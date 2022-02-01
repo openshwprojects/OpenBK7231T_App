@@ -33,7 +33,10 @@ const char htmlHeader[] = "<!DOCTYPE html><html><body>" ;
 const char htmlEnd[] = "</body></html>" ;
 const char htmlReturnToMenu[] = "<a href=\"index\">Return to menu</a>";;
 
-
+#if WINDOWS
+#define os_free free
+#define os_malloc malloc
+#endif
 
 typedef struct http_callback_tag {
     char *url;
@@ -244,10 +247,11 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 	char tmpB[64];
 	char tmpC[64];
 	int bChanged = 0;
+	const char *urlStr;
 
 	*outbuf = '\0';
 
-	const char *urlStr = recvbuf + 5;
+	urlStr = recvbuf + 5;
 	if(http_startsWith(recvbuf,"GET")) {
 		printf("HTTP request\n");
 	} else {
@@ -258,7 +262,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 	http_getArg(urlStr,"c",tmpC,sizeof(tmpC));
 
 
-	for (int i = 0; i < numCallbacks; i++){
+	for (i = 0; i < numCallbacks; i++){
 		char *url = callbacks[i]->url;
 		if (http_checkUrlBase(urlStr, &url[1])){
 			return callbacks[i]->callback(recvbuf, outbuf, outBufSize);
@@ -782,7 +786,11 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 		strcat(outbuf,htmlReturnToMenu);
 		strcat(outbuf,htmlEnd);
     } else if(http_checkUrlBase(urlStr,"ota")) {
+#if WINDOWS
+
+#else
         otarequest(DEFAULT_OTA_URL);
+#endif
         http_setup(outbuf, httpMimeTypeHTML);
         strcat(outbuf,htmlHeader);
         strcat(outbuf,"OTA Requested.");

@@ -164,6 +164,22 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\src\httpserver\http_tcp_server.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\httpserver\http_tcp_server.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\new_builtin_devices.c"
 				>
 			</File>
@@ -184,7 +200,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\new_http.c"
+				RelativePath=".\src\httpserver\new_http.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\httpserver\new_http.h"
 				>
 			</File>
 			<File
