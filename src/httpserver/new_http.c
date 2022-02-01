@@ -602,6 +602,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 		strcat_safe(outbuf,"<form action=\"cfg_wifi\"><input type=\"submit\" value=\"Configure WiFi\"/></form>",outBufSize);
 		strcat_safe(outbuf,"<form action=\"cfg_mqtt\"><input type=\"submit\" value=\"Configure MQTT\"/></form>",outBufSize);
 		strcat_safe(outbuf,"<form action=\"cfg_ha\"><input type=\"submit\" value=\"Generate Home Assistant cfg\"/></form>",outBufSize);
+		strcat_safe(outbuf,"<form action=\"ota\"><input type=\"submit\" value=\"OTA (update software by WiFi)\"/></form>",outBufSize);
 		strcat_safe(outbuf,"<form action=\"cmd_single\"><input type=\"submit\" value=\"Execute custom command\"/></form>",outBufSize);
 		strcat_safe(outbuf,"<form action=\"flash_read_tool\"><input type=\"submit\" value=\"Flash Read Tool\"/></form>",outBufSize);
 
@@ -804,15 +805,30 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 		strcat(outbuf,htmlReturnToMenu);
 		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat(outbuf,htmlEnd);
-    } else if(http_checkUrlBase(urlStr,"ota")) {
+    } else if(http_checkUrlBase(urlStr,"ota_exec")) {
+        http_setup(outbuf, httpMimeTypeHTML);
+        strcat(outbuf,htmlHeader);
+		if(http_getArg(urlStr,"host",tmpA,sizeof(tmpA))) {
+			sprintf(tmpB,"<h3>OTA requested for %s!</h3>",tmpA);
+			strcat(outbuf,tmpB);
 #if WINDOWS
 
 #else
-        otarequest(DEFAULT_OTA_URL);
+        otarequest(tmpA);
 #endif
-        http_setup(outbuf, httpMimeTypeHTML);
-        strcat(outbuf,htmlHeader);
-        strcat(outbuf,"OTA Requested.");
+		}
+        strcat(outbuf,htmlReturnToMenu);
+		HTTP_AddBuildFooter(outbuf,outBufSize);
+        strcat(outbuf,htmlEnd);
+	} else if(http_checkUrlBase(urlStr,"ota")) {
+		http_setup(outbuf, httpMimeTypeHTML);
+		strcat(outbuf,htmlHeader);
+		strcat_safe(outbuf,"<form action=\"/ota_exec\">\
+			  <label for=\"host\">URL for new bin file:</label><br>\
+			  <input type=\"text\" id=\"host\" name=\"host\" value=\"",outBufSize);
+		strcat_safe(outbuf,"\"><br>\
+			  <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MQTT data twice?')\">\
+			</form> ",outBufSize);
         strcat(outbuf,htmlReturnToMenu);
 		HTTP_AddBuildFooter(outbuf,outBufSize);
         strcat(outbuf,htmlEnd);
