@@ -32,6 +32,7 @@ const char httpMimeTypeText[] = "text/plain\n\n" ;           // TEXT MIME type
 const char htmlHeader[] = "<!DOCTYPE html><html><body>" ;
 const char htmlEnd[] = "</body></html>" ;
 const char htmlReturnToMenu[] = "<a href=\"index\">Return to menu</a>";;
+const char *g_build_str = "Build on " __DATE__ " " __TIME__;
 
 #if WINDOWS
 #define os_free free
@@ -241,6 +242,11 @@ int g_total_templates = sizeof(g_templates)/sizeof(g_templates[0]);
 
 const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7231T/\">OpenBK7231</a></h1><h3><a href=\"https://www.elektroda.com/rtvforum/viewtopic.php?p=19841301#19841301\">[Read more]</a><a href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
 
+
+void HTTP_AddBuildFooter(char *outbuf, int outBufSize) {
+	strcat(outbuf,"<br>",outBufSize);
+	strcat(outbuf,g_build_str,outBufSize);
+}
 int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 	int i, j;
 	char tmpA[128];
@@ -275,6 +281,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 		strcat_safe(outbuf,g_header,outBufSize);
 		strcat_safe(outbuf,"About us page.",outBufSize);
 		strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
+		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat_safe(outbuf,htmlEnd,outBufSize);
 	} else if(http_checkUrlBase(urlStr,"cfg_mqtt")) {
 		http_setup(outbuf, httpMimeTypeHTML);
@@ -309,6 +316,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 			  <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MQTT data twice?')\">\
 			</form> ",outBufSize);
 		strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
+		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat_safe(outbuf,htmlEnd,outBufSize);
 	} else if(http_checkUrlBase(urlStr,"cfg_mqtt_set")) {
 		http_setup(outbuf, httpMimeTypeHTML);
@@ -340,6 +348,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 		strcat_safe(outbuf,"<a href=\"cfg_mqtt\">Return to MQTT settings</a>",outBufSize);
 		strcat_safe(outbuf,"<br>",outBufSize);
 		strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
+		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat_safe(outbuf,htmlEnd,outBufSize);
 	} else if(http_checkUrlBase(urlStr,"cfg_wifi_set")) {
 		http_setup(outbuf, httpMimeTypeHTML);
@@ -366,6 +375,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 		strcat_safe(outbuf,"<a href=\"cfg_wifi\">Return to WiFi settings</a>",outBufSize);
 		strcat_safe(outbuf,"<br>",outBufSize);
 		strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
+		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat_safe(outbuf,htmlEnd,outBufSize);
 	} else if(http_checkUrlBase(urlStr,"cfg_wifi")) {
 		// for a test, show password as well...
@@ -411,6 +421,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 			  <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check SSID and pass twice?')\">\
 			</form> ",outBufSize);
 		strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
+		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat_safe(outbuf,htmlEnd,outBufSize);
 	} else if(http_checkUrlBase(urlStr,"flash_read_tool")) {
 		int len = 16;
@@ -473,6 +484,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 			</form> ",outBufSize);
 
 		strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
+		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat_safe(outbuf,htmlEnd,outBufSize);
 
 	} else if(http_checkUrlBase(urlStr,"cfg_quick")) {
@@ -499,6 +511,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 		strcat_safe(outbuf,"<input type=\"submit\" value=\"Set\"/></form>",outBufSize);
 		
 		strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
+		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat_safe(outbuf,htmlEnd,outBufSize);
 
 
@@ -576,6 +589,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 		strcat_safe(outbuf,"</textarea>",outBufSize);
 
 		strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
+		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat_safe(outbuf,htmlEnd,outBufSize);
 
 		
@@ -593,6 +607,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 
 
 		strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
+		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat_safe(outbuf,htmlEnd,outBufSize);
 	} else if(http_checkUrlBase(urlStr,"setWB2SInputs")) {
 		http_setup(outbuf, httpMimeTypeHTML);
@@ -603,6 +618,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 		http_setup(outbuf, httpMimeTypeHTML);
 		strcat_safe(outbuf,"Set all inputs for dbg .",outBufSize);
 		strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
+		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat_safe(outbuf,htmlEnd,outBufSize);
 	} else if(http_checkUrlBase(urlStr,"setAllInputs")) {
 		http_setup(outbuf, httpMimeTypeHTML);
@@ -615,6 +631,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 		http_setup(outbuf, httpMimeTypeHTML);
 		strcat_safe(outbuf,"Set all inputs for dbg .",outBufSize);
 		strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
+		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat_safe(outbuf,htmlEnd,outBufSize);
 	} else if(http_checkUrlBase(urlStr,"cfg_pins")) {
 		int iChanged = 0;
@@ -691,6 +708,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 		strcat(outbuf,"<input type=\"submit\" value=\"Save\"/></form>");
 
 		strcat(outbuf,htmlReturnToMenu);
+		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat(outbuf,htmlEnd);
 	} else if(http_checkUrlBase(urlStr,"index")) {
 		int relayFlags;
@@ -784,6 +802,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 
 
 		strcat(outbuf,htmlReturnToMenu);
+		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat(outbuf,htmlEnd);
     } else if(http_checkUrlBase(urlStr,"ota")) {
 #if WINDOWS
@@ -795,6 +814,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
         strcat(outbuf,htmlHeader);
         strcat(outbuf,"OTA Requested.");
         strcat(outbuf,htmlReturnToMenu);
+		HTTP_AddBuildFooter(outbuf,outBufSize);
         strcat(outbuf,htmlEnd);
 	} else {
 		http_setup(outbuf, httpMimeTypeHTML);
@@ -802,6 +822,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 		strcat_safe(outbuf,g_header,outBufSize);
 		strcat(outbuf,"Not found.");
 		strcat(outbuf,htmlReturnToMenu);
+		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat(outbuf,htmlEnd);
 	}
 
