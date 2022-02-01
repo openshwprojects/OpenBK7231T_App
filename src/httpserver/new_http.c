@@ -1,8 +1,8 @@
 
 
-#include "new_common.h"
+#include "../new_common.h"
 #include "new_http.h"
-#include "new_pins.h"
+#include "../new_pins.h"
 
 /*
 GET / HTTP/1.1
@@ -29,8 +29,45 @@ Connection: keep-alive
 const char httpHeader[] = "HTTP/1.1 200 OK\nContent-type: " ;  // HTTP header
 const char httpMimeTypeHTML[] = "text/html\n\n" ;              // HTML MIME type
 const char httpMimeTypeText[] = "text/plain\n\n" ;           // TEXT MIME type
-const unsigned char htmlHeader[] = "<!DOCTYPE html><html><body>" ;
-const unsigned char htmlEnd[] = "</body></html>" ;
+const char htmlHeader[] = "<!DOCTYPE html><html><body>" ;
+const char htmlEnd[] = "</body></html>" ;
+const char htmlReturnToMenu[] = "<a href=\"index\">Return to menu</a>";;
+
+
+
+typedef struct http_callback_tag {
+    char *url;
+    http_callback_fn callback;
+} http_callback_t;
+
+#define MAX_HTTP_CALLBACKS 32
+static http_callback_t *callbacks[MAX_HTTP_CALLBACKS];
+static int numCallbacks = 0;
+
+int HTTP_RegisterCallback( const char *url, http_callback_fn callback){
+	if (!url || !callback){
+		return -1;
+	}
+	if (numCallbacks >= MAX_HTTP_CALLBACKS){
+		return -4;
+	}
+	callbacks[numCallbacks] = (http_callback_t*)os_malloc(sizeof(http_callback_t));
+	if (!callbacks[numCallbacks]){
+		return -2;
+	}
+	callbacks[numCallbacks]->url = (char *)os_malloc(strlen(url)+1);
+	if (!callbacks[numCallbacks]->url){
+		os_free(callbacks[numCallbacks]);
+		return -3;
+	}
+	strcpy(callbacks[numCallbacks]->url, url);
+	callbacks[numCallbacks]->callback = callback;
+	numCallbacks++;
+
+	// success
+	return 0;
+}
+
 
 bool http_startsWith(const char *base, const char *substr) {
 	while(*substr != 0) {
@@ -146,7 +183,6 @@ const char *htmlIndex = "<select name=\"cars\" id=\"cars\">\
 //<option value=\"5\">LED</option>\
 //<option value=\"6\">LED_n</option>\
 //</select>";
-const char *htmlReturnToMenu = "<a href=\"index\">Return to menu</a>";;
 
 const char *htmlPinRoleNames[] = {
 	" ",
@@ -202,12 +238,14 @@ int g_total_templates = sizeof(g_templates)/sizeof(g_templates[0]);
 
 const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7231T/\">OpenBK7231</a></h1><h3><a href=\"https://www.elektroda.com/rtvforum/viewtopic.php?p=19841301#19841301\">[Read more]</a><a href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
 
-void HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
+int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 	int i, j;
 	char tmpA[128];
 	char tmpB[64];
 	char tmpC[64];
 	int bChanged = 0;
+
+	*outbuf = '\0';
 
 	const char *urlStr = recvbuf + 5;
 	if(http_startsWith(recvbuf,"GET")) {
@@ -218,6 +256,15 @@ void HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 	http_getArg(urlStr,"a",tmpA,sizeof(tmpA));
 	http_getArg(urlStr,"b",tmpB,sizeof(tmpB));
 	http_getArg(urlStr,"c",tmpC,sizeof(tmpC));
+
+
+	for (int i = 0; i < numCallbacks; i++){
+		char *url = callbacks[i]->url;
+		if (http_checkUrlBase(urlStr, &url[1])){
+			return callbacks[i]->callback(recvbuf, outbuf, outBufSize);
+		}
+	}
+
 	if(http_checkUrlBase(urlStr,"about")) {
 		http_setup(outbuf, httpMimeTypeHTML);
 		strcat_safe(outbuf,htmlHeader,outBufSize);
@@ -749,4 +796,6 @@ void HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 		strcat(outbuf,htmlReturnToMenu);
 		strcat(outbuf,htmlEnd);
 	}
+
+	return strlen(outbuf);
 }

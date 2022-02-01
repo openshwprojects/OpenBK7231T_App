@@ -14,7 +14,7 @@ static void store_sector(unsigned int addr, unsigned char *data);
 
 
 
-int init_ota(startaddr){
+int init_ota(unsigned int startaddr){
     flash_init();
 	flash_protection_op(FLASH_XTX_16M_SR_WRITE_ENABLE, FLASH_PROTECT_NONE);
     if (startaddr > 0xff000){
@@ -141,7 +141,7 @@ static char *post_data = "";
 
 char *http_buf = (void *)0;
 
-void otarequest(urlin){
+void otarequest(const char *urlin){
   httprequest_t *request = &httprequest;
   if (request->state == 1){
     addLog("********************http in progress, not starting another\r\n");

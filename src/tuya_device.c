@@ -31,23 +31,27 @@
 
 /* Private includes ----------------------------------------------------------*/
 #include "tuya_device.h"
-#include "new_http.h"
+#include "httpserver/new_http.h"
 #include "new_pins.h"
+#include "logging/logging.h"
+#include "httpserver/http_tcp_server.h"
 
 #include "../../beken378/func/key/multi_button.h"
 #include "../../beken378/app/config/param_config.h"
 #include "lwip/apps/mqtt.h"
 
+
+#define os_printf addLog
+#define PR_DEBUG addLog
+#define PR_NOTICE addLog
+#define Malloc os_malloc
+#define Free os_free
+
+
 static int g_secondsElapsed = 0;
 
 
-
-#define HTTP_SERVER_PORT            80 /*set up a tcp server,port at 20000*/
-
-int my_fd = -1; 
-
 int g_my_reconnect_mqtt_after_time = -1;
-
 
 #define tcp_server_log(M, ...) os_printf("TCP", M, ##__VA_ARGS__)
 
@@ -76,138 +80,7 @@ int unw_recv(const int fd, void *buf, u32 nbytes)
     
 }
 
-void tcp_client_thread( beken_thread_arg_t arg )
-{
-    OSStatus err = kNoErr;
-    int fd = (int) arg;
-    int len = 0;
-    fd_set readfds, errfds, readfds2; 
-    char *buf = NULL;
-    char *reply = NULL;
-	int replyBufferSize = 10000;
-	int res;
-	//char reply[8192];
 
-    my_fd = fd;
-
-    reply = (char*) os_malloc( replyBufferSize );
-    buf = (char*) os_malloc( 1024 );
-    ASSERT(buf);
-    
-
-    
-    while ( 1 )
-    {
-           
-        {
-            len = recv( fd, buf, 1024, 0 );
-
-            if ( len <= 0 )
-            {
-                os_printf( "TCP Client is disconnected, fd: %d", fd );
-                goto exit;
-            }
-  
-      PR_NOTICE( "TCP received string %s\n",buf );
-		  
-		HTTP_ProcessPacket(buf, reply, replyBufferSize);
-
-		///	strcpy(buf,"[WB2S example TCP reply!]");
-			len = strlen(reply);
-      PR_NOTICE( "TCP sending reply len %i\n",len );
-            len = send( fd, reply, len, 0 );
-
-          rtos_delay_milliseconds(10);
-
-          //  rtos_delay_milliseconds(100);
-			// it gives me problems, ERR_CONNECTION_RESET
-		  
-			// do not wait for another request, just close
-			// TODO: what if a retransmit or smth happens and takes more than 100ms?
-			// let's just assume it will be ok?
-			// Without break, Chrome has X loading ico nforever here
-			//break;
-		  // break; here breaks stuff
-        }
-    }
-
-
-exit:
-    if ( err != kNoErr ) 
-		tcp_server_log( "TCP client thread exit with err: %d", err );
-	
-    if ( buf != NULL ) 
-		os_free( buf );
-    if ( reply != NULL ) 
-		os_free( reply );
-	
-    close( fd );
-    rtos_delete_thread( NULL );
-}
-
-volatile u8 test_flag = 0;
-void close_tcp_client(void)
-{
-    os_printf("close_tcp_client:%d, %p\r\n", my_fd, rtos_get_current_thread());
-    test_flag = 1;
-    close( my_fd );
-    my_fd = -1;
-}
-
-/* TCP server listener thread */
-void tcp_server_thread( beken_thread_arg_t arg )
-{
-    (void)( arg );
-    OSStatus err = kNoErr;
-    struct sockaddr_in server_addr, client_addr;
-    socklen_t sockaddr_t_size = sizeof(client_addr);
-    char client_ip_str[16];
-    int tcp_listen_fd = -1, client_fd = -1;
-    fd_set readfds;
-
-    tcp_listen_fd = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP );
-
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = INADDR_ANY;/* Accept conenction request on all network interface */
-    server_addr.sin_port = htons( HTTP_SERVER_PORT );/* Server listen on port: 20000 */
-    err = bind( tcp_listen_fd, (struct sockaddr *) &server_addr, sizeof(server_addr) );
-    
-    err = listen( tcp_listen_fd, 0 );
-    
-    while ( 1 )
-    {
-        FD_ZERO( &readfds );
-        FD_SET( tcp_listen_fd, &readfds );
-
-        select( tcp_listen_fd + 1, &readfds, NULL, NULL, NULL);
-
-        if ( FD_ISSET( tcp_listen_fd, &readfds ) )
-        {
-            client_fd = accept( tcp_listen_fd, (struct sockaddr *) &client_addr, &sockaddr_t_size );
-            if ( client_fd >= 0 )
-            {
-                os_strcpy( client_ip_str, inet_ntoa( client_addr.sin_addr ) );
-                tcp_server_log( "TCP Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd );
-                if ( kNoErr
-                     != rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY, 
-							                     "TCP Clients",
-                                                 (beken_thread_function_t)tcp_client_thread,
-                                                 0x800, 
-                                                 (beken_thread_arg_t)client_fd ) ) 
-                {
-                    close( client_fd );
-					client_fd = -1;
-                }
-            }
-        }
-    }
-	
-    if ( err != kNoErr ) 
-		tcp_server_log( "Server listerner thread exit with err: %d", err );
-	
-    close( tcp_listen_fd );
-    rtos_delete_thread( NULL );
-}
 
 void connect_to_wifi(const char *oob_ssid,const char *connect_key)
 {
@@ -243,23 +116,6 @@ void connect_to_wifi(const char *oob_ssid,const char *connect_key)
 			
     bk_wlan_start(&network_cfg);
 #endif
-}
-
-
-
-void demo_start_tcp()
-{
-    OSStatus err = kNoErr;
-
-    err = rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY, 
-									"TCP_server", 
-									(beken_thread_function_t)tcp_server_thread,
-									0x800,
-									(beken_thread_arg_t)0 );
-    if(err != kNoErr)
-    {
-       os_printf("create \"TCP_server\" thread failed!\r\n");
-    }
 }
 
 
@@ -510,8 +366,12 @@ static void app_led_timer_handler(void *data)
 	}
 
 	g_secondsElapsed ++;
+  PR_NOTICE("Timer is %i free mem %d\n", g_secondsElapsed, xPortGetFreeHeapSize());
 
-    PR_NOTICE("Timer is %i\n",g_secondsElapsed);
+  // print network info
+  if (!(g_secondsElapsed % 10)){
+    print_network_info();
+  }
 }
 
 void app_on_generic_dbl_click(int btnIndex)
@@ -521,283 +381,6 @@ void app_on_generic_dbl_click(int btnIndex)
 		CFG_SaveWiFi();
 	}
 }
-
-/* Private functions ---------------------------------------------------------*/
-/**
- * @Function: wifi_state_led_reminder
- * @Description: WiFi led指示灯，根据当前 WiFi 状态，做出不同提示 
- * @Input: cur_stat：当前 WiFi 状态 
- * @Output: none
- * @Return: none
- * @Others: 
- */
-STATIC VOID wifi_state_led_reminder(IN CONST GW_WIFI_NW_STAT_E cur_stat)
-{
-   
-}
-
-/**
- * @Function: wifi_key_process
- * @Description: 按键回调函数
- * @Input: port：触发引脚,type：按键触发类型,cnt:触发次数
- * @Output: none
- * @Return: none
- * @Others: 长按触发配网模式
- */
-STATIC VOID wifi_key_process(TY_GPIO_PORT_E port,PUSH_KEY_TYPE_E type,INT_T cnt)
-{
-
-
-    return;
-}
-
-/**
- * @Function: wifi_config_init
- * @Description: 初始化 WiFi 相关设备，按键，led指示灯
- * @Input: none
- * @Output: none
- * @Return: none
- * @Others: 
- */
-STATIC VOID wifi_config_init(VOID)
-{
- 
-
-    return;
-}
-
-/**
- * @Function: hw_report_all_dp_status
- * @Description: 上报所有 dp 点
- * @Input: none
- * @Output: none
- * @Return: none
- * @Others: 
- */
-VOID hw_report_all_dp_status(VOID)
-{
-    //report all dp status
-}
-
-/**
- * @Function:gpio_test 
- * @Description: gpio测试
- * @Input: none
- * @Output: none
- * @Return: none
- * @Others: none
- */
-BOOL_T gpio_test(IN CONST CHAR_T *in, OUT CHAR_T *out)
-{
-    return gpio_test_all(in, out);
-}
-
-/**
- * @Function: mf_user_callback
- * @Description: 授权回调函数
- * @Input: none
- * @Output: none
- * @Return: none
- * @Others: 清空flash中存储的数据
- */
-VOID mf_user_callback(VOID)
-{
-    hw_reset_flash_data();
-    return;
-}
-
-/**
- * @Function: prod_test
- * @Description: 扫描到产测热点，进入回调函数，主要是按键、指示灯、继电器功能测试
- * @Input: flag:授权标识；rssi:信号强度
- * @Output: none
- * @Return: none
- * @Others: none
- */
-VOID prod_test(BOOL_T flag, SCHAR_T rssi)
-{
-    if (flag == FALSE || rssi < -60) 
-    {
-        PR_ERR("Prod test failed... flag:%d, rssi:%d", flag, rssi);
-        return;
-    }
-    PR_NOTICE("flag:%d rssi:%d", flag, rssi);
-
-}
-
-/**
- * @Function: app_init
- * @Description: 设备初始化，设置工作模式
- * @Input: none
- * @Output: none
- * @Return: none
- * @Others: 无
- */
-// NOTE: this is externally called from tuya_mainc
-VOID app_init(VOID)
-{
-
-}
-
-/**
- * @Function: pre_device_init
- * @Description: 设备信息(SDK信息、版本号、固件标识等)打印、重启原因和打印等级设置
- * @Input: none
- * @Output: none
- * @Return: none
- * @Others: none
- */
-VOID pre_device_init(VOID)
-{
-    PR_DEBUG("%s",tuya_iot_get_sdk_info());
-    PR_DEBUG("%s:%s",APP_BIN_NAME,DEV_SW_VERSION);
-    PR_NOTICE("firmware compiled at %s %s", __DATE__, __TIME__);
-    PR_NOTICE("Hello Tuya World!");
-    PR_NOTICE("system reset reason:[%s]",tuya_hal_system_get_rst_info());
-    /* 打印等级设置 */
-    SetLogManageAttr(TY_LOG_LEVEL_DEBUG);
-}
-
-/**
- * @Function: status_changed_cb
- * @Description: network status changed callback
- * @Input: status: current status
- * @Output: none
- * @Return: none
- * @Others: none
- */
-VOID status_changed_cb(IN CONST GW_STATUS_E status)
-{
-
-}
-
-/**
- * @Function: upgrade_notify_cb
- * @Description: firmware download finish result callback
- * @Input: fw: firmware info
- * @Input: download_result: 0 means download succes. other means fail
- * @Input: pri_data: private data
- * @Output: none
- * @Return: none
- * @Others: none
- */
-VOID upgrade_notify_cb(IN CONST FW_UG_S *fw, IN CONST INT_T download_result, IN PVOID_T pri_data)
-{
-
-}
-
-/**
- * @Function: get_file_data_cb
- * @Description: firmware download content process callback
- * @Input: fw: firmware info
- * @Input: total_len: firmware total size
- * @Input: offset: offset of this download package
- * @Input: data && len: this download package
- * @Input: pri_data: private data
- * @Output: remain_len: the size left to process in next cb
- * @Return: OPRT_OK: success  Other: fail
- * @Others: none
- */
-OPERATE_RET get_file_data_cb(IN CONST FW_UG_S *fw, IN CONST UINT_T total_len, IN CONST UINT_T offset, \
-                                     IN CONST BYTE_T *data, IN CONST UINT_T len, OUT UINT_T *remain_len, IN PVOID_T pri_data)
-{
-
-    return OPRT_OK;
-}
-
-/**
- * @Function: gw_ug_inform_cb
- * @Description: gateway ota firmware available nofity callback
- * @Input: fw: firmware info
- * @Output: none
- * @Return: int:
- * @Others: 
- */
-INT_T gw_ug_inform_cb(IN CONST FW_UG_S *fw)
-{
-
-    return 0;
-}
-
-/**
- * @Function: hw_reset_flash_data
- * @Description: hardware reset, erase user data from flash
- * @Input: none
- * @Output: none
- * @Return: none
- * @Others: 
- */
-VOID hw_reset_flash_data(VOID)
-{
-    return;
-}
-
-/**
- * @Function: gw_reset_cb
- * @Description: gateway restart callback, app remove the device 
- * @Input: type:gateway reset type
- * @Output: none
- * @Return: none
- * @Others: reset factory clear flash data
- */
-VOID gw_reset_cb(IN CONST GW_RESET_TYPE_E type)
-{
-
-}
-
-/**
- * @Function: dev_obj_dp_cb
- * @Description: obj dp info cmd callback, tuya cloud dp(data point) received
- * @Input: dp:obj dp info
- * @Output: none
- * @Return: none
- * @Others: app send data by dpid  control device stat
- */
-VOID dev_obj_dp_cb(IN CONST TY_RECV_OBJ_DP_S *dp)
-{
-
-}
-
-/**
- * @Function: dev_raw_dp_cb
- * @Description: raw dp info cmd callback, tuya cloud dp(data point) received (hex data)
- * @Input: dp: raw dp info
- * @Output: none
- * @Return: none
- * @Others: none
- */
-VOID dev_raw_dp_cb(IN CONST TY_RECV_RAW_DP_S *dp)
-{
-
-    return;
-}
-
-/**
- * @Function: dev_dp_query_cb
- * @Description: dp info query callback, cloud or app actively query device info
- * @Input: dp_qry: query info
- * @Output: none
- * @Return: none
- * @Others: none
- */
-STATIC VOID dev_dp_query_cb(IN CONST TY_DP_QUERY_S *dp_qry) 
-{
-
-}
-
-/**
- * @Function: wf_nw_status_cb
- * @Description: tuya-sdk network state check callback
- * @Input: stat: curr network status
- * @Output: none
- * @Return: none
- * @Others: none
- */
-VOID wf_nw_status_cb(IN CONST GW_WIFI_NW_STAT_E stat)
-{
-
-}
-
 
 
 static int setup_wifi_open_access_point(void)
@@ -867,6 +450,44 @@ static int setup_wifi_open_access_point(void)
 }
 
 
+
+
+// receives status change notifications about wireless - could be useful
+// ctxt is pointer to a rw_evt_type
+void wl_status( void *ctxt ){
+
+    rw_evt_type stat = *((rw_evt_type*)ctxt);
+    bk_printf("wl_status %d\r\n", stat);
+
+    switch(stat){
+        case RW_EVT_STA_IDLE:
+        case RW_EVT_STA_SCANNING:
+        case RW_EVT_STA_SCAN_OVER:
+        case RW_EVT_STA_CONNECTING:
+            break;
+        case RW_EVT_STA_BEACON_LOSE:
+        case RW_EVT_STA_PASSWORD_WRONG:
+        case RW_EVT_STA_NO_AP_FOUND:
+        case RW_EVT_STA_ASSOC_FULL:
+        case RW_EVT_STA_DISCONNECTED:    /* disconnect with server */
+            // try to connect again in 5 seconds
+            //reconnect = 5;
+            break;
+        case RW_EVT_STA_CONNECT_FAILED:  /* authentication failed */
+        case RW_EVT_STA_CONNECTED:        /* authentication success */    
+        case RW_EVT_STA_GOT_IP: 
+        
+        /* for softap mode */
+        case RW_EVT_AP_CONNECTED:          /* a client association success */
+        case RW_EVT_AP_DISCONNECTED:       /* a client disconnect */
+        case RW_EVT_AP_CONNECT_FAILED:     /* a client association failed */
+        default:
+            break;
+    }
+
+}
+
+
 /**
  * @Function: device_init
  * @Description: device initialization process 
@@ -879,7 +500,8 @@ static int setup_wifi_open_access_point(void)
 
 
 
-OPERATE_RET device_init(VOID)
+void user_main(void)
+//OPERATE_RET device_init(VOID)
 {
     OSStatus err;
 	int bForceOpenAP = 0;
@@ -914,11 +536,14 @@ OPERATE_RET device_init(VOID)
 		connect_to_wifi(wifi_ssid,wifi_pass);
 	}
 
+  // register function to get callbacks about wifi changes.
+  bk_wlan_status_register_cb(wl_status);
+
 		// NOT WORKING, I done it other way, see ethernetif.c
 	//net_dhcp_hostname_set(g_shortDeviceName);
 
 	//demo_start_upd();
-	demo_start_tcp();
+	start_tcp_http();
 	
 	PIN_Init();
 

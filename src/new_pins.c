@@ -3,14 +3,19 @@
 
 
 #include "new_common.h"
-#include "new_http.h"
+#include "httpserver/new_http.h"
 #include "new_pins.h"
+#include "logging/logging.h"
 
 #if WINDOWS
 
 #else
 #include "../../beken378/func/include/net_param_pub.h"
 #include "../../beken378/func/user_driver/BkDriverPwm.h"
+#define PR_DEBUG addLog
+#define PR_NOTICE addLog
+
+
 #endif
 
 /*

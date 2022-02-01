@@ -1,7 +1,9 @@
 
 #include "../new_common.h"
 #include "../logging/logging.h"
+#include "../httpserver/new_http.h"
 
+static int http_getlog(const char *payload, char *outbuf, int outBufSize);
 
 static void log_server_thread( beken_thread_arg_t arg );
 static void log_client_thread( beken_thread_arg_t arg );
@@ -17,10 +19,11 @@ static void startLogServer();
 int logTcpPort = LOGPORT;
 
 static struct tag_logMemory {
-    char *log[LOGSIZE];
+    char log[LOGSIZE];
     int head;
     int tailserial;
     int tailtcp;
+    int tailhttp;
     SemaphoreHandle_t mutex;
 } logMemory;
 
@@ -29,11 +32,12 @@ static char tmp[1024];
 
 static void initLog() {
     bk_printf("init log\r\n");
-    logMemory.head = logMemory.tailserial = logMemory.tailtcp = 0; 
+    logMemory.head = logMemory.tailserial = logMemory.tailtcp = logMemory.tailhttp = 0; 
     logMemory.mutex = xSemaphoreCreateMutex( );
     initialised = 1;
     startSerialLog();
     startLogServer();
+    HTTP_RegisterCallback( "/logs", http_getlog);
 }
 
 // adds a log to the log memory
@@ -53,13 +57,15 @@ void addLog(char *fmt, ...){
 //#define DIRECTLOG
 #ifdef DIRECTLOG
     bk_printf(tmp);
-    if (taken = pdTRUE){
+    if (taken == pdTRUE){
         xSemaphoreGive( logMemory.mutex );
     }
     return;
 #endif    
 
     int len = strlen(tmp);
+    tmp[len++] = '\r';
+    tmp[len++] = '\n';
 
     //bk_printf("addlog %d.%d.%d %d:%s\n", logMemory.head, logMemory.tailserial, logMemory.tailtcp, len,tmp);
 
@@ -72,9 +78,12 @@ void addLog(char *fmt, ...){
         if (logMemory.tailtcp == logMemory.head){
             logMemory.tailtcp = (logMemory.tailtcp + 1) % LOGSIZE;
         }
+        if (logMemory.tailhttp == logMemory.head){
+            logMemory.tailhttp = (logMemory.tailhttp + 1) % LOGSIZE;
+        }
     }
 
-    if (taken = pdTRUE){
+    if (taken == pdTRUE){
         xSemaphoreGive( logMemory.mutex );
     }
 }
@@ -97,7 +106,7 @@ static int getData(char *buff, int buffsize, int *tail) {
     }
     *p = 0;
 
-    if (taken = pdTRUE){
+    if (taken == pdTRUE){
         xSemaphoreGive( logMemory.mutex );
     }
     return count;
@@ -115,6 +124,11 @@ static int getTcp(char *buff, int buffsize){
     return len;
 }
 
+static int getHttp(char *buff, int buffsize){
+    int len = getData(buff, buffsize, &logMemory.tailhttp);
+    //bk_printf("got tcp: %d:%s\r\n", len,buff);
+    return len;
+}
 
 void startLogServer(){
     OSStatus err = kNoErr;
@@ -247,3 +261,33 @@ static void log_serial_thread( beken_thread_arg_t arg )
         rtos_delay_milliseconds(10);
     }
 }
+
+
+
+static int http_getlog(const char *payload, char *outbuf, int outBufSize){
+    http_setup(outbuf, httpMimeTypeHTML);
+    strcat_safe(outbuf,htmlHeader,outBufSize);
+    strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
+
+    strcat_safe(outbuf, "<pre>",outBufSize);
+    char *post = "</pre>";
+
+    char *b = outbuf;
+
+    int len = strlen(b);
+    b += len;
+    outBufSize -= len;
+
+    int trailsize = strlen(htmlEnd) + strlen(post);
+    len = getHttp(b, outBufSize - trailsize - 1);
+    b += len;
+    outBufSize -= len;
+
+    strcat_safe(outbuf, post, outBufSize);
+    strcat_safe(outbuf,htmlEnd,outBufSize);
+
+    return strlen(outbuf);
+}
+
+
+
