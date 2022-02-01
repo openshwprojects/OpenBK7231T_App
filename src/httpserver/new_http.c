@@ -244,8 +244,8 @@ const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7
 
 
 void HTTP_AddBuildFooter(char *outbuf, int outBufSize) {
-	strcat(outbuf,"<br>",outBufSize);
-	strcat(outbuf,g_build_str,outBufSize);
+	strcat_safe(outbuf,"<br>",outBufSize);
+	strcat_safe(outbuf,g_build_str,outBufSize);
 }
 int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 	int i, j;
