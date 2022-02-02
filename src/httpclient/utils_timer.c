@@ -94,7 +94,7 @@ uint32_t utils_time_get_ms(void)
 
 uint64_t utils_time_left(uint64_t t_end, uint64_t t_now)
 {
-    uint64_t t_left;
+    //uint64_t t_left;
 
     return  (1!=(hal_machw_time_past(t_end*1000)));
 }

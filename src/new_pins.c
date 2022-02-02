@@ -12,6 +12,8 @@
 #else
 #include "../../beken378/func/include/net_param_pub.h"
 #include "../../beken378/func/user_driver/BkDriverPwm.h"
+#undef PR_DEBUG
+#undef PR_NOTICE
 #define PR_DEBUG addLog
 #define PR_NOTICE addLog
 
@@ -79,14 +81,14 @@ void (*g_doubleClickCallback)(int pinIndex) = 0;
 void PIN_SaveToFlash() {
 #if WINDOWS
 #else
-	save_info_item(NEW_PINS_CONFIG,&g_pins, 0, 0);
+	save_info_item(NEW_PINS_CONFIG,(UINT8 *)&g_pins, 0, 0);
 #endif
 }
 void PIN_LoadFromFlash() {
 	int i;
 #if WINDOWS
 #else
-	get_info_item(NEW_PINS_CONFIG,&g_pins, 0, 0);
+	get_info_item(NEW_PINS_CONFIG,(UINT8 *)&g_pins, 0, 0);
 #endif
 	for(i = 0; i < GPIO_MAX; i++) {
 		PIN_SetPinRoleForPinIndex(i,g_pins.roles[i]);
@@ -158,7 +160,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 	
 #else
 		{
-			BUTTON_S *bt = &g_buttons[index];
+			//BUTTON_S *bt = &g_buttons[index];
 			// TODO: disable button
 		}
 #endif
@@ -177,7 +179,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 	case IOR_PWM:
 		{
 			int pwmIndex;
-			int channelIndex;
+			//int channelIndex;
 
 			pwmIndex = PIN_GetPWMIndexForPinIndex(index);
 #if WINDOWS
