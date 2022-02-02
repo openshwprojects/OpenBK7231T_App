@@ -5,6 +5,7 @@
 #include "lwip/inet.h"
 #include "../logging/logging.h"
 #include "new_http.h"
+#include "str_pub.h"
 
 static void tcp_server_thread( beken_thread_arg_t arg );
 static void tcp_client_thread( beken_thread_arg_t arg );

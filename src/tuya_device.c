@@ -66,6 +66,10 @@ int g_my_reconnect_mqtt_after_time = -1;
 
 #define tcp_server_log(M, ...) os_printf("TCP", M, ##__VA_ARGS__)
 
+
+// from wlan_ui.c, no header
+void bk_wlan_status_register_cb(FUNC_1PARAM_PTR cb);
+
 int unw_recv(const int fd, void *buf, u32 nbytes)
 {
     fd_set readfds, errfds;
@@ -316,10 +320,8 @@ static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection
 
 void example_do_connect(mqtt_client_t *client)
 {
-  err_t err;
   const char *mqtt_userName, *mqtt_host, *mqtt_pass, *mqtt_clientID;
   int mqtt_port;
-
 
   mqtt_userName = CFG_GetMQTTUserName();
   mqtt_pass = CFG_GetMQTTPass();
@@ -344,12 +346,6 @@ void example_do_connect(mqtt_client_t *client)
           &mqtt_ip, mqtt_port,
           mqtt_connection_cb, LWIP_CONST_CAST(void*, &mqtt_client_info),
           &mqtt_client_info);
-
-
-  /* For now just print the result code if something goes wrong */
-  if(err != ERR_OK) {
-    PR_NOTICE("mqtt_connect return %d\n", err);
-  }
 }
 
 
@@ -439,10 +435,10 @@ static int setup_wifi_open_access_point(void)
 
     bk_wlan_ap_set_default_channel(ap_info.chann);
 
-    len = os_strlen(ap_info.ssid.array);
+    len = os_strlen((char *)ap_info.ssid.array);
 
-    os_strcpy((char *)wNetConfig.wifi_ssid, ap_info.ssid.array);
-    os_strcpy((char *)wNetConfig.wifi_key, ap_info.key);
+    os_strcpy((char *)wNetConfig.wifi_ssid, (char *)ap_info.ssid.array);
+    os_strcpy((char *)wNetConfig.wifi_key, (char *)ap_info.key);
     
     wNetConfig.wifi_mode = SOFT_AP;
     wNetConfig.dhcp_mode = DHCP_SERVER;
@@ -521,7 +517,7 @@ void user_main(void)
 	int bForceOpenAP = 0;
 	const char *wifi_ssid, *wifi_pass;
 
-    OPERATE_RET op_ret = OPRT_OK;
+  //OPERATE_RET op_ret = OPRT_OK;
 
 	CFG_CreateDeviceNameUnique();
 
@@ -575,6 +571,4 @@ void user_main(void)
 
     err = rtos_start_timer(&led_timer);
     ASSERT(kNoErr == err);
-
-    return op_ret;
 }

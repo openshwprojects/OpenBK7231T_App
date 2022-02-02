@@ -1,11 +1,13 @@
 
 
 #include "../new_common.h"
+#include "ctype.h" 
 #include "str_pub.h"
 #include "new_http.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #include "../ota/ota.h"
+#include "tuya_hal_storge.h"
 
 /*
 GET / HTTP/1.1
@@ -116,8 +118,9 @@ const char *http_checkArg(const char *p, const char *n) {
 	}
 	return p;
 }
-void http_copyCarg(const char *at, char *to, int maxSize) {
-	char a, b;
+void http_copyCarg(const char *atin, char *to, int maxSize) {
+	int a, b;
+	const unsigned char *at = (unsigned char *)atin;
 
 	while(*at != 0 && *at != '&' && *at != ' ' && maxSize > 1) {
 #if 0
@@ -257,7 +260,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 	char tmpA[128];
 	char tmpB[64];
 	char tmpC[64];
-	int bChanged = 0;
+	//int bChanged = 0;
 	const char *urlStr;
 
 	*outbuf = '\0';

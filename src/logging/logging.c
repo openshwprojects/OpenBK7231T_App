@@ -2,6 +2,7 @@
 #include "../new_common.h"
 #include "../logging/logging.h"
 #include "../httpserver/new_http.h"
+#include "str_pub.h"
 
 static int http_getlog(const char *payload, char *outbuf, int outBufSize);
 

@@ -1,7 +1,4 @@
 
-
-
-
 #include "new_common.h"
 #include "httpserver/new_http.h"
 #include "new_pins.h"
@@ -34,7 +31,7 @@ const char *CFG_GetShortDeviceName(){
 }
 void CFG_CreateDeviceNameUnique()
 {
-	u8 mac[32];
+	char mac[32];
 #if WINDOWS
 
 #else
@@ -100,7 +97,7 @@ void CFG_SaveWiFi() {
 	ITEM_NEW_WIFI_CONFIG container;
 	strcpy_safe(container.ssid, g_wifi_ssid, sizeof(container.ssid));
 	strcpy_safe(container.pass, g_wifi_pass, sizeof(container.pass));
-	save_info_item(NEW_WIFI_CONFIG,&container, 0, 0);
+	save_info_item(NEW_WIFI_CONFIG,(UINT8 *)&container, 0, 0);
 #endif
 }
 void CFG_LoadWiFi() {
@@ -108,7 +105,7 @@ void CFG_LoadWiFi() {
 
 #else
 	ITEM_NEW_WIFI_CONFIG container;
-	if(get_info_item(NEW_WIFI_CONFIG,&container, 0, 0) != 0) {
+	if(get_info_item(NEW_WIFI_CONFIG,(UINT8 *)&container, 0, 0) != 0) {
 		strcpy_safe(g_wifi_ssid,container.ssid,sizeof(g_wifi_ssid));
 		strcpy_safe(g_wifi_pass,container.pass,sizeof(g_wifi_pass));
 	} 
@@ -125,7 +122,7 @@ void CFG_SaveMQTT() {
 	strcpy_safe(container.hostName, g_mqtt_host, sizeof(container.hostName));
 	strcpy_safe(container.brokerName, g_mqtt_brokerName, sizeof(container.brokerName));
 	container.port = g_mqtt_port;
-	save_info_item(NEW_MQTT_CONFIG,&container, 0, 0);
+	save_info_item(NEW_MQTT_CONFIG,(UINT8 *)&container, 0, 0);
 	
 #endif
 }
@@ -134,7 +131,7 @@ void CFG_LoadMQTT() {
 
 #else
 	ITEM_NEW_MQTT_CONFIG container;
-	if(get_info_item(NEW_MQTT_CONFIG,&container, 0, 0) != 0) {
+	if(get_info_item(NEW_MQTT_CONFIG,(UINT8 *)&container, 0, 0) != 0) {
 		strcpy_safe(g_mqtt_userName,container.userName,sizeof(g_mqtt_userName));
 		strcpy_safe(g_mqtt_pass,container.pass,sizeof(g_mqtt_pass));
 		strcpy_safe(g_mqtt_host,container.hostName,sizeof(g_mqtt_host));
