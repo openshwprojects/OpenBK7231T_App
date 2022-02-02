@@ -1,8 +1,11 @@
 
 
 #include "../new_common.h"
+#include "str_pub.h"
 #include "new_http.h"
 #include "../new_pins.h"
+#include "../new_cfg.h"
+#include "../ota/ota.h"
 
 /*
 GET / HTTP/1.1
@@ -180,13 +183,15 @@ const char *htmlIndex = "<select name=\"cars\" id=\"cars\">\
 <option value=\"1\">qqqqqq</option>\
 <option value=\"2\">qqq</option>\
 </select>";
-//const char *htmlPinRoles = "<option value=\"1\">Relay</option>\
-//<option value=\"2\">Relay_n</option>\
-//<option value=\"3\">Button</option>\
-//<option value=\"4\">Button_n</option>\
-//<option value=\"5\">LED</option>\
-//<option value=\"6\">LED_n</option>\
-//</select>";
+/*
+const char *htmlPinRoles = "<option value=\"1\">Relay</option>\
+<option value=\"2\">Relay_n</option>\
+<option value=\"3\">Button</option>\
+<option value=\"4\">Button_n</option>\
+<option value=\"5\">LED</option>\
+<option value=\"6\">LED_n</option>\
+</select>";
+*/
 
 const char *htmlPinRoleNames[] = {
 	" ",

@@ -208,7 +208,7 @@ void log_server_thread( beken_thread_arg_t arg )
     }
 	
     if ( err != kNoErr ) 
-		tcp_server_log( "Server listerner thread exit with err: %d", err );
+		addLog( "Server listerner thread exit with err: %d", err );
 	
     close( tcp_listen_fd );
     rtos_delete_thread( NULL );
@@ -218,16 +218,8 @@ void log_server_thread( beken_thread_arg_t arg )
 static char tcplogbuf[TCPLOGBUFSIZE];
 static void log_client_thread( beken_thread_arg_t arg )
 {
-    OSStatus err = kNoErr;
     int fd = (int) arg;
     int len = 0;
-    fd_set readfds, errfds, readfds2; 
-    char *buf = NULL;
-    char *reply = NULL;
-	int replyBufferSize = 128;
-	int res;
-
-
     while ( 1 ){
         int count = getTcp(tcplogbuf, TCPLOGBUFSIZE);
         if (count){
@@ -240,9 +232,7 @@ static void log_client_thread( beken_thread_arg_t arg )
         rtos_delay_milliseconds(10);
     }
 	
-exit:
-    if ( err != kNoErr ) 
-		addLog( "TCP client thread exit with err: %d", err );
+	addLog( "TCP client thread exit with err: %d", len );
 	
     close( fd );
     rtos_delete_thread( NULL );

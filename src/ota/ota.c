@@ -2,6 +2,7 @@
 #include "../new_common.h"
 #include "typedef.h"
 #include "flash_pub.h"
+//#include "flash.h"
 #include "../logging/logging.h"
 #include "../httpclient/http_client.h"
 
@@ -11,12 +12,14 @@ int sectorlen = 0;
 unsigned int addr = 0xff000;
 #define SECTOR_SIZE 0x1000
 static void store_sector(unsigned int addr, unsigned char *data);
+extern void flash_protection_op(UINT8 mode,PROTECT_TYPE type);
+
 
 
 
 int init_ota(unsigned int startaddr){
     flash_init();
-	flash_protection_op(FLASH_XTX_16M_SR_WRITE_ENABLE, FLASH_PROTECT_NONE);
+	  flash_protection_op(FLASH_XTX_16M_SR_WRITE_ENABLE, FLASH_PROTECT_NONE);
     if (startaddr > 0xff000){
         if (sector){
             addLog("aborting OTS, sector already non-null\n");
@@ -46,7 +49,7 @@ void close_ota(){
 
     os_free(sector);
     sector = (void *)0;
-	flash_protection_op(FLASH_XTX_16M_SR_WRITE_ENABLE, FLASH_UNPROTECT_LAST_BLOCK);
+	  flash_protection_op(FLASH_XTX_16M_SR_WRITE_ENABLE, FLASH_UNPROTECT_LAST_BLOCK);
 }
 
 void add_otadata(unsigned char *data, int len){
@@ -104,7 +107,7 @@ int myhttpclientcallback(httprequest_t* request){
       break;
     case 1: // data
       if (request->client_data.response_buf_filled){
-        unsigned char *d = request->client_data.response_buf;
+        unsigned char *d = (unsigned char *)request->client_data.response_buf;
         int l = request->client_data.response_buf_filled;
         add_otadata(d, l);
       }

@@ -1,3 +1,7 @@
+
+
+#include "../new_common.h"
+#include "str_pub.h"
 #include "wlan_ui_pub.h"
 #include "../logging/logging.h"
 
