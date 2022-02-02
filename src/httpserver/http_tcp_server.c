@@ -1,8 +1,10 @@
 #include "../new_common.h"
+#include "ctype.h"
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
 #include "../logging/logging.h"
+#include "new_http.h"
 
 static void tcp_server_thread( beken_thread_arg_t arg );
 static void tcp_client_thread( beken_thread_arg_t arg );
@@ -29,11 +31,11 @@ static void tcp_client_thread( beken_thread_arg_t arg )
   OSStatus err = kNoErr;
   int fd = (int) arg;
   int len = 0;
-  fd_set readfds, errfds, readfds2; 
+  //fd_set readfds, errfds, readfds2; 
   char *buf = NULL;
   char *reply = NULL;
 	int replyBufferSize = 10000;
-	int res;
+	//int res;
 	//char reply[8192];
 
   //my_fd = fd;

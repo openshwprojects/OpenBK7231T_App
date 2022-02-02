@@ -353,7 +353,7 @@ int httpclient_send_header(httpclient_t *client, const char *url, int method, ht
     }
 
     if (client_data->post_buf != NULL) {
-        snprintf(buf, HTTPCLIENT_SEND_BUF_SIZE, "Content-Length: %d\r\n", client_data->post_buf_len);
+        snprintf(buf, HTTPCLIENT_SEND_BUF_SIZE, "Content-Length: %u\r\n", client_data->post_buf_len);
         httpclient_get_info(client, send_buf, &len, buf, os_strlen(buf));
 
         if (client_data->post_content_type != NULL) {
@@ -454,14 +454,14 @@ int httpclient_recv(httpclient_t *client, char *buf, int min_len, int max_len, i
 int httpclient_retrieve_content(httpclient_t *client, char *data, int len, uint32_t timeout_ms,
                                 httpclient_data_t *client_data)
 {
-    int count = 0;
-    int templen = 0;
-    int crlf_pos;
+    //int count = 0;
+    //int templen = 0;
+    //int crlf_pos;
     iotx_time_t timer;
-    char * b_data = NULL;
+    //char * b_data = NULL;
 
-    iotx_time_init(&timer);
-    utils_time_countdown_ms(&timer, timeout_ms);
+    //iotx_time_init(&timer);
+    //utils_time_countdown_ms(&timer, timeout_ms);
 
     /* Receive data */
     log_debug("Current data len: %d\r\n", len);
@@ -481,6 +481,7 @@ int httpclient_retrieve_content(httpclient_t *client, char *data, int len, uint3
 
 
 
+#ifdef INCLUDE_OLD_FUNCTION
 // called with data and len from header parser.
 // called with len = 0 when getting more
 int httpclient_retrieve_content_old(httpclient_t *client, char *data, int len, uint32_t timeout_ms,
@@ -687,6 +688,8 @@ int httpclient_retrieve_content_old(httpclient_t *client, char *data, int len, u
 
     return SUCCESS_RETURN;
 }
+#endif
+
 
 int httpclient_response_parse(httpclient_t *client, char *data, int len, uint32_t timeout_ms,
                               httpclient_data_t *client_data)

@@ -1,5 +1,5 @@
 #include "new_common.h"
-
+#include "ctype.h"
 
 // returns amount of space left in buffer (0=overflow happened)
 int strcat_safe(char *tg, const char *src, int tgMaxLen) {
@@ -49,10 +49,12 @@ int strcpy_safe(char *tg, const char *src, int tgMaxLen) {
 	return tgMaxLen-curOfs;
 }
 
-void urldecode2_safe(char *dst, const char *src, int maxDstLen)
+void urldecode2_safe(char *dst, const char *srcin, int maxDstLen)
 {
 	int curLen = 1;
-        char a, b;
+        int a, b;
+	// avoid signing issues in conversion to int for isxdigit(int c)
+	const unsigned char *src = (const unsigned char *)srcin;
         while (*src) {
 				if(curLen>=maxDstLen)
 					break;

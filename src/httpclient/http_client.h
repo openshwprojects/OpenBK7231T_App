@@ -143,6 +143,7 @@ typedef struct httprequest_t_tag{
  * @endcode
  */
 int async_request(httprequest_t *request);
+void httpclient_set_custom_header(httpclient_t *client, char *header);
 
 #ifdef __cplusplus
 }
