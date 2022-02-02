@@ -8,6 +8,7 @@ extern const char htmlEnd[];
 extern const char htmlReturnToMenu[];
 
 int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize);
+void http_setup(char *o, const char *type);
 
 
 // callback function for http

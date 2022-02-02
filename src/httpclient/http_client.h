@@ -64,7 +64,7 @@ typedef struct {
     int remote_port; /**< HTTP or HTTPS port. */
     utils_network_t net;
     int response_code; /**< Response code. */
-    char *header; /**< Custom header. */
+    const char *header; /**< Custom header. */
     char *auth_user; /**< Username for basic authentication. */
     char *auth_password; /**< Password for basic authentication. */
 } httpclient_t;
@@ -143,6 +143,7 @@ typedef struct httprequest_t_tag{
  * @endcode
  */
 int async_request(httprequest_t *request);
+void httpclient_set_custom_header(httpclient_t *client, const char *header);
 
 #ifdef __cplusplus
 }

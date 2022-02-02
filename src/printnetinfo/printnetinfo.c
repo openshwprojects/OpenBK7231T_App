@@ -1,4 +1,9 @@
+
+
+#include "../new_common.h"
+#include "str_pub.h"
 #include "wlan_ui_pub.h"
+#include "net.h"
 #include "../logging/logging.h"
 
 #define MAC2STR(a) (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5]

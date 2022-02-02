@@ -1,8 +1,13 @@
 
 
 #include "../new_common.h"
+#include "ctype.h" 
+#include "str_pub.h"
 #include "new_http.h"
 #include "../new_pins.h"
+#include "../new_cfg.h"
+#include "../ota/ota.h"
+#include "tuya_hal_storge.h"
 
 /*
 GET / HTTP/1.1
@@ -114,8 +119,9 @@ const char *http_checkArg(const char *p, const char *n) {
 	}
 	return p;
 }
-void http_copyCarg(const char *at, char *to, int maxSize) {
-	char a, b;
+void http_copyCarg(const char *atin, char *to, int maxSize) {
+	int a, b;
+	const unsigned char *at = (unsigned char *)atin;
 
 	while(*at != 0 && *at != '&' && *at != ' ' && maxSize > 1) {
 #if 0
@@ -181,13 +187,15 @@ const char *htmlIndex = "<select name=\"cars\" id=\"cars\">\
 <option value=\"1\">qqqqqq</option>\
 <option value=\"2\">qqq</option>\
 </select>";
-//const char *htmlPinRoles = "<option value=\"1\">Relay</option>\
-//<option value=\"2\">Relay_n</option>\
-//<option value=\"3\">Button</option>\
-//<option value=\"4\">Button_n</option>\
-//<option value=\"5\">LED</option>\
-//<option value=\"6\">LED_n</option>\
-//</select>";
+/*
+const char *htmlPinRoles = "<option value=\"1\">Relay</option>\
+<option value=\"2\">Relay_n</option>\
+<option value=\"3\">Button</option>\
+<option value=\"4\">Button_n</option>\
+<option value=\"5\">LED</option>\
+<option value=\"6\">LED_n</option>\
+</select>";
+*/
 
 const char *htmlPinRoleNames[] = {
 	" ",
@@ -253,7 +261,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 	char tmpA[128];
 	char tmpB[64];
 	char tmpC[64];
-	int bChanged = 0;
+	//int bChanged = 0;
 	const char *urlStr;
 
 	*outbuf = '\0';

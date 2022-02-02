@@ -21,6 +21,7 @@ enum IORole {
 #define GPIO_MAX 27
 #define CHANNEL_MAX 32
 
+void PIN_Init(void);
 void PIN_ClearPins();
 int PIN_GetPinRoleForPinIndex(int index);
 int PIN_GetPinChannelForPinIndex(int index);

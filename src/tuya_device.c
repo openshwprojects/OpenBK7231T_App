@@ -29,18 +29,29 @@
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
 
+#include "mem_pub.h"
+#include "str_pub.h"
+#include "ethernet_intf.h"
+
 /* Private includes ----------------------------------------------------------*/
 #include "tuya_device.h"
 #include "httpserver/new_http.h"
 #include "new_pins.h"
+#include "new_cfg.h"
 #include "logging/logging.h"
 #include "httpserver/http_tcp_server.h"
+#include "printnetinfo/printnetinfo.h"
 
 #include "../../beken378/func/key/multi_button.h"
 #include "../../beken378/app/config/param_config.h"
 #include "lwip/apps/mqtt.h"
 
 
+#undef os_printf
+#undef PR_DEBUG
+#undef PR_NOTICE
+#undef Malloc
+#undef Free
 #define os_printf addLog
 #define PR_DEBUG addLog
 #define PR_NOTICE addLog
@@ -54,6 +65,10 @@ static int g_secondsElapsed = 0;
 int g_my_reconnect_mqtt_after_time = -1;
 
 #define tcp_server_log(M, ...) os_printf("TCP", M, ##__VA_ARGS__)
+
+
+// from wlan_ui.c, no header
+void bk_wlan_status_register_cb(FUNC_1PARAM_PTR cb);
 
 int unw_recv(const int fd, void *buf, u32 nbytes)
 {
@@ -90,7 +105,7 @@ void connect_to_wifi(const char *oob_ssid,const char *connect_key)
 	os_memset( &wNetConfigAdv, 0x0, sizeof(network_InitTypeDef_adv_st) );
 	
 	os_strcpy((char*)wNetConfigAdv.ap_info.ssid, oob_ssid);
-	hwaddr_aton("48:ee:0c:48:93:12", wNetConfigAdv.ap_info.bssid);
+	hwaddr_aton("48:ee:0c:48:93:12", (u8 *)wNetConfigAdv.ap_info.bssid);
 	wNetConfigAdv.ap_info.security = SECURITY_TYPE_WPA2_MIXED;
 	wNetConfigAdv.ap_info.channel = 5;
 	
@@ -204,11 +219,13 @@ int g_incoming_channel_mqtt = 0;
 static void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags)
 {
 	int iValue;
-  const struct mqtt_connect_client_info_t* client_info = (const struct mqtt_connect_client_info_t*)arg;
+  // unused - left here as example
+  //const struct mqtt_connect_client_info_t* client_info = (const struct mqtt_connect_client_info_t*)arg;
+
   //PR_NOTICE("MQTT client in mqtt_incoming_data_cb\n");
   PR_NOTICE("MQTT client in mqtt_incoming_data_cb data is %s for ch %i\n",data,g_incoming_channel_mqtt);
 
-  iValue = atoi(data);
+  iValue = atoi((char *)data);
   CHANNEL_Set(g_incoming_channel_mqtt,iValue,0);
 
  // PR_NOTICE(("MQTT client \"%s\" data cb: len %d, flags %d\n", client_info->client_id, (int)len, (int)flags));
@@ -217,7 +234,9 @@ static void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t f
 static void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len)
 {
 	const char *p;
-  const struct mqtt_connect_client_info_t* client_info = (const struct mqtt_connect_client_info_t*)arg;
+  // unused - left here as example
+  //const struct mqtt_connect_client_info_t* client_info = (const struct mqtt_connect_client_info_t*)arg;
+
   //PR_NOTICE("MQTT client in mqtt_incoming_publish_cb\n");
   PR_NOTICE("MQTT client in mqtt_incoming_publish_cb topic %s\n",topic);
 // TODO: better 
@@ -239,7 +258,7 @@ mqtt_request_cb(void *arg, err_t err)
 {
   const struct mqtt_connect_client_info_t* client_info = (const struct mqtt_connect_client_info_t*)arg;
 
-  PR_NOTICE(("MQTT client \"%s\" request cb: err %d\n", client_info->client_id, (int)err));
+  PR_NOTICE("MQTT client \"%s\" request cb: err %d\n", client_info->client_id, (int)err);
 }
 static void mqtt_sub_request_cb(void *arg, err_t result)
 {
@@ -251,7 +270,6 @@ static void mqtt_sub_request_cb(void *arg, err_t result)
 void example_do_connect(mqtt_client_t *client);
 static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status)
 {
-	int i;
 	char tmp[64];
 	const char *baseName;
   err_t err = ERR_OK;
@@ -302,10 +320,8 @@ static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection
 
 void example_do_connect(mqtt_client_t *client)
 {
-  err_t err;
   const char *mqtt_userName, *mqtt_host, *mqtt_pass, *mqtt_clientID;
   int mqtt_port;
-
 
   mqtt_userName = CFG_GetMQTTUserName();
   mqtt_pass = CFG_GetMQTTPass();
@@ -330,12 +346,6 @@ void example_do_connect(mqtt_client_t *client)
           &mqtt_ip, mqtt_port,
           mqtt_connection_cb, LWIP_CONST_CAST(void*, &mqtt_client_info),
           &mqtt_client_info);
-
-
-  /* For now just print the result code if something goes wrong */
-  if(err != ERR_OK) {
-    PR_NOTICE("mqtt_connect return %d\n", err);
-  }
 }
 
 
@@ -411,9 +421,9 @@ static int setup_wifi_open_access_point(void)
 
         PR_NOTICE("no flash configuration, use default\r\n");
         mac = (u8*)&ap_info.bssid.array;
-		// this is MAC for Access Point, it's different than Client one
-		// see wifi_get_mac_address source
-        wifi_get_mac_address(mac, CONFIG_ROLE_AP);
+		    // this is MAC for Access Point, it's different than Client one
+		    // see wifi_get_mac_address source
+        wifi_get_mac_address((char *)mac, CONFIG_ROLE_AP);
         ap_info.chann = APP_DRONE_DEF_CHANNEL;
         ap_info.cipher_suite = 0;
         //os_memcpy(ap_info.ssid.array, APP_DRONE_DEF_SSID, os_strlen(APP_DRONE_DEF_SSID));
@@ -425,10 +435,10 @@ static int setup_wifi_open_access_point(void)
 
     bk_wlan_ap_set_default_channel(ap_info.chann);
 
-    len = os_strlen(ap_info.ssid.array);
+    len = os_strlen((char *)ap_info.ssid.array);
 
-    os_strcpy((char *)wNetConfig.wifi_ssid, ap_info.ssid.array);
-    os_strcpy((char *)wNetConfig.wifi_key, ap_info.key);
+    os_strcpy((char *)wNetConfig.wifi_ssid, (char *)ap_info.ssid.array);
+    os_strcpy((char *)wNetConfig.wifi_key, (char *)ap_info.key);
     
     wNetConfig.wifi_mode = SOFT_AP;
     wNetConfig.dhcp_mode = DHCP_SERVER;
@@ -507,7 +517,7 @@ void user_main(void)
 	int bForceOpenAP = 0;
 	const char *wifi_ssid, *wifi_pass;
 
-    OPERATE_RET op_ret = OPRT_OK;
+  //OPERATE_RET op_ret = OPRT_OK;
 
 	CFG_CreateDeviceNameUnique();
 
@@ -561,6 +571,4 @@ void user_main(void)
 
     err = rtos_start_timer(&led_timer);
     ASSERT(kNoErr == err);
-
-    return op_ret;
 }

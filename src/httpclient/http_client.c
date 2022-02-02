@@ -241,7 +241,7 @@ int httpclient_get_info(httpclient_t *client, char *send_buf, int *send_idx, cha
     return SUCCESS_RETURN;
 }
 
-void httpclient_set_custom_header(httpclient_t *client, char *header)
+void httpclient_set_custom_header(httpclient_t *client, const char *header)
 {
     client->header = header;
 }
@@ -353,7 +353,7 @@ int httpclient_send_header(httpclient_t *client, const char *url, int method, ht
     }
 
     if (client_data->post_buf != NULL) {
-        snprintf(buf, HTTPCLIENT_SEND_BUF_SIZE, "Content-Length: %d\r\n", client_data->post_buf_len);
+        snprintf(buf, HTTPCLIENT_SEND_BUF_SIZE, "Content-Length: %u\r\n", (unsigned int)client_data->post_buf_len);
         httpclient_get_info(client, send_buf, &len, buf, os_strlen(buf));
 
         if (client_data->post_content_type != NULL) {
@@ -454,14 +454,14 @@ int httpclient_recv(httpclient_t *client, char *buf, int min_len, int max_len, i
 int httpclient_retrieve_content(httpclient_t *client, char *data, int len, uint32_t timeout_ms,
                                 httpclient_data_t *client_data)
 {
-    int count = 0;
-    int templen = 0;
-    int crlf_pos;
-    iotx_time_t timer;
-    char * b_data = NULL;
+    //int count = 0;
+    //int templen = 0;
+    //int crlf_pos;
+    //iotx_time_t timer;
+    //char * b_data = NULL;
 
-    iotx_time_init(&timer);
-    utils_time_countdown_ms(&timer, timeout_ms);
+    //iotx_time_init(&timer);
+    //utils_time_countdown_ms(&timer, timeout_ms);
 
     /* Receive data */
     log_debug("Current data len: %d\r\n", len);
@@ -481,6 +481,7 @@ int httpclient_retrieve_content(httpclient_t *client, char *data, int len, uint3
 
 
 
+#ifdef INCLUDE_OLD_FUNCTION
 // called with data and len from header parser.
 // called with len = 0 when getting more
 int httpclient_retrieve_content_old(httpclient_t *client, char *data, int len, uint32_t timeout_ms,
@@ -687,6 +688,8 @@ int httpclient_retrieve_content_old(httpclient_t *client, char *data, int len, u
 
     return SUCCESS_RETURN;
 }
+#endif
+
 
 int httpclient_response_parse(httpclient_t *client, char *data, int len, uint32_t timeout_ms,
                               httpclient_data_t *client_data)
@@ -769,7 +772,7 @@ int httpclient_response_parse(httpclient_t *client, char *data, int len, uint32_
         if (n == 2) {
             log_debug("Read header : %s: %s\r\n", key, value);
             if (!os_strcmp(key, "Content-Length")) {
-                sscanf(value, "%d", &(client_data->response_content_len));
+                sscanf(value, "%d", (int *)&(client_data->response_content_len));
                 client_data->retrieve_len = client_data->response_content_len;
             } else if (!os_strcmp(key, "Transfer-Encoding")) {
                 if (!os_strcmp(value, "Chunked") || !os_strcmp(value, "chunked")) {
@@ -977,7 +980,7 @@ static void httprequest_thread( beken_thread_arg_t arg )
     const char *header = request->header;
     int port = request->port;
     const char *ca_crt = request->ca_crt;
-    uint32_t timeout = request->timeout;
+    //uint32_t timeout = request->timeout;
     httpclient_data_t *client_data = &request->client_data;
     int method = request->method;
     int timeout_ms = request->timeout;
