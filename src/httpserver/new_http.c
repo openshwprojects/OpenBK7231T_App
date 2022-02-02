@@ -2,12 +2,16 @@
 
 #include "../new_common.h"
 #include "ctype.h" 
+#ifndef WINDOWS
 #include "str_pub.h"
+#endif
 #include "new_http.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #include "../ota/ota.h"
+#ifndef WINDOWS
 #include "tuya_hal_storge.h"
+#endif
 
 /*
 GET / HTTP/1.1
