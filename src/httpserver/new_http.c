@@ -32,6 +32,7 @@ const char httpMimeTypeText[] = "text/plain\n\n" ;           // TEXT MIME type
 const char htmlHeader[] = "<!DOCTYPE html><html><body>" ;
 const char htmlEnd[] = "</body></html>" ;
 const char htmlReturnToMenu[] = "<a href=\"index\">Return to menu</a>";;
+const char htmlReturnToCfg[] = "<a href=\"cfg\">Return to cfg</a>";;
 const char *g_build_str = "Build on " __DATE__ " " __TIME__;
 
 #if WINDOWS
@@ -315,7 +316,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 		strcat_safe(outbuf,"\"><br>\
 			  <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MQTT data twice?')\">\
 			</form> ",outBufSize);
-		strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
+		strcat_safe(outbuf,htmlReturnToCfg,outBufSize);
 		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat_safe(outbuf,htmlEnd,outBufSize);
 	} else if(http_checkUrlBase(urlStr,"cfg_mqtt_set")) {
@@ -347,7 +348,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 		strcat_safe(outbuf,"<br>",outBufSize);
 		strcat_safe(outbuf,"<a href=\"cfg_mqtt\">Return to MQTT settings</a>",outBufSize);
 		strcat_safe(outbuf,"<br>",outBufSize);
-		strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
+		strcat_safe(outbuf,htmlReturnToCfg,outBufSize);
 		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat_safe(outbuf,htmlEnd,outBufSize);
 	} else if(http_checkUrlBase(urlStr,"cfg_wifi_set")) {
@@ -374,7 +375,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 		strcat_safe(outbuf,"<br>",outBufSize);
 		strcat_safe(outbuf,"<a href=\"cfg_wifi\">Return to WiFi settings</a>",outBufSize);
 		strcat_safe(outbuf,"<br>",outBufSize);
-		strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
+		strcat_safe(outbuf,htmlReturnToCfg,outBufSize);
 		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat_safe(outbuf,htmlEnd,outBufSize);
 	} else if(http_checkUrlBase(urlStr,"cfg_wifi")) {
@@ -420,7 +421,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 		strcat_safe(outbuf,"\"><br><br>\
 			  <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check SSID and pass twice?')\">\
 			</form> ",outBufSize);
-		strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
+		strcat_safe(outbuf,htmlReturnToCfg,outBufSize);
 		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat_safe(outbuf,htmlEnd,outBufSize);
 	} else if(http_checkUrlBase(urlStr,"flash_read_tool")) {
@@ -483,7 +484,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 			  <input type=\"submit\" value=\"Submit\">\
 			</form> ",outBufSize);
 
-		strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
+		strcat_safe(outbuf,htmlReturnToCfg,outBufSize);
 		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat_safe(outbuf,htmlEnd,outBufSize);
 
@@ -510,7 +511,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 		strcat(outbuf, "</select>");
 		strcat_safe(outbuf,"<input type=\"submit\" value=\"Set\"/></form>",outBufSize);
 		
-		strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
+		strcat_safe(outbuf,htmlReturnToCfg,outBufSize);
 		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat_safe(outbuf,htmlEnd,outBufSize);
 
@@ -588,7 +589,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 
 		strcat_safe(outbuf,"</textarea>",outBufSize);
 
-		strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
+		strcat_safe(outbuf,htmlReturnToCfg,outBufSize);
 		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat_safe(outbuf,htmlEnd,outBufSize);
 
@@ -610,30 +611,30 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 		strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
 		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat_safe(outbuf,htmlEnd,outBufSize);
-	} else if(http_checkUrlBase(urlStr,"setWB2SInputs")) {
-		http_setup(outbuf, httpMimeTypeHTML);
-		strcat_safe(outbuf,htmlHeader,outBufSize);
+	//} else if(http_checkUrlBase(urlStr,"setWB2SInputs")) {
+	//	http_setup(outbuf, httpMimeTypeHTML);
+	//	strcat_safe(outbuf,htmlHeader,outBufSize);
 
-		setupAllWB2SPinsAsButtons();
+	//	setupAllWB2SPinsAsButtons();
 
-		http_setup(outbuf, httpMimeTypeHTML);
-		strcat_safe(outbuf,"Set all inputs for dbg .",outBufSize);
-		strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
-		HTTP_AddBuildFooter(outbuf,outBufSize);
-		strcat_safe(outbuf,htmlEnd,outBufSize);
-	} else if(http_checkUrlBase(urlStr,"setAllInputs")) {
-		http_setup(outbuf, httpMimeTypeHTML);
-		strcat_safe(outbuf,htmlHeader,outBufSize);
-		// it breaks UART pins as well, omg!
-		for(i = 0; i < GPIO_MAX; i++) {
-			PIN_SetPinRoleForPinIndex(i,IOR_Button);
-			PIN_SetPinChannelForPinIndex(i,1);
-		}
-		http_setup(outbuf, httpMimeTypeHTML);
-		strcat_safe(outbuf,"Set all inputs for dbg .",outBufSize);
-		strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
-		HTTP_AddBuildFooter(outbuf,outBufSize);
-		strcat_safe(outbuf,htmlEnd,outBufSize);
+	//	http_setup(outbuf, httpMimeTypeHTML);
+	//	strcat_safe(outbuf,"Set all inputs for dbg .",outBufSize);
+	//	strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
+	//	HTTP_AddBuildFooter(outbuf,outBufSize);
+	//	strcat_safe(outbuf,htmlEnd,outBufSize);
+	//} else if(http_checkUrlBase(urlStr,"setAllInputs")) {
+	//	http_setup(outbuf, httpMimeTypeHTML);
+	//	strcat_safe(outbuf,htmlHeader,outBufSize);
+	//	// it breaks UART pins as well, omg!
+	//	for(i = 0; i < GPIO_MAX; i++) {
+	//		PIN_SetPinRoleForPinIndex(i,IOR_Button);
+	//		PIN_SetPinChannelForPinIndex(i,1);
+	//	}
+	//	http_setup(outbuf, httpMimeTypeHTML);
+	//	strcat_safe(outbuf,"Set all inputs for dbg .",outBufSize);
+	//	strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
+	//	HTTP_AddBuildFooter(outbuf,outBufSize);
+	//	strcat_safe(outbuf,htmlEnd,outBufSize);
 	} else if(http_checkUrlBase(urlStr,"cfg_pins")) {
 		int iChanged = 0;
 		int iChangedRequested = 0;
@@ -708,7 +709,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 		}
 		strcat(outbuf,"<input type=\"submit\" value=\"Save\"/></form>");
 
-		strcat(outbuf,htmlReturnToMenu);
+		strcat(outbuf,htmlReturnToCfg);
 		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat(outbuf,htmlEnd);
 	} else if(http_checkUrlBase(urlStr,"index")) {
@@ -841,6 +842,17 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat(outbuf,htmlEnd);
 	}
-
-	return strlen(outbuf);
+	i = strlen(outbuf);
+	if(i >= outBufSize-1) {
+		// Rewrite all to allow user to know that something went wrong
+		http_setup(outbuf, httpMimeTypeHTML);
+		strcat(outbuf,htmlHeader);
+		strcat_safe(outbuf,g_header,outBufSize);
+		sprintf(tmpA, "Buffer overflow occured while trying to process your request.<br>");
+		strcat(outbuf,tmpA);
+		strcat(outbuf,htmlReturnToMenu);
+		HTTP_AddBuildFooter(outbuf,outBufSize);
+		strcat(outbuf,htmlEnd);
+	}
+	return i;
 }
