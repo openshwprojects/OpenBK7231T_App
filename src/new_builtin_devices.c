@@ -80,3 +80,35 @@ void Setup_Device_TuyaLEDDimmerSingleChannel() {
 	PIN_SaveToFlash();
 }
 
+
+void Setup_Device_CalexLEDDimmerFiveChannel() {
+
+	// pins are:
+	// red - PWM2 = P7
+	// green - PWM3 = P8
+	// blue - PWM1 = P6
+	// warm white - PWM5 = P26
+	// cold white - PWM4 = P24
+
+	PIN_ClearPins();
+
+	// red
+	PIN_SetPinChannelForPinIndex(7, 1);
+	PIN_SetPinRoleForPinIndex(7, IOR_PWM);
+	// green
+	PIN_SetPinChannelForPinIndex(8, 2);
+	PIN_SetPinRoleForPinIndex(8, IOR_PWM);
+	// blue
+	PIN_SetPinChannelForPinIndex(6, 3);
+	PIN_SetPinRoleForPinIndex(6, IOR_PWM);
+	// cold white
+	PIN_SetPinChannelForPinIndex(24, 4);
+	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
+	// warm white
+	PIN_SetPinChannelForPinIndex(26, 5);
+	PIN_SetPinRoleForPinIndex(26, IOR_PWM);
+
+	PIN_SaveToFlash();
+}
+
+
