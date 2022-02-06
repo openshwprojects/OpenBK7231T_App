@@ -210,7 +210,8 @@ const char *htmlPinRoleNames[] = {
 	"LED",
 	"LED_n",
 	"PWM",
-	"e",
+	"Wifi LED",
+	"Wifi LED_n",
 	"e",
 	"e",
 };
@@ -262,7 +263,7 @@ void HTTP_AddBuildFooter(char *outbuf, int outBufSize) {
 	strcat_safe(outbuf,"<br>",outBufSize);
 	strcat_safe(outbuf,g_build_str,outBufSize);
 }
-int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
+int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize, http_send_fn sendpart, int socket) {
 	int i, j;
 	char tmpA[128];
 	char tmpB[64];
@@ -688,6 +689,10 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 				}
 			}
 		}
+		if (sendpart){
+			sendpart(socket, outbuf, strlen(outbuf));
+			outbuf[0] = 0;
+		}
 		if(iChangedRequested>0) {
 			PIN_SaveToFlash();
 			sprintf(tmpA, "Pins update - %i reqs, %i changed!<br><br>",iChangedRequested,iChanged);
@@ -703,6 +708,10 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 			strcat(outbuf,tmpA);
 			sprintf(tmpA, "<select name=\"%i\">",i);
 			strcat(outbuf,tmpA);
+			if (sendpart){
+				sendpart(socket, outbuf, strlen(outbuf));
+				outbuf[0] = 0;
+			}
 			for(j = 0; j < IOR_Total_Options; j++) {
 				if(j == si) {
 					sprintf(tmpA, "<option value=\"%i\" selected>%s</option>",j,htmlPinRoleNames[j]);
@@ -710,6 +719,10 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 					sprintf(tmpA, "<option value=\"%i\">%s</option>",j,htmlPinRoleNames[j]);
 				}
 				strcat(outbuf,tmpA);
+				if (sendpart){
+					sendpart(socket, outbuf, strlen(outbuf));
+					outbuf[0] = 0;
+				}
 			}
 			strcat(outbuf, "</select>");
 			if(ch == 0) {
@@ -720,6 +733,10 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 			sprintf(tmpA, "<input name=\"r%i\" type=\"text\" value=\"%s\"/>",i,tmpB);
 			strcat(outbuf,tmpA);
 			strcat(outbuf,"<br>");
+			if (sendpart){
+				sendpart(socket, outbuf, strlen(outbuf));
+				outbuf[0] = 0;
+			}
 		}
 		strcat(outbuf,"<input type=\"submit\" value=\"Save\"/></form>");
 
@@ -868,5 +885,6 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize) {
 		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat(outbuf,htmlEnd);
 	}
+	i = strlen(outbuf);
 	return i;
 }

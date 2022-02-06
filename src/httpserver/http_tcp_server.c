@@ -27,11 +27,19 @@ void start_tcp_http()
     }
 }
 
+
+int sendfn(int fd, char * data, int len){
+  if (fd){
+    return send( fd, data, len, 0 );
+  }
+  return -1;
+}
+
 static void tcp_client_thread( beken_thread_arg_t arg )
 {
   OSStatus err = kNoErr;
   int fd = (int) arg;
-  int len = 0;
+  int lenrx = 0;
   //fd_set readfds, errfds, readfds2; 
   char *buf = NULL;
   char *reply = NULL;
@@ -47,9 +55,9 @@ static void tcp_client_thread( beken_thread_arg_t arg )
   
   while ( 1 )
   {
-    len = recv( fd, buf, 1024, 0 );
+    lenrx = recv( fd, buf, 1024, 0 );
 
-    if ( len <= 0 )
+    if ( lenrx <= 0 )
     {
         os_printf( "TCP Client is disconnected, fd: %d", fd );
         goto exit;
@@ -57,9 +65,16 @@ static void tcp_client_thread( beken_thread_arg_t arg )
 
     //addLog( "TCP received string %s\n",buf );
     // returns length to be sent if any
-    len = HTTP_ProcessPacket(buf, reply, replyBufferSize);
-    addLog( "TCP sending reply len %i\n",len );
-    len = send( fd, reply, len, 0 );
+    buf[lenrx] = 0;
+    int lenret = HTTP_ProcessPacket(buf, reply, replyBufferSize, sendfn, fd);
+    addLog( "TCP sending reply len %i\n",lenret );
+    while(lenret){
+      int len = lenret;
+      if (len > 1024) len = 1024;
+      send( fd, reply, len, 0 );
+      reply += len;
+      lenret -= len;
+    }
 
     rtos_delay_milliseconds(10);
     close(fd);
