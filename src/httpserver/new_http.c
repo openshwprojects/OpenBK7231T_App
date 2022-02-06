@@ -9,7 +9,15 @@
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #include "../ota/ota.h"
-#ifndef WINDOWS
+#ifdef WINDOWS
+
+#elif PLATFORM_BK7231N
+// tuya-iotos-embeded-sdk-wifi-ble-bk7231n/sdk/include/tuya_hal_storage.h
+#include "tuya_hal_storage.h"
+#else
+// REALLY? A typo in Tuya SDK? Storge?
+// tuya-iotos-embeded-sdk-wifi-ble-bk7231t/platforms/bk7231t/tuya_os_adapter/include/driver/tuya_hal_storge.h
+
 #include "tuya_hal_storge.h"
 #endif
 

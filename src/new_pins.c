@@ -10,6 +10,8 @@
 #if WINDOWS
 
 #else
+#include <gpio_pub.h>
+
 #include "../../beken378/func/include/net_param_pub.h"
 #include "../../beken378/func/user_driver/BkDriverPwm.h"
 #undef PR_DEBUG
