@@ -31,11 +31,12 @@ const char *CFG_GetShortDeviceName(){
 }
 void CFG_CreateDeviceNameUnique()
 {
-	char mac[32];
+	// must be unsigned, else print below prints negatives as e.g. FFFFFFFe
+	unsigned char mac[32];
 #if WINDOWS
 
 #else
-    wifi_get_mac_address(mac, CONFIG_ROLE_STA);
+    wifi_get_mac_address((char *)mac, CONFIG_ROLE_STA);
 #endif
 	sprintf(g_deviceName,"OpenBK7231T_%02X%02X%02X%02X",mac[0],mac[1],mac[2],mac[3]);
 	sprintf(g_shortDeviceName,"obk%02X%02X%02X%02X",mac[0],mac[1],mac[2],mac[3]);

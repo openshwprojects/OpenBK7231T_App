@@ -35,12 +35,15 @@ void CHANNEL_Set(int ch, int iVal, int bForce);
 int CHANNEL_Get(int ch);
 void PIN_SaveToFlash();
 void PIN_LoadFromFlash();
+
+// from new_builtin.c
 void Setup_Device_Empty();
 void Setup_Device_TuyaWL_SW01_16A();
 void Setup_Device_TuyaSmartLife4CH10A();
 void Setup_Device_IntelligentLife_NF101A();
 void Setup_Device_TuyaLEDDimmerSingleChannel();
 void Setup_Device_CalexLEDDimmerFiveChannel();
+void Setup_Device_CalexPowerStrip_900018_1v1_0UK();
 
 #endif
 

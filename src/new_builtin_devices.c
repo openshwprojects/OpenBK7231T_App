@@ -111,4 +111,41 @@ void Setup_Device_CalexLEDDimmerFiveChannel() {
 	PIN_SaveToFlash();
 }
 
+void Setup_Device_CalexPowerStrip_900018_1v1_0UK() {
+
+	// pins are:
+	// red - PWM2 = P7
+	// green - PWM3 = P8
+	// blue - PWM1 = P6
+	// warm white - PWM5 = P26
+	// cold white - PWM4 = P24
+
+	PIN_ClearPins();
+
+	// relays - 4 sockets + 1 USB
+	PIN_SetPinChannelForPinIndex(6, 5);
+	PIN_SetPinRoleForPinIndex(6, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(7, 2);
+	PIN_SetPinRoleForPinIndex(7, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(8, 3);
+	PIN_SetPinRoleForPinIndex(8, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(9, 1);
+	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(26, 4);
+	PIN_SetPinRoleForPinIndex(26, IOR_Relay);
+
+	// button
+	PIN_SetPinChannelForPinIndex(14, 1);
+	PIN_SetPinRoleForPinIndex(14, IOR_Button);
+
+	// 2 x LEDs
+	// wifi stat
+	PIN_SetPinChannelForPinIndex(10, 1);
+	PIN_SetPinRoleForPinIndex(10, IOR_LED);
+	// power stat
+	PIN_SetPinChannelForPinIndex(24, 2);
+	PIN_SetPinRoleForPinIndex(24, IOR_LED);
+
+	PIN_SaveToFlash();
+}
 
