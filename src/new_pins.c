@@ -493,4 +493,20 @@ void PIN_Init(void)
     ASSERT(kNoErr == result);
 }
 
+void PIN_set_wifi_led(int value){
+	int res = -1;
+	for (int i = 0; i < 32; i++){
+		if ((g_pins.roles[i] == IOR_LED_WIFI) || (g_pins.roles[i] == IOR_LED_WIFI_n)){
+			res = i;
+			break;
+		}
+	}
+	if (res >= 0){
+		if (g_pins.roles[res] == IOR_LED_WIFI_n){
+			value = !value;
+		}
+		RAW_SetPinValue(res, value & 1);
+	}
+}
+
 #endif
