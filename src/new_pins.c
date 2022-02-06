@@ -184,6 +184,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			pwmIndex = PIN_GetPWMIndexForPinIndex(index);
 #if WINDOWS
 	
+#elif PLATFORM_BK7231N
+
 #else
 			bk_pwm_stop(pwmIndex);
 
@@ -236,6 +238,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			channelIndex = PIN_GetPinChannelForPinIndex(index);
 #if WINDOWS
 	
+#elif PLATFORM_BK7231N
+
 #else
 			bk_pwm_start(pwmIndex);
 			// they are using 1kHz PWM
@@ -288,6 +292,8 @@ void Channel_OnChanged(int ch) {
 
 #if WINDOWS
 	
+#elif PLATFORM_BK7231N
+
 #else
 				// they are using 1kHz PWM
 				// See: https://www.elektroda.pl/rtvforum/topic3798114.html
