@@ -61,6 +61,8 @@
 
 static int g_secondsElapsed = 0;
 
+static int g_openAP = 0;
+
 
 int g_my_reconnect_mqtt_after_time = -1;
 
@@ -69,6 +71,7 @@ int g_my_reconnect_mqtt_after_time = -1;
 
 // from wlan_ui.c, no header
 void bk_wlan_status_register_cb(FUNC_1PARAM_PTR cb);
+static int setup_wifi_open_access_point(void);
 
 int unw_recv(const int fd, void *buf, u32 nbytes)
 {
@@ -328,13 +331,26 @@ void example_do_connect(mqtt_client_t *client)
   mqtt_clientID = CFG_GetMQTTBrokerName();
   mqtt_host = CFG_GetMQTTHost();
 
+  PR_NOTICE("mqtt_userName %s\r\nmqtt_pass %s\r\nmqtt_clientID %s\r\nmqtt_host %s\r\n",
+    mqtt_userName,
+    mqtt_pass,
+    mqtt_clientID,
+    mqtt_host
+  );
+
+
+  if (!mqtt_host[0]){
+    PR_NOTICE("mqtt_host empty, not starting mqtt\r\n");
+    return;
+  }
+
   // set pointer, there are no buffers to strcpy
   mqtt_client_info.client_id = mqtt_host;
   mqtt_client_info.client_pass = mqtt_pass;
   mqtt_client_info.client_user = mqtt_userName;
 
   // host name/ip
-  	ipaddr_aton(mqtt_host,&mqtt_ip);
+  ipaddr_aton(mqtt_host,&mqtt_ip);
 	mqtt_port = CFG_GetMQTTPort();
 
   /* Initiate client and connect to server, if this fails immediately an error code is returned
@@ -363,6 +379,8 @@ static void app_my_channel_toggle_callback(int channel, int iVal)
     PR_NOTICE("Channel has changed! Publishing change %i with %i \n",channel,iVal);
 	example_publish(mqtt_client,channel,iVal);
 }
+
+
 int loopsWithDisconnected = 0;
 static void app_led_timer_handler(void *data)
 {
@@ -381,6 +399,14 @@ static void app_led_timer_handler(void *data)
   // print network info
   if (!(g_secondsElapsed % 10)){
     print_network_info();
+  }
+
+
+  if (g_openAP){
+    g_openAP--;
+    if (0 == g_openAP){
+      setup_wifi_open_access_point();
+    }
   }
 }
 
@@ -437,26 +463,26 @@ static int setup_wifi_open_access_point(void)
 
     len = os_strlen((char *)ap_info.ssid.array);
 
-    os_strcpy((char *)wNetConfig.wifi_ssid, (char *)ap_info.ssid.array);
-    os_strcpy((char *)wNetConfig.wifi_key, (char *)ap_info.key);
+    os_strncpy((char *)wNetConfig.wifi_ssid, (char *)ap_info.ssid.array, sizeof(wNetConfig.wifi_ssid));
+    os_strncpy((char *)wNetConfig.wifi_key, (char *)ap_info.key, sizeof(wNetConfig.wifi_key));
     
     wNetConfig.wifi_mode = SOFT_AP;
     wNetConfig.dhcp_mode = DHCP_SERVER;
     wNetConfig.wifi_retry_interval = 100;
     
-	if(0) {
+	if(1) {
 		PR_NOTICE("set ip info: %s,%s,%s\r\n",
 				wNetConfig.local_ip_addr,
 				wNetConfig.net_mask,
 				wNetConfig.dns_server_ip_addr);
 	}
     
-	if(0) {
-	  PR_NOTICE("ssid:%s  key:%s\r\n", wNetConfig.wifi_ssid, wNetConfig.wifi_key);
+	if(1) {
+	  PR_NOTICE("ssid:%s  key:%s mode:%d\r\n", wNetConfig.wifi_ssid, wNetConfig.wifi_key, wNetConfig.wifi_mode);
 	}
 	bk_wlan_start(&wNetConfig);
 
-    return 0;    
+  return 0;    
 }
 
 
@@ -541,27 +567,38 @@ void user_main(void)
 	bForceOpenAP = 1;
 #endif
 	if(*wifi_ssid == 0 || *wifi_pass == 0 || bForceOpenAP) {
-		setup_wifi_open_access_point();
+    // start AP mode in 5 seconds
+    g_openAP = 5;
+		//setup_wifi_open_access_point();
 	} else {
 		connect_to_wifi(wifi_ssid,wifi_pass);
+    // register function to get callbacks about wifi changes.
+    bk_wlan_status_register_cb(wl_status);
+    PR_NOTICE("Registered for wifi changes\r\n");
 	}
 
-  // register function to get callbacks about wifi changes.
-  bk_wlan_status_register_cb(wl_status);
-
-		// NOT WORKING, I done it other way, see ethernetif.c
+	// NOT WORKING, I done it other way, see ethernetif.c
 	//net_dhcp_hostname_set(g_shortDeviceName);
 
 	//demo_start_upd();
 	start_tcp_http();
+	PR_NOTICE("Started http tcp server\r\n");
 	
 	PIN_Init();
+	PR_NOTICE("Initialised pins\r\n");
 
 
 	PIN_SetGenericDoubleClickCallback(app_on_generic_dbl_click);
 	CHANNEL_SetChangeCallback(app_my_channel_toggle_callback);
+	PR_NOTICE("Initialised other callbacks\r\n");
 
-	mqtt_example_init();
+  #define START_MQTT
+  #ifdef START_MQTT
+  	mqtt_example_init();
+	  PR_NOTICE("Initialised mqtt\r\n");
+  #else
+	  PR_NOTICE("mqtt hashed out\r\n");
+  #endif
 
     err = rtos_init_timer(&led_timer,
                           1 * 1000,
@@ -571,4 +608,5 @@ void user_main(void)
 
     err = rtos_start_timer(&led_timer);
     ASSERT(kNoErr == err);
+	PR_NOTICE("started timer\r\n");
 }

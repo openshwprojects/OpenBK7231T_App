@@ -297,7 +297,9 @@ void Channel_OnChanged(int ch) {
 #else
 				// they are using 1kHz PWM
 				// See: https://www.elektroda.pl/rtvforum/topic3798114.html
-				bk_pwm_update_param(pwmIndex, 1000, g_channelValues[ch]);
+				float f;
+				f = g_channelValues[ch] * 0.01f;
+				bk_pwm_update_param(pwmIndex, 1000, f * 1000.0f);
 
 #endif
 			}
