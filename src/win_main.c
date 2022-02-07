@@ -138,13 +138,23 @@ int __cdecl main(void)
 			iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
 			if (iResult > 0) {
 				int leen;
-				HTTP_ProcessPacket(recvbuf,outbuf,sizeof(outbuf),0,0);
 
-				printf("Bytes received: %d\n", iResult);
-				printf("%s\n",outbuf);
+				http_request_t request;
+				memset(&request, 0, sizeof(request));
+
+				request.fd = ClientSocket;
+				request.received = recvbuf;
+				request.receivedLen = iResult;
+				request.reply = outbuf;
+				request.replymaxlen = DEFAULT_BUFLEN;
+
+				int len = HTTP_ProcessPacket(&request);
+
+				printf("Bytes received: %d tosend %d\n", iResult, len);
+				//printf("%s\n",outbuf);
 				// Echo the buffer back to the sender
-				leen =  strlen(outbuf);
-				iSendResult = send( ClientSocket, outbuf,leen, 0 );
+				//leen =  strlen(request.reply);
+				iSendResult = send( ClientSocket, outbuf,len, 0 );
 				if (iSendResult == SOCKET_ERROR) {
 					printf("send failed with error: %d\n", WSAGetLastError());
 					closesocket(ClientSocket);
