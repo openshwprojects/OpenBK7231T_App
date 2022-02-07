@@ -500,6 +500,7 @@ void wl_status( void *ctxt ){
         case RW_EVT_STA_SCANNING:
         case RW_EVT_STA_SCAN_OVER:
         case RW_EVT_STA_CONNECTING:
+            PIN_set_wifi_led(0);
             break;
         case RW_EVT_STA_BEACON_LOSE:
         case RW_EVT_STA_PASSWORD_WRONG:
@@ -508,15 +509,24 @@ void wl_status( void *ctxt ){
         case RW_EVT_STA_DISCONNECTED:    /* disconnect with server */
             // try to connect again in 5 seconds
             //reconnect = 5;
+            PIN_set_wifi_led(0);
             break;
         case RW_EVT_STA_CONNECT_FAILED:  /* authentication failed */
+            PIN_set_wifi_led(0);
+            break;
         case RW_EVT_STA_CONNECTED:        /* authentication success */    
         case RW_EVT_STA_GOT_IP: 
+            PIN_set_wifi_led(1);
+            break;
         
         /* for softap mode */
         case RW_EVT_AP_CONNECTED:          /* a client association success */
+            PIN_set_wifi_led(1);
+            break;
         case RW_EVT_AP_DISCONNECTED:       /* a client disconnect */
         case RW_EVT_AP_CONNECT_FAILED:     /* a client association failed */
+            PIN_set_wifi_led(0);
+            break;
         default:
             break;
     }

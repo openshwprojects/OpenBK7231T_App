@@ -7,7 +7,9 @@ extern const char htmlHeader[];
 extern const char htmlEnd[];
 extern const char htmlReturnToMenu[];
 
-int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize);
+typedef int (*http_send_fn)(int fd, const char *payload, int len);
+
+int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize, http_send_fn send, int socket);
 void http_setup(char *o, const char *type);
 
 

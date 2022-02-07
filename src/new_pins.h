@@ -15,6 +15,8 @@ enum IORole {
 	IOR_LED,
 	IOR_LED_n,
 	IOR_PWM,
+	IOR_LED_WIFI,
+	IOR_LED_WIFI_n,
 	IOR_Total_Options,
 };
 
@@ -35,6 +37,7 @@ void CHANNEL_Set(int ch, int iVal, int bForce);
 int CHANNEL_Get(int ch);
 void PIN_SaveToFlash();
 void PIN_LoadFromFlash();
+void PIN_set_wifi_led(int value);
 
 // from new_builtin.c
 void Setup_Device_Empty();
