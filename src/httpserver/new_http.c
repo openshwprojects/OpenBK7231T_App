@@ -445,7 +445,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 	}
 
 	if(http_checkUrlBase(urlStr,"about")) {
-		poststr(request, httpMimeTypeHTML);
+		http_setup(request, httpMimeTypeHTML);
 		poststr(request,htmlHeader);
 		poststr(request,g_header);
 		poststr(request,"About us page.");
