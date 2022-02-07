@@ -149,3 +149,22 @@ void Setup_Device_CalexPowerStrip_900018_1v1_0UK() {
 	PIN_SaveToFlash();
 }
 
+// https://www.bunnings.com.au/arlec-grid-connect-smart-9w-cct-led-downlight_p0168694
+void Setup_Device_ArlecCCTDownlight() {
+
+	// WB3L
+	// pins are:
+	// cold white - PWM1 = P6
+	// warm white - PWM2 = P24
+
+	PIN_ClearPins();
+
+	// cold white
+	PIN_SetPinChannelForPinIndex(6, 1);
+	PIN_SetPinRoleForPinIndex(6, IOR_PWM);
+	// warm white
+	PIN_SetPinChannelForPinIndex(24, 2);
+	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
+
+	PIN_SaveToFlash();
+}
