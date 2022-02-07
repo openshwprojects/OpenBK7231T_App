@@ -612,6 +612,9 @@ void user_main(void)
 	  PR_NOTICE("mqtt hashed out\r\n");
   #endif
 
+  // initialise rest interface
+  init_rest();
+
     err = rtos_init_timer(&led_timer,
                           1 * 1000,
                           app_led_timer_handler,
