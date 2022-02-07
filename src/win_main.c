@@ -14,7 +14,7 @@
 #pragma comment (lib, "Ws2_32.lib")
 // #pragma comment (lib, "Mswsock.lib")
 
-#define DEFAULT_BUFLEN 8192
+#define DEFAULT_BUFLEN 16384
 #define DEFAULT_PORT "80"
 
 #include "new_common.h"
@@ -138,7 +138,7 @@ int __cdecl main(void)
 			iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
 			if (iResult > 0) {
 				int leen;
-				HTTP_ProcessPacket(recvbuf,outbuf,sizeof(outbuf));
+				HTTP_ProcessPacket(recvbuf,outbuf,sizeof(outbuf),0,0);
 
 				printf("Bytes received: %d\n", iResult);
 				printf("%s\n",outbuf);
