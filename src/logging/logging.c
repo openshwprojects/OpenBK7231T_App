@@ -5,6 +5,7 @@
 #include "str_pub.h"
 
 static int http_getlog(http_request_t *request);
+static int http_getlograw(http_request_t *request);
 
 static void log_server_thread( beken_thread_arg_t arg );
 static void log_client_thread( beken_thread_arg_t arg );
@@ -39,6 +40,7 @@ static void initLog() {
     startSerialLog();
     startLogServer();
     HTTP_RegisterCallback( "/logs", HTTP_GET, http_getlog);
+    HTTP_RegisterCallback( "/lograw", HTTP_GET, http_getlograw);
 }
 
 // adds a log to the log memory
@@ -254,15 +256,8 @@ static void log_serial_thread( beken_thread_arg_t arg )
 }
 
 
-
-static int http_getlog(http_request_t *request){
+static int http_getlograw(http_request_t *request){
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    poststr(request,htmlReturnToMenu);
-
-    poststr(request, "<pre>");
-    char *post = "</pre>";
-
     int len = 0;
 
     // get log in small chunks, posting on http
@@ -274,6 +269,19 @@ static int http_getlog(http_request_t *request){
             poststr(request, buf);
         }
     } while (len);
+    poststr(request, NULL);
+    return 0;
+}
+
+static int http_getlog(http_request_t *request){
+    http_setup(request, httpMimeTypeHTML);
+    poststr(request,htmlHeader);
+    poststr(request,htmlReturnToMenu);
+
+    poststr(request, "<pre>");
+    char *post = "</pre>";
+
+    http_getlograw(request);
 
     poststr(request, post);
     poststr(request, htmlEnd);
