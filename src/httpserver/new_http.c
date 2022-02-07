@@ -872,11 +872,14 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize, http_s
         strcat(outbuf,htmlReturnToMenu);
 		HTTP_AddBuildFooter(outbuf,outBufSize);
         strcat(outbuf,htmlEnd);
+	} else if(http_checkUrlBase(urlStr,"")) {
+		// Redirect / to /index page
+        strcat(outbuf,"HTTP/1.1 302 OK\nLocation: /index\nConnection: close\n\n");
 	} else {
 		http_setup(outbuf, httpMimeTypeHTML);
 		strcat(outbuf,htmlHeader);
 		strcat_safe(outbuf,g_header,outBufSize);
-		strcat(outbuf,"Not found.");
+		strcat(outbuf,"Not found.<br>\n");
 		strcat(outbuf,htmlReturnToMenu);
 		HTTP_AddBuildFooter(outbuf,outBufSize);
 		strcat(outbuf,htmlEnd);
