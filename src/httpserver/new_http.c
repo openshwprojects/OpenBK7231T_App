@@ -3,7 +3,12 @@
 #include "../new_common.h"
 #include "ctype.h" 
 #ifndef WINDOWS
+#include "lwip/sockets.h"
 #include "str_pub.h"
+#else
+//#include <windows.h>
+#include <winsock2.h>
+//#include <ws2tcpip.h>
 #endif
 #include "new_http.h"
 #include "../new_pins.h"
@@ -44,21 +49,34 @@ Connection: keep-alive
 #define DEFAULT_OTA_URL "http://raspberrypi:1880/firmware"
 
 const char httpHeader[] = "HTTP/1.1 200 OK\nContent-type: " ;  // HTTP header
-const char httpMimeTypeHTML[] = "text/html\n\n" ;              // HTML MIME type
-const char httpMimeTypeText[] = "text/plain\n\n" ;           // TEXT MIME type
+const char httpMimeTypeHTML[] = "text/html" ;              // HTML MIME type
+const char httpMimeTypeText[] = "text/plain" ;           // TEXT MIME type
 const char htmlHeader[] = "<!DOCTYPE html><html><body>" ;
 const char htmlEnd[] = "</body></html>" ;
 const char htmlReturnToMenu[] = "<a href=\"index\">Return to menu</a>";;
 const char htmlReturnToCfg[] = "<a href=\"cfg\">Return to cfg</a>";;
 const char *g_build_str = "Build on " __DATE__ " " __TIME__;
 
+const char httpCorsHeaders[] = "Access-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept" ;           // TEXT MIME type
+
+const char *methodNames[] = {
+	"GET",
+	"POST",
+	"PUT",
+	"OPTIONS"
+};
+
+
 #if WINDOWS
 #define os_free free
 #define os_malloc malloc
 #endif
 
+
+
 typedef struct http_callback_tag {
     char *url;
+		int method;
     http_callback_fn callback;
 } http_callback_t;
 
@@ -66,7 +84,7 @@ typedef struct http_callback_tag {
 static http_callback_t *callbacks[MAX_HTTP_CALLBACKS];
 static int numCallbacks = 0;
 
-int HTTP_RegisterCallback( const char *url, http_callback_fn callback){
+int HTTP_RegisterCallback( const char *url, int method, http_callback_fn callback){
 	if (!url || !callback){
 		return -1;
 	}
@@ -84,6 +102,8 @@ int HTTP_RegisterCallback( const char *url, http_callback_fn callback){
 	}
 	strcpy(callbacks[numCallbacks]->url, url);
 	callbacks[numCallbacks]->callback = callback;
+	callbacks[numCallbacks]->method = method;
+	
 	numCallbacks++;
 
 	// success
@@ -116,10 +136,15 @@ bool http_checkUrlBase(const char *base, const char *fileName) {
 	return true;
 }
 
-void http_setup(char *o, const char *type){
-	strcpy(o,httpHeader);
-	strcat(o,type);
+void http_setup(http_request_t *request, const char *type){
+	poststr(request,httpHeader);
+	poststr(request,type);
+	poststr(request,"\r\n"); // next header
+	poststr(request,httpCorsHeaders);
+	poststr(request,"\r\n"); // end headers with double CRLF
+	poststr(request,"\r\n");
 }
+
 const char *http_checkArg(const char *p, const char *n) {
 	while(1) {
 		if(*n == 0 && (*p == 0 || *p == '='))
@@ -268,186 +293,305 @@ int g_total_templates = sizeof(g_templates)/sizeof(g_templates[0]);
 const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7231T/\">OpenBK7231</a></h1><h3><a href=\"https://www.elektroda.com/rtvforum/viewtopic.php?p=19841301#19841301\">[Read more]</a><a href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
 
 
-void HTTP_AddBuildFooter(char *outbuf, int outBufSize) {
-	strcat_safe(outbuf,"<br>",outBufSize);
-	strcat_safe(outbuf,g_build_str,outBufSize);
+void HTTP_AddBuildFooter(http_request_t *request) {
+	poststr(request,"<br>");
+	poststr(request,g_build_str);
 }
-int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize, http_send_fn sendpart, int socket) {
+
+
+// add some more output safely, sending if necessary.
+// call with str == NULL to force send.
+int poststr(http_request_t *request, const char *str){
+	if (NULL == str){
+		send(request->fd, request->reply, strlen(request->reply), 0);
+		request->reply[0] = 0;
+		return 0;
+	}
+
+	int currentlen = strlen(request->reply);
+	int addlen = strlen(str);
+	if (currentlen + addlen >= request->replymaxlen){
+		send(request->fd, request->reply, strlen(request->reply), 0);
+		request->reply[0] = 0;
+		currentlen = 0;
+	}
+	if (addlen > request->replymaxlen){
+		printf("won't fit");
+	} else {
+		strcat(request->reply, str );
+	}
+	return (currentlen + addlen);
+}
+
+int HTTP_ProcessPacket(http_request_t *request) {
 	int i, j;
 	char tmpA[128];
 	char tmpB[64];
 	char tmpC[64];
 	//int bChanged = 0;
-	const char *urlStr;
+	const char *urlStr = "";
 
-	*outbuf = '\0';
+	char *recvbuf = request->received;
+	for (int i = 0; i < sizeof(methodNames)/sizeof(*methodNames); i++){
+		if (http_startsWith(recvbuf, methodNames[i])){
+			urlStr = recvbuf + strlen(methodNames[i]) + 2; // skip method name plus space, plus slash
+			request->method = i;
+			break;
+		}
+	}
+	if (request->method == -1){
+		printf("unsupported method %7s", recvbuf);
+		return 0;
+	}
 
-	urlStr = recvbuf + 5;
-	if(http_startsWith(recvbuf,"GET")) {
+	if (request->method == HTTP_GET) {
 		printf("HTTP request\n");
 	} else {
 		printf("Other request\n");
 	}
+
+	// if OPTIONS, return now - for CORS
+	if (request->method == HTTP_OPTIONS) {
+		http_setup(request, httpMimeTypeHTML);
+		i = strlen(request->reply);
+		return i;
+	}
+
+	// chop URL at space
+	char *p = strchr(urlStr, ' ');
+	if (*p) {
+		*p = '\0';
+		p++; // past space
+	}
+	else {
+		printf("invalid request\n");
+		return 0;
+	}
+	// protocol is next, termed by \r\n
+	char *protocol = p;
+	p = strchr(protocol, '\r');
+	if (*p) {
+		*p = '\0';
+		p++; // past \r
+		p++; // past \n
+	} else {
+		printf("invalid request\n");
+		return 0;
+	}
+	p++;
+	char *headers = p;
+	do {
+		p = strchr(headers, '\r');
+		if (p != headers){
+			if (p){
+				if (request->numheaders < 16){
+					request->headers[request->numheaders] = headers;
+					request->numheaders++;
+				}
+				// pick out contentLength
+				if (!strcmp(headers, "Content-Length:")){
+					request->contentLength = atoi(headers + 15);
+				}
+
+				*p = 0;
+				p++; // past \r
+				p++; // past \n
+				headers = p;
+			} else {
+				break;
+			}
+		}
+		if (*p == '\r'){
+			// end of headers
+			*p = 0;
+			p++;
+			p++;
+			break;
+		}
+	} while(1);
+
+	request->bodystart = p;
+
+	// we will make this more general
 	http_getArg(urlStr,"a",tmpA,sizeof(tmpA));
 	http_getArg(urlStr,"b",tmpB,sizeof(tmpB));
 	http_getArg(urlStr,"c",tmpC,sizeof(tmpC));
+	if (*tmpA){
+		request->querynames[request->numqueryitems] = "a";
+		request->queryvalues[request->numqueryitems] = tmpA;
+		request->numqueryitems++;
+	}
+	if (*tmpB){
+		request->querynames[request->numqueryitems] = "b";
+		request->queryvalues[request->numqueryitems] = tmpB;
+		request->numqueryitems++;
+	}
+	if (*tmpC){
+		request->querynames[request->numqueryitems] = "c";
+		request->queryvalues[request->numqueryitems] = tmpC;
+		request->numqueryitems++;
+	}
 
 
+	// look for a callback with this URL and method, or HTTP_ANY
 	for (i = 0; i < numCallbacks; i++){
 		char *url = callbacks[i]->url;
 		if (http_checkUrlBase(urlStr, &url[1])){
-			return callbacks[i]->callback(recvbuf, outbuf, outBufSize);
+			int method = callbacks[i]->method;
+			if(method == HTTP_ANY || method == request->method){
+				return callbacks[i]->callback(request);
+			}
 		}
 	}
 
 	if(http_checkUrlBase(urlStr,"about")) {
-		http_setup(outbuf, httpMimeTypeHTML);
-		strcat_safe(outbuf,htmlHeader,outBufSize);
-		strcat_safe(outbuf,g_header,outBufSize);
-		strcat_safe(outbuf,"About us page.",outBufSize);
-		strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
-		HTTP_AddBuildFooter(outbuf,outBufSize);
-		strcat_safe(outbuf,htmlEnd,outBufSize);
+		http_setup(request, httpMimeTypeHTML);
+		poststr(request,htmlHeader);
+		poststr(request,g_header);
+		poststr(request,"About us page.");
+		poststr(request,htmlReturnToMenu);
+		HTTP_AddBuildFooter(request);
+		poststr(request,htmlEnd);
 	} else if(http_checkUrlBase(urlStr,"cfg_mqtt")) {
-		http_setup(outbuf, httpMimeTypeHTML);
-		strcat_safe(outbuf,htmlHeader,outBufSize);
-		strcat_safe(outbuf,g_header,outBufSize);
-		strcat_safe(outbuf,"<h2> Use this to connect to your MQTT</h2>",outBufSize);
-		strcat_safe(outbuf,"<form action=\"/cfg_mqtt_set\">\
+		http_setup(request, httpMimeTypeHTML);
+		poststr(request,htmlHeader);
+		poststr(request,g_header);
+		poststr(request,"<h2> Use this to connect to your MQTT</h2>");
+		poststr(request,"<form action=\"/cfg_mqtt_set\">\
 			  <label for=\"host\">Host:</label><br>\
-			  <input type=\"text\" id=\"host\" name=\"host\" value=\"",outBufSize);
+			  <input type=\"text\" id=\"host\" name=\"host\" value=\"");
 			  
-		strcat_safe(outbuf,CFG_GetMQTTHost(),outBufSize);
-		strcat_safe(outbuf,"\"><br>\
+		poststr(request,CFG_GetMQTTHost());
+		poststr(request,"\"><br>\
 			  <label for=\"port\">Port:</label><br>\
-			  <input type=\"text\" id=\"port\" name=\"port\" value=\"",outBufSize);
+			  <input type=\"text\" id=\"port\" name=\"port\" value=\"");
 		i = CFG_GetMQTTPort();
 		sprintf(tmpA,"%i",i);
-		strcat_safe(outbuf,tmpA,outBufSize);
-		strcat_safe(outbuf,"\"><br><br>\
+		poststr(request,tmpA);
+		poststr(request,"\"><br><br>\
 			  <label for=\"port\">Client:</label><br>\
-			  <input type=\"text\" id=\"client\" name=\"client\" value=\"",outBufSize);
+			  <input type=\"text\" id=\"client\" name=\"client\" value=\"");
 			  
-		strcat_safe(outbuf,CFG_GetMQTTBrokerName(),outBufSize);
-		strcat_safe(outbuf,"\"><br>\
+		poststr(request,CFG_GetMQTTBrokerName());
+		poststr(request,"\"><br>\
 			  <label for=\"user\">User:</label><br>\
-			  <input type=\"text\" id=\"user\" name=\"user\" value=\"",outBufSize);
-		strcat_safe(outbuf,CFG_GetMQTTUserName(),outBufSize);
-		strcat_safe(outbuf,"\"><br>\
+			  <input type=\"text\" id=\"user\" name=\"user\" value=\"");
+		poststr(request,CFG_GetMQTTUserName());
+		poststr(request,"\"><br>\
 			  <label for=\"port\">Password:</label><br>\
-			  <input type=\"text\" id=\"password\" name=\"password\" value=\"",outBufSize);
-		strcat_safe(outbuf,CFG_GetMQTTPass(),outBufSize);
-		strcat_safe(outbuf,"\"><br>\
+			  <input type=\"text\" id=\"password\" name=\"password\" value=\"");
+		poststr(request,CFG_GetMQTTPass());
+		poststr(request,"\"><br>\
 			  <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MQTT data twice?')\">\
-			</form> ",outBufSize);
-		strcat_safe(outbuf,htmlReturnToCfg,outBufSize);
-		HTTP_AddBuildFooter(outbuf,outBufSize);
-		strcat_safe(outbuf,htmlEnd,outBufSize);
+			</form> ");
+		poststr(request,htmlReturnToCfg);
+		HTTP_AddBuildFooter(request);
+		poststr(request,htmlEnd);
 	} else if(http_checkUrlBase(urlStr,"cfg_mqtt_set")) {
-		http_setup(outbuf, httpMimeTypeHTML);
-		strcat_safe(outbuf,htmlHeader,outBufSize);
-		strcat_safe(outbuf,g_header,outBufSize);
+		http_setup(request, httpMimeTypeHTML);
+		poststr(request,htmlHeader);
+		poststr(request,g_header);
 	
-		if(http_getArg(recvbuf,"host",tmpA,sizeof(tmpA))) {
+		if(http_getArg(urlStr,"host",tmpA,sizeof(tmpA))) {
 			CFG_SetMQTTHost(tmpA);
 		}
-		if(http_getArg(recvbuf,"port",tmpA,sizeof(tmpA))) {
+		if(http_getArg(urlStr,"port",tmpA,sizeof(tmpA))) {
 			CFG_SetMQTTPort(atoi(tmpA));
 		}
-		if(http_getArg(recvbuf,"user",tmpA,sizeof(tmpA))) {
+		if(http_getArg(urlStr,"user",tmpA,sizeof(tmpA))) {
 			CFG_SetMQTTUserName(tmpA);
 		}
-		if(http_getArg(recvbuf,"password",tmpA,sizeof(tmpA))) {
+		if(http_getArg(urlStr,"password",tmpA,sizeof(tmpA))) {
 			CFG_SetMQTTPass(tmpA);
 		}
-		if(http_getArg(recvbuf,"client",tmpA,sizeof(tmpA))) {
+		if(http_getArg(urlStr,"client",tmpA,sizeof(tmpA))) {
 			CFG_SetMQTTBrokerName(tmpA);
 		}
-		strcat_safe(outbuf,"MQTT mode set!",outBufSize);
+		poststr(request,"MQTT mode set!");
 		
 		CFG_SaveMQTT();
 
-		strcat_safe(outbuf,"Please wait for module to connect... if there is problem, restart it...",outBufSize);
+		poststr(request,"Please wait for module to connect... if there is problem, restart it...");
 		
-		strcat_safe(outbuf,"<br>",outBufSize);
-		strcat_safe(outbuf,"<a href=\"cfg_mqtt\">Return to MQTT settings</a>",outBufSize);
-		strcat_safe(outbuf,"<br>",outBufSize);
-		strcat_safe(outbuf,htmlReturnToCfg,outBufSize);
-		HTTP_AddBuildFooter(outbuf,outBufSize);
-		strcat_safe(outbuf,htmlEnd,outBufSize);
+		poststr(request,"<br>");
+		poststr(request,"<a href=\"cfg_mqtt\">Return to MQTT settings</a>");
+		poststr(request,"<br>");
+		poststr(request,htmlReturnToCfg);
+		HTTP_AddBuildFooter(request);
+		poststr(request,htmlEnd);
 	} else if(http_checkUrlBase(urlStr,"cfg_wifi_set")) {
-		http_setup(outbuf, httpMimeTypeHTML);
-		strcat_safe(outbuf,htmlHeader,outBufSize);
-		strcat_safe(outbuf,g_header,outBufSize);
+		http_setup(request, httpMimeTypeHTML);
+		poststr(request,htmlHeader);
+		poststr(request,g_header);
 		if(http_getArg(recvbuf,"open",tmpA,sizeof(tmpA))) {
 			CFG_SetWiFiSSID("");
 			CFG_SetWiFiPass("");
-			strcat_safe(outbuf,"WiFi mode set: open access point.",outBufSize);
+			poststr(request,"WiFi mode set: open access point.");
 		} else {
-			if(http_getArg(recvbuf,"ssid",tmpA,sizeof(tmpA))) {
+			if(http_getArg(urlStr,"ssid",tmpA,sizeof(tmpA))) {
 				CFG_SetWiFiSSID(tmpA);
 			}
-			if(http_getArg(recvbuf,"pass",tmpA,sizeof(tmpA))) {
+			if(http_getArg(urlStr,"pass",tmpA,sizeof(tmpA))) {
 				CFG_SetWiFiPass(tmpA);
 			}
-			strcat_safe(outbuf,"WiFi mode set: connect to WLAN.",outBufSize);
+			poststr(request,"WiFi mode set: connect to WLAN.");
 		}
 		CFG_SaveWiFi();
 
-		strcat_safe(outbuf,"Please wait for module to reset...",outBufSize);
+		poststr(request,"Please wait for module to reset...");
 		
-		strcat_safe(outbuf,"<br>",outBufSize);
-		strcat_safe(outbuf,"<a href=\"cfg_wifi\">Return to WiFi settings</a>",outBufSize);
-		strcat_safe(outbuf,"<br>",outBufSize);
-		strcat_safe(outbuf,htmlReturnToCfg,outBufSize);
-		HTTP_AddBuildFooter(outbuf,outBufSize);
-		strcat_safe(outbuf,htmlEnd,outBufSize);
+		poststr(request,"<br>");
+		poststr(request,"<a href=\"cfg_wifi\">Return to WiFi settings</a>");
+		poststr(request,"<br>");
+		poststr(request,htmlReturnToCfg);
+		HTTP_AddBuildFooter(request);
+		poststr(request,htmlEnd);
 	} else if(http_checkUrlBase(urlStr,"cfg_wifi")) {
 		// for a test, show password as well...
 		const char *cur_ssid, *cur_pass;
 
 
-		http_setup(outbuf, httpMimeTypeHTML);
-		strcat_safe(outbuf,htmlHeader,outBufSize);
-		strcat_safe(outbuf,g_header,outBufSize);
+		http_setup(request, httpMimeTypeHTML);
+		poststr(request,htmlHeader);
+		poststr(request,g_header);
 		/*bChanged = 0;
 		if(http_getArg(recvbuf,"ssid",tmpA,sizeof(tmpA))) {
 			CFG_SetWiFiSSID(tmpA);
-			strcat_safe(outbuf,"<h4> WiFi SSID set!</h4>",outBufSize);
+			poststr(request,"<h4> WiFi SSID set!</h4>");
 			bChanged = 1;
 		}
 		if(http_getArg(recvbuf,"pass",tmpA,sizeof(tmpA))) {
 			CFG_SetWiFiPass(tmpA);
-			strcat_safe(outbuf,"<h4> WiFi Password set!</h4>",outBufSize);
+			poststr(request,"<h4> WiFi Password set!</h4>");
 			bChanged = 1;
 		}
 		if(bChanged) {
-			strcat_safe(outbuf,"<h4> Device will reconnect after restarting</h4>",outBufSize);
+			poststr(request,"<h4> Device will reconnect after restarting</h4>");
 		}*/
-		strcat_safe(outbuf,"<h2> Use this to disconnect from your WiFi</h2>",outBufSize);
-		strcat_safe(outbuf,"<form action=\"/cfg_wifi_set\">\
+		poststr(request,"<h2> Use this to disconnect from your WiFi</h2>");
+		poststr(request,"<form action=\"/cfg_wifi_set\">\
 			  <input type=\"hidden\" id=\"open\" name=\"open\" value=\"1\">\
 			  <input type=\"submit\" value=\"Convert to open access wifi\" onclick=\"return confirm('Are you sure to convert module to open access wifi?')\">\
-			</form> ",outBufSize);
-		strcat_safe(outbuf,"<h2> Use this to connect to your WiFi</h2>",outBufSize);
-		strcat_safe(outbuf,"<form action=\"/cfg_wifi_set\">\
+			</form> ");
+		poststr(request,"<h2> Use this to connect to your WiFi</h2>");
+		poststr(request,"<form action=\"/cfg_wifi_set\">\
 			  <label for=\"ssid\">SSID:</label><br>\
-			  <input type=\"text\" id=\"ssid\" name=\"ssid\" value=\"",outBufSize);
+			  <input type=\"text\" id=\"ssid\" name=\"ssid\" value=\"");
 		cur_ssid = CFG_GetWiFiSSID();
-		strcat_safe(outbuf,cur_ssid,outBufSize);
+		poststr(request,cur_ssid);
 			  
-			 strcat_safe(outbuf, "\"><br>\
+			 poststr(request, "\"><br>\
 			  <label for=\"pass\">Pass:</label><br>\
-			  <input type=\"text\" id=\"pass\" name=\"pass\" value=\"",outBufSize);
+			  <input type=\"text\" id=\"pass\" name=\"pass\" value=\"");
 		cur_pass = CFG_GetWiFiPass();
-		strcat_safe(outbuf,cur_pass,outBufSize);
+		poststr(request,cur_pass);
 			  
-		strcat_safe(outbuf,"\"><br><br>\
+		poststr(request,"\"><br><br>\
 			  <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check SSID and pass twice?')\">\
-			</form> ",outBufSize);
-		strcat_safe(outbuf,htmlReturnToCfg,outBufSize);
-		HTTP_AddBuildFooter(outbuf,outBufSize);
-		strcat_safe(outbuf,htmlEnd,outBufSize);
+			</form> ");
+		poststr(request,htmlReturnToCfg);
+		HTTP_AddBuildFooter(request);
+		poststr(request,htmlEnd);
 	} else if(http_checkUrlBase(urlStr,"flash_read_tool")) {
 		int len = 16;
 		int ofs = 1970176;
@@ -455,18 +599,19 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize, http_s
 		int rem;
 		int now;
 		int nowOfs;
-		http_setup(outbuf, httpMimeTypeHTML);
-		strcat_safe(outbuf,htmlHeader,outBufSize);
-		strcat_safe(outbuf,g_header,outBufSize);
-		strcat_safe(outbuf,"<h4>Flash Read Tool</h4>",outBufSize);
+		http_setup(request, httpMimeTypeHTML);
+		poststr(request,htmlHeader);
+		poststr(request,g_header);
+		poststr(request,"<h4>Flash Read Tool</h4>");
 
-		if(http_getArg(recvbuf,"offset",tmpA,sizeof(tmpA))&&http_getArg(recvbuf,"len",tmpB,sizeof(tmpB))) {
+		if(	http_getArg(urlStr,"offset",tmpA,sizeof(tmpA)) &&
+				http_getArg(urlStr,"len",tmpB,sizeof(tmpB))) {
 			u8 buffer[128];
 			len = atoi(tmpB);
 			ofs = atoi(tmpA);
 			sprintf(tmpA,"Memory at %i with len %i reads: ",ofs,len);
-			strcat_safe(outbuf,tmpA,outBufSize);
-			strcat_safe(outbuf,"<br>",outBufSize);
+			poststr(request,tmpA);
+			poststr(request,"<br>");
 
 			///res = tuya_hal_flash_read (ofs, buffer,len);
 			//sprintf(tmpA,"Result %i",res);
@@ -484,7 +629,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize, http_s
 				res = tuya_hal_flash_read (nowOfs, buffer,now);
 				for(i = 0; i < now; i++) {
 					sprintf(tmpA,"%02X ",buffer[i]);
-					strcat_safe(outbuf,tmpA,outBufSize);
+					poststr(request,tmpA);
 				}
 				rem -= now;
 				nowOfs += now;
@@ -493,51 +638,51 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize, http_s
 				}
 			}
 
-			strcat_safe(outbuf,"<br>",outBufSize);
+			poststr(request,"<br>");
 		}
-		strcat_safe(outbuf,"<form action=\"/flash_read_tool\">\
+		poststr(request,"<form action=\"/flash_read_tool\">\
 			  <label for=\"offset\">offset:</label><br>\
-			  <input type=\"number\" id=\"offset\" name=\"offset\"",outBufSize);
+			  <input type=\"number\" id=\"offset\" name=\"offset\"");
 		sprintf(tmpA," value=\"%i\"><br>",ofs);
-		strcat_safe(outbuf,tmpA,outBufSize);
-		strcat_safe(outbuf,"<label for=\"lenght\">lenght:</label><br>\
-			  <input type=\"number\" id=\"len\" name=\"len\" ",outBufSize);
+		poststr(request,tmpA);
+		poststr(request,"<label for=\"lenght\">lenght:</label><br>\
+			  <input type=\"number\" id=\"len\" name=\"len\" ");
 		sprintf(tmpA,"value=\"%i\">",len);
-		strcat_safe(outbuf,tmpA,outBufSize);
-		strcat_safe(outbuf,"<br><br>\
+		poststr(request,tmpA);
+		poststr(request,"<br><br>\
 			  <input type=\"submit\" value=\"Submit\">\
-			</form> ",outBufSize);
+			</form> ");
 
-		strcat_safe(outbuf,htmlReturnToCfg,outBufSize);
-		HTTP_AddBuildFooter(outbuf,outBufSize);
-		strcat_safe(outbuf,htmlEnd,outBufSize);
+		poststr(request,htmlReturnToCfg);
+		HTTP_AddBuildFooter(request);
+		poststr(request,htmlEnd);
 
 	} else if(http_checkUrlBase(urlStr,"cfg_quick")) {
-		http_setup(outbuf, httpMimeTypeHTML);
-		strcat_safe(outbuf,htmlHeader,outBufSize);
-		strcat_safe(outbuf,g_header,outBufSize);
-		strcat_safe(outbuf,"<h4>Quick Config</h4>",outBufSize);
+		http_setup(request, httpMimeTypeHTML);
+		poststr(request,htmlHeader);
+		poststr(request,g_header);
+		poststr(request,"<h4>Quick Config</h4>");
 		
 		if(http_getArg(urlStr,"dev",tmpA,sizeof(tmpA))) {
 			j = atoi(tmpA);
 			sprintf(tmpA,"<h3>Set dev %i!</h3>",j);
-			strcat(outbuf,tmpA);
+			poststr(request,tmpA);
 			
 			g_templates[j].setter();
 		}
-		strcat_safe(outbuf,"<form action=\"cfg_quick\">",outBufSize);		
+		poststr(request,"<form action=\"cfg_quick\">");		
 		sprintf(tmpA, "<select name=\"dev\">");
-		strcat(outbuf,tmpA);
+		poststr(request,tmpA);
 		for(j = 0; j < g_total_templates; j++) {
 			sprintf(tmpA, "<option value=\"%i\">%s</option>",j,g_templates[j].name);
-			strcat(outbuf,tmpA);
+			poststr(request,tmpA);
 		}
-		strcat(outbuf, "</select>");
-		strcat_safe(outbuf,"<input type=\"submit\" value=\"Set\"/></form>",outBufSize);
+		poststr(request,"</select>");
+		poststr(request,"<input type=\"submit\" value=\"Set\"/></form>");
 		
-		strcat_safe(outbuf,htmlReturnToCfg,outBufSize);
-		HTTP_AddBuildFooter(outbuf,outBufSize);
-		strcat_safe(outbuf,htmlEnd,outBufSize);
+		poststr(request,htmlReturnToCfg);
+		HTTP_AddBuildFooter(request);
+		poststr(request,htmlEnd);
 
 
 	} else if(http_checkUrlBase(urlStr,"cfg_ha")) {
@@ -549,13 +694,13 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize, http_s
 
 		baseName = CFG_GetShortDeviceName();
 
-		http_setup(outbuf, httpMimeTypeHTML);
-		strcat_safe(outbuf,htmlHeader,outBufSize);
-		strcat_safe(outbuf,g_header,outBufSize);
-		strcat_safe(outbuf,"<h4>Home Assistant Cfg</h4>",outBufSize);
-		strcat_safe(outbuf,"<h4>Paste this to configuration yaml</h4>",outBufSize);
+		http_setup(request, httpMimeTypeHTML);
+		poststr(request,htmlHeader);
+		poststr(request,g_header);
+		poststr(request,"<h4>Home Assistant Cfg</h4>");
+		poststr(request,"<h4>Paste this to configuration yaml</h4>");
 		
-		strcat_safe(outbuf,"<textarea rows=\"40\" cols=\"50\">",outBufSize);
+		poststr(request,"<textarea rows=\"40\" cols=\"50\">");
 
 		for(i = 0; i < GPIO_MAX; i++) {
 			int role = PIN_GetPinRoleForPinIndex(i);
@@ -570,102 +715,102 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize, http_s
 			}
 		}
 		if(relayCount > 0) {
-			strcat_safe(outbuf,"switch:\n",outBufSize);
+			poststr(request,"switch:\n");
 			for(i = 0; i < CHANNEL_MAX; i++) {
 				if(BIT_CHECK(relayFlags,i)) {
-					strcat_safe(outbuf,"  - platform: mqtt\n",outBufSize);
+					poststr(request,"  - platform: mqtt\n");
 					sprintf(tmpA,"    name: \"%s %i\"\n",baseName,i);
-					strcat_safe(outbuf,tmpA,outBufSize);
+					poststr(request,tmpA);
 					sprintf(tmpA,"    state_topic: \"%s/%i/get\"\n",baseName,i);
-					strcat_safe(outbuf,tmpA,outBufSize);
+					poststr(request,tmpA);
 					sprintf(tmpA,"    command_topic: \"%s/%i/set\"\n",baseName,i);
-					strcat_safe(outbuf,tmpA,outBufSize);
-					strcat_safe(outbuf,"    qos: 1\n",outBufSize);
-					strcat_safe(outbuf,"    payload_on: 0\n",outBufSize);
-					strcat_safe(outbuf,"    payload_off: 1\n",outBufSize);
-					strcat_safe(outbuf,"    retain: true\n",outBufSize);
+					poststr(request,tmpA);
+					poststr(request,"    qos: 1\n");
+					poststr(request,"    payload_on: 0\n");
+					poststr(request,"    payload_off: 1\n");
+					poststr(request,"    retain: true\n");
 				}
 			}
 		}
 		if(pwmCount > 0) {
-			strcat_safe(outbuf,"light:\n",outBufSize);
+			poststr(request,"light:\n");
 			for(i = 0; i < CHANNEL_MAX; i++) {
 				if(BIT_CHECK(pwmFlags,i)) {
-					strcat_safe(outbuf,"  - platform: mqtt\n",outBufSize);
+					poststr(request,"  - platform: mqtt\n");
 					sprintf(tmpA,"    name: \"%s %i\"\n",baseName,i);
-					strcat_safe(outbuf,tmpA,outBufSize);
+					poststr(request,tmpA);
 					sprintf(tmpA,"    state_topic: \"%s/%i/get\"\n",baseName,i);
-					strcat_safe(outbuf,tmpA,outBufSize);
+					poststr(request,tmpA);
 					sprintf(tmpA,"    command_topic: \"%s/%i/set\"\n",baseName,i);
-					strcat_safe(outbuf,tmpA,outBufSize);
+					poststr(request,tmpA);
 					sprintf(tmpA,"    brightness_command_topic: \"%s/%i/set\"\n",baseName,i);
-					strcat_safe(outbuf,tmpA,outBufSize);
-					strcat_safe(outbuf,"    on_command_type: \"brightness\"\n",outBufSize);
-					strcat_safe(outbuf,"    brightness_scale: 99\n",outBufSize);
-					strcat_safe(outbuf,"    qos: 1\n",outBufSize);
-					strcat_safe(outbuf,"    payload_on: 99\n",outBufSize);
-					strcat_safe(outbuf,"    payload_off: 0\n",outBufSize);
-					strcat_safe(outbuf,"    retain: true\n",outBufSize);
-					strcat_safe(outbuf,"    optimistic: true\n",outBufSize);
+					poststr(request,tmpA);
+					poststr(request,"    on_command_type: \"brightness\"\n");
+					poststr(request,"    brightness_scale: 99\n");
+					poststr(request,"    qos: 1\n");
+					poststr(request,"    payload_on: 99\n");
+					poststr(request,"    payload_off: 0\n");
+					poststr(request,"    retain: true\n");
+					poststr(request,"    optimistic: true\n");
 				}
 			}
 		}
 
-		strcat_safe(outbuf,"</textarea>",outBufSize);
+		poststr(request,"</textarea>");
 
-		strcat_safe(outbuf,htmlReturnToCfg,outBufSize);
-		HTTP_AddBuildFooter(outbuf,outBufSize);
-		strcat_safe(outbuf,htmlEnd,outBufSize);
+		poststr(request,htmlReturnToCfg);
+		HTTP_AddBuildFooter(request);
+		poststr(request,htmlEnd);
 
 		
 	} else if(http_checkUrlBase(urlStr,"cfg")) {
-		http_setup(outbuf, httpMimeTypeHTML);
-		strcat_safe(outbuf,htmlHeader,outBufSize);
-		strcat_safe(outbuf,g_header,outBufSize);
-		strcat_safe(outbuf,"<form action=\"cfg_pins\"><input type=\"submit\" value=\"Configure Module\"/></form>",outBufSize);
-		strcat_safe(outbuf,"<form action=\"cfg_quick\"><input type=\"submit\" value=\"Quick Config\"/></form>",outBufSize);
-		strcat_safe(outbuf,"<form action=\"cfg_wifi\"><input type=\"submit\" value=\"Configure WiFi\"/></form>",outBufSize);
-		strcat_safe(outbuf,"<form action=\"cfg_mqtt\"><input type=\"submit\" value=\"Configure MQTT\"/></form>",outBufSize);
-		strcat_safe(outbuf,"<form action=\"cfg_ha\"><input type=\"submit\" value=\"Generate Home Assistant cfg\"/></form>",outBufSize);
-		strcat_safe(outbuf,"<form action=\"ota\"><input type=\"submit\" value=\"OTA (update software by WiFi)\"/></form>",outBufSize);
-		strcat_safe(outbuf,"<form action=\"cmd_single\"><input type=\"submit\" value=\"Execute custom command\"/></form>",outBufSize);
-		strcat_safe(outbuf,"<form action=\"flash_read_tool\"><input type=\"submit\" value=\"Flash Read Tool\"/></form>",outBufSize);
+		http_setup(request, httpMimeTypeHTML);
+		poststr(request,htmlHeader);
+		poststr(request,g_header);
+		poststr(request,"<form action=\"cfg_pins\"><input type=\"submit\" value=\"Configure Module\"/></form>");
+		poststr(request,"<form action=\"cfg_quick\"><input type=\"submit\" value=\"Quick Config\"/></form>");
+		poststr(request,"<form action=\"cfg_wifi\"><input type=\"submit\" value=\"Configure WiFi\"/></form>");
+		poststr(request,"<form action=\"cfg_mqtt\"><input type=\"submit\" value=\"Configure MQTT\"/></form>");
+		poststr(request,"<form action=\"cfg_ha\"><input type=\"submit\" value=\"Generate Home Assistant cfg\"/></form>");
+		poststr(request,"<form action=\"ota\"><input type=\"submit\" value=\"OTA (update software by WiFi)\"/></form>");
+		poststr(request,"<form action=\"cmd_single\"><input type=\"submit\" value=\"Execute custom command\"/></form>");
+		poststr(request,"<form action=\"flash_read_tool\"><input type=\"submit\" value=\"Flash Read Tool\"/></form>");
 
 
-		strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
-		HTTP_AddBuildFooter(outbuf,outBufSize);
-		strcat_safe(outbuf,htmlEnd,outBufSize);
+		poststr(request,htmlReturnToMenu);
+		HTTP_AddBuildFooter(request);
+		poststr(request,htmlEnd);
 	//} else if(http_checkUrlBase(urlStr,"setWB2SInputs")) {
 	//	http_setup(outbuf, httpMimeTypeHTML);
-	//	strcat_safe(outbuf,htmlHeader,outBufSize);
+	//	poststr(request,htmlHeader);
 
 	//	setupAllWB2SPinsAsButtons();
 
 	//	http_setup(outbuf, httpMimeTypeHTML);
-	//	strcat_safe(outbuf,"Set all inputs for dbg .",outBufSize);
-	//	strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
-	//	HTTP_AddBuildFooter(outbuf,outBufSize);
-	//	strcat_safe(outbuf,htmlEnd,outBufSize);
+	//	poststr(request,"Set all inputs for dbg .");
+	//	poststr(request,htmlReturnToMenu);
+	//	HTTP_AddBuildFooter(outbuf);
+	//	poststr(request,htmlEnd);
 	//} else if(http_checkUrlBase(urlStr,"setAllInputs")) {
 	//	http_setup(outbuf, httpMimeTypeHTML);
-	//	strcat_safe(outbuf,htmlHeader,outBufSize);
+	//	poststr(request,htmlHeader);
 	//	// it breaks UART pins as well, omg!
 	//	for(i = 0; i < GPIO_MAX; i++) {
 	//		PIN_SetPinRoleForPinIndex(i,IOR_Button);
 	//		PIN_SetPinChannelForPinIndex(i,1);
 	//	}
 	//	http_setup(outbuf, httpMimeTypeHTML);
-	//	strcat_safe(outbuf,"Set all inputs for dbg .",outBufSize);
-	//	strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
-	//	HTTP_AddBuildFooter(outbuf,outBufSize);
-	//	strcat_safe(outbuf,htmlEnd,outBufSize);
+	//	poststr(request,"Set all inputs for dbg .");
+	//	poststr(request,htmlReturnToMenu);
+	//	HTTP_AddBuildFooter(outbuf);
+	//	poststr(request,htmlEnd);
 	} else if(http_checkUrlBase(urlStr,"cfg_pins")) {
 		int iChanged = 0;
 		int iChangedRequested = 0;
 
-		http_setup(outbuf, httpMimeTypeHTML);
-		strcat(outbuf,htmlHeader);
-		strcat_safe(outbuf,g_header,outBufSize);
+		http_setup(request, httpMimeTypeHTML);
+		poststr(request,htmlHeader);
+		poststr(request,g_header);
 		for(i = 0; i < GPIO_MAX; i++) {
 			sprintf(tmpA, "%i",i);
 			if(http_getArg(recvbuf,tmpA,tmpB,sizeof(tmpB))) {
@@ -683,7 +828,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize, http_s
 				}
 			}
 			sprintf(tmpA, "r%i",i);
-			if(http_getArg(recvbuf,tmpA,tmpB,sizeof(tmpB))) {
+			if(http_getArg(urlStr,tmpA,tmpB,sizeof(tmpB))) {
 				int rel;
 				int prevRel;
 
@@ -698,60 +843,44 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize, http_s
 				}
 			}
 		}
-		if (sendpart){
-			sendpart(socket, outbuf, strlen(outbuf));
-			outbuf[0] = 0;
-		}
 		if(iChangedRequested>0) {
 			PIN_SaveToFlash();
 			sprintf(tmpA, "Pins update - %i reqs, %i changed!<br><br>",iChangedRequested,iChanged);
-			strcat(outbuf,tmpA);
+			poststr(request,tmpA);
 		}
 	//	strcat(outbuf,"<button type=\"button\">Click Me!</button>");
-		strcat(outbuf,"<form action=\"cfg_pins\">");
+		poststr(request,"<form action=\"cfg_pins\">");
 		for( i = 0; i < GPIO_MAX; i++) {
 			int si, ch;
 			si = PIN_GetPinRoleForPinIndex(i);
 			ch = PIN_GetPinChannelForPinIndex(i);
 			sprintf(tmpA, "P%i ",i);
-			strcat(outbuf,tmpA);
+			poststr(request,tmpA);
 			sprintf(tmpA, "<select name=\"%i\">",i);
-			strcat(outbuf,tmpA);
-			if (sendpart){
-				sendpart(socket, outbuf, strlen(outbuf));
-				outbuf[0] = 0;
-			}
+			poststr(request,tmpA);
 			for(j = 0; j < IOR_Total_Options; j++) {
 				if(j == si) {
 					sprintf(tmpA, "<option value=\"%i\" selected>%s</option>",j,htmlPinRoleNames[j]);
 				} else {
 					sprintf(tmpA, "<option value=\"%i\">%s</option>",j,htmlPinRoleNames[j]);
 				}
-				strcat(outbuf,tmpA);
-				if (sendpart){
-					sendpart(socket, outbuf, strlen(outbuf));
-					outbuf[0] = 0;
-				}
+				poststr(request,tmpA);
 			}
-			strcat(outbuf, "</select>");
+			poststr(request, "</select>");
 			if(ch == 0) {
 				tmpB[0] = 0;
 			} else {
 				sprintf(tmpB,"%i",ch);
 			}
 			sprintf(tmpA, "<input name=\"r%i\" type=\"text\" value=\"%s\"/>",i,tmpB);
-			strcat(outbuf,tmpA);
-			strcat(outbuf,"<br>");
-			if (sendpart){
-				sendpart(socket, outbuf, strlen(outbuf));
-				outbuf[0] = 0;
-			}
+			poststr(request,tmpA);
+			poststr(request,"<br>");
 		}
-		strcat(outbuf,"<input type=\"submit\" value=\"Save\"/></form>");
+		poststr(request,"<input type=\"submit\" value=\"Save\"/></form>");
 
-		strcat(outbuf,htmlReturnToCfg);
-		HTTP_AddBuildFooter(outbuf,outBufSize);
-		strcat(outbuf,htmlEnd);
+		poststr(request,htmlReturnToCfg);
+		HTTP_AddBuildFooter(request);
+		poststr(request,htmlEnd);
 	} else if(http_checkUrlBase(urlStr,"index")) {
 		int relayFlags;
 		int pwmFlags;
@@ -759,26 +888,26 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize, http_s
 		relayFlags = 0;
 		pwmFlags = 0;
 
-		http_setup(outbuf, httpMimeTypeHTML);
-		strcat(outbuf,htmlHeader);
-		strcat(outbuf,"<style>.r { background-color: red; } .g { background-color: green; }</style>");
-		strcat_safe(outbuf,g_header,outBufSize);
+		http_setup(request, httpMimeTypeHTML);
+		poststr(request,htmlHeader);
+		poststr(request,"<style>.r { background-color: red; } .g { background-color: green; }</style>");
+		poststr(request,g_header);
 		if(http_getArg(urlStr,"tgl",tmpA,sizeof(tmpA))) {
 			j = atoi(tmpA);
 			sprintf(tmpA,"<h3>Toggled %i!</h3>",j);
-			strcat(outbuf,tmpA);
+			poststr(request,tmpA);
 			CHANNEL_Toggle(j);
 		}
 		if(http_getArg(urlStr,"on",tmpA,sizeof(tmpA))) {
 			j = atoi(tmpA);
 			sprintf(tmpA,"<h3>Enabled %i!</h3>",j);
-			strcat(outbuf,tmpA);
+			poststr(request,tmpA);
 			CHANNEL_Set(j,255,1);
 		}
 		if(http_getArg(urlStr,"off",tmpA,sizeof(tmpA))) {
 			j = atoi(tmpA);
 			sprintf(tmpA,"<h3>Disabled %i!</h3>",j);
-			strcat(outbuf,tmpA);
+			poststr(request,tmpA);
 			CHANNEL_Set(j,0,1);
 		}
 		if(http_getArg(urlStr,"pwm",tmpA,sizeof(tmpA))) {
@@ -786,7 +915,7 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize, http_s
 			http_getArg(urlStr,"pwmIndex",tmpA,sizeof(tmpA));
 			j = atoi(tmpA);
 			sprintf(tmpA,"<h3>Changed pwm %i to %i!</h3>",j,newPWMValue);
-			strcat(outbuf,tmpA);
+			poststr(request,tmpA);
 			CHANNEL_Set(j,newPWMValue,1);
 		}
 
@@ -808,95 +937,87 @@ int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize, http_s
 				} else {
 					c = "g";
 				}
-				strcat(outbuf,"<form action=\"index\">");
+				poststr(request,"<form action=\"index\">");
 				sprintf(tmpA,"<input type=\"hidden\" name=\"tgl\" value=\"%i\">",i);
-				strcat(outbuf,tmpA);
+				poststr(request,tmpA);
 				sprintf(tmpA,"<input class=\"%s\" type=\"submit\" value=\"Toggle %i\"/></form>",c,i);
-				strcat(outbuf,tmpA);
+				poststr(request,tmpA);
 			}
 			if(BIT_CHECK(pwmFlags,i)) {
 				int pwmValue;
 
 				pwmValue = CHANNEL_Get(i);
 				sprintf(tmpA,"<form action=\"index\" id=\"form%i\">",i);
-				strcat(outbuf,tmpA);
+				poststr(request,tmpA);
 				sprintf(tmpA,"<input type=\"range\" min=\"0\" max=\"100\" name=\"pwm\" id=\"slider%i\" value=\"%i\">",i,pwmValue);
-				strcat(outbuf,tmpA);
+				poststr(request,tmpA);
 				sprintf(tmpA,"<input type=\"hidden\" name=\"pwmIndex\" value=\"%i\">",i);
-				strcat(outbuf,tmpA);
+				poststr(request,tmpA);
 				sprintf(tmpA,"<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>",i);
-				strcat(outbuf,tmpA);
+				poststr(request,tmpA);
 
 
-				strcat(outbuf,"<script>");
+				poststr(request,"<script>");
 				sprintf(tmpA,"var slider = document.getElementById(\"slider%i\");\n",i);
-				strcat(outbuf,tmpA);
-				strcat(outbuf,"slider.onmouseup = function () {\n");
+				poststr(request,tmpA);
+				poststr(request,"slider.onmouseup = function () {\n");
 				sprintf(tmpA," document.getElementById(\"form%i\").submit();\n",i);
-				strcat(outbuf,tmpA);
-				strcat(outbuf,"}\n");
-				strcat(outbuf,"</script>");
+				poststr(request,tmpA);
+				poststr(request,"}\n");
+				poststr(request,"</script>");
 			}
 		}
 	//	strcat(outbuf,"<button type=\"button\">Click Me!</button>");
-		strcat(outbuf,"<form action=\"cfg\"><input type=\"submit\" value=\"Config\"/></form>");
-		strcat(outbuf,"<form action=\"about\"><input type=\"submit\" value=\"About\"/></form>");
+		poststr(request,"<form action=\"cfg\"><input type=\"submit\" value=\"Config\"/></form>");
+		poststr(request,"<form action=\"about\"><input type=\"submit\" value=\"About\"/></form>");
 
 
-		strcat(outbuf,htmlReturnToMenu);
-		HTTP_AddBuildFooter(outbuf,outBufSize);
-		strcat(outbuf,htmlEnd);
+		poststr(request,htmlReturnToMenu);
+		HTTP_AddBuildFooter(request);
+		poststr(request,htmlEnd);
     } else if(http_checkUrlBase(urlStr,"ota_exec")) {
-        http_setup(outbuf, httpMimeTypeHTML);
-        strcat(outbuf,htmlHeader);
+        http_setup(request, httpMimeTypeHTML);
+        poststr(request,htmlHeader);
 		if(http_getArg(urlStr,"host",tmpA,sizeof(tmpA))) {
 			sprintf(tmpB,"<h3>OTA requested for %s!</h3>",tmpA);
-			strcat(outbuf,tmpB);
+			poststr(request,tmpB);
 #if WINDOWS
 
 #else
         otarequest(tmpA);
 #endif
 		}
-        strcat(outbuf,htmlReturnToMenu);
-		HTTP_AddBuildFooter(outbuf,outBufSize);
-        strcat(outbuf,htmlEnd);
+        poststr(request,htmlReturnToMenu);
+		HTTP_AddBuildFooter(request);
+        poststr(request,htmlEnd);
 	} else if(http_checkUrlBase(urlStr,"ota")) {
-		http_setup(outbuf, httpMimeTypeHTML);
-		strcat(outbuf,htmlHeader);
-		strcat_safe(outbuf,"<form action=\"/ota_exec\">\
+		http_setup(request, httpMimeTypeHTML);
+		poststr(request,htmlHeader);
+		poststr(request,"<form action=\"/ota_exec\">\
 			  <label for=\"host\">URL for new bin file:</label><br>\
-			  <input type=\"text\" id=\"host\" name=\"host\" value=\"",outBufSize);
-		strcat_safe(outbuf,"\"><br>\
+			  <input type=\"text\" id=\"host\" name=\"host\" value=\"");
+		poststr(request,"\"><br>\
 			  <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MQTT data twice?')\">\
-			</form> ",outBufSize);
-        strcat(outbuf,htmlReturnToMenu);
-		HTTP_AddBuildFooter(outbuf,outBufSize);
-        strcat(outbuf,htmlEnd);
+			</form> ");
+        poststr(request,htmlReturnToMenu);
+		HTTP_AddBuildFooter(request);
+        poststr(request,htmlEnd);
 	} else if(http_checkUrlBase(urlStr,"")) {
 		// Redirect / to /index page
-        strcat(outbuf,"HTTP/1.1 302 OK\nLocation: /index\nConnection: close\n\n");
+        poststr(request,"HTTP/1.1 302 OK\nLocation: /index\nConnection: close\n\n");
 	} else {
-		http_setup(outbuf, httpMimeTypeHTML);
-		strcat(outbuf,htmlHeader);
-		strcat_safe(outbuf,g_header,outBufSize);
-		strcat(outbuf,"Not found.<br>\n");
-		strcat(outbuf,htmlReturnToMenu);
-		HTTP_AddBuildFooter(outbuf,outBufSize);
-		strcat(outbuf,htmlEnd);
+		http_setup(request, httpMimeTypeHTML);
+		poststr(request,htmlHeader);
+		poststr(request,g_header);
+		poststr(request,"Not found.<br/>");
+		poststr(request,htmlReturnToMenu);
+		HTTP_AddBuildFooter(request);
+		poststr(request,htmlEnd);
 	}
-	i = strlen(outbuf);
-	if(i >= outBufSize-1) {
-		// Rewrite all to allow user to know that something went wrong
-		http_setup(outbuf, httpMimeTypeHTML);
-		strcat(outbuf,htmlHeader);
-		strcat_safe(outbuf,g_header,outBufSize);
-		sprintf(tmpA, "Buffer overflow occured while trying to process your request.<br>");
-		strcat(outbuf,tmpA);
-		strcat(outbuf,htmlReturnToMenu);
-		HTTP_AddBuildFooter(outbuf,outBufSize);
-		strcat(outbuf,htmlEnd);
-	}
-	i = strlen(outbuf);
-	return i;
+
+
+	// force send remaining
+	poststr(request, NULL);
+	// nothing more to send
+	return 0;
 }
