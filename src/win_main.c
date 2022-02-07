@@ -49,6 +49,7 @@ int __cdecl main(void)
 {
     WSADATA wsaData;
     int iResult;
+	int len;
 
     SOCKET ListenSocket = INVALID_SOCKET;
     SOCKET ClientSocket = INVALID_SOCKET;
@@ -137,7 +138,6 @@ int __cdecl main(void)
 
 			iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
 			if (iResult > 0) {
-				int leen;
 
 				http_request_t request;
 				memset(&request, 0, sizeof(request));
@@ -148,7 +148,7 @@ int __cdecl main(void)
 				request.reply = outbuf;
 				request.replymaxlen = DEFAULT_BUFLEN;
 
-				int len = HTTP_ProcessPacket(&request);
+				len = HTTP_ProcessPacket(&request);
 
 				printf("Bytes received: %d tosend %d\n", iResult, len);
 				//printf("%s\n",outbuf);

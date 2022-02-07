@@ -302,14 +302,16 @@ void HTTP_AddBuildFooter(http_request_t *request) {
 // add some more output safely, sending if necessary.
 // call with str == NULL to force send.
 int poststr(http_request_t *request, const char *str){
+	int currentlen;
+	int addlen;
 	if (NULL == str){
 		send(request->fd, request->reply, strlen(request->reply), 0);
 		request->reply[0] = 0;
 		return 0;
 	}
 
-	int currentlen = strlen(request->reply);
-	int addlen = strlen(str);
+	currentlen = strlen(request->reply);
+	addlen = strlen(str);
 	if (currentlen + addlen >= request->replymaxlen){
 		send(request->fd, request->reply, strlen(request->reply), 0);
 		request->reply[0] = 0;
@@ -328,11 +330,14 @@ int HTTP_ProcessPacket(http_request_t *request) {
 	char tmpA[128];
 	char tmpB[64];
 	char tmpC[64];
+	char *p;
+	char *headers;
+	char *protocol;
 	//int bChanged = 0;
 	const char *urlStr = "";
 
 	char *recvbuf = request->received;
-	for (int i = 0; i < sizeof(methodNames)/sizeof(*methodNames); i++){
+	for ( i = 0; i < sizeof(methodNames)/sizeof(*methodNames); i++){
 		if (http_startsWith(recvbuf, methodNames[i])){
 			urlStr = recvbuf + strlen(methodNames[i]) + 2; // skip method name plus space, plus slash
 			request->method = i;
@@ -358,7 +363,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 	}
 
 	// chop URL at space
-	char *p = strchr(urlStr, ' ');
+	p = strchr(urlStr, ' ');
 	if (*p) {
 		*p = '\0';
 		p++; // past space
@@ -368,7 +373,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		return 0;
 	}
 	// protocol is next, termed by \r\n
-	char *protocol = p;
+	protocol = p;
 	p = strchr(protocol, '\r');
 	if (*p) {
 		*p = '\0';
@@ -379,7 +384,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		return 0;
 	}
 	p++;
-	char *headers = p;
+	headers = p;
 	do {
 		p = strchr(headers, '\r');
 		if (p != headers){
