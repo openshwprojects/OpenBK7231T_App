@@ -39,7 +39,6 @@ static void tcp_client_thread( beken_thread_arg_t arg )
 {
   OSStatus err = kNoErr;
   int fd = (int) arg;
-  int lenrx = 0;
   //fd_set readfds, errfds, readfds2; 
   char *buf = NULL;
   char *reply = NULL;
@@ -50,37 +49,34 @@ static void tcp_client_thread( beken_thread_arg_t arg )
   //my_fd = fd;
 
   reply = (char*) os_malloc( replyBufferSize );
-  buf = (char*) os_malloc( 1024 );
+  buf = (char*) os_malloc( 1026 );
   ASSERT(buf);
   
-  while ( 1 )
+  http_request_t request;
+  os_memset(&request, 0, sizeof(request));
+
+  request.fd = fd;
+  request.received = buf;
+  request.receivedLen = recv( fd, request.received, 1024, 0 );
+
+  request.reply = reply;
+  reply[0] = '\0';
+  request.replymaxlen = replyBufferSize - 1;
+
+  if ( request.receivedLen <= 0 )
   {
-    lenrx = recv( fd, buf, 1024, 0 );
-
-    if ( lenrx <= 0 )
-    {
-        os_printf( "TCP Client is disconnected, fd: %d", fd );
-        goto exit;
-    }
-
-    //addLog( "TCP received string %s\n",buf );
-    // returns length to be sent if any
-    buf[lenrx] = 0;
-    int lenret = HTTP_ProcessPacket(buf, reply, replyBufferSize, sendfn, fd);
-    addLog( "TCP sending reply len %i\n",lenret );
-    while(lenret){
-      int len = lenret;
-      if (len > 1024) len = 1024;
-      send( fd, reply, len, 0 );
-      reply += len;
-      lenret -= len;
-    }
-
-    rtos_delay_milliseconds(10);
-    close(fd);
-    break;
+      os_printf( "TCP Client is disconnected, fd: %d", fd );
+      goto exit;
   }
 
+  //addLog( "TCP received string %s\n",buf );
+  // returns length to be sent if any
+  request.received[request.receivedLen] = 0;
+  int lenret = HTTP_ProcessPacket(&request);
+  addLog( "TCP sending reply len %i\n",lenret );
+  send( fd, reply, lenret, 0 );
+
+  rtos_delay_milliseconds(10);
 
 exit:
   if ( err != kNoErr ) 

@@ -7,14 +7,44 @@ extern const char htmlHeader[];
 extern const char htmlEnd[];
 extern const char htmlReturnToMenu[];
 
-typedef int (*http_send_fn)(int fd, const char *payload, int len);
+#define MAX_QUERY 16 
+#define MAX_HEADERS 16
+typedef struct http_request_tag {
+    char *received; // partial or whole received data, up to 1024
+    int receivedLen;
 
-int HTTP_ProcessPacket(const char *recvbuf, char *outbuf, int outBufSize, http_send_fn send, int socket);
-void http_setup(char *o, const char *type);
+    // filled by HTTP_ProcessPacket
+    int method;
+    char *url;
+    int numqueryitems;
+    char *querynames[MAX_QUERY];
+    char *queryvalues[MAX_QUERY];
+    int numheaders;
+    char *headers[MAX_HEADERS];
+    char *bodystart; /// start start of the body (maybe all of it)
+    int contentLength;
 
+    // used to respond
+    char *reply;
+    int replymaxlen;
+    int fd;
+} http_request_t;
+
+
+int HTTP_ProcessPacket(http_request_t *request);
+void http_setup(http_request_t *request, const char *type);
+int poststr(http_request_t *request, const char *str);
+
+enum {
+    HTTP_ANY = -1,
+    HTTP_GET = 0,
+    HTTP_PUT = 1,
+    HTTP_POST = 2,
+    HTTP_OPTIONS = 3
+} METHODS;
 
 // callback function for http
-typedef int (*http_callback_fn)(const char *payload, char *outbuf, int outBufSize);
+typedef int (*http_callback_fn)(http_request_t *request);
 // url MUST start with '/'
 // urls must be unique (i.e. you can't have /about and /aboutme or /about/me)
-int HTTP_RegisterCallback( const char *url, http_callback_fn callback);
+int HTTP_RegisterCallback( const char *url, int method, http_callback_fn callback);

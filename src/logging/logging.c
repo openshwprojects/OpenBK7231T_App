@@ -4,7 +4,7 @@
 #include "../httpserver/new_http.h"
 #include "str_pub.h"
 
-static int http_getlog(const char *payload, char *outbuf, int outBufSize);
+static int http_getlog(http_request_t *request);
 
 static void log_server_thread( beken_thread_arg_t arg );
 static void log_client_thread( beken_thread_arg_t arg );
@@ -38,7 +38,7 @@ static void initLog() {
     initialised = 1;
     startSerialLog();
     startLogServer();
-    HTTP_RegisterCallback( "/logs", http_getlog);
+    HTTP_RegisterCallback( "/logs", HTTP_GET, http_getlog);
 }
 
 // adds a log to the log memory
@@ -255,29 +255,31 @@ static void log_serial_thread( beken_thread_arg_t arg )
 
 
 
-static int http_getlog(const char *payload, char *outbuf, int outBufSize){
-    http_setup(outbuf, httpMimeTypeHTML);
-    strcat_safe(outbuf,htmlHeader,outBufSize);
-    strcat_safe(outbuf,htmlReturnToMenu,outBufSize);
+static int http_getlog(http_request_t *request){
+    http_setup(request, httpMimeTypeHTML);
+    poststr(request,htmlHeader);
+    poststr(request,htmlReturnToMenu);
 
-    strcat_safe(outbuf, "<pre>",outBufSize);
+    poststr(request, "<pre>");
     char *post = "</pre>";
 
-    char *b = outbuf;
+    int len = 0;
 
-    int len = strlen(b);
-    b += len;
-    outBufSize -= len;
+    // get log in small chunks, posting on http
+    do {
+        char buf[128];
+        len = getHttp(buf, 127);
+        buf[len] = '\0';
+        if (len){
+            poststr(request, buf);
+        }
+    } while (len);
 
-    int trailsize = strlen(htmlEnd) + strlen(post);
-    len = getHttp(b, outBufSize - trailsize - 1);
-    b += len;
-    outBufSize -= len;
+    poststr(request, post);
+    poststr(request, htmlEnd);
+    poststr(request, NULL);
 
-    strcat_safe(outbuf, post, outBufSize);
-    strcat_safe(outbuf,htmlEnd,outBufSize);
-
-    return strlen(outbuf);
+    return 0;
 }
 
 
