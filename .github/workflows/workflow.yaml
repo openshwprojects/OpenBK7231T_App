@@ -1,0 +1,114 @@
+name: Build App
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches: 
+      - '*'
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  APP_NAME: ${{ github.event.repository.name }}
+
+jobs:
+  refs:
+    name: Prepare CI Vars
+    runs-on: ubuntu-latest
+    outputs:
+      sha_short: ${{ steps.refs.outputs.sha_short }}
+      short_ref: ${{ steps.refs.outputs.short_ref }}
+      version: ${{ steps.refs.outputs.version }}
+      new_release: ${{ steps.refs.outputs.new_release }}
+    steps:
+      - name: Source checkout
+        uses: actions/checkout@v2
+      - name: Semantic Release
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v2
+        with:
+          dry_run: true
+          semantic_version: 18
+          extra_plugins: |
+            @semantic-release/changelog
+            @semantic-release/git
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set outputs
+        id: refs
+        run: |
+          export BRANCH=${GITHUB_REF#refs/*/}
+          echo "branch: ${BRANCH}"
+          export BRANCHTRANSLATED=$(echo ${BRANCH} | tr '/' '_')
+          echo "short_ref: ${BRANCHTRANSLATED}"
+          export VERSION=""
+          if ${{ steps.semantic.outputs.new_release_published == 'true' }}; then
+            export VERSION=${{ steps.semantic.outputs.new_release_version }}
+          else
+            export VERSION=${BRANCHTRANSLATED}_$(git rev-parse --short=12 HEAD)
+          fi
+          echo "new_release: ${{ steps.semantic.outputs.new_release_published }}"
+          echo "version: ${VERSION}"
+          echo "::set-output name=new_release::${{ steps.semantic.outputs.new_release_published }}"
+          echo "::set-output name=short_ref::${BRANCHTRANSLATED}"
+          echo "::set-output name=sha_short::SHA-$(git rev-parse --short=12 HEAD)"
+          echo "::set-output name=version::${VERSION}"
+  build:
+    name: Build
+    needs: refs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Source checkout
+        uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+          architecture: 'x64'
+      - name: Install dependencies
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get -y install libc6-i386 make
+      - run: ls -la
+      - name: Run make
+        run: make APP_VERSION=${{ needs.refs.outputs.version }} APP_NAME=${{ env.APP_NAME }} build
+      - name: Save build assets
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
+          path: |
+            output/${{ needs.refs.outputs.version }}/${{ env.APP_NAME }}_UA_${{ needs.refs.outputs.version }}.bin
+            output/${{ needs.refs.outputs.version }}/${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}.rbl
+          if-no-files-found: error         
+
+  release:
+    name: Semantic Release Images and Artifacts
+    runs-on: ubuntu-latest
+    needs: [ refs, build ]
+    if: ${{ needs.refs.outputs.new_release == 'true' && github.ref == 'refs/heads/main' }}
+    steps:
+      - name: Source checkout
+        uses: actions/checkout@v2
+      - name: Fetch build assets
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
+          path: output/${{ needs.refs.outputs.version }}
+      - name: Run Semantic Release
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v2
+        with:
+          dry_run: false
+          semantic_version: 18
+          extra_plugins: |
+            @semantic-release/changelog
+            @semantic-release/git
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Echo Semantic Release Versions
+        if: steps.semantic.outputs.new_release_published == 'true'
+        run: |
+          echo ${{ steps.semantic.outputs.new_release_version }}
+          echo ${{ steps.semantic.outputs.new_release_major_version }}
+          echo ${{ steps.semantic.outputs.new_release_minor_version }}
+          echo ${{ steps.semantic.outputs.new_release_patch_version }}

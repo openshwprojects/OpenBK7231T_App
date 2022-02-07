@@ -1,0 +1,80 @@
+branches: 
+  - 'main'
+preset: "angular"
+tagFormat: "${version}"
+plugins:
+  - "@semantic-release/commit-analyzer"
+  - "@semantic-release/release-notes-generator"
+  - "@semantic-release/changelog"
+  - "@semantic-release/git"
+  - "@semantic-release/github"
+verifyConditions:
+  - '@semantic-release/git'
+  - "@semantic-release/github"
+analyzeCommits:
+  - path: "@semantic-release/commit-analyzer"
+    releaseRules:
+    - type: "feat"
+      release: "patch"
+    - type: "hotfix"
+      release: "patch"
+    - type: "fix"
+      release: "patch"
+    - type: "patch"
+      release: "patch"
+    - type: "minor"
+      release: "minor"
+    - type: "breaking"
+      release: "major"
+    - type: "chore"
+      release: "patch"
+generateNotes:
+  - path: "@semantic-release/release-notes-generator"
+    writerOpts:
+      groupBy: "type"
+      commitGroupsSort:
+        - "hotfix"
+        - "feat"
+        - "perf"
+        - "fix"
+      commitsSort: "header"
+    types:
+    - type: "feat"
+    - section: "Features"
+    # Tracked bug fix with a hotfix branch
+    - type: "hotfix"
+    - section: "Bug Fixes"
+    # Uninmportent fix (CI testing, etc)
+    - type: "fix"
+    - section: "Bug Fixes"
+    - type: "chore"
+    - section: "Bug Fixes"
+    - type: "docs"
+    - hidden: true
+    - type: "doc"
+    - hidden: true
+    - type: "style"
+    - hidden: true
+    - type: "refactor"
+    - hidden: true
+    - type: "perf"
+    - hidden: true
+    - type: "test"
+    - hidden: true
+    presetConfig: true
+prepare:
+  - path: "@semantic-release/git"
+  - path: "@semantic-release/changelog"
+    changelogFile: "CHANGELOG.md"
+publish:
+  - path: "@semantic-release/github"
+    addReleases: "bottom"
+    assets:
+      - path: "output/**/*_UA_*.bin"
+      - path: "output/**/*.rbl"
+
+success:
+  - "@semantic-release/github"
+
+fail:
+  - "@semantic-release/github"
