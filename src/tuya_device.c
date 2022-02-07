@@ -328,14 +328,17 @@ void example_do_connect(mqtt_client_t *client)
 
   mqtt_userName = CFG_GetMQTTUserName();
   mqtt_pass = CFG_GetMQTTPass();
-  mqtt_clientID = CFG_GetMQTTBrokerName();
+  //mqtt_clientID = CFG_GetMQTTBrokerName();
+  mqtt_clientID = CFG_GetShortDeviceName();
   mqtt_host = CFG_GetMQTTHost();
+	mqtt_port = CFG_GetMQTTPort();
 
-  PR_NOTICE("mqtt_userName %s\r\nmqtt_pass %s\r\nmqtt_clientID %s\r\nmqtt_host %s\r\n",
+  PR_NOTICE("mqtt_userName %s\r\nmqtt_pass %s\r\nmqtt_clientID %s\r\nmqtt_host %s:%d\r\n",
     mqtt_userName,
     mqtt_pass,
     mqtt_clientID,
-    mqtt_host
+    mqtt_host,
+    mqtt_port
   );
 
 
@@ -345,13 +348,12 @@ void example_do_connect(mqtt_client_t *client)
   }
 
   // set pointer, there are no buffers to strcpy
-  mqtt_client_info.client_id = mqtt_host;
+  mqtt_client_info.client_id = mqtt_clientID;
   mqtt_client_info.client_pass = mqtt_pass;
   mqtt_client_info.client_user = mqtt_userName;
 
   // host name/ip
   ipaddr_aton(mqtt_host,&mqtt_ip);
-	mqtt_port = CFG_GetMQTTPort();
 
   /* Initiate client and connect to server, if this fails immediately an error code is returned
      otherwise mqtt_connection_cb will be called with connection result after attempting
