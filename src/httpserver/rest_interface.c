@@ -136,10 +136,11 @@ static int http_rest_post(http_request_t *request){
     return 0;
 }
 
+// currently crashes the MCU - maybe stack overflow?
 static int http_rest_post_pins(http_request_t *request){
     int i;
     int r;
-    char tmp[256];
+    char tmp[64];
 
     //https://github.com/zserge/jsmn/blob/master/example/simple.c
     jsmn_parser p;
