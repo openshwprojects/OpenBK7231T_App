@@ -4,6 +4,7 @@
 //#include "str_pub.h"
 #include "../new_pins.h"
 #include "../jsmn/jsmn_h.h"
+#include "../printnetinfo/printnetinfo.h"
 
 static int http_rest_get(http_request_t *request);
 static int http_rest_post(http_request_t *request);
@@ -39,7 +40,7 @@ const char * apppage4 = "/startup.js\"></script>"
 static int http_rest_app(http_request_t *request){
     //char *webhost = "http://raspberrypi:1880";//CFG_GetWebRoot();
     char *webhost = "https://btsimonh.github.io/testwebpages/";
-    char *ourip = "192.168.1.176"; //CFG_GetOurIP();
+    char *ourip = getMyIp(); //CFG_GetOurIP();
     http_setup(request, httpMimeTypeHTML);
     if (webhost && ourip){
         poststr(request, apppage1);

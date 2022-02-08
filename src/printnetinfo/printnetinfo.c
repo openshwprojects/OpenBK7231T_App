@@ -9,6 +9,19 @@
 #define MAC2STR(a) (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5]
 #define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x "
 
+char g_IP[3+3+3+3+1+1+1] = "unknown";
+char *getMyIp(){
+    IPStatusTypedef ipStatus;
+
+    os_memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
+    bk_wlan_get_ip_status(&ipStatus, STATION);
+    
+    strcpy(g_IP, ipStatus.ip);
+    return g_IP;
+}
+
+
+
 void print_network_info(){
     IPStatusTypedef ipStatus;
 
