@@ -138,9 +138,10 @@ int __cdecl main(void)
 
 			iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
 			if (iResult > 0) {
-
 				http_request_t request;
 				memset(&request, 0, sizeof(request));
+
+				recvbuf[iResult] = 0;
 
 				request.fd = ClientSocket;
 				request.received = recvbuf;
@@ -148,20 +149,23 @@ int __cdecl main(void)
 				request.reply = outbuf;
 				request.replymaxlen = DEFAULT_BUFLEN;
 
+				printf("Bytes received: %d \n", iResult);
 				len = HTTP_ProcessPacket(&request);
 
-				printf("Bytes received: %d tosend %d\n", iResult, len);
-				//printf("%s\n",outbuf);
-				// Echo the buffer back to the sender
-				//leen =  strlen(request.reply);
-				iSendResult = send( ClientSocket, outbuf,len, 0 );
-				if (iSendResult == SOCKET_ERROR) {
-					printf("send failed with error: %d\n", WSAGetLastError());
-					closesocket(ClientSocket);
-					WSACleanup();
-					return 1;
+				if(len > 0) {
+					printf("Bytes rremaining tosend %d\n", len);
+					//printf("%s\n",outbuf);
+					// Echo the buffer back to the sender
+					//leen =  strlen(request.reply);
+					iSendResult = send( ClientSocket, outbuf,len, 0 );
+					if (iSendResult == SOCKET_ERROR) {
+						printf("send failed with error: %d\n", WSAGetLastError());
+						closesocket(ClientSocket);
+						WSACleanup();
+						return 1;
+					}
+					printf("Bytes sent: %d\n", iSendResult);
 				}
-				printf("Bytes sent: %d\n", iSendResult);
 			}
 			else if (iResult == 0)
 				printf("Connection closing...\n");
