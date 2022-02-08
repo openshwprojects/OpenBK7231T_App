@@ -73,8 +73,10 @@ static void tcp_client_thread( beken_thread_arg_t arg )
   // returns length to be sent if any
   request.received[request.receivedLen] = 0;
   int lenret = HTTP_ProcessPacket(&request);
-  addLog( "TCP sending reply len %i\n",lenret );
-  send( fd, reply, lenret, 0 );
+  if (lenret > 0){
+    addLog( "TCP sending reply len %i\n",lenret );
+    send( fd, reply, lenret, 0 );
+  }
 
   rtos_delay_milliseconds(10);
 

@@ -40,6 +40,7 @@
 #include "new_cfg.h"
 #include "logging/logging.h"
 #include "httpserver/http_tcp_server.h"
+#include "httpserver/rest_interface.h"
 #include "printnetinfo/printnetinfo.h"
 
 #include "../../beken378/func/key/multi_button.h"

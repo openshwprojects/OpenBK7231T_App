@@ -51,6 +51,7 @@ Connection: keep-alive
 const char httpHeader[] = "HTTP/1.1 200 OK\nContent-type: " ;  // HTTP header
 const char httpMimeTypeHTML[] = "text/html" ;              // HTML MIME type
 const char httpMimeTypeText[] = "text/plain" ;           // TEXT MIME type
+const char httpMimeTypeJson[] = "application/json" ;           // TEXT MIME type
 const char htmlHeader[] = "<!DOCTYPE html><html><body>" ;
 const char htmlEnd[] = "</body></html>" ;
 const char htmlReturnToMenu[] = "<a href=\"index\">Return to menu</a>";;
@@ -61,8 +62,8 @@ const char httpCorsHeaders[] = "Access-Control-Allow-Origin: *\r\nAccess-Control
 
 const char *methodNames[] = {
 	"GET",
-	"POST",
 	"PUT",
+	"POST",
 	"OPTIONS"
 };
 
@@ -110,6 +111,18 @@ int HTTP_RegisterCallback( const char *url, int method, http_callback_fn callbac
 	return 0;
 }
 
+int my_strnicmp(char *a, char *b, int len){
+	int i; 
+	for (i = 0; i < len; i++){
+		char x = *a;
+		char y = *b;
+		if (!x || !y) return 1;
+		if ((x | 0x20) != (y | 0x20)) return 1;
+		a++;
+		b++;
+	}
+	return 0;
+}
 
 bool http_startsWith(const char *base, const char *substr) {
 	while(*substr != 0) {
@@ -329,7 +342,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 	char tmpB[64];
 	char tmpC[64];
 	//int bChanged = 0;
-	const char *urlStr = "";
+	char *urlStr = "";
 
 	char *recvbuf = request->received;
 	for (int i = 0; i < sizeof(methodNames)/sizeof(*methodNames); i++){
@@ -367,6 +380,9 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		printf("invalid request\n");
 		return 0;
 	}
+
+	request->url = urlStr;
+
 	// protocol is next, termed by \r\n
 	char *protocol = p;
 	p = strchr(protocol, '\r');
@@ -379,6 +395,8 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		return 0;
 	}
 	p++;
+	// i.e. not received
+	request->contentLength = -1;
 	char *headers = p;
 	do {
 		p = strchr(headers, '\r');
@@ -389,7 +407,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 					request->numheaders++;
 				}
 				// pick out contentLength
-				if (!strcmp(headers, "Content-Length:")){
+				if (!my_strnicmp(headers, "Content-Length:", 15)){
 					request->contentLength = atoi(headers + 15);
 				}
 
@@ -436,7 +454,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 	// look for a callback with this URL and method, or HTTP_ANY
 	for (i = 0; i < numCallbacks; i++){
 		char *url = callbacks[i]->url;
-		if (http_checkUrlBase(urlStr, &url[1])){
+		if (http_startsWith(urlStr, &url[1])){
 			int method = callbacks[i]->method;
 			if(method == HTTP_ANY || method == request->method){
 				return callbacks[i]->callback(request);
