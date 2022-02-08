@@ -1,7 +1,7 @@
 #include "../new_common.h"
 #include "../logging/logging.h"
 #include "../httpserver/new_http.h"
-#include "str_pub.h"
+//#include "str_pub.h"
 #include "../new_pins.h"
 #include "../jsmn/jsmn_h.h"
 
@@ -37,10 +37,10 @@ const char * apppage4 = "/startup.js\"></script>"
 
 
 static int http_rest_app(http_request_t *request){
-    http_setup(request, httpMimeTypeHTML);
     //char *webhost = "http://raspberrypi:1880";//CFG_GetWebRoot();
     char *webhost = "https://btsimonh.github.io/testwebpages/";
     char *ourip = "192.168.1.176"; //CFG_GetOurIP();
+    http_setup(request, httpMimeTypeHTML);
     if (webhost && ourip){
         poststr(request, apppage1);
         poststr(request, webhost);
@@ -143,19 +143,26 @@ static int http_rest_post_pins(http_request_t *request){
     char tmp[64];
 
     //https://github.com/zserge/jsmn/blob/master/example/simple.c
-    jsmn_parser p;
-    jsmntok_t t[128]; /* We expect no more than 128 tokens */
+    //jsmn_parser p;
+    jsmn_parser *p = malloc(sizeof(jsmn_parser));
+    //jsmntok_t t[128]; /* We expect no more than 128 tokens */
+#define TOKEN_COUNT 128
+    jsmntok_t *t = malloc(sizeof(jsmntok_t)*TOKEN_COUNT);
     char *json_str = request->bodystart;
     int json_len = strlen(json_str);
-    http_setup(request, httpMimeTypeText);
 
-    jsmn_init(&p);
-    r = jsmn_parse(&p, json_str, json_len, t,
-                    sizeof(t) / sizeof(t[0]));
+	http_setup(request, httpMimeTypeText);
+	memset(p, 0, sizeof(jsmn_parser));
+	memset(t, 0, sizeof(jsmntok_t)*128);
+
+    jsmn_init(p);
+    r = jsmn_parse(p, json_str, json_len, t, TOKEN_COUNT);
     if (r < 0) {
         sprintf(tmp,"Failed to parse JSON: %d\n", r);
         poststr(request, tmp);
         poststr(request, NULL);
+        free(p);
+        free(t);
         return 0;
     }
 
@@ -164,14 +171,14 @@ static int http_rest_post_pins(http_request_t *request){
         sprintf(tmp,"Object expected\n");
         poststr(request, tmp);
         poststr(request, NULL);
+        free(p);
+        free(t);
         return 0;
     }
 
-    sprintf(tmp,"parsed JSON: %s\n", json_str);
-    poststr(request, tmp);
-    poststr(request, NULL);
-    return 0;
-
+    //sprintf(tmp,"parsed JSON: %s\n", json_str);
+    //poststr(request, tmp);
+    //poststr(request, NULL);
 
         /* Loop over all keys of the root object */
     for (i = 1; i < r; i++) {
@@ -209,5 +216,7 @@ static int http_rest_post_pins(http_request_t *request){
     }
 
     poststr(request, NULL);
+    free(p);
+    free(t);
     return 0;
 }

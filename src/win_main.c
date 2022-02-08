@@ -70,6 +70,7 @@ int __cdecl main(void)
 
 	PIN_SetPinChannelForPinIndex(2,2);
 	PIN_SetPinRoleForPinIndex(2,IOR_PWM);
+    init_rest();
 
     // Initialize Winsock
     iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
@@ -146,7 +147,10 @@ int __cdecl main(void)
 				request.fd = ClientSocket;
 				request.received = recvbuf;
 				request.receivedLen = iResult;
+				outbuf[0] = '\0';
 				request.reply = outbuf;
+				request.replylen = 0;
+
 				request.replymaxlen = DEFAULT_BUFLEN;
 
 				printf("Bytes received: %d \n", iResult);

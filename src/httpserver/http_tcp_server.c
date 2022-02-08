@@ -58,9 +58,12 @@ static void tcp_client_thread( beken_thread_arg_t arg )
   request.fd = fd;
   request.received = buf;
   request.receivedLen = recv( fd, request.received, 1024, 0 );
+  request.received[request.receivedLen] = 0;
 
   request.reply = reply;
+  request.replylen = 0;
   reply[0] = '\0';
+
   request.replymaxlen = replyBufferSize - 1;
 
   if ( request.receivedLen <= 0 )
@@ -71,7 +74,6 @@ static void tcp_client_thread( beken_thread_arg_t arg )
 
   //addLog( "TCP received string %s\n",buf );
   // returns length to be sent if any
-  request.received[request.receivedLen] = 0;
   int lenret = HTTP_ProcessPacket(&request);
   if (lenret > 0){
     addLog( "TCP sending reply len %i\n",lenret );

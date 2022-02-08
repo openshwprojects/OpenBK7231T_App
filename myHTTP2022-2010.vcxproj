@@ -78,6 +78,8 @@
     <ClCompile Include="src\httpserver\http_tcp_server.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\httpserver\rest_interface.c" />
+    <ClCompile Include="src\jsmn\jsmn.c" />
     <ClCompile Include="src\new_builtin_devices.c" />
     <ClCompile Include="src\new_cfg.c" />
     <ClCompile Include="src\new_common.c" />

@@ -209,6 +209,7 @@ void http_copyCarg(const char *atin, char *to, int maxSize) {
 	*to = 0;
 }
 bool http_getArg(const char *base, const char *name, char *o, int maxSize) {
+	*o = '\0';
 	while(*base != '?') {
 		if(*base == 0)
 			return 0;
@@ -313,29 +314,42 @@ void HTTP_AddBuildFooter(http_request_t *request) {
 
 
 // add some more output safely, sending if necessary.
-// call with str == NULL to force send.
-int poststr(http_request_t *request, const char *str){
+// call with str == NULL to force send. - can be binary.
+// supply length
+int postany(http_request_t *request, const char *str, int len){
 	int currentlen;
-	int addlen;
+	int addlen = len;
 	if (NULL == str){
-		send(request->fd, request->reply, strlen(request->reply), 0);
+		send(request->fd, request->reply, request->replylen, 0);
 		request->reply[0] = 0;
+		request->replylen = 0;
 		return 0;
 	}
 
-	currentlen = strlen(request->reply);
-	addlen = strlen(str);
+	currentlen = request->replylen;
 	if (currentlen + addlen >= request->replymaxlen){
-		send(request->fd, request->reply, strlen(request->reply), 0);
+		send(request->fd, request->reply, request->replylen, 0);
 		request->reply[0] = 0;
+		request->replylen = 0;
 		currentlen = 0;
 	}
 	if (addlen > request->replymaxlen){
 		printf("won't fit");
 	} else {
-		strcat(request->reply, str );
+		memcpy( request->reply+request->replylen, str, addlen );
+		request->replylen += addlen;
 	}
 	return (currentlen + addlen);
+}
+
+
+// add some more output safely, sending if necessary.
+// call with str == NULL to force send.
+int poststr(http_request_t *request, const char *str){
+	if (str == NULL){
+		return postany(request, NULL, 0);
+	}
+	return postany(request, str, strlen(str));
 }
 
 int HTTP_ProcessPacket(http_request_t *request) {
@@ -399,7 +413,6 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		printf("invalid request\n");
 		return 0;
 	}
-	p++;
 	// i.e. not received
 	request->contentLength = -1;
 	headers = p;

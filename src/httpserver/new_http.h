@@ -29,6 +29,7 @@ typedef struct http_request_tag {
 
     // used to respond
     char *reply;
+    int replylen;
     int replymaxlen;
     int fd;
 } http_request_t;
