@@ -44,6 +44,11 @@ void strcat_safe_test(){
 	urldecode2_safe(buff,"qqqqqq%40qqqq",sizeof(buff));
 	urldecode2_safe(buff,"qqqqqq%40qqqq",sizeof(buff));
 }
+// placeholder - TODO
+char myIP[] = "127.0.0.1";
+char *getMyIp(){
+    return myIP;
+}
 
 int __cdecl main(void) 
 {

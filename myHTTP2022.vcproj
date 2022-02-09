@@ -180,6 +180,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\jsmn\jsmn.c"
+				>
+			</File>
+			<File
 				RelativePath=".\src\new_builtin_devices.c"
 				>
 			</File>
@@ -204,11 +208,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\httpserver\new_http.h"
+				RelativePath=".\src\new_http.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\new_http.h"
+				RelativePath=".\src\httpserver\new_http.h"
 				>
 			</File>
 			<File
@@ -217,6 +221,10 @@
 			</File>
 			<File
 				RelativePath=".\src\new_pins.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\httpserver\rest_interface.c"
 				>
 			</File>
 			<File
