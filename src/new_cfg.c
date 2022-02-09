@@ -38,8 +38,8 @@ void CFG_CreateDeviceNameUnique()
 #else
     wifi_get_mac_address((char *)mac, CONFIG_ROLE_STA);
 #endif
-	sprintf(g_deviceName,"OpenBK7231T_%02X%02X%02X%02X",mac[0],mac[1],mac[2],mac[3]);
-	sprintf(g_shortDeviceName,"obk%02X%02X%02X%02X",mac[0],mac[1],mac[2],mac[3]);
+	sprintf(g_deviceName,"OpenBK7231T_%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
+	sprintf(g_shortDeviceName,"obk%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
 
 		// NOT WORKING, I done it other way, see ethernetif.c
 	//net_dhcp_hostname_set(g_shortDeviceName);
