@@ -33,7 +33,7 @@ static int initialised = 0;
 static char tmp[1024];
 
 static void initLog() {
-    bk_printf("init log\r\n");
+    bk_printf("Entering init log...\r\n");
     logMemory.head = logMemory.tailserial = logMemory.tailtcp = logMemory.tailhttp = 0; 
     logMemory.mutex = xSemaphoreCreateMutex( );
     initialised = 1;
@@ -41,6 +41,7 @@ static void initLog() {
     startLogServer();
     HTTP_RegisterCallback( "/logs", HTTP_GET, http_getlog);
     HTTP_RegisterCallback( "/lograw", HTTP_GET, http_getlograw);
+    bk_printf("Init log done!\r\n");
 }
 
 // adds a log to the log memory
