@@ -30,7 +30,7 @@ const char * apppage2 = "';"
 const char * apppage3 = "';"
 "        </script>"
 "        <script src=\"";
-const char * apppage4 = "/startup.js\"></script>"
+const char * apppage4 = "startup.js\"></script>"
 "    </head>"
 "<body>"
 "</body>"
@@ -39,7 +39,7 @@ const char * apppage4 = "/startup.js\"></script>"
 
 static int http_rest_app(http_request_t *request){
     //char *webhost = "http://raspberrypi:1880";//CFG_GetWebRoot();
-    char *webhost = "https://btsimonh.github.io/testwebpages/";
+    char *webhost = "https://openbekeniot.github.io/webapp/";
     char *ourip = getMyIp(); //CFG_GetOurIP();
     http_setup(request, httpMimeTypeHTML);
     if (webhost && ourip){
