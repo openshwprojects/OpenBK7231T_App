@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="myHTTP2022"
+	Name="windowsTest_msvc2008"
 	ProjectGUID="{EE06C1F3-28B1-4580-A0FA-9F7422C7E456}"
 	RootNamespace="myHTTP2022"
 	TargetFrameworkVersion="196613"
