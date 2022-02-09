@@ -1,4 +1,27 @@
 
+#define DEBUG_USE_SIMPLE_LOGGER
+
+#ifdef DEBUG_USE_SIMPLE_LOGGER
+
+#include "../new_common.h"
+#include "../httpserver/new_http.h"
+#include "str_pub.h"
+
+void addLog(char *fmt, ...){
+	char tmp[1024];
+    va_list argList;
+
+	// TODO: semaphore
+
+    va_start(argList, fmt);
+    vsprintf(tmp, fmt, argList);
+    va_end(argList);
+	bk_printf(tmp);
+	bk_printf("\r");
+}
+
+#else
+
 #include "../new_common.h"
 #include "../logging/logging.h"
 #include "../httpserver/new_http.h"
@@ -10,7 +33,6 @@ static int http_getlograw(http_request_t *request);
 static void log_server_thread( beken_thread_arg_t arg );
 static void log_client_thread( beken_thread_arg_t arg );
 static void log_serial_thread( beken_thread_arg_t arg );
-
 
 static void startSerialLog();
 static void startLogServer();
@@ -293,3 +315,5 @@ static int http_getlog(http_request_t *request){
 
 
 
+
+#endif
