@@ -51,6 +51,7 @@ Connection: keep-alive
 const char httpHeader[] = "HTTP/1.1 200 OK\nContent-type: " ;  // HTTP header
 const char httpMimeTypeHTML[] = "text/html" ;              // HTML MIME type
 const char httpMimeTypeText[] = "text/plain" ;           // TEXT MIME type
+const char httpMimeTypeJson[] = "application/json" ;           // TEXT MIME type
 const char htmlHeader[] = "<!DOCTYPE html><html><body>" ;
 const char htmlEnd[] = "</body></html>" ;
 const char htmlReturnToMenu[] = "<a href=\"index\">Return to menu</a>";;
@@ -61,8 +62,8 @@ const char httpCorsHeaders[] = "Access-Control-Allow-Origin: *\r\nAccess-Control
 
 const char *methodNames[] = {
 	"GET",
-	"POST",
 	"PUT",
+	"POST",
 	"OPTIONS"
 };
 
@@ -110,6 +111,18 @@ int HTTP_RegisterCallback( const char *url, int method, http_callback_fn callbac
 	return 0;
 }
 
+int my_strnicmp(char *a, char *b, int len){
+	int i; 
+	for (i = 0; i < len; i++){
+		char x = *a;
+		char y = *b;
+		if (!x || !y) return 1;
+		if ((x | 0x20) != (y | 0x20)) return 1;
+		a++;
+		b++;
+	}
+	return 0;
+}
 
 bool http_startsWith(const char *base, const char *substr) {
 	while(*substr != 0) {
@@ -196,6 +209,7 @@ void http_copyCarg(const char *atin, char *to, int maxSize) {
 	*to = 0;
 }
 bool http_getArg(const char *base, const char *name, char *o, int maxSize) {
+	*o = '\0';
 	while(*base != '?') {
 		if(*base == 0)
 			return 0;
@@ -300,29 +314,42 @@ void HTTP_AddBuildFooter(http_request_t *request) {
 
 
 // add some more output safely, sending if necessary.
-// call with str == NULL to force send.
-int poststr(http_request_t *request, const char *str){
+// call with str == NULL to force send. - can be binary.
+// supply length
+int postany(http_request_t *request, const char *str, int len){
 	int currentlen;
-	int addlen;
+	int addlen = len;
 	if (NULL == str){
-		send(request->fd, request->reply, strlen(request->reply), 0);
+		send(request->fd, request->reply, request->replylen, 0);
 		request->reply[0] = 0;
+		request->replylen = 0;
 		return 0;
 	}
 
-	currentlen = strlen(request->reply);
-	addlen = strlen(str);
+	currentlen = request->replylen;
 	if (currentlen + addlen >= request->replymaxlen){
-		send(request->fd, request->reply, strlen(request->reply), 0);
+		send(request->fd, request->reply, request->replylen, 0);
 		request->reply[0] = 0;
+		request->replylen = 0;
 		currentlen = 0;
 	}
 	if (addlen > request->replymaxlen){
 		printf("won't fit");
 	} else {
-		strcat(request->reply, str );
+		memcpy( request->reply+request->replylen, str, addlen );
+		request->replylen += addlen;
 	}
 	return (currentlen + addlen);
+}
+
+
+// add some more output safely, sending if necessary.
+// call with str == NULL to force send.
+int poststr(http_request_t *request, const char *str){
+	if (str == NULL){
+		return postany(request, NULL, 0);
+	}
+	return postany(request, str, strlen(str));
 }
 
 int HTTP_ProcessPacket(http_request_t *request) {
@@ -334,7 +361,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 	char *headers;
 	char *protocol;
 	//int bChanged = 0;
-	const char *urlStr = "";
+	char *urlStr = "";
 
 	char *recvbuf = request->received;
 	for ( i = 0; i < sizeof(methodNames)/sizeof(*methodNames); i++){
@@ -372,6 +399,9 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		printf("invalid request\n");
 		return 0;
 	}
+
+	request->url = urlStr;
+
 	// protocol is next, termed by \r\n
 	protocol = p;
 	p = strchr(protocol, '\r');
@@ -383,7 +413,8 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		printf("invalid request\n");
 		return 0;
 	}
-	p++;
+	// i.e. not received
+	request->contentLength = -1;
 	headers = p;
 	do {
 		p = strchr(headers, '\r');
@@ -394,7 +425,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 					request->numheaders++;
 				}
 				// pick out contentLength
-				if (!strcmp(headers, "Content-Length:")){
+				if (!my_strnicmp(headers, "Content-Length:", 15)){
 					request->contentLength = atoi(headers + 15);
 				}
 
@@ -441,7 +472,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 	// look for a callback with this URL and method, or HTTP_ANY
 	for (i = 0; i < numCallbacks; i++){
 		char *url = callbacks[i]->url;
-		if (http_checkUrlBase(urlStr, &url[1])){
+		if (http_startsWith(urlStr, &url[1])){
 			int method = callbacks[i]->method;
 			if(method == HTTP_ANY || method == request->method){
 				return callbacks[i]->callback(request);

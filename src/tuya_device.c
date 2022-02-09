@@ -40,6 +40,7 @@
 #include "new_cfg.h"
 #include "logging/logging.h"
 #include "httpserver/http_tcp_server.h"
+#include "httpserver/rest_interface.h"
 #include "printnetinfo/printnetinfo.h"
 
 #include "../../beken378/func/key/multi_button.h"
@@ -611,6 +612,9 @@ void user_main(void)
   #else
 	  PR_NOTICE("mqtt hashed out\r\n");
   #endif
+
+  // initialise rest interface
+  init_rest();
 
     err = rtos_init_timer(&led_timer,
                           1 * 1000,

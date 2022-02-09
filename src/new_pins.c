@@ -2,9 +2,8 @@
 
 
 
-#include "new_common.h"
-#include "httpserver/new_http.h"
 #include "new_pins.h"
+#include "httpserver/new_http.h"
 #include "logging/logging.h"
 
 #if WINDOWS
@@ -69,11 +68,6 @@ unsigned char g_channelValues[GPIO_MAX] = { 0 };
 BUTTON_S g_buttons[GPIO_MAX];
 
 #endif
-typedef struct pinsState_s {
-	byte roles[32];
-	byte channels[32];
-} pinsState_t;
-
 pinsState_t g_pins;
 
 void (*g_channelChangeCallback)(int idx, int iVal) = 0;
