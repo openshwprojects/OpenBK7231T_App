@@ -46,6 +46,7 @@
 #include "../../beken378/func/key/multi_button.h"
 #include "../../beken378/app/config/param_config.h"
 #include "lwip/apps/mqtt.h"
+#include "lwip/netdb.h"
 
 
 #undef os_printf
@@ -326,6 +327,7 @@ void example_do_connect(mqtt_client_t *client)
 {
   const char *mqtt_userName, *mqtt_host, *mqtt_pass, *mqtt_clientID;
   int mqtt_port;
+  struct hostent* hostEntry;
 
   mqtt_userName = CFG_GetMQTTUserName();
   mqtt_pass = CFG_GetMQTTPass();
@@ -353,18 +355,37 @@ void example_do_connect(mqtt_client_t *client)
   mqtt_client_info.client_pass = mqtt_pass;
   mqtt_client_info.client_user = mqtt_userName;
 
-  // host name/ip
-  ipaddr_aton(mqtt_host,&mqtt_ip);
 
-  /* Initiate client and connect to server, if this fails immediately an error code is returned
-     otherwise mqtt_connection_cb will be called with connection result after attempting
-     to establish a connection with the server.
-     For now MQTT version 3.1.1 is always used */
+  hostEntry = gethostbyname(mqtt_host);
+  if (NULL != hostEntry){
+    if (hostEntry->h_addr_list && hostEntry->h_addr_list[0]){
+      int len = hostEntry->h_length;
+      if (len > 4){
+        PR_NOTICE("mqtt_host resolves to addr len > 4\r\n");
+        len = 4;
+      }
+      memcpy(&mqtt_ip, hostEntry->h_addr_list[0], len);
+    } else {
+      PR_NOTICE("mqtt_host resolves no addresses?\r\n");
+      return;
+    }
 
-  mqtt_client_connect(mqtt_client,
-          &mqtt_ip, mqtt_port,
-          mqtt_connection_cb, LWIP_CONST_CAST(void*, &mqtt_client_info),
-          &mqtt_client_info);
+    // host name/ip
+    //ipaddr_aton(mqtt_host,&mqtt_ip);
+
+    /* Initiate client and connect to server, if this fails immediately an error code is returned
+      otherwise mqtt_connection_cb will be called with connection result after attempting
+      to establish a connection with the server.
+      For now MQTT version 3.1.1 is always used */
+
+    mqtt_client_connect(mqtt_client,
+            &mqtt_ip, mqtt_port,
+            mqtt_connection_cb, LWIP_CONST_CAST(void*, &mqtt_client_info),
+            &mqtt_client_info);
+
+  } else {
+    PR_NOTICE("mqtt_host %s not found by gethostbyname\r\n", mqtt_host);
+  }
 }
 
 
