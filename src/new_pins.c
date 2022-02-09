@@ -82,6 +82,11 @@ void PIN_SaveToFlash() {
 }
 void PIN_LoadFromFlash() {
 	int i;
+
+
+	PR_NOTICE("PIN_LoadFromFlash called - going to load pins.\r\n");
+	PR_NOTICE("UART log breaking after that means that you changed the role of TX pin to digital IO or smth else.\r\n");
+
 #if WINDOWS
 #else
 	get_info_item(NEW_PINS_CONFIG,(UINT8 *)&g_pins, 0, 0);
@@ -89,6 +94,7 @@ void PIN_LoadFromFlash() {
 	for(i = 0; i < GPIO_MAX; i++) {
 		PIN_SetPinRoleForPinIndex(i,g_pins.roles[i]);
 	}
+	PR_NOTICE("PIN_LoadFromFlash pins have been set up.\r\n");
 }
 void PIN_ClearPins() {
 	memset(&g_pins,0,sizeof(g_pins));
