@@ -151,7 +151,12 @@ static void app_led_timer_handler(void *data)
 	if(mqtt_client != 0 && mqtt_client_is_connected(mqtt_client) == 0) {
 		PR_NOTICE("Timer discovetrs disconnected mqtt %i\n",loopsWithDisconnected);
 		loopsWithDisconnected++;
-		if(loopsWithDisconnected>10){ 
+		if(loopsWithDisconnected > 10)
+		{ 
+			if(mqtt_client == 0)
+			{
+			    mqtt_client = mqtt_client_new();
+			}
 			example_do_connect(mqtt_client);
 			loopsWithDisconnected = 0;
 		}
@@ -366,13 +371,6 @@ void user_main(void)
 	CHANNEL_SetChangeCallback(app_my_channel_toggle_callback);
 	PR_NOTICE("Initialised other callbacks\r\n");
 
-  #define START_MQTT
-  #ifdef START_MQTT
-  	mqtt_example_init();
-	  PR_NOTICE("Initialised mqtt\r\n");
-  #else
-	  PR_NOTICE("mqtt hashed out\r\n");
-  #endif
 
   // initialise rest interface
   init_rest();
