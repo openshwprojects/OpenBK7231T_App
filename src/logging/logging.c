@@ -1,5 +1,7 @@
 
-#define DEBUG_USE_SIMPLE_LOGGER
+// Trying to narrow down Boozeman crash.
+// Is the code with this define enabled crashing/freezing BK after few minutes for anybody?
+// #define DEBUG_USE_SIMPLE_LOGGER
 
 #ifdef DEBUG_USE_SIMPLE_LOGGER
 
@@ -7,17 +9,31 @@
 #include "../httpserver/new_http.h"
 #include "str_pub.h"
 
-void addLog(char *fmt, ...){
-	char tmp[1024];
-    va_list argList;
+SemaphoreHandle_t g_mutex = 0;
+static char tmp[1024];
 
+
+void addLog(char *fmt, ...){
+    va_list argList;
+    BaseType_t taken;
+
+	if(g_mutex == 0)
+	{
+		g_mutex = xSemaphoreCreateMutex( );
+	}
 	// TODO: semaphore
 
-    va_start(argList, fmt);
-    vsprintf(tmp, fmt, argList);
-    va_end(argList);
-	bk_printf(tmp);
-	bk_printf("\r");
+    taken = xSemaphoreTake( g_mutex, 100 );
+    if (taken == pdTRUE) {
+
+		va_start(argList, fmt);
+		vsprintf(tmp, fmt, argList);
+		va_end(argList);
+		bk_printf(tmp);
+		bk_printf("\r");
+
+        xSemaphoreGive( g_mutex );
+    }
 }
 
 #else
