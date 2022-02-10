@@ -197,7 +197,7 @@ static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection
     //        1);
   } else {
     PR_NOTICE("mqtt_connection_cb: Disconnected, reason: %d\n", status);
-    example_do_connect(client);
+   // example_do_connect(client);
 
   }
 }
@@ -274,5 +274,5 @@ void mqtt_example_init(void)
 
 	
 
-	example_do_connect(mqtt_client);
+//	example_do_connect(mqtt_client);
 }
