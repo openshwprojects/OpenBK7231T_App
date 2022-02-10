@@ -19,7 +19,11 @@ void addLogAdv(int level, int feature, char *fmt, ...);
 #define ADDLOG_DEBUG(x, y, ...) addLogAdv(LOG_DEBUG, x, y, ##__VA_ARGS__)
 
 extern int loglevel;
+extern char *loglevelnames[];
+
 extern unsigned int logfeatures;
+extern char *logfeaturenames[];
+
 extern int direct_serial_log;
 
 // set to 1 to use only direct serial logging at startup - eg for boot issues
@@ -32,7 +36,8 @@ enum {
     LOG_WARN = 2,
     LOG_INFO = 3,
     LOG_DEBUG = 4,
-    LOG_ALL = 5
+    LOG_ALL = 5,
+    LOG_MAX = 6
 } log_levels;
 
 enum {
