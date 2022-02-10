@@ -57,7 +57,7 @@ static void mqtt_pub_request_cb(void *arg, err_t result)
 }
 static void
 mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status);
-void mqtt_example_init(void);
+
 void example_publish(mqtt_client_t *client, int channel, int iVal)
 {
 	char pub_topic[32];
@@ -91,8 +91,6 @@ void example_publish(mqtt_client_t *client, int channel, int iVal)
 	 if(err == ERR_CONN) {
 		 
 		// g_my_reconnect_mqtt_after_time = 5;
-
-       // mqtt_example_init();
 
 
 	 }
@@ -268,11 +266,3 @@ void example_do_connect(mqtt_client_t *client)
 }
 
 
-void mqtt_example_init(void)
-{
-  mqtt_client = mqtt_client_new();
-
-	
-
-//	example_do_connect(mqtt_client);
-}

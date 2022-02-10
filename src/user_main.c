@@ -303,18 +303,6 @@ void wl_status( void *ctxt ){
 }
 
 
-/**
- * @Function: device_init
- * @Description: device initialization process 
- * @Input: none
- * @Output: none
- * @Return: OPRT_OK: success  Other: fail
- * @Others: none
- */
-
-
-
-
 void user_main(void)
 //OPERATE_RET device_init(VOID)
 {
@@ -346,14 +334,14 @@ void user_main(void)
 	bForceOpenAP = 1;
 #endif
 	if(*wifi_ssid == 0 || *wifi_pass == 0 || bForceOpenAP) {
-    // start AP mode in 5 seconds
-    g_openAP = 5;
+		// start AP mode in 5 seconds
+		g_openAP = 5;
 		//setup_wifi_open_access_point();
 	} else {
 		connect_to_wifi(wifi_ssid,wifi_pass);
-    // register function to get callbacks about wifi changes.
-    bk_wlan_status_register_cb(wl_status);
-    PR_NOTICE("Registered for wifi changes\r\n");
+		// register function to get callbacks about wifi changes.
+		bk_wlan_status_register_cb(wl_status);
+		PR_NOTICE("Registered for wifi changes\r\n");
 	}
 
 	// NOT WORKING, I done it other way, see ethernetif.c
@@ -372,8 +360,8 @@ void user_main(void)
 	PR_NOTICE("Initialised other callbacks\r\n");
 
 
-  // initialise rest interface
-  init_rest();
+    // initialise rest interface
+    init_rest();
 
     err = rtos_init_timer(&led_timer,
                           1 * 1000,
@@ -385,3 +373,13 @@ void user_main(void)
     ASSERT(kNoErr == err);
 	PR_NOTICE("started timer\r\n");
 }
+
+#undef Free
+// This is needed by tuya_hal_wifi_release_ap.
+// How come that the Malloc was not undefined, but Free is?
+// That's because Free is defined to os_free. It would be better to fix it elsewhere
+void Free(void* ptr)
+{
+    os_free(ptr);
+}
+

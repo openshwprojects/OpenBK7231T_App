@@ -604,6 +604,24 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		if(bChanged) {
 			poststr(request,"<h4> Device will reconnect after restarting</h4>");
 		}*/
+		poststr(request,"<h2> Check networks reachable by module</h2> This will lag few seconds.<br>");
+		if(http_getArg(urlStr,"scan",tmpA,sizeof(tmpA))) {
+			AP_IF_S *ar;
+			uint32_t num;
+			
+			bk_printf("Scan begin...\r\n");
+			tuya_hal_wifi_all_ap_scan(&ar,&num);
+			bk_printf("Scan returned %i networks\r\n",num);
+			for(i = 0; i < num; i++) {
+				sprintf(tmpA,"[%i/%i] SSID: %s, Channel: %i, Signal %i<br>",i,num,ar[i].ssid, ar[i].channel, ar[i].rssi);
+				poststr(request,tmpA);
+			}
+			tuya_hal_wifi_release_ap(ar);
+		}
+		poststr(request,"<form action=\"/cfg_wifi\">\
+			  <input type=\"hidden\" id=\"scan\" name=\"scan\" value=\"1\">\
+			  <input type=\"submit\" value=\"Scan local networks!\">\
+			</form> ");
 		poststr(request,"<h2> Use this to disconnect from your WiFi</h2>");
 		poststr(request,"<form action=\"/cfg_wifi_set\">\
 			  <input type=\"hidden\" id=\"open\" name=\"open\" value=\"1\">\
