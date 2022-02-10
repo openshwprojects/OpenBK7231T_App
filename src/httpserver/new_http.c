@@ -352,6 +352,17 @@ int poststr(http_request_t *request, const char *str){
 	return postany(request, str, strlen(str));
 }
 
+int hprintf128(http_request_t *request, const char *fmt, ...){
+  va_list argList;
+  BaseType_t taken;
+	char tmp[128];
+	va_start(argList, fmt);
+	vsprintf(tmp, fmt, argList);
+	va_end(argList);
+	return postany(request, tmp, strlen(tmp));
+}
+
+
 int HTTP_ProcessPacket(http_request_t *request) {
 	int i, j;
 	char tmpA[128];

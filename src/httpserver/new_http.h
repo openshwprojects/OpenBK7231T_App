@@ -39,6 +39,9 @@ int HTTP_ProcessPacket(http_request_t *request);
 void http_setup(http_request_t *request, const char *type);
 int poststr(http_request_t *request, const char *str);
 
+// poststr with format - for results LESS THAN 128
+int hprintf128(http_request_t *request, const char *fmt, ...);
+
 enum {
     HTTP_ANY = -1,
     HTTP_GET = 0,
