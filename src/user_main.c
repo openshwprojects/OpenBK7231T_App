@@ -67,6 +67,9 @@ static int g_openAP = 0;
 
 #define tcp_server_log(M, ...) os_printf("TCP", M, ##__VA_ARGS__)
 
+int Time_getUpTimeSeconds() {
+	return g_secondsElapsed;
+}
 
 // from wlan_ui.c, no header
 void bk_wlan_status_register_cb(FUNC_1PARAM_PTR cb);

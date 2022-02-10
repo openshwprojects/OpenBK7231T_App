@@ -184,6 +184,18 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\logging\logging.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\src\new_builtin_devices.c"
 				>
 			</File>
@@ -208,12 +220,24 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\httpserver\new_http.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\new_http.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\httpserver\new_http.h"
+				RelativePath=".\src\mqtt\new_mqtt.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\src\new_pins.c"
@@ -229,6 +253,18 @@
 			</File>
 			<File
 				RelativePath=".\src\tuya_device.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\user_main.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"

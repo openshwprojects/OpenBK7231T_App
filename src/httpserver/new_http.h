@@ -38,6 +38,7 @@ typedef struct http_request_tag {
 int HTTP_ProcessPacket(http_request_t *request);
 void http_setup(http_request_t *request, const char *type);
 int poststr(http_request_t *request, const char *str);
+void misc_formatUpTimeString(int totalSeconds, char *o);
 
 enum {
     HTTP_ANY = -1,

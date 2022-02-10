@@ -25,6 +25,14 @@ void strcat_safe_test(){
 	char tmpA[16];
 	char tmpB[16];
 	char buff[128];
+	char timeStrA[128];
+	char timeStrB[128];
+	char timeStrC[128];
+	char timeStrD[128];
+	char timeStrE[128];
+	char timeStrF[128];
+	char timeStrG[128];
+	char timeStrH[128];
 	int res0, res1, res2, res3, res4, res5;
 	tmpA[0] = 0;
 	res0 = strcat_safe(tmpA,"Test1",sizeof(tmpA));
@@ -43,6 +51,19 @@ void strcat_safe_test(){
 
 	urldecode2_safe(buff,"qqqqqq%40qqqq",sizeof(buff));
 	urldecode2_safe(buff,"qqqqqq%40qqqq",sizeof(buff));
+
+	
+	misc_formatUpTimeString(15, timeStrA);
+	misc_formatUpTimeString(65, timeStrB);
+	misc_formatUpTimeString(125, timeStrC);
+	misc_formatUpTimeString(60*60, timeStrD);
+	misc_formatUpTimeString(4*60*60, timeStrE);
+	misc_formatUpTimeString(24*60*60, timeStrF);
+	misc_formatUpTimeString(24*60*60+60*60+50, timeStrG);
+	misc_formatUpTimeString(100*24*60*60+60*60+15*60+50, timeStrH);
+}
+int Time_getUpTimeSeconds() {
+	return rand()% 100000;
 }
 // placeholder - TODO
 char myIP[] = "127.0.0.1";

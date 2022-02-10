@@ -308,8 +308,12 @@ const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7
 
 
 void HTTP_AddBuildFooter(http_request_t *request) {
+	char upTimeStr[128];
 	poststr(request,"<br>");
 	poststr(request,g_build_str);
+	poststr(request,"<br> Online for ");
+	misc_formatUpTimeString(Time_getUpTimeSeconds(), upTimeStr);
+	poststr(request,upTimeStr);
 }
 
 
@@ -352,6 +356,37 @@ int poststr(http_request_t *request, const char *str){
 	return postany(request, str, strlen(str));
 }
 
+void misc_formatUpTimeString(int totalSeconds, char *o) {
+	int rem_days;
+	int rem_hours;
+	int rem_minutes;
+	int rem_seconds;
+
+	rem_days = totalSeconds / (24*60*60);
+	totalSeconds = totalSeconds % (24*60*60);
+	rem_hours = totalSeconds / (60*60);
+	totalSeconds = totalSeconds % (60*60);
+	rem_minutes = totalSeconds / (60);
+	rem_seconds = totalSeconds % 60;
+
+	*o = 0;
+	if(rem_days > 0)
+	{
+		sprintf(o,"%i days, %i hours, %i minutes and %i seconds ",rem_days,rem_hours,rem_minutes,rem_seconds);
+	}
+	else if(rem_hours > 0)
+	{
+		sprintf(o,"%i hours, %i minutes and %i seconds ",rem_hours,rem_minutes,rem_seconds);
+	}
+	else if(rem_minutes > 0)
+	{
+		sprintf(o,"%i minutes and %i seconds ",rem_minutes,rem_seconds);
+	}
+	else
+	{
+		sprintf(o,"just %i seconds ",rem_seconds);
+	}
+}
 int HTTP_ProcessPacket(http_request_t *request) {
 	int i, j;
 	char tmpA[128];
@@ -606,6 +641,10 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		}*/
 		poststr(request,"<h2> Check networks reachable by module</h2> This will lag few seconds.<br>");
 		if(http_getArg(urlStr,"scan",tmpA,sizeof(tmpA))) {
+#ifdef WINDOWS
+
+			poststr(request,"Not available on Windows<br>");
+#else
 			AP_IF_S *ar;
 			uint32_t num;
 			
@@ -617,6 +656,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 				poststr(request,tmpA);
 			}
 			tuya_hal_wifi_release_ap(ar);
+#endif
 		}
 		poststr(request,"<form action=\"/cfg_wifi\">\
 			  <input type=\"hidden\" id=\"scan\" name=\"scan\" value=\"1\">\
