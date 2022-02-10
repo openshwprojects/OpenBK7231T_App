@@ -387,6 +387,18 @@ void misc_formatUpTimeString(int totalSeconds, char *o) {
 		sprintf(o,"just %i seconds ",rem_seconds);
 	}
 }
+
+int hprintf128(http_request_t *request, const char *fmt, ...){
+  va_list argList;
+  BaseType_t taken;
+	char tmp[128];
+	va_start(argList, fmt);
+	vsprintf(tmp, fmt, argList);
+	va_end(argList);
+	return postany(request, tmp, strlen(tmp));
+}
+
+
 int HTTP_ProcessPacket(http_request_t *request) {
 	int i, j;
 	char tmpA[128];
@@ -652,7 +664,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 			tuya_hal_wifi_all_ap_scan(&ar,&num);
 			bk_printf("Scan returned %i networks\r\n",num);
 			for(i = 0; i < num; i++) {
-				sprintf(tmpA,"[%i/%i] SSID: %s, Channel: %i, Signal %i<br>",i,num,ar[i].ssid, ar[i].channel, ar[i].rssi);
+				sprintf(tmpA,"[%i/%i] SSID: %s, Channel: %i, Signal %i<br>",i,(int)num,ar[i].ssid, ar[i].channel, ar[i].rssi);
 				poststr(request,tmpA);
 			}
 			tuya_hal_wifi_release_ap(ar);
