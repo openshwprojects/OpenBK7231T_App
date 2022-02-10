@@ -613,7 +613,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 			tuya_hal_wifi_all_ap_scan(&ar,&num);
 			bk_printf("Scan returned %i networks\r\n",num);
 			for(i = 0; i < num; i++) {
-				sprintf(tmpA,"[%i/%i] SSID: %s, Channel: %i, Signal %i<br>",i,num,ar[i].ssid, ar[i].channel, ar[i].rssi);
+				sprintf(tmpA,"[%i/%i] SSID: %s, Channel: %i, Signal %i<br>",i,(int)num,ar[i].ssid, ar[i].channel, ar[i].rssi);
 				poststr(request,tmpA);
 			}
 			tuya_hal_wifi_release_ap(ar);

@@ -49,14 +49,9 @@
 #include "lwip/netdb.h"
 
 
-#undef os_printf
-#undef PR_DEBUG
-#undef PR_NOTICE
+
 #undef Malloc
 #undef Free
-#define os_printf addLog
-#define PR_DEBUG addLog
-#define PR_NOTICE addLog
 #define Malloc os_malloc
 #define Free os_free
 
@@ -64,9 +59,6 @@
 static int g_secondsElapsed = 0;
 
 static int g_openAP = 0;
-
-#define tcp_server_log(M, ...) os_printf("TCP", M, ##__VA_ARGS__)
-
 
 // from wlan_ui.c, no header
 void bk_wlan_status_register_cb(FUNC_1PARAM_PTR cb);
@@ -88,7 +80,7 @@ int unw_recv(const int fd, void *buf, u32 nbytes)
     FD_SET( fd, &errfds );
 
     ret = select( fd+1, &readfds, NULL, &errfds, NULL);
-    os_printf("select ret:%d, %d, %d\r\n", ret, FD_ISSET( fd, &readfds ), FD_ISSET( fd, &errfds ));
+    ADDLOG_DEBUG(LOG_FEATURE_MAIN, "select ret:%d, %d, %d\r\n", ret, FD_ISSET( fd, &readfds ), FD_ISSET( fd, &errfds ));
 
     if(ret > 0 && FD_ISSET( fd, &readfds ))
         return recv(fd,buf,nbytes,0); 
@@ -129,7 +121,7 @@ void connect_to_wifi(const char *oob_ssid,const char *connect_key)
     network_cfg.dhcp_mode = DHCP_CLIENT;
     network_cfg.wifi_retry_interval = 100;
 
-    bk_printf("ssid:%s key:%s\r\n", network_cfg.wifi_ssid, network_cfg.wifi_key);
+    ADDLOG_INFO(LOG_FEATURE_MAIN, "ssid:%s key:%s\r\n", network_cfg.wifi_ssid, network_cfg.wifi_key);
 			
     bk_wlan_start(&network_cfg);
 #endif
@@ -140,7 +132,7 @@ beken_timer_t led_timer;
 
 static void app_my_channel_toggle_callback(int channel, int iVal)
 {
-    PR_NOTICE("Channel has changed! Publishing change %i with %i \n",channel,iVal);
+  ADDLOG_INFO(LOG_FEATURE_MAIN, "Channel has changed! Publishing change %i with %i \n",channel,iVal);
 	example_publish(mqtt_client,channel,iVal);
 }
 
@@ -149,7 +141,7 @@ int loopsWithDisconnected = 0;
 static void app_led_timer_handler(void *data)
 {
 	if(mqtt_client != 0 && mqtt_client_is_connected(mqtt_client) == 0) {
-		PR_NOTICE("Timer discovetrs disconnected mqtt %i\n",loopsWithDisconnected);
+		ADDLOG_INFO(LOG_FEATURE_MAIN, "Timer discovers disconnected mqtt %i\n",loopsWithDisconnected);
 		loopsWithDisconnected++;
 		if(loopsWithDisconnected > 10)
 		{ 
@@ -163,7 +155,7 @@ static void app_led_timer_handler(void *data)
 	}
 
 	g_secondsElapsed ++;
-  PR_NOTICE("Timer is %i free mem %d\n", g_secondsElapsed, xPortGetFreeHeapSize());
+  ADDLOG_INFO(LOG_FEATURE_MAIN, "Timer is %i free mem %d\n", g_secondsElapsed, xPortGetFreeHeapSize());
 
   // print network info
   if (!(g_secondsElapsed % 10)){
@@ -214,7 +206,7 @@ static int setup_wifi_open_access_point(void)
         os_strcpy((char *)wNetConfig.dns_server_ip_addr, APP_DRONE_DEF_NET_GW);
  
 
-        PR_NOTICE("no flash configuration, use default\r\n");
+        ADDLOG_INFO(LOG_FEATURE_MAIN, "no flash configuration, use default\r\n");
         mac = (u8*)&ap_info.bssid.array;
 		    // this is MAC for Access Point, it's different than Client one
 		    // see wifi_get_mac_address source
@@ -240,14 +232,14 @@ static int setup_wifi_open_access_point(void)
     wNetConfig.wifi_retry_interval = 100;
     
 	if(1) {
-		PR_NOTICE("set ip info: %s,%s,%s\r\n",
+		ADDLOG_INFO(LOG_FEATURE_MAIN, "set ip info: %s,%s,%s\r\n",
 				wNetConfig.local_ip_addr,
 				wNetConfig.net_mask,
 				wNetConfig.dns_server_ip_addr);
 	}
     
 	if(1) {
-	  PR_NOTICE("ssid:%s  key:%s mode:%d\r\n", wNetConfig.wifi_ssid, wNetConfig.wifi_key, wNetConfig.wifi_mode);
+	  ADDLOG_INFO(LOG_FEATURE_MAIN, "ssid:%s  key:%s mode:%d\r\n", wNetConfig.wifi_ssid, wNetConfig.wifi_key, wNetConfig.wifi_mode);
 	}
 	bk_wlan_start(&wNetConfig);
 
@@ -262,7 +254,7 @@ static int setup_wifi_open_access_point(void)
 void wl_status( void *ctxt ){
 
     rw_evt_type stat = *((rw_evt_type*)ctxt);
-    bk_printf("wl_status %d\r\n", stat);
+    ADDLOG_INFO(LOG_FEATURE_MAIN, "wl_status %d\r\n", stat);
 
     switch(stat){
         case RW_EVT_STA_IDLE:
@@ -321,8 +313,8 @@ void user_main(void)
 	wifi_ssid = CFG_GetWiFiSSID();
 	wifi_pass = CFG_GetWiFiPass();
 
-	PR_NOTICE("Using SSID [%s]\r\n",wifi_ssid);
-	PR_NOTICE("Using Pass [%s]\r\n",wifi_pass);
+	ADDLOG_INFO(LOG_FEATURE_MAIN, "Using SSID [%s]\r\n",wifi_ssid);
+	ADDLOG_INFO(LOG_FEATURE_MAIN, "Using Pass [%s]\r\n",wifi_pass);
 
 #if 0
 	// you can use this if you bricked your module by setting wrong access point data
@@ -341,7 +333,7 @@ void user_main(void)
 		connect_to_wifi(wifi_ssid,wifi_pass);
 		// register function to get callbacks about wifi changes.
 		bk_wlan_status_register_cb(wl_status);
-		PR_NOTICE("Registered for wifi changes\r\n");
+		ADDLOG_INFO(LOG_FEATURE_MAIN, "Registered for wifi changes\r\n");
 	}
 
 	// NOT WORKING, I done it other way, see ethernetif.c
@@ -349,15 +341,15 @@ void user_main(void)
 
 	//demo_start_upd();
 	start_tcp_http();
-	PR_NOTICE("Started http tcp server\r\n");
+	ADDLOG_INFO(LOG_FEATURE_MAIN, "Started http tcp server\r\n");
 	
 	PIN_Init();
-	PR_NOTICE("Initialised pins\r\n");
+	ADDLOG_INFO(LOG_FEATURE_MAIN, "Initialised pins\r\n");
 
 
 	PIN_SetGenericDoubleClickCallback(app_on_generic_dbl_click);
 	CHANNEL_SetChangeCallback(app_my_channel_toggle_callback);
-	PR_NOTICE("Initialised other callbacks\r\n");
+	ADDLOG_INFO(LOG_FEATURE_MAIN, "Initialised other callbacks\r\n");
 
 
     // initialise rest interface
@@ -371,7 +363,7 @@ void user_main(void)
 
     err = rtos_start_timer(&led_timer);
     ASSERT(kNoErr == err);
-	PR_NOTICE("started timer\r\n");
+	ADDLOG_INFO(LOG_FEATURE_MAIN, "started timer\r\n");
 }
 
 #undef Free

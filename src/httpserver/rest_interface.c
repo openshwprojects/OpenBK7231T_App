@@ -60,6 +60,7 @@ static int http_rest_app(http_request_t *request){
 }
 
 static int http_rest_get(http_request_t *request){
+    ADDLOG_DEBUG(LOG_FEATURE_API, "GET of %s", request->url);
     if (!strcmp(request->url, "api/pins")){
         return http_rest_get_pins(request);
     }
@@ -120,9 +121,11 @@ static int http_rest_get_pins(http_request_t *request){
 
 static int http_rest_post(http_request_t *request){
     char tmp[20];
+    ADDLOG_DEBUG(LOG_FEATURE_API, "POST to %s", request->url);
     if (!strcmp(request->url, "api/pins")){
         return http_rest_post_pins(request);
     }
+
     http_setup(request, httpMimeTypeHTML);
     poststr(request, "POST to ");
     poststr(request, request->url);
@@ -159,6 +162,7 @@ static int http_rest_post_pins(http_request_t *request){
     jsmn_init(p);
     r = jsmn_parse(p, json_str, json_len, t, TOKEN_COUNT);
     if (r < 0) {
+        ADDLOG_ERROR(LOG_FEATURE_API, "Failed to parse JSON: %d", r);
         sprintf(tmp,"Failed to parse JSON: %d\n", r);
         poststr(request, tmp);
         poststr(request, NULL);
@@ -169,6 +173,7 @@ static int http_rest_post_pins(http_request_t *request){
 
     /* Assume the top-level element is an object */
     if (r < 1 || t[0].type != JSMN_OBJECT) {
+        ADDLOG_ERROR(LOG_FEATURE_API, "Object expected", r);
         sprintf(tmp,"Object expected\n");
         poststr(request, tmp);
         poststr(request, NULL);
@@ -210,6 +215,8 @@ static int http_rest_post_pins(http_request_t *request){
             }
             i += t[i + 1].size + 1;
         } else {
+            ADDLOG_ERROR(LOG_FEATURE_API, "Unexpected key: %.*s", t[i].end - t[i].start,
+                json_str + t[i].start);
             sprintf(tmp,"Unexpected key: %.*s\n", t[i].end - t[i].start,
                 json_str + t[i].start);
             poststr(request, tmp);
