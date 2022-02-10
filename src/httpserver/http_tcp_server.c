@@ -23,7 +23,7 @@ void start_tcp_http()
 									(beken_thread_arg_t)0 );
     if(err != kNoErr)
     {
-       os_printf("create \"TCP_server\" thread failed!\r\n");
+       ADDLOG_ERROR(LOG_FEATURE_HTTP, "create \"TCP_server\" thread failed!\r\n");
     }
 }
 
@@ -68,7 +68,7 @@ static void tcp_client_thread( beken_thread_arg_t arg )
 
   if ( request.receivedLen <= 0 )
   {
-      os_printf( "TCP Client is disconnected, fd: %d", fd );
+      ADDLOG_ERROR(LOG_FEATURE_HTTP, "TCP Client is disconnected, fd: %d", fd );
       goto exit;
   }
 
@@ -76,7 +76,7 @@ static void tcp_client_thread( beken_thread_arg_t arg )
   // returns length to be sent if any
   int lenret = HTTP_ProcessPacket(&request);
   if (lenret > 0){
-    addLog( "TCP sending reply len %i\n",lenret );
+    ADDLOG_DEBUG(LOG_FEATURE_HTTP,  "TCP sending reply len %i\n",lenret );
     send( fd, reply, lenret, 0 );
   }
 
@@ -84,7 +84,7 @@ static void tcp_client_thread( beken_thread_arg_t arg )
 
 exit:
   if ( err != kNoErr ) 
-    addLog( "TCP client thread exit with err: %d", err );
+    ADDLOG_ERROR(LOG_FEATURE_HTTP, "TCP client thread exit with err: %d", err );
 
   if ( buf != NULL ) 
     os_free( buf );
@@ -128,7 +128,7 @@ static void tcp_server_thread( beken_thread_arg_t arg )
             if ( client_fd >= 0 )
             {
                 os_strcpy( client_ip_str, inet_ntoa( client_addr.sin_addr ) );
-                addLog( "TCP Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd );
+                ADDLOG_DEBUG(LOG_FEATURE_HTTP,  "TCP Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd );
                 if ( kNoErr
                      != rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY, 
 							                     "TCP Clients",
@@ -144,7 +144,7 @@ static void tcp_server_thread( beken_thread_arg_t arg )
     }
 	
     if ( err != kNoErr ) 
-		addLog( "Server listerner thread exit with err: %d", err );
+		  ADDLOG_ERROR(LOG_FEATURE_HTTP,  "Server listerner thread exit with err: %d", err );
 	
     close( tcp_listen_fd );
     rtos_delete_thread( NULL );

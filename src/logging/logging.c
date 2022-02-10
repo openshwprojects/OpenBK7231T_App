@@ -2,16 +2,38 @@
 // Trying to narrow down Boozeman crash.
 // Is the code with this define enabled crashing/freezing BK after few minutes for anybody?
 // #define DEBUG_USE_SIMPLE_LOGGER
-
-#ifdef DEBUG_USE_SIMPLE_LOGGER
-
 #include "../new_common.h"
 #include "../httpserver/new_http.h"
 #include "str_pub.h"
+#include "../logging/logging.h"
 
 SemaphoreHandle_t g_mutex = 0;
 static char tmp[1024];
+int loglevel = 4; // default to info
+unsigned int logfeatures = 0xffffffff;
 
+char *loglevelnames[] = {
+    "NONE:",
+    "Error:",
+    "Warn:",
+    "Info:",
+    "Debug:",
+    "All:"
+};
+
+char *logfeaturenames[] = {
+    "HTTP:",//            = 0,
+    "MQTT:",//            = 1,
+    "CFG:",//             = 2,
+    "HTTP_CLIENT:",//     = 3,
+    "OTA:",//             = 4,
+    "PINS:",//            = 5,
+    "MAIN:",//            = 6,
+    "GEN:", //              = 7
+    "API:", // = 8
+};
+
+#ifdef DEBUG_USE_SIMPLE_LOGGER
 
 void addLog(char *fmt, ...){
     va_list argList;
@@ -36,12 +58,42 @@ void addLog(char *fmt, ...){
     }
 }
 
-#else
+void addLogAdv(int level, int feature, char *fmt, ...){
+    va_list argList;
+    BaseType_t taken;
+    char *t = tmp;
+    if (!((1<<feature) & logfeatures)){
+        return;
+    }
+    if (level > loglevel){
+        return;
+    }
+	if(g_mutex == 0)
+	{
+		g_mutex = xSemaphoreCreateMutex( );
+	}
+	// TODO: semaphore
 
-#include "../new_common.h"
-#include "../logging/logging.h"
-#include "../httpserver/new_http.h"
-#include "str_pub.h"
+    taken = xSemaphoreTake( g_mutex, 100 );
+    if (taken == pdTRUE) {
+
+		va_start(argList, fmt);
+		vsprintf(tmp, fmt, argList);
+		va_end(argList);
+        strcpy(t, loglevelnames[level]);
+        t += strlen(t);
+        if (feature < sizeof(logfeaturenames)/sizeof(*logfeaturenames)){
+            strcpy(t, logfeaturenames[feature]);
+            t += strlen(t);
+        }
+
+		bk_printf(tmp);
+		bk_printf("\r");
+
+        xSemaphoreGive( g_mutex );
+    }
+}
+#else
 
 static int http_getlog(http_request_t *request);
 static int http_getlograw(http_request_t *request);
@@ -67,6 +119,8 @@ static struct tag_logMemory {
     SemaphoreHandle_t mutex;
 } logMemory;
 
+int direct_serial_log = DEFAULT_DIRECT_SERIAL_LOG;
+
 static int initialised = 0; 
 static char tmp[1024];
 
@@ -85,27 +139,28 @@ static void initLog() {
 // adds a log to the log memory
 // if head collides with either tail, move the tails on.
 void addLog(char *fmt, ...){
+    int len;
     va_list argList;
+    BaseType_t taken;
     // if not initialised, direct output
     if (!initialised) {
         initLog();
     }
-    BaseType_t taken = xSemaphoreTake( logMemory.mutex, 100 );
+    taken = xSemaphoreTake( logMemory.mutex, 100 );
 
     va_start(argList, fmt);
     vsprintf(tmp, fmt, argList);
     va_end(argList);
 
-//#define DIRECTLOG
-#ifdef DIRECTLOG
-    bk_printf(tmp);
-    if (taken == pdTRUE){
-        xSemaphoreGive( logMemory.mutex );
+    if (direct_serial_log){
+        bk_printf(tmp);
+        if (taken == pdTRUE){
+            xSemaphoreGive( logMemory.mutex );
+        }
+        return;
     }
-    return;
-#endif    
 
-    int len = strlen(tmp);
+    len = strlen(tmp);
     tmp[len++] = '\r';
     tmp[len++] = '\n';
 
@@ -129,6 +184,73 @@ void addLog(char *fmt, ...){
         xSemaphoreGive( logMemory.mutex );
     }
 }
+
+
+
+
+// adds a log to the log memory
+// if head collides with either tail, move the tails on.
+void addLogAdv(int level, int feature, char *fmt, ...){
+    char *t = tmp;
+    if (!((1<<feature) & logfeatures)){
+        return;
+    }
+    if (level > loglevel){
+        return;
+    }
+
+    va_list argList;
+    // if not initialised, direct output
+    if (!initialised) {
+        initLog();
+    }
+    BaseType_t taken = xSemaphoreTake( logMemory.mutex, 100 );
+
+    strcpy(t, loglevelnames[level]);
+    t += strlen(t);
+    if (feature < sizeof(logfeaturenames)/sizeof(*logfeaturenames)){
+        strcpy(t, logfeaturenames[feature]);
+        t += strlen(t);
+    }
+
+    va_start(argList, fmt);
+    vsprintf(t, fmt, argList);
+    va_end(argList);
+
+    int len = strlen(tmp);
+    tmp[len++] = '\r';
+    tmp[len++] = '\n';
+
+#ifdef DIRECTLOG
+    bk_printf(tmp);
+    if (taken == pdTRUE){
+        xSemaphoreGive( logMemory.mutex );
+    }
+    return;
+#endif    
+
+    //bk_printf("addlog %d.%d.%d %d:%s\n", logMemory.head, logMemory.tailserial, logMemory.tailtcp, len,tmp);
+
+    for (int i = 0; i < len; i++){
+        logMemory.log[logMemory.head] = tmp[i];
+        logMemory.head = (logMemory.head + 1) % LOGSIZE;
+        if (logMemory.tailserial == logMemory.head){
+            logMemory.tailserial = (logMemory.tailserial + 1) % LOGSIZE;
+        }
+        if (logMemory.tailtcp == logMemory.head){
+            logMemory.tailtcp = (logMemory.tailtcp + 1) % LOGSIZE;
+        }
+        if (logMemory.tailhttp == logMemory.head){
+            logMemory.tailhttp = (logMemory.tailhttp + 1) % LOGSIZE;
+        }
+    }
+
+    if (taken == pdTRUE){
+        xSemaphoreGive( logMemory.mutex );
+    }
+}
+
+
 
 static int getData(char *buff, int buffsize, int *tail) {
     if (!initialised) return 0;
