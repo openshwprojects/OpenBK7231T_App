@@ -31,6 +31,7 @@ char *logfeaturenames[] = {
     "MAIN:",//            = 6,
     "GEN:", //              = 7
     "API:", // = 8
+    "LFS:", // = 9
 };
 
 #ifdef DEBUG_USE_SIMPLE_LOGGER
