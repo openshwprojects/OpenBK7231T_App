@@ -144,7 +144,7 @@ static void app_my_channel_toggle_callback(int channel, int iVal)
 int loopsWithDisconnected = 0;
 static void app_led_timer_handler(void *data)
 {
-	if(mqtt_client != 0 && mqtt_client_is_connected(mqtt_client) == 0) {
+	if(mqtt_client == 0 || mqtt_client_is_connected(mqtt_client) == 0) {
 		ADDLOG_INFO(LOG_FEATURE_MAIN, "Timer discovers disconnected mqtt %i\n",loopsWithDisconnected);
 		loopsWithDisconnected++;
 		if(loopsWithDisconnected > 10)
