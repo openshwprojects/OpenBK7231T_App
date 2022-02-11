@@ -50,7 +50,8 @@ enum {
     LOG_FEATURE_MAIN            = 6,
     LOG_FEATURE_GENERAL         = 7,
     LOG_FEATURE_API             = 8,
+    LOG_FEATURE_LFS             = 9,
     // add in here - but also in names in logging.c
-    LOG_FEATURE_MAX             = 9,
+    LOG_FEATURE_MAX             = 10,
 } log_features;
 

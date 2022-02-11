@@ -1,3 +1,5 @@
+#include "../obk_config.h"
+
 #include "../new_common.h"
 #include "../logging/logging.h"
 #include "../httpserver/new_http.h"
@@ -62,6 +64,21 @@ static int http_rest_app(http_request_t *request){
     return 0;
 }
 
+
+#ifdef BK_LITTLEFS
+static int http_rest_get_lfs(http_request_t *request){
+    init_lfs();
+    http_setup(request, httpMimeTypeHTML);
+    poststr(request, "GET of ");
+    poststr(request, request->url);
+    poststr(request, htmlEnd);
+    poststr(request,NULL);
+  return 0;
+}
+#endif
+
+
+
 static int http_rest_get(http_request_t *request){
     ADDLOG_DEBUG(LOG_FEATURE_API, "GET of %s", request->url);
     if (!strcmp(request->url, "api/pins")){
@@ -70,7 +87,11 @@ static int http_rest_get(http_request_t *request){
     if (!strcmp(request->url, "api/logconfig")){
         return http_rest_get_logconfig(request);
     }
-
+    #ifdef BK_LITTLEFS
+    if (!strcmp(request->url, "api/initlfs")){
+        return http_rest_get_lfs(request);
+    }
+    #endif
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request, "GET of ");
@@ -79,6 +100,8 @@ static int http_rest_get(http_request_t *request){
     poststr(request,NULL);
     return 0;
 }
+
+
 
 static int http_rest_get_pins(http_request_t *request){
     int i;

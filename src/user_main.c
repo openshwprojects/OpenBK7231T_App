@@ -47,7 +47,7 @@
 #include "../../beken378/func/key/multi_button.h"
 #include "../../beken378/app/config/param_config.h"
 #include "lwip/netdb.h"
-
+#include "littlefs/our_lfs.h"
 
 
 #undef Malloc
