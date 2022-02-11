@@ -64,7 +64,7 @@ void example_publish(mqtt_client_t *client, int channel, int iVal)
 	char pub_payload[128];
 //  const char *pub_payload= "{\"temperature\": \"45.5\"}";
   err_t err;
-  int myValue;
+  //int myValue;
   u8_t qos = 2; /* 0 1 or 2, see MQTT specification */
   u8_t retain = 0; /* No don't retain such crappy payload... */
 	const char *baseName;
@@ -76,8 +76,8 @@ void example_publish(mqtt_client_t *client, int channel, int iVal)
 		return;
   }
 
-  myValue = CHANNEL_Check(channel);
-   sprintf(pub_payload,"%i",myValue);
+  //myValue = CHANNEL_Check(channel);
+   sprintf(pub_payload,"%i",iVal);
    
     PR_NOTICE("calling pub: \n");
 

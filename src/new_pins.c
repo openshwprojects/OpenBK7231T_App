@@ -277,19 +277,18 @@ void Channel_OnChanged(int ch) {
 	iVal = g_channelValues[ch];
 	bOn = iVal > 0;
 
-	if(g_channelChangeCallback!=0) {
-		g_channelChangeCallback(ch,iVal);
-	}
-
 	for(i = 0; i < GPIO_MAX; i++) {
 		if(g_pins.channels[i] == ch) {
 			if(g_pins.roles[i] == IOR_Relay || g_pins.roles[i] == IOR_LED) {
 				RAW_SetPinValue(i,bOn);
+				g_channelChangeCallback(ch,bOn);
 			}
 			if(g_pins.roles[i] == IOR_Relay_n || g_pins.roles[i] == IOR_LED_n) {
 				RAW_SetPinValue(i,!bOn);
+				g_channelChangeCallback(ch,bOn);
 			}
 			if(g_pins.roles[i] == IOR_PWM) {
+				g_channelChangeCallback(ch,iVal);
 				int pwmIndex = PIN_GetPWMIndexForPinIndex(i);
 
 #if WINDOWS
@@ -299,10 +298,7 @@ void Channel_OnChanged(int ch) {
 #else
 				// they are using 1kHz PWM
 				// See: https://www.elektroda.pl/rtvforum/topic3798114.html
-				float f;
-				f = g_channelValues[ch] * 0.01f;
-				bk_pwm_update_param(pwmIndex, 1000, f * 1000.0f);
-
+				bk_pwm_update_param(pwmIndex, 1000, iVal * 10.0f); // Duty cycle 0...100 * 10.0 = 0...1000
 #endif
 			}
 			
