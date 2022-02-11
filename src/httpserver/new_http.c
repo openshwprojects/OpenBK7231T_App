@@ -835,6 +835,8 @@ int HTTP_ProcessPacket(http_request_t *request) {
 					poststr(request,"    payload_on: 0\n");
 					poststr(request,"    payload_off: 1\n");
 					poststr(request,"    retain: true\n");
+					sprintf(tmpA,"    availability_topic: \"%s/connected\"\n",baseName);
+					poststr(request,tmpA);
 				}
 			}
 		}
@@ -858,6 +860,8 @@ int HTTP_ProcessPacket(http_request_t *request) {
 					poststr(request,"    payload_off: 0\n");
 					poststr(request,"    retain: true\n");
 					poststr(request,"    optimistic: true\n");
+					sprintf(tmpA,"    availability_topic: \"%s/connected\"\n",baseName);
+					poststr(request,tmpA);
 				}
 			}
 		}

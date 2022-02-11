@@ -184,6 +184,14 @@ static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection
       PR_NOTICE("mqtt_subscribe return: %d\n", err);
     }
 
+    sprintf(tmp,"%s/connected",baseName);
+    err = mqtt_publish(client, tmp, "online", strlen("online"), 2, true, mqtt_pub_request_cb, 0);
+    if(err != ERR_OK) {
+      PR_NOTICE("Publish err: %d\n", err);
+      if(err == ERR_CONN) {
+      // g_my_reconnect_mqtt_after_time = 5;
+      }
+    }
 
     //mqtt_sub_unsub(client,
     //        "topic_qos1", 1,
@@ -205,6 +213,7 @@ void example_do_connect(mqtt_client_t *client)
   const char *mqtt_userName, *mqtt_host, *mqtt_pass, *mqtt_clientID;
   int mqtt_port;
   struct hostent* hostEntry;
+  char will_topic[32];
 
   mqtt_userName = CFG_GetMQTTUserName();
   mqtt_pass = CFG_GetMQTTPass();
@@ -231,7 +240,12 @@ void example_do_connect(mqtt_client_t *client)
   mqtt_client_info.client_id = mqtt_clientID;
   mqtt_client_info.client_pass = mqtt_pass;
   mqtt_client_info.client_user = mqtt_userName;
-
+  
+	sprintf(will_topic,"%s/connected",CFG_GetShortDeviceName());
+  mqtt_client_info.will_topic = will_topic;
+  mqtt_client_info.will_msg = "offline";
+  mqtt_client_info.will_retain = true,
+  mqtt_client_info.will_qos = 2,
 
   hostEntry = gethostbyname(mqtt_host);
   if (NULL != hostEntry){
