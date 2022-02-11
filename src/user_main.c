@@ -156,7 +156,11 @@ static void app_led_timer_handler(void *data)
 			example_do_connect(mqtt_client);
 			loopsWithDisconnected = 0;
 		}
-	}
+	} else if (mqtt_client == 0) {
+        mqtt_client = mqtt_client_new();
+        example_do_connect(mqtt_client);
+        loopsWithDisconnected = 0;
+    }
 
 	g_secondsElapsed ++;
   ADDLOG_INFO(LOG_FEATURE_MAIN, "Timer is %i free mem %d\n", g_secondsElapsed, xPortGetFreeHeapSize());
