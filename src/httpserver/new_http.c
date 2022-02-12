@@ -2,19 +2,24 @@
 
 #include "../new_common.h"
 #include "ctype.h" 
-#ifndef WINDOWS
-#include "lwip/sockets.h"
-#include "str_pub.h"
-#else
+#if WINDOWS
 //#include <windows.h>
 #include <winsock2.h>
 //#include <ws2tcpip.h>
+#elif PLATFORM_XR809
+#include <stdarg.h>
+
+#else
+#include "lwip/sockets.h"
+#include "str_pub.h"
 #endif
 #include "new_http.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #include "../ota/ota.h"
 #ifdef WINDOWS
+
+#elif PLATFORM_XR809
 
 #elif defined(PLATFORM_BK7231N)
 // tuya-iotos-embeded-sdk-wifi-ble-bk7231n/sdk/include/tuya_hal_storage.h
@@ -656,6 +661,9 @@ int HTTP_ProcessPacket(http_request_t *request) {
 #ifdef WINDOWS
 
 			poststr(request,"Not available on Windows<br>");
+#elif PLATFORM_XR809
+			poststr(request,"TODO XR809<br>");
+
 #else
 			AP_IF_S *ar;
 			uint32_t num;

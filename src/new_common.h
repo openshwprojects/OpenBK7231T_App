@@ -24,6 +24,9 @@ typedef int bool;
 #define false 0
 
 #define PR_NOTICE printf
+typedef unsigned char u8;
+typedef unsigned char uint8_t;
+typedef unsigned int uint32_t;
 
 #include <stdio.h>
 #include <string.h>
