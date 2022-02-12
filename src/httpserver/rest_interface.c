@@ -6,7 +6,16 @@
 //#include "str_pub.h"
 #include "../new_pins.h"
 #include "../jsmn/jsmn_h.h"
+#include "../ota/ota.h"
 #include "../printnetinfo/printnetinfo.h"
+#include "../littlefs/our_lfs.h"
+#include "lwip/sockets.h"
+
+
+extern int g_reset;
+
+extern UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address);
+
 
 static int http_rest_get(http_request_t *request);
 static int http_rest_post(http_request_t *request);
@@ -15,13 +24,28 @@ static int http_rest_app(http_request_t *request);
 static int http_rest_post_pins(http_request_t *request);
 static int http_rest_get_pins(http_request_t *request);
 
+static int http_rest_get_seriallog(http_request_t *request);
+
 static int http_rest_post_logconfig(http_request_t *request);
 static int http_rest_get_logconfig(http_request_t *request);
+
+#ifdef BK_LITTLEFS
+static int http_rest_get_lfs_file(http_request_t *request);
+static int http_rest_post_lfs_file(http_request_t *request);
+#endif
+static int http_favicon(http_request_t *request);
+
+static int http_rest_post_reboot(http_request_t *request);
+static int http_rest_post_flash(http_request_t *request, int startaddr);
+static int http_rest_get_flash(http_request_t *request, int startaddr, int len);
+
+
 
 void init_rest(){
     HTTP_RegisterCallback( "/api/", HTTP_GET, http_rest_get);
     HTTP_RegisterCallback( "/api/", HTTP_POST, http_rest_post);
     HTTP_RegisterCallback( "/app", HTTP_GET, http_rest_app);
+    HTTP_RegisterCallback( "/favicon.ico", HTTP_GET, http_favicon);
 }
 
 const char *apppage1 = 
@@ -66,17 +90,187 @@ static int http_rest_app(http_request_t *request){
 
 
 #ifdef BK_LITTLEFS
-static int http_rest_get_lfs(http_request_t *request){
+
+int EndsWith(const char *str, const char *suffix)
+{
+    if (!str || !suffix)
+        return 0;
+    size_t lenstr = strlen(str);
+    size_t lensuffix = strlen(suffix);
+    if (lensuffix >  lenstr)
+        return 0;
+    return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
+}
+
+static int http_rest_get_lfs_file(http_request_t *request){
+    char *fpath;
+    char *buff;
+    int len;
+    int lfsres;
+    int total = 0;
+    lfs_file_t *file;
+
+    fpath = malloc(strlen(request->url) - strlen("api/lfs/") + 1);
+
     init_lfs();
-    http_setup(request, httpMimeTypeHTML);
-    poststr(request, "GET of ");
-    poststr(request, request->url);
-    poststr(request, htmlEnd);
+
+    buff = malloc(1024);
+    file = malloc(sizeof(lfs_file_t));
+    memset(file, 0, sizeof(lfs_file_t));
+
+    strncpy(fpath, request->url + strlen("api/lfs/"), 63);
+    ADDLOG_DEBUG(LOG_FEATURE_API, "LFS read of %s", fpath);
+    lfsres = lfs_file_open(&lfs, file, fpath, LFS_O_RDONLY);
+    if (lfsres >= 0){
+        const char *mimetype = httpMimeTypeBinary;
+        do {
+            if (EndsWith(fpath, ".ico")){
+                mimetype = "image/x-icon";
+                break;
+            }
+            if (EndsWith(fpath, ".js")){
+                mimetype = "text/javascript";
+                break;
+            }
+            if (EndsWith(fpath, ".json")){
+                mimetype = httpMimeTypeJson;
+                break;
+            }
+            if (EndsWith(fpath, ".html")){
+                mimetype = "text/html";
+                break;
+            }
+            if (EndsWith(fpath, ".vue")){
+                mimetype = "application/javascript";
+                break;
+            }
+            break;
+        } while (0);
+
+        http_setup(request, mimetype);
+        do {
+            len = lfs_file_read(&lfs, file, buff, 1024);
+            total += len;
+            if (len){
+                //ADDLOG_DEBUG(LOG_FEATURE_API, "%d bytes read", len);
+                postany(request, buff, len);
+            }
+        } while (len > 0);
+        lfs_file_close(&lfs, file);
+        ADDLOG_DEBUG(LOG_FEATURE_API, "%d total bytes read", total);
+    } else {
+        request->responseCode = HTTP_RESPONSE_NOT_FOUND;
+        http_setup(request, httpMimeTypeJson);
+        ADDLOG_DEBUG(LOG_FEATURE_API, "failed to open %s lfs result %d", fpath, lfsres);
+        hprintf128(request, "{\"fname\":\"%s\",\"error\":%d}", fpath, lfsres);
+    }
     poststr(request,NULL);
-  return 0;
+    if (fpath) free(fpath);
+    if (file) free(file);
+    if (buff) free(buff);
+    return 0;
+}
+
+static int http_rest_post_lfs_file(http_request_t *request){
+    int len;
+    int lfsres;
+    int total = 0;
+
+    // allocated variables
+    lfs_file_t *file;
+    char *fpath;
+    char *folder;
+
+    init_lfs();
+
+    fpath = malloc(strlen(request->url) - strlen("api/lfs/") + 1);
+    file = malloc(sizeof(lfs_file_t));
+    memset(file, 0, sizeof(lfs_file_t));
+
+    strcpy(fpath, request->url + strlen("api/lfs/"));
+    ADDLOG_DEBUG(LOG_FEATURE_API, "LFS write of %s len %d", fpath, request->contentLength);
+
+    folder = strchr(fpath, '/');
+    if (folder){
+        int folderlen = folder - fpath;
+        folder = malloc(folderlen+1);
+        strncpy(folder, fpath, folderlen);
+        ADDLOG_DEBUG(LOG_FEATURE_API, "file is in folder %s try to create", folder);
+        lfsres = lfs_mkdir(&lfs, folder);
+        if (lfsres < 0){
+            ADDLOG_DEBUG(LOG_FEATURE_API, "mkdir error %d", lfsres);
+        }
+    }
+
+    //ADDLOG_DEBUG(LOG_FEATURE_API, "LFS write of %s len %d", fpath, request->contentLength);
+
+    lfsres = lfs_file_open(&lfs, file, fpath, LFS_O_RDWR | LFS_O_CREAT);
+    if (lfsres >= 0){
+        //ADDLOG_DEBUG(LOG_FEATURE_API, "opened %s");
+        int towrite = request->bodylen;
+        char *writebuf = request->bodystart;
+        int writelen = request->bodylen;
+        if (request->contentLength >= 0){
+            towrite = request->contentLength;
+        }
+        //ADDLOG_DEBUG(LOG_FEATURE_API, "bodylen %d, contentlen %d", request->bodylen, request->contentLength);
+        
+        if (writelen < 0){
+            ADDLOG_DEBUG(LOG_FEATURE_API, "ABORTED: %d bytes to write", writelen);
+            lfs_file_close(&lfs, file);
+            request->responseCode = HTTP_RESPONSE_SERVER_ERROR;
+            http_setup(request, httpMimeTypeJson);
+            hprintf128(request, "{\"fname\":\"%s\",\"error\":%d}", fpath, -20);
+            goto exit;
+        }
+
+        do {
+            //ADDLOG_DEBUG(LOG_FEATURE_API, "%d bytes to write", writelen);
+            len = lfs_file_write(&lfs, file, writebuf, writelen);
+            total += len;
+            if (len > 0){
+                //ADDLOG_DEBUG(LOG_FEATURE_API, "%d bytes written", len);
+            }
+            towrite -= len;
+            if (towrite > 0){
+                writebuf = request->received;
+                writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
+                if (writelen < 0){
+                    ADDLOG_DEBUG(LOG_FEATURE_API, "recv returned %d - end of data - remaining %d", writelen, towrite);
+                }
+            }
+        } while ((towrite > 0) && (writelen >= 0));
+        //ADDLOG_DEBUG(LOG_FEATURE_API, "closing %s", fpath);
+        lfs_file_close(&lfs, file);
+        ADDLOG_DEBUG(LOG_FEATURE_API, "%d total bytes written", total);
+        http_setup(request, httpMimeTypeJson);
+        hprintf128(request, "{\"fname\":\"%s\",\"size\":%d}", fpath, total);
+    } else {
+        request->responseCode = HTTP_RESPONSE_SERVER_ERROR;
+        http_setup(request, httpMimeTypeJson);
+        ADDLOG_DEBUG(LOG_FEATURE_API, "failed to open %s err %d", fpath, lfsres);
+        hprintf128(request, "{\"fname\":\"%s\",\"error\":%d}", fpath, lfsres);
+    }
+exit:
+    poststr(request,NULL);
+    if (folder) free(folder);
+    if (file) free(file);
+    if (fpath) free(fpath);
+    return 0;
+}
+
+static int http_favicon(http_request_t *request){
+    request->url = "api/lfs/favicon.ico";
+    return http_rest_get_lfs_file(request);
+}
+
+#else
+static int http_favicon(http_request_t *request){
+    request->responseCode = HTTP_RESPONSE_NOT_FOUND;
+    http_setup(request, httpMimeTypeHTML);
+    poststr(request,NULL);
 }
 #endif
-
 
 
 static int http_rest_get(http_request_t *request){
@@ -87,9 +281,18 @@ static int http_rest_get(http_request_t *request){
     if (!strcmp(request->url, "api/logconfig")){
         return http_rest_get_logconfig(request);
     }
+
+    if (!strncmp(request->url, "api/seriallog", 13)){
+        return http_rest_get_seriallog(request);
+    }
+
+    if (!strcmp(request->url, "api/fsblock")){
+        return http_rest_get_flash(request, LFS_BLOCKS_START, LFS_BLOCKS_LEN);
+    }
+
     #ifdef BK_LITTLEFS
-    if (!strcmp(request->url, "api/initlfs")){
-        return http_rest_get_lfs(request);
+    if (!strncmp(request->url, "api/lfs/", 8)){
+        return http_rest_get_lfs_file(request);
     }
     #endif
 
@@ -98,6 +301,18 @@ static int http_rest_get(http_request_t *request){
     poststr(request, request->url);
     poststr(request, htmlEnd);
     poststr(request,NULL);
+    return 0;
+}
+
+static int http_rest_get_seriallog(http_request_t *request){
+    if (request->url[strlen(request->url)-1] == '1'){
+        direct_serial_log = 1;
+    } else {
+        direct_serial_log = 0;
+    }
+    http_setup(request, httpMimeTypeJson);
+    hprintf128(request, "Direct serial logging set to %d", direct_serial_log);
+    poststr(request, NULL);
     return 0;
 }
 
@@ -256,6 +471,22 @@ static int http_rest_post(http_request_t *request){
         return http_rest_post_logconfig(request);
     }
 
+    if (!strcmp(request->url, "api/reboot")){
+        return http_rest_post_reboot(request);
+    }
+    if (!strcmp(request->url, "api/ota")){
+        return http_rest_post_flash(request, 0x132000);
+    }
+    if (!strcmp(request->url, "api/fsblock")){
+        return http_rest_post_flash(request, LFS_BLOCKS_START);
+    }
+    
+    #ifdef BK_LITTLEFS
+    if (!strncmp(request->url, "api/lfs/", 8)){
+        return http_rest_post_lfs_file(request);
+    }
+    #endif
+
     http_setup(request, httpMimeTypeHTML);
     poststr(request, "POST to ");
     poststr(request, request->url);
@@ -359,5 +590,85 @@ static int http_rest_post_pins(http_request_t *request){
     poststr(request, NULL);
     free(p);
     free(t);
+    return 0;
+}
+
+
+static int http_rest_post_flash(http_request_t *request, int startaddr){
+    int total = 0;
+    int towrite;
+    char *writebuf;
+    int writelen;
+
+    ADDLOG_DEBUG(LOG_FEATURE_API, "OTA post len %d", request->contentLength);
+
+    init_ota(startaddr);
+
+    towrite = request->bodylen;
+    writebuf = request->bodystart;
+    writelen = request->bodylen;
+    if (request->contentLength >= 0){
+        towrite = request->contentLength;
+    }
+        
+    if (writelen < 0){
+        ADDLOG_DEBUG(LOG_FEATURE_API, "ABORTED: %d bytes to write", writelen);
+        request->responseCode = HTTP_RESPONSE_SERVER_ERROR;
+        http_setup(request, httpMimeTypeJson);
+        hprintf128(request, "{\"error\":%d}", -20);
+        goto exit;
+    }
+
+    do {
+        //ADDLOG_DEBUG(LOG_FEATURE_API, "%d bytes to write", writelen);
+        add_otadata(writebuf, writelen);
+        total += writelen;
+        towrite -= writelen;
+        if (towrite > 0){
+            writebuf = request->received;
+            writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
+            if (writelen < 0){
+                ADDLOG_DEBUG(LOG_FEATURE_API, "recv returned %d - end of data - remaining %d", writelen, towrite);
+            }
+        }
+    } while ((towrite > 0) && (writelen >= 0));
+    ADDLOG_DEBUG(LOG_FEATURE_API, "%d total bytes written", total);
+    http_setup(request, httpMimeTypeJson);
+    hprintf128(request, "{\"size\":%d}", total);
+    close_ota();
+
+exit:
+    poststr(request,NULL);
+    return 0;
+}
+
+static int http_rest_post_reboot(http_request_t *request){
+    http_setup(request, httpMimeTypeJson);
+    hprintf128(request, "{\"reboot\":%d}", 3);
+    ADDLOG_DEBUG(LOG_FEATURE_API, "Rebooting in 3 seconds...");
+    g_reset = 3;
+    poststr(request,NULL);
+    return 0;
+}
+
+
+static int http_rest_get_flash(http_request_t *request, int startaddr, int len){
+    char *buffer;
+    int res;
+
+    buffer = malloc(1024);
+
+    http_setup(request, httpMimeTypeBinary);
+    while(len){
+        int readlen = len;
+        if (readlen > 1024){
+            readlen = 1024;
+        }
+        res = flash_read((char *)buffer, readlen, startaddr);
+        startaddr += readlen;
+        len -= readlen;
+        postany(request, buffer, readlen);
+    }
+    poststr(request, NULL);
     return 0;
 }
