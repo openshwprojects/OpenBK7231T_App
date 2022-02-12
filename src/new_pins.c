@@ -8,6 +8,8 @@
 
 #if WINDOWS
 
+#elif PLATFORM_XR809
+
 #else
 #include <gpio_pub.h>
 
@@ -64,6 +66,8 @@ unsigned char g_channelValues[GPIO_MAX] = { 0 };
 
 #ifdef WINDOWS
 
+#elif PLATFORM_XR809
+
 #else
 BUTTON_S g_buttons[GPIO_MAX];
 
@@ -76,6 +80,9 @@ void (*g_doubleClickCallback)(int pinIndex) = 0;
 
 void PIN_SaveToFlash() {
 #if WINDOWS
+
+#elif PLATFORM_XR809
+
 #else
 	save_info_item(NEW_PINS_CONFIG,(UINT8 *)&g_pins, 0, 0);
 #endif
@@ -88,6 +95,9 @@ void PIN_LoadFromFlash() {
 	PR_NOTICE("UART log breaking after that means that you changed the role of TX pin to digital IO or smth else.\r\n");
 
 #if WINDOWS
+
+#elif PLATFORM_XR809
+
 #else
 	get_info_item(NEW_PINS_CONFIG,(UINT8 *)&g_pins, 0, 0);
 #endif
@@ -107,6 +117,8 @@ int PIN_GetPinChannelForPinIndex(int index) {
 }
 void RAW_SetPinValue(int index, int iVal){
 #if WINDOWS
+
+#elif PLATFORM_XR809
 
 #else
     bk_gpio_output(index, iVal);
@@ -135,6 +147,8 @@ unsigned char button_generic_get_gpio_value(void *param)
 {
 #if WINDOWS
 	return 0;
+#elif PLATFORM_XR809
+	return 0;
 #else
 	int index = ((BUTTON_S*)param) - g_buttons;
 	return bk_gpio_input(index);
@@ -160,6 +174,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 	case IOR_Button_n:
 #if WINDOWS
 	
+#elif PLATFORM_XR809
+
 #else
 		{
 			//BUTTON_S *bt = &g_buttons[index];
@@ -173,6 +189,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 	case IOR_Relay_n:
 #if WINDOWS
 	
+#elif PLATFORM_XR809
+
 #else
 		// TODO: disable?
 #endif
@@ -186,6 +204,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			pwmIndex = PIN_GetPWMIndexForPinIndex(index);
 #if WINDOWS
 	
+#elif PLATFORM_XR809
+
 #elif PLATFORM_BK7231N
 
 #else
@@ -207,6 +227,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 	case IOR_Button_n:
 #if WINDOWS
 	
+#elif PLATFORM_XR809
+
 #else
 		{
 			BUTTON_S *bt = &g_buttons[index];
@@ -225,6 +247,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 	case IOR_Relay_n:
 #if WINDOWS
 	
+#elif PLATFORM_XR809
+
 #else
 		bk_gpio_config_output(index);
 		bk_gpio_output(index, 0);
@@ -240,6 +264,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			channelIndex = PIN_GetPinChannelForPinIndex(index);
 #if WINDOWS
 	
+#elif PLATFORM_XR809
+
 #elif PLATFORM_BK7231N
 
 #else
@@ -293,6 +319,8 @@ void Channel_OnChanged(int ch) {
 
 #if WINDOWS
 	
+#elif PLATFORM_XR809
+
 #elif PLATFORM_BK7231N
 
 #else
@@ -347,6 +375,8 @@ bool CHANNEL_Check(int ch) {
 }
 
 #if WINDOWS
+
+#elif PLATFORM_XR809
 
 #else
 

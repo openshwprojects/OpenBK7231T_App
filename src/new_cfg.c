@@ -5,6 +5,8 @@
 
 #if WINDOWS
 
+#elif PLATFORM_XR809
+
 #else
 #include "../../beken378/func/include/net_param_pub.h"
 #include "../../beken378/app/config/param_config.h"
@@ -35,6 +37,8 @@ void CFG_CreateDeviceNameUnique()
 	unsigned char mac[32];
 #if WINDOWS
 
+#elif PLATFORM_XR809
+	mac[0] = 'A'; mac[1] = 'B'; mac[2] = 'A'; mac[3] = 'B'; mac[4] = 'A'; mac[5] = 'B';
 #else
     wifi_get_mac_address((char *)mac, CONFIG_ROLE_STA);
 #endif
@@ -94,6 +98,8 @@ void CFG_SetMQTTPass(const char *s) {
 void CFG_SaveWiFi() {
 #if WINDOWS
 
+#elif PLATFORM_XR809
+
 #else
 	ITEM_NEW_WIFI_CONFIG container;
 	strcpy_safe(container.ssid, g_wifi_ssid, sizeof(container.ssid));
@@ -103,6 +109,8 @@ void CFG_SaveWiFi() {
 }
 void CFG_LoadWiFi() {
 #if WINDOWS
+
+#elif PLATFORM_XR809
 
 #else
 	ITEM_NEW_WIFI_CONFIG container;
@@ -115,6 +123,8 @@ void CFG_LoadWiFi() {
 
 void CFG_SaveMQTT() {
 #if WINDOWS
+
+#elif PLATFORM_XR809
 
 #else
 	ITEM_NEW_MQTT_CONFIG container;
@@ -129,6 +139,8 @@ void CFG_SaveMQTT() {
 }
 void CFG_LoadMQTT() {
 #if WINDOWS
+
+#elif PLATFORM_XR809
 
 #else
 	ITEM_NEW_MQTT_CONFIG container;

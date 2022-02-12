@@ -43,7 +43,7 @@ void misc_formatUpTimeString(int totalSeconds, char *o);
 // poststr with format - for results LESS THAN 128
 int hprintf128(http_request_t *request, const char *fmt, ...);
 
-enum {
+typedef enum {
     HTTP_ANY = -1,
     HTTP_GET = 0,
     HTTP_PUT = 1,
