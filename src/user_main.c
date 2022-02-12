@@ -60,6 +60,12 @@ static int g_secondsElapsed = 0;
 
 static int g_openAP = 0;
 
+// reset in this number of seconds
+int g_reset = 0;
+// from wlan_ui.c
+void bk_reboot(void);
+
+
 int Time_getUpTimeSeconds() {
 	return g_secondsElapsed;
 }
@@ -172,6 +178,14 @@ static void app_led_timer_handler(void *data)
     if (0 == g_openAP){
       setup_wifi_open_access_point();
     }
+  }
+
+
+  if (g_reset){
+      g_reset--;
+      if (!g_reset){
+        bk_reboot(); 
+      }
   }
 }
 

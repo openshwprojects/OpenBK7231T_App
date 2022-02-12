@@ -53,10 +53,11 @@ Connection: keep-alive
 
 #define DEFAULT_OTA_URL "http://raspberrypi:1880/firmware"
 
-const char httpHeader[] = "HTTP/1.1 200 OK\nContent-type: " ;  // HTTP header
+const char httpHeader[] = "HTTP/1.1 %d OK\nContent-type: %s" ;  // HTTP header
 const char httpMimeTypeHTML[] = "text/html" ;              // HTML MIME type
 const char httpMimeTypeText[] = "text/plain" ;           // TEXT MIME type
 const char httpMimeTypeJson[] = "application/json" ;           // TEXT MIME type
+const char httpMimeTypeBinary[] = "application/octet-stream" ;   // binary/file MIME type
 const char htmlHeader[] = "<!DOCTYPE html><html><body>" ;
 const char htmlEnd[] = "</body></html>" ;
 const char htmlReturnToMenu[] = "<a href=\"index\">Return to menu</a>";;
@@ -78,7 +79,8 @@ const char *methodNames[] = {
 #define os_malloc malloc
 #endif
 
-
+void misc_formatUpTimeString(int totalSeconds, char *o);
+int Time_getUpTimeSeconds();
 
 typedef struct http_callback_tag {
     char *url;
@@ -155,8 +157,7 @@ bool http_checkUrlBase(const char *base, const char *fileName) {
 }
 
 void http_setup(http_request_t *request, const char *type){
-	poststr(request,httpHeader);
-	poststr(request,type);
+	hprintf128(request, httpHeader, request->responseCode, type);
 	poststr(request,"\r\n"); // next header
 	poststr(request,httpCorsHeaders);
 	poststr(request,"\r\n"); // end headers with double CRLF
@@ -395,7 +396,7 @@ void misc_formatUpTimeString(int totalSeconds, char *o) {
 
 int hprintf128(http_request_t *request, const char *fmt, ...){
   va_list argList;
-  BaseType_t taken;
+  //BaseType_t taken;
 	char tmp[128];
 	va_start(argList, fmt);
 	vsprintf(tmp, fmt, argList);
@@ -499,6 +500,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 	} while(1);
 
 	request->bodystart = p;
+	request->bodylen = request->receivedLen - (p - request->received); 
 
 	// we will make this more general
 	http_getArg(urlStr,"a",tmpA,sizeof(tmpA));

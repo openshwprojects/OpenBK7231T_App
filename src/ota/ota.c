@@ -61,8 +61,6 @@ void close_ota(){
 void add_otadata(unsigned char *data, int len){
     if (!sector) return;
     //addLog("OTA DataRxed start: %02.2x %02.2x len %d\r\n", data[0], data[1], len);
-    addLog(".");
-
     while (len){
         if (sectorlen < SECTOR_SIZE){
             int lenstore = SECTOR_SIZE - sectorlen;
@@ -85,7 +83,9 @@ void add_otadata(unsigned char *data, int len){
 }
 
 static void store_sector(unsigned int addr, unsigned char *data){
-    addLog("X");
+    if (!(addr % 0x4000)){
+      addLog("%x", addr);
+    }
     //addLog("writing OTA, addr 0x%x\n", addr);
     flash_ctrl(CMD_FLASH_WRITE_ENABLE, (void *)0);
     flash_ctrl(CMD_FLASH_ERASE_SECTOR, &addr);

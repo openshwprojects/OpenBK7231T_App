@@ -76,7 +76,9 @@ static void tcp_client_thread( beken_thread_arg_t arg )
 
   request.fd = fd;
   request.received = buf;
-  request.receivedLen = recv( fd, request.received, 1024, 0 );
+  request.receivedLenmax = 1024;
+  request.responseCode = HTTP_RESPONSE_OK;
+  request.receivedLen = recv( fd, request.received, request.receivedLenmax, 0 );
   request.received[request.receivedLen] = 0;
 
   request.reply = reply;

@@ -13,15 +13,14 @@
 #include "../logging/logging.h"
 #include "flash_pub.h"
 
+
 //https://github.com/littlefs-project/littlefs
-
-
-
 
 
 #ifdef BK_LITTLEFS
 
 // variables used by the filesystem
+int lfs_initialised = 0;
 lfs_t lfs;
 lfs_file_t file;
 
@@ -73,28 +72,30 @@ const struct lfs_config cfg = {
 
 
 void init_lfs(){
-    int err = lfs_mount(&lfs, &cfg);
+    if (!lfs_initialised){
+        int err = lfs_mount(&lfs, &cfg);
 
-    // reformat if we can't mount the filesystem
-    // this should only happen on the first boot
-    if (err) {
-        ADDLOG_INFO(LOG_FEATURE_LFS, "Formatting LFS");
-        lfs_format(&lfs, &cfg);
-        lfs_mount(&lfs, &cfg);
+        // reformat if we can't mount the filesystem
+        // this should only happen on the first boot
+        if (err) {
+            ADDLOG_INFO(LOG_FEATURE_LFS, "Formatting LFS");
+            lfs_format(&lfs, &cfg);
+            lfs_mount(&lfs, &cfg);
+        }
+        // read current count
+        lfs_file_open(&lfs, &file, "boot_count", LFS_O_RDWR | LFS_O_CREAT);
+        lfs_file_read(&lfs, &file, &boot_count, sizeof(boot_count));
+
+        // update boot count
+        boot_count += 1;
+        lfs_file_rewind(&lfs, &file);
+        lfs_file_write(&lfs, &file, &boot_count, sizeof(boot_count));
+
+        // remember the storage is not updated until the file is closed successfully
+        lfs_file_close(&lfs, &file);
+        ADDLOG_INFO(LOG_FEATURE_LFS, "boot count %d", boot_count);
+        lfs_initialised = 1;
     }
-    // read current count
-    lfs_file_open(&lfs, &file, "boot_count", LFS_O_RDWR | LFS_O_CREAT);
-    lfs_file_read(&lfs, &file, &boot_count, sizeof(boot_count));
-
-    // update boot count
-    boot_count += 1;
-    lfs_file_rewind(&lfs, &file);
-    lfs_file_write(&lfs, &file, &boot_count, sizeof(boot_count));
-
-    // remember the storage is not updated until the file is closed successfully
-    lfs_file_close(&lfs, &file);
-    ADDLOG_INFO(LOG_FEATURE_LFS, "boot count %d", boot_count);
-
 }
 
 

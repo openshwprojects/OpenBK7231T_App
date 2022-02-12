@@ -7,6 +7,8 @@
 #ifndef LFS_UTIL_H
 #define LFS_UTIL_H
 
+#include "mem_pub.h"
+
 // Users can override lfs_util.h with their own configuration by defining
 // LFS_CONFIG as a header file to include (-DLFS_CONFIG=lfs_config.h).
 //
@@ -219,7 +221,7 @@ uint32_t lfs_crc(uint32_t crc, const void *buffer, size_t size);
 // Note, memory must be 64-bit aligned
 static inline void *lfs_malloc(size_t size) {
 #ifndef LFS_NO_MALLOC
-    return malloc(size);
+    return os_malloc(size);
 #else
     (void)size;
     return NULL;
@@ -229,7 +231,7 @@ static inline void *lfs_malloc(size_t size) {
 // Deallocate memory, only used if buffers are not provided to littlefs
 static inline void lfs_free(void *p) {
 #ifndef LFS_NO_MALLOC
-    free(p);
+    os_free(p);
 #else
     (void)p;
 #endif

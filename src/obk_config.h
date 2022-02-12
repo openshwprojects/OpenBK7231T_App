@@ -6,9 +6,10 @@
 
 // comment out to remove component
 
-
 // comment out to remove littlefs
 #define BK_LITTLEFS
+
+// add further app wide defined here, and used them to control build inclusion.
 
 
 #endif
