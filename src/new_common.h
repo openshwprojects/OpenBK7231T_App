@@ -17,6 +17,26 @@ typedef unsigned char u8;
 typedef unsigned char uint8_t;
 typedef unsigned int uint32_t;
 
+#elif PLATFORM_XR809
+
+typedef int bool;
+#define true 1
+#define false 0
+
+#define PR_NOTICE printf
+typedef unsigned char u8;
+typedef unsigned char uint8_t;
+typedef unsigned int uint32_t;
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
+
+#include "common/framework/platform_init.h"
+
+#include "kernel/os/os.h"
+
 #else
 #define _TUYA_DEVICE_GLOBAL
 

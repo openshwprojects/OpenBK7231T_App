@@ -30,7 +30,7 @@ extern int direct_serial_log;
 #define DEFAULT_DIRECT_SERIAL_LOG 0
 //#define DEFAULT_DIRECT_SERIAL_LOG 1
 
-enum {
+typedef enum {
     LOG_NONE = 0,
     LOG_ERROR = 1,
     LOG_WARN = 2,
@@ -40,7 +40,7 @@ enum {
     LOG_MAX = 6
 } log_levels;
 
-enum {
+typedef enum {
     LOG_FEATURE_HTTP            = 0,
     LOG_FEATURE_MQTT            = 1,
     LOG_FEATURE_CFG             = 2,
