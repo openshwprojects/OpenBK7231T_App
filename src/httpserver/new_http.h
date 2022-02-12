@@ -4,17 +4,26 @@ extern const char httpHeader[];  // HTTP header
 extern const char httpMimeTypeHTML[];              // HTML MIME type
 extern const char httpMimeTypeText[];           // TEXT MIME type
 extern const char httpMimeTypeJson[];
+extern const char httpMimeTypeBinary[];
 extern const char htmlHeader[];
 extern const char htmlEnd[];
 extern const char htmlReturnToMenu[];
 
 extern const char *htmlPinRoleNames[];
 
+
+#define HTTP_RESPONSE_OK 200
+#define HTTP_RESPONSE_NOT_FOUND 404
+#define HTTP_RESPONSE_SERVER_ERROR 500
+
+
+
 #define MAX_QUERY 16 
 #define MAX_HEADERS 16
 typedef struct http_request_tag {
     char *received; // partial or whole received data, up to 1024
     int receivedLen;
+    int receivedLenmax; // sizeof received
 
     // filled by HTTP_ProcessPacket
     int method;
@@ -25,7 +34,9 @@ typedef struct http_request_tag {
     int numheaders;
     char *headers[MAX_HEADERS];
     char *bodystart; /// start start of the body (maybe all of it)
+    int bodylen;
     int contentLength;
+    int responseCode;
 
     // used to respond
     char *reply;
@@ -38,6 +49,7 @@ typedef struct http_request_tag {
 int HTTP_ProcessPacket(http_request_t *request);
 void http_setup(http_request_t *request, const char *type);
 int poststr(http_request_t *request, const char *str);
+int postany(http_request_t *request, const char *str, int len);
 void misc_formatUpTimeString(int totalSeconds, char *o);
 
 // poststr with format - for results LESS THAN 128
