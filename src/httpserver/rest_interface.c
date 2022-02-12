@@ -12,6 +12,7 @@
 #include "lwip/sockets.h"
 
 
+
 extern int g_reset;
 
 extern UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address);
@@ -110,12 +111,12 @@ static int http_rest_get_lfs_file(http_request_t *request){
     int total = 0;
     lfs_file_t *file;
 
-    fpath = malloc(strlen(request->url) - strlen("api/lfs/") + 1);
+    fpath = os_malloc(strlen(request->url) - strlen("api/lfs/") + 1);
 
     init_lfs();
 
-    buff = malloc(1024);
-    file = malloc(sizeof(lfs_file_t));
+    buff = os_malloc(1024);
+    file = os_malloc(sizeof(lfs_file_t));
     memset(file, 0, sizeof(lfs_file_t));
 
     strncpy(fpath, request->url + strlen("api/lfs/"), 63);
@@ -165,9 +166,9 @@ static int http_rest_get_lfs_file(http_request_t *request){
         hprintf128(request, "{\"fname\":\"%s\",\"error\":%d}", fpath, lfsres);
     }
     poststr(request,NULL);
-    if (fpath) free(fpath);
-    if (file) free(file);
-    if (buff) free(buff);
+    if (fpath) os_free(fpath);
+    if (file) os_free(file);
+    if (buff) os_free(buff);
     return 0;
 }
 
@@ -183,8 +184,8 @@ static int http_rest_post_lfs_file(http_request_t *request){
 
     init_lfs();
 
-    fpath = malloc(strlen(request->url) - strlen("api/lfs/") + 1);
-    file = malloc(sizeof(lfs_file_t));
+    fpath = os_malloc(strlen(request->url) - strlen("api/lfs/") + 1);
+    file = os_malloc(sizeof(lfs_file_t));
     memset(file, 0, sizeof(lfs_file_t));
 
     strcpy(fpath, request->url + strlen("api/lfs/"));
@@ -193,7 +194,7 @@ static int http_rest_post_lfs_file(http_request_t *request){
     folder = strchr(fpath, '/');
     if (folder){
         int folderlen = folder - fpath;
-        folder = malloc(folderlen+1);
+        folder = os_malloc(folderlen+1);
         strncpy(folder, fpath, folderlen);
         ADDLOG_DEBUG(LOG_FEATURE_API, "file is in folder %s try to create", folder);
         lfsres = lfs_mkdir(&lfs, folder);
@@ -253,9 +254,9 @@ static int http_rest_post_lfs_file(http_request_t *request){
     }
 exit:
     poststr(request,NULL);
-    if (folder) free(folder);
-    if (file) free(file);
-    if (fpath) free(fpath);
+    if (folder) os_free(folder);
+    if (file) os_free(file);
+    if (fpath) os_free(fpath);
     return 0;
 }
 
@@ -395,10 +396,10 @@ static int http_rest_post_logconfig(http_request_t *request){
 
     //https://github.com/zserge/jsmn/blob/master/example/simple.c
     //jsmn_parser p;
-    jsmn_parser *p = malloc(sizeof(jsmn_parser));
+    jsmn_parser *p = os_malloc(sizeof(jsmn_parser));
     //jsmntok_t t[128]; /* We expect no more than 128 tokens */
 #define TOKEN_COUNT 128
-    jsmntok_t *t = malloc(sizeof(jsmntok_t)*TOKEN_COUNT);
+    jsmntok_t *t = os_malloc(sizeof(jsmntok_t)*TOKEN_COUNT);
     char *json_str = request->bodystart;
     int json_len = strlen(json_str);
 
@@ -411,8 +412,8 @@ static int http_rest_post_logconfig(http_request_t *request){
     if (r < 0) {
         ADDLOG_ERROR(LOG_FEATURE_API, "Failed to parse JSON: %d", r);
         poststr(request, NULL);
-        free(p);
-        free(t);
+        os_free(p);
+        os_free(t);
         return 0;
     }
 
@@ -420,8 +421,8 @@ static int http_rest_post_logconfig(http_request_t *request){
     if (r < 1 || t[0].type != JSMN_OBJECT) {
         ADDLOG_ERROR(LOG_FEATURE_API, "Object expected", r);
         poststr(request, NULL);
-        free(p);
-        free(t);
+        os_free(p);
+        os_free(t);
         return 0;
     }
 
@@ -453,8 +454,8 @@ static int http_rest_post_logconfig(http_request_t *request){
     }
 
     poststr(request, NULL);
-    free(p);
-    free(t);
+    os_free(p);
+    os_free(t);
     return 0;
 }
 
@@ -510,10 +511,10 @@ static int http_rest_post_pins(http_request_t *request){
 
     //https://github.com/zserge/jsmn/blob/master/example/simple.c
     //jsmn_parser p;
-    jsmn_parser *p = malloc(sizeof(jsmn_parser));
+    jsmn_parser *p = os_malloc(sizeof(jsmn_parser));
     //jsmntok_t t[128]; /* We expect no more than 128 tokens */
 #define TOKEN_COUNT 128
-    jsmntok_t *t = malloc(sizeof(jsmntok_t)*TOKEN_COUNT);
+    jsmntok_t *t = os_malloc(sizeof(jsmntok_t)*TOKEN_COUNT);
     char *json_str = request->bodystart;
     int json_len = strlen(json_str);
 
@@ -528,8 +529,8 @@ static int http_rest_post_pins(http_request_t *request){
         sprintf(tmp,"Failed to parse JSON: %d\n", r);
         poststr(request, tmp);
         poststr(request, NULL);
-        free(p);
-        free(t);
+        os_free(p);
+        os_free(t);
         return 0;
     }
 
@@ -539,8 +540,8 @@ static int http_rest_post_pins(http_request_t *request){
         sprintf(tmp,"Object expected\n");
         poststr(request, tmp);
         poststr(request, NULL);
-        free(p);
-        free(t);
+        os_free(p);
+        os_free(t);
         return 0;
     }
 
@@ -588,8 +589,8 @@ static int http_rest_post_pins(http_request_t *request){
     }
 
     poststr(request, NULL);
-    free(p);
-    free(t);
+    os_free(p);
+    os_free(t);
     return 0;
 }
 
@@ -621,7 +622,7 @@ static int http_rest_post_flash(http_request_t *request, int startaddr){
 
     do {
         //ADDLOG_DEBUG(LOG_FEATURE_API, "%d bytes to write", writelen);
-        add_otadata(writebuf, writelen);
+        add_otadata((unsigned char *)writebuf, writelen);
         total += writelen;
         towrite -= writelen;
         if (towrite > 0){
@@ -656,7 +657,7 @@ static int http_rest_get_flash(http_request_t *request, int startaddr, int len){
     char *buffer;
     int res;
 
-    buffer = malloc(1024);
+    buffer = os_malloc(1024);
 
     http_setup(request, httpMimeTypeBinary);
     while(len){

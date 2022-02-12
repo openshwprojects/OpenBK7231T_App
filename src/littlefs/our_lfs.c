@@ -13,10 +13,8 @@
 #include "../logging/logging.h"
 #include "flash_pub.h"
 
+
 //https://github.com/littlefs-project/littlefs
-
-
-
 
 
 #ifdef BK_LITTLEFS
