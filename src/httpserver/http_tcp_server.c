@@ -1,3 +1,8 @@
+#if PLATFORM_XR809
+#define LWIP_COMPAT_SOCKETS 1
+#define LWIP_POSIX_SOCKETS_IO_NAMES 1
+#endif
+
 #include "../new_common.h"
 #include "ctype.h"
 #include "lwip/sockets.h"
@@ -5,16 +10,24 @@
 #include "lwip/inet.h"
 #include "../logging/logging.h"
 #include "new_http.h"
+
 #if PLATFORM_XR809
 
 #define kNoErr                      0       //! No error occurred.
 typedef void *beken_thread_arg_t;
 typedef int OSStatus;
 
+#define close lwip_close
+
 static OS_Thread_t g_http_thread;
 
 #else
 #include "str_pub.h"
+#endif
+
+
+#if PLATFORM_XR809
+#define DISABLE_SEPARATE_THREAD_FOR_EACH_TCP_CLIENT 1
 #endif
 
 static void tcp_server_thread( beken_thread_arg_t arg );
@@ -113,10 +126,14 @@ exit:
     os_free( reply );
 
   close( fd );;
+#if DISABLE_SEPARATE_THREAD_FOR_EACH_TCP_CLIENT
+
+#else
 #if PLATFORM_XR809
 	OS_ThreadDelete( NULL );
 #else
 	rtos_delete_thread( NULL );
+#endif
 #endif
 }
 
@@ -152,16 +169,25 @@ static void tcp_server_thread( beken_thread_arg_t arg )
             client_fd = accept( tcp_listen_fd, (struct sockaddr *) &client_addr, &sockaddr_t_size );
             if ( client_fd >= 0 )
             {
+#if PLATFORM_XR809
+				OS_Thread_t clientThreadUnused ;
+#endif
                 os_strcpy( client_ip_str, inet_ntoa( client_addr.sin_addr ) );
                 ADDLOG_DEBUG(LOG_FEATURE_HTTP,  "TCP Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd );
+#if DISABLE_SEPARATE_THREAD_FOR_EACH_TCP_CLIENT
+				// Use main server thread (blocking all other clients)
+				// right now, I am getting OS_ThreadCreate everytime on XR809 platform
+				tcp_client_thread(client_fd);
+#else
+				// Create separate thread for client
                 if ( kNoErr != 
 #if PLATFORM_XR809
-					OS_ThreadCreate(&g_http_thread,
+					OS_ThreadCreate(&clientThreadUnused,
 							                     "TCP Clients",
 		                tcp_client_thread,
 		                client_fd,
 		                OS_THREAD_PRIO_CONSOLE,
-		                0x800)
+		                0x400)
 
 #else
                      rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY, 
@@ -173,9 +199,11 @@ static void tcp_server_thread( beken_thread_arg_t arg )
 #endif
 												 ) 
                 {
+                  ADDLOG_DEBUG(LOG_FEATURE_HTTP,  "TCP Client %s:%d thread creation failed! fd: %d", client_ip_str, client_addr.sin_port, client_fd );
                   close( client_fd );
                   client_fd = -1;
                 }
+#endif
             }
         }
     }

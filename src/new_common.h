@@ -28,6 +28,14 @@ typedef unsigned char u8;
 typedef unsigned char uint8_t;
 typedef unsigned int uint32_t;
 
+#define ASSERT
+#define os_strcpy strcpy
+#define os_malloc malloc
+#define os_free free
+#define os_memset memset
+
+#define rtos_delay_milliseconds OS_ThreadSleep
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

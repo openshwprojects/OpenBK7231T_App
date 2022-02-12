@@ -2,6 +2,7 @@
 
 #include "../new_common.h"
 #include "ctype.h" 
+#include "lwip/sockets.h"
 #if WINDOWS
 //#include <windows.h>
 #include <winsock2.h>
@@ -10,7 +11,6 @@
 #include <stdarg.h>
 
 #else
-#include "lwip/sockets.h"
 #include "str_pub.h"
 #endif
 #include "new_http.h"
@@ -742,7 +742,13 @@ int HTTP_ProcessPacket(http_request_t *request) {
 				} else {
 					now = rem;
 				}
+#if PLATFORM_XR809
+				res = 0;
+				now = 0;
+				rem = 0;
+#else
 				res = tuya_hal_flash_read (nowOfs, buffer,now);
+#endif
 				for(i = 0; i < now; i++) {
 					sprintf(tmpA,"%02X ",buffer[i]);
 					poststr(request,tmpA);
@@ -1102,6 +1108,8 @@ int HTTP_ProcessPacket(http_request_t *request) {
 			sprintf(tmpB,"<h3>OTA requested for %s!</h3>",tmpA);
 			poststr(request,tmpB);
 #if WINDOWS
+
+#elif PLATFORM_XR809
 
 #else
         otarequest(tmpA);
