@@ -310,7 +310,13 @@ template_t g_templates [] = {
 
 int g_total_templates = sizeof(g_templates)/sizeof(g_templates[0]);
 
+#if PLATFORM_XR809
+const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenXR809/\">OpenXR809</a></h1><h3><a href=\"https://www.elektroda.com/rtvforum/viewtopic.php?p=19841301#19841301\">[Read more]</a><a href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
+
+#else
 const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7231T/\">OpenBK7231</a></h1><h3><a href=\"https://www.elektroda.com/rtvforum/viewtopic.php?p=19841301#19841301\">[Read more]</a><a href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
+
+#endif
 
 
 void HTTP_AddBuildFooter(http_request_t *request) {
@@ -978,10 +984,17 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		poststr(request,"<form action=\"cfg_pins\">");
 		for( i = 0; i < GPIO_MAX; i++) {
 			int si, ch;
+
 			si = PIN_GetPinRoleForPinIndex(i);
 			ch = PIN_GetPinChannelForPinIndex(i);
+
+#if PLATFORM_XR809
+			poststr(request,PIN_GetPinNameAlias(i));
+			poststr(request," ");
+#else
 			sprintf(tmpA, "P%i ",i);
 			poststr(request,tmpA);
+#endif
 			sprintf(tmpA, "<select name=\"%i\">",i);
 			poststr(request,tmpA);
 			for(j = 0; j < IOR_Total_Options; j++) {
