@@ -140,29 +140,11 @@ void connect_to_wifi(const char *oob_ssid,const char *connect_key)
 
 beken_timer_t led_timer;
 
-static void app_my_channel_toggle_callback(int channel, int iVal)
-{
-  ADDLOG_INFO(LOG_FEATURE_MAIN, "Channel has changed! Publishing change %i with %i \n",channel,iVal);
-	example_publish(mqtt_client,channel,iVal);
-}
 
 
-int loopsWithDisconnected = 0;
 static void app_led_timer_handler(void *data)
 {
-	if(mqtt_client == 0 || mqtt_client_is_connected(mqtt_client) == 0) {
-		ADDLOG_INFO(LOG_FEATURE_MAIN, "Timer discovers disconnected mqtt %i\n",loopsWithDisconnected);
-		loopsWithDisconnected++;
-		if(loopsWithDisconnected > 10)
-		{ 
-			if(mqtt_client == 0)
-			{
-			    mqtt_client = mqtt_client_new();
-			}
-			example_do_connect(mqtt_client);
-			loopsWithDisconnected = 0;
-		}
-	}
+	MQTT_RunEverySecondUpdate();
 
 	g_secondsElapsed ++;
   ADDLOG_INFO(LOG_FEATURE_MAIN, "Timer is %i free mem %d\n", g_secondsElapsed, xPortGetFreeHeapSize());
@@ -366,7 +348,6 @@ void user_main(void)
 
 
 	PIN_SetGenericDoubleClickCallback(app_on_generic_dbl_click);
-	CHANNEL_SetChangeCallback(app_my_channel_toggle_callback);
 	ADDLOG_INFO(LOG_FEATURE_MAIN, "Initialised other callbacks\r\n");
 
 
