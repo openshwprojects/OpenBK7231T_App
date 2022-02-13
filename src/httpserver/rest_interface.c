@@ -40,6 +40,7 @@ static int http_rest_post_reboot(http_request_t *request);
 static int http_rest_post_flash(http_request_t *request, int startaddr);
 static int http_rest_get_flash(http_request_t *request, int startaddr, int len);
 
+static int http_rest_get_info(http_request_t *request);
 
 
 void init_rest(){
@@ -297,6 +298,10 @@ static int http_rest_get(http_request_t *request){
     }
     #endif
 
+    if (!strcmp(request->url, "api/info")){
+        return http_rest_get_info(request);
+    }
+
     http_setup(request, httpMimeTypeHTML);
     poststr(request, "GET of ");
     poststr(request, request->url);
@@ -460,6 +465,16 @@ static int http_rest_post_logconfig(http_request_t *request){
 }
 
 /////////////////////////////////////////////////
+
+
+static int http_rest_get_info(http_request_t *request){
+    int i;
+    http_setup(request, httpMimeTypeJson);
+    hprintf128(request, "{\"uptimes\":%d,", Time_getUpTimeSeconds());
+    hprintf128(request, "\"build\":\"%s\"}", g_build_str);
+    poststr(request, NULL);
+    return 0;
+}
 
 
 static int http_rest_post(http_request_t *request){
