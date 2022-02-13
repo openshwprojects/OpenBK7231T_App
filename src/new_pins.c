@@ -10,6 +10,8 @@
 
 #elif PLATFORM_XR809
 
+#include "driver/chip/hal_gpio.h"
+
 #else
 #include <gpio_pub.h>
 
@@ -119,7 +121,13 @@ void RAW_SetPinValue(int index, int iVal){
 #if WINDOWS
 
 #elif PLATFORM_XR809
+	GPIO_InitParam param;
+	int xr_port; // eg GPIO_PORT_A
+	int xr_pin; // eg. GPIO_PIN_20
 
+	PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
+
+	HAL_GPIO_WritePin(xr_port, xr_pin, iVal);
 #else
     bk_gpio_output(index, iVal);
 #endif
@@ -142,6 +150,54 @@ void button_generic_double_press(int index)
 void button_generic_long_press_hold(int index)
 {
 	PR_NOTICE("%i key_long_press_hold\r\n", index);
+}
+
+#if PLATFORM_XR809
+typedef struct xr809pin_s {
+	const char *name;
+	int port;
+	int pin;
+} xr809pin_t;
+
+// https://developer.tuya.com/en/docs/iot/xr3-datasheet?id=K98s9168qi49g
+
+xr809pin_t g_xrPins[] = {
+	{ "PA19", GPIO_PORT_A, GPIO_PIN_19 },
+	{ "PB03", GPIO_PORT_B, GPIO_PIN_3 },
+	{ "PA12", GPIO_PORT_A, GPIO_PIN_12 },
+	{ "PA14", GPIO_PORT_A, GPIO_PIN_14 },
+	{ "PA15", GPIO_PORT_A, GPIO_PIN_15 },
+	{ "PA06", GPIO_PORT_A, GPIO_PIN_6 },
+	{ "PA07", GPIO_PORT_A, GPIO_PIN_7 },
+	{ "PA16", GPIO_PORT_A, GPIO_PIN_16 },
+	{ "PA20", GPIO_PORT_A, GPIO_PIN_20 },
+	{ "PA21", GPIO_PORT_A, GPIO_PIN_21 },
+	{ "PA22", GPIO_PORT_A, GPIO_PIN_22 },
+	{ "PB02", GPIO_PORT_B, GPIO_PIN_2 },
+	{ "PA08", GPIO_PORT_A, GPIO_PIN_8 },
+};
+int g_numXRPins = sizeof(g_xrPins) / sizeof(g_xrPins[0]);
+
+void PIN_XR809_GetPortPinForIndex(int index, int *xr_port, int *xr_pin) {
+	if(index < 0 || index >= g_numXRPins) {
+		*xr_port = 0;
+		*xr_pin = 0;
+		return;
+	}
+	*xr_port = g_xrPins[index].port;
+	*xr_pin = g_xrPins[index].pin;
+}
+
+#endif
+const char *PIN_GetPinNameAlias(int index) {
+#if PLATFORM_XR809
+	if(index < 0 || index >= g_numXRPins) {
+		return "bad_index";
+	}
+	return g_xrPins[index].name;
+#else
+	return "not_implemented_here";
+#endif
 }
 unsigned char button_generic_get_gpio_value(void *param)
 {
@@ -245,14 +301,26 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 	case IOR_LED_n:
 	case IOR_Relay:
 	case IOR_Relay_n:
+	{
 #if WINDOWS
 	
 #elif PLATFORM_XR809
+		GPIO_InitParam param;
+		int xr_port; // eg GPIO_PORT_A
+		int xr_pin; // eg. GPIO_PIN_20
 
+		PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
+
+		/*set pin driver capability*/
+		param.driving = GPIO_DRIVING_LEVEL_1;
+		param.mode = GPIOx_Pn_F1_OUTPUT;
+		param.pull = GPIO_PULL_NONE;
+		HAL_GPIO_Init(xr_port, xr_pin, &param);
 #else
 		bk_gpio_config_output(index);
 		bk_gpio_output(index, 0);
 #endif
+	}
 		break;
 	case IOR_PWM:
 		{
@@ -307,14 +375,20 @@ void Channel_OnChanged(int ch) {
 		if(g_pins.channels[i] == ch) {
 			if(g_pins.roles[i] == IOR_Relay || g_pins.roles[i] == IOR_LED) {
 				RAW_SetPinValue(i,bOn);
-				g_channelChangeCallback(ch,bOn);
+				if(g_channelChangeCallback != 0) {
+					g_channelChangeCallback(ch,bOn);
+				}
 			}
 			if(g_pins.roles[i] == IOR_Relay_n || g_pins.roles[i] == IOR_LED_n) {
 				RAW_SetPinValue(i,!bOn);
-				g_channelChangeCallback(ch,bOn);
+				if(g_channelChangeCallback != 0) {
+					g_channelChangeCallback(ch,bOn);
+				}
 			}
 			if(g_pins.roles[i] == IOR_PWM) {
-				g_channelChangeCallback(ch,iVal);
+				if(g_channelChangeCallback != 0) {
+					g_channelChangeCallback(ch,iVal);
+				}
 				int pwmIndex = PIN_GetPWMIndexForPinIndex(i);
 
 #if WINDOWS
