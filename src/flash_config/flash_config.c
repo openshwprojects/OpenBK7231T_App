@@ -21,12 +21,19 @@ static TLV_HEADER_ST *g_table = NULL;
 static UINT32 flashaddr;
 static UINT32 flashlen;
 
-static int compress_table();
-static int save_table();
+static int changes = 0;
+extern int g_savecfg;
+
+static int config_compress_table();
+static int config_save_table();
+
+static INFO_ITEM_ST *_search_item(INFO_ITEM_ST *item, UINT32 *p_usedlen);
+
+static SemaphoreHandle_t config_mutex = 0;
 
 
 char *hex = "0123456789ABCDEF";
-int dump(unsigned char *addr, int len){
+int config_dump(unsigned char *addr, int len){
     char tmp[40];
     int i;
     ADDLOG_DEBUG(LOG_FEATURE_CFG, "dump of 0x%08X", addr);
@@ -45,7 +52,31 @@ int dump(unsigned char *addr, int len){
 
 
 
-int get_tbl(int readit){
+int config_get_item(void *container) {
+    INFO_ITEM_ST *res;
+    INFO_ITEM_ST *p_item = (INFO_ITEM_ST *)container;
+    int ret = 0;
+    BaseType_t taken;
+    if (!config_mutex) {
+        config_mutex = xSemaphoreCreateMutex( );
+    }
+    taken = xSemaphoreTake( config_mutex, 100 );
+
+    res = _search_item(p_item, NULL);
+    if (res){
+        os_memcpy(p_item, res, sizeof(INFO_ITEM_ST) + p_item->len);
+        ret = 1;
+    }
+
+    if (taken == pdTRUE){
+        xSemaphoreGive( config_mutex );
+    }
+    return ret;
+}
+
+
+
+int config_get_tbl(int readit){
     UINT32 ret = 0, status;
     DD_HANDLE flash_handle;
     TLV_HEADER_ST head;
@@ -65,7 +96,7 @@ int get_tbl(int readit){
 
         if(INFO_TLV_HEADER != g_table->type){
             ADDLOG_DEBUG(LOG_FEATURE_CFG, "get_tbl g_table corrupted");
-            dump((unsigned char *)g_table, 32);
+            config_dump((unsigned char *)g_table, 32);
             cfg_len = 0;
             return cfg_len;
         }
@@ -101,21 +132,42 @@ int get_tbl(int readit){
     ddev_close(flash_handle);
 	hal_flash_unlock();
 
-    dump((unsigned char *)g_table, 32);
+    config_dump((unsigned char *)g_table, cfg_len);
+    config_dump_table();
 
     return ret;
 }
 
-int release_tbl(){
-    void *table = g_table;
+int config_release_tbl(){
+    void *table;
+    BaseType_t taken;
+    if (!config_mutex) {
+        config_mutex = xSemaphoreCreateMutex( );
+    }
+    taken = xSemaphoreTake( config_mutex, 100 );
+    table = g_table;
+
+
     if(INFO_TLV_HEADER != g_table->type){
         ADDLOG_DEBUG(LOG_FEATURE_CFG, "release_tbl g_table corrupted");
     }
 
-    if (!table) 
+    if (!table) {
+        if (taken == pdTRUE){
+            xSemaphoreGive( config_mutex );
+        }
         return 0;
+    }
+
+    if (changes){
+        config_save_table();
+    }
+
     g_table = NULL;
     os_free(table);
+    if (taken == pdTRUE){
+        xSemaphoreGive( config_mutex );
+    }
     ADDLOG_DEBUG(LOG_FEATURE_CFG, "release_tbl");
     return 0;
 }
@@ -128,7 +180,7 @@ static INFO_ITEM_ST *_search_item(INFO_ITEM_ST *item, UINT32 *p_usedlen)
     INFO_ITEM_ST *target = NULL;
     UINT32 usedlen = 0;
     UINT32 type = 0;
-    UINT32 tablelen = get_tbl(1);
+    UINT32 tablelen = config_get_tbl(1);
     if (!tablelen){
         if (p_usedlen) *p_usedlen = usedlen;
         return NULL;
@@ -175,23 +227,33 @@ static int tbl_used_data_len(){
     return (int)len;
 }
 
-INFO_ITEM_ST *search_item(INFO_ITEM_ST *item){
+INFO_ITEM_ST *config_search_item(INFO_ITEM_ST *item){
     return _search_item(item, NULL);
 }
 
-INFO_ITEM_ST *search_item_type(UINT32 type){
+INFO_ITEM_ST *config_search_item_type(UINT32 type){
     INFO_ITEM_ST item;
     item.type = type;
     return _search_item(&item, NULL);
 }
 
-int delete_item(UINT32 type)
+int config_delete_item(UINT32 type)
 {
     UINT32 addr, end_addr;
     INFO_ITEM_ST *head;
     UINT32 deleted = 0;
-    UINT32 tablelen = get_tbl(1);
+    UINT32 tablelen;
+
+    BaseType_t taken;
+    if (!config_mutex) {
+        config_mutex = xSemaphoreCreateMutex( );
+    }
+    taken = xSemaphoreTake( config_mutex, 100 );
+
+    tablelen = config_get_tbl(1);
+
     if (!tablelen){
+        if (taken == pdTRUE) xSemaphoreGive( config_mutex );
         return 0;
     }
 
@@ -211,23 +273,33 @@ int delete_item(UINT32 type)
 
     if (deleted){
         ADDLOG_DEBUG(LOG_FEATURE_CFG, "Deleted %d items type 0x%08X", deleted, type);
-        compress_table();
-        save_table();
+        config_compress_table();
     }
 
+    if (taken == pdTRUE) xSemaphoreGive( config_mutex );
     return deleted;
 }
 
 
 //////////////////////////////////////////
 // remove redundant entries
-static int compress_table()
+static int config_compress_table()
 {
     UINT32 addr1, addr2, end_addr;
     INFO_ITEM_ST *head;
     UINT32 usedlen = 0;
-    UINT32 tablelen = get_tbl(1);
+    UINT32 tablelen;
+
+    BaseType_t taken;
+    if (!config_mutex) {
+        config_mutex = xSemaphoreCreateMutex( );
+    }
+    taken = xSemaphoreTake( config_mutex, 100 );
+
+    tablelen = config_get_tbl(1);
+
     if (!tablelen){
+        if (taken == pdTRUE) xSemaphoreGive( config_mutex );
         return 0;
     }
 
@@ -258,8 +330,11 @@ static int compress_table()
 
     if (addr1 != addr2) {
         ADDLOG_DEBUG(LOG_FEATURE_CFG, "Compress table from %d to %d bytes", g_table->len, usedlen);
+        changes++;
     }
     g_table->len = addr2 - sizeof(TLV_HEADER_ST);
+
+    if (taken == pdTRUE) xSemaphoreGive( config_mutex );
 
     if (addr1 != addr2) {
         return addr2; // maybe should save
@@ -269,22 +344,30 @@ static int compress_table()
 }
 
 
-static int save_table(){
+static int config_save_table(){
     UINT32 tablelen = 0;
 	bk_logic_partition_t *pt = bk_flash_get_info(BK_PARTITION_NET_PARAM);
 
     flashaddr = pt->partition_start_addr;
     flashlen = pt->partition_length;
 
+    BaseType_t taken;
+    if (!config_mutex) {
+        config_mutex = xSemaphoreCreateMutex( );
+    }
+    taken = xSemaphoreTake( config_mutex, 100 );
+
     if (!g_table) {
         ADDLOG_ERROR(LOG_FEATURE_CFG, "save_table - no table to save");
+        if (taken == pdTRUE) xSemaphoreGive( config_mutex );
         return 0;
     }
     // should already have it...
-    tablelen = get_tbl(1);
+    tablelen = config_get_tbl(1);
 
     if (tablelen > flashlen){
         ADDLOG_ERROR(LOG_FEATURE_CFG, "save_table - table too big - can't save");
+        if (taken == pdTRUE) xSemaphoreGive( config_mutex );
         return 0;
     }
 
@@ -295,28 +378,39 @@ static int save_table(){
 	bk_flash_write(BK_PARTITION_NET_PARAM,0,(uint8_t *)g_table,tablelen);
 	bk_flash_enable_security(FLASH_PROTECT_ALL);
 	hal_flash_unlock();
+    changes = 0;
+    if (taken == pdTRUE) xSemaphoreGive( config_mutex );
     
     ADDLOG_DEBUG(LOG_FEATURE_CFG, "would save_table %d bytes", tablelen);
     return 1;
 }
 
 
-int save_item(INFO_ITEM_ST *item)
+int config_save_item(INFO_ITEM_ST *item)
 {
 	UINT32 item_len;
 	INFO_ITEM_ST_PTR item_head_ptr;
 
+    BaseType_t taken;
+    if (!config_mutex) {
+        config_mutex = xSemaphoreCreateMutex( );
+    }
+    taken = xSemaphoreTake( config_mutex, 100 );
+
+
 	item_len = sizeof(INFO_ITEM_ST) + item->len;
 	
-    UINT32 tablelen = get_tbl(1);
+    UINT32 tablelen = config_get_tbl(1);
 
     if(g_table && (INFO_TLV_HEADER != g_table->type)){
         ADDLOG_DEBUG(LOG_FEATURE_CFG, "save_item g_table corrupted");
+        if (taken == pdTRUE){
+            xSemaphoreGive( config_mutex );
+        }
         return 0;
     }
 
     ADDLOG_DEBUG(LOG_FEATURE_CFG, "save_item type %08X len %d, tablelen %d", item->type, item->len, tablelen);
-    rtos_delay_milliseconds(1000);
 
     if (!tablelen){
         // no table, creat it.
@@ -329,9 +423,10 @@ int save_item(INFO_ITEM_ST *item)
         os_memcpy(item_head_ptr, item, item_len);
         tablelen = cfg_len;
         ADDLOG_DEBUG(LOG_FEATURE_CFG, "save_item, new table created");
+        changes++;
     } else {
         // have table - do we have existing item?
-        item_head_ptr = search_item(item);
+        item_head_ptr = config_search_item(item);
         ADDLOG_DEBUG(LOG_FEATURE_API, "save search found %x len %d, our len %d", item_head_ptr, (item_head_ptr?item_head_ptr->len:0), item->len);
         if (item_head_ptr){
             // if length mismatch, then zap this entry, and add on end
@@ -347,12 +442,14 @@ int save_item(INFO_ITEM_ST *item)
         } else {
             ADDLOG_DEBUG(LOG_FEATURE_CFG, "save_item new item");
         }
-        rtos_delay_milliseconds(1000);
 
         // if we STILL have an item, lengths match.
         // just copy in data and write whole table
         if (item_head_ptr){
-            os_memcpy(item_head_ptr, item, item_len);
+            if (os_memcmp(item_head_ptr, item, item_len)){
+                os_memcpy(item_head_ptr, item, item_len);
+                changes++;
+            }
         } else {
             UINT32 newlen = 0;
             // add to end
@@ -363,11 +460,13 @@ int save_item(INFO_ITEM_ST *item)
             if(!newtable){
                 ADDLOG_DEBUG(LOG_FEATURE_CFG, "allocation failure for %d bytes - save aborted",
                     tablelen + item_len);
+                if (taken == pdTRUE){
+                    xSemaphoreGive( config_mutex );
+                }
                 return 0;
             }
             ADDLOG_DEBUG(LOG_FEATURE_CFG, "copy from %x to %x len %d",
                 g_table, newtable, tablelen);
-            rtos_delay_milliseconds(1000);
             os_memcpy(newtable, g_table, tablelen);
             item_head_ptr = (INFO_ITEM_ST *) (((char *)newtable) + tablelen);
             os_memcpy(item_head_ptr, item, item_len);
@@ -375,24 +474,35 @@ int save_item(INFO_ITEM_ST *item)
             newtable->len = tablelen - sizeof(TLV_HEADER_ST);
             g_table = newtable;
             os_free(oldtable);
-            newlen = compress_table();
+            newlen = config_compress_table();
             if (newlen){
                 tablelen = newlen;
             }
+            changes++;
         }
     }
 
-    save_table();
+    if (taken == pdTRUE){
+        xSemaphoreGive( config_mutex );
+    }
+
+    if (changes){
+        // save config in 3 seconds....
+        if (!g_savecfg){
+            g_savecfg = 3;
+        }
+    }
+
 	return 1;
 }
 
 
-int dump_table()
+int config_dump_table()
 {
     UINT32 addr, end_addr;
     INFO_ITEM_ST *head;
     UINT32 usedlen = 0;
-    UINT32 tablelen = get_tbl(1);
+    UINT32 tablelen = config_get_tbl(1);
     if (!tablelen){
         ADDLOG_ERROR(LOG_FEATURE_CFG, "dump_table - no table");
         return 0;
@@ -408,6 +518,7 @@ int dump_table()
     while(addr < end_addr) {
         ADDLOG_DEBUG(LOG_FEATURE_CFG, "item type 0x%08X len %d at 0x%04X", 
             head->type, head->len, addr);
+        config_dump(head, head->len);
 
         addr += sizeof(INFO_ITEM_ST);
         addr += head->len;
@@ -424,3 +535,14 @@ int dump_table()
 
     return 1;
 }
+
+int config_commit(){
+    if (changes){
+        config_save_table();
+        return 1;
+    }
+    // free config memory;
+    config_release_tbl();
+    return 0;
+}
+

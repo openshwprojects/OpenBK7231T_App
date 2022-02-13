@@ -13,6 +13,7 @@
 #endif
 #include "lwip/sockets.h"
 #include "../flash_config/flash_config.h"
+#include "../new_cfg.h"
 
 
 extern int g_reset;
@@ -73,9 +74,8 @@ const char * apppage4 = "startup.js\"></script>"
 
 
 static int http_rest_app(http_request_t *request){
-    //char *webhost = "http://raspberrypi:1880";//CFG_GetWebRoot();
-    char *webhost = CFG_GetWebappRoot();
-    char *ourip = getMyIp(); //CFG_GetOurIP();
+    const char *webhost = CFG_GetWebappRoot();
+    const char *ourip = getMyIp(); //CFG_GetOurIP();
     http_setup(request, httpMimeTypeHTML);
     if (webhost && ourip){
         poststr(request, apppage1);
@@ -93,7 +93,6 @@ static int http_rest_app(http_request_t *request){
     poststr(request,NULL);
     return 0;
 }
-
 
 #ifdef BK_LITTLEFS
 
@@ -709,7 +708,7 @@ static int http_rest_get_flash(http_request_t *request, int startaddr, int len){
 
 static int http_rest_get_dumpconfig(http_request_t *request){
 
-    dump_table();
+    config_dump_table();
 
     http_setup(request, httpMimeTypeText);
     poststr(request, NULL);
@@ -736,29 +735,28 @@ static int http_rest_get_testconfig(http_request_t *request){
     testconfig.head.len = sizeof(testconfig) - sizeof(testconfig.head);
     strcpy(testconfig.somename, "test it here");
 
-    dump_table();
+    config_dump_table();
 
-    ret = search_item((INFO_ITEM_ST *)&testconfig);
+    ret = config_search_item((INFO_ITEM_ST *)&testconfig);
     ADDLOG_DEBUG(LOG_FEATURE_API, "search found %x", ret);
 
-    dump_table();
+    config_dump_table();
 
-    intres = delete_item(testconfig.head.type);
+    intres = config_delete_item(testconfig.head.type);
     ADDLOG_DEBUG(LOG_FEATURE_API, "delete_item returned %d", intres);
 
-    intres = save_item((INFO_ITEM_ST *)&testconfig);
+    intres = config_save_item((INFO_ITEM_ST *)&testconfig);
 
     ADDLOG_DEBUG(LOG_FEATURE_API, "save_item returned %d", intres);
 
-    ret = search_item((INFO_ITEM_ST *)&testconfig);
+    ret = config_search_item((INFO_ITEM_ST *)&testconfig);
     ADDLOG_DEBUG(LOG_FEATURE_API, "search2 found %x len %d", ret, (ret?ret->len:0));
 
-    intres = save_item((INFO_ITEM_ST *)&testconfig);
+    intres = config_save_item((INFO_ITEM_ST *)&testconfig);
     ADDLOG_DEBUG(LOG_FEATURE_API, "save_item returned %d", intres);
 
-    ret = search_item((INFO_ITEM_ST *)&testconfig);
+    ret = config_search_item((INFO_ITEM_ST *)&testconfig);
     ADDLOG_DEBUG(LOG_FEATURE_API, "search3 found %x len %d", ret, (ret?ret->len:0));
-    rtos_delay_milliseconds(1000);
 
 
     if (ret){
@@ -769,28 +767,24 @@ static int http_rest_get_testconfig(http_request_t *request){
         }
     }
 
-    rtos_delay_milliseconds(1000);
     testconfig.head.len = sizeof(testconfig) - sizeof(testconfig.head) - 1;
-    intres = save_item((INFO_ITEM_ST *)&testconfig);
+    intres = config_save_item((INFO_ITEM_ST *)&testconfig);
     ADDLOG_DEBUG(LOG_FEATURE_API, "save_item returned %d", intres);
 
-    rtos_delay_milliseconds(1000);
 
-    ret = search_item((INFO_ITEM_ST *)&testconfig);
+    ret = config_search_item((INFO_ITEM_ST *)&testconfig);
     ADDLOG_DEBUG(LOG_FEATURE_API, "search4 found %x len %d", ret, (ret?ret->len:0));
 
-    dump_table();
-    rtos_delay_milliseconds(1000);
+    config_dump_table();
 
-    intres = delete_item(testconfig.head.type);
+    intres = config_delete_item(testconfig.head.type);
     ADDLOG_DEBUG(LOG_FEATURE_API, "delete_item returned %d", intres);
 
-    dump_table();
-    rtos_delay_milliseconds(1000);
+    config_dump_table();
 
-    release_tbl();
+    config_release_tbl();
 
-    dump_table();
+    config_dump_table();
 
     http_setup(request, httpMimeTypeText);
     poststr(request, NULL);

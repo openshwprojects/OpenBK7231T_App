@@ -26,27 +26,32 @@ static char g_mqtt_pass[128] = "qqqqqqqqqq";
 static char g_wifi_ssid[64] = { 0 };
 static char g_wifi_pass[64] = { 0 };
 
-static char g_webappRoot[CONFIG_URL_SIZE_MAX] = { 0 };
+static char g_webappRoot[CONFIG_URL_SIZE_MAX] = "https://openbekeniot.github.io/webapp/";
 
 // Long unique device name, like OpenBK7231T_AABBCCDD
 char g_deviceName[64] = "testDev";
 // Short unique device name, like obkAABBCCDD
 char g_shortDeviceName[64] = "td01";
 
+const char *CFG_LoadWebappRoot(){
+	ITEM_URL_CONFIG item;
+	int res;
+	CONFIG_INIT_ITEM(CONFIG_TYPE_WEBAPP_ROOT, &item);
+	res = config_get_item(&item);
+	if (res) strcpy_safe(g_webappRoot, item.url,sizeof(g_webappRoot));
+	return g_webappRoot;
+}
+
 const char *CFG_GetWebappRoot(){
-	ITEM_URL_CONFIG *pItem = (ITEM_URL_CONFIG*)search_item_type(CONFIG_TAG_WEBAPP_ROOT);
-	if (pItem){
-		strncpy(g_webappRoot, pItem->url, sizeof(g_webappRoot));
-	}
 	return g_webappRoot;
 }
 
 void CFG_SetWebappRoot(const char *s) {
 	ITEM_URL_CONFIG item;
-	item.head.type = CONFIG_TAG_WEBAPP_ROOT;
-	item.head.len = sizeof(item) - sizeof(item.head);
+	CONFIG_INIT_ITEM(CONFIG_TYPE_WEBAPP_ROOT, &item);
 	strcpy_safe(item.url,s,sizeof(item.url));
-	save_item((INFO_ITEM_ST *)&item);
+	strcpy_safe(g_webappRoot, item.url,sizeof(g_webappRoot));
+	config_save_item(&item);
 }
 
 const char *CFG_GetDeviceName(){
@@ -125,10 +130,12 @@ void CFG_SaveWiFi() {
 #elif PLATFORM_XR809
 
 #else
-	ITEM_NEW_WIFI_CONFIG container;
+	ITEM_NEW_WIFI_CONFIG2 container;
+	os_memset(&container, 0, sizeof(container));
+	CONFIG_INIT_ITEM(NEW_WIFI_CONFIG, &container);
 	strcpy_safe(container.ssid, g_wifi_ssid, sizeof(container.ssid));
 	strcpy_safe(container.pass, g_wifi_pass, sizeof(container.pass));
-	save_info_item(NEW_WIFI_CONFIG,(UINT8 *)&container, 0, 0);
+	config_save_item(&container);
 #endif
 }
 void CFG_LoadWiFi() {
@@ -137,8 +144,9 @@ void CFG_LoadWiFi() {
 #elif PLATFORM_XR809
 
 #else
-	ITEM_NEW_WIFI_CONFIG container;
-	if(get_info_item(NEW_WIFI_CONFIG,(UINT8 *)&container, 0, 0) != 0) {
+	ITEM_NEW_WIFI_CONFIG2 container;
+	CONFIG_INIT_ITEM(NEW_WIFI_CONFIG, &container);
+	if (config_get_item(&container) != 0){
 		strcpy_safe(g_wifi_ssid,container.ssid,sizeof(g_wifi_ssid));
 		strcpy_safe(g_wifi_pass,container.pass,sizeof(g_wifi_pass));
 	} 
@@ -151,13 +159,15 @@ void CFG_SaveMQTT() {
 #elif PLATFORM_XR809
 
 #else
-	ITEM_NEW_MQTT_CONFIG container;
+	ITEM_NEW_MQTT_CONFIG2 container;
+	os_memset(&container, 0, sizeof(container));
+	CONFIG_INIT_ITEM(NEW_MQTT_CONFIG, &container);
 	strcpy_safe(container.userName, g_mqtt_userName, sizeof(container.userName));
 	strcpy_safe(container.pass, g_mqtt_pass, sizeof(container.pass));
 	strcpy_safe(container.hostName, g_mqtt_host, sizeof(container.hostName));
 	strcpy_safe(container.brokerName, g_mqtt_brokerName, sizeof(container.brokerName));
 	container.port = g_mqtt_port;
-	save_info_item(NEW_MQTT_CONFIG,(UINT8 *)&container, 0, 0);
+	config_save_item(&container);
 	
 #endif
 }
@@ -167,8 +177,9 @@ void CFG_LoadMQTT() {
 #elif PLATFORM_XR809
 
 #else
-	ITEM_NEW_MQTT_CONFIG container;
-	if(get_info_item(NEW_MQTT_CONFIG,(UINT8 *)&container, 0, 0) != 0) {
+	ITEM_NEW_MQTT_CONFIG2 container;
+	CONFIG_INIT_ITEM(NEW_MQTT_CONFIG, &container);
+	if (config_get_item(&container) != 0){
 		strcpy_safe(g_mqtt_userName,container.userName,sizeof(g_mqtt_userName));
 		strcpy_safe(g_mqtt_pass,container.pass,sizeof(g_mqtt_pass));
 		strcpy_safe(g_mqtt_host,container.hostName,sizeof(g_mqtt_host));

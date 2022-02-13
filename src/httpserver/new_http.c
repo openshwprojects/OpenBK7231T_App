@@ -615,6 +615,35 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		poststr(request,htmlReturnToCfg);
 		HTTP_AddBuildFooter(request);
 		poststr(request,htmlEnd);
+	} else if(http_checkUrlBase(urlStr,"cfg_webapp")) {
+		http_setup(request, httpMimeTypeHTML);
+		poststr(request,htmlHeader);
+		poststr(request,g_header);
+		poststr(request,"<h2> Use this to set the URL of the Webapp</h2>");
+		poststr(request,"<form action=\"/cfg_webapp_set\">\
+			  <label for=\"url\">Url:</label><br>\
+			  <input type=\"text\" id=\"url\" name=\"url\" value=\"");			  
+		poststr(request,CFG_GetWebappRoot());
+		poststr(request,"\"><br>\
+			  <input type=\"submit\" value=\"Submit\">\
+			</form> ");
+		poststr(request,htmlReturnToCfg);
+		HTTP_AddBuildFooter(request);
+		poststr(request,htmlEnd);
+	} else if(http_checkUrlBase(urlStr,"cfg_webapp_set")) {
+		http_setup(request, httpMimeTypeHTML);
+		poststr(request,htmlHeader);
+		poststr(request,g_header);
+	
+		if(http_getArg(urlStr,"url",tmpA,sizeof(tmpA))) {
+			CFG_SetWebappRoot(tmpA);
+		}
+		poststr(request,"Webapp url set!");
+		
+		poststr(request,"<br>");
+		poststr(request,htmlReturnToCfg);
+		HTTP_AddBuildFooter(request);
+		poststr(request,htmlEnd);
 	} else if(http_checkUrlBase(urlStr,"cfg_wifi_set")) {
 		http_setup(request, httpMimeTypeHTML);
 		poststr(request,htmlHeader);
@@ -903,6 +932,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		poststr(request,"<form action=\"cfg_quick\"><input type=\"submit\" value=\"Quick Config\"/></form>");
 		poststr(request,"<form action=\"cfg_wifi\"><input type=\"submit\" value=\"Configure WiFi\"/></form>");
 		poststr(request,"<form action=\"cfg_mqtt\"><input type=\"submit\" value=\"Configure MQTT\"/></form>");
+		poststr(request,"<form action=\"cfg_webapp\"><input type=\"submit\" value=\"Configure Webapp\"/></form>");
 		poststr(request,"<form action=\"cfg_ha\"><input type=\"submit\" value=\"Generate Home Assistant cfg\"/></form>");
 		poststr(request,"<form action=\"ota\"><input type=\"submit\" value=\"OTA (update software by WiFi)\"/></form>");
 		poststr(request,"<form action=\"cmd_single\"><input type=\"submit\" value=\"Execute custom command\"/></form>");
