@@ -2,6 +2,7 @@
 #include "new_common.h"
 #include "httpserver/new_http.h"
 #include "new_pins.h"
+#include "flash_config/flash_config.h"
 
 #if WINDOWS
 
@@ -12,6 +13,11 @@
 #include "../../beken378/app/config/param_config.h"
 #endif
 
+
+// added for OpenBK7231T
+#define NEW_WEBAPP_CONFIG_SIZE 64
+//NEW_PINS_CONFIG
+
 static int g_mqtt_port = 1883;
 static char g_mqtt_host[64] = "192.168.0.113";
 static char g_mqtt_brokerName[64] = "test";
@@ -20,10 +26,28 @@ static char g_mqtt_pass[128] = "qqqqqqqqqq";
 static char g_wifi_ssid[64] = { 0 };
 static char g_wifi_pass[64] = { 0 };
 
+static char g_webappRoot[CONFIG_URL_SIZE_MAX] = { 0 };
+
 // Long unique device name, like OpenBK7231T_AABBCCDD
 char g_deviceName[64] = "testDev";
 // Short unique device name, like obkAABBCCDD
 char g_shortDeviceName[64] = "td01";
+
+const char *CFG_GetWebappRoot(){
+	ITEM_URL_CONFIG *pItem = (ITEM_URL_CONFIG*)search_item_type(CONFIG_TAG_WEBAPP_ROOT);
+	if (pItem){
+		strncpy(g_webappRoot, pItem->url, sizeof(g_webappRoot));
+	}
+	return g_webappRoot;
+}
+
+void CFG_SetWebappRoot(const char *s) {
+	ITEM_URL_CONFIG item;
+	item.head.type = CONFIG_TAG_WEBAPP_ROOT;
+	item.head.len = sizeof(item) - sizeof(item.head);
+	strcpy_safe(item.url,s,sizeof(item.url));
+	save_item((INFO_ITEM_ST *)&item);
+}
 
 const char *CFG_GetDeviceName(){
 	return g_deviceName;
@@ -153,10 +177,4 @@ void CFG_LoadMQTT() {
 	}
 #endif
 }
-
-
-
-
-
-
 

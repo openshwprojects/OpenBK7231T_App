@@ -10,7 +10,7 @@
 #include "../printnetinfo/printnetinfo.h"
 #include "../littlefs/our_lfs.h"
 #include "lwip/sockets.h"
-
+#include "../flash_config/flash_config.h"
 
 
 extern int g_reset;
@@ -42,6 +42,8 @@ static int http_rest_get_flash(http_request_t *request, int startaddr, int len);
 
 static int http_rest_get_info(http_request_t *request);
 
+static int http_rest_get_dumpconfig(http_request_t *request);
+static int http_rest_get_testconfig(http_request_t *request);
 
 void init_rest(){
     HTTP_RegisterCallback( "/api/", HTTP_GET, http_rest_get);
@@ -70,7 +72,7 @@ const char * apppage4 = "startup.js\"></script>"
 
 static int http_rest_app(http_request_t *request){
     //char *webhost = "http://raspberrypi:1880";//CFG_GetWebRoot();
-    char *webhost = "https://openbekeniot.github.io/webapp/";
+    char *webhost = CFG_GetWebappRoot();
     char *ourip = getMyIp(); //CFG_GetOurIP();
     http_setup(request, httpMimeTypeHTML);
     if (webhost && ourip){
@@ -302,6 +304,16 @@ static int http_rest_get(http_request_t *request){
         return http_rest_get_info(request);
     }
 
+    if (!strcmp(request->url, "api/dumpconfig")){
+        return http_rest_get_dumpconfig(request);
+    }
+
+    if (!strcmp(request->url, "api/testconfig")){
+        return http_rest_get_testconfig(request);
+    }
+    
+    
+
     http_setup(request, httpMimeTypeHTML);
     poststr(request, "GET of ");
     poststr(request, request->url);
@@ -468,7 +480,6 @@ static int http_rest_post_logconfig(http_request_t *request){
 
 
 static int http_rest_get_info(http_request_t *request){
-    int i;
     http_setup(request, httpMimeTypeJson);
     hprintf128(request, "{\"uptimes\":%d,", Time_getUpTimeSeconds());
     hprintf128(request, "\"build\":\"%s\"}", g_build_str);
@@ -685,6 +696,97 @@ static int http_rest_get_flash(http_request_t *request, int startaddr, int len){
         len -= readlen;
         postany(request, buffer, readlen);
     }
+    poststr(request, NULL);
+    return 0;
+}
+
+
+static int http_rest_get_dumpconfig(http_request_t *request){
+
+    dump_table();
+
+    http_setup(request, httpMimeTypeText);
+    poststr(request, NULL);
+    return 0;
+}
+
+
+
+// added for OpenBK7231T
+typedef struct item_new_test_config
+{
+	INFO_ITEM_ST head;
+	char somename[64];
+}ITEM_NEW_TEST_CONFIG,*ITEM_NEW_TEST_CONFIG_PTR;
+
+ITEM_NEW_TEST_CONFIG testconfig;
+
+static int http_rest_get_testconfig(http_request_t *request){
+
+    INFO_ITEM_ST *ret;
+    int intres;
+
+    testconfig.head.type = (UINT32) *((UINT32*)"TEST");
+    testconfig.head.len = sizeof(testconfig) - sizeof(testconfig.head);
+    strcpy(testconfig.somename, "test it here");
+
+    dump_table();
+
+    ret = search_item((INFO_ITEM_ST *)&testconfig);
+    ADDLOG_DEBUG(LOG_FEATURE_API, "search found %x", ret);
+
+    dump_table();
+
+    intres = delete_item(testconfig.head.type);
+    ADDLOG_DEBUG(LOG_FEATURE_API, "delete_item returned %d", intres);
+
+    intres = save_item((INFO_ITEM_ST *)&testconfig);
+
+    ADDLOG_DEBUG(LOG_FEATURE_API, "save_item returned %d", intres);
+
+    ret = search_item((INFO_ITEM_ST *)&testconfig);
+    ADDLOG_DEBUG(LOG_FEATURE_API, "search2 found %x len %d", ret, (ret?ret->len:0));
+
+    intres = save_item((INFO_ITEM_ST *)&testconfig);
+    ADDLOG_DEBUG(LOG_FEATURE_API, "save_item returned %d", intres);
+
+    ret = search_item((INFO_ITEM_ST *)&testconfig);
+    ADDLOG_DEBUG(LOG_FEATURE_API, "search3 found %x len %d", ret, (ret?ret->len:0));
+    rtos_delay_milliseconds(1000);
+
+
+    if (ret){
+        if (os_memcmp(ret, &testconfig, sizeof(testconfig))){
+            ADDLOG_DEBUG(LOG_FEATURE_API, "content mismatch");
+        } else {
+            ADDLOG_DEBUG(LOG_FEATURE_API, "content match");
+        }
+    }
+
+    rtos_delay_milliseconds(1000);
+    testconfig.head.len = sizeof(testconfig) - sizeof(testconfig.head) - 1;
+    intres = save_item((INFO_ITEM_ST *)&testconfig);
+    ADDLOG_DEBUG(LOG_FEATURE_API, "save_item returned %d", intres);
+
+    rtos_delay_milliseconds(1000);
+
+    ret = search_item((INFO_ITEM_ST *)&testconfig);
+    ADDLOG_DEBUG(LOG_FEATURE_API, "search4 found %x len %d", ret, (ret?ret->len:0));
+
+    dump_table();
+    rtos_delay_milliseconds(1000);
+
+    intres = delete_item(testconfig.head.type);
+    ADDLOG_DEBUG(LOG_FEATURE_API, "delete_item returned %d", intres);
+
+    dump_table();
+    rtos_delay_milliseconds(1000);
+
+    release_tbl();
+
+    dump_table();
+
+    http_setup(request, httpMimeTypeText);
     poststr(request, NULL);
     return 0;
 }
