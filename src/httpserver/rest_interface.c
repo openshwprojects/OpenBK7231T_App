@@ -8,7 +8,9 @@
 #include "../jsmn/jsmn_h.h"
 #include "../ota/ota.h"
 #include "../printnetinfo/printnetinfo.h"
+#ifdef BK_LITTLEFS
 #include "../littlefs/our_lfs.h"
+#endif
 #include "lwip/sockets.h"
 
 
@@ -287,15 +289,17 @@ static int http_rest_get(http_request_t *request){
         return http_rest_get_seriallog(request);
     }
 
+#ifdef BK_LITTLEFS
     if (!strcmp(request->url, "api/fsblock")){
         return http_rest_get_flash(request, LFS_BLOCKS_START, LFS_BLOCKS_LEN);
     }
+#endif
 
-    #ifdef BK_LITTLEFS
+#ifdef BK_LITTLEFS
     if (!strncmp(request->url, "api/lfs/", 8)){
         return http_rest_get_lfs_file(request);
     }
-    #endif
+#endif
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request, "GET of ");
@@ -478,15 +482,17 @@ static int http_rest_post(http_request_t *request){
     if (!strcmp(request->url, "api/ota")){
         return http_rest_post_flash(request, 0x132000);
     }
+#ifdef BK_LITTLEFS
     if (!strcmp(request->url, "api/fsblock")){
         return http_rest_post_flash(request, LFS_BLOCKS_START);
     }
+#endif
     
-    #ifdef BK_LITTLEFS
+#ifdef BK_LITTLEFS
     if (!strncmp(request->url, "api/lfs/", 8)){
         return http_rest_post_lfs_file(request);
     }
-    #endif
+#endif
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request, "POST to ");
