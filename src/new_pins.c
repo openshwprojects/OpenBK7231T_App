@@ -118,7 +118,7 @@ void PIN_LoadFromFlash() {
 
 #else
 	CONFIG_INIT_ITEM(CONFIG_TYPE_PINS, &pins);
-	res = config_get_item(&g_pins);
+	res = config_get_item(&pins);
 	if (res){
 			os_memcpy(&g_pins, &pins.pins, sizeof(g_pins));
 	}
