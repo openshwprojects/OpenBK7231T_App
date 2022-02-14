@@ -26,6 +26,7 @@ typedef struct pinsState_s {
 	byte channels[32];
 } pinsState_t;
 
+
 extern pinsState_t g_pins;
 
 

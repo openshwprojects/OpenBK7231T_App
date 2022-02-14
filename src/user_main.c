@@ -49,6 +49,7 @@
 #include "lwip/netdb.h"
 #include "littlefs/our_lfs.h"
 
+#include "flash_config/flash_config.h"
 
 #undef Malloc
 #undef Free
@@ -62,6 +63,11 @@ static int g_openAP = 0;
 
 // reset in this number of seconds
 int g_reset = 0;
+
+// save config in this number of seconds
+int g_savecfg = 0;
+
+
 // from wlan_ui.c
 void bk_reboot(void);
 
@@ -166,9 +172,19 @@ static void app_led_timer_handler(void *data)
   if (g_reset){
       g_reset--;
       if (!g_reset){
+        // ensure any config changes are saved before reboot.
+        config_commit(); 
         bk_reboot(); 
       }
   }
+
+    if (g_savecfg){
+        g_savecfg--;
+      if (!g_savecfg){
+        config_commit(); 
+      }
+    }
+
 }
 
 void app_on_generic_dbl_click(int btnIndex)
@@ -306,6 +322,7 @@ void user_main(void)
 
 	CFG_CreateDeviceNameUnique();
 
+    CFG_LoadWebappRoot();
 	CFG_LoadWiFi();
 	CFG_LoadMQTT();
 	PIN_LoadFromFlash();

@@ -5,6 +5,7 @@
 #include "new_pins.h"
 #include "httpserver/new_http.h"
 #include "logging/logging.h"
+#include "flash_config/flash_config.h"
 
 #if WINDOWS
 
@@ -24,6 +25,14 @@
 
 
 #endif
+
+typedef struct item_pins_config
+{
+	INFO_ITEM_ST head;
+	pinsState_t pins;
+}ITEM_PINS_CONFIG,*ITEM_PINS_CONFIG_PTR;
+
+
 
 /*
 // from BkDriverPwm.h"
@@ -81,16 +90,23 @@ void (*g_doubleClickCallback)(int pinIndex) = 0;
 
 
 void PIN_SaveToFlash() {
+	ITEM_PINS_CONFIG pins;
 #if WINDOWS
 
 #elif PLATFORM_XR809
 
 #else
-	save_info_item(NEW_PINS_CONFIG,(UINT8 *)&g_pins, 0, 0);
+	os_memcpy(&pins.pins, &g_pins, sizeof(pins.pins));
+	CONFIG_INIT_ITEM(CONFIG_TYPE_PINS, &pins);
+	config_save_item(&pins);
+	// delete old if it exists
+	config_delete_item(NEW_PINS_CONFIG);
 #endif
 }
 void PIN_LoadFromFlash() {
 	int i;
+	int res;
+	ITEM_PINS_CONFIG pins;
 
 
 	PR_NOTICE("PIN_LoadFromFlash called - going to load pins.\r\n");
@@ -101,7 +117,11 @@ void PIN_LoadFromFlash() {
 #elif PLATFORM_XR809
 
 #else
-	get_info_item(NEW_PINS_CONFIG,(UINT8 *)&g_pins, 0, 0);
+	CONFIG_INIT_ITEM(CONFIG_TYPE_PINS, &pins);
+	res = config_get_item(&pins);
+	if (res){
+			os_memcpy(&g_pins, &pins.pins, sizeof(g_pins));
+	}
 #endif
 	for(i = 0; i < GPIO_MAX; i++) {
 		PIN_SetPinRoleForPinIndex(i,g_pins.roles[i]);
