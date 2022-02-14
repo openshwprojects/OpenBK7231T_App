@@ -2,14 +2,15 @@
 #include "new_common.h"
 #include "httpserver/new_http.h"
 #include "new_pins.h"
-#include "flash_config/flash_config.h"
 #include "new_cfg.h"
 
 #if WINDOWS
 
 #elif PLATFORM_XR809
-
+// XR809 sysinfo is used to save configuration to flash
+#include "common/framework/sysinfo.h"
 #else
+#include "flash_config/flash_config.h"
 #include "../../beken378/func/include/net_param_pub.h"
 #include "../../beken378/app/config/param_config.h"
 #endif
@@ -35,11 +36,18 @@ char g_deviceName[64] = "testDev";
 char g_shortDeviceName[64] = "td01";
 
 const char *CFG_LoadWebappRoot(){
+#if WINDOWS
+
+#elif PLATFORM_XR809
+
+#else
 	ITEM_URL_CONFIG item;
 	int res;
 	CONFIG_INIT_ITEM(CONFIG_TYPE_WEBAPP_ROOT, &item);
 	res = config_get_item(&item);
-	if (res) strcpy_safe(g_webappRoot, item.url,sizeof(g_webappRoot));
+	if (res) 
+		strcpy_safe(g_webappRoot, item.url,sizeof(g_webappRoot));
+#endif
 	return g_webappRoot;
 }
 
@@ -48,11 +56,20 @@ const char *CFG_GetWebappRoot(){
 }
 
 void CFG_SetWebappRoot(const char *s) {
+#if WINDOWS
+	strcpy_safe(g_webappRoot, s,sizeof(g_webappRoot));
+
+#elif PLATFORM_XR809
+	strcpy_safe(g_webappRoot, s,sizeof(g_webappRoot));
+
+#else
 	ITEM_URL_CONFIG item;
+	int res;
 	CONFIG_INIT_ITEM(CONFIG_TYPE_WEBAPP_ROOT, &item);
-	strcpy_safe(item.url,s,sizeof(item.url));
-	strcpy_safe(g_webappRoot, item.url,sizeof(g_webappRoot));
-	config_save_item(&item);
+	res = config_get_item(&item);
+	if (res) 
+		strcpy_safe(g_webappRoot, item.url,sizeof(g_webappRoot));
+#endif
 }
 
 const char *CFG_GetDeviceName(){
@@ -173,7 +190,23 @@ void CFG_SaveMQTT() {
 #if WINDOWS
 
 #elif PLATFORM_XR809
+	sysinfo_t *inf;
+	int res;
+	inf = sysinfo_get();
+	if(inf == 0) {
+		printf("CFG_SaveMQTT: sysinfo_get returned 0!\n\r");
+		return 0;
+	}
+	strcpy_safe(inf->mqtt_param.userName, g_mqtt_userName, sizeof(inf->mqtt_param.userName));
+	strcpy_safe(inf->mqtt_param.pass, g_mqtt_pass, sizeof(inf->mqtt_param.pass));
+	strcpy_safe(inf->mqtt_param.hostName, g_mqtt_host, sizeof(inf->mqtt_param.hostName));
+	strcpy_safe(inf->mqtt_param.brokerName, g_mqtt_brokerName, sizeof(inf->mqtt_param.brokerName));
+	inf->mqtt_param.port = g_mqtt_port;
 
+	res = sysinfo_save();
+	if(res != 0) {
+		printf("CFG_SaveMQTT: sysinfo_save error - %i!\n\r",res);
+	}
 #else
 	ITEM_NEW_MQTT_CONFIG container;
 	os_memset(&container, 0, sizeof(container));
@@ -191,6 +224,17 @@ void CFG_LoadMQTT() {
 #if WINDOWS
 
 #elif PLATFORM_XR809
+	sysinfo_t *inf;
+	inf = sysinfo_get();
+	if(inf == 0) {
+		printf("CFG_LoadMQTT: sysinfo_get returned 0!\n\r");
+		return 0;
+	}
+	strcpy_safe(g_mqtt_userName,inf->mqtt_param.userName,sizeof(g_mqtt_userName));
+	strcpy_safe(g_mqtt_pass,inf->mqtt_param.pass,sizeof(g_mqtt_pass));
+	strcpy_safe(g_mqtt_host,inf->mqtt_param.hostName,sizeof(g_mqtt_host));
+	strcpy_safe(g_mqtt_brokerName,inf->mqtt_param.brokerName,sizeof(g_mqtt_brokerName));
+	g_mqtt_port = inf->mqtt_param.port;
 
 #else
 	{
@@ -222,3 +266,10 @@ void CFG_LoadMQTT() {
 #endif
 }
 
+void CFG_InitAndLoad() {
+	CFG_CreateDeviceNameUnique();
+    CFG_LoadWebappRoot();
+	CFG_LoadWiFi();
+	CFG_LoadMQTT();
+	PIN_LoadFromFlash();
+}

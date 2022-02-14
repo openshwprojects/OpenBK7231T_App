@@ -320,12 +320,7 @@ void user_main(void)
 
   //OPERATE_RET op_ret = OPRT_OK;
 
-	CFG_CreateDeviceNameUnique();
-
-    CFG_LoadWebappRoot();
-	CFG_LoadWiFi();
-	CFG_LoadMQTT();
-	PIN_LoadFromFlash();
+	CFG_InitAndLoad();
 
 	wifi_ssid = CFG_GetWiFiSSID();
 	wifi_pass = CFG_GetWiFiPass();
