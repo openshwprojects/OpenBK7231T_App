@@ -22,3 +22,6 @@ void CFG_SaveWiFi();
 void CFG_LoadWiFi();
 void CFG_SaveMQTT();
 void CFG_LoadMQTT();
+const char *CFG_GetWebappRoot();
+const char *CFG_LoadWebappRoot();
+void CFG_SetWebappRoot(const char *s);

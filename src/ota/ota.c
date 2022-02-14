@@ -5,7 +5,7 @@
 //#include "flash.h"
 #include "../logging/logging.h"
 #include "../httpclient/http_client.h"
-
+#include "../flash_config/flash_config.h"
 
 static unsigned char *sector = (void *)0;
 int sectorlen = 0;
@@ -123,6 +123,12 @@ int myhttpclientcallback(httprequest_t* request){
       addLog("\r\nmyhttpclientcallback state %d total %d/%d\r\n", request->state, total_bytes, request->client_data.response_content_len);
 
       addLog("Rebooting in 1 seconds...");
+
+      // record this OTA
+      increment_OTA_count();
+      // make sure it's saved before reboot
+      config_commit();
+
       rtos_delay_milliseconds(1000);
       bk_reboot(); 
       break;
