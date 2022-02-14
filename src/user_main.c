@@ -190,6 +190,8 @@ static void app_led_timer_handler(void *data)
   if (g_reset){
       g_reset--;
       if (!g_reset){
+        // ensure any config changes are saved before reboot.
+        config_commit(); 
         bk_reboot(); 
       }
   }

@@ -3,6 +3,7 @@
 #include "httpserver/new_http.h"
 #include "new_pins.h"
 #include "flash_config/flash_config.h"
+#include "new_cfg.h"
 
 #if WINDOWS
 
@@ -130,9 +131,9 @@ void CFG_SaveWiFi() {
 #elif PLATFORM_XR809
 
 #else
-	ITEM_NEW_WIFI_CONFIG2 container;
+	ITEM_NEW_WIFI_CONFIG container;
 	os_memset(&container, 0, sizeof(container));
-	CONFIG_INIT_ITEM(NEW_WIFI_CONFIG, &container);
+	CONFIG_INIT_ITEM(CONFIG_TYPE_WIFI, &container);
 	strcpy_safe(container.ssid, g_wifi_ssid, sizeof(container.ssid));
 	strcpy_safe(container.pass, g_wifi_pass, sizeof(container.pass));
 	config_save_item(&container);
@@ -144,12 +145,27 @@ void CFG_LoadWiFi() {
 #elif PLATFORM_XR809
 
 #else
-	ITEM_NEW_WIFI_CONFIG2 container;
-	CONFIG_INIT_ITEM(NEW_WIFI_CONFIG, &container);
-	if (config_get_item(&container) != 0){
-		strcpy_safe(g_wifi_ssid,container.ssid,sizeof(g_wifi_ssid));
-		strcpy_safe(g_wifi_pass,container.pass,sizeof(g_wifi_pass));
-	} 
+	{
+		// try to read 'old' structure with extra 8 bytes
+		// if we find it, delete and re-save with new structure
+		ITEM_NEW_WIFI_CONFIG2 container;
+		CONFIG_INIT_ITEM(NEW_WIFI_CONFIG, &container);
+		if (config_get_item(&container) != 0){
+			strcpy_safe(g_wifi_ssid,container.ssid,sizeof(g_wifi_ssid));
+			strcpy_safe(g_wifi_pass,container.pass,sizeof(g_wifi_pass));
+			// delete and re-save
+			config_delete_item(NEW_WIFI_CONFIG);
+			CFG_SaveWiFi();
+		} 
+	}
+	{
+		ITEM_NEW_WIFI_CONFIG container;
+		CONFIG_INIT_ITEM(CONFIG_TYPE_WIFI, &container);
+		if (config_get_item(&container) != 0){
+			strcpy_safe(g_wifi_ssid,container.ssid,sizeof(g_wifi_ssid));
+			strcpy_safe(g_wifi_pass,container.pass,sizeof(g_wifi_pass));
+		} 
+	}
 #endif
 }
 
@@ -159,9 +175,9 @@ void CFG_SaveMQTT() {
 #elif PLATFORM_XR809
 
 #else
-	ITEM_NEW_MQTT_CONFIG2 container;
+	ITEM_NEW_MQTT_CONFIG container;
 	os_memset(&container, 0, sizeof(container));
-	CONFIG_INIT_ITEM(NEW_MQTT_CONFIG, &container);
+	CONFIG_INIT_ITEM(CONFIG_TYPE_MQTT, &container);
 	strcpy_safe(container.userName, g_mqtt_userName, sizeof(container.userName));
 	strcpy_safe(container.pass, g_mqtt_pass, sizeof(container.pass));
 	strcpy_safe(container.hostName, g_mqtt_host, sizeof(container.hostName));
@@ -177,14 +193,31 @@ void CFG_LoadMQTT() {
 #elif PLATFORM_XR809
 
 #else
-	ITEM_NEW_MQTT_CONFIG2 container;
-	CONFIG_INIT_ITEM(NEW_MQTT_CONFIG, &container);
-	if (config_get_item(&container) != 0){
-		strcpy_safe(g_mqtt_userName,container.userName,sizeof(g_mqtt_userName));
-		strcpy_safe(g_mqtt_pass,container.pass,sizeof(g_mqtt_pass));
-		strcpy_safe(g_mqtt_host,container.hostName,sizeof(g_mqtt_host));
-		strcpy_safe(g_mqtt_brokerName,container.brokerName,sizeof(g_mqtt_brokerName));
-		g_mqtt_port = container.port;
+	{
+		ITEM_NEW_MQTT_CONFIG2 container;
+		CONFIG_INIT_ITEM(NEW_MQTT_CONFIG, &container);
+		if (config_get_item(&container) != 0){
+			strcpy_safe(g_mqtt_userName,container.userName,sizeof(g_mqtt_userName));
+			strcpy_safe(g_mqtt_pass,container.pass,sizeof(g_mqtt_pass));
+			strcpy_safe(g_mqtt_host,container.hostName,sizeof(g_mqtt_host));
+			strcpy_safe(g_mqtt_brokerName,container.brokerName,sizeof(g_mqtt_brokerName));
+			g_mqtt_port = container.port;
+
+			// delete and re-save
+			config_delete_item(NEW_MQTT_CONFIG);
+			CFG_SaveMQTT();
+		}
+	}
+	{
+		ITEM_NEW_MQTT_CONFIG container;
+		CONFIG_INIT_ITEM(CONFIG_TYPE_MQTT, &container);
+		if (config_get_item(&container) != 0){
+			strcpy_safe(g_mqtt_userName,container.userName,sizeof(g_mqtt_userName));
+			strcpy_safe(g_mqtt_pass,container.pass,sizeof(g_mqtt_pass));
+			strcpy_safe(g_mqtt_host,container.hostName,sizeof(g_mqtt_host));
+			strcpy_safe(g_mqtt_brokerName,container.brokerName,sizeof(g_mqtt_brokerName));
+			g_mqtt_port = container.port;
+		}
 	}
 #endif
 }

@@ -97,8 +97,10 @@ void PIN_SaveToFlash() {
 
 #else
 	os_memcpy(&pins.pins, &g_pins, sizeof(pins.pins));
-	CONFIG_INIT_ITEM(NEW_PINS_CONFIG, &pins);
+	CONFIG_INIT_ITEM(CONFIG_TYPE_PINS, &pins);
 	config_save_item(&pins);
+	// delete old if it exists
+	config_delete_item(NEW_PINS_CONFIG);
 #endif
 }
 void PIN_LoadFromFlash() {
@@ -115,7 +117,7 @@ void PIN_LoadFromFlash() {
 #elif PLATFORM_XR809
 
 #else
-	CONFIG_INIT_ITEM(NEW_PINS_CONFIG, &pins);
+	CONFIG_INIT_ITEM(CONFIG_TYPE_PINS, &pins);
 	res = config_get_item(&g_pins);
 	if (res){
 			os_memcpy(&g_pins, &pins.pins, sizeof(g_pins));

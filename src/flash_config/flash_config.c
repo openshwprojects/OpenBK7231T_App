@@ -12,6 +12,14 @@
 #endif
 
 #include "../logging/logging.h"
+#include "flash_config.h"
+
+//#define DEBUG_FLASH_CONFIG
+
+#ifndef DEBUG_FLASH_CONFIG
+#undef ADDLOG_DEBUG
+#define ADDLOG_DEBUG(x, y, ...)
+#endif
 
 
 // temporary storage for table.
@@ -22,10 +30,14 @@ static UINT32 flashaddr;
 static UINT32 flashlen;
 
 static int changes = 0;
+static int flashwrites = -1;
+static int OTAwrites = 0;
 extern int g_savecfg;
 
 static int config_compress_table();
 static int config_save_table();
+int config_getflashinfo();
+int increment_flashcounts(int config, int ota);
 
 static INFO_ITEM_ST *_search_item(INFO_ITEM_ST *item, UINT32 *p_usedlen);
 
@@ -33,7 +45,8 @@ static SemaphoreHandle_t config_mutex = 0;
 
 
 char *hex = "0123456789ABCDEF";
-int config_dump(unsigned char *addr, int len){
+int config_dump(void* obj, int len){
+    unsigned char *addr = (unsigned char *)obj;
     char tmp[40];
     int i;
     ADDLOG_DEBUG(LOG_FEATURE_CFG, "dump of 0x%08X", addr);
@@ -132,9 +145,15 @@ int config_get_tbl(int readit){
     ddev_close(flash_handle);
 	hal_flash_unlock();
 
-    config_dump((unsigned char *)g_table, cfg_len);
+    // should happen only on first read.
+    if (flashwrites == -1){
+        flashwrites = 0;
+        config_getflashinfo();
+    }
+    //config_dump((unsigned char *)g_table, cfg_len);
+#ifdef DEBUG_FLASH_CONFIG
     config_dump_table();
-
+#endif
     return ret;
 }
 
@@ -363,6 +382,7 @@ static int config_save_table(){
         return 0;
     }
     // should already have it...
+    increment_flashcounts(1, 0);
     tablelen = config_get_tbl(1);
 
     if (tablelen > flashlen){
@@ -386,17 +406,18 @@ static int config_save_table(){
 }
 
 
-int config_save_item(INFO_ITEM_ST *item)
+int config_save_item(void *itemin)
 {
 	UINT32 item_len;
 	INFO_ITEM_ST_PTR item_head_ptr;
+    INFO_ITEM_ST *item;
 
     BaseType_t taken;
     if (!config_mutex) {
         config_mutex = xSemaphoreCreateMutex( );
     }
     taken = xSemaphoreTake( config_mutex, 100 );
-
+    item = itemin;
 
 	item_len = sizeof(INFO_ITEM_ST) + item->len;
 	
@@ -546,3 +567,31 @@ int config_commit(){
     return 0;
 }
 
+int config_getflashinfo(){
+    ITEM_FLASHIINFO_CONFIG flash_info;
+    CONFIG_INIT_ITEM(CONFIG_TYPE_FLASH_INFO, &flash_info);
+    if (config_get_item(&flash_info)){
+        flashwrites = flash_info.flash_write_count;
+	    OTAwrites = flash_info.OTA_count;
+    }
+    return 0;
+}
+
+int increment_flashcounts(int config, int ota){
+    ITEM_FLASHIINFO_CONFIG flash_info;
+    CONFIG_INIT_ITEM(CONFIG_TYPE_FLASH_INFO, &flash_info);
+    flashwrites += config;
+    OTAwrites += ota;
+    flash_info.flash_write_count = flashwrites;
+    flash_info.OTA_count = OTAwrites;
+    config_save_item(&flash_info);
+    ADDLOG_DEBUG(LOG_FEATURE_CFG, "Flash info - config writes %d, OTA %d", 
+        flashwrites,
+        OTAwrites
+        );
+    return 1;
+}
+
+int increment_OTA_count(){
+    return increment_flashcounts(0, 1);
+}

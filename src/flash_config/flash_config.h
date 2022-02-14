@@ -18,6 +18,9 @@ int config_delete_item(UINT32 type);
 
 // save pending changes NOW and release the config memory 
 int config_commit();
+
+int increment_OTA_count();
+
 /////////////////////////////////////////////////////
 
 
@@ -38,9 +41,14 @@ int config_dump_table();
 /////////////////////////////////////////
 // config types not defined by beken
 //
-// strucutre is ITEM_URL_CONFIG
-#define CONFIG_TYPE_WEBAPP_ROOT ((UINT32) *((UINT32*)"TEST"))
-//
+// structure is ITEM_URL_CONFIG
+#define CONFIG_TYPE_WEBAPP_ROOT ((UINT32) *((UINT32*)"WEB"))
+// structure is ITEM_FLASHIINFO_CONFIG
+#define CONFIG_TYPE_FLASH_INFO ((UINT32) *((UINT32*)"FLSH"))
+// 'new' structure
+#define CONFIG_TYPE_WIFI ((UINT32) *((UINT32*)"WIFI"))
+#define CONFIG_TYPE_MQTT ((UINT32) *((UINT32*)"MQTT"))
+#define CONFIG_TYPE_PINS ((UINT32) *((UINT32*)"PINS"))
 
 #define CONFIG_INIT_ITEM(t, ptr) { (ptr)->head.len = sizeof(*(ptr)) - sizeof((ptr)->head); (ptr)->head.type = t; }  
 
@@ -55,6 +63,12 @@ typedef struct item_url_config
 	char url[CONFIG_URL_SIZE_MAX];
 }ITEM_URL_CONFIG,*ITEM_URL_CONFIG_PTR;
 
+typedef struct item_flashinfo_config
+{
+	INFO_ITEM_ST head;
+	int flash_write_count;
+	int OTA_count;
+}ITEM_FLASHIINFO_CONFIG,*ITEM_FLASHINFO_CONFIG_PTR;
 
 // added for OpenBK7231T
 typedef struct item_new_wifi_config2
