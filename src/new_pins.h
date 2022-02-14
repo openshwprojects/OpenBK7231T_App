@@ -21,6 +21,8 @@ enum IORole {
 	IOR_Total_Options,
 };
 
+// NOTE: you must keep size of this structure in sync with
+// structures in flash config code for both BK7231 and XR809
 typedef struct pinsState_s {
 	byte roles[32];
 	byte channels[32];

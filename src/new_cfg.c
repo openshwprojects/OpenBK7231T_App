@@ -150,7 +150,20 @@ void CFG_SaveWiFi() {
 #if WINDOWS
 
 #elif PLATFORM_XR809
+	sysinfo_t *inf;
+	int res;
+	inf = sysinfo_get();
+	if(inf == 0) {
+		printf("CFG_SaveMQTT: sysinfo_get returned 0!\n\r");
+		return;
+	}
+	strcpy_safe(inf->wlan_sta_param.ssid, g_wifi_ssid, sizeof(inf->wlan_sta_param.ssid));
+	strcpy_safe(inf->wlan_sta_param.psk, g_wifi_pass, sizeof(inf->wlan_sta_param.psk));
 
+	res = sysinfo_save_wrapper();
+	if(res != 0) {
+		printf("CFG_SaveWiFi: sysinfo_save error - %i!\n\r",res);
+	}
 #else
 	ITEM_NEW_WIFI_CONFIG container;
 	os_memset(&container, 0, sizeof(container));
@@ -164,7 +177,14 @@ void CFG_LoadWiFi() {
 #if WINDOWS
 
 #elif PLATFORM_XR809
-
+	sysinfo_t *inf;
+	inf = sysinfo_get();
+	if(inf == 0) {
+		printf("CFG_LoadWiFi: sysinfo_get returned 0!\n\r");
+		return;
+	}
+	strcpy_safe(g_wifi_ssid,inf->wlan_sta_param.ssid,sizeof(g_wifi_ssid));
+	strcpy_safe(g_wifi_pass,inf->wlan_sta_param.psk,sizeof(g_wifi_pass));
 #else
 	{
 		// try to read 'old' structure with extra 8 bytes
@@ -189,7 +209,32 @@ void CFG_LoadWiFi() {
 	}
 #endif
 }
+#if PLATFORM_XR809
+int sysinfo_checksum(sysinfo_t *inf) {
+	int crc = 0;
+	crc ^ Tiny_CRC8(inf->mac_addr,sizeof(inf->mac_addr));
+	crc ^ Tiny_CRC8(inf->wlan_mode,sizeof(inf->wlan_mode));
+	crc ^ Tiny_CRC8(inf->wlan_sta_param,sizeof(inf->wlan_sta_param));
+	crc ^ Tiny_CRC8(inf->wlan_ap_param,sizeof(inf->wlan_ap_param));
+	crc ^ Tiny_CRC8(inf->netif_sta_param,sizeof(inf->netif_sta_param));
+	crc ^ Tiny_CRC8(inf->netif_ap_param,sizeof(inf->netif_ap_param));
+	crc ^ Tiny_CRC8(inf->mqtt_param,sizeof(inf->mqtt_param));
+	crc ^ Tiny_CRC8(inf->pins,sizeof(inf->pins));
 
+	return crc;
+}
+int sysinfo_save_wrapper() {
+	sysinfo_t *inf;
+	int res;
+	inf = sysinfo_get();
+	if(inf == 0) {
+		printf("sysinfo_save_wrapper: sysinfo_get returned 0!\n\r");
+		return -1;
+	}
+	inf->checksum = sysinfo_checksum(inf);
+	sysinfo_save();
+}
+#endif
 void CFG_SaveMQTT() {
 #if WINDOWS
 
@@ -199,7 +244,7 @@ void CFG_SaveMQTT() {
 	inf = sysinfo_get();
 	if(inf == 0) {
 		printf("CFG_SaveMQTT: sysinfo_get returned 0!\n\r");
-		return 0;
+		return;
 	}
 	strcpy_safe(inf->mqtt_param.userName, g_mqtt_userName, sizeof(inf->mqtt_param.userName));
 	strcpy_safe(inf->mqtt_param.pass, g_mqtt_pass, sizeof(inf->mqtt_param.pass));
@@ -209,7 +254,7 @@ void CFG_SaveMQTT() {
 
 	printf("CFG_SaveMQTT: sysinfo will save inf->mqtt_param.userName - %s!\n\r",inf->mqtt_param.userName);
 	printf("CFG_SaveMQTT: sysinfo will save inf->mqtt_param.hostName - %s!\n\r",inf->mqtt_param.hostName);
-	res = sysinfo_save();
+	res = sysinfo_save_wrapper();
 	if(res != 0) {
 		printf("CFG_SaveMQTT: sysinfo_save error - %i!\n\r",res);
 	}

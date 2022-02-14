@@ -10,7 +10,11 @@
 
 #elif PLATFORM_XR809
 
+// XR809 sysinfo is used to save configuration to flash
+#include "common/framework/sysinfo.h"
 #include "driver/chip/hal_gpio.h"
+
+#define os_memcpy memcpy
 
 #else
 #include "flash_config/flash_config.h"
@@ -71,113 +75,6 @@ int PIN_GetPWMIndexForPinIndex(int pin) {
 	return -1;
 }
 
-// it was nice to have it as bits but now that we support PWM...
-//int g_channelStates;
-unsigned char g_channelValues[GPIO_MAX] = { 0 };
-
-#ifdef WINDOWS
-
-#elif PLATFORM_XR809
-
-#else
-BUTTON_S g_buttons[GPIO_MAX];
-
-#endif
-pinsState_t g_pins;
-
-void (*g_channelChangeCallback)(int idx, int iVal) = 0;
-void (*g_doubleClickCallback)(int pinIndex) = 0;
-
-
-void PIN_SaveToFlash() {
-#if WINDOWS
-
-#elif PLATFORM_XR809
-
-#else
-	ITEM_PINS_CONFIG pins;
-	os_memcpy(&pins.pins, &g_pins, sizeof(pins.pins));
-	CONFIG_INIT_ITEM(CONFIG_TYPE_PINS, &pins);
-	config_save_item(&pins);
-	// delete old if it exists
-	config_delete_item(NEW_PINS_CONFIG);
-#endif
-}
-void PIN_LoadFromFlash() {
-	int i;
-	int res;
-#if WINDOWS
-
-#elif PLATFORM_XR809
-
-#else
-	ITEM_PINS_CONFIG pins;
-#endif
-
-
-	PR_NOTICE("PIN_LoadFromFlash called - going to load pins.\r\n");
-	PR_NOTICE("UART log breaking after that means that you changed the role of TX pin to digital IO or smth else.\r\n");
-
-#if WINDOWS
-
-#elif PLATFORM_XR809
-
-#else
-	CONFIG_INIT_ITEM(CONFIG_TYPE_PINS, &pins);
-	res = config_get_item(&pins);
-	if (res){
-			os_memcpy(&g_pins, &pins.pins, sizeof(g_pins));
-	}
-#endif
-	for(i = 0; i < GPIO_MAX; i++) {
-		PIN_SetPinRoleForPinIndex(i,g_pins.roles[i]);
-	}
-	PR_NOTICE("PIN_LoadFromFlash pins have been set up.\r\n");
-}
-void PIN_ClearPins() {
-	memset(&g_pins,0,sizeof(g_pins));
-}
-int PIN_GetPinRoleForPinIndex(int index) {
-	return g_pins.roles[index];
-}
-int PIN_GetPinChannelForPinIndex(int index) {
-	return g_pins.channels[index];
-}
-void RAW_SetPinValue(int index, int iVal){
-#if WINDOWS
-
-#elif PLATFORM_XR809
-	GPIO_InitParam param;
-	int xr_port; // eg GPIO_PORT_A
-	int xr_pin; // eg. GPIO_PIN_20
-
-	PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
-
-	HAL_GPIO_WritePin(xr_port, xr_pin, iVal);
-#else
-    bk_gpio_output(index, iVal);
-#endif
-}
-void button_generic_short_press(int index)
-{
-	CHANNEL_Toggle(g_pins.channels[index]);
-
-	PR_NOTICE("%i key_short_press\r\n", index);
-}
-void button_generic_double_press(int index)
-{
-	CHANNEL_Toggle(g_pins.channels[index]);
-
-	if(g_doubleClickCallback!=0) {
-		g_doubleClickCallback(index);
-	}
-	PR_NOTICE("%i key_double_press\r\n", index);
-}
-void button_generic_long_press_hold(int index)
-{
-	PR_NOTICE("%i key_long_press_hold\r\n", index);
-}
-
 #if PLATFORM_XR809
 typedef struct xr809pin_s {
 	const char *name;
@@ -215,6 +112,137 @@ void PIN_XR809_GetPortPinForIndex(int index, int *xr_port, int *xr_pin) {
 }
 
 #endif
+// it was nice to have it as bits but now that we support PWM...
+//int g_channelStates;
+unsigned char g_channelValues[GPIO_MAX] = { 0 };
+
+#ifdef WINDOWS
+
+#elif PLATFORM_XR809
+
+#else
+BUTTON_S g_buttons[GPIO_MAX];
+
+#endif
+pinsState_t g_pins;
+
+void (*g_channelChangeCallback)(int idx, int iVal) = 0;
+void (*g_doubleClickCallback)(int pinIndex) = 0;
+
+
+void PIN_SaveToFlash() {
+#if WINDOWS
+
+#elif PLATFORM_XR809
+	sysinfo_t *inf;
+	int res;
+	inf = sysinfo_get();
+	if(inf == 0) {
+		printf("PIN_SaveToFlash: sysinfo_get returned 0!\n\r");
+		return;
+	}
+	os_memcpy(&inf->pins, &g_pins, sizeof(inf->pins));
+	
+	if(sizeof(inf->pins) != sizeof(g_pins)) {
+		printf("PIN_SaveToFlash: FATAL ERROR - pin structures size mismatch! %i vs %i\r\n",sizeof(inf->pins),sizeof(g_pins));
+	}
+
+	res = sysinfo_save_wrapper();
+	if(res != 0) {
+		printf("PIN_SaveToFlash: sysinfo_save error - %i!\n\r",res);
+	}
+
+#else
+	ITEM_PINS_CONFIG pins;
+	os_memcpy(&pins.pins, &g_pins, sizeof(pins.pins));
+	CONFIG_INIT_ITEM(CONFIG_TYPE_PINS, &pins);
+	config_save_item(&pins);
+	// delete old if it exists
+	config_delete_item(NEW_PINS_CONFIG);
+#endif
+}
+void PIN_LoadFromFlash() {
+	int i;
+#if WINDOWS
+
+#elif PLATFORM_XR809
+	sysinfo_t *inf;
+#else
+	int res;
+	ITEM_PINS_CONFIG pins;
+#endif
+
+
+	PR_NOTICE("PIN_LoadFromFlash called - going to load pins.\r\n");
+	PR_NOTICE("UART log breaking after that means that you changed the role of TX pin to digital IO or smth else.\r\n");
+
+#if WINDOWS
+
+#elif PLATFORM_XR809
+	inf = sysinfo_get();
+	if(inf == 0) {
+		printf("PIN_LoadFromFlash: sysinfo_get returned 0!\n\r");
+		return;
+	}
+	os_memcpy(&g_pins, &inf->pins, sizeof(g_pins));
+	if(sizeof(inf->pins) != sizeof(g_pins)) {
+		printf("PIN_LoadFromFlash: FATAL ERROR - pin structures size mismatch! %i vs %i\r\n",sizeof(inf->pins),sizeof(g_pins));
+	}
+#else
+	CONFIG_INIT_ITEM(CONFIG_TYPE_PINS, &pins);
+	res = config_get_item(&pins);
+	if (res){
+			os_memcpy(&g_pins, &pins.pins, sizeof(g_pins));
+	}
+#endif
+	for(i = 0; i < GPIO_MAX; i++) {
+		PIN_SetPinRoleForPinIndex(i,g_pins.roles[i]);
+	}
+	PR_NOTICE("PIN_LoadFromFlash pins have been set up.\r\n");
+}
+void PIN_ClearPins() {
+	memset(&g_pins,0,sizeof(g_pins));
+}
+int PIN_GetPinRoleForPinIndex(int index) {
+	return g_pins.roles[index];
+}
+int PIN_GetPinChannelForPinIndex(int index) {
+	return g_pins.channels[index];
+}
+void RAW_SetPinValue(int index, int iVal){
+#if WINDOWS
+
+#elif PLATFORM_XR809
+	int xr_port; // eg GPIO_PORT_A
+	int xr_pin; // eg. GPIO_PIN_20
+
+	PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
+
+	HAL_GPIO_WritePin(xr_port, xr_pin, iVal);
+#else
+    bk_gpio_output(index, iVal);
+#endif
+}
+void button_generic_short_press(int index)
+{
+	CHANNEL_Toggle(g_pins.channels[index]);
+
+	PR_NOTICE("%i key_short_press\r\n", index);
+}
+void button_generic_double_press(int index)
+{
+	CHANNEL_Toggle(g_pins.channels[index]);
+
+	if(g_doubleClickCallback!=0) {
+		g_doubleClickCallback(index);
+	}
+	PR_NOTICE("%i key_double_press\r\n", index);
+}
+void button_generic_long_press_hold(int index)
+{
+	PR_NOTICE("%i key_long_press_hold\r\n", index);
+}
+
 const char *PIN_GetPinNameAlias(int index) {
 #if PLATFORM_XR809
 	if(index < 0 || index >= g_numXRPins) {

@@ -25,3 +25,4 @@ void CFG_LoadMQTT();
 const char *CFG_GetWebappRoot();
 const char *CFG_LoadWebappRoot();
 void CFG_SetWebappRoot(const char *s);
+void CFG_InitAndLoad();
