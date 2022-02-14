@@ -28,6 +28,10 @@ static char g_mqtt_pass[128] = "qqqqqqqqqq";
 static char g_wifi_ssid[64] = { 0 };
 static char g_wifi_pass[64] = { 0 };
 
+#if PLATFORM_XR809
+#define CONFIG_URL_SIZE_MAX 64
+#endif
+
 static char g_webappRoot[CONFIG_URL_SIZE_MAX] = "https://openbekeniot.github.io/webapp/";
 
 // Long unique device name, like OpenBK7231T_AABBCCDD
@@ -203,6 +207,8 @@ void CFG_SaveMQTT() {
 	strcpy_safe(inf->mqtt_param.brokerName, g_mqtt_brokerName, sizeof(inf->mqtt_param.brokerName));
 	inf->mqtt_param.port = g_mqtt_port;
 
+	printf("CFG_SaveMQTT: sysinfo will save inf->mqtt_param.userName - %s!\n\r",inf->mqtt_param.userName);
+	printf("CFG_SaveMQTT: sysinfo will save inf->mqtt_param.hostName - %s!\n\r",inf->mqtt_param.hostName);
 	res = sysinfo_save();
 	if(res != 0) {
 		printf("CFG_SaveMQTT: sysinfo_save error - %i!\n\r",res);
@@ -235,6 +241,11 @@ void CFG_LoadMQTT() {
 	strcpy_safe(g_mqtt_host,inf->mqtt_param.hostName,sizeof(g_mqtt_host));
 	strcpy_safe(g_mqtt_brokerName,inf->mqtt_param.brokerName,sizeof(g_mqtt_brokerName));
 	g_mqtt_port = inf->mqtt_param.port;
+	
+	printf("CFG_LoadMQTT: sysinfo has been loaded!\n\r");
+	printf("CFG_LoadMQTT: SYSINFO_SIZE is %i!\n\r",SYSINFO_SIZE);
+	printf("CFG_LoadMQTT: g_mqtt_userName is %s!\n\r",g_mqtt_userName);
+	printf("CFG_LoadMQTT: g_mqtt_host is %s!\n\r",g_mqtt_host);
 
 #else
 	{

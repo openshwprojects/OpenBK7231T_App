@@ -5,7 +5,6 @@
 #include "new_pins.h"
 #include "httpserver/new_http.h"
 #include "logging/logging.h"
-#include "flash_config/flash_config.h"
 
 #if WINDOWS
 
@@ -14,6 +13,7 @@
 #include "driver/chip/hal_gpio.h"
 
 #else
+#include "flash_config/flash_config.h"
 #include <gpio_pub.h>
 
 #include "../../beken378/func/include/net_param_pub.h"
@@ -23,14 +23,14 @@
 #define PR_DEBUG addLog
 #define PR_NOTICE addLog
 
-
-#endif
-
 typedef struct item_pins_config
 {
 	INFO_ITEM_ST head;
 	pinsState_t pins;
 }ITEM_PINS_CONFIG,*ITEM_PINS_CONFIG_PTR;
+
+
+#endif
 
 
 
@@ -90,12 +90,12 @@ void (*g_doubleClickCallback)(int pinIndex) = 0;
 
 
 void PIN_SaveToFlash() {
-	ITEM_PINS_CONFIG pins;
 #if WINDOWS
 
 #elif PLATFORM_XR809
 
 #else
+	ITEM_PINS_CONFIG pins;
 	os_memcpy(&pins.pins, &g_pins, sizeof(pins.pins));
 	CONFIG_INIT_ITEM(CONFIG_TYPE_PINS, &pins);
 	config_save_item(&pins);
@@ -106,7 +106,13 @@ void PIN_SaveToFlash() {
 void PIN_LoadFromFlash() {
 	int i;
 	int res;
+#if WINDOWS
+
+#elif PLATFORM_XR809
+
+#else
 	ITEM_PINS_CONFIG pins;
+#endif
 
 
 	PR_NOTICE("PIN_LoadFromFlash called - going to load pins.\r\n");
