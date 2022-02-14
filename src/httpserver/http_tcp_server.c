@@ -170,14 +170,18 @@ static void tcp_server_thread( beken_thread_arg_t arg )
             if ( client_fd >= 0 )
             {
 #if PLATFORM_XR809
+#if DISABLE_SEPARATE_THREAD_FOR_EACH_TCP_CLIENT
+
+#else
 				OS_Thread_t clientThreadUnused ;
+#endif
 #endif
                 os_strcpy( client_ip_str, inet_ntoa( client_addr.sin_addr ) );
                 ADDLOG_DEBUG(LOG_FEATURE_HTTP,  "TCP Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd );
 #if DISABLE_SEPARATE_THREAD_FOR_EACH_TCP_CLIENT
 				// Use main server thread (blocking all other clients)
 				// right now, I am getting OS_ThreadCreate everytime on XR809 platform
-				tcp_client_thread(client_fd);
+				tcp_client_thread((beken_thread_arg_t)client_fd);
 #else
 				// Create separate thread for client
                 if ( kNoErr != 

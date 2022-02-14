@@ -783,7 +783,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 				}
 #if PLATFORM_XR809
 				//uint32_t flash_read(uint32_t flash, uint32_t addr,void *buf, uint32_t size)
-#define FLASH_INDEX_XR809 0
+				#define FLASH_INDEX_XR809 0
 				res = flash_read(FLASH_INDEX_XR809, nowOfs, buffer, now);
 #else
 				res = tuya_hal_flash_read (nowOfs, buffer,now);

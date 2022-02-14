@@ -82,6 +82,18 @@ const char *CFG_GetDeviceName(){
 const char *CFG_GetShortDeviceName(){
 	return g_shortDeviceName;
 }
+
+#if WINDOWS
+#define DEVICENAME_PREFIX_FULL "WinTest"
+#define DEVICENAME_PREFIX_SHORT "WT"
+#elif PLATFORM_XR809
+#define DEVICENAME_PREFIX_FULL "OpenXR809"
+#define DEVICENAME_PREFIX_SHORT "oxr"
+#else
+#define DEVICENAME_PREFIX_FULL "OpenBK7231T"
+#define DEVICENAME_PREFIX_SHORT "obk"
+#endif
+
 void CFG_CreateDeviceNameUnique()
 {
 	// must be unsigned, else print below prints negatives as e.g. FFFFFFFe
@@ -93,8 +105,8 @@ void CFG_CreateDeviceNameUnique()
 #else
     wifi_get_mac_address((char *)mac, CONFIG_ROLE_STA);
 #endif
-	sprintf(g_deviceName,"OpenBK7231T_%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
-	sprintf(g_shortDeviceName,"obk%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
+	sprintf(g_deviceName,DEVICENAME_PREFIX_FULL"_%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
+	sprintf(g_shortDeviceName,DEVICENAME_PREFIX_SHORT"%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
 
 		// NOT WORKING, I done it other way, see ethernetif.c
 	//net_dhcp_hostname_set(g_shortDeviceName);
@@ -157,8 +169,8 @@ void CFG_SaveWiFi() {
 		printf("CFG_SaveWiFi: sysinfo_get returned 0!\n\r");
 		return;
 	}
-	strcpy_safe(inf->wlan_sta_param.ssid, g_wifi_ssid, sizeof(inf->wlan_sta_param.ssid));
-	strcpy_safe(inf->wlan_sta_param.psk, g_wifi_pass, sizeof(inf->wlan_sta_param.psk));
+	strcpy_safe((char*)inf->wlan_sta_param.ssid, g_wifi_ssid, sizeof(inf->wlan_sta_param.ssid));
+	strcpy_safe((char*)inf->wlan_sta_param.psk, g_wifi_pass, sizeof(inf->wlan_sta_param.psk));
 
 	res = sysinfo_save_wrapper();
 	if(res != 0) {
@@ -183,8 +195,8 @@ void CFG_LoadWiFi() {
 		printf("CFG_LoadWiFi: sysinfo_get returned 0!\n\r");
 		return;
 	}
-	strcpy_safe(g_wifi_ssid,inf->wlan_sta_param.ssid,sizeof(g_wifi_ssid));
-	strcpy_safe(g_wifi_pass,inf->wlan_sta_param.psk,sizeof(g_wifi_pass));
+	strcpy_safe(g_wifi_ssid,(char*)inf->wlan_sta_param.ssid,sizeof(g_wifi_ssid));
+	strcpy_safe(g_wifi_pass,(char*)inf->wlan_sta_param.psk,sizeof(g_wifi_pass));
 #else
 	{
 		// try to read 'old' structure with extra 8 bytes
@@ -212,14 +224,14 @@ void CFG_LoadWiFi() {
 #if PLATFORM_XR809
 int sysinfo_checksum(sysinfo_t *inf) {
 	int crc = 0;
-	crc ^= Tiny_CRC8(&inf->mac_addr,sizeof(inf->mac_addr));
-	crc ^= Tiny_CRC8(&inf->wlan_mode,sizeof(inf->wlan_mode));
-	crc ^= Tiny_CRC8(&inf->wlan_sta_param,sizeof(inf->wlan_sta_param));
-	crc ^= Tiny_CRC8(&inf->wlan_ap_param,sizeof(inf->wlan_ap_param));
-	crc ^= Tiny_CRC8(&inf->netif_sta_param,sizeof(inf->netif_sta_param));
-	crc ^= Tiny_CRC8(&inf->netif_ap_param,sizeof(inf->netif_ap_param));
-	crc ^= Tiny_CRC8(&inf->mqtt_param,sizeof(inf->mqtt_param));
-	crc ^= Tiny_CRC8(&inf->pins,sizeof(inf->pins));
+	crc ^= Tiny_CRC8((const char*)&inf->mac_addr,sizeof(inf->mac_addr));
+	crc ^= Tiny_CRC8((const char*)&inf->wlan_mode,sizeof(inf->wlan_mode));
+	crc ^= Tiny_CRC8((const char*)&inf->wlan_sta_param,sizeof(inf->wlan_sta_param));
+	crc ^= Tiny_CRC8((const char*)&inf->wlan_ap_param,sizeof(inf->wlan_ap_param));
+	crc ^= Tiny_CRC8((const char*)&inf->netif_sta_param,sizeof(inf->netif_sta_param));
+	crc ^= Tiny_CRC8((const char*)&inf->netif_ap_param,sizeof(inf->netif_ap_param));
+	crc ^= Tiny_CRC8((const char*)&inf->mqtt_param,sizeof(inf->mqtt_param));
+	crc ^= Tiny_CRC8((const char*)&inf->pins,sizeof(inf->pins));
 
 	return crc;
 }
