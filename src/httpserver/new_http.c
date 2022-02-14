@@ -645,6 +645,8 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		HTTP_AddBuildFooter(request);
 		poststr(request,htmlEnd);
 	} else if(http_checkUrlBase(urlStr,"cfg_wifi_set")) {
+		printf("HTTP_ProcessPacket: generating cfg_wifi_set \r\n");
+
 		http_setup(request, httpMimeTypeHTML);
 		poststr(request,htmlHeader);
 		poststr(request,g_header);
@@ -661,7 +663,9 @@ int HTTP_ProcessPacket(http_request_t *request) {
 			}
 			poststr(request,"WiFi mode set: connect to WLAN.");
 		}
+		printf("HTTP_ProcessPacket: calling CFG_SaveWiFi \r\n");
 		CFG_SaveWiFi();
+		printf("HTTP_ProcessPacket: done CFG_SaveWiFi \r\n");
 
 		poststr(request,"Please wait for module to reset...");
 		

@@ -154,7 +154,7 @@ void CFG_SaveWiFi() {
 	int res;
 	inf = sysinfo_get();
 	if(inf == 0) {
-		printf("CFG_SaveMQTT: sysinfo_get returned 0!\n\r");
+		printf("CFG_SaveWiFi: sysinfo_get returned 0!\n\r");
 		return;
 	}
 	strcpy_safe(inf->wlan_sta_param.ssid, g_wifi_ssid, sizeof(inf->wlan_sta_param.ssid));
@@ -212,14 +212,14 @@ void CFG_LoadWiFi() {
 #if PLATFORM_XR809
 int sysinfo_checksum(sysinfo_t *inf) {
 	int crc = 0;
-	crc ^ Tiny_CRC8(inf->mac_addr,sizeof(inf->mac_addr));
-	crc ^ Tiny_CRC8(inf->wlan_mode,sizeof(inf->wlan_mode));
-	crc ^ Tiny_CRC8(inf->wlan_sta_param,sizeof(inf->wlan_sta_param));
-	crc ^ Tiny_CRC8(inf->wlan_ap_param,sizeof(inf->wlan_ap_param));
-	crc ^ Tiny_CRC8(inf->netif_sta_param,sizeof(inf->netif_sta_param));
-	crc ^ Tiny_CRC8(inf->netif_ap_param,sizeof(inf->netif_ap_param));
-	crc ^ Tiny_CRC8(inf->mqtt_param,sizeof(inf->mqtt_param));
-	crc ^ Tiny_CRC8(inf->pins,sizeof(inf->pins));
+	crc ^= Tiny_CRC8(&inf->mac_addr,sizeof(inf->mac_addr));
+	crc ^= Tiny_CRC8(&inf->wlan_mode,sizeof(inf->wlan_mode));
+	crc ^= Tiny_CRC8(&inf->wlan_sta_param,sizeof(inf->wlan_sta_param));
+	crc ^= Tiny_CRC8(&inf->wlan_ap_param,sizeof(inf->wlan_ap_param));
+	crc ^= Tiny_CRC8(&inf->netif_sta_param,sizeof(inf->netif_sta_param));
+	crc ^= Tiny_CRC8(&inf->netif_ap_param,sizeof(inf->netif_ap_param));
+	crc ^= Tiny_CRC8(&inf->mqtt_param,sizeof(inf->mqtt_param));
+	crc ^= Tiny_CRC8(&inf->pins,sizeof(inf->pins));
 
 	return crc;
 }
@@ -231,8 +231,12 @@ int sysinfo_save_wrapper() {
 		printf("sysinfo_save_wrapper: sysinfo_get returned 0!\n\r");
 		return -1;
 	}
+	printf("sysinfo_save_wrapper: going to calc checksum!\n\r");
 	inf->checksum = sysinfo_checksum(inf);
+	printf("sysinfo_save_wrapper: going to call save!\n\r");
 	sysinfo_save();
+	printf("sysinfo_save_wrapper: done!\n\r");
+	return 0;
 }
 #endif
 void CFG_SaveMQTT() {
@@ -279,7 +283,7 @@ void CFG_LoadMQTT() {
 	inf = sysinfo_get();
 	if(inf == 0) {
 		printf("CFG_LoadMQTT: sysinfo_get returned 0!\n\r");
-		return 0;
+		return;
 	}
 	strcpy_safe(g_mqtt_userName,inf->mqtt_param.userName,sizeof(g_mqtt_userName));
 	strcpy_safe(g_mqtt_pass,inf->mqtt_param.pass,sizeof(g_mqtt_pass));
