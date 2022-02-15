@@ -94,10 +94,7 @@ const char *CFG_GetShortDeviceName(){
 #define DEVICENAME_PREFIX_SHORT "obk"
 #endif
 
-void CFG_CreateDeviceNameUnique()
-{
-	// must be unsigned, else print below prints negatives as e.g. FFFFFFFe
-	unsigned char mac[32];
+void WiFI_GetMacAddress(char *mac) {
 #if WINDOWS
 
 #elif PLATFORM_XR809
@@ -105,6 +102,15 @@ void CFG_CreateDeviceNameUnique()
 #else
     wifi_get_mac_address((char *)mac, CONFIG_ROLE_STA);
 #endif
+}
+
+void CFG_CreateDeviceNameUnique()
+{
+	// must be unsigned, else print below prints negatives as e.g. FFFFFFFe
+	unsigned char mac[32];
+
+	WiFI_GetMacAddress((char *)mac);
+
 	sprintf(g_deviceName,DEVICENAME_PREFIX_FULL"_%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
 	sprintf(g_shortDeviceName,DEVICENAME_PREFIX_SHORT"%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
 

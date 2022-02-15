@@ -321,11 +321,18 @@ const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7
 
 void HTTP_AddBuildFooter(http_request_t *request) {
 	char upTimeStr[128];
+	unsigned char mac[32];
 	poststr(request,"<br>");
 	poststr(request,g_build_str);
 	poststr(request,"<br> Online for ");
 	misc_formatUpTimeString(Time_getUpTimeSeconds(), upTimeStr);
 	poststr(request,upTimeStr);
+
+	WiFI_GetMacAddress((char *)mac);
+
+	sprintf(upTimeStr,"<br> Device MAC: %02X%02X%02X%02X%02X%02X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
+	poststr(request,upTimeStr);
+
 }
 
 
@@ -860,6 +867,8 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		poststr(request,g_header);
 		poststr(request,"<h4>Home Assistant Cfg</h4>");
 		poststr(request,"<h4>Paste this to configuration yaml</h4>");
+		poststr(request,"<h5>Make sure that you have \"switch:\" keyword only once! Home Assistant doesn't like dup keywords.</h5>");
+		poststr(request,"<h5>You can also use \"switch MyDeviceName:\" to avoid keyword duplication!</h5>");
 		
 		poststr(request,"<textarea rows=\"40\" cols=\"50\">");
 
