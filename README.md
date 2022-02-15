@@ -1,6 +1,8 @@
 # Building
 
-Clone the SDK repo to a folder, e.g. bk7231sdk/
+Get the SDK repo:
+https://github.com/openshwprojects/OpenBK7231T
+Clone it to a folder, e.g. bk7231sdk/
 
 Clone the app repo into bk7231sdk/apps/<appname> - e.g. bk7231sdk\apps\openbk7231app
 
