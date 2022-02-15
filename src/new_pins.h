@@ -63,6 +63,7 @@ void Setup_Device_CalexPowerStrip_900018_1v1_0UK();
 void Setup_Device_ArlecCCTDownlight();
 void Setup_Device_NedisWIFIPO120FWT_16A();
 void Setup_Device_NedisWIFIP130FWT_10A();
+void Setup_Device_Device_EmaxHome_EDU8774();
 
 #endif
 
