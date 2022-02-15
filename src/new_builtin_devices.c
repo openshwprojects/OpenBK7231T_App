@@ -168,3 +168,56 @@ void Setup_Device_ArlecCCTDownlight() {
 
 	PIN_SaveToFlash();
 }
+
+// https://www.elektroda.pl/rtvforum/topic3804553.html
+// SmartSwitch Nedis WIFIPO120FWT
+void Setup_Device_NedisWIFIPO120FWT_16A() {
+
+	// WB2S
+	// Pins are:
+	// Led - PWM0 
+	// BL0937 CF - PWM1 
+	// BL0937 CF1 - PWM2
+	// Button = TX1
+	// BL0937 SEL - PWM4
+	// Relay = PWM5
+	
+
+	PIN_ClearPins();
+    // Button stat
+	PIN_SetPinRoleForPinIndex(6, IOR_LED);
+	PIN_SetPinChannelForPinIndex(6, 1);
+	// Button
+    PIN_SetPinRoleForPinIndex(10, IOR_Button);
+	PIN_SetPinChannelForPinIndex(10, 1);
+	// Relay
+	PIN_SetPinRoleForPinIndex(26, IOR_Relay_n);
+	PIN_SetPinChannelForPinIndex(26, 1);
+
+	PIN_SaveToFlash();
+}
+
+// https://www.elektroda.pl/rtvforum/topic3804553.html
+// SmartSwitch Nedis WIFIP130FWT
+void Setup_Device_NedisWIFIP130FWT_10A() {
+
+	// WB2S
+	// Pins are:
+	// Led - PWM0 
+	// Button = TX1
+	// Relay = PWM5
+	
+
+	PIN_ClearPins();
+	// Button stat
+	PIN_SetPinRoleForPinIndex(6, IOR_LED);
+	PIN_SetPinChannelForPinIndex(6, 1);
+	// Button
+    PIN_SetPinRoleForPinIndex(10, IOR_Button);
+	PIN_SetPinChannelForPinIndex(10, 1);
+	// Relay
+	PIN_SetPinRoleForPinIndex(26, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(26, 1);
+
+	PIN_SaveToFlash();
+}
