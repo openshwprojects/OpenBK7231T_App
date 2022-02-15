@@ -175,12 +175,12 @@ void Setup_Device_NedisWIFIPO120FWT_16A() {
 
 	// WB2S
 	// Pins are:
-	// Led			PWM0 - P6
-	// BL0937-CF	PWM1 - P7
-	// BL0937-CF1	PWM2 - P8
-	// Button		RX1  - P10
-	// BL0937-SEL	PWM4 - P24
-	// Relay		PWM5 - P26
+	// Led - PWM0 - P6
+	// BL0937-CF - PWM1 - P7
+	// BL0937-CF1- PWM2 - P8
+	// Button - RX1  - P10
+	// BL0937-SEL - PWM4 - P24
+	// Relay - PWM5 - P26
 	
 
 	PIN_ClearPins();
@@ -203,9 +203,9 @@ void Setup_Device_NedisWIFIP130FWT_10A() {
 
 	// WB2S
 	// Pins are:
-	// Led		PWM0 - P6 
-	// Button 	RX1  - P10
-	// Relay	PWM5 - P26
+	// Led - PWM0 - P6 
+	// Button - RX1  - P10
+	// Relay - PWM5 - P26
 	
 
 	PIN_ClearPins();
@@ -228,12 +228,12 @@ void Setup_Device_EmaxHome_EDU8774() {
 
 	// WB2S
 	// Pins are:
-	// BL0937-CF	PWM0 - P6 
-	// BL0937-CF1	PWM1 - P7
-	// BL0937-SEL	PWM2 - P8
-	// Button		RX1	 - P10
-	// Relay		PWM4 - P24
-	// Led			PWM5 - P26
+	// BL0937-CF - PWM0 - P6 
+	// BL0937-CF1 - PWM1 - P7
+	// BL0937-SEL - PWM2 - P8
+	// Button - RX1 - P10
+	// Relay - PWM4 - P24
+	// Led - PWM5 - P26
 	
 
 	PIN_ClearPins();
