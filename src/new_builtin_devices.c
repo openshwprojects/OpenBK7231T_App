@@ -238,10 +238,10 @@ void Setup_Device_EmaxHome_EDU8774() {
 
 	PIN_ClearPins();
 	// Button
-	PIN_SetPinRoleForPinIndex(6, IOR_Button);
+	PIN_SetPinRoleForPinIndex(10, IOR_Button);
 	PIN_SetPinChannelForPinIndex(10, 1);
 	// Relay
-	PIN_SetPinRoleForPinIndex(10, IOR_Relay);
+	PIN_SetPinRoleForPinIndex(24, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(24, 1);
 	// Led
 	PIN_SetPinRoleForPinIndex(26, IOR_LED);
