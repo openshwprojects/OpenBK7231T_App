@@ -307,7 +307,8 @@ template_t g_templates [] = {
 	{ Setup_Device_CalexPowerStrip_900018_1v1_0UK, "Calex UK power strip 900018.1 v1.0 UK"},
 	{ Setup_Device_ArlecCCTDownlight, "Arlec CCT LED Downlight ALD029CHA"},
 	{ Setup_Device_NedisWIFIPO120FWT_16A, "Nedis WIFIPO120FWT 16A"},
-	{ Setup_Device_NedisWIFIP130FWT_10A, "Nedis WIFIP130FWT 10A"}
+	{ Setup_Device_NedisWIFIP130FWT_10A, "Nedis WIFIP130FWT 10A"},
+	{ Setup_Device_TuyaSmartPFW02G, "Tuya Smart PFW02-G"}
 	
 };
 
