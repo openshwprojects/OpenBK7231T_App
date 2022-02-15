@@ -99,7 +99,6 @@ void WiFI_GetMacAddress(char *mac) {
 
 #elif PLATFORM_XR809
 	sysinfo_t *inf;
-	int res;
 	inf = sysinfo_get();
 	if(inf == 0) {
 		mac[0] = 'E'; mac[1] = 'R'; mac[2] = 'R'; mac[3] = 'O'; mac[4] = 'R'; mac[5] = '!';
@@ -111,7 +110,26 @@ void WiFI_GetMacAddress(char *mac) {
     wifi_get_mac_address((char *)mac, CONFIG_ROLE_STA);
 #endif
 }
+void WiFI_SetMacAddress(char *mac) {
+#if WINDOWS
 
+#elif PLATFORM_XR809
+	sysinfo_t *inf;
+	int res;
+	inf = sysinfo_get();
+	if(inf == 0) {
+		printf("WiFI_SetMacAddress: sysinfo_get returned 0!\n\r");
+		return;
+	}
+	memcpy(inf->mac_addr,mac,6);
+	res = sysinfo_save_wrapper();
+	if(res != 0) {
+		printf("WiFI_SetMacAddress: sysinfo_save error - %i!\n\r",res);
+	}
+#else
+    wifi_set_mac_address((char *)mac);
+#endif
+}
 void CFG_CreateDeviceNameUnique()
 {
 	// must be unsigned, else print below prints negatives as e.g. FFFFFFFe
@@ -260,7 +278,10 @@ int sysinfo_save_wrapper() {
 	printf("sysinfo_save_wrapper: going to calc checksum!\n\r");
 	inf->checksum = sysinfo_checksum(inf);
 	printf("sysinfo_save_wrapper: going to call save!\n\r");
-	sysinfo_save();
+	res = sysinfo_save();
+	if(res != 0) {
+		printf("sysinfo_save_wrapper: sysinfo_save returned error!\n\r");
+	}
 	printf("sysinfo_save_wrapper: done!\n\r");
 	return 0;
 }

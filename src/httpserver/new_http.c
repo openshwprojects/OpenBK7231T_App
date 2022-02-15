@@ -417,6 +417,16 @@ int hprintf128(http_request_t *request, const char *fmt, ...){
 	return postany(request, tmp, strlen(tmp));
 }
 
+uint8_t hexdigit( char hex )
+{
+    return (hex <= '9') ? hex - '0' : 
+                          toupper(hex) - 'A' + 10 ;
+}
+
+uint8_t hexbyte( const char* hex )
+{
+    return (hexdigit(*hex) << 4) | hexdigit(*(hex+1)) ;
+}
 
 int HTTP_ProcessPacket(http_request_t *request) {
 	int i, j;
@@ -754,6 +764,39 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		poststr(request,htmlReturnToCfg);
 		HTTP_AddBuildFooter(request);
 		poststr(request,htmlEnd);
+	} else if(http_checkUrlBase(urlStr,"cfg_mac")) {
+		// must be unsigned, else print below prints negatives as e.g. FFFFFFFe
+		unsigned char mac[6];
+
+		http_setup(request, httpMimeTypeHTML);
+		poststr(request,htmlHeader);
+		poststr(request,g_header);
+
+		if(http_getArg(recvbuf,"mac",tmpA,sizeof(tmpA))) {
+			for( i = 0; i < 6; i++ )
+			{
+				mac[i] = hexbyte( &tmpA[i * 2] ) ;
+			}
+			WiFI_SetMacAddress((char*)mac);
+			//sscanf(tmpA,"%02X%02X%02X%02X%02X%02X",&mac[0],&mac[1],&mac[2],&mac[3],&mac[4],&mac[5]);
+			poststr(request,"<h4> New MAC set!</h4>");
+		}
+
+		WiFI_GetMacAddress((char *)mac);
+
+		sprintf(tmpA,"%02X%02X%02X%02X%02X%02X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
+
+		poststr(request,"<h2> Here you can change MAC address.</h2>");
+		poststr(request,"<form action=\"/cfg_mac\">\
+			  <label for=\"mac\">MAC:</label><br>\
+			  <input type=\"text\" id=\"mac\" name=\"mac\" value=\"");
+		poststr(request,tmpA);
+		poststr(request,"\"><br><br>\
+			  <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MAC hex string twice?')\">\
+			</form> ");
+		poststr(request,htmlReturnToCfg);
+		HTTP_AddBuildFooter(request);
+		poststr(request,htmlEnd);
 	} else if(http_checkUrlBase(urlStr,"flash_read_tool")) {
 		int len = 16;
 		int ofs = 1970176;
@@ -945,6 +988,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		poststr(request,"<form action=\"cfg_quick\"><input type=\"submit\" value=\"Quick Config\"/></form>");
 		poststr(request,"<form action=\"cfg_wifi\"><input type=\"submit\" value=\"Configure WiFi\"/></form>");
 		poststr(request,"<form action=\"cfg_mqtt\"><input type=\"submit\" value=\"Configure MQTT\"/></form>");
+		poststr(request,"<form action=\"cfg_mac\"><input type=\"submit\" value=\"Change MAC\"/></form>");
 		poststr(request,"<form action=\"cfg_webapp\"><input type=\"submit\" value=\"Configure Webapp\"/></form>");
 		poststr(request,"<form action=\"cfg_ha\"><input type=\"submit\" value=\"Generate Home Assistant cfg\"/></form>");
 		poststr(request,"<form action=\"ota\"><input type=\"submit\" value=\"OTA (update software by WiFi)\"/></form>");
