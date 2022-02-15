@@ -98,7 +98,15 @@ void WiFI_GetMacAddress(char *mac) {
 #if WINDOWS
 
 #elif PLATFORM_XR809
-	mac[0] = 'A'; mac[1] = 'B'; mac[2] = 'A'; mac[3] = 'B'; mac[4] = 'A'; mac[5] = 'B';
+	sysinfo_t *inf;
+	int res;
+	inf = sysinfo_get();
+	if(inf == 0) {
+		mac[0] = 'E'; mac[1] = 'R'; mac[2] = 'R'; mac[3] = 'O'; mac[4] = 'R'; mac[5] = '!';
+		printf("WiFI_GetMacAddress: sysinfo_get returned 0!\n\r");
+		return;
+	}
+	memcpy(mac,inf->mac_addr,6);
 #else
     wifi_get_mac_address((char *)mac, CONFIG_ROLE_STA);
 #endif
