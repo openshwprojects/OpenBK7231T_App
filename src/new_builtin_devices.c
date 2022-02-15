@@ -184,11 +184,11 @@ void Setup_Device_NedisWIFIPO120FWT_16A() {
 	
 
 	PIN_ClearPins();
-    // Button stat
+	// Button stat
 	PIN_SetPinRoleForPinIndex(6, IOR_LED);
 	PIN_SetPinChannelForPinIndex(6, 1);
 	// Button
-    PIN_SetPinRoleForPinIndex(10, IOR_Button);
+	PIN_SetPinRoleForPinIndex(10, IOR_Button);
 	PIN_SetPinChannelForPinIndex(10, 1);
 	// Relay
 	PIN_SetPinRoleForPinIndex(26, IOR_Relay_n);
@@ -213,7 +213,7 @@ void Setup_Device_NedisWIFIP130FWT_10A() {
 	PIN_SetPinRoleForPinIndex(6, IOR_LED);
 	PIN_SetPinChannelForPinIndex(6, 1);
 	// Button
-    PIN_SetPinRoleForPinIndex(10, IOR_Button);
+	PIN_SetPinRoleForPinIndex(10, IOR_Button);
 	PIN_SetPinChannelForPinIndex(10, 1);
 	// Relay
 	PIN_SetPinRoleForPinIndex(26, IOR_Relay);
