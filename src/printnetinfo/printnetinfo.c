@@ -20,7 +20,18 @@ char *getMyIp(){
     return g_IP;
 }
 
+////////////////////
+// NOTE: this gets the STA mac
+void getMAC(unsigned char *mac){
+    net_get_if_macaddr(mac, net_get_sta_handle());
+}
 
+char *getMACStr(char *macstr){
+    unsigned char mac[6];
+    getMAC(mac);
+    sprintf(macstr, MACSTR, MAC2STR(mac));
+    return macstr;
+}
 
 void print_network_info(){
     IPStatusTypedef ipStatus;
