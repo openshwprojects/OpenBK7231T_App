@@ -999,6 +999,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		poststr(request,"<form action=\"cmd_single\"><input type=\"submit\" value=\"Execute custom command\"/></form>");
 		poststr(request,"<form action=\"flash_read_tool\"><input type=\"submit\" value=\"Flash Read Tool\"/></form>");
 
+		poststr(request,"<a href=\"/app\" target=\"_blank\">Launch Web Application</a><br/>");
 
 		poststr(request,htmlReturnToMenu);
 		HTTP_AddBuildFooter(request);
@@ -1229,7 +1230,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 			  <label for=\"host\">URL for new bin file:</label><br>\
 			  <input type=\"text\" id=\"host\" name=\"host\" value=\"");
 		poststr(request,"\"><br>\
-			  <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MQTT data twice?')\">\
+			  <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure?')\">\
 			</form> ");
         poststr(request,htmlReturnToMenu);
 		HTTP_AddBuildFooter(request);

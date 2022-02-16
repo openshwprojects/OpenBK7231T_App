@@ -61,8 +61,20 @@ const char *apppage1 =
 "    <head>"
 "        <script>"
 "            var root = '";
+#if WINDOWS
 const char * apppage2 = "';"
+"            var obktype = 'windows';"
 "            var device = 'http://";
+#elif PLATFORM_XR809
+const char * apppage2 = "';"
+"            var obktype = 'XR809';"
+"            var device = 'http://";
+#else
+const char * apppage2 = "';"
+"            var obktype = 'beken';"
+"            var device = 'http://";
+#endif
+
 const char * apppage3 = "';"
 "        </script>"
 "        <script src=\"";

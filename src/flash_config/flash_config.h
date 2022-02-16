@@ -50,6 +50,11 @@ int config_dump_table();
 #define CONFIG_TYPE_MQTT ((UINT32) *((UINT32*)"MQTT"))
 #define CONFIG_TYPE_PINS ((UINT32) *((UINT32*)"PINS"))
 
+// OLD VALUES moved from SDK
+#define OLD_PINS_CONFIG 0xAAAAAAAA
+#define OLD_WIFI_CONFIG 0xBBBBBBBB
+#define OLD_MQTT_CONFIG 0xCCCCCCCC
+
 #define CONFIG_INIT_ITEM(t, ptr) { (ptr)->head.len = sizeof(*(ptr)) - sizeof((ptr)->head); (ptr)->head.type = t; }  
 
 
@@ -92,4 +97,23 @@ typedef struct item_new_mqtt_config2
 }ITEM_NEW_MQTT_CONFIG2,*ITEM_NEW_MQTT_CONFIG2_PTR;
 
 
+// added for OpenBK7231T
+typedef struct item_new_new_wifi_config
+{
+    INFO_ITEM_ST head;
+    char ssid[32];
+    char pass[64];    
+}ITEM_NEW_NEW_WIFI_CONFIG,*ITEM_NEW_NEW_WIFI_CONFIG_PTR;
+
+// added for OpenBK7231T
+typedef struct item_new_new_mqtt_config
+{
+    INFO_ITEM_ST head;
+    char brokerName[64];
+    char userName[64];
+    int port;
+    char hostName[64];
+    // Home Assistant default password is 64 chars..
+    char pass[128];    
+}ITEM_NEW_NEW_MQTT_CONFIG,*ITEM_NEW_NEW_MQTT_CONFIG_PTR;
 
