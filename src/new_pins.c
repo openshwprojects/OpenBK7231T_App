@@ -158,7 +158,7 @@ void PIN_SaveToFlash() {
 	CONFIG_INIT_ITEM(CONFIG_TYPE_PINS, &pins);
 	config_save_item(&pins);
 	// delete old if it exists
-	config_delete_item(NEW_PINS_CONFIG);
+	config_delete_item(OLD_PINS_CONFIG);
 #endif
 }
 void PIN_LoadFromFlash() {
