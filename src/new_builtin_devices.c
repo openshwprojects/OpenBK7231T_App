@@ -175,16 +175,16 @@ void Setup_Device_NedisWIFIPO120FWT_16A() {
 
 	// WB2S
 	// Pins are:
-	// Led - PWM0 
-	// BL0937 CF - PWM1 
-	// BL0937 CF1 - PWM2
-	// Button = TX1
-	// BL0937 SEL - PWM4
-	// Relay = PWM5
+	// Led - PWM0 - P6
+	// BL0937-CF - PWM1 - P7
+	// BL0937-CF1- PWM2 - P8
+	// Button - RX1  - P10
+	// BL0937-SEL - PWM4 - P24
+	// Relay - PWM5 - P26
 	
 
 	PIN_ClearPins();
-	// Button stat
+	// LEd
 	PIN_SetPinRoleForPinIndex(6, IOR_LED);
 	PIN_SetPinChannelForPinIndex(6, 1);
 	// Button
@@ -203,13 +203,13 @@ void Setup_Device_NedisWIFIP130FWT_10A() {
 
 	// WB2S
 	// Pins are:
-	// Led - PWM0 
-	// Button = TX1
-	// Relay = PWM5
+	// Led - PWM0 - P6 
+	// Button - RX1  - P10
+	// Relay - PWM5 - P26
 	
 
 	PIN_ClearPins();
-	// Button stat
+	// Led
 	PIN_SetPinRoleForPinIndex(6, IOR_LED);
 	PIN_SetPinChannelForPinIndex(6, 1);
 	// Button
@@ -217,6 +217,34 @@ void Setup_Device_NedisWIFIP130FWT_10A() {
 	PIN_SetPinChannelForPinIndex(10, 1);
 	// Relay
 	PIN_SetPinRoleForPinIndex(26, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(26, 1);
+
+	PIN_SaveToFlash();
+}
+
+// https://www.elektroda.pl/rtvforum/topic3804553.html
+// SmartSwitch Emax Home EDU8774 16A 
+void Setup_Device_EmaxHome_EDU8774() {
+
+	// WB2S
+	// Pins are:
+	// BL0937-CF - PWM0 - P6 
+	// BL0937-CF1 - PWM1 - P7
+	// BL0937-SEL - PWM2 - P8
+	// Button - RX1 - P10
+	// Relay - PWM4 - P24
+	// Led - PWM5 - P26
+	
+
+	PIN_ClearPins();
+	// Button
+	PIN_SetPinRoleForPinIndex(10, IOR_Button);
+	PIN_SetPinChannelForPinIndex(10, 1);
+	// Relay
+	PIN_SetPinRoleForPinIndex(24, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(24, 1);
+	// Led
+	PIN_SetPinRoleForPinIndex(26, IOR_LED);
 	PIN_SetPinChannelForPinIndex(26, 1);
 
 	PIN_SaveToFlash();
