@@ -96,7 +96,7 @@ int __cdecl main(void)
 
 	PIN_SetPinChannelForPinIndex(2,2);
 	PIN_SetPinRoleForPinIndex(2,IOR_PWM);
-    init_rest();
+    //init_rest();
 
     // Initialize Winsock
     iResult = WSAStartup(MAKEWORD(2,2), &wsaData);

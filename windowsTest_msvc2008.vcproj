@@ -250,6 +250,14 @@
 			<File
 				RelativePath=".\src\httpserver\rest_interface.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\src\tuya_device.c"

@@ -15,9 +15,6 @@
 #include "../flash_config/flash_config.h"
 #include "../new_cfg.h"
 
-
-extern int g_reset;
-
 extern UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address);
 
 
@@ -701,7 +698,7 @@ static int http_rest_post_reboot(http_request_t *request){
     http_setup(request, httpMimeTypeJson);
     hprintf128(request, "{\"reboot\":%d}", 3);
     ADDLOG_DEBUG(LOG_FEATURE_API, "Rebooting in 3 seconds...");
-    g_reset = 3;
+	RESET_ScheduleModuleReset(3);
     poststr(request,NULL);
     return 0;
 }

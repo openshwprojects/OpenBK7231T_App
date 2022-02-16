@@ -2,15 +2,16 @@
 
 #include "../new_common.h"
 #include "ctype.h" 
-#include "lwip/sockets.h"
 #if WINDOWS
 //#include <windows.h>
 #include <winsock2.h>
 //#include <ws2tcpip.h>
 #elif PLATFORM_XR809
+#include "lwip/sockets.h"
 #include <stdarg.h>
 #include <image/flash.h>
 #else
+#include "lwip/sockets.h"
 #include "str_pub.h"
 #endif
 #include "new_http.h"
@@ -1199,7 +1200,26 @@ int HTTP_ProcessPacket(http_request_t *request) {
 			}
 		}
 	//	strcat(outbuf,"<button type=\"button\">Click Me!</button>");
+
+		
+		if(http_getArg(urlStr,"restart",tmpA,sizeof(tmpA))) {
+			poststr(request,"<h5> Module will restart soon</h5>");
+#if WINDOWS
+
+#elif PLATFORM_XR809
+
+#else
+			RESET_ScheduleModuleReset(3);
+#endif
+		}
+
 		poststr(request,"<form action=\"cfg\"><input type=\"submit\" value=\"Config\"/></form>");
+
+		poststr(request,"<form action=\"/index\">\
+			  <input type=\"hidden\" id=\"restart\" name=\"restart\" value=\"1\">\
+			  <input type=\"submit\" value=\"Restart\" onclick=\"return confirm('Are you sure to restart module?')\">\
+			</form> ");
+
 		poststr(request,"<form action=\"about\"><input type=\"submit\" value=\"About\"/></form>");
 
 

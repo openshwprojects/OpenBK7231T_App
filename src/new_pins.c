@@ -419,6 +419,7 @@ void Channel_OnChanged(int ch) {
 	int i;
 	int iVal;
 	int bOn;
+	int pwmIndex;
 
 
 	//bOn = BIT_CHECK(g_channelStates,ch);
@@ -443,7 +444,7 @@ void Channel_OnChanged(int ch) {
 				if(g_channelChangeCallback != 0) {
 					g_channelChangeCallback(ch,iVal);
 				}
-				int pwmIndex = PIN_GetPWMIndexForPinIndex(i);
+				pwmIndex = PIN_GetPWMIndexForPinIndex(i);
 
 #if WINDOWS
 	

@@ -72,6 +72,10 @@ int g_savecfg = 0;
 void bk_reboot(void);
 
 
+void RESET_ScheduleModuleReset(int delSeconds) {
+	g_reset = delSeconds;
+}
+
 int Time_getUpTimeSeconds() {
 	return g_secondsElapsed;
 }
@@ -377,6 +381,12 @@ void user_main(void)
 	ADDLOG_INFO(LOG_FEATURE_MAIN, "started timer\r\n");
 }
 
+#if PLATFORM_BK7231N
+
+// right now Free is somewhere else
+
+#else
+
 #undef Free
 // This is needed by tuya_hal_wifi_release_ap.
 // How come that the Malloc was not undefined, but Free is?
@@ -386,3 +396,5 @@ void Free(void* ptr)
     os_free(ptr);
 }
 
+
+#endif
