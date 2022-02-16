@@ -71,8 +71,10 @@ void CFG_SetWebappRoot(const char *s) {
 	int res;
 	CONFIG_INIT_ITEM(CONFIG_TYPE_WEBAPP_ROOT, &item);
 	res = config_get_item(&item);
-	if (res) 
-		strcpy_safe(g_webappRoot, item.url,sizeof(g_webappRoot));
+	strcpy_safe(item.url, s,sizeof(item.url));
+	strcpy_safe(g_webappRoot, item.url,sizeof(g_webappRoot));
+	
+	config_save_item(&item);
 #endif
 }
 

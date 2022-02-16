@@ -59,14 +59,17 @@ const char *apppage1 =
 "        <script>"
 "            var root = '";
 #if WINDOWS
+const char *obktype = "windows";
 const char * apppage2 = "';"
 "            var obktype = 'windows';"
 "            var device = 'http://";
 #elif PLATFORM_XR809
+const char *obktype = "XR809";
 const char * apppage2 = "';"
 "            var obktype = 'XR809';"
 "            var device = 'http://";
 #else
+const char *obktype = "beken";
 const char * apppage2 = "';"
 "            var obktype = 'beken';"
 "            var device = 'http://";
@@ -492,9 +495,17 @@ static int http_rest_post_logconfig(http_request_t *request){
 
 
 static int http_rest_get_info(http_request_t *request){
+    char macstr[3*6+1];
     http_setup(request, httpMimeTypeJson);
-    hprintf128(request, "{\"uptimes\":%d,", Time_getUpTimeSeconds());
-    hprintf128(request, "\"build\":\"%s\"}", g_build_str);
+    hprintf128(request, "{\"uptime_s\":%d,", Time_getUpTimeSeconds());
+    hprintf128(request, "\"build\":\"%s\",", g_build_str);
+    hprintf128(request, "\"sys\":\"%s\",", obktype);
+    hprintf128(request, "\"ip\":\"%s\",", getMyIp());
+    hprintf128(request, "\"mac\":\"%s\",", getMACStr(macstr));
+    hprintf128(request, "\"mqtthost\":\"%s:%d\",", CFG_GetMQTTHost(), CFG_GetMQTTPort());
+    hprintf128(request, "\"mqtttopic\":\"%s\",", CFG_GetShortDeviceName());
+    hprintf128(request, "\"webapp\":\"%s\"}", CFG_GetWebappRoot());
+
     poststr(request, NULL);
     return 0;
 }
