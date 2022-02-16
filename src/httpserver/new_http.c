@@ -308,8 +308,8 @@ template_t g_templates [] = {
 	{ Setup_Device_ArlecCCTDownlight, "Arlec CCT LED Downlight ALD029CHA"},
 	{ Setup_Device_NedisWIFIPO120FWT_16A, "Nedis WIFIPO120FWT SmartPlug 16A"},
 	{ Setup_Device_NedisWIFIP130FWT_10A, "Nedis WIFIP130FWT SmartPlug 10A"},
-	{ Setup_Device_EmaxHome_EDU8774, "Emax Home EDU8774 SmartPlug 16A"}
-	
+	{ Setup_Device_EmaxHome_EDU8774, "Emax Home EDU8774 SmartPlug 16A"},
+	{ Setup_Device_TuyaSmartPFW02G, "Tuya Smart PFW02-G"}
 };
 
 int g_total_templates = sizeof(g_templates)/sizeof(g_templates[0]);
