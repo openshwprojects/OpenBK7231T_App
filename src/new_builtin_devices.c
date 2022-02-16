@@ -221,3 +221,24 @@ void Setup_Device_NedisWIFIP130FWT_10A() {
 
 	PIN_SaveToFlash();
 }
+
+// https://www.tokmanni.fi/alypistorasia-home-connect-ip20-6419860720456
+// Marked as Smart-PFW02-G
+// Relay (with npn-transistor) at PWM4 P24
+// Button PWM5 P26
+// LED PWM1 P7
+void Setup_Device_TuyaSmartPFW02G() {
+	PIN_ClearPins();
+
+	PIN_SetPinRoleForPinIndex(24, IOR_Relay_n);
+	PIN_SetPinChannelForPinIndex(24, 1);
+
+	PIN_SetPinRoleForPinIndex(26, IOR_Button);
+	PIN_SetPinChannelForPinIndex(26, 1);
+
+	PIN_SetPinRoleForPinIndex(7, IOR_LED);
+	PIN_SetPinChannelForPinIndex(7, 1);
+
+
+	PIN_SaveToFlash();
+}
