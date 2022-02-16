@@ -27,5 +27,5 @@ const char *CFG_LoadWebappRoot();
 void CFG_SetWebappRoot(const char *s);
 void CFG_InitAndLoad();
 void WiFI_GetMacAddress(char *mac);
-void WiFI_SetMacAddress(char *mac);
+int WiFI_SetMacAddress(char *mac);
 

@@ -112,24 +112,28 @@ void WiFI_GetMacAddress(char *mac) {
     wifi_get_mac_address((char *)mac, CONFIG_ROLE_STA);
 #endif
 }
-void WiFI_SetMacAddress(char *mac) {
+int WiFI_SetMacAddress(char *mac) {
 #if WINDOWS
-
+	return 0;
 #elif PLATFORM_XR809
 	sysinfo_t *inf;
 	int res;
 	inf = sysinfo_get();
 	if(inf == 0) {
 		printf("WiFI_SetMacAddress: sysinfo_get returned 0!\n\r");
-		return;
+		return 0; // error
 	}
 	memcpy(inf->mac_addr,mac,6);
 	res = sysinfo_save_wrapper();
 	if(res != 0) {
 		printf("WiFI_SetMacAddress: sysinfo_save error - %i!\n\r",res);
+		return 0; // error
 	}
+	return 1;
 #else
-    wifi_set_mac_address((char *)mac);
+   if(wifi_set_mac_address((char *)mac))
+	   return 1;
+   return 0; // error
 #endif
 }
 void CFG_CreateDeviceNameUnique()

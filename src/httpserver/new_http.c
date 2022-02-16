@@ -784,9 +784,12 @@ int HTTP_ProcessPacket(http_request_t *request) {
 			{
 				mac[i] = hexbyte( &tmpA[i * 2] ) ;
 			}
-			WiFI_SetMacAddress((char*)mac);
 			//sscanf(tmpA,"%02X%02X%02X%02X%02X%02X",&mac[0],&mac[1],&mac[2],&mac[3],&mac[4],&mac[5]);
-			poststr(request,"<h4> New MAC set!</h4>");
+			if(WiFI_SetMacAddress((char*)mac)) {
+				poststr(request,"<h4> New MAC set!</h4>");
+			} else {
+				poststr(request,"<h4> MAC change error?</h4>");
+			}
 		}
 
 		WiFI_GetMacAddress((char *)mac);
