@@ -81,4 +81,7 @@ int strcpy_safe(char *tg, const char *src, int tgMaxLen);
 void urldecode2_safe(char *dst, const char *srcin, int maxDstLen);
 int Time_getUpTimeSeconds();
 char Tiny_CRC8(const char *data,int length);
+void RESET_ScheduleModuleReset(int delSeconds);
+
+
 

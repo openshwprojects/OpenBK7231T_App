@@ -28,7 +28,7 @@ static char g_mqtt_pass[128] = "qqqqqqqqqq";
 static char g_wifi_ssid[64] = { 0 };
 static char g_wifi_pass[64] = { 0 };
 
-#if PLATFORM_XR809
+#if PLATFORM_XR809 || WINDOWS
 #define CONFIG_URL_SIZE_MAX 64
 #endif
 

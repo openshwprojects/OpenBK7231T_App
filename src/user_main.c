@@ -72,6 +72,10 @@ int g_savecfg = 0;
 void bk_reboot(void);
 
 
+void RESET_ScheduleModuleReset(int delSeconds) {
+	g_reset = delSeconds;
+}
+
 int Time_getUpTimeSeconds() {
 	return g_secondsElapsed;
 }
