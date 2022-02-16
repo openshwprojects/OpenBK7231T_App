@@ -659,8 +659,10 @@ int HTTP_ProcessPacket(http_request_t *request) {
 	
 		if(http_getArg(urlStr,"url",tmpA,sizeof(tmpA))) {
 			CFG_SetWebappRoot(tmpA);
+			hprintf128(request,"Webapp url set to %s", tmpA);
+		} else {
+			poststr(request,"Webapp url not set");
 		}
-		poststr(request,"Webapp url set!");
 		
 		poststr(request,"<br>");
 		poststr(request,htmlReturnToCfg);

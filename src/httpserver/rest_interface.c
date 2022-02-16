@@ -503,8 +503,8 @@ static int http_rest_get_info(http_request_t *request){
     hprintf128(request, "\"ip\":\"%s\",", getMyIp());
     hprintf128(request, "\"mac\":\"%s\",", getMACStr(macstr));
     hprintf128(request, "\"mqtthost\":\"%s:%d\",", CFG_GetMQTTHost(), CFG_GetMQTTPort());
-    hprintf128(request, "\"mqtttopic\":\"%s\"}", CFG_GetShortDeviceName());
-
+    hprintf128(request, "\"mqtttopic\":\"%s\",", CFG_GetShortDeviceName());
+    hprintf128(request, "\"webapp\":\"%s\"}", CFG_GetWebappRoot());
 
     poststr(request, NULL);
     return 0;
