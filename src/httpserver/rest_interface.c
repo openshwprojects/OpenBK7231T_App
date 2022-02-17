@@ -39,6 +39,8 @@ static int http_favicon(http_request_t *request);
 static int http_rest_post_reboot(http_request_t *request);
 static int http_rest_post_flash(http_request_t *request, int startaddr);
 static int http_rest_get_flash(http_request_t *request, int startaddr, int len);
+static int http_rest_get_flash_advanced(http_request_t *request);
+static int http_rest_post_flash_advanced(http_request_t *request);
 
 static int http_rest_get_info(http_request_t *request);
 
@@ -319,6 +321,11 @@ static int http_rest_get(http_request_t *request){
         return http_rest_get_info(request);
     }
 
+    if (!strncmp(request->url, "api/flash/", 10)){
+        return http_rest_get_flash_advanced(request);
+    }
+
+
     if (!strcmp(request->url, "api/dumpconfig")){
         return http_rest_get_dumpconfig(request);
     }
@@ -527,6 +534,10 @@ static int http_rest_post(http_request_t *request){
     if (!strcmp(request->url, "api/ota")){
         return http_rest_post_flash(request, 0x132000);
     }
+    if (!strncmp(request->url, "api/flash/", 10)){
+        return http_rest_get_flash_advanced(request);
+    }
+
 #ifdef BK_LITTLEFS
     if (!strcmp(request->url, "api/fsblock")){
         return http_rest_post_flash(request, LFS_BLOCKS_START);
@@ -645,6 +656,14 @@ static int http_rest_post_pins(http_request_t *request){
     return 0;
 }
 
+static int http_rest_error(http_request_t *request, int code, char *msg){
+    request->responseCode = HTTP_RESPONSE_SERVER_ERROR;
+    http_setup(request, httpMimeTypeJson);
+    hprintf128(request, "{\"error\":%d, \"msg\"=\"%s\"}", code, msg);
+    poststr(request,NULL);
+    return 0;
+}
+
 
 static int http_rest_post_flash(http_request_t *request, int startaddr){
     int total = 0;
@@ -663,12 +682,9 @@ static int http_rest_post_flash(http_request_t *request, int startaddr){
         towrite = request->contentLength;
     }
         
-    if (writelen < 0){
+    if (writelen < 0 || (startaddr + writelen > 0x200000)){
         ADDLOG_DEBUG(LOG_FEATURE_API, "ABORTED: %d bytes to write", writelen);
-        request->responseCode = HTTP_RESPONSE_SERVER_ERROR;
-        http_setup(request, httpMimeTypeJson);
-        hprintf128(request, "{\"error\":%d}", -20);
-        goto exit;
+        return http_rest_error(request, -20, "writelen < 0 or end > 0x200000");
     }
 
     do {
@@ -689,7 +705,6 @@ static int http_rest_post_flash(http_request_t *request, int startaddr){
     hprintf128(request, "{\"size\":%d}", total);
     close_ota();
 
-exit:
     poststr(request,NULL);
     return 0;
 }
@@ -703,10 +718,36 @@ static int http_rest_post_reboot(http_request_t *request){
     return 0;
 }
 
+static int http_rest_get_flash_advanced(http_request_t *request){
+    char *params = request->url + 10;
+    int startaddr = 0; 
+    int len = 0;
+    int sres;
+    sres = sscanf(params, "%x-%x", &startaddr, &len);
+    if (sres == 2) {
+        return http_rest_get_flash(request, startaddr, len);
+    }
+    return http_rest_error(request, -1, "invalid url");
+}
+
+static int http_rest_post_flash_advanced(http_request_t *request){
+    char *params = request->url + 10;
+    int startaddr = 0; 
+    int sres;
+    sres = sscanf(params, "%x", &startaddr);
+    if (sres == 1 && startaddr >= 0x132000){
+        return http_rest_post_flash(request, startaddr);
+    }
+    return http_rest_error(request, -1, "invalid url");
+}
 
 static int http_rest_get_flash(http_request_t *request, int startaddr, int len){
     char *buffer;
     int res;
+
+    if (startaddr < 0 || (startaddr + len > 0x200000)){
+        return http_rest_error(request, -1, "requested flash read out of range");
+    }
 
     buffer = os_malloc(1024);
 
