@@ -625,9 +625,12 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		if(http_getArg(urlStr,"client",tmpA,sizeof(tmpA))) {
 			CFG_SetMQTTBrokerName(tmpA);
 		}
-		poststr(request,"MQTT mode set!");
+		if(CFG_SaveMQTT()) {
+			poststr(request,"MQTT mode set!");
+		} else {
+			poststr(request,"Error saving MQTT settings to flash!");
+		}
 		
-		CFG_SaveMQTT();
 
 		poststr(request,"Please wait for module to connect... if there is problem, restart it...");
 		
@@ -652,16 +655,34 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		poststr(request,htmlReturnToCfg);
 		HTTP_AddBuildFooter(request);
 		poststr(request,htmlEnd);
+	} else if(http_checkUrlBase(urlStr,"config_dump_table")) {
+		http_setup(request, httpMimeTypeHTML);
+		poststr(request,htmlHeader);
+		poststr(request,g_header);
+#if WINDOWS
+		poststr(request,"Not implemented <br>");
+#elif PLATFORM_XR809
+		poststr(request,"Not implemented <br>");
+#else
+		poststr(request,"Dumped to log <br>");
+			config_dump_table();
+#endif
+		poststr(request,htmlReturnToCfg);
+		HTTP_AddBuildFooter(request);
+		poststr(request,htmlEnd);
 	} else if(http_checkUrlBase(urlStr,"cfg_webapp_set")) {
 		http_setup(request, httpMimeTypeHTML);
 		poststr(request,htmlHeader);
 		poststr(request,g_header);
 	
 		if(http_getArg(urlStr,"url",tmpA,sizeof(tmpA))) {
-			CFG_SetWebappRoot(tmpA);
-			hprintf128(request,"Webapp url set to %s", tmpA);
+			if(CFG_SetWebappRoot(tmpA)) {
+				hprintf128(request,"Webapp url set to %s", tmpA);
+			} else {
+				hprintf128(request,"Webapp url change error - failed to save to flash.");
+			}
 		} else {
-			poststr(request,"Webapp url not set");
+			poststr(request,"Webapp url not set because you didn't specify the argument.");
 		}
 		
 		poststr(request,"<br>");

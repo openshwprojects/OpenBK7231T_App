@@ -59,12 +59,13 @@ const char *CFG_GetWebappRoot(){
 	return g_webappRoot;
 }
 
-void CFG_SetWebappRoot(const char *s) {
+int CFG_SetWebappRoot(const char *s) {
 #if WINDOWS
 	strcpy_safe(g_webappRoot, s,sizeof(g_webappRoot));
-
+	return 1; // ok
 #elif PLATFORM_XR809
 	strcpy_safe(g_webappRoot, s,sizeof(g_webappRoot));
+	return 1; // ok
 
 #else
 	ITEM_URL_CONFIG item;
@@ -74,7 +75,10 @@ void CFG_SetWebappRoot(const char *s) {
 	strcpy_safe(item.url, s,sizeof(item.url));
 	strcpy_safe(g_webappRoot, item.url,sizeof(g_webappRoot));
 	
-	config_save_item(&item);
+	if(config_save_item(&item)) {
+		return 1;
+	}
+	return 0;
 #endif
 }
 
@@ -292,16 +296,16 @@ int sysinfo_save_wrapper() {
 	return 0;
 }
 #endif
-void CFG_SaveMQTT() {
+int CFG_SaveMQTT() {
 #if WINDOWS
-
+	return 0;
 #elif PLATFORM_XR809
 	sysinfo_t *inf;
 	int res;
 	inf = sysinfo_get();
 	if(inf == 0) {
 		printf("CFG_SaveMQTT: sysinfo_get returned 0!\n\r");
-		return;
+		return 0;
 	}
 	strcpy_safe(inf->mqtt_param.userName, g_mqtt_userName, sizeof(inf->mqtt_param.userName));
 	strcpy_safe(inf->mqtt_param.pass, g_mqtt_pass, sizeof(inf->mqtt_param.pass));
@@ -314,6 +318,7 @@ void CFG_SaveMQTT() {
 	res = sysinfo_save_wrapper();
 	if(res != 0) {
 		printf("CFG_SaveMQTT: sysinfo_save error - %i!\n\r",res);
+		return 0;
 	}
 #else
 	ITEM_NEW_MQTT_CONFIG container;
@@ -324,7 +329,9 @@ void CFG_SaveMQTT() {
 	strcpy_safe(container.hostName, g_mqtt_host, sizeof(container.hostName));
 	strcpy_safe(container.brokerName, g_mqtt_brokerName, sizeof(container.brokerName));
 	container.port = g_mqtt_port;
-	config_save_item(&container);
+	if(config_save_item(&container))
+		return 1;
+	return 0;
 	
 #endif
 }
