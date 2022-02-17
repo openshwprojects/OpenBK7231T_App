@@ -28,7 +28,7 @@
 #else
 // REALLY? A typo in Tuya SDK? Storge?
 // tuya-iotos-embeded-sdk-wifi-ble-bk7231t/platforms/bk7231t/tuya_os_adapter/include/driver/tuya_hal_storge.h
-
+#include "../logging/logging.h"
 #include "tuya_hal_storge.h"
 #endif
 
@@ -318,8 +318,13 @@ int g_total_templates = sizeof(g_templates)/sizeof(g_templates[0]);
 #if PLATFORM_XR809
 const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenXR809/\">OpenXR809</a></h1><h3><a href=\"https://www.elektroda.com/rtvforum/viewtopic.php?p=19841301#19841301\">[Read more]</a><a href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
 
+#elif PLATFORM_BK7231T
+
+const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7231T/\">OpenBK7231N</a></h1><h3><a href=\"https://www.elektroda.com/rtvforum/viewtopic.php?p=19841301#19841301\">[Read more]</a><a href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
+
 #else
-const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7231T/\">OpenBK7231</a></h1><h3><a href=\"https://www.elektroda.com/rtvforum/viewtopic.php?p=19841301#19841301\">[Read more]</a><a href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
+
+const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7231T/\">OpenBK7231T</a></h1><h3><a href=\"https://www.elektroda.com/rtvforum/viewtopic.php?p=19841301#19841301\">[Read more]</a><a href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
 
 #endif
 
@@ -716,6 +721,37 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		
 		poststr(request,"<br>");
 		poststr(request,"<a href=\"cfg_wifi\">Return to WiFi settings</a>");
+		poststr(request,"<br>");
+		poststr(request,htmlReturnToCfg);
+		HTTP_AddBuildFooter(request);
+		poststr(request,htmlEnd);
+	} else if(http_checkUrlBase(urlStr,"cfg_loglevel_set")) {
+		printf("HTTP_ProcessPacket: generating cfg_loglevel_set \r\n");
+
+		http_setup(request, httpMimeTypeHTML);
+		poststr(request,htmlHeader);
+		poststr(request,g_header);
+		if(http_getArg(recvbuf,"loglevel",tmpA,sizeof(tmpA))) {
+#if PLATFORM_BK7231T
+			loglevel = atoi(tmpA);
+#endif
+			poststr(request,"LOG level changed.");
+		} 
+		poststr(request,"<form action=\"/cfg_loglevel_set\">\
+			  <label for=\"loglevel\">loglevel:</label><br>\
+			  <input type=\"text\" id=\"loglevel\" name=\"loglevel\" value=\"");
+		tmpA[0] = 0;
+#if PLATFORM_BK7231T
+		sprintf(tmpA,"%i",loglevel);
+#endif
+		poststr(request,tmpA);
+			  
+		poststr(request,"\"><br><br>\
+			  <input type=\"submit\" value=\"Submit\" >\
+			</form> ");
+		
+		poststr(request,"<br>");
+		poststr(request,"<a href=\"cfg\">Return to config settings</a>");
 		poststr(request,"<br>");
 		poststr(request,htmlReturnToCfg);
 		HTTP_AddBuildFooter(request);
