@@ -95,9 +95,15 @@ const char *CFG_GetShortDeviceName(){
 #elif PLATFORM_XR809
 #define DEVICENAME_PREFIX_FULL "OpenXR809"
 #define DEVICENAME_PREFIX_SHORT "oxr"
-#else
+#elif PLATFORM_BK7231N
+#define DEVICENAME_PREFIX_FULL "OpenBK7231N"
+#define DEVICENAME_PREFIX_SHORT "obk"
+#elif PLATFORM_BK7231T
 #define DEVICENAME_PREFIX_FULL "OpenBK7231T"
 #define DEVICENAME_PREFIX_SHORT "obk"
+#else
+#error "You must define a platform.."
+This platform is not supported, error!
 #endif
 
 void WiFI_GetMacAddress(char *mac) {
