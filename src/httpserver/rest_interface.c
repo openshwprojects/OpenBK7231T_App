@@ -17,6 +17,7 @@
 
 extern UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address);
 
+static int http_rest_error(http_request_t *request, int code, char *msg);
 
 static int http_rest_get(http_request_t *request);
 static int http_rest_post(http_request_t *request);
@@ -580,7 +581,6 @@ static int http_rest_post_pins(http_request_t *request){
     char *json_str = request->bodystart;
     int json_len = strlen(json_str);
 
-	http_setup(request, httpMimeTypeText);
 	memset(p, 0, sizeof(jsmn_parser));
 	memset(t, 0, sizeof(jsmntok_t)*128);
 
@@ -589,22 +589,18 @@ static int http_rest_post_pins(http_request_t *request){
     if (r < 0) {
         ADDLOG_ERROR(LOG_FEATURE_API, "Failed to parse JSON: %d", r);
         sprintf(tmp,"Failed to parse JSON: %d\n", r);
-        poststr(request, tmp);
-        poststr(request, NULL);
         os_free(p);
         os_free(t);
-        return 0;
+        return http_rest_error(request, 400, tmp);
     }
 
     /* Assume the top-level element is an object */
     if (r < 1 || t[0].type != JSMN_OBJECT) {
         ADDLOG_ERROR(LOG_FEATURE_API, "Object expected", r);
         sprintf(tmp,"Object expected\n");
-        poststr(request, tmp);
-        poststr(request, NULL);
         os_free(p);
         os_free(t);
-        return 0;
+        return http_rest_error(request, 400, tmp);
     }
 
     /* Loop over all keys of the root object */
@@ -618,9 +614,9 @@ static int http_rest_post_pins(http_request_t *request){
                 int roleval, pr;
                 jsmntok_t *g = &t[i + j + 2];
                 roleval = atoi(json_str + g->start);
-				pr = PIN_GetPinRoleForPinIndex(i);
+				pr = PIN_GetPinRoleForPinIndex(j);
 				if(pr != roleval) {
-					PIN_SetPinRoleForPinIndex(i,roleval);
+					PIN_SetPinRoleForPinIndex(j,roleval);
 					iChanged++;
 				}
             }
@@ -648,18 +644,23 @@ static int http_rest_post_pins(http_request_t *request){
     }
     if (iChanged){
 	    PIN_SaveToFlash();
+        ADDLOG_DEBUG(LOG_FEATURE_API, "Changed %d - saved to flash", iChanged);
     }
 
-    poststr(request, NULL);
     os_free(p);
     os_free(t);
+    return http_rest_error(request, 200, "OK");
     return 0;
 }
 
 static int http_rest_error(http_request_t *request, int code, char *msg){
     request->responseCode = HTTP_RESPONSE_SERVER_ERROR;
     http_setup(request, httpMimeTypeJson);
-    hprintf128(request, "{\"error\":%d, \"msg\"=\"%s\"}", code, msg);
+    if (code != 200){
+        hprintf128(request, "{\"error\":%d, \"msg\"=\"%s\"}", code, msg);
+    } else {
+        hprintf128(request, "{\"success\":%d, \"msg\"=\"%s\"}", code, msg);
+    }
     poststr(request,NULL);
     return 0;
 }
