@@ -657,9 +657,9 @@ static int http_rest_error(http_request_t *request, int code, char *msg){
     request->responseCode = HTTP_RESPONSE_SERVER_ERROR;
     http_setup(request, httpMimeTypeJson);
     if (code != 200){
-        hprintf128(request, "{\"error\":%d, \"msg\"=\"%s\"}", code, msg);
+        hprintf128(request, "{\"error\":%d, \"msg\":\"%s\"}", code, msg);
     } else {
-        hprintf128(request, "{\"success\":%d, \"msg\"=\"%s\"}", code, msg);
+        hprintf128(request, "{\"success\":%d, \"msg\":\"%s\"}", code, msg);
     }
     poststr(request,NULL);
     return 0;
