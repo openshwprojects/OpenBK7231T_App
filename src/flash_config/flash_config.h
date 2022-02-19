@@ -36,6 +36,8 @@ INFO_ITEM_ST *config_search_item_type(UINT32 type);
 // list table contetn by type & len to debug
 int config_dump_table();
 
+// debug
+int config_get_tableOffsets(int tableID, int *outStart, int *outLen);
 
 
 /////////////////////////////////////////

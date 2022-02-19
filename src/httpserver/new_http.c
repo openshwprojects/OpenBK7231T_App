@@ -25,11 +25,13 @@
 #elif defined(PLATFORM_BK7231N)
 // tuya-iotos-embeded-sdk-wifi-ble-bk7231n/sdk/include/tuya_hal_storage.h
 #include "tuya_hal_storage.h"
+#include "BkDriverFlash.h"
 #else
 // REALLY? A typo in Tuya SDK? Storge?
 // tuya-iotos-embeded-sdk-wifi-ble-bk7231t/platforms/bk7231t/tuya_os_adapter/include/driver/tuya_hal_storge.h
 #include "../logging/logging.h"
 #include "tuya_hal_storge.h"
+#include "BkDriverFlash.h"
 #endif
 
 /*
@@ -451,7 +453,7 @@ uint8_t hexbyte( const char* hex )
 }
 
 int HTTP_ProcessPacket(http_request_t *request) {
-	int i, j;
+	int i, j, k;
 	char tmpA[128];
 	char tmpB[64];
 	char tmpC[64];
@@ -1090,6 +1092,19 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		poststr(request,"<form action=\"ota\"><input type=\"submit\" value=\"OTA (update software by WiFi)\"/></form>");
 		poststr(request,"<form action=\"cmd_single\"><input type=\"submit\" value=\"Execute custom command\"/></form>");
 		poststr(request,"<form action=\"flash_read_tool\"><input type=\"submit\" value=\"Flash Read Tool\"/></form>");
+
+#if PLATFORM_BK7231T | PLATFORM_BK7231N
+		k = config_get_tableOffsets(BK_PARTITION_NET_PARAM,&i,&j);
+		sprintf(tmpA,"BK_PARTITION_NET_PARAM: bOk %i, at %i, len %i<br>",k,i,j);
+		poststr(request,tmpA);
+		k = config_get_tableOffsets(BK_PARTITION_RF_FIRMWARE,&i,&j);
+		sprintf(tmpA,"BK_PARTITION_RF_FIRMWARE: bOk %i, at %i, len %i<br>",k,i,j);
+		poststr(request,tmpA);
+		k = config_get_tableOffsets(BK_PARTITION_OTA,&i,&j);
+		sprintf(tmpA,"BK_PARTITION_OTA: bOk %i, at %i, len %i<br>",k,i,j);
+		poststr(request,tmpA);
+#endif
+
 
 		poststr(request,"<a href=\"/app\" target=\"_blank\">Launch Web Application</a><br/>");
 

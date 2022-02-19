@@ -87,7 +87,17 @@ int config_get_item(void *container) {
     return ret;
 }
 
-
+int config_get_tableOffsets(int tableID, int *outStart, int *outLen) {
+	bk_logic_partition_t *pt;
+	pt = bk_flash_get_info(tableID);
+	*outStart = 0;
+	*outLen = 0;
+	if(pt == 0)
+		return 1;
+    *outStart = pt->partition_start_addr;
+    *outLen = pt->partition_length;
+	return 0;
+}
 
 int config_get_tbl(int readit){
     UINT32 ret = 0, status;
