@@ -533,7 +533,7 @@ static int http_rest_post(http_request_t *request){
         return http_rest_post_reboot(request);
     }
     if (!strcmp(request->url, "api/ota")){
-        return http_rest_post_flash(request, 0x132000);
+        return http_rest_post_flash(request, START_ADR_OF_BK_PARTITION_OTA);
     }
     if (!strncmp(request->url, "api/flash/", 10)){
         return http_rest_get_flash_advanced(request);
@@ -736,7 +736,7 @@ static int http_rest_post_flash_advanced(http_request_t *request){
     int startaddr = 0; 
     int sres;
     sres = sscanf(params, "%x", &startaddr);
-    if (sres == 1 && startaddr >= 0x132000){
+    if (sres == 1 && startaddr >= START_ADR_OF_BK_PARTITION_OTA){
         return http_rest_post_flash(request, startaddr);
     }
     return http_rest_error(request, -1, "invalid url");

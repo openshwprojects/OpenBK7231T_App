@@ -1,4 +1,5 @@
 
+#include "ota.h"
 #include "../new_common.h"
 #include "typedef.h"
 #include "flash_pub.h"
@@ -108,7 +109,8 @@ int myhttpclientcallback(httprequest_t* request){
   switch(request->state){
     case 0: // start
       //init_ota(0xff000);
-      init_ota(0x132000);
+
+      init_ota(START_ADR_OF_BK_PARTITION_OTA);
       addLog("\r\nmyhttpclientcallback state %d total %d/%d\r\n", request->state, total_bytes, request->client_data.response_content_len);
       break;
     case 1: // data
