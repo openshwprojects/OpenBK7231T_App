@@ -19,6 +19,6 @@ int init_ota(unsigned int startaddr);
 void add_otadata(unsigned char *data, int len);
 
 // finalise OTA flash (write last sector if incomplete)
-int close_ota();
+void close_ota();
 
 void otarequest(const char *urlin);
