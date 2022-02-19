@@ -250,6 +250,25 @@ void Setup_Device_EmaxHome_EDU8774() {
 	PIN_SaveToFlash();
 }
 
+// TODO - ELEKTRODA LINK
+// QiachipSmartSwitch
+void Setup_Device_BK7231N_CB2S_QiachipSmartSwitch() {
+
+
+
+	PIN_ClearPins();
+	// Button
+	PIN_SetPinRoleForPinIndex(7, IOR_Button);
+	PIN_SetPinChannelForPinIndex(7, 1);
+	// Relay
+	PIN_SetPinRoleForPinIndex(8, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(8, 1);
+	// Led
+
+	PIN_SaveToFlash();
+}
+
+
 // https://www.tokmanni.fi/alypistorasia-home-connect-ip20-6419860720456
 // Marked as Smart-PFW02-G
 // Relay (with npn-transistor) at PWM4 P24

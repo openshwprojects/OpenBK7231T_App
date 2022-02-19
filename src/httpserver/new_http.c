@@ -300,6 +300,9 @@ typedef struct template_s {
 
 template_t g_templates [] = {
 	{ Setup_Device_Empty, "Empty"},
+	// BK7231N devices
+	{ Setup_Device_BK7231N_CB2S_QiachipSmartSwitch, "[BK7231N][CB2S] QiaChip Smart Switch"},
+	// BK7231T devices
 	{ Setup_Device_TuyaWL_SW01_16A, "WL SW01 16A"},
 	{ Setup_Device_TuyaSmartLife4CH10A, "Smart Life 4CH 10A"},
 	{ Setup_Device_IntelligentLife_NF101A, "Intelligent Life NF101A"},
