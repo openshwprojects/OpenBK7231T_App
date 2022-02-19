@@ -880,10 +880,16 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		int rem;
 		int now;
 		int nowOfs;
+		int hex;
 		http_setup(request, httpMimeTypeHTML);
 		poststr(request,htmlHeader);
 		poststr(request,g_header);
 		poststr(request,"<h4>Flash Read Tool</h4>");
+		if(	http_getArg(urlStr,"hex",tmpA,sizeof(tmpA))){
+			hex = atoi(tmpA);
+		} else {
+			hex = 0;
+		}
 
 		if(	http_getArg(urlStr,"offset",tmpA,sizeof(tmpA)) &&
 				http_getArg(urlStr,"len",tmpB,sizeof(tmpB))) {
@@ -915,7 +921,12 @@ int HTTP_ProcessPacket(http_request_t *request) {
 				res = tuya_hal_flash_read (nowOfs, buffer,now);
 #endif
 				for(i = 0; i < now; i++) {
-					sprintf(tmpA,"%02X ",buffer[i]);
+					u8 val = buffer[i];
+					if(!hex && isprint(val)) {
+						sprintf(tmpA,"'%c' ",val);
+					} else {
+						sprintf(tmpA,"%02X ",val);
+					}
 					poststr(request,tmpA);
 				}
 				rem -= now;
@@ -927,8 +938,14 @@ int HTTP_ProcessPacket(http_request_t *request) {
 
 			poststr(request,"<br>");
 		}
-		poststr(request,"<form action=\"/flash_read_tool\">\
-			  <label for=\"offset\">offset:</label><br>\
+		poststr(request,"<form action=\"/flash_read_tool\">");
+		
+		poststr(request,"<input type=\"checkbox\" id=\"hex\" name=\"hex\" value=\"1\"");
+		if(hex){
+			poststr(request," checked");
+		}
+		poststr(request,"><label for=\"hex\">Show all hex?</label><br>");
+		poststr(request,"<label for=\"offset\">offset:</label><br>\
 			  <input type=\"number\" id=\"offset\" name=\"offset\"");
 		sprintf(tmpA," value=\"%i\"><br>",ofs);
 		poststr(request,tmpA);
