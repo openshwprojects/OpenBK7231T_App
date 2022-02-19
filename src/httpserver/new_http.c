@@ -25,11 +25,13 @@
 #elif defined(PLATFORM_BK7231N)
 // tuya-iotos-embeded-sdk-wifi-ble-bk7231n/sdk/include/tuya_hal_storage.h
 #include "tuya_hal_storage.h"
+#include "BkDriverFlash.h"
 #else
 // REALLY? A typo in Tuya SDK? Storge?
 // tuya-iotos-embeded-sdk-wifi-ble-bk7231t/platforms/bk7231t/tuya_os_adapter/include/driver/tuya_hal_storge.h
-
+#include "../logging/logging.h"
 #include "tuya_hal_storge.h"
+#include "BkDriverFlash.h"
 #endif
 
 /*
@@ -300,6 +302,9 @@ typedef struct template_s {
 
 template_t g_templates [] = {
 	{ Setup_Device_Empty, "Empty"},
+	// BK7231N devices
+	{ Setup_Device_BK7231N_CB2S_QiachipSmartSwitch, "[BK7231N][CB2S] QiaChip Smart Switch"},
+	// BK7231T devices
 	{ Setup_Device_TuyaWL_SW01_16A, "WL SW01 16A"},
 	{ Setup_Device_TuyaSmartLife4CH10A, "Smart Life 4CH 10A"},
 	{ Setup_Device_IntelligentLife_NF101A, "Intelligent Life NF101A"},
@@ -318,9 +323,23 @@ int g_total_templates = sizeof(g_templates)/sizeof(g_templates[0]);
 #if PLATFORM_XR809
 const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenXR809/\">OpenXR809</a></h1><h3><a href=\"https://www.elektroda.com/rtvforum/viewtopic.php?p=19841301#19841301\">[Read more]</a><a href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
 
-#else
-const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7231T/\">OpenBK7231</a></h1><h3><a href=\"https://www.elektroda.com/rtvforum/viewtopic.php?p=19841301#19841301\">[Read more]</a><a href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
+#elif PLATFORM_BK7231N
 
+const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7231T/\">OpenBK7231N</a></h1><h3><a href=\"https://www.elektroda.com/rtvforum/viewtopic.php?p=19841301#19841301\">[Read more]</a><a href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
+
+#elif PLATFORM_BK7231T
+
+const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7231T/\">OpenBK7231T</a></h1><h3><a href=\"https://www.elektroda.com/rtvforum/viewtopic.php?p=19841301#19841301\">[Read more]</a><a href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
+
+#elif WINDOWS
+
+const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7231T/\">OpenBK7231 [Win test]</a></h1><h3><a href=\"https://www.elektroda.com/rtvforum/viewtopic.php?p=19841301#19841301\">[Read more]</a><a href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
+
+#else
+
+const char *g_header = "<h1>error</h1>";
+#error "Platform not supported"
+Platform not supported
 #endif
 
 
@@ -434,7 +453,7 @@ uint8_t hexbyte( const char* hex )
 }
 
 int HTTP_ProcessPacket(http_request_t *request) {
-	int i, j;
+	int i, j, k;
 	char tmpA[128];
 	char tmpB[64];
 	char tmpC[64];
@@ -720,6 +739,37 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		poststr(request,htmlReturnToCfg);
 		HTTP_AddBuildFooter(request);
 		poststr(request,htmlEnd);
+	} else if(http_checkUrlBase(urlStr,"cfg_loglevel_set")) {
+		printf("HTTP_ProcessPacket: generating cfg_loglevel_set \r\n");
+
+		http_setup(request, httpMimeTypeHTML);
+		poststr(request,htmlHeader);
+		poststr(request,g_header);
+		if(http_getArg(recvbuf,"loglevel",tmpA,sizeof(tmpA))) {
+#if PLATFORM_BK7231T
+			loglevel = atoi(tmpA);
+#endif
+			poststr(request,"LOG level changed.");
+		} 
+		poststr(request,"<form action=\"/cfg_loglevel_set\">\
+			  <label for=\"loglevel\">loglevel:</label><br>\
+			  <input type=\"text\" id=\"loglevel\" name=\"loglevel\" value=\"");
+		tmpA[0] = 0;
+#if PLATFORM_BK7231T
+		sprintf(tmpA,"%i",loglevel);
+#endif
+		poststr(request,tmpA);
+			  
+		poststr(request,"\"><br><br>\
+			  <input type=\"submit\" value=\"Submit\" >\
+			</form> ");
+		
+		poststr(request,"<br>");
+		poststr(request,"<a href=\"cfg\">Return to config settings</a>");
+		poststr(request,"<br>");
+		poststr(request,htmlReturnToCfg);
+		HTTP_AddBuildFooter(request);
+		poststr(request,htmlEnd);
 	} else if(http_checkUrlBase(urlStr,"cfg_wifi")) {
 		// for a test, show password as well...
 		const char *cur_ssid, *cur_pass;
@@ -835,10 +885,16 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		int rem;
 		int now;
 		int nowOfs;
+		int hex;
 		http_setup(request, httpMimeTypeHTML);
 		poststr(request,htmlHeader);
 		poststr(request,g_header);
 		poststr(request,"<h4>Flash Read Tool</h4>");
+		if(	http_getArg(urlStr,"hex",tmpA,sizeof(tmpA))){
+			hex = atoi(tmpA);
+		} else {
+			hex = 0;
+		}
 
 		if(	http_getArg(urlStr,"offset",tmpA,sizeof(tmpA)) &&
 				http_getArg(urlStr,"len",tmpB,sizeof(tmpB))) {
@@ -870,7 +926,12 @@ int HTTP_ProcessPacket(http_request_t *request) {
 				res = tuya_hal_flash_read (nowOfs, buffer,now);
 #endif
 				for(i = 0; i < now; i++) {
-					sprintf(tmpA,"%02X ",buffer[i]);
+					u8 val = buffer[i];
+					if(!hex && isprint(val)) {
+						sprintf(tmpA,"'%c' ",val);
+					} else {
+						sprintf(tmpA,"%02X ",val);
+					}
 					poststr(request,tmpA);
 				}
 				rem -= now;
@@ -882,8 +943,14 @@ int HTTP_ProcessPacket(http_request_t *request) {
 
 			poststr(request,"<br>");
 		}
-		poststr(request,"<form action=\"/flash_read_tool\">\
-			  <label for=\"offset\">offset:</label><br>\
+		poststr(request,"<form action=\"/flash_read_tool\">");
+		
+		poststr(request,"<input type=\"checkbox\" id=\"hex\" name=\"hex\" value=\"1\"");
+		if(hex){
+			poststr(request," checked");
+		}
+		poststr(request,"><label for=\"hex\">Show all hex?</label><br>");
+		poststr(request,"<label for=\"offset\">offset:</label><br>\
 			  <input type=\"number\" id=\"offset\" name=\"offset\"");
 		sprintf(tmpA," value=\"%i\"><br>",ofs);
 		poststr(request,tmpA);
@@ -1025,6 +1092,19 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		poststr(request,"<form action=\"ota\"><input type=\"submit\" value=\"OTA (update software by WiFi)\"/></form>");
 		poststr(request,"<form action=\"cmd_single\"><input type=\"submit\" value=\"Execute custom command\"/></form>");
 		poststr(request,"<form action=\"flash_read_tool\"><input type=\"submit\" value=\"Flash Read Tool\"/></form>");
+
+#if PLATFORM_BK7231T | PLATFORM_BK7231N
+		k = config_get_tableOffsets(BK_PARTITION_NET_PARAM,&i,&j);
+		sprintf(tmpA,"BK_PARTITION_NET_PARAM: bOk %i, at %i, len %i<br>",k,i,j);
+		poststr(request,tmpA);
+		k = config_get_tableOffsets(BK_PARTITION_RF_FIRMWARE,&i,&j);
+		sprintf(tmpA,"BK_PARTITION_RF_FIRMWARE: bOk %i, at %i, len %i<br>",k,i,j);
+		poststr(request,tmpA);
+		k = config_get_tableOffsets(BK_PARTITION_OTA,&i,&j);
+		sprintf(tmpA,"BK_PARTITION_OTA: bOk %i, at %i, len %i<br>",k,i,j);
+		poststr(request,tmpA);
+#endif
+
 
 		poststr(request,"<a href=\"/app\" target=\"_blank\">Launch Web Application</a><br/>");
 

@@ -584,7 +584,6 @@ static int http_rest_get_info(http_request_t *request){
 }
 
 
-
 static int http_rest_post_pins(http_request_t *request){
     int i;
     int r;
@@ -755,7 +754,7 @@ static int http_rest_post_flash_advanced(http_request_t *request){
     int startaddr = 0; 
     int sres;
     sres = sscanf(params, "%x", &startaddr);
-    if (sres == 1 && startaddr >= 0x132000){
+    if (sres == 1 && startaddr >= START_ADR_OF_BK_PARTITION_OTA){
         return http_rest_post_flash(request, startaddr);
     }
     return http_rest_error(request, -1, "invalid url");
