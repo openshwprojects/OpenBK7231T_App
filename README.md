@@ -64,4 +64,27 @@ Once you are connected and have an IP, go to http://192.168.4.1/index , select c
 
 After a reboot, the device should connect to your lan.
 
+  
+ 
+# Building for BK7231N
+
+Same as for BK7231T, but use BK7231N SDK:
+https://github.com/openshwprojects/OpenBK7231N
+
+
+# Flashing for BK7231N
+
+BKwriter 1.60 doesn't work for BK7231N for me, in BK7231 mode it errors with "invalid CRC" and in BK7231N mode it fails to unprotect the device.
+For BK7231N, one should use:
+https://github.com/OpenBekenIOT/hid_download_py
+Flash BK7231N QIO binary, like that:
+`python uartprogram W:\GIT\OpenBK7231N\apps\OpenBK7231N_App\output\1.0.0\OpenBK7231N_app_QIO_1.0.0.bin --unprotect -d com10 -w --startaddr 0x0`
+  
+ 
+# Building for XR809
+
+Get XR809 SDK:
+https://github.com/openshwprojects/OpenXR809
+
+(to be continued)
 
