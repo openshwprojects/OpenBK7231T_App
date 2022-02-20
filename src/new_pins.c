@@ -295,9 +295,19 @@ unsigned char button_generic_get_gpio_value(void *param)
 #if WINDOWS
 	return 0;
 #elif PLATFORM_XR809
-	return 0;
+	int xr_port; // eg GPIO_PORT_A
+	int xr_pin; // eg. GPIO_PIN_20
+	int index;
+	index = ((pinButton_s*)param) - g_buttons;
+
+	PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
+
+	if (HAL_GPIO_ReadPin(xr_port, xr_pin) == GPIO_PIN_LOW)
+		return 0;
+	return 1;
 #else
-	int index = ((pinButton_s*)param) - g_buttons;
+	int index;
+	index = ((pinButton_s*)param) - g_buttons;
 	return bk_gpio_input(index);
 #endif
 }
@@ -330,16 +340,16 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 	{
 	case IOR_Button:
 	case IOR_Button_n:
+		{
+			//pinButton_s *bt = &g_buttons[index];
+			// TODO: disable button
 #if WINDOWS
 	
 #elif PLATFORM_XR809
 
 #else
-		{
-			//pinButton_s *bt = &g_buttons[index];
-			// TODO: disable button
-		}
 #endif
+		}
 		break;
 	case IOR_LED:
 	case IOR_LED_n:
@@ -384,21 +394,32 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 	{
 	case IOR_Button:
 	case IOR_Button_n:
-#if WINDOWS
-	
-#elif PLATFORM_XR809
-
-#else
 		{
 			pinButton_s *bt = &g_buttons[index];
 			NEW_button_init(bt, button_generic_get_gpio_value, 0);
+#if WINDOWS
+	
+#elif PLATFORM_XR809
+			{
+				int xr_port; // eg GPIO_PORT_A
+				int xr_pin; // eg. GPIO_PIN_20
+				GPIO_InitParam param;
+
+				PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
+
+				param.driving = GPIO_DRIVING_LEVEL_1;
+				param.mode = GPIOx_Pn_F0_INPUT;
+				param.pull = GPIO_PULL_UP;
+				HAL_GPIO_Init(xr_port, xr_pin, &param);
+			}
+#else
 			bk_gpio_config_input_pup(index);
+#endif
 		/*	button_attach(bt, BTN_SINGLE_CLICK,     button_generic_short_press);
 			button_attach(bt, BTN_DOUBLE_CLICK,     button_generic_double_press);
 			button_attach(bt, BTN_LONG_PRESS_HOLD,  button_generic_long_press_hold);
 			button_start(bt);*/
 		}
-#endif
 		break;
 	case IOR_LED:
 	case IOR_LED_n:
@@ -576,8 +597,9 @@ void PIN_Input_Handler(int pinIndex)
 	pinButton_s *handle;
 	uint8_t read_gpio_level;
 	
-	read_gpio_level = bk_gpio_input(pinIndex);
 	handle = &g_buttons[pinIndex];
+	//read_gpio_level = bk_gpio_input(pinIndex);
+	read_gpio_level = button_generic_get_gpio_value(handle);
 
 	//ticks counter working..
 	if((handle->state) > 0)
@@ -696,7 +718,16 @@ void PIN_Init(void)
 #if WINDOWS
 
 #elif PLATFORM_XR809
+	OS_Timer_t timer;
 
+	OS_TimerSetInvalid(&timer);
+	if (OS_TimerCreate(&timer, OS_TIMER_PERIODIC, PIN_ticks, NULL,
+	                   PIN_TMR_DURATION) != OS_OK) {
+		printf("PIN_Init timer create failed\n");
+		return;
+	}
+
+	OS_TimerStart(&timer); /* start OS timer to feed watchdog */
 #else
 
 	OSStatus result;
