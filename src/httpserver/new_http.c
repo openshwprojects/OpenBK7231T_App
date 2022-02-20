@@ -1347,7 +1347,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 #if WINDOWS
 
 #elif PLATFORM_XR809
-
+		cmd_ota_http_exec(tmpA);
 #else
         otarequest(tmpA);
 #endif
