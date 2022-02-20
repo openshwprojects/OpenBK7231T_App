@@ -6,6 +6,42 @@
 #include "httpserver/new_http.h"
 #include "logging/logging.h"
 
+
+//According to your need to modify the constants.
+#define BTN_TICKS_INTERVAL    5	//ms
+#define BTN_DEBOUNCE_TICKS    3	//MAX 8
+#define BTN_SHORT_TICKS       (300 /BTN_TICKS_INTERVAL)
+#define BTN_LONG_TICKS        (1000 /BTN_TICKS_INTERVAL)
+
+typedef enum {
+	BTN_PRESS_DOWN = 0,
+	BTN_PRESS_UP,
+	BTN_PRESS_REPEAT,
+	BTN_SINGLE_CLICK,
+	BTN_DOUBLE_CLICK,
+	BTN_LONG_RRESS_START,
+	BTN_LONG_PRESS_HOLD,
+	BTN_number_of_event,
+	BTN_NONE_PRESS
+}BTN_PRESS_EVT;
+
+
+typedef void (*new_btn_callback)(void*);
+
+typedef struct pinButton_ {
+	uint16_t ticks;
+	uint8_t  repeat : 4;
+	uint8_t  event : 4;
+	uint8_t  state : 3;
+	uint8_t  debounce_cnt : 3; 
+	uint8_t  active_level : 1;
+	uint8_t  button_level : 1;
+	
+	uint8_t  (*hal_button_Level)(void *self);
+	new_btn_callback  cb[BTN_number_of_event];
+}pinButton_s;
+
+
 #if WINDOWS
 
 #elif PLATFORM_XR809
@@ -116,12 +152,13 @@ void PIN_XR809_GetPortPinForIndex(int index, int *xr_port, int *xr_pin) {
 //int g_channelStates;
 unsigned char g_channelValues[GPIO_MAX] = { 0 };
 
+pinButton_s g_buttons[GPIO_MAX];
+
 #ifdef WINDOWS
 
 #elif PLATFORM_XR809
 
 #else
-BUTTON_S g_buttons[GPIO_MAX];
 
 #endif
 pinsState_t g_pins;
@@ -260,7 +297,7 @@ unsigned char button_generic_get_gpio_value(void *param)
 #elif PLATFORM_XR809
 	return 0;
 #else
-	int index = ((BUTTON_S*)param) - g_buttons;
+	int index = ((pinButton_s*)param) - g_buttons;
 	return bk_gpio_input(index);
 #endif
 }
@@ -268,6 +305,17 @@ unsigned char button_generic_get_gpio_value(void *param)
 #define PIN_UART1_TXD 11
 #define PIN_UART2_RXD 1
 #define PIN_UART2_TXD 0
+
+void NEW_button_init(pinButton_s* handle, uint8_t(*pin_level)(void *self), uint8_t active_level)
+{
+	memset(handle, sizeof(pinButton_s), 0);
+	
+	handle->event = (uint8_t)BTN_NONE_PRESS;
+	handle->hal_button_Level = pin_level;
+	handle->button_level = handle->hal_button_Level(handle);
+	handle->active_level = active_level;
+}
+
 
 void PIN_SetPinRoleForPinIndex(int index, int role) {
 	//if(index == PIN_UART1_RXD)
@@ -288,7 +336,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 
 #else
 		{
-			//BUTTON_S *bt = &g_buttons[index];
+			//pinButton_s *bt = &g_buttons[index];
 			// TODO: disable button
 		}
 #endif
@@ -342,12 +390,12 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 
 #else
 		{
-			BUTTON_S *bt = &g_buttons[index];
-			button_init(bt, button_generic_get_gpio_value, 0);
+			pinButton_s *bt = &g_buttons[index];
+			NEW_button_init(bt, button_generic_get_gpio_value, 0);
 			bk_gpio_config_input_pup(index);
-		/*	button_attach(bt, SINGLE_CLICK,     button_generic_short_press);
-			button_attach(bt, DOUBLE_CLICK,     button_generic_double_press);
-			button_attach(bt, LONG_PRESS_HOLD,  button_generic_long_press_hold);
+		/*	button_attach(bt, BTN_SINGLE_CLICK,     button_generic_short_press);
+			button_attach(bt, BTN_DOUBLE_CLICK,     button_generic_double_press);
+			button_attach(bt, BTN_LONG_PRESS_HOLD,  button_generic_long_press_hold);
 			button_start(bt);*/
 		}
 #endif
@@ -510,20 +558,22 @@ bool CHANNEL_Check(int ch) {
 	return 0;
 }
 
+
+#define EVENT_CB(ev)   if(handle->cb[ev])handle->cb[ev]((pinButton_s*)handle)
+
+#define PIN_TMR_DURATION       5
 #if WINDOWS
 
 #elif PLATFORM_XR809
 
 #else
 
-#define EVENT_CB(ev)   if(handle->cb[ev])handle->cb[ev]((BUTTON_S*)handle)
-
-#define PIN_TMR_DURATION       5
 beken_timer_t g_pin_timer;
+#endif
 
 void PIN_Input_Handler(int pinIndex)
 {
-	BUTTON_S *handle;
+	pinButton_s *handle;
 	uint8_t read_gpio_level;
 	
 	read_gpio_level = bk_gpio_input(pinIndex);
@@ -536,7 +586,7 @@ void PIN_Input_Handler(int pinIndex)
 	/*------------button debounce handle---------------*/
 	if(read_gpio_level != handle->button_level) { //not equal to prev one
 		//continue read 3 times same new level change
-		if(++(handle->debounce_cnt) >= DEBOUNCE_TICKS) {
+		if(++(handle->debounce_cnt) >= BTN_DEBOUNCE_TICKS) {
 			handle->button_level = read_gpio_level;
 			handle->debounce_cnt = 0;
 		}
@@ -548,49 +598,49 @@ void PIN_Input_Handler(int pinIndex)
 	switch (handle->state) {
 	case 0:
 		if(handle->button_level == handle->active_level) {	//start press down
-			handle->event = (uint8_t)PRESS_DOWN;
-			EVENT_CB(PRESS_DOWN);
+			handle->event = (uint8_t)BTN_PRESS_DOWN;
+			EVENT_CB(BTN_PRESS_DOWN);
 			handle->ticks = 0;
 			handle->repeat = 1;
 			handle->state = 1;
 		} else {
-			handle->event = (uint8_t)NONE_PRESS;
+			handle->event = (uint8_t)BTN_NONE_PRESS;
 		}
 		break;
 
 	case 1:
 		if(handle->button_level != handle->active_level) { //released press up
-			handle->event = (uint8_t)PRESS_UP;
-			EVENT_CB(PRESS_UP);
+			handle->event = (uint8_t)BTN_PRESS_UP;
+			EVENT_CB(BTN_PRESS_UP);
 			handle->ticks = 0;
 			handle->state = 2;
 
-		} else if(handle->ticks > LONG_TICKS) {
-			handle->event = (uint8_t)LONG_RRESS_START;
-			EVENT_CB(LONG_RRESS_START);
+		} else if(handle->ticks > BTN_LONG_TICKS) {
+			handle->event = (uint8_t)BTN_LONG_RRESS_START;
+			EVENT_CB(BTN_LONG_RRESS_START);
 			handle->state = 5;
 		}
 		break;
 
 	case 2:
 		if(handle->button_level == handle->active_level) { //press down again
-			handle->event = (uint8_t)PRESS_DOWN;
-			EVENT_CB(PRESS_DOWN);
+			handle->event = (uint8_t)BTN_PRESS_DOWN;
+			EVENT_CB(BTN_PRESS_DOWN);
 			handle->repeat++;
 			if(handle->repeat == 2) {
-				EVENT_CB(DOUBLE_CLICK); // repeat hit
+				EVENT_CB(BTN_DOUBLE_CLICK); // repeat hit
 				button_generic_double_press(pinIndex);
 			} 
-			EVENT_CB(PRESS_REPEAT); // repeat hit
+			EVENT_CB(BTN_PRESS_REPEAT); // repeat hit
 			handle->ticks = 0;
 			handle->state = 3;
-		} else if(handle->ticks > SHORT_TICKS) { //released timeout
+		} else if(handle->ticks > BTN_SHORT_TICKS) { //released timeout
 			if(handle->repeat == 1) {
-				handle->event = (uint8_t)SINGLE_CLICK;
-				EVENT_CB(SINGLE_CLICK);
+				handle->event = (uint8_t)BTN_SINGLE_CLICK;
+				EVENT_CB(BTN_SINGLE_CLICK);
 				button_generic_short_press(pinIndex);
 			} else if(handle->repeat == 2) {
-				handle->event = (uint8_t)DOUBLE_CLICK;
+				handle->event = (uint8_t)BTN_DOUBLE_CLICK;
 			}
 			handle->state = 0;
 		}
@@ -598,9 +648,9 @@ void PIN_Input_Handler(int pinIndex)
 
 	case 3:
 		if(handle->button_level != handle->active_level) { //released press up
-			handle->event = (uint8_t)PRESS_UP;
-			EVENT_CB(PRESS_UP);
-			if(handle->ticks < SHORT_TICKS) {
+			handle->event = (uint8_t)BTN_PRESS_UP;
+			EVENT_CB(BTN_PRESS_UP);
+			if(handle->ticks < BTN_SHORT_TICKS) {
 				handle->ticks = 0;
 				handle->state = 2; //repeat press
 			} else {
@@ -612,12 +662,12 @@ void PIN_Input_Handler(int pinIndex)
 	case 5:
 		if(handle->button_level == handle->active_level) {
 			//continue hold trigger
-			handle->event = (uint8_t)LONG_PRESS_HOLD;
-			EVENT_CB(LONG_PRESS_HOLD);
+			handle->event = (uint8_t)BTN_LONG_PRESS_HOLD;
+			EVENT_CB(BTN_LONG_PRESS_HOLD);
 
 		} else { //releasd
-			handle->event = (uint8_t)PRESS_UP;
-			EVENT_CB(PRESS_UP);
+			handle->event = (uint8_t)BTN_PRESS_UP;
+			EVENT_CB(BTN_PRESS_UP);
 			handle->state = 0; //reset
 		}
 		break;
@@ -643,6 +693,12 @@ void PIN_ticks(void *param)
 
 void PIN_Init(void)
 {
+#if WINDOWS
+
+#elif PLATFORM_XR809
+
+#else
+
 	OSStatus result;
 	
     result = rtos_init_timer(&g_pin_timer,
@@ -653,6 +709,8 @@ void PIN_Init(void)
 	
     result = rtos_start_timer(&g_pin_timer);
     ASSERT(kNoErr == result);
+#endif
+
 }
 
 void PIN_set_wifi_led(int value){
@@ -670,5 +728,3 @@ void PIN_set_wifi_led(int value){
 		RAW_SetPinValue(res, value & 1);
 	}
 }
-
-#endif
