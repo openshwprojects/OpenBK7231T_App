@@ -48,6 +48,9 @@ static int http_rest_get_info(http_request_t *request);
 static int http_rest_get_dumpconfig(http_request_t *request);
 static int http_rest_get_testconfig(http_request_t *request);
 
+static int http_rest_post_channels(http_request_t *request);
+static int http_rest_get_channels(http_request_t *request);
+
 void init_rest(){
     HTTP_RegisterCallback( "/api/", HTTP_GET, http_rest_get);
     HTTP_RegisterCallback( "/api/", HTTP_POST, http_rest_post);
@@ -86,6 +89,119 @@ const char * apppage4 = "startup.js\"></script>"
 "<body>"
 "</body>"
 "</html>";
+
+
+static int http_rest_get(http_request_t *request){
+    ADDLOG_DEBUG(LOG_FEATURE_API, "GET of %s", request->url);
+    
+    if (!strcmp(request->url, "api/channels")){
+        return http_rest_get_channels(request);
+    }
+
+    if (!strcmp(request->url, "api/pins")){
+        return http_rest_get_pins(request);
+    }
+    if (!strcmp(request->url, "api/logconfig")){
+        return http_rest_get_logconfig(request);
+    }
+
+    if (!strncmp(request->url, "api/seriallog", 13)){
+        return http_rest_get_seriallog(request);
+    }
+
+#ifdef BK_LITTLEFS
+    if (!strcmp(request->url, "api/fsblock")){
+        return http_rest_get_flash(request, LFS_BLOCKS_START, LFS_BLOCKS_LEN);
+    }
+#endif
+
+#ifdef BK_LITTLEFS
+    if (!strncmp(request->url, "api/lfs/", 8)){
+        return http_rest_get_lfs_file(request);
+    }
+#endif
+
+    if (!strcmp(request->url, "api/info")){
+        return http_rest_get_info(request);
+    }
+
+    if (!strncmp(request->url, "api/flash/", 10)){
+        return http_rest_get_flash_advanced(request);
+    }
+
+
+    if (!strcmp(request->url, "api/dumpconfig")){
+        return http_rest_get_dumpconfig(request);
+    }
+
+    if (!strcmp(request->url, "api/testconfig")){
+        return http_rest_get_testconfig(request);
+    }
+    
+    
+
+    http_setup(request, httpMimeTypeHTML);
+    poststr(request, "GET of ");
+    poststr(request, request->url);
+    poststr(request, htmlEnd);
+    poststr(request,NULL);
+    return 0;
+}
+
+static int http_rest_post(http_request_t *request){
+    char tmp[20];
+    ADDLOG_DEBUG(LOG_FEATURE_API, "POST to %s", request->url);
+
+    if (!strcmp(request->url, "api/channels")){
+        return http_rest_post_channels(request);
+    }
+
+    if (!strcmp(request->url, "api/pins")){
+        return http_rest_post_pins(request);
+    }
+    if (!strcmp(request->url, "api/logconfig")){
+        return http_rest_post_logconfig(request);
+    }
+
+    if (!strcmp(request->url, "api/reboot")){
+        return http_rest_post_reboot(request);
+    }
+    if (!strcmp(request->url, "api/ota")){
+        return http_rest_post_flash(request, 0x132000);
+    }
+    if (!strncmp(request->url, "api/flash/", 10)){
+        return http_rest_post_flash_advanced(request);
+    }
+
+#ifdef BK_LITTLEFS
+    if (!strcmp(request->url, "api/fsblock")){
+        return http_rest_post_flash(request, LFS_BLOCKS_START);
+    }
+#endif
+    
+#ifdef BK_LITTLEFS
+    if (!strncmp(request->url, "api/lfs/", 8)){
+        return http_rest_post_lfs_file(request);
+    }
+#endif
+
+    http_setup(request, httpMimeTypeHTML);
+    poststr(request, "POST to ");
+    poststr(request, request->url);
+    poststr(request, "<br/>Content Length:");
+    sprintf(tmp, "%d", request->contentLength);
+    poststr(request, tmp);
+    poststr(request, "<br/>Content:[");
+    poststr(request, request->bodystart);
+    poststr(request, "]<br/>");
+    poststr(request, htmlEnd);
+    poststr(request,NULL);
+    return 0;
+}
+
+
+
+
 
 
 static int http_rest_app(http_request_t *request){
@@ -293,57 +409,6 @@ static int http_favicon(http_request_t *request){
 #endif
 
 
-static int http_rest_get(http_request_t *request){
-    ADDLOG_DEBUG(LOG_FEATURE_API, "GET of %s", request->url);
-    if (!strcmp(request->url, "api/pins")){
-        return http_rest_get_pins(request);
-    }
-    if (!strcmp(request->url, "api/logconfig")){
-        return http_rest_get_logconfig(request);
-    }
-
-    if (!strncmp(request->url, "api/seriallog", 13)){
-        return http_rest_get_seriallog(request);
-    }
-
-#ifdef BK_LITTLEFS
-    if (!strcmp(request->url, "api/fsblock")){
-        return http_rest_get_flash(request, LFS_BLOCKS_START, LFS_BLOCKS_LEN);
-    }
-#endif
-
-#ifdef BK_LITTLEFS
-    if (!strncmp(request->url, "api/lfs/", 8)){
-        return http_rest_get_lfs_file(request);
-    }
-#endif
-
-    if (!strcmp(request->url, "api/info")){
-        return http_rest_get_info(request);
-    }
-
-    if (!strncmp(request->url, "api/flash/", 10)){
-        return http_rest_get_flash_advanced(request);
-    }
-
-
-    if (!strcmp(request->url, "api/dumpconfig")){
-        return http_rest_get_dumpconfig(request);
-    }
-
-    if (!strcmp(request->url, "api/testconfig")){
-        return http_rest_get_testconfig(request);
-    }
-    
-    
-
-    http_setup(request, httpMimeTypeHTML);
-    poststr(request, "GET of ");
-    poststr(request, request->url);
-    poststr(request, htmlEnd);
-    poststr(request,NULL);
-    return 0;
-}
 
 static int http_rest_get_seriallog(http_request_t *request){
     if (request->url[strlen(request->url)-1] == '1'){
@@ -519,53 +584,6 @@ static int http_rest_get_info(http_request_t *request){
 }
 
 
-static int http_rest_post(http_request_t *request){
-    char tmp[20];
-    ADDLOG_DEBUG(LOG_FEATURE_API, "POST to %s", request->url);
-    if (!strcmp(request->url, "api/pins")){
-        return http_rest_post_pins(request);
-    }
-    if (!strcmp(request->url, "api/logconfig")){
-        return http_rest_post_logconfig(request);
-    }
-
-    if (!strcmp(request->url, "api/reboot")){
-        return http_rest_post_reboot(request);
-    }
-    if (!strcmp(request->url, "api/ota")){
-        return http_rest_post_flash(request, START_ADR_OF_BK_PARTITION_OTA);
-    }
-    if (!strncmp(request->url, "api/flash/", 10)){
-        return http_rest_get_flash_advanced(request);
-    }
-
-#ifdef BK_LITTLEFS
-    if (!strcmp(request->url, "api/fsblock")){
-        return http_rest_post_flash(request, LFS_BLOCKS_START);
-    }
-#endif
-    
-#ifdef BK_LITTLEFS
-    if (!strncmp(request->url, "api/lfs/", 8)){
-        return http_rest_post_lfs_file(request);
-    }
-#endif
-
-    http_setup(request, httpMimeTypeHTML);
-    poststr(request, "POST to ");
-    poststr(request, request->url);
-    poststr(request, "<br/>Content Length:");
-    sprintf(tmp, "%d", request->contentLength);
-    poststr(request, tmp);
-    poststr(request, "<br/>Content:[");
-    poststr(request, request->bodystart);
-    poststr(request, "]<br/>");
-    poststr(request, htmlEnd);
-    poststr(request,NULL);
-    return 0;
-}
-
-// currently crashes the MCU - maybe stack overflow?
 static int http_rest_post_pins(http_request_t *request){
     int i;
     int r;
@@ -789,7 +807,7 @@ typedef struct item_new_test_config
 ITEM_NEW_TEST_CONFIG testconfig;
 
 static int http_rest_get_testconfig(http_request_t *request){
-
+#ifdef TESTCONFIG_ENABLE    
     INFO_ITEM_ST *ret;
     int intres;
 
@@ -850,5 +868,105 @@ static int http_rest_get_testconfig(http_request_t *request){
 
     http_setup(request, httpMimeTypeText);
     poststr(request, NULL);
+#else
+    return http_rest_error(request, 400, "unsupported");
+#endif    
+    return 0;
+}
+
+
+
+static int http_rest_get_channels(http_request_t *request){
+    int i;
+    /*typedef struct pinsState_s {
+    	byte roles[32];
+	    byte channels[32];
+    } pinsState_t;
+
+    extern pinsState_t g_pins;
+    */
+    http_setup(request, httpMimeTypeJson);
+    poststr(request, "{\"values\":{");
+    for (i = 0; i < 32; i++){
+        if (PIN_GetPinRoleForPinIndex(i)){
+            hprintf128(request, "\"%d\":", i, CHANNEL_Get(i));
+        }
+    }
+    poststr(request, "}}");
+    poststr(request, NULL);
+    return 0;
+}
+
+// currently crashes the MCU - maybe stack overflow?
+static int http_rest_post_channels(http_request_t *request){
+    int i;
+    int r;
+    char tmp[64];
+
+    //https://github.com/zserge/jsmn/blob/master/example/simple.c
+    //jsmn_parser p;
+    jsmn_parser *p = os_malloc(sizeof(jsmn_parser));
+    //jsmntok_t t[128]; /* We expect no more than 128 tokens */
+#define TOKEN_COUNT 128
+    jsmntok_t *t = os_malloc(sizeof(jsmntok_t)*TOKEN_COUNT);
+    char *json_str = request->bodystart;
+    int json_len = strlen(json_str);
+
+	memset(p, 0, sizeof(jsmn_parser));
+	memset(t, 0, sizeof(jsmntok_t)*128);
+
+    jsmn_init(p);
+    r = jsmn_parse(p, json_str, json_len, t, TOKEN_COUNT);
+    if (r < 0) {
+        ADDLOG_ERROR(LOG_FEATURE_API, "Failed to parse JSON: %d", r);
+        sprintf(tmp,"Failed to parse JSON: %d\n", r);
+        os_free(p);
+        os_free(t);
+        return http_rest_error(request, 400, tmp);
+    }
+
+    /* Assume the top-level element is an object */
+    if (r < 1 || t[0].type != JSMN_OBJECT) {
+        ADDLOG_ERROR(LOG_FEATURE_API, "Object expected", r);
+        sprintf(tmp,"Object expected\n");
+        os_free(p);
+        os_free(t);
+        return http_rest_error(request, 400, tmp);
+    }
+
+    /* Loop over all keys of the root object */
+    for (i = 1; i < r; i++) {
+        if (jsoneq(json_str, &t[i], "values") == 0) {
+            int j;
+            if (t[i + 1].type != JSMN_ARRAY) {
+                continue; /* We expect an array of channel values*/
+                /* mainly because I could not be bothered to work out how to use a sub-object right now */
+            }
+            for (j = 0; j < t[i + 1].size; j++) {
+                int chanval, pr;
+                jsmntok_t *g = &t[i + j + 2];
+                chanval = atoi(json_str + g->start);
+				pr = PIN_GetPinRoleForPinIndex(j);
+				if(pr) {
+                    CHANNEL_Set(j, chanval, 0);
+                    ADDLOG_DEBUG(LOG_FEATURE_API, "Set of chan %d to %d", j,
+                        chanval);
+				} else {
+                    if (chanval){
+                        ADDLOG_ERROR(LOG_FEATURE_API, "Set of chan %d to %d but no role", j,
+                            chanval);
+                    }
+                }
+            }
+            i += t[i + 1].size + 1;
+        } else {
+            ADDLOG_ERROR(LOG_FEATURE_API, "Unexpected key: %.*s", t[i].end - t[i].start,
+                json_str + t[i].start);
+        }
+    }
+
+    os_free(p);
+    os_free(t);
+    return http_rest_error(request, 200, "OK");
     return 0;
 }
