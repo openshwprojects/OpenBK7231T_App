@@ -672,7 +672,7 @@ static int http_rest_post_pins(http_request_t *request){
 }
 
 static int http_rest_error(http_request_t *request, int code, char *msg){
-    request->responseCode = HTTP_RESPONSE_SERVER_ERROR;
+    request->responseCode = code;
     http_setup(request, httpMimeTypeJson);
     if (code != 200){
         hprintf128(request, "{\"error\":%d, \"msg\":\"%s\"}", code, msg);
@@ -878,6 +878,7 @@ static int http_rest_get_testconfig(http_request_t *request){
 
 static int http_rest_get_channels(http_request_t *request){
     int i;
+    int addcomma = 0;
     /*typedef struct pinsState_s {
     	byte roles[32];
 	    byte channels[32];
@@ -886,13 +887,20 @@ static int http_rest_get_channels(http_request_t *request){
     extern pinsState_t g_pins;
     */
     http_setup(request, httpMimeTypeJson);
-    poststr(request, "{\"values\":{");
+    poststr(request, "{");
+
     for (i = 0; i < 32; i++){
-        if (PIN_GetPinRoleForPinIndex(i)){
-            hprintf128(request, "\"%d\":", i, CHANNEL_Get(i));
+        int ch = PIN_GetPinChannelForPinIndex(i);
+        int role = PIN_GetPinRoleForPinIndex(i);
+        if (role){
+            if (addcomma){
+                hprintf128(request, ",");
+            }
+            hprintf128(request, "\"%d\":%d", ch, CHANNEL_Get(ch));
+            addcomma = 1;
         }
     }
-    poststr(request, "}}");
+    poststr(request, "}");
     poststr(request, NULL);
     return 0;
 }
@@ -926,8 +934,8 @@ static int http_rest_post_channels(http_request_t *request){
     }
 
     /* Assume the top-level element is an object */
-    if (r < 1 || t[0].type != JSMN_OBJECT) {
-        ADDLOG_ERROR(LOG_FEATURE_API, "Object expected", r);
+    if (r < 1 || t[0].type != JSMN_ARRAY) {
+        ADDLOG_ERROR(LOG_FEATURE_API, "Array expected", r);
         sprintf(tmp,"Object expected\n");
         os_free(p);
         os_free(t);
@@ -936,33 +944,12 @@ static int http_rest_post_channels(http_request_t *request){
 
     /* Loop over all keys of the root object */
     for (i = 1; i < r; i++) {
-        if (jsoneq(json_str, &t[i], "values") == 0) {
-            int j;
-            if (t[i + 1].type != JSMN_ARRAY) {
-                continue; /* We expect an array of channel values*/
-                /* mainly because I could not be bothered to work out how to use a sub-object right now */
-            }
-            for (j = 0; j < t[i + 1].size; j++) {
-                int chanval, pr;
-                jsmntok_t *g = &t[i + j + 2];
-                chanval = atoi(json_str + g->start);
-				pr = PIN_GetPinRoleForPinIndex(j);
-				if(pr) {
-                    CHANNEL_Set(j, chanval, 0);
-                    ADDLOG_DEBUG(LOG_FEATURE_API, "Set of chan %d to %d", j,
-                        chanval);
-				} else {
-                    if (chanval){
-                        ADDLOG_ERROR(LOG_FEATURE_API, "Set of chan %d to %d but no role", j,
-                            chanval);
-                    }
-                }
-            }
-            i += t[i + 1].size + 1;
-        } else {
-            ADDLOG_ERROR(LOG_FEATURE_API, "Unexpected key: %.*s", t[i].end - t[i].start,
-                json_str + t[i].start);
-        }
+        int chanval;
+        jsmntok_t *g = &t[i];
+        chanval = atoi(json_str + g->start);
+        CHANNEL_Set(i-1, chanval, 0);
+        ADDLOG_DEBUG(LOG_FEATURE_API, "Set of chan %d to %d", i,
+                chanval);
     }
 
     os_free(p);
