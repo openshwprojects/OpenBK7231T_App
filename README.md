@@ -1,4 +1,12 @@
-# Building
+# Introduction
+
+This repository is named "OpenBK7231T_App", but now it's a multiplatform app, supporting build for 3 separate chips:
+- BK7231T (WB3S, WB2S, etc)
+- BK7231N (CB2S, etc)
+- XR809 (XR3, etc)
+To build for a given platform, just checkout first our version of SDK and then checkout this app repository into it, details later.
+
+# Building for BK7231T
 
 Get the SDK repo:
 https://github.com/openshwprojects/OpenBK7231T
@@ -11,11 +19,14 @@ On Windows, start a cygwin prompt.
 go to the SDK folder.
 
 build using:
+`./b.sh`
+  
+you can also do advanced build by build_app.sh:
 `./build_app.sh apps/<folder> <appname> <appversion>`
 
 e.g. `./build_app.sh apps/openbk7231app openbk7231app 1.0.0`
 
-# flashing
+# flashing for BK7231T
 
 ## UART
 
