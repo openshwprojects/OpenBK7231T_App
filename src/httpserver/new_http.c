@@ -800,7 +800,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 #elif PLATFORM_XR809
 			poststr(request,"TODO XR809<br>");
 
-#else
+#elif PLATFORM_BK7231T
 			AP_IF_S *ar;
 			uint32_t num;
 			
@@ -812,6 +812,12 @@ int HTTP_ProcessPacket(http_request_t *request) {
 				poststr(request,tmpA);
 			}
 			tuya_hal_wifi_release_ap(ar);
+#elif PLATFORM_BK7231N
+			poststr(request,"TODO: BK7231N support for scan<br>");
+
+#else
+#error "Unknown platform"
+			poststr(request,Unknown platform<br>");
 #endif
 		}
 		poststr(request,"<form action=\"/cfg_wifi\">\
@@ -905,7 +911,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 			poststr(request,tmpA);
 			poststr(request,"<br>");
 
-			///res = tuya_hal_flash_read (ofs, buffer,len);
+			///res = bekken_hal_flash_read (ofs, buffer,len);
 			//sprintf(tmpA,"Result %i",res);
 		//	strcat(outbuf,tmpA);
 		///	strcat(outbuf,"<br>");
@@ -923,7 +929,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 				#define FLASH_INDEX_XR809 0
 				res = flash_read(FLASH_INDEX_XR809, nowOfs, buffer, now);
 #else
-				res = tuya_hal_flash_read (nowOfs, buffer,now);
+				res = bekken_hal_flash_read (nowOfs, buffer,now);
 #endif
 				for(i = 0; i < now; i++) {
 					u8 val = buffer[i];

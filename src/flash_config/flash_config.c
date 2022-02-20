@@ -266,6 +266,24 @@ INFO_ITEM_ST *config_search_item_type(UINT32 type){
     return _search_item(&item, NULL);
 }
 
+int bekken_hal_flash_read(const uint32_t addr, void *dst, const UINT32 size)
+{
+    UINT32 status;
+    if(NULL == dst) {
+        return 1;
+    }
+	hal_flash_lock();
+
+    DD_HANDLE flash_handle;
+    flash_handle = ddev_open(FLASH_DEV_NAME, &status, 0);
+    ddev_read(flash_handle, dst, size, addr);
+    ddev_close(flash_handle);
+    
+	hal_flash_unlock();
+
+    return 0;
+}
+
 int config_delete_item(UINT32 type)
 {
     UINT32 addr, end_addr;
