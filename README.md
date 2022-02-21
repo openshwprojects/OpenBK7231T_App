@@ -77,8 +77,11 @@ https://github.com/openshwprojects/OpenBK7231N
 
 BKwriter 1.60 doesn't work for BK7231N for me, in BK7231 mode it errors with "invalid CRC" and in BK7231N mode it fails to unprotect the device.
 For BK7231N, one should use:
+  
 https://github.com/OpenBekenIOT/hid_download_py
+  
 Flash BK7231N QIO binary, like that:
+  
 `python uartprogram W:\GIT\OpenBK7231N\apps\OpenBK7231N_App\output\1.0.0\OpenBK7231N_app_QIO_1.0.0.bin --unprotect -d com10 -w --startaddr 0x0`
   
  
@@ -93,6 +96,9 @@ https://github.com/openshwprojects/OpenXR809
 # Futher reading
   
 For technical insights and generic SDK information related to Bekken and XRadio modules, please refer:
+  
 https://www.elektroda.com/rtvforum/topic3850712.html
+  
 https://www.elektroda.com/rtvforum/topic3866123.html
+  
 https://www.elektroda.com/rtvforum/topic3806769.html
