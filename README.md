@@ -29,19 +29,28 @@ e.g. `./build_app.sh apps/openbk7231app openbk7231app 1.0.0`
 
 # flashing for BK7231T
 
-## UART
+
+## UART (Windows only)
+
+get BKwriter 1.60 exe
+
+connect the PC to TX1 and RX1 on the bk7231 (TX2 and RX2 are optional, only for log)
+  
+start flash in BKwriter 1.60 (select COM port, etc)
+then re-power the device (or reset with CEN by temporary connecting CEN to ground) until the flashing program continues, repeat if required.
+  
+## UART (multiplatform method, Python required)
 
 clone the repo https://github.com/OpenBekenIOT/hid_download_py
 
-connect the PC to serial 2 on the bk7231
+connect the PC to TX1 and RX1 on the bk7231 (TX2 and RX2 are optional, only for log)
 
-flash using:
+start flash using:
 `python uartprogram <sdk folder>\apps\<folder>\output\1.0.0\<appname>_UA_<appversion>.bin -d <port> -w`
-re-power the device until the flashing program works, repeat if required.
+then re-power the device (or reset with CEN temporary connecting CEN to ground) until the flashing program continues, repeat if required.
 
 e.g.
 `python uartprogram C:\DataNoBackup\tuya\tuya-iotos-embeded-sdk-wifi-ble-bk7231t\apps\my_alpha_demo\output\1.0.0\my_alpha_demo_UA_1.0.0.bin -d com4 -w`
-
 
 ## SPI
 
