@@ -33,6 +33,8 @@ e.g. `./build_app.sh apps/openbk7231app openbk7231app 1.0.0`
 ## UART (Windows only)
 
 get BKwriter 1.60 exe
+  
+Use USB to TTL converter with 3.3V logic levels, like HW 597
 
 connect the PC to TX1 and RX1 on the bk7231 (TX2 and RX2 are optional, only for log)
   
@@ -42,6 +44,8 @@ then re-power the device (or reset with CEN by temporary connecting CEN to groun
 ## UART (multiplatform method, Python required)
 
 clone the repo https://github.com/OpenBekenIOT/hid_download_py
+  
+Use USB to TTL converter with 3.3V logic levels, like HW 597 
 
 connect the PC to TX1 and RX1 on the bk7231 (TX2 and RX2 are optional, only for log)
 
@@ -62,7 +66,7 @@ Once the firmware has been flashed for the first time, it can be flashed over wi
 
 Setup a simple webserver to serve `<sdk folder>\apps\<folder>\output\1.0.0\<appname>_<appversion>.rbl`
 
-Visit <ip>/ota - this will start the flashing process.
+Visit <ip>/ota - here start the flashing process.
 
 ## First run
 
@@ -74,7 +78,6 @@ Once you are connected and have an IP, go to http://192.168.4.1/index , select c
 
 After a reboot, the device should connect to your lan.
 
-  
  
 # Building for BK7231N
 
@@ -93,6 +96,7 @@ Flash BK7231N QIO binary, like that:
   
 `python uartprogram W:\GIT\OpenBK7231N\apps\OpenBK7231N_App\output\1.0.0\OpenBK7231N_app_QIO_1.0.0.bin --unprotect -d com10 -w --startaddr 0x0`
   
+  Remember - QIO binary with --unprotect and --startaddr 0x0, this is for N chip, not for T.
  
 # Building for XR809
 
