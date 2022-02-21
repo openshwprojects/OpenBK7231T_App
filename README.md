@@ -106,3 +106,8 @@ https://www.elektroda.com/rtvforum/topic3850712.html
 https://www.elektroda.com/rtvforum/topic3866123.html
   
 https://www.elektroda.com/rtvforum/topic3806769.html
+  
+# Support project
+  
+If you want to support project, please donate at: https://www.paypal.com/paypalme/openshwprojects
+  
