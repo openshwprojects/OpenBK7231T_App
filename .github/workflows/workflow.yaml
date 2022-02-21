@@ -57,6 +57,9 @@ jobs:
     name: Build
     needs: refs
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [OpenBK7231T, OpenBK7231N, OpenXR809]
     steps:
       - name: Source checkout
         uses: actions/checkout@v2
@@ -71,15 +74,16 @@ jobs:
           sudo apt-get -y install libc6-i386 make
       - run: ls -la
       - name: Run make
-        run: make APP_VERSION=${{ needs.refs.outputs.version }} APP_NAME=${{ env.APP_NAME }} build
+        run: make APP_VERSION=${{ needs.refs.outputs.version }} APP_NAME=${{ matrix.platform }} ${{ matrix.platform }}
       - name: Save build assets
         uses: actions/upload-artifact@v2
         with:
           name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
           path: |
-            output/${{ needs.refs.outputs.version }}/${{ env.APP_NAME }}_UA_${{ needs.refs.outputs.version }}.bin
-            output/${{ needs.refs.outputs.version }}/${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}.rbl
-          if-no-files-found: error         
+            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_UA_${{ needs.refs.outputs.version }}.bin
+            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.rbl
+            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.img
+          if-no-files-found: warn         
 
   release:
     name: Semantic Release Images and Artifacts

@@ -72,6 +72,7 @@ publish:
     assets:
       - path: "output/**/*_UA_*.bin"
       - path: "output/**/*.rbl"
+      - path: "output/**/*.img"
 
 success:
   - "@semantic-release/github"
