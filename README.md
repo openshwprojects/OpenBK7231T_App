@@ -98,6 +98,8 @@ Flash BK7231N QIO binary, like that:
   
   Remember - QIO binary with --unprotect and --startaddr 0x0, this is for N chip, not for T.
  
+You can see an example of detailed teardown and BK7231N flashing here (use google translate): https://www.elektroda.pl/rtvforum/viewtopic.php?t=3874289&highlight=
+  
 # Building for XR809
 
 Get XR809 SDK:
@@ -108,7 +110,7 @@ https://github.com/openshwprojects/OpenXR809
   
 # Testing HTTP server on Windows
   
-It is also possible to build a part of our App for Windows platform. It basically creates a Windows .exe for our HTTP server, so developers can create our configurator, etc, pages faster, without having any Tuya modules at hand. For building on Windows, use MSVC projects in the app directory.
+It is also possible to build a part of our App for Windows platform. It basically creates a Windows .exe for our HTTP server, so developers can create our configurator, etc, pages faster, without having any Tuya modules at hand. For building on Windows, use MSVC projects in the app directory. It is using Winsock and creates a TCP listening socket on port 80, so make sure your machine has it free to use.
   
 # Futher reading
   
