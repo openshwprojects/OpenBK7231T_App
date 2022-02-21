@@ -93,6 +93,10 @@ https://github.com/openshwprojects/OpenXR809
 (to be continued)
   
   
+# Testing HTTP server on Windows
+  
+It is also possible to build a part of our App for Windows platform. It basically creates a Windows .exe for our HTTP server, so developers can create our configurator, etc, pages faster, without having any Tuya modules at hand. For building on Windows, use MSVC projects in the app directory.
+  
 # Futher reading
   
 For technical insights and generic SDK information related to Bekken and XRadio modules, please refer:
