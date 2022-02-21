@@ -4,6 +4,7 @@ This repository is named "OpenBK7231T_App", but now it's a multiplatform app, su
 - BK7231T (WB3S, WB2S, etc)
 - BK7231N (CB2S, etc)
 - XR809 (XR3, etc)
+
 To build for a given platform, just checkout first our version of SDK and then checkout this app repository into it, details later.
 
 # Building for BK7231T
@@ -87,4 +88,11 @@ Get XR809 SDK:
 https://github.com/openshwprojects/OpenXR809
 
 (to be continued)
-
+  
+  
+# Futher reading
+  
+For technical insights and generic SDK information related to Bekken and XRadio modules, please refer:
+https://www.elektroda.com/rtvforum/topic3850712.html
+https://www.elektroda.com/rtvforum/topic3866123.html
+https://www.elektroda.com/rtvforum/topic3806769.html
