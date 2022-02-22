@@ -105,8 +105,13 @@ You can see an example of detailed teardown and BK7231N flashing here (use googl
 Get XR809 SDK:
 https://github.com/openshwprojects/OpenXR809
 
-(to be continued)
+Checkout this repository to openxr809/project/oxr_sharedApp/shared/
   
+Run ./build_oxr_sharedapp.sh
+  
+# Flashing for XR809
+  
+Get USB to UART converter, start phoenixMC.exe from OpenXR809 repository and follow this guide: https://www.elektroda.com/rtvforum/topic3806769.html
   
 # Testing HTTP server on Windows
   
