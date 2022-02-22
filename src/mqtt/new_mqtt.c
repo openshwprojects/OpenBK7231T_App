@@ -101,13 +101,18 @@ int g_incoming_channel_mqtt = 0;
 static void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags)
 {
 	int iValue;
+  char copy[128];
   // unused - left here as example
   //const struct mqtt_connect_client_info_t* client_info = (const struct mqtt_connect_client_info_t*)arg;
 
-  //PR_NOTICE("MQTT client in mqtt_incoming_data_cb\n");
-  PR_NOTICE("MQTT client in mqtt_incoming_data_cb data is %s for ch %i\n",data,g_incoming_channel_mqtt);
+  strncpy(copy, (char *)data, len);
+  // strncpy does not terminate??!!!!
+  copy[len] = '\0';
 
-  iValue = atoi((char *)data);
+  //PR_NOTICE("MQTT client in mqtt_incoming_data_cb\n");
+  PR_NOTICE("MQTT client in mqtt_incoming_data_cb data is %s for ch %i\n", copy, g_incoming_channel_mqtt);
+
+  iValue = atoi((char *)copy);
   CHANNEL_Set(g_incoming_channel_mqtt,iValue,0);
 
  // PR_NOTICE(("MQTT client \"%s\" data cb: len %d, flags %d\n", client_info->client_id, (int)len, (int)flags));
