@@ -65,7 +65,7 @@ const char htmlHeader[] = "<!DOCTYPE html><html><body>" ;
 const char htmlEnd[] = "</body></html>" ;
 const char htmlReturnToMenu[] = "<a href=\"index\">Return to menu</a>";;
 const char htmlReturnToCfg[] = "<a href=\"cfg\">Return to cfg</a>";;
-const char *g_build_str = "Build on " __DATE__ " " __TIME__;
+const char *g_build_str = "Build on " __DATE__ " " __TIME__ " version " USER_SW_VER; // Show GIT version at Build line
 
 const char httpCorsHeaders[] = "Access-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept" ;           // TEXT MIME type
 
