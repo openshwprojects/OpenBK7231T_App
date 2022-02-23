@@ -105,6 +105,10 @@ static void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t f
   // unused - left here as example
   //const struct mqtt_connect_client_info_t* client_info = (const struct mqtt_connect_client_info_t*)arg;
 
+  if(len > sizeof(copy)-1) {
+	len = sizeof(copy)-1;
+  }
+
   strncpy(copy, (char *)data, len);
   // strncpy does not terminate??!!!!
   copy[len] = '\0';
