@@ -56,6 +56,21 @@ Connection: keep-alive
 
 #define DEFAULT_OTA_URL "http://raspberrypi:1880/firmware"
 
+// make sure that USER_SW_VER is set on all platforms
+#ifndef USER_SW_VER
+#ifdef WINDOWS
+#define USER_SW_VER "Win_Test"
+#elif PLATFORM_XR809
+#define USER_SW_VER "XR809_Test"
+#elif defined(PLATFORM_BK7231N)
+#define USER_SW_VER "BK7231N_Test"
+#elif defined(PLATFORM_BK7231T)
+#define USER_SW_VER "BK7231T_Test"
+#else
+
+#endif
+#endif
+
 const char httpHeader[] = "HTTP/1.1 %d OK\nContent-type: %s" ;  // HTTP header
 const char httpMimeTypeHTML[] = "text/html" ;              // HTML MIME type
 const char httpMimeTypeText[] = "text/plain" ;           // TEXT MIME type
@@ -65,7 +80,7 @@ const char htmlHeader[] = "<!DOCTYPE html><html><body>" ;
 const char htmlEnd[] = "</body></html>" ;
 const char htmlReturnToMenu[] = "<a href=\"index\">Return to menu</a>";;
 const char htmlReturnToCfg[] = "<a href=\"cfg\">Return to cfg</a>";;
-const char *g_build_str = "Build on " __DATE__ " " __TIME__;
+const char *g_build_str = "Build on " __DATE__ " " __TIME__ " version " USER_SW_VER; // Show GIT version at Build line;
 
 const char httpCorsHeaders[] = "Access-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept" ;           // TEXT MIME type
 
