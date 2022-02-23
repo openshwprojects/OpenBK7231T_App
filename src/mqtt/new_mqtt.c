@@ -29,6 +29,17 @@ static int g_my_reconnect_mqtt_after_time = -1;
 ip_addr_t mqtt_ip LWIP_MQTT_EXAMPLE_IPADDR_INIT;
 mqtt_client_t* mqtt_client;
 
+typedef struct mqtt_callback_tag {
+    char *topic;
+    int ID;
+    mqtt_callback_fn callback;
+} mqtt_callback_t;
+
+#define MAX_MQTT_CALLBACKS 32
+static mqtt_callback_t *callbacks[MAX_MQTT_CALLBACKS];
+static int numCallbacks = 0;
+
+
 static struct mqtt_connect_client_info_t mqtt_client_info =
 {
   "test",
@@ -46,6 +57,135 @@ static struct mqtt_connect_client_info_t mqtt_client_info =
 };
 
 
+// this can REPLACE callbacks, since we MAY wish to change the root topic....
+// in which case we would re-resigster all callbacks?
+int MQTT_RegisterCallback( const char *topic, int ID, mqtt_callback_fn callback){
+  int index;
+	if (!topic || !callback){
+		return -1;
+	}
+
+  // find existing to replace
+  for (index = 0; index < numCallbacks; index++){
+    if (callbacks[index]){
+      if (callbacks[index]->ID == ID){
+        break;
+      }
+    }
+  }
+
+  // find empty if any (empty by MQTT_RemoveCallback)
+  if (index == numCallbacks){
+    for (index = 0; index < numCallbacks; index++){
+      if (!callbacks[index]){
+        break;
+      }
+    }
+  }
+
+	if (index >= MAX_MQTT_CALLBACKS){
+		return -4;
+	}
+  if (!callbacks[index]){
+	  callbacks[index] = (mqtt_callback_t*)os_malloc(sizeof(mqtt_callback_t));
+  }
+	if (!callbacks[index]){
+		return -2;
+	}
+  if (callbacks[index]->topic) {
+    os_free(callbacks[index]->topic);
+    callbacks[index]->topic = NULL;
+  }
+	callbacks[index]->topic = (char *)os_malloc(strlen(topic)+1);
+	if (!callbacks[index]->topic){
+		os_free(callbacks[index]);
+		return -3;
+	}
+	strcpy(callbacks[index]->topic, topic);
+	callbacks[index]->callback = callback;
+  if (index == numCallbacks){
+	  numCallbacks++;
+  }
+	// success
+	return 0;
+}
+
+int MQTT_RemoveCallback(int ID){
+  int index;
+
+  for (index = 0; index < numCallbacks; index++){
+    if (callbacks[index]){
+      if (callbacks[index]->ID == ID){
+        if (callbacks[index]->topic) {
+          os_free(callbacks[index]->topic);
+          callbacks[index]->topic = NULL;
+        }
+    		os_free(callbacks[index]);
+        callbacks[index] = NULL;
+        break;
+      }
+    }
+  }
+}
+
+
+// this accepts obkXXXXXX/<chan>/set to receive data to set channels
+int channelSet(mqtt_request_t* request){
+  // we only need a few bytes to receive a decimal number 0-100
+  char copy[12];
+  int len = request->receivedLen;
+  char *p = request->topic;
+  int channel = 0;
+  int iValue = 0;
+
+  // TODO: better 
+  while(*p != '/') {
+    if(*p == 0)
+      return 0;
+    p++;
+  }
+  p++;
+  if ((*p - '0' >= 0) && (*p - '0' <= 9)){
+    channel = atoi(p);
+  } else {
+    channel = -1;
+  }
+
+  // if channel out of range, stop here.
+  if ((channel < 0) || (channel > 32)){
+    return 0;
+  }
+
+  // find something after channel - should be <base>/<chan>/set
+  while(*p != '/') {
+    if(*p == 0)
+      return 0;
+    p++;
+  }
+
+  // if not /set, then stop here
+  if (strcmp(p, 'set')){
+    return 0;
+  }
+
+  if(len > sizeof(copy)-1) {
+    len = sizeof(copy)-1;
+  }
+
+  strncpy(copy, (char *)request->received, len);
+  // strncpy does not terminate??!!!!
+  copy[len] = '\0';
+
+  //PR_NOTICE("MQTT client in mqtt_incoming_data_cb\n");
+  PR_NOTICE("MQTT client in mqtt_incoming_data_cb data is %s for ch %i\n", copy, channel);
+
+  iValue = atoi((char *)copy);
+  CHANNEL_Set(channel,iValue,0);
+
+  // return 1 to stop processing callbacks here.
+  // return 0 to allow later callbacks to process this topic.
+  return 1;
+}
 
 
 /* Called when publish is complete either with sucess or failure */
@@ -97,51 +237,54 @@ void example_publish(mqtt_client_t *client, int channel, int iVal)
   }
 }
 
-int g_incoming_channel_mqtt = 0;
+// note: only one incomming can be processed at a time.
+static mqtt_request_t g_mqtt_request;
+
 static void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags)
 {
-	int iValue;
-  char copy[128];
+  int i;
   // unused - left here as example
   //const struct mqtt_connect_client_info_t* client_info = (const struct mqtt_connect_client_info_t*)arg;
 
-  if(len > sizeof(copy)-1) {
-	len = sizeof(copy)-1;
+  // if we stored a topic in g_mqtt_request, then we found a matching callback, so use it.
+  if (g_mqtt_request.topic[0]) {
+    // note: data is NOT terminated (it may be binary...).
+    g_mqtt_request.received = data;
+    g_mqtt_request.receivedLen = len;
+
+    for (i = 0; i < numCallbacks; i++){
+      char *cbtopic = callbacks[i]->topic;
+      if (strncmp(g_mqtt_request.topic, cbtopic, strlen(cbtopic))){
+        // note - callback must return 1 to say it ate the mqtt, else further processing can be performed.
+        // i.e. multiple people can get each topic if required.
+        if (callbacks[i]->callback(&g_mqtt_request)){
+          return;
+        }
+      }
+    }
   }
-
-  strncpy(copy, (char *)data, len);
-  // strncpy does not terminate??!!!!
-  copy[len] = '\0';
-
-  //PR_NOTICE("MQTT client in mqtt_incoming_data_cb\n");
-  PR_NOTICE("MQTT client in mqtt_incoming_data_cb data is %s for ch %i\n", copy, g_incoming_channel_mqtt);
-
-  iValue = atoi((char *)copy);
-  CHANNEL_Set(g_incoming_channel_mqtt,iValue,0);
-
- // PR_NOTICE(("MQTT client \"%s\" data cb: len %d, flags %d\n", client_info->client_id, (int)len, (int)flags));
 }
 
 static void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len)
 {
 	const char *p;
+  int i;
   // unused - left here as example
   //const struct mqtt_connect_client_info_t* client_info = (const struct mqtt_connect_client_info_t*)arg;
 
+	// look for a callback with this URL and method, or HTTP_ANY
+  g_mqtt_request.topic[0] = '\0';
+	for (i = 0; i < numCallbacks; i++){
+		char *cbtopic = callbacks[i]->topic;
+		if (strncmp(topic, cbtopic, strlen(cbtopic))){
+      strncpy(g_mqtt_request.topic, topic, sizeof(g_mqtt_request.topic) - 1);
+      g_mqtt_request.topic[sizeof(g_mqtt_request.topic) - 1] = 0;
+      break;
+		}
+	}
+
   //PR_NOTICE("MQTT client in mqtt_incoming_publish_cb\n");
   PR_NOTICE("MQTT client in mqtt_incoming_publish_cb topic %s\n",topic);
-// TODO: better 
-//  g_incoming_channel_mqtt = topic[5] - '0';
-  p = topic;
-  while(*p != '/') {
-	  if(*p == 0)
-		  return;
-		p++;
-  }
-  p++;
-  g_incoming_channel_mqtt = *p - '0';
-
- // PR_NOTICE(("MQTT client \"%s\" publish cb: topic %s, len %d\n", client_info->client_id, topic, (int)tot_len));
 }
 
 static void
@@ -182,6 +325,13 @@ static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection
 	 /* Subscribe to a topic named "subtopic" with QoS level 1, call mqtt_sub_request_cb with result */
 
 	baseName = CFG_GetShortDeviceName();
+
+  // register the main set channel callback
+	sprintf(tmp,"%s/",baseName);
+  // note: this may REPLACE an existing entry with the same ID.
+  MQTT_RegisterCallback( tmp, 1, channelSet);
+  
+  // setup subscription
   // + is a MQTT wildcard
 	sprintf(tmp,"%s/+/set",baseName);
     err = mqtt_sub_unsub(client,

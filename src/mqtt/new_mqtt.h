@@ -18,4 +18,20 @@ void example_publish(mqtt_client_t *client, int channel, int iVal);
 void MQTT_RunEverySecondUpdate();
 
 
+// ability to register callbacks for MQTT data
+typedef struct mqtt_request_tag {
+    const unsigned char *received; // note: NOT terminated, may be binary
+    int receivedLen;
+    char topic[128];
+} mqtt_request_t;
+
+// callback function for mqtt.
+// return 0 to allow the incoming topic/data to be processed by others/channel set.
+// return 1 to 'eat the packet and terminate further processing.
+typedef int (*mqtt_callback_fn)(mqtt_request_t *request);
+
+// topics must be unique (i.e. you can't have /about and /aboutme or /about/me)
+// ALL topics currently must start with main device topic root.
+// ID is unique and non-zero - so that callbacks can be replaced....
+int MQTT_RegisterCallback( const char *topic, int ID, mqtt_callback_fn callback);
 
