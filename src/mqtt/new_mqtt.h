@@ -12,9 +12,10 @@
 extern ip_addr_t mqtt_ip;
 extern mqtt_client_t* mqtt_client;
 
-void mqtt_example_init(void);
-void example_do_connect(mqtt_client_t *client);
+//void mqtt_example_init(void);
+//void example_do_connect(mqtt_client_t *client);
 void example_publish(mqtt_client_t *client, int channel, int iVal);
+void MQTT_init();
 void MQTT_RunEverySecondUpdate();
 
 
@@ -33,5 +34,6 @@ typedef int (*mqtt_callback_fn)(mqtt_request_t *request);
 // topics must be unique (i.e. you can't have /about and /aboutme or /about/me)
 // ALL topics currently must start with main device topic root.
 // ID is unique and non-zero - so that callbacks can be replaced....
-int MQTT_RegisterCallback( const char *topic, int ID, mqtt_callback_fn callback);
+int MQTT_RegisterCallback( const char *basetopic, const char *subscriptiontopic, int ID, mqtt_callback_fn callback);
+int MQTT_RemoveCallback(int ID);
 

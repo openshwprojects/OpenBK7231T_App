@@ -370,6 +370,10 @@ void user_main(void)
     // initialise rest interface
     init_rest();
 
+    // initialise MQTT - just sets up variables.
+    // all MQTT happens in timer thread?
+    MQTT_init();
+
     err = rtos_init_timer(&led_timer,
                           1 * 1000,
                           app_led_timer_handler,
