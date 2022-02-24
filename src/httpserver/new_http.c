@@ -67,6 +67,7 @@ Connection: keep-alive
 #elif defined(PLATFORM_BK7231T)
 #define USER_SW_VER "BK7231T_Test"
 #else
+#define USER_SW_VER "unknown"
 
 #endif
 #endif
@@ -354,7 +355,7 @@ const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7
 
 const char *g_header = "<h1>error</h1>";
 #error "Platform not supported"
-Platform not supported
+//Platform not supported
 #endif
 
 
@@ -832,7 +833,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 
 #else
 #error "Unknown platform"
-			poststr(request,Unknown platform<br>");
+			poststr(request,"Unknown platform<br>");
 #endif
 		}
 		poststr(request,"<form action=\"/cfg_wifi\">\
