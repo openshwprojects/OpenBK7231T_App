@@ -259,6 +259,8 @@ int tasCmnd(mqtt_request_t* request){
   // strncpy does not terminate??!!!!
   copy[len] = '\0';
 
+  PR_NOTICE("tas? data is %s for ch %s\n", copy, request->topic);
+
   // TODO: better 
   // skip to after second forward slash
   while(*p != '/') { if(*p == 0) return 0; p++; }
@@ -362,9 +364,11 @@ static void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t f
     g_mqtt_request.received = data;
     g_mqtt_request.receivedLen = len;
 
+    PR_NOTICE("MQTT in topic %s", g_mqtt_request.topic);    
+
     for (i = 0; i < numCallbacks; i++){
       char *cbtopic = callbacks[i]->topic;
-      if (strncmp(g_mqtt_request.topic, cbtopic, strlen(cbtopic))){
+      if (!strncmp(g_mqtt_request.topic, cbtopic, strlen(cbtopic))){
         // note - callback must return 1 to say it ate the mqtt, else further processing can be performed.
         // i.e. multiple people can get each topic if required.
         if (callbacks[i]->callback(&g_mqtt_request)){
@@ -568,7 +572,7 @@ void MQTT_init(){
 
   // register the TAS cmnd callback
 	sprintf(cbtopicbase,"cmnd/%s/",baseName);
-  sprintf(cbtopicsub,"cmnd/%s/",baseName);
+  sprintf(cbtopicsub,"cmnd/%s/+",baseName);
   // note: this may REPLACE an existing entry with the same ID.  ID 2 !!!
   MQTT_RegisterCallback( cbtopicbase, cbtopicsub, 2, tasCmnd);
 
