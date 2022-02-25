@@ -192,6 +192,8 @@ int channelSet(mqtt_request_t* request){
   int channel = 0;
   int iValue = 0;
 
+  PR_NOTICE("channelSet topic %i", request->topic);
+
   // TODO: better 
   while(*p != '/') {
     if(*p == 0)
@@ -199,11 +201,15 @@ int channelSet(mqtt_request_t* request){
     p++;
   }
   p++;
+  PR_NOTICE("channelSet part topic %s", p);
+
   if ((*p - '0' >= 0) && (*p - '0' <= 9)){
     channel = atoi(p);
   } else {
     channel = -1;
   }
+
+  PR_NOTICE("channelSet channel %i", channel);
 
   // if channel out of range, stop here.
   if ((channel < 0) || (channel > 32)){
@@ -216,9 +222,11 @@ int channelSet(mqtt_request_t* request){
       return 0;
     p++;
   }
+  p++;
 
   // if not /set, then stop here
   if (strcmp(p, "set")){
+    PR_NOTICE("channelSet NOT 'set'");
     return 0;
   }
 
