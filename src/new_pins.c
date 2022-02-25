@@ -302,12 +302,22 @@ unsigned char button_generic_get_gpio_value(void *param)
 
 	PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
 
+	if(g_pins.roles[index] == IOR_Button_n) {
+		if (HAL_GPIO_ReadPin(xr_port, xr_pin) == GPIO_PIN_LOW)
+			return 1;//0;
+		return 0;//1;
+	}
 	if (HAL_GPIO_ReadPin(xr_port, xr_pin) == GPIO_PIN_LOW)
 		return 0;
 	return 1;
 #else
 	int index;
 	index = ((pinButton_s*)param) - g_buttons;
+
+	// support inverted button
+	if(g_pins.roles[index] == IOR_Button_n) {
+		return !bk_gpio_input(index);
+	}
 	return bk_gpio_input(index);
 #endif
 }
@@ -396,7 +406,6 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 	case IOR_Button_n:
 		{
 			pinButton_s *bt = &g_buttons[index];
-			NEW_button_init(bt, button_generic_get_gpio_value, 0);
 #if WINDOWS
 	
 #elif PLATFORM_XR809
@@ -415,6 +424,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 #else
 			bk_gpio_config_input_pup(index);
 #endif
+			// init button after initializing pin role
+			NEW_button_init(bt, button_generic_get_gpio_value, 0);
 		/*	button_attach(bt, BTN_SINGLE_CLICK,     button_generic_short_press);
 			button_attach(bt, BTN_DOUBLE_CLICK,     button_generic_double_press);
 			button_attach(bt, BTN_LONG_PRESS_HOLD,  button_generic_long_press_hold);
