@@ -67,6 +67,7 @@ void Setup_Device_EmaxHome_EDU8774();
 void Setup_Device_TuyaSmartPFW02G();
 void Setup_Device_BK7231N_CB2S_QiachipSmartSwitch();
 void Setup_Device_BK7231T_WB2S_QiachipSmartSwitch();
+void Setup_Device_BK7231T_Raw_PrimeWiFiSmartOutletsOutdoor_CCWFIO232PK();
 
 #endif
 

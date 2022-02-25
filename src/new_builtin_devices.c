@@ -250,10 +250,10 @@ void Setup_Device_EmaxHome_EDU8774() {
 	PIN_SaveToFlash();
 }
 
-// TODO - ELEKTRODA LINK
-
 
 // QiachipSmartSwitch
+// See teardown article here:
+// https://www.elektroda.pl/rtvforum/viewtopic.php?t=3874289&highlight=
 void Setup_Device_BK7231N_CB2S_QiachipSmartSwitch() {
 
 
@@ -282,6 +282,36 @@ void Setup_Device_BK7231T_WB2S_QiachipSmartSwitch() {
        PIN_SetPinChannelForPinIndex(10, 1);
 
        PIN_SaveToFlash();
+}
+
+
+
+// Strigona donation
+// https://obrazki.elektroda.pl/6606464600_1642467157.jpg
+void Setup_Device_BK7231T_Raw_PrimeWiFiSmartOutletsOutdoor_CCWFIO232PK() {
+
+
+
+	PIN_ClearPins();
+	// Relay
+	PIN_SetPinRoleForPinIndex(6, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(6, 1);
+	// Relay
+	PIN_SetPinRoleForPinIndex(7, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(7, 2);
+	// Led
+	PIN_SetPinRoleForPinIndex(10, IOR_LED);
+	PIN_SetPinChannelForPinIndex(10, 1);
+	// Led
+	PIN_SetPinRoleForPinIndex(26, IOR_LED);
+	PIN_SetPinChannelForPinIndex(26, 2);
+
+	// Single button
+	PIN_SetPinRoleForPinIndex(24, IOR_Button);
+	PIN_SetPinChannelForPinIndex(24, 1);
+
+
+	PIN_SaveToFlash();
 }
 
 
