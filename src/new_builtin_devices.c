@@ -251,6 +251,8 @@ void Setup_Device_EmaxHome_EDU8774() {
 }
 
 // TODO - ELEKTRODA LINK
+
+
 // QiachipSmartSwitch
 void Setup_Device_BK7231N_CB2S_QiachipSmartSwitch() {
 
@@ -266,6 +268,20 @@ void Setup_Device_BK7231N_CB2S_QiachipSmartSwitch() {
 	// Led
 
 	PIN_SaveToFlash();
+}
+void Setup_Device_BK7231T_WB2S_QiachipSmartSwitch() {
+       PIN_ClearPins();
+       // Button
+       PIN_SetPinRoleForPinIndex(7, IOR_Button);
+       PIN_SetPinChannelForPinIndex(7, 1);
+       // Relay
+       PIN_SetPinRoleForPinIndex(6, IOR_Relay_n);
+       PIN_SetPinChannelForPinIndex(6, 1);
+       // Led
+       PIN_SetPinRoleForPinIndex(10, IOR_LED);
+       PIN_SetPinChannelForPinIndex(10, 1);
+
+       PIN_SaveToFlash();
 }
 
 
