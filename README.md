@@ -23,8 +23,9 @@ build using:
 `./b.sh`
   
 you can also do advanced build by build_app.sh:
-`./build_app.sh apps/<folder> <appname> <appversion>`
-
+`./build_app.sh apps/<appname> <appname> <appversion>`
+(appname must be identical to foldername in apps/ folder)
+  
 e.g. `./build_app.sh apps/openbk7231app openbk7231app 1.0.0`
 
 # flashing for BK7231T
