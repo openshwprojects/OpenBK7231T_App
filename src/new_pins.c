@@ -757,7 +757,8 @@ void PIN_Init(void)
 
 void PIN_set_wifi_led(int value){
 	int res = -1;
-	for (int i = 0; i < 32; i++){
+	int i;
+	for ( i = 0; i < 32; i++){
 		if ((g_pins.roles[i] == IOR_LED_WIFI) || (g_pins.roles[i] == IOR_LED_WIFI_n)){
 			res = i;
 			break;
