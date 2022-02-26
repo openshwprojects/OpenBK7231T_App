@@ -71,6 +71,7 @@ publish:
     addReleases: "bottom"
     assets:
       - path: "output/**/*_UA_*.bin"
+      - path: "output/**/*_QIO_*.bin"
       - path: "output/**/*.rbl"
       - path: "output/**/*.img"
 
