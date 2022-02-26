@@ -1,9 +1,9 @@
 [submodule "sdk/OpenXR809"]
 	path = sdk/OpenXR809
-	url = https://github.com/talltechdude/OpenXR809.git
+	url = https://github.com/openshwprojects/OpenXR809.git
 [submodule "sdk/OpenBK7231T"]
 	path = sdk/OpenBK7231T
 	url = https://github.com/openshwprojects/OpenBK7231T.git
 [submodule "sdk/OpenBK7231N"]
 	path = sdk/OpenBK7231N
-	url = https://github.com/talltechdude/OpenBK7231N.git
+	url = https://github.com/openshwprojects/OpenBK7231N.git
