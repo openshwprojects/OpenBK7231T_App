@@ -678,6 +678,17 @@ bool CHANNEL_Check(int ch) {
 }
 
 
+int CHANNEL_GetRoleForChannel(int ch){
+	int i;
+	for (i = 0; i < 32; i++){
+		if (g_pins.channels[i] == ch){
+			return g_pins.roles[i];
+		}
+	}
+	return IOR_None;
+}
+
+
 #define EVENT_CB(ev)   if(handle->cb[ev])handle->cb[ev]((pinButton_s*)handle)
 
 #define PIN_TMR_DURATION       5
