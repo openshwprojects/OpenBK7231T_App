@@ -18,19 +18,21 @@
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #include "../ota/ota.h"
-#include "../flash_config/flash_config.h"
 #ifdef WINDOWS
 
 #elif PLATFORM_XR809
 
 #elif defined(PLATFORM_BK7231N)
 // tuya-iotos-embeded-sdk-wifi-ble-bk7231n/sdk/include/tuya_hal_storage.h
+#include "../logging/logging.h"
+#include "../flash_config/flash_config.h"
 #include "tuya_hal_storage.h"
 #include "BkDriverFlash.h"
 #else
 // REALLY? A typo in Tuya SDK? Storge?
 // tuya-iotos-embeded-sdk-wifi-ble-bk7231t/platforms/bk7231t/tuya_os_adapter/include/driver/tuya_hal_storge.h
 #include "../logging/logging.h"
+#include "../flash_config/flash_config.h"
 #include "tuya_hal_storge.h"
 #include "BkDriverFlash.h"
 #endif
