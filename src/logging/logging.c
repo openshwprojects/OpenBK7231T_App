@@ -153,6 +153,11 @@ void addLog(char *fmt, ...){
     vsprintf(tmp, fmt, argList);
     va_end(argList);
 
+    len = strlen(tmp);
+    tmp[len++] = '\r';
+    tmp[len++] = '\n';
+    tmp[len] = '\0';
+
     if (direct_serial_log){
         bk_printf(tmp);
         if (taken == pdTRUE){
@@ -160,10 +165,6 @@ void addLog(char *fmt, ...){
         }
         return;
     }
-
-    len = strlen(tmp);
-    tmp[len++] = '\r';
-    tmp[len++] = '\n';
 
     //bk_printf("addlog %d.%d.%d %d:%s\n", logMemory.head, logMemory.tailserial, logMemory.tailtcp, len,tmp);
 
