@@ -18,6 +18,7 @@
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #include "../ota/ota.h"
+#include "../flash_config/flash_config.h"
 #ifdef WINDOWS
 
 #elif PLATFORM_XR809
@@ -464,7 +465,7 @@ int hprintf128(http_request_t *request, const char *fmt, ...){
 uint8_t hexdigit( char hex )
 {
     return (hex <= '9') ? hex - '0' : 
-                          toupper(hex) - 'A' + 10 ;
+                          toupper((unsigned char)hex) - 'A' + 10 ;
 }
 
 uint8_t hexbyte( const char* hex )

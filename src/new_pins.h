@@ -51,6 +51,8 @@ void CHANNEL_SetChangeCallback(void (*cb)(int idx, int iVal));
 void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex));
 void CHANNEL_Set(int ch, int iVal, int bForce);
 int CHANNEL_Get(int ch);
+int CHANNEL_GetRoleForChannel(int ch);
+
 void PIN_SaveToFlash();
 void PIN_LoadFromFlash();
 void PIN_set_wifi_led(int value);
