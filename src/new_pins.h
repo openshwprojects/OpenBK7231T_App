@@ -18,6 +18,8 @@ enum IORole {
 	IOR_PWM,
 	IOR_LED_WIFI,
 	IOR_LED_WIFI_n,
+	IOR_Button_ToggleAll,
+	IOR_Button_ToggleAll_n,
 	IOR_Total_Options,
 };
 
@@ -43,6 +45,7 @@ const char *PIN_GetPinNameAlias(int index);
 void PIN_SetPinRoleForPinIndex(int index, int role);
 void PIN_SetPinChannelForPinIndex(int index, int ch);
 void CHANNEL_Toggle(int ch);
+void CHANNEL_DoSpecialToggleAll();
 bool CHANNEL_Check(int ch);
 void CHANNEL_SetChangeCallback(void (*cb)(int idx, int iVal));
 void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex));
@@ -66,6 +69,8 @@ void Setup_Device_NedisWIFIP130FWT_10A();
 void Setup_Device_EmaxHome_EDU8774();
 void Setup_Device_TuyaSmartPFW02G();
 void Setup_Device_BK7231N_CB2S_QiachipSmartSwitch();
+void Setup_Device_BK7231T_WB2S_QiachipSmartSwitch();
+void Setup_Device_BK7231T_Raw_PrimeWiFiSmartOutletsOutdoor_CCWFIO232PK();
 
 #endif
 

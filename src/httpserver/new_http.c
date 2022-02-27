@@ -284,6 +284,8 @@ const char *htmlPinRoleNames[] = {
 	"PWM",
 	"Wifi LED",
 	"Wifi LED_n",
+	"Btn_Tgl_All",
+	"Btn_Tgl_All_n",
 	"e",
 	"e",
 };
@@ -321,6 +323,7 @@ template_t g_templates [] = {
 	// BK7231N devices
 	{ Setup_Device_BK7231N_CB2S_QiachipSmartSwitch, "[BK7231N][CB2S] QiaChip Smart Switch"},
 	// BK7231T devices
+	{ Setup_Device_BK7231T_WB2S_QiachipSmartSwitch, "[BK7231T][WB2S] QiaChip Smart Switch"},
 	{ Setup_Device_TuyaWL_SW01_16A, "WL SW01 16A"},
 	{ Setup_Device_TuyaSmartLife4CH10A, "Smart Life 4CH 10A"},
 	{ Setup_Device_IntelligentLife_NF101A, "Intelligent Life NF101A"},
@@ -330,6 +333,7 @@ template_t g_templates [] = {
 	{ Setup_Device_ArlecCCTDownlight, "Arlec CCT LED Downlight ALD029CHA"},
 	{ Setup_Device_NedisWIFIPO120FWT_16A, "Nedis WIFIPO120FWT SmartPlug 16A"},
 	{ Setup_Device_NedisWIFIP130FWT_10A, "Nedis WIFIP130FWT SmartPlug 10A"},
+	{ Setup_Device_BK7231T_Raw_PrimeWiFiSmartOutletsOutdoor_CCWFIO232PK, "Prime SmartOutlet Outdoor 2x Costco"},
 	{ Setup_Device_EmaxHome_EDU8774, "Emax Home EDU8774 SmartPlug 16A"},
 	{ Setup_Device_TuyaSmartPFW02G, "Tuya Smart PFW02-G"}
 };

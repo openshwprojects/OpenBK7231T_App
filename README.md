@@ -23,8 +23,9 @@ build using:
 `./b.sh`
   
 you can also do advanced build by build_app.sh:
-`./build_app.sh apps/<folder> <appname> <appversion>`
-
+`./build_app.sh apps/<appname> <appname> <appversion>`
+(appname must be identical to foldername in apps/ folder)
+  
 e.g. `./build_app.sh apps/openbk7231app openbk7231app 1.0.0`
 
 # flashing for BK7231T
@@ -70,7 +71,7 @@ Visit <ip>/ota - here start the flashing process.
 
 ## First run
 
-At first boot, if the new formware does not find your wifi SSID and password in the Tuya flash, it will start as an access point.
+At first boot, if the new firmware does not find your wifi SSID and password in the Tuya flash, it will start as an access point.
 
 The access point will come up on 192.168.4.1, however some machines may not get an ip from it - you may need to configure your connecting for a staitc IP on that network, e.g. 192.168.4.10
 
@@ -116,6 +117,32 @@ Get USB to UART converter, start phoenixMC.exe from OpenXR809 repository and fol
 # Testing HTTP server on Windows
   
 It is also possible to build a part of our App for Windows platform. It basically creates a Windows .exe for our HTTP server, so developers can create our configurator, etc, pages faster, without having any Tuya modules at hand. For building on Windows, use MSVC projects in the app directory. It is using Winsock and creates a TCP listening socket on port 80, so make sure your machine has it free to use.
+  
+# Pin roles
+ 
+You can set pin roles in "Configure Module" section or use one of predefined templates from "Quick config" subpage.
+For each pin, you also set coresponding channel value. This is needed for modules with multiple relays. If you have 3 relays and 3 buttons, you need to use channel values like 1, 2, and 3. Just enter '1' in the text field, etc.
+Currently available pin roles:
+- Button 
+- Button_n (as Button but pin logical value is inversed)
+- Relay 
+- Relay_n (as Relay but pin logical value is inversed)
+- LED 
+- LED_n (as Led but pin logical value is inversed)
+- Button Toggle All - this button toggles all channels at once
+- Button Toggle All_n (as above but pin logical value is inversed)
+- PWM - pulse width modulation output for LED dimmers (with MQTT dimming support from Home Assistant)
+- WiFi LED - special LED to indicate WLan connection state
+  
+# Detailed flashing guides along with device teardowns
+  
+ I have prepared several detailed teardowns and flashing guides for multiple supported devices.
+  
+  Outdoor two relays smart switch CCWFIO232PK (BK7231T): 
+  https://www.elektroda.pl/rtvforum/viewtopic.php?p=19906670#19906670
+  
+  Qiachip Smart Switch module (BK7231N/CB2S): 
+  https://www.elektroda.pl/rtvforum/viewtopic.php?t=3874289&highlight=
   
 # Futher reading
   

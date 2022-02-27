@@ -260,22 +260,31 @@ void RAW_SetPinValue(int index, int iVal){
     bk_gpio_output(index, iVal);
 #endif
 }
-void button_generic_short_press(int index)
+void Button_OnShortClick(int index)
 {
-	CHANNEL_Toggle(g_pins.channels[index]);
-
 	PR_NOTICE("%i key_short_press\r\n", index);
+	if(g_pins.roles[index] == IOR_Button_ToggleAll || g_pins.roles[index] == IOR_Button_ToggleAll_n)
+	{
+		CHANNEL_DoSpecialToggleAll();
+		return;
+	}
+	CHANNEL_Toggle(g_pins.channels[index]);
 }
-void button_generic_double_press(int index)
+void Button_OnDoubleClick(int index)
 {
+	PR_NOTICE("%i key_double_press\r\n", index);
+	if(g_pins.roles[index] == IOR_Button_ToggleAll || g_pins.roles[index] == IOR_Button_ToggleAll_n)
+	{
+		CHANNEL_DoSpecialToggleAll();
+		return;
+	}
 	CHANNEL_Toggle(g_pins.channels[index]);
 
 	if(g_doubleClickCallback!=0) {
 		g_doubleClickCallback(index);
 	}
-	PR_NOTICE("%i key_double_press\r\n", index);
 }
-void button_generic_long_press_hold(int index)
+void Button_OnLongPressHold(int index)
 {
 	PR_NOTICE("%i key_long_press_hold\r\n", index);
 }
@@ -290,6 +299,13 @@ const char *PIN_GetPinNameAlias(int index) {
 	return "not_implemented_here";
 #endif
 }
+bool BTN_ShouldInvert(int index)
+{
+	if(g_pins.roles[index] == IOR_Button_n || g_pins.roles[index] == IOR_Button_ToggleAll_n) {
+		return true;
+	}
+	return false;
+}
 unsigned char button_generic_get_gpio_value(void *param)
 {
 #if WINDOWS
@@ -302,12 +318,22 @@ unsigned char button_generic_get_gpio_value(void *param)
 
 	PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
 
+	if(BTN_ShouldInvert(index)) {
+		if (HAL_GPIO_ReadPin(xr_port, xr_pin) == GPIO_PIN_LOW)
+			return 1;//0;
+		return 0;//1;
+	}
 	if (HAL_GPIO_ReadPin(xr_port, xr_pin) == GPIO_PIN_LOW)
 		return 0;
 	return 1;
 #else
 	int index;
 	index = ((pinButton_s*)param) - g_buttons;
+
+	// support inverted button
+	if(BTN_ShouldInvert(index)) {
+		return !bk_gpio_input(index);
+	}
 	return bk_gpio_input(index);
 #endif
 }
@@ -325,8 +351,75 @@ void NEW_button_init(pinButton_s* handle, uint8_t(*pin_level)(void *self), uint8
 	handle->button_level = handle->hal_button_Level(handle);
 	handle->active_level = active_level;
 }
+void CHANNEL_SetAll(int iVal) {
+	int i;
 
 
+	for(i = 0; i < GPIO_MAX; i++) {	
+		switch(g_pins.roles[i])
+		{
+		case IOR_Button:
+		case IOR_Button_n:
+		case IOR_Button_ToggleAll:
+		case IOR_Button_ToggleAll_n:
+			{
+
+			}
+			break;
+		case IOR_LED:
+		case IOR_LED_n:
+		case IOR_Relay:
+		case IOR_Relay_n:
+			CHANNEL_Set(g_pins.channels[i],iVal,1);
+			break;
+		case IOR_PWM:
+			CHANNEL_Set(g_pins.channels[i],iVal,1);
+			break;
+
+		default:
+			break;
+		}
+	}
+}
+bool CHANNEL_IsInUse(int ch) {
+	int i;
+	for(i = 0; i < GPIO_MAX; i++){
+		if(g_pins.channels[i] == ch) {
+			switch(g_pins.roles[i])
+			{
+			case IOR_LED:
+			case IOR_LED_n:
+			case IOR_Relay:
+			case IOR_Relay_n:
+			case IOR_PWM:
+				return true;
+				break;
+
+			default:
+				break;
+			}
+		}
+	}
+	return false;
+}
+void CHANNEL_DoSpecialToggleAll() {
+	int anyEnabled, i;
+
+	anyEnabled = 0;
+
+	for(i = 0; i < CHANNEL_MAX; i++) {	
+		if(CHANNEL_IsInUse(i)==false)
+			continue;
+		if(g_channelValues[i] > 0) {
+			anyEnabled++;
+		}	
+	}
+	if(anyEnabled)
+		CHANNEL_SetAll(0);
+	else
+		CHANNEL_SetAll(255);
+
+}
 void PIN_SetPinRoleForPinIndex(int index, int role) {
 	//if(index == PIN_UART1_RXD)
 	//	return;
@@ -340,6 +433,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 	{
 	case IOR_Button:
 	case IOR_Button_n:
+	case IOR_Button_ToggleAll:
+	case IOR_Button_ToggleAll_n:
 		{
 			//pinButton_s *bt = &g_buttons[index];
 			// TODO: disable button
@@ -394,9 +489,10 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 	{
 	case IOR_Button:
 	case IOR_Button_n:
+	case IOR_Button_ToggleAll:
+	case IOR_Button_ToggleAll_n:
 		{
 			pinButton_s *bt = &g_buttons[index];
-			NEW_button_init(bt, button_generic_get_gpio_value, 0);
 #if WINDOWS
 	
 #elif PLATFORM_XR809
@@ -415,9 +511,11 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 #else
 			bk_gpio_config_input_pup(index);
 #endif
-		/*	button_attach(bt, BTN_SINGLE_CLICK,     button_generic_short_press);
-			button_attach(bt, BTN_DOUBLE_CLICK,     button_generic_double_press);
-			button_attach(bt, BTN_LONG_PRESS_HOLD,  button_generic_long_press_hold);
+			// init button after initializing pin role
+			NEW_button_init(bt, button_generic_get_gpio_value, 0);
+		/*	button_attach(bt, BTN_SINGLE_CLICK,     Button_OnShortClick);
+			button_attach(bt, BTN_DOUBLE_CLICK,     Button_OnDoubleClick);
+			button_attach(bt, BTN_LONG_PRESS_HOLD,  Button_OnLongPressHold);
 			button_start(bt);*/
 		}
 		break;
@@ -651,7 +749,7 @@ void PIN_Input_Handler(int pinIndex)
 			handle->repeat++;
 			if(handle->repeat == 2) {
 				EVENT_CB(BTN_DOUBLE_CLICK); // repeat hit
-				button_generic_double_press(pinIndex);
+				Button_OnDoubleClick(pinIndex);
 			} 
 			EVENT_CB(BTN_PRESS_REPEAT); // repeat hit
 			handle->ticks = 0;
@@ -660,7 +758,7 @@ void PIN_Input_Handler(int pinIndex)
 			if(handle->repeat == 1) {
 				handle->event = (uint8_t)BTN_SINGLE_CLICK;
 				EVENT_CB(BTN_SINGLE_CLICK);
-				button_generic_short_press(pinIndex);
+				Button_OnShortClick(pinIndex);
 			} else if(handle->repeat == 2) {
 				handle->event = (uint8_t)BTN_DOUBLE_CLICK;
 			}
@@ -706,7 +804,8 @@ void PIN_ticks(void *param)
 {
 	int i;
 	for(i = 0; i < GPIO_MAX; i++) {
-		if(g_pins.roles[i] == IOR_Button || g_pins.roles[i] == IOR_Button_n) {
+		if(g_pins.roles[i] == IOR_Button || g_pins.roles[i] == IOR_Button_n
+			|| g_pins.roles[i] == IOR_Button_ToggleAll || g_pins.roles[i] == IOR_Button_ToggleAll_n) {
 			//PR_NOTICE("Test hold %i\r\n",i);
 			PIN_Input_Handler(i);
 		}
@@ -746,7 +845,8 @@ void PIN_Init(void)
 
 void PIN_set_wifi_led(int value){
 	int res = -1;
-	for (int i = 0; i < 32; i++){
+	int i;
+	for ( i = 0; i < 32; i++){
 		if ((g_pins.roles[i] == IOR_LED_WIFI) || (g_pins.roles[i] == IOR_LED_WIFI_n)){
 			res = i;
 			break;
