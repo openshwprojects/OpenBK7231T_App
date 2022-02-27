@@ -222,6 +222,12 @@ void Setup_Device_NedisWIFIP130FWT_10A() {
 	PIN_SaveToFlash();
 }
 
+// https://www.elektroda.com/rtvforum/topic3819498.html
+// 
+void Setup_Device_TH06_LCD_RTCC_WB3S() {
+
+}
+
 // https://www.elektroda.pl/rtvforum/topic3804553.html
 // SmartSwitch Emax Home EDU8774 16A 
 void Setup_Device_EmaxHome_EDU8774() {
