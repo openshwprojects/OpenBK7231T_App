@@ -58,6 +58,7 @@ jobs:
     needs: refs
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         platform: [OpenBK7231T, OpenBK7231N, OpenXR809]
     steps:
