@@ -1,4 +1,6 @@
 
+#ifndef PLATFORM_XR809
+
 #include "flash_vars.h"
 #include "../logging/logging.h"
 
@@ -52,3 +54,5 @@ int boot_failures(){
 #endif
     return diff;
 }
+
+#endif 

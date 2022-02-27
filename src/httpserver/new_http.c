@@ -13,12 +13,12 @@
 #else
 #include "lwip/sockets.h"
 #include "str_pub.h"
+#include "../flash_config/flash_config.h"
 #endif
 #include "new_http.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #include "../ota/ota.h"
-#include "../flash_config/flash_config.h"
 #ifdef WINDOWS
 
 #elif PLATFORM_XR809
