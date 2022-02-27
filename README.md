@@ -137,8 +137,10 @@ Currently available pin roles:
 # Detailed flashing guides along with device teardowns
   
  I have prepared several detailed teardowns and flashing guides for multiple supported devices.
+  
   Outdoor two relays smart switch CCWFIO232PK (BK7231T): 
   https://www.elektroda.pl/rtvforum/viewtopic.php?p=19906670#19906670
+  
   Qiachip Smart Switch module (BK7231N/CB2S): 
   https://www.elektroda.pl/rtvforum/viewtopic.php?t=3874289&highlight=
   
