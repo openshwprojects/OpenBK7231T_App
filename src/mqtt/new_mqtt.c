@@ -26,7 +26,7 @@
 #endif
 
 // from mqtt.c
-extern void mqtt_disconnect_my2(mqtt_client_t *client);
+extern void mqtt_disconnect(mqtt_client_t *client);
 
 static int g_my_reconnect_mqtt_after_time = -1;
 ip_addr_t mqtt_ip LWIP_MQTT_EXAMPLE_IPADDR_INIT;
@@ -309,7 +309,7 @@ static void MQTT_disconnect(mqtt_client_t *client)
 {
   if (!client) return;
   // this is what it was renamed to.  why?
-  mqtt_disconnect_my2(client);
+  mqtt_disconnect(client);
 }
 
 /* Called when publish is complete either with sucess or failure */
