@@ -72,7 +72,7 @@ jobs:
           sudo dpkg --add-architecture i386
           sudo apt-get update
           sudo apt-get -y install libc6-i386 make
-          md sdk
+          mkdir sdk
           rm -rf OpenBK7231T
           rm -rf OpenBK7231N
           rm -rf OpenXR809
