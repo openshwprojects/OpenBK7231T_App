@@ -287,7 +287,9 @@ void Setup_Device_BK7231T_WB2S_QiachipSmartSwitch() {
 
 
 // Strigona donation
+// Teardown article: https://www.elektroda.pl/rtvforum/viewtopic.php?p=19906670#19906670
 // https://obrazki.elektroda.pl/6606464600_1642467157.jpg
+// NOTE: It used to be ESP-based https://templates.blakadder.com/prime_CCWFIO232PK.html
 void Setup_Device_BK7231T_Raw_PrimeWiFiSmartOutletsOutdoor_CCWFIO232PK() {
 
 
