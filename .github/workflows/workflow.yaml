@@ -72,6 +72,13 @@ jobs:
           sudo dpkg --add-architecture i386
           sudo apt-get update
           sudo apt-get -y install libc6-i386 make
+          md sdk
+          rm -rf OpenBK7231T
+          rm -rf OpenBK7231N
+          rm -rf OpenXR809
+          git clone https://github.com/openshwprojects/OpenBK7231T.git .
+          git clone https://github.com/openshwprojects/OpenBK7231N.git .
+          git clone https://github.com/openshwprojects/OpenXR809 .
       - run: ls -la
       - name: Run make
         run: make APP_VERSION=${{ needs.refs.outputs.version }} APP_NAME=${{ matrix.platform }} ${{ matrix.platform }}
