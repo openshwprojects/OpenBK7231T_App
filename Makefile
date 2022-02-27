@@ -28,7 +28,7 @@ full: clean all
 # Update/init git submodules
 .PHONY: submodules
 submodules:
-	git submodule update --init --recursive
+	#git submodule update --init --recursive
 
 # Create symlink for App into SDK folder structure
 sdk/OpenBK7231T/apps/$(APP_NAME):
