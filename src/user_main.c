@@ -50,6 +50,7 @@
 #include "littlefs/our_lfs.h"
 
 #include "flash_config/flash_config.h"
+#include "flash_config/flash_vars_vars.h"
 
 #undef Malloc
 #undef Free
@@ -164,6 +165,10 @@ static void app_led_timer_handler(void *data)
     print_network_info();
   }
 
+  // when we hit 30s, mark as boot complete.
+  if (g_secondsElapsed == BOOT_COMPLETE_SECONDS){
+    boot_complete();
+  }
 
   if (g_openAP){
     g_openAP--;
@@ -320,9 +325,11 @@ void user_main(void)
 {
     OSStatus err;
 	int bForceOpenAP = 0;
+  int bootFailures = 0;
 	const char *wifi_ssid, *wifi_pass;
 
-  //OPERATE_RET op_ret = OPRT_OK;
+  // read or initialise the boot count flash area
+  increment_boot_count();
 
 	CFG_InitAndLoad();
 
@@ -341,6 +348,14 @@ void user_main(void)
 	// you can use this if you bricked your module by setting wrong access point data
 	bForceOpenAP = 1;
 #endif
+
+
+  bootFailures = boot_failures();
+  if (bootFailures > 3){
+    bForceOpenAP = 1;
+		ADDLOG_INFO(LOG_FEATURE_MAIN, "###### would force AP mode - boot failures %d", bootFailures);
+  }
+
 	if(*wifi_ssid == 0 || *wifi_pass == 0 || bForceOpenAP) {
 		// start AP mode in 5 seconds
 		g_openAP = 5;

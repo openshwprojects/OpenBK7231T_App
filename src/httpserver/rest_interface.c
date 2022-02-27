@@ -14,6 +14,8 @@
 #include "lwip/sockets.h"
 #include "../flash_config/flash_config.h"
 #include "../new_cfg.h"
+#include "../flash_config/flash_vars_vars.h"
+#include "../flash_config/flash_vars.h"
 
 extern UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address);
 
@@ -50,6 +52,10 @@ static int http_rest_get_testconfig(http_request_t *request);
 
 static int http_rest_post_channels(http_request_t *request);
 static int http_rest_get_channels(http_request_t *request);
+
+static int http_rest_get_flash_vars_test(http_request_t *request);
+
+
 
 void init_rest(){
     HTTP_RegisterCallback( "/api/", HTTP_GET, http_rest_get);
@@ -137,6 +143,11 @@ static int http_rest_get(http_request_t *request){
     if (!strcmp(request->url, "api/testconfig")){
         return http_rest_get_testconfig(request);
     }
+
+    if (!strncmp(request->url, "api/testflashvars", 17)){
+        return http_rest_get_flash_vars_test(request);
+    }
+    
     
     
 
@@ -874,6 +885,45 @@ static int http_rest_get_testconfig(http_request_t *request){
     return 0;
 }
 
+static int http_rest_get_flash_vars_test(http_request_t *request){
+#ifndef DISABLE_FLASH_VARS_VARS
+    char *params = request->url + 17;
+    int increment = 0; 
+    int len = 0;
+    int sres;
+    int i;
+    char tmp[128];
+    FLASH_VARS_STRUCTURE data, *p;
+
+    p = &flash_vars;
+
+    sres = sscanf(params, "%x-%x", &increment, &len);
+
+    ADDLOG_DEBUG(LOG_FEATURE_API, "http_rest_get_flash_vars_test %d %d returned %d", increment, len, sres);
+
+    if (increment == 10){
+        flash_vars_read(&data);
+        p = &data;
+    } else {
+        for (i = 0; i < increment; i++){
+            increment_boot_count();
+        }
+        for (i = 0; i < len; i++){
+            boot_complete();
+        }
+    }
+
+    sprintf(tmp, "offset %d, boot count %d, boot success %d, bootfailures %d", 
+        flash_vars_offset, 
+        p->boot_count, 
+        p->boot_success_count,
+        p->boot_count - p->boot_success_count );
+
+    return http_rest_error(request, 200, tmp);
+#else 
+    return http_rest_error(request, 400, "flash vars unsupported");
+#endif
+}
 
 
 static int http_rest_get_channels(http_request_t *request){
