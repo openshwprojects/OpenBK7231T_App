@@ -79,9 +79,9 @@ jobs:
           rm -rf OpenBK7231T || true
           rm -rf OpenBK7231N || true
           rm -rf OpenXR809 || true
-          git clone https://github.com/openshwprojects/OpenBK7231T.git .
-          git clone https://github.com/openshwprojects/OpenBK7231N.git .
-          git clone https://github.com/openshwprojects/OpenXR809 .
+          git clone https://github.com/openshwprojects/OpenBK7231T.git
+          git clone https://github.com/openshwprojects/OpenBK7231N.git
+          git clone https://github.com/openshwprojects/OpenXR809
           ls -la || true
       - run: ls -la
       - name: Run make
