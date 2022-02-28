@@ -10,6 +10,7 @@
 
 */
 
+#ifndef PLATFORM_XR809
 
 #include "include.h"
 #include "mem_pub.h"
@@ -477,3 +478,5 @@ int flash_vars_erase(unsigned int off_set, unsigned int size){
 
     return 0;
 }
+
+#endif 

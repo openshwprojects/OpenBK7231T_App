@@ -30,6 +30,13 @@ full: clean all
 submodules:
 	git submodule update --init --recursive
 
+update-submodules:
+	cd sdk/OpenBK7231T && git pull -r
+	cd sdk/OpenBK7231N && git pull -r
+	cd sdk/OpenXR809 && git pull -r
+	git add sdk/OpenBK7231T sdk/OpenBK7231N sdk/OpenXR809
+	-git commit -m "feat: update SDKs"
+
 # Create symlink for App into SDK folder structure
 sdk/OpenBK7231T/apps/$(APP_NAME):
 	@echo Create symlink for $(APP_NAME) into sdk folder

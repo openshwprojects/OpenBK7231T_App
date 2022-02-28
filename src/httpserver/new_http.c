@@ -13,6 +13,7 @@
 #else
 #include "lwip/sockets.h"
 #include "str_pub.h"
+#include "../flash_config/flash_config.h"
 #endif
 #include "new_http.h"
 #include "../new_pins.h"
@@ -464,7 +465,7 @@ int hprintf128(http_request_t *request, const char *fmt, ...){
 uint8_t hexdigit( char hex )
 {
     return (hex <= '9') ? hex - '0' : 
-                          toupper(hex) - 'A' + 10 ;
+                          toupper((unsigned char)hex) - 'A' + 10 ;
 }
 
 uint8_t hexbyte( const char* hex )
