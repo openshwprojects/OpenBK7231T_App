@@ -51,7 +51,7 @@ int HTTP_ProcessPacket(http_request_t *request);
 void http_setup(http_request_t *request, const char *type);
 int poststr(http_request_t *request, const char *str);
 int postany(http_request_t *request, const char *str, int len);
-void misc_formatUpTimeString(int totalSeconds, char *o);
+void misc_formatUptimeString(int totalSeconds, char *o);
 
 // poststr with format - for results LESS THAN 128
 int hprintf128(http_request_t *request, const char *fmt, ...);

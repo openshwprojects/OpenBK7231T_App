@@ -53,16 +53,16 @@ void strcat_safe_test(){
 	urldecode2_safe(buff,"qqqqqq%40qqqq",sizeof(buff));
 
 	
-	misc_formatUpTimeString(15, timeStrA);
-	misc_formatUpTimeString(65, timeStrB);
-	misc_formatUpTimeString(125, timeStrC);
-	misc_formatUpTimeString(60*60, timeStrD);
-	misc_formatUpTimeString(4*60*60, timeStrE);
-	misc_formatUpTimeString(24*60*60, timeStrF);
-	misc_formatUpTimeString(24*60*60+60*60+50, timeStrG);
-	misc_formatUpTimeString(100*24*60*60+60*60+15*60+50, timeStrH);
+	misc_formatUptimeString(15, timeStrA);
+	misc_formatUptimeString(65, timeStrB);
+	misc_formatUptimeString(125, timeStrC);
+	misc_formatUptimeString(60*60, timeStrD);
+	misc_formatUptimeString(4*60*60, timeStrE);
+	misc_formatUptimeString(24*60*60, timeStrF);
+	misc_formatUptimeString(24*60*60+60*60+50, timeStrG);
+	misc_formatUptimeString(100*24*60*60+60*60+15*60+50, timeStrH);
 }
-int Time_getUpTimeSeconds() {
+int Time_getUptimeSeconds() {
 	return rand()% 100000;
 }
 // placeholder - TODO

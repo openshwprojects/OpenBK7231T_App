@@ -581,7 +581,7 @@ static int http_rest_post_logconfig(http_request_t *request){
 static int http_rest_get_info(http_request_t *request){
     char macstr[3*6+1];
     http_setup(request, httpMimeTypeJson);
-    hprintf128(request, "{\"uptime_s\":%d,", Time_getUpTimeSeconds());
+    hprintf128(request, "{\"uptime_s\":%d,", Time_getUptimeSeconds());
     hprintf128(request, "\"build\":\"%s\",", g_build_str);
     hprintf128(request, "\"sys\":\"%s\",", obktype);
     hprintf128(request, "\"ip\":\"%s\",", getMyIp());

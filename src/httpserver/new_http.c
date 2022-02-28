@@ -1,24 +1,24 @@
-
-
 #include "../new_common.h"
 #include "ctype.h" 
-#if WINDOWS
+#if WINDOWS // debug mode
 //#include <windows.h>
 #include <winsock2.h>
 //#include <ws2tcpip.h>
-#elif PLATFORM_XR809
+#elif PLATFORM_XR809 // specific
 #include "lwip/sockets.h"
 #include <stdarg.h>
 #include <image/flash.h>
-#else
+#else // all other platforms
 #include "lwip/sockets.h"
 #include "str_pub.h"
 #include "../flash_config/flash_config.h"
 #endif
+
 #include "new_http.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #include "../ota/ota.h"
+
 #ifdef WINDOWS
 
 #elif PLATFORM_XR809
@@ -27,10 +27,9 @@
 // tuya-iotos-embeded-sdk-wifi-ble-bk7231n/sdk/include/tuya_hal_storage.h
 #include "tuya_hal_storage.h"
 #include "BkDriverFlash.h"
-#else
-// REALLY? A typo in Tuya SDK? Storge?
-// tuya-iotos-embeded-sdk-wifi-ble-bk7231t/platforms/bk7231t/tuya_os_adapter/include/driver/tuya_hal_storge.h
+#else // all other platforms
 #include "../logging/logging.h"
+// tuya-iotos-embeded-sdk-wifi-ble-bk7231t/platforms/bk7231t/tuya_os_adapter/include/driver/tuya_hal_storge.h // REALLY? A typo in Tuya SDK? Storge?
 #include "tuya_hal_storge.h"
 #include "BkDriverFlash.h"
 #endif
@@ -55,7 +54,7 @@ Host: 127.0.0.1
 Connection: keep-alive
 */
 
-#define DEFAULT_OTA_URL "http://raspberrypi:1880/firmware"
+#define DEFAULT_OTA_URL "http://raspberrypi:1880/firmware" // This is apparently not used?
 
 // make sure that USER_SW_VER is set on all platforms
 #ifndef USER_SW_VER
@@ -99,8 +98,8 @@ const char *methodNames[] = {
 #define os_malloc malloc
 #endif
 
-void misc_formatUpTimeString(int totalSeconds, char *o);
-int Time_getUpTimeSeconds();
+void misc_formatUptimeString(int totalSeconds, char *o);
+int Time_getUptimeSeconds();
 
 typedef struct http_callback_tag {
     char *url;
@@ -162,6 +161,7 @@ bool http_startsWith(const char *base, const char *substr) {
 	}
 	return true;
 }
+
 bool http_checkUrlBase(const char *base, const char *fileName) {
 	while(*base != 0 && *base != '?' && *base != ' ') {
 		if(*base != *fileName)
@@ -179,9 +179,8 @@ bool http_checkUrlBase(const char *base, const char *fileName) {
 void http_setup(http_request_t *request, const char *type){
 	hprintf128(request, httpHeader, request->responseCode, type);
 	poststr(request,"\r\n"); // next header
-	poststr(request,httpCorsHeaders);
-	poststr(request,"\r\n"); // end headers with double CRLF
-	poststr(request,"\r\n");
+	poststr(request,httpCorsHeaders); // http mime-type headers
+	poststr(request,"\r\n\r\n"); // end headers with double CRLF
 }
 
 const char *http_checkArg(const char *p, const char *n) {
@@ -195,17 +194,12 @@ const char *http_checkArg(const char *p, const char *n) {
 	}
 	return p;
 }
+
 void http_copyCarg(const char *atin, char *to, int maxSize) {
 	int a, b;
 	const unsigned char *at = (unsigned char *)atin;
 
 	while(*at != 0 && *at != '&' && *at != ' ' && maxSize > 1) {
-#if 0
-		*to = *at;
-		to++;
-		at++;
-		maxSize--;
-#else
         if ((*at == '%') &&
             ((a = at[1]) && (b = at[2])) &&
             (isxdigit(a) && isxdigit(b))) {
@@ -230,10 +224,10 @@ void http_copyCarg(const char *atin, char *to, int maxSize) {
                 *to++ = *at++;
         }
 		maxSize--;
-#endif
 	}
 	*to = 0;
 }
+
 bool http_getArg(const char *base, const char *name, char *o, int maxSize) {
 	*o = '\0';
 	while(*base != '?') {
@@ -260,7 +254,7 @@ bool http_getArg(const char *base, const char *name, char *o, int maxSize) {
 	return 0;
 }
 
-const char *htmlIndex = "<select name=\"cars\" id=\"cars\">\
+/* const char *htmlIndex = "<select name=\"cars\" id=\"cars\">\ // Not Used ?
 <option value=\"1\">qqqqqq</option>\
 <option value=\"2\">qqq</option>\
 </select>";
@@ -364,19 +358,19 @@ const char *g_header = "<h1>error</h1>";
 #endif
 
 
-void HTTP_AddBuildFooter(http_request_t *request) {
-	char upTimeStr[128];
+void HTTP_AddBuildFooter(http_request_t *request) { // Generate content for Build information
+	char uptimeStr[128];
 	unsigned char mac[32];
 	poststr(request,"<br>");
 	poststr(request,g_build_str);
 	poststr(request,"<br> Online for ");
-	misc_formatUpTimeString(Time_getUpTimeSeconds(), upTimeStr);
-	poststr(request,upTimeStr);
+	misc_formatUptimeString(Time_getUptimeSeconds(), uptimeStr);
+	poststr(request,uptimeStr);
 
 	WiFI_GetMacAddress((char *)mac);
 
-	sprintf(upTimeStr,"<br> Device MAC: %02X%02X%02X%02X%02X%02X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
-	poststr(request,upTimeStr);
+	sprintf(uptimeStr,"<br> Device MAC: %02X%02X%02X%02X%02X%02X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
+	poststr(request,uptimeStr);
 
 }
 
@@ -420,7 +414,7 @@ int poststr(http_request_t *request, const char *str){
 	return postany(request, str, strlen(str));
 }
 
-void misc_formatUpTimeString(int totalSeconds, char *o) {
+void misc_formatUptimeString(int totalSeconds, char *o) {
 	int rem_days;
 	int rem_hours;
 	int rem_minutes;
@@ -1391,7 +1385,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
         poststr(request,htmlEnd);
 	} else if(http_checkUrlBase(urlStr,"")) {
 		// Redirect / to /index page
-        poststr(request,"HTTP/1.1 302 OK\nLocation: /index\nConnection: close\n\n");
+        poststr(request,"HTTP/1.1 302 OK\n\rLocation: /index\n\rConnection: close\n\r\n\r");
 	} else {
 		http_setup(request, httpMimeTypeHTML);
 		poststr(request,htmlHeader);

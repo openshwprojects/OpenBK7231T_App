@@ -77,7 +77,7 @@ void RESET_ScheduleModuleReset(int delSeconds) {
 	g_reset = delSeconds;
 }
 
-int Time_getUpTimeSeconds() {
+int Time_getUptimeSeconds() {
 	return g_secondsElapsed;
 }
 
