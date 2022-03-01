@@ -62,6 +62,132 @@ unsigned char hexbyte( const char* hex ) {
     return (hexdigit(*hex) << 4) | hexdigit(*(hex+1)) ;
 }
 
+int http_fn_empty_url(http_request_t *request) {
+    poststr(request,"HTTP/1.1 302 OK\nLocation: /index\nConnection: close\n\n");
+	poststr(request, NULL);
+    return 0;
+}
+
+int http_fn_index(http_request_t *request) {
+    int relayFlags;
+    int pwmFlags;
+    int j, i;
+	char tmpA[128];
+
+    relayFlags = 0;
+    pwmFlags = 0;
+
+    http_setup(request, httpMimeTypeHTML);
+    poststr(request,htmlHeader);
+    poststr(request,"<style>.r { background-color: red; } .g { background-color: green; }</style>");
+    poststr(request,g_header);
+    if(http_getArg(request->url,"tgl",tmpA,sizeof(tmpA))) {
+        j = atoi(tmpA);
+        sprintf(tmpA,"<h3>Toggled %i!</h3>",j);
+        poststr(request,tmpA);
+        CHANNEL_Toggle(j);
+    }
+    if(http_getArg(request->url,"on",tmpA,sizeof(tmpA))) {
+        j = atoi(tmpA);
+        sprintf(tmpA,"<h3>Enabled %i!</h3>",j);
+        poststr(request,tmpA);
+        CHANNEL_Set(j,255,1);
+    }
+    if(http_getArg(request->url,"off",tmpA,sizeof(tmpA))) {
+        j = atoi(tmpA);
+        sprintf(tmpA,"<h3>Disabled %i!</h3>",j);
+        poststr(request,tmpA);
+        CHANNEL_Set(j,0,1);
+    }
+    if(http_getArg(request->url,"pwm",tmpA,sizeof(tmpA))) {
+        int newPWMValue = atoi(tmpA);
+        http_getArg(request->url,"pwmIndex",tmpA,sizeof(tmpA));
+        j = atoi(tmpA);
+        sprintf(tmpA,"<h3>Changed pwm %i to %i!</h3>",j,newPWMValue);
+        poststr(request,tmpA);
+        CHANNEL_Set(j,newPWMValue,1);
+    }
+
+    for(i = 0; i < GPIO_MAX; i++) {
+        int role = PIN_GetPinRoleForPinIndex(i);
+        int ch = PIN_GetPinChannelForPinIndex(i);
+        if(role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
+            BIT_SET(relayFlags,ch);
+        }
+        if(role == IOR_PWM) {
+            BIT_SET(pwmFlags,ch);
+        }
+    }
+    for(i = 0; i < CHANNEL_MAX; i++) {
+        if(BIT_CHECK(relayFlags,i)) {
+            const char *c;
+            if(CHANNEL_Check(i)) {
+                c = "r";
+            } else {
+                c = "g";
+            }
+            poststr(request,"<form action=\"index\">");
+            sprintf(tmpA,"<input type=\"hidden\" name=\"tgl\" value=\"%i\">",i);
+            poststr(request,tmpA);
+            sprintf(tmpA,"<input class=\"%s\" type=\"submit\" value=\"Toggle %i\"/></form>",c,i);
+            poststr(request,tmpA);
+        }
+        if(BIT_CHECK(pwmFlags,i)) {
+            int pwmValue;
+
+            pwmValue = CHANNEL_Get(i);
+            sprintf(tmpA,"<form action=\"index\" id=\"form%i\">",i);
+            poststr(request,tmpA);
+            sprintf(tmpA,"<input type=\"range\" min=\"0\" max=\"100\" name=\"pwm\" id=\"slider%i\" value=\"%i\">",i,pwmValue);
+            poststr(request,tmpA);
+            sprintf(tmpA,"<input type=\"hidden\" name=\"pwmIndex\" value=\"%i\">",i);
+            poststr(request,tmpA);
+            sprintf(tmpA,"<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>",i);
+            poststr(request,tmpA);
+
+
+            poststr(request,"<script>");
+            sprintf(tmpA,"var slider = document.getElementById(\"slider%i\");\n",i);
+            poststr(request,tmpA);
+            poststr(request,"slider.onmouseup = function () {\n");
+            sprintf(tmpA," document.getElementById(\"form%i\").submit();\n",i);
+            poststr(request,tmpA);
+            poststr(request,"}\n");
+            poststr(request,"</script>");
+        }
+    }
+//	strcat(outbuf,"<button type=\"button\">Click Me!</button>");
+
+    
+    if(http_getArg(request->url,"restart",tmpA,sizeof(tmpA))) {
+        poststr(request,"<h5> Module will restart soon</h5>");
+#if WINDOWS
+
+#elif PLATFORM_XR809
+
+#else
+        RESET_ScheduleModuleReset(3);
+#endif
+    }
+
+    poststr(request,"<form action=\"cfg\"><input type=\"submit\" value=\"Config\"/></form>");
+
+    poststr(request,"<form action=\"/index\">\
+            <input type=\"hidden\" id=\"restart\" name=\"restart\" value=\"1\">\
+            <input type=\"submit\" value=\"Restart\" onclick=\"return confirm('Are you sure to restart module?')\">\
+        </form> ");
+
+    poststr(request,"<form action=\"about\"><input type=\"submit\" value=\"About\"/></form>");
+
+
+    poststr(request,htmlReturnToMenu);
+    HTTP_AddBuildFooter(request);
+    poststr(request,htmlEnd);
+
+	poststr(request, NULL);
+    return 0;
+}
+
 int http_fn_about(http_request_t *request){
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
@@ -73,6 +199,8 @@ int http_fn_about(http_request_t *request){
 	poststr(request, NULL);
     return 0;
 }
+
+
 
 
 int http_fn_cfg_mqtt(http_request_t *request) {
@@ -156,6 +284,8 @@ int http_fn_cfg_mqtt_set(http_request_t *request) {
 }
 
 
+
+
 int http_fn_cfg_webapp(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
@@ -168,25 +298,6 @@ int http_fn_cfg_webapp(http_request_t *request) {
     poststr(request,"\"><br>\
             <input type=\"submit\" value=\"Submit\">\
         </form> ");
-    poststr(request,htmlReturnToCfg);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
-	poststr(request, NULL);
-    return 0;
-}
-
-int http_fn_config_dump_table(http_request_t *request) {
-    http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    poststr(request,g_header);
-#if WINDOWS
-    poststr(request,"Not implemented <br>");
-#elif PLATFORM_XR809
-    poststr(request,"Not implemented <br>");
-#else
-    poststr(request,"Dumped to log <br>");
-        config_dump_table();
-#endif
     poststr(request,htmlReturnToCfg);
     HTTP_AddBuildFooter(request);
     poststr(request,htmlEnd);
@@ -218,78 +329,8 @@ int http_fn_cfg_webapp_set(http_request_t *request) {
     return 0;
 }
 
-int http_fn_cfg_wifi_set(http_request_t *request) {
-	char tmpA[128];
-	printf("HTTP_ProcessPacket: generating cfg_wifi_set \r\n");
 
-    http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    poststr(request,g_header);
-    if(http_getArg(request->url,"open",tmpA,sizeof(tmpA))) {
-        CFG_SetWiFiSSID("");
-        CFG_SetWiFiPass("");
-        poststr(request,"WiFi mode set: open access point.");
-    } else {
-        if(http_getArg(request->url,"ssid",tmpA,sizeof(tmpA))) {
-            CFG_SetWiFiSSID(tmpA);
-        }
-        if(http_getArg(request->url,"pass",tmpA,sizeof(tmpA))) {
-            CFG_SetWiFiPass(tmpA);
-        }
-        poststr(request,"WiFi mode set: connect to WLAN.");
-    }
-    printf("HTTP_ProcessPacket: calling CFG_SaveWiFi \r\n");
-    CFG_SaveWiFi();
-    printf("HTTP_ProcessPacket: done CFG_SaveWiFi \r\n");
 
-    poststr(request,"Please wait for module to reset...");
-    
-    poststr(request,"<br>");
-    poststr(request,"<a href=\"cfg_wifi\">Return to WiFi settings</a>");
-    poststr(request,"<br>");
-    poststr(request,htmlReturnToCfg);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
-    
-	poststr(request, NULL);
-    return 0;
-}
-
-int http_fn_cfg_loglevel_set(http_request_t *request) {
-	char tmpA[128];
-    printf("HTTP_ProcessPacket: generating cfg_loglevel_set \r\n");
-
-    http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    poststr(request,g_header);
-    if(http_getArg(request->url,"loglevel",tmpA,sizeof(tmpA))) {
-#if PLATFORM_BK7231T
-        loglevel = atoi(tmpA);
-#endif
-        poststr(request,"LOG level changed.");
-    } 
-    poststr(request,"<form action=\"/cfg_loglevel_set\">\
-            <label for=\"loglevel\">loglevel:</label><br>\
-            <input type=\"text\" id=\"loglevel\" name=\"loglevel\" value=\"");
-    tmpA[0] = 0;
-#if PLATFORM_BK7231T
-    sprintf(tmpA,"%i",loglevel);
-#endif
-    poststr(request,tmpA);
-            
-    poststr(request,"\"><br><br>\
-            <input type=\"submit\" value=\"Submit\" >\
-        </form> ");
-    
-    poststr(request,"<br>");
-    poststr(request,"<a href=\"cfg\">Return to config settings</a>");
-    poststr(request,"<br>");
-    poststr(request,htmlReturnToCfg);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
-	poststr(request, NULL);
-    return 0;
-}
 
 int http_fn_cfg_wifi(http_request_t *request) {
     // for a test, show password as well...
@@ -374,6 +415,83 @@ int http_fn_cfg_wifi(http_request_t *request) {
 	poststr(request, NULL);
     return 0;
 }
+
+int http_fn_cfg_wifi_set(http_request_t *request) {
+	char tmpA[128];
+	printf("HTTP_ProcessPacket: generating cfg_wifi_set \r\n");
+
+    http_setup(request, httpMimeTypeHTML);
+    poststr(request,htmlHeader);
+    poststr(request,g_header);
+    if(http_getArg(request->url,"open",tmpA,sizeof(tmpA))) {
+        CFG_SetWiFiSSID("");
+        CFG_SetWiFiPass("");
+        poststr(request,"WiFi mode set: open access point.");
+    } else {
+        if(http_getArg(request->url,"ssid",tmpA,sizeof(tmpA))) {
+            CFG_SetWiFiSSID(tmpA);
+        }
+        if(http_getArg(request->url,"pass",tmpA,sizeof(tmpA))) {
+            CFG_SetWiFiPass(tmpA);
+        }
+        poststr(request,"WiFi mode set: connect to WLAN.");
+    }
+    printf("HTTP_ProcessPacket: calling CFG_SaveWiFi \r\n");
+    CFG_SaveWiFi();
+    printf("HTTP_ProcessPacket: done CFG_SaveWiFi \r\n");
+
+    poststr(request,"Please wait for module to reset...");
+    
+    poststr(request,"<br>");
+    poststr(request,"<a href=\"cfg_wifi\">Return to WiFi settings</a>");
+    poststr(request,"<br>");
+    poststr(request,htmlReturnToCfg);
+    HTTP_AddBuildFooter(request);
+    poststr(request,htmlEnd);
+    
+	poststr(request, NULL);
+    return 0;
+}
+
+
+
+
+int http_fn_cfg_loglevel_set(http_request_t *request) {
+	char tmpA[128];
+    printf("HTTP_ProcessPacket: generating cfg_loglevel_set \r\n");
+
+    http_setup(request, httpMimeTypeHTML);
+    poststr(request,htmlHeader);
+    poststr(request,g_header);
+    if(http_getArg(request->url,"loglevel",tmpA,sizeof(tmpA))) {
+#if PLATFORM_BK7231T
+        loglevel = atoi(tmpA);
+#endif
+        poststr(request,"LOG level changed.");
+    } 
+    poststr(request,"<form action=\"/cfg_loglevel_set\">\
+            <label for=\"loglevel\">loglevel:</label><br>\
+            <input type=\"text\" id=\"loglevel\" name=\"loglevel\" value=\"");
+    tmpA[0] = 0;
+#if PLATFORM_BK7231T
+    sprintf(tmpA,"%i",loglevel);
+#endif
+    poststr(request,tmpA);
+            
+    poststr(request,"\"><br><br>\
+            <input type=\"submit\" value=\"Submit\" >\
+        </form> ");
+    
+    poststr(request,"<br>");
+    poststr(request,"<a href=\"cfg\">Return to config settings</a>");
+    poststr(request,"<br>");
+    poststr(request,htmlReturnToCfg);
+    HTTP_AddBuildFooter(request);
+    poststr(request,htmlEnd);
+	poststr(request, NULL);
+    return 0;
+}
+
 
 int http_fn_cfg_mac(http_request_t *request) {
     // must be unsigned, else print below prints negatives as e.g. FFFFFFFe
@@ -514,6 +632,28 @@ int http_fn_flash_read_tool(http_request_t *request) {
 	poststr(request, NULL);
     return 0;
 }
+
+int http_fn_config_dump_table(http_request_t *request) {
+    http_setup(request, httpMimeTypeHTML);
+    poststr(request,htmlHeader);
+    poststr(request,g_header);
+#if WINDOWS
+    poststr(request,"Not implemented <br>");
+#elif PLATFORM_XR809
+    poststr(request,"Not implemented <br>");
+#else
+    poststr(request,"Dumped to log <br>");
+        config_dump_table();
+#endif
+    poststr(request,htmlReturnToCfg);
+    HTTP_AddBuildFooter(request);
+    poststr(request,htmlEnd);
+	poststr(request, NULL);
+    return 0;
+}
+
+
+
 
 int http_fn_cfg_quick(http_request_t *request) {
 	char tmpA[128];
@@ -764,126 +904,6 @@ int http_fn_cfg_pins(http_request_t *request) {
     return 0;
 }
 
-int http_fn_index(http_request_t *request) {
-    int relayFlags;
-    int pwmFlags;
-    int j, i;
-	char tmpA[128];
-
-    relayFlags = 0;
-    pwmFlags = 0;
-
-    http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    poststr(request,"<style>.r { background-color: red; } .g { background-color: green; }</style>");
-    poststr(request,g_header);
-    if(http_getArg(request->url,"tgl",tmpA,sizeof(tmpA))) {
-        j = atoi(tmpA);
-        sprintf(tmpA,"<h3>Toggled %i!</h3>",j);
-        poststr(request,tmpA);
-        CHANNEL_Toggle(j);
-    }
-    if(http_getArg(request->url,"on",tmpA,sizeof(tmpA))) {
-        j = atoi(tmpA);
-        sprintf(tmpA,"<h3>Enabled %i!</h3>",j);
-        poststr(request,tmpA);
-        CHANNEL_Set(j,255,1);
-    }
-    if(http_getArg(request->url,"off",tmpA,sizeof(tmpA))) {
-        j = atoi(tmpA);
-        sprintf(tmpA,"<h3>Disabled %i!</h3>",j);
-        poststr(request,tmpA);
-        CHANNEL_Set(j,0,1);
-    }
-    if(http_getArg(request->url,"pwm",tmpA,sizeof(tmpA))) {
-        int newPWMValue = atoi(tmpA);
-        http_getArg(request->url,"pwmIndex",tmpA,sizeof(tmpA));
-        j = atoi(tmpA);
-        sprintf(tmpA,"<h3>Changed pwm %i to %i!</h3>",j,newPWMValue);
-        poststr(request,tmpA);
-        CHANNEL_Set(j,newPWMValue,1);
-    }
-
-    for(i = 0; i < GPIO_MAX; i++) {
-        int role = PIN_GetPinRoleForPinIndex(i);
-        int ch = PIN_GetPinChannelForPinIndex(i);
-        if(role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
-            BIT_SET(relayFlags,ch);
-        }
-        if(role == IOR_PWM) {
-            BIT_SET(pwmFlags,ch);
-        }
-    }
-    for(i = 0; i < CHANNEL_MAX; i++) {
-        if(BIT_CHECK(relayFlags,i)) {
-            const char *c;
-            if(CHANNEL_Check(i)) {
-                c = "r";
-            } else {
-                c = "g";
-            }
-            poststr(request,"<form action=\"index\">");
-            sprintf(tmpA,"<input type=\"hidden\" name=\"tgl\" value=\"%i\">",i);
-            poststr(request,tmpA);
-            sprintf(tmpA,"<input class=\"%s\" type=\"submit\" value=\"Toggle %i\"/></form>",c,i);
-            poststr(request,tmpA);
-        }
-        if(BIT_CHECK(pwmFlags,i)) {
-            int pwmValue;
-
-            pwmValue = CHANNEL_Get(i);
-            sprintf(tmpA,"<form action=\"index\" id=\"form%i\">",i);
-            poststr(request,tmpA);
-            sprintf(tmpA,"<input type=\"range\" min=\"0\" max=\"100\" name=\"pwm\" id=\"slider%i\" value=\"%i\">",i,pwmValue);
-            poststr(request,tmpA);
-            sprintf(tmpA,"<input type=\"hidden\" name=\"pwmIndex\" value=\"%i\">",i);
-            poststr(request,tmpA);
-            sprintf(tmpA,"<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>",i);
-            poststr(request,tmpA);
-
-
-            poststr(request,"<script>");
-            sprintf(tmpA,"var slider = document.getElementById(\"slider%i\");\n",i);
-            poststr(request,tmpA);
-            poststr(request,"slider.onmouseup = function () {\n");
-            sprintf(tmpA," document.getElementById(\"form%i\").submit();\n",i);
-            poststr(request,tmpA);
-            poststr(request,"}\n");
-            poststr(request,"</script>");
-        }
-    }
-//	strcat(outbuf,"<button type=\"button\">Click Me!</button>");
-
-    
-    if(http_getArg(request->url,"restart",tmpA,sizeof(tmpA))) {
-        poststr(request,"<h5> Module will restart soon</h5>");
-#if WINDOWS
-
-#elif PLATFORM_XR809
-
-#else
-        RESET_ScheduleModuleReset(3);
-#endif
-    }
-
-    poststr(request,"<form action=\"cfg\"><input type=\"submit\" value=\"Config\"/></form>");
-
-    poststr(request,"<form action=\"/index\">\
-            <input type=\"hidden\" id=\"restart\" name=\"restart\" value=\"1\">\
-            <input type=\"submit\" value=\"Restart\" onclick=\"return confirm('Are you sure to restart module?')\">\
-        </form> ");
-
-    poststr(request,"<form action=\"about\"><input type=\"submit\" value=\"About\"/></form>");
-
-
-    poststr(request,htmlReturnToMenu);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
-
-	poststr(request, NULL);
-    return 0;
-}
-
 int http_fn_ota_exec(http_request_t *request) {
 	char tmpA[128];
 	char tmpB[64];
@@ -923,12 +943,6 @@ int http_fn_ota(http_request_t *request) {
     HTTP_AddBuildFooter(request);
     poststr(request,htmlEnd);
 
-	poststr(request, NULL);
-    return 0;
-}
-
-int http_fn_empty_url(http_request_t *request) {
-    poststr(request,"HTTP/1.1 302 OK\nLocation: /index\nConnection: close\n\n");
 	poststr(request, NULL);
     return 0;
 }

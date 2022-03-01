@@ -491,25 +491,35 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		}
 	}
 
+	if(http_checkUrlBase(urlStr,"")) return http_fn_empty_url(request);
+
+	if(http_checkUrlBase(urlStr,"index")) return http_fn_index(request);
+
 	if(http_checkUrlBase(urlStr,"about")) return http_fn_about(request);
+
 	if(http_checkUrlBase(urlStr,"cfg_mqtt")) return http_fn_cfg_mqtt(request);
 	if(http_checkUrlBase(urlStr,"cfg_mqtt_set")) return http_fn_cfg_mqtt_set(request);
+
 	if(http_checkUrlBase(urlStr,"cfg_webapp")) return http_fn_cfg_webapp(request);
-	if(http_checkUrlBase(urlStr,"config_dump_table")) return http_fn_config_dump_table(request);
 	if(http_checkUrlBase(urlStr,"cfg_webapp_set")) return http_fn_cfg_webapp_set(request); 
-	if(http_checkUrlBase(urlStr,"cfg_wifi_set")) return http_fn_cfg_wifi_set(request);
-	if(http_checkUrlBase(urlStr,"cfg_loglevel_set")) return http_fn_cfg_loglevel_set(request);
+
 	if(http_checkUrlBase(urlStr,"cfg_wifi")) return http_fn_cfg_wifi(request);
+	if(http_checkUrlBase(urlStr,"cfg_wifi_set")) return http_fn_cfg_wifi_set(request);
+
+	if(http_checkUrlBase(urlStr,"cfg_loglevel_set")) return http_fn_cfg_loglevel_set(request);
 	if(http_checkUrlBase(urlStr,"cfg_mac")) return http_fn_cfg_mac(request);
+
 	if(http_checkUrlBase(urlStr,"flash_read_tool")) return http_fn_flash_read_tool(request);
+	if(http_checkUrlBase(urlStr,"config_dump_table")) return http_fn_config_dump_table(request);
+
 	if(http_checkUrlBase(urlStr,"cfg_quick")) return http_fn_cfg_quick(request);
 	if(http_checkUrlBase(urlStr,"cfg_ha")) return http_fn_cfg_ha(request);
 	if(http_checkUrlBase(urlStr,"cfg")) return http_fn_cfg(request);
+
 	if(http_checkUrlBase(urlStr,"cfg_pins")) return http_fn_cfg_pins(request);
-	if(http_checkUrlBase(urlStr,"index")) return http_fn_index(request);
-	if(http_checkUrlBase(urlStr,"ota_exec")) return http_fn_ota_exec(request);
+
 	if(http_checkUrlBase(urlStr,"ota")) return http_fn_ota(request);
-	if(http_checkUrlBase(urlStr,"")) return http_fn_empty_url(request);
+	if(http_checkUrlBase(urlStr,"ota_exec")) return http_fn_ota_exec(request);
 
 	return http_fn_other(request);
 }
