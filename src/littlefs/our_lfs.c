@@ -86,11 +86,20 @@ void init_lfs(int create){
         if (err){
             if (create) {
                 ADDLOG_INFO(LOG_FEATURE_LFS, "Formatting LFS");
-                lfs_format(&lfs, &cfg);
-                lfs_mount(&lfs, &cfg);
+                err  = lfs_format(&lfs, &cfg);
+                if (err){
+                    ADDLOG_ERROR(LOG_FEATURE_LFS, "Format LFS failed %d", err);
+                    return;
+                }
+                ADDLOG_INFO(LOG_FEATURE_LFS, "Formatted LFS");
+                err = lfs_mount(&lfs, &cfg);
+                if (err){
+                    ADDLOG_ERROR(LOG_FEATURE_LFS, "Mount LFS failed %d", err);
+                    return;
+                }
                 lfs_initialised = 1;
             } else {
-                ADDLOG_INFO(LOG_FEATURE_LFS, "LFS not present");
+                ADDLOG_INFO(LOG_FEATURE_LFS, "LFS not present - not creating");
             }
         } else {
             // mounted existing
@@ -116,6 +125,7 @@ void init_lfs(int create){
 
 void release_lfs(){
     lfs_unmount(&lfs);
+    lfs_initialised = 0;
 }
 
 
