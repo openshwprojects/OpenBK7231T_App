@@ -83,28 +83,24 @@ int http_fn_index(http_request_t *request) {
     poststr(request,g_header);
     if(http_getArg(request->url,"tgl",tmpA,sizeof(tmpA))) {
         j = atoi(tmpA);
-        sprintf(tmpA,"<h3>Toggled %i!</h3>",j);
-        poststr(request,tmpA);
+        hprintf128(request,"<h3>Toggled %i!</h3>",j);
         CHANNEL_Toggle(j);
     }
     if(http_getArg(request->url,"on",tmpA,sizeof(tmpA))) {
         j = atoi(tmpA);
-        sprintf(tmpA,"<h3>Enabled %i!</h3>",j);
-        poststr(request,tmpA);
+        hprintf128(request,"<h3>Enabled %i!</h3>",j);
         CHANNEL_Set(j,255,1);
     }
     if(http_getArg(request->url,"off",tmpA,sizeof(tmpA))) {
         j = atoi(tmpA);
-        sprintf(tmpA,"<h3>Disabled %i!</h3>",j);
-        poststr(request,tmpA);
+        hprintf128(request,"<h3>Disabled %i!</h3>",j);
         CHANNEL_Set(j,0,1);
     }
     if(http_getArg(request->url,"pwm",tmpA,sizeof(tmpA))) {
         int newPWMValue = atoi(tmpA);
         http_getArg(request->url,"pwmIndex",tmpA,sizeof(tmpA));
         j = atoi(tmpA);
-        sprintf(tmpA,"<h3>Changed pwm %i to %i!</h3>",j,newPWMValue);
-        poststr(request,tmpA);
+        hprintf128(request,"<h3>Changed pwm %i to %i!</h3>",j,newPWMValue);
         CHANNEL_Set(j,newPWMValue,1);
     }
 
@@ -127,31 +123,23 @@ int http_fn_index(http_request_t *request) {
                 c = "g";
             }
             poststr(request,"<form action=\"index\">");
-            sprintf(tmpA,"<input type=\"hidden\" name=\"tgl\" value=\"%i\">",i);
-            poststr(request,tmpA);
-            sprintf(tmpA,"<input class=\"%s\" type=\"submit\" value=\"Toggle %i\"/></form>",c,i);
-            poststr(request,tmpA);
+            hprintf128(request,"<input type=\"hidden\" name=\"tgl\" value=\"%i\">",i);
+            hprintf128(request,"<input class=\"%s\" type=\"submit\" value=\"Toggle %i\"/></form>",c,i);
         }
         if(BIT_CHECK(pwmFlags,i)) {
             int pwmValue;
 
             pwmValue = CHANNEL_Get(i);
-            sprintf(tmpA,"<form action=\"index\" id=\"form%i\">",i);
-            poststr(request,tmpA);
-            sprintf(tmpA,"<input type=\"range\" min=\"0\" max=\"100\" name=\"pwm\" id=\"slider%i\" value=\"%i\">",i,pwmValue);
-            poststr(request,tmpA);
-            sprintf(tmpA,"<input type=\"hidden\" name=\"pwmIndex\" value=\"%i\">",i);
-            poststr(request,tmpA);
-            sprintf(tmpA,"<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>",i);
-            poststr(request,tmpA);
+            hprintf128(request,"<form action=\"index\" id=\"form%i\">",i);
+            hprintf128(request,"<input type=\"range\" min=\"0\" max=\"100\" name=\"pwm\" id=\"slider%i\" value=\"%i\">",i,pwmValue);
+            hprintf128(request,"<input type=\"hidden\" name=\"pwmIndex\" value=\"%i\">",i);
+            hprintf128(request,"<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>",i);
 
 
             poststr(request,"<script>");
-            sprintf(tmpA,"var slider = document.getElementById(\"slider%i\");\n",i);
-            poststr(request,tmpA);
+            hprintf128(request,"var slider = document.getElementById(\"slider%i\");\n",i);
             poststr(request,"slider.onmouseup = function () {\n");
-            sprintf(tmpA," document.getElementById(\"form%i\").submit();\n",i);
-            poststr(request,tmpA);
+            hprintf128(request," document.getElementById(\"form%i\").submit();\n",i);
             poststr(request,"}\n");
             poststr(request,"</script>");
         }
@@ -371,8 +359,7 @@ int http_fn_cfg_wifi(http_request_t *request) {
         tuya_hal_wifi_all_ap_scan(&ar,&num);
         bk_printf("Scan returned %i networks\r\n",num);
         for(i = 0; i < num; i++) {
-            sprintf(tmpA,"[%i/%i] SSID: %s, Channel: %i, Signal %i<br>",i,(int)num,ar[i].ssid, ar[i].channel, ar[i].rssi);
-            poststr(request,tmpA);
+            hprintf128(request,"[%i/%i] SSID: %s, Channel: %i, Signal %i<br>",i,(int)num,ar[i].ssid, ar[i].channel, ar[i].rssi);
         }
         tuya_hal_wifi_release_ap(ar);
 #elif PLATFORM_BK7231N
@@ -474,10 +461,8 @@ int http_fn_cfg_loglevel_set(http_request_t *request) {
             <input type=\"text\" id=\"loglevel\" name=\"loglevel\" value=\"");
     tmpA[0] = 0;
 #if PLATFORM_BK7231T
-    sprintf(tmpA,"%i",loglevel);
+    hprintf128(request,"%i",loglevel);
 #endif
-    poststr(request,tmpA);
-            
     poststr(request,"\"><br><br>\
             <input type=\"submit\" value=\"Submit\" >\
         </form> ");
@@ -518,13 +503,12 @@ int http_fn_cfg_mac(http_request_t *request) {
 
     WiFI_GetMacAddress((char *)mac);
 
-    sprintf(tmpA,"%02X%02X%02X%02X%02X%02X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
 
     poststr(request,"<h2> Here you can change MAC address.</h2>");
     poststr(request,"<form action=\"/cfg_mac\">\
             <label for=\"mac\">MAC:</label><br>\
             <input type=\"text\" id=\"mac\" name=\"mac\" value=\"");
-    poststr(request,tmpA);
+    hprintf128(request,"%02X%02X%02X%02X%02X%02X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
     poststr(request,"\"><br><br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MAC hex string twice?')\">\
         </form> ");
@@ -563,8 +547,7 @@ int http_fn_flash_read_tool(http_request_t *request) {
         unsigned char buffer[128];
         len = atoi(tmpB);
         ofs = atoi(tmpA);
-        sprintf(tmpA,"Memory at %i with len %i reads: ",ofs,len);
-        poststr(request,tmpA);
+        hprintf128(request,"Memory at %i with len %i reads: ",ofs,len);
         poststr(request,"<br>");
 
         ///res = bekken_hal_flash_read (ofs, buffer,len);
@@ -590,11 +573,10 @@ int http_fn_flash_read_tool(http_request_t *request) {
             for(i = 0; i < now; i++) {
                 unsigned char val = buffer[i];
                 if(!hex && isprint(val)) {
-                    sprintf(tmpA,"'%c' ",val);
+                    hprintf128(request,"'%c' ",val);
                 } else {
-                    sprintf(tmpA,"%02X ",val);
+                    hprintf128(request,"%02X ",val);
                 }
-                poststr(request,tmpA);
             }
             rem -= now;
             nowOfs += now;
@@ -614,12 +596,10 @@ int http_fn_flash_read_tool(http_request_t *request) {
     poststr(request,"><label for=\"hex\">Show all hex?</label><br>");
     poststr(request,"<label for=\"offset\">offset:</label><br>\
             <input type=\"number\" id=\"offset\" name=\"offset\"");
-    sprintf(tmpA," value=\"%i\"><br>",ofs);
-    poststr(request,tmpA);
+    hprintf128(request," value=\"%i\"><br>",ofs);
     poststr(request,"<label for=\"lenght\">lenght:</label><br>\
             <input type=\"number\" id=\"len\" name=\"len\" ");
-    sprintf(tmpA,"value=\"%i\">",len);
-    poststr(request,tmpA);
+    hprintf128(request,"value=\"%i\">",len);
     poststr(request,"<br><br>\
             <input type=\"submit\" value=\"Submit\">\
         </form> ");
@@ -665,17 +645,13 @@ int http_fn_cfg_quick(http_request_t *request) {
     
     if(http_getArg(request->url,"dev",tmpA,sizeof(tmpA))) {
         j = atoi(tmpA);
-        sprintf(tmpA,"<h3>Set dev %i!</h3>",j);
-        poststr(request,tmpA);
-        
+        hprintf128(request,"<h3>Set dev %i!</h3>",j);
         g_templates[j].setter();
     }
     poststr(request,"<form action=\"cfg_quick\">");		
-    sprintf(tmpA, "<select name=\"dev\">");
-    poststr(request,tmpA);
+    poststr(request, "<select name=\"dev\">");
     for(j = 0; j < g_total_templates; j++) {
-        sprintf(tmpA, "<option value=\"%i\">%s</option>",j,g_templates[j].name);
-        poststr(request,tmpA);
+        hprintf128(request, "<option value=\"%i\">%s</option>",j,g_templates[j].name);
     }
     poststr(request,"</select>");
     poststr(request,"<input type=\"submit\" value=\"Set\"/></form>");
@@ -726,18 +702,14 @@ int http_fn_cfg_ha(http_request_t *request) {
         for(i = 0; i < CHANNEL_MAX; i++) {
             if(BIT_CHECK(relayFlags,i)) {
                 poststr(request,"  - platform: mqtt\n");
-                sprintf(tmpA,"    name: \"%s %i\"\n",baseName,i);
-                poststr(request,tmpA);
-                sprintf(tmpA,"    state_topic: \"%s/%i/get\"\n",baseName,i);
-                poststr(request,tmpA);
-                sprintf(tmpA,"    command_topic: \"%s/%i/set\"\n",baseName,i);
-                poststr(request,tmpA);
+                hprintf128(request,"    name: \"%s %i\"\n",baseName,i);
+                hprintf128(request,"    state_topic: \"%s/%i/get\"\n",baseName,i);
+                hprintf128(request,"    command_topic: \"%s/%i/set\"\n",baseName,i);
                 poststr(request,"    qos: 1\n");
                 poststr(request,"    payload_on: 0\n");
                 poststr(request,"    payload_off: 1\n");
                 poststr(request,"    retain: true\n");
-                sprintf(tmpA,"    availability_topic: \"%s/connected\"\n",baseName);
-                poststr(request,tmpA);
+                hprintf128(request,"    availability_topic: \"%s/connected\"\n",baseName);
             }
         }
     }
@@ -746,14 +718,10 @@ int http_fn_cfg_ha(http_request_t *request) {
         for(i = 0; i < CHANNEL_MAX; i++) {
             if(BIT_CHECK(pwmFlags,i)) {
                 poststr(request,"  - platform: mqtt\n");
-                sprintf(tmpA,"    name: \"%s %i\"\n",baseName,i);
-                poststr(request,tmpA);
-                sprintf(tmpA,"    state_topic: \"%s/%i/get\"\n",baseName,i);
-                poststr(request,tmpA);
-                sprintf(tmpA,"    command_topic: \"%s/%i/set\"\n",baseName,i);
-                poststr(request,tmpA);
-                sprintf(tmpA,"    brightness_command_topic: \"%s/%i/set\"\n",baseName,i);
-                poststr(request,tmpA);
+                hprintf128(request,"    name: \"%s %i\"\n",baseName,i);
+                hprintf128(request,"    state_topic: \"%s/%i/get\"\n",baseName,i);
+                hprintf128(request,"    command_topic: \"%s/%i/set\"\n",baseName,i);
+                hprintf128(request,"    brightness_command_topic: \"%s/%i/set\"\n",baseName,i);
                 poststr(request,"    on_command_type: \"brightness\"\n");
                 poststr(request,"    brightness_scale: 99\n");
                 poststr(request,"    qos: 1\n");
@@ -761,8 +729,7 @@ int http_fn_cfg_ha(http_request_t *request) {
                 poststr(request,"    payload_off: 0\n");
                 poststr(request,"    retain: true\n");
                 poststr(request,"    optimistic: true\n");
-                sprintf(tmpA,"    availability_topic: \"%s/connected\"\n",baseName);
-                poststr(request,tmpA);
+                hprintf128(request,"    availability_topic: \"%s/connected\"\n",baseName);
             }
         }
     }
@@ -855,8 +822,7 @@ int http_fn_cfg_pins(http_request_t *request) {
     }
     if(iChangedRequested>0) {
         PIN_SaveToFlash();
-        sprintf(tmpA, "Pins update - %i reqs, %i changed!<br><br>",iChangedRequested,iChanged);
-        poststr(request,tmpA);
+        hprintf128(request, "Pins update - %i reqs, %i changed!<br><br>",iChangedRequested,iChanged);
     }
 //	strcat(outbuf,"<button type=\"button\">Click Me!</button>");
     poststr(request,"<form action=\"cfg_pins\">");
@@ -871,18 +837,15 @@ int http_fn_cfg_pins(http_request_t *request) {
         poststr(request,PIN_GetPinNameAlias(i));
         poststr(request," ");
 #else
-        sprintf(tmpA, "P%i ",i);
-        poststr(request,tmpA);
+        hprintf128(request, "P%i ",i);
 #endif
-        sprintf(tmpA, "<select name=\"%i\">",i);
-        poststr(request,tmpA);
+        hprintf128(request, "<select name=\"%i\">",i);
         for(j = 0; j < IOR_Total_Options; j++) {
             if(j == si) {
-                sprintf(tmpA, "<option value=\"%i\" selected>%s</option>",j,htmlPinRoleNames[j]);
+                hprintf128(request, "<option value=\"%i\" selected>%s</option>",j,htmlPinRoleNames[j]);
             } else {
-                sprintf(tmpA, "<option value=\"%i\">%s</option>",j,htmlPinRoleNames[j]);
+                hprintf128(request, "<option value=\"%i\">%s</option>",j,htmlPinRoleNames[j]);
             }
-            poststr(request,tmpA);
         }
         poststr(request, "</select>");
         if(ch == 0) {
@@ -890,8 +853,7 @@ int http_fn_cfg_pins(http_request_t *request) {
         } else {
             sprintf(tmpB,"%i",ch);
         }
-        sprintf(tmpA, "<input name=\"r%i\" type=\"text\" value=\"%s\"/>",i,tmpB);
-        poststr(request,tmpA);
+        hprintf128(request, "<input name=\"r%i\" type=\"text\" value=\"%s\"/>",i,tmpB);
         poststr(request,"<br>");
     }
     poststr(request,"<input type=\"submit\" value=\"Save\"/></form>");
@@ -911,8 +873,7 @@ int http_fn_ota_exec(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
     if(http_getArg(request->url,"host",tmpA,sizeof(tmpA))) {
-        sprintf(tmpB,"<h3>OTA requested for %s!</h3>",tmpA);
-        poststr(request,tmpB);
+        hprintf128(request,"<h3>OTA requested for %s!</h3>",tmpA);
 #if WINDOWS
 
 #elif PLATFORM_XR809
