@@ -1,3 +1,5 @@
+#ifndef _NEW_HTTP_H
+#define _NEW_HTTP_H
 
 
 extern const char httpHeader[];  // HTTP header
@@ -8,6 +10,7 @@ extern const char httpMimeTypeBinary[];
 extern const char htmlHeader[];
 extern const char htmlEnd[];
 extern const char htmlReturnToMenu[];
+extern const char htmlReturnToCfg[];
 
 extern const char *htmlPinRoleNames[];
 
@@ -52,6 +55,8 @@ void http_setup(http_request_t *request, const char *type);
 int poststr(http_request_t *request, const char *str);
 int postany(http_request_t *request, const char *str, int len);
 void misc_formatUpTimeString(int totalSeconds, char *o);
+void HTTP_AddBuildFooter(http_request_t *request);
+bool http_getArg(const char *base, const char *name, char *o, int maxSize);
 
 // poststr with format - for results LESS THAN 128
 int hprintf128(http_request_t *request, const char *fmt, ...);
@@ -69,3 +74,5 @@ typedef int (*http_callback_fn)(http_request_t *request);
 // url MUST start with '/'
 // urls must be unique (i.e. you can't have /about and /aboutme or /about/me)
 int HTTP_RegisterCallback( const char *url, int method, http_callback_fn callback);
+
+#endif
