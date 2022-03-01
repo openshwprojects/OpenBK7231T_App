@@ -25,4 +25,6 @@ extern lfs_t lfs;
 extern lfs_file_t file;
 
 void init_lfs();
+void release_lfs();
+int lfs_present();
 #endif

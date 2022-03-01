@@ -34,6 +34,10 @@
 #include "ethernet_intf.h"
 
 /* Private includes ----------------------------------------------------------*/
+
+// overall config variables for app - like BK_LITTLEFS
+#include "obk_config.h"
+
 #include "tuya_device.h"
 #include "httpserver/new_http.h"
 #include "new_pins.h"
@@ -382,21 +386,27 @@ void user_main(void)
 	ADDLOG_INFO(LOG_FEATURE_MAIN, "Initialised other callbacks\r\n");
 
 
-    // initialise rest interface
-    init_rest();
+#ifdef BK_LITTLEFS
+  // initialise the filesystem, only if present.
+  // don't create if it does not mount
+  init_lfs(0);
+#endif
 
-    // initialise MQTT - just sets up variables.
-    // all MQTT happens in timer thread?
-    MQTT_init();
+  // initialise rest interface
+  init_rest();
 
-    err = rtos_init_timer(&led_timer,
-                          1 * 1000,
-                          app_led_timer_handler,
-                          (void *)0);
-    ASSERT(kNoErr == err);
+  // initialise MQTT - just sets up variables.
+  // all MQTT happens in timer thread?
+  MQTT_init();
 
-    err = rtos_start_timer(&led_timer);
-    ASSERT(kNoErr == err);
+  err = rtos_init_timer(&led_timer,
+                        1 * 1000,
+                        app_led_timer_handler,
+                        (void *)0);
+  ASSERT(kNoErr == err);
+
+  err = rtos_start_timer(&led_timer);
+  ASSERT(kNoErr == err);
 	ADDLOG_INFO(LOG_FEATURE_MAIN, "started timer\r\n");
 }
 

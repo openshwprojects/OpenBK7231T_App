@@ -186,11 +186,16 @@ static int http_rest_post(http_request_t *request){
 
 #ifdef BK_LITTLEFS
     if (!strcmp(request->url, "api/fsblock")){
-        return http_rest_post_flash(request, LFS_BLOCKS_START);
+        if (lfs_present()){
+            release_lfs();
+        }
+        // we are writing the lfs block
+        int res = http_rest_post_flash(request, LFS_BLOCKS_START);
+        // initialise the filesystem, it should be there now.
+        // don't create if it does not mount
+        init_lfs(0);
+        return res;
     }
-#endif
-    
-#ifdef BK_LITTLEFS
     if (!strncmp(request->url, "api/lfs/", 8)){
         return http_rest_post_lfs_file(request);
     }
@@ -257,9 +262,16 @@ static int http_rest_get_lfs_file(http_request_t *request){
     int total = 0;
     lfs_file_t *file;
 
-    fpath = os_malloc(strlen(request->url) - strlen("api/lfs/") + 1);
+    // don't start LFS just because we're trying to read a file -
+    // it won't exist anyway
+    if (!lfs_present()){
+        request->responseCode = HTTP_RESPONSE_NOT_FOUND;
+        http_setup(request, httpMimeTypeText);
+        poststr(request,NULL);
+        return 0;
+    }
 
-    init_lfs();
+    fpath = os_malloc(strlen(request->url) - strlen("api/lfs/") + 1);
 
     buff = os_malloc(1024);
     file = os_malloc(sizeof(lfs_file_t));
@@ -328,7 +340,8 @@ static int http_rest_post_lfs_file(http_request_t *request){
     char *fpath;
     char *folder;
 
-    init_lfs();
+    // create if it does not exist
+    init_lfs(1);
 
     fpath = os_malloc(strlen(request->url) - strlen("api/lfs/") + 1);
     file = os_malloc(sizeof(lfs_file_t));

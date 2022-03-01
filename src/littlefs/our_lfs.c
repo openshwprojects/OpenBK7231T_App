@@ -29,7 +29,9 @@ extern UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address);
 extern UINT32 flash_write(char *user_buf, UINT32 count, UINT32 address);
 extern UINT32 flash_ctrl(UINT32 cmd, void *parm);
 
+#ifdef LFS_BOOTCOUNT        
 int boot_count = -1;
+#endif
 
 // Read a region in a block. Negative error codes are propogated
 // to the user.
@@ -70,18 +72,41 @@ const struct lfs_config cfg = {
     .block_cycles = 500,
 };
 
+int lfs_present(){
+    return lfs_initialised;
+}
 
-void init_lfs(){
+
+void init_lfs(int create){
     if (!lfs_initialised){
         int err = lfs_mount(&lfs, &cfg);
 
         // reformat if we can't mount the filesystem
         // this should only happen on the first boot
-        if (err) {
-            ADDLOG_INFO(LOG_FEATURE_LFS, "Formatting LFS");
-            lfs_format(&lfs, &cfg);
-            lfs_mount(&lfs, &cfg);
+        if (err){
+            if (create) {
+                ADDLOG_INFO(LOG_FEATURE_LFS, "Formatting LFS");
+                err  = lfs_format(&lfs, &cfg);
+                if (err){
+                    ADDLOG_ERROR(LOG_FEATURE_LFS, "Format LFS failed %d", err);
+                    return;
+                }
+                ADDLOG_INFO(LOG_FEATURE_LFS, "Formatted LFS");
+                err = lfs_mount(&lfs, &cfg);
+                if (err){
+                    ADDLOG_ERROR(LOG_FEATURE_LFS, "Mount LFS failed %d", err);
+                    return;
+                }
+                lfs_initialised = 1;
+            } else {
+                ADDLOG_INFO(LOG_FEATURE_LFS, "LFS not present - not creating");
+            }
+        } else {
+            // mounted existing
+            ADDLOG_INFO(LOG_FEATURE_LFS, "Mounted existing LFS");
+            lfs_initialised = 1;
         }
+#ifdef LFS_BOOTCOUNT        
         // read current count
         lfs_file_open(&lfs, &file, "boot_count", LFS_O_RDWR | LFS_O_CREAT);
         lfs_file_read(&lfs, &file, &boot_count, sizeof(boot_count));
@@ -94,10 +119,14 @@ void init_lfs(){
         // remember the storage is not updated until the file is closed successfully
         lfs_file_close(&lfs, &file);
         ADDLOG_INFO(LOG_FEATURE_LFS, "boot count %d", boot_count);
-        lfs_initialised = 1;
+#endif        
     }
 }
 
+void release_lfs(){
+    lfs_unmount(&lfs);
+    lfs_initialised = 0;
+}
 
 
 // Read a region in a block. Negative error codes are propogated
