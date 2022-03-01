@@ -671,7 +671,7 @@ int http_fn_cfg_ha(http_request_t *request) {
     int pwmCount = 0;
     const char *baseName;
     int i;
-	char tmpA[128];
+	//char tmpA[128];
 
     baseName = CFG_GetShortDeviceName();
 
@@ -868,7 +868,7 @@ int http_fn_cfg_pins(http_request_t *request) {
 
 int http_fn_ota_exec(http_request_t *request) {
 	char tmpA[128];
-	char tmpB[64];
+	//char tmpB[64];
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
