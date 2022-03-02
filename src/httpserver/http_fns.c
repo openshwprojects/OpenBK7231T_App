@@ -788,6 +788,10 @@ int http_fn_cfg_pins(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
     poststr(request,g_header);
+    poststr(request,"<h5> First textfield is used to enter channel index (relay index), used to support multiple relays and buttons</h5>");
+    poststr(request,"<h5> (so, first button and first relay should have channel 1, second button and second relay have channel 2, etc)</h5>");
+    poststr(request,"<h5> Second textfield (only for buttons) is used to enter channel to toggle when doing double click</h5>");
+    poststr(request,"<h5> (second textfield shows up when you change role to button and save...)</h5>");
     for(i = 0; i < GPIO_MAX; i++) {
         sprintf(tmpA, "%i",i);
         if(http_getArg(request->url,tmpA,tmpB,sizeof(tmpB))) {
@@ -819,6 +823,21 @@ int http_fn_cfg_pins(http_request_t *request) {
                 iChanged++;
             }
         }
+        sprintf(tmpA, "e%i",i);
+        if(http_getArg(request->url,tmpA,tmpB,sizeof(tmpB))) {
+            int rel;
+            int prevRel;
+
+            iChangedRequested++;
+
+            rel = atoi(tmpB);
+
+            prevRel = PIN_GetPinChannel2ForPinIndex(i);
+            if(prevRel != rel) {
+                PIN_SetPinChannel2ForPinIndex(i,rel);
+                iChanged++;
+            }
+        }
     }
     if(iChangedRequested>0) {
         PIN_SaveToFlash();
@@ -827,11 +846,12 @@ int http_fn_cfg_pins(http_request_t *request) {
 //	strcat(outbuf,"<button type=\"button\">Click Me!</button>");
     poststr(request,"<form action=\"cfg_pins\">");
     for( i = 0; i < GPIO_MAX; i++) {
-        int si, ch;
+        int si, ch, ch2;
         int j;
 
         si = PIN_GetPinRoleForPinIndex(i);
         ch = PIN_GetPinChannelForPinIndex(i);
+        ch2 = PIN_GetPinChannel2ForPinIndex(i);
 
 #if PLATFORM_XR809
         poststr(request,PIN_GetPinNameAlias(i));
@@ -848,12 +868,13 @@ int http_fn_cfg_pins(http_request_t *request) {
             }
         }
         poststr(request, "</select>");
-        if(ch == 0) {
-            tmpB[0] = 0;
-        } else {
-            sprintf(tmpB,"%i",ch);
-        }
-        hprintf128(request, "<input name=\"r%i\" type=\"text\" value=\"%s\"/>",i,tmpB);
+        hprintf128(request, "<input name=\"r%i\" type=\"text\" value=\"%i\"/>",i,ch);
+		
+		if(si == IOR_Button || si == IOR_Button_n) 
+		{
+			// extra param. For button, is relay index to toggle on double click
+			hprintf128(request, "<input name=\"e%i\" type=\"text\" value=\"%i\"/>",i,ch2);
+		}
         poststr(request,"<br>");
     }
     poststr(request,"<input type=\"submit\" value=\"Save\"/></form>");

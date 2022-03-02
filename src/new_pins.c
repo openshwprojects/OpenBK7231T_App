@@ -246,6 +246,9 @@ int PIN_GetPinRoleForPinIndex(int index) {
 int PIN_GetPinChannelForPinIndex(int index) {
 	return g_pins.channels[index];
 }
+int PIN_GetPinChannel2ForPinIndex(int index) {
+	return g_pins.channels2[index];
+}
 void RAW_SetPinValue(int index, int iVal){
 #if WINDOWS
 
@@ -268,6 +271,7 @@ void Button_OnShortClick(int index)
 		CHANNEL_DoSpecialToggleAll();
 		return;
 	}
+	// first click toggles FIRST CHANNEL linked to this button
 	CHANNEL_Toggle(g_pins.channels[index]);
 }
 void Button_OnDoubleClick(int index)
@@ -278,7 +282,8 @@ void Button_OnDoubleClick(int index)
 		CHANNEL_DoSpecialToggleAll();
 		return;
 	}
-	CHANNEL_Toggle(g_pins.channels[index]);
+	// double click toggles SECOND CHANNEL linked to this button
+	CHANNEL_Toggle(g_pins.channels2[index]);
 
 	if(g_doubleClickCallback!=0) {
 		g_doubleClickCallback(index);
@@ -581,6 +586,9 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 }
 void PIN_SetPinChannelForPinIndex(int index, int ch) {
 	g_pins.channels[index] = ch;
+}
+void PIN_SetPinChannel2ForPinIndex(int index, int ch) {
+	g_pins.channels2[index] = ch;
 }
 void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex)) {
 	g_doubleClickCallback = cb;

@@ -28,6 +28,10 @@ enum IORole {
 typedef struct pinsState_s {
 	byte roles[32];
 	byte channels[32];
+	// extra channels array - this is needed for 
+	// buttons, so button can toggle one relay on single click
+	// and other relay on double click
+	byte channels2[32];
 } pinsState_t;
 
 
@@ -41,9 +45,11 @@ void PIN_Init(void);
 void PIN_ClearPins();
 int PIN_GetPinRoleForPinIndex(int index);
 int PIN_GetPinChannelForPinIndex(int index);
+int PIN_GetPinChannel2ForPinIndex(int index);
 const char *PIN_GetPinNameAlias(int index);
 void PIN_SetPinRoleForPinIndex(int index, int role);
 void PIN_SetPinChannelForPinIndex(int index, int ch);
+void PIN_SetPinChannel2ForPinIndex(int index, int ch);
 void CHANNEL_Toggle(int ch);
 void CHANNEL_DoSpecialToggleAll();
 bool CHANNEL_Check(int ch);
