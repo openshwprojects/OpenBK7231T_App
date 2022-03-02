@@ -176,6 +176,14 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\httpserver\http_fns.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\httpserver\http_fns.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\httpserver\http_tcp_server.c"
 				>
 				<FileConfiguration
