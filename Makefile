@@ -28,14 +28,15 @@ full: clean all
 # Update/init git submodules
 .PHONY: submodules
 submodules:
-	git submodule update --init --recursive
+	git submodule update --init --recursive --remote
 
-update-submodules:
-	cd sdk/OpenBK7231T && git pull -r
-	cd sdk/OpenBK7231N && git pull -r
-	cd sdk/OpenXR809 && git pull -r
+update-submodules: submodules
 	git add sdk/OpenBK7231T sdk/OpenBK7231N sdk/OpenXR809
-	-git commit -m "feat: update SDKs"
+ifdef GITHUB_ACTIONS
+	git config user.name github-actions
+	git config user.email github-actions@github.com
+endif
+	git commit -m "feat: update SDKs" && git push || echo "No changes to commit"
 
 # Create symlink for App into SDK folder structure
 sdk/OpenBK7231T/apps/$(APP_NAME):
@@ -59,7 +60,7 @@ OpenBK7231N:
 	$(MAKE) APP_NAME=OpenBK7231N TARGET_PLATFORM=bk7231n SDK_PATH=sdk/OpenBK7231N APPS_BUILD_PATH=../bk7231n_os build-BK7231
 
 sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q2:
-	cd sdk/OpenXR809/tools && wget "https://launchpad.net/gcc-arm-embedded/4.9/4.9-2015-q2-update/+download/gcc-arm-none-eabi-4_9-2015q2-20150609-linux.tar.bz2" && tar -xf *.tar.bz2 && rm -f *.tar.bz2
+	cd sdk/OpenXR809/tools && wget -q "https://launchpad.net/gcc-arm-embedded/4.9/4.9-2015-q2-update/+download/gcc-arm-none-eabi-4_9-2015q2-20150609-linux.tar.bz2" && tar -xf *.tar.bz2 && rm -f *.tar.bz2
 
 OpenXR809: submodules sdk/OpenXR809/project/oxr_sharedApp/shared sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q2
 	$(MAKE) -C sdk/OpenXR809/src CC_DIR=$(PWD)/sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q2/bin

@@ -13,7 +13,7 @@ env:
 
 jobs:
   refs:
-    name: Prepare CI Vars
+    name: Prepare CI Environment
     runs-on: ubuntu-latest
     outputs:
       sha_short: ${{ steps.refs.outputs.sha_short }}
@@ -23,6 +23,10 @@ jobs:
     steps:
       - name: Source checkout
         uses: actions/checkout@v2
+        with:
+          submodules: recursive        
+      - name: Update SDKs if required
+        run: make update-submodules        
       - name: Semantic Release
         id: semantic
         uses: cycjimmy/semantic-release-action@v2
@@ -64,6 +68,8 @@ jobs:
     steps:
       - name: Source checkout
         uses: actions/checkout@v2
+        with:
+          submodules: recursive        
       - uses: actions/setup-python@v2
         with:
           python-version: '3.8'
