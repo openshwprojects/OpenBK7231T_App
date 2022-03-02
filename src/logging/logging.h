@@ -10,6 +10,10 @@
 // or to use from boot, #define DEFAULT_DIRECT_SERIAL_LOG 1
 ///////////////////////////////////////////////////////////////////////////
 
+
+#ifndef _OBK_LOGGING_H
+#define _OBK_LOGGING_H
+
 void addLog(char *fmt, ...);
 void addLogAdv(int level, int feature, char *fmt, ...);
 
@@ -55,3 +59,4 @@ typedef enum {
     LOG_FEATURE_MAX             = 10,
 } log_features;
 
+#endif

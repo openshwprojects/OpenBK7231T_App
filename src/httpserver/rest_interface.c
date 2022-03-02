@@ -280,48 +280,99 @@ static int http_rest_get_lfs_file(http_request_t *request){
     strncpy(fpath, request->url + strlen("api/lfs/"), 63);
     ADDLOG_DEBUG(LOG_FEATURE_API, "LFS read of %s", fpath);
     lfsres = lfs_file_open(&lfs, file, fpath, LFS_O_RDONLY);
-    if (lfsres >= 0){
-        const char *mimetype = httpMimeTypeBinary;
-        do {
-            if (EndsWith(fpath, ".ico")){
-                mimetype = "image/x-icon";
-                break;
-            }
-            if (EndsWith(fpath, ".js")){
-                mimetype = "text/javascript";
-                break;
-            }
-            if (EndsWith(fpath, ".json")){
-                mimetype = httpMimeTypeJson;
-                break;
-            }
-            if (EndsWith(fpath, ".html")){
-                mimetype = "text/html";
-                break;
-            }
-            if (EndsWith(fpath, ".vue")){
-                mimetype = "application/javascript";
-                break;
-            }
-            break;
-        } while (0);
 
-        http_setup(request, mimetype);
-        do {
-            len = lfs_file_read(&lfs, file, buff, 1024);
-            total += len;
-            if (len){
-                //ADDLOG_DEBUG(LOG_FEATURE_API, "%d bytes read", len);
-                postany(request, buff, len);
-            }
-        } while (len > 0);
-        lfs_file_close(&lfs, file);
-        ADDLOG_DEBUG(LOG_FEATURE_API, "%d total bytes read", total);
+    if (lfsres == -21){
+        lfs_dir_t *dir;
+        dir = os_malloc(sizeof(lfs_dir_t));
+        os_memset(dir, 0, sizeof(*dir));
+        // if the thing is a folder.
+        ADDLOG_DEBUG(LOG_FEATURE_API, "%s is a folder", fpath);
+        lfsres = lfs_dir_open(&lfs, dir, fpath);
+
+        if (lfsres >= 0){
+            // this is needed during iteration...?
+            struct lfs_info info;
+            int count = 0;
+            http_setup(request, httpMimeTypeJson);
+            ADDLOG_DEBUG(LOG_FEATURE_API, "opened folder %s lfs result %d", fpath, lfsres);
+            hprintf128(request, "{\"dir\":\"%s\",\"content\":[", fpath);
+            do {
+                // Read an entry in the directory
+                //
+                // Fills out the info structure, based on the specified file or directory.
+                // Returns a positive value on success, 0 at the end of directory,
+                // or a negative error code on failure.
+                lfsres = lfs_dir_read(&lfs, dir, &info);
+                if (lfsres > 0){
+                    if (count) poststr(request, ",");
+                    hprintf128(request, "{\"name\":\"%s\",\"type\":%d,\"size\":%d}", 
+                        info.name, info.type, info.size);
+                } else {
+                    if (lfsres < 0){
+                        if (count) poststr(request, ",");
+                        hprintf128(request, "{\"error\":%d}", lfsres); 
+                    }
+                }
+                count++;
+            } while (lfsres > 0);
+
+            hprintf128(request, "]}");
+
+            lfs_dir_close(&lfs, dir);
+            if (dir) os_free(dir);
+            dir = NULL;
+        } else {
+            if (dir) os_free(dir);
+            dir = NULL;
+            request->responseCode = HTTP_RESPONSE_NOT_FOUND;
+            http_setup(request, httpMimeTypeJson);
+            ADDLOG_DEBUG(LOG_FEATURE_API, "failed to open %s lfs result %d", fpath, lfsres);
+            hprintf128(request, "{\"fname\":\"%s\",\"error\":%d}", fpath, lfsres);
+        }
     } else {
-        request->responseCode = HTTP_RESPONSE_NOT_FOUND;
-        http_setup(request, httpMimeTypeJson);
-        ADDLOG_DEBUG(LOG_FEATURE_API, "failed to open %s lfs result %d", fpath, lfsres);
-        hprintf128(request, "{\"fname\":\"%s\",\"error\":%d}", fpath, lfsres);
+        if (lfsres >= 0){
+            const char *mimetype = httpMimeTypeBinary;
+            do {
+                if (EndsWith(fpath, ".ico")){
+                    mimetype = "image/x-icon";
+                    break;
+                }
+                if (EndsWith(fpath, ".js")){
+                    mimetype = "text/javascript";
+                    break;
+                }
+                if (EndsWith(fpath, ".json")){
+                    mimetype = httpMimeTypeJson;
+                    break;
+                }
+                if (EndsWith(fpath, ".html")){
+                    mimetype = "text/html";
+                    break;
+                }
+                if (EndsWith(fpath, ".vue")){
+                    mimetype = "application/javascript";
+                    break;
+                }
+                break;
+            } while (0);
+
+            http_setup(request, mimetype);
+            do {
+                len = lfs_file_read(&lfs, file, buff, 1024);
+                total += len;
+                if (len){
+                    //ADDLOG_DEBUG(LOG_FEATURE_API, "%d bytes read", len);
+                    postany(request, buff, len);
+                }
+            } while (len > 0);
+            lfs_file_close(&lfs, file);
+            ADDLOG_DEBUG(LOG_FEATURE_API, "%d total bytes read", total);
+        } else {
+            request->responseCode = HTTP_RESPONSE_NOT_FOUND;
+            http_setup(request, httpMimeTypeJson);
+            ADDLOG_DEBUG(LOG_FEATURE_API, "failed to open %s lfs result %d", fpath, lfsres);
+            hprintf128(request, "{\"fname\":\"%s\",\"error\":%d}", fpath, lfsres);
+        }
     }
     poststr(request,NULL);
     if (fpath) os_free(fpath);
@@ -355,6 +406,7 @@ static int http_rest_post_lfs_file(http_request_t *request){
         int folderlen = folder - fpath;
         folder = os_malloc(folderlen+1);
         strncpy(folder, fpath, folderlen);
+        folder[folderlen] = 0;
         ADDLOG_DEBUG(LOG_FEATURE_API, "file is in folder %s try to create", folder);
         lfsres = lfs_mkdir(&lfs, folder);
         if (lfsres < 0){
