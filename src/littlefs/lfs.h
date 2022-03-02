@@ -7,6 +7,14 @@
 #ifndef LFS_H
 #define LFS_H
 
+#include "../logging/logging.h"
+
+#define LFS_ERROR(y, ...) addLogAdv(LOG_ERROR, LOG_FEATURE_LFS, y, ##__VA_ARGS__)
+#define LFS_WARN(y, ...)  addLogAdv(LOG_WARN, LOG_FEATURE_LFS, y, ##__VA_ARGS__)
+#define LFS_TRACE(y, ...)  addLogAdv(LOG_DEBUG, LOG_FEATURE_LFS, y, ##__VA_ARGS__)
+#define LFS_DEBUG(y, ...) addLogAdv(LOG_DEBUG, LOG_FEATURE_LFS, y, ##__VA_ARGS__)
+
+
 #include <stdint.h>
 #include <stdbool.h>
 #include "lfs_util.h"

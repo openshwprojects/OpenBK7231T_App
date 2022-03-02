@@ -137,7 +137,10 @@ static int lfs_read(const struct lfs_config *c, lfs_block_t block,
     unsigned int startAddr = LFS_BLOCKS_START;
     startAddr += block*LFS_BLOCK_SIZE;
     startAddr += off;
+    GLOBAL_INT_DECLARATION();
+    GLOBAL_INT_DISABLE();
     res = flash_read((char *)buffer, size, startAddr);
+    GLOBAL_INT_RESTORE();
     return res;
 }
 
@@ -147,12 +150,21 @@ static int lfs_read(const struct lfs_config *c, lfs_block_t block,
 static int lfs_write(const struct lfs_config *c, lfs_block_t block,
         lfs_off_t off, const void *buffer, lfs_size_t size){
     int res;
+    int protect = FLASH_PROTECT_NONE;
     unsigned int startAddr = LFS_BLOCKS_START;
+    GLOBAL_INT_DECLARATION();
+
     startAddr += block*LFS_BLOCK_SIZE;
     startAddr += off;
     
+    GLOBAL_INT_DISABLE();
+    flash_ctrl(CMD_FLASH_SET_PROTECT, &protect);
     flash_ctrl(CMD_FLASH_WRITE_ENABLE, (void *)0);
     res = flash_write((char *)buffer , size, startAddr);
+    protect = FLASH_PROTECT_ALL;
+    flash_ctrl(CMD_FLASH_SET_PROTECT, &protect);
+    GLOBAL_INT_RESTORE();
+    
     return res;
 }
 
@@ -162,10 +174,18 @@ static int lfs_write(const struct lfs_config *c, lfs_block_t block,
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int lfs_erase(const struct lfs_config *c, lfs_block_t block){
     int res;
+    int protect = FLASH_PROTECT_NONE;
     unsigned int startAddr = LFS_BLOCKS_START;
+    GLOBAL_INT_DECLARATION();
+
     startAddr += block*LFS_BLOCK_SIZE;
+    GLOBAL_INT_DISABLE();
+    flash_ctrl(CMD_FLASH_SET_PROTECT, &protect);
     flash_ctrl(CMD_FLASH_WRITE_ENABLE, (void *)0);
     res = flash_ctrl(CMD_FLASH_ERASE_SECTOR, &startAddr);
+    protect = FLASH_PROTECT_ALL;
+    flash_ctrl(CMD_FLASH_SET_PROTECT, &protect);
+    GLOBAL_INT_RESTORE();
     return res;
 }
 
