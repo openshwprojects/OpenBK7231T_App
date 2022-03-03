@@ -612,6 +612,39 @@ int http_fn_flash_read_tool(http_request_t *request) {
 	poststr(request, NULL);
     return 0;
 }
+int http_fn_uart_tool(http_request_t *request) {
+	char tmpA[256];
+
+    http_setup(request, httpMimeTypeHTML);
+    poststr(request,htmlHeader);
+    poststr(request,g_header);
+    poststr(request,"<h4>UART Tool</h4>");
+ 
+
+    if(http_getArg(request->url,"data",tmpA,sizeof(tmpA))) {
+
+        hprintf128(request,"<h3>Sent %s!</h3>",tmpA);
+	} else {
+		strcpy(tmpA,"Hello UART world");
+	}
+
+    poststr(request,"<form action=\"/uart_tool\">");
+   
+    poststr(request,"<label for=\"data\">data:</label><br>\
+            <input type=\"text\" id=\"data\" name=\"data\"");
+    hprintf128(request," value=\"%s\"  size=\"40\"><br>",tmpA);
+    poststr(request,"<br>\
+            <input type=\"submit\" value=\"Submit\">\
+        </form> ");
+
+    poststr(request,htmlReturnToCfg);
+    HTTP_AddBuildFooter(request);
+    poststr(request,htmlEnd);
+
+
+	poststr(request, NULL);
+    return 0;
+}
 
 int http_fn_config_dump_table(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
@@ -759,6 +792,7 @@ int http_fn_cfg(http_request_t *request) {
     poststr(request,"<form action=\"ota\"><input type=\"submit\" value=\"OTA (update software by WiFi)\"/></form>");
     poststr(request,"<form action=\"cmd_single\"><input type=\"submit\" value=\"Execute custom command\"/></form>");
     poststr(request,"<form action=\"flash_read_tool\"><input type=\"submit\" value=\"Flash Read Tool\"/></form>");
+    poststr(request,"<form action=\"uart_tool\"><input type=\"submit\" value=\"UART Tool\"/></form>");
 
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
     k = config_get_tableOffsets(BK_PARTITION_NET_PARAM,&i,&j);
