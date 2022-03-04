@@ -164,6 +164,14 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\src\drv_tuyaMCU.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\drv_tuyaMCU.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\flash_config\flash_config.c"
 				>
 				<FileConfiguration
@@ -225,6 +233,14 @@
 			</File>
 			<File
 				RelativePath=".\src\new_cfg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\new_cmd.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\new_cmd.h"
 				>
 			</File>
 			<File

@@ -79,9 +79,11 @@ bool isWhiteSpace(char ch) {
 		return true;
 	return false;
 }
-void CMD_ExecuteCommand(const char *s) {
+int CMD_ExecuteCommand(const char *s) {
+	int r = 0;
 	char *p;
 	int i;
+	command_t *newCmd;
 
 	while(isWhiteSpace(*s)) {
 		s++;
@@ -114,6 +116,14 @@ void CMD_ExecuteCommand(const char *s) {
 			printf("Arg %i is %s\n",i,g_args[i]);
 		}
 	}
+
+	newCmd = CMD_Find(g_args[0]);
+	if(newCmd != 0) {
+		r++;
+		newCmd->handler();
+	}
+
+	return r;
 }
 
 

@@ -14,6 +14,7 @@ int http_fn_cfg_loglevel_set(http_request_t *request);
 int http_fn_cfg_wifi(http_request_t *request);
 int http_fn_cfg_mac(http_request_t *request);
 int http_fn_flash_read_tool(http_request_t *request);
+int http_fn_cmd_tool(http_request_t *request);
 int http_fn_uart_tool(http_request_t *request);
 int http_fn_cfg_quick(http_request_t *request);
 int http_fn_cfg_ha(http_request_t *request);

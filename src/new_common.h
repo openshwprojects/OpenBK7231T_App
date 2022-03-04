@@ -79,6 +79,16 @@ typedef unsigned char byte;
 
 #endif
 
+// stricmp fix
+#if WINDOWS
+
+#else
+
+int wal_stricmp(const char *a, const char *b) ;
+#define stricmp wal_stricmp
+
+#endif
+
 
 int strcat_safe(char *tg, const char *src, int tgMaxLen);
 int strcpy_safe(char *tg, const char *src, int tgMaxLen);

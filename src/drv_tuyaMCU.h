@@ -1,0 +1,3 @@
+
+
+void TuyaMCU_Init();

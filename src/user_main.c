@@ -336,6 +336,7 @@ void user_main(void)
   increment_boot_count();
 
 	CFG_InitAndLoad();
+	TuyaMCU_Init();
 
 	wifi_ssid = CFG_GetWiFiSSID();
 	wifi_pass = CFG_GetWiFiPass();

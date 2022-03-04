@@ -112,6 +112,8 @@ int __cdecl main(void)
 	PIN_SetPinRoleForPinIndex(2,IOR_PWM);
     //init_rest();
 
+	TuyaMCU_Init();
+
     // Initialize Winsock
     iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
     if (iResult != 0) {

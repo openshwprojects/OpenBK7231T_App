@@ -11,7 +11,7 @@ typedef struct command_s {
 
 command_t *CMD_Find(const char *name);
 void CMD_RegisterCommand(const char *name, const char *args, commandHandler_t handler);
-void CMD_ExecuteCommand(const char *s);
+int CMD_ExecuteCommand(const char *s);
 
 
 
