@@ -1,6 +1,7 @@
 #include "new_cmd.h"
 #include "new_pins.h"
 #include "new_cfg.h"
+#include "logging/logging.h"
 #include <ctype.h>
 
 #define HASH_SIZE 128
@@ -104,6 +105,8 @@ int CMD_ExecuteCommand(const char *s) {
 	char *p;
 	int i;
 	command_t *newCmd;
+
+	ADDLOG_DEBUG(LOG_FEATURE_CMD, "cmd [%s]", s);
 
 	while(isWhiteSpace(*s)) {
 		s++;
