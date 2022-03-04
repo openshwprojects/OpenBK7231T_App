@@ -110,7 +110,7 @@ static void tcp_client_thread( beken_thread_arg_t arg )
   // returns length to be sent if any
   int lenret = HTTP_ProcessPacket(&request);
   if (lenret > 0){
-    ADDLOG_DEBUG(LOG_FEATURE_HTTP,  "TCP sending reply len %i\n",lenret );
+    //ADDLOG_DEBUG(LOG_FEATURE_HTTP,  "TCP sending reply len %i\n",lenret );
     send( fd, reply, lenret, 0 );
   }
 
@@ -177,7 +177,7 @@ static void tcp_server_thread( beken_thread_arg_t arg )
 #endif
 #endif
                 os_strcpy( client_ip_str, inet_ntoa( client_addr.sin_addr ) );
-                ADDLOG_DEBUG(LOG_FEATURE_HTTP,  "TCP Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd );
+                //  ADDLOG_DEBUG(LOG_FEATURE_HTTP,  "TCP Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd );
 #if DISABLE_SEPARATE_THREAD_FOR_EACH_TCP_CLIENT
 				// Use main server thread (blocking all other clients)
 				// right now, I am getting OS_ThreadCreate everytime on XR809 platform

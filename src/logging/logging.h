@@ -55,8 +55,9 @@ typedef enum {
     LOG_FEATURE_GENERAL         = 7,
     LOG_FEATURE_API             = 8,
     LOG_FEATURE_LFS             = 9,
+    LOG_FEATURE_CMD             = 10,
     // add in here - but also in names in logging.c
-    LOG_FEATURE_MAX             = 10,
+    LOG_FEATURE_MAX             = 11,
 } log_features;
 
 #endif

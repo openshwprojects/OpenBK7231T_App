@@ -358,7 +358,7 @@ void log_server_thread( beken_thread_arg_t arg )
             if ( client_fd >= 0 )
             {
                 os_strcpy( client_ip_str, inet_ntoa( client_addr.sin_addr ) );
-                addLog( "TCP Log Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd );
+                //addLog( "TCP Log Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd );
                 if ( kNoErr
                      != rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY, 
 							                     "TCP Clients",
@@ -398,7 +398,7 @@ static void log_client_thread( beken_thread_arg_t arg )
         rtos_delay_milliseconds(10);
     }
 	
-	addLog( "TCP client thread exit with err: %d", len );
+	//addLog( "TCP client thread exit with err: %d", len );
 	
     close( fd );
     rtos_delete_thread( NULL );
