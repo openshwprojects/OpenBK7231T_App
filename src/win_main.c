@@ -85,6 +85,55 @@ char *getMyIp(){
     return myIP;
 }
 
+DWORD WINAPI Thread_EverySecond(void* arg)
+{
+	while(1){
+		TuyaMCU_RunFrame();
+		Sleep(1000);
+	}
+    return 0;
+}
+
+DWORD WINAPI Thread_SimulateTUYAMCUSendingData(void* arg)
+{
+	int r;
+	const char *p;
+	const char  *packets[] = { 
+		"55AA00000000FF",
+		"55AA00000000FF",
+		"55AA0001000000",
+		"55AA0002000001",
+		"55AA002400010024",
+		"55AA001C0008000000000000000023",
+	};
+	int g_numPackets = sizeof(packets)/sizeof(packets[0]);
+	while(1){
+		int ch;
+		ch = rand()%g_numPackets;
+		p = packets[ch];
+		while(*p) {
+			byte b;
+			b = hexbyte(p);
+			UART_AppendByteToCircularBuffer(b);
+			p += 2;
+			Sleep(10);
+		}
+		
+		Sleep(1000);
+	}
+    return 0;
+}
+
+void addLogAdv(int level, int feature, char *fmt, ...){
+	char t[512];
+    va_list argList;
+
+    va_start(argList, fmt);
+    vsprintf(t, fmt, argList);
+    va_end(argList);
+
+	printf(t);
+}
 int __cdecl main(void) 
 {
     WSADATA wsaData;
@@ -120,6 +169,10 @@ int __cdecl main(void)
         printf("WSAStartup failed with error: %d\n", iResult);
         return 1;
     }
+
+	CreateThread(NULL, 0, Thread_EverySecond, 0, 0, NULL);
+	CreateThread(NULL, 0, Thread_SimulateTUYAMCUSendingData, 0, 0, NULL);
+
 
     ZeroMemory(&hints, sizeof(hints));
     hints.ai_family = AF_INET;

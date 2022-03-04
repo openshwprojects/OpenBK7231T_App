@@ -8,8 +8,6 @@
 #include "../../beken378/func/user_driver/BkDriverUart.h"
 #endif
 
-
-
 #define TUYA_CMD_HEARTBEAT     0x00
 #define TUYA_CMD_QUERY_PRODUCT 0x01
 #define TUYA_CMD_MCU_CONF      0x02
@@ -21,6 +19,29 @@
 #define TUYA_CMD_QUERY_STATE   0x08
 #define TUYA_CMD_SET_TIME      0x1C
 
+const char *TuyaMCU_GetCommandTypeLabel(int t) {
+	if(t == TUYA_CMD_HEARTBEAT)
+		return "Hearbeat";
+	if(t == TUYA_CMD_QUERY_PRODUCT)
+		return "QueryProductInformation";
+	if(t == TUYA_CMD_MCU_CONF)
+		return "MCUconf";
+	if(t == TUYA_CMD_WIFI_STATE)
+		return "WiFiState";
+	if(t == TUYA_CMD_WIFI_RESET)
+		return "WiFiReset";
+	if(t == TUYA_CMD_WIFI_SELECT)
+		return "WiFiSelect";
+	if(t == TUYA_CMD_SET_DP)
+		return "SetDP";
+	if(t == TUYA_CMD_STATE)
+		return "State";
+	if(t == TUYA_CMD_QUERY_STATE)
+		return "QueryState";
+	if(t == TUYA_CMD_SET_TIME)
+		return "SetTime";
+	return "Unknown";
+}
 typedef struct rtcc_s {
 	uint8_t       second;
 	uint8_t       minute;
@@ -35,6 +56,107 @@ typedef struct rtcc_s {
 	uint32_t      valid;
 } rtcc_t;
 
+static byte *g_recvBuf = 0;
+static int g_recvBufSize = 0;
+static int g_recvBufIn = 0;
+static int g_recvBufOut = 0;
+
+void UART_InitReceiveRingBuffer(int size){
+	if(g_recvBuf!=0)
+		free(g_recvBuf);
+	g_recvBuf = (byte*)malloc(size);
+	memset(g_recvBuf,0,size);
+	g_recvBufSize = size;
+	g_recvBufIn = 0;
+}
+int UART_GetDataSize()
+{
+    int remain_buf_size = 0;
+
+    if(g_recvBufIn >= g_recvBufOut) {
+        remain_buf_size = g_recvBufIn - g_recvBufOut;
+    }else {
+        remain_buf_size = g_recvBufIn + g_recvBufSize - g_recvBufOut;
+    }
+    
+    return remain_buf_size;
+}
+byte UART_GetNextByte(int index) {
+	int realIndex = g_recvBufOut + index;
+	if(realIndex > g_recvBufSize)
+		realIndex -= g_recvBufSize;
+
+	return g_recvBuf[realIndex];
+}
+void UART_ConsumeBytes(int idx) {
+	g_recvBufOut += idx;
+	if(g_recvBufOut > g_recvBufSize)
+		g_recvBufOut -= g_recvBufSize;
+}
+// header version command lenght data checksum
+// 55AA		00		00		0000   xx	00
+
+#define MIN_TUYAMCU_PACKET_SIZE (2+1+1+2+1)
+int UART_TryToGetNextTuyaPacket(byte *out, int maxSize) {
+	int cs;
+	int len, i;
+	int c_garbage_consumed = 0;
+	byte a, b, version, command, lena, lenb;
+	
+	cs = UART_GetDataSize();
+
+	if(cs < MIN_TUYAMCU_PACKET_SIZE) {
+		return 0;
+	}
+	// skip garbage data (should not happen)
+	while(cs > 0) {
+		a = UART_GetNextByte(0);
+		b = UART_GetNextByte(1);
+		if(a != 0x55 || b != 0xAA) {
+			UART_ConsumeBytes(1);
+			c_garbage_consumed++;
+			cs--;
+		} else {
+			break;
+		}
+	}
+	if(c_garbage_consumed > 0){
+		printf("Consumed %i unwanted non-header byte in Tuya MCU buffer\n", c_garbage_consumed);
+	}
+	if(cs < MIN_TUYAMCU_PACKET_SIZE) {
+		return 0;
+	}
+	a = UART_GetNextByte(0);
+	b = UART_GetNextByte(1);
+	if(a != 0x55 || b != 0xAA) {
+		return 0;
+	}
+	version = UART_GetNextByte(2);
+	command = UART_GetNextByte(3);
+	lena = UART_GetNextByte(4); // hi
+	lenb = UART_GetNextByte(5); // lo
+	len = lenb | lena >> 8;
+	// now check if we have received whole packet
+	len += 2 + 1 + 1 + 2 + 1; // header 2 bytes, version, command, lenght, chekcusm
+	if(cs >= len) {
+		for(i = 0; i < len; i++) {
+			out[i] = UART_GetNextByte(i);
+		}
+		// consume whole packet (but don't touch next one, if any)
+		UART_ConsumeBytes(len);
+		return len;
+	}
+	return 0;
+}
+void UART_AppendByteToCircularBuffer(int rc) {
+    if(UART_GetDataSize() < (g_recvBufSize-1)) 
+    {
+        g_recvBuf[g_recvBufIn++] = rc;
+        if(g_recvBufIn >= g_recvBufSize){
+            g_recvBufIn = 0;
+        }
+   }
+}
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
 void test_ty_read_uart_data_to_buffer(int port, void* param)
 {
@@ -42,13 +164,7 @@ void test_ty_read_uart_data_to_buffer(int port, void* param)
     
     while((rc = uart_read_byte(port)) != -1)
     {
-     //   if(__ty_uart_read_data_size(port) < (ty_uart[port].buf_len-1)) 
-    //    {
-     //       ty_uart[port].buf[ty_uart[port].in++] = rc;
-      ///      if(ty_uart[port].in >= ty_uart[port].buf_len){
-     ///           ty_uart[port].in = 0;
-     ///       }
-      //  }
+		UART_AppendByteToCircularBuffer(rc);
     }
 
 }
@@ -125,6 +241,22 @@ void TuyaMCU_Send_SetTime(rtcc_t *pTime) {
 
 	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_TIME, payload_buffer, 8);
 }
+void TuyaMCU_Send_Hex() {
+	const char *args = CMD_GetArg(1);
+	if(args == 0) {
+		printf("TuyaMCU_Send_Hex: requires 1 argument (hex string, like FFAABB00CCDD\n");
+		return;
+	}
+	while(*args) {
+		byte b;
+		b = hexbyte(args);
+		
+		TuyaMCU_Bridge_SendUARTByte(b);
+
+		args += 2;
+	}
+
+}
 void TuyaMCU_Send_SetTime_Example() {
 	rtcc_t testTime;
 
@@ -142,8 +274,6 @@ void TuyaMCU_Send(byte *data, int size) {
 	int i;
     unsigned char check_sum;
 
-	TuyaMCU_Bridge_InitUART(9600);
-
 	check_sum = 0;
 	for(i = 0; i < size; i++) {
 		byte b = data[i];
@@ -156,6 +286,63 @@ void TuyaMCU_Send(byte *data, int size) {
 }
 void TuyaMCU_Init()
 {
-	CMD_RegisterCommand("tuyaMcu_testSendTime","",TuyaMCU_Send_SetTime_Example);
+	TuyaMCU_Bridge_InitUART(9600);
+	UART_InitReceiveRingBuffer(256);
+	CMD_RegisterCommand("tuyaMcu_testSendTime","",TuyaMCU_Send_SetTime_Example, "Sends a example date by TuyaMCU to clock/callendar MCU");
+	CMD_RegisterCommand("uartSendHex","",TuyaMCU_Send_Hex, "Sends raw data by TuyaMCU UART, you must write whole packet with checksum yourself");
+	///CMD_RegisterCommand("tuyaMcu_sendSimple","",TuyaMCU_Send_Simple, "Appends a 0x55 0xAA header to a data, append a checksum at end and send");
 
 }
+
+
+void TuyaMCU_ProcessIncoming(const byte *data, int len) {
+	int checkLen;
+	int i;
+	byte checkCheckSum;
+	byte cmd;
+	if(data[0] != 0x55 || data[1] != 0xAA) {
+		printf("TuyaMCU_ProcessIncoming: discarding packet with bad ident and len %i\n",len);
+		return;
+	}
+	checkLen = data[5] | data[4] >> 8;
+	checkLen = checkLen + 2 + 1 + 1 + 2 + 1;
+	if(checkLen != len) {
+		printf("TuyaMCU_ProcessIncoming: discarding packet bad expected len, expected %i and got len %i\n",checkLen,len);
+		return;
+	}
+	checkCheckSum = 0;
+	for(i = 0; i < len-1; i++) {
+		checkCheckSum += data[i];
+	}
+	if(checkCheckSum != data[len-1]) {
+		printf("TuyaMCU_ProcessIncoming: discarding packet bad expected checksum, expected %i and got checksum %i\n",(int)data[len-1],(int)checkCheckSum);
+		return;
+	}
+	cmd = data[3];
+	printf("TuyaMCU_ProcessIncoming: processing command %i (%s) with %i bytes\n",cmd,TuyaMCU_GetCommandTypeLabel(cmd),len);
+
+}
+void TuyaMCU_RunFrame() {
+	byte data[128];
+	char buffer_for_log[256];
+	char buffer2[4];
+	int len, i;
+
+	//printf("UART ring buffer state: %i %i\n",g_recvBufIn,g_recvBufOut);
+
+	len = UART_TryToGetNextTuyaPacket(data,sizeof(data));
+	if(len > 0) {
+		//printf("TUYAMCU received: ");
+		buffer_for_log[0] = 0;
+		for(i = 0; i < len; i++) {
+			//printf("%02X ",data[i]);
+			sprintf(buffer2,"%02X ",data[i]);
+			strcat_safe(buffer_for_log,buffer2,sizeof(buffer_for_log));
+		}
+		//printf(buffer_for_log);
+		//printf("\n");
+		printf("TUYAMCU received: %s\n", buffer_for_log);
+		TuyaMCU_ProcessIncoming(data,len);
+	}
+}
+

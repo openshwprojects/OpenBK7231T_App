@@ -642,7 +642,7 @@ int http_fn_cmd_tool(http_request_t *request) {
 
     poststr(request,"<label for=\"cmd\">cmd:</label><br>\
             <input type=\"text\" id=\"cmd\" name=\"cmd\" ");
-    hprintf128(request,"value=\"%s\">",tmpA);
+    hprintf128(request,"value=\"%s\"  size=\"80\">",tmpA);
     poststr(request,"<br><br>\
             <input type=\"submit\" value=\"Submit\">\
         </form> ");
