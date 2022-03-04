@@ -72,6 +72,9 @@ typedef unsigned int UINT32;
 
 #include "../../beken378/func/key/multi_button.h"
 
+#define printf addLog
+
+
 #endif
 
 typedef unsigned char byte;
@@ -81,6 +84,7 @@ typedef unsigned char byte;
 
 // stricmp fix
 #if WINDOWS
+
 
 #else
 

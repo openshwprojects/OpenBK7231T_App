@@ -15,8 +15,6 @@ static int generateHashValue(const char *fname) {
 	i = 0;
 	while (fname[i] != '\0') {
 		letter = tolower(fname[i]);
-		if (letter =='.') break;				// don't include extension
-		if (letter =='\\') letter = '/';		// damn path names
 		hash+=(int)(letter)*(i+119);
 		i++;
 	}
@@ -27,7 +25,20 @@ static int generateHashValue(const char *fname) {
 
 command_t *g_commands[HASH_SIZE];
 
-void CMD_RegisterCommand(const char *name, const char *args, commandHandler_t handler) {
+void CMD_ListAllCommands(void *userData, void (*callback)(command_t *cmd, void *userData)) {
+	int i;
+	command_t *newCmd;
+
+	for(i = 0; i < HASH_SIZE; i++) {
+		newCmd = g_commands[i];
+		while(newCmd) {
+			callback(newCmd,userData);
+			newCmd = newCmd->next;
+		}
+	}
+	
+}
+void CMD_RegisterCommand(const char *name, const char *args, commandHandler_t handler, const char *userDesc) {
 	int hash;
 	command_t *newCmd;
 
@@ -44,6 +55,7 @@ void CMD_RegisterCommand(const char *name, const char *args, commandHandler_t ha
 	newCmd->handler = handler;
 	newCmd->name = name;
 	newCmd->next = g_commands[hash];
+	newCmd->userDesc = userDesc;
 	g_commands[hash] = newCmd;
 }
 
@@ -79,6 +91,14 @@ bool isWhiteSpace(char ch) {
 	if(ch == '\r')
 		return true;
 	return false;
+}
+// NOTE: arg0 is command name
+int CMD_GetArgsCount() {
+	return g_numArgs;
+}
+// NOTE: arg0 is command name
+const char *CMD_GetArg(int i) {
+	return g_args[i];
 }
 int CMD_ExecuteCommand(const char *s) {
 	int r = 0;
