@@ -612,18 +612,104 @@ int http_fn_flash_read_tool(http_request_t *request) {
 	poststr(request, NULL);
     return 0;
 }
+#if PLATFORM_BK7231T | PLATFORM_BK7231N
+void test_ty_read_uart_data_to_buffer(int port, void* param)
+{
+    int rc = 0;
+    
+    while((rc = uart_read_byte(port)) != -1)
+    {
+     //   if(__ty_uart_read_data_size(port) < (ty_uart[port].buf_len-1)) 
+    //    {
+     //       ty_uart[port].buf[ty_uart[port].in++] = rc;
+      ///      if(ty_uart[port].in >= ty_uart[port].buf_len){
+     ///           ty_uart[port].in = 0;
+     ///       }
+      //  }
+    }
+
+}
+#endif
+#if PLATFORM_BK7231T | PLATFORM_BK7231N
+#include "../../beken378/func/user_driver/BkDriverUart.h"
+#endif
+
+void TuyaMCU_Bridge_InitUART(int baud) {
+#if PLATFORM_BK7231T | PLATFORM_BK7231N
+	bk_uart_config_t config;
+
+    config.baud_rate = 9600;
+    config.data_width = 0x03;
+    config.parity = 0;    //0:no parity,1:odd,2:even
+    config.stop_bits = 0;   //0:1bit,1:2bit
+    config.flow_control = 0;   //FLOW_CTRL_DISABLED
+    config.flags = 0;
+
+    bk_uart_initialize(0, &config, NULL);
+    bk_uart_set_rx_callback(0, test_ty_read_uart_data_to_buffer, NULL);
+#else
+
+
+#endif
+}
+void TuyaMCU_Bridge_SendUARTByte(byte b) {
+#if PLATFORM_BK7231T | PLATFORM_BK7231N
+	bk_send_byte(0, b);
+#elif WINDOWS
+	// STUB - for testing
+    printf("%02X", b);
+#else
+
+
+#endif
+}
+
+
+void TuyaMCU_Send(byte *data, int size) {
+	int i;
+    unsigned char check_sum;
+
+	TuyaMCU_Bridge_InitUART(9600);
+
+	check_sum = 0;
+	for(i = 0; i < size; i++) {
+		byte b = data[i];
+		check_sum += b;
+		TuyaMCU_Bridge_SendUARTByte(b);
+	}
+	TuyaMCU_Bridge_SendUARTByte(check_sum);
+
+	printf("\nWe sent %i bytes to Tuya MCU\n",size+1);
+}
 int http_fn_uart_tool(http_request_t *request) {
 	char tmpA[256];
-
+	byte results[128];
+	int resultLen = 0;
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
     poststr(request,g_header);
     poststr(request,"<h4>UART Tool</h4>");
- 
+
+
 
     if(http_getArg(request->url,"data",tmpA,sizeof(tmpA))) {
-
         hprintf128(request,"<h3>Sent %s!</h3>",tmpA);
+		if(0){
+			TuyaMCU_Send(tmpA, strlen(tmpA));
+		//	bk_send_string(0,tmpA);
+		} else {
+			byte b;
+			const char *p;
+
+			p = tmpA;
+			while(*p) {
+				b = hexbyte(p);
+				results[resultLen] = b;
+				resultLen++;
+				p+=2;
+			}
+			TuyaMCU_Send(results, resultLen);
+		}
 	} else {
 		strcpy(tmpA,"Hello UART world");
 	}

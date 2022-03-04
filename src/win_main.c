@@ -61,6 +61,20 @@ void strcat_safe_test(){
 	misc_formatUpTimeString(24*60*60, timeStrF);
 	misc_formatUpTimeString(24*60*60+60*60+50, timeStrG);
 	misc_formatUpTimeString(100*24*60*60+60*60+15*60+50, timeStrH);
+
+	// some command examples, compatible with Tasmota syntax
+	CMD_ExecuteCommand("TuyaSend3 108,ff0000646464ff");
+	CMD_ExecuteCommand("TuyaSend4 103,2");
+	CMD_ExecuteCommand("TuyaSend5 108, ABCD");
+	CMD_ExecuteCommand("TuyaSend8");
+	// TODO
+	//CMD_ExecuteCommand("Backlog Dimmer 10; Dimmer 100 ");
+	//CMD_ExecuteCommand("Backlog Status 1; Power2 on; Delay 20; Power2 off; Status 4");
+	CMD_ExecuteCommand("Tuyqqqqqqqqqq arg1 arg2 arg3 arg4");
+	CMD_ExecuteCommand("Tuyqqqqqqqqqq");
+	CMD_ExecuteCommand("Tuyqqqqqqqqqq");
+	CMD_ExecuteCommand("Tuyqqqqqqqqqq");
+	CMD_ExecuteCommand("Tuyqqqqqqqqqq");
 }
 int Time_getUpTimeSeconds() {
 	return rand()% 100000;
