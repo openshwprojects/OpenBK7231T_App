@@ -16,6 +16,7 @@
 #include "../new_cfg.h"
 #include "../flash_config/flash_vars_vars.h"
 #include "../flash_config/flash_vars.h"
+#include "../new_cmd.h"
 
 extern UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address);
 
@@ -55,6 +56,7 @@ static int http_rest_get_channels(http_request_t *request);
 
 static int http_rest_get_flash_vars_test(http_request_t *request);
 
+static int http_rest_post_cmd(http_request_t *request);
 
 
 void init_rest(){
@@ -183,6 +185,11 @@ static int http_rest_post(http_request_t *request){
     if (!strncmp(request->url, "api/flash/", 10)){
         return http_rest_post_flash_advanced(request);
     }
+
+    if (!strcmp(request->url, "api/cmnd")){
+        return http_rest_post_cmd(request);
+    }
+    
 
 #ifdef BK_LITTLEFS
     if (!strcmp(request->url, "api/fsblock")){
@@ -1072,3 +1079,11 @@ static int http_rest_post_channels(http_request_t *request){
     return http_rest_error(request, 200, "OK");
     return 0;
 }
+
+
+static int http_rest_post_cmd(http_request_t *request){
+    char *cmd = request->bodystart;
+    CMD_ExecuteCommand(cmd);
+    return http_rest_error(request, 200, "OK");
+}
+
