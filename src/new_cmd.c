@@ -2,7 +2,11 @@
 #include "new_pins.h"
 #include "new_cfg.h"
 #include "logging/logging.h"
+#include "obk_config.h"
 #include <ctype.h>
+#ifdef BK_LITTLEFS
+	#include "littlefs/our_lfs.h"
+#endif
 
 #define HASH_SIZE 128
 
@@ -25,10 +29,15 @@ static int generateHashValue(const char *fname) {
 }
 
 command_t *g_commands[HASH_SIZE];
-static int cmnd_backlog(void * context, const char *cmd, char *args);
+static int cmnd_backlog(const void * context, const char *cmd, char *args);
+static int cmnd_lfsexec(const void * context, const char *cmd, char *args);
 
-void CMD_Init() {
+void CMD_Init(int runautoexec) {
 	CMD_RegisterCommand("backlog", "", cmnd_backlog, "run a sequence of ; separated commands", NULL);
+	CMD_RegisterCommand("exec", "", cmnd_lfsexec, "exec <file> - run autoexec.bat or other file from LFS if present", NULL);
+	if (runautoexec){
+		cmnd_lfsexec(NULL, "exec", "autoexec.bat");
+	}
 }
 
 
@@ -216,5 +225,51 @@ static int cmnd_backlog(const void * context, const char *cmd, char *args){
 	}
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "backlog executed %d", count);
 
+	return 1;
+}
+
+
+static int cmnd_lfsexec(const void * context, const char *cmd, char *args){
+#ifdef BK_LITTLEFS
+	ADDLOG_DEBUG(LOG_FEATURE_CMD, "exec %s", args);
+	if (lfs_present()){
+		lfs_file_t *file = os_malloc(sizeof(lfs_file_t));
+		if (file){
+			int lfsres;
+			char line[256];
+			char *fname = "autoexec.bat";
+			if (args && *args){
+				fname = args;
+			}
+			lfsres = lfs_file_open(&lfs, file, fname, LFS_O_RDONLY);
+			if (lfsres >= 0) {
+				do {
+					char *p = line;
+					do {
+						lfsres = lfs_file_read(&lfs, file, p, 1);
+						if ((lfsres <= 0) || (*p < 0x20)){
+							*p = 0;
+							break;
+						}
+						p++;
+					} while ((p - line) < 255);
+					if (lfsres >= 0){
+						if (*line && (*line != '#')){
+							CMD_ExecuteCommand(line);
+						}
+					}
+				} while (lfsres > 0);
+
+				lfs_file_close(&lfs, file);
+			} else {
+				ADDLOG_ERROR(LOG_FEATURE_CMD, "no file %s err %d", fname, lfsres);
+			}
+			os_free(file);
+			file = NULL;
+		}
+	} else {
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "lfs is absent");
+	}
+#endif
 	return 1;
 }
