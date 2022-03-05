@@ -7,6 +7,8 @@
 #if PLATFORM_XR809
 
 
+#elif WINDOWS
+
 #else
 
 // comment out to remove component
