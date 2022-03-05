@@ -56,6 +56,7 @@
 #include "flash_config/flash_config.h"
 #include "flash_config/flash_vars_vars.h"
 #include "drv_tuyaMCU.h"
+#include "ntp_time.h"
 
 
 #undef Malloc

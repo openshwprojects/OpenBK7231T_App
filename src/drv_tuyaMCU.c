@@ -23,6 +23,10 @@
 
 void TuyaMCU_RunFrame();
 
+// from http_fns.  should move to a utils file.
+extern unsigned char hexbyte( const char* hex );
+
+
 const char *TuyaMCU_GetCommandTypeLabel(int t) {
 	if(t == TUYA_CMD_HEARTBEAT)
 		return "Hearbeat";

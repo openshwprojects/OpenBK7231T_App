@@ -616,14 +616,14 @@ int http_fn_flash_read_tool(http_request_t *request) {
 }
 
 int http_fn_cmd_tool(http_request_t *request) {
-    int res;
-    int rem;
-    int now;
-    int nowOfs;
-    int hex;
+    //int res;
+    //int rem;
+    //int now;
+    //int nowOfs;
+    //int hex;
     int i;
 	char tmpA[128];
-	char tmpB[64];
+	//char tmpB[64];
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
@@ -671,7 +671,7 @@ int http_fn_uart_tool(http_request_t *request) {
     if(http_getArg(request->url,"data",tmpA,sizeof(tmpA))) {
         hprintf128(request,"<h3>Sent %s!</h3>",tmpA);
 		if(0){
-			TuyaMCU_Send(tmpA, strlen(tmpA));
+			TuyaMCU_Send((byte *)tmpA, strlen(tmpA));
 		//	bk_send_string(0,tmpA);
 		} else {
 			byte b;

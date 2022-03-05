@@ -391,7 +391,6 @@ static char tcplogbuf[TCPLOGBUFSIZE];
 static void log_client_thread( beken_thread_arg_t arg )
 {
     int fd = (int) arg;
-    int len = 0;
     while ( 1 ){
         int count = getTcp(tcplogbuf, TCPLOGBUFSIZE);
         if (count){
