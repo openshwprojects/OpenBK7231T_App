@@ -2,6 +2,8 @@
 #include "new_pins.h"
 #include "new_cfg.h"
 #include "new_cmd.h"
+#include "logging/logging.h"
+#include "drv_tuyaMCU.h"
 
 
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
@@ -18,6 +20,8 @@
 #define TUYA_CMD_STATE         0x07
 #define TUYA_CMD_QUERY_STATE   0x08
 #define TUYA_CMD_SET_TIME      0x1C
+
+void TuyaMCU_RunFrame();
 
 const char *TuyaMCU_GetCommandTypeLabel(int t) {
 	if(t == TUYA_CMD_HEARTBEAT)
@@ -241,11 +245,12 @@ void TuyaMCU_Send_SetTime(rtcc_t *pTime) {
 
 	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_TIME, payload_buffer, 8);
 }
-void TuyaMCU_Send_Hex() {
-	const char *args = CMD_GetArg(1);
-	if(args == 0) {
+
+int TuyaMCU_Send_Hex(const void *context, const char *cmd, char *args) {
+	//const char *args = CMD_GetArg(1);
+	if(!(*args)) {
 		printf("TuyaMCU_Send_Hex: requires 1 argument (hex string, like FFAABB00CCDD\n");
-		return;
+		return -1;
 	}
 	while(*args) {
 		byte b;
@@ -255,9 +260,10 @@ void TuyaMCU_Send_Hex() {
 
 		args += 2;
 	}
-
+	return 1;
 }
-void TuyaMCU_Send_SetTime_Example() {
+
+int TuyaMCU_Send_SetTime_Example(const void *context, const char *cmd, char *args) {
 	rtcc_t testTime;
 
 	testTime.year = 2012;
@@ -269,7 +275,9 @@ void TuyaMCU_Send_SetTime_Example() {
 	testTime.second = 32;
 
 	TuyaMCU_Send_SetTime(&testTime);
+	return 1;
 }
+
 void TuyaMCU_Send(byte *data, int size) {
 	int i;
     unsigned char check_sum;
@@ -288,8 +296,8 @@ void TuyaMCU_Init()
 {
 	TuyaMCU_Bridge_InitUART(9600);
 	UART_InitReceiveRingBuffer(256);
-	CMD_RegisterCommand("tuyaMcu_testSendTime","",TuyaMCU_Send_SetTime_Example, "Sends a example date by TuyaMCU to clock/callendar MCU");
-	CMD_RegisterCommand("uartSendHex","",TuyaMCU_Send_Hex, "Sends raw data by TuyaMCU UART, you must write whole packet with checksum yourself");
+	CMD_RegisterCommand("tuyaMcu_testSendTime","",TuyaMCU_Send_SetTime_Example, "Sends a example date by TuyaMCU to clock/callendar MCU", NULL);
+	CMD_RegisterCommand("uartSendHex","",TuyaMCU_Send_Hex, "Sends raw data by TuyaMCU UART, you must write whole packet with checksum yourself", NULL);
 	///CMD_RegisterCommand("tuyaMcu_sendSimple","",TuyaMCU_Send_Simple, "Appends a 0x55 0xAA header to a data, append a checksum at end and send");
 
 }

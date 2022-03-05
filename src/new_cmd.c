@@ -9,13 +9,14 @@
 static int generateHashValue(const char *fname) {
 	int		i;
 	int		hash;
-	char	letter;
+	int		letter;
+	unsigned char *f = (unsigned char *)fname;
 
 	hash = 0;
 	i = 0;
-	while (fname[i] != '\0') {
-		letter = tolower(fname[i]);
-		hash+=(int)(letter)*(i+119);
+	while (f[i]) {
+		letter = tolower(f[i]);
+		hash+=(letter)*(i+119);
 		i++;
 	}
 	hash = (hash ^ (hash >> 10) ^ (hash >> 20));
@@ -38,7 +39,7 @@ void CMD_ListAllCommands(void *userData, void (*callback)(command_t *cmd, void *
 	}
 	
 }
-void CMD_RegisterCommand(const char *name, const char *args, commandHandler_t handler, const char *userDesc) {
+void CMD_RegisterCommand(const char *name, const char *args, commandHandler_t handler, const char *userDesc, void *context) {
 	int hash;
 	command_t *newCmd;
 
@@ -56,6 +57,7 @@ void CMD_RegisterCommand(const char *name, const char *args, commandHandler_t ha
 	newCmd->name = name;
 	newCmd->next = g_commands[hash];
 	newCmd->userDesc = userDesc;
+	newCmd->context = context;
 	g_commands[hash] = newCmd;
 }
 
@@ -77,9 +79,9 @@ command_t *CMD_Find(const char *name) {
 #define MAX_CMD_LEN 512
 #define MAX_ARGS 32
 
-static char g_buffer[MAX_CMD_LEN];
-static char *g_args[MAX_ARGS];
-static int g_numArgs = 0;
+//static char g_buffer[MAX_CMD_LEN];
+//static char *g_args[MAX_ARGS];
+//static int g_numArgs = 0;
 
 bool isWhiteSpace(char ch) {
 	if(ch == ' ')
@@ -93,17 +95,20 @@ bool isWhiteSpace(char ch) {
 	return false;
 }
 // NOTE: arg0 is command name
-int CMD_GetArgsCount() {
-	return g_numArgs;
-}
+//int CMD_GetArgsCount() {
+//	return g_numArgs;
+//}
 // NOTE: arg0 is command name
-const char *CMD_GetArg(int i) {
-	return g_args[i];
-}
-int CMD_ExecuteCommand(const char *s) {
-	int r = 0;
+//const char *CMD_GetArg(int i) {
+//	return g_args[i];
+//}
+
+int CMD_ExecuteCommand(char *s) {
+	//int r = 0;
 	char *p;
-	int i;
+	//int i;
+	char *cmd;
+	char *args;
 	command_t *newCmd;
 
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "cmd [%s]", s);
@@ -112,6 +117,34 @@ int CMD_ExecuteCommand(const char *s) {
 		s++;
 	}
 
+	cmd = s;
+	p = s;
+	while(*p != 0) {
+		if(isWhiteSpace(*p)) {
+			*p = 0;
+			p++;
+			break;
+		}
+		p++;
+	}
+
+	while(*p && isWhiteSpace(*p)) {
+		p++;
+	}
+	args = p;
+
+	newCmd = CMD_Find(cmd);
+	if (!newCmd) {
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "cmd %s not found", cmd);
+		return 0;
+	}
+
+	if (newCmd->handler){
+		return newCmd->handler(newCmd->context, cmd, args);
+	}
+	return 0;
+
+/*
 	strcpy(g_buffer,s);
 	p = g_buffer;
 	g_numArgs = 0;
@@ -147,6 +180,6 @@ int CMD_ExecuteCommand(const char *s) {
 	}
 
 	return r;
+*/
 }
-
 
