@@ -25,6 +25,12 @@ static int generateHashValue(const char *fname) {
 }
 
 command_t *g_commands[HASH_SIZE];
+static int cmnd_backlog(void * context, const char *cmd, char *args);
+
+void CMD_Init() {
+	CMD_RegisterCommand("backlog", "", cmnd_backlog, "run a sequence of ; separated commands", NULL);
+}
+
 
 void CMD_ListAllCommands(void *userData, void (*callback)(command_t *cmd, void *userData)) {
 	int i;
@@ -183,3 +189,32 @@ int CMD_ExecuteCommand(char *s) {
 */
 }
 
+
+static int cmnd_backlog(const void * context, const char *cmd, char *args){
+	char *subcmd;
+	char *p;
+	int count = 0;
+	if (stricmp(cmd, "backlog")){
+		return -1;
+	}
+	ADDLOG_DEBUG(LOG_FEATURE_CMD, "backlog [%s]", args);
+
+	subcmd = args;
+	p = args;
+	while (*subcmd){
+		while (*p){
+			if (*p == ';'){
+				*p = '\0';
+				p++;
+				break;
+			}
+			p++;
+		}
+		count++;
+		CMD_ExecuteCommand(subcmd);
+		subcmd = p;
+	}
+	ADDLOG_DEBUG(LOG_FEATURE_CMD, "backlog executed %d", count);
+
+	return 1;
+}

@@ -11,6 +11,7 @@ typedef struct command_s {
 	struct command_s *next;
 } command_t;
 
+void CMD_Init();
 command_t *CMD_Find(const char *name);
 void CMD_RegisterCommand(const char *name, const char *args, commandHandler_t handler, const char *userDesc, void *context);
 // allow modification of s

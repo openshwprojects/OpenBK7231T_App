@@ -57,6 +57,7 @@
 #include "flash_config/flash_vars_vars.h"
 #include "drv_tuyaMCU.h"
 #include "ntp_time.h"
+#include "new_cmd.h"
 
 
 #undef Malloc
@@ -342,7 +343,8 @@ void user_main(void)
 
 	CFG_InitAndLoad();
 	TuyaMCU_Init();
-
+  CMD_Init();
+  
 	wifi_ssid = CFG_GetWiFiSSID();
 	wifi_pass = CFG_GetWiFiPass();
 
