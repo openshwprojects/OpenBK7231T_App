@@ -163,6 +163,7 @@ static void app_led_timer_handler(void *data)
 {
 	MQTT_RunEverySecondUpdate();
 	TuyaMCU_RunFrame();
+	NTP_OnEverySecond();
 
 	g_secondsElapsed ++;
   ADDLOG_INFO(LOG_FEATURE_MAIN, "Timer is %i free mem %d\n", g_secondsElapsed, xPortGetFreeHeapSize());

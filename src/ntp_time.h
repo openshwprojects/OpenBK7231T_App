@@ -1,0 +1,3 @@
+
+
+void NTP_OnEverySecond();
