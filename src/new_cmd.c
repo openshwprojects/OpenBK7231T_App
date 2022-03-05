@@ -28,7 +28,7 @@ static int generateHashValue(const char *fname) {
 	return hash;
 }
 
-command_t *g_commands[HASH_SIZE];
+command_t *g_commands[HASH_SIZE] = { NULL };
 static int cmnd_backlog(const void * context, const char *cmd, char *args);
 static int cmnd_lfsexec(const void * context, const char *cmd, char *args);
 
@@ -238,21 +238,25 @@ static int cmnd_lfsexec(const void * context, const char *cmd, char *args){
 			int lfsres;
 			char line[256];
 			char *fname = "autoexec.bat";
+		    memset(file, 0, sizeof(lfs_file_t));
 			if (args && *args){
 				fname = args;
 			}
 			lfsres = lfs_file_open(&lfs, file, fname, LFS_O_RDONLY);
 			if (lfsres >= 0) {
+				ADDLOG_DEBUG(LOG_FEATURE_CMD, "openned file %s", fname);
 				do {
 					char *p = line;
 					do {
 						lfsres = lfs_file_read(&lfs, file, p, 1);
-						if ((lfsres <= 0) || (*p < 0x20)){
+						if ((lfsres <= 0) || (*p < 0x20) || (p - line) == 255){
 							*p = 0;
 							break;
 						}
 						p++;
 					} while ((p - line) < 255);
+					ADDLOG_DEBUG(LOG_FEATURE_CMD, "line is %s", line);
+
 					if (lfsres >= 0){
 						if (*line && (*line != '#')){
 							CMD_ExecuteCommand(line);
@@ -261,6 +265,7 @@ static int cmnd_lfsexec(const void * context, const char *cmd, char *args){
 				} while (lfsres > 0);
 
 				lfs_file_close(&lfs, file);
+				ADDLOG_DEBUG(LOG_FEATURE_CMD, "closed file %s", fname);
 			} else {
 				ADDLOG_ERROR(LOG_FEATURE_CMD, "no file %s err %d", fname, lfsres);
 			}

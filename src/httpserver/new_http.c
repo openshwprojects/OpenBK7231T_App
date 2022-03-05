@@ -409,9 +409,9 @@ int HTTP_ProcessPacket(http_request_t *request) {
 	}
 
 	if (request->method == HTTP_GET) {
-		ADDLOG_INFO(LOG_FEATURE_HTTP, "HTTP request\n");
+		//ADDLOG_INFO(LOG_FEATURE_HTTP, "HTTP request\n");
 	} else {
-		ADDLOG_INFO(LOG_FEATURE_HTTP, "Other request\n");
+		//ADDLOG_INFO(LOG_FEATURE_HTTP, "Other request\n");
 	}
 
 	// if OPTIONS, return now - for CORS
