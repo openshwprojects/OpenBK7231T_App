@@ -17,6 +17,8 @@
 void addLog(char *fmt, ...);
 void addLogAdv(int level, int feature, char *fmt, ...);
 
+int log_command(const void *context, const char *cmd, char *args);
+
 #define ADDLOG_ERROR(x, y, ...) addLogAdv(LOG_ERROR, x, y, ##__VA_ARGS__)
 #define ADDLOG_WARN(x, y, ...)  addLogAdv(LOG_WARN, x, y, ##__VA_ARGS__)
 #define ADDLOG_INFO(x, y, ...)  addLogAdv(LOG_INFO, x, y, ##__VA_ARGS__)

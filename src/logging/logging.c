@@ -6,6 +6,7 @@
 #include "../httpserver/new_http.h"
 #include "str_pub.h"
 #include "../logging/logging.h"
+#include "../new_cmd.h"
 
 SemaphoreHandle_t g_mutex = 0;
 static char tmp[1024];
@@ -32,7 +33,9 @@ char *logfeaturenames[] = {
     "GEN:", //              = 7
     "API:", // = 8
     "LFS:", // = 9
+    "CMD:", // = 10
 };
+
 
 #ifdef DEBUG_USE_SIMPLE_LOGGER
 
@@ -135,6 +138,9 @@ static void initLog() {
     HTTP_RegisterCallback( "/logs", HTTP_GET, http_getlog);
     HTTP_RegisterCallback( "/lograw", HTTP_GET, http_getlograw);
     bk_printf("Init log done!\r\n");
+
+    CMD_RegisterCommand("loglevel", "", log_command, "set log level <0..6>", NULL);
+    CMD_RegisterCommand("logfeature", "", log_command, "set log feature filter, <0..10> <0|1>", NULL);
 }
 
 // adds a log to the log memory
@@ -385,7 +391,6 @@ static char tcplogbuf[TCPLOGBUFSIZE];
 static void log_client_thread( beken_thread_arg_t arg )
 {
     int fd = (int) arg;
-    int len = 0;
     while ( 1 ){
         int count = getTcp(tcplogbuf, TCPLOGBUFSIZE);
         if (count){
@@ -454,6 +459,55 @@ static int http_getlog(http_request_t *request){
 }
 
 
+int log_command(const void *context, const char *cmd, char *args){
+    int result = 0;
+    if (!cmd) return -1;
+    if (!args) return -1;
+    do{
+        if (!stricmp(cmd, "loglevel")){
+            int res, level;
+            res = sscanf(args, "%d", &level);
+            if (res == 1){
+                if ((level >= 0) && (level <= 9)){
+                    loglevel = level;
+                    result = 1;
+                    ADDLOG_DEBUG(LOG_FEATURE_CMD, "loglevel set %d", level);
+                } else {
+                    ADDLOG_ERROR(LOG_FEATURE_CMD, "loglevel %d out of range", level);
+                    result = -1;
+                }
+            } else {
+                ADDLOG_ERROR(LOG_FEATURE_CMD, "loglevel %s invalid?", args);
+                result = -1;
+            }
+            break;
+        }
+        if (!stricmp(cmd, "logfeature")){
+            int res, feat;
+            int val = 1;
+            res = sscanf(args, "%d %d", &feat, &val);
+            if (res >= 1){
+                if ((feat >= 0) && (feat < LOG_FEATURE_MAX)){
+                    logfeatures &= ~(1 << feat);
+                    if (val){
+                        logfeatures |= (1 << feat);
+                    }
+                    ADDLOG_DEBUG(LOG_FEATURE_CMD, "logfeature set 0x%08X", logfeatures);
+                    result = 1;
+                } else {
+                    ADDLOG_ERROR(LOG_FEATURE_CMD, "logfeature %d out of range", feat);
+                    result = -1;
+                }
+            } else {
+                ADDLOG_ERROR(LOG_FEATURE_CMD, "logfeature %s invalid?", args);
+                result = -1;
+            }
+            break;
+        }
+    } while (0);
+
+    return result;
+}
 
 
 #endif

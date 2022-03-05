@@ -55,6 +55,10 @@
 
 #include "flash_config/flash_config.h"
 #include "flash_config/flash_vars_vars.h"
+#include "drv_tuyaMCU.h"
+#include "ntp_time.h"
+#include "new_cmd.h"
+
 
 #undef Malloc
 #undef Free
@@ -339,7 +343,7 @@ void user_main(void)
 
 	CFG_InitAndLoad();
 	TuyaMCU_Init();
-
+  
 	wifi_ssid = CFG_GetWiFiSSID();
 	wifi_pass = CFG_GetWiFiPass();
 
@@ -401,6 +405,12 @@ void user_main(void)
   // initialise MQTT - just sets up variables.
   // all MQTT happens in timer thread?
   MQTT_init();
+
+
+  // NOTE: this will try to read autoexec.bat,
+  // so ALL commands expected in autoexec.bat should have been registered by now...
+  // but DON't run autoexec if we have had 2+ boot failures
+  CMD_Init(bootFailures < 2);
 
   err = rtos_init_timer(&led_timer,
                         1 * 1000,

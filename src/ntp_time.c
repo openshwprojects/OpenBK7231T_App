@@ -19,6 +19,7 @@
 
 #else
 #include "lwip/sockets.h"
+#include "logging/logging.h"
 
 
 #endif
