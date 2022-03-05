@@ -11,7 +11,25 @@
 SemaphoreHandle_t g_mutex = 0;
 static char tmp[1024];
 int loglevel = 4; // default to info
-unsigned int logfeatures = 0xffffffff;
+unsigned int logfeatures = (
+    (1 << 0) |
+    (1 << 1) |
+    (1 << 2) |
+    (1 << 3) |
+    (1 << 4) |
+    (1 << 5) |
+    (1 << 6) |
+    (1 << 7) |
+    (1 << 8) |
+    (0 << 9) | // disable LFS by default
+    (1 << 10) |
+    (1 << 11) |
+    (1 << 12) |
+    (1 << 13) |
+    (1 << 14) |
+    (1 << 15)
+);
+static int log_delay = 0;
 
 char *loglevelnames[] = {
     "NONE:",
@@ -95,6 +113,9 @@ void addLogAdv(int level, int feature, char *fmt, ...){
 		bk_printf("\r");
 
         xSemaphoreGive( g_mutex );
+        if (log_delay){
+            rtos_delay_milliseconds(log_delay);
+        }
     }
 }
 #else
@@ -126,9 +147,8 @@ static struct tag_logMemory {
 int direct_serial_log = DEFAULT_DIRECT_SERIAL_LOG;
 
 static int initialised = 0; 
-static char tmp[1024];
 
-static void initLog() {
+static void initLog( void ) {
     bk_printf("Entering init log...\r\n");
     logMemory.head = logMemory.tailserial = logMemory.tailtcp = logMemory.tailhttp = 0; 
     logMemory.mutex = xSemaphoreCreateMutex( );
@@ -141,6 +161,9 @@ static void initLog() {
 
     CMD_RegisterCommand("loglevel", "", log_command, "set log level <0..6>", NULL);
     CMD_RegisterCommand("logfeature", "", log_command, "set log feature filter, <0..10> <0|1>", NULL);
+    CMD_RegisterCommand("logtype", "", log_command, "logtype direct|all - direct logs only to serial immediately", NULL);
+    CMD_RegisterCommand("logdelay", "", log_command, "logdelay 0..n - impose ms delay after every log", NULL);
+    
 }
 
 // adds a log to the log memory
@@ -169,6 +192,9 @@ void addLog(char *fmt, ...){
         if (taken == pdTRUE){
             xSemaphoreGive( logMemory.mutex );
         }
+        if (log_delay){
+            rtos_delay_milliseconds(log_delay);
+        }
         return;
     }
 
@@ -191,9 +217,10 @@ void addLog(char *fmt, ...){
     if (taken == pdTRUE){
         xSemaphoreGive( logMemory.mutex );
     }
+    if (log_delay){
+        rtos_delay_milliseconds(log_delay);
+    }
 }
-
-
 
 
 // adds a log to the log memory
@@ -228,16 +255,18 @@ void addLogAdv(int level, int feature, char *fmt, ...){
     int len = strlen(tmp);
     tmp[len++] = '\r';
     tmp[len++] = '\n';
+    tmp[len] = '\0';
 
-#ifdef DIRECTLOG
-    bk_printf(tmp);
-    if (taken == pdTRUE){
-        xSemaphoreGive( logMemory.mutex );
+    if (direct_serial_log){
+        bk_printf(tmp);
+        if (taken == pdTRUE){
+            xSemaphoreGive( logMemory.mutex );
+        }
+        if (log_delay){
+            rtos_delay_milliseconds(log_delay);
+        }
+        return;
     }
-    return;
-#endif    
-
-    //bk_printf("addlog %d.%d.%d %d:%s\n", logMemory.head, logMemory.tailserial, logMemory.tailtcp, len,tmp);
 
     for (int i = 0; i < len; i++){
         logMemory.log[logMemory.head] = tmp[i];
@@ -256,6 +285,10 @@ void addLogAdv(int level, int feature, char *fmt, ...){
     if (taken == pdTRUE){
         xSemaphoreGive( logMemory.mutex );
     }
+    if (log_delay){
+        rtos_delay_milliseconds(log_delay);
+    }
+
 }
 
 
@@ -504,6 +537,25 @@ int log_command(const void *context, const char *cmd, char *args){
             }
             break;
         }
+        if (!stricmp(cmd, "logtype")){
+            if (!strcmp(args, "direct")){
+                direct_serial_log = 1;
+            } else {
+                direct_serial_log = 0;
+            }
+            break;
+        }
+        if (!stricmp(cmd, "logdelay")){
+            int res, delay;
+            res = sscanf(args, "%d", &delay);
+            if (res == 1){
+                log_delay = delay;
+            } else {
+                log_delay = 0;
+            }
+            break;
+        }
+
     } while (0);
 
     return result;

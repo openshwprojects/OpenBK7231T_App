@@ -284,16 +284,17 @@ static int http_rest_get_lfs_file(http_request_t *request){
     file = os_malloc(sizeof(lfs_file_t));
     memset(file, 0, sizeof(lfs_file_t));
 
-    strncpy(fpath, request->url + strlen("api/lfs/"), 63);
+    strcpy(fpath, request->url + strlen("api/lfs/"));
+    
     ADDLOG_DEBUG(LOG_FEATURE_API, "LFS read of %s", fpath);
     lfsres = lfs_file_open(&lfs, file, fpath, LFS_O_RDONLY);
 
     if (lfsres == -21){
         lfs_dir_t *dir;
+        ADDLOG_DEBUG(LOG_FEATURE_API, "%s is a folder", fpath);
         dir = os_malloc(sizeof(lfs_dir_t));
         os_memset(dir, 0, sizeof(*dir));
         // if the thing is a folder.
-        ADDLOG_DEBUG(LOG_FEATURE_API, "%s is a folder", fpath);
         lfsres = lfs_dir_open(&lfs, dir, fpath);
 
         if (lfsres >= 0){
@@ -337,6 +338,7 @@ static int http_rest_get_lfs_file(http_request_t *request){
             hprintf128(request, "{\"fname\":\"%s\",\"error\":%d}", fpath, lfsres);
         }
     } else {
+        ADDLOG_DEBUG(LOG_FEATURE_API, "LFS open [%s] gives %d", fpath, lfsres);
         if (lfsres >= 0){
             const char *mimetype = httpMimeTypeBinary;
             do {

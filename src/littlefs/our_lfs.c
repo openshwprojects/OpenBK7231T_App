@@ -22,7 +22,7 @@
 // variables used by the filesystem
 int lfs_initialised = 0;
 lfs_t lfs;
-lfs_file_t file;
+//lfs_file_t file;
 
 // from flash.c
 extern UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address);
