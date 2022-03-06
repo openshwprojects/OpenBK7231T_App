@@ -21,8 +21,12 @@
 #include "lwip/sockets.h"
 #include "logging/logging.h"
 
+// please enable logging.c/h in windows!!!
+#undef printf
+#define printf(x, ...) ADDLOGF_ERROR(x, ##__VA_ARGS__)
 
 #endif
+#define LOG_FEATURE LOG_FEATURE_NTP
 
 typedef struct
 {
@@ -75,8 +79,8 @@ void NTP_Shutdown() {
 }
 void NTP_SendRequest(bool bBlocking) {
 	byte *ptr;
-    int i, recv_len;
-    char buf[64];
+    //int i, recv_len;
+    //char buf[64];
 	ntp_packet packet = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 	adrLen = sizeof(g_address);
