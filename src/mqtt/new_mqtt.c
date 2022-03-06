@@ -4,6 +4,7 @@
 #include "../new_cfg.h"
 #include "../logging/logging.h"
 #include <ctype.h>
+#include "../new_cmd.h"
 
 
 #undef os_printf
@@ -291,8 +292,6 @@ int tasCmnd(mqtt_request_t* request){
   // strncpy does not terminate??!!!!
   copy[len] = '\0';
 
-  PR_NOTICE("tas? data is %s for ch %s\n", copy, request->topic);
-
   // TODO: better 
   // skip to after second forward slash
   while(*p != '/') { if(*p == 0) return 0; p++; }
@@ -300,61 +299,8 @@ int tasCmnd(mqtt_request_t* request){
   while(*p != '/') { if(*p == 0) return 0; p++; }
   p++;
 
-  do{
-    // accept POWER and POWER0-n
-    if (!wal_strnicmp(p, "POWER", 5)){
-      p += 5;
-      if ((*p - '0' >= 0) && (*p - '0' <= 9)){
-        channel = atoi(p);
-      } else {
-        channel = 0;
-      }
-      // if channel out of range, stop here.
-      if ((channel < 0) || (channel > 32))  return 0;
-
-      //PR_NOTICE("MQTT client in mqtt_incoming_data_cb\n");
-      PR_NOTICE("MQTT client in tasCmnd data is %s for ch %i\n", copy, channel);
-      iValue = atoi((char *)copy);
-      CHANNEL_Set(channel,iValue,0);
-      break;
-    }
-
-    if (!wal_strnicmp(p, "COLOR", 5)){
-      p += 5;
-      if (copy[0] != '#'){
-        PR_NOTICE("tasCmnd COLOR expected a # prefixed color");
-      } else {
-        char *c = copy;
-        int val = 0;
-        int channel = 0;
-        c++;
-        while (*c){
-          char tmp[3];
-          int r;
-          tmp[0] = *(c++);
-          if (!*c) break;
-          tmp[1] = *(c++);
-          r = sscanf(tmp, "%x", &val);
-          if (!r) break;
-          // if this channel is not PWM, find a PWM channel;
-          while ((channel < 32) && (IOR_PWM != CHANNEL_GetRoleForChannel(channel))) {
-            channel ++;
-          }
-
-          if (channel >= 32) break;
-
-          val = (val * 100)/255;
-          CHANNEL_Set(channel, val, 0);
-          // move to next channel.
-          channel ++;
-        }
-      }
-      break;
-    }
-
-    PR_NOTICE("MQTT client unprocessed in tasCmnd data is %s for topic \n", copy, request->topic);
-    break;
-  } while (0);
+  // use command executor....
+  CMD_ExecuteCommandArgs(p, copy);
 
   // return 1 to stop processing callbacks here.
   // return 0 to allow later callbacks to process this topic.

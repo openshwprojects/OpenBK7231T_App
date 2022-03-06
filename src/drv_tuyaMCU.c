@@ -250,7 +250,7 @@ void TuyaMCU_Send_SetTime(rtcc_t *pTime) {
 	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_TIME, payload_buffer, 8);
 }
 
-int TuyaMCU_Send_Hex(const void *context, const char *cmd, char *args) {
+int TuyaMCU_Send_Hex(const void *context, const char *cmd, const char *args) {
 	//const char *args = CMD_GetArg(1);
 	if(!(*args)) {
 		printf("TuyaMCU_Send_Hex: requires 1 argument (hex string, like FFAABB00CCDD\n");
@@ -267,7 +267,7 @@ int TuyaMCU_Send_Hex(const void *context, const char *cmd, char *args) {
 	return 1;
 }
 
-int TuyaMCU_Send_SetTime_Example(const void *context, const char *cmd, char *args) {
+int TuyaMCU_Send_SetTime_Example(const void *context, const char *cmd, const char *args) {
 	rtcc_t testTime;
 
 	testTime.year = 2012;
