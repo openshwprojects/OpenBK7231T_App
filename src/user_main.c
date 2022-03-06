@@ -59,6 +59,8 @@
 #include "ntp_time.h"
 #include "new_cmd.h"
 
+#include "cmnds/taslike.h"
+#include "cmnds/fortest.h"
 
 #undef Malloc
 #undef Free
@@ -416,11 +418,19 @@ void user_main(void)
   // all MQTT happens in timer thread?
   MQTT_init();
 
+  // add some commands...
+  taslike_commands_init();
+  fortest_commands_init();
 
   // NOTE: this will try to read autoexec.bat,
   // so ALL commands expected in autoexec.bat should have been registered by now...
   // but DON't run autoexec if we have had 2+ boot failures
-  CMD_Init(bootFailures < 2);
+  CMD_Init();
+
+  if (bootFailures < 2){
+	  CMD_ExecuteCommand("exec autoexec.bat");
+	}
+
 
   err = rtos_init_timer(&led_timer,
                         1 * 1000,

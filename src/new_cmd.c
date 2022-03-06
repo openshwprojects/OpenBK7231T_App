@@ -1,9 +1,9 @@
-#include "new_cmd.h"
 #include "new_pins.h"
 #include "new_cfg.h"
 #include "logging/logging.h"
 #include "obk_config.h"
 #include <ctype.h>
+#include "new_cmd.h"
 #ifdef BK_LITTLEFS
 	#include "littlefs/our_lfs.h"
 #endif
@@ -29,15 +29,8 @@ static int generateHashValue(const char *fname) {
 }
 
 command_t *g_commands[HASH_SIZE] = { NULL };
-static int cmnd_backlog(const void * context, const char *cmd, char *args);
-static int cmnd_lfsexec(const void * context, const char *cmd, char *args);
 
-void CMD_Init(int runautoexec) {
-	CMD_RegisterCommand("backlog", "", cmnd_backlog, "run a sequence of ; separated commands", NULL);
-	CMD_RegisterCommand("exec", "", cmnd_lfsexec, "exec <file> - run autoexec.bat or other file from LFS if present", NULL);
-	if (runautoexec){
-		cmnd_lfsexec(NULL, "exec", "autoexec.bat");
-	}
+void CMD_Init() {
 }
 
 
@@ -61,9 +54,10 @@ void CMD_RegisterCommand(const char *name, const char *args, commandHandler_t ha
 	// check
 	newCmd = CMD_Find(name);
 	if(newCmd != 0) {
-		printf("ERROR: command with name %s already exists!\n",name);
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "command with name %s already exists!",name);
 		return;
 	}
+	ADDLOG_DEBUG(LOG_FEATURE_CMD, "Adding command %s",name);
 
 	hash = generateHashValue(name);
 	newCmd = (command_t*)malloc(sizeof(command_t));
@@ -87,7 +81,8 @@ command_t *CMD_Find(const char *name) {
 		if(!stricmp(newCmd->name,name)) {
 			return newCmd;
 		}
-	}
+		newCmd = newCmd->next;
+}
 	return 0;
 }
 
@@ -118,163 +113,84 @@ bool isWhiteSpace(char ch) {
 //	return g_args[i];
 //}
 
-int CMD_ExecuteCommand(char *s) {
-	//int r = 0;
-	char *p;
-	//int i;
-	char *cmd;
-	char *args;
+// get a string up to whitespace.
+// if stripnum is set, stop at numbers.
+int get_cmd(const char *s, char *dest, int maxlen, int stripnum){
+	int i;
+	int count = 0;
+	for (i = 0; i < maxlen-1; i++){
+		if (isWhiteSpace(*s)) {
+			break;
+		}
+		if (stripnum && *s >= '0' && *s <= '9'){
+			break;
+		}
+		*(dest++) = *(s++);
+		count++;
+	}
+	*dest = '\0';
+	return count;
+}
+
+
+// execute a command from cmd and args - used below and in MQTT
+int CMD_ExecuteCommandArgs(const char *cmd, const char *args) {
 	command_t *newCmd;
+	int len;
+
+	// look for complete commmand
+	newCmd = CMD_Find(cmd);
+	if (!newCmd) {
+		// not found, so...
+		char nonums[32];
+		// get the complete string up to numbers.
+		len = get_cmd(cmd, nonums, 32, 1);
+		newCmd = CMD_Find(nonums);
+		if (!newCmd) {
+			// if still not found, then error
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "cmd %s NOT found", cmd);
+			return 0;
+		}
+	} else {
+	}
+
+	if (newCmd->handler){
+		int res;
+		res = newCmd->handler(newCmd->context, cmd, args);
+		return res;
+	}
+	return 0;
+}
+
+
+// execute a raw command - single string
+int CMD_ExecuteCommand(const char *s) {
+	const char *p;
+	const char *args;
+
+	char copy[32];
+	int len;
+	const char *org;
 
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "cmd [%s]", s);
 
 	while(isWhiteSpace(*s)) {
 		s++;
 	}
+	org = s;
 
-	cmd = s;
+	// get the complete string up to whitespace.
+	len = get_cmd(s, copy, 32, 0);
+	s += len;
+
 	p = s;
-	while(*p != 0) {
-		if(isWhiteSpace(*p)) {
-			*p = 0;
-			p++;
-			break;
-		}
-		p++;
-	}
 
 	while(*p && isWhiteSpace(*p)) {
 		p++;
 	}
 	args = p;
 
-	newCmd = CMD_Find(cmd);
-	if (!newCmd) {
-		ADDLOG_ERROR(LOG_FEATURE_CMD, "cmd %s not found", cmd);
-		return 0;
-	}
-
-	if (newCmd->handler){
-		return newCmd->handler(newCmd->context, cmd, args);
-	}
-	return 0;
-
-/*
-	strcpy(g_buffer,s);
-	p = g_buffer;
-	g_numArgs = 0;
-	g_args[g_numArgs] = p;
-	g_numArgs++;
-	while(*p != 0) {
-		if(isWhiteSpace(*p)) {
-			*p = 0;
-			if((p[1] != 0)) {
-				g_args[g_numArgs] = p+1;
-				g_numArgs++;
-			}
-		}
-		if(*p == ',') {
-			*p = 0;
-			g_args[g_numArgs] = p+1;
-			g_numArgs++;
-		}
-		p++;
-	}
-
-	if(1){
-		printf("Command parsed debug out! %i args\n",g_numArgs);
-		for(i = 0; i < g_numArgs; i++) {
-			printf("Arg %i is %s\n",i,g_args[i]);
-		}
-	}
-
-	newCmd = CMD_Find(g_args[0]);
-	if(newCmd != 0) {
-		r++;
-		newCmd->handler();
-	}
-
-	return r;
-*/
+	return CMD_ExecuteCommandArgs(copy, args);
 }
 
 
-static int cmnd_backlog(const void * context, const char *cmd, char *args){
-	char *subcmd;
-	char *p;
-	int count = 0;
-	if (stricmp(cmd, "backlog")){
-		return -1;
-	}
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "backlog [%s]", args);
-
-	subcmd = args;
-	p = args;
-	while (*subcmd){
-		while (*p){
-			if (*p == ';'){
-				*p = '\0';
-				p++;
-				break;
-			}
-			p++;
-		}
-		count++;
-		CMD_ExecuteCommand(subcmd);
-		subcmd = p;
-	}
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "backlog executed %d", count);
-
-	return 1;
-}
-
-
-static int cmnd_lfsexec(const void * context, const char *cmd, char *args){
-#ifdef BK_LITTLEFS
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "exec %s", args);
-	if (lfs_present()){
-		lfs_file_t *file = os_malloc(sizeof(lfs_file_t));
-		if (file){
-			int lfsres;
-			char line[256];
-			char *fname = "autoexec.bat";
-		    memset(file, 0, sizeof(lfs_file_t));
-			if (args && *args){
-				fname = args;
-			}
-			lfsres = lfs_file_open(&lfs, file, fname, LFS_O_RDONLY);
-			if (lfsres >= 0) {
-				ADDLOG_DEBUG(LOG_FEATURE_CMD, "openned file %s", fname);
-				do {
-					char *p = line;
-					do {
-						lfsres = lfs_file_read(&lfs, file, p, 1);
-						if ((lfsres <= 0) || (*p < 0x20) || (p - line) == 255){
-							*p = 0;
-							break;
-						}
-						p++;
-					} while ((p - line) < 255);
-					ADDLOG_DEBUG(LOG_FEATURE_CMD, "line is %s", line);
-
-					if (lfsres >= 0){
-						if (*line && (*line != '#')){
-							CMD_ExecuteCommand(line);
-						}
-					}
-				} while (lfsres > 0);
-
-				lfs_file_close(&lfs, file);
-				ADDLOG_DEBUG(LOG_FEATURE_CMD, "closed file %s", fname);
-			} else {
-				ADDLOG_ERROR(LOG_FEATURE_CMD, "no file %s err %d", fname, lfsres);
-			}
-			os_free(file);
-			file = NULL;
-		}
-	} else {
-		ADDLOG_ERROR(LOG_FEATURE_CMD, "lfs is absent");
-	}
-#endif
-	return 1;
-}
