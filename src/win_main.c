@@ -63,18 +63,18 @@ void strcat_safe_test(){
 	misc_formatUpTimeString(100*24*60*60+60*60+15*60+50, timeStrH);
 
 	// some command examples, compatible with Tasmota syntax
-	CMD_ExecuteCommand("TuyaSend3 108,ff0000646464ff");
-	CMD_ExecuteCommand("TuyaSend4 103,2");
-	CMD_ExecuteCommand("TuyaSend5 108, ABCD");
-	CMD_ExecuteCommand("TuyaSend8");
-	// TODO
-	//CMD_ExecuteCommand("Backlog Dimmer 10; Dimmer 100 ");
-	//CMD_ExecuteCommand("Backlog Status 1; Power2 on; Delay 20; Power2 off; Status 4");
-	CMD_ExecuteCommand("Tuyqqqqqqqqqq arg1 arg2 arg3 arg4");
-	CMD_ExecuteCommand("Tuyqqqqqqqqqq");
-	CMD_ExecuteCommand("Tuyqqqqqqqqqq");
-	CMD_ExecuteCommand("Tuyqqqqqqqqqq");
-	CMD_ExecuteCommand("Tuyqqqqqqqqqq");
+	//CMD_ExecuteCommand("TuyaSend3 108,ff0000646464ff");
+	//CMD_ExecuteCommand("TuyaSend4 103,2");
+	//CMD_ExecuteCommand("TuyaSend5 108, ABCD");
+	//CMD_ExecuteCommand("TuyaSend8");
+	//// TODO
+	////CMD_ExecuteCommand("Backlog Dimmer 10; Dimmer 100 ");
+	////CMD_ExecuteCommand("Backlog Status 1; Power2 on; Delay 20; Power2 off; Status 4");
+	//CMD_ExecuteCommand("Tuyqqqqqqqqqq arg1 arg2 arg3 arg4");
+	//CMD_ExecuteCommand("Tuyqqqqqqqqqq");
+	//CMD_ExecuteCommand("Tuyqqqqqqqqqq");
+	//CMD_ExecuteCommand("Tuyqqqqqqqqqq");
+
 }
 int Time_getUpTimeSeconds() {
 	return rand()% 100000;
@@ -93,7 +93,7 @@ DWORD WINAPI Thread_EverySecond(void* arg)
 	}
     return 0;
 }
-
+// WINDOWS TEST ONLY - simulate UART receiving bytes, byte after byte
 DWORD WINAPI Thread_SimulateTUYAMCUSendingData(void* arg)
 {
 	int r;
@@ -124,16 +124,19 @@ DWORD WINAPI Thread_SimulateTUYAMCUSendingData(void* arg)
     return 0;
 }
 
-void addLogAdv(int level, int feature, char *fmt, ...){
-	char t[512];
-    va_list argList;
-
-    va_start(argList, fmt);
-    vsprintf(t, fmt, argList);
-    va_end(argList);
-
-	printf(t);
+int Main_IsConnectedToWiFi() {
+	return 1;
 }
+//void addLogAdv(int level, int feature, char *fmt, ...){
+//	char t[512];
+//    va_list argList;
+//
+//    va_start(argList, fmt);
+//    vsprintf(t, fmt, argList);
+//    va_end(argList);
+//
+//	printf(t);
+//}
 int __cdecl main(void) 
 {
     WSADATA wsaData;
@@ -169,6 +172,9 @@ int __cdecl main(void)
         printf("WSAStartup failed with error: %d\n", iResult);
         return 1;
     }
+	NTP_SendRequest_BlockingMode();
+	Sleep(500);
+        return 1;
 
 	CreateThread(NULL, 0, Thread_EverySecond, 0, 0, NULL);
 	CreateThread(NULL, 0, Thread_SimulateTUYAMCUSendingData, 0, 0, NULL);

@@ -3,7 +3,7 @@
 // https://www.elektroda.pl/rtvforum/topic3712112.html
 
 #include "new_common.h"
-
+#include <time.h>
 
 #ifdef WINDOWS
 
@@ -21,8 +21,12 @@
 #include "lwip/sockets.h"
 #include "logging/logging.h"
 
+// please enable logging.c/h in windows!!!
+#undef printf
+#define printf(x, ...) ADDLOGF_ERROR(x, ##__VA_ARGS__)
 
 #endif
+#define LOG_FEATURE LOG_FEATURE_NTP
 
 typedef struct
 {
@@ -56,10 +60,22 @@ typedef struct
 
 #define MAKE_WORD(hi, lo) hi << 8 | lo
 
+// NTP time since 1900 to unix time (since 1970)
+// Number of seconds to ad
+#define NTP_OFFSET 2208988800L
+
 static int g_ntp_socket = 0;
 static struct sockaddr_in g_address;
 static int adrLen;
-static int g_ntp_delay = 0;
+// in seconds, before next retry
+static int g_ntp_delay = 2;
+// current time
+static unsigned int g_time;
+
+unsigned int NTP_GetCurrentTime() {
+	return g_time;
+}	
+
 
 void NTP_Shutdown() {
 	if(g_ntp_socket != 0) {
@@ -75,8 +91,8 @@ void NTP_Shutdown() {
 }
 void NTP_SendRequest(bool bBlocking) {
 	byte *ptr;
-    int i, recv_len;
-    char buf[64];
+    //int i, recv_len;
+    //char buf[64];
 	ntp_packet packet = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 	adrLen = sizeof(g_address);
@@ -135,6 +151,7 @@ void NTP_SendRequest(bool bBlocking) {
 void NTP_CheckForReceive() {
 	byte *ptr;
     int i, recv_len;
+	struct tm * ptm;
     unsigned short highWord;
     unsigned short lowWord;
 	unsigned int secsSince1900;
@@ -161,8 +178,20 @@ void NTP_CheckForReceive() {
     secsSince1900 = highWord << 16 | lowWord;
     printf("Seconds since Jan 1 1900 = %u",secsSince1900);
 
-
-
+	g_time = secsSince1900 - NTP_OFFSET;
+    printf("Unix time = %u",g_time);
+#if 1
+	//ptm = localtime (&g_time);
+	ptm = gmtime(&g_time);
+	if(ptm == 0) {
+		printf("gmtime somehow returned 0\n");
+	} else {
+		printf("gmtime => tm_year: %i\n",ptm->tm_year);
+		printf("gmtime => tm_mon: %i\n",ptm->tm_mon);
+		printf("gmtime => tm_mday: %i\n",ptm->tm_mday);
+		printf("gmtime => tm_hour: %i\n",ptm->tm_hour	);
+	}
+#endif
 	NTP_Shutdown();
 
 }
@@ -176,7 +205,11 @@ void NTP_SendRequest_BlockingMode() {
 
 
 void NTP_OnEverySecond() {
+	g_time++;
 
+	if(Main_IsConnectedToWiFi()==0) {
+		return;
+	}
 	if(g_ntp_socket == 0) {
 		// if no socket, this is a reconnect delay
 		if(g_ntp_delay > 0) {

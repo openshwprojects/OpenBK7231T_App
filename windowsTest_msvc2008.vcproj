@@ -216,7 +216,6 @@
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -256,11 +255,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\new_http.h"
+				RelativePath=".\src\httpserver\new_http.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\httpserver\new_http.h"
+				RelativePath=".\src\new_http.h"
 				>
 			</File>
 			<File
@@ -281,6 +280,14 @@
 			</File>
 			<File
 				RelativePath=".\src\new_pins.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\ntp_time.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\ntp_time.h"
 				>
 			</File>
 			<File

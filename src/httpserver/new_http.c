@@ -21,6 +21,9 @@
 #include "../ota/ota.h"
 
 
+// define the feature ADDLOGF_XXX will use
+#define LOG_FEATURE LOG_FEATURE_HTTP
+
 const char httpHeader[] = "HTTP/1.1 %d OK\nContent-type: %s" ;  // HTTP header
 const char httpMimeTypeHTML[] = "text/html" ;              // HTML MIME type
 const char httpMimeTypeText[] = "text/plain" ;           // TEXT MIME type
@@ -326,7 +329,7 @@ int postany(http_request_t *request, const char *str, int len){
 		currentlen = 0;
 	}
 	if (addlen > request->replymaxlen){
-		printf("won't fit");
+		ADDLOGF_ERROR("won't fit");
 	} else {
 		memcpy( request->reply+request->replylen, str, addlen );
 		request->replylen += addlen;
@@ -404,7 +407,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		}
 	}
 	if (request->method == -1){
-		printf("unsupported method %7s", recvbuf);
+		ADDLOGF_ERROR("unsupported method %7s", recvbuf);
 		return 0;
 	}
 
@@ -428,7 +431,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		p++; // past space
 	}
 	else {
-		printf("invalid request\n");
+		ADDLOGF_ERROR("invalid request\n");
 		return 0;
 	}
 
@@ -442,7 +445,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 		p++; // past \r
 		p++; // past \n
 	} else {
-		printf("invalid request\n");
+		ADDLOGF_ERROR("invalid request\n");
 		return 0;
 	}
 	// i.e. not received

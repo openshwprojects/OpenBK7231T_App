@@ -18,6 +18,8 @@
 
 
 #ifdef BK_LITTLEFS
+// define the feature ADDLOGF_XXX will use
+#define LOG_FEATURE LOG_FEATURE_LFS
 
 // variables used by the filesystem
 int lfs_initialised = 0;
@@ -85,25 +87,25 @@ void init_lfs(int create){
         // this should only happen on the first boot
         if (err){
             if (create) {
-                ADDLOG_INFO(LOG_FEATURE_LFS, "Formatting LFS");
+                ADDLOGF_INFO("Formatting LFS");
                 err  = lfs_format(&lfs, &cfg);
                 if (err){
-                    ADDLOG_ERROR(LOG_FEATURE_LFS, "Format LFS failed %d", err);
+                    ADDLOGF_ERROR("Format LFS failed %d", err);
                     return;
                 }
-                ADDLOG_INFO(LOG_FEATURE_LFS, "Formatted LFS");
+                ADDLOGF_INFO("Formatted LFS");
                 err = lfs_mount(&lfs, &cfg);
                 if (err){
-                    ADDLOG_ERROR(LOG_FEATURE_LFS, "Mount LFS failed %d", err);
+                    ADDLOGF_ERROR("Mount LFS failed %d", err);
                     return;
                 }
                 lfs_initialised = 1;
             } else {
-                ADDLOG_INFO(LOG_FEATURE_LFS, "LFS not present - not creating");
+                ADDLOGF_INFO("LFS not present - not creating");
             }
         } else {
             // mounted existing
-            ADDLOG_INFO(LOG_FEATURE_LFS, "Mounted existing LFS");
+            ADDLOGF_INFO("Mounted existing LFS");
             lfs_initialised = 1;
         }
 #ifdef LFS_BOOTCOUNT        
@@ -118,7 +120,7 @@ void init_lfs(int create){
 
         // remember the storage is not updated until the file is closed successfully
         lfs_file_close(&lfs, &file);
-        ADDLOG_INFO(LOG_FEATURE_LFS, "boot count %d", boot_count);
+        ADDLOGF_INFO("boot count %d", boot_count);
 #endif        
     }
 }

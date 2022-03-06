@@ -77,6 +77,7 @@ int g_reset = 0;
 // save config in this number of seconds
 int g_savecfg = 0;
 
+#define LOG_FEATURE LOG_FEATURE_MAIN
 
 // from wlan_ui.c
 void bk_reboot(void);
@@ -110,7 +111,7 @@ int unw_recv(const int fd, void *buf, u32 nbytes)
     FD_SET( fd, &errfds );
 
     ret = select( fd+1, &readfds, NULL, &errfds, NULL);
-    ADDLOG_DEBUG(LOG_FEATURE_MAIN, "select ret:%d, %d, %d\r\n", ret, FD_ISSET( fd, &readfds ), FD_ISSET( fd, &errfds ));
+    ADDLOGF_DEBUG("select ret:%d, %d, %d\r\n", ret, FD_ISSET( fd, &readfds ), FD_ISSET( fd, &errfds ));
 
     if(ret > 0 && FD_ISSET( fd, &readfds ))
         return recv(fd,buf,nbytes,0); 
@@ -151,7 +152,7 @@ void connect_to_wifi(const char *oob_ssid,const char *connect_key)
     network_cfg.dhcp_mode = DHCP_CLIENT;
     network_cfg.wifi_retry_interval = 100;
 
-    ADDLOG_INFO(LOG_FEATURE_MAIN, "ssid:%s key:%s\r\n", network_cfg.wifi_ssid, network_cfg.wifi_key);
+    ADDLOGF_INFO("ssid:%s key:%s\r\n", network_cfg.wifi_ssid, network_cfg.wifi_key);
 			
     bk_wlan_start(&network_cfg);
 #endif
@@ -169,7 +170,7 @@ static void app_led_timer_handler(void *data)
 	NTP_OnEverySecond();
 
 	g_secondsElapsed ++;
-  ADDLOG_INFO(LOG_FEATURE_MAIN, "Timer is %i free mem %d\n", g_secondsElapsed, xPortGetFreeHeapSize());
+  ADDLOGF_INFO("Timer is %i free mem %d\n", g_secondsElapsed, xPortGetFreeHeapSize());
 
   // print network info
   if (!(g_secondsElapsed % 10)){
@@ -242,7 +243,7 @@ static int setup_wifi_open_access_point(void)
         os_strcpy((char *)wNetConfig.dns_server_ip_addr, APP_DRONE_DEF_NET_GW);
  
 
-        ADDLOG_INFO(LOG_FEATURE_MAIN, "no flash configuration, use default\r\n");
+        ADDLOGF_INFO("no flash configuration, use default\r\n");
         mac = (u8*)&ap_info.bssid.array;
 		    // this is MAC for Access Point, it's different than Client one
 		    // see wifi_get_mac_address source
@@ -268,29 +269,32 @@ static int setup_wifi_open_access_point(void)
     wNetConfig.wifi_retry_interval = 100;
     
 	if(1) {
-		ADDLOG_INFO(LOG_FEATURE_MAIN, "set ip info: %s,%s,%s\r\n",
+		ADDLOGF_INFO("set ip info: %s,%s,%s\r\n",
 				wNetConfig.local_ip_addr,
 				wNetConfig.net_mask,
 				wNetConfig.dns_server_ip_addr);
 	}
     
 	if(1) {
-	  ADDLOG_INFO(LOG_FEATURE_MAIN, "ssid:%s  key:%s mode:%d\r\n", wNetConfig.wifi_ssid, wNetConfig.wifi_key, wNetConfig.wifi_mode);
+	  ADDLOGF_INFO("ssid:%s  key:%s mode:%d\r\n", wNetConfig.wifi_ssid, wNetConfig.wifi_key, wNetConfig.wifi_mode);
 	}
 	bk_wlan_start(&wNetConfig);
 
   return 0;    
 }
 
+int g_bHasWiFiConnected = 0;
 
-
+int Main_IsConnectedToWiFi() {
+	return g_bHasWiFiConnected;
+}
 
 // receives status change notifications about wireless - could be useful
 // ctxt is pointer to a rw_evt_type
 void wl_status( void *ctxt ){
 
     rw_evt_type stat = *((rw_evt_type*)ctxt);
-    ADDLOG_INFO(LOG_FEATURE_MAIN, "wl_status %d\r\n", stat);
+    ADDLOGF_INFO("wl_status %d\r\n", stat);
 
     switch(stat){
         case RW_EVT_STA_IDLE:
@@ -298,6 +302,7 @@ void wl_status( void *ctxt ){
         case RW_EVT_STA_SCAN_OVER:
         case RW_EVT_STA_CONNECTING:
             PIN_set_wifi_led(0);
+			g_bHasWiFiConnected = 0;
             break;
         case RW_EVT_STA_BEACON_LOSE:
         case RW_EVT_STA_PASSWORD_WRONG:
@@ -307,22 +312,27 @@ void wl_status( void *ctxt ){
             // try to connect again in 5 seconds
             //reconnect = 5;
             PIN_set_wifi_led(0);
+			g_bHasWiFiConnected = 0;
             break;
         case RW_EVT_STA_CONNECT_FAILED:  /* authentication failed */
             PIN_set_wifi_led(0);
+			g_bHasWiFiConnected = 0;
             break;
         case RW_EVT_STA_CONNECTED:        /* authentication success */    
         case RW_EVT_STA_GOT_IP: 
             PIN_set_wifi_led(1);
+			g_bHasWiFiConnected = 1;
             break;
         
         /* for softap mode */
         case RW_EVT_AP_CONNECTED:          /* a client association success */
             PIN_set_wifi_led(1);
+			g_bHasWiFiConnected = 1;
             break;
         case RW_EVT_AP_DISCONNECTED:       /* a client disconnect */
         case RW_EVT_AP_CONNECT_FAILED:     /* a client association failed */
             PIN_set_wifi_led(0);
+			g_bHasWiFiConnected = 0;
             break;
         default:
             break;
@@ -348,8 +358,8 @@ void user_main(void)
 	wifi_ssid = CFG_GetWiFiSSID();
 	wifi_pass = CFG_GetWiFiPass();
 
-	ADDLOG_INFO(LOG_FEATURE_MAIN, "Using SSID [%s]\r\n",wifi_ssid);
-	ADDLOG_INFO(LOG_FEATURE_MAIN, "Using Pass [%s]\r\n",wifi_pass);
+	ADDLOGF_INFO("Using SSID [%s]\r\n",wifi_ssid);
+	ADDLOGF_INFO("Using Pass [%s]\r\n",wifi_pass);
 
 #if 0
 	// you can use this if you bricked your module by setting wrong access point data
@@ -365,7 +375,7 @@ void user_main(void)
   bootFailures = boot_failures();
   if (bootFailures > 3){
     bForceOpenAP = 1;
-		ADDLOG_INFO(LOG_FEATURE_MAIN, "###### would force AP mode - boot failures %d", bootFailures);
+		ADDLOGF_INFO("###### force AP mode - boot failures %d", bootFailures);
   }
 
 	if(*wifi_ssid == 0 || *wifi_pass == 0 || bForceOpenAP) {
@@ -376,7 +386,7 @@ void user_main(void)
 		connect_to_wifi(wifi_ssid,wifi_pass);
 		// register function to get callbacks about wifi changes.
 		bk_wlan_status_register_cb(wl_status);
-		ADDLOG_INFO(LOG_FEATURE_MAIN, "Registered for wifi changes\r\n");
+		ADDLOGF_DEBUG("Registered for wifi changes\r\n");
 	}
 
 	// NOT WORKING, I done it other way, see ethernetif.c
@@ -384,14 +394,14 @@ void user_main(void)
 
 	//demo_start_upd();
 	start_tcp_http();
-	ADDLOG_INFO(LOG_FEATURE_MAIN, "Started http tcp server\r\n");
+	ADDLOGF_DEBUG("Started http tcp server\r\n");
 	
 	PIN_Init();
-	ADDLOG_INFO(LOG_FEATURE_MAIN, "Initialised pins\r\n");
+	ADDLOGF_DEBUG("Initialised pins\r\n");
 
 
 	PIN_SetGenericDoubleClickCallback(app_on_generic_dbl_click);
-	ADDLOG_INFO(LOG_FEATURE_MAIN, "Initialised other callbacks\r\n");
+	ADDLOGF_DEBUG("Initialised other callbacks\r\n");
 
 
 #ifdef BK_LITTLEFS
@@ -428,7 +438,7 @@ void user_main(void)
 
   err = rtos_start_timer(&led_timer);
   ASSERT(kNoErr == err);
-	ADDLOG_INFO(LOG_FEATURE_MAIN, "started timer\r\n");
+	ADDLOGF_DEBUG("started timer\r\n");
 }
 
 #if PLATFORM_BK7231N
