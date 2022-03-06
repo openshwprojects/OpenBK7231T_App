@@ -4,11 +4,16 @@
 // #define DEBUG_USE_SIMPLE_LOGGER
 #include "../new_common.h"
 #include "../httpserver/new_http.h"
+#if WINDOWS
+#include <stdarg.h>
+
+#else 
 #include "str_pub.h"
+#endif
+
 #include "../logging/logging.h"
 #include "../new_cmd.h"
 
-SemaphoreHandle_t g_mutex = 0;
 static char tmp[1024];
 int loglevel = 4; // default to info
 unsigned int logfeatures = (
@@ -103,6 +108,7 @@ void addLogAdv(int level, int feature, char *fmt, ...){
 
 #else // from WINDOWS
 
+SemaphoreHandle_t g_mutex = 0;
 
 #ifdef DEBUG_USE_SIMPLE_LOGGER
 

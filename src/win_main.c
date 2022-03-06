@@ -74,7 +74,7 @@ void strcat_safe_test(){
 	CMD_ExecuteCommand("Tuyqqqqqqqqqq");
 	CMD_ExecuteCommand("Tuyqqqqqqqqqq");
 	CMD_ExecuteCommand("Tuyqqqqqqqqqq");
-	CMD_ExecuteCommand("Tuyqqqqqqqqqq");
+
 }
 int Time_getUpTimeSeconds() {
 	return rand()% 100000;
@@ -93,7 +93,7 @@ DWORD WINAPI Thread_EverySecond(void* arg)
 	}
     return 0;
 }
-
+// WINDOWS TEST ONLY - simulate UART receiving bytes, byte after byte
 DWORD WINAPI Thread_SimulateTUYAMCUSendingData(void* arg)
 {
 	int r;
@@ -124,16 +124,16 @@ DWORD WINAPI Thread_SimulateTUYAMCUSendingData(void* arg)
     return 0;
 }
 
-void addLogAdv(int level, int feature, char *fmt, ...){
-	char t[512];
-    va_list argList;
-
-    va_start(argList, fmt);
-    vsprintf(t, fmt, argList);
-    va_end(argList);
-
-	printf(t);
-}
+//void addLogAdv(int level, int feature, char *fmt, ...){
+//	char t[512];
+//    va_list argList;
+//
+//    va_start(argList, fmt);
+//    vsprintf(t, fmt, argList);
+//    va_end(argList);
+//
+//	printf(t);
+//}
 int __cdecl main(void) 
 {
     WSADATA wsaData;
@@ -169,6 +169,9 @@ int __cdecl main(void)
         printf("WSAStartup failed with error: %d\n", iResult);
         return 1;
     }
+	NTP_SendRequest_BlockingMode();
+	Sleep(500);
+        return 1;
 
 	CreateThread(NULL, 0, Thread_EverySecond, 0, 0, NULL);
 	CreateThread(NULL, 0, Thread_SimulateTUYAMCUSendingData, 0, 0, NULL);
