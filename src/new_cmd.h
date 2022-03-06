@@ -22,6 +22,8 @@ int CMD_GetArgsCount() ;
 const char *CMD_GetArg(int i);
 // for autocompletion?
 void CMD_ListAllCommands(void *userData, void (*callback)(command_t *cmd, void *userData));
+int get_cmd(const char *s, char *dest, int maxlen, int stripnum);
+bool isWhiteSpace(char ch);
 
 
 

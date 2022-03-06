@@ -1,9 +1,9 @@
-#include "new_cmd.h"
 #include "new_pins.h"
 #include "new_cfg.h"
 #include "logging/logging.h"
 #include "obk_config.h"
 #include <ctype.h>
+#include "new_cmd.h"
 #ifdef BK_LITTLEFS
 	#include "littlefs/our_lfs.h"
 #endif
@@ -54,9 +54,10 @@ void CMD_RegisterCommand(const char *name, const char *args, commandHandler_t ha
 	// check
 	newCmd = CMD_Find(name);
 	if(newCmd != 0) {
-		printf("ERROR: command with name %s already exists!\n",name);
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "command with name %s already exists!",name);
 		return;
 	}
+	ADDLOG_DEBUG(LOG_FEATURE_CMD, "Adding command %s",name);
 
 	hash = generateHashValue(name);
 	newCmd = (command_t*)malloc(sizeof(command_t));
@@ -136,8 +137,6 @@ int get_cmd(const char *s, char *dest, int maxlen, int stripnum){
 int CMD_ExecuteCommandArgs(const char *cmd, const char *args) {
 	command_t *newCmd;
 	int len;
-	char *org;
-	char *s = cmd;
 
 	// look for complete commmand
 	newCmd = CMD_Find(cmd);
@@ -166,13 +165,12 @@ int CMD_ExecuteCommandArgs(const char *cmd, const char *args) {
 
 // execute a raw command - single string
 int CMD_ExecuteCommand(const char *s) {
-	char *p;
-	char *args;
-	command_t *newCmd;
+	const char *p;
+	const char *args;
 
 	char copy[32];
 	int len;
-	char *org;
+	const char *org;
 
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "cmd [%s]", s);
 

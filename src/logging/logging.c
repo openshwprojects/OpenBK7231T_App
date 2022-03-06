@@ -547,7 +547,7 @@ static int http_getlog(http_request_t *request){
 }
 
 
-int log_command(const void *context, const char *cmd, char *args){
+int log_command(const void *context, const char *cmd, const char *args){
     int result = 0;
     if (!cmd) return -1;
     if (!args) return -1;

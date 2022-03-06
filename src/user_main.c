@@ -60,6 +60,7 @@
 #include "new_cmd.h"
 
 #include "cmnds/taslike.h"
+#include "cmnds/fortest.h"
 
 #undef Malloc
 #undef Free
@@ -419,6 +420,7 @@ void user_main(void)
 
   // add some commands...
   taslike_commands_init();
+  fortest_commands_init();
 
   // NOTE: this will try to read autoexec.bat,
   // so ALL commands expected in autoexec.bat should have been registered by now...

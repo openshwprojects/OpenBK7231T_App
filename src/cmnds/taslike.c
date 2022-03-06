@@ -1,12 +1,17 @@
 
 #include "../logging/logging.h"
-#include "../new_cmd.h"
 #include "../new_pins.h"
 #include "../obk_config.h"
 #include <ctype.h>
+#include "../new_cmd.h"
 #ifdef BK_LITTLEFS
 	#include "../littlefs/our_lfs.h"
 #endif
+
+
+extern int wal_stricmp(const char *a, const char *b);
+extern int wal_strnicmp(const char *a, const char *b, int count);
+
 
 static int power(const void *context, const char *cmd, const char *args){
 	if (!wal_strnicmp(cmd, "POWER", 5)){
@@ -28,7 +33,7 @@ static int color(const void *context, const char *cmd, const char *args){
             ADDLOG_ERROR(LOG_FEATURE_CMD, "tasCmnd COLOR expected a # prefixed color");
             return 0;
         } else {
-            char *c = args;
+            const char *c = args;
             int val = 0;
             int channel = 0;
             c++;
@@ -59,8 +64,8 @@ static int color(const void *context, const char *cmd, const char *args){
 }
 
 static int cmnd_backlog(const void * context, const char *cmd, const char *args){
-	char *subcmd;
-	char *p;
+	const char *subcmd;
+	const char *p;
 	int count = 0;
     char copy[128];
     char *c;
@@ -102,7 +107,7 @@ static int cmnd_lfsexec(const void * context, const char *cmd, const char *args)
 		if (file){
 			int lfsres;
 			char line[256];
-			char *fname = "autoexec.bat";
+			const char *fname = "autoexec.bat";
 		    memset(file, 0, sizeof(lfs_file_t));
 			if (args && *args){
 				fname = args;
@@ -150,4 +155,5 @@ int taslike_commands_init(){
     CMD_RegisterCommand("color", "", color, "set PWN color using #RRGGBB[cw][ww]", NULL);
 	CMD_RegisterCommand("backlog", "", cmnd_backlog, "run a sequence of ; separated commands", NULL);
 	CMD_RegisterCommand("exec", "", cmnd_lfsexec, "exec <file> - run autoexec.bat or other file from LFS if present", NULL);
+    return 0;
 }

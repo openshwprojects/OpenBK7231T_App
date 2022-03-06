@@ -280,9 +280,7 @@ int tasCmnd(mqtt_request_t* request){
   // we only need a few bytes to receive a decimal number 0-100
   char copy[64];
   int len = request->receivedLen;
-  char *p = request->topic;
-  int channel = 0;
-  int iValue = 0;
+  const char *p = request->topic;
 
   // assume a string input here, copy and terminate
   if(len > sizeof(copy)-1) {
