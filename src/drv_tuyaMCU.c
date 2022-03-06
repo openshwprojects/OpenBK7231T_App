@@ -26,6 +26,13 @@ void TuyaMCU_RunFrame();
 // from http_fns.  should move to a utils file.
 extern unsigned char hexbyte( const char* hex );
 
+#if PLATFORM_BK7231T | PLATFORM_BK7231N
+	// from uart_bk.c
+	extern void bk_send_byte(UINT8 uport, UINT8 data);
+#elif WINDOWS
+#else
+#endif
+
 
 const char *TuyaMCU_GetCommandTypeLabel(int t) {
 	if(t == TUYA_CMD_HEARTBEAT)
@@ -196,6 +203,9 @@ void TuyaMCU_Bridge_InitUART(int baud) {
 
 #endif
 }
+
+
+
 void TuyaMCU_Bridge_SendUARTByte(byte b) {
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
 	bk_send_byte(0, b);

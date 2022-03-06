@@ -27,19 +27,31 @@ unsigned int logfeatures = (
     (1 << 12) |
     (1 << 13) |
     (1 << 14) |
-    (1 << 15)
+    (1 << 15) | 
+    (1 << 16) | 
+    (1 << 17) | 
+    (1 << 18) | 
+    (1 << 19) | 
+    (1 << 20) | 
+    (1 << 21) | 
+    (1 << 22) | 
+    (1 << 23) | 
+    (1 << 24)
 );
 static int log_delay = 0;
 
+// must match header definitions in logging.h
 char *loglevelnames[] = {
     "NONE:",
     "Error:",
     "Warn:",
     "Info:",
     "Debug:",
+    "ExtraDebug:",
     "All:"
 };
 
+// must match header definitions in logging.h
 char *logfeaturenames[] = {
     "HTTP:",//            = 0,
     "MQTT:",//            = 1,
@@ -52,7 +64,44 @@ char *logfeaturenames[] = {
     "API:", // = 8
     "LFS:", // = 9
     "CMD:", // = 10
+    "NTP:", // = 11
 };
+
+
+#ifdef WINDOWS
+void addLog(char *fmt, ...){
+    va_list argList;
+    va_start(argList, fmt);
+    vsprintf(tmp, fmt, argList);
+    va_end(argList);
+    printf(tmp);
+    printf("\r\n");
+}
+
+void addLogAdv(int level, int feature, char *fmt, ...){
+    va_list argList;
+    char *t = tmp;
+    if (!((1<<feature) & logfeatures)){
+        return;
+    }
+    if (level > loglevel){
+        return;
+    }
+    va_start(argList, fmt);
+    vsprintf(tmp, fmt, argList);
+    va_end(argList);
+    strcpy(t, loglevelnames[level]);
+    t += strlen(t);
+    if (feature < sizeof(logfeaturenames)/sizeof(*logfeaturenames)){
+        strcpy(t, logfeaturenames[feature]);
+        t += strlen(t);
+    }
+
+    printf(tmp);
+    printf("\r\n");
+}
+
+#else // from WINDOWS
 
 
 #ifdef DEBUG_USE_SIMPLE_LOGGER
@@ -562,4 +611,5 @@ int log_command(const void *context, const char *cmd, char *args){
 }
 
 
-#endif
+#endif // else from simple logger
+#endif // else from windows
