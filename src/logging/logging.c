@@ -7,6 +7,12 @@
 #if WINDOWS
 #include <stdarg.h>
 
+#elif PLATFORM_XR809
+#include <stdarg.h>
+#include "lwip/sockets.h"
+#include "lwip/ip_addr.h"
+#include "lwip/inet.h"
+
 #else 
 #include "str_pub.h"
 #endif
@@ -71,6 +77,7 @@ char *logfeaturenames[] = {
     "CMD:", // = 10
     "NTP:", // = 11
 };
+
 
 
 #ifdef WINDOWS
@@ -219,6 +226,7 @@ static void initLog( void ) {
     CMD_RegisterCommand("logtype", "", log_command, "logtype direct|all - direct logs only to serial immediately", NULL);
     CMD_RegisterCommand("logdelay", "", log_command, "logdelay 0..n - impose ms delay after every log", NULL);
     
+    bk_printf("Commands registered!\r\n");
 }
 
 // adds a log to the log memory
@@ -231,6 +239,15 @@ void addLog(char *fmt, ...){
     if (!initialised) {
         initLog();
     }
+//#if PLATFORM_XR809
+//
+//    va_start(argList, fmt);
+//    vsprintf(tmp, fmt, argList);
+//    va_end(argList);
+//
+//	printf(tmp);
+//#else
+
     taken = xSemaphoreTake( logMemory.mutex, 100 );
 
     va_start(argList, fmt);
@@ -275,6 +292,7 @@ void addLog(char *fmt, ...){
     if (log_delay){
         rtos_delay_milliseconds(log_delay);
     }
+//#endif
 }
 
 

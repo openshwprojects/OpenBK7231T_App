@@ -23,6 +23,15 @@ typedef unsigned short uint16_t;
 
 #elif PLATFORM_XR809
 
+#define kNoErr                      0       //! No error occurred.
+typedef void *beken_thread_arg_t;
+typedef void *beken_thread_t;
+typedef void (*beken_thread_function_t)( beken_thread_arg_t arg );
+typedef int OSStatus;
+
+#define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
+#define BEKEN_APPLICATION_PRIORITY         (7)
+
 typedef int bool;
 #define true 1
 #define false 0
@@ -38,6 +47,8 @@ typedef unsigned int UINT32;
 #define os_malloc malloc
 #define os_free free
 #define os_memset memset
+
+#define close lwip_close
 
 #define rtos_delay_milliseconds OS_ThreadSleep
 

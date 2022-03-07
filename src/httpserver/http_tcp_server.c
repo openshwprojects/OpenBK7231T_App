@@ -13,11 +13,7 @@
 
 #if PLATFORM_XR809
 
-#define kNoErr                      0       //! No error occurred.
-typedef void *beken_thread_arg_t;
-typedef int OSStatus;
 
-#define close lwip_close
 
 static OS_Thread_t g_http_thread;
 

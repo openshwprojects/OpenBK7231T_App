@@ -307,7 +307,6 @@ void HTTP_AddBuildFooter(http_request_t *request) {
 	poststr(request,upTimeStr);
 }
 
-
 // add some more output safely, sending if necessary.
 // call with str == NULL to force send. - can be binary.
 // supply length
