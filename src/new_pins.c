@@ -60,8 +60,7 @@ typedef struct pinButton_ {
 #include "../../beken378/func/user_driver/BkDriverPwm.h"
 #undef PR_DEBUG
 #undef PR_NOTICE
-#define PR_DEBUG addLog
-#define PR_NOTICE addLog
+
 
 typedef struct item_pins_config
 {
@@ -210,8 +209,8 @@ void PIN_LoadFromFlash() {
 #endif
 
 
-	PR_NOTICE("PIN_LoadFromFlash called - going to load pins.\r\n");
-	PR_NOTICE("UART log breaking after that means that you changed the role of TX pin to digital IO or smth else.\r\n");
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"PIN_LoadFromFlash called - going to load pins.\r\n");
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"UART log breaking after that means that you changed the role of TX pin to digital IO or smth else.\r\n");
 
 #if WINDOWS
 
@@ -235,7 +234,7 @@ void PIN_LoadFromFlash() {
 	for(i = 0; i < GPIO_MAX; i++) {
 		PIN_SetPinRoleForPinIndex(i,g_pins.roles[i]);
 	}
-	PR_NOTICE("PIN_LoadFromFlash pins have been set up.\r\n");
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"PIN_LoadFromFlash pins have been set up.\r\n");
 }
 void PIN_ClearPins() {
 	memset(&g_pins,0,sizeof(g_pins));
@@ -265,7 +264,7 @@ void RAW_SetPinValue(int index, int iVal){
 }
 void Button_OnShortClick(int index)
 {
-	PR_NOTICE("%i key_short_press\r\n", index);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"%i key_short_press\r\n", index);
 	if(g_pins.roles[index] == IOR_Button_ToggleAll || g_pins.roles[index] == IOR_Button_ToggleAll_n)
 	{
 		CHANNEL_DoSpecialToggleAll();
@@ -276,7 +275,7 @@ void Button_OnShortClick(int index)
 }
 void Button_OnDoubleClick(int index)
 {
-	PR_NOTICE("%i key_double_press\r\n", index);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"%i key_double_press\r\n", index);
 	if(g_pins.roles[index] == IOR_Button_ToggleAll || g_pins.roles[index] == IOR_Button_ToggleAll_n)
 	{
 		CHANNEL_DoSpecialToggleAll();
@@ -291,7 +290,7 @@ void Button_OnDoubleClick(int index)
 }
 void Button_OnLongPressHold(int index)
 {
-	PR_NOTICE("%i key_long_press_hold\r\n", index);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"%i key_long_press_hold\r\n", index);
 }
 
 const char *PIN_GetPinNameAlias(int index) {
@@ -655,11 +654,11 @@ void CHANNEL_Set(int ch, int iVal, int bForce) {
 		//prevVal = BIT_CHECK(g_channelStates, ch);
 		prevVal = g_channelValues[ch];
 		if(prevVal == iVal) {
-			PR_NOTICE("No change in channel %i - ignoring\n\r",ch);
+			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"No change in channel %i - ignoring\n\r",ch);
 			return;
 		}
 	}
-	PR_NOTICE("CHANNEL_Set channel %i has changed to %i\n\r",ch,iVal);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"CHANNEL_Set channel %i has changed to %i\n\r",ch,iVal);
 	//if(iVal) {
 	//	BIT_SET(g_channelStates,ch);
 	//} else {
@@ -825,7 +824,7 @@ void PIN_ticks(void *param)
 	for(i = 0; i < GPIO_MAX; i++) {
 		if(g_pins.roles[i] == IOR_Button || g_pins.roles[i] == IOR_Button_n
 			|| g_pins.roles[i] == IOR_Button_ToggleAll || g_pins.roles[i] == IOR_Button_ToggleAll_n) {
-			//PR_NOTICE("Test hold %i\r\n",i);
+			//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Test hold %i\r\n",i);
 			PIN_Input_Handler(i);
 		}
 	}

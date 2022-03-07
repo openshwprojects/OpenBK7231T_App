@@ -323,7 +323,7 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
 	byte checkCheckSum;
 	byte cmd;
 	if(data[0] != 0x55 || data[1] != 0xAA) {
-		addLog("TuyaMCU_ProcessIncoming: discarding packet with bad ident and len %i\n",len);
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: discarding packet with bad ident and len %i\n",len);
 		return;
 	}
 	checkLen = data[5] | data[4] >> 8;
