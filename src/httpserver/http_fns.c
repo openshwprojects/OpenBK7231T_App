@@ -409,7 +409,7 @@ int http_fn_cfg_wifi(http_request_t *request) {
 
 int http_fn_cfg_wifi_set(http_request_t *request) {
 	char tmpA[128];
-	printf("HTTP_ProcessPacket: generating cfg_wifi_set \r\n");
+	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"HTTP_ProcessPacket: generating cfg_wifi_set \r\n");
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
@@ -427,9 +427,9 @@ int http_fn_cfg_wifi_set(http_request_t *request) {
         }
         poststr(request,"WiFi mode set: connect to WLAN.");
     }
-    printf("HTTP_ProcessPacket: calling CFG_SaveWiFi \r\n");
+    addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"HTTP_ProcessPacket: calling CFG_SaveWiFi \r\n");
     CFG_SaveWiFi();
-    printf("HTTP_ProcessPacket: done CFG_SaveWiFi \r\n");
+    addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"HTTP_ProcessPacket: done CFG_SaveWiFi \r\n");
 
     poststr(request,"Please wait for module to reset...");
     
@@ -449,7 +449,7 @@ int http_fn_cfg_wifi_set(http_request_t *request) {
 
 int http_fn_cfg_loglevel_set(http_request_t *request) {
 	char tmpA[128];
-    printf("HTTP_ProcessPacket: generating cfg_loglevel_set \r\n");
+    addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"HTTP_ProcessPacket: generating cfg_loglevel_set \r\n");
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);

@@ -40,7 +40,7 @@ void print_network_info(){
     bk_wlan_get_ip_status(&ipStatus, STATION);
     
     char *fmt = "dhcp=%d ip=%s gate=%s mask=%s mac=" MACSTR "\r\n";
-    addLog(fmt ,
+    addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, fmt ,
         ipStatus.dhcp, ipStatus.ip, ipStatus.gate, 
         ipStatus.mask, MAC2STR((unsigned char*)ipStatus.mac));
 
@@ -120,7 +120,7 @@ void print_network_info(){
                 bk_printf("Error\r\n");
                 break;
         }
-        addLog("ip=%s,gate=%s,mask=%s,dns=%s\r\n",
+        addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"ip=%s,gate=%s,mask=%s,dns=%s\r\n",
             ap_info.local_ip_addr, 
             ap_info.gateway_ip_addr, 
             ap_info.net_mask, 

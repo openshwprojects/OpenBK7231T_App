@@ -82,14 +82,7 @@ char *logfeaturenames[] = {
 
 
 #ifdef WINDOWS
-void addLog(char *fmt, ...){
-    va_list argList;
-    va_start(argList, fmt);
-    vsprintf(tmp, fmt, argList);
-    va_end(argList);
-    printf(tmp);
-    printf("\r\n");
-}
+
 
 void addLogAdv(int level, int feature, char *fmt, ...){
     va_list argList;

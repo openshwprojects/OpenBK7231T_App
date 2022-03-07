@@ -214,13 +214,6 @@
 			<File
 				RelativePath=".\src\logging\logging.c"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\src\new_builtin_devices.c"
@@ -255,11 +248,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\httpserver\new_http.h"
+				RelativePath=".\src\new_http.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\new_http.h"
+				RelativePath=".\src\httpserver\new_http.h"
 				>
 			</File>
 			<File
@@ -289,6 +282,18 @@
 			<File
 				RelativePath=".\src\ntp_time.h"
 				>
+			</File>
+			<File
+				RelativePath=".\src\ota\ota.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\src\httpserver\rest_interface.c"
