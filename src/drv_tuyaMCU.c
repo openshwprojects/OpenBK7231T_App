@@ -136,7 +136,7 @@ int UART_TryToGetNextTuyaPacket(byte *out, int maxSize) {
 		}
 	}
 	if(c_garbage_consumed > 0){
-		printf("Consumed %i unwanted non-header byte in Tuya MCU buffer\n", c_garbage_consumed);
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"Consumed %i unwanted non-header byte in Tuya MCU buffer\n", c_garbage_consumed);
 	}
 	if(cs < MIN_TUYAMCU_PACKET_SIZE) {
 		return 0;
@@ -211,7 +211,7 @@ void TuyaMCU_Bridge_SendUARTByte(byte b) {
 	bk_send_byte(0, b);
 #elif WINDOWS
 	// STUB - for testing
-    printf("%02X", b);
+    addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"%02X", b);
 #else
 
 
@@ -263,7 +263,7 @@ void TuyaMCU_Send_SetTime(rtcc_t *pTime) {
 int TuyaMCU_Send_Hex(const void *context, const char *cmd, const char *args) {
 	//const char *args = CMD_GetArg(1);
 	if(!(*args)) {
-		printf("TuyaMCU_Send_Hex: requires 1 argument (hex string, like FFAABB00CCDD\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_Send_Hex: requires 1 argument (hex string, like FFAABB00CCDD\n");
 		return -1;
 	}
 	while(*args) {
@@ -304,7 +304,7 @@ void TuyaMCU_Send(byte *data, int size) {
 	}
 	TuyaMCU_Bridge_SendUARTByte(check_sum);
 
-	printf("\nWe sent %i bytes to Tuya MCU\n",size+1);
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"\nWe sent %i bytes to Tuya MCU\n",size+1);
 }
 void TuyaMCU_Init()
 {
@@ -323,13 +323,13 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
 	byte checkCheckSum;
 	byte cmd;
 	if(data[0] != 0x55 || data[1] != 0xAA) {
-		printf("TuyaMCU_ProcessIncoming: discarding packet with bad ident and len %i\n",len);
+		addLog("TuyaMCU_ProcessIncoming: discarding packet with bad ident and len %i\n",len);
 		return;
 	}
 	checkLen = data[5] | data[4] >> 8;
 	checkLen = checkLen + 2 + 1 + 1 + 2 + 1;
 	if(checkLen != len) {
-		printf("TuyaMCU_ProcessIncoming: discarding packet bad expected len, expected %i and got len %i\n",checkLen,len);
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: discarding packet bad expected len, expected %i and got len %i\n",checkLen,len);
 		return;
 	}
 	checkCheckSum = 0;
@@ -337,11 +337,11 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
 		checkCheckSum += data[i];
 	}
 	if(checkCheckSum != data[len-1]) {
-		printf("TuyaMCU_ProcessIncoming: discarding packet bad expected checksum, expected %i and got checksum %i\n",(int)data[len-1],(int)checkCheckSum);
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: discarding packet bad expected checksum, expected %i and got checksum %i\n",(int)data[len-1],(int)checkCheckSum);
 		return;
 	}
 	cmd = data[3];
-	printf("TuyaMCU_ProcessIncoming: processing command %i (%s) with %i bytes\n",cmd,TuyaMCU_GetCommandTypeLabel(cmd),len);
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: processing command %i (%s) with %i bytes\n",cmd,TuyaMCU_GetCommandTypeLabel(cmd),len);
 
 }
 void TuyaMCU_RunFrame() {
@@ -350,20 +350,20 @@ void TuyaMCU_RunFrame() {
 	char buffer2[4];
 	int len, i;
 
-	//printf("UART ring buffer state: %i %i\n",g_recvBufIn,g_recvBufOut);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"UART ring buffer state: %i %i\n",g_recvBufIn,g_recvBufOut);
 
 	len = UART_TryToGetNextTuyaPacket(data,sizeof(data));
 	if(len > 0) {
-		//printf("TUYAMCU received: ");
+		//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TUYAMCU received: ");
 		buffer_for_log[0] = 0;
 		for(i = 0; i < len; i++) {
-			//printf("%02X ",data[i]);
+			//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"%02X ",data[i]);
 			sprintf(buffer2,"%02X ",data[i]);
 			strcat_safe(buffer_for_log,buffer2,sizeof(buffer_for_log));
 		}
-		//printf(buffer_for_log);
-		//printf("\n");
-		printf("TUYAMCU received: %s\n", buffer_for_log);
+		//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,buffer_for_log);
+		//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TUYAMCU received: %s\n", buffer_for_log);
 		TuyaMCU_ProcessIncoming(data,len);
 	}
 }

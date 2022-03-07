@@ -14,7 +14,6 @@
 #ifndef _OBK_LOGGING_H
 #define _OBK_LOGGING_H
 
-void addLog(char *fmt, ...);
 void addLogAdv(int level, int feature, char *fmt, ...);
 
 int log_command(const void *context, const char *cmd, const char *args);
@@ -68,8 +67,9 @@ typedef enum {
     LOG_FEATURE_LFS             = 9,
     LOG_FEATURE_CMD             = 10,
     LOG_FEATURE_NTP             = 11,
+	LOG_FEATURE_TUYAMCU			= 12,
     // add in here - but also in names in logging.c
-    LOG_FEATURE_MAX             = 12,
+    LOG_FEATURE_MAX             = 13,
 } log_features;
 
 #endif

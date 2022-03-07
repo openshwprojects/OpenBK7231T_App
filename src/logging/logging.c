@@ -76,6 +76,7 @@ char *logfeaturenames[] = {
     "LFS:", // = 9
     "CMD:", // = 10
     "NTP:", // = 11
+	"TuyaMCU:",// = 12
 };
 
 
