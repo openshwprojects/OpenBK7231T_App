@@ -229,72 +229,6 @@ static void initLog( void ) {
     bk_printf("Commands registered!\r\n");
 }
 
-// adds a log to the log memory
-// if head collides with either tail, move the tails on.
-void addLog(char *fmt, ...){
-    int len;
-    va_list argList;
-    BaseType_t taken;
-    // if not initialised, direct output
-    if (!initialised) {
-        initLog();
-    }
-//#if PLATFORM_XR809
-//
-//    va_start(argList, fmt);
-//    vsprintf(tmp, fmt, argList);
-//    va_end(argList);
-//
-//	printf(tmp);
-//#else
-
-    taken = xSemaphoreTake( logMemory.mutex, 100 );
-
-    va_start(argList, fmt);
-    vsprintf(tmp, fmt, argList);
-    va_end(argList);
-
-    len = strlen(tmp);
-    tmp[len++] = '\r';
-    tmp[len++] = '\n';
-    tmp[len] = '\0';
-
-    if (direct_serial_log){
-        bk_printf(tmp);
-        if (taken == pdTRUE){
-            xSemaphoreGive( logMemory.mutex );
-        }
-        if (log_delay){
-            rtos_delay_milliseconds(log_delay);
-        }
-        return;
-    }
-
-    //bk_printf("addlog %d.%d.%d %d:%s\n", logMemory.head, logMemory.tailserial, logMemory.tailtcp, len,tmp);
-
-    for (int i = 0; i < len; i++){
-        logMemory.log[logMemory.head] = tmp[i];
-        logMemory.head = (logMemory.head + 1) % LOGSIZE;
-        if (logMemory.tailserial == logMemory.head){
-            logMemory.tailserial = (logMemory.tailserial + 1) % LOGSIZE;
-        }
-        if (logMemory.tailtcp == logMemory.head){
-            logMemory.tailtcp = (logMemory.tailtcp + 1) % LOGSIZE;
-        }
-        if (logMemory.tailhttp == logMemory.head){
-            logMemory.tailhttp = (logMemory.tailhttp + 1) % LOGSIZE;
-        }
-    }
-
-    if (taken == pdTRUE){
-        xSemaphoreGive( logMemory.mutex );
-    }
-    if (log_delay){
-        rtos_delay_milliseconds(log_delay);
-    }
-//#endif
-}
-
 
 // adds a log to the log memory
 // if head collides with either tail, move the tails on.
@@ -329,6 +263,9 @@ void addLogAdv(int level, int feature, char *fmt, ...){
     tmp[len++] = '\r';
     tmp[len++] = '\n';
     tmp[len] = '\0';
+#if PLATFORM_XR809
+    printf(tmp);
+#endif
 
     if (direct_serial_log){
         bk_printf(tmp);
@@ -404,7 +341,7 @@ static int getTcp(char *buff, int buffsize){
 
 static int getHttp(char *buff, int buffsize){
     int len = getData(buff, buffsize, &logMemory.tailhttp);
-    //bk_printf("got tcp: %d:%s\r\n", len,buff);
+    //printf("got tcp: %d:%s\r\n", len,buff);
     return len;
 }
 

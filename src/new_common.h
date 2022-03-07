@@ -23,14 +23,7 @@ typedef unsigned short uint16_t;
 
 #elif PLATFORM_XR809
 
-#define kNoErr                      0       //! No error occurred.
-typedef void *beken_thread_arg_t;
-typedef void *beken_thread_t;
-typedef void (*beken_thread_function_t)( beken_thread_arg_t arg );
-typedef int OSStatus;
 
-#define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
-#define BEKEN_APPLICATION_PRIORITY         (7)
 
 typedef int bool;
 #define true 1
@@ -51,6 +44,23 @@ typedef unsigned int UINT32;
 #define close lwip_close
 
 #define rtos_delay_milliseconds OS_ThreadSleep
+
+
+#define kNoErr                      0       //! No error occurred.
+typedef void *beken_thread_arg_t;
+typedef void *beken_thread_t;
+typedef void (*beken_thread_function_t)( beken_thread_arg_t arg );
+typedef int OSStatus;
+
+#define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
+#define BEKEN_APPLICATION_PRIORITY         (7)
+
+// wrappers for XR809 threads to work like bekken
+OSStatus rtos_delete_thread( beken_thread_t* thread );
+OSStatus rtos_create_thread( beken_thread_t* thread, 
+							uint8_t priority, const char* name, 
+							beken_thread_function_t function,
+							uint32_t stack_size, beken_thread_arg_t arg );
 
 #include <stdio.h>
 #include <string.h>

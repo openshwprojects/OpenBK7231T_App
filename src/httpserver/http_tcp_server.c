@@ -13,17 +13,12 @@
 
 #if PLATFORM_XR809
 
+#define DISABLE_SEPARATE_THREAD_FOR_EACH_TCP_CLIENT 1
 
-
-static OS_Thread_t g_http_thread;
+#define close lwip_close
 
 #else
 #include "str_pub.h"
-#endif
-
-
-#if PLATFORM_XR809
-#define DISABLE_SEPARATE_THREAD_FOR_EACH_TCP_CLIENT 1
 #endif
 
 static void tcp_server_thread( beken_thread_arg_t arg );
@@ -31,24 +26,17 @@ static void tcp_client_thread( beken_thread_arg_t arg );
 
 #define HTTP_SERVER_PORT            80 /*set up a tcp server,port at 20000*/
 
+xTaskHandle g_http_thread = NULL;
+
 void start_tcp_http()
 {
     OSStatus err = kNoErr;
 
-#if PLATFORM_XR809
-	err = OS_ThreadCreate(&g_http_thread,
-		                "TCP_server",
-		                tcp_server_thread,
-		                NULL,
-		                OS_THREAD_PRIO_CONSOLE,
-		                0x800);
-#else
-    err = rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY, 
+    err = rtos_create_thread( &g_http_thread, BEKEN_APPLICATION_PRIORITY, 
 									"TCP_server", 
 									(beken_thread_function_t)tcp_server_thread,
 									0x800,
 									(beken_thread_arg_t)0 );
-#endif
     if(err != kNoErr)
     {
        ADDLOG_ERROR(LOG_FEATURE_HTTP, "create \"TCP_server\" thread failed!\r\n");
@@ -125,11 +113,7 @@ exit:
 #if DISABLE_SEPARATE_THREAD_FOR_EACH_TCP_CLIENT
 
 #else
-#if PLATFORM_XR809
-	OS_ThreadDelete( NULL );
-#else
 	rtos_delete_thread( NULL );
-#endif
 #endif
 }
 
@@ -212,9 +196,7 @@ static void tcp_server_thread( beken_thread_arg_t arg )
 		  ADDLOG_ERROR(LOG_FEATURE_HTTP,  "Server listerner thread exit with err: %d", err );
 	
     close( tcp_listen_fd );
-#if PLATFORM_XR809
-	OS_ThreadDelete( NULL );
-#else
+
     rtos_delete_thread( NULL );
-#endif
+
 }

@@ -10,8 +10,10 @@
 #ifdef WINDOWS
     // nothing
 #elif PLATFORM_XR809
+    #include "../logging/logging.h"
     #include <image/flash.h>
 #elif defined(PLATFORM_BK7231N)
+    #include "../logging/logging.h"
     // tuya-iotos-embeded-sdk-wifi-ble-bk7231n/sdk/include/tuya_hal_storage.h
     #include "tuya_hal_storage.h"
     #include "BkDriverFlash.h"
@@ -453,7 +455,8 @@ int http_fn_cfg_loglevel_set(http_request_t *request) {
     poststr(request,htmlHeader);
     poststr(request,g_header);
     if(http_getArg(request->url,"loglevel",tmpA,sizeof(tmpA))) {
-#if PLATFORM_BK7231T
+#if WINDOWS
+#else
         loglevel = atoi(tmpA);
 #endif
         poststr(request,"LOG level changed.");
@@ -462,7 +465,8 @@ int http_fn_cfg_loglevel_set(http_request_t *request) {
             <label for=\"loglevel\">loglevel:</label><br>\
             <input type=\"text\" id=\"loglevel\" name=\"loglevel\" value=\"");
     tmpA[0] = 0;
-#if PLATFORM_BK7231T
+#if WINDOWS
+#else
     hprintf128(request,"%i",loglevel);
 #endif
     poststr(request,"\"><br><br>\

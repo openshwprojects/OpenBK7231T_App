@@ -12,13 +12,22 @@
 #include "../littlefs/our_lfs.h"
 #endif
 #include "lwip/sockets.h"
+#if PLATFORM_XR809
+    #include <image/flash.h>
+#else
 #include "../flash_config/flash_config.h"
+#endif
 #include "../new_cfg.h"
 #include "../flash_config/flash_vars_vars.h"
 #include "../flash_config/flash_vars.h"
 #include "../new_cmd.h"
 
+#if PLATFORM_XR809
+uint32_t flash_read(uint32_t flash, uint32_t addr,void *buf, uint32_t size);
+#define FLASH_INDEX_XR809 0
+#else
 extern UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address);
+#endif
 
 static int http_rest_error(http_request_t *request, int code, char *msg);
 
@@ -770,6 +779,9 @@ static int http_rest_error(http_request_t *request, int code, char *msg){
 
 
 static int http_rest_post_flash(http_request_t *request, int startaddr){
+#if PLATFORM_XR809
+
+#else
     int total = 0;
     int towrite;
     char *writebuf;
@@ -810,6 +822,7 @@ static int http_rest_post_flash(http_request_t *request, int startaddr){
     close_ota();
 
     poststr(request,NULL);
+#endif
     return 0;
 }
 
@@ -861,7 +874,13 @@ static int http_rest_get_flash(http_request_t *request, int startaddr, int len){
         if (readlen > 1024){
             readlen = 1024;
         }
+#if PLATFORM_XR809
+  //uint32_t flash_read(uint32_t flash, uint32_t addr,void *buf, uint32_t size)
+ #define FLASH_INDEX_XR809 0
+        res = flash_read(FLASH_INDEX_XR809, startaddr, buffer, readlen);
+#else
         res = flash_read((char *)buffer, readlen, startaddr);
+#endif
         startaddr += readlen;
         len -= readlen;
         postany(request, buffer, readlen);
@@ -873,7 +892,10 @@ static int http_rest_get_flash(http_request_t *request, int startaddr, int len){
 
 static int http_rest_get_dumpconfig(http_request_t *request){
 
+#if PLATFORM_XR809
+#else
     config_dump_table();
+#endif
 
     http_setup(request, httpMimeTypeText);
     poststr(request, NULL);
@@ -882,6 +904,7 @@ static int http_rest_get_dumpconfig(http_request_t *request){
 
 
 
+#ifdef TESTCONFIG_ENABLE    
 // added for OpenBK7231T
 typedef struct item_new_test_config
 {
@@ -890,6 +913,7 @@ typedef struct item_new_test_config
 }ITEM_NEW_TEST_CONFIG,*ITEM_NEW_TEST_CONFIG_PTR;
 
 ITEM_NEW_TEST_CONFIG testconfig;
+#endif    
 
 static int http_rest_get_testconfig(http_request_t *request){
 #ifdef TESTCONFIG_ENABLE    
@@ -960,6 +984,9 @@ static int http_rest_get_testconfig(http_request_t *request){
 }
 
 static int http_rest_get_flash_vars_test(http_request_t *request){
+#if PLATFORM_XR809
+    return http_rest_error(request, 400, "flash vars unsupported");
+#else
 #ifndef DISABLE_FLASH_VARS_VARS
     char *params = request->url + 17;
     int increment = 0; 
@@ -996,6 +1023,7 @@ static int http_rest_get_flash_vars_test(http_request_t *request){
     return http_rest_error(request, 200, tmp);
 #else 
     return http_rest_error(request, 400, "flash vars unsupported");
+#endif
 #endif
 }
 
