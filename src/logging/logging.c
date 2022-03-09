@@ -93,15 +93,15 @@ void addLogAdv(int level, int feature, char *fmt, ...){
     if (level > loglevel){
         return;
     }
-    va_start(argList, fmt);
-    vsprintf(tmp, fmt, argList);
-    va_end(argList);
     strcpy(t, loglevelnames[level]);
     t += strlen(t);
     if (feature < sizeof(logfeaturenames)/sizeof(*logfeaturenames)){
         strcpy(t, logfeaturenames[feature]);
         t += strlen(t);
     }
+    va_start(argList, fmt);
+    vsprintf(t, fmt, argList);
+    va_end(argList);
 
     printf(tmp);
     printf("\r\n");
@@ -112,29 +112,6 @@ void addLogAdv(int level, int feature, char *fmt, ...){
 SemaphoreHandle_t g_mutex = 0;
 
 #ifdef DEBUG_USE_SIMPLE_LOGGER
-
-void addLog(char *fmt, ...){
-    va_list argList;
-    BaseType_t taken;
-
-	if(g_mutex == 0)
-	{
-		g_mutex = xSemaphoreCreateMutex( );
-	}
-	// TODO: semaphore
-
-    taken = xSemaphoreTake( g_mutex, 100 );
-    if (taken == pdTRUE) {
-
-		va_start(argList, fmt);
-		vsprintf(tmp, fmt, argList);
-		va_end(argList);
-		bk_printf(tmp);
-		bk_printf("\r");
-
-        xSemaphoreGive( g_mutex );
-    }
-}
 
 void addLogAdv(int level, int feature, char *fmt, ...){
     va_list argList;
@@ -155,18 +132,18 @@ void addLogAdv(int level, int feature, char *fmt, ...){
     taken = xSemaphoreTake( g_mutex, 100 );
     if (taken == pdTRUE) {
 
-		va_start(argList, fmt);
-		vsprintf(tmp, fmt, argList);
-		va_end(argList);
         strcpy(t, loglevelnames[level]);
         t += strlen(t);
         if (feature < sizeof(logfeaturenames)/sizeof(*logfeaturenames)){
             strcpy(t, logfeaturenames[feature]);
             t += strlen(t);
         }
+		va_start(argList, fmt);
+		vsprintf(t, fmt, argList);
+		va_end(argList);
 
 		bk_printf(tmp);
-		bk_printf("\r");
+		bk_printf("\r\n");
 
         xSemaphoreGive( g_mutex );
         if (log_delay){
@@ -416,8 +393,9 @@ void log_server_thread( beken_thread_arg_t arg )
         }
     }
 	
-    if ( err != kNoErr ) 
-		addLog( "Server listerner thread exit with err: %d", err );
+    if ( err != kNoErr ) {
+		//addLog( "Server listener thread exit with err: %d", err );
+    }
 	
     close( tcp_listen_fd );
     rtos_delete_thread( NULL );
