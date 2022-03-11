@@ -6,11 +6,11 @@
 #include "../ota/ota.h"
 #include "../new_cmd.h"
 #include "../drv_tuyaMCU.h"
+#include "../logging/logging.h"
 
 #ifdef WINDOWS
     // nothing
 #elif PLATFORM_XR809
-    #include "../logging/logging.h"
     #include <image/flash.h>
 #elif defined(PLATFORM_BK7231N)
     #include "../logging/logging.h"

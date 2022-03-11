@@ -431,6 +431,8 @@ void user_main(void)
 	  CMD_ExecuteCommand("exec autoexec.bat");
 	}
 
+ // start_i2c_test();
+
 
   err = rtos_init_timer(&led_timer,
                         1 * 1000,

@@ -58,6 +58,9 @@ typedef struct pinButton_ {
 
 #include "../../beken378/func/include/net_param_pub.h"
 #include "../../beken378/func/user_driver/BkDriverPwm.h"
+#include "../../beken378/func/user_driver/BkDriverI2c.h"
+#include "../../beken378/driver/i2c/i2c1.h"
+#include "../../beken378/driver/gpio/gpio.h"
 #undef PR_DEBUG
 #undef PR_NOTICE
 
@@ -68,6 +71,368 @@ typedef struct item_pins_config
 	pinsState_t pins;
 }ITEM_PINS_CONFIG,*ITEM_PINS_CONFIG_PTR;
 
+void testI2C()
+{
+	bk_i2c_device_t def;
+
+	def.address = 0xAA;
+	def.address_width = I2C_ADDRESS_WIDTH_7BIT;
+	def.speed_mode = I2C_STANDARD_SPEED_MODE;
+
+	BkI2cInitialize(&def);
+
+
+}
+int TC74_readTemp_method1(int adr)
+{
+	bk_i2c_device_t def;
+	byte buffer[9];
+	int t;
+
+
+	def.address = adr;
+	def.address_width = I2C_ADDRESS_WIDTH_7BIT;
+	def.speed_mode = I2C_STANDARD_SPEED_MODE;
+
+	BkI2cInitialize(&def);
+
+ // I2C1_start();
+  //I2C1_Wr(adr);  // Status = 0 if got an ACK
+ // I2C1_Wr(0x00);  // Status = 0 if got an ACK
+  //I2C1_Repeated_Start();  // issue I2C signal repeated start
+ // I2C1_Wr(adr+1);  // Status = 0 if got an ACK
+ // delay_ms(10);
+ // t = I2C1_Rd(1);
+ // I2C1_stop();
+
+	return t;
+
+}
+#include "i2c_pub.h"
+I2C_OP_ST i2c_operater;
+DD_HANDLE i2c_hdl;
+static void camera_intf_sccb_write(UINT8 addr, UINT8 data)
+{
+	char buff = (char)data;
+    
+    i2c_operater.op_addr = addr;
+    ddev_write(i2c_hdl, &buff, 1, (UINT32)&i2c_operater);
+}
+
+void camera_intf_sccb_read(UINT8 addr, UINT8 *data)
+{   
+    i2c_operater.op_addr = addr;
+    ddev_read(i2c_hdl, (char*)data, 1, (UINT32)&i2c_operater);
+}
+int TC74_readTemp_method2(int dev_adr)
+{
+	byte buffer[9];
+	int t;
+    uint32_t status;
+	uint32_t oflag;
+    oflag = I2C_DEF_DIV;
+
+	//i2c1_init();
+	i2c_hdl = ddev_open("i2c1", &status, oflag);
+    if(DD_HANDLE_UNVALID == i2c_hdl){
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"TC74_readTemp_method2 ddev_open failed, status %i!\n",status);
+		return -1;
+	}
+
+    i2c_operater.salve_id = dev_adr;
+
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"TC74_readTemp_method2 ddev_open OK!\n");
+
+
+	camera_intf_sccb_write(0,0x00);
+
+	camera_intf_sccb_read(0x00,&buffer[0]);
+	t = buffer[0];
+
+
+	ddev_close(i2c_hdl);
+	return t;
+
+}
+
+///*/*/*int TC74_readTemp_method2(int adr)
+//{
+//	byte buffer[9];
+//	int t;
+//    uint32_t status;
+//	uint32_t oflag;
+//    oflag = I2C_DEF_DIV;
+//
+//	//i2c1_init();
+//	i2c_hdl = ddev_open("i2c1", &status, oflag);
+//    if(DD_HANDLE_UNVALID == i2c_hdl){
+//		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"TC74_readTemp_method2 ddev_open failed, status %i!\n",status);
+//		return -1;
+//	}
+//
+//		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"TC74_readTemp_method2 ddev_open OK!\n");
+//
+//	//I2C1_start();
+//	//i2c1_open(0);
+//	//I2C1_Wr(adr);  // Status = 0 if got an ACK
+//	//I2C1_Wr(0x00);  // Status = 0 if got an ACK
+//	buffer[0] = adr;
+//	buffer[1] = 0x00;
+//	camera_intf_sccb_write(adr,0x00);
+//	//ddev_write(i2c_hdl,buffer,2,0);
+//	//i2c1_write((char*)buffer, 2, 0);
+//	//I2C1_Repeated_Start();  // issue I2C signal repeated start
+//	// ????
+//	//I2C1_Wr(adr+1);  // Status = 0 if got an ACK
+//	buffer[0] = adr+1;
+//	//ddev_write(i2c_hdl,buffer,1,0);
+//	//delay_ms(10);
+//	//t = I2C1_Rd(1);
+//	//ddev_read(i2c_hdl,buffer,1,0);
+//	//i2c1_read((char*)buffer, 1, 0);
+//	camera_intf_sccb_read(adr,&buffer[0]);
+//	t = buffer[0];
+//	//I2C1_stop();
+//	//i2c1_close();
+//
+//	ddev_close(i2c_hdl);
+//	return t;
+//
+//}*/*/*/
+	int attempt;
+
+	
+// dac i2c interface 
+#define I2C_CLK 26
+#define I2C_DAT 27
+
+typedef struct Codec_RegCfg_s
+{
+	unsigned int map;
+	unsigned char reg;
+}Codec_ES8374_RegCfg_t;
+
+// 0-output&pullup, 1--input
+static void gpio_config_c( UINT32 index, UINT32 mode ) 
+{
+	volatile UINT32 *gpio_cfg_addr;
+	UINT32 val;
+	UINT32 tmp;
+	if(index >GPIONUM)
+		return;
+	gpio_cfg_addr = (volatile UINT32 *)(REG_GPIO_CFG_BASE_ADDR + index * 4);
+	tmp =mode;
+	mode &= 0xff;
+	
+	if(mode == 1)
+		val =0x0c;
+	else
+	{
+		val = 0x30;
+		if(tmp>>8)
+			val |= 1<<1;
+	}
+	REG_WRITE(gpio_cfg_addr, val);
+}
+
+
+
+static void gpio_output_c(UINT32 index, UINT32 val)
+{
+    UINT32 reg_val;
+    volatile UINT32 *gpio_cfg_addr;
+
+    gpio_cfg_addr = (volatile UINT32 *)(REG_GPIO_CFG_BASE_ADDR + index * 4);
+    reg_val = REG_READ(gpio_cfg_addr);
+
+    reg_val &= ~GCFG_OUTPUT_BIT;
+    reg_val |= (val & 0x01) << GCFG_OUTPUT_POS;
+    REG_WRITE(gpio_cfg_addr, reg_val);
+}
+
+static UINT32 DATA_INPUT(void)
+{
+    UINT32 val = 0;
+    volatile UINT32 *gpio_cfg_addr;
+
+    gpio_cfg_addr = (volatile UINT32 *)(REG_GPIO_CFG_BASE_ADDR + I2C_DAT * 4);
+    val = REG_READ(gpio_cfg_addr);
+
+    return (val & 1);
+}
+
+
+static void CLK_OUTPUT_HIGH(void)
+{
+	gpio_output_c(I2C_CLK,1);
+}
+static void CLK_OUTPUT_LOW(void)
+{
+	gpio_output_c(I2C_CLK,0);
+}
+
+static void DATA_OUTPUT_HIGH(void)
+{
+	gpio_output_c(I2C_DAT,1);
+}
+
+static void DATA_OUTPUT_LOW(void)
+{
+	gpio_output_c(I2C_DAT,0);
+}
+
+static void SET_DATA_INPUT(void)
+{
+	gpio_config_c(I2C_DAT,1);
+}
+
+static void set_data_output(void)
+{
+	UINT32 mode;
+	UINT32 val = 	DATA_INPUT();
+	mode = (val<<8) ;
+	gpio_config_c(I2C_DAT,mode);
+}
+
+/*1 equals about 5 us*/
+static void es8374_codec_i2c_delay(int us)
+{
+    volatile int i, j;
+    for(i = 0; i < us; i++)
+    {
+        j = 50;
+        while(j--);
+    }	
+}
+
+static void es8374_codec_i2c_start(void)
+{
+    // start bit
+	CLK_OUTPUT_HIGH();
+	DATA_OUTPUT_HIGH();
+    es8374_codec_i2c_delay(1); 
+	DATA_OUTPUT_LOW();
+    es8374_codec_i2c_delay(1); 
+}
+
+static void es8374_codec_i2c_stop(void)
+{
+	//stop bit
+	CLK_OUTPUT_LOW();
+	es8374_codec_i2c_delay(1); 
+	CLK_OUTPUT_HIGH();
+	es8374_codec_i2c_delay(1); 
+	DATA_OUTPUT_HIGH();
+	es8374_codec_i2c_delay(1); 
+}
+
+
+static void es8374_codec_i2c_write_byte(unsigned char data)
+{
+	int i;
+
+	//data 0-7bit
+	for(i = 7; i >= 0; i--)
+	{
+		CLK_OUTPUT_LOW();
+		if(data & (0x1 << i)) // msb first, rising change and falling lock in codec
+			DATA_OUTPUT_HIGH();
+		else
+			DATA_OUTPUT_LOW();
+		es8374_codec_i2c_delay(1);
+		CLK_OUTPUT_HIGH();
+		es8374_codec_i2c_delay(1);      
+	}
+	//receive ack, bit9
+	CLK_OUTPUT_LOW();
+	SET_DATA_INPUT();
+
+	es8374_codec_i2c_delay(1);          
+
+	CLK_OUTPUT_HIGH();
+	es8374_codec_i2c_delay(1);     
+	set_data_output();
+}
+int TC74_readTemp_method3(int adr)
+{
+  int t;
+
+
+  es8374_codec_i2c_start();
+  es8374_codec_i2c_write_byte(adr);  // Status = 0 if got an ACK
+  es8374_codec_i2c_write_byte(0x00);  // Status = 0 if got an ACK
+  es8374_codec_i2c_start();  // issue I2C signal repeated start
+  es8374_codec_i2c_write_byte(adr+1);  // Status = 0 if got an ACK
+  delay_ms(10);
+  t = I2C1_Rd(1);
+  es8374_codec_i2c_stop();
+      return t;
+
+}
+static void I2CWRNBYTE_CODEC(unsigned char reg, unsigned char val)
+{
+    UINT8 i2c_address = 0x20;
+
+    es8374_codec_i2c_start();
+    es8374_codec_i2c_write_byte(i2c_address); 	
+    es8374_codec_i2c_write_byte(reg);
+    es8374_codec_i2c_write_byte(val);
+    es8374_codec_i2c_stop();
+}
+
+
+void run_i2c_test()
+{
+	int res;
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Will do I2C attemt %i!\n",attempt);
+		attempt++;
+		// TC74A2
+		res = TC74_readTemp_method2(0x4A);
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Temp result is %i!\n",res);
+		//res = TC74_readTemp_method3(0x4A);
+		//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Temp result is %i!\n",res);
+}
+void my_i2c_test(void *p)
+{
+
+	attempt = 0;
+///		delay_ms(500);
+///	while(1)
+	///{
+	////	delay_ms(500);
+		run_i2c_test();
+
+	////}
+}
+xTaskHandle g_i2c_test = NULL;
+void start_i2c_test()
+{
+    OSStatus err = kNoErr;
+
+	
+  err = rtos_init_timer(&g_i2c_test,
+                        1 * 1000,
+                        my_i2c_test,
+                        (void *)0);
+
+
+    if(err != kNoErr)
+    {
+       ADDLOG_ERROR(LOG_FEATURE_HTTP, "create \"TCP_server\" thread failed!\r\n");
+    }
+    rtos_start_timer(&g_i2c_test);
+}
+void testI2C_method1()
+{
+	char buffer[8];
+	
+
+	i2c1_open(0);
+	
+	i2c1_write(buffer, 2, 0);
+	i2c1_close();
+
+}
 
 #endif
 

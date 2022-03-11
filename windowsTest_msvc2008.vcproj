@@ -248,11 +248,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\new_http.h"
+				RelativePath=".\src\httpserver\new_http.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\httpserver\new_http.h"
+				RelativePath=".\src\new_http.h"
 				>
 			</File>
 			<File
@@ -348,6 +348,22 @@
 			<File
 				RelativePath="..\..\platforms\bk7231t\bk7231t_os\application.mk"
 				>
+			</File>
+			<File
+				RelativePath="..\..\platforms\bk7231t\bk7231t_os\beken378\func\user_driver\BkDriverI2c.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\platforms\bk7231t\bk7231t_os\beken378\driver\common\dd.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\platforms\bk7231t\bk7231t_os\beken378\func\lwip_intf\lwip-2.0.2\port\ethernetif.c"
