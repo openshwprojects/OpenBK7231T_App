@@ -135,13 +135,13 @@ int TC74_readTemp_method2(int dev_adr)
 	//i2c1_init();
 	i2c_hdl = ddev_open("i2c1", &status, oflag);
     if(DD_HANDLE_UNVALID == i2c_hdl){
-		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"TC74_readTemp_method2 ddev_open failed, status %i!\n",status);
+		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"TC74_readTemp_method2 ddev_open failed, status %i!\n",status);
 		return -1;
 	}
 
     i2c_operater.salve_id = dev_adr;
 
-		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"TC74_readTemp_method2 ddev_open OK!\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"TC74_readTemp_method2 ddev_open OK!\n");
 
 
 	camera_intf_sccb_write(0,0x00);
@@ -166,11 +166,11 @@ int TC74_readTemp_method2(int dev_adr)
 //	//i2c1_init();
 //	i2c_hdl = ddev_open("i2c1", &status, oflag);
 //    if(DD_HANDLE_UNVALID == i2c_hdl){
-//		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"TC74_readTemp_method2 ddev_open failed, status %i!\n",status);
+//		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"TC74_readTemp_method2 ddev_open failed, status %i!\n",status);
 //		return -1;
 //	}
 //
-//		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"TC74_readTemp_method2 ddev_open OK!\n");
+//		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"TC74_readTemp_method2 ddev_open OK!\n");
 //
 //	//I2C1_start();
 //	//i2c1_open(0);
@@ -384,13 +384,13 @@ static void I2CWRNBYTE_CODEC(unsigned char reg, unsigned char val)
 void run_i2c_test()
 {
 	int res;
-		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Will do I2C attemt %i!\n",attempt);
+		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"Will do I2C attemt %i!\n",attempt);
 		attempt++;
 		// TC74A2
 		res = TC74_readTemp_method2(0x4A);
-		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Temp result is %i!\n",res);
+		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"Temp result is %i!\n",res);
 		//res = TC74_readTemp_method3(0x4A);
-		//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Temp result is %i!\n",res);
+		//addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"Temp result is %i!\n",res);
 }
 void my_i2c_test(void *p)
 {
@@ -418,7 +418,7 @@ void start_i2c_test()
 
     if(err != kNoErr)
     {
-       ADDLOG_ERROR(LOG_FEATURE_HTTP, "create \"TCP_server\" thread failed!\r\n");
+       ADDLOG_ERROR(LOG_FEATURE_I2C, "create \"I2C\" thread failed!\r\n");
     }
     rtos_start_timer(&g_i2c_test);
 }
