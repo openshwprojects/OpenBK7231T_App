@@ -343,3 +343,40 @@ void Setup_Device_TuyaSmartPFW02G() {
 
 	PIN_SaveToFlash();
 }
+
+
+void Setup_Device_AvatarASL04() {
+
+	// pins are:
+	// red - PWM2 = P7
+	// green - PWM3 = P8
+	// blue - PWM1 = P6
+	// warm white - PWM5 = P26
+	// cold white - PWM4 = P24
+
+	PIN_ClearPins();
+
+	// red
+	PIN_SetPinChannelForPinIndex(24, 1);
+	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
+	// green
+	PIN_SetPinChannelForPinIndex(6, 2);
+	PIN_SetPinRoleForPinIndex(6, IOR_PWM);
+	// blue
+	PIN_SetPinChannelForPinIndex(8, 3);
+	PIN_SetPinRoleForPinIndex(8, IOR_PWM);
+
+
+	// just set to buttons 1/2/3 for the moment
+	PIN_SetPinRoleForPinIndex(7, IOR_Button);
+	PIN_SetPinChannelForPinIndex(7, 1);
+
+	PIN_SetPinRoleForPinIndex(9, IOR_Button);
+	PIN_SetPinChannelForPinIndex(9, 1);
+
+	PIN_SetPinRoleForPinIndex(14, IOR_Button);
+	PIN_SetPinChannelForPinIndex(14, 1);
+
+
+	PIN_SaveToFlash();
+}
