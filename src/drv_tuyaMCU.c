@@ -23,6 +23,36 @@
 
 void TuyaMCU_RunFrame();
 
+
+
+
+
+//=============================================================================
+//dp data point type
+//=============================================================================
+#define         DP_TYPE_RAW                     0x00        //RAW type
+#define         DP_TYPE_BOOL                    0x01        //bool type
+#define         DP_TYPE_VALUE                   0x02        //value type
+#define         DP_TYPE_STRING                  0x03        //string type
+#define         DP_TYPE_ENUM                    0x04        //enum type
+#define         DP_TYPE_BITMAP                  0x05        //fault type
+
+
+const char *TuyaMCU_GetDataTypeString(int dpId){
+	if(DP_TYPE_RAW == dpId)
+		return "DP_TYPE_RAW";
+	if(DP_TYPE_BOOL == dpId)
+		return "DP_TYPE_BOOL";
+	if(DP_TYPE_VALUE == dpId)
+		return "DP_TYPE_VALUE";
+	if(DP_TYPE_STRING == dpId)
+		return "DP_TYPE_STRING";
+	if(DP_TYPE_ENUM == dpId)
+		return "DP_TYPE_ENUM";
+	if(DP_TYPE_BITMAP == dpId)
+		return "DP_TYPE_BITMAP";
+	return "DP_ERROR";
+}
 // from http_fns.  should move to a utils file.
 extern unsigned char hexbyte( const char* hex );
 
@@ -310,12 +340,42 @@ void TuyaMCU_Init()
 {
 	TuyaMCU_Bridge_InitUART(9600);
 	UART_InitReceiveRingBuffer(256);
+	// uartSendHex 55AA0008000007 
 	CMD_RegisterCommand("tuyaMcu_testSendTime","",TuyaMCU_Send_SetTime_Example, "Sends a example date by TuyaMCU to clock/callendar MCU", NULL);
 	CMD_RegisterCommand("uartSendHex","",TuyaMCU_Send_Hex, "Sends raw data by TuyaMCU UART, you must write whole packet with checksum yourself", NULL);
 	///CMD_RegisterCommand("tuyaMcu_sendSimple","",TuyaMCU_Send_Simple, "Appends a 0x55 0xAA header to a data, append a checksum at end and send");
 
 }
 
+void TuyaMCU_ParseStateMessage(const byte *data, int len) {
+	int ofs;
+	int sectorLen;
+	int fnId;
+	int dataType;
+
+	ofs = 0;
+	
+	while(ofs + 4 < len) {
+		sectorLen = data[ofs + 2] << 8 | data[ofs + 3];
+		fnId = data[ofs];
+		dataType = data[ofs+1];
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ParseStateMessage: processing command %i, dataType %i-%s and %i data bytes\n",
+			fnId, dataType, TuyaMCU_GetDataTypeString(dataType),sectorLen);
+
+		if(sectorLen == 1) {
+			int iVal = (int)data[ofs+4];
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ParseStateMessage: raw data 1 byte: %c\n",iVal);
+		}
+		if(sectorLen == 4) {  
+			int iVal = data[ofs + 4] << 24 | data[ofs + 5] << 16 | data[ofs + 6] << 8 | data[ofs + 7];
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ParseStateMessage: raw data 4 int: %i\n",iVal);
+		}
+
+		// size of header (type, datatype, len 2 bytes) + data sector size
+		ofs += (4+sectorLen);
+	}
+
+}
 
 void TuyaMCU_ProcessIncoming(const byte *data, int len) {
 	int checkLen;
@@ -342,7 +402,12 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
 	}
 	cmd = data[3];
 	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: processing command %i (%s) with %i bytes\n",cmd,TuyaMCU_GetCommandTypeLabel(cmd),len);
-
+	switch(cmd)
+	{
+	case TUYA_CMD_STATE:
+		TuyaMCU_ParseStateMessage(data+6,len-6);
+		break;
+	}
 }
 void TuyaMCU_RunFrame() {
 	byte data[128];
