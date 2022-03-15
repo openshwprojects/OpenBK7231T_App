@@ -1051,11 +1051,24 @@ bool CHANNEL_Check(int ch) {
 }
 
 
-int CHANNEL_GetRoleForChannel(int ch){
+int CHANNEL_GetRoleForOutputChannel(int ch){
 	int i;
 	for (i = 0; i < 32; i++){
 		if (g_pins.channels[i] == ch){
-			return g_pins.roles[i];
+			switch(g_pins.roles[i]){
+				case IOR_Relay:
+				case IOR_Relay_n:
+				case IOR_LED:
+				case IOR_LED_n:
+				case IOR_PWM:
+					return g_pins.roles[i];
+					break;
+				case IOR_Button:
+				case IOR_Button_n:
+				case IOR_LED_WIFI:
+				case IOR_LED_WIFI_n:
+					break;
+			}
 		}
 	}
 	return IOR_None;
@@ -1276,3 +1289,6 @@ void PIN_set_wifi_led(int value){
 		RAW_SetPinValue(res, value & 1);
 	}
 }
+
+
+

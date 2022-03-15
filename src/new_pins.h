@@ -57,7 +57,7 @@ void CHANNEL_SetChangeCallback(void (*cb)(int idx, int iVal));
 void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex));
 void CHANNEL_Set(int ch, int iVal, int bForce);
 int CHANNEL_Get(int ch);
-int CHANNEL_GetRoleForChannel(int ch);
+int CHANNEL_GetRoleForOutputChannel(int ch);
 
 void PIN_SaveToFlash();
 void PIN_LoadFromFlash();
@@ -79,6 +79,7 @@ void Setup_Device_TuyaSmartPFW02G();
 void Setup_Device_BK7231N_CB2S_QiachipSmartSwitch();
 void Setup_Device_BK7231T_WB2S_QiachipSmartSwitch();
 void Setup_Device_BK7231T_Raw_PrimeWiFiSmartOutletsOutdoor_CCWFIO232PK();
+void Setup_Device_AvatarASL04();
 
 #endif
 
