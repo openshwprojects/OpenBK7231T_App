@@ -343,3 +343,47 @@ void Setup_Device_TuyaSmartPFW02G() {
 
 	PIN_SaveToFlash();
 }
+
+
+void Setup_Device_AvatarASL04() {
+
+	// pins are:
+	// red - PWM1 = P24
+	// green - PWM2 = P6
+	// blue - PWM3 = P8
+
+	// buttons
+	// music - P7
+	// color - P9
+	// on/off - P14
+
+	// IR - P14
+
+	// audio input ???? - most likely P23/ADC?
+
+	PIN_ClearPins();
+
+	// red
+	PIN_SetPinChannelForPinIndex(24, 1);
+	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
+	// green
+	PIN_SetPinChannelForPinIndex(6, 2);
+	PIN_SetPinRoleForPinIndex(6, IOR_PWM);
+	// blue
+	PIN_SetPinChannelForPinIndex(8, 3);
+	PIN_SetPinRoleForPinIndex(8, IOR_PWM);
+
+
+	// just set to buttons 1/2/3 for the moment
+	PIN_SetPinRoleForPinIndex(7, IOR_Button);
+	PIN_SetPinChannelForPinIndex(7, 1);
+
+	PIN_SetPinRoleForPinIndex(9, IOR_Button);
+	PIN_SetPinChannelForPinIndex(9, 1);
+
+	PIN_SetPinRoleForPinIndex(14, IOR_Button_ToggleAll);
+	PIN_SetPinChannelForPinIndex(14, 1);
+
+
+	PIN_SaveToFlash();
+}

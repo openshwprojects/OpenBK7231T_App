@@ -5,6 +5,7 @@
 #include "new_pins.h"
 #include "httpserver/new_http.h"
 #include "logging/logging.h"
+#include "new_cmd.h"
 
 
 //According to your need to modify the constants.
@@ -1050,11 +1051,24 @@ bool CHANNEL_Check(int ch) {
 }
 
 
-int CHANNEL_GetRoleForChannel(int ch){
+int CHANNEL_GetRoleForOutputChannel(int ch){
 	int i;
 	for (i = 0; i < 32; i++){
 		if (g_pins.channels[i] == ch){
-			return g_pins.roles[i];
+			switch(g_pins.roles[i]){
+				case IOR_Relay:
+				case IOR_Relay_n:
+				case IOR_LED:
+				case IOR_LED_n:
+				case IOR_PWM:
+					return g_pins.roles[i];
+					break;
+				case IOR_Button:
+				case IOR_Button_n:
+				case IOR_LED_WIFI:
+				case IOR_LED_WIFI_n:
+					break;
+			}
 		}
 	}
 	return IOR_None;
@@ -1195,6 +1209,37 @@ void PIN_ticks(void *param)
 	}
 }
 
+static int showgpi(const void *context, const char *cmd, const char *args){
+	int i;
+	unsigned int value = 0;
+
+	for (i = 0; i < 32; i++) {
+		int val = 0;
+#ifdef WINDOWS		
+#elif PLATFORM_XR809
+		int xr_port; // eg GPIO_PORT_A
+		int xr_pin; // eg. GPIO_PIN_20
+		PIN_XR809_GetPortPinForIndex(i, &xr_port, &xr_pin);
+
+		if (HAL_GPIO_ReadPin(xr_port, xr_pin) == GPIO_PIN_LOW)
+			val = 0;
+		else 
+			val = 1;
+#else
+		val = bk_gpio_input(i);
+		if (val){
+			val = 1;
+		} else {
+			val = 0;
+		}
+#endif
+		value |= ((val & 1)<<i);
+	}
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"GPIs are 0x%x", value);
+	return 1;
+}
+
+
 void PIN_Init(void)
 {
 #if WINDOWS
@@ -1224,6 +1269,8 @@ void PIN_Init(void)
     ASSERT(kNoErr == result);
 #endif
 
+
+	CMD_RegisterCommand("showgpi", NULL, showgpi, "log stat of all GPIs", NULL);
 }
 
 void PIN_set_wifi_led(int value){
@@ -1242,3 +1289,6 @@ void PIN_set_wifi_led(int value){
 		RAW_SetPinValue(res, value & 1);
 	}
 }
+
+
+

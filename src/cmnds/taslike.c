@@ -36,26 +36,39 @@ static int color(const void *context, const char *cmd, const char *args){
             const char *c = args;
             int val = 0;
             int channel = 0;
+            ADDLOG_DEBUG(LOG_FEATURE_CMD, "tasCmnd COLOR got %s", args);
             c++;
             while (*c){
                 char tmp[3];
                 int r;
+                int val100;
                 tmp[0] = *(c++);
                 if (!*c) break;
                 tmp[1] = *(c++);
+                tmp[2] = '\0';
                 r = sscanf(tmp, "%x", &val);
-                if (!r) break;
+                if (!r) {
+                    ADDLOG_ERROR(LOG_FEATURE_CMD, "COLOR no sscanf hex result from %s", tmp);
+                    break;
+                }
                 // if this channel is not PWM, find a PWM channel;
-                while ((channel < 32) && (IOR_PWM != CHANNEL_GetRoleForChannel(channel))) {
+                while ((channel < 32) && (IOR_PWM != CHANNEL_GetRoleForOutputChannel(channel))) {
                     channel ++;
                 }
 
-                if (channel >= 32) break;
+                if (channel >= 32) {
+                    ADDLOG_ERROR(LOG_FEATURE_CMD, "COLOR channel >= 32");
+                    break;
+                }
 
-                val = (val * 100)/255;
-                CHANNEL_Set(channel, val, 0);
+                val100 = (val * 100)/255;
+                ADDLOG_DEBUG(LOG_FEATURE_CMD, "COLOR found chan %d -> val255 %d -> val100 %d (from %s)", channel, val, val100, tmp);
+                CHANNEL_Set(channel, val100, 0);
                 // move to next channel.
                 channel ++;
+            }
+            if (!(*c)){
+                ADDLOG_DEBUG(LOG_FEATURE_CMD, "COLOR arg ended");
             }
         }
         return 1;
