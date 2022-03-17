@@ -367,11 +367,11 @@ void Setup_Device_AvatarASL04() {
 	PIN_SetPinChannelForPinIndex(24, 1);
 	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
 	// green
-	PIN_SetPinChannelForPinIndex(6, 2);
-	PIN_SetPinRoleForPinIndex(6, IOR_PWM);
-	// blue
-	PIN_SetPinChannelForPinIndex(8, 3);
+	PIN_SetPinChannelForPinIndex(8, 2);
 	PIN_SetPinRoleForPinIndex(8, IOR_PWM);
+	// blue
+	PIN_SetPinChannelForPinIndex(6, 3);
+	PIN_SetPinRoleForPinIndex(6, IOR_PWM);
 
 
 	// just set to buttons 1/2/3 for the moment
@@ -379,10 +379,10 @@ void Setup_Device_AvatarASL04() {
 	PIN_SetPinChannelForPinIndex(7, 1);
 
 	PIN_SetPinRoleForPinIndex(9, IOR_Button);
-	PIN_SetPinChannelForPinIndex(9, 1);
+	PIN_SetPinChannelForPinIndex(9, 2);
 
-	PIN_SetPinRoleForPinIndex(14, IOR_Button_ToggleAll);
-	PIN_SetPinChannelForPinIndex(14, 1);
+	PIN_SetPinRoleForPinIndex(14, IOR_Button);
+	PIN_SetPinChannelForPinIndex(14, 3);
 
 
 	PIN_SaveToFlash();
