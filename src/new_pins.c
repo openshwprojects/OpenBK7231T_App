@@ -927,12 +927,18 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 #elif PLATFORM_XR809
 
 #elif PLATFORM_BK7231N
+			// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
+			bk_pwm_initialize(pwmIndex, 1000, 0, 0, 0);
+
 			bk_pwm_start(pwmIndex);
 			f = g_channelValues[channelIndex] * 0.01f;
 			// OSStatus bk_pwm_update_param(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle1, uint32_t duty_cycle2, uint32_t duty_cycle3)
 			bk_pwm_update_param(pwmIndex, 1000, f * 1000.0f,0,0);
 
 #else
+			// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
+			bk_pwm_initialize(pwmIndex, 1000, 0);
+
 			bk_pwm_start(pwmIndex);
 			// they are using 1kHz PWM
 			// See: https://www.elektroda.pl/rtvforum/topic3798114.html
