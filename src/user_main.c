@@ -71,6 +71,7 @@
 static int g_secondsElapsed = 0;
 
 static int g_openAP = 0;
+static int g_connectToWiFi = 0;
 
 // reset in this number of seconds
 int g_reset = 0;
@@ -91,6 +92,59 @@ void RESET_ScheduleModuleReset(int delSeconds) {
 int Time_getUpTimeSeconds() {
 	return g_secondsElapsed;
 }
+
+int g_bHasWiFiConnected = 0;
+// receives status change notifications about wireless - could be useful
+// ctxt is pointer to a rw_evt_type
+void wl_status( void *ctxt ){
+
+    rw_evt_type stat = *((rw_evt_type*)ctxt);
+    ADDLOGF_INFO("wl_status %d\r\n", stat);
+
+    switch(stat){
+        case RW_EVT_STA_IDLE:
+        case RW_EVT_STA_SCANNING:
+        case RW_EVT_STA_SCAN_OVER:
+        case RW_EVT_STA_CONNECTING:
+            PIN_set_wifi_led(0);
+			g_bHasWiFiConnected = 0;
+            break;
+        case RW_EVT_STA_BEACON_LOSE:
+        case RW_EVT_STA_PASSWORD_WRONG:
+        case RW_EVT_STA_NO_AP_FOUND:
+        case RW_EVT_STA_ASSOC_FULL:
+        case RW_EVT_STA_DISCONNECTED:    /* disconnect with server */
+            // try to connect again in 5 seconds
+            //reconnect = 5;
+            PIN_set_wifi_led(0);
+			g_bHasWiFiConnected = 0;
+            break;
+        case RW_EVT_STA_CONNECT_FAILED:  /* authentication failed */
+            PIN_set_wifi_led(0);
+			g_bHasWiFiConnected = 0;
+            break;
+        case RW_EVT_STA_CONNECTED:        /* authentication success */    
+        case RW_EVT_STA_GOT_IP: 
+            PIN_set_wifi_led(1);
+			g_bHasWiFiConnected = 1;
+            break;
+        
+        /* for softap mode */
+        case RW_EVT_AP_CONNECTED:          /* a client association success */
+            PIN_set_wifi_led(1);
+			g_bHasWiFiConnected = 1;
+            break;
+        case RW_EVT_AP_DISCONNECTED:       /* a client disconnect */
+        case RW_EVT_AP_CONNECT_FAILED:     /* a client association failed */
+            PIN_set_wifi_led(0);
+			g_bHasWiFiConnected = 0;
+            break;
+        default:
+            break;
+    }
+
+}
+
 
 // from wlan_ui.c, no header
 void bk_wlan_status_register_cb(FUNC_1PARAM_PTR cb);
@@ -189,7 +243,20 @@ static void app_led_timer_handler(void *data)
       setup_wifi_open_access_point();
     }
   }
-
+  if(g_connectToWiFi){
+	g_connectToWiFi --;
+	if(0 == g_connectToWiFi) {
+		const char *wifi_ssid, *wifi_pass;
+		wifi_ssid = CFG_GetWiFiSSID();
+		wifi_pass = CFG_GetWiFiPass();
+		connect_to_wifi(wifi_ssid,wifi_pass);
+		// register function to get callbacks about wifi changes.
+		bk_wlan_status_register_cb(wl_status);
+		ADDLOGF_DEBUG("Registered for wifi changes\r\n");
+		// reconnect after 10 minutes?
+		//g_connectToWiFi = 60 * 10; 
+	}
+  }
 
   if (g_reset){
       g_reset--;
@@ -284,63 +351,10 @@ static int setup_wifi_open_access_point(void)
   return 0;    
 }
 
-int g_bHasWiFiConnected = 0;
 
 int Main_IsConnectedToWiFi() {
 	return g_bHasWiFiConnected;
 }
-
-// receives status change notifications about wireless - could be useful
-// ctxt is pointer to a rw_evt_type
-void wl_status( void *ctxt ){
-
-    rw_evt_type stat = *((rw_evt_type*)ctxt);
-    ADDLOGF_INFO("wl_status %d\r\n", stat);
-
-    switch(stat){
-        case RW_EVT_STA_IDLE:
-        case RW_EVT_STA_SCANNING:
-        case RW_EVT_STA_SCAN_OVER:
-        case RW_EVT_STA_CONNECTING:
-            PIN_set_wifi_led(0);
-			g_bHasWiFiConnected = 0;
-            break;
-        case RW_EVT_STA_BEACON_LOSE:
-        case RW_EVT_STA_PASSWORD_WRONG:
-        case RW_EVT_STA_NO_AP_FOUND:
-        case RW_EVT_STA_ASSOC_FULL:
-        case RW_EVT_STA_DISCONNECTED:    /* disconnect with server */
-            // try to connect again in 5 seconds
-            //reconnect = 5;
-            PIN_set_wifi_led(0);
-			g_bHasWiFiConnected = 0;
-            break;
-        case RW_EVT_STA_CONNECT_FAILED:  /* authentication failed */
-            PIN_set_wifi_led(0);
-			g_bHasWiFiConnected = 0;
-            break;
-        case RW_EVT_STA_CONNECTED:        /* authentication success */    
-        case RW_EVT_STA_GOT_IP: 
-            PIN_set_wifi_led(1);
-			g_bHasWiFiConnected = 1;
-            break;
-        
-        /* for softap mode */
-        case RW_EVT_AP_CONNECTED:          /* a client association success */
-            PIN_set_wifi_led(1);
-			g_bHasWiFiConnected = 1;
-            break;
-        case RW_EVT_AP_DISCONNECTED:       /* a client disconnect */
-        case RW_EVT_AP_CONNECT_FAILED:     /* a client association failed */
-            PIN_set_wifi_led(0);
-			g_bHasWiFiConnected = 0;
-            break;
-        default:
-            break;
-    }
-
-}
-
 
 void user_main(void)
 //OPERATE_RET device_init(VOID)
@@ -384,10 +398,7 @@ void user_main(void)
 		g_openAP = 5;
 		//setup_wifi_open_access_point();
 	} else {
-		connect_to_wifi(wifi_ssid,wifi_pass);
-		// register function to get callbacks about wifi changes.
-		bk_wlan_status_register_cb(wl_status);
-		ADDLOGF_DEBUG("Registered for wifi changes\r\n");
+		g_connectToWiFi = 5;
 	}
 
 	// NOT WORKING, I done it other way, see ethernetif.c
