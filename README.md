@@ -139,10 +139,15 @@ Currently available pin roles:
  I have prepared several detailed teardowns and flashing guides for multiple supported devices.
   
   Outdoor two relays smart switch CCWFIO232PK (BK7231T): 
+  https://www.elektroda.com/rtvforum/topic3875654.html
   https://www.elektroda.pl/rtvforum/viewtopic.php?p=19906670#19906670
   
   Qiachip Smart Switch module (BK7231N/CB2S): 
+  https://www.elektroda.com/rtvforum/topic3874289.html
   https://www.elektroda.pl/rtvforum/viewtopic.php?t=3874289&highlight=
+  
+  Tuya RGBCW 12W light bulb (raw PWMs, no I2C, BK7231N)
+  https://www.elektroda.pl/rtvforum/viewtopic.php?t=3880540&highlight=
   
 # Futher reading
   
