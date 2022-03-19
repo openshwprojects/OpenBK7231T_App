@@ -49,6 +49,37 @@ void Setup_Device_TuyaSmartLife4CH10A() {
 
 	PIN_SaveToFlash();
 }
+// Tuya "12W" smart light bulb
+// "Tuya Wifi Smart Life Light Bulb Lamp E27 LED RGBCW Dimmable For Alexa/Google 18W
+// See this topic: https://www.elektroda.pl/rtvforum/viewtopic.php?t=3880540&highlight=
+void Setup_Device_BK7231N_TuyaLightBulb_RGBCW_5PWMs() {
+	PIN_ClearPins();
+
+	// RGBCW, in that order
+	// Raw PWMS (no I2C)
+
+	// P26 - red
+	PIN_SetPinRoleForPinIndex(26, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(26, 1);
+
+	// P8 - green
+	PIN_SetPinRoleForPinIndex(8, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(8, 2);
+
+	// P7 - blue
+	PIN_SetPinRoleForPinIndex(7, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(7, 3);
+
+	// P9 - cold white
+	PIN_SetPinRoleForPinIndex(9, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(9, 4);
+
+	// P6 - warm white
+	PIN_SetPinRoleForPinIndex(6, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(6, 5);
+
+	PIN_SaveToFlash();
+}
 // https://www.elektroda.pl/rtvforum/viewtopic.php?p=19743751#19743751
 void Setup_Device_IntelligentLife_NF101A() {
 	PIN_ClearPins();
