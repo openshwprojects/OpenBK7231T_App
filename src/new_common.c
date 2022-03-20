@@ -10,7 +10,7 @@ int strcat_safe(char *tg, const char *src, int tgMaxLen) {
 	while(*tg != 0) {
 		tg++;
 		curOfs++;
-		if(curOfs >= tgMaxLen) {
+		if(curOfs >= tgMaxLen - 1) {
 			*tg = 0;
 			return 0;
 		}
@@ -21,7 +21,7 @@ int strcat_safe(char *tg, const char *src, int tgMaxLen) {
 		src++;
 		tg++;
 		curOfs++;
-		if(curOfs >= tgMaxLen) {
+		if(curOfs >= tgMaxLen - 1) {
 			*tg = 0;
 			return 0;
 		}
@@ -40,7 +40,7 @@ int strcpy_safe(char *tg, const char *src, int tgMaxLen) {
 		src++;
 		tg++;
 		curOfs++;
-		if(curOfs >= tgMaxLen) {
+		if(curOfs >= tgMaxLen - 1) {
 			*tg = 0;
 			return 0;
 		}
@@ -52,12 +52,13 @@ int strcpy_safe(char *tg, const char *src, int tgMaxLen) {
 void urldecode2_safe(char *dst, const char *srcin, int maxDstLen)
 {
 	int curLen = 1;
-        int a, b;
+        int a = 0, b = 0;
 	// avoid signing issues in conversion to int for isxdigit(int c)
 	const unsigned char *src = (const unsigned char *)srcin;
         while (*src) {
-				if(curLen>=maxDstLen)
-					break;
+		if(curLen >= (maxDstLen - 1)){
+			break;
+		}
                 if ((*src == '%') &&
                     ((a = src[1]) && (b = src[2])) &&
                     (isxdigit(a) && isxdigit(b))) {
@@ -81,7 +82,7 @@ void urldecode2_safe(char *dst, const char *srcin, int maxDstLen)
                 } else {
                         *dst++ = *src++;
                 }
-				curLen++;
+		curLen++;
         }
         *dst++ = '\0';
 }
