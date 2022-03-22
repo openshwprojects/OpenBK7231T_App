@@ -791,14 +791,24 @@ void CHANNEL_DoSpecialToggleAll() {
 
 }
 void PIN_SetPinRoleForPinIndex(int index, int role) {
-	//if(index == PIN_UART1_RXD)
-	//	return;
-	//if(index == PIN_UART1_TXD)
-	//	return;
-	//if(index == PIN_UART2_RXD)
-	//	return;
-	//if(index == PIN_UART2_TXD)
-	//	return;
+#if 0
+	if(index == PIN_UART1_RXD) {
+		// default role to None in order to fix broken config
+		role = IOR_None;
+	}
+	if(index == PIN_UART1_TXD) {
+		// default role to None in order to fix broken config
+		role = IOR_None;
+	}
+	if(index == PIN_UART2_RXD) {
+		// default role to None in order to fix broken config
+		role = IOR_None;
+	}
+	if(index == PIN_UART2_TXD) {
+		// default role to None in order to fix broken config
+		role = IOR_None;
+	}
+#endif
 	switch(g_pins.roles[index])
 	{
 	case IOR_Button:
