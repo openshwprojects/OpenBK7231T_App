@@ -23,8 +23,6 @@
 
 
 // temporary storage for table.
-static int *test1;
-static int *test2;
 static TLV_HEADER_ST *g_table = NULL;
 static UINT32 flashaddr;
 static UINT32 flashlen;
@@ -110,13 +108,6 @@ int config_get_tbl(int readit){
     flashlen = pt->partition_length;
 
     if (g_table){
-        if (*test1 != 0x12345678){
-            ADDLOG_DEBUG(LOG_FEATURE_CFG, "get_tbl test1 corrput %08X", *test1);
-        }
-        if (*test2 != 0x12345678){
-            ADDLOG_DEBUG(LOG_FEATURE_CFG, "get_tbl test2 corrput %08X", *test2);
-        }
-
         if(INFO_TLV_HEADER != g_table->type){
             ADDLOG_DEBUG(LOG_FEATURE_CFG, "get_tbl g_table corrupted");
             config_dump((unsigned char *)g_table, 32);
@@ -143,11 +134,7 @@ int config_get_tbl(int readit){
 	 	cfg_len = head.len + sizeof(TLV_HEADER_ST);
         ret = cfg_len;
         if (readit){
-            test1 = os_malloc(sizeof(*test1));
-            *test1 = 0x12345678;
             g_table = os_malloc(cfg_len);
-            test2 = os_malloc(sizeof(*test2));
-            *test2 = 0x12345678;
             ddev_read(flash_handle, ((char *)g_table), cfg_len, flashaddr);
             ADDLOG_DEBUG(LOG_FEATURE_CFG, "get_tbl read %d bytes", cfg_len);
         }
