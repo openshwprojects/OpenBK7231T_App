@@ -845,17 +845,20 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			//int channelIndex;
 
 			pwmIndex = PIN_GetPWMIndexForPinIndex(index);
+			// is this pin capable of PWM?
+			if(pwmIndex != -1) {
 #if WINDOWS
 	
 #elif PLATFORM_XR809
 
 #elif PLATFORM_BK7231N
-			bk_pwm_stop(pwmIndex);
+				bk_pwm_stop(pwmIndex);
 #elif PLATFORM_BK7231T
-			bk_pwm_stop(pwmIndex);
+				bk_pwm_stop(pwmIndex);
 #else
 #error "Unknown platform"
 #endif
+			}
 		}
 		break;
 
@@ -931,33 +934,36 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			float f;
 
 			pwmIndex = PIN_GetPWMIndexForPinIndex(index);
-			channelIndex = PIN_GetPinChannelForPinIndex(index);
+			// is this pin capable of PWM?
+			if(pwmIndex != -1) {
+				channelIndex = PIN_GetPinChannelForPinIndex(index);
 #if WINDOWS
 	
 #elif PLATFORM_XR809
 
 #elif PLATFORM_BK7231N
-			// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
-			bk_pwm_initialize(pwmIndex, 1000, 0, 0, 0);
+				// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
+				bk_pwm_initialize(pwmIndex, 1000, 0, 0, 0);
 
-			bk_pwm_start(pwmIndex);
-			f = g_channelValues[channelIndex] * 0.01f;
-			// OSStatus bk_pwm_update_param(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle1, uint32_t duty_cycle2, uint32_t duty_cycle3)
-			bk_pwm_update_param(pwmIndex, 1000, f * 1000.0f,0,0);
+				bk_pwm_start(pwmIndex);
+				f = g_channelValues[channelIndex] * 0.01f;
+				// OSStatus bk_pwm_update_param(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle1, uint32_t duty_cycle2, uint32_t duty_cycle3)
+				bk_pwm_update_param(pwmIndex, 1000, f * 1000.0f,0,0);
 
 #else
-			// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
-			bk_pwm_initialize(pwmIndex, 1000, 0);
+				// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
+				bk_pwm_initialize(pwmIndex, 1000, 0);
 
-			bk_pwm_start(pwmIndex);
-			// they are using 1kHz PWM
-			// See: https://www.elektroda.pl/rtvforum/topic3798114.html
-		//	bk_pwm_update_param(pwmIndex, 1000, g_channelValues[channelIndex]);
-			f = g_channelValues[channelIndex] * 0.01f;
-			// OSStatus bk_pwm_update_param(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle)
-			bk_pwm_update_param(pwmIndex, 1000, f * 1000.0f);
+				bk_pwm_start(pwmIndex);
+				// they are using 1kHz PWM
+				// See: https://www.elektroda.pl/rtvforum/topic3798114.html
+			//	bk_pwm_update_param(pwmIndex, 1000, g_channelValues[channelIndex]);
+				f = g_channelValues[channelIndex] * 0.01f;
+				// OSStatus bk_pwm_update_param(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle)
+				bk_pwm_update_param(pwmIndex, 1000, f * 1000.0f);
 
 #endif
+			}
 		}
 		break;
 
@@ -1007,19 +1013,22 @@ void Channel_OnChanged(int ch) {
 					g_channelChangeCallback(ch,iVal);
 				}
 				pwmIndex = PIN_GetPWMIndexForPinIndex(i);
+				// is this pin capable of PWM?
+				if(pwmIndex != -1) {
 
 #if WINDOWS
 	
 #elif PLATFORM_XR809
 
 #elif PLATFORM_BK7231N
-				bk_pwm_update_param(pwmIndex, 1000, iVal * 10.0f,0,0); // Duty cycle 0...100 * 10.0 = 0...1000
+					bk_pwm_update_param(pwmIndex, 1000, iVal * 10.0f,0,0); // Duty cycle 0...100 * 10.0 = 0...1000
 
 #else
-				// they are using 1kHz PWM
-				// See: https://www.elektroda.pl/rtvforum/topic3798114.html
-				bk_pwm_update_param(pwmIndex, 1000, iVal * 10.0f); // Duty cycle 0...100 * 10.0 = 0...1000
+					// they are using 1kHz PWM
+					// See: https://www.elektroda.pl/rtvforum/topic3798114.html
+					bk_pwm_update_param(pwmIndex, 1000, iVal * 10.0f); // Duty cycle 0...100 * 10.0 = 0...1000
 #endif
+				}
 			}
 			
 		}
