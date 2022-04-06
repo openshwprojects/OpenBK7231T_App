@@ -380,8 +380,17 @@ int http_fn_cfg_wifi(http_request_t *request) {
         }
         tuya_hal_wifi_release_ap(ar);
 #elif PLATFORM_BK7231N
-        poststr(request,"TODO: BK7231N support for scan<br>");
+//        poststr(request,"TODO: BK7231N support for scan<br>");
+        AP_IF_S *ar;
+        uint32_t num;
 
+        bk_printf("Scan begin...\r\n");
+        tuya_os_adapt_wifi_all_ap_scan(&ar,&num);
+        bk_printf("Scan returned %i networks\r\n",num);
+        for(i = 0; i < num; i++) {
+            hprintf128(request,"[%i/%i] SSID: %s, Channel: %i, Signal %i<br>",i + 1,(int)num,ar[i].ssid, ar[i].channel, ar[i].rssi);
+        }
+        tuya_os_adapt_wifi_release_ap(ar);
 #else
 #error "Unknown platform"
         poststr(request,"Unknown platform<br>");
