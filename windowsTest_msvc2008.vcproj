@@ -164,6 +164,18 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\src\i2c\drv_i2c_local.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\i2c\drv_i2c_main.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\i2c\drv_i2c_tc74.c"
+				>
+			</File>
+			<File
 				RelativePath=".\src\drv_tuyaMCU.c"
 				>
 			</File>
@@ -297,18 +309,6 @@
 			</File>
 			<File
 				RelativePath=".\src\httpserver\rest_interface.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\src\tuya_device.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"

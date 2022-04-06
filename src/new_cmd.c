@@ -89,9 +89,9 @@ command_t *CMD_Find(const char *name) {
 #define MAX_CMD_LEN 512
 #define MAX_ARGS 32
 
-//static char g_buffer[MAX_CMD_LEN];
-//static char *g_args[MAX_ARGS];
-//static int g_numArgs = 0;
+static char g_buffer[MAX_CMD_LEN];
+static char *g_args[MAX_ARGS];
+static int g_numArgs = 0;
 
 bool isWhiteSpace(char ch) {
 	if(ch == ' ')
@@ -104,15 +104,54 @@ bool isWhiteSpace(char ch) {
 		return true;
 	return false;
 }
-// NOTE: arg0 is command name
-//int CMD_GetArgsCount() {
-//	return g_numArgs;
-//}
-// NOTE: arg0 is command name
-//const char *CMD_GetArg(int i) {
-//	return g_args[i];
-//}
+int Tokenizer_GetArgsCount() {
+	return g_numArgs;
+}
+const char *Tokenizer_GetArg(int i) {
+	return g_args[i];
+}
+int Tokenizer_GetArgInteger(int i) {
+	const char *s;
+	s = g_args[i];
+	if(s[0] == '0' && s[1] == 'x') {
+		int ret;
+		sscanf(s, "%x", &ret);
+		return ret;
+	}
+	return atoi(s);
+}
+void Tokenizer_TokenizeString(const char *s) {
+	int r = 0;
+	char *p;
+	int i;
 
+	while(isWhiteSpace(*s)) {
+		s++;
+	}
+
+	strcpy(g_buffer,s);
+	p = g_buffer;
+	g_numArgs = 0;
+	g_args[g_numArgs] = p;
+	g_numArgs++;
+	while(*p != 0) {
+		if(isWhiteSpace(*p)) {
+			*p = 0;
+			if((p[1] != 0)) {
+				g_args[g_numArgs] = p+1;
+				g_numArgs++;
+			}
+		}
+		if(*p == ',') {
+			*p = 0;
+			g_args[g_numArgs] = p+1;
+			g_numArgs++;
+		}
+		p++;
+	}
+
+
+}
 // get a string up to whitespace.
 // if stripnum is set, stop at numbers.
 int get_cmd(const char *s, char *dest, int maxlen, int stripnum){

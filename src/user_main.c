@@ -223,6 +223,7 @@ static void app_led_timer_handler(void *data)
 	MQTT_RunEverySecondUpdate();
 	TuyaMCU_RunFrame();
 	NTP_OnEverySecond();
+	DRV_I2C_EverySecond();
 
 	g_secondsElapsed ++;
   ADDLOGF_INFO("Timer is %i free mem %d\n", g_secondsElapsed, xPortGetFreeHeapSize());
@@ -369,6 +370,7 @@ void user_main(void)
 
 	CFG_InitAndLoad();
 	TuyaMCU_Init();
+	DRV_I2C_Init();
   
 	wifi_ssid = CFG_GetWiFiSSID();
 	wifi_pass = CFG_GetWiFiPass();
@@ -442,7 +444,6 @@ void user_main(void)
 	  CMD_ExecuteCommand("exec autoexec.bat");
 	}
 
- // start_i2c_test();
 
 
   err = rtos_init_timer(&led_timer,

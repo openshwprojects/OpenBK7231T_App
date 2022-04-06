@@ -109,52 +109,7 @@ int TC74_readTemp_method1(int adr)
 	return t;
 
 }
-#include "i2c_pub.h"
-I2C_OP_ST i2c_operater;
-DD_HANDLE i2c_hdl;
-static void camera_intf_sccb_write(UINT8 addr, UINT8 data)
-{
-	char buff = (char)data;
-    
-    i2c_operater.op_addr = addr;
-    ddev_write(i2c_hdl, &buff, 1, (UINT32)&i2c_operater);
-}
 
-void camera_intf_sccb_read(UINT8 addr, UINT8 *data)
-{   
-    i2c_operater.op_addr = addr;
-    ddev_read(i2c_hdl, (char*)data, 1, (UINT32)&i2c_operater);
-}
-int TC74_readTemp_method2(int dev_adr)
-{
-	byte buffer[9];
-	int t;
-    uint32_t status;
-	uint32_t oflag;
-    oflag = I2C_DEF_DIV;
-
-	//i2c1_init();
-	i2c_hdl = ddev_open("i2c1", &status, oflag);
-    if(DD_HANDLE_UNVALID == i2c_hdl){
-		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"TC74_readTemp_method2 ddev_open failed, status %i!\n",status);
-		return -1;
-	}
-
-    i2c_operater.salve_id = dev_adr;
-
-		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"TC74_readTemp_method2 ddev_open OK!\n");
-
-
-	camera_intf_sccb_write(0,0x00);
-
-	camera_intf_sccb_read(0x00,&buffer[0]);
-	t = buffer[0];
-
-
-	ddev_close(i2c_hdl);
-	return t;
-
-}
 
 ///*/*/*int TC74_readTemp_method2(int adr)
 //{
@@ -382,47 +337,6 @@ static void I2CWRNBYTE_CODEC(unsigned char reg, unsigned char val)
 }
 
 
-void run_i2c_test()
-{
-	int res;
-		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"Will do I2C attemt %i!\n",attempt);
-		attempt++;
-		// TC74A2
-		res = TC74_readTemp_method2(0x4A);
-		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"Temp result is %i!\n",res);
-		//res = TC74_readTemp_method3(0x4A);
-		//addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"Temp result is %i!\n",res);
-}
-void my_i2c_test(void *p)
-{
-
-	attempt = 0;
-///		delay_ms(500);
-///	while(1)
-	///{
-	////	delay_ms(500);
-		run_i2c_test();
-
-	////}
-}
-xTaskHandle g_i2c_test = NULL;
-void start_i2c_test()
-{
-    OSStatus err = kNoErr;
-
-	
-  err = rtos_init_timer(&g_i2c_test,
-                        1 * 1000,
-                        my_i2c_test,
-                        (void *)0);
-
-
-    if(err != kNoErr)
-    {
-       ADDLOG_ERROR(LOG_FEATURE_I2C, "create \"I2C\" thread failed!\r\n");
-    }
-    rtos_start_timer(&g_i2c_test);
-}
 void testI2C_method1()
 {
 	char buffer[8];
@@ -515,7 +429,10 @@ void PIN_XR809_GetPortPinForIndex(int index, int *xr_port, int *xr_pin) {
 #endif
 // it was nice to have it as bits but now that we support PWM...
 //int g_channelStates;
-unsigned char g_channelValues[GPIO_MAX] = { 0 };
+int g_channelValues[GPIO_MAX] = { 0 };
+// channel content types, mostly not required to set
+int g_channelTypes[GPIO_MAX] = { 0 };
+
 
 pinButton_s g_buttons[GPIO_MAX];
 
@@ -720,6 +637,12 @@ void NEW_button_init(pinButton_s* handle, uint8_t(*pin_level)(void *self), uint8
 	handle->hal_button_Level = pin_level;
 	handle->button_level = handle->hal_button_Level(handle);
 	handle->active_level = active_level;
+}
+void CHANNEL_SetType(int ch, int type) {
+	g_channelTypes[ch] = type;
+}
+int CHANNEL_GetType(int ch) {
+	return g_channelTypes[ch];
 }
 void CHANNEL_SetAll(int iVal) {
 	int i;
@@ -1233,6 +1156,39 @@ void PIN_ticks(void *param)
 		}
 	}
 }
+int CHANNEL_ParseChannelType(const char *s) {
+	if(!stricmp(s,"temperature") || !stricmp(s,"temp"))
+		return ChType_Temperature;
+	if(!stricmp(s,"default") )
+		return ChType_Default;
+	return ChType_Error;
+}
+static int CMD_SetChannelType(const void *context, const char *cmd, const char *args){
+	int channel;
+	const char *type;
+	int typeCode;
+
+	Tokenizer_TokenizeString(args);
+
+	if(Tokenizer_GetArgsCount() < 2) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"This command requires 2 arguments");
+		return 1;
+	}
+	channel = Tokenizer_GetArgInteger(0);
+	type = Tokenizer_GetArg(1);
+
+	typeCode = CHANNEL_ParseChannelType(type);
+	if(typeCode == ChType_Error) {
+
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Channel %i type not set because %s is not a known type", channel,type);
+		return 1;
+	}
+
+	CHANNEL_SetType(channel,typeCode);
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Channel %i type changed to %s", channel,type);
+	return 0;
+}
 
 static int showgpi(const void *context, const char *cmd, const char *args){
 	int i;
@@ -1296,8 +1252,8 @@ void PIN_Init(void)
 
 
 	CMD_RegisterCommand("showgpi", NULL, showgpi, "log stat of all GPIs", NULL);
+	CMD_RegisterCommand("setChannelType", NULL, CMD_SetChannelType, "qqqqqqqq", NULL);
 }
-
 void PIN_set_wifi_led(int value){
 	int res = -1;
 	int i;

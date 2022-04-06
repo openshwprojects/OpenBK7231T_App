@@ -23,6 +23,12 @@ enum IORole {
 	IOR_Total_Options,
 };
 
+enum ChannelType {
+	ChType_Default,
+	ChType_Error,
+	ChType_Temperature,
+
+};
 // NOTE: you must keep size of this structure in sync with
 // structures in flash config code for both BK7231 and XR809
 typedef struct pinsState_s {
@@ -58,6 +64,9 @@ void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex));
 void CHANNEL_Set(int ch, int iVal, int bForce);
 int CHANNEL_Get(int ch);
 int CHANNEL_GetRoleForOutputChannel(int ch);
+// See: enum ChannelType
+void CHANNEL_SetType(int ch, int type);
+int CHANNEL_GetType(int ch);
 
 void PIN_SaveToFlash();
 void PIN_LoadFromFlash();

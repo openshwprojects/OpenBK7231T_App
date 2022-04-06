@@ -121,7 +121,18 @@ int http_fn_index(http_request_t *request) {
         }
     }
     for(i = 0; i < CHANNEL_MAX; i++) {
-        if(BIT_CHECK(relayFlags,i)) {
+		int channelType;
+
+		channelType = CHANNEL_GetType(i);
+
+		if(channelType == ChType_Temperature) {
+			int iValue;
+
+			iValue = CHANNEL_Get(i);
+
+            hprintf128(request,"Temperature Channel %i value %i C<br>",i, iValue);
+
+		} else if(BIT_CHECK(relayFlags,i)) {
             const char *c;
             if(CHANNEL_Check(i)) {
                 c = "r";
@@ -132,7 +143,7 @@ int http_fn_index(http_request_t *request) {
             hprintf128(request,"<input type=\"hidden\" name=\"tgl\" value=\"%i\">",i);
             hprintf128(request,"<input class=\"%s\" type=\"submit\" value=\"Toggle %i\"/></form>",c,i);
         }
-        if(BIT_CHECK(pwmFlags,i)) {
+        else if(BIT_CHECK(pwmFlags,i)) {
             int pwmValue;
 
             pwmValue = CHANNEL_Get(i);
