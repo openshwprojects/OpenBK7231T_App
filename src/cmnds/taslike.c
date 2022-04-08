@@ -12,6 +12,13 @@
 extern int wal_stricmp(const char *a, const char *b);
 extern int wal_strnicmp(const char *a, const char *b, int count);
 
+static int parsePowerArgument(const char *s) {
+	if(!stricmp(s,"ON"))
+		return 255;
+	if(!stricmp(s,"OFF"))
+		return 0;
+	return atoi(s);
+}
 
 static int power(const void *context, const char *cmd, const char *args){
 	if (!wal_strnicmp(cmd, "POWER", 5)){
@@ -32,7 +39,7 @@ static int power(const void *context, const char *cmd, const char *args){
 			return 1;
 		}
 #endif
-		iVal = atoi(args);
+		iVal = parsePowerArgument(args);
 		CHANNEL_Set(channel, iVal, false);
 		return 1;
 	}
@@ -45,7 +52,7 @@ static int powerAll(const void *context, const char *cmd, const char *args){
 
         ADDLOG_INFO(LOG_FEATURE_CMD, "tasCmnd POWERALL (%s) received with args %s",cmd,args);
 
-		iVal = atoi(args);
+		iVal = parsePowerArgument(args);
 
 		CHANNEL_SetAll(iVal, false);
 		return 1;
