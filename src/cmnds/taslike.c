@@ -39,6 +39,20 @@ static int power(const void *context, const char *cmd, const char *args){
 	return 0;
 }
 
+static int powerAll(const void *context, const char *cmd, const char *args){
+	if (!wal_strnicmp(cmd, "POWERALL", 8)){
+		int iVal = 0;
+
+        ADDLOG_INFO(LOG_FEATURE_CMD, "tasCmnd POWERALL (%s) received with args %s",cmd,args);
+
+		iVal = atoi(args);
+
+		CHANNEL_SetAll(iVal, false);
+		return 1;
+	}
+	return 0;
+}
+
 static int color(const void *context, const char *cmd, const char *args){
     if (!wal_strnicmp(cmd, "COLOR", 5)){
         if (args[0] != '#'){
@@ -177,6 +191,7 @@ static int cmnd_lfsexec(const void * context, const char *cmd, const char *args)
 
 int taslike_commands_init(){
     CMD_RegisterCommand("power", "", power, "set output POWERn 0..100", NULL);
+    CMD_RegisterCommand("powerAll", "", powerAll, "set all outputs", NULL);
     CMD_RegisterCommand("color", "", color, "set PWN color using #RRGGBB[cw][ww]", NULL);
 	CMD_RegisterCommand("backlog", "", cmnd_backlog, "run a sequence of ; separated commands", NULL);
 	CMD_RegisterCommand("exec", "", cmnd_lfsexec, "exec <file> - run autoexec.bat or other file from LFS if present", NULL);
