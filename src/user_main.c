@@ -224,6 +224,7 @@ static void app_led_timer_handler(void *data)
 	TuyaMCU_RunFrame();
 	NTP_OnEverySecond();
 	DRV_I2C_EverySecond();
+	RepeatingEvents_OnEverySecond();
 
 	g_secondsElapsed ++;
   ADDLOGF_INFO("Timer is %i free mem %d\n", g_secondsElapsed, xPortGetFreeHeapSize());
@@ -371,6 +372,8 @@ void user_main(void)
 	CFG_InitAndLoad();
 	TuyaMCU_Init();
 	DRV_I2C_Init();
+	RepeatingEvents_Init();
+	NTP_InitCommands();
   
 	wifi_ssid = CFG_GetWiFiSSID();
 	wifi_pass = CFG_GetWiFiPass();

@@ -4,6 +4,7 @@
 #include "new_cmd.h"
 #include "logging/logging.h"
 #include "drv_tuyaMCU.h"
+#include <time.h>
 
 
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
@@ -100,6 +101,46 @@ typedef struct rtcc_s {
 	uint32_t      days;
 	uint32_t      valid;
 } rtcc_t;
+
+typedef struct tuyaMCUMapping_s {
+	// internal Tuya variable index
+	int fnId;
+	// target channel
+	int channel;
+	// TODO
+	//int mode;
+	// list
+	struct tuyaMCUMapping_s *next;
+} tuyaMCUMapping_t;
+
+tuyaMCUMapping_t *g_tuyaMappings = 0;
+
+tuyaMCUMapping_t *TuyaMCU_FindDefForID(int fnId) {
+	tuyaMCUMapping_t *cur;
+
+	cur = g_tuyaMappings;
+	while(cur) {
+		if(cur->fnId == fnId)
+			return cur;
+		cur = cur->next;
+	}
+	return 0;
+}
+void TuyaMCU_MapIDToChannel(int fnId, int channel) {
+	tuyaMCUMapping_t *cur;
+
+	cur = TuyaMCU_FindDefForID(fnId);
+
+	if(cur == 0) {
+		cur = (tuyaMCUMapping_t*)malloc(sizeof(tuyaMCUMapping_t));
+		cur->fnId = fnId;
+		cur->next = g_tuyaMappings;
+		g_tuyaMappings = cur;
+	}
+
+	cur->channel = channel;
+}
+
 
 static byte *g_recvBuf = 0;
 static int g_recvBufSize = 0;
@@ -268,28 +309,39 @@ void TuyaMCU_SendCommandWithData(byte cmdType, byte *data, int payload_len) {
 	TuyaMCU_Bridge_SendUARTByte(check_sum);
 }
 
-void TuyaMCU_Send_SetTime(rtcc_t *pTime) {
+void TuyaMCU_Send_SetTime(struct tm *pTime) {
 	byte payload_buffer[8];
 	byte tuya_day_of_week;
 
-	if (pTime->day_of_week == 1) {
+	if (pTime->tm_wday == 1) {
 		tuya_day_of_week = 7;
 	} else {
-		tuya_day_of_week = pTime->day_of_week-1;
+		tuya_day_of_week = pTime->tm_wday-1;
 	}
 
 	payload_buffer[0] = 0x01;
-	payload_buffer[1] = pTime->year % 100;
-	payload_buffer[2] = pTime->month;
-	payload_buffer[3] = pTime->day_of_month;
-	payload_buffer[4] = pTime->hour;
-	payload_buffer[5] = pTime->minute;
-	payload_buffer[6] = pTime->second;
+	payload_buffer[1] = pTime->tm_year % 100;
+	payload_buffer[2] = pTime->tm_mon;
+	payload_buffer[3] = pTime->tm_mday;
+	payload_buffer[4] = pTime->tm_hour;
+	payload_buffer[5] = pTime->tm_min;
+	payload_buffer[6] = pTime->tm_sec;
 	payload_buffer[7] = tuya_day_of_week; //1 for Monday in TUYA Doc
 
 	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_TIME, payload_buffer, 8);
 }
+struct tm * TuyaMCU_Get_NTP_Time() {
+	int g_time;
+	struct tm * ptm;
 
+	g_time = NTP_GetCurrentTime();
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"MCU time to set: %i\n", g_time);
+	ptm = gmtime(&g_time);
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"ptime ->gmtime => tm_hour: %i\n",ptm->tm_hour );
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"ptime ->gmtime => tm_min: %i\n", ptm->tm_min );
+
+	return ptm;
+}
 int TuyaMCU_Send_Hex(const void *context, const char *cmd, const char *args) {
 	//const char *args = CMD_GetArg(1);
 	if(!(*args)) {
@@ -307,16 +359,41 @@ int TuyaMCU_Send_Hex(const void *context, const char *cmd, const char *args) {
 	return 1;
 }
 
-int TuyaMCU_Send_SetTime_Example(const void *context, const char *cmd, const char *args) {
-	rtcc_t testTime;
+int TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, const char *args) {
+	int dpID;
+	int channelID;
 
-	testTime.year = 2012;
-	testTime.month = 7;
-	testTime.day_of_month = 15;
-	testTime.day_of_week = 4;
-	testTime.hour = 6;
-	testTime.minute = 54;
-	testTime.second = 32;
+	// linkTuyaMCUOutputToChannel dpID channelID [varType]
+	Tokenizer_TokenizeString(args);
+
+	if(Tokenizer_GetArgsCount() < 2) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_LinkTuyaMCUOutputToChannel: requires 2 arguments (dpID, channelIndex)\n");
+		return -1;
+	}
+	dpID = Tokenizer_GetArgInteger(0);
+	channelID = Tokenizer_GetArgInteger(1);
+
+	TuyaMCU_MapIDToChannel(dpID,channelID);
+
+	return 1;
+}
+
+int TuyaMCU_Send_SetTime_Current(const void *context, const char *cmd, const char *args) {
+
+	TuyaMCU_Send_SetTime(TuyaMCU_Get_NTP_Time());
+
+	return 1;
+}
+int TuyaMCU_Send_SetTime_Example(const void *context, const char *cmd, const char *args) {
+	struct tm testTime;
+
+	testTime.tm_year = 2012;
+	testTime.tm_mon = 7;
+	testTime.tm_mday = 15;
+	testTime.tm_wday = 4;
+	testTime.tm_hour = 6;
+	testTime.tm_min = 54;
+	testTime.tm_sec = 32;
 
 	TuyaMCU_Send_SetTime(&testTime);
 	return 1;
@@ -340,13 +417,36 @@ void TuyaMCU_Init()
 {
 	TuyaMCU_Bridge_InitUART(9600);
 	UART_InitReceiveRingBuffer(256);
-	// uartSendHex 55AA0008000007 
+	// uartSendHex 55AA0008000007
 	CMD_RegisterCommand("tuyaMcu_testSendTime","",TuyaMCU_Send_SetTime_Example, "Sends a example date by TuyaMCU to clock/callendar MCU", NULL);
+	CMD_RegisterCommand("tuyaMcu_sendCurTime","",TuyaMCU_Send_SetTime_Current, "Sends a current date by TuyaMCU to clock/callendar MCU", NULL);
 	CMD_RegisterCommand("uartSendHex","",TuyaMCU_Send_Hex, "Sends raw data by TuyaMCU UART, you must write whole packet with checksum yourself", NULL);
 	///CMD_RegisterCommand("tuyaMcu_sendSimple","",TuyaMCU_Send_Simple, "Appends a 0x55 0xAA header to a data, append a checksum at end and send");
+	CMD_RegisterCommand("linkTuyaMCUOutputToChannel","",TuyaMCU_LinkTuyaMCUOutputToChannel, "Map value send from TuyaMCU (eg. humidity or temperature) to channel", NULL);
 
 }
+// ntp_timeZoneOfs 2
+// addRepeatingEvent 10 uartSendHex 55AA0008000007
+// setChannelType 1 temperature_div10
+// setChannelType 2 humidity
+// linkTuyaMCUOutputToChannel 1 1
+// linkTuyaMCUOutputToChannel 2 2
+// addRepeatingEvent 10 tuyaMcu_sendCurTime
+//
+// same as above but merged
+// backlog ntp_timeZoneOfs 2; addRepeatingEvent 10 uartSendHex 55AA0008000007; setChannelType 1 temperature_div10; setChannelType 2 humidity; linkTuyaMCUOutputToChannel 1 1; linkTuyaMCUOutputToChannel 2 2; addRepeatingEvent 10 tuyaMcu_sendCurTime
+//
+void TuyaMCU_ApplyMapping(int fnID, int value) {
+	tuyaMCUMapping_t *mapping;
 
+	// find mapping (where to save received data)
+	mapping = TuyaMCU_FindDefForID(fnID);
+
+	if(mapping == 0){
+		return;
+	}
+	CHANNEL_Set(mapping->channel,value,0);
+}
 void TuyaMCU_ParseStateMessage(const byte *data, int len) {
 	int ofs;
 	int sectorLen;
@@ -362,13 +462,18 @@ void TuyaMCU_ParseStateMessage(const byte *data, int len) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ParseStateMessage: processing command %i, dataType %i-%s and %i data bytes\n",
 			fnId, dataType, TuyaMCU_GetDataTypeString(dataType),sectorLen);
 
+
 		if(sectorLen == 1) {
 			int iVal = (int)data[ofs+4];
 			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ParseStateMessage: raw data 1 byte: %c\n",iVal);
+			// apply to channels
+			TuyaMCU_ApplyMapping(fnId,iVal);
 		}
 		if(sectorLen == 4) {  
 			int iVal = data[ofs + 4] << 24 | data[ofs + 5] << 16 | data[ofs + 6] << 8 | data[ofs + 7];
 			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ParseStateMessage: raw data 4 int: %i\n",iVal);
+			// apply to channels
+			TuyaMCU_ApplyMapping(fnId,iVal);
 		}
 
 		// size of header (type, datatype, len 2 bytes) + data sector size
@@ -406,6 +511,10 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
 	{
 	case TUYA_CMD_STATE:
 		TuyaMCU_ParseStateMessage(data+6,len-6);
+		break;
+	case TUYA_CMD_SET_TIME:
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: received TUYA_CMD_SET_TIME, so sending back time");
+		TuyaMCU_Send_SetTime(TuyaMCU_Get_NTP_Time());
 		break;
 	}
 }

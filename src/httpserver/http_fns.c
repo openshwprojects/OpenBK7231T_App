@@ -132,6 +132,31 @@ int http_fn_index(http_request_t *request) {
 
             hprintf128(request,"Temperature Channel %i value %i C<br>",i, iValue);
 
+		} else if(channelType == ChType_Temperature_div10) {
+			int iValue;
+			float fValue;
+
+			iValue = CHANNEL_Get(i);
+			fValue = iValue * 0.1f;
+
+            hprintf128(request,"Temperature Channel %i value %f C<br>",i, fValue);
+
+		} else  if(channelType == ChType_Humidity) {
+			int iValue;
+
+			iValue = CHANNEL_Get(i);
+
+            hprintf128(request,"Humidity Channel %i value %i Percent<br>",i, iValue);
+
+		} else if(channelType == ChType_Humidity_div10) {
+			int iValue;
+			float fValue;
+
+			iValue = CHANNEL_Get(i);
+			fValue = iValue * 0.1f;
+
+            hprintf128(request,"Humidity Channel %i value %f Percent<br>",i, fValue);
+
 		} else if(BIT_CHECK(relayFlags,i)) {
             const char *c;
             if(CHANNEL_Check(i)) {

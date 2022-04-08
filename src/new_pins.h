@@ -27,6 +27,12 @@ enum ChannelType {
 	ChType_Default,
 	ChType_Error,
 	ChType_Temperature,
+	ChType_Humidity,
+	// most likely will not be used
+	// but it's humidity value times 10
+	// TuyaMCU sends 225 instead of 22.5%
+	ChType_Humidity_div10,
+	ChType_Temperature_div10,
 
 };
 // NOTE: you must keep size of this structure in sync with

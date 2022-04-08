@@ -19,13 +19,11 @@
 
 #else
 #include "lwip/sockets.h"
-#include "logging/logging.h"
-
-// please enable logging.c/h in windows!!!
-#undef printf
-#define printf(x, ...) ADDLOGF_ERROR(x, ##__VA_ARGS__)
 
 #endif
+
+#include "logging/logging.h"
+
 #define LOG_FEATURE LOG_FEATURE_NTP
 
 typedef struct
@@ -68,9 +66,26 @@ static int g_ntp_socket = 0;
 static struct sockaddr_in g_address;
 static int adrLen;
 // in seconds, before next retry
-static int g_ntp_delay = 2;
+static int g_ntp_delay = 5;
 // current time
 static unsigned int g_time;
+// time offset (time zone?)
+static int g_timeOffsetHours;
+
+int NTP_SetTimeZoneOfs(const void *context, const char *cmd, const char *args) {
+	Tokenizer_TokenizeString(args);
+	if(Tokenizer_GetArgsCount() < 1) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Command requires one argument\n");
+		return 0;
+	}
+	g_timeOffsetHours = Tokenizer_GetArgInteger(0) * 60 * 60;
+	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP offset set, wait for next ntp packet to apply changes\n");
+	return 1;
+}
+void NTP_InitCommands() {
+
+	CMD_RegisterCommand("ntp_timeZoneOfs","",NTP_SetTimeZoneOfs, "Sets the time zone offset in hours", NULL);
+}
 
 unsigned int NTP_GetCurrentTime() {
 	return g_time;
@@ -115,7 +130,7 @@ void NTP_SendRequest(bool bBlocking) {
     if ((g_ntp_socket=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP )) == -1)
     {
 		g_ntp_socket = 0;
-		printf("NTP_SendRequest: failed to create socket\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP_SendRequest: failed to create socket");
 		return;
     }
 
@@ -129,7 +144,7 @@ void NTP_SendRequest(bool bBlocking) {
     // Send the message to server:
     if(sendto(g_ntp_socket, &packet, sizeof(packet), 0,
          (struct sockaddr*)&g_address, adrLen) < 0) {
-		printf("NTP_SendRequest: Unable to send message\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP_SendRequest: Unable to send message");
 		NTP_Shutdown();
         return;
     }
@@ -140,7 +155,7 @@ void NTP_SendRequest(bool bBlocking) {
 #if WINDOWS
 #else
 		if(fcntl(g_ntp_socket, F_SETFL, O_NONBLOCK)) {
-			printf("NTP_SendRequest: failed to make socket non-blocking!\n");
+			addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP_SendRequest: failed to make socket non-blocking!\n");
 		}
 #endif
 	}
@@ -168,7 +183,7 @@ void NTP_CheckForReceive() {
 #endif
 	
 	if(recv_len < 0){
-		printf("NTP_CheckForReceive: Error while receiving server's msg\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP_CheckForReceive: Error while receiving server's msg\n");
         return;
     }
 	highWord = MAKE_WORD(ptr[40], ptr[41]);
@@ -176,20 +191,21 @@ void NTP_CheckForReceive() {
     // combine the four bytes (two words) into a long integer
     // this is NTP time (seconds since Jan 1 1900):
     secsSince1900 = highWord << 16 | lowWord;
-    printf("Seconds since Jan 1 1900 = %u",secsSince1900);
+	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Seconds since Jan 1 1900 = %u",secsSince1900);
 
 	g_time = secsSince1900 - NTP_OFFSET;
-    printf("Unix time = %u",g_time);
-#if 1
+	g_time += g_timeOffsetHours;
+	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time = %u",g_time);
+#if 0
 	//ptm = localtime (&g_time);
 	ptm = gmtime(&g_time);
 	if(ptm == 0) {
-		printf("gmtime somehow returned 0\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime somehow returned 0\n");
 	} else {
-		printf("gmtime => tm_year: %i\n",ptm->tm_year);
-		printf("gmtime => tm_mon: %i\n",ptm->tm_mon);
-		printf("gmtime => tm_mday: %i\n",ptm->tm_mday);
-		printf("gmtime => tm_hour: %i\n",ptm->tm_hour	);
+		addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime => tm_year: %i\n",ptm->tm_year);
+		addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime => tm_mon: %i\n",ptm->tm_mon);
+		addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime => tm_mday: %i\n",ptm->tm_mday);
+		addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime => tm_hour: %i\n",ptm->tm_hour	);
 	}
 #endif
 	NTP_Shutdown();

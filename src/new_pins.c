@@ -1157,8 +1157,14 @@ void PIN_ticks(void *param)
 	}
 }
 int CHANNEL_ParseChannelType(const char *s) {
-	if(!stricmp(s,"temperature") || !stricmp(s,"temp"))
+	if(!stricmp(s,"temperature"))
 		return ChType_Temperature;
+	if(!stricmp(s,"humidity") )
+		return ChType_Humidity;
+	if(!stricmp(s,"humidity_div10") )
+		return ChType_Humidity_div10;
+	if(!stricmp(s,"temperature_div10"))
+		return ChType_Temperature_div10;
 	if(!stricmp(s,"default") )
 		return ChType_Default;
 	return ChType_Error;

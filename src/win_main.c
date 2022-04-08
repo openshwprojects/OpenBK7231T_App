@@ -156,6 +156,8 @@ int __cdecl main(void)
     
 	strcat_safe_test();
 
+	Tokenizer_TokenizeString("dsfafd dasfdsaf dsaf dsaf dsa fdsaf dsafdsa");
+
 	PIN_ClearPins();
 	PIN_SetPinChannelForPinIndex(1,1);
 	PIN_SetPinRoleForPinIndex(1,IOR_Relay);

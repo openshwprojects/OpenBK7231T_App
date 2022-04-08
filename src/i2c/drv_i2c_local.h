@@ -25,6 +25,18 @@ typedef struct i2cDevice_TC74_s {
 	int targetChannel;
 } i2cDevice_TC74_t;
 
+// https://www.elektroda.pl/rtvforum/viewtopic.php?t=3880540&highlight=
+typedef struct i2cDevice_SM2135_s {
+	i2cDevice_t base;
+	// private SM2135 variables
+	// Input channel indices.
+	// Device will listen to changes in those channels and update accordingly.
+	int sourceChannel_R;
+	int sourceChannel_G;
+	int sourceChannel_B;
+	int sourceChannel_C;
+	int sourceChannel_W;
+} i2cDevice_SM2135_t;
 
 void DRV_I2C_Write(UINT8 addr, UINT8 data);
 void DRV_I2C_Read(UINT8 addr, UINT8 *data);
