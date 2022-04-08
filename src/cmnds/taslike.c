@@ -17,9 +17,21 @@ static int power(const void *context, const char *cmd, const char *args){
 	if (!wal_strnicmp(cmd, "POWER", 5)){
 		int channel = 0;
 		int iVal = 0;
+
+        ADDLOG_INFO(LOG_FEATURE_CMD, "tasCmnd POWER (%s) received with args %s",cmd,args);
+
 		if (strlen(cmd) > 5) {
 			channel = atoi(cmd+5);
 		}
+#if 0
+		// it seems that my Home Assistant expects RGB etc light bulbs to be turned off entirely 
+		// with this commands with no arguments, so... no arguments = set all channels?
+		else 
+		{
+			CHANNEL_SetAll(iVal, false);
+			return 1;
+		}
+#endif
 		iVal = atoi(args);
 		CHANNEL_Set(channel, iVal, false);
 		return 1;
