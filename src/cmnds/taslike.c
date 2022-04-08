@@ -30,7 +30,7 @@ static int power(const void *context, const char *cmd, const char *args){
 static int color(const void *context, const char *cmd, const char *args){
     if (!wal_strnicmp(cmd, "COLOR", 5)){
         if (args[0] != '#'){
-            ADDLOG_ERROR(LOG_FEATURE_CMD, "tasCmnd COLOR expected a # prefixed color");
+            ADDLOG_ERROR(LOG_FEATURE_CMD, "tasCmnd COLOR expected a # prefixed color, you sent %s",args);
             return 0;
         } else {
             const char *c = args;
