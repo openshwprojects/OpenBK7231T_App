@@ -12,7 +12,7 @@
 extern int wal_stricmp(const char *a, const char *b);
 extern int wal_strnicmp(const char *a, const char *b, int count);
 
-static int parsePowerArgument(const char *s) {
+int parsePowerArgument(const char *s) {
 	if(!stricmp(s,"ON"))
 		return 255;
 	if(!stricmp(s,"OFF"))
@@ -21,7 +21,7 @@ static int parsePowerArgument(const char *s) {
 }
 
 static int power(const void *context, const char *cmd, const char *args){
-	if (!wal_strnicmp(cmd, "POWER", 5)){
+	//if (!wal_strnicmp(cmd, "POWER", 5)){
 		int channel = 0;
 		int iVal = 0;
 
@@ -42,12 +42,12 @@ static int power(const void *context, const char *cmd, const char *args){
 		iVal = parsePowerArgument(args);
 		CHANNEL_Set(channel, iVal, false);
 		return 1;
-	}
-	return 0;
+	//}
+	//return 0;
 }
 
 static int powerAll(const void *context, const char *cmd, const char *args){
-	if (!wal_strnicmp(cmd, "POWERALL", 8)){
+	//if (!wal_strnicmp(cmd, "POWERALL", 8)){
 		int iVal = 0;
 
         ADDLOG_INFO(LOG_FEATURE_CMD, "tasCmnd POWERALL (%s) received with args %s",cmd,args);
@@ -56,12 +56,27 @@ static int powerAll(const void *context, const char *cmd, const char *args){
 
 		CHANNEL_SetAll(iVal, false);
 		return 1;
-	}
-	return 0;
+	//}
+	//return 0;
+}
+
+
+static int powerStateOnly(const void *context, const char *cmd, const char *args){
+	//if (!wal_strnicmp(cmd, "POWERALL", 8)){
+		int iVal = 0;
+
+        ADDLOG_INFO(LOG_FEATURE_CMD, "tasCmnd powerStateOnly (%s) received with args %s",cmd,args);
+
+		iVal = parsePowerArgument(args);
+
+		CHANNEL_SetStateOnly(iVal);
+		return 1;
+	//}
+	//return 0;
 }
 
 static int color(const void *context, const char *cmd, const char *args){
-    if (!wal_strnicmp(cmd, "COLOR", 5)){
+   // if (!wal_strnicmp(cmd, "COLOR", 5)){
         if (args[0] != '#'){
             ADDLOG_ERROR(LOG_FEATURE_CMD, "tasCmnd COLOR expected a # prefixed color, you sent %s",args);
             return 0;
@@ -105,9 +120,10 @@ static int color(const void *context, const char *cmd, const char *args){
             }
         }
         return 1;
-    }
-    return 0;
+  //  }
+   // return 0;
 }
+
 
 static int cmnd_backlog(const void * context, const char *cmd, const char *args){
 	const char *subcmd;
@@ -198,6 +214,7 @@ static int cmnd_lfsexec(const void * context, const char *cmd, const char *args)
 
 int taslike_commands_init(){
     CMD_RegisterCommand("power", "", power, "set output POWERn 0..100", NULL);
+    CMD_RegisterCommand("powerStateOnly", "", powerStateOnly, "ensures that device is on or off without changing pwm values", NULL);
     CMD_RegisterCommand("powerAll", "", powerAll, "set all outputs", NULL);
     CMD_RegisterCommand("color", "", color, "set PWN color using #RRGGBB[cw][ww]", NULL);
 	CMD_RegisterCommand("backlog", "", cmnd_backlog, "run a sequence of ; separated commands", NULL);

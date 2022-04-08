@@ -639,10 +639,52 @@ void NEW_button_init(pinButton_s* handle, uint8_t(*pin_level)(void *self), uint8
 	handle->active_level = active_level;
 }
 void CHANNEL_SetType(int ch, int type) {
+
 	g_channelTypes[ch] = type;
 }
 int CHANNEL_GetType(int ch) {
 	return g_channelTypes[ch];
+}
+bool CHANNEL_IsInUse(int ch) {
+	int i;
+	for(i = 0; i < GPIO_MAX; i++){
+		if(g_pins.channels[i] == ch) {
+			switch(g_pins.roles[i])
+			{
+			case IOR_LED:
+			case IOR_LED_n:
+			case IOR_Relay:
+			case IOR_Relay_n:
+			case IOR_PWM:
+				return true;
+				break;
+
+			default:
+				break;
+			}
+		}
+	}
+	return false;
+}
+void CHANNEL_SetStateOnly(int iVal) {
+	int i;
+
+	if(iVal == 0) {
+		CHANNEL_SetAll(0);
+		return;
+	}
+
+	// is it already on on some channel?
+	for(i = 0; i < GPIO_MAX; i++) {
+		if(CHANNEL_IsInUse(i)) {
+			if(CHANNEL_Get(i) > 0) {
+				return;
+			}
+		}
+	}
+	CHANNEL_SetAll(iVal);
+
+
 }
 void CHANNEL_SetAll(int iVal) {
 	int i;
@@ -673,27 +715,6 @@ void CHANNEL_SetAll(int iVal) {
 			break;
 		}
 	}
-}
-bool CHANNEL_IsInUse(int ch) {
-	int i;
-	for(i = 0; i < GPIO_MAX; i++){
-		if(g_pins.channels[i] == ch) {
-			switch(g_pins.roles[i])
-			{
-			case IOR_LED:
-			case IOR_LED_n:
-			case IOR_Relay:
-			case IOR_Relay_n:
-			case IOR_PWM:
-				return true;
-				break;
-
-			default:
-				break;
-			}
-		}
-	}
-	return false;
 }
 void CHANNEL_DoSpecialToggleAll() {
 	int anyEnabled, i;
@@ -959,9 +980,18 @@ void Channel_OnChanged(int ch) {
 
 }
 int CHANNEL_Get(int ch) {
+	if(ch < 0 || ch >= GPIO_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Get: Channel index %i is out of range <0,%i)\n\r",ch,GPIO_MAX);
+		return 0;
+	}
 	return g_channelValues[ch];
 }
+
 void CHANNEL_Set(int ch, int iVal, int bForce) {
+	if(ch < 0 || ch >= GPIO_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Set: Channel index %i is out of range <0,%i)\n\r",ch,GPIO_MAX);
+		return;
+	}
 	if(bForce == 0) {
 		int prevVal;
 
@@ -983,6 +1013,10 @@ void CHANNEL_Set(int ch, int iVal, int bForce) {
 	Channel_OnChanged(ch);
 }
 void CHANNEL_Toggle(int ch) {
+	if(ch < 0 || ch >= GPIO_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Toggle: Channel index %i is out of range <0,%i)\n\r",ch,GPIO_MAX);
+		return;
+	}
 	//BIT_TGL(g_channelStates,ch);
 	if(g_channelValues[ch] == 0)
 		g_channelValues[ch] = 100;
@@ -992,6 +1026,10 @@ void CHANNEL_Toggle(int ch) {
 	Channel_OnChanged(ch);
 }
 bool CHANNEL_Check(int ch) {
+	if(ch < 0 || ch >= GPIO_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Check: Channel index %i is out of range <0,%i)\n\r",ch,GPIO_MAX);
+		return 0;
+	}
 	//return BIT_CHECK(g_channelStates,ch);
 	if (g_channelValues[ch] > 0)
 		return 1;

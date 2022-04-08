@@ -121,7 +121,7 @@ int CMD_ExecuteCommandArgs(const char *cmd, const char *args) {
 		newCmd = CMD_Find(nonums);
 		if (!newCmd) {
 			// if still not found, then error
-			ADDLOG_ERROR(LOG_FEATURE_CMD, "cmd %s NOT found", cmd);
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "cmd %s NOT found (args %s)", cmd, args);
 			return 0;
 		}
 	} else {
