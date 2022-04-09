@@ -418,3 +418,31 @@ void Setup_Device_AvatarASL04() {
 
 	PIN_SaveToFlash();
 }
+
+
+void Setup_Device_TuyaSmartWIFISwith_4Gang_CB3S(){
+	PIN_ClearPins();
+
+	PIN_SetPinRoleForPinIndex(24, IOR_Button);
+	PIN_SetPinChannelForPinIndex(24, 1);
+	PIN_SetPinRoleForPinIndex(20, IOR_Button);
+	PIN_SetPinChannelForPinIndex(20, 2);
+	PIN_SetPinRoleForPinIndex(7, IOR_Button);
+	PIN_SetPinChannelForPinIndex(7, 3);
+	PIN_SetPinRoleForPinIndex(14, IOR_Button);
+	PIN_SetPinChannelForPinIndex(14, 4);
+
+	PIN_SetPinRoleForPinIndex(6, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(6, 1);
+	PIN_SetPinRoleForPinIndex(8, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(8, 2);
+	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(9, 3);
+	PIN_SetPinRoleForPinIndex(26, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(26, 4);
+
+	PIN_SetPinRoleForPinIndex(22, IOR_LED_WIFI);
+	PIN_SetPinChannelForPinIndex(22, 1);
+
+	PIN_SaveToFlash();
+}

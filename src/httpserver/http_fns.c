@@ -54,7 +54,8 @@ template_t g_templates [] = {
 	{ Setup_Device_EmaxHome_EDU8774, "Emax Home EDU8774 SmartPlug 16A"},
 	{ Setup_Device_BK7231N_TuyaLightBulb_RGBCW_5PWMs, "Tuya E27 LED RGBCW 5PWMs BK7231N"},
 	{ Setup_Device_TuyaSmartPFW02G, "Tuya Smart PFW02-G"},
-    { Setup_Device_AvatarASL04, "Avatar ASL04 5v LED strip"}
+    { Setup_Device_AvatarASL04, "Avatar ASL04 5v LED strip"},
+    { Setup_Device_TuyaSmartWIFISwith_4Gang_CB3S, "[BK7231N][CB3S] Tuya Smart Wifi Switch 4 Gang"}
 };
 
 int g_total_templates = sizeof(g_templates)/sizeof(g_templates[0]);
