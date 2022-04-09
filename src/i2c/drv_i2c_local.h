@@ -40,6 +40,6 @@ typedef struct i2cDevice_SM2135_s {
 
 void DRV_I2C_Write(UINT8 addr, UINT8 data);
 void DRV_I2C_Read(UINT8 addr, UINT8 *data);
-int DRV_I2C_Begin(int dev_adr);
+int DRV_I2C_Begin(int dev_adr, int busID);
 void DRV_I2C_Close();
 

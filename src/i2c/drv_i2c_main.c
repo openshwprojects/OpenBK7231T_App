@@ -25,13 +25,20 @@ void DRV_I2C_Read(UINT8 addr, UINT8 *data)
     i2c_operater.op_addr = addr;
     ddev_read(i2c_hdl, (char*)data, 1, (UINT32)&i2c_operater);
 }
-int DRV_I2C_Begin(int dev_adr) {
+int DRV_I2C_Begin(int dev_adr, int busID) {
 
     uint32_t status;
 	uint32_t oflag;
     oflag = I2C_DEF_DIV;
 
-	i2c_hdl = ddev_open("i2c1", &status, oflag);
+	if(busID == I2C_BUS_I2C1) {
+		i2c_hdl = ddev_open("i2c1", &status, oflag);
+	} else if(busID == I2C_BUS_I2C2) {
+		i2c_hdl = ddev_open("i2c2", &status, oflag);
+	} else {
+		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_Begin bus type %i not supported!\n",busID);
+		return 1;
+	}
     if(DD_HANDLE_UNVALID == i2c_hdl){
 		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_Begin ddev_open failed, status %i!\n",status);
 		return 1;
@@ -55,7 +62,7 @@ void DRV_I2C_Write(UINT8 addr, UINT8 data)
 void DRV_I2C_Read(UINT8 addr, UINT8 *data)
 {   
 }
-int DRV_I2C_Begin(int dev_adr) {
+int DRV_I2C_Begin(int dev_adr, int busID) {
 
 	return 1; // error
 }
@@ -110,15 +117,37 @@ int DRV_I2C_AddDevice_TC74(const void *context, const char *cmd, const char *arg
 
 	return 1;
 }
+int DRV_I2C_AddDevice_MCP23017(const void *context, const char *cmd, const char *args) {
+	const char *i2cModuleStr;
+	int address;
+	int targetChannel;
+	i2cBusType_t busType;
+
+	Tokenizer_TokenizeString(args);
+	i2cModuleStr = Tokenizer_GetArg(0);
+	address = Tokenizer_GetArgInteger(1);
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"addI2CDevice_MCP23017: module %s, address %i\n", i2cModuleStr, address);
+
+	busType = DRV_I2C_ParseBusType(i2cModuleStr);
+
+//	DRV_I2C_AddDevice_MCP23017_Internal(busType,address,targetChannel);
+
+	return 1;
+}
 // TC74 A0 (address type 0)
 // setChannelType 5 temperature
 // addI2CDevice_TC74 I2C1 0x48 5 
 // TC74 A2 (address type 2)
 // setChannelType 6 temperature
 // addI2CDevice_TC74 I2C1 0x4A 6 
+
+// MCP23017 with A0=1, A1=1, A2=1
+// addI2CDevice_MCP23017 I2C1 0x4E 6 
 void DRV_I2C_Init()
 {
 	CMD_RegisterCommand("addI2CDevice_TC74","",DRV_I2C_AddDevice_TC74, "Adds a new I2C device", NULL);
+	CMD_RegisterCommand("addI2CDevice_MCP23017","",DRV_I2C_AddDevice_MCP23017, "Adds a new I2C device", NULL);
 
 }
 void DRC_I2C_RunDevice(i2cDevice_t *dev)
