@@ -2,6 +2,7 @@
 enum i2cDeviceType_e {
 	I2CDEV_UNKNOWN,
 	I2CDEV_TC74,
+	I2CDEV_MCP23017,
 };
 
 typedef enum i2cBusType_e {
@@ -38,8 +39,21 @@ typedef struct i2cDevice_SM2135_s {
 	int sourceChannel_W;
 } i2cDevice_SM2135_t;
 
+// Right now, MCP23017 port expander supports only output mode
+// (map channel to MCP23017 output)
+typedef struct i2cDevice_MCP23017_s {
+	i2cDevice_t base;
+	// private MCP23017 variables
+	// Channel indices (0xff = none)
+	byte pinMapping[16];
+	// is pin an output or input?
+	//int pinDirections;
+} i2cDevice_MCP23017_t;
+
 void DRV_I2C_Write(UINT8 addr, UINT8 data);
 void DRV_I2C_Read(UINT8 addr, UINT8 *data);
 int DRV_I2C_Begin(int dev_adr, int busID);
 void DRV_I2C_Close();
 
+// drv_i2c_mcp23017.c
+int DRV_I2C_MCP23017_MapPinToChannel(const void *context, const char *cmd, const char *args);

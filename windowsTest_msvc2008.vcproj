@@ -204,6 +204,18 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\i2c\drv_i2c_mcp23017.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\src\i2c\drv_i2c_tc74.c"
 				>
 				<FileConfiguration
@@ -356,7 +368,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\new_http.h"
+				RelativePath=".\src\httpserver\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -368,7 +380,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\httpserver\new_http.h"
+				RelativePath=".\src\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"

@@ -33,7 +33,7 @@ enum ChannelType {
 	// TuyaMCU sends 225 instead of 22.5%
 	ChType_Humidity_div10,
 	ChType_Temperature_div10,
-
+	ChType_Toggle,
 };
 // NOTE: you must keep size of this structure in sync with
 // structures in flash config code for both BK7231 and XR809

@@ -158,7 +158,7 @@ int http_fn_index(http_request_t *request) {
 
             hprintf128(request,"Humidity Channel %i value %f Percent<br>",i, fValue);
 
-		} else if(BIT_CHECK(relayFlags,i)) {
+		} else if(BIT_CHECK(relayFlags,i) || channelType == ChType_Toggle) {
             const char *c;
             if(CHANNEL_Check(i)) {
                 c = "r";

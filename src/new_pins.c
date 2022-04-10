@@ -938,6 +938,8 @@ void Channel_OnChanged(int ch) {
 	iVal = g_channelValues[ch];
 	bOn = iVal > 0;
 
+	I2C_OnChannelChanged(ch,iVal);
+
 	for(i = 0; i < GPIO_MAX; i++) {
 		if(g_pins.channels[i] == ch) {
 			if(g_pins.roles[i] == IOR_Relay || g_pins.roles[i] == IOR_LED) {
@@ -1203,6 +1205,8 @@ int CHANNEL_ParseChannelType(const char *s) {
 		return ChType_Humidity_div10;
 	if(!stricmp(s,"temperature_div10"))
 		return ChType_Temperature_div10;
+	if(!stricmp(s,"toggle"))
+		return ChType_Toggle;
 	if(!stricmp(s,"default") )
 		return ChType_Default;
 	return ChType_Error;
