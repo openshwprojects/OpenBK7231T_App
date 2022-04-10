@@ -241,6 +241,8 @@ const char *htmlPinRoleNames[] = {
 	"Wifi LED_n",
 	"Btn_Tgl_All",
 	"Btn_Tgl_All_n",
+	"DigitalInput",
+	"DigitalInput_n",
 	"e",
 	"e",
 };

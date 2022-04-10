@@ -20,6 +20,10 @@ enum IORole {
 	IOR_LED_WIFI_n,
 	IOR_Button_ToggleAll,
 	IOR_Button_ToggleAll_n,
+	// this copies directly value on pin (0 or 1) to channel
+	IOR_DigitalInput,
+	// as above, but inverted
+	IOR_DigitalInput_n,
 	IOR_Total_Options,
 };
 

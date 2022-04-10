@@ -588,20 +588,17 @@ const char *PIN_GetPinNameAlias(int index) {
 }
 bool BTN_ShouldInvert(int index)
 {
-	if(g_pins.roles[index] == IOR_Button_n || g_pins.roles[index] == IOR_Button_ToggleAll_n) {
+	if(g_pins.roles[index] == IOR_Button_n || g_pins.roles[index] == IOR_Button_ToggleAll_n|| g_pins.roles[index] == IOR_DigitalInput_n) {
 		return true;
 	}
 	return false;
 }
-unsigned char button_generic_get_gpio_value(void *param)
-{
+unsigned char PIN_ReadDigitalInputValue_WithInversionIncluded(int index) {
 #if WINDOWS
 	return 0;
 #elif PLATFORM_XR809
 	int xr_port; // eg GPIO_PORT_A
 	int xr_pin; // eg. GPIO_PIN_20
-	int index;
-	index = ((pinButton_s*)param) - g_buttons;
 
 	PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
 
@@ -614,14 +611,22 @@ unsigned char button_generic_get_gpio_value(void *param)
 		return 0;
 	return 1;
 #else
-	int index;
-	index = ((pinButton_s*)param) - g_buttons;
-
 	// support inverted button
 	if(BTN_ShouldInvert(index)) {
 		return !bk_gpio_input(index);
 	}
 	return bk_gpio_input(index);
+#endif
+}
+unsigned char button_generic_get_gpio_value(void *param)
+{
+#if WINDOWS
+	return 0;
+#else
+	int index;
+	index = ((pinButton_s*)param) - g_buttons;
+
+	return PIN_ReadDigitalInputValue_WithInversionIncluded(index);
 #endif
 }
 #define PIN_UART1_RXD 10
@@ -845,6 +850,27 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			button_attach(bt, BTN_LONG_PRESS_HOLD,  Button_OnLongPressHold);
 			button_start(bt);*/
 		}
+		break;
+	case IOR_DigitalInput:
+	case IOR_DigitalInput_n:
+#if WINDOWS
+	
+#elif PLATFORM_XR809
+			{
+				int xr_port; // eg GPIO_PORT_A
+				int xr_pin; // eg. GPIO_PIN_20
+				GPIO_InitParam param;
+
+				PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
+
+				param.driving = GPIO_DRIVING_LEVEL_1;
+				param.mode = GPIOx_Pn_F0_INPUT;
+				param.pull = GPIO_PULL_UP;
+				HAL_GPIO_Init(xr_port, xr_pin, &param);
+			}
+#else
+			bk_gpio_config_input_pup(index);
+#endif
 		break;
 	case IOR_LED:
 	case IOR_LED_n:
@@ -1188,11 +1214,22 @@ void PIN_Input_Handler(int pinIndex)
 void PIN_ticks(void *param)
 {
 	int i;
+	int value;
+
 	for(i = 0; i < GPIO_MAX; i++) {
 		if(g_pins.roles[i] == IOR_Button || g_pins.roles[i] == IOR_Button_n
 			|| g_pins.roles[i] == IOR_Button_ToggleAll || g_pins.roles[i] == IOR_Button_ToggleAll_n) {
 			//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Test hold %i\r\n",i);
 			PIN_Input_Handler(i);
+		}		
+		else if(g_pins.roles[i] == IOR_DigitalInput || g_pins.roles[i] == IOR_DigitalInput_n) {
+			// read pin digital value (and already invert it if needed)
+			value = PIN_ReadDigitalInputValue_WithInversionIncluded(i);
+				// NOT NEEDED - INCLUDED in function above
+			//if(g_pins.roles[i] == IOR_DigitalInput_n) {
+//
+			//}
+			CHANNEL_Set(g_pins.channels[i], value,0);
 		}
 	}
 }
