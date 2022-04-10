@@ -134,6 +134,12 @@ Currently available pin roles:
 - PWM - pulse width modulation output for LED dimmers (with MQTT dimming support from Home Assistant)
 - WiFi LED - special LED to indicate WLan connection state
   
+# RGBCW Tuya 5 PWMs LED bulb control compatible with Home Assistant
+  
+  RGBCW light bulbs are now supported and they are compatible with HA by rgb_command_template, brightness_value_template, color_temp_value_template commands. Please follow the guide below showing how to flash, setup and pair them with HA by MQTT:
+  
+  https://www.elektroda.com/rtvforum/topic3880540.html#19938487
+  
 # Detailed flashing guides along with device teardowns
   
  I have prepared several detailed teardowns and flashing guides for multiple supported devices.
@@ -147,6 +153,7 @@ Currently available pin roles:
   https://www.elektroda.pl/rtvforum/viewtopic.php?t=3874289&highlight=
   
   Tuya RGBCW 12W light bulb (raw PWMs, no I2C, BK7231N)
+  https://www.elektroda.com/rtvforum/topic3880540.html#19938487
   https://www.elektroda.pl/rtvforum/viewtopic.php?t=3880540&highlight=
   
 # Futher reading
