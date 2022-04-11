@@ -940,6 +940,9 @@ int http_fn_cfg_pins(http_request_t *request) {
     poststr(request,"<h5> (so, first button and first relay should have channel 1, second button and second relay have channel 2, etc)</h5>");
     poststr(request,"<h5> Second textfield (only for buttons) is used to enter channel to toggle when doing double click</h5>");
     poststr(request,"<h5> (second textfield shows up when you change role to button and save...)</h5>");
+#if PLATFORM_BK7231N || PLATFORM_BK7231T
+    poststr(request,"<h5>BK7231N/BK7231T supports PWM only on pins 6, 7, 8, 9, 24 and 26!</h5>");
+#endif
     for(i = 0; i < GPIO_MAX; i++) {
         sprintf(tmpA, "%i",i);
         if(http_getArg(request->url,tmpA,tmpB,sizeof(tmpB))) {
@@ -996,10 +999,13 @@ int http_fn_cfg_pins(http_request_t *request) {
     for( i = 0; i < GPIO_MAX; i++) {
         int si, ch, ch2;
         int j;
+		int internalPWMIndex;
 
         si = PIN_GetPinRoleForPinIndex(i);
         ch = PIN_GetPinChannelForPinIndex(i);
         ch2 = PIN_GetPinChannel2ForPinIndex(i);
+		// internal pwm index (-1 if this pin is not supported by pwm)
+		internalPWMIndex = PIN_GetPWMIndexForPinIndex(i);
 
 #if PLATFORM_XR809
         poststr(request,PIN_GetPinNameAlias(i));
@@ -1009,6 +1015,13 @@ int http_fn_cfg_pins(http_request_t *request) {
 #endif
         hprintf128(request, "<select name=\"%i\">",i);
         for(j = 0; j < IOR_Total_Options; j++) {
+			// do not show hardware PWM on non-PWM pin
+			if(j == IOR_PWM) {
+				if(internalPWMIndex == -1) {
+					continue;
+				}
+			}
+
             if(j == si) {
                 hprintf128(request, "<option value=\"%i\" selected>%s</option>",j,htmlPinRoleNames[j]);
             } else {
