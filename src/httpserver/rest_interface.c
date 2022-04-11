@@ -189,7 +189,13 @@ static int http_rest_post(http_request_t *request){
         return http_rest_post_reboot(request);
     }
     if (!strcmp(request->url, "api/ota")){
+#if PLATFORM_BK7231T
         return http_rest_post_flash(request, 0x132000);
+#elif PLATFORM_BK7231N
+        return http_rest_post_flash(request, 0x12A000);
+#else
+		// TODO
+#endif
     }
     if (!strncmp(request->url, "api/flash/", 10)){
         return http_rest_post_flash_advanced(request);
