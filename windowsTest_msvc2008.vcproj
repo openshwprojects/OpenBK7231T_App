@@ -164,6 +164,28 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\src\drv_bl0942.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\drv_bl0942.h"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\src\i2c\drv_i2c_local.h"
 				>
 				<FileConfiguration
@@ -188,7 +210,6 @@
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -216,6 +237,18 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\drv_i2c_public.h"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\src\i2c\drv_i2c_tc74.c"
 				>
 				<FileConfiguration
@@ -234,6 +267,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\drv_main.c"
+				>
 			</File>
 			<File
 				RelativePath=".\src\drv_tuyaMCU.c"
@@ -258,6 +295,14 @@
 						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\drv_uart.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\drv_uart.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\flash_config\flash_config.c"

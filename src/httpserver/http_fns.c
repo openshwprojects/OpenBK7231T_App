@@ -187,6 +187,7 @@ int http_fn_index(http_request_t *request) {
             poststr(request,"</script>");
         }
     }
+	DRV_AppendInformationToHTTPIndexPage(request);
 //	strcat(outbuf,"<button type=\"button\">Click Me!</button>");
 
     

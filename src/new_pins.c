@@ -671,26 +671,6 @@ bool CHANNEL_IsInUse(int ch) {
 	}
 	return false;
 }
-void CHANNEL_SetStateOnly(int iVal) {
-	int i;
-
-	if(iVal == 0) {
-		CHANNEL_SetAll(0);
-		return;
-	}
-
-	// is it already on on some channel?
-	for(i = 0; i < GPIO_MAX; i++) {
-		if(CHANNEL_IsInUse(i)) {
-			if(CHANNEL_Get(i) > 0) {
-				return;
-			}
-		}
-	}
-	CHANNEL_SetAll(iVal);
-
-
-}
 void CHANNEL_SetAll(int iVal) {
 	int i;
 
@@ -720,6 +700,26 @@ void CHANNEL_SetAll(int iVal) {
 			break;
 		}
 	}
+}
+void CHANNEL_SetStateOnly(int iVal) {
+	int i;
+
+	if(iVal == 0) {
+		CHANNEL_SetAll(0);
+		return;
+	}
+
+	// is it already on on some channel?
+	for(i = 0; i < GPIO_MAX; i++) {
+		if(CHANNEL_IsInUse(i)) {
+			if(CHANNEL_Get(i) > 0) {
+				return;
+			}
+		}
+	}
+	CHANNEL_SetAll(iVal);
+
+
 }
 void CHANNEL_DoSpecialToggleAll() {
 	int anyEnabled, i;
