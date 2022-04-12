@@ -980,6 +980,11 @@ void Channel_OnChanged(int ch) {
 					g_channelChangeCallback(ch,bOn);
 				}
 			}
+			if(g_pins.roles[i] == IOR_DigitalInput) {
+				if(g_channelChangeCallback != 0) {
+					g_channelChangeCallback(ch,iVal);
+				}
+			}
 			if(g_pins.roles[i] == IOR_PWM) {
 				if(g_channelChangeCallback != 0) {
 					g_channelChangeCallback(ch,iVal);
