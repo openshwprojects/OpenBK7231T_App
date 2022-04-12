@@ -82,7 +82,7 @@ int NTP_SetTimeZoneOfs(const void *context, const char *cmd, const char *args) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP offset set, wait for next ntp packet to apply changes\n");
 	return 1;
 }
-void NTP_InitCommands() {
+void NTP_Init() {
 
 	CMD_RegisterCommand("ntp_timeZoneOfs","",NTP_SetTimeZoneOfs, "Sets the time zone offset in hours", NULL);
 }

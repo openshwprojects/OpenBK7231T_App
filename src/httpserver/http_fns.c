@@ -187,6 +187,7 @@ int http_fn_index(http_request_t *request) {
             poststr(request,"</script>");
         }
     }
+	DRV_AppendInformationToHTTPIndexPage(request);
 //	strcat(outbuf,"<button type=\"button\">Click Me!</button>");
 
     
@@ -480,6 +481,7 @@ int http_fn_cfg_wifi_set(http_request_t *request) {
     addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"HTTP_ProcessPacket: done CFG_SaveWiFi \r\n");
 
     poststr(request,"Please wait for module to reset...");
+	RESET_ScheduleModuleReset(3);
     
     poststr(request,"<br>");
     poststr(request,"<a href=\"cfg_wifi\">Return to WiFi settings</a>");

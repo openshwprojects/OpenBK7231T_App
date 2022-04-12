@@ -4,12 +4,9 @@
 #include "new_cmd.h"
 #include "logging/logging.h"
 #include "drv_tuyaMCU.h"
+#include "drv_uart.h"
 #include <time.h>
 
-
-#if PLATFORM_BK7231T | PLATFORM_BK7231N
-#include "../../beken378/func/user_driver/BkDriverUart.h"
-#endif
 
 #define TUYA_CMD_HEARTBEAT     0x00
 #define TUYA_CMD_QUERY_PRODUCT 0x01
@@ -57,12 +54,7 @@ const char *TuyaMCU_GetDataTypeString(int dpId){
 // from http_fns.  should move to a utils file.
 extern unsigned char hexbyte( const char* hex );
 
-#if PLATFORM_BK7231T | PLATFORM_BK7231N
-	// from uart_bk.c
-	extern void bk_send_byte(UINT8 uport, UINT8 data);
-#elif WINDOWS
-#else
-#endif
+
 
 
 const char *TuyaMCU_GetCommandTypeLabel(int t) {
@@ -142,43 +134,6 @@ void TuyaMCU_MapIDToChannel(int fnId, int channel) {
 }
 
 
-static byte *g_recvBuf = 0;
-static int g_recvBufSize = 0;
-static int g_recvBufIn = 0;
-static int g_recvBufOut = 0;
-
-void UART_InitReceiveRingBuffer(int size){
-	if(g_recvBuf!=0)
-		free(g_recvBuf);
-	g_recvBuf = (byte*)malloc(size);
-	memset(g_recvBuf,0,size);
-	g_recvBufSize = size;
-	g_recvBufIn = 0;
-}
-int UART_GetDataSize()
-{
-    int remain_buf_size = 0;
-
-    if(g_recvBufIn >= g_recvBufOut) {
-        remain_buf_size = g_recvBufIn - g_recvBufOut;
-    }else {
-        remain_buf_size = g_recvBufIn + g_recvBufSize - g_recvBufOut;
-    }
-    
-    return remain_buf_size;
-}
-byte UART_GetNextByte(int index) {
-	int realIndex = g_recvBufOut + index;
-	if(realIndex > g_recvBufSize)
-		realIndex -= g_recvBufSize;
-
-	return g_recvBuf[realIndex];
-}
-void UART_ConsumeBytes(int idx) {
-	g_recvBufOut += idx;
-	if(g_recvBufOut > g_recvBufSize)
-		g_recvBufOut -= g_recvBufSize;
-}
 // header version command lenght data checksum
 // 55AA		00		00		0000   xx	00
 
@@ -234,79 +189,28 @@ int UART_TryToGetNextTuyaPacket(byte *out, int maxSize) {
 	}
 	return 0;
 }
-void UART_AppendByteToCircularBuffer(int rc) {
-    if(UART_GetDataSize() < (g_recvBufSize-1)) 
-    {
-        g_recvBuf[g_recvBufIn++] = rc;
-        if(g_recvBufIn >= g_recvBufSize){
-            g_recvBufIn = 0;
-        }
-   }
-}
-#if PLATFORM_BK7231T | PLATFORM_BK7231N
-void test_ty_read_uart_data_to_buffer(int port, void* param)
-{
-    int rc = 0;
-    
-    while((rc = uart_read_byte(port)) != -1)
-    {
-		UART_AppendByteToCircularBuffer(rc);
-    }
-
-}
-#endif
-
-void TuyaMCU_Bridge_InitUART(int baud) {
-#if PLATFORM_BK7231T | PLATFORM_BK7231N
-	bk_uart_config_t config;
-
-    config.baud_rate = 9600;
-    config.data_width = 0x03;
-    config.parity = 0;    //0:no parity,1:odd,2:even
-    config.stop_bits = 0;   //0:1bit,1:2bit
-    config.flow_control = 0;   //FLOW_CTRL_DISABLED
-    config.flags = 0;
-
-    bk_uart_initialize(0, &config, NULL);
-    bk_uart_set_rx_callback(0, test_ty_read_uart_data_to_buffer, NULL);
-#else
-
-
-#endif
-}
 
 
 
-void TuyaMCU_Bridge_SendUARTByte(byte b) {
-#if PLATFORM_BK7231T | PLATFORM_BK7231N
-	bk_send_byte(0, b);
-#elif WINDOWS
-	// STUB - for testing
-    addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"%02X", b);
-#else
-
-
-#endif
-}
 
 // append header, len, everything, checksum
 void TuyaMCU_SendCommandWithData(byte cmdType, byte *data, int payload_len) {
 	int i;
 
 	byte check_sum = (0xFF + cmdType + (payload_len >> 8) + (payload_len & 0xFF));
-	TuyaMCU_Bridge_InitUART(9600);
-	TuyaMCU_Bridge_SendUARTByte(0x55);
-	TuyaMCU_Bridge_SendUARTByte(0xAA);
-	TuyaMCU_Bridge_SendUARTByte(0x00);         // version 00
-	TuyaMCU_Bridge_SendUARTByte(cmdType);         // version 00
-	TuyaMCU_Bridge_SendUARTByte(payload_len >> 8);      // following data length (Hi)
-	TuyaMCU_Bridge_SendUARTByte(payload_len & 0xFF);    // following data length (Lo)
+	UART_InitUART(9600);
+	UART_SendByte(0x55);
+	UART_SendByte(0xAA);
+	UART_SendByte(0x00);         // version 00
+	UART_SendByte(cmdType);         // version 00
+	UART_SendByte(payload_len >> 8);      // following data length (Hi)
+	UART_SendByte(payload_len & 0xFF);    // following data length (Lo)
 	for(i = 0; i < payload_len; i++) {
 		byte b = data[i];
 		check_sum += b;
-		TuyaMCU_Bridge_SendUARTByte(b);
+		UART_SendByte(b);
 	}
-	TuyaMCU_Bridge_SendUARTByte(check_sum);
+	UART_SendByte(check_sum);
 }
 
 void TuyaMCU_Send_SetTime(struct tm *pTime) {
@@ -352,7 +256,7 @@ int TuyaMCU_Send_Hex(const void *context, const char *cmd, const char *args) {
 		byte b;
 		b = hexbyte(args);
 		
-		TuyaMCU_Bridge_SendUARTByte(b);
+		UART_SendByte(b);
 
 		args += 2;
 	}
@@ -407,15 +311,15 @@ void TuyaMCU_Send(byte *data, int size) {
 	for(i = 0; i < size; i++) {
 		byte b = data[i];
 		check_sum += b;
-		TuyaMCU_Bridge_SendUARTByte(b);
+		UART_SendByte(b);
 	}
-	TuyaMCU_Bridge_SendUARTByte(check_sum);
+	UART_SendByte(check_sum);
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"\nWe sent %i bytes to Tuya MCU\n",size+1);
 }
 void TuyaMCU_Init()
 {
-	TuyaMCU_Bridge_InitUART(9600);
+	UART_InitUART(9600);
 	UART_InitReceiveRingBuffer(256);
 	// uartSendHex 55AA0008000007
 	CMD_RegisterCommand("tuyaMcu_testSendTime","",TuyaMCU_Send_SetTime_Example, "Sends a example date by TuyaMCU to clock/callendar MCU", NULL);

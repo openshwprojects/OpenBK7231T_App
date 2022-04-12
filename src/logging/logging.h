@@ -69,8 +69,9 @@ typedef enum {
     LOG_FEATURE_NTP             = 11,
 	LOG_FEATURE_TUYAMCU			= 12,
 	LOG_FEATURE_I2C				= 13,
+	LOG_FEATURE_BL0942			= 14,
     // add in here - but also in names in logging.c
-    LOG_FEATURE_MAX             = 14,
+    LOG_FEATURE_MAX             = 15,
 } log_features;
 
 #endif

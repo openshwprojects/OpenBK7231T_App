@@ -248,10 +248,8 @@ static void app_led_timer_handler(void *data)
 {
 	// run_adc_test();
 	MQTT_RunEverySecondUpdate();
-	TuyaMCU_RunFrame();
-	NTP_OnEverySecond();
-	DRV_I2C_EverySecond();
 	RepeatingEvents_OnEverySecond();
+	DRV_OnEverySecond();
 
 	g_secondsElapsed ++;
   ADDLOGF_INFO("Timer is %i free mem %d\n", g_secondsElapsed, xPortGetFreeHeapSize());
@@ -397,10 +395,8 @@ void user_main(void)
   increment_boot_count();
 
 	CFG_InitAndLoad();
-	TuyaMCU_Init();
-	DRV_I2C_Init();
+	DRV_Generic_Init();
 	RepeatingEvents_Init();
-	NTP_InitCommands();
   
 	wifi_ssid = CFG_GetWiFiSSID();
 	wifi_pass = CFG_GetWiFiPass();
@@ -423,6 +419,7 @@ void user_main(void)
   if (bootFailures > 3){
     bForceOpenAP = 1;
 		ADDLOGF_INFO("###### force AP mode - boot failures %d", bootFailures);
+  } else {
   }
 
 	if(*wifi_ssid == 0 || *wifi_pass == 0 || bForceOpenAP) {

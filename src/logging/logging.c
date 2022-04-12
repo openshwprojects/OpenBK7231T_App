@@ -78,8 +78,8 @@ char *logfeaturenames[] = {
     "NTP:", // = 11
 	"TuyaMCU:",// = 12
 	"I2C:",// = 13
+	"BL0942:",// = 14
 };
-
 
 
 #ifdef WINDOWS
