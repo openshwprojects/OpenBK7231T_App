@@ -134,12 +134,22 @@ Currently available pin roles:
 - Button Toggle All_n (as above but pin logical value is inversed)
 - PWM - pulse width modulation output for LED dimmers (with MQTT dimming support from Home Assistant)
 - WiFi LED - special LED to indicate WLan connection state
+- DigitalInput - this is a simple digital input pin, it sets the linked channel to current logical value on it, just like digitalRead( ) from Arduino. This input has a internal pull up resistor.
+- DigitalInput_n (as above but inversed)
   
 # RGBCW Tuya 5 PWMs LED bulb control compatible with Home Assistant
   
   RGBCW light bulbs are now supported and they are compatible with HA by rgb_command_template, brightness_value_template, color_temp_value_template commands. Please follow the guide below showing how to flash, setup and pair them with HA by MQTT:
   
   https://www.elektroda.com/rtvforum/topic3880540.html#19938487
+  
+# I2C drivers system with support for MCP23017 bus expander, TC74 temperature sensor and more
+  
+  Detailed description and step by step tutorial on Elektroda.com is coming soon.
+  
+# BL0942 power metering plug (UART communication mode) support and calibration process
+    
+  Detailed description and step by step tutorial on Elektroda.com is coming soon.
   
 # Detailed flashing guides along with device teardowns
   
