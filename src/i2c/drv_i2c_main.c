@@ -12,7 +12,7 @@
 I2C_OP_ST i2c_operater;
 DD_HANDLE i2c_hdl;
 
-void DRV_I2C_Write(UINT8 addr, UINT8 data)
+void DRV_I2C_Write(byte addr, byte data)
 {
 	char buff = (char)data;
     
@@ -20,7 +20,7 @@ void DRV_I2C_Write(UINT8 addr, UINT8 data)
     ddev_write(i2c_hdl, &buff, 1, (UINT32)&i2c_operater);
 }
 
-void DRV_I2C_Read(UINT8 addr, UINT8 *data)
+void DRV_I2C_Read(byte addr, byte *data)
 {   
     i2c_operater.op_addr = addr;
     ddev_read(i2c_hdl, (char*)data, 1, (UINT32)&i2c_operater);
@@ -55,11 +55,11 @@ void DRV_I2C_Close() {
 }
 #else
 
-void DRV_I2C_Write(UINT8 addr, UINT8 data)
+void DRV_I2C_Write(byte addr, byte data)
 {
 }
 
-void DRV_I2C_Read(UINT8 addr, UINT8 *data)
+void DRV_I2C_Read(byte addr, byte *data)
 {   
 }
 int DRV_I2C_Begin(int dev_adr, int busID) {

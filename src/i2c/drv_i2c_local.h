@@ -1,3 +1,5 @@
+#ifndef __DRV_I2C_LOCAL_H__
+#define __DRV_I2C_LOCAL_H__
 
 enum i2cDeviceType_e {
 	I2CDEV_UNKNOWN,
@@ -50,10 +52,12 @@ typedef struct i2cDevice_MCP23017_s {
 	//int pinDirections;
 } i2cDevice_MCP23017_t;
 
-void DRV_I2C_Write(UINT8 addr, UINT8 data);
-void DRV_I2C_Read(UINT8 addr, UINT8 *data);
+void DRV_I2C_Write(byte addr, byte data);
+void DRV_I2C_Read(byte addr, byte *data);
 int DRV_I2C_Begin(int dev_adr, int busID);
 void DRV_I2C_Close();
 
 // drv_i2c_mcp23017.c
 int DRV_I2C_MCP23017_MapPinToChannel(const void *context, const char *cmd, const char *args);
+
+#endif // __DRV_I2C_LOCAL_H__
