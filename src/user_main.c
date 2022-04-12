@@ -216,10 +216,37 @@ void connect_to_wifi(const char *oob_ssid,const char *connect_key)
 
 beken_timer_t led_timer;
 
+#if 0
+// OpenSHWProjects 2022 04 11
+// I tried to implement ADC but it seems that BkAdcInitialize and BkAdcTakeSample
+// are missing from the precompiled Bekken library...
+int adc_init = 0;
+#include "../../beken378/func/user_driver/BkDriverADC.h"
+void run_adc_test(){
+		OSStatus test;
+		int adc;
+		short res;
+		int val;
+		uint32_t sampling_cycle;
+		uint16_t output;
+		sampling_cycle = 1000;
+		adc = 3;
 
-
+		if(adc_init == 0) {
+			adc_init = 1;
+			//  undefined reference to `BkAdcInitialize'
+			test = BkAdcInitialize( adc,  sampling_cycle );
+			ADDLOGF_INFO("Adc init res %i\n", test);
+		}
+		//  undefined reference to `BkAdcTakeSample'
+		test = BkAdcTakeSample( adc, &output );
+		val = output;
+		ADDLOGF_INFO("BkAdcTakeSample res %i value %i\n", test, val);
+}
+#endif
 static void app_led_timer_handler(void *data)
 {
+	// run_adc_test();
 	MQTT_RunEverySecondUpdate();
 	TuyaMCU_RunFrame();
 	NTP_OnEverySecond();
