@@ -527,6 +527,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 
 	if(http_checkUrlBase(urlStr,"ota")) return http_fn_ota(request);
 	if(http_checkUrlBase(urlStr,"ota_exec")) return http_fn_ota_exec(request);
+	if(http_checkUrlBase(urlStr,"cm")) return http_fn_cm(request);
 
 	return http_fn_other(request);
 }

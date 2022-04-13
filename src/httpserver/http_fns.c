@@ -892,6 +892,32 @@ int http_fn_cfg_ha(http_request_t *request) {
 	poststr(request, NULL);
     return 0;
 }
+// https://tasmota.github.io/docs/Commands/#with-mqtt
+/*
+http://<ip>/cm?cmnd=Power%20TOGGLE
+http://<ip>/cm?cmnd=Power%20On
+http://<ip>/cm?cmnd=Power%20off
+http://<ip>/cm?user=admin&password=joker&cmnd=Power%20Toggle
+*/
+// https://www.elektroda.com/rtvforum/viewtopic.php?p=19330027#19330027
+// Web browser sends: GET /cm?cmnd=POWER1
+// System responds with state
+int http_fn_cm(http_request_t *request) {
+	char tmpA[128];
+	
+    http_setup(request, httpMimeTypeJson);
+    if(	http_getArg(request->url,"cmd",tmpA,sizeof(tmpA))) {
+		//CMD_ExecuteCommand(
+
+
+
+    }
+	poststr(request,"{\"POWER1\":\"OFF\"}");
+	poststr(request, NULL);
+
+
+    return 0;
+}
 
 int http_fn_cfg(http_request_t *request) {
     int i,j,k;

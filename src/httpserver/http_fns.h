@@ -25,3 +25,4 @@ int http_fn_ota_exec(http_request_t *request);
 int http_fn_ota(http_request_t *request);
 int http_fn_empty_url(http_request_t *request);
 int http_fn_other(http_request_t *request);
+int http_fn_cm(http_request_t *request);
