@@ -114,13 +114,15 @@ void wl_status( void *ctxt ){
         case RW_EVT_STA_NO_AP_FOUND:
         case RW_EVT_STA_ASSOC_FULL:
         case RW_EVT_STA_DISCONNECTED:    /* disconnect with server */
-            // try to connect again in 5 seconds
-            //reconnect = 5;
+            // try to connect again in few seconds
+            g_connectToWiFi = 15;
             PIN_set_wifi_led(0);
 			g_bHasWiFiConnected = 0;
             break;
         case RW_EVT_STA_CONNECT_FAILED:  /* authentication failed */
             PIN_set_wifi_led(0);
+            // try to connect again in few seconds
+            g_connectToWiFi = 60;
 			g_bHasWiFiConnected = 0;
             break;
         case RW_EVT_STA_CONNECTED:        /* authentication success */    
