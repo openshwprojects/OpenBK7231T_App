@@ -42,6 +42,10 @@ typedef struct pinButton_ {
 	new_btn_callback  cb[BTN_number_of_event];
 }pinButton_s;
 
+// overall pins enable.
+// if zero, all hardware action is disabled.
+char g_enable_pins = 0;
+
 
 #if WINDOWS
 
@@ -72,9 +76,6 @@ typedef struct item_pins_config
 	pinsState_t pins;
 }ITEM_PINS_CONFIG,*ITEM_PINS_CONFIG_PTR;
 
-// overall pins enable.
-// if zero, all hardware action is disabled.
-char g_enable_pins = 0;
 
 void testI2C()
 {
@@ -543,6 +544,7 @@ int PIN_GetPinChannel2ForPinIndex(int index) {
 	return g_pins.channels2[index];
 }
 void RAW_SetPinValue(int index, int iVal){
+	if (g_enable_pins) {
 #if WINDOWS
 
 #elif PLATFORM_XR809
@@ -553,10 +555,9 @@ void RAW_SetPinValue(int index, int iVal){
 
 	HAL_GPIO_WritePin(xr_port, xr_pin, iVal);
 #else
-	if (g_enable_pins) {
 	    bk_gpio_output(index, iVal);
-	}
 #endif
+	}
 }
 void Button_OnShortClick(int index)
 {
