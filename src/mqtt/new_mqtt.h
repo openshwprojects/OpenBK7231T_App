@@ -37,3 +37,7 @@ typedef int (*mqtt_callback_fn)(mqtt_request_t *request);
 int MQTT_RegisterCallback( const char *basetopic, const char *subscriptiontopic, int ID, mqtt_callback_fn callback);
 int MQTT_RemoveCallback(int ID);
 
+
+void MQTT_PublishMain_StringFloat(const char *sChannel, float f);
+
+

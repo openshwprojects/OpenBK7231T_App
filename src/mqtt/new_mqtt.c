@@ -320,10 +320,12 @@ static void mqtt_pub_request_cb(void *arg, err_t result)
   }
 }
 
-void example_publish(mqtt_client_t *client, int channel, int iVal)
+// This is used to publish channel values in "obk0696FB33/1/get" format with numerical value,
+// This is also used to publish custom information with string name,
+// for example, "obk0696FB33/voltage/get" is used to publish voltage from the sensor
+void MQTT_PublishMain(mqtt_client_t *client, const char *sChannel, const char *sVal)
 {
 	char pub_topic[32];
-	char pub_payload[128];
 //  const char *pub_payload= "{\"temperature\": \"45.5\"}";
   err_t err;
   //int myValue;
@@ -338,16 +340,12 @@ void example_publish(mqtt_client_t *client, int channel, int iVal)
 		return;
   }
 
-  //myValue = CHANNEL_Check(channel);
-   sprintf(pub_payload,"%i",iVal);
-   
-  addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"calling pub: \n");
+  addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publishing %s = %s \n",sChannel,sVal);
 
 	baseName = CFG_GetShortDeviceName();
 
-	//sprintf(pub_topic,"wb2s/%i/get",channel);
-	sprintf(pub_topic,"%s/%i/get",baseName,channel);
-  err = mqtt_publish(client, pub_topic, pub_payload, strlen(pub_payload), qos, retain, mqtt_pub_request_cb, 0);
+	sprintf(pub_topic,"%s/%s/get",baseName,sChannel);
+  err = mqtt_publish(client, pub_topic, sVal, strlen(sVal), qos, retain, mqtt_pub_request_cb, 0);
   if(err != ERR_OK) {
       addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publish err: %d\n", err);
 	 if(err == ERR_CONN) {
@@ -557,11 +555,24 @@ static void MQTT_do_connect(mqtt_client_t *client)
    addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"mqtt_host %s not found by gethostbyname\r\n", mqtt_host);
   }
 }
+void MQTT_PublishMain_StringFloat(const char *sChannel, float f)
+{
+	char valueStr[16];
+	sprintf(valueStr,"%f",f);
 
+	MQTT_PublishMain(mqtt_client,sChannel,valueStr);
+}
 static void app_my_channel_toggle_callback(int channel, int iVal)
 {
+	char channelNameStr[8];
+	char valueStr[16];
+
    addLogAdv(LOG_INFO,LOG_FEATURE_MAIN, "Channel has changed! Publishing change %i with %i \n",channel,iVal);
-	example_publish(mqtt_client,channel,iVal);
+
+	sprintf(channelNameStr,"%i",channel);
+	sprintf(valueStr,"%i",iVal);
+
+	MQTT_PublishMain(mqtt_client,channelNameStr,valueStr);
 }
 
 // initialise things MQTT

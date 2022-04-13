@@ -2,6 +2,7 @@
 #include "new_pins.h"
 #include "new_cfg.h"
 #include "new_cmd.h"
+#include "mqtt/new_mqtt.h"
 #include "logging/logging.h"
 #include "drv_bl0942.h"
 #include "drv_uart.h"
@@ -18,6 +19,8 @@ int raw_unscaled_freq;
 
 float realVoltage, realCurrent, realPower;
 
+#define BL0942_BAUD_RATE 4800
+
 #define BL0942_READ_COMMAND 0x58
 
 int BL0942_TryToGetNextBL0942Packet() {
@@ -25,6 +28,7 @@ int BL0942_TryToGetNextBL0942Packet() {
 	int len, i;
 	int c_garbage_consumed = 0;
 	byte a, b, version, command, lena, lenb;
+	float newPower, newCurrent, newVoltage;
 	byte checksum;
 	int BL0942_PACKET_LEN = 23;
 
@@ -88,12 +92,24 @@ int BL0942_TryToGetNextBL0942Packet() {
 	raw_unscaled_freq = (UART_GetNextByte(17) << 8) | UART_GetNextByte(16);  
 
 	// those are not values like 230V, but unscaled
-	// addLogAdv(LOG_INFO, LOG_FEATURE_BL0942,"Unscaled current %d, voltage %d, power %d, freq %d\n", raw_unscaled_current, raw_unscaled_voltage,raw_unscaled_power,raw_unscaled_freq);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_BL0942,"Unscaled current %d, voltage %d, power %d, freq %d\n", raw_unscaled_current, raw_unscaled_voltage,raw_unscaled_power,raw_unscaled_freq);
 
 	// those are final values, like 230V
-	realPower = (raw_unscaled_power / BL0942_PREF);
-	realVoltage = (raw_unscaled_voltage / BL0942_UREF);
-	realCurrent = (raw_unscaled_current / BL0942_IREF);
+	newPower = (raw_unscaled_power / BL0942_PREF);
+	if(newPower!=realPower){
+		realPower = newPower;
+		MQTT_PublishMain_StringFloat("power",newPower);
+	}
+	newVoltage = (raw_unscaled_voltage / BL0942_UREF);
+	if(newVoltage!=realVoltage){
+		realVoltage = newVoltage;
+		MQTT_PublishMain_StringFloat("voltage",newVoltage);
+	}
+	newCurrent = (raw_unscaled_current / BL0942_IREF);
+	if(newCurrent!=realCurrent){
+		realCurrent = newCurrent;
+		MQTT_PublishMain_StringFloat("current",realCurrent);
+	}
 
 	{
 		char res[128];
@@ -109,7 +125,7 @@ int BL0942_TryToGetNextBL0942Packet() {
 }
 
 void BL0942_SendRequest() {
-	UART_InitUART(4800);
+	UART_InitUART(BL0942_BAUD_RATE);
 	UART_SendByte(BL0942_READ_COMMAND);
 	UART_SendByte(0xAA);
 }
@@ -191,7 +207,7 @@ int BL0942_CurrentSet(const void *context, const char *cmd, const char *args) {
 }
 void BL0942_Init() {
 
-	UART_InitUART(9600);
+	UART_InitUART(BL0942_BAUD_RATE);
 	UART_InitReceiveRingBuffer(256);
 	CMD_RegisterCommand("PowerSet","",BL0942_PowerSet, "Sets current power value for calibration", NULL);
 	CMD_RegisterCommand("VoltageSet","",BL0942_VoltageSet, "Sets current V value for calibration", NULL);

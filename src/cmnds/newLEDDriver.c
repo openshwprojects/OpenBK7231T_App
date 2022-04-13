@@ -240,5 +240,7 @@ int NewLED_InitCommands(){
     CMD_RegisterCommand("led_basecolor_rgbcw", "", basecolor_rgbcw, "set PWN color using #RRGGBB[cw][ww]", NULL);
     CMD_RegisterCommand("led_temperature", "", temperature, "set qqqq", NULL);
     CMD_RegisterCommand("led_brightnessMult", "", brightnessMult, "set qqqq", NULL);
+
+	// "cmnd/obk8D38570E/led_dimmer_get""
     return 0;
 }

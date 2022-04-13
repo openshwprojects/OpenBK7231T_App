@@ -166,13 +166,6 @@
 			<File
 				RelativePath=".\src\drv_bl0942.c"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\src\drv_bl0942.h"
@@ -208,13 +201,6 @@
 			<File
 				RelativePath=".\src\i2c\drv_i2c_main.c"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
 					ExcludedFromBuild="true"
@@ -481,6 +467,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\cmnds\newLEDDriver.c"
+				>
+			</File>
+			<File
 				RelativePath=".\src\ntp_time.c"
 				>
 			</File>
@@ -507,6 +497,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\littlefs\our_lfs.c"
+				>
 			</File>
 			<File
 				RelativePath=".\src\httpserver\rest_interface.c"
