@@ -185,7 +185,7 @@ void connect_to_wifi(const char *oob_ssid,const char *connect_key)
 	os_memset( &wNetConfigAdv, 0x0, sizeof(network_InitTypeDef_adv_st) );
 	
 	os_strcpy((char*)wNetConfigAdv.ap_info.ssid, oob_ssid);
-	hwaddr_aton("48:ee:0c:48:93:12", (u8 *)wNetConfigAdv.ap_info.bssid);
+	hwaddr_aton("48:ee:0c:48:93:12", (unsigned char *)wNetConfigAdv.ap_info.bssid);
 	wNetConfigAdv.ap_info.security = SECURITY_TYPE_WPA2_MIXED;
 	wNetConfigAdv.ap_info.channel = 5;
 	
@@ -324,7 +324,7 @@ static int setup_wifi_open_access_point(void)
     ap_param_t ap_info;
     network_InitTypeDef_st wNetConfig;
     int len;
-    u8 *mac;
+    unsigned char *mac;
     
     os_memset(&general, 0, sizeof(general_param_t));
     os_memset(&ap_info, 0, sizeof(ap_param_t)); 
@@ -339,7 +339,7 @@ static int setup_wifi_open_access_point(void)
  
 
         ADDLOGF_INFO("no flash configuration, use default\r\n");
-        mac = (u8*)&ap_info.bssid.array;
+        mac = (unsigned char*)&ap_info.bssid.array;
 		    // this is MAC for Access Point, it's different than Client one
 		    // see wifi_get_mac_address source
         wifi_get_mac_address((char *)mac, CONFIG_ROLE_AP);
@@ -394,15 +394,16 @@ void user_main(void)
   // read or initialise the boot count flash area
   increment_boot_count();
 
+  bootFailures = boot_failures();
+  if (bootFailures > 3){
+    bForceOpenAP = 1;
+		ADDLOGF_INFO("###### force AP mode - boot failures %d", bootFailures);
+  } else {
+  }
+
 	CFG_InitAndLoad();
-	DRV_Generic_Init();
-	RepeatingEvents_Init();
-  
 	wifi_ssid = CFG_GetWiFiSSID();
 	wifi_pass = CFG_GetWiFiPass();
-
-	ADDLOGF_INFO("Using SSID [%s]\r\n",wifi_ssid);
-	ADDLOGF_INFO("Using Pass [%s]\r\n",wifi_pass);
 
 #if 0
 	// you can use this if you bricked your module by setting wrong access point data
@@ -414,14 +415,6 @@ void user_main(void)
 	bForceOpenAP = 1;
 #endif
 
-
-  bootFailures = boot_failures();
-  if (bootFailures > 3){
-    bForceOpenAP = 1;
-		ADDLOGF_INFO("###### force AP mode - boot failures %d", bootFailures);
-  } else {
-  }
-
 	if(*wifi_ssid == 0 || *wifi_pass == 0 || bForceOpenAP) {
 		// start AP mode in 5 seconds
 		g_openAP = 5;
@@ -430,49 +423,60 @@ void user_main(void)
 		g_connectToWiFi = 5;
 	}
 
+	ADDLOGF_INFO("Using SSID [%s]\r\n",wifi_ssid);
+	ADDLOGF_INFO("Using Pass [%s]\r\n",wifi_pass);
+
 	// NOT WORKING, I done it other way, see ethernetif.c
 	//net_dhcp_hostname_set(g_shortDeviceName);
 
 	//demo_start_upd();
 	start_tcp_http();
 	ADDLOGF_DEBUG("Started http tcp server\r\n");
-	
-	PIN_Init();
-	ADDLOGF_DEBUG("Initialised pins\r\n");
 
+  // only initialise certain things if we are not in AP mode
+  if (!g_openAP){
+    g_enable_pins = 1;
+    // this actually sets the pins, moved out so we could avoid if necessary
+    PIN_SetupPins();
 
-	PIN_SetGenericDoubleClickCallback(app_on_generic_dbl_click);
-	ADDLOGF_DEBUG("Initialised other callbacks\r\n");
+    DRV_Generic_Init();
+    RepeatingEvents_Init();
 
+    PIN_Init();
+    ADDLOGF_DEBUG("Initialised pins\r\n");
+
+    // initialise MQTT - just sets up variables.
+    // all MQTT happens in timer thread?
+    MQTT_init();
+
+    PIN_SetGenericDoubleClickCallback(app_on_generic_dbl_click);
+    ADDLOGF_DEBUG("Initialised other callbacks\r\n");
 
 #ifdef BK_LITTLEFS
-  // initialise the filesystem, only if present.
-  // don't create if it does not mount
-  init_lfs(0);
+    // initialise the filesystem, only if present.
+    // don't create if it does not mount
+    // do this for ST mode only, as it may be something in FS which is killing us,
+    // and we may add a command to empty fs just be writing first sector?
+    init_lfs(0);
 #endif
 
-  // initialise rest interface
-  init_rest();
+    // initialise rest interface
+    init_rest();
 
-  // initialise MQTT - just sets up variables.
-  // all MQTT happens in timer thread?
-  MQTT_init();
+    // add some commands...
+    taslike_commands_init();
+    fortest_commands_init();
+    NewLED_InitCommands();
 
-  // add some commands...
-  taslike_commands_init();
-  fortest_commands_init();
-  NewLED_InitCommands();
+    // NOTE: this will try to read autoexec.bat,
+    // so ALL commands expected in autoexec.bat should have been registered by now...
+    // but DON't run autoexec if we have had 2+ boot failures
+    CMD_Init();
 
-  // NOTE: this will try to read autoexec.bat,
-  // so ALL commands expected in autoexec.bat should have been registered by now...
-  // but DON't run autoexec if we have had 2+ boot failures
-  CMD_Init();
-
-  if (bootFailures < 2){
-	  CMD_ExecuteCommand("exec autoexec.bat");
-	}
-
-
+    if (bootFailures < 2){
+      CMD_ExecuteCommand("exec autoexec.bat");
+    }
+  }
 
   err = rtos_init_timer(&led_timer,
                         1 * 1000,

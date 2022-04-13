@@ -72,6 +72,10 @@ typedef struct item_pins_config
 	pinsState_t pins;
 }ITEM_PINS_CONFIG,*ITEM_PINS_CONFIG_PTR;
 
+// overall pins enable.
+// if zero, all hardware action is disabled.
+char g_enable_pins = 0;
+
 void testI2C()
 {
 	bk_i2c_device_t def;
@@ -481,7 +485,7 @@ void PIN_SaveToFlash() {
 #endif
 }
 void PIN_LoadFromFlash() {
-	int i;
+	//int i;
 #if WINDOWS
 
 #elif PLATFORM_XR809
@@ -514,11 +518,18 @@ void PIN_LoadFromFlash() {
 			os_memcpy(&g_pins, &pins.pins, sizeof(g_pins));
 	}
 #endif
+}
+
+
+// call after PIN_LoadFromFlash() - if you want to actually set them
+void PIN_SetupPins() {
+	int i;
 	for(i = 0; i < GPIO_MAX; i++) {
 		PIN_SetPinRoleForPinIndex(i,g_pins.roles[i]);
 	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"PIN_LoadFromFlash pins have been set up.\r\n");
 }
+
 void PIN_ClearPins() {
 	memset(&g_pins,0,sizeof(g_pins));
 }
@@ -542,7 +553,9 @@ void RAW_SetPinValue(int index, int iVal){
 
 	HAL_GPIO_WritePin(xr_port, xr_pin, iVal);
 #else
-    bk_gpio_output(index, iVal);
+	if (g_enable_pins) {
+	    bk_gpio_output(index, iVal);
+	}
 #endif
 }
 void Button_OnShortClick(int index)
@@ -758,189 +771,196 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		role = IOR_None;
 	}
 #endif
-	switch(g_pins.roles[index])
-	{
-	case IOR_Button:
-	case IOR_Button_n:
-	case IOR_Button_ToggleAll:
-	case IOR_Button_ToggleAll_n:
+
+	if (g_enable_pins) {
+		switch(g_pins.roles[index])
 		{
-			//pinButton_s *bt = &g_buttons[index];
-			// TODO: disable button
-#if WINDOWS
-	
-#elif PLATFORM_XR809
+		case IOR_Button:
+		case IOR_Button_n:
+		case IOR_Button_ToggleAll:
+		case IOR_Button_ToggleAll_n:
+			{
+				//pinButton_s *bt = &g_buttons[index];
+				// TODO: disable button
+	#if WINDOWS
+		
+	#elif PLATFORM_XR809
 
-#else
-#endif
-		}
-		break;
-	case IOR_LED:
-	case IOR_LED_n:
-	case IOR_Relay:
-	case IOR_Relay_n:
-#if WINDOWS
-	
-#elif PLATFORM_XR809
-
-#else
-		// TODO: disable?
-#endif
-		break;
-		// Disable PWM for previous pin role
-	case IOR_PWM:
-		{
-			int pwmIndex;
-			//int channelIndex;
-
-			pwmIndex = PIN_GetPWMIndexForPinIndex(index);
-			// is this pin capable of PWM?
-			if(pwmIndex != -1) {
-#if WINDOWS
-	
-#elif PLATFORM_XR809
-
-#elif PLATFORM_BK7231N
-				bk_pwm_stop(pwmIndex);
-#elif PLATFORM_BK7231T
-				bk_pwm_stop(pwmIndex);
-#else
-#error "Unknown platform"
-#endif
+	#else
+	#endif
 			}
-		}
-		break;
+			break;
+		case IOR_LED:
+		case IOR_LED_n:
+		case IOR_Relay:
+		case IOR_Relay_n:
+	#if WINDOWS
+		
+	#elif PLATFORM_XR809
 
-	default:
-		break;
+	#else
+			// TODO: disable?
+	#endif
+			break;
+			// Disable PWM for previous pin role
+		case IOR_PWM:
+			{
+				int pwmIndex;
+				//int channelIndex;
+
+				pwmIndex = PIN_GetPWMIndexForPinIndex(index);
+				// is this pin capable of PWM?
+				if(pwmIndex != -1) {
+	#if WINDOWS
+		
+	#elif PLATFORM_XR809
+
+	#elif PLATFORM_BK7231N
+					bk_pwm_stop(pwmIndex);
+	#elif PLATFORM_BK7231T
+					bk_pwm_stop(pwmIndex);
+	#else
+	#error "Unknown platform"
+	#endif
+				}
+			}
+			break;
+
+		default:
+			break;
+		}
 	}
 	// set new role
 	g_pins.roles[index] = role;
-	// init new role
-	switch(role)
-	{
-	case IOR_Button:
-	case IOR_Button_n:
-	case IOR_Button_ToggleAll:
-	case IOR_Button_ToggleAll_n:
+
+	if (g_enable_pins) {
+		// init new role
+		switch(role)
 		{
-			pinButton_s *bt = &g_buttons[index];
-#if WINDOWS
-	
-#elif PLATFORM_XR809
+		case IOR_Button:
+		case IOR_Button_n:
+		case IOR_Button_ToggleAll:
+		case IOR_Button_ToggleAll_n:
 			{
-				int xr_port; // eg GPIO_PORT_A
-				int xr_pin; // eg. GPIO_PIN_20
-				GPIO_InitParam param;
+				pinButton_s *bt = &g_buttons[index];
+	#if WINDOWS
+		
+	#elif PLATFORM_XR809
+				{
+					int xr_port; // eg GPIO_PORT_A
+					int xr_pin; // eg. GPIO_PIN_20
+					GPIO_InitParam param;
 
-				PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
+					PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
 
-				param.driving = GPIO_DRIVING_LEVEL_1;
-				param.mode = GPIOx_Pn_F0_INPUT;
-				param.pull = GPIO_PULL_UP;
-				HAL_GPIO_Init(xr_port, xr_pin, &param);
+					param.driving = GPIO_DRIVING_LEVEL_1;
+					param.mode = GPIOx_Pn_F0_INPUT;
+					param.pull = GPIO_PULL_UP;
+					HAL_GPIO_Init(xr_port, xr_pin, &param);
+				}
+	#else
+				bk_gpio_config_input_pup(index);
+	#endif
+				// init button after initializing pin role
+				NEW_button_init(bt, button_generic_get_gpio_value, 0);
+			/*	button_attach(bt, BTN_SINGLE_CLICK,     Button_OnShortClick);
+				button_attach(bt, BTN_DOUBLE_CLICK,     Button_OnDoubleClick);
+				button_attach(bt, BTN_LONG_PRESS_HOLD,  Button_OnLongPressHold);
+				button_start(bt);*/
 			}
-#else
-			bk_gpio_config_input_pup(index);
-#endif
-			// init button after initializing pin role
-			NEW_button_init(bt, button_generic_get_gpio_value, 0);
-		/*	button_attach(bt, BTN_SINGLE_CLICK,     Button_OnShortClick);
-			button_attach(bt, BTN_DOUBLE_CLICK,     Button_OnDoubleClick);
-			button_attach(bt, BTN_LONG_PRESS_HOLD,  Button_OnLongPressHold);
-			button_start(bt);*/
-		}
-		break;
-	case IOR_DigitalInput:
-	case IOR_DigitalInput_n:
-#if WINDOWS
-	
-#elif PLATFORM_XR809
-			{
-				int xr_port; // eg GPIO_PORT_A
-				int xr_pin; // eg. GPIO_PIN_20
-				GPIO_InitParam param;
+			break;
+		case IOR_DigitalInput:
+		case IOR_DigitalInput_n:
+	#if WINDOWS
+		
+	#elif PLATFORM_XR809
+				{
+					int xr_port; // eg GPIO_PORT_A
+					int xr_pin; // eg. GPIO_PIN_20
+					GPIO_InitParam param;
 
-				PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
+					PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
 
-				param.driving = GPIO_DRIVING_LEVEL_1;
-				param.mode = GPIOx_Pn_F0_INPUT;
-				param.pull = GPIO_PULL_UP;
-				HAL_GPIO_Init(xr_port, xr_pin, &param);
-			}
-#else
-			bk_gpio_config_input_pup(index);
-#endif
-		break;
-	case IOR_LED:
-	case IOR_LED_n:
-	case IOR_Relay:
-	case IOR_Relay_n:
-	{
-#if WINDOWS
-	
-#elif PLATFORM_XR809
-		GPIO_InitParam param;
-		int xr_port; // eg GPIO_PORT_A
-		int xr_pin; // eg. GPIO_PIN_20
-
-		PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
-
-		/*set pin driver capability*/
-		param.driving = GPIO_DRIVING_LEVEL_1;
-		param.mode = GPIOx_Pn_F1_OUTPUT;
-		param.pull = GPIO_PULL_NONE;
-		HAL_GPIO_Init(xr_port, xr_pin, &param);
-#else
-		bk_gpio_config_output(index);
-		bk_gpio_output(index, 0);
-#endif
-	}
-		break;
-	case IOR_PWM:
+					param.driving = GPIO_DRIVING_LEVEL_1;
+					param.mode = GPIOx_Pn_F0_INPUT;
+					param.pull = GPIO_PULL_UP;
+					HAL_GPIO_Init(xr_port, xr_pin, &param);
+				}
+	#else
+				bk_gpio_config_input_pup(index);
+	#endif
+			break;
+		case IOR_LED:
+		case IOR_LED_n:
+		case IOR_Relay:
+		case IOR_Relay_n:
 		{
-			int pwmIndex;
-			int channelIndex;
-			float f;
+	#if WINDOWS
+		
+	#elif PLATFORM_XR809
+			GPIO_InitParam param;
+			int xr_port; // eg GPIO_PORT_A
+			int xr_pin; // eg. GPIO_PIN_20
 
-			pwmIndex = PIN_GetPWMIndexForPinIndex(index);
-			// is this pin capable of PWM?
-			if(pwmIndex != -1) {
-				channelIndex = PIN_GetPinChannelForPinIndex(index);
-#if WINDOWS
-	
-#elif PLATFORM_XR809
+			PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
 
-#elif PLATFORM_BK7231N
-				// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
-				bk_pwm_initialize(pwmIndex, 1000, 0, 0, 0);
-
-				bk_pwm_start(pwmIndex);
-				f = g_channelValues[channelIndex] * 0.01f;
-				// OSStatus bk_pwm_update_param(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle1, uint32_t duty_cycle2, uint32_t duty_cycle3)
-				bk_pwm_update_param(pwmIndex, 1000, f * 1000.0f,0,0);
-
-#else
-				// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
-				bk_pwm_initialize(pwmIndex, 1000, 0);
-
-				bk_pwm_start(pwmIndex);
-				// they are using 1kHz PWM
-				// See: https://www.elektroda.pl/rtvforum/topic3798114.html
-			//	bk_pwm_update_param(pwmIndex, 1000, g_channelValues[channelIndex]);
-				f = g_channelValues[channelIndex] * 0.01f;
-				// OSStatus bk_pwm_update_param(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle)
-				bk_pwm_update_param(pwmIndex, 1000, f * 1000.0f);
-
-#endif
-			}
+			/*set pin driver capability*/
+			param.driving = GPIO_DRIVING_LEVEL_1;
+			param.mode = GPIOx_Pn_F1_OUTPUT;
+			param.pull = GPIO_PULL_NONE;
+			HAL_GPIO_Init(xr_port, xr_pin, &param);
+	#else
+			bk_gpio_config_output(index);
+			bk_gpio_output(index, 0);
+	#endif
 		}
-		break;
+			break;
+		case IOR_PWM:
+			{
+				int pwmIndex;
+				int channelIndex;
+				float f;
 
-	default:
-		break;
+				pwmIndex = PIN_GetPWMIndexForPinIndex(index);
+				// is this pin capable of PWM?
+				if(pwmIndex != -1) {
+					channelIndex = PIN_GetPinChannelForPinIndex(index);
+	#if WINDOWS
+		
+	#elif PLATFORM_XR809
+
+	#elif PLATFORM_BK7231N
+					// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
+					bk_pwm_initialize(pwmIndex, 1000, 0, 0, 0);
+
+					bk_pwm_start(pwmIndex);
+					f = g_channelValues[channelIndex] * 0.01f;
+					// OSStatus bk_pwm_update_param(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle1, uint32_t duty_cycle2, uint32_t duty_cycle3)
+					bk_pwm_update_param(pwmIndex, 1000, f * 1000.0f,0,0);
+
+	#else
+					// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
+					bk_pwm_initialize(pwmIndex, 1000, 0);
+
+					bk_pwm_start(pwmIndex);
+					// they are using 1kHz PWM
+					// See: https://www.elektroda.pl/rtvforum/topic3798114.html
+				//	bk_pwm_update_param(pwmIndex, 1000, g_channelValues[channelIndex]);
+					f = g_channelValues[channelIndex] * 0.01f;
+					// OSStatus bk_pwm_update_param(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle)
+					bk_pwm_update_param(pwmIndex, 1000, f * 1000.0f);
+
+	#endif
+				}
+			}
+			break;
+
+		default:
+			break;
+		}
 	}
 }
+
 void PIN_SetPinChannelForPinIndex(int index, int ch) {
 	g_pins.channels[index] = ch;
 }

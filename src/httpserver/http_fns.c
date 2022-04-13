@@ -653,7 +653,7 @@ int http_fn_flash_read_tool(http_request_t *request) {
     poststr(request,"<label for=\"offset\">offset:</label><br>\
             <input type=\"number\" id=\"offset\" name=\"offset\"");
     hprintf128(request," value=\"%i\"><br>",ofs);
-    poststr(request,"<label for=\"lenght\">lenght:</label><br>\
+    poststr(request,"<label for=\"len\">length:</label><br>\
             <input type=\"number\" id=\"len\" name=\"len\" ");
     hprintf128(request,"value=\"%i\">",len);
     poststr(request,"<br><br>\
