@@ -72,6 +72,7 @@ static int g_secondsElapsed = 0;
 
 static int g_openAP = 0;
 static int g_connectToWiFi = 0;
+int bSafeMode = 0;
 
 // reset in this number of seconds
 int g_reset = 0;
@@ -397,8 +398,11 @@ void user_main(void)
   bootFailures = boot_failures();
   if (bootFailures > 3){
     bForceOpenAP = 1;
-		ADDLOGF_INFO("###### force AP mode - boot failures %d", bootFailures);
-  } else {
+    ADDLOGF_INFO("###### force AP mode - boot failures %d", bootFailures);
+  }
+  if (bootFailures > 4){
+    bSafeMode = 1;
+		ADDLOGF_INFO("###### safe mode activated - boot failures %d", bootFailures);
   }
 
 	CFG_InitAndLoad();
@@ -434,7 +438,7 @@ void user_main(void)
 	ADDLOGF_DEBUG("Started http tcp server\r\n");
 
   // only initialise certain things if we are not in AP mode
-  if (!g_openAP){
+  if (!bSafeMode){
     g_enable_pins = 1;
     // this actually sets the pins, moved out so we could avoid if necessary
     PIN_SetupPins();
