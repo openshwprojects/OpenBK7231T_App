@@ -53,11 +53,13 @@ typedef struct pinsState_s {
 
 extern pinsState_t g_pins;
 
+extern char g_enable_pins;
 
 #define GPIO_MAX 27
 #define CHANNEL_MAX 32
 
 void PIN_Init(void);
+void PIN_SetupPins();
 void PIN_ClearPins();
 int PIN_GetPinRoleForPinIndex(int index);
 int PIN_GetPinChannelForPinIndex(int index);
