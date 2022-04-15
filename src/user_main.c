@@ -14,15 +14,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "uni_log.h"
-#include "tuya_iot_wifi_api.h"
-#include "tuya_hal_system.h"
-#include "tuya_iot_com_api.h"
-#include "tuya_cloud_com_defs.h"
 #include "gw_intf.h"
-#include "gpio_test.h"
-#include "tuya_gpio.h"
-#include "tuya_key.h"
-#include "tuya_led.h"
 #include "wlan_ui_pub.h"
 
 #include "lwip/sockets.h"
@@ -38,7 +30,6 @@
 // overall config variables for app - like BK_LITTLEFS
 #include "obk_config.h"
 
-#include "tuya_device.h"
 #include "httpserver/new_http.h"
 #include "new_pins.h"
 #include "new_cfg.h"
@@ -48,7 +39,6 @@
 #include "printnetinfo/printnetinfo.h"
 #include "mqtt/new_mqtt.h"
 
-#include "../../beken378/func/key/multi_button.h"
 #include "../../beken378/app/config/param_config.h"
 #include "lwip/netdb.h"
 #include "littlefs/our_lfs.h"
@@ -61,12 +51,6 @@
 
 #include "cmnds/taslike.h"
 #include "cmnds/fortest.h"
-
-#undef Malloc
-#undef Free
-#define Malloc os_malloc
-#define Free os_free
-
 
 static int g_secondsElapsed = 0;
 
@@ -151,31 +135,6 @@ void wl_status( void *ctxt ){
 // from wlan_ui.c, no header
 void bk_wlan_status_register_cb(FUNC_1PARAM_PTR cb);
 static int setup_wifi_open_access_point(void);
-
-int unw_recv(const int fd, void *buf, u32 nbytes)
-{
-    fd_set readfds, errfds;
-    int ret = 0;   
-
-    if( fd < 0 ) 
-    {        
-        return -1;//UNW_FAIL;
-    } 
-
-    FD_ZERO( &readfds );
-    FD_ZERO( &errfds ); 
-    FD_SET( fd, &readfds );
-    FD_SET( fd, &errfds );
-
-    ret = select( fd+1, &readfds, NULL, &errfds, NULL);
-    ADDLOGF_DEBUG("select ret:%d, %d, %d\r\n", ret, FD_ISSET( fd, &readfds ), FD_ISSET( fd, &errfds ));
-
-    if(ret > 0 && FD_ISSET( fd, &readfds ))
-        return recv(fd,buf,nbytes,0); 
-    else
-        return -1;//UNW_FAIL;
-    
-}
 
 
 
@@ -386,7 +345,6 @@ int Main_IsConnectedToWiFi() {
 }
 
 void user_main(void)
-//OPERATE_RET device_init(VOID)
 {
     OSStatus err;
 	int bForceOpenAP = 0;
@@ -435,7 +393,6 @@ void user_main(void)
 	// NOT WORKING, I done it other way, see ethernetif.c
 	//net_dhcp_hostname_set(g_shortDeviceName);
 
-	//demo_start_upd();
 	start_tcp_http();
 	ADDLOGF_DEBUG("Started http tcp server\r\n");
 	
