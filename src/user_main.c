@@ -10,13 +10,12 @@
  * @LastEditTime: 2021-01-27 17:00:00
  */
 //
-//#include "lwip/sockets.h"
-//#include "lwip/ip_addr.h"
-//#include "lwip/inet.h"
+
+#include "hal/hal_wifi.h"
+#include "hal/hal_generic.h"
 
 #include "mem_pub.h"
 #include "str_pub.h"
-#include "ethernet_intf.h"
 #include "driver/drv_public.h"
 
 // Commands register, execution API and cmd tokenizer
@@ -35,7 +34,6 @@
 #include "mqtt/new_mqtt.h"
 
 #include "../../beken378/app/config/param_config.h"
-#include "lwip/netdb.h"
 #include "littlefs/our_lfs.h"
 
 #include "flash_config/flash_config.h"
@@ -55,7 +53,7 @@ static int g_reset = 0;
 int g_savecfg = 0;
 // main timer tick every 1s
 beken_timer_t g_main_timer_1s;
-
+// is connected to WiFi?
 int g_bHasWiFiConnected = 0;
 
 #define LOG_FEATURE LOG_FEATURE_MAIN
@@ -69,53 +67,39 @@ int Time_getUpTimeSeconds() {
 	return g_secondsElapsed;
 }
 
-// from wlan_ui.c
-void bk_reboot(void);
 
-// receives status change notifications about wireless - could be useful
-// ctxt is pointer to a rw_evt_type
-void wl_status( void *ctxt ){
 
-    rw_evt_type stat = *((rw_evt_type*)ctxt);
-    ADDLOGF_INFO("wl_status %d\r\n", stat);
+void Main_OnWiFiStatusChange(int code){
 
-    switch(stat){
-        case RW_EVT_STA_IDLE:
-        case RW_EVT_STA_SCANNING:
-        case RW_EVT_STA_SCAN_OVER:
-        case RW_EVT_STA_CONNECTING:
+    ADDLOGF_INFO("Main_OnWiFiStatusChange %d\r\n", code);
+
+    switch(code){
+        case WIFI_STA_CONNECTING:
             PIN_set_wifi_led(0);
 			g_bHasWiFiConnected = 0;
             break;
-        case RW_EVT_STA_BEACON_LOSE:
-        case RW_EVT_STA_PASSWORD_WRONG:
-        case RW_EVT_STA_NO_AP_FOUND:
-        case RW_EVT_STA_ASSOC_FULL:
-        case RW_EVT_STA_DISCONNECTED:    /* disconnect with server */
+        case WIFI_STA_DISCONNECTED:
             // try to connect again in few seconds
             g_connectToWiFi = 15;
             PIN_set_wifi_led(0);
 			g_bHasWiFiConnected = 0;
             break;
-        case RW_EVT_STA_CONNECT_FAILED:  /* authentication failed */
+        case WIFI_STA_AUTH_FAILED:
             PIN_set_wifi_led(0);
             // try to connect again in few seconds
             g_connectToWiFi = 60;
 			g_bHasWiFiConnected = 0;
             break;
-        case RW_EVT_STA_CONNECTED:        /* authentication success */    
-        case RW_EVT_STA_GOT_IP: 
+        case WIFI_STA_CONNECTED:  
             PIN_set_wifi_led(1);
 			g_bHasWiFiConnected = 1;
             break;
-        
         /* for softap mode */
-        case RW_EVT_AP_CONNECTED:          /* a client association success */
+        case WIFI_AP_CONNECTED: 
             PIN_set_wifi_led(1);
 			g_bHasWiFiConnected = 1;
             break;
-        case RW_EVT_AP_DISCONNECTED:       /* a client disconnect */
-        case RW_EVT_AP_CONNECT_FAILED:     /* a client association failed */
+        case WIFI_AP_FAILED:      
             PIN_set_wifi_led(0);
 			g_bHasWiFiConnected = 0;
             break;
@@ -124,50 +108,6 @@ void wl_status( void *ctxt ){
     }
 
 }
-
-
-// from wlan_ui.c, no header
-void bk_wlan_status_register_cb(FUNC_1PARAM_PTR cb);
-static int HAL_SetupWiFiOpenAccessPoint(void);
-
-
-
-void HAL_ConnectToWiFi(const char *oob_ssid,const char *connect_key)
-{
-#if 1
-	network_InitTypeDef_adv_st	wNetConfigAdv;
-
-	os_memset( &wNetConfigAdv, 0x0, sizeof(network_InitTypeDef_adv_st) );
-	
-	os_strcpy((char*)wNetConfigAdv.ap_info.ssid, oob_ssid);
-	hwaddr_aton("48:ee:0c:48:93:12", (unsigned char *)wNetConfigAdv.ap_info.bssid);
-	wNetConfigAdv.ap_info.security = SECURITY_TYPE_WPA2_MIXED;
-	wNetConfigAdv.ap_info.channel = 5;
-	
-	os_strcpy((char*)wNetConfigAdv.key, connect_key);
-	wNetConfigAdv.key_len = os_strlen(connect_key);
-	wNetConfigAdv.dhcp_mode = DHCP_CLIENT;
-	wNetConfigAdv.wifi_retry_interval = 100;
-
-	bk_wlan_start_sta_adv(&wNetConfigAdv);
-#else
-    network_InitTypeDef_st network_cfg;
-	
-    os_memset(&network_cfg, 0x0, sizeof(network_InitTypeDef_st));
-
-    os_strcpy((char *)network_cfg.wifi_ssid, oob_ssid);
-    os_strcpy((char *)network_cfg.wifi_key, connect_key);
-
-    network_cfg.wifi_mode = STATION;
-    network_cfg.dhcp_mode = DHCP_CLIENT;
-    network_cfg.wifi_retry_interval = 100;
-
-    ADDLOGF_INFO("ssid:%s key:%s\r\n", network_cfg.wifi_ssid, network_cfg.wifi_key);
-			
-    bk_wlan_start(&network_cfg);
-#endif
-}
-
 
 
 
@@ -194,7 +134,7 @@ static void Main_OnEverySecond(void *data)
   if (g_openAP){
     g_openAP--;
     if (0 == g_openAP){
-      HAL_SetupWiFiOpenAccessPoint();
+      HAL_SetupWiFiOpenAccessPoint(CFG_GetDeviceName());
     }
   }
   if(g_connectToWiFi){
@@ -205,7 +145,7 @@ static void Main_OnEverySecond(void *data)
 		wifi_pass = CFG_GetWiFiPass();
 		HAL_ConnectToWiFi(wifi_ssid,wifi_pass);
 		// register function to get callbacks about wifi changes.
-		bk_wlan_status_register_cb(wl_status);
+		HAL_WiFi_SetupStatusCallback(Main_OnWiFiStatusChange);
 		ADDLOGF_DEBUG("Registered for wifi changes\r\n");
 		// reconnect after 10 minutes?
 		//g_connectToWiFi = 60 * 10; 
@@ -217,7 +157,7 @@ static void Main_OnEverySecond(void *data)
       if (!g_reset){
         // ensure any config changes are saved before reboot.
         config_commit(); 
-        bk_reboot(); 
+        HAL_RebootModule(); 
       }
   }
 
@@ -236,73 +176,6 @@ void app_on_generic_dbl_click(int btnIndex)
 		CFG_SetOpenAccessPoint();
 		CFG_SaveWiFi();
 	}
-}
-
-
-static int HAL_SetupWiFiOpenAccessPoint(void)
-{
-    //#define APP_DRONE_DEF_SSID          "WIFI_UPV_000000"
-    #define APP_DRONE_DEF_NET_IP        "192.168.4.1"
-    #define APP_DRONE_DEF_NET_MASK      "255.255.255.0"
-    #define APP_DRONE_DEF_NET_GW        "192.168.4.1"
-    #define APP_DRONE_DEF_CHANNEL       1    
-    
-    general_param_t general;
-    ap_param_t ap_info;
-    network_InitTypeDef_st wNetConfig;
-    int len;
-    unsigned char *mac;
-    
-    os_memset(&general, 0, sizeof(general_param_t));
-    os_memset(&ap_info, 0, sizeof(ap_param_t)); 
-    os_memset(&wNetConfig, 0x0, sizeof(network_InitTypeDef_st));  
-    
-        general.role = 1,
-        general.dhcp_enable = 1,
-
-        os_strcpy((char *)wNetConfig.local_ip_addr, APP_DRONE_DEF_NET_IP);
-        os_strcpy((char *)wNetConfig.net_mask, APP_DRONE_DEF_NET_MASK);
-        os_strcpy((char *)wNetConfig.dns_server_ip_addr, APP_DRONE_DEF_NET_GW);
- 
-
-        ADDLOGF_INFO("no flash configuration, use default\r\n");
-        mac = (unsigned char*)&ap_info.bssid.array;
-		    // this is MAC for Access Point, it's different than Client one
-		    // see wifi_get_mac_address source
-        wifi_get_mac_address((char *)mac, CONFIG_ROLE_AP);
-        ap_info.chann = APP_DRONE_DEF_CHANNEL;
-        ap_info.cipher_suite = 0;
-        //os_memcpy(ap_info.ssid.array, APP_DRONE_DEF_SSID, os_strlen(APP_DRONE_DEF_SSID));
-        os_memcpy(ap_info.ssid.array, CFG_GetDeviceName(), os_strlen(CFG_GetDeviceName()));
-		
-        ap_info.key_len = 0;
-        os_memset(&ap_info.key, 0, 65);   
-  
-
-    bk_wlan_ap_set_default_channel(ap_info.chann);
-
-    len = os_strlen((char *)ap_info.ssid.array);
-
-    os_strncpy((char *)wNetConfig.wifi_ssid, (char *)ap_info.ssid.array, sizeof(wNetConfig.wifi_ssid));
-    os_strncpy((char *)wNetConfig.wifi_key, (char *)ap_info.key, sizeof(wNetConfig.wifi_key));
-    
-    wNetConfig.wifi_mode = SOFT_AP;
-    wNetConfig.dhcp_mode = DHCP_SERVER;
-    wNetConfig.wifi_retry_interval = 100;
-    
-	if(1) {
-		ADDLOGF_INFO("set ip info: %s,%s,%s\r\n",
-				wNetConfig.local_ip_addr,
-				wNetConfig.net_mask,
-				wNetConfig.dns_server_ip_addr);
-	}
-    
-	if(1) {
-	  ADDLOGF_INFO("ssid:%s  key:%s mode:%d\r\n", wNetConfig.wifi_ssid, wNetConfig.wifi_key, wNetConfig.wifi_mode);
-	}
-	bk_wlan_start(&wNetConfig);
-
-  return 0;    
 }
 
 

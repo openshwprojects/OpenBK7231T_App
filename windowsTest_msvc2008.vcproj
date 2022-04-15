@@ -797,6 +797,34 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="HAL"
+			>
+			<File
+				RelativePath=".\src\hal\hal_generic.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\hal\hal_generic_bk7231.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\hal\hal_generic_xr809.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\hal\hal_wifi.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\hal\hal_wifi_bk7231.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\hal\hal_wifi_xr809.c"
+				>
+			</File>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>
