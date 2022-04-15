@@ -14,6 +14,12 @@
 #include "serial.h"
 #include "kernel/os/os.h"
 
+#include "lwip/sockets.h"
+#include "lwip/ip_addr.h"
+#include "lwip/inet.h"
+#include "lwip/netdb.h"
+
+static char g_ipStr[32];
 
 void HAL_ConnectToWiFi(const char *ssid, const char *psk)
 {
@@ -41,6 +47,19 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
 }
 void HAL_WiFi_SetupStatusCallback(void (*cb)(int code)) {
 
+}
+
+
+const char *HAL_GetMyIPString() {
+	strcpy(g_ipStr,inet_ntoa(g_wlan_netif->ip_addr));
+
+	return g_ipStr;
+}
+const char *HAL_GetMACStr(char *macstr) {
+	unsigned char mac[32];
+	WiFI_GetMacAddress((char *)mac);
+	sprintf(macstr,"%02X%02X%02X%02X%02X%02X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
+	return macstr;
 }
 
 #endif // PLATFORM_XR809

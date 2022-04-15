@@ -10,7 +10,7 @@
 #define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x "
 
 char g_IP[3+3+3+3+1+1+1] = "unknown";
-const char *getMyIp(){
+const char *HAL_GetMyIPString(){
     IPStatusTypedef ipStatus;
 
     os_memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
@@ -26,14 +26,14 @@ void getMAC(unsigned char *mac){
     net_get_if_macaddr(mac, net_get_sta_handle());
 }
 
-const char *getMACStr(char *macstr){
+const char *HAL_GetMACStr(char *macstr){
     unsigned char mac[6];
     getMAC(mac);
     sprintf(macstr, MACSTR, MAC2STR(mac));
     return macstr;
 }
 
-void print_network_info(){
+void HAL_PrintNetworkInfo(){
     IPStatusTypedef ipStatus;
 
     os_memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));

@@ -197,8 +197,6 @@ int http_fn_index(http_request_t *request) {
         poststr(request,"<h5> Module will restart soon</h5>");
 #if WINDOWS
 
-#elif PLATFORM_XR809
-
 #else
         RESET_ScheduleModuleReset(3);
 #endif

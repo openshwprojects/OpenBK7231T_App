@@ -3,6 +3,7 @@
 #include "httpserver/new_http.h"
 #include "new_pins.h"
 #include "new_cfg.h"
+#include "hal/hal_wifi.h"
 
 #if WINDOWS
 

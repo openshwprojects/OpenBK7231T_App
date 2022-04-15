@@ -245,7 +245,7 @@ static int http_rest_post(http_request_t *request){
 
 static int http_rest_app(http_request_t *request){
     const char *webhost = CFG_GetWebappRoot();
-    const char *ourip = getMyIp(); //CFG_GetOurIP();
+    const char *ourip = HAL_GetMyIPString(); //CFG_GetOurIP();
     http_setup(request, httpMimeTypeHTML);
     if (webhost && ourip){
         poststr(request, apppage1);
@@ -674,8 +674,8 @@ static int http_rest_get_info(http_request_t *request){
     hprintf128(request, "{\"uptime_s\":%d,", Time_getUpTimeSeconds());
     hprintf128(request, "\"build\":\"%s\",", g_build_str);
     hprintf128(request, "\"sys\":\"%s\",", obktype);
-    hprintf128(request, "\"ip\":\"%s\",", getMyIp());
-    hprintf128(request, "\"mac\":\"%s\",", getMACStr(macstr));
+    hprintf128(request, "\"ip\":\"%s\",", HAL_GetMyIPString());
+    hprintf128(request, "\"mac\":\"%s\",", HAL_GetMACStr(macstr));
     hprintf128(request, "\"mqtthost\":\"%s:%d\",", CFG_GetMQTTHost(), CFG_GetMQTTPort());
     hprintf128(request, "\"mqtttopic\":\"%s\",", CFG_GetShortDeviceName());
     hprintf128(request, "\"webapp\":\"%s\"}", CFG_GetWebappRoot());

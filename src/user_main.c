@@ -144,7 +144,7 @@ void Main_OnWiFiStatusChange(int code){
 size_t xPortGetFreeHeapSize() {
 	return 0;
 }
-void print_network_info() {
+void HAL_PrintNetworkInfo() {
 
 }
 #endif
@@ -161,7 +161,7 @@ static void Main_OnEverySecond(void *data)
 
   // print network info
   if (!(g_secondsElapsed % 10)){
-    print_network_info();
+    HAL_PrintNetworkInfo();
   }
 
   // when we hit 30s, mark as boot complete.
@@ -195,8 +195,12 @@ static void Main_OnEverySecond(void *data)
       if (!g_reset){
         // ensure any config changes are saved before reboot.
         config_commit(); 
+		ADDLOGF_INFO("Going to call HAL_RebootModule\r\n");
         HAL_RebootModule(); 
-      }
+	  } else {
+
+		ADDLOGF_INFO("Module reboot in %i...\r\n",g_reset);
+	  }
   }
 
     if (g_savecfg){
