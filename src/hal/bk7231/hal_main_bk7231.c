@@ -1,6 +1,6 @@
 
-#include "../new_common.h"
-#include "../logging/logging.h"
+#include "../../new_common.h"
+#include "../../logging/logging.h"
 
 
 #include "../../beken378/app/config/param_config.h"
