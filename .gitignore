@@ -1,5 +1,9 @@
 output/**
 **/*.o
 **/*.obj
+*.idb
+*.exe
+*.pdb
+*.ncb
 **/*.d
 /custom.mk

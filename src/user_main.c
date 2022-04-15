@@ -43,24 +43,22 @@
 #include "driver/drv_ntp.h"
 
 static int g_secondsElapsed = 0;
-
+// open access point after this number of seconds
 static int g_openAP = 0;
+// connect to wifi after this number of seconds
 static int g_connectToWiFi = 0;
+// many boots failed? do not run pins or anything risky
 static int bSafeMode = 0;
-
-// reset in this number of seconds
+// reset after this number of seconds
 static int g_reset = 0;
-beken_timer_t g_main_timer_1s;
-
 // save config in this number of seconds
 int g_savecfg = 0;
+// main timer tick every 1s
+beken_timer_t g_main_timer_1s;
 
 int g_bHasWiFiConnected = 0;
 
 #define LOG_FEATURE LOG_FEATURE_MAIN
-
-// from wlan_ui.c
-void bk_reboot(void);
 
 
 void RESET_ScheduleModuleReset(int delSeconds) {
@@ -70,6 +68,9 @@ void RESET_ScheduleModuleReset(int delSeconds) {
 int Time_getUpTimeSeconds() {
 	return g_secondsElapsed;
 }
+
+// from wlan_ui.c
+void bk_reboot(void);
 
 // receives status change notifications about wireless - could be useful
 // ctxt is pointer to a rw_evt_type
@@ -127,11 +128,11 @@ void wl_status( void *ctxt ){
 
 // from wlan_ui.c, no header
 void bk_wlan_status_register_cb(FUNC_1PARAM_PTR cb);
-static int setup_wifi_open_access_point(void);
+static int HAL_SetupWiFiOpenAccessPoint(void);
 
 
 
-void connect_to_wifi(const char *oob_ssid,const char *connect_key)
+void HAL_ConnectToWiFi(const char *oob_ssid,const char *connect_key)
 {
 #if 1
 	network_InitTypeDef_adv_st	wNetConfigAdv;
@@ -170,7 +171,7 @@ void connect_to_wifi(const char *oob_ssid,const char *connect_key)
 
 
 
-static void app_led_timer_handler(void *data)
+static void Main_OnEverySecond(void *data)
 {
 	// run_adc_test();
 	MQTT_RunEverySecondUpdate();
@@ -193,7 +194,7 @@ static void app_led_timer_handler(void *data)
   if (g_openAP){
     g_openAP--;
     if (0 == g_openAP){
-      setup_wifi_open_access_point();
+      HAL_SetupWiFiOpenAccessPoint();
     }
   }
   if(g_connectToWiFi){
@@ -202,7 +203,7 @@ static void app_led_timer_handler(void *data)
 		const char *wifi_ssid, *wifi_pass;
 		wifi_ssid = CFG_GetWiFiSSID();
 		wifi_pass = CFG_GetWiFiPass();
-		connect_to_wifi(wifi_ssid,wifi_pass);
+		HAL_ConnectToWiFi(wifi_ssid,wifi_pass);
 		// register function to get callbacks about wifi changes.
 		bk_wlan_status_register_cb(wl_status);
 		ADDLOGF_DEBUG("Registered for wifi changes\r\n");
@@ -238,7 +239,7 @@ void app_on_generic_dbl_click(int btnIndex)
 }
 
 
-static int setup_wifi_open_access_point(void)
+static int HAL_SetupWiFiOpenAccessPoint(void)
 {
     //#define APP_DRONE_DEF_SSID          "WIFI_UPV_000000"
     #define APP_DRONE_DEF_NET_IP        "192.168.4.1"
@@ -346,7 +347,7 @@ void user_main(void)
 	if(*wifi_ssid == 0 || *wifi_pass == 0 || bForceOpenAP) {
 		// start AP mode in 5 seconds
 		g_openAP = 5;
-		//setup_wifi_open_access_point();
+		//HAL_SetupWiFiOpenAccessPoint();
 	} else {
 		g_connectToWiFi = 5;
 	}
@@ -357,7 +358,7 @@ void user_main(void)
 	// NOT WORKING, I done it other way, see ethernetif.c
 	//net_dhcp_hostname_set(g_shortDeviceName);
 
-	start_tcp_http();
+	HTTPServer_Start();
 	ADDLOGF_DEBUG("Started http tcp server\r\n");
 
   // only initialise certain things if we are not in AP mode
@@ -407,7 +408,7 @@ void user_main(void)
 
   err = rtos_init_timer(&g_main_timer_1s,
                         1 * 1000,
-                        app_led_timer_handler,
+                        Main_OnEverySecond,
                         (void *)0);
   ASSERT(kNoErr == err);
 

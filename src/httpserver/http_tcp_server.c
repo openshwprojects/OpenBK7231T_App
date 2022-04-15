@@ -28,7 +28,7 @@ static void tcp_client_thread( beken_thread_arg_t arg );
 
 xTaskHandle g_http_thread = NULL;
 
-void start_tcp_http()
+void HTTPServer_Start()
 {
     OSStatus err = kNoErr;
 

@@ -212,26 +212,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\drv_main.c"
-				>
-			</File>
-			<File
-				RelativePath=".\src\drv_tuyaMCU.c"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\src\drv_uart.c"
-				>
-			</File>
-			<File
 				RelativePath=".\src\flash_config\flash_config.c"
 				>
 				<FileConfiguration
@@ -332,14 +312,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\cmnds\newLEDDriver.c"
-				>
-			</File>
-			<File
-				RelativePath=".\src\ntp_time.c"
-				>
-			</File>
-			<File
 				RelativePath=".\src\ota\ota.c"
 				>
 				<FileConfiguration
@@ -382,10 +354,6 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\src\cmnds\taslike.c"
-				>
 			</File>
 			<File
 				RelativePath=".\src\user_main.c"
@@ -794,6 +762,10 @@
 			</File>
 			<File
 				RelativePath=".\src\driver\drv_main.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\driver\drv_ntp.c"
 				>
 			</File>
 			<File
