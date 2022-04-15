@@ -52,6 +52,7 @@ char g_enable_pins = 0;
 #if WINDOWS
 
 #elif PLATFORM_BL602
+#include "bl_gpio.h"
 
 #elif PLATFORM_XR809
 
@@ -282,6 +283,7 @@ void RAW_SetPinValue(int index, int iVal){
 #if WINDOWS
 
 #elif PLATFORM_BL602
+    bl_gpio_output_set(index, iVal ? 1 : 0);
 
 #elif PLATFORM_XR809
 	int xr_port; // eg GPIO_PORT_A
@@ -347,7 +349,14 @@ unsigned char PIN_ReadDigitalInputValue_WithInversionIncluded(int index) {
 #if WINDOWS
 	return 0;
 #elif PLATFORM_BL602
-	return 0;
+	uint8_t iVal;
+    bl_gpio_input_get(index, &iVal);
+
+	// support inverted button
+	if(BTN_ShouldInvert(index)) {
+		return !iVal;
+	}
+	return iVal;
 #elif PLATFORM_XR809
 	int xr_port; // eg GPIO_PORT_A
 	int xr_pin; // eg. GPIO_PIN_20
@@ -587,6 +596,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 	#if WINDOWS
 		
 	#elif PLATFORM_BL602
+				// int bl_gpio_enable_input(uint8_t pin, uint8_t pullup, uint8_t pulldown);
+			bl_gpio_enable_input(index, 1, 0);
 
 	#elif PLATFORM_XR809
 				{
@@ -618,6 +629,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		
 	#elif PLATFORM_BL602
 
+				// int bl_gpio_enable_input(uint8_t pin, uint8_t pullup, uint8_t pulldown);
+			bl_gpio_enable_input(index, 1, 0);
 	#elif PLATFORM_XR809
 				{
 					int xr_port; // eg GPIO_PORT_A
@@ -643,7 +656,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 	#if WINDOWS
 		
 	#elif PLATFORM_BL602
-
+			bl_gpio_enable_output(index, 1,0);
+			bl_gpio_output_set(index, 0);
 	#elif PLATFORM_XR809
 			GPIO_InitParam param;
 			int xr_port; // eg GPIO_PORT_A
