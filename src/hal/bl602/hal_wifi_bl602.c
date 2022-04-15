@@ -17,7 +17,8 @@
 #include <aos/kernel.h>
 #include <aos/yloop.h>
 
-char g_ipStr[64];
+static char g_ipStr[64];
+static int g_bAccessPointMode = 1;
 
 void HAL_ConnectToWiFi(const char *ssid, const char *psk)
 {
@@ -25,6 +26,8 @@ void HAL_ConnectToWiFi(const char *ssid, const char *psk)
 
     wifi_interface = wifi_mgmr_sta_enable();
     wifi_mgmr_sta_connect(wifi_interface, ssid, psk, NULL, NULL, 0, 0);
+
+	g_bAccessPointMode = 0;
 }
 int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
 	
@@ -36,6 +39,8 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
     wifi_interface = wifi_mgmr_ap_enable();
     /*no password when only one param*/
     wifi_mgmr_ap_start(wifi_interface, ssid, hidden_ssid, NULL, 1);
+
+	g_bAccessPointMode = 1;
 
 	return 0;
 }
@@ -144,7 +149,11 @@ const char *HAL_GetMyIPString() {
 	uint32_t gw;
 	uint32_t mask;
 
-	wifi_mgmr_sta_ip_get(&ip, &gw, &mask);
+	if(g_bAccessPointMode == 1) {
+		wifi_mgmr_ap_ip_get(&ip, &gw, &mask);
+	} else {
+		wifi_mgmr_sta_ip_get(&ip, &gw, &mask);
+	}
 
 	strcpy(g_ipStr,inet_ntoa(ip));
 
