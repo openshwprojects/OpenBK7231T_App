@@ -19,6 +19,8 @@
 #include "ethernet_intf.h"
 #include "drv_public.h"
 
+#include "new_repeatingEvents.h"
+
 // overall config variables for app - like BK_LITTLEFS
 #include "obk_config.h"
 

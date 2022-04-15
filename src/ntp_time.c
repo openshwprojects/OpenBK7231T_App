@@ -6,6 +6,7 @@
 #include <time.h>
 #include "new_tokenizer.h"
 #include "new_cmd.h"
+#include "new_main.h"
 
 #ifdef WINDOWS
 

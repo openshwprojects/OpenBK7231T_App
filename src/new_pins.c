@@ -412,7 +412,7 @@ bool CHANNEL_IsInUse(int ch) {
 	}
 	return false;
 }
-void CHANNEL_SetAll(int iVal) {
+void CHANNEL_SetAll(int iVal, bool bForce) {
 	int i;
 
 
@@ -431,10 +431,10 @@ void CHANNEL_SetAll(int iVal) {
 		case IOR_LED_n:
 		case IOR_Relay:
 		case IOR_Relay_n:
-			CHANNEL_Set(g_pins.channels[i],iVal,1);
+			CHANNEL_Set(g_pins.channels[i],iVal,bForce);
 			break;
 		case IOR_PWM:
-			CHANNEL_Set(g_pins.channels[i],iVal,1);
+			CHANNEL_Set(g_pins.channels[i],iVal,bForce);
 			break;
 
 		default:
@@ -446,7 +446,7 @@ void CHANNEL_SetStateOnly(int iVal) {
 	int i;
 
 	if(iVal == 0) {
-		CHANNEL_SetAll(0);
+		CHANNEL_SetAll(0, true);
 		return;
 	}
 
@@ -458,7 +458,7 @@ void CHANNEL_SetStateOnly(int iVal) {
 			}
 		}
 	}
-	CHANNEL_SetAll(iVal);
+	CHANNEL_SetAll(iVal, true);
 
 
 }
@@ -475,9 +475,9 @@ void CHANNEL_DoSpecialToggleAll() {
 		}	
 	}
 	if(anyEnabled)
-		CHANNEL_SetAll(0);
+		CHANNEL_SetAll(0, true);
 	else
-		CHANNEL_SetAll(255);
+		CHANNEL_SetAll(255, true);
 
 }
 void PIN_SetPinRoleForPinIndex(int index, int role) {

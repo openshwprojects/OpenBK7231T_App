@@ -396,6 +396,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\cmnds\taslike.c"
+				>
+			</File>
+			<File
 				RelativePath=".\src\user_main.c"
 				>
 				<FileConfiguration
@@ -653,6 +657,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\drv_public.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\drv_tuyaMCU.h"
 				>
 				<FileConfiguration
@@ -719,6 +727,10 @@
 						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\new_main.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\new_pins.h"

@@ -25,6 +25,15 @@ void CMD_ListAllCommands(void *userData, void (*callback)(command_t *cmd, void *
 int get_cmd(const char *s, char *dest, int maxlen, int stripnum);
 bool isWhiteSpace(char ch);
 
+//
+int NewLED_InitCommands();
+//
+
+//
+
+//
+
+
 
 
 

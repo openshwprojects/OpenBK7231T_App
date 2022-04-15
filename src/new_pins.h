@@ -79,6 +79,7 @@ int CHANNEL_GetRoleForOutputChannel(int ch);
 // See: enum ChannelType
 void CHANNEL_SetType(int ch, int type);
 int CHANNEL_GetType(int ch);
+void CHANNEL_SetAll(int iVal, bool bForce);
 
 void PIN_SaveToFlash();
 void PIN_LoadFromFlash();
