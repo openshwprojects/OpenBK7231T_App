@@ -1,12 +1,12 @@
-#include "hal_wifi.h"
+#include "../hal_wifi.h"
 
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
 #include "wlan_ui_pub.h"
 #include "ethernet_intf.h"
-#include "../new_common.h"
+#include "../../new_common.h"
 #include "net.h"
-#include "../logging/logging.h"
+#include "../../logging/logging.h"
 #include "../../beken378/app/config/param_config.h"
 #include "lwip/netdb.h"
 

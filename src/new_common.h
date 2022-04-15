@@ -8,6 +8,7 @@
 #include <time.h>
 #include <stdarg.h>
 
+#include "obk_config.h"
 
 #if WINDOWS
 
@@ -27,6 +28,8 @@ typedef unsigned short uint16_t;
 
 #include <FreeRTOS.h>
 #include <task.h>
+#include <portable.h>
+#include <semphr.h>
 
 typedef int bool;
 #define true 1
@@ -37,6 +40,8 @@ typedef int bool;
 #define os_malloc malloc
 #define os_free free
 #define os_memset memset
+
+#define bk_printf printf
 
 #define rtos_delay_milliseconds vTaskDelay
 

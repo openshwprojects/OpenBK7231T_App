@@ -61,7 +61,7 @@ int g_bHasWiFiConnected = 0;
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
 
-#if PLATFORM_XR809 || PLATFORM_BL602
+#if PLATFORM_XR809
 void boot_complete(){
 
 }
@@ -77,6 +77,51 @@ void increment_boot_count(){
 }
 size_t xPortGetFreeHeapSize() {
 	return 0;
+}
+#endif
+#if PLATFORM_BL602
+void boot_complete(){
+
+}
+int config_commit(){
+
+    return 0;
+}
+int boot_failures(){
+    return 0;
+}
+void increment_boot_count(){
+
+}
+
+
+
+
+OSStatus rtos_create_thread( beken_thread_t* thread, 
+							uint8_t priority, const char* name, 
+							beken_thread_function_t function,
+							uint32_t stack_size, beken_thread_arg_t arg ) {
+    OSStatus err = kNoErr;
+
+
+    err = xTaskCreate(function, name, stack_size, arg, 15, &thread);
+/*
+ BaseType_t xTaskCreate(
+							  TaskFunction_t pvTaskCode,
+							  const char * const pcName,
+							  configSTACK_DEPTH_TYPE usStackDepth,
+							  void *pvParameters,
+							  UBaseType_t uxPriority,
+							  TaskHandle_t *pvCreatedTask
+						  );
+*/
+
+	return err;
+}
+
+OSStatus rtos_delete_thread( beken_thread_t* thread ) {
+	vTaskDelete(thread);
+	return kNoErr;
 }
 #endif
 void RESET_ScheduleModuleReset(int delSeconds) {
@@ -137,7 +182,9 @@ void Main_OnEverySecond()
 	// run_adc_test();
 	MQTT_RunEverySecondUpdate();
 	RepeatingEvents_OnEverySecond();
+#ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();
+#endif
 
 	g_secondsElapsed ++;
 	ADDLOGF_INFO("Timer is %i free mem %d\n", g_secondsElapsed, xPortGetFreeHeapSize());
@@ -264,7 +311,9 @@ void Main_Init()
     // this actually sets the pins, moved out so we could avoid if necessary
     PIN_SetupPins();
 
+#ifndef OBK_DISABLE_ALL_DRIVERS
     DRV_Generic_Init();
+#endif
     RepeatingEvents_Init();
 
     PIN_Init();

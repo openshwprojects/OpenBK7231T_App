@@ -1,21 +1,9 @@
 
 // Trying to narrow down Boozeman crash.
 // Is the code with this define enabled crashing/freezing BK after few minutes for anybody?
-// #define DEBUG_USE_SIMPLE_LOGGER
+
 #include "../new_common.h"
 #include "../httpserver/new_http.h"
-#if WINDOWS
-#include <stdarg.h>
-
-#elif PLATFORM_XR809
-#include <stdarg.h>
-#include "lwip/sockets.h"
-#include "lwip/ip_addr.h"
-#include "lwip/inet.h"
-
-#else 
-#endif
-
 #include "../logging/logging.h"
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
@@ -81,6 +69,8 @@ char *logfeaturenames[] = {
 	"BL0942:",// = 14
 };
 
+
+int direct_serial_log = DEFAULT_DIRECT_SERIAL_LOG;
 
 #ifdef WINDOWS
 
@@ -178,7 +168,6 @@ static struct tag_logMemory {
     SemaphoreHandle_t mutex;
 } logMemory;
 
-int direct_serial_log = DEFAULT_DIRECT_SERIAL_LOG;
 
 static int initialised = 0; 
 
@@ -236,6 +225,9 @@ void addLogAdv(int level, int feature, char *fmt, ...){
     tmp[len++] = '\n';
     tmp[len] = '\0';
 #if PLATFORM_XR809
+    printf(tmp);
+#endif
+#if PLATFORM_BL602
     printf(tmp);
 #endif
 

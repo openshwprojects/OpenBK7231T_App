@@ -733,7 +733,9 @@ void Channel_OnChanged(int ch) {
 	iVal = g_channelValues[ch];
 	bOn = iVal > 0;
 
+#ifndef OBK_DISABLE_ALL_DRIVERS
 	I2C_OnChannelChanged(ch,iVal);
+#endif
 
 	for(i = 0; i < GPIO_MAX; i++) {
 		if(g_pins.channels[i] == ch) {

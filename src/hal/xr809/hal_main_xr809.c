@@ -1,7 +1,7 @@
 #ifdef PLATFORM_XR809
 
-#include "../new_common.h"
-#include "../logging/logging.h"
+#include "../../new_common.h"
+#include "../../logging/logging.h"
 
 // main timer tick every 1s
 OS_Thread_t g_main_timer_1s;

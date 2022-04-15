@@ -191,7 +191,9 @@ int http_fn_index(http_request_t *request) {
             poststr(request,"</script>");
         }
     }
+#ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_AppendInformationToHTTPIndexPage(request);
+#endif
 //	strcat(outbuf,"<button type=\"button\">Click Me!</button>");
 
     
@@ -729,6 +731,7 @@ int http_fn_uart_tool(http_request_t *request) {
 
 
     if(http_getArg(request->url,"data",tmpA,sizeof(tmpA))) {
+#ifndef OBK_DISABLE_ALL_DRIVERS
         hprintf128(request,"<h3>Sent %s!</h3>",tmpA);
 		if(0){
 			TuyaMCU_Send((byte *)tmpA, strlen(tmpA));
@@ -746,6 +749,7 @@ int http_fn_uart_tool(http_request_t *request) {
 			}
 			TuyaMCU_Send(results, resultLen);
 		}
+#endif
 	} else {
 		strcpy(tmpA,"Hello UART world");
 	}
@@ -1093,6 +1097,8 @@ int http_fn_ota_exec(http_request_t *request) {
     if(http_getArg(request->url,"host",tmpA,sizeof(tmpA))) {
         hprintf128(request,"<h3>OTA requested for %s!</h3>",tmpA);
 #if WINDOWS
+
+#elif PLATFORM_BL602
 
 #elif PLATFORM_XR809
     //cmd_ota_http_exec(tmpA);

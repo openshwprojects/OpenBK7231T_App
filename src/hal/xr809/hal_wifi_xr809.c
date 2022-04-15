@@ -1,6 +1,6 @@
 #ifdef PLATFORM_XR809
 
-#include "hal_wifi.h"
+#include "../hal_wifi.h"
 
 #include <stdio.h>
 #include <string.h>

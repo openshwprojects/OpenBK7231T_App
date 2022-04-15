@@ -796,6 +796,8 @@ static int http_rest_error(http_request_t *request, int code, char *msg){
 static int http_rest_post_flash(http_request_t *request, int startaddr){
 #if PLATFORM_XR809
 
+#elif PLATFORM_BL602
+
 #else
     int total = 0;
     int towrite;
@@ -1004,6 +1006,8 @@ static int http_rest_get_testconfig(http_request_t *request){
 
 static int http_rest_get_flash_vars_test(http_request_t *request){
 #if PLATFORM_XR809
+    return http_rest_error(request, 400, "flash vars unsupported");
+#elif PLATFORM_BL602
     return http_rest_error(request, 400, "flash vars unsupported");
 #else
 #ifndef DISABLE_FLASH_VARS_VARS

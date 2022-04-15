@@ -96,6 +96,11 @@ int MQTT_RegisterCallback( const char *basetopic, const char *subscriptiontopic,
 	if (!basetopic || !subscriptiontopic || !callback){
 		return -1;
 	}
+#ifdef PLATFORM_BL602
+	// crash below
+return -1;
+#endif
+  addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"MQTT_RegisterCallback called for bT %s subT %s", basetopic, subscriptiontopic);
 
   // find existing to replace
   for (index = 0; index < numCallbacks; index++){
