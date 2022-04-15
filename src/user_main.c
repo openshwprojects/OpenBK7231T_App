@@ -104,7 +104,7 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
     OSStatus err = kNoErr;
 
 
-    err = xTaskCreate(function, name, stack_size, arg, 15, &thread);
+    err = xTaskCreate(function, name, stack_size, arg, 1, thread);
 /*
  BaseType_t xTaskCreate(
 							  TaskFunction_t pvTaskCode,
@@ -115,8 +115,15 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 							  TaskHandle_t *pvCreatedTask
 						  );
 */
-
-	return err;
+	if(err == pdPASS){ 
+		printf("Thread create %s - pdPASS\n",name);
+		return 0;
+	} else if(err == errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY ) {
+		printf("Thread create %s - errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY\n",name);
+	} else {
+		printf("Thread create %s - err %i\n",name,err);
+	}
+	return 1;
 }
 
 OSStatus rtos_delete_thread( beken_thread_t* thread ) {
