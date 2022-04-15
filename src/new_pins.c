@@ -69,7 +69,6 @@ char g_enable_pins = 0;
 #include "../../beken378/driver/i2c/i2c1.h"
 #include "../../beken378/driver/gpio/gpio.h"
 #undef PR_DEBUG
-#undef PR_NOTICE
 
 
 typedef struct item_pins_config

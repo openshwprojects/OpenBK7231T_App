@@ -12,7 +12,6 @@ typedef int bool;
 #define true 1
 #define false 0
 
-#define PR_NOTICE printf
 typedef unsigned char u8;
 typedef unsigned char uint8_t;
 typedef unsigned int uint32_t;
@@ -29,7 +28,6 @@ typedef int bool;
 #define true 1
 #define false 0
 
-#define PR_NOTICE printf
 typedef unsigned char u8;
 typedef unsigned char uint8_t;
 typedef unsigned int uint32_t;

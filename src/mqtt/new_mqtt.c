@@ -9,7 +9,6 @@
 
 #undef os_printf
 #undef PR_DEBUG
-#undef PR_NOTICE
 #undef Malloc
 #undef Free
 
@@ -263,7 +262,6 @@ int channelSet(mqtt_request_t* request){
   // strncpy does not terminate??!!!!
   copy[len] = '\0';
 
-  //PR_NOTICE("MQTT client in mqtt_incoming_data_cb\n");
   addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"MQTT client in mqtt_incoming_data_cb data is %s for ch %i\n", copy, channel);
 
   iValue = atoi((char *)copy);
@@ -405,7 +403,6 @@ static void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len
 		}
 	}
 
-  //PR_NOTICE("MQTT client in mqtt_incoming_publish_cb\n");
   addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"MQTT client in mqtt_incoming_publish_cb topic %s\n",topic);
 }
 
@@ -433,8 +430,8 @@ static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection
   const struct mqtt_connect_client_info_t* client_info = (const struct mqtt_connect_client_info_t*)arg;
   LWIP_UNUSED_ARG(client);
 
-//  PR_NOTICE(("MQTT client < removed name > connection cb: status %d\n",  (int)status));
- // PR_NOTICE(("MQTT client \"%s\" connection cb: status %d\n", client_info->client_id, (int)status));
+//   addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"MQTT client < removed name > connection cb: status %d\n",  (int)status);
+ //  addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"MQTT client \"%s\" connection cb: status %d\n", client_info->client_id, (int)status);
 
   if (status == MQTT_CONNECT_ACCEPTED) {
     addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"mqtt_connection_cb: Successfully connected\n");

@@ -6,6 +6,7 @@
 #include "../ota/ota.h"
 #include "../new_cmd.h"
 #include "../drv_tuyaMCU.h"
+#include "../drv_public.h"
 #include "../logging/logging.h"
 
 #ifdef WINDOWS

@@ -80,10 +80,12 @@ int CHANNEL_GetRoleForOutputChannel(int ch);
 void CHANNEL_SetType(int ch, int type);
 int CHANNEL_GetType(int ch);
 void CHANNEL_SetAll(int iVal, bool bForce);
+void CHANNEL_SetStateOnly(int iVal);
 
 void PIN_SaveToFlash();
 void PIN_LoadFromFlash();
 void PIN_set_wifi_led(int value);
+int PIN_GetPWMIndexForPinIndex(int pin);
 
 // from new_builtin.c
 void Setup_Device_Empty();
