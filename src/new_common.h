@@ -1,11 +1,15 @@
 #ifndef __NEW_COMMON_H__
 #define __NEW_COMMON_H__
 
-
-#if WINDOWS
-
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include <time.h>
+#include <stdarg.h>
+
+
+#if WINDOWS
 
 
 typedef int bool;
@@ -21,9 +25,6 @@ typedef unsigned short uint16_t;
 
 #elif PLATFORM_BL602
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <FreeRTOS.h>
 #include <task.h>
 
@@ -95,30 +96,19 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 							beken_thread_function_t function,
 							uint32_t stack_size, beken_thread_arg_t arg );
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <time.h>
+
 
 #include "common/framework/platform_init.h"
 
 #include "kernel/os/os.h"
 
 #else
-#define _TUYA_DEVICE_GLOBAL
 
-/* Includes ------------------------------------------------------------------*/
-#include "uni_log.h"
-#include "tuya_iot_wifi_api.h"
-#include "tuya_hal_system.h"
-#include "tuya_iot_com_api.h"
-#include "tuya_cloud_com_defs.h"
 #include "gw_intf.h"
-#include "gpio_test.h"
-#include "tuya_gpio.h"
-#include "tuya_key.h"
-#include "tuya_led.h"
 #include "wlan_ui_pub.h"
+#include "mem_pub.h"
+#include "str_pub.h"
+#include "drv_model_pub.h"
 
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
@@ -135,6 +125,30 @@ typedef unsigned char byte;
 
 
 #endif
+
+#if PLATFORM_XR809
+#define LWIP_COMPAT_SOCKETS 1
+#define LWIP_POSIX_SOCKETS_IO_NAMES 1
+#endif
+
+
+
+#if WINDOWS
+
+#undef UNICODE
+
+#define WIN32_LEAN_AND_MEAN
+
+#include <windows.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+
+#else
+
+#include "lwip/sockets.h"
+
+#endif
+
 
 // stricmp fix
 #if WINDOWS

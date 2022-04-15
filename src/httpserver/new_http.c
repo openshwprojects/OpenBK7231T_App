@@ -3,21 +3,6 @@
 #include "../new_common.h"
 #include "../logging/logging.h"
 #include "ctype.h" 
-#if WINDOWS
-//#include <windows.h>
-#include <winsock2.h>
-//#include <ws2tcpip.h>
-#elif PLATFORM_XR809
-#include "lwip/sockets.h"
-#include <stdarg.h>
-#elif PLATFORM_BL602
-#include "lwip/sockets.h"
-#include <stdarg.h>
-
-#else
-#include "lwip/sockets.h"
-#include "str_pub.h"
-#endif
 #include "new_http.h"
 #include "http_fns.h"
 #include "../new_pins.h"

@@ -1,26 +1,17 @@
 /*
- * @Author: yj 
- * @email: shiliu.yang@tuya.com
- * @LastEditors: yj 
- * @file name: tuya_device.c
- * @Description: template demo for SDK WiFi & BLE for BK7231T
- * @Copyright: HANGZHOU TUYA INFORMATION TECHNOLOGY CO.,LTD
- * @Company: http://www.tuya.com
- * @Date: 2021-01-23 16:33:00
- * @LastEditTime: 2021-01-27 17:00:00
+
  */
 //
 
 #include "hal/hal_wifi.h"
 #include "hal/hal_generic.h"
+#include "new_common.h"
 
 #if PLATFORM_XR809
 
 #elif PLATFORM_BL602
 
 #else
-#include "mem_pub.h"
-#include "str_pub.h"
 #include "../../beken378/app/config/param_config.h"
 #endif
 #include "driver/drv_public.h"

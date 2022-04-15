@@ -3,26 +3,9 @@
 // https://www.elektroda.pl/rtvforum/topic3712112.html
 
 #include "../new_common.h"
-#include <time.h>
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 
-#ifdef WINDOWS
-
-#undef UNICODE
-
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <stdlib.h>
-#include <stdio.h>
-
-#else
-#include "lwip/sockets.h"
-
-#endif
 
 #include "../logging/logging.h"
 
@@ -99,7 +82,7 @@ void NTP_Shutdown() {
 #if WINDOWS
 		closesocket(g_ntp_socket);
 #else
-		close(g_ntp_socket);
+		lwip_close(g_ntp_socket);
 #endif
 	}
 	g_ntp_socket = 0;

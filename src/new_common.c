@@ -1,5 +1,4 @@
 #include "new_common.h"
-#include "ctype.h"
 
 // returns amount of space left in buffer (0=overflow happened)
 int strcat_safe(char *tg, const char *src, int tgMaxLen) {

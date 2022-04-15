@@ -2,8 +2,6 @@
 
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
-#include "mem_pub.h"
-#include "str_pub.h"
 #include "wlan_ui_pub.h"
 #include "ethernet_intf.h"
 #include "../new_common.h"

@@ -1,7 +1,3 @@
-#if PLATFORM_XR809
-#define LWIP_COMPAT_SOCKETS 1
-#define LWIP_POSIX_SOCKETS_IO_NAMES 1
-#endif
 
 #include "../new_common.h"
 #include "ctype.h"
@@ -20,13 +16,12 @@
 #elif PLATFORM_BL602
 
 #else
-#include "str_pub.h"
 #endif
 
 static void tcp_server_thread( beken_thread_arg_t arg );
 static void tcp_client_thread( beken_thread_arg_t arg );
 
-#define HTTP_SERVER_PORT            80 /*set up a tcp server,port at 20000*/
+#define HTTP_SERVER_PORT            80
 
 xTaskHandle g_http_thread = NULL;
 
@@ -115,7 +110,7 @@ exit:
   if ( reply != NULL ) 
     os_free( reply );
 
-  close( fd );;
+  lwip_close( fd );;
 #if DISABLE_SEPARATE_THREAD_FOR_EACH_TCP_CLIENT
 
 #else
@@ -190,7 +185,7 @@ static void tcp_server_thread( beken_thread_arg_t arg )
 												 ) 
                 {
                   ADDLOG_DEBUG(LOG_FEATURE_HTTP,  "TCP Client %s:%d thread creation failed! fd: %d", client_ip_str, client_addr.sin_port, client_fd );
-                  close( client_fd );
+                  lwip_close( client_fd );
                   client_fd = -1;
                 }
 #endif
@@ -201,7 +196,7 @@ static void tcp_server_thread( beken_thread_arg_t arg )
     if ( err != kNoErr ) 
 		  ADDLOG_ERROR(LOG_FEATURE_HTTP,  "Server listerner thread exit with err: %d", err );
 	
-    close( tcp_listen_fd );
+    lwip_close( tcp_listen_fd );
 
     rtos_delete_thread( NULL );
 

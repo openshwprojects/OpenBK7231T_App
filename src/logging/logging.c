@@ -14,7 +14,6 @@
 #include "lwip/inet.h"
 
 #else 
-#include "str_pub.h"
 #endif
 
 #include "../logging/logging.h"

@@ -1,20 +1,12 @@
 
 #include "new_mqtt.h"
+#include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #include "../logging/logging.h"
-#include <ctype.h>
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 
-
-#undef os_printf
-#undef PR_DEBUG
-#undef Malloc
-#undef Free
-
-#define Malloc os_malloc
-#define Free os_free
 
 
 #ifndef LWIP_MQTT_EXAMPLE_IPADDR_INIT

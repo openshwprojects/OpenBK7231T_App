@@ -164,10 +164,6 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\src\drv_bl0942.c"
-				>
-			</File>
-			<File
 				RelativePath=".\src\i2c\drv_i2c_main.c"
 				>
 				<FileConfiguration
@@ -810,6 +806,14 @@
 			</File>
 			<File
 				RelativePath=".\src\hal\hal_generic_xr809.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\hal\hal_main_bk7231.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\hal\hal_main_xr809.c"
 				>
 			</File>
 			<File

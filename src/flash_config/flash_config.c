@@ -1,6 +1,5 @@
 
-#include "include.h"
-#include "mem_pub.h"
+#include "../new_common.h"
 #include "drv_model_pub.h"
 #include "net_param_pub.h"
 #include "flash_pub.h"
