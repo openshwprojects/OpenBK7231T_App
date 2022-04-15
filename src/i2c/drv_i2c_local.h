@@ -65,6 +65,7 @@ i2cDevice_t *DRV_I2C_FindDeviceExt(int busType,int address, int devType);
 // drv_i2c_mcp23017.c
 void DRV_I2C_MCP23017_RunDevice(i2cDevice_t *dev);
 int DRV_I2C_MCP23017_MapPinToChannel(const void *context, const char *cmd, const char *args);
+void DRV_I2C_MCP23017_OnChannelChanged(i2cDevice_t *dev, int channel, int iVal);
 
 // drv_i2c_tc74.c
 void DRV_I2C_TC74_RunDevice(i2cDevice_t *dev);

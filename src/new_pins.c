@@ -5,9 +5,9 @@
 #include "new_pins.h"
 #include "httpserver/new_http.h"
 #include "logging/logging.h"
-#include "new_cmd.h"
-#include "new_tokenizer.h"
-#include "drv_i2c_public.h"
+// Commands register, execution API and cmd tokenizer
+#include "cmnds/cmd_public.h"
+#include "i2c/drv_i2c_public.h"
 
 
 //According to your need to modify the constants.

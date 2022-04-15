@@ -4,9 +4,10 @@
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #include "../ota/ota.h"
-#include "../new_cmd.h"
-#include "../drv_tuyaMCU.h"
-#include "../drv_public.h"
+// Commands register, execution API and cmd tokenizer
+#include "../cmnds/cmd_public.h"
+#include "../driver/drv_tuyaMCU.h"
+#include "../driver/drv_public.h"
 #include "../logging/logging.h"
 
 #ifdef WINDOWS

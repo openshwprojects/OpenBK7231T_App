@@ -2,10 +2,10 @@
 // Based on my previous work here: 
 // https://www.elektroda.pl/rtvforum/topic3712112.html
 
-#include "new_common.h"
+#include "../new_common.h"
 #include <time.h>
-#include "new_tokenizer.h"
-#include "new_cmd.h"
+// Commands register, execution API and cmd tokenizer
+#include "../cmnds/cmd_public.h"
 
 #ifdef WINDOWS
 
@@ -24,7 +24,7 @@
 
 #endif
 
-#include "logging/logging.h"
+#include "../logging/logging.h"
 
 #define LOG_FEATURE LOG_FEATURE_NTP
 

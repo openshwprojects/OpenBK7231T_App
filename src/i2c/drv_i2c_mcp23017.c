@@ -1,9 +1,9 @@
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
-#include "../new_cmd.h"
+// Commands register, execution API and cmd tokenizer
+#include "../cmnds/cmd_public.h"
 #include "../logging/logging.h"
-#include "../new_tokenizer.h"
 #include "drv_i2c_local.h"
 // addresses, banks, etc, defines
 #include "drv_i2c_mcp23017.h"

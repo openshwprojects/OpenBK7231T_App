@@ -20,7 +20,8 @@
 #include "../new_cfg.h"
 #include "../flash_config/flash_vars_vars.h"
 #include "../flash_config/flash_vars.h"
-#include "../new_cmd.h"
+// Commands register, execution API and cmd tokenizer
+#include "../cmnds/cmd_public.h"
 
 #if PLATFORM_XR809
 uint32_t flash_read(uint32_t flash, uint32_t addr,void *buf, uint32_t size);

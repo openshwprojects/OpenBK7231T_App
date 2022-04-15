@@ -292,10 +292,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\new_cmd.c"
-				>
-			</File>
-			<File
 				RelativePath=".\src\new_common.c"
 				>
 			</File>
@@ -333,14 +329,6 @@
 			</File>
 			<File
 				RelativePath=".\src\new_pins.c"
-				>
-			</File>
-			<File
-				RelativePath=".\src\new_repeatingEvents.c"
-				>
-			</File>
-			<File
-				RelativePath=".\src\new_tokenizer.c"
 				>
 			</File>
 			<File
@@ -746,6 +734,94 @@
 			</File>
 			<File
 				RelativePath=".\src\ntp_time.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="CMD"
+			>
+			<File
+				RelativePath=".\src\cmnds\cmd_local.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\cmnds\cmd_main.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\cmnds\cmd_newLEDDriver.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\cmnds\cmd_public.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\cmnds\cmd_repeatingEvents.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\cmnds\cmd_tasmota.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\cmnds\cmd_test.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\cmnds\cmd_tokenizer.c"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Driver"
+			>
+			<File
+				RelativePath=".\src\driver\drv_bl0942.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\driver\drv_bl0942.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\driver\drv_config.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\driver\drv_i2c_public.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\driver\drv_main.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\driver\drv_public.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\driver\drv_tuyaMCU.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\driver\drv_tuyaMCU.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\driver\drv_uart.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\driver\drv_uart.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="I2C"
+			>
+			<File
+				RelativePath=".\src\i2c\drv_i2c_mcp23017.h"
 				>
 			</File>
 		</Filter>

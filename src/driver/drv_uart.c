@@ -1,8 +1,9 @@
-#include "new_common.h"
-#include "new_pins.h"
-#include "new_cfg.h"
-#include "new_cmd.h"
-#include "logging/logging.h"
+#include "../new_common.h"
+#include "../new_pins.h"
+#include "../new_cfg.h"
+// Commands register, execution API and cmd tokenizer
+#include "../cmnds/cmd_public.h"
+#include "../logging/logging.h"
 
 
 #if PLATFORM_BK7231T | PLATFORM_BK7231N

@@ -3,7 +3,7 @@
 #include "../new_pins.h"
 #include "../obk_config.h"
 #include <ctype.h>
-#include "../new_cmd.h"
+#include "cmd_local.h"
 #include "../new_pins.h"
 #ifdef BK_LITTLEFS
 	#include "../littlefs/our_lfs.h"

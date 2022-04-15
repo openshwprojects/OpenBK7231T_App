@@ -17,9 +17,10 @@
 #include "mem_pub.h"
 #include "str_pub.h"
 #include "ethernet_intf.h"
-#include "drv_public.h"
+#include "driver/drv_public.h"
 
-#include "new_repeatingEvents.h"
+// Commands register, execution API and cmd tokenizer
+#include "cmnds/cmd_public.h"
 
 // overall config variables for app - like BK_LITTLEFS
 #include "obk_config.h"
@@ -39,12 +40,7 @@
 
 #include "flash_config/flash_config.h"
 #include "flash_config/flash_vars_vars.h"
-#include "drv_tuyaMCU.h"
-#include "ntp_time.h"
-#include "new_cmd.h"
-
-#include "cmnds/taslike.h"
-#include "cmnds/fortest.h"
+#include "driver/drv_ntp.h"
 
 static int g_secondsElapsed = 0;
 

@@ -1,12 +1,13 @@
-#include "new_common.h"
-#include "new_pins.h"
-#include "new_cfg.h"
-#include "new_cmd.h"
-#include "mqtt/new_mqtt.h"
-#include "logging/logging.h"
+#include "../new_common.h"
+#include "../new_pins.h"
+#include "../new_cfg.h"
+// Commands register, execution API and cmd tokenizer
+#include "../cmnds/cmd_public.h"
+#include "../mqtt/new_mqtt.h"
+#include "../logging/logging.h"
 #include "drv_bl0942.h"
 #include "drv_uart.h"
-#include "httpserver/new_http.h"
+#include "../httpserver/new_http.h"
 
 float BL0942_PREF = 598;
 float BL0942_UREF = 15188;

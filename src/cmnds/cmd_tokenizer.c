@@ -1,8 +1,8 @@
 
-#include "new_common.h"
-#include "httpserver/new_http.h"
-#include "new_pins.h"
-#include "new_cfg.h"
+#include "../new_common.h"
+#include "../httpserver/new_http.h"
+#include "../new_pins.h"
+#include "../new_cfg.h"
 
 #define MAX_CMD_LEN 512
 #define MAX_ARGS 32

@@ -1,14 +1,15 @@
-#include "new_common.h"
-#include "new_pins.h"
-#include "new_cfg.h"
-#include "new_cmd.h"
-#include "logging/logging.h"
+#include "../new_common.h"
+#include "../new_pins.h"
+#include "../new_cfg.h"
+// Commands register, execution API and cmd tokenizer
+#include "../cmnds/cmd_public.h"
+#include "../logging/logging.h"
 #include "drv_bl0942.h"
 #include "drv_uart.h"
 #include "drv_tuyaMCU.h"
-#include "drv_i2c_public.h"
-#include "ntp_time.h"
-#include "httpserver/new_http.h"
+#include "../i2c/drv_i2c_public.h"
+#include "drv_ntp.h"
+#include "../httpserver/new_http.h"
 
 
 typedef struct driver_s {

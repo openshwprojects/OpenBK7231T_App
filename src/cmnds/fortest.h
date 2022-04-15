@@ -1,1 +1,0 @@
-int fortest_commands_init();

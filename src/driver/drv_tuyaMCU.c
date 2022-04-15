@@ -1,13 +1,13 @@
-#include "new_common.h"
-#include "new_pins.h"
-#include "new_cfg.h"
-#include "new_cmd.h"
-#include "logging/logging.h"
+#include "../new_common.h"
+#include "../new_pins.h"
+#include "../new_cfg.h"
+// Commands register, execution API and cmd tokenizer
+#include "../cmnds/cmd_public.h"
+#include "../logging/logging.h"
 #include "drv_tuyaMCU.h"
 #include "drv_uart.h"
 #include <time.h>
-#include "ntp_time.h"
-#include "new_tokenizer.h"
+#include "drv_ntp.h"
 
 
 #define TUYA_CMD_HEARTBEAT     0x00

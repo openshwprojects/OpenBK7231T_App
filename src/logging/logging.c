@@ -18,7 +18,8 @@
 #endif
 
 #include "../logging/logging.h"
-#include "../new_cmd.h"
+// Commands register, execution API and cmd tokenizer
+#include "../cmnds/cmd_public.h"
 
 static char tmp[1024];
 int loglevel = 4; // default to info

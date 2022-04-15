@@ -4,7 +4,8 @@
 #include "../new_cfg.h"
 #include "../logging/logging.h"
 #include <ctype.h>
-#include "../new_cmd.h"
+// Commands register, execution API and cmd tokenizer
+#include "../cmnds/cmd_public.h"
 
 
 #undef os_printf

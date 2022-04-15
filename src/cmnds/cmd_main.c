@@ -1,11 +1,11 @@
-#include "new_pins.h"
-#include "new_cfg.h"
-#include "logging/logging.h"
-#include "obk_config.h"
+#include "../new_pins.h"
+#include "../new_cfg.h"
+#include "../logging/logging.h"
+#include "../obk_config.h"
 #include <ctype.h>
-#include "new_cmd.h"
+#include "cmd_local.h"
 #ifdef BK_LITTLEFS
-	#include "littlefs/our_lfs.h"
+	#include "../littlefs/our_lfs.h"
 #endif
 
 #define HASH_SIZE 128

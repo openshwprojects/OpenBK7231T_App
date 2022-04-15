@@ -1,11 +1,11 @@
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
-#include "../new_cmd.h"
 #include "../logging/logging.h"
 #include "drv_i2c_local.h"
-#include "../drv_i2c_public.h"
-#include "../new_tokenizer.h"
+#include "drv_i2c_public.h"
+// Commands register, execution API and cmd tokenizer
+#include "../cmnds/cmd_public.h"
 
 
 #if PLATFORM_BK7231T
