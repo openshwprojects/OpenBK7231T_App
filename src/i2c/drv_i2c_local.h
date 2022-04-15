@@ -57,7 +57,16 @@ void DRV_I2C_Read(byte addr, byte *data);
 int DRV_I2C_Begin(int dev_adr, int busID);
 void DRV_I2C_Close();
 
+i2cBusType_t DRV_I2C_ParseBusType(const char *s);
+i2cDevice_t *DRV_I2C_FindDevice(int busType,int address);
+i2cDevice_t *DRV_I2C_FindDeviceExt(int busType,int address, int devType);
+
+
 // drv_i2c_mcp23017.c
+void DRV_I2C_MCP23017_RunDevice(i2cDevice_t *dev);
 int DRV_I2C_MCP23017_MapPinToChannel(const void *context, const char *cmd, const char *args);
+
+// drv_i2c_tc74.c
+void DRV_I2C_TC74_RunDevice(i2cDevice_t *dev);
 
 #endif // __DRV_I2C_LOCAL_H__

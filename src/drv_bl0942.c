@@ -25,9 +25,9 @@ float realVoltage, realCurrent, realPower;
 
 int BL0942_TryToGetNextBL0942Packet() {
 	int cs;
-	int len, i;
+	int i;
 	int c_garbage_consumed = 0;
-	byte a, b, version, command, lena, lenb;
+	byte a;
 	float newPower, newCurrent, newVoltage;
 	byte checksum;
 	int BL0942_PACKET_LEN = 23;

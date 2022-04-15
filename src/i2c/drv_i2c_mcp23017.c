@@ -3,6 +3,7 @@
 #include "../new_cfg.h"
 #include "../new_cmd.h"
 #include "../logging/logging.h"
+#include "../new_tokenizer.h"
 #include "drv_i2c_local.h"
 // addresses, banks, etc, defines
 #include "drv_i2c_mcp23017.h"
@@ -129,7 +130,7 @@ int DRV_I2C_MCP23017_MapPinToChannel(const void *context, const char *cmd, const
 
 	busType = DRV_I2C_ParseBusType(i2cModuleStr);
 
-	mcp = DRV_I2C_FindDeviceExt( busType, address,I2CDEV_MCP23017);
+	mcp = (i2cDevice_MCP23017_t *)DRV_I2C_FindDeviceExt( busType, address,I2CDEV_MCP23017);
 	if(mcp == 0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_MCP23017_MapPinToChannel: no such device exists\n" );
 		return 0;
@@ -138,7 +139,7 @@ int DRV_I2C_MCP23017_MapPinToChannel(const void *context, const char *cmd, const
 	mcp->pinMapping[targetPin] = targetChannel;
 
 	// send refresh
-	DRV_I2C_MCP23017_OnChannelChanged(mcp, targetChannel, CHANNEL_Get(targetChannel));
+	DRV_I2C_MCP23017_OnChannelChanged((i2cDevice_t*)mcp, targetChannel, CHANNEL_Get(targetChannel));
 
 	return 1;
 }

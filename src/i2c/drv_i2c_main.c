@@ -4,6 +4,8 @@
 #include "../new_cmd.h"
 #include "../logging/logging.h"
 #include "drv_i2c_local.h"
+#include "../drv_i2c_public.h"
+#include "../new_tokenizer.h"
 
 
 #if PLATFORM_BK7231T
@@ -96,7 +98,7 @@ void DRV_I2C_AddDevice_MCP23017_Internal(int busType,int address) {
 	dev->base.next = 0;
 	memset(dev->pinMapping,0xff,sizeof(dev->pinMapping));
 
-	DRV_I2C_AddNextDevice(dev);
+	DRV_I2C_AddNextDevice((i2cDevice_t*)dev);
 }
 i2cDevice_t *DRV_I2C_FindDevice(int busType,int address) {
 	i2cDevice_t *dev;
@@ -131,7 +133,7 @@ void DRV_I2C_AddDevice_TC74_Internal(int busType,int address, int targetChannel)
 	dev->base.next = 0;
 	dev->targetChannel = targetChannel;
 
-	DRV_I2C_AddNextDevice(dev);
+	DRV_I2C_AddNextDevice((i2cDevice_t*)dev);
 }
 int DRV_I2C_AddDevice_TC74(const void *context, const char *cmd, const char *args) {
 	const char *i2cModuleStr;

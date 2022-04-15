@@ -9,23 +9,15 @@
  * @Date: 2021-01-23 16:33:00
  * @LastEditTime: 2021-01-27 17:00:00
  */
-
-#define _TUYA_DEVICE_GLOBAL
-
-/* Includes ------------------------------------------------------------------*/
-#include "uni_log.h"
-#include "gw_intf.h"
-#include "wlan_ui_pub.h"
-
-#include "lwip/sockets.h"
-#include "lwip/ip_addr.h"
-#include "lwip/inet.h"
+//
+//#include "lwip/sockets.h"
+//#include "lwip/ip_addr.h"
+//#include "lwip/inet.h"
 
 #include "mem_pub.h"
 #include "str_pub.h"
 #include "ethernet_intf.h"
-
-/* Private includes ----------------------------------------------------------*/
+#include "drv_public.h"
 
 // overall config variables for app - like BK_LITTLEFS
 #include "obk_config.h"
@@ -56,13 +48,16 @@ static int g_secondsElapsed = 0;
 
 static int g_openAP = 0;
 static int g_connectToWiFi = 0;
-int bSafeMode = 0;
+static int bSafeMode = 0;
 
 // reset in this number of seconds
-int g_reset = 0;
+static int g_reset = 0;
+beken_timer_t g_main_timer_1s;
 
 // save config in this number of seconds
 int g_savecfg = 0;
+
+int g_bHasWiFiConnected = 0;
 
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
@@ -78,7 +73,6 @@ int Time_getUpTimeSeconds() {
 	return g_secondsElapsed;
 }
 
-int g_bHasWiFiConnected = 0;
 // receives status change notifications about wireless - could be useful
 // ctxt is pointer to a rw_evt_type
 void wl_status( void *ctxt ){
@@ -176,36 +170,8 @@ void connect_to_wifi(const char *oob_ssid,const char *connect_key)
 }
 
 
-beken_timer_t led_timer;
 
-#if 0
-// OpenSHWProjects 2022 04 11
-// I tried to implement ADC but it seems that BkAdcInitialize and BkAdcTakeSample
-// are missing from the precompiled Bekken library...
-int adc_init = 0;
-#include "../../beken378/func/user_driver/BkDriverADC.h"
-void run_adc_test(){
-		OSStatus test;
-		int adc;
-		short res;
-		int val;
-		uint32_t sampling_cycle;
-		uint16_t output;
-		sampling_cycle = 1000;
-		adc = 3;
 
-		if(adc_init == 0) {
-			adc_init = 1;
-			//  undefined reference to `BkAdcInitialize'
-			test = BkAdcInitialize( adc,  sampling_cycle );
-			ADDLOGF_INFO("Adc init res %i\n", test);
-		}
-		//  undefined reference to `BkAdcTakeSample'
-		test = BkAdcTakeSample( adc, &output );
-		val = output;
-		ADDLOGF_INFO("BkAdcTakeSample res %i value %i\n", test, val);
-}
-#endif
 static void app_led_timer_handler(void *data)
 {
 	// run_adc_test();
@@ -214,7 +180,7 @@ static void app_led_timer_handler(void *data)
 	DRV_OnEverySecond();
 
 	g_secondsElapsed ++;
-  ADDLOGF_INFO("Timer is %i free mem %d\n", g_secondsElapsed, xPortGetFreeHeapSize());
+	ADDLOGF_INFO("Timer is %i free mem %d\n", g_secondsElapsed, xPortGetFreeHeapSize());
 
   // print network info
   if (!(g_secondsElapsed % 10)){
@@ -441,13 +407,13 @@ void user_main(void)
     }
   }
 
-  err = rtos_init_timer(&led_timer,
+  err = rtos_init_timer(&g_main_timer_1s,
                         1 * 1000,
                         app_led_timer_handler,
                         (void *)0);
   ASSERT(kNoErr == err);
 
-  err = rtos_start_timer(&led_timer);
+  err = rtos_start_timer(&g_main_timer_1s);
   ASSERT(kNoErr == err);
 	ADDLOGF_DEBUG("started timer\r\n");
 }

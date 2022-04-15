@@ -168,37 +168,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\drv_bl0942.h"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\src\i2c\drv_i2c_local.h"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\src\i2c\drv_i2c_main.c"
 				>
 				<FileConfiguration
@@ -219,18 +188,6 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\src\drv_i2c_public.h"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -271,23 +228,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\drv_tuyaMCU.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\src\drv_uart.c"
-				>
-			</File>
-			<File
-				RelativePath=".\src\drv_uart.h"
 				>
 			</File>
 			<File
@@ -323,18 +264,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\httpserver\http_fns.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\src\httpserver\http_tcp_server.c"
 				>
 				<FileConfiguration
@@ -345,10 +274,6 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\src\httpserver\http_tcp_server.h"
-				>
 			</File>
 			<File
 				RelativePath=".\src\jsmn\jsmn.c"
@@ -367,23 +292,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\new_cfg.h"
-				>
-			</File>
-			<File
 				RelativePath=".\src\new_cmd.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\new_cmd.h"
-				>
-			</File>
-			<File
 				RelativePath=".\src\new_common.c"
-				>
-			</File>
-			<File
-				RelativePath=".\src\new_common.h"
 				>
 			</File>
 			<File
@@ -395,30 +308,6 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\src\httpserver\new_http.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\src\new_http.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -447,23 +336,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\new_pins.h"
-				>
-			</File>
-			<File
 				RelativePath=".\src\new_repeatingEvents.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\new_repeatingEvents.h"
-				>
-			</File>
-			<File
 				RelativePath=".\src\new_tokenizer.c"
-				>
-			</File>
-			<File
-				RelativePath=".\src\new_tokenizer.h"
 				>
 			</File>
 			<File
@@ -472,10 +349,6 @@
 			</File>
 			<File
 				RelativePath=".\src\ntp_time.c"
-				>
-			</File>
-			<File
-				RelativePath=".\src\ntp_time.h"
 				>
 			</File>
 			<File
@@ -731,6 +604,137 @@
 						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
+			</File>
+		</Filter>
+		<Filter
+			Name="Header Files"
+			>
+			<File
+				RelativePath=".\src\drv_bl0942.h"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\i2c\drv_i2c_local.h"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\drv_i2c_public.h"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\drv_tuyaMCU.h"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\drv_uart.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\httpserver\http_fns.h"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\httpserver\http_tcp_server.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\new_cfg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\new_cmd.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\new_common.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\new_http.h"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\httpserver\new_http.h"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\new_pins.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\new_repeatingEvents.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\new_tokenizer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\ntp_time.h"
+				>
 			</File>
 		</Filter>
 	</Files>

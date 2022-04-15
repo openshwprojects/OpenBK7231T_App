@@ -8,8 +8,8 @@
 #define MAX_ARGS 32
 
 static char g_buffer[MAX_CMD_LEN];
-static char *g_args[MAX_ARGS];
-static char *g_argsFrom[MAX_ARGS];
+static const char *g_args[MAX_ARGS];
+static const char *g_argsFrom[MAX_ARGS];
 static int g_numArgs = 0;
 
 bool isWhiteSpace(char ch) {
@@ -43,9 +43,7 @@ int Tokenizer_GetArgInteger(int i) {
 	return atoi(s);
 }
 void Tokenizer_TokenizeString(const char *s) {
-	int r = 0;
 	char *p;
-	int i;
 
 	while(isWhiteSpace(*s)) {
 		s++;

@@ -1,9 +1,11 @@
 
 #include "new_common.h"
+#include "new_tokenizer.h"
 #include "httpserver/new_http.h"
 #include "logging/logging.h"
 #include "new_pins.h"
 #include "new_cfg.h"
+#include "new_cmd.h"
 
 typedef struct repeatingEvent_s {
 	char *command;

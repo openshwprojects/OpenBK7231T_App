@@ -6,6 +6,8 @@
 #include "drv_tuyaMCU.h"
 #include "drv_uart.h"
 #include <time.h>
+#include "ntp_time.h"
+#include "new_tokenizer.h"
 
 
 #define TUYA_CMD_HEARTBEAT     0x00

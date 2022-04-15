@@ -4,6 +4,8 @@
 
 #include "new_common.h"
 #include <time.h>
+#include "new_tokenizer.h"
+#include "new_cmd.h"
 
 #ifdef WINDOWS
 
@@ -166,7 +168,7 @@ void NTP_SendRequest(bool bBlocking) {
 void NTP_CheckForReceive() {
 	byte *ptr;
     int i, recv_len;
-	struct tm * ptm;
+	//struct tm * ptm;
     unsigned short highWord;
     unsigned short lowWord;
 	unsigned int secsSince1900;
