@@ -202,7 +202,7 @@ void http_copyCarg(const char *atin, char *to, int maxSize) {
 	*to = 0;
 }
 
-bool http_getArg(const char *base, const char *name, char *o, int maxSize) {
+int http_getArg(const char *base, const char *name, char *o, int maxSize) {
 	*o = '\0';
 	while(*base != '?') {
 		if(*base == 0)

@@ -14,8 +14,13 @@
 #include "hal/hal_wifi.h"
 #include "hal/hal_generic.h"
 
+#if PLATFORM_XR809
+
+#else
 #include "mem_pub.h"
 #include "str_pub.h"
+#include "../../beken378/app/config/param_config.h"
+#endif
 #include "driver/drv_public.h"
 
 // Commands register, execution API and cmd tokenizer
@@ -33,11 +38,17 @@
 #include "printnetinfo/printnetinfo.h"
 #include "mqtt/new_mqtt.h"
 
-#include "../../beken378/app/config/param_config.h"
+#ifdef BK_LITTLEFS
 #include "littlefs/our_lfs.h"
+#endif
 
+#if PLATFORM_XR809
+
+#else
 #include "flash_config/flash_config.h"
+#endif
 #include "flash_config/flash_vars_vars.h"
+
 #include "driver/drv_ntp.h"
 
 static int g_secondsElapsed = 0;
@@ -52,13 +63,32 @@ static int g_reset = 0;
 // save config in this number of seconds
 int g_savecfg = 0;
 // main timer tick every 1s
+#if PLATFORM_XR809
+OS_Thread_t g_main_timer_1s;
+#else
 beken_timer_t g_main_timer_1s;
+#endif
 // is connected to WiFi?
 int g_bHasWiFiConnected = 0;
 
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
 
+#if PLATFORM_XR809
+void boot_complete(){
+
+}
+int config_commit(){
+
+    return 0;
+}
+int boot_failures(){
+    return 0;
+}
+void increment_boot_count(){
+
+}
+#endif
 void RESET_ScheduleModuleReset(int delSeconds) {
 	g_reset = delSeconds;
 }
@@ -110,6 +140,14 @@ void Main_OnWiFiStatusChange(int code){
 }
 
 
+#if PLATFORM_XR809
+size_t xPortGetFreeHeapSize() {
+	return 0;
+}
+void print_network_info() {
+
+}
+#endif
 
 static void Main_OnEverySecond(void *data)
 {
@@ -139,7 +177,7 @@ static void Main_OnEverySecond(void *data)
   }
   if(g_connectToWiFi){
 	g_connectToWiFi --;
-	if(0 == g_connectToWiFi) {
+	if(0 == g_connectToWiFi && g_bHasWiFiConnected == 0) {
 		const char *wifi_ssid, *wifi_pass;
 		wifi_ssid = CFG_GetWiFiSSID();
 		wifi_pass = CFG_GetWiFiPass();
@@ -183,6 +221,17 @@ int Main_IsConnectedToWiFi() {
 	return g_bHasWiFiConnected;
 }
 
+#if PLATFORM_XR809
+static void helloworld_task(void *arg)
+{
+	while (1) {
+		OS_Sleep(1);
+		Main_OnEverySecond(0);
+	}
+
+	OS_ThreadDelete(&g_main_timer_1s);
+}
+#endif
 void user_main(void)
 {
     OSStatus err;
@@ -279,6 +328,22 @@ void user_main(void)
     }
   }
 
+#if PLATFORM_XR809
+
+#define HELLOWORLD_THREAD_STACK_SIZE	(1 * 1024)
+
+	/* start helloworld task */
+	if (OS_ThreadCreate(&g_main_timer_1s,
+		                "helloworld",
+		                helloworld_task,
+		                NULL,
+		                OS_THREAD_PRIO_CONSOLE,
+		                HELLOWORLD_THREAD_STACK_SIZE) != OS_OK) {
+		ADDLOGF_DEBUG("create helloworld failed\n");
+		return ;
+	}
+
+#else
   err = rtos_init_timer(&g_main_timer_1s,
                         1 * 1000,
                         Main_OnEverySecond,
@@ -288,6 +353,7 @@ void user_main(void)
   err = rtos_start_timer(&g_main_timer_1s);
   ASSERT(kNoErr == err);
 	ADDLOGF_DEBUG("started timer\r\n");
+#endif
 }
 
 #if PLATFORM_BK7231N
