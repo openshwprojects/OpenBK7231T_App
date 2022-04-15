@@ -10,6 +10,10 @@
 #elif PLATFORM_XR809
 #include "lwip/sockets.h"
 #include <stdarg.h>
+#elif PLATFORM_BL602
+#include "lwip/sockets.h"
+#include <stdarg.h>
+
 #else
 #include "lwip/sockets.h"
 #include "str_pub.h"
@@ -282,6 +286,10 @@ const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7
 #elif PLATFORM_BK7231T
 
 const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7231T/\">OpenBK7231T</a></h1><h3><a href=\"https://www.elektroda.com/rtvforum/viewtopic.php?p=19841301#19841301\">[Read more]</a><a href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
+
+#elif PLATFORM_BL602
+
+const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7231T/\">OpenBL602</a></h1><h3><a href=\"https://www.elektroda.com/rtvforum/viewtopic.php?p=19841301#19841301\">[Read more]</a><a href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
 
 #elif WINDOWS
 

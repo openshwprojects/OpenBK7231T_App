@@ -17,6 +17,8 @@
 
 #define close lwip_close
 
+#elif PLATFORM_BL602
+
 #else
 #include "str_pub.h"
 #endif
@@ -66,8 +68,12 @@ static void tcp_client_thread( beken_thread_arg_t arg )
 
   reply = (char*) os_malloc( replyBufferSize );
   buf = (char*) os_malloc( 1026 );
-  ASSERT(buf);
   
+  if ( buf == 0 || reply == 0)
+  {
+      ADDLOG_ERROR(LOG_FEATURE_HTTP, "TCP Client failed to malloc buffer" );
+      goto exit;
+  }
   http_request_t request;
   os_memset(&request, 0, sizeof(request));
 

@@ -7,6 +7,8 @@
 
 #if WINDOWS
 
+#elif PLATFORM_BL602
+
 #elif PLATFORM_XR809
 // XR809 sysinfo is used to save configuration to flash
 #include "common/framework/sysinfo.h"
@@ -29,7 +31,7 @@ static char g_mqtt_pass[128] = "qqqqqqqqqq";
 static char g_wifi_ssid[64] = { 0 };
 static char g_wifi_pass[64] = { 0 };
 
-#if PLATFORM_XR809 || WINDOWS
+#if PLATFORM_XR809 || WINDOWS || PLATFORM_BL602
 #define CONFIG_URL_SIZE_MAX 64
 #endif
 
@@ -44,6 +46,8 @@ const char *CFG_LoadWebappRoot(){
 #if WINDOWS
 
 #elif PLATFORM_XR809
+
+#elif PLATFORM_BL602
 
 #else
 	ITEM_URL_CONFIG item;
@@ -63,6 +67,9 @@ const char *CFG_GetWebappRoot(){
 int CFG_SetWebappRoot(const char *s) {
 #if WINDOWS
 	strcpy_safe(g_webappRoot, s,sizeof(g_webappRoot));
+	return 1; // ok
+#elif PLATFORM_BL602
+
 	return 1; // ok
 #elif PLATFORM_XR809
 	strcpy_safe(g_webappRoot, s,sizeof(g_webappRoot));
@@ -102,6 +109,9 @@ const char *CFG_GetShortDeviceName(){
 #elif PLATFORM_BK7231T
 #define DEVICENAME_PREFIX_FULL "OpenBK7231T"
 #define DEVICENAME_PREFIX_SHORT "obk"
+#elif PLATFORM_BL602
+#define DEVICENAME_PREFIX_FULL "OpenBL602"
+#define DEVICENAME_PREFIX_SHORT "obl"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -109,6 +119,8 @@ This platform is not supported, error!
 
 void WiFI_GetMacAddress(char *mac) {
 #if WINDOWS
+
+#elif PLATFORM_BL602
 
 #elif PLATFORM_XR809
 	sysinfo_t *inf;
@@ -125,6 +137,8 @@ void WiFI_GetMacAddress(char *mac) {
 }
 int WiFI_SetMacAddress(char *mac) {
 #if WINDOWS
+	return 0;
+#elif PLATFORM_BL602
 	return 0;
 #elif PLATFORM_XR809
 	sysinfo_t *inf;
@@ -150,7 +164,7 @@ int WiFI_SetMacAddress(char *mac) {
 void CFG_CreateDeviceNameUnique()
 {
 	// must be unsigned, else print below prints negatives as e.g. FFFFFFFe
-	unsigned char mac[32];
+	unsigned char mac[32] = { 0 };
 
 	WiFI_GetMacAddress((char *)mac);
 
@@ -210,6 +224,8 @@ void CFG_SetMQTTPass(const char *s) {
 void CFG_SaveWiFi() {
 #if WINDOWS
 
+#elif PLATFORM_BL602
+
 #elif PLATFORM_XR809
 	sysinfo_t *inf;
 	int res;
@@ -236,6 +252,8 @@ void CFG_SaveWiFi() {
 }
 void CFG_LoadWiFi() {
 #if WINDOWS
+
+#elif PLATFORM_BL602
 
 #elif PLATFORM_XR809
 	sysinfo_t *inf;
@@ -306,6 +324,8 @@ int sysinfo_save_wrapper() {
 int CFG_SaveMQTT() {
 #if WINDOWS
 	return 0;
+#elif PLATFORM_BL602
+	return 0;
 #elif PLATFORM_XR809
 	sysinfo_t *inf;
 	int res;
@@ -344,6 +364,8 @@ int CFG_SaveMQTT() {
 }
 void CFG_LoadMQTT() {
 #if WINDOWS
+
+#elif PLATFORM_BL602
 
 #elif PLATFORM_XR809
 	sysinfo_t *inf;

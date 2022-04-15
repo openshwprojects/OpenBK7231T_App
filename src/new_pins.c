@@ -51,6 +51,8 @@ char g_enable_pins = 0;
 
 #if WINDOWS
 
+#elif PLATFORM_BL602
+
 #elif PLATFORM_XR809
 
 // XR809 sysinfo is used to save configuration to flash
@@ -183,6 +185,8 @@ void (*g_doubleClickCallback)(int pinIndex) = 0;
 void PIN_SaveToFlash() {
 #if WINDOWS
 
+#elif PLATFORM_BL602
+
 #elif PLATFORM_XR809
 	sysinfo_t *inf;
 	int res;
@@ -215,6 +219,8 @@ void PIN_LoadFromFlash() {
 	//int i;
 #if WINDOWS
 
+#elif PLATFORM_BL602
+
 #elif PLATFORM_XR809
 	sysinfo_t *inf;
 #else
@@ -227,6 +233,8 @@ void PIN_LoadFromFlash() {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"UART log breaking after that means that you changed the role of TX pin to digital IO or smth else.\r\n");
 
 #if WINDOWS
+
+#elif PLATFORM_BL602
 
 #elif PLATFORM_XR809
 	inf = sysinfo_get();
@@ -272,6 +280,8 @@ int PIN_GetPinChannel2ForPinIndex(int index) {
 void RAW_SetPinValue(int index, int iVal){
 	if (g_enable_pins) {
 #if WINDOWS
+
+#elif PLATFORM_BL602
 
 #elif PLATFORM_XR809
 	int xr_port; // eg GPIO_PORT_A
@@ -335,6 +345,8 @@ bool BTN_ShouldInvert(int index)
 }
 unsigned char PIN_ReadDigitalInputValue_WithInversionIncluded(int index) {
 #if WINDOWS
+	return 0;
+#elif PLATFORM_BL602
 	return 0;
 #elif PLATFORM_XR809
 	int xr_port; // eg GPIO_PORT_A
@@ -546,6 +558,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 					bk_pwm_stop(pwmIndex);
 	#elif PLATFORM_BK7231T
 					bk_pwm_stop(pwmIndex);
+	#elif PLATFORM_BL602
+	
 	#else
 	#error "Unknown platform"
 	#endif
@@ -572,6 +586,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 				pinButton_s *bt = &g_buttons[index];
 	#if WINDOWS
 		
+	#elif PLATFORM_BL602
+
 	#elif PLATFORM_XR809
 				{
 					int xr_port; // eg GPIO_PORT_A
@@ -600,6 +616,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_DigitalInput_n:
 	#if WINDOWS
 		
+	#elif PLATFORM_BL602
+
 	#elif PLATFORM_XR809
 				{
 					int xr_port; // eg GPIO_PORT_A
@@ -624,6 +642,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		{
 	#if WINDOWS
 		
+	#elif PLATFORM_BL602
+
 	#elif PLATFORM_XR809
 			GPIO_InitParam param;
 			int xr_port; // eg GPIO_PORT_A
@@ -654,6 +674,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 					channelIndex = PIN_GetPinChannelForPinIndex(index);
 	#if WINDOWS
 		
+	#elif PLATFORM_BL602
+
 	#elif PLATFORM_XR809
 
 	#elif PLATFORM_BK7231N
@@ -742,6 +764,8 @@ void Channel_OnChanged(int ch) {
 
 #if WINDOWS
 	
+#elif PLATFORM_BL602
+
 #elif PLATFORM_XR809
 
 #elif PLATFORM_BK7231N
@@ -845,6 +869,8 @@ int CHANNEL_GetRoleForOutputChannel(int ch){
 
 #define PIN_TMR_DURATION       5
 #if WINDOWS
+
+#elif PLATFORM_BL602
 
 #elif PLATFORM_XR809
 
@@ -1034,6 +1060,9 @@ static int showgpi(const void *context, const char *cmd, const char *args){
 	for (i = 0; i < 32; i++) {
 		int val = 0;
 #ifdef WINDOWS		
+
+#elif PLATFORM_BL602
+
 #elif PLATFORM_XR809
 		int xr_port; // eg GPIO_PORT_A
 		int xr_pin; // eg. GPIO_PIN_20
@@ -1061,6 +1090,8 @@ static int showgpi(const void *context, const char *cmd, const char *args){
 void PIN_Init(void)
 {
 #if WINDOWS
+
+#elif PLATFORM_BL602
 
 #elif PLATFORM_XR809
 	OS_Timer_t timer;

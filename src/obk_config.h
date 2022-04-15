@@ -9,6 +9,8 @@
 
 #elif WINDOWS
 
+#elif PLATFORM_BL602
+
 #else
 
 // comment out to remove component

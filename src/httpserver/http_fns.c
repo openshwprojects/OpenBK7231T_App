@@ -13,6 +13,8 @@
 
 #ifdef WINDOWS
     // nothing
+#elif PLATFORM_BL602
+
 #elif PLATFORM_XR809
     #include <image/flash.h>
 #elif defined(PLATFORM_BK7231N)
@@ -396,6 +398,8 @@ int http_fn_cfg_wifi(http_request_t *request) {
 #elif PLATFORM_XR809
         poststr(request,"TODO XR809<br>");
 
+#elif PLATFORM_BL602
+        poststr(request,"TODO BL602<br>");
 #elif PLATFORM_BK7231T
         AP_IF_S *ar;
         uint32_t num;
@@ -624,6 +628,8 @@ int http_fn_flash_read_tool(http_request_t *request) {
             //uint32_t flash_read(uint32_t flash, uint32_t addr,void *buf, uint32_t size)
             #define FLASH_INDEX_XR809 0
             res = flash_read(FLASH_INDEX_XR809, nowOfs, buffer, now);
+#elif PLATFORM_BL602
+
 #else
             res = bekken_hal_flash_read (nowOfs, buffer,now);
 #endif
@@ -770,6 +776,8 @@ int http_fn_config_dump_table(http_request_t *request) {
 #if WINDOWS
     poststr(request,"Not implemented <br>");
 #elif PLATFORM_XR809
+    poststr(request,"Not implemented <br>");
+#elif PLATFORM_BL602
     poststr(request,"Not implemented <br>");
 #else
     poststr(request,"Dumped to log <br>");

@@ -19,6 +19,41 @@ typedef unsigned short uint16_t;
 
 	
 
+#elif PLATFORM_BL602
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <FreeRTOS.h>
+#include <task.h>
+
+typedef int bool;
+#define true 1
+#define false 0
+
+#define ASSERT
+#define os_strcpy strcpy
+#define os_malloc malloc
+#define os_free free
+#define os_memset memset
+
+#define rtos_delay_milliseconds vTaskDelay
+
+#define kNoErr                      0       //! No error occurred.
+typedef void *beken_thread_arg_t;
+typedef void *beken_thread_t;
+typedef void (*beken_thread_function_t)( beken_thread_arg_t arg );
+typedef int OSStatus;
+
+#define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
+#define BEKEN_APPLICATION_PRIORITY         (7)
+
+// wrappers for XR809 threads to work like bekken
+OSStatus rtos_delete_thread( beken_thread_t* thread );
+OSStatus rtos_create_thread( beken_thread_t* thread, 
+							uint8_t priority, const char* name, 
+							beken_thread_function_t function,
+							uint32_t stack_size, beken_thread_arg_t arg );
 
 #elif PLATFORM_XR809
 

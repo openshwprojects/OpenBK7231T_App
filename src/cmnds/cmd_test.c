@@ -2,6 +2,7 @@
 
 #include "../logging/logging.h"
 #include "../new_pins.h"
+#include "../new_common.h"
 #include "../obk_config.h"
 #include <ctype.h>
 #include "cmd_local.h"

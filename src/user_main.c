@@ -16,6 +16,8 @@
 
 #if PLATFORM_XR809
 
+#elif PLATFORM_BL602
+
 #else
 #include "mem_pub.h"
 #include "str_pub.h"
@@ -43,6 +45,7 @@
 
 #if PLATFORM_XR809
 
+#elif PLATFORM_BL602
 #else
 #include "flash_config/flash_config.h"
 #endif
@@ -67,7 +70,7 @@ int g_bHasWiFiConnected = 0;
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
 
-#if PLATFORM_XR809
+#if PLATFORM_XR809 || PLATFORM_BL602
 void boot_complete(){
 
 }
@@ -80,6 +83,9 @@ int boot_failures(){
 }
 void increment_boot_count(){
 
+}
+size_t xPortGetFreeHeapSize() {
+	return 0;
 }
 #endif
 void RESET_ScheduleModuleReset(int delSeconds) {
@@ -133,11 +139,7 @@ void Main_OnWiFiStatusChange(int code){
 }
 
 
-#if PLATFORM_XR809
-size_t xPortGetFreeHeapSize() {
-	return 0;
-}
-#endif
+
 
 void Main_OnEverySecond()
 {

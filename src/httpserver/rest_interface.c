@@ -14,6 +14,8 @@
 #include "lwip/sockets.h"
 #if PLATFORM_XR809
     #include <image/flash.h>
+#elif PLATFORM_BL602
+
 #else
 #include "../flash_config/flash_config.h"
 #endif
@@ -26,6 +28,7 @@
 #if PLATFORM_XR809
 uint32_t flash_read(uint32_t flash, uint32_t addr,void *buf, uint32_t size);
 #define FLASH_INDEX_XR809 0
+#elif PLATFORM_BL602
 #else
 extern UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address);
 #endif
@@ -91,6 +94,11 @@ const char * apppage2 = "';"
 const char *obktype = "XR809";
 const char * apppage2 = "';"
 "            var obktype = 'XR809';"
+"            var device = 'http://";
+#elif PLATFORM_BL602
+const char *obktype = "BL602";
+const char * apppage2 = "';"
+"            var obktype = 'BL602';"
 "            var device = 'http://";
 #else
 const char *obktype = "beken";
@@ -506,6 +514,7 @@ static int http_favicon(http_request_t *request){
     request->responseCode = HTTP_RESPONSE_NOT_FOUND;
     http_setup(request, httpMimeTypeHTML);
     poststr(request,NULL);
+    return 0;
 }
 #endif
 
@@ -885,6 +894,8 @@ static int http_rest_get_flash(http_request_t *request, int startaddr, int len){
   //uint32_t flash_read(uint32_t flash, uint32_t addr,void *buf, uint32_t size)
  #define FLASH_INDEX_XR809 0
         res = flash_read(FLASH_INDEX_XR809, startaddr, buffer, readlen);
+#elif PLATFORM_BL602
+		res = 0;
 #else
         res = flash_read((char *)buffer, readlen, startaddr);
 #endif
@@ -900,6 +911,8 @@ static int http_rest_get_flash(http_request_t *request, int startaddr, int len){
 static int http_rest_get_dumpconfig(http_request_t *request){
 
 #if PLATFORM_XR809
+
+#elif PLATFORM_BL602
 #else
     config_dump_table();
 #endif
