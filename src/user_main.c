@@ -35,7 +35,6 @@
 #include "logging/logging.h"
 #include "httpserver/http_tcp_server.h"
 #include "httpserver/rest_interface.h"
-#include "printnetinfo/printnetinfo.h"
 #include "mqtt/new_mqtt.h"
 
 #ifdef BK_LITTLEFS
@@ -62,12 +61,6 @@ static int bSafeMode = 0;
 static int g_reset = 0;
 // save config in this number of seconds
 int g_savecfg = 0;
-// main timer tick every 1s
-#if PLATFORM_XR809
-OS_Thread_t g_main_timer_1s;
-#else
-beken_timer_t g_main_timer_1s;
-#endif
 // is connected to WiFi?
 int g_bHasWiFiConnected = 0;
 
@@ -144,12 +137,9 @@ void Main_OnWiFiStatusChange(int code){
 size_t xPortGetFreeHeapSize() {
 	return 0;
 }
-void HAL_PrintNetworkInfo() {
-
-}
 #endif
 
-static void Main_OnEverySecond(void *data)
+void Main_OnEverySecond()
 {
 	// run_adc_test();
 	MQTT_RunEverySecondUpdate();
@@ -225,20 +215,8 @@ int Main_IsConnectedToWiFi() {
 	return g_bHasWiFiConnected;
 }
 
-#if PLATFORM_XR809
-static void helloworld_task(void *arg)
+void Main_Init()
 {
-	while (1) {
-		OS_Sleep(1);
-		Main_OnEverySecond(0);
-	}
-
-	OS_ThreadDelete(&g_main_timer_1s);
-}
-#endif
-void user_main(void)
-{
-    OSStatus err;
 	int bForceOpenAP = 0;
   int bootFailures = 0;
 	const char *wifi_ssid, *wifi_pass;
@@ -332,48 +310,4 @@ void user_main(void)
     }
   }
 
-#if PLATFORM_XR809
-
-#define HELLOWORLD_THREAD_STACK_SIZE	(1 * 1024)
-
-	/* start helloworld task */
-	if (OS_ThreadCreate(&g_main_timer_1s,
-		                "helloworld",
-		                helloworld_task,
-		                NULL,
-		                OS_THREAD_PRIO_CONSOLE,
-		                HELLOWORLD_THREAD_STACK_SIZE) != OS_OK) {
-		ADDLOGF_DEBUG("create helloworld failed\n");
-		return ;
-	}
-
-#else
-  err = rtos_init_timer(&g_main_timer_1s,
-                        1 * 1000,
-                        Main_OnEverySecond,
-                        (void *)0);
-  ASSERT(kNoErr == err);
-
-  err = rtos_start_timer(&g_main_timer_1s);
-  ASSERT(kNoErr == err);
-	ADDLOGF_DEBUG("started timer\r\n");
-#endif
 }
-
-#if PLATFORM_BK7231N
-
-// right now Free is somewhere else
-
-#else
-
-#undef Free
-// This is needed by tuya_hal_wifi_release_ap.
-// How come that the Malloc was not undefined, but Free is?
-// That's because Free is defined to os_free. It would be better to fix it elsewhere
-void Free(void* ptr)
-{
-    os_free(ptr);
-}
-
-
-#endif

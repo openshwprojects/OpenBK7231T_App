@@ -19,6 +19,7 @@
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #include "../ota/ota.h"
+#include "../hal/hal_wifi.h"
 
 
 // define the feature ADDLOGF_XXX will use

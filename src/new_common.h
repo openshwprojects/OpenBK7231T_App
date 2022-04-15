@@ -120,8 +120,8 @@ int Time_getUpTimeSeconds();
 char Tiny_CRC8(const char *data,int length);
 void RESET_ScheduleModuleReset(int delSeconds);
 int Main_IsConnectedToWiFi();
-
-
+void Main_Init();
+void Main_OnEverySecond();
 
 
 

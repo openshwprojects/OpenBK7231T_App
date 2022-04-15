@@ -50,6 +50,9 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code)) {
 }
 
 
+void HAL_PrintNetworkInfo() {
+
+}
 const char *HAL_GetMyIPString() {
 	strcpy(g_ipStr,inet_ntoa(g_wlan_netif->ip_addr));
 

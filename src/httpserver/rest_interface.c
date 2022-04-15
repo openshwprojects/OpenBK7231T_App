@@ -7,7 +7,7 @@
 #include "../new_pins.h"
 #include "../jsmn/jsmn_h.h"
 #include "../ota/ota.h"
-#include "../printnetinfo/printnetinfo.h"
+#include "../hal/hal_wifi.h"
 #ifdef BK_LITTLEFS
 #include "../littlefs/our_lfs.h"
 #endif

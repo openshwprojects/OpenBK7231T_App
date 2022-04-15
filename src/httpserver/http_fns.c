@@ -9,6 +9,7 @@
 #include "../driver/drv_tuyaMCU.h"
 #include "../driver/drv_public.h"
 #include "../logging/logging.h"
+#include "../hal/hal_wifi.h"
 
 #ifdef WINDOWS
     // nothing
