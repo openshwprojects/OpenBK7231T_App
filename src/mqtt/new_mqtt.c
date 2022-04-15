@@ -55,6 +55,8 @@ static int g_my_reconnect_mqtt_after_time = -1;
 ip_addr_t mqtt_ip LWIP_MQTT_EXAMPLE_IPADDR_INIT;
 mqtt_client_t* mqtt_client;
 
+static int mqtt_initialised = 0;
+
 typedef struct mqtt_callback_tag {
     char *topic;
     char *subscriptionTopic;
@@ -595,11 +597,15 @@ void MQTT_init(){
   // note: this may REPLACE an existing entry with the same ID.  ID 2 !!!
   MQTT_RegisterCallback( cbtopicbase, cbtopicsub, 2, tasCmnd);
 
+  mqtt_initialised = 1;
+
 }
 
 
 // called from user timer.
 void MQTT_RunEverySecondUpdate() {
+
+  if (!mqtt_initialised) return;
 
   // if asked to reconnect (e.g. change of topic(s))
   if (mqtt_reconnect > 0){
