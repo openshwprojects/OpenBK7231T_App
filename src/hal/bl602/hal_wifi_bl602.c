@@ -161,7 +161,11 @@ const char *HAL_GetMyIPString() {
 }
 const char *HAL_GetMACStr(char *macstr) {
 	uint8_t mac[6];
-	wifi_mgmr_sta_mac_get(mac);
+	if(g_bAccessPointMode == 1) {
+		wifi_mgmr_ap_mac_get(mac);
+	} else {
+		wifi_mgmr_sta_mac_get(mac);
+	}
 	sprintf(macstr,"%02X%02X%02X%02X%02X%02X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
 	return macstr;
 }

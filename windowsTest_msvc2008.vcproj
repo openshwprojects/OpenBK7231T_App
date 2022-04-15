@@ -657,7 +657,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\new_http.h"
+				RelativePath=".\src\httpserver\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -669,7 +669,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\httpserver\new_http.h"
+				RelativePath=".\src\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -698,6 +698,10 @@
 			</File>
 			<File
 				RelativePath=".\src\ntp_time.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\obk_config.h"
 				>
 			</File>
 		</Filter>
@@ -805,6 +809,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\hal\bl602\hal_generic_bl602.c"
+				>
+			</File>
+			<File
 				RelativePath=".\src\hal\hal_generic_xr809.c"
 				>
 			</File>
@@ -825,7 +833,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\hal\bl602\hal_wifi_bl602.c"
+				>
+			</File>
+			<File
 				RelativePath=".\src\hal\hal_wifi_xr809.c"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="BL602_Only"
+			>
+			<File
+				RelativePath="..\main.c"
 				>
 			</File>
 		</Filter>
