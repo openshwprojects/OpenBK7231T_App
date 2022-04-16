@@ -374,7 +374,7 @@ void log_server_thread( beken_thread_arg_t arg )
                 //addLog( "TCP Log Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd );
                 if ( kNoErr
                      != rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY, 
-							                     "TCP Clients",
+							                     "Logging TCP Client",
                                                  (beken_thread_function_t)log_client_thread,
                                                  0x800, 
                                                  (beken_thread_arg_t)client_fd ) ) 

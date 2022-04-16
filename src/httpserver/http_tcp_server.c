@@ -168,7 +168,7 @@ static void tcp_server_thread( beken_thread_arg_t arg )
                 if ( kNoErr != 
 #if PLATFORM_XR809
 					OS_ThreadCreate(&clientThreadUnused,
-							                     "TCP Clients",
+							                     "HTTP Client",
 		                tcp_client_thread,
 		                client_fd,
 		                OS_THREAD_PRIO_CONSOLE,
@@ -176,7 +176,7 @@ static void tcp_server_thread( beken_thread_arg_t arg )
 
 #else
                      rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY, 
-							                     "TCP Clients",
+							                     "HTTP Client",
                                                  (beken_thread_function_t)tcp_client_thread,
                                                  0x800, 
                                                  (beken_thread_arg_t)client_fd )
