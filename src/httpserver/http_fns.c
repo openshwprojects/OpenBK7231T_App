@@ -1036,16 +1036,24 @@ int http_fn_cfg_pins(http_request_t *request) {
     }
 //	strcat(outbuf,"<button type=\"button\">Click Me!</button>");
     poststr(request,"<form action=\"cfg_pins\">");
-    for( i = 0; i < GPIO_MAX; i++) {
+    for(i = 0; i < GPIO_MAX; i++) {
         int si, ch, ch2;
         int j;
+#if PLATFORM_BL602		
+		// On BL602, any GPIO can be mapped to one of 5 PWM channels
+#else
 		int internalPWMIndex;
+#endif
 
         si = PIN_GetPinRoleForPinIndex(i);
         ch = PIN_GetPinChannelForPinIndex(i);
         ch2 = PIN_GetPinChannel2ForPinIndex(i);
+#if PLATFORM_BL602
+		// On BL602, any GPIO can be mapped to one of 5 PWM channels
+#else
 		// internal pwm index (-1 if this pin is not supported by pwm)
 		internalPWMIndex = PIN_GetPWMIndexForPinIndex(i);
+#endif
 
 #if PLATFORM_XR809
         poststr(request,PIN_GetPinNameAlias(i));
@@ -1055,12 +1063,16 @@ int http_fn_cfg_pins(http_request_t *request) {
 #endif
         hprintf128(request, "<select name=\"%i\">",i);
         for(j = 0; j < IOR_Total_Options; j++) {
+#if PLATFORM_BL602
+			// On BL602, any GPIO can be mapped to one of 5 PWM channels
+#else
 			// do not show hardware PWM on non-PWM pin
 			if(j == IOR_PWM) {
 				if(internalPWMIndex == -1) {
 					continue;
 				}
 			}
+#endif
 
             if(j == si) {
                 hprintf128(request, "<option value=\"%i\" selected>%s</option>",j,htmlPinRoleNames[j]);
