@@ -30,6 +30,33 @@ int strcat_safe(char *tg, const char *src, int tgMaxLen) {
 }
 
 
+int strcpy_safe_checkForChanges(char *tg, const char *src, int tgMaxLen) {
+	int changesFound = 0;
+	// keep space for 1 more char
+	int curOfs = 1;
+	// copy
+	while(*src != 0) {
+		if(*tg != *src) {
+			changesFound++;
+			*tg = *src;
+		}
+		src++;
+		tg++;
+		curOfs++;
+		if(curOfs >= tgMaxLen - 1) {
+			if(*tg != 0) {
+				changesFound++;
+				*tg = 0;
+			}
+			return 0;
+		}
+	}
+	if(*tg != 0) {
+		changesFound++;
+		*tg = 0;
+	}
+	return changesFound;
+}
 int strcpy_safe(char *tg, const char *src, int tgMaxLen) {
 	// keep space for 1 more char
 	int curOfs = 1;

@@ -10,6 +10,7 @@
 #include "../logging/logging.h"
 #include "../hal/hal_wifi.h"
 #include "../hal/hal_pins.h"
+#include "../hal/hal_flashConfig.h"
 
 #ifdef WINDOWS
     // nothing
@@ -216,6 +217,7 @@ int http_fn_index(http_request_t *request) {
 
     poststr(request,"<form action=\"about\"><input type=\"submit\" value=\"About\"/></form>");
 
+	hprintf128(request,"<h3>Cfg size: %i, change counter: %i, ota counter: %i!</h3>",sizeof(g_cfg),g_cfg.changeCounter,g_cfg.otaCounter);
 
     poststr(request,htmlReturnToMenu);
     HTTP_AddBuildFooter(request);
@@ -300,14 +302,8 @@ int http_fn_cfg_mqtt_set(http_request_t *request) {
     if(http_getArg(request->url,"client",tmpA,sizeof(tmpA))) {
         CFG_SetMQTTBrokerName(tmpA);
     }
-    if(CFG_SaveMQTT()) {
-        poststr(request,"MQTT mode set!");
-    } else {
-        poststr(request,"Error saving MQTT settings to flash!");
-    }
-    
 
-    poststr(request,"Please wait for module to connect... if there is problem, restart it...");
+    poststr(request,"Please wait for module to connect... if there is problem, restart it from Index html page...");
     
     poststr(request,"<br>");
     poststr(request,"<a href=\"cfg_mqtt\">Return to MQTT settings</a>");
@@ -483,9 +479,9 @@ int http_fn_cfg_wifi_set(http_request_t *request) {
         }
         poststr(request,"WiFi mode set: connect to WLAN.");
     }
-    addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"HTTP_ProcessPacket: calling CFG_SaveWiFi \r\n");
-    CFG_SaveWiFi();
-    addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"HTTP_ProcessPacket: done CFG_SaveWiFi \r\n");
+    addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"HTTP_ProcessPacket: calling CFG_Save_IfThereArePendingChanges \r\n");
+	CFG_Save_IfThereArePendingChanges();
+    addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"HTTP_ProcessPacket: done CFG_Save_IfThereArePendingChanges \r\n");
 
     poststr(request,"Please wait for module to reset...");
 	RESET_ScheduleModuleReset(3);
@@ -777,16 +773,9 @@ int http_fn_config_dump_table(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
     poststr(request,g_header);
-#if WINDOWS
+
     poststr(request,"Not implemented <br>");
-#elif PLATFORM_XR809
-    poststr(request,"Not implemented <br>");
-#elif PLATFORM_BL602
-    poststr(request,"Not implemented <br>");
-#else
-    poststr(request,"Dumped to log <br>");
-        config_dump_table();
-#endif
+
     poststr(request,htmlReturnToCfg);
     HTTP_AddBuildFooter(request);
     poststr(request,htmlEnd);
@@ -1032,7 +1021,7 @@ int http_fn_cfg_pins(http_request_t *request) {
         }
     }
     if(iChangedRequested>0) {
-        PIN_SaveToFlash();
+		CFG_Save_IfThereArePendingChanges();
         hprintf128(request, "Pins update - %i reqs, %i changed!<br><br>",iChangedRequested,iChanged);
     }
 //	strcat(outbuf,"<button type=\"button\">Click Me!</button>");

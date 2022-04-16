@@ -158,13 +158,12 @@ int __cdecl main(void)
 
 	Tokenizer_TokenizeString("dsfafd dasfdsaf dsaf dsaf dsa fdsaf dsafdsa");
 
-	PIN_ClearPins();
+	CFG_ClearPins();
 	PIN_SetPinChannelForPinIndex(1,1);
 	PIN_SetPinRoleForPinIndex(1,IOR_Relay);
 
 	PIN_SetPinChannelForPinIndex(2,2);
 	PIN_SetPinRoleForPinIndex(2,IOR_PWM);
-    //init_rest();
 
 	TuyaMCU_Init();
 

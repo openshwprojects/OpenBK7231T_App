@@ -10,6 +10,30 @@
 
 #include "obk_config.h"
 
+
+#if WINDOWS
+#define DEVICENAME_PREFIX_FULL "WinTest"
+#define DEVICENAME_PREFIX_SHORT "WT"
+#elif PLATFORM_XR809
+#define DEVICENAME_PREFIX_FULL "OpenXR809"
+#define DEVICENAME_PREFIX_SHORT "oxr"
+#elif PLATFORM_BK7231N
+#define DEVICENAME_PREFIX_FULL "OpenBK7231N"
+#define DEVICENAME_PREFIX_SHORT "obk"
+#elif PLATFORM_BK7231T
+#define DEVICENAME_PREFIX_FULL "OpenBK7231T"
+#define DEVICENAME_PREFIX_SHORT "obk"
+#elif PLATFORM_BL602
+#define DEVICENAME_PREFIX_FULL "OpenBL602"
+#define DEVICENAME_PREFIX_SHORT "obl"
+#else
+#error "You must define a platform.."
+This platform is not supported, error!
+#endif
+
+
+
+
 #if WINDOWS
 
 
@@ -169,6 +193,7 @@ int wal_stricmp(const char *a, const char *b) ;
 
 int strcat_safe(char *tg, const char *src, int tgMaxLen);
 int strcpy_safe(char *tg, const char *src, int tgMaxLen);
+int strcpy_safe_checkForChanges(char *tg, const char *src, int tgMaxLen);
 void urldecode2_safe(char *dst, const char *srcin, int maxDstLen);
 int Time_getUpTimeSeconds();
 char Tiny_CRC8(const char *data,int length);

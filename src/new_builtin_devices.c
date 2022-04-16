@@ -3,18 +3,19 @@
 // but for now let's use that
 #include "new_common.h"
 #include "new_pins.h"
+#include "new_cfg.h"
 
 void Setup_Device_Empty() {
-	PIN_ClearPins();
+	CFG_ClearPins();
 
-	PIN_SaveToFlash();
+	CFG_Save_IfThereArePendingChanges();
 
 }
 
 // https://www.elektroda.pl/rtvforum/topic3804553.html
 // SmartSwitch Tuya WL-SW01_16 16A
 void Setup_Device_TuyaWL_SW01_16A() {
-	PIN_ClearPins();
+	CFG_ClearPins();
 
 	PIN_SetPinRoleForPinIndex(7, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(7, 1);
@@ -22,12 +23,12 @@ void Setup_Device_TuyaWL_SW01_16A() {
 	PIN_SetPinRoleForPinIndex(26, IOR_Button);
 	PIN_SetPinChannelForPinIndex(26, 1);
 
-	PIN_SaveToFlash();
+	CFG_Save_IfThereArePendingChanges();
 }
 // https://www.elektroda.pl/rtvforum/topic3822484.html
 //  WiFi Tuya SmartLife 4CH 10A
 void Setup_Device_TuyaSmartLife4CH10A() {
-	PIN_ClearPins();
+	CFG_ClearPins();
 
 	PIN_SetPinRoleForPinIndex(7, IOR_Button);
 	PIN_SetPinChannelForPinIndex(7, 1);
@@ -47,13 +48,13 @@ void Setup_Device_TuyaSmartLife4CH10A() {
 	PIN_SetPinRoleForPinIndex(26, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(26, 4);
 
-	PIN_SaveToFlash();
+	CFG_Save_IfThereArePendingChanges();
 }
 // Tuya "12W" smart light bulb
 // "Tuya Wifi Smart Life Light Bulb Lamp E27 LED RGBCW Dimmable For Alexa/Google 18W
 // See this topic: https://www.elektroda.pl/rtvforum/viewtopic.php?t=3880540&highlight=
 void Setup_Device_BK7231N_TuyaLightBulb_RGBCW_5PWMs() {
-	PIN_ClearPins();
+	CFG_ClearPins();
 
 	// RGBCW, in that order
 	// Raw PWMS (no I2C)
@@ -78,11 +79,11 @@ void Setup_Device_BK7231N_TuyaLightBulb_RGBCW_5PWMs() {
 	PIN_SetPinRoleForPinIndex(6, IOR_PWM);
 	PIN_SetPinChannelForPinIndex(6, 5);
 
-	PIN_SaveToFlash();
+	CFG_Save_IfThereArePendingChanges();
 }
 // https://www.elektroda.pl/rtvforum/viewtopic.php?p=19743751#19743751
 void Setup_Device_IntelligentLife_NF101A() {
-	PIN_ClearPins();
+	CFG_ClearPins();
 
 	// TODO: LED
 
@@ -93,11 +94,11 @@ void Setup_Device_IntelligentLife_NF101A() {
 	PIN_SetPinChannelForPinIndex(6, 1);
 
 
-	PIN_SaveToFlash();
+	CFG_Save_IfThereArePendingChanges();
 }	
 // https://www.elektroda.pl/rtvforum/topic3798114.html
 void Setup_Device_TuyaLEDDimmerSingleChannel() {
-	PIN_ClearPins();
+	CFG_ClearPins();
 
 	// pin 8 has PWM 
 	PIN_SetPinRoleForPinIndex(8, IOR_Relay);
@@ -108,7 +109,7 @@ void Setup_Device_TuyaLEDDimmerSingleChannel() {
 	PIN_SetPinChannelForPinIndex(1, 1);
 
 
-	PIN_SaveToFlash();
+	CFG_Save_IfThereArePendingChanges();
 }
 
 
@@ -121,7 +122,7 @@ void Setup_Device_CalexLEDDimmerFiveChannel() {
 	// warm white - PWM5 = P26
 	// cold white - PWM4 = P24
 
-	PIN_ClearPins();
+	CFG_ClearPins();
 
 	// red
 	PIN_SetPinChannelForPinIndex(7, 1);
@@ -139,7 +140,7 @@ void Setup_Device_CalexLEDDimmerFiveChannel() {
 	PIN_SetPinChannelForPinIndex(26, 5);
 	PIN_SetPinRoleForPinIndex(26, IOR_PWM);
 
-	PIN_SaveToFlash();
+	CFG_Save_IfThereArePendingChanges();
 }
 
 void Setup_Device_CalexPowerStrip_900018_1v1_0UK() {
@@ -151,7 +152,7 @@ void Setup_Device_CalexPowerStrip_900018_1v1_0UK() {
 	// warm white - PWM5 = P26
 	// cold white - PWM4 = P24
 
-	PIN_ClearPins();
+	CFG_ClearPins();
 
 	// relays - 4 sockets + 1 USB
 	PIN_SetPinChannelForPinIndex(6, 5);
@@ -177,7 +178,7 @@ void Setup_Device_CalexPowerStrip_900018_1v1_0UK() {
 	PIN_SetPinChannelForPinIndex(24, 2);
 	PIN_SetPinRoleForPinIndex(24, IOR_LED);
 
-	PIN_SaveToFlash();
+	CFG_Save_IfThereArePendingChanges();
 }
 
 // https://www.bunnings.com.au/arlec-grid-connect-smart-9w-cct-led-downlight_p0168694
@@ -188,7 +189,7 @@ void Setup_Device_ArlecCCTDownlight() {
 	// cold white - PWM1 = P6
 	// warm white - PWM2 = P24
 
-	PIN_ClearPins();
+	CFG_ClearPins();
 
 	// cold white
 	PIN_SetPinChannelForPinIndex(6, 1);
@@ -197,7 +198,7 @@ void Setup_Device_ArlecCCTDownlight() {
 	PIN_SetPinChannelForPinIndex(24, 2);
 	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
 
-	PIN_SaveToFlash();
+	CFG_Save_IfThereArePendingChanges();
 }
 
 // https://www.elektroda.pl/rtvforum/topic3804553.html
@@ -214,7 +215,7 @@ void Setup_Device_NedisWIFIPO120FWT_16A() {
 	// Relay - PWM5 - P26
 	
 
-	PIN_ClearPins();
+	CFG_ClearPins();
 	// LEd
 	PIN_SetPinRoleForPinIndex(6, IOR_LED);
 	PIN_SetPinChannelForPinIndex(6, 1);
@@ -225,7 +226,7 @@ void Setup_Device_NedisWIFIPO120FWT_16A() {
 	PIN_SetPinRoleForPinIndex(26, IOR_Relay_n);
 	PIN_SetPinChannelForPinIndex(26, 1);
 
-	PIN_SaveToFlash();
+	CFG_Save_IfThereArePendingChanges();
 }
 
 // https://www.elektroda.pl/rtvforum/topic3804553.html
@@ -239,7 +240,7 @@ void Setup_Device_NedisWIFIP130FWT_10A() {
 	// Relay - PWM5 - P26
 	
 
-	PIN_ClearPins();
+	CFG_ClearPins();
 	// Led
 	PIN_SetPinRoleForPinIndex(6, IOR_LED);
 	PIN_SetPinChannelForPinIndex(6, 1);
@@ -250,7 +251,7 @@ void Setup_Device_NedisWIFIP130FWT_10A() {
 	PIN_SetPinRoleForPinIndex(26, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(26, 1);
 
-	PIN_SaveToFlash();
+	CFG_Save_IfThereArePendingChanges();
 }
 
 // https://www.elektroda.com/rtvforum/topic3819498.html
@@ -273,7 +274,7 @@ void Setup_Device_EmaxHome_EDU8774() {
 	// Led - PWM5 - P26
 	
 
-	PIN_ClearPins();
+	CFG_ClearPins();
 	// Button
 	PIN_SetPinRoleForPinIndex(10, IOR_Button);
 	PIN_SetPinChannelForPinIndex(10, 1);
@@ -284,7 +285,7 @@ void Setup_Device_EmaxHome_EDU8774() {
 	PIN_SetPinRoleForPinIndex(26, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(26, 1);
 
-	PIN_SaveToFlash();
+	CFG_Save_IfThereArePendingChanges();
 }
 
 
@@ -295,7 +296,7 @@ void Setup_Device_BK7231N_CB2S_QiachipSmartSwitch() {
 
 
 
-	PIN_ClearPins();
+	CFG_ClearPins();
 	// Button
 	PIN_SetPinRoleForPinIndex(7, IOR_Button);
 	PIN_SetPinChannelForPinIndex(7, 1);
@@ -304,21 +305,21 @@ void Setup_Device_BK7231N_CB2S_QiachipSmartSwitch() {
 	PIN_SetPinChannelForPinIndex(8, 1);
 	// Led
 
-	PIN_SaveToFlash();
+	CFG_Save_IfThereArePendingChanges();
 }
 void Setup_Device_BK7231T_WB2S_QiachipSmartSwitch() {
-       PIN_ClearPins();
-       // Button
-       PIN_SetPinRoleForPinIndex(7, IOR_Button);
-       PIN_SetPinChannelForPinIndex(7, 1);
-       // Relay
-       PIN_SetPinRoleForPinIndex(6, IOR_Relay_n);
-       PIN_SetPinChannelForPinIndex(6, 1);
-       // Led
-       PIN_SetPinRoleForPinIndex(10, IOR_LED);
-       PIN_SetPinChannelForPinIndex(10, 1);
+	CFG_ClearPins();
+	// Button
+	PIN_SetPinRoleForPinIndex(7, IOR_Button);
+	PIN_SetPinChannelForPinIndex(7, 1);
+	// Relay
+	PIN_SetPinRoleForPinIndex(6, IOR_Relay_n);
+	PIN_SetPinChannelForPinIndex(6, 1);
+	// Led
+	PIN_SetPinRoleForPinIndex(10, IOR_LED);
+	PIN_SetPinChannelForPinIndex(10, 1);
 
-       PIN_SaveToFlash();
+	CFG_Save_IfThereArePendingChanges();
 }
 
 
@@ -331,7 +332,7 @@ void Setup_Device_BK7231T_Raw_PrimeWiFiSmartOutletsOutdoor_CCWFIO232PK() {
 
 
 
-	PIN_ClearPins();
+	CFG_ClearPins();
 	// Relay
 	PIN_SetPinRoleForPinIndex(6, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(6, 1);
@@ -350,7 +351,7 @@ void Setup_Device_BK7231T_Raw_PrimeWiFiSmartOutletsOutdoor_CCWFIO232PK() {
 	PIN_SetPinChannelForPinIndex(24, 1);
 
 
-	PIN_SaveToFlash();
+	CFG_Save_IfThereArePendingChanges();
 }
 
 
@@ -360,7 +361,7 @@ void Setup_Device_BK7231T_Raw_PrimeWiFiSmartOutletsOutdoor_CCWFIO232PK() {
 // Button PWM5 P26
 // LED PWM1 P7
 void Setup_Device_TuyaSmartPFW02G() {
-	PIN_ClearPins();
+	CFG_ClearPins();
 
 	PIN_SetPinRoleForPinIndex(24, IOR_Relay_n);
 	PIN_SetPinChannelForPinIndex(24, 1);
@@ -372,7 +373,7 @@ void Setup_Device_TuyaSmartPFW02G() {
 	PIN_SetPinChannelForPinIndex(7, 1);
 
 
-	PIN_SaveToFlash();
+	CFG_Save_IfThereArePendingChanges();
 }
 
 
@@ -392,7 +393,7 @@ void Setup_Device_AvatarASL04() {
 
 	// audio input ???? - most likely P23/ADC?
 
-	PIN_ClearPins();
+	CFG_ClearPins();
 
 	// red
 	PIN_SetPinChannelForPinIndex(24, 1);
@@ -416,12 +417,12 @@ void Setup_Device_AvatarASL04() {
 	PIN_SetPinChannelForPinIndex(14, 3);
 
 
-	PIN_SaveToFlash();
+	CFG_Save_IfThereArePendingChanges();
 }
 
 
 void Setup_Device_TuyaSmartWIFISwith_4Gang_CB3S(){
-	PIN_ClearPins();
+	CFG_ClearPins();
 
 	PIN_SetPinRoleForPinIndex(24, IOR_Button);
 	PIN_SetPinChannelForPinIndex(24, 1);
@@ -444,5 +445,10 @@ void Setup_Device_TuyaSmartWIFISwith_4Gang_CB3S(){
 	PIN_SetPinRoleForPinIndex(22, IOR_LED_WIFI);
 	PIN_SetPinChannelForPinIndex(22, 1);
 
-	PIN_SaveToFlash();
+	CFG_Save_IfThereArePendingChanges();
 }
+
+
+
+
+

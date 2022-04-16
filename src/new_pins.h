@@ -39,28 +39,74 @@ enum ChannelType {
 	ChType_Temperature_div10,
 	ChType_Toggle,
 };
-// NOTE: you must keep size of this structure in sync with
-// structures in flash config code for both BK7231 and XR809
+#define GPIO_MAX 27
+#define CHANNEL_MAX 64
+
 typedef struct pinsState_s {
+	// All above values are indexed by physical pin index
+	// (so we assume we have maximum of 32 pins)
 	byte roles[32];
 	byte channels[32];
 	// extra channels array - this is needed for 
 	// buttons, so button can toggle one relay on single click
 	// and other relay on double click
 	byte channels2[32];
+	// This single field above, is indexed by CHANNEL INDEX 
+	// (not by pin index)
+	byte channelTypes[CHANNEL_MAX];
 } pinsState_t;
 
+//
+// Main config structure (less than 2KB)
+//
+// This config structure is supposed  to be saved only when user 
+// changes the device configuration, so really not often.
+// We should not worry about flash memory wear in this case.
+// The saved-every-reboot values are stored elsewhere
+// (i.e. saved channel states, reboot counter?)
+typedef struct mainConfig_s {
+	byte ident0;
+	byte ident1;
+	byte ident2;
+	byte crc;
+	int version;
+	// unused
+	int genericFlags;
+	// unused
+	int genericFlags2;
+	unsigned short changeCounter;
+	unsigned short otaCounter;
+	// target wifi credentials
+	char wifi_ssid[64];
+	char wifi_pass[64];
+	// MQTT information for Home Assistant
+	char mqtt_host[256];
+	char mqtt_brokerName[64];
+	char mqtt_userName[64];
+	char mqtt_pass[128];
+	int mqtt_port;
+	// addon JavaScript panel is hosted on external server
+	char webappRoot[64];
+	// TODO?
+	byte mac[6];
+	// TODO?
+	char shortDeviceName[32];
+	char longDeviceName[64];
+	pinsState_t pins;
+	byte unusedSectorA[256];
+	byte unusedSectorB[128];
+	byte unusedSectorC[128];
+	char initCommandLine[512];
+} mainConfig_t;
 
-extern pinsState_t g_pins;
+extern mainConfig_t g_cfg;
 
 extern char g_enable_pins;
 
-#define GPIO_MAX 27
-#define CHANNEL_MAX 32
 
 void PIN_Init(void);
 void PIN_SetupPins();
-void PIN_ClearPins();
+void CFG_ClearPins();
 int PIN_GetPinRoleForPinIndex(int index);
 int PIN_GetPinChannelForPinIndex(int index);
 int PIN_GetPinChannel2ForPinIndex(int index);
@@ -82,8 +128,7 @@ int CHANNEL_GetType(int ch);
 void CHANNEL_SetAll(int iVal, bool bForce);
 void CHANNEL_SetStateOnly(int iVal);
 
-void PIN_SaveToFlash();
-void PIN_LoadFromFlash();
+
 void PIN_set_wifi_led(int value);
 int PIN_GetPWMIndexForPinIndex(int pin);
 

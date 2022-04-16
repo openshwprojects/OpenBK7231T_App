@@ -50,7 +50,7 @@ void RepeatingEvents_OnEverySecond() {
 		cur = cur->next;
 	}
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"RepeatingEvents_OnEverySecond checked %i events, ran %i\n",c_checked,c_ran);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"RepeatingEvents_OnEverySecond checked %i events, ran %i\n",c_checked,c_ran);
 }
 int RepeatingEvents_Cmd_AddRepeatingEvent(const void *context, const char *cmd, const char *args) {
 	int interval;

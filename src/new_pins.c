@@ -49,168 +49,36 @@ typedef struct pinButton_ {
 // if zero, all hardware action is disabled.
 char g_enable_pins = 0;
 
-
-#if WINDOWS
-
-#elif PLATFORM_BL602
-#include "bl_gpio.h"
-#include <bl_pwm.h>
-
-#elif PLATFORM_XR809
-
-// XR809 sysinfo is used to save configuration to flash
-#include "common/framework/sysinfo.h"
-
-#else
-#include "flash_config/flash_config.h"
-
-#include "../../beken378/func/include/net_param_pub.h"
-
-
-typedef struct item_pins_config
-{
-	INFO_ITEM_ST head;
-	pinsState_t pins;
-}ITEM_PINS_CONFIG,*ITEM_PINS_CONFIG_PTR;
-
-
-
-
-#endif
-
-
-
-/*
-// from BkDriverPwm.h"
-OSStatus bk_pwm_start(bk_pwm_t pwm);
-
-OSStatus bk_pwm_update_param(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
-
-OSStatus bk_pwm_stop(bk_pwm_t pwm);
-*/
-//char g_pwmIndexForPinIndexMapping []
-//{
-//	// pin 0
-//
-//
-//};
-
-// pwm mqtt
-// https://community.home-assistant.io/t/shelly-dimmer-with-mqtt/149871
-// https://community.home-assistant.io/t/mqtt-light-problems-with-dimmer-devices/120822
-// https://community.home-assistant.io/t/mqtt-dimming/96447/2
-// https://community.home-assistant.io/t/mqtt-dimmer-switch-doesnt-display-brightness-slider/15471/2
-
-
 // it was nice to have it as bits but now that we support PWM...
 //int g_channelStates;
 int g_channelValues[GPIO_MAX] = { 0 };
 // channel content types, mostly not required to set
 int g_channelTypes[GPIO_MAX] = { 0 };
 
-
 pinButton_s g_buttons[GPIO_MAX];
-
-pinsState_t g_pins;
 
 void (*g_channelChangeCallback)(int idx, int iVal) = 0;
 void (*g_doubleClickCallback)(int pinIndex) = 0;
 
 
-void PIN_SaveToFlash() {
-#if WINDOWS
-
-#elif PLATFORM_BL602
-
-#elif PLATFORM_XR809
-	sysinfo_t *inf;
-	int res;
-	inf = sysinfo_get();
-	if(inf == 0) {
-		printf("PIN_SaveToFlash: sysinfo_get returned 0!\n\r");
-		return;
-	}
-	memcpy(&inf->pins, &g_pins, sizeof(inf->pins));
-	
-	if(sizeof(inf->pins) != sizeof(g_pins)) {
-		printf("PIN_SaveToFlash: FATAL ERROR - pin structures size mismatch! %i vs %i\r\n",sizeof(inf->pins),sizeof(g_pins));
-	}
-
-	res = sysinfo_save_wrapper();
-	if(res != 0) {
-		printf("PIN_SaveToFlash: sysinfo_save error - %i!\n\r",res);
-	}
-
-#else
-	ITEM_PINS_CONFIG pins;
-	memcpy(&pins.pins, &g_pins, sizeof(pins.pins));
-	CONFIG_INIT_ITEM(CONFIG_TYPE_PINS, &pins);
-	config_save_item(&pins);
-	// delete old if it exists
-	config_delete_item(OLD_PINS_CONFIG);
-#endif
-}
-void PIN_LoadFromFlash() {
-	//int i;
-#if WINDOWS
-
-#elif PLATFORM_BL602
-
-#elif PLATFORM_XR809
-	sysinfo_t *inf;
-#else
-	int res;
-	ITEM_PINS_CONFIG pins;
-#endif
 
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"PIN_LoadFromFlash called - going to load pins.\r\n");
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"UART log breaking after that means that you changed the role of TX pin to digital IO or smth else.\r\n");
-
-#if WINDOWS
-
-#elif PLATFORM_BL602
-
-#elif PLATFORM_XR809
-	inf = sysinfo_get();
-	if(inf == 0) {
-		printf("PIN_LoadFromFlash: sysinfo_get returned 0!\n\r");
-		return;
-	}
-	memcpy(&g_pins, &inf->pins, sizeof(g_pins));
-	if(sizeof(inf->pins) != sizeof(g_pins)) {
-		printf("PIN_LoadFromFlash: FATAL ERROR - pin structures size mismatch! %i vs %i\r\n",sizeof(inf->pins),sizeof(g_pins));
-	}
-#else
-	CONFIG_INIT_ITEM(CONFIG_TYPE_PINS, &pins);
-	res = config_get_item(&pins);
-	if (res){
-			memcpy(&g_pins, &pins.pins, sizeof(g_pins));
-	}
-#endif
-}
-
-
-// call after PIN_LoadFromFlash() - if you want to actually set them
 void PIN_SetupPins() {
 	int i;
 	for(i = 0; i < GPIO_MAX; i++) {
-		PIN_SetPinRoleForPinIndex(i,g_pins.roles[i]);
+		PIN_SetPinRoleForPinIndex(i,g_cfg.pins.roles[i]);
 	}
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"PIN_LoadFromFlash pins have been set up.\r\n");
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"PIN_SetupPins pins have been set up.\r\n");
 }
 
-void PIN_ClearPins() {
-	memset(&g_pins,0,sizeof(g_pins));
-}
 int PIN_GetPinRoleForPinIndex(int index) {
-	return g_pins.roles[index];
+	return g_cfg.pins.roles[index];
 }
 int PIN_GetPinChannelForPinIndex(int index) {
-	return g_pins.channels[index];
+	return g_cfg.pins.channels[index];
 }
 int PIN_GetPinChannel2ForPinIndex(int index) {
-	return g_pins.channels2[index];
+	return g_cfg.pins.channels2[index];
 }
 void RAW_SetPinValue(int index, int iVal){
 	if (g_enable_pins) {
@@ -220,24 +88,24 @@ void RAW_SetPinValue(int index, int iVal){
 void Button_OnShortClick(int index)
 {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"%i key_short_press\r\n", index);
-	if(g_pins.roles[index] == IOR_Button_ToggleAll || g_pins.roles[index] == IOR_Button_ToggleAll_n)
+	if(g_cfg.pins.roles[index] == IOR_Button_ToggleAll || g_cfg.pins.roles[index] == IOR_Button_ToggleAll_n)
 	{
 		CHANNEL_DoSpecialToggleAll();
 		return;
 	}
 	// first click toggles FIRST CHANNEL linked to this button
-	CHANNEL_Toggle(g_pins.channels[index]);
+	CHANNEL_Toggle(g_cfg.pins.channels[index]);
 }
 void Button_OnDoubleClick(int index)
 {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"%i key_double_press\r\n", index);
-	if(g_pins.roles[index] == IOR_Button_ToggleAll || g_pins.roles[index] == IOR_Button_ToggleAll_n)
+	if(g_cfg.pins.roles[index] == IOR_Button_ToggleAll || g_cfg.pins.roles[index] == IOR_Button_ToggleAll_n)
 	{
 		CHANNEL_DoSpecialToggleAll();
 		return;
 	}
 	// double click toggles SECOND CHANNEL linked to this button
-	CHANNEL_Toggle(g_pins.channels2[index]);
+	CHANNEL_Toggle(g_cfg.pins.channels2[index]);
 
 	if(g_doubleClickCallback!=0) {
 		g_doubleClickCallback(index);
@@ -248,7 +116,7 @@ void Button_OnLongPressHold(int index) {
 }
 
 bool BTN_ShouldInvert(int index) {
-	if(g_pins.roles[index] == IOR_Button_n || g_pins.roles[index] == IOR_Button_ToggleAll_n|| g_pins.roles[index] == IOR_DigitalInput_n) {
+	if(g_cfg.pins.roles[index] == IOR_Button_n || g_cfg.pins.roles[index] == IOR_Button_ToggleAll_n|| g_cfg.pins.roles[index] == IOR_DigitalInput_n) {
 		return true;
 	}
 	return false;
@@ -293,8 +161,8 @@ int CHANNEL_GetType(int ch) {
 bool CHANNEL_IsInUse(int ch) {
 	int i;
 	for(i = 0; i < GPIO_MAX; i++){
-		if(g_pins.channels[i] == ch) {
-			switch(g_pins.roles[i])
+		if(g_cfg.pins.channels[i] == ch) {
+			switch(g_cfg.pins.roles[i])
 			{
 			case IOR_LED:
 			case IOR_LED_n:
@@ -316,7 +184,7 @@ void CHANNEL_SetAll(int iVal, bool bForce) {
 
 
 	for(i = 0; i < GPIO_MAX; i++) {	
-		switch(g_pins.roles[i])
+		switch(g_cfg.pins.roles[i])
 		{
 		case IOR_Button:
 		case IOR_Button_n:
@@ -330,10 +198,10 @@ void CHANNEL_SetAll(int iVal, bool bForce) {
 		case IOR_LED_n:
 		case IOR_Relay:
 		case IOR_Relay_n:
-			CHANNEL_Set(g_pins.channels[i],iVal,bForce);
+			CHANNEL_Set(g_cfg.pins.channels[i],iVal,bForce);
 			break;
 		case IOR_PWM:
-			CHANNEL_Set(g_pins.channels[i],iVal,bForce);
+			CHANNEL_Set(g_cfg.pins.channels[i],iVal,bForce);
 			break;
 
 		default:
@@ -399,7 +267,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 	}
 #endif
 	if (g_enable_pins) {
-		switch(g_pins.roles[index])
+		switch(g_cfg.pins.roles[index])
 		{
 		case IOR_Button:
 		case IOR_Button_n:
@@ -428,7 +296,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		}
 	}
 	// set new role
-	g_pins.roles[index] = role;
+	g_cfg.pins.roles[index] = role;
 
 	if (g_enable_pins) {
 		// init new role
@@ -482,10 +350,10 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 }
 
 void PIN_SetPinChannelForPinIndex(int index, int ch) {
-	g_pins.channels[index] = ch;
+	g_cfg.pins.channels[index] = ch;
 }
 void PIN_SetPinChannel2ForPinIndex(int index, int ch) {
-	g_pins.channels2[index] = ch;
+	g_cfg.pins.channels2[index] = ch;
 }
 void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex)) {
 	g_doubleClickCallback = cb;
@@ -508,25 +376,25 @@ void Channel_OnChanged(int ch) {
 #endif
 
 	for(i = 0; i < GPIO_MAX; i++) {
-		if(g_pins.channels[i] == ch) {
-			if(g_pins.roles[i] == IOR_Relay || g_pins.roles[i] == IOR_LED) {
+		if(g_cfg.pins.channels[i] == ch) {
+			if(g_cfg.pins.roles[i] == IOR_Relay || g_cfg.pins.roles[i] == IOR_LED) {
 				RAW_SetPinValue(i,bOn);
 				if(g_channelChangeCallback != 0) {
 					g_channelChangeCallback(ch,bOn);
 				}
 			}
-			if(g_pins.roles[i] == IOR_Relay_n || g_pins.roles[i] == IOR_LED_n) {
+			if(g_cfg.pins.roles[i] == IOR_Relay_n || g_cfg.pins.roles[i] == IOR_LED_n) {
 				RAW_SetPinValue(i,!bOn);
 				if(g_channelChangeCallback != 0) {
 					g_channelChangeCallback(ch,bOn);
 				}
 			}
-			if(g_pins.roles[i] == IOR_DigitalInput) {
+			if(g_cfg.pins.roles[i] == IOR_DigitalInput) {
 				if(g_channelChangeCallback != 0) {
 					g_channelChangeCallback(ch,iVal);
 				}
 			}
-			if(g_pins.roles[i] == IOR_PWM) {
+			if(g_cfg.pins.roles[i] == IOR_PWM) {
 				if(g_channelChangeCallback != 0) {
 					g_channelChangeCallback(ch,iVal);
 				}
@@ -589,14 +457,14 @@ bool CHANNEL_Check(int ch) {
 int CHANNEL_GetRoleForOutputChannel(int ch){
 	int i;
 	for (i = 0; i < 32; i++){
-		if (g_pins.channels[i] == ch){
-			switch(g_pins.roles[i]){
+		if (g_cfg.pins.channels[i] == ch){
+			switch(g_cfg.pins.roles[i]){
 				case IOR_Relay:
 				case IOR_Relay_n:
 				case IOR_LED:
 				case IOR_LED_n:
 				case IOR_PWM:
-					return g_pins.roles[i];
+					return g_cfg.pins.roles[i];
 					break;
 				case IOR_Button:
 				case IOR_Button_n:
@@ -725,15 +593,15 @@ void PIN_ticks(void *param)
 	int value;
 
 	for(i = 0; i < GPIO_MAX; i++) {
-		if(g_pins.roles[i] == IOR_Button || g_pins.roles[i] == IOR_Button_n
-			|| g_pins.roles[i] == IOR_Button_ToggleAll || g_pins.roles[i] == IOR_Button_ToggleAll_n) {
+		if(g_cfg.pins.roles[i] == IOR_Button || g_cfg.pins.roles[i] == IOR_Button_n
+			|| g_cfg.pins.roles[i] == IOR_Button_ToggleAll || g_cfg.pins.roles[i] == IOR_Button_ToggleAll_n) {
 			//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Test hold %i\r\n",i);
 			PIN_Input_Handler(i);
 		}		
-		else if(g_pins.roles[i] == IOR_DigitalInput || g_pins.roles[i] == IOR_DigitalInput_n) {
+		else if(g_cfg.pins.roles[i] == IOR_DigitalInput || g_cfg.pins.roles[i] == IOR_DigitalInput_n) {
 			// read pin digital value (and already invert it if needed)
 			value = PIN_ReadDigitalInputValue_WithInversionIncluded(i);
-			CHANNEL_Set(g_pins.channels[i], value,0);
+			CHANNEL_Set(g_cfg.pins.channels[i], value,0);
 		}
 	}
 }
@@ -840,13 +708,13 @@ void PIN_set_wifi_led(int value){
 	int res = -1;
 	int i;
 	for ( i = 0; i < 32; i++){
-		if ((g_pins.roles[i] == IOR_LED_WIFI) || (g_pins.roles[i] == IOR_LED_WIFI_n)){
+		if ((g_cfg.pins.roles[i] == IOR_LED_WIFI) || (g_cfg.pins.roles[i] == IOR_LED_WIFI_n)){
 			res = i;
 			break;
 		}
 	}
 	if (res >= 0){
-		if (g_pins.roles[res] == IOR_LED_WIFI_n){
+		if (g_cfg.pins.roles[res] == IOR_LED_WIFI_n){
 			value = !value;
 		}
 		RAW_SetPinValue(res, value & 1);

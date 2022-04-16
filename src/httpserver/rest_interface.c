@@ -535,13 +535,6 @@ static int http_rest_get_seriallog(http_request_t *request){
 
 static int http_rest_get_pins(http_request_t *request){
     int i;
-    /*typedef struct pinsState_s {
-    	byte roles[32];
-	    byte channels[32];
-    } pinsState_t;
-
-    extern pinsState_t g_pins;
-    */
     http_setup(request, httpMimeTypeJson);
     poststr(request, "{\"rolenames\":[");
     for (i = 0; i < IOR_Total_Options; i++){
@@ -555,17 +548,17 @@ static int http_rest_get_pins(http_request_t *request){
 
     for (i = 0; i < 32; i++){
         if (i){
-            hprintf128(request, ",%d", g_pins.roles[i]);
+			hprintf128(request, ",%d", g_cfg.pins.roles[i]);
         } else {
-            hprintf128(request, "%d", g_pins.roles[i]);
+            hprintf128(request, "%d", g_cfg.pins.roles[i]);
         }
     }
     poststr(request, "],\"channels\":[");
     for (i = 0; i < 32; i++){
         if (i){
-            hprintf128(request, ",%d", g_pins.channels[i]);
+            hprintf128(request, ",%d", g_cfg.pins.channels[i]);
         } else {
-            hprintf128(request, "%d", g_pins.channels[i]);
+            hprintf128(request, "%d", g_cfg.pins.channels[i]);
         }
     }
     poststr(request, "]}");
@@ -770,7 +763,7 @@ static int http_rest_post_pins(http_request_t *request){
         }
     }
     if (iChanged){
-	    PIN_SaveToFlash();
+		CFG_Save_IfThereArePendingChanges();
         ADDLOG_DEBUG(LOG_FEATURE_API, "Changed %d - saved to flash", iChanged);
     }
 
@@ -911,12 +904,7 @@ static int http_rest_get_flash(http_request_t *request, int startaddr, int len){
 
 static int http_rest_get_dumpconfig(http_request_t *request){
 
-#if PLATFORM_XR809
 
-#elif PLATFORM_BL602
-#else
-    config_dump_table();
-#endif
 
     http_setup(request, httpMimeTypeText);
     poststr(request, NULL);
@@ -937,70 +925,7 @@ ITEM_NEW_TEST_CONFIG testconfig;
 #endif    
 
 static int http_rest_get_testconfig(http_request_t *request){
-#ifdef TESTCONFIG_ENABLE    
-    INFO_ITEM_ST *ret;
-    int intres;
-
-    testconfig.head.type = (UINT32) *((UINT32*)"TEST");
-    testconfig.head.len = sizeof(testconfig) - sizeof(testconfig.head);
-    strcpy(testconfig.somename, "test it here");
-
-    config_dump_table();
-
-    ret = config_search_item((INFO_ITEM_ST *)&testconfig);
-    ADDLOG_DEBUG(LOG_FEATURE_API, "search found %x", ret);
-
-    config_dump_table();
-
-    intres = config_delete_item(testconfig.head.type);
-    ADDLOG_DEBUG(LOG_FEATURE_API, "delete_item returned %d", intres);
-
-    intres = config_save_item((INFO_ITEM_ST *)&testconfig);
-
-    ADDLOG_DEBUG(LOG_FEATURE_API, "save_item returned %d", intres);
-
-    ret = config_search_item((INFO_ITEM_ST *)&testconfig);
-    ADDLOG_DEBUG(LOG_FEATURE_API, "search2 found %x len %d", ret, (ret?ret->len:0));
-
-    intres = config_save_item((INFO_ITEM_ST *)&testconfig);
-    ADDLOG_DEBUG(LOG_FEATURE_API, "save_item returned %d", intres);
-
-    ret = config_search_item((INFO_ITEM_ST *)&testconfig);
-    ADDLOG_DEBUG(LOG_FEATURE_API, "search3 found %x len %d", ret, (ret?ret->len:0));
-
-
-    if (ret){
-        if (os_memcmp(ret, &testconfig, sizeof(testconfig))){
-            ADDLOG_DEBUG(LOG_FEATURE_API, "content mismatch");
-        } else {
-            ADDLOG_DEBUG(LOG_FEATURE_API, "content match");
-        }
-    }
-
-    testconfig.head.len = sizeof(testconfig) - sizeof(testconfig.head) - 1;
-    intres = config_save_item((INFO_ITEM_ST *)&testconfig);
-    ADDLOG_DEBUG(LOG_FEATURE_API, "save_item returned %d", intres);
-
-
-    ret = config_search_item((INFO_ITEM_ST *)&testconfig);
-    ADDLOG_DEBUG(LOG_FEATURE_API, "search4 found %x len %d", ret, (ret?ret->len:0));
-
-    config_dump_table();
-
-    intres = config_delete_item(testconfig.head.type);
-    ADDLOG_DEBUG(LOG_FEATURE_API, "delete_item returned %d", intres);
-
-    config_dump_table();
-
-    config_release_tbl();
-
-    config_dump_table();
-
-    http_setup(request, httpMimeTypeText);
-    poststr(request, NULL);
-#else
     return http_rest_error(request, 400, "unsupported");
-#endif    
     return 0;
 }
 

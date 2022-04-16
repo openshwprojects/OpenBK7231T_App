@@ -208,26 +208,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\flash_config\flash_config.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\src\httpserver\http_fns.c"
 				>
 				<FileConfiguration
@@ -657,7 +637,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\new_http.h"
+				RelativePath=".\src\httpserver\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -669,7 +649,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\httpserver\new_http.h"
+				RelativePath=".\src\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"

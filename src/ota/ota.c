@@ -1,6 +1,7 @@
 
 #include "ota.h"
 #include "../new_common.h"
+#include "../new_cfg.h"
 #include "typedef.h"
 #include "flash_pub.h"
 //#include "flash.h"
@@ -127,9 +128,9 @@ int myhttpclientcallback(httprequest_t* request){
       addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"Rebooting in 1 seconds...");
 
       // record this OTA
-      increment_OTA_count();
+      CFG_IncrementOTACount();
       // make sure it's saved before reboot
-      config_commit();
+	  CFG_Save_IfThereArePendingChanges();
 
       rtos_delay_milliseconds(1000);
       bk_reboot(); 

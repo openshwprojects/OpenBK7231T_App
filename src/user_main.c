@@ -46,8 +46,6 @@ static int g_connectToWiFi = 0;
 static int bSafeMode = 0;
 // reset after this number of seconds
 static int g_reset = 0;
-// save config in this number of seconds
-int g_savecfg = 0;
 // is connected to WiFi?
 int g_bHasWiFiConnected = 0;
 
@@ -58,10 +56,7 @@ int g_bHasWiFiConnected = 0;
 void boot_complete(){
 
 }
-int config_commit(){
 
-    return 0;
-}
 int boot_failures(){
     return 0;
 }
@@ -76,10 +71,7 @@ size_t xPortGetFreeHeapSize() {
 void boot_complete(){
 
 }
-int config_commit(){
 
-    return 0;
-}
 int boot_failures(){
     return 0;
 }
@@ -228,7 +220,7 @@ void Main_OnEverySecond()
       g_reset--;
       if (!g_reset){
         // ensure any config changes are saved before reboot.
-        config_commit(); 
+        CFG_Save_IfThereArePendingChanges(); 
 		ADDLOGF_INFO("Going to call HAL_RebootModule\r\n");
         HAL_RebootModule(); 
 	  } else {
@@ -237,12 +229,7 @@ void Main_OnEverySecond()
 	  }
   }
 
-    if (g_savecfg){
-        g_savecfg--;
-      if (!g_savecfg){
-        config_commit(); 
-      }
-    }
+ 
 
 }
 
@@ -250,7 +237,6 @@ void app_on_generic_dbl_click(int btnIndex)
 {
 	if(g_secondsElapsed < 5) {
 		CFG_SetOpenAccessPoint();
-		CFG_SaveWiFi();
 	}
 }
 

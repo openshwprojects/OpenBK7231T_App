@@ -1,424 +1,208 @@
 
 #include "new_common.h"
+#include "logging/logging.h"
 #include "httpserver/new_http.h"
 #include "new_pins.h"
 #include "new_cfg.h"
 #include "hal/hal_wifi.h"
-
-#if WINDOWS
-
-#elif PLATFORM_BL602
-
-#elif PLATFORM_XR809
-// XR809 sysinfo is used to save configuration to flash
-#include "common/framework/sysinfo.h"
-#else
-#include "flash_config/flash_config.h"
-#include "../../beken378/func/include/net_param_pub.h"
-#include "../../beken378/app/config/param_config.h"
-#endif
+#include "hal/hal_flashConfig.h"
 
 
-// added for OpenBK7231T
-#define NEW_WEBAPP_CONFIG_SIZE 64
-//NEW_PINS_CONFIG
+mainConfig_t g_cfg;
 
-static int g_mqtt_port = 1883;
-static char g_mqtt_host[64] = "192.168.0.113";
-static char g_mqtt_brokerName[64] = "test";
-static char g_mqtt_userName[64] = "homeassistant"; 
-static char g_mqtt_pass[128] = "qqqqqqqqqq"; 
-static char g_wifi_ssid[64] = { 0 };
-static char g_wifi_pass[64] = { 0 };
+static int g_cfg_pendingChanges = 0;
 
-#if PLATFORM_XR809 || WINDOWS || PLATFORM_BL602
-#define CONFIG_URL_SIZE_MAX 64
-#endif
+#define CFG_IDENT_0 'C'
+#define CFG_IDENT_1 'F'
+#define CFG_IDENT_2 'G'
 
-static char g_webappRoot[CONFIG_URL_SIZE_MAX] = "https://openbekeniot.github.io/webapp/";
+#define MAIN_CFG_VERSION 1
 
-// Long unique device name, like OpenBK7231T_AABBCCDD
-char g_deviceName[64] = "testDev";
-// Short unique device name, like obkAABBCCDD
-char g_shortDeviceName[64] = "td01";
-
-const char *CFG_LoadWebappRoot(){
-#if WINDOWS
-
-#elif PLATFORM_XR809
-
-#elif PLATFORM_BL602
-
-#else
-	ITEM_URL_CONFIG item;
-	int res;
-	CONFIG_INIT_ITEM(CONFIG_TYPE_WEBAPP_ROOT, &item);
-	res = config_get_item(&item);
-	if (res) 
-		strcpy_safe(g_webappRoot, item.url,sizeof(g_webappRoot));
-#endif
-	return g_webappRoot;
-}
-
-const char *CFG_GetWebappRoot(){
-	return g_webappRoot;
-}
-
-int CFG_SetWebappRoot(const char *s) {
-#if WINDOWS
-	strcpy_safe(g_webappRoot, s,sizeof(g_webappRoot));
-	return 1; // ok
-#elif PLATFORM_BL602
-
-	return 1; // ok
-#elif PLATFORM_XR809
-	strcpy_safe(g_webappRoot, s,sizeof(g_webappRoot));
-	return 1; // ok
-
-#else
-	ITEM_URL_CONFIG item;
-	int res;
-	CONFIG_INIT_ITEM(CONFIG_TYPE_WEBAPP_ROOT, &item);
-	res = config_get_item(&item);
-	strcpy_safe(item.url, s,sizeof(item.url));
-	strcpy_safe(g_webappRoot, item.url,sizeof(g_webappRoot));
-	
-	if(config_save_item(&item)) {
-		return 1;
-	}
-	return 0;
-#endif
-}
-
-const char *CFG_GetDeviceName(){
-	return g_deviceName;
-}
-const char *CFG_GetShortDeviceName(){
-	return g_shortDeviceName;
-}
-
-#if WINDOWS
-#define DEVICENAME_PREFIX_FULL "WinTest"
-#define DEVICENAME_PREFIX_SHORT "WT"
-#elif PLATFORM_XR809
-#define DEVICENAME_PREFIX_FULL "OpenXR809"
-#define DEVICENAME_PREFIX_SHORT "oxr"
-#elif PLATFORM_BK7231N
-#define DEVICENAME_PREFIX_FULL "OpenBK7231N"
-#define DEVICENAME_PREFIX_SHORT "obk"
-#elif PLATFORM_BK7231T
-#define DEVICENAME_PREFIX_FULL "OpenBK7231T"
-#define DEVICENAME_PREFIX_SHORT "obk"
-#elif PLATFORM_BL602
-#define DEVICENAME_PREFIX_FULL "OpenBL602"
-#define DEVICENAME_PREFIX_SHORT "obl"
-#else
-#error "You must define a platform.."
-This platform is not supported, error!
-#endif
-
-void WiFI_GetMacAddress(char *mac) {
-#if WINDOWS
-
-#elif PLATFORM_BL602
-
-#elif PLATFORM_XR809
-	sysinfo_t *inf;
-	inf = sysinfo_get();
-	if(inf == 0) {
-		mac[0] = 'E'; mac[1] = 'R'; mac[2] = 'R'; mac[3] = 'O'; mac[4] = 'R'; mac[5] = '!';
-		printf("WiFI_GetMacAddress: sysinfo_get returned 0!\n\r");
-		return;
-	}
-	memcpy(mac,inf->mac_addr,6);
-#else
-    wifi_get_mac_address((char *)mac, CONFIG_ROLE_STA);
-#endif
-}
-int WiFI_SetMacAddress(char *mac) {
-#if WINDOWS
-	return 0;
-#elif PLATFORM_BL602
-	return 0;
-#elif PLATFORM_XR809
-	sysinfo_t *inf;
-	int res;
-	inf = sysinfo_get();
-	if(inf == 0) {
-		printf("WiFI_SetMacAddress: sysinfo_get returned 0!\n\r");
-		return 0; // error
-	}
-	memcpy(inf->mac_addr,mac,6);
-	res = sysinfo_save_wrapper();
-	if(res != 0) {
-		printf("WiFI_SetMacAddress: sysinfo_save error - %i!\n\r",res);
-		return 0; // error
-	}
-	return 1;
-#else
-   if(wifi_set_mac_address((char *)mac))
-	   return 1;
-   return 0; // error
-#endif
-}
-void CFG_CreateDeviceNameUnique()
-{
-	// must be unsigned, else print below prints negatives as e.g. FFFFFFFe
-	unsigned char mac[32] = { 0 };
-
-	WiFI_GetMacAddress((char *)mac);
-
-	sprintf(g_deviceName,DEVICENAME_PREFIX_FULL"_%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
-	sprintf(g_shortDeviceName,DEVICENAME_PREFIX_SHORT"%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
-
-		// NOT WORKING, I done it other way, see ethernetif.c
-	//net_dhcp_hostname_set(g_shortDeviceName);
-}
-
-int CFG_GetMQTTPort() {
-	return g_mqtt_port;
-}
-void CFG_SetMQTTPort(int p) {
-	g_mqtt_port = p;
-}
-void CFG_SetOpenAccessPoint() {
-	g_wifi_ssid[0] = 0;
-	g_wifi_pass[0] = 0;
-}
-const char *CFG_GetWiFiSSID(){
-	return g_wifi_ssid;
-}
-const char *CFG_GetWiFiPass(){
-	return g_wifi_pass;
-}
-void CFG_SetWiFiSSID(const char *s) {
-	strcpy_safe(g_wifi_ssid,s,sizeof(g_wifi_ssid));
-}
-void CFG_SetWiFiPass(const char *s) {
-	strcpy_safe(g_wifi_pass,s,sizeof(g_wifi_pass));
-}
-const char *CFG_GetMQTTHost() {
-	return g_mqtt_host;
-}
-const char *CFG_GetMQTTBrokerName() {
-	return g_mqtt_brokerName;
-}
-const char *CFG_GetMQTTUserName() {
-	return g_mqtt_userName;
-}
-const char *CFG_GetMQTTPass() {
-	return g_mqtt_pass;
-}
-void CFG_SetMQTTHost(const char *s) {
-	strcpy_safe(g_mqtt_host,s,sizeof(g_mqtt_host));
-}
-void CFG_SetMQTTBrokerName(const char *s) {
-	strcpy_safe(g_mqtt_brokerName,s,sizeof(g_mqtt_brokerName));
-}
-void CFG_SetMQTTUserName(const char *s) {
-	strcpy_safe(g_mqtt_userName,s,sizeof(g_mqtt_userName));
-}
-void CFG_SetMQTTPass(const char *s) {
-	strcpy_safe(g_mqtt_pass,s,sizeof(g_mqtt_pass));
-}
-void CFG_SaveWiFi() {
-#if WINDOWS
-
-#elif PLATFORM_BL602
-
-#elif PLATFORM_XR809
-	sysinfo_t *inf;
-	int res;
-	inf = sysinfo_get();
-	if(inf == 0) {
-		printf("CFG_SaveWiFi: sysinfo_get returned 0!\n\r");
-		return;
-	}
-	strcpy_safe((char*)inf->wlan_sta_param.ssid, g_wifi_ssid, sizeof(inf->wlan_sta_param.ssid));
-	strcpy_safe((char*)inf->wlan_sta_param.psk, g_wifi_pass, sizeof(inf->wlan_sta_param.psk));
-
-	res = sysinfo_save_wrapper();
-	if(res != 0) {
-		printf("CFG_SaveWiFi: sysinfo_save error - %i!\n\r",res);
-	}
-#else
-	ITEM_NEW_WIFI_CONFIG container;
-	os_memset(&container, 0, sizeof(container));
-	CONFIG_INIT_ITEM(CONFIG_TYPE_WIFI, &container);
-	strcpy_safe(container.ssid, g_wifi_ssid, sizeof(container.ssid));
-	strcpy_safe(container.pass, g_wifi_pass, sizeof(container.pass));
-	config_save_item(&container);
-#endif
-}
-void CFG_LoadWiFi() {
-#if WINDOWS
-
-#elif PLATFORM_BL602
-
-#elif PLATFORM_XR809
-	sysinfo_t *inf;
-	inf = sysinfo_get();
-	if(inf == 0) {
-		printf("CFG_LoadWiFi: sysinfo_get returned 0!\n\r");
-		return;
-	}
-	strcpy_safe(g_wifi_ssid,(char*)inf->wlan_sta_param.ssid,sizeof(g_wifi_ssid));
-	strcpy_safe(g_wifi_pass,(char*)inf->wlan_sta_param.psk,sizeof(g_wifi_pass));
-#else
-	{
-		// try to read 'old' structure with extra 8 bytes
-		// if we find it, delete and re-save with new structure
-		ITEM_NEW_WIFI_CONFIG2 container;
-		CONFIG_INIT_ITEM(OLD_WIFI_CONFIG, &container);
-		if (config_get_item(&container) != 0){
-			strcpy_safe(g_wifi_ssid,container.ssid,sizeof(g_wifi_ssid));
-			strcpy_safe(g_wifi_pass,container.pass,sizeof(g_wifi_pass));
-			// delete and re-save
-			config_delete_item(OLD_WIFI_CONFIG);
-			CFG_SaveWiFi();
-		} 
-	}
-	{
-		ITEM_NEW_NEW_WIFI_CONFIG container;
-		CONFIG_INIT_ITEM(CONFIG_TYPE_WIFI, &container);
-		if (config_get_item(&container) != 0){
-			strcpy_safe(g_wifi_ssid,container.ssid,sizeof(g_wifi_ssid));
-			strcpy_safe(g_wifi_pass,container.pass,sizeof(g_wifi_pass));
-		} 
-	}
-#endif
-}
-#if PLATFORM_XR809
-int sysinfo_checksum(sysinfo_t *inf) {
-	int crc = 0;
-	crc ^= Tiny_CRC8((const char*)&inf->mac_addr,sizeof(inf->mac_addr));
-	crc ^= Tiny_CRC8((const char*)&inf->wlan_mode,sizeof(inf->wlan_mode));
-	crc ^= Tiny_CRC8((const char*)&inf->wlan_sta_param,sizeof(inf->wlan_sta_param));
-	crc ^= Tiny_CRC8((const char*)&inf->wlan_ap_param,sizeof(inf->wlan_ap_param));
-	crc ^= Tiny_CRC8((const char*)&inf->netif_sta_param,sizeof(inf->netif_sta_param));
-	crc ^= Tiny_CRC8((const char*)&inf->netif_ap_param,sizeof(inf->netif_ap_param));
-	crc ^= Tiny_CRC8((const char*)&inf->mqtt_param,sizeof(inf->mqtt_param));
+static byte CFG_CalcChecksum(mainConfig_t *inf) {
+	byte crc = 0;
+	crc ^= Tiny_CRC8((const char*)&inf->version,sizeof(inf->version));
+	crc ^= Tiny_CRC8((const char*)&inf->changeCounter,sizeof(inf->changeCounter));
+	crc ^= Tiny_CRC8((const char*)&inf->otaCounter,sizeof(inf->otaCounter));
+	crc ^= Tiny_CRC8((const char*)&inf->genericFlags,sizeof(inf->genericFlags));
+	crc ^= Tiny_CRC8((const char*)&inf->genericFlags2,sizeof(inf->genericFlags2));
+	crc ^= Tiny_CRC8((const char*)&inf->wifi_ssid,sizeof(inf->wifi_ssid));
+	crc ^= Tiny_CRC8((const char*)&inf->wifi_pass,sizeof(inf->wifi_pass));
+	crc ^= Tiny_CRC8((const char*)&inf->mqtt_host,sizeof(inf->mqtt_host));
+	crc ^= Tiny_CRC8((const char*)&inf->mqtt_brokerName,sizeof(inf->mqtt_brokerName));
+	crc ^= Tiny_CRC8((const char*)&inf->mqtt_userName,sizeof(inf->mqtt_userName));
+	crc ^= Tiny_CRC8((const char*)&inf->mqtt_pass,sizeof(inf->mqtt_pass));
+	crc ^= Tiny_CRC8((const char*)&inf->mqtt_port,sizeof(inf->mqtt_port));
+	crc ^= Tiny_CRC8((const char*)&inf->webappRoot,sizeof(inf->webappRoot));
+	crc ^= Tiny_CRC8((const char*)&inf->mac,sizeof(inf->mac));
+	crc ^= Tiny_CRC8((const char*)&inf->shortDeviceName,sizeof(inf->shortDeviceName));
+	crc ^= Tiny_CRC8((const char*)&inf->longDeviceName,sizeof(inf->longDeviceName));
 	crc ^= Tiny_CRC8((const char*)&inf->pins,sizeof(inf->pins));
+	crc ^= Tiny_CRC8((const char*)&inf->unusedSectorA,sizeof(inf->unusedSectorA));
+	crc ^= Tiny_CRC8((const char*)&inf->unusedSectorB,sizeof(inf->unusedSectorB));
+	crc ^= Tiny_CRC8((const char*)&inf->unusedSectorC,sizeof(inf->unusedSectorC));
+	crc ^= Tiny_CRC8((const char*)&inf->initCommandLine,sizeof(inf->initCommandLine));
 
 	return crc;
 }
-int sysinfo_save_wrapper() {
-	sysinfo_t *inf;
-	int res;
-	inf = sysinfo_get();
-	if(inf == 0) {
-		printf("sysinfo_save_wrapper: sysinfo_get returned 0!\n\r");
-		return -1;
-	}
-	printf("sysinfo_save_wrapper: going to calc checksum!\n\r");
-	inf->checksum = sysinfo_checksum(inf);
-	printf("sysinfo_save_wrapper: going to call save!\n\r");
-	res = sysinfo_save();
-	if(res != 0) {
-		printf("sysinfo_save_wrapper: sysinfo_save returned error!\n\r");
-	}
-	printf("sysinfo_save_wrapper: done!\n\r");
-	return 0;
+
+
+static void CFG_SetDefaultConfig() {
+	// must be unsigned, else print below prints negatives as e.g. FFFFFFFe
+	unsigned char mac[6] = { 0 };
+
+	WiFI_GetMacAddress((char *)mac);
+
+	memset(&g_cfg,0,sizeof(mainConfig_t));
+	g_cfg.mqtt_port = 1883;
+	g_cfg.ident0 = CFG_IDENT_0;
+	g_cfg.ident1 = CFG_IDENT_1;
+	g_cfg.ident2 = CFG_IDENT_2;
+	strcpy(g_cfg.mqtt_host, "192.168.0.113");
+	strcpy(g_cfg.mqtt_brokerName, "test");
+	strcpy(g_cfg.mqtt_userName, "homeassistant");
+	strcpy(g_cfg.mqtt_pass, "qqqqqqqqqq");
+	// already zeroed but just to remember, open AP by default
+	g_cfg.wifi_ssid[0] = 0;
+	g_cfg.wifi_pass[0] = 0;
+	// i am not sure about this, because some platforms might have no way to store mac outside our cfg?
+	memcpy(g_cfg.mac,mac,6);
+	strcpy(g_cfg.webappRoot, "https://openbekeniot.github.io/webapp/");
+	// Long unique device name, like OpenBK7231T_AABBCCDD
+	sprintf(g_cfg.longDeviceName,DEVICENAME_PREFIX_FULL"_%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
+	sprintf(g_cfg.shortDeviceName,DEVICENAME_PREFIX_SHORT"%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
+
 }
-#endif
-int CFG_SaveMQTT() {
-#if WINDOWS
-	return 0;
-#elif PLATFORM_BL602
-	return 0;
-#elif PLATFORM_XR809
-	sysinfo_t *inf;
-	int res;
-	inf = sysinfo_get();
-	if(inf == 0) {
-		printf("CFG_SaveMQTT: sysinfo_get returned 0!\n\r");
-		return 0;
-	}
-	strcpy_safe(inf->mqtt_param.userName, g_mqtt_userName, sizeof(inf->mqtt_param.userName));
-	strcpy_safe(inf->mqtt_param.pass, g_mqtt_pass, sizeof(inf->mqtt_param.pass));
-	strcpy_safe(inf->mqtt_param.hostName, g_mqtt_host, sizeof(inf->mqtt_param.hostName));
-	strcpy_safe(inf->mqtt_param.brokerName, g_mqtt_brokerName, sizeof(inf->mqtt_param.brokerName));
-	inf->mqtt_param.port = g_mqtt_port;
 
-	printf("CFG_SaveMQTT: sysinfo will save inf->mqtt_param.userName - %s!\n\r",inf->mqtt_param.userName);
-	printf("CFG_SaveMQTT: sysinfo will save inf->mqtt_param.hostName - %s!\n\r",inf->mqtt_param.hostName);
-	res = sysinfo_save_wrapper();
-	if(res != 0) {
-		printf("CFG_SaveMQTT: sysinfo_save error - %i!\n\r",res);
-		return 0;
-	}
-#else
-	ITEM_NEW_MQTT_CONFIG container;
-	os_memset(&container, 0, sizeof(container));
-	CONFIG_INIT_ITEM(CONFIG_TYPE_MQTT, &container);
-	strcpy_safe(container.userName, g_mqtt_userName, sizeof(container.userName));
-	strcpy_safe(container.pass, g_mqtt_pass, sizeof(container.pass));
-	strcpy_safe(container.hostName, g_mqtt_host, sizeof(container.hostName));
-	strcpy_safe(container.brokerName, g_mqtt_brokerName, sizeof(container.brokerName));
-	container.port = g_mqtt_port;
-	if(config_save_item(&container))
-		return 1;
-	return 0;
-	
-#endif
+const char *CFG_GetWebappRoot(){
+	return g_cfg.webappRoot;
 }
-void CFG_LoadMQTT() {
-#if WINDOWS
 
-#elif PLATFORM_BL602
+int CFG_SetWebappRoot(const char *s) {
+	// this will return non-zero if there were any changes 
+	if(strcpy_safe_checkForChanges(g_cfg.webappRoot, s,sizeof(g_cfg.webappRoot))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+	return 1;
+}
 
-#elif PLATFORM_XR809
-	sysinfo_t *inf;
-	inf = sysinfo_get();
-	if(inf == 0) {
-		printf("CFG_LoadMQTT: sysinfo_get returned 0!\n\r");
+const char *CFG_GetDeviceName(){
+	return g_cfg.longDeviceName;
+}
+const char *CFG_GetShortDeviceName(){
+	return g_cfg.shortDeviceName;
+}
+
+int CFG_GetMQTTPort() {
+	return g_cfg.mqtt_port;
+}
+void CFG_SetMQTTPort(int p) {
+	// is there a change?
+	if(g_cfg.mqtt_port != p) {
+		g_cfg.mqtt_port = p;
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+void CFG_SetOpenAccessPoint() {
+	// is there a change?
+	if(g_cfg.wifi_ssid[0] == 0 && g_cfg.wifi_pass[0] == 0) {
 		return;
 	}
-	strcpy_safe(g_mqtt_userName,inf->mqtt_param.userName,sizeof(g_mqtt_userName));
-	strcpy_safe(g_mqtt_pass,inf->mqtt_param.pass,sizeof(g_mqtt_pass));
-	strcpy_safe(g_mqtt_host,inf->mqtt_param.hostName,sizeof(g_mqtt_host));
-	strcpy_safe(g_mqtt_brokerName,inf->mqtt_param.brokerName,sizeof(g_mqtt_brokerName));
-	g_mqtt_port = inf->mqtt_param.port;
-	
-	printf("CFG_LoadMQTT: sysinfo has been loaded!\n\r");
-	printf("CFG_LoadMQTT: SYSINFO_SIZE is %i!\n\r",SYSINFO_SIZE);
-	printf("CFG_LoadMQTT: g_mqtt_userName is %s!\n\r",g_mqtt_userName);
-	printf("CFG_LoadMQTT: g_mqtt_host is %s!\n\r",g_mqtt_host);
-
-#else
-	{
-		ITEM_NEW_MQTT_CONFIG2 container;
-		CONFIG_INIT_ITEM(NEW_MQTT_CONFIG, &container);
-		if (config_get_item(&container) != 0){
-			strcpy_safe(g_mqtt_userName,container.userName,sizeof(g_mqtt_userName));
-			strcpy_safe(g_mqtt_pass,container.pass,sizeof(g_mqtt_pass));
-			strcpy_safe(g_mqtt_host,container.hostName,sizeof(g_mqtt_host));
-			strcpy_safe(g_mqtt_brokerName,container.brokerName,sizeof(g_mqtt_brokerName));
-			g_mqtt_port = container.port;
-
-			// delete and re-save
-			config_delete_item(OLD_MQTT_CONFIG);
-			CFG_SaveMQTT();
-		}
+	g_cfg.wifi_ssid[0] = 0;
+	g_cfg.wifi_pass[0] = 0;
+	// mark as dirty (value has changed)
+	g_cfg_pendingChanges++;
+}
+const char *CFG_GetWiFiSSID(){
+	return g_cfg.wifi_ssid;
+}
+const char *CFG_GetWiFiPass(){
+	return g_cfg.wifi_pass;
+}
+void CFG_SetWiFiSSID(const char *s) {
+	// this will return non-zero if there were any changes 
+	if(strcpy_safe_checkForChanges(g_cfg.wifi_ssid, s,sizeof(g_cfg.wifi_ssid))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
 	}
-	{
-		ITEM_NEW_NEW_MQTT_CONFIG container;
-		CONFIG_INIT_ITEM(CONFIG_TYPE_MQTT, &container);
-		if (config_get_item(&container) != 0){
-			strcpy_safe(g_mqtt_userName,container.userName,sizeof(g_mqtt_userName));
-			strcpy_safe(g_mqtt_pass,container.pass,sizeof(g_mqtt_pass));
-			strcpy_safe(g_mqtt_host,container.hostName,sizeof(g_mqtt_host));
-			strcpy_safe(g_mqtt_brokerName,container.brokerName,sizeof(g_mqtt_brokerName));
-			g_mqtt_port = container.port;
-		}
+}
+void CFG_SetWiFiPass(const char *s) {
+	// this will return non-zero if there were any changes 
+	if(strcpy_safe_checkForChanges(g_cfg.wifi_pass, s,sizeof(g_cfg.wifi_pass))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
 	}
-#endif
+}
+const char *CFG_GetMQTTHost() {
+	return g_cfg.mqtt_host;
+}
+const char *CFG_GetMQTTBrokerName() {
+	return g_cfg.mqtt_brokerName;
+}
+const char *CFG_GetMQTTUserName() {
+	return g_cfg.mqtt_userName;
+}
+const char *CFG_GetMQTTPass() {
+	return g_cfg.mqtt_pass;
+}
+void CFG_SetMQTTHost(const char *s) {
+	// this will return non-zero if there were any changes 
+	if(strcpy_safe_checkForChanges(g_cfg.mqtt_host, s,sizeof(g_cfg.mqtt_host))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+void CFG_SetMQTTBrokerName(const char *s) {
+	// this will return non-zero if there were any changes 
+	if(strcpy_safe_checkForChanges(g_cfg.mqtt_brokerName, s,sizeof(g_cfg.mqtt_brokerName))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+void CFG_SetMQTTUserName(const char *s) {
+	// this will return non-zero if there were any changes 
+	if(strcpy_safe_checkForChanges(g_cfg.mqtt_userName, s,sizeof(g_cfg.mqtt_userName))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+void CFG_SetMQTTPass(const char *s) {
+	// this will return non-zero if there were any changes 
+	if(strcpy_safe_checkForChanges(g_cfg.mqtt_pass, s,sizeof(g_cfg.mqtt_pass))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+void CFG_ClearPins() {
+	memset(&g_cfg.pins,0,sizeof(g_cfg.pins));
+	g_cfg_pendingChanges++;
+}
+void CFG_IncrementOTACount() {
+	g_cfg.otaCounter++;
+	g_cfg_pendingChanges++;
+}
+void CFG_Save_IfThereArePendingChanges() {
+	if(g_cfg_pendingChanges > 0) {
+		g_cfg.changeCounter++;
+		g_cfg.crc = CFG_CalcChecksum(&g_cfg);
+		HAL_Configuration_SaveConfigMemory(&g_cfg,sizeof(g_cfg));
+		g_cfg_pendingChanges = 0;
+	}
 }
 
 void CFG_InitAndLoad() {
-	CFG_CreateDeviceNameUnique();
-    CFG_LoadWebappRoot();
-	CFG_LoadWiFi();
-	CFG_LoadMQTT();
-	PIN_LoadFromFlash();
+	byte chkSum;
+
+	HAL_Configuration_ReadConfigMemory(&g_cfg,sizeof(g_cfg));
+	chkSum = CFG_CalcChecksum(&g_cfg);
+	if(g_cfg.ident0 != CFG_IDENT_0 || g_cfg.ident1 != CFG_IDENT_1 || g_cfg.ident2 != CFG_IDENT_2 
+		|| chkSum != g_cfg.crc) {
+			addLogAdv(LOG_WARN, LOG_FEATURE_CFG, "CFG_InitAndLoad: Config crc or ident mismatch. Default config will be loaded.");
+		CFG_SetDefaultConfig();
+		// mark as changed
+		g_cfg_pendingChanges ++;
+	} else {
+		addLogAdv(LOG_WARN, LOG_FEATURE_CFG, "CFG_InitAndLoad: Correct config has been loaded with %i changes count.",g_cfg.changeCounter);
+	}
 }

@@ -40,7 +40,23 @@ const char *HAL_GetMyIPString(){
 void getMAC(unsigned char *mac){
     net_get_if_macaddr(mac, net_get_sta_handle());
 }
+int WiFI_SetMacAddress(char *mac) {
+#if WINDOWS
+	return 0;
+#elif PLATFORM_BL602
+	return 0;
+#elif PLATFORM_XR809
 
+#else
+   if(wifi_set_mac_address((char *)mac))
+	   return 1;
+   return 0; // error
+#endif
+}
+
+void WiFI_GetMacAddress(char *mac) {
+    wifi_get_mac_address((char *)mac, CONFIG_ROLE_STA);
+}
 const char *HAL_GetMACStr(char *macstr){
     unsigned char mac[6];
     getMAC(mac);
