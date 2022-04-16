@@ -657,7 +657,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\httpserver\new_http.h"
+				RelativePath=".\src\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -669,7 +669,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\new_http.h"
+				RelativePath=".\src\httpserver\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -805,41 +805,73 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\hal\hal_generic_bk7231.c"
-				>
-			</File>
-			<File
-				RelativePath=".\src\hal\bl602\hal_generic_bl602.c"
-				>
-			</File>
-			<File
-				RelativePath=".\src\hal\hal_generic_xr809.c"
-				>
-			</File>
-			<File
-				RelativePath=".\src\hal\hal_main_bk7231.c"
-				>
-			</File>
-			<File
-				RelativePath=".\src\hal\hal_main_xr809.c"
+				RelativePath=".\src\hal\hal_pins.h"
 				>
 			</File>
 			<File
 				RelativePath=".\src\hal\hal_wifi.h"
 				>
 			</File>
-			<File
-				RelativePath=".\src\hal\hal_wifi_bk7231.c"
+			<Filter
+				Name="BL602"
 				>
-			</File>
-			<File
-				RelativePath=".\src\hal\bl602\hal_wifi_bl602.c"
+				<File
+					RelativePath=".\src\hal\bl602\hal_generic_bl602.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\hal\bl602\hal_main_bl602.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\hal\bl602\hal_pins_bl602.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\hal\bl602\hal_wifi_bl602.c"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="BK7231"
 				>
-			</File>
-			<File
-				RelativePath=".\src\hal\hal_wifi_xr809.c"
+				<File
+					RelativePath=".\src\hal\bk7231\hal_generic_bk7231.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\hal\bk7231\hal_main_bk7231.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\hal\bk7231\hal_pins_bk7231.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\hal\bk7231\hal_wifi_bk7231.c"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="XR809"
 				>
-			</File>
+				<File
+					RelativePath=".\src\hal\xr809\hal_generic_xr809.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\hal\xr809\hal_main_xr809.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\hal\xr809\hal_pins_xr809.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\hal\xr809\hal_wifi_xr809.c"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="BL602_Only"

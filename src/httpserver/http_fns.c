@@ -9,6 +9,7 @@
 #include "../driver/drv_public.h"
 #include "../logging/logging.h"
 #include "../hal/hal_wifi.h"
+#include "../hal/hal_pins.h"
 
 #ifdef WINDOWS
     // nothing
@@ -1039,40 +1040,33 @@ int http_fn_cfg_pins(http_request_t *request) {
     for(i = 0; i < GPIO_MAX; i++) {
         int si, ch, ch2;
         int j;
-#if PLATFORM_BL602		
+		const char *alias;
 		// On BL602, any GPIO can be mapped to one of 5 PWM channels
-#else
-		int internalPWMIndex;
-#endif
+		// But on Beken chips, only certain pins can be PWM
+		int bCanThisPINbePWM;
 
         si = PIN_GetPinRoleForPinIndex(i);
         ch = PIN_GetPinChannelForPinIndex(i);
         ch2 = PIN_GetPinChannel2ForPinIndex(i);
-#if PLATFORM_BL602
-		// On BL602, any GPIO can be mapped to one of 5 PWM channels
-#else
-		// internal pwm index (-1 if this pin is not supported by pwm)
-		internalPWMIndex = PIN_GetPWMIndexForPinIndex(i);
-#endif
 
-#if PLATFORM_XR809
-        poststr(request,PIN_GetPinNameAlias(i));
-        poststr(request," ");
-#else
-        hprintf128(request, "P%i ",i);
-#endif
+		bCanThisPINbePWM = HAL_PIN_CanThisPinBePWM(i);
+
+		// if available..
+		alias = HAL_PIN_GetPinNameAlias(i);
+		if(alias) {
+			poststr(request,alias);
+			poststr(request," ");
+		} else {
+			hprintf128(request, "P%i ",i);
+		}
         hprintf128(request, "<select name=\"%i\">",i);
         for(j = 0; j < IOR_Total_Options; j++) {
-#if PLATFORM_BL602
-			// On BL602, any GPIO can be mapped to one of 5 PWM channels
-#else
 			// do not show hardware PWM on non-PWM pin
 			if(j == IOR_PWM) {
-				if(internalPWMIndex == -1) {
+				if(bCanThisPINbePWM == 0) {
 					continue;
 				}
 			}
-#endif
 
             if(j == si) {
                 hprintf128(request, "<option value=\"%i\" selected>%s</option>",j,htmlPinRoleNames[j]);

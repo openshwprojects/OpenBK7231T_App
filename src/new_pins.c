@@ -8,6 +8,7 @@
 // Commands register, execution API and cmd tokenizer
 #include "cmnds/cmd_public.h"
 #include "i2c/drv_i2c_public.h"
+#include "hal/hal_pins.h"
 
 
 //According to your need to modify the constants.
@@ -53,6 +54,7 @@ char g_enable_pins = 0;
 
 #elif PLATFORM_BL602
 #include "bl_gpio.h"
+#include <bl_pwm.h>
 
 #elif PLATFORM_XR809
 
@@ -108,59 +110,7 @@ OSStatus bk_pwm_stop(bk_pwm_t pwm);
 // https://community.home-assistant.io/t/mqtt-dimming/96447/2
 // https://community.home-assistant.io/t/mqtt-dimmer-switch-doesnt-display-brightness-slider/15471/2
 
-int PIN_GetPWMIndexForPinIndex(int pin) {
-	if(pin == 6)
-		return 0;
-	if(pin == 7)
-		return 1;
-	if(pin == 8)
-		return 2;
-	if(pin == 9)
-		return 3;
-	if(pin == 24)
-		return 4;
-	if(pin == 26)
-		return 5;
-	return -1;
-}
 
-#if PLATFORM_XR809
-typedef struct xr809pin_s {
-	const char *name;
-	int port;
-	int pin;
-} xr809pin_t;
-
-// https://developer.tuya.com/en/docs/iot/xr3-datasheet?id=K98s9168qi49g
-
-xr809pin_t g_xrPins[] = {
-	{ "PA19", GPIO_PORT_A, GPIO_PIN_19 },
-	{ "PB03", GPIO_PORT_B, GPIO_PIN_3 },
-	{ "PA12", GPIO_PORT_A, GPIO_PIN_12 },
-	{ "PA14", GPIO_PORT_A, GPIO_PIN_14 },
-	{ "PA15", GPIO_PORT_A, GPIO_PIN_15 },
-	{ "PA06", GPIO_PORT_A, GPIO_PIN_6 },
-	{ "PA07", GPIO_PORT_A, GPIO_PIN_7 },
-	{ "PA16", GPIO_PORT_A, GPIO_PIN_16 },
-	{ "PA20", GPIO_PORT_A, GPIO_PIN_20 },
-	{ "PA21", GPIO_PORT_A, GPIO_PIN_21 },
-	{ "PA22", GPIO_PORT_A, GPIO_PIN_22 },
-	{ "PB02", GPIO_PORT_B, GPIO_PIN_2 },
-	{ "PA08", GPIO_PORT_A, GPIO_PIN_8 },
-};
-int g_numXRPins = sizeof(g_xrPins) / sizeof(g_xrPins[0]);
-
-void PIN_XR809_GetPortPinForIndex(int index, int *xr_port, int *xr_pin) {
-	if(index < 0 || index >= g_numXRPins) {
-		*xr_port = 0;
-		*xr_pin = 0;
-		return;
-	}
-	*xr_port = g_xrPins[index].port;
-	*xr_pin = g_xrPins[index].pin;
-}
-
-#endif
 // it was nice to have it as bits but now that we support PWM...
 //int g_channelStates;
 int g_channelValues[GPIO_MAX] = { 0 };
@@ -170,13 +120,6 @@ int g_channelTypes[GPIO_MAX] = { 0 };
 
 pinButton_s g_buttons[GPIO_MAX];
 
-#ifdef WINDOWS
-
-#elif PLATFORM_XR809
-
-#else
-
-#endif
 pinsState_t g_pins;
 
 void (*g_channelChangeCallback)(int idx, int iVal) = 0;
@@ -280,21 +223,7 @@ int PIN_GetPinChannel2ForPinIndex(int index) {
 }
 void RAW_SetPinValue(int index, int iVal){
 	if (g_enable_pins) {
-#if WINDOWS
-
-#elif PLATFORM_BL602
-    bl_gpio_output_set(index, iVal ? 1 : 0);
-
-#elif PLATFORM_XR809
-	int xr_port; // eg GPIO_PORT_A
-	int xr_pin; // eg. GPIO_PIN_20
-
-	PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
-
-	HAL_GPIO_WritePin(xr_port, xr_pin, iVal);
-#else
-	    bk_gpio_output(index, iVal);
-#endif
+		HAL_PIN_SetOutputValue(index, iVal);
 	}
 }
 void Button_OnShortClick(int index)
@@ -323,72 +252,31 @@ void Button_OnDoubleClick(int index)
 		g_doubleClickCallback(index);
 	}
 }
-void Button_OnLongPressHold(int index)
-{
+void Button_OnLongPressHold(int index) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"%i key_long_press_hold\r\n", index);
 }
 
-const char *PIN_GetPinNameAlias(int index) {
-#if PLATFORM_XR809
-	if(index < 0 || index >= g_numXRPins) {
-		return "bad_index";
-	}
-	return g_xrPins[index].name;
-#else
-	return "not_implemented_here";
-#endif
-}
-bool BTN_ShouldInvert(int index)
-{
+bool BTN_ShouldInvert(int index) {
 	if(g_pins.roles[index] == IOR_Button_n || g_pins.roles[index] == IOR_Button_ToggleAll_n|| g_pins.roles[index] == IOR_DigitalInput_n) {
 		return true;
 	}
 	return false;
 }
-unsigned char PIN_ReadDigitalInputValue_WithInversionIncluded(int index) {
-#if WINDOWS
-	return 0;
-#elif PLATFORM_BL602
-	uint8_t iVal;
-    bl_gpio_input_get(index, &iVal);
+static uint8_t PIN_ReadDigitalInputValue_WithInversionIncluded(int index) {
+	uint8_t iVal = HAL_PIN_ReadDigitalInput(index);
 
 	// support inverted button
 	if(BTN_ShouldInvert(index)) {
 		return !iVal;
 	}
 	return iVal;
-#elif PLATFORM_XR809
-	int xr_port; // eg GPIO_PORT_A
-	int xr_pin; // eg. GPIO_PIN_20
-
-	PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
-
-	if(BTN_ShouldInvert(index)) {
-		if (HAL_GPIO_ReadPin(xr_port, xr_pin) == GPIO_PIN_LOW)
-			return 1;//0;
-		return 0;//1;
-	}
-	if (HAL_GPIO_ReadPin(xr_port, xr_pin) == GPIO_PIN_LOW)
-		return 0;
-	return 1;
-#else
-	// support inverted button
-	if(BTN_ShouldInvert(index)) {
-		return !bk_gpio_input(index);
-	}
-	return bk_gpio_input(index);
-#endif
 }
-unsigned char button_generic_get_gpio_value(void *param)
+static uint8_t button_generic_get_gpio_value(void *param)
 {
-#if WINDOWS
-	return 0;
-#else
 	int index;
 	index = ((pinButton_s*)param) - g_buttons;
 
 	return PIN_ReadDigitalInputValue_WithInversionIncluded(index);
-#endif
 }
 #define PIN_UART1_RXD 10
 #define PIN_UART1_TXD 11
@@ -530,49 +418,18 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			{
 				//pinButton_s *bt = &g_buttons[index];
 				// TODO: disable button
-	#if WINDOWS
-		
-	#elif PLATFORM_XR809
-
-	#else
-	#endif
 			}
 			break;
 		case IOR_LED:
 		case IOR_LED_n:
 		case IOR_Relay:
 		case IOR_Relay_n:
-	#if WINDOWS
-		
-	#elif PLATFORM_XR809
-
-	#else
 			// TODO: disable?
-	#endif
 			break;
 			// Disable PWM for previous pin role
 		case IOR_PWM:
 			{
-				int pwmIndex;
-				//int channelIndex;
-
-				pwmIndex = PIN_GetPWMIndexForPinIndex(index);
-				// is this pin capable of PWM?
-				if(pwmIndex != -1) {
-	#if WINDOWS
-		
-	#elif PLATFORM_XR809
-
-	#elif PLATFORM_BK7231N
-					bk_pwm_stop(pwmIndex);
-	#elif PLATFORM_BK7231T
-					bk_pwm_stop(pwmIndex);
-	#elif PLATFORM_BL602
-	
-	#else
-	#error "Unknown platform"
-	#endif
-				}
+				HAL_PIN_PWM_Stop(index);
 			}
 			break;
 
@@ -593,128 +450,38 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_Button_ToggleAll_n:
 			{
 				pinButton_s *bt = &g_buttons[index];
-	#if WINDOWS
-		
-	#elif PLATFORM_BL602
-				// int bl_gpio_enable_input(uint8_t pin, uint8_t pullup, uint8_t pulldown);
-			bl_gpio_enable_input(index, 1, 0);
 
-	#elif PLATFORM_XR809
-				{
-					int xr_port; // eg GPIO_PORT_A
-					int xr_pin; // eg. GPIO_PIN_20
-					GPIO_InitParam param;
+				// digital input
+				HAL_PIN_Setup_Input_Pullup(index);
 
-					PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
-
-					param.driving = GPIO_DRIVING_LEVEL_1;
-					param.mode = GPIOx_Pn_F0_INPUT;
-					param.pull = GPIO_PULL_UP;
-					HAL_GPIO_Init(xr_port, xr_pin, &param);
-				}
-	#else
-				bk_gpio_config_input_pup(index);
-	#endif
 				// init button after initializing pin role
 				NEW_button_init(bt, button_generic_get_gpio_value, 0);
-			/*	button_attach(bt, BTN_SINGLE_CLICK,     Button_OnShortClick);
-				button_attach(bt, BTN_DOUBLE_CLICK,     Button_OnDoubleClick);
-				button_attach(bt, BTN_LONG_PRESS_HOLD,  Button_OnLongPressHold);
-				button_start(bt);*/
 			}
 			break;
 		case IOR_DigitalInput:
 		case IOR_DigitalInput_n:
-	#if WINDOWS
-		
-	#elif PLATFORM_BL602
-
-				// int bl_gpio_enable_input(uint8_t pin, uint8_t pullup, uint8_t pulldown);
-			bl_gpio_enable_input(index, 1, 0);
-	#elif PLATFORM_XR809
-				{
-					int xr_port; // eg GPIO_PORT_A
-					int xr_pin; // eg. GPIO_PIN_20
-					GPIO_InitParam param;
-
-					PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
-
-					param.driving = GPIO_DRIVING_LEVEL_1;
-					param.mode = GPIOx_Pn_F0_INPUT;
-					param.pull = GPIO_PULL_UP;
-					HAL_GPIO_Init(xr_port, xr_pin, &param);
-				}
-	#else
-				bk_gpio_config_input_pup(index);
-	#endif
+			{
+				// digital input
+				HAL_PIN_Setup_Input_Pullup(index);
+			}
 			break;
 		case IOR_LED:
 		case IOR_LED_n:
 		case IOR_Relay:
 		case IOR_Relay_n:
 		{
-	#if WINDOWS
-		
-	#elif PLATFORM_BL602
-			bl_gpio_enable_output(index, 1,0);
-			bl_gpio_output_set(index, 0);
-	#elif PLATFORM_XR809
-			GPIO_InitParam param;
-			int xr_port; // eg GPIO_PORT_A
-			int xr_pin; // eg. GPIO_PIN_20
-
-			PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
-
-			/*set pin driver capability*/
-			param.driving = GPIO_DRIVING_LEVEL_1;
-			param.mode = GPIOx_Pn_F1_OUTPUT;
-			param.pull = GPIO_PULL_NONE;
-			HAL_GPIO_Init(xr_port, xr_pin, &param);
-	#else
-			bk_gpio_config_output(index);
-			bk_gpio_output(index, 0);
-	#endif
+			HAL_PIN_Setup_Output(index);
 		}
 			break;
 		case IOR_PWM:
 			{
-				int pwmIndex;
 				int channelIndex;
-				float f;
+				int channelValue;
 
-				pwmIndex = PIN_GetPWMIndexForPinIndex(index);
-				// is this pin capable of PWM?
-				if(pwmIndex != -1) {
-					channelIndex = PIN_GetPinChannelForPinIndex(index);
-	#if WINDOWS
-		
-	#elif PLATFORM_BL602
-
-	#elif PLATFORM_XR809
-
-	#elif PLATFORM_BK7231N
-					// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
-					bk_pwm_initialize(pwmIndex, 1000, 0, 0, 0);
-
-					bk_pwm_start(pwmIndex);
-					f = g_channelValues[channelIndex] * 0.01f;
-					// OSStatus bk_pwm_update_param(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle1, uint32_t duty_cycle2, uint32_t duty_cycle3)
-					bk_pwm_update_param(pwmIndex, 1000, f * 1000.0f,0,0);
-
-	#else
-					// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
-					bk_pwm_initialize(pwmIndex, 1000, 0);
-
-					bk_pwm_start(pwmIndex);
-					// they are using 1kHz PWM
-					// See: https://www.elektroda.pl/rtvforum/topic3798114.html
-				//	bk_pwm_update_param(pwmIndex, 1000, g_channelValues[channelIndex]);
-					f = g_channelValues[channelIndex] * 0.01f;
-					// OSStatus bk_pwm_update_param(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle)
-					bk_pwm_update_param(pwmIndex, 1000, f * 1000.0f);
-
-	#endif
-				}
+				channelIndex = PIN_GetPinChannelForPinIndex(index);
+				channelValue = g_channelValues[channelIndex];
+				HAL_PIN_PWM_Start(index);
+				HAL_PIN_PWM_Update(index,channelValue);
 			}
 			break;
 
@@ -740,7 +507,6 @@ void Channel_OnChanged(int ch) {
 	int i;
 	int iVal;
 	int bOn;
-	int pwmIndex;
 
 
 	//bOn = BIT_CHECK(g_channelStates,ch);
@@ -774,27 +540,8 @@ void Channel_OnChanged(int ch) {
 				if(g_channelChangeCallback != 0) {
 					g_channelChangeCallback(ch,iVal);
 				}
-				pwmIndex = PIN_GetPWMIndexForPinIndex(i);
-				// is this pin capable of PWM?
-				if(pwmIndex != -1) {
-
-#if WINDOWS
-	
-#elif PLATFORM_BL602
-
-#elif PLATFORM_XR809
-
-#elif PLATFORM_BK7231N
-					bk_pwm_update_param(pwmIndex, 1000, iVal * 10.0f,0,0); // Duty cycle 0...100 * 10.0 = 0...1000
-
-#else
-					// they are using 1kHz PWM
-					// See: https://www.elektroda.pl/rtvforum/topic3798114.html
-					bk_pwm_update_param(pwmIndex, 1000, iVal * 10.0f); // Duty cycle 0...100 * 10.0 = 0...1000
-#endif
-				}
+				HAL_PIN_PWM_Update(i,iVal);
 			}
-			
 		}
 	}
 
@@ -815,7 +562,6 @@ void CHANNEL_Set(int ch, int iVal, int bForce) {
 	if(bForce == 0) {
 		int prevVal;
 
-		//prevVal = BIT_CHECK(g_channelStates, ch);
 		prevVal = g_channelValues[ch];
 		if(prevVal == iVal) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"No change in channel %i - ignoring\n\r",ch);
@@ -823,11 +569,6 @@ void CHANNEL_Set(int ch, int iVal, int bForce) {
 		}
 	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"CHANNEL_Set channel %i has changed to %i\n\r",ch,iVal);
-	//if(iVal) {
-	//	BIT_SET(g_channelStates,ch);
-	//} else {
-	//	BIT_CLEAR(g_channelStates,ch);
-	//}
 	g_channelValues[ch] = iVal;
 
 	Channel_OnChanged(ch);
@@ -837,7 +578,6 @@ void CHANNEL_Toggle(int ch) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Toggle: Channel index %i is out of range <0,%i)\n\r",ch,GPIO_MAX);
 		return;
 	}
-	//BIT_TGL(g_channelStates,ch);
 	if(g_channelValues[ch] == 0)
 		g_channelValues[ch] = 100;
 	else
@@ -850,7 +590,6 @@ bool CHANNEL_Check(int ch) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Check: Channel index %i is out of range <0,%i)\n\r",ch,GPIO_MAX);
 		return 0;
 	}
-	//return BIT_CHECK(g_channelStates,ch);
 	if (g_channelValues[ch] > 0)
 		return 1;
 	return 0;
@@ -884,16 +623,6 @@ int CHANNEL_GetRoleForOutputChannel(int ch){
 #define EVENT_CB(ev)   if(handle->cb[ev])handle->cb[ev]((pinButton_s*)handle)
 
 #define PIN_TMR_DURATION       5
-#if WINDOWS
-
-#elif PLATFORM_BL602
-
-#elif PLATFORM_XR809
-
-#else
-
-beken_timer_t g_pin_timer;
-#endif
 
 void PIN_Input_Handler(int pinIndex)
 {
@@ -901,7 +630,6 @@ void PIN_Input_Handler(int pinIndex)
 	uint8_t read_gpio_level;
 	
 	handle = &g_buttons[pinIndex];
-	//read_gpio_level = bk_gpio_input(pinIndex);
 	read_gpio_level = button_generic_get_gpio_value(handle);
 
 	//ticks counter working..
@@ -1000,11 +728,7 @@ void PIN_Input_Handler(int pinIndex)
 }
 
 
-/**
-  * @brief  background ticks, timer repeat invoking interval 5ms.
-  * @param  None.
-  * @retval None
-  */
+//  background ticks, timer repeat invoking interval 5ms.
 void PIN_ticks(void *param)
 {
 	int i;
@@ -1019,10 +743,6 @@ void PIN_ticks(void *param)
 		else if(g_pins.roles[i] == IOR_DigitalInput || g_pins.roles[i] == IOR_DigitalInput_n) {
 			// read pin digital value (and already invert it if needed)
 			value = PIN_ReadDigitalInputValue_WithInversionIncluded(i);
-				// NOT NEEDED - INCLUDED in function above
-			//if(g_pins.roles[i] == IOR_DigitalInput_n) {
-//
-			//}
 			CHANNEL_Set(g_pins.channels[i], value,0);
 		}
 	}
@@ -1075,27 +795,9 @@ static int showgpi(const void *context, const char *cmd, const char *args){
 
 	for (i = 0; i < 32; i++) {
 		int val = 0;
-#ifdef WINDOWS		
 
-#elif PLATFORM_BL602
+		val = HAL_PIN_ReadDigitalInput(i);
 
-#elif PLATFORM_XR809
-		int xr_port; // eg GPIO_PORT_A
-		int xr_pin; // eg. GPIO_PIN_20
-		PIN_XR809_GetPortPinForIndex(i, &xr_port, &xr_pin);
-
-		if (HAL_GPIO_ReadPin(xr_port, xr_pin) == GPIO_PIN_LOW)
-			val = 0;
-		else 
-			val = 1;
-#else
-		val = bk_gpio_input(i);
-		if (val){
-			val = 1;
-		} else {
-			val = 0;
-		}
-#endif
 		value |= ((val & 1)<<i);
 	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"GPIs are 0x%x", value);
@@ -1121,7 +823,7 @@ void PIN_Init(void)
 
 	OS_TimerStart(&timer); /* start OS timer to feed watchdog */
 #else
-
+	beken_timer_t g_pin_timer;
 	OSStatus result;
 	
     result = rtos_init_timer(&g_pin_timer,
