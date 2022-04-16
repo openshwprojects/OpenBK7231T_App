@@ -50,7 +50,11 @@ static void CFG_SetDefaultConfig() {
 	// must be unsigned, else print below prints negatives as e.g. FFFFFFFe
 	unsigned char mac[6] = { 0 };
 
+#if PLATFORM_XR809
+	HAL_Configuration_GenerateMACForThisModule(mac);
+#else
 	WiFI_GetMacAddress((char *)mac);
+#endif
 
 	memset(&g_cfg,0,sizeof(mainConfig_t));
 	g_cfg.mqtt_port = 1883;

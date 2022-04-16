@@ -171,8 +171,10 @@ void Main_OnWiFiStatusChange(int code){
 
 void Main_OnEverySecond()
 {
+	int bMQTTconnected;
+
 	// run_adc_test();
-	MQTT_RunEverySecondUpdate();
+	bMQTTconnected = MQTT_RunEverySecondUpdate();
 	RepeatingEvents_OnEverySecond();
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();
@@ -180,9 +182,9 @@ void Main_OnEverySecond()
 
 	g_secondsElapsed ++;
 	if(bSafeMode) { 
-		ADDLOGF_INFO("[SAFE MODE] Timer is %i free mem %d\n", g_secondsElapsed, xPortGetFreeHeapSize());
+		ADDLOGF_INFO("[SAFE MODE] Timer %i, free mem %d, MQTT state %i", g_secondsElapsed, xPortGetFreeHeapSize(),bMQTTconnected);
 	} else {
-		ADDLOGF_INFO("Timer is %i free mem %d\n", g_secondsElapsed, xPortGetFreeHeapSize());
+		ADDLOGF_INFO("Timer %i, free mem %d, MQTT state %i", g_secondsElapsed, xPortGetFreeHeapSize(),bMQTTconnected);
 	}
 
   // print network info

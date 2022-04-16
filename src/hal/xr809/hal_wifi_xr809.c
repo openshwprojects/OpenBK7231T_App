@@ -1,6 +1,9 @@
 #ifdef PLATFORM_XR809
 
 #include "../hal_wifi.h"
+#include "../../new_cfg.h"
+#include "../../new_pins.h"
+
 
 #include <stdio.h>
 #include <string.h>
@@ -36,7 +39,7 @@ void HAL_ConnectToWiFi(const char *ssid, const char *psk)
 	printf("ok set wifii\n\r");
 }
 int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
-	char ap_psk[] = "12345678";
+	char ap_psk[8] = { 0 };
 
 	net_switch_mode(WLAN_MODE_HOSTAP);
 	wlan_ap_disable();
@@ -49,6 +52,9 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code)) {
 
 }
 
+void WiFI_GetMacAddress(char *mac) {
+	memcpy(mac,g_cfg.mac,6);
+}
 
 void HAL_PrintNetworkInfo() {
 

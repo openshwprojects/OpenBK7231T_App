@@ -597,35 +597,38 @@ void MQTT_init(){
 
 
 // called from user timer.
-void MQTT_RunEverySecondUpdate() {
+int MQTT_RunEverySecondUpdate() {
 
-  if (!mqtt_initialised) return;
+	if (!mqtt_initialised)
+		return 0;
 
-  // if asked to reconnect (e.g. change of topic(s))
-  if (mqtt_reconnect > 0){
-    mqtt_reconnect --;
-    if (mqtt_reconnect == 0){
-      // then if connected, disconnect, and then it will reconnect automatically in 2s
-      if (mqtt_client && mqtt_client_is_connected(mqtt_client)) {
-        MQTT_disconnect(mqtt_client);
-        loopsWithDisconnected = 8;
-      }
-    }
-  }
+	// if asked to reconnect (e.g. change of topic(s))
+	if (mqtt_reconnect > 0){
+		mqtt_reconnect --;
+		if (mqtt_reconnect == 0){
+			// then if connected, disconnect, and then it will reconnect automatically in 2s
+			if (mqtt_client && mqtt_client_is_connected(mqtt_client)) {
+				MQTT_disconnect(mqtt_client);
+				loopsWithDisconnected = 8;
+			}
+		}
+	}
 
 	if(mqtt_client == 0 || mqtt_client_is_connected(mqtt_client) == 0) {
-		 addLogAdv(LOG_INFO,LOG_FEATURE_MAIN, "Timer discovers disconnected mqtt %i\n",loopsWithDisconnected);
+		//addLogAdv(LOG_INFO,LOG_FEATURE_MAIN, "Timer discovers disconnected mqtt %i\n",loopsWithDisconnected);
 		loopsWithDisconnected++;
 		if(loopsWithDisconnected > 10)
 		{ 
 			if(mqtt_client == 0)
 			{
-			    mqtt_client = mqtt_client_new();
+				mqtt_client = mqtt_client_new();
 				CHANNEL_SetChangeCallback(app_my_channel_toggle_callback);
-      }
-      MQTT_do_connect(mqtt_client);
+			}
+			MQTT_do_connect(mqtt_client);
 			loopsWithDisconnected = 0;
 		}
+		return 0;
 	}
+	return 1;
 }
 

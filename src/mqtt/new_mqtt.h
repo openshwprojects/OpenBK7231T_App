@@ -16,7 +16,7 @@ extern mqtt_client_t* mqtt_client;
 //void example_do_connect(mqtt_client_t *client);
 void example_publish(mqtt_client_t *client, int channel, int iVal);
 void MQTT_init();
-void MQTT_RunEverySecondUpdate();
+int MQTT_RunEverySecondUpdate();
 
 
 // ability to register callbacks for MQTT data
