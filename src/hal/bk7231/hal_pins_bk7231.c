@@ -64,7 +64,7 @@ void HAL_PIN_PWM_Stop(int index) {
 	bk_pwm_stop(pwmIndex);
 }
 
-void HAL_PIN_PWM_Start(int index,) {
+void HAL_PIN_PWM_Start(int index) {
 	int pwmIndex;
 
 	pwmIndex = PIN_GetPWMIndexForPinIndex(index);

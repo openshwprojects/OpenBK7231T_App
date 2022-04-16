@@ -194,7 +194,11 @@ void Main_OnEverySecond()
 #endif
 
 	g_secondsElapsed ++;
-	ADDLOGF_INFO("Timer is %i free mem %d\n", g_secondsElapsed, xPortGetFreeHeapSize());
+	if(bSafeMode) { 
+		ADDLOGF_INFO("[SAFE MODE] Timer is %i free mem %d\n", g_secondsElapsed, xPortGetFreeHeapSize());
+	} else {
+		ADDLOGF_INFO("Timer is %i free mem %d\n", g_secondsElapsed, xPortGetFreeHeapSize());
+	}
 
   // print network info
   if (!(g_secondsElapsed % 10)){

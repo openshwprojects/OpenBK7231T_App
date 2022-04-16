@@ -407,7 +407,6 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		role = IOR_None;
 	}
 #endif
-
 	if (g_enable_pins) {
 		switch(g_pins.roles[index])
 		{
@@ -804,7 +803,14 @@ static int showgpi(const void *context, const char *cmd, const char *args){
 	return 1;
 }
 
+#if WINDOWS
 
+#elif PLATFORM_BL602
+
+#elif PLATFORM_XR809
+#else
+beken_timer_t g_pin_timer;
+#endif
 void PIN_Init(void)
 {
 #if WINDOWS
@@ -823,7 +829,6 @@ void PIN_Init(void)
 
 	OS_TimerStart(&timer); /* start OS timer to feed watchdog */
 #else
-	beken_timer_t g_pin_timer;
 	OSStatus result;
 	
     result = rtos_init_timer(&g_pin_timer,
