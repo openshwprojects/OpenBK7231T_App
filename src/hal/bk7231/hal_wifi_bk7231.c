@@ -16,12 +16,20 @@ void (*g_wifiStatusCallback)(int code);
 #define MAC2STR(a) (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5]
 #define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x "
 
-char g_IP[3+3+3+3+1+1+1] = "unknown";
+static char g_IP[3+3+3+3+1+1+1] = "unknown";
+static int g_bOpenAccessPointMode = 0;
+
+// This must return correct IP for both SOFT_AP and STATION modes,
+// because, for example, javascript control panel requires it
 const char *HAL_GetMyIPString(){
     IPStatusTypedef ipStatus;
 
     os_memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
-    bk_wlan_get_ip_status(&ipStatus, STATION);
+	if(g_bOpenAccessPointMode) {
+		bk_wlan_get_ip_status(&ipStatus, SOFT_AP);
+	} else {
+		bk_wlan_get_ip_status(&ipStatus, STATION);
+	}
     
     strcpy(g_IP, ipStatus.ip);
     return g_IP;
@@ -65,7 +73,7 @@ void HAL_PrintNetworkInfo(){
     {
     os_memset(&linkStatus, 0x0, sizeof(LinkStatusTypeDef));
     bk_wlan_get_link_status(&linkStatus);
-        os_memcpy(ssid, linkStatus.ssid, 32);
+        memcpy(ssid, linkStatus.ssid, 32);
 
     char *fmt = "sta:rssi=%d,ssid=%s,bssid=" MACSTR ",channel=%d,cipher_type:";
     bk_printf(fmt,
@@ -100,7 +108,7 @@ void HAL_PrintNetworkInfo(){
     {
         os_memset(&ap_info, 0x0, sizeof(network_InitTypeDef_ap_st));
         bk_wlan_ap_para_info_get(&ap_info);
-        os_memcpy(ssid, ap_info.wifi_ssid, 32);
+        memcpy(ssid, ap_info.wifi_ssid, 32);
         bk_printf("softap:ssid=%s,channel=%d,dhcp=%d,cipher_type:",
         ssid, ap_info.channel,ap_info.dhcp_mode);
         switch(ap_info.security)
@@ -201,6 +209,8 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code)) {
 }
 void HAL_ConnectToWiFi(const char *oob_ssid,const char *connect_key)
 {
+	g_bOpenAccessPointMode = 0;
+
 #if 1
 	network_InitTypeDef_adv_st	wNetConfigAdv;
 
@@ -268,8 +278,8 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid)
         wifi_get_mac_address((char *)mac, CONFIG_ROLE_AP);
         ap_info.chann = APP_DRONE_DEF_CHANNEL;
         ap_info.cipher_suite = 0;
-        //os_memcpy(ap_info.ssid.array, APP_DRONE_DEF_SSID, os_strlen(APP_DRONE_DEF_SSID));
-        os_memcpy(ap_info.ssid.array, ssid, os_strlen(ssid));
+        //memcpy(ap_info.ssid.array, APP_DRONE_DEF_SSID, os_strlen(APP_DRONE_DEF_SSID));
+        memcpy(ap_info.ssid.array, ssid, os_strlen(ssid));
 		
         ap_info.key_len = 0;
         os_memset(&ap_info.key, 0, 65);   
@@ -297,6 +307,10 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid)
 	  ADDLOGF_INFO("ssid:%s  key:%s mode:%d\r\n", wNetConfig.wifi_ssid, wNetConfig.wifi_key, wNetConfig.wifi_mode);
 	}
 	bk_wlan_start(&wNetConfig);
+	g_bOpenAccessPointMode = 1;
+
+	//dhcp_server_start(0);
+	//dhcp_server_stop(void);
 
   return 0;    
 }

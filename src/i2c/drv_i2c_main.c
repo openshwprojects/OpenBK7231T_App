@@ -29,8 +29,8 @@ void DRV_I2C_Read(byte addr, byte *data)
 }
 int DRV_I2C_Begin(int dev_adr, int busID) {
 
-    uint32_t status;
-	uint32_t oflag;
+    UINT32 status;
+	UINT32 oflag;
     oflag = I2C_DEF_DIV;
 
 	if(busID == I2C_BUS_I2C1) {

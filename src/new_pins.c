@@ -1,7 +1,7 @@
 
 
 
-
+#include "new_common.h"
 #include "new_pins.h"
 #include "httpserver/new_http.h"
 #include "logging/logging.h"
@@ -60,20 +60,11 @@ char g_enable_pins = 0;
 
 // XR809 sysinfo is used to save configuration to flash
 #include "common/framework/sysinfo.h"
-#include "driver/chip/hal_gpio.h"
-
-#define os_memcpy memcpy
 
 #else
 #include "flash_config/flash_config.h"
-#include <gpio_pub.h>
 
 #include "../../beken378/func/include/net_param_pub.h"
-#include "../../beken378/func/user_driver/BkDriverPwm.h"
-#include "../../beken378/func/user_driver/BkDriverI2c.h"
-#include "../../beken378/driver/i2c/i2c1.h"
-#include "../../beken378/driver/gpio/gpio.h"
-#undef PR_DEBUG
 
 
 typedef struct item_pins_config
@@ -139,7 +130,7 @@ void PIN_SaveToFlash() {
 		printf("PIN_SaveToFlash: sysinfo_get returned 0!\n\r");
 		return;
 	}
-	os_memcpy(&inf->pins, &g_pins, sizeof(inf->pins));
+	memcpy(&inf->pins, &g_pins, sizeof(inf->pins));
 	
 	if(sizeof(inf->pins) != sizeof(g_pins)) {
 		printf("PIN_SaveToFlash: FATAL ERROR - pin structures size mismatch! %i vs %i\r\n",sizeof(inf->pins),sizeof(g_pins));
@@ -152,7 +143,7 @@ void PIN_SaveToFlash() {
 
 #else
 	ITEM_PINS_CONFIG pins;
-	os_memcpy(&pins.pins, &g_pins, sizeof(pins.pins));
+	memcpy(&pins.pins, &g_pins, sizeof(pins.pins));
 	CONFIG_INIT_ITEM(CONFIG_TYPE_PINS, &pins);
 	config_save_item(&pins);
 	// delete old if it exists
@@ -186,7 +177,7 @@ void PIN_LoadFromFlash() {
 		printf("PIN_LoadFromFlash: sysinfo_get returned 0!\n\r");
 		return;
 	}
-	os_memcpy(&g_pins, &inf->pins, sizeof(g_pins));
+	memcpy(&g_pins, &inf->pins, sizeof(g_pins));
 	if(sizeof(inf->pins) != sizeof(g_pins)) {
 		printf("PIN_LoadFromFlash: FATAL ERROR - pin structures size mismatch! %i vs %i\r\n",sizeof(inf->pins),sizeof(g_pins));
 	}
@@ -194,7 +185,7 @@ void PIN_LoadFromFlash() {
 	CONFIG_INIT_ITEM(CONFIG_TYPE_PINS, &pins);
 	res = config_get_item(&pins);
 	if (res){
-			os_memcpy(&g_pins, &pins.pins, sizeof(g_pins));
+			memcpy(&g_pins, &pins.pins, sizeof(g_pins));
 	}
 #endif
 }
@@ -808,6 +799,7 @@ static int showgpi(const void *context, const char *cmd, const char *args){
 #elif PLATFORM_BL602
 
 #elif PLATFORM_XR809
+OS_Timer_t timer;
 #else
 beken_timer_t g_pin_timer;
 #endif
@@ -818,7 +810,6 @@ void PIN_Init(void)
 #elif PLATFORM_BL602
 
 #elif PLATFORM_XR809
-	OS_Timer_t timer;
 
 	OS_TimerSetInvalid(&timer);
 	if (OS_TimerCreate(&timer, OS_TIMER_PERIODIC, PIN_ticks, NULL,

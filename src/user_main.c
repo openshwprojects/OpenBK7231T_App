@@ -7,13 +7,6 @@
 #include "hal/hal_generic.h"
 #include "new_common.h"
 
-#if PLATFORM_XR809
-
-#elif PLATFORM_BL602
-
-#else
-#include "../../beken378/app/config/param_config.h"
-#endif
 #include "driver/drv_public.h"
 
 // Commands register, execution API and cmd tokenizer
