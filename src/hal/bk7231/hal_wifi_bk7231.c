@@ -322,6 +322,19 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid)
 	if(1) {
 	  ADDLOGF_INFO("ssid:%s  key:%s mode:%d\r\n", wNetConfig.wifi_ssid, wNetConfig.wifi_key, wNetConfig.wifi_mode);
 	}
+	//{
+	//	IPStatusTypedef ipStatus;
+
+	//	os_memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
+	//	bk_wlan_get_ip_status(&ipStatus, STATION);
+	//	ipStatus.dhcp = 1;
+ //       os_strcpy((char *)ipStatus.ip, APP_DRONE_DEF_NET_IP);
+ //       os_strcpy((char *)ipStatus.mask, APP_DRONE_DEF_NET_MASK);
+ //       os_strcpy((char *)ipStatus.gate, APP_DRONE_DEF_NET_GW);
+ //       os_strcpy((char *)ipStatus.dns, APP_DRONE_DEF_NET_IP);
+	//	bk_wlan_set_ip_status(&ipStatus, STATION);
+
+	//}
 	bk_wlan_start(&wNetConfig);
 	g_bOpenAccessPointMode = 1;
 
