@@ -51,7 +51,7 @@ int HAL_Configuration_ReadConfigMemory(void *target, int dataLen){
 
 
 
-int bekken_hal_flash_read(const uint32_t addr, void *dst, const UINT32 size)
+int bekken_hal_flash_read(const unsigned int addr, void *dst, const unsigned int size)
 {
     UINT32 status;
     if(NULL == dst) {

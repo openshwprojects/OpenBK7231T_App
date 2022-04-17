@@ -159,6 +159,10 @@ const char *HAL_GetMyIPString() {
 
 	return g_ipStr;
 }
+void WiFI_GetMacAddress(char *mac) {
+	// FOR station mode
+	wifi_mgmr_sta_mac_get((uint8_t*)mac);
+}
 const char *HAL_GetMACStr(char *macstr) {
 	uint8_t mac[6];
 	if(g_bAccessPointMode == 1) {

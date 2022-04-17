@@ -52,8 +52,6 @@ char g_enable_pins = 0;
 // it was nice to have it as bits but now that we support PWM...
 //int g_channelStates;
 int g_channelValues[GPIO_MAX] = { 0 };
-// channel content types, mostly not required to set
-int g_channelTypes[GPIO_MAX] = { 0 };
 
 pinButton_s g_buttons[GPIO_MAX];
 
@@ -152,11 +150,10 @@ void NEW_button_init(pinButton_s* handle, uint8_t(*pin_level)(void *self), uint8
 	handle->active_level = active_level;
 }
 void CHANNEL_SetType(int ch, int type) {
-
-	g_channelTypes[ch] = type;
+	g_cfg.pins.channelTypes[ch] = type;
 }
 int CHANNEL_GetType(int ch) {
-	return g_channelTypes[ch];
+	return g_cfg.pins.channelTypes[ch];
 }
 bool CHANNEL_IsInUse(int ch) {
 	int i;
