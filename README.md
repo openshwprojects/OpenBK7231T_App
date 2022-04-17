@@ -7,7 +7,19 @@ This repository is named "OpenBK7231T_App", but now it's a multiplatform app, su
 - XR809 (XR3, etc)
 - BL602
 
-To build for a given platform, just checkout first our version of SDK and then checkout this app repository into it, details later.
+Please use automatically compiled binaries from the Releases tab. To build yourself for a given platform, just checkout first our version of SDK and then checkout this app repository into it, details later.
+
+# Features
+
+OpenBeken features:
+- Tasmota-like setup, configuration and experience on all supported platforms
+- OTA firwmare upgrade system (for Beken chips)
+- MQTT compatibility with Home Assistant
+- Support for multiple relays, buttons, leds, inputs and PWMs
+- Driver system for custom peripherals, including TuyaMCU, I2C bus and Bl0942 power metering chip
+- NTP time from network
+- RGBCW LED lighting control compatible with Home Assistant
+- and much more
 
 # Building for BK7231T
 
