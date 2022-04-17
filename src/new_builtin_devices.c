@@ -33,8 +33,8 @@ void Setup_Device_BL602_MagicHome_IR_RGB_LedStrip() {
 	PIN_SetPinChannelForPinIndex(20, 3);
 
 	// IR recv
-	PIN_SetPinRoleForPinIndex(12, IOR_IR_RECV);
-	PIN_SetPinChannelForPinIndex(12, 0);
+	//PIN_SetPinRoleForPinIndex(12, IOR_IR_RECV);
+	//PIN_SetPinChannelForPinIndex(12, 0);
 
 	CFG_Save_SetupTimer();
 }
