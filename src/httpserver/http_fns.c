@@ -1083,6 +1083,8 @@ int http_fn_cfg_pins(http_request_t *request) {
     return 0;
 }
 
+void XR809_RequestOTAHTTP(const char *s);
+
 int http_fn_ota_exec(http_request_t *request) {
 	char tmpA[128];
 	//char tmpB[64];
@@ -1096,8 +1098,7 @@ int http_fn_ota_exec(http_request_t *request) {
 #elif PLATFORM_BL602
 
 #elif PLATFORM_XR809
-    //cmd_ota_http_exec(tmpA);
-    xr809_do_ota_next_frame(tmpA);
+    XR809_RequestOTAHTTP(tmpA);
 #else
     otarequest(tmpA);
 #endif
