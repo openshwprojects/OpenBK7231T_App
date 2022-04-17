@@ -928,49 +928,47 @@ static int http_rest_get_testconfig(http_request_t *request){
 }
 
 static int http_rest_get_flash_vars_test(http_request_t *request){
-#if PLATFORM_XR809
-    return http_rest_error(request, 400, "flash vars unsupported");
-#elif PLATFORM_BL602
-    return http_rest_error(request, 400, "flash vars unsupported");
-#else
-#ifndef DISABLE_FLASH_VARS_VARS
-    char *params = request->url + 17;
-    int increment = 0; 
-    int len = 0;
-    int sres;
-    int i;
-    char tmp[128];
-    FLASH_VARS_STRUCTURE data, *p;
-
-    p = &flash_vars;
-
-    sres = sscanf(params, "%x-%x", &increment, &len);
-
-    ADDLOG_DEBUG(LOG_FEATURE_API, "http_rest_get_flash_vars_test %d %d returned %d", increment, len, sres);
-
-    if (increment == 10){
-        flash_vars_read(&data);
-        p = &data;
-    } else {
-        for (i = 0; i < increment; i++){
-            HAL_FlashVars_IncreaseBootCount();
-        }
-        for (i = 0; i < len; i++){
-            HAL_FlashVars_SaveBootComplete();
-        }
-    }
-
-    sprintf(tmp, "offset %d, boot count %d, boot success %d, bootfailures %d", 
-        flash_vars_offset, 
-        p->boot_count, 
-        p->boot_success_count,
-        p->boot_count - p->boot_success_count );
-
-    return http_rest_error(request, 200, tmp);
-#else 
-    return http_rest_error(request, 400, "flash vars unsupported");
-#endif
-#endif
+//#if PLATFORM_XR809
+//    return http_rest_error(request, 400, "flash vars unsupported");
+//#elif PLATFORM_BL602
+//    return http_rest_error(request, 400, "flash vars unsupported");
+//#else
+//#ifndef DISABLE_FLASH_VARS_VARS
+//    char *params = request->url + 17;
+//    int increment = 0; 
+//    int len = 0;
+//    int sres;
+//    int i;
+//    char tmp[128];
+//    FLASH_VARS_STRUCTURE data, *p;
+//
+//    p = &flash_vars;
+//
+//    sres = sscanf(params, "%x-%x", &increment, &len);
+//
+//    ADDLOG_DEBUG(LOG_FEATURE_API, "http_rest_get_flash_vars_test %d %d returned %d", increment, len, sres);
+//
+//    if (increment == 10){
+//        flash_vars_read(&data);
+//        p = &data;
+//    } else {
+//        for (i = 0; i < increment; i++){
+//            HAL_FlashVars_IncreaseBootCount();
+//        }
+//        for (i = 0; i < len; i++){
+//            HAL_FlashVars_SaveBootComplete();
+//        }
+//    }
+//
+//    sprintf(tmp, "offset %d, boot count %d, boot success %d, bootfailures %d", 
+//        flash_vars_offset, 
+//        p->boot_count, 
+//        p->boot_success_count,
+//        p->boot_count - p->boot_success_count );
+//
+//    return http_rest_error(request, 200, tmp);
+//#else 
+    return http_rest_error(request, 400, "flash test unsupported");
 }
 
 

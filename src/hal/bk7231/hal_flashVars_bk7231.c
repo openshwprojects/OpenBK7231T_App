@@ -18,15 +18,31 @@
 #include "net_param_pub.h"
 #include "flash_pub.h"
 
-#if WINDOWS
-#elif PLATFORM_XR809
-#else
-    #include "BkDriverFlash.h"
-    #include "BkDriverUart.h"
-#endif
+#include "BkDriverFlash.h"
+#include "BkDriverUart.h"
 
-#include "../logging/logging.h"
-#include "flash_vars.h"
+#include "../../logging/logging.h"
+
+
+
+typedef struct flash_vars_structure
+{
+    unsigned short boot_count; // number of times the device has booted
+    unsigned short boot_success_count; // if a device boots completely (>30s), will equal boot_success_count
+    unsigned char _align[3];
+    unsigned char len; // length of the whole structure (i.e. 2+2+1 = 5)  MUST NOT BE 255
+} FLASH_VARS_STRUCTURE;
+
+extern FLASH_VARS_STRUCTURE flash_vars;
+
+
+int flash_vars_init();
+int flash_vars_write();
+
+// for testing only...  only done once at startup...
+extern int flash_vars_offset;
+int flash_vars_read(FLASH_VARS_STRUCTURE *data);
+
 
 
 //#define TEST_MODE
@@ -478,5 +494,62 @@ int flash_vars_erase(unsigned int off_set, unsigned int size){
 
     return 0;
 }
+
+
+
+//#define DISABLE_FLASH_VARS_VARS
+
+
+// call at startup
+void HAL_FlashVars_IncreaseBootCount(){
+#ifndef DISABLE_FLASH_VARS_VARS
+    FLASH_VARS_STRUCTURE data;
+
+    flash_vars_init();
+    flash_vars.boot_count ++;
+    ADDLOG_INFO(LOG_FEATURE_CFG, "####### Boot Count %d #######", flash_vars.boot_count);
+    flash_vars_write();
+
+    flash_vars_read(&data);
+    ADDLOG_DEBUG(LOG_FEATURE_CFG, "re-read - offset %d, boot count %d, boot success %d, bootfailures %d", 
+        flash_vars_offset, 
+        data.boot_count, 
+        data.boot_success_count,
+        data.boot_count - data.boot_success_count );
+#endif
+}
+
+// call once started (>30s?)
+void HAL_FlashVars_SaveBootComplete(){
+#ifndef DISABLE_FLASH_VARS_VARS
+    FLASH_VARS_STRUCTURE data;
+    // mark that we have completed a boot.
+    ADDLOG_INFO(LOG_FEATURE_CFG, "####### Set Boot Complete #######");
+
+    flash_vars.boot_success_count = flash_vars.boot_count;
+    flash_vars_write();
+
+    flash_vars_read(&data);
+    ADDLOG_DEBUG(LOG_FEATURE_CFG, "re-read - offset %d, boot count %d, boot success %d, bootfailures %d", 
+        flash_vars_offset, 
+        data.boot_count, 
+        data.boot_success_count,
+        data.boot_count - data.boot_success_count );
+#endif
+}
+
+// call to return the number of boots since a HAL_FlashVars_SaveBootComplete
+int HAL_FlashVars_GetBootFailures(){
+    int diff = 0;
+#ifndef DISABLE_FLASH_VARS_VARS
+    diff = flash_vars.boot_count - flash_vars.boot_success_count;
+#endif
+    return diff;
+}
+
+int HAL_FlashVars_GetBootCount(){
+	return flash_vars.boot_count;
+}
+
 
 #endif 

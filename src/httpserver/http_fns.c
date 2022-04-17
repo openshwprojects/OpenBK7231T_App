@@ -11,6 +11,7 @@
 #include "../hal/hal_wifi.h"
 #include "../hal/hal_pins.h"
 #include "../hal/hal_flashConfig.h"
+#include "../logging/logging.h"
 
 #ifdef WINDOWS
     // nothing
@@ -19,18 +20,14 @@
 #elif PLATFORM_XR809
     #include <image/flash.h>
 #elif defined(PLATFORM_BK7231N)
-    #include "../logging/logging.h"
     // tuya-iotos-embeded-sdk-wifi-ble-bk7231n/sdk/include/tuya_hal_storage.h
     #include "tuya_hal_storage.h"
     #include "BkDriverFlash.h"
-    #include "../flash_config/flash_config.h"
 #else
     // REALLY? A typo in Tuya SDK? Storge?
     // tuya-iotos-embeded-sdk-wifi-ble-bk7231t/platforms/bk7231t/tuya_os_adapter/include/driver/tuya_hal_storge.h
-    #include "../logging/logging.h"
     #include "tuya_hal_storge.h"
     #include "BkDriverFlash.h"
-    #include "../flash_config/flash_config.h"
 #endif
 
 
@@ -207,9 +204,7 @@ int http_fn_index(http_request_t *request) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_AppendInformationToHTTPIndexPage(request);
 #endif
-//	strcat(outbuf,"<button type=\"button\">Click Me!</button>");
 
-    
     if(http_getArg(request->url,"restart",tmpA,sizeof(tmpA))) {
         poststr(request,"<h5> Module will restart soon</h5>");
         RESET_ScheduleModuleReset(3);
@@ -224,7 +219,7 @@ int http_fn_index(http_request_t *request) {
 
     poststr(request,"<form action=\"about\"><input type=\"submit\" value=\"About\"/></form>");
 
-	hprintf128(request,"<h3>Cfg size: %i, change counter: %i, ota counter: %i, boot fails %i!</h3>",
+	hprintf128(request,"<h5>Cfg size: %i, change counter: %i, ota counter: %i, boot incompletes %i (might change to 0 if you wait to 30 sec)!</h5>",
 		sizeof(g_cfg),g_cfg.changeCounter,g_cfg.otaCounter,Main_GetLastRebootBootFailures());
 
     poststr(request,htmlReturnToMenu);
@@ -239,7 +234,7 @@ int http_fn_about(http_request_t *request){
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
     poststr(request,g_header);
-    poststr(request,"About us page.");
+    poststr(request,"<h2>Open source firmware for BK7231N, BK7231T, XR809 and BL602 by OpenSHWProjects</h2>");
     poststr(request,htmlReturnToMenu);
     HTTP_AddBuildFooter(request);
     poststr(request,htmlEnd);

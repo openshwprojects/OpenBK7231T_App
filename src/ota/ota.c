@@ -7,7 +7,6 @@
 //#include "flash.h"
 #include "../logging/logging.h"
 #include "../httpclient/http_client.h"
-#include "../flash_config/flash_config.h"
 
 static unsigned char *sector = (void *)0;
 int sectorlen = 0;

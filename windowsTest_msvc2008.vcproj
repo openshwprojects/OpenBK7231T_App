@@ -208,22 +208,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\flash_config\flash_vars.c"
-				>
-			</File>
-			<File
-				RelativePath=".\src\flash_config\flash_vars.h"
-				>
-			</File>
-			<File
-				RelativePath=".\src\flash_config\flash_vars_vars.c"
-				>
-			</File>
-			<File
-				RelativePath=".\src\flash_config\flash_vars_vars.h"
-				>
-			</File>
-			<File
 				RelativePath=".\src\httpserver\http_fns.c"
 				>
 				<FileConfiguration
@@ -653,7 +637,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\new_http.h"
+				RelativePath=".\src\httpserver\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -665,7 +649,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\httpserver\new_http.h"
+				RelativePath=".\src\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -816,6 +800,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\hal\bl602\hal_flashVars_bl602.c"
+					>
+				</File>
+				<File
 					RelativePath=".\src\hal\bl602\hal_generic_bl602.c"
 					>
 				</File>
@@ -840,6 +828,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\hal\bk7231\hal_flashVars_bk7231.c"
+					>
+				</File>
+				<File
 					RelativePath=".\src\hal\bk7231\hal_generic_bk7231.c"
 					>
 				</File>
@@ -861,6 +853,10 @@
 				>
 				<File
 					RelativePath=".\src\hal\xr809\hal_flashConfig_xr809.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\hal\xr809\hal_flashVars_xr809.c"
 					>
 				</File>
 				<File
