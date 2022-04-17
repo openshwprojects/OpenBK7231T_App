@@ -23,6 +23,7 @@ int WiFI_SetMacAddress(char *mac) {
 int HAL_Configuration_ReadConfigMemory(void *target, int dataLen){
 	int readLen;
 
+	ADDLOG_DEBUG(LOG_FEATURE_CFG, "HAL_Configuration_ReadConfigMemory: will read %d bytes", dataLen);
 	readLen = ef_get_env_blob(EASYFLASH_MY_OBK_CONF, target, dataLen , NULL);
 
     return dataLen;
@@ -36,9 +37,17 @@ void HAL_Configuration_GenerateMACForThisModule(unsigned char *out) {
 
 int HAL_Configuration_SaveConfigMemory(void *src, int dataLen){
 
-	int res;
-	res = ef_set_env_blob(EASYFLASH_MY_OBK_CONF, src, dataLen);
+	EfErrCode  res;
 
+	res = ef_set_env_blob(EASYFLASH_MY_OBK_CONF, src, dataLen);
+	if(res == EF_ENV_INIT_FAILED) {
+		ADDLOG_DEBUG(LOG_FEATURE_CFG, "HAL_Configuration_SaveConfigMemory: EF_ENV_INIT_FAILED for %d bytes", dataLen);
+		return 0;
+	}
+	if(res == EF_ENV_ARG_ERR) {
+		ADDLOG_DEBUG(LOG_FEATURE_CFG, "HAL_Configuration_SaveConfigMemory: EF_ENV_ARG_ERR for %d bytes", dataLen);
+		return 0;
+	}
 	ADDLOG_DEBUG(LOG_FEATURE_CFG, "HAL_Configuration_SaveConfigMemory: saved %d bytes", dataLen);
     return dataLen;
 }
