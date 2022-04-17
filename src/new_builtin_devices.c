@@ -12,6 +12,33 @@ void Setup_Device_Empty() {
 
 }
 
+// https://www.elektroda.pl/rtvforum/topic3881416.html
+void Setup_Device_BL602_MagicHome_IR_RGB_LedStrip() {
+	CFG_ClearPins();
+
+	// red
+	PIN_SetPinRoleForPinIndex(4, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(4, 0);
+
+	// green
+	PIN_SetPinRoleForPinIndex(3, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(3, 1);
+
+	// blue
+	PIN_SetPinRoleForPinIndex(21, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(21, 1);
+
+	// dummy unused channel 4 with place on pcb for transistor
+	PIN_SetPinRoleForPinIndex(20, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(20, 3);
+
+	// IR recv
+	PIN_SetPinRoleForPinIndex(12, IOR_IR_RECV);
+	PIN_SetPinChannelForPinIndex(12, 0);
+
+	CFG_Save_SetupTimer();
+}
+
 // https://www.elektroda.pl/rtvforum/topic3804553.html
 // SmartSwitch Tuya WL-SW01_16 16A
 void Setup_Device_TuyaWL_SW01_16A() {
