@@ -227,9 +227,9 @@ void addLogAdv(int level, int feature, char *fmt, ...){
 #if PLATFORM_XR809
     printf(tmp);
 #endif
-#if PLATFORM_BL602
-    printf(tmp);
-#endif
+//#if PLATFORM_BL602
+//    printf(tmp);
+//#endif
 
     if (direct_serial_log){
         bk_printf(tmp);

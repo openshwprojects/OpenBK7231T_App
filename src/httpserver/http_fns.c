@@ -80,15 +80,35 @@ int http_fn_empty_url(http_request_t *request) {
 	poststr(request, NULL);
     return 0;
 }
-
+int h_isChannelPWM(int tg_ch){
+    int i;
+    for(i = 0; i < GPIO_MAX; i++) {
+        int ch = PIN_GetPinChannelForPinIndex(i);
+		if(tg_ch != ch)
+			continue;
+        int role = PIN_GetPinRoleForPinIndex(i);
+        if(role == IOR_PWM) {
+			return true;
+        }
+    }
+	return false;
+}
+int h_isChannelRelay(int tg_ch) {
+    int i;
+    for(i = 0; i < GPIO_MAX; i++) {
+        int ch = PIN_GetPinChannelForPinIndex(i);
+		if(tg_ch != ch)
+			continue;
+        int role = PIN_GetPinRoleForPinIndex(i);
+        if(role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
+			return true;
+        }
+    }
+	return false;
+}
 int http_fn_index(http_request_t *request) {
-    int relayFlags;
-    int pwmFlags;
     int j, i;
 	char tmpA[128];
-
-    relayFlags = 0;
-    pwmFlags = 0;
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
@@ -117,16 +137,7 @@ int http_fn_index(http_request_t *request) {
         CHANNEL_Set(j,newPWMValue,1);
     }
 
-    for(i = 0; i < GPIO_MAX; i++) {
-        int role = PIN_GetPinRoleForPinIndex(i);
-        int ch = PIN_GetPinChannelForPinIndex(i);
-        if(role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
-            BIT_SET(relayFlags,ch);
-        }
-        if(role == IOR_PWM) {
-            BIT_SET(pwmFlags,ch);
-        }
-    }
+
     for(i = 0; i < CHANNEL_MAX; i++) {
 		int channelType;
 
@@ -164,7 +175,7 @@ int http_fn_index(http_request_t *request) {
 
             hprintf128(request,"Humidity Channel %i value %f Percent<br>",i, fValue);
 
-		} else if(BIT_CHECK(relayFlags,i) || channelType == ChType_Toggle) {
+		} else if(h_isChannelRelay(i) || channelType == ChType_Toggle) {
             const char *c;
             if(CHANNEL_Check(i)) {
                 c = "r";
@@ -175,7 +186,7 @@ int http_fn_index(http_request_t *request) {
             hprintf128(request,"<input type=\"hidden\" name=\"tgl\" value=\"%i\">",i);
             hprintf128(request,"<input class=\"%s\" type=\"submit\" value=\"Toggle %i\"/></form>",c,i);
         }
-        else if(BIT_CHECK(pwmFlags,i)) {
+        else if(h_isChannelPWM(i)) {
             int pwmValue;
 
             pwmValue = CHANNEL_Get(i);
@@ -818,8 +829,6 @@ int http_fn_cfg_quick(http_request_t *request) {
 }
 
 int http_fn_cfg_ha(http_request_t *request) {
-    int relayFlags = 0;
-    int pwmFlags = 0;
     int relayCount = 0;
     int pwmCount = 0;
     const char *baseName;
@@ -842,18 +851,16 @@ int http_fn_cfg_ha(http_request_t *request) {
         int role = PIN_GetPinRoleForPinIndex(i);
         int ch = PIN_GetPinChannelForPinIndex(i);
         if(role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
-            BIT_SET(relayFlags,ch);
             relayCount++;
         }
         if(role == IOR_PWM) {
-            BIT_SET(pwmFlags,ch);
             pwmCount++;
         }
     }
     if(relayCount > 0) {
         poststr(request,"switch:\n");
         for(i = 0; i < CHANNEL_MAX; i++) {
-            if(BIT_CHECK(relayFlags,i)) {
+			if(h_isChannelRelay(i)) {
                 poststr(request,"  - platform: mqtt\n");
                 hprintf128(request,"    name: \"%s %i\"\n",baseName,i);
                 hprintf128(request,"    state_topic: \"%s/%i/get\"\n",baseName,i);
@@ -869,7 +876,7 @@ int http_fn_cfg_ha(http_request_t *request) {
     if(pwmCount > 0) {
         poststr(request,"light:\n");
         for(i = 0; i < CHANNEL_MAX; i++) {
-            if(BIT_CHECK(pwmFlags,i)) {
+			if(h_isChannelPWM(i)) {
                 poststr(request,"  - platform: mqtt\n");
                 hprintf128(request,"    name: \"%s %i\"\n",baseName,i);
                 hprintf128(request,"    state_topic: \"%s/%i/get\"\n",baseName,i);
