@@ -86,7 +86,10 @@ void HAL_PIN_PWM_Start(int index) {
 	if(pwm == -1) {
 		return;
 	}
-	bl_pwm_init(pwm, index, 1000);
+	
+	addLogAdv(LOG_INFO, LOG_FEATURE_MAIN,"HAL_PIN_PWM_Start: pin %i chose pwm %i\r\n",index,pwm);
+    //  Frequency must be between 2000 and 800000
+	bl_pwm_init(pwm, index, 2000);
 	bl_pwm_start(pwm);
 
 }
@@ -99,7 +102,13 @@ void HAL_PIN_PWM_Update(int index, int value) {
 	if(pwm == -1) {
 		return;
 	}
-	duty = value * 0.01f;
+	duty = value;
+/*duty is the PWM Duty Cycle (0 to 100). When duty=25, it means that in every PWM Cycle...
+--> PWM Ouput is 1 (High) for the initial 25% of the PWM Cycle
+--> Followed by PWM Output 0 (Low) for the remaining 75% of the PWM Cycle
+*/
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_MAIN,"HAL_PIN_PWM_Update: pin %i had pwm %i, set %i\r\n",index,pwm,value);
 	bl_pwm_set_duty(pwm, duty);
 
 }

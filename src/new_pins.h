@@ -39,7 +39,14 @@ enum ChannelType {
 	ChType_Temperature_div10,
 	ChType_Toggle,
 };
-#define GPIO_MAX 27
+
+
+#if PLATFORM_BL602
+#define PLATFORM_GPIO_MAX 24
+#else
+#define PLATFORM_GPIO_MAX 27
+#endif
+
 #define CHANNEL_MAX 64
 
 typedef struct pinsState_s {

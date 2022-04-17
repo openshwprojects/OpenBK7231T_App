@@ -763,7 +763,7 @@ static int http_rest_post_pins(http_request_t *request){
         }
     }
     if (iChanged){
-		CFG_Save_IfThereArePendingChanges();
+		CFG_Save_SetupTimer();
         ADDLOG_DEBUG(LOG_FEATURE_API, "Changed %d - saved to flash", iChanged);
     }
 

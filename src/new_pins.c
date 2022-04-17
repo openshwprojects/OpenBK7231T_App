@@ -52,9 +52,9 @@ char g_enable_pins = 0;
 
 // it was nice to have it as bits but now that we support PWM...
 //int g_channelStates;
-int g_channelValues[GPIO_MAX] = { 0 };
+int g_channelValues[CHANNEL_MAX] = { 0 };
 
-pinButton_s g_buttons[GPIO_MAX];
+pinButton_s g_buttons[PLATFORM_GPIO_MAX];
 
 void (*g_channelChangeCallback)(int idx, int iVal) = 0;
 void (*g_doubleClickCallback)(int pinIndex) = 0;
@@ -64,22 +64,38 @@ void (*g_doubleClickCallback)(int pinIndex) = 0;
 
 void PIN_SetupPins() {
 	int i;
-	for(i = 0; i < GPIO_MAX; i++) {
+	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		PIN_SetPinRoleForPinIndex(i,g_cfg.pins.roles[i]);
 	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"PIN_SetupPins pins have been set up.\r\n");
 }
 
 int PIN_GetPinRoleForPinIndex(int index) {
+	if(index < 0 || index >= PLATFORM_GPIO_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "PIN_GetPinRoleForPinIndex: Pin index %i out of range <0,%i).",index,PLATFORM_GPIO_MAX);
+		return 0;
+	}
 	return g_cfg.pins.roles[index];
 }
 int PIN_GetPinChannelForPinIndex(int index) {
+	if(index < 0 || index >= PLATFORM_GPIO_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "PIN_GetPinChannelForPinIndex: Pin index %i out of range <0,%i).",index,PLATFORM_GPIO_MAX);
+		return 0;
+	}
 	return g_cfg.pins.channels[index];
 }
 int PIN_GetPinChannel2ForPinIndex(int index) {
+	if(index < 0 || index >= PLATFORM_GPIO_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "PIN_GetPinChannel2ForPinIndex: Pin index %i out of range <0,%i).",index,PLATFORM_GPIO_MAX);
+		return 0;
+	}
 	return g_cfg.pins.channels2[index];
 }
 void RAW_SetPinValue(int index, int iVal){
+	if(index < 0 || index >= PLATFORM_GPIO_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "RAW_SetPinValue: Pin index %i out of range <0,%i).",index,PLATFORM_GPIO_MAX);
+		return;
+	}
 	if (g_enable_pins) {
 		HAL_PIN_SetOutputValue(index, iVal);
 	}
@@ -115,6 +131,10 @@ void Button_OnLongPressHold(int index) {
 }
 
 bool BTN_ShouldInvert(int index) {
+	if(index < 0 || index >= PLATFORM_GPIO_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "BTN_ShouldInvert: Pin index %i out of range <0,%i).",index,PLATFORM_GPIO_MAX);
+		return false;
+	}
 	if(g_cfg.pins.roles[index] == IOR_Button_n || g_cfg.pins.roles[index] == IOR_Button_ToggleAll_n|| g_cfg.pins.roles[index] == IOR_DigitalInput_n) {
 		return true;
 	}
@@ -158,7 +178,7 @@ int CHANNEL_GetType(int ch) {
 }
 bool CHANNEL_IsInUse(int ch) {
 	int i;
-	for(i = 0; i < GPIO_MAX; i++){
+	for(i = 0; i < PLATFORM_GPIO_MAX; i++){
 		if(g_cfg.pins.channels[i] == ch) {
 			switch(g_cfg.pins.roles[i])
 			{
@@ -181,7 +201,7 @@ void CHANNEL_SetAll(int iVal, bool bForce) {
 	int i;
 
 
-	for(i = 0; i < GPIO_MAX; i++) {	
+	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {	
 		switch(g_cfg.pins.roles[i])
 		{
 		case IOR_Button:
@@ -216,7 +236,7 @@ void CHANNEL_SetStateOnly(int iVal) {
 	}
 
 	// is it already on on some channel?
-	for(i = 0; i < GPIO_MAX; i++) {
+	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if(CHANNEL_IsInUse(i)) {
 			if(CHANNEL_Get(i) > 0) {
 				return;
@@ -246,6 +266,10 @@ void CHANNEL_DoSpecialToggleAll() {
 
 }
 void PIN_SetPinRoleForPinIndex(int index, int role) {
+	if(index < 0 || index >= PLATFORM_GPIO_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "PIN_SetPinRoleForPinIndex: Pin index %i out of range <0,%i).",index,PLATFORM_GPIO_MAX);
+		return;
+	}
 #if 0
 	if(index == PIN_UART1_RXD) {
 		// default role to None in order to fix broken config
@@ -370,7 +394,7 @@ void Channel_OnChanged(int ch) {
 	I2C_OnChannelChanged(ch,iVal);
 #endif
 
-	for(i = 0; i < GPIO_MAX; i++) {
+	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if(g_cfg.pins.channels[i] == ch) {
 			if(g_cfg.pins.roles[i] == IOR_Relay || g_cfg.pins.roles[i] == IOR_LED) {
 				RAW_SetPinValue(i,bOn);
@@ -400,16 +424,16 @@ void Channel_OnChanged(int ch) {
 
 }
 int CHANNEL_Get(int ch) {
-	if(ch < 0 || ch >= GPIO_MAX) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Get: Channel index %i is out of range <0,%i)\n\r",ch,GPIO_MAX);
+	if(ch < 0 || ch >= CHANNEL_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Get: Channel index %i is out of range <0,%i)\n\r",ch,CHANNEL_MAX);
 		return 0;
 	}
 	return g_channelValues[ch];
 }
 
 void CHANNEL_Set(int ch, int iVal, int bForce) {
-	if(ch < 0 || ch >= GPIO_MAX) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Set: Channel index %i is out of range <0,%i)\n\r",ch,GPIO_MAX);
+	if(ch < 0 || ch >= CHANNEL_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Set: Channel index %i is out of range <0,%i)\n\r",ch,CHANNEL_MAX);
 		return;
 	}
 	if(bForce == 0) {
@@ -427,8 +451,8 @@ void CHANNEL_Set(int ch, int iVal, int bForce) {
 	Channel_OnChanged(ch);
 }
 void CHANNEL_Toggle(int ch) {
-	if(ch < 0 || ch >= GPIO_MAX) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Toggle: Channel index %i is out of range <0,%i)\n\r",ch,GPIO_MAX);
+	if(ch < 0 || ch >= CHANNEL_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Toggle: Channel index %i is out of range <0,%i)\n\r",ch,CHANNEL_MAX);
 		return;
 	}
 	if(g_channelValues[ch] == 0)
@@ -439,8 +463,8 @@ void CHANNEL_Toggle(int ch) {
 	Channel_OnChanged(ch);
 }
 bool CHANNEL_Check(int ch) {
-	if(ch < 0 || ch >= GPIO_MAX) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Check: Channel index %i is out of range <0,%i)\n\r",ch,GPIO_MAX);
+	if(ch < 0 || ch >= CHANNEL_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Check: Channel index %i is out of range <0,%i)\n\r",ch,CHANNEL_MAX);
 		return 0;
 	}
 	if (g_channelValues[ch] > 0)
@@ -587,7 +611,7 @@ void PIN_ticks(void *param)
 	int i;
 	int value;
 
-	for(i = 0; i < GPIO_MAX; i++) {
+	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if(g_cfg.pins.roles[i] == IOR_Button || g_cfg.pins.roles[i] == IOR_Button_n
 			|| g_cfg.pins.roles[i] == IOR_Button_ToggleAll || g_cfg.pins.roles[i] == IOR_Button_ToggleAll_n) {
 			//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Test hold %i\r\n",i);

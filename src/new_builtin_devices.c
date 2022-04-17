@@ -8,7 +8,7 @@
 void Setup_Device_Empty() {
 	CFG_ClearPins();
 
-	CFG_Save_IfThereArePendingChanges();
+	CFG_Save_SetupTimer();
 
 }
 
@@ -23,7 +23,7 @@ void Setup_Device_TuyaWL_SW01_16A() {
 	PIN_SetPinRoleForPinIndex(26, IOR_Button);
 	PIN_SetPinChannelForPinIndex(26, 1);
 
-	CFG_Save_IfThereArePendingChanges();
+	CFG_Save_SetupTimer();
 }
 // https://www.elektroda.pl/rtvforum/topic3822484.html
 //  WiFi Tuya SmartLife 4CH 10A
@@ -48,7 +48,7 @@ void Setup_Device_TuyaSmartLife4CH10A() {
 	PIN_SetPinRoleForPinIndex(26, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(26, 4);
 
-	CFG_Save_IfThereArePendingChanges();
+	CFG_Save_SetupTimer();
 }
 // Tuya "12W" smart light bulb
 // "Tuya Wifi Smart Life Light Bulb Lamp E27 LED RGBCW Dimmable For Alexa/Google 18W
@@ -79,7 +79,7 @@ void Setup_Device_BK7231N_TuyaLightBulb_RGBCW_5PWMs() {
 	PIN_SetPinRoleForPinIndex(6, IOR_PWM);
 	PIN_SetPinChannelForPinIndex(6, 5);
 
-	CFG_Save_IfThereArePendingChanges();
+	CFG_Save_SetupTimer();
 }
 // https://www.elektroda.pl/rtvforum/viewtopic.php?p=19743751#19743751
 void Setup_Device_IntelligentLife_NF101A() {
@@ -94,7 +94,7 @@ void Setup_Device_IntelligentLife_NF101A() {
 	PIN_SetPinChannelForPinIndex(6, 1);
 
 
-	CFG_Save_IfThereArePendingChanges();
+	CFG_Save_SetupTimer();
 }	
 // https://www.elektroda.pl/rtvforum/topic3798114.html
 void Setup_Device_TuyaLEDDimmerSingleChannel() {
@@ -109,7 +109,7 @@ void Setup_Device_TuyaLEDDimmerSingleChannel() {
 	PIN_SetPinChannelForPinIndex(1, 1);
 
 
-	CFG_Save_IfThereArePendingChanges();
+	CFG_Save_SetupTimer();
 }
 
 
@@ -140,7 +140,7 @@ void Setup_Device_CalexLEDDimmerFiveChannel() {
 	PIN_SetPinChannelForPinIndex(26, 5);
 	PIN_SetPinRoleForPinIndex(26, IOR_PWM);
 
-	CFG_Save_IfThereArePendingChanges();
+	CFG_Save_SetupTimer();
 }
 
 void Setup_Device_CalexPowerStrip_900018_1v1_0UK() {
@@ -178,7 +178,7 @@ void Setup_Device_CalexPowerStrip_900018_1v1_0UK() {
 	PIN_SetPinChannelForPinIndex(24, 2);
 	PIN_SetPinRoleForPinIndex(24, IOR_LED);
 
-	CFG_Save_IfThereArePendingChanges();
+	CFG_Save_SetupTimer();
 }
 
 // https://www.bunnings.com.au/arlec-grid-connect-smart-9w-cct-led-downlight_p0168694
@@ -198,7 +198,7 @@ void Setup_Device_ArlecCCTDownlight() {
 	PIN_SetPinChannelForPinIndex(24, 2);
 	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
 
-	CFG_Save_IfThereArePendingChanges();
+	CFG_Save_SetupTimer();
 }
 
 // https://www.elektroda.pl/rtvforum/topic3804553.html
@@ -226,7 +226,7 @@ void Setup_Device_NedisWIFIPO120FWT_16A() {
 	PIN_SetPinRoleForPinIndex(26, IOR_Relay_n);
 	PIN_SetPinChannelForPinIndex(26, 1);
 
-	CFG_Save_IfThereArePendingChanges();
+	CFG_Save_SetupTimer();
 }
 
 // https://www.elektroda.pl/rtvforum/topic3804553.html
@@ -251,7 +251,7 @@ void Setup_Device_NedisWIFIP130FWT_10A() {
 	PIN_SetPinRoleForPinIndex(26, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(26, 1);
 
-	CFG_Save_IfThereArePendingChanges();
+	CFG_Save_SetupTimer();
 }
 
 // https://www.elektroda.com/rtvforum/topic3819498.html
@@ -285,7 +285,7 @@ void Setup_Device_EmaxHome_EDU8774() {
 	PIN_SetPinRoleForPinIndex(26, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(26, 1);
 
-	CFG_Save_IfThereArePendingChanges();
+	CFG_Save_SetupTimer();
 }
 
 
@@ -305,7 +305,7 @@ void Setup_Device_BK7231N_CB2S_QiachipSmartSwitch() {
 	PIN_SetPinChannelForPinIndex(8, 1);
 	// Led
 
-	CFG_Save_IfThereArePendingChanges();
+	CFG_Save_SetupTimer();
 }
 void Setup_Device_BK7231T_WB2S_QiachipSmartSwitch() {
 	CFG_ClearPins();
@@ -319,7 +319,7 @@ void Setup_Device_BK7231T_WB2S_QiachipSmartSwitch() {
 	PIN_SetPinRoleForPinIndex(10, IOR_LED);
 	PIN_SetPinChannelForPinIndex(10, 1);
 
-	CFG_Save_IfThereArePendingChanges();
+	CFG_Save_SetupTimer();
 }
 
 
@@ -351,7 +351,7 @@ void Setup_Device_BK7231T_Raw_PrimeWiFiSmartOutletsOutdoor_CCWFIO232PK() {
 	PIN_SetPinChannelForPinIndex(24, 1);
 
 
-	CFG_Save_IfThereArePendingChanges();
+	CFG_Save_SetupTimer();
 }
 
 
@@ -373,7 +373,7 @@ void Setup_Device_TuyaSmartPFW02G() {
 	PIN_SetPinChannelForPinIndex(7, 1);
 
 
-	CFG_Save_IfThereArePendingChanges();
+	CFG_Save_SetupTimer();
 }
 
 
@@ -417,7 +417,7 @@ void Setup_Device_AvatarASL04() {
 	PIN_SetPinChannelForPinIndex(14, 3);
 
 
-	CFG_Save_IfThereArePendingChanges();
+	CFG_Save_SetupTimer();
 }
 
 
@@ -445,7 +445,7 @@ void Setup_Device_TuyaSmartWIFISwith_4Gang_CB3S(){
 	PIN_SetPinRoleForPinIndex(22, IOR_LED_WIFI);
 	PIN_SetPinChannelForPinIndex(22, 1);
 
-	CFG_Save_IfThereArePendingChanges();
+	CFG_Save_SetupTimer();
 }
 
 

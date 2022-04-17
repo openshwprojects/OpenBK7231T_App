@@ -49,6 +49,8 @@ static int g_reset = 0;
 // is connected to WiFi?
 int g_bHasWiFiConnected = 0;
 
+static int g_saveCfgAfter = 0;
+
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
 
@@ -167,7 +169,9 @@ void Main_OnWiFiStatusChange(int code){
 }
 
 
-
+void CFG_Save_SetupTimer() {
+	g_saveCfgAfter = 3;
+}
 
 void Main_OnEverySecond()
 {
@@ -182,56 +186,63 @@ void Main_OnEverySecond()
 
 	g_secondsElapsed ++;
 	if(bSafeMode) { 
-		ADDLOGF_INFO("[SAFE MODE] Timer %i, free mem %d, MQTT state %i", g_secondsElapsed, xPortGetFreeHeapSize(),bMQTTconnected);
+		ADDLOGF_INFO("[SAFE MODE] Timer %i, free mem %d, MQTT state %i\n", g_secondsElapsed, xPortGetFreeHeapSize(),bMQTTconnected);
 	} else {
-		ADDLOGF_INFO("Timer %i, free mem %d, MQTT state %i", g_secondsElapsed, xPortGetFreeHeapSize(),bMQTTconnected);
+		ADDLOGF_INFO("Timer %i, free mem %d, MQTT state %i\n", g_secondsElapsed, xPortGetFreeHeapSize(),bMQTTconnected);
 	}
 
-  // print network info
-  if (!(g_secondsElapsed % 10)){
-    HAL_PrintNetworkInfo();
-  }
-
-  // when we hit 30s, mark as boot complete.
-  if (g_secondsElapsed == BOOT_COMPLETE_SECONDS){
-    boot_complete();
-  }
-
-  if (g_openAP){
-    g_openAP--;
-    if (0 == g_openAP){
-      HAL_SetupWiFiOpenAccessPoint(CFG_GetDeviceName());
-    }
-  }
-  if(g_connectToWiFi){
-	g_connectToWiFi --;
-	if(0 == g_connectToWiFi && g_bHasWiFiConnected == 0) {
-		const char *wifi_ssid, *wifi_pass;
-		wifi_ssid = CFG_GetWiFiSSID();
-		wifi_pass = CFG_GetWiFiPass();
-		HAL_ConnectToWiFi(wifi_ssid,wifi_pass);
-		// register function to get callbacks about wifi changes.
-		HAL_WiFi_SetupStatusCallback(Main_OnWiFiStatusChange);
-		ADDLOGF_DEBUG("Registered for wifi changes\r\n");
-		// reconnect after 10 minutes?
-		//g_connectToWiFi = 60 * 10; 
+	// print network info
+	if (!(g_secondsElapsed % 10)){
+		HAL_PrintNetworkInfo();
 	}
-  }
 
-  if (g_reset){
-      g_reset--;
-      if (!g_reset){
-        // ensure any config changes are saved before reboot.
-        CFG_Save_IfThereArePendingChanges(); 
-		ADDLOGF_INFO("Going to call HAL_RebootModule\r\n");
-        HAL_RebootModule(); 
-	  } else {
+	// when we hit 30s, mark as boot complete.
+	if (g_secondsElapsed == BOOT_COMPLETE_SECONDS){
+		boot_complete();
+	}
 
-		ADDLOGF_INFO("Module reboot in %i...\r\n",g_reset);
-	  }
-  }
+	if (g_openAP){
+		g_openAP--;
+		if (0 == g_openAP){
+			HAL_SetupWiFiOpenAccessPoint(CFG_GetDeviceName());
+		}
+	}
+	if(g_connectToWiFi){
+		g_connectToWiFi --;
+		if(0 == g_connectToWiFi && g_bHasWiFiConnected == 0) {
+			const char *wifi_ssid, *wifi_pass;
+			wifi_ssid = CFG_GetWiFiSSID();
+			wifi_pass = CFG_GetWiFiPass();
+			HAL_ConnectToWiFi(wifi_ssid,wifi_pass);
+			// register function to get callbacks about wifi changes.
+			HAL_WiFi_SetupStatusCallback(Main_OnWiFiStatusChange);
+			ADDLOGF_DEBUG("Registered for wifi changes\r\n");
+			// reconnect after 10 minutes?
+			//g_connectToWiFi = 60 * 10; 
+		}
+	}
 
- 
+	// config save moved here because of stack size problems
+	if (g_saveCfgAfter){
+		g_saveCfgAfter--;
+		if (!g_saveCfgAfter){
+			CFG_Save_IfThereArePendingChanges(); 
+		}
+	}
+	if (g_reset){
+		g_reset--;
+		if (!g_reset){
+			// ensure any config changes are saved before reboot.
+			CFG_Save_IfThereArePendingChanges(); 
+			ADDLOGF_INFO("Going to call HAL_RebootModule\r\n");
+			HAL_RebootModule(); 
+		} else {
+
+			ADDLOGF_INFO("Module reboot in %i...\r\n",g_reset);
+		}
+	}
+
+
 
 }
 

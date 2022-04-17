@@ -82,7 +82,7 @@ int http_fn_empty_url(http_request_t *request) {
 }
 int h_isChannelPWM(int tg_ch){
     int i;
-    for(i = 0; i < GPIO_MAX; i++) {
+    for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
         int ch = PIN_GetPinChannelForPinIndex(i);
 		if(tg_ch != ch)
 			continue;
@@ -95,7 +95,7 @@ int h_isChannelPWM(int tg_ch){
 }
 int h_isChannelRelay(int tg_ch) {
     int i;
-    for(i = 0; i < GPIO_MAX; i++) {
+    for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
         int ch = PIN_GetPinChannelForPinIndex(i);
 		if(tg_ch != ch)
 			continue;
@@ -314,7 +314,7 @@ int http_fn_cfg_mqtt_set(http_request_t *request) {
         CFG_SetMQTTBrokerName(tmpA);
     }
 
-	CFG_Save_IfThereArePendingChanges();
+	CFG_Save_SetupTimer();
 
     poststr(request,"Please wait for module to connect... if there is problem, restart it from Index html page...");
     
@@ -492,9 +492,7 @@ int http_fn_cfg_wifi_set(http_request_t *request) {
         }
         poststr(request,"WiFi mode set: connect to WLAN.");
     }
-    addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"HTTP_ProcessPacket: calling CFG_Save_IfThereArePendingChanges \r\n");
-	CFG_Save_IfThereArePendingChanges();
-    addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"HTTP_ProcessPacket: done CFG_Save_IfThereArePendingChanges \r\n");
+	CFG_Save_SetupTimer();
 
     poststr(request,"Please wait for module to reset...");
 	RESET_ScheduleModuleReset(3);
@@ -847,7 +845,7 @@ int http_fn_cfg_ha(http_request_t *request) {
     
     poststr(request,"<textarea rows=\"40\" cols=\"50\">");
 
-    for(i = 0; i < GPIO_MAX; i++) {
+    for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
         int role = PIN_GetPinRoleForPinIndex(i);
         int ch = PIN_GetPinChannelForPinIndex(i);
         if(role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
@@ -982,7 +980,7 @@ int http_fn_cfg_pins(http_request_t *request) {
 #if PLATFORM_BK7231N || PLATFORM_BK7231T
     poststr(request,"<h5>BK7231N/BK7231T supports PWM only on pins 6, 7, 8, 9, 24 and 26!</h5>");
 #endif
-    for(i = 0; i < GPIO_MAX; i++) {
+    for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
         sprintf(tmpA, "%i",i);
         if(http_getArg(request->url,tmpA,tmpB,sizeof(tmpB))) {
             int role;
@@ -1030,12 +1028,12 @@ int http_fn_cfg_pins(http_request_t *request) {
         }
     }
     if(iChangedRequested>0) {
-		CFG_Save_IfThereArePendingChanges();
+		CFG_Save_SetupTimer();
         hprintf128(request, "Pins update - %i reqs, %i changed!<br><br>",iChangedRequested,iChanged);
     }
 //	strcat(outbuf,"<button type=\"button\">Click Me!</button>");
     poststr(request,"<form action=\"cfg_pins\">");
-    for(i = 0; i < GPIO_MAX; i++) {
+    for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
         int si, ch, ch2;
         int j;
 		const char *alias;

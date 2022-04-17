@@ -195,12 +195,20 @@ void CFG_Save_IfThereArePendingChanges() {
 	}
 }
 void PIN_SetPinChannelForPinIndex(int index, int ch) {
+	if(index < 0 || index >= PLATFORM_GPIO_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "PIN_SetPinChannelForPinIndex: Pin index %i out of range <0,%i).",index,PLATFORM_GPIO_MAX);
+		return;
+	}
 	if(g_cfg.pins.channels[index] != ch) {
 		g_cfg_pendingChanges++;
 		g_cfg.pins.channels[index] = ch;
 	}
 }
 void PIN_SetPinChannel2ForPinIndex(int index, int ch) {
+	if(index < 0 || index >= PLATFORM_GPIO_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "PIN_SetPinChannel2ForPinIndex: Pin index %i out of range <0,%i).",index,PLATFORM_GPIO_MAX);
+		return;
+	}
 	if(g_cfg.pins.channels2[index] != ch) {
 		g_cfg_pendingChanges++;
 		g_cfg.pins.channels2[index] = ch;
