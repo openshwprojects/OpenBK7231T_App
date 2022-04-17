@@ -303,6 +303,8 @@ int http_fn_cfg_mqtt_set(http_request_t *request) {
         CFG_SetMQTTBrokerName(tmpA);
     }
 
+	CFG_Save_IfThereArePendingChanges();
+
     poststr(request,"Please wait for module to connect... if there is problem, restart it from Index html page...");
     
     poststr(request,"<br>");

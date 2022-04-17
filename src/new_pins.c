@@ -3,6 +3,7 @@
 
 #include "new_common.h"
 #include "new_pins.h"
+#include "new_cfg.h"
 #include "httpserver/new_http.h"
 #include "logging/logging.h"
 // Commands register, execution API and cmd tokenizer
@@ -293,7 +294,10 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		}
 	}
 	// set new role
-	g_cfg.pins.roles[index] = role;
+	if(g_cfg.pins.roles[index] != role) {
+		g_cfg.pins.roles[index] = role;
+		g_cfg_pendingChanges++;
+	}
 
 	if (g_enable_pins) {
 		// init new role
@@ -346,12 +350,6 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 	}
 }
 
-void PIN_SetPinChannelForPinIndex(int index, int ch) {
-	g_cfg.pins.channels[index] = ch;
-}
-void PIN_SetPinChannel2ForPinIndex(int index, int ch) {
-	g_cfg.pins.channels2[index] = ch;
-}
 void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex)) {
 	g_doubleClickCallback = cb;
 }

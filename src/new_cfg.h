@@ -1,6 +1,7 @@
 
 
 
+extern int g_cfg_pendingChanges;
 
 const char *CFG_GetDeviceName();
 const char *CFG_GetShortDeviceName();

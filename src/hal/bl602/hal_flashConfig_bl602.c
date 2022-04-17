@@ -25,6 +25,7 @@ int HAL_Configuration_ReadConfigMemory(void *target, int dataLen){
 
 	ADDLOG_DEBUG(LOG_FEATURE_CFG, "HAL_Configuration_ReadConfigMemory: will read %d bytes", dataLen);
 	readLen = ef_get_env_blob(EASYFLASH_MY_OBK_CONF, target, dataLen , NULL);
+	ADDLOG_DEBUG(LOG_FEATURE_CFG, "HAL_Configuration_ReadConfigMemory: really loaded %d bytes", readLen);
 
     return dataLen;
 }

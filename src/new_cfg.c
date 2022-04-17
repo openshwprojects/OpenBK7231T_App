@@ -10,7 +10,7 @@
 
 mainConfig_t g_cfg;
 
-static int g_cfg_pendingChanges = 0;
+int g_cfg_pendingChanges = 0;
 
 #define CFG_IDENT_0 'C'
 #define CFG_IDENT_1 'F'
@@ -192,6 +192,18 @@ void CFG_Save_IfThereArePendingChanges() {
 		g_cfg.crc = CFG_CalcChecksum(&g_cfg);
 		HAL_Configuration_SaveConfigMemory(&g_cfg,sizeof(g_cfg));
 		g_cfg_pendingChanges = 0;
+	}
+}
+void PIN_SetPinChannelForPinIndex(int index, int ch) {
+	if(g_cfg.pins.channels[index] != ch) {
+		g_cfg_pendingChanges++;
+		g_cfg.pins.channels[index] = ch;
+	}
+}
+void PIN_SetPinChannel2ForPinIndex(int index, int ch) {
+	if(g_cfg.pins.channels2[index] != ch) {
+		g_cfg_pendingChanges++;
+		g_cfg.pins.channels2[index] = ch;
 	}
 }
 
