@@ -74,8 +74,9 @@ void HAL_PIN_PWM_Stop(int index) {
 	if(pwm == -1) {
 		return;
 	}
-
 	bl_pwm_stop(pwm);
+	// mark this pwm as no longer assigned to pin index
+	bl_pwms[pwm] = -1;
 }
 
 void HAL_PIN_PWM_Start(int index) {
