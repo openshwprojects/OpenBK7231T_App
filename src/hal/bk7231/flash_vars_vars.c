@@ -9,7 +9,7 @@
 
 
 // call at startup
-void increment_boot_count(){
+void HAL_FlashVars_IncreaseBootCount(){
 #ifndef DISABLE_FLASH_VARS_VARS
     FLASH_VARS_STRUCTURE data;
 
@@ -28,7 +28,7 @@ void increment_boot_count(){
 }
 
 // call once started (>30s?)
-void boot_complete(){
+void HAL_FlashVars_SaveBootComplete(){
 #ifndef DISABLE_FLASH_VARS_VARS
     FLASH_VARS_STRUCTURE data;
     // mark that we have completed a boot.
@@ -46,8 +46,8 @@ void boot_complete(){
 #endif
 }
 
-// call to return the number of boots since a boot_complete
-int boot_failures(){
+// call to return the number of boots since a HAL_FlashVars_SaveBootComplete
+int HAL_FlashVars_GetBootFailures(){
     int diff = 0;
 #ifndef DISABLE_FLASH_VARS_VARS
     diff = flash_vars.boot_count - flash_vars.boot_success_count;

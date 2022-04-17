@@ -212,11 +212,7 @@ int http_fn_index(http_request_t *request) {
     
     if(http_getArg(request->url,"restart",tmpA,sizeof(tmpA))) {
         poststr(request,"<h5> Module will restart soon</h5>");
-#if WINDOWS
-
-#else
         RESET_ScheduleModuleReset(3);
-#endif
     }
 
     poststr(request,"<form action=\"cfg\"><input type=\"submit\" value=\"Config\"/></form>");
@@ -228,7 +224,8 @@ int http_fn_index(http_request_t *request) {
 
     poststr(request,"<form action=\"about\"><input type=\"submit\" value=\"About\"/></form>");
 
-	hprintf128(request,"<h3>Cfg size: %i, change counter: %i, ota counter: %i!</h3>",sizeof(g_cfg),g_cfg.changeCounter,g_cfg.otaCounter);
+	hprintf128(request,"<h3>Cfg size: %i, change counter: %i, ota counter: %i, boot fails %i!</h3>",
+		sizeof(g_cfg),g_cfg.changeCounter,g_cfg.otaCounter,Main_GetLastRebootBootFailures());
 
     poststr(request,htmlReturnToMenu);
     HTTP_AddBuildFooter(request);

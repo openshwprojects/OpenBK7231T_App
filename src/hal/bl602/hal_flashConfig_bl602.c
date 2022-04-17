@@ -7,7 +7,7 @@
 
 static int g_easyFlash_Ready = 0;
 
-static void BL602_InitEasyFlashIfNeeded(){
+void BL602_InitEasyFlashIfNeeded(){
 	if(g_easyFlash_Ready==0){
 		easyflash_init();
 		g_easyFlash_Ready = 1;

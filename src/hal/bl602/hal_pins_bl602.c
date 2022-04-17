@@ -87,7 +87,7 @@ void HAL_PIN_PWM_Start(int index) {
 		return;
 	}
 	
-	addLogAdv(LOG_INFO, LOG_FEATURE_MAIN,"HAL_PIN_PWM_Start: pin %i chose pwm %i\r\n",index,pwm);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_MAIN,"HAL_PIN_PWM_Start: pin %i chose pwm %i\r\n",index,pwm);
     //  Frequency must be between 2000 and 800000
 	bl_pwm_init(pwm, index, 2000);
 	bl_pwm_start(pwm);
@@ -108,7 +108,7 @@ void HAL_PIN_PWM_Update(int index, int value) {
 --> Followed by PWM Output 0 (Low) for the remaining 75% of the PWM Cycle
 */
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_MAIN,"HAL_PIN_PWM_Update: pin %i had pwm %i, set %i\r\n",index,pwm,value);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_MAIN,"HAL_PIN_PWM_Update: pin %i had pwm %i, set %i\r\n",index,pwm,value);
 	bl_pwm_set_duty(pwm, duty);
 
 }

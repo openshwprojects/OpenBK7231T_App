@@ -208,6 +208,22 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\flash_config\flash_vars.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\flash_config\flash_vars.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\flash_config\flash_vars_vars.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\flash_config\flash_vars_vars.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\httpserver\http_fns.c"
 				>
 				<FileConfiguration
@@ -637,7 +653,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\httpserver\new_http.h"
+				RelativePath=".\src\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -649,7 +665,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\new_http.h"
+				RelativePath=".\src\httpserver\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"

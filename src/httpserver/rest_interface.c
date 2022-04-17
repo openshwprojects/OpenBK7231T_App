@@ -7,6 +7,7 @@
 #include "../jsmn/jsmn_h.h"
 #include "../ota/ota.h"
 #include "../hal/hal_wifi.h"
+#include "../hal/hal_flashVars.h"
 #ifdef BK_LITTLEFS
 #include "../littlefs/our_lfs.h"
 #endif
@@ -16,11 +17,8 @@
 #elif PLATFORM_BL602
 
 #else
-#include "../flash_config/flash_config.h"
 #endif
 #include "../new_cfg.h"
-#include "../flash_config/flash_vars_vars.h"
-#include "../flash_config/flash_vars.h"
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 
@@ -955,10 +953,10 @@ static int http_rest_get_flash_vars_test(http_request_t *request){
         p = &data;
     } else {
         for (i = 0; i < increment; i++){
-            increment_boot_count();
+            HAL_FlashVars_IncreaseBootCount();
         }
         for (i = 0; i < len; i++){
-            boot_complete();
+            HAL_FlashVars_SaveBootComplete();
         }
     }
 

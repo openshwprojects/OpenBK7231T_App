@@ -5,6 +5,7 @@
 
 #include "hal/hal_wifi.h"
 #include "hal/hal_generic.h"
+#include "hal/hal_flashVars.h"
 #include "new_common.h"
 
 #include "driver/drv_public.h"
@@ -27,13 +28,6 @@
 #include "littlefs/our_lfs.h"
 #endif
 
-#if PLATFORM_XR809
-
-#elif PLATFORM_BL602
-#else
-#include "flash_config/flash_config.h"
-#endif
-#include "flash_config/flash_vars_vars.h"
 
 #include "driver/drv_ntp.h"
 
@@ -49,38 +43,19 @@ static int g_reset = 0;
 // is connected to WiFi?
 int g_bHasWiFiConnected = 0;
 
+static int g_bootFailures = 0;
+
 static int g_saveCfgAfter = 0;
 
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
 
 #if PLATFORM_XR809
-void boot_complete(){
-
-}
-
-int boot_failures(){
-    return 0;
-}
-void increment_boot_count(){
-
-}
 size_t xPortGetFreeHeapSize() {
 	return 0;
 }
 #endif
 #if PLATFORM_BL602
-void boot_complete(){
-
-}
-
-int boot_failures(){
-    return 0;
-}
-void increment_boot_count(){
-
-}
-
 
 
 
@@ -198,7 +173,8 @@ void Main_OnEverySecond()
 
 	// when we hit 30s, mark as boot complete.
 	if (g_secondsElapsed == BOOT_COMPLETE_SECONDS){
-		boot_complete();
+		HAL_FlashVars_SaveBootComplete();
+		g_bootFailures = HAL_FlashVars_GetBootFailures();
 	}
 
 	if (g_openAP){
@@ -257,24 +233,26 @@ void app_on_generic_dbl_click(int btnIndex)
 int Main_IsConnectedToWiFi() {
 	return g_bHasWiFiConnected;
 }
+int Main_GetLastRebootBootFailures() {
+	return g_bootFailures;
+}
 
 void Main_Init()
 {
 	int bForceOpenAP = 0;
-  int bootFailures = 0;
 	const char *wifi_ssid, *wifi_pass;
 
   // read or initialise the boot count flash area
-  increment_boot_count();
+  HAL_FlashVars_IncreaseBootCount();
 
-  bootFailures = boot_failures();
-  if (bootFailures > 3){
+  g_bootFailures = HAL_FlashVars_GetBootFailures();
+  if (g_bootFailures > 3){
     bForceOpenAP = 1;
-    ADDLOGF_INFO("###### force AP mode - boot failures %d", bootFailures);
+    ADDLOGF_INFO("###### force AP mode - boot failures %d", g_bootFailures);
   }
-  if (bootFailures > 4){
+  if (g_bootFailures > 4){
     bSafeMode = 1;
-		ADDLOGF_INFO("###### safe mode activated - boot failures %d", bootFailures);
+		ADDLOGF_INFO("###### safe mode activated - boot failures %d", g_bootFailures);
   }
 
 	CFG_InitAndLoad();
@@ -350,7 +328,7 @@ void Main_Init()
     // but DON't run autoexec if we have had 2+ boot failures
     CMD_Init();
 
-    if (bootFailures < 2){
+    if (g_bootFailures < 2){
       CMD_ExecuteCommand("exec autoexec.bat");
     }
   }
