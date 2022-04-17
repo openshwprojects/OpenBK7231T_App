@@ -26,11 +26,11 @@ void Setup_Device_BL602_MagicHome_IR_RGB_LedStrip() {
 
 	// blue
 	PIN_SetPinRoleForPinIndex(21, IOR_PWM);
-	PIN_SetPinChannelForPinIndex(21, 1);
+	PIN_SetPinChannelForPinIndex(21, 2);
 
 	// dummy unused channel 4 with place on pcb for transistor
-	PIN_SetPinRoleForPinIndex(20, IOR_PWM);
-	PIN_SetPinChannelForPinIndex(20, 3);
+	//PIN_SetPinRoleForPinIndex(20, IOR_Relay);
+	//PIN_SetPinChannelForPinIndex(20, 3);
 
 	// IR recv
 	//PIN_SetPinRoleForPinIndex(12, IOR_IR_RECV);
