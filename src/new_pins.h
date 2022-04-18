@@ -24,6 +24,7 @@ enum IORole {
 	IOR_DigitalInput,
 	// as above, but inverted
 	IOR_DigitalInput_n,
+	IOR_ToggleChannelOnToggle,
 	IOR_Total_Options,
 };
 

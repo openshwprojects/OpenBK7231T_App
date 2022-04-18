@@ -233,6 +233,7 @@ const char *htmlPinRoleNames[] = {
 	"Btn_Tgl_All_n",
 	"DigitalInput",
 	"DigitalInput_n",
+	"ToggleChannelOnToggle",
 	"e",
 	"e",
 };

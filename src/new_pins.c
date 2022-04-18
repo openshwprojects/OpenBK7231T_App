@@ -604,6 +604,9 @@ void PIN_Input_Handler(int pinIndex)
 	}
 }
 
+byte g_timesDown[PLATFORM_GPIO_MAX];
+byte g_timesUp[PLATFORM_GPIO_MAX];
+byte g_lastValidState[PLATFORM_GPIO_MAX];
 
 //  background ticks, timer repeat invoking interval 5ms.
 void PIN_ticks(void *param)
@@ -621,6 +624,33 @@ void PIN_ticks(void *param)
 			// read pin digital value (and already invert it if needed)
 			value = PIN_ReadDigitalInputValue_WithInversionIncluded(i);
 			CHANNEL_Set(g_cfg.pins.channels[i], value,0);
+		} else if(g_cfg.pins.roles[i] == IOR_ToggleChannelOnToggle) {
+			// we must detect a toggle, but with debouncing
+			value = PIN_ReadDigitalInputValue_WithInversionIncluded(i);
+			if(value) {
+				if(g_timesUp[i] > 50) {
+					if(g_lastValidState[i] != value) {
+						// became up
+						g_lastValidState[i] = value;
+						CHANNEL_Toggle(g_cfg.pins.channels[i]);
+					}
+				} else {
+					g_timesUp[i]++;
+				}
+				g_timesDown[i] = 0;
+			} else {
+				if(g_timesDown[i] > 50) {
+					if(g_lastValidState[i] != value) {
+						// became down
+						g_lastValidState[i] = value;
+						CHANNEL_Toggle(g_cfg.pins.channels[i]);
+					}
+				} else {
+					g_timesDown[i]++;
+				}
+				g_timesUp[i] = 0;
+
+			}
 		}
 	}
 }
