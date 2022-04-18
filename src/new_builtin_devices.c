@@ -12,6 +12,25 @@ void Setup_Device_Empty() {
 
 }
 
+void Setup_Device_WiFi_DIY_Switch_WB2S_ZN268131() {
+	CFG_ClearPins();
+
+	PIN_SetPinRoleForPinIndex(6, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(6, 1);
+
+	PIN_SetPinRoleForPinIndex(7, IOR_LED_WIFI);
+	PIN_SetPinChannelForPinIndex(7, 1);
+
+	PIN_SetPinRoleForPinIndex(10, IOR_Button);
+	PIN_SetPinChannelForPinIndex(10, 1);
+
+	PIN_SetPinRoleForPinIndex(26, IOR_ToggleChannelOnToggle);
+	PIN_SetPinChannelForPinIndex(26, 1);
+
+	CFG_Save_SetupTimer();
+
+}
+
 // https://www.elektroda.pl/rtvforum/topic3881416.html
 void Setup_Device_BL602_MagicHome_IR_RGB_LedStrip() {
 	CFG_ClearPins();

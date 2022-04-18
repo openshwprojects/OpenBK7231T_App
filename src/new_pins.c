@@ -341,6 +341,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 				NEW_button_init(bt, button_generic_get_gpio_value, 0);
 			}
 			break;
+		case IOR_ToggleChannelOnToggle:
 		case IOR_DigitalInput:
 		case IOR_DigitalInput_n:
 			{
@@ -384,6 +385,7 @@ void Channel_OnChanged(int ch) {
 	int i;
 	int iVal;
 	int bOn;
+	int bCallCb = 0;
 
 
 	//bOn = BIT_CHECK(g_channelStates,ch);
@@ -398,30 +400,29 @@ void Channel_OnChanged(int ch) {
 		if(g_cfg.pins.channels[i] == ch) {
 			if(g_cfg.pins.roles[i] == IOR_Relay || g_cfg.pins.roles[i] == IOR_LED) {
 				RAW_SetPinValue(i,bOn);
-				if(g_channelChangeCallback != 0) {
-					g_channelChangeCallback(ch,bOn);
-				}
+				bCallCb = 1;
 			}
-			if(g_cfg.pins.roles[i] == IOR_Relay_n || g_cfg.pins.roles[i] == IOR_LED_n) {
+			else if(g_cfg.pins.roles[i] == IOR_Relay_n || g_cfg.pins.roles[i] == IOR_LED_n) {
 				RAW_SetPinValue(i,!bOn);
-				if(g_channelChangeCallback != 0) {
-					g_channelChangeCallback(ch,bOn);
-				}
+				bCallCb = 1;
 			}
-			if(g_cfg.pins.roles[i] == IOR_DigitalInput) {
-				if(g_channelChangeCallback != 0) {
-					g_channelChangeCallback(ch,iVal);
-				}
+			else if(g_cfg.pins.roles[i] == IOR_DigitalInput || g_cfg.pins.roles[i] == IOR_DigitalInput_n) {
+				bCallCb = 1;
 			}
-			if(g_cfg.pins.roles[i] == IOR_PWM) {
-				if(g_channelChangeCallback != 0) {
-					g_channelChangeCallback(ch,iVal);
-				}
+			else if(g_cfg.pins.roles[i] == IOR_ToggleChannelOnToggle) {
+				bCallCb = 1;
+			}
+			else if(g_cfg.pins.roles[i] == IOR_PWM) {
 				HAL_PIN_PWM_Update(i,iVal);
+				bCallCb = 1;
 			}
 		}
 	}
-
+	if(bCallCb) {
+		if(g_channelChangeCallback != 0) {
+			g_channelChangeCallback(ch,iVal);
+		}
+	}
 }
 int CHANNEL_Get(int ch) {
 	if(ch < 0 || ch >= CHANNEL_MAX) {
