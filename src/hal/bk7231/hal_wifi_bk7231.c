@@ -221,6 +221,8 @@ void bk_wlan_status_register_cb(FUNC_1PARAM_PTR cb);
 
 
 void HAL_WiFi_SetupStatusCallback(void (*cb)(int code)) {
+	g_wifiStatusCallback = cb;
+
 	bk_wlan_status_register_cb(wl_status);
 }
 void HAL_ConnectToWiFi(const char *oob_ssid,const char *connect_key)
