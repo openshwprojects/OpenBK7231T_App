@@ -19,6 +19,7 @@
 
 static char g_ipStr[64];
 static int g_bAccessPointMode = 1;
+void (*g_wifiStatusCallback)(int code);
 
 void HAL_ConnectToWiFi(const char *ssid, const char *psk)
 {
@@ -136,6 +137,7 @@ static void event_cb_wifi_event(input_event_t *event, void *private_data)
     }
 }
 void HAL_WiFi_SetupStatusCallback(void (*cb)(int code)) {
+	g_wifiStatusCallback = cb;
 
     aos_register_event_filter(EV_WIFI, event_cb_wifi_event, NULL);
 }

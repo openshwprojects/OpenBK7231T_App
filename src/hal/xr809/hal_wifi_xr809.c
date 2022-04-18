@@ -22,6 +22,8 @@
 #include "lwip/inet.h"
 #include "lwip/netdb.h"
 
+void (*g_wifiStatusCallback)(int code);
+
 static char g_ipStr[32];
 
 void HAL_ConnectToWiFi(const char *ssid, const char *psk)
@@ -49,6 +51,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
 	return 0;
 }
 void HAL_WiFi_SetupStatusCallback(void (*cb)(int code)) {
+	g_wifiStatusCallback = cb;
 
 }
 
