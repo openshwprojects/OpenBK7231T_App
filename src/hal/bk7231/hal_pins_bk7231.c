@@ -93,6 +93,10 @@ void HAL_PIN_PWM_Update(int index, int value) {
 	if(pwmIndex == -1) {
 		return;
 	}
+	if(value<0)
+		value = 0;
+	if(value>100)
+		value = 100;
 #if PLATFORM_BK7231N
 	bk_pwm_update_param(pwmIndex, 1000, value * 10.0f,0,0); // Duty cycle 0...100 * 10.0 = 0...1000
 #else

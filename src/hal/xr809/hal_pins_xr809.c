@@ -108,6 +108,10 @@ void HAL_PIN_PWM_Start(int index) {
 }
 void HAL_PIN_PWM_Update(int index, int value) {
 
+	if(value<0)
+		value = 0;
+	if(value>100)
+		value = 100;
 }
 
 

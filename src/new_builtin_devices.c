@@ -12,6 +12,28 @@ void Setup_Device_Empty() {
 
 }
 
+void Setup_Device_WB2L_FCMila_Smart_Spotlight_Gu10() {
+	CFG_ClearPins();
+
+	PIN_SetPinRoleForPinIndex(6, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(6, 0);
+
+	PIN_SetPinRoleForPinIndex(7, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(7, 3);
+
+	PIN_SetPinRoleForPinIndex(8, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(8, 4);
+
+	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(24, 2);
+
+	PIN_SetPinRoleForPinIndex(26, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(26, 1);
+
+	CFG_Save_SetupTimer();
+
+}
+
 void Setup_Device_WiFi_DIY_Switch_WB2S_ZN268131() {
 	CFG_ClearPins();
 

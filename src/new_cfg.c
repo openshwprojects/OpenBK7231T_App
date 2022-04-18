@@ -199,6 +199,10 @@ void PIN_SetPinChannelForPinIndex(int index, int ch) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "PIN_SetPinChannelForPinIndex: Pin index %i out of range <0,%i).",index,PLATFORM_GPIO_MAX);
 		return;
 	}
+	if(ch < 0 || ch >= CHANNEL_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "PIN_SetPinChannelForPinIndex: Channel index %i out of range <0,%i).",ch,CHANNEL_MAX);
+		return;
+	}
 	if(g_cfg.pins.channels[index] != ch) {
 		g_cfg_pendingChanges++;
 		g_cfg.pins.channels[index] = ch;

@@ -841,7 +841,7 @@ int http_fn_cfg_ha(http_request_t *request) {
 
     for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
         int role = PIN_GetPinRoleForPinIndex(i);
-        int ch = PIN_GetPinChannelForPinIndex(i);
+        //int ch = PIN_GetPinChannelForPinIndex(i);
         if(role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
             relayCount++;
         }

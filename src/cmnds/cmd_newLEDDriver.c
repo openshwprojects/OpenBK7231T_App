@@ -45,8 +45,8 @@ enum LightMode {
 int g_lightMode = Light_RGB;
 // Those are base colors, normalized, without brightness applied
 float baseColors[5] = { 255, 255, 255, 255, 255 };
-// this is not really needed, as we could easily change channel indices to anything we want...
-int baseColorChannels[5] = { 1, 2, 3, 4, 5 };
+// By default, colors are in 255 to 0 range, while our channels accept 0 to 100 range
+float g_colorScaleToChannel = 100.0f/255.0f;
 int g_numBaseColors = 5;
 float g_brightness = 1.0f;
 
@@ -59,6 +59,17 @@ float g_cfg_brightnessMult = 0.01f;
 
 void apply_smart_light() {
 	int i;
+	int firstChannelIndex;
+	int channelToUse;
+
+	// The color order is RGBCW.
+	// some people set RED to channel 0, and some of them set RED to channel 1
+	// Let's detect if there is a PWM on channel 0
+	if(CHANNEL_HasChannelPinWithRole(0, IOR_PWM)) {
+		firstChannelIndex = 0;
+	} else {
+		firstChannelIndex = 1;
+	}
 
 	for(i = 0; i < 5; i++) {
 		float raw, final;
@@ -87,9 +98,12 @@ void apply_smart_light() {
 
 		}
 
-	////	ADDLOG_INFO(LOG_FEATURE_CMD, "apply_smart_light: ch %i raw is %f, scaled by brightness is %f, enableAll is %i",i,raw,final,g_lightEnableAll);
+		channelToUse = firstChannelIndex + i;
 
-		CHANNEL_Set(baseColorChannels[i], final, false);
+		ADDLOG_INFO(LOG_FEATURE_CMD, "apply_smart_light: ch %i raw is %f, bright %f, final %f, enableAll is %i",
+			channelToUse,raw,g_brightness,final,g_lightEnableAll);
+
+		CHANNEL_Set(channelToUse, final * g_colorScaleToChannel, false);
 	}
 }
 static int temperature(const void *context, const char *cmd, const char *args){
@@ -198,7 +212,7 @@ static int basecolor(const void *context, const char *cmd, const char *args, int
                 ADDLOG_DEBUG(LOG_FEATURE_CMD, "BASECOLOR found chan %d -> val255 %d(from %s)", channel, val, tmp);
 
 				baseColors[g_numBaseColors] = val;
-				baseColorChannels[g_numBaseColors] = channel;
+			//	baseColorChannels[g_numBaseColors] = channel;
 				g_numBaseColors++;
 
                 // move to next channel.
@@ -222,6 +236,16 @@ static int basecolor_rgbcw(const void *context, const char *cmd, const char *arg
 }
 
 // CONFIG-ONLY command!
+static int colorMult(const void *context, const char *cmd, const char *args){
+        ADDLOG_INFO(LOG_FEATURE_CMD, " g_colorScaleToChannel (%s) received with args %s",cmd,args);
+
+		g_colorScaleToChannel = atof(args);
+
+		return 1;
+	//}
+	//return 0;
+}
+// CONFIG-ONLY command!
 static int brightnessMult(const void *context, const char *cmd, const char *args){
         ADDLOG_INFO(LOG_FEATURE_CMD, " brightnessMult (%s) received with args %s",cmd,args);
 
@@ -240,6 +264,7 @@ int NewLED_InitCommands(){
     CMD_RegisterCommand("led_basecolor_rgbcw", "", basecolor_rgbcw, "set PWN color using #RRGGBB[cw][ww]", NULL);
     CMD_RegisterCommand("led_temperature", "", temperature, "set qqqq", NULL);
     CMD_RegisterCommand("led_brightnessMult", "", brightnessMult, "set qqqq", NULL);
+    CMD_RegisterCommand("led_colorMult", "", colorMult, "set qqqq", NULL);
 
 	// "cmnd/obk8D38570E/led_dimmer_get""
     return 0;

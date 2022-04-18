@@ -442,7 +442,7 @@ void CHANNEL_Set(int ch, int iVal, int bForce) {
 
 		prevVal = g_channelValues[ch];
 		if(prevVal == iVal) {
-			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"No change in channel %i - ignoring\n\r",ch);
+			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"No change in channel %i (still set to %i) - ignoring\n\r",ch, prevVal);
 			return;
 		}
 	}
@@ -462,6 +462,19 @@ void CHANNEL_Toggle(int ch) {
 		g_channelValues[ch] = 0;
 
 	Channel_OnChanged(ch);
+}
+int CHANNEL_HasChannelPinWithRole(int ch, int iorType) {
+	if(ch < 0 || ch >= CHANNEL_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_HasChannelPinWithRole: Channel index %i is out of range <0,%i)\n\r",ch,CHANNEL_MAX);
+		return 0;
+	}
+	for(int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if(g_cfg.pins.channels[i] == ch) {
+			if(g_cfg.pins.roles[i] == iorType)
+				return 1;
+		}
+	}
+	return 0;
 }
 bool CHANNEL_Check(int ch) {
 	if(ch < 0 || ch >= CHANNEL_MAX) {
@@ -616,6 +629,11 @@ void PIN_ticks(void *param)
 	int value;
 
 	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
+#if 1
+		if(g_cfg.pins.roles[i] == IOR_PWM) {
+			HAL_PIN_PWM_Update(i,g_channelValues[g_cfg.pins.channels[i]]);
+		} else 
+#endif
 		if(g_cfg.pins.roles[i] == IOR_Button || g_cfg.pins.roles[i] == IOR_Button_n
 			|| g_cfg.pins.roles[i] == IOR_Button_ToggleAll || g_cfg.pins.roles[i] == IOR_Button_ToggleAll_n) {
 			//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Test hold %i\r\n",i);
@@ -669,6 +687,17 @@ int CHANNEL_ParseChannelType(const char *s) {
 	if(!stricmp(s,"default") )
 		return ChType_Default;
 	return ChType_Error;
+}
+static int CMD_ShowChannelValues(const void *context, const char *cmd, const char *args){
+	int i;
+
+	for(i = 0; i < CHANNEL_MAX; i++) {
+		if(g_channelValues[i] > 0) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Channel %i value is %i", i, g_channelValues[i]);
+		}
+	}	
+
+	return 0;
 }
 static int CMD_SetChannelType(const void *context, const char *cmd, const char *args){
 	int channel;
@@ -753,6 +782,7 @@ void PIN_Init(void)
 
 	CMD_RegisterCommand("showgpi", NULL, showgpi, "log stat of all GPIs", NULL);
 	CMD_RegisterCommand("setChannelType", NULL, CMD_SetChannelType, "qqqqqqqq", NULL);
+	CMD_RegisterCommand("showChannelValues", NULL,CMD_ShowChannelValues, "log channel values", NULL);
 }
 void PIN_set_wifi_led(int value){
 	int res = -1;

@@ -135,6 +135,7 @@ void CHANNEL_SetType(int ch, int type);
 int CHANNEL_GetType(int ch);
 void CHANNEL_SetAll(int iVal, bool bForce);
 void CHANNEL_SetStateOnly(int iVal);
+int CHANNEL_HasChannelPinWithRole(int ch, int iorType);
 
 
 void PIN_set_wifi_led(int value);
