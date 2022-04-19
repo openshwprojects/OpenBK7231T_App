@@ -149,9 +149,13 @@ Currently available pin roles:
 - Button Toggle All - this button toggles all channels at once
 - Button Toggle All_n (as above but pin logical value is inversed)
 - PWM - pulse width modulation output for LED dimmers (with MQTT dimming support from Home Assistant)
-- WiFi LED - special LED to indicate WLan connection state
+- WiFi LED - special LED to indicate WLan connection state. LED states are following: LED on = client mode successfully connected to your Router. Half a second blink - connecting to your router, please wait (or connection problem). Fast blink (200ms) - open access point mode. In safe mode (after failed boots), LED might not work.
 - DigitalInput - this is a simple digital input pin, it sets the linked channel to current logical value on it, just like digitalRead( ) from Arduino. This input has a internal pull up resistor.
 - DigitalInput_n (as above but inversed)
+  
+# Safe mode
+  
+  Device is counting full boots (full boot is a boot after which device worked for 30 seconds). If you power off and on device multiple times, it will enter open access point mode and safe mode (safe mode means even pin systems are not initialized). Those modes are used to recover devices from bad configs and errors.
   
 # RGBCW Tuya 5 PWMs LED bulb control compatible with Home Assistant
   
