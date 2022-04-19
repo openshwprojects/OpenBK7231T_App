@@ -365,8 +365,11 @@ void Setup_Device_BK7231N_CB2S_LSPA9_BL0942() {
 
 	CFG_ClearPins();
 	// Button
-	PIN_SetPinRoleForPinIndex(7, IOR_Button);
-	PIN_SetPinChannelForPinIndex(7, 1);
+	PIN_SetPinRoleForPinIndex(6, IOR_Button);
+	PIN_SetPinChannelForPinIndex(6, 1);
+	// LED
+	PIN_SetPinRoleForPinIndex(8, IOR_LED_WIFI);
+	PIN_SetPinChannelForPinIndex(8, 1);
 	// Relay
 	PIN_SetPinRoleForPinIndex(26, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(26, 1);
