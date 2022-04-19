@@ -29,6 +29,14 @@
 	// TODO: state return topics
 	*/
 
+// NOTE: there are 2 customization commands
+// They are not storing the config in flash, if you use them,
+// please put them in autoexec.bat from LittleFS.
+// Command 1: led_brightnessMult [floatVal] 
+// It sets the multipler for the dimming
+// Command 2: g_cfg_colorScaleToChannel [floatVal]
+// It sets the multipler for converting 0-255 range RGB to 0-100 channel value
+
 int parsePowerArgument(const char *s);
 
 // In general, LED can be in two modes:
@@ -46,7 +54,7 @@ int g_lightMode = Light_RGB;
 // Those are base colors, normalized, without brightness applied
 float baseColors[5] = { 255, 255, 255, 255, 255 };
 // By default, colors are in 255 to 0 range, while our channels accept 0 to 100 range
-float g_colorScaleToChannel = 100.0f/255.0f;
+float g_cfg_colorScaleToChannel = 100.0f/255.0f;
 int g_numBaseColors = 5;
 float g_brightness = 1.0f;
 
@@ -103,7 +111,7 @@ void apply_smart_light() {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "apply_smart_light: ch %i raw is %f, bright %f, final %f, enableAll is %i",
 			channelToUse,raw,g_brightness,final,g_lightEnableAll);
 
-		CHANNEL_Set(channelToUse, final * g_colorScaleToChannel, false);
+		CHANNEL_Set(channelToUse, final * g_cfg_colorScaleToChannel, false);
 	}
 }
 static int temperature(const void *context, const char *cmd, const char *args){
@@ -237,9 +245,9 @@ static int basecolor_rgbcw(const void *context, const char *cmd, const char *arg
 
 // CONFIG-ONLY command!
 static int colorMult(const void *context, const char *cmd, const char *args){
-        ADDLOG_INFO(LOG_FEATURE_CMD, " g_colorScaleToChannel (%s) received with args %s",cmd,args);
+        ADDLOG_INFO(LOG_FEATURE_CMD, " g_cfg_colorScaleToChannel (%s) received with args %s",cmd,args);
 
-		g_colorScaleToChannel = atof(args);
+		g_cfg_colorScaleToChannel = atof(args);
 
 		return 1;
 	//}
