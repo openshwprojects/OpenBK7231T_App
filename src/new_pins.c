@@ -304,6 +304,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_LED_n:
 		case IOR_Relay:
 		case IOR_Relay_n:
+		case IOR_LED_WIFI:
+		case IOR_LED_WIFI_n:
 			// TODO: disable?
 			break;
 			// Disable PWM for previous pin role
@@ -353,6 +355,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_LED_n:
 		case IOR_Relay:
 		case IOR_Relay_n:
+		case IOR_LED_WIFI:
+		case IOR_LED_WIFI_n:
 		{
 			HAL_PIN_Setup_Output(index);
 		}
@@ -622,11 +626,49 @@ byte g_timesDown[PLATFORM_GPIO_MAX];
 byte g_timesUp[PLATFORM_GPIO_MAX];
 byte g_lastValidState[PLATFORM_GPIO_MAX];
 
+static void PIN_set_wifi_led(int value){
+	int i;
+	for ( i = 0; i < PLATFORM_GPIO_MAX; i++){
+		if (g_cfg.pins.roles[i] == IOR_LED_WIFI){
+			RAW_SetPinValue(i, value);
+		} else if (g_cfg.pins.roles[i] == IOR_LED_WIFI_n){
+			// inversed
+			RAW_SetPinValue(i, !value);
+		}
+	}
+}
+
+
+static int g_wifiLedToggleTime = 0;
+static int g_wifi_ledState = 0;
 //  background ticks, timer repeat invoking interval 5ms.
 void PIN_ticks(void *param)
 {
 	int i;
 	int value;
+
+	// WiFi LED
+	// In Open Access point mode, fast blink (250ms)
+	if(Main_IsOpenAccessPointMode()) {
+		g_wifiLedToggleTime += 5;
+		if(g_wifiLedToggleTime > 200) {
+			g_wifi_ledState = !g_wifi_ledState;
+			g_wifiLedToggleTime = 0;
+			PIN_set_wifi_led(g_wifi_ledState);
+		}
+	} else if(Main_IsConnectedToWiFi()) {
+		// In WiFi client success mode, just stay enabled
+		PIN_set_wifi_led(1);
+	} else {
+		// in connecting mode, slow blink
+		g_wifiLedToggleTime += 5;
+		if(g_wifiLedToggleTime > 500) {
+			g_wifi_ledState = !g_wifi_ledState;
+			g_wifiLedToggleTime = 0;
+			PIN_set_wifi_led(g_wifi_ledState);
+		}
+	}
+
 
 	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
 #if 1
@@ -784,17 +826,3 @@ void PIN_Init(void)
 	CMD_RegisterCommand("setChannelType", NULL, CMD_SetChannelType, "qqqqqqqq", NULL);
 	CMD_RegisterCommand("showChannelValues", NULL,CMD_ShowChannelValues, "log channel values", NULL);
 }
-void PIN_set_wifi_led(int value){
-	int i;
-	for ( i = 0; i < PLATFORM_GPIO_MAX; i++){
-		if (g_cfg.pins.roles[i] == IOR_LED_WIFI){
-			RAW_SetPinValue(i, value);
-		} else if (g_cfg.pins.roles[i] == IOR_LED_WIFI_n){
-			// inversed
-			RAW_SetPinValue(i, !value);
-		}
-	}
-}
-
-
-

@@ -41,7 +41,9 @@ static int bSafeMode = 0;
 // reset after this number of seconds
 static int g_reset = 0;
 // is connected to WiFi?
-int g_bHasWiFiConnected = 0;
+static int g_bHasWiFiConnected = 0;
+// is Open Access point or a client?
+static int g_bOpenAccessPointMode = 0;
 
 static int g_bootFailures = 0;
 
@@ -109,32 +111,26 @@ void Main_OnWiFiStatusChange(int code){
 
     switch(code){
         case WIFI_STA_CONNECTING:
-            PIN_set_wifi_led(0);
 			g_bHasWiFiConnected = 0;
             break;
         case WIFI_STA_DISCONNECTED:
             // try to connect again in few seconds
             g_connectToWiFi = 15;
-            PIN_set_wifi_led(0);
 			g_bHasWiFiConnected = 0;
             break;
         case WIFI_STA_AUTH_FAILED:
-            PIN_set_wifi_led(0);
             // try to connect again in few seconds
             g_connectToWiFi = 60;
 			g_bHasWiFiConnected = 0;
             break;
         case WIFI_STA_CONNECTED:  
-            PIN_set_wifi_led(1);
 			g_bHasWiFiConnected = 1;
             break;
         /* for softap mode */
         case WIFI_AP_CONNECTED: 
-            PIN_set_wifi_led(1);
 			g_bHasWiFiConnected = 1;
             break;
         case WIFI_AP_FAILED:      
-            PIN_set_wifi_led(0);
 			g_bHasWiFiConnected = 0;
             break;
         default:
@@ -181,12 +177,15 @@ void Main_OnEverySecond()
 		g_openAP--;
 		if (0 == g_openAP){
 			HAL_SetupWiFiOpenAccessPoint(CFG_GetDeviceName());
+			g_bOpenAccessPointMode = 1;
 		}
 	}
 	if(g_connectToWiFi){
 		g_connectToWiFi --;
 		if(0 == g_connectToWiFi && g_bHasWiFiConnected == 0) {
 			const char *wifi_ssid, *wifi_pass;
+
+			g_bOpenAccessPointMode = 0;
 			wifi_ssid = CFG_GetWiFiSSID();
 			wifi_pass = CFG_GetWiFiPass();
 			HAL_ConnectToWiFi(wifi_ssid,wifi_pass);
@@ -230,6 +229,9 @@ void app_on_generic_dbl_click(int btnIndex)
 }
 
 
+int Main_IsOpenAccessPointMode() {
+	return g_bOpenAccessPointMode;
+}
 int Main_IsConnectedToWiFi() {
 	return g_bHasWiFiConnected;
 }
@@ -299,8 +301,6 @@ void Main_Init()
 
 		PIN_Init();
 		ADDLOGF_DEBUG("Initialised pins\r\n");
-
-        PIN_set_wifi_led(0);
 
 		// initialise MQTT - just sets up variables.
 		// all MQTT happens in timer thread?

@@ -137,8 +137,6 @@ void CHANNEL_SetAll(int iVal, bool bForce);
 void CHANNEL_SetStateOnly(int iVal);
 int CHANNEL_HasChannelPinWithRole(int ch, int iorType);
 
-
-void PIN_set_wifi_led(int value);
 int PIN_GetPWMIndexForPinIndex(int pin);
 
 // from new_builtin.c

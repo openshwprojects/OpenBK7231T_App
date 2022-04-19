@@ -199,6 +199,7 @@ int Time_getUpTimeSeconds();
 char Tiny_CRC8(const char *data,int length);
 void RESET_ScheduleModuleReset(int delSeconds);
 int Main_IsConnectedToWiFi();
+int Main_IsOpenAccessPointMode();
 void Main_Init();
 void Main_OnEverySecond();
 int Main_GetLastRebootBootFailures();
