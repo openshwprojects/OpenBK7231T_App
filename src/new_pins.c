@@ -489,7 +489,7 @@ bool CHANNEL_Check(int ch) {
 
 int CHANNEL_GetRoleForOutputChannel(int ch){
 	int i;
-	for (i = 0; i < 32; i++){
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++){
 		if (g_cfg.pins.channels[i] == ch){
 			switch(g_cfg.pins.roles[i]){
 				case IOR_Relay:
@@ -730,7 +730,7 @@ static int showgpi(const void *context, const char *cmd, const char *args){
 	int i;
 	unsigned int value = 0;
 
-	for (i = 0; i < 32; i++) {
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		int val = 0;
 
 		val = HAL_PIN_ReadDigitalInput(i);
@@ -785,19 +785,14 @@ void PIN_Init(void)
 	CMD_RegisterCommand("showChannelValues", NULL,CMD_ShowChannelValues, "log channel values", NULL);
 }
 void PIN_set_wifi_led(int value){
-	int res = -1;
 	int i;
-	for ( i = 0; i < 32; i++){
-		if ((g_cfg.pins.roles[i] == IOR_LED_WIFI) || (g_cfg.pins.roles[i] == IOR_LED_WIFI_n)){
-			res = i;
-			break;
+	for ( i = 0; i < PLATFORM_GPIO_MAX; i++){
+		if (g_cfg.pins.roles[i] == IOR_LED_WIFI){
+			RAW_SetPinValue(i, value);
+		} else if (g_cfg.pins.roles[i] == IOR_LED_WIFI_n){
+			// inversed
+			RAW_SetPinValue(i, !value);
 		}
-	}
-	if (res >= 0){
-		if (g_cfg.pins.roles[res] == IOR_LED_WIFI_n){
-			value = !value;
-		}
-		RAW_SetPinValue(res, value & 1);
 	}
 }
 

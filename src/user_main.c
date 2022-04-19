@@ -300,6 +300,8 @@ void Main_Init()
 		PIN_Init();
 		ADDLOGF_DEBUG("Initialised pins\r\n");
 
+        PIN_set_wifi_led(0);
+
 		// initialise MQTT - just sets up variables.
 		// all MQTT happens in timer thread?
 		MQTT_init();
