@@ -22,7 +22,7 @@
 #include "lwip/inet.h"
 #include "lwip/netdb.h"
 
-void (*g_wifiStatusCallback)(int code);
+static void (*g_wifiStatusCallback)(int code);
 
 static char g_ipStr[32];
 

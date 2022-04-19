@@ -10,7 +10,7 @@
 #include "../../beken378/app/config/param_config.h"
 #include "lwip/netdb.h"
 
-void (*g_wifiStatusCallback)(int code);
+static void (*g_wifiStatusCallback)(int code);
 
 
 #define MAC2STR(a) (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5]

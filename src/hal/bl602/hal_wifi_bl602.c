@@ -19,7 +19,7 @@
 
 static char g_ipStr[64];
 static int g_bAccessPointMode = 1;
-void (*g_wifiStatusCallback)(int code);
+static void (*g_wifiStatusCallback)(int code);
 
 void HAL_ConnectToWiFi(const char *ssid, const char *psk)
 {
