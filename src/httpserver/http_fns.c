@@ -60,7 +60,8 @@ template_t g_templates [] = {
     { Setup_Device_AvatarASL04, "Avatar ASL04 5v LED strip"},
     { Setup_Device_BL602_MagicHome_IR_RGB_LedStrip, "BL602 Magic Home LED RGB IR Strip"},
     { Setup_Device_WiFi_DIY_Switch_WB2S_ZN268131, "WB2S WiFi DIY Switch ZN268131"},
-    { Setup_Device_TuyaSmartWIFISwith_4Gang_CB3S, "[BK7231N][CB3S] Tuya Smart Wifi Switch 4 Gang"}
+    { Setup_Device_TuyaSmartWIFISwith_4Gang_CB3S, "[BK7231N][CB3S] Tuya Smart Wifi Switch 4 Gang"},
+    { Setup_Device_BK7231N_CB2S_LSPA9_BL0942, "[BK7231N][CB2S] LSPA9 power metering plug BL0942 version"},
 };
 
 int g_total_templates = sizeof(g_templates)/sizeof(g_templates[0]);
@@ -721,6 +722,42 @@ int http_fn_cmd_tool(http_request_t *request) {
     return 0;
 }
 
+int http_fn_startup_command(http_request_t *request) {
+	char tmpA[512];
+	const char *cmd;
+    http_setup(request, httpMimeTypeHTML);
+    poststr(request,htmlHeader);
+    poststr(request,g_header);
+    poststr(request,"<h4>Set/Change/Clear startup command line</h4>");
+    poststr(request,"<h5>Startup command is a shorter, smaller alternative to LittleFS autoexec.bat."
+		"The startup commands are ran at device startup."
+		"You can use them to init peripherals and drivers, like BL0942 energy sensor</h5>");
+
+    if(http_getArg(request->url,"data",tmpA,sizeof(tmpA))) {
+        hprintf128(request,"<h3>Set command to  %s!</h3>",tmpA);
+		CFG_SetShortStartupCommand(tmpA);
+	} else {
+	}
+
+	cmd = CFG_GetShortStartupCommand();
+
+    poststr(request,"<form action=\"/startup_command\">");
+   
+    poststr(request,"<label for=\"data\">data:</label><br>\
+            <input type=\"text\" id=\"data\" name=\"data\"");
+    hprintf128(request," value=\"%s\"  size=\"40\"><br>",cmd);
+    poststr(request,"<br>\
+            <input type=\"submit\" value=\"Submit\">\
+        </form> ");
+
+    poststr(request,htmlReturnToCfg);
+    HTTP_AddBuildFooter(request);
+    poststr(request,htmlEnd);
+
+
+	poststr(request, NULL);
+    return 0;
+}
 int http_fn_uart_tool(http_request_t *request) {
 	char tmpA[256];
 	byte results[128];
@@ -938,6 +975,7 @@ int http_fn_cfg(http_request_t *request) {
     poststr(request,"<form action=\"cmd_tool\"><input type=\"submit\" value=\"Execute custom command\"/></form>");
     poststr(request,"<form action=\"flash_read_tool\"><input type=\"submit\" value=\"Flash Read Tool\"/></form>");
     poststr(request,"<form action=\"uart_tool\"><input type=\"submit\" value=\"UART Tool\"/></form>");
+    poststr(request,"<form action=\"startup_command\"><input type=\"submit\" value=\"Change startup command text\"/></form>");
 
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
     k = config_get_tableOffsets(BK_PARTITION_NET_PARAM,&i,&j);

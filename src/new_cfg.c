@@ -6,6 +6,7 @@
 #include "new_cfg.h"
 #include "hal/hal_wifi.h"
 #include "hal/hal_flashConfig.h"
+#include "cmnds/cmd_public.h"
 
 
 mainConfig_t g_cfg;
@@ -80,7 +81,22 @@ static void CFG_SetDefaultConfig() {
 const char *CFG_GetWebappRoot(){
 	return g_cfg.webappRoot;
 }
+const char *CFG_GetShortStartupCommand() {
+	return g_cfg.initCommandLine;
+}
 
+
+void CFG_SetShortStartupCommand_AndExecuteNow(const char *s) {
+	CFG_SetShortStartupCommand(s);
+	CMD_ExecuteCommand(s);
+}
+void CFG_SetShortStartupCommand(const char *s) {
+	// this will return non-zero if there were any changes 
+	if(strcpy_safe_checkForChanges(g_cfg.initCommandLine, s,sizeof(g_cfg.initCommandLine))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
 int CFG_SetWebappRoot(const char *s) {
 	// this will return non-zero if there were any changes 
 	if(strcpy_safe_checkForChanges(g_cfg.webappRoot, s,sizeof(g_cfg.webappRoot))) {

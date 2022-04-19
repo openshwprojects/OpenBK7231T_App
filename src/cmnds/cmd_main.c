@@ -145,15 +145,21 @@ int CMD_ExecuteCommand(const char *s) {
 	int len;
 	const char *org;
 
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "cmd [%s]", s);
+	if(s == 0 || *s == 0) {
+		return 0;
+	}
 
 	while(isWhiteSpace(*s)) {
 		s++;
 	}
+	if(*s == 0) {
+		return 0;
+	}
+	ADDLOG_DEBUG(LOG_FEATURE_CMD, "cmd [%s]", s);
 	org = s;
 
 	// get the complete string up to whitespace.
-	len = get_cmd(s, copy, 32, 0);
+	len = get_cmd(s, copy, sizeof(copy), 0);
 	s += len;
 
 	p = s;

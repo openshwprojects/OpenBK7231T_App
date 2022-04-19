@@ -1,5 +1,5 @@
-
-
+#ifndef __CMD_PUBLIC_H__
+#define __CMD_PUBLIC_H__
 
 typedef int (*commandHandler_t)(const void *context, const char *cmd, const char *args);
 
@@ -27,3 +27,5 @@ int taslike_commands_init();
 int NewLED_InitCommands();
 // cmd_test.c
 int fortest_commands_init();
+
+#endif // __CMD_PUBLIC_H__

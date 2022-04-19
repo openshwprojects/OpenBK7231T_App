@@ -356,6 +356,26 @@ void Setup_Device_EmaxHome_EDU8774() {
 	CFG_Save_SetupTimer();
 }
 
+// LSPA9
+// See teardown article here:
+// https://www.elektroda.pl/rtvforum/viewtopic.php?t=3887748&highlight=
+void Setup_Device_BK7231N_CB2S_LSPA9_BL0942() {
+
+
+
+	CFG_ClearPins();
+	// Button
+	PIN_SetPinRoleForPinIndex(7, IOR_Button);
+	PIN_SetPinChannelForPinIndex(7, 1);
+	// Relay
+	PIN_SetPinRoleForPinIndex(26, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(26, 1);
+	// Led
+
+	CFG_SetShortStartupCommand_AndExecuteNow("backlog startDriver BL0942; VREF 15987.125000; PREF -683.023987; IREF 272302.687500");
+
+	CFG_Save_SetupTimer();
+}
 
 // QiachipSmartSwitch
 // See teardown article here:

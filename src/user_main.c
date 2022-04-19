@@ -242,18 +242,18 @@ void Main_Init()
 	int bForceOpenAP = 0;
 	const char *wifi_ssid, *wifi_pass;
 
-  // read or initialise the boot count flash area
-  HAL_FlashVars_IncreaseBootCount();
+	// read or initialise the boot count flash area
+	HAL_FlashVars_IncreaseBootCount();
 
-  g_bootFailures = HAL_FlashVars_GetBootFailures();
-  if (g_bootFailures > 3){
-    bForceOpenAP = 1;
-    ADDLOGF_INFO("###### force AP mode - boot failures %d", g_bootFailures);
-  }
-  if (g_bootFailures > 4){
-    bSafeMode = 1;
+	g_bootFailures = HAL_FlashVars_GetBootFailures();
+	if (g_bootFailures > 3){
+		bForceOpenAP = 1;
+		ADDLOGF_INFO("###### force AP mode - boot failures %d", g_bootFailures);
+	}
+	if (g_bootFailures > 4){
+		bSafeMode = 1;
 		ADDLOGF_INFO("###### safe mode activated - boot failures %d", g_bootFailures);
-  }
+	}
 
 	CFG_InitAndLoad();
 	wifi_ssid = CFG_GetWiFiSSID();
@@ -286,51 +286,52 @@ void Main_Init()
 	HTTPServer_Start();
 	ADDLOGF_DEBUG("Started http tcp server\r\n");
 
-  // only initialise certain things if we are not in AP mode
-  if (!bSafeMode){
-    g_enable_pins = 1;
-    // this actually sets the pins, moved out so we could avoid if necessary
-    PIN_SetupPins();
+	// only initialise certain things if we are not in AP mode
+	if (!bSafeMode){
+		g_enable_pins = 1;
+		// this actually sets the pins, moved out so we could avoid if necessary
+		PIN_SetupPins();
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
-    DRV_Generic_Init();
+		DRV_Generic_Init();
 #endif
-    RepeatingEvents_Init();
+		RepeatingEvents_Init();
 
-    PIN_Init();
-    ADDLOGF_DEBUG("Initialised pins\r\n");
+		PIN_Init();
+		ADDLOGF_DEBUG("Initialised pins\r\n");
 
-    // initialise MQTT - just sets up variables.
-    // all MQTT happens in timer thread?
-    MQTT_init();
+		// initialise MQTT - just sets up variables.
+		// all MQTT happens in timer thread?
+		MQTT_init();
 
-    PIN_SetGenericDoubleClickCallback(app_on_generic_dbl_click);
-    ADDLOGF_DEBUG("Initialised other callbacks\r\n");
+		PIN_SetGenericDoubleClickCallback(app_on_generic_dbl_click);
+		ADDLOGF_DEBUG("Initialised other callbacks\r\n");
 
 #ifdef BK_LITTLEFS
-    // initialise the filesystem, only if present.
-    // don't create if it does not mount
-    // do this for ST mode only, as it may be something in FS which is killing us,
-    // and we may add a command to empty fs just be writing first sector?
-    init_lfs(0);
+		// initialise the filesystem, only if present.
+		// don't create if it does not mount
+		// do this for ST mode only, as it may be something in FS which is killing us,
+		// and we may add a command to empty fs just be writing first sector?
+		init_lfs(0);
 #endif
 
-    // initialise rest interface
-    init_rest();
+		// initialise rest interface
+		init_rest();
 
-    // add some commands...
-    taslike_commands_init();
-    fortest_commands_init();
-    NewLED_InitCommands();
+		// add some commands...
+		taslike_commands_init();
+		fortest_commands_init();
+		NewLED_InitCommands();
 
-    // NOTE: this will try to read autoexec.bat,
-    // so ALL commands expected in autoexec.bat should have been registered by now...
-    // but DON't run autoexec if we have had 2+ boot failures
-    CMD_Init();
+		// NOTE: this will try to read autoexec.bat,
+		// so ALL commands expected in autoexec.bat should have been registered by now...
+		// but DON't run autoexec if we have had 2+ boot failures
+		CMD_Init();
 
-    if (g_bootFailures < 2){
-      CMD_ExecuteCommand("exec autoexec.bat");
-    }
-  }
+		if (g_bootFailures < 2){
+			CMD_ExecuteCommand(CFG_GetShortStartupCommand());
+			CMD_ExecuteCommand("exec autoexec.bat");
+		}
+	}
 
 }

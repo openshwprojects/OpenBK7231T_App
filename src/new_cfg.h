@@ -27,6 +27,16 @@ void CFG_InitAndLoad();
 void CFG_Save_IfThereArePendingChanges();
 void CFG_Save_SetupTimer();
 void CFG_IncrementOTACount();
+// This is a short startup command stored along with config.
+// One could say that's a very crude LittleFS replacement.
+// see mainConfig_t::initCommandLine
+// I only added this because there was free space in the Flash sector used for config on various devices
+void CFG_SetShortStartupCommand(const char *s);
+void CFG_SetShortStartupCommand_AndExecuteNow(const char *s);
+const char *CFG_GetShortStartupCommand();
+
+
+
 
 
 
