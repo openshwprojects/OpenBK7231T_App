@@ -112,6 +112,7 @@ void Main_OnWiFiStatusChange(int code){
     switch(code){
         case WIFI_STA_CONNECTING:
 			g_bHasWiFiConnected = 0;
+            g_connectToWiFi = 120;
             break;
         case WIFI_STA_DISCONNECTED:
             // try to connect again in few seconds
