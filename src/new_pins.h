@@ -45,7 +45,7 @@ enum ChannelType {
 #if PLATFORM_BL602
 #define PLATFORM_GPIO_MAX 24
 #else
-#define PLATFORM_GPIO_MAX 27
+#define PLATFORM_GPIO_MAX 29
 #endif
 
 #define CHANNEL_MAX 64
