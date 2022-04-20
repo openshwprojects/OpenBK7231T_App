@@ -108,8 +108,9 @@ void apply_smart_light() {
 
 		channelToUse = firstChannelIndex + i;
 
-		ADDLOG_INFO(LOG_FEATURE_CMD, "apply_smart_light: ch %i raw is %f, bright %f, final %f, enableAll is %i",
-			channelToUse,raw,g_brightness,final,g_lightEnableAll);
+		// log printf with %f crashes N platform?
+		//ADDLOG_INFO(LOG_FEATURE_CMD, "apply_smart_light: ch %i raw is %f, bright %f, final %f, enableAll is %i",
+		//	channelToUse,raw,g_brightness,final,g_lightEnableAll);
 
 		CHANNEL_Set(channelToUse, final * g_cfg_colorScaleToChannel, false);
 	}
