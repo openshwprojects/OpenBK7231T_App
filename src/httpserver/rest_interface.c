@@ -544,15 +544,17 @@ static int http_rest_get_pins(http_request_t *request){
     }
     poststr(request, "],\"roles\":[");
 
-    for (i = 0; i < 32; i++){
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++){
         if (i){
 			hprintf128(request, ",%d", g_cfg.pins.roles[i]);
         } else {
             hprintf128(request, "%d", g_cfg.pins.roles[i]);
         }
     }
+	// TODO: maybe we should cull futher channels that are not used?
+	// I support many channels because I plan to use 16x relays module with I2C MCP23017 driver
     poststr(request, "],\"channels\":[");
-    for (i = 0; i < 32; i++){
+	for (i = 0; i < CHANNEL_MAX; i++){
         if (i){
             hprintf128(request, ",%d", g_cfg.pins.channels[i]);
         } else {
@@ -985,7 +987,11 @@ static int http_rest_get_channels(http_request_t *request){
     http_setup(request, httpMimeTypeJson);
     poststr(request, "{");
 
-    for (i = 0; i < 32; i++){
+	// TODO: maybe we should cull futher channels that are not used?
+	// I support many channels because I plan to use 16x relays module with I2C MCP23017 driver
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++){
+		// "i" is a pin index
+		// Get channel index and role
         int ch = PIN_GetPinChannelForPinIndex(i);
         int role = PIN_GetPinRoleForPinIndex(i);
         if (role){
