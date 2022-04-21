@@ -10,6 +10,7 @@ int http_fn_cfg_webapp(http_request_t *request);
 int http_fn_config_dump_table(http_request_t *request);
 int http_fn_cfg_webapp_set(http_request_t *request);
 int http_fn_cfg_wifi_set(http_request_t *request);
+int http_fn_cfg_name(http_request_t *request);
 int http_fn_cfg_loglevel_set(http_request_t *request);
 int http_fn_cfg_wifi(http_request_t *request);
 int http_fn_cfg_mac(http_request_t *request);

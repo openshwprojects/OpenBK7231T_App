@@ -467,6 +467,46 @@ int http_fn_cfg_wifi(http_request_t *request) {
     return 0;
 }
 
+int http_fn_cfg_name(http_request_t *request) {
+    // for a test, show password as well...
+    const char *shortName, *name;
+	char tmpA[128];
+    int i;
+
+    http_setup(request, httpMimeTypeHTML);
+    poststr(request,htmlHeader);
+    poststr(request,g_header);
+  
+    poststr(request,"<h2> Change device names for display. </h2> Remember that short name is used by MQTT.<br>");
+    if(http_getArg(request->url,"shortName",tmpA,sizeof(tmpA))) {
+		CFG_SetShortDeviceName(tmpA);
+    }
+    if(http_getArg(request->url,"name",tmpA,sizeof(tmpA))) {
+		CFG_SetDeviceName(tmpA);
+    }
+    poststr(request,"<h2> Use this to change device names</h2>");
+    poststr(request,"<form action=\"/cfg_name\">\
+            <label for=\"shortName\">ShortName:</label><br>\
+            <input type=\"text\" id=\"shortName\" name=\"shortName\" value=\"");
+	shortName = CFG_GetShortDeviceName();
+    poststr(request,shortName);
+            
+            poststr(request, "\"><br>\
+            <label for=\"name\">Full Name:</label><br>\
+            <input type=\"text\" id=\"name\" name=\"name\" value=\"");
+			name = CFG_GetDeviceName();
+    poststr(request,name);
+            
+    poststr(request,"\"><br><br>\
+            <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Short name might be used by MQTT, so you will have to reconfig some stuff.')\">\
+        </form> ");
+    poststr(request,htmlReturnToCfg);
+    HTTP_AddBuildFooter(request);
+    poststr(request,htmlEnd);
+
+	poststr(request, NULL);
+    return 0;
+}
 int http_fn_cfg_wifi_set(http_request_t *request) {
 	char tmpA[128];
 	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"HTTP_ProcessPacket: generating cfg_wifi_set \r\n");
@@ -968,6 +1008,7 @@ int http_fn_cfg(http_request_t *request) {
     poststr(request,"<form action=\"cfg_quick\"><input type=\"submit\" value=\"Quick Config\"/></form>");
     poststr(request,"<form action=\"cfg_wifi\"><input type=\"submit\" value=\"Configure WiFi\"/></form>");
     poststr(request,"<form action=\"cfg_mqtt\"><input type=\"submit\" value=\"Configure MQTT\"/></form>");
+    poststr(request,"<form action=\"cfg_name\"><input type=\"submit\" value=\"Configure Names\"/></form>");
     poststr(request,"<form action=\"cfg_mac\"><input type=\"submit\" value=\"Change MAC\"/></form>");
     poststr(request,"<form action=\"cfg_webapp\"><input type=\"submit\" value=\"Configure Webapp\"/></form>");
     poststr(request,"<form action=\"cfg_ha\"><input type=\"submit\" value=\"Generate Home Assistant cfg\"/></form>");

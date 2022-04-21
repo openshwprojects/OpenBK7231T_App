@@ -504,6 +504,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 	if(http_checkUrlBase(urlStr,"cfg_webapp_set")) return http_fn_cfg_webapp_set(request); 
 
 	if(http_checkUrlBase(urlStr,"cfg_wifi")) return http_fn_cfg_wifi(request);
+	if(http_checkUrlBase(urlStr,"cfg_name")) return http_fn_cfg_name(request);
 	if(http_checkUrlBase(urlStr,"cfg_wifi_set")) return http_fn_cfg_wifi_set(request);
 
 	if(http_checkUrlBase(urlStr,"cfg_loglevel_set")) return http_fn_cfg_loglevel_set(request);

@@ -10,7 +10,7 @@
 
 
 mainConfig_t g_cfg;
-
+int g_configInitialized = 0;
 int g_cfg_pendingChanges = 0;
 
 #define CFG_IDENT_0 'C'
@@ -45,8 +45,6 @@ static byte CFG_CalcChecksum(mainConfig_t *inf) {
 
 	return crc;
 }
-
-
 static void CFG_SetDefaultConfig() {
 	// must be unsigned, else print below prints negatives as e.g. FFFFFFFe
 	unsigned char mac[6] = { 0 };
@@ -56,6 +54,8 @@ static void CFG_SetDefaultConfig() {
 #else
 	WiFI_GetMacAddress((char *)mac);
 #endif
+
+	g_configInitialized = 1;
 
 	memset(&g_cfg,0,sizeof(mainConfig_t));
 	g_cfg.mqtt_port = 1883;
@@ -107,14 +107,32 @@ int CFG_SetWebappRoot(const char *s) {
 }
 
 const char *CFG_GetDeviceName(){
+	if(g_configInitialized==0)
+		return "";
 	return g_cfg.longDeviceName;
 }
 const char *CFG_GetShortDeviceName(){
+	if(g_configInitialized==0)
+		return "";
 	return g_cfg.shortDeviceName;
 }
 
 int CFG_GetMQTTPort() {
 	return g_cfg.mqtt_port;
+}
+void CFG_SetShortDeviceName(const char *s) {
+	// this will return non-zero if there were any changes 
+	if(strcpy_safe_checkForChanges(g_cfg.shortDeviceName, s,sizeof(g_cfg.shortDeviceName))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+void CFG_SetDeviceName(const char *s) {
+	// this will return non-zero if there were any changes 
+	if(strcpy_safe_checkForChanges(g_cfg.longDeviceName, s,sizeof(g_cfg.longDeviceName))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
 }
 void CFG_SetMQTTPort(int p) {
 	// is there a change?
@@ -249,4 +267,5 @@ void CFG_InitAndLoad() {
 	} else {
 		addLogAdv(LOG_WARN, LOG_FEATURE_CFG, "CFG_InitAndLoad: Correct config has been loaded with %i changes count.",g_cfg.changeCounter);
 	}
+	g_configInitialized = 1;
 }
