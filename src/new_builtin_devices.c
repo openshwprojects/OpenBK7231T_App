@@ -169,7 +169,7 @@ void Setup_Device_TuyaLEDDimmerSingleChannel() {
 	CFG_ClearPins();
 
 	// pin 8 has PWM 
-	PIN_SetPinRoleForPinIndex(8, IOR_Relay);
+	PIN_SetPinRoleForPinIndex(8, IOR_PWM);
 	PIN_SetPinChannelForPinIndex(8, 1);
 
 	// button is on RXD2, which is a debug uart..
