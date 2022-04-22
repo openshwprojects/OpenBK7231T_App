@@ -433,7 +433,7 @@ static void Channel_OnChanged(int ch, int prevValue) {
 			g_channelChangeCallback(ch,iVal);
 		}
 	}
-	EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANNEL0_CHANGED + ch, prevValue, iVal);
+	EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CHANNEL0 + ch, prevValue, iVal);
 }
 int CHANNEL_Get(int ch) {
 	if(ch < 0 || ch >= CHANNEL_MAX) {
