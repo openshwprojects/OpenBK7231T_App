@@ -143,7 +143,6 @@ static int cmnd_backlog(const void * context, const char *cmd, const char *args)
         c = copy;
 		while (*p){
 			if (*p == ';'){
-				*c = '\0';
 				p++;
 				break;
 			}
@@ -152,6 +151,7 @@ static int cmnd_backlog(const void * context, const char *cmd, const char *args)
                 c++;
             }
 		}
+		*c = 0;
 		count++;
 		CMD_ExecuteCommand(copy);
 		subcmd = p;
