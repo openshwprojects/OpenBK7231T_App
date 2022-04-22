@@ -22,8 +22,8 @@ enum EventCode {
 	CMD_EVENT_CHANGE_CHANNEL0,
 	CMD_EVENT_CHANGE_CHANNEL63 = CMD_EVENT_CHANGE_CHANNEL0 + 63,
 	// change events for custom values (non-channels)
+	CMD_EVENT_CHANGE_VOLTAGE, // must match order in drv_bl0942.c
 	CMD_EVENT_CHANGE_CURRENT,
-	CMD_EVENT_CHANGE_VOLTAGE,
 	CMD_EVENT_CHANGE_POWER,
 
 
@@ -41,6 +41,7 @@ void Tokenizer_TokenizeString(const char *s);
 void RepeatingEvents_Init();
 void RepeatingEvents_OnEverySecond();
 // cmd_eventHandlers.c
+void EventHandlers_Init();
 void EventHandlers_AddEventHandler_Integer(byte eventCode, int requiredArgument, const char *commandToRun);
 void EventHandlers_FireEvent(byte eventCode, int argument);
 void EventHandlers_ProcessVariableChange_Integer(byte eventCode, int oldValue, int newValue);

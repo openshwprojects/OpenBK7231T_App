@@ -326,6 +326,7 @@ void Main_Init()
 		fortest_commands_init();
 		NewLED_InitCommands();
 		CMD_InitChannelCommands();
+		EventHandlers_Init();
 
 		// NOTE: this will try to read autoexec.bat,
 		// so ALL commands expected in autoexec.bat should have been registered by now...

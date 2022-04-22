@@ -664,6 +664,7 @@ static void PIN_set_wifi_led(int value){
 
 static int g_wifiLedToggleTime = 0;
 static int g_wifi_ledState = 0;
+#define TOGGLE_PIN_DEBOUNCE_CYCLES
 //  background ticks, timer repeat invoking interval 5ms.
 void PIN_ticks(void *param)
 {
@@ -712,7 +713,7 @@ void PIN_ticks(void *param)
 			// we must detect a toggle, but with debouncing
 			value = PIN_ReadDigitalInputValue_WithInversionIncluded(i);
 			if(value) {
-				if(g_timesUp[i] > 50) {
+				if(g_timesUp[i] > TOGGLE_PIN_DEBOUNCE_CYCLES) {
 					if(g_lastValidState[i] != value) {
 						// became up
 						g_lastValidState[i] = value;
@@ -723,7 +724,7 @@ void PIN_ticks(void *param)
 				}
 				g_timesDown[i] = 0;
 			} else {
-				if(g_timesDown[i] > 50) {
+				if(g_timesDown[i] > TOGGLE_PIN_DEBOUNCE_CYCLES) {
 					if(g_lastValidState[i] != value) {
 						// became down
 						g_lastValidState[i] = value;
@@ -733,7 +734,6 @@ void PIN_ticks(void *param)
 					g_timesDown[i]++;
 				}
 				g_timesUp[i] = 0;
-
 			}
 		}
 	}

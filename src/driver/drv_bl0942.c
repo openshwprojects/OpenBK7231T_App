@@ -22,7 +22,7 @@ int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
 
 enum {
-	OBK_VOLTAGE,
+	OBK_VOLTAGE, // must match order in cmd_public.h
 	OBK_CURRENT,
 	OBK_POWER,
 	OBK_NUM_MEASUREMENTS,
@@ -146,6 +146,14 @@ int BL0942_TryToGetNextBL0942Packet() {
 			noChangeFrames[i] > changeSendAlwaysFrames
 			){
 			noChangeFrames[i] = 0;
+			if(i == OBK_CURRENT) {
+				int prev_mA, now_mA;
+				prev_mA = lastSentValues[i] * 1000;
+				now_mA = lastReadings[i] * 1000;
+				EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CURRENT, prev_mA,now_mA);
+			} else {
+				EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_VOLTAGE+i, lastSentValues[i], lastReadings[i]);
+			}
 			lastSentValues[i] = lastReadings[i];
 			MQTT_PublishMain_StringFloat(mqttNames[i],lastReadings[i]);
 			stat_updatesSent++;
