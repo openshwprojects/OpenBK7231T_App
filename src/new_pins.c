@@ -108,6 +108,8 @@ void Button_OnShortClick(int index)
 		CHANNEL_DoSpecialToggleAll();
 		return;
 	}
+	// fire event - button on pin <index> was clicked
+	EventHandlers_FireEvent(CMD_EVENT_PIN_ONCLICK,index);
 	// first click toggles FIRST CHANNEL linked to this button
 	CHANNEL_Toggle(g_cfg.pins.channels[index]);
 }
@@ -119,6 +121,8 @@ void Button_OnDoubleClick(int index)
 		CHANNEL_DoSpecialToggleAll();
 		return;
 	}
+	// fire event - button on pin <index> was dbclicked
+	EventHandlers_FireEvent(CMD_EVENT_PIN_ONDBLCLICK,index);
 	// double click toggles SECOND CHANNEL linked to this button
 	CHANNEL_Toggle(g_cfg.pins.channels2[index]);
 
@@ -128,6 +132,8 @@ void Button_OnDoubleClick(int index)
 }
 void Button_OnLongPressHold(int index) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"%i key_long_press_hold\r\n", index);
+	// fire event - button on pin <index> was held
+	EventHandlers_FireEvent(CMD_EVENT_PIN_ONHOLD,index);
 }
 
 bool BTN_ShouldInvert(int index) {
@@ -385,7 +391,7 @@ void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex)) {
 void CHANNEL_SetChangeCallback(void (*cb)(int idx, int iVal)) {
 	g_channelChangeCallback = cb;
 }
-void Channel_OnChanged(int ch) {
+static void Channel_OnChanged(int ch, int prevValue) {
 	int i;
 	int iVal;
 	int bOn;
@@ -427,6 +433,7 @@ void Channel_OnChanged(int ch) {
 			g_channelChangeCallback(ch,iVal);
 		}
 	}
+	EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANNEL0_CHANGED + ch, prevValue, iVal);
 }
 int CHANNEL_Get(int ch) {
 	if(ch < 0 || ch >= CHANNEL_MAX) {
@@ -437,35 +444,51 @@ int CHANNEL_Get(int ch) {
 }
 
 void CHANNEL_Set(int ch, int iVal, int bForce) {
+	int prevValue;
+
 	if(ch < 0 || ch >= CHANNEL_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Set: Channel index %i is out of range <0,%i)\n\r",ch,CHANNEL_MAX);
 		return;
 	}
+	prevValue = g_channelValues[ch];
 	if(bForce == 0) {
-		int prevVal;
-
-		prevVal = g_channelValues[ch];
-		if(prevVal == iVal) {
-			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"No change in channel %i (still set to %i) - ignoring\n\r",ch, prevVal);
+		if(prevValue == iVal) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"No change in channel %i (still set to %i) - ignoring\n\r",ch, prevValue);
 			return;
 		}
 	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"CHANNEL_Set channel %i has changed to %i\n\r",ch,iVal);
 	g_channelValues[ch] = iVal;
 
-	Channel_OnChanged(ch);
+	Channel_OnChanged(ch,prevValue);
+}
+void CHANNEL_Add(int ch, int iVal) {
+	int prevValue;
+	if(ch < 0 || ch >= CHANNEL_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Add: Channel index %i is out of range <0,%i)\n\r",ch,CHANNEL_MAX);
+		return;
+	}
+	prevValue = g_channelValues[ch];
+	g_channelValues[ch] = g_channelValues[ch] + iVal;
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"CHANNEL_Add channel %i has changed to %i\n\r",ch,g_channelValues[ch]);
+
+	Channel_OnChanged(ch,prevValue);
 }
 void CHANNEL_Toggle(int ch) {
+	int prev;
+
 	if(ch < 0 || ch >= CHANNEL_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Toggle: Channel index %i is out of range <0,%i)\n\r",ch,CHANNEL_MAX);
 		return;
 	}
+	prev = g_channelValues[ch];
 	if(g_channelValues[ch] == 0)
 		g_channelValues[ch] = 100;
 	else
 		g_channelValues[ch] = 0;
 
-	Channel_OnChanged(ch);
+	Channel_OnChanged(ch,prev);
 }
 int CHANNEL_HasChannelPinWithRole(int ch, int iorType) {
 	if(ch < 0 || ch >= CHANNEL_MAX) {

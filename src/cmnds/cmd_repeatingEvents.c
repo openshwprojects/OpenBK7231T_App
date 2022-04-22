@@ -14,7 +14,7 @@ typedef struct repeatingEvent_s {
 	struct repeatingEvent_s *next;
 } repeatingEvent_t;
 
-repeatingEvent_t *g_repeatingEvents = 0;
+static repeatingEvent_t *g_repeatingEvents = 0;
 
 void RepeatingEvents_AddRepeatingEvent(const char *command, int secondsInterval)
 {

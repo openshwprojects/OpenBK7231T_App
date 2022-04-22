@@ -67,6 +67,7 @@ char *logfeaturenames[] = {
 	"TuyaMCU:",// = 12
 	"I2C:",// = 13
 	"BL0942:",// = 14
+	"EVENT:",// = 15
 };
 
 

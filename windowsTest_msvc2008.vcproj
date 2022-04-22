@@ -332,6 +332,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\tiny_crc8.c"
+				>
+			</File>
+			<File
 				RelativePath=".\src\user_main.c"
 				>
 				<FileConfiguration
@@ -688,6 +692,10 @@
 		<Filter
 			Name="CMD"
 			>
+			<File
+				RelativePath=".\src\cmnds\cmd_eventHandlers.c"
+				>
+			</File>
 			<File
 				RelativePath=".\src\cmnds\cmd_local.h"
 				>

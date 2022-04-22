@@ -21,7 +21,7 @@ int raw_unscaled_freq;
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
 
-typedef enum {
+enum {
 	OBK_VOLTAGE,
 	OBK_CURRENT,
 	OBK_POWER,

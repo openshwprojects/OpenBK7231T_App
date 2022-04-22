@@ -325,6 +325,7 @@ void Main_Init()
 		taslike_commands_init();
 		fortest_commands_init();
 		NewLED_InitCommands();
+		CMD_InitChannelCommands();
 
 		// NOTE: this will try to read autoexec.bat,
 		// so ALL commands expected in autoexec.bat should have been registered by now...
