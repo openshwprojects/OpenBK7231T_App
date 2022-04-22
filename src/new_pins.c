@@ -664,7 +664,7 @@ static void PIN_set_wifi_led(int value){
 
 static int g_wifiLedToggleTime = 0;
 static int g_wifi_ledState = 0;
-#define TOGGLE_PIN_DEBOUNCE_CYCLES
+#define TOGGLE_PIN_DEBOUNCE_CYCLES 50
 //  background ticks, timer repeat invoking interval 5ms.
 void PIN_ticks(void *param)
 {

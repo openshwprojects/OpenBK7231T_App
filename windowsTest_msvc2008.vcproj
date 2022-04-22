@@ -164,50 +164,6 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\src\i2c\drv_i2c_main.c"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\src\i2c\drv_i2c_mcp23017.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\src\i2c\drv_i2c_tc74.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\src\httpserver\http_fns.c"
 				>
 				<FileConfiguration
@@ -641,7 +597,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\httpserver\new_http.h"
+				RelativePath=".\src\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -653,7 +609,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\new_http.h"
+				RelativePath=".\src\httpserver\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -745,10 +701,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\driver\drv_i2c_public.h"
-				>
-			</File>
-			<File
 				RelativePath=".\src\driver\drv_main.c"
 				>
 			</File>
@@ -781,7 +733,31 @@
 			Name="I2C"
 			>
 			<File
+				RelativePath=".\src\i2c\drv_i2c_main.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\i2c\drv_i2c_mcp23017.c"
+				>
+			</File>
+			<File
 				RelativePath=".\src\i2c\drv_i2c_mcp23017.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\i2c\drv_i2c_pcf8574t.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\driver\drv_i2c_public.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\i2c\drv_i2c_public.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\i2c\drv_i2c_tc74.c"
 				>
 			</File>
 		</Filter>
