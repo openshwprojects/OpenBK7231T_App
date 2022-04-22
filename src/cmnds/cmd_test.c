@@ -11,8 +11,6 @@
 #endif
 
 
-extern int wal_stricmp(const char *a, const char *b);
-extern int wal_strnicmp(const char *a, const char *b, int count);
 
 char *cmds[16] = { NULL };
 char *names[16] = { NULL };

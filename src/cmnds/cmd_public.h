@@ -42,7 +42,6 @@ void RepeatingEvents_Init();
 void RepeatingEvents_OnEverySecond();
 // cmd_eventHandlers.c
 void EventHandlers_Init();
-void EventHandlers_AddEventHandler_Integer(byte eventCode, int requiredArgument, const char *commandToRun);
 void EventHandlers_FireEvent(byte eventCode, int argument);
 void EventHandlers_ProcessVariableChange_Integer(byte eventCode, int oldValue, int newValue);
 // cmd_tasmota.c

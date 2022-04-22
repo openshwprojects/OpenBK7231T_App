@@ -10,8 +10,6 @@
 #endif
 
 
-extern int wal_stricmp(const char *a, const char *b);
-extern int wal_strnicmp(const char *a, const char *b, int count);
 
 int parsePowerArgument(const char *s) {
 	if(!stricmp(s,"ON"))

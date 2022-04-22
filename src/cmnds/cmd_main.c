@@ -141,7 +141,7 @@ int CMD_ExecuteCommand(const char *s) {
 	const char *p;
 	const char *args;
 
-	char copy[32];
+	char copy[128];
 	int len;
 	const char *org;
 

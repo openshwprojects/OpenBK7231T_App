@@ -3,6 +3,7 @@
 #include "../httpserver/new_http.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
+#include "../logging/logging.h"
 
 #define MAX_CMD_LEN 512
 #define MAX_ARGS 32
@@ -73,6 +74,10 @@ void Tokenizer_TokenizeString(const char *s) {
 			g_args[g_numArgs] = p+1;
 			g_argsFrom[g_numArgs] = (s+((p+1)-g_buffer));
 			g_numArgs++;
+		}
+		if(g_numArgs>=MAX_ARGS) {
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "Too many args, skipped all after 32nd.");
+			break;
 		}
 		p++;
 	}

@@ -287,7 +287,7 @@ int DRV_I2C_AddDevice_LCM1602(const void *context, const char *cmd, const char *
 
 // maps channels 5 6 7 8 etc
 // backlog setChannelType 5 toggle; setChannelType 6 toggle; setChannelType 7 toggle; setChannelType 8 toggle; setChannelType 9 toggle; setChannelType 10 toggle; setChannelType 11 toggle; addI2CDevice_MCP23017 I2C1 0x27; MCP23017_MapPinToChannel I2C1 0x27 7 5; MCP23017_MapPinToChannel I2C1 0x27 6 6; MCP23017_MapPinToChannel I2C1 0x27 5 7; MCP23017_MapPinToChannel I2C1 0x27 4 8; MCP23017_MapPinToChannel I2C1 0x27 3 9; MCP23017_MapPinToChannel I2C1 0x27 2 10; MCP23017_MapPinToChannel I2C1 0x27 1 11
-\
+
 void DRV_I2C_Init()
 {
 	CMD_RegisterCommand("addI2CDevice_TC74","",DRV_I2C_AddDevice_TC74, "Adds a new I2C device", NULL);
@@ -337,6 +337,9 @@ void I2C_OnChannelChanged_Device(i2cDevice_t *dev, int channel, int iVal)
 		break;
 	case I2CDEV_MCP23017:
 		DRV_I2C_MCP23017_OnChannelChanged(dev, channel, iVal);
+		break;
+	case I2CDEV_LCD_PCF8574:
+		// not needed
 		break;
 	default:
 		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"I2C_OnChannelChanged: error, device of type %i at adr %i not handled\n", dev->type, dev->addr);
