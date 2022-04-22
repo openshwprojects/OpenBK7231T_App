@@ -152,6 +152,7 @@ Currently available pin roles:
 - WiFi LED - special LED to indicate WLan connection state. LED states are following: LED on = client mode successfully connected to your Router. Half a second blink - connecting to your router, please wait (or connection problem). Fast blink (200ms) - open access point mode. In safe mode (after failed boots), LED might not work.
 - DigitalInput - this is a simple digital input pin, it sets the linked channel to current logical value on it, just like digitalRead( ) from Arduino. This input has a internal pull up resistor.
 - DigitalInput_n (as above but inversed)
+- ToggleChannelOnToggle - this pin will toggle target channel when a value on this pin changes (with debouncing). you can connect simple two position switch here and swapping the switch will toggle target channel relay on or off
   
 # Safe mode
   
@@ -169,7 +170,8 @@ Currently available pin roles:
   
 # BL0942 power metering plug (UART communication mode) support and calibration process
     
-  Detailed description and step by step tutorial on Elektroda.com is coming soon.
+Please refer to this step by step guide:
+  https://www.elektroda.com/rtvforum/topic3887748.html
   
 # Detailed flashing guides along with device teardowns
   
@@ -186,6 +188,10 @@ Currently available pin roles:
   Tuya RGBCW 12W light bulb (raw PWMs, no I2C, BK7231N)
   https://www.elektroda.com/rtvforum/topic3880540.html#19938487
   https://www.elektroda.pl/rtvforum/viewtopic.php?t=3880540&highlight=
+  
+  LSPA9 CB2S + BL0942 power metering plug:
+  https://www.elektroda.com/rtvforum/topic3887748.html
+  https://www.elektroda.pl/rtvforum/viewtopic.php?t=3887748&highlight=
   
 # Futher reading
   
