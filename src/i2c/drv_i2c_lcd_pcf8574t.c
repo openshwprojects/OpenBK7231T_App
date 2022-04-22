@@ -219,18 +219,122 @@ static void PCF8574_LCD_Write_String(i2cDevice_PCF8574_t *lcd, const char *str)
         str++;
    }
 }
+
+int DRV_I2C_LCD_PCF8574_GoTo(const void *context, const char *cmd, const char *args) {
+	const char *i2cModuleStr;
+	int address;
+	i2cBusType_t busType;
+	i2cDevice_t *dev;
+	i2cDevice_PCF8574_t *lcd;
+	byte x, y;
+
+	Tokenizer_TokenizeString(args);
+	i2cModuleStr = Tokenizer_GetArg(0);
+	address = Tokenizer_GetArgInteger(1);
+
+	busType = DRV_I2C_ParseBusType(i2cModuleStr);
+
+	dev = DRV_I2C_FindDeviceExt(busType,address,I2CDEV_LCD_PCF8574);
+
+	if(dev == 0) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_LCD_PCF8574_GoTo: there is already some device on this bus with such addr\n");
+		return 1;
+	}
+	addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_LCD_PCF8574_GoTo: module %s, address %i\n", i2cModuleStr, address);
+
+	lcd = (i2cDevice_PCF8574_t *)dev;
+
+	x = Tokenizer_GetArgInteger(2);
+	y = Tokenizer_GetArgInteger(3);
+
+	PCF8574_LCD_Open(lcd);
+	PCF8574_LCD_Goto(lcd,x,y);
+	PCF8574_LCD_Close(lcd);
+	return 1;
+}
+int DRV_I2C_LCD_PCF8574_Print(const void *context, const char *cmd, const char *args) {
+	const char *i2cModuleStr;
+	int address;
+	i2cBusType_t busType;
+	i2cDevice_t *dev;
+	i2cDevice_PCF8574_t *lcd;
+	const char *msg;
+
+	Tokenizer_TokenizeString(args);
+	i2cModuleStr = Tokenizer_GetArg(0);
+	address = Tokenizer_GetArgInteger(1);
+
+	busType = DRV_I2C_ParseBusType(i2cModuleStr);
+
+	dev = DRV_I2C_FindDeviceExt(busType,address,I2CDEV_LCD_PCF8574);
+
+	if(dev == 0) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_LCD_PCF8574_Print: there is already some device on this bus with such addr\n");
+		return 1;
+	}
+	lcd = (i2cDevice_PCF8574_t *)dev;
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_LCD_PCF8574_Print: module %s, address %i\n", i2cModuleStr, address);
+	msg = Tokenizer_GetArgFrom(2);
+
+	PCF8574_LCD_Open(lcd);
+	PCF8574_LCD_Write_String(lcd,msg);
+	PCF8574_LCD_Close(lcd);
+
+	return 1;
+}
+int DRV_I2C_LCD_PCF8574_Clear(const void *context, const char *cmd, const char *args) {
+	const char *i2cModuleStr;
+	int address;
+	i2cBusType_t busType;
+	i2cDevice_t *dev;
+	i2cDevice_PCF8574_t *lcd;
+
+	Tokenizer_TokenizeString(args);
+	i2cModuleStr = Tokenizer_GetArg(0);
+	address = Tokenizer_GetArgInteger(1);
+
+	busType = DRV_I2C_ParseBusType(i2cModuleStr);
+
+	dev = DRV_I2C_FindDeviceExt(busType,address,I2CDEV_LCD_PCF8574);
+
+	if(dev == 0) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_LCD_PCF8574_Clear: there is already some device on this bus with such addr\n");
+		return 1;
+	}
+	lcd = (i2cDevice_PCF8574_t *)dev;
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_LCD_PCF8574_Clear: module %s, address %i\n", i2cModuleStr, address);
+
+	PCF8574_LCD_Open(lcd);
+	PCF8574_LCD_Clear(lcd);
+	PCF8574_LCD_Close(lcd);
+
+	return 1;
+}
+static int g_i2c_cmds_lcd_init = 0;
+
 void DRV_I2C_Commands_Init() {
 
+	CMD_RegisterCommand("lcd_goto","",DRV_I2C_LCD_PCF8574_GoTo, "Adds a new I2C device", NULL);
+	CMD_RegisterCommand("lcd_print","",DRV_I2C_LCD_PCF8574_Print, "Adds a new I2C device", NULL);
+	CMD_RegisterCommand("lcd_clear","",DRV_I2C_LCD_PCF8574_Clear, "Adds a new I2C device", NULL);
 }
 /// backlog startDriver I2C; addI2CDevice_LCD_PCF8574 I2C1 0x23 0 0 0
+// lcd_print I2C1 0x23 Hello123
+// backlog lcd_goto I2C1 0x23 2 2; lcd_print I2C1 0x23 Teste123
 int c = 0;
 void DRV_I2C_LCD_PCF8574_RunDevice(i2cDevice_t *dev)
 {
 	i2cDevice_PCF8574_t *lcd;
 
+	if(g_i2c_cmds_lcd_init==0) {
+		DRV_I2C_Commands_Init();
+		g_i2c_cmds_lcd_init = 1;
+	}
 	lcd = (i2cDevice_PCF8574_t*)dev;
 
-	if(c % 5 == 0){
+	if(c == 0){
 		PCF8574_LCD_Init(lcd);
 		 delay_ms(115);
 		PCF8574_LCD_Clear(lcd);
