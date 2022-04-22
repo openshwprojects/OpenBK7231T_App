@@ -5,6 +5,7 @@ enum i2cDeviceType_e {
 	I2CDEV_UNKNOWN,
 	I2CDEV_TC74,
 	I2CDEV_MCP23017,
+	I2CDEV_LCD_PCF8574,
 };
 
 typedef enum i2cBusType_e {
@@ -52,7 +53,23 @@ typedef struct i2cDevice_MCP23017_s {
 	//int pinDirections;
 } i2cDevice_MCP23017_t;
 
+typedef struct i2cDevice_PCF8574_s {
+	i2cDevice_t base;
+	// private PCF8574T variables
+	byte lcd_cols, lcd_rows, charsize;
+	byte  LCD_BL_Status;     // 1 for POSITIVE control, 0 for NEGATIVE control
+	byte  pin_E;//   =    I2C_BYTE.2
+	byte  pin_RW;//  =    I2C_BYTE.1
+	byte  pin_RS;//  =    I2C_BYTE.0
+	byte  pin_D4;//  =    I2C_BYTE.4
+	byte  pin_D5;//  =    I2C_BYTE.5
+	byte  pin_D6;//  =    I2C_BYTE.6
+	byte  pin_D7;//  =    I2C_BYTE.7
+	byte  pin_BL;//  =    I2C_BYTE.3
+} i2cDevice_PCF8574_t;
+
 void DRV_I2C_Write(byte addr, byte data);
+void DRV_I2C_WriteBytes(byte addr, byte *data, int len);
 void DRV_I2C_Read(byte addr, byte *data);
 int DRV_I2C_Begin(int dev_adr, int busID);
 void DRV_I2C_Close();
@@ -69,5 +86,8 @@ void DRV_I2C_MCP23017_OnChannelChanged(i2cDevice_t *dev, int channel, int iVal);
 
 // drv_i2c_tc74.c
 void DRV_I2C_TC74_RunDevice(i2cDevice_t *dev);
+
+// drv_i2c_lcd_pcf8574t.c
+void DRV_I2C_LCD_PCF8574_RunDevice(i2cDevice_t *dev);
 
 #endif // __DRV_I2C_LOCAL_H__

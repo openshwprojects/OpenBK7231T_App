@@ -733,6 +733,10 @@
 			Name="I2C"
 			>
 			<File
+				RelativePath=".\src\i2c\drv_i2c_lcd_pcf8574t.c"
+				>
+			</File>
+			<File
 				RelativePath=".\src\i2c\drv_i2c_main.c"
 				>
 			</File>
@@ -742,10 +746,6 @@
 			</File>
 			<File
 				RelativePath=".\src\i2c\drv_i2c_mcp23017.h"
-				>
-			</File>
-			<File
-				RelativePath=".\src\i2c\drv_i2c_pcf8574t.c"
 				>
 			</File>
 			<File
