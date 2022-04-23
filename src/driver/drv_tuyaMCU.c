@@ -103,6 +103,8 @@ typedef struct tuyaMCUMapping_s {
 	int channel;
 	// data point type (one of the DP_TYPE_xxx defines)
 	int dpType;
+	// store last channel value to avoid sending it again
+	int prevValue;
 	// TODO
 	//int mode;
 	// list
@@ -155,6 +157,7 @@ void TuyaMCU_MapIDToChannel(int fnId, int dpType, int channel) {
 		cur = (tuyaMCUMapping_t*)malloc(sizeof(tuyaMCUMapping_t));
 		cur->fnId = fnId;
 		cur->dpType = dpType;
+		cur->prevValue = 0;
 		cur->next = g_tuyaMappings;
 		g_tuyaMappings = cur;
 	}
@@ -573,7 +576,9 @@ void TuyaMCU_ApplyMapping(int fnID, int value) {
 		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU,"TuyaMCU_ApplyMapping: mapped value %d (TuyaMCU range) to %d (OpenBK7321T_App range)\n", value, mappedValue);
 	}
 
-	CHANNEL_SetEx(mapping->channel,mappedValue,false,false);
+	mapping->prevValue = mappedValue;
+
+	CHANNEL_Set(mapping->channel,mappedValue,false);
 }
 
 void TuyaMCU_OnChannelChanged(int channel, int iVal) {
@@ -584,6 +589,12 @@ void TuyaMCU_OnChannelChanged(int channel, int iVal) {
 	mapping = TuyaMCU_FindDefForChannel(channel);
 
 	if(mapping == 0){
+		return;
+	}
+
+	// this might be a callback from CHANNEL_Set in TuyaMCU_ApplyMapping. If we should set exactly the
+	// same value, skip it
+	if (mapping->prevValue == iVal) {
 		return;
 	}
 

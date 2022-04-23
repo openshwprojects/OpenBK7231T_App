@@ -129,7 +129,6 @@ bool CHANNEL_Check(int ch);
 void CHANNEL_SetChangeCallback(void (*cb)(int idx, int iVal));
 void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex));
 void CHANNEL_Set(int ch, int iVal, int bForce);
-void CHANNEL_SetEx(int ch, int iVal, int bForce, int bRunOnChanged);
 void CHANNEL_Add(int ch, int iVal);
 int CHANNEL_Get(int ch);
 int CHANNEL_GetRoleForOutputChannel(int ch);
