@@ -129,6 +129,7 @@ void CHANNEL_SetChangeCallback(void (*cb)(int idx, int iVal));
 void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex));
 void CHANNEL_Set(int ch, int iVal, int bForce);
 void CHANNEL_Add(int ch, int iVal);
+void CHANNEL_AddClamped(int ch, int iVal, int min, int max);
 int CHANNEL_Get(int ch);
 int CHANNEL_GetRoleForOutputChannel(int ch);
 // See: enum ChannelType
@@ -139,6 +140,8 @@ void CHANNEL_SetStateOnly(int iVal);
 int CHANNEL_HasChannelPinWithRole(int ch, int iorType);
 
 int PIN_GetPWMIndexForPinIndex(int pin);
+
+int PIN_ParsePinRoleName(const char *name);
 
 // from new_builtin.c
 void Setup_Device_Empty();

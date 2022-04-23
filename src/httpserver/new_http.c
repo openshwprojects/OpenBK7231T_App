@@ -238,6 +238,16 @@ const char *htmlPinRoleNames[] = {
 	"e",
 };
 
+int PIN_ParsePinRoleName(const char *name) {
+	int i;
+
+	for(i = 0; i < IOR_Total_Options; i++) {
+		if(!stricmp(name,htmlPinRoleNames[i]))
+			return i;
+	}
+	return IOR_Total_Options;
+}
+
 void setupAllWB2SPinsAsButtons() {
 		PIN_SetPinRoleForPinIndex(6,IOR_Button);
 		PIN_SetPinChannelForPinIndex(6,1);

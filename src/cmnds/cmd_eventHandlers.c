@@ -52,6 +52,10 @@ setEventHandler OnHold 11 addChannel 1 -10
 // addChangeHandler Channel1 == 0 backlog lcd_clearAndGoto I2C1 0x23 1 1; lcd_print I2C1 0x23 Disabled
 
 
+AddEventHandler OnClick 0 addChannel 1 -10 0 100 AddEventHandler OnClick 1 addChannel 1 10 0 100
+
+
+
 */
 //
 

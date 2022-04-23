@@ -462,6 +462,24 @@ void CHANNEL_Set(int ch, int iVal, int bForce) {
 
 	Channel_OnChanged(ch,prevValue);
 }
+void CHANNEL_AddClamped(int ch, int iVal, int min, int max) {
+	int prevValue;
+	if(ch < 0 || ch >= CHANNEL_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_AddClamped: Channel index %i is out of range <0,%i)\n\r",ch,CHANNEL_MAX);
+		return;
+	}
+	prevValue = g_channelValues[ch];
+	g_channelValues[ch] = g_channelValues[ch] + iVal;
+
+	if(g_channelValues[ch]>max)
+		g_channelValues[ch] = max;
+	if(g_channelValues[ch]<min)
+		g_channelValues[ch] = min;
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"CHANNEL_AddClamped channel %i has changed to %i\n\r",ch,g_channelValues[ch]);
+
+	Channel_OnChanged(ch,prevValue);
+}
 void CHANNEL_Add(int ch, int iVal) {
 	int prevValue;
 	if(ch < 0 || ch >= CHANNEL_MAX) {

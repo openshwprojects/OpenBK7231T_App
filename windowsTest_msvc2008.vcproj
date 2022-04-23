@@ -164,30 +164,6 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\src\httpserver\http_fns.c"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\src\httpserver\http_tcp_server.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\src\jsmn\jsmn.c"
 				>
 			</File>
@@ -206,18 +182,6 @@
 			<File
 				RelativePath=".\src\new_common.c"
 				>
-			</File>
-			<File
-				RelativePath=".\src\httpserver\new_http.c"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\src\mqtt\new_mqtt.c"
@@ -597,7 +561,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\new_http.h"
+				RelativePath=".\src\httpserver\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -609,7 +573,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\httpserver\new_http.h"
+				RelativePath=".\src\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -648,6 +612,10 @@
 		<Filter
 			Name="CMD"
 			>
+			<File
+				RelativePath=".\src\cmnds\cmd_channels.c"
+				>
+			</File>
 			<File
 				RelativePath=".\src\cmnds\cmd_eventHandlers.c"
 				>
@@ -746,10 +714,6 @@
 			</File>
 			<File
 				RelativePath=".\src\i2c\drv_i2c_mcp23017.h"
-				>
-			</File>
-			<File
-				RelativePath=".\src\driver\drv_i2c_public.h"
 				>
 			</File>
 			<File
@@ -872,6 +836,46 @@
 		<Filter
 			Name="XR809_Only"
 			>
+		</Filter>
+		<Filter
+			Name="HTTP"
+			>
+			<File
+				RelativePath=".\src\httpserver\http_fns.c"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\httpserver\http_tcp_server.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\httpserver\new_http.c"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>
