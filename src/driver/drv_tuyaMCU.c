@@ -573,7 +573,7 @@ void TuyaMCU_ApplyMapping(int fnID, int value) {
 		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU,"TuyaMCU_ApplyMapping: mapped value %d (TuyaMCU range) to %d (OpenBK7321T_App range)\n", value, mappedValue);
 	}
 
-	CHANNEL_Set(mapping->channel,mappedValue,0);
+	CHANNEL_SetEx(mapping->channel,mappedValue,false,false);
 }
 
 void TuyaMCU_OnChannelChanged(int channel, int iVal) {

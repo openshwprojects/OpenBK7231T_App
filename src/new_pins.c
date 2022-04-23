@@ -446,6 +446,9 @@ int CHANNEL_Get(int ch) {
 }
 
 void CHANNEL_Set(int ch, int iVal, int bForce) {
+	CHANNEL_SetEx(ch, iVal, bForce, true);
+}
+void CHANNEL_SetEx(int ch, int iVal, int bForce, int bRunOnChanged) {
 	int prevValue;
 
 	if(ch < 0 || ch >= CHANNEL_MAX) {
@@ -462,7 +465,9 @@ void CHANNEL_Set(int ch, int iVal, int bForce) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"CHANNEL_Set channel %i has changed to %i\n\r",ch,iVal);
 	g_channelValues[ch] = iVal;
 
-	Channel_OnChanged(ch,prevValue);
+	if (bRunOnChanged) {
+		Channel_OnChanged(ch,prevValue);
+	}
 }
 void CHANNEL_Add(int ch, int iVal) {
 	int prevValue;
