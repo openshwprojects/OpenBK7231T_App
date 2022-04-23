@@ -419,7 +419,7 @@ int TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, con
 	Tokenizer_TokenizeString(args);
 
 	if(Tokenizer_GetArgsCount() < 3) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_LinkTuyaMCUOutputToChannel: requires 2 arguments (dpId, dpType, channelIndex)\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_LinkTuyaMCUOutputToChannel: requires 3 arguments (dpId, dpType, channelIndex)\n");
 		return -1;
 	}
 	dpId = Tokenizer_GetArgInteger(0);
