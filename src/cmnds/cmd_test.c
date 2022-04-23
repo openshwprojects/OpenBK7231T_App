@@ -33,7 +33,7 @@ static int addcmd(const void * context, const char *cmd, const char *args){
 	if (!wal_strnicmp(cmd, "addcmd", 6)){
 		int index = 0;
         char cmd[32];
-        int len;
+        //int len;
 		if (strlen(cmd) > 6) {
 			index = atoi(cmd+6);
 		}
@@ -50,7 +50,8 @@ static int addcmd(const void * context, const char *cmd, const char *args){
         cmds[index] = os_malloc(strlen(args)+1);
         
         strcpy(cmds[index], args);
-        len = get_cmd(args, cmd, 32, 1);
+        //len = 
+		get_cmd(args, cmd, 32, 1);
         names[index] = os_malloc(strlen(cmd)+1);
         strcpy(names[index], cmd);
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "cmd %d set to %s", index, cmd);

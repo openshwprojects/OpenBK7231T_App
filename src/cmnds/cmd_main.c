@@ -109,7 +109,7 @@ int get_cmd(const char *s, char *dest, int maxlen, int stripnum){
 // execute a command from cmd and args - used below and in MQTT
 int CMD_ExecuteCommandArgs(const char *cmd, const char *args) {
 	command_t *newCmd;
-	int len;
+	//int len;
 
 	// look for complete commmand
 	newCmd = CMD_Find(cmd);
@@ -117,7 +117,8 @@ int CMD_ExecuteCommandArgs(const char *cmd, const char *args) {
 		// not found, so...
 		char nonums[32];
 		// get the complete string up to numbers.
-		len = get_cmd(cmd, nonums, 32, 1);
+		//len = 
+		get_cmd(cmd, nonums, 32, 1);
 		newCmd = CMD_Find(nonums);
 		if (!newCmd) {
 			// if still not found, then error
@@ -143,7 +144,7 @@ int CMD_ExecuteCommand(const char *s) {
 
 	char copy[128];
 	int len;
-	const char *org;
+	//const char *org;
 
 	if(s == 0 || *s == 0) {
 		return 0;
@@ -156,7 +157,7 @@ int CMD_ExecuteCommand(const char *s) {
 		return 0;
 	}
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "cmd [%s]", s);
-	org = s;
+	//org = s;
 
 	// get the complete string up to whitespace.
 	len = get_cmd(s, copy, sizeof(copy), 0);

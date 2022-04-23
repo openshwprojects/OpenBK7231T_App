@@ -185,10 +185,10 @@ static char *test_strdup(const char *s)
     if (s == NULL)
         return NULL;
 
-    len = os_strlen(s);
-    res = os_malloc(len + 1);
+    len = strlen(s);
+    res = malloc(len + 1);
     if (res)
-        os_memcpy(res, s, len + 1);
+        memcpy(res, s, len + 1);
 
     return res;
 }

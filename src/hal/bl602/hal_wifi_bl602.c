@@ -68,11 +68,17 @@ static void event_cb_wifi_event(input_event_t *event, void *private_data)
         case CODE_WIFI_ON_DISCONNECT:
         {
             printf("[APP] [EVT] disconnect %lld\r\n", aos_now_ms());
+			if(g_wifiStatusCallback!=0) {
+				g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
+			}
         }
         break;
         case CODE_WIFI_ON_CONNECTING:
         {
             printf("[APP] [EVT] Connecting %lld\r\n", aos_now_ms());
+			if(g_wifiStatusCallback!=0) {
+				g_wifiStatusCallback(WIFI_STA_CONNECTING);
+			}
         }
         break;
         case CODE_WIFI_CMD_RECONNECT:
@@ -94,6 +100,9 @@ static void event_cb_wifi_event(input_event_t *event, void *private_data)
         {
             printf("[APP] [EVT] GOT IP %lld\r\n", aos_now_ms());
             printf("[SYS] Memory left is %d Bytes\r\n", xPortGetFreeHeapSize());
+			if(g_wifiStatusCallback!=0) {
+				g_wifiStatusCallback(WIFI_STA_CONNECTED);
+			}
         }
         break;
         case CODE_WIFI_ON_PROV_SSID:
@@ -127,6 +136,9 @@ static void event_cb_wifi_event(input_event_t *event, void *private_data)
         case CODE_WIFI_ON_PROV_DISCONNECT:
         {
             printf("[APP] [EVT] [PROV] [DISCONNECT] %lld\r\n", aos_now_ms());
+			if(g_wifiStatusCallback!=0) {
+				g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
+			}
         }
         break;
         default:
