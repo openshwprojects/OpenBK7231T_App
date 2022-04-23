@@ -39,6 +39,7 @@ enum ChannelType {
 	ChType_Humidity_div10,
 	ChType_Temperature_div10,
 	ChType_Toggle,
+	ChType_Dimmer,
 };
 
 

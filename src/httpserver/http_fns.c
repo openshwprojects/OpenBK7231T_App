@@ -136,6 +136,13 @@ int http_fn_index(http_request_t *request) {
         hprintf128(request,"<h3>Changed pwm %i to %i!</h3>",j,newPWMValue);
         CHANNEL_Set(j,newPWMValue,1);
     }
+    if(http_getArg(request->url,"dim",tmpA,sizeof(tmpA))) {
+        int newDimmerValue = atoi(tmpA);
+        http_getArg(request->url,"dimIndex",tmpA,sizeof(tmpA));
+        j = atoi(tmpA);
+        hprintf128(request,"<h3>Changed dimmer %i to %i!</h3>",j,newDimmerValue);
+        CHANNEL_Set(j,newDimmerValue,1);
+    }
 
 
     for(i = 0; i < CHANNEL_MAX; i++) {
@@ -186,13 +193,15 @@ int http_fn_index(http_request_t *request) {
             hprintf128(request,"<input type=\"hidden\" name=\"tgl\" value=\"%i\">",i);
             hprintf128(request,"<input class=\"%s\" type=\"submit\" value=\"Toggle %i\"/></form>",c,i);
         }
-        else if(h_isChannelPWM(i)) {
+        else if(h_isChannelPWM(i) || (channelType == ChType_Dimmer)) {
+        	// PWM and dimmer both use a slider control
+        	const char *inputName = h_isChannelPWM(i) ? "pwm" : "dim";
             int pwmValue;
 
             pwmValue = CHANNEL_Get(i);
             hprintf128(request,"<form action=\"index\" id=\"form%i\">",i);
-            hprintf128(request,"<input type=\"range\" min=\"0\" max=\"100\" name=\"pwm\" id=\"slider%i\" value=\"%i\">",i,pwmValue);
-            hprintf128(request,"<input type=\"hidden\" name=\"pwmIndex\" value=\"%i\">",i);
+            hprintf128(request,"<input type=\"range\" min=\"0\" max=\"100\" name=\"%s\" id=\"slider%i\" value=\"%i\">",inputName,i,pwmValue);
+            hprintf128(request,"<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">",inputName,i);
             hprintf128(request,"<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>",i);
 
 
