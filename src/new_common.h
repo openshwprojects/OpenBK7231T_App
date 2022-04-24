@@ -106,8 +106,9 @@ typedef unsigned int UINT32;
 
 #define close lwip_close
 
+// OS_MSleep?
 #define rtos_delay_milliseconds OS_ThreadSleep
-
+#define delay_ms OS_ThreadSleep
 
 #define kNoErr                      0       //! No error occurred.
 typedef void *beken_thread_arg_t;

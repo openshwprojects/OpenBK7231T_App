@@ -50,9 +50,70 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
 
 	return 0;
 }
+static void wlan_msg_recv(uint32_t event, uint32_t data, void *arg)
+{
+	uint16_t type = EVENT_SUBTYPE(event);
+	printf("%s msg type:%d\n", __func__, type);
+
+	switch (type) {
+	case NET_CTRL_MSG_WLAN_CONNECTED:
+			if(g_wifiStatusCallback!=0) {
+				g_wifiStatusCallback(WIFI_STA_CONNECTED);
+			}
+		break;
+	case NET_CTRL_MSG_WLAN_DISCONNECTED:
+			if(g_wifiStatusCallback!=0) {
+				g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
+			}
+		break;
+	case NET_CTRL_MSG_WLAN_SCAN_SUCCESS:
+	case NET_CTRL_MSG_WLAN_SCAN_FAILED:
+		break;
+	case NET_CTRL_MSG_WLAN_4WAY_HANDSHAKE_FAILED:
+	case NET_CTRL_MSG_WLAN_CONNECT_FAILED:
+			if(g_wifiStatusCallback!=0) {
+				g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
+			}
+		break;
+	case NET_CTRL_MSG_CONNECTION_LOSS:
+			if(g_wifiStatusCallback!=0) {
+				g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
+			}
+		break;
+	case NET_CTRL_MSG_NETWORK_UP:
+
+		break;
+	case NET_CTRL_MSG_NETWORK_DOWN:
+
+		break;
+#if (!defined(__CONFIG_LWIP_V1) && LWIP_IPV6)
+	case NET_CTRL_MSG_NETWORK_IPV6_STATE:
+		break;
+#endif
+	default:
+		printf("unknown msg (%u, %u)\n", type, data);
+		break;
+	}
+}
 void HAL_WiFi_SetupStatusCallback(void (*cb)(int code)) {
 	g_wifiStatusCallback = cb;
 
+	observer_base *ob = sys_callback_observer_create(CTRL_MSG_TYPE_NETWORK,
+	                                                 NET_CTRL_MSG_ALL,
+	                                                 wlan_msg_recv,
+	                                                 NULL);
+	if (ob == NULL) {
+		// error
+
+		return;
+	}
+	if (sys_ctrl_attach(ob) != 0) {
+		// error
+
+		return;
+	}
+	// ok
+	return;
 }
 
 void WiFI_GetMacAddress(char *mac) {
