@@ -107,32 +107,37 @@ int Time_getUpTimeSeconds() {
 
 void Main_OnWiFiStatusChange(int code){
 
-    ADDLOGF_INFO("Main_OnWiFiStatusChange %d\r\n", code);
 
     switch(code){
         case WIFI_STA_CONNECTING:
 			g_bHasWiFiConnected = 0;
             g_connectToWiFi = 120;
+			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTING\r\n");
             break;
         case WIFI_STA_DISCONNECTED:
             // try to connect again in few seconds
             g_connectToWiFi = 15;
 			g_bHasWiFiConnected = 0;
+			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_DISCONNECTED\r\n");
             break;
         case WIFI_STA_AUTH_FAILED:
             // try to connect again in few seconds
             g_connectToWiFi = 60;
 			g_bHasWiFiConnected = 0;
+			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_AUTH_FAILED\r\n");
             break;
         case WIFI_STA_CONNECTED:  
 			g_bHasWiFiConnected = 1;
+			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTED\r\n");
             break;
         /* for softap mode */
         case WIFI_AP_CONNECTED: 
 			g_bHasWiFiConnected = 1;
+			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_AP_CONNECTED\r\n");
             break;
         case WIFI_AP_FAILED:      
 			g_bHasWiFiConnected = 0;
+			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_AP_FAILED\r\n");
             break;
         default:
             break;
@@ -148,6 +153,7 @@ void CFG_Save_SetupTimer() {
 void Main_OnEverySecond()
 {
 	int bMQTTconnected;
+	const char *safe;
 
 	// run_adc_test();
 	bMQTTconnected = MQTT_RunEverySecondUpdate();
@@ -158,10 +164,12 @@ void Main_OnEverySecond()
 
 	g_secondsElapsed ++;
 	if(bSafeMode) { 
-		ADDLOGF_INFO("[SAFE MODE] Timer %i, free mem %d, MQTT state %i\n", g_secondsElapsed, xPortGetFreeHeapSize(),bMQTTconnected);
+		safe = "[SAFE] ";
 	} else {
-		ADDLOGF_INFO("Timer %i, free mem %d, MQTT state %i\n", g_secondsElapsed, xPortGetFreeHeapSize(),bMQTTconnected);
+		safe = "";
 	}
+	ADDLOGF_INFO("%sTime %i, free %d, MQTT %i, bWifi %i\n", 
+			safe, g_secondsElapsed, xPortGetFreeHeapSize(),bMQTTconnected, g_bHasWiFiConnected);
 
 	// print network info
 	if (!(g_secondsElapsed % 10)){
