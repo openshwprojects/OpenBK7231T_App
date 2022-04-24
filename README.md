@@ -17,11 +17,14 @@ OpenBeken features:
 - MQTT compatibility with Home Assistant
 - Support for multiple relays, buttons, leds, inputs and PWMs
 - Driver system for custom peripherals, including TuyaMCU, I2C bus and Bl0942 power metering chip
+- Supports multiple I2C devices, like TC74 temperature sensor, MCP23017 port expander, PCF8574T LCD 2x16 (or other?), etc
 - NTP time from network (can be used with TH06 and other TuyaMCU devices)
 - RGBCW LED lighting control compatible with Home Assistant
 - LittleFS integration for large files (resides in OTA memory, so you have to backup it every time you OTA)
 - Command line system for starting and configuring drivers
 - Short startup command (up to 512 characters) storage in flash config, so you can easily init your drivers (eg. BL0942) without LittleFS
+- Simple scripting and events system (allows you to mirror Tasmota rules, for example catch button click, double click, hold)
+- Automatic reconnect when WiFi network goes out
 - and much more
 
 # Building for BK7231T
