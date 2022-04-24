@@ -9,6 +9,7 @@
 // Commands register, execution API and cmd tokenizer
 #include "cmnds/cmd_public.h"
 #include "i2c/drv_i2c_public.h"
+#include "driver/drv_tuyaMCU.h"
 #include "hal/hal_pins.h"
 
 
@@ -404,6 +405,7 @@ static void Channel_OnChanged(int ch, int prevValue) {
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	I2C_OnChannelChanged(ch,iVal);
+	TuyaMCU_OnChannelChanged(ch, iVal);
 #endif
 
 	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
@@ -493,6 +495,7 @@ void CHANNEL_Add(int ch, int iVal) {
 
 	Channel_OnChanged(ch,prevValue);
 }
+
 void CHANNEL_Toggle(int ch) {
 	int prev;
 
@@ -767,6 +770,8 @@ int CHANNEL_ParseChannelType(const char *s) {
 		return ChType_Temperature_div10;
 	if(!stricmp(s,"toggle"))
 		return ChType_Toggle;
+	if(!stricmp(s,"dimmer") )
+		return ChType_Dimmer;
 	if(!stricmp(s,"default") )
 		return ChType_Default;
 	return ChType_Error;
