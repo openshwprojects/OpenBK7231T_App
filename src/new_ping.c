@@ -15,9 +15,13 @@
 #include "lwip/icmp.h"
 #include "lwip/netif.h"
 #include "lwip/sys.h"
+#ifdef PLATFORM_XR809
+
+#else
 #include "lwip/timeouts.h"
-#include "lwip/inet_chksum.h"
 #include "lwip/prot/ip4.h"
+#endif
+#include "lwip/inet_chksum.h"
 
 #include "lwip/sockets.h"
 #include "lwip/inet.h"
@@ -50,12 +54,12 @@
 #define PING_RESULT(ping_ok)
 #endif
 
-static u32 ping_time;
+static unsigned int ping_time;
 static ip_addr_t ping_target;
-static u16_t ping_seq_num;
+static unsigned short ping_seq_num;
 static struct raw_pcb *ping_pcb;
-static u32 ping_lost = 0;
-static u32 ping_received = 0;
+static unsigned int ping_lost = 0;
+static unsigned int ping_received = 0;
 static int bReceivedLastOneSend = 0;
 
 static void ping_prepare_echo( struct icmp_echo_hdr *iecho, u16_t len)
@@ -125,7 +129,7 @@ static void ping_timeout(void *arg)
 
 static u8_t ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_addr_t *addr)
 {
-	u32 ms;
+	unsigned int ms;
   struct icmp_echo_hdr *iecho;
   LWIP_UNUSED_ARG(arg);
   LWIP_UNUSED_ARG(pcb);
