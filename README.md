@@ -134,6 +134,11 @@ Run ./build_oxr_sharedapp.sh
   
 Get USB to UART converter, start phoenixMC.exe from OpenXR809 repository and follow this guide: https://www.elektroda.com/rtvforum/topic3806769.html
   
+# Building and flashing for BL602
+
+Follow the BL602 guide:
+https://www.elektroda.com/rtvforum/topic3889041.html
+  
 # Testing HTTP server on Windows
   
 It is also possible to build a part of our App for Windows platform. It basically creates a Windows .exe for our HTTP server, so developers can create our configurator, etc, pages faster, without having any Tuya modules at hand. For building on Windows, use MSVC projects in the app directory. It is using Winsock and creates a TCP listening socket on port 80, so make sure your machine has it free to use.
