@@ -212,12 +212,20 @@ int UART_TryToGetNextTuyaPacket(byte *out, int maxSize) {
 	// now check if we have received whole packet
 	len += 2 + 1 + 1 + 2 + 1; // header 2 bytes, version, command, lenght, chekcusm
 	if(cs >= len) {
-		for(i = 0; i < len; i++) {
-			out[i] = UART_GetNextByte(i);
+		int ret;
+		// can packet fit into the buffer?
+		if(len <= maxSize) {
+			for(i = 0; i < len; i++) {
+				out[i] = UART_GetNextByte(i);
+			}
+			ret = len;
+		} else {
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU packet too large, %i > %i\n", len, maxSize);
+			ret = 0;
 		}
 		// consume whole packet (but don't touch next one, if any)
 		UART_ConsumeBytes(len);
-		return len;
+		return ret;
 	}
 	return 0;
 }
