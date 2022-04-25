@@ -205,6 +205,8 @@ int Main_IsOpenAccessPointMode();
 void Main_Init();
 void Main_OnEverySecond();
 int Main_GetLastRebootBootFailures();
+void Main_OnPingCheckerReply(int ms);
+
 
 
 

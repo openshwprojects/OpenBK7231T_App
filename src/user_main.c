@@ -49,6 +49,9 @@ static int g_bootFailures = 0;
 
 static int g_saveCfgAfter = 0;
 
+// not really <time>, but rather a loop count, but it doesn't really matter much
+static int g_timeSinceLastPingReply = 0;
+
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
 
@@ -149,7 +152,9 @@ void Main_OnWiFiStatusChange(int code){
 void CFG_Save_SetupTimer() {
 	g_saveCfgAfter = 3;
 }
-
+void Main_OnPingCheckerReply(int ms) {
+	g_timeSinceLastPingReply = 0;
+}
 void Main_OnEverySecond()
 {
 	int bMQTTconnected;
@@ -161,6 +166,9 @@ void Main_OnEverySecond()
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();
 #endif
+
+	g_timeSinceLastPingReply++;
+
 
 	g_secondsElapsed ++;
 	if(bSafeMode) { 
@@ -201,8 +209,8 @@ void Main_OnEverySecond()
 			// register function to get callbacks about wifi changes.
 			HAL_WiFi_SetupStatusCallback(Main_OnWiFiStatusChange);
 			ADDLOGF_DEBUG("Registered for wifi changes\r\n");
-			// reconnect after 10 minutes?
-			//g_connectToWiFi = 60 * 10; 
+
+			//ping_raw_init();
 		}
 	}
 
