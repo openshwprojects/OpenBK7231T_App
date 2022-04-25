@@ -104,7 +104,10 @@ typedef struct mainConfig_s {
 	pinsState_t pins;
 	byte unusedSectorA[256];
 	byte unusedSectorB[128];
-	byte unusedSectorC[128];
+	byte unusedSectorC[56];
+	int ping_interval;
+	int ping_seconds;
+	char ping_host[64];
 	char initCommandLine[512];
 } mainConfig_t;
 

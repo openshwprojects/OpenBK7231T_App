@@ -197,6 +197,8 @@ int strcat_safe(char *tg, const char *src, int tgMaxLen);
 int strcpy_safe(char *tg, const char *src, int tgMaxLen);
 int strcpy_safe_checkForChanges(char *tg, const char *src, int tgMaxLen);
 void urldecode2_safe(char *dst, const char *srcin, int maxDstLen);
+
+// user_main.c
 int Time_getUpTimeSeconds();
 char Tiny_CRC8(const char *data,int length);
 void RESET_ScheduleModuleReset(int delSeconds);
@@ -206,6 +208,11 @@ void Main_Init();
 void Main_OnEverySecond();
 int Main_GetLastRebootBootFailures();
 void Main_OnPingCheckerReply(int ms);
+
+// new_ping.c
+void Main_SetupPingWatchDog(const char *target, int delayBetweenPings);
+
+
 
 
 

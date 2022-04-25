@@ -36,6 +36,12 @@ void CFG_IncrementOTACount();
 void CFG_SetShortStartupCommand(const char *s);
 void CFG_SetShortStartupCommand_AndExecuteNow(const char *s);
 const char *CFG_GetShortStartupCommand();
+const char *CFG_GetPingHost();
+int CFG_GetPingDisconnectedSecondsToRestart();
+int CFG_GetPingIntervalSeconds();
+void CFG_SetPingHost(const char *s);
+void CFG_SetPingDisconnectedSecondsToRestart(int i);
+void CFG_SetPingIntervalSeconds(int i);
 
 
 

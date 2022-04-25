@@ -17,9 +17,47 @@ int g_cfg_pendingChanges = 0;
 #define CFG_IDENT_1 'F'
 #define CFG_IDENT_2 'G'
 
-#define MAIN_CFG_VERSION 1
+#define MAIN_CFG_VERSION 2
 
-static byte CFG_CalcChecksum(mainConfig_t *inf) {
+// version v1
+// Version v2 is now flexible and doesnt have to be duplicated
+// in order to support previous versions any more
+typedef struct mainConfig_v1_s {
+	byte ident0;
+	byte ident1;
+	byte ident2;
+	byte crc;
+	int version;
+	// unused
+	int genericFlags;
+	// unused
+	int genericFlags2;
+	unsigned short changeCounter;
+	unsigned short otaCounter;
+	// target wifi credentials
+	char wifi_ssid[64];
+	char wifi_pass[64];
+	// MQTT information for Home Assistant
+	char mqtt_host[256];
+	char mqtt_brokerName[64];
+	char mqtt_userName[64];
+	char mqtt_pass[128];
+	int mqtt_port;
+	// addon JavaScript panel is hosted on external server
+	char webappRoot[64];
+	// TODO?
+	byte mac[6];
+	// TODO?
+	char shortDeviceName[32];
+	char longDeviceName[64];
+	pinsState_t pins;
+	byte unusedSectorA[256];
+	byte unusedSectorB[128];
+	byte unusedSectorC[128];
+	char initCommandLine[512];
+} mainConfig_v1_t;
+
+static byte CFG_CalcChecksum_V1(mainConfig_v1_t *inf) {
 	byte crc = 0;
 	crc ^= Tiny_CRC8((const char*)&inf->version,sizeof(inf->version));
 	crc ^= Tiny_CRC8((const char*)&inf->changeCounter,sizeof(inf->changeCounter));
@@ -45,6 +83,25 @@ static byte CFG_CalcChecksum(mainConfig_t *inf) {
 
 	return crc;
 }
+static byte CFG_CalcChecksum(mainConfig_t *inf) {
+	int header_size;
+	int remaining_size;
+	byte crc;
+
+	if(inf->version <= 1) {
+		return CFG_CalcChecksum_V1((mainConfig_v1_t *)inf);
+	}
+	header_size = ((byte*)&inf->version)-((byte*)inf);
+	remaining_size = sizeof(mainConfig_t) - header_size;
+
+	ADDLOG_DEBUG(LOG_FEATURE_CFG, "CFG_CalcChecksum: header size %i, total size %i, rem size %i\n",
+		header_size, sizeof(mainConfig_t), remaining_size);
+
+	// This is more flexible method and won't be affected by field offsets
+	crc = Tiny_CRC8((const char*)&inf->version,remaining_size);
+
+	return crc;
+}
 static void CFG_SetDefaultConfig() {
 	// must be unsigned, else print below prints negatives as e.g. FFFFFFFe
 	unsigned char mac[6] = { 0 };
@@ -58,10 +115,12 @@ static void CFG_SetDefaultConfig() {
 	g_configInitialized = 1;
 
 	memset(&g_cfg,0,sizeof(mainConfig_t));
+	g_cfg.version = MAIN_CFG_VERSION;
 	g_cfg.mqtt_port = 1883;
 	g_cfg.ident0 = CFG_IDENT_0;
 	g_cfg.ident1 = CFG_IDENT_1;
 	g_cfg.ident2 = CFG_IDENT_2;
+	strcpy(g_cfg.ping_host,"192.168.0.1");
 	strcpy(g_cfg.mqtt_host, "192.168.0.113");
 	strcpy(g_cfg.mqtt_brokerName, "test");
 	strcpy(g_cfg.mqtt_userName, "homeassistant");
@@ -85,7 +144,36 @@ const char *CFG_GetShortStartupCommand() {
 	return g_cfg.initCommandLine;
 }
 
-
+const char *CFG_GetPingHost() {
+	return g_cfg.ping_host;
+}
+int CFG_GetPingDisconnectedSecondsToRestart() {
+	return g_cfg.ping_seconds;
+}
+int CFG_GetPingIntervalSeconds() {
+	return g_cfg.ping_interval;
+}
+void CFG_SetPingHost(const char *s) {
+	// this will return non-zero if there were any changes 
+	if(strcpy_safe_checkForChanges(g_cfg.ping_host, s,sizeof(g_cfg.ping_host))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+void CFG_SetPingDisconnectedSecondsToRestart(int i) {
+	if(g_cfg.ping_seconds != i) {
+		g_cfg.ping_seconds = i;
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+void CFG_SetPingIntervalSeconds(int i) {
+	if(g_cfg.ping_interval != i) {
+		g_cfg.ping_interval = i;
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
 void CFG_SetShortStartupCommand_AndExecuteNow(const char *s) {
 	CFG_SetShortStartupCommand(s);
 	CMD_ExecuteCommand(s);
@@ -222,6 +310,7 @@ void CFG_IncrementOTACount() {
 }
 void CFG_Save_IfThereArePendingChanges() {
 	if(g_cfg_pendingChanges > 0) {
+		g_cfg.version = MAIN_CFG_VERSION;
 		g_cfg.changeCounter++;
 		g_cfg.crc = CFG_CalcChecksum(&g_cfg);
 		HAL_Configuration_SaveConfigMemory(&g_cfg,sizeof(g_cfg));

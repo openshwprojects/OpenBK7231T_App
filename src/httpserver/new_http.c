@@ -531,6 +531,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 	if(http_checkUrlBase(urlStr,"cfg")) return http_fn_cfg(request);
 
 	if(http_checkUrlBase(urlStr,"cfg_pins")) return http_fn_cfg_pins(request);
+	if(http_checkUrlBase(urlStr,"cfg_ping")) return http_fn_cfg_ping(request);
 
 	if(http_checkUrlBase(urlStr,"ota")) return http_fn_ota(request);
 	if(http_checkUrlBase(urlStr,"ota_exec")) return http_fn_ota_exec(request);

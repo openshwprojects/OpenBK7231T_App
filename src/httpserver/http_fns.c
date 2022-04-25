@@ -382,6 +382,82 @@ int http_fn_cfg_webapp_set(http_request_t *request) {
 
 
 
+
+int http_fn_cfg_ping(http_request_t *request) {
+	char tmpA[128];
+	const char *tmp;
+	int i;
+	int bChanged;
+
+    http_setup(request, httpMimeTypeHTML);
+    poststr(request,htmlHeader);
+    poststr(request,g_header);
+    bChanged = 0;
+    poststr(request,"<h3> Ping watchdog (backup reconnect mechanism)</h3>");
+    poststr(request,"<p> By default, all OpenBeken devices automatically tries to reconnect to WiFi when a connection is lost.");
+    poststr(request," I have tested the reconnect mechanism many times by restarting my router and it always worked reliably.");
+    poststr(request," However, according to some reports, there are still some edge cases when a device fails to reconnect to WIFi.");
+    poststr(request," This is why <b>this mechanism</b> has been added.</p>");
+    poststr(request,"<p> This mechanism keeps pinging certain host and reconnects to WiFi if it doesn't respond at all for a certain amount of seconds.</p>");
+	poststr(request,"<p> USAGE: For a host, choose the main address of your router and make sure it responds to a pings. Interval can be 2 seconds or so, timeout 60 sec</p>");
+    if(http_getArg(request->url,"host",tmpA,sizeof(tmpA))) {
+		CFG_SetPingHost(tmpA);
+        poststr(request,"<h4> New ping host set!</h4>");
+        bChanged = 1;
+    }
+    if(http_getArg(request->url,"interval",tmpA,sizeof(tmpA))) {
+		CFG_SetPingIntervalSeconds(atoi(tmpA));
+        poststr(request,"<h4> New ping interval set!</h4>");
+        bChanged = 1;
+    }
+    if(http_getArg(request->url,"disconnectTime",tmpA,sizeof(tmpA))) {
+		CFG_SetPingDisconnectedSecondsToRestart(atoi(tmpA));
+        poststr(request,"<h4> New ping disconnectTime set!</h4>");
+        bChanged = 1;
+    }
+    if(http_getArg(request->url,"clear",tmpA,sizeof(tmpA))) {
+		CFG_SetPingDisconnectedSecondsToRestart(0);
+		CFG_SetPingIntervalSeconds(0);
+		CFG_SetPingHost("");
+        poststr(request,"<h4> Ping watchdog disabled!</h4>");
+        bChanged = 1;
+    }
+    if(bChanged) {
+        poststr(request,"<h4> Changes will be applied after restarting</h4>");
+    }
+    poststr(request,"<form action=\"/cfg_ping\">\
+            <input type=\"hidden\" id=\"clear\" name=\"clear\" value=\"1\">\
+            <input type=\"submit\" value=\"Disable ping watchdog!\">\
+        </form> ");
+    poststr(request,"<h2> Use this to enable pinger</h2>");
+    poststr(request,"<form action=\"/cfg_ping\">\
+            <label for=\"host\">Host:</label><br>\
+            <input type=\"text\" id=\"host\" name=\"host\" value=\"");
+	tmp = CFG_GetPingHost();
+    poststr(request,tmp);
+            
+            poststr(request, "\"><br>\
+		<label for=\"pass\">Interval (s) between pings:</label><br>\
+            <input type=\"number\" id=\"interval\" name=\"interval\" value=\"");
+    i = CFG_GetPingIntervalSeconds();
+    hprintf128(request,"%i",i);
+
+            poststr(request, "\"><br>\
+		<label for=\"pass\">Take action after this number of seconds with no reply:</label><br>\
+            <input type=\"number\" id=\"disconnectTime\" name=\"disconnectTime\" value=\"");
+			i = CFG_GetPingDisconnectedSecondsToRestart();
+    hprintf128(request,"%i",i);
+            
+    poststr(request,"\"><br><br>\
+            <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure?')\">\
+        </form> ");
+    poststr(request,htmlReturnToCfg);
+    HTTP_AddBuildFooter(request);
+    poststr(request,htmlEnd);
+
+	poststr(request, NULL);
+    return 0;
+}
 int http_fn_cfg_wifi(http_request_t *request) {
     // for a test, show password as well...
     const char *cur_ssid, *cur_pass;
@@ -1020,6 +1096,7 @@ int http_fn_cfg(http_request_t *request) {
     poststr(request,"<form action=\"cfg_mqtt\"><input type=\"submit\" value=\"Configure MQTT\"/></form>");
     poststr(request,"<form action=\"cfg_name\"><input type=\"submit\" value=\"Configure Names\"/></form>");
     poststr(request,"<form action=\"cfg_mac\"><input type=\"submit\" value=\"Change MAC\"/></form>");
+    poststr(request,"<form action=\"cfg_ping\"><input type=\"submit\" value=\"Ping Watchdog (Network lost restarter)\"/></form>");
     poststr(request,"<form action=\"cfg_webapp\"><input type=\"submit\" value=\"Configure Webapp\"/></form>");
     poststr(request,"<form action=\"cfg_ha\"><input type=\"submit\" value=\"Generate Home Assistant cfg\"/></form>");
     poststr(request,"<form action=\"ota\"><input type=\"submit\" value=\"OTA (update software by WiFi)\"/></form>");

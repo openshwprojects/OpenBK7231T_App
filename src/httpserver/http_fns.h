@@ -21,6 +21,7 @@ int http_fn_cfg_quick(http_request_t *request);
 int http_fn_cfg_ha(http_request_t *request);
 int http_fn_cfg(http_request_t *request);
 int http_fn_cfg_pins(http_request_t *request);
+int http_fn_cfg_ping(http_request_t *request);
 int http_fn_index(http_request_t *request);
 int http_fn_ota_exec(http_request_t *request);
 int http_fn_ota(http_request_t *request);

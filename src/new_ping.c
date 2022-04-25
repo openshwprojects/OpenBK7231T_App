@@ -6,7 +6,8 @@
  */
 //
 //	TODO: convert it to structure-based code instead of using global variables
-// so we can have multiple ping instances running
+// so we can have multiple ping instances running.
+// One ping for "ping watchdog", second ran from console by user, etc etc
 //
 
 #include "lwip/mem.h"
@@ -156,10 +157,12 @@ static u8_t ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_a
   return 0; /* don't eat the packet */
 }
 
-void ping_raw_init(void){
+
+void Main_SetupPingWatchDog(const char *target, int delayBetweenPings) {
 
     ///ipaddr_aton("192.168.0.1",&ping_target)
-    ipaddr_aton("8.8.8.8",&ping_target);
+    //ipaddr_aton("8.8.8.8",&ping_target);
+    ipaddr_aton(target,&ping_target);
 
     ping_pcb = raw_new(IP_PROTO_ICMP);
     LWIP_ASSERT("ping_pcb != NULL", ping_pcb != NULL);

@@ -350,6 +350,16 @@ void Main_Init()
 		CMD_Init();
 
 		if (g_bootFailures < 2){
+			const char *pingTargetServer;
+			int pingInterval;
+
+			pingTargetServer = CFG_GetPingHost();
+			pingInterval = CFG_GetPingIntervalSeconds();
+
+			if(*pingTargetServer && pingInterval > 0) {
+				Main_SetupPingWatchDog(pingTargetServer,pingInterval);
+			}
+
 			CMD_ExecuteCommand(CFG_GetShortStartupCommand());
 			CMD_ExecuteCommand("exec autoexec.bat");
 		}
