@@ -234,6 +234,10 @@ int http_fn_index(http_request_t *request) {
 	hprintf128(request,"<h5>Cfg size: %i, change counter: %i, ota counter: %i, boot incompletes %i (might change to 0 if you wait to 30 sec)!</h5>",
 		sizeof(g_cfg),g_cfg.changeCounter,g_cfg.otaCounter,Main_GetLastRebootBootFailures());
 
+	hprintf128(request,"<h5>Ping watchdog - %i lost, %i ok!</h5>",
+		PingWatchDog_GetTotalLost(),PingWatchDog_GetTotalReceived());
+
+
     poststr(request,htmlReturnToMenu);
     HTTP_AddBuildFooter(request);
     poststr(request,htmlEnd);
@@ -399,17 +403,17 @@ int http_fn_cfg_ping(http_request_t *request) {
     poststr(request," However, according to some reports, there are still some edge cases when a device fails to reconnect to WIFi.");
     poststr(request," This is why <b>this mechanism</b> has been added.</p>");
     poststr(request,"<p> This mechanism keeps pinging certain host and reconnects to WiFi if it doesn't respond at all for a certain amount of seconds.</p>");
-	poststr(request,"<p> USAGE: For a host, choose the main address of your router and make sure it responds to a pings. Interval can be 2 seconds or so, timeout 60 sec</p>");
+	poststr(request,"<p> USAGE: For a host, choose the main address of your router and make sure it responds to a pings. Interval is 1 second or so, timeout can be set by user, to eg. 60 sec</p>");
     if(http_getArg(request->url,"host",tmpA,sizeof(tmpA))) {
 		CFG_SetPingHost(tmpA);
         poststr(request,"<h4> New ping host set!</h4>");
         bChanged = 1;
     }
-    if(http_getArg(request->url,"interval",tmpA,sizeof(tmpA))) {
+   /* if(http_getArg(request->url,"interval",tmpA,sizeof(tmpA))) {
 		CFG_SetPingIntervalSeconds(atoi(tmpA));
         poststr(request,"<h4> New ping interval set!</h4>");
         bChanged = 1;
-    }
+    }*/
     if(http_getArg(request->url,"disconnectTime",tmpA,sizeof(tmpA))) {
 		CFG_SetPingDisconnectedSecondsToRestart(atoi(tmpA));
         poststr(request,"<h4> New ping disconnectTime set!</h4>");
@@ -436,11 +440,11 @@ int http_fn_cfg_ping(http_request_t *request) {
 	tmp = CFG_GetPingHost();
     poststr(request,tmp);
             
-            poststr(request, "\"><br>\
+         /*   poststr(request, "\"><br>\
 		<label for=\"pass\">Interval (s) between pings:</label><br>\
             <input type=\"number\" id=\"interval\" name=\"interval\" value=\"");
     i = CFG_GetPingIntervalSeconds();
-    hprintf128(request,"%i",i);
+    hprintf128(request,"%i",i);*/
 
             poststr(request, "\"><br>\
 		<label for=\"pass\">Take action after this number of seconds with no reply:</label><br>\

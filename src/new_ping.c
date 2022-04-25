@@ -33,11 +33,7 @@
 #define PING_DEBUG     LWIP_DBG_ON
 #endif
 
-
-/** ping delay - in milliseconds */
-#ifndef PING_DELAY
-#define PING_DELAY     1000
-#endif
+#define PING_DELAY 1000
 
 /** ping identifier - must fit on a u16_t */
 #ifndef PING_ID
@@ -60,7 +56,8 @@ static unsigned short ping_seq_num;
 static struct raw_pcb *ping_pcb;
 static unsigned int ping_lost = 0;
 static unsigned int ping_received = 0;
-static int bReceivedLastOneSend = 0;
+static int bReceivedLastOneSend = -1;
+//static int g_delayBetweenPings_MS = 1000;
 
 static void ping_prepare_echo( struct icmp_echo_hdr *iecho, u16_t len)
 {
@@ -102,7 +99,7 @@ static void ping_send(struct raw_pcb *raw, const ip_addr_t *addr)
     ping_prepare_echo(iecho, (u16_t)ping_size);
 
 	if(bReceivedLastOneSend == 0) {
-		addLogAdv(LOG_INFO,LOG_FEATURE_MAIN,"Ping lost: (total lost %i, recv %i)\r\n",ping_lost,ping_received);
+		//addLogAdv(LOG_INFO,LOG_FEATURE_MAIN,"Ping lost: (total lost %i, recv %i)\r\n",ping_lost,ping_received);
 		ping_lost++;
 	}
 	bReceivedLastOneSend = 0;
@@ -147,7 +144,9 @@ static u8_t ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_a
     //  LWIP_DEBUGF( PING_DEBUG, (" %"U32_F" ms\n", ms));
 	  ping_received++;
 	bReceivedLastOneSend = 1;
-	 addLogAdv(LOG_INFO,LOG_FEATURE_MAIN,"Ping recv: %ims (total lost %i, recv %i)\r\n", ms,ping_lost,ping_received);
+	
+	//addLogAdv(LOG_INFO,LOG_FEATURE_MAIN,"Ping recv: %ims (total lost %i, recv %i)\r\n", ms,ping_lost,ping_received);
+
 	//  addLogAdv(LOG_INFO,LOG_FEATURE_MAIN,"Ping recv: %ims\r\n", ms);
 	Main_OnPingCheckerReply(ms);
       PING_RESULT(1);
@@ -161,9 +160,17 @@ static u8_t ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_a
   return 0; /* don't eat the packet */
 }
 
+int PingWatchDog_GetTotalLost() {
+	return ping_lost;
+}
+int PingWatchDog_GetTotalReceived() {
+	return ping_received;
+}
+void Main_SetupPingWatchDog(const char *target/*, int delayBetweenPings_Seconds*/) {
 
-void Main_SetupPingWatchDog(const char *target, int delayBetweenPings) {
-
+	// none sent yet.
+	bReceivedLastOneSend = -1;
+	//g_delayBetweenPings_MS = delayBetweenPings_Seconds * 1000;
     ///ipaddr_aton("192.168.0.1",&ping_target)
     //ipaddr_aton("8.8.8.8",&ping_target);
     ipaddr_aton(target,&ping_target);

@@ -210,7 +210,12 @@ int Main_GetLastRebootBootFailures();
 void Main_OnPingCheckerReply(int ms);
 
 // new_ping.c
-void Main_SetupPingWatchDog(const char *target, int delayBetweenPings);
+void Main_SetupPingWatchDog(const char *target/*, int delayBetweenPings_Seconds*/);
+int PingWatchDog_GetTotalLost();
+int PingWatchDog_GetTotalReceived();
+
+
+
 
 
 

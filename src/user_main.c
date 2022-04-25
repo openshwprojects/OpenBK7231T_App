@@ -48,9 +48,12 @@ static int g_bOpenAccessPointMode = 0;
 static int g_bootFailures = 0;
 
 static int g_saveCfgAfter = 0;
+static int g_startPingWatchDogAfter = 0;
 
 // not really <time>, but rather a loop count, but it doesn't really matter much
 static int g_timeSinceLastPingReply = 0;
+// was it ran?
+static int g_bPingWatchDogStarted = 0;
 
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
@@ -167,7 +170,17 @@ void Main_OnEverySecond()
 	DRV_OnEverySecond();
 #endif
 
-	g_timeSinceLastPingReply++;
+	// some users say that despite our simple reconnect mechanism 
+	// there are some rare cases when devices stuck outside network
+	// That is why we can also reconnect them by basing on ping
+	if(g_timeSinceLastPingReply != -1 && g_secondsElapsed > 60) {
+		g_timeSinceLastPingReply++;
+		if(g_timeSinceLastPingReply == CFG_GetPingDisconnectedSecondsToRestart()) {
+			ADDLOGF_INFO("[Ping watchdog] No ping replies within %i seconds. Will try to reconnect.\n",g_timeSinceLastPingReply);
+			g_bHasWiFiConnected = 0;
+			g_connectToWiFi = 10;
+		}
+	}
 
 
 	g_secondsElapsed ++;
@@ -176,8 +189,8 @@ void Main_OnEverySecond()
 	} else {
 		safe = "";
 	}
-	ADDLOGF_INFO("%sTime %i, free %d, MQTT %i, bWifi %i\n", 
-			safe, g_secondsElapsed, xPortGetFreeHeapSize(),bMQTTconnected, g_bHasWiFiConnected);
+	ADDLOGF_INFO("%sTime %i, free %d, MQTT %i, bWifi %i, secondsWithNoPing %i\n", 
+			safe, g_secondsElapsed, xPortGetFreeHeapSize(),bMQTTconnected, g_bHasWiFiConnected,g_timeSinceLastPingReply);
 
 	// print network info
 	if (!(g_secondsElapsed % 10)){
@@ -197,6 +210,32 @@ void Main_OnEverySecond()
 			g_bOpenAccessPointMode = 1;
 		}
 	}
+	if(g_startPingWatchDogAfter) {
+		g_startPingWatchDogAfter--;
+		if(0==g_startPingWatchDogAfter) {
+			const char *pingTargetServer;
+			///int pingInterval;
+			int restartAfterNoPingsSeconds;
+
+			g_bPingWatchDogStarted = 1;
+
+			pingTargetServer = CFG_GetPingHost();
+			//pingInterval = CFG_GetPingIntervalSeconds();
+			restartAfterNoPingsSeconds = CFG_GetPingDisconnectedSecondsToRestart();
+
+			if(*pingTargetServer /* && pingInterval > 0*/ && restartAfterNoPingsSeconds > 0) {
+				// mark as enabled
+				g_timeSinceLastPingReply = 0;
+			//	Main_SetupPingWatchDog(pingTargetServer,pingInterval);
+				Main_SetupPingWatchDog(pingTargetServer
+					/*,1*/
+					);
+			} else {
+				// mark as disabled
+				g_timeSinceLastPingReply = -1;
+			}	
+		}
+	}
 	if(g_connectToWiFi){
 		g_connectToWiFi --;
 		if(0 == g_connectToWiFi && g_bHasWiFiConnected == 0) {
@@ -210,7 +249,10 @@ void Main_OnEverySecond()
 			HAL_WiFi_SetupStatusCallback(Main_OnWiFiStatusChange);
 			ADDLOGF_DEBUG("Registered for wifi changes\r\n");
 
-			//ping_raw_init();
+			// it must be done with a delay
+			if (g_bootFailures < 2 && g_bPingWatchDogStarted == 0){
+				g_startPingWatchDogAfter = 60;
+			}
 		}
 	}
 
@@ -350,16 +392,6 @@ void Main_Init()
 		CMD_Init();
 
 		if (g_bootFailures < 2){
-			const char *pingTargetServer;
-			int pingInterval;
-
-			pingTargetServer = CFG_GetPingHost();
-			pingInterval = CFG_GetPingIntervalSeconds();
-
-			if(*pingTargetServer && pingInterval > 0) {
-				Main_SetupPingWatchDog(pingTargetServer,pingInterval);
-			}
-
 			CMD_ExecuteCommand(CFG_GetShortStartupCommand());
 			CMD_ExecuteCommand("exec autoexec.bat");
 		}
