@@ -45,6 +45,8 @@ enum ChannelType {
 
 #if PLATFORM_BL602
 #define PLATFORM_GPIO_MAX 24
+#elif PLATFORM_XR809
+#define PLATFORM_GPIO_MAX 13
 #else
 #define PLATFORM_GPIO_MAX 29
 #endif
@@ -131,6 +133,8 @@ void CHANNEL_DoSpecialToggleAll();
 bool CHANNEL_Check(int ch);
 void CHANNEL_SetChangeCallback(void (*cb)(int idx, int iVal));
 void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex));
+// bMustBeSilent means it is called very often and log printf would crash system
+// (eg from 5ms timer)
 void CHANNEL_Set(int ch, int iVal, int bForce);
 void CHANNEL_Add(int ch, int iVal);
 void CHANNEL_AddClamped(int ch, int iVal, int min, int max);

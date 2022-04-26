@@ -449,13 +449,17 @@ void CHANNEL_Set(int ch, int iVal, int bForce) {
 	int prevValue;
 
 	if(ch < 0 || ch >= CHANNEL_MAX) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Set: Channel index %i is out of range <0,%i)\n\r",ch,CHANNEL_MAX);
+		//if(bMustBeSilent==0) {
+			addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Set: Channel index %i is out of range <0,%i)\n\r",ch,CHANNEL_MAX);
+		//}
 		return;
 	}
 	prevValue = g_channelValues[ch];
 	if(bForce == 0) {
 		if(prevValue == iVal) {
-			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"No change in channel %i (still set to %i) - ignoring\n\r",ch, prevValue);
+			//if(bMustBeSilent==0) {
+				addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"No change in channel %i (still set to %i) - ignoring\n\r",ch, prevValue);
+			//}
 			return;
 		}
 	}
@@ -729,7 +733,35 @@ void PIN_ticks(void *param)
 		else if(g_cfg.pins.roles[i] == IOR_DigitalInput || g_cfg.pins.roles[i] == IOR_DigitalInput_n) {
 			// read pin digital value (and already invert it if needed)
 			value = PIN_ReadDigitalInputValue_WithInversionIncluded(i);
+#if 0
 			CHANNEL_Set(g_cfg.pins.channels[i], value,0);
+#else
+			// debouncing
+			if(value) {
+				if(g_timesUp[i] > TOGGLE_PIN_DEBOUNCE_CYCLES) {
+					if(g_lastValidState[i] != value) {
+						// became up
+						g_lastValidState[i] = value;
+						CHANNEL_Set(g_cfg.pins.channels[i], value,0);
+					}
+				} else {
+					g_timesUp[i]++;
+				}
+				g_timesDown[i] = 0;
+			} else {
+				if(g_timesDown[i] > TOGGLE_PIN_DEBOUNCE_CYCLES) {
+					if(g_lastValidState[i] != value) {
+						// became down
+						g_lastValidState[i] = value;
+						CHANNEL_Set(g_cfg.pins.channels[i], value,0);
+					}
+				} else {
+					g_timesDown[i]++;
+				}
+				g_timesUp[i] = 0;
+			}
+
+#endif
 		} else if(g_cfg.pins.roles[i] == IOR_ToggleChannelOnToggle) {
 			// we must detect a toggle, but with debouncing
 			value = PIN_ReadDigitalInputValue_WithInversionIncluded(i);
