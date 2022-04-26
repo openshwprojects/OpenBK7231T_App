@@ -84,6 +84,18 @@ void HAL_PIN_Setup_Input_Pullup(int index) {
 	param.pull = GPIO_PULL_UP;
 	HAL_GPIO_Init(xr_port, xr_pin, &param);
 }
+void HAL_PIN_Setup_Input(int index) {
+	int xr_port; // eg GPIO_PORT_A
+	int xr_pin; // eg. GPIO_PIN_20
+	GPIO_InitParam param;
+
+	PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
+
+	param.driving = GPIO_DRIVING_LEVEL_1;
+	param.mode = GPIOx_Pn_F0_INPUT;
+	param.pull = GPIO_PULL_NONE;
+	HAL_GPIO_Init(xr_port, xr_pin, &param);
+}
 
 void HAL_PIN_Setup_Output(int index) {
 	GPIO_InitParam param;

@@ -47,6 +47,9 @@ int HAL_PIN_ReadDigitalInput(int index) {
 void HAL_PIN_Setup_Input_Pullup(int index) {
 	bk_gpio_config_input_pup(index);
 }
+void HAL_PIN_Setup_Input(int index) {
+	bk_gpio_config_input(index);
+}
 void HAL_PIN_Setup_Output(int index) {
 	bk_gpio_config_output(index);
 	bk_gpio_output(index, 0);

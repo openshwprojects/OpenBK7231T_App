@@ -33,6 +33,10 @@ void HAL_PIN_Setup_Input_Pullup(int index) {
 	// int bl_gpio_enable_input(uint8_t pin, uint8_t pullup, uint8_t pulldown);
 	bl_gpio_enable_input(index, 1, 0);
 }
+void HAL_PIN_Setup_Input(int index) {
+	// int bl_gpio_enable_input(uint8_t pin, uint8_t pullup, uint8_t pulldown);
+	bl_gpio_enable_input(index, 0, 0);
+}
 void HAL_PIN_Setup_Output(int index) {
 	bl_gpio_enable_output(index, 1,0);
 	bl_gpio_output_set(index, 0);

@@ -142,7 +142,8 @@ bool BTN_ShouldInvert(int index) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "BTN_ShouldInvert: Pin index %i out of range <0,%i).",index,PLATFORM_GPIO_MAX);
 		return false;
 	}
-	if(g_cfg.pins.roles[index] == IOR_Button_n || g_cfg.pins.roles[index] == IOR_Button_ToggleAll_n|| g_cfg.pins.roles[index] == IOR_DigitalInput_n) {
+	if(g_cfg.pins.roles[index] == IOR_Button_n || g_cfg.pins.roles[index] == IOR_Button_ToggleAll_n|| 
+		g_cfg.pins.roles[index] == IOR_DigitalInput_n || 	g_cfg.pins.roles[index] == IOR_DigitalInput_NoPup_n) {
 		return true;
 	}
 	return false;
@@ -358,6 +359,13 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 				HAL_PIN_Setup_Input_Pullup(index);
 			}
 			break;
+		case IOR_DigitalInput_NoPup:
+		case IOR_DigitalInput_NoPup_n:
+			{
+				// digital input
+				HAL_PIN_Setup_Input(index);
+			}
+			break;
 		case IOR_LED:
 		case IOR_LED_n:
 		case IOR_Relay:
@@ -418,7 +426,8 @@ static void Channel_OnChanged(int ch, int prevValue) {
 				RAW_SetPinValue(i,!bOn);
 				bCallCb = 1;
 			}
-			else if(g_cfg.pins.roles[i] == IOR_DigitalInput || g_cfg.pins.roles[i] == IOR_DigitalInput_n) {
+			else if(g_cfg.pins.roles[i] == IOR_DigitalInput || g_cfg.pins.roles[i] == IOR_DigitalInput_n
+				|| g_cfg.pins.roles[i] == IOR_DigitalInput_NoPup || g_cfg.pins.roles[i] == IOR_DigitalInput_NoPup_n) {
 				bCallCb = 1;
 			}
 			else if(g_cfg.pins.roles[i] == IOR_ToggleChannelOnToggle) {
@@ -730,7 +739,9 @@ void PIN_ticks(void *param)
 			//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Test hold %i\r\n",i);
 			PIN_Input_Handler(i);
 		}		
-		else if(g_cfg.pins.roles[i] == IOR_DigitalInput || g_cfg.pins.roles[i] == IOR_DigitalInput_n) {
+		else if(g_cfg.pins.roles[i] == IOR_DigitalInput || g_cfg.pins.roles[i] == IOR_DigitalInput_n
+			||
+			g_cfg.pins.roles[i] == IOR_DigitalInput_NoPup || g_cfg.pins.roles[i] == IOR_DigitalInput_NoPup_n) {
 			// read pin digital value (and already invert it if needed)
 			value = PIN_ReadDigitalInputValue_WithInversionIncluded(i);
 #if 0

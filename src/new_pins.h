@@ -25,6 +25,10 @@ enum IORole {
 	// as above, but inverted
 	IOR_DigitalInput_n,
 	IOR_ToggleChannelOnToggle,
+	// this copies directly value on pin (0 or 1) to channel
+	IOR_DigitalInput_NoPup,
+	// as above, but inverted
+	IOR_DigitalInput_NoPup_n,
 	IOR_Total_Options,
 };
 
