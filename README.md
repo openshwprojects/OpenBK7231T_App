@@ -161,6 +161,8 @@ Currently available pin roles:
 - DigitalInput - this is a simple digital input pin, it sets the linked channel to current logical value on it, just like digitalRead( ) from Arduino. This input has a internal pull up resistor.
 - DigitalInput_n (as above but inversed)
 - ToggleChannelOnToggle - this pin will toggle target channel when a value on this pin changes (with debouncing). you can connect simple two position switch here and swapping the switch will toggle target channel relay on or off
+- DigitalInput_NoPullUp - same as DigitalInput but with no programmable pull up resistor. This is used for, for example, XR809 water sensor and door sensor.
+- DigitalInput_NoPullUp_n (as above but inversed)
   
 # Safe mode
   
