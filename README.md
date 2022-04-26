@@ -119,7 +119,7 @@ Flash BK7231N QIO binary, like that:
   
   Remember - QIO binary with --unprotect and --startaddr 0x0, this is for N chip, not for T.
  
-You can see an example of detailed teardown and BK7231N flashing here (use google translate): https://www.elektroda.pl/rtvforum/viewtopic.php?t=3874289&highlight=
+You can see an example of detailed teardown and BK7231N flashing here: https://www.elektroda.com/rtvforum/topic3874289.html
   
 # Building for XR809
 
