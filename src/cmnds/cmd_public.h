@@ -52,5 +52,7 @@ int NewLED_InitCommands();
 int fortest_commands_init();
 // cmd_channels.c
 void CMD_InitChannelCommands();
+// cmd_send.c
+int CMD_InitSendCommands();
 
 #endif // __CMD_PUBLIC_H__

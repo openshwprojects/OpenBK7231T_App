@@ -6,20 +6,14 @@
  * Copyright (C) 2015-2017 Alibaba Group Holding Limited
  */
 
-#include <string.h>
-#include <stddef.h>
+#include "../new_common.h"
 #include "include.h"
 #include "utils_timer.h"
 //#include "lite-log.h"
 #include "http_client.h"
-#include "uart_pub.h"
-#include "flash_pub.h"
-#include "mem_pub.h"
-#include "str_pub.h"
 #include "rtos_pub.h"
 #include "../logging/logging.h"
 
-//#include "new_common.h"
 #include "iot_export_errno.h"
 
 #define log_err(a, ...)
@@ -78,8 +72,10 @@ static void httpclient_base64enc(char *out, const char *in)
 
 int httpclient_conn(httpclient_t *client)
 {
-    if (0 != client->net.connect(&client->net)) {
-        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "establish connection failed");
+	int ret;
+	ret = client->net.doConnect(&client->net);
+    if (0 != ret) {
+        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "establish connection failed, error %i ",ret);
         return ERROR_HTTP_CONN;
     }
 
@@ -230,7 +226,7 @@ int httpclient_get_info(httpclient_t *client, char *send_buf, int *send_idx, cha
             //                return ERROR_HTTP;
             //            }
             //ret = httpclient_tcp_send_all(client->handle, send_buf, HTTPCLIENT_SEND_BUF_SIZE);
-            ret = client->net.write(&client->net, send_buf, HTTPCLIENT_SEND_BUF_SIZE, 5000);
+            ret = client->net.doWrite(&client->net, send_buf, HTTPCLIENT_SEND_BUF_SIZE, 5000);
             if (ret) {
                 return (ret);
             }
@@ -241,7 +237,7 @@ int httpclient_get_info(httpclient_t *client, char *send_buf, int *send_idx, cha
     return SUCCESS_RETURN;
 }
 
-void httpclient_set_custom_header(httpclient_t *client, const char *header)
+void HTTPClient_SetCustomHeader(httpclient_t *client, const char *header)
 {
     client->header = header;
 }
@@ -368,7 +364,7 @@ int httpclient_send_header(httpclient_t *client, const char *url, int method, ht
     //log_multi_line(LOG_DEBUG_LEVEL, "REQUEST", "%s", send_buf, ">");
 
     //ret = httpclient_tcp_send_all(client->net.handle, send_buf, len);
-    ret = client->net.write(&client->net, send_buf, len, 5000);
+    ret = client->net.doWrite(&client->net, send_buf, len, 5000);
     if (ret > 0) {
         ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "Written %d bytes\r\n", ret);
     } else if (ret == 0) {
@@ -399,7 +395,7 @@ int httpclient_send_userdata(httpclient_t *client, httpclient_data_t *client_dat
         ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "client_data->post_buf: %s", client_data->post_buf);
         {
             //ret = httpclient_tcp_send_all(client->handle, (char *)client_data->post_buf, client_data->post_buf_len);
-            ret = client->net.write(&client->net, (char *)client_data->post_buf, client_data->post_buf_len, 5000);
+            ret = client->net.doWrite(&client->net, (char *)client_data->post_buf, client_data->post_buf_len, 5000);
             if (ret > 0) {
                 ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "Written %d bytes", ret);
             } else if (ret == 0) {
@@ -428,7 +424,7 @@ int httpclient_recv(httpclient_t *client, char *buf, int min_len, int max_len, i
 
     *p_read_len = 0;
 
-    ret = client->net.read(&client->net, buf, max_len, iotx_time_left(&timer));
+    ret = client->net.doRead(&client->net, buf, max_len, iotx_time_left(&timer));
     //log_debug("Recv: | %s", buf);
 
     if (ret > 0) {
@@ -897,11 +893,20 @@ iotx_err_t httpclient_recv_response(httpclient_t *client, uint32_t timeout_ms, h
 void httpclient_close(httpclient_t *client)
 {
     if (client->net.handle > 0) {
-        client->net.disconnect(&client->net);
+        client->net.doDisconnect(&client->net);
     }
     client->net.handle = 0;
 }
 
+void httpclient_freeMemory(httprequest_t *request)
+{
+	if(request->flags & HTTPREQUEST_FLAG_FREE_URLONDONE) {
+		free((void*)request->url);
+	}
+	if(request->flags & HTTPREQUEST_FLAG_FREE_SELFONDONE) {
+		free((void*)request);
+	}
+}
 int httpclient_common(httpclient_t *client, const char *url, int port, const char *ca_crt, int method,
                       uint32_t timeout_ms,
                       httpclient_data_t *client_data)
@@ -970,7 +975,10 @@ iotx_err_t iotx_post(
     return httpclient_common(client, url, port, ca_crt, HTTPCLIENT_POST, timeout_ms, client_data);
 }
 
-
+//void mylog12(const char *s) {
+//
+//    	ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, s);
+//}
 static void httprequest_thread( beken_thread_arg_t arg )
 {
     httprequest_t *request = (httprequest_t *)arg;
@@ -990,10 +998,10 @@ static void httprequest_thread( beken_thread_arg_t arg )
 
 
     if (header && header[0]){
-        httpclient_set_custom_header(client, header);  //Sets the custom header if needed.
+        HTTPClient_SetCustomHeader(client, header);  //Sets the custom header if needed.
     }
 
-    //addLog("after httpclient_set_custom_header\r\n");
+    //addLog("after HTTPClient_SetCustomHeader\r\n");
     //rtos_delay_milliseconds(500);
 
     iotx_time_t timer;
@@ -1090,7 +1098,17 @@ static void httprequest_thread( beken_thread_arg_t arg )
             }
         } while (client_data->is_more);
     } else {
-        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "httpclient - no response buff");
+		// must read out somewhere data, otherwise lwip will fail at lwip_close and it wont free socket
+		// and then it will soon run out of the sockets and break networking
+		int c_read;
+		int ret;
+		c_read = 0;
+		do {
+			ret = client->net.doRead(&client->net, host, sizeof(host), iotx_time_left(&timer));
+			if(ret>0)
+				c_read += ret;
+		} while(ret > 0);
+        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "httpclient - no response buff, skipped %i",c_read);
     }
 exit:
     //addLog("close http channel");
@@ -1100,6 +1118,8 @@ exit:
     if (request->data_callback){
         request->data_callback(request);
     }
+	// free if required
+	httpclient_freeMemory(request);
     // remove this thread
     rtos_delete_thread( NULL );
     return;
@@ -1108,7 +1128,7 @@ exit:
 
 //////////////////////////////////////
 // our async stuff
-int async_request(httprequest_t *request){
+int HTTPClient_Async_SendGeneric(httprequest_t *request){
     OSStatus err = kNoErr;
     err = rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY, 
 									"httprequest", 
@@ -1123,6 +1143,71 @@ int async_request(httprequest_t *request){
 
     return 0;
 }
+
+// The malloc below is not responsible for 88 bytes mem leak in HTTP client
+// It is elsewhere
+//#define DBG_HTTPCLIENT_MEMLEAK 1
+#if DBG_HTTPCLIENT_MEMLEAK
+char tmp[125];
+httprequest_t testreq;
+#else
+
+#endif
+int HTTPClient_Async_SendGet(const char *url_in){
+	httprequest_t *request;
+	httpclient_t *client;
+	httpclient_data_t *client_data;
+	char *url;
+
+	// it must be copied, but we can free it automatically later
+#if DBG_HTTPCLIENT_MEMLEAK
+	strcpy(tmp,url_in);
+	url = tmp;
+#else
+	url = test_strdup(url_in);
+#endif
+	if(url==0) {
+		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendGet for %s, failed to alloc URL memory\r\n");
+		return;
+	}
+
+#if DBG_HTTPCLIENT_MEMLEAK
+	request = &testreq;
+#else
+	request = (httprequest_t *) malloc(sizeof(httprequest_t));
+#endif
+	if(url==0) {
+		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendGet for %s, failed to alloc request memory\r\n");
+		return;
+	}
+
+    ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendGet for %s, sizeof(httprequest_t) == %i!\r\n",
+		url_in,sizeof(httprequest_t));
+
+	memset(request, 0, sizeof(*request));
+	request->flags |= HTTPREQUEST_FLAG_FREE_SELFONDONE;
+	request->flags |= HTTPREQUEST_FLAG_FREE_URLONDONE;
+	client = &request->client;
+	client_data = &request->client_data;
+
+	client_data->response_buf = 0;  //Sets a buffer to store the result.
+	client_data->response_buf_len = 0;  //Sets the buffer size.
+	HTTPClient_SetCustomHeader(client, "");  //Sets the custom header if needed.
+	client_data->post_buf = "";  //Sets the user data to be posted.
+	client_data->post_buf_len = 0;  //Sets the post data length.
+	client_data->post_content_type = "text/csv";  //Sets the content type.
+	request->data_callback = 0; 
+	request->port = 80;//HTTP_PORT;
+	request->url = url;
+	request->method = HTTPCLIENT_GET; 
+	request->timeout = 10000;
+	HTTPClient_Async_SendGeneric(request);
+
+
+    return 0;
+}
+
+
 
 
 

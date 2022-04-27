@@ -1078,8 +1078,8 @@ int http_fn_cm(http_request_t *request) {
 	char tmpA[128];
 	
     http_setup(request, httpMimeTypeJson);
-    if(	http_getArg(request->url,"cmd",tmpA,sizeof(tmpA))) {
-		//CMD_ExecuteCommand(
+    if(	http_getArg(request->url,"cmnd",tmpA,sizeof(tmpA))) {
+		CMD_ExecuteCommand(tmpA);
 
 
 
@@ -1289,6 +1289,7 @@ int http_fn_ota_exec(http_request_t *request) {
 int http_fn_ota(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
+    poststr(request,"<p>Simple OTA system (you should rather use the OTA from App panel where you can drag and drop file easily without setting up server). Use RBL file for OTA. In the OTA below, you should paste link to RBL file (you need HTTP server).</p>");
     poststr(request,"<form action=\"/ota_exec\">\
             <label for=\"host\">URL for new bin file:</label><br>\
             <input type=\"text\" id=\"host\" name=\"host\" value=\"");

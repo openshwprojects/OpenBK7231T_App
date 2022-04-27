@@ -2,18 +2,13 @@
  * Copyright (C) 2015-2017 Alibaba Group Holding Limited
  */
 
-#include <string.h>
-
-#include "include.h"
+#include "../new_common.h"
+#include "../logging/logging.h"
 #include "utils_net.h"
 #include "errno.h"
 #include "lwip/sockets.h"
 #include "lwip/netdb.h"
 #include "utils_timer.h"
-#include "str_pub.h"
-#include "mem_pub.h"
-
-#define log_err(x, ...)
 
 uintptr_t HAL_TCP_Establish(const char *host, uint16_t port)
 {
@@ -31,38 +26,39 @@ uintptr_t HAL_TCP_Establish(const char *host, uint16_t port)
     sprintf(service, "%u", port);
 
     if ((rc = getaddrinfo(host, service, &hints, &addrInfoList)) != 0) {
-        log_err("getaddrinfo error");
+        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"getaddrinfo error");
         return 0;
     }
 
     for (cur = addrInfoList; cur != NULL; cur = cur->ai_next) {
         if (cur->ai_family != AF_INET) {
-            log_err("socket type error");
+            ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"socket type error");
             rc = 0;
             continue;
         }
 
         fd = socket(cur->ai_family, cur->ai_socktype, cur->ai_protocol);
         if (fd < 0) {
-            log_err("create socket error");
+            ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"create socket error %i",fd);
             rc = 0;
             continue;
         }
+		ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "HAL_TCP_Establish: created socket %i\n\r",(int)fd);
 
         if (connect(fd, cur->ai_addr, cur->ai_addrlen) == 0) {
             rc = fd;
             break;
         }
 
-        close(fd);
-        log_err("connect error");
+        lwip_close(fd);
+        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"connect error");
         rc = 0;
     }
 
     if (0 == rc){
-        log_err("fail to establish tcp");
+        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"fail to establish tcp");
     } else {
-        log_err("success to establish tcp, fd=%d", rc);
+        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"success to establish tcp, fd=%d", rc);
     }
     freeaddrinfo(addrInfoList);
 
@@ -73,20 +69,41 @@ uintptr_t HAL_TCP_Establish(const char *host, uint16_t port)
 int32_t HAL_TCP_Destroy(uintptr_t fd)
 {
     int rc;
+	int att;
 
     //Shutdown both send and receive operations.
     rc = shutdown((int) fd, 2);
     if (0 != rc) {
-        log_err("shutdown error");
+        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"shutdown error %i",rc);
         return -1;
     }
-
-    rc = close((int) fd);
+#if 0
+	for(att = 0; att < 10; att++) {
+		rc = lwip_close((int) fd);
+		if (0 != rc) {
+			ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"closesocket(%i) error %i at attemtp %i",((int)fd),rc,att);
+			delay_ms(500);
+		} else {
+			break;
+		}
+	}
+#elif 1
+    rc = lwip_close((int) fd);
     if (0 != rc) {
-        log_err("closesocket error");
+        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"closesocket(%i) error %i",((int)fd),rc);
+		// same as above but without SOCK_DEINIT_SYNC check
+		// There is a bug in our htttp client and this is a temporary work around for that
+		// Otherwise, it leaves sockets unfried and they adds up to 38 and block all networking
+		lwip_close_force((int) fd);
         return -1;
     }
-
+#else
+    rc = lwip_close((int) fd);
+    if (0 != rc) {
+        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"closesocket(%i) error %i",((int)fd),rc);
+        return -1;
+    }
+#endif
     return 0;
 }
 
@@ -118,22 +135,22 @@ int32_t HAL_TCP_Write(uintptr_t fd, const char *buf, uint32_t len, uint32_t time
             ret = select(fd + 1, NULL, &sets, NULL, &timeout);
             if (ret > 0) {
                if (0 == FD_ISSET(fd, &sets)) {
-                    log_err("Should NOT arrive");
+                    ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"Should NOT arrive");
                     //If timeout in next loop, it will not sent any data
                     ret = 0;
                     continue;
                 }
             } else if (0 == ret) {
-                log_err("select-write timeout %lu", fd);
+                ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"select-write timeout %lu", fd);
                 break;
             } else {
                 if (EINTR == errno) {
-                    log_err("EINTR be caught");
+                    ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"EINTR be caught");
                     continue;
                 }
 
                 err_code = -1;
-                log_err("select-write fail");
+                ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"select-write fail");
                 break;
             }
         }
@@ -143,15 +160,15 @@ int32_t HAL_TCP_Write(uintptr_t fd, const char *buf, uint32_t len, uint32_t time
             if (ret > 0) {
                 len_sent += ret;
             } else if (0 == ret) {
-                log_err("No data be sent");
+                ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"No data be sent");
             } else {
                 if (EINTR == errno) {
-                    log_err("EINTR be caught");
+                    ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"EINTR be caught");
                     continue;
                 }
 
                 err_code = -1;
-                log_err("send fail");
+                ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"send fail");
                 break;
             }
         }
@@ -203,15 +220,15 @@ int32_t HAL_TCP_Read(uintptr_t fd, char *buf, uint32_t len, uint32_t timeout_ms)
                    
                     len_recv += ret;
                 } else if (0 == ret) {
-                    log_err("connection is closed");
+                    ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"connection is closed");
                     err_code = -1;
                     break;
                 } else {
                     if (EINTR == errno) {
-                        log_err("EINTR be caught");
+                        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"EINTR be caught");
                         continue;
                     }
-                    log_err("send fail");
+                    ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"send fail");
                     err_code = -2;
                     break;
                 }
@@ -219,10 +236,10 @@ int32_t HAL_TCP_Read(uintptr_t fd, char *buf, uint32_t len, uint32_t timeout_ms)
                 break;
             } else {
                 if (EINTR == errno) {
-                log_err("EINTR be caught-------\r\n");
+                ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"EINTR be caught-------\r\n");
                 //continue;
                 }
-                log_err("select-recv fail");
+                ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"select-recv fail");
                 err_code = -2;
                 break;
             }
@@ -264,7 +281,7 @@ static int disconnect_tcp(utils_network_pt pNetwork)
 static int connect_tcp(utils_network_pt pNetwork)
 {
     if (NULL == pNetwork) {
-        log_err("network is null");
+        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"network is null");
         return 1;
     }
 
@@ -318,7 +335,7 @@ int iotx_net_connect(utils_network_pt pNetwork)
 int iotx_net_init(utils_network_pt pNetwork, const char *host, uint16_t port, const char *ca_crt)
 {
     if (!pNetwork || !host) {
-        log_err("parameter error! pNetwork=%p, host = %p", pNetwork, host);
+        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"parameter error! pNetwork=%p, host = %p", pNetwork, host);
         return -1;
     }
     pNetwork->pHostAddress = host;
@@ -332,10 +349,10 @@ int iotx_net_init(utils_network_pt pNetwork, const char *host, uint16_t port, co
     }
 
     pNetwork->handle = 0;
-    pNetwork->read = utils_net_read;
-    pNetwork->write = utils_net_write;
-    pNetwork->disconnect = iotx_net_disconnect;
-    pNetwork->connect = iotx_net_connect;
+    pNetwork->doRead = utils_net_read;
+    pNetwork->doWrite = utils_net_write;
+    pNetwork->doDisconnect = iotx_net_disconnect;
+    pNetwork->doConnect = iotx_net_connect;
 
     return 0;
 }

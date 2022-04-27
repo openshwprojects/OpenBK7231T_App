@@ -182,7 +182,7 @@ void otarequest(const char *urlin){
   }
   client_data->response_buf = http_buf;  //Sets a buffer to store the result.
   client_data->response_buf_len = BUF_SIZE;  //Sets the buffer size.
-  httpclient_set_custom_header(client, header);  //Sets the custom header if needed.
+  HTTPClient_SetCustomHeader(client, header);  //Sets the custom header if needed.
   client_data->post_buf = post_data;  //Sets the user data to be posted.
   client_data->post_buf_len = strlen(post_data);  //Sets the post data length.
   client_data->post_content_type = content_type;  //Sets the content type.
@@ -191,6 +191,6 @@ void otarequest(const char *urlin){
   request->url = url;
   request->method = HTTPCLIENT_GET; 
   request->timeout = 10000;
-  async_request(request);
+  HTTPClient_Async_SendGeneric(request);
  }
 
