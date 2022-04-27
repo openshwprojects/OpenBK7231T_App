@@ -38,8 +38,12 @@ static int power(const void *context, const char *cmd, const char *args){
 			return 1;
 		}
 #endif
-		iVal = parsePowerArgument(args);
-		CHANNEL_Set(channel, iVal, false);
+		if(!stricmp(args,"TOGGLE")) {
+			CHANNEL_Toggle(channel);
+		} else {
+			iVal = parsePowerArgument(args);
+			CHANNEL_Set(channel, iVal, false);
+		}
 		return 1;
 	//}
 	//return 0;

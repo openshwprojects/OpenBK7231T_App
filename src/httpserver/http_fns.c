@@ -1077,8 +1077,8 @@ int http_fn_cm(http_request_t *request) {
 	char tmpA[128];
 	
     http_setup(request, httpMimeTypeJson);
-    if(	http_getArg(request->url,"cmd",tmpA,sizeof(tmpA))) {
-		//CMD_ExecuteCommand(
+    if(	http_getArg(request->url,"cmnd",tmpA,sizeof(tmpA))) {
+		CMD_ExecuteCommand(tmpA);
 
 
 
