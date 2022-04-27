@@ -1001,6 +1001,7 @@ int http_fn_cfg_ha(http_request_t *request) {
     poststr(request,htmlHeader);
     poststr(request,g_header);
     poststr(request,"<h4>Home Assistant Cfg</h4>");
+	hprintf128(request,"<h4>Note that your short device name is: %s</h4>",baseName);
     poststr(request,"<h4>Paste this to configuration yaml</h4>");
     poststr(request,"<h5>Make sure that you have \"switch:\" keyword only once! Home Assistant doesn't like dup keywords.</h5>");
     poststr(request,"<h5>You can also use \"switch MyDeviceName:\" to avoid keyword duplication!</h5>");
