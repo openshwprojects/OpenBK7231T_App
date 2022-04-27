@@ -189,8 +189,9 @@ void Main_OnEverySecond()
 	} else {
 		safe = "";
 	}
-	ADDLOGF_INFO("%sTime %i, free %d, MQTT %i, bWifi %i, secondsWithNoPing %i\n", 
-			safe, g_secondsElapsed, xPortGetFreeHeapSize(),bMQTTconnected, g_bHasWiFiConnected,g_timeSinceLastPingReply);
+	ADDLOGF_INFO("%sTime %i, free %d, MQTT %i, bWifi %i, secondsWithNoPing %i, socks %i/%i\n", 
+			safe, g_secondsElapsed, xPortGetFreeHeapSize(),bMQTTconnected, g_bHasWiFiConnected,g_timeSinceLastPingReply,
+			LWIP_GetActiveSockets(),LWIP_GetMaxSockets());
 
 	// print network info
 	if (!(g_secondsElapsed % 10)){

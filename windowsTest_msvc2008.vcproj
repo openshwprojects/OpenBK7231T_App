@@ -601,6 +601,10 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath="..\..\platforms\bk7231t\bk7231t_os\beken378\func\lwip_intf\lwip-2.0.2\src\core\tcp.c"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"

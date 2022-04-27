@@ -72,8 +72,10 @@ static void httpclient_base64enc(char *out, const char *in)
 
 int httpclient_conn(httpclient_t *client)
 {
-    if (0 != client->net.doConnect(&client->net)) {
-        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "establish connection failed");
+	int ret;
+	ret = client->net.doConnect(&client->net);
+    if (0 != ret) {
+        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "establish connection failed, error %i ",ret);
         return ERROR_HTTP_CONN;
     }
 
@@ -973,7 +975,10 @@ iotx_err_t iotx_post(
     return httpclient_common(client, url, port, ca_crt, HTTPCLIENT_POST, timeout_ms, client_data);
 }
 
-
+//void mylog12(const char *s) {
+//
+//    	ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, s);
+//}
 static void httprequest_thread( beken_thread_arg_t arg )
 {
     httprequest_t *request = (httprequest_t *)arg;
@@ -1093,7 +1098,17 @@ static void httprequest_thread( beken_thread_arg_t arg )
             }
         } while (client_data->is_more);
     } else {
-        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "httpclient - no response buff");
+		// must read out somewhere data, otherwise lwip will fail at lwip_close and it wont free socket
+		// and then it will soon run out of the sockets and break networking
+		int c_read;
+		int ret;
+		c_read = 0;
+		do {
+			ret = client->net.doRead(&client->net, host, sizeof(host), iotx_time_left(&timer));
+			if(ret>0)
+				c_read += ret;
+		} while(ret > 0);
+        ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "httpclient - no response buff, skipped %i",c_read);
     }
 exit:
     //addLog("close http channel");

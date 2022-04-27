@@ -215,6 +215,11 @@ void Main_SetupPingWatchDog(const char *target/*, int delayBetweenPings_Seconds*
 int PingWatchDog_GetTotalLost();
 int PingWatchDog_GetTotalReceived();
 
+// my addon to LWIP library
+
+int LWIP_GetMaxSockets();
+int LWIP_GetActiveSockets();
+
 
 
 
