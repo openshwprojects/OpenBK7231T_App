@@ -19,7 +19,6 @@
 #include "rtos_pub.h"
 #include "../logging/logging.h"
 
-//#include "new_common.h"
 #include "iot_export_errno.h"
 
 #define log_err(a, ...)
@@ -78,7 +77,7 @@ static void httpclient_base64enc(char *out, const char *in)
 
 int httpclient_conn(httpclient_t *client)
 {
-    if (0 != client->net.connect(&client->net)) {
+    if (0 != client->net.doConnect(&client->net)) {
         ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "establish connection failed");
         return ERROR_HTTP_CONN;
     }
@@ -230,7 +229,7 @@ int httpclient_get_info(httpclient_t *client, char *send_buf, int *send_idx, cha
             //                return ERROR_HTTP;
             //            }
             //ret = httpclient_tcp_send_all(client->handle, send_buf, HTTPCLIENT_SEND_BUF_SIZE);
-            ret = client->net.write(&client->net, send_buf, HTTPCLIENT_SEND_BUF_SIZE, 5000);
+            ret = client->net.doWrite(&client->net, send_buf, HTTPCLIENT_SEND_BUF_SIZE, 5000);
             if (ret) {
                 return (ret);
             }
@@ -368,7 +367,7 @@ int httpclient_send_header(httpclient_t *client, const char *url, int method, ht
     //log_multi_line(LOG_DEBUG_LEVEL, "REQUEST", "%s", send_buf, ">");
 
     //ret = httpclient_tcp_send_all(client->net.handle, send_buf, len);
-    ret = client->net.write(&client->net, send_buf, len, 5000);
+    ret = client->net.doWrite(&client->net, send_buf, len, 5000);
     if (ret > 0) {
         ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "Written %d bytes\r\n", ret);
     } else if (ret == 0) {
@@ -399,7 +398,7 @@ int httpclient_send_userdata(httpclient_t *client, httpclient_data_t *client_dat
         ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "client_data->post_buf: %s", client_data->post_buf);
         {
             //ret = httpclient_tcp_send_all(client->handle, (char *)client_data->post_buf, client_data->post_buf_len);
-            ret = client->net.write(&client->net, (char *)client_data->post_buf, client_data->post_buf_len, 5000);
+            ret = client->net.doWrite(&client->net, (char *)client_data->post_buf, client_data->post_buf_len, 5000);
             if (ret > 0) {
                 ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "Written %d bytes", ret);
             } else if (ret == 0) {
@@ -428,7 +427,7 @@ int httpclient_recv(httpclient_t *client, char *buf, int min_len, int max_len, i
 
     *p_read_len = 0;
 
-    ret = client->net.read(&client->net, buf, max_len, iotx_time_left(&timer));
+    ret = client->net.doRead(&client->net, buf, max_len, iotx_time_left(&timer));
     //log_debug("Recv: | %s", buf);
 
     if (ret > 0) {
@@ -897,7 +896,7 @@ iotx_err_t httpclient_recv_response(httpclient_t *client, uint32_t timeout_ms, h
 void httpclient_close(httpclient_t *client)
 {
     if (client->net.handle > 0) {
-        client->net.disconnect(&client->net);
+        client->net.doDisconnect(&client->net);
     }
     client->net.handle = 0;
 }

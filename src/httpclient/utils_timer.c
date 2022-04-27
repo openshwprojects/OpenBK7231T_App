@@ -5,7 +5,6 @@
 //#include "lite-log.h"
 #include "utils_timer.h"
 #include "hal_machw.h"
-#include "uart_pub.h"
 
 
 void iotx_time_start(iotx_time_t *timer)
