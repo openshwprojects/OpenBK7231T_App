@@ -383,6 +383,7 @@ void Main_Init()
 		taslike_commands_init();
 		fortest_commands_init();
 		NewLED_InitCommands();
+		CMD_InitSendCommands();
 		CMD_InitChannelCommands();
 		EventHandlers_Init();
 

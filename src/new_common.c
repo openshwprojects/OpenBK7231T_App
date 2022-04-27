@@ -1,5 +1,25 @@
 #include "new_common.h"
 
+// Why strdup breaks strings?
+// backlog lcd_clearAndGoto I2C1 0x23 1 1; lcd_print I2C1 0x23 Enabled
+// it got broken around 64 char
+// where is buffer with [64] bytes?
+char *test_strdup(const char *s)
+{
+    char *res;
+    size_t len;
+
+    if (s == NULL)
+        return NULL;
+
+    len = strlen(s);
+    res = malloc(len + 1);
+    if (res)
+        memcpy(res, s, len + 1);
+
+    return res;
+}
+
 // returns amount of space left in buffer (0=overflow happened)
 int strcat_safe(char *tg, const char *src, int tgMaxLen) {
 	// keep space for 1 more char

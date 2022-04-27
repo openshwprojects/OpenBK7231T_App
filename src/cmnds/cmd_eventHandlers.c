@@ -173,25 +173,6 @@ typedef struct eventHandler_s {
 
 static eventHandler_t *g_eventHandlers = 0;
 
-// Why strdup breaks strings?
-// backlog lcd_clearAndGoto I2C1 0x23 1 1; lcd_print I2C1 0x23 Enabled
-// it got broken around 64 char
-// where is buffer with [64] bytes?
-static char *test_strdup(const char *s)
-{
-    char *res;
-    size_t len;
-
-    if (s == NULL)
-        return NULL;
-
-    len = strlen(s);
-    res = malloc(len + 1);
-    if (res)
-        memcpy(res, s, len + 1);
-
-    return res;
-}
 
 void EventHandlers_ProcessVariableChange_Integer(byte eventCode, int oldValue, int newValue) {
 	struct eventHandler_s *ev;

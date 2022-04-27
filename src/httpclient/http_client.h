@@ -83,6 +83,10 @@ typedef struct {
     uint32_t response_buf_filled; /** how much real data in response_buff */
 } httpclient_data_t;
 
+// should the library call free( ) on request struct when done?
+#define HTTPREQUEST_FLAG_FREE_SELFONDONE 1
+// should the library call free( ) on url when done?
+#define HTTPREQUEST_FLAG_FREE_URLONDONE 2
 
 typedef struct httprequest_t_tag{
     int state;
@@ -91,7 +95,9 @@ typedef struct httprequest_t_tag{
     const char *url;
     const char *header;
     int port;
-    int method;
+    short method;
+	// eg. HTTPREQUEST_FLAG_FREE_SELFONDONE
+    short flags;
     const char *ca_crt;
     uint32_t timeout;
     httpclient_data_t client_data;
@@ -103,7 +109,7 @@ typedef struct httprequest_t_tag{
  * @brief            This function executes a request on a given URL. It returns immediately and calls back with state and data.
  * @param[in]        request is a pointer to the #httprequest_t.
  * @return           .
- * @par              async_request Post Example
+ * @par              HTTPClient_Async_SendGeneric Post Example
  * @code
  *                   httprequest_t *request = os_malloc(sizeof(httprequest_t));
  *                   // NOTE: these MUST persist
@@ -122,7 +128,7 @@ typedef struct httprequest_t_tag{
  *                   memset(buf, 0, sizeof(buf));
  *                   client_data->.response_buf = buf;  //Sets a buffer to store the result.
  *                   client_data->response_buf_len = BUF_SIZE;  //Sets the buffer size.
- *                   httpclient_set_custom_header(&client, header);  //Sets the custom header if needed.
+ *                   HTTPClient_SetCustomHeader(&client, header);  //Sets the custom header if needed.
  *                   client_data->post_buf = post_data;  //Sets the user data to be posted.
  *                   client_data->post_buf_len = strlen(post_data);  //Sets the post data length.
  *                   client_data->post_content_type = content_type;  //Sets the content type.
@@ -131,7 +137,7 @@ typedef struct httprequest_t_tag{
  *                   request->method = HTTPCLIENT_POST; 
  *                   request->timeout = 10000;
  *                   request->data_callback = mydatacallback; 
- *                   async_request(request);
+ *                   HTTPClient_Async_SendGeneric(request);
  * 
  * 
  * int mydatacallback(httprequest_t *request){
@@ -142,8 +148,9 @@ typedef struct httprequest_t_tag{
  * }
  * @endcode
  */
-int async_request(httprequest_t *request);
-void httpclient_set_custom_header(httpclient_t *client, const char *header);
+int HTTPClient_Async_SendGeneric(httprequest_t *request);
+int HTTPClient_Async_SendGet(const char *url_in);
+void HTTPClient_SetCustomHeader(httpclient_t *client, const char *header);
 
 #ifdef __cplusplus
 }

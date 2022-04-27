@@ -191,6 +191,7 @@ int wal_stricmp(const char *a, const char *b) ;
 
 #endif
 
+char *test_strdup(const char *s);
 int wal_stricmp(const char *a, const char *b);
 int wal_strnicmp(const char *a, const char *b, int count);
 int strcat_safe(char *tg, const char *src, int tgMaxLen);

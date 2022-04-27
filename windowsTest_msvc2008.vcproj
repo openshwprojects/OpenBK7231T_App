@@ -720,7 +720,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\new_http.h"
+				RelativePath=".\src\httpserver\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -732,7 +732,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\httpserver\new_http.h"
+				RelativePath=".\src\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1000,6 +1000,14 @@
 			Name="HTTP"
 			>
 			<File
+				RelativePath=".\src\httpclient\http_client.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\httpclient\http_client.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\httpserver\http_fns.c"
 				>
 				<FileConfiguration
@@ -1030,6 +1038,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\httpclient\iot_export_errno.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\jsmn\jsmn.c"
@@ -1074,6 +1086,22 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\httpclient\utils_net.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\httpclient\utils_net.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\httpclient\utils_timer.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\httpclient\utils_timer.h"
+				>
 			</File>
 		</Filter>
 	</Files>

@@ -2,16 +2,12 @@
  * Copyright (C) 2015-2017 Alibaba Group Holding Limited
  */
 
-#include <string.h>
-
-#include "include.h"
+#include "../new_common.h"
 #include "utils_net.h"
 #include "errno.h"
 #include "lwip/sockets.h"
 #include "lwip/netdb.h"
 #include "utils_timer.h"
-#include "str_pub.h"
-#include "mem_pub.h"
 
 #define log_err(x, ...)
 
