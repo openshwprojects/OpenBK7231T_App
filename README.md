@@ -13,7 +13,7 @@ Please use automatically compiled binaries from the Releases tab. To build yours
 
 OpenBeken features:
 - Tasmota-like setup, configuration and experience on all supported platforms
-- OTA firwmare upgrade system (for Beken chips)
+- OTA firwmare upgrade system (for Beken chips); to use OTA, drag and drop RBL file (always RBL file) on OTA field on new Web App Javascript Console
 - MQTT compatibility with Home Assistant
 - Support for multiple relays, buttons, leds, inputs and PWMs
 - Driver system for custom peripherals, including TuyaMCU, I2C bus and Bl0942 power metering chip
