@@ -78,7 +78,8 @@ void test_ty_read_uart_data_to_buffer(int port, void* param)
 #endif
 void UART_SendByte(byte b) {
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
-	bk_send_byte(0, b);
+	// BK_UART_1 is defined to 0
+	bk_send_byte(BK_UART_1, b);
 #elif WINDOWS
 	// STUB - for testing
     addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"%02X", b);
@@ -98,8 +99,10 @@ void UART_InitUART(int baud) {
     config.flow_control = 0;   //FLOW_CTRL_DISABLED
     config.flags = 0;
 
-    bk_uart_initialize(0, &config, NULL);
-    bk_uart_set_rx_callback(0, test_ty_read_uart_data_to_buffer, NULL);
+	// BK_UART_1 is defined to 0
+    bk_uart_initialize(BK_UART_1, &config, NULL);
+	// BK_UART_1 is defined to 0
+    bk_uart_set_rx_callback(BK_UART_1, test_ty_read_uart_data_to_buffer, NULL);
 #else
 
 

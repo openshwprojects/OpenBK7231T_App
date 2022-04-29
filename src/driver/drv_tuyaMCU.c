@@ -498,6 +498,11 @@ int TuyaMCU_SendHeartbeat(const void *context, const char *cmd, const char *args
 	return 1;
 }
 
+int TuyaMCU_SendQueryProductInformation(const void *context, const char *cmd, const char *args) {
+	TuyaMCU_SendCommandWithData(TUYA_CMD_QUERY_PRODUCT, NULL, 0);
+
+	return 1;
+}
 int TuyaMCU_SendQueryState(const void *context, const char *cmd, const char *args) {
 	TuyaMCU_SendCommandWithData(TUYA_CMD_QUERY_STATE, NULL, 0);
 
@@ -544,6 +549,7 @@ void TuyaMCU_Init()
 	CMD_RegisterCommand("tuyaMcu_setDimmerRange","",TuyaMCU_SetDimmerRange, "Set dimmer range used by TuyaMCU", NULL);
 	CMD_RegisterCommand("tuyaMcu_sendHeartbeat","",TuyaMCU_SendHeartbeat, "Send heartbeat to TuyaMCU", NULL);
 	CMD_RegisterCommand("tuyaMcu_sendQueryState","",TuyaMCU_SendQueryState, "Send query state command", NULL);
+	CMD_RegisterCommand("tuyaMcu_sendProductInformation","",TuyaMCU_SendQueryProductInformation, "Send qqq", NULL);
 	CMD_RegisterCommand("tuyaMcu_sendState","",TuyaMCU_SendStateCmd, "Send set state command", NULL);
 	CMD_RegisterCommand("tuyaMcu_sendMCUConf","",TuyaMCU_SendMCUConf, "Send MCU conf command", NULL);
 }
@@ -642,6 +648,18 @@ void TuyaMCU_OnChannelChanged(int channel, int iVal) {
 	}
 }
 
+void TuyaMCU_ParseQueryProductInformation(const byte *data, int len) {
+	char name[256];
+	int useLen;
+
+	useLen = len-1;
+	if(useLen > sizeof(name)-1)
+		useLen = sizeof(name)-1;
+	memcpy(name,data,useLen);
+	name[useLen] = 0;
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ParseQueryProductInformation: received %s\n", name);
+}
 void TuyaMCU_ParseStateMessage(const byte *data, int len) {
 	int ofs;
 	int sectorLen;
@@ -711,6 +729,9 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: received TUYA_CMD_SET_TIME, so sending back time");
 		TuyaMCU_Send_SetTime(TuyaMCU_Get_NTP_Time());
 		break;
+	case TUYA_CMD_QUERY_PRODUCT:
+		TuyaMCU_ParseQueryProductInformation(data+6,len-6);
+		break;
 	}
 }
 void TuyaMCU_RunFrame() {
@@ -723,15 +744,11 @@ void TuyaMCU_RunFrame() {
 
 	len = UART_TryToGetNextTuyaPacket(data,sizeof(data));
 	if(len > 0) {
-		//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TUYAMCU received: ");
 		buffer_for_log[0] = 0;
 		for(i = 0; i < len; i++) {
-			//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"%02X ",data[i]);
 			sprintf(buffer2,"%02X ",data[i]);
 			strcat_safe(buffer_for_log,buffer2,sizeof(buffer_for_log));
 		}
-		//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,buffer_for_log);
-		//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"\n");
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TUYAMCU received: %s\n", buffer_for_log);
 		TuyaMCU_ProcessIncoming(data,len);
 	}
