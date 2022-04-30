@@ -30,7 +30,24 @@ static int generateHashValue(const char *fname) {
 
 command_t *g_commands[HASH_SIZE] = { NULL };
 
+static int CMD_Restart(const void *context, const char *cmd, const char *args){
+	int delaySeconds;
+
+	if(args==0||*args==0) {
+		delaySeconds = 3;
+	} else {
+		delaySeconds = atoi(args);
+	}
+	
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Restart: will reboot in %i",delaySeconds);
+
+	RESET_ScheduleModuleReset(delaySeconds);
+
+	return 1;
+}
+
 void CMD_Init() {
+    CMD_RegisterCommand("restart", "", CMD_Restart, "Reboots the module", NULL);
 }
 
 
