@@ -203,6 +203,10 @@ Please refer to this step by step guide:
   https://www.elektroda.com/rtvforum/topic3887748.html
   https://www.elektroda.pl/rtvforum/viewtopic.php?t=3887748&highlight=
   
+# Troubles programming by UART?
+  
+I had some reports from users saying that they are unable to flash BK7231T with CP2102 but CH340 works. So, maybe try different USB to UART dongle. Some of them might not be reliable enough for flashing.
+  
 # Futher reading
   
 For technical insights and generic SDK information related to Bekken and XRadio modules, please refer:
