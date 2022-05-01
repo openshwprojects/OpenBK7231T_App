@@ -540,6 +540,21 @@ void Setup_Device_TuyaSmartWIFISwith_4Gang_CB3S(){
 }
 
 
+void Setup_Device_LSC_Smart_Connect_Plug_CB2S(){
+	CFG_ClearPins();
+
+	PIN_SetPinRoleForPinIndex(6, IOR_LED);
+	PIN_SetPinChannelForPinIndex(6, 1);
+
+	PIN_SetPinRoleForPinIndex(7, IOR_Button);
+	PIN_SetPinChannelForPinIndex(7, 1);
+
+	PIN_SetPinRoleForPinIndex(26, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(26, 1);
+
+	CFG_Save_SetupTimer();
+}
+
 
 
 
