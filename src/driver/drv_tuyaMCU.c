@@ -1,3 +1,16 @@
+
+//
+// Generic TuyaMCU information
+//
+/*
+There are two versions of TuyaMCU that I am aware of.
+TuyaMCU version 3, the one that is supported by Tasmota and documented here:
+
+TuyaMCU version 0, aka low power protocol, documented here:
+(Tuya IoT Development PlatformProduct DevelopmentLow-Code Development (MCU)Wi-Fi for Low-PowerSerial Port Protocol)
+https://developer.tuya.com/en/docs/iot/tuyacloudlowpoweruniversalserialaccessprotocol?id=K95afs9h4tjjh
+*/
+
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
@@ -175,7 +188,11 @@ int UART_TryToGetNextTuyaPacket(byte *out, int maxSize) {
 	int len, i;
 	int c_garbage_consumed = 0;
 	byte a, b, version, command, lena, lenb;
+	char printfSkipDebug[256];
+	char buffer2[8];
 	
+	printfSkipDebug[0] = 0;
+
 	cs = UART_GetDataSize();
 
 	if(cs < MIN_TUYAMCU_PACKET_SIZE) {
@@ -187,6 +204,10 @@ int UART_TryToGetNextTuyaPacket(byte *out, int maxSize) {
 		b = UART_GetNextByte(1);
 		if(a != 0x55 || b != 0xAA) {
 			UART_ConsumeBytes(1);
+			if(c_garbage_consumed + 1 < printfSkipDebug) {
+				sprintf(buffer2,"%02X ",a);
+				strcat_safe(printfSkipDebug,buffer2,sizeof(printfSkipDebug));
+			}
 			c_garbage_consumed++;
 			cs--;
 		} else {
@@ -195,6 +216,7 @@ int UART_TryToGetNextTuyaPacket(byte *out, int maxSize) {
 	}
 	if(c_garbage_consumed > 0){
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"Consumed %i unwanted non-header byte in Tuya MCU buffer\n", c_garbage_consumed);
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"Skipped data (part) %s\n", printfSkipDebug);
 	}
 	if(cs < MIN_TUYAMCU_PACKET_SIZE) {
 		return 0;
@@ -536,23 +558,6 @@ int TuyaMCU_SendMCUConf(const void *context, const char *cmd, const char *args) 
 	return 1;
 }
 
-void TuyaMCU_Init()
-{
-	UART_InitUART(9600);
-	UART_InitReceiveRingBuffer(256);
-	// uartSendHex 55AA0008000007
-	CMD_RegisterCommand("tuyaMcu_testSendTime","",TuyaMCU_Send_SetTime_Example, "Sends a example date by TuyaMCU to clock/callendar MCU", NULL);
-	CMD_RegisterCommand("tuyaMcu_sendCurTime","",TuyaMCU_Send_SetTime_Current, "Sends a current date by TuyaMCU to clock/callendar MCU", NULL);
-	CMD_RegisterCommand("uartSendHex","",TuyaMCU_Send_Hex, "Sends raw data by TuyaMCU UART, you must write whole packet with checksum yourself", NULL);
-	///CMD_RegisterCommand("tuyaMcu_sendSimple","",TuyaMCU_Send_Simple, "Appends a 0x55 0xAA header to a data, append a checksum at end and send");
-	CMD_RegisterCommand("linkTuyaMCUOutputToChannel","",TuyaMCU_LinkTuyaMCUOutputToChannel, "Map value send from TuyaMCU (eg. humidity or temperature) to channel", NULL);
-	CMD_RegisterCommand("tuyaMcu_setDimmerRange","",TuyaMCU_SetDimmerRange, "Set dimmer range used by TuyaMCU", NULL);
-	CMD_RegisterCommand("tuyaMcu_sendHeartbeat","",TuyaMCU_SendHeartbeat, "Send heartbeat to TuyaMCU", NULL);
-	CMD_RegisterCommand("tuyaMcu_sendQueryState","",TuyaMCU_SendQueryState, "Send query state command", NULL);
-	CMD_RegisterCommand("tuyaMcu_sendProductInformation","",TuyaMCU_SendQueryProductInformation, "Send qqq", NULL);
-	CMD_RegisterCommand("tuyaMcu_sendState","",TuyaMCU_SendStateCmd, "Send set state command", NULL);
-	CMD_RegisterCommand("tuyaMcu_sendMCUConf","",TuyaMCU_SendMCUConf, "Send MCU conf command", NULL);
-}
 // ntp_timeZoneOfs 2
 // addRepeatingEvent 10 uartSendHex 55AA0008000007
 // setChannelType 1 temperature_div10
@@ -660,6 +665,13 @@ void TuyaMCU_ParseQueryProductInformation(const byte *data, int len) {
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ParseQueryProductInformation: received %s\n", name);
 }
+// Protocol version - 0x00 (not 0x03)
+// Used for battery powered devices, eg. door sensor.
+// Packet ID: 0x08
+void TuyaMCU_V0_ParseRealTimeWithRecordStorage(const byte *data, int len) {
+
+
+}
 void TuyaMCU_ParseStateMessage(const byte *data, int len) {
 	int ofs;
 	int sectorLen;
@@ -700,10 +712,13 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
 	int i;
 	byte checkCheckSum;
 	byte cmd;
+	byte version;
+
 	if(data[0] != 0x55 || data[1] != 0xAA) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: discarding packet with bad ident and len %i\n",len);
 		return;
 	}
+	version = data[2];
 	checkLen = data[5] | data[4] >> 8;
 	checkLen = checkLen + 2 + 1 + 1 + 2 + 1;
 	if(checkLen != len) {
@@ -732,7 +747,39 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
 	case TUYA_CMD_QUERY_PRODUCT:
 		TuyaMCU_ParseQueryProductInformation(data+6,len-6);
 		break;
+		// this name seems invalid for Version 0 of TuyaMCU
+	case TUYA_CMD_QUERY_STATE:
+		if(version == 0) {
+			// 0x08 packet for version 0 (not 0x03) of TuyaMCU
+			TuyaMCU_V0_ParseRealTimeWithRecordStorage(data+6,len-6);
+		} else {
+
+		}
+		break;
+	default:
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: unhandled type %i",cmd);
+		break;
 	}
+}
+int TuyaMCU_FakePacket(const void *context, const char *cmd, const char *args) {
+	byte packet[256];
+	int c = 0;
+	if(!(*args)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_FakePacket: requires 1 argument (hex string, like FFAABB00CCDD\n");
+		return -1;
+	}
+	while(*args) {
+		byte b;
+		b = hexbyte(args);
+
+		if(sizeof(packet)>c+1) {
+			packet[c] = b;
+			c++;
+		}
+		args += 2;
+	}
+	TuyaMCU_ProcessIncoming(packet,c);
+	return 1;
 }
 void TuyaMCU_RunFrame() {
 	byte data[128];
@@ -753,4 +800,37 @@ void TuyaMCU_RunFrame() {
 		TuyaMCU_ProcessIncoming(data,len);
 	}
 }
+
+
+void TuyaMCU_Init()
+{
+	UART_InitUART(9600);
+	UART_InitReceiveRingBuffer(256);
+	// uartSendHex 55AA0008000007
+	CMD_RegisterCommand("tuyaMcu_testSendTime","",TuyaMCU_Send_SetTime_Example, "Sends a example date by TuyaMCU to clock/callendar MCU", NULL);
+	CMD_RegisterCommand("tuyaMcu_sendCurTime","",TuyaMCU_Send_SetTime_Current, "Sends a current date by TuyaMCU to clock/callendar MCU", NULL);
+	CMD_RegisterCommand("uartSendHex","",TuyaMCU_Send_Hex, "Sends raw data by TuyaMCU UART, you must write whole packet with checksum yourself", NULL);
+	///CMD_RegisterCommand("tuyaMcu_sendSimple","",TuyaMCU_Send_Simple, "Appends a 0x55 0xAA header to a data, append a checksum at end and send");
+	CMD_RegisterCommand("linkTuyaMCUOutputToChannel","",TuyaMCU_LinkTuyaMCUOutputToChannel, "Map value send from TuyaMCU (eg. humidity or temperature) to channel", NULL);
+	CMD_RegisterCommand("tuyaMcu_setDimmerRange","",TuyaMCU_SetDimmerRange, "Set dimmer range used by TuyaMCU", NULL);
+	CMD_RegisterCommand("tuyaMcu_sendHeartbeat","",TuyaMCU_SendHeartbeat, "Send heartbeat to TuyaMCU", NULL);
+	CMD_RegisterCommand("tuyaMcu_sendQueryState","",TuyaMCU_SendQueryState, "Send query state command", NULL);
+	CMD_RegisterCommand("tuyaMcu_sendProductInformation","",TuyaMCU_SendQueryProductInformation, "Send qqq", NULL);
+	CMD_RegisterCommand("tuyaMcu_sendState","",TuyaMCU_SendStateCmd, "Send set state command", NULL);
+	CMD_RegisterCommand("tuyaMcu_sendMCUConf","",TuyaMCU_SendMCUConf, "Send MCU conf command", NULL);
+	CMD_RegisterCommand("fakeTuyaPacket","",TuyaMCU_FakePacket, "qq", NULL);
+}
+// Door sensor with TuyaMCU version 0 (not 3), so all replies have x00 and not 0x03 byte
+// fakeTuyaPacket 55AA0008000C00010101010101030400010223
+// fakeTuyaPacket 55AA0008000C00020202020202010100010123
+// https://developer.tuya.com/en/docs/iot/tuyacloudlowpoweruniversalserialaccessprotocol?id=K95afs9h4tjjh
+/// 55AA 00 08 000C 00 02 0202 020202010100010123
+/// head vr id size dp dt dtln ????
+// https://github.com/esphome/feature-requests/issues/497
+/// 55AA 00 08 000C 00 02 02 02 02 02 02 01 01 0001 01 23
+/// head vr id size FL YY MM DD HH MM SS ID TP SIZE VL CK
+/// 55AA 00 08 000C 00 01 01 01 01 01 01 03 04 0001 02 23 
+// TP = 0x01	bool	1	Value range: 0x00/0x01.
+// TP = 0x04	enum	1	Enumeration type, ranging from 0 to 255.
+
 
