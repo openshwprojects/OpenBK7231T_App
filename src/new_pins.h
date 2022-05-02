@@ -177,6 +177,7 @@ void Setup_Device_TuyaSmartWIFISwith_4Gang_CB3S();
 void Setup_Device_BL602_MagicHome_IR_RGB_LedStrip();
 void Setup_Device_WiFi_DIY_Switch_WB2S_ZN268131();
 void Setup_Device_BK7231N_CB2S_LSPA9_BL0942();
+void Setup_Device_LSC_Smart_Connect_Plug_CB2S();
 
 #endif
 
