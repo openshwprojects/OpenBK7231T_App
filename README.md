@@ -185,7 +185,7 @@ Please refer to this step by step guide:
   
 # Detailed flashing guides along with device teardowns
   
- I have prepared several detailed teardowns and flashing guides for multiple supported devices.
+ I have prepared several detailed teardowns and flashing guides for multiple supported devices. Each comes in two languages - English and Polish.
   
   Outdoor two relays smart switch CCWFIO232PK (BK7231T): 
   https://www.elektroda.com/rtvforum/topic3875654.html
@@ -202,6 +202,10 @@ Please refer to this step by step guide:
   LSPA9 CB2S + BL0942 power metering plug:
   https://www.elektroda.com/rtvforum/topic3887748.html
   https://www.elektroda.pl/rtvforum/viewtopic.php?t=3887748&highlight=
+  
+  XR3/XR809 water sensor guide:
+  https://www.elektroda.com/rtvforum/topic3890640.html
+  https://www.elektroda.pl/rtvforum/viewtopic.php?t=3890640&highlight=
   
 # Troubles programming by UART?
   
