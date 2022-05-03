@@ -556,5 +556,73 @@ void Setup_Device_LSC_Smart_Connect_Plug_CB2S(){
 }
 
 
+void Setup_Device_DS_102_1Gang_WB3S(){
+	CFG_ClearPins();
+
+	PIN_SetPinRoleForPinIndex(1, IOR_LED_WIFI);
+	PIN_SetPinChannelForPinIndex(1, 1);
+
+	PIN_SetPinRoleForPinIndex(6, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(6, 1);
+
+	PIN_SetPinRoleForPinIndex(10, IOR_Button);
+	PIN_SetPinChannelForPinIndex(10, 1);
+
+	PIN_SetPinRoleForPinIndex(26, IOR_LED);
+	PIN_SetPinChannelForPinIndex(26, 1);
+
+	CFG_Save_SetupTimer();
+}
 
 
+void Setup_Device_DS_102_2Gang_WB3S(){
+	Setup_Device_DS_102_1Gang_WB3S();
+
+	PIN_SetPinRoleForPinIndex(8, IOR_Button);
+	PIN_SetPinChannelForPinIndex(8, 2);
+
+	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(9, 2);
+
+	PIN_SetPinRoleForPinIndex(11, IOR_LED);
+	PIN_SetPinChannelForPinIndex(11, 2);
+
+	CFG_Save_SetupTimer();
+}
+
+
+void Setup_Device_DS_102_3Gang_WB3S(){
+	CFG_ClearPins();
+
+	PIN_SetPinRoleForPinIndex(1, IOR_LED_WIFI);
+	PIN_SetPinChannelForPinIndex(1, 1);
+
+	PIN_SetPinRoleForPinIndex(6, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(6, 1);
+
+	PIN_SetPinRoleForPinIndex(7, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(7, 3);
+
+	PIN_SetPinRoleForPinIndex(8, IOR_Button);
+	PIN_SetPinChannelForPinIndex(8, 3);
+
+	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(9, 2);
+
+	PIN_SetPinRoleForPinIndex(10, IOR_Button);
+	PIN_SetPinChannelForPinIndex(10, 2);
+
+	PIN_SetPinRoleForPinIndex(11, IOR_LED);
+	PIN_SetPinChannelForPinIndex(11, 3);
+
+	PIN_SetPinRoleForPinIndex(14, IOR_LED);
+	PIN_SetPinChannelForPinIndex(14, 1);
+
+	PIN_SetPinRoleForPinIndex(24, IOR_Button);
+	PIN_SetPinChannelForPinIndex(24, 1);
+
+	PIN_SetPinRoleForPinIndex(26, IOR_LED);
+	PIN_SetPinChannelForPinIndex(26, 2);
+
+	CFG_Save_SetupTimer();
+}
