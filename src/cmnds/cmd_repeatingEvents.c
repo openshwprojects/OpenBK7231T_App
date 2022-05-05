@@ -45,14 +45,14 @@ void RepeatingEvents_OnEverySecond() {
 		if(cur->currentInterval<=0){
 			c_ran++;
 			cur->currentInterval = cur->intervalSeconds;
-			CMD_ExecuteCommand(cur->command);
+			CMD_ExecuteCommand(cur->command, COMMAND_FLAG_SOURCE_SCRIPT);
 		}
 		cur = cur->next;
 	}
 
 	//addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"RepeatingEvents_OnEverySecond checked %i events, ran %i\n",c_checked,c_ran);
 }
-int RepeatingEvents_Cmd_AddRepeatingEvent(const void *context, const char *cmd, const char *args) {
+int RepeatingEvents_Cmd_AddRepeatingEvent(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int interval;
 	const char *cmdToRepeat;
 	// linkTuyaMCUOutputToChannel dpID channelID [varType]

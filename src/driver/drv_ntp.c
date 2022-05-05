@@ -57,7 +57,7 @@ static unsigned int g_time;
 // time offset (time zone?)
 static int g_timeOffsetHours;
 
-int NTP_SetTimeZoneOfs(const void *context, const char *cmd, const char *args) {
+int NTP_SetTimeZoneOfs(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	Tokenizer_TokenizeString(args);
 	if(Tokenizer_GetArgsCount() < 1) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Command requires one argument\n");

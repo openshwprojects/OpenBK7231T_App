@@ -1063,7 +1063,7 @@ static int http_rest_post_channels(http_request_t *request){
 
 static int http_rest_post_cmd(http_request_t *request){
     char *cmd = request->bodystart;
-    CMD_ExecuteCommand(cmd);
+	CMD_ExecuteCommand(cmd, COMMAND_FLAG_SOURCE_CONSOLE);
     return http_rest_error(request, 200, "OK");
 }
 

@@ -819,7 +819,7 @@ int CHANNEL_ParseChannelType(const char *s) {
 		return ChType_Default;
 	return ChType_Error;
 }
-static int CMD_ShowChannelValues(const void *context, const char *cmd, const char *args){
+static int CMD_ShowChannelValues(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int i;
 
 	for(i = 0; i < CHANNEL_MAX; i++) {
@@ -830,7 +830,7 @@ static int CMD_ShowChannelValues(const void *context, const char *cmd, const cha
 
 	return 0;
 }
-static int CMD_SetChannelType(const void *context, const char *cmd, const char *args){
+static int CMD_SetChannelType(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int channel;
 	const char *type;
 	int typeCode;
@@ -857,7 +857,7 @@ static int CMD_SetChannelType(const void *context, const char *cmd, const char *
 	return 0;
 }
 
-static int showgpi(const void *context, const char *cmd, const char *args){
+static int showgpi(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int i;
 	unsigned int value = 0;
 

@@ -112,7 +112,7 @@ void DRV_I2C_MCP23017_OnChannelChanged(i2cDevice_t *dev, int channel, int iVal)
 		}
 	}
 }
-int DRV_I2C_MCP23017_MapPinToChannel(const void *context, const char *cmd, const char *args) {
+int DRV_I2C_MCP23017_MapPinToChannel(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *i2cModuleStr;
 	int address;
 	int targetPin;

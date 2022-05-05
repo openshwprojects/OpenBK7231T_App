@@ -1,15 +1,24 @@
 #ifndef __CMD_PUBLIC_H__
 #define __CMD_PUBLIC_H__
 
-typedef int (*commandHandler_t)(const void *context, const char *cmd, const char *args);
+typedef int (*commandHandler_t)(const void *context, const char *cmd, const char *args, int flags);
+
+// command was entered in console (web app etc)
+#define COMMAND_FLAG_SOURCE_CONSOLE		1
+// command was entered by script
+#define COMMAND_FLAG_SOURCE_SCRIPT		2
+// command was sent by MQTT
+#define COMMAND_FLAG_SOURCE_MQTT		4
+// command was sent by HTTP cmnd GET
+#define COMMAND_FLAG_SOURCE_HTTP		8
 
 
 
 //
 void CMD_Init();
 void CMD_RegisterCommand(const char *name, const char *args, commandHandler_t handler, const char *userDesc, void *context);
-int CMD_ExecuteCommand(const char *s);
-int CMD_ExecuteCommandArgs(const char *cmd, const char *args);
+int CMD_ExecuteCommand(const char *s, int cmdFlags);
+int CMD_ExecuteCommandArgs(const char *cmd, const char *args, int cmdFlags);
 
 enum EventCode {
 	CMD_EVENT_NONE,

@@ -396,8 +396,8 @@ void Main_Init()
 		CMD_Init();
 
 		if (g_bootFailures < 2){
-			CMD_ExecuteCommand(CFG_GetShortStartupCommand());
-			CMD_ExecuteCommand("exec autoexec.bat");
+			CMD_ExecuteCommand(CFG_GetShortStartupCommand(), COMMAND_FLAG_SOURCE_SCRIPT);
+			CMD_ExecuteCommand("exec autoexec.bat", COMMAND_FLAG_SOURCE_SCRIPT);
 		}
 	}
 

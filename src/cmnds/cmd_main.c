@@ -30,7 +30,7 @@ static int generateHashValue(const char *fname) {
 
 command_t *g_commands[HASH_SIZE] = { NULL };
 
-static int CMD_Restart(const void *context, const char *cmd, const char *args){
+static int CMD_Restart(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int delaySeconds;
 
 	if(args==0||*args==0) {
@@ -124,7 +124,7 @@ int get_cmd(const char *s, char *dest, int maxlen, int stripnum){
 
 
 // execute a command from cmd and args - used below and in MQTT
-int CMD_ExecuteCommandArgs(const char *cmd, const char *args) {
+int CMD_ExecuteCommandArgs(const char *cmd, const char *args, int cmdFlags) {
 	command_t *newCmd;
 	//int len;
 
@@ -147,7 +147,7 @@ int CMD_ExecuteCommandArgs(const char *cmd, const char *args) {
 
 	if (newCmd->handler){
 		int res;
-		res = newCmd->handler(newCmd->context, cmd, args);
+		res = newCmd->handler(newCmd->context, cmd, args, cmdFlags);
 		return res;
 	}
 	return 0;
@@ -155,7 +155,7 @@ int CMD_ExecuteCommandArgs(const char *cmd, const char *args) {
 
 
 // execute a raw command - single string
-int CMD_ExecuteCommand(const char *s) {
+int CMD_ExecuteCommand(const char *s, int cmdFlags) {
 	const char *p;
 	const char *args;
 
@@ -187,7 +187,7 @@ int CMD_ExecuteCommand(const char *s) {
 	}
 	args = p;
 
-	return CMD_ExecuteCommandArgs(copy, args);
+	return CMD_ExecuteCommandArgs(copy, args,cmdFlags);
 }
 
 

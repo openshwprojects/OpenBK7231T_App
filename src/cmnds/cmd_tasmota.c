@@ -19,7 +19,7 @@ int parsePowerArgument(const char *s) {
 	return atoi(s);
 }
 
-static int power(const void *context, const char *cmd, const char *args){
+static int power(const void *context, const char *cmd, const char *args, int cmdFlags){
 	//if (!wal_strnicmp(cmd, "POWER", 5)){
 		int channel = 0;
 		int iVal = 0;
@@ -49,7 +49,7 @@ static int power(const void *context, const char *cmd, const char *args){
 	//return 0;
 }
 
-static int powerAll(const void *context, const char *cmd, const char *args){
+static int powerAll(const void *context, const char *cmd, const char *args, int cmdFlags){
 	//if (!wal_strnicmp(cmd, "POWERALL", 8)){
 		int iVal = 0;
 
@@ -64,7 +64,7 @@ static int powerAll(const void *context, const char *cmd, const char *args){
 }
 
 
-static int powerStateOnly(const void *context, const char *cmd, const char *args){
+static int powerStateOnly(const void *context, const char *cmd, const char *args, int cmdFlags){
 	//if (!wal_strnicmp(cmd, "POWERALL", 8)){
 		int iVal = 0;
 
@@ -78,7 +78,7 @@ static int powerStateOnly(const void *context, const char *cmd, const char *args
 	//return 0;
 }
 
-static int color(const void *context, const char *cmd, const char *args){
+static int color(const void *context, const char *cmd, const char *args, int cmdFlags){
    // if (!wal_strnicmp(cmd, "COLOR", 5)){
         if (args[0] != '#'){
             ADDLOG_ERROR(LOG_FEATURE_CMD, "tasCmnd COLOR expected a # prefixed color, you sent %s",args);
@@ -128,7 +128,7 @@ static int color(const void *context, const char *cmd, const char *args){
 }
 
 
-static int cmnd_backlog(const void * context, const char *cmd, const char *args){
+static int cmnd_backlog(const void * context, const char *cmd, const char *args, int cmdFlags){
 	const char *subcmd;
 	const char *p;
 	int count = 0;
@@ -155,7 +155,7 @@ static int cmnd_backlog(const void * context, const char *cmd, const char *args)
 		}
 		*c = 0;
 		count++;
-		CMD_ExecuteCommand(copy);
+		CMD_ExecuteCommand(copy, cmdFlags);
 		subcmd = p;
 	}
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "backlog executed %d", count);
@@ -164,7 +164,7 @@ static int cmnd_backlog(const void * context, const char *cmd, const char *args)
 }
 
 
-static int cmnd_lfsexec(const void * context, const char *cmd, const char *args){
+static int cmnd_lfsexec(const void * context, const char *cmd, const char *args, int cmdFlags){
 #ifdef BK_LITTLEFS
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "exec %s", args);
 	if (lfs_present()){
@@ -194,7 +194,7 @@ static int cmnd_lfsexec(const void * context, const char *cmd, const char *args)
 
 					if (lfsres >= 0){
 						if (*line && (*line != '#')){
-							CMD_ExecuteCommand(line);
+							CMD_ExecuteCommand(line, cmdFlags);
 						}
 					}
 				} while (lfsres > 0);

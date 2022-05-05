@@ -293,7 +293,7 @@ int tasCmnd(mqtt_request_t* request){
   p++;
 
   // use command executor....
-  CMD_ExecuteCommandArgs(p, copy);
+  CMD_ExecuteCommandArgs(p, copy, COMMAND_FLAG_SOURCE_MQTT);
 
   // return 1 to stop processing callbacks here.
   // return 0 to allow later callbacks to process this topic.

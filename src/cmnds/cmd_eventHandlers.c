@@ -183,7 +183,7 @@ void EventHandlers_ProcessVariableChange_Integer(byte eventCode, int oldValue, i
 		if(eventCode==ev->eventCode) {
 			if(EVENT_EvaluateChangeCondition(ev->eventType, ev->requiredArgument, oldValue, newValue)) {
 				ADDLOG_INFO(LOG_FEATURE_EVENT, "EventHandlers_ProcessVariableChange_Integer: executing command %s",ev->command);
-				CMD_ExecuteCommand(ev->command);
+				CMD_ExecuteCommand(ev->command, COMMAND_FLAG_SOURCE_SCRIPT);
 			}
 		}
 		ev = ev->next;
@@ -210,7 +210,7 @@ void EventHandlers_FireEvent(byte eventCode, int argument) {
 		if(eventCode==ev->eventCode) {
 			if(argument == ev->requiredArgument) {
 				ADDLOG_INFO(LOG_FEATURE_EVENT, "EventHandlers_ProcessVariableChange_Integer: executing command %s",ev->command);
-				CMD_ExecuteCommand(ev->command);
+				CMD_ExecuteCommand(ev->command, COMMAND_FLAG_SOURCE_SCRIPT);
 			}
 		}
 		ev = ev->next;
@@ -218,7 +218,7 @@ void EventHandlers_FireEvent(byte eventCode, int argument) {
 	
 }
 
-static int CMD_AddEventHandler(const void *context, const char *cmd, const char *args){
+static int CMD_AddEventHandler(const void *context, const char *cmd, const char *args, int cmdFlags){
 	const char *eventName;
 	int reqArg;
 	const char *cmdToCall;
@@ -250,7 +250,7 @@ static int CMD_AddEventHandler(const void *context, const char *cmd, const char 
 	return 1;
 }
 
-static int CMD_AddChangeHandler(const void *context, const char *cmd, const char *args){
+static int CMD_AddChangeHandler(const void *context, const char *cmd, const char *args, int cmdFlags){
 	const char *eventName;
 	const char *relation;
 	int reqArg;
@@ -292,7 +292,7 @@ static int CMD_AddChangeHandler(const void *context, const char *cmd, const char
 	return 1;
 }
 
-static int CMD_ListEvents(const void *context, const char *cmd, const char *args){
+static int CMD_ListEvents(const void *context, const char *cmd, const char *args, int cmdFlags){
 	struct eventHandler_s *ev;
 	int c;
 

@@ -1169,7 +1169,7 @@ int HTTPClient_Async_SendGet(const char *url_in){
 #endif
 	if(url==0) {
 		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendGet for %s, failed to alloc URL memory\r\n");
-		return;
+		return 1;
 	}
 
 #if DBG_HTTPCLIENT_MEMLEAK
@@ -1179,7 +1179,7 @@ int HTTPClient_Async_SendGet(const char *url_in){
 #endif
 	if(url==0) {
 		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendGet for %s, failed to alloc request memory\r\n");
-		return;
+		return 1;
 	}
 
     ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendGet for %s, sizeof(httprequest_t) == %i!\r\n",

@@ -5,7 +5,7 @@
 #include <ctype.h>
 #include "cmd_local.h"
 
-static int CMD_SetChannel(const void *context, const char *cmd, const char *args){
+static int CMD_SetChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int ch, val;
 
 	if(args==0||*args==0) {
@@ -25,7 +25,7 @@ static int CMD_SetChannel(const void *context, const char *cmd, const char *args
 
 	return 1;
 }
-static int CMD_AddChannel(const void *context, const char *cmd, const char *args){
+static int CMD_AddChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int ch, val;
 
 	if(args==0||*args==0) {
@@ -54,7 +54,7 @@ static int CMD_AddChannel(const void *context, const char *cmd, const char *args
 
 	return 1;
 }
-static int CMD_ClampChannel(const void *context, const char *cmd, const char *args){
+static int CMD_ClampChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int ch, max, min;
 
 	if(args==0||*args==0) {
@@ -76,7 +76,7 @@ static int CMD_ClampChannel(const void *context, const char *cmd, const char *ar
 	return 1;
 }
 
-static int CMD_SetPinRole(const void *context, const char *cmd, const char *args){
+static int CMD_SetPinRole(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int pin, roleIndex;
 	const char *role;
 
@@ -102,7 +102,7 @@ static int CMD_SetPinRole(const void *context, const char *cmd, const char *args
 
 	return 1;
 }
-static int CMD_SetPinChannel(const void *context, const char *cmd, const char *args){
+static int CMD_SetPinChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int pin, ch;
 
 	if(args==0||*args==0) {

@@ -69,7 +69,7 @@ uintptr_t HAL_TCP_Establish(const char *host, uint16_t port)
 int32_t HAL_TCP_Destroy(uintptr_t fd)
 {
     int rc;
-	int att;
+	///int att;
 
     //Shutdown both send and receive operations.
     rc = shutdown((int) fd, 2);

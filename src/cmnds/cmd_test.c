@@ -17,7 +17,7 @@ char *names[16] = { NULL };
 
 
 // run an aliased command
-static int runcmd(const void * context, const char *cmd, const char *args){
+static int runcmd(const void * context, const char *cmd, const char *args, int cmdFlags){
     char *c = (char *)context;
     char *p = c;
 
@@ -25,11 +25,11 @@ static int runcmd(const void * context, const char *cmd, const char *args){
         p++;
 	}
     if (*p) p++;
-    return CMD_ExecuteCommand(p);
+    return CMD_ExecuteCommand(p,cmdFlags);
 }
 
 // run an aliased command
-static int addcmd(const void * context, const char *cmd, const char *args){
+static int addcmd(const void * context, const char *cmd, const char *args, int cmdFlags){
 	if (!wal_strnicmp(cmd, "addcmd", 6)){
 		int index = 0;
         char cmd[32];

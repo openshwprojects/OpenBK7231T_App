@@ -220,7 +220,7 @@ static void PCF8574_LCD_Write_String(i2cDevice_PCF8574_t *lcd, const char *str)
    }
 }
 
-int DRV_I2C_LCD_PCF8574_GoTo_Internal(int bClear, const void *context, const char *cmd, const char *args) {
+int DRV_I2C_LCD_PCF8574_GoTo_Internal(int bClear, const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *i2cModuleStr;
 	int address;
 	i2cBusType_t busType;
@@ -255,15 +255,15 @@ int DRV_I2C_LCD_PCF8574_GoTo_Internal(int bClear, const void *context, const cha
 	PCF8574_LCD_Close(lcd);
 	return 1;
 }
-int DRV_I2C_LCD_PCF8574_GoTo(const void *context, const char *cmd, const char *args) {
-	return DRV_I2C_LCD_PCF8574_GoTo_Internal(0,context,cmd,args);
+int DRV_I2C_LCD_PCF8574_GoTo(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	return DRV_I2C_LCD_PCF8574_GoTo_Internal(0,context,cmd,args,cmdFlags);
 }
-int DRV_I2C_LCD_PCF8574_ClearAndGoTo(const void *context, const char *cmd, const char *args) {
-	return DRV_I2C_LCD_PCF8574_GoTo_Internal(1,context,cmd,args);
+int DRV_I2C_LCD_PCF8574_ClearAndGoTo(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	return DRV_I2C_LCD_PCF8574_GoTo_Internal(1,context,cmd,args,cmdFlags);
 }
 
 
-int DRV_I2C_LCD_PCF8574_Print(const void *context, const char *cmd, const char *args) {
+int DRV_I2C_LCD_PCF8574_Print(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *i2cModuleStr;
 	int address;
 	i2cBusType_t busType;
@@ -294,7 +294,7 @@ int DRV_I2C_LCD_PCF8574_Print(const void *context, const char *cmd, const char *
 
 	return 1;
 }
-int DRV_I2C_LCD_PCF8574_Clear(const void *context, const char *cmd, const char *args) {
+int DRV_I2C_LCD_PCF8574_Clear(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *i2cModuleStr;
 	int address;
 	i2cBusType_t busType;

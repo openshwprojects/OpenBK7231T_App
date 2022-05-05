@@ -169,7 +169,7 @@ void DRV_I2C_AddDevice_TC74_Internal(int busType,int address, int targetChannel)
 
 	DRV_I2C_AddNextDevice((i2cDevice_t*)dev);
 }
-int DRV_I2C_AddDevice_TC74(const void *context, const char *cmd, const char *args) {
+int DRV_I2C_AddDevice_TC74(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *i2cModuleStr;
 	int address;
 	int targetChannel;
@@ -193,7 +193,7 @@ int DRV_I2C_AddDevice_TC74(const void *context, const char *cmd, const char *arg
 
 	return 1;
 }
-int DRV_I2C_AddDevice_MCP23017(const void *context, const char *cmd, const char *args) {
+int DRV_I2C_AddDevice_MCP23017(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *i2cModuleStr;
 	int address;
 	i2cBusType_t busType;
@@ -217,7 +217,7 @@ int DRV_I2C_AddDevice_MCP23017(const void *context, const char *cmd, const char 
 }
 
 // 
-int DRV_I2C_AddDevice_PCF8574(const void *context, const char *cmd, const char *args) {
+int DRV_I2C_AddDevice_PCF8574(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *i2cModuleStr;
 	int address;
 	i2cBusType_t busType;
@@ -245,7 +245,7 @@ int DRV_I2C_AddDevice_PCF8574(const void *context, const char *cmd, const char *
 	return 1;
 }
 
-int DRV_I2C_AddDevice_LCM1602(const void *context, const char *cmd, const char *args) {
+int DRV_I2C_AddDevice_LCM1602(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *i2cModuleStr;
 	int address;
 	i2cBusType_t busType;

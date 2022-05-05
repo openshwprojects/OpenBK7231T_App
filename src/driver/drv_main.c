@@ -40,7 +40,7 @@ void DRV_OnEverySecond() {
 	}
 }
 // startDriver BL0942
-int DRV_Start(const void *context, const char *cmd, const char *args) {
+int DRV_Start(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int i;
 	const char *name;
 

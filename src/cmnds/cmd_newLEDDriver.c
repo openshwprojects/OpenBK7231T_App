@@ -115,7 +115,7 @@ void apply_smart_light() {
 		CHANNEL_Set(channelToUse, final * g_cfg_colorScaleToChannel, false);
 	}
 }
-static int temperature(const void *context, const char *cmd, const char *args){
+static int temperature(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int tmp;
 	float f;
 	//if (!wal_strnicmp(cmd, "POWERALL", 8)){
@@ -147,7 +147,7 @@ static int temperature(const void *context, const char *cmd, const char *args){
 	//}
 	//return 0;
 }
-static int enableAll(const void *context, const char *cmd, const char *args){
+static int enableAll(const void *context, const char *cmd, const char *args, int cmdFlags){
 	//if (!wal_strnicmp(cmd, "POWERALL", 8)){
 
         ADDLOG_INFO(LOG_FEATURE_CMD, " enableAll (%s) received with args %s",cmd,args);
@@ -161,7 +161,7 @@ static int enableAll(const void *context, const char *cmd, const char *args){
 	//return 0;
 }
 
-static int dimmer(const void *context, const char *cmd, const char *args){
+static int dimmer(const void *context, const char *cmd, const char *args, int cmdFlags){
 	//if (!wal_strnicmp(cmd, "POWERALL", 8)){
 		int iVal = 0;
 
@@ -237,15 +237,15 @@ static int basecolor(const void *context, const char *cmd, const char *args, int
    // return 0;
 }
 
-static int basecolor_rgb(const void *context, const char *cmd, const char *args){
+static int basecolor_rgb(const void *context, const char *cmd, const char *args, int cmdFlags){
 	return basecolor(context,cmd,args,0);
 }
-static int basecolor_rgbcw(const void *context, const char *cmd, const char *args){
+static int basecolor_rgbcw(const void *context, const char *cmd, const char *args, int cmdFlags){
 	return basecolor(context,cmd,args,1);
 }
 
 // CONFIG-ONLY command!
-static int colorMult(const void *context, const char *cmd, const char *args){
+static int colorMult(const void *context, const char *cmd, const char *args, int cmdFlags){
         ADDLOG_INFO(LOG_FEATURE_CMD, " g_cfg_colorScaleToChannel (%s) received with args %s",cmd,args);
 
 		g_cfg_colorScaleToChannel = atof(args);
@@ -255,7 +255,7 @@ static int colorMult(const void *context, const char *cmd, const char *args){
 	//return 0;
 }
 // CONFIG-ONLY command!
-static int brightnessMult(const void *context, const char *cmd, const char *args){
+static int brightnessMult(const void *context, const char *cmd, const char *args, int cmdFlags){
         ADDLOG_INFO(LOG_FEATURE_CMD, " brightnessMult (%s) received with args %s",cmd,args);
 
 		g_cfg_brightnessMult = atof(args);

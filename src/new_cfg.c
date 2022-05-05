@@ -176,7 +176,7 @@ void CFG_SetPingIntervalSeconds(int i) {
 }
 void CFG_SetShortStartupCommand_AndExecuteNow(const char *s) {
 	CFG_SetShortStartupCommand(s);
-	CMD_ExecuteCommand(s);
+	CMD_ExecuteCommand(s,COMMAND_FLAG_SOURCE_SCRIPT);
 }
 void CFG_SetShortStartupCommand(const char *s) {
 	// this will return non-zero if there were any changes 

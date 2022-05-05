@@ -183,7 +183,7 @@ void BL0942_SendRequest() {
 	UART_SendByte(BL0942_READ_COMMAND);
 	UART_SendByte(0xAA);
 }
-int BL0942_PowerSet(const void *context, const char *cmd, const char *args) {
+int BL0942_PowerSet(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	float realPower;
 
 	if(args==0||*args==0) {
@@ -199,7 +199,7 @@ int BL0942_PowerSet(const void *context, const char *cmd, const char *args) {
 	}
 	return 0;
 }
-int BL0942_PowerRef(const void *context, const char *cmd, const char *args) {
+int BL0942_PowerRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_BL0942,"This command needs one argument");
@@ -208,7 +208,7 @@ int BL0942_PowerRef(const void *context, const char *cmd, const char *args) {
 	BL0942_PREF = atof(args);
 	return 0;
 }
-int BL0942_CurrentRef(const void *context, const char *cmd, const char *args) {
+int BL0942_CurrentRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_BL0942,"This command needs one argument");
@@ -217,7 +217,7 @@ int BL0942_CurrentRef(const void *context, const char *cmd, const char *args) {
 	BL0942_IREF = atof(args);
 	return 0;
 }
-int BL0942_VoltageRef(const void *context, const char *cmd, const char *args) {
+int BL0942_VoltageRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_BL0942,"This command needs one argument");
@@ -226,7 +226,7 @@ int BL0942_VoltageRef(const void *context, const char *cmd, const char *args) {
 	BL0942_UREF = atof(args);
 	return 0;
 }
-int BL0942_VoltageSet(const void *context, const char *cmd, const char *args) {
+int BL0942_VoltageSet(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	float realV;
 
 	if(args==0||*args==0) {
@@ -243,7 +243,7 @@ int BL0942_VoltageSet(const void *context, const char *cmd, const char *args) {
 
 	return 0;
 }
-int BL0942_CurrentSet(const void *context, const char *cmd, const char *args) {
+int BL0942_CurrentSet(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	float realI;
 
 	if(args==0||*args==0) {

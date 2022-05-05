@@ -204,7 +204,7 @@ int UART_TryToGetNextTuyaPacket(byte *out, int maxSize) {
 		b = UART_GetNextByte(1);
 		if(a != 0x55 || b != 0xAA) {
 			UART_ConsumeBytes(1);
-			if(c_garbage_consumed + 1 < printfSkipDebug) {
+			if(c_garbage_consumed + 2 < sizeof(printfSkipDebug)) {
 				sprintf(buffer2,"%02X ",a);
 				strcat_safe(printfSkipDebug,buffer2,sizeof(printfSkipDebug));
 			}
@@ -426,7 +426,7 @@ struct tm * TuyaMCU_Get_NTP_Time() {
 
 	return ptm;
 }
-int TuyaMCU_Send_Hex(const void *context, const char *cmd, const char *args) {
+int TuyaMCU_Send_Hex(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	//const char *args = CMD_GetArg(1);
 	if(!(*args)) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_Send_Hex: requires 1 argument (hex string, like FFAABB00CCDD\n");
@@ -443,7 +443,7 @@ int TuyaMCU_Send_Hex(const void *context, const char *cmd, const char *args) {
 	return 1;
 }
 
-int TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, const char *args) {
+int TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int dpId;
 	int dpType;
 	int channelID;
@@ -464,13 +464,13 @@ int TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, con
 	return 1;
 }
 
-int TuyaMCU_Send_SetTime_Current(const void *context, const char *cmd, const char *args) {
+int TuyaMCU_Send_SetTime_Current(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
 	TuyaMCU_Send_SetTime(TuyaMCU_Get_NTP_Time());
 
 	return 1;
 }
-int TuyaMCU_Send_SetTime_Example(const void *context, const char *cmd, const char *args) {
+int TuyaMCU_Send_SetTime_Example(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	struct tm testTime;
 
 	testTime.tm_year = 2012;
@@ -500,7 +500,7 @@ void TuyaMCU_Send(byte *data, int size) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"\nWe sent %i bytes to Tuya MCU\n",size+1);
 }
 
-int TuyaMCU_SetDimmerRange(const void *context, const char *cmd, const char *args) {
+int TuyaMCU_SetDimmerRange(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	Tokenizer_TokenizeString(args);
 
 	if(Tokenizer_GetArgsCount() < 2) {
@@ -514,24 +514,24 @@ int TuyaMCU_SetDimmerRange(const void *context, const char *cmd, const char *arg
 	return 1;
 }
 
-int TuyaMCU_SendHeartbeat(const void *context, const char *cmd, const char *args) {
+int TuyaMCU_SendHeartbeat(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	TuyaMCU_SendCommandWithData(TUYA_CMD_HEARTBEAT, NULL, 0);
 
 	return 1;
 }
 
-int TuyaMCU_SendQueryProductInformation(const void *context, const char *cmd, const char *args) {
+int TuyaMCU_SendQueryProductInformation(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	TuyaMCU_SendCommandWithData(TUYA_CMD_QUERY_PRODUCT, NULL, 0);
 
 	return 1;
 }
-int TuyaMCU_SendQueryState(const void *context, const char *cmd, const char *args) {
+int TuyaMCU_SendQueryState(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	TuyaMCU_SendCommandWithData(TUYA_CMD_QUERY_STATE, NULL, 0);
 
 	return 1;
 }
 
-int TuyaMCU_SendStateCmd(const void *context, const char *cmd, const char *args) {
+int TuyaMCU_SendStateCmd(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int dpId;
 	int dpType;
 	int value;
@@ -552,7 +552,7 @@ int TuyaMCU_SendStateCmd(const void *context, const char *cmd, const char *args)
 	return 1;
 }
 
-int TuyaMCU_SendMCUConf(const void *context, const char *cmd, const char *args) {
+int TuyaMCU_SendMCUConf(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	TuyaMCU_SendCommandWithData(TUYA_CMD_MCU_CONF, NULL, 0);
 
 	return 1;
@@ -761,7 +761,7 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
 		break;
 	}
 }
-int TuyaMCU_FakePacket(const void *context, const char *cmd, const char *args) {
+int TuyaMCU_FakePacket(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	byte packet[256];
 	int c = 0;
 	if(!(*args)) {

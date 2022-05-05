@@ -830,7 +830,7 @@ int http_fn_cmd_tool(http_request_t *request) {
     poststr(request,"<h4>Command Tool</h4>");
 
     if(	http_getArg(request->url,"cmd",tmpA,sizeof(tmpA))) {
-		i = CMD_ExecuteCommand(tmpA);
+		i = CMD_ExecuteCommand(tmpA, COMMAND_FLAG_SOURCE_CONSOLE);
 		if(i == 0) {
 		   poststr(request,"Command not found");
 		} else {
@@ -1083,7 +1083,7 @@ int http_fn_cm(http_request_t *request) {
 	
     http_setup(request, httpMimeTypeJson);
     if(	http_getArg(request->url,"cmnd",tmpA,sizeof(tmpA))) {
-		CMD_ExecuteCommand(tmpA);
+		CMD_ExecuteCommand(tmpA,COMMAND_FLAG_SOURCE_HTTP);
 
 
 
