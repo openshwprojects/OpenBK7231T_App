@@ -181,6 +181,7 @@ void Setup_Device_LSC_Smart_Connect_Plug_CB2S();
 void Setup_Device_DS_102_1Gang_WB3S();
 void Setup_Device_DS_102_2Gang_WB3S();
 void Setup_Device_DS_102_3Gang_WB3S();
+void Setup_Device_BK7231T_Gosund_Switch_SW5_A_V2_1();
 
 #endif
 

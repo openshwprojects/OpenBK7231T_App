@@ -574,6 +574,28 @@ void Setup_Device_DS_102_1Gang_WB3S(){
 	CFG_Save_SetupTimer();
 }
 
+// see https://www.elektroda.com/rtvforum/viewtopic.php?p=20008969#20008969
+
+void Setup_Device_BK7231T_Gosund_Switch_SW5_A_V2_1(){
+	CFG_ClearPins();
+
+	// green
+	PIN_SetPinRoleForPinIndex(7, IOR_LED_WIFI);
+	PIN_SetPinChannelForPinIndex(7, 1);
+
+	PIN_SetPinRoleForPinIndex(14, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(14, 1);
+
+	PIN_SetPinRoleForPinIndex(8, IOR_Button);
+	PIN_SetPinChannelForPinIndex(8, 1);
+
+	// red
+	PIN_SetPinRoleForPinIndex(16, IOR_LED_n);
+	PIN_SetPinChannelForPinIndex(16, 1);
+
+
+	CFG_Save_SetupTimer();
+}
 
 void Setup_Device_DS_102_2Gang_WB3S(){
 	CFG_ClearPins();
