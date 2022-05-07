@@ -445,10 +445,11 @@ int TuyaMCU_Send_Hex(const void *context, const char *cmd, const char *args, int
 
 int TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int dpId;
+	const char *dpTypeString;
 	int dpType;
 	int channelID;
 
-	// linkTuyaMCUOutputToChannel dpId channelID [varType]
+	// linkTuyaMCUOutputToChannel dpId varType channelID 
 	Tokenizer_TokenizeString(args);
 
 	if(Tokenizer_GetArgsCount() < 3) {
@@ -456,7 +457,20 @@ int TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, con
 		return -1;
 	}
 	dpId = Tokenizer_GetArgInteger(0);
-	dpType = Tokenizer_GetArgInteger(1);
+	dpTypeString = Tokenizer_GetArg(1);
+	if(!stricmp(dpTypeString,"bool")) {
+		dpType = DP_TYPE_BOOL;
+	} else if(!stricmp(dpTypeString,"val")) {
+		dpType = DP_TYPE_VALUE;
+	} else if(!stricmp(dpTypeString,"str")) {
+		dpType = DP_TYPE_STRING;
+	} else if(!stricmp(dpTypeString,"enum")) {
+		dpType = DP_TYPE_ENUM;
+	} else if(!stricmp(dpTypeString,"raw")) {
+		dpType = DP_TYPE_RAW;
+	} else {
+		dpType = atoi(dpTypeString);
+	}
 	channelID = Tokenizer_GetArgInteger(2);
 
 	TuyaMCU_MapIDToChannel(dpId, dpType, channelID);
