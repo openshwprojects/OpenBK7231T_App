@@ -19,7 +19,18 @@ char *test_strdup(const char *s)
 
     return res;
 }
-
+int strIsInteger(const char *s) {
+	if(s==0)
+		return 0;
+	if(*s == 0)
+		return 0;
+	while(*s) {
+		if(isdigit(*s)==false)
+			return 0;
+		s++;
+	}
+	return 1;
+}
 // returns amount of space left in buffer (0=overflow happened)
 int strcat_safe(char *tg, const char *src, int tgMaxLen) {
 	// keep space for 1 more char

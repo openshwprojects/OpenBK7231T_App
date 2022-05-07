@@ -148,6 +148,13 @@ int http_fn_index(http_request_t *request) {
         hprintf128(request,"<h3>Changed dimmer %i to %i!</h3>",j,newDimmerValue);
         CHANNEL_Set(j,newDimmerValue,1);
     }
+    if(http_getArg(request->url,"set",tmpA,sizeof(tmpA))) {
+        int newSetValue = atoi(tmpA);
+        http_getArg(request->url,"setIndex",tmpA,sizeof(tmpA));
+        j = atoi(tmpA);
+        hprintf128(request,"<h3>Changed channel %i to %i!</h3>",j,newSetValue);
+        CHANNEL_Set(j,newSetValue,1);
+    }
 
 
     for(i = 0; i < CHANNEL_MAX; i++) {
@@ -186,6 +193,23 @@ int http_fn_index(http_request_t *request) {
 			fValue = iValue * 0.1f;
 
             hprintf128(request,"Humidity Channel %i value %f Percent<br>",i, fValue);
+		} else if(channelType == ChType_LowMidHigh) {
+			const char *types[]={"Low","Mid","High"};
+			int iValue;
+			iValue = CHANNEL_Get(i);
+
+            hprintf128(request,"<p>Select speed:</p><form action=\"index\">");
+            hprintf128(request,"<input type=\"hidden\" name=\"setIndex\" value=\"%i\">",i);
+			for(j = 0; j < 3; j++) {
+				const char *check;
+				if(j == iValue)
+					check = "checked";
+				else
+					check = "";
+				hprintf128(request,"<input type=\"radio\" name=\"set\" value=\"%i\" onchange=\"this.form.submit()\" %s>%s",j,check,types[j]);
+			}
+            hprintf128(request,"</form>");
+            hprintf128(request,"<br>");
 
 		} else if(h_isChannelRelay(i) || channelType == ChType_Toggle) {
             const char *c;

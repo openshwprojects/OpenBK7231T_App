@@ -469,7 +469,12 @@ int TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, con
 	} else if(!stricmp(dpTypeString,"raw")) {
 		dpType = DP_TYPE_RAW;
 	} else {
-		dpType = atoi(dpTypeString);
+		if(strIsInteger(dpTypeString)) {
+			dpType = atoi(dpTypeString);
+		} else {
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_LinkTuyaMCUOutputToChannel: %s is not a valid var type\n",dpTypeString);
+			return -1;
+		}
 	}
 	channelID = Tokenizer_GetArgInteger(2);
 

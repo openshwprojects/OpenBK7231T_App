@@ -198,6 +198,7 @@ int strcat_safe(char *tg, const char *src, int tgMaxLen);
 int strcpy_safe(char *tg, const char *src, int tgMaxLen);
 int strcpy_safe_checkForChanges(char *tg, const char *src, int tgMaxLen);
 void urldecode2_safe(char *dst, const char *srcin, int maxDstLen);
+int strIsInteger(const char *s);
 
 // user_main.c
 int Time_getUpTimeSeconds();

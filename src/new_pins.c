@@ -802,6 +802,7 @@ void PIN_ticks(void *param)
 		}
 	}
 }
+// setChannelType 3 LowMidHigh
 int CHANNEL_ParseChannelType(const char *s) {
 	if(!stricmp(s,"temperature"))
 		return ChType_Temperature;
@@ -815,6 +816,8 @@ int CHANNEL_ParseChannelType(const char *s) {
 		return ChType_Toggle;
 	if(!stricmp(s,"dimmer") )
 		return ChType_Dimmer;
+	if(!stricmp(s,"LowMidHigh") )
+		return ChType_LowMidHigh;
 	if(!stricmp(s,"default") )
 		return ChType_Default;
 	return ChType_Error;

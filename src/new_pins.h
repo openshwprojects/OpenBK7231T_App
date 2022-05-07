@@ -44,6 +44,7 @@ enum ChannelType {
 	ChType_Temperature_div10,
 	ChType_Toggle,
 	ChType_Dimmer,
+	ChType_LowMidHigh,
 };
 
 
