@@ -6,14 +6,14 @@
 #include "../new_pins.h"
 #include "../new_cfg.h"
 
-// setEventHandler OnClick 5 setChannel 4 1
+// addEventHandler OnClick 5 setChannel 4 1
 // This will set event handler for event name "OnClick" for pin number 5, and the executed event command will be "setChannel 4 1"
-// setEventHandler OnHold 5 addChannel 4 10 
+// addEventHandler OnHold 5 addChannel 4 10 
 // As above, but it will require a button hold and it will add value 10 to channel 4 (it will add a value to PWM, PWM channels are <0,100> range)
 
 //
-// setEventHandler OnChannelChanged 5 ???
-// setEventHandler OnWifiLost ????
+// addEventHandler OnChannelChanged 5 ???
+// addEventHandler OnWifiLost ????
 //
 //
 //
@@ -34,10 +34,10 @@ setPinRole 11 Btn
 setPinChannel 11 0
 setPinRole 26 PWM
 setPinChannel 26 1
-setEventHandler OnClick 10 setChannel 1 100
-setEventHandler OnHold 10 addChannel 1 10 
-setEventHandler OnClick 11 setChannel 1 0
-setEventHandler OnHold 11 addChannel 1 -10 
+addEventHandler OnClick 10 setChannel 1 100
+addEventHandler OnHold 10 addChannel 1 10 
+addEventHandler OnClick 11 setChannel 1 0
+addEventHandler OnHold 11 addChannel 1 -10 
 
 //
 // On change listeners 
@@ -162,7 +162,7 @@ typedef struct eventHandler_s {
 	// optional argument for event.
 	// The handler will only happen if it
 	// catches event with a certain argument.
-	// For example, you can do "setEventHandler OnClick 5"
+	// For example, you can do "addEventHandler OnClick 5"
 	// and it will only fire for pin 5
 	short requiredArgument;
 	// command to execute when it happens
