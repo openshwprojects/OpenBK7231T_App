@@ -724,7 +724,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\httpserver\new_http.h"
+				RelativePath=".\src\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -736,7 +736,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\new_http.h"
+				RelativePath=".\src\httpserver\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -801,6 +801,10 @@
 			</File>
 			<File
 				RelativePath=".\src\cmnds\cmd_repeatingEvents.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\cmnds\cmd_send.c"
 				>
 			</File>
 			<File
