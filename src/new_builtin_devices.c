@@ -655,3 +655,28 @@ void Setup_Device_DS_102_3Gang_WB3S(){
 
 	CFG_Save_SetupTimer();
 }
+
+// https://obrazki.elektroda.pl/8563462300_1652196315.jpg
+// https://obrazki.elektroda.pl/8998188300_1652196330.jpg
+// https://obrazki.elektroda.pl/2281136200_1652196339.jpg
+// https://obrazki.elektroda.pl/1568452900_1652196348.jpg
+// https://obrazki.elektroda.pl/4600787700_1652196323.jpg
+void Setup_Device_13A_Socket_CB2S(){
+	CFG_ClearPins();
+
+	PIN_SetPinRoleForPinIndex(6, IOR_LED);
+	PIN_SetPinChannelForPinIndex(6, 0);
+	PIN_SetPinRoleForPinIndex(7, IOR_LED);
+	PIN_SetPinChannelForPinIndex(7, 1);
+
+	PIN_SetPinRoleForPinIndex(8, IOR_Button);
+	PIN_SetPinChannelForPinIndex(8, 0);
+	PIN_SetPinChannel2ForPinIndex(8, 1);
+
+	PIN_SetPinRoleForPinIndex(24, IOR_Relay_n);
+	PIN_SetPinChannelForPinIndex(24, 0);
+	PIN_SetPinRoleForPinIndex(25, IOR_Relay_n);
+	PIN_SetPinChannelForPinIndex(25, 1);
+
+	CFG_Save_SetupTimer();
+}
