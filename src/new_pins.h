@@ -183,6 +183,7 @@ void Setup_Device_DS_102_1Gang_WB3S();
 void Setup_Device_DS_102_2Gang_WB3S();
 void Setup_Device_DS_102_3Gang_WB3S();
 void Setup_Device_BK7231T_Gosund_Switch_SW5_A_V2_1();
+void Setup_Device_13A_Socket_CB2S();
 
 #endif
 
