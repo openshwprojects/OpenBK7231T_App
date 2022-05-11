@@ -67,7 +67,7 @@ template_t g_templates [] = {
     { Setup_Device_BK7231N_CB2S_LSPA9_BL0942, "[BK7231N][CB2S] LSPA9 power metering plug BL0942 version"},
     { Setup_Device_LSC_Smart_Connect_Plug_CB2S, "[BK7231N][CB2S] LSC Smart Connect Plug"},
 	{ Setup_Device_BK7231T_Gosund_Switch_SW5_A_V2_1, "BK7231T Gosund Smart Switch SW5-A-V2.1"},
-	{ Setup_Device_13A_Socket_CB2S, "BK7231N CB3S 13A Aliexpress socket"},
+	{ Setup_Device_13A_Socket_CB2S, "BK7231N CB2S 13A Aliexpress socket"},
 };
 
 int g_total_templates = sizeof(g_templates)/sizeof(g_templates[0]);
