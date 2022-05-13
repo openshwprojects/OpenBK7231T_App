@@ -11,6 +11,7 @@
 #include "drv_ntp.h"
 #include "../httpserver/new_http.h"
 
+void DRV_DGR_Init();
 
 typedef struct driver_s {
 	const char *name;
@@ -25,6 +26,7 @@ static driver_t g_drivers[] = {
 	{ "NTP", NTP_Init, NTP_OnEverySecond, NULL, false }, 
 	{ "I2C", DRV_I2C_Init, DRV_I2C_EverySecond, NULL, false }, 
 	{ "BL0942", BL0942_Init, BL0942_RunFrame, BL0942_AppendInformationToHTTPIndexPage, false }, 
+	{ "DGR", DRV_DGR_Init, NULL, NULL, false }, 
 };
 static int g_numDrivers = sizeof(g_drivers)/sizeof(g_drivers[0]);
 
