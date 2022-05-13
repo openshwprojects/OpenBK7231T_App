@@ -1,6 +1,5 @@
 
 #include "../new_common.h"
-#include "ctype.h"
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
