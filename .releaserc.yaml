@@ -15,7 +15,7 @@ analyzeCommits:
   - path: "@semantic-release/commit-analyzer"
     releaseRules:
     - type: "feat"
-      release: "patch"
+      release: "minor"
     - type: "hotfix"
       release: "patch"
     - type: "fix"
@@ -27,6 +27,8 @@ analyzeCommits:
     - type: "breaking"
       release: "major"
     - type: "chore"
+      release: "patch"
+    - message: "*"
       release: "patch"
 generateNotes:
   - path: "@semantic-release/release-notes-generator"
@@ -75,6 +77,7 @@ publish:
       - path: "output/**/*_QIO_*.bin"
       - path: "output/**/*.rbl"
       - path: "output/**/*.img"
+      - path: "output/**/OpenBL602*.bin"
 
 success:
   - "@semantic-release/github"

@@ -64,7 +64,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [OpenBK7231T, OpenBK7231N, OpenXR809]
+        platform: [OpenBK7231T, OpenBK7231N, OpenXR809, OpenBL602]
     steps:
       - name: Source checkout
         uses: actions/checkout@v2
@@ -93,13 +93,14 @@ jobs:
             output/${{ needs.refs.outputs.version }}/OpenBK7231N_UG_${{ needs.refs.outputs.version }}.bin
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.rbl
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.img
-          if-no-files-found: warn         
+            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.bin
+          if-no-files-found: warn
 
   release:
     name: Semantic Release Images and Artifacts
     runs-on: ubuntu-latest
     needs: [ refs, build ]
-    if: ${{ needs.refs.outputs.new_release == 'true' && github.ref == 'refs/heads/main' }}
+    if: always() && needs.refs.outputs.new_release == 'true' && github.ref == 'refs/heads/main'
     steps:
       - name: Source checkout
         uses: actions/checkout@v2
