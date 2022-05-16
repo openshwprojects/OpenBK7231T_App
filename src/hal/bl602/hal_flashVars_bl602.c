@@ -79,6 +79,6 @@ void HAL_FlashVars_IncreaseBootCount(){
 
 
 
-#endif // PLATFORM_XR809
+#endif // PLATFORM_BL602
 
 
