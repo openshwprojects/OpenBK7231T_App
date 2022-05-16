@@ -12,6 +12,7 @@
 #include "../httpserver/new_http.h"
 
 void DRV_DGR_Init();
+void DRV_DGR_RunFrame();
 
 typedef struct driver_s {
 	const char *name;
@@ -26,7 +27,9 @@ static driver_t g_drivers[] = {
 	{ "NTP", NTP_Init, NTP_OnEverySecond, NULL, false }, 
 	{ "I2C", DRV_I2C_Init, DRV_I2C_EverySecond, NULL, false }, 
 	{ "BL0942", BL0942_Init, BL0942_RunFrame, BL0942_AppendInformationToHTTPIndexPage, false }, 
-	{ "DGR", DRV_DGR_Init, NULL, NULL, false }, 
+#if PLATFORM_BEKEN
+	{ "DGR", DRV_DGR_Init, DRV_DGR_RunFrame, NULL, false }, 
+#endif
 };
 static int g_numDrivers = sizeof(g_drivers)/sizeof(g_drivers[0]);
 
@@ -41,6 +44,7 @@ void DRV_OnEverySecond() {
 		}
 	}
 }
+// startDriver DGR
 // startDriver BL0942
 int DRV_Start(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int i;
@@ -63,6 +67,15 @@ int DRV_Start(const void *context, const char *cmd, const char *args, int cmdFla
 		}
 	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Driver %s is not known in this build.\n",name);
+	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Available drivers: ");
+	for(i = 0; i < g_numDrivers; i++) {
+		if(i == 0) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"%s",g_drivers[i].name);
+		} else {
+			addLogAdv(LOG_INFO, LOG_FEATURE_NTP,", %s",g_drivers[i].name);
+		}
+	}
+
 	return 1;
 }
 void DRV_Generic_Init() {
