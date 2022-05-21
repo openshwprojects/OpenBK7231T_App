@@ -33,7 +33,6 @@ int strIsInteger(const char *s) {
 }
 // returns amount of space left in buffer (0=overflow happened)
 int strcat_safe(char *tg, const char *src, int tgMaxLen) {
-	// keep space for 1 more char
 	int curOfs = 1;
 
 	// skip
@@ -63,8 +62,7 @@ int strcat_safe(char *tg, const char *src, int tgMaxLen) {
 
 int strcpy_safe_checkForChanges(char *tg, const char *src, int tgMaxLen) {
 	int changesFound = 0;
-	// keep space for 1 more char
-	int curOfs = 1;
+	int curOfs = 0;
 	// copy
 	while(*src != 0) {
 		if(*tg != *src) {
@@ -89,8 +87,7 @@ int strcpy_safe_checkForChanges(char *tg, const char *src, int tgMaxLen) {
 	return changesFound;
 }
 int strcpy_safe(char *tg, const char *src, int tgMaxLen) {
-	// keep space for 1 more char
-	int curOfs = 1;
+	int curOfs = 0;
 	// copy
 	while(*src != 0) {
 		*tg = *src;
