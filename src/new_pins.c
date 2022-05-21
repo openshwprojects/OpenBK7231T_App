@@ -820,6 +820,10 @@ int CHANNEL_ParseChannelType(const char *s) {
 		return ChType_LowMidHigh;
 	if(!stricmp(s,"default") )
 		return ChType_Default;
+	if(!stricmp(s,"TextField") )
+		return ChType_TextField;
+	if(!stricmp(s,"ReadOnly") )
+		return ChType_ReadOnly;
 	return ChType_Error;
 }
 static int CMD_ShowChannelValues(const void *context, const char *cmd, const char *args, int cmdFlags){

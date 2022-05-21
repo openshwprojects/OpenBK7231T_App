@@ -45,6 +45,8 @@ enum ChannelType {
 	ChType_Toggle,
 	ChType_Dimmer,
 	ChType_LowMidHigh,
+	ChType_TextField,
+	ChType_ReadOnly,
 };
 
 

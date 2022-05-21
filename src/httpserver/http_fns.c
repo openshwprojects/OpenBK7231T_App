@@ -211,6 +211,22 @@ int http_fn_index(http_request_t *request) {
 			}
             hprintf128(request,"</form>");
             hprintf128(request,"<br>");
+		} else if(channelType == ChType_TextField) {
+			int iValue;
+			iValue = CHANNEL_Get(i);
+
+            hprintf128(request,"<p>Change channel %i value:</p><form action=\"index\">",i);
+            hprintf128(request,"<input type=\"hidden\" name=\"setIndex\" value=\"%i\">",i);
+            hprintf128(request,"<input type=\"number\" name=\"set\" value=\"%i\">",iValue);
+            hprintf128(request,"<input type=\"submit\" value=\"Set!\"/></form>");
+            hprintf128(request,"</form>");
+            hprintf128(request,"<br>");
+		} else if(channelType == ChType_ReadOnly) {
+			int iValue;
+			iValue = CHANNEL_Get(i);
+
+            hprintf128(request,"Channel %i = %i",i,iValue);
+            hprintf128(request,"<br>");
 
 		} else if(h_isChannelRelay(i) || channelType == ChType_Toggle) {
             const char *c;
