@@ -512,6 +512,23 @@ void CHANNEL_Add(int ch, int iVal) {
 	Channel_OnChanged(ch,prevValue);
 }
 
+int CHANNEL_FindMaxValueForChannel(int ch) {
+	int i;
+	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		// is pin tied to this channel?
+		if(g_cfg.pins.channels[i] == ch) {
+			// is it PWM?
+			if(g_cfg.pins.roles[i] == IOR_PWM) {
+				return 100;
+			}
+		}
+	}
+	if(g_cfg.pins.channelTypes[ch] == ChType_Dimmer)
+		return 100;
+	return 1;
+}
+// PWMs are toggled between 0 and 100 (0% and 100% PWM)
+// Relays and everything else is toggled between 0 (off) and 1 (on)
 void CHANNEL_Toggle(int ch) {
 	int prev;
 
@@ -521,7 +538,7 @@ void CHANNEL_Toggle(int ch) {
 	}
 	prev = g_channelValues[ch];
 	if(g_channelValues[ch] == 0)
-		g_channelValues[ch] = 100;
+		g_channelValues[ch] = CHANNEL_FindMaxValueForChannel(ch);
 	else
 		g_channelValues[ch] = 0;
 
