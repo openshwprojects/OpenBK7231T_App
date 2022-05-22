@@ -439,6 +439,9 @@ static void Channel_OnChanged(int ch, int prevValue) {
 			}
 		}
 	}
+	if(g_cfg.pins.channelTypes[ch] != ChType_Default) {
+		bCallCb = 1;
+	}
 	if(bCallCb) {
 		if(g_channelChangeCallback != 0) {
 			g_channelChangeCallback(ch,iVal);
