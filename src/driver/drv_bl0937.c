@@ -24,6 +24,12 @@ int GPIO_HLW_CF = 7;
 int GPIO_NRG_CF1 = 8; 
 
 bool g_sel = true;
+uint32_t res_v = 0;
+uint32_t res_c = 0;
+uint32_t res_p = 0;
+float calib_v = 0.13253012048f;
+float calib_p = 1.5f;
+float calib_c = 0.0118577075f;
 
 volatile uint32_t g_vc_pulses = 0;
 volatile uint32_t g_p_pulses = 0;
@@ -33,6 +39,82 @@ void HlwCf1Interrupt(unsigned char pinNum) {  // Service Voltage and Current
 }
 void HlwCfInterrupt(unsigned char pinNum) {  // Service Power
 	g_p_pulses++;
+}
+int BL0937_PowerSet(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	float realPower;
+
+	if(args==0||*args==0) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_BL0942,"This command needs one argument");
+		return 1;
+	}
+	realPower = atof(args);
+	calib_p = realPower / res_p;
+	{
+		char dbg[128];
+		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realPower, calib_p);
+		addLogAdv(LOG_INFO, LOG_FEATURE_BL0942,dbg);
+	}
+	return 0;
+}
+int BL0937_PowerRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
+
+	if(args==0||*args==0) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_BL0942,"This command needs one argument");
+		return 1;
+	}
+	calib_p = atof(args);
+	return 0;
+}
+int BL0937_CurrentRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
+
+	if(args==0||*args==0) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_BL0942,"This command needs one argument");
+		return 1;
+	}
+	calib_c = atof(args);
+	return 0;
+}
+int BL0937_VoltageRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
+
+	if(args==0||*args==0) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_BL0942,"This command needs one argument");
+		return 1;
+	}
+	calib_v = atof(args);
+	return 0;
+}
+int BL0937_VoltageSet(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	float realV;
+
+	if(args==0||*args==0) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_BL0942,"This command needs one argument");
+		return 1;
+	}
+	realV = atof(args);
+	calib_v = realV / res_v;
+	{
+		char dbg[128];
+		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realV, calib_v);
+		addLogAdv(LOG_INFO, LOG_FEATURE_BL0942,dbg);
+	}
+
+	return 0;
+}
+int BL0937_CurrentSet(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	float realI;
+
+	if(args==0||*args==0) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_BL0942,"This command needs one argument");
+		return 1;
+	}
+	realI = atof(args);
+	calib_c = realI / res_c;
+	{
+		char dbg[128];
+		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realI, calib_c);
+		addLogAdv(LOG_INFO, LOG_FEATURE_BL0942,dbg);
+	}
+	return 0;
 }
 void BL0937_Init() {
 	
@@ -46,13 +128,13 @@ void BL0937_Init() {
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF);
     gpio_int_enable(GPIO_HLW_CF,IRQ_TRIGGER_FALLING_EDGE,HlwCfInterrupt);
 
+	CMD_RegisterCommand("PowerSet","",BL0937_PowerSet, "Sets current power value for calibration", NULL);
+	CMD_RegisterCommand("VoltageSet","",BL0937_VoltageSet, "Sets current V value for calibration", NULL);
+	CMD_RegisterCommand("CurrentSet","",BL0937_CurrentSet, "Sets current I value for calibration", NULL);
+	CMD_RegisterCommand("PREF","",BL0937_PowerRef, "Sets the calibration multiplier", NULL);
+	CMD_RegisterCommand("VREF","",BL0937_VoltageRef, "Sets the calibration multiplier", NULL);
+	CMD_RegisterCommand("IREF","",BL0937_CurrentRef, "Sets the calibration multiplier", NULL);
 }
-uint32_t res_v = 0;
-uint32_t res_c = 0;
-uint32_t res_p = 0;
-float calib_v = 0.13253012048f;
-float calib_p = 1.5f;
-float calib_c = 0.0118577075f;
 void BL0937_RunFrame() {
 	float final_v;
 	float final_c;
