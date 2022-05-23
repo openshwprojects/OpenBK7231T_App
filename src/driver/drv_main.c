@@ -14,6 +14,9 @@
 void DRV_DGR_Init();
 void DRV_DGR_RunFrame();
 
+void BL0937_Init();
+void BL0937_RunFrame();
+
 typedef struct driver_s {
 	const char *name;
 	void (*initFunc)();
@@ -22,13 +25,15 @@ typedef struct driver_s {
 	bool bLoaded;
 } driver_t;
 
+// startDriver BL0937
 static driver_t g_drivers[] = {
 	{ "TuyaMCU", TuyaMCU_Init, TuyaMCU_RunFrame, NULL, false }, 
 	{ "NTP", NTP_Init, NTP_OnEverySecond, NULL, false }, 
 	{ "I2C", DRV_I2C_Init, DRV_I2C_EverySecond, NULL, false }, 
 	{ "BL0942", BL0942_Init, BL0942_RunFrame, BL0942_AppendInformationToHTTPIndexPage, false }, 
+	{ "BL0937", BL0937_Init, BL0937_RunFrame, NULL, false }, 
 #if PLATFORM_BEKEN
-	{ "DGR", DRV_DGR_Init, DRV_DGR_RunFrame, NULL, false }, 
+	{ "DGR", DRV_DGR_Init, DRV_DGR_RunFrame, NULL, NULL, false }, 
 #endif
 };
 static int g_numDrivers = sizeof(g_drivers)/sizeof(g_drivers[0]);
