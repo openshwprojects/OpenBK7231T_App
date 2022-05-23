@@ -50,7 +50,13 @@ void BL0937_Init() {
 uint32_t res_v = 0;
 uint32_t res_c = 0;
 uint32_t res_p = 0;
+float calib_v = 0.13253012048f;
+float calib_p = 1.5f;
+float calib_c = 0.0118577075f;
 void BL0937_RunFrame() {
+	float final_v;
+	float final_c;
+	float final_p;
 
 	if(g_sel) {
 		res_v = g_vc_pulses;
@@ -66,5 +72,10 @@ void BL0937_RunFrame() {
 	g_p_pulses = 0;
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_BL0942,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
+
+	final_v = res_v * calib_v;
+	final_c = res_c * calib_c;
+	final_p = res_p * calib_p;
+	addLogAdv(LOG_INFO, LOG_FEATURE_BL0942,"Voltage %f, current %f, power %f\n", final_v, final_c, final_p);
 }
 
