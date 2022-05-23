@@ -39,7 +39,6 @@ void BL0937_Init() {
 	HAL_PIN_Setup_Output(GPIO_NRG_SEL);
     HAL_PIN_SetOutputValue(GPIO_NRG_SEL, g_sel);
 
-
 	HAL_PIN_Setup_Input_Pullup(GPIO_NRG_CF1);
 	
     gpio_int_enable(GPIO_NRG_CF1,IRQ_TRIGGER_FALLING_EDGE,HlwCf1Interrupt);
@@ -48,16 +47,24 @@ void BL0937_Init() {
     gpio_int_enable(GPIO_HLW_CF,IRQ_TRIGGER_FALLING_EDGE,HlwCfInterrupt);
 
 }
+uint32_t res_v = 0;
+uint32_t res_c = 0;
+uint32_t res_p = 0;
 void BL0937_RunFrame() {
-	uint32_t res_vc = 0;
-	uint32_t res_p = 0;
 
-	res_vc = g_vc_pulses;
+	if(g_sel) {
+		res_v = g_vc_pulses;
+		g_sel = false;
+	} else {
+		res_c = g_vc_pulses;
+		g_sel = true;
+	}
+    HAL_PIN_SetOutputValue(GPIO_NRG_SEL, g_sel);
 	g_vc_pulses = 0;
 
 	res_p = g_p_pulses;
 	g_p_pulses = 0;
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_BL0942,"VI pulses %i, power %i\n", res_vc, g_p_pulses);
+	addLogAdv(LOG_INFO, LOG_FEATURE_BL0942,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, g_p_pulses);
 }
 
