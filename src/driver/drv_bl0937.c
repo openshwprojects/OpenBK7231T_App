@@ -65,6 +65,6 @@ void BL0937_RunFrame() {
 	res_p = g_p_pulses;
 	g_p_pulses = 0;
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_BL0942,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, g_p_pulses);
+	addLogAdv(LOG_INFO, LOG_FEATURE_BL0942,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
 }
 
