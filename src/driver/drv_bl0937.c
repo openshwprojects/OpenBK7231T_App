@@ -5,7 +5,8 @@
 #include "../cmnds/cmd_public.h"
 #include "../mqtt/new_mqtt.h"
 #include "../logging/logging.h"
-#include "drv_bl0942.h"
+#include "../hal/hal_pins.h"
+#include "drv_local.h"
 #include "drv_uart.h"
 #include "../httpserver/new_http.h"
 
@@ -159,5 +160,7 @@ void BL0937_RunFrame() {
 	final_c = res_c * calib_c;
 	final_p = res_p * calib_p;
 	addLogAdv(LOG_INFO, LOG_FEATURE_BL0942,"Voltage %f, current %f, power %f\n", final_v, final_c, final_p);
+
+	BL_ProcessUpdate(final_v,final_c,final_p);
 }
 

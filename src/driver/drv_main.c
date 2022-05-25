@@ -4,18 +4,13 @@
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 #include "../logging/logging.h"
-#include "drv_bl0942.h"
+#include "drv_local.h"
 #include "drv_uart.h"
 #include "drv_tuyaMCU.h"
 #include "../i2c/drv_i2c_public.h"
 #include "drv_ntp.h"
 #include "../httpserver/new_http.h"
 
-void DRV_DGR_Init();
-void DRV_DGR_RunFrame();
-
-void BL0937_Init();
-void BL0937_RunFrame();
 
 typedef struct driver_s {
 	const char *name;
@@ -33,7 +28,7 @@ static driver_t g_drivers[] = {
 	{ "BL0942", BL0942_Init, BL0942_RunFrame, BL0942_AppendInformationToHTTPIndexPage, false }, 
 	{ "BL0937", BL0937_Init, BL0937_RunFrame, NULL, false }, 
 #if PLATFORM_BEKEN
-	{ "DGR", DRV_DGR_Init, DRV_DGR_RunFrame, NULL, NULL, false }, 
+	{ "DGR", DRV_DGR_Init, DRV_DGR_RunFrame, NULL, false }, 
 #endif
 };
 static int g_numDrivers = sizeof(g_drivers)/sizeof(g_drivers[0]);
