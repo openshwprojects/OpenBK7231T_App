@@ -211,6 +211,23 @@ int http_fn_index(http_request_t *request) {
 			}
             hprintf128(request,"</form>");
             hprintf128(request,"<br>");
+		} else if(channelType == ChType_OffLowMidHigh) {
+			const char *types[]={"Off","Low","Mid","High"};
+			int iValue;
+			iValue = CHANNEL_Get(i);
+
+            hprintf128(request,"<p>Select speed:</p><form action=\"index\">");
+            hprintf128(request,"<input type=\"hidden\" name=\"setIndex\" value=\"%i\">",i);
+			for(j = 0; j < 4; j++) {
+				const char *check;
+				if(j == iValue)
+					check = "checked";
+				else
+					check = "";
+				hprintf128(request,"<input type=\"radio\" name=\"set\" value=\"%i\" onchange=\"this.form.submit()\" %s>%s",j,check,types[j]);
+			}
+            hprintf128(request,"</form>");
+            hprintf128(request,"<br>");
 		} else if(channelType == ChType_TextField) {
 			int iValue;
 			iValue = CHANNEL_Get(i);

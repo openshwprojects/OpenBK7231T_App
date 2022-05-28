@@ -838,6 +838,8 @@ int CHANNEL_ParseChannelType(const char *s) {
 		return ChType_Dimmer;
 	if(!stricmp(s,"LowMidHigh") )
 		return ChType_LowMidHigh;
+	if(!stricmp(s,"OffLowMidHigh") )
+		return ChType_OffLowMidHigh;
 	if(!stricmp(s,"default") )
 		return ChType_Default;
 	if(!stricmp(s,"TextField") )

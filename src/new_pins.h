@@ -47,6 +47,7 @@ enum ChannelType {
 	ChType_LowMidHigh,
 	ChType_TextField,
 	ChType_ReadOnly,
+	ChType_OffLowMidHigh,
 };
 
 
