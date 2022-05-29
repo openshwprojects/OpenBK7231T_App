@@ -29,9 +29,9 @@ static void MCP23017_setBits( i2cDevice_MCP23017_t *mcp, byte tgRegAddr, byte bi
     byte temp;
 
     temp = MCP23017_readByte( mcp, tgRegAddr );
-    
+
     temp |= bitMask;
-    
+
     MCP23017_writeByte( mcp, tgRegAddr, temp );
 }
 static void MCP23017_clearBits( i2cDevice_MCP23017_t *mcp, byte tgRegAddr, byte bitMask )
@@ -39,9 +39,9 @@ static void MCP23017_clearBits( i2cDevice_MCP23017_t *mcp, byte tgRegAddr, byte 
     byte temp;
 
     temp = MCP23017_readByte( mcp, tgRegAddr );
-    
+
     temp &= ~bitMask;
-    
+
     MCP23017_writeByte( mcp, tgRegAddr, temp );
 }
 static void MCP23017_toggleBits( i2cDevice_MCP23017_t *mcp, byte tgRegAddr, byte bitMask )
@@ -49,9 +49,9 @@ static void MCP23017_toggleBits( i2cDevice_MCP23017_t *mcp, byte tgRegAddr, byte
     byte temp;
 
     temp = MCP23017_readByte( mcp, tgRegAddr );
-    
+
     temp ^= bitMask;
-    
+
     MCP23017_writeByte( mcp, tgRegAddr, temp );
 }
 static void MCP23017_setDirectionPortA( i2cDevice_MCP23017_t *mcp, byte toWrite )

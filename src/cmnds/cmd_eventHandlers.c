@@ -8,7 +8,7 @@
 
 // addEventHandler OnClick 5 setChannel 4 1
 // This will set event handler for event name "OnClick" for pin number 5, and the executed event command will be "setChannel 4 1"
-// addEventHandler OnHold 5 addChannel 4 10 
+// addEventHandler OnHold 5 addChannel 4 10
 // As above, but it will require a button hold and it will add value 10 to channel 4 (it will add a value to PWM, PWM channels are <0,100> range)
 
 //
@@ -35,18 +35,18 @@ setPinChannel 11 0
 setPinRole 26 PWM
 setPinChannel 26 1
 addEventHandler OnClick 10 setChannel 1 100
-addEventHandler OnHold 10 addChannel 1 10 
+addEventHandler OnHold 10 addChannel 1 10
 addEventHandler OnClick 11 setChannel 1 0
-addEventHandler OnHold 11 addChannel 1 -10 
+addEventHandler OnHold 11 addChannel 1 -10
 
 //
-// On change listeners 
+// On change listeners
 // Full example of on change listeners:
 // addChangeHandler Channel0 < 50 echo value is low
 // addChangeHandler Current > 100 setChannel 0 0
 // addChangeHandler Power > 40 setChannel 1 0
 //
-// 
+//
 // LCD demo:
 // backlog startDriver I2C; addI2CDevice_LCD_PCF8574 I2C1 0x23 0 0 0
 // addChangeHandler Channel1 != 0 backlog lcd_clearAndGoto I2C1 0x23 1 1; lcd_print I2C1 0x23 Enabled
@@ -179,7 +179,7 @@ void EventHandlers_ProcessVariableChange_Integer(byte eventCode, int oldValue, i
 	struct eventHandler_s *ev;
 
 	ev = g_eventHandlers;
-	
+
 	while(ev) {
 		if(eventCode==ev->eventCode) {
 			if(EVENT_EvaluateChangeCondition(ev->eventType, ev->requiredArgument, oldValue, newValue)) {
@@ -206,7 +206,7 @@ void EventHandlers_FireEvent(byte eventCode, int argument) {
 	struct eventHandler_s *ev;
 
 	ev = g_eventHandlers;
-	
+
 	while(ev) {
 		if(eventCode==ev->eventCode) {
 			if(argument == ev->requiredArgument) {
@@ -216,7 +216,7 @@ void EventHandlers_FireEvent(byte eventCode, int argument) {
 		}
 		ev = ev->next;
 	}
-	
+
 }
 
 static int CMD_AddEventHandler(const void *context, const char *cmd, const char *args, int cmdFlags){
@@ -234,17 +234,17 @@ static int CMD_AddEventHandler(const void *context, const char *cmd, const char 
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddEventHandler: command requires 3 arguments");
 		return 1;
 	}
-	
+
 	eventName = Tokenizer_GetArg(0);
 	reqArg = Tokenizer_GetArgInteger(1);
 	cmdToCall = Tokenizer_GetArgFrom(2);
-	
+
 	eventCode = EVENT_ParseEventName(eventName);
 	if(eventCode == CMD_EVENT_NONE) {
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddEventHandler: %s is not a valid event",eventName);
 		return 1;
 	}
-	
+
 	ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddEventHandler: added %s with cmd %s",eventName,cmdToCall);
 	EventHandlers_AddEventHandler_Integer(eventCode,EVENT_DEFAULT,reqArg,cmdToCall);
 
@@ -268,7 +268,7 @@ static int CMD_AddChangeHandler(const void *context, const char *cmd, const char
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddChangeHandler: command requires 4 arguments");
 		return 1;
 	}
-	
+
 	eventName = Tokenizer_GetArg(0);
 	relation = Tokenizer_GetArg(1);
 	reqArg = Tokenizer_GetArgInteger(2);
@@ -285,8 +285,8 @@ static int CMD_AddChangeHandler(const void *context, const char *cmd, const char
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddChangeHandler: %s is not a valid event",eventName);
 		return 1;
 	}
-	
-		
+
+
 	ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddChangeHandler: added %s with cmd %s",eventName,cmdToCall);
 	EventHandlers_AddEventHandler_Integer(eventCode,relationCode,reqArg,cmdToCall);
 
@@ -299,9 +299,9 @@ static int CMD_ListEvents(const void *context, const char *cmd, const char *args
 
 	ev = g_eventHandlers;
 	c = 0;
-	
+
 	while(ev) {
-		
+
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "Event %i has code %i and command %s",c,ev->eventCode,ev->command);
 		ev = ev->next;
 		c++;
@@ -314,7 +314,7 @@ void EventHandlers_Init() {
     CMD_RegisterCommand("AddEventHandler", "", CMD_AddEventHandler, "qqqqq0", NULL);
     CMD_RegisterCommand("AddChangeHandler", "", CMD_AddChangeHandler, "qqqqq0", NULL);
     CMD_RegisterCommand("listEvents", "", CMD_ListEvents, "qqqqq0", NULL);
-	
+
 }
 
 

@@ -2,7 +2,7 @@
 
 #include "../new_common.h"
 #include "../logging/logging.h"
-#include "ctype.h" 
+#include "ctype.h"
 #include "new_http.h"
 #include "http_fns.h"
 #include "../new_pins.h"
@@ -86,7 +86,7 @@ int HTTP_RegisterCallback( const char *url, int method, http_callback_fn callbac
 	strcpy(callbacks[numCallbacks]->url, url);
 	callbacks[numCallbacks]->callback = callback;
 	callbacks[numCallbacks]->method = method;
-	
+
 	numCallbacks++;
 
 	// success
@@ -94,7 +94,7 @@ int HTTP_RegisterCallback( const char *url, int method, http_callback_fn callbac
 }
 
 int my_strnicmp(char *a, char *b, int len){
-	int i; 
+	int i;
 	for (i = 0; i < len; i++){
 		char x = *a;
 		char y = *b;
@@ -490,7 +490,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 	} while(1);
 
 	request->bodystart = p;
-	request->bodylen = request->receivedLen - (p - request->received); 
+	request->bodylen = request->receivedLen - (p - request->received);
 
 	// look for a callback with this URL and method, or HTTP_ANY
 	for (i = 0; i < numCallbacks; i++){
@@ -513,7 +513,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 	if(http_checkUrlBase(urlStr,"cfg_mqtt_set")) return http_fn_cfg_mqtt_set(request);
 
 	if(http_checkUrlBase(urlStr,"cfg_webapp")) return http_fn_cfg_webapp(request);
-	if(http_checkUrlBase(urlStr,"cfg_webapp_set")) return http_fn_cfg_webapp_set(request); 
+	if(http_checkUrlBase(urlStr,"cfg_webapp_set")) return http_fn_cfg_webapp_set(request);
 
 	if(http_checkUrlBase(urlStr,"cfg_wifi")) return http_fn_cfg_wifi(request);
 	if(http_checkUrlBase(urlStr,"cfg_name")) return http_fn_cfg_name(request);

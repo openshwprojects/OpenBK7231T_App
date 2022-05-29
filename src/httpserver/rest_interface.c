@@ -76,7 +76,7 @@ void init_rest(){
     HTTP_RegisterCallback( "/favicon.ico", HTTP_GET, http_favicon);
 }
 
-const char *apppage1 = 
+const char *apppage1 =
 "<!DOCTYPE html>"
 "<html>"
 "    <head>"
@@ -116,7 +116,7 @@ const char * apppage4 = "startup.js\"></script>"
 
 static int http_rest_get(http_request_t *request){
     ADDLOG_DEBUG(LOG_FEATURE_API, "GET of %s", request->url);
-    
+
     if (!strcmp(request->url, "api/channels")){
         return http_rest_get_channels(request);
     }
@@ -164,9 +164,9 @@ static int http_rest_get(http_request_t *request){
     if (!strncmp(request->url, "api/testflashvars", 17)){
         return http_rest_get_flash_vars_test(request);
     }
-    
-    
-    
+
+
+
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request, "GET of ");
@@ -210,7 +210,7 @@ static int http_rest_post(http_request_t *request){
     if (!strcmp(request->url, "api/cmnd")){
         return http_rest_post_cmd(request);
     }
-    
+
 
 #ifdef BK_LITTLEFS
     if (!strcmp(request->url, "api/fsblock")){
@@ -306,7 +306,7 @@ static int http_rest_get_lfs_file(http_request_t *request){
     memset(file, 0, sizeof(lfs_file_t));
 
     strcpy(fpath, request->url + strlen("api/lfs/"));
-    
+
     ADDLOG_DEBUG(LOG_FEATURE_API, "LFS read of %s", fpath);
     lfsres = lfs_file_open(&lfs, file, fpath, LFS_O_RDONLY);
 
@@ -334,12 +334,12 @@ static int http_rest_get_lfs_file(http_request_t *request){
                 lfsres = lfs_dir_read(&lfs, dir, &info);
                 if (lfsres > 0){
                     if (count) poststr(request, ",");
-                    hprintf128(request, "{\"name\":\"%s\",\"type\":%d,\"size\":%d}", 
+                    hprintf128(request, "{\"name\":\"%s\",\"type\":%d,\"size\":%d}",
                         info.name, info.type, info.size);
                 } else {
                     if (lfsres < 0){
                         if (count) poststr(request, ",");
-                        hprintf128(request, "{\"error\":%d}", lfsres); 
+                        hprintf128(request, "{\"error\":%d}", lfsres);
                     }
                 }
                 count++;
@@ -456,7 +456,7 @@ static int http_rest_post_lfs_file(http_request_t *request){
             towrite = request->contentLength;
         }
         //ADDLOG_DEBUG(LOG_FEATURE_API, "bodylen %d, contentlen %d", request->bodylen, request->contentLength);
-        
+
         if (writelen < 0){
             ADDLOG_DEBUG(LOG_FEATURE_API, "ABORTED: %d bytes to write", writelen);
             lfs_file_close(&lfs, file);
@@ -807,7 +807,7 @@ static int http_rest_post_flash(http_request_t *request, int startaddr){
     if (request->contentLength >= 0){
         towrite = request->contentLength;
     }
-        
+
     if (writelen < 0 || (startaddr + writelen > 0x200000)){
         ADDLOG_DEBUG(LOG_FEATURE_API, "ABORTED: %d bytes to write", writelen);
         return http_rest_error(request, -20, "writelen < 0 or end > 0x200000");
@@ -847,7 +847,7 @@ static int http_rest_post_reboot(http_request_t *request){
 
 static int http_rest_get_flash_advanced(http_request_t *request){
     char *params = request->url + 10;
-    int startaddr = 0; 
+    int startaddr = 0;
     int len = 0;
     int sres;
     sres = sscanf(params, "%x-%x", &startaddr, &len);
@@ -859,7 +859,7 @@ static int http_rest_get_flash_advanced(http_request_t *request){
 
 static int http_rest_post_flash_advanced(http_request_t *request){
     char *params = request->url + 10;
-    int startaddr = 0; 
+    int startaddr = 0;
     int sres;
     sres = sscanf(params, "%x", &startaddr);
     if (sres == 1 && startaddr >= START_ADR_OF_BK_PARTITION_OTA){
@@ -913,7 +913,7 @@ static int http_rest_get_dumpconfig(http_request_t *request){
 
 
 
-#ifdef TESTCONFIG_ENABLE    
+#ifdef TESTCONFIG_ENABLE
 // added for OpenBK7231T
 typedef struct item_new_test_config
 {
@@ -922,7 +922,7 @@ typedef struct item_new_test_config
 }ITEM_NEW_TEST_CONFIG,*ITEM_NEW_TEST_CONFIG_PTR;
 
 ITEM_NEW_TEST_CONFIG testconfig;
-#endif    
+#endif
 
 static int http_rest_get_testconfig(http_request_t *request){
     return http_rest_error(request, 400, "unsupported");
@@ -937,7 +937,7 @@ static int http_rest_get_flash_vars_test(http_request_t *request){
 //#else
 //#ifndef DISABLE_FLASH_VARS_VARS
 //    char *params = request->url + 17;
-//    int increment = 0; 
+//    int increment = 0;
 //    int len = 0;
 //    int sres;
 //    int i;
@@ -962,14 +962,14 @@ static int http_rest_get_flash_vars_test(http_request_t *request){
 //        }
 //    }
 //
-//    sprintf(tmp, "offset %d, boot count %d, boot success %d, bootfailures %d", 
-//        flash_vars_offset, 
-//        p->boot_count, 
+//    sprintf(tmp, "offset %d, boot count %d, boot success %d, bootfailures %d",
+//        flash_vars_offset,
+//        p->boot_count,
 //        p->boot_success_count,
 //        p->boot_count - p->boot_success_count );
 //
 //    return http_rest_error(request, 200, tmp);
-//#else 
+//#else
     return http_rest_error(request, 400, "flash test unsupported");
 }
 

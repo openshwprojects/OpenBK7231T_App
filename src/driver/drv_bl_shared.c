@@ -20,9 +20,9 @@ enum {
 	OBK_NUM_MEASUREMENTS,
 };
 
-// Current values 
+// Current values
 float lastReadings[OBK_NUM_MEASUREMENTS];
-// 
+//
 // Variables below are for optimization
 // We can't send a full MQTT update every second.
 // It's too much for Beken, and it's too much for LWIP 2 MQTT library,
@@ -35,13 +35,13 @@ float lastSentValues[OBK_NUM_MEASUREMENTS];
 // how much update frames has passed without sending MQTT update of read values?
 int noChangeFrames[OBK_NUM_MEASUREMENTS];
 // how much of value have to change in order to be send over MQTT again?
-int changeSendThresholds[OBK_NUM_MEASUREMENTS] = { 
+int changeSendThresholds[OBK_NUM_MEASUREMENTS] = {
 	0.25f, // voltage - OBK_VOLTAGE
 	0.002f, // current - OBK_CURRENT
 	0.25f, // power - OBK_POWER
 };
 // how are they called in MQTT
-const char *mqttNames[OBK_NUM_MEASUREMENTS] = { 
+const char *mqttNames[OBK_NUM_MEASUREMENTS] = {
 	"voltage",
 	"current",
 	"power"

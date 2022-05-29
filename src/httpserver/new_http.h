@@ -22,7 +22,7 @@ extern const char *g_build_str;
 
 
 
-#define MAX_QUERY 16 
+#define MAX_QUERY 16
 #define MAX_HEADERS 16
 typedef struct http_request_tag {
     char *received; // partial or whole received data, up to 1024

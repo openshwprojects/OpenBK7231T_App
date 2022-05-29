@@ -102,7 +102,7 @@ int HAL_Configuration_SaveConfigMemory(void *src, int dataLen){
 		ADDLOG_DEBUG(LOG_FEATURE_CFG, "HAL_Configuration_SaveConfigMemory: fdcm write failed\n");
 		return 0;
 	}
-	
+
 	ADDLOG_DEBUG(LOG_FEATURE_CFG, "HAL_Configuration_SaveConfigMemory: saved %d bytes", dataLen);
     return dataLen;
 }

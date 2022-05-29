@@ -28,8 +28,8 @@ void HTTPServer_Start()
 {
     OSStatus err = kNoErr;
 
-    err = rtos_create_thread( &g_http_thread, BEKEN_APPLICATION_PRIORITY, 
-									"TCP_server", 
+    err = rtos_create_thread( &g_http_thread, BEKEN_APPLICATION_PRIORITY,
+									"TCP_server",
 									(beken_thread_function_t)tcp_server_thread,
 									0x800,
 									(beken_thread_arg_t)0 );
@@ -51,7 +51,7 @@ static void tcp_client_thread( beken_thread_arg_t arg )
 {
   OSStatus err = kNoErr;
   int fd = (int) arg;
-  //fd_set readfds, errfds, readfds2; 
+  //fd_set readfds, errfds, readfds2;
   char *buf = NULL;
   char *reply = NULL;
 	int replyBufferSize = 10000;
@@ -62,7 +62,7 @@ static void tcp_client_thread( beken_thread_arg_t arg )
 
   reply = (char*) os_malloc( replyBufferSize );
   buf = (char*) os_malloc( 1026 );
-  
+
   if ( buf == 0 || reply == 0)
   {
       ADDLOG_ERROR(LOG_FEATURE_HTTP, "TCP Client failed to malloc buffer" );
@@ -101,12 +101,12 @@ static void tcp_client_thread( beken_thread_arg_t arg )
   rtos_delay_milliseconds(10);
 
 exit:
-  if ( err != kNoErr ) 
+  if ( err != kNoErr )
     ADDLOG_ERROR(LOG_FEATURE_HTTP, "TCP client thread exit with err: %d", err );
 
-  if ( buf != NULL ) 
+  if ( buf != NULL )
     os_free( buf );
-  if ( reply != NULL ) 
+  if ( reply != NULL )
     os_free( reply );
 
   lwip_close( fd );;
@@ -134,9 +134,9 @@ static void tcp_server_thread( beken_thread_arg_t arg )
     server_addr.sin_addr.s_addr = INADDR_ANY;/* Accept conenction request on all network interface */
     server_addr.sin_port = htons( HTTP_SERVER_PORT );/* Server listen on port: 20000 */
     err = bind( tcp_listen_fd, (struct sockaddr *) &server_addr, sizeof(server_addr) );
-    
+
     err = listen( tcp_listen_fd, 0 );
-    
+
     while ( 1 )
     {
         FD_ZERO( &readfds );
@@ -164,7 +164,7 @@ static void tcp_server_thread( beken_thread_arg_t arg )
 				tcp_client_thread((beken_thread_arg_t)client_fd);
 #else
 				// Create separate thread for client
-                if ( kNoErr != 
+                if ( kNoErr !=
 #if PLATFORM_XR809
 					OS_ThreadCreate(&clientThreadUnused,
 							                     "HTTP Client",
@@ -174,14 +174,14 @@ static void tcp_server_thread( beken_thread_arg_t arg )
 		                0x400)
 
 #else
-                     rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY, 
+                     rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY,
 							                     "HTTP Client",
                                                  (beken_thread_function_t)tcp_client_thread,
-                                                 0x800, 
+                                                 0x800,
                                                  (beken_thread_arg_t)client_fd )
-	
+
 #endif
-												 ) 
+												 )
                 {
                   ADDLOG_DEBUG(LOG_FEATURE_HTTP,  "TCP Client %s:%d thread creation failed! fd: %d", client_ip_str, client_addr.sin_port, client_fd );
                   lwip_close( client_fd );
@@ -191,10 +191,10 @@ static void tcp_server_thread( beken_thread_arg_t arg )
             }
         }
     }
-	
-    if ( err != kNoErr ) 
+
+    if ( err != kNoErr )
 		  ADDLOG_ERROR(LOG_FEATURE_HTTP,  "Server listerner thread exit with err: %d", err );
-	
+
     lwip_close( tcp_listen_fd );
 
     rtos_delete_thread( NULL );

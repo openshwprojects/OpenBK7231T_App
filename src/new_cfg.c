@@ -154,7 +154,7 @@ int CFG_GetPingIntervalSeconds() {
 	return g_cfg.ping_interval;
 }
 void CFG_SetPingHost(const char *s) {
-	// this will return non-zero if there were any changes 
+	// this will return non-zero if there were any changes
 	if(strcpy_safe_checkForChanges(g_cfg.ping_host, s,sizeof(g_cfg.ping_host))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
@@ -179,14 +179,14 @@ void CFG_SetShortStartupCommand_AndExecuteNow(const char *s) {
 	CMD_ExecuteCommand(s,COMMAND_FLAG_SOURCE_SCRIPT);
 }
 void CFG_SetShortStartupCommand(const char *s) {
-	// this will return non-zero if there were any changes 
+	// this will return non-zero if there were any changes
 	if(strcpy_safe_checkForChanges(g_cfg.initCommandLine, s,sizeof(g_cfg.initCommandLine))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
 	}
 }
 int CFG_SetWebappRoot(const char *s) {
-	// this will return non-zero if there were any changes 
+	// this will return non-zero if there were any changes
 	if(strcpy_safe_checkForChanges(g_cfg.webappRoot, s,sizeof(g_cfg.webappRoot))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
@@ -209,14 +209,14 @@ int CFG_GetMQTTPort() {
 	return g_cfg.mqtt_port;
 }
 void CFG_SetShortDeviceName(const char *s) {
-	// this will return non-zero if there were any changes 
+	// this will return non-zero if there were any changes
 	if(strcpy_safe_checkForChanges(g_cfg.shortDeviceName, s,sizeof(g_cfg.shortDeviceName))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
 	}
 }
 void CFG_SetDeviceName(const char *s) {
-	// this will return non-zero if there were any changes 
+	// this will return non-zero if there were any changes
 	if(strcpy_safe_checkForChanges(g_cfg.longDeviceName, s,sizeof(g_cfg.longDeviceName))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
@@ -247,14 +247,14 @@ const char *CFG_GetWiFiPass(){
 	return g_cfg.wifi_pass;
 }
 void CFG_SetWiFiSSID(const char *s) {
-	// this will return non-zero if there were any changes 
+	// this will return non-zero if there were any changes
 	if(strcpy_safe_checkForChanges(g_cfg.wifi_ssid, s,sizeof(g_cfg.wifi_ssid))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
 	}
 }
 void CFG_SetWiFiPass(const char *s) {
-	// this will return non-zero if there were any changes 
+	// this will return non-zero if there were any changes
 	if(strcpy_safe_checkForChanges(g_cfg.wifi_pass, s,sizeof(g_cfg.wifi_pass))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
@@ -273,28 +273,28 @@ const char *CFG_GetMQTTPass() {
 	return g_cfg.mqtt_pass;
 }
 void CFG_SetMQTTHost(const char *s) {
-	// this will return non-zero if there were any changes 
+	// this will return non-zero if there were any changes
 	if(strcpy_safe_checkForChanges(g_cfg.mqtt_host, s,sizeof(g_cfg.mqtt_host))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
 	}
 }
 void CFG_SetMQTTBrokerName(const char *s) {
-	// this will return non-zero if there were any changes 
+	// this will return non-zero if there were any changes
 	if(strcpy_safe_checkForChanges(g_cfg.mqtt_brokerName, s,sizeof(g_cfg.mqtt_brokerName))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
 	}
 }
 void CFG_SetMQTTUserName(const char *s) {
-	// this will return non-zero if there were any changes 
+	// this will return non-zero if there were any changes
 	if(strcpy_safe_checkForChanges(g_cfg.mqtt_userName, s,sizeof(g_cfg.mqtt_userName))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
 	}
 }
 void CFG_SetMQTTPass(const char *s) {
-	// this will return non-zero if there were any changes 
+	// this will return non-zero if there were any changes
 	if(strcpy_safe_checkForChanges(g_cfg.mqtt_pass, s,sizeof(g_cfg.mqtt_pass))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
@@ -347,7 +347,7 @@ void CFG_InitAndLoad() {
 
 	HAL_Configuration_ReadConfigMemory(&g_cfg,sizeof(g_cfg));
 	chkSum = CFG_CalcChecksum(&g_cfg);
-	if(g_cfg.ident0 != CFG_IDENT_0 || g_cfg.ident1 != CFG_IDENT_1 || g_cfg.ident2 != CFG_IDENT_2 
+	if(g_cfg.ident0 != CFG_IDENT_0 || g_cfg.ident1 != CFG_IDENT_1 || g_cfg.ident2 != CFG_IDENT_2
 		|| chkSum != g_cfg.crc) {
 			addLogAdv(LOG_WARN, LOG_FEATURE_CFG, "CFG_InitAndLoad: Config crc or ident mismatch. Default config will be loaded.");
 		CFG_SetDefaultConfig();

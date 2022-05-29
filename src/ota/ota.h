@@ -12,7 +12,7 @@
 #define START_ADR_OF_BK_PARTITION_OTA 0x132000
 #endif
 
-// initialise OTA flash starting at startaddr 
+// initialise OTA flash starting at startaddr
 int init_ota(unsigned int startaddr);
 
 // add any length of data to OTA

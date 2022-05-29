@@ -32,7 +32,7 @@
 // NOTE: there are 2 customization commands
 // They are not storing the config in flash, if you use them,
 // please put them in autoexec.bat from LittleFS.
-// Command 1: led_brightnessMult [floatVal] 
+// Command 1: led_brightnessMult [floatVal]
 // It sets the multipler for the dimming
 // Command 2: g_cfg_colorScaleToChannel [floatVal]
 // It sets the multipler for converting 0-255 range RGB to 0-100 channel value
@@ -40,7 +40,7 @@
 int parsePowerArgument(const char *s);
 
 // In general, LED can be in two modes:
-// - Temperature (Cool and Warm LEDs are on) 
+// - Temperature (Cool and Warm LEDs are on)
 // - RGB (R G B LEDs are on)
 // This is just like in Tuya.
 // The third mode, "All", was added by me for testing.
@@ -81,7 +81,7 @@ void apply_smart_light() {
 
 	for(i = 0; i < 5; i++) {
 		float raw, final;
-		
+
 		raw = baseColors[i];
 
 		if(g_lightEnableAll) {
@@ -97,7 +97,7 @@ void apply_smart_light() {
 				final = 0;
 			}
 		} else if(g_lightMode == Light_RGB) {
-			// skip channels 3, 4 
+			// skip channels 3, 4
 			if(i >= 3)
 			{
 				final = 0;
@@ -125,8 +125,8 @@ static int temperature(const void *context, const char *cmd, const char *args, i
 		tmp = atoi(args);
 
 		g_lightMode = Light_Temperature;
-// the slider control in the UI emits values 
-//in the range from 154-500 (defined 
+// the slider control in the UI emits values
+//in the range from 154-500 (defined
 //in homeassistant/util/color.py as HASS_COLOR_MIN and HASS_COLOR_MAX).
 
 		f = (tmp - 154);

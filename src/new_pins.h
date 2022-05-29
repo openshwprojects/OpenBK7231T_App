@@ -66,11 +66,11 @@ typedef struct pinsState_s {
 	// (so we assume we have maximum of 32 pins)
 	byte roles[32];
 	byte channels[32];
-	// extra channels array - this is needed for 
+	// extra channels array - this is needed for
 	// buttons, so button can toggle one relay on single click
 	// and other relay on double click
 	byte channels2[32];
-	// This single field above, is indexed by CHANNEL INDEX 
+	// This single field above, is indexed by CHANNEL INDEX
 	// (not by pin index)
 	byte channelTypes[CHANNEL_MAX];
 } pinsState_t;
@@ -78,7 +78,7 @@ typedef struct pinsState_s {
 //
 // Main config structure (less than 2KB)
 //
-// This config structure is supposed  to be saved only when user 
+// This config structure is supposed  to be saved only when user
 // changes the device configuration, so really not often.
 // We should not worry about flash memory wear in this case.
 // The saved-every-reboot values are stored elsewhere

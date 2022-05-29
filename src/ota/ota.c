@@ -37,7 +37,7 @@ int init_ota(unsigned int startaddr){
         addr = startaddr;
         addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"init OTA, startaddr 0x%x\n", startaddr);
         return 1;
-    } 
+    }
     addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"aborting OTA, startaddr 0x%x < 0xff000\n", startaddr);
     return 0;
 }
@@ -132,7 +132,7 @@ int myhttpclientcallback(httprequest_t* request){
 	  CFG_Save_IfThereArePendingChanges();
 
       rtos_delay_milliseconds(1000);
-      bk_reboot(); 
+      bk_reboot();
       break;
   }
 
@@ -149,7 +149,7 @@ int myhttpclientcallback(httprequest_t* request){
 }
 
   // NOTE: these MUST persist
-// note: url must have a '/' after host, else it can;t parse it.. 
+// note: url must have a '/' after host, else it can;t parse it..
 static char url[256] = "http://raspberrypi:1880/firmware";
 static const char *header = "";
 static char *content_type = "text/csv";
@@ -173,7 +173,7 @@ void otarequest(const char *urlin){
   httpclient_data_t *client_data = &request->client_data;
 
   if (http_buf == (void *)0){
-    http_buf = os_malloc(BUF_SIZE+1); 
+    http_buf = os_malloc(BUF_SIZE+1);
     if (http_buf == (void *)0) {
         addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"startrequest Malloc failed.\r\n");
         return;
@@ -186,10 +186,10 @@ void otarequest(const char *urlin){
   client_data->post_buf = post_data;  //Sets the user data to be posted.
   client_data->post_buf_len = strlen(post_data);  //Sets the post data length.
   client_data->post_content_type = content_type;  //Sets the content type.
-  request->data_callback = &myhttpclientcallback; 
+  request->data_callback = &myhttpclientcallback;
   request->port = 80;//HTTP_PORT;
   request->url = url;
-  request->method = HTTPCLIENT_GET; 
+  request->method = HTTPCLIENT_GET;
   request->timeout = 10000;
   HTTPClient_Async_SendGeneric(request);
  }
