@@ -202,7 +202,7 @@ int32_t HAL_TCP_Read(uintptr_t fd, char *buf, uint32_t len, uint32_t timeout_ms)
 
         timeout.tv_sec = t_left / 1000;
         timeout.tv_usec = (t_left % 1000) * 1000;
-    
+
         ret = select(fd + 1, &sets, NULL, NULL, NULL);
         if ( FD_ISSET( fd, &sets ) )
         {
@@ -217,7 +217,7 @@ int32_t HAL_TCP_Read(uintptr_t fd, char *buf, uint32_t len, uint32_t timeout_ms)
 //                        {
 //                        http_data_process(buf,ret);
 //                    }
-                   
+
                     len_recv += ret;
                 } else if (0 == ret) {
                     ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"connection is closed");

@@ -190,7 +190,7 @@ int UART_TryToGetNextTuyaPacket(byte *out, int maxSize) {
 	byte a, b, version, command, lena, lenb;
 	char printfSkipDebug[256];
 	char buffer2[8];
-	
+
 	printfSkipDebug[0] = 0;
 
 	cs = UART_GetDataSize();
@@ -435,7 +435,7 @@ int TuyaMCU_Send_Hex(const void *context, const char *cmd, const char *args, int
 	while(*args) {
 		byte b;
 		b = hexbyte(args);
-		
+
 		UART_SendByte(b);
 
 		args += 2;
@@ -449,7 +449,7 @@ int TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, con
 	int dpType;
 	int channelID;
 
-	// linkTuyaMCUOutputToChannel dpId varType channelID 
+	// linkTuyaMCUOutputToChannel dpId varType channelID
 	Tokenizer_TokenizeString(args);
 
 	if(Tokenizer_GetArgsCount() < 3) {
@@ -698,7 +698,7 @@ void TuyaMCU_ParseStateMessage(const byte *data, int len) {
 	int dataType;
 
 	ofs = 0;
-	
+
 	while(ofs + 4 < len) {
 		sectorLen = data[ofs + 2] << 8 | data[ofs + 3];
 		fnId = data[ofs];
@@ -713,7 +713,7 @@ void TuyaMCU_ParseStateMessage(const byte *data, int len) {
 			// apply to channels
 			TuyaMCU_ApplyMapping(fnId,iVal);
 		}
-		if(sectorLen == 4) {  
+		if(sectorLen == 4) {
 			int iVal = data[ofs + 4] << 24 | data[ofs + 5] << 16 | data[ofs + 6] << 8 | data[ofs + 7];
 			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ParseStateMessage: raw data 4 int: %i\n",iVal);
 			// apply to channels
@@ -848,7 +848,7 @@ void TuyaMCU_Init()
 // https://github.com/esphome/feature-requests/issues/497
 /// 55AA 00 08 000C 00 02 02 02 02 02 02 01 01 0001 01 23
 /// head vr id size FL YY MM DD HH MM SS ID TP SIZE VL CK
-/// 55AA 00 08 000C 00 01 01 01 01 01 01 03 04 0001 02 23 
+/// 55AA 00 08 000C 00 01 01 01 01 01 01 03 04 0001 02 23
 // TP = 0x01	bool	1	Value range: 0x00/0x01.
 // TP = 0x04	enum	1	Enumeration type, ranging from 0 to 255.
 

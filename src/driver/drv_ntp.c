@@ -1,5 +1,5 @@
 // NTP client
-// Based on my previous work here: 
+// Based on my previous work here:
 // https://www.elektroda.pl/rtvforum/topic3712112.html
 
 #include "../new_common.h"
@@ -74,7 +74,7 @@ void NTP_Init() {
 
 unsigned int NTP_GetCurrentTime() {
 	return g_time;
-}	
+}
 
 
 void NTP_Shutdown() {
@@ -166,7 +166,7 @@ void NTP_CheckForReceive() {
 #else
     recv_len = recv(g_ntp_socket, ptr, i, 0);
 #endif
-	
+
 	if(recv_len < 0){
 		addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP_CheckForReceive: Error while receiving server's msg\n");
         return;

@@ -10,7 +10,7 @@
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
 
-const char* group = "239.255.250.250"; 
+const char* group = "239.255.250.250";
 int port = 4447;
 //
 //int DRV_DGR_CreateSocket_Send() {
@@ -52,11 +52,11 @@ void DRV_DGR_CreateSocket_Receive() {
         return ;
     }
 
-	if(broadcast) 
+	if(broadcast)
 	{
 
 		iResult = setsockopt(g_dgr_socket, SOL_SOCKET, SO_BROADCAST, (char *)&flag, sizeof(flag));
-		if (iResult != 0) 
+		if (iResult != 0)
 		{
 			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"failed to do setsockopt SO_BROADCAST\n");
 			return ;
@@ -93,7 +93,7 @@ void DRV_DGR_CreateSocket_Receive() {
     //    return 1;
     //}
 
-	if(broadcast) 
+	if(broadcast)
 	{
 
 	}
@@ -121,7 +121,7 @@ void DRV_DGR_CreateSocket_Receive() {
 }
 void DRV_DGR_RunFrame() {
     struct sockaddr_in addr;
-	
+
 	if(g_dgr_socket==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"no sock\n");
             return ;
@@ -165,12 +165,12 @@ void DRV_DGR_RunFrame() {
 //     OSStatus err = kNoErr;
 //
 //
-//    err = rtos_create_thread( &g_dgr_thread, BEKEN_APPLICATION_PRIORITY, 
-//									"DGR_server", 
+//    err = rtos_create_thread( &g_dgr_thread, BEKEN_APPLICATION_PRIORITY,
+//									"DGR_server",
 //									(beken_thread_function_t)DRV_DGR_Thread,
 //									0x100,
 //									(beken_thread_arg_t)0 );
-//   
+//
 //}
 
 void DRV_DGR_Init()
@@ -179,7 +179,7 @@ void DRV_DGR_Init()
 	DRV_DGR_StartThread();
 #else
 	DRV_DGR_CreateSocket_Receive();
-   
+
 	lwip_fcntl(g_dgr_socket, F_SETFL,O_NONBLOCK);
 #endif
 }

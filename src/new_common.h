@@ -46,7 +46,7 @@ typedef unsigned char uint8_t;
 typedef unsigned int uint32_t;
 typedef unsigned short uint16_t;
 
-	
+
 
 #elif PLATFORM_BL602
 
@@ -80,8 +80,8 @@ typedef int OSStatus;
 
 // wrappers for XR809 threads to work like bekken
 OSStatus rtos_delete_thread( beken_thread_t* thread );
-OSStatus rtos_create_thread( beken_thread_t* thread, 
-							uint8_t priority, const char* name, 
+OSStatus rtos_create_thread( beken_thread_t* thread,
+							uint8_t priority, const char* name,
 							beken_thread_function_t function,
 							uint32_t stack_size, beken_thread_arg_t arg );
 
@@ -121,8 +121,8 @@ typedef int OSStatus;
 
 // wrappers for XR809 threads to work like bekken
 OSStatus rtos_delete_thread( beken_thread_t* thread );
-OSStatus rtos_create_thread( beken_thread_t* thread, 
-							uint8_t priority, const char* name, 
+OSStatus rtos_create_thread( beken_thread_t* thread,
+							uint8_t priority, const char* name,
 							beken_thread_function_t function,
 							uint32_t stack_size, beken_thread_arg_t arg );
 

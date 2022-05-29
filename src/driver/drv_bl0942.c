@@ -85,12 +85,12 @@ int BL0942_TryToGetNextBL0942Packet() {
 		return 1;
 	}
 	//startDriver BL0942
-	raw_unscaled_current = (UART_GetNextByte(3) << 16) | (UART_GetNextByte(2) << 8) | UART_GetNextByte(1);  
-	raw_unscaled_voltage = (UART_GetNextByte(6) << 16) | (UART_GetNextByte(5) << 8) | UART_GetNextByte(4);  
-	raw_unscaled_power = (UART_GetNextByte(12) << 24) | (UART_GetNextByte(11) << 16) | (UART_GetNextByte(10) << 8);  
+	raw_unscaled_current = (UART_GetNextByte(3) << 16) | (UART_GetNextByte(2) << 8) | UART_GetNextByte(1);
+	raw_unscaled_voltage = (UART_GetNextByte(6) << 16) | (UART_GetNextByte(5) << 8) | UART_GetNextByte(4);
+	raw_unscaled_power = (UART_GetNextByte(12) << 24) | (UART_GetNextByte(11) << 16) | (UART_GetNextByte(10) << 8);
 	raw_unscaled_power = (raw_unscaled_power >> 8);
 
-	raw_unscaled_freq = (UART_GetNextByte(17) << 8) | UART_GetNextByte(16);  
+	raw_unscaled_freq = (UART_GetNextByte(17) << 8) | UART_GetNextByte(16);
 
 	// those are not values like 230V, but unscaled
 	//addLogAdv(LOG_INFO, LOG_FEATURE_BL0942,"Unscaled current %d, voltage %d, power %d, freq %d\n", raw_unscaled_current, raw_unscaled_voltage,raw_unscaled_power,raw_unscaled_freq);
@@ -116,7 +116,7 @@ int BL0942_TryToGetNextBL0942Packet() {
 #endif
 
 	UART_ConsumeBytes(BL0942_PACKET_LEN);
-	
+
 	return BL0942_PACKET_LEN;
 }
 

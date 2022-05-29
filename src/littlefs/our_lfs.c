@@ -31,7 +31,7 @@ extern UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address);
 extern UINT32 flash_write(char *user_buf, UINT32 count, UINT32 address);
 extern UINT32 flash_ctrl(UINT32 cmd, void *parm);
 
-#ifdef LFS_BOOTCOUNT        
+#ifdef LFS_BOOTCOUNT
 int boot_count = -1;
 #endif
 
@@ -108,7 +108,7 @@ void init_lfs(int create){
             ADDLOGF_INFO("Mounted existing LFS");
             lfs_initialised = 1;
         }
-#ifdef LFS_BOOTCOUNT        
+#ifdef LFS_BOOTCOUNT
         // read current count
         lfs_file_open(&lfs, &file, "boot_count", LFS_O_RDWR | LFS_O_CREAT);
         lfs_file_read(&lfs, &file, &boot_count, sizeof(boot_count));
@@ -121,7 +121,7 @@ void init_lfs(int create){
         // remember the storage is not updated until the file is closed successfully
         lfs_file_close(&lfs, &file);
         ADDLOGF_INFO("boot count %d", boot_count);
-#endif        
+#endif
     }
 }
 
@@ -158,7 +158,7 @@ static int lfs_write(const struct lfs_config *c, lfs_block_t block,
 
     startAddr += block*LFS_BLOCK_SIZE;
     startAddr += off;
-    
+
     GLOBAL_INT_DISABLE();
     flash_ctrl(CMD_FLASH_SET_PROTECT, &protect);
     flash_ctrl(CMD_FLASH_WRITE_ENABLE, (void *)0);
@@ -166,7 +166,7 @@ static int lfs_write(const struct lfs_config *c, lfs_block_t block,
     protect = FLASH_PROTECT_ALL;
     flash_ctrl(CMD_FLASH_SET_PROTECT, &protect);
     GLOBAL_INT_RESTORE();
-    
+
     return res;
 }
 

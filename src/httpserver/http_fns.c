@@ -73,7 +73,7 @@ template_t g_templates [] = {
 int g_total_templates = sizeof(g_templates)/sizeof(g_templates[0]);
 
 unsigned char hexdigit( char hex ) {
-    return (hex <= '9') ? hex - '0' : 
+    return (hex <= '9') ? hex - '0' :
                           toupper((unsigned char)hex) - 'A' + 10 ;
 }
 
@@ -333,7 +333,7 @@ int http_fn_cfg_mqtt(http_request_t *request) {
     poststr(request,"<form action=\"/cfg_mqtt_set\">\
             <label for=\"host\">Host:</label><br>\
             <input type=\"text\" id=\"host\" name=\"host\" value=\"");
-            
+
     poststr(request,CFG_GetMQTTHost());
     poststr(request,"\"><br>\
             <label for=\"port\">Port:</label><br>\
@@ -343,7 +343,7 @@ int http_fn_cfg_mqtt(http_request_t *request) {
     poststr(request,"\"><br><br>\
             <label for=\"port\">Client:</label><br>\
             <input type=\"text\" id=\"client\" name=\"client\" value=\"");
-            
+
     poststr(request,CFG_GetMQTTBrokerName());
     poststr(request,"\"><br>\
             <label for=\"user\">User:</label><br>\
@@ -388,7 +388,7 @@ int http_fn_cfg_mqtt_set(http_request_t *request) {
 	CFG_Save_SetupTimer();
 
     poststr(request,"Please wait for module to connect... if there is problem, restart it from Index html page...");
-    
+
     poststr(request,"<br>");
     poststr(request,"<a href=\"cfg_mqtt\">Return to MQTT settings</a>");
     poststr(request,"<br>");
@@ -410,7 +410,7 @@ int http_fn_cfg_webapp(http_request_t *request) {
     poststr(request,"<h2> Use this to set the URL of the Webapp</h2>");
     poststr(request,"<form action=\"/cfg_webapp_set\">\
             <label for=\"url\">Url:</label><br>\
-            <input type=\"text\" id=\"url\" name=\"url\" value=\"");			  
+            <input type=\"text\" id=\"url\" name=\"url\" value=\"");
     poststr(request,CFG_GetWebappRoot());
     poststr(request,"\"><br>\
             <input type=\"submit\" value=\"Submit\">\
@@ -437,7 +437,7 @@ int http_fn_cfg_webapp_set(http_request_t *request) {
     } else {
         poststr(request,"Webapp url not set because you didn't specify the argument.");
     }
-    
+
     poststr(request,"<br>");
     poststr(request,htmlReturnToCfg);
     HTTP_AddBuildFooter(request);
@@ -502,7 +502,7 @@ int http_fn_cfg_ping(http_request_t *request) {
             <input type=\"text\" id=\"host\" name=\"host\" value=\"");
 	tmp = CFG_GetPingHost();
     poststr(request,tmp);
-            
+
          /*   poststr(request, "\"><br>\
 		<label for=\"pass\">Interval (s) between pings:</label><br>\
             <input type=\"number\" id=\"interval\" name=\"interval\" value=\"");
@@ -514,7 +514,7 @@ int http_fn_cfg_ping(http_request_t *request) {
             <input type=\"number\" id=\"disconnectTime\" name=\"disconnectTime\" value=\"");
 			i = CFG_GetPingDisconnectedSecondsToRestart();
     hprintf128(request,"%i",i);
-            
+
     poststr(request,"\"><br><br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure?')\">\
         </form> ");
@@ -562,7 +562,7 @@ int http_fn_cfg_wifi(http_request_t *request) {
 
         AP_IF_S *ar;
         uint32_t num;
-        
+
         bk_printf("Scan begin...\r\n");
         tuya_hal_wifi_all_ap_scan(&ar,&num);
         bk_printf("Scan returned %i networks\r\n",num);
@@ -603,13 +603,13 @@ int http_fn_cfg_wifi(http_request_t *request) {
             <input type=\"text\" id=\"ssid\" name=\"ssid\" value=\"");
     cur_ssid = CFG_GetWiFiSSID();
     poststr(request,cur_ssid);
-            
+
             poststr(request, "\"><br>\
             <label for=\"pass\">Pass:</label><br>\
             <input type=\"text\" id=\"pass\" name=\"pass\" value=\"");
     cur_pass = CFG_GetWiFiPass();
     poststr(request,cur_pass);
-            
+
     poststr(request,"\"><br><br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check SSID and pass twice?')\">\
         </form> ");
@@ -629,7 +629,7 @@ int http_fn_cfg_name(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
     poststr(request,g_header);
-  
+
     poststr(request,"<h2> Change device names for display. </h2> Remember that short name is used by MQTT.<br>");
     if(http_getArg(request->url,"shortName",tmpA,sizeof(tmpA))) {
 		CFG_SetShortDeviceName(tmpA);
@@ -643,13 +643,13 @@ int http_fn_cfg_name(http_request_t *request) {
             <input type=\"text\" id=\"shortName\" name=\"shortName\" value=\"");
 	shortName = CFG_GetShortDeviceName();
     poststr(request,shortName);
-            
+
             poststr(request, "\"><br>\
             <label for=\"name\">Full Name:</label><br>\
             <input type=\"text\" id=\"name\" name=\"name\" value=\"");
 			name = CFG_GetDeviceName();
     poststr(request,name);
-            
+
     poststr(request,"\"><br><br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Short name might be used by MQTT, so you will have to reconfig some stuff.')\">\
         </form> ");
@@ -684,14 +684,14 @@ int http_fn_cfg_wifi_set(http_request_t *request) {
 
     poststr(request,"Please wait for module to reset...");
 	RESET_ScheduleModuleReset(3);
-    
+
     poststr(request,"<br>");
     poststr(request,"<a href=\"cfg_wifi\">Return to WiFi settings</a>");
     poststr(request,"<br>");
     poststr(request,htmlReturnToCfg);
     HTTP_AddBuildFooter(request);
     poststr(request,htmlEnd);
-    
+
 	poststr(request, NULL);
     return 0;
 }
@@ -712,7 +712,7 @@ int http_fn_cfg_loglevel_set(http_request_t *request) {
         loglevel = atoi(tmpA);
 #endif
         poststr(request,"LOG level changed.");
-    } 
+    }
     poststr(request,"<form action=\"/cfg_loglevel_set\">\
             <label for=\"loglevel\">loglevel:</label><br>\
             <input type=\"text\" id=\"loglevel\" name=\"loglevel\" value=\"");
@@ -724,7 +724,7 @@ int http_fn_cfg_loglevel_set(http_request_t *request) {
     poststr(request,"\"><br><br>\
             <input type=\"submit\" value=\"Submit\" >\
         </form> ");
-    
+
     poststr(request,"<br>");
     poststr(request,"<a href=\"cfg\">Return to config settings</a>");
     poststr(request,"<br>");
@@ -848,7 +848,7 @@ int http_fn_flash_read_tool(http_request_t *request) {
         poststr(request,"<br>");
     }
     poststr(request,"<form action=\"/flash_read_tool\">");
-    
+
     poststr(request,"<input type=\"checkbox\" id=\"hex\" name=\"hex\" value=\"1\"");
     if(hex){
         poststr(request," checked");
@@ -935,7 +935,7 @@ int http_fn_startup_command(http_request_t *request) {
 	cmd = CFG_GetShortStartupCommand();
 
     poststr(request,"<form action=\"/startup_command\">");
-   
+
     poststr(request,"<label for=\"data\">Startup command:</label><br>\
             <input type=\"text\" id=\"data\" name=\"data\"");
     hprintf128(request," value=\"%s\"  size=\"120\"><br>",cmd);
@@ -988,7 +988,7 @@ int http_fn_uart_tool(http_request_t *request) {
 	}
 
     poststr(request,"<form action=\"/uart_tool\">");
-   
+
     poststr(request,"<label for=\"data\">data:</label><br>\
             <input type=\"text\" id=\"data\" name=\"data\"");
     hprintf128(request," value=\"%s\"  size=\"40\"><br>",tmpA);
@@ -1029,20 +1029,20 @@ int http_fn_cfg_quick(http_request_t *request) {
     poststr(request,htmlHeader);
     poststr(request,g_header);
     poststr(request,"<h4>Quick Config</h4>");
-    
+
     if(http_getArg(request->url,"dev",tmpA,sizeof(tmpA))) {
         j = atoi(tmpA);
         hprintf128(request,"<h3>Set dev %i!</h3>",j);
         g_templates[j].setter();
     }
-    poststr(request,"<form action=\"cfg_quick\">");		
+    poststr(request,"<form action=\"cfg_quick\">");
     poststr(request, "<select name=\"dev\">");
     for(j = 0; j < g_total_templates; j++) {
         hprintf128(request, "<option value=\"%i\">%s</option>",j,g_templates[j].name);
     }
     poststr(request,"</select>");
     poststr(request,"<input type=\"submit\" value=\"Set\"/></form>");
-    
+
     poststr(request,htmlReturnToCfg);
     HTTP_AddBuildFooter(request);
     poststr(request,htmlEnd);
@@ -1068,7 +1068,7 @@ int http_fn_cfg_ha(http_request_t *request) {
     poststr(request,"<h4>Paste this to configuration yaml</h4>");
     poststr(request,"<h5>Make sure that you have \"switch:\" keyword only once! Home Assistant doesn't like dup keywords.</h5>");
     poststr(request,"<h5>You can also use \"switch MyDeviceName:\" to avoid keyword duplication!</h5>");
-    
+
     poststr(request,"<textarea rows=\"40\" cols=\"50\">");
 
     for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
@@ -1139,7 +1139,7 @@ http://<ip>/cm?user=admin&password=joker&cmnd=Power%20Toggle
 // System responds with state
 int http_fn_cm(http_request_t *request) {
 	char tmpA[128];
-	
+
     http_setup(request, httpMimeTypeJson);
     if(	http_getArg(request->url,"cmnd",tmpA,sizeof(tmpA))) {
 		CMD_ExecuteCommand(tmpA,COMMAND_FLAG_SOURCE_HTTP);
@@ -1303,8 +1303,8 @@ int http_fn_cfg_pins(http_request_t *request) {
         }
         poststr(request, "</select>");
         hprintf128(request, "<input name=\"r%i\" type=\"text\" value=\"%i\"/>",i,ch);
-		
-		if(si == IOR_Button || si == IOR_Button_n) 
+
+		if(si == IOR_Button || si == IOR_Button_n)
 		{
 			// extra param. For button, is relay index to toggle on double click
 			hprintf128(request, "<input name=\"e%i\" type=\"text\" value=\"%i\"/>",i,ch2);

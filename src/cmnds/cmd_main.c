@@ -38,7 +38,7 @@ static int CMD_Restart(const void *context, const char *cmd, const char *args, i
 	} else {
 		delaySeconds = atoi(args);
 	}
-	
+
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Restart: will reboot in %i",delaySeconds);
 
 	RESET_ScheduleModuleReset(delaySeconds);
@@ -62,7 +62,7 @@ void CMD_ListAllCommands(void *userData, void (*callback)(command_t *cmd, void *
 			newCmd = newCmd->next;
 		}
 	}
-	
+
 }
 void CMD_RegisterCommand(const char *name, const char *args, commandHandler_t handler, const char *userDesc, void *context) {
 	int hash;
@@ -134,7 +134,7 @@ int CMD_ExecuteCommandArgs(const char *cmd, const char *args, int cmdFlags) {
 		// not found, so...
 		char nonums[32];
 		// get the complete string up to numbers.
-		//len = 
+		//len =
 		get_cmd(cmd, nonums, 32, 1);
 		newCmd = CMD_Find(nonums);
 		if (!newCmd) {

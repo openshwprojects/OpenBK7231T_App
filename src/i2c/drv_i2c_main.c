@@ -17,13 +17,13 @@ DD_HANDLE i2c_hdl;
 void DRV_I2C_Write(byte addr, byte data)
 {
 	char buff = (char)data;
-    
+
     i2c_operater.op_addr = addr;
     ddev_write(i2c_hdl, &buff, 1, (UINT32)&i2c_operater);
 }
 void DRV_I2C_WriteBytes(byte addr, byte *data, int len) {
 
-    
+
     i2c_operater.op_addr = addr;
     ddev_write(i2c_hdl, (char*)data, len, (UINT32)&i2c_operater);
 }
@@ -31,14 +31,14 @@ void DRV_I2C_WriteBytes(byte addr, byte *data, int len) {
 //{
 //	char data;
 //	char buff = (char)data;
-//    
+//
 //    i2c_operater.op_addr = addr;
 //    ddev_write(i2c_hdl, &buff, 0, (UINT32)&i2c_operater);
 //}
 
 
 void DRV_I2C_Read(byte addr, byte *data)
-{   
+{
     i2c_operater.op_addr = addr;
     ddev_read(i2c_hdl, (char*)data, 1, (UINT32)&i2c_operater);
 }
@@ -80,7 +80,7 @@ void DRV_I2C_WriteBytes(byte addr, byte *data, int len) {
 }
 
 void DRV_I2C_Read(byte addr, byte *data)
-{   
+{
 }
 int DRV_I2C_Begin(int dev_adr, int busID) {
 
@@ -216,7 +216,7 @@ int DRV_I2C_AddDevice_MCP23017(const void *context, const char *cmd, const char 
 	return 1;
 }
 
-// 
+//
 int DRV_I2C_AddDevice_PCF8574(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *i2cModuleStr;
 	int address;
@@ -271,10 +271,10 @@ int DRV_I2C_AddDevice_LCM1602(const void *context, const char *cmd, const char *
 //
 // TC74 A0 (address type 0)
 // setChannelType 5 temperature
-// addI2CDevice_TC74 I2C1 0x48 5 
+// addI2CDevice_TC74 I2C1 0x48 5
 // TC74 A2 (address type 2)
 // setChannelType 6 temperature
-// addI2CDevice_TC74 I2C1 0x4A 6 
+// addI2CDevice_TC74 I2C1 0x4A 6
 
 //
 //	MCP23017 - I2C 16 bit port expander - both inputs and outputs, right now we use it only as outputs
@@ -295,7 +295,7 @@ void DRV_I2C_Init()
 	CMD_RegisterCommand("addI2CDevice_LCM1602","",DRV_I2C_AddDevice_LCM1602, "Adds a new I2C device", NULL);
 	CMD_RegisterCommand("addI2CDevice_LCD_PCF8574","",DRV_I2C_AddDevice_PCF8574, "Adds a new I2C device", NULL);
 	CMD_RegisterCommand("MCP23017_MapPinToChannel","",DRV_I2C_MCP23017_MapPinToChannel, "Adds a new I2C device", NULL);
- 
+
 }
 void DRC_I2C_RunDevice(i2cDevice_t *dev)
 {

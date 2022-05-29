@@ -44,7 +44,7 @@ void HAL_PIN_Setup_Output(int index) {
 
 void HAL_PIN_PWM_Stop(int index) {
 	int pwm;
-	
+
 	pwm = BL_FindPWMForPin(index);
 
 	if(pwm == -1) {
@@ -55,13 +55,13 @@ void HAL_PIN_PWM_Stop(int index) {
 
 void HAL_PIN_PWM_Start(int index) {
 	int pwm;
-	
+
 	pwm = BL_FindPWMForPin(index);
 
 	if(pwm == -1) {
 		return;
 	}
-	
+
 	//addLogAdv(LOG_INFO, LOG_FEATURE_MAIN,"HAL_PIN_PWM_Start: pin %i chose pwm %i\r\n",index,pwm);
     //  Frequency must be between 2000 and 800000
 	bl_pwm_init(pwm, index, 2000);

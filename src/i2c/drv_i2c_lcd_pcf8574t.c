@@ -353,7 +353,7 @@ void DRV_I2C_LCD_PCF8574_RunDevice(i2cDevice_t *dev)
 		PCF8574_LCD_Clear(lcd);
 		delay_ms(115);
 		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"Testing lcd\n" );
-	 
+
 		PCF8574_LCD_Write_String(lcd,"OpenBeken BK7231T LCD");
 		delay_ms(115);
 		PCF8574_LCD_Goto(lcd,2,2);

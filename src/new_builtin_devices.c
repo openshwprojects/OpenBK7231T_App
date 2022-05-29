@@ -163,12 +163,12 @@ void Setup_Device_IntelligentLife_NF101A() {
 
 
 	CFG_Save_SetupTimer();
-}	
+}
 // https://www.elektroda.pl/rtvforum/topic3798114.html
 void Setup_Device_TuyaLEDDimmerSingleChannel() {
 	CFG_ClearPins();
 
-	// pin 8 has PWM 
+	// pin 8 has PWM
 	PIN_SetPinRoleForPinIndex(8, IOR_PWM);
 	PIN_SetPinChannelForPinIndex(8, 1);
 
@@ -281,7 +281,7 @@ void Setup_Device_NedisWIFIPO120FWT_16A() {
 	// Button - RX1  - P10
 	// BL0937-SEL - PWM4 - P24
 	// Relay - PWM5 - P26
-	
+
 
 	CFG_ClearPins();
 	// LEd
@@ -303,10 +303,10 @@ void Setup_Device_NedisWIFIP130FWT_10A() {
 
 	// WB2S
 	// Pins are:
-	// Led - PWM0 - P6 
+	// Led - PWM0 - P6
 	// Button - RX1  - P10
 	// Relay - PWM5 - P26
-	
+
 
 	CFG_ClearPins();
 	// Led
@@ -323,24 +323,24 @@ void Setup_Device_NedisWIFIP130FWT_10A() {
 }
 
 // https://www.elektroda.com/rtvforum/topic3819498.html
-// 
+//
 void Setup_Device_TH06_LCD_RTCC_WB3S() {
 
 }
 
 // https://www.elektroda.pl/rtvforum/topic3804553.html
-// SmartSwitch Emax Home EDU8774 16A 
+// SmartSwitch Emax Home EDU8774 16A
 void Setup_Device_EmaxHome_EDU8774() {
 
 	// WB2S
 	// Pins are:
-	// BL0937-CF - PWM0 - P6 
+	// BL0937-CF - PWM0 - P6
 	// BL0937-CF1 - PWM1 - P7
 	// BL0937-SEL - PWM2 - P8
 	// Button - RX1 - P10
 	// Relay - PWM4 - P24
 	// Led - PWM5 - P26
-	
+
 
 	CFG_ClearPins();
 	// Button

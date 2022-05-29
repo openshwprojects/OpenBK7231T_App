@@ -30,7 +30,7 @@ const char *HAL_GetMyIPString(){
 	} else {
 		bk_wlan_get_ip_status(&ipStatus, STATION);
 	}
-    
+
     strcpy(g_IP, ipStatus.ip);
     return g_IP;
 }
@@ -69,10 +69,10 @@ void HAL_PrintNetworkInfo(){
 
     os_memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
     bk_wlan_get_ip_status(&ipStatus, STATION);
-    
+
     char *fmt = "dhcp=%d ip=%s gate=%s mask=%s mac=" MACSTR "\r\n";
     addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, fmt ,
-        ipStatus.dhcp, ipStatus.ip, ipStatus.gate, 
+        ipStatus.dhcp, ipStatus.ip, ipStatus.gate,
         ipStatus.mask, MAC2STR((unsigned char*)ipStatus.mac));
 
     // print wifi state
@@ -84,7 +84,7 @@ void HAL_PrintNetworkInfo(){
     #else
         bk_printf("sta: %d, softap: %d, b/g\r\n",sta_ip_is_start(),uap_ip_is_start());
     #endif
-    
+
     if( sta_ip_is_start() )
     {
     os_memset(&linkStatus, 0x0, sizeof(LinkStatusTypeDef));
@@ -119,7 +119,7 @@ void HAL_PrintNetworkInfo(){
                 break;
         }
     }
-    
+
     if( uap_ip_is_start() )
     {
         os_memset(&ap_info, 0x0, sizeof(network_InitTypeDef_ap_st));
@@ -152,9 +152,9 @@ void HAL_PrintNetworkInfo(){
                 break;
         }
         addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"ip=%s,gate=%s,mask=%s,dns=%s\r\n",
-            ap_info.local_ip_addr, 
-            ap_info.gateway_ip_addr, 
-            ap_info.net_mask, 
+            ap_info.local_ip_addr,
+            ap_info.gateway_ip_addr,
+            ap_info.net_mask,
             ap_info.dns_server_ip_addr);
     }
 
@@ -190,13 +190,13 @@ void wl_status( void *ctxt ){
 				g_wifiStatusCallback(WIFI_STA_AUTH_FAILED);
 			}
             break;
-        case RW_EVT_STA_CONNECTED:        /* authentication success */    
-        case RW_EVT_STA_GOT_IP: 
+        case RW_EVT_STA_CONNECTED:        /* authentication success */
+        case RW_EVT_STA_GOT_IP:
 			if(g_wifiStatusCallback!=0) {
 				g_wifiStatusCallback(WIFI_STA_CONNECTED);
 			}
             break;
-        
+
         /* for softap mode */
         case RW_EVT_AP_CONNECTED:          /* a client association success */
 			if(g_wifiStatusCallback!=0) {
@@ -233,12 +233,12 @@ void HAL_ConnectToWiFi(const char *oob_ssid,const char *connect_key)
 	network_InitTypeDef_adv_st	wNetConfigAdv;
 
 	os_memset( &wNetConfigAdv, 0x0, sizeof(network_InitTypeDef_adv_st) );
-	
+
 	os_strcpy((char*)wNetConfigAdv.ap_info.ssid, oob_ssid);
 	hwaddr_aton("48:ee:0c:48:93:12", (unsigned char *)wNetConfigAdv.ap_info.bssid);
 	wNetConfigAdv.ap_info.security = SECURITY_TYPE_WPA2_MIXED;
 	wNetConfigAdv.ap_info.channel = 5;
-	
+
 	os_strcpy((char*)wNetConfigAdv.key, connect_key);
 	wNetConfigAdv.key_len = os_strlen(connect_key);
 	wNetConfigAdv.dhcp_mode = DHCP_CLIENT;
@@ -247,7 +247,7 @@ void HAL_ConnectToWiFi(const char *oob_ssid,const char *connect_key)
 	bk_wlan_start_sta_adv(&wNetConfigAdv);
 #else
     network_InitTypeDef_st network_cfg;
-	
+
     os_memset(&network_cfg, 0x0, sizeof(network_InitTypeDef_st));
 
     os_strcpy((char *)network_cfg.wifi_ssid, oob_ssid);
@@ -258,7 +258,7 @@ void HAL_ConnectToWiFi(const char *oob_ssid,const char *connect_key)
     network_cfg.wifi_retry_interval = 100;
 
     ADDLOGF_INFO("ssid:%s key:%s\r\n", network_cfg.wifi_ssid, network_cfg.wifi_key);
-			
+
     bk_wlan_start(&network_cfg);
 #endif
 }
@@ -269,25 +269,25 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid)
     #define APP_DRONE_DEF_NET_IP        "192.168.4.1"
     #define APP_DRONE_DEF_NET_MASK      "255.255.255.0"
     #define APP_DRONE_DEF_NET_GW        "192.168.4.1"
-    #define APP_DRONE_DEF_CHANNEL       1    
-    
+    #define APP_DRONE_DEF_CHANNEL       1
+
     general_param_t general;
     ap_param_t ap_info;
     network_InitTypeDef_st wNetConfig;
     int len;
     unsigned char *mac;
-    
+
     os_memset(&general, 0, sizeof(general_param_t));
-    os_memset(&ap_info, 0, sizeof(ap_param_t)); 
-    os_memset(&wNetConfig, 0x0, sizeof(network_InitTypeDef_st));  
-    
+    os_memset(&ap_info, 0, sizeof(ap_param_t));
+    os_memset(&wNetConfig, 0x0, sizeof(network_InitTypeDef_st));
+
         general.role = 1,
         general.dhcp_enable = 1,
 
         os_strcpy((char *)wNetConfig.local_ip_addr, APP_DRONE_DEF_NET_IP);
         os_strcpy((char *)wNetConfig.net_mask, APP_DRONE_DEF_NET_MASK);
         os_strcpy((char *)wNetConfig.dns_server_ip_addr, APP_DRONE_DEF_NET_GW);
- 
+
 
         ADDLOGF_INFO("no flash configuration, use default\r\n");
         mac = (unsigned char*)&ap_info.bssid.array;
@@ -298,10 +298,10 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid)
         ap_info.cipher_suite = 0;
         //memcpy(ap_info.ssid.array, APP_DRONE_DEF_SSID, os_strlen(APP_DRONE_DEF_SSID));
         memcpy(ap_info.ssid.array, ssid, os_strlen(ssid));
-		
+
         ap_info.key_len = 0;
-        os_memset(&ap_info.key, 0, 65);   
-  
+        os_memset(&ap_info.key, 0, 65);
+
 
     bk_wlan_ap_set_default_channel(ap_info.chann);
 
@@ -309,18 +309,18 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid)
 
     os_strncpy((char *)wNetConfig.wifi_ssid, (char *)ap_info.ssid.array, sizeof(wNetConfig.wifi_ssid));
     os_strncpy((char *)wNetConfig.wifi_key, (char *)ap_info.key, sizeof(wNetConfig.wifi_key));
-    
+
     wNetConfig.wifi_mode = SOFT_AP;
     wNetConfig.dhcp_mode = DHCP_SERVER;
     wNetConfig.wifi_retry_interval = 100;
-    
+
 	if(1) {
 		ADDLOGF_INFO("set ip info: %s,%s,%s\r\n",
 				wNetConfig.local_ip_addr,
 				wNetConfig.net_mask,
 				wNetConfig.dns_server_ip_addr);
 	}
-    
+
 	if(1) {
 	  ADDLOGF_INFO("ssid:%s  key:%s mode:%d\r\n", wNetConfig.wifi_ssid, wNetConfig.wifi_key, wNetConfig.wifi_mode);
 	}
@@ -343,6 +343,6 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid)
 	//dhcp_server_start(0);
 	//dhcp_server_stop(void);
 
-  return 0;    
+  return 0;
 }
 

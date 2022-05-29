@@ -134,15 +134,15 @@ typedef struct httprequest_t_tag{
  *                   client_data->post_content_type = content_type;  //Sets the content type.
  *                   request->port = HTTPS_PORT;
  *                   request->url = url;
- *                   request->method = HTTPCLIENT_POST; 
+ *                   request->method = HTTPCLIENT_POST;
  *                   request->timeout = 10000;
- *                   request->data_callback = mydatacallback; 
+ *                   request->data_callback = mydatacallback;
  *                   HTTPClient_Async_SendGeneric(request);
- * 
- * 
+ *
+ *
  * int mydatacallback(httprequest_t *request){
  *      addLog("httpclient callback state %d", request->state);
- * 
+ *
  *      //to terminate, return 1
  *      return 0
  * }
