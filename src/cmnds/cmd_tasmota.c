@@ -30,9 +30,9 @@ static int power(const void *context, const char *cmd, const char *args, int cmd
 			channel = atoi(cmd+5);
 		}
 #if 0
-		// it seems that my Home Assistant expects RGB etc light bulbs to be turned off entirely 
+		// it seems that my Home Assistant expects RGB etc light bulbs to be turned off entirely
 		// with this commands with no arguments, so... no arguments = set all channels?
-		else 
+		else
 		{
 			CHANNEL_SetAll(iVal, false);
 			return 1;

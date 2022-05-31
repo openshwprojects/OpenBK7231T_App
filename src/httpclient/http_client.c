@@ -608,7 +608,7 @@ int httpclient_retrieve_content_old(httpclient_t *client, char *data, int len, u
         http_wr_to_flash(data,len);
         #endif
 
-        
+
         b_data =  os_malloc((TCP_LEN_MAX+1) * sizeof(char));
         //bk_http_ptr->do_data = 1;
         //bk_http_ptr->http_total = readLen - len;
@@ -620,7 +620,7 @@ int httpclient_retrieve_content_old(httpclient_t *client, char *data, int len, u
                 os_memcpy(client_data->response_buf+count, data, templen);
                 client_data->response_buf_filled = count;
                 client_data->response_buf[count] = '\0';
-                client_data->retrieve_len -= templen;                
+                client_data->retrieve_len -= templen;
             } else {
                 client_data->response_buf[client_data->response_buf_len - 1] = '\0';
                 client_data->response_buf_filled = client_data->response_buf_len - 1;
@@ -653,11 +653,11 @@ int httpclient_retrieve_content_old(httpclient_t *client, char *data, int len, u
                 }
             }
         } while (readLen);
-        
+
         //bk_http_ptr->do_data = 0;
         os_free(b_data);
         b_data = NULL;
-            
+
         if (client_data->is_chunked) {
             if (len < 2) {
                 int new_trf_len, ret;
@@ -873,7 +873,7 @@ iotx_err_t httpclient_recv_response(httpclient_t *client, uint32_t timeout_ms, h
 
 
     // if is_more is true, we just need to get more data
-    // this will fill response_buf 
+    // this will fill response_buf
     if (client_data->is_more) {
         client_data->response_buf[0] = '\0';
         client_data->response_buf_filled = 0;
@@ -882,9 +882,9 @@ iotx_err_t httpclient_recv_response(httpclient_t *client, uint32_t timeout_ms, h
         if (ret != 0) {
             return ret;
         }
-        ret = httpclient_retrieve_content(client, 
-            buf, 
-            reclen, 
+        ret = httpclient_retrieve_content(client,
+            buf,
+            reclen,
             iotx_time_left(&timer), client_data);
     }
 
@@ -1131,8 +1131,8 @@ exit:
 // our async stuff
 int HTTPClient_Async_SendGeneric(httprequest_t *request){
     OSStatus err = kNoErr;
-    err = rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY, 
-									"httprequest", 
+    err = rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY,
+									"httprequest",
 									(beken_thread_function_t)httprequest_thread,
 									0x800,
 									(beken_thread_arg_t)request );
@@ -1197,10 +1197,10 @@ int HTTPClient_Async_SendGet(const char *url_in){
 	client_data->post_buf = "";  //Sets the user data to be posted.
 	client_data->post_buf_len = 0;  //Sets the post data length.
 	client_data->post_content_type = "text/csv";  //Sets the content type.
-	request->data_callback = 0; 
+	request->data_callback = 0;
 	request->port = 80;//HTTP_PORT;
 	request->url = url;
-	request->method = HTTPCLIENT_GET; 
+	request->method = HTTPCLIENT_GET;
 	request->timeout = 10000;
 	HTTPClient_Async_SendGeneric(request);
 

@@ -4,9 +4,9 @@
     Design:
     variables to be small - we want as many writes between erases as possible.
     sector will be all FF (erased), and data added into it.
-    reading consists of searching the first non FF byte from the end, then 
+    reading consists of searching the first non FF byte from the end, then
     reading the preceding bytes as the variables.
-    last byte of data is len (!== 0xFF!) 
+    last byte of data is len (!== 0xFF!)
 
 */
 
@@ -47,13 +47,13 @@ int flash_vars_read(FLASH_VARS_STRUCTURE *data);
 
 //#define TEST_MODE
 //#define debug_delay(x) rtos_delay_milliseconds(x)
-#define debug_delay(x) 
+#define debug_delay(x)
 
 #define FLASH_VARS_MAGIC 0xfefefefe
 // NOTE: Changed below according to partitions in SDK!!!!
 static unsigned int flash_vars_start = 0x1e3000; //0x1e1000 + 0x1000 + 0x1000; // after netconfig and mystery SSID
-static unsigned int flash_vars_len = 0x2000; // two blocks in BK7231 
-static unsigned int flash_vars_sector_len = 0x1000; // erase size in BK7231 
+static unsigned int flash_vars_len = 0x2000; // two blocks in BK7231
+static unsigned int flash_vars_sector_len = 0x1000; // erase size in BK7231
 
 FLASH_VARS_STRUCTURE flash_vars;
 int flash_vars_offset = 0; // offset to first FF in our area
@@ -110,8 +110,8 @@ int flash_vars_init(){
         // there is an EXTRA sctor used for some form of wifi?
         // on T variety, this is 0x1e3000
         flash_vars_start = pt->partition_start_addr + pt->partition_length + 0x1000;
-        flash_vars_len = 0x2000; // two blocks in BK7231 
-        flash_vars_sector_len = 0x1000; // erase size in BK7231 
+        flash_vars_len = 0x2000; // two blocks in BK7231
+        flash_vars_sector_len = 0x1000; // erase size in BK7231
 #endif
         //ADDLOG_DEBUG(LOG_FEATURE_CFG, "got part info");
         debug_delay(200);
@@ -137,7 +137,7 @@ static int flash_vars_valid(){
     //uint32_t i;
     //uint32_t param;
     UINT32 status;
-#ifndef TEST_MODE        
+#ifndef TEST_MODE
     DD_HANDLE flash_hdl;
 #endif
     uint32_t start_addr;
@@ -146,7 +146,7 @@ static int flash_vars_valid(){
     //ADDLOG_DEBUG(LOG_FEATURE_CFG, "flash_vars_valid()");
     debug_delay(200);
 
-#ifndef TEST_MODE        
+#ifndef TEST_MODE
     flash_hdl = ddev_open(FLASH_DEV_NAME, &status, 0);
     ASSERT(DD_HANDLE_UNVALID != flash_hdl);
 	bk_flash_enable_security(FLASH_PROTECT_NONE);
@@ -156,7 +156,7 @@ static int flash_vars_valid(){
     //ADDLOG_DEBUG(LOG_FEATURE_CFG, "flash_vars_valid() flash open");
     debug_delay(200);
 
-#ifdef TEST_MODE        
+#ifdef TEST_MODE
     os_memcpy(&tmp, &test_flash_area[start_addr - flash_vars_start], sizeof(tmp));
 #else
     GLOBAL_INT_DISABLE();
@@ -187,7 +187,7 @@ static int flash_vars_write_magic(){
     //uint32_t i;
     //uint32_t param;
     UINT32 status;
-#ifndef TEST_MODE        
+#ifndef TEST_MODE
     DD_HANDLE flash_hdl;
 #endif
     uint32_t start_addr;
@@ -208,7 +208,7 @@ static int flash_vars_write_magic(){
         debug_delay(200);
         return -1;
     }
-#ifdef TEST_MODE        
+#ifdef TEST_MODE
     os_memcpy(&test_flash_area[start_addr - flash_vars_start], &tmp, sizeof(tmp));
 #else
 	bk_flash_enable_security(FLASH_PROTECT_NONE);
@@ -248,7 +248,7 @@ int flash_vars_read(FLASH_VARS_STRUCTURE *data){
     //uint32_t i;
     //uint32_t param;
     UINT32 status;
-#ifndef TEST_MODE        
+#ifndef TEST_MODE
     DD_HANDLE flash_hdl;
 #endif
     uint32_t start_addr;
@@ -269,7 +269,7 @@ int flash_vars_read(FLASH_VARS_STRUCTURE *data){
     }
     debug_delay(200);
 
-#ifndef TEST_MODE        
+#ifndef TEST_MODE
     flash_hdl = ddev_open(FLASH_DEV_NAME, &status, 0);
     ASSERT(DD_HANDLE_UNVALID != flash_hdl);
 	bk_flash_enable_security(FLASH_PROTECT_NONE);
@@ -278,7 +278,7 @@ int flash_vars_read(FLASH_VARS_STRUCTURE *data){
 
     do {
         start_addr -= sizeof(tmp);
-#ifdef TEST_MODE        
+#ifdef TEST_MODE
         os_memcpy(&tmp, &test_flash_area[start_addr - flash_vars_start], sizeof(tmp));
 #else
         GLOBAL_INT_DISABLE();
@@ -300,7 +300,7 @@ int flash_vars_read(FLASH_VARS_STRUCTURE *data){
         os_memset(data, 0, sizeof(*data));
         // set the len to the latest revision's len
         data->len = sizeof(*data);
-#ifndef TEST_MODE        
+#ifndef TEST_MODE
         ddev_close(flash_hdl);
     	bk_flash_enable_security(FLASH_PROTECT_ALL);
 #endif
@@ -319,7 +319,7 @@ int flash_vars_read(FLASH_VARS_STRUCTURE *data){
 
         if (len > sizeof(*data)){
             ADDLOG_ERROR(LOG_FEATURE_CFG, "len (%d) in flash_var greater than current structure len (%d)", len, sizeof(*data));
-#ifndef TEST_MODE        
+#ifndef TEST_MODE
             ddev_close(flash_hdl);
         	bk_flash_enable_security(FLASH_PROTECT_ALL);
 #endif
@@ -330,7 +330,7 @@ int flash_vars_read(FLASH_VARS_STRUCTURE *data){
             // clear result.
             os_memset(data, 0, sizeof(*data));
             // read the DATA portion into the structure
-#ifdef TEST_MODE        
+#ifdef TEST_MODE
             os_memcpy(data, &test_flash_area[start_addr - flash_vars_start], len-1);
 #else
             GLOBAL_INT_DISABLE();
@@ -376,8 +376,8 @@ int flash_vars_write(){
     flash_vars_offset += data->len;
     alignOffset(&flash_vars_offset);
 
-    ADDLOG_DEBUG(LOG_FEATURE_CFG, "new offset %d, boot_count %d, success count %d", 
-        flash_vars_offset, 
+    ADDLOG_DEBUG(LOG_FEATURE_CFG, "new offset %d, boot_count %d, success count %d",
+        flash_vars_offset,
         data->boot_count,
         data->boot_success_count
         );
@@ -394,14 +394,14 @@ int _flash_vars_write(void *data, unsigned int off_set, unsigned int size){
     //uint32_t i;
     //uint32_t param;
     UINT32 status;
-#ifndef TEST_MODE        
+#ifndef TEST_MODE
     DD_HANDLE flash_hdl;
 #endif
     uint32_t start_addr;
     GLOBAL_INT_DECLARATION();
     //ADDLOG_DEBUG(LOG_FEATURE_CFG, "_flash vars write offset %d, size %d", off_set, size);
 
-#ifndef TEST_MODE        
+#ifndef TEST_MODE
     flash_hdl = ddev_open(FLASH_DEV_NAME, &status, 0);
     ASSERT(DD_HANDLE_UNVALID != flash_hdl);
 	bk_flash_enable_security(FLASH_PROTECT_NONE);
@@ -421,7 +421,7 @@ int _flash_vars_write(void *data, unsigned int off_set, unsigned int size){
         return -1;
     }
 
-#ifdef TEST_MODE        
+#ifdef TEST_MODE
     os_memcpy(&test_flash_area[start_addr - flash_vars_start], data, size);
 #else
     GLOBAL_INT_DISABLE();
@@ -443,14 +443,14 @@ int flash_vars_erase(unsigned int off_set, unsigned int size){
     uint32_t i;
     uint32_t param;
     UINT32 status;
-#ifndef TEST_MODE        
+#ifndef TEST_MODE
     DD_HANDLE flash_hdl;
 #endif
     uint32_t start_sector, end_sector;
     GLOBAL_INT_DECLARATION();
     ADDLOG_DEBUG(LOG_FEATURE_CFG, "flash vars erase at offset %d len %d", off_set, size);
 
-#ifndef TEST_MODE        
+#ifndef TEST_MODE
     flash_hdl = ddev_open(FLASH_DEV_NAME, &status, 0);
     ASSERT(DD_HANDLE_UNVALID != flash_hdl);
 	bk_flash_enable_security(FLASH_PROTECT_NONE);
@@ -463,7 +463,7 @@ int flash_vars_erase(unsigned int off_set, unsigned int size){
         param = flash_vars_start + (i << 12);
         if (param < flash_vars_start){
             ADDLOG_ERROR(LOG_FEATURE_CFG, "flash vars erase invalid addr 0x%X < 0x%X", param, flash_vars_start);
-#ifndef TEST_MODE        
+#ifndef TEST_MODE
             ddev_close(flash_hdl);
         	bk_flash_enable_security(FLASH_PROTECT_ALL);
 #endif
@@ -471,14 +471,14 @@ int flash_vars_erase(unsigned int off_set, unsigned int size){
         }
         if (param + flash_vars_sector_len > flash_vars_start + flash_vars_len){
             ADDLOG_ERROR(LOG_FEATURE_CFG, "flash vars erase invalid addr 0x%X+0x%X > 0x%X", param, flash_vars_sector_len, flash_vars_start + flash_vars_len);
-#ifndef TEST_MODE        
+#ifndef TEST_MODE
             ddev_close(flash_hdl);
         	bk_flash_enable_security(FLASH_PROTECT_ALL);
 #endif
             return -1;
         }
         ADDLOG_DEBUG(LOG_FEATURE_CFG, "flash vars erase block at addr 0x%X", param);
-#ifdef TEST_MODE        
+#ifdef TEST_MODE
         os_memset(&test_flash_area[param - flash_vars_start], 0xff, 0x1000);
 #else
         GLOBAL_INT_DISABLE();
@@ -486,7 +486,7 @@ int flash_vars_erase(unsigned int off_set, unsigned int size){
         GLOBAL_INT_RESTORE();
 #endif
     }
-#ifndef TEST_MODE        
+#ifndef TEST_MODE
     ddev_close(flash_hdl);
 	bk_flash_enable_security(FLASH_PROTECT_ALL);
 #endif
@@ -511,9 +511,9 @@ void HAL_FlashVars_IncreaseBootCount(){
     flash_vars_write();
 
     flash_vars_read(&data);
-    ADDLOG_DEBUG(LOG_FEATURE_CFG, "re-read - offset %d, boot count %d, boot success %d, bootfailures %d", 
-        flash_vars_offset, 
-        data.boot_count, 
+    ADDLOG_DEBUG(LOG_FEATURE_CFG, "re-read - offset %d, boot count %d, boot success %d, bootfailures %d",
+        flash_vars_offset,
+        data.boot_count,
         data.boot_success_count,
         data.boot_count - data.boot_success_count );
 #endif
@@ -530,9 +530,9 @@ void HAL_FlashVars_SaveBootComplete(){
     flash_vars_write();
 
     flash_vars_read(&data);
-    ADDLOG_DEBUG(LOG_FEATURE_CFG, "re-read - offset %d, boot count %d, boot success %d, bootfailures %d", 
-        flash_vars_offset, 
-        data.boot_count, 
+    ADDLOG_DEBUG(LOG_FEATURE_CFG, "re-read - offset %d, boot count %d, boot success %d, bootfailures %d",
+        flash_vars_offset,
+        data.boot_count,
         data.boot_success_count,
         data.boot_count - data.boot_success_count );
 #endif
@@ -552,4 +552,4 @@ int HAL_FlashVars_GetBootCount(){
 }
 
 
-#endif 
+#endif

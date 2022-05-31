@@ -48,9 +48,9 @@ static int addcmd(const void * context, const char *cmd, const char *args, int c
             os_free(names[index]);
         }
         cmds[index] = os_malloc(strlen(args)+1);
-        
+
         strcpy(cmds[index], args);
-        //len = 
+        //len =
 		get_cmd(args, cmd, 32, 1);
         names[index] = os_malloc(strlen(cmd)+1);
         strcpy(names[index], cmd);

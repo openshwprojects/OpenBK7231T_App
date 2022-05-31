@@ -52,7 +52,7 @@ void strcat_safe_test(){
 	urldecode2_safe(buff,"qqqqqq%40qqqq",sizeof(buff));
 	urldecode2_safe(buff,"qqqqqq%40qqqq",sizeof(buff));
 
-	
+
 	misc_formatUpTimeString(15, timeStrA);
 	misc_formatUpTimeString(65, timeStrB);
 	misc_formatUpTimeString(125, timeStrC);
@@ -98,7 +98,7 @@ DWORD WINAPI Thread_SimulateTUYAMCUSendingData(void* arg)
 {
 	int r;
 	const char *p;
-	const char  *packets[] = { 
+	const char  *packets[] = {
 		"55AA00000000FF",
 		"55AA00000000FF",
 		"55AA0001000000",
@@ -118,7 +118,7 @@ DWORD WINAPI Thread_SimulateTUYAMCUSendingData(void* arg)
 			p += 2;
 			Sleep(10);
 		}
-		
+
 		Sleep(1000);
 	}
     return 0;
@@ -137,7 +137,7 @@ int Main_IsConnectedToWiFi() {
 //
 //	printf(t);
 //}
-int __cdecl main(void) 
+int __cdecl main(void)
 {
     WSADATA wsaData;
     int iResult;
@@ -153,7 +153,7 @@ int __cdecl main(void)
     char recvbuf[DEFAULT_BUFLEN];
     char outbuf[DEFAULT_BUFLEN];
     int recvbuflen = DEFAULT_BUFLEN;
-    
+
 	strcat_safe_test();
 
 	Tokenizer_TokenizeString("dsfafd dasfdsaf dsaf dsaf dsa fdsaf dsafdsa");
@@ -234,7 +234,7 @@ int __cdecl main(void)
 			WSACleanup();
 			return 1;
 		}
-		
+
 
 		// Receive until the peer shuts down the connection
 		do {

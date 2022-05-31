@@ -63,7 +63,7 @@ int bekken_hal_flash_read(const unsigned int addr, void *dst, const unsigned int
     flash_handle = ddev_open(FLASH_DEV_NAME, &status, 0);
     ddev_read(flash_handle, dst, size, addr);
     ddev_close(flash_handle);
-    
+
 	hal_flash_unlock();
 
     return 0;
@@ -87,7 +87,7 @@ int HAL_Configuration_SaveConfigMemory(void *src, int dataLen){
 
     if (dataLen > flashlen){
         ADDLOG_ERROR(LOG_FEATURE_CFG, "HAL_Configuration_SaveConfigMemory - table too big - can't save");
-        if (taken == pdTRUE) 
+        if (taken == pdTRUE)
 			xSemaphoreGive( config_mutex );
         return 0;
     }
@@ -102,7 +102,7 @@ int HAL_Configuration_SaveConfigMemory(void *src, int dataLen){
 
     if (taken == pdTRUE)
 		xSemaphoreGive( config_mutex );
-    
+
 	ADDLOG_DEBUG(LOG_FEATURE_CFG, "HAL_Configuration_SaveConfigMemory: saved %d bytes to %d", dataLen, flashaddr);
     return dataLen;
 }

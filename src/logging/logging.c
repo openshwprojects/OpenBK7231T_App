@@ -26,15 +26,15 @@ unsigned int logfeatures = (
     (1 << 12) |
     (1 << 13) |
     (1 << 14) |
-    (1 << 15) | 
-    (1 << 16) | 
-    (1 << 17) | 
-    (1 << 18) | 
-    (1 << 19) | 
-    (1 << 20) | 
-    (1 << 21) | 
-    (1 << 22) | 
-    (1 << 23) | 
+    (1 << 15) |
+    (1 << 16) |
+    (1 << 17) |
+    (1 << 18) |
+    (1 << 19) |
+    (1 << 20) |
+    (1 << 21) |
+    (1 << 22) |
+    (1 << 23) |
     (1 << 24)
 );
 static int log_delay = 0;
@@ -171,11 +171,11 @@ static struct tag_logMemory {
 } logMemory;
 
 
-static int initialised = 0; 
+static int initialised = 0;
 
 static void initLog( void ) {
     bk_printf("Entering init log...\r\n");
-    logMemory.head = logMemory.tailserial = logMemory.tailtcp = logMemory.tailhttp = 0; 
+    logMemory.head = logMemory.tailserial = logMemory.tailtcp = logMemory.tailhttp = 0;
     logMemory.mutex = xSemaphoreCreateMutex( );
     initialised = 1;
     startSerialLog();
@@ -188,7 +188,7 @@ static void initLog( void ) {
     CMD_RegisterCommand("logfeature", "", log_command, "set log feature filter, <0..10> <0|1>", NULL);
     CMD_RegisterCommand("logtype", "", log_command, "logtype direct|all - direct logs only to serial immediately", NULL);
     CMD_RegisterCommand("logdelay", "", log_command, "logdelay 0..n - impose ms delay after every log", NULL);
-    
+
     bk_printf("Commands registered!\r\n");
 }
 
@@ -314,8 +314,8 @@ static int getHttp(char *buff, int buffsize){
 void startLogServer(){
     OSStatus err = kNoErr;
 
-    err = rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY, 
-									"TCP_server", 
+    err = rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY,
+									"TCP_server",
 									(beken_thread_function_t)log_server_thread,
 									0x800,
 									(beken_thread_arg_t)0 );
@@ -327,8 +327,8 @@ void startLogServer(){
 
 void startSerialLog(){
     OSStatus err = kNoErr;
-    err = rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY, 
-									"log_serial", 
+    err = rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY,
+									"log_serial",
 									(beken_thread_function_t)log_serial_thread,
 									0x800,
 									(beken_thread_arg_t)0 );
@@ -357,9 +357,9 @@ void log_server_thread( beken_thread_arg_t arg )
     server_addr.sin_addr.s_addr = INADDR_ANY;/* Accept conenction request on all network interface */
     server_addr.sin_port = htons( logTcpPort );/* Server listen on port: 20000 */
     err = bind( tcp_listen_fd, (struct sockaddr *) &server_addr, sizeof(server_addr) );
-    
+
     err = listen( tcp_listen_fd, 0 );
-    
+
     while ( 1 )
     {
         FD_ZERO( &readfds );
@@ -375,11 +375,11 @@ void log_server_thread( beken_thread_arg_t arg )
                 os_strcpy( client_ip_str, inet_ntoa( client_addr.sin_addr ) );
                 //addLog( "TCP Log Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd );
                 if ( kNoErr
-                     != rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY, 
+                     != rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY,
 							                     "Logging TCP Client",
                                                  (beken_thread_function_t)log_client_thread,
-                                                 0x800, 
-                                                 (beken_thread_arg_t)client_fd ) ) 
+                                                 0x800,
+                                                 (beken_thread_arg_t)client_fd ) )
                 {
                     close( client_fd );
 					client_fd = -1;
@@ -387,11 +387,11 @@ void log_server_thread( beken_thread_arg_t arg )
             }
         }
     }
-	
+
     if ( err != kNoErr ) {
 		//addLog( "Server listener thread exit with err: %d", err );
     }
-	
+
     close( tcp_listen_fd );
     rtos_delete_thread( NULL );
 }
@@ -412,9 +412,9 @@ static void log_client_thread( beken_thread_arg_t arg )
         }
         rtos_delay_milliseconds(10);
     }
-	
+
 	//addLog( "TCP client thread exit with err: %d", len );
-	
+
     close( fd );
     rtos_delete_thread( NULL );
 }

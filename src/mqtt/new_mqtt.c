@@ -155,7 +155,7 @@ int MQTT_RegisterCallback( const char *basetopic, const char *subscriptiontopic,
     // find out if this subscription is new.
     for (i = 0; i < numCallbacks; i++){
       if (callbacks[i]){
-        if (callbacks[i]->subscriptionTopic && 
+        if (callbacks[i]->subscriptionTopic &&
             !strcmp(callbacks[i]->subscriptionTopic, subscriptiontopic)){
           break;
         }
@@ -215,7 +215,7 @@ int channelSet(mqtt_request_t* request){
 
   addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"channelSet topic %i", request->topic);
 
-  // TODO: better 
+  // TODO: better
   while(*p != '/') {
     if(*p == 0)
       return 0;
@@ -285,7 +285,7 @@ int tasCmnd(mqtt_request_t* request){
   // strncpy does not terminate??!!!!
   copy[len] = '\0';
 
-  // TODO: better 
+  // TODO: better
   // skip to after second forward slash
   while(*p != '/') { if(*p == 0) return 0; p++; }
   p++;
@@ -329,7 +329,7 @@ void MQTT_PublishMain(mqtt_client_t *client, const char *sChannel, const char *s
   u8_t qos = 2; /* 0 1 or 2, see MQTT specification */
   u8_t retain = 0; /* No don't retain such crappy payload... */
 	const char *baseName;
-  
+
   if(client==0)
 	  return;
   if(mqtt_client_is_connected(client)==0) {
@@ -346,7 +346,7 @@ void MQTT_PublishMain(mqtt_client_t *client, const char *sChannel, const char *s
   if(err != ERR_OK) {
       addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publish err: %d\n", err);
 	 if(err == ERR_CONN) {
-		 
+
 		// g_my_reconnect_mqtt_after_time = 5;
 
 
@@ -367,7 +367,7 @@ static void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t f
     g_mqtt_request.received = data;
     g_mqtt_request.receivedLen = len;
 
-  addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"MQTT in topic %s", g_mqtt_request.topic);    
+  addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"MQTT in topic %s", g_mqtt_request.topic);
 
     for (i = 0; i < numCallbacks; i++){
       char *cbtopic = callbacks[i]->topic;
@@ -513,7 +513,7 @@ static void MQTT_do_connect(mqtt_client_t *client)
   mqtt_client_info.client_id = mqtt_clientID;
   mqtt_client_info.client_pass = mqtt_pass;
   mqtt_client_info.client_user = mqtt_userName;
-  
+
 	sprintf(will_topic,"%s/connected",CFG_GetShortDeviceName());
   mqtt_client_info.will_topic = will_topic;
   mqtt_client_info.will_msg = "offline";
@@ -618,7 +618,7 @@ int MQTT_RunEverySecondUpdate() {
 		//addLogAdv(LOG_INFO,LOG_FEATURE_MAIN, "Timer discovers disconnected mqtt %i\n",loopsWithDisconnected);
 		loopsWithDisconnected++;
 		if(loopsWithDisconnected > 10)
-		{ 
+		{
 			if(mqtt_client == 0)
 			{
 				mqtt_client = mqtt_client_new();

@@ -21,8 +21,8 @@
 
 
 int GPIO_NRG_SEL = 24; // pwm4
-int GPIO_HLW_CF = 7; 
-int GPIO_NRG_CF1 = 8; 
+int GPIO_HLW_CF = 7;
+int GPIO_NRG_CF1 = 8;
 
 bool g_sel = true;
 uint32_t res_v = 0;
@@ -118,12 +118,12 @@ int BL0937_CurrentSet(const void *context, const char *cmd, const char *args, in
 	return 0;
 }
 void BL0937_Init() {
-	
+
 	HAL_PIN_Setup_Output(GPIO_NRG_SEL);
     HAL_PIN_SetOutputValue(GPIO_NRG_SEL, g_sel);
 
 	HAL_PIN_Setup_Input_Pullup(GPIO_NRG_CF1);
-	
+
     gpio_int_enable(GPIO_NRG_CF1,IRQ_TRIGGER_FALLING_EDGE,HlwCf1Interrupt);
 
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF);

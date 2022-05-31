@@ -128,5 +128,5 @@ void HAL_PIN_PWM_Update(int index, int value) {
 
 
 
-#endif 
+#endif
 

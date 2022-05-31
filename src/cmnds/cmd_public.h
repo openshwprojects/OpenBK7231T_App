@@ -37,7 +37,7 @@ enum EventCode {
 
 
 	// must be lower than 256
-	CMD_EVENT_MAX_TYPES 
+	CMD_EVENT_MAX_TYPES
 };
 
 // cmd_tokenizer.c

@@ -22,13 +22,13 @@ typedef struct driver_s {
 
 // startDriver BL0937
 static driver_t g_drivers[] = {
-	{ "TuyaMCU", TuyaMCU_Init, TuyaMCU_RunFrame, NULL, false }, 
-	{ "NTP", NTP_Init, NTP_OnEverySecond, NULL, false }, 
-	{ "I2C", DRV_I2C_Init, DRV_I2C_EverySecond, NULL, false }, 
-	{ "BL0942", BL0942_Init, BL0942_RunFrame, BL0942_AppendInformationToHTTPIndexPage, false }, 
-	{ "BL0937", BL0937_Init, BL0937_RunFrame, NULL, false }, 
+	{ "TuyaMCU", TuyaMCU_Init, TuyaMCU_RunFrame, NULL, false },
+	{ "NTP", NTP_Init, NTP_OnEverySecond, NULL, false },
+	{ "I2C", DRV_I2C_Init, DRV_I2C_EverySecond, NULL, false },
+	{ "BL0942", BL0942_Init, BL0942_RunFrame, BL0942_AppendInformationToHTTPIndexPage, false },
+	{ "BL0937", BL0937_Init, BL0937_RunFrame, NULL, false },
 #if PLATFORM_BEKEN
-	{ "DGR", DRV_DGR_Init, DRV_DGR_RunFrame, NULL, false }, 
+	{ "DGR", DRV_DGR_Init, DRV_DGR_RunFrame, NULL, false },
 #endif
 };
 static int g_numDrivers = sizeof(g_drivers)/sizeof(g_drivers[0]);
@@ -55,7 +55,7 @@ int DRV_Start(const void *context, const char *cmd, const char *args, int cmdFla
 
 	for(i = 0; i < g_numDrivers; i++) {
 		if(!stricmp(g_drivers[i].name,name)) {
-			if(g_drivers[i].bLoaded){ 
+			if(g_drivers[i].bLoaded){
 				addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Drv %s is already loaded.\n",name);
 				return 1;
 
@@ -89,14 +89,14 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t *request) {
 	int c_active = 0;
 
 	for(i = 0; i < g_numDrivers; i++) {
-		if(g_drivers[i].bLoaded){ 
+		if(g_drivers[i].bLoaded){
 			c_active++;
 			if(g_drivers[i].appendInformationToHTTPIndexPage) {
 				g_drivers[i].appendInformationToHTTPIndexPage(request);
 			}
 		}
 	}
-	
+
     hprintf128(request,"<h5>%i drivers active, total %i</h5>",c_active,g_numDrivers);
 }
 

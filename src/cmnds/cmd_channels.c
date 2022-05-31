@@ -17,10 +17,10 @@ static int CMD_SetChannel(const void *context, const char *cmd, const char *args
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetChannel: command requires 2 arguments");
 		return 1;
 	}
-	
+
 	ch = Tokenizer_GetArgInteger(0);
 	val = Tokenizer_GetArgInteger(1);
-	
+
 	CHANNEL_Set(ch,val, false);
 
 	return 1;
@@ -37,7 +37,7 @@ static int CMD_AddChannel(const void *context, const char *cmd, const char *args
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_AddChannel: command requires 2 arguments (next 2, min and max, are optionsl)");
 		return 1;
 	}
-	
+
 	ch = Tokenizer_GetArgInteger(0);
 	val = Tokenizer_GetArgInteger(1);
 	if(Tokenizer_GetArgsCount() == 4) {
@@ -50,7 +50,7 @@ static int CMD_AddChannel(const void *context, const char *cmd, const char *args
 	} else {
 		CHANNEL_Add(ch,val);
 	}
-	
+
 
 	return 1;
 }
@@ -66,11 +66,11 @@ static int CMD_ClampChannel(const void *context, const char *cmd, const char *ar
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ClampChannel: command requires 3 arguments");
 		return 1;
 	}
-	
+
 	ch = Tokenizer_GetArgInteger(0);
 	min = Tokenizer_GetArgInteger(1);
 	max = Tokenizer_GetArgInteger(2);
-	
+
 	CHANNEL_AddClamped(ch,0, min, max);
 
 	return 1;
@@ -89,10 +89,10 @@ static int CMD_SetPinRole(const void *context, const char *cmd, const char *args
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetPinRole: command requires 2 arguments");
 		return 1;
 	}
-	
+
 	pin = Tokenizer_GetArgInteger(0);
 	role = Tokenizer_GetArg(1);
-	
+
 	roleIndex = PIN_ParsePinRoleName(role);
 	if(roleIndex == IOR_Total_Options) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetPinRole: This role is not known");
@@ -114,10 +114,10 @@ static int CMD_SetPinChannel(const void *context, const char *cmd, const char *a
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetPinChannel: command requires 2 arguments");
 		return 1;
 	}
-	
+
 	pin = Tokenizer_GetArgInteger(0);
 	ch = Tokenizer_GetArgInteger(1);
-	
+
 	PIN_SetPinChannelForPinIndex(pin,ch);
 
 	return 1;

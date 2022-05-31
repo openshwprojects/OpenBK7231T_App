@@ -144,7 +144,7 @@ static u8_t ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_a
     //  LWIP_DEBUGF( PING_DEBUG, (" %"U32_F" ms\n", ms));
 	  ping_received++;
 	bReceivedLastOneSend = 1;
-	
+
 	//addLogAdv(LOG_INFO,LOG_FEATURE_MAIN,"Ping recv: %ims (total lost %i, recv %i)\r\n", ms,ping_lost,ping_received);
 
 	//  addLogAdv(LOG_INFO,LOG_FEATURE_MAIN,"Ping recv: %ims\r\n", ms);

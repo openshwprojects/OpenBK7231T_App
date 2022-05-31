@@ -39,7 +39,7 @@ int UART_GetDataSize()
     }else {
         remain_buf_size = g_recvBufIn + g_recvBufSize - g_recvBufOut;
     }
-    
+
     return remain_buf_size;
 }
 byte UART_GetNextByte(int index) {
@@ -56,7 +56,7 @@ void UART_ConsumeBytes(int idx) {
 }
 
 void UART_AppendByteToCircularBuffer(int rc) {
-    if(UART_GetDataSize() < (g_recvBufSize-1)) 
+    if(UART_GetDataSize() < (g_recvBufSize-1))
     {
         g_recvBuf[g_recvBufIn++] = rc;
         if(g_recvBufIn >= g_recvBufSize){
@@ -68,7 +68,7 @@ void UART_AppendByteToCircularBuffer(int rc) {
 void test_ty_read_uart_data_to_buffer(int port, void* param)
 {
     int rc = 0;
-    
+
     while((rc = uart_read_byte(port)) != -1)
     {
 		UART_AppendByteToCircularBuffer(rc);

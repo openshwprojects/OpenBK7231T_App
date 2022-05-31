@@ -67,8 +67,8 @@ size_t xPortGetFreeHeapSize() {
 
 
 
-OSStatus rtos_create_thread( beken_thread_t* thread, 
-							uint8_t priority, const char* name, 
+OSStatus rtos_create_thread( beken_thread_t* thread,
+							uint8_t priority, const char* name,
 							beken_thread_function_t function,
 							uint32_t stack_size, beken_thread_arg_t arg ) {
     OSStatus err = kNoErr;
@@ -85,7 +85,7 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 							  TaskHandle_t *pvCreatedTask
 						  );
 */
-	if(err == pdPASS){ 
+	if(err == pdPASS){
 		printf("Thread create %s - pdPASS\n",name);
 		return 0;
 	} else if(err == errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY ) {
@@ -132,16 +132,16 @@ void Main_OnWiFiStatusChange(int code){
 			g_bHasWiFiConnected = 0;
 			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_AUTH_FAILED\r\n");
             break;
-        case WIFI_STA_CONNECTED:  
+        case WIFI_STA_CONNECTED:
 			g_bHasWiFiConnected = 1;
 			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTED\r\n");
             break;
         /* for softap mode */
-        case WIFI_AP_CONNECTED: 
+        case WIFI_AP_CONNECTED:
 			g_bHasWiFiConnected = 1;
 			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_AP_CONNECTED\r\n");
             break;
-        case WIFI_AP_FAILED:      
+        case WIFI_AP_FAILED:
 			g_bHasWiFiConnected = 0;
 			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_AP_FAILED\r\n");
             break;
@@ -170,7 +170,7 @@ void Main_OnEverySecond()
 	DRV_OnEverySecond();
 #endif
 
-	// some users say that despite our simple reconnect mechanism 
+	// some users say that despite our simple reconnect mechanism
 	// there are some rare cases when devices stuck outside network
 	// That is why we can also reconnect them by basing on ping
 	if(g_timeSinceLastPingReply != -1 && g_secondsElapsed > 60) {
@@ -184,13 +184,13 @@ void Main_OnEverySecond()
 
 
 	g_secondsElapsed ++;
-	if(bSafeMode) { 
+	if(bSafeMode) {
 		safe = "[SAFE] ";
 	} else {
 		safe = "";
 	}
 	#ifndef PLATFORM_BL602
-	ADDLOGF_INFO("%sTime %i, free %d, MQTT %i, bWifi %i, secondsWithNoPing %i, socks %i/%i\n", 
+	ADDLOGF_INFO("%sTime %i, free %d, MQTT %i, bWifi %i, secondsWithNoPing %i, socks %i/%i\n",
 			safe, g_secondsElapsed, xPortGetFreeHeapSize(),bMQTTconnected, g_bHasWiFiConnected,g_timeSinceLastPingReply,
 			LWIP_GetActiveSockets(),LWIP_GetMaxSockets());
 	#endif
@@ -236,7 +236,7 @@ void Main_OnEverySecond()
 			} else {
 				// mark as disabled
 				g_timeSinceLastPingReply = -1;
-			}	
+			}
 		}
 	}
 	if(g_connectToWiFi){
@@ -263,16 +263,16 @@ void Main_OnEverySecond()
 	if (g_saveCfgAfter){
 		g_saveCfgAfter--;
 		if (!g_saveCfgAfter){
-			CFG_Save_IfThereArePendingChanges(); 
+			CFG_Save_IfThereArePendingChanges();
 		}
 	}
 	if (g_reset){
 		g_reset--;
 		if (!g_reset){
 			// ensure any config changes are saved before reboot.
-			CFG_Save_IfThereArePendingChanges(); 
+			CFG_Save_IfThereArePendingChanges();
 			ADDLOGF_INFO("Going to call HAL_RebootModule\r\n");
-			HAL_RebootModule(); 
+			HAL_RebootModule();
 		} else {
 
 			ADDLOGF_INFO("Module reboot in %i...\r\n",g_reset);
