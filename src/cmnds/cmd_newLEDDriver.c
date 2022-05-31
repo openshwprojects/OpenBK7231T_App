@@ -278,6 +278,8 @@ static void led_setSaturation(float sat){
 	baseColors[0] = r * 255.0f;
 	baseColors[1] = g * 255.0f;
 	baseColors[2] = b * 255.0f;
+
+	apply_smart_light();
 }
 static void led_setHue(float hue){
 	float fH, fS, fV;
@@ -292,6 +294,8 @@ static void led_setHue(float hue){
 	baseColors[0] = r * 255.0f;
 	baseColors[1] = g * 255.0f;
 	baseColors[2] = b * 255.0f;
+
+	apply_smart_light();
 }
 static int setSaturation(const void *context, const char *cmd, const char *args, int cmdFlags){
     float f;
