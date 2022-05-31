@@ -2,6 +2,7 @@
 #include "../logging/logging.h"
 #include "../new_pins.h"
 #include "../obk_config.h"
+#include "../rgb2hsv.h"
 #include <ctype.h>
 #include "cmd_local.h"
 #ifdef BK_LITTLEFS
@@ -264,7 +265,52 @@ static int brightnessMult(const void *context, const char *cmd, const char *args
 	//}
 	//return 0;
 }
+static void led_setSaturation(float sat){
+	float fH, fS, fV;
+	float r, g, b;
 
+	RGBtoHSV(baseColors[0]/255.0f, baseColors[1]/255.0f, baseColors[2]/255.0f, &fH, &fS, &fV);
+	
+	fS = sat;
+
+	HSVtoRGB(&r,&g,&b, fH,fS,fV);
+
+	baseColors[0] = r * 255.0f;
+	baseColors[1] = g * 255.0f;
+	baseColors[2] = b * 255.0f;
+}
+static void led_setHue(float hue){
+	float fH, fS, fV;
+	float r, g, b;
+
+	RGBtoHSV(baseColors[0]/255.0f, baseColors[1]/255.0f, baseColors[2]/255.0f, &fH, &fS, &fV);
+	
+	fH = hue;
+
+	HSVtoRGB(&r,&g,&b, fH,fS,fV);
+
+	baseColors[0] = r * 255.0f;
+	baseColors[1] = g * 255.0f;
+	baseColors[2] = b * 255.0f;
+}
+static int setSaturation(const void *context, const char *cmd, const char *args, int cmdFlags){
+    float f;
+
+	f = atof(args);
+
+	led_setSaturation(f);
+
+	return 1;
+}
+static int setHue(const void *context, const char *cmd, const char *args, int cmdFlags){
+    float f;
+
+	f = atof(args);
+
+	led_setHue(f);
+
+	return 1;
+}
 
 int NewLED_InitCommands(){
     CMD_RegisterCommand("led_dimmer", "", dimmer, "set output dimmer 0..100", NULL);
@@ -274,6 +320,8 @@ int NewLED_InitCommands(){
     CMD_RegisterCommand("led_temperature", "", temperature, "set qqqq", NULL);
     CMD_RegisterCommand("led_brightnessMult", "", brightnessMult, "set qqqq", NULL);
     CMD_RegisterCommand("led_colorMult", "", colorMult, "set qqqq", NULL);
+    CMD_RegisterCommand("led_saturation", "", setSaturation, "set qqqq", NULL);
+    CMD_RegisterCommand("led_hue", "", setHue, "set qqqq", NULL);
 
 	// "cmnd/obk8D38570E/led_dimmer_get""
     return 0;
