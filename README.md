@@ -174,6 +174,12 @@ Currently available pin roles:
   
   https://www.elektroda.com/rtvforum/topic3880540.html#19938487
   
+# TuyaMCU example with QIACHIP Universal WIFI Ceiling Fan Light Remote Control Kit - BK7231N - CB2S
+  
+  Home Assistant and Node Red. Please refer to this example:
+  
+  https://www.elektroda.com/rtvforum/viewtopic.php?p=20031489#20031489
+  
 # I2C drivers system with support for MCP23017 bus expander, TC74 temperature sensor and more
   
   Detailed description and step by step tutorial on Elektroda.com is coming soon.
