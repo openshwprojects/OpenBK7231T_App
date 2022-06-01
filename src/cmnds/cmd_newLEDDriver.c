@@ -54,6 +54,9 @@ enum LightMode {
 int g_lightMode = Light_RGB;
 // Those are base colors, normalized, without brightness applied
 float baseColors[5] = { 255, 255, 255, 255, 255 };
+float g_hsv_h = 0; // 0 to 360
+float g_hsv_s = 0; // 0 to 1
+float g_hsv_v = 1; // 0 to 1
 // By default, colors are in 255 to 0 range, while our channels accept 0 to 100 range
 float g_cfg_colorScaleToChannel = 100.0f/255.0f;
 int g_numBaseColors = 5;
@@ -228,7 +231,12 @@ static int basecolor(const void *context, const char *cmd, const char *args, int
                 // move to next channel.
                 channel ++;
             }
-		apply_smart_light();
+			// keep hsv in sync
+			
+			RGBtoHSV(baseColors[0]/255.0f, baseColors[1]/255.0f, baseColors[2]/255.0f, &g_hsv_h, &g_hsv_s, &g_hsv_v);
+
+			apply_smart_light();
+
             if (!(*c)){
                 ADDLOG_DEBUG(LOG_FEATURE_CMD, "BASECOLOR arg ended");
             }
@@ -266,14 +274,11 @@ static int brightnessMult(const void *context, const char *cmd, const char *args
 	//return 0;
 }
 static void led_setSaturation(float sat){
-	float fH, fS, fV;
 	float r, g, b;
 
-	RGBtoHSV(baseColors[0]/255.0f, baseColors[1]/255.0f, baseColors[2]/255.0f, &fH, &fS, &fV);
-	
-	fS = sat;
+	g_hsv_s = sat;
 
-	HSVtoRGB(&r,&g,&b, fH,fS,fV);
+	HSVtoRGB(&r,&g,&b, g_hsv_h,g_hsv_s,g_hsv_v);
 
 	baseColors[0] = r * 255.0f;
 	baseColors[1] = g * 255.0f;
@@ -284,12 +289,10 @@ static void led_setSaturation(float sat){
 static void led_setHue(float hue){
 	float fH, fS, fV;
 	float r, g, b;
-
-	RGBtoHSV(baseColors[0]/255.0f, baseColors[1]/255.0f, baseColors[2]/255.0f, &fH, &fS, &fV);
 	
-	fH = hue;
+	g_hsv_h = hue;
 
-	HSVtoRGB(&r,&g,&b, fH,fS,fV);
+	HSVtoRGB(&r,&g,&b, g_hsv_h,g_hsv_s,g_hsv_v);
 
 	baseColors[0] = r * 255.0f;
 	baseColors[1] = g * 255.0f;
@@ -301,6 +304,9 @@ static int setSaturation(const void *context, const char *cmd, const char *args,
     float f;
 
 	f = atof(args);
+
+	// input is in 0-100 range 
+	f *= 0.01f;
 
 	led_setSaturation(f);
 
