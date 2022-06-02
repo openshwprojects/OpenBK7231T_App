@@ -6,17 +6,20 @@
 #include "../new_pins.h"
 #include "../new_cfg.h"
 
+// addRepeatingEvent 1 -1 led_basecolor_rgb rand
+
 typedef struct repeatingEvent_s {
 	char *command;
 	//char *condition;
 	int intervalSeconds;
 	int currentInterval;
+	int times;
 	struct repeatingEvent_s *next;
 } repeatingEvent_t;
 
 static repeatingEvent_t *g_repeatingEvents = 0;
 
-void RepeatingEvents_AddRepeatingEvent(const char *command, int secondsInterval)
+void RepeatingEvents_AddRepeatingEvent(const char *command, int secondsInterval, int times)
 {
 	repeatingEvent_t *ev = malloc(sizeof(repeatingEvent_t));
 
@@ -24,6 +27,7 @@ void RepeatingEvents_AddRepeatingEvent(const char *command, int secondsInterval)
 	g_repeatingEvents = ev;
 	ev->command = strdup(command);
 	ev->intervalSeconds = secondsInterval;
+	ev->times = times;
 	// fire next frame
 	ev->currentInterval = 1;
 }
@@ -54,6 +58,7 @@ void RepeatingEvents_OnEverySecond() {
 }
 int RepeatingEvents_Cmd_AddRepeatingEvent(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int interval;
+	int times;
 	const char *cmdToRepeat;
 	// linkTuyaMCUOutputToChannel dpID channelID [varType]
 	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"addRepeatingEvent: will tokenize %s\n",args);
@@ -64,11 +69,12 @@ int RepeatingEvents_Cmd_AddRepeatingEvent(const void *context, const char *cmd, 
 		return -1;
 	}
 	interval = Tokenizer_GetArgInteger(0);
-	cmdToRepeat = Tokenizer_GetArgFrom(1);
+	times = Tokenizer_GetArgInteger(1);
+	cmdToRepeat = Tokenizer_GetArgFrom(2);
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"addRepeatingEvent: interval %i, command [%s]\n",interval,cmdToRepeat);
 
-	RepeatingEvents_AddRepeatingEvent(cmdToRepeat,interval);
+	RepeatingEvents_AddRepeatingEvent(cmdToRepeat,interval, times);
 
 	return 1;
 }

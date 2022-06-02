@@ -616,7 +616,7 @@ void TuyaMCU_ApplyMapping(int fnID, int value) {
 
 	mapping->prevValue = mappedValue;
 
-	CHANNEL_Set(mapping->channel,mappedValue,false);
+	CHANNEL_Set(mapping->channel,mappedValue,0);
 }
 
 void TuyaMCU_OnChannelChanged(int channel, int iVal) {

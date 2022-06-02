@@ -6,6 +6,7 @@
 #include "new_cfg.h"
 #include "httpserver/new_http.h"
 #include "logging/logging.h"
+#include "mqtt/new_mqtt.h"
 // Commands register, execution API and cmd tokenizer
 #include "cmnds/cmd_public.h"
 #include "i2c/drv_i2c_public.h"
@@ -57,7 +58,6 @@ int g_channelValues[CHANNEL_MAX] = { 0 };
 
 pinButton_s g_buttons[PLATFORM_GPIO_MAX];
 
-void (*g_channelChangeCallback)(int idx, int iVal) = 0;
 void (*g_doubleClickCallback)(int pinIndex) = 0;
 
 
@@ -205,7 +205,7 @@ bool CHANNEL_IsInUse(int ch) {
 	}
 	return false;
 }
-void CHANNEL_SetAll(int iVal, bool bForce) {
+void CHANNEL_SetAll(int iVal, int iFlags) {
 	int i;
 
 
@@ -224,10 +224,10 @@ void CHANNEL_SetAll(int iVal, bool bForce) {
 		case IOR_LED_n:
 		case IOR_Relay:
 		case IOR_Relay_n:
-			CHANNEL_Set(g_cfg.pins.channels[i],iVal,bForce);
+			CHANNEL_Set(g_cfg.pins.channels[i],iVal,iFlags);
 			break;
 		case IOR_PWM:
-			CHANNEL_Set(g_cfg.pins.channels[i],iVal,bForce);
+			CHANNEL_Set(g_cfg.pins.channels[i],iVal,iFlags);
 			break;
 
 		default:
@@ -397,10 +397,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex)) {
 	g_doubleClickCallback = cb;
 }
-void CHANNEL_SetChangeCallback(void (*cb)(int idx, int iVal)) {
-	g_channelChangeCallback = cb;
-}
-static void Channel_OnChanged(int ch, int prevValue) {
+
+static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 	int i;
 	int iVal;
 	int bOn;
@@ -442,9 +440,9 @@ static void Channel_OnChanged(int ch, int prevValue) {
 	if(g_cfg.pins.channelTypes[ch] != ChType_Default) {
 		bCallCb = 1;
 	}
-	if(bCallCb) {
-		if(g_channelChangeCallback != 0) {
-			g_channelChangeCallback(ch,iVal);
+	if((iFlags & CHANNEL_SET_FLAG_SKIP_MQTT) == 0) {
+		if(bCallCb) {
+			MQTT_ChannelChangeCallback(ch,iVal);
 		}
 	}
 	EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CHANNEL0 + ch, prevValue, iVal);
@@ -457,8 +455,10 @@ int CHANNEL_Get(int ch) {
 	return g_channelValues[ch];
 }
 
-void CHANNEL_Set(int ch, int iVal, int bForce) {
+void CHANNEL_Set(int ch, int iVal, int iFlags) {
 	int prevValue;
+	int bForce;
+	bForce = iFlags & CHANNEL_SET_FLAG_FORCE;
 
 	if(ch < 0 || ch >= CHANNEL_MAX) {
 		//if(bMustBeSilent==0) {
@@ -478,7 +478,7 @@ void CHANNEL_Set(int ch, int iVal, int bForce) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"CHANNEL_Set channel %i has changed to %i\n\r",ch,iVal);
 	g_channelValues[ch] = iVal;
 
-	Channel_OnChanged(ch,prevValue);
+	Channel_OnChanged(ch,prevValue,iFlags);
 }
 void CHANNEL_AddClamped(int ch, int iVal, int min, int max) {
 	int prevValue;
@@ -496,7 +496,7 @@ void CHANNEL_AddClamped(int ch, int iVal, int min, int max) {
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"CHANNEL_AddClamped channel %i has changed to %i\n\r",ch,g_channelValues[ch]);
 
-	Channel_OnChanged(ch,prevValue);
+	Channel_OnChanged(ch,prevValue,0);
 }
 void CHANNEL_Add(int ch, int iVal) {
 	int prevValue;
@@ -509,7 +509,7 @@ void CHANNEL_Add(int ch, int iVal) {
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"CHANNEL_Add channel %i has changed to %i\n\r",ch,g_channelValues[ch]);
 
-	Channel_OnChanged(ch,prevValue);
+	Channel_OnChanged(ch,prevValue,0);
 }
 
 int CHANNEL_FindMaxValueForChannel(int ch) {
@@ -542,7 +542,7 @@ void CHANNEL_Toggle(int ch) {
 	else
 		g_channelValues[ch] = 0;
 
-	Channel_OnChanged(ch,prev);
+	Channel_OnChanged(ch,prev,0);
 }
 int CHANNEL_HasChannelPinWithRole(int ch, int iorType) {
 	if(ch < 0 || ch >= CHANNEL_MAX) {

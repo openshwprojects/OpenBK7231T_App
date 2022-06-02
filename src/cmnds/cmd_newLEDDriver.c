@@ -5,6 +5,7 @@
 #include "../rgb2hsv.h"
 #include <ctype.h>
 #include "cmd_local.h"
+#include "../mqtt/new_mqtt.h"
 #ifdef BK_LITTLEFS
 	#include "../littlefs/our_lfs.h"
 #endif
@@ -69,6 +70,14 @@ int g_lightEnableAll = 1;
 // config only stuff
 float g_cfg_brightnessMult = 0.01f;
 
+// the slider control in the UI emits values
+//in the range from 154-500 (defined
+//in homeassistant/util/color.py as HASS_COLOR_MIN and HASS_COLOR_MAX).
+
+float led_temperature_min = 154.0f;
+float led_temperature_max = 500.0f;
+float led_temperature_current = 0;
+
 void apply_smart_light() {
 	int i;
 	int firstChannelIndex;
@@ -116,36 +125,68 @@ void apply_smart_light() {
 		//ADDLOG_INFO(LOG_FEATURE_CMD, "apply_smart_light: ch %i raw is %f, bright %f, final %f, enableAll is %i",
 		//	channelToUse,raw,g_brightness,final,g_lightEnableAll);
 
-		CHANNEL_Set(channelToUse, final * g_cfg_colorScaleToChannel, false);
+		CHANNEL_Set(channelToUse, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT);
 	}
 }
+static void sendColorChange() {
+	char s[16];
+	byte c[3];
+
+	c[0] = (byte)(baseColors[0]);
+	c[1] = (byte)(baseColors[1]);
+	c[2] = (byte)(baseColors[2]);
+	
+	sprintf(s,"%02X%02X%02X",c[0],c[1],c[2]);
+
+	MQTT_PublishMain_StringString("led_basecolor_rgb",s);
+}
+static void sendDimmerChange() {
+	int iValue;
+
+	iValue = g_brightness / g_cfg_brightnessMult;
+
+	MQTT_PublishMain_StringInt("led_dimmer", iValue);
+}
+static void sendTemperatureChange(){
+	MQTT_PublishMain_StringInt("led_temperature", (int)led_temperature_current);
+}
+
+static void setTemperature(int tmpInteger, bool bApply) {
+	float f;
+	
+	led_temperature_current = tmpInteger;
+
+	f = (tmpInteger - led_temperature_min);
+	f = f / (led_temperature_max - led_temperature_min);
+	if(f<0)
+		f = 0;
+	if(f>1)
+		f =1;
+
+     ///   ADDLOG_INFO(LOG_FEATURE_CMD, "tasCmnd temperature frac %f",f);
+
+	baseColors[3] = (255.0f) * (1-f);
+	baseColors[4] = (255.0f) * f;
+
+	if(bApply) {
+		g_lightMode = Light_Temperature;
+		apply_smart_light();
+	}
+
+}
+
 static int temperature(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int tmp;
-	float f;
 	//if (!wal_strnicmp(cmd, "POWERALL", 8)){
 
         ADDLOG_INFO(LOG_FEATURE_CMD, " temperature (%s) received with args %s",cmd,args);
 
+
 		tmp = atoi(args);
 
-		g_lightMode = Light_Temperature;
-// the slider control in the UI emits values
-//in the range from 154-500 (defined
-//in homeassistant/util/color.py as HASS_COLOR_MIN and HASS_COLOR_MAX).
+		setTemperature(tmp, 1);
 
-		f = (tmp - 154);
-		f = f / (500.0f - 154.0f);
-		if(f<0)
-			f = 0;
-		if(f>1)
-			f =1;
-
-     ///   ADDLOG_INFO(LOG_FEATURE_CMD, "tasCmnd temperature frac %f",f);
-
-		baseColors[3] = (255.0f) * (1-f);
-		baseColors[4] = (255.0f) * f;
-
-		apply_smart_light();
+		sendTemperatureChange();
 
 		return 1;
 	//}
@@ -159,6 +200,12 @@ static int enableAll(const void *context, const char *cmd, const char *args, int
 		g_lightEnableAll = parsePowerArgument(args);
 
 		apply_smart_light();
+
+		MQTT_PublishMain_StringInt("led_enableAll",g_lightEnableAll);
+	
+	//	sendColorChange();
+	//	sendDimmerChange();
+	//	sendTemperatureChange();
 
 		return 1;
 	//}
@@ -176,22 +223,22 @@ static int dimmer(const void *context, const char *cmd, const char *args, int cm
 		g_brightness = iVal * g_cfg_brightnessMult;
 
 		apply_smart_light();
+		sendDimmerChange();
 
 		return 1;
 	//}
 	//return 0;
 }
 static int basecolor(const void *context, const char *cmd, const char *args, int bAll){
-   // if (!wal_strnicmp(cmd, "COLOR", 5)){
-        if (args[0] != '#'){
-            ADDLOG_ERROR(LOG_FEATURE_CMD, " BASECOLOR expected a # prefixed color, you sent %s",args);
-            return 0;
-        } else {
+   // support both '#' prefix and not
             const char *c = args;
             int val = 0;
             int channel = 0;
             ADDLOG_DEBUG(LOG_FEATURE_CMD, " BASECOLOR got %s", args);
-            c++;
+
+			// some people prefix colors with #
+			if(c[0] == '#')
+				c++;
 
 			if(bAll) {
 				g_lightMode = Light_All;
@@ -200,47 +247,57 @@ static int basecolor(const void *context, const char *cmd, const char *args, int
 			}
 
 			g_numBaseColors = 0;
-            while (*c){
-                char tmp[3];
-                int r;
-                tmp[0] = *(c++);
-                if (!*c) break;
-                tmp[1] = *(c++);
-                tmp[2] = '\0';
-                r = sscanf(tmp, "%x", &val);
-                if (!r) {
-                    ADDLOG_ERROR(LOG_FEATURE_CMD, "BASECOLOR no sscanf hex result from %s", tmp);
-                    break;
-                }
-                // if this channel is not PWM, find a PWM channel;
-                while ((channel < 32) && (IOR_PWM != CHANNEL_GetRoleForOutputChannel(channel))) {
-                    channel ++;
-                }
+			if(!stricmp(c,"rand")) {
+				baseColors[0] = rand()%255;
+				baseColors[1] = rand()%255;
+				baseColors[2] = rand()%255;
+				if(bAll){
+					baseColors[3] = rand()%255;
+					baseColors[4] = rand()%255;
+				}
+			} else {
+				while (*c){
+					char tmp[3];
+					int r;
+					tmp[0] = *(c++);
+					if (!*c) break;
+					tmp[1] = *(c++);
+					tmp[2] = '\0';
+					r = sscanf(tmp, "%x", &val);
+					if (!r) {
+						ADDLOG_ERROR(LOG_FEATURE_CMD, "BASECOLOR no sscanf hex result from %s", tmp);
+						break;
+					}
+					// if this channel is not PWM, find a PWM channel;
+					while ((channel < 32) && (IOR_PWM != CHANNEL_GetRoleForOutputChannel(channel))) {
+						channel ++;
+					}
 
-                if (channel >= 32) {
-                    ADDLOG_ERROR(LOG_FEATURE_CMD, "BASECOLOR channel >= 32");
-                    break;
-                }
+					if (channel >= 32) {
+						ADDLOG_ERROR(LOG_FEATURE_CMD, "BASECOLOR channel >= 32");
+						break;
+					}
 
-                ADDLOG_DEBUG(LOG_FEATURE_CMD, "BASECOLOR found chan %d -> val255 %d(from %s)", channel, val, tmp);
+					ADDLOG_DEBUG(LOG_FEATURE_CMD, "BASECOLOR found chan %d -> val255 %d (from %s)", channel, val, tmp);
 
-				baseColors[g_numBaseColors] = val;
-			//	baseColorChannels[g_numBaseColors] = channel;
-				g_numBaseColors++;
+					baseColors[g_numBaseColors] = val;
+				//	baseColorChannels[g_numBaseColors] = channel;
+					g_numBaseColors++;
 
-                // move to next channel.
-                channel ++;
-            }
-			// keep hsv in sync
+					// move to next channel.
+					channel ++;
+				}
+				// keep hsv in sync
+			}
 			
 			RGBtoHSV(baseColors[0]/255.0f, baseColors[1]/255.0f, baseColors[2]/255.0f, &g_hsv_h, &g_hsv_s, &g_hsv_v);
 
 			apply_smart_light();
+			sendColorChange();
 
             if (!(*c)){
                 ADDLOG_DEBUG(LOG_FEATURE_CMD, "BASECOLOR arg ended");
             }
-        }
         return 1;
   //  }
    // return 0;
@@ -273,32 +330,30 @@ static int brightnessMult(const void *context, const char *cmd, const char *args
 	//}
 	//return 0;
 }
-static void led_setSaturation(float sat){
+static void onHSVChanged() {
 	float r, g, b;
-
-	g_hsv_s = sat;
 
 	HSVtoRGB(&r,&g,&b, g_hsv_h,g_hsv_s,g_hsv_v);
 
 	baseColors[0] = r * 255.0f;
 	baseColors[1] = g * 255.0f;
 	baseColors[2] = b * 255.0f;
+
+	sendColorChange();
 
 	apply_smart_light();
 }
+static void led_setSaturation(float sat){
+
+	g_hsv_s = sat;
+
+	onHSVChanged();
+}
 static void led_setHue(float hue){
-	float fH, fS, fV;
-	float r, g, b;
 	
 	g_hsv_h = hue;
 
-	HSVtoRGB(&r,&g,&b, g_hsv_h,g_hsv_s,g_hsv_v);
-
-	baseColors[0] = r * 255.0f;
-	baseColors[1] = g * 255.0f;
-	baseColors[2] = b * 255.0f;
-
-	apply_smart_light();
+	onHSVChanged();
 }
 static int setSaturation(const void *context, const char *cmd, const char *args, int cmdFlags){
     float f;
@@ -332,6 +387,9 @@ int NewLED_InitCommands(){
     CMD_RegisterCommand("led_colorMult", "", colorMult, "set qqqq", NULL);
     CMD_RegisterCommand("led_saturation", "", setSaturation, "set qqqq", NULL);
     CMD_RegisterCommand("led_hue", "", setHue, "set qqqq", NULL);
+
+	// set, but do not apply
+	setTemperature(250,0);
 
 	// "cmnd/obk8D38570E/led_dimmer_get""
     return 0;

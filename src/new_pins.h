@@ -125,6 +125,8 @@ extern mainConfig_t g_cfg;
 
 extern char g_enable_pins;
 
+#define CHANNEL_SET_FLAG_FORCE		1
+#define CHANNEL_SET_FLAG_SKIP_MQTT	2
 
 void PIN_Init(void);
 void PIN_SetupPins();
@@ -139,11 +141,9 @@ void PIN_SetPinChannel2ForPinIndex(int index, int ch);
 void CHANNEL_Toggle(int ch);
 void CHANNEL_DoSpecialToggleAll();
 bool CHANNEL_Check(int ch);
-void CHANNEL_SetChangeCallback(void (*cb)(int idx, int iVal));
 void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex));
-// bMustBeSilent means it is called very often and log printf would crash system
-// (eg from 5ms timer)
-void CHANNEL_Set(int ch, int iVal, int bForce);
+// CHANNEL_SET_FLAG_*
+void CHANNEL_Set(int ch, int iVal, int iFlags);
 void CHANNEL_Add(int ch, int iVal);
 void CHANNEL_AddClamped(int ch, int iVal, int min, int max);
 int CHANNEL_Get(int ch);
@@ -151,7 +151,8 @@ int CHANNEL_GetRoleForOutputChannel(int ch);
 // See: enum ChannelType
 void CHANNEL_SetType(int ch, int type);
 int CHANNEL_GetType(int ch);
-void CHANNEL_SetAll(int iVal, bool bForce);
+// CHANNEL_SET_FLAG_*
+void CHANNEL_SetAll(int iVal, int iFlags);
 void CHANNEL_SetStateOnly(int iVal);
 int CHANNEL_HasChannelPinWithRole(int ch, int iorType);
 

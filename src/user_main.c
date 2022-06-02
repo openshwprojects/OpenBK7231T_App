@@ -190,9 +190,15 @@ void Main_OnEverySecond()
 		safe = "";
 	}
 	#ifndef PLATFORM_BL602
-	ADDLOGF_INFO("%sTime %i, free %d, MQTT %i, bWifi %i, secondsWithNoPing %i, socks %i/%i\n",
+	{
+		//int mqtt_max, mqtt_cur, mqtt_mem;
+		//MQTT_GetStats(&mqtt_cur, &mqtt_max, &mqtt_mem);
+	//	ADDLOGF_INFO("mqtt req %i/%i, free mem %i\n", mqtt_cur,mqtt_max,mqtt_mem);
+		ADDLOGF_INFO("%sTime %i, free %d, MQTT %i, bWifi %i, secondsWithNoPing %i, socks %i/%i\n",
 			safe, g_secondsElapsed, xPortGetFreeHeapSize(),bMQTTconnected, g_bHasWiFiConnected,g_timeSinceLastPingReply,
 			LWIP_GetActiveSockets(),LWIP_GetMaxSockets());
+
+	}
 	#endif
 
 	// print network info

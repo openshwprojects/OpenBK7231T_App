@@ -300,6 +300,9 @@ int tasCmnd(mqtt_request_t* request){
   return 1;
 }
 
+void MQTT_GetStats(int *outUsed, int *outMax, int *outFreeMem) {
+	mqtt_get_request_stats(mqtt_client,outUsed, outMax,outFreeMem);
+}
 
 // copied here because for some reason renames in sdk?
 static void MQTT_disconnect(mqtt_client_t *client)
@@ -344,12 +347,12 @@ void MQTT_PublishMain(mqtt_client_t *client, const char *sChannel, const char *s
 	sprintf(pub_topic,"%s/%s/get",baseName,sChannel);
   err = mqtt_publish(client, pub_topic, sVal, strlen(sVal), qos, retain, mqtt_pub_request_cb, 0);
   if(err != ERR_OK) {
-      addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publish err: %d\n", err);
 	 if(err == ERR_CONN) {
-
-		// g_my_reconnect_mqtt_after_time = 5;
-
-
+		addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publish err: ERR_CONN aka %d\n", err);
+	 } else if(err == ERR_MEM) {
+		addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publish err: ERR_MEM aka %d\n", err);
+	 } else {
+		addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publish err: %d\n", err);
 	 }
   }
 }
@@ -551,6 +554,13 @@ static void MQTT_do_connect(mqtt_client_t *client)
    addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"mqtt_host %s not found by gethostbyname\r\n", mqtt_host);
   }
 }
+void MQTT_PublishMain_StringInt(const char *sChannel, int iv)
+{
+	char valueStr[16];
+	sprintf(valueStr,"%i",iv);
+
+	MQTT_PublishMain(mqtt_client,sChannel,valueStr);
+}
 void MQTT_PublishMain_StringFloat(const char *sChannel, float f)
 {
 	char valueStr[16];
@@ -558,7 +568,11 @@ void MQTT_PublishMain_StringFloat(const char *sChannel, float f)
 
 	MQTT_PublishMain(mqtt_client,sChannel,valueStr);
 }
-static void app_my_channel_toggle_callback(int channel, int iVal)
+void MQTT_PublishMain_StringString(const char *sChannel, const char *valueStr)
+{
+	MQTT_PublishMain(mqtt_client,sChannel,valueStr);
+}
+void MQTT_ChannelChangeCallback(int channel, int iVal)
 {
 	char channelNameStr[8];
 	char valueStr[16];
@@ -622,7 +636,6 @@ int MQTT_RunEverySecondUpdate() {
 			if(mqtt_client == 0)
 			{
 				mqtt_client = mqtt_client_new();
-				CHANNEL_SetChangeCallback(app_my_channel_toggle_callback);
 			}
 			MQTT_do_connect(mqtt_client);
 			loopsWithDisconnected = 0;
