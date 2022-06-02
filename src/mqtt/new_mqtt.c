@@ -300,9 +300,9 @@ int tasCmnd(mqtt_request_t* request){
   return 1;
 }
 
-void MQTT_GetStats(int *outUsed, int *outMax, int *outFreeMem) {
-	mqtt_get_request_stats(mqtt_client,outUsed, outMax,outFreeMem);
-}
+//void MQTT_GetStats(int *outUsed, int *outMax, int *outFreeMem) {
+//	mqtt_get_request_stats(mqtt_client,outUsed, outMax,outFreeMem);
+//}
 
 // copied here because for some reason renames in sdk?
 static void MQTT_disconnect(mqtt_client_t *client)
