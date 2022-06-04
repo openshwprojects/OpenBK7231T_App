@@ -482,6 +482,10 @@ static int http_rest_post_lfs_file(http_request_t *request){
                 }
             }
         } while ((towrite > 0) && (writelen >= 0));
+
+		// no more data
+		lfs_file_truncate(&lfs, file,total);
+
         //ADDLOG_DEBUG(LOG_FEATURE_API, "closing %s", fpath);
         lfs_file_close(&lfs, file);
         ADDLOG_DEBUG(LOG_FEATURE_API, "%d total bytes written", total);
