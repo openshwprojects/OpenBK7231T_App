@@ -6,7 +6,8 @@
 #include "../new_pins.h"
 #include "../new_cfg.h"
 
-// addRepeatingEvent 1 -1 led_basecolor_rgb rand
+// addRepeatingEvent	interval_seconds	  repeats	command top run
+// addRepeatingEvent		1				 -1			led_basecolor_rgb rand
 
 typedef struct repeatingEvent_s {
 	char *command;
@@ -21,7 +22,22 @@ static repeatingEvent_t *g_repeatingEvents = 0;
 
 void RepeatingEvents_AddRepeatingEvent(const char *command, int secondsInterval, int times)
 {
-	repeatingEvent_t *ev = malloc(sizeof(repeatingEvent_t));
+	repeatingEvent_t *ev;
+
+	// reuse existing
+	for(ev = g_repeatingEvents; ev; ev = ev->next) {
+		if(ev->times <= 0) {
+			if(!strcmp(ev->command,command)) {
+				ev->intervalSeconds = secondsInterval;
+				// fire next frame
+				ev->currentInterval = 1;
+				ev->times = times;
+				return;
+			}
+		}
+	}
+	// create new
+	ev = malloc(sizeof(repeatingEvent_t));
 
 	ev->next = g_repeatingEvents;
 	g_repeatingEvents = ev;
@@ -45,11 +61,14 @@ void RepeatingEvents_OnEverySecond() {
 			cur->next = 0;
 			return;
 		}
-		cur->currentInterval--;
-		if(cur->currentInterval<=0){
-			c_ran++;
-			cur->currentInterval = cur->intervalSeconds;
-			CMD_ExecuteCommand(cur->command, COMMAND_FLAG_SOURCE_SCRIPT);
+		if(cur->times > 0) {
+			cur->currentInterval--;
+			if(cur->currentInterval<=0){
+				c_ran++;
+				cur->times -= 1;
+				cur->currentInterval = cur->intervalSeconds;
+				CMD_ExecuteCommand(cur->command, COMMAND_FLAG_SOURCE_SCRIPT);
+			}
 		}
 		cur = cur->next;
 	}
