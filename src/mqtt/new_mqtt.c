@@ -488,6 +488,7 @@ static void MQTT_do_connect(mqtt_client_t *client)
 {
   const char *mqtt_userName, *mqtt_host, *mqtt_pass, *mqtt_clientID;
   int mqtt_port;
+  int res;
   struct hostent* hostEntry;
   char will_topic[32];
 
@@ -545,10 +546,14 @@ static void MQTT_do_connect(mqtt_client_t *client)
       to establish a connection with the server.
       For now MQTT version 3.1.1 is always used */
 
-    mqtt_client_connect(mqtt_client,
+   res = mqtt_client_connect(mqtt_client,
             &mqtt_ip, mqtt_port,
             mqtt_connection_cb, LWIP_CONST_CAST(void*, &mqtt_client_info),
             &mqtt_client_info);
+   if(res != ERR_OK) {
+      addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Connect error in mqtt_client_connect - code: %d\n", res);
+
+    }
 
   } else {
    addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"mqtt_host %s not found by gethostbyname\r\n", mqtt_host);
