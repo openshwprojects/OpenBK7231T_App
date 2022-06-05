@@ -50,7 +50,7 @@ const char *mqttNames[OBK_NUM_MEASUREMENTS] = {
 int changeSendAlwaysFrames = 60;
 
 
-void BL0942_AppendInformationToHTTPIndexPage(http_request_t *request) {
+void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request) {
 	char tmp[128];
 	sprintf(tmp, "<h2>BL0942 Voltage=%f, Current=%f, Power=%f (changes sent %i, skipped %i)</h2>",
 		lastReadings[OBK_VOLTAGE],lastReadings[OBK_CURRENT], lastReadings[OBK_POWER],

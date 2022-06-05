@@ -26,7 +26,7 @@ static driver_t g_drivers[] = {
 	{ "NTP", NTP_Init, NTP_OnEverySecond, NULL, false },
 	{ "I2C", DRV_I2C_Init, DRV_I2C_EverySecond, NULL, false },
 	{ "BL0942", BL0942_Init, BL0942_RunFrame, BL0942_AppendInformationToHTTPIndexPage, false },
-	{ "BL0937", BL0937_Init, BL0937_RunFrame, NULL, false },
+	{ "BL0937", BL0937_Init, BL0937_RunFrame, BL0942_AppendInformationToHTTPIndexPage, false },
 #if PLATFORM_BEKEN
 	{ "DGR", DRV_DGR_Init, DRV_DGR_RunFrame, NULL, false },
 #endif
