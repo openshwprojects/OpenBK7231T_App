@@ -85,6 +85,15 @@ int PIN_GetPinChannelForPinIndex(int index) {
 	}
 	return g_cfg.pins.channels[index];
 }
+int PIN_FindPinIndexForRole(int role, int defaultIndexToReturnIfNotFound) {
+	int i;
+
+	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if(g_cfg.pins.roles[i] == role)
+			return i;
+	}
+	return defaultIndexToReturnIfNotFound;
+}
 int PIN_GetPinChannel2ForPinIndex(int index) {
 	if(index < 0 || index >= PLATFORM_GPIO_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "PIN_GetPinChannel2ForPinIndex: Pin index %i out of range <0,%i).",index,PLATFORM_GPIO_MAX);

@@ -236,6 +236,9 @@ const char *htmlPinRoleNames[] = {
 	"ToggleChannelOnToggle",
 	"DigitalInput_NoPullUp",
 	"DigitalInput_NoPullUp_n",
+	"BL0937 SEL",
+	"BL0937 CF",
+	"BL0937 CF1",
 	"e",
 	"e",
 };

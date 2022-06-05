@@ -29,6 +29,10 @@ enum IORole {
 	IOR_DigitalInput_NoPup,
 	// as above, but inverted
 	IOR_DigitalInput_NoPup_n,
+	// energy sensor
+	IOR_BL0937_SEL,
+	IOR_BL0937_CF,
+	IOR_BL0937_CF1,
 	IOR_Total_Options,
 };
 
@@ -134,6 +138,7 @@ void CFG_ClearPins();
 int PIN_GetPinRoleForPinIndex(int index);
 int PIN_GetPinChannelForPinIndex(int index);
 int PIN_GetPinChannel2ForPinIndex(int index);
+int PIN_FindPinIndexForRole(int role, int defaultIndexToReturnIfNotFound);
 const char *PIN_GetPinNameAlias(int index);
 void PIN_SetPinRoleForPinIndex(int index, int role);
 void PIN_SetPinChannelForPinIndex(int index, int ch);

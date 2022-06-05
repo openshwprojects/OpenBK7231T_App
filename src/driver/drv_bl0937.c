@@ -15,14 +15,17 @@
 #include "sys_timer.h"
 #include "gw_intf.h"
 
+// HLW8012 aka BL0937
+
 #define ELE_HW_TIME 1
 #define HW_TIMER_ID 0
 
 
-
-int GPIO_NRG_SEL = 24; // pwm4
+// Those can be set by Web page pins configurator
+// The below are default values for Mycket smart socket
+int GPIO_HLW_SEL = 24; // pwm4
 int GPIO_HLW_CF = 7;
-int GPIO_NRG_CF1 = 8;
+int GPIO_HLW_CF1 = 8;
 
 bool g_sel = true;
 uint32_t res_v = 0;
@@ -119,12 +122,12 @@ int BL0937_CurrentSet(const void *context, const char *cmd, const char *args, in
 }
 void BL0937_Init() {
 
-	HAL_PIN_Setup_Output(GPIO_NRG_SEL);
-    HAL_PIN_SetOutputValue(GPIO_NRG_SEL, g_sel);
+	HAL_PIN_Setup_Output(GPIO_HLW_SEL);
+    HAL_PIN_SetOutputValue(GPIO_HLW_SEL, g_sel);
 
-	HAL_PIN_Setup_Input_Pullup(GPIO_NRG_CF1);
+	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF1);
 
-    gpio_int_enable(GPIO_NRG_CF1,IRQ_TRIGGER_FALLING_EDGE,HlwCf1Interrupt);
+    gpio_int_enable(GPIO_HLW_CF1,IRQ_TRIGGER_FALLING_EDGE,HlwCf1Interrupt);
 
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF);
     gpio_int_enable(GPIO_HLW_CF,IRQ_TRIGGER_FALLING_EDGE,HlwCfInterrupt);
@@ -141,6 +144,12 @@ void BL0937_RunFrame() {
 	float final_c;
 	float final_p;
 
+
+	// if not found, this will return the already set value
+	GPIO_HLW_SEL = PIN_FindPinIndexForRole(IOR_BL0937_SEL,GPIO_HLW_SEL);
+	GPIO_HLW_CF = PIN_FindPinIndexForRole(IOR_BL0937_CF,GPIO_HLW_CF);
+	GPIO_HLW_CF1 = PIN_FindPinIndexForRole(IOR_BL0937_CF1,GPIO_HLW_CF1);
+
 	if(g_sel) {
 		res_v = g_vc_pulses;
 		g_sel = false;
@@ -148,7 +157,7 @@ void BL0937_RunFrame() {
 		res_c = g_vc_pulses;
 		g_sel = true;
 	}
-    HAL_PIN_SetOutputValue(GPIO_NRG_SEL, g_sel);
+    HAL_PIN_SetOutputValue(GPIO_HLW_SEL, g_sel);
 	g_vc_pulses = 0;
 
 	res_p = g_p_pulses;
@@ -159,7 +168,11 @@ void BL0937_RunFrame() {
 	final_v = res_v * calib_v;
 	final_c = res_c * calib_c;
 	final_p = res_p * calib_p;
-	addLogAdv(LOG_INFO, LOG_FEATURE_BL0942,"Voltage %f, current %f, power %f\n", final_v, final_c, final_p);
+	{
+		char dbg[128];
+		sprintf(dbg,"Voltage %f, current %f, power %f\n", final_v, final_c, final_p);
+		addLogAdv(LOG_INFO, LOG_FEATURE_BL0942,dbg);
+	}
 
 	BL_ProcessUpdate(final_v,final_c,final_p);
 }
