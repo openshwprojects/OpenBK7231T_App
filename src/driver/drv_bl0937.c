@@ -122,6 +122,12 @@ int BL0937_CurrentSet(const void *context, const char *cmd, const char *args, in
 }
 void BL0937_Init() {
 
+	// if not found, this will return the already set value
+	GPIO_HLW_SEL = PIN_FindPinIndexForRole(IOR_BL0937_SEL,GPIO_HLW_SEL);
+	GPIO_HLW_CF = PIN_FindPinIndexForRole(IOR_BL0937_CF,GPIO_HLW_CF);
+	GPIO_HLW_CF1 = PIN_FindPinIndexForRole(IOR_BL0937_CF1,GPIO_HLW_CF1);
+
+
 	HAL_PIN_Setup_Output(GPIO_HLW_SEL);
     HAL_PIN_SetOutputValue(GPIO_HLW_SEL, g_sel);
 
@@ -144,11 +150,6 @@ void BL0937_RunFrame() {
 	float final_c;
 	float final_p;
 
-
-	// if not found, this will return the already set value
-	GPIO_HLW_SEL = PIN_FindPinIndexForRole(IOR_BL0937_SEL,GPIO_HLW_SEL);
-	GPIO_HLW_CF = PIN_FindPinIndexForRole(IOR_BL0937_CF,GPIO_HLW_CF);
-	GPIO_HLW_CF1 = PIN_FindPinIndexForRole(IOR_BL0937_CF1,GPIO_HLW_CF1);
 
 	if(g_sel) {
 		res_v = g_vc_pulses;
