@@ -313,20 +313,17 @@ int Main_GetLastRebootBootFailures() {
 	return g_bootFailures;
 }
 
+#define RESTARTS_REQUIRED_FOR_SAFE_MODE 4
+
 void Main_Init()
 {
-	int bForceOpenAP = 0;
 	const char *wifi_ssid, *wifi_pass;
 
 	// read or initialise the boot count flash area
 	HAL_FlashVars_IncreaseBootCount();
 
 	g_bootFailures = HAL_FlashVars_GetBootFailures();
-	if (g_bootFailures > 3){
-		bForceOpenAP = 1;
-		ADDLOGF_INFO("###### force AP mode - boot failures %d", g_bootFailures);
-	}
-	if (g_bootFailures > 4){
+	if (g_bootFailures > RESTARTS_REQUIRED_FOR_SAFE_MODE){
 		bSafeMode = 1;
 		ADDLOGF_INFO("###### safe mode activated - boot failures %d", g_bootFailures);
 	}
@@ -345,7 +342,7 @@ void Main_Init()
 	bForceOpenAP = 1;
 #endif
 
-	if(*wifi_ssid == 0 || *wifi_pass == 0 || bForceOpenAP) {
+	if(*wifi_ssid == 0 || *wifi_pass == 0 || bSafeMode) {
 		// start AP mode in 5 seconds
 		g_openAP = 5;
 		//HAL_SetupWiFiOpenAccessPoint();
@@ -409,10 +406,8 @@ void Main_Init()
 		// but DON't run autoexec if we have had 2+ boot failures
 		CMD_Init();
 
-		if (g_bootFailures < 2){
-			CMD_ExecuteCommand(CFG_GetShortStartupCommand(), COMMAND_FLAG_SOURCE_SCRIPT);
-			CMD_ExecuteCommand("exec autoexec.bat", COMMAND_FLAG_SOURCE_SCRIPT);
-		}
+		CMD_ExecuteCommand(CFG_GetShortStartupCommand(), COMMAND_FLAG_SOURCE_SCRIPT);
+		CMD_ExecuteCommand("exec autoexec.bat", COMMAND_FLAG_SOURCE_SCRIPT);
 	}
 
 }
