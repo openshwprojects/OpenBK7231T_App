@@ -8,6 +8,7 @@
 #include "hal/hal_flashConfig.h"
 #include "cmnds/cmd_public.h"
 
+#define DEFAULT_BOOT_SUCCESS_TIME 30
 
 mainConfig_t g_cfg;
 int g_configInitialized = 0;
@@ -120,6 +121,7 @@ static void CFG_SetDefaultConfig() {
 	g_cfg.ident0 = CFG_IDENT_0;
 	g_cfg.ident1 = CFG_IDENT_1;
 	g_cfg.ident2 = CFG_IDENT_2;
+	g_cfg.timeRequiredToMarkBootSuccessfull = DEFAULT_BOOT_SUCCESS_TIME;
 	strcpy(g_cfg.ping_host,"192.168.0.1");
 	strcpy(g_cfg.mqtt_host, "192.168.0.113");
 	strcpy(g_cfg.mqtt_brokerName, "test");
@@ -144,6 +146,24 @@ const char *CFG_GetShortStartupCommand() {
 	return g_cfg.initCommandLine;
 }
 
+void CFG_SetBootOkSeconds(int v) {
+	// at least 1 second, always
+	if(v < 1)
+		v = 1;
+	if(g_cfg.timeRequiredToMarkBootSuccessfull != v) {
+		g_cfg.timeRequiredToMarkBootSuccessfull = v;
+		g_cfg_pendingChanges++;
+	}
+}
+int CFG_GetBootOkSeconds() {
+	if(g_configInitialized==0){
+		return DEFAULT_BOOT_SUCCESS_TIME;
+	}
+	if(g_cfg.timeRequiredToMarkBootSuccessfull <= 0) {
+		return DEFAULT_BOOT_SUCCESS_TIME;
+	}
+	return g_cfg.timeRequiredToMarkBootSuccessfull;
+}
 const char *CFG_GetPingHost() {
 	return g_cfg.ping_host;
 }

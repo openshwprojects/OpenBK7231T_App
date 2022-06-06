@@ -42,7 +42,8 @@ int CFG_GetPingIntervalSeconds();
 void CFG_SetPingHost(const char *s);
 void CFG_SetPingDisconnectedSecondsToRestart(int i);
 void CFG_SetPingIntervalSeconds(int i);
-
+void CFG_SetBootOkSeconds(int v);
+int CFG_GetBootOkSeconds();
 
 
 

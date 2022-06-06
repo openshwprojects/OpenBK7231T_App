@@ -1159,6 +1159,7 @@ int http_fn_cfg(http_request_t *request) {
     poststr(request,htmlHeader);
     poststr(request,g_header);
     poststr(request,"<form action=\"cfg_pins\"><input type=\"submit\" value=\"Configure Module\"/></form>");
+    poststr(request,"<form action=\"cfg_generic\"><input type=\"submit\" value=\"Configure General\"/></form>");
     poststr(request,"<form action=\"cfg_quick\"><input type=\"submit\" value=\"Quick Config\"/></form>");
     poststr(request,"<form action=\"cfg_wifi\"><input type=\"submit\" value=\"Configure WiFi\"/></form>");
     poststr(request,"<form action=\"cfg_mqtt\"><input type=\"submit\" value=\"Configure MQTT\"/></form>");
@@ -1311,6 +1312,42 @@ int http_fn_cfg_pins(http_request_t *request) {
 		}
         poststr(request,"<br>");
     }
+    poststr(request,"<input type=\"submit\" value=\"Save\"/></form>");
+
+    poststr(request,htmlReturnToCfg);
+    HTTP_AddBuildFooter(request);
+    poststr(request,htmlEnd);
+
+	poststr(request, NULL);
+    return 0;
+}
+
+int http_fn_cfg_generic(http_request_t *request) {
+    int iChanged = 0;
+    int iChangedRequested = 0;
+    int i;
+	char tmpA[128];
+	char tmpB[64];
+
+    http_setup(request, httpMimeTypeHTML);
+    poststr(request,htmlHeader);
+    poststr(request,g_header);
+
+    if(	http_getArg(request->url,"boot_ok_delay",tmpA,sizeof(tmpA))) {
+		i = atoi(tmpA);
+		if(i <= 0) {
+			poststr(request,"<h5>Boot ok delay must be at least 1 second<h5>");
+			i = 1;
+		}
+		hprintf128(request,"<h5>Setting boot OK delay to %i<h5>",i);
+		CFG_SetBootOkSeconds(i);
+    }
+
+    poststr(request,"<form action=\"/cfg_generic\">\
+            <label for=\"boot_ok_delay\">Uptime seconds required to mark boot as ok:</label><br>\
+            <input type=\"text\" id=\"boot_ok_delay\" name=\"boot_ok_delay\" value=\"");
+    hprintf128(request, "%i",CFG_GetBootOkSeconds());
+    poststr(request,"\"><br>\"");
     poststr(request,"<input type=\"submit\" value=\"Save\"/></form>");
 
     poststr(request,htmlReturnToCfg);

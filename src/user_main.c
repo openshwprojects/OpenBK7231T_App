@@ -158,6 +158,7 @@ void CFG_Save_SetupTimer() {
 void Main_OnPingCheckerReply(int ms) {
 	g_timeSinceLastPingReply = 0;
 }
+int g_bBootMarkedOK = 0;
 void Main_OnEverySecond()
 {
 	int bMQTTconnected;
@@ -207,9 +208,14 @@ void Main_OnEverySecond()
 	}
 
 	// when we hit 30s, mark as boot complete.
-	if (g_secondsElapsed == BOOT_COMPLETE_SECONDS){
-		HAL_FlashVars_SaveBootComplete();
-		g_bootFailures = HAL_FlashVars_GetBootFailures();
+	if(g_bBootMarkedOK==false) {
+		int bootCompleteSeconds = CFG_GetBootOkSeconds();
+		if (g_secondsElapsed > bootCompleteSeconds){
+			ADDLOGF_INFO("Boot complete time reached (%i seconds)\n",bootCompleteSeconds);
+			HAL_FlashVars_SaveBootComplete();
+			g_bootFailures = HAL_FlashVars_GetBootFailures();
+			g_bBootMarkedOK = true;
+		}
 	}
 
 	if (g_openAP){

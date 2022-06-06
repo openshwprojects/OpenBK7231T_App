@@ -530,6 +530,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 	if(http_checkUrlBase(urlStr,"cmd_tool")) return http_fn_cmd_tool(request);
 	if(http_checkUrlBase(urlStr,"config_dump_table")) return http_fn_config_dump_table(request);
 	if(http_checkUrlBase(urlStr,"startup_command")) return http_fn_startup_command(request);
+	if(http_checkUrlBase(urlStr,"cfg_generic")) return http_fn_cfg_generic(request);
 
 	if(http_checkUrlBase(urlStr,"cfg_quick")) return http_fn_cfg_quick(request);
 	if(http_checkUrlBase(urlStr,"cfg_ha")) return http_fn_cfg_ha(request);

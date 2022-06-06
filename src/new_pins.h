@@ -118,7 +118,8 @@ typedef struct mainConfig_s {
 	pinsState_t pins;
 	byte unusedSectorA[256];
 	byte unusedSectorB[128];
-	byte unusedSectorC[56];
+	byte unusedSectorC[55];
+	byte timeRequiredToMarkBootSuccessfull;
 	int ping_interval;
 	int ping_seconds;
 	char ping_host[64];
