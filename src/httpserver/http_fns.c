@@ -1347,7 +1347,7 @@ int http_fn_cfg_generic(http_request_t *request) {
             <label for=\"boot_ok_delay\">Uptime seconds required to mark boot as ok:</label><br>\
             <input type=\"text\" id=\"boot_ok_delay\" name=\"boot_ok_delay\" value=\"");
     hprintf128(request, "%i",CFG_GetBootOkSeconds());
-    poststr(request,"\"><br>\"");
+    poststr(request,"\"><br>");
     poststr(request,"<input type=\"submit\" value=\"Save\"/></form>");
 
     poststr(request,htmlReturnToCfg);
