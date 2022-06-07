@@ -154,6 +154,7 @@ void CHANNEL_Add(int ch, int iVal);
 void CHANNEL_AddClamped(int ch, int iVal, int min, int max);
 int CHANNEL_Get(int ch);
 int CHANNEL_GetRoleForOutputChannel(int ch);
+int CHANNEL_IsUsed(int ch);
 // See: enum ChannelType
 void CHANNEL_SetType(int ch, int type);
 int CHANNEL_GetType(int ch);

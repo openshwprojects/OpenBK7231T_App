@@ -64,6 +64,14 @@ static mqtt_request_t g_mqtt_request;
 
 int loopsWithDisconnected = 0;
 int mqtt_reconnect = 0;
+// set for the device to broadcast self state on start
+int g_bPublishAllStatesNow = 0;
+int g_publishItemIndex = 0;
+
+void MQTT_PublishWholeDeviceState() {
+	g_bPublishAllStatesNow = 1;
+	g_publishItemIndex = 0;
+}
 
 static struct mqtt_connect_client_info_t mqtt_client_info =
 {
@@ -471,6 +479,9 @@ static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection
       }
     }
 
+	// publish all values on state
+	MQTT_PublishWholeDeviceState();
+
     //mqtt_sub_unsub(client,
     //        "topic_qos1", 1,
     //        mqtt_request_cb, LWIP_CONST_CAST(void*, client_info),
@@ -589,6 +600,21 @@ void MQTT_ChannelChangeCallback(int channel, int iVal)
 
 	MQTT_PublishMain(mqtt_client,channelNameStr,valueStr);
 }
+void MQTT_ChannelPublish(int channel)
+{
+	char channelNameStr[8];
+	char valueStr[16];
+	int iValue;
+	
+	iValue = CHANNEL_Get(g_publishItemIndex);
+
+	addLogAdv(LOG_INFO,LOG_FEATURE_MAIN, "Forced channel publish! Publishing val %i with %i \n",channel,iValue);
+
+	sprintf(channelNameStr,"%i",channel);
+	sprintf(valueStr,"%i",iValue);
+
+	MQTT_PublishMain(mqtt_client,channelNameStr,valueStr);
+}
 
 // initialise things MQTT
 // called from user_main
@@ -646,6 +672,31 @@ int MQTT_RunEverySecondUpdate() {
 			loopsWithDisconnected = 0;
 		}
 		return 0;
+	} else {
+		// it is connected
+
+		// do we want to broadcast full state?
+		// Do it slowly in order not to overload the buffers
+		if(g_bPublishAllStatesNow) {
+			int g_sent_thisFrame = 0;
+
+			while(g_publishItemIndex < CHANNEL_MAX) {
+				if(CHANNEL_IsUsed(g_publishItemIndex)) {
+					MQTT_ChannelPublish(g_publishItemIndex);
+					g_sent_thisFrame++;
+					if(g_sent_thisFrame>=2){
+						break;
+					}
+				}
+				g_publishItemIndex++;
+			}
+			if(g_publishItemIndex >= CHANNEL_MAX) {
+				// done
+				g_bPublishAllStatesNow = 0;
+				g_publishItemIndex = 0;
+			}	
+		}
+
 	}
 	return 1;
 }

@@ -361,7 +361,16 @@ void PIN_SetPinChannel2ForPinIndex(int index, int ch) {
 		g_cfg.pins.channels2[index] = ch;
 	}
 }
+void CFG_ApplyStartChannelValues() {
+	int i;
 
+	// apply channel values
+	for(i = 0; i < CHANNEL_MAX; i++) {
+		if(CHANNEL_IsInUse(i)) {
+			CHANNEL_Set(i,0,CHANNEL_SET_FLAG_FORCE | CHANNEL_SET_FLAG_SKIP_MQTT);
+		}
+	}
+}
 void CFG_InitAndLoad() {
 	byte chkSum;
 

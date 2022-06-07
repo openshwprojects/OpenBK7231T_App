@@ -371,6 +371,8 @@ void Main_Init()
 		RepeatingEvents_Init();
 
 		PIN_Init();
+
+		CFG_ApplyStartChannelValues();
 		ADDLOGF_DEBUG("Initialised pins\r\n");
 
 		// initialise MQTT - just sets up variables.

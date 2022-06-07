@@ -577,6 +577,16 @@ bool CHANNEL_Check(int ch) {
 }
 
 
+int CHANNEL_IsUsed(int ch) {
+	int i;
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++){
+		if (g_cfg.pins.channels[i] == ch){
+			return true;
+		}
+	}
+	return false;
+}
+
 int CHANNEL_GetRoleForOutputChannel(int ch){
 	int i;
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++){
@@ -910,6 +920,8 @@ static int showgpi(const void *context, const char *cmd, const char *args, int c
 	return 1;
 }
 
+
+
 #if WINDOWS
 
 #elif PLATFORM_BL602
@@ -921,6 +933,8 @@ beken_timer_t g_pin_timer;
 #endif
 void PIN_Init(void)
 {
+	int i;
+
 #if WINDOWS
 
 #elif PLATFORM_BL602
@@ -952,4 +966,5 @@ void PIN_Init(void)
 	CMD_RegisterCommand("showgpi", NULL, showgpi, "log stat of all GPIs", NULL);
 	CMD_RegisterCommand("setChannelType", NULL, CMD_SetChannelType, "qqqqqqqq", NULL);
 	CMD_RegisterCommand("showChannelValues", NULL,CMD_ShowChannelValues, "log channel values", NULL);
+
 }
