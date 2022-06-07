@@ -484,7 +484,7 @@ void CHANNEL_Set(int ch, int iVal, int iFlags) {
 			return;
 		}
 	}
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"CHANNEL_Set channel %i has changed to %i\n\r",ch,iVal);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"CHANNEL_Set channel %i has changed to %i (flags %i)\n\r",ch,iVal,iFlags);
 	g_channelValues[ch] = iVal;
 
 	Channel_OnChanged(ch,prevValue,iFlags);

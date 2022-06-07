@@ -9,6 +9,8 @@
 // addRepeatingEvent	interval_seconds	  repeats	command top run
 // addRepeatingEvent		1				 -1			led_basecolor_rgb rand
 
+// turn off TuyaMCU after 5 seconds
+// addRepeatingEvent 5 1 setChannel 1 0
 typedef struct repeatingEvent_s {
 	char *command;
 	//char *condition;
@@ -29,8 +31,8 @@ void RepeatingEvents_AddRepeatingEvent(const char *command, int secondsInterval,
 		if(ev->times <= 0) {
 			if(!strcmp(ev->command,command)) {
 				ev->intervalSeconds = secondsInterval;
-				// fire next frame
-				ev->currentInterval = 1;
+				// fire after delay
+				ev->currentInterval = secondsInterval;
 				ev->times = times;
 				return;
 			}
