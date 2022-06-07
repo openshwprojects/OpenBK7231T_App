@@ -189,6 +189,22 @@ Currently available pin roles:
 Please refer to this step by step guide:
   https://www.elektroda.com/rtvforum/topic3887748.html
   
+# How to set relay state on device boot? (PowerOnState)
+  
+  The simplest way is to use short startup command from Options or create "autoexec.bat" in LittleFS file system in web panel and execute commands from there.
+  For example, for RGBCW LED, you can do startup command:
+   
+  > backlog led_dimmer 100; led_basecolor_rgb #FF00FF; led_enableAll 1
+  
+  For simple relay, in this example on channel number 5, you can do:
+  
+  > backlog SetChannel 5 1
+  
+  For direct PWM access (for single-color strips etc) you can do:
+  
+  > backlog SetChannel 5 90
+  
+  
 # Detailed flashing guides along with device teardowns
   
  I have prepared several detailed teardowns and flashing guides for multiple supported devices. Each comes in two languages - English and Polish.
