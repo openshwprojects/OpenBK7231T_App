@@ -321,7 +321,6 @@ void Main_Init()
 
 	// read or initialise the boot count flash area
 	HAL_FlashVars_IncreaseBootCount();
-	PIN_OnReboot();
 
 	g_bootFailures = HAL_FlashVars_GetBootFailures();
 	if (g_bootFailures > RESTARTS_REQUIRED_FOR_SAFE_MODE){
@@ -359,7 +358,6 @@ void Main_Init()
 
 	HTTPServer_Start();
 	ADDLOGF_DEBUG("Started http tcp server\r\n");
-
 	// only initialise certain things if we are not in AP mode
 	if (!bSafeMode){
 
@@ -368,7 +366,9 @@ void Main_Init()
 #endif
 		RepeatingEvents_Init();
 
-		PIN_Init();
+		CFG_ApplyChannelStartValues();
+
+		PIN_AddCommands();
 
 		//CFG_ApplyStartChannelValues();
 		ADDLOGF_DEBUG("Initialised pins\r\n");
@@ -387,7 +387,6 @@ void Main_Init()
 		// and we may add a command to empty fs just be writing first sector?
 		init_lfs(0);
 #endif
-
 		// initialise rest interface
 		init_rest();
 
@@ -412,6 +411,7 @@ void Main_Init()
 		g_enable_pins = 1;
 		// this actually sets the pins, moved out so we could avoid if necessary
 		PIN_SetupPins();
+		PIN_StartButtonScanThread();
 	}
 
 }

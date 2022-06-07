@@ -116,7 +116,8 @@ typedef struct mainConfig_s {
 	char shortDeviceName[32];
 	char longDeviceName[64];
 	pinsState_t pins;
-	byte unusedSectorA[256];
+	short startChannelValues[CHANNEL_MAX];
+	byte unusedSectorA[128];
 	byte unusedSectorB[128];
 	byte unusedSectorC[55];
 	byte timeRequiredToMarkBootSuccessfull;
@@ -133,8 +134,9 @@ extern char g_enable_pins;
 #define CHANNEL_SET_FLAG_FORCE		1
 #define CHANNEL_SET_FLAG_SKIP_MQTT	2
 
-void PIN_Init(void);
+void PIN_AddCommands(void);
 void PIN_SetupPins();
+void PIN_StartButtonScanThread(void);
 void PIN_OnReboot();
 void CFG_ClearPins();
 int PIN_GetPinRoleForPinIndex(int index);

@@ -337,6 +337,23 @@ void CFG_Save_IfThereArePendingChanges() {
 		g_cfg_pendingChanges = 0;
 	}
 }
+void CFG_SetChannelStartupValue(int channelIndex,short newValue) {
+	if(channelIndex < 0 || channelIndex >= CHANNEL_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "CFG_SetChannelStartupValue: Channel index %i out of range <0,%i).",channelIndex,CHANNEL_MAX);
+		return;
+	}
+	if(g_cfg.startChannelValues[channelIndex] != newValue) {
+		g_cfg.startChannelValues[channelIndex] = newValue;
+		g_cfg_pendingChanges++;
+	}
+}
+short CFG_GetChannelStartupValue(int channelIndex) {
+	if(channelIndex < 0 || channelIndex >= CHANNEL_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "CFG_SetChannelStartupValue: Channel index %i out of range <0,%i).",channelIndex,CHANNEL_MAX);
+		return 0;
+	}
+	return g_cfg.startChannelValues[channelIndex];
+}
 void PIN_SetPinChannelForPinIndex(int index, int ch) {
 	if(index < 0 || index >= PLATFORM_GPIO_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "PIN_SetPinChannelForPinIndex: Pin index %i out of range <0,%i).",index,PLATFORM_GPIO_MAX);
@@ -386,4 +403,5 @@ void CFG_InitAndLoad() {
 		addLogAdv(LOG_WARN, LOG_FEATURE_CFG, "CFG_InitAndLoad: Correct config has been loaded with %i changes count.",g_cfg.changeCounter);
 	}
 	g_configInitialized = 1;
+
 }

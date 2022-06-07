@@ -1175,6 +1175,7 @@ int http_fn_cfg(http_request_t *request) {
     poststr(request,g_header);
     poststr(request,"<form action=\"cfg_pins\"><input type=\"submit\" value=\"Configure Module\"/></form>");
     poststr(request,"<form action=\"cfg_generic\"><input type=\"submit\" value=\"Configure General\"/></form>");
+    poststr(request,"<form action=\"cfg_startup\"><input type=\"submit\" value=\"Configure Startup\"/></form>");
     poststr(request,"<form action=\"cfg_quick\"><input type=\"submit\" value=\"Quick Config\"/></form>");
     poststr(request,"<form action=\"cfg_wifi\"><input type=\"submit\" value=\"Configure WiFi\"/></form>");
     poststr(request,"<form action=\"cfg_mqtt\"><input type=\"submit\" value=\"Configure MQTT\"/></form>");
@@ -1364,6 +1365,66 @@ int http_fn_cfg_generic(http_request_t *request) {
     hprintf128(request, "%i",CFG_GetBootOkSeconds());
     poststr(request,"\"><br>");
     poststr(request,"<input type=\"submit\" value=\"Save\"/></form>");
+
+    poststr(request,htmlReturnToCfg);
+    HTTP_AddBuildFooter(request);
+    poststr(request,htmlEnd);
+
+	poststr(request, NULL);
+    return 0;
+}
+int http_fn_cfg_startup(http_request_t *request) {
+    int iChanged = 0;
+    int iChangedRequested = 0;
+	int channelIndex;
+	int newValue;
+    int i;
+	char tmpA[128];
+	char tmpB[64];
+
+    http_setup(request, httpMimeTypeHTML);
+    poststr(request,htmlHeader);
+    poststr(request,g_header);
+
+	hprintf128(request,"<h5>Here you can set pin start values<h5>");
+	hprintf128(request,"<h5>For relays, simply use 1 or 0</h5>");
+	//hprintf128(request,"<h5>For 'remember last power state', use -1 as a special value</h5>");
+	hprintf128(request,"<h5>For dimmers, range is 0 to 100</h5>");
+	hprintf128(request,"<h5>For custom values, you can set any number you want to</h5>");
+	hprintf128(request,"<h5>Remember that you can also use short startup command to run commands like led_baseColor #FF0000 and led_enableAll 1 etc</h5>");
+
+    if(	http_getArg(request->url,"idx",tmpA,sizeof(tmpA))) {
+		channelIndex = atoi(tmpA);
+		if(	http_getArg(request->url,"value",tmpA,sizeof(tmpA))) {
+			newValue = atoi(tmpA);
+
+
+			CFG_SetChannelStartupValue(channelIndex,newValue);
+
+			hprintf128(request,"<h5>Setting channel %i start value to %i<h5>",channelIndex,newValue);
+
+		}
+    }
+
+	for(i = 0; i < CHANNEL_MAX; i++) {
+		if(CHANNEL_IsInUse(i)) {
+			int startValue;
+
+			startValue = CFG_GetChannelStartupValue(i);
+
+			poststr(request,"<br><form action=\"/cfg_startup\">\
+					<label for=\"boot_ok_delay\">New start value for channel ");
+			hprintf128(request, "%i",i);
+			poststr(request,":</label><br>\
+					<input type=\"hidden\" id=\"idx\" name=\"idx\" value=\"");
+			hprintf128(request, "%i",i);
+			poststr(request,"\">");
+			poststr(request,"<input type=\"number\" id=\"value\" name=\"value\" value=\"");
+			hprintf128(request, "%i",startValue);
+			poststr(request,"\"><br>");
+			poststr(request,"<input type=\"submit\" value=\"Save\"/></form>");
+		}
+	}
 
     poststr(request,htmlReturnToCfg);
     HTTP_AddBuildFooter(request);

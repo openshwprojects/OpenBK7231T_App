@@ -45,6 +45,9 @@ void CFG_SetPingDisconnectedSecondsToRestart(int i);
 void CFG_SetPingIntervalSeconds(int i);
 void CFG_SetBootOkSeconds(int v);
 int CFG_GetBootOkSeconds();
+void CFG_SetChannelStartupValue(int channelIndex,short newValue);
+short CFG_GetChannelStartupValue(int channelIndex);
+void CFG_ApplyChannelStartValues();
 
 
 

@@ -65,13 +65,6 @@ static byte g_timesUp[PLATFORM_GPIO_MAX];
 static byte g_lastValidState[PLATFORM_GPIO_MAX];
 
 
-void PIN_OnReboot() {
-	int i;
-	for(i = 0; i < CHANNEL_MAX; i++) {
-		g_channelValues[i] = 0;
-	}
-}
-
 void PIN_SetupPins() {
 	int i;
 	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
@@ -487,6 +480,19 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 	}
 	EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CHANNEL0 + ch, prevValue, iVal);
 }
+void CFG_ApplyChannelStartValues() {
+	int i;
+	for(i = 0; i < CHANNEL_MAX; i++) {
+		int iValue;
+
+		iValue = g_cfg.startChannelValues[i];
+		if(iValue == -1) {
+
+		} else {
+			g_channelValues[i] = iValue;
+		}
+	}
+}
 int CHANNEL_Get(int ch) {
 	if(ch < 0 || ch >= CHANNEL_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Get: Channel index %i is out of range <0,%i)\n\r",ch,CHANNEL_MAX);
@@ -652,7 +658,11 @@ void PIN_Input_Handler(int pinIndex)
 	uint8_t read_gpio_level;
 
 	handle = &g_buttons[pinIndex];
-	read_gpio_level = handle->hal_button_Level(handle);
+	if(handle->hal_button_Level != 0) {
+		read_gpio_level = handle->hal_button_Level(handle);
+	} else {
+		read_gpio_level = handle->button_level;
+	}
 
 	//ticks counter working..
 	if((handle->state) > 0)
@@ -959,7 +969,7 @@ OS_Timer_t timer;
 #else
 beken_timer_t g_pin_timer;
 #endif
-void PIN_Init(void)
+void PIN_StartButtonScanThread(void)
 {
 	int i;
 
@@ -972,7 +982,7 @@ void PIN_Init(void)
 	OS_TimerSetInvalid(&timer);
 	if (OS_TimerCreate(&timer, OS_TIMER_PERIODIC, PIN_ticks, NULL,
 	                   PIN_TMR_DURATION) != OS_OK) {
-		printf("PIN_Init timer create failed\n");
+		printf("PIN_AddCommands timer create failed\n");
 		return;
 	}
 
@@ -990,6 +1000,12 @@ void PIN_Init(void)
     ASSERT(kNoErr == result);
 #endif
 
+
+
+}
+
+void PIN_AddCommands(void)
+{
 
 	CMD_RegisterCommand("showgpi", NULL, showgpi, "log stat of all GPIs", NULL);
 	CMD_RegisterCommand("setChannelType", NULL, CMD_SetChannelType, "qqqqqqqq", NULL);
