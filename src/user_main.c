@@ -321,6 +321,7 @@ void Main_Init()
 
 	// read or initialise the boot count flash area
 	HAL_FlashVars_IncreaseBootCount();
+	PIN_OnReboot();
 
 	g_bootFailures = HAL_FlashVars_GetBootFailures();
 	if (g_bootFailures > RESTARTS_REQUIRED_FOR_SAFE_MODE){
@@ -361,9 +362,6 @@ void Main_Init()
 
 	// only initialise certain things if we are not in AP mode
 	if (!bSafeMode){
-		g_enable_pins = 1;
-		// this actually sets the pins, moved out so we could avoid if necessary
-		PIN_SetupPins();
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
 		DRV_Generic_Init();
@@ -372,7 +370,7 @@ void Main_Init()
 
 		PIN_Init();
 
-		CFG_ApplyStartChannelValues();
+		//CFG_ApplyStartChannelValues();
 		ADDLOGF_DEBUG("Initialised pins\r\n");
 
 		// initialise MQTT - just sets up variables.
@@ -410,6 +408,10 @@ void Main_Init()
 
 		CMD_ExecuteCommand(CFG_GetShortStartupCommand(), COMMAND_FLAG_SOURCE_SCRIPT);
 		CMD_ExecuteCommand("exec autoexec.bat", COMMAND_FLAG_SOURCE_SCRIPT);
+
+		g_enable_pins = 1;
+		// this actually sets the pins, moved out so we could avoid if necessary
+		PIN_SetupPins();
 	}
 
 }

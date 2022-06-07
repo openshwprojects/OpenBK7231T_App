@@ -26,7 +26,7 @@ void CFG_SetMQTTPass(const char *s);
 const char *CFG_GetWebappRoot();
 int CFG_SetWebappRoot(const char *s);
 void CFG_InitAndLoad();
-void CFG_ApplyStartChannelValues();
+//void CFG_ApplyStartChannelValues();
 void CFG_Save_IfThereArePendingChanges();
 void CFG_Save_SetupTimer();
 void CFG_IncrementOTACount();

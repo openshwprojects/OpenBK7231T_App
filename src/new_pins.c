@@ -60,8 +60,17 @@ pinButton_s g_buttons[PLATFORM_GPIO_MAX];
 
 void (*g_doubleClickCallback)(int pinIndex) = 0;
 
+static byte g_timesDown[PLATFORM_GPIO_MAX];
+static byte g_timesUp[PLATFORM_GPIO_MAX];
+static byte g_lastValidState[PLATFORM_GPIO_MAX];
 
 
+void PIN_OnReboot() {
+	int i;
+	for(i = 0; i < CHANNEL_MAX; i++) {
+		g_channelValues[i] = 0;
+	}
+}
 
 void PIN_SetupPins() {
 	int i;
@@ -361,6 +370,13 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			}
 			break;
 		case IOR_ToggleChannelOnToggle:
+			{
+				// digital input
+				HAL_PIN_Setup_Input_Pullup(index);
+				// otherwise we get a toggle on start
+				g_lastValidState[index] = PIN_ReadDigitalInputValue_WithInversionIncluded(index);
+			}
+			break;
 		case IOR_DigitalInput:
 		case IOR_DigitalInput_n:
 			{
@@ -379,6 +395,21 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_LED_n:
 		case IOR_Relay:
 		case IOR_Relay_n:
+			{
+				int channelIndex;
+				int channelValue;
+
+				channelIndex = PIN_GetPinChannelForPinIndex(index);
+				channelValue = g_channelValues[channelIndex];
+
+				HAL_PIN_Setup_Output(index);
+				if(role == IOR_LED_n || role == IOR_Relay_n) { 
+					HAL_PIN_SetOutputValue(index,!channelValue);
+				} else {
+					HAL_PIN_SetOutputValue(index,channelValue);
+				}
+			}
+			break;
 		case IOR_LED_WIFI:
 		case IOR_LED_WIFI_n:
 		{
@@ -621,7 +652,7 @@ void PIN_Input_Handler(int pinIndex)
 	uint8_t read_gpio_level;
 
 	handle = &g_buttons[pinIndex];
-	read_gpio_level = button_generic_get_gpio_value(handle);
+	read_gpio_level = handle->hal_button_Level(handle);
 
 	//ticks counter working..
 	if((handle->state) > 0)
@@ -718,9 +749,6 @@ void PIN_Input_Handler(int pinIndex)
 	}
 }
 
-byte g_timesDown[PLATFORM_GPIO_MAX];
-byte g_timesUp[PLATFORM_GPIO_MAX];
-byte g_lastValidState[PLATFORM_GPIO_MAX];
 
 static void PIN_set_wifi_led(int value){
 	int i;

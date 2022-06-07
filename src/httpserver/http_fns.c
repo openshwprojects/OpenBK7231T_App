@@ -294,6 +294,21 @@ int http_fn_index(http_request_t *request) {
 
     poststr(request,"<form action=\"about\"><input type=\"submit\" value=\"About\"/></form>");
 
+	if(1) {
+		int bFirst = true;
+		hprintf128(request,"<h5>");
+		for(i = 0; i < CHANNEL_MAX; i++) {
+			if(CHANNEL_IsUsed(i)) {
+				int value = CHANNEL_Get(i);
+				if(bFirst == false) {
+					hprintf128(request,", ");
+				}
+				hprintf128(request,"Channel %i = %i",i,value);
+				bFirst = false;
+			}
+		}
+		hprintf128(request,"</h5>");
+	}
 	hprintf128(request,"<h5>Cfg size: %i, change counter: %i, ota counter: %i, boot incompletes %i (might change to 0 if you wait to 30 sec)!</h5>",
 		sizeof(g_cfg),g_cfg.changeCounter,g_cfg.otaCounter,Main_GetLastRebootBootFailures());
 

@@ -135,6 +135,7 @@ extern char g_enable_pins;
 
 void PIN_Init(void);
 void PIN_SetupPins();
+void PIN_OnReboot();
 void CFG_ClearPins();
 int PIN_GetPinRoleForPinIndex(int index);
 int PIN_GetPinChannelForPinIndex(int index);
