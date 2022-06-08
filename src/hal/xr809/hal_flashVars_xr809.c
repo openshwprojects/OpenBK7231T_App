@@ -15,6 +15,13 @@ int HAL_FlashVars_GetBootFailures(){
 }
 void HAL_FlashVars_IncreaseBootCount(){
 }
+void HAL_FlashVars_SaveChannel(int index, int value) {
+
+}
+int HAL_FlashVars_GetChannelValue(int ch) {
+	return 0;
+}
+
 
 
 

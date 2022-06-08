@@ -10,3 +10,6 @@ void HAL_FlashVars_SaveBootComplete();
 // call to return the number of boots since a HAL_FlashVars_SaveBootComplete
 int HAL_FlashVars_GetBootFailures();
 int HAL_FlashVars_GetBootCount();
+void HAL_FlashVars_SaveChannel(int index, int value);
+int HAL_FlashVars_GetChannelValue(int ch);
+

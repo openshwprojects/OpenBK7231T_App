@@ -298,7 +298,7 @@ int http_fn_index(http_request_t *request) {
 		int bFirst = true;
 		hprintf128(request,"<h5>");
 		for(i = 0; i < CHANNEL_MAX; i++) {
-			if(CHANNEL_IsUsed(i)) {
+			if(CHANNEL_IsInUse(i)) {
 				int value = CHANNEL_Get(i);
 				if(bFirst == false) {
 					hprintf128(request,", ");
@@ -1388,10 +1388,11 @@ int http_fn_cfg_startup(http_request_t *request) {
 
 	hprintf128(request,"<h5>Here you can set pin start values<h5>");
 	hprintf128(request,"<h5>For relays, simply use 1 or 0</h5>");
-	//hprintf128(request,"<h5>For 'remember last power state', use -1 as a special value</h5>");
+	hprintf128(request,"<h5>For 'remember last power state', use -1 as a special value</h5>");
 	hprintf128(request,"<h5>For dimmers, range is 0 to 100</h5>");
 	hprintf128(request,"<h5>For custom values, you can set any number you want to</h5>");
 	hprintf128(request,"<h5>Remember that you can also use short startup command to run commands like led_baseColor #FF0000 and led_enableAll 1 etc</h5>");
+	hprintf128(request,"<h5><color=red>Remembering last state of LED driver is not yet fully supported, please wait!</color></h5>");
 
     if(	http_getArg(request->url,"idx",tmpA,sizeof(tmpA))) {
 		channelIndex = atoi(tmpA);

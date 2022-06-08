@@ -681,7 +681,7 @@ int MQTT_RunEverySecondUpdate() {
 			int g_sent_thisFrame = 0;
 
 			while(g_publishItemIndex < CHANNEL_MAX) {
-				if(CHANNEL_IsUsed(g_publishItemIndex)) {
+				if(CHANNEL_IsInUse(g_publishItemIndex)) {
 					MQTT_ChannelPublish(g_publishItemIndex);
 					g_sent_thisFrame++;
 					if(g_sent_thisFrame>=2){

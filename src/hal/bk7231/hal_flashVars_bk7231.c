@@ -23,14 +23,19 @@
 
 #include "../../logging/logging.h"
 
-
+#define MAX_RETAIN_CHANNELS 12
 
 typedef struct flash_vars_structure
 {
+	// offset 0
     unsigned short boot_count; // number of times the device has booted
     unsigned short boot_success_count; // if a device boots completely (>30s), will equal boot_success_count
-    unsigned char _align[3];
+	// offset 4
+	short savedValues[MAX_RETAIN_CHANNELS];
+	// offset 28
+    unsigned char rgb[3];
     unsigned char len; // length of the whole structure (i.e. 2+2+1 = 5)  MUST NOT BE 255
+	// size 32
 } FLASH_VARS_STRUCTURE;
 
 extern FLASH_VARS_STRUCTURE flash_vars;
@@ -518,6 +523,29 @@ void HAL_FlashVars_IncreaseBootCount(){
         data.boot_count - data.boot_success_count );
 #endif
 }
+void HAL_FlashVars_SaveChannel(int index, int value) {
+#ifndef DISABLE_FLASH_VARS_VARS
+    FLASH_VARS_STRUCTURE data;
+
+
+	if(index < 0 || index >= MAX_RETAIN_CHANNELS){
+	   ADDLOG_INFO(LOG_FEATURE_CFG, "####### Flash Save Can't Save Channel %d as %d (not enough space in array) #######", index,value);
+		return;
+	}
+
+    flash_vars_init();
+    flash_vars.savedValues[index] = value;
+    ADDLOG_INFO(LOG_FEATURE_CFG, "####### Flash Save Channel %d as %d #######", index,value);
+    flash_vars_write();
+
+    flash_vars_read(&data);
+    ADDLOG_DEBUG(LOG_FEATURE_CFG, "re-read - offset %d, boot count %d, boot success %d, bootfailures %d",
+        flash_vars_offset,
+        data.boot_count,
+        data.boot_success_count,
+        data.boot_count - data.boot_success_count );
+#endif
+}
 
 // call once started (>30s?)
 void HAL_FlashVars_SaveBootComplete(){
@@ -549,6 +577,13 @@ int HAL_FlashVars_GetBootFailures(){
 
 int HAL_FlashVars_GetBootCount(){
 	return flash_vars.boot_count;
+}
+int HAL_FlashVars_GetChannelValue(int ch){
+	if(ch < 0 || ch >= MAX_RETAIN_CHANNELS){
+	    ADDLOG_INFO(LOG_FEATURE_CFG, "####### Flash Save Can't Get Channel %d (not enough space in array) #######", ch);
+		return 0;
+	}
+	return flash_vars.savedValues[ch];
 }
 
 

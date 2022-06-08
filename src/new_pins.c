@@ -195,27 +195,7 @@ void CHANNEL_SetType(int ch, int type) {
 int CHANNEL_GetType(int ch) {
 	return g_cfg.pins.channelTypes[ch];
 }
-bool CHANNEL_IsInUse(int ch) {
-	int i;
-	for(i = 0; i < PLATFORM_GPIO_MAX; i++){
-		if(g_cfg.pins.channels[i] == ch) {
-			switch(g_cfg.pins.roles[i])
-			{
-			case IOR_LED:
-			case IOR_LED_n:
-			case IOR_Relay:
-			case IOR_Relay_n:
-			case IOR_PWM:
-				return true;
-				break;
 
-			default:
-				break;
-			}
-		}
-	}
-	return false;
-}
 void CHANNEL_SetAll(int iVal, int iFlags) {
 	int i;
 
@@ -479,6 +459,13 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 		}
 	}
 	EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CHANNEL0 + ch, prevValue, iVal);
+	
+		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_OnChanged: Channel index %i startChannelValues %i\n\r",ch,g_cfg.startChannelValues[ch]);
+	// save, if marked as save value in flash (-1)
+	if(g_cfg.startChannelValues[ch] == -1) {
+		HAL_FlashVars_SaveChannel(ch,iVal);
+	}
+	
 }
 void CFG_ApplyChannelStartValues() {
 	int i;
@@ -487,7 +474,7 @@ void CFG_ApplyChannelStartValues() {
 
 		iValue = g_cfg.startChannelValues[i];
 		if(iValue == -1) {
-
+			g_channelValues[i] = HAL_FlashVars_GetChannelValue(i);
 		} else {
 			g_channelValues[i] = iValue;
 		}
@@ -613,16 +600,23 @@ bool CHANNEL_Check(int ch) {
 	return 0;
 }
 
-
-int CHANNEL_IsUsed(int ch) {
+bool CHANNEL_IsInUse(int ch) {
 	int i;
-	for (i = 0; i < PLATFORM_GPIO_MAX; i++){
-		if (g_cfg.pins.channels[i] == ch){
-			return true;
+
+	if(g_cfg.pins.channelTypes[ch] != ChType_Default){
+		return true;
+	}
+
+	for(i = 0; i < PLATFORM_GPIO_MAX; i++){
+		if(g_cfg.pins.roles[i] != IOR_None){
+				if(g_cfg.pins.channels[i] == ch) {
+				return true;
+			}
 		}
 	}
 	return false;
 }
+
 
 int CHANNEL_GetRoleForOutputChannel(int ch){
 	int i;
