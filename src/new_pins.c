@@ -411,7 +411,12 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex)) {
 	g_doubleClickCallback = cb;
 }
-
+void Channel_SaveInFlashIfNeeded(int ch) {
+	// save, if marked as save value in flash (-1)
+	if(g_cfg.startChannelValues[ch] == -1) {
+		HAL_FlashVars_SaveChannel(ch,g_channelValues[ch]);
+	}
+}
 static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 	int i;
 	int iVal;
@@ -461,12 +466,9 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 	}
 	EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CHANNEL0 + ch, prevValue, iVal);
 	
-		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_OnChanged: Channel index %i startChannelValues %i\n\r",ch,g_cfg.startChannelValues[ch]);
-	// save, if marked as save value in flash (-1)
-	if(g_cfg.startChannelValues[ch] == -1) {
-		HAL_FlashVars_SaveChannel(ch,iVal);
-	}
-	
+	//addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_OnChanged: Channel index %i startChannelValues %i\n\r",ch,g_cfg.startChannelValues[ch]);
+
+	Channel_SaveInFlashIfNeeded(ch);
 }
 void CFG_ApplyChannelStartValues() {
 	int i;

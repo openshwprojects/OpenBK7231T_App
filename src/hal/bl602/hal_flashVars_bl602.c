@@ -9,20 +9,23 @@
 void BL602_InitEasyFlashIfNeeded();
 
 #define EASYFLASH_MY_BOOTCOUNTS     "myBtCnts"
+#define BL602_SAVED_CHANNELS_MAX 8
 
 typedef struct bl602_bootCounts_s {
     unsigned short boot_count; // number of times the device has booted
     unsigned short boot_success_count; // if a device boots completely (>30s), will equal boot_success_count
+    short channelStates[BL602_SAVED_CHANNELS_MAX];
 } bl602_bootCounts_t;
 
-bl602_bootCounts_t g_bootCounts;
-
+static bl602_bootCounts_t g_bootCounts;
+static int g_loaded = 0;
 
 static int BL602_ReadFlashVars(void *target, int dataLen){
 	int readLen;
 
 	BL602_InitEasyFlashIfNeeded();
 
+	g_loaded = 1;
 	ADDLOG_DEBUG(LOG_FEATURE_CFG, "BL602_ReadFlashVars: will read %d bytes", dataLen);
 	readLen = ef_get_env_blob(EASYFLASH_MY_BOOTCOUNTS, target, dataLen , NULL);
 	ADDLOG_DEBUG(LOG_FEATURE_CFG, "BL602_ReadFlashVars: really loaded %d bytes", readLen);
@@ -68,8 +71,7 @@ int HAL_FlashVars_GetBootFailures(){
 }
 void HAL_FlashVars_IncreaseBootCount(){
 	// defaults - in case read fails
-	g_bootCounts.boot_count = 0;
-	g_bootCounts.boot_success_count = 0;
+	memset(&g_bootCounts,0,sizeof(g_bootCounts));
 	// read saved
 	BL602_ReadFlashVars(&g_bootCounts,sizeof(g_bootCounts));
 	g_bootCounts.boot_count++;
@@ -79,10 +81,22 @@ void HAL_FlashVars_IncreaseBootCount(){
 
 
 void HAL_FlashVars_SaveChannel(int index, int value) {
-
+	if(index<0||index>=BL602_SAVED_CHANNELS_MAX)
+		return;
+	if(g_loaded==0) {
+		BL602_ReadFlashVars(&g_bootCounts,sizeof(g_bootCounts));
+	}
+	g_bootCounts.channelStates[index] = value;
+	// save after increase
+	BL602_SaveFlashVars(&g_bootCounts,sizeof(g_bootCounts));
 }
 int HAL_FlashVars_GetChannelValue(int ch) {
-	return 0;
+	if(ch<0||ch>=BL602_SAVED_CHANNELS_MAX)
+		return 0;
+	if(g_loaded==0) {
+		BL602_ReadFlashVars(&g_bootCounts,sizeof(g_bootCounts));
+	}
+	return g_bootCounts.channelStates[ch];
 }
 
 #endif // PLATFORM_BL602

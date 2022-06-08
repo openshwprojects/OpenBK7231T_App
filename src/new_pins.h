@@ -165,6 +165,7 @@ void CHANNEL_SetAll(int iVal, int iFlags);
 void CHANNEL_SetStateOnly(int iVal);
 int CHANNEL_HasChannelPinWithRole(int ch, int iorType);
 bool CHANNEL_IsInUse(int ch);
+void Channel_SaveInFlashIfNeeded(int ch);
 
 int PIN_GetPWMIndexForPinIndex(int pin);
 

@@ -1401,7 +1401,8 @@ int http_fn_cfg_startup(http_request_t *request) {
 
 
 			CFG_SetChannelStartupValue(channelIndex,newValue);
-
+			// also save current value if marked as saved
+			Channel_SaveInFlashIfNeeded(channelIndex);
 			hprintf128(request,"<h5>Setting channel %i start value to %i<h5>",channelIndex,newValue);
 
 		}
