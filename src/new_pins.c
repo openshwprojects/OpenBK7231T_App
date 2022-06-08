@@ -11,6 +11,7 @@
 #include "cmnds/cmd_public.h"
 #include "i2c/drv_i2c_public.h"
 #include "driver/drv_tuyaMCU.h"
+#include "hal/hal_flashVars.h"
 #include "hal/hal_pins.h"
 
 
