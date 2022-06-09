@@ -48,8 +48,12 @@ int CFG_GetBootOkSeconds();
 void CFG_SetChannelStartupValue(int channelIndex,short newValue);
 short CFG_GetChannelStartupValue(int channelIndex);
 void CFG_ApplyChannelStartValues();
-
-
+void CFG_DeviceGroups_SetName(const char *s);
+void CFG_DeviceGroups_SetSendFlags(int newSendFlags);
+void CFG_DeviceGroups_SetRecvFlags(int newSendFlags);
+const char *CFG_DeviceGroups_GetName();
+int CFG_DeviceGroups_GetSendFlags();
+int CFG_DeviceGroups_GetRecvFlags();
 
 
 

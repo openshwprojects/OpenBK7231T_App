@@ -217,6 +217,12 @@ int http_getArg(const char *base, const char *name, char *o, int maxSize) {
 	}
 	return 0;
 }
+int http_getArgInteger(const char *base, const char *name) {
+	char tmp[16];
+	if(http_getArg(base,name,tmp,sizeof(tmp))==0)
+		return 0;
+	return atoi(tmp);
+}
 
 const char *htmlPinRoleNames[] = {
 	" ",
@@ -532,6 +538,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 	if(http_checkUrlBase(urlStr,"startup_command")) return http_fn_startup_command(request);
 	if(http_checkUrlBase(urlStr,"cfg_generic")) return http_fn_cfg_generic(request);
 	if(http_checkUrlBase(urlStr,"cfg_startup")) return http_fn_cfg_startup(request);
+	if(http_checkUrlBase(urlStr,"cfg_dgr")) return http_fn_cfg_dgr(request);
 
 	if(http_checkUrlBase(urlStr,"cfg_quick")) return http_fn_cfg_quick(request);
 	if(http_checkUrlBase(urlStr,"cfg_ha")) return http_fn_cfg_ha(request);

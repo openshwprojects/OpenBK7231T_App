@@ -135,6 +135,11 @@ void Main_OnWiFiStatusChange(int code){
         case WIFI_STA_CONNECTED:
 			g_bHasWiFiConnected = 1;
 			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTED\r\n");
+			
+		if(bSafeMode == 0 && strlen(CFG_DeviceGroups_GetName())>0){
+			DRV_StartDriver("DGR");
+		}
+
             break;
         /* for softap mode */
         case WIFI_AP_CONNECTED:
@@ -412,6 +417,7 @@ void Main_Init()
 		// this actually sets the pins, moved out so we could avoid if necessary
 		PIN_SetupPins();
 		PIN_StartButtonScanThread();
+
 	}
 
 }

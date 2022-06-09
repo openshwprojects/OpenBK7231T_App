@@ -6,6 +6,7 @@
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 #include "../logging/logging.h"
+#include "../devicegroups/deviceGroups_public.h"
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
@@ -59,6 +60,8 @@ void DRV_DGR_CreateSocket_Receive() {
 		if (iResult != 0)
 		{
 			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"failed to do setsockopt SO_BROADCAST\n");
+			close(g_dgr_socket);
+			g_dgr_socket = 0;
 			return ;
 		}
 	}
@@ -71,6 +74,8 @@ void DRV_DGR_CreateSocket_Receive() {
 			) < 0
 		){
 			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"failed to do setsockopt SO_REUSEADDR\n");
+			close(g_dgr_socket);
+			g_dgr_socket = 0;
 		  return ;
 		}
 	}
@@ -86,6 +91,8 @@ void DRV_DGR_CreateSocket_Receive() {
     //
     if (bind(g_dgr_socket, (struct sockaddr*) &addr, sizeof(addr)) < 0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"failed to do bind\n");
+		close(g_dgr_socket);
+		g_dgr_socket = 0;
         return ;
     }
 
@@ -113,14 +120,71 @@ void DRV_DGR_CreateSocket_Receive() {
 			iResult < 0
 		){
 			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"failed to do setsockopt IP_ADD_MEMBERSHIP %i\n",iResult);
+			close(g_dgr_socket);
+			g_dgr_socket = 0;
 			return ;
 		}
 	}
 
+	lwip_fcntl(g_dgr_socket, F_SETFL,O_NONBLOCK);
+
 	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Waiting for packets\n");
+}
+
+void DRV_DGR_processPower(int relayStates, byte relaysCount) {
+	int startIndex;
+	int i;
+	int ch;
+
+	LED_SetEnableAll(BIT_CHECK(relayStates,0));
+	//if(CHANNEL_HasChannelSomeOutputPin(0)) {
+	//	startIndex = 0;
+	//} else {
+	//	startIndex = 1;
+	//}
+	//for(i = 0; i < relaysCount; i++) {
+	//	int bOn;
+	//	bOn = BIT_CHECK(relayStates,i);
+	//	ch = startIndex+i;
+	//	if(bOn) {
+	//		if(CHANNEL_HasChannelPinWithRole(ch,IOR_PWM)) {
+
+	//		} else {
+	//			CHANNEL_Set(ch,1,0);
+	//		}
+	//	} else {
+	//		CHANNEL_Set(ch,0,0);
+	//	}
+	//}
+}
+void DRV_DGR_processBrightnessPowerOn(byte brightness) {
+	int numPWMs;
+	int idx_pin;
+	int idx_channel;
+	float fr;
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_processBrightnessPowerOn: %i\n",(int)brightness);
+
+	// convert to our 0-100 range
+	fr = brightness / 255.0f;
+	brightness = fr * 100;
+
+	
+	LED_SetDimmer(brightness);
+
+	//numPWMs = PIN_CountPinsWithRole(IOR_PWM);
+	//idx_pin = PIN_FindPinIndexForRole(IOR_PWM,0);
+	//idx_channel = PIN_GetPinChannelForPinIndex(idx_pin);
+
+	//CHANNEL_Set(idx_channel,brightness,0);
+	
+}
+void DRV_DGR_processLightBrightness(byte brightness) {
+	
 }
 void DRV_DGR_RunFrame() {
     struct sockaddr_in addr;
+	dgrDevice_t def;
 
 	if(g_dgr_socket==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"no sock\n");
@@ -139,11 +203,20 @@ void DRV_DGR_RunFrame() {
             &addrlen
         );
         if (nbytes <= 0) {
-			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"nothing\n");
+			//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"nothing\n");
             return ;
         }
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Received %i bytes\n",nbytes);
         msgbuf[nbytes] = '\0';
+
+		strcpy(def.gr.groupName,CFG_DeviceGroups_GetName());
+		def.gr.devGroupShare_In = CFG_DeviceGroups_GetRecvFlags();
+		def.gr.devGroupShare_Out = CFG_DeviceGroups_GetSendFlags();
+		def.cbs.processBrightnessPowerOn = DRV_DGR_processBrightnessPowerOn;
+		def.cbs.processLightBrightness = DRV_DGR_processLightBrightness;
+		def.cbs.processPower = DRV_DGR_processPower;
+
+		DGR_Parse(msgbuf, nbytes, &def);
 		//DGR_Parse(msgbuf, nbytes);
        // puts(msgbuf);
 }
@@ -180,7 +253,6 @@ void DRV_DGR_Init()
 #else
 	DRV_DGR_CreateSocket_Receive();
 
-	lwip_fcntl(g_dgr_socket, F_SETFL,O_NONBLOCK);
 #endif
 }
 

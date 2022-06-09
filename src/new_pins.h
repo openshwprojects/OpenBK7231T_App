@@ -2,10 +2,6 @@
 #define __NEW_PINS_H__
 #include "new_common.h"
 
-#define BIT_SET(PIN,N) (PIN |=  (1<<N))
-#define BIT_CLEAR(PIN,N) (PIN &= ~(1<<N))
-#define BIT_TGL(PIN,N) (PIN ^=  (1<<N))
-#define BIT_CHECK(PIN,N) !!((PIN & (1<<N)))
 
 enum IORole {
 	IOR_None,
@@ -117,7 +113,10 @@ typedef struct mainConfig_s {
 	char longDeviceName[64];
 	pinsState_t pins;
 	short startChannelValues[CHANNEL_MAX];
-	byte unusedSectorA[128];
+	int dgr_sendFlags;
+	int dgr_recvFlags;
+	char dgr_name[16];
+	byte unusedSectorA[104];
 	byte unusedSectorB[128];
 	byte unusedSectorC[55];
 	byte timeRequiredToMarkBootSuccessfull;
@@ -139,6 +138,7 @@ void PIN_SetupPins();
 void PIN_StartButtonScanThread(void);
 void PIN_OnReboot();
 void CFG_ClearPins();
+int PIN_CountPinsWithRole(int role);
 int PIN_GetPinRoleForPinIndex(int index);
 int PIN_GetPinChannelForPinIndex(int index);
 int PIN_GetPinChannel2ForPinIndex(int index);
@@ -166,6 +166,7 @@ void CHANNEL_SetStateOnly(int iVal);
 int CHANNEL_HasChannelPinWithRole(int ch, int iorType);
 bool CHANNEL_IsInUse(int ch);
 void Channel_SaveInFlashIfNeeded(int ch);
+bool CHANNEL_HasChannelSomeOutputPin(int ch);
 
 int PIN_GetPWMIndexForPinIndex(int pin);
 

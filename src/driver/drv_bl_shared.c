@@ -52,8 +52,17 @@ int changeSendAlwaysFrames = 60;
 
 void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request) {
 	char tmp[128];
-	sprintf(tmp, "<h2>BL0942 Voltage=%f, Current=%f, Power=%f (changes sent %i, skipped %i)</h2>",
-		lastReadings[OBK_VOLTAGE],lastReadings[OBK_CURRENT], lastReadings[OBK_POWER],
+	const char *mode;
+
+	if(DRV_IsRunning("BL0937")) {
+		mode = "BL0937";
+	} else if(DRV_IsRunning("BL0942")) {
+		mode = "BL0942";
+	} else {
+		mode = "PWR";
+	}
+	sprintf(tmp, "<h2>%s Voltage=%f, Current=%f, Power=%f (changes sent %i, skipped %i)</h2>",
+		mode, lastReadings[OBK_VOLTAGE],lastReadings[OBK_CURRENT], lastReadings[OBK_POWER],
 		stat_updatesSent, stat_updatesSkipped);
     hprintf128(request,tmp);
 

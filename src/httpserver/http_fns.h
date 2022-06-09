@@ -31,3 +31,4 @@ int http_fn_cm(http_request_t *request);
 int http_fn_startup_command(http_request_t *request);
 int http_fn_cfg_generic(http_request_t *request);
 int http_fn_cfg_startup(http_request_t *request);
+int http_fn_cfg_dgr(http_request_t *request);

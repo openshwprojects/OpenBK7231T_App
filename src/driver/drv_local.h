@@ -12,5 +12,7 @@ void DRV_DGR_RunFrame();
 
 void BL_ProcessUpdate(float voltage, float current, float power);
 void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request);
+bool DRV_IsRunning(const char *name);
+
 
 

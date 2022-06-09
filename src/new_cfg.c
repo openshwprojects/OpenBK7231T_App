@@ -337,6 +337,34 @@ void CFG_Save_IfThereArePendingChanges() {
 		g_cfg_pendingChanges = 0;
 	}
 }
+void CFG_DeviceGroups_SetName(const char *s) {
+	// this will return non-zero if there were any changes
+	if(strcpy_safe_checkForChanges(g_cfg.dgr_name, s,sizeof(g_cfg.dgr_name))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+void CFG_DeviceGroups_SetSendFlags(int newSendFlags) {
+	if(g_cfg.dgr_sendFlags != newSendFlags) {
+		g_cfg.dgr_sendFlags = newSendFlags;
+		g_cfg_pendingChanges++;
+	}
+}
+void CFG_DeviceGroups_SetRecvFlags(int newRecvFlags) {
+	if(g_cfg.dgr_recvFlags != newRecvFlags) {
+		g_cfg.dgr_recvFlags = newRecvFlags;
+		g_cfg_pendingChanges++;
+	}
+}
+const char *CFG_DeviceGroups_GetName() {
+	return g_cfg.dgr_name;
+}
+int CFG_DeviceGroups_GetSendFlags() {
+	return g_cfg.dgr_sendFlags;
+}
+int CFG_DeviceGroups_GetRecvFlags() {
+	return g_cfg.dgr_recvFlags;
+}
 void CFG_SetChannelStartupValue(int channelIndex,short newValue) {
 	if(channelIndex < 0 || channelIndex >= CHANNEL_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "CFG_SetChannelStartupValue: Channel index %i out of range <0,%i).",channelIndex,CHANNEL_MAX);

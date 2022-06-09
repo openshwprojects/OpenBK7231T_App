@@ -33,6 +33,19 @@ static driver_t g_drivers[] = {
 };
 static int g_numDrivers = sizeof(g_drivers)/sizeof(g_drivers[0]);
 
+bool DRV_IsRunning(const char *name) {
+	int i;
+
+	for(i = 0; i < g_numDrivers; i++) {
+		if(g_drivers[i].bLoaded) {
+			if(!stricmp(name,g_drivers[i].name)) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 void DRV_OnEverySecond() {
 	int i;
 
@@ -44,26 +57,20 @@ void DRV_OnEverySecond() {
 		}
 	}
 }
-// startDriver DGR
-// startDriver BL0942
-// startDriver BL0937
-int DRV_Start(const void *context, const char *cmd, const char *args, int cmdFlags) {
+void DRV_StartDriver(const char *name) {
 	int i;
-	const char *name;
-
-	name = args;
 
 	for(i = 0; i < g_numDrivers; i++) {
 		if(!stricmp(g_drivers[i].name,name)) {
 			if(g_drivers[i].bLoaded){
 				addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Drv %s is already loaded.\n",name);
-				return 1;
+				return ;
 
 			} else {
 				g_drivers[i].initFunc();
 				g_drivers[i].bLoaded = true;
 				addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Started %s.\n",name);
-				return 1;
+				return ;
 			}
 		}
 	}
@@ -76,6 +83,13 @@ int DRV_Start(const void *context, const char *cmd, const char *args, int cmdFla
 			addLogAdv(LOG_INFO, LOG_FEATURE_NTP,", %s",g_drivers[i].name);
 		}
 	}
+}
+// startDriver DGR
+// startDriver BL0942
+// startDriver BL0937
+static int DRV_Start(const void *context, const char *cmd, const char *args, int cmdFlags) {
+
+	DRV_StartDriver(args);
 
 	return 1;
 }

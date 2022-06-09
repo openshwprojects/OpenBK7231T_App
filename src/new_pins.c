@@ -88,6 +88,16 @@ int PIN_GetPinChannelForPinIndex(int index) {
 	}
 	return g_cfg.pins.channels[index];
 }
+int PIN_CountPinsWithRole(int role) {
+	int i;
+	int r = 0;
+
+	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if(g_cfg.pins.roles[i] == role)
+			r++;
+	}
+	return r;
+}
 int PIN_FindPinIndexForRole(int role, int defaultIndexToReturnIfNotFound) {
 	int i;
 
@@ -621,6 +631,9 @@ bool CHANNEL_IsInUse(int ch) {
 }
 
 
+bool CHANNEL_HasChannelSomeOutputPin(int ch) {
+	return CHANNEL_GetRoleForOutputChannel(ch) != IOR_None;
+}
 int CHANNEL_GetRoleForOutputChannel(int ch){
 	int i;
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++){
@@ -968,8 +981,6 @@ beken_timer_t g_pin_timer;
 #endif
 void PIN_StartButtonScanThread(void)
 {
-	int i;
-
 #if WINDOWS
 
 #elif PLATFORM_BL602
@@ -1003,7 +1014,6 @@ void PIN_StartButtonScanThread(void)
 
 void PIN_AddCommands(void)
 {
-
 	CMD_RegisterCommand("showgpi", NULL, showgpi, "log stat of all GPIs", NULL);
 	CMD_RegisterCommand("setChannelType", NULL, CMD_SetChannelType, "qqqqqqqq", NULL);
 	CMD_RegisterCommand("showChannelValues", NULL,CMD_ShowChannelValues, "log channel values", NULL);

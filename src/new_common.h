@@ -32,6 +32,10 @@ This platform is not supported, error!
 #endif
 
 
+#define BIT_SET(PIN,N) (PIN |=  (1<<N))
+#define BIT_CLEAR(PIN,N) (PIN &= ~(1<<N))
+#define BIT_TGL(PIN,N) (PIN ^=  (1<<N))
+#define BIT_CHECK(PIN,N) !!((PIN & (1<<N)))
 
 
 #if WINDOWS

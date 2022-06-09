@@ -192,16 +192,22 @@ static int temperature(const void *context, const char *cmd, const char *args, i
 	//}
 	//return 0;
 }
+void LED_SetEnableAll(int bEnable) {
+	g_lightEnableAll = bEnable;
+
+	apply_smart_light();
+
+	MQTT_PublishMain_StringInt("led_enableAll",g_lightEnableAll);
+}
 static int enableAll(const void *context, const char *cmd, const char *args, int cmdFlags){
 	//if (!wal_strnicmp(cmd, "POWERALL", 8)){
-
+		int bEnable;
         ADDLOG_INFO(LOG_FEATURE_CMD, " enableAll (%s) received with args %s",cmd,args);
 
-		g_lightEnableAll = parsePowerArgument(args);
+		bEnable = parsePowerArgument(args);
 
-		apply_smart_light();
+		LED_SetEnableAll(bEnable);
 
-		MQTT_PublishMain_StringInt("led_enableAll",g_lightEnableAll);
 	
 	//	sendColorChange();
 	//	sendDimmerChange();
@@ -212,6 +218,14 @@ static int enableAll(const void *context, const char *cmd, const char *args, int
 	//return 0;
 }
 
+void LED_SetDimmer(int iVal) {
+
+	g_brightness = iVal * g_cfg_brightnessMult;
+
+	apply_smart_light();
+	sendDimmerChange();
+
+}
 static int dimmer(const void *context, const char *cmd, const char *args, int cmdFlags){
 	//if (!wal_strnicmp(cmd, "POWERALL", 8)){
 		int iVal = 0;
@@ -220,10 +234,7 @@ static int dimmer(const void *context, const char *cmd, const char *args, int cm
 
 		iVal = parsePowerArgument(args);
 
-		g_brightness = iVal * g_cfg_brightnessMult;
-
-		apply_smart_light();
-		sendDimmerChange();
+		LED_SetDimmer(iVal);
 
 		return 1;
 	//}

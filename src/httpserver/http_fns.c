@@ -12,6 +12,7 @@
 #include "../hal/hal_pins.h"
 #include "../hal/hal_flashConfig.h"
 #include "../logging/logging.h"
+#include "../devicegroups/deviceGroups_public.h"
 
 #ifdef WINDOWS
     // nothing
@@ -944,6 +945,8 @@ int http_fn_startup_command(http_request_t *request) {
     if(http_getArg(request->url,"data",tmpA,sizeof(tmpA))) {
         hprintf128(request,"<h3>Set command to  %s!</h3>",tmpA);
 		CFG_SetShortStartupCommand(tmpA);
+
+		CFG_Save_IfThereArePendingChanges();
 	} else {
 	}
 
@@ -1176,6 +1179,7 @@ int http_fn_cfg(http_request_t *request) {
     poststr(request,"<form action=\"cfg_pins\"><input type=\"submit\" value=\"Configure Module\"/></form>");
     poststr(request,"<form action=\"cfg_generic\"><input type=\"submit\" value=\"Configure General\"/></form>");
     poststr(request,"<form action=\"cfg_startup\"><input type=\"submit\" value=\"Configure Startup\"/></form>");
+    poststr(request,"<form action=\"cfg_dgr\"><input type=\"submit\" value=\"Configure Device Groups\"/></form>");
     poststr(request,"<form action=\"cfg_quick\"><input type=\"submit\" value=\"Quick Config\"/></form>");
     poststr(request,"<form action=\"cfg_wifi\"><input type=\"submit\" value=\"Configure WiFi\"/></form>");
     poststr(request,"<form action=\"cfg_mqtt\"><input type=\"submit\" value=\"Configure MQTT\"/></form>");
@@ -1339,11 +1343,8 @@ int http_fn_cfg_pins(http_request_t *request) {
 }
 
 int http_fn_cfg_generic(http_request_t *request) {
-    int iChanged = 0;
-    int iChangedRequested = 0;
     int i;
 	char tmpA[128];
-	char tmpB[64];
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
@@ -1405,6 +1406,7 @@ int http_fn_cfg_startup(http_request_t *request) {
 			Channel_SaveInFlashIfNeeded(channelIndex);
 			hprintf128(request,"<h5>Setting channel %i start value to %i<h5>",channelIndex,newValue);
 
+			CFG_Save_IfThereArePendingChanges();
 		}
     }
 
@@ -1426,6 +1428,102 @@ int http_fn_cfg_startup(http_request_t *request) {
 			poststr(request,"\"><br>");
 			poststr(request,"<input type=\"submit\" value=\"Save\"/></form>");
 		}
+	}
+
+    poststr(request,htmlReturnToCfg);
+    HTTP_AddBuildFooter(request);
+    poststr(request,htmlEnd);
+
+	poststr(request, NULL);
+    return 0;
+}
+
+int http_fn_cfg_dgr(http_request_t *request) {
+    int iChanged = 0;
+    int iChangedRequested = 0;
+	int channelIndex;
+	int newValue;
+    int i;
+	char tmpA[128];
+	char tmpB[64];
+
+    http_setup(request, httpMimeTypeHTML);
+    poststr(request,htmlHeader);
+    poststr(request,g_header);
+
+	hprintf128(request,"<h5>Here you can configure Tasmota Device Groups<h5>");
+
+
+    if(	http_getArg(request->url,"name",tmpA,sizeof(tmpA))) {
+		int newSendFlags;
+		int newRecvFlags;
+
+		newSendFlags = 0;
+		newRecvFlags = 0;
+
+		if(http_getArgInteger(request->url,"s_pwr"))
+			newSendFlags |= DGR_SHARE_POWER;
+		if(http_getArgInteger(request->url,"r_pwr"))
+			newRecvFlags |= DGR_SHARE_POWER;
+		if(http_getArgInteger(request->url,"s_lbr"))
+			newSendFlags |= DGR_SHARE_LIGHT_BRI;
+		if(http_getArgInteger(request->url,"r_lbr"))
+			newRecvFlags |= DGR_SHARE_LIGHT_BRI;
+		if(http_getArgInteger(request->url,"s_lcl"))
+			newSendFlags |= DGR_SHARE_LIGHT_COLOR;
+		if(http_getArgInteger(request->url,"r_lcl"))
+			newRecvFlags |= DGR_SHARE_LIGHT_COLOR;
+
+		CFG_DeviceGroups_SetName(tmpA);
+		CFG_DeviceGroups_SetSendFlags(newSendFlags);
+		CFG_DeviceGroups_SetRecvFlags(newRecvFlags);
+
+		if(tmpA[0] != 0) {
+			DRV_StartDriver("DGR");
+		}
+		CFG_Save_IfThereArePendingChanges();
+    }
+	{
+		int newSendFlags;
+		int newRecvFlags;
+		const char *groupName = CFG_DeviceGroups_GetName();
+
+
+		newSendFlags = CFG_DeviceGroups_GetSendFlags();
+		newRecvFlags = CFG_DeviceGroups_GetRecvFlags();
+
+		poststr(request,"<form action=\"/cfg_dgr\"><label for=\"name\">Group name:</label><br><input type=\"text\" id=\"name\" name=\"name\" value=\"");
+		poststr(request,groupName);
+		poststr(request,"\"><br><table><tr><th>Name</th><th>Tasmota Code</th><th>Receive</th><th>Send</th></tr><tr><td>Power</td><td>1</td>");
+
+		poststr(request,"     <td><input type=\"checkbox\" name=\"r_pwr\" value=\"1\"");
+		if(newRecvFlags & DGR_SHARE_POWER)
+			poststr(request," checked");
+		poststr(request,"></td>  <td><input type=\"checkbox\" name=\"s_pwr\" value=\"1\"");
+		if(newSendFlags & DGR_SHARE_POWER)
+			poststr(request," checked");
+		poststr(request,"></td> ");
+
+		poststr(request,"  </tr>  <tr>    <td>Light Brightness</td>    <td>2</td>");
+
+		poststr(request,"    <td><input type=\"checkbox\" name=\"r_lbr\" value=\"1\"");
+		if(newRecvFlags & DGR_SHARE_LIGHT_BRI)
+			poststr(request," checked");
+		poststr(request,"></td>    <td><input type=\"checkbox\" name=\"s_lbr\" value=\"1\"");
+		if(newSendFlags & DGR_SHARE_LIGHT_BRI)
+			poststr(request," checked");
+		poststr(request,"></td> ");
+
+		poststr(request,"  </tr>  <tr>    <td>Light Color</td>    <td>16</td>");
+		poststr(request,"     <td><input type=\"checkbox\" name=\"r_lcl\" value=\"1\"");
+		if(newRecvFlags & DGR_SHARE_LIGHT_COLOR)
+			poststr(request," checked");
+		poststr(request,"></td> <td><input type=\"checkbox\" name=\"s_lcl\" value=\"1\"");
+		if(newSendFlags & DGR_SHARE_LIGHT_COLOR)
+			poststr(request," checked");
+		poststr(request,"></td> ");
+
+		poststr(request,"    </tr></table>  <input type=\"submit\" value=\"Submit\"></form>");
 	}
 
     poststr(request,htmlReturnToCfg);
