@@ -11,6 +11,7 @@
 #include "cmnds/cmd_public.h"
 #include "i2c/drv_i2c_public.h"
 #include "driver/drv_tuyaMCU.h"
+#include "driver/drv_public.h"
 #include "hal/hal_flashVars.h"
 #include "hal/hal_pins.h"
 
@@ -791,6 +792,8 @@ void PIN_ticks(void *param)
 {
 	int i;
 	int value;
+
+	DRV_RunQuickTick();
 
 	// WiFi LED
 	// In Open Access point mode, fast blink (250ms)

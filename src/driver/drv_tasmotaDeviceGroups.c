@@ -185,6 +185,7 @@ void DRV_DGR_processLightBrightness(byte brightness) {
 void DRV_DGR_RunFrame() {
     struct sockaddr_in addr;
 	dgrDevice_t def;
+    char msgbuf[64];
 
 	if(g_dgr_socket==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"no sock\n");
@@ -192,7 +193,6 @@ void DRV_DGR_RunFrame() {
         }
     // now just enter a read-print loop
     //
-        char msgbuf[64];
         int addrlen = sizeof(addr);
         int nbytes = recvfrom(
             g_dgr_socket,
@@ -245,6 +245,15 @@ void DRV_DGR_RunFrame() {
 //									(beken_thread_arg_t)0 );
 //
 //}
+void DRV_DGR_Shutdown()
+{
+	if(g_dgr_socket!=0) {
+		close(g_dgr_socket);
+		g_dgr_socket = 0;
+	}
+}
+
+
 
 void DRV_DGR_Init()
 {

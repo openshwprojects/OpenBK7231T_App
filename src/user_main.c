@@ -137,6 +137,7 @@ void Main_OnWiFiStatusChange(int code){
 			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTED\r\n");
 			
 		if(bSafeMode == 0 && strlen(CFG_DeviceGroups_GetName())>0){
+			DRV_StopDriver("DGR");
 			DRV_StartDriver("DGR");
 		}
 

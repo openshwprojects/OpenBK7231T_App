@@ -17,18 +17,20 @@ typedef struct driver_s {
 	void (*initFunc)();
 	void (*onEverySecond)();
 	void (*appendInformationToHTTPIndexPage)(http_request_t *request);
+	void (*runQuickTick)();
+	void (*stopFunc)();
 	bool bLoaded;
 } driver_t;
 
 // startDriver BL0937
 static driver_t g_drivers[] = {
-	{ "TuyaMCU", TuyaMCU_Init, TuyaMCU_RunFrame, NULL, false },
-	{ "NTP", NTP_Init, NTP_OnEverySecond, NULL, false },
-	{ "I2C", DRV_I2C_Init, DRV_I2C_EverySecond, NULL, false },
-	{ "BL0942", BL0942_Init, BL0942_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, false },
-	{ "BL0937", BL0937_Init, BL0937_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, false },
+	{ "TuyaMCU", TuyaMCU_Init, TuyaMCU_RunFrame, NULL, NULL, NULL,false },
+	{ "NTP", NTP_Init, NTP_OnEverySecond, NULL, NULL, NULL, false },
+	{ "I2C", DRV_I2C_Init, DRV_I2C_EverySecond, NULL, NULL, NULL, false },
+	{ "BL0942", BL0942_Init, BL0942_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, false },
+	{ "BL0937", BL0937_Init, BL0937_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, false },
 #if PLATFORM_BEKEN
-	{ "DGR", DRV_DGR_Init, DRV_DGR_RunFrame, NULL, false },
+	{ "DGR", DRV_DGR_Init, NULL, NULL, DRV_DGR_RunFrame, DRV_DGR_Shutdown, false },
 #endif
 };
 static int g_numDrivers = sizeof(g_drivers)/sizeof(g_drivers[0]);
@@ -53,6 +55,36 @@ void DRV_OnEverySecond() {
 		if(g_drivers[i].bLoaded) {
 			if(g_drivers[i].onEverySecond != 0) {
 				g_drivers[i].onEverySecond();
+			}
+		}
+	}
+}
+void DRV_RunQuickTick() {
+	int i;
+
+	for(i = 0; i < g_numDrivers; i++) {
+		if(g_drivers[i].bLoaded) {
+			if(g_drivers[i].runQuickTick != 0) {
+				g_drivers[i].runQuickTick();
+			}
+		}
+	}
+}
+void DRV_StopDriver(const char *name) {
+	int i;
+
+	for(i = 0; i < g_numDrivers; i++) {
+		if(!stricmp(g_drivers[i].name,name)) {
+			if(g_drivers[i].bLoaded){
+				if(g_drivers[i].stopFunc != 0) {
+					g_drivers[i].stopFunc();
+				}
+				g_drivers[i].bLoaded = 0;
+				addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Drv %s has been stopped.\n",name);
+				return ;
+			} else {
+				addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Drv %s is not running.\n",name);
+				return ;
 			}
 		}
 	}
