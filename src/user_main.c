@@ -110,6 +110,12 @@ int Time_getUpTimeSeconds() {
 }
 
 
+char scheduledDriverName[16];
+int scheduledDelay = 0;
+void ScheduleDriverStart(const char *name, int delay) {
+	scheduledDelay = delay;
+	strcpy(scheduledDriverName,name);
+}
 
 void Main_OnWiFiStatusChange(int code){
 
@@ -136,10 +142,9 @@ void Main_OnWiFiStatusChange(int code){
 			g_bHasWiFiConnected = 1;
 			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTED\r\n");
 			
-		if(bSafeMode == 0 && strlen(CFG_DeviceGroups_GetName())>0){
-			DRV_StopDriver("DGR");
-			DRV_StartDriver("DGR");
-		}
+			if(bSafeMode == 0 && strlen(CFG_DeviceGroups_GetName())>0){
+				ScheduleDriverStart("DGR",5);
+			}
 
             break;
         /* for softap mode */
@@ -189,6 +194,14 @@ void Main_OnEverySecond()
 		}
 	}
 
+	if(scheduledDelay > 0) {
+		scheduledDelay--;
+		if(scheduledDelay<=0){
+			scheduledDelay = -1;
+			DRV_StopDriver(scheduledDriverName);
+			DRV_StartDriver(scheduledDriverName);
+		}
+	}
 
 	g_secondsElapsed ++;
 	if(bSafeMode) {

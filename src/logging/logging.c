@@ -102,7 +102,7 @@ void addLogAdv(int level, int feature, char *fmt, ...){
 
 #else // from WINDOWS
 
-SemaphoreHandle_t g_mutex = 0;
+static SemaphoreHandle_t g_mutex = 0;
 
 #ifdef DEBUG_USE_SIMPLE_LOGGER
 

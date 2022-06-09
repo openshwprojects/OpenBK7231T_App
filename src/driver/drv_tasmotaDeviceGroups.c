@@ -36,7 +36,7 @@ int port = 4447;
 //	return 0;
 //}
 
-static int g_dgr_socket = 0;
+static int g_dgr_socket = -1;
 void DRV_DGR_CreateSocket_Receive() {
 
     struct sockaddr_in addr;
@@ -49,6 +49,7 @@ void DRV_DGR_CreateSocket_Receive() {
     //
     g_dgr_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (g_dgr_socket < 0) {
+		g_dgr_socket = -1;
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"failed to do socket\n");
         return ;
     }
@@ -61,7 +62,7 @@ void DRV_DGR_CreateSocket_Receive() {
 		{
 			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"failed to do setsockopt SO_BROADCAST\n");
 			close(g_dgr_socket);
-			g_dgr_socket = 0;
+			g_dgr_socket = -1;
 			return ;
 		}
 	}
@@ -75,7 +76,7 @@ void DRV_DGR_CreateSocket_Receive() {
 		){
 			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"failed to do setsockopt SO_REUSEADDR\n");
 			close(g_dgr_socket);
-			g_dgr_socket = 0;
+			g_dgr_socket = -1;
 		  return ;
 		}
 	}
@@ -92,7 +93,7 @@ void DRV_DGR_CreateSocket_Receive() {
     if (bind(g_dgr_socket, (struct sockaddr*) &addr, sizeof(addr)) < 0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"failed to do bind\n");
 		close(g_dgr_socket);
-		g_dgr_socket = 0;
+		g_dgr_socket = -1;
         return ;
     }
 
@@ -121,7 +122,7 @@ void DRV_DGR_CreateSocket_Receive() {
 		){
 			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"failed to do setsockopt IP_ADD_MEMBERSHIP %i\n",iResult);
 			close(g_dgr_socket);
-			g_dgr_socket = 0;
+			g_dgr_socket = -1;
 			return ;
 		}
 	}
@@ -157,20 +158,17 @@ void DRV_DGR_processPower(int relayStates, byte relaysCount) {
 	//	}
 	//}
 }
-void DRV_DGR_processBrightnessPowerOn(byte brightness) {
-	int numPWMs;
-	int idx_pin;
-	int idx_channel;
+byte Val255ToVal100(byte v){ 
 	float fr;
-
+	// convert to our 0-100 range
+	fr = v / 255.0f;
+	v = fr * 100;
+	return v;
+}
+void DRV_DGR_processBrightnessPowerOn(byte brightness) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_processBrightnessPowerOn: %i\n",(int)brightness);
 
-	// convert to our 0-100 range
-	fr = brightness / 255.0f;
-	brightness = fr * 100;
-
-	
-	LED_SetDimmer(brightness);
+	LED_SetDimmer(Val255ToVal100(brightness));
 
 	//numPWMs = PIN_CountPinsWithRole(IOR_PWM);
 	//idx_pin = PIN_FindPinIndexForRole(IOR_PWM,0);
@@ -180,6 +178,9 @@ void DRV_DGR_processBrightnessPowerOn(byte brightness) {
 	
 }
 void DRV_DGR_processLightBrightness(byte brightness) {
+	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_processLightBrightness: %i\n",(int)brightness);
+
+	LED_SetDimmer(Val255ToVal100(brightness));
 	
 }
 void DRV_DGR_RunFrame() {
@@ -187,7 +188,7 @@ void DRV_DGR_RunFrame() {
 	dgrDevice_t def;
     char msgbuf[64];
 
-	if(g_dgr_socket==0) {
+	if(g_dgr_socket<0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"no sock\n");
             return ;
         }
@@ -247,9 +248,9 @@ void DRV_DGR_RunFrame() {
 //}
 void DRV_DGR_Shutdown()
 {
-	if(g_dgr_socket!=0) {
+	if(g_dgr_socket>=0) {
 		close(g_dgr_socket);
-		g_dgr_socket = 0;
+		g_dgr_socket = -1;
 	}
 }
 
