@@ -66,11 +66,13 @@ int loopsWithDisconnected = 0;
 int mqtt_reconnect = 0;
 // set for the device to broadcast self state on start
 int g_bPublishAllStatesNow = 0;
-int g_publishItemIndex = 0;
+#define PUBLISHITEM_INDEX_FIRST -1
+#define PUBLISHITEM_SELF_IP -1
+int g_publishItemIndex = PUBLISHITEM_INDEX_FIRST;
 
 void MQTT_PublishWholeDeviceState() {
 	g_bPublishAllStatesNow = 1;
-	g_publishItemIndex = 0;
+	g_publishItemIndex = PUBLISHITEM_INDEX_FIRST;
 }
 
 static struct mqtt_connect_client_info_t mqtt_client_info =
@@ -588,6 +590,13 @@ void MQTT_PublishMain_StringString(const char *sChannel, const char *valueStr)
 {
 	MQTT_PublishMain(mqtt_client,sChannel,valueStr);
 }
+void MQTT_Publish_SelfIP() {
+	const char *ip;
+
+	ip = HAL_GetMyIPString();
+
+	MQTT_PublishMain_StringString("IP",ip);
+}
 void MQTT_ChannelChangeCallback(int channel, int iVal)
 {
 	char channelNameStr[8];
@@ -640,6 +649,17 @@ void MQTT_init(){
 
 }
 
+bool MQTT_DoItemPublish(int idx) {
+	if(idx == PUBLISHITEM_SELF_IP) {
+		MQTT_Publish_SelfIP();
+		return true; //  published
+	}
+	if(CHANNEL_IsInUse(idx)) {
+		MQTT_ChannelPublish(g_publishItemIndex);
+		return true; //  published
+	}
+	return false; // didnt publish
+}
 
 // called from user timer.
 int MQTT_RunEverySecondUpdate() {
@@ -677,12 +697,13 @@ int MQTT_RunEverySecondUpdate() {
 
 		// do we want to broadcast full state?
 		// Do it slowly in order not to overload the buffers
+		// The item indexes start at negative values for special items
+		// and then covers Channel indexes up to CHANNEL_MAX
 		if(g_bPublishAllStatesNow) {
 			int g_sent_thisFrame = 0;
 
 			while(g_publishItemIndex < CHANNEL_MAX) {
-				if(CHANNEL_IsInUse(g_publishItemIndex)) {
-					MQTT_ChannelPublish(g_publishItemIndex);
+				if(MQTT_DoItemPublish(g_publishItemIndex)) {
 					g_sent_thisFrame++;
 					if(g_sent_thisFrame>=2){
 						break;
@@ -693,7 +714,6 @@ int MQTT_RunEverySecondUpdate() {
 			if(g_publishItemIndex >= CHANNEL_MAX) {
 				// done
 				g_bPublishAllStatesNow = 0;
-				g_publishItemIndex = 0;
 			}	
 		}
 
