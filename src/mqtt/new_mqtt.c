@@ -6,6 +6,7 @@
 #include "../logging/logging.h"
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
+#include "../hal/hal_wifi.h"
 
 
 
