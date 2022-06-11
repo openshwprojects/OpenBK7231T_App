@@ -224,6 +224,7 @@ void LED_SetDimmer(int iVal) {
 
 	apply_smart_light();
 	sendDimmerChange();
+	sendColorChange();
 
 }
 static int dimmer(const void *context, const char *cmd, const char *args, int cmdFlags){
@@ -304,6 +305,7 @@ static int basecolor(const void *context, const char *cmd, const char *args, int
 			RGBtoHSV(baseColors[0]/255.0f, baseColors[1]/255.0f, baseColors[2]/255.0f, &g_hsv_h, &g_hsv_s, &g_hsv_v);
 
 			apply_smart_light();
+			sendDimmerChange();
 			sendColorChange();
 
             if (!(*c)){
