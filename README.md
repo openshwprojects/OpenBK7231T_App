@@ -195,7 +195,12 @@ Please refer to this step by step guide:
   
 # How to set relay state on device boot? (PowerOnState)
   
-  The simplest way is to use short startup command from Options or create "autoexec.bat" in LittleFS file system in web panel and execute commands from there.
+  There are two ways.
+  
+  1. Go to Config -> Startup state and set it from GUI here.
+  
+  2. Use use short startup command from Options or create "autoexec.bat" in LittleFS file system in web panel and execute commands from there.
+  
   For example, for RGBCW LED, you can do startup command:
    
   > backlog led_dimmer 100; led_basecolor_rgb #FF00FF; led_enableAll 1
