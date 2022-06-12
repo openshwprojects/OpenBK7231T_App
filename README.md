@@ -180,6 +180,10 @@ Currently available pin roles:
   
   https://www.elektroda.com/rtvforum/viewtopic.php?p=20031489#20031489
   
+# TuyaMCU WB2S "Moes House" Dimmer configuration example with Home Assistant, see here:
+  
+https://www.elektroda.com/rtvforum/topic3898502.html
+  
 # I2C drivers system with support for MCP23017 bus expander, TC74 temperature sensor and more
   
   Detailed description and step by step tutorial on Elektroda.com is coming soon.
