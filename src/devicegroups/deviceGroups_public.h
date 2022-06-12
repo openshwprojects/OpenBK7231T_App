@@ -21,8 +21,8 @@ typedef struct dgrCallbacks_s {
 
 typedef struct dgrGroupDef_s {
 	char groupName[32];
-	u32 devGroupShare_In;
-	u32 devGroupShare_Out;
+	unsigned int devGroupShare_In;
+	unsigned int devGroupShare_Out;
 } dgrGroupDef_t;
 
 typedef struct dgrDevice_s {
