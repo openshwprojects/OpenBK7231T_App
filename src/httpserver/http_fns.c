@@ -1479,7 +1479,9 @@ int http_fn_cfg_dgr(http_request_t *request) {
 		CFG_DeviceGroups_SetRecvFlags(newRecvFlags);
 
 		if(tmpA[0] != 0) {
+#ifndef OBK_DISABLE_ALL_DRIVERS
 			DRV_StartDriver("DGR");
+#endif
 		}
 		CFG_Save_IfThereArePendingChanges();
     }
