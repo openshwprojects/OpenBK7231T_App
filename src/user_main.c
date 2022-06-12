@@ -110,9 +110,9 @@ int Time_getUpTimeSeconds() {
 }
 
 
-char scheduledDriverName[16];
-int scheduledDelay = 0;
-void ScheduleDriverStart(const char *name, int delay) {
+static char scheduledDriverName[16];
+static int scheduledDelay = 0;
+static void ScheduleDriverStart(const char *name, int delay) {
 	scheduledDelay = delay;
 	strcpy(scheduledDriverName,name);
 }
@@ -198,8 +198,10 @@ void Main_OnEverySecond()
 		scheduledDelay--;
 		if(scheduledDelay<=0){
 			scheduledDelay = -1;
+#ifndef OBK_DISABLE_ALL_DRIVERS
 			DRV_StopDriver(scheduledDriverName);
 			DRV_StartDriver(scheduledDriverName);
+#endif
 		}
 	}
 
