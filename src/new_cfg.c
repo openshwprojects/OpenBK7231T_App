@@ -365,6 +365,25 @@ int CFG_DeviceGroups_GetSendFlags() {
 int CFG_DeviceGroups_GetRecvFlags() {
 	return g_cfg.dgr_recvFlags;
 }
+void CFG_SetFlag(int flag, bool bValue) {
+	int nf = g_cfg.genericFlags;
+	if(bValue) {
+		BIT_SET(nf,flag);
+	} else {
+		BIT_CLEAR(nf,flag);
+	}
+	if(nf != g_cfg.genericFlags) {
+		g_cfg.genericFlags = nf;
+		g_cfg_pendingChanges++;
+	}
+}
+int CFG_GetFlags() {
+	return g_cfg.genericFlags;
+}
+bool CFG_HasFlag(int flag) {
+	return BIT_CHECK(g_cfg.genericFlags,flag);
+}
+
 void CFG_SetChannelStartupValue(int channelIndex,short newValue) {
 	if(channelIndex < 0 || channelIndex >= CHANNEL_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "CFG_SetChannelStartupValue: Channel index %i out of range <0,%i).",channelIndex,CHANNEL_MAX);

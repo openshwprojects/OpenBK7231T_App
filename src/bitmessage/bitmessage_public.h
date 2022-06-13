@@ -19,7 +19,7 @@ const char *MSG_GetStringPointerAtCurrentPosition(bitMessage_t *msg);
 
 // bitmessage_write.c
 void MSG_BeginWriting(bitMessage_t *msg, byte *data, int dataSize);
-int MSG_WriteBytes(bitMessage_t *msg, void *p, int numBytes);
+int MSG_WriteBytes(bitMessage_t *msg, const void *p, int numBytes);
 int MSG_WriteString(bitMessage_t *msg, const char *s);
 int MSG_WriteU16(bitMessage_t *msg, unsigned short s);
 int MSG_WriteByte(bitMessage_t *msg, byte s);

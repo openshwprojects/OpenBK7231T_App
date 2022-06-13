@@ -54,6 +54,10 @@ void CFG_DeviceGroups_SetRecvFlags(int newSendFlags);
 const char *CFG_DeviceGroups_GetName();
 int CFG_DeviceGroups_GetSendFlags();
 int CFG_DeviceGroups_GetRecvFlags();
+void CFG_SetFlag(int flag, bool bValue);
+bool CFG_HasFlag(int flag);
+int CFG_GetFlags();
+
 
 
 

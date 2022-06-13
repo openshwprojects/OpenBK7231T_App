@@ -146,7 +146,7 @@ int http_fn_index(http_request_t *request) {
     if(http_getArg(request->url,"dim",tmpA,sizeof(tmpA))) {
         int newDimmerValue = atoi(tmpA);
         http_getArg(request->url,"dimIndex",tmpA,sizeof(tmpA));
-        j = atoi(tmpA);
+       j  = atoi(tmpA);
         hprintf128(request,"<h3>Changed dimmer %i to %i!</h3>",j,newDimmerValue);
         CHANNEL_Set(j,newDimmerValue,1);
     }
@@ -1341,10 +1341,20 @@ int http_fn_cfg_pins(http_request_t *request) {
 	poststr(request, NULL);
     return 0;
 }
+const char *g_obk_flagNames[] = {
+	"[MQTT] Broadcast led params together (send dimmer and color when dimmer or color changes, topic name: YourDevName/led_basecolor_rgb/get, YourDevName/led_dimmer/get)",
+	"[MQTT] Broadcast led final color (topic name: YourDevName/led_finalcolor_rgb/get)",
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
+};
 
 int http_fn_cfg_generic(http_request_t *request) {
     int i;
-	char tmpA[128];
+	char tmpA[64];
+	char tmpB[64];
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
@@ -1359,6 +1369,45 @@ int http_fn_cfg_generic(http_request_t *request) {
 		hprintf128(request,"<h5>Setting boot OK delay to %i<h5>",i);
 		CFG_SetBootOkSeconds(i);
     }
+
+    if(	http_getArg(request->url,"setFlags",tmpA,sizeof(tmpA))) {
+		for(i = 0; i < OBK_TOTAL_FLAGS; i++) {
+			int ni;
+			sprintf(tmpB,"flag%i",i);
+
+			if(	http_getArg(request->url,tmpB,tmpA,sizeof(tmpA))) {
+				ni = atoi(tmpA);
+			} else {
+				ni = 0;
+			}
+			hprintf128(request,"<h5>Setting flag %i to %i<h5>",i,ni);
+			CFG_SetFlag(i,ni);
+		}
+    }
+
+	hprintf128(request,"<h5>Flags (Current value=%i)<h5>",CFG_GetFlags());
+	poststr(request,"<form action=\"/cfg_generic\">");
+	for(i = 0; i < OBK_TOTAL_FLAGS; i++) {
+		int bHas;
+		const char *flagName;
+
+
+
+
+		bHas = CFG_HasFlag(i);
+		flagName = g_obk_flagNames[i];
+
+		poststr(request,"<br>");
+		hprintf128(request, "Flag %i -",i);
+		poststr(request,flagName);
+		poststr(request,"<br>");
+		hprintf128(request,"<input type=\"checkbox\" name=\"flag%i\" value=\"1\"",i);
+		if(bHas)
+			poststr(request," checked");
+		poststr(request,">");
+	}
+	poststr(request,"<input type=\"hidden\" id=\"setFlags\" name=\"setFlags\" value=\"1\">");
+	poststr(request,"<input type=\"submit\" value=\"Submit\"></form>");
 
     poststr(request,"<form action=\"/cfg_generic\">\
             <label for=\"boot_ok_delay\">Uptime seconds required to mark boot as ok:</label><br>\
@@ -1375,13 +1424,10 @@ int http_fn_cfg_generic(http_request_t *request) {
     return 0;
 }
 int http_fn_cfg_startup(http_request_t *request) {
-    int iChanged = 0;
-    int iChangedRequested = 0;
 	int channelIndex;
 	int newValue;
     int i;
 	char tmpA[128];
-	char tmpB[64];
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
@@ -1439,13 +1485,7 @@ int http_fn_cfg_startup(http_request_t *request) {
 }
 
 int http_fn_cfg_dgr(http_request_t *request) {
-    int iChanged = 0;
-    int iChangedRequested = 0;
-	int channelIndex;
-	int newValue;
-    int i;
 	char tmpA[128];
-	char tmpB[64];
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);

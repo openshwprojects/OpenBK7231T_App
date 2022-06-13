@@ -6,7 +6,7 @@ void MSG_BeginWriting(bitMessage_t *msg, byte *data, int dataSize) {
 	msg->data = data;
 }
 
-int MSG_WriteBytes(bitMessage_t *msg, void *p, int numBytes) {
+int MSG_WriteBytes(bitMessage_t *msg, const void *p, int numBytes) {
 	if(msg->position + numBytes >= msg->totalSize)
 		return 0;
 	memcpy(msg->data + msg->position,p,numBytes);

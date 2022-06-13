@@ -1,6 +1,7 @@
 
 #include "../logging/logging.h"
 #include "../new_pins.h"
+#include "../new_cfg.h"
 #include "../obk_config.h"
 #include "../rgb2hsv.h"
 #include <ctype.h>
@@ -55,6 +56,7 @@ enum LightMode {
 int g_lightMode = Light_RGB;
 // Those are base colors, normalized, without brightness applied
 float baseColors[5] = { 255, 255, 255, 255, 255 };
+float finalColors[5] = { 255, 255, 255, 255, 255 };
 float g_hsv_h = 0; // 0 to 360
 float g_hsv_s = 0; // 0 to 1
 float g_hsv_v = 1; // 0 to 1
@@ -118,6 +120,7 @@ void apply_smart_light() {
 		} else {
 
 		}
+		finalColors[i] = final;
 
 		channelToUse = firstChannelIndex + i;
 
@@ -139,6 +142,18 @@ static void sendColorChange() {
 	sprintf(s,"%02X%02X%02X",c[0],c[1],c[2]);
 
 	MQTT_PublishMain_StringString("led_basecolor_rgb",s);
+}
+static void sendFinalColor() {
+	char s[16];
+	byte c[3];
+
+	c[0] = (byte)(baseColors[0]);
+	c[1] = (byte)(baseColors[1]);
+	c[2] = (byte)(baseColors[2]);
+	
+	sprintf(s,"%02X%02X%02X",c[0],c[1],c[2]);
+
+	MQTT_PublishMain_StringString("led_finalcolor_rgb",s);
 }
 static void sendDimmerChange() {
 	int iValue;
@@ -224,7 +239,12 @@ void LED_SetDimmer(int iVal) {
 
 	apply_smart_light();
 	sendDimmerChange();
-	sendColorChange();
+	if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTLEDPARAMSTOGETHER)) {
+		sendColorChange();
+	}
+	if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTLEDFINALCOLOR)) {
+		sendFinalColor();
+	}
 
 }
 static int dimmer(const void *context, const char *cmd, const char *args, int cmdFlags){
@@ -305,8 +325,14 @@ static int basecolor(const void *context, const char *cmd, const char *args, int
 			RGBtoHSV(baseColors[0]/255.0f, baseColors[1]/255.0f, baseColors[2]/255.0f, &g_hsv_h, &g_hsv_s, &g_hsv_v);
 
 			apply_smart_light();
-			sendDimmerChange();
 			sendColorChange();
+			if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTLEDPARAMSTOGETHER)) {
+				sendDimmerChange();
+			}
+			if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTLEDFINALCOLOR)) {
+				sendFinalColor();
+			}
+
 
             if (!(*c)){
                 ADDLOG_DEBUG(LOG_FEATURE_CMD, "BASECOLOR arg ended");
