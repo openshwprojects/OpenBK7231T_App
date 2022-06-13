@@ -1,4 +1,7 @@
+#ifndef __NEW_CFG_H__
+#define __NEW_CFG_H__
 
+#include "new_common.h"
 
 
 extern int g_cfg_pendingChanges;
@@ -59,5 +62,7 @@ bool CFG_HasFlag(int flag);
 int CFG_GetFlags();
 
 
+
+#endif 
 
 
