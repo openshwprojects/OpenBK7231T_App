@@ -381,6 +381,11 @@ static void onHSVChanged() {
 	sendColorChange();
 
 	apply_smart_light();
+
+	
+	if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTLEDFINALCOLOR)) {
+		sendFinalColor();
+	}
 }
 static void led_setSaturation(float sat){
 
