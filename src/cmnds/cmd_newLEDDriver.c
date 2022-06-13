@@ -147,9 +147,9 @@ static void sendFinalColor() {
 	char s[16];
 	byte c[3];
 
-	c[0] = (byte)(baseColors[0]);
-	c[1] = (byte)(baseColors[1]);
-	c[2] = (byte)(baseColors[2]);
+	c[0] = (byte)(finalColors[0]);
+	c[1] = (byte)(finalColors[1]);
+	c[2] = (byte)(finalColors[2]);
 	
 	sprintf(s,"%02X%02X%02X",c[0],c[1],c[2]);
 
