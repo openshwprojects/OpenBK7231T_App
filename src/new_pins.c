@@ -793,7 +793,9 @@ void PIN_ticks(void *param)
 	int i;
 	int value;
 
+#ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_RunQuickTick();
+#endif
 
 	// WiFi LED
 	// In Open Access point mode, fast blink (250ms)
@@ -976,7 +978,13 @@ static int showgpi(const void *context, const char *cmd, const char *args, int c
 #if WINDOWS
 
 #elif PLATFORM_BL602
-
+void button_timer_thread(void *param)
+{
+    while(1) {
+        vTaskDelay(PIN_TMR_DURATION);
+		PIN_ticks(0);
+    }
+}
 #elif PLATFORM_XR809
 OS_Timer_t timer;
 #else
@@ -988,6 +996,7 @@ void PIN_StartButtonScanThread(void)
 
 #elif PLATFORM_BL602
 
+    xTaskCreate(button_timer_thread, "buttons", 1024, NULL, 15, NULL);
 #elif PLATFORM_XR809
 
 	OS_TimerSetInvalid(&timer);
