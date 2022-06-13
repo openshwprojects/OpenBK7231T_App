@@ -1385,6 +1385,8 @@ int http_fn_cfg_generic(http_request_t *request) {
 		}
     }
 
+	CFG_Save_IfThereArePendingChanges();
+
 	hprintf128(request,"<h5>Flags (Current value=%i)<h5>",CFG_GetFlags());
 	poststr(request,"<form action=\"/cfg_generic\">");
 	for(i = 0; i < OBK_TOTAL_FLAGS; i++) {
