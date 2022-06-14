@@ -192,6 +192,11 @@ https://www.elektroda.com/rtvforum/topic3898502.html
     
 Please refer to this step by step guide:
   https://www.elektroda.com/rtvforum/topic3887748.html
+ 
+  
+# ZN268131 example, a smart switch that allows you to connect a bistable button
+    
+https://www.elektroda.com/rtvforum/topic3895572.html
   
 # How to set relay state on device boot? (PowerOnState)
   
