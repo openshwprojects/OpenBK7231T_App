@@ -4,6 +4,7 @@ OpenBK7231T/OpenBeken is a Tasmota replacement for new Tuya modules featuring MQ
 This repository is named "OpenBK7231T_App", but now it's a multiplatform app, supporting build for 4 separate chips:
 - BK7231T (WB3S, WB2S, WB2L, etc)
 - BK7231N (CB2S, CB2L, etc)
+- T34 ([T34 is based on BK7231N](https://developer.tuya.com/en/docs/iot/t34-module-datasheet?id=Ka0l4h5zvg6j8))
 - XR809 (XR3, etc)
 - BL602
 
