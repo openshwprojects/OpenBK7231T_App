@@ -1,7 +1,6 @@
 #include "new_http.h"
 
 
-extern const char *g_header;
 
 int http_fn_about(http_request_t *request);
 int http_fn_cfg_mqtt(http_request_t *request);

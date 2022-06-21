@@ -120,7 +120,7 @@ int http_fn_index(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
     poststr(request,"<style>.r { background-color: red; } .g { background-color: green; }</style>");
-    poststr(request,g_header);
+    HTTP_AddHeader(request);
     if(http_getArg(request->url,"tgl",tmpA,sizeof(tmpA))) {
         j = atoi(tmpA);
         hprintf128(request,"<h3>Toggled %i!</h3>",j);
@@ -328,7 +328,7 @@ int http_fn_index(http_request_t *request) {
 int http_fn_about(http_request_t *request){
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
-    poststr(request,g_header);
+    HTTP_AddHeader(request);
     poststr(request,"<h2>Open source firmware for BK7231N, BK7231T, XR809 and BL602 by OpenSHWProjects</h2>");
     poststr(request,htmlReturnToMenu);
     HTTP_AddBuildFooter(request);
@@ -344,7 +344,7 @@ int http_fn_cfg_mqtt(http_request_t *request) {
     int i;
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
-    poststr(request,g_header);
+    HTTP_AddHeader(request);
     poststr(request,"<h2> Use this to connect to your MQTT</h2>");
     poststr(request,"<form action=\"/cfg_mqtt_set\">\
             <label for=\"host\">Host:</label><br>\
@@ -383,7 +383,7 @@ int http_fn_cfg_mqtt_set(http_request_t *request) {
 	char tmpA[128];
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
-    poststr(request,g_header);
+    HTTP_AddHeader(request);
 
     if(http_getArg(request->url,"host",tmpA,sizeof(tmpA))) {
         CFG_SetMQTTHost(tmpA);
@@ -422,7 +422,7 @@ int http_fn_cfg_mqtt_set(http_request_t *request) {
 int http_fn_cfg_webapp(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
-    poststr(request,g_header);
+    HTTP_AddHeader(request);
     poststr(request,"<h2> Use this to set the URL of the Webapp</h2>");
     poststr(request,"<form action=\"/cfg_webapp_set\">\
             <label for=\"url\">Url:</label><br>\
@@ -442,7 +442,7 @@ int http_fn_cfg_webapp_set(http_request_t *request) {
 	char tmpA[128];
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
-    poststr(request,g_header);
+    HTTP_AddHeader(request);
 
     if(http_getArg(request->url,"url",tmpA,sizeof(tmpA))) {
         if(CFG_SetWebappRoot(tmpA)) {
@@ -474,7 +474,7 @@ int http_fn_cfg_ping(http_request_t *request) {
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
-    poststr(request,g_header);
+    HTTP_AddHeader(request);
     bChanged = 0;
     poststr(request,"<h3> Ping watchdog (backup reconnect mechanism)</h3>");
     poststr(request,"<p> By default, all OpenBeken devices automatically tries to reconnect to WiFi when a connection is lost.");
@@ -548,7 +548,7 @@ int http_fn_cfg_wifi(http_request_t *request) {
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
-    poststr(request,g_header);
+    HTTP_AddHeader(request);
     /*bChanged = 0;
     if(http_getArg(recvbuf,"ssid",tmpA,sizeof(tmpA))) {
         CFG_SetWiFiSSID(tmpA);
@@ -644,7 +644,7 @@ int http_fn_cfg_name(http_request_t *request) {
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
-    poststr(request,g_header);
+    HTTP_AddHeader(request);
 
     poststr(request,"<h2> Change device names for display. </h2> Remember that short name is used by MQTT.<br>");
     if(http_getArg(request->url,"shortName",tmpA,sizeof(tmpA))) {
@@ -682,7 +682,7 @@ int http_fn_cfg_wifi_set(http_request_t *request) {
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
-    poststr(request,g_header);
+    HTTP_AddHeader(request);
     if(http_getArg(request->url,"open",tmpA,sizeof(tmpA))) {
         CFG_SetWiFiSSID("");
         CFG_SetWiFiPass("");
@@ -721,7 +721,7 @@ int http_fn_cfg_loglevel_set(http_request_t *request) {
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
-    poststr(request,g_header);
+    HTTP_AddHeader(request);
     if(http_getArg(request->url,"loglevel",tmpA,sizeof(tmpA))) {
 #if WINDOWS
 #else
@@ -760,7 +760,7 @@ int http_fn_cfg_mac(http_request_t *request) {
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
-    poststr(request,g_header);
+    HTTP_AddHeader(request);
 
     if(http_getArg(request->url,"mac",tmpA,sizeof(tmpA))) {
         for( i = 0; i < 6; i++ )
@@ -808,7 +808,7 @@ int http_fn_flash_read_tool(http_request_t *request) {
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
-    poststr(request,g_header);
+    HTTP_AddHeader(request);
     poststr(request,"<h4>Flash Read Tool</h4>");
     if(	http_getArg(request->url,"hex",tmpA,sizeof(tmpA))){
         hex = atoi(tmpA);
@@ -901,7 +901,7 @@ int http_fn_cmd_tool(http_request_t *request) {
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
-    poststr(request,g_header);
+    HTTP_AddHeader(request);
     poststr(request,"<h4>Command Tool</h4>");
 
     if(	http_getArg(request->url,"cmd",tmpA,sizeof(tmpA))) {
@@ -936,7 +936,7 @@ int http_fn_startup_command(http_request_t *request) {
 	const char *cmd;
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
-    poststr(request,g_header);
+    HTTP_AddHeader(request);
     poststr(request,"<h4>Set/Change/Clear startup command line</h4>");
     poststr(request,"<h5>Startup command is a shorter, smaller alternative to LittleFS autoexec.bat."
 		"The startup commands are ran at device startup."
@@ -974,7 +974,7 @@ int http_fn_uart_tool(http_request_t *request) {
 	int resultLen = 0;
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
-    poststr(request,g_header);
+    HTTP_AddHeader(request);
     poststr(request,"<h4>UART Tool</h4>");
 
 
@@ -1026,7 +1026,7 @@ int http_fn_uart_tool(http_request_t *request) {
 int http_fn_config_dump_table(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
-    poststr(request,g_header);
+    HTTP_AddHeader(request);
 
     poststr(request,"Not implemented <br>");
 
@@ -1045,7 +1045,7 @@ int http_fn_cfg_quick(http_request_t *request) {
     int j;
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
-    poststr(request,g_header);
+    HTTP_AddHeader(request);
     poststr(request,"<h4>Quick Config</h4>");
 
     if(http_getArg(request->url,"dev",tmpA,sizeof(tmpA))) {
@@ -1080,7 +1080,7 @@ int http_fn_cfg_ha(http_request_t *request) {
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
-    poststr(request,g_header);
+    HTTP_AddHeader(request);
     poststr(request,"<h4>Home Assistant Cfg</h4>");
 	hprintf128(request,"<h4>Note that your short device name is: %s</h4>",baseName);
     poststr(request,"<h4>Paste this to configuration yaml</h4>");
@@ -1175,7 +1175,7 @@ int http_fn_cm(http_request_t *request) {
 int http_fn_cfg(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
-    poststr(request,g_header);
+    HTTP_AddHeader(request);
     poststr(request,"<form action=\"cfg_pins\"><input type=\"submit\" value=\"Configure Module\"/></form>");
     poststr(request,"<form action=\"cfg_generic\"><input type=\"submit\" value=\"Configure General\"/></form>");
     poststr(request,"<form action=\"cfg_startup\"><input type=\"submit\" value=\"Configure Startup\"/></form>");
@@ -1224,7 +1224,7 @@ int http_fn_cfg_pins(http_request_t *request) {
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
-    poststr(request,g_header);
+    HTTP_AddHeader(request);
     poststr(request,"<h5> First textfield is used to enter channel index (relay index), used to support multiple relays and buttons</h5>");
     poststr(request,"<h5> (so, first button and first relay should have channel 1, second button and second relay have channel 2, etc)</h5>");
     poststr(request,"<h5> Second textfield (only for buttons) is used to enter channel to toggle when doing double click</h5>");
@@ -1358,7 +1358,7 @@ int http_fn_cfg_generic(http_request_t *request) {
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
-    poststr(request,g_header);
+    HTTP_AddHeader(request);
 
     if(	http_getArg(request->url,"boot_ok_delay",tmpA,sizeof(tmpA))) {
 		i = atoi(tmpA);
@@ -1433,7 +1433,7 @@ int http_fn_cfg_startup(http_request_t *request) {
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
-    poststr(request,g_header);
+    HTTP_AddHeader(request);
 
 	hprintf128(request,"<h5>Here you can set pin start values<h5>");
 	hprintf128(request,"<h5>For relays, simply use 1 or 0</h5>");
@@ -1491,7 +1491,7 @@ int http_fn_cfg_dgr(http_request_t *request) {
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
-    poststr(request,g_header);
+    HTTP_AddHeader(request);
 
 	hprintf128(request,"<h5>Here you can configure Tasmota Device Groups<h5>");
 
@@ -1627,7 +1627,7 @@ int http_fn_ota(http_request_t *request) {
 int http_fn_other(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
-    poststr(request,g_header);
+    HTTP_AddHeader(request);
     poststr(request,"Not found.<br/>");
     poststr(request,htmlReturnToMenu);
     HTTP_AddBuildFooter(request);

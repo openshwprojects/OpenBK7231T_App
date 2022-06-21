@@ -283,36 +283,22 @@ void setupAllWB2SPinsAsButtons() {
 }
 
 
-#if PLATFORM_XR809
-const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenXR809/\">OpenXR809</a></h1><h3><a href=\"https://www.elektroda.com/rtvforum/viewtopic.php?p=19841301#19841301\">[Read more]</a><a href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
 
-#elif PLATFORM_BK7231N
 
-const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7231T/\">OpenBK7231N</a></h1><h3><a href=\"https://www.elektroda.com/rtvforum/viewtopic.php?p=19841301#19841301\">[Read more]</a><a href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
+const char *g_header_start = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7231T_App/\">";
+const char *g_header_end = "</a></h1><h3><a href=\"https://www.elektroda.com/rtvforum/viewtopic.php?p=19841301#19841301\">[Read more]</a><a href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
 
-#elif PLATFORM_BK7231T
 
-const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7231T/\">OpenBK7231T</a></h1><h3><a href=\"https://www.elektroda.com/rtvforum/viewtopic.php?p=19841301#19841301\">[Read more]</a><a href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
-
-#elif PLATFORM_BL602
-
-const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7231T/\">OpenBL602</a></h1><h3><a href=\"https://www.elektroda.com/rtvforum/viewtopic.php?p=19841301#19841301\">[Read more]</a><a href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
-
-#elif WINDOWS
-
-const char *g_header = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7231T/\">OpenBK7231 [Win test]</a></h1><h3><a href=\"https://www.elektroda.com/rtvforum/viewtopic.php?p=19841301#19841301\">[Read more]</a><a href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
-
-#else
-
-const char *g_header = "<h1>error</h1>";
-#error "Platform not supported"
-//Platform not supported
-#endif
-
+void HTTP_AddHeader(http_request_t *request) {
+	poststr(request,g_header_start);
+	poststr(request,CFG_GetDeviceName());
+	poststr(request,g_header_end);
+}
 
 void HTTP_AddBuildFooter(http_request_t *request) {
 	char upTimeStr[128];
 	unsigned char mac[32];
+
 	poststr(request,"<br>");
 	poststr(request,g_build_str);
 	poststr(request,"<br> Online for ");
@@ -322,6 +308,8 @@ void HTTP_AddBuildFooter(http_request_t *request) {
 	WiFI_GetMacAddress((char *)mac);
 
 	sprintf(upTimeStr,"<br> Device MAC: %02X%02X%02X%02X%02X%02X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
+	poststr(request,upTimeStr);
+	sprintf(upTimeStr,"<br> Short name: %s, Chipset %s",CFG_GetShortDeviceName(),PLATFORM_MCU_NAME);
 	poststr(request,upTimeStr);
 }
 
