@@ -34,7 +34,7 @@ Get the SDK repo:
 https://github.com/openshwprojects/OpenBK7231T
 Clone it to a folder, e.g. bk7231sdk/
 
-Clone the app repo into bk7231sdk/apps/<appname> - e.g. bk7231sdk\apps\openbk7231app
+Clone the [app](https://github.com/openshwprojects/OpenBK7231T_App) repo into bk7231sdk/apps/<appname> - e.g. bk7231sdk\apps\openbk7231app
 
 On Windows, start a cygwin prompt.
 
@@ -103,7 +103,7 @@ After a reboot, the device should connect to your lan.
  
 # Building for BK7231N
 
-Same as for BK7231T, but use BK7231N SDK:
+Same as for BK7231T, but use BK7231N SDK and you also might need to rename project directory from OpenBK7231T_App to OpenBK7231N_App:
 https://github.com/openshwprojects/OpenBK7231N
 
 
@@ -127,7 +127,7 @@ You can see an example of detailed teardown and BK7231N flashing here: https://w
 Get XR809 SDK:
 https://github.com/openshwprojects/OpenXR809
 
-Checkout this repository to openxr809/project/oxr_sharedApp/shared/
+Checkout [this repository](https://github.com/openshwprojects/OpenBK7231T_App) to openxr809/project/oxr_sharedApp/shared/
   
 Run ./build_oxr_sharedapp.sh
   
