@@ -14,6 +14,7 @@
 #include "driver/drv_public.h"
 #include "hal/hal_flashVars.h"
 #include "hal/hal_pins.h"
+#include "hal/hal_adc.h"
 
 
 //According to your need to modify the constants.
@@ -325,6 +326,9 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 				HAL_PIN_PWM_Stop(index);
 			}
 			break;
+		case IOR_ADC:
+			// TODO: disable?
+			break;
 
 		default:
 			break;
@@ -400,6 +404,10 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		{
 			HAL_PIN_Setup_Output(index);
 		}
+			break;
+		case IOR_ADC:
+			// init ADC for given pin
+			HAL_ADC_Init(index);
 			break;
 		case IOR_PWM:
 			{
@@ -662,6 +670,10 @@ int CHANNEL_GetRoleForOutputChannel(int ch){
 #define EVENT_CB(ev)   if(handle->cb[ev])handle->cb[ev]((pinButton_s*)handle)
 
 #define PIN_TMR_DURATION       5
+#define PIN_TMR_LOOPS_PER_SECOND (1000/PIN_TMR_DURATION)
+#define ADC_SAMPLING_TICK_COUNT PIN_TMR_LOOPS_PER_SECOND
+
+static int g_next_adc_loop = 0;
 
 void PIN_Input_Handler(int pinIndex)
 {
@@ -819,6 +831,20 @@ void PIN_ticks(void *param)
 		}
 	}
 
+	g_next_adc_loop++;
+	if(g_next_adc_loop == ADC_SAMPLING_TICK_COUNT) {
+		g_next_adc_loop = 0;
+
+		for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
+			if(g_cfg.pins.roles[i] == IOR_ADC) {
+				int value;
+
+				value = HAL_ADC_Read(i);
+
+				CHANNEL_Set(g_cfg.pins.channels[i],value, 0);
+			}
+		}
+	}
 
 	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
 #if 1

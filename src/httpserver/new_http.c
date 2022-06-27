@@ -245,6 +245,7 @@ const char *htmlPinRoleNames[] = {
 	"BL0937 SEL",
 	"BL0937 CF",
 	"BL0937 CF1",
+	"ADC",
 	"e",
 	"e",
 };

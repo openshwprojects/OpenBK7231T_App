@@ -29,6 +29,7 @@ enum IORole {
 	IOR_BL0937_SEL,
 	IOR_BL0937_CF,
 	IOR_BL0937_CF1,
+	IOR_ADC,
 	IOR_Total_Options,
 };
 
