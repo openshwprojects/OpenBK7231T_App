@@ -513,7 +513,9 @@ int CHANNEL_Get(int ch) {
 void CHANNEL_Set(int ch, int iVal, int iFlags) {
 	int prevValue;
 	int bForce;
+	int bSilent;
 	bForce = iFlags & CHANNEL_SET_FLAG_FORCE;
+	bSilent = iFlags & CHANNEL_SET_FLAG_SILENT;
 
 	if(ch < 0 || ch >= CHANNEL_MAX) {
 		//if(bMustBeSilent==0) {
@@ -524,9 +526,9 @@ void CHANNEL_Set(int ch, int iVal, int iFlags) {
 	prevValue = g_channelValues[ch];
 	if(bForce == 0) {
 		if(prevValue == iVal) {
-			//if(bMustBeSilent==0) {
+			if(bSilent==0) {
 				addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"No change in channel %i (still set to %i) - ignoring\n\r",ch, prevValue);
-			//}
+			}
 			return;
 		}
 	}
@@ -672,8 +674,6 @@ int CHANNEL_GetRoleForOutputChannel(int ch){
 #define PIN_TMR_DURATION       5
 #define PIN_TMR_LOOPS_PER_SECOND (1000/PIN_TMR_DURATION)
 #define ADC_SAMPLING_TICK_COUNT PIN_TMR_LOOPS_PER_SECOND
-
-static int g_next_adc_loop = 0;
 
 void PIN_Input_Handler(int pinIndex)
 {
@@ -831,20 +831,6 @@ void PIN_ticks(void *param)
 		}
 	}
 
-	g_next_adc_loop++;
-	if(g_next_adc_loop == ADC_SAMPLING_TICK_COUNT) {
-		g_next_adc_loop = 0;
-
-		for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
-			if(g_cfg.pins.roles[i] == IOR_ADC) {
-				int value;
-
-				value = HAL_ADC_Read(i);
-
-				CHANNEL_Set(g_cfg.pins.channels[i],value, 0);
-			}
-		}
-	}
 
 	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
 #if 1

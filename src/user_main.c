@@ -170,10 +170,13 @@ void Main_OnPingCheckerReply(int ms) {
 	g_timeSinceLastPingReply = 0;
 }
 int g_bBootMarkedOK = 0;
+
+
 void Main_OnEverySecond()
 {
 	int bMQTTconnected;
 	const char *safe;
+	int val;
 
 	// run_adc_test();
 	bMQTTconnected = MQTT_RunEverySecondUpdate();
@@ -181,7 +184,6 @@ void Main_OnEverySecond()
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();
 #endif
-
 	// some users say that despite our simple reconnect mechanism
 	// there are some rare cases when devices stuck outside network
 	// That is why we can also reconnect them by basing on ping
@@ -191,6 +193,21 @@ void Main_OnEverySecond()
 			ADDLOGF_INFO("[Ping watchdog] No ping replies within %i seconds. Will try to reconnect.\n",g_timeSinceLastPingReply);
 			g_bHasWiFiConnected = 0;
 			g_connectToWiFi = 10;
+		}
+	}
+
+	if(bSafeMode == 0) {
+		int i;
+
+		for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
+			if(g_cfg.pins.roles[i] == IOR_ADC) {
+				int value;
+
+				value = HAL_ADC_Read(i);
+
+			//	ADDLOGF_INFO("ADC %i=%i\r\n", i,value);
+				CHANNEL_Set(g_cfg.pins.channels[i],value, CHANNEL_SET_FLAG_SILENT);
+			}
 		}
 	}
 
@@ -315,7 +332,6 @@ void Main_OnEverySecond()
 			ADDLOGF_INFO("Module reboot in %i...\r\n",g_reset);
 		}
 	}
-
 
 
 }

@@ -138,6 +138,7 @@ extern char g_enable_pins;
 
 #define CHANNEL_SET_FLAG_FORCE		1
 #define CHANNEL_SET_FLAG_SKIP_MQTT	2
+#define CHANNEL_SET_FLAG_SILENT		4
 
 void PIN_AddCommands(void);
 void PIN_SetupPins();
