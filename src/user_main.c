@@ -6,6 +6,7 @@
 #include "hal/hal_wifi.h"
 #include "hal/hal_generic.h"
 #include "hal/hal_flashVars.h"
+#include "hal/hal_adc.h"
 #include "new_common.h"
 
 #include "driver/drv_public.h"
