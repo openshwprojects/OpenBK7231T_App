@@ -616,7 +616,7 @@ void MQTT_ChannelPublish(int channel)
 	char valueStr[16];
 	int iValue;
 	
-	iValue = CHANNEL_Get(g_publishItemIndex);
+	iValue = CHANNEL_Get(channel);
 
 	addLogAdv(LOG_INFO,LOG_FEATURE_MAIN, "Forced channel publish! Publishing val %i with %i \n",channel,iValue);
 
