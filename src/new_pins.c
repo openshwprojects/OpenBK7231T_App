@@ -772,7 +772,7 @@ void PIN_Input_Handler(int pinIndex)
 			//continue hold trigger
 			handle->event = (uint8_t)BTN_LONG_PRESS_HOLD;
 			EVENT_CB(BTN_LONG_PRESS_HOLD);
-
+			Button_OnLongPressHold(pinIndex);
 		} else { //releasd
 			handle->event = (uint8_t)BTN_PRESS_UP;
 			EVENT_CB(BTN_PRESS_UP);

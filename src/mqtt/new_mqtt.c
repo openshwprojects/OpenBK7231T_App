@@ -625,7 +625,22 @@ void MQTT_ChannelPublish(int channel)
 
 	MQTT_PublishMain(mqtt_client,channelNameStr,valueStr);
 }
+int MQTT_PublishCommand(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	const char *topic, *value;
 
+	Tokenizer_TokenizeString(args);
+
+	if(Tokenizer_GetArgsCount() < 2){
+		addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publish command requires two arguments (topic and value)");
+		return 0;
+	}
+	topic = Tokenizer_GetArg(0);
+	value = Tokenizer_GetArg(1);
+
+	MQTT_PublishMain_StringString(topic,value);
+
+	return 1;
+}
 // initialise things MQTT
 // called from user_main
 void MQTT_init(){
@@ -647,6 +662,8 @@ void MQTT_init(){
   MQTT_RegisterCallback( cbtopicbase, cbtopicsub, 2, tasCmnd);
 
   mqtt_initialised = 1;
+
+	CMD_RegisterCommand("publish","",MQTT_PublishCommand, "Sqqq", NULL);
 
 }
 
