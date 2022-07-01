@@ -80,7 +80,8 @@ typedef struct pinsState_s {
 // bit indexes (not values), so 0 1 2 3 4
 #define OBK_FLAG_MQTT_BROADCASTLEDPARAMSTOGETHER	0	
 #define OBK_FLAG_MQTT_BROADCASTLEDFINALCOLOR		1
-#define OBK_TOTAL_FLAGS 2
+#define OBK_FLAG_MQTT_BROADCASTSELFSTATEPERMINUTE	2
+#define OBK_TOTAL_FLAGS 3
 
 //
 // Main config structure (less than 2KB)

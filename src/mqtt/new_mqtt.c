@@ -678,6 +678,7 @@ bool MQTT_DoItemPublish(int idx) {
 	}
 	return false; // didnt publish
 }
+static int g_secondsBeforeNextFullBroadcast = 30;
 
 // called from user timer.
 int MQTT_RunEverySecondUpdate() {
@@ -718,12 +719,14 @@ int MQTT_RunEverySecondUpdate() {
 		// The item indexes start at negative values for special items
 		// and then covers Channel indexes up to CHANNEL_MAX
 		if(g_bPublishAllStatesNow) {
+			// Doing step by a step a full publish state
 			int g_sent_thisFrame = 0;
 
 			while(g_publishItemIndex < CHANNEL_MAX) {
 				if(MQTT_DoItemPublish(g_publishItemIndex)) {
 					g_sent_thisFrame++;
 					if(g_sent_thisFrame>=2){
+						g_publishItemIndex++;
 						break;
 					}
 				}
@@ -733,6 +736,16 @@ int MQTT_RunEverySecondUpdate() {
 				// done
 				g_bPublishAllStatesNow = 0;
 			}	
+		} else {
+			// not doing anything
+			if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEPERMINUTE)) {
+				// this is called every second
+				g_secondsBeforeNextFullBroadcast--;
+				if(g_secondsBeforeNextFullBroadcast <= 0) {
+					g_secondsBeforeNextFullBroadcast = 60;
+					MQTT_PublishWholeDeviceState();
+				}
+			}			
 		}
 
 	}

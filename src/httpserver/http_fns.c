@@ -1344,6 +1344,9 @@ int http_fn_cfg_pins(http_request_t *request) {
 const char *g_obk_flagNames[] = {
 	"[MQTT] Broadcast led params together (send dimmer and color when dimmer or color changes, topic name: YourDevName/led_basecolor_rgb/get, YourDevName/led_dimmer/get)",
 	"[MQTT] Broadcast led final color (topic name: YourDevName/led_finalcolor_rgb/get)",
+	"[MQTT] Broadcast self state every minute",
+	"error",
+	"error",
 	"error",
 	"error",
 	"error",
