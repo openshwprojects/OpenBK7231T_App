@@ -36,7 +36,45 @@ int port = 4447;
 //	return 0;
 //}
 
-static int g_dgr_socket = -1;
+static int g_dgr_socket_receive = -1;
+static int g_dgr_socket_send = -1;
+static int g_dgr_send_seq = 0;
+void DRV_DGR_CreateSocket_Send() {
+    // create what looks like an ordinary UDP socket
+    //
+    g_dgr_socket_send = socket(AF_INET, SOCK_DGRAM, 0);
+    if (g_dgr_socket_send < 0) {
+        return;
+    }
+
+
+
+}
+void DRV_DGR_Send_Power(const char *groupName, int channelValues, int numChannels){
+	int len;
+	int nbytes;
+	char message[64];
+    struct sockaddr_in addr;
+
+	len = DGR_Quick_FormatPowerState(message,sizeof(message),groupName,g_dgr_send_seq, 0,channelValues, numChannels);
+	g_dgr_send_seq++;
+
+    // set up destination address
+    //
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = inet_addr(group);
+    addr.sin_port = htons(port);
+
+    nbytes = sendto(
+            g_dgr_socket_send,
+            message,
+            len,
+            0,
+            (struct sockaddr*) &addr,
+            sizeof(addr)
+        );
+}
 void DRV_DGR_CreateSocket_Receive() {
 
     struct sockaddr_in addr;
@@ -47,9 +85,9 @@ void DRV_DGR_CreateSocket_Receive() {
 
     // create what looks like an ordinary UDP socket
     //
-    g_dgr_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (g_dgr_socket < 0) {
-		g_dgr_socket = -1;
+    g_dgr_socket_receive = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (g_dgr_socket_receive < 0) {
+		g_dgr_socket_receive = -1;
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"failed to do socket\n");
         return ;
     }
@@ -57,12 +95,12 @@ void DRV_DGR_CreateSocket_Receive() {
 	if(broadcast)
 	{
 
-		iResult = setsockopt(g_dgr_socket, SOL_SOCKET, SO_BROADCAST, (char *)&flag, sizeof(flag));
+		iResult = setsockopt(g_dgr_socket_receive, SOL_SOCKET, SO_BROADCAST, (char *)&flag, sizeof(flag));
 		if (iResult != 0)
 		{
 			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"failed to do setsockopt SO_BROADCAST\n");
-			close(g_dgr_socket);
-			g_dgr_socket = -1;
+			close(g_dgr_socket_receive);
+			g_dgr_socket_receive = -1;
 			return ;
 		}
 	}
@@ -71,12 +109,12 @@ void DRV_DGR_CreateSocket_Receive() {
 		//
 		if (
 			setsockopt(
-				g_dgr_socket, SOL_SOCKET, SO_REUSEADDR, (char*) &flag, sizeof(flag)
+				g_dgr_socket_receive, SOL_SOCKET, SO_REUSEADDR, (char*) &flag, sizeof(flag)
 			) < 0
 		){
 			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"failed to do setsockopt SO_REUSEADDR\n");
-			close(g_dgr_socket);
-			g_dgr_socket = -1;
+			close(g_dgr_socket_receive);
+			g_dgr_socket_receive = -1;
 		  return ;
 		}
 	}
@@ -90,14 +128,14 @@ void DRV_DGR_CreateSocket_Receive() {
 
     // bind to receive address
     //
-    if (bind(g_dgr_socket, (struct sockaddr*) &addr, sizeof(addr)) < 0) {
+    if (bind(g_dgr_socket_receive, (struct sockaddr*) &addr, sizeof(addr)) < 0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"failed to do bind\n");
-		close(g_dgr_socket);
-		g_dgr_socket = -1;
+		close(g_dgr_socket_receive);
+		g_dgr_socket_receive = -1;
         return ;
     }
 
-    //if(0 != setsockopt(g_dgr_socket,SOL_SOCKET,SO_BROADCAST,(const char*)&flag,sizeof(int))) {
+    //if(0 != setsockopt(g_dgr_socket_receive,SOL_SOCKET,SO_BROADCAST,(const char*)&flag,sizeof(int))) {
     //    return 1;
     //}
 
@@ -115,19 +153,19 @@ void DRV_DGR_CreateSocket_Receive() {
 	mreq.imr_interface.s_addr = htonl(INADDR_ANY);//inet_addr(MY_CAPTURE_IP);
     	///mreq.imr_interface.s_addr = inet_addr("192.168.0.122");
 	iResult = setsockopt(
-				g_dgr_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*) &mreq, sizeof(mreq)
+				g_dgr_socket_receive, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*) &mreq, sizeof(mreq)
 			);
 		if (
 			iResult < 0
 		){
 			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"failed to do setsockopt IP_ADD_MEMBERSHIP %i\n",iResult);
-			close(g_dgr_socket);
-			g_dgr_socket = -1;
+			close(g_dgr_socket_receive);
+			g_dgr_socket_receive = -1;
 			return ;
 		}
 	}
 
-	lwip_fcntl(g_dgr_socket, F_SETFL,O_NONBLOCK);
+	lwip_fcntl(g_dgr_socket_receive, F_SETFL,O_NONBLOCK);
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Waiting for packets\n");
 }
@@ -188,7 +226,7 @@ void DRV_DGR_RunFrame() {
 	dgrDevice_t def;
     char msgbuf[64];
 
-	if(g_dgr_socket<0) {
+	if(g_dgr_socket_receive<0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"no sock\n");
             return ;
         }
@@ -196,7 +234,7 @@ void DRV_DGR_RunFrame() {
     //
         int addrlen = sizeof(addr);
         int nbytes = recvfrom(
-            g_dgr_socket,
+            g_dgr_socket_receive,
             msgbuf,
             sizeof(msgbuf),
             0,
@@ -248,22 +286,43 @@ void DRV_DGR_RunFrame() {
 //}
 void DRV_DGR_Shutdown()
 {
-	if(g_dgr_socket>=0) {
-		close(g_dgr_socket);
-		g_dgr_socket = -1;
+	if(g_dgr_socket_receive>=0) {
+		close(g_dgr_socket_receive);
+		g_dgr_socket_receive = -1;
 	}
 }
 
+// DGR_SendPower testSocket 1 1
 
+int CMD_DGR_SendPower(const void *context, const char *cmd, const char *args, int flags) {
+	const char *groupName;
+	int channelValues;
+	int channelsCount;
 
+	Tokenizer_TokenizeString(args);
+
+	if(Tokenizer_GetArgsCount() < 3) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Command requires 3 arguments - groupname, channelvalues, valuescount\n");
+		return 0;
+	}
+	groupName = Tokenizer_GetArg(0);
+	channelValues = Tokenizer_GetArgInteger(1);
+	channelsCount = Tokenizer_GetArgInteger(2);
+
+	DRV_DGR_Send_Power(groupName,channelValues,channelsCount);
+
+	return 1;
+}
 void DRV_DGR_Init()
 {
 #if 0
 	DRV_DGR_StartThread();
 #else
 	DRV_DGR_CreateSocket_Receive();
+	DRV_DGR_CreateSocket_Send();
 
 #endif
+    CMD_RegisterCommand("DGR_SendPower", "", CMD_DGR_SendPower, "qqq", NULL);
 }
 
 
