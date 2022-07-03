@@ -107,6 +107,8 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev) {
 				b = MSG_ReadByte(&msg);
 				c = MSG_ReadByte(&msg);
 				w = MSG_ReadByte(&msg);
+
+				dev->cbs.processRGBCW(r,g,b,c,w);
 			} else {
 				MSG_SkipBytes(&msg,sLen);
 			}

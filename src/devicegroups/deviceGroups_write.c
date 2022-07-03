@@ -63,5 +63,14 @@ int DGR_Quick_FormatBrightness(byte *buffer, int maxSize, const char *groupName,
 	return msg.position;
 }
 
+int DGR_Quick_FormatRGBCW(byte *buffer, int maxSize, const char *groupName, int sequence,int flags, byte r, byte g, byte b, byte c, byte w) {
+	bitMessage_t msg;
+	MSG_BeginWriting(&msg,buffer,maxSize);
+	DGR_BeginWriting(&msg,groupName, sequence,flags);
+	DGR_AppendColorRGBCW(&msg,r,g,b,c,w);
+	DGR_Finish(&msg);
+	return msg.position;
+}
+
 
 

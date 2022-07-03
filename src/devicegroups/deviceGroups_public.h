@@ -16,6 +16,7 @@ typedef struct dgrCallbacks_s {
 	// they are both sent together by Tasmota devices
 	void (*processBrightnessPowerOn)(byte brightness);
 	void (*processLightBrightness)(byte brightness);
+	void (*processRGBCW)(byte r, byte g, byte b, byte c, byte w);
 
 } dgrCallbacks_t;
 
@@ -34,6 +35,7 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev);
 
 int DGR_Quick_FormatPowerState(byte *buffer, int maxSize, const char *groupName, int sequence, int flags, int channels, int numChannels);
 int DGR_Quick_FormatBrightness(byte *buffer, int maxSize, const char *groupName, int sequence, int flags, byte brightness);
+int DGR_Quick_FormatRGBCW(byte *buffer, int maxSize, const char *groupName, int sequence, int flags, byte r, byte g, byte b, byte c, byte w);
 
 
 

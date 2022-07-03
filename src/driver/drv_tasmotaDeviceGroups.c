@@ -50,13 +50,10 @@ void DRV_DGR_CreateSocket_Send() {
 
 
 }
-void DRV_DGR_Send_Power(const char *groupName, int channelValues, int numChannels){
-	int len;
-	int nbytes;
-	char message[64];
+void DRV_DGR_Send_Generic(char *message, int len) {
     struct sockaddr_in addr;
+	int nbytes;
 
-	len = DGR_Quick_FormatPowerState(message,sizeof(message),groupName,g_dgr_send_seq, 0,channelValues, numChannels);
 	g_dgr_send_seq++;
 
     // set up destination address
@@ -74,6 +71,22 @@ void DRV_DGR_Send_Power(const char *groupName, int channelValues, int numChannel
             (struct sockaddr*) &addr,
             sizeof(addr)
         );
+}
+void DRV_DGR_Send_Power(const char *groupName, int channelValues, int numChannels){
+	int len;
+	char message[64];
+
+	len = DGR_Quick_FormatPowerState(message,sizeof(message),groupName,g_dgr_send_seq, 0,channelValues, numChannels);
+
+	DRV_DGR_Send_Generic(message,len);
+}
+void DRV_DGR_Send_Brightness(const char *groupName, byte brightness){
+	int len;
+	char message[64];
+
+	len = DGR_Quick_FormatBrightness(message,sizeof(message),groupName,g_dgr_send_seq, 0, brightness);
+
+	DRV_DGR_Send_Generic(message,len);
 }
 void DRV_DGR_CreateSocket_Receive() {
 
@@ -170,6 +183,9 @@ void DRV_DGR_CreateSocket_Receive() {
 	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Waiting for packets\n");
 }
 
+void DRV_DGR_processRGBCW(byte r, byte g, byte b, byte c, byte w) {
+
+}
 void DRV_DGR_processPower(int relayStates, byte relaysCount) {
 	int startIndex;
 	int i;
@@ -254,6 +270,7 @@ void DRV_DGR_RunFrame() {
 		def.cbs.processBrightnessPowerOn = DRV_DGR_processBrightnessPowerOn;
 		def.cbs.processLightBrightness = DRV_DGR_processLightBrightness;
 		def.cbs.processPower = DRV_DGR_processPower;
+		def.cbs.processRGBCW = DRV_DGR_processRGBCW;
 
 		DGR_Parse(msgbuf, nbytes, &def);
 		//DGR_Parse(msgbuf, nbytes);
@@ -293,7 +310,6 @@ void DRV_DGR_Shutdown()
 }
 
 // DGR_SendPower testSocket 1 1
-
 int CMD_DGR_SendPower(const void *context, const char *cmd, const char *args, int flags) {
 	const char *groupName;
 	int channelValues;
@@ -313,6 +329,24 @@ int CMD_DGR_SendPower(const void *context, const char *cmd, const char *args, in
 
 	return 1;
 }
+// DGR_SendBrightness roomLEDstrips 128
+int CMD_DGR_SendBrightness(const void *context, const char *cmd, const char *args, int flags) {
+	const char *groupName;
+	int brightness;
+
+	Tokenizer_TokenizeString(args);
+
+	if(Tokenizer_GetArgsCount() < 2) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Command requires 2 arguments - groupname, brightess\n");
+		return 0;
+	}
+	groupName = Tokenizer_GetArg(0);
+	brightness = Tokenizer_GetArgInteger(1);
+
+	DRV_DGR_Send_Brightness(groupName,brightness);
+
+	return 1;
+}
 void DRV_DGR_Init()
 {
 #if 0
@@ -323,6 +357,7 @@ void DRV_DGR_Init()
 
 #endif
     CMD_RegisterCommand("DGR_SendPower", "", CMD_DGR_SendPower, "qqq", NULL);
+    CMD_RegisterCommand("DGR_SendBrightness", "", CMD_DGR_SendBrightness, "qqq", NULL);
 }
 
 
