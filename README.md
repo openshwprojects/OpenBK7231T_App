@@ -55,6 +55,7 @@ e.g. `./build_app.sh apps/openbk7231app openbk7231app 1.0.0`
 ## UART (Windows only)
 
 get BKwriter 1.60 exe (extract zip) from here https://github.com/openshwprojects/OpenBK7231T
+https://github.com/openshwprojects/OpenBK7231T/blob/master/bk_writer1.60.zip
   
 Use USB to TTL converter with 3.3V logic levels, like HW 597
 
