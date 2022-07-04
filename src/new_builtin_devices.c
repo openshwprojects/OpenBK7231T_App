@@ -680,3 +680,26 @@ void Setup_Device_13A_Socket_CB2S(){
 
 	CFG_Save_SetupTimer();
 }
+
+//Australian 2 Gang Wall Switch
+//https://obrazki.elektroda.pl/2789424600_1656890909.jpg
+void Setup_Device_Deta_Smart_Double_Power_Point_6922HA_Series2() {
+	CFG_ClearPins();
+
+	PIN_SetPinRoleForPinIndex(6, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(6, 1);
+
+	PIN_SetPinRoleForPinIndex(9, IOR_LED_WIFI_n);
+	PIN_SetPinChannelForPinIndex(9, 1);
+
+	PIN_SetPinRoleForPinIndex(14, IOR_Button);
+	PIN_SetPinChannelForPinIndex(14, 1);
+
+	PIN_SetPinRoleForPinIndex(24, IOR_Button);
+	PIN_SetPinChannelForPinIndex(24, 2);
+
+	PIN_SetPinRoleForPinIndex(26, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(26, 2);
+
+	CFG_Save_SetupTimer();
+}
