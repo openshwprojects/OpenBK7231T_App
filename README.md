@@ -229,6 +229,9 @@ https://www.elektroda.com/rtvforum/topic3895572.html
   https://www.elektroda.com/rtvforum/topic3875654.html
   https://www.elektroda.pl/rtvforum/viewtopic.php?p=19906670#19906670
   
+  Australian Double Power Point DETA 6922HA-Series 2 (BK7231T) (English only) 
+  https://community.home-assistant.io/t/detailed-guide-on-how-to-flash-the-new-tuya-beken-chips-with-openbk7231t/437276
+
   Qiachip Smart Switch module (BK7231N/CB2S): 
   https://www.elektroda.com/rtvforum/topic3874289.html
   https://www.elektroda.pl/rtvforum/viewtopic.php?t=3874289&highlight=
