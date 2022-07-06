@@ -121,7 +121,7 @@ int http_fn_index(http_request_t *request) {
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
-    poststr(request,"<style>.r { background-color: red; } .g { background-color: green; }</style>");
+    //poststr(request,"<style>.r { background-color: red; } .g { background-color: green; }</style>");
     HTTP_AddHeader(request);
     if(http_getArg(request->url,"tgl",tmpA,sizeof(tmpA))) {
         j = atoi(tmpA);
@@ -251,9 +251,9 @@ int http_fn_index(http_request_t *request) {
 		} else if(h_isChannelRelay(i) || channelType == ChType_Toggle) {
             const char *c;
             if(CHANNEL_Check(i)) {
-                c = "r";
+                c = "bgrn";
             } else {
-                c = "g";
+                c = "bred";
             }
             poststr(request,"<form action=\"index\">");
             hprintf128(request,"<input type=\"hidden\" name=\"tgl\" value=\"%i\">",i);
@@ -292,7 +292,7 @@ int http_fn_index(http_request_t *request) {
 
     poststr(request,"<form action=\"/index\">\
             <input type=\"hidden\" id=\"restart\" name=\"restart\" value=\"1\">\
-            <input type=\"submit\" value=\"Restart\" onclick=\"return confirm('Are you sure to restart module?')\">\
+            <input class=\"bred\" type=\"submit\" value=\"Restart\" onclick=\"return confirm('Are you sure to restart module?')\">\
         </form> ");
 
     poststr(request,"<form action=\"about\"><input type=\"submit\" value=\"About\"/></form>");
@@ -1303,13 +1303,14 @@ int http_fn_cfg_pins(http_request_t *request) {
 
 		// if available..
 		alias = HAL_PIN_GetPinNameAlias(i);
+        poststr(request, "<div class=\"hdiv\">");
 		if(alias) {
 			poststr(request,alias);
 			poststr(request," ");
 		} else {
 			hprintf128(request, "P%i ",i);
 		}
-        hprintf128(request, "<select name=\"%i\">",i);
+        hprintf128(request, "<select class=\"hele\" name=\"%i\">",i);
         for(j = 0; j < IOR_Total_Options; j++) {
 			// do not show hardware PWM on non-PWM pin
 			if(j == IOR_PWM) {
@@ -1325,14 +1326,14 @@ int http_fn_cfg_pins(http_request_t *request) {
             }
         }
         poststr(request, "</select>");
-        hprintf128(request, "<input name=\"r%i\" type=\"text\" value=\"%i\"/>",i,ch);
+        hprintf128(request, "<input class=\"hele\" name=\"r%i\" type=\"text\" value=\"%i\"/>",i,ch);
 
 		if(si == IOR_Button || si == IOR_Button_n)
 		{
 			// extra param. For button, is relay index to toggle on double click
-			hprintf128(request, "<input name=\"e%i\" type=\"text\" value=\"%i\"/>",i,ch2);
+			hprintf128(request, "<input class=\"hele\" name=\"e%i\" type=\"text\" value=\"%i\"/>",i,ch2);
 		}
-        poststr(request,"<br>");
+        poststr(request,"</div>");
     }
     poststr(request,"<input type=\"submit\" value=\"Save\"/></form>");
 
