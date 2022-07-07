@@ -29,10 +29,12 @@ static driver_t g_drivers[] = {
 	{ "I2C", DRV_I2C_Init, DRV_I2C_EverySecond, NULL, NULL, NULL, false },
 	{ "BL0942", BL0942_Init, BL0942_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, false },
 	{ "BL0937", BL0937_Init, BL0937_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, false },
+	{ "CSE7766", CSE7766_Init, CSE7766_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, false },
 #if PLATFORM_BEKEN
 	{ "DGR", DRV_DGR_Init, NULL, NULL, DRV_DGR_RunFrame, DRV_DGR_Shutdown, false },
 #endif
 };
+
 static int g_numDrivers = sizeof(g_drivers)/sizeof(g_drivers[0]);
 
 bool DRV_IsRunning(const char *name) {
