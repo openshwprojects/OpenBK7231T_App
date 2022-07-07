@@ -9,8 +9,8 @@
 #include "drv_uart.h"
 #include "../httpserver/new_http.h"
 
-static float CSE7766_PREF = 598;
-static float CSE7766_UREF = 15188;
+static float CSE7766_PREF = 3150.261719;
+static float CSE7766_UREF = 6.300000;
 static float CSE7766_IREF = 251210;
 
 static int raw_unscaled_voltage;
@@ -30,6 +30,7 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 	byte a;
 	byte checksum;
 	int CSE7766_PACKET_LEN = 24;
+	byte header;
 
 	cs = UART_GetDataSize();
 
@@ -37,6 +38,7 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 	if(cs < CSE7766_PACKET_LEN) {
 		return 0;
 	}
+	header = UART_GetNextByte(0);
 	// skip garbage data (should not happen)
 	while(cs > 0) {
 		a = UART_GetNextByte(1);
@@ -81,31 +83,82 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 		UART_ConsumeBytes(CSE7766_PACKET_LEN);
 		return 1;
 	}
-	addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"CSE checksum ok");
+	//addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"CSE checksum ok");
 
-	/*
-	//startDriver CSE7766
-	raw_unscaled_current = (UART_GetNextByte(3) << 16) | (UART_GetNextByte(2) << 8) | UART_GetNextByte(1);
-	raw_unscaled_voltage = (UART_GetNextByte(6) << 16) | (UART_GetNextByte(5) << 8) | UART_GetNextByte(4);
-	raw_unscaled_power = (UART_GetNextByte(12) << 24) | (UART_GetNextByte(11) << 16) | (UART_GetNextByte(10) << 8);
-	raw_unscaled_power = (raw_unscaled_power >> 8);
-
-	raw_unscaled_freq = (UART_GetNextByte(17) << 8) | UART_GetNextByte(16);
-
-	// those are not values like 230V, but unscaled
-	//addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"Unscaled current %d, voltage %d, power %d, freq %d\n", raw_unscaled_current, raw_unscaled_voltage,raw_unscaled_power,raw_unscaled_freq);
-
-	// those are final values, like 230V
 	{
-		float power, voltage, current;
-		power = (raw_unscaled_power / CSE7766_PREF);
-		voltage = (raw_unscaled_voltage / CSE7766_UREF);
-		current = (raw_unscaled_current / CSE7766_IREF);
+		unsigned char adjustement;
+		long power_cycle_first = 0;
+		long cf_pulses = 0;
 
-		BL_ProcessUpdate(voltage,current,power);
+
+		// samples captured by me on 07 07 2022
+		// 0   1  2  3  4  5  6  7  8 9  10 11 12 13 14 15 16 17 18 19 20 21 22 23
+		// H  Id VCal---- Voltage- ICal---- Current- PCal---- Power--- Ad CF--- Ck
+		// F2 5A 02 D5 00 00 05 A7 00 3C 05 03 2B F3 4D B2 A0 9C 98 CA 61 24 90 97 
+		// F2 5A 02 D5 00 00 05 A7 00 3C 05 03 77 4B 4D B2 A0 AA FE 56 61 24 90 3B 		// F2 5A 02 D5 00 00 05 AB 00 3C 05 03 77 4B 4D B2 A0 BA FC 48 61 24 90 3F 		// F2 5A 02 D5 00 00 05 AB 00 3C 05 05 38 DB 4D B2 A0 C9 60 D5 61 24 90 92 
+
+		// samples with disabled relay (?not sure, doing it remotely)
+		// power is 0, current still non-zero
+		// power should be 54.5W
+		/*
+		0   1  2  3  4  5  6  7  8 9  10 11 12 13 14 15 16 17 18 19 20 21 22 23
+		H  Id VCal---- Voltage- ICal---- Current- PCal---- Power--- Ad CF--- Ck
+		F2 5A 02 D5 00 00 05 B7 00 3C 05 03 5D C5 4D B2 A0 A7 BB 9C 61 2A 61 82 		F2 5A 02 D5 00 00 05 B7 00 3C 05 03 5D C5 4D B2 A0 B6 20 29 61 2A 61 83 		F2 5A 02 D5 00 00 F2 5A 02 D5 00 00 05 B7 00 3C 05 03 5D C5 4D B2 A0 C6 
+		F2 5A 02 D5 00 00 05 B7 00 3C 05 03 5D C5 4D B2 A0 D4 82 A8 61 2A 61 82 
+		F2 5A 02 D5 00 00 05 B7 00 3C 05 03 76 DF 4D B2 A0 E4 7F 9B 61 2A E8 B5 
+
+		*/
+		// samples with enabled relay (current, power, voltag enon-zero)
+		/*
+		0   1  2  3  4  5  6  7  8 9  10 11 12 13 14 15 16 17 18 19 20 21 22 23
+		H  Id VCal---- Voltage- ICal---- Current- PCal---- Power--- Ad CF--- Ck		55 5A 02 D5 00 00 05 A9 00 3C 38 00 FD 5C 4D B2 A0 02 95 7C 71 48 23 AD 		55 5A 02 D5 00 00 05 A9 00 3C 05 00 FD 73 4D B2 A0 02 97 27 71 48 28 76 		55 5A 02 D5 00 00 05 A7 00 3C 05 00 FD 73 4D B2 A0 02 96 1F 71 48 2E 71 		55 5A 02 D5 00 00 05 A7 00 3C 05 00 FD 73 4D B2 A0 02 97 5C 71 48 34 B5 		55 5A 02 D5 00 00 05 A7 00 3C 05 00 FD 9C 4D B2 A0 02 96 80 71 48 3A 07 		55 5A 02 D5 00 00 05 A6 00 3C 05 00 FD 9C 4D B2 A0 02 93 C2 71 48 40 4B 		55 5A 02 D5 00 00 05 A6 00 3C 05 00 FD 9C 4D B2 A0 02 96 54 71 48 46 E6 		55 5A 02 D5 00 00 05 A6 00 3C 05 00 FD AB 4D B2 A0 02 96 5F 71 48 4B 05 
+		*/
+		//
+			
+		
+		
+
+		adjustement = UART_GetNextByte(20);
+		raw_unscaled_voltage = UART_GetNextByte(5) << 16 | UART_GetNextByte(6) << 8 | UART_GetNextByte(7);
+		raw_unscaled_current = UART_GetNextByte(11) << 16 | UART_GetNextByte(12) << 8 | UART_GetNextByte(13);
+		raw_unscaled_power = UART_GetNextByte(17) << 16 | UART_GetNextByte(18) << 8 | UART_GetNextByte(19);
+		cf_pulses = UART_GetNextByte(21) << 8 | UART_GetNextByte(22);
+
+		// i am not sure about these flags
+		if (adjustement & 0x40) {  // Voltage valid
+		
+		} else {
+			raw_unscaled_voltage = 0;
+		}
+		if (adjustement & 0x10) {  // Power valid
+			if ((header & 0xF2) == 0xF2) {  // Power cycle exceeds range
+				//power_cycle = 0;
+			} else {
+
+			}
+		} else {
+			raw_unscaled_power = 0;
+		}
+		if (adjustement & 0x20) {  // Current valid
+
+		} else {
+			raw_unscaled_current = 0;
+		}
+
+		// those are final values, like 230V
+		{
+			float power, voltage, current;
+			power = (raw_unscaled_power / CSE7766_PREF);
+			voltage = (raw_unscaled_voltage / CSE7766_UREF);
+			current = (raw_unscaled_current / CSE7766_IREF);
+
+			BL_ProcessUpdate(voltage,current,power);
+		}
 	}
 
-*/
+
+
+
 #if 0
 	{
 		char res[128];
@@ -120,11 +173,6 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 	return CSE7766_PACKET_LEN;
 }
 
-void CSE7766_SendRequest() {
-	//UART_InitUART(CSE7766_BAUD_RATE);
-	//UART_SendByte(CSE7766_READ_COMMAND);
-	//UART_SendByte(0xAA);
-}
 int CSE7766_PowerSet(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	float realPower;
 
@@ -136,7 +184,7 @@ int CSE7766_PowerSet(const void *context, const char *cmd, const char *args, int
 	CSE7766_PREF = raw_unscaled_power / realPower;
 	{
 		char dbg[128];
-		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realPower, CSE7766_PREF);
+		sprintf(dbg,"PowerSet: you gave %f, set ref to %f\n", realPower, CSE7766_PREF);
 		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,dbg);
 	}
 	return 0;
@@ -213,15 +261,9 @@ void CSE7766_Init() {
 	CMD_RegisterCommand("IREF","",CSE7766_CurrentRef, "Sets the calibration multiplier", NULL);
 }
 void CSE7766_RunFrame() {
-	int len;
 
 	//addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"UART buffer size %i\n", UART_GetDataSize());
 
-	len = CSE7766_TryToGetNextCSE7766Packet();
-	if(len > 0) {
-
-	} else {
-	//	CSE7766_SendRequest();
-	}
+	CSE7766_TryToGetNextCSE7766Packet();
 }
 
