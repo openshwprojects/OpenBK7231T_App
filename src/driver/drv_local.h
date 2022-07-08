@@ -7,6 +7,9 @@ void BL0942_RunFrame();
 void BL0937_Init();
 void BL0937_RunFrame();
 
+void CSE7766_Init();
+void CSE7766_RunFrame();
+
 void DRV_DGR_Init();
 void DRV_DGR_RunFrame();
 void DRV_DGR_Shutdown();
