@@ -160,20 +160,20 @@ int http_fn_index(http_request_t *request) {
         CHANNEL_Set(j,newSetValue,1);
     }
 
-
+    poststr(request, "<table width=\"100%\">");
     for(i = 0; i < CHANNEL_MAX; i++) {
-		int channelType;
+
+        int channelType;
 
 		channelType = CHANNEL_GetType(i);
-
 		if(channelType == ChType_Temperature) {
 			int iValue;
 
 			iValue = CHANNEL_Get(i);
-
+            
             hprintf128(request,"Temperature Channel %i value %i C<br>",i, iValue);
-
-		} else if(channelType == ChType_Temperature_div10) {
+            
+        } else if(channelType == ChType_Temperature_div10) {
 			int iValue;
 			float fValue;
 
@@ -248,16 +248,26 @@ int http_fn_index(http_request_t *request) {
             hprintf128(request,"Channel %i = %i",i,iValue);
             hprintf128(request,"<br>");
 
-		} else if(h_isChannelRelay(i) || channelType == ChType_Toggle) {
+        }
+        else if (h_isChannelRelay(i) || channelType == ChType_Toggle) {
+            if (i <= 1) {
+                hprintf128(request, "<tr colspan=\"%i\">", CHANNEL_MAX);
+            }
             const char *c;
+            const char *state;
             if(CHANNEL_Check(i)) {
                 c = "bgrn";
+                state = "ON";
             } else {
                 c = "bred";
+                state = "OFF";
             }
-            poststr(request,"<form action=\"index\">");
+            poststr(request,"<td><form action=\"index\">");
             hprintf128(request,"<input type=\"hidden\" name=\"tgl\" value=\"%i\">",i);
-            hprintf128(request,"<input class=\"%s\" type=\"submit\" value=\"Toggle %i\"/></form>",c,i);
+            hprintf128(request,"<input class=\"%s\" type=\"submit\" value=\"Toggle %i (%s)\"/></form></td>",c,i,state);
+            if (i == CHANNEL_MAX-1) {
+                poststr(request, "</tr>");
+            }
         }
         else if(h_isChannelPWM(i) || (channelType == ChType_Dimmer)) {
         	// PWM and dimmer both use a slider control
@@ -279,6 +289,7 @@ int http_fn_index(http_request_t *request) {
             poststr(request,"</script>");
         }
     }
+    poststr(request, "</table>");
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_AppendInformationToHTTPIndexPage(request);
 #endif
