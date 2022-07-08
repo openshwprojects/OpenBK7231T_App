@@ -9,14 +9,14 @@
 #include "drv_uart.h"
 #include "../httpserver/new_http.h"
 
-float BL0942_PREF = 598;
-float BL0942_UREF = 15188;
-float BL0942_IREF = 251210;
+static float BL0942_PREF = 598;
+static float BL0942_UREF = 15188;
+static float BL0942_IREF = 251210;
 
-int raw_unscaled_voltage;
-int raw_unscaled_current;
-int raw_unscaled_power;
-int raw_unscaled_freq;
+static int raw_unscaled_voltage;
+static int raw_unscaled_current;
+static int raw_unscaled_power;
+static int raw_unscaled_freq;
 
 
 
