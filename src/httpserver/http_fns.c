@@ -161,6 +161,28 @@ int http_fn_index(http_request_t *request) {
     }
 
     poststr(request, "<table width=\"100%\">");
+    for (i = 0; i < CHANNEL_MAX; i++) {
+        int channelType;
+
+        channelType = CHANNEL_GetType(i);
+        if (h_isChannelRelay(i) || channelType == ChType_Toggle) {
+            if (i <= 1) {
+                hprintf128(request, "<tr colspan=\"%i\">", CHANNEL_MAX);
+            }
+            if (CHANNEL_Check(i)) {
+                poststr(request, "<td style=\"text-align:center; font-weight:bold; font-size:54px\">ON</td>");
+            }
+            else {
+                poststr(request, "<td style=\"text-align:center; font-size:54px\">OFF</td>");
+            }
+            if (i == CHANNEL_MAX - 1) {
+                poststr(request, "</tr>");
+            }
+        }
+    }
+    poststr(request, "<table width=\"100%\">");
+    
+    poststr(request, "<table width=\"100%\">");
     for(i = 0; i < CHANNEL_MAX; i++) {
 
         int channelType;
@@ -254,17 +276,14 @@ int http_fn_index(http_request_t *request) {
                 hprintf128(request, "<tr colspan=\"%i\">", CHANNEL_MAX);
             }
             const char *c;
-            const char *state;
             if(CHANNEL_Check(i)) {
                 c = "bgrn";
-                state = "ON";
             } else {
                 c = "bred";
-                state = "OFF";
             }
             poststr(request,"<td><form action=\"index\">");
             hprintf128(request,"<input type=\"hidden\" name=\"tgl\" value=\"%i\">",i);
-            hprintf128(request,"<input class=\"%s\" type=\"submit\" value=\"Toggle %i (%s)\"/></form></td>",c,i,state);
+            hprintf128(request,"<input class=\"%s\" type=\"submit\" value=\"Toggle %i\"/></form></td>",c,i);
             if (i == CHANNEL_MAX-1) {
                 poststr(request, "</tr>");
             }
