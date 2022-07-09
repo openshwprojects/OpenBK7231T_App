@@ -164,17 +164,18 @@ void BL0937_RunFrame() {
 	res_p = g_p_pulses;
 	g_p_pulses = 0;
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
 
 	final_v = res_v * calib_v;
 	final_c = res_c * calib_c;
 	final_p = res_p * calib_p;
+#if 0
 	{
 		char dbg[128];
 		sprintf(dbg,"Voltage %f, current %f, power %f\n", final_v, final_c, final_p);
 		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,dbg);
 	}
-
+#endif
 	BL_ProcessUpdate(final_v,final_c,final_p);
 }
 
