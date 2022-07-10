@@ -2,6 +2,7 @@
 #include "../new_cfg.h"
 #include "../logging/logging.h"
 #include "../obk_config.h"
+#include <string.h>
 #include <ctype.h>
 #include "cmd_local.h"
 #ifdef BK_LITTLEFS
@@ -46,10 +47,53 @@ static int CMD_Restart(const void *context, const char *cmd, const char *args, i
 	return 1;
 }
 
-void CMD_Init() {
-    CMD_RegisterCommand("restart", "", CMD_Restart, "Reboots the module", NULL);
+int CMD_CompareCommandName(const void *p, const void *q) {
+	const command_t *l = *(const command_t **)p;
+	const command_t *r = *(const command_t **)q;
+    return stricmp(l->name, r->name);
 }
 
+/*
+Logs an ordered list of all avaliable commands.
+*/
+static int CMD_ListCommands(const void *context, const char *cmd, const char *args, int cmdFlags){
+	
+	int i;
+	command_t *newCmd;
+
+	int count = 0;
+	for(i = 0; i < HASH_SIZE; i++) {
+		newCmd = g_commands[i];
+		while(newCmd) {
+			count++;
+			newCmd = newCmd->next;
+		}
+	}
+
+	command_t **commands = (command_t **) os_malloc(sizeof(command_t) * count);
+	int pos = 0;
+	for(i = 0; i < HASH_SIZE; i++) {
+		newCmd = g_commands[i];
+		while(newCmd) {
+			commands[pos++] = newCmd;
+			newCmd = newCmd->next;
+		}
+	}
+
+    qsort(commands, count, sizeof(command_t*), CMD_CompareCommandName);
+
+	for(i = 0; i < count; i++) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Command %s; args: %s; %s", commands[i]->name, commands[i]->argsFormat, commands[i]->userDesc);
+	}
+	os_free(commands);
+
+	return 1;
+}
+
+void CMD_Init() {
+    CMD_RegisterCommand("Restart", "", CMD_Restart, "Reboots the module", NULL);
+	CMD_RegisterCommand("ListCommands", "", CMD_ListCommands, "Lists all available commands", NULL);
+}
 
 void CMD_ListAllCommands(void *userData, void (*callback)(command_t *cmd, void *userData)) {
 	int i;
