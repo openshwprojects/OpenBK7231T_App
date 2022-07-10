@@ -148,9 +148,9 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 		// those are final values, like 230V
 		{
 			float power, voltage, current;
-			power = (raw_unscaled_power / CSE7766_PREF);
-			voltage = (raw_unscaled_voltage / CSE7766_UREF);
-			current = (raw_unscaled_current / CSE7766_IREF);
+			power = CSE7766_PREF / raw_unscaled_power;
+			voltage = CSE7766_UREF / raw_unscaled_voltage;
+			current = CSE7766_IREF / raw_unscaled_current;
 
 			BL_ProcessUpdate(voltage,current,power);
 		}
@@ -181,7 +181,7 @@ int CSE7766_PowerSet(const void *context, const char *cmd, const char *args, int
 		return 1;
 	}
 	realPower = atof(args);
-	CSE7766_PREF = raw_unscaled_power / realPower;
+	CSE7766_PREF = realPower / raw_unscaled_power;
 	{
 		char dbg[128];
 		sprintf(dbg,"PowerSet: you gave %f, set ref to %f\n", realPower, CSE7766_PREF);
@@ -224,7 +224,7 @@ int CSE7766_VoltageSet(const void *context, const char *cmd, const char *args, i
 		return 1;
 	}
 	realV = atof(args);
-	CSE7766_UREF = raw_unscaled_voltage / realV;
+	CSE7766_UREF = realV / raw_unscaled_voltage;
 	{
 		char dbg[128];
 		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realV, CSE7766_UREF);
@@ -241,7 +241,7 @@ int CSE7766_CurrentSet(const void *context, const char *cmd, const char *args, i
 		return 1;
 	}
 	realI = atof(args);
-	CSE7766_IREF = raw_unscaled_current / realI;
+	CSE7766_IREF = realI / raw_unscaled_current;
 	{
 		char dbg[128];
 		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realI, CSE7766_IREF);
