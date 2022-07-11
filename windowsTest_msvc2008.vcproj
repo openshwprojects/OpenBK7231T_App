@@ -728,7 +728,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\httpserver\new_http.h"
+				RelativePath=".\src\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -740,7 +740,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\new_http.h"
+				RelativePath=".\src\httpserver\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1004,6 +1004,38 @@
 				</File>
 				<File
 					RelativePath=".\src\hal\xr809\hal_wifi_xr809.c"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="W800"
+				>
+				<File
+					RelativePath=".\src\hal\w800\hal_adc_w800.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\hal\w800\hal_flashConfig_w800.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\hal\w800\hal_flashVars_w800.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\hal\w800\hal_generic_w800.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\hal\w800\hal_main_w800.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\hal\w800\hal_pins_w800.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\hal\w800\hal_wifi_w800.c"
 					>
 				</File>
 			</Filter>

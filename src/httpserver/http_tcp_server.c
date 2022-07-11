@@ -35,7 +35,7 @@ void HTTPServer_Start()
 									(beken_thread_arg_t)0 );
     if(err != kNoErr)
     {
-       ADDLOG_ERROR(LOG_FEATURE_HTTP, "create \"TCP_server\" thread failed!\r\n");
+       ADDLOG_ERROR(LOG_FEATURE_HTTP, "create \"TCP_server\" thread failed with %i!\r\n",err);
     }
 }
 
