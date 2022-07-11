@@ -230,7 +230,7 @@ void addLogAdv(int level, int feature, char *fmt, ...){
     printf(tmp);
 #endif
 #if PLATFORM_W800
-    printf(tmp);
+  //  printf(tmp);
 #endif
 //#if PLATFORM_BL602
 //    printf(tmp);

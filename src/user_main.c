@@ -91,7 +91,7 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 		//printf("Thread create %s - pdPASS\n",name);
 		return 0;
 	} else if(err == errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY ) {
-		printf("Thread create %s - errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY\n",name);
+		printf("Thread create %s - errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY (%i stack size)\n",name,stack_size);
 	} else {
 		printf("Thread create %s - err %i\n",name,err);
 	}
