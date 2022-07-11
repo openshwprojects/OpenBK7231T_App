@@ -999,6 +999,14 @@ void button_timer_thread(void *param)
 		PIN_ticks(0);
     }
 }
+#elif PLATFORM_W800
+void button_timer_thread(void *param)
+{
+    while(1) {
+        vTaskDelay(PIN_TMR_DURATION);
+		PIN_ticks(0);
+    }
+}
 #elif PLATFORM_XR809
 OS_Timer_t timer;
 #else
@@ -1009,6 +1017,9 @@ void PIN_StartButtonScanThread(void)
 #if WINDOWS
 
 #elif PLATFORM_BL602
+
+    xTaskCreate(button_timer_thread, "buttons", 1024, NULL, 15, NULL);
+#elif PLATFORM_W800
 
     xTaskCreate(button_timer_thread, "buttons", 1024, NULL, 15, NULL);
 #elif PLATFORM_XR809
