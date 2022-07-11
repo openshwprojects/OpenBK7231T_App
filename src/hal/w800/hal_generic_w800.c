@@ -1,0 +1,6 @@
+
+
+
+void HAL_RebootModule() {
+
+}

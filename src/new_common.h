@@ -31,6 +31,10 @@
 #define DEVICENAME_PREFIX_FULL "OpenBL602"
 #define DEVICENAME_PREFIX_SHORT "obl"
 #define PLATFORM_MCU_NAME "BL602"
+#elif PLATFORM_W800
+#define DEVICENAME_PREFIX_FULL "OpenW800"
+#define DEVICENAME_PREFIX_SHORT "w800"
+#define PLATFORM_MCU_NAME "W800"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -140,6 +144,46 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 #include "common/framework/platform_init.h"
 
 #include "kernel/os/os.h"
+
+#elif PLATFORM_W800
+
+#include <string.h>
+#include "wm_include.h"
+#include <FreeRTOS.h>
+#include <task.h>
+#include <portable.h>
+#include <semphr.h>
+
+#define bk_printf printf
+#define os_strcpy strcpy
+#define os_malloc malloc
+#define os_free free
+#define os_memset memset
+
+
+#define rtos_delay_milliseconds sys_msleep
+#define delay_ms sys_msleep
+
+#define SemaphoreHandle_t xSemaphoreHandle
+
+#define os_strcpy strcpy
+
+#define kNoErr                      0       //! No error occurred.
+typedef void *beken_thread_arg_t;
+typedef void *beken_thread_t;
+typedef void (*beken_thread_function_t)( beken_thread_arg_t arg );
+typedef int OSStatus;
+
+#define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
+#define BEKEN_APPLICATION_PRIORITY         (7)
+
+// wrappers for XR809 threads to work like bekken
+OSStatus rtos_delete_thread( beken_thread_t* thread );
+OSStatus rtos_create_thread( beken_thread_t* thread,
+							uint8_t priority, const char* name,
+							beken_thread_function_t function,
+							uint32_t stack_size, beken_thread_arg_t arg );
+
 
 #else
 

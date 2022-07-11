@@ -64,7 +64,8 @@ size_t xPortGetFreeHeapSize() {
 	return 0;
 }
 #endif
-#if PLATFORM_BL602
+
+#if defined(PLATFORM_BL602) || defined(PLATFORM_W800)
 
 
 
