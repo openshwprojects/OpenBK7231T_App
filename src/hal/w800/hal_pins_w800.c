@@ -1,3 +1,4 @@
+#ifdef PLATFORM_W800
 
 #include "../../new_common.h"
 #include "../../logging/logging.h"
@@ -54,3 +55,5 @@ void HAL_PIN_PWM_Update(int index, int value) {
 
 }
 
+
+#endif

@@ -8,6 +8,9 @@
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
 
+
+#if 1
+
 #define  DEMO_TASK_PRIO			                32
 
 #define    DEMO_TASK_SIZE      2048
@@ -25,6 +28,20 @@ void user_main(void)
                        DEMO_TASK_SIZE * sizeof(u32), /* task's stack size, unit:byte */
                        DEMO_TASK_PRIO,
                        0);
+
 }
 
+#else
+
+void user_main(void)
+{
+	Main_Init();
+    while(1)
+    {
+    	sys_msleep(1000);
+    	Main_OnEverySecond();
+    }
+}
+
+#endif
 

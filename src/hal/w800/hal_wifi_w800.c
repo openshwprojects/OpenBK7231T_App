@@ -1,3 +1,5 @@
+#ifdef PLATFORM_W800
+
 #include "../hal_wifi.h"
 
 #define LOG_FEATURE LOG_FEATURE_MAIN
@@ -68,3 +70,4 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid)
   return 0;
 }
 
+#endif

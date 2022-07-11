@@ -1,3 +1,5 @@
+#ifdef PLATFORM_W800
+
 #include "../hal_adc.h"
 #include "../../new_common.h"
 
@@ -38,3 +40,5 @@ int HAL_ADC_Read(int pinNumber)
     return -3;
 }
 
+
+#endif

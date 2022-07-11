@@ -1,3 +1,5 @@
+#ifdef PLATFORM_W800
+
 #include "../hal_flashConfig.h"
 
 
@@ -30,4 +32,6 @@ int HAL_Configuration_SaveConfigMemory(void *src, int dataLen){
 }
 
 
+
+#endif
 

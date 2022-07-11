@@ -1,4 +1,4 @@
-
+#ifdef PLATFORM_W800
 
 // call at startup
 void HAL_FlashVars_IncreaseBootCount(){
@@ -25,3 +25,5 @@ int HAL_FlashVars_GetChannelValue(int ch){
 	return 0;
 }
 
+
+#endif
