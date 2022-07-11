@@ -1630,12 +1630,13 @@ int http_fn_ota_exec(http_request_t *request) {
     poststr(request,htmlHeader);
     if(http_getArg(request->url,"host",tmpA,sizeof(tmpA))) {
         hprintf128(request,"<h3>OTA requested for %s!</h3>",tmpA);
+    	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"http_fn_ota_exec: will try to do OTA for %s \r\n",tmpA);
 #if WINDOWS
 
 #elif PLATFORM_BL602
 
 #elif PLATFORM_W800
-
+    t_http_fwup(tmpA);
 #elif PLATFORM_XR809
     XR809_RequestOTAHTTP(tmpA);
 #else

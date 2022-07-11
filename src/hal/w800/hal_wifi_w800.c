@@ -22,6 +22,9 @@ static int g_bOpenAccessPointMode = 0;
 // This must return correct IP for both SOFT_AP and STATION modes,
 // because, for example, javascript control panel requires it
 const char *HAL_GetMyIPString(){
+    struct netif *netif = tls_get_netif();
+
+	strcpy(g_IP,inet_ntoa(netif->ip_addr));
 
     return g_IP;
 }
