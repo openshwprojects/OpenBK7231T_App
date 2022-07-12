@@ -7,7 +7,7 @@ This repository is named "OpenBK7231T_App", but now it's a multiplatform app, su
 - T34 ([T34 is based on BK7231N](https://developer.tuya.com/en/docs/iot/t34-module-datasheet?id=Ka0l4h5zvg6j8))
 - XR809 (XR3, etc)
 - BL602
-- W800 (W800-C400, WinnerMicro WiFi & Bluetooth)
+- W800 (W800-C400, WinnerMicro WiFi & Bluetooth), W801
 
 Please use automatically compiled binaries from the Releases tab. To build yourself for a given platform, just checkout first our version of SDK and then checkout this app repository into it, details later.
 
@@ -141,6 +141,27 @@ Get USB to UART converter, start phoenixMC.exe from OpenXR809 repository and fol
 
 Follow the BL602 guide:
 https://www.elektroda.com/rtvforum/topic3889041.html
+  
+# Building for W800/W801
+
+To build for W800, you need our W800 SDK fork:
+https://github.com/openshwprojects/OpenW800
+also checkout this repository (OpenBK7231T_App), put into the shared app directory in the SDK, so you get paths like:
+OpenW800\sharedAppContainer\sharedApp\src\devicegroups
+then, to compile, you only need C-Sky Development Suite for CK-CPU C/C++ Developers (V5.2.11 B20220512)
+Get it from here (you'd need to register):
+https://occ.t-head.cn/community/download
+The IDE/compiler bundle I used was: cds-windows-mingw-elf_tools-V5.2.11-20220512-2012.zip
+
+# Flashing for W800/W801
+
+Use wm_tool.exe, command line utility from this SDK https://github.com/openshwprojects/OpenW800
+
+wm_tool.exe -c COM9 -dl W:\GIT\wm_sdk_w800\bin\w800\w800.fls
+
+# OTA for W800/W801
+  
+  Create a HTTP server (maybe with Node-Red), then use the update mechanism by HTTP link. Give link to w800_ota.img file from the build. The second OTA mechanism (on javascript panel, by drag and drop) is not ready yet for W800/W801
   
 # Testing HTTP server on Windows
   
