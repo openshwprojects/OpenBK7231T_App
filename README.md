@@ -165,6 +165,8 @@ Use wm_tool.exe, command line utility from this SDK https://github.com/openshwpr
 
 wm_tool.exe -c COM9 -dl W:\GIT\wm_sdk_w800\bin\w800\w800.fls
 
+wm_tool.exe will then wait for device reset. Repower it or connect RESET to ground, then it will start the flashing
+
 # OTA for W800/W801
   
   Create a HTTP server (maybe with Node-Red), then use the update mechanism by HTTP link. Give link to w800_ota.img file from the build. The second OTA mechanism (on javascript panel, by drag and drop) is not ready yet for W800/W801. Wait for device to restart, do not repower it manually.
