@@ -145,12 +145,18 @@ https://www.elektroda.com/rtvforum/topic3889041.html
 # Building for W800/W801
 
 To build for W800, you need our W800 SDK fork:
+
 https://github.com/openshwprojects/OpenW800
+
 also checkout this repository (OpenBK7231T_App), put into the shared app directory in the SDK, so you get paths like:
+
 OpenW800\sharedAppContainer\sharedApp\src\devicegroups
+
 then, to compile, you only need C-Sky Development Suite for CK-CPU C/C++ Developers (V5.2.11 B20220512)
 Get it from here (you'd need to register):
+
 https://occ.t-head.cn/community/download
+
 The IDE/compiler bundle I used was: cds-windows-mingw-elf_tools-V5.2.11-20220512-2012.zip
 
 # Flashing for W800/W801
