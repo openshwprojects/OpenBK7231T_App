@@ -191,26 +191,29 @@ void DRV_DGR_processPower(int relayStates, byte relaysCount) {
 	int i;
 	int ch;
 
-	LED_SetEnableAll(BIT_CHECK(relayStates,0));
-	//if(CHANNEL_HasChannelSomeOutputPin(0)) {
-	//	startIndex = 0;
-	//} else {
-	//	startIndex = 1;
-	//}
-	//for(i = 0; i < relaysCount; i++) {
-	//	int bOn;
-	//	bOn = BIT_CHECK(relayStates,i);
-	//	ch = startIndex+i;
-	//	if(bOn) {
-	//		if(CHANNEL_HasChannelPinWithRole(ch,IOR_PWM)) {
+	if(PIN_CountPinsWithRole(IOR_PWM) > 0) {
+		LED_SetEnableAll(BIT_CHECK(relayStates,0));
+	} else {
+		//if(CHANNEL_HasChannelSomeOutputPin(0)) {
+			startIndex = 0;
+		//} else {
+		//	startIndex = 1;
+		//}
+		for(i = 0; i < relaysCount; i++) {
+			int bOn;
+			bOn = BIT_CHECK(relayStates,i);
+			ch = startIndex+i;
+			if(bOn) {
+				if(CHANNEL_HasChannelPinWithRole(ch,IOR_PWM)) {
 
-	//		} else {
-	//			CHANNEL_Set(ch,1,0);
-	//		}
-	//	} else {
-	//		CHANNEL_Set(ch,0,0);
-	//	}
-	//}
+				} else {
+					CHANNEL_Set(ch,1,0);
+				}
+			} else {
+				CHANNEL_Set(ch,0,0);
+			}
+		}
+	}
 }
 byte Val255ToVal100(byte v){ 
 	float fr;
