@@ -99,6 +99,8 @@ static int EVENT_ParseEventName(const char *s) {
 		return CMD_EVENT_CHANGE_POWER;
 	if(!stricmp(s,"OnClick"))
 		return CMD_EVENT_PIN_ONCLICK;
+	if(!stricmp(s,"OnToggle"))
+		return CMD_EVENT_PIN_ONTOGGLE;
 	if(!stricmp(s,"OnHold"))
 		return CMD_EVENT_PIN_ONHOLD;
 	if(!stricmp(s,"OnDblClick"))

@@ -887,6 +887,9 @@ void PIN_ticks(void *param)
 						// became up
 						g_lastValidState[i] = value;
 						CHANNEL_Toggle(g_cfg.pins.channels[i]);
+						// fire event - IOR_ToggleChannelOnToggle has been toggle
+						// Argument is a pin number (NOT channel)
+						EventHandlers_FireEvent(CMD_EVENT_PIN_ONTOGGLE,i);
 					}
 				} else {
 					g_timesUp[i]++;
@@ -898,6 +901,9 @@ void PIN_ticks(void *param)
 						// became down
 						g_lastValidState[i] = value;
 						CHANNEL_Toggle(g_cfg.pins.channels[i]);
+						// fire event - IOR_ToggleChannelOnToggle has been toggle
+						// Argument is a pin number (NOT channel)
+						EventHandlers_FireEvent(CMD_EVENT_PIN_ONTOGGLE,i);
 					}
 				} else {
 					g_timesDown[i]++;

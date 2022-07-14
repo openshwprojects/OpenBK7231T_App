@@ -23,6 +23,7 @@ int CMD_ExecuteCommandArgs(const char *cmd, const char *args, int cmdFlags);
 enum EventCode {
 	CMD_EVENT_NONE,
 	// per-pins event (no value, only trigger action)
+	// This is for Buttons
 	CMD_EVENT_PIN_ONCLICK,
 	CMD_EVENT_PIN_ONDBLCLICK,
 	CMD_EVENT_PIN_ONHOLD,
@@ -35,6 +36,8 @@ enum EventCode {
 	CMD_EVENT_CHANGE_CURRENT,
 	CMD_EVENT_CHANGE_POWER,
 
+	// this is for ToggleChannelOnToggle
+	CMD_EVENT_PIN_ONTOGGLE,
 
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
