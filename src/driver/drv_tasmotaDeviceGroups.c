@@ -329,6 +329,34 @@ int CMD_DGR_SendPower(const void *context, const char *cmd, const char *args, in
 
 	return 1;
 }
+void DRV_DGR_OnChannelChanged(int ch, int value) {
+	int channelValues;
+	int channelsCount;
+	int i;
+	const char *groupName;
+
+	if((CFG_DeviceGroups_GetSendFlags() & DGR_SHARE_POWER)==0) {
+
+		return;
+	}
+	channelValues = 0;
+	channelsCount = 0;
+	groupName = CFG_DeviceGroups_GetName();
+
+	for(i = 0; i < CHANNEL_MAX; i++) {
+		if(CHANNEL_HasChannelPinWithRole(i,IOR_Relay) || CHANNEL_HasChannelPinWithRole(i,IOR_Relay_n)
+			|| CHANNEL_HasChannelPinWithRole(i,IOR_LED) || CHANNEL_HasChannelPinWithRole(i,IOR_LED_n)) {
+			channelsCount = i + 1;
+			if(CHANNEL_Get(i)) {
+				BIT_SET(channelValues ,i);
+			}
+		} 
+	}
+
+	DRV_DGR_Send_Power(groupName,channelValues,channelsCount);
+
+	
+}
 // DGR_SendBrightness roomLEDstrips 128
 int CMD_DGR_SendBrightness(const void *context, const char *cmd, const char *args, int flags) {
 	const char *groupName;
