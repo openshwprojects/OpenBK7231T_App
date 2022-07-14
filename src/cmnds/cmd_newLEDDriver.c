@@ -84,6 +84,7 @@ void apply_smart_light() {
 	int i;
 	int firstChannelIndex;
 	int channelToUse;
+	byte finalRGBCW[5];
 
 	// The color order is RGBCW.
 	// some people set RED to channel 0, and some of them set RED to channel 1
@@ -121,6 +122,7 @@ void apply_smart_light() {
 
 		}
 		finalColors[i] = final;
+		finalRGBCW[i] = final;
 
 		channelToUse = firstChannelIndex + i;
 
@@ -129,6 +131,9 @@ void apply_smart_light() {
 		//	channelToUse,raw,g_brightness,final,g_lightEnableAll);
 
 		CHANNEL_Set(channelToUse, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT);
+	}
+	if(DRV_IsRunning("SM2135")) {
+		SM2135_Write(finalRGBCW);
 	}
 }
 static void sendColorChange() {
@@ -265,7 +270,6 @@ static int basecolor(const void *context, const char *cmd, const char *args, int
    // support both '#' prefix and not
             const char *c = args;
             int val = 0;
-            int channel = 0;
             ADDLOG_DEBUG(LOG_FEATURE_CMD, " BASECOLOR got %s", args);
 
 			// some people prefix colors with #
@@ -300,24 +304,14 @@ static int basecolor(const void *context, const char *cmd, const char *args, int
 						ADDLOG_ERROR(LOG_FEATURE_CMD, "BASECOLOR no sscanf hex result from %s", tmp);
 						break;
 					}
-					// if this channel is not PWM, find a PWM channel;
-					while ((channel < 32) && (IOR_PWM != CHANNEL_GetRoleForOutputChannel(channel))) {
-						channel ++;
-					}
 
-					if (channel >= 32) {
-						ADDLOG_ERROR(LOG_FEATURE_CMD, "BASECOLOR channel >= 32");
-						break;
-					}
 
-					ADDLOG_DEBUG(LOG_FEATURE_CMD, "BASECOLOR found chan %d -> val255 %d (from %s)", channel, val, tmp);
+					ADDLOG_DEBUG(LOG_FEATURE_CMD, "BASECOLOR found chan %d -> val255 %d (from %s)", g_numBaseColors, val, tmp);
 
 					baseColors[g_numBaseColors] = val;
 				//	baseColorChannels[g_numBaseColors] = channel;
 					g_numBaseColors++;
 
-					// move to next channel.
-					channel ++;
 				}
 				// keep hsv in sync
 			}

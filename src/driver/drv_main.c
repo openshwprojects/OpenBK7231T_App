@@ -19,20 +19,22 @@ typedef struct driver_s {
 	void (*appendInformationToHTTPIndexPage)(http_request_t *request);
 	void (*runQuickTick)();
 	void (*stopFunc)();
+	void (*onChannelChanged)(int ch, int val);
 	bool bLoaded;
 } driver_t;
 
 // startDriver BL0937
 static driver_t g_drivers[] = {
-	{ "TuyaMCU", TuyaMCU_Init, TuyaMCU_RunFrame, NULL, NULL, NULL,false },
-	{ "NTP", NTP_Init, NTP_OnEverySecond, NULL, NULL, NULL, false },
-	{ "I2C", DRV_I2C_Init, DRV_I2C_EverySecond, NULL, NULL, NULL, false },
-	{ "BL0942", BL0942_Init, BL0942_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, false },
-	{ "BL0937", BL0937_Init, BL0937_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, false },
-	{ "CSE7766", CSE7766_Init, CSE7766_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, false },
+	{ "TuyaMCU", TuyaMCU_Init, TuyaMCU_RunFrame, NULL, NULL, NULL, NULL, false },
+	{ "NTP", NTP_Init, NTP_OnEverySecond, NULL, NULL, NULL, NULL, false },
+	{ "I2C", DRV_I2C_Init, DRV_I2C_EverySecond, NULL, NULL, NULL, NULL, false },
+	{ "BL0942", BL0942_Init, BL0942_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	{ "BL0937", BL0937_Init, BL0937_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	{ "CSE7766", CSE7766_Init, CSE7766_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #if PLATFORM_BEKEN
-	{ "DGR", DRV_DGR_Init, NULL, NULL, DRV_DGR_RunFrame, DRV_DGR_Shutdown, false },
+	{ "DGR", DRV_DGR_Init, NULL, NULL, DRV_DGR_RunFrame, DRV_DGR_Shutdown, DRV_DGR_OnChannelChanged, false },
 #endif
+	{ "SM2135", SM2135_Init, SM2135_RunFrame, NULL, NULL, NULL, SM2135_OnChannelChanged, false },
 };
 
 static int g_numDrivers = sizeof(g_drivers)/sizeof(g_drivers[0]);
@@ -93,6 +95,21 @@ void DRV_RunQuickTick() {
 		if(g_drivers[i].bLoaded) {
 			if(g_drivers[i].runQuickTick != 0) {
 				g_drivers[i].runQuickTick();
+			}
+		}
+	}
+	DRV_Mutex_Free();
+}
+void DRV_OnChannelChanged(int channel,int iVal) {
+	int i;
+
+	if(DRV_Mutex_Take(100)==false) {
+		return;
+	}
+	for(i = 0; i < g_numDrivers; i++) {
+		if(g_drivers[i].bLoaded){
+			if(g_drivers[i].onChannelChanged != 0) {
+				g_drivers[i].onChannelChanged(channel,iVal);
 			}
 		}
 	}

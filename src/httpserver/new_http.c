@@ -246,8 +246,18 @@ const char *htmlPinRoleNames[] = {
 	"BL0937 CF",
 	"BL0937 CF1",
 	"ADC",
-	"e",
-	"e",
+	"SM2135 DAT",
+	"SM2135 CLK",
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
 };
 
 int PIN_ParsePinRoleName(const char *name) {

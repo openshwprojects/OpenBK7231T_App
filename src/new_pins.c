@@ -449,6 +449,7 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	I2C_OnChannelChanged(ch,iVal);
+	DRV_OnChannelChanged(ch,iVal);
 	TuyaMCU_OnChannelChanged(ch, iVal);
 #endif
 
