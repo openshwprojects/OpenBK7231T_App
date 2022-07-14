@@ -451,6 +451,11 @@ void Main_Init()
 		CMD_ExecuteCommand(CFG_GetShortStartupCommand(), COMMAND_FLAG_SOURCE_SCRIPT);
 		CMD_ExecuteCommand("exec autoexec.bat", COMMAND_FLAG_SOURCE_SCRIPT);
 
+		// autostart drivers
+		if(PIN_FindPinIndexForRole(IOR_SM2135_CLK,-1) != -1 && PIN_FindPinIndexForRole(IOR_SM2135_DAT,-1) != -1) {
+			DRV_StartDriver("SM2135");
+		}
+
 		g_enable_pins = 1;
 		// this actually sets the pins, moved out so we could avoid if necessary
 		PIN_SetupPins();
