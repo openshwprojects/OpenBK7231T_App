@@ -191,8 +191,6 @@ void LED_SetTemperature(int tmpInteger, bool bApply) {
 	if(f>1)
 		f =1;
 
-     ///   ADDLOG_INFO(LOG_FEATURE_CMD, "tasCmnd temperature frac %f",f);
-
 	baseColors[3] = (255.0f) * (1-f);
 	baseColors[4] = (255.0f) * f;
 
@@ -346,10 +344,6 @@ int LED_SetBaseColor(const void *context, const char *cmd, const char *args, int
 				sendFinalColor();
 			}
 
-
-            //if (!(*c)){
-                //ADDLOG_DEBUG(LOG_FEATURE_CMD, "BASECOLOR arg ended");
-           // }
         return 1;
   //  }
    // return 0;
