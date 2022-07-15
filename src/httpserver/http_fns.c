@@ -123,8 +123,10 @@ int http_fn_index(http_request_t *request) {
     int j, i;
 	char tmpA[128];
 	int bRawPWMs;
+	int forceShowRGBCW;
 
 	bRawPWMs = CFG_HasFlag(OBK_FLAG_LED_RAWCHANNELSMODE);
+	forceShowRGBCW = CFG_HasFlag(OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER);
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
@@ -333,13 +335,16 @@ int http_fn_index(http_request_t *request) {
             poststr(request,"</script>");
         }
     }
-	if(bRawPWMs == 0) {
+	if(bRawPWMs == 0 || forceShowRGBCW) {
 		int c_pwms;
 		int lm;
 
 		lm = LED_GetMode();
 
 		c_pwms = PIN_CountPinsWithRole(IOR_PWM);
+		if(forceShowRGBCW) {
+			c_pwms = 5;
+		}
 
 		if(c_pwms > 0) {
 			const char *c;
@@ -1511,9 +1516,9 @@ int http_fn_cfg_pins(http_request_t *request) {
 const char *g_obk_flagNames[] = {
 	"[MQTT] Broadcast led params together (send dimmer and color when dimmer or color changes, topic name: YourDevName/led_basecolor_rgb/get, YourDevName/led_dimmer/get)",
 	"[MQTT] Broadcast led final color (topic name: YourDevName/led_finalcolor_rgb/get)",
-	"[MQTT] Broadcast self state every minute",
+	"[MQTT] Broadcast self state every minute (May cause device disconnect's, DONT USE IT YET)",
 	"[LED][Debug] Show raw PWM controller on WWW index instead of new LED RGB/CW/etc picker",
-	"error",
+	"[LED] Force show RGBCW controller (for example, for SM2135 LEDs, or for DGR sender)",
 	"error",
 	"error",
 	"error",
