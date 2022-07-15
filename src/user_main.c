@@ -230,11 +230,7 @@ void Main_OnEverySecond()
 	} else {
 		safe = "";
 	}
-#ifdef PLATFORM_BL602
 
-		ADDLOGF_INFO("%sTime %i, free %d, MQTT %i, bWifi %i, secondsWithNoPing %i\n",
-			safe, g_secondsElapsed, xPortGetFreeHeapSize(),bMQTTconnected, g_bHasWiFiConnected,g_timeSinceLastPingReply);
-#else
 	{
 		//int mqtt_max, mqtt_cur, mqtt_mem;
 		//MQTT_GetStats(&mqtt_cur, &mqtt_max, &mqtt_mem);
@@ -244,7 +240,6 @@ void Main_OnEverySecond()
 			LWIP_GetActiveSockets(),LWIP_GetMaxSockets());
 
 	}
-#endif
 
 	// print network info
 	if (!(g_secondsElapsed % 10)){
