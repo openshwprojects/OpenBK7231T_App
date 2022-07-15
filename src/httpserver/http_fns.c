@@ -132,7 +132,7 @@ int http_fn_index(http_request_t *request) {
     HTTP_AddHeader(request);
     if(http_getArg(request->url,"tgl",tmpA,sizeof(tmpA))) {
         j = atoi(tmpA);
-		if(i == SPECIAL_CHANNEL_LEDPOWER) {
+		if(j == SPECIAL_CHANNEL_LEDPOWER) {
 			hprintf128(request,"<h3>Toggled LED power!</h3>",j);
 		} else {
 			hprintf128(request,"<h3>Toggled %i!</h3>",j);
