@@ -488,7 +488,6 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 		}
 	}
 	EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CHANNEL0 + ch, prevValue, iVal);
-	
 	//addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_OnChanged: Channel index %i startChannelValues %i\n\r",ch,g_cfg.startChannelValues[ch]);
 
 	Channel_SaveInFlashIfNeeded(ch);
