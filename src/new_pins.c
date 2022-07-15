@@ -18,10 +18,13 @@
 
 
 //According to your need to modify the constants.
-#define BTN_TICKS_INTERVAL    5	//ms
+#define PIN_TMR_DURATION      5 // Delay (in ms) between button scan iterations
 #define BTN_DEBOUNCE_TICKS    3	//MAX 8
-#define BTN_SHORT_TICKS       (300 /BTN_TICKS_INTERVAL)
-#define BTN_LONG_TICKS        (1000 /BTN_TICKS_INTERVAL)
+#define BTN_SHORT_TICKS       (300 / PIN_TMR_DURATION)
+#define BTN_LONG_TICKS        (1000 / PIN_TMR_DURATION)
+
+#define WIFI_LED_FAST_BLINK_DURATION 250
+#define WIFI_LED_SLOW_BLINK_DURATION 500
 
 typedef enum {
 	BTN_PRESS_DOWN = 0,
@@ -686,7 +689,6 @@ int CHANNEL_GetRoleForOutputChannel(int ch){
 
 #define EVENT_CB(ev)   if(handle->cb[ev])handle->cb[ev]((pinButton_s*)handle)
 
-#define PIN_TMR_DURATION       5
 #define PIN_TMR_LOOPS_PER_SECOND (1000/PIN_TMR_DURATION)
 #define ADC_SAMPLING_TICK_COUNT PIN_TMR_LOOPS_PER_SECOND
 
@@ -814,7 +816,7 @@ static void PIN_set_wifi_led(int value){
 static int g_wifiLedToggleTime = 0;
 static int g_wifi_ledState = 0;
 #define TOGGLE_PIN_DEBOUNCE_CYCLES 50
-//  background ticks, timer repeat invoking interval 5ms.
+//  background ticks, timer repeat invoking interval defined by PIN_TMR_DURATION.
 void PIN_ticks(void *param)
 {
 	int i;
@@ -825,10 +827,10 @@ void PIN_ticks(void *param)
 #endif
 
 	// WiFi LED
-	// In Open Access point mode, fast blink (250ms)
+	// In Open Access point mode, fast blink
 	if(Main_IsOpenAccessPointMode()) {
-		g_wifiLedToggleTime += 5;
-		if(g_wifiLedToggleTime > 200) {
+		g_wifiLedToggleTime += PIN_TMR_DURATION;
+		if(g_wifiLedToggleTime > WIFI_LED_FAST_BLINK_DURATION) {
 			g_wifi_ledState = !g_wifi_ledState;
 			g_wifiLedToggleTime = 0;
 			PIN_set_wifi_led(g_wifi_ledState);
@@ -838,8 +840,8 @@ void PIN_ticks(void *param)
 		PIN_set_wifi_led(1);
 	} else {
 		// in connecting mode, slow blink
-		g_wifiLedToggleTime += 5;
-		if(g_wifiLedToggleTime > 500) {
+		g_wifiLedToggleTime += PIN_TMR_DURATION;
+		if(g_wifiLedToggleTime > WIFI_LED_SLOW_BLINK_DURATION) {
 			g_wifi_ledState = !g_wifi_ledState;
 			g_wifiLedToggleTime = 0;
 			PIN_set_wifi_led(g_wifi_ledState);
