@@ -86,6 +86,19 @@ static bool MQTT_Mutex_Take(int del) {
 	}
 	return false;
 }
+static bool MQTT_Mutex_Poll() {
+	int taken;
+
+	if(g_mutex == 0)
+	{
+		return false;
+	}
+    taken = xSemaphoreTake( g_mutex, 0 );
+    if (taken == pdTRUE) {
+		return true;
+	}
+	return false;
+}
 static void MQTT_Mutex_Free() {
 	xSemaphoreGive( g_mutex );
 }
@@ -354,7 +367,7 @@ static void mqtt_pub_request_cb(void *arg, err_t result)
 // This is used to publish channel values in "obk0696FB33/1/get" format with numerical value,
 // This is also used to publish custom information with string name,
 // for example, "obk0696FB33/voltage/get" is used to publish voltage from the sensor
-static int MQTT_PublishMain(mqtt_client_t *client, const char *sChannel, const char *sVal)
+static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t *client, const char *sChannel, const char *sVal)
 {
 	char pub_topic[32];
 //  const char *pub_payload= "{\"temperature\": \"45.5\"}";
@@ -367,19 +380,19 @@ static int MQTT_PublishMain(mqtt_client_t *client, const char *sChannel, const c
 
 
   if(client==0)
-	  return 1;
+	  return OBK_PUBLISH_WAS_DISCONNECTED;
 
   
 	if(MQTT_Mutex_Take(100)==0) {
 		addLogAdv(LOG_ERROR,LOG_FEATURE_MQTT,"MQTT_PublishMain: mutex failed for %s=%s\r\n", sChannel, sVal);
-		return 1;
+		return OBK_PUBLISH_MUTEX_FAIL;
 	}
 
 
   if(mqtt_client_is_connected(client)==0) {
 		 g_my_reconnect_mqtt_after_time = 5;
 		MQTT_Mutex_Free();
-		return 1;
+		return OBK_PUBLISH_WAS_DISCONNECTED;
   }
 
   g_timeSinceLastMQTTPublish = 0;
@@ -400,9 +413,11 @@ static int MQTT_PublishMain(mqtt_client_t *client, const char *sChannel, const c
 	 }
   }
 	MQTT_Mutex_Free();
-	return 0;
+	return OBK_PUBLISH_OK;
 }
-
+void MQTT_OBK_Printf(const char *s) {
+		addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,s);
+}
 
 static void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags)
 {
@@ -608,7 +623,7 @@ static void MQTT_do_connect(mqtt_client_t *client)
    addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"mqtt_host %s not found by gethostbyname\r\n", mqtt_host);
   }
 }
-int MQTT_PublishMain_StringInt(const char *sChannel, int iv)
+OBK_Publish_Result MQTT_PublishMain_StringInt(const char *sChannel, int iv)
 {
 	char valueStr[16];
 
@@ -617,7 +632,7 @@ int MQTT_PublishMain_StringInt(const char *sChannel, int iv)
 	return MQTT_PublishMain(mqtt_client,sChannel,valueStr);
 
 }
-int MQTT_PublishMain_StringFloat(const char *sChannel, float f)
+OBK_Publish_Result MQTT_PublishMain_StringFloat(const char *sChannel, float f)
 {
 	char valueStr[16];
 
@@ -626,20 +641,20 @@ int MQTT_PublishMain_StringFloat(const char *sChannel, float f)
 	return MQTT_PublishMain(mqtt_client,sChannel,valueStr);
 
 }
-int MQTT_PublishMain_StringString(const char *sChannel, const char *valueStr)
+OBK_Publish_Result MQTT_PublishMain_StringString(const char *sChannel, const char *valueStr)
 {
 
 	return MQTT_PublishMain(mqtt_client,sChannel,valueStr);
 
 }
-int MQTT_Publish_SelfIP() {
+OBK_Publish_Result MQTT_Publish_SelfIP() {
 	const char *ip;
 
 	ip = HAL_GetMyIPString();
 
 	return MQTT_PublishMain_StringString("IP",ip);
 }
-int MQTT_ChannelChangeCallback(int channel, int iVal)
+OBK_Publish_Result MQTT_ChannelChangeCallback(int channel, int iVal)
 {
 	char channelNameStr[8];
 	char valueStr[16];
@@ -651,7 +666,7 @@ int MQTT_ChannelChangeCallback(int channel, int iVal)
 
 	return MQTT_PublishMain(mqtt_client,channelNameStr,valueStr);
 }
-int  MQTT_ChannelPublish(int channel)
+OBK_Publish_Result MQTT_ChannelPublish(int channel)
 {
 	char channelNameStr[8];
 	char valueStr[16];
@@ -666,8 +681,9 @@ int  MQTT_ChannelPublish(int channel)
 
 	return MQTT_PublishMain(mqtt_client,channelNameStr,valueStr);
 }
-int MQTT_PublishCommand(const void *context, const char *cmd, const char *args, int cmdFlags) {
+OBK_Publish_Result MQTT_PublishCommand(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *topic, *value;
+	OBK_Publish_Result ret;
 
 	Tokenizer_TokenizeString(args);
 
@@ -678,9 +694,9 @@ int MQTT_PublishCommand(const void *context, const char *cmd, const char *args, 
 	topic = Tokenizer_GetArg(0);
 	value = Tokenizer_GetArg(1);
 
-	MQTT_PublishMain_StringString(topic,value);
+	ret = MQTT_PublishMain_StringString(topic,value);
 
-	return 1;
+	return ret;
 }
 // initialise things MQTT
 // called from user_main
@@ -708,16 +724,22 @@ void MQTT_init(){
 
 }
 
-bool MQTT_DoItemPublish(int idx) {
+OBK_Publish_Result MQTT_DoItemPublish(int idx) {
+	OBK_Publish_Result ret;
+
+	if(MQTT_Mutex_Poll()==false) {
+		return OBK_PUBLISH_MUTEX_FAIL;
+	}
+
 	if(idx == PUBLISHITEM_SELF_IP) {
-		MQTT_Publish_SelfIP();
-		return true; //  published
+		ret = MQTT_Publish_SelfIP();
+		return ret;  
 	}
 	if(CHANNEL_IsInUse(idx)) {
-		MQTT_ChannelPublish(g_publishItemIndex);
-		return true; //  published
+		ret = MQTT_ChannelPublish(g_publishItemIndex);
+		return ret;
 	}
-	return false; // didnt publish
+	return OBK_PUBLISH_WAS_NOT_REQUIRED; // didnt publish
 }
 static int g_secondsBeforeNextFullBroadcast = 30;
 
@@ -768,16 +790,28 @@ int MQTT_RunEverySecondUpdate() {
 		if(g_bPublishAllStatesNow) {
 			// Doing step by a step a full publish state
 			if(g_timeSinceLastMQTTPublish > 2) {
+				OBK_Publish_Result publishRes;
 				int g_sent_thisFrame = 0;
 
 				while(g_publishItemIndex < CHANNEL_MAX) {
-					if(MQTT_DoItemPublish(g_publishItemIndex)) {
+					publishRes = MQTT_DoItemPublish(g_publishItemIndex);
+					// There are several things that can happen now
+					// OBK_PUBLISH_OK - it was required and was published
+					if(publishRes == OBK_PUBLISH_OK) {
 						g_sent_thisFrame++;
 						if(g_sent_thisFrame>=1){
 							g_publishItemIndex++;
 							break;
 						}
 					}
+					// OBK_PUBLISH_MUTEX_FAIL - MQTT is busy
+					if(publishRes == OBK_PUBLISH_MUTEX_FAIL
+						|| publishRes == OBK_PUBLISH_WAS_DISCONNECTED) {
+						// retry the same later
+						break;
+					}
+					// OBK_PUBLISH_WAS_NOT_REQUIRED
+					// The item is not used for this device
 					g_publishItemIndex++;
 				}
 				if(g_publishItemIndex >= CHANNEL_MAX) {

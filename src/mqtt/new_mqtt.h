@@ -18,6 +18,14 @@ void example_publish(mqtt_client_t *client, int channel, int iVal);
 void MQTT_init();
 int MQTT_RunEverySecondUpdate();
 
+typedef int OBK_Publish_Result;
+
+enum OBK_Publish_Result_e {
+	OBK_PUBLISH_OK,
+	OBK_PUBLISH_MUTEX_FAIL,
+	OBK_PUBLISH_WAS_DISCONNECTED,
+	OBK_PUBLISH_WAS_NOT_REQUIRED,
+};
 
 // ability to register callbacks for MQTT data
 typedef struct mqtt_request_tag {
@@ -39,10 +47,10 @@ int MQTT_RemoveCallback(int ID);
 
 void MQTT_GetStats(int *outUsed, int *outMax, int *outFreeMem);
 
-int MQTT_PublishMain_StringFloat(const char *sChannel, float f);
-int MQTT_PublishMain_StringInt(const char *sChannel, int val);
-int MQTT_PublishMain_StringString(const char *sChannel, const char *valueStr);
-int MQTT_ChannelChangeCallback(int channel, int iVal);
+OBK_Publish_Result MQTT_PublishMain_StringFloat(const char *sChannel, float f);
+OBK_Publish_Result MQTT_PublishMain_StringInt(const char *sChannel, int val);
+OBK_Publish_Result MQTT_PublishMain_StringString(const char *sChannel, const char *valueStr);
+OBK_Publish_Result MQTT_ChannelChangeCallback(int channel, int iVal);
 
 
 

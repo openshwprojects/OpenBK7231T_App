@@ -113,13 +113,13 @@ static int color(const void *context, const char *cmd, const char *args, int cmd
                 }
 
                 val100 = (val * 100)/255;
-                ADDLOG_DEBUG(LOG_FEATURE_CMD, "COLOR found chan %d -> val255 %d -> val100 %d (from %s)", channel, val, val100, tmp);
+            //    ADDLOG_DEBUG(LOG_FEATURE_CMD, "COLOR found chan %d -> val255 %d -> val100 %d (from %s)", channel, val, val100, tmp);
                 CHANNEL_Set(channel, val100, 0);
                 // move to next channel.
                 channel ++;
             }
             if (!(*c)){
-                ADDLOG_DEBUG(LOG_FEATURE_CMD, "COLOR arg ended");
+              //  ADDLOG_DEBUG(LOG_FEATURE_CMD, "COLOR arg ended");
             }
         }
         return 1;

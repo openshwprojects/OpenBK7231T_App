@@ -325,7 +325,7 @@ int LED_SetBaseColor(const void *context, const char *cmd, const char *args, int
 					}
 
 
-					ADDLOG_DEBUG(LOG_FEATURE_CMD, "BASECOLOR found chan %d -> val255 %d (from %s)", g_numBaseColors, val, tmp);
+					//ADDLOG_DEBUG(LOG_FEATURE_CMD, "BASECOLOR found chan %d -> val255 %d (from %s)", g_numBaseColors, val, tmp);
 
 					baseColors[g_numBaseColors] = val;
 				//	baseColorChannels[g_numBaseColors] = channel;
@@ -347,9 +347,9 @@ int LED_SetBaseColor(const void *context, const char *cmd, const char *args, int
 			}
 
 
-            if (!(*c)){
-                ADDLOG_DEBUG(LOG_FEATURE_CMD, "BASECOLOR arg ended");
-            }
+            //if (!(*c)){
+                //ADDLOG_DEBUG(LOG_FEATURE_CMD, "BASECOLOR arg ended");
+           // }
         return 1;
   //  }
    // return 0;
