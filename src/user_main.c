@@ -76,7 +76,7 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
     OSStatus err = kNoErr;
 
 
-    err = xTaskCreate(function, name, stack_size, arg, 1, thread);
+    err = xTaskCreate(function, name, stack_size/sizeof(StackType_t), arg, 1, thread);
 /*
  BaseType_t xTaskCreate(
 							  TaskFunction_t pvTaskCode,
