@@ -64,6 +64,9 @@ enum ChannelType {
 
 #define CHANNEL_MAX 64
 
+#define SPECIAL_CHANNEL_BRIGHTNESS 129
+#define SPECIAL_CHANNEL_LEDPOWER 130
+
 typedef struct pinsState_s {
 	// All above values are indexed by physical pin index
 	// (so we assume we have maximum of 32 pins)

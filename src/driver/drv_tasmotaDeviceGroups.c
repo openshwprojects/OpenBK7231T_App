@@ -36,6 +36,19 @@ int port = 4447;
 //	return 0;
 //}
 
+byte Val255ToVal100(byte v){ 
+	float fr;
+	// convert to our 0-100 range
+	fr = v / 255.0f;
+	v = fr * 100;
+	return v;
+}
+byte Val100ToVal255(byte v){ 
+	float fr;
+	fr = v / 100.0f;
+	v = fr * 255;
+	return v;
+}
 static int g_dgr_socket_receive = -1;
 static int g_dgr_socket_send = -1;
 static int g_dgr_send_seq = 0;
@@ -215,13 +228,6 @@ void DRV_DGR_processPower(int relayStates, byte relaysCount) {
 		}
 	}
 }
-byte Val255ToVal100(byte v){ 
-	float fr;
-	// convert to our 0-100 range
-	fr = v / 255.0f;
-	v = fr * 100;
-	return v;
-}
 void DRV_DGR_processBrightnessPowerOn(byte brightness) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_processBrightnessPowerOn: %i\n",(int)brightness);
 
@@ -240,8 +246,49 @@ void DRV_DGR_processLightBrightness(byte brightness) {
 	LED_SetDimmer(Val255ToVal100(brightness));
 	
 }
-void DRV_DGR_RunFrame() {
+typedef struct dgrMmember_s {
     struct sockaddr_in addr;
+	int lastSeq;
+} dgrMember_t;
+
+#define MAX_DGR_MEMBERS 32
+static dgrMember_t g_dgrMembers[MAX_DGR_MEMBERS];
+static int g_curDGRMembers = 0;
+static struct sockaddr_in addr;
+
+dgrMember_t *findMember() {
+	int i;
+	for(i = 0; i < g_curDGRMembers; i++) {
+		if(!memcmp(&g_dgrMembers[i].addr, &addr,sizeof(addr))) {
+			return &g_dgrMembers[i];
+		}
+	}
+	i = g_curDGRMembers;
+	if(i>=MAX_DGR_MEMBERS)
+		return 0;
+	memcpy(&g_dgrMembers[i].addr,&addr,sizeof(addr));
+	return &g_dgrMembers[i];
+}
+
+int DGR_CheckSequence(int seq) {
+	dgrMember_t *m;
+	
+	m = findMember();
+	
+	if(m == 0)
+		return 1;
+	if(seq > m->lastSeq) {
+		m->lastSeq = seq;
+		return 0;
+	}
+	if(seq + 4 < m->lastSeq) {
+		// hard reset
+		m->lastSeq = seq;
+		return 0;
+	}
+	return 1;
+}
+void DRV_DGR_RunFrame() {
 	dgrDevice_t def;
     char msgbuf[64];
 
@@ -274,8 +321,9 @@ void DRV_DGR_RunFrame() {
 		def.cbs.processLightBrightness = DRV_DGR_processLightBrightness;
 		def.cbs.processPower = DRV_DGR_processPower;
 		def.cbs.processRGBCW = DRV_DGR_processRGBCW;
+		def.cbs.checkSequence = DGR_CheckSequence;
 
-		DGR_Parse(msgbuf, nbytes, &def);
+		DGR_Parse(msgbuf, nbytes, &def, &addr);
 		//DGR_Parse(msgbuf, nbytes);
        // puts(msgbuf);
 }
@@ -332,6 +380,30 @@ int CMD_DGR_SendPower(const void *context, const char *cmd, const char *args, in
 
 	return 1;
 }
+void DRV_DGR_OnLedDimmerChange(int iVal) {
+	//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_OnLedDimmerChange: called\n");
+	if(g_dgr_socket_receive==0) {
+		return;
+	}
+	if((CFG_DeviceGroups_GetSendFlags() & DGR_SHARE_LIGHT_BRI)==0) {
+
+		return;
+	}
+
+	//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_OnLedDimmerChange: will send Brightness\n");
+	DRV_DGR_Send_Brightness(CFG_DeviceGroups_GetName(),Val100ToVal255(iVal));
+}
+void DRV_DGR_OnLedEnableAllChange(int iVal) {
+	if(g_dgr_socket_receive==0) {
+		return;
+	}
+	if((CFG_DeviceGroups_GetSendFlags() & DGR_SHARE_POWER)==0) {
+
+		return;
+	}
+
+	DRV_DGR_Send_Power(CFG_DeviceGroups_GetName(),iVal,1);
+}
 void DRV_DGR_OnChannelChanged(int ch, int value) {
 	int channelValues;
 	int channelsCount;
@@ -355,8 +427,10 @@ void DRV_DGR_OnChannelChanged(int ch, int value) {
 			}
 		} 
 	}
+	if(channelsCount>0){
+		DRV_DGR_Send_Power(groupName,channelValues,channelsCount);
+	}
 
-	DRV_DGR_Send_Power(groupName,channelValues,channelsCount);
 
 	
 }
@@ -380,6 +454,7 @@ int CMD_DGR_SendBrightness(const void *context, const char *cmd, const char *arg
 }
 void DRV_DGR_Init()
 {
+	memset(&g_dgrMembers[0],0,sizeof(g_dgrMembers));
 #if 0
 	DRV_DGR_StartThread();
 #else

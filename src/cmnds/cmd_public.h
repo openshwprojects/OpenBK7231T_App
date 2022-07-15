@@ -60,6 +60,10 @@ void EventHandlers_ProcessVariableChange_Integer(byte eventCode, int oldValue, i
 int taslike_commands_init();
 // cmd_newLEDDriver.c
 int NewLED_InitCommands();
+float LED_GetDimmer();
+void LED_SetDimmer(int iVal);
+void LED_SetEnableAll(int bEnable);
+int LED_GetEnableAll();
 // cmd_test.c
 int fortest_commands_init();
 // cmd_channels.c

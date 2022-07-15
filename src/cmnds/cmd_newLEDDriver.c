@@ -3,6 +3,7 @@
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #include "../obk_config.h"
+#include "../driver/drv_public.h"
 #include "../rgb2hsv.h"
 #include <ctype.h>
 #include "cmd_local.h"
@@ -217,7 +218,12 @@ void LED_SetEnableAll(int bEnable) {
 
 	apply_smart_light();
 
+	DRV_DGR_OnLedEnableAllChange(bEnable);
+
 	MQTT_PublishMain_StringInt("led_enableAll",g_lightEnableAll);
+}
+int LED_GetEnableAll() {
+	return g_lightEnableAll;
 }
 static int enableAll(const void *context, const char *cmd, const char *args, int cmdFlags){
 	//if (!wal_strnicmp(cmd, "POWERALL", 8)){
@@ -237,10 +243,14 @@ static int enableAll(const void *context, const char *cmd, const char *args, int
 	//}
 	//return 0;
 }
-
+float LED_GetDimmer() {
+	return g_brightness / g_cfg_brightnessMult;
+}
 void LED_SetDimmer(int iVal) {
 
 	g_brightness = iVal * g_cfg_brightnessMult;
+
+	DRV_DGR_OnLedDimmerChange(iVal);
 
 	apply_smart_light();
 	sendDimmerChange();

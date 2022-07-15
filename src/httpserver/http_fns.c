@@ -117,9 +117,14 @@ int h_isChannelRelay(int tg_ch) {
     }
 	return false;
 }
+
+
 int http_fn_index(http_request_t *request) {
     int j, i;
 	char tmpA[128];
+	int bRawPWMs;
+
+	bRawPWMs = 0;
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
@@ -290,7 +295,8 @@ int http_fn_index(http_request_t *request) {
                 poststr(request, "</tr>");
             }
         }
-        else if(h_isChannelPWM(i) || (channelType == ChType_Dimmer)) {
+        else if((bRawPWMs&&h_isChannelPWM(i)) || (channelType == ChType_Dimmer)) {
+			
         	// PWM and dimmer both use a slider control
         	const char *inputName = h_isChannelPWM(i) ? "pwm" : "dim";
             int pwmValue;
@@ -310,6 +316,63 @@ int http_fn_index(http_request_t *request) {
             poststr(request,"</script>");
         }
     }
+	if(bRawPWMs == 0) {
+		int c_pwms;
+
+		c_pwms = PIN_CountPinsWithRole(IOR_PWM);
+
+		if(c_pwms > 0) {
+			const char *c;
+			if(CHANNEL_Check(i)) {
+				c = "bgrn";
+			} else {
+				c = "bred";
+			}
+			poststr(request, "<tr>");
+			poststr(request,"<td><form action=\"index\">");
+			hprintf128(request,"<input type=\"hidden\" name=\"tgl\" value=\"%i\">",SPECIAL_CHANNEL_LEDPOWER);
+			hprintf128(request,"<input class=\"%s\" type=\"submit\" value=\"Toggle %i\"/></form></td>",c,SPECIAL_CHANNEL_LEDPOWER);
+			poststr(request, "</tr>");
+		}
+
+		if(c_pwms > 0) {
+            int pwmValue;
+        	const char *inputName;
+
+			inputName = "dim";
+
+            pwmValue = LED_GetDimmer();
+
+			poststr(request, "<tr>");
+            hprintf128(request,"<form action=\"index\" id=\"form%i\">",SPECIAL_CHANNEL_BRIGHTNESS);
+            hprintf128(request,"<input type=\"range\" min=\"0\" max=\"100\" name=\"%s\" id=\"slider%i\" value=\"%i\">",inputName,SPECIAL_CHANNEL_BRIGHTNESS,pwmValue);
+            hprintf128(request,"<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">",inputName,SPECIAL_CHANNEL_BRIGHTNESS);
+            hprintf128(request,"<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>",SPECIAL_CHANNEL_BRIGHTNESS);
+
+
+            poststr(request,"<script>");
+            hprintf128(request,"var slider = document.getElementById(\"slider%i\");\n",SPECIAL_CHANNEL_BRIGHTNESS);
+            poststr(request,"slider.onmouseup = function () {\n");
+            hprintf128(request," document.getElementById(\"form%i\").submit();\n",SPECIAL_CHANNEL_BRIGHTNESS);
+            poststr(request,"}\n");
+            poststr(request,"</script>");
+			poststr(request, "</tr>");
+		}
+		if(c_pwms == 1) {
+			// nothing else
+		} else if(c_pwms == 2) {
+			// TODO: temperature slider
+		} else if(c_pwms == 3) {
+			// TODO: RGB sliders
+ 
+		} else if(c_pwms == 4) {
+			// TODO: RGBW sliders?
+
+		} else if(c_pwms == 5) {
+
+		}
+
+	}
     poststr(request, "</table>");
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_AppendInformationToHTTPIndexPage(request);

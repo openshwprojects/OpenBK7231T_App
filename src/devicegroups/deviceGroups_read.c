@@ -2,10 +2,11 @@
 #include "deviceGroups_local.h"
 #include "../bitmessage/bitmessage_public.h"
 #include "../logging/logging.h"
+#include "lwip/inet.h"
 
 
 
-int DGR_Parse(const byte *data, int len, dgrDevice_t *dev) {
+int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr) {
 	bitMessage_t msg;
 	char groupName[32];
 	int sequence, flags, type;
@@ -33,8 +34,17 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev) {
 	sequence = MSG_ReadU16(&msg);
 	flags = MSG_ReadU16(&msg);
 
+	// ack, not supported yet
+	if(flags == 8) {
+		return 1;
+	}
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_Parse: seq %i, flags %i\n",sequence, flags);
+	if(dev->cbs.checkSequence(sequence)) {
+		return 1;
+	}
+
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_Parse: [%s] seq %i, flags %i\n",inet_ntoa(((struct sockaddr_in *)addr)->sin_addr),sequence, flags);
 	while(MSG_EOF(&msg)==0) {
 		type = MSG_ReadByte(&msg);
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Next section - %i\n",type);

@@ -518,6 +518,15 @@ void CHANNEL_Set(int ch, int iVal, int iFlags) {
 	bForce = iFlags & CHANNEL_SET_FLAG_FORCE;
 	bSilent = iFlags & CHANNEL_SET_FLAG_SILENT;
 
+	// special channels
+	if(ch == SPECIAL_CHANNEL_LEDPOWER) {
+		LED_SetEnableAll(iVal);
+		return;
+	}
+	if(ch == SPECIAL_CHANNEL_BRIGHTNESS) {
+		LED_SetDimmer(iVal);
+		return;
+	}
 	if(ch < 0 || ch >= CHANNEL_MAX) {
 		//if(bMustBeSilent==0) {
 			addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Set: Channel index %i is out of range <0,%i)\n\r",ch,CHANNEL_MAX);
@@ -590,6 +599,11 @@ int CHANNEL_FindMaxValueForChannel(int ch) {
 void CHANNEL_Toggle(int ch) {
 	int prev;
 
+	// special channels
+	if(ch == SPECIAL_CHANNEL_LEDPOWER) {
+		LED_SetEnableAll(!LED_GetEnableAll());
+		return;
+	}
 	if(ch < 0 || ch >= CHANNEL_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Toggle: Channel index %i is out of range <0,%i)\n\r",ch,CHANNEL_MAX);
 		return;
