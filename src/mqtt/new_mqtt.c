@@ -47,7 +47,7 @@ extern void mqtt_disconnect(mqtt_client_t *client);
 static int g_my_reconnect_mqtt_after_time = -1;
 ip_addr_t mqtt_ip LWIP_MQTT_EXAMPLE_IPADDR_INIT;
 mqtt_client_t* mqtt_client;
-
+static int g_timeSinceLastMQTTPublish = 0;
 static int mqtt_initialised = 0;
 
 typedef struct mqtt_callback_tag {
@@ -337,7 +337,8 @@ int tasCmnd(mqtt_request_t* request){
 // copied here because for some reason renames in sdk?
 static void MQTT_disconnect(mqtt_client_t *client)
 {
-  if (!client) return;
+  if (!client)
+	  return;
   // this is what it was renamed to.  why?
   mqtt_disconnect(client);
 }
@@ -380,6 +381,8 @@ static int MQTT_PublishMain(mqtt_client_t *client, const char *sChannel, const c
 		MQTT_Mutex_Free();
 		return 1;
   }
+
+  g_timeSinceLastMQTTPublish = 0;
 
   addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publishing %s = %s \n",sChannel,sVal);
 
@@ -756,6 +759,7 @@ int MQTT_RunEverySecondUpdate() {
 		return 0;
 	} else {
 		// it is connected
+		g_timeSinceLastMQTTPublish++;
 
 		// do we want to broadcast full state?
 		// Do it slowly in order not to overload the buffers
@@ -763,22 +767,24 @@ int MQTT_RunEverySecondUpdate() {
 		// and then covers Channel indexes up to CHANNEL_MAX
 		if(g_bPublishAllStatesNow) {
 			// Doing step by a step a full publish state
-			int g_sent_thisFrame = 0;
+			if(g_timeSinceLastMQTTPublish > 2) {
+				int g_sent_thisFrame = 0;
 
-			while(g_publishItemIndex < CHANNEL_MAX) {
-				if(MQTT_DoItemPublish(g_publishItemIndex)) {
-					g_sent_thisFrame++;
-					if(g_sent_thisFrame>=2){
-						g_publishItemIndex++;
-						break;
+				while(g_publishItemIndex < CHANNEL_MAX) {
+					if(MQTT_DoItemPublish(g_publishItemIndex)) {
+						g_sent_thisFrame++;
+						if(g_sent_thisFrame>=1){
+							g_publishItemIndex++;
+							break;
+						}
 					}
+					g_publishItemIndex++;
 				}
-				g_publishItemIndex++;
+				if(g_publishItemIndex >= CHANNEL_MAX) {
+					// done
+					g_bPublishAllStatesNow = 0;
+				}	
 			}
-			if(g_publishItemIndex >= CHANNEL_MAX) {
-				// done
-				g_bPublishAllStatesNow = 0;
-			}	
 		} else {
 			// not doing anything
 			if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEPERMINUTE)) {
