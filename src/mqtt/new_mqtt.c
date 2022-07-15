@@ -70,7 +70,7 @@ int g_bPublishAllStatesNow = 0;
 #define PUBLISHITEM_INDEX_FIRST -1
 #define PUBLISHITEM_SELF_IP -1
 int g_publishItemIndex = PUBLISHITEM_INDEX_FIRST;
-
+int g_memoryErrorsThisSession = 0;
 static SemaphoreHandle_t g_mutex = 0;
 
 static bool MQTT_Mutex_Take(int del) {
@@ -81,19 +81,6 @@ static bool MQTT_Mutex_Take(int del) {
 		g_mutex = xSemaphoreCreateMutex( );
 	}
     taken = xSemaphoreTake( g_mutex, del );
-    if (taken == pdTRUE) {
-		return true;
-	}
-	return false;
-}
-static bool MQTT_Mutex_Poll() {
-	int taken;
-
-	if(g_mutex == 0)
-	{
-		return false;
-	}
-    taken = xSemaphoreTake( g_mutex, 0 );
     if (taken == pdTRUE) {
 		return true;
 	}
@@ -367,7 +354,7 @@ static void mqtt_pub_request_cb(void *arg, err_t result)
 // This is used to publish channel values in "obk0696FB33/1/get" format with numerical value,
 // This is also used to publish custom information with string name,
 // for example, "obk0696FB33/voltage/get" is used to publish voltage from the sensor
-static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t *client, const char *sChannel, const char *sVal)
+static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t *client, const char *sChannel, const char *sVal, int flags)
 {
 	char pub_topic[32];
 //  const char *pub_payload= "{\"temperature\": \"45.5\"}";
@@ -383,9 +370,15 @@ static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t *client, const char *sC
 	  return OBK_PUBLISH_WAS_DISCONNECTED;
 
   
-	if(MQTT_Mutex_Take(100)==0) {
-		addLogAdv(LOG_ERROR,LOG_FEATURE_MQTT,"MQTT_PublishMain: mutex failed for %s=%s\r\n", sChannel, sVal);
-		return OBK_PUBLISH_MUTEX_FAIL;
+	if(flags & OBK_PUBLISH_FLAG_MUTEX_SILENT) {
+		if(MQTT_Mutex_Take(100)==0) {
+			return OBK_PUBLISH_MUTEX_FAIL;
+		}
+	} else {
+		if(MQTT_Mutex_Take(500)==0) {
+			addLogAdv(LOG_ERROR,LOG_FEATURE_MQTT,"MQTT_PublishMain: mutex failed for %s=%s\r\n", sChannel, sVal);
+			return OBK_PUBLISH_MUTEX_FAIL;
+		}
 	}
 
 
@@ -408,6 +401,7 @@ static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t *client, const char *sC
 		addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publish err: ERR_CONN aka %d\n", err);
 	 } else if(err == ERR_MEM) {
 		addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publish err: ERR_MEM aka %d\n", err);
+		g_memoryErrorsThisSession ++;
 	 } else {
 		addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publish err: %d\n", err);
 	 }
@@ -629,7 +623,7 @@ OBK_Publish_Result MQTT_PublishMain_StringInt(const char *sChannel, int iv)
 
 	sprintf(valueStr,"%i",iv);
 
-	return MQTT_PublishMain(mqtt_client,sChannel,valueStr);
+	return MQTT_PublishMain(mqtt_client,sChannel,valueStr, 0);
 
 }
 OBK_Publish_Result MQTT_PublishMain_StringFloat(const char *sChannel, float f)
@@ -638,21 +632,21 @@ OBK_Publish_Result MQTT_PublishMain_StringFloat(const char *sChannel, float f)
 
 	sprintf(valueStr,"%f",f);
 
-	return MQTT_PublishMain(mqtt_client,sChannel,valueStr);
+	return MQTT_PublishMain(mqtt_client,sChannel,valueStr, 0);
 
 }
-OBK_Publish_Result MQTT_PublishMain_StringString(const char *sChannel, const char *valueStr)
+OBK_Publish_Result MQTT_PublishMain_StringString(const char *sChannel, const char *valueStr, int flags)
 {
 
-	return MQTT_PublishMain(mqtt_client,sChannel,valueStr);
+	return MQTT_PublishMain(mqtt_client,sChannel,valueStr, flags);
 
 }
-OBK_Publish_Result MQTT_Publish_SelfIP() {
+OBK_Publish_Result MQTT_Publish_SelfIP(int flags) {
 	const char *ip;
 
 	ip = HAL_GetMyIPString();
 
-	return MQTT_PublishMain_StringString("IP",ip);
+	return MQTT_PublishMain_StringString("IP",ip, flags);
 }
 OBK_Publish_Result MQTT_ChannelChangeCallback(int channel, int iVal)
 {
@@ -664,9 +658,9 @@ OBK_Publish_Result MQTT_ChannelChangeCallback(int channel, int iVal)
 	sprintf(channelNameStr,"%i",channel);
 	sprintf(valueStr,"%i",iVal);
 
-	return MQTT_PublishMain(mqtt_client,channelNameStr,valueStr);
+	return MQTT_PublishMain(mqtt_client,channelNameStr,valueStr, 0);
 }
-OBK_Publish_Result MQTT_ChannelPublish(int channel)
+OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 {
 	char channelNameStr[8];
 	char valueStr[16];
@@ -679,7 +673,7 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel)
 	sprintf(channelNameStr,"%i",channel);
 	sprintf(valueStr,"%i",iValue);
 
-	return MQTT_PublishMain(mqtt_client,channelNameStr,valueStr);
+	return MQTT_PublishMain(mqtt_client,channelNameStr,valueStr, flags);
 }
 OBK_Publish_Result MQTT_PublishCommand(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *topic, *value;
@@ -694,7 +688,7 @@ OBK_Publish_Result MQTT_PublishCommand(const void *context, const char *cmd, con
 	topic = Tokenizer_GetArg(0);
 	value = Tokenizer_GetArg(1);
 
-	ret = MQTT_PublishMain_StringString(topic,value);
+	ret = MQTT_PublishMain_StringString(topic,value, 0);
 
 	return ret;
 }
@@ -727,16 +721,13 @@ void MQTT_init(){
 OBK_Publish_Result MQTT_DoItemPublish(int idx) {
 	OBK_Publish_Result ret;
 
-	if(MQTT_Mutex_Poll()==false) {
-		return OBK_PUBLISH_MUTEX_FAIL;
-	}
 
 	if(idx == PUBLISHITEM_SELF_IP) {
-		ret = MQTT_Publish_SelfIP();
+		ret = MQTT_Publish_SelfIP(OBK_PUBLISH_FLAG_MUTEX_SILENT);
 		return ret;  
 	}
-	if(CHANNEL_IsInUse(idx)) {
-		ret = MQTT_ChannelPublish(g_publishItemIndex);
+	if(CHANNEL_IsInUse(idx)) {	
+		ret = MQTT_ChannelPublish(g_publishItemIndex, OBK_PUBLISH_FLAG_MUTEX_SILENT);
 		return ret;
 	}
 	return OBK_PUBLISH_WAS_NOT_REQUIRED; // didnt publish
@@ -749,10 +740,17 @@ int MQTT_RunEverySecondUpdate() {
 	if (!mqtt_initialised)
 		return 0;
 
+	// take mutex for connect and disconnect operations
 	if(MQTT_Mutex_Take(100)==0) {
 		return 0;
 	}
 
+	// reconnect if went into MQTT library ERR_MEM forever loop
+	if(g_memoryErrorsThisSession >= 5) {
+		addLogAdv(LOG_INFO,LOG_FEATURE_MQTT, "MQTT will reconnect soon to fix ERR_MEM errors\n");
+		g_memoryErrorsThisSession = 0;
+		mqtt_reconnect = 5;
+	}
 	// if asked to reconnect (e.g. change of topic(s))
 	if (mqtt_reconnect > 0){
 		mqtt_reconnect --;
@@ -780,6 +778,9 @@ int MQTT_RunEverySecondUpdate() {
 		MQTT_Mutex_Free();
 		return 0;
 	} else {
+		MQTT_Mutex_Free();
+		// below mutex is not required any more
+
 		// it is connected
 		g_timeSinceLastMQTTPublish++;
 
@@ -795,6 +796,7 @@ int MQTT_RunEverySecondUpdate() {
 
 				while(g_publishItemIndex < CHANNEL_MAX) {
 					publishRes = MQTT_DoItemPublish(g_publishItemIndex);
+					addLogAdv(LOG_INFO,LOG_FEATURE_MQTT, "[g_bPublishAllStatesNow] item %i result %i\n",g_publishItemIndex,publishRes);
 					// There are several things that can happen now
 					// OBK_PUBLISH_OK - it was required and was published
 					if(publishRes == OBK_PUBLISH_OK) {
@@ -832,7 +834,6 @@ int MQTT_RunEverySecondUpdate() {
 		}
 
 	}
-	MQTT_Mutex_Free();
 	return 1;
 }
 

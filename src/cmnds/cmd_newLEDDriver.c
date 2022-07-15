@@ -139,7 +139,7 @@ static void sendColorChange() {
 	
 	sprintf(s,"%02X%02X%02X",c[0],c[1],c[2]);
 
-	MQTT_PublishMain_StringString("led_basecolor_rgb",s);
+	MQTT_PublishMain_StringString("led_basecolor_rgb",s, 0);
 }
 void LED_GetBaseColorString(char * s) {
 	byte c[3];
@@ -160,7 +160,7 @@ static void sendFinalColor() {
 	
 	sprintf(s,"%02X%02X%02X",c[0],c[1],c[2]);
 
-	MQTT_PublishMain_StringString("led_finalcolor_rgb",s);
+	MQTT_PublishMain_StringString("led_finalcolor_rgb",s, 0);
 }
 static void sendDimmerChange() {
 	int iValue;
