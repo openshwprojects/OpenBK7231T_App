@@ -158,7 +158,11 @@ int http_fn_index(http_request_t *request) {
         int newPWMValue = atoi(tmpA);
         http_getArg(request->url,"pwmIndex",tmpA,sizeof(tmpA));
         j = atoi(tmpA);
-        hprintf128(request,"<h3>Changed pwm %i to %i!</h3>",j,newPWMValue);
+		if(j == SPECIAL_CHANNEL_TEMPERATURE) {
+			hprintf128(request,"<h3>Changed Temperature to %i!</h3>",newPWMValue);
+		} else {
+			hprintf128(request,"<h3>Changed pwm %i to %i!</h3>",j,newPWMValue);
+		}
         CHANNEL_Set(j,newPWMValue,1);
     }
     if(http_getArg(request->url,"dim",tmpA,sizeof(tmpA))) {
