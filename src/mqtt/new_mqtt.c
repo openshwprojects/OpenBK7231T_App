@@ -796,7 +796,9 @@ int MQTT_RunEverySecondUpdate() {
 
 				while(g_publishItemIndex < CHANNEL_MAX) {
 					publishRes = MQTT_DoItemPublish(g_publishItemIndex);
-					addLogAdv(LOG_INFO,LOG_FEATURE_MQTT, "[g_bPublishAllStatesNow] item %i result %i\n",g_publishItemIndex,publishRes);
+					if(publishRes != OBK_PUBLISH_WAS_NOT_REQUIRED){
+						addLogAdv(LOG_INFO,LOG_FEATURE_MQTT, "[g_bPublishAllStatesNow] item %i result %i\n",g_publishItemIndex,publishRes);
+					}
 					// There are several things that can happen now
 					// OBK_PUBLISH_OK - it was required and was published
 					if(publishRes == OBK_PUBLISH_OK) {
