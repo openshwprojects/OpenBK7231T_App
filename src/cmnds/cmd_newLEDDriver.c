@@ -223,8 +223,9 @@ void LED_SetEnableAll(int bEnable) {
 	g_lightEnableAll = bEnable;
 
 	apply_smart_light();
-
+#ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_DGR_OnLedEnableAllChange(bEnable);
+#endif
 
 	MQTT_PublishMain_StringInt("led_enableAll",g_lightEnableAll);
 }
@@ -256,7 +257,9 @@ void LED_SetDimmer(int iVal) {
 
 	g_brightness = iVal * g_cfg_brightnessMult;
 
+#ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_DGR_OnLedDimmerChange(iVal);
+#endif
 
 	apply_smart_light();
 	sendDimmerChange();
