@@ -2,6 +2,7 @@
 #include "../logging/logging.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
+#include "cmd_public.h"
 #include "../obk_config.h"
 #include "../driver/drv_public.h"
 #include "../rgb2hsv.h"
@@ -43,16 +44,6 @@
 
 int parsePowerArgument(const char *s);
 
-// In general, LED can be in two modes:
-// - Temperature (Cool and Warm LEDs are on)
-// - RGB (R G B LEDs are on)
-// This is just like in Tuya.
-// The third mode, "All", was added by me for testing.
-enum LightMode {
-	Light_Temperature,
-	Light_RGB,
-	Light_All,
-};
 
 int g_lightMode = Light_RGB;
 // Those are base colors, normalized, without brightness applied
@@ -76,9 +67,8 @@ float g_cfg_brightnessMult = 0.01f;
 // the slider control in the UI emits values
 //in the range from 154-500 (defined
 //in homeassistant/util/color.py as HASS_COLOR_MIN and HASS_COLOR_MAX).
-
-float led_temperature_min = 154.0f;
-float led_temperature_max = 500.0f;
+float led_temperature_min = HASS_TEMPERATURE_MIN;
+float led_temperature_max = HASS_TEMPERATURE_MAX;
 float led_temperature_current = 0;
 
 void apply_smart_light() {
@@ -149,6 +139,15 @@ static void sendColorChange() {
 
 	MQTT_PublishMain_StringString("led_basecolor_rgb",s);
 }
+void LED_GetBaseColorString(char * s) {
+	byte c[3];
+
+	c[0] = (byte)(baseColors[0]);
+	c[1] = (byte)(baseColors[1]);
+	c[2] = (byte)(baseColors[2]);
+	
+	sprintf(s,"%02X%02X%02X",c[0],c[1],c[2]);
+}
 static void sendFinalColor() {
 	char s[16];
 	byte c[3];
@@ -171,8 +170,14 @@ static void sendDimmerChange() {
 static void sendTemperatureChange(){
 	MQTT_PublishMain_StringInt("led_temperature", (int)led_temperature_current);
 }
+float LED_GetTemperature() {
+	return led_temperature_current;
+}
+int LED_GetMode() {
+	return g_lightMode;
+}
 
-static void setTemperature(int tmpInteger, bool bApply) {
+void LED_SetTemperature(int tmpInteger, bool bApply) {
 	float f;
 	
 	led_temperature_current = tmpInteger;
@@ -191,6 +196,7 @@ static void setTemperature(int tmpInteger, bool bApply) {
 
 	if(bApply) {
 		g_lightMode = Light_Temperature;
+		sendTemperatureChange();
 		apply_smart_light();
 	}
 
@@ -205,9 +211,7 @@ static int temperature(const void *context, const char *cmd, const char *args, i
 
 		tmp = atoi(args);
 
-		setTemperature(tmp, 1);
-
-		sendTemperatureChange();
+		LED_SetTemperature(tmp, 1);
 
 		return 1;
 	//}
@@ -276,7 +280,7 @@ static int dimmer(const void *context, const char *cmd, const char *args, int cm
 	//}
 	//return 0;
 }
-static int basecolor(const void *context, const char *cmd, const char *args, int bAll){
+int LED_SetBaseColor(const void *context, const char *cmd, const char *args, int bAll){
    // support both '#' prefix and not
             const char *c = args;
             int val = 0;
@@ -347,10 +351,10 @@ static int basecolor(const void *context, const char *cmd, const char *args, int
 }
 
 static int basecolor_rgb(const void *context, const char *cmd, const char *args, int cmdFlags){
-	return basecolor(context,cmd,args,0);
+	return LED_SetBaseColor(context,cmd,args,0);
 }
 static int basecolor_rgbcw(const void *context, const char *cmd, const char *args, int cmdFlags){
-	return basecolor(context,cmd,args,1);
+	return LED_SetBaseColor(context,cmd,args,1);
 }
 
 // CONFIG-ONLY command!
@@ -437,7 +441,7 @@ int NewLED_InitCommands(){
     CMD_RegisterCommand("led_hue", "", setHue, "set qqqq", NULL);
 
 	// set, but do not apply
-	setTemperature(250,0);
+	LED_SetTemperature(250,0);
 
 	// "cmnd/obk8D38570E/led_dimmer_get""
     return 0;

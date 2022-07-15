@@ -71,6 +71,25 @@ int g_bPublishAllStatesNow = 0;
 #define PUBLISHITEM_SELF_IP -1
 int g_publishItemIndex = PUBLISHITEM_INDEX_FIRST;
 
+static SemaphoreHandle_t g_mutex = 0;
+
+static bool MQTT_Mutex_Take(int del) {
+	int taken;
+
+	if(g_mutex == 0)
+	{
+		g_mutex = xSemaphoreCreateMutex( );
+	}
+    taken = xSemaphoreTake( g_mutex, del );
+    if (taken == pdTRUE) {
+		return true;
+	}
+	return false;
+}
+static void MQTT_Mutex_Free() {
+	xSemaphoreGive( g_mutex );
+}
+
 void MQTT_PublishWholeDeviceState() {
 	g_bPublishAllStatesNow = 1;
 	g_publishItemIndex = PUBLISHITEM_INDEX_FIRST;
@@ -334,7 +353,7 @@ static void mqtt_pub_request_cb(void *arg, err_t result)
 // This is used to publish channel values in "obk0696FB33/1/get" format with numerical value,
 // This is also used to publish custom information with string name,
 // for example, "obk0696FB33/voltage/get" is used to publish voltage from the sensor
-void MQTT_PublishMain(mqtt_client_t *client, const char *sChannel, const char *sVal)
+static int MQTT_PublishMain(mqtt_client_t *client, const char *sChannel, const char *sVal)
 {
 	char pub_topic[32];
 //  const char *pub_payload= "{\"temperature\": \"45.5\"}";
@@ -344,11 +363,22 @@ void MQTT_PublishMain(mqtt_client_t *client, const char *sChannel, const char *s
   u8_t retain = 0; /* No don't retain such crappy payload... */
 	const char *baseName;
 
+
+
   if(client==0)
-	  return;
+	  return 1;
+
+  
+	if(MQTT_Mutex_Take(100)==0) {
+		addLogAdv(LOG_ERROR,LOG_FEATURE_MQTT,"MQTT_PublishMain: mutex failed for %s=%s\r\n", sChannel, sVal);
+		return 1;
+	}
+
+
   if(mqtt_client_is_connected(client)==0) {
 		 g_my_reconnect_mqtt_after_time = 5;
-		return;
+		MQTT_Mutex_Free();
+		return 1;
   }
 
   addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publishing %s = %s \n",sChannel,sVal);
@@ -366,6 +396,8 @@ void MQTT_PublishMain(mqtt_client_t *client, const char *sChannel, const char *s
 		addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publish err: %d\n", err);
 	 }
   }
+	MQTT_Mutex_Free();
+	return 0;
 }
 
 
@@ -573,32 +605,38 @@ static void MQTT_do_connect(mqtt_client_t *client)
    addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"mqtt_host %s not found by gethostbyname\r\n", mqtt_host);
   }
 }
-void MQTT_PublishMain_StringInt(const char *sChannel, int iv)
+int MQTT_PublishMain_StringInt(const char *sChannel, int iv)
 {
 	char valueStr[16];
+
 	sprintf(valueStr,"%i",iv);
 
-	MQTT_PublishMain(mqtt_client,sChannel,valueStr);
+	return MQTT_PublishMain(mqtt_client,sChannel,valueStr);
+
 }
-void MQTT_PublishMain_StringFloat(const char *sChannel, float f)
+int MQTT_PublishMain_StringFloat(const char *sChannel, float f)
 {
 	char valueStr[16];
+
 	sprintf(valueStr,"%f",f);
 
-	MQTT_PublishMain(mqtt_client,sChannel,valueStr);
+	return MQTT_PublishMain(mqtt_client,sChannel,valueStr);
+
 }
-void MQTT_PublishMain_StringString(const char *sChannel, const char *valueStr)
+int MQTT_PublishMain_StringString(const char *sChannel, const char *valueStr)
 {
-	MQTT_PublishMain(mqtt_client,sChannel,valueStr);
+
+	return MQTT_PublishMain(mqtt_client,sChannel,valueStr);
+
 }
-void MQTT_Publish_SelfIP() {
+int MQTT_Publish_SelfIP() {
 	const char *ip;
 
 	ip = HAL_GetMyIPString();
 
-	MQTT_PublishMain_StringString("IP",ip);
+	return MQTT_PublishMain_StringString("IP",ip);
 }
-void MQTT_ChannelChangeCallback(int channel, int iVal)
+int MQTT_ChannelChangeCallback(int channel, int iVal)
 {
 	char channelNameStr[8];
 	char valueStr[16];
@@ -608,9 +646,9 @@ void MQTT_ChannelChangeCallback(int channel, int iVal)
 	sprintf(channelNameStr,"%i",channel);
 	sprintf(valueStr,"%i",iVal);
 
-	MQTT_PublishMain(mqtt_client,channelNameStr,valueStr);
+	return MQTT_PublishMain(mqtt_client,channelNameStr,valueStr);
 }
-void MQTT_ChannelPublish(int channel)
+int  MQTT_ChannelPublish(int channel)
 {
 	char channelNameStr[8];
 	char valueStr[16];
@@ -623,7 +661,7 @@ void MQTT_ChannelPublish(int channel)
 	sprintf(channelNameStr,"%i",channel);
 	sprintf(valueStr,"%i",iValue);
 
-	MQTT_PublishMain(mqtt_client,channelNameStr,valueStr);
+	return MQTT_PublishMain(mqtt_client,channelNameStr,valueStr);
 }
 int MQTT_PublishCommand(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *topic, *value;
@@ -686,6 +724,10 @@ int MQTT_RunEverySecondUpdate() {
 	if (!mqtt_initialised)
 		return 0;
 
+	if(MQTT_Mutex_Take(100)==0) {
+		return 0;
+	}
+
 	// if asked to reconnect (e.g. change of topic(s))
 	if (mqtt_reconnect > 0){
 		mqtt_reconnect --;
@@ -710,6 +752,7 @@ int MQTT_RunEverySecondUpdate() {
 			MQTT_do_connect(mqtt_client);
 			loopsWithDisconnected = 0;
 		}
+		MQTT_Mutex_Free();
 		return 0;
 	} else {
 		// it is connected
@@ -749,6 +792,7 @@ int MQTT_RunEverySecondUpdate() {
 		}
 
 	}
+	MQTT_Mutex_Free();
 	return 1;
 }
 

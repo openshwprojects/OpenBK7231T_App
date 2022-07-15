@@ -530,6 +530,10 @@ void CHANNEL_Set(int ch, int iVal, int iFlags) {
 		LED_SetDimmer(iVal);
 		return;
 	}
+	if(ch == SPECIAL_CHANNEL_TEMPERATURE) {
+		LED_SetTemperature(iVal,1);
+		return;
+	}
 	if(ch < 0 || ch >= CHANNEL_MAX) {
 		//if(bMustBeSilent==0) {
 			addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Set: Channel index %i is out of range <0,%i)\n\r",ch,CHANNEL_MAX);
@@ -633,6 +637,9 @@ int CHANNEL_HasChannelPinWithRole(int ch, int iorType) {
 	return 0;
 }
 bool CHANNEL_Check(int ch) {
+	if(ch == SPECIAL_CHANNEL_LEDPOWER) {
+		return LED_GetEnableAll();
+	}
 	if(ch < 0 || ch >= CHANNEL_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Check: Channel index %i is out of range <0,%i)\n\r",ch,CHANNEL_MAX);
 		return 0;

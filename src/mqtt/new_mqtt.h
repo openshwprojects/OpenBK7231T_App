@@ -39,10 +39,10 @@ int MQTT_RemoveCallback(int ID);
 
 void MQTT_GetStats(int *outUsed, int *outMax, int *outFreeMem);
 
-void MQTT_PublishMain_StringFloat(const char *sChannel, float f);
-void MQTT_PublishMain_StringInt(const char *sChannel, int val);
-void MQTT_PublishMain_StringString(const char *sChannel, const char *valueStr);
-void MQTT_ChannelChangeCallback(int channel, int iVal);
+int MQTT_PublishMain_StringFloat(const char *sChannel, float f);
+int MQTT_PublishMain_StringInt(const char *sChannel, int val);
+int MQTT_PublishMain_StringString(const char *sChannel, const char *valueStr);
+int MQTT_ChannelChangeCallback(int channel, int iVal);
 
 
 

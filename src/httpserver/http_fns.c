@@ -124,7 +124,7 @@ int http_fn_index(http_request_t *request) {
 	char tmpA[128];
 	int bRawPWMs;
 
-	bRawPWMs = 0;
+	bRawPWMs = CFG_HasFlag(OBK_FLAG_LED_RAWCHANNELSMODE);
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
@@ -132,7 +132,11 @@ int http_fn_index(http_request_t *request) {
     HTTP_AddHeader(request);
     if(http_getArg(request->url,"tgl",tmpA,sizeof(tmpA))) {
         j = atoi(tmpA);
-        hprintf128(request,"<h3>Toggled %i!</h3>",j);
+		if(i == SPECIAL_CHANNEL_LEDPOWER) {
+			hprintf128(request,"<h3>Toggled LED power!</h3>",j);
+		} else {
+			hprintf128(request,"<h3>Toggled %i!</h3>",j);
+		}
         CHANNEL_Toggle(j);
     }
     if(http_getArg(request->url,"on",tmpA,sizeof(tmpA))) {
@@ -140,6 +144,11 @@ int http_fn_index(http_request_t *request) {
         hprintf128(request,"<h3>Enabled %i!</h3>",j);
         CHANNEL_Set(j,255,1);
     }
+    if(http_getArg(request->url,"rgb",tmpA,sizeof(tmpA))) {
+        hprintf128(request,"<h3>Set RGB to %s!</h3>",tmpA);
+		LED_SetBaseColor(0,"led_basecolor",tmpA,0);
+    }
+	
     if(http_getArg(request->url,"off",tmpA,sizeof(tmpA))) {
         j = atoi(tmpA);
         hprintf128(request,"<h3>Disabled %i!</h3>",j);
@@ -155,8 +164,12 @@ int http_fn_index(http_request_t *request) {
     if(http_getArg(request->url,"dim",tmpA,sizeof(tmpA))) {
         int newDimmerValue = atoi(tmpA);
         http_getArg(request->url,"dimIndex",tmpA,sizeof(tmpA));
-       j  = atoi(tmpA);
-        hprintf128(request,"<h3>Changed dimmer %i to %i!</h3>",j,newDimmerValue);
+		j  = atoi(tmpA);
+		if(j == SPECIAL_CHANNEL_BRIGHTNESS) {
+			hprintf128(request,"<h3>Changed LED brightness to %i!</h3>",newDimmerValue);
+		} else {
+			hprintf128(request,"<h3>Changed dimmer %i to %i!</h3>",j,newDimmerValue);
+		}
         CHANNEL_Set(j,newDimmerValue,1);
     }
     if(http_getArg(request->url,"set",tmpA,sizeof(tmpA))) {
@@ -318,12 +331,15 @@ int http_fn_index(http_request_t *request) {
     }
 	if(bRawPWMs == 0) {
 		int c_pwms;
+		int lm;
+
+		lm = LED_GetMode();
 
 		c_pwms = PIN_CountPinsWithRole(IOR_PWM);
 
 		if(c_pwms > 0) {
 			const char *c;
-			if(CHANNEL_Check(i)) {
+			if(CHANNEL_Check(SPECIAL_CHANNEL_LEDPOWER)) {
 				c = "bgrn";
 			} else {
 				c = "bred";
@@ -331,7 +347,7 @@ int http_fn_index(http_request_t *request) {
 			poststr(request, "<tr>");
 			poststr(request,"<td><form action=\"index\">");
 			hprintf128(request,"<input type=\"hidden\" name=\"tgl\" value=\"%i\">",SPECIAL_CHANNEL_LEDPOWER);
-			hprintf128(request,"<input class=\"%s\" type=\"submit\" value=\"Toggle %i\"/></form></td>",c,SPECIAL_CHANNEL_LEDPOWER);
+			hprintf128(request,"<input class=\"%s\" type=\"submit\" value=\"Toggle Light\"/></form></td>",c);
 			poststr(request, "</tr>");
 		}
 
@@ -344,6 +360,7 @@ int http_fn_index(http_request_t *request) {
             pwmValue = LED_GetDimmer();
 
 			poststr(request, "<tr>");
+            hprintf128(request,"<h5> LED Dimmer/Brightness </h5>");
             hprintf128(request,"<form action=\"index\" id=\"form%i\">",SPECIAL_CHANNEL_BRIGHTNESS);
             hprintf128(request,"<input type=\"range\" min=\"0\" max=\"100\" name=\"%s\" id=\"slider%i\" value=\"%i\">",inputName,SPECIAL_CHANNEL_BRIGHTNESS,pwmValue);
             hprintf128(request,"<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">",inputName,SPECIAL_CHANNEL_BRIGHTNESS);
@@ -358,19 +375,63 @@ int http_fn_index(http_request_t *request) {
             poststr(request,"</script>");
 			poststr(request, "</tr>");
 		}
-		if(c_pwms == 1) {
-			// nothing else
-		} else if(c_pwms == 2) {
-			// TODO: temperature slider
-		} else if(c_pwms == 3) {
-			// TODO: RGB sliders
- 
-		} else if(c_pwms == 4) {
-			// TODO: RGBW sliders?
+		if(c_pwms >= 3) {
+			char colorValue[16];
+			const char *inputName = "rgb";
+			const char *activeStr = "";
+			if(lm == Light_RGB) {
+				activeStr = "[ACTIVE]";
+			}
 
-		} else if(c_pwms == 5) {
+			LED_GetBaseColorString(colorValue);
+
+            hprintf128(request,"<h5> LED RGB Color %s </h5>",activeStr);
+            hprintf128(request,"<form action=\"index\" id=\"form%i\">",SPECIAL_CHANNEL_BASECOLOR);
+			hprintf128(request,"<input type=\"color\" name=\"%s\" id=\"color%i\" value=\"#%s\">",inputName,SPECIAL_CHANNEL_BASECOLOR,colorValue);
+            hprintf128(request,"<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">",inputName,SPECIAL_CHANNEL_BASECOLOR);
+            hprintf128(request,"<input  type=\"submit\" style=\"display:none;\" value=\"Toggle Light\"/></form>");
+
+
+            poststr(request,"<script>");
+            hprintf128(request,"var color = document.getElementById(\"color%i\");\n",SPECIAL_CHANNEL_BASECOLOR);
+            poststr(request,"color.onchange = function () {\n");
+            hprintf128(request," document.getElementById(\"form%i\").submit();\n",SPECIAL_CHANNEL_BASECOLOR);
+            poststr(request,"}\n");
+            poststr(request,"</script>");
 
 		}
+		if(c_pwms == 2 || c_pwms == 5) {
+			// TODO: temperature slider
+			int pwmValue;
+        	const char *inputName;
+			const char *activeStr = "";
+			if(lm == Light_Temperature) {
+				activeStr = "[ACTIVE]";
+			}
+
+			inputName = "pwm";
+
+            pwmValue = LED_GetTemperature();
+
+			poststr(request, "<tr>");
+            hprintf128(request,"<h5> LED Temperature Slider %s (cur=%i, min=%i, max=%i) (Cold <--- ---> Warm) </h5>",activeStr,pwmValue,HASS_TEMPERATURE_MIN,HASS_TEMPERATURE_MAX);
+            hprintf128(request,"<form action=\"index\" id=\"form%i\">",SPECIAL_CHANNEL_TEMPERATURE);
+            hprintf128(request,"<input type=\"range\" min=\"%i\" max=\"%i\"", HASS_TEMPERATURE_MIN,HASS_TEMPERATURE_MAX);
+			hprintf128(request,"name=\"%s\" id=\"slider%i\" value=\"%i\">",inputName,SPECIAL_CHANNEL_TEMPERATURE,pwmValue);
+            hprintf128(request,"<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">",inputName,SPECIAL_CHANNEL_TEMPERATURE);
+            hprintf128(request,"<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>",SPECIAL_CHANNEL_TEMPERATURE);
+
+
+            poststr(request,"<script>");
+            hprintf128(request,"var slider = document.getElementById(\"slider%i\");\n",SPECIAL_CHANNEL_TEMPERATURE);
+            poststr(request,"slider.onmouseup = function () {\n");
+            hprintf128(request," document.getElementById(\"form%i\").submit();\n",SPECIAL_CHANNEL_TEMPERATURE);
+            poststr(request,"}\n");
+            poststr(request,"</script>");
+			poststr(request, "</tr>");
+
+			
+		} 
 
 	}
     poststr(request, "</table>");
@@ -1447,7 +1508,7 @@ const char *g_obk_flagNames[] = {
 	"[MQTT] Broadcast led params together (send dimmer and color when dimmer or color changes, topic name: YourDevName/led_basecolor_rgb/get, YourDevName/led_dimmer/get)",
 	"[MQTT] Broadcast led final color (topic name: YourDevName/led_finalcolor_rgb/get)",
 	"[MQTT] Broadcast self state every minute",
-	"error",
+	"[LED][Debug] Show raw PWM controller on WWW index instead of new LED RGB/CW/etc picker",
 	"error",
 	"error",
 	"error",

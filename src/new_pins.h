@@ -66,6 +66,8 @@ enum ChannelType {
 
 #define SPECIAL_CHANNEL_BRIGHTNESS 129
 #define SPECIAL_CHANNEL_LEDPOWER 130
+#define SPECIAL_CHANNEL_BASECOLOR 131
+#define SPECIAL_CHANNEL_TEMPERATURE 132
 
 typedef struct pinsState_s {
 	// All above values are indexed by physical pin index
@@ -86,7 +88,9 @@ typedef struct pinsState_s {
 #define OBK_FLAG_MQTT_BROADCASTLEDPARAMSTOGETHER	0	
 #define OBK_FLAG_MQTT_BROADCASTLEDFINALCOLOR		1
 #define OBK_FLAG_MQTT_BROADCASTSELFSTATEPERMINUTE	2
-#define OBK_TOTAL_FLAGS 3
+#define OBK_FLAG_LED_RAWCHANNELSMODE				3
+
+#define OBK_TOTAL_FLAGS 4
 
 //
 // Main config structure (less than 2KB)
