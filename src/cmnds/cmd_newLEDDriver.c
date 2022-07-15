@@ -123,9 +123,11 @@ void apply_smart_light() {
 
 		CHANNEL_Set(channelToUse, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT);
 	}
+#ifndef OBK_DISABLE_ALL_DRIVERS
 	if(DRV_IsRunning("SM2135")) {
 		SM2135_Write(finalRGBCW);
 	}
+#endif
 }
 static void sendColorChange() {
 	char s[16];

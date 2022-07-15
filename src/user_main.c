@@ -453,7 +453,9 @@ void Main_Init()
 
 		// autostart drivers
 		if(PIN_FindPinIndexForRole(IOR_SM2135_CLK,-1) != -1 && PIN_FindPinIndexForRole(IOR_SM2135_DAT,-1) != -1) {
+#ifndef OBK_DISABLE_ALL_DRIVERS
 			DRV_StartDriver("SM2135");
+#endif
 		}
 
 		g_enable_pins = 1;
