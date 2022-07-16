@@ -74,6 +74,11 @@ char *logfeaturenames[] = {
 
 int direct_serial_log = DEFAULT_DIRECT_SERIAL_LOG;
 
+static int g_extraSocketToSendLOG = 0;
+
+void LOG_SetRawSocketCallback(int newFD) {
+	g_extraSocketToSendLOG = newFD;
+}
 #ifdef WINDOWS
 
 
@@ -102,9 +107,10 @@ void addLogAdv(int level, int feature, char *fmt, ...){
 
 #else // from WINDOWS
 
-static SemaphoreHandle_t g_mutex = 0;
 
 #ifdef DEBUG_USE_SIMPLE_LOGGER
+
+static SemaphoreHandle_t g_mutex = 0;
 
 void addLogAdv(int level, int feature, char *fmt, ...){
     va_list argList;
@@ -137,6 +143,9 @@ void addLogAdv(int level, int feature, char *fmt, ...){
 
 		bk_printf(tmp);
 		bk_printf("\r\n");
+		if(g_extraSocketToSendLOG) {
+			send(g_extraSocketToSendLOG,tmp,strlen(tmp),0);
+		}
 
         xSemaphoreGive( g_mutex );
         if (log_delay){
@@ -235,6 +244,9 @@ void addLogAdv(int level, int feature, char *fmt, ...){
 //#if PLATFORM_BL602
 //    printf(tmp);
 //#endif
+	if(g_extraSocketToSendLOG) {
+		send(g_extraSocketToSendLOG,tmp,strlen(tmp),0);
+	}
 
     if (direct_serial_log){
         bk_printf(tmp);

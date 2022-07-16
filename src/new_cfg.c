@@ -375,6 +375,10 @@ void CFG_SetFlag(int flag, bool bValue) {
 	if(nf != g_cfg.genericFlags) {
 		g_cfg.genericFlags = nf;
 		g_cfg_pendingChanges++;
+		// this will start only if it wasnt running
+		if(bValue && flag == OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER) {
+			CMD_StartTCPCommandLine();
+		}
 	}
 }
 int CFG_GetFlags() {

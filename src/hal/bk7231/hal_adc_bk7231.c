@@ -8,6 +8,7 @@
 #include <rtos_error.h>
 #include <sys_ctrl_pub.h>
 #include "../../logging/logging.h"
+#include "../../new_common.h"
 
 #include <saradc_pub.h>
 #include <drv_model_pub.h>
@@ -25,7 +26,6 @@ static int adcToGpio[] = {
 };
 static int c_adcToGpio = sizeof(adcToGpio)/sizeof(adcToGpio[0]);
 
-static uint16_t adcData[1];
 
 static uint8_t gpioToAdc(int gpio) {
 	uint8_t i;

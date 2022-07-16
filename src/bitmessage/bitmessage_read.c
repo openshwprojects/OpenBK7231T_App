@@ -2,10 +2,10 @@
 
 
 
-void MSG_BeginReading(bitMessage_t *msg, byte *data, int dataSize) {
+void MSG_BeginReading(bitMessage_t *msg, const byte *data, int dataSize) {
 	msg->position = 0;
 	msg->totalSize = dataSize;
-	msg->data = data;
+	msg->data = (byte*) data;
 }
 const char *MSG_GetStringPointerAtCurrentPosition(bitMessage_t *msg) {
 	const char *r = (const char*)(msg->data+msg->position);

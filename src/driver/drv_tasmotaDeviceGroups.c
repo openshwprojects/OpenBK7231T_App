@@ -63,7 +63,7 @@ void DRV_DGR_CreateSocket_Send() {
 
 
 }
-void DRV_DGR_Send_Generic(char *message, int len) {
+void DRV_DGR_Send_Generic(byte *message, int len) {
     struct sockaddr_in addr;
 	int nbytes;
 
@@ -78,7 +78,7 @@ void DRV_DGR_Send_Generic(char *message, int len) {
 
     nbytes = sendto(
             g_dgr_socket_send,
-            message,
+           (const char*) message,
             len,
             0,
             (struct sockaddr*) &addr,
@@ -87,7 +87,7 @@ void DRV_DGR_Send_Generic(char *message, int len) {
 }
 void DRV_DGR_Send_Power(const char *groupName, int channelValues, int numChannels){
 	int len;
-	char message[64];
+	byte message[64];
 
 	len = DGR_Quick_FormatPowerState(message,sizeof(message),groupName,g_dgr_send_seq, 0,channelValues, numChannels);
 
@@ -95,7 +95,7 @@ void DRV_DGR_Send_Power(const char *groupName, int channelValues, int numChannel
 }
 void DRV_DGR_Send_Brightness(const char *groupName, byte brightness){
 	int len;
-	char message[64];
+	byte message[64];
 
 	len = DGR_Quick_FormatBrightness(message,sizeof(message),groupName,g_dgr_send_seq, 0, brightness);
 
@@ -298,7 +298,7 @@ void DRV_DGR_RunFrame() {
         }
     // now just enter a read-print loop
     //
-        int addrlen = sizeof(addr);
+        socklen_t addrlen = sizeof(addr);
         int nbytes = recvfrom(
             g_dgr_socket_receive,
             msgbuf,

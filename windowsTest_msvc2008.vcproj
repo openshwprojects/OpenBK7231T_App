@@ -816,6 +816,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\cmnds\cmd_tcp.c"
+				>
+			</File>
+			<File
 				RelativePath=".\src\cmnds\cmd_test.c"
 				>
 			</File>

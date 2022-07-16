@@ -178,7 +178,6 @@ void Main_OnEverySecond()
 {
 	int bMQTTconnected;
 	const char *safe;
-	int val;
 
 	// run_adc_test();
 	bMQTTconnected = MQTT_RunEverySecondUpdate();

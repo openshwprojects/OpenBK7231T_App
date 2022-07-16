@@ -409,7 +409,7 @@ static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t *client, const char *sC
 	MQTT_Mutex_Free();
 	return OBK_PUBLISH_OK;
 }
-void MQTT_OBK_Printf(const char *s) {
+void MQTT_OBK_Printf( char *s) {
 		addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,s);
 }
 

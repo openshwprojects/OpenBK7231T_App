@@ -15,7 +15,7 @@
 #define _OBK_LOGGING_H
 
 void addLogAdv(int level, int feature, char *fmt, ...);
-
+void LOG_SetRawSocketCallback(int newFD);
 int log_command(const void *context, const char *cmd, const char *args, int cmdFlags);
 
 #define ADDLOG_ERROR(x, fmt, ...) addLogAdv(LOG_ERROR, x, fmt, ##__VA_ARGS__)

@@ -94,5 +94,7 @@ int fortest_commands_init();
 void CMD_InitChannelCommands();
 // cmd_send.c
 int CMD_InitSendCommands();
+// cmd_tcp.c
+void CMD_StartTCPCommandLine();
 
 #endif // __CMD_PUBLIC_H__

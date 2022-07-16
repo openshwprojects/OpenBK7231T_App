@@ -1519,7 +1519,7 @@ const char *g_obk_flagNames[] = {
 	"[MQTT] Broadcast self state every minute (May cause device disconnect's, DONT USE IT YET)",
 	"[LED][Debug] Show raw PWM controller on WWW index instead of new LED RGB/CW/etc picker",
 	"[LED] Force show RGBCW controller (for example, for SM2135 LEDs, or for DGR sender)",
-	"error",
+	"[CMD] Enable TCP console command server (for Putty, etc)",
 	"error",
 	"error",
 	"error",

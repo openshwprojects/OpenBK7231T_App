@@ -8,6 +8,7 @@
 #include "drv_local.h"
 #include "drv_uart.h"
 #include "../httpserver/new_http.h"
+#include "../hal/hal_pins.h"
 
 #include "drv_sm2135.h"
 
@@ -86,7 +87,7 @@ void SM2135_Write(byte *rgbcw) {
     SM2135_Stop();
 }
 
-static int SM2135_RGBCW(const void *context, const char *cmd, const char *args){
+static int SM2135_RGBCW(const void *context, const char *cmd, const char *args, int flags){
 	const char *c = args;
 	byte col[5] = { 0, 0, 0, 0, 0 };
 	int ci;
@@ -131,7 +132,7 @@ static int SM2135_RGBCW(const void *context, const char *cmd, const char *args){
 // This is the order used on my polish Spectrum WOJ14415 bulb:
 // SM2135_Map 2 1 0 4 3 
 
-static int SM2135_Map(const void *context, const char *cmd, const char *args){
+static int SM2135_Map(const void *context, const char *cmd, const char *args, int flags){
 	
 	Tokenizer_TokenizeString(args);
 

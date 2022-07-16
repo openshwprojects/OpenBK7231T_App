@@ -16,7 +16,7 @@ static float CSE7766_IREF = 251210;
 static int raw_unscaled_voltage;
 static int raw_unscaled_current;
 static int raw_unscaled_power;
-static int raw_unscaled_freq;
+//static int raw_unscaled_freq;
 
 
 #define CSE7766_BAUD_RATE 4800
@@ -87,7 +87,7 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 
 	{
 		unsigned char adjustement;
-		long power_cycle_first = 0;
+		//long power_cycle_first = 0;
 		long cf_pulses = 0;
 
 

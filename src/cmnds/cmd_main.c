@@ -48,6 +48,9 @@ static int CMD_Restart(const void *context, const char *cmd, const char *args, i
 
 void CMD_Init() {
     CMD_RegisterCommand("restart", "", CMD_Restart, "Reboots the module", NULL);
+	if(CFG_HasFlag(OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER)) {
+		CMD_StartTCPCommandLine();
+	}
 }
 
 
@@ -110,6 +113,9 @@ int get_cmd(const char *s, char *dest, int maxlen, int stripnum){
 	int count = 0;
 	for (i = 0; i < maxlen-1; i++){
 		if (isWhiteSpace(*s)) {
+			break;
+		}
+		if(*s == 0) {
 			break;
 		}
 		if (stripnum && *s >= '0' && *s <= '9'){

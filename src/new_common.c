@@ -25,7 +25,7 @@ int strIsInteger(const char *s) {
 	if(*s == 0)
 		return 0;
 	while(*s) {
-		if(isdigit(*s)==false)
+		if(isdigit((unsigned char)*s)==false)
 			return 0;
 		s++;
 	}

@@ -75,7 +75,6 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr
 			MSG_SkipBytes(&msg,2);
 		} else if(type < DGR_ITEM_MAX_32BIT) {
 			if(type == DGR_ITEM_POWER) {
-				int total = 0;
 
 				relayFlags = MSG_Read3Bytes(&msg);
 				relaysCnt = MSG_ReadByte(&msg);
