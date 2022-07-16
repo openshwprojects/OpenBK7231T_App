@@ -66,7 +66,7 @@ char *logfeaturenames[] = {
     "NTP:", // = 11
 	"TuyaMCU:",// = 12
 	"I2C:",// = 13
-	"BL0942:",// = 14
+	"EnergyMeter:",// = 14
 	"EVENT:",// = 15
 	"DGR:",// = 16
 };

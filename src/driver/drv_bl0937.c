@@ -48,7 +48,7 @@ int BL0937_PowerSet(const void *context, const char *cmd, const char *args, int 
 	float realPower;
 
 	if(args==0||*args==0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"This command needs one argument");
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
 		return 1;
 	}
 	realPower = atof(args);
@@ -56,14 +56,14 @@ int BL0937_PowerSet(const void *context, const char *cmd, const char *args, int 
 	{
 		char dbg[128];
 		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realPower, calib_p);
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,dbg);
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 	return 0;
 }
 int BL0937_PowerRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
 	if(args==0||*args==0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"This command needs one argument");
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
 		return 1;
 	}
 	calib_p = atof(args);
@@ -72,7 +72,7 @@ int BL0937_PowerRef(const void *context, const char *cmd, const char *args, int 
 int BL0937_CurrentRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
 	if(args==0||*args==0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"This command needs one argument");
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
 		return 1;
 	}
 	calib_c = atof(args);
@@ -81,7 +81,7 @@ int BL0937_CurrentRef(const void *context, const char *cmd, const char *args, in
 int BL0937_VoltageRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
 	if(args==0||*args==0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"This command needs one argument");
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
 		return 1;
 	}
 	calib_v = atof(args);
@@ -91,7 +91,7 @@ int BL0937_VoltageSet(const void *context, const char *cmd, const char *args, in
 	float realV;
 
 	if(args==0||*args==0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"This command needs one argument");
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
 		return 1;
 	}
 	realV = atof(args);
@@ -99,7 +99,7 @@ int BL0937_VoltageSet(const void *context, const char *cmd, const char *args, in
 	{
 		char dbg[128];
 		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realV, calib_v);
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,dbg);
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 
 	return 0;
@@ -108,7 +108,7 @@ int BL0937_CurrentSet(const void *context, const char *cmd, const char *args, in
 	float realI;
 
 	if(args==0||*args==0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"This command needs one argument");
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
 		return 1;
 	}
 	realI = atof(args);
@@ -116,7 +116,7 @@ int BL0937_CurrentSet(const void *context, const char *cmd, const char *args, in
 	{
 		char dbg[128];
 		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realI, calib_c);
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,dbg);
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 	return 0;
 }
@@ -164,7 +164,7 @@ void BL0937_RunFrame() {
 	res_p = g_p_pulses;
 	g_p_pulses = 0;
 
-	//addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
 
 	final_v = res_v * calib_v;
 	final_c = res_c * calib_c;
@@ -173,7 +173,7 @@ void BL0937_RunFrame() {
 	{
 		char dbg[128];
 		sprintf(dbg,"Voltage %f, current %f, power %f\n", final_v, final_c, final_p);
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,dbg);
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 #endif
 	BL_ProcessUpdate(final_v,final_c,final_p);

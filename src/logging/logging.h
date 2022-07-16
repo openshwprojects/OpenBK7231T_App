@@ -69,7 +69,7 @@ typedef enum {
     LOG_FEATURE_NTP             = 11,
 	LOG_FEATURE_TUYAMCU			= 12,
 	LOG_FEATURE_I2C				= 13,
-	LOG_FEATURE_BL09XX			= 14,
+	LOG_FEATURE_ENERGYMETER		= 14,
 	LOG_FEATURE_EVENT			= 15,
 	LOG_FEATURE_DGR				= 16,
     // add in here - but also in names in logging.c

@@ -51,7 +51,7 @@ int BL0942_TryToGetNextBL0942Packet() {
 		}
 	}
 	if(c_garbage_consumed > 0){
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"Consumed %i unwanted non-header byte in BL0942 buffer\n", c_garbage_consumed);
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Consumed %i unwanted non-header byte in BL0942 buffer\n", c_garbage_consumed);
 	}
 	if(cs < BL0942_PACKET_LEN) {
 		return 0;
@@ -76,11 +76,11 @@ int BL0942_TryToGetNextBL0942Packet() {
 			sprintf(buffer2,"%02X ",UART_GetNextByte(i));
 			strcat_safe(buffer_for_log,buffer2,sizeof(buffer_for_log));
 		}
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"BL0942 received: %s\n", buffer_for_log);
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"BL0942 received: %s\n", buffer_for_log);
 	}
 #endif
 	if(checksum != UART_GetNextByte(BL0942_PACKET_LEN-1)) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"Skipping packet with bad checksum %02X wanted %02X\n",checksum,UART_GetNextByte(BL0942_PACKET_LEN-1));
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Skipping packet with bad checksum %02X wanted %02X\n",checksum,UART_GetNextByte(BL0942_PACKET_LEN-1));
 		UART_ConsumeBytes(BL0942_PACKET_LEN);
 		return 1;
 	}
@@ -93,7 +93,7 @@ int BL0942_TryToGetNextBL0942Packet() {
 	raw_unscaled_freq = (UART_GetNextByte(17) << 8) | UART_GetNextByte(16);
 
 	// those are not values like 230V, but unscaled
-	//addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"Unscaled current %d, voltage %d, power %d, freq %d\n", raw_unscaled_current, raw_unscaled_voltage,raw_unscaled_power,raw_unscaled_freq);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Unscaled current %d, voltage %d, power %d, freq %d\n", raw_unscaled_current, raw_unscaled_voltage,raw_unscaled_power,raw_unscaled_freq);
 
 	// those are final values, like 230V
 	{
@@ -111,7 +111,7 @@ int BL0942_TryToGetNextBL0942Packet() {
 		char res[128];
 		// V=245.107925,I=109.921143,P=0.035618
 		sprintf(res,"V=%f,I=%f,P=%f\n",lastReadings[OBK_VOLTAGE],lastReadings[OBK_CURRENT],lastReadings[OBK_POWER]);
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,res );
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,res );
 	}
 #endif
 
@@ -129,7 +129,7 @@ int BL0942_PowerSet(const void *context, const char *cmd, const char *args, int 
 	float realPower;
 
 	if(args==0||*args==0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"This command needs one argument");
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
 		return 1;
 	}
 	realPower = atof(args);
@@ -137,14 +137,14 @@ int BL0942_PowerSet(const void *context, const char *cmd, const char *args, int 
 	{
 		char dbg[128];
 		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realPower, BL0942_PREF);
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,dbg);
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 	return 0;
 }
 int BL0942_PowerRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
 	if(args==0||*args==0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"This command needs one argument");
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
 		return 1;
 	}
 	BL0942_PREF = atof(args);
@@ -153,7 +153,7 @@ int BL0942_PowerRef(const void *context, const char *cmd, const char *args, int 
 int BL0942_CurrentRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
 	if(args==0||*args==0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"This command needs one argument");
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
 		return 1;
 	}
 	BL0942_IREF = atof(args);
@@ -162,7 +162,7 @@ int BL0942_CurrentRef(const void *context, const char *cmd, const char *args, in
 int BL0942_VoltageRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
 	if(args==0||*args==0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"This command needs one argument");
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
 		return 1;
 	}
 	BL0942_UREF = atof(args);
@@ -172,7 +172,7 @@ int BL0942_VoltageSet(const void *context, const char *cmd, const char *args, in
 	float realV;
 
 	if(args==0||*args==0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"This command needs one argument");
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
 		return 1;
 	}
 	realV = atof(args);
@@ -180,7 +180,7 @@ int BL0942_VoltageSet(const void *context, const char *cmd, const char *args, in
 	{
 		char dbg[128];
 		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realV, BL0942_UREF);
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,dbg);
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 
 	return 0;
@@ -189,7 +189,7 @@ int BL0942_CurrentSet(const void *context, const char *cmd, const char *args, in
 	float realI;
 
 	if(args==0||*args==0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"This command needs one argument");
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
 		return 1;
 	}
 	realI = atof(args);
@@ -197,7 +197,7 @@ int BL0942_CurrentSet(const void *context, const char *cmd, const char *args, in
 	{
 		char dbg[128];
 		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realI, BL0942_IREF);
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,dbg);
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 	return 0;
 }
@@ -215,7 +215,7 @@ void BL0942_Init() {
 void BL0942_RunFrame() {
 	int len;
 
-	//addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"UART buffer size %i\n", UART_GetDataSize());
+	//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"UART buffer size %i\n", UART_GetDataSize());
 
 	len = BL0942_TryToGetNextBL0942Packet();
 	if(len > 0) {
