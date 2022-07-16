@@ -51,7 +51,7 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 		}
 	}
 	if(c_garbage_consumed > 0){
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"Consumed %i unwanted non-header byte in CSE7766 buffer\n", c_garbage_consumed);
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Consumed %i unwanted non-header byte in CSE7766 buffer\n", c_garbage_consumed);
 	}
 	if(cs < CSE7766_PACKET_LEN) {
 		return 0;
@@ -75,15 +75,15 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 			sprintf(buffer2,"%02X ",UART_GetNextByte(i));
 			strcat_safe(buffer_for_log,buffer2,sizeof(buffer_for_log));
 		}
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"CSE7766 received: %s\n", buffer_for_log);
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"CSE7766 received: %s\n", buffer_for_log);
 	}
 #endif
 	if(checksum != UART_GetNextByte(CSE7766_PACKET_LEN-1)) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"Skipping packet with bad checksum %02X wanted %02X\n",checksum,UART_GetNextByte(CSE7766_PACKET_LEN-1));
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Skipping packet with bad checksum %02X wanted %02X\n",checksum,UART_GetNextByte(CSE7766_PACKET_LEN-1));
 		UART_ConsumeBytes(CSE7766_PACKET_LEN);
 		return 1;
 	}
-	//addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"CSE checksum ok");
+	//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"CSE checksum ok");
 
 	{
 		unsigned char adjustement;
@@ -164,7 +164,7 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 		char res[128];
 		// V=245.107925,I=109.921143,P=0.035618
 		sprintf(res,"V=%f,I=%f,P=%f\n",lastReadings[OBK_VOLTAGE],lastReadings[OBK_CURRENT],lastReadings[OBK_POWER]);
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,res );
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,res );
 	}
 #endif
 
@@ -177,7 +177,7 @@ int CSE7766_PowerSet(const void *context, const char *cmd, const char *args, int
 	float realPower;
 
 	if(args==0||*args==0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"This command needs one argument");
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
 		return 1;
 	}
 	realPower = atof(args);
@@ -185,14 +185,14 @@ int CSE7766_PowerSet(const void *context, const char *cmd, const char *args, int
 	{
 		char dbg[128];
 		sprintf(dbg,"PowerSet: you gave %f, set ref to %f\n", realPower, CSE7766_PREF);
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,dbg);
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 	return 0;
 }
 int CSE7766_PowerRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
 	if(args==0||*args==0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"This command needs one argument");
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
 		return 1;
 	}
 	CSE7766_PREF = atof(args);
@@ -201,7 +201,7 @@ int CSE7766_PowerRef(const void *context, const char *cmd, const char *args, int
 int CSE7766_CurrentRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
 	if(args==0||*args==0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"This command needs one argument");
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
 		return 1;
 	}
 	CSE7766_IREF = atof(args);
@@ -210,7 +210,7 @@ int CSE7766_CurrentRef(const void *context, const char *cmd, const char *args, i
 int CSE7766_VoltageRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
 	if(args==0||*args==0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"This command needs one argument");
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
 		return 1;
 	}
 	CSE7766_UREF = atof(args);
@@ -220,7 +220,7 @@ int CSE7766_VoltageSet(const void *context, const char *cmd, const char *args, i
 	float realV;
 
 	if(args==0||*args==0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"This command needs one argument");
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
 		return 1;
 	}
 	realV = atof(args);
@@ -228,7 +228,7 @@ int CSE7766_VoltageSet(const void *context, const char *cmd, const char *args, i
 	{
 		char dbg[128];
 		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realV, CSE7766_UREF);
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,dbg);
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 
 	return 0;
@@ -237,7 +237,7 @@ int CSE7766_CurrentSet(const void *context, const char *cmd, const char *args, i
 	float realI;
 
 	if(args==0||*args==0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"This command needs one argument");
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
 		return 1;
 	}
 	realI = atof(args);
@@ -245,7 +245,7 @@ int CSE7766_CurrentSet(const void *context, const char *cmd, const char *args, i
 	{
 		char dbg[128];
 		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realI, CSE7766_IREF);
-		addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,dbg);
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 	return 0;
 }
@@ -262,7 +262,7 @@ void CSE7766_Init() {
 }
 void CSE7766_RunFrame() {
 
-	//addLogAdv(LOG_INFO, LOG_FEATURE_BL09XX,"UART buffer size %i\n", UART_GetDataSize());
+	//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"UART buffer size %i\n", UART_GetDataSize());
 
 	CSE7766_TryToGetNextCSE7766Packet();
 }

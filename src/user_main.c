@@ -443,15 +443,21 @@ void Main_Init()
 		// but DON't run autoexec if we have had 2+ boot failures
 		CMD_Init();
 
-		CMD_ExecuteCommand(CFG_GetShortStartupCommand(), COMMAND_FLAG_SOURCE_SCRIPT);
-		CMD_ExecuteCommand("exec autoexec.bat", COMMAND_FLAG_SOURCE_SCRIPT);
-
 		// autostart drivers
 		if(PIN_FindPinIndexForRole(IOR_SM2135_CLK,-1) != -1 && PIN_FindPinIndexForRole(IOR_SM2135_DAT,-1) != -1) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 			DRV_StartDriver("SM2135");
 #endif
 		}
+		if(PIN_FindPinIndexForRole(IOR_BL0937_CF,-1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_CF1,-1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_SEL,-1) != -1) {
+#ifndef OBK_DISABLE_ALL_DRIVERS
+			DRV_StartDriver("BL0937");
+#endif
+		}
+
+		CMD_ExecuteCommand(CFG_GetShortStartupCommand(), COMMAND_FLAG_SOURCE_SCRIPT);
+		CMD_ExecuteCommand("exec autoexec.bat", COMMAND_FLAG_SOURCE_SCRIPT);
+
 
 		g_enable_pins = 1;
 		// this actually sets the pins, moved out so we could avoid if necessary

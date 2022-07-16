@@ -844,6 +844,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\driver\drv_cse7766.c"
+				>
+			</File>
+			<File
 				RelativePath=".\src\driver\drv_local.h"
 				>
 			</File>
@@ -857,6 +861,14 @@
 			</File>
 			<File
 				RelativePath=".\src\driver\drv_public.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\driver\drv_sm2135.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\driver\drv_sm2135.h"
 				>
 			</File>
 			<File
