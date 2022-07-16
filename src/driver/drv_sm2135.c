@@ -14,6 +14,8 @@
 static int g_pin_clk = 26;
 static int g_pin_data = 24;
 static int g_current_setting = SM2135_20MA;
+// Mapping between RGBCW to current SM2135 channels
+static byte g_channelOrder[5] = { 2, 1, 0, 4, 3 };
 
 static void SM2135_SetLow(uint8_t pin) {
 	HAL_PIN_Setup_Output(pin);
@@ -76,11 +78,11 @@ void SM2135_Write(byte *rgbcw) {
     SM2135_Start(SM2135_ADDR_MC);
     SM2135_WriteByte(g_current_setting);
     SM2135_WriteByte(SM2135_RGB);
-    SM2135_WriteByte(rgbcw[2]);
-    SM2135_WriteByte(rgbcw[1]);
-    SM2135_WriteByte(rgbcw[0]); 
-    SM2135_WriteByte(rgbcw[4]); 
-    SM2135_WriteByte(rgbcw[3]); 
+    SM2135_WriteByte(rgbcw[g_channelOrder[0]]);
+    SM2135_WriteByte(rgbcw[g_channelOrder[1]]);
+    SM2135_WriteByte(rgbcw[g_channelOrder[2]]); 
+    SM2135_WriteByte(rgbcw[g_channelOrder[3]]); 
+    SM2135_WriteByte(rgbcw[g_channelOrder[4]]); 
     SM2135_Stop();
 }
 
@@ -123,6 +125,35 @@ static int SM2135_RGBCW(const void *context, const char *cmd, const char *args){
 
 	return 0;
 }
+// SM2135_Map is used to map the RGBCW indices to SM2135 indices
+// This is how you uset RGB CW order:
+// SM2135_Map 0 1 2 3 4
+// This is the order used on my polish Spectrum WOJ14415 bulb:
+// SM2135_Map 2 1 0 4 3 
+
+static int SM2135_Map(const void *context, const char *cmd, const char *args){
+	
+	Tokenizer_TokenizeString(args);
+
+	if(Tokenizer_GetArgsCount()==0) {
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2135_Map current order is %i %i %i    %i %i! ",
+			(int)g_channelOrder[0],(int)g_channelOrder[1],(int)g_channelOrder[2],(int)g_channelOrder[3],(int)g_channelOrder[4]);
+		return 0;
+	}
+
+	g_channelOrder[0] = Tokenizer_GetArgInteger(0);
+	g_channelOrder[1] = Tokenizer_GetArgInteger(1);
+	g_channelOrder[2] = Tokenizer_GetArgInteger(2);
+	g_channelOrder[3] = Tokenizer_GetArgInteger(3);
+	g_channelOrder[4] = Tokenizer_GetArgInteger(4);
+
+	ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2135_Map new order is %i %i %i    %i %i! ",
+		(int)g_channelOrder[0],(int)g_channelOrder[1],(int)g_channelOrder[2],(int)g_channelOrder[3],(int)g_channelOrder[4]);
+
+	return 0;
+}
+
+
 // startDriver SM2135
 // SM2135_RGBCW FF00000000
 void SM2135_Init() {
@@ -133,6 +164,7 @@ void SM2135_Init() {
 	g_pin_data = PIN_FindPinIndexForRole(IOR_SM2135_DAT,g_pin_data);
 
     CMD_RegisterCommand("SM2135_RGBCW", "", SM2135_RGBCW, "qq", NULL);
+    CMD_RegisterCommand("SM2135_Map", "", SM2135_Map, "qq", NULL);
 }
 
 void SM2135_RunFrame() {
