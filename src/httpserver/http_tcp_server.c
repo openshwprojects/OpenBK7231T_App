@@ -10,7 +10,6 @@
 
 #define DISABLE_SEPARATE_THREAD_FOR_EACH_TCP_CLIENT 1
 
-#define close lwip_close
 
 #elif PLATFORM_BL602
 
