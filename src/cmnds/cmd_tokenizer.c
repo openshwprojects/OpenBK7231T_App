@@ -46,11 +46,16 @@ int Tokenizer_GetArgInteger(int i) {
 void Tokenizer_TokenizeString(const char *s) {
 	char *p;
 
+	g_numArgs = 0;
+
+	if(s == 0) {
+		return;
+	}
+
 	while(isWhiteSpace(*s)) {
 		s++;
 	}
 
-	g_numArgs = 0;
 	if(*s == 0) {
 		return;
 	}
