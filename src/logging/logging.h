@@ -72,8 +72,10 @@ typedef enum {
 	LOG_FEATURE_ENERGYMETER		= 14,
 	LOG_FEATURE_EVENT			= 15,
 	LOG_FEATURE_DGR				= 16,
+	// user to print without any prefixes
+	LOG_FEATURE_RAW				= 17,
     // add in here - but also in names in logging.c
-    LOG_FEATURE_MAX             = 17,
+    LOG_FEATURE_MAX             = 18,
 } log_features;
 
 #endif

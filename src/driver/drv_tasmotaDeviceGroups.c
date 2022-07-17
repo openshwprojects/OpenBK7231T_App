@@ -311,7 +311,7 @@ void DRV_DGR_RunFrame() {
 			//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"nothing\n");
             return ;
         }
-		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Received %i bytes\n",nbytes);
+		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Received %i bytes from %s\n",nbytes,inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr));
         msgbuf[nbytes] = '\0';
 
 		strcpy(def.gr.groupName,CFG_DeviceGroups_GetName());

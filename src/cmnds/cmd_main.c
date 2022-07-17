@@ -179,7 +179,9 @@ int CMD_ExecuteCommand(const char *s, int cmdFlags) {
 	if(*s == 0) {
 		return 0;
 	}
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "cmd [%s]", s);
+	if((cmdFlags & COMMAND_FLAG_SOURCE_TCP)==0) {
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "cmd [%s]", s);
+	}
 	//org = s;
 
 	// get the complete string up to whitespace.

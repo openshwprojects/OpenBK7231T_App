@@ -69,6 +69,7 @@ char *logfeaturenames[] = {
 	"EnergyMeter:",// = 14
 	"EVENT:",// = 15
 	"DGR:",// = 16
+	"RAW:", // = 17 raw, without any prefix
 };
 
 
@@ -91,12 +92,16 @@ void addLogAdv(int level, int feature, char *fmt, ...){
     if (level > loglevel){
         return;
     }
-    strcpy(t, loglevelnames[level]);
-    t += strlen(t);
-    if (feature < sizeof(logfeaturenames)/sizeof(*logfeaturenames)){
-        strcpy(t, logfeaturenames[feature]);
-        t += strlen(t);
-    }
+	if(feature == LOG_FEATURE_RAW) {
+		// raw means no prefixes
+	} else {
+		strcpy(t, loglevelnames[level]);
+		t += strlen(t);
+		if (feature < sizeof(logfeaturenames)/sizeof(*logfeaturenames)){
+			strcpy(t, logfeaturenames[feature]);
+			t += strlen(t);
+		}
+	}
     va_start(argList, fmt);
     vsprintf(t, fmt, argList);
     va_end(argList);
@@ -131,12 +136,16 @@ void addLogAdv(int level, int feature, char *fmt, ...){
     taken = xSemaphoreTake( g_mutex, 100 );
     if (taken == pdTRUE) {
 
-        strcpy(t, loglevelnames[level]);
-        t += strlen(t);
-        if (feature < sizeof(logfeaturenames)/sizeof(*logfeaturenames)){
-            strcpy(t, logfeaturenames[feature]);
-            t += strlen(t);
-        }
+		if(feature == LOG_FEATURE_RAW) {
+			// raw means no prefixes
+		} else {
+			strcpy(t, loglevelnames[level]);
+			t += strlen(t);
+			if (feature < sizeof(logfeaturenames)/sizeof(*logfeaturenames)){
+				strcpy(t, logfeaturenames[feature]);
+				t += strlen(t);
+			}
+		}
 		va_start(argList, fmt);
 		vsprintf(t, fmt, argList);
 		va_end(argList);
@@ -220,12 +229,16 @@ void addLogAdv(int level, int feature, char *fmt, ...){
     }
     BaseType_t taken = xSemaphoreTake( logMemory.mutex, 100 );
 
-    strcpy(t, loglevelnames[level]);
-    t += strlen(t);
-    if (feature < sizeof(logfeaturenames)/sizeof(*logfeaturenames)){
-        strcpy(t, logfeaturenames[feature]);
-        t += strlen(t);
-    }
+	if(feature == LOG_FEATURE_RAW) {
+		// raw means no prefixes
+	} else {
+		strcpy(t, loglevelnames[level]);
+		t += strlen(t);
+		if (feature < sizeof(logfeaturenames)/sizeof(*logfeaturenames)){
+			strcpy(t, logfeaturenames[feature]);
+			t += strlen(t);
+		}
+	}
 
     va_start(argList, fmt);
     vsprintf(t, fmt, argList);

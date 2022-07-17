@@ -1,7 +1,9 @@
 
 #include "../logging/logging.h"
 #include "../new_pins.h"
+#include "../new_cfg.h"
 #include "../obk_config.h"
+#include "../driver/drv_public.h"
 #include <ctype.h>
 #include "cmd_local.h"
 
@@ -122,11 +124,67 @@ static int CMD_SetPinChannel(const void *context, const char *cmd, const char *a
 
 	return 1;
 }
+static int CMD_GetChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
+	int ch, val;
+
+	if(args==0||*args==0) {
+		return 1;
+	}
+	Tokenizer_TokenizeString(args);
+	if(Tokenizer_GetArgsCount() < 1) {
+		return 1;
+	}
+
+	ch = Tokenizer_GetArgInteger(0);
+	val = CHANNEL_Get(ch);
+
+	if(cmdFlags & COMMAND_FLAG_SOURCE_TCP) {
+		ADDLOG_INFO(LOG_FEATURE_RAW, "%i", val);
+	} else {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_GetChannel: channel %i is %i",ch, val);
+	}
+
+	return 1;
+}
+static int CMD_GetReadings(const void *context, const char *cmd, const char *args, int cmdFlags){
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	char tmp[64];
+	float v, c, p;
+
+	v = DRV_GetReading(OBK_VOLTAGE);
+	c = DRV_GetReading(OBK_CURRENT);
+	p = DRV_GetReading(OBK_POWER);
+
+	sprintf(tmp, "%f %f %f",v,c,p);
+
+	if(cmdFlags & COMMAND_FLAG_SOURCE_TCP) {
+		ADDLOG_INFO(LOG_FEATURE_RAW, tmp);
+	} else {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_GetReadings: readings are %s",tmp);
+	}
+#endif
+	return 1;
+}
+static int CMD_ShortName(const void *context, const char *cmd, const char *args, int cmdFlags){
+	const char *s;
+
+	s = CFG_GetShortDeviceName();
+
+	if(cmdFlags & COMMAND_FLAG_SOURCE_TCP) {
+		ADDLOG_INFO(LOG_FEATURE_RAW, s);
+	} else {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ShortName: name is %s", s);
+	}
+	return 1;
+}
 void CMD_InitChannelCommands(){
     CMD_RegisterCommand("SetChannel", "", CMD_SetChannel, "qqqqq0", NULL);
     CMD_RegisterCommand("AddChannel", "", CMD_AddChannel, "qqqqq0", NULL);
     CMD_RegisterCommand("ClampChannel", "", CMD_ClampChannel, "qqqqq0", NULL);
     CMD_RegisterCommand("SetPinRole", "", CMD_SetPinRole, "qqqqq0", NULL);
     CMD_RegisterCommand("SetPinChannel", "", CMD_SetPinChannel, "qqqqq0", NULL);
+    CMD_RegisterCommand("GetChannel", "", CMD_GetChannel, "qqqqq0", NULL);
+    CMD_RegisterCommand("GetReadings", "", CMD_GetReadings, "qqqqq0", NULL);
+    CMD_RegisterCommand("ShortName", "", CMD_ShortName, "qqqqq0", NULL);
 
 }

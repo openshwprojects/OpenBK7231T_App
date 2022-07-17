@@ -6,6 +6,9 @@
 #include "cmd_local.h"
 
 
+#define CMD_CLIENT_SLEEP_TIME_MS 50
+#define CMD_CLIENT_DISCONNECT_AFTER_IDLE_MS (60 * 1000)
+
 #define CMD_SERVER_PORT		100
 #define MAX_COMMAND_LEN		64
 
@@ -16,10 +19,18 @@ static void CMD_ClientThread(int fd)
 {
 	char buf[MAX_COMMAND_LEN];
 	int len;
+	int sleepTime;
 
-	send(fd,"CMD:",5,0);
+	sleepTime = 0;
+	//send(fd,"CMD:",5,0);
+
 	while(1) {
-		rtos_delay_milliseconds(10);
+		if(sleepTime >= CMD_CLIENT_DISCONNECT_AFTER_IDLE_MS) {
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "TCP Console dropping because of inactivity" );
+			break;
+		}
+		rtos_delay_milliseconds(CMD_CLIENT_SLEEP_TIME_MS);
+		sleepTime += CMD_CLIENT_SLEEP_TIME_MS;
 		len = recv( fd, buf, sizeof(buf)-1, 0 );
 		if(len < 0) {
 			if(errno == EAGAIN) {
@@ -31,10 +42,11 @@ static void CMD_ClientThread(int fd)
 			break;
 		}
 		if(len > 0) {
+			sleepTime = 0;
 			buf[len] = 0;
 			ADDLOG_ERROR(LOG_FEATURE_CMD, "TCP Console command: %s (raw len %i, strlen %i)", buf, len, strlen(buf) );
 			LOG_SetRawSocketCallback(fd);
-			CMD_ExecuteCommand(buf,0);
+			CMD_ExecuteCommand(buf,COMMAND_FLAG_SOURCE_TCP);
 			LOG_SetRawSocketCallback(0);
 			//send(fd,"OK",3,0);
 		}
@@ -53,7 +65,6 @@ static void CMD_ServerThread( beken_thread_arg_t arg )
     OSStatus err = kNoErr;
     struct sockaddr_in server_addr, client_addr;
     socklen_t sockaddr_t_size = sizeof(client_addr);
-    char client_ip_str[16];
     int tcp_listen_fd = -1, client_fd = -1;
     fd_set readfds;
 

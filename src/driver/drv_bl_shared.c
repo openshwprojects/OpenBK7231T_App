@@ -5,20 +5,13 @@
 #include "../cmnds/cmd_public.h"
 #include "../mqtt/new_mqtt.h"
 #include "../logging/logging.h"
+#include "drv_public.h"
 #include "drv_local.h"
 #include "drv_uart.h"
 #include "../httpserver/new_http.h"
 
-
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
-
-enum {
-	OBK_VOLTAGE, // must match order in cmd_public.h
-	OBK_CURRENT,
-	OBK_POWER,
-	OBK_NUM_MEASUREMENTS,
-};
 
 // Current values
 float lastReadings[OBK_NUM_MEASUREMENTS];
@@ -48,7 +41,6 @@ const char *mqttNames[OBK_NUM_MEASUREMENTS] = {
 };
 
 int changeSendAlwaysFrames = 60;
-
 
 void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request) {
 	char tmp[128];
@@ -110,6 +102,11 @@ void BL_Shared_Init() {
 		lastReadings[i] = 0;
 	}
 }
+// OBK_POWER etc
+float DRV_GetReading(int type) {
+	return lastReadings[type];
+}
+
 
 
 

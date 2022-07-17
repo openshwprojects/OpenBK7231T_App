@@ -11,6 +11,8 @@ typedef int (*commandHandler_t)(const void *context, const char *cmd, const char
 #define COMMAND_FLAG_SOURCE_MQTT		4
 // command was sent by HTTP cmnd GET
 #define COMMAND_FLAG_SOURCE_HTTP		8
+// command was sent by TCP CMD
+#define COMMAND_FLAG_SOURCE_TCP			16
 
 
 
