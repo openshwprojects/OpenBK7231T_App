@@ -12,17 +12,22 @@
 static xTaskHandle g_cmd_thread = NULL;
 static int g_bStarted = 0;
 
-static void CMD_ClientThread( beken_thread_arg_t arg )
+static void CMD_ClientThread(int fd)
 {
-	OSStatus err = kNoErr;
-	int fd = (int) arg;
 	char buf[MAX_COMMAND_LEN];
 	int len;
 
-
+	send(fd,"CMD:",5,0);
 	while(1) {
+		rtos_delay_milliseconds(10);
 		len = recv( fd, buf, sizeof(buf)-1, 0 );
 		if(len < 0) {
+			if(errno == EAGAIN) {
+				continue;
+			}
+			break;
+		}
+		if(len == 0) {
 			break;
 		}
 		if(len > 0) {
@@ -35,17 +40,10 @@ static void CMD_ClientThread( beken_thread_arg_t arg )
 		}
 	}
 
+	ADDLOG_ERROR(LOG_FEATURE_CMD, "TCP client endd" );
 	rtos_delay_milliseconds(10);
 
-	if ( err != kNoErr )
-		ADDLOG_ERROR(LOG_FEATURE_CMD, "TCP client thread exit with err: %d", err );
 
-	lwip_close( fd );;
-#if DISABLE_SEPARATE_THREAD_FOR_EACH_CMD_CLIENT
-
-#else
-	rtos_delete_thread( NULL );
-#endif
 }
 
 /* TCP server listener thread */
@@ -80,45 +78,16 @@ static void CMD_ServerThread( beken_thread_arg_t arg )
             client_fd = accept( tcp_listen_fd, (struct sockaddr *) &client_addr, &sockaddr_t_size );
             if ( client_fd >= 0 )
             {
-#if PLATFORM_XR809
-#if DISABLE_SEPARATE_THREAD_FOR_EACH_CMD_CLIENT
-
-#else
-				OS_Thread_t clientThreadUnused ;
+#if 1
+				// Put the socket in non-blocking mode:
+				if(fcntl(client_fd, F_SETFL, O_NONBLOCK) < 0) {
+				    ADDLOG_DEBUG(LOG_FEATURE_CMD,  "CMD Client failed to made non-blocking" );
+				}
 #endif
-#endif
-                os_strcpy( client_ip_str, inet_ntoa( client_addr.sin_addr ) );
-                ADDLOG_DEBUG(LOG_FEATURE_CMD,  "CMD Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd );
-#if DISABLE_SEPARATE_THREAD_FOR_EACH_CMD_CLIENT
-				// Use main server thread (blocking all other clients)
-				// right now, I am getting OS_ThreadCreate everytime on XR809 platform
-				CMD_ClientThread((beken_thread_arg_t)client_fd);
-#else
-				// Create separate thread for client
-                if ( kNoErr !=
-#if PLATFORM_XR809
-					OS_ThreadCreate(&clientThreadUnused,
-							                     "CMD Client",
-		                CMD_ClientThread,
-		                client_fd,
-		                OS_THREAD_PRIO_CONSOLE,
-		                0x400)
-
-#else
-                     rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY,
-							                     "CMD Client",
-                                                 (beken_thread_function_t)CMD_ClientThread,
-                                                 0x800,
-                                                 (beken_thread_arg_t)client_fd )
-
-#endif
-												 )
-                {
-                  ADDLOG_DEBUG(LOG_FEATURE_CMD,  "CMD Client %s:%d thread creation failed! fd: %d", client_ip_str, client_addr.sin_port, client_fd );
-                  lwip_close( client_fd );
-                  client_fd = -1;
-                }
-#endif
+             //   os_strcpy( client_ip_str, inet_ntoa( client_addr.sin_addr ) );
+           ///     ADDLOG_DEBUG(LOG_FEATURE_CMD,  "CMD Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd );
+				CMD_ClientThread(client_fd);
+				lwip_close( client_fd );;
             }
         }
     }
@@ -141,7 +110,7 @@ void CMD_StartTCPCommandLine()
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "CMD server is already running!\r\n");
 		return;
 	}
-    err = rtos_create_thread( &g_cmd_thread, BEKEN_APPLICATION_PRIORITY,
+    err = rtos_create_thread( &g_cmd_thread, 6,
 									"CMD_server",
 									(beken_thread_function_t)CMD_ServerThread,
 									0x800,
