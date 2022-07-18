@@ -142,11 +142,11 @@ static int SM2135_Map(const void *context, const char *cmd, const char *args, in
 		return 0;
 	}
 
-	g_channelOrder[0] = Tokenizer_GetArgInteger(0);
-	g_channelOrder[1] = Tokenizer_GetArgInteger(1);
-	g_channelOrder[2] = Tokenizer_GetArgInteger(2);
-	g_channelOrder[3] = Tokenizer_GetArgInteger(3);
-	g_channelOrder[4] = Tokenizer_GetArgInteger(4);
+	g_channelOrder[0] = Tokenizer_GetArgIntegerRange(0, 0, 4);
+	g_channelOrder[1] = Tokenizer_GetArgIntegerRange(1, 0, 4);
+	g_channelOrder[2] = Tokenizer_GetArgIntegerRange(2, 0, 4);
+	g_channelOrder[3] = Tokenizer_GetArgIntegerRange(3, 0, 4);
+	g_channelOrder[4] = Tokenizer_GetArgIntegerRange(4, 0, 4);
 
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2135_Map new order is %i %i %i    %i %i! ",
 		(int)g_channelOrder[0],(int)g_channelOrder[1],(int)g_channelOrder[2],(int)g_channelOrder[3],(int)g_channelOrder[4]);

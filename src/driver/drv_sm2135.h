@@ -1,4 +1,5 @@
 
+// Thx to the work of https://github.com/arendst (Tasmota) for making the initial version of the driver
 
 #define SM2135_ADDR_MC      0xC0  // Max current register
 #define SM2135_ADDR_CH      0xC1  // RGB or CW channel select register

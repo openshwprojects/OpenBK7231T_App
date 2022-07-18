@@ -33,6 +33,18 @@ const char *Tokenizer_GetArg(int i) {
 const char *Tokenizer_GetArgFrom(int i) {
 	return g_argsFrom[i];
 }
+int Tokenizer_GetArgIntegerRange(int i, int rangeMax, int rangeMin) {
+	int ret = Tokenizer_GetArgInteger(i);
+	if(ret < rangeMin) {
+		ret = rangeMin;
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "Argument %i (val=%i) was out of range [%i,%i], clamped",i,ret,rangeMax,rangeMin);
+	}
+	if(ret > rangeMax) {
+		ret = rangeMax;
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "Argument %i (val=%i) was out of range [%i,%i], clamped",i,ret,rangeMax,rangeMin);
+	}
+	return ret;
+}
 int Tokenizer_GetArgInteger(int i) {
 	const char *s;
 	s = g_args[i];
