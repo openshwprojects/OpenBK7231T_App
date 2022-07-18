@@ -69,6 +69,7 @@ int Tokenizer_GetArgsCount();
 const char *Tokenizer_GetArg(int i);
 const char *Tokenizer_GetArgFrom(int i);
 int Tokenizer_GetArgInteger(int i);
+int Tokenizer_GetArgIntegerRange(int i, int rangeMax, int rangeMin);
 void Tokenizer_TokenizeString(const char *s);
 // cmd_repeatingEvents.c
 void RepeatingEvents_Init();
