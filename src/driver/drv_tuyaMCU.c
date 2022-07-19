@@ -137,6 +137,9 @@ int g_dimmerRangeMin = 0;
 // maximum dimmer value as reported by TuyaMCU dimmer
 int g_dimmerRangeMax = 100;
 
+// serial baud rate used to communicate with the TuyaMCU
+int g_baudRate = 9600;
+
 tuyaMCUMapping_t *TuyaMCU_FindDefForID(int fnId) {
 	tuyaMCUMapping_t *cur;
 
@@ -260,7 +263,7 @@ void TuyaMCU_SendCommandWithData(byte cmdType, byte *data, int payload_len) {
 	int i;
 
 	byte check_sum = (0xFF + cmdType + (payload_len >> 8) + (payload_len & 0xFF));
-	UART_InitUART(9600);
+	UART_InitUART(g_baudRate);
 	UART_SendByte(0x55);
 	UART_SendByte(0xAA);
 	UART_SendByte(0x00);         // version 00
@@ -821,9 +824,23 @@ void TuyaMCU_RunFrame() {
 }
 
 
+int TuyaMCU_SetBaudRate(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	Tokenizer_TokenizeString(args);
+
+	if(Tokenizer_GetArgsCount() < 1) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_SetBaudRate: requires 1 arguments (baudRate)\n");
+		return -1;
+	}
+
+	g_baudRate = Tokenizer_GetArgInteger(0);
+	
+	return 1;
+}
+
+
 void TuyaMCU_Init()
 {
-	UART_InitUART(9600);
+	UART_InitUART(g_baudRate);
 	UART_InitReceiveRingBuffer(256);
 	// uartSendHex 55AA0008000007
 	CMD_RegisterCommand("tuyaMcu_testSendTime","",TuyaMCU_Send_SetTime_Example, "Sends a example date by TuyaMCU to clock/callendar MCU", NULL);
@@ -838,6 +855,7 @@ void TuyaMCU_Init()
 	CMD_RegisterCommand("tuyaMcu_sendState","",TuyaMCU_SendStateCmd, "Send set state command", NULL);
 	CMD_RegisterCommand("tuyaMcu_sendMCUConf","",TuyaMCU_SendMCUConf, "Send MCU conf command", NULL);
 	CMD_RegisterCommand("fakeTuyaPacket","",TuyaMCU_FakePacket, "qq", NULL);
+	CMD_RegisterCommand("tuyaMcu_setBaudRate","",TuyaMCU_SetBaudRate, "Set the serial baud rate used to communicate with the TuyaMCU", NULL);
 }
 // Door sensor with TuyaMCU version 0 (not 3), so all replies have x00 and not 0x03 byte
 // fakeTuyaPacket 55AA0008000C00010101010101030400010223
