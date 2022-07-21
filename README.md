@@ -277,11 +277,13 @@ https://www.elektroda.com/rtvforum/topic3895572.html
   
   XR3/XR809 water sensor guide:
   https://www.elektroda.com/rtvforum/topic3890640.html
+  
   https://www.elektroda.pl/rtvforum/viewtopic.php?t=3890640&highlight=
   
   SM2135 LED configuration
   https://www.elektroda.com/rtvforum/topic3906898.html
-  https://www.elektroda.pl/rtvforum/viewtopic.php?t=3906898&highlight= 
+  
+  https://www.elektroda.pl/rtvforum/viewtopic.php?t=3906898
   
   
 # Troubles programming by UART?
