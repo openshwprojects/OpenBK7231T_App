@@ -279,6 +279,11 @@ https://www.elektroda.com/rtvforum/topic3895572.html
   https://www.elektroda.com/rtvforum/topic3890640.html
   https://www.elektroda.pl/rtvforum/viewtopic.php?t=3890640&highlight=
   
+  SM2135 LED configuration
+  https://www.elektroda.com/rtvforum/topic3906898.html
+  https://www.elektroda.pl/rtvforum/viewtopic.php?t=3906898&highlight= 
+  
+  
 # Troubles programming by UART?
   
 I had some reports from users saying that they are unable to flash BK7231T with CP2102 but CH340 works. So, maybe try different USB to UART dongle. Some of them might not be reliable enough for flashing.
