@@ -64,7 +64,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [OpenBK7231T, OpenBK7231N, OpenXR809, OpenBL602]
+        platform: [OpenBK7231T, OpenBK7231N, OpenXR809, OpenBL602, OpenW800]
     steps:
       - name: Source checkout
         uses: actions/checkout@v2
@@ -94,6 +94,7 @@ jobs:
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.rbl
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.img
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.bin
+            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.fls
           if-no-files-found: warn
 
   release:

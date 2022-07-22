@@ -78,6 +78,7 @@ publish:
       - path: "output/**/*.rbl"
       - path: "output/**/*.img"
       - path: "output/**/OpenBL602*.bin"
+      - path: "output/**/OpenW800*.fls"
 
 success:
   - "@semantic-release/github"
