@@ -16,6 +16,11 @@
 ///#define DEBUG_USE_SIMPLE_LOGGER
 #define OBK_DISABLE_ALL_DRIVERS 1
 
+
+#elif PLATFORM_XR809
+///#define DEBUG_USE_SIMPLE_LOGGER
+#define OBK_DISABLE_ALL_DRIVERS 1
+
 #else
 
 // comment out to remove component
