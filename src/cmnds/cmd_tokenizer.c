@@ -1,5 +1,6 @@
 
 #include "../new_common.h"
+#include "cmd_public.h"
 #include "../httpserver/new_http.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
