@@ -15,4 +15,4 @@
 	url = https://github.com/openshwprojects/OpenBL602.git
 [submodule "sdk/OpenW800"]
 	path = sdk/OpenW800
-	url = https://github.com/talltechdude/OpenW800.git
+	url = https://github.com/openshwprojects/OpenW800.git
