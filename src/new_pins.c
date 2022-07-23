@@ -953,6 +953,8 @@ int CHANNEL_ParseChannelType(const char *s) {
 		return ChType_LowMidHigh;
 	if(!stricmp(s,"OffLowMidHigh") )
 		return ChType_OffLowMidHigh;
+	if(!stricmp(s,"OffLowestLowMidHighHighest") )
+		return ChType_OffLowestLowMidHighHighest;
 	if(!stricmp(s,"default") )
 		return ChType_Default;
 	if(!stricmp(s,"TextField") )

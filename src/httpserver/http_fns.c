@@ -262,14 +262,26 @@ int http_fn_index(http_request_t *request) {
 			}
             hprintf128(request,"</form>");
             hprintf128(request,"<br>");
-		} else if(channelType == ChType_OffLowMidHigh) {
-			const char *types[]={"Off","Low","Mid","High"};
+		} else if(channelType == ChType_OffLowMidHigh || channelType == ChType_OffLowestLowMidHighHighest) {
+			const char **types;
+			const char *types4[] = {"Off","Low","Mid","High"};
+			const char *types6[] = {"Off", "Lowest", "Low", "Mid", "High", "Highest"};
+			int numTypes;
 			int iValue;
+			
+			if(channelType == ChType_OffLowMidHigh) {
+				types = types4;
+				numTypes = 4;
+			} else {
+				types = types6;
+				numTypes = 6;
+			}
+
 			iValue = CHANNEL_Get(i);
 
             hprintf128(request,"<p>Select speed:</p><form action=\"index\">");
             hprintf128(request,"<input type=\"hidden\" name=\"setIndex\" value=\"%i\">",i);
-			for(j = 0; j < 4; j++) {
+			for(j = 0; j < numTypes; j++) {
 				const char *check;
 				if(j == iValue)
 					check = "checked";

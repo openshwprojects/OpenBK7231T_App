@@ -50,7 +50,10 @@ enum ChannelType {
 	ChType_LowMidHigh,
 	ChType_TextField,
 	ChType_ReadOnly,
+	// off (0) and 3 speeds
 	ChType_OffLowMidHigh,
+	// off (0) and 5 speeds
+	ChType_OffLowestLowMidHighHighest,
 };
 
 
