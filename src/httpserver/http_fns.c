@@ -262,16 +262,20 @@ int http_fn_index(http_request_t *request) {
 			}
             hprintf128(request,"</form>");
             hprintf128(request,"<br>");
-		} else if(channelType == ChType_OffLowMidHigh || channelType == ChType_OffLowestLowMidHighHighest) {
+		} else if(channelType == ChType_OffLowMidHigh || channelType == ChType_OffLowestLowMidHighHighest || channelType == ChType_LowestLowMidHighHighest) {
 			const char **types;
 			const char *types4[] = {"Off","Low","Mid","High"};
 			const char *types6[] = {"Off", "Lowest", "Low", "Mid", "High", "Highest"};
+			const char *types5NoOff[] = { "Lowest", "Low", "Mid", "High", "Highest"};
 			int numTypes;
 			int iValue;
 			
 			if(channelType == ChType_OffLowMidHigh) {
 				types = types4;
 				numTypes = 4;
+			} else if(channelType == ChType_LowestLowMidHighHighest) {
+				types = types5NoOff;
+				numTypes = 5;
 			} else {
 				types = types6;
 				numTypes = 6;

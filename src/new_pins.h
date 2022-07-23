@@ -54,6 +54,8 @@ enum ChannelType {
 	ChType_OffLowMidHigh,
 	// off (0) and 5 speeds
 	ChType_OffLowestLowMidHighHighest,
+	// only 5 speeds
+	ChType_LowestLowMidHighHighest,
 };
 
 
