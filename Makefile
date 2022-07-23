@@ -80,7 +80,9 @@ sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q2:
 # Retry OpenXR809 a few times to account for calibration file issues
 RETRY = 3
 OpenXR809:
-	for i in `seq 1 ${RETRY}`; do ($(MAKE) -k build-XR809; echo Finished attempt $$i/${RETRY}); done
+	@for i in `seq 1 ${RETRY}`; do ($(MAKE) -k build-XR809; echo Prebuild attempt $$i/${RETRY}); done
+	@echo Running build final time to check output
+	$(MAKE) build-XR809;
 
 build-XR809: submodules sdk/OpenXR809/project/oxr_sharedApp/shared sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q2
 	$(MAKE) -C sdk/OpenXR809/src CC_DIR=$(PWD)/sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q2/bin
