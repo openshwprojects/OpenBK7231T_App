@@ -74,7 +74,15 @@ OpenBK7231N:
 sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q2:
 	cd sdk/OpenXR809/tools && wget -q "https://launchpad.net/gcc-arm-embedded/4.9/4.9-2015-q2-update/+download/gcc-arm-none-eabi-4_9-2015q2-20150609-linux.tar.bz2" && tar -xf *.tar.bz2 && rm -f *.tar.bz2
 
-OpenXR809: submodules sdk/OpenXR809/project/oxr_sharedApp/shared sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q2
+
+	
+.PHONY: OpenXR809 build-XR809
+# Retry OpenXR809 a few times to account for calibration file issues
+RETRY = 3
+OpenXR809:
+	for i in `seq 1 ${RETRY}`; do ($(MAKE) -k build-XR809; echo Finished attempt $$i/${RETRY}); done
+
+build-XR809: submodules sdk/OpenXR809/project/oxr_sharedApp/shared sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q2
 	$(MAKE) -C sdk/OpenXR809/src CC_DIR=$(PWD)/sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q2/bin
 	$(MAKE) -C sdk/OpenXR809/src install CC_DIR=$(PWD)/sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q2/bin
 	$(MAKE) -C sdk/OpenXR809/project/oxr_sharedApp/gcc CC_DIR=$(PWD)/sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q2/bin
