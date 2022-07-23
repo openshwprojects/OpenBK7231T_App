@@ -304,3 +304,4 @@ https://www.elektroda.com/rtvforum/topic3806769.html
   
 If you want to support project, please donate at: https://www.paypal.com/paypalme/openshwprojects
   
+Special thanks for Tasmota/Esphome/etc contributors for making a great reference for implementing Tuya module drivers 
