@@ -1536,7 +1536,7 @@ const char *g_obk_flagNames[] = {
 	"[LED][Debug] Show raw PWM controller on WWW index instead of new LED RGB/CW/etc picker",
 	"[LED] Force show RGBCW controller (for example, for SM2135 LEDs, or for DGR sender)",
 	"[CMD] Enable TCP console command server (for Putty, etc)",
-	"error",
+	"[BTN] Instant touch reaction instead of waiting for release (aka SetOption 13)",
 	"error",
 	"error",
 	"error",

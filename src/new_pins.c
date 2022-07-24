@@ -128,18 +128,35 @@ void RAW_SetPinValue(int index, int iVal){
 		HAL_PIN_SetOutputValue(index, iVal);
 	}
 }
+void Button_OnInitialPressDown(int index) 
+{
+	//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"%i Button_OnInitialPressDown\r\n", index);
+	
+	// so-called SetOption13 - instant reaction to touch instead of waiting for release
+	if(CFG_HasFlag(OBK_FLAG_BTN_INSTANTTOUCH)) {
+		if(g_cfg.pins.roles[index] == IOR_Button_ToggleAll || g_cfg.pins.roles[index] == IOR_Button_ToggleAll_n)
+		{
+			CHANNEL_DoSpecialToggleAll();
+			return;
+		}
+		CHANNEL_Toggle(g_cfg.pins.channels[index]);
+	}
+}
 void Button_OnShortClick(int index)
 {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"%i key_short_press\r\n", index);
-	if(g_cfg.pins.roles[index] == IOR_Button_ToggleAll || g_cfg.pins.roles[index] == IOR_Button_ToggleAll_n)
-	{
-		CHANNEL_DoSpecialToggleAll();
-		return;
-	}
 	// fire event - button on pin <index> was clicked
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ONCLICK,index);
+	// so-called SetOption13 - instant reaction to touch instead of waiting for release
 	// first click toggles FIRST CHANNEL linked to this button
-	CHANNEL_Toggle(g_cfg.pins.channels[index]);
+	if(CFG_HasFlag(OBK_FLAG_BTN_INSTANTTOUCH)==false) {
+		if(g_cfg.pins.roles[index] == IOR_Button_ToggleAll || g_cfg.pins.roles[index] == IOR_Button_ToggleAll_n)
+		{
+			CHANNEL_DoSpecialToggleAll();
+			return;
+		}
+		CHANNEL_Toggle(g_cfg.pins.channels[index]);
+	}
 }
 void Button_OnDoubleClick(int index)
 {
@@ -731,6 +748,7 @@ void PIN_Input_Handler(int pinIndex)
 		if(handle->button_level == handle->active_level) {	//start press down
 			handle->event = (uint8_t)BTN_PRESS_DOWN;
 			EVENT_CB(BTN_PRESS_DOWN);
+			Button_OnInitialPressDown(pinIndex);
 			handle->ticks = 0;
 			handle->repeat = 1;
 			handle->state = 1;

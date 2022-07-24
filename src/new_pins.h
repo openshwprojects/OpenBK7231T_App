@@ -96,8 +96,9 @@ typedef struct pinsState_s {
 #define OBK_FLAG_LED_RAWCHANNELSMODE				3
 #define OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER		4
 #define OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER		5
+#define OBK_FLAG_BTN_INSTANTTOUCH					6
 
-#define OBK_TOTAL_FLAGS 6
+#define OBK_TOTAL_FLAGS 7
 
 //
 // Main config structure (less than 2KB)
