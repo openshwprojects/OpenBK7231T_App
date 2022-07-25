@@ -208,7 +208,7 @@ Currently available pin roles:
   
   There are some extra short commands for TCP console:
 - GetChannel [index] 
-- GetReadings 
+- GetReadings - returns voltage, current and power
 - ShortName
 the commands above return a single ASCII string as a reply so it's easy to parse.
   
