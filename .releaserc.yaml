@@ -1,5 +1,7 @@
 branches: 
   - 'main'
+  - name: 'alpha'
+    prerelease: true
 preset: "angular"
 tagFormat: "${version}"
 plugins:
@@ -40,34 +42,110 @@ generateNotes:
         - "perf"
         - "fix"
       commitsSort: "header"
-    types:
-    - type: "feat"
-    - section: "Features"
-    # Tracked bug fix with a hotfix branch
-    - type: "hotfix"
-    - section: "Bug Fixes"
-    # Uninmportent fix (CI testing, etc)
-    - type: "fix"
-    - section: "Bug Fixes"
-    - type: "chore"
-    - section: "Bug Fixes"
-    - type: "docs"
-    - hidden: true
-    - type: "doc"
-    - hidden: true
-    - type: "style"
-    - hidden: true
-    - type: "refactor"
-    - hidden: true
-    - type: "perf"
-    - hidden: true
-    - type: "test"
-    - hidden: true
-    presetConfig: true
+      mainTemplate: |
+        {{> header}}
+
+        {{#if noteGroups}}
+        {{#each noteGroups}}
+
+        ### ⚠ {{title}}
+
+        {{#each notes}}
+        * {{#if commit.scope}}**{{commit.scope}}:** {{/if}}{{text}}
+        {{/each}}
+        {{/each}}
+        {{/if}}
+        {{#each commitGroups}}
+
+        {{#if title}}
+        ### {{title}}
+
+        {{/if}}
+        {{#each commits}}
+        {{> commit root=@root}}
+        {{/each}}
+
+        {{/each}}
+
+        {{> footer}}
+      headerPartial: |
+        ## OpenBK7231T/OpenBeken release {{version}}
+        
+        OpenBK7231T/OpenBeken is a Tasmota/Esphome replacement for new Tuya modules featuring MQTT and Home Assistant compatibility. This repository is named <code>OpenBK7231T_App</code>, but now it's a multiplatform app, supporting build for multiple separate chips:
+
+        - BK7231T (WB3S, WB2S, WB2L, etc)
+        - BK7231N (CB2S, CB2L, WB2L_M1, etc)
+        - T34 (T34 is based on BK7231N)
+        - XR809 (XR3, etc)
+        - BL602
+        - W800 (W800-C400, WinnerMicro WiFi & Bluetooth), W801
+
+      footerPartial: |
+        {{#if noteGroups}}
+        {{#each noteGroups}}
+
+        ### {{title}}
+
+        {{#each notes}}
+        * {{text}}
+        {{/each}}
+        {{/each}}
+        {{/if}}
+
+        ### Assets
+        Refer to the following table for the usage of the various assests included in this release
+        | Platform | Usage      | Filename                                                                                                                           |
+        | ---      | ---        | ---                                                                                                                                |
+        | BK7231T  | OTA Update | [OpenBK7231T_{{version}}.rbl]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231T_{{version}}.rbl)         |
+        | BK7231T  | UART Flash | [OpenBK7231T_UG_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231T_UG_{{version}}.bin)   |
+        | BK7231T  |            | [OpenBK7231T_UA_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231T_UA_{{version}}.bin)   |
+        | BK7231N  | OTA Update | [OpenBK7231N_{{version}}.rbl]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231N_{{version}}.rbl)         |
+        | BK7231N  | UART Flash | [OpenBK7231N_UG_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231N_UG_{{version}}.bin)   |
+        | BK7231N  | SPI Flash  | [OpenBK7231N_QIO_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231N_QIO_{{version}}.bin) |
+        | XR809    |            | [OpenXR809_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenXR809_{{version}}.img)             |
+        | BL602    | UART Flash | [OpenBL602_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBL602_{{version}}.bin)             |
+        | W800     | OTA Update | [OpenW800_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenW800_{{version}}_ota.img)       |
+        | W800     | UART Flash | [OpenW800_{{version}}.fls]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenW800_{{version}}.fls)               |
+
+        Flashing instructions are available on the project's [README.md]({{host}}/{{owner}}/{{repository}}#readme)
+    preset: conventionalcommits
+    presetConfig:
+      types:
+        - type: "feat"
+          section: "Features"
+        # Tracked bug fix with a hotfix branch
+        - type: "hotfix"
+          section: "Bug Fixes"
+        # Uninmportent fix (CI testing, etc)
+        - type: "fix"
+          section: "Bug Fixes"
+          hidden: false
+        - type: "chore"
+          section: "Changes"
+          hidden: false
+        - type: "docs"
+          section: "Changes"
+          hidden: false
+        - type: "doc"
+          section: "Changes"
+          hidden: false
+        - type: "style"
+          section: "Changes"
+          hidden: false
+        - type: "refactor"
+          section: "Changes"
+          hidden: false
+        - type: "perf"
+          section: "Changes"
+          hidden: false
+        - type: "test"
+          section: "Changes"
+          hidden: false
+        - type: ""
+          section: "Changes"
+          hidden: false          
 prepare:
   - path: "@semantic-release/git"
-  - path: "@semantic-release/changelog"
-    changelogFile: "CHANGELOG.md"
 publish:
   - path: "@semantic-release/github"
     addReleases: "bottom"
