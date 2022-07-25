@@ -1381,6 +1381,7 @@ int http_fn_cfg(http_request_t *request) {
     poststr(request,"<form action=\"uart_tool\"><input type=\"submit\" value=\"UART Tool\"/></form>");
     poststr(request,"<form action=\"startup_command\"><input type=\"submit\" value=\"Change startup command text\"/></form>");
 
+#if 0
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
 	{
 		int i,j,k;
@@ -1391,6 +1392,7 @@ int http_fn_cfg(http_request_t *request) {
 		k = config_get_tableOffsets(BK_PARTITION_OTA,&i,&j);
 		hprintf128(request,"BK_PARTITION_OTA: bOk %i, at %i, len %i<br>",k,i,j);
 	}
+#endif
 #endif
 
     poststr(request,"<a href=\"/app\" target=\"_blank\">Launch Web Application</a><br/>");
