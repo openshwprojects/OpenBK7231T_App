@@ -201,6 +201,18 @@ Currently available pin roles:
   
   Device is counting full boots (full boot is a boot after which device worked for 30 seconds). If you power off and on device multiple times, it will enter open access point mode and safe mode (safe mode means even pin systems are not initialized). Those modes are used to recover devices from bad configs and errors.
   
+  
+# Simple TCP command server for scripting
+  
+  You can enable a simple TCP server in device Generic/Flags option, which will listen by default on port 100. Server can accept single connection at time from Putty in RAW mode (raw TCP connection) and accepts text commands for OpenBeken console. In future, we may add support for multiple connections at time. Server will close connection if client does nothing for some time.
+  
+  There are some extra short commands for TCP console:
+- GetChannel [index] 
+- GetReadings - returns voltage, current and power
+- ShortName
+the commands above return a single ASCII string as a reply so it's easy to parse.
+  
+  
 # RGBCW Tuya 5 PWMs LED bulb control compatible with Home Assistant
   
   RGBCW light bulbs are now supported and they are compatible with HA by rgb_command_template, brightness_value_template, color_temp_value_template commands. Please follow the guide below showing how to flash, setup and pair them with HA by MQTT:
