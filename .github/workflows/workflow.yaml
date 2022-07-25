@@ -26,16 +26,17 @@ jobs:
         with:
           submodules: recursive        
       - name: Update SDKs if required
-        run: make update-submodules        
+        run: make update-submodules
       - name: Semantic Release
         id: semantic
-        uses: cycjimmy/semantic-release-action@v2
+        uses: cycjimmy/semantic-release-action@v3
         with:
           dry_run: true
-          semantic_version: 18
+          semantic_version: 19
           extra_plugins: |
             @semantic-release/changelog
             @semantic-release/git
+            conventional-changelog-conventionalcommits
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Set outputs
@@ -102,7 +103,7 @@ jobs:
     name: Semantic Release Images and Artifacts
     runs-on: ubuntu-latest
     needs: [ refs, build ]
-    if: always() && needs.refs.outputs.new_release == 'true' && github.ref == 'refs/heads/main'
+    if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
     steps:
       - name: Source checkout
         uses: actions/checkout@v2
@@ -113,13 +114,14 @@ jobs:
           path: output/${{ needs.refs.outputs.version }}
       - name: Run Semantic Release
         id: semantic
-        uses: cycjimmy/semantic-release-action@v2
+        uses: cycjimmy/semantic-release-action@v3
         with:
           dry_run: false
-          semantic_version: 18
+          semantic_version: 19
           extra_plugins: |
             @semantic-release/changelog
             @semantic-release/git
+            conventional-changelog-conventionalcommits
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Echo Semantic Release Versions
