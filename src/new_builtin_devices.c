@@ -439,6 +439,7 @@ void Setup_Device_BK7231N_KS_602_TOUCH() {
 	PIN_SetPinRoleForPinIndex(26, IOR_Button);
 	PIN_SetPinChannelForPinIndex(26, 1);
 
+	CFG_SetFlag(OBK_FLAG_BTN_INSTANTTOUCH,true);
 	CFG_Save_SetupTimer();
 }
 
