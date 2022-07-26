@@ -429,6 +429,19 @@ void Setup_Device_BK7231N_CB2S_QiachipSmartSwitch() {
 
 	CFG_Save_SetupTimer();
 }
+
+void Setup_Device_BK7231N_KS_602_TOUCH() {
+	CFG_ClearPins();
+
+	PIN_SetPinRoleForPinIndex(17, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(17, 1);
+
+	PIN_SetPinRoleForPinIndex(26, IOR_Button);
+	PIN_SetPinChannelForPinIndex(26, 1);
+
+	CFG_Save_SetupTimer();
+}
+
 void Setup_Device_BK7231T_WB2S_QiachipSmartSwitch() {
 	CFG_ClearPins();
 	// Button
@@ -708,18 +721,6 @@ void Setup_Device_13A_Socket_CB2S(){
 	PIN_SetPinChannelForPinIndex(24, 0);
 	PIN_SetPinRoleForPinIndex(25, IOR_Relay_n);
 	PIN_SetPinChannelForPinIndex(25, 1);
-
-	CFG_Save_SetupTimer();
-}
-
-void Setup_Device_KS_602_TOUCH() {
-	CFG_ClearPins();
-
-	PIN_SetPinRoleForPinIndex(17, IOR_Relay);
-	PIN_SetPinChannelForPinIndex(17, 1);
-
-	PIN_SetPinRoleForPinIndex(26, IOR_Button);
-	PIN_SetPinChannelForPinIndex(26, 1);
 
 	CFG_Save_SetupTimer();
 }

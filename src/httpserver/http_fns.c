@@ -45,6 +45,7 @@ template_t g_templates [] = {
 	{ Setup_Device_Empty, "Empty"},
 	// BK7231N devices
 	{ Setup_Device_BK7231N_CB2S_QiachipSmartSwitch, "[BK7231N][CB2S] QiaChip Smart Switch"},
+	{Setup_Device_BK7231N_KS_602_TOUCH, "[BK7231N] KS 602 Touch Switch US"},
 	// BK7231T devices
 	{ Setup_Device_BK7231T_WB2S_QiachipSmartSwitch, "[BK7231T][WB2S] QiaChip Smart Switch"},
 	{ Setup_Device_TuyaWL_SW01_16A, "WL SW01 16A"},
@@ -73,7 +74,6 @@ template_t g_templates [] = {
 	{ Setup_Device_13A_Socket_CB2S, "BK7231N CB2S 13A Aliexpress socket"},
     { Setup_Device_Deta_Smart_Double_Power_Point_6922HA_Series2, "BK7231T DETA SMART Double Power Point 6922HA-Series 2"},
     { Setup_Device_ArlecRGBCCTDownlight, "Arlec RGB+CCT LED Downlight ALD092RHA"},
-    { Setup_Device_KS_602_TOUCH, "KS-602 Touch Switch US"},
 };
 
 int g_total_templates = sizeof(g_templates)/sizeof(g_templates[0]);
