@@ -1344,14 +1344,14 @@ http://<ip>/cm?user=admin&password=joker&cmnd=Power%20Toggle
 // Web browser sends: GET /cm?cmnd=POWER1
 // System responds with state
 int http_tasmota_json_power(http_request_t *request) {
-	int numRelays = 0;
-	int numPWMs = 0;
+	int numRelays;
+	int numPWMs;
 	int i;
 	int lastRelayState;
 
 	// try to return status
 	numPWMs = PIN_CountPinsWithRole(IOR_PWM);
-	numRelays = PIN_CountPinsWithRole(IOR_Relay);
+	numRelays = 0;
 
 	// LED driver (if has PWMs)
 	if(numPWMs > 0){
