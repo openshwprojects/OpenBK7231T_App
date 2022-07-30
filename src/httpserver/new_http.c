@@ -328,8 +328,13 @@ void HTTP_AddBuildFooter(http_request_t *request) {
 // call with str == NULL to force send. - can be binary.
 // supply length
 int postany(http_request_t *request, const char *str, int len){
+#if PLATFORM_BL602
+	send(request->fd,str,len,0);
+	return 0;
+#else
 	int currentlen;
 	int addlen = len;
+
 	if (NULL == str){
 		send(request->fd, request->reply, request->replylen, 0);
 		request->reply[0] = 0;
@@ -351,6 +356,7 @@ int postany(http_request_t *request, const char *str, int len){
 		request->replylen += addlen;
 	}
 	return (currentlen + addlen);
+#endif
 }
 
 
@@ -414,6 +420,11 @@ int HTTP_ProcessPacket(http_request_t *request) {
 	//int bChanged = 0;
 	char *urlStr = "";
 
+	if (request->received == 0){
+		ADDLOGF_ERROR("You gave request with NULL input");
+		return 0;
+	}
+
 	char *recvbuf = request->received;
 	for ( i = 0; i < sizeof(methodNames)/sizeof(*methodNames); i++){
 		if (http_startsWith(recvbuf, methodNames[i])){
@@ -424,6 +435,10 @@ int HTTP_ProcessPacket(http_request_t *request) {
 	}
 	if (request->method == -1){
 		ADDLOGF_ERROR("unsupported method %7s", recvbuf);
+		return 0;
+	}
+	if (request->reply == 0){
+		ADDLOGF_ERROR("You gave request with NULL buffer");
 		return 0;
 	}
 
@@ -499,6 +514,12 @@ int HTTP_ProcessPacket(http_request_t *request) {
 
 	request->bodystart = p;
 	request->bodylen = request->receivedLen - (p - request->received);
+#if 0
+	postany(request,"test",4);
+	return 0;
+#elif 0
+	return http_fn_empty_url(request);
+#endif
 
 	// look for a callback with this URL and method, or HTTP_ANY
 	for (i = 0; i < numCallbacks; i++){
@@ -510,7 +531,6 @@ int HTTP_ProcessPacket(http_request_t *request) {
 			}
 		}
 	}
-
 	if(http_checkUrlBase(urlStr,"")) return http_fn_empty_url(request);
 
 	if(http_checkUrlBase(urlStr,"index")) return http_fn_index(request);

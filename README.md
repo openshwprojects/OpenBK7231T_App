@@ -225,6 +225,12 @@ the commands above return a single ASCII string as a reply so it's easy to parse
   
   https://www.elektroda.com/rtvforum/viewtopic.php?p=20031489#20031489
   
+# TuyaMCU example with Tuya 5 Speed Fan Controller by TEQOOZ - BK7231T - WB3S
+  
+  Home Assistant Yaml examples. Please refer to this example:
+  
+  https://www.elektroda.com/rtvforum/topic3908093.html
+  
 # TuyaMCU WB2S "Moes House" Dimmer configuration example with Home Assistant, see here:
   
 https://www.elektroda.com/rtvforum/topic3898502.html
@@ -237,7 +243,6 @@ https://www.elektroda.com/rtvforum/topic3898502.html
     
 Please refer to this step by step guide:
   https://www.elektroda.com/rtvforum/topic3887748.html
- 
   
 # ZN268131 example, a smart switch that allows you to connect a bistable button
     
