@@ -1407,6 +1407,32 @@ int http_tasmota_json_status_SNS(http_request_t *request) {
 	hprintf128(request,"\"Voltage\":%f,", voltage);
 	hprintf128(request,"\"Current\":%f}}}", current);
 
+	return 0;
+}
+/*
+{"Status":{"Module":0,"DeviceName":"Tasmota","FriendlyName":["Tasmota"],"Topic":"tasmota_48E7F3","ButtonTopic":"0","Power":1,"PowerOnState":3,"LedState":1,"LedMask":"FFFF","SaveData":1,"SaveState":1,"SwitchTopic":"0","SwitchMode":[0,0,0,0,0,0,0,0],"ButtonRetain":0,"SwitchRetain":0,"SensorRetain":0,"PowerRetain":0,"InfoRetain":0,"StateRetain":0}}
+*/
+int http_tasmota_json_status_generic(http_request_t *request) {
+	const char *deviceName;
+	const char *friendlyName;
+	const char *topic;
+
+	deviceName = CFG_GetShortDeviceName();
+	friendlyName = CFG_GetShortDeviceName();
+	topic = CFG_GetShortDeviceName();
+
+	hprintf128(request,"{\"Status\":{\"Module\":0,\"DeviceName\":\"%s\"",deviceName);
+	hprintf128(request,",\"FriendlyName\":[\"%s\"]",friendlyName);
+	hprintf128(request,",\"Topic\":\"%s\",\"ButtonTopic\":\"0\"",topic);
+	hprintf128(request,",\"Power\":1,\"PowerOnState\":3,\"LedState\":1");
+	hprintf128(request,",\"LedMask\":\"FFFF\",\"SaveData\":1,\"SaveState\":1");
+	hprintf128(request,",\"SwitchTopic\":\"0\",\"SwitchMode\":[0,0,0,0,0,0,0,0]");
+	hprintf128(request,",\"ButtonRetain\":0,\"SwitchRetain\":0,\"SensorRetain\":0");
+	hprintf128(request,",\"PowerRetain\":0,\"InfoRetain\":0,\"StateRetain\":0}}");
+
+
+
+	return 0;
 }
 int http_fn_cm(http_request_t *request) {
 	char tmpA[128];
@@ -1418,11 +1444,10 @@ int http_fn_cm(http_request_t *request) {
 
 		if(!wal_strnicmp(tmpA,"POWER",5)) {
 			http_tasmota_json_power(request);
-		}
-		else if(!wal_strnicmp(tmpA,"STATUS",6)) {
+		} else if(!wal_strnicmp(tmpA,"STATUS 8",8)) {
 			http_tasmota_json_status_SNS(request);
 		} else {
-			http_tasmota_json_status_SNS(request);
+			http_tasmota_json_status_generic(request);
 		}
 
     }
