@@ -1342,17 +1342,90 @@ http://<ip>/cm?user=admin&password=joker&cmnd=Power%20Toggle
 // https://www.elektroda.com/rtvforum/viewtopic.php?p=19330027#19330027
 // Web browser sends: GET /cm?cmnd=POWER1
 // System responds with state
+int http_tasmota_json_power(http_request_t *request) {
+	int numRelays = 0;
+	int numPWMs = 0;
+	int i;
+	int lastRelayState;
+
+	// try to return status
+	numPWMs = PIN_CountPinsWithRole(IOR_PWM);
+	numRelays = PIN_CountPinsWithRole(IOR_Relay);
+
+	// LED driver (if has PWMs)
+	if(numPWMs > 0){
+		if(LED_GetEnableAll() == 0) {
+			poststr(request,"{\"POWER\":\"OFF\"}");
+		} else {
+			poststr(request,"{\"POWER\":\"ON\"}");
+		}
+	} else {
+		// relays driver
+		for(i = 0; i < CHANNEL_MAX; i++) {
+			if (h_isChannelRelay(i) || CHANNEL_GetType(i) == ChType_Toggle) {
+				numRelays++;
+				lastRelayState = CHANNEL_Get(i);
+			}
+		}
+		if(numRelays == 1) {
+			if(lastRelayState) {
+				poststr(request,"{\"POWER\":\"ON\"}");
+			} else {
+				poststr(request,"{\"POWER\":\"OFF\"}");
+			}
+		} else {
+			for(i = 0; i < CHANNEL_MAX; i++) {
+				if (h_isChannelRelay(i) || CHANNEL_GetType(i) == ChType_Toggle) {
+					lastRelayState = CHANNEL_Get(i);
+					if(lastRelayState) {
+						hprintf128(request,"{\"POWER%i\":\"ON\"}",i);
+					} else {
+						hprintf128(request,"{\"POWER%i\":\"OFF\"}",i);
+					}
+				}
+			}
+		}
+
+	}
+	return 0;
+}
+/*
+{"StatusSNS":{"Time":"2022-07-30T10:11:26","ENERGY":{"TotalStartTime":"2022-05-12T10:56:31","Total":0.003,"Yesterday":0.003,"Today":0.000,"Power": 0,"ApparentPower": 0,"ReactivePower": 0,"Factor":0.00,"Voltage":236,"Current":0.000}}}
+*/
+int http_tasmota_json_status_SNS(http_request_t *request) {
+	float power, factor, voltage, current;
+
+	factor = 0; // TODO
+	voltage = DRV_GetReading(OBK_VOLTAGE);
+	current = DRV_GetReading(OBK_CURRENT);
+	power = DRV_GetReading(OBK_POWER);
+
+	hprintf128(request,"{\"StatusSNS\":{\"ENERGY\":{");
+	hprintf128(request,"\"Power\": %f,", power);
+	hprintf128(request,"\"ApparentPower\": 0,\"ReactivePower\": 0,\"Factor\":%f,", factor);
+	hprintf128(request,"\"Voltage\":%f,", voltage);
+	hprintf128(request,"\"Current\":%f}}}", current);
+
+}
 int http_fn_cm(http_request_t *request) {
 	char tmpA[128];
 
     http_setup(request, httpMimeTypeJson);
+	// exec command
     if(	http_getArg(request->url,"cmnd",tmpA,sizeof(tmpA))) {
 		CMD_ExecuteCommand(tmpA,COMMAND_FLAG_SOURCE_HTTP);
 
-
+		if(!wal_strnicmp(tmpA,"POWER",5)) {
+			http_tasmota_json_power(request);
+		}
+		else if(!wal_strnicmp(tmpA,"STATUS",6)) {
+			http_tasmota_json_status_SNS(request);
+		} else {
+			http_tasmota_json_status_SNS(request);
+		}
 
     }
-	poststr(request,"{\"POWER1\":\"OFF\"}");
+
 	poststr(request, NULL);
 
 

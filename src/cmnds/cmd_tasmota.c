@@ -23,11 +23,25 @@ static int power(const void *context, const char *cmd, const char *args, int cmd
 	//if (!wal_strnicmp(cmd, "POWER", 5)){
 		int channel = 0;
 		int iVal = 0;
+		int i;
 
         ADDLOG_INFO(LOG_FEATURE_CMD, "tasCmnd POWER (%s) received with args %s",cmd,args);
 
 		if (strlen(cmd) > 5) {
 			channel = atoi(cmd+5);
+		} else {
+			// if new LED driver active
+			if(PIN_CountPinsWithRole(IOR_PWM) > 0) {
+				channel = SPECIAL_CHANNEL_LEDPOWER;
+			} else {
+				// find first active channel, because some people index with 0 and some with 1
+				for(i = 0; i < CHANNEL_MAX; i++) {
+					if (h_isChannelRelay(i) || CHANNEL_GetType(i) == ChType_Toggle) {
+						channel = i;
+						break;
+					}
+				}
+			}
 		}
 #if 0
 		// it seems that my Home Assistant expects RGB etc light bulbs to be turned off entirely
