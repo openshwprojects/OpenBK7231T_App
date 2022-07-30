@@ -52,7 +52,9 @@ static int power(const void *context, const char *cmd, const char *args, int cmd
 			return 1;
 		}
 #endif
-		if(!stricmp(args,"TOGGLE")) {
+		if(args == 0 || *args == 0) {
+			// this should only check status
+		} else if(!stricmp(args,"TOGGLE")) {
 			CHANNEL_Toggle(channel);
 		} else {
 			iVal = parsePowerArgument(args);
