@@ -1021,6 +1021,32 @@ static int CMD_SetChannelType(const void *context, const char *cmd, const char *
 	return 0;
 }
 
+int h_isChannelPWM(int tg_ch){
+    int i;
+    for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
+        int ch = PIN_GetPinChannelForPinIndex(i);
+		if(tg_ch != ch)
+			continue;
+        int role = PIN_GetPinRoleForPinIndex(i);
+        if(role == IOR_PWM) {
+			return true;
+        }
+    }
+	return false;
+}
+int h_isChannelRelay(int tg_ch) {
+    int i;
+    for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
+        int ch = PIN_GetPinChannelForPinIndex(i);
+		if(tg_ch != ch)
+			continue;
+        int role = PIN_GetPinRoleForPinIndex(i);
+        if(role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
+			return true;
+        }
+    }
+	return false;
+}
 static int showgpi(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int i;
 	unsigned int value = 0;

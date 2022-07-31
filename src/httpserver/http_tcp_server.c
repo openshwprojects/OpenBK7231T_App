@@ -22,7 +22,7 @@ int sendfn(int fd, char * data, int len){
 
 static void tcp_client_thread( int fd, char *buf, char *reply )
 {
-	OSStatus err = kNoErr;
+	//OSStatus err = kNoErr;
 
 	http_request_t request;
 	os_memset(&request, 0, sizeof(request));

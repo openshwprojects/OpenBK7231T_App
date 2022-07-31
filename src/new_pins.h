@@ -193,6 +193,10 @@ bool CHANNEL_IsInUse(int ch);
 void Channel_SaveInFlashIfNeeded(int ch);
 bool CHANNEL_HasChannelSomeOutputPin(int ch);
 
+int h_isChannelPWM(int tg_ch);
+int h_isChannelRelay(int tg_ch);
+
+
 int PIN_GetPWMIndexForPinIndex(int pin);
 
 int PIN_ParsePinRoleName(const char *name);
