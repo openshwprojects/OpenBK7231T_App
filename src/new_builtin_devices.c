@@ -300,6 +300,30 @@ void Setup_Device_ArlecRGBCCTDownlight() {
 	CFG_Save_SetupTimer();
 }
 
+// https://www.elektroda.com/rtvforum/viewtopic.php?p=20123466#20123466
+// CasaLife CCT Downlight SMART-AL2017-TGTS
+// Sold by ALDI Australia
+void Setup_Device_CasaLifeCCTDownlight() {
+
+	// WB2L
+	// pins are:
+	// color temperature - PWM1 = P7
+	// brightness - PWM2 = P8
+
+	CFG_ClearPins();
+
+	// color temperature
+	PIN_SetPinChannelForPinIndex(7, 0);
+	PIN_SetPinRoleForPinIndex(7, IOR_PWM);
+	// brightness
+	PIN_SetPinChannelForPinIndex(8, 1);
+	PIN_SetPinRoleForPinIndex(8, IOR_PWM);
+	// Raw PWM values already control temperature/brighness so enable "Flag 3 -[LED][Debug] Show raw PWM controller on WWW index instead of new LED RGB/CW/etc picker"
+	CFG_SetFlag(OBK_FLAG_LED_RAWCHANNELSMODE, true);
+
+	CFG_Save_SetupTimer();
+}
+
 // https://www.elektroda.pl/rtvforum/topic3804553.html
 // SmartSwitch Nedis WIFIPO120FWT
 void Setup_Device_NedisWIFIPO120FWT_16A() {
