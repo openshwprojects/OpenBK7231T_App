@@ -8,7 +8,7 @@
 
 #define HTTP_SERVER_PORT            80
 
-#define REPLY_BUFFER_SIZE			10000
+#define REPLY_BUFFER_SIZE			5000
 #define INCOMING_BUFFER_SIZE		1024
 
 xTaskHandle g_http_thread = NULL;
