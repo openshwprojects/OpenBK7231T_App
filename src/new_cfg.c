@@ -103,7 +103,7 @@ static byte CFG_CalcChecksum(mainConfig_t *inf) {
 
 	return crc;
 }
-static void CFG_SetDefaultConfig() {
+void CFG_SetDefaultConfig() {
 	// must be unsigned, else print below prints negatives as e.g. FFFFFFFe
 	unsigned char mac[6] = { 0 };
 
@@ -137,6 +137,7 @@ static void CFG_SetDefaultConfig() {
 	sprintf(g_cfg.longDeviceName,DEVICENAME_PREFIX_FULL"_%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
 	sprintf(g_cfg.shortDeviceName,DEVICENAME_PREFIX_SHORT"%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
 
+	g_cfg_pendingChanges++;
 }
 
 const char *CFG_GetWebappRoot(){

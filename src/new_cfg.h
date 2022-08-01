@@ -14,6 +14,7 @@ void CFG_CreateDeviceNameUnique();
 int CFG_GetMQTTPort();
 void CFG_SetMQTTPort(int p);
 void CFG_SetOpenAccessPoint();
+void CFG_SetDefaultConfig();
 const char *CFG_GetWiFiSSID();
 const char *CFG_GetWiFiPass();
 void CFG_SetWiFiSSID(const char *s);

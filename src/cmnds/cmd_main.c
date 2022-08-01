@@ -45,9 +45,19 @@ static int CMD_Restart(const void *context, const char *cmd, const char *args, i
 
 	return 1;
 }
+static int CMD_ClearConfig(const void *context, const char *cmd, const char *args, int cmdFlags){
+
+	CFG_SetDefaultConfig();
+	CFG_Save_IfThereArePendingChanges();
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ClearConfig: whole device config has been cleared, restart device to connect to clear AP");
+
+	return 1;
+}
 
 void CMD_Init() {
     CMD_RegisterCommand("restart", "", CMD_Restart, "Reboots the module", NULL);
+    CMD_RegisterCommand("clearConfig", "", CMD_ClearConfig, "Clears all config", NULL);
 	if(CFG_HasFlag(OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER)) {
 		CMD_StartTCPCommandLine();
 	}
