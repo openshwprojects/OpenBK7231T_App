@@ -1236,7 +1236,7 @@ int http_fn_cfg_ha(http_request_t *request) {
     int pwmCount = 0;
     const char *baseName;
     int i;
-	//char tmpA[128];
+    char mqttAdded = 0;
 
     baseName = CFG_GetShortDeviceName();
 
@@ -1260,40 +1260,63 @@ int http_fn_cfg_ha(http_request_t *request) {
         if(role == IOR_PWM) {
             pwmCount++;
         }
-    }
+    }        
+
     if(relayCount > 0) {
-        poststr(request,"switch:\n");
+        char switchAdded = 0;
+
         for(i = 0; i < CHANNEL_MAX; i++) {
-			if(h_isChannelRelay(i)) {
-                poststr(request,"  - platform: mqtt\n");
+            if(h_isChannelRelay(i)) {
+                if (mqttAdded == 0){
+                    poststr(request,"mqtt:\n");
+                    mqttAdded=1;
+                }
+                if (switchAdded == 0){
+                    poststr(request,"  switch:\n");
+                    switchAdded=1;
+                }
+
+                hprintf128(request,"  - unique_id: \"%s %i\"\n",baseName,i);
                 hprintf128(request,"    name: \"%s %i\"\n",baseName,i);
                 hprintf128(request,"    state_topic: \"%s/%i/get\"\n",baseName,i);
                 hprintf128(request,"    command_topic: \"%s/%i/set\"\n",baseName,i);
-                poststr(request,"    qos: 1\n");
-                poststr(request,"    payload_on: 0\n");
-                poststr(request,"    payload_off: 1\n");
-                poststr(request,"    retain: true\n");
-                hprintf128(request,"    availability_topic: \"%s/connected\"\n",baseName);
+                poststr(request,   "    qos: 1\n");
+                poststr(request,   "    payload_on: 0\n");
+                poststr(request,   "    payload_off: 1\n");
+                poststr(request,   "    retain: true\n");
+                hprintf128(request,"    availability:\n");
+                hprintf128(request,"      - topic: \"%s/connected\"\n",baseName);
             }
         }
     }
     if(pwmCount > 0) {
-        poststr(request,"light:\n");
+        char lightAdded = 0;
+                
         for(i = 0; i < CHANNEL_MAX; i++) {
-			if(h_isChannelPWM(i)) {
-                poststr(request,"  - platform: mqtt\n");
+            if(h_isChannelPWM(i)) {
+                if (mqttAdded == 0){
+                    poststr(request,"mqtt:\n");
+                    mqttAdded=1;
+                }
+                if (lightAdded == 0){
+                    poststr(request,"  light:\n");
+                    lightAdded=1;
+                }
+
+                hprintf128(request,"  - unique_id: \"%s %i\"\n",baseName,i);
                 hprintf128(request,"    name: \"%s %i\"\n",baseName,i);
                 hprintf128(request,"    state_topic: \"%s/%i/get\"\n",baseName,i);
                 hprintf128(request,"    command_topic: \"%s/%i/set\"\n",baseName,i);
                 hprintf128(request,"    brightness_command_topic: \"%s/%i/set\"\n",baseName,i);
-                poststr(request,"    on_command_type: \"brightness\"\n");
-                poststr(request,"    brightness_scale: 99\n");
-                poststr(request,"    qos: 1\n");
-                poststr(request,"    payload_on: 99\n");
-                poststr(request,"    payload_off: 0\n");
-                poststr(request,"    retain: true\n");
-                poststr(request,"    optimistic: true\n");
-                hprintf128(request,"    availability_topic: \"%s/connected\"\n",baseName);
+                poststr(request,   "    on_command_type: \"brightness\"\n");
+                poststr(request,   "    brightness_scale: 99\n");
+                poststr(request,   "    qos: 1\n");
+                poststr(request,   "    payload_on: 99\n");
+                poststr(request,   "    payload_off: 0\n");
+                poststr(request,   "    retain: true\n");
+                poststr(request,   "    optimistic: true\n");
+                hprintf128(request,"    availability:\n");
+                hprintf128(request,"      - topic: \"%s/connected\"\n",baseName);
             }
         }
     }
