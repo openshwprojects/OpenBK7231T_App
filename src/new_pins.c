@@ -291,10 +291,19 @@ void CHANNEL_DoSpecialToggleAll() {
 			anyEnabled++;
 		}
 	}
-	if(anyEnabled)
+	if(anyEnabled) {
 		CHANNEL_SetAll(0, true);
-	else
-		CHANNEL_SetAll(255, true);
+	} else {
+		for(i = 0; i < CHANNEL_MAX; i++) {
+			if(CHANNEL_IsInUse(i)) {
+				int valToSet;
+
+				valToSet = CHANNEL_FindMaxValueForChannel(i);
+
+				CHANNEL_Set(i,valToSet,0);
+			}
+		}
+	}
 
 }
 void PIN_SetPinRoleForPinIndex(int index, int role) {
