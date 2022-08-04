@@ -196,6 +196,7 @@ int CHANNEL_HasChannelPinWithRole(int ch, int iorType);
 bool CHANNEL_IsInUse(int ch);
 void Channel_SaveInFlashIfNeeded(int ch);
 bool CHANNEL_HasChannelSomeOutputPin(int ch);
+int CHANNEL_FindMaxValueForChannel(int ch);
 
 int h_isChannelPWM(int tg_ch);
 int h_isChannelRelay(int tg_ch);
