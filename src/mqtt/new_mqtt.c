@@ -7,7 +7,7 @@
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 #include "../hal/hal_wifi.h"
-
+#include "../driver/drv_ntp.h"
 
 
 #ifndef LWIP_MQTT_EXAMPLE_IPADDR_INIT
@@ -67,9 +67,30 @@ int loopsWithDisconnected = 0;
 int mqtt_reconnect = 0;
 // set for the device to broadcast self state on start
 int g_bPublishAllStatesNow = 0;
-#define PUBLISHITEM_INDEX_FIRST -1
-#define PUBLISHITEM_SELF_IP -1
-int g_publishItemIndex = PUBLISHITEM_INDEX_FIRST;
+
+#define PUBLISHITEM_ALL_INDEX_FIRST   -13
+
+//These 3 values are pretty much static
+#define PUBLISHITEM_SELF_STATIC_RESERVED_2 -13
+#define PUBLISHITEM_SELF_STATIC_RESERVED_1 -12
+#define PUBLISHITEM_SELF_HOSTNAME -11  //Device name
+#define PUBLISHITEM_SELF_VERSION  -10  //Device version
+#define PUBLISHITEM_SELF_MAC      -9   //Device mac
+
+//These values are dynamic
+#define PUBLISHITEM_DYNAMIC_INDEX_FIRST     -8
+#define PUBLISHITEM_SELF_DYNAMIC_RESERVED_2 -8
+#define PUBLISHITEM_SELF_DYNAMIC_RESERVED_1 -7
+#define PUBLISHITEM_SELF_DATETIME -6  //Current unix datetime
+#define PUBLISHITEM_SELF_SOCKETS  -5  //Active sockets
+#define PUBLISHITEM_SELF_RSSI     -4  //Link strength
+#define PUBLISHITEM_SELF_UPTIME   -3  //Uptime
+#define PUBLISHITEM_SELF_FREEHEAP -2  //Free heap
+#define PUBLISHITEM_SELF_IP       -1  //ip address
+
+int g_publishItemIndex = PUBLISHITEM_ALL_INDEX_FIRST;
+static bool g_firstFullBroadcast = true;  //Flag indicating that we need to do a full broadcast
+
 int g_memoryErrorsThisSession = 0;
 static SemaphoreHandle_t g_mutex = 0;
 
@@ -92,7 +113,9 @@ static void MQTT_Mutex_Free() {
 
 void MQTT_PublishWholeDeviceState() {
 	g_bPublishAllStatesNow = 1;
-	g_publishItemIndex = PUBLISHITEM_INDEX_FIRST;
+
+  //Publish all status items once. Publish only dynamic items after that.
+  g_publishItemIndex = g_firstFullBroadcast == true ? PUBLISHITEM_ALL_INDEX_FIRST:PUBLISHITEM_DYNAMIC_INDEX_FIRST;
 }
 
 static struct mqtt_connect_client_info_t mqtt_client_info =
@@ -354,7 +377,7 @@ static void mqtt_pub_request_cb(void *arg, err_t result)
 // This is used to publish channel values in "obk0696FB33/1/get" format with numerical value,
 // This is also used to publish custom information with string name,
 // for example, "obk0696FB33/voltage/get" is used to publish voltage from the sensor
-static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t *client, const char *sChannel, const char *sVal, int flags)
+static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t *client, const char *sChannel, const char *sVal, int flags, bool appendGet)
 {
 	char pub_topic[32];
 //  const char *pub_payload= "{\"temperature\": \"45.5\"}";
@@ -394,7 +417,7 @@ static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t *client, const char *sC
 
 	baseName = CFG_GetShortDeviceName();
 
-	sprintf(pub_topic,"%s/%s/get",baseName,sChannel);
+	sprintf(pub_topic,"%s/%s%s",baseName,sChannel, (appendGet == true ? "/get" : ""));
   err = mqtt_publish(client, pub_topic, sVal, strlen(sVal), qos, retain, mqtt_pub_request_cb, 0);
   if(err != ERR_OK) {
 	 if(err == ERR_CONN) {
@@ -623,7 +646,7 @@ OBK_Publish_Result MQTT_PublishMain_StringInt(const char *sChannel, int iv)
 
 	sprintf(valueStr,"%i",iv);
 
-	return MQTT_PublishMain(mqtt_client,sChannel,valueStr, 0);
+	return MQTT_PublishMain(mqtt_client,sChannel,valueStr, 0, true);
 
 }
 OBK_Publish_Result MQTT_PublishMain_StringFloat(const char *sChannel, float f)
@@ -632,21 +655,14 @@ OBK_Publish_Result MQTT_PublishMain_StringFloat(const char *sChannel, float f)
 
 	sprintf(valueStr,"%f",f);
 
-	return MQTT_PublishMain(mqtt_client,sChannel,valueStr, 0);
+	return MQTT_PublishMain(mqtt_client,sChannel,valueStr, 0, true);
 
 }
 OBK_Publish_Result MQTT_PublishMain_StringString(const char *sChannel, const char *valueStr, int flags)
 {
 
-	return MQTT_PublishMain(mqtt_client,sChannel,valueStr, flags);
+	return MQTT_PublishMain(mqtt_client,sChannel,valueStr, flags, true);
 
-}
-OBK_Publish_Result MQTT_Publish_SelfIP(int flags) {
-	const char *ip;
-
-	ip = HAL_GetMyIPString();
-
-	return MQTT_PublishMain_StringString("IP",ip, flags);
 }
 OBK_Publish_Result MQTT_ChannelChangeCallback(int channel, int iVal)
 {
@@ -658,7 +674,7 @@ OBK_Publish_Result MQTT_ChannelChangeCallback(int channel, int iVal)
 	sprintf(channelNameStr,"%i",channel);
 	sprintf(valueStr,"%i",iVal);
 
-	return MQTT_PublishMain(mqtt_client,channelNameStr,valueStr, 0);
+	return MQTT_PublishMain(mqtt_client,channelNameStr,valueStr, 0, true);
 }
 OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 {
@@ -673,7 +689,7 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 	sprintf(channelNameStr,"%i",channel);
 	sprintf(valueStr,"%i",iValue);
 
-	return MQTT_PublishMain(mqtt_client,channelNameStr,valueStr, flags);
+	return MQTT_PublishMain(mqtt_client,channelNameStr,valueStr, flags, true);
 }
 OBK_Publish_Result MQTT_PublishCommand(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *topic, *value;
@@ -718,17 +734,63 @@ void MQTT_init(){
 
 }
 
+OBK_Publish_Result MQTT_DoItemPublishString(const char *sChannel, const char *valueStr) {
+  return MQTT_PublishMain(mqtt_client, sChannel, valueStr, OBK_PUBLISH_FLAG_MUTEX_SILENT, false);
+}
+
 OBK_Publish_Result MQTT_DoItemPublish(int idx) {
-	OBK_Publish_Result ret;
+  OBK_Publish_Result ret;
+  LinkStatusTypeDef linkStatus;
+  char dataStr[3*6+1];  //This is sufficient to hold mac value
 
+	switch(idx) {
+    case PUBLISHITEM_SELF_STATIC_RESERVED_2:
+    case PUBLISHITEM_SELF_STATIC_RESERVED_1:
+    case PUBLISHITEM_SELF_DYNAMIC_RESERVED_2:
+    case PUBLISHITEM_SELF_DYNAMIC_RESERVED_1:
+      return OBK_PUBLISH_WAS_NOT_REQUIRED;
 
-	if(idx == PUBLISHITEM_SELF_IP) {
-		ret = MQTT_Publish_SelfIP(OBK_PUBLISH_FLAG_MUTEX_SILENT);
-		return ret;  
-	}
-	if(CHANNEL_IsInUse(idx)) {	
-		ret = MQTT_ChannelPublish(g_publishItemIndex, OBK_PUBLISH_FLAG_MUTEX_SILENT);
-		return ret;
+    case PUBLISHITEM_SELF_HOSTNAME:
+      return MQTT_DoItemPublishString("host", CFG_GetShortDeviceName());
+
+    case PUBLISHITEM_SELF_VERSION:
+      return MQTT_DoItemPublishString("version", USER_SW_VER);
+      
+    case PUBLISHITEM_SELF_MAC:
+      return MQTT_DoItemPublishString("mac", HAL_GetMACStr(dataStr));
+    
+    case PUBLISHITEM_SELF_DATETIME:
+      sprintf(dataStr,"%d",NTP_GetCurrentTime());
+      return MQTT_DoItemPublishString("datetime", dataStr);
+
+    case PUBLISHITEM_SELF_SOCKETS:
+      sprintf(dataStr,"%d",LWIP_GetActiveSockets());
+      return MQTT_DoItemPublishString("sockets", dataStr);
+
+    case PUBLISHITEM_SELF_RSSI:
+      os_memset(&linkStatus, 0x0, sizeof(LinkStatusTypeDef));
+      bk_wlan_get_link_status(&linkStatus);
+      sprintf(dataStr,"%d",linkStatus.wifi_strength);
+      return MQTT_DoItemPublishString("rssi", dataStr);
+
+    case PUBLISHITEM_SELF_UPTIME:
+      sprintf(dataStr,"%d",Time_getUpTimeSeconds());
+      return MQTT_DoItemPublishString("uptime", dataStr);
+
+    case PUBLISHITEM_SELF_FREEHEAP:
+      sprintf(dataStr,"%d",xPortGetFreeHeapSize());
+      return MQTT_DoItemPublishString("freeheap", dataStr);
+
+    case PUBLISHITEM_SELF_IP:
+      g_firstFullBroadcast = false; //We published the last status item, disable full broadcast
+      return MQTT_DoItemPublishString("ip", HAL_GetMyIPString());
+
+    default:
+      break;
+  }
+  
+	if(CHANNEL_IsInUse(idx)) {
+		 MQTT_ChannelPublish(g_publishItemIndex, OBK_PUBLISH_FLAG_MUTEX_SILENT);
 	}
 	return OBK_PUBLISH_WAS_NOT_REQUIRED; // didnt publish
 }
@@ -832,7 +894,7 @@ int MQTT_RunEverySecondUpdate() {
 					g_secondsBeforeNextFullBroadcast = 60;
 					MQTT_PublishWholeDeviceState();
 				}
-			}			
+			}
 		}
 
 	}
