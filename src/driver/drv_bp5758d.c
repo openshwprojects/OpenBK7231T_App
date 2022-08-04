@@ -55,7 +55,7 @@ static void BP5758D_Start(uint8_t addr) {
 	rtos_delay_milliseconds(BP5758D_DELAY);
 	HAL_PIN_SetOutputValue(g_pin_clk, 0);
 	rtos_delay_milliseconds(BP5758D_DELAY);
-	BP5758D_Write(addr);
+	BP5758D_WriteByte(addr);
 }
 
 static void BP5758D_PreInit() {
