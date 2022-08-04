@@ -200,10 +200,10 @@ static int BP5758D_Map(const void *context, const char *cmd, const char *args, i
 // BP5758D_RGBCW FF00000000
 void BP5758D_Init() {
 
-    BP5758D_PreInit();
-
 	g_pin_clk = PIN_FindPinIndexForRole(IOR_BP5758D_CLK,g_pin_clk);
 	g_pin_data = PIN_FindPinIndexForRole(IOR_BP5758D_DAT,g_pin_data);
+
+    BP5758D_PreInit();
 
     CMD_RegisterCommand("BP5758D_RGBCW", "", BP5758D_RGBCW, "qq", NULL);
     CMD_RegisterCommand("BP5758D_Map", "", BP5758D_Map, "qq", NULL);
