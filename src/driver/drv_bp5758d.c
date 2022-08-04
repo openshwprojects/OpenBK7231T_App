@@ -69,24 +69,24 @@ static void BP5758D_PreInit() {
     // For it's init sequence, BP5758D just sets all fields
     BP5758D_Start(BP5758D_ADDR_SETUP);
     // Output enabled: enable all outputs since we're using a RGBCW light
-    BP5758D_Write(BP5758D_ENABLE_OUTPUTS_ALL);
+    BP5758D_WriteByte(BP5758D_ENABLE_OUTPUTS_ALL);
     // Set currents for OUT1-OUT5
-    BP5758D_Write(BP5758D_14MA);
-    BP5758D_Write(BP5758D_14MA);
-    BP5758D_Write(BP5758D_14MA);
-    BP5758D_Write(BP5758D_14MA);
-    BP5758D_Write(BP5758D_14MA);
+    BP5758D_WriteByte(BP5758D_14MA);
+    BP5758D_WriteByte(BP5758D_14MA);
+    BP5758D_WriteByte(BP5758D_14MA);
+    BP5758D_WriteByte(BP5758D_14MA);
+    BP5758D_WriteByte(BP5758D_14MA);
     // Set grayscale levels ouf all outputs to 0
-    BP5758D_Write(0x00);
-    BP5758D_Write(0x00);
-    BP5758D_Write(0x00);
-    BP5758D_Write(0x00);
-    BP5758D_Write(0x00);
-    BP5758D_Write(0x00);
-    BP5758D_Write(0x00);
-    BP5758D_Write(0x00);
-    BP5758D_Write(0x00);
-    BP5758D_Write(0x00);
+    BP5758D_WriteByte(0x00);
+    BP5758D_WriteByte(0x00);
+    BP5758D_WriteByte(0x00);
+    BP5758D_WriteByte(0x00);
+    BP5758D_WriteByte(0x00);
+    BP5758D_WriteByte(0x00);
+    BP5758D_WriteByte(0x00);
+    BP5758D_WriteByte(0x00);
+    BP5758D_WriteByte(0x00);
+    BP5758D_WriteByte(0x00);
     BP5758D_Stop();
 }
 
