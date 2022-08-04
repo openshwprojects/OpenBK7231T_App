@@ -61,12 +61,12 @@ static void BP5758D_Start(uint8_t addr) {
 static void BP5758D_PreInit() {
 	HAL_PIN_Setup_Output(g_pin_clk);
 	HAL_PIN_Setup_Output(g_pin_data);
+
 	BP5758D_Stop();
 
 	rtos_delay_milliseconds(BP5758D_DELAY);
 	
     // For it's init sequence, BP5758D just sets all fields
-    BP5758D_Init();
     BP5758D_Start(BP5758D_ADDR_SETUP);
     // Output enabled: enable all outputs since we're using a RGBCW light
     BP5758D_Write(BP5758D_ENABLE_OUTPUTS_ALL);
