@@ -30,17 +30,17 @@ typedef struct i2cDevice_TC74_s {
 } i2cDevice_TC74_t;
 
 // https://www.elektroda.pl/rtvforum/viewtopic.php?t=3880540&highlight=
-typedef struct i2cDevice_SM2135_s {
-	i2cDevice_t base;
-	// private SM2135 variables
-	// Input channel indices.
-	// Device will listen to changes in those channels and update accordingly.
-	int sourceChannel_R;
-	int sourceChannel_G;
-	int sourceChannel_B;
-	int sourceChannel_C;
-	int sourceChannel_W;
-} i2cDevice_SM2135_t;
+//typedef struct i2cDevice_SM2135_s {
+//	i2cDevice_t base;
+//	// private SM2135 variables
+//	// Input channel indices.
+//	// Device will listen to changes in those channels and update accordingly.
+//	int sourceChannel_R;
+//	int sourceChannel_G;
+//	int sourceChannel_B;
+//	int sourceChannel_C;
+//	int sourceChannel_W;
+//} i2cDevice_SM2135_t;
 
 // Right now, MCP23017 port expander supports only output mode
 // (map channel to MCP23017 output)

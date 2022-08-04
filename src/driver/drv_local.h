@@ -19,6 +19,10 @@ void SM2135_Init();
 void SM2135_RunFrame();
 void SM2135_OnChannelChanged(int ch, int value);
 
+void BP5758D_Init();
+void BP5758D_RunFrame();
+void BP5758D_OnChannelChanged(int ch, int value);
+
 void BL_ProcessUpdate(float voltage, float current, float power);
 void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request);
 bool DRV_IsRunning(const char *name);

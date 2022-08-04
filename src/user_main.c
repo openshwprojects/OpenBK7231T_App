@@ -448,6 +448,11 @@ void Main_Init()
 			DRV_StartDriver("SM2135");
 #endif
 		}
+		if(PIN_FindPinIndexForRole(IOR_BP5758D_CLK,-1) != -1 && PIN_FindPinIndexForRole(IOR_BP5758D_DAT,-1) != -1) {
+#ifndef OBK_DISABLE_ALL_DRIVERS
+			DRV_StartDriver("BP5758D");
+#endif
+		}
 		if(PIN_FindPinIndexForRole(IOR_BL0937_CF,-1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_CF1,-1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_SEL,-1) != -1) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 			DRV_StartDriver("BL0937");

@@ -32,6 +32,10 @@ enum IORole {
 	IOR_ADC,
 	IOR_SM2135_DAT,
 	IOR_SM2135_CLK,
+
+	IOR_BP5758D_DAT,
+	IOR_BP5758D_CLK,
+
 	IOR_Total_Options,
 };
 

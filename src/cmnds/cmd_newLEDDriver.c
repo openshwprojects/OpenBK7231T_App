@@ -127,6 +127,9 @@ void apply_smart_light() {
 	if(DRV_IsRunning("SM2135")) {
 		SM2135_Write(finalRGBCW);
 	}
+	if(DRV_IsRunning("BP5758D")) {
+		BP5758D_Write(finalRGBCW);
+	}
 #endif
 }
 static void sendColorChange() {
