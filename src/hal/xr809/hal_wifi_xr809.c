@@ -123,6 +123,10 @@ void WiFI_GetMacAddress(char *mac) {
 void HAL_PrintNetworkInfo() {
 
 }
+int HAL_GetWifiStrength() {
+    return -1;
+}
+
 const char *HAL_GetMyIPString() {
 	strcpy(g_ipStr,inet_ntoa(g_wlan_netif->ip_addr));
 

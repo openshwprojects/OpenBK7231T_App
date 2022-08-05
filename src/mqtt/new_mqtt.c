@@ -7,8 +7,8 @@
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 #include "../hal/hal_wifi.h"
+#include "../driver/drv_public.h"
 #include "../driver/drv_ntp.h"
-
 
 #ifndef LWIP_MQTT_EXAMPLE_IPADDR_INIT
 #if LWIP_IPV4
@@ -74,7 +74,7 @@ int g_bPublishAllStatesNow = 0;
 #define PUBLISHITEM_SELF_STATIC_RESERVED_2 -13
 #define PUBLISHITEM_SELF_STATIC_RESERVED_1 -12
 #define PUBLISHITEM_SELF_HOSTNAME -11  //Device name
-#define PUBLISHITEM_SELF_VERSION  -10  //Device version
+#define PUBLISHITEM_SELF_BUILD    -10  //Build
 #define PUBLISHITEM_SELF_MAC      -9   //Device mac
 
 //These values are dynamic
@@ -739,8 +739,6 @@ OBK_Publish_Result MQTT_DoItemPublishString(const char *sChannel, const char *va
 }
 
 OBK_Publish_Result MQTT_DoItemPublish(int idx) {
-  OBK_Publish_Result ret;
-  LinkStatusTypeDef linkStatus;
   char dataStr[3*6+1];  //This is sufficient to hold mac value
 
 	switch(idx) {
@@ -753,8 +751,8 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx) {
     case PUBLISHITEM_SELF_HOSTNAME:
       return MQTT_DoItemPublishString("host", CFG_GetShortDeviceName());
 
-    case PUBLISHITEM_SELF_VERSION:
-      return MQTT_DoItemPublishString("version", USER_SW_VER);
+    case PUBLISHITEM_SELF_BUILD:
+      return MQTT_DoItemPublishString("build", g_build_str);
       
     case PUBLISHITEM_SELF_MAC:
       return MQTT_DoItemPublishString("mac", HAL_GetMACStr(dataStr));
@@ -773,9 +771,7 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx) {
       return MQTT_DoItemPublishString("sockets", dataStr);
 
     case PUBLISHITEM_SELF_RSSI:
-      os_memset(&linkStatus, 0x0, sizeof(LinkStatusTypeDef));
-      bk_wlan_get_link_status(&linkStatus);
-      sprintf(dataStr,"%d",linkStatus.wifi_strength);
+      sprintf(dataStr,"%d",HAL_GetWifiStrength());
       return MQTT_DoItemPublishString("rssi", dataStr);
 
     case PUBLISHITEM_SELF_UPTIME:
