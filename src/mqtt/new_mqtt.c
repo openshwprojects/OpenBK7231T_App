@@ -758,13 +758,18 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx) {
       return MQTT_DoItemPublishString("mac", HAL_GetMACStr(dataStr));
     
     case PUBLISHITEM_SELF_DATETIME:
-      if (DRV_IsRunning("NTP")) {
-        sprintf(dataStr,"%d",NTP_GetCurrentTime());
-        return MQTT_DoItemPublishString("datetime", dataStr);
-      }
-      else{
+      //Drivers are only built on BK7231 chips
+      #ifndef OBK_DISABLE_ALL_DRIVERS
+        if (DRV_IsRunning("NTP")) {
+          sprintf(dataStr,"%d",NTP_GetCurrentTime());
+          return MQTT_DoItemPublishString("datetime", dataStr);
+        }
+        else{
+          return OBK_PUBLISH_WAS_NOT_REQUIRED;
+        }
+      #else
         return OBK_PUBLISH_WAS_NOT_REQUIRED;
-      }
+      #endif
 
     case PUBLISHITEM_SELF_SOCKETS:
       sprintf(dataStr,"%d",LWIP_GetActiveSockets());
