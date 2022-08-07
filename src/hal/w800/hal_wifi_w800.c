@@ -54,6 +54,9 @@ const char *HAL_GetMACStr(char *macstr){
 void HAL_PrintNetworkInfo(){
 
 }
+int HAL_GetWifiStrength() {
+    return -1;
+}
 
 static void apsta_demo_net_status(u8 status)
 {

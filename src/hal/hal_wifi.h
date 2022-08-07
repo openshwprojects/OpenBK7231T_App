@@ -22,4 +22,5 @@ const char *HAL_GetMACStr(char *macstr);
 void WiFI_GetMacAddress(char *mac);
 int WiFI_SetMacAddress(char *mac);
 void HAL_PrintNetworkInfo();
+int HAL_GetWifiStrength();
 
