@@ -772,3 +772,20 @@ void Setup_Device_Deta_Smart_Double_Power_Point_6922HA_Series2() {
 
 	CFG_Save_SetupTimer();
 }
+
+//https://enbrightenme.com/enbrighten-indoor-plug-in-mini-wifi-smart-switch-2-pack-white
+//https://www.elektroda.com/rtvforum/viewtopic.php?p=20133554#20133554
+void Setup_Device_Enbrighten_WFD4103(){
+	CFG_ClearPins();
+
+	PIN_SetPinRoleForPinIndex(7, IOR_LED_n);
+	PIN_SetPinChannelForPinIndex(7, 1);
+
+	PIN_SetPinRoleForPinIndex(24, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(24, 1);
+
+	PIN_SetPinRoleForPinIndex(26, IOR_Button);
+	PIN_SetPinChannelForPinIndex(26, 1);
+
+	CFG_Save_SetupTimer();
+}
