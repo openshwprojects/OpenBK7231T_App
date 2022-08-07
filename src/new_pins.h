@@ -196,6 +196,7 @@ int CHANNEL_HasChannelPinWithRole(int ch, int iorType);
 bool CHANNEL_IsInUse(int ch);
 void Channel_SaveInFlashIfNeeded(int ch);
 bool CHANNEL_HasChannelSomeOutputPin(int ch);
+int CHANNEL_FindMaxValueForChannel(int ch);
 
 int h_isChannelPWM(int tg_ch);
 int h_isChannelRelay(int tg_ch);
@@ -216,6 +217,7 @@ void Setup_Device_CalexLEDDimmerFiveChannel();
 void Setup_Device_CalexPowerStrip_900018_1v1_0UK();
 void Setup_Device_ArlecCCTDownlight();
 void Setup_Device_ArlecRGBCCTDownlight();
+void Setup_Device_CasaLifeCCTDownlight();
 void Setup_Device_NedisWIFIPO120FWT_16A();
 void Setup_Device_NedisWIFIP130FWT_10A();
 void Setup_Device_EmaxHome_EDU8774();

@@ -55,38 +55,38 @@ static void BP5758D_Start(uint8_t addr) {
 	rtos_delay_milliseconds(BP5758D_DELAY);
 	HAL_PIN_SetOutputValue(g_pin_clk, 0);
 	rtos_delay_milliseconds(BP5758D_DELAY);
-	BP5758D_Write(addr);
+	BP5758D_WriteByte(addr);
 }
 
 static void BP5758D_PreInit() {
 	HAL_PIN_Setup_Output(g_pin_clk);
 	HAL_PIN_Setup_Output(g_pin_data);
+
 	BP5758D_Stop();
 
 	rtos_delay_milliseconds(BP5758D_DELAY);
 	
     // For it's init sequence, BP5758D just sets all fields
-    BP5758D_Init();
     BP5758D_Start(BP5758D_ADDR_SETUP);
     // Output enabled: enable all outputs since we're using a RGBCW light
-    BP5758D_Write(BP5758D_ENABLE_OUTPUTS_ALL);
+    BP5758D_WriteByte(BP5758D_ENABLE_OUTPUTS_ALL);
     // Set currents for OUT1-OUT5
-    BP5758D_Write(BP5758D_14MA);
-    BP5758D_Write(BP5758D_14MA);
-    BP5758D_Write(BP5758D_14MA);
-    BP5758D_Write(BP5758D_14MA);
-    BP5758D_Write(BP5758D_14MA);
+    BP5758D_WriteByte(BP5758D_14MA);
+    BP5758D_WriteByte(BP5758D_14MA);
+    BP5758D_WriteByte(BP5758D_14MA);
+    BP5758D_WriteByte(BP5758D_14MA);
+    BP5758D_WriteByte(BP5758D_14MA);
     // Set grayscale levels ouf all outputs to 0
-    BP5758D_Write(0x00);
-    BP5758D_Write(0x00);
-    BP5758D_Write(0x00);
-    BP5758D_Write(0x00);
-    BP5758D_Write(0x00);
-    BP5758D_Write(0x00);
-    BP5758D_Write(0x00);
-    BP5758D_Write(0x00);
-    BP5758D_Write(0x00);
-    BP5758D_Write(0x00);
+    BP5758D_WriteByte(0x00);
+    BP5758D_WriteByte(0x00);
+    BP5758D_WriteByte(0x00);
+    BP5758D_WriteByte(0x00);
+    BP5758D_WriteByte(0x00);
+    BP5758D_WriteByte(0x00);
+    BP5758D_WriteByte(0x00);
+    BP5758D_WriteByte(0x00);
+    BP5758D_WriteByte(0x00);
+    BP5758D_WriteByte(0x00);
     BP5758D_Stop();
 }
 
@@ -200,10 +200,10 @@ static int BP5758D_Map(const void *context, const char *cmd, const char *args, i
 // BP5758D_RGBCW FF00000000
 void BP5758D_Init() {
 
-    BP5758D_PreInit();
-
 	g_pin_clk = PIN_FindPinIndexForRole(IOR_BP5758D_CLK,g_pin_clk);
 	g_pin_data = PIN_FindPinIndexForRole(IOR_BP5758D_DAT,g_pin_data);
+
+    BP5758D_PreInit();
 
     CMD_RegisterCommand("BP5758D_RGBCW", "", BP5758D_RGBCW, "qq", NULL);
     CMD_RegisterCommand("BP5758D_Map", "", BP5758D_Map, "qq", NULL);
