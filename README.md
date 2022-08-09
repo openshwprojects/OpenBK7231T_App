@@ -213,6 +213,17 @@ There are multiple console commands that allow you to automate your devices.
 | addEventHandler     | TODO | TODO |
 | sendGet     | TODO | TODO |
   
+      
+# Console Command argument expansion 
+
+  Every console command that takes an integer argument supports following constant expansion:
+- $CH[CHANNEL_NUMBER] - so, $CH0 is a channel 0 value, etc, so SetChannel 1 $CH2 will get current value of Channel2 and set it to Channel 1
+      
+# Scripting engine
+  
+  Scripting engine with threads is coming soon
+
+  
 # Simple TCP command server for scripting
   
   You can enable a simple TCP server in device Generic/Flags option, which will listen by default on port 100. Server can accept single connection at time from Putty in RAW mode (raw TCP connection) and accepts text commands for OpenBeken console. In future, we may add support for multiple connections at time. Server will close connection if client does nothing for some time.
