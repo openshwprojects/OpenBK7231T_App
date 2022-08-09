@@ -47,12 +47,20 @@ int Tokenizer_GetArgIntegerRange(int i, int rangeMax, int rangeMin) {
 	return ret;
 }
 int Tokenizer_GetArgInteger(int i) {
+	int channelIndex;
 	const char *s;
 	s = g_args[i];
 	if(s[0] == '0' && s[1] == 'x') {
 		int ret;
 		sscanf(s, "%x", &ret);
 		return ret;
+	}
+	if(s[0] == '$') {
+		// constant
+		if(s[1] == 'C' && s[2] == 'H') {
+			channelIndex = atoi(s+3);
+			return CHANNEL_Get(channelIndex);
+		}
 	}
 	return atoi(s);
 }
