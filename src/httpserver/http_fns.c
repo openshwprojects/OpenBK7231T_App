@@ -934,6 +934,7 @@ int http_fn_cfg_mac(http_request_t *request) {
         } else {
             poststr(request,"<h4> MAC change error?</h4>");
         }
+		CFG_Save_IfThereArePendingChanges();
     }
 
     WiFI_GetMacAddress((char *)mac);

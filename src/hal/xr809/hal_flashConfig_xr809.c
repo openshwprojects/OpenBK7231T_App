@@ -34,10 +34,6 @@ static int XR809_InitSysInfo() {
 	return 0;
 }
 
-int WiFI_SetMacAddress(char *mac) {
-	return 0;
-
-}
 int HAL_Configuration_ReadConfigMemory(void *target, int dataLen){
 
 	if(g_fdcm_hdl == 0) {

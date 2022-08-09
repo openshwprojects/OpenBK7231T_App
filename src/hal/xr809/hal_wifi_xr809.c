@@ -116,6 +116,13 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code)) {
 	return;
 }
 
+int WiFI_SetMacAddress(char *mac) {
+	// will be done after restarting
+//	wlan_set_mac_addr(mac, 6);
+	CFG_SetMac(mac);
+	return 1;
+
+}
 void WiFI_GetMacAddress(char *mac) {
 	memcpy(mac,g_cfg.mac,6);
 }

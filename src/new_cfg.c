@@ -329,6 +329,12 @@ void CFG_IncrementOTACount() {
 	g_cfg.otaCounter++;
 	g_cfg_pendingChanges++;
 }
+void CFG_SetMac(char *mac) {
+	if(memcmp(mac,g_cfg.mac,6)) {
+		memcpy(g_cfg.mac,mac,6);
+		g_cfg_pendingChanges++;
+	}
+}
 void CFG_Save_IfThereArePendingChanges() {
 	if(g_cfg_pendingChanges > 0) {
 		g_cfg.version = MAIN_CFG_VERSION;
@@ -452,6 +458,9 @@ void CFG_InitAndLoad() {
 		// mark as changed
 		g_cfg_pendingChanges ++;
 	} else {
+#if PLATFORM_XR809
+		WiFI_SetMacAddress(g_cfg.mac);
+#endif
 		addLogAdv(LOG_WARN, LOG_FEATURE_CFG, "CFG_InitAndLoad: Correct config has been loaded with %i changes count.",g_cfg.changeCounter);
 	}
 	g_configInitialized = 1;

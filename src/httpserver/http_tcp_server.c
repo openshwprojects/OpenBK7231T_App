@@ -20,6 +20,8 @@
 
 #define DISABLE_SEPARATE_THREAD_FOR_EACH_TCP_CLIENT 1
 
+#endif
+
 static void tcp_server_thread( beken_thread_arg_t arg );
 static void tcp_client_thread( beken_thread_arg_t arg );
 

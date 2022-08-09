@@ -33,7 +33,6 @@ static void helloworld_task(void *arg)
 
 void user_main(void)
 {
-	Main_Init();
 
 
 	/* start helloworld task */
