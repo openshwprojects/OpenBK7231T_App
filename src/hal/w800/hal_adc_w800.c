@@ -14,7 +14,7 @@ static int adcToGpio[] = {
 	12,//GPIO12, // ADC6
 	13,//GPIO13, // ADC7
 };
-static int c_adcToGpio = sizeof(adcToGpio)/sizeof(adcToGpio[0]);
+//static int c_adcToGpio = sizeof(adcToGpio)/sizeof(adcToGpio[0]);
 
 static uint16_t adcData[1];
 

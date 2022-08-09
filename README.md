@@ -200,7 +200,29 @@ Currently available pin roles:
 # Safe mode
   
   Device is counting full boots (full boot is a boot after which device worked for 30 seconds). If you power off and on device multiple times, it will enter open access point mode and safe mode (safe mode means even pin systems are not initialized). Those modes are used to recover devices from bad configs and errors.
+    
+# Console Commands
+
+There are multiple console commands that allow you to automate your devices.
+
+| Command        | Arguments          | Description  |
+| ------------- |:-------------:| -----:|
+| setChannel     | TODO | TODO |
+| addChannel     | TODO | TODO |
+| addRepeatingEvent     | TODO | TODO |
+| addEventHandler     | TODO | TODO |
+| sendGet     | TODO | TODO |
   
+      
+# Console Command argument expansion 
+
+  Every console command that takes an integer argument supports following constant expansion:
+- $CH[CHANNEL_NUMBER] - so, $CH0 is a channel 0 value, etc, so SetChannel 1 $CH2 will get current value of Channel2 and set it to Channel 1
+      
+# Scripting engine
+  
+  Scripting engine with threads is coming soon
+
   
 # Simple TCP command server for scripting
   

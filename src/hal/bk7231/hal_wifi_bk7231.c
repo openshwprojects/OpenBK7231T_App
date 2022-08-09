@@ -160,6 +160,13 @@ void HAL_PrintNetworkInfo(){
 
 }
 
+int HAL_GetWifiStrength() {
+    LinkStatusTypeDef linkStatus;
+    os_memset(&linkStatus, 0x0, sizeof(LinkStatusTypeDef));
+    bk_wlan_get_link_status(&linkStatus);
+    return linkStatus.wifi_strength;
+}
+
 // receives status change notifications about wireless - could be useful
 // ctxt is pointer to a rw_evt_type
 void wl_status( void *ctxt ){

@@ -158,6 +158,10 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code)) {
 void HAL_PrintNetworkInfo() {
 
 }
+int HAL_GetWifiStrength() {
+    return -1;
+}
+
 const char *HAL_GetMyIPString() {
 	uint32_t ip;
 	uint32_t gw;
