@@ -238,6 +238,7 @@ void Setup_Device_BK7231T_Gosund_Switch_SW5_A_V2_1();
 void Setup_Device_13A_Socket_CB2S();
 void Setup_Device_Deta_Smart_Double_Power_Point_6922HA_Series2();
 void Setup_Device_BK7231N_KS_602_TOUCH();
+void Setup_Device_Enbrighten_WFD4103();
 
 #endif
 
