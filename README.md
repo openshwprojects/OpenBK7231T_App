@@ -37,8 +37,7 @@ OpenBeken supports online builds for all platforms (BK7231T, BK7231N, XR809, BL6
 
 ## UART (Windows only)
 
-get BKwriter 1.60 exe (extract zip) from here https://github.com/openshwprojects/OpenBK7231T
-https://github.com/openshwprojects/OpenBK7231T/blob/master/bk_writer1.60.zip
+get BKwriter 1.60 exe (extract zip) from [here](https://github.com/openshwprojects/OpenBK7231T/blob/master/bk_writer1.60.zip)
   
 Use USB to TTL converter with 3.3V logic levels, like HW 597
 
