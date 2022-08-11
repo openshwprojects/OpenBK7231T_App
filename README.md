@@ -207,11 +207,13 @@ There are multiple console commands that allow you to automate your devices. Com
 
 | Command        | Arguments          | Description  |
 | ------------- |:-------------:| -----:|
-| setChannel     | [ChannelIndex][ChannelValue] | Sets a raw channel to given value. Relay channels are using 1 and 0 values. PWM channels are within [0,100] range. |
+| setChannel     | [ChannelIndex][ChannelValue] | Sets a raw channel to given value. Relay channels are using 1 and 0 values. PWM channels are within [0,100] range. Do not use this for LED control, because there is a better and more advanced LED driver with dimming and configuration memory (remembers setting after on/off), LED driver commands has "led_" prefix. |
 | addChannel     | [ChannelIndex][ValueToAdd][ClampMin][ClampMax] | Ads a given value to the channel. Can be used to change PWM brightness. Clamp min and max arguments are optional. |
-| addRepeatingEvent     | [IntervalSeconds][RepeatsOr-1][CommandToRun] | Starts a timer/interval command. |
-| addEventHandler     | [EventName][EventArgument][CommandToRun] | TODO |
-| addChangeHandler     | [Variable][Relation][Constant][Command] | TODO |
+| setPinRole     | [PinRole][RoleIndexOrName] | qqq |
+| setPinChannel     | [PinRole][ChannelIndex] | qqq |
+| addRepeatingEvent     | [IntervalSeconds][RepeatsOr-1][CommandToRun] | Starts a timer/interval command. Use "backlog" to fit multiple commands in a single string. |
+| addEventHandler     | [EventName][EventArgument][CommandToRun] | This can be used to trigger an action on a button click, long press, etc |
+| addChangeHandler     | [Variable][Relation][Constant][Command] | This can listen to change in channel value (for example channel 0 becoming 100), or for a voltage/current/power change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be "Power", or "Current" or "Voltage" |
 | sendGet     | [TargetURL] | Sends a HTTP GET request to target URL. May include GET arguments. Can be used to control devices by Tasmota HTTP protocol. |
 | publish     | [Topic][Value] | Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get |
 | linkTuyaMCUOutputToChannel     | TODO | Used to map between TuyaMCU dpIDs and our internal channels. Mapping works both ways. |
@@ -219,19 +221,23 @@ There are multiple console commands that allow you to automate your devices. Com
 | led_enableAll     | [1or0] | Power on/off LED but remember the RGB(CW) values. |
 | led_basecolor_rgb     | [HexValue] | Puts the LED driver in RGB mode and sets given color. |
 | led_basecolor_rgbcw     | [HexValue] | TODO |
-| led_temperature     | [TempValue] | Toggles LED driver into temperature mode and sets given temperature. It using Home Assistant temperature range. |
+| led_temperature     | [TempValue] | Toggles LED driver into temperature mode and sets given temperature. It using Home Assistant temperature range (in the range from 154-500 defined in homeassistant/util/color.py as HASS_COLOR_MIN and HASS_COLOR_MAX) |
 | led_dimmer     | [DimmerValue] | Used to dim all kinds of lights, works for both RGB and CW modes. |
 | led_brightnessMult     | [Value] | Internal usage only. |
 | led_colorMult     | [Value] | TODO |
-| led_saturation     | [Value] | TODO |
-| led_hue     | [Value] | TODO |
+| led_saturation     | [Value] | This is an alternate way to set the LED color. |
+| led_hue     | [Value] | This is an alternate way to set the LED color. |
 | SM2135_Map     | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of SM2135 channels. This is because SM2135 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. |
 | SM2135_RGBCW     | [HexColor] | Don't use it. It's for direct access of SM2135 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
+| BP5758D_Map     | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP5758D channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. |
+| BP5758D_RGBCW     | [HexColor] | Don't use it. It's for direct access of BP5758D driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
 | restart     |  | Reboots the device. |
 | clearConfig     |  | Clears all the device config and returns it to AP mode. |
 | VoltageSet     | [Value] | Used for BL0942/BL0937/etc calibration. Refer to BL0937 guide for more info. |
 | PowerSet     | [Value] | Used for BL0942/BL0937/etc calibration. Refer to BL0937 guide for more info. |
 | CurrentSet     | [Value] | Used for BL0942/BL0937/etc calibration. Refer to BL0937 guide for more info. |
+| DGR_SendPower     | [GroupName][ChannelValues][ChannelsCount] | Sends a POWER message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
+| DGR_SendBrightness     | [GroupName][Brightness] | Sends a Brightness message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
   
       
 # Console Command Examples
@@ -253,6 +259,25 @@ There are multiple console commands that allow you to automate your devices. Com
   
   Scripting engine with threads is coming soon
 
+
+| CodeName        | Description  | Screenshot  |
+| ------------- |:-------------:| -----:|
+| Toggle | Simple on/off Toggle | TODO |
+| LowMidHigh | 3 options - Low (0), Mid (1), High (2). Used for TuyaMCU Fan Controller. | TODO |
+| OffLowMidHigh | 4 options - Off(0), Low (1), Mid (2), High (3). Used for TuyaMCU Fan Controller. | TODO |
+| Dimmer | Display slider for TuyaMCU dimmer. | TODO |
+| TextField | Display textfield so you can enter any number. Used for testing, can be also used for time countdown on TuyaMCU devices. | TODO |
+| ReadOnly | Display a read only value on web panel. | TODO |
+| Temperature | Display a text value with 'C suffix, I am using it with I2C TC74 temperature sensor | TODO |
+| temperature_div10 | First divide given value by 10, then display result value with 'C suffix. This is for TuyaMCU LCD/Clock/Calendar/Temperature Sensor/Humidity meter | TODO |
+| humidity | Display value as a % humidity. | TODO |
+ 
+# Channel Types
+
+Channel types are often not required and don't have to be configured, but in some cases they are required for better device control from OpenBeken web panel. Channel types describes the kind of value stored in channel, for example, if you have a Tuya Fan Controller with 3 speeds control,  you can set the channel type to LowMidHigh and it will display the correct setting on OpenBeken panel.
+
+ 
+  
   
 # Simple TCP command server for scripting
   
