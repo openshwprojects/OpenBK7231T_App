@@ -259,6 +259,10 @@ There are multiple console commands that allow you to automate your devices. Com
   
   Scripting engine with threads is coming soon
 
+# Channel Types
+
+Channel types are often not required and don't have to be configured, but in some cases they are required for better device control from OpenBeken web panel. Channel types describes the kind of value stored in channel, for example, if you have a Tuya Fan Controller with 3 speeds control,  you can set the channel type to LowMidHigh and it will display the correct setting on OpenBeken panel.
+
 
 | CodeName        | Description  | Screenshot  |
 | ------------- |:-------------:| -----:|
@@ -271,13 +275,6 @@ There are multiple console commands that allow you to automate your devices. Com
 | Temperature | Display a text value with 'C suffix, I am using it with I2C TC74 temperature sensor | TODO |
 | temperature_div10 | First divide given value by 10, then display result value with 'C suffix. This is for TuyaMCU LCD/Clock/Calendar/Temperature Sensor/Humidity meter | TODO |
 | humidity | Display value as a % humidity. | TODO |
- 
-# Channel Types
-
-Channel types are often not required and don't have to be configured, but in some cases they are required for better device control from OpenBeken web panel. Channel types describes the kind of value stored in channel, for example, if you have a Tuya Fan Controller with 3 speeds control,  you can set the channel type to LowMidHigh and it will display the correct setting on OpenBeken panel.
-
- 
-  
   
 # Simple TCP command server for scripting
   
