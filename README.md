@@ -214,19 +214,19 @@ There are multiple console commands that allow you to automate your devices. Com
 | addChangeHandler     | TODO | TODO |
 | sendGet     | [TargetURL] | Sends a HTTP GET request to target URL. May include GET arguments. Can be used to control devices by Tasmota HTTP protocol. |
 | publish     | [Topic][Value] | Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get |
-| led_dimmer     | TODO | TODO |
 | linkTuyaMCUOutputToChannel     | TODO | Used to map between TuyaMCU dpIDs and our internal channels. Mapping works both ways. |
 | tuyaMcu_setBaudRate     | [BaudValue] | Sets the baud rate used by TuyaMCU UART communication. Default value is 9600. |
-| led_enableAll     | [OnOrOff] | Power on/off LED but remember the RGB(CW) values. |
-| led_basecolor_rgb     | TODO | TODO |
-| led_basecolor_rgbcw     | TODO | TODO |
+| led_enableAll     | [1or0] | Power on/off LED but remember the RGB(CW) values. |
+| led_basecolor_rgb     | [HexValue] | Puts the LED driver in RGB mode and sets given color. |
+| led_basecolor_rgbcw     | [HexValue] | TODO |
 | led_temperature     | [TempValue] | Toggles LED driver into temperature mode and sets given temperature. It using Home Assistant temperature range. |
-| led_brightnessMult     | TODO | TODO |
-| led_colorMult     | TODO | TODO |
-| led_saturation     | TODO | TODO |
-| led_hue     | TODO | TODO |
+| led_dimmer     | [DimmerValue] | Used to dim all kinds of lights, works for both RGB and CW modes. |
+| led_brightnessMult     | [Value] | Internal usage only. |
+| led_colorMult     | [Value] | TODO |
+| led_saturation     | [Value] | TODO |
+| led_hue     | [Value] | TODO |
 | SM2135_Map     | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of SM2135 channels. This is because SM2135 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. |
-| SM2135_RGBCW     | TODO | TODO |
+| SM2135_RGBCW     | [HexColor] | Don't use it. It's for direct access of SM2135 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
 | restart     |  | Reboots the device. |
 | clearConfig     |  | Clears all the device config and returns it to AP mode. |
   
