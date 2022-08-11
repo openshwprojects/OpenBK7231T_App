@@ -211,7 +211,24 @@ There are multiple console commands that allow you to automate your devices.
 | addChannel     | TODO | TODO |
 | addRepeatingEvent     | TODO | TODO |
 | addEventHandler     | TODO | TODO |
+| addChangeHandler     | TODO | TODO |
 | sendGet     | TODO | TODO |
+| publish     | [Topic][Value] | Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get |
+| led_dimmer     | TODO | TODO |
+| linkTuyaMCUOutputToChannel     | TODO | TODO |
+| tuyaMcu_setBaudRate     | TODO | TODO |
+| led_enableAll     | TODO | TODO |
+| led_basecolor_rgb     | TODO | TODO |
+| led_basecolor_rgbcw     | TODO | TODO |
+| led_temperature     | TODO | TODO |
+| led_brightnessMult     | TODO | TODO |
+| led_colorMult     | TODO | TODO |
+| led_saturation     | TODO | TODO |
+| led_hue     | TODO | TODO |
+| SM2135_Map     | TODO | TODO |
+| SM2135_RGBCW     | TODO | TODO |
+| restart     | TODO | TODO |
+| clearConfig     | TODO | TODO |
   
       
 # Console Command argument expansion 
