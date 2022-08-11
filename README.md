@@ -209,9 +209,9 @@ There are multiple console commands that allow you to automate your devices. Com
 | ------------- |:-------------:| -----:|
 | setChannel     | [ChannelIndex][ChannelValue] | Sets a raw channel to given value. Relay channels are using 1 and 0 values. PWM channels are within [0,100] range. |
 | addChannel     | [ChannelIndex][ValueToAdd][ClampMin][ClampMax] | Ads a given value to the channel. Can be used to change PWM brightness. Clamp min and max arguments are optional. |
-| addRepeatingEvent     | TODO | Starts a timer/interval command. |
-| addEventHandler     | TODO | TODO |
-| addChangeHandler     | TODO | TODO |
+| addRepeatingEvent     | [IntervalSeconds][RepeatsOr-1][CommandToRun] | Starts a timer/interval command. |
+| addEventHandler     | [EventName][EventArgument][CommandToRun] | TODO |
+| addChangeHandler     | [Variable][Relation][Constant][Command] | TODO |
 | sendGet     | [TargetURL] | Sends a HTTP GET request to target URL. May include GET arguments. Can be used to control devices by Tasmota HTTP protocol. |
 | publish     | [Topic][Value] | Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get |
 | linkTuyaMCUOutputToChannel     | TODO | Used to map between TuyaMCU dpIDs and our internal channels. Mapping works both ways. |
@@ -229,8 +229,21 @@ There are multiple console commands that allow you to automate your devices. Com
 | SM2135_RGBCW     | [HexColor] | Don't use it. It's for direct access of SM2135 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
 | restart     |  | Reboots the device. |
 | clearConfig     |  | Clears all the device config and returns it to AP mode. |
+| VoltageSet     | [Value] | Used for BL0942/BL0937/etc calibration. Refer to BL0937 guide for more info. |
+| PowerSet     | [Value] | Used for BL0942/BL0937/etc calibration. Refer to BL0937 guide for more info. |
+| CurrentSet     | [Value] | Used for BL0942/BL0937/etc calibration. Refer to BL0937 guide for more info. |
   
       
+# Console Command Examples
+
+| Command        | Description  |
+| ------------- | -----:|
+| addRepeatingEvent 15 -1 SendGet http://192.168.0.112/cm?cmnd=Power0%20Toggle | This will send a Tasmota HTTP Toggle command every 15 seconds to given device |
+| addEventHandler OnClick 8 SendGet http://192.168.0.112/cm?cmnd=Power0%20Toggle     | This will send a Tasmota HTTP Toggle command to given device when a button on pin 8 is clicked (pin 8, NOT channel 8) |
+| addChangeHandler Channel1 != 0  SendGet http://192.168.0.112/cm?cmnd=Power0%20On | This will set a Tasmota HTTP Power0 ON command when a channel 1 value become non-zero |
+| addChangeHandler Channel1 == 0  SendGet http://192.168.0.112/cm?cmnd=Power0%20Off | This will set a Tasmota HTTP Power0 OFF command when a channel 1 value become zero |
+| addChangeHandler Channel1 == 1 addRepeatingEvent 60 1 setChannel 1 0 | This will create a new repeating events with 1 repeat count and 60 seconds delay everytime Channel1 becomes 1. Basically, it will automatically turn off the light 60 seconds after you turn it on. TODO: clear previous event instance? |
+
 # Console Command argument expansion 
 
   Every console command that takes an integer argument supports following constant expansion:
