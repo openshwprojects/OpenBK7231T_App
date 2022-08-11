@@ -203,32 +203,32 @@ Currently available pin roles:
     
 # Console Commands
 
-There are multiple console commands that allow you to automate your devices.
+There are multiple console commands that allow you to automate your devices. Commands can be entered manually in command line, can be send by HTTP (just like in Tasmota), can be send by MQTT and also can be scripted.
 
 | Command        | Arguments          | Description  |
 | ------------- |:-------------:| -----:|
-| setChannel     | TODO | TODO |
-| addChannel     | TODO | TODO |
-| addRepeatingEvent     | TODO | TODO |
+| setChannel     | [ChannelIndex][ChannelValue] | Sets a raw channel to given value. Relay channels are using 1 and 0 values. PWM channels are within [0,100] range. |
+| addChannel     | [ChannelIndex][ValueToAdd][ClampMin][ClampMax] | Ads a given value to the channel. Can be used to change PWM brightness. Clamp min and max arguments are optional. |
+| addRepeatingEvent     | TODO | Starts a timer/interval command. |
 | addEventHandler     | TODO | TODO |
 | addChangeHandler     | TODO | TODO |
-| sendGet     | TODO | TODO |
+| sendGet     | [TargetURL] | Sends a HTTP GET request to target URL. May include GET arguments. Can be used to control devices by Tasmota HTTP protocol. |
 | publish     | [Topic][Value] | Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get |
 | led_dimmer     | TODO | TODO |
-| linkTuyaMCUOutputToChannel     | TODO | TODO |
-| tuyaMcu_setBaudRate     | TODO | TODO |
-| led_enableAll     | TODO | TODO |
+| linkTuyaMCUOutputToChannel     | TODO | Used to map between TuyaMCU dpIDs and our internal channels. Mapping works both ways. |
+| tuyaMcu_setBaudRate     | [BaudValue] | Sets the baud rate used by TuyaMCU UART communication. Default value is 9600. |
+| led_enableAll     | [OnOrOff] | Power on/off LED but remember the RGB(CW) values. |
 | led_basecolor_rgb     | TODO | TODO |
 | led_basecolor_rgbcw     | TODO | TODO |
-| led_temperature     | TODO | TODO |
+| led_temperature     | [TempValue] | Toggles LED driver into temperature mode and sets given temperature. It using Home Assistant temperature range. |
 | led_brightnessMult     | TODO | TODO |
 | led_colorMult     | TODO | TODO |
 | led_saturation     | TODO | TODO |
 | led_hue     | TODO | TODO |
-| SM2135_Map     | TODO | TODO |
+| SM2135_Map     | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of SM2135 channels. This is because SM2135 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. |
 | SM2135_RGBCW     | TODO | TODO |
-| restart     | TODO | TODO |
-| clearConfig     | TODO | TODO |
+| restart     |  | Reboots the device. |
+| clearConfig     |  | Clears all the device config and returns it to AP mode. |
   
       
 # Console Command argument expansion 
