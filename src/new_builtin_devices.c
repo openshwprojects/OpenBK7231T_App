@@ -80,6 +80,24 @@ void Setup_Device_BL602_MagicHome_IR_RGB_LedStrip() {
 	CFG_Save_SetupTimer();
 }
 
+// DeviceName: Sonoff MiniR3
+// ShortDeviceName: minir3
+// https://sonoff.tech/product/minir3
+void Setup_Device_Sonoff_MiniR3() {
+	CFG_ClearPins();
+	// P1 WIFI LED inverted
+	PIN_SetPinRoleForPinIndex(1, IOR_LED_WIFI_n);
+	PIN_SetPinChannelForPinIndex(1, 1);
+	// P5 Relay Button
+	PIN_SetPinRoleForPinIndex(5, IOR_Button);
+	PIN_SetPinChannelForPinIndex(5, 1);
+	// P22 Relay
+	PIN_SetPinRoleForPinIndex(22, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(22, 1);
+
+	CFG_Save_SetupTimer();
+}
+
 // https://www.elektroda.pl/rtvforum/topic3804553.html
 // SmartSwitch Tuya WL-SW01_16 16A
 void Setup_Device_TuyaWL_SW01_16A() {
