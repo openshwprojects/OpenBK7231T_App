@@ -1,3 +1,7 @@
+#ifndef __NEW_MQTT_H__
+#define __NEW_MQTT_H__
+
+#include "../new_common.h"
 
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
@@ -17,8 +21,6 @@ extern mqtt_client_t* mqtt_client;
 void example_publish(mqtt_client_t *client, int channel, int iVal);
 void MQTT_init();
 int MQTT_RunEverySecondUpdate();
-
-typedef int OBK_Publish_Result;
 
 enum OBK_Publish_Result_e {
 	OBK_PUBLISH_OK,
@@ -54,6 +56,6 @@ OBK_Publish_Result MQTT_PublishMain_StringInt(const char *sChannel, int val);
 OBK_Publish_Result MQTT_PublishMain_StringString(const char *sChannel, const char *valueStr, int flags);
 OBK_Publish_Result MQTT_ChannelChangeCallback(int channel, int iVal);
 
-
+#endif // __NEW_MQTT_H__
 
 

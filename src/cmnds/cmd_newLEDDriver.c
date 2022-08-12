@@ -132,7 +132,7 @@ void apply_smart_light() {
 	}
 #endif
 }
-static void sendColorChange() {
+static OBK_Publish_Result sendColorChange() {
 	char s[16];
 	byte c[3];
 
@@ -142,7 +142,7 @@ static void sendColorChange() {
 	
 	sprintf(s,"%02X%02X%02X",c[0],c[1],c[2]);
 
-	MQTT_PublishMain_StringString("led_basecolor_rgb",s, 0);
+	return MQTT_PublishMain_StringString("led_basecolor_rgb",s, 0);
 }
 void LED_GetBaseColorString(char * s) {
 	byte c[3];
@@ -165,15 +165,15 @@ static void sendFinalColor() {
 
 	MQTT_PublishMain_StringString("led_finalcolor_rgb",s, 0);
 }
-static void sendDimmerChange() {
+OBK_Publish_Result LED_SendDimmerChange() {
 	int iValue;
 
 	iValue = g_brightness / g_cfg_brightnessMult;
 
-	MQTT_PublishMain_StringInt("led_dimmer", iValue);
+	return MQTT_PublishMain_StringInt("led_dimmer", iValue);
 }
-static void sendTemperatureChange(){
-	MQTT_PublishMain_StringInt("led_temperature", (int)led_temperature_current);
+static OBK_Publish_Result sendTemperatureChange(){
+	return MQTT_PublishMain_StringInt("led_temperature", (int)led_temperature_current);
 }
 float LED_GetTemperature() {
 	return led_temperature_current;
@@ -182,6 +182,15 @@ int LED_GetMode() {
 	return g_lightMode;
 }
 
+OBK_Publish_Result LED_SendCurrentLightMode() {
+
+	if(g_lightMode == Light_Temperature) {
+		return sendTemperatureChange();
+	} else if(g_lightMode == Light_RGB) {
+		return sendColorChange();
+	}
+	return OBK_PUBLISH_WAS_NOT_REQUIRED;
+}
 void LED_SetTemperature(int tmpInteger, bool bApply) {
 	float f;
 	
@@ -220,6 +229,9 @@ static int temperature(const void *context, const char *cmd, const char *args, i
 	//}
 	//return 0;
 }
+OBK_Publish_Result LED_SendEnableAllState() {
+	return MQTT_PublishMain_StringInt("led_enableAll",g_lightEnableAll);
+}
 void LED_SetEnableAll(int bEnable) {
 	g_lightEnableAll = bEnable;
 
@@ -227,8 +239,8 @@ void LED_SetEnableAll(int bEnable) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_DGR_OnLedEnableAllChange(bEnable);
 #endif
+	LED_SendEnableAllState();
 
-	MQTT_PublishMain_StringInt("led_enableAll",g_lightEnableAll);
 }
 int LED_GetEnableAll() {
 	return g_lightEnableAll;
@@ -251,6 +263,13 @@ static int enableAll(const void *context, const char *cmd, const char *args, int
 	//}
 	//return 0;
 }
+int LED_IsRunningDriver() {
+	if(PIN_CountPinsWithRole(IOR_PWM))
+		return 1;
+	if(CFG_HasFlag(OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER))
+		return 1;
+	return 0;
+}
 float LED_GetDimmer() {
 	return g_brightness / g_cfg_brightnessMult;
 }
@@ -263,7 +282,7 @@ void LED_SetDimmer(int iVal) {
 #endif
 
 	apply_smart_light();
-	sendDimmerChange();
+	LED_SendDimmerChange();
 	if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTLEDPARAMSTOGETHER)) {
 		sendColorChange();
 	}
@@ -341,7 +360,7 @@ int LED_SetBaseColor(const void *context, const char *cmd, const char *args, int
 			apply_smart_light();
 			sendColorChange();
 			if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTLEDPARAMSTOGETHER)) {
-				sendDimmerChange();
+				LED_SendDimmerChange();
 			}
 			if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTLEDFINALCOLOR)) {
 				sendFinalColor();

@@ -1,6 +1,8 @@
 #ifndef __CMD_PUBLIC_H__
 #define __CMD_PUBLIC_H__
 
+#include "../new_common.h"
+
 typedef int (*commandHandler_t)(const void *context, const char *cmd, const char *args, int flags);
 
 // command was entered in console (web app etc)
@@ -83,6 +85,7 @@ int taslike_commands_init();
 // cmd_newLEDDriver.c
 int NewLED_InitCommands();
 float LED_GetDimmer();
+int LED_IsRunningDriver();
 float LED_GetTemperature();
 void LED_SetTemperature(int tmpInteger, bool bApply);
 void LED_SetDimmer(int iVal);
@@ -91,6 +94,9 @@ void LED_SetEnableAll(int bEnable);
 int LED_GetEnableAll();
 void LED_GetBaseColorString(char * s);
 int LED_GetMode();
+OBK_Publish_Result LED_SendEnableAllState();
+OBK_Publish_Result LED_SendDimmerChange();
+OBK_Publish_Result LED_SendCurrentLightMode();
 // cmd_test.c
 int fortest_commands_init();
 // cmd_channels.c

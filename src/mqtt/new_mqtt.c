@@ -68,25 +68,27 @@ int mqtt_reconnect = 0;
 // set for the device to broadcast self state on start
 int g_bPublishAllStatesNow = 0;
 
-#define PUBLISHITEM_ALL_INDEX_FIRST   -13
+#define PUBLISHITEM_ALL_INDEX_FIRST   -14
 
 //These 3 values are pretty much static
-#define PUBLISHITEM_SELF_STATIC_RESERVED_2 -13
-#define PUBLISHITEM_SELF_STATIC_RESERVED_1 -12
-#define PUBLISHITEM_SELF_HOSTNAME -11  //Device name
-#define PUBLISHITEM_SELF_BUILD    -10  //Build
-#define PUBLISHITEM_SELF_MAC      -9   //Device mac
+#define PUBLISHITEM_SELF_STATIC_RESERVED_2		-14
+#define PUBLISHITEM_SELF_STATIC_RESERVED_1		-13
+#define PUBLISHITEM_SELF_HOSTNAME				-12  //Device name
+#define PUBLISHITEM_SELF_BUILD					-11  //Build
+#define PUBLISHITEM_SELF_MAC					-10   //Device mac
+
+#define PUBLISHITEM_DYNAMIC_INDEX_FIRST			-9
 
 //These values are dynamic
-#define PUBLISHITEM_DYNAMIC_INDEX_FIRST     -8
-#define PUBLISHITEM_SELF_DYNAMIC_RESERVED_2 -8
-#define PUBLISHITEM_SELF_DYNAMIC_RESERVED_1 -7
-#define PUBLISHITEM_SELF_DATETIME -6  //Current unix datetime
-#define PUBLISHITEM_SELF_SOCKETS  -5  //Active sockets
-#define PUBLISHITEM_SELF_RSSI     -4  //Link strength
-#define PUBLISHITEM_SELF_UPTIME   -3  //Uptime
-#define PUBLISHITEM_SELF_FREEHEAP -2  //Free heap
-#define PUBLISHITEM_SELF_IP       -1  //ip address
+#define PUBLISHITEM_SELF_DYNAMIC_LIGHTSTATE		-9
+#define PUBLISHITEM_SELF_DYNAMIC_LIGHTMODE		-8
+#define PUBLISHITEM_SELF_DYNAMIC_DIMMER			-7
+#define PUBLISHITEM_SELF_DATETIME				-6  //Current unix datetime
+#define PUBLISHITEM_SELF_SOCKETS				-5  //Active sockets
+#define PUBLISHITEM_SELF_RSSI					-4  //Link strength
+#define PUBLISHITEM_SELF_UPTIME					-3  //Uptime
+#define PUBLISHITEM_SELF_FREEHEAP				-2  //Free heap
+#define PUBLISHITEM_SELF_IP						-1  //ip address
 
 int g_publishItemIndex = PUBLISHITEM_ALL_INDEX_FIRST;
 static bool g_firstFullBroadcast = true;  //Flag indicating that we need to do a full broadcast
@@ -737,17 +739,28 @@ void MQTT_init(){
 OBK_Publish_Result MQTT_DoItemPublishString(const char *sChannel, const char *valueStr) {
   return MQTT_PublishMain(mqtt_client, sChannel, valueStr, OBK_PUBLISH_FLAG_MUTEX_SILENT, false);
 }
-
 OBK_Publish_Result MQTT_DoItemPublish(int idx) {
   char dataStr[3*6+1];  //This is sufficient to hold mac value
 
 	switch(idx) {
     case PUBLISHITEM_SELF_STATIC_RESERVED_2:
     case PUBLISHITEM_SELF_STATIC_RESERVED_1:
-    case PUBLISHITEM_SELF_DYNAMIC_RESERVED_2:
-    case PUBLISHITEM_SELF_DYNAMIC_RESERVED_1:
       return OBK_PUBLISH_WAS_NOT_REQUIRED;
-
+	case PUBLISHITEM_SELF_DYNAMIC_LIGHTSTATE:
+		if(LED_IsRunningDriver()) {
+			return LED_SendEnableAllState();
+		}
+		return OBK_PUBLISH_WAS_NOT_REQUIRED; // didnt publish
+    case PUBLISHITEM_SELF_DYNAMIC_LIGHTMODE:
+		if(LED_IsRunningDriver()) {
+			return LED_SendCurrentLightMode();
+		}
+		return OBK_PUBLISH_WAS_NOT_REQUIRED; // didnt publish
+    case PUBLISHITEM_SELF_DYNAMIC_DIMMER:
+		if(LED_IsRunningDriver()) {
+			return LED_SendDimmerChange();
+		}
+		return OBK_PUBLISH_WAS_NOT_REQUIRED; // didnt publish
     case PUBLISHITEM_SELF_HOSTNAME:
       return MQTT_DoItemPublishString("host", CFG_GetShortDeviceName());
 

@@ -10,6 +10,7 @@
 
 #include "obk_config.h"
 
+typedef int OBK_Publish_Result;
 
 #if WINDOWS
 #define DEVICENAME_PREFIX_FULL "WinTest"
