@@ -1110,7 +1110,9 @@ int http_fn_startup_command(http_request_t *request) {
 		"You can use them to init peripherals and drivers, like BL0942 energy sensor</h5>");
 
     if(http_getArg(request->url,"data",tmpA,sizeof(tmpA))) {
-        hprintf128(request,"<h3>Set command to  %s!</h3>",tmpA);
+      //  hprintf128(request,"<h3>Set command to  %s!</h3>",tmpA);
+		// tmpA can be longer than 128 bytes and this would crash
+        hprintf128(request,"<h3>Command changed!</h3>");
 		CFG_SetShortStartupCommand(tmpA);
 
 		CFG_Save_IfThereArePendingChanges();
