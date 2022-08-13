@@ -36,6 +36,7 @@ static driver_t g_drivers[] = {
 #endif
 	{ "SM2135", SM2135_Init, SM2135_RunFrame, NULL, NULL, NULL, SM2135_OnChannelChanged, false },
 	{ "BP5758D", BP5758D_Init, BP5758D_RunFrame, NULL, NULL, NULL, BP5758D_OnChannelChanged, false },
+	{ "tmSensor", NULL, TuyaMCU_Sensor_RunFrame, NULL, NULL, NULL, NULL, false },
 };
 
 static int g_numDrivers = sizeof(g_drivers)/sizeof(g_drivers[0]);

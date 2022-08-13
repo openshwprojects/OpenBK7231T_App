@@ -28,5 +28,4 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request);
 bool DRV_IsRunning(const char *name);
 
 
-
-
+void TuyaMCU_Sensor_RunFrame();

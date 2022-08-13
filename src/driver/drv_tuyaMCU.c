@@ -457,6 +457,13 @@ int TuyaMCU_Fake_Hex(const void *context, const char *cmd, const char *args, int
 	}
 	return 1;
 }
+void TuyaMCU_Send_RawBuffer(byte *data, int len) {
+	int i;
+
+	for(i = 0; i < len; i++) {
+		UART_SendByte(data[i]);
+	}
+}
 int TuyaMCU_Send_Hex(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	//const char *args = CMD_GetArg(1);
 	if(!(*args)) {
@@ -481,6 +488,7 @@ int TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, con
 	int channelID;
 
 	// linkTuyaMCUOutputToChannel dpId varType channelID
+	// linkTuyaMCUOutputToChannel 1 val 1
 	Tokenizer_TokenizeString(args);
 
 	if(Tokenizer_GetArgsCount() < 3) {
