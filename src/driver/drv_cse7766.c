@@ -227,7 +227,7 @@ int CSE7766_VoltageSet(const void *context, const char *cmd, const char *args, i
 	CSE7766_UREF = realV / raw_unscaled_voltage;
 	{
 		char dbg[128];
-		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realV, CSE7766_UREF);
+		sprintf(dbg,"VoltageSet: you gave %f, set ref to %f\n", realV, CSE7766_UREF);
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 

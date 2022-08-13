@@ -55,7 +55,7 @@ int BL0937_PowerSet(const void *context, const char *cmd, const char *args, int 
 	calib_p = realPower / res_p;
 	{
 		char dbg[128];
-		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realPower, calib_p);
+		sprintf(dbg,"PowerSet: you gave %f, set ref to %f\n", realPower, calib_p);
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 	return 0;
@@ -98,7 +98,7 @@ int BL0937_VoltageSet(const void *context, const char *cmd, const char *args, in
 	calib_v = realV / res_v;
 	{
 		char dbg[128];
-		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realV, calib_v);
+		sprintf(dbg,"VoltageSet: you gave %f, set ref to %f\n", realV, calib_v);
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 

@@ -136,7 +136,7 @@ int BL0942_PowerSet(const void *context, const char *cmd, const char *args, int 
 	BL0942_PREF = raw_unscaled_power / realPower;
 	{
 		char dbg[128];
-		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realPower, BL0942_PREF);
+		sprintf(dbg,"PowerSet: you gave %f, set ref to %f\n", realPower, BL0942_PREF);
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 	return 0;
@@ -179,7 +179,7 @@ int BL0942_VoltageSet(const void *context, const char *cmd, const char *args, in
 	BL0942_UREF = raw_unscaled_voltage / realV;
 	{
 		char dbg[128];
-		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realV, BL0942_UREF);
+		sprintf(dbg,"VoltageSet: you gave %f, set ref to %f\n", realV, BL0942_UREF);
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 
