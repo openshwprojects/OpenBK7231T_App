@@ -120,6 +120,14 @@ void MQTT_PublishWholeDeviceState() {
   g_publishItemIndex = g_firstFullBroadcast == true ? PUBLISHITEM_ALL_INDEX_FIRST:PUBLISHITEM_DYNAMIC_INDEX_FIRST;
 }
 
+void MQTT_PublishOnlyDeviceChannelsIfPossible() {
+	if(g_bPublishAllStatesNow == 1)
+		return;
+	g_bPublishAllStatesNow = 1;
+
+  //Start with channels
+  g_publishItemIndex = 0;
+}
 static struct mqtt_connect_client_info_t mqtt_client_info =
 {
   "test",
@@ -404,6 +412,13 @@ static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t *client, const char *sC
 			addLogAdv(LOG_ERROR,LOG_FEATURE_MQTT,"MQTT_PublishMain: mutex failed for %s=%s\r\n", sChannel, sVal);
 			return OBK_PUBLISH_MUTEX_FAIL;
 		}
+	}
+	if(flags & OBK_PUBLISH_FLAG_RETAIN) {
+		retain = 1;
+	}
+	// global tool
+	if(CFG_HasFlag(OBK_FLAG_MQTT_ALWAYSSETRETAIN)) {
+		retain = 1;
 	}
 
 

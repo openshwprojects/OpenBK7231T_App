@@ -29,7 +29,8 @@ enum OBK_Publish_Result_e {
 	OBK_PUBLISH_WAS_NOT_REQUIRED,
 };
 
-#define OBK_PUBLISH_FLAG_MUTEX_SILENT 1
+#define OBK_PUBLISH_FLAG_MUTEX_SILENT	1
+#define OBK_PUBLISH_FLAG_RETAIN			2
 
 // ability to register callbacks for MQTT data
 typedef struct mqtt_request_tag {
@@ -55,6 +56,7 @@ OBK_Publish_Result MQTT_PublishMain_StringFloat(const char *sChannel, float f);
 OBK_Publish_Result MQTT_PublishMain_StringInt(const char *sChannel, int val);
 OBK_Publish_Result MQTT_PublishMain_StringString(const char *sChannel, const char *valueStr, int flags);
 OBK_Publish_Result MQTT_ChannelChangeCallback(int channel, int iVal);
+void MQTT_PublishOnlyDeviceChannelsIfPossible();
 
 #endif // __NEW_MQTT_H__
 

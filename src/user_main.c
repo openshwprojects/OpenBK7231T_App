@@ -174,9 +174,12 @@ void Main_OnPingCheckerReply(int ms) {
 int g_bBootMarkedOK = 0;
 
 
+static int bMQTTconnected = 0;
+int Main_HasMQTTConnected(){
+	return bMQTTconnected;
+}
 void Main_OnEverySecond()
 {
-	int bMQTTconnected;
 	const char *safe;
 
 	// run_adc_test();

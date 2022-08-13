@@ -262,6 +262,7 @@ int Main_IsConnectedToWiFi();
 int Main_IsOpenAccessPointMode();
 void Main_Init();
 void Main_OnEverySecond();
+int Main_HasMQTTConnected();
 int Main_GetLastRebootBootFailures();
 void Main_OnPingCheckerReply(int ms);
 

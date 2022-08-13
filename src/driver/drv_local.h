@@ -29,3 +29,5 @@ bool DRV_IsRunning(const char *name);
 
 
 void TuyaMCU_Sensor_RunFrame();
+void TuyaMCU_Sensor_Init();
+

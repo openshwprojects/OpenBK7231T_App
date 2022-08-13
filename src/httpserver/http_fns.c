@@ -1125,7 +1125,9 @@ int http_fn_startup_command(http_request_t *request) {
 
     poststr(request,"<label for=\"data\">Startup command:</label><br>\
             <input type=\"text\" id=\"data\" name=\"data\"");
-    hprintf128(request," value=\"%s\"  size=\"120\"><br>",cmd);
+    hprintf128(request," value=\"");
+    poststr(request,cmd);
+    hprintf128(request,"\"  size=\"120\"><br>");
     poststr(request,"<br>\
             <input type=\"submit\" value=\"Submit\">\
         </form> ");
@@ -1649,7 +1651,7 @@ const char *g_obk_flagNames[] = {
 	"[LED] Force show RGBCW controller (for example, for SM2135 LEDs, or for DGR sender)",
 	"[CMD] Enable TCP console command server (for Putty, etc)",
 	"[BTN] Instant touch reaction instead of waiting for release (aka SetOption 13)",
-	"error",
+	"[MQTT] [Debug] Always set Retain flag to all published values",
 	"error",
 	"error",
 };

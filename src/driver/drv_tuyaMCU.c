@@ -464,6 +464,23 @@ void TuyaMCU_Send_RawBuffer(byte *data, int len) {
 		UART_SendByte(data[i]);
 	}
 }
+//battery-powered water sensor with TyuaMCU request to get somo response
+// uartSendHex 55AA0001000000 - this will get reply:
+//Info:TuyaMCU:TuyaMCU_ParseQueryProductInformation: received {"p":"j53rkdu55ydc0fkq","v":"1.0.0"}
+//
+// and this will get states: 0x55 0xAA 0x00 0x02 0x00 0x01 0x04 0x06
+// uartSendHex 55AA000200010406
+/*Info:MAIN:Time 143, free 88864, MQTT 1, bWifi 1, secondsWithNoPing -1, socks 2/38
+Info:TuyaMCU:TUYAMCU received: 55 AA 00 08 00 0C 00 02 02 02 02 02 02 01 04 00 01 00 25 
+
+Info:TuyaMCU:TuyaMCU_ProcessIncoming: processing V0 command 8 with 19 bytes
+
+Info:TuyaMCU:TuyaMCU_V0_ParseRealTimeWithRecordStorage: processing dpId 1, dataType 4-DP_TYPE_ENUM and 1 data bytes
+
+Info:TuyaMCU:TuyaMCU_V0_ParseRealTimeWithRecordStorage: raw data 1 byte: 
+Info:GEN:No change in channel 1 (still set to 0) - ignoring
+*/
+
 int TuyaMCU_Send_Hex(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	//const char *args = CMD_GetArg(1);
 	if(!(*args)) {
