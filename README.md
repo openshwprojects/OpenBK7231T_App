@@ -21,6 +21,7 @@ OpenBeken features:
 - Driver system for custom peripherals, including TuyaMCU, I2C bus and BL0942, BL0937 power metering chips
 - Supports multiple I2C devices, like TC74 temperature sensor, MCP23017 port expander, PCF8574T LCD 2x16 (or other?), etc
 - NTP time from network (can be used with TH06 and other TuyaMCU devices)
+- basic support for TuyaMCU Battery Powered devices protocol (TuyaMCU enables WiFi module only to report the state, eg. for door sensors, water sensors)
 - RGBCW LED lighting control compatible with Home Assistant (both PWM LEDs, SM2135 LEDs and BP5758 LEDs)
 - LittleFS integration for large files (resides in OTA memory, so you have to backup it every time you OTA)
 - Command line system for starting and configuring drivers
