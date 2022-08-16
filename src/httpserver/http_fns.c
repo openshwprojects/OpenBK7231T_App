@@ -1246,8 +1246,7 @@ char *build_hass_unique_id(char *type, int index){
     //unique_id and I would think that longDeviceName should contain that.
     
     //e.g. longDeviceName_relay_1
-    int length = strlen(g_cfg.longDeviceName) + strlen(type)+ 1 + 3;
-    char *unique_id = (char*)malloc (length * sizeof (char));
+    char unique_id[128];    //64 for longDeviceName, 10 for type,3 for index .. 128 would be sufficient 
 
     sprintf(unique_id,"%s_%s_%d",g_cfg.longDeviceName,type,index);
     return unique_id;
