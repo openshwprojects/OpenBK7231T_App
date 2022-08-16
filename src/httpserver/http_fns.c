@@ -1652,6 +1652,7 @@ const char *g_obk_flagNames[] = {
 	"[CMD] Enable TCP console command server (for Putty, etc)",
 	"[BTN] Instant touch reaction instead of waiting for release (aka SetOption 13)",
 	"[MQTT] [Debug] Always set Retain flag to all published values",
+	"[LED] Alternate CW light mode (first PWM for warm/cold slider, second for brightness)",
 	"error",
 	"error",
 };

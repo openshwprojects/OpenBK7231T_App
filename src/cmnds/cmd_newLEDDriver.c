@@ -71,6 +71,17 @@ float led_temperature_min = HASS_TEMPERATURE_MIN;
 float led_temperature_max = HASS_TEMPERATURE_MAX;
 float led_temperature_current = 0;
 
+
+int isCWMode() {
+	int pwmCount;
+	
+	pwmCount = PIN_CountPinsWithRole(IOR_PWM);
+	
+	if(pwmCount == 2)
+		return 1;
+	return 0;
+}
+
 void apply_smart_light() {
 	int i;
 	int firstChannelIndex;
@@ -86,42 +97,73 @@ void apply_smart_light() {
 		firstChannelIndex = 1;
 	}
 
-	for(i = 0; i < 5; i++) {
-		float raw, final;
+	if(isCWMode() && CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
+		int value_brightness = 0;
+		int value_cold_or_warm = 0;
 
-		raw = baseColors[i];
-
+		for(i = 0; i < 5; i++) {
+			finalColors[i] = 0;
+			finalRGBCW[i] = 0;
+		}
 		if(g_lightEnableAll) {
-			final = raw * g_brightness;
-		} else {
-			final = 0;
+			value_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
+			value_brightness = g_brightness * 100.0f;
+			for(i = 3; i < 5; i++) {
+				finalColors[i] = baseColors[i] * g_brightness;
+				finalRGBCW[i] = baseColors[i] * g_brightness;
+			}
 		}
-		if(g_lightMode == Light_Temperature) {
-			// skip channels 0, 1, 2
-			// (RGB)
-			if(i < 3)
-			{
+		CHANNEL_Set(firstChannelIndex, value_cold_or_warm, CHANNEL_SET_FLAG_SKIP_MQTT);
+		CHANNEL_Set(firstChannelIndex+1, value_brightness, CHANNEL_SET_FLAG_SKIP_MQTT);
+	} else {
+		for(i = 0; i < 5; i++) {
+			float raw, final;
+
+			raw = baseColors[i];
+
+			if(g_lightEnableAll) {
+				final = raw * g_brightness;
+			} else {
 				final = 0;
 			}
-		} else if(g_lightMode == Light_RGB) {
-			// skip channels 3, 4
-			if(i >= 3)
-			{
-				final = 0;
+			if(g_lightMode == Light_Temperature) {
+				// skip channels 0, 1, 2
+				// (RGB)
+				if(i < 3)
+				{
+					final = 0;
+				}
+			} else if(g_lightMode == Light_RGB) {
+				// skip channels 3, 4
+				if(i >= 3)
+				{
+					final = 0;
+				}
+			} else {
+
 			}
-		} else {
+			finalColors[i] = final;
+			finalRGBCW[i] = final;
 
+			channelToUse = firstChannelIndex + i;
+
+			// log printf with %f crashes N platform?
+			//ADDLOG_INFO(LOG_FEATURE_CMD, "apply_smart_light: ch %i raw is %f, bright %f, final %f, enableAll is %i",
+			//	channelToUse,raw,g_brightness,final,g_lightEnableAll);
+
+			if(isCWMode()) {
+				// in CW mode, we have only set two channels
+				// We don't have RGB channels
+				// so, do simple mapping
+				if(i == 4) {
+					CHANNEL_Set(firstChannelIndex+0, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT);
+				} else if(i == 5) {
+					CHANNEL_Set(firstChannelIndex+1, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT);
+				}
+			} else {
+				CHANNEL_Set(channelToUse, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT);
+			}
 		}
-		finalColors[i] = final;
-		finalRGBCW[i] = final;
-
-		channelToUse = firstChannelIndex + i;
-
-		// log printf with %f crashes N platform?
-		//ADDLOG_INFO(LOG_FEATURE_CMD, "apply_smart_light: ch %i raw is %f, bright %f, final %f, enableAll is %i",
-		//	channelToUse,raw,g_brightness,final,g_lightEnableAll);
-
-		CHANNEL_Set(channelToUse, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT);
 	}
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	if(DRV_IsRunning("SM2135")) {
@@ -191,17 +233,24 @@ OBK_Publish_Result LED_SendCurrentLightMode() {
 	}
 	return OBK_PUBLISH_WAS_NOT_REQUIRED;
 }
-void LED_SetTemperature(int tmpInteger, bool bApply) {
+float LED_GetTemperature0to1Range() {
 	float f;
-	
-	led_temperature_current = tmpInteger;
 
-	f = (tmpInteger - led_temperature_min);
+	f = (led_temperature_current - led_temperature_min);
 	f = f / (led_temperature_max - led_temperature_min);
 	if(f<0)
 		f = 0;
 	if(f>1)
 		f =1;
+
+	return f;
+}
+void LED_SetTemperature(int tmpInteger, bool bApply) {
+	float f;
+	
+	led_temperature_current = tmpInteger;
+
+	f = LED_GetTemperature0to1Range();
 
 	baseColors[3] = (255.0f) * (1-f);
 	baseColors[4] = (255.0f) * f;
