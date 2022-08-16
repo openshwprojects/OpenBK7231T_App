@@ -137,6 +137,8 @@ void CFG_SetDefaultConfig() {
 	sprintf(g_cfg.longDeviceName,DEVICENAME_PREFIX_FULL"_%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
 	sprintf(g_cfg.shortDeviceName,DEVICENAME_PREFIX_SHORT"%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
 
+	strcpy(g_cfg.ntpServer, "217.147.223.78");	//bart.nexellent.net
+
 	g_cfg_pendingChanges++;
 }
 
@@ -446,6 +448,16 @@ void PIN_SetPinChannel2ForPinIndex(int index, int ch) {
 //		}
 //	}
 //}
+
+const char *CFG_GetNTPServer() {
+	return g_cfg.ntpServer;
+}
+void CFG_SetNTPServer(const char *s) {	
+	if(strcpy_safe_checkForChanges(g_cfg.ntpServer, s,sizeof(g_cfg.ntpServer))) {
+		g_cfg_pendingChanges++;
+	}
+}
+
 void CFG_InitAndLoad() {
 	byte chkSum;
 

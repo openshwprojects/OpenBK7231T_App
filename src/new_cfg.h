@@ -61,7 +61,8 @@ int CFG_DeviceGroups_GetRecvFlags();
 void CFG_SetFlag(int flag, bool bValue);
 bool CFG_HasFlag(int flag);
 int CFG_GetFlags();
-
+const char* CFG_GetNTPServer();
+void CFG_SetNTPServer(const char *s);
 
 
 #endif 
