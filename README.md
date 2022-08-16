@@ -30,95 +30,11 @@ OpenBeken features:
 - Automatic reconnect when WiFi network goes out
 - and much more
 
-# Building
+# Building. Flashing and OTA Updates
 
 OpenBeken supports online builds for all platforms (BK7231T, BK7231N, XR809, BL602, W800), but if you want to compile it yourself, see  [BUILDING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md)
 
-# flashing for BK7231T
-
-## UART (Windows only)
-
-get BKwriter 1.60 exe (extract zip) from [here](https://github.com/openshwprojects/OpenBK7231T/blob/master/bk_writer1.60.zip)
-  
-Use USB to TTL converter with 3.3V logic levels, like HW 597
-
-connect the PC to TX1 and RX1 on the bk7231 (TX2 and RX2 are optional, only for log)
-  
-start flash in BKwriter 1.60 (select COM port, etc)
-then re-power the device (or reset with CEN by temporary connecting CEN to ground) until the flashing program continues, repeat if required.
-  
-## UART (multiplatform method, Python required)
-
-clone the repo https://github.com/OpenBekenIOT/hid_download_py
-  
-Use USB to TTL converter with 3.3V logic levels, like HW 597 
-
-connect the PC to TX1 and RX1 on the bk7231 (TX2 and RX2 are optional, only for log)
-
-start flash using:
-`python uartprogram <sdk folder>\apps\<folder>\output\1.0.0\<appname>_UA_<appversion>.bin -d <port> -w`
-then re-power the device (or reset with CEN temporary connecting CEN to ground) until the flashing program continues, repeat if required.
-
-e.g.
-`python uartprogram C:\DataNoBackup\tuya\tuya-iotos-embeded-sdk-wifi-ble-bk7231t\apps\my_alpha_demo\output\1.0.0\my_alpha_demo_UA_1.0.0.bin -d com4 -w`
-
-## SPI
-
-see https://github.com/OpenBekenIOT/hid_download_py/blob/master/SPIFlash.md
-
-## OTA
-
-Once the firmware has been flashed for the first time, it can be flashed over wifi (note: change hardcoded firmware URL in new_http.c)
-
-Setup a simple webserver to serve `<sdk folder>\apps\<folder>\output\1.0.0\<appname>_<appversion>.rbl`
-
-Visit <ip>/ota - here start the flashing process.
-
-## First run
-
-At first boot, if the new firmware does not find your wifi SSID and password in the Tuya flash, it will start as an access point.
-
-The access point will come up on 192.168.4.1, however some machines may not get an ip from it - you may need to configure your connecting for a staitc IP on that network, e.g. 192.168.4.10
-
-Once you are connected and have an IP, go to http://192.168.4.1/index , select config then wifi, and setup your wifi.
-
-After a reboot, the device should connect to your lan.
-
-# Flashing for BK7231N
-
-BKwriter 1.60 doesn't work for BK7231N for me, in BK7231 mode it errors with "invalid CRC" and in BK7231N mode it fails to unprotect the device.
-For BK7231N, one should use:
-  
-https://github.com/OpenBekenIOT/hid_download_py
-  
-Flash BK7231N QIO binary, like that:
-  
-`python uartprogram W:\GIT\OpenBK7231N\apps\OpenBK7231N_App\output\1.0.0\OpenBK7231N_app_QIO_1.0.0.bin --unprotect -d com10 -w --startaddr 0x0`
-  
-  Remember - QIO binary with --unprotect and --startaddr 0x0, this is for N chip, not for T.
- 
-You can see an example of detailed teardown and BK7231N flashing here: https://www.elektroda.com/rtvforum/topic3874289.html
-  
-# Flashing for XR809
-  
-Get USB to UART converter, start phoenixMC.exe from OpenXR809 repository and follow this guide: https://www.elektroda.com/rtvforum/topic3806769.html
-  
-# Building and flashing for BL602
-
-Follow the BL602 guide:
-https://www.elektroda.com/rtvforum/topic3889041.html
-
-# Flashing for W800/W801
-
-Use wm_tool.exe, command line utility from this SDK https://github.com/openshwprojects/OpenW800
-
-wm_tool.exe -c COM9 -dl W:\GIT\wm_sdk_w800\bin\w800\w800.fls
-
-wm_tool.exe will then wait for device reset. Repower it or connect RESET to ground, then it will start the flashing
-
-# OTA for W800/W801
-  
-  Create a HTTP server (maybe with Node-Red), then use the update mechanism by HTTP link. Give link to w800_ota.img file from the build. The second OTA mechanism (on javascript panel, by drag and drop) is not ready yet for W800/W801. Wait for device to restart, do not repower it manually.
+[See Wiki for Instructions](https://github.com/openshwprojects/OpenBK7231T_App/wiki/Wiki-Home#flashing-ota-updates-and-building)
   
 # Testing HTTP server on Windows
   
