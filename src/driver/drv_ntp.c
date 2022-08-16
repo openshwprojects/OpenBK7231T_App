@@ -68,6 +68,8 @@ int NTP_SetTimeZoneOfs(const void *context, const char *cmd, const char *args, i
 	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP offset set, wait for next ntp packet to apply changes\n");
 	return 1;
 }
+
+//Set custom NTP server
 int NTP_SetServer(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	Tokenizer_TokenizeString(args);
 	if(Tokenizer_GetArgsCount() < 1) {
@@ -79,10 +81,20 @@ int NTP_SetServer(const void *context, const char *cmd, const char *args, int cm
 	addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP server set to %s\n", newValue);
 	return 1;
 }
+
+//Display settings used by the NTP driver
+int NTP_Info(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "Server=%s, Time offset=%d\n", CFG_GetNTPServer(), g_timeOffsetHours);
+	return 1;
+}
+
 void NTP_Init() {
 
 	CMD_RegisterCommand("ntp_timeZoneOfs","",NTP_SetTimeZoneOfs, "Sets the time zone offset in hours", NULL);
 	CMD_RegisterCommand("ntp_setServer", "", NTP_SetServer, "Sets the NTP server", NULL);
+	CMD_RegisterCommand("ntp_info", "", NTP_Info, "Display NTP related settings", NULL);
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP driver initialized with server=%s, offset=%d\n", CFG_GetNTPServer(), g_timeOffsetHours);
 }
 
 unsigned int NTP_GetCurrentTime() {
