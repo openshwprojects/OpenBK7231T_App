@@ -82,6 +82,19 @@ int isCWMode() {
 	return 0;
 }
 
+int shouldSendRGB() {
+	int pwmCount;
+	
+	pwmCount = PIN_CountPinsWithRole(IOR_PWM);
+	
+	// single colors and CW don't send rgb
+	if(pwmCount <= 2)
+		return 0;
+
+	return 1;
+}
+
+
 void apply_smart_light() {
 	int i;
 	int firstChannelIndex;
@@ -178,6 +191,10 @@ static OBK_Publish_Result sendColorChange() {
 	char s[16];
 	byte c[3];
 
+	if(shouldSendRGB()==0) {
+		return OBK_PUBLISH_WAS_NOT_REQUIRED;
+	}
+
 	c[0] = (byte)(baseColors[0]);
 	c[1] = (byte)(baseColors[1]);
 	c[2] = (byte)(baseColors[2]);
@@ -198,6 +215,10 @@ void LED_GetBaseColorString(char * s) {
 static void sendFinalColor() {
 	char s[16];
 	byte c[3];
+
+	if(shouldSendRGB()==0) {
+		return OBK_PUBLISH_WAS_NOT_REQUIRED;
+	}
 
 	c[0] = (byte)(finalColors[0]);
 	c[1] = (byte)(finalColors[1]);
@@ -332,11 +353,14 @@ void LED_SetDimmer(int iVal) {
 
 	apply_smart_light();
 	LED_SendDimmerChange();
-	if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTLEDPARAMSTOGETHER)) {
-		sendColorChange();
-	}
-	if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTLEDFINALCOLOR)) {
-		sendFinalColor();
+
+	if(shouldSendRGB()) {
+		if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTLEDPARAMSTOGETHER)) {
+			sendColorChange();
+		}
+		if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTLEDFINALCOLOR)) {
+			sendFinalColor();
+		}
 	}
 
 }
