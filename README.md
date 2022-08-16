@@ -32,7 +32,7 @@ OpenBeken features:
 
 # Wiki 
 
-For more Information refer to the [WIKI](github.com/openshwprojects/OpenBK7231T_App/wiki/Wiki-Home)
+For more Information refer to the [WIKI](https://github.com/openshwprojects/OpenBK7231T_App/wiki/Wiki-Home)
 
 # Building
 
