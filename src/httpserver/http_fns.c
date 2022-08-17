@@ -456,6 +456,7 @@ int http_fn_index(http_request_t *request) {
             <input class=\"bred\" type=\"submit\" value=\"Restart\" onclick=\"return confirm('Are you sure to restart module?')\">\
         </form> ");
 
+    poststr(request,"<form action=\"/app\" target=\"_blank\"><input type=\"submit\" value=\"Launch Web Application\"\"></form> ");
     poststr(request,"<form action=\"about\"><input type=\"submit\" value=\"About\"/></form>");
 
 	if(1) {
@@ -1508,9 +1509,6 @@ int http_fn_cfg(http_request_t *request) {
 #endif
 #endif
 
-    poststr(request,"<a href=\"/app\" target=\"_blank\">Launch Web Application</a><br/>");
-
-    poststr(request,htmlReturnToMenu);
     HTTP_AddBuildFooter(request);
     poststr(request,htmlEnd);
 	poststr(request, NULL);
