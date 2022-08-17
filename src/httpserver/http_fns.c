@@ -1696,24 +1696,20 @@ int http_fn_cfg_generic(http_request_t *request) {
 
 	hprintf128(request,"<h5>Flags (Current value=%i)<h5>",CFG_GetFlags());
 	poststr(request,"<form action=\"/cfg_generic\">");
+
 	for(i = 0; i < OBK_TOTAL_FLAGS; i++) {
-		int bHas;
-		const char *flagName;
+		const char *flagName = g_obk_flagNames[i];
+/*
+<div><input type="checkbox" name="flag0" id="flag0" value="1" checked>
+<label for="flag0">Flag 0 - [MQTT] Broadcast led params together (send dimmer and color when dimmer or color changes, topic name: YourDevName/led_basecolor_rgb/get, YourDevName/led_dimmer/get)</label>
+</div>
+*/
+        hprintf128(request, "<div><input type=\"checkbox\" name=\"flag%i\" id=\"flag%i\" value=\"1\"%s>",
+            i, i, (CFG_HasFlag(i) ?" checked":"")); //this is less that 128 char
 
-
-
-
-		bHas = CFG_HasFlag(i);
-		flagName = g_obk_flagNames[i];
-
-		poststr(request,"<br>");
-		hprintf128(request, "Flag %i -",i);
-		poststr(request,flagName);
-		poststr(request,"<br>");
-		hprintf128(request,"<input type=\"checkbox\" name=\"flag%i\" value=\"1\"",i);
-		if(bHas)
-			poststr(request," checked");
-		poststr(request,">");
+        hprintf128(request,"<label for=\"flag%i\">Flag %i - ",i,i);
+        poststr(request, flagName);
+        poststr(request,"</label></div>");
 	}
 	poststr(request,"<input type=\"hidden\" id=\"setFlags\" name=\"setFlags\" value=\"1\">");
 	poststr(request,"<input type=\"submit\" value=\"Submit\"></form>");
