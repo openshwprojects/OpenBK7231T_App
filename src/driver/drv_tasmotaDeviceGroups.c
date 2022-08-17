@@ -204,7 +204,7 @@ void DRV_DGR_processPower(int relayStates, byte relaysCount) {
 	int i;
 	int ch;
 
-	if(PIN_CountPinsWithRole(IOR_PWM) > 0) {
+	if(PIN_CountPinsWithRoleOrRole(IOR_PWM,IOR_PWM_n) > 0) {
 		LED_SetEnableAll(BIT_CHECK(relayStates,0));
 	} else {
 		//if(CHANNEL_HasChannelSomeOutputPin(0)) {
@@ -217,7 +217,7 @@ void DRV_DGR_processPower(int relayStates, byte relaysCount) {
 			bOn = BIT_CHECK(relayStates,i);
 			ch = startIndex+i;
 			if(bOn) {
-				if(CHANNEL_HasChannelPinWithRole(ch,IOR_PWM)) {
+				if(CHANNEL_HasChannelPinWithRoleOrRole(ch,IOR_PWM,IOR_PWM_n)) {
 
 				} else {
 					CHANNEL_Set(ch,1,0);
@@ -233,8 +233,8 @@ void DRV_DGR_processBrightnessPowerOn(byte brightness) {
 
 	LED_SetDimmer(Val255ToVal100(brightness));
 
-	//numPWMs = PIN_CountPinsWithRole(IOR_PWM);
-	//idx_pin = PIN_FindPinIndexForRole(IOR_PWM,0);
+	//numPWMs = PIN_CountPinsWithRole(IOR_PWM,IOR_PWM_n);
+	//idx_pin = PIN_FindPinIndexForRole(IOR_PWM,IOR_PWM_n,0);
 	//idx_channel = PIN_GetPinChannelForPinIndex(idx_pin);
 
 	//CHANNEL_Set(idx_channel,brightness,0);

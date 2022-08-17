@@ -36,6 +36,8 @@ enum IORole {
 	IOR_BP5758D_DAT,
 	IOR_BP5758D_CLK,
 
+	IOR_PWM_n,
+
 	IOR_Total_Options,
 };
 
@@ -171,6 +173,7 @@ void PIN_StartButtonScanThread(void);
 void PIN_OnReboot();
 void CFG_ClearPins();
 int PIN_CountPinsWithRole(int role);
+int PIN_CountPinsWithRoleOrRole(int role, int role2);
 int PIN_GetPinRoleForPinIndex(int index);
 int PIN_GetPinChannelForPinIndex(int index);
 int PIN_GetPinChannel2ForPinIndex(int index);
@@ -196,6 +199,7 @@ int CHANNEL_GetType(int ch);
 void CHANNEL_SetAll(int iVal, int iFlags);
 void CHANNEL_SetStateOnly(int iVal);
 int CHANNEL_HasChannelPinWithRole(int ch, int iorType);
+int CHANNEL_HasChannelPinWithRoleOrRole(int ch, int iorType, int iorType2);
 bool CHANNEL_IsInUse(int ch);
 void Channel_SaveInFlashIfNeeded(int ch);
 bool CHANNEL_HasChannelSomeOutputPin(int ch);

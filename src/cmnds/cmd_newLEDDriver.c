@@ -75,7 +75,7 @@ float led_temperature_current = 0;
 int isCWMode() {
 	int pwmCount;
 	
-	pwmCount = PIN_CountPinsWithRole(IOR_PWM);
+	pwmCount = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
 	
 	if(pwmCount == 2)
 		return 1;
@@ -85,7 +85,7 @@ int isCWMode() {
 int shouldSendRGB() {
 	int pwmCount;
 	
-	pwmCount = PIN_CountPinsWithRole(IOR_PWM);
+	pwmCount = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
 	
 	// single colors and CW don't send rgb
 	if(pwmCount <= 2)
@@ -104,7 +104,7 @@ void apply_smart_light() {
 	// The color order is RGBCW.
 	// some people set RED to channel 0, and some of them set RED to channel 1
 	// Let's detect if there is a PWM on channel 0
-	if(CHANNEL_HasChannelPinWithRole(0, IOR_PWM)) {
+	if(CHANNEL_HasChannelPinWithRoleOrRole(0, IOR_PWM, IOR_PWM_n)) {
 		firstChannelIndex = 0;
 	} else {
 		firstChannelIndex = 1;
@@ -334,7 +334,7 @@ static int enableAll(const void *context, const char *cmd, const char *args, int
 	//return 0;
 }
 int LED_IsRunningDriver() {
-	if(PIN_CountPinsWithRole(IOR_PWM))
+	if(PIN_CountPinsWithRoleOrRole(IOR_PWM,IOR_PWM_n))
 		return 1;
 	if(CFG_HasFlag(OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER))
 		return 1;

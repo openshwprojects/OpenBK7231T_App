@@ -93,6 +93,18 @@ int PIN_GetPinChannelForPinIndex(int index) {
 	}
 	return g_cfg.pins.channels[index];
 }
+int PIN_CountPinsWithRoleOrRole(int role, int role2) {
+	int i;
+	int r = 0;
+
+	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if(g_cfg.pins.roles[i] == role)
+			r++;
+		else if(g_cfg.pins.roles[i] == role2)
+			r++;
+	}
+	return r;
+}
 int PIN_CountPinsWithRole(int role) {
 	int i;
 	int r = 0;
@@ -251,6 +263,7 @@ void CHANNEL_SetAll(int iVal, int iFlags) {
 			CHANNEL_Set(g_cfg.pins.channels[i],iVal,iFlags);
 			break;
 		case IOR_PWM:
+		case IOR_PWM_n:
 			CHANNEL_Set(g_cfg.pins.channels[i],iVal,iFlags);
 			break;
 
@@ -350,6 +363,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			// TODO: disable?
 			break;
 			// Disable PWM for previous pin role
+		case IOR_PWM_n:
 		case IOR_PWM:
 			{
 				HAL_PIN_PWM_Stop(index);
@@ -438,6 +452,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			// init ADC for given pin
 			HAL_ADC_Init(index);
 			break;
+		case IOR_PWM_n:
 		case IOR_PWM:
 			{
 				int channelIndex;
@@ -446,7 +461,13 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 				channelIndex = PIN_GetPinChannelForPinIndex(index);
 				channelValue = g_channelValues[channelIndex];
 				HAL_PIN_PWM_Start(index);
-				HAL_PIN_PWM_Update(index,channelValue);
+
+				if(role == IOR_PWM_n) {
+					// inversed PWM
+					HAL_PIN_PWM_Update(index,100-channelValue);
+				} else {
+					HAL_PIN_PWM_Update(index,channelValue);
+				}
 			}
 			break;
 
@@ -501,6 +522,10 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 			}
 			else if(g_cfg.pins.roles[i] == IOR_PWM) {
 				HAL_PIN_PWM_Update(i,iVal);
+				bCallCb = 1;
+			}
+			else if(g_cfg.pins.roles[i] == IOR_PWM_n) {
+				HAL_PIN_PWM_Update(i,100-iVal);
 				bCallCb = 1;
 			}
 		}
@@ -620,6 +645,9 @@ int CHANNEL_FindMaxValueForChannel(int ch) {
 			if(g_cfg.pins.roles[i] == IOR_PWM) {
 				return 100;
 			}
+			if(g_cfg.pins.roles[i] == IOR_PWM_n) {
+				return 100;
+			}
 		}
 	}
 	if(g_cfg.pins.channelTypes[ch] == ChType_Dimmer)
@@ -647,6 +675,21 @@ void CHANNEL_Toggle(int ch) {
 		g_channelValues[ch] = 0;
 
 	Channel_OnChanged(ch,prev,0);
+}
+int CHANNEL_HasChannelPinWithRoleOrRole(int ch, int iorType, int iorType2) {
+	if(ch < 0 || ch >= CHANNEL_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_HasChannelPinWithRole: Channel index %i is out of range <0,%i)\n\r",ch,CHANNEL_MAX);
+		return 0;
+	}
+	for(int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if(g_cfg.pins.channels[i] == ch) {
+			if(g_cfg.pins.roles[i] == iorType)
+				return 1;
+			else if(g_cfg.pins.roles[i] == iorType2)
+				return 1;
+		}
+	}
+	return 0;
 }
 int CHANNEL_HasChannelPinWithRole(int ch, int iorType) {
 	if(ch < 0 || ch >= CHANNEL_MAX) {
@@ -704,6 +747,7 @@ int CHANNEL_GetRoleForOutputChannel(int ch){
 				case IOR_Relay_n:
 				case IOR_LED:
 				case IOR_LED_n:
+				case IOR_PWM_n:
 				case IOR_PWM:
 					return g_cfg.pins.roles[i];
 					break;
@@ -886,6 +930,9 @@ void PIN_ticks(void *param)
 #if 1
 		if(g_cfg.pins.roles[i] == IOR_PWM) {
 			HAL_PIN_PWM_Update(i,g_channelValues[g_cfg.pins.channels[i]]);
+		} else if(g_cfg.pins.roles[i] == IOR_PWM_n) {
+			// invert PWM value
+			HAL_PIN_PWM_Update(i,100-g_channelValues[g_cfg.pins.channels[i]]);
 		} else
 #endif
 		if(g_cfg.pins.roles[i] == IOR_Button || g_cfg.pins.roles[i] == IOR_Button_n
@@ -1037,7 +1084,7 @@ int h_isChannelPWM(int tg_ch){
 		if(tg_ch != ch)
 			continue;
         int role = PIN_GetPinRoleForPinIndex(i);
-        if(role == IOR_PWM) {
+        if(role == IOR_PWM || role == IOR_PWM_n) {
 			return true;
         }
     }

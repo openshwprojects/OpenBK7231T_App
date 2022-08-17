@@ -31,7 +31,7 @@ static int power(const void *context, const char *cmd, const char *args, int cmd
 			channel = atoi(cmd+5);
 		} else {
 			// if new LED driver active
-			if(PIN_CountPinsWithRole(IOR_PWM) > 0) {
+			if(PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n) > 0) {
 				channel = SPECIAL_CHANNEL_LEDPOWER;
 			} else {
 				// find first active channel, because some people index with 0 and some with 1
@@ -119,7 +119,7 @@ static int color(const void *context, const char *cmd, const char *args, int cmd
                     break;
                 }
                 // if this channel is not PWM, find a PWM channel;
-                while ((channel < 32) && (IOR_PWM != CHANNEL_GetRoleForOutputChannel(channel))) {
+                while ((channel < 32) && (IOR_PWM != CHANNEL_GetRoleForOutputChannel(channel) && IOR_PWM_n != CHANNEL_GetRoleForOutputChannel(channel))) {
                     channel ++;
                 }
 

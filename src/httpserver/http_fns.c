@@ -337,7 +337,7 @@ int http_fn_index(http_request_t *request) {
 
 		lm = LED_GetMode();
 
-		c_pwms = PIN_CountPinsWithRole(IOR_PWM);
+		c_pwms = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
 		if(forceShowRGBCW) {
 			c_pwms = 5;
 		}
@@ -1282,7 +1282,7 @@ int http_fn_cfg_ha(http_request_t *request) {
         if(role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
             relayCount++;
         }
-        if(role == IOR_PWM) {
+        if(role == IOR_PWM || role == IOR_PWM_n) {
             pwmCount++;
         }
     }        
@@ -1374,7 +1374,7 @@ int http_tasmota_json_power(http_request_t *request) {
 	int lastRelayState;
 
 	// try to return status
-	numPWMs = PIN_CountPinsWithRole(IOR_PWM);
+	numPWMs = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
 	numRelays = 0;
 
 	// LED driver (if has PWMs)
@@ -1630,7 +1630,7 @@ int http_fn_cfg_pins(http_request_t *request) {
         hprintf128(request, "<select class=\"hele\" name=\"%i\">",i);
         for(j = 0; j < IOR_Total_Options; j++) {
 			// do not show hardware PWM on non-PWM pin
-			if(j == IOR_PWM) {
+			if(j == IOR_PWM || j == IOR_PWM_n) {
 				if(bCanThisPINbePWM == 0) {
 					continue;
 				}

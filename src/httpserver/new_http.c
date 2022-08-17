@@ -250,7 +250,7 @@ const char *htmlPinRoleNames[] = {
 	"SM2135CLK",
 	"BP5758D_DAT",
 	"BP5758D_CLK",
-	"error",
+	"PWM_n",
 	"error",
 	"error",
 	"error",
