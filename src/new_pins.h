@@ -146,8 +146,8 @@ typedef struct mainConfig_s {
 	int dgr_sendFlags;
 	int dgr_recvFlags;
 	char dgr_name[16];
-	char ntpServer[20];
-	byte unusedSectorA[84];
+	char ntpServer[32];
+	byte unusedSectorA[72];
 	byte unusedSectorB[128];
 	byte unusedSectorC[55];
 	byte timeRequiredToMarkBootSuccessfull;
