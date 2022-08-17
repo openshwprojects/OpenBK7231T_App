@@ -1241,16 +1241,18 @@ int http_fn_cfg_quick(http_request_t *request) {
     return 0;
 }
 
-//Generate  HomeAssistant unique id based
-char *build_hass_unique_id(char *type, int index){
+/*
+ * Generates HomeAssistant unique id
+ * @param outBuffer Output buffer (128 char)
+ * @param type Entity type (relay, light)
+ * @param index Entity index
+ */
+void build_hass_unique_id(char *outBuffer, char *type, int index){
     //https://developers.home-assistant.io/docs/entity_registry_index/#unique-id-requirements mentions that mac can be used for
     //unique_id and I would think that longDeviceName should contain that.
     
     //e.g. longDeviceName_relay_1
-    char unique_id[128];    //64 for longDeviceName, 10 for type,3 for index .. 128 would be sufficient 
-
-    sprintf(unique_id,"%s_%s_%d",g_cfg.longDeviceName,type,index);
-    return unique_id;
+    sprintf(outBuffer,"%s_%s_%d",g_cfg.longDeviceName,type,index);
 }
 
 int http_fn_cfg_ha(http_request_t *request) {
@@ -1259,6 +1261,7 @@ int http_fn_cfg_ha(http_request_t *request) {
     const char *baseName;
     int i;
     char mqttAdded = 0;
+    char unique_id[128];    //64 for longDeviceName, 10 for type,3 for index .. 128 would be sufficient
 
     baseName = CFG_GetShortDeviceName();
 
@@ -1298,7 +1301,8 @@ int http_fn_cfg_ha(http_request_t *request) {
                     switchAdded=1;
                 }
 
-                hprintf128(request,"  - unique_id: \"%s\"\n",build_hass_unique_id("relay",i));
+                build_hass_unique_id(unique_id,"relay",i);
+                hprintf128(request,"  - unique_id: \"%s\"\n",unique_id);
                 hprintf128(request,"    name: \"%s %i\"\n",baseName,i);
                 hprintf128(request,"    state_topic: \"%s/%i/get\"\n",baseName,i);
                 hprintf128(request,"    command_topic: \"%s/%i/set\"\n",baseName,i);
@@ -1325,7 +1329,8 @@ int http_fn_cfg_ha(http_request_t *request) {
                     lightAdded=1;
                 }
 
-                hprintf128(request,"  - unique_id: \"%s\"\n",build_hass_unique_id("light",i));
+                build_hass_unique_id(unique_id,"light",i);
+                hprintf128(request,"  - unique_id: \"%s\"\n",unique_id);
                 hprintf128(request,"    name: \"%s %i\"\n",baseName,i);
                 hprintf128(request,"    state_topic: \"%s/%i/get\"\n",baseName,i);
                 hprintf128(request,"    command_topic: \"%s/%i/set\"\n",baseName,i);
