@@ -142,6 +142,7 @@ Currently available pin roles:
 - Button Toggle All - this button toggles all channels at once
 - Button Toggle All_n (as above but pin logical value is inversed)
 - PWM - pulse width modulation output for LED dimmers (with MQTT dimming support from Home Assistant)
+- PWM_n - as above, but percentage of duty is inversed. This might be useful for some special LED drivers that are using single PWM to choose between Cool white and Warm white (it also needs setting a special flag in General options)
 - WiFi LED - special LED to indicate WLan connection state. LED states are following: LED on = client mode successfully connected to your Router. Half a second blink - connecting to your router, please wait (or connection problem). Fast blink (200ms) - open access point mode. In safe mode (after failed boots), LED might not work.
 - DigitalInput - this is a simple digital input pin, it sets the linked channel to current logical value on it, just like digitalRead( ) from Arduino. This input has a internal pull up resistor.
 - DigitalInput_n (as above but inversed)
