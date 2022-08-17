@@ -859,53 +859,35 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: discarding packet bad expected checksum, expected %i and got checksum %i\n",(int)data[len-1],(int)checkCheckSum);
 		return;
 	}
-	if(version == 0) {	
-		// https://developer.tuya.com/en/docs/iot/tuyacloudlowpoweruniversalserialaccessprotocol?id=K95afs9h4tjjh
-		// Special TuyaMCU version for battery-powered devices
-		cmd = data[3];
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: processing V0 command %i with %i bytes\n",cmd,len);
-		switch(cmd)
-		{		
-			// 55 AA 00 01 00 ${"p":"e7dny8zvmiyhqerw","v":"1.0.0"}$
-			// tuyaMcu_fakeHex 55AA000100247B2270223A226537646E79387A766D69796871657277222C2276223A22312E302E30227D24
-			case TUYA_CMD_QUERY_PRODUCT:
-				TuyaMCU_ParseQueryProductInformation(data+6,len-6);
-			break;
-			//55 AA 00 08 00 0C 00 02 02 02 02 02 02 01 01 00 01 01 23
-			// tuyaMcu_fakeHex 55AA0008000C00020202020202010100010123
-			case TUYA_V0_CMD_RECORDSTATUS:
-				TuyaMCU_V0_ParseRealTimeWithRecordStorage(data+6,len-6);
-			break;
-		}
-	} else {
-		cmd = data[3];
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: processing command %i (%s) with %i bytes\n",cmd,TuyaMCU_GetCommandTypeLabel(cmd),len);
-		switch(cmd)
-		{
-		case TUYA_CMD_STATE:
-			TuyaMCU_ParseStateMessage(data+6,len-6);
-			break;
-		case TUYA_CMD_SET_TIME:
-			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: received TUYA_CMD_SET_TIME, so sending back time");
-			TuyaMCU_Send_SetTime(TuyaMCU_Get_NTP_Time());
-			break;
-		case TUYA_CMD_QUERY_PRODUCT:
-			TuyaMCU_ParseQueryProductInformation(data+6,len-6);
-			break;
-			// this name seems invalid for Version 0 of TuyaMCU
-		case TUYA_CMD_QUERY_STATE:
-			//if(version == 0) {
-			//	// 0x08 packet for version 0 (not 0x03) of TuyaMCU
-			//	TuyaMCU_V0_ParseRealTimeWithRecordStorage(data+6,len-6);
-			//} else {
+	cmd = data[3];
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming[ver=%i]: processing command %i (%s) with %i bytes\n",version,cmd,TuyaMCU_GetCommandTypeLabel(cmd),len);
+	switch(cmd)
+	{
+	case TUYA_CMD_STATE:
+		TuyaMCU_ParseStateMessage(data+6,len-6);
+		break;
+	case TUYA_CMD_SET_TIME:
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: received TUYA_CMD_SET_TIME, so sending back time");
+		TuyaMCU_Send_SetTime(TuyaMCU_Get_NTP_Time());
+		break;
+		// 55 AA 00 01 00 ${"p":"e7dny8zvmiyhqerw","v":"1.0.0"}$
+		// tuyaMcu_fakeHex 55AA000100247B2270223A226537646E79387A766D69796871657277222C2276223A22312E302E30227D24
+	case TUYA_CMD_QUERY_PRODUCT:
+		TuyaMCU_ParseQueryProductInformation(data+6,len-6);
+		break;
+		// this name seems invalid for Version 0 of TuyaMCU
+	case TUYA_CMD_QUERY_STATE:
+		if(version == 0) {
+			// 0x08 packet for version 0 (not 0x03) of TuyaMCU
+			TuyaMCU_V0_ParseRealTimeWithRecordStorage(data+6,len-6);
+		} else {
 
-			//}
-			break;
-		default:
-			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: unhandled type %i",cmd);
-			break;
 		}
-	}
+		break;
+	default:
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: unhandled type %i",cmd);
+		break;
+		}
 }
 int TuyaMCU_FakePacket(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	byte packet[256];
