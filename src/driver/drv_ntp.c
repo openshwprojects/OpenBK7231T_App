@@ -3,6 +3,7 @@
 // https://www.elektroda.pl/rtvforum/topic3712112.html
 
 #include "../new_common.h"
+#include "../new_cfg.h"
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 
@@ -67,9 +68,33 @@ int NTP_SetTimeZoneOfs(const void *context, const char *cmd, const char *args, i
 	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP offset set, wait for next ntp packet to apply changes\n");
 	return 1;
 }
+
+//Set custom NTP server
+int NTP_SetServer(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	Tokenizer_TokenizeString(args);
+	if(Tokenizer_GetArgsCount() < 1) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Argument missing e.g. ntp_setServer ipAddress\n");
+		return 0;
+	}
+	char *newValue = Tokenizer_GetArg(0);
+	CFG_SetNTPServer(newValue);
+	addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP server set to %s\n", newValue);
+	return 1;
+}
+
+//Display settings used by the NTP driver
+int NTP_Info(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "Server=%s, Time offset=%d\n", CFG_GetNTPServer(), g_timeOffsetHours);
+	return 1;
+}
+
 void NTP_Init() {
 
 	CMD_RegisterCommand("ntp_timeZoneOfs","",NTP_SetTimeZoneOfs, "Sets the time zone offset in hours", NULL);
+	CMD_RegisterCommand("ntp_setServer", "", NTP_SetServer, "Sets the NTP server", NULL);
+	CMD_RegisterCommand("ntp_info", "", NTP_Info, "Display NTP related settings", NULL);
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP driver initialized with server=%s, offset=%d\n", CFG_GetNTPServer(), g_timeOffsetHours);
 }
 
 unsigned int NTP_GetCurrentTime() {
@@ -122,7 +147,7 @@ void NTP_SendRequest(bool bBlocking) {
     memset((char *) &g_address, 0, sizeof(g_address));
 
         g_address.sin_family = AF_INET;
-        g_address.sin_addr.s_addr = inet_addr("217.147.223.78"); // this is address of host which I want to send the socket
+        g_address.sin_addr.s_addr = inet_addr(CFG_GetNTPServer()); // this is address of host which I want to send the socket
         g_address.sin_port = htons(123);
 
 
