@@ -102,8 +102,9 @@ typedef struct pinsState_s {
 #define OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER		5
 #define OBK_FLAG_BTN_INSTANTTOUCH					6
 #define OBK_FLAG_MQTT_ALWAYSSETRETAIN				7
+#define OBK_FLAG_LED_ALTERNATE_CW_MODE				8
 
-#define OBK_TOTAL_FLAGS 7
+#define OBK_TOTAL_FLAGS 9
 
 //
 // Main config structure (less than 2KB)
@@ -145,7 +146,8 @@ typedef struct mainConfig_s {
 	int dgr_sendFlags;
 	int dgr_recvFlags;
 	char dgr_name[16];
-	byte unusedSectorA[104];
+	char ntpServer[32];
+	byte unusedSectorA[72];
 	byte unusedSectorB[128];
 	byte unusedSectorC[55];
 	byte timeRequiredToMarkBootSuccessfull;
@@ -241,6 +243,6 @@ void Setup_Device_13A_Socket_CB2S();
 void Setup_Device_Deta_Smart_Double_Power_Point_6922HA_Series2();
 void Setup_Device_BK7231N_KS_602_TOUCH();
 void Setup_Device_Enbrighten_WFD4103();
-
+void Setup_Device_Aubess_Mini_Smart_Switch_16A();
 #endif
 

@@ -88,6 +88,7 @@ float LED_GetDimmer();
 int LED_IsRunningDriver();
 float LED_GetTemperature();
 void LED_SetTemperature(int tmpInteger, bool bApply);
+float LED_GetTemperature0to1Range();
 void LED_SetDimmer(int iVal);
 int LED_SetBaseColor(const void *context, const char *cmd, const char *args, int bAll);
 void LED_SetEnableAll(int bEnable);

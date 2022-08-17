@@ -807,3 +807,29 @@ void Setup_Device_Enbrighten_WFD4103(){
 
 	CFG_Save_SetupTimer();
 }
+
+// Aubess Mini Smart Switch 16A
+void Setup_Device_Aubess_Mini_Smart_Switch_16A() {
+
+	// pins are:
+	// led - led_n = P6
+	// embedded button - btn = P8
+	// switch - btn = P14
+	// relay - rel = P15
+
+	CFG_ClearPins();
+	// Led
+	PIN_SetPinRoleForPinIndex(6, IOR_LED_n);
+	PIN_SetPinChannelForPinIndex(6, 1);	
+	// Embedded Button
+	PIN_SetPinRoleForPinIndex(8, IOR_Button);
+	PIN_SetPinChannelForPinIndex(8, 1);
+	// Switch
+	PIN_SetPinRoleForPinIndex(14, IOR_Button);
+	PIN_SetPinChannelForPinIndex(14, 1);	
+	// Relay
+	PIN_SetPinRoleForPinIndex(15, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(15, 1);
+
+	CFG_Save_SetupTimer();
+}
