@@ -10,6 +10,7 @@ extern const char httpMimeTypeBinary[];
 extern const char htmlHeader[];
 extern const char htmlEnd[];
 extern const char htmlReturnToMenu[];
+extern const char htmlRefresh[];
 extern const char htmlReturnToCfg[];
 
 extern const char *htmlPinRoleNames[];

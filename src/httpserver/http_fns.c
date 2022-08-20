@@ -481,7 +481,7 @@ int http_fn_index(http_request_t *request) {
 		PingWatchDog_GetTotalLost(),PingWatchDog_GetTotalReceived());
 
 
-    poststr(request,htmlReturnToMenu);
+    poststr(request,htmlRefresh);
     HTTP_AddBuildFooter(request);
     poststr(request,htmlEnd);
 
@@ -1525,7 +1525,7 @@ int http_fn_cfg(http_request_t *request) {
 	}
 #endif
 #endif
-
+    poststr(request,htmlReturnToMenu);
     HTTP_AddBuildFooter(request);
     poststr(request,htmlEnd);
 	poststr(request, NULL);
