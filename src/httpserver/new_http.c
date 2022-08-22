@@ -20,6 +20,7 @@ const char httpMimeTypeText[] = "text/plain" ;           // TEXT MIME type
 const char httpMimeTypeJson[] = "application/json" ;           // TEXT MIME type
 const char httpMimeTypeBinary[] = "application/octet-stream" ;   // binary/file MIME type
 const char htmlHeader[] = "<!DOCTYPE html><html><head><style>div,fieldset,input,select{padding:5px;font-size:1em;margin: 0 0 0.2em 0}fieldset{background:#4f4f4f;}p{margin:0.5em 0;}input{width:100%;box-sizing:border-box;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;background:#dddddd;color:#000000;}form{margin-bottom:0.5em}input[type=checkbox],input[type=radio]{width:1em;margin-right:6px;vertical-align:-1px;}input[type=range]{width:99%;}select{width:100%;background:#dddddd;color:#000000;}textarea{resize:vertical;width:98%;height:318px;padding:5px;overflow:auto;background:#1f1f1f;color:#65c115;}body{text-align:center;font-family:verdana,sans-serif;background:#21333e; color:#eaeaea}h1 a{background:#21333e; color:#eaeaea}td{padding:0px;}input[type=submit]{border:0;border-radius:0.3rem;background:#1fa3ec;color:#faffff;line-height:2.4rem;font-size:1.2rem;width:100%;-webkit-transition-duration:0.4s;transition-duration:0.4s;cursor:pointer;margin-buttom:0.5em}input[type=submit]:hover{background:#0e70a4;}.bred{background:#d43535 !important;}.bred:hover{background:#931f1f !important;}.bgrn{background:#47c266 !important;}.bgrn:hover{background:#5aaf6f !important;}a{color:#1fa3ec;text-decoration:none;}.p{float:left;text-align:left;}.q{float:right;text-align:right;}.r{border-radius:0.3em;padding:2px;margin:6px 2px;}.hf{display:none;}.hdiv{width:95%;white-space:nowrap;}.hele{width:210px;display:inline-block;margin-left:2px;}</style></head><body><div style=\"text-align:left; display:inline-block; color:#eaeaea; min-width:340px;max-width:800px;\">" ;
+//const char htmlHeader[] = "<!DOCTYPE html><html><body>" ;
 const char htmlEnd[] = "</div></body></html>" ;
 const char htmlReturnToMenu[] = "<a href=\"index\">Return to menu</a>";
 const char htmlRefresh[] = "<a href=\"index\">Refresh</a>";
@@ -337,7 +338,9 @@ int postany(http_request_t *request, const char *str, int len){
 	int addlen = len;
 
 	if (NULL == str){
-		send(request->fd, request->reply, request->replylen, 0);
+		if(request->replylen > 0) {
+			send(request->fd, request->reply, request->replylen, 0);
+		}
 		request->reply[0] = 0;
 		request->replylen = 0;
 		return 0;
@@ -350,12 +353,20 @@ int postany(http_request_t *request, const char *str, int len){
 		request->replylen = 0;
 		currentlen = 0;
 	}
-	if (addlen > request->replymaxlen){
-		ADDLOGF_ERROR("won't fit");
-	} else {
-		memcpy( request->reply+request->replylen, str, addlen );
-		request->replylen += addlen;
+	while (addlen >= request->replymaxlen){
+		if(request->replylen > 0) {
+			send(request->fd, request->reply, request->replylen, 0);
+			request->replylen = 0;
+		}
+		send(request->fd, str, (request->replymaxlen-1), 0);
+		addlen -= (request->replymaxlen-1);
+		str += (request->replymaxlen-1);
+
+		rtos_delay_milliseconds(1);
 	}
+	
+	memcpy( request->reply+request->replylen, str, addlen );
+	request->replylen += addlen;
 	return (currentlen + addlen);
 #endif
 }
@@ -405,7 +416,7 @@ void misc_formatUpTimeString(int totalSeconds, char *o) {
 int hprintf128(http_request_t *request, const char *fmt, ...){
   va_list argList;
   //BaseType_t taken;
-	char tmp[128];
+	char tmp[256];
 	va_start(argList, fmt);
 	vsprintf(tmp, fmt, argList);
 	va_end(argList);
@@ -534,6 +545,7 @@ int HTTP_ProcessPacket(http_request_t *request) {
 	}
 	if(http_checkUrlBase(urlStr,"")) return http_fn_empty_url(request);
 
+	if(http_checkUrlBase(urlStr,"testmsg")) return http_fn_testmsg(request);
 	if(http_checkUrlBase(urlStr,"index")) return http_fn_index(request);
 
 	if(http_checkUrlBase(urlStr,"about")) return http_fn_about(request);
