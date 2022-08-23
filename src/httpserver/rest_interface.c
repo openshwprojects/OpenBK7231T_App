@@ -119,6 +119,18 @@ const char * apppage4 = "startup.js\"></script>"
 "</body>"
 "</html>";
 
+const KeyIntegerTuple_t OBKFlagValues[OBK_TOTAL_FLAGS] = {
+	{"OBK_FLAG_MQTT_BROADCASTLEDPARAMSTOGETHER", OBK_FLAG_MQTT_BROADCASTLEDPARAMSTOGETHER},
+	{"OBK_FLAG_MQTT_BROADCASTLEDFINALCOLOR", OBK_FLAG_MQTT_BROADCASTLEDFINALCOLOR},
+	{"OBK_FLAG_MQTT_BROADCASTSELFSTATEPERMINUTE", OBK_FLAG_MQTT_BROADCASTSELFSTATEPERMINUTE},
+	{"OBK_FLAG_LED_RAWCHANNELSMODE", OBK_FLAG_LED_RAWCHANNELSMODE},
+	{"OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER", OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER},
+	{"OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER", OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER},
+	{"OBK_FLAG_BTN_INSTANTTOUCH", OBK_FLAG_BTN_INSTANTTOUCH},
+	{"OBK_FLAG_MQTT_ALWAYSSETRETAIN", OBK_FLAG_MQTT_ALWAYSSETRETAIN},
+	{"OBK_FLAG_LED_ALTERNATE_CW_MODE", OBK_FLAG_LED_ALTERNATE_CW_MODE},
+	{"OBK_FLAG_SM2135_SEPARATE_MODES", OBK_FLAG_SM2135_SEPARATE_MODES}
+};
 
 static int http_rest_get(http_request_t *request){
     ADDLOG_DEBUG(LOG_FEATURE_API, "GET of %s", request->url);
@@ -690,18 +702,31 @@ static int http_rest_get_info(http_request_t *request){
     hprintf128(request, "\"mqtthost\":\"%s:%d\",", CFG_GetMQTTHost(), CFG_GetMQTTPort());
     hprintf128(request, "\"mqtttopic\":\"%s\",", CFG_GetShortDeviceName());
     hprintf128(request, "\"chipset\":\"%s\",", PLATFORM_MCU_NAME);
-    hprintf128(request, "\"webapp\":\"%s\"}", CFG_GetWebappRoot());
+    hprintf128(request, "\"webapp\":\"%s\",", CFG_GetWebappRoot());
+    hprintf128(request, "\"supportsClientDeviceDB\":true}");
 
     poststr(request, NULL);
     return 0;
 }
 
+/* Try parse OBK_FLAG from the specified value. Returns true if the operation was successful. */
+static bool tryFindOBKFlag(char *value, int *outFlag){
+    for(int i = 0;i < OBK_TOTAL_FLAGS;i ++){
+        if (strcmp(value, OBKFlagValues[i].key) == 0) {
+            *outFlag = OBKFlagValues[i].value;
+            return true;
+        }
+    }
+
+    return false;
+}
 
 static int http_rest_post_pins(http_request_t *request){
     int i;
     int r;
     char tmp[64];
     int iChanged = 0;
+    char tokenStrValue[MAX_JSON_VALUE_LENGTH + 1];
 
     //https://github.com/zserge/jsmn/blob/master/example/simple.c
     //jsmn_parser p;
@@ -713,7 +738,7 @@ static int http_rest_post_pins(http_request_t *request){
     int json_len = strlen(json_str);
 
 	memset(p, 0, sizeof(jsmn_parser));
-	memset(t, 0, sizeof(jsmntok_t)*128);
+	memset(t, 0, sizeof(jsmntok_t)*TOKEN_COUNT);
 
     jsmn_init(p);
     r = jsmn_parse(p, json_str, json_len, t, TOKEN_COUNT);
@@ -736,7 +761,13 @@ static int http_rest_post_pins(http_request_t *request){
 
     /* Loop over all keys of the root object */
     for (i = 1; i < r; i++) {
-        if (jsoneq(json_str, &t[i], "roles") == 0) {
+        if (tryGetTokenString(json_str, &t[i], tokenStrValue) != true){
+            ADDLOG_DEBUG(LOG_FEATURE_API, "Parsing failed");
+            continue;
+        }
+        //ADDLOG_DEBUG(LOG_FEATURE_API, "parsed %s", tokenStrValue);
+
+        if (strcmp(tokenStrValue, "roles") == 0) {
             int j;
             if (t[i + 1].type != JSMN_ARRAY) {
                 continue; /* We expect groups to be an array of strings */
@@ -752,7 +783,7 @@ static int http_rest_post_pins(http_request_t *request){
 				}
             }
             i += t[i + 1].size + 1;
-        } else if (jsoneq(json_str, &t[i], "channels") == 0) {
+        } else if (strcmp(tokenStrValue, "channels") == 0) {
             int j;
             if (t[i + 1].type != JSMN_ARRAY) {
                 continue; /* We expect groups to be an array of strings */
@@ -767,6 +798,25 @@ static int http_rest_post_pins(http_request_t *request){
 					iChanged++;
 				}
             }
+            i += t[i + 1].size + 1;
+        } else if (strcmp(tokenStrValue, "deviceFlag") == 0) {
+            if (tryGetTokenString(json_str, &t[i + 1], tokenStrValue) == true){
+                ADDLOG_DEBUG(LOG_FEATURE_API, "received deviceFlag %s", tokenStrValue);
+                int flag;
+                if (tryFindOBKFlag(tokenStrValue, &flag)){
+                    CFG_SetFlag(flag, true);
+                    iChanged++;
+                }
+            }
+
+            i += t[i + 1].size + 1;
+        } else if (strcmp(tokenStrValue, "deviceCommand") == 0) {
+            if (tryGetTokenString(json_str, &t[i + 1], tokenStrValue) == true){
+                ADDLOG_DEBUG(LOG_FEATURE_API, "received deviceCommand %s", tokenStrValue);
+                CFG_SetShortStartupCommand_AndExecuteNow(tokenStrValue);
+                iChanged++;
+            }
+
             i += t[i + 1].size + 1;
         } else {
             ADDLOG_ERROR(LOG_FEATURE_API, "Unexpected key: %.*s", t[i].end - t[i].start,

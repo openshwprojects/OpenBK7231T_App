@@ -12,6 +12,12 @@
 
 typedef int OBK_Publish_Result;
 
+typedef struct KeyIntegerTuple {
+	char *key;
+	int value;
+} KeyIntegerTuple_t;
+
+
 #if WINDOWS
 #define DEVICENAME_PREFIX_FULL "WinTest"
 #define DEVICENAME_PREFIX_SHORT "WT"
@@ -275,17 +281,3 @@ int PingWatchDog_GetTotalReceived();
 
 int LWIP_GetMaxSockets();
 int LWIP_GetActiveSockets();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
