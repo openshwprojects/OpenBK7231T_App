@@ -119,19 +119,6 @@ const char * apppage4 = "startup.js\"></script>"
 "</body>"
 "</html>";
 
-const KeyIntegerTuple_t OBKFlagValues[OBK_TOTAL_FLAGS] = {
-	{"OBK_FLAG_MQTT_BROADCASTLEDPARAMSTOGETHER", OBK_FLAG_MQTT_BROADCASTLEDPARAMSTOGETHER},
-	{"OBK_FLAG_MQTT_BROADCASTLEDFINALCOLOR", OBK_FLAG_MQTT_BROADCASTLEDFINALCOLOR},
-	{"OBK_FLAG_MQTT_BROADCASTSELFSTATEPERMINUTE", OBK_FLAG_MQTT_BROADCASTSELFSTATEPERMINUTE},
-	{"OBK_FLAG_LED_RAWCHANNELSMODE", OBK_FLAG_LED_RAWCHANNELSMODE},
-	{"OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER", OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER},
-	{"OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER", OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER},
-	{"OBK_FLAG_BTN_INSTANTTOUCH", OBK_FLAG_BTN_INSTANTTOUCH},
-	{"OBK_FLAG_MQTT_ALWAYSSETRETAIN", OBK_FLAG_MQTT_ALWAYSSETRETAIN},
-	{"OBK_FLAG_LED_ALTERNATE_CW_MODE", OBK_FLAG_LED_ALTERNATE_CW_MODE},
-	{"OBK_FLAG_SM2135_SEPARATE_MODES", OBK_FLAG_SM2135_SEPARATE_MODES}
-};
-
 static int http_rest_get(http_request_t *request){
     ADDLOG_DEBUG(LOG_FEATURE_API, "GET of %s", request->url);
 
@@ -709,18 +696,6 @@ static int http_rest_get_info(http_request_t *request){
     return 0;
 }
 
-/* Try parse OBK_FLAG from the specified value. Returns true if the operation was successful. */
-static bool tryFindOBKFlag(char *value, int *outFlag){
-    for(int i = 0;i < OBK_TOTAL_FLAGS;i ++){
-        if (strcmp(value, OBKFlagValues[i].key) == 0) {
-            *outFlag = OBKFlagValues[i].value;
-            return true;
-        }
-    }
-
-    return false;
-}
-
 static int http_rest_post_pins(http_request_t *request){
     int i;
     int r;
@@ -800,13 +775,17 @@ static int http_rest_post_pins(http_request_t *request){
             }
             i += t[i + 1].size + 1;
         } else if (strcmp(tokenStrValue, "deviceFlag") == 0) {
-            if (tryGetTokenString(json_str, &t[i + 1], tokenStrValue) == true){
-                ADDLOG_DEBUG(LOG_FEATURE_API, "received deviceFlag %s", tokenStrValue);
-                int flag;
-                if (tryFindOBKFlag(tokenStrValue, &flag)){
-                    CFG_SetFlag(flag, true);
-                    iChanged++;
-                }
+            jsmntok_t *flagTok = &t[i + 1];
+            if (flagTok == NULL || flagTok->type != JSMN_PRIMITIVE){
+                continue;
+            }
+
+            int flag = atoi(json_str + flagTok->start);
+            ADDLOG_DEBUG(LOG_FEATURE_API, "received deviceFlag %d", flag);
+
+            if (flag >= 0 && flag <= 10){
+                CFG_SetFlag(flag, true);
+                iChanged++;
             }
 
             i += t[i + 1].size + 1;
