@@ -31,6 +31,9 @@ uint32_t flash_read(uint32_t flash, uint32_t addr,void *buf, uint32_t size);
 extern UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address);
 #endif
 
+#define MAX_JSON_VALUE_LENGTH   128
+
+
 static int http_rest_error(http_request_t *request, int code, char *msg);
 
 static int http_rest_get(http_request_t *request);
@@ -118,6 +121,25 @@ const char * apppage4 = "startup.js\"></script>"
 "<body>"
 "</body>"
 "</html>";
+
+
+/* Extracts string token value into outBuffer (128 char). Returns true if the operation was successful. */
+bool tryGetTokenString(const char *json, jsmntok_t *tok, char *outBuffer){
+  if (tok == NULL || tok->type != JSMN_STRING){
+    return false;
+  }
+  
+  int length = tok->end - tok->start;
+
+  //Don't have enough buffer
+  if (length > MAX_JSON_VALUE_LENGTH) {
+    return false;
+  }
+
+  memset(outBuffer, '\0', MAX_JSON_VALUE_LENGTH); //Wipe previous value
+  strncpy(outBuffer, json + tok->start, length);
+  return true;
+}
 
 static int http_rest_get(http_request_t *request){
     ADDLOG_DEBUG(LOG_FEATURE_API, "GET of %s", request->url);
