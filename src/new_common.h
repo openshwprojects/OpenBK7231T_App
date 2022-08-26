@@ -275,17 +275,3 @@ int PingWatchDog_GetTotalReceived();
 
 int LWIP_GetMaxSockets();
 int LWIP_GetActiveSockets();
-
-
-
-
-
-
-
-
-
-
-
-
-
-

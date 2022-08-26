@@ -31,6 +31,9 @@ uint32_t flash_read(uint32_t flash, uint32_t addr,void *buf, uint32_t size);
 extern UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address);
 #endif
 
+#define MAX_JSON_VALUE_LENGTH   128
+
+
 static int http_rest_error(http_request_t *request, int code, char *msg);
 
 static int http_rest_get(http_request_t *request);
@@ -119,6 +122,24 @@ const char * apppage4 = "startup.js\"></script>"
 "</body>"
 "</html>";
 
+
+/* Extracts string token value into outBuffer (128 char). Returns true if the operation was successful. */
+bool tryGetTokenString(const char *json, jsmntok_t *tok, char *outBuffer){
+  if (tok == NULL || tok->type != JSMN_STRING){
+    return false;
+  }
+  
+  int length = tok->end - tok->start;
+
+  //Don't have enough buffer
+  if (length > MAX_JSON_VALUE_LENGTH) {
+    return false;
+  }
+
+  memset(outBuffer, '\0', MAX_JSON_VALUE_LENGTH); //Wipe previous value
+  strncpy(outBuffer, json + tok->start, length);
+  return true;
+}
 
 static int http_rest_get(http_request_t *request){
     ADDLOG_DEBUG(LOG_FEATURE_API, "GET of %s", request->url);
@@ -690,18 +711,19 @@ static int http_rest_get_info(http_request_t *request){
     hprintf128(request, "\"mqtthost\":\"%s:%d\",", CFG_GetMQTTHost(), CFG_GetMQTTPort());
     hprintf128(request, "\"mqtttopic\":\"%s\",", CFG_GetShortDeviceName());
     hprintf128(request, "\"chipset\":\"%s\",", PLATFORM_MCU_NAME);
-    hprintf128(request, "\"webapp\":\"%s\"}", CFG_GetWebappRoot());
+    hprintf128(request, "\"webapp\":\"%s\",", CFG_GetWebappRoot());
+    hprintf128(request, "\"supportsClientDeviceDB\":true}");
 
     poststr(request, NULL);
     return 0;
 }
-
 
 static int http_rest_post_pins(http_request_t *request){
     int i;
     int r;
     char tmp[64];
     int iChanged = 0;
+    char tokenStrValue[MAX_JSON_VALUE_LENGTH + 1];
 
     //https://github.com/zserge/jsmn/blob/master/example/simple.c
     //jsmn_parser p;
@@ -713,7 +735,7 @@ static int http_rest_post_pins(http_request_t *request){
     int json_len = strlen(json_str);
 
 	memset(p, 0, sizeof(jsmn_parser));
-	memset(t, 0, sizeof(jsmntok_t)*128);
+	memset(t, 0, sizeof(jsmntok_t)*TOKEN_COUNT);
 
     jsmn_init(p);
     r = jsmn_parse(p, json_str, json_len, t, TOKEN_COUNT);
@@ -736,7 +758,13 @@ static int http_rest_post_pins(http_request_t *request){
 
     /* Loop over all keys of the root object */
     for (i = 1; i < r; i++) {
-        if (jsoneq(json_str, &t[i], "roles") == 0) {
+        if (tryGetTokenString(json_str, &t[i], tokenStrValue) != true){
+            ADDLOG_DEBUG(LOG_FEATURE_API, "Parsing failed");
+            continue;
+        }
+        //ADDLOG_DEBUG(LOG_FEATURE_API, "parsed %s", tokenStrValue);
+
+        if (strcmp(tokenStrValue, "roles") == 0) {
             int j;
             if (t[i + 1].type != JSMN_ARRAY) {
                 continue; /* We expect groups to be an array of strings */
@@ -752,7 +780,7 @@ static int http_rest_post_pins(http_request_t *request){
 				}
             }
             i += t[i + 1].size + 1;
-        } else if (jsoneq(json_str, &t[i], "channels") == 0) {
+        } else if (strcmp(tokenStrValue, "channels") == 0) {
             int j;
             if (t[i + 1].type != JSMN_ARRAY) {
                 continue; /* We expect groups to be an array of strings */
@@ -767,6 +795,29 @@ static int http_rest_post_pins(http_request_t *request){
 					iChanged++;
 				}
             }
+            i += t[i + 1].size + 1;
+        } else if (strcmp(tokenStrValue, "deviceFlag") == 0) {
+            jsmntok_t *flagTok = &t[i + 1];
+            if (flagTok == NULL || flagTok->type != JSMN_PRIMITIVE){
+                continue;
+            }
+
+            int flag = atoi(json_str + flagTok->start);
+            ADDLOG_DEBUG(LOG_FEATURE_API, "received deviceFlag %d", flag);
+
+            if (flag >= 0 && flag <= 10){
+                CFG_SetFlag(flag, true);
+                iChanged++;
+            }
+
+            i += t[i + 1].size + 1;
+        } else if (strcmp(tokenStrValue, "deviceCommand") == 0) {
+            if (tryGetTokenString(json_str, &t[i + 1], tokenStrValue) == true){
+                ADDLOG_DEBUG(LOG_FEATURE_API, "received deviceCommand %s", tokenStrValue);
+                CFG_SetShortStartupCommand_AndExecuteNow(tokenStrValue);
+                iChanged++;
+            }
+
             i += t[i + 1].size + 1;
         } else {
             ADDLOG_ERROR(LOG_FEATURE_API, "Unexpected key: %.*s", t[i].end - t[i].start,
