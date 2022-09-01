@@ -299,10 +299,13 @@ const char *g_header_start =
 	"<noscript>To use this device, please enable JavaScript.<br></noscript>"
     "<h1><a target=\"_blank\" href=\"https://github.com/openshwprojects/OpenBK7231T_App/\">";
 const char *g_header_end =
-    "</a></h1><h3><a target=\"_blank\" "
+    "</a></h1>";
+const char *g_footer_info =
+    "<a target=\"_blank\" "
     "href=\"https://www.elektroda.com/rtvforum/"
-    "viewtopic.php?p=19841301#19841301\">[Read more]</a><a target=\"_blank\" "
-    "href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
+    "viewtopic.php?p=19841301#19841301\">Read more</a> | "
+	"<a target=\"_blank\" "
+    "href=\"https://paypal.me/openshwprojects\">Support project</a><br>";
 
 void HTTP_AddHeader(http_request_t *request) {
 	poststr(request,g_header_start);
@@ -314,9 +317,11 @@ void HTTP_AddBuildFooter(http_request_t *request) {
 	char upTimeStr[128];
 	unsigned char mac[32];
 
+	poststr(request, " | ");
+	poststr(request, g_footer_info);
 	poststr(request,"<br>");
 	poststr(request,g_build_str);
-	poststr(request,"<br> Online for ");
+	poststr(request,"<br>Online for ");
 	misc_formatUpTimeString(Time_getUpTimeSeconds(), upTimeStr);
 	poststr(request,upTimeStr);
 
