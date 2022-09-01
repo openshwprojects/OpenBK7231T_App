@@ -21,7 +21,6 @@ const char httpMimeTypeJson[] = "application/json" ;           // TEXT MIME type
 const char httpMimeTypeBinary[] = "application/octet-stream" ;   // binary/file MIME type
 const char htmlDoctype[] =
     "<!DOCTYPE html><html>";
-//	"<title>OpenBK7231T</title>" // todo: add device name to title
 const char htmlHeadMain[] =
 	"<meta charset=\"utf-8\">"
 	"<meta name=\"viewport\" content=\"width=device-width,initial-scale=1,user-scalable=no\">"
@@ -61,13 +60,13 @@ const char htmlHeadStyle[] =
 		".hf{display:none;}"
 		".hdiv{width:95%;white-space:nowrap;}"
 		".hele{width:210px;display:inline-block;margin-left:2px;}"
-		"#statediv{padding:0}"
+		"div#statediv{padding:0}"
+		"div#main{text-align:left; display:inline-block; color:#eaeaea;min-width:340px;max-width:800px;}"
 	"</style>";
 const char htmlBodyStart[] =
 	"<body>"
 	"<noscript>To use this device, please enable JavaScript.<br></noscript>"
-	"<div style=\"text-align:left; display:inline-block; color:#eaeaea; "
-    "min-width:340px;max-width:800px;\">"
+	"<div id=\"main\">"
     "<h1>"
 	"<a target=\"_blank\" href=\"https://github.com/openshwprojects/OpenBK7231T_App/\">";
 const char htmlBodyStart2[] = 
