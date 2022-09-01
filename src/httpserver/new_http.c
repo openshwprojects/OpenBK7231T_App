@@ -295,12 +295,14 @@ void setupAllWB2SPinsAsButtons() {
 		PIN_SetPinChannelForPinIndex(27,1);
 }
 
-
-
-
-const char *g_header_start = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7231T_App/\">";
-const char *g_header_end = "</a></h1><h3><a href=\"https://www.elektroda.com/rtvforum/viewtopic.php?p=19841301#19841301\">[Read more]</a><a href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
-
+const char *g_header_start =
+	"<noscript>To use this device, please enable JavaScript.<br></noscript>"
+    "<h1><a target=\"_blank\" href=\"https://github.com/openshwprojects/OpenBK7231T_App/\">";
+const char *g_header_end =
+    "</a></h1><h3><a target=\"_blank\" "
+    "href=\"https://www.elektroda.com/rtvforum/"
+    "viewtopic.php?p=19841301#19841301\">[Read more]</a><a target=\"_blank\" "
+    "href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
 
 void HTTP_AddHeader(http_request_t *request) {
 	poststr(request,g_header_start);
@@ -320,9 +322,9 @@ void HTTP_AddBuildFooter(http_request_t *request) {
 
 	WiFI_GetMacAddress((char *)mac);
 
-	sprintf(upTimeStr,"<br> Device MAC: %02X%02X%02X%02X%02X%02X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
+	sprintf(upTimeStr,"<br>Device MAC: %02X:%02X:%02X:%02X:%02X:%02X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
 	poststr(request,upTimeStr);
-	sprintf(upTimeStr,"<br> Short name: %s, Chipset %s",CFG_GetShortDeviceName(),PLATFORM_MCU_NAME);
+	sprintf(upTimeStr,"<br>Short name: %s, Chipset %s",CFG_GetShortDeviceName(),PLATFORM_MCU_NAME);
 	poststr(request,upTimeStr);
 }
 

@@ -114,10 +114,15 @@ int http_fn_index(http_request_t *request) {
 	bRawPWMs = CFG_HasFlag(OBK_FLAG_LED_RAWCHANNELSMODE);
 	forceShowRGBCW = CFG_HasFlag(OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER);
 
-    http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    //poststr(request,"<style>.r { background-color: red; } .g { background-color: green; }</style>");
-    HTTP_AddHeader(request);
+    // use ?state URL parameter to only request current state
+    if(!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
+        http_setup(request, httpMimeTypeHTML);
+        poststr(request,htmlHeader);
+        //poststr(request,"<style>.r { background-color: red; } .g { background-color: green; }</style>");
+        HTTP_AddHeader(request);
+        poststr(request, "<div id=\"statediv\">"); // replaceable content follows
+    }
+
     if(http_getArg(request->url,"tgl",tmpA,sizeof(tmpA))) {
         j = atoi(tmpA);
 		if(j == SPECIAL_CHANNEL_LEDPOWER) {
@@ -455,16 +460,6 @@ int http_fn_index(http_request_t *request) {
         RESET_ScheduleModuleReset(3);
     }
 
-    poststr(request,"<form action=\"cfg\"><input type=\"submit\" value=\"Config\"/></form>");
-
-    poststr(request,"<form action=\"/index\">\
-            <input type=\"hidden\" id=\"restart\" name=\"restart\" value=\"1\">\
-            <input class=\"bred\" type=\"submit\" value=\"Restart\" onclick=\"return confirm('Are you sure to restart module?')\">\
-        </form> ");
-
-    poststr(request,"<form action=\"/app\" target=\"_blank\"><input type=\"submit\" value=\"Launch Web Application\"\"></form> ");
-    poststr(request,"<form action=\"about\"><input type=\"submit\" value=\"About\"/></form>");
-
 	if(1) {
 		int bFirst = true;
 		hprintf128(request,"<h5>");
@@ -486,10 +481,53 @@ int http_fn_index(http_request_t *request) {
 	hprintf128(request,"<h5>Ping watchdog - %i lost, %i ok!</h5>",
 		PingWatchDog_GetTotalLost(),PingWatchDog_GetTotalReceived());
 
+    // for normal page loads, show the rest of the HTML
+    if(!http_getArg(request->url,"state",tmpA,sizeof(tmpA))) {
+        poststr(request, "</div>"); // end id=statediv
 
-    poststr(request,htmlRefresh);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
+        // Shared UI elements 
+        poststr(request,"<form action=\"cfg\"><input type=\"submit\" value=\"Config\"/></form>");
+
+        poststr(request,"<form action=\"/index\">\
+                <input type=\"hidden\" id=\"restart\" name=\"restart\" value=\"1\">\
+                <input class=\"bred\" type=\"submit\" value=\"Restart\" onclick=\"return confirm('Are you sure to restart module?')\">\
+            </form> ");
+
+        poststr(request,"<form action=\"/app\" target=\"_blank\"><input type=\"submit\" value=\"Launch Web Application\"\"></form> ");
+        poststr(request,"<form action=\"about\"><input type=\"submit\" value=\"About\"/></form>");
+
+        poststr(request,htmlRefresh);
+        HTTP_AddBuildFooter(request);
+
+        // refresh status section every 3 seconds
+        poststr(
+            request,
+            "<script type='text/javascript'>"
+            "var firstTime, lastTime, req=null;" 
+            "eb=s=>document.getElementById(s);"
+            "function showState() { "
+                "clearTimeout(firstTime);"
+                "clearTimeout(lastTime);"
+                "if (req!=null) { req.abort() }"
+                "req=new XMLHttpRequest();"
+                "req.onreadystatechange=()=>{"
+                    "if(req.readyState==4 && req.status==200){"
+                        "var s=req.responseText;"
+                        "eb('statediv').innerHTML=s;" 
+                        "clearTimeout(firstTime);"
+                        "clearTimeout(lastTime);"
+                        "lastTime=setTimeout(showState, 3000);"
+                "}};"
+                "req.open('GET','index?state=1', true);"
+                "req.send();"
+                "firstTime=setTimeout(showState, 3000);"
+            "}"
+            "window.addEventListener('load', showState);"
+            "</script>"
+        );
+
+        poststr(request,htmlEnd);
+    }
 
 	poststr(request, NULL);
     return 0;
