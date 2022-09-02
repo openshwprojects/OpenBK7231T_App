@@ -7,10 +7,11 @@ extern const char httpMimeTypeHTML[];              // HTML MIME type
 extern const char httpMimeTypeText[];           // TEXT MIME type
 extern const char httpMimeTypeJson[];
 extern const char httpMimeTypeBinary[];
-
-extern const char htmlFooterReturnToMenu[];
-extern const char htmlFooterRefreshLink[];
-extern const char htmlFooterReturnToCfgLink[];
+extern const char htmlHeader[];
+extern const char htmlEnd[];
+extern const char htmlReturnToMenu[];
+extern const char htmlRefresh[];
+extern const char htmlReturnToCfg[];
 
 extern const char *htmlPinRoleNames[];
 
@@ -19,6 +20,8 @@ extern const char *g_build_str;
 #define HTTP_RESPONSE_OK 200
 #define HTTP_RESPONSE_NOT_FOUND 404
 #define HTTP_RESPONSE_SERVER_ERROR 500
+
+
 
 #define MAX_QUERY 16
 #define MAX_HEADERS 16
@@ -50,13 +53,11 @@ typedef struct http_request_tag {
 
 int HTTP_ProcessPacket(http_request_t *request);
 void http_setup(http_request_t *request, const char *type);
-void http_html_start(http_request_t *request, const char *pagename);
-void http_html_end(http_request_t *request);
 int poststr(http_request_t *request, const char *str);
 int postany(http_request_t *request, const char *str, int len);
 void misc_formatUpTimeString(int totalSeconds, char *o);
-// void HTTP_AddBuildFooter(http_request_t *request);
-// void HTTP_AddHeader(http_request_t *request);
+void HTTP_AddBuildFooter(http_request_t *request);
+void HTTP_AddHeader(http_request_t *request);
 int http_getArg(const char *base, const char *name, char *o, int maxSize);
 int http_getArgInteger(const char *base, const char *name);
 

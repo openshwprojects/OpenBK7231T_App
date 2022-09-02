@@ -481,8 +481,8 @@ static int http_getlograw(http_request_t *request){
 
 static int http_getlog(http_request_t *request){
     http_setup(request, httpMimeTypeHTML);
-    http_html_start(request, "Log");
-    poststr(request,htmlFooterReturnToMenu);
+    poststr(request,htmlHeader);
+    poststr(request,htmlReturnToMenu);
 
     poststr(request, "<pre>");
     char *post = "</pre>";
@@ -490,7 +490,7 @@ static int http_getlog(http_request_t *request){
     http_getlograw(request);
 
     poststr(request, post);
-    http_html_end(request);
+    poststr(request, htmlEnd);
     poststr(request, NULL);
 
     return 0;
