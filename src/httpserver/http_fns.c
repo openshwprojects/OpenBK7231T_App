@@ -13,6 +13,8 @@
 #include "../hal/hal_flashConfig.h"
 #include "../logging/logging.h"
 #include "../devicegroups/deviceGroups_public.h"
+#include "../mqtt/new_mqtt.h"
+#include "hass.h"
 
 #ifdef WINDOWS
     // nothing
@@ -34,7 +36,25 @@
 #endif
 
 
-
+/*
+function send_ha_disc(){
+	var xhr = new XMLHttpRequest();
+    xhr.open("GET", "/ha_discovery?prefix="+document.getElementById("ha_disc_topic").value, false);
+	xhr.onload = function() {
+	  if (xhr.status === 200) {
+	    alert("MQTT discovery queued");
+	  }
+      else if (xhr.status === 404) {
+		alert("Error invoking ha_discovery");
+	  }
+	}
+	xhr.onerror = function() {
+	  alert("Error invoking ha_discovery");
+	}
+	xhr.send();
+}
+*/
+const char HomeAssistantDiscoveryScript[] = "<script>function send_ha_disc(){var xhr=new XMLHttpRequest();xhr.open(\"GET\",\"/ha_discovery?prefix=\"+document.getElementById(\"ha_disc_topic\").value,false);xhr.onload=function(){if(xhr.status===200){alert(\"MQTT discovery queued\")}else if(xhr.status===404){alert(\"Error invoking ha_discovery\")}};xhr.onerror=function(){alert(\"Error invoking ha_discovery\")};xhr.send()}</script>";
 
 typedef struct template_s {
 	void (*setter)();
@@ -97,7 +117,10 @@ int http_fn_empty_url(http_request_t *request) {
     return 0;
 }
 
-
+void postFormAction(http_request_t *request, char *action, char *value){
+    //"<form action=\"cfg_pins\"><input type=\"submit\" value=\"Configure Module\"/></form>"
+    hprintf128(request,"<form action=\"%s\"><input type=\"submit\" value=\"%s\"/></form>", action, value);
+}
 
 int http_fn_testmsg(http_request_t *request) {
     poststr(request,"This is just a test msg\n\n");
@@ -117,63 +140,63 @@ int http_fn_index(http_request_t *request) {
 
     // use ?state URL parameter to only request current state
     if(!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
-        http_setup(request, httpMimeTypeHTML);
+    http_setup(request, httpMimeTypeHTML);
         http_html_start(request, NULL);
 
         poststr(request, "<div id=\"changed\">");
-        if(http_getArg(request->url,"tgl",tmpA,sizeof(tmpA))) {
-            j = atoi(tmpA);
-            if(j == SPECIAL_CHANNEL_LEDPOWER) {
-                hprintf128(request,"<h3>Toggled LED power!</h3>",j);
-            } else {
-                hprintf128(request,"<h3>Toggled %i!</h3>",j);
-            }
-            CHANNEL_Toggle(j);
-        }
-        if(http_getArg(request->url,"on",tmpA,sizeof(tmpA))) {
-            j = atoi(tmpA);
-            hprintf128(request,"<h3>Enabled %i!</h3>",j);
-            CHANNEL_Set(j,255,1);
-        }
-        if(http_getArg(request->url,"rgb",tmpA,sizeof(tmpA))) {
-            hprintf128(request,"<h3>Set RGB to %s!</h3>",tmpA);
-            LED_SetBaseColor(0,"led_basecolor",tmpA,0);
-        }
-        
-        if(http_getArg(request->url,"off",tmpA,sizeof(tmpA))) {
-            j = atoi(tmpA);
-            hprintf128(request,"<h3>Disabled %i!</h3>",j);
-            CHANNEL_Set(j,0,1);
-        }
-        if(http_getArg(request->url,"pwm",tmpA,sizeof(tmpA))) {
-            int newPWMValue = atoi(tmpA);
-            http_getArg(request->url,"pwmIndex",tmpA,sizeof(tmpA));
-            j = atoi(tmpA);
-            if(j == SPECIAL_CHANNEL_TEMPERATURE) {
-                hprintf128(request,"<h3>Changed Temperature to %i!</h3>",newPWMValue);
-            } else {
-                hprintf128(request,"<h3>Changed pwm %i to %i!</h3>",j,newPWMValue);
-            }
-            CHANNEL_Set(j,newPWMValue,1);
-        }
-        if(http_getArg(request->url,"dim",tmpA,sizeof(tmpA))) {
-            int newDimmerValue = atoi(tmpA);
-            http_getArg(request->url,"dimIndex",tmpA,sizeof(tmpA));
-            j  = atoi(tmpA);
-            if(j == SPECIAL_CHANNEL_BRIGHTNESS) {
-                hprintf128(request,"<h3>Changed LED brightness to %i!</h3>",newDimmerValue);
-            } else {
-                hprintf128(request,"<h3>Changed dimmer %i to %i!</h3>",j,newDimmerValue);
-            }
-            CHANNEL_Set(j,newDimmerValue,1);
-        }
-        if(http_getArg(request->url,"set",tmpA,sizeof(tmpA))) {
-            int newSetValue = atoi(tmpA);
-            http_getArg(request->url,"setIndex",tmpA,sizeof(tmpA));
-            j = atoi(tmpA);
-            hprintf128(request,"<h3>Changed channel %i to %i!</h3>",j,newSetValue);
-            CHANNEL_Set(j,newSetValue,1);
-        }
+    if(http_getArg(request->url,"tgl",tmpA,sizeof(tmpA))) {
+        j = atoi(tmpA);
+		if(j == SPECIAL_CHANNEL_LEDPOWER) {
+			hprintf128(request,"<h3>Toggled LED power!</h3>",j);
+		} else {
+			hprintf128(request,"<h3>Toggled %i!</h3>",j);
+		}
+        CHANNEL_Toggle(j);
+    }
+    if(http_getArg(request->url,"on",tmpA,sizeof(tmpA))) {
+        j = atoi(tmpA);
+        hprintf128(request,"<h3>Enabled %i!</h3>",j);
+        CHANNEL_Set(j,255,1);
+    }
+    if(http_getArg(request->url,"rgb",tmpA,sizeof(tmpA))) {
+        hprintf128(request,"<h3>Set RGB to %s!</h3>",tmpA);
+		LED_SetBaseColor(0,"led_basecolor",tmpA,0);
+    }
+	
+    if(http_getArg(request->url,"off",tmpA,sizeof(tmpA))) {
+        j = atoi(tmpA);
+        hprintf128(request,"<h3>Disabled %i!</h3>",j);
+        CHANNEL_Set(j,0,1);
+    }
+    if(http_getArg(request->url,"pwm",tmpA,sizeof(tmpA))) {
+        int newPWMValue = atoi(tmpA);
+        http_getArg(request->url,"pwmIndex",tmpA,sizeof(tmpA));
+        j = atoi(tmpA);
+		if(j == SPECIAL_CHANNEL_TEMPERATURE) {
+			hprintf128(request,"<h3>Changed Temperature to %i!</h3>",newPWMValue);
+		} else {
+			hprintf128(request,"<h3>Changed pwm %i to %i!</h3>",j,newPWMValue);
+		}
+        CHANNEL_Set(j,newPWMValue,1);
+    }
+    if(http_getArg(request->url,"dim",tmpA,sizeof(tmpA))) {
+        int newDimmerValue = atoi(tmpA);
+        http_getArg(request->url,"dimIndex",tmpA,sizeof(tmpA));
+		j  = atoi(tmpA);
+		if(j == SPECIAL_CHANNEL_BRIGHTNESS) {
+			hprintf128(request,"<h3>Changed LED brightness to %i!</h3>",newDimmerValue);
+		} else {
+			hprintf128(request,"<h3>Changed dimmer %i to %i!</h3>",j,newDimmerValue);
+		}
+        CHANNEL_Set(j,newDimmerValue,1);
+    }
+    if(http_getArg(request->url,"set",tmpA,sizeof(tmpA))) {
+        int newSetValue = atoi(tmpA);
+        http_getArg(request->url,"setIndex",tmpA,sizeof(tmpA));
+        j = atoi(tmpA);
+        hprintf128(request,"<h3>Changed channel %i to %i!</h3>",j,newSetValue);
+        CHANNEL_Set(j,newSetValue,1);
+    }
         if(http_getArg(request->url,"restart",tmpA,sizeof(tmpA))) {
             poststr(request,"<h5> Module will restart soon</h5>");
             RESET_ScheduleModuleReset(3);
@@ -352,7 +375,7 @@ int http_fn_index(http_request_t *request) {
             hprintf128(request,"<form action=\"index\" id=\"form%i\">",i);
             hprintf128(request,"<input type=\"range\" min=\"0\" max=\"100\" name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">",inputName,i,pwmValue);
             hprintf128(request,"<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">",inputName,i);
-            hprintf128(request,"<input type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>",i);
+            hprintf128(request,"<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>",i);
             poststr(request, "</td></tr>");
         }
     }
@@ -1052,14 +1075,8 @@ int http_fn_flash_read_tool(http_request_t *request) {
 }
 
 int http_fn_cmd_tool(http_request_t *request) {
-    //int res;
-    //int rem;
-    //int now;
-    //int nowOfs;
-    //int hex;
     int i;
 	char tmpA[128];
-	//char tmpB[64];
 
     http_setup(request, httpMimeTypeHTML);
     http_html_start(request, "Command tool");
@@ -1215,29 +1232,94 @@ int http_fn_cfg_quick(http_request_t *request) {
     return 0;
 }
 
-/*
- * Generates HomeAssistant unique id
- * @param outBuffer Output buffer (128 char)
- * @param type Entity type (relay, light)
- * @param index Entity index
- */
-void build_hass_unique_id(char *outBuffer, char *type, int index){
-    //https://developers.home-assistant.io/docs/entity_registry_index/#unique-id-requirements mentions that mac can be used for
-    //unique_id and I would think that longDeviceName should contain that.
-    
-    //e.g. longDeviceName_relay_1
-    sprintf(outBuffer,"%s_%s_%d",g_cfg.longDeviceName,type,index);
+/// @brief Computes the Relay and PWM count.
+/// @param relayCount 
+/// @param pwmCount 
+void get_Relay_PWM_Count(int *relayCount, int *pwmCount){
+    (*relayCount) = 0;
+    (*pwmCount) = 0;
+
+    for(int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+        int role = PIN_GetPinRoleForPinIndex(i);
+        if(role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
+            (*relayCount)++;
+        }
+        else if(role == IOR_PWM || role == IOR_PWM_n) {
+            (*pwmCount)++;
+        }
+    }
 }
 
-int http_fn_cfg_ha(http_request_t *request) {
+/// @brief Sends HomeAssistant discovery MQTT messages.
+/// @param request 
+/// @return 
+int http_fn_ha_discovery(http_request_t *request) {
+    int i;
+    char topic[32];
+    int relayCount=0;
+    int pwmCount=0;
+
+    http_setup(request, httpMimeTypeText);
+    get_Relay_PWM_Count(&relayCount, &pwmCount);
+
+    if ((relayCount == 0) && (pwmCount == 0)) {
+        poststr(request, NULL);
+        return 0;
+    }
+
+    if (!http_getArg(request->url, "prefix", topic, sizeof(topic))) {
+        sprintf(topic, "homeassistant");    //default discovery topic is `homeassistant`
+    }
+    
+    cJSON_Hooks hooks = {os_malloc, os_free};
+    cJSON_InitHooks(&hooks);
+    
+    if(relayCount > 0) {
+        for(i = 0; i < CHANNEL_MAX; i++) {
+            if(h_isChannelRelay(i)) {
+                HassDeviceInfo *dev_info = hass_init_device_info(ENTITY_RELAY, i, "1", "0");
+
+                cJSON_AddStringToObject(dev_info->root, "pl_avail", "1");     //payload_available
+                cJSON_AddStringToObject(dev_info->root, "pl_not_avail", "0"); //payload_not_available
+                
+                MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info));
+                hass_free_device_info(dev_info);
+            }
+        }
+    }
+
+    if(pwmCount > 0) {
+        char tmp[64];
+        const char *baseName = CFG_GetShortDeviceName();
+
+        for(i = 0; i < CHANNEL_MAX; i++) {
+            if(h_isChannelPWM(i)) {
+                HassDeviceInfo *dev_info = hass_init_device_info(ENTITY_LIGHT, i, "99", "0");
+
+                cJSON_AddStringToObject(dev_info->root, "on_cmd_type", "brightness"); //on_command_type
+                cJSON_AddNumberToObject(dev_info->root, "bri_scl", 99);   //brightness_scale
+
+                sprintf(tmp,"%s/%i/set",baseName,i);
+                cJSON_AddStringToObject(dev_info->root, "bri_cmd_t", tmp);    //brightness_command_topic
+
+                MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info));
+                hass_free_device_info(dev_info);
+            }
+        }
+    }
+    
+    poststr(request, NULL);
+    return 0;
+}
+
+int http_fn_ha_cfg(http_request_t *request) {
     int relayCount = 0;
     int pwmCount = 0;
-    const char *baseName;
     int i;
     char mqttAdded = 0;
-    char unique_id[128];    //64 for longDeviceName, 10 for type,3 for index .. 128 would be sufficient
+    char *uniq_id;
 
-    baseName = CFG_GetShortDeviceName();
+    const char *baseName = CFG_GetShortDeviceName();
 
     http_setup(request, httpMimeTypeHTML);
     http_html_start(request, "Home Assistant Setup");
@@ -1249,17 +1331,8 @@ int http_fn_cfg_ha(http_request_t *request) {
 
     poststr(request,"<textarea rows=\"40\" cols=\"50\">");
 
-    for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
-        int role = PIN_GetPinRoleForPinIndex(i);
-        //int ch = PIN_GetPinChannelForPinIndex(i);
-        if(role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
-            relayCount++;
-        }
-        if(role == IOR_PWM || role == IOR_PWM_n) {
-            pwmCount++;
-        }
-    }        
-
+    get_Relay_PWM_Count(&relayCount, &pwmCount);
+    
     if(relayCount > 0) {
         char switchAdded = 0;
 
@@ -1274,8 +1347,10 @@ int http_fn_cfg_ha(http_request_t *request) {
                     switchAdded=1;
                 }
 
-                build_hass_unique_id(unique_id,"relay",i);
-                hprintf128(request,"  - unique_id: \"%s\"\n",unique_id);
+                uniq_id = hass_build_unique_id(ENTITY_RELAY,i);
+                hprintf128(request,"  - unique_id: \"%s\"\n",uniq_id);
+                os_free(uniq_id);
+
                 hprintf128(request,"    name: \"%s %i\"\n",baseName,i);
                 hprintf128(request,"    state_topic: \"%s/%i/get\"\n",baseName,i);
                 hprintf128(request,"    command_topic: \"%s/%i/set\"\n",baseName,i);
@@ -1302,8 +1377,10 @@ int http_fn_cfg_ha(http_request_t *request) {
                     lightAdded=1;
                 }
 
-                build_hass_unique_id(unique_id,"light",i);
-                hprintf128(request,"  - unique_id: \"%s\"\n",unique_id);
+                uniq_id = hass_build_unique_id(ENTITY_LIGHT,i);
+                hprintf128(request,"  - unique_id: \"%s\"\n",uniq_id);
+                os_free(uniq_id);
+
                 hprintf128(request,"    name: \"%s %i\"\n",baseName,i);
                 hprintf128(request,"    state_topic: \"%s/%i/get\"\n",baseName,i);
                 hprintf128(request,"    command_topic: \"%s/%i/set\"\n",baseName,i);
@@ -1322,12 +1399,15 @@ int http_fn_cfg_ha(http_request_t *request) {
     }
 
     poststr(request,"</textarea>");
-
+    
     poststr(request,htmlFooterReturnToCfgLink);
+    poststr(request,"<br/><div><label for=\"ha_disc_topic\">Topic:</label><input id=\"ha_disc_topic\" value=\"homeassistant\"><button onclick=\"send_ha_disc();\">Start Home Assistant Discovery</button>&nbsp;<form action=\"cfg_mqtt\" style=\"display:inline-block;\"><button type=\"submit\">Configure MQTT</button></form></div><br/>");
+    
     http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
+
 // https://tasmota.github.io/docs/Commands/#with-mqtt
 /*
 http://<ip>/cm?cmnd=Power%20TOGGLE
@@ -1463,23 +1543,24 @@ int http_fn_cm(http_request_t *request) {
 int http_fn_cfg(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
     http_html_start(request, "Config");
-    poststr(request,"<form action=\"cfg_pins\"><input type=\"submit\" value=\"Configure Module\"/></form>");
-    poststr(request,"<form action=\"cfg_generic\"><input type=\"submit\" value=\"Configure General\"/></form>");
-    poststr(request,"<form action=\"cfg_startup\"><input type=\"submit\" value=\"Configure Startup\"/></form>");
-    poststr(request,"<form action=\"cfg_dgr\"><input type=\"submit\" value=\"Configure Device Groups\"/></form>");
-    poststr(request,"<form action=\"cfg_quick\"><input type=\"submit\" value=\"Quick Config\"/></form>");
-    poststr(request,"<form action=\"cfg_wifi\"><input type=\"submit\" value=\"Configure WiFi\"/></form>");
-    poststr(request,"<form action=\"cfg_mqtt\"><input type=\"submit\" value=\"Configure MQTT\"/></form>");
-    poststr(request,"<form action=\"cfg_name\"><input type=\"submit\" value=\"Configure Names\"/></form>");
-    poststr(request,"<form action=\"cfg_mac\"><input type=\"submit\" value=\"Change MAC\"/></form>");
-    poststr(request,"<form action=\"cfg_ping\"><input type=\"submit\" value=\"Ping Watchdog (Network lost restarter)\"/></form>");
-    poststr(request,"<form action=\"cfg_webapp\"><input type=\"submit\" value=\"Configure Webapp\"/></form>");
-    poststr(request,"<form action=\"cfg_ha\"><input type=\"submit\" value=\"Generate Home Assistant cfg\"/></form>");
-    poststr(request,"<form action=\"ota\"><input type=\"submit\" value=\"OTA (update software by WiFi)\"/></form>");
-    poststr(request,"<form action=\"cmd_tool\"><input type=\"submit\" value=\"Execute custom command\"/></form>");
-    poststr(request,"<form action=\"flash_read_tool\"><input type=\"submit\" value=\"Flash Read Tool\"/></form>");
-    poststr(request,"<form action=\"uart_tool\"><input type=\"submit\" value=\"UART Tool\"/></form>");
-    poststr(request,"<form action=\"startup_command\"><input type=\"submit\" value=\"Change startup command text\"/></form>");
+    
+    postFormAction(request, "cfg_pins", "Configure Module");
+    postFormAction(request, "cfg_generic", "Configure General");
+    postFormAction(request, "cfg_startup", "Configure Startup");
+    postFormAction(request, "cfg_dgr", "Configure Device Groups");
+    postFormAction(request, "cfg_quick","Quick Config");
+    postFormAction(request, "cfg_wifi", "Configure WiFi");
+    postFormAction(request, "cfg_mqtt", "Configure MQTT");
+    postFormAction(request, "cfg_name", "Configure Names");
+    postFormAction(request, "cfg_mac", "Change MAC");
+    postFormAction(request, "cfg_ping", "Ping Watchdog (Network lost restarter)");
+    postFormAction(request, "cfg_webapp", "Configure Webapp");
+    postFormAction(request, "ha_cfg", "Generate Home Assistant cfg");
+    postFormAction(request, "ota", "OTA (update software by WiFi)");
+    postFormAction(request, "cmd_tool", "Execute custom command");
+    postFormAction(request, "flash_read_tool" ,"Flash Read Tool");
+    postFormAction(request, "uart_tool", "UART Tool");
+    postFormAction(request, "startup_command", "Change startup command text");
 
 #if 0
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
