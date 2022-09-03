@@ -1269,6 +1269,41 @@ int http_fn_ha_discovery(http_request_t *request) {
     get_Relay_PWM_Count(&relayCount, &pwmCount);
 
     if ((relayCount == 0) && (pwmCount == 0)) {
+	poststr(request, NULL);
+    return 0;
+}
+
+/// @brief Computes the Relay and PWM count.
+/// @param relayCount 
+/// @param pwmCount 
+void get_Relay_PWM_Count(int *relayCount, int *pwmCount){
+    (*relayCount) = 0;
+    (*pwmCount) = 0;
+
+    for(int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+        int role = PIN_GetPinRoleForPinIndex(i);
+        if(role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
+            (*relayCount)++;
+        }
+        else if(role == IOR_PWM || role == IOR_PWM_n) {
+            (*pwmCount)++;
+        }
+    }
+}
+
+/// @brief Sends HomeAssistant discovery MQTT messages.
+/// @param request 
+/// @return 
+int http_fn_ha_discovery(http_request_t *request) {
+    int i;
+    char topic[32];
+    int relayCount=0;
+    int pwmCount=0;
+
+    http_setup(request, httpMimeTypeText);
+    get_Relay_PWM_Count(&relayCount, &pwmCount);
+
+    if ((relayCount == 0) && (pwmCount == 0)) {
         poststr(request, NULL);
         return 0;
     }
@@ -1284,7 +1319,11 @@ int http_fn_ha_discovery(http_request_t *request) {
         for(i = 0; i < CHANNEL_MAX; i++) {
             if(h_isChannelRelay(i)) {
                 HassDeviceInfo *dev_info = hass_init_device_info(ENTITY_RELAY, i, "1", "0");
-                MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+
+                cJSON_AddStringToObject(dev_info->root, "pl_avail", "1");     //payload_available
+                cJSON_AddStringToObject(dev_info->root, "pl_not_avail", "0"); //payload_not_available
+                
+                MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info));
                 hass_free_device_info(dev_info);
             }
         }
@@ -1304,7 +1343,7 @@ int http_fn_ha_discovery(http_request_t *request) {
                 sprintf(tmp,"%s/%i/set",baseName,i);
                 cJSON_AddStringToObject(dev_info->root, "bri_cmd_t", tmp);    //brightness_command_topic
 
-                MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+                MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info));
                 hass_free_device_info(dev_info);
             }
         }
@@ -1403,9 +1442,13 @@ int http_fn_ha_cfg(http_request_t *request) {
 
     poststr(request,"</textarea>");
     
-    poststr(request,htmlFooterReturnToCfgLink);
+    poststr(request, HomeAssistantDiscoveryScript);
     poststr(request,"<br/><div><label for=\"ha_disc_topic\">Discovery topic:</label><input id=\"ha_disc_topic\" value=\"homeassistant\"><button onclick=\"send_ha_disc();\">Start Home Assistant Discovery</button>&nbsp;<form action=\"cfg_mqtt\" style=\"display:inline-block;\"><button type=\"submit\">Configure MQTT</button></form></div><br/>");
     
+    poststr(request,htmlReturnToCfg);
+    HTTP_AddBuildFooter(request);
+    poststr(request,htmlEnd);
+
     http_html_end(request);
 	poststr(request, NULL);
     return 0;
@@ -1545,7 +1588,8 @@ int http_fn_cm(http_request_t *request) {
 
 int http_fn_cfg(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
-    http_html_start(request, "Config");
+    poststr(request,htmlHeader);
+    HTTP_AddHeader(request);
     
     postFormAction(request, "cfg_pins", "Configure Module");
     postFormAction(request, "cfg_generic", "Configure General");
