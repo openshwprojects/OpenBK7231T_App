@@ -16,26 +16,32 @@ typedef int OBK_Publish_Result;
 #define DEVICENAME_PREFIX_FULL "WinTest"
 #define DEVICENAME_PREFIX_SHORT "WT"
 #define PLATFORM_MCU_NAME "WIN32"
+#define MANUFACTURER "Microsoft"
 #elif PLATFORM_XR809
 #define DEVICENAME_PREFIX_FULL "OpenXR809"
 #define DEVICENAME_PREFIX_SHORT "oxr"
 #define PLATFORM_MCU_NAME "XR809"
+#define MANUFACTURER "Xradio Technology"
 #elif PLATFORM_BK7231N
 #define DEVICENAME_PREFIX_FULL "OpenBK7231N"
 #define DEVICENAME_PREFIX_SHORT "obk"
 #define PLATFORM_MCU_NAME "BK7231N"
+#define MANUFACTURER "Beken Corporation"
 #elif PLATFORM_BK7231T
 #define DEVICENAME_PREFIX_FULL "OpenBK7231T"
 #define DEVICENAME_PREFIX_SHORT "obk"
 #define PLATFORM_MCU_NAME "BK7231T"
+#define MANUFACTURER "Beken Corporation"
 #elif PLATFORM_BL602
 #define DEVICENAME_PREFIX_FULL "OpenBL602"
 #define DEVICENAME_PREFIX_SHORT "obl"
 #define PLATFORM_MCU_NAME "BL602"
+#define MANUFACTURER "BLAITEK"
 #elif PLATFORM_W800
 #define DEVICENAME_PREFIX_FULL "OpenW800"
 #define DEVICENAME_PREFIX_SHORT "w800"
 #define PLATFORM_MCU_NAME "W800"
+#define MANUFACTURER "WinnerMicro"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
