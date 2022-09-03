@@ -41,6 +41,19 @@ int wal_strnicmp(const char *a, const char *b, int count) {
    return ca - cb;
 }
 
+/// @brief Publish queue item
+typedef struct MqttPublishItem
+{
+  char *topic;
+  char *channel;
+  char *value;
+  struct MqttPublishItem *next;
+} MqttPublishItem_t;
+MqttPublishItem_t *g_MqttPublishItem = NULL;
+
+OBK_Publish_Result PublishQueuedItem();
+
+
 // from mqtt.c
 extern void mqtt_disconnect(mqtt_client_t *client);
 
@@ -68,16 +81,18 @@ int mqtt_reconnect = 0;
 // set for the device to broadcast self state on start
 int g_bPublishAllStatesNow = 0;
 
-#define PUBLISHITEM_ALL_INDEX_FIRST   -14
+#define PUBLISHITEM_ALL_INDEX_FIRST   -15
 
 //These 3 values are pretty much static
-#define PUBLISHITEM_SELF_STATIC_RESERVED_2		-14
-#define PUBLISHITEM_SELF_STATIC_RESERVED_1		-13
-#define PUBLISHITEM_SELF_HOSTNAME				-12  //Device name
-#define PUBLISHITEM_SELF_BUILD					-11  //Build
-#define PUBLISHITEM_SELF_MAC					-10   //Device mac
+#define PUBLISHITEM_SELF_STATIC_RESERVED_2		-15
+#define PUBLISHITEM_SELF_STATIC_RESERVED_1		-14
+#define PUBLISHITEM_SELF_HOSTNAME				-13  //Device name
+#define PUBLISHITEM_SELF_BUILD					-12  //Build
+#define PUBLISHITEM_SELF_MAC					  -11  //Device mac
 
-#define PUBLISHITEM_DYNAMIC_INDEX_FIRST			-9
+#define PUBLISHITEM_DYNAMIC_INDEX_FIRST			-10
+
+#define PUBLISHITEM_QUEUED_VALUES        		-10  //Publish queued items
 
 //These values are dynamic
 #define PUBLISHITEM_SELF_DYNAMIC_LIGHTSTATE		-9
@@ -384,20 +399,13 @@ static void mqtt_pub_request_cb(void *arg, err_t result)
   }
 }
 
-// This is used to publish channel values in "obk0696FB33/1/get" format with numerical value,
-// This is also used to publish custom information with string name,
-// for example, "obk0696FB33/voltage/get" is used to publish voltage from the sensor
-static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t *client, const char *sChannel, const char *sVal, int flags, bool appendGet)
+// This publishes value to the specified topic/channel.
+static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t *client, const char *sTopic, const char *sChannel, const char *sVal, int flags, bool appendGet)
 {
-	char pub_topic[32];
-//  const char *pub_payload= "{\"temperature\": \"45.5\"}";
   err_t err;
-  //int myValue;
   u8_t qos = 2; /* 0 1 or 2, see MQTT specification */
   u8_t retain = 0; /* No don't retain such crappy payload... */
 	const char *clientId;
-
-
 
   if(client==0)
 	  return OBK_PUBLISH_WAS_DISCONNECTED;
@@ -409,7 +417,7 @@ static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t *client, const char *sC
 		}
 	} else {
 		if(MQTT_Mutex_Take(500)==0) {
-			addLogAdv(LOG_ERROR,LOG_FEATURE_MQTT,"MQTT_PublishMain: mutex failed for %s=%s\r\n", sChannel, sVal);
+			addLogAdv(LOG_ERROR,LOG_FEATURE_MQTT,"MQTT_PublishTopicToClient: mutex failed for %s=%s\r\n", sChannel, sVal);
 			return OBK_PUBLISH_MUTEX_FAIL;
 		}
 	}
@@ -429,13 +437,13 @@ static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t *client, const char *sC
   }
 
   g_timeSinceLastMQTTPublish = 0;
-
-  addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publishing %s = %s \n",sChannel,sVal);
-
-	clientId = CFG_GetMQTTClientId();
-
-	sprintf(pub_topic,"%s/%s%s",clientId,sChannel, (appendGet == true ? "/get" : ""));
+  
+  char *pub_topic = (char *)os_malloc(strlen(sTopic) + 1 + strlen(sChannel) + 5 + 1);
+	sprintf(pub_topic, "%s/%s%s", sTopic, sChannel, (appendGet == true ? "/get" : ""));
+  addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publishing to %s",pub_topic);
   err = mqtt_publish(client, pub_topic, sVal, strlen(sVal), qos, retain, mqtt_pub_request_cb, 0);
+  os_free(pub_topic);
+
   if(err != ERR_OK) {
 	 if(err == ERR_CONN) {
 		addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publish err: ERR_CONN aka %d\n", err);
@@ -449,6 +457,15 @@ static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t *client, const char *sC
 	MQTT_Mutex_Free();
 	return OBK_PUBLISH_OK;
 }
+
+// This is used to publish channel values in "obk0696FB33/1/get" format with numerical value,
+// This is also used to publish custom information with string name,
+// for example, "obk0696FB33/voltage/get" is used to publish voltage from the sensor
+static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t *client, const char *sChannel, const char *sVal, int flags, bool appendGet)
+{
+  return MQTT_PublishTopicToClient(mqtt_client, CFG_GetShortDeviceName(), sChannel, sVal, flags, appendGet);
+}
+
 void MQTT_OBK_Printf( char *s) {
 		addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,s);
 }
@@ -764,21 +781,17 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx) {
     case PUBLISHITEM_SELF_STATIC_RESERVED_2:
     case PUBLISHITEM_SELF_STATIC_RESERVED_1:
       return OBK_PUBLISH_WAS_NOT_REQUIRED;
-	case PUBLISHITEM_SELF_DYNAMIC_LIGHTSTATE:
-		if(LED_IsRunningDriver()) {
-			return LED_SendEnableAllState();
-		}
-		return OBK_PUBLISH_WAS_NOT_REQUIRED; // didnt publish
+
+    case PUBLISHITEM_QUEUED_VALUES:
+      return PublishQueuedItem();
+
+	  case PUBLISHITEM_SELF_DYNAMIC_LIGHTSTATE:
+      return LED_IsRunningDriver() ? LED_SendEnableAllState() : OBK_PUBLISH_WAS_NOT_REQUIRED;
     case PUBLISHITEM_SELF_DYNAMIC_LIGHTMODE:
-		if(LED_IsRunningDriver()) {
-			return LED_SendCurrentLightMode();
-		}
-		return OBK_PUBLISH_WAS_NOT_REQUIRED; // didnt publish
+      return LED_IsRunningDriver() ? LED_SendCurrentLightMode() : OBK_PUBLISH_WAS_NOT_REQUIRED;
     case PUBLISHITEM_SELF_DYNAMIC_DIMMER:
-		if(LED_IsRunningDriver()) {
-			return LED_SendDimmerChange();
-		}
-		return OBK_PUBLISH_WAS_NOT_REQUIRED; // didnt publish
+      return LED_IsRunningDriver() ? LED_SendDimmerChange() : OBK_PUBLISH_WAS_NOT_REQUIRED;
+
     case PUBLISHITEM_SELF_HOSTNAME:
       return MQTT_DoItemPublishString("host", CFG_GetShortDeviceName());
 
@@ -938,3 +951,64 @@ int MQTT_RunEverySecondUpdate() {
 	return 1;
 }
 
+char *_strdup(char *src) {
+  size_t len = strlen(src) + 1;
+  char *dst = malloc(len);
+  if (dst == NULL) return NULL; 
+  memcpy (dst, src, len);
+  return dst;
+}
+
+/// @brief Queue an entry for publish.
+/// @param topic 
+/// @param channel 
+/// @param value 
+void MQTT_QueuePublish(char *topic, char *channel, char *value){
+  MqttPublishItem_t *newItem = os_malloc(sizeof(MqttPublishItem_t));
+
+  //Make copies of all string values. Using built in strdup was causing a crash so I create a local version.
+  newItem->topic = strdup(topic);
+  newItem->channel = _strdup(channel);
+  newItem->value = _strdup(value);
+  newItem->next = NULL;
+
+  if (g_MqttPublishItem == NULL){
+    g_MqttPublishItem = newItem;
+  }
+  else{
+    MqttPublishItem_t *head = g_MqttPublishItem;
+    while (head->next != NULL){
+      head = head->next; 
+    }
+    head->next = newItem;
+  }
+  
+  MQTT_PublishWholeDeviceState();   //Force a publish on next second
+  addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"MQTT_QueuePublish queued message for %s/%s", topic, channel);
+}
+
+/// @brief Publish the first 3 queued items.
+/// @return 
+OBK_Publish_Result PublishQueuedItem(){
+  OBK_Publish_Result result = OBK_PUBLISH_WAS_NOT_REQUIRED;
+
+  for(int i = 0;i < 3;i++){
+    MqttPublishItem_t *head = g_MqttPublishItem;
+    if (head == NULL){  //Nothing to do
+      return result;
+    }
+    
+    result = MQTT_PublishTopicToClient(mqtt_client, head->topic, head->channel, head->value, 0, false);
+    g_MqttPublishItem = head->next;
+
+    os_free(head->topic);
+    os_free(head->channel);
+    os_free(head->value);
+    os_free(head);
+
+    //Stop if last publish failed
+    if (result != OBK_PUBLISH_OK) break;
+  }
+
+  return result;
+}
