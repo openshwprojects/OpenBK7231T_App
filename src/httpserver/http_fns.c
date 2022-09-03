@@ -105,6 +105,7 @@ int http_fn_testmsg(http_request_t *request) {
     return 0;
 
 }
+
 int http_fn_index(http_request_t *request) {
     int j, i;
 	char tmpA[128];
@@ -118,61 +119,67 @@ int http_fn_index(http_request_t *request) {
     if(!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
         http_setup(request, httpMimeTypeHTML);
         http_html_start(request, NULL);
-        poststr(request, "<div id=\"statediv\">"); // replaceable content follows
-    }
 
-    if(http_getArg(request->url,"tgl",tmpA,sizeof(tmpA))) {
-        j = atoi(tmpA);
-		if(j == SPECIAL_CHANNEL_LEDPOWER) {
-			hprintf128(request,"<h3>Toggled LED power!</h3>",j);
-		} else {
-			hprintf128(request,"<h3>Toggled %i!</h3>",j);
-		}
-        CHANNEL_Toggle(j);
-    }
-    if(http_getArg(request->url,"on",tmpA,sizeof(tmpA))) {
-        j = atoi(tmpA);
-        hprintf128(request,"<h3>Enabled %i!</h3>",j);
-        CHANNEL_Set(j,255,1);
-    }
-    if(http_getArg(request->url,"rgb",tmpA,sizeof(tmpA))) {
-        hprintf128(request,"<h3>Set RGB to %s!</h3>",tmpA);
-		LED_SetBaseColor(0,"led_basecolor",tmpA,0);
-    }
-	
-    if(http_getArg(request->url,"off",tmpA,sizeof(tmpA))) {
-        j = atoi(tmpA);
-        hprintf128(request,"<h3>Disabled %i!</h3>",j);
-        CHANNEL_Set(j,0,1);
-    }
-    if(http_getArg(request->url,"pwm",tmpA,sizeof(tmpA))) {
-        int newPWMValue = atoi(tmpA);
-        http_getArg(request->url,"pwmIndex",tmpA,sizeof(tmpA));
-        j = atoi(tmpA);
-		if(j == SPECIAL_CHANNEL_TEMPERATURE) {
-			hprintf128(request,"<h3>Changed Temperature to %i!</h3>",newPWMValue);
-		} else {
-			hprintf128(request,"<h3>Changed pwm %i to %i!</h3>",j,newPWMValue);
-		}
-        CHANNEL_Set(j,newPWMValue,1);
-    }
-    if(http_getArg(request->url,"dim",tmpA,sizeof(tmpA))) {
-        int newDimmerValue = atoi(tmpA);
-        http_getArg(request->url,"dimIndex",tmpA,sizeof(tmpA));
-		j  = atoi(tmpA);
-		if(j == SPECIAL_CHANNEL_BRIGHTNESS) {
-			hprintf128(request,"<h3>Changed LED brightness to %i!</h3>",newDimmerValue);
-		} else {
-			hprintf128(request,"<h3>Changed dimmer %i to %i!</h3>",j,newDimmerValue);
-		}
-        CHANNEL_Set(j,newDimmerValue,1);
-    }
-    if(http_getArg(request->url,"set",tmpA,sizeof(tmpA))) {
-        int newSetValue = atoi(tmpA);
-        http_getArg(request->url,"setIndex",tmpA,sizeof(tmpA));
-        j = atoi(tmpA);
-        hprintf128(request,"<h3>Changed channel %i to %i!</h3>",j,newSetValue);
-        CHANNEL_Set(j,newSetValue,1);
+        poststr(request, "<div id=\"changed\">");
+        if(http_getArg(request->url,"tgl",tmpA,sizeof(tmpA))) {
+            j = atoi(tmpA);
+            if(j == SPECIAL_CHANNEL_LEDPOWER) {
+                hprintf128(request,"<h3>Toggled LED power!</h3>",j);
+            } else {
+                hprintf128(request,"<h3>Toggled %i!</h3>",j);
+            }
+            CHANNEL_Toggle(j);
+        }
+        if(http_getArg(request->url,"on",tmpA,sizeof(tmpA))) {
+            j = atoi(tmpA);
+            hprintf128(request,"<h3>Enabled %i!</h3>",j);
+            CHANNEL_Set(j,255,1);
+        }
+        if(http_getArg(request->url,"rgb",tmpA,sizeof(tmpA))) {
+            hprintf128(request,"<h3>Set RGB to %s!</h3>",tmpA);
+            LED_SetBaseColor(0,"led_basecolor",tmpA,0);
+        }
+        
+        if(http_getArg(request->url,"off",tmpA,sizeof(tmpA))) {
+            j = atoi(tmpA);
+            hprintf128(request,"<h3>Disabled %i!</h3>",j);
+            CHANNEL_Set(j,0,1);
+        }
+        if(http_getArg(request->url,"pwm",tmpA,sizeof(tmpA))) {
+            int newPWMValue = atoi(tmpA);
+            http_getArg(request->url,"pwmIndex",tmpA,sizeof(tmpA));
+            j = atoi(tmpA);
+            if(j == SPECIAL_CHANNEL_TEMPERATURE) {
+                hprintf128(request,"<h3>Changed Temperature to %i!</h3>",newPWMValue);
+            } else {
+                hprintf128(request,"<h3>Changed pwm %i to %i!</h3>",j,newPWMValue);
+            }
+            CHANNEL_Set(j,newPWMValue,1);
+        }
+        if(http_getArg(request->url,"dim",tmpA,sizeof(tmpA))) {
+            int newDimmerValue = atoi(tmpA);
+            http_getArg(request->url,"dimIndex",tmpA,sizeof(tmpA));
+            j  = atoi(tmpA);
+            if(j == SPECIAL_CHANNEL_BRIGHTNESS) {
+                hprintf128(request,"<h3>Changed LED brightness to %i!</h3>",newDimmerValue);
+            } else {
+                hprintf128(request,"<h3>Changed dimmer %i to %i!</h3>",j,newDimmerValue);
+            }
+            CHANNEL_Set(j,newDimmerValue,1);
+        }
+        if(http_getArg(request->url,"set",tmpA,sizeof(tmpA))) {
+            int newSetValue = atoi(tmpA);
+            http_getArg(request->url,"setIndex",tmpA,sizeof(tmpA));
+            j = atoi(tmpA);
+            hprintf128(request,"<h3>Changed channel %i to %i!</h3>",j,newSetValue);
+            CHANNEL_Set(j,newSetValue,1);
+        }
+        if(http_getArg(request->url,"restart",tmpA,sizeof(tmpA))) {
+            poststr(request,"<h5> Module will restart soon</h5>");
+            RESET_ScheduleModuleReset(3);
+        }
+        poststr(request, "</div>"); // end div#change
+        poststr(request, "<div id=\"state\">"); // replaceable content follows
     }
 
     poststr(request, "<table width=\"100%\">");
@@ -421,11 +428,6 @@ int http_fn_index(http_request_t *request) {
 	DRV_AppendInformationToHTTPIndexPage(request);
 #endif
 
-    if(http_getArg(request->url,"restart",tmpA,sizeof(tmpA))) {
-        poststr(request,"<h5> Module will restart soon</h5>");
-        RESET_ScheduleModuleReset(3);
-    }
-
 	if(1) {
 		int bFirst = true;
 		hprintf128(request,"<h5>");
@@ -449,7 +451,7 @@ int http_fn_index(http_request_t *request) {
 
     // for normal page loads, show the rest of the HTML
     if(!http_getArg(request->url,"state",tmpA,sizeof(tmpA))) {
-        poststr(request, "</div>"); // end id=statediv
+        poststr(request, "</div>"); // end div#state
 
         // Shared UI elements 
         poststr(request, "<form action=\"cfg\"><input type=\"submit\" value=\"Config\"/></form>");
@@ -479,16 +481,18 @@ int http_fn_index(http_request_t *request) {
                 "req.onreadystatechange=()=>{"
                     "if(req.readyState==4 && req.status==200){"
                         "var s=req.responseText;"
-                        "eb('statediv').innerHTML=s;" 
+                        "eb('state').innerHTML=s;" 
                         "clearTimeout(firstTime);"
                         "clearTimeout(lastTime);"
-                        "lastTime=setTimeout(showState, 3000);"
+                        "lastTime=setTimeout(showState, 3e3);"
                 "}};"
                 "req.open('GET','index?state=1', true);"
                 "req.send();"
-                "firstTime=setTimeout(showState, 3000);"
+                "firstTime=setTimeout(showState, 3e3);"
             "}"
             "window.addEventListener('load', showState);"
+            "history.pushState(null, '', 'index');" // drop actions like 'toggle' from URL
+            "setTimeout(()=>{eb('changed').innerHTML=''}, 5e3);" // hide change info
             "</script>"
         );
     }
@@ -499,12 +503,10 @@ int http_fn_index(http_request_t *request) {
 
 int http_fn_about(http_request_t *request){
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    HTTP_AddHeader(request);
+    http_html_start(request, "About");
     poststr(request,"<h2>Open source firmware for BK7231N, BK7231T, XR809 and BL602 by OpenSHWProjects</h2>");
-    poststr(request,htmlReturnToMenu);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
+    poststr(request,htmlFooterReturnToMenu);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
@@ -515,8 +517,7 @@ int http_fn_about(http_request_t *request){
 int http_fn_cfg_mqtt(http_request_t *request) {
     int i;
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    HTTP_AddHeader(request);
+    http_html_start(request, "MQTT");
     poststr(request,"<h2> Use this to connect to your MQTT</h2>");
     poststr(request,"<form action=\"/cfg_mqtt_set\">\
             <label for=\"host\">Host:</label><br>\
@@ -544,9 +545,8 @@ int http_fn_cfg_mqtt(http_request_t *request) {
     poststr(request,"\"><br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MQTT data twice?')\">\
         </form> ");
-    poststr(request,htmlReturnToCfg);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
+    poststr(request,htmlFooterReturnToCfgLink);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
@@ -554,8 +554,7 @@ int http_fn_cfg_mqtt(http_request_t *request) {
 int http_fn_cfg_mqtt_set(http_request_t *request) {
 	char tmpA[128];
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    HTTP_AddHeader(request);
+    http_html_start(request, "Saving MQTT");
 
     if(http_getArg(request->url,"host",tmpA,sizeof(tmpA))) {
         CFG_SetMQTTHost(tmpA);
@@ -580,21 +579,15 @@ int http_fn_cfg_mqtt_set(http_request_t *request) {
     poststr(request,"<br>");
     poststr(request,"<a href=\"cfg_mqtt\">Return to MQTT settings</a>");
     poststr(request,"<br>");
-    poststr(request,htmlReturnToCfg);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
-
+    poststr(request,htmlFooterReturnToCfgLink);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
 
-
-
-
 int http_fn_cfg_webapp(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    HTTP_AddHeader(request);
+    http_html_start(request, "Set Webapp");
     poststr(request,"<h2> Use this to set the URL of the Webapp</h2>");
     poststr(request,"<form action=\"/cfg_webapp_set\">\
             <label for=\"url\">Url:</label><br>\
@@ -603,9 +596,8 @@ int http_fn_cfg_webapp(http_request_t *request) {
     poststr(request,"\"><br>\
             <input type=\"submit\" value=\"Submit\">\
         </form> ");
-    poststr(request,htmlReturnToCfg);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
+    poststr(request,htmlFooterReturnToCfgLink);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
@@ -613,8 +605,7 @@ int http_fn_cfg_webapp(http_request_t *request) {
 int http_fn_cfg_webapp_set(http_request_t *request) {
 	char tmpA[128];
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    HTTP_AddHeader(request);
+    http_html_start(request, "Saving Webapp");
 
     if(http_getArg(request->url,"url",tmpA,sizeof(tmpA))) {
         if(CFG_SetWebappRoot(tmpA)) {
@@ -627,9 +618,8 @@ int http_fn_cfg_webapp_set(http_request_t *request) {
     }
 
     poststr(request,"<br>");
-    poststr(request,htmlReturnToCfg);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
+    poststr(request,htmlFooterReturnToCfgLink);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
@@ -645,8 +635,7 @@ int http_fn_cfg_ping(http_request_t *request) {
 	int bChanged;
 
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    HTTP_AddHeader(request);
+    http_html_start(request, "Set Watchdog");
     bChanged = 0;
     poststr(request,"<h3> Ping watchdog (backup reconnect mechanism)</h3>");
     poststr(request,"<p> By default, all OpenBeken devices automatically tries to reconnect to WiFi when a connection is lost.");
@@ -706,10 +695,8 @@ int http_fn_cfg_ping(http_request_t *request) {
     poststr(request,"\"><br><br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure?')\">\
         </form> ");
-    poststr(request,htmlReturnToCfg);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
-
+    poststr(request,htmlFooterReturnToCfgLink);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
@@ -719,8 +706,7 @@ int http_fn_cfg_wifi(http_request_t *request) {
 	char tmpA[128];
 
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    HTTP_AddHeader(request);
+    http_html_start(request, "Set Wifi");
     /*bChanged = 0;
     if(http_getArg(recvbuf,"ssid",tmpA,sizeof(tmpA))) {
         CFG_SetWiFiSSID(tmpA);
@@ -803,10 +789,8 @@ int http_fn_cfg_wifi(http_request_t *request) {
     poststr(request,"\"><br><br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check SSID and pass twice?')\">\
         </form> ");
-    poststr(request,htmlReturnToCfg);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
-
+    poststr(request,htmlFooterReturnToCfgLink);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
@@ -817,8 +801,7 @@ int http_fn_cfg_name(http_request_t *request) {
 	char tmpA[128];
 
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    HTTP_AddHeader(request);
+    http_html_start(request, "Set name");
 
     poststr(request,"<h2> Change device names for display. </h2> Remember that short name is used by MQTT.<br>");
     if(http_getArg(request->url,"shortName",tmpA,sizeof(tmpA))) {
@@ -843,20 +826,18 @@ int http_fn_cfg_name(http_request_t *request) {
     poststr(request,"\"><br><br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Short name might be used by MQTT, so you will have to reconfig some stuff.')\">\
         </form> ");
-    poststr(request,htmlReturnToCfg);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
-
+    poststr(request,htmlFooterReturnToCfgLink);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
+
 int http_fn_cfg_wifi_set(http_request_t *request) {
 	char tmpA[128];
 	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"HTTP_ProcessPacket: generating cfg_wifi_set \r\n");
 
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    HTTP_AddHeader(request);
+    http_html_start(request, "Saving Wifi");
     if(http_getArg(request->url,"open",tmpA,sizeof(tmpA))) {
         CFG_SetWiFiSSID("");
         CFG_SetWiFiPass("");
@@ -878,24 +859,18 @@ int http_fn_cfg_wifi_set(http_request_t *request) {
     poststr(request,"<br>");
     poststr(request,"<a href=\"cfg_wifi\">Return to WiFi settings</a>");
     poststr(request,"<br>");
-    poststr(request,htmlReturnToCfg);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
-
+    poststr(request,htmlFooterReturnToCfgLink);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
-
-
-
 
 int http_fn_cfg_loglevel_set(http_request_t *request) {
 	char tmpA[128];
     addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"HTTP_ProcessPacket: generating cfg_loglevel_set \r\n");
 
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    HTTP_AddHeader(request);
+    http_html_start(request, "Set log level");
     if(http_getArg(request->url,"loglevel",tmpA,sizeof(tmpA))) {
 #if WINDOWS
 #else
@@ -918,9 +893,8 @@ int http_fn_cfg_loglevel_set(http_request_t *request) {
     poststr(request,"<br>");
     poststr(request,"<a href=\"cfg\">Return to config settings</a>");
     poststr(request,"<br>");
-    poststr(request,htmlReturnToCfg);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
+    poststr(request,htmlFooterReturnToCfgLink);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
@@ -933,8 +907,7 @@ int http_fn_cfg_mac(http_request_t *request) {
     int i;
 
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    HTTP_AddHeader(request);
+    http_html_start(request, "Set MAC address");
 
     if(http_getArg(request->url,"mac",tmpA,sizeof(tmpA))) {
         for( i = 0; i < 6; i++ )
@@ -952,7 +925,6 @@ int http_fn_cfg_mac(http_request_t *request) {
 
     WiFI_GetMacAddress((char *)mac);
 
-
     poststr(request,"<h2> Here you can change MAC address.</h2>");
     poststr(request,"<form action=\"/cfg_mac\">\
             <label for=\"mac\">MAC:</label><br>\
@@ -961,10 +933,8 @@ int http_fn_cfg_mac(http_request_t *request) {
     poststr(request,"\"><br><br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MAC hex string twice?')\">\
         </form> ");
-    poststr(request,htmlReturnToCfg);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
-
+    poststr(request,htmlFooterReturnToCfgLink);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
@@ -982,8 +952,7 @@ int http_fn_flash_read_tool(http_request_t *request) {
 	char tmpB[64];
 
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    HTTP_AddHeader(request);
+    http_html_start(request, "Flash read");
     poststr(request,"<h4>Flash Read Tool</h4>");
     if(	http_getArg(request->url,"hex",tmpA,sizeof(tmpA))){
         hex = atoi(tmpA);
@@ -1057,11 +1026,8 @@ int http_fn_flash_read_tool(http_request_t *request) {
             <input type=\"submit\" value=\"Submit\">\
         </form> ");
 
-    poststr(request,htmlReturnToCfg);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
-
-
+    poststr(request,htmlFooterReturnToCfgLink);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
@@ -1077,8 +1043,7 @@ int http_fn_cmd_tool(http_request_t *request) {
 	//char tmpB[64];
 
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    HTTP_AddHeader(request);
+    http_html_start(request, "Command tool");
     poststr(request,"<h4>Command Tool</h4>");
 
     if(	http_getArg(request->url,"cmd",tmpA,sizeof(tmpA))) {
@@ -1099,11 +1064,8 @@ int http_fn_cmd_tool(http_request_t *request) {
             <input type=\"submit\" value=\"Submit\">\
         </form> ");
 
-    poststr(request,htmlReturnToCfg);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
-
-
+    poststr(request,htmlFooterReturnToCfgLink);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
@@ -1112,8 +1074,7 @@ int http_fn_startup_command(http_request_t *request) {
 	char tmpA[512];
 	const char *cmd;
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    HTTP_AddHeader(request);
+    http_html_start(request, "Set startup command");
     poststr(request,"<h4>Set/Change/Clear startup command line</h4>");
     poststr(request,"<h5>Startup command is a shorter, smaller alternative to LittleFS autoexec.bat."
 		"The startup commands are ran at device startup."
@@ -1142,11 +1103,8 @@ int http_fn_startup_command(http_request_t *request) {
             <input type=\"submit\" value=\"Submit\">\
         </form> ");
 
-    poststr(request,htmlReturnToCfg);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
-
-
+    poststr(request,htmlFooterReturnToCfgLink);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
@@ -1154,11 +1112,8 @@ int http_fn_uart_tool(http_request_t *request) {
 	char tmpA[256];
 	int resultLen = 0;
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    HTTP_AddHeader(request);
+    http_html_start(request, "UART tool");
     poststr(request,"<h4>UART Tool</h4>");
-
-
 
     if(http_getArg(request->url,"data",tmpA,sizeof(tmpA))) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
@@ -1195,25 +1150,19 @@ int http_fn_uart_tool(http_request_t *request) {
             <input type=\"submit\" value=\"Submit\">\
         </form> ");
 
-    poststr(request,htmlReturnToCfg);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
-
-
+    poststr(request,htmlFooterReturnToCfgLink);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
 
 int http_fn_config_dump_table(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    HTTP_AddHeader(request);
-
+    http_html_start(request, "Dump config");
     poststr(request,"Not implemented <br>");
 
-    poststr(request,htmlReturnToCfg);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
+    poststr(request,htmlFooterReturnToCfgLink);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
@@ -1225,8 +1174,7 @@ int http_fn_cfg_quick(http_request_t *request) {
 	char tmpA[128];
     int j;
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    HTTP_AddHeader(request);
+    http_html_start(request, "Quick Config");
     poststr(request,"<h4>Quick Config</h4>");
 
     if(http_getArg(request->url,"dev",tmpA,sizeof(tmpA))) {
@@ -1242,10 +1190,8 @@ int http_fn_cfg_quick(http_request_t *request) {
     poststr(request,"</select>");
     poststr(request,"<input type=\"submit\" value=\"Set\"/></form>");
 
-    poststr(request,htmlReturnToCfg);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
-
+    poststr(request,htmlFooterReturnToCfgLink);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
@@ -1275,8 +1221,7 @@ int http_fn_cfg_ha(http_request_t *request) {
     baseName = CFG_GetShortDeviceName();
 
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    HTTP_AddHeader(request);
+    http_html_start(request, "Home Assistant Setup");
     poststr(request,"<h4>Home Assistant Cfg</h4>");
 	hprintf128(request,"<h4>Note that your short device name is: %s</h4>",baseName);
     poststr(request,"<h4>Paste this to configuration yaml</h4>");
@@ -1359,10 +1304,8 @@ int http_fn_cfg_ha(http_request_t *request) {
 
     poststr(request,"</textarea>");
 
-    poststr(request,htmlReturnToCfg);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
-
+    poststr(request,htmlFooterReturnToCfgLink);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
@@ -1500,8 +1443,7 @@ int http_fn_cm(http_request_t *request) {
 
 int http_fn_cfg(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    HTTP_AddHeader(request);
+    http_html_start(request, "Config");
     poststr(request,"<form action=\"cfg_pins\"><input type=\"submit\" value=\"Configure Module\"/></form>");
     poststr(request,"<form action=\"cfg_generic\"><input type=\"submit\" value=\"Configure General\"/></form>");
     poststr(request,"<form action=\"cfg_startup\"><input type=\"submit\" value=\"Configure Startup\"/></form>");
@@ -1533,9 +1475,8 @@ int http_fn_cfg(http_request_t *request) {
 	}
 #endif
 #endif
-    poststr(request,htmlReturnToMenu);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
+    poststr(request,htmlFooterReturnToMenu);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
@@ -1548,8 +1489,7 @@ int http_fn_cfg_pins(http_request_t *request) {
 	char tmpB[64];
 
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    HTTP_AddHeader(request);
+    http_html_start(request, "Pin config");
     poststr(request,"<h5> First textfield is used to enter channel index (relay index), used to support multiple relays and buttons</h5>");
     poststr(request,"<h5> (so, first button and first relay should have channel 1, second button and second relay have channel 2, etc)</h5>");
     poststr(request,"<h5> Second textfield (only for buttons) is used to enter channel to toggle when doing double click</h5>");
@@ -1664,10 +1604,8 @@ int http_fn_cfg_pins(http_request_t *request) {
     }
     poststr(request,"<input type=\"submit\" value=\"Save\"/></form>");
 
-    poststr(request,htmlReturnToCfg);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
-
+    poststr(request,htmlFooterReturnToCfgLink);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
@@ -1695,8 +1633,7 @@ int http_fn_cfg_generic(http_request_t *request) {
 	char tmpB[64];
 
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    HTTP_AddHeader(request);
+    http_html_start(request, "Generic config");
 
     if(	http_getArg(request->url,"boot_ok_delay",tmpA,sizeof(tmpA))) {
 		i = atoi(tmpA);
@@ -1752,10 +1689,8 @@ int http_fn_cfg_generic(http_request_t *request) {
     poststr(request,"\"><br>");
     poststr(request,"<input type=\"submit\" value=\"Save\"/></form>");
 
-    poststr(request,htmlReturnToCfg);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
-
+    poststr(request,htmlFooterReturnToCfgLink);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
@@ -1766,9 +1701,7 @@ int http_fn_cfg_startup(http_request_t *request) {
 	char tmpA[128];
 
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    HTTP_AddHeader(request);
-
+    http_html_start(request, "Config startup");
 	hprintf128(request,"<h5>Here you can set pin start values<h5>");
 	hprintf128(request,"<h5>For relays, simply use 1 or 0</h5>");
 	hprintf128(request,"<h5>For 'remember last power state', use -1 as a special value</h5>");
@@ -1812,10 +1745,8 @@ int http_fn_cfg_startup(http_request_t *request) {
 		}
 	}
 
-    poststr(request,htmlReturnToCfg);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
-
+    poststr(request,htmlFooterReturnToCfgLink);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
@@ -1824,8 +1755,7 @@ int http_fn_cfg_dgr(http_request_t *request) {
 	char tmpA[128];
 
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    HTTP_AddHeader(request);
+    http_html_start(request, "Device groups");
 
 	hprintf128(request,"<h5>Here you can configure Tasmota Device Groups<h5>");
 
@@ -1904,10 +1834,8 @@ int http_fn_cfg_dgr(http_request_t *request) {
 		poststr(request,"    </tr></table>  <input type=\"submit\" value=\"Submit\"></form>");
 	}
 
-    poststr(request,htmlReturnToCfg);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
-
+    poststr(request,htmlFooterReturnToCfgLink);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
@@ -1919,7 +1847,7 @@ int http_fn_ota_exec(http_request_t *request) {
 	//char tmpB[64];
 
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
+    http_html_start(request, "OTA request");
     if(http_getArg(request->url,"host",tmpA,sizeof(tmpA))) {
         hprintf128(request,"<h3>OTA requested for %s!</h3>",tmpA);
     	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"http_fn_ota_exec: will try to do OTA for %s \r\n",tmpA);
@@ -1935,17 +1863,15 @@ int http_fn_ota_exec(http_request_t *request) {
     otarequest(tmpA);
 #endif
     }
-    poststr(request,htmlReturnToMenu);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
-
+    poststr(request,htmlFooterReturnToMenu);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
 
 int http_fn_ota(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
+    http_html_start(request, "OTA system");
     poststr(request,"<p>Simple OTA system (you should rather use the OTA from App panel where you can drag and drop file easily without setting up server). Use RBL file for OTA. In the OTA below, you should paste link to RBL file (you need HTTP server).</p>");
     poststr(request,"<form action=\"/ota_exec\">\
             <label for=\"host\">URL for new bin file:</label><br>\
@@ -1953,22 +1879,18 @@ int http_fn_ota(http_request_t *request) {
     poststr(request,"\"><br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure?')\">\
         </form> ");
-    poststr(request,htmlReturnToMenu);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
-
+    poststr(request,htmlFooterReturnToMenu);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
 
 int http_fn_other(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
-    poststr(request,htmlHeader);
-    HTTP_AddHeader(request);
+    http_html_start(request, "Not found");
     poststr(request,"Not found.<br/>");
-    poststr(request,htmlReturnToMenu);
-    HTTP_AddBuildFooter(request);
-    poststr(request,htmlEnd);
+    poststr(request,htmlFooterReturnToMenu);
+    http_html_end(request);
 	poststr(request, NULL);
     return 0;
 }
