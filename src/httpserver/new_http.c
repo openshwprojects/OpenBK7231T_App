@@ -60,7 +60,7 @@ const char htmlHeadStyle[] =
 		".hf{display:none;}"
 		".hdiv{width:95%;white-space:nowrap;}"
 		".hele{width:210px;display:inline-block;margin-left:2px;}"
-		"div#statediv{padding:0}"
+		"div#state{padding:0} div#changed{padding:0}"
 		"div#main{text-align:left; display:inline-block; color:#eaeaea;min-width:340px;max-width:800px;}"
 	"</style>";
 const char htmlBodyStart[] =

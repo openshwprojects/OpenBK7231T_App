@@ -119,61 +119,67 @@ int http_fn_index(http_request_t *request) {
     if(!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
         http_setup(request, httpMimeTypeHTML);
         http_html_start(request, NULL);
-        poststr(request, "<div id=\"statediv\">"); // replaceable content follows
-    }
 
-    if(http_getArg(request->url,"tgl",tmpA,sizeof(tmpA))) {
-        j = atoi(tmpA);
-		if(j == SPECIAL_CHANNEL_LEDPOWER) {
-			hprintf128(request,"<h3>Toggled LED power!</h3>",j);
-		} else {
-			hprintf128(request,"<h3>Toggled %i!</h3>",j);
-		}
-        CHANNEL_Toggle(j);
-    }
-    if(http_getArg(request->url,"on",tmpA,sizeof(tmpA))) {
-        j = atoi(tmpA);
-        hprintf128(request,"<h3>Enabled %i!</h3>",j);
-        CHANNEL_Set(j,255,1);
-    }
-    if(http_getArg(request->url,"rgb",tmpA,sizeof(tmpA))) {
-        hprintf128(request,"<h3>Set RGB to %s!</h3>",tmpA);
-		LED_SetBaseColor(0,"led_basecolor",tmpA,0);
-    }
-	
-    if(http_getArg(request->url,"off",tmpA,sizeof(tmpA))) {
-        j = atoi(tmpA);
-        hprintf128(request,"<h3>Disabled %i!</h3>",j);
-        CHANNEL_Set(j,0,1);
-    }
-    if(http_getArg(request->url,"pwm",tmpA,sizeof(tmpA))) {
-        int newPWMValue = atoi(tmpA);
-        http_getArg(request->url,"pwmIndex",tmpA,sizeof(tmpA));
-        j = atoi(tmpA);
-		if(j == SPECIAL_CHANNEL_TEMPERATURE) {
-			hprintf128(request,"<h3>Changed Temperature to %i!</h3>",newPWMValue);
-		} else {
-			hprintf128(request,"<h3>Changed pwm %i to %i!</h3>",j,newPWMValue);
-		}
-        CHANNEL_Set(j,newPWMValue,1);
-    }
-    if(http_getArg(request->url,"dim",tmpA,sizeof(tmpA))) {
-        int newDimmerValue = atoi(tmpA);
-        http_getArg(request->url,"dimIndex",tmpA,sizeof(tmpA));
-		j  = atoi(tmpA);
-		if(j == SPECIAL_CHANNEL_BRIGHTNESS) {
-			hprintf128(request,"<h3>Changed LED brightness to %i!</h3>",newDimmerValue);
-		} else {
-			hprintf128(request,"<h3>Changed dimmer %i to %i!</h3>",j,newDimmerValue);
-		}
-        CHANNEL_Set(j,newDimmerValue,1);
-    }
-    if(http_getArg(request->url,"set",tmpA,sizeof(tmpA))) {
-        int newSetValue = atoi(tmpA);
-        http_getArg(request->url,"setIndex",tmpA,sizeof(tmpA));
-        j = atoi(tmpA);
-        hprintf128(request,"<h3>Changed channel %i to %i!</h3>",j,newSetValue);
-        CHANNEL_Set(j,newSetValue,1);
+        poststr(request, "<div id=\"changed\">");
+        if(http_getArg(request->url,"tgl",tmpA,sizeof(tmpA))) {
+            j = atoi(tmpA);
+            if(j == SPECIAL_CHANNEL_LEDPOWER) {
+                hprintf128(request,"<h3>Toggled LED power!</h3>",j);
+            } else {
+                hprintf128(request,"<h3>Toggled %i!</h3>",j);
+            }
+            CHANNEL_Toggle(j);
+        }
+        if(http_getArg(request->url,"on",tmpA,sizeof(tmpA))) {
+            j = atoi(tmpA);
+            hprintf128(request,"<h3>Enabled %i!</h3>",j);
+            CHANNEL_Set(j,255,1);
+        }
+        if(http_getArg(request->url,"rgb",tmpA,sizeof(tmpA))) {
+            hprintf128(request,"<h3>Set RGB to %s!</h3>",tmpA);
+            LED_SetBaseColor(0,"led_basecolor",tmpA,0);
+        }
+        
+        if(http_getArg(request->url,"off",tmpA,sizeof(tmpA))) {
+            j = atoi(tmpA);
+            hprintf128(request,"<h3>Disabled %i!</h3>",j);
+            CHANNEL_Set(j,0,1);
+        }
+        if(http_getArg(request->url,"pwm",tmpA,sizeof(tmpA))) {
+            int newPWMValue = atoi(tmpA);
+            http_getArg(request->url,"pwmIndex",tmpA,sizeof(tmpA));
+            j = atoi(tmpA);
+            if(j == SPECIAL_CHANNEL_TEMPERATURE) {
+                hprintf128(request,"<h3>Changed Temperature to %i!</h3>",newPWMValue);
+            } else {
+                hprintf128(request,"<h3>Changed pwm %i to %i!</h3>",j,newPWMValue);
+            }
+            CHANNEL_Set(j,newPWMValue,1);
+        }
+        if(http_getArg(request->url,"dim",tmpA,sizeof(tmpA))) {
+            int newDimmerValue = atoi(tmpA);
+            http_getArg(request->url,"dimIndex",tmpA,sizeof(tmpA));
+            j  = atoi(tmpA);
+            if(j == SPECIAL_CHANNEL_BRIGHTNESS) {
+                hprintf128(request,"<h3>Changed LED brightness to %i!</h3>",newDimmerValue);
+            } else {
+                hprintf128(request,"<h3>Changed dimmer %i to %i!</h3>",j,newDimmerValue);
+            }
+            CHANNEL_Set(j,newDimmerValue,1);
+        }
+        if(http_getArg(request->url,"set",tmpA,sizeof(tmpA))) {
+            int newSetValue = atoi(tmpA);
+            http_getArg(request->url,"setIndex",tmpA,sizeof(tmpA));
+            j = atoi(tmpA);
+            hprintf128(request,"<h3>Changed channel %i to %i!</h3>",j,newSetValue);
+            CHANNEL_Set(j,newSetValue,1);
+        }
+        if(http_getArg(request->url,"restart",tmpA,sizeof(tmpA))) {
+            poststr(request,"<h5> Module will restart soon</h5>");
+            RESET_ScheduleModuleReset(3);
+        }
+        poststr(request, "</div>"); // end div#change
+        poststr(request, "<div id=\"state\">"); // replaceable content follows
     }
 
     poststr(request, "<table width=\"100%\">");
@@ -183,7 +189,7 @@ int http_fn_index(http_request_t *request) {
         channelType = CHANNEL_GetType(i);
         if (h_isChannelRelay(i) || channelType == ChType_Toggle) {
             if (i <= 1) {
-                hprintf128(request, "<tr colspan=\"%i\">", CHANNEL_MAX);
+                hprintf128(request, "<tr>");
             }
             if (CHANNEL_Check(i)) {
                 poststr(request, "<td style=\"text-align:center; font-weight:bold; font-size:54px\">ON</td>");
@@ -196,7 +202,7 @@ int http_fn_index(http_request_t *request) {
             }
         }
     }
-    poststr(request, "<table width=\"100%\">");
+    poststr(request, "</table>");
     
     poststr(request, "<table width=\"100%\">");
     for(i = 0; i < CHANNEL_MAX; i++) {
@@ -305,7 +311,7 @@ int http_fn_index(http_request_t *request) {
         }
         else if (h_isChannelRelay(i) || channelType == ChType_Toggle) {
             if (i <= 1) {
-                hprintf128(request, "<tr colspan=\"%i\">", CHANNEL_MAX);
+                hprintf128(request, "<tr>");
             }
             const char *c;
             if(CHANNEL_Check(i)) {
@@ -327,18 +333,12 @@ int http_fn_index(http_request_t *request) {
             int pwmValue;
 
             pwmValue = CHANNEL_Get(i);
+            poststr(request, "<tr><td>");
             hprintf128(request,"<form action=\"index\" id=\"form%i\">",i);
-            hprintf128(request,"<input type=\"range\" min=\"0\" max=\"100\" name=\"%s\" id=\"slider%i\" value=\"%i\">",inputName,i,pwmValue);
+            hprintf128(request,"<input type=\"range\" min=\"0\" max=\"100\" name=\"%s\" id=\"slider%i\" value=\"%i\" onmouseup=\"this.form.submit()\">",inputName,i,pwmValue);
             hprintf128(request,"<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">",inputName,i);
-            hprintf128(request,"<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>",i);
-
-
-            poststr(request,"<script>");
-            hprintf128(request,"var slider = document.getElementById(\"slider%i\");\n",i);
-            poststr(request,"slider.onmouseup = function () {\n");
-            hprintf128(request," document.getElementById(\"form%i\").submit();\n",i);
-            poststr(request,"}\n");
-            poststr(request,"</script>");
+            hprintf128(request,"<input type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>",i);
+            poststr(request, "</td></tr>");
         }
     }
 	if(bRawPWMs == 0 || forceShowRGBCW) {
@@ -359,11 +359,11 @@ int http_fn_index(http_request_t *request) {
 			} else {
 				c = "bred";
 			}
-			poststr(request, "<tr>");
-			poststr(request,"<td><form action=\"index\">");
+			poststr(request, "<tr><td>");
+			poststr(request,"<form action=\"index\">");
 			hprintf128(request,"<input type=\"hidden\" name=\"tgl\" value=\"%i\">",SPECIAL_CHANNEL_LEDPOWER);
-			hprintf128(request,"<input class=\"%s\" type=\"submit\" value=\"Toggle Light\"/></form></td>",c);
-			poststr(request, "</tr>");
+			hprintf128(request,"<input class=\"%s\" type=\"submit\" value=\"Toggle Light\"/></form>",c);
+			poststr(request, "</td></tr>");
 		}
 
 		if(c_pwms > 0) {
@@ -374,21 +374,13 @@ int http_fn_index(http_request_t *request) {
 
             pwmValue = LED_GetDimmer();
 
-			poststr(request, "<tr>");
+			poststr(request, "<tr><td>");
             hprintf128(request,"<h5> LED Dimmer/Brightness </h5>");
             hprintf128(request,"<form action=\"index\" id=\"form%i\">",SPECIAL_CHANNEL_BRIGHTNESS);
-            hprintf128(request,"<input type=\"range\" min=\"0\" max=\"100\" name=\"%s\" id=\"slider%i\" value=\"%i\">",inputName,SPECIAL_CHANNEL_BRIGHTNESS,pwmValue);
+            hprintf128(request,"<input type=\"range\" min=\"0\" max=\"100\" name=\"%s\" id=\"slider%i\" value=\"%i\" onmouseup=\"this.form.submit()\">",inputName,SPECIAL_CHANNEL_BRIGHTNESS,pwmValue);
             hprintf128(request,"<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">",inputName,SPECIAL_CHANNEL_BRIGHTNESS);
             hprintf128(request,"<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>",SPECIAL_CHANNEL_BRIGHTNESS);
-
-
-            poststr(request,"<script>");
-            hprintf128(request,"var slider = document.getElementById(\"slider%i\");\n",SPECIAL_CHANNEL_BRIGHTNESS);
-            poststr(request,"slider.onmouseup = function () {\n");
-            hprintf128(request," document.getElementById(\"form%i\").submit();\n",SPECIAL_CHANNEL_BRIGHTNESS);
-            poststr(request,"}\n");
-            poststr(request,"</script>");
-			poststr(request, "</tr>");
+			poststr(request, "</td></tr>");
 		}
 		if(c_pwms >= 3) {
 			char colorValue[16];
@@ -399,21 +391,13 @@ int http_fn_index(http_request_t *request) {
 			}
 
 			LED_GetBaseColorString(colorValue);
-
+			poststr(request, "<tr><td>");
             hprintf128(request,"<h5> LED RGB Color %s </h5>",activeStr);
             hprintf128(request,"<form action=\"index\" id=\"form%i\">",SPECIAL_CHANNEL_BASECOLOR);
-			hprintf128(request,"<input type=\"color\" name=\"%s\" id=\"color%i\" value=\"#%s\">",inputName,SPECIAL_CHANNEL_BASECOLOR,colorValue);
+			hprintf128(request,"<input type=\"color\" name=\"%s\" id=\"color%i\" value=\"#%s\" onmouseup=\"this.form.submit()\">",inputName,SPECIAL_CHANNEL_BASECOLOR,colorValue);
             hprintf128(request,"<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">",inputName,SPECIAL_CHANNEL_BASECOLOR);
             hprintf128(request,"<input  type=\"submit\" style=\"display:none;\" value=\"Toggle Light\"/></form>");
-
-
-            poststr(request,"<script>");
-            hprintf128(request,"var color = document.getElementById(\"color%i\");\n",SPECIAL_CHANNEL_BASECOLOR);
-            poststr(request,"color.onchange = function () {\n");
-            hprintf128(request," document.getElementById(\"form%i\").submit();\n",SPECIAL_CHANNEL_BASECOLOR);
-            poststr(request,"}\n");
-            poststr(request,"</script>");
-
+			poststr(request, "</td></tr>");
 		}
 		if(c_pwms == 2 || c_pwms == 5) {
 			// TODO: temperature slider
@@ -428,24 +412,14 @@ int http_fn_index(http_request_t *request) {
 
             pwmValue = LED_GetTemperature();
 
-			poststr(request, "<tr>");
+			poststr(request, "<tr><td>");
             hprintf128(request,"<h5> LED Temperature Slider %s (cur=%i, min=%i, max=%i) (Cold <--- ---> Warm) </h5>",activeStr,pwmValue,HASS_TEMPERATURE_MIN,HASS_TEMPERATURE_MAX);
             hprintf128(request,"<form action=\"index\" id=\"form%i\">",SPECIAL_CHANNEL_TEMPERATURE);
             hprintf128(request,"<input type=\"range\" min=\"%i\" max=\"%i\"", HASS_TEMPERATURE_MIN,HASS_TEMPERATURE_MAX);
-			hprintf128(request,"name=\"%s\" id=\"slider%i\" value=\"%i\">",inputName,SPECIAL_CHANNEL_TEMPERATURE,pwmValue);
+			hprintf128(request,"name=\"%s\" id=\"slider%i\" value=\"%i\" onmouseup=\"this.form.submit()\">",inputName,SPECIAL_CHANNEL_TEMPERATURE,pwmValue);
             hprintf128(request,"<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">",inputName,SPECIAL_CHANNEL_TEMPERATURE);
             hprintf128(request,"<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>",SPECIAL_CHANNEL_TEMPERATURE);
-
-
-            poststr(request,"<script>");
-            hprintf128(request,"var slider = document.getElementById(\"slider%i\");\n",SPECIAL_CHANNEL_TEMPERATURE);
-            poststr(request,"slider.onmouseup = function () {\n");
-            hprintf128(request," document.getElementById(\"form%i\").submit();\n",SPECIAL_CHANNEL_TEMPERATURE);
-            poststr(request,"}\n");
-            poststr(request,"</script>");
-			poststr(request, "</tr>");
-
-			
+			poststr(request, "</td></tr>");
 		} 
 
 	}
@@ -453,11 +427,6 @@ int http_fn_index(http_request_t *request) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_AppendInformationToHTTPIndexPage(request);
 #endif
-
-    if(http_getArg(request->url,"restart",tmpA,sizeof(tmpA))) {
-        poststr(request,"<h5> Module will restart soon</h5>");
-        RESET_ScheduleModuleReset(3);
-    }
 
 	if(1) {
 		int bFirst = true;
@@ -482,7 +451,7 @@ int http_fn_index(http_request_t *request) {
 
     // for normal page loads, show the rest of the HTML
     if(!http_getArg(request->url,"state",tmpA,sizeof(tmpA))) {
-        poststr(request, "</div>"); // end id=statediv
+        poststr(request, "</div>"); // end div#state
 
         // Shared UI elements 
         poststr(request, "<form action=\"cfg\"><input type=\"submit\" value=\"Config\"/></form>");
@@ -512,16 +481,18 @@ int http_fn_index(http_request_t *request) {
                 "req.onreadystatechange=()=>{"
                     "if(req.readyState==4 && req.status==200){"
                         "var s=req.responseText;"
-                        "eb('statediv').innerHTML=s;" 
+                        "eb('state').innerHTML=s;" 
                         "clearTimeout(firstTime);"
                         "clearTimeout(lastTime);"
-                        "lastTime=setTimeout(showState, 3000);"
+                        "lastTime=setTimeout(showState, 3e3);"
                 "}};"
                 "req.open('GET','index?state=1', true);"
                 "req.send();"
-                "firstTime=setTimeout(showState, 3000);"
+                "firstTime=setTimeout(showState, 3e3);"
             "}"
             "window.addEventListener('load', showState);"
+            "history.pushState(null, '', 'index');" // drop actions like 'toggle' from URL
+            "setTimeout(()=>{eb('changed').innerHTML=''}, 5e3);" // hide change info
             "</script>"
         );
     }
@@ -1574,7 +1545,11 @@ int http_fn_cfg_pins(http_request_t *request) {
         }
     }
     if(iChangedRequested>0) {
-		CFG_Save_SetupTimer();
+        // Anecdotally, if pins are configured badly, the
+        // second-timer breaks. To reconfigure, force
+        // saving the configuration instead of waiting.
+		//CFG_Save_SetupTimer(); 
+        CFG_Save_IfThereArePendingChanges(); 
         hprintf128(request, "Pins update - %i reqs, %i changed!<br><br>",iChangedRequested,iChanged);
     }
 //	strcat(outbuf,"<button type=\"button\">Click Me!</button>");
