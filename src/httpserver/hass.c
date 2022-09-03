@@ -12,8 +12,6 @@
         "mdl":"LOLIN"
     },
     "avty_t":"ESPURNA-9DE8F9/status",
-    "pl_avail":"1",
-    "pl_not_avail":"0",
     "pl_on":"1",
     "pl_off":"0",
     "uniq_id":"espurna_9de8f9_relay_0",
