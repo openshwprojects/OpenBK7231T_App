@@ -60,7 +60,7 @@ const char htmlHeadStyle[] =
 		".hf{display:none;}"
 		".hdiv{width:95%;white-space:nowrap;}"
 		".hele{width:210px;display:inline-block;margin-left:2px;}"
-		"div#state{padding:0} div#changed{padding:0}"
+		"div#statediv{padding:0}"
 		"div#main{text-align:left; display:inline-block; color:#eaeaea;min-width:340px;max-width:800px;}"
 	"</style>";
 const char htmlBodyStart[] =
@@ -198,46 +198,6 @@ void http_setup(http_request_t *request, const char *type){
 	poststr(request,httpCorsHeaders);
 	poststr(request,"\r\n"); // end headers with double CRLF
 	poststr(request,"\r\n");
-}
-
-void http_html_start(http_request_t *request, const char *pagename) {
-// void HTTP_AddHeader(http_request_t *request) {
-	poststr(request, htmlDoctype);
-	poststr(request, "<title>");
-	poststr(request, CFG_GetDeviceName()); // todo: check escaping
-	if (pagename) {
-		poststr(request, " - ");
-		poststr(request, pagename);
-	} 
-	poststr(request, "</title>");
-	poststr(request, htmlHeadMain);
-	poststr(request, htmlHeadStyle);
-	poststr(request, htmlBodyStart);
-	poststr(request, CFG_GetDeviceName()); // todo: check escaping
-	poststr(request, htmlBodyStart2);
-}
-
-void http_html_end(http_request_t *request) {
-// was void HTTP_AddBuildFooter(http_request_t *request) {
-	char upTimeStr[128];
-	unsigned char mac[32];
-
-	poststr(request, " | ");
-	poststr(request, htmlFooterInfo);
-	poststr(request, "<br>");
-	poststr(request, g_build_str);
-	poststr(request, "<br>Online for ");
-	misc_formatUpTimeString(Time_getUpTimeSeconds(), upTimeStr);
-	poststr(request, upTimeStr);
-
-	WiFI_GetMacAddress((char *)mac);
-
-	sprintf(upTimeStr, "<br>Device MAC: %02X:%02X:%02X:%02X:%02X:%02X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
-	poststr(request, upTimeStr);
-	sprintf(upTimeStr, "<br>Short name: %s, Chipset %s",CFG_GetShortDeviceName(),PLATFORM_MCU_NAME);
-	poststr(request, upTimeStr);
-
-	poststr(request, htmlBodyEnd);
 }
 
 const char *http_checkArg(const char *p, const char *n) {
@@ -391,6 +351,37 @@ void setupAllWB2SPinsAsButtons() {
 
 		PIN_SetPinRoleForPinIndex(27,IOR_Button);
 		PIN_SetPinChannelForPinIndex(27,1);
+}
+
+
+
+
+const char *g_header_start = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7231T_App/\">";
+const char *g_header_end = "</a></h1><h3><a href=\"https://www.elektroda.com/rtvforum/viewtopic.php?p=19841301#19841301\">[Read more]</a><a href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
+
+
+void HTTP_AddHeader(http_request_t *request) {
+	poststr(request,g_header_start);
+	poststr(request,CFG_GetDeviceName());
+	poststr(request,g_header_end);
+}
+
+void HTTP_AddBuildFooter(http_request_t *request) {
+	char upTimeStr[128];
+	unsigned char mac[32];
+
+	poststr(request,"<br>");
+	poststr(request,g_build_str);
+	poststr(request,"<br> Online for ");
+	misc_formatUpTimeString(Time_getUpTimeSeconds(), upTimeStr);
+	poststr(request,upTimeStr);
+
+	WiFI_GetMacAddress((char *)mac);
+
+	sprintf(upTimeStr,"<br> Device MAC: %02X%02X%02X%02X%02X%02X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
+	poststr(request,upTimeStr);
+	sprintf(upTimeStr,"<br> Short name: %s, Chipset %s",CFG_GetShortDeviceName(),PLATFORM_MCU_NAME);
+	poststr(request,upTimeStr);
 }
 
 // add some more output safely, sending if necessary.

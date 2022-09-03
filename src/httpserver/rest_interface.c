@@ -179,6 +179,7 @@ static int http_rest_get(http_request_t *request){
         return http_rest_get_flash_advanced(request);
     }
 
+
     if (!strcmp(request->url, "api/dumpconfig")){
         return http_rest_get_dumpconfig(request);
     }
@@ -191,11 +192,13 @@ static int http_rest_get(http_request_t *request){
         return http_rest_get_flash_vars_test(request);
     }
 
+
+
+
     http_setup(request, httpMimeTypeHTML);
-    http_html_start(request, "GET REST API");
     poststr(request, "GET of ");
     poststr(request, request->url);
-    http_html_end(request);
+    poststr(request, htmlEnd);
     poststr(request,NULL);
     return 0;
 }
@@ -254,7 +257,6 @@ static int http_rest_post(http_request_t *request){
 #endif
 
     http_setup(request, httpMimeTypeHTML);
-    http_html_start(request, "POST REST API");
     poststr(request, "POST to ");
     poststr(request, request->url);
     poststr(request, "<br/>Content Length:");
@@ -263,10 +265,15 @@ static int http_rest_post(http_request_t *request){
     poststr(request, "<br/>Content:[");
     poststr(request, request->bodystart);
     poststr(request, "]<br/>");
-    http_html_end(request);
+    poststr(request, htmlEnd);
     poststr(request,NULL);
     return 0;
 }
+
+
+
+
+
 
 static int http_rest_app(http_request_t *request){
     const char *webhost = CFG_GetWebappRoot();
@@ -281,10 +288,9 @@ static int http_rest_app(http_request_t *request){
         poststr(request, webhost);
         poststr(request, apppage4);
     } else {
-        http_html_start(request, "Not available");
-        poststr(request, htmlFooterReturnToMenu);
-        poststr(request, "no APP available<br/>");
-        http_html_end(request);
+        poststr(request,htmlHeader);
+        poststr(request,htmlReturnToMenu);
+        poststr(request,"no APP available<br/>");
     }
     poststr(request,NULL);
     return 0;
