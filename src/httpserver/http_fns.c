@@ -1319,10 +1319,6 @@ int http_fn_ha_discovery(http_request_t *request) {
         for(i = 0; i < CHANNEL_MAX; i++) {
             if(h_isChannelRelay(i)) {
                 HassDeviceInfo *dev_info = hass_init_device_info(ENTITY_RELAY, i, "1", "0");
-
-                cJSON_AddStringToObject(dev_info->root, "pl_avail", "1");     //payload_available
-                cJSON_AddStringToObject(dev_info->root, "pl_not_avail", "0"); //payload_not_available
-                
                 MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info));
                 hass_free_device_info(dev_info);
             }
