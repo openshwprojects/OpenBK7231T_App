@@ -106,8 +106,9 @@ typedef struct pinsState_s {
 #define OBK_FLAG_MQTT_ALWAYSSETRETAIN				7
 #define OBK_FLAG_LED_ALTERNATE_CW_MODE				8
 #define OBK_FLAG_SM2135_SEPARATE_MODES				9
+#define OBK_FLAG_MQTT_BROADCASTSELFSTATEONCONNECT	10
 
-#define OBK_TOTAL_FLAGS 10
+#define OBK_TOTAL_FLAGS 11
 
 //
 // Main config structure (less than 2KB)

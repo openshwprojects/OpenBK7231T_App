@@ -30,6 +30,12 @@ OpenBeken features:
 - Automatic reconnect when WiFi network goes out
 - and much more
 
+# Teardown database 
+
+We're making a teardown database here:
+https://www.elektroda.com/rtvforum/forum507.html
+Feel free to submit new teardown! Device information + where to buy + good quality photos of inside, maybe include chip datasheets as well
+
 # Wiki 
 
 For more Information refer to the [WIKI](https://github.com/openshwprojects/OpenBK7231T_App/wiki/Wiki-Home)

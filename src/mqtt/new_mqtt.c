@@ -567,7 +567,11 @@ static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection
     }
 
 	// publish all values on state
-	MQTT_PublishWholeDeviceState();
+	if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEONCONNECT)) {
+		MQTT_PublishWholeDeviceState();
+	} else {
+		//MQTT_PublishOnlyDeviceChannelsIfPossible();
+	}
 
     //mqtt_sub_unsub(client,
     //        "topic_qos1", 1,

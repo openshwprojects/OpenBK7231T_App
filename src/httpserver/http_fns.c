@@ -1676,6 +1676,10 @@ const char *g_obk_flagNames[] = {
 	"[MQTT] [Debug] Always set Retain flag to all published values",
 	"[LED] Alternate CW light mode (first PWM for warm/cold slider, second for brightness)",
 	"[SM2135] Use separate RGB/CW modes instead of writing all 5 values as RGB",
+	"[MQTT] Broadcast self state on MQTT connect",
+	"error",
+	"error",
+	"error",
 	"error",
 };
 
