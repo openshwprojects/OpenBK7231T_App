@@ -967,7 +967,7 @@ void MQTT_QueuePublish(char *topic, char *channel, char *value){
   MqttPublishItem_t *newItem = os_malloc(sizeof(MqttPublishItem_t));
 
   //Make copies of all string values. Using built in strdup was causing a crash so I create a local version.
-  newItem->topic = strdup(topic);
+  newItem->topic = _strdup(topic);
   newItem->channel = _strdup(channel);
   newItem->value = _strdup(value);
   newItem->next = NULL;
