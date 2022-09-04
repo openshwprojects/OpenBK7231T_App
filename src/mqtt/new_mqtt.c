@@ -432,7 +432,7 @@ static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t *client, const char *sC
 
   addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publishing %s = %s \n",sChannel,sVal);
 
-	baseName = CFG_GetShortDeviceName();
+	baseName = CFG_GetMQTTClientId();
 
 	sprintf(pub_topic,"%s/%s%s",baseName,sChannel, (appendGet == true ? "/get" : ""));
   err = mqtt_publish(client, pub_topic, sVal, strlen(sVal), qos, retain, mqtt_pub_request_cb, 0);
@@ -555,7 +555,7 @@ static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection
       }
     }
 
-  	baseName = CFG_GetShortDeviceName();
+  	baseName = CFG_GetMQTTClientId();
 
     sprintf(tmp,"%s/connected",baseName);
     err = mqtt_publish(client, tmp, "online", strlen("online"), 2, true, mqtt_pub_request_cb, 0);
@@ -596,8 +596,8 @@ static void MQTT_do_connect(mqtt_client_t *client)
 
   mqtt_userName = CFG_GetMQTTUserName();
   mqtt_pass = CFG_GetMQTTPass();
-  //mqtt_clientID = CFG_GetMQTTClientId();
-  mqtt_clientID = CFG_GetShortDeviceName();
+  mqtt_clientID = CFG_GetMQTTClientId();
+  //mqtt_clientID = CFG_GetShortDeviceName();
   mqtt_host = CFG_GetMQTTHost();
 	mqtt_port = CFG_GetMQTTPort();
 
@@ -620,7 +620,7 @@ static void MQTT_do_connect(mqtt_client_t *client)
   mqtt_client_info.client_pass = mqtt_pass;
   mqtt_client_info.client_user = mqtt_userName;
 
-	sprintf(will_topic,"%s/connected",CFG_GetShortDeviceName());
+	sprintf(will_topic,"%s/connected",CFG_GetMQTTClientId());
   mqtt_client_info.will_topic = will_topic;
   mqtt_client_info.will_msg = "offline";
   mqtt_client_info.will_retain = true,
@@ -735,7 +735,7 @@ void MQTT_init(){
 	char cbtopicbase[64];
 	char cbtopicsub[64];
   const char *baseName;
-	baseName = CFG_GetShortDeviceName();
+	baseName = CFG_GetMQTTClientId();
 
   // register the main set channel callback
 	sprintf(cbtopicbase,"%s/",baseName);

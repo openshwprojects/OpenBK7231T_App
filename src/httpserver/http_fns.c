@@ -1266,11 +1266,13 @@ int http_fn_cfg_ha(http_request_t *request) {
     int relayCount = 0;
     int pwmCount = 0;
     const char *baseName;
+    const char *topicName;
     int i;
     char mqttAdded = 0;
     char unique_id[128];    //64 for longDeviceName, 10 for type,3 for index .. 128 would be sufficient
 
     baseName = CFG_GetShortDeviceName();
+    topicName = CFG_GetMQTTClientId();
 
     http_setup(request, httpMimeTypeHTML);
     poststr(request,htmlHeader);
@@ -1311,14 +1313,14 @@ int http_fn_cfg_ha(http_request_t *request) {
                 build_hass_unique_id(unique_id,"relay",i);
                 hprintf128(request,"  - unique_id: \"%s\"\n",unique_id);
                 hprintf128(request,"    name: \"%s %i\"\n",baseName,i);
-                hprintf128(request,"    state_topic: \"%s/%i/get\"\n",baseName,i);
-                hprintf128(request,"    command_topic: \"%s/%i/set\"\n",baseName,i);
+                hprintf128(request,"    state_topic: \"%s/%i/get\"\n",topicName,i);
+                hprintf128(request,"    command_topic: \"%s/%i/set\"\n",topicName,i);
                 poststr(request,   "    qos: 1\n");
                 poststr(request,   "    payload_on: 1\n");
                 poststr(request,   "    payload_off: 0\n");
                 poststr(request,   "    retain: true\n");
                 hprintf128(request,"    availability:\n");
-                hprintf128(request,"      - topic: \"%s/connected\"\n",baseName);
+                hprintf128(request,"      - topic: \"%s/connected\"\n",topicName);
             }
         }
     }
@@ -1339,9 +1341,9 @@ int http_fn_cfg_ha(http_request_t *request) {
                 build_hass_unique_id(unique_id,"light",i);
                 hprintf128(request,"  - unique_id: \"%s\"\n",unique_id);
                 hprintf128(request,"    name: \"%s %i\"\n",baseName,i);
-                hprintf128(request,"    state_topic: \"%s/%i/get\"\n",baseName,i);
-                hprintf128(request,"    command_topic: \"%s/%i/set\"\n",baseName,i);
-                hprintf128(request,"    brightness_command_topic: \"%s/%i/set\"\n",baseName,i);
+                hprintf128(request,"    state_topic: \"%s/%i/get\"\n",topicName,i);
+                hprintf128(request,"    command_topic: \"%s/%i/set\"\n",topicName,i);
+                hprintf128(request,"    brightness_command_topic: \"%s/%i/set\"\n",topicName,i);
                 poststr(request,   "    on_command_type: \"brightness\"\n");
                 poststr(request,   "    brightness_scale: 99\n");
                 poststr(request,   "    qos: 1\n");
@@ -1350,7 +1352,7 @@ int http_fn_cfg_ha(http_request_t *request) {
                 poststr(request,   "    retain: true\n");
                 poststr(request,   "    optimistic: true\n");
                 hprintf128(request,"    availability:\n");
-                hprintf128(request,"      - topic: \"%s/connected\"\n",baseName);
+                hprintf128(request,"      - topic: \"%s/connected\"\n",topicName);
             }
         }
     }
@@ -1456,8 +1458,8 @@ int http_tasmota_json_status_generic(http_request_t *request) {
 	const char *topic;
 
 	deviceName = CFG_GetShortDeviceName();
-	friendlyName = CFG_GetShortDeviceName();
-	topic = CFG_GetShortDeviceName();
+	friendlyName = CFG_GetDeviceName();
+	topic = CFG_GetMQTTClientId();
 
 	hprintf128(request,"{\"Status\":{\"Module\":0,\"DeviceName\":\"%s\"",deviceName);
 	hprintf128(request,",\"FriendlyName\":[\"%s\"]",friendlyName);
