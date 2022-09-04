@@ -350,7 +350,7 @@ int http_fn_index(http_request_t *request) {
             pwmValue = CHANNEL_Get(i);
             poststr(request, "<tr><td>");
             hprintf128(request,"<form action=\"index\" id=\"form%i\">",i);
-            hprintf128(request,"<input type=\"range\" min=\"0\" max=\"100\" name=\"%s\" id=\"slider%i\" value=\"%i\" onmouseup=\"this.form.submit()\">",inputName,i,pwmValue);
+            hprintf128(request,"<input type=\"range\" min=\"0\" max=\"100\" name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">",inputName,i,pwmValue);
             hprintf128(request,"<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">",inputName,i);
             hprintf128(request,"<input type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>",i);
             poststr(request, "</td></tr>");
@@ -393,7 +393,7 @@ int http_fn_index(http_request_t *request) {
 			poststr(request, "<tr><td>");
             hprintf128(request,"<h5> LED Dimmer/Brightness </h5>");
             hprintf128(request,"<form action=\"index\" id=\"form%i\">",SPECIAL_CHANNEL_BRIGHTNESS);
-            hprintf128(request,"<input type=\"range\" min=\"0\" max=\"100\" name=\"%s\" id=\"slider%i\" value=\"%i\" onmouseup=\"this.form.submit()\">",inputName,SPECIAL_CHANNEL_BRIGHTNESS,pwmValue);
+            hprintf128(request,"<input type=\"range\" min=\"0\" max=\"100\" name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">",inputName,SPECIAL_CHANNEL_BRIGHTNESS,pwmValue);
             hprintf128(request,"<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">",inputName,SPECIAL_CHANNEL_BRIGHTNESS);
             hprintf128(request,"<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>",SPECIAL_CHANNEL_BRIGHTNESS);
 			poststr(request, "</td></tr>");
@@ -432,7 +432,7 @@ int http_fn_index(http_request_t *request) {
             hprintf128(request,"<h5> LED Temperature Slider %s (cur=%i, min=%i, max=%i) (Cold <--- ---> Warm) </h5>",activeStr,pwmValue,HASS_TEMPERATURE_MIN,HASS_TEMPERATURE_MAX);
             hprintf128(request,"<form action=\"index\" id=\"form%i\">",SPECIAL_CHANNEL_TEMPERATURE);
             hprintf128(request,"<input type=\"range\" min=\"%i\" max=\"%i\"", HASS_TEMPERATURE_MIN,HASS_TEMPERATURE_MAX);
-			hprintf128(request,"name=\"%s\" id=\"slider%i\" value=\"%i\" onmouseup=\"this.form.submit()\">",inputName,SPECIAL_CHANNEL_TEMPERATURE,pwmValue);
+			hprintf128(request,"name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">",inputName,SPECIAL_CHANNEL_TEMPERATURE,pwmValue);
             hprintf128(request,"<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">",inputName,SPECIAL_CHANNEL_TEMPERATURE);
             hprintf128(request,"<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>",SPECIAL_CHANNEL_TEMPERATURE);
 			poststr(request, "</td></tr>");
