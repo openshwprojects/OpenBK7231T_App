@@ -838,9 +838,12 @@ int http_fn_cfg_name(http_request_t *request) {
 			name = CFG_GetDeviceName();
     poststr(request,name);
 
-    poststr(request,"\"><br><br>\
-            <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Short name might be used by MQTT, so you will have to reconfig some stuff.')\">\
-        </form> ");
+    poststr(request,"\"><br><br>");
+    poststr(request, "<input type=\"submit\" value=\"Submit\" "
+            "onclick=\"return confirm('Are you sure? "
+            "Short name might be used by Home Assistant, "
+            "so you will have to reconfig some stuff.')\">");
+    poststr(request, "</form>");
     poststr(request,htmlReturnToCfg);
     HTTP_AddBuildFooter(request);
     poststr(request,htmlEnd);
