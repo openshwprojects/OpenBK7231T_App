@@ -18,11 +18,12 @@ int g_cfg_pendingChanges = 0;
 #define CFG_IDENT_1 'F'
 #define CFG_IDENT_2 'G'
 
-#define MAIN_CFG_VERSION 2
+#define MAIN_CFG_VERSION 3
 
 // version v1
 // Version v2 is now flexible and doesnt have to be duplicated
 // in order to support previous versions any more
+// Version v3 moves shortName to MQTT Client ID
 typedef struct mainConfig_v1_s {
 	byte ident0;
 	byte ident1;
@@ -475,6 +476,15 @@ void CFG_InitAndLoad() {
 #endif
 		addLogAdv(LOG_WARN, LOG_FEATURE_CFG, "CFG_InitAndLoad: Correct config has been loaded with %i changes count.",g_cfg.changeCounter);
 	}
-	g_configInitialized = 1;
 
+	// copy shortDeviceName to MQTT Client ID, set version=3
+	if (g_cfg.version<3) {
+		addLogAdv(LOG_WARN, LOG_FEATURE_CFG, "CFG_InitAndLoad: Old config version found, updating to v3.");
+		strcpy_safe(g_cfg.mqtt_clientId, g_cfg.shortDeviceName, sizeof(g_cfg.mqtt_clientId));
+		g_cfg.version = 3;
+		g_cfg_pendingChanges++;
+	}
+
+	g_configInitialized = 1;
+	CFG_Save_IfThereArePendingChanges();
 }
