@@ -596,7 +596,7 @@ static void MQTT_do_connect(mqtt_client_t *client)
 
   mqtt_userName = CFG_GetMQTTUserName();
   mqtt_pass = CFG_GetMQTTPass();
-  //mqtt_clientID = CFG_GetMQTTBrokerName();
+  //mqtt_clientID = CFG_GetMQTTClientId();
   mqtt_clientID = CFG_GetShortDeviceName();
   mqtt_host = CFG_GetMQTTHost();
 	mqtt_port = CFG_GetMQTTPort();

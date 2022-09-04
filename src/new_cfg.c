@@ -40,7 +40,7 @@ typedef struct mainConfig_v1_s {
 	char wifi_pass[64];
 	// MQTT information for Home Assistant
 	char mqtt_host[256];
-	char mqtt_brokerName[64];
+	char mqtt_clientId[64]; // was mqtt_brokerName[]
 	char mqtt_userName[64];
 	char mqtt_pass[128];
 	int mqtt_port;
@@ -68,7 +68,7 @@ static byte CFG_CalcChecksum_V1(mainConfig_v1_t *inf) {
 	crc ^= Tiny_CRC8((const char*)&inf->wifi_ssid,sizeof(inf->wifi_ssid));
 	crc ^= Tiny_CRC8((const char*)&inf->wifi_pass,sizeof(inf->wifi_pass));
 	crc ^= Tiny_CRC8((const char*)&inf->mqtt_host,sizeof(inf->mqtt_host));
-	crc ^= Tiny_CRC8((const char*)&inf->mqtt_brokerName,sizeof(inf->mqtt_brokerName));
+	crc ^= Tiny_CRC8((const char*)&inf->mqtt_clientId,sizeof(inf->mqtt_clientId));
 	crc ^= Tiny_CRC8((const char*)&inf->mqtt_userName,sizeof(inf->mqtt_userName));
 	crc ^= Tiny_CRC8((const char*)&inf->mqtt_pass,sizeof(inf->mqtt_pass));
 	crc ^= Tiny_CRC8((const char*)&inf->mqtt_port,sizeof(inf->mqtt_port));
@@ -124,7 +124,7 @@ void CFG_SetDefaultConfig() {
 	g_cfg.timeRequiredToMarkBootSuccessfull = DEFAULT_BOOT_SUCCESS_TIME;
 	strcpy(g_cfg.ping_host,"192.168.0.1");
 	strcpy(g_cfg.mqtt_host, "192.168.0.113");
-	strcpy(g_cfg.mqtt_brokerName, "test");
+	strcpy(g_cfg.mqtt_clientId, "test");
 	strcpy(g_cfg.mqtt_userName, "homeassistant");
 	strcpy(g_cfg.mqtt_pass, "qqqqqqqqqq");
 	// already zeroed but just to remember, open AP by default
@@ -286,8 +286,8 @@ void CFG_SetWiFiPass(const char *s) {
 const char *CFG_GetMQTTHost() {
 	return g_cfg.mqtt_host;
 }
-const char *CFG_GetMQTTBrokerName() {
-	return g_cfg.mqtt_brokerName;
+const char *CFG_GetMQTTClientId() {
+	return g_cfg.mqtt_clientId;
 }
 const char *CFG_GetMQTTUserName() {
 	return g_cfg.mqtt_userName;
@@ -302,9 +302,9 @@ void CFG_SetMQTTHost(const char *s) {
 		g_cfg_pendingChanges++;
 	}
 }
-void CFG_SetMQTTBrokerName(const char *s) {
+void CFG_SetMQTTClientId(const char *s) {
 	// this will return non-zero if there were any changes
-	if(strcpy_safe_checkForChanges(g_cfg.mqtt_brokerName, s,sizeof(g_cfg.mqtt_brokerName))) {
+	if(strcpy_safe_checkForChanges(g_cfg.mqtt_clientId, s,sizeof(g_cfg.mqtt_clientId))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
 	}

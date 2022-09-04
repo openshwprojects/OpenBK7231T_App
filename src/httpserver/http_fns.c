@@ -530,7 +530,7 @@ int http_fn_cfg_mqtt(http_request_t *request) {
             <label for=\"port\">Client:</label><br>\
             <input type=\"text\" id=\"client\" name=\"client\" value=\"");
 
-    poststr(request,CFG_GetMQTTBrokerName());
+    poststr(request,CFG_GetMQTTClientId());
     poststr(request,"\"><br>\
             <label for=\"user\">User:</label><br>\
             <input type=\"text\" id=\"user\" name=\"user\" value=\"");
@@ -568,7 +568,7 @@ int http_fn_cfg_mqtt_set(http_request_t *request) {
         CFG_SetMQTTPass(tmpA);
     }
     if(http_getArg(request->url,"client",tmpA,sizeof(tmpA))) {
-        CFG_SetMQTTBrokerName(tmpA);
+        CFG_SetMQTTClientId(tmpA);
     }
 
 	CFG_Save_SetupTimer();
