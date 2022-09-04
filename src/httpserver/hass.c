@@ -68,7 +68,11 @@ cJSON *hass_build_device_node(const char *baseName, cJSON *ids) {
     cJSON *dev = cJSON_CreateObject();
     cJSON_AddItemToObject(dev, "ids", ids);     //identifiers
     cJSON_AddStringToObject(dev, "name", baseName);
+
+    #ifdef USER_SW_VER
     cJSON_AddStringToObject(dev, "sw", USER_SW_VER);   //sw_version
+    #endif
+
     cJSON_AddStringToObject(dev, "mf", MANUFACTURER);   //manufacturer
     cJSON_AddStringToObject(dev, "mdl", PLATFORM_MCU_NAME);  //Using chipset for model
     return dev;
