@@ -62,6 +62,7 @@ const char htmlHeadStyle[] =
 		".hele{width:210px;display:inline-block;margin-left:2px;}"
 		"div#state{padding:0} div#changed{padding:0}"
 		"div#main{text-align:left; display:inline-block; color:#eaeaea;min-width:340px;max-width:800px;}"
+		"table{table-layout:fixed}"
 	"</style>";
 const char htmlBodyStart[] =
 	"<body>"

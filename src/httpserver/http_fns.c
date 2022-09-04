@@ -214,8 +214,9 @@ int http_fn_index(http_request_t *request) {
 			int iValue;
 
 			iValue = CHANNEL_Get(i);
-            
+            poststr(request, "<tr><td>");
             hprintf128(request,"Temperature Channel %i value %i C<br>",i, iValue);
+            poststr(request, "</td></tr>");
             
         } else if(channelType == ChType_Temperature_div10) {
 			int iValue;
@@ -224,14 +225,18 @@ int http_fn_index(http_request_t *request) {
 			iValue = CHANNEL_Get(i);
 			fValue = iValue * 0.1f;
 
+            poststr(request, "<tr><td>");
             hprintf128(request,"Temperature Channel %i value %f C<br>",i, fValue);
+            poststr(request, "</td></tr>");
 
 		} else  if(channelType == ChType_Humidity) {
 			int iValue;
 
 			iValue = CHANNEL_Get(i);
 
+            poststr(request, "<tr><td>");
             hprintf128(request,"Humidity Channel %i value %i Percent<br>",i, iValue);
+            poststr(request, "</td></tr>");
 
 		} else if(channelType == ChType_Humidity_div10) {
 			int iValue;
@@ -240,12 +245,16 @@ int http_fn_index(http_request_t *request) {
 			iValue = CHANNEL_Get(i);
 			fValue = iValue * 0.1f;
 
+            poststr(request, "<tr><td>");
             hprintf128(request,"Humidity Channel %i value %f Percent<br>",i, fValue);
+            poststr(request, "</td></tr>");
+
 		} else if(channelType == ChType_LowMidHigh) {
 			const char *types[]={"Low","Mid","High"};
 			int iValue;
 			iValue = CHANNEL_Get(i);
 
+            poststr(request, "<tr><td>");
             hprintf128(request,"<p>Select speed:</p><form action=\"index\">");
             hprintf128(request,"<input type=\"hidden\" name=\"setIndex\" value=\"%i\">",i);
 			for(j = 0; j < 3; j++) {
@@ -257,7 +266,8 @@ int http_fn_index(http_request_t *request) {
 				hprintf128(request,"<input type=\"radio\" name=\"set\" value=\"%i\" onchange=\"this.form.submit()\" %s>%s",j,check,types[j]);
 			}
             hprintf128(request,"</form>");
-            hprintf128(request,"<br>");
+            poststr(request, "</td></tr>");
+
 		} else if(channelType == ChType_OffLowMidHigh || channelType == ChType_OffLowestLowMidHighHighest || channelType == ChType_LowestLowMidHighHighest) {
 			const char **types;
 			const char *types4[] = {"Off","Low","Mid","High"};
@@ -279,6 +289,7 @@ int http_fn_index(http_request_t *request) {
 
 			iValue = CHANNEL_Get(i);
 
+            poststr(request, "<tr><td>");
             hprintf128(request,"<p>Select speed:</p><form action=\"index\">");
             hprintf128(request,"<input type=\"hidden\" name=\"setIndex\" value=\"%i\">",i);
 			for(j = 0; j < numTypes; j++) {
@@ -290,23 +301,27 @@ int http_fn_index(http_request_t *request) {
 				hprintf128(request,"<input type=\"radio\" name=\"set\" value=\"%i\" onchange=\"this.form.submit()\" %s>%s",j,check,types[j]);
 			}
             hprintf128(request,"</form>");
-            hprintf128(request,"<br>");
+            poststr(request, "</td></tr>");
+
 		} else if(channelType == ChType_TextField) {
 			int iValue;
 			iValue = CHANNEL_Get(i);
 
+            poststr(request, "<tr><td>");
             hprintf128(request,"<p>Change channel %i value:</p><form action=\"index\">",i);
             hprintf128(request,"<input type=\"hidden\" name=\"setIndex\" value=\"%i\">",i);
-            hprintf128(request,"<input type=\"number\" name=\"set\" value=\"%i\">",iValue);
+            hprintf128(request,"<input type=\"number\" name=\"set\" value=\"%i\" onblur=\"this.form.submit()\">",iValue);
             hprintf128(request,"<input type=\"submit\" value=\"Set!\"/></form>");
             hprintf128(request,"</form>");
-            hprintf128(request,"<br>");
+            poststr(request, "</td></tr>");
+
 		} else if(channelType == ChType_ReadOnly) {
 			int iValue;
 			iValue = CHANNEL_Get(i);
 
+            poststr(request, "<tr><td>");
             hprintf128(request,"Channel %i = %i",i,iValue);
-            hprintf128(request,"<br>");
+            poststr(request, "</td></tr>");
 
         }
         else if (h_isChannelRelay(i) || channelType == ChType_Toggle) {
@@ -341,6 +356,7 @@ int http_fn_index(http_request_t *request) {
             poststr(request, "</td></tr>");
         }
     }
+
 	if(bRawPWMs == 0 || forceShowRGBCW) {
 		int c_pwms;
 		int lm;
@@ -394,7 +410,7 @@ int http_fn_index(http_request_t *request) {
 			poststr(request, "<tr><td>");
             hprintf128(request,"<h5> LED RGB Color %s </h5>",activeStr);
             hprintf128(request,"<form action=\"index\" id=\"form%i\">",SPECIAL_CHANNEL_BASECOLOR);
-			hprintf128(request,"<input type=\"color\" name=\"%s\" id=\"color%i\" value=\"#%s\" onmouseup=\"this.form.submit()\">",inputName,SPECIAL_CHANNEL_BASECOLOR,colorValue);
+			hprintf128(request,"<input type=\"color\" name=\"%s\" id=\"color%i\" value=\"#%s\" onchange=\"this.form.submit()\">",inputName,SPECIAL_CHANNEL_BASECOLOR,colorValue);
             hprintf128(request,"<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">",inputName,SPECIAL_CHANNEL_BASECOLOR);
             hprintf128(request,"<input  type=\"submit\" style=\"display:none;\" value=\"Toggle Light\"/></form>");
 			poststr(request, "</td></tr>");
@@ -480,8 +496,11 @@ int http_fn_index(http_request_t *request) {
                 "req=new XMLHttpRequest();"
                 "req.onreadystatechange=()=>{"
                     "if(req.readyState==4 && req.status==200){"
-                        "var s=req.responseText;"
-                        "eb('state').innerHTML=s;" 
+                        "if (!(document.activeElement.tagName=='INPUT' && "
+                            "(document.activeElement.type=='number' || document.activeElement.type=='color'))) {"
+                                "var s=req.responseText;"
+                                "eb('state').innerHTML=s;" 
+                        "}"
                         "clearTimeout(firstTime);"
                         "clearTimeout(lastTime);"
                         "lastTime=setTimeout(showState, 3e3);"
