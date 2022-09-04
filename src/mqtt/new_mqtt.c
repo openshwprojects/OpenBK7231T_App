@@ -41,14 +41,6 @@ int wal_strnicmp(const char *a, const char *b, int count) {
    return ca - cb;
 }
 
-/// @brief Publish queue item
-typedef struct MqttPublishItem
-{
-  char *topic;
-  char *channel;
-  char *value;
-  struct MqttPublishItem *next;
-} MqttPublishItem_t;
 MqttPublishItem_t *g_MqttPublishItem = NULL;
 
 OBK_Publish_Result PublishQueuedItem();
@@ -463,6 +455,16 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t *client, const
 static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t *client, const char *sChannel, const char *sVal, int flags, bool appendGet)
 {
   return MQTT_PublishTopicToClient(mqtt_client, CFG_GetShortDeviceName(), sChannel, sVal, flags, appendGet);
+}
+
+/// @brief Publish a MQTT message immediately.
+/// @param sTopic 
+/// @param sChannel 
+/// @param sVal 
+/// @return 
+OBK_Publish_Result MQTT_Publish(char *sTopic, char *sChannel, char *sVal)
+{
+  return MQTT_PublishTopicToClient(mqtt_client, sTopic, sChannel, sVal, 0, false);
 }
 
 void MQTT_OBK_Printf( char *s) {
@@ -992,7 +994,7 @@ void MQTT_QueuePublish(char *topic, char *channel, char *value){
 OBK_Publish_Result PublishQueuedItem(){
   OBK_Publish_Result result = OBK_PUBLISH_WAS_NOT_REQUIRED;
 
-  for(int i = 0;i < 3;i++){
+  for(int i = 0;i < QUEUED_IETMS_PUBLISHED_AT_ONCE;i++){
     MqttPublishItem_t *head = g_MqttPublishItem;
     if (head == NULL){  //Nothing to do
       return result;
