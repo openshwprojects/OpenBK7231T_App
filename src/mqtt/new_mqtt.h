@@ -39,6 +39,18 @@ typedef struct mqtt_request_tag {
     char topic[128];
 } mqtt_request_t;
 
+/// @brief Publish queue item
+typedef struct MqttPublishItem
+{
+  char *topic;
+  char *channel;
+  char *value;
+  struct MqttPublishItem *next;
+} MqttPublishItem_t;
+
+// Count of queued items published at once.
+#define QUEUED_IETMS_PUBLISHED_AT_ONCE	3
+
 // callback function for mqtt.
 // return 0 to allow the incoming topic/data to be processed by others/channel set.
 // return 1 to 'eat the packet and terminate further processing.
@@ -58,6 +70,7 @@ OBK_Publish_Result MQTT_PublishMain_StringString(const char *sChannel, const cha
 OBK_Publish_Result MQTT_ChannelChangeCallback(int channel, int iVal);
 void MQTT_PublishOnlyDeviceChannelsIfPossible();
 void MQTT_QueuePublish(char *topic, char *channel, char *value);
+OBK_Publish_Result MQTT_Publish(char *sTopic, char *sChannel, char *value);
 
 #endif // __NEW_MQTT_H__
 
