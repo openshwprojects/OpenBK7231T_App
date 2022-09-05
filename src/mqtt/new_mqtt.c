@@ -432,7 +432,7 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t *client, const
   
   char *pub_topic = (char *)os_malloc(strlen(sTopic) + 1 + strlen(sChannel) + 5 + 1);
 	sprintf(pub_topic, "%s/%s%s", sTopic, sChannel, (appendGet == true ? "/get" : ""));
-  addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publishing to %s",pub_topic);
+  addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publishing to %s retain=%i",pub_topic, retain);
   err = mqtt_publish(client, pub_topic, sVal, strlen(sVal), qos, retain, mqtt_pub_request_cb, 0);
   os_free(pub_topic);
 
@@ -462,10 +462,11 @@ static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t *client, const char *sC
 /// @param sTopic 
 /// @param sChannel 
 /// @param sVal 
+/// @param flags
 /// @return 
-OBK_Publish_Result MQTT_Publish(char *sTopic, char *sChannel, char *sVal)
+OBK_Publish_Result MQTT_Publish(char *sTopic, char *sChannel, char *sVal, int flags)
 {
-  return MQTT_PublishTopicToClient(mqtt_client, sTopic, sChannel, sVal, 0, false);
+  return MQTT_PublishTopicToClient(mqtt_client, sTopic, sChannel, sVal, flags, false);
 }
 
 void MQTT_OBK_Printf( char *s) {
@@ -965,13 +966,15 @@ char *_strdup(char *src) {
 /// @param topic 
 /// @param channel 
 /// @param value 
-void MQTT_QueuePublish(char *topic, char *channel, char *value){
+/// @param flags
+void MQTT_QueuePublish(char *topic, char *channel, char *value, int flags){
   MqttPublishItem_t *newItem = os_malloc(sizeof(MqttPublishItem_t));
 
   //Make copies of all string values. Using built in strdup was causing a crash so I create a local version.
   newItem->topic = _strdup(topic);
   newItem->channel = _strdup(channel);
   newItem->value = _strdup(value);
+  newItem->flags = flags;
   newItem->next = NULL;
 
   if (g_MqttPublishItem == NULL){
@@ -1000,7 +1003,7 @@ OBK_Publish_Result PublishQueuedItem(){
       return result;
     }
     
-    result = MQTT_PublishTopicToClient(mqtt_client, head->topic, head->channel, head->value, 0, false);
+    result = MQTT_PublishTopicToClient(mqtt_client, head->topic, head->channel, head->value, head->flags, false);
     g_MqttPublishItem = head->next;
 
     os_free(head->topic);
