@@ -121,6 +121,21 @@ void postFormAction(http_request_t *request, char *action, char *value){
     //"<form action=\"cfg_pins\"><input type=\"submit\" value=\"Configure Module\"/></form>"
     hprintf128(request,"<form action=\"%s\"><input type=\"submit\" value=\"%s\"/></form>", action, value);
 }
+/// @brief Generate a pair of label and field elements.
+/// @param request 
+/// @param label 
+/// @param fieldId This also gets used as the field name
+/// @param value 
+/// @param preContent 
+void add_label_field(http_request_t *request, char *label, char *fieldId, const char *value, char *preContent){
+    if (strlen(preContent) > 0){
+        poststr(request, preContent);
+    }
+    
+    //These individual strings should be less than 256 .. yes hprintf128 uses 256 char buffer
+    hprintf128(request, "<label for=\"%s\">%s:</label><br>", fieldId, label);
+    hprintf128(request, "<input type=\"text\" id=\"%s\" name=\"%s\" value=\"%s\">", fieldId, fieldId, value);
+}
 
 int http_fn_testmsg(http_request_t *request) {
     poststr(request,"This is just a test msg\n\n");
@@ -140,63 +155,63 @@ int http_fn_index(http_request_t *request) {
 
     // use ?state URL parameter to only request current state
     if(!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
-    http_setup(request, httpMimeTypeHTML);
+        http_setup(request, httpMimeTypeHTML);
         http_html_start(request, NULL);
 
         poststr(request, "<div id=\"changed\">");
-    if(http_getArg(request->url,"tgl",tmpA,sizeof(tmpA))) {
-        j = atoi(tmpA);
-		if(j == SPECIAL_CHANNEL_LEDPOWER) {
-			hprintf128(request,"<h3>Toggled LED power!</h3>",j);
-		} else {
-			hprintf128(request,"<h3>Toggled %i!</h3>",j);
-		}
-        CHANNEL_Toggle(j);
-    }
-    if(http_getArg(request->url,"on",tmpA,sizeof(tmpA))) {
-        j = atoi(tmpA);
-        hprintf128(request,"<h3>Enabled %i!</h3>",j);
-        CHANNEL_Set(j,255,1);
-    }
-    if(http_getArg(request->url,"rgb",tmpA,sizeof(tmpA))) {
-        hprintf128(request,"<h3>Set RGB to %s!</h3>",tmpA);
-		LED_SetBaseColor(0,"led_basecolor",tmpA,0);
-    }
-	
-    if(http_getArg(request->url,"off",tmpA,sizeof(tmpA))) {
-        j = atoi(tmpA);
-        hprintf128(request,"<h3>Disabled %i!</h3>",j);
-        CHANNEL_Set(j,0,1);
-    }
-    if(http_getArg(request->url,"pwm",tmpA,sizeof(tmpA))) {
-        int newPWMValue = atoi(tmpA);
-        http_getArg(request->url,"pwmIndex",tmpA,sizeof(tmpA));
-        j = atoi(tmpA);
-		if(j == SPECIAL_CHANNEL_TEMPERATURE) {
-			hprintf128(request,"<h3>Changed Temperature to %i!</h3>",newPWMValue);
-		} else {
-			hprintf128(request,"<h3>Changed pwm %i to %i!</h3>",j,newPWMValue);
-		}
-        CHANNEL_Set(j,newPWMValue,1);
-    }
-    if(http_getArg(request->url,"dim",tmpA,sizeof(tmpA))) {
-        int newDimmerValue = atoi(tmpA);
-        http_getArg(request->url,"dimIndex",tmpA,sizeof(tmpA));
-		j  = atoi(tmpA);
-		if(j == SPECIAL_CHANNEL_BRIGHTNESS) {
-			hprintf128(request,"<h3>Changed LED brightness to %i!</h3>",newDimmerValue);
-		} else {
-			hprintf128(request,"<h3>Changed dimmer %i to %i!</h3>",j,newDimmerValue);
-		}
-        CHANNEL_Set(j,newDimmerValue,1);
-    }
-    if(http_getArg(request->url,"set",tmpA,sizeof(tmpA))) {
-        int newSetValue = atoi(tmpA);
-        http_getArg(request->url,"setIndex",tmpA,sizeof(tmpA));
-        j = atoi(tmpA);
-        hprintf128(request,"<h3>Changed channel %i to %i!</h3>",j,newSetValue);
-        CHANNEL_Set(j,newSetValue,1);
-    }
+        if(http_getArg(request->url,"tgl",tmpA,sizeof(tmpA))) {
+            j = atoi(tmpA);
+            if(j == SPECIAL_CHANNEL_LEDPOWER) {
+                hprintf128(request,"<h3>Toggled LED power!</h3>",j);
+            } else {
+                hprintf128(request,"<h3>Toggled %i!</h3>",j);
+            }
+            CHANNEL_Toggle(j);
+        }
+        if(http_getArg(request->url,"on",tmpA,sizeof(tmpA))) {
+            j = atoi(tmpA);
+            hprintf128(request,"<h3>Enabled %i!</h3>",j);
+            CHANNEL_Set(j,255,1);
+        }
+        if(http_getArg(request->url,"rgb",tmpA,sizeof(tmpA))) {
+            hprintf128(request,"<h3>Set RGB to %s!</h3>",tmpA);
+            LED_SetBaseColor(0,"led_basecolor",tmpA,0);
+        }
+        
+        if(http_getArg(request->url,"off",tmpA,sizeof(tmpA))) {
+            j = atoi(tmpA);
+            hprintf128(request,"<h3>Disabled %i!</h3>",j);
+            CHANNEL_Set(j,0,1);
+        }
+        if(http_getArg(request->url,"pwm",tmpA,sizeof(tmpA))) {
+            int newPWMValue = atoi(tmpA);
+            http_getArg(request->url,"pwmIndex",tmpA,sizeof(tmpA));
+            j = atoi(tmpA);
+            if(j == SPECIAL_CHANNEL_TEMPERATURE) {
+                hprintf128(request,"<h3>Changed Temperature to %i!</h3>",newPWMValue);
+            } else {
+                hprintf128(request,"<h3>Changed pwm %i to %i!</h3>",j,newPWMValue);
+            }
+            CHANNEL_Set(j,newPWMValue,1);
+        }
+        if(http_getArg(request->url,"dim",tmpA,sizeof(tmpA))) {
+            int newDimmerValue = atoi(tmpA);
+            http_getArg(request->url,"dimIndex",tmpA,sizeof(tmpA));
+            j  = atoi(tmpA);
+            if(j == SPECIAL_CHANNEL_BRIGHTNESS) {
+                hprintf128(request,"<h3>Changed LED brightness to %i!</h3>",newDimmerValue);
+            } else {
+                hprintf128(request,"<h3>Changed dimmer %i to %i!</h3>",j,newDimmerValue);
+            }
+            CHANNEL_Set(j,newDimmerValue,1);
+        }
+        if(http_getArg(request->url,"set",tmpA,sizeof(tmpA))) {
+            int newSetValue = atoi(tmpA);
+            http_getArg(request->url,"setIndex",tmpA,sizeof(tmpA));
+            j = atoi(tmpA);
+            hprintf128(request,"<h3>Changed channel %i to %i!</h3>",j,newSetValue);
+            CHANNEL_Set(j,newSetValue,1);
+        }
         if(http_getArg(request->url,"restart",tmpA,sizeof(tmpA))) {
             poststr(request,"<h5> Module will restart soon</h5>");
             RESET_ScheduleModuleReset(3);
@@ -375,7 +390,7 @@ int http_fn_index(http_request_t *request) {
             hprintf128(request,"<form action=\"index\" id=\"form%i\">",i);
             hprintf128(request,"<input type=\"range\" min=\"0\" max=\"100\" name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">",inputName,i,pwmValue);
             hprintf128(request,"<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">",inputName,i);
-            hprintf128(request,"<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>",i);
+            hprintf128(request,"<input type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>",i);
             poststr(request, "</td></tr>");
         }
     }
@@ -553,43 +568,28 @@ int http_fn_about(http_request_t *request){
     return 0;
 }
 
-
-
-
 int http_fn_cfg_mqtt(http_request_t *request) {
-    int i;
     http_setup(request, httpMimeTypeHTML);
     http_html_start(request, "MQTT");
-    poststr(request,"<h2> Use this to connect to your MQTT</h2>");
-    poststr(request,"<form action=\"/cfg_mqtt_set\">\
-            <label for=\"host\">Host:</label><br>\
-            <input type=\"text\" id=\"host\" name=\"host\" value=\"");
+    
+    poststr(request,"<h2>Use this to connect to your MQTT</h2>");
+    
+    add_label_field(request, "Host", "host", CFG_GetMQTTHost(), "<form action=\"/cfg_mqtt_set\">");
 
-    poststr(request,CFG_GetMQTTHost());
-    poststr(request,"\"><br>\
-            <label for=\"port\">Port:</label><br>\
-            <input type=\"text\" id=\"port\" name=\"port\" value=\"");
-    i = CFG_GetMQTTPort();
-    hprintf128(request, "%i", i);
-    poststr(request,"\"><br><br>\
-            <label for=\"port\">Client ID:</label><br>\
-            <input type=\"text\" id=\"client\" name=\"client\" value=\"");
+    char port[7];   //Max possible port is 65536
+    sprintf(port, "%i", CFG_GetMQTTPort());
+    add_label_field(request, "Port", "port", port, "<br>");
 
-    poststr(request,CFG_GetMQTTClientId());
-    poststr(request,"\"><br>\
-            <label for=\"user\">User:</label><br>\
-            <input type=\"text\" id=\"user\" name=\"user\" value=\"");
-    poststr(request,CFG_GetMQTTUserName());
-    poststr(request,"\"><br>\
-            <label for=\"port\">Password:</label><br>\
-            <input type=\"text\" id=\"password\" name=\"password\" value=\"");
-    poststr(request,CFG_GetMQTTPass());
-    poststr(request,"\"><br>\
+    add_label_field(request, "Client", "client", CFG_GetMQTTBrokerName(), "<br><br>");
+    add_label_field(request, "User", "user", CFG_GetMQTTUserName(), "<br>");
+    add_label_field(request, "Password", "password", CFG_GetMQTTPass(), "<br>");
+    
+    poststr(request,"<br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MQTT data twice?')\">\
         </form> ");
     poststr(request,htmlFooterReturnToCfgLink);
     http_html_end(request);
-	poststr(request, NULL);
+    poststr(request, NULL);
     return 0;
 }
 
@@ -1244,12 +1244,12 @@ int http_fn_cfg_quick(http_request_t *request) {
 void get_Relay_PWM_Count(int *relayCount, int *pwmCount){
     (*relayCount) = 0;
     (*pwmCount) = 0;
-
+    
     for(int i = 0; i < PLATFORM_GPIO_MAX; i++) {
         int role = PIN_GetPinRoleForPinIndex(i);
         if(role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
             (*relayCount)++;
-        }
+}
         else if(role == IOR_PWM || role == IOR_PWM_n) {
             (*pwmCount)++;
         }
@@ -1262,8 +1262,8 @@ void get_Relay_PWM_Count(int *relayCount, int *pwmCount){
 int http_fn_ha_discovery(http_request_t *request) {
     int i;
     char topic[32];
-    int relayCount=0;
-    int pwmCount=0;
+    int relayCount = 0;
+    int pwmCount = 0;
 
     http_setup(request, httpMimeTypeText);
     get_Relay_PWM_Count(&relayCount, &pwmCount);
@@ -1337,7 +1337,7 @@ int http_fn_ha_cfg(http_request_t *request) {
     poststr(request,"<textarea rows=\"40\" cols=\"50\">");
 
     get_Relay_PWM_Count(&relayCount, &pwmCount);
-    
+
     if(relayCount > 0) {
         char switchAdded = 0;
 
