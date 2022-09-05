@@ -121,20 +121,43 @@ void postFormAction(http_request_t *request, char *action, char *value){
     //"<form action=\"cfg_pins\"><input type=\"submit\" value=\"Configure Module\"/></form>"
     hprintf128(request,"<form action=\"%s\"><input type=\"submit\" value=\"%s\"/></form>", action, value);
 }
+
 /// @brief Generate a pair of label and field elements.
 /// @param request 
 /// @param label 
 /// @param fieldId This also gets used as the field name
 /// @param value 
 /// @param preContent 
-void add_label_field(http_request_t *request, char *label, char *fieldId, const char *value, char *preContent){
+void add_label_input(http_request_t *request, char *inputType, char *label, char *fieldId, const char *value, char *preContent){
     if (strlen(preContent) > 0){
         poststr(request, preContent);
     }
     
     //These individual strings should be less than 256 .. yes hprintf128 uses 256 char buffer
     hprintf128(request, "<label for=\"%s\">%s:</label><br>", fieldId, label);
-    hprintf128(request, "<input type=\"text\" id=\"%s\" name=\"%s\" value=\"%s\">", fieldId, fieldId, value);
+    hprintf128(request, "<input type=\"%s\" id=\"%s\" name=\"%s\" value=\"%s\">", inputType, fieldId, fieldId, value);
+}
+
+/// @brief Generates a pair of label and text field elements.
+/// @param request 
+/// @param label Label for the field
+/// @param fieldId Field id, this also gets used as the name
+/// @param value String value
+/// @param preContent Content before the label
+void add_label_field(http_request_t *request, char *label, char *fieldId, const char *value, char *preContent){
+    add_label_input(request, "text", label, fieldId, value, preContent);
+}
+
+/// @brief Generate a pair of label and numeric field elements.
+/// @param request 
+/// @param label Label for the field
+/// @param fieldId Field id, this also gets used as the name
+/// @param value Integer value
+/// @param preContent Content before the label
+void add_label_numeric_field(http_request_t *request, char *label, char *fieldId, int value, char *preContent){
+    char strValue[32];
+    sprintf(strValue, "%i", value);
+    add_label_input(request, "number", label, fieldId, strValue, preContent);
 }
 
 int http_fn_testmsg(http_request_t *request) {
@@ -571,15 +594,9 @@ int http_fn_about(http_request_t *request){
 int http_fn_cfg_mqtt(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
     http_html_start(request, "MQTT");
-    
     poststr(request,"<h2>Use this to connect to your MQTT</h2>");
-    
     add_label_field(request, "Host", "host", CFG_GetMQTTHost(), "<form action=\"/cfg_mqtt_set\">");
-
-    char port[7];   //Max possible port is 65536
-    sprintf(port, "%i", CFG_GetMQTTPort());
-    add_label_field(request, "Port", "port", port, "<br>");
-
+    add_label_numeric_field(request, "Port", "port", CFG_GetMQTTPort(), "<br>");
     add_label_field(request, "Client", "client", CFG_GetMQTTBrokerName(), "<br><br>");
     add_label_field(request, "User", "user", CFG_GetMQTTUserName(), "<br>");
     add_label_field(request, "Password", "password", CFG_GetMQTTPass(), "<br>");
