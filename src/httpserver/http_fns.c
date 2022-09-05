@@ -1278,7 +1278,7 @@ int http_fn_ha_discovery(http_request_t *request) {
         for(i = 0; i < CHANNEL_MAX; i++) {
             if(h_isChannelRelay(i)) {
                 HassDeviceInfo *dev_info = hass_init_device_info(ENTITY_RELAY, i, "1", "0");
-                MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info));
+                MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
                 hass_free_device_info(dev_info);
             }
         }
@@ -1298,7 +1298,7 @@ int http_fn_ha_discovery(http_request_t *request) {
                 sprintf(tmp,"%s/%i/set",baseName,i);
                 cJSON_AddStringToObject(dev_info->root, "bri_cmd_t", tmp);    //brightness_command_topic
 
-                MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info));
+                MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
                 hass_free_device_info(dev_info);
             }
         }
