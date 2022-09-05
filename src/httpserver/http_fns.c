@@ -97,7 +97,21 @@ int http_fn_empty_url(http_request_t *request) {
     return 0;
 }
 
-
+/// @brief Generate a pair of label and field elements.
+/// @param request 
+/// @param label 
+/// @param fieldId This also gets used as the field name
+/// @param value 
+/// @param preContent 
+void add_label_field(http_request_t *request, char *label, char *fieldId, const char *value, char *preContent){
+    if (strlen(preContent) > 0){
+        poststr(request, preContent);
+    }
+    
+    //These individual strings should be less than 256 .. yes hprintf128 uses 256 char buffer
+    hprintf128(request, "<label for=\"%s\">%s:</label><br>", fieldId, label);
+    hprintf128(request, "<input type=\"text\" id=\"%s\" name=\"%s\" value=\"%s\">", fieldId, fieldId, value);
+}
 
 int http_fn_testmsg(http_request_t *request) {
     poststr(request,"This is just a test msg\n\n");
@@ -530,43 +544,28 @@ int http_fn_about(http_request_t *request){
     return 0;
 }
 
-
-
-
 int http_fn_cfg_mqtt(http_request_t *request) {
-    int i;
     http_setup(request, httpMimeTypeHTML);
     http_html_start(request, "MQTT");
-    poststr(request,"<h2> Use this to connect to your MQTT</h2>");
-    poststr(request,"<form action=\"/cfg_mqtt_set\">\
-            <label for=\"host\">Host:</label><br>\
-            <input type=\"text\" id=\"host\" name=\"host\" value=\"");
+    
+    poststr(request,"<h2>Use this to connect to your MQTT</h2>");
+    
+    add_label_field(request, "Host", "host", CFG_GetMQTTHost(), "<form action=\"/cfg_mqtt_set\">");
 
-    poststr(request,CFG_GetMQTTHost());
-    poststr(request,"\"><br>\
-            <label for=\"port\">Port:</label><br>\
-            <input type=\"text\" id=\"port\" name=\"port\" value=\"");
-    i = CFG_GetMQTTPort();
-    hprintf128(request, "%i", i);
-    poststr(request,"\"><br><br>\
-            <label for=\"port\">Client:</label><br>\
-            <input type=\"text\" id=\"client\" name=\"client\" value=\"");
+    char port[7];   //Max possible port is 65536
+    sprintf(port, "%i", CFG_GetMQTTPort());
+    add_label_field(request, "Port", "port", port, "<br>");
 
-    poststr(request,CFG_GetMQTTBrokerName());
-    poststr(request,"\"><br>\
-            <label for=\"user\">User:</label><br>\
-            <input type=\"text\" id=\"user\" name=\"user\" value=\"");
-    poststr(request,CFG_GetMQTTUserName());
-    poststr(request,"\"><br>\
-            <label for=\"port\">Password:</label><br>\
-            <input type=\"text\" id=\"password\" name=\"password\" value=\"");
-    poststr(request,CFG_GetMQTTPass());
-    poststr(request,"\"><br>\
+    add_label_field(request, "Client", "client", CFG_GetMQTTBrokerName(), "<br><br>");
+    add_label_field(request, "User", "user", CFG_GetMQTTUserName(), "<br>");
+    add_label_field(request, "Password", "password", CFG_GetMQTTPass(), "<br>");
+    
+    poststr(request,"<br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MQTT data twice?')\">\
         </form> ");
     poststr(request,htmlFooterReturnToCfgLink);
     http_html_end(request);
-	poststr(request, NULL);
+    poststr(request, NULL);
     return 0;
 }
 
