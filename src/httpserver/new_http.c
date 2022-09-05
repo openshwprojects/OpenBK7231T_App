@@ -19,12 +19,71 @@ const char httpMimeTypeHTML[] = "text/html" ;              // HTML MIME type
 const char httpMimeTypeText[] = "text/plain" ;           // TEXT MIME type
 const char httpMimeTypeJson[] = "application/json" ;           // TEXT MIME type
 const char httpMimeTypeBinary[] = "application/octet-stream" ;   // binary/file MIME type
-const char htmlHeader[] = "<!DOCTYPE html><html><head><style>div,fieldset,input,select{padding:5px;font-size:1em;margin: 0 0 0.2em 0}fieldset{background:#4f4f4f;}p{margin:0.5em 0;}input{width:100%;box-sizing:border-box;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;background:#dddddd;color:#000000;}form{margin-bottom:0.5em}input[type=checkbox],input[type=radio]{width:1em;margin-right:6px;vertical-align:-1px;}input[type=range]{width:99%;}select{width:100%;background:#dddddd;color:#000000;}textarea{resize:vertical;width:98%;height:318px;padding:5px;overflow:auto;background:#1f1f1f;color:#65c115;}body{text-align:center;font-family:verdana,sans-serif;background:#21333e; color:#eaeaea}h1 a{background:#21333e; color:#eaeaea}td{padding:0px;}input[type=submit]{border:0;border-radius:0.3rem;background:#1fa3ec;color:#faffff;line-height:2.4rem;font-size:1.2rem;width:100%;-webkit-transition-duration:0.4s;transition-duration:0.4s;cursor:pointer;margin-buttom:0.5em}input[type=submit]:hover{background:#0e70a4;}.bred{background:#d43535 !important;}.bred:hover{background:#931f1f !important;}.bgrn{background:#47c266 !important;}.bgrn:hover{background:#5aaf6f !important;}a{color:#1fa3ec;text-decoration:none;}.p{float:left;text-align:left;}.q{float:right;text-align:right;}.r{border-radius:0.3em;padding:2px;margin:6px 2px;}.hf{display:none;}.hdiv{width:95%;white-space:nowrap;}.hele{width:210px;display:inline-block;margin-left:2px;}</style></head><body><div style=\"text-align:left; display:inline-block; color:#eaeaea; min-width:340px;max-width:800px;\">" ;
-//const char htmlHeader[] = "<!DOCTYPE html><html><body>" ;
-const char htmlEnd[] = "</div></body></html>" ;
-const char htmlReturnToMenu[] = "<a href=\"index\">Return to menu</a>";
-const char htmlRefresh[] = "<a href=\"index\">Refresh</a>";
-const char htmlReturnToCfg[] = "<a href=\"cfg\">Return to cfg</a>";
+const char htmlDoctype[] =
+    "<!DOCTYPE html><html>";
+const char htmlHeadMain[] =
+	"<meta charset=\"utf-8\">"
+	"<meta name=\"viewport\" content=\"width=device-width,initial-scale=1,user-scalable=no\">"
+	"<meta name=\"robots\" content=\"none\">";
+const char htmlHeadStyle[] =
+	"<style>"
+		"div,fieldset,input,select{padding:5px;font-size:"
+		"1em;margin: 0 0 0.2em 0}"
+		"fieldset{background:#4f4f4f;}"
+		"p{margin:0.5em 0;}"
+		"input{width:100%;box-sizing:border-box;-webkit-box-sizing:border-box;-"
+		"moz-box-sizing:border-box;background:#dddddd;color:#000000;}"
+		"form{margin-bottom:0.5em}"
+		"input[type=checkbox],input[type=radio]{width:1em;margin-"
+		"right:6px;vertical-align:-1px;}"
+		"input[type=range]{width:99%;}"
+		"select{width:100%;background:#dddddd;color:#000000;}"
+		"textarea{resize:vertical;width:98%;height:318px;padding:5px;"
+		"overflow:auto;background:#1f1f1f;color:#65c115;}"
+		"body{text-align:center;font-family:verdana,sans-serif;background:#21333e; "
+		"color:#eaeaea}"
+		"h1 a{background:#21333e; color:#eaeaea}"
+		"td{padding:0px;}"
+		"input[type=submit]{border:0;border-radius:0.3rem;background:#1fa3ec;"
+		"color:#faffff;line-height:2.4rem;font-size:1.2rem;"
+		"width:100%;-webkit-transition-duration:0.4s;transition-duration:0.4s;"
+		"cursor:pointer;margin-buttom:0.5em}"
+		"input[type=submit]:hover{background:#0e70a4;}"
+		".bred{background:#d43535 !important;}"
+		".bred:hover{background:#931f1f !important;}"
+		".bgrn{background:#47c266 !important;}"
+		".bgrn:hover{background:#5aaf6f !important;}"
+		"a{color:#1fa3ec;text-decoration:none;}"
+		".p{float:left;text-align:left;}"
+		".q{float:right;text-align:right;}"
+		".r{border-radius:0.3em;padding:2px;margin:6px 2px;}"
+		".hf{display:none;}"
+		".hdiv{width:95%;white-space:nowrap;}"
+		".hele{width:210px;display:inline-block;margin-left:2px;}"
+		"div#state{padding:0} div#changed{padding:0}"
+		"div#main{text-align:left; display:inline-block; color:#eaeaea;min-width:340px;max-width:800px;}"
+		"table{table-layout:fixed}"
+	"</style>";
+const char htmlBodyStart[] =
+	"<body>"
+	"<noscript>To use this device, please enable JavaScript.<br></noscript>"
+	"<div id=\"main\">"
+    "<h1>"
+	"<a target=\"_blank\" href=\"https://github.com/openshwprojects/OpenBK7231T_App/\">";
+const char htmlBodyStart2[] = 
+    "</a></h1>";
+const char htmlBodyEnd[] = "</div></body></html>" ;
+
+const char htmlFooterReturnToMenu[] = "<a href=\"index\">Return to menu</a>";
+const char htmlFooterRefreshLink[] = "<a href=\"index\">Refresh</a>";
+const char htmlFooterReturnToCfgLink[] = "<a href=\"cfg\">Return to cfg</a>";
+
+const char htmlFooterInfo[] =
+    "<a target=\"_blank\" "
+    "href=\"https://www.elektroda.com/rtvforum/"
+    "viewtopic.php?p=19841301#19841301\">Read more</a> | "
+	"<a target=\"_blank\" "
+    "href=\"https://paypal.me/openshwprojects\">Support project</a><br>";
 
 // make sure that USER_SW_VER is set on all platforms
 #ifndef USER_SW_VER
@@ -140,6 +199,46 @@ void http_setup(http_request_t *request, const char *type){
 	poststr(request,httpCorsHeaders);
 	poststr(request,"\r\n"); // end headers with double CRLF
 	poststr(request,"\r\n");
+}
+
+void http_html_start(http_request_t *request, const char *pagename) {
+// void HTTP_AddHeader(http_request_t *request) {
+	poststr(request, htmlDoctype);
+	poststr(request, "<title>");
+	poststr(request, CFG_GetDeviceName()); // todo: check escaping
+	if (pagename) {
+		poststr(request, " - ");
+		poststr(request, pagename);
+	} 
+	poststr(request, "</title>");
+	poststr(request, htmlHeadMain);
+	poststr(request, htmlHeadStyle);
+	poststr(request, htmlBodyStart);
+	poststr(request, CFG_GetDeviceName()); // todo: check escaping
+	poststr(request, htmlBodyStart2);
+}
+
+void http_html_end(http_request_t *request) {
+// was void HTTP_AddBuildFooter(http_request_t *request) {
+	char upTimeStr[128];
+	unsigned char mac[32];
+
+	poststr(request, " | ");
+	poststr(request, htmlFooterInfo);
+	poststr(request, "<br>");
+	poststr(request, g_build_str);
+	poststr(request, "<br>Online for ");
+	misc_formatUpTimeString(Time_getUpTimeSeconds(), upTimeStr);
+	poststr(request, upTimeStr);
+
+	WiFI_GetMacAddress((char *)mac);
+
+	sprintf(upTimeStr, "<br>Device MAC: %02X:%02X:%02X:%02X:%02X:%02X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
+	poststr(request, upTimeStr);
+	sprintf(upTimeStr, "<br>Short name: %s, Chipset %s",CFG_GetShortDeviceName(),PLATFORM_MCU_NAME);
+	poststr(request, upTimeStr);
+
+	poststr(request, htmlBodyEnd);
 }
 
 const char *http_checkArg(const char *p, const char *n) {
@@ -293,37 +392,6 @@ void setupAllWB2SPinsAsButtons() {
 
 		PIN_SetPinRoleForPinIndex(27,IOR_Button);
 		PIN_SetPinChannelForPinIndex(27,1);
-}
-
-
-
-
-const char *g_header_start = "<h1><a href=\"https://github.com/openshwprojects/OpenBK7231T_App/\">";
-const char *g_header_end = "</a></h1><h3><a href=\"https://www.elektroda.com/rtvforum/viewtopic.php?p=19841301#19841301\">[Read more]</a><a href=\"https://paypal.me/openshwprojects\">[Support project]</a></h3>";
-
-
-void HTTP_AddHeader(http_request_t *request) {
-	poststr(request,g_header_start);
-	poststr(request,CFG_GetDeviceName());
-	poststr(request,g_header_end);
-}
-
-void HTTP_AddBuildFooter(http_request_t *request) {
-	char upTimeStr[128];
-	unsigned char mac[32];
-
-	poststr(request,"<br>");
-	poststr(request,g_build_str);
-	poststr(request,"<br> Online for ");
-	misc_formatUpTimeString(Time_getUpTimeSeconds(), upTimeStr);
-	poststr(request,upTimeStr);
-
-	WiFI_GetMacAddress((char *)mac);
-
-	sprintf(upTimeStr,"<br> Device MAC: %02X%02X%02X%02X%02X%02X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
-	poststr(request,upTimeStr);
-	sprintf(upTimeStr,"<br> Short name: %s, Chipset %s",CFG_GetShortDeviceName(),PLATFORM_MCU_NAME);
-	poststr(request,upTimeStr);
 }
 
 // add some more output safely, sending if necessary.
