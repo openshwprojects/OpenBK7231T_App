@@ -1395,12 +1395,11 @@ int http_fn_ha_cfg(http_request_t *request) {
     }
 
     poststr(request,"</textarea>");
-    
-    poststr(request,htmlFooterReturnToCfgLink);
     poststr(request,"<br/><div><label for=\"ha_disc_topic\">Discovery topic:</label><input id=\"ha_disc_topic\" value=\"homeassistant\"><button onclick=\"send_ha_disc();\">Start Home Assistant Discovery</button>&nbsp;<form action=\"cfg_mqtt\" style=\"display:inline-block;\"><button type=\"submit\">Configure MQTT</button></form></div><br/>");
-    
+    poststr(request,htmlFooterReturnToCfgLink);
     http_html_end(request);
-	poststr(request, NULL);
+    poststr(request, HomeAssistantDiscoveryScript);
+    poststr(request, NULL);
     return 0;
 }
 
@@ -1573,7 +1572,7 @@ int http_fn_cfg(http_request_t *request) {
 #endif
     poststr(request,htmlFooterReturnToMenu);
     http_html_end(request);
-	poststr(request, NULL);
+    poststr(request, NULL);
     return 0;
 }
 
