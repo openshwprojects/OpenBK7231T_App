@@ -333,7 +333,7 @@ int channelSet(mqtt_request_t* request){
 }
 
 
-// this accepts cmnd/<basename>/<xxx> to receive data to set channels
+// this accepts cmnd/<clientId>/<xxx> to receive data to set channels
 int tasCmnd(mqtt_request_t* request){
   // we only need a few bytes to receive a decimal number 0-100
   char copy[64];
@@ -395,7 +395,7 @@ static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t *client, const char *sC
   //int myValue;
   u8_t qos = 2; /* 0 1 or 2, see MQTT specification */
   u8_t retain = 0; /* No don't retain such crappy payload... */
-	const char *baseName;
+	const char *clientId;
 
 
 
@@ -432,9 +432,9 @@ static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t *client, const char *sC
 
   addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publishing %s = %s \n",sChannel,sVal);
 
-	baseName = CFG_GetShortDeviceName();
+	clientId = CFG_GetMQTTClientId();
 
-	sprintf(pub_topic,"%s/%s%s",baseName,sChannel, (appendGet == true ? "/get" : ""));
+	sprintf(pub_topic,"%s/%s%s",clientId,sChannel, (appendGet == true ? "/get" : ""));
   err = mqtt_publish(client, pub_topic, sVal, strlen(sVal), qos, retain, mqtt_pub_request_cb, 0);
   if(err != ERR_OK) {
 	 if(err == ERR_CONN) {
@@ -520,7 +520,7 @@ static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection
 {
   int i;
 	char tmp[64];
-	const char *baseName;
+	const char *clientId;
   err_t err = ERR_OK;
   const struct mqtt_connect_client_info_t* client_info = (const struct mqtt_connect_client_info_t*)arg;
   LWIP_UNUSED_ARG(client);
@@ -555,9 +555,9 @@ static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection
       }
     }
 
-  	baseName = CFG_GetShortDeviceName();
+  	clientId = CFG_GetMQTTClientId();
 
-    sprintf(tmp,"%s/connected",baseName);
+    sprintf(tmp,"%s/connected",clientId);
     err = mqtt_publish(client, tmp, "online", strlen("online"), 2, true, mqtt_pub_request_cb, 0);
     if(err != ERR_OK) {
       addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publish err: %d\n", err);
@@ -596,8 +596,7 @@ static void MQTT_do_connect(mqtt_client_t *client)
 
   mqtt_userName = CFG_GetMQTTUserName();
   mqtt_pass = CFG_GetMQTTPass();
-  //mqtt_clientID = CFG_GetMQTTBrokerName();
-  mqtt_clientID = CFG_GetShortDeviceName();
+  mqtt_clientID = CFG_GetMQTTClientId();
   mqtt_host = CFG_GetMQTTHost();
 	mqtt_port = CFG_GetMQTTPort();
 
@@ -620,7 +619,7 @@ static void MQTT_do_connect(mqtt_client_t *client)
   mqtt_client_info.client_pass = mqtt_pass;
   mqtt_client_info.client_user = mqtt_userName;
 
-	sprintf(will_topic,"%s/connected",CFG_GetShortDeviceName());
+	sprintf(will_topic,"%s/connected",CFG_GetMQTTClientId());
   mqtt_client_info.will_topic = will_topic;
   mqtt_client_info.will_msg = "offline";
   mqtt_client_info.will_retain = true,
@@ -734,18 +733,18 @@ OBK_Publish_Result MQTT_PublishCommand(const void *context, const char *cmd, con
 void MQTT_init(){
 	char cbtopicbase[64];
 	char cbtopicsub[64];
-  const char *baseName;
-	baseName = CFG_GetShortDeviceName();
+  const char *clientId;
+	clientId = CFG_GetMQTTClientId();
 
   // register the main set channel callback
-	sprintf(cbtopicbase,"%s/",baseName);
-  sprintf(cbtopicsub,"%s/+/set",baseName);
+	sprintf(cbtopicbase,"%s/",clientId);
+  sprintf(cbtopicsub,"%s/+/set",clientId);
   // note: this may REPLACE an existing entry with the same ID.  ID 1 !!!
   MQTT_RegisterCallback( cbtopicbase, cbtopicsub, 1, channelSet);
 
   // register the TAS cmnd callback
-	sprintf(cbtopicbase,"cmnd/%s/",baseName);
-  sprintf(cbtopicsub,"cmnd/%s/+",baseName);
+	sprintf(cbtopicbase,"cmnd/%s/",clientId);
+  sprintf(cbtopicsub,"cmnd/%s/+",clientId);
   // note: this may REPLACE an existing entry with the same ID.  ID 2 !!!
   MQTT_RegisterCallback( cbtopicbase, cbtopicsub, 2, tasCmnd);
 

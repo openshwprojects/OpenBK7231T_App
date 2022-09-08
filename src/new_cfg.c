@@ -18,11 +18,12 @@ int g_cfg_pendingChanges = 0;
 #define CFG_IDENT_1 'F'
 #define CFG_IDENT_2 'G'
 
-#define MAIN_CFG_VERSION 2
+#define MAIN_CFG_VERSION 3
 
 // version v1
 // Version v2 is now flexible and doesnt have to be duplicated
 // in order to support previous versions any more
+// Version v3 moves shortName to MQTT Client ID
 typedef struct mainConfig_v1_s {
 	byte ident0;
 	byte ident1;
@@ -40,7 +41,7 @@ typedef struct mainConfig_v1_s {
 	char wifi_pass[64];
 	// MQTT information for Home Assistant
 	char mqtt_host[256];
-	char mqtt_brokerName[64];
+	char mqtt_clientId[64]; // was mqtt_brokerName[]
 	char mqtt_userName[64];
 	char mqtt_pass[128];
 	int mqtt_port;
@@ -68,7 +69,7 @@ static byte CFG_CalcChecksum_V1(mainConfig_v1_t *inf) {
 	crc ^= Tiny_CRC8((const char*)&inf->wifi_ssid,sizeof(inf->wifi_ssid));
 	crc ^= Tiny_CRC8((const char*)&inf->wifi_pass,sizeof(inf->wifi_pass));
 	crc ^= Tiny_CRC8((const char*)&inf->mqtt_host,sizeof(inf->mqtt_host));
-	crc ^= Tiny_CRC8((const char*)&inf->mqtt_brokerName,sizeof(inf->mqtt_brokerName));
+	crc ^= Tiny_CRC8((const char*)&inf->mqtt_clientId,sizeof(inf->mqtt_clientId));
 	crc ^= Tiny_CRC8((const char*)&inf->mqtt_userName,sizeof(inf->mqtt_userName));
 	crc ^= Tiny_CRC8((const char*)&inf->mqtt_pass,sizeof(inf->mqtt_pass));
 	crc ^= Tiny_CRC8((const char*)&inf->mqtt_port,sizeof(inf->mqtt_port));
@@ -124,7 +125,7 @@ void CFG_SetDefaultConfig() {
 	g_cfg.timeRequiredToMarkBootSuccessfull = DEFAULT_BOOT_SUCCESS_TIME;
 	strcpy(g_cfg.ping_host,"192.168.0.1");
 	strcpy(g_cfg.mqtt_host, "192.168.0.113");
-	strcpy(g_cfg.mqtt_brokerName, "test");
+	// g_cfg.mqtt_clientId is set as shortDeviceName below
 	strcpy(g_cfg.mqtt_userName, "homeassistant");
 	strcpy(g_cfg.mqtt_pass, "qqqqqqqqqq");
 	// already zeroed but just to remember, open AP by default
@@ -136,6 +137,7 @@ void CFG_SetDefaultConfig() {
 	// Long unique device name, like OpenBK7231T_AABBCCDD
 	sprintf(g_cfg.longDeviceName,DEVICENAME_PREFIX_FULL"_%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
 	sprintf(g_cfg.shortDeviceName,DEVICENAME_PREFIX_SHORT"%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
+	strcpy_safe(g_cfg.mqtt_clientId, g_cfg.shortDeviceName, sizeof(g_cfg.mqtt_clientId));
 
 	strcpy(g_cfg.ntpServer, "217.147.223.78");	//bart.nexellent.net
 
@@ -286,8 +288,8 @@ void CFG_SetWiFiPass(const char *s) {
 const char *CFG_GetMQTTHost() {
 	return g_cfg.mqtt_host;
 }
-const char *CFG_GetMQTTBrokerName() {
-	return g_cfg.mqtt_brokerName;
+const char *CFG_GetMQTTClientId() {
+	return g_cfg.mqtt_clientId;
 }
 const char *CFG_GetMQTTUserName() {
 	return g_cfg.mqtt_userName;
@@ -302,9 +304,9 @@ void CFG_SetMQTTHost(const char *s) {
 		g_cfg_pendingChanges++;
 	}
 }
-void CFG_SetMQTTBrokerName(const char *s) {
+void CFG_SetMQTTClientId(const char *s) {
 	// this will return non-zero if there were any changes
-	if(strcpy_safe_checkForChanges(g_cfg.mqtt_brokerName, s,sizeof(g_cfg.mqtt_brokerName))) {
+	if(strcpy_safe_checkForChanges(g_cfg.mqtt_clientId, s,sizeof(g_cfg.mqtt_clientId))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
 	}
@@ -475,6 +477,15 @@ void CFG_InitAndLoad() {
 #endif
 		addLogAdv(LOG_WARN, LOG_FEATURE_CFG, "CFG_InitAndLoad: Correct config has been loaded with %i changes count.",g_cfg.changeCounter);
 	}
-	g_configInitialized = 1;
 
+	// copy shortDeviceName to MQTT Client ID, set version=3
+	if (g_cfg.version<3) {
+		addLogAdv(LOG_WARN, LOG_FEATURE_CFG, "CFG_InitAndLoad: Old config version found, updating to v3.");
+		strcpy_safe(g_cfg.mqtt_clientId, g_cfg.shortDeviceName, sizeof(g_cfg.mqtt_clientId));
+		g_cfg.version = 3;
+		g_cfg_pendingChanges++;
+	}
+
+	g_configInitialized = 1;
+	CFG_Save_IfThereArePendingChanges();
 }
