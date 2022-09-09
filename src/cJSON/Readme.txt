@@ -1,1 +1,1 @@
-The 2 files here have been copied from https://github.com/DaveGamble/cJSON (b45f48e600671feade0b6bd65d1c69de7899f2be).
+The files here have been copied from https://github.com/DaveGamble/cJSON (b45f48e600671feade0b6bd65d1c69de7899f2be).

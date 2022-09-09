@@ -703,7 +703,7 @@ static int http_rest_get_info(http_request_t *request){
     hprintf128(request, "\"ip\":\"%s\",", HAL_GetMyIPString());
     hprintf128(request, "\"mac\":\"%s\",", HAL_GetMACStr(macstr));
     hprintf128(request, "\"mqtthost\":\"%s:%d\",", CFG_GetMQTTHost(), CFG_GetMQTTPort());
-    hprintf128(request, "\"mqtttopic\":\"%s\",", CFG_GetShortDeviceName());
+    hprintf128(request, "\"mqtttopic\":\"%s\",", CFG_GetMQTTClientId());
     hprintf128(request, "\"chipset\":\"%s\",", PLATFORM_MCU_NAME);
     hprintf128(request, "\"webapp\":\"%s\",", CFG_GetWebappRoot());
     hprintf128(request, "\"supportsClientDeviceDB\":true}");

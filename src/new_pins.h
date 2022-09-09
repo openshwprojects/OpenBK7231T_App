@@ -134,7 +134,7 @@ typedef struct mainConfig_s {
 	char wifi_pass[64];
 	// MQTT information for Home Assistant
 	char mqtt_host[256];
-	char mqtt_brokerName[64];
+	char mqtt_clientId[64];
 	char mqtt_userName[64];
 	char mqtt_pass[128];
 	int mqtt_port;

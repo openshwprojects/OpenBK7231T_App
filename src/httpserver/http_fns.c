@@ -572,10 +572,10 @@ int http_fn_cfg_mqtt(http_request_t *request) {
     i = CFG_GetMQTTPort();
     hprintf128(request, "%i", i);
     poststr(request,"\"><br><br>\
-            <label for=\"port\">Client:</label><br>\
+            <label for=\"port\">Client ID:</label><br>\
             <input type=\"text\" id=\"client\" name=\"client\" value=\"");
 
-    poststr(request,CFG_GetMQTTBrokerName());
+    poststr(request,CFG_GetMQTTClientId());
     poststr(request,"\"><br>\
             <label for=\"user\">User:</label><br>\
             <input type=\"text\" id=\"user\" name=\"user\" value=\"");
@@ -611,7 +611,7 @@ int http_fn_cfg_mqtt_set(http_request_t *request) {
         CFG_SetMQTTPass(tmpA);
     }
     if(http_getArg(request->url,"client",tmpA,sizeof(tmpA))) {
-        CFG_SetMQTTBrokerName(tmpA);
+        CFG_SetMQTTClientId(tmpA);
     }
 
 	CFG_Save_SetupTimer();
@@ -845,7 +845,7 @@ int http_fn_cfg_name(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
     http_html_start(request, "Set name");
 
-    poststr(request,"<h2> Change device names for display. </h2> Remember that short name is used by MQTT.<br>");
+    poststr(request,"<h2> Change device names for display. </h2>");
     if(http_getArg(request->url,"shortName",tmpA,sizeof(tmpA))) {
 		CFG_SetShortDeviceName(tmpA);
     }
@@ -865,9 +865,15 @@ int http_fn_cfg_name(http_request_t *request) {
 			name = CFG_GetDeviceName();
     poststr(request,name);
 
-    poststr(request,"\"><br><br>\
-            <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Short name might be used by MQTT, so you will have to reconfig some stuff.')\">\
-        </form> ");
+    poststr(request,"\"><br><br>");
+    poststr(request, "<input type=\"submit\" value=\"Submit\" "
+            "onclick=\"return confirm('Are you sure? "
+            "Short name might be used by Home Assistant, "
+            "so you will have to reconfig some stuff.')\">");
+    poststr(request, "</form>");
+    //poststr(request,htmlReturnToCfg);
+    //HTTP_AddBuildFooter(request);
+    //poststr(request,htmlEnd);
     poststr(request,htmlFooterReturnToCfgLink);
     http_html_end(request);
 	poststr(request, NULL);
@@ -1311,16 +1317,19 @@ int http_fn_ha_discovery(http_request_t *request) {
 int http_fn_ha_cfg(http_request_t *request) {
     int relayCount = 0;
     int pwmCount = 0;
+    const char *shortDeviceName;
+    const char *clientId;
     int i;
     char mqttAdded = 0;
     char *uniq_id;
 
-    const char *baseName = CFG_GetShortDeviceName();
+    shortDeviceName = CFG_GetShortDeviceName();
+    clientId = CFG_GetMQTTClientId();
 
     http_setup(request, httpMimeTypeHTML);
     http_html_start(request, "Home Assistant Setup");
     poststr(request,"<h4>Home Assistant Cfg</h4>");
-	hprintf128(request,"<h4>Note that your short device name is: %s</h4>",baseName);
+	hprintf128(request,"<h4>Note that your short device name is: %s</h4>",shortDeviceName);
     poststr(request,"<h4>Paste this to configuration yaml</h4>");
     poststr(request,"<h5>Make sure that you have \"switch:\" keyword only once! Home Assistant doesn't like dup keywords.</h5>");
     poststr(request,"<h5>You can also use \"switch MyDeviceName:\" to avoid keyword duplication!</h5>");
@@ -1347,15 +1356,15 @@ int http_fn_ha_cfg(http_request_t *request) {
                 hprintf128(request,"  - unique_id: \"%s\"\n",uniq_id);
                 os_free(uniq_id);
 
-                hprintf128(request,"    name: \"%s %i\"\n",baseName,i);
-                hprintf128(request,"    state_topic: \"%s/%i/get\"\n",baseName,i);
-                hprintf128(request,"    command_topic: \"%s/%i/set\"\n",baseName,i);
+                hprintf128(request,"    name: \"%s %i\"\n",shortDeviceName,i);
+                hprintf128(request,"    state_topic: \"%s/%i/get\"\n",clientId,i);
+                hprintf128(request,"    command_topic: \"%s/%i/set\"\n",clientId,i);
                 poststr(request,   "    qos: 1\n");
                 poststr(request,   "    payload_on: 1\n");
                 poststr(request,   "    payload_off: 0\n");
                 poststr(request,   "    retain: true\n");
                 hprintf128(request,"    availability:\n");
-                hprintf128(request,"      - topic: \"%s/connected\"\n",baseName);
+                hprintf128(request,"      - topic: \"%s/connected\"\n",clientId);
             }
         }
     }
@@ -1377,10 +1386,10 @@ int http_fn_ha_cfg(http_request_t *request) {
                 hprintf128(request,"  - unique_id: \"%s\"\n",uniq_id);
                 os_free(uniq_id);
 
-                hprintf128(request,"    name: \"%s %i\"\n",baseName,i);
-                hprintf128(request,"    state_topic: \"%s/%i/get\"\n",baseName,i);
-                hprintf128(request,"    command_topic: \"%s/%i/set\"\n",baseName,i);
-                hprintf128(request,"    brightness_command_topic: \"%s/%i/set\"\n",baseName,i);
+                hprintf128(request,"    name: \"%s %i\"\n",shortDeviceName,i);
+                hprintf128(request,"    state_topic: \"%s/%i/get\"\n",clientId,i);
+                hprintf128(request,"    command_topic: \"%s/%i/set\"\n",clientId,i);
+                hprintf128(request,"    brightness_command_topic: \"%s/%i/set\"\n",clientId,i);
                 poststr(request,   "    on_command_type: \"brightness\"\n");
                 poststr(request,   "    brightness_scale: 99\n");
                 poststr(request,   "    qos: 1\n");
@@ -1389,7 +1398,7 @@ int http_fn_ha_cfg(http_request_t *request) {
                 poststr(request,   "    retain: true\n");
                 poststr(request,   "    optimistic: true\n");
                 hprintf128(request,"    availability:\n");
-                hprintf128(request,"      - topic: \"%s/connected\"\n",baseName);
+                hprintf128(request,"      - topic: \"%s/connected\"\n",clientId);
             }
         }
     }
@@ -1492,15 +1501,15 @@ int http_tasmota_json_status_SNS(http_request_t *request) {
 int http_tasmota_json_status_generic(http_request_t *request) {
 	const char *deviceName;
 	const char *friendlyName;
-	const char *topic;
+	const char *clientId;
 
 	deviceName = CFG_GetShortDeviceName();
-	friendlyName = CFG_GetShortDeviceName();
-	topic = CFG_GetShortDeviceName();
+	friendlyName = CFG_GetDeviceName();
+	clientId = CFG_GetMQTTClientId();
 
 	hprintf128(request,"{\"Status\":{\"Module\":0,\"DeviceName\":\"%s\"",deviceName);
 	hprintf128(request,",\"FriendlyName\":[\"%s\"]",friendlyName);
-	hprintf128(request,",\"Topic\":\"%s\",\"ButtonTopic\":\"0\"",topic);
+	hprintf128(request,",\"Topic\":\"%s\",\"ButtonTopic\":\"0\"",clientId);
 	hprintf128(request,",\"Power\":1,\"PowerOnState\":3,\"LedState\":1");
 	hprintf128(request,",\"LedMask\":\"FFFF\",\"SaveData\":1,\"SaveState\":1");
 	hprintf128(request,",\"SwitchTopic\":\"0\",\"SwitchMode\":[0,0,0,0,0,0,0,0]");
