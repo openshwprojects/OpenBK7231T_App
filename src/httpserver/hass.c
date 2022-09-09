@@ -62,12 +62,11 @@ char *hass_get_device_config_channel(ENTITY_TYPE type, char *uniq_id){
 }
 
 /// @brief Builds HomeAssistant device discovery info. The caller needs to free the returned pointer.
-/// @param baseName 
 /// @param ids 
-cJSON *hass_build_device_node(const char *baseName, cJSON *ids) {
+cJSON *hass_build_device_node(cJSON *ids) {
     cJSON *dev = cJSON_CreateObject();
     cJSON_AddItemToObject(dev, "ids", ids);     //identifiers
-    cJSON_AddStringToObject(dev, "name", baseName);
+    cJSON_AddStringToObject(dev, "name", CFG_GetShortDeviceName());
 
     #ifdef USER_SW_VER
     cJSON_AddStringToObject(dev, "sw", USER_SW_VER);   //sw_version
@@ -80,25 +79,25 @@ cJSON *hass_build_device_node(const char *baseName, cJSON *ids) {
 
 /// @brief Populates common values for HomeAssistant device discovery.
 /// @param root 
-/// @param baseName 
 /// @param index 
 /// @param unique_id 
 /// @param payload_on 
 /// @param payload_off 
-void hass_populate_common(cJSON *root, const char *baseName, int index, char *unique_id, char *payload_on, char *payload_off){
-    char tmp[64];  //baseName is g_cfg.shortDeviceName which reserves 32 char so 64 would be enough
+void hass_populate_common(cJSON *root, int index, char *unique_id, char *payload_on, char *payload_off){
+    const char *clientId = CFG_GetMQTTClientId();
+    char tmp[64];  //CFG_GetShortDeviceName is 32 char max so 64 would be enough
 
     //Using abbreviated node names as per https://www.home-assistant.io/docs/mqtt/discovery/
-    sprintf(tmp,"%s %i",baseName,index);
+    sprintf(tmp,"%s %i",CFG_GetShortDeviceName(),index);
     cJSON_AddStringToObject(root, "name", tmp);
 
-    sprintf(tmp,"%s/%i/get",baseName,index);
+    sprintf(tmp,"%s/%i/get",clientId,index);
     cJSON_AddStringToObject(root, "stat_t", tmp);   //state_topic
 
-    sprintf(tmp,"%s/%i/set",baseName,index);
+    sprintf(tmp,"%s/%i/set",clientId,index);
     cJSON_AddStringToObject(root, "cmd_t", tmp);    //command_topic
 
-    sprintf(tmp,"%s/connected",baseName);
+    sprintf(tmp,"%s/connected",clientId);
     cJSON_AddStringToObject(root, "avty_t", tmp);   //availability_topic
 
     cJSON_AddStringToObject(root, "pl_on", "1");    //payload_on
@@ -113,7 +112,6 @@ void hass_populate_common(cJSON *root, const char *baseName, int index, char *un
 /// @param payload_off 
 /// @return 
 HassDeviceInfo *hass_init_device_info(ENTITY_TYPE type, int index, char *payload_on, char *payload_off){
-    const char *baseName = CFG_GetShortDeviceName();
     HassDeviceInfo *info = os_malloc(sizeof(HassDeviceInfo));
 
     info->unique_id = hass_build_unique_id(type, index);
@@ -122,12 +120,12 @@ HassDeviceInfo *hass_init_device_info(ENTITY_TYPE type, int index, char *payload
     info->ids = cJSON_CreateArray();
     cJSON_AddItemToArray(info->ids, cJSON_CreateString(CFG_GetDeviceName()));
 
-    info->device = hass_build_device_node(baseName, info->ids);
+    info->device = hass_build_device_node(info->ids);
 
     info->root = cJSON_CreateObject();
     cJSON_AddItemToObject(info->root, "dev", info->device);    //device
     
-    hass_populate_common(info->root, baseName, index, info->unique_id, payload_on, payload_off);
+    hass_populate_common(info->root, index, info->unique_id, payload_on, payload_off);
     return info;
 }
 
