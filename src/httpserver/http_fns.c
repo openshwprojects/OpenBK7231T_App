@@ -1292,7 +1292,7 @@ int http_fn_ha_discovery(http_request_t *request) {
 
     if(pwmCount > 0) {
         char tmp[64];
-        const char *baseName = CFG_GetShortDeviceName();
+        const char *shortDeviceName = CFG_GetShortDeviceName();
 
         for(i = 0; i < CHANNEL_MAX; i++) {
             if(h_isChannelPWM(i)) {
@@ -1301,7 +1301,7 @@ int http_fn_ha_discovery(http_request_t *request) {
                 cJSON_AddStringToObject(dev_info->root, "on_cmd_type", "brightness"); //on_command_type
                 cJSON_AddNumberToObject(dev_info->root, "bri_scl", 99);   //brightness_scale
 
-                sprintf(tmp,"%s/%i/set",baseName,i);
+                sprintf(tmp,"%s/%i/set",shortDeviceName,i);
                 cJSON_AddStringToObject(dev_info->root, "bri_cmd_t", tmp);    //brightness_command_topic
 
                 MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
