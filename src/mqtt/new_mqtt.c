@@ -397,7 +397,6 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t *client, const
   err_t err;
   u8_t qos = 2; /* 0 1 or 2, see MQTT specification */
   u8_t retain = 0; /* No don't retain such crappy payload... */
-	const char *clientId;
 
   if(client==0)
 	  return OBK_PUBLISH_WAS_DISCONNECTED;
@@ -430,8 +429,8 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t *client, const
 
   g_timeSinceLastMQTTPublish = 0;
   
-  char *pub_topic = (char *)os_malloc(strlen(sTopic) + 1 + strlen(sChannel) + 5 + 1);
-	sprintf(pub_topic, "%s/%s%s", sTopic, sChannel, (appendGet == true ? "/get" : ""));
+  char *pub_topic = (char *)os_malloc(strlen(sTopic) + 1 + strlen(sChannel) + 5 + 1); //5 for /get
+  sprintf(pub_topic, "%s/%s%s", sTopic, sChannel, (appendGet == true ? "/get" : ""));
   addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publishing to %s retain=%i",pub_topic, retain);
   err = mqtt_publish(client, pub_topic, sVal, strlen(sVal), qos, retain, mqtt_pub_request_cb, 0);
   os_free(pub_topic);
@@ -455,7 +454,7 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t *client, const
 // for example, "obk0696FB33/voltage/get" is used to publish voltage from the sensor
 static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t *client, const char *sChannel, const char *sVal, int flags, bool appendGet)
 {
-  return MQTT_PublishTopicToClient(mqtt_client, CFG_GetShortDeviceName(), sChannel, sVal, flags, appendGet);
+  return MQTT_PublishTopicToClient(mqtt_client, CFG_GetMQTTClientId(), sChannel, sVal, flags, appendGet);
 }
 
 /// @brief Publish a MQTT message immediately.
