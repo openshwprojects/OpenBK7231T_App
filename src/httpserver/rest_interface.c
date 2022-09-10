@@ -179,7 +179,6 @@ static int http_rest_get(http_request_t *request){
         return http_rest_get_flash_advanced(request);
     }
 
-
     if (!strcmp(request->url, "api/dumpconfig")){
         return http_rest_get_dumpconfig(request);
     }
@@ -192,13 +191,11 @@ static int http_rest_get(http_request_t *request){
         return http_rest_get_flash_vars_test(request);
     }
 
-
-
-
     http_setup(request, httpMimeTypeHTML);
+    http_html_start(request, "GET REST API");
     poststr(request, "GET of ");
     poststr(request, request->url);
-    poststr(request, htmlEnd);
+    http_html_end(request);
     poststr(request,NULL);
     return 0;
 }
@@ -257,6 +254,7 @@ static int http_rest_post(http_request_t *request){
 #endif
 
     http_setup(request, httpMimeTypeHTML);
+    http_html_start(request, "POST REST API");
     poststr(request, "POST to ");
     poststr(request, request->url);
     poststr(request, "<br/>Content Length:");
@@ -265,15 +263,10 @@ static int http_rest_post(http_request_t *request){
     poststr(request, "<br/>Content:[");
     poststr(request, request->bodystart);
     poststr(request, "]<br/>");
-    poststr(request, htmlEnd);
+    http_html_end(request);
     poststr(request,NULL);
     return 0;
 }
-
-
-
-
-
 
 static int http_rest_app(http_request_t *request){
     const char *webhost = CFG_GetWebappRoot();
@@ -288,9 +281,10 @@ static int http_rest_app(http_request_t *request){
         poststr(request, webhost);
         poststr(request, apppage4);
     } else {
-        poststr(request,htmlHeader);
-        poststr(request,htmlReturnToMenu);
-        poststr(request,"no APP available<br/>");
+        http_html_start(request, "Not available");
+        poststr(request, htmlFooterReturnToMenu);
+        poststr(request, "no APP available<br/>");
+        http_html_end(request);
     }
     poststr(request,NULL);
     return 0;
@@ -709,7 +703,7 @@ static int http_rest_get_info(http_request_t *request){
     hprintf128(request, "\"ip\":\"%s\",", HAL_GetMyIPString());
     hprintf128(request, "\"mac\":\"%s\",", HAL_GetMACStr(macstr));
     hprintf128(request, "\"mqtthost\":\"%s:%d\",", CFG_GetMQTTHost(), CFG_GetMQTTPort());
-    hprintf128(request, "\"mqtttopic\":\"%s\",", CFG_GetShortDeviceName());
+    hprintf128(request, "\"mqtttopic\":\"%s\",", CFG_GetMQTTClientId());
     hprintf128(request, "\"chipset\":\"%s\",", PLATFORM_MCU_NAME);
     hprintf128(request, "\"webapp\":\"%s\",", CFG_GetWebappRoot());
     hprintf128(request, "\"supportsClientDeviceDB\":true}");
