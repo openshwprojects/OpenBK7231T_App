@@ -126,8 +126,8 @@ void apply_smart_light() {
 				finalRGBCW[i] = baseColors[i] * g_brightness;
 			}
 		}
-		CHANNEL_Set(firstChannelIndex, value_cold_or_warm, CHANNEL_SET_FLAG_SKIP_MQTT);
-		CHANNEL_Set(firstChannelIndex+1, value_brightness, CHANNEL_SET_FLAG_SKIP_MQTT);
+		CHANNEL_Set(firstChannelIndex, value_cold_or_warm, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+		CHANNEL_Set(firstChannelIndex+1, value_brightness, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 	} else {
 		for(i = 0; i < 5; i++) {
 			float raw, final;
@@ -169,12 +169,12 @@ void apply_smart_light() {
 				// We don't have RGB channels
 				// so, do simple mapping
 				if(i == 4) {
-					CHANNEL_Set(firstChannelIndex+0, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT);
+					CHANNEL_Set(firstChannelIndex+0, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 				} else if(i == 5) {
-					CHANNEL_Set(firstChannelIndex+1, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT);
+					CHANNEL_Set(firstChannelIndex+1, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 				}
 			} else {
-				CHANNEL_Set(channelToUse, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT);
+				CHANNEL_Set(channelToUse, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 			}
 		}
 	}
@@ -377,6 +377,28 @@ static int dimmer(const void *context, const char *cmd, const char *args, int cm
 		return 1;
 	//}
 	//return 0;
+}
+void LED_SetFinalRGB(byte r, byte g, byte b) {
+	g_lightMode = Light_RGB;
+			
+	baseColors[0] = r;
+	baseColors[1] = g;
+	baseColors[2] = b;
+
+	RGBtoHSV(baseColors[0]/255.0f, baseColors[1]/255.0f, baseColors[2]/255.0f, &g_hsv_h, &g_hsv_s, &g_hsv_v);
+
+	apply_smart_light();
+
+	// TODO
+	if(0) {
+		sendColorChange();
+		if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTLEDPARAMSTOGETHER)) {
+			LED_SendDimmerChange();
+		}
+		if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTLEDFINALCOLOR)) {
+			sendFinalColor();
+		}
+	}
 }
 int LED_SetBaseColor(const void *context, const char *cmd, const char *args, int bAll){
    // support both '#' prefix and not

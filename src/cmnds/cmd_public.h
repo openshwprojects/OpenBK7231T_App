@@ -91,6 +91,7 @@ void LED_SetTemperature(int tmpInteger, bool bApply);
 float LED_GetTemperature0to1Range();
 void LED_SetDimmer(int iVal);
 int LED_SetBaseColor(const void *context, const char *cmd, const char *args, int bAll);
+void LED_SetFinalRGB(byte r, byte g, byte b);
 void LED_SetEnableAll(int bEnable);
 int LED_GetEnableAll();
 void LED_GetBaseColorString(char * s);

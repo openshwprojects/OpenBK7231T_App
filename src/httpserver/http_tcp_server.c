@@ -96,7 +96,7 @@ static void tcp_client_thread( beken_thread_arg_t arg )
 
   //addLog( "TCP received string %s\n",buf );
   // returns length to be sent if any
-    ADDLOG_DEBUG(LOG_FEATURE_HTTP,  "TCP will process packet of len %i\n", request.receivedLen );
+   // ADDLOG_DEBUG(LOG_FEATURE_HTTP,  "TCP will process packet of len %i\n", request.receivedLen );
   int lenret = HTTP_ProcessPacket(&request);
   if (lenret > 0){
     ADDLOG_DEBUG(LOG_FEATURE_HTTP,  "TCP sending reply len %i\n",lenret );
