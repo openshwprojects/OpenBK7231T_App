@@ -15,6 +15,10 @@ void DRV_DGR_RunFrame();
 void DRV_DGR_Shutdown();
 void DRV_DGR_OnChannelChanged(int ch, int value);
 
+void DRV_DDP_Init();
+void DRV_DDP_RunFrame();
+void DRV_DDP_Shutdown();
+
 void SM2135_Init();
 void SM2135_RunFrame();
 void SM2135_OnChannelChanged(int ch, int value);

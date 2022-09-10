@@ -11,8 +11,8 @@
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
 
-const char* group = "239.255.250.250";
-int port = 4447;
+static const char* dgr_group = "239.255.250.250";
+static int dgr_port = 4447;
 //
 //int DRV_DGR_CreateSocket_Send() {
 //
@@ -29,8 +29,8 @@ int port = 4447;
 //
 //    memset(&addr, 0, sizeof(addr));
 //    addr.sin_family = AF_INET;
-//    addr.sin_addr.s_addr = inet_addr(group);
-//    addr.sin_port = htons(port);
+//    addr.sin_addr.s_addr = inet_addr(dgr_group);
+//    addr.sin_port = htons(dgr_port);
 //
 //
 //	return 0;
@@ -73,8 +73,8 @@ void DRV_DGR_Send_Generic(byte *message, int len) {
     //
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = inet_addr(group);
-    addr.sin_port = htons(port);
+    addr.sin_addr.s_addr = inet_addr(dgr_group);
+    addr.sin_port = htons(dgr_port);
 
     nbytes = sendto(
             g_dgr_socket_send,
@@ -150,7 +150,7 @@ void DRV_DGR_CreateSocket_Receive() {
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = htonl(INADDR_ANY); // differs from sender
-    addr.sin_port = htons(port);
+    addr.sin_port = htons(dgr_port);
 
     // bind to receive address
     //
@@ -174,7 +174,7 @@ void DRV_DGR_CreateSocket_Receive() {
 
 	  // use setsockopt() to request that the kernel join a multicast group
 		//
-		mreq.imr_multiaddr.s_addr = inet_addr(group);
+		mreq.imr_multiaddr.s_addr = inet_addr(dgr_group);
 		//mreq.imr_interface.s_addr = htonl(INADDR_ANY);
 	mreq.imr_interface.s_addr = htonl(INADDR_ANY);//inet_addr(MY_CAPTURE_IP);
     	///mreq.imr_interface.s_addr = inet_addr("192.168.0.122");

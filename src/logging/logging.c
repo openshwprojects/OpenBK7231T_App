@@ -69,7 +69,8 @@ char *logfeaturenames[] = {
 	"EnergyMeter:",// = 14
 	"EVENT:",// = 15
 	"DGR:",// = 16
-	"RAW:", // = 17 raw, without any prefix
+	"DDP:",// = 17
+	"RAW:", // = 18 raw, without any prefix
 };
 
 
