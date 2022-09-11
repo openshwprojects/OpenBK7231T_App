@@ -1068,11 +1068,7 @@ int http_fn_cmd_tool(http_request_t *request) {
 		}
         poststr(request,"<br>");
     }
-    poststr(request,"<form action=\"/cmd_tool\">");
-
-    poststr(request,"<label for=\"cmd\">cmd:</label><br>\
-            <input type=\"text\" id=\"cmd\" name=\"cmd\" ");
-    hprintf128(request,"value=\"%s\"  size=\"80\">",tmpA);
+    add_label_text_field(request, "Command", "cmd", tmpA, "<form action=\"/cmd_tool\">");
     poststr(request,"<br><br>\
             <input type=\"submit\" value=\"Submit\">\
         </form> ");
@@ -1085,7 +1081,6 @@ int http_fn_cmd_tool(http_request_t *request) {
 
 int http_fn_startup_command(http_request_t *request) {
 	char tmpA[512];
-	const char *cmd;
     http_setup(request, httpMimeTypeHTML);
     http_html_start(request, "Set startup command");
     poststr(request,"<h4>Set/Change/Clear startup command line</h4>");
@@ -1103,16 +1098,8 @@ int http_fn_startup_command(http_request_t *request) {
 	} else {
 	}
 
-	cmd = CFG_GetShortStartupCommand();
-
-    poststr(request,"<form action=\"/startup_command\">");
-
-    poststr(request,"<label for=\"data\">Startup command:</label><br>\
-            <input type=\"text\" id=\"data\" name=\"data\"");
-    hprintf128(request," value=\"");
-    poststr(request,cmd);
-    hprintf128(request,"\"  size=\"120\"><br>");
-    poststr(request,"<br>\
+    add_label_text_field(request, "Startup command", "data", CFG_GetShortStartupCommand(), "<form action=\"/startup_command\">");
+    poststr(request,"<br><br>\
             <input type=\"submit\" value=\"Submit\">\
         </form> ");
 
@@ -1154,11 +1141,7 @@ int http_fn_uart_tool(http_request_t *request) {
 		strcpy(tmpA,"Hello UART world");
 	}
 
-    poststr(request,"<form action=\"/uart_tool\">");
-
-    poststr(request,"<label for=\"data\">data:</label><br>\
-            <input type=\"text\" id=\"data\" name=\"data\"");
-    hprintf128(request," value=\"%s\"  size=\"40\"><br>",tmpA);
+    add_label_text_field(request, "Data", "data", tmpA, "<form action=\"/uart_tool\">");
     poststr(request,"<br>\
             <input type=\"submit\" value=\"Submit\">\
         </form> ");
