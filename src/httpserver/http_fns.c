@@ -597,7 +597,7 @@ int http_fn_cfg_mqtt(http_request_t *request) {
     poststr(request,"<h2>Use this to connect to your MQTT</h2>");
     add_label_field(request, "Host", "host", CFG_GetMQTTHost(), "<form action=\"/cfg_mqtt_set\">");
     add_label_numeric_field(request, "Port", "port", CFG_GetMQTTPort(), "<br>");
-    add_label_field(request, "Client", "client", CFG_GetMQTTBrokerName(), "<br><br>");
+    add_label_field(request, "Client", "client", CFG_GetMQTTClientId(), "<br><br>");
     add_label_field(request, "User", "user", CFG_GetMQTTUserName(), "<br>");
     add_label_field(request, "Password", "password", CFG_GetMQTTPass(), "<br>");
     
