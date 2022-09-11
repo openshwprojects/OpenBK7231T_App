@@ -648,11 +648,8 @@ int http_fn_cfg_webapp(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
     http_html_start(request, "Set Webapp");
     poststr(request,"<h2> Use this to set the URL of the Webapp</h2>");
-    poststr(request,"<form action=\"/cfg_webapp_set\">\
-            <label for=\"url\">Url:</label><br>\
-            <input type=\"text\" id=\"url\" name=\"url\" value=\"");
-    poststr(request,CFG_GetWebappRoot());
-    poststr(request,"\"><br>\
+    add_label_text_field(request, "Url", "url", CFG_GetWebappRoot(), "<form action=\"/cfg_webapp_set\">");
+    poststr(request,"<br>\
             <input type=\"submit\" value=\"Submit\">\
         </form> ");
     poststr(request,htmlFooterReturnToCfgLink);
@@ -689,8 +686,6 @@ int http_fn_cfg_webapp_set(http_request_t *request) {
 
 int http_fn_cfg_ping(http_request_t *request) {
 	char tmpA[128];
-	const char *tmp;
-	int i;
 	int bChanged;
 
     http_setup(request, httpMimeTypeHTML);
@@ -733,25 +728,10 @@ int http_fn_cfg_ping(http_request_t *request) {
             <input type=\"submit\" value=\"Disable ping watchdog!\">\
         </form> ");
     poststr(request,"<h2> Use this to enable pinger</h2>");
-    poststr(request,"<form action=\"/cfg_ping\">\
-            <label for=\"host\">Host:</label><br>\
-            <input type=\"text\" id=\"host\" name=\"host\" value=\"");
-	tmp = CFG_GetPingHost();
-    poststr(request,tmp);
-
-         /*   poststr(request, "\"><br>\
-		<label for=\"pass\">Interval (s) between pings:</label><br>\
-            <input type=\"number\" id=\"interval\" name=\"interval\" value=\"");
-    i = CFG_GetPingIntervalSeconds();
-    hprintf128(request,"%i",i);*/
-
-            poststr(request, "\"><br>\
-		<label for=\"pass\">Take action after this number of seconds with no reply:</label><br>\
-            <input type=\"number\" id=\"disconnectTime\" name=\"disconnectTime\" value=\"");
-			i = CFG_GetPingDisconnectedSecondsToRestart();
-    hprintf128(request,"%i",i);
-
-    poststr(request,"\"><br><br>\
+    add_label_text_field(request, "Host", "host", CFG_GetPingHost(), "<form action=\"/cfg_ping\">");
+    add_label_numeric_field(request, "Take action after this number of seconds with no reply", "disconnectTime", 
+        CFG_GetPingDisconnectedSecondsToRestart(), "<br>");
+    poststr(request,"<br><br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure?')\">\
         </form> ");
     poststr(request,htmlFooterReturnToCfgLink);
@@ -761,7 +741,6 @@ int http_fn_cfg_ping(http_request_t *request) {
 }
 int http_fn_cfg_wifi(http_request_t *request) {
     // for a test, show password as well...
-    const char *cur_ssid, *cur_pass;
 	char tmpA[128];
 
     http_setup(request, httpMimeTypeHTML);
@@ -833,19 +812,9 @@ int http_fn_cfg_wifi(http_request_t *request) {
             <input type=\"submit\" value=\"Convert to open access wifi\" onclick=\"return confirm('Are you sure to convert module to open access wifi?')\">\
         </form> ");
     poststr(request,"<h2> Use this to connect to your WiFi</h2>");
-    poststr(request,"<form action=\"/cfg_wifi_set\">\
-            <label for=\"ssid\">SSID:</label><br>\
-            <input type=\"text\" id=\"ssid\" name=\"ssid\" value=\"");
-    cur_ssid = CFG_GetWiFiSSID();
-    poststr(request,cur_ssid);
-
-            poststr(request, "\"><br>\
-            <label for=\"pass\">Pass:</label><br>\
-            <input type=\"text\" id=\"pass\" name=\"pass\" value=\"");
-    cur_pass = CFG_GetWiFiPass();
-    poststr(request,cur_pass);
-
-    poststr(request,"\"><br><br>\
+    add_label_text_field(request, "SSID", "ssid", CFG_GetWiFiSSID(), "<form action=\"/cfg_wifi_set\">");
+    add_label_text_field(request, "Password", "pass", CFG_GetWiFiPass(), "<br>");
+    poststr(request,"<br><br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check SSID and pass twice?')\">\
         </form> ");
     poststr(request,htmlFooterReturnToCfgLink);
@@ -856,7 +825,6 @@ int http_fn_cfg_wifi(http_request_t *request) {
 
 int http_fn_cfg_name(http_request_t *request) {
     // for a test, show password as well...
-    const char *shortName, *name;
 	char tmpA[128];
 
     http_setup(request, httpMimeTypeHTML);
@@ -870,19 +838,9 @@ int http_fn_cfg_name(http_request_t *request) {
 		CFG_SetDeviceName(tmpA);
     }
     poststr(request,"<h2> Use this to change device names</h2>");
-    poststr(request,"<form action=\"/cfg_name\">\
-            <label for=\"shortName\">ShortName:</label><br>\
-            <input type=\"text\" id=\"shortName\" name=\"shortName\" value=\"");
-	shortName = CFG_GetShortDeviceName();
-    poststr(request,shortName);
-
-            poststr(request, "\"><br>\
-            <label for=\"name\">Full Name:</label><br>\
-            <input type=\"text\" id=\"name\" name=\"name\" value=\"");
-			name = CFG_GetDeviceName();
-    poststr(request,name);
-
-    poststr(request,"\"><br><br>");
+    add_label_text_field(request, "ShortName", "shortName", CFG_GetShortDeviceName(), "<form action=\"/cfg_name\">");
+    add_label_text_field(request, "Full Name", "name", CFG_GetDeviceName(), "<br>");
+    poststr(request,"<br><br>");
     poststr(request, "<input type=\"submit\" value=\"Submit\" "
             "onclick=\"return confirm('Are you sure? "
             "Short name might be used by Home Assistant, "
@@ -943,15 +901,14 @@ int http_fn_cfg_loglevel_set(http_request_t *request) {
 #endif
         poststr(request,"LOG level changed.");
     }
-    poststr(request,"<form action=\"/cfg_loglevel_set\">\
-            <label for=\"loglevel\">loglevel:</label><br>\
-            <input type=\"text\" id=\"loglevel\" name=\"loglevel\" value=\"");
+
     tmpA[0] = 0;
 #if WINDOWS
+    add_label_text_field(request, "Loglevel", "loglevel", "", "<form action=\"/cfg_loglevel_set\">");
 #else
-    hprintf128(request,"%i",loglevel);
+    add_label_numeric_field(request, "Loglevel", "loglevel", loglevel, "<form action=\"/cfg_loglevel_set\">");
 #endif
-    poststr(request,"\"><br><br>\
+    poststr(request,"<br><br>\
             <input type=\"submit\" value=\"Submit\" >\
         </form> ");
 
@@ -991,11 +948,11 @@ int http_fn_cfg_mac(http_request_t *request) {
     WiFI_GetMacAddress((char *)mac);
 
     poststr(request,"<h2> Here you can change MAC address.</h2>");
-    poststr(request,"<form action=\"/cfg_mac\">\
-            <label for=\"mac\">MAC:</label><br>\
-            <input type=\"text\" id=\"mac\" name=\"mac\" value=\"");
-    hprintf128(request,"%02X%02X%02X%02X%02X%02X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
-    poststr(request,"\"><br><br>\
+
+    char macStr[16];
+    sprintf(macStr,"%02X%02X%02X%02X%02X%02X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
+    add_label_text_field(request, "MAC", "mac",macStr , "<form action=\"/cfg_mac\">");
+    poststr(request,"<br><br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MAC hex string twice?')\">\
         </form> ");
     poststr(request,htmlFooterReturnToCfgLink);
@@ -1081,12 +1038,9 @@ int http_fn_flash_read_tool(http_request_t *request) {
         poststr(request," checked");
     }
     poststr(request,"><label for=\"hex\">Show all hex?</label><br>");
-    poststr(request,"<label for=\"offset\">offset:</label><br>\
-            <input type=\"number\" id=\"offset\" name=\"offset\"");
-    hprintf128(request," value=\"%i\"><br>",ofs);
-    poststr(request,"<label for=\"len\">length:</label><br>\
-            <input type=\"number\" id=\"len\" name=\"len\" ");
-    hprintf128(request,"value=\"%i\">",len);
+
+    add_label_numeric_field(request, "Offset", "offset", ofs, "");
+    add_label_numeric_field(request, "Length", "len", len, "<br>");
     poststr(request,"<br><br>\
             <input type=\"submit\" value=\"Submit\">\
         </form> ");
@@ -1802,12 +1756,9 @@ int http_fn_cfg_generic(http_request_t *request) {
 	poststr(request,"<input type=\"hidden\" id=\"setFlags\" name=\"setFlags\" value=\"1\">");
 	poststr(request,"<input type=\"submit\" value=\"Submit\"></form>");
 
-    poststr(request,"<form action=\"/cfg_generic\">\
-            <label for=\"boot_ok_delay\">Uptime seconds required to mark boot as ok:</label><br>\
-            <input type=\"text\" id=\"boot_ok_delay\" name=\"boot_ok_delay\" value=\"");
-    hprintf128(request, "%i",CFG_GetBootOkSeconds());
-    poststr(request,"\"><br>");
-    poststr(request,"<input type=\"submit\" value=\"Save\"/></form>");
+    add_label_numeric_field(request, "Uptime seconds required to mark boot as ok", "boot_ok_delay", 
+        CFG_GetBootOkSeconds(), "<form action=\"/cfg_generic\">");
+    poststr(request,"<br><input type=\"submit\" value=\"Save\"/></form>");
 
     poststr(request,htmlFooterReturnToCfgLink);
     http_html_end(request);
@@ -1920,9 +1871,8 @@ int http_fn_cfg_dgr(http_request_t *request) {
 		newSendFlags = CFG_DeviceGroups_GetSendFlags();
 		newRecvFlags = CFG_DeviceGroups_GetRecvFlags();
 
-		poststr(request,"<form action=\"/cfg_dgr\"><label for=\"name\">Group name:</label><br><input type=\"text\" id=\"name\" name=\"name\" value=\"");
-		poststr(request,groupName);
-		poststr(request,"\"><br><table><tr><th>Name</th><th>Tasmota Code</th><th>Receive</th><th>Send</th></tr><tr><td>Power</td><td>1</td>");
+		add_label_text_field(request, "Group name", "name", groupName, "<form action=\"/cfg_dgr\">");
+		poststr(request,"<br><table><tr><th>Name</th><th>Tasmota Code</th><th>Receive</th><th>Send</th></tr><tr><td>Power</td><td>1</td>");
 
 		poststr(request,"     <td><input type=\"checkbox\" name=\"r_pwr\" value=\"1\"");
 		if(newRecvFlags & DGR_SHARE_POWER)
@@ -1993,10 +1943,8 @@ int http_fn_ota(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
     http_html_start(request, "OTA system");
     poststr(request,"<p>Simple OTA system (you should rather use the OTA from App panel where you can drag and drop file easily without setting up server). Use RBL file for OTA. In the OTA below, you should paste link to RBL file (you need HTTP server).</p>");
-    poststr(request,"<form action=\"/ota_exec\">\
-            <label for=\"host\">URL for new bin file:</label><br>\
-            <input type=\"text\" id=\"host\" name=\"host\" value=\"");
-    poststr(request,"\"><br>\
+    add_label_text_field(request, "URL for new bin file", "host", "", "<form action=\"/ota_exec\">");
+    poststr(request,"<br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure?')\">\
         </form> ");
     poststr(request,htmlFooterReturnToMenu);
