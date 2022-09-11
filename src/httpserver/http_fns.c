@@ -1648,7 +1648,7 @@ const char *g_obk_flagNames[] = {
 	"[LED] Alternate CW light mode (first PWM for warm/cold slider, second for brightness)",
 	"[SM2135] Use separate RGB/CW modes instead of writing all 5 values as RGB",
 	"[MQTT] Broadcast self state on MQTT connect",
-	"error",
+	"[PWM] BK7231 use 600hz instead of 1khz default",
 	"error",
 	"error",
 	"error",
