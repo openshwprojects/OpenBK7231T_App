@@ -108,7 +108,16 @@ void DRV_DDP_CreateSocket_Receive() {
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"Waiting for packets\n");
 }
+void DDP_Parse(byte *data, int len) {
+	if(len > 12) {
+		byte r, g, b;
+		r = data[10];
+		g = data[11];
+		b = data[12];
 
+		LED_SetFinalRGB(r,g,b);
+	}
+}
 void DRV_DDP_RunFrame() {
     char msgbuf[64];
 	struct sockaddr_in addr;
@@ -132,11 +141,11 @@ void DRV_DDP_RunFrame() {
 			//addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"nothing\n");
             return ;
         }
-		addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"Received %i bytes from %s\n",nbytes,inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr));
+		//addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"Received %i bytes from %s\n",nbytes,inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr));
         msgbuf[nbytes] = '\0';
 
 
-		//DDP_Parse(msgbuf, nbytes);
+		DDP_Parse((byte*)msgbuf, nbytes);
 
 }
 void DRV_DDP_Shutdown()
