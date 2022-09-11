@@ -168,9 +168,9 @@ void apply_smart_light() {
 				// in CW mode, we have only set two channels
 				// We don't have RGB channels
 				// so, do simple mapping
-				if(i == 4) {
+				if(i == 3) {
 					CHANNEL_Set(firstChannelIndex+0, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-				} else if(i == 5) {
+				} else if(i == 4) {
 					CHANNEL_Set(firstChannelIndex+1, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 				}
 			} else {
