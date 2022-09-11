@@ -144,7 +144,7 @@ void add_label_input(http_request_t *request, char *inputType, char *label, char
 /// @param fieldId Field id, this also gets used as the name
 /// @param value String value
 /// @param preContent Content before the label
-void add_label_field(http_request_t *request, char *label, char *fieldId, const char *value, char *preContent){
+void add_label_text_field(http_request_t *request, char *label, char *fieldId, const char *value, char *preContent){
     add_label_input(request, "text", label, fieldId, value, preContent);
 }
 
@@ -595,11 +595,11 @@ int http_fn_cfg_mqtt(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
     http_html_start(request, "MQTT");
     poststr(request,"<h2>Use this to connect to your MQTT</h2>");
-    add_label_field(request, "Host", "host", CFG_GetMQTTHost(), "<form action=\"/cfg_mqtt_set\">");
+    add_label_text_field(request, "Host", "host", CFG_GetMQTTHost(), "<form action=\"/cfg_mqtt_set\">");
     add_label_numeric_field(request, "Port", "port", CFG_GetMQTTPort(), "<br>");
-    add_label_field(request, "Client", "client", CFG_GetMQTTClientId(), "<br><br>");
-    add_label_field(request, "User", "user", CFG_GetMQTTUserName(), "<br>");
-    add_label_field(request, "Password", "password", CFG_GetMQTTPass(), "<br>");
+    add_label_text_field(request, "Client", "client", CFG_GetMQTTClientId(), "<br><br>");
+    add_label_text_field(request, "User", "user", CFG_GetMQTTUserName(), "<br>");
+    add_label_text_field(request, "Password", "password", CFG_GetMQTTPass(), "<br>");
     
     poststr(request,"<br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MQTT data twice?')\">\
