@@ -51,6 +51,7 @@ typedef struct MqttPublishItem
 
 // Count of queued items published at once.
 #define MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE	3
+#define MQTT_MAX_QUEUE_SIZE	                5
 
 // callback function for mqtt.
 // return 0 to allow the incoming topic/data to be processed by others/channel set.

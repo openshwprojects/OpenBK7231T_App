@@ -42,7 +42,7 @@ int wal_strnicmp(const char *a, const char *b, int count) {
 }
 
 MqttPublishItem_t *g_MqttPublishQueueHead = NULL;
-
+int g_MqttPublishQueueSize = 0;
 OBK_Publish_Result PublishQueuedItem();
 
 
@@ -967,6 +967,11 @@ char *_strdup(char *src) {
 /// @param value 
 /// @param flags
 void MQTT_QueuePublish(char *topic, char *channel, char *value, int flags){
+  if (g_MqttPublishQueueSize >= MQTT_MAX_QUEUE_SIZE){
+    addLogAdv(LOG_ERROR,LOG_FEATURE_MQTT,"MQTT_QueuePublish: unable to queue, %i items already present\r\n", g_MqttPublishQueueSize);
+    return;
+  }
+
   MqttPublishItem_t *newItem = os_malloc(sizeof(MqttPublishItem_t));
 
   //Make copies of all string values. Using built in strdup was causing a crash so I create a local version.
@@ -987,6 +992,7 @@ void MQTT_QueuePublish(char *topic, char *channel, char *value, int flags){
     head->next = newItem;
   }
   
+  g_MqttPublishQueueSize++;
   MQTT_PublishWholeDeviceState();   //Force a publish on next second
   addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"MQTT_QueuePublish queued message for %s/%s", topic, channel);
 }
@@ -1004,6 +1010,7 @@ OBK_Publish_Result PublishQueuedItem(){
     
     result = MQTT_PublishTopicToClient(mqtt_client, head->topic, head->channel, head->value, head->flags, false);
     g_MqttPublishQueueHead = head->next;
+    g_MqttPublishQueueSize--;
 
     os_free(head->topic);
     os_free(head->channel);
