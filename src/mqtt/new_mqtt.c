@@ -43,7 +43,8 @@ int wal_strnicmp(const char *a, const char *b, int count) {
 
 MqttPublishItem_t *g_MqttPublishQueueHead = NULL;
 int g_MqttPublishQueueSize = 0;
-OBK_Publish_Result PublishQueuedItem();
+bool g_bPublishQueuedItems = false;   //Flag indicating queued items to be published next second
+OBK_Publish_Result PublishQueuedItems();
 
 
 // from mqtt.c
@@ -785,7 +786,7 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx) {
       return OBK_PUBLISH_WAS_NOT_REQUIRED;
 
     case PUBLISHITEM_QUEUED_VALUES:
-      return PublishQueuedItem();
+      return PublishQueuedItems();
 
 	  case PUBLISHITEM_SELF_DYNAMIC_LIGHTSTATE:
       return LED_IsRunningDriver() ? LED_SendEnableAllState() : OBK_PUBLISH_WAS_NOT_REQUIRED;
@@ -902,7 +903,16 @@ int MQTT_RunEverySecondUpdate() {
 		// Do it slowly in order not to overload the buffers
 		// The item indexes start at negative values for special items
 		// and then covers Channel indexes up to CHANNEL_MAX
-		if(g_bPublishAllStatesNow) {
+
+    //Handle only queued items needing publish. Don't need to take separate action if entire state is being published.
+    if (g_bPublishQueuedItems == true && !g_bPublishAllStatesNow){
+      if (PublishQueuedItems() == OBK_PUBLISH_OK){
+        g_bPublishQueuedItems = false;
+      }
+      // retry the same later
+      return 1;
+    }
+		else if(g_bPublishAllStatesNow) {
 			// Doing step by a step a full publish state
 			if(g_timeSinceLastMQTTPublish > 2) {
 				OBK_Publish_Result publishRes;
@@ -993,13 +1003,13 @@ void MQTT_QueuePublish(char *topic, char *channel, char *value, int flags){
   }
   
   g_MqttPublishQueueSize++;
-  MQTT_PublishWholeDeviceState();   //Force a publish on next second
-  addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"MQTT_QueuePublish queued message for %s/%s", topic, channel);
+  g_bPublishQueuedItems = true;   //Publish queued items the next second
+  addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"MQTT_QueuePublish queued message for %s/%s %i items queued", topic, channel, g_MqttPublishQueueSize);
 }
 
 /// @brief Publish the first MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE queued items.
 /// @return 
-OBK_Publish_Result PublishQueuedItem(){
+OBK_Publish_Result PublishQueuedItems(){
   OBK_Publish_Result result = OBK_PUBLISH_WAS_NOT_REQUIRED;
 
   for(int i = 0;i < MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE;i++){
