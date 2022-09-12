@@ -50,7 +50,7 @@ typedef struct MqttPublishItem
 } MqttPublishItem_t;
 
 // Count of queued items published at once.
-#define QUEUED_IETMS_PUBLISHED_AT_ONCE	3
+#define MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE	3
 
 // callback function for mqtt.
 // return 0 to allow the incoming topic/data to be processed by others/channel set.

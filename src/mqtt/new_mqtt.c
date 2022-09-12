@@ -41,7 +41,7 @@ int wal_strnicmp(const char *a, const char *b, int count) {
    return ca - cb;
 }
 
-MqttPublishItem_t *g_MqttPublishItem = NULL;
+MqttPublishItem_t *g_MqttPublishQueueHead = NULL;
 
 OBK_Publish_Result PublishQueuedItem();
 
@@ -976,11 +976,11 @@ void MQTT_QueuePublish(char *topic, char *channel, char *value, int flags){
   newItem->flags = flags;
   newItem->next = NULL;
 
-  if (g_MqttPublishItem == NULL){
-    g_MqttPublishItem = newItem;
+  if (g_MqttPublishQueueHead == NULL){
+    g_MqttPublishQueueHead = newItem;
   }
   else{
-    MqttPublishItem_t *head = g_MqttPublishItem;
+    MqttPublishItem_t *head = g_MqttPublishQueueHead;
     while (head->next != NULL){
       head = head->next; 
     }
@@ -991,19 +991,19 @@ void MQTT_QueuePublish(char *topic, char *channel, char *value, int flags){
   addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"MQTT_QueuePublish queued message for %s/%s", topic, channel);
 }
 
-/// @brief Publish the first 3 queued items.
+/// @brief Publish the first MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE queued items.
 /// @return 
 OBK_Publish_Result PublishQueuedItem(){
   OBK_Publish_Result result = OBK_PUBLISH_WAS_NOT_REQUIRED;
 
-  for(int i = 0;i < QUEUED_IETMS_PUBLISHED_AT_ONCE;i++){
-    MqttPublishItem_t *head = g_MqttPublishItem;
+  for(int i = 0;i < MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE;i++){
+    MqttPublishItem_t *head = g_MqttPublishQueueHead;
     if (head == NULL){  //Nothing to do
       return result;
     }
     
     result = MQTT_PublishTopicToClient(mqtt_client, head->topic, head->channel, head->value, head->flags, false);
-    g_MqttPublishItem = head->next;
+    g_MqttPublishQueueHead = head->next;
 
     os_free(head->topic);
     os_free(head->channel);
