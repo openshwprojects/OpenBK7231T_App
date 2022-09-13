@@ -41,9 +41,11 @@ int wal_strnicmp(const char *a, const char *b, int count) {
    return ca - cb;
 }
 
+#define MQTT_QUEUE_ITEM_IS_REUSABLE(x)  (x->topic[0] == 0)
+#define MQTT_QUEUE_ITEM_SET_REUSABLE(x) (x->topic[0] = 0)
+
 MqttPublishItem_t *g_MqttPublishQueueHead = NULL;
-int g_MqttPublishQueueSize = 0;
-bool g_bPublishQueuedItems = false;   //Flag indicating queued items to be published next second
+int g_MqttPublishItemsQueued = 0;   //Items in the queue waiting to be published. This is not the queue length.
 OBK_Publish_Result PublishQueuedItems();
 
 
@@ -904,12 +906,9 @@ int MQTT_RunEverySecondUpdate() {
 		// The item indexes start at negative values for special items
 		// and then covers Channel indexes up to CHANNEL_MAX
 
-    //Handle only queued items needing publish. Don't need to take separate action if entire state is being published.
-    if (g_bPublishQueuedItems == true && !g_bPublishAllStatesNow){
-      if (PublishQueuedItems() == OBK_PUBLISH_OK){
-        g_bPublishQueuedItems = false;
-      }
-      // retry the same later
+    //Handle only queued items. Don't need to do this separately if entire state is being published.
+    if ((g_MqttPublishItemsQueued > 0) && !g_bPublishAllStatesNow){
+      PublishQueuedItems();
       return 1;
     }
 		else if(g_bPublishAllStatesNow) {
@@ -963,12 +962,23 @@ int MQTT_RunEverySecondUpdate() {
 	return 1;
 }
 
-char *_strdup(char *src) {
-  size_t len = strlen(src) + 1;
-  char *dst = malloc(len);
-  if (dst == NULL) return NULL; 
-  memcpy (dst, src, len);
-  return dst;
+MqttPublishItem_t *get_queue_tail(MqttPublishItem_t *head){
+  if (head == NULL){ return NULL; }
+
+  while (head->next != NULL){
+    head = head->next; 
+  }
+  return head;
+}
+
+MqttPublishItem_t *find_queue_reusable_item(MqttPublishItem_t *head){
+  while (head != NULL){
+    if (MQTT_QUEUE_ITEM_IS_REUSABLE(head)){
+      return head;
+    }
+    head = head->next;
+  }
+  return head;
 }
 
 /// @brief Queue an entry for publish.
@@ -977,58 +987,72 @@ char *_strdup(char *src) {
 /// @param value 
 /// @param flags
 void MQTT_QueuePublish(char *topic, char *channel, char *value, int flags){
-  if (g_MqttPublishQueueSize >= MQTT_MAX_QUEUE_SIZE){
-    addLogAdv(LOG_ERROR,LOG_FEATURE_MQTT,"MQTT_QueuePublish: unable to queue, %i items already present\r\n", g_MqttPublishQueueSize);
+  if (g_MqttPublishItemsQueued >= MQTT_MAX_QUEUE_SIZE){
+    addLogAdv(LOG_ERROR,LOG_FEATURE_MQTT,"Unable to queue! %i items already present\r\n", g_MqttPublishItemsQueued);
     return;
   }
 
-  MqttPublishItem_t *newItem = os_malloc(sizeof(MqttPublishItem_t));
+  if ((strlen(topic) > MQTT_PUBLISH_ITEM_TOPIC_LENGTH) ||
+    (strlen(channel) > MQTT_PUBLISH_ITEM_CHANNEL_LENGTH) ||
+    (strlen(value) > MQTT_PUBLISH_ITEM_VALUE_LENGTH)){
+    addLogAdv(LOG_ERROR,LOG_FEATURE_MQTT,"Unable to queue! Topic, channel or value exceeds size limit\r\n");
+    return;
+  }
 
-  //Make copies of all string values. Using built in strdup was causing a crash so I create a local version.
-  newItem->topic = _strdup(topic);
-  newItem->channel = _strdup(channel);
-  newItem->value = _strdup(value);
-  newItem->flags = flags;
-  newItem->next = NULL;
+  //Queue data for publish. This might be a new item in the queue or an existing item. This is done to prevent
+  //memory fragmentation. The total queue length is limited to MQTT_MAX_QUEUE_SIZE.
+  MqttPublishItem_t *newItem;
 
   if (g_MqttPublishQueueHead == NULL){
-    g_MqttPublishQueueHead = newItem;
+    g_MqttPublishQueueHead = newItem = os_malloc(sizeof(MqttPublishItem_t));
+    newItem->next=NULL;
   }
   else{
-    MqttPublishItem_t *head = g_MqttPublishQueueHead;
-    while (head->next != NULL){
-      head = head->next; 
+    newItem = find_queue_reusable_item(g_MqttPublishQueueHead);
+
+    if (newItem == NULL){
+      newItem = os_malloc(sizeof(MqttPublishItem_t));
+      newItem->next=NULL;
+      get_queue_tail(g_MqttPublishQueueHead)->next = newItem; //Append new item
     }
-    head->next = newItem;
   }
   
-  g_MqttPublishQueueSize++;
-  g_bPublishQueuedItems = true;   //Publish queued items the next second
-  addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"MQTT_QueuePublish queued message for %s/%s %i items queued", topic, channel, g_MqttPublishQueueSize);
+  //os_strcpy does copy ending null character.
+  os_strcpy(newItem->topic, topic); 
+  os_strcpy(newItem->channel, channel);
+  os_strcpy(newItem->value, value);
+  newItem->flags = flags;
+  
+  g_MqttPublishItemsQueued++;
+  addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Queued topic=%s/%s %i, items queued", newItem->topic, newItem->channel, g_MqttPublishItemsQueued);
 }
 
-/// @brief Publish the first MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE queued items.
+/// @brief Publish MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE queued items.
 /// @return 
 OBK_Publish_Result PublishQueuedItems(){
   OBK_Publish_Result result = OBK_PUBLISH_WAS_NOT_REQUIRED;
 
-  for(int i = 0;i < MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE;i++){
-    MqttPublishItem_t *head = g_MqttPublishQueueHead;
-    if (head == NULL){  //Nothing to do
-      return result;
+  int count = 0;
+  MqttPublishItem_t *head = g_MqttPublishQueueHead;
+  
+  //The next actionable item might not be at the front. The queue size is limited to MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE
+  //so this traversal is fast.
+  //addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"PublishQueuedItems g_MqttPublishItemsQueued=%i",g_MqttPublishItemsQueued );
+  while ((head != NULL) && (count < MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE) && (g_MqttPublishItemsQueued > 0)){
+    if (!MQTT_QUEUE_ITEM_IS_REUSABLE(head)){  //Skip reusable entries
+      count++;
+      result = MQTT_PublishTopicToClient(mqtt_client, head->topic, head->channel, head->value, head->flags, false);
+      MQTT_QUEUE_ITEM_SET_REUSABLE(head); //Flag item as reusable
+      g_MqttPublishItemsQueued--;   //decrement queued count
+
+      //Stop if last publish failed
+      if (result != OBK_PUBLISH_OK) break;
     }
-    
-    result = MQTT_PublishTopicToClient(mqtt_client, head->topic, head->channel, head->value, head->flags, false);
-    g_MqttPublishQueueHead = head->next;
-    g_MqttPublishQueueSize--;
+    else{
+      //addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"PublishQueuedItems item skipped reusable");
+    }
 
-    os_free(head->topic);
-    os_free(head->channel);
-    os_free(head->value);
-    os_free(head);
-
-    //Stop if last publish failed
-    if (result != OBK_PUBLISH_OK) break;
+    head = head->next;
   }
 
   return result;
