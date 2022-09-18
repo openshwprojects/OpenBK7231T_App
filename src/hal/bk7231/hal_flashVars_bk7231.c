@@ -17,13 +17,12 @@
 #include "drv_model_pub.h"
 #include "net_param_pub.h"
 #include "flash_pub.h"
+#include "../hal_flashVars.h"
 
 #include "BkDriverFlash.h"
 #include "BkDriverUart.h"
 
 #include "../../logging/logging.h"
-
-#define MAX_RETAIN_CHANNELS 12
 
 typedef struct flash_vars_structure
 {
@@ -536,6 +535,39 @@ void HAL_FlashVars_SaveChannel(int index, int value) {
     flash_vars_init();
     flash_vars.savedValues[index] = value;
     ADDLOG_INFO(LOG_FEATURE_CFG, "####### Flash Save Channel %d as %d #######", index,value);
+    flash_vars_write();
+
+    flash_vars_read(&data);
+    ADDLOG_DEBUG(LOG_FEATURE_CFG, "re-read - offset %d, boot count %d, boot success %d, bootfailures %d",
+        flash_vars_offset,
+        data.boot_count,
+        data.boot_success_count,
+        data.boot_count - data.boot_success_count );
+#endif
+}
+void HAL_FlashVars_ReadLED(byte *mode, short *brightness, short *temperature, byte *rgb) {
+#ifndef DISABLE_FLASH_VARS_VARS
+	*mode = flash_vars.savedValues[MAX_RETAIN_CHANNELS-3];
+	*temperature = flash_vars.savedValues[MAX_RETAIN_CHANNELS-2];
+	*brightness = flash_vars.savedValues[MAX_RETAIN_CHANNELS-1];
+	rgb[0] = flash_vars.rgb[0];
+	rgb[1] = flash_vars.rgb[1];
+	rgb[2] = flash_vars.rgb[2];
+#endif
+}
+void HAL_FlashVars_SaveLED(byte mode, short brightness, short temperature, byte r, byte g, byte b) {
+#ifndef DISABLE_FLASH_VARS_VARS
+    FLASH_VARS_STRUCTURE data;
+
+
+    flash_vars_init();
+	flash_vars.savedValues[MAX_RETAIN_CHANNELS-1] = brightness;
+	flash_vars.savedValues[MAX_RETAIN_CHANNELS-2] = temperature;
+	flash_vars.savedValues[MAX_RETAIN_CHANNELS-3] = mode;
+    flash_vars.rgb[0] = r;
+    flash_vars.rgb[1] = g;
+    flash_vars.rgb[2] = b;
+    ADDLOG_INFO(LOG_FEATURE_CFG, "####### Flash Save LED #######");
     flash_vars_write();
 
     flash_vars_read(&data);

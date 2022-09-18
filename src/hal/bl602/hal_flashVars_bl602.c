@@ -90,6 +90,9 @@ void HAL_FlashVars_SaveChannel(int index, int value) {
 	// save after increase
 	BL602_SaveFlashVars(&g_bootCounts,sizeof(g_bootCounts));
 }
+void HAL_FlashVars_SaveLED(byte mode, short brightness, short temperature, byte r, byte g, byte b) {
+
+}
 int HAL_FlashVars_GetChannelValue(int ch) {
 	if(ch<0||ch>=BL602_SAVED_CHANNELS_MAX)
 		return 0;

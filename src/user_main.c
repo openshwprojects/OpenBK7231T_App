@@ -471,6 +471,7 @@ void Main_Init()
 		PIN_SetupPins();
 		PIN_StartButtonScanThread();
 
+		NewLED_RestoreSavedStateIfNeeded();
 	}
 
 }

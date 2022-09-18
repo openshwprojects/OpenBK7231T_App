@@ -1649,7 +1649,7 @@ const char *g_obk_flagNames[] = {
 	"[SM2135] Use separate RGB/CW modes instead of writing all 5 values as RGB",
 	"[MQTT] Broadcast self state on MQTT connect",
 	"[PWM] BK7231 use 600hz instead of 1khz default",
-	"error",
+	"[LED] remember LED driver state (RGBCW, enable, brightness, temperature) after reboot",
 	"error",
 	"error",
 };

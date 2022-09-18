@@ -5,6 +5,7 @@
 #include "cmd_public.h"
 #include "../obk_config.h"
 #include "../driver/drv_public.h"
+#include "../hal/hal_flashVars.h"
 #include "../rgb2hsv.h"
 #include <ctype.h>
 #include "cmd_local.h"
@@ -186,7 +187,11 @@ void apply_smart_light() {
 		BP5758D_Write(finalRGBCW);
 	}
 #endif
+	if(CFG_HasFlag(OBK_FLAG_LED_REMEMBERLASTSTATE)) {
+		HAL_FlashVars_SaveLED(g_lightMode,g_brightness / g_cfg_brightnessMult, led_temperature_current,baseColors[0],baseColors[1],baseColors[2]);
+	}
 }
+
 static OBK_Publish_Result sendColorChange() {
 	char s[16];
 	byte c[3];
@@ -556,8 +561,25 @@ int NewLED_InitCommands(){
     CMD_RegisterCommand("led_saturation", "", setSaturation, "set qqqq", NULL);
     CMD_RegisterCommand("led_hue", "", setHue, "set qqqq", NULL);
 
-	// set, but do not apply
-	LED_SetTemperature(250,0);
+}
+void NewLED_RestoreSavedStateIfNeeded() {
+	if(CFG_HasFlag(OBK_FLAG_LED_REMEMBERLASTSTATE)) {
+		short brig;
+		short tmp;
+		byte rgb[3];
+		byte mod;
+		HAL_FlashVars_ReadLED(&mod, &brig, &tmp, rgb);
+		g_lightMode = mod;
+		g_brightness = brig * g_cfg_brightnessMult;
+		led_temperature_current = tmp;
+		baseColors[0] = rgb[0];
+		baseColors[1] = rgb[1];
+		baseColors[2] = rgb[2];
+		apply_smart_light();
+	} else {
+		// set, but do not apply
+		LED_SetTemperature(250,0);
+	}
 
 	// "cmnd/obk8D38570E/led_dimmer_get""
     return 0;
