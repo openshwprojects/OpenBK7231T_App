@@ -571,7 +571,7 @@ void NewLED_RestoreSavedStateIfNeeded() {
 		HAL_FlashVars_ReadLED(&mod, &brig, &tmp, rgb);
 		g_lightMode = mod;
 		g_brightness = brig * g_cfg_brightnessMult;
-		led_temperature_current = tmp;
+		LED_SetTemperature(tmp,0);
 		baseColors[0] = rgb[0];
 		baseColors[1] = rgb[1];
 		baseColors[2] = rgb[2];
