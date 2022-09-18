@@ -24,6 +24,9 @@ int HAL_FlashVars_GetChannelValue(int ch) {
 void HAL_FlashVars_SaveLED(byte mode, short brightness, short temperature, byte r, byte g, byte b) {
 
 }
+void HAL_FlashVars_ReadLED(byte *mode, short *brightness, short *temperature, byte *rgb) {
+
+}
 
 
 
