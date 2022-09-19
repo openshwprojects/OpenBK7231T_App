@@ -41,7 +41,7 @@ typedef struct mqtt_request_tag {
 
 #define MQTT_PUBLISH_ITEM_TOPIC_LENGTH    64
 #define MQTT_PUBLISH_ITEM_CHANNEL_LENGTH  64
-#define MQTT_PUBLISH_ITEM_VALUE_LENGTH    416
+#define MQTT_PUBLISH_ITEM_VALUE_LENGTH    480
 
 /// @brief Publish queue item
 typedef struct MqttPublishItem
