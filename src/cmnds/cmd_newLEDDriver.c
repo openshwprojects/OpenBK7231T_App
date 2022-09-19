@@ -582,5 +582,4 @@ void NewLED_RestoreSavedStateIfNeeded() {
 	}
 
 	// "cmnd/obk8D38570E/led_dimmer_get""
-    return 0;
 }
