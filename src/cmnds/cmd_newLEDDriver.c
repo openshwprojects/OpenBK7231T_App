@@ -550,7 +550,7 @@ static int setHue(const void *context, const char *cmd, const char *args, int cm
 	return 1;
 }
 
-int NewLED_InitCommands(){
+void NewLED_InitCommands(){
     CMD_RegisterCommand("led_dimmer", "", dimmer, "set output dimmer 0..100", NULL);
     CMD_RegisterCommand("led_enableAll", "", enableAll, "qqqq", NULL);
     CMD_RegisterCommand("led_basecolor_rgb", "", basecolor_rgb, "set PWN color using #RRGGBB", NULL);

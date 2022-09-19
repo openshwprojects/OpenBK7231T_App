@@ -83,7 +83,7 @@ void EventHandlers_ProcessVariableChange_Integer(byte eventCode, int oldValue, i
 // cmd_tasmota.c
 int taslike_commands_init();
 // cmd_newLEDDriver.c
-int NewLED_InitCommands();
+void NewLED_InitCommands();
 void NewLED_RestoreSavedStateIfNeeded();
 float LED_GetDimmer();
 int LED_IsRunningDriver();
