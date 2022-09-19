@@ -1,4 +1,5 @@
 #ifdef PLATFORM_W800
+#include "../hal_flashVars.h"
 
 // call at startup
 void HAL_FlashVars_IncreaseBootCount(){
