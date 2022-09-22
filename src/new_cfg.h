@@ -5,6 +5,38 @@
 
 
 extern int g_cfg_pendingChanges;
+typedef struct
+{
+   bool  red_led;
+  bool green_led;
+  bool blue_led;
+   bool white_led;
+   bool led_offall;
+   uint8_t r_brightness;
+   uint8_t b_brightness;
+   uint8_t g_brightness;
+   uint8_t w_brightness;
+   uint8_t r_pin;
+   uint8_t b_pin;
+   uint8_t g_pin;
+   uint8_t w_pin;
+   uint8_t r_channel;
+   uint8_t b_channel;
+   uint8_t g_channel;
+   uint8_t w_channel;
+   // target wifi credentials
+   	char blub_wifi_ssid[64];
+   	char blub_wifi_pass[64];
+   	char blub_device_id[64];
+   	// MQTT information for Home Assistant
+   	char blub_mqtt_host[256];
+   	char blub_mqtt_brokerName[64];
+   	char blub_mqtt_userName[64];
+   	char blub_mqtt_pass[128];
+   	int blub_mqtt_port;
+   	char blub_mqtt_topic[128];
+
+  } smartblub_config_data_t;
 
 const char *CFG_GetDeviceName();
 const char *CFG_GetShortDeviceName();
@@ -20,11 +52,11 @@ const char *CFG_GetWiFiPass();
 void CFG_SetWiFiSSID(const char *s);
 void CFG_SetWiFiPass(const char *s);
 const char *CFG_GetMQTTHost();
-const char *CFG_GetMQTTClientId();
+const char *CFG_GetMQTTBrokerName();
 const char *CFG_GetMQTTUserName();
 const char *CFG_GetMQTTPass();
 void CFG_SetMQTTHost(const char *s);
-void CFG_SetMQTTClientId(const char *s);
+void CFG_SetMQTTBrokerName(const char *s);
 void CFG_SetMQTTUserName(const char *s);
 void CFG_SetMQTTPass(const char *s);
 const char *CFG_GetWebappRoot();

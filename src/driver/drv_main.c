@@ -33,7 +33,6 @@ static driver_t g_drivers[] = {
 	{ "CSE7766", CSE7766_Init, CSE7766_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #if PLATFORM_BEKEN
 	{ "DGR", DRV_DGR_Init, NULL, NULL, DRV_DGR_RunFrame, DRV_DGR_Shutdown, DRV_DGR_OnChannelChanged, false },
-	{ "DDP", DRV_DDP_Init, NULL, NULL, DRV_DDP_RunFrame, DRV_DDP_Shutdown, NULL, false },
 #endif
 	{ "SM2135", SM2135_Init, SM2135_RunFrame, NULL, NULL, NULL, SM2135_OnChannelChanged, false },
 	{ "BP5758D", BP5758D_Init, BP5758D_RunFrame, NULL, NULL, NULL, BP5758D_OnChannelChanged, false },

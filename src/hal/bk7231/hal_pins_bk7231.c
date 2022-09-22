@@ -1,8 +1,7 @@
 
 #include "../../new_common.h"
 #include "../../logging/logging.h"
-#include "../../new_cfg.h"
-//#include "../../new_pins.h"
+
 #include <gpio_pub.h>
 
 #include "../../beken378/func/include/net_param_pub.h"
@@ -11,11 +10,6 @@
 #include "../../beken378/driver/i2c/i2c1.h"
 #include "../../beken378/driver/gpio/gpio.h"
 
-//100hz to 20000hz according to tuya code
-#define PWM_FREQUENCY_SLOW 600 //Slow frequency for LED Drivers requiring slower PWM Freq
-#define PWM_FREQUENCY_DEFAULT 1000 //Default Frequency
-
-int pwmfrequency = PWM_FREQUENCY_DEFAULT;
 
 static int PIN_GetPWMIndexForPinIndex(int pin) {
 	if(pin == 6)
@@ -82,15 +76,14 @@ void HAL_PIN_PWM_Start(int index) {
 	if(pwmIndex == -1) {
 		return;
 	}
-	//Use slow pwm if user has set checkbox in webif
-	if(CFG_HasFlag(11)) pwmfrequency = PWM_FREQUENCY_SLOW; //11 = OBK_FLAG_PWM_SLOW
 
-	uint32_t frequency = (26000000 / pwmfrequency);
+	// they are using 1kHz PWM
+	// See: https://www.elektroda.pl/rtvforum/topic3798114.html
 #if PLATFORM_BK7231N
 	// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
-	bk_pwm_initialize(pwmIndex, frequency, 0, 0, 0);
+	bk_pwm_initialize(pwmIndex, 1000, 0, 0, 0);
 #else
-	bk_pwm_initialize(pwmIndex, frequency, 0);
+	bk_pwm_initialize(pwmIndex, 1000, 0);
 #endif
 	bk_pwm_start(pwmIndex);
 }
@@ -107,13 +100,10 @@ void HAL_PIN_PWM_Update(int index, int value) {
 		value = 0;
 	if(value>100)
 		value = 100;
-
-	//uint32_t value_upscaled = value * 10.0f; //Duty cycle 0...100 -> 0...1000
-	uint32_t period = (26000000 / pwmfrequency); //TODO: Move to global variable and set in init func so it does not have to be recalculated every time...
-	uint32_t duty = (value / 100.0 * period); //No need to use upscaled variable
 #if PLATFORM_BK7231N
-	bk_pwm_update_param(pwmIndex, period, duty,0,0);
+	bk_pwm_update_param(pwmIndex, 1000, value * 10.0f,0,0); // Duty cycle 0...100 * 10.0 = 0...1000
 #else
-	bk_pwm_update_param(pwmIndex, period, duty);
+	bk_pwm_update_param(pwmIndex, 1000, value * 10.0f); // Duty cycle 0...100 * 10.0 = 0...1000
 #endif
 }
+

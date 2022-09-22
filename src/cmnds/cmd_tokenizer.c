@@ -34,7 +34,7 @@ const char *Tokenizer_GetArg(int i) {
 const char *Tokenizer_GetArgFrom(int i) {
 	return g_argsFrom[i];
 }
-int Tokenizer_GetArgIntegerRange(int i, int rangeMin, int rangeMax) {
+int Tokenizer_GetArgIntegerRange(int i, int rangeMax, int rangeMin) {
 	int ret = Tokenizer_GetArgInteger(i);
 	if(ret < rangeMin) {
 		ret = rangeMin;
