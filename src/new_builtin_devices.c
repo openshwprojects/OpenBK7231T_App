@@ -642,6 +642,18 @@ void Setup_Device_LSC_Smart_Connect_Plug_CB2S(){
 	CFG_Save_SetupTimer();
 }
 
+// LSC 806lm smart bulbs
+void Setup_Device_LSC_Smart_Connect_Bulb_806lm() {
+	CFG_ClearPins();
+
+	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(24, 1);
+
+	PIN_SetPinRoleForPinIndex(26, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(26, 2);
+
+	CFG_Save_SetupTimer();
+}
 
 void Setup_Device_DS_102_1Gang_WB3S(){
 	CFG_ClearPins();

@@ -243,6 +243,7 @@ void Setup_Device_Sonoff_MiniR3();
 void Setup_Device_WiFi_DIY_Switch_WB2S_ZN268131();
 void Setup_Device_BK7231N_CB2S_LSPA9_BL0942();
 void Setup_Device_LSC_Smart_Connect_Plug_CB2S();
+void Setup_Device_LSC_Smart_Connect_Bulb_806lm();
 void Setup_Device_DS_102_1Gang_WB3S();
 void Setup_Device_DS_102_2Gang_WB3S();
 void Setup_Device_DS_102_3Gang_WB3S();
