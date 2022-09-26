@@ -86,6 +86,12 @@ int isCWMode() {
 int shouldSendRGB() {
 	int pwmCount;
 	
+	// forced RGBCW means 'send rgb'
+	// This flag should be set for SM2315 and BP5758
+	// This flag also could be used for dummy Device Groups driver-module
+	if(CFG_HasFlag(OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER))
+		return 1;
+
 	pwmCount = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
 	
 	// single colors and CW don't send rgb
