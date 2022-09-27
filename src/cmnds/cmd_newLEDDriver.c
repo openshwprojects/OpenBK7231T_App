@@ -5,7 +5,6 @@
 #include "cmd_public.h"
 #include "../obk_config.h"
 #include "../driver/drv_public.h"
-#include "../hal/hal_flashVars.h"
 #include "../rgb2hsv.h"
 #include <ctype.h>
 #include "cmd_local.h"
@@ -133,8 +132,8 @@ void apply_smart_light() {
 				finalRGBCW[i] = baseColors[i] * g_brightness;
 			}
 		}
-		CHANNEL_Set(firstChannelIndex, value_cold_or_warm, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-		CHANNEL_Set(firstChannelIndex+1, value_brightness, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+		CHANNEL_Set(firstChannelIndex, value_cold_or_warm, CHANNEL_SET_FLAG_SKIP_MQTT);
+		CHANNEL_Set(firstChannelIndex+1, value_brightness, CHANNEL_SET_FLAG_SKIP_MQTT);
 	} else {
 		for(i = 0; i < 5; i++) {
 			float raw, final;
@@ -175,13 +174,13 @@ void apply_smart_light() {
 				// in CW mode, we have only set two channels
 				// We don't have RGB channels
 				// so, do simple mapping
-				if(i == 3) {
-					CHANNEL_Set(firstChannelIndex+0, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-				} else if(i == 4) {
-					CHANNEL_Set(firstChannelIndex+1, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+				if(i == 4) {
+					CHANNEL_Set(firstChannelIndex+0, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT);
+				} else if(i == 5) {
+					CHANNEL_Set(firstChannelIndex+1, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT);
 				}
 			} else {
-				CHANNEL_Set(channelToUse, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+				CHANNEL_Set(channelToUse, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT);
 			}
 		}
 	}
@@ -193,11 +192,7 @@ void apply_smart_light() {
 		BP5758D_Write(finalRGBCW);
 	}
 #endif
-	if(CFG_HasFlag(OBK_FLAG_LED_REMEMBERLASTSTATE)) {
-		HAL_FlashVars_SaveLED(g_lightMode,g_brightness / g_cfg_brightnessMult, led_temperature_current,baseColors[0],baseColors[1],baseColors[2]);
-	}
 }
-
 static OBK_Publish_Result sendColorChange() {
 	char s[16];
 	byte c[3];
@@ -389,28 +384,6 @@ static int dimmer(const void *context, const char *cmd, const char *args, int cm
 	//}
 	//return 0;
 }
-void LED_SetFinalRGB(byte r, byte g, byte b) {
-	g_lightMode = Light_RGB;
-			
-	baseColors[0] = r;
-	baseColors[1] = g;
-	baseColors[2] = b;
-
-	RGBtoHSV(baseColors[0]/255.0f, baseColors[1]/255.0f, baseColors[2]/255.0f, &g_hsv_h, &g_hsv_s, &g_hsv_v);
-
-	apply_smart_light();
-
-	// TODO
-	if(0) {
-		sendColorChange();
-		if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTLEDPARAMSTOGETHER)) {
-			LED_SendDimmerChange();
-		}
-		if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTLEDFINALCOLOR)) {
-			sendFinalColor();
-		}
-	}
-}
 int LED_SetBaseColor(const void *context, const char *cmd, const char *args, int bAll){
    // support both '#' prefix and not
             const char *c = args;
@@ -556,7 +529,7 @@ static int setHue(const void *context, const char *cmd, const char *args, int cm
 	return 1;
 }
 
-void NewLED_InitCommands(){
+int NewLED_InitCommands(){
     CMD_RegisterCommand("led_dimmer", "", dimmer, "set output dimmer 0..100", NULL);
     CMD_RegisterCommand("led_enableAll", "", enableAll, "qqqq", NULL);
     CMD_RegisterCommand("led_basecolor_rgb", "", basecolor_rgb, "set PWN color using #RRGGBB", NULL);
@@ -567,25 +540,9 @@ void NewLED_InitCommands(){
     CMD_RegisterCommand("led_saturation", "", setSaturation, "set qqqq", NULL);
     CMD_RegisterCommand("led_hue", "", setHue, "set qqqq", NULL);
 
-}
-void NewLED_RestoreSavedStateIfNeeded() {
-	if(CFG_HasFlag(OBK_FLAG_LED_REMEMBERLASTSTATE)) {
-		short brig;
-		short tmp;
-		byte rgb[3];
-		byte mod;
-		HAL_FlashVars_ReadLED(&mod, &brig, &tmp, rgb);
-		g_lightMode = mod;
-		g_brightness = brig * g_cfg_brightnessMult;
-		LED_SetTemperature(tmp,0);
-		baseColors[0] = rgb[0];
-		baseColors[1] = rgb[1];
-		baseColors[2] = rgb[2];
-		apply_smart_light();
-	} else {
-		// set, but do not apply
-		LED_SetTemperature(250,0);
-	}
+	// set, but do not apply
+	LED_SetTemperature(250,0);
 
 	// "cmnd/obk8D38570E/led_dimmer_get""
+    return 0;
 }
