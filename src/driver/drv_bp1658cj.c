@@ -77,9 +77,7 @@ static void BP1658CJ_PreInit() {
 
 
 void BP1658CJ_Write(byte *rgbcw) {
-  //ADDLOG_DEBUG(LOG_FEATURE_CMD, "Writing to Lamp (int): %i,%i,%i,%i,%i", rgbcw[0], rgbcw[1], rgbcw[2], rgbcw[3], rgbcw[4]);
   ADDLOG_DEBUG(LOG_FEATURE_CMD, "Writing to Lamp: #%02X%02X%02X%02X%02X", rgbcw[0], rgbcw[1], rgbcw[2], rgbcw[3], rgbcw[4]);
-  //ADDLOG_DEBUG(LOG_FEATURE_CMD, "Writing to Lamp (test): #%i%i%i%i%i", rgbcw[0], rgbcw[1], rgbcw[2], rgbcw[3], rgbcw[4]);
   unsigned short cur_col_10[5];
 
 	for(int i = 0; i < 5; i++){
@@ -87,7 +85,7 @@ void BP1658CJ_Write(byte *rgbcw) {
 		cur_col_10[i] = rgbcw[g_channelOrder[i]] * 4;
 	}
 
-	// If we receive 0 for all channels, we'll assume that the lightbulb is off, and activate BP1658CJ's sleep mode ([80] ).
+	// If we receive 0 for all channels, we'll assume that the lightbulb is off, and activate BP1658CJ's sleep mode ([0x80] ).
 	if (cur_col_10[0]==0 && cur_col_10[1]==0 && cur_col_10[2]==0 && cur_col_10[3]==0 && cur_col_10[4]==0) {
 		BP1658CJ_Start(BP1658CJ_ADDR_SLEEP);
                 BP1658CJ_WriteByte(BP1658CJ_SUBADDR);
@@ -100,8 +98,8 @@ void BP1658CJ_Write(byte *rgbcw) {
 	// Even though we could address changing channels only, in practice we observed that the lightbulb always sets all channels.
 	BP1658CJ_Start(BP1658CJ_ADDR_OUT);
 
-        // The First Byte is the Subadress
-        BP1658CJ_WriteByte(BP1658CJ_SUBADDR);
+  // The First Byte is the Subadress
+  BP1658CJ_WriteByte(BP1658CJ_SUBADDR);
 	// Brigtness values are transmitted as two bytes. The light-bulb accepts a 10-bit integer (0-1023) as an input value.
 	// The first 5bits of this input are transmitted in second byte, the second 5bits in the first byte.
 	BP1658CJ_WriteByte((uint8_t)(cur_col_10[0] & 0x1F));  //Red
