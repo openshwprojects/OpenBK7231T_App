@@ -17,13 +17,13 @@ static int g_pin_data = 24;
 // Mapping between RGBCW to current BP1658CJ channels
 static byte g_channelOrder[5] = { 1, 0, 2, 3, 4 }; //in our case: Hama 5.5W GU10 RGBCW the channel order is: [Green][Red][Blue][Warm][Cold]
 
-const int BP1658CJ_DELAY = 10; //delay*3 --> nop's
+const int BP1658CJ_DELAY = 1; //delay*10 --> nops
 
 
-void usleep(int r) //delay function do 3*r nothing, because rtos_delay_milliseconds is too much
+void usleep(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 {
   for(volatile int i=0; i<r; i++)
-    __asm__("nop\nnop\nnop");
+    __asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
 }
 
 static void BP1658CJ_Stop() {
