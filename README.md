@@ -309,7 +309,7 @@ MQTT based integration with Home Assistant is possible in 2 ways from the Home A
 One can paste the generated [yaml](https://www.home-assistant.io/docs/configuration/yaml/) configuration into Home Assistant configuration manually.
 
 Or add the devices automatically via discovery. To do click the `Start Home Assistant Discovery` button which sends outs [MQTT discovery](https://www.home-assistant.io/docs/mqtt/discovery/) messages, one for each entity (switch, light).
-* The discovery topic should match the `discovery_prefix` defined in Home Assistant, then default value is `homeassistant`.
+* The discovery topic should match the `discovery_prefix` defined in Home Assistant, the default value is `homeassistant`.
 * More details about Home Assistant discovery can be found [here](https://www.home-assistant.io/docs/mqtt/discovery/).
 
 
