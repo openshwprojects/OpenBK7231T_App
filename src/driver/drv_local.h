@@ -27,6 +27,10 @@ void BP5758D_Init();
 void BP5758D_RunFrame();
 void BP5758D_OnChannelChanged(int ch, int value);
 
+void BP1658CJ_Init();
+void BP1658CJ_RunFrame();
+void BP1658CJ_OnChannelChanged(int ch, int value);
+
 void BL_ProcessUpdate(float voltage, float current, float power);
 void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request);
 bool DRV_IsRunning(const char *name);
@@ -34,4 +38,3 @@ bool DRV_IsRunning(const char *name);
 
 void TuyaMCU_Sensor_RunFrame();
 void TuyaMCU_Sensor_Init();
-
