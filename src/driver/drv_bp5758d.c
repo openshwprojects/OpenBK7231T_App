@@ -11,7 +11,6 @@
 #include "../hal/hal_pins.h"
 
 #include "drv_bp5758d.h"
-#include "drv_1658cj.h"
 
 static int g_pin_clk = 26;
 static int g_pin_data = 24;
