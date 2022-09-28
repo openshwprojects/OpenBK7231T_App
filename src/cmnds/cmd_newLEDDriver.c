@@ -193,7 +193,7 @@ void apply_smart_light() {
 		BP5758D_Write(finalRGBCW);
 	}
 	if(DRV_IsRunning("BP1658CJ")) {
-		BP5758D_Write(finalRGBCW);
+		BP1658CJ_Write(finalRGBCW);
 	}
 #endif
 	if(CFG_HasFlag(OBK_FLAG_LED_REMEMBERLASTSTATE)) {
