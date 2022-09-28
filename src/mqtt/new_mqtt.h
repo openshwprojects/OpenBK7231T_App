@@ -39,6 +39,24 @@ typedef struct mqtt_request_tag {
     char topic[128];
 } mqtt_request_t;
 
+#define MQTT_PUBLISH_ITEM_TOPIC_LENGTH    64
+#define MQTT_PUBLISH_ITEM_CHANNEL_LENGTH  64
+#define MQTT_PUBLISH_ITEM_VALUE_LENGTH    480
+
+/// @brief Publish queue item
+typedef struct MqttPublishItem
+{
+  char topic[MQTT_PUBLISH_ITEM_TOPIC_LENGTH];
+  char channel[MQTT_PUBLISH_ITEM_CHANNEL_LENGTH];
+  char value[MQTT_PUBLISH_ITEM_VALUE_LENGTH];
+  int flags;
+  struct MqttPublishItem *next;
+} MqttPublishItem_t;
+
+// Count of queued items published at once.
+#define MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE	3
+#define MQTT_MAX_QUEUE_SIZE	                7
+
 // callback function for mqtt.
 // return 0 to allow the incoming topic/data to be processed by others/channel set.
 // return 1 to 'eat the packet and terminate further processing.
@@ -57,6 +75,8 @@ OBK_Publish_Result MQTT_PublishMain_StringInt(const char *sChannel, int val);
 OBK_Publish_Result MQTT_PublishMain_StringString(const char *sChannel, const char *valueStr, int flags);
 OBK_Publish_Result MQTT_ChannelChangeCallback(int channel, int iVal);
 void MQTT_PublishOnlyDeviceChannelsIfPossible();
+void MQTT_QueuePublish(char *topic, char *channel, char *value, int flags);
+OBK_Publish_Result MQTT_Publish(char *sTopic, char *sChannel, char *value, int flags);
 
 #endif // __NEW_MQTT_H__
 
