@@ -1,4 +1,4 @@
-#ifdef PLATFORM_W800
+#if defined(PLATFORM_W800) || defined(PLATFORM_W600)
 
 #include "../hal_adc.h"
 #include "../../new_common.h"

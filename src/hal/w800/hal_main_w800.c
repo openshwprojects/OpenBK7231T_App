@@ -1,4 +1,4 @@
-#ifdef PLATFORM_W800
+#if defined(PLATFORM_W800) || defined(PLATFORM_W600)
 
 #include "../../new_common.h"
 #include "../../logging/logging.h"

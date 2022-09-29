@@ -42,6 +42,14 @@ typedef int OBK_Publish_Result;
 #define DEVICENAME_PREFIX_SHORT "w800"
 #define PLATFORM_MCU_NAME "W800"
 #define MANUFACTURER "WinnerMicro"
+#elif PLATFORM_W600
+#define DEVICENAME_PREFIX_FULL "OpenW600"
+#define DEVICENAME_PREFIX_SHORT "w600"
+#define PLATFORM_MCU_NAME "W600"
+#define MANUFACTURER "WinnerMicro"
+
+typedef long BaseType_t;
+
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -152,7 +160,7 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 
 #include "kernel/os/os.h"
 
-#elif PLATFORM_W800
+#elif PLATFORM_W600 || PLATFORM_W800
 
 #include <string.h>
 #include "wm_include.h"
