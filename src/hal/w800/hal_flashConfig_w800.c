@@ -1,4 +1,4 @@
-#ifdef PLATFORM_W800
+#if defined(PLATFORM_W800) || defined(PLATFORM_W600)
 
 #include "../hal_flashConfig.h"
 #include "../../logging/logging.h"
@@ -17,8 +17,18 @@ void initFlashIfNeeded(){
 	bFlashReady = 1;
 
 }
-#define TEST_FLASH_BUF_SIZE    4000
-#define FLASH_CONFIG_ADDR 		0x1F0303
+
+#if defined(PLATFORM_W800) 
+
+	#define TEST_FLASH_BUF_SIZE    4000
+	#define FLASH_CONFIG_ADDR 		0x1F0303
+	
+#else
+
+	#define TEST_FLASH_BUF_SIZE    4000
+	#define FLASH_CONFIG_ADDR 		0xF0000
+
+#endif
 
 
 int HAL_Configuration_ReadConfigMemory(void *target, int dataLen){
