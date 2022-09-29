@@ -303,6 +303,19 @@ https://www.elektroda.com/rtvforum/topic3895572.html
   > backlog SetChannel 5 90
   
   
+# HomeAssistant Integration
+MQTT based integration with Home Assistant is possible in 2 ways from the Home Assistant configuration page (`Config > Generate Home Assistant cfg`).
+
+One can paste the generated [yaml](https://www.home-assistant.io/docs/configuration/yaml/) configuration into Home Assistant configuration manually.
+
+Or add the devices automatically via discovery. To do click the `Start Home Assistant Discovery` button which sends outs [MQTT discovery](https://www.home-assistant.io/docs/mqtt/discovery/) messages, one for each entity (switch, light).
+* The discovery topic should match the `discovery_prefix` defined in Home Assistant, the default value is `homeassistant`.
+* More details about Home Assistant discovery can be found [here](https://www.home-assistant.io/docs/mqtt/discovery/).
+
+
+Note: Currently, discovery is only implemented for light and relay entities.
+
+
 # Detailed flashing guides along with device teardowns
   
  I have prepared several detailed teardowns and flashing guides for multiple supported devices. Each comes in two languages - English and Polish.
