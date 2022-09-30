@@ -25,45 +25,6 @@ const char htmlHeadMain[] =
 	"<meta charset=\"utf-8\">"
 	"<meta name=\"viewport\" content=\"width=device-width,initial-scale=1,user-scalable=no\">"
 	"<meta name=\"robots\" content=\"none\">";
-const char htmlHeadStyle[] =
-	"<style>"
-		"div,fieldset,input,select{padding:5px;font-size:"
-		"1em;margin: 0 0 0.2em 0}"
-		"fieldset{background:#4f4f4f;}"
-		"p{margin:0.5em 0;}"
-		"input{width:100%;box-sizing:border-box;-webkit-box-sizing:border-box;-"
-		"moz-box-sizing:border-box;background:#dddddd;color:#000000;}"
-		"form{margin-bottom:0.5em}"
-		"input[type=checkbox],input[type=radio]{width:1em;margin-"
-		"right:6px;vertical-align:-1px;}"
-		"input[type=range]{width:99%;}"
-		"select{width:100%;background:#dddddd;color:#000000;}"
-		"textarea{resize:vertical;width:98%;height:318px;padding:5px;"
-		"overflow:auto;background:#1f1f1f;color:#65c115;}"
-		"body{text-align:center;font-family:verdana,sans-serif;background:#21333e; "
-		"color:#eaeaea}"
-		"h1 a{background:#21333e; color:#eaeaea}"
-		"td{padding:0px;}"
-		"input[type=submit],button{border:0;border-radius:0.3rem;background:#1fa3ec;"
-		"color:#faffff;line-height:2.4rem;font-size:1.2rem;"
-		"cursor:pointer;margin-buttom:0.5em}"
-		"input[type=submit]{width:100%;-webkit-transition-duration:0.4s;transition-duration:0.4s;}"
-		"input[type=submit]:hover{background:#0e70a4;}"
-		".bred{background:#d43535 !important;}"
-		".bred:hover{background:#931f1f !important;}"
-		".bgrn{background:#47c266 !important;}"
-		".bgrn:hover{background:#5aaf6f !important;}"
-		"a{color:#1fa3ec;text-decoration:none;}"
-		".p{float:left;text-align:left;}"
-		".q{float:right;text-align:right;}"
-		".r{border-radius:0.3em;padding:2px;margin:6px 2px;}"
-		".hf{display:none;}"
-		".hdiv{width:95%;white-space:nowrap;}"
-		".hele{width:210px;display:inline-block;margin-left:2px;}"
-		"div#state{padding:0} div#changed{padding:0}"
-		"div#main{text-align:left; display:inline-block; color:#eaeaea;min-width:340px;max-width:800px;}"
-		"table{table-layout:fixed}"
-	"</style>";
 const char htmlBodyStart[] =
 	"<body>"
 	"<noscript>To use this device, please enable JavaScript.<br></noscript>"
@@ -664,3 +625,21 @@ int HTTP_ProcessPacket(http_request_t *request) {
 
 	return http_fn_other(request);
 }
+
+/*
+To edit the following two fields:
+1. Edit the files script.js (pageScript) or script.css (htmlHeadStyle)
+2. Generate compressed content using gulp or online compressor such as https://www.minifier.org/
+
+For using gulp, you need to have nodejs (https://nodejs.org/en/) installed.
+After that run, `npm install` at the root folder to install dependent dev packages.
+And then run `gulp` which will automatically update the fields.
+*/
+
+//region_start htmlHeadStyle
+const char htmlHeadStyle[]="<style>div,fieldset,input,select{padding:5px;font-size:1em;margin:0 0 .2em}fieldset{background:#4f4f4f}p{margin:.5em 0}input{width:100%;box-sizing:border-box;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;background:#ddd;color:#000}form{margin-bottom:.5em}input[type=checkbox],input[type=radio]{width:1em;margin-right:6px;vertical-align:-1px}input[type=range]{width:99%}select{width:100%;background:#ddd;color:#000}textarea{resize:vertical;width:98%;height:318px;padding:5px;overflow:auto;background:#1f1f1f;color:#65c115}body{text-align:center;font-family:verdana,sans-serif}body,h1 a{background:#21333e;color:#eaeaea}td{padding:0}button,input[type=submit]{border:0;border-radius:.3rem;background:#1fa3ec;color:#faffff;line-height:2.4rem;font-size:1.2rem;cursor:pointer}input[type=submit]{width:100%;transition-duration:.4s}input[type=submit]:hover{background:#0e70a4}.bred{background:#d43535!important}.bred:hover{background:#931f1f!important}.bgrn{background:#47c266!important}.bgrn:hover{background:#5aaf6f!important}a{color:#1fa3ec;text-decoration:none}.p{float:left;text-align:left}.q{float:right;text-align:right}.r{border-radius:.3em;padding:2px;margin:6px 2px}.hf{display:none}.hdiv{width:95%;white-space:nowrap}.hele{width:210px;display:inline-block;margin-left:2px}div#changed,div#state{padding:0}div#main{text-align:left;display:inline-block;color:#eaeaea;min-width:340px;max-width:800px}table{table-layout:fixed}</style>";
+//region_end htmlHeadStyle
+
+//region_start pageScript
+const char pageScript[]="<script type='text/javascript'>var firstTime,lastTime,req=null;function showState(){clearTimeout(firstTime),clearTimeout(lastTime),null!=req&&req.abort(),(req=new XMLHttpRequest).onreadystatechange=()=>{var e;4==req.readyState&&200==req.status&&((\"INPUT\"!=document.activeElement.tagName||\"number\"!=document.activeElement.type&&\"color\"!=document.activeElement.type)&&(e=req.responseText,eb(\"state\").innerHTML=e),clearTimeout(firstTime),clearTimeout(lastTime),lastTime=setTimeout(showState,3e3))},req.open(\"GET\",\"index?state=1\",!0),req.send(),firstTime=setTimeout(showState,3e3)}eb=e=>document.getElementById(e),window.addEventListener(\"load\",showState),history.pushState(null,\"\",\"index\"),setTimeout(()=>{eb(\"changed\").innerHTML=\"\"},5e3);</script>";
+//region_end pageScript

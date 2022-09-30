@@ -16,6 +16,9 @@ extern const char *htmlPinRoleNames[];
 
 extern const char *g_build_str;
 
+extern const char htmlHeadStyle[];
+extern const char pageScript[];
+
 #define HTTP_RESPONSE_OK 200
 #define HTTP_RESPONSE_NOT_FOUND 404
 #define HTTP_RESPONSE_SERVER_ERROR 500
