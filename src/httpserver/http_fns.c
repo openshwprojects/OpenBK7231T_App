@@ -47,26 +47,6 @@ static char *HASS_QOS_CONFIG             = "    qos: 1\n";
 static char *HASS_MQTT_NODE  = "mqtt:\n";
 static char *HASS_LIGHT_NODE = "  light:\n";
 
-/*
-function send_ha_disc(){
-	var xhr = new XMLHttpRequest();
-    xhr.open("GET", "/ha_discovery?prefix="+document.getElementById("ha_disc_topic").value, false);
-	xhr.onload = function() {
-	  if (xhr.status === 200) {
-	    alert("MQTT discovery queued");
-	  }
-      else if (xhr.status === 404) {
-		alert("Error invoking ha_discovery");
-	  }
-	}
-	xhr.onerror = function() {
-	  alert("Error invoking ha_discovery");
-	}
-	xhr.send();
-}
-*/
-const char HomeAssistantDiscoveryScript[] = "<script>function send_ha_disc(){var xhr=new XMLHttpRequest();xhr.open(\"GET\",\"/ha_discovery?prefix=\"+document.getElementById(\"ha_disc_topic\").value,false);xhr.onload=function(){if(xhr.status===200){alert(\"MQTT discovery queued\")}else if(xhr.status===404){alert(\"Error invoking ha_discovery\")}};xhr.onerror=function(){alert(\"Error invoking ha_discovery\")};xhr.send()}</script>";
-
 typedef struct template_s {
 	void (*setter)();
 	const char *name;
@@ -567,12 +547,10 @@ int http_fn_index(http_request_t *request) {
 
         poststr(request, htmlFooterRefreshLink);
         http_html_end(request);
-
-        poststr(request, pageScript);
     }
 
 	poststr(request, NULL);
-    return 0;
+	return 0;
 }
 
 int http_fn_about(http_request_t *request){
@@ -1419,7 +1397,7 @@ int http_fn_ha_cfg(http_request_t *request) {
     poststr(request,"<br/><div><label for=\"ha_disc_topic\">Discovery topic:</label><input id=\"ha_disc_topic\" value=\"homeassistant\"><button onclick=\"send_ha_disc();\">Start Home Assistant Discovery</button>&nbsp;<form action=\"cfg_mqtt\" style=\"display:inline-block;\"><button type=\"submit\">Configure MQTT</button></form></div><br/>");
     poststr(request,htmlFooterReturnToCfgLink);
     http_html_end(request);
-    poststr(request, HomeAssistantDiscoveryScript);
+    poststr(request, ha_discovery_script);
 	poststr(request, NULL);
     return 0;
 }

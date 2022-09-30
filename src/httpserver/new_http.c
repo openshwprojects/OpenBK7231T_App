@@ -171,7 +171,6 @@ void http_setup(http_request_t *request, const char *type){
 }
 
 void http_html_start(http_request_t *request, const char *pagename) {
-// void HTTP_AddHeader(http_request_t *request) {
 	poststr(request, htmlDoctype);
 	poststr(request, "<title>");
 	poststr(request, CFG_GetDeviceName()); // todo: check escaping
@@ -188,7 +187,6 @@ void http_html_start(http_request_t *request, const char *pagename) {
 }
 
 void http_html_end(http_request_t *request) {
-// was void HTTP_AddBuildFooter(http_request_t *request) {
 	char upTimeStr[128];
 	unsigned char mac[32];
 
@@ -196,9 +194,8 @@ void http_html_end(http_request_t *request) {
 	poststr(request, htmlFooterInfo);
 	poststr(request, "<br>");
 	poststr(request, g_build_str);
-	poststr(request, "<br>Online for ");
-	misc_formatUpTimeString(Time_getUpTimeSeconds(), upTimeStr);
-	poststr(request, upTimeStr);
+
+	hprintf128(request, "<br>Online for&nbsp;<span id=\"onlineFor\" data-initial=\"%i\">-</span>", Time_getUpTimeSeconds());
 
 	WiFI_GetMacAddress((char *)mac);
 
@@ -208,6 +205,7 @@ void http_html_end(http_request_t *request) {
 	poststr(request, upTimeStr);
 
 	poststr(request, htmlBodyEnd);
+	poststr(request, pageScript);
 }
 
 const char *http_checkArg(const char *p, const char *n) {
@@ -420,38 +418,6 @@ int poststr(http_request_t *request, const char *str){
 	return postany(request, str, strlen(str));
 }
 
-void misc_formatUpTimeString(int totalSeconds, char *o) {
-	int rem_days;
-	int rem_hours;
-	int rem_minutes;
-	int rem_seconds;
-
-	rem_days = totalSeconds / (24*60*60);
-	totalSeconds = totalSeconds % (24*60*60);
-	rem_hours = totalSeconds / (60*60);
-	totalSeconds = totalSeconds % (60*60);
-	rem_minutes = totalSeconds / (60);
-	rem_seconds = totalSeconds % 60;
-
-	*o = 0;
-	if(rem_days > 0)
-	{
-		sprintf(o,"%i days, %i hours, %i minutes and %i seconds ",rem_days,rem_hours,rem_minutes,rem_seconds);
-	}
-	else if(rem_hours > 0)
-	{
-		sprintf(o,"%i hours, %i minutes and %i seconds ",rem_hours,rem_minutes,rem_seconds);
-	}
-	else if(rem_minutes > 0)
-	{
-		sprintf(o,"%i minutes and %i seconds ",rem_minutes,rem_seconds);
-	}
-	else
-	{
-		sprintf(o,"just %i seconds ",rem_seconds);
-	}
-}
-
 int hprintf128(http_request_t *request, const char *fmt, ...){
   va_list argList;
   //BaseType_t taken;
@@ -641,5 +607,9 @@ const char htmlHeadStyle[]="<style>div,fieldset,input,select{padding:5px;font-si
 //region_end htmlHeadStyle
 
 //region_start pageScript
-const char pageScript[]="<script type='text/javascript'>var firstTime,lastTime,req=null;function showState(){clearTimeout(firstTime),clearTimeout(lastTime),null!=req&&req.abort(),(req=new XMLHttpRequest).onreadystatechange=()=>{var e;4==req.readyState&&200==req.status&&((\"INPUT\"!=document.activeElement.tagName||\"number\"!=document.activeElement.type&&\"color\"!=document.activeElement.type)&&(e=req.responseText,eb(\"state\").innerHTML=e),clearTimeout(firstTime),clearTimeout(lastTime),lastTime=setTimeout(showState,3e3))},req.open(\"GET\",\"index?state=1\",!0),req.send(),firstTime=setTimeout(showState,3e3)}eb=e=>document.getElementById(e),window.addEventListener(\"load\",showState),history.pushState(null,\"\",\"index\"),setTimeout(()=>{eb(\"changed\").innerHTML=\"\"},5e3);</script>";
+const char pageScript[]="<script type='text/javascript'>var firstTime,lastTime,onlineFor,req=null,onlineForEl=null,getElement=e=>document.getElementById(e);function showState(){clearTimeout(firstTime),clearTimeout(lastTime),null!=req&&req.abort(),(req=new XMLHttpRequest).onreadystatechange=()=>{4==req.readyState&&200==req.status&&((\"INPUT\"!=document.activeElement.tagName||\"number\"!=document.activeElement.type&&\"color\"!=document.activeElement.type)&&(getElement(\"state\").innerHTML=req.responseText),clearTimeout(firstTime),clearTimeout(lastTime),lastTime=setTimeout(showState,3e3))},req.open(\"GET\",\"index?state=1\",!0),req.send(),firstTime=setTimeout(showState,3e3)}function fmtUpTime(e){var t,n,o=Math.floor(e/86400);return e%=86400,t=Math.floor(e/3600),e%=3600,n=Math.floor(e/60),e=e%60,0<o?o+` days, ${t} hours, ${n} minutes and ${e} seconds`:0<t?t+` hours, ${n} minutes and ${e} seconds`:0<n?n+` minutes and ${e} seconds`:`just ${e} seconds`}function updateOnlineFor(){onlineForEl.textContent=fmtUpTime(++onlineFor)}function onLoad(){(onlineForEl=getElement(\"onlineFor\"))&&(onlineFor=parseInt(onlineForEl.dataset.initial,10))&&setInterval(updateOnlineFor,1e3),showState()}window.addEventListener(\"load\",onLoad),history.pushState(null,\"\",\"index\"),setTimeout(()=>{getElement(\"changed\").innerHTML=\"\"},5e3);</script>";
 //region_end pageScript
+
+//region_start ha_discovery_script
+const char ha_discovery_script[]="<script type='text/javascript'>function send_ha_disc(){var e=new XMLHttpRequest;e.open(\"GET\",\"/ha_discovery?prefix=\"+document.getElementById(\"ha_disc_topic\").value,!1),e.onload=function(){200===e.status?alert(\"MQTT discovery queued\"):404===e.status&&alert(\"Error invoking ha_discovery\")},e.onerror=function(){alert(\"Error invoking ha_discovery\")},e.send()}</script>";
+//region_end ha_discovery_script

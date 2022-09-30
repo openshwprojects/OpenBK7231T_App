@@ -105,6 +105,16 @@ function minifyJs() {
   );
 }
 
+function minifyHassDiscoveryJs() {
+  return (
+    gulp
+      .src("./src/httpserver/script_ha_discovery.js")
+      .pipe(dumpFileSize())
+      .pipe(uglify())
+      .pipe(generateCode("ha_discovery_script", true))
+  );
+}
+
 function minifyCss() {
   return gulp
     .src("./src/httpserver/style.css")
@@ -113,4 +123,4 @@ function minifyCss() {
     .pipe(generateCode("htmlHeadStyle", false));
 }
 
-exports.default = gulp.series(minifyJs, minifyCss);
+exports.default = gulp.series(minifyJs, minifyHassDiscoveryJs, minifyCss);

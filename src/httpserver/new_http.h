@@ -18,6 +18,7 @@ extern const char *g_build_str;
 
 extern const char htmlHeadStyle[];
 extern const char pageScript[];
+extern const char ha_discovery_script[];
 
 #define HTTP_RESPONSE_OK 200
 #define HTTP_RESPONSE_NOT_FOUND 404
