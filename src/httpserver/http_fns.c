@@ -20,7 +20,7 @@
     // nothing
 #elif PLATFORM_BL602
 
-#elif PLATFORM_W800
+#elif PLATFORM_W600 || PLATFORM_W800
 
 #elif PLATFORM_XR809
     #include <image/flash.h>
@@ -771,7 +771,7 @@ int http_fn_cfg_wifi(http_request_t *request) {
 #elif PLATFORM_XR809
         poststr(request,"TODO XR809<br>");
 
-#elif PLATFORM_W800
+#elif PLATFORM_W600 || PLATFORM_W800
         poststr(request,"TODO W800<br>");
 #elif PLATFORM_BL602
         poststr(request,"TODO BL602<br>");
@@ -1035,7 +1035,7 @@ int http_fn_flash_read_tool(http_request_t *request) {
             res = flash_read(FLASH_INDEX_XR809, nowOfs, buffer, now);
 #elif PLATFORM_BL602
 
-#elif PLATFORM_W800
+#elif PLATFORM_W600 || PLATFORM_W800
 
 #else
             res = bekken_hal_flash_read (nowOfs, buffer,now);
@@ -1958,7 +1958,7 @@ int http_fn_ota_exec(http_request_t *request) {
 
 #elif PLATFORM_BL602
 
-#elif PLATFORM_W800
+#elif PLATFORM_W600 || PLATFORM_W800
     t_http_fwup(tmpA);
 #elif PLATFORM_XR809
     XR809_RequestOTAHTTP(tmpA);

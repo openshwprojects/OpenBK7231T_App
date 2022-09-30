@@ -69,6 +69,8 @@ enum ChannelType {
 #define PLATFORM_GPIO_MAX 24
 #elif PLATFORM_XR809
 #define PLATFORM_GPIO_MAX 13
+#elif defined(PLATFORM_W800) || defined(PLATFORM_W600)
+#define PLATFORM_GPIO_MAX 17
 #else
 #define PLATFORM_GPIO_MAX 29
 #endif

@@ -26,7 +26,7 @@
 uint32_t flash_read(uint32_t flash, uint32_t addr,void *buf, uint32_t size);
 #define FLASH_INDEX_XR809 0
 #elif PLATFORM_BL602
-#elif PLATFORM_W800
+#elif PLATFORM_W600 || PLATFORM_W800
 #else
 extern UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address);
 #endif
@@ -101,7 +101,7 @@ const char *obktype = "BL602";
 const char * apppage2 = "';"
 "            var obktype = 'BL602';"
 "            var device = 'http://";
-#elif PLATFORM_W800
+#elif PLATFORM_W600 || PLATFORM_W800
 const char *obktype = "W800";
 const char * apppage2 = "';"
 "            var obktype = 'W800';"
@@ -847,7 +847,7 @@ static int http_rest_post_flash(http_request_t *request, int startaddr){
 
 #elif PLATFORM_BL602
 
-#elif PLATFORM_W800
+#elif PLATFORM_W600 || PLATFORM_W800
 
 #else
     int total = 0;
@@ -948,7 +948,7 @@ static int http_rest_get_flash(http_request_t *request, int startaddr, int len){
         res = flash_read(FLASH_INDEX_XR809, startaddr, buffer, readlen);
 #elif PLATFORM_BL602
 		res = 0;
-#elif PLATFORM_W800
+#elif PLATFORM_W600 || PLATFORM_W800
 		res = 0;
 #else
         res = flash_read((char *)buffer, readlen, startaddr);

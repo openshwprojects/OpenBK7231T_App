@@ -1132,7 +1132,7 @@ void button_timer_thread(void *param)
 		PIN_ticks(0);
     }
 }
-#elif PLATFORM_W800
+#elif PLATFORM_W600 || PLATFORM_W800
 void button_timer_thread(void *param)
 {
     while(1) {
@@ -1152,7 +1152,7 @@ void PIN_StartButtonScanThread(void)
 #elif PLATFORM_BL602
 
     xTaskCreate(button_timer_thread, "buttons", 1024, NULL, 15, NULL);
-#elif PLATFORM_W800
+#elif PLATFORM_W600 || PLATFORM_W800
 
     xTaskCreate(button_timer_thread, "buttons", 1024, NULL, 15, NULL);
 #elif PLATFORM_XR809

@@ -1,4 +1,4 @@
-#ifdef PLATFORM_W800
+#if defined(PLATFORM_W800) || defined (PLATFORM_W600)
 
 #include "../../new_common.h"
 #include "../../logging/logging.h"
@@ -70,7 +70,7 @@ void HAL_PIN_SetOutputValue(int index, int iVal) {
 		return;
 	realCode = g_pins[index].code;
 
-	tls_gpio_write(realCode,iVal);			/*д��*/
+	tls_gpio_write(realCode,iVal);			/*Ð´¸ß*/
 }
 
 int HAL_PIN_ReadDigitalInput(int index) {

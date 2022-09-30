@@ -1,4 +1,4 @@
-#ifdef PLATFORM_W800
+#if defined(PLATFORM_W800) || defined(PLATFORM_W600)
 
 #include "../hal_wifi.h"
 
@@ -64,6 +64,13 @@ static void apsta_demo_net_status(u8 status)
 
     switch(status)
     {
+    case NETIF_WIFI_JOIN_SUCCESS:
+        wm_printf("apsta_demo_net_status: NETIF_WIFI_JOIN_SUCCESS\n");
+        if(g_wifiStatusCallback!=0) {
+            g_wifiStatusCallback(WIFI_STA_CONNECTED);
+        }
+        break;
+    
     case NETIF_WIFI_JOIN_FAILED:
         wm_printf("apsta_demo_net_status: sta join net failed\n");
 		if(g_wifiStatusCallback!=0) {
@@ -100,6 +107,29 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code)) {
 static int connect_wifi_demo(char *ssid, char *pwd)
 {
     int ret;
+    struct tls_param_ip *ip_param = NULL;
+    u8 wireless_protocol = 0;
+    
+    tls_wifi_disconnect();
+    tls_wifi_softap_destroy();
+    tls_wifi_set_oneshot_flag(0);
+
+    tls_param_get(TLS_PARAM_ID_WPROTOCOL, (void *) &wireless_protocol, TRUE);
+    if (TLS_PARAM_IEEE80211_INFRA != wireless_protocol)
+    {
+        tls_wifi_softap_destroy();
+        wireless_protocol = TLS_PARAM_IEEE80211_INFRA;
+        tls_param_set(TLS_PARAM_ID_WPROTOCOL, (void *) &wireless_protocol, FALSE);
+    }
+
+    ip_param = tls_mem_alloc(sizeof(struct tls_param_ip));
+    if (ip_param)
+    {
+        tls_param_get(TLS_PARAM_ID_IP, ip_param, FALSE);
+        ip_param->dhcp_enable = TRUE;
+        tls_param_set(TLS_PARAM_ID_IP, ip_param, FALSE);
+        tls_mem_free(ip_param);
+    }
 
     ret = tls_wifi_connect((u8 *)ssid, strlen(ssid), (u8 *)pwd, strlen(pwd));
     if (WM_SUCCESS == ret)

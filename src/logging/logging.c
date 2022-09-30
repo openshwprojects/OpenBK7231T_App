@@ -252,7 +252,7 @@ void addLogAdv(int level, int feature, char *fmt, ...){
 #if PLATFORM_XR809
     printf(tmp);
 #endif
-#if PLATFORM_W800
+#if PLATFORM_W600 || PLATFORM_W800
   //  printf(tmp);
 #endif
 //#if PLATFORM_BL602
