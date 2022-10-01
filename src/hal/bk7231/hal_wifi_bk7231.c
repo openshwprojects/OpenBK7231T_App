@@ -40,7 +40,9 @@ const char *HAL_GetMyIPString(){
 void getMAC(unsigned char *mac){
     net_get_if_macaddr(mac, net_get_sta_handle());
 }
-int WiFI_SetMacAddress(char *mac) {
+
+int WiFI_SetMacAddress(char *mac) 
+{
 #if WINDOWS
 	return 0;
 #elif PLATFORM_BL602
@@ -54,17 +56,21 @@ int WiFI_SetMacAddress(char *mac) {
 #endif
 }
 
-void WiFI_GetMacAddress(char *mac) {
+void WiFI_GetMacAddress(char *mac) 
+{
     wifi_get_mac_address((char *)mac, CONFIG_ROLE_STA);
 }
-const char *HAL_GetMACStr(char *macstr){
+
+const char *HAL_GetMACStr(char *macstr)
+{
     unsigned char mac[6];
     getMAC(mac);
     sprintf(macstr, MACSTR, MAC2STR(mac));
     return macstr;
 }
 
-void HAL_PrintNetworkInfo(){
+void HAL_PrintNetworkInfo()
+{
     IPStatusTypedef ipStatus;
 
     os_memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
@@ -160,7 +166,8 @@ void HAL_PrintNetworkInfo(){
 
 }
 
-int HAL_GetWifiStrength() {
+int HAL_GetWifiStrength() 
+{
     LinkStatusTypeDef linkStatus;
     os_memset(&linkStatus, 0x0, sizeof(LinkStatusTypeDef));
     bk_wlan_get_link_status(&linkStatus);
@@ -169,7 +176,8 @@ int HAL_GetWifiStrength() {
 
 // receives status change notifications about wireless - could be useful
 // ctxt is pointer to a rw_evt_type
-void wl_status( void *ctxt ){
+void wl_status( void *ctxt )
+{
 
     rw_evt_type stat = *((rw_evt_type*)ctxt);
     ADDLOGF_INFO("wl_status %d\r\n", stat);
@@ -227,11 +235,13 @@ void wl_status( void *ctxt ){
 void bk_wlan_status_register_cb(FUNC_1PARAM_PTR cb);
 
 
-void HAL_WiFi_SetupStatusCallback(void (*cb)(int code)) {
+void HAL_WiFi_SetupStatusCallback(void (*cb)(int code)) 
+{
 	g_wifiStatusCallback = cb;
 
 	bk_wlan_status_register_cb(wl_status);
 }
+
 void HAL_ConnectToWiFi(const char *oob_ssid,const char *connect_key)
 {
 	g_bOpenAccessPointMode = 0;
@@ -303,14 +313,16 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid)
     wNetConfig.dhcp_mode = DHCP_SERVER;
     wNetConfig.wifi_retry_interval = 100;
 
-	if(1) {
+	if(1) 
+    {
 		ADDLOGF_INFO("set ip info: %s,%s,%s\r\n",
 				wNetConfig.local_ip_addr,
 				wNetConfig.net_mask,
 				wNetConfig.dns_server_ip_addr);
 	}
 
-	if(1) {
+	if(1) 
+    {
 	  ADDLOGF_INFO("ssid:%s  key:%s mode:%d\r\n", wNetConfig.wifi_ssid, wNetConfig.wifi_key, wNetConfig.wifi_mode);
 	}
 	//{
@@ -319,10 +331,10 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid)
 	//	os_memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
 	//	bk_wlan_get_ip_status(&ipStatus, STATION);
 	//	ipStatus.dhcp = 1;
- //       os_strcpy((char *)ipStatus.ip, APP_DRONE_DEF_NET_IP);
- //       os_strcpy((char *)ipStatus.mask, APP_DRONE_DEF_NET_MASK);
- //       os_strcpy((char *)ipStatus.gate, APP_DRONE_DEF_NET_GW);
- //       os_strcpy((char *)ipStatus.dns, APP_DRONE_DEF_NET_IP);
+    //  os_strcpy((char *)ipStatus.ip, APP_DRONE_DEF_NET_IP);
+    //  os_strcpy((char *)ipStatus.mask, APP_DRONE_DEF_NET_MASK);
+    //  os_strcpy((char *)ipStatus.gate, APP_DRONE_DEF_NET_GW);
+    //  os_strcpy((char *)ipStatus.dns, APP_DRONE_DEF_NET_IP);
 	//	bk_wlan_set_ip_status(&ipStatus, STATION);
 
 	//}
@@ -332,6 +344,6 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid)
 	//dhcp_server_start(0);
 	//dhcp_server_stop(void);
 
-  return 0;
+    return 0;
 }
 

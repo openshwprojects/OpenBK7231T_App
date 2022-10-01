@@ -15,6 +15,7 @@
 #include "../devicegroups/deviceGroups_public.h"
 #include "../mqtt/new_mqtt.h"
 #include "hass.h"
+#include "../cJSON/cJSON.h"
 
 #ifdef WINDOWS
     // nothing
@@ -526,6 +527,7 @@ int http_fn_index(http_request_t *request) {
 
 	hprintf128(request,"<h5>Ping watchdog - %i lost, %i ok!</h5>",
 		PingWatchDog_GetTotalLost(),PingWatchDog_GetTotalReceived());
+    hprintf128(request,"<h5>MQTT State: %s</h5>", (Main_HasMQTTConnected()==1)?"connected":"disconnected");
 
     // for normal page loads, show the rest of the HTML
     if(!http_getArg(request->url,"state",tmpA,sizeof(tmpA))) {
@@ -1232,7 +1234,9 @@ int http_fn_ha_discovery(http_request_t *request) {
         sprintf(topic, "homeassistant");    //default discovery topic is `homeassistant`
     }
     
-    cJSON_Hooks hooks = {os_malloc, os_free};
+    struct cJSON_Hooks hooks;
+    hooks.malloc_fn = os_malloc;
+    hooks.free_fn = os_free;
     cJSON_InitHooks(&hooks);
     
     if(relayCount > 0) {

@@ -25,8 +25,13 @@ float lastReadings[OBK_NUM_MEASUREMENTS];
 //
 // what are the last values we sent over the MQTT?
 float lastSentValues[OBK_NUM_MEASUREMENTS];
+float energyCounter = 0.0f;
+portTickType energyCounterStamp;
+
 // how much update frames has passed without sending MQTT update of read values?
 int noChangeFrames[OBK_NUM_MEASUREMENTS];
+int noChangeFrameEnergyCounter;
+
 // how much of value have to change in order to be send over MQTT again?
 int changeSendThresholds[OBK_NUM_MEASUREMENTS] = {
 	0.25f, // voltage - OBK_VOLTAGE
@@ -40,7 +45,7 @@ const char *mqttNames[OBK_NUM_MEASUREMENTS] = {
 	"power"
 };
 
-int changeSendAlwaysFrames = 60;
+int changeSendAlwaysFrames = 5; // 60;
 
 void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request) {
 	char tmp[128];
@@ -59,23 +64,37 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request) {
     hprintf128(request,tmp);
 
 }
-void BL_ProcessUpdate(float voltage, float current, float power) {
-	int i;
 
-// those are final values, like 230V
+void BL_ProcessUpdate(float voltage, float current, float power) 
+{
+	int i;
+    float energy;    
+    int xPassedTicks;
+
+    // those are final values, like 230V
 	lastReadings[OBK_POWER] = power;
 	lastReadings[OBK_VOLTAGE] = voltage;
 	lastReadings[OBK_CURRENT] = current;
+    
+    xPassedTicks = (int)(xTaskGetTickCount() - energyCounterStamp);
+    if (xPassedTicks <= 0)
+        xPassedTicks = 1;
+    energy = (float)xPassedTicks;
+    energy *= power;
+    energy /= (3600000.0f / (float)portTICK_PERIOD_MS);
 
-	for(i = 0; i < OBK_NUM_MEASUREMENTS; i++) {
+    energyCounter += energy;
+    energyCounterStamp = xTaskGetTickCount();
+
+	for(i = 0; i < OBK_NUM_MEASUREMENTS; i++) 
+    {
 		// send update only if there was a big change or if certain time has passed
-		if(
-			(abs(lastSentValues[i]-lastReadings[i]) > changeSendThresholds[i])
-			||
-			noChangeFrames[i] > changeSendAlwaysFrames
-			){
+		if ( (abs(lastSentValues[i]-lastReadings[i]) > changeSendThresholds[i]) ||
+			 (noChangeFrames[i] > changeSendAlwaysFrames) )
+        {
 			noChangeFrames[i] = 0;
-			if(i == OBK_CURRENT) {
+			if(i == OBK_CURRENT) 
+            {
 				int prev_mA, now_mA;
 				prev_mA = lastSentValues[i] * 1000;
 				now_mA = lastReadings[i] * 1000;
@@ -91,22 +110,37 @@ void BL_ProcessUpdate(float voltage, float current, float power) {
 			noChangeFrames[i]++;
 			stat_updatesSkipped++;
 		}
-	}
-}
-void BL_Shared_Init() {
+    }
 
+    if ( (energy > 0.0f) || 
+         (noChangeFrameEnergyCounter > changeSendAlwaysFrames) )
+    {
+        MQTT_PublishMain_StringFloat("energycounter", energyCounter);
+        noChangeFrameEnergyCounter = 0;
+        stat_updatesSent++;
+    } else {
+        noChangeFrameEnergyCounter++;
+        stat_updatesSkipped++;
+    }
+}
+
+void BL_Shared_Init() 
+{
 	int i;
 
-	for(i = 0; i < OBK_NUM_MEASUREMENTS; i++) {
+	for(i = 0; i < OBK_NUM_MEASUREMENTS; i++) 
+    {
 		noChangeFrames[i] = 0;
 		lastReadings[i] = 0;
 	}
+    noChangeFrameEnergyCounter = 0;
+    energyCounterStamp = xTaskGetTickCount(); 
 }
+
 // OBK_POWER etc
-float DRV_GetReading(int type) {
+float DRV_GetReading(int type) 
+{
 	return lastReadings[type];
 }
-
-
 
 
