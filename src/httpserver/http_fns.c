@@ -98,8 +98,8 @@ template_t g_templates [] = {
     { Setup_Device_Deta_Smart_Double_Power_Point_6922HA_Series2, "BK7231T DETA SMART Double Power Point 6922HA-Series 2"},
     { Setup_Device_ArlecRGBCCTDownlight, "Arlec RGB+CCT LED Downlight ALD092RHA"},
     { Setup_Device_CasaLifeCCTDownlight, "CasaLife CCT LED Downlight SMART-AL2017-TGTS"},
-    { Setup_Device_Enbrighten_WFD4103, "Enbrighten WFD4103 WiFi Switch BK7231T WB2S"},
-    { Setup_Device_Zemismart_Light_Switch_KS_811_3, "Zemismart Light Switch KS-811-3" }
+    { Setup_Device_Enbrighten_WFD4103, "Enbrighten WFD4103 WiFi Switch BK7231T WB2S"} ,
+    { Setup_Device_Zemismart_Light_Switch_KS_811_3, "Zemismart Light Switch (Neutral Optional) KS_811_3"} 
 };
 
 int g_total_templates = sizeof(g_templates)/sizeof(g_templates[0]);

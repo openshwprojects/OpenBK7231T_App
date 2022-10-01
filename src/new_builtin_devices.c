@@ -834,7 +834,7 @@ void Setup_Device_Aubess_Mini_Smart_Switch_16A() {
 	CFG_Save_SetupTimer();
 }
 
-// Zemismart Light Switch (Neutral Optional) KS-811-3
+// Zemismart Light Switch (Neutral Optional) KS_811_3
 // https://www.aliexpress.com/item/4000979779573.html
 // Has a BK7231N direct on board, but easy access to UART on back with removal of 4 screws.
 // There is a single and 2 switch version of this, which should be easy to template.
