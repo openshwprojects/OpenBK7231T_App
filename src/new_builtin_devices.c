@@ -833,3 +833,37 @@ void Setup_Device_Aubess_Mini_Smart_Switch_16A() {
 
 	CFG_Save_SetupTimer();
 }
+
+// Zemismart Light Switch (Neutral Optional) KS-811-3
+// https://www.aliexpress.com/item/4000979779573.html
+// Has a BK7231N direct on board, but easy access to UART on back with removal of 4 screws.
+// There is a single and 2 switch version of this, which should be easy to template.
+// Device Info, Pics and Flashing Notes: https://zorruno.com/2022/zemismart-ks-811-with-openbk7231n-openbeken/
+void Setup_Device_Zemismart_Light_Switch_KS-811-3() {
+
+	// GPIO:
+	// Buttons 1,2,3 = P17,P26,P24
+	// Relays/Red LEDs 1,2,3 = P14,P16,P15
+	// All LEDs Blue/Off = P22 (Have used this as Wifi Status)
+
+	CFG_ClearPins();
+	// 3 Leds Blue (Wifi Status, All 3 flash together)
+	PIN_SetPinRoleForPinIndex(22, IOR_LED_WIFI_n);
+	PIN_SetPinChannelForPinIndex(22, 1);	
+	// Buttons
+	PIN_SetPinRoleForPinIndex(17, IOR_Button);
+	PIN_SetPinChannelForPinIndex(17, 1);	
+	PIN_SetPinRoleForPinIndex(26, IOR_Button);
+	PIN_SetPinChannelForPinIndex(26, 2);	
+	PIN_SetPinRoleForPinIndex(24, IOR_Button);
+	PIN_SetPinChannelForPinIndex(24, 3);	
+	// Relay, Individual LEDs Red (Relays and LEDs are on same GPIO Pins)
+	PIN_SetPinRoleForPinIndex(14, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(14, 1);	
+	PIN_SetPinRoleForPinIndex(16, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(16, 2);
+	PIN_SetPinRoleForPinIndex(15, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(15, 3);
+
+	CFG_Save_SetupTimer();
+}
