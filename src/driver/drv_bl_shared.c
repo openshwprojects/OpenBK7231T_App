@@ -58,9 +58,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request) {
 	} else {
 		mode = "PWR";
 	}
-	sprintf(tmp, "<h2>%s Voltage=%f, Current=%f, Power=%f (changes sent %i, skipped %i)</h2>",
+	sprintf(tmp, "<h2>%s Voltage=%f, Current=%f, Power=%f, Consumption=%f (changes sent %i, skipped %i)</h2>",
 		mode, lastReadings[OBK_VOLTAGE],lastReadings[OBK_CURRENT], lastReadings[OBK_POWER],
-		stat_updatesSent, stat_updatesSkipped);
+        energyCounter, stat_updatesSent, stat_updatesSkipped);
     hprintf128(request,tmp);
 
 }
