@@ -86,6 +86,8 @@ const char htmlFooterInfo[] =
     "href=\"https://paypal.me/openshwprojects\">Support project</a><br>";
 
 // make sure that USER_SW_VER is set on all platforms
+// Automatic Github builds are setting it externally,
+// but it may not be set while doing a test build on developer PC
 #ifndef USER_SW_VER
     #ifdef WINDOWS
         #define USER_SW_VER "Win_Test"
@@ -99,6 +101,8 @@ const char htmlFooterInfo[] =
 		#define USER_SW_VER "W600_Test"
 	#elif defined(PLATFORM_W800)
 		#define USER_SW_VER "W800_Test"
+	#elif defined(PLATFORM_BL602)
+		#define USER_SW_VER "BL602_Test"
     #else
         #define USER_SW_VER "unknown"
     #endif
