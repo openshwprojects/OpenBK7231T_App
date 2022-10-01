@@ -839,7 +839,7 @@ void Setup_Device_Aubess_Mini_Smart_Switch_16A() {
 // Has a BK7231N direct on board, but easy access to UART on back with removal of 4 screws.
 // There is a single and 2 switch version of this, which should be easy to template.
 // Device Info, Pics and Flashing Notes: https://zorruno.com/2022/zemismart-ks-811-with-openbk7231n-openbeken/
-void Setup_Device_Zemismart_Light_Switch_KS-811-3() {
+void Setup_Device_Zemismart_Light_Switch_KS_811_3() {
 
 	// GPIO:
 	// Buttons 1,2,3 = P17,P26,P24
@@ -867,3 +867,4 @@ void Setup_Device_Zemismart_Light_Switch_KS-811-3() {
 
 	CFG_Save_SetupTimer();
 }
+

@@ -57,6 +57,7 @@ ip_addr_t mqtt_ip LWIP_MQTT_EXAMPLE_IPADDR_INIT;
 mqtt_client_t* mqtt_client;
 static int g_timeSinceLastMQTTPublish = 0;
 static int mqtt_initialised = 0;
+static int mqtt_connect_events = 0;
 
 typedef struct mqtt_callback_tag {
     char *topic;
@@ -119,25 +120,27 @@ static bool MQTT_Mutex_Take(int del) {
 	}
 	return false;
 }
-static void MQTT_Mutex_Free() {
+static void MQTT_Mutex_Free() 
+{
 	xSemaphoreGive( g_mutex );
 }
 
-void MQTT_PublishWholeDeviceState() {
-	g_bPublishAllStatesNow = 1;
-
+void MQTT_PublishWholeDeviceState() 
+{
+  g_bPublishAllStatesNow = 1;
   //Publish all status items once. Publish only dynamic items after that.
   g_publishItemIndex = g_firstFullBroadcast == true ? PUBLISHITEM_ALL_INDEX_FIRST:PUBLISHITEM_DYNAMIC_INDEX_FIRST;
 }
 
-void MQTT_PublishOnlyDeviceChannelsIfPossible() {
-	if(g_bPublishAllStatesNow == 1)
-		return;
-	g_bPublishAllStatesNow = 1;
-
+void MQTT_PublishOnlyDeviceChannelsIfPossible() 
+{
+  if(g_bPublishAllStatesNow == 1)
+    return;
+  g_bPublishAllStatesNow = 1;
   //Start with channels
   g_publishItemIndex = 0;
 }
+
 static struct mqtt_connect_client_info_t mqtt_client_info =
 {
   "test",
@@ -159,7 +162,49 @@ int channelSet(mqtt_request_t* request);
 static void MQTT_do_connect(mqtt_client_t *client);
 static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status);
 
+int MQTT_GetConnectEvents(void)
+{
+    return mqtt_connect_events;
+}
 
+static const char *get_error_name(int err)
+{
+    switch(err)
+    {
+        case ERR_MEM: return "ERR_MEM";
+        /** Buffer error.            */
+        case ERR_BUF: return "ERR_BUF";
+        /** Timeout.                 */
+        case ERR_TIMEOUT: return "ERR_TIMEOUT";
+        /** Routing problem.         */
+        case ERR_RTE: return "ERR_RTE";
+        /** Operation in progress    */
+        case ERR_INPROGRESS: return "ERR_INPROGRESS";
+        /** Illegal value.           */
+        case ERR_VAL: return "ERR_VAL";
+        /** Operation would block.   */
+        case ERR_WOULDBLOCK: return "ERR_WOULDBLOCK";
+        /** Address in use.          */
+        case ERR_USE: return "ERR_USE";
+        /** Already connecting.      */
+        case ERR_ALREADY: return "ERR_ALREADY";
+        /** Conn already established.*/
+        case ERR_ISCONN: return "ERR_ISCONN";
+        /** Not connected.           */
+        case ERR_CONN: return "ERR_CONN";
+        /** Low-level netif error    */
+        case ERR_IF: return "ERR_IF";
+        /** Connection aborted.      */
+        case ERR_ABRT: return "ERR_ABRT";
+        /** Connection reset.        */
+        case ERR_RST: return "ERR_RST";
+        /** Connection closed.       */
+        case ERR_CLSD: return "ERR_CLSD";
+        /** Illegal argument.        */
+        case ERR_ARG: return "ERR_ARG";
+    }
+    return "";
+}
 // this can REPLACE callbacks, since we MAY wish to change the root topic....
 // in which case we would re-resigster all callbacks?
 int MQTT_RegisterCallback( const char *basetopic, const char *subscriptiontopic, int ID, mqtt_callback_fn callback){
@@ -389,8 +434,9 @@ static void MQTT_disconnect(mqtt_client_t *client)
 /* Called when publish is complete either with sucess or failure */
 static void mqtt_pub_request_cb(void *arg, err_t result)
 {
-  if(result != ERR_OK) {
-  addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publish result: %d\n", result);
+  if(result != ERR_OK) 
+  {
+    addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publish result: %d(%s)\n", result, get_error_name(result));
   }
 }
 
@@ -435,6 +481,8 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t *client, const
   char *pub_topic = (char *)os_malloc(strlen(sTopic) + 1 + strlen(sChannel) + 5 + 1); //5 for /get
   sprintf(pub_topic, "%s/%s%s", sTopic, sChannel, (appendGet == true ? "/get" : ""));
   addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publishing to %s retain=%i",pub_topic, retain);
+  addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Published '%s' \n", sVal);
+
   err = mqtt_publish(client, pub_topic, sVal, strlen(sVal), qos, retain, mqtt_pub_request_cb, 0);
   os_free(pub_topic);
 
@@ -550,7 +598,8 @@ static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection
 //   addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"MQTT client < removed name > connection cb: status %d\n",  (int)status);
  //  addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"MQTT client \"%s\" connection cb: status %d\n", client_info->client_id, (int)status);
 
-  if (status == MQTT_CONNECT_ACCEPTED) {
+  if (status == MQTT_CONNECT_ACCEPTED) 
+  {
     addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"mqtt_connection_cb: Successfully connected\n");
 
     mqtt_set_inpub_callback(mqtt_client,
@@ -669,15 +718,21 @@ static void MQTT_do_connect(mqtt_client_t *client)
       to establish a connection with the server.
       For now MQTT version 3.1.1 is always used */
 
-   res = mqtt_client_connect(mqtt_client,
+    res = mqtt_client_connect(mqtt_client,
             &mqtt_ip, mqtt_port,
             mqtt_connection_cb, LWIP_CONST_CAST(void*, &mqtt_client_info),
             &mqtt_client_info);
-   if(res != ERR_OK) {
+    if(res != ERR_OK) 
+    {
       addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Connect error in mqtt_client_connect - code: %d\n", res);
-
+      if (res == ERR_ISCONN)
+      {
+        if (mqtt_client != 0)
+        {
+          mqtt_disconnect(mqtt_client);
+        }
+      }
     }
-
   } else {
    addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"mqtt_host %s not found by gethostbyname\r\n", mqtt_host);
   }
@@ -752,34 +807,38 @@ OBK_Publish_Result MQTT_PublishCommand(const void *context, const char *cmd, con
 }
 // initialise things MQTT
 // called from user_main
-void MQTT_init(){
-	char cbtopicbase[64];
-	char cbtopicsub[64];
+void MQTT_init()
+{
+  char cbtopicbase[64];
+  char cbtopicsub[64];
   const char *clientId;
-	clientId = CFG_GetMQTTClientId();
+
+  clientId = CFG_GetMQTTClientId();
 
   // register the main set channel callback
-	sprintf(cbtopicbase,"%s/",clientId);
+  sprintf(cbtopicbase,"%s/",clientId);
   sprintf(cbtopicsub,"%s/+/set",clientId);
   // note: this may REPLACE an existing entry with the same ID.  ID 1 !!!
   MQTT_RegisterCallback( cbtopicbase, cbtopicsub, 1, channelSet);
 
   // register the TAS cmnd callback
-	sprintf(cbtopicbase,"cmnd/%s/",clientId);
+  sprintf(cbtopicbase,"cmnd/%s/",clientId);
   sprintf(cbtopicsub,"cmnd/%s/+",clientId);
   // note: this may REPLACE an existing entry with the same ID.  ID 2 !!!
   MQTT_RegisterCallback( cbtopicbase, cbtopicsub, 2, tasCmnd);
 
   mqtt_initialised = 1;
 
-	CMD_RegisterCommand("publish","",MQTT_PublishCommand, "Sqqq", NULL);
-
+  CMD_RegisterCommand("publish","",MQTT_PublishCommand, "Sqqq", NULL);
 }
 
-OBK_Publish_Result MQTT_DoItemPublishString(const char *sChannel, const char *valueStr) {
+OBK_Publish_Result MQTT_DoItemPublishString(const char *sChannel, const char *valueStr) 
+{
   return MQTT_PublishMain(mqtt_client, sChannel, valueStr, OBK_PUBLISH_FLAG_MUTEX_SILENT, false);
 }
-OBK_Publish_Result MQTT_DoItemPublish(int idx) {
+
+OBK_Publish_Result MQTT_DoItemPublish(int idx) 
+{
   char dataStr[3*6+1];  //This is sufficient to hold mac value
 
 	switch(idx) {
@@ -852,35 +911,45 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx) {
 static int g_secondsBeforeNextFullBroadcast = 30;
 
 // called from user timer.
-int MQTT_RunEverySecondUpdate() {
-
+int MQTT_RunEverySecondUpdate() 
+{
 	if (!mqtt_initialised)
 		return 0;
 
+    if (Main_HasWiFiConnected() == 0)
+        return 0;
+
 	// take mutex for connect and disconnect operations
-	if(MQTT_Mutex_Take(100)==0) {
+	if(MQTT_Mutex_Take(100)==0) 
+    {
 		return 0;
 	}
 
-	// reconnect if went into MQTT library ERR_MEM forever loop
-	if(g_memoryErrorsThisSession >= 5) {
+        // reconnect if went into MQTT library ERR_MEM forever loop
+	if(g_memoryErrorsThisSession >= 5) 
+    {
 		addLogAdv(LOG_INFO,LOG_FEATURE_MQTT, "MQTT will reconnect soon to fix ERR_MEM errors\n");
 		g_memoryErrorsThisSession = 0;
 		mqtt_reconnect = 5;
 	}
+
 	// if asked to reconnect (e.g. change of topic(s))
-	if (mqtt_reconnect > 0){
+	if (mqtt_reconnect > 0)
+    {
 		mqtt_reconnect --;
-		if (mqtt_reconnect == 0){
+		if (mqtt_reconnect == 0)
+        {
 			// then if connected, disconnect, and then it will reconnect automatically in 2s
-			if (mqtt_client && mqtt_client_is_connected(mqtt_client)) {
+			if (mqtt_client && mqtt_client_is_connected(mqtt_client)) 
+            {
 				MQTT_disconnect(mqtt_client);
 				loopsWithDisconnected = 8;
 			}
 		}
 	}
 
-	if(mqtt_client == 0 || mqtt_client_is_connected(mqtt_client) == 0) {
+	if(mqtt_client == 0 || mqtt_client_is_connected(mqtt_client) == 0) 
+    {
 		//addLogAdv(LOG_INFO,LOG_FEATURE_MAIN, "Timer discovers disconnected mqtt %i\n",loopsWithDisconnected);
 		loopsWithDisconnected++;
 		if(loopsWithDisconnected > 10)
@@ -888,8 +957,11 @@ int MQTT_RunEverySecondUpdate() {
 			if(mqtt_client == 0)
 			{
 				mqtt_client = mqtt_client_new();
-			}
+			} else {
+                mqtt_client_cleanup(mqtt_client);
+            }
 			MQTT_do_connect(mqtt_client);
+            mqtt_connect_events++;
 			loopsWithDisconnected = 0;
 		}
 		MQTT_Mutex_Free();
@@ -905,35 +977,42 @@ int MQTT_RunEverySecondUpdate() {
 		// Do it slowly in order not to overload the buffers
 		// The item indexes start at negative values for special items
 		// and then covers Channel indexes up to CHANNEL_MAX
-
-    //Handle only queued items. Don't need to do this separately if entire state is being published.
-    if ((g_MqttPublishItemsQueued > 0) && !g_bPublishAllStatesNow){
-      PublishQueuedItems();
-      return 1;
-    }
-		else if(g_bPublishAllStatesNow) {
+        //Handle only queued items. Don't need to do this separately if entire state is being published.
+        if ((g_MqttPublishItemsQueued > 0) && !g_bPublishAllStatesNow)
+        {
+           PublishQueuedItems();
+           return 1;
+        }
+	    else if(g_bPublishAllStatesNow) 
+        {
 			// Doing step by a step a full publish state
-			if(g_timeSinceLastMQTTPublish > 2) {
+			if(g_timeSinceLastMQTTPublish > 2) 
+            {
 				OBK_Publish_Result publishRes;
 				int g_sent_thisFrame = 0;
 
-				while(g_publishItemIndex < CHANNEL_MAX) {
+				while(g_publishItemIndex < CHANNEL_MAX) 
+                {
 					publishRes = MQTT_DoItemPublish(g_publishItemIndex);
-					if(publishRes != OBK_PUBLISH_WAS_NOT_REQUIRED){
+					if(publishRes != OBK_PUBLISH_WAS_NOT_REQUIRED)
+                    {
 						addLogAdv(LOG_INFO,LOG_FEATURE_MQTT, "[g_bPublishAllStatesNow] item %i result %i\n",g_publishItemIndex,publishRes);
 					}
 					// There are several things that can happen now
 					// OBK_PUBLISH_OK - it was required and was published
-					if(publishRes == OBK_PUBLISH_OK) {
+					if(publishRes == OBK_PUBLISH_OK) 
+                    {
 						g_sent_thisFrame++;
-						if(g_sent_thisFrame>=1){
+						if(g_sent_thisFrame>=1)
+                        {
 							g_publishItemIndex++;
 							break;
 						}
 					}
 					// OBK_PUBLISH_MUTEX_FAIL - MQTT is busy
 					if(publishRes == OBK_PUBLISH_MUTEX_FAIL
-						|| publishRes == OBK_PUBLISH_WAS_DISCONNECTED) {
+						|| publishRes == OBK_PUBLISH_WAS_DISCONNECTED) 
+                    {
 						// retry the same later
 						break;
 					}
@@ -941,23 +1020,26 @@ int MQTT_RunEverySecondUpdate() {
 					// The item is not used for this device
 					g_publishItemIndex++;
 				}
-				if(g_publishItemIndex >= CHANNEL_MAX) {
+
+				if(g_publishItemIndex >= CHANNEL_MAX) 
+                {
 					// done
 					g_bPublishAllStatesNow = 0;
 				}	
 			}
 		} else {
 			// not doing anything
-			if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEPERMINUTE)) {
+			if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEPERMINUTE)) 
+            {
 				// this is called every second
 				g_secondsBeforeNextFullBroadcast--;
-				if(g_secondsBeforeNextFullBroadcast <= 0) {
+				if(g_secondsBeforeNextFullBroadcast <= 0) 
+                {
 					g_secondsBeforeNextFullBroadcast = 60;
 					MQTT_PublishWholeDeviceState();
 				}
 			}
 		}
-
 	}
 	return 1;
 }

@@ -15,6 +15,7 @@
 #include "../devicegroups/deviceGroups_public.h"
 #include "../mqtt/new_mqtt.h"
 #include "hass.h"
+#include "../cJSON/cJSON.h"
 
 #ifdef WINDOWS
     // nothing
@@ -97,7 +98,8 @@ template_t g_templates [] = {
     { Setup_Device_Deta_Smart_Double_Power_Point_6922HA_Series2, "BK7231T DETA SMART Double Power Point 6922HA-Series 2"},
     { Setup_Device_ArlecRGBCCTDownlight, "Arlec RGB+CCT LED Downlight ALD092RHA"},
     { Setup_Device_CasaLifeCCTDownlight, "CasaLife CCT LED Downlight SMART-AL2017-TGTS"},
-    { Setup_Device_Enbrighten_WFD4103, "Enbrighten WFD4103 WiFi Switch BK7231T WB2S"} 
+    { Setup_Device_Enbrighten_WFD4103, "Enbrighten WFD4103 WiFi Switch BK7231T WB2S"},
+    { Setup_Device_Zemismart_Light_Switch_KS_811_3, "Zemismart Light Switch KS-811-3" }
 };
 
 int g_total_templates = sizeof(g_templates)/sizeof(g_templates[0]);
@@ -487,6 +489,7 @@ int http_fn_index(http_request_t *request) {
 
 	hprintf128(request,"<h5>Ping watchdog - %i lost, %i ok!</h5>",
 		PingWatchDog_GetTotalLost(),PingWatchDog_GetTotalReceived());
+    hprintf128(request,"<h5>MQTT State: %s</h5>", (Main_HasMQTTConnected()==1)?"connected":"disconnected");
 
     // for normal page loads, show the rest of the HTML
     if(!http_getArg(request->url,"state",tmpA,sizeof(tmpA))) {
@@ -1277,7 +1280,9 @@ int http_fn_ha_discovery(http_request_t *request) {
         sprintf(topic, "homeassistant");    //default discovery topic is `homeassistant`
     }
     
-    cJSON_Hooks hooks = {os_malloc, os_free};
+    struct cJSON_Hooks hooks;
+    hooks.malloc_fn = os_malloc;
+    hooks.free_fn = os_free;
     cJSON_InitHooks(&hooks);
     
     if(relayCount > 0) {

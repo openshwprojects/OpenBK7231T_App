@@ -65,6 +65,7 @@ typedef int (*mqtt_callback_fn)(mqtt_request_t *request);
 // topics must be unique (i.e. you can't have /about and /aboutme or /about/me)
 // ALL topics currently must start with main device topic root.
 // ID is unique and non-zero - so that callbacks can be replaced....
+int MQTT_GetConnectEvents(void);
 int MQTT_RegisterCallback( const char *basetopic, const char *subscriptiontopic, int ID, mqtt_callback_fn callback);
 int MQTT_RemoveCallback(int ID);
 

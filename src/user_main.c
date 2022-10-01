@@ -119,10 +119,11 @@ static void ScheduleDriverStart(const char *name, int delay) {
 	strcpy(scheduledDriverName,name);
 }
 
-void Main_OnWiFiStatusChange(int code){
+void Main_OnWiFiStatusChange(int code)
+{
 
-
-    switch(code){
+    switch(code)
+    {
         case WIFI_STA_CONNECTING:
 			g_bHasWiFiConnected = 0;
             g_connectToWiFi = 120;
@@ -144,7 +145,8 @@ void Main_OnWiFiStatusChange(int code){
 			g_bHasWiFiConnected = 1;
 			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTED\r\n");
 			
-			if(bSafeMode == 0 && strlen(CFG_DeviceGroups_GetName())>0){
+			if(bSafeMode == 0 && strlen(CFG_DeviceGroups_GetName())>0)
+            {
 				ScheduleDriverStart("DGR",5);
 			}
 
@@ -165,19 +167,29 @@ void Main_OnWiFiStatusChange(int code){
 }
 
 
-void CFG_Save_SetupTimer() {
+void CFG_Save_SetupTimer() 
+{
 	g_saveCfgAfter = 3;
 }
-void Main_OnPingCheckerReply(int ms) {
+
+void Main_OnPingCheckerReply(int ms) 
+{
 	g_timeSinceLastPingReply = 0;
 }
+
 int g_bBootMarkedOK = 0;
-
-
 static int bMQTTconnected = 0;
-int Main_HasMQTTConnected(){
+
+int Main_HasMQTTConnected()
+{
 	return bMQTTconnected;
 }
+
+int Main_HasWiFiConnected()
+{
+    return g_bHasWiFiConnected;
+}
+
 void Main_OnEverySecond()
 {
 	const char *safe;
@@ -191,20 +203,25 @@ void Main_OnEverySecond()
 	// some users say that despite our simple reconnect mechanism
 	// there are some rare cases when devices stuck outside network
 	// That is why we can also reconnect them by basing on ping
-	if(g_timeSinceLastPingReply != -1 && g_secondsElapsed > 60) {
+	if(g_timeSinceLastPingReply != -1 && g_secondsElapsed > 60) 
+    {
 		g_timeSinceLastPingReply++;
-		if(g_timeSinceLastPingReply == CFG_GetPingDisconnectedSecondsToRestart()) {
+		if(g_timeSinceLastPingReply == CFG_GetPingDisconnectedSecondsToRestart()) 
+        {
 			ADDLOGF_INFO("[Ping watchdog] No ping replies within %i seconds. Will try to reconnect.\n",g_timeSinceLastPingReply);
 			g_bHasWiFiConnected = 0;
 			g_connectToWiFi = 10;
 		}
 	}
 
-	if(bSafeMode == 0) {
+	if(bSafeMode == 0) 
+    {
 		int i;
 
-		for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
-			if(g_cfg.pins.roles[i] == IOR_ADC) {
+		for(i = 0; i < PLATFORM_GPIO_MAX; i++) 
+        {
+			if(g_cfg.pins.roles[i] == IOR_ADC) 
+            {
 				int value;
 
 				value = HAL_ADC_Read(i);
@@ -215,9 +232,11 @@ void Main_OnEverySecond()
 		}
 	}
 
-	if(scheduledDelay > 0) {
+	if(scheduledDelay > 0) 
+    {
 		scheduledDelay--;
-		if(scheduledDelay<=0){
+		if(scheduledDelay<=0)
+        {
 			scheduledDelay = -1;
 #ifndef OBK_DISABLE_ALL_DRIVERS
 			DRV_StopDriver(scheduledDriverName);
@@ -236,22 +255,25 @@ void Main_OnEverySecond()
 	{
 		//int mqtt_max, mqtt_cur, mqtt_mem;
 		//MQTT_GetStats(&mqtt_cur, &mqtt_max, &mqtt_mem);
-	//	ADDLOGF_INFO("mqtt req %i/%i, free mem %i\n", mqtt_cur,mqtt_max,mqtt_mem);
-		ADDLOGF_INFO("%sTime %i, free %d, MQTT %i, bWifi %i, secondsWithNoPing %i, socks %i/%i\n",
-			safe, g_secondsElapsed, xPortGetFreeHeapSize(),bMQTTconnected, g_bHasWiFiConnected,g_timeSinceLastPingReply,
-			LWIP_GetActiveSockets(),LWIP_GetMaxSockets());
+	    //ADDLOGF_INFO("mqtt req %i/%i, free mem %i\n", mqtt_cur,mqtt_max,mqtt_mem);
+		ADDLOGF_INFO("%sTime %i, free %d, MQTT %i(%i), bWifi %i, secondsWithNoPing %i, socks %i/%i\n",
+			safe, g_secondsElapsed, xPortGetFreeHeapSize(),bMQTTconnected, MQTT_GetConnectEvents(), 
+            g_bHasWiFiConnected, g_timeSinceLastPingReply, LWIP_GetActiveSockets(), LWIP_GetMaxSockets());
 
 	}
 
 	// print network info
-	if (!(g_secondsElapsed % 10)){
+	if (!(g_secondsElapsed % 10))
+    {
 		HAL_PrintNetworkInfo();
 	}
 
 	// when we hit 30s, mark as boot complete.
-	if(g_bBootMarkedOK==false) {
+	if(g_bBootMarkedOK==false) 
+    {
 		int bootCompleteSeconds = CFG_GetBootOkSeconds();
-		if (g_secondsElapsed > bootCompleteSeconds){
+		if (g_secondsElapsed > bootCompleteSeconds)
+        {
 			ADDLOGF_INFO("Boot complete time reached (%i seconds)\n",bootCompleteSeconds);
 			HAL_FlashVars_SaveBootComplete();
 			g_bootFailures = HAL_FlashVars_GetBootFailures();
@@ -259,16 +281,21 @@ void Main_OnEverySecond()
 		}
 	}
 
-	if (g_openAP){
+	if (g_openAP)
+    {
 		g_openAP--;
-		if (0 == g_openAP){
+		if (0 == g_openAP)
+        {
 			HAL_SetupWiFiOpenAccessPoint(CFG_GetDeviceName());
 			g_bOpenAccessPointMode = 1;
 		}
 	}
-	if(g_startPingWatchDogAfter) {
+
+	if(g_startPingWatchDogAfter) 
+    {
 		g_startPingWatchDogAfter--;
-		if(0==g_startPingWatchDogAfter) {
+		if(0==g_startPingWatchDogAfter) 
+        {
 			const char *pingTargetServer;
 			///int pingInterval;
 			int restartAfterNoPingsSeconds;
@@ -279,10 +306,11 @@ void Main_OnEverySecond()
 			//pingInterval = CFG_GetPingIntervalSeconds();
 			restartAfterNoPingsSeconds = CFG_GetPingDisconnectedSecondsToRestart();
 
-			if(*pingTargetServer /* && pingInterval > 0*/ && restartAfterNoPingsSeconds > 0) {
+			if(*pingTargetServer /* && pingInterval > 0*/ && restartAfterNoPingsSeconds > 0) 
+            {
 				// mark as enabled
 				g_timeSinceLastPingReply = 0;
-			//	Main_SetupPingWatchDog(pingTargetServer,pingInterval);
+			    //Main_SetupPingWatchDog(pingTargetServer,pingInterval);
 				Main_SetupPingWatchDog(pingTargetServer
 					/*,1*/
 					);
@@ -292,9 +320,11 @@ void Main_OnEverySecond()
 			}
 		}
 	}
-	if(g_connectToWiFi){
+	if(g_connectToWiFi)
+    {
 		g_connectToWiFi --;
-		if(0 == g_connectToWiFi && g_bHasWiFiConnected == 0) {
+		if(0 == g_connectToWiFi && g_bHasWiFiConnected == 0) 
+        {
 			const char *wifi_ssid, *wifi_pass;
 
 			g_bOpenAccessPointMode = 0;
@@ -337,19 +367,25 @@ void Main_OnEverySecond()
 
 void app_on_generic_dbl_click(int btnIndex)
 {
-	if(g_secondsElapsed < 5) {
+	if(g_secondsElapsed < 5) 
+    {
 		CFG_SetOpenAccessPoint();
 	}
 }
 
 
-int Main_IsOpenAccessPointMode() {
+int Main_IsOpenAccessPointMode() 
+{
 	return g_bOpenAccessPointMode;
 }
-int Main_IsConnectedToWiFi() {
+
+int Main_IsConnectedToWiFi() 
+{
 	return g_bHasWiFiConnected;
 }
-int Main_GetLastRebootBootFailures() {
+
+int Main_GetLastRebootBootFailures() 
+{
 	return g_bootFailures;
 }
 
@@ -363,7 +399,8 @@ void Main_Init()
 	HAL_FlashVars_IncreaseBootCount();
 
 	g_bootFailures = HAL_FlashVars_GetBootFailures();
-	if (g_bootFailures > RESTARTS_REQUIRED_FOR_SAFE_MODE){
+	if (g_bootFailures > RESTARTS_REQUIRED_FOR_SAFE_MODE)
+    {
 		bSafeMode = 1;
 		ADDLOGF_INFO("###### safe mode activated - boot failures %d", g_bootFailures);
 	}
@@ -382,12 +419,18 @@ void Main_Init()
 	bForceOpenAP = 1;
 #endif
 
-	if(*wifi_ssid == 0 || *wifi_pass == 0 || bSafeMode) {
+	if((*wifi_ssid == 0) || (*wifi_pass == 0))
+    {
 		// start AP mode in 5 seconds
 		g_openAP = 5;
 		//HAL_SetupWiFiOpenAccessPoint();
 	} else {
-		g_connectToWiFi = 5;
+        if (bSafeMode)
+        {
+            g_openAP = 5;
+        } else {
+    		g_connectToWiFi = 5;
+        }
 	}
 
 	ADDLOGF_INFO("Using SSID [%s]\r\n",wifi_ssid);
@@ -399,8 +442,8 @@ void Main_Init()
 	HTTPServer_Start();
 	ADDLOGF_DEBUG("Started http tcp server\r\n");
 	// only initialise certain things if we are not in AP mode
-	if (!bSafeMode){
-
+	if (!bSafeMode)
+    {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 		DRV_Generic_Init();
 #endif
@@ -446,17 +489,20 @@ void Main_Init()
 		CMD_Init();
 
 		// autostart drivers
-		if(PIN_FindPinIndexForRole(IOR_SM2135_CLK,-1) != -1 && PIN_FindPinIndexForRole(IOR_SM2135_DAT,-1) != -1) {
+		if(PIN_FindPinIndexForRole(IOR_SM2135_CLK,-1) != -1 && PIN_FindPinIndexForRole(IOR_SM2135_DAT,-1) != -1) 
+        {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 			DRV_StartDriver("SM2135");
 #endif
 		}
-		if(PIN_FindPinIndexForRole(IOR_BP5758D_CLK,-1) != -1 && PIN_FindPinIndexForRole(IOR_BP5758D_DAT,-1) != -1) {
+		if(PIN_FindPinIndexForRole(IOR_BP5758D_CLK,-1) != -1 && PIN_FindPinIndexForRole(IOR_BP5758D_DAT,-1) != -1) 
+        {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 			DRV_StartDriver("BP5758D");
 #endif
 		}
-		if(PIN_FindPinIndexForRole(IOR_BL0937_CF,-1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_CF1,-1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_SEL,-1) != -1) {
+		if(PIN_FindPinIndexForRole(IOR_BL0937_CF,-1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_CF1,-1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_SEL,-1) != -1) 
+        {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 			DRV_StartDriver("BL0937");
 #endif
@@ -473,5 +519,5 @@ void Main_Init()
 
 		NewLED_RestoreSavedStateIfNeeded();
 	}
-
 }
+
