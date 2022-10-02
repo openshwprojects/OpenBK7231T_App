@@ -634,15 +634,15 @@ int TuyaMCU_SendMCUConf(const void *context, const char *cmd, const char *args, 
 }
 
 // ntp_timeZoneOfs 2
-// addRepeatingEvent 10 uartSendHex 55AA0008000007
+// addRepeatingEvent 10 -1 uartSendHex 55AA0008000007
 // setChannelType 1 temperature_div10
 // setChannelType 2 humidity
 // linkTuyaMCUOutputToChannel 1 1
 // linkTuyaMCUOutputToChannel 2 2
-// addRepeatingEvent 10 tuyaMcu_sendCurTime
+// addRepeatingEvent 10 -1 tuyaMcu_sendCurTime
 //
 // same as above but merged
-// backlog ntp_timeZoneOfs 2; addRepeatingEvent 10 uartSendHex 55AA0008000007; setChannelType 1 temperature_div10; setChannelType 2 humidity; linkTuyaMCUOutputToChannel 1 1; linkTuyaMCUOutputToChannel 2 2; addRepeatingEvent 10 tuyaMcu_sendCurTime
+// backlog ntp_timeZoneOfs 2; addRepeatingEvent 10 -1 uartSendHex 55AA0008000007; setChannelType 1 temperature_div10; setChannelType 2 humidity; linkTuyaMCUOutputToChannel 1 1; linkTuyaMCUOutputToChannel 2 2; addRepeatingEvent 10 -1 tuyaMcu_sendCurTime
 //
 void TuyaMCU_ApplyMapping(int fnID, int value) {
 	tuyaMCUMapping_t *mapping;
