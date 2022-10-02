@@ -48,7 +48,6 @@ MqttPublishItem_t *g_MqttPublishQueueHead = NULL;
 int g_MqttPublishItemsQueued = 0;   //Items in the queue waiting to be published. This is not the queue length.
 OBK_Publish_Result PublishQueuedItems();
 
-
 // from mqtt.c
 extern void mqtt_disconnect(mqtt_client_t *client);
 
@@ -448,56 +447,69 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t *client, const
   u8_t retain = 0; /* No don't retain such crappy payload... */
 
   if(client==0)
-	  return OBK_PUBLISH_WAS_DISCONNECTED;
+    return OBK_PUBLISH_WAS_DISCONNECTED;
 
   
-	if(flags & OBK_PUBLISH_FLAG_MUTEX_SILENT) {
-		if(MQTT_Mutex_Take(100)==0) {
-			return OBK_PUBLISH_MUTEX_FAIL;
-		}
-	} else {
-		if(MQTT_Mutex_Take(500)==0) {
-			addLogAdv(LOG_ERROR,LOG_FEATURE_MQTT,"MQTT_PublishTopicToClient: mutex failed for %s=%s\r\n", sChannel, sVal);
-			return OBK_PUBLISH_MUTEX_FAIL;
-		}
+  if(flags & OBK_PUBLISH_FLAG_MUTEX_SILENT) 
+  {
+	if(MQTT_Mutex_Take(100)==0) 
+    {
+	  return OBK_PUBLISH_MUTEX_FAIL;
 	}
-	if(flags & OBK_PUBLISH_FLAG_RETAIN) {
-		retain = 1;
+  } else {
+	if(MQTT_Mutex_Take(500)==0) 
+    {
+      addLogAdv(LOG_ERROR,LOG_FEATURE_MQTT,"MQTT_PublishTopicToClient: mutex failed for %s=%s\r\n", sChannel, sVal);
+	  return OBK_PUBLISH_MUTEX_FAIL;
 	}
-	// global tool
-	if(CFG_HasFlag(OBK_FLAG_MQTT_ALWAYSSETRETAIN)) {
-		retain = 1;
-	}
+  }
+  if(flags & OBK_PUBLISH_FLAG_RETAIN) 
+  {
+	retain = 1;
+  }
+  // global tool
+  if(CFG_HasFlag(OBK_FLAG_MQTT_ALWAYSSETRETAIN)) 
+  {
+    retain = 1;
+  }
 
-
-  if(mqtt_client_is_connected(client)==0) {
-		 g_my_reconnect_mqtt_after_time = 5;
-		MQTT_Mutex_Free();
-		return OBK_PUBLISH_WAS_DISCONNECTED;
+  if(mqtt_client_is_connected(client)==0) 
+  {
+    g_my_reconnect_mqtt_after_time = 5;
+    MQTT_Mutex_Free();
+	return OBK_PUBLISH_WAS_DISCONNECTED;
   }
 
   g_timeSinceLastMQTTPublish = 0;
   
   char *pub_topic = (char *)os_malloc(strlen(sTopic) + 1 + strlen(sChannel) + 5 + 1); //5 for /get
-  sprintf(pub_topic, "%s/%s%s", sTopic, sChannel, (appendGet == true ? "/get" : ""));
-  addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publishing to %s retain=%i",pub_topic, retain);
-  addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Published '%s' \n", sVal);
+  if (pub_topic != NULL)
+  {
+    sprintf(pub_topic, "%s/%s%s", sTopic, sChannel, (appendGet == true ? "/get" : ""));
+    addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publishing to %s retain=%i",pub_topic, retain);
+    addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Published '%s' \n", sVal);
 
-  err = mqtt_publish(client, pub_topic, sVal, strlen(sVal), qos, retain, mqtt_pub_request_cb, 0);
-  os_free(pub_topic);
+    err = mqtt_publish(client, pub_topic, sVal, strlen(sVal), qos, retain, mqtt_pub_request_cb, 0);
+    os_free(pub_topic);
 
-  if(err != ERR_OK) {
-	 if(err == ERR_CONN) {
+    if(err != ERR_OK) 
+    {
+	  if(err == ERR_CONN) 
+      {
 		addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publish err: ERR_CONN aka %d\n", err);
-	 } else if(err == ERR_MEM) {
+	  } else if(err == ERR_MEM) {
 		addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publish err: ERR_MEM aka %d\n", err);
 		g_memoryErrorsThisSession ++;
-	 } else {
+	  } else {
 		addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publish err: %d\n", err);
-	 }
-  }
+	  }
+    }
 	MQTT_Mutex_Free();
 	return OBK_PUBLISH_OK;
+  } else {
+    MQTT_Mutex_Free();
+    return OBK_PUBLISH_MEM_FAIL;
+  }
 }
 
 // This is used to publish channel values in "obk0696FB33/1/get" format with numerical value,
