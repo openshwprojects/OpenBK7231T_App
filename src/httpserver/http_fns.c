@@ -1296,7 +1296,11 @@ int http_fn_ha_cfg(http_request_t *request) {
 
     get_Relay_PWM_Count(&relayCount, &pwmCount);
 
+#ifndef OBK_DISABLE_ALL_DRIVERS
 	bLedDriverChipRunning = DRV_IsRunning("SM2135") || DRV_IsRunning("BP5758D");
+#else
+	bLedDriverChipRunning = 0;
+#endif
 
     if(relayCount > 0) {
 
