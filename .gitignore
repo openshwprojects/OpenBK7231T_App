@@ -8,3 +8,5 @@ output/**
 **/*.d
 /custom.mk
 /.vs
+.vscode
+node_modules
