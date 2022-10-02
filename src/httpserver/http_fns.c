@@ -124,6 +124,44 @@ void postFormAction(http_request_t *request, char *action, char *value){
     hprintf128(request,"<form action=\"%s\"><input type=\"submit\" value=\"%s\"/></form>", action, value);
 }
 
+/// @brief Generate a pair of label and field elements.
+/// @param request 
+/// @param label 
+/// @param fieldId This also gets used as the field name
+/// @param value 
+/// @param preContent 
+void add_label_input(http_request_t *request, char *inputType, char *label, char *fieldId, const char *value, char *preContent){
+    if (strlen(preContent) > 0){
+        poststr(request, preContent);
+    }
+    
+    //These individual strings should be less than 256 .. yes hprintf128 uses 256 char buffer
+    hprintf128(request, "<label for=\"%s\">%s:</label><br>", fieldId, label);
+    hprintf128(request, "<input type=\"%s\" id=\"%s\" name=\"%s\" value=\"%s\">", inputType, fieldId, fieldId, value);
+}
+
+/// @brief Generates a pair of label and text field elements.
+/// @param request 
+/// @param label Label for the field
+/// @param fieldId Field id, this also gets used as the name
+/// @param value String value
+/// @param preContent Content before the label
+void add_label_text_field(http_request_t *request, char *label, char *fieldId, const char *value, char *preContent){
+    add_label_input(request, "text", label, fieldId, value, preContent);
+}
+
+/// @brief Generate a pair of label and numeric field elements.
+/// @param request 
+/// @param label Label for the field
+/// @param fieldId Field id, this also gets used as the name
+/// @param value Integer value
+/// @param preContent Content before the label
+void add_label_numeric_field(http_request_t *request, char *label, char *fieldId, int value, char *preContent){
+    char strValue[32];
+    sprintf(strValue, "%i", value);
+    add_label_input(request, "number", label, fieldId, strValue, preContent);
+}
+
 int http_fn_testmsg(http_request_t *request) {
     poststr(request,"This is just a test msg\n\n");
 	poststr(request, NULL);
@@ -142,63 +180,63 @@ int http_fn_index(http_request_t *request) {
 
     // use ?state URL parameter to only request current state
     if(!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
-    http_setup(request, httpMimeTypeHTML);
+        http_setup(request, httpMimeTypeHTML);
         http_html_start(request, NULL);
 
         poststr(request, "<div id=\"changed\">");
-    if(http_getArg(request->url,"tgl",tmpA,sizeof(tmpA))) {
-        j = atoi(tmpA);
-		if(j == SPECIAL_CHANNEL_LEDPOWER) {
-			hprintf128(request,"<h3>Toggled LED power!</h3>",j);
-		} else {
-			hprintf128(request,"<h3>Toggled %i!</h3>",j);
-		}
-        CHANNEL_Toggle(j);
-    }
-    if(http_getArg(request->url,"on",tmpA,sizeof(tmpA))) {
-        j = atoi(tmpA);
-        hprintf128(request,"<h3>Enabled %i!</h3>",j);
-        CHANNEL_Set(j,255,1);
-    }
-    if(http_getArg(request->url,"rgb",tmpA,sizeof(tmpA))) {
-        hprintf128(request,"<h3>Set RGB to %s!</h3>",tmpA);
-		LED_SetBaseColor(0,"led_basecolor",tmpA,0);
-    }
-	
-    if(http_getArg(request->url,"off",tmpA,sizeof(tmpA))) {
-        j = atoi(tmpA);
-        hprintf128(request,"<h3>Disabled %i!</h3>",j);
-        CHANNEL_Set(j,0,1);
-    }
-    if(http_getArg(request->url,"pwm",tmpA,sizeof(tmpA))) {
-        int newPWMValue = atoi(tmpA);
-        http_getArg(request->url,"pwmIndex",tmpA,sizeof(tmpA));
-        j = atoi(tmpA);
-		if(j == SPECIAL_CHANNEL_TEMPERATURE) {
-			hprintf128(request,"<h3>Changed Temperature to %i!</h3>",newPWMValue);
-		} else {
-			hprintf128(request,"<h3>Changed pwm %i to %i!</h3>",j,newPWMValue);
-		}
-        CHANNEL_Set(j,newPWMValue,1);
-    }
-    if(http_getArg(request->url,"dim",tmpA,sizeof(tmpA))) {
-        int newDimmerValue = atoi(tmpA);
-        http_getArg(request->url,"dimIndex",tmpA,sizeof(tmpA));
-		j  = atoi(tmpA);
-		if(j == SPECIAL_CHANNEL_BRIGHTNESS) {
-			hprintf128(request,"<h3>Changed LED brightness to %i!</h3>",newDimmerValue);
-		} else {
-			hprintf128(request,"<h3>Changed dimmer %i to %i!</h3>",j,newDimmerValue);
-		}
-        CHANNEL_Set(j,newDimmerValue,1);
-    }
-    if(http_getArg(request->url,"set",tmpA,sizeof(tmpA))) {
-        int newSetValue = atoi(tmpA);
-        http_getArg(request->url,"setIndex",tmpA,sizeof(tmpA));
-        j = atoi(tmpA);
-        hprintf128(request,"<h3>Changed channel %i to %i!</h3>",j,newSetValue);
-        CHANNEL_Set(j,newSetValue,1);
-    }
+        if(http_getArg(request->url,"tgl",tmpA,sizeof(tmpA))) {
+            j = atoi(tmpA);
+            if(j == SPECIAL_CHANNEL_LEDPOWER) {
+                hprintf128(request,"<h3>Toggled LED power!</h3>",j);
+            } else {
+                hprintf128(request,"<h3>Toggled %i!</h3>",j);
+            }
+            CHANNEL_Toggle(j);
+        }
+        if(http_getArg(request->url,"on",tmpA,sizeof(tmpA))) {
+            j = atoi(tmpA);
+            hprintf128(request,"<h3>Enabled %i!</h3>",j);
+            CHANNEL_Set(j,255,1);
+        }
+        if(http_getArg(request->url,"rgb",tmpA,sizeof(tmpA))) {
+            hprintf128(request,"<h3>Set RGB to %s!</h3>",tmpA);
+            LED_SetBaseColor(0,"led_basecolor",tmpA,0);
+        }
+        
+        if(http_getArg(request->url,"off",tmpA,sizeof(tmpA))) {
+            j = atoi(tmpA);
+            hprintf128(request,"<h3>Disabled %i!</h3>",j);
+            CHANNEL_Set(j,0,1);
+        }
+        if(http_getArg(request->url,"pwm",tmpA,sizeof(tmpA))) {
+            int newPWMValue = atoi(tmpA);
+            http_getArg(request->url,"pwmIndex",tmpA,sizeof(tmpA));
+            j = atoi(tmpA);
+            if(j == SPECIAL_CHANNEL_TEMPERATURE) {
+                hprintf128(request,"<h3>Changed Temperature to %i!</h3>",newPWMValue);
+            } else {
+                hprintf128(request,"<h3>Changed pwm %i to %i!</h3>",j,newPWMValue);
+            }
+            CHANNEL_Set(j,newPWMValue,1);
+        }
+        if(http_getArg(request->url,"dim",tmpA,sizeof(tmpA))) {
+            int newDimmerValue = atoi(tmpA);
+            http_getArg(request->url,"dimIndex",tmpA,sizeof(tmpA));
+            j  = atoi(tmpA);
+            if(j == SPECIAL_CHANNEL_BRIGHTNESS) {
+                hprintf128(request,"<h3>Changed LED brightness to %i!</h3>",newDimmerValue);
+            } else {
+                hprintf128(request,"<h3>Changed dimmer %i to %i!</h3>",j,newDimmerValue);
+            }
+            CHANNEL_Set(j,newDimmerValue,1);
+        }
+        if(http_getArg(request->url,"set",tmpA,sizeof(tmpA))) {
+            int newSetValue = atoi(tmpA);
+            http_getArg(request->url,"setIndex",tmpA,sizeof(tmpA));
+            j = atoi(tmpA);
+            hprintf128(request,"<h3>Changed channel %i to %i!</h3>",j,newSetValue);
+            CHANNEL_Set(j,newSetValue,1);
+        }
         if(http_getArg(request->url,"restart",tmpA,sizeof(tmpA))) {
             poststr(request,"<h5> Module will restart soon</h5>");
             RESET_ScheduleModuleReset(3);
@@ -377,7 +415,7 @@ int http_fn_index(http_request_t *request) {
             hprintf128(request,"<form action=\"index\" id=\"form%i\">",i);
             hprintf128(request,"<input type=\"range\" min=\"0\" max=\"100\" name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">",inputName,i,pwmValue);
             hprintf128(request,"<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">",inputName,i);
-            hprintf128(request,"<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>",i);
+            hprintf128(request,"<input type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>",i);
             poststr(request, "</td></tr>");
         }
     }
@@ -556,43 +594,22 @@ int http_fn_about(http_request_t *request){
     return 0;
 }
 
-
-
-
 int http_fn_cfg_mqtt(http_request_t *request) {
-    int i;
     http_setup(request, httpMimeTypeHTML);
     http_html_start(request, "MQTT");
-    poststr(request,"<h2> Use this to connect to your MQTT</h2>");
-    poststr(request,"<form action=\"/cfg_mqtt_set\">\
-            <label for=\"host\">Host:</label><br>\
-            <input type=\"text\" id=\"host\" name=\"host\" value=\"");
-
-    poststr(request,CFG_GetMQTTHost());
-    poststr(request,"\"><br>\
-            <label for=\"port\">Port:</label><br>\
-            <input type=\"text\" id=\"port\" name=\"port\" value=\"");
-    i = CFG_GetMQTTPort();
-    hprintf128(request, "%i", i);
-    poststr(request,"\"><br><br>\
-            <label for=\"port\">Client ID:</label><br>\
-            <input type=\"text\" id=\"client\" name=\"client\" value=\"");
-
-    poststr(request,CFG_GetMQTTClientId());
-    poststr(request,"\"><br>\
-            <label for=\"user\">User:</label><br>\
-            <input type=\"text\" id=\"user\" name=\"user\" value=\"");
-    poststr(request,CFG_GetMQTTUserName());
-    poststr(request,"\"><br>\
-            <label for=\"port\">Password:</label><br>\
-            <input type=\"text\" id=\"password\" name=\"password\" value=\"");
-    poststr(request,CFG_GetMQTTPass());
-    poststr(request,"\"><br>\
+    poststr(request,"<h2>Use this to connect to your MQTT</h2>");
+    add_label_text_field(request, "Host", "host", CFG_GetMQTTHost(), "<form action=\"/cfg_mqtt_set\">");
+    add_label_numeric_field(request, "Port", "port", CFG_GetMQTTPort(), "<br>");
+    add_label_text_field(request, "Client", "client", CFG_GetMQTTClientId(), "<br><br>");
+    add_label_text_field(request, "User", "user", CFG_GetMQTTUserName(), "<br>");
+    add_label_text_field(request, "Password", "password", CFG_GetMQTTPass(), "<br>");
+    
+    poststr(request,"<br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MQTT data twice?')\">\
         </form> ");
     poststr(request,htmlFooterReturnToCfgLink);
     http_html_end(request);
-	poststr(request, NULL);
+    poststr(request, NULL);
     return 0;
 }
 
@@ -634,11 +651,8 @@ int http_fn_cfg_webapp(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
     http_html_start(request, "Set Webapp");
     poststr(request,"<h2> Use this to set the URL of the Webapp</h2>");
-    poststr(request,"<form action=\"/cfg_webapp_set\">\
-            <label for=\"url\">Url:</label><br>\
-            <input type=\"text\" id=\"url\" name=\"url\" value=\"");
-    poststr(request,CFG_GetWebappRoot());
-    poststr(request,"\"><br>\
+    add_label_text_field(request, "Url", "url", CFG_GetWebappRoot(), "<form action=\"/cfg_webapp_set\">");
+    poststr(request,"<br>\
             <input type=\"submit\" value=\"Submit\">\
         </form> ");
     poststr(request,htmlFooterReturnToCfgLink);
@@ -675,8 +689,6 @@ int http_fn_cfg_webapp_set(http_request_t *request) {
 
 int http_fn_cfg_ping(http_request_t *request) {
 	char tmpA[128];
-	const char *tmp;
-	int i;
 	int bChanged;
 
     http_setup(request, httpMimeTypeHTML);
@@ -719,25 +731,10 @@ int http_fn_cfg_ping(http_request_t *request) {
             <input type=\"submit\" value=\"Disable ping watchdog!\">\
         </form> ");
     poststr(request,"<h2> Use this to enable pinger</h2>");
-    poststr(request,"<form action=\"/cfg_ping\">\
-            <label for=\"host\">Host:</label><br>\
-            <input type=\"text\" id=\"host\" name=\"host\" value=\"");
-	tmp = CFG_GetPingHost();
-    poststr(request,tmp);
-
-         /*   poststr(request, "\"><br>\
-		<label for=\"pass\">Interval (s) between pings:</label><br>\
-            <input type=\"number\" id=\"interval\" name=\"interval\" value=\"");
-    i = CFG_GetPingIntervalSeconds();
-    hprintf128(request,"%i",i);*/
-
-            poststr(request, "\"><br>\
-		<label for=\"pass\">Take action after this number of seconds with no reply:</label><br>\
-            <input type=\"number\" id=\"disconnectTime\" name=\"disconnectTime\" value=\"");
-			i = CFG_GetPingDisconnectedSecondsToRestart();
-    hprintf128(request,"%i",i);
-
-    poststr(request,"\"><br><br>\
+    add_label_text_field(request, "Host", "host", CFG_GetPingHost(), "<form action=\"/cfg_ping\">");
+    add_label_numeric_field(request, "Take action after this number of seconds with no reply", "disconnectTime", 
+        CFG_GetPingDisconnectedSecondsToRestart(), "<br>");
+    poststr(request,"<br><br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure?')\">\
         </form> ");
     poststr(request,htmlFooterReturnToCfgLink);
@@ -747,7 +744,6 @@ int http_fn_cfg_ping(http_request_t *request) {
 }
 int http_fn_cfg_wifi(http_request_t *request) {
     // for a test, show password as well...
-    const char *cur_ssid, *cur_pass;
 	char tmpA[128];
 
     http_setup(request, httpMimeTypeHTML);
@@ -819,19 +815,9 @@ int http_fn_cfg_wifi(http_request_t *request) {
             <input type=\"submit\" value=\"Convert to open access wifi\" onclick=\"return confirm('Are you sure to convert module to open access wifi?')\">\
         </form> ");
     poststr(request,"<h2> Use this to connect to your WiFi</h2>");
-    poststr(request,"<form action=\"/cfg_wifi_set\">\
-            <label for=\"ssid\">SSID:</label><br>\
-            <input type=\"text\" id=\"ssid\" name=\"ssid\" value=\"");
-    cur_ssid = CFG_GetWiFiSSID();
-    poststr(request,cur_ssid);
-
-            poststr(request, "\"><br>\
-            <label for=\"pass\">Pass:</label><br>\
-            <input type=\"text\" id=\"pass\" name=\"pass\" value=\"");
-    cur_pass = CFG_GetWiFiPass();
-    poststr(request,cur_pass);
-
-    poststr(request,"\"><br><br>\
+    add_label_text_field(request, "SSID", "ssid", CFG_GetWiFiSSID(), "<form action=\"/cfg_wifi_set\">");
+    add_label_text_field(request, "Password", "pass", CFG_GetWiFiPass(), "<br>");
+    poststr(request,"<br><br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check SSID and pass twice?')\">\
         </form> ");
     poststr(request,htmlFooterReturnToCfgLink);
@@ -842,7 +828,6 @@ int http_fn_cfg_wifi(http_request_t *request) {
 
 int http_fn_cfg_name(http_request_t *request) {
     // for a test, show password as well...
-    const char *shortName, *name;
 	char tmpA[128];
 
     http_setup(request, httpMimeTypeHTML);
@@ -856,19 +841,9 @@ int http_fn_cfg_name(http_request_t *request) {
 		CFG_SetDeviceName(tmpA);
     }
     poststr(request,"<h2> Use this to change device names</h2>");
-    poststr(request,"<form action=\"/cfg_name\">\
-            <label for=\"shortName\">ShortName:</label><br>\
-            <input type=\"text\" id=\"shortName\" name=\"shortName\" value=\"");
-	shortName = CFG_GetShortDeviceName();
-    poststr(request,shortName);
-
-            poststr(request, "\"><br>\
-            <label for=\"name\">Full Name:</label><br>\
-            <input type=\"text\" id=\"name\" name=\"name\" value=\"");
-			name = CFG_GetDeviceName();
-    poststr(request,name);
-
-    poststr(request,"\"><br><br>");
+    add_label_text_field(request, "ShortName", "shortName", CFG_GetShortDeviceName(), "<form action=\"/cfg_name\">");
+    add_label_text_field(request, "Full Name", "name", CFG_GetDeviceName(), "<br>");
+    poststr(request,"<br><br>");
     poststr(request, "<input type=\"submit\" value=\"Submit\" "
             "onclick=\"return confirm('Are you sure? "
             "Short name might be used by Home Assistant, "
@@ -929,15 +904,14 @@ int http_fn_cfg_loglevel_set(http_request_t *request) {
 #endif
         poststr(request,"LOG level changed.");
     }
-    poststr(request,"<form action=\"/cfg_loglevel_set\">\
-            <label for=\"loglevel\">loglevel:</label><br>\
-            <input type=\"text\" id=\"loglevel\" name=\"loglevel\" value=\"");
+
     tmpA[0] = 0;
 #if WINDOWS
+    add_label_text_field(request, "Loglevel", "loglevel", "", "<form action=\"/cfg_loglevel_set\">");
 #else
-    hprintf128(request,"%i",loglevel);
+    add_label_numeric_field(request, "Loglevel", "loglevel", loglevel, "<form action=\"/cfg_loglevel_set\">");
 #endif
-    poststr(request,"\"><br><br>\
+    poststr(request,"<br><br>\
             <input type=\"submit\" value=\"Submit\" >\
         </form> ");
 
@@ -977,11 +951,11 @@ int http_fn_cfg_mac(http_request_t *request) {
     WiFI_GetMacAddress((char *)mac);
 
     poststr(request,"<h2> Here you can change MAC address.</h2>");
-    poststr(request,"<form action=\"/cfg_mac\">\
-            <label for=\"mac\">MAC:</label><br>\
-            <input type=\"text\" id=\"mac\" name=\"mac\" value=\"");
-    hprintf128(request,"%02X%02X%02X%02X%02X%02X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
-    poststr(request,"\"><br><br>\
+
+    char macStr[16];
+    sprintf(macStr,"%02X%02X%02X%02X%02X%02X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
+    add_label_text_field(request, "MAC", "mac",macStr , "<form action=\"/cfg_mac\">");
+    poststr(request,"<br><br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MAC hex string twice?')\">\
         </form> ");
     poststr(request,htmlFooterReturnToCfgLink);
@@ -1067,12 +1041,9 @@ int http_fn_flash_read_tool(http_request_t *request) {
         poststr(request," checked");
     }
     poststr(request,"><label for=\"hex\">Show all hex?</label><br>");
-    poststr(request,"<label for=\"offset\">offset:</label><br>\
-            <input type=\"number\" id=\"offset\" name=\"offset\"");
-    hprintf128(request," value=\"%i\"><br>",ofs);
-    poststr(request,"<label for=\"len\">length:</label><br>\
-            <input type=\"number\" id=\"len\" name=\"len\" ");
-    hprintf128(request,"value=\"%i\">",len);
+
+    add_label_numeric_field(request, "Offset", "offset", ofs, "");
+    add_label_numeric_field(request, "Length", "len", len, "<br>");
     poststr(request,"<br><br>\
             <input type=\"submit\" value=\"Submit\">\
         </form> ");
@@ -1100,11 +1071,7 @@ int http_fn_cmd_tool(http_request_t *request) {
 		}
         poststr(request,"<br>");
     }
-    poststr(request,"<form action=\"/cmd_tool\">");
-
-    poststr(request,"<label for=\"cmd\">cmd:</label><br>\
-            <input type=\"text\" id=\"cmd\" name=\"cmd\" ");
-    hprintf128(request,"value=\"%s\"  size=\"80\">",tmpA);
+    add_label_text_field(request, "Command", "cmd", tmpA, "<form action=\"/cmd_tool\">");
     poststr(request,"<br><br>\
             <input type=\"submit\" value=\"Submit\">\
         </form> ");
@@ -1117,7 +1084,6 @@ int http_fn_cmd_tool(http_request_t *request) {
 
 int http_fn_startup_command(http_request_t *request) {
 	char tmpA[512];
-	const char *cmd;
     http_setup(request, httpMimeTypeHTML);
     http_html_start(request, "Set startup command");
     poststr(request,"<h4>Set/Change/Clear startup command line</h4>");
@@ -1135,16 +1101,8 @@ int http_fn_startup_command(http_request_t *request) {
 	} else {
 	}
 
-	cmd = CFG_GetShortStartupCommand();
-
-    poststr(request,"<form action=\"/startup_command\">");
-
-    poststr(request,"<label for=\"data\">Startup command:</label><br>\
-            <input type=\"text\" id=\"data\" name=\"data\"");
-    hprintf128(request," value=\"");
-    poststr(request,cmd);
-    hprintf128(request,"\"  size=\"120\"><br>");
-    poststr(request,"<br>\
+    add_label_text_field(request, "Startup command", "data", CFG_GetShortStartupCommand(), "<form action=\"/startup_command\">");
+    poststr(request,"<br><br>\
             <input type=\"submit\" value=\"Submit\">\
         </form> ");
 
@@ -1186,11 +1144,7 @@ int http_fn_uart_tool(http_request_t *request) {
 		strcpy(tmpA,"Hello UART world");
 	}
 
-    poststr(request,"<form action=\"/uart_tool\">");
-
-    poststr(request,"<label for=\"data\">data:</label><br>\
-            <input type=\"text\" id=\"data\" name=\"data\"");
-    hprintf128(request," value=\"%s\"  size=\"40\"><br>",tmpA);
+    add_label_text_field(request, "Data", "data", tmpA, "<form action=\"/uart_tool\">");
     poststr(request,"<br>\
             <input type=\"submit\" value=\"Submit\">\
         </form> ");
@@ -1247,12 +1201,12 @@ int http_fn_cfg_quick(http_request_t *request) {
 void get_Relay_PWM_Count(int *relayCount, int *pwmCount){
     (*relayCount) = 0;
     (*pwmCount) = 0;
-
+    
     for(int i = 0; i < PLATFORM_GPIO_MAX; i++) {
         int role = PIN_GetPinRoleForPinIndex(i);
         if(role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
             (*relayCount)++;
-        }
+}
         else if(role == IOR_PWM || role == IOR_PWM_n) {
             (*pwmCount)++;
         }
@@ -1265,8 +1219,8 @@ void get_Relay_PWM_Count(int *relayCount, int *pwmCount){
 int http_fn_ha_discovery(http_request_t *request) {
     int i;
     char topic[32];
-    int relayCount=0;
-    int pwmCount=0;
+    int relayCount = 0;
+    int pwmCount = 0;
 
     http_setup(request, httpMimeTypeText);
     get_Relay_PWM_Count(&relayCount, &pwmCount);
@@ -1342,7 +1296,7 @@ int http_fn_ha_cfg(http_request_t *request) {
     poststr(request,"<textarea rows=\"40\" cols=\"50\">");
 
     get_Relay_PWM_Count(&relayCount, &pwmCount);
-    
+
     if(relayCount > 0) {
         char switchAdded = 0;
 
@@ -1790,12 +1744,9 @@ int http_fn_cfg_generic(http_request_t *request) {
 	poststr(request,"<input type=\"hidden\" id=\"setFlags\" name=\"setFlags\" value=\"1\">");
 	poststr(request,"<input type=\"submit\" value=\"Submit\"></form>");
 
-    poststr(request,"<form action=\"/cfg_generic\">\
-            <label for=\"boot_ok_delay\">Uptime seconds required to mark boot as ok:</label><br>\
-            <input type=\"text\" id=\"boot_ok_delay\" name=\"boot_ok_delay\" value=\"");
-    hprintf128(request, "%i",CFG_GetBootOkSeconds());
-    poststr(request,"\"><br>");
-    poststr(request,"<input type=\"submit\" value=\"Save\"/></form>");
+    add_label_numeric_field(request, "Uptime seconds required to mark boot as ok", "boot_ok_delay", 
+        CFG_GetBootOkSeconds(), "<form action=\"/cfg_generic\">");
+    poststr(request,"<br><input type=\"submit\" value=\"Save\"/></form>");
 
     poststr(request,htmlFooterReturnToCfgLink);
     http_html_end(request);
@@ -1908,9 +1859,8 @@ int http_fn_cfg_dgr(http_request_t *request) {
 		newSendFlags = CFG_DeviceGroups_GetSendFlags();
 		newRecvFlags = CFG_DeviceGroups_GetRecvFlags();
 
-		poststr(request,"<form action=\"/cfg_dgr\"><label for=\"name\">Group name:</label><br><input type=\"text\" id=\"name\" name=\"name\" value=\"");
-		poststr(request,groupName);
-		poststr(request,"\"><br><table><tr><th>Name</th><th>Tasmota Code</th><th>Receive</th><th>Send</th></tr><tr><td>Power</td><td>1</td>");
+		add_label_text_field(request, "Group name", "name", groupName, "<form action=\"/cfg_dgr\">");
+		poststr(request,"<br><table><tr><th>Name</th><th>Tasmota Code</th><th>Receive</th><th>Send</th></tr><tr><td>Power</td><td>1</td>");
 
 		poststr(request,"     <td><input type=\"checkbox\" name=\"r_pwr\" value=\"1\"");
 		if(newRecvFlags & DGR_SHARE_POWER)
@@ -1981,10 +1931,8 @@ int http_fn_ota(http_request_t *request) {
     http_setup(request, httpMimeTypeHTML);
     http_html_start(request, "OTA system");
     poststr(request,"<p>Simple OTA system (you should rather use the OTA from App panel where you can drag and drop file easily without setting up server). Use RBL file for OTA. In the OTA below, you should paste link to RBL file (you need HTTP server).</p>");
-    poststr(request,"<form action=\"/ota_exec\">\
-            <label for=\"host\">URL for new bin file:</label><br>\
-            <input type=\"text\" id=\"host\" name=\"host\" value=\"");
-    poststr(request,"\"><br>\
+    add_label_text_field(request, "URL for new bin file", "host", "", "<form action=\"/ota_exec\">");
+    poststr(request,"<br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure?')\">\
         </form> ");
     poststr(request,htmlFooterReturnToMenu);
