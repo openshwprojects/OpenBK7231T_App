@@ -45,7 +45,7 @@ const char *mqttNames[OBK_NUM_MEASUREMENTS] = {
 	"power"
 };
 
-int changeSendAlwaysFrames = 5; // 60;
+int changeSendAlwaysFrames = 60;
 
 void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request) {
 	char tmp[128];
