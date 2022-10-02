@@ -57,6 +57,11 @@ mqtt_client_t* mqtt_client;
 static int g_timeSinceLastMQTTPublish = 0;
 static int mqtt_initialised = 0;
 static int mqtt_connect_events = 0;
+static int mqtt_connect_result = ERR_OK;
+static char *mqtt_status_message = NULL;
+static int mqtt_published_events = 0;
+static int mqtt_publish_errors = 0;
+static int mqtt_received_events = 0;
 
 typedef struct mqtt_callback_tag {
     char *topic;
@@ -163,13 +168,34 @@ static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection
 
 int MQTT_GetConnectEvents(void)
 {
-    return mqtt_connect_events;
+  return mqtt_connect_events;
 }
 
-static const char *get_error_name(int err)
+int MQTT_GetPublishEventCounter(void)
+{
+  return mqtt_published_events;
+}
+
+int MQTT_GetPublishErrorCounter(void)
+{
+  return mqtt_publish_errors;
+}
+
+int MQTT_GetReceivedEventCounter(void)
+{
+  return mqtt_received_events;
+}
+
+int MQTT_GetConnectResult(void)
+{
+    return mqtt_connect_result;
+}
+
+const char *get_error_name(int err)
 {
     switch(err)
     {
+        case ERR_OK: return "ERR_OK";
         case ERR_MEM: return "ERR_MEM";
         /** Buffer error.            */
         case ERR_BUF: return "ERR_BUF";
@@ -204,6 +230,12 @@ static const char *get_error_name(int err)
     }
     return "";
 }
+
+char *MQTT_GetStatusMessage(void)
+{
+    return mqtt_status_message;
+}
+
 // this can REPLACE callbacks, since we MAY wish to change the root topic....
 // in which case we would re-resigster all callbacks?
 int MQTT_RegisterCallback( const char *basetopic, const char *subscriptiontopic, int ID, mqtt_callback_fn callback){
@@ -436,6 +468,7 @@ static void mqtt_pub_request_cb(void *arg, err_t result)
   if(result != ERR_OK) 
   {
     addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publish result: %d(%s)\n", result, get_error_name(result));
+    mqtt_publish_errors++;
   }
 }
 
@@ -504,6 +537,7 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t *client, const
 		addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publish err: %d\n", err);
 	  }
     }
+    mqtt_published_events++;
 	MQTT_Mutex_Free();
 	return OBK_PUBLISH_OK;
   } else {
@@ -542,19 +576,24 @@ static void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t f
   //const struct mqtt_connect_client_info_t* client_info = (const struct mqtt_connect_client_info_t*)arg;
 
   // if we stored a topic in g_mqtt_request, then we found a matching callback, so use it.
-  if (g_mqtt_request.topic[0]) {
+  if (g_mqtt_request.topic[0]) 
+  {
     // note: data is NOT terminated (it may be binary...).
     g_mqtt_request.received = data;
     g_mqtt_request.receivedLen = len;
 
-  addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"MQTT in topic %s", g_mqtt_request.topic);
+    addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"MQTT in topic %s", g_mqtt_request.topic);
+    mqtt_received_events++;
 
-    for (i = 0; i < numCallbacks; i++){
+    for (i = 0; i < numCallbacks; i++)
+    {
       char *cbtopic = callbacks[i]->topic;
-      if (!strncmp(g_mqtt_request.topic, cbtopic, strlen(cbtopic))){
+      if (!strncmp(g_mqtt_request.topic, cbtopic, strlen(cbtopic)))
+      {
         // note - callback must return 1 to say it ate the mqtt, else further processing can be performed.
         // i.e. multiple people can get each topic if required.
-        if (callbacks[i]->callback(&g_mqtt_request)){
+        if (callbacks[i]->callback(&g_mqtt_request))
+        {
           return;
         }
       }
@@ -564,22 +603,23 @@ static void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t f
 
 static void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len)
 {
-	//const char *p;
+  //const char *p;
   int i;
   // unused - left here as example
   //const struct mqtt_connect_client_info_t* client_info = (const struct mqtt_connect_client_info_t*)arg;
 
-	// look for a callback with this URL and method, or HTTP_ANY
+  // look for a callback with this URL and method, or HTTP_ANY
   g_mqtt_request.topic[0] = '\0';
-	for (i = 0; i < numCallbacks; i++){
-		char *cbtopic = callbacks[i]->topic;
-		if (strncmp(topic, cbtopic, strlen(cbtopic))){
+  for (i = 0; i < numCallbacks; i++)
+  {
+    char *cbtopic = callbacks[i]->topic;
+    if (strncmp(topic, cbtopic, strlen(cbtopic)))
+    {
       strncpy(g_mqtt_request.topic, topic, sizeof(g_mqtt_request.topic) - 1);
       g_mqtt_request.topic[sizeof(g_mqtt_request.topic) - 1] = 0;
       break;
-		}
-	}
-
+    }
+  }
   addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"MQTT client in mqtt_incoming_publish_cb topic %s\n",topic);
 }
 
@@ -590,6 +630,7 @@ mqtt_request_cb(void *arg, err_t err)
 
   addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"MQTT client \"%s\" request cb: err %d\n", client_info->client_id, (int)err);
 }
+
 static void mqtt_sub_request_cb(void *arg, err_t result)
 {
   /* Just print the result code here for simplicity,
@@ -694,6 +735,9 @@ static void MQTT_do_connect(mqtt_client_t *client)
 
   if (!mqtt_host[0]){
     addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"mqtt_host empty, not starting mqtt\r\n");
+    if (mqtt_status_message != NULL)
+      free(mqtt_status_message);
+    mqtt_status_message = strdup("mqtt_host empty, not starting mqtt");
     return;
   }
 
@@ -719,6 +763,9 @@ static void MQTT_do_connect(mqtt_client_t *client)
       memcpy(&mqtt_ip, hostEntry->h_addr_list[0], len);
     } else {
       addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"mqtt_host resolves no addresses?\r\n");
+      if (mqtt_status_message != NULL)
+        free(mqtt_status_message);
+      mqtt_status_message = strdup("mqtt_host resolves no addresses?");
       return;
     }
 
@@ -734,9 +781,13 @@ static void MQTT_do_connect(mqtt_client_t *client)
             &mqtt_ip, mqtt_port,
             mqtt_connection_cb, LWIP_CONST_CAST(void*, &mqtt_client_info),
             &mqtt_client_info);
+    mqtt_connect_result = res;
     if(res != ERR_OK) 
     {
-      addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Connect error in mqtt_client_connect - code: %d\n", res);
+      addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Connect error in mqtt_client_connect - code: %d (%s)\n", res);
+      if (mqtt_status_message != NULL)
+        free(mqtt_status_message);
+      mqtt_status_message = strdup("mqtt_client_connect connect failed");
       if (res == ERR_ISCONN)
       {
         if (mqtt_client != 0)
@@ -744,11 +795,20 @@ static void MQTT_do_connect(mqtt_client_t *client)
           mqtt_disconnect(mqtt_client);
         }
       }
+    } else {
+      if (mqtt_status_message != NULL)
+        free(mqtt_status_message);
+      mqtt_status_message = NULL;
     }
   } else {
    addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"mqtt_host %s not found by gethostbyname\r\n", mqtt_host);
+   if (mqtt_status_message != NULL)
+     free(mqtt_status_message);
+   mqtt_status_message = (char*)os_malloc(256);
+   sprintf(mqtt_status_message, "mqtt_host %s not found by gethostbyname", mqtt_host);
   }
 }
+
 OBK_Publish_Result MQTT_PublishMain_StringInt(const char *sChannel, int iv)
 {
 	char valueStr[16];

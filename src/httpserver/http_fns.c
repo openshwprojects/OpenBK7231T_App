@@ -527,7 +527,11 @@ int http_fn_index(http_request_t *request) {
 
 	hprintf128(request,"<h5>Ping watchdog - %i lost, %i ok!</h5>",
 		PingWatchDog_GetTotalLost(),PingWatchDog_GetTotalReceived());
-    hprintf128(request,"<h5>MQTT State: %s</h5>", (Main_HasMQTTConnected()==1)?"connected":"disconnected");
+    hprintf128(request,"<h5>MQTT State: %s RES: %d(%s)<br>", (Main_HasMQTTConnected()==1)?"connected":"disconnected",
+            MQTT_GetConnectResult(), get_error_name(MQTT_GetConnectResult()) );
+    hprintf128(request,"MQTT ErrMsg: %s <br>", (MQTT_GetStatusMessage()!=NULL)?MQTT_GetStatusMessage():"");
+    hprintf128(request,"MQTT Stats:CONN: %d PUB: %d RECV: %d ERR: %d </h5>", MQTT_GetConnectEvents(), 
+            MQTT_GetPublishEventCounter(), MQTT_GetReceivedEventCounter(), MQTT_GetPublishErrorCounter());
 
     // for normal page loads, show the rest of the HTML
     if(!http_getArg(request->url,"state",tmpA,sizeof(tmpA))) {
