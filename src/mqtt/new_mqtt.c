@@ -18,6 +18,9 @@
 #endif
 #endif
 
+#ifndef mqtt_client_cleanup
+#define mqtt_client_cleanup(client) memset(client, 0, sizeof(mqtt_client_t))
+#endif
 
 int wal_stricmp(const char *a, const char *b) {
   int ca, cb;
