@@ -101,7 +101,12 @@ const char *obktype = "BL602";
 const char * apppage2 = "';"
 "            var obktype = 'BL602';"
 "            var device = 'http://";
-#elif PLATFORM_W600 || PLATFORM_W800
+#elif PLATFORM_W600
+const char *obktype = "W600";
+const char * apppage2 = "';"
+"            var obktype = 'W600';"
+"            var device = 'http://";
+#elif PLATFORM_W800
 const char *obktype = "W800";
 const char * apppage2 = "';"
 "            var obktype = 'W800';"
