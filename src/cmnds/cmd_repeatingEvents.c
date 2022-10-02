@@ -17,12 +17,27 @@ typedef struct repeatingEvent_s {
 	int intervalSeconds;
 	int currentInterval;
 	int times;
+	int userID;
 	struct repeatingEvent_s *next;
 } repeatingEvent_t;
 
 static repeatingEvent_t *g_repeatingEvents = 0;
 
-void RepeatingEvents_AddRepeatingEvent(const char *command, int secondsInterval, int times)
+void RepeatingEvents_CancelRepeatingEvents(int userID)
+{
+	repeatingEvent_t *ev;
+
+	// reuse existing
+	for(ev = g_repeatingEvents; ev; ev = ev->next) {
+		if(ev->userID == userID) {
+			// mark as finished
+			ev->times = 0;
+			addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"Event with id %i and cmd %s has been canceled\n",ev->userID,ev->command);
+		}
+	}
+
+}
+void RepeatingEvents_AddRepeatingEvent(const char *command, int secondsInterval, int times, int userID)
 {
 	repeatingEvent_t *ev;
 
@@ -46,6 +61,7 @@ void RepeatingEvents_AddRepeatingEvent(const char *command, int secondsInterval,
 	ev->command = strdup(command);
 	ev->intervalSeconds = secondsInterval;
 	ev->times = times;
+	ev->userID = userID;
 	// fire next frame
 	ev->currentInterval = 1;
 }
@@ -63,11 +79,15 @@ void RepeatingEvents_OnEverySecond() {
 			cur->next = 0;
 			return;
 		}
-		if(cur->times > 0) {
+		// -1 means 'forever'
+		if(cur->times > 0 || cur->times == -1) {
 			cur->currentInterval--;
 			if(cur->currentInterval<=0){
 				c_ran++;
-				cur->times -= 1;
+				// -1 means 'forever'
+				if(cur->times != -1) {
+					cur->times -= 1;
+				}
 				cur->currentInterval = cur->intervalSeconds;
 				CMD_ExecuteCommand(cur->command, COMMAND_FLAG_SOURCE_SCRIPT);
 			}
@@ -81,6 +101,8 @@ int RepeatingEvents_Cmd_AddRepeatingEvent(const void *context, const char *cmd, 
 	int interval;
 	int times;
 	const char *cmdToRepeat;
+	int userID;
+
 	// linkTuyaMCUOutputToChannel dpID channelID [varType]
 	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"addRepeatingEvent: will tokenize %s\n",args);
 	Tokenizer_TokenizeString(args);
@@ -91,17 +113,48 @@ int RepeatingEvents_Cmd_AddRepeatingEvent(const void *context, const char *cmd, 
 	}
 	interval = Tokenizer_GetArgInteger(0);
 	times = Tokenizer_GetArgInteger(1);
-	cmdToRepeat = Tokenizer_GetArgFrom(2);
+	if(!stricmp(cmd,"addRepeatingEventID")) {
+		userID = Tokenizer_GetArgInteger(2);
+		cmdToRepeat = Tokenizer_GetArgFrom(3);
+	} else { 
+		userID = 255;
+		cmdToRepeat = Tokenizer_GetArgFrom(2);
+	}
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"addRepeatingEvent: interval %i, command [%s]\n",interval,cmdToRepeat);
+	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"addRepeatingEvent: interval %i, repeats %i, command [%s]\n",interval,times,cmdToRepeat);
 
-	RepeatingEvents_AddRepeatingEvent(cmdToRepeat,interval, times);
+	RepeatingEvents_AddRepeatingEvent(cmdToRepeat,interval, times, userID);
+
+	return 1;
+}
+int RepeatingEvents_Cmd_CancelRepeatingEvent(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	int userID;
+
+	// linkTuyaMCUOutputToChannel dpID channelID [varType]
+	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"cancelRepeatingEvent: will tokenize %s\n",args);
+	Tokenizer_TokenizeString(args);
+
+	if(Tokenizer_GetArgsCount() < 1) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"cancelRepeatingEvent: requires 1 argument\n");
+		return -1;
+	}
+	userID = Tokenizer_GetArgInteger(0);
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"cancelRepeatingEvent: will cancel events with id %i\n",userID);
+
+	RepeatingEvents_CancelRepeatingEvents(userID);
 
 	return 1;
 }
 void RepeatingEvents_Init() {
-	// addRepeatingEvent 5 dsfsdfsdfds
+	// addRepeatingEvent [DelaySeconds] [Repeats] [Command With Spaces Allowed]
+	// addRepeatingEvent 5 -1 Power0 Toggle
 	CMD_RegisterCommand("addRepeatingEvent","",RepeatingEvents_Cmd_AddRepeatingEvent, "qqqq", NULL);
+	// addRepeatingEventID [DelaySeconds] [Repeats] [UserIDInteger] [Command With Spaces Allowed]
+	// addRepeatingEventID 2 -1 123 Power0 Toggle
+	CMD_RegisterCommand("addRepeatingEventID","",RepeatingEvents_Cmd_AddRepeatingEvent, "qqqq", NULL);
+	// cancelRepeatingEvent [UserIDInteger]
+	CMD_RegisterCommand("cancelRepeatingEvent","",RepeatingEvents_Cmd_CancelRepeatingEvent, "qqqq", NULL);
 
 
 }
