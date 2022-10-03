@@ -214,8 +214,10 @@ const char *get_error_name(int err)
         case ERR_WOULDBLOCK: return "ERR_WOULDBLOCK";
         /** Address in use.          */
         case ERR_USE: return "ERR_USE";
+        #if defined(ERR_ALREADY)
         /** Already connecting.      */
         case ERR_ALREADY: return "ERR_ALREADY";
+        #endif
         /** Conn already established.*/
         case ERR_ISCONN: return "ERR_ISCONN";
         /** Not connected.           */
