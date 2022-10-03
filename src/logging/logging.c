@@ -8,7 +8,6 @@
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 
-static char tmp[1024];
 int loglevel = 4; // default to info
 unsigned int logfeatures = (
     (1 << 0) |
@@ -81,11 +80,11 @@ static int g_extraSocketToSendLOG = 0;
 void LOG_SetRawSocketCallback(int newFD) {
 	g_extraSocketToSendLOG = newFD;
 }
+
 #ifdef WINDOWS
-
-
 void addLogAdv(int level, int feature, char *fmt, ...){
     va_list argList;
+    char tmp[1024];
     char *t = tmp;
     if (!((1<<feature) & logfeatures)){
         return;
@@ -96,21 +95,22 @@ void addLogAdv(int level, int feature, char *fmt, ...){
 	if(feature == LOG_FEATURE_RAW) {
 		// raw means no prefixes
 	} else {
-		strcpy(t, loglevelnames[level]);
+		strncpy(t, loglevelnames[level], (sizeof(tmp)-(3+t-tmp)));
 		t += strlen(t);
 		if (feature < sizeof(logfeaturenames)/sizeof(*logfeaturenames)){
-			strcpy(t, logfeaturenames[feature]);
+    		strncpy(t, logfeaturenames[feature], (sizeof(tmp)-(3+t-tmp)));
 			t += strlen(t);
 		}
 	}
     va_start(argList, fmt);
-    vsprintf(t, fmt, argList);
+    vsnprintf(t, (sizeof(tmp)-(3+t-tmp)), fmt, argList);
     va_end(argList);
+    if (tmp[strlen(tmp)-1]=='\n') tmp[strlen(tmp)-1]='\0';
+    if (tmp[strlen(tmp)-1]=='\r') tmp[strlen(tmp)-1]='\0';
 
     printf(tmp);
     printf("\r\n");
 }
-
 #else // from WINDOWS
 
 
@@ -121,6 +121,7 @@ static SemaphoreHandle_t g_mutex = 0;
 void addLogAdv(int level, int feature, char *fmt, ...){
     va_list argList;
     BaseType_t taken;
+    char tmp[1024];
     char *t = tmp;
     if (!((1<<feature) & logfeatures)){
         return;
@@ -140,16 +141,18 @@ void addLogAdv(int level, int feature, char *fmt, ...){
 		if(feature == LOG_FEATURE_RAW) {
 			// raw means no prefixes
 		} else {
-			strcpy(t, loglevelnames[level]);
+    		strncpy(t, loglevelnames[level], (sizeof(tmp)-(3+t-tmp)));
 			t += strlen(t);
 			if (feature < sizeof(logfeaturenames)/sizeof(*logfeaturenames)){
-				strcpy(t, logfeaturenames[feature]);
+        		strncpy(t, logfeaturenames[feature], (sizeof(tmp)-(3+t-tmp)));
 				t += strlen(t);
 			}
 		}
 		va_start(argList, fmt);
-		vsprintf(t, fmt, argList);
+        vsnprintf(t, (sizeof(tmp)-(3+t-tmp)), fmt, argList);
 		va_end(argList);
+        if (tmp[strlen(tmp)-1]=='\n') tmp[strlen(tmp)-1]='\0';
+        if (tmp[strlen(tmp)-1]=='\r') tmp[strlen(tmp)-1]='\0';
 
 		bk_printf(tmp);
 		bk_printf("\r\n");
@@ -193,7 +196,7 @@ static struct tag_logMemory {
 static int initialised = 0;
 
 static void initLog( void ) {
-    bk_printf("Entering init log...\r\n");
+    bk_printf("Entering initLog()...\r\n");
     logMemory.head = logMemory.tailserial = logMemory.tailtcp = logMemory.tailhttp = 0;
     logMemory.mutex = xSemaphoreCreateMutex( );
     initialised = 1;
@@ -201,7 +204,6 @@ static void initLog( void ) {
     startLogServer();
     HTTP_RegisterCallback( "/logs", HTTP_GET, http_getlog);
     HTTP_RegisterCallback( "/lograw", HTTP_GET, http_getlograw);
-    bk_printf("Init log done!\r\n");
 
     CMD_RegisterCommand("loglevel", "", log_command, "set log level <0..6>", NULL);
     CMD_RegisterCommand("logfeature", "", log_command, "set log feature filter, <0..10> <0|1>", NULL);
@@ -209,12 +211,14 @@ static void initLog( void ) {
     CMD_RegisterCommand("logdelay", "", log_command, "logdelay 0..n - impose ms delay after every log", NULL);
 
     bk_printf("Commands registered!\r\n");
+    bk_printf("initLog() done!\r\n");
 }
 
 
 // adds a log to the log memory
 // if head collides with either tail, move the tails on.
 void addLogAdv(int level, int feature, char *fmt, ...){
+    char tmp[1024];
     char *t = tmp;
     if (!((1<<feature) & logfeatures)){
         return;
@@ -233,19 +237,21 @@ void addLogAdv(int level, int feature, char *fmt, ...){
 	if(feature == LOG_FEATURE_RAW) {
 		// raw means no prefixes
 	} else {
-		strcpy(t, loglevelnames[level]);
+		strncpy(t, loglevelnames[level], (sizeof(tmp)-(3+t-tmp)));
 		t += strlen(t);
 		if (feature < sizeof(logfeaturenames)/sizeof(*logfeaturenames)){
-			strcpy(t, logfeaturenames[feature]);
+			strncpy(t, logfeaturenames[feature], (sizeof(tmp)-(3+t-tmp)));
 			t += strlen(t);
 		}
 	}
 
     va_start(argList, fmt);
-    vsprintf(t, fmt, argList);
+    vsnprintf(t, (sizeof(tmp)-(3+t-tmp)), fmt, argList);
     va_end(argList);
+    if (tmp[strlen(tmp)-1]=='\n') tmp[strlen(tmp)-1]='\0';
+    if (tmp[strlen(tmp)-1]=='\r') tmp[strlen(tmp)-1]='\0';
 
-    int len = strlen(tmp);
+    int len = strlen(tmp); // save 3 bytes at end for /r/n/0
     tmp[len++] = '\r';
     tmp[len++] = '\n';
     tmp[len] = '\0';
@@ -470,7 +476,7 @@ static int http_getlograw(http_request_t *request){
     // get log in small chunks, posting on http
     do {
         char buf[128];
-        len = getHttp(buf, 127);
+        len = getHttp(buf, sizeof(buf)-1);
         buf[len] = '\0';
         if (len){
             poststr(request, buf);
