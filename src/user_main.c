@@ -143,7 +143,7 @@ void Main_OnWiFiStatusChange(int code){
         case WIFI_STA_CONNECTED:
 			g_bHasWiFiConnected = 1;
 			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTED\r\n");
-			
+
 			if(bSafeMode == 0 && strlen(CFG_DeviceGroups_GetName())>0){
 				ScheduleDriverStart("DGR",5);
 			}
@@ -454,6 +454,11 @@ void Main_Init()
 		if(PIN_FindPinIndexForRole(IOR_BP5758D_CLK,-1) != -1 && PIN_FindPinIndexForRole(IOR_BP5758D_DAT,-1) != -1) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 			DRV_StartDriver("BP5758D");
+#endif
+		}
+		if(PIN_FindPinIndexForRole(IOR_BP1658CJ_CLK,-1) != -1 && PIN_FindPinIndexForRole(IOR_BP1658CJ_DAT,-1) != -1) {
+#ifndef OBK_DISABLE_ALL_DRIVERS
+			DRV_StartDriver("BP1658CJ");
 #endif
 		}
 		if(PIN_FindPinIndexForRole(IOR_BL0937_CF,-1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_CF1,-1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_SEL,-1) != -1) {

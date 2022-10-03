@@ -65,7 +65,7 @@ static void BP5758D_PreInit() {
 	BP5758D_Stop();
 
 	rtos_delay_milliseconds(BP5758D_DELAY);
-	
+
     // For it's init sequence, BP5758D just sets all fields
     BP5758D_Start(BP5758D_ADDR_SETUP);
     // Output enabled: enable all outputs since we're using a RGBCW light
@@ -111,7 +111,7 @@ void BP5758D_Write(byte *rgbcw) {
 	// Even though we could address changing channels only, in practice we observed that the lightbulb always sets all channels.
 	BP5758D_Start(BP5758D_ADDR_OUT1_GL);
 	// Brigtness values are transmitted as two bytes. The light-bulb accepts a 10-bit integer (0-1023) as an input value.
-	// The first 5bits of this input are transmitted in second byte, the second 5bits in the first byte.  
+	// The first 5bits of this input are transmitted in second byte, the second 5bits in the first byte.
 	BP5758D_WriteByte((uint8_t)(cur_col_10[0] & 0x1F));  //Red
 	BP5758D_WriteByte((uint8_t)(cur_col_10[0] >> 5));
 	BP5758D_WriteByte((uint8_t)(cur_col_10[1] & 0x1F)); //Green
@@ -171,10 +171,10 @@ static int BP5758D_RGBCW(const void *context, const char *cmd, const char *args,
 // This is how you uset RGB CW order:
 // BP5758D_Map 0 1 2 3 4
 // This is the order used on my polish Spectrum WOJ14415 bulb:
-// BP5758D_Map 2 1 0 4 3 
+// BP5758D_Map 2 1 0 4 3
 
 static int BP5758D_Map(const void *context, const char *cmd, const char *args, int flags){
-	
+
 	Tokenizer_TokenizeString(args);
 
 	if(Tokenizer_GetArgsCount()==0) {
@@ -233,7 +233,3 @@ void BP5758D_OnChannelChanged(int ch, int value) {
 	BP5758D_Write(col);
 #endif
 }
-
-
-
-

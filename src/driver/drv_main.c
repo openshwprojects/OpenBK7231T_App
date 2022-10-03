@@ -37,6 +37,7 @@ static driver_t g_drivers[] = {
 #endif
 	{ "SM2135", SM2135_Init, SM2135_RunFrame, NULL, NULL, NULL, SM2135_OnChannelChanged, false },
 	{ "BP5758D", BP5758D_Init, BP5758D_RunFrame, NULL, NULL, NULL, BP5758D_OnChannelChanged, false },
+	{ "BP1658CJ", BP1658CJ_Init, BP1658CJ_RunFrame, NULL, NULL, NULL, BP1658CJ_OnChannelChanged, false },
 	{ "tmSensor", TuyaMCU_Sensor_Init, TuyaMCU_Sensor_RunFrame, NULL, NULL, NULL, NULL, false },
 };
 
@@ -229,5 +230,3 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t *request) {
 	}
     hprintf128(request,", total %i</h5>",g_numDrivers);
 }
-
-

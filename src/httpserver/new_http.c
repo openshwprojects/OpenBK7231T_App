@@ -70,7 +70,7 @@ const char htmlBodyStart[] =
 	"<div id=\"main\">"
     "<h1>"
 	"<a target=\"_blank\" href=\"https://github.com/openshwprojects/OpenBK7231T_App/\">";
-const char htmlBodyStart2[] = 
+const char htmlBodyStart2[] =
     "</a></h1>";
 const char htmlBodyEnd[] = "</div></body></html>" ;
 
@@ -219,7 +219,7 @@ void http_html_start(http_request_t *request, const char *pagename) {
 	if (pagename) {
 		poststr(request, " - ");
 		poststr(request, pagename);
-	} 
+	}
 	poststr(request, "</title>");
 	poststr(request, htmlHeadMain);
 	poststr(request, htmlHeadStyle);
@@ -361,6 +361,8 @@ const char *htmlPinRoleNames[] = {
 	"SM2135CLK",
 	"BP5758D_DAT",
 	"BP5758D_CLK",
+  "BP1658CJ_DAT",
+	"BP1658CJ_CLK",
 	"PWM_n",
 	"error",
 	"error",
@@ -442,7 +444,7 @@ int postany(http_request_t *request, const char *str, int len){
 
 		rtos_delay_milliseconds(1);
 	}
-	
+
 	memcpy( request->reply+request->replylen, str, addlen );
 	request->replylen += addlen;
 	return (currentlen + addlen);
