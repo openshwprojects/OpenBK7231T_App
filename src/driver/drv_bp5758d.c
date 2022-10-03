@@ -19,6 +19,8 @@ static byte g_channelOrder[5] = { 0, 1, 2, 3, 4 };
 
 const byte BP5758D_DELAY = 2;
 
+bool bIsSleeping = false; //Save sleep state of Lamp
+
 static void BP5758D_Stop() {
 	HAL_PIN_SetOutputValue(g_pin_clk, 1);
 	rtos_delay_milliseconds(BP5758D_DELAY);
@@ -71,7 +73,7 @@ static void BP5758D_PreInit() {
     // Output enabled: enable all outputs since we're using a RGBCW light
     BP5758D_WriteByte(BP5758D_ENABLE_OUTPUTS_ALL);
     // Set currents for OUT1-OUT5
-    BP5758D_WriteByte(BP5758D_14MA);
+    BP5758D_WriteByte(BP5758D_14MA); //TODO: Make this configurable from webapp / console
     BP5758D_WriteByte(BP5758D_14MA);
     BP5758D_WriteByte(BP5758D_14MA);
     BP5758D_WriteByte(BP5758D_14MA);
@@ -103,9 +105,20 @@ void BP5758D_Write(byte *rgbcw) {
 
 	// If we receive 0 for all channels, we'll assume that the lightbulb is off, and activate BP5758d's sleep mode.
 	if (cur_col_10[0]==0 && cur_col_10[1]==0 && cur_col_10[2]==0 && cur_col_10[3]==0 && cur_col_10[4]==0) {
-		BP5758D_Start(BP5758D_ADDR_SLEEP);
+		bIsSleeping = true;
+		BP5758D_Start(BP5758D_ADDR_SETUP); 		//Select B1: Output enable setup
+		BP5758D_WriteByte(BP5758D_DISABLE_OUTPUTS_ALL); //Set all outputs to OFF
+		BP5758D_Stop(); 				//Stop transmission since we have to set Sleep mode (can probably be removed)
+		BP5758D_Start(BP5758D_ADDR_SLEEP); 		//Enable sleep mode
 		BP5758D_Stop();
 		return;
+	}
+	
+	if(bIsSleeping) {
+		bIsSleeping = false;				//No need to run it every time a val gets changed
+		BP5758D_Start(BP5758D_ADDR_SETUP);		//Sleep mode gets disabled too since bits 5:6 get set to 01
+		BP5758D_WriteByte(BP5758D_ENABLE_OUTPUTS_ALL);	//Set all outputs to ON
+		BP5758D_Stop();
 	}
 
 	// Even though we could address changing channels only, in practice we observed that the lightbulb always sets all channels.
