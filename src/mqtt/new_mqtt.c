@@ -18,10 +18,6 @@
 #endif
 #endif
 
-#if !defined(MQTT_CLIENT_CLEANUP)
-#define mqtt_client_cleanup(CL) { memset(CL, 0, sizeof(struct mqtt_client_s)); }
-#endif
-
 int wal_stricmp(const char *a, const char *b) {
   int ca, cb;
   do {
@@ -1035,7 +1031,9 @@ int MQTT_RunEverySecondUpdate()
 			{
 				mqtt_client = mqtt_client_new();
 			} else {
+                #if defined(MQTT_CLIENT_CLEANUP)
                 mqtt_client_cleanup(mqtt_client);
+                #endif
             }
 			MQTT_do_connect(mqtt_client);
             mqtt_connect_events++;
