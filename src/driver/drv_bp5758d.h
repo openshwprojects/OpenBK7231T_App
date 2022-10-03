@@ -2,7 +2,7 @@
 // Thx to the work of https://github.com/arendst (Tasmota) for making the initial version of the driver
 
 // Layout: Bits B[7:8]=10 (address selection identification bits), B[5:6] sleep mode if set to 00, B[0:4] Address selection
-#define BP5758D_ADDR_SLEEP   0x86  //10 00 0110: Sleep mode bits set (OUT1 gray-scale level setup selected, ignored by chip)
+#define BP5758D_ADDR_SLEEP   0x80  //10 00 0110: Sleep mode bits set (OUT1-5 enable setup selected, ignored by chip)
 #define BP5758D_ADDR_SETUP   0x90  //10 01 0000: OUT1-5 enable/disable setup - used during init
 #define BP5758D_ADDR_OUT1_CR 0x91  //10 01 0001: OUT1 current range
 #define BP5758D_ADDR_OUT2_CR 0x92  //10 01 0010: OUT2 current range
@@ -17,6 +17,7 @@
 
 // Output enabled (OUT1-5, represented by lower 5 bits)
 #define BP5758D_ENABLE_OUTPUTS_ALL 0x1F
+#define BP5758D_DISABLE_OUTPUTS_ALL 0x00
 
 // Current values: Bit 6 to 0 represent 30mA, 32mA, 16mA, 8mA, 4mA, 2mA, 1mA respectively
 #define BP5758D_10MA 0x0A // 0 0001010
