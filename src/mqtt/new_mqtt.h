@@ -27,6 +27,7 @@ enum OBK_Publish_Result_e {
 	OBK_PUBLISH_MUTEX_FAIL,
 	OBK_PUBLISH_WAS_DISCONNECTED,
 	OBK_PUBLISH_WAS_NOT_REQUIRED,
+    OBK_PUBLISH_MEM_FAIL,
 };
 
 #define OBK_PUBLISH_FLAG_MUTEX_SILENT	1
@@ -65,6 +66,14 @@ typedef int (*mqtt_callback_fn)(mqtt_request_t *request);
 // topics must be unique (i.e. you can't have /about and /aboutme or /about/me)
 // ALL topics currently must start with main device topic root.
 // ID is unique and non-zero - so that callbacks can be replaced....
+int MQTT_GetConnectEvents(void);
+const char *get_error_name(int err);
+int MQTT_GetConnectResult(void);
+char *MQTT_GetStatusMessage(void);
+int MQTT_GetPublishEventCounter(void);
+int MQTT_GetPublishErrorCounter(void);
+int MQTT_GetReceivedEventCounter(void);
+
 int MQTT_RegisterCallback( const char *basetopic, const char *subscriptiontopic, int ID, mqtt_callback_fn callback);
 int MQTT_RemoveCallback(int ID);
 

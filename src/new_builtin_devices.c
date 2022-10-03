@@ -867,3 +867,4 @@ void Setup_Device_Zemismart_Light_Switch_KS_811_3() {
 
 	CFG_Save_SetupTimer();
 }
+

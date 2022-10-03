@@ -258,4 +258,5 @@ void Setup_Device_BK7231N_KS_602_TOUCH();
 void Setup_Device_Enbrighten_WFD4103();
 void Setup_Device_Aubess_Mini_Smart_Switch_16A();
 void Setup_Device_Zemismart_Light_Switch_KS_811_3();
+
 #endif

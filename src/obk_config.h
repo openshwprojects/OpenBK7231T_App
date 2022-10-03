@@ -2,7 +2,7 @@
 // specify which parts of the app we wish to be active
 //
 #ifndef OBK_CONFIG_H
-	#define OBK_CONFIG_H
+#define OBK_CONFIG_H
 
 	#if PLATFORM_XR809
 		///#define DEBUG_USE_SIMPLE_LOGGER
@@ -22,7 +22,7 @@
 	#else
 
 		// comment out to remove component
-
+        #undef OBK_DISABLE_ALL_DRIVERS
 		// comment out to remove littlefs
 		#define BK_LITTLEFS
 
