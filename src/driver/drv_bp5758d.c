@@ -165,7 +165,10 @@ void BP5758D_Write(byte *rgbcw) {
 	return true;
 }
 
-
+// see drv_bp5758d.h for sample values
+// Also see here for Datasheet table:
+// https://user-images.githubusercontent.com/19175445/193464004-d5e8072b-d7a8-4950-8f06-118c01796616.png
+// https://imgur.com/a/VKM6jOb
 static int BP5758D_Current(const void *context, const char *cmd, const char *args, int flags){
 	byte val;
 	Tokenizer_TokenizeString(args);
@@ -250,6 +253,9 @@ static int BP5758D_Map(const void *context, const char *cmd, const char *args, i
 
 // startDriver BP5758D
 // BP5758D_RGBCW FF00000000
+//
+// to init a current value at startup - short startup command
+// backlog startDriver BP5758D; BP5758D_Current 14; 
 void BP5758D_Init() {
 
 	g_pin_clk = PIN_FindPinIndexForRole(IOR_BP5758D_CLK,g_pin_clk);
