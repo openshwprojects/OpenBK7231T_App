@@ -85,6 +85,7 @@ template_t g_templates [] = {
 	{ Setup_Device_TuyaSmartPFW02G, "Tuya Smart PFW02-G"},
     { Setup_Device_AvatarASL04, "Avatar ASL04 5v LED strip"},
     { Setup_Device_BL602_MagicHome_IR_RGB_LedStrip, "BL602 Magic Home LED RGB IR Strip"},
+    { Setup_Device_BL602_MagicHome_CCT_LedStrip, "BL602 Magic Home LED CCT Strip"},	
     { Setup_Device_Sonoff_MiniR3, "Sonoff MiniR3"},
     { Setup_Device_WiFi_DIY_Switch_WB2S_ZN268131, "WB2S WiFi DIY Switch ZN268131"},
 	{ Setup_Device_DS_102_1Gang_WB3S, "DS-102 1 Gang Switch"},

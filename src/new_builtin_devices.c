@@ -80,6 +80,18 @@ void Setup_Device_BL602_MagicHome_IR_RGB_LedStrip() {
 	CFG_Save_SetupTimer();
 }
 
+// MagicHome CCT : ZJ-BWCE-CCT v1.1
+void Setup_Device_BL602_MagicHome_CCT_LedStrip()
+{
+	CFG_ClearPins();
+
+	// White CCT
+	PIN_SetPinRoleForPinIndex(20, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(20, 1);
+
+	CFG_Save_SetupTimer();
+}	
+
 // DeviceName: Sonoff MiniR3
 // ShortDeviceName: minir3
 // https://sonoff.tech/product/minir3
