@@ -103,8 +103,6 @@ const char htmlFooterInfo[] =
 		#define USER_SW_VER "W600_Test"
 	#elif defined(PLATFORM_W800)
 		#define USER_SW_VER "W800_Test"
-	#elif defined(PLATFORM_BL602)
-		#define USER_SW_VER "BL602_Test"
     #else
         #define USER_SW_VER "unknown"
     #endif
