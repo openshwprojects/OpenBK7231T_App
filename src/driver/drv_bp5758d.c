@@ -21,11 +21,13 @@ const byte BP5758D_DELAY = 2;
 
 bool bIsSleeping = false; //Save sleep state of Lamp
 
+void usleep(int r); //delay function do 10*r nops, because rtos_delay_milliseconds is too much
+
 static void BP5758D_Stop() {
 	HAL_PIN_SetOutputValue(g_pin_clk, 1);
-	rtos_delay_milliseconds(BP5758D_DELAY);
+	usleep(BP5758D_DELAY);
 	HAL_PIN_SetOutputValue(g_pin_data, 1);
-	rtos_delay_milliseconds(BP5758D_DELAY);
+	usleep(BP5758D_DELAY);
 }
 
 
@@ -36,27 +38,27 @@ static void BP5758D_WriteByte(uint8_t value) {
 	for (bit_idx = 7; bit_idx >= 0; bit_idx--) {
 		bit = BIT_CHECK(value, bit_idx);
 		HAL_PIN_SetOutputValue(g_pin_data, bit);
-		rtos_delay_milliseconds(BP5758D_DELAY);
+		usleep(BP5758D_DELAY);
 		HAL_PIN_SetOutputValue(g_pin_clk, 1);
-		rtos_delay_milliseconds(BP5758D_DELAY);
+		usleep(BP5758D_DELAY);
 		HAL_PIN_SetOutputValue(g_pin_clk, 0);
-		rtos_delay_milliseconds(BP5758D_DELAY);
+		usleep(BP5758D_DELAY);
 	}
 	// Wait for ACK
 	// TODO: pullup?
 	HAL_PIN_Setup_Input(g_pin_data);
 	HAL_PIN_SetOutputValue(g_pin_clk, 1);
-	rtos_delay_milliseconds(BP5758D_DELAY);
+	usleep(BP5758D_DELAY);
 	HAL_PIN_SetOutputValue(g_pin_clk, 0);
-	rtos_delay_milliseconds(BP5758D_DELAY);
+	usleep(BP5758D_DELAY);
 	HAL_PIN_Setup_Output(g_pin_data);
 }
 
 static void BP5758D_Start(uint8_t addr) {
 	HAL_PIN_SetOutputValue(g_pin_data, 0);
-	rtos_delay_milliseconds(BP5758D_DELAY);
+	usleep(BP5758D_DELAY);
 	HAL_PIN_SetOutputValue(g_pin_clk, 0);
-	rtos_delay_milliseconds(BP5758D_DELAY);
+	usleep(BP5758D_DELAY);
 	BP5758D_WriteByte(addr);
 }
 
@@ -66,7 +68,7 @@ static void BP5758D_PreInit() {
 
 	BP5758D_Stop();
 
-	rtos_delay_milliseconds(BP5758D_DELAY);
+	usleep(BP5758D_DELAY);
 
     // For it's init sequence, BP5758D just sets all fields
     BP5758D_Start(BP5758D_ADDR_SETUP);
