@@ -104,7 +104,7 @@ void BP5758D_Write(byte *rgbcw) {
 		// convert 0-255 to 0-1023
 		//cur_col_10[i] = rgbcw[g_channelOrder[i]] * 4;
 		// Arduino mapping function
-      cur_col_10[i] = (rgbcw[g_channelOrder[i]] - 0x00) * (0x3FF - 0x00) / (0xFF - 0x00) + 0x00;
+    cur_col_10[i] = (rgbcw[g_channelOrder[i]] - 0x00) * (0x3FF - 0x00) / (0xFF - 0x00) + 0x00;
 	}
 
 	// If we receive 0 for all channels, we'll assume that the lightbulb is off, and activate BP5758d's sleep mode.
