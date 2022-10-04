@@ -63,13 +63,13 @@ char *logfeaturenames[] = {
     "LFS:", // = 9
     "CMD:", // = 10
     "NTP:", // = 11
-	"TuyaMCU:",// = 12
-	"I2C:",// = 13
-	"EnergyMeter:",// = 14
-	"EVENT:",// = 15
-	"DGR:",// = 16
-	"DDP:",// = 17
-	"RAW:", // = 18 raw, without any prefix
+    "TuyaMCU:",// = 12
+    "I2C:",// = 13
+    "EnergyMeter:",// = 14
+    "EVENT:",// = 15
+    "DGR:",// = 16
+    "DDP:",// = 17
+    "RAW:", // = 18 raw, without any prefix
 };
 
 
@@ -77,39 +77,55 @@ int direct_serial_log = DEFAULT_DIRECT_SERIAL_LOG;
 
 static int g_extraSocketToSendLOG = 0;
 
-void LOG_SetRawSocketCallback(int newFD) {
-	g_extraSocketToSendLOG = newFD;
+void LOG_SetRawSocketCallback(int newFD) 
+{
+    g_extraSocketToSendLOG = newFD;
 }
 
 #ifdef WINDOWS
-void addLogAdv(int level, int feature, char *fmt, ...){
+void addLogAdv(int level, int feature, char *fmt, ...)
+{
     va_list argList;
-    char tmp[1024];
-    char *t = tmp;
-    if (!((1<<feature) & logfeatures)){
-        return;
-    }
-    if (level > loglevel){
-        return;
-    }
-	if(feature == LOG_FEATURE_RAW) {
-		// raw means no prefixes
-	} else {
-		strncpy(t, loglevelnames[level], (sizeof(tmp)-(3+t-tmp)));
-		t += strlen(t);
-		if (feature < sizeof(logfeaturenames)/sizeof(*logfeaturenames)){
-    		strncpy(t, logfeaturenames[feature], (sizeof(tmp)-(3+t-tmp)));
-			t += strlen(t);
-		}
-	}
-    va_start(argList, fmt);
-    vsnprintf(t, (sizeof(tmp)-(3+t-tmp)), fmt, argList);
-    va_end(argList);
-    if (tmp[strlen(tmp)-1]=='\n') tmp[strlen(tmp)-1]='\0';
-    if (tmp[strlen(tmp)-1]=='\r') tmp[strlen(tmp)-1]='\0';
+    const size_t tmp_len = 1024;
+    char *tmp;
+    char *t;
 
-    printf(tmp);
-    printf("\r\n");
+    if (!((1<<feature) & logfeatures))
+    {
+        return;
+    }
+    if (level > loglevel)
+    {
+        return;
+    }
+
+    tmp = (char*)os_malloc(tmp_len);
+    if (tmp != NULL)
+    {
+        memset(tmp, 0, tmp_len);
+        t = tmp;
+        if (feature == LOG_FEATURE_RAW) 
+        {
+            // raw means no prefixes
+        } else {
+            strncpy(t, loglevelnames[level], (tmp_len-(3+t-tmp)));
+            t += strlen(t);
+            if (feature < sizeof(logfeaturenames)/sizeof(*logfeaturenames))
+            {
+                strncpy(t, logfeaturenames[feature], (tmp_len-(3+t-tmp)));
+                t += strlen(t);
+            }
+        }
+        va_start(argList, fmt);
+        vsnprintf(t, (tmp_len-(3+t-tmp)), fmt, argList);
+        va_end(argList);
+        if (tmp[strlen(tmp)-1]=='\n') tmp[strlen(tmp)-1]='\0';
+        if (tmp[strlen(tmp)-1]=='\r') tmp[strlen(tmp)-1]='\0';
+
+        printf(tmp);
+        printf("\r\n");
+        os_free(tmp);
+    }
 }
 #else // from WINDOWS
 
@@ -118,51 +134,67 @@ void addLogAdv(int level, int feature, char *fmt, ...){
 
 static SemaphoreHandle_t g_mutex = 0;
 
-void addLogAdv(int level, int feature, char *fmt, ...){
+void addLogAdv(int level, int feature, char *fmt, ...)
+{
     va_list argList;
     BaseType_t taken;
-    char tmp[1024];
-    char *t = tmp;
-    if (!((1<<feature) & logfeatures)){
+    const size_t tmp_len = 1024;
+    char *tmp;
+    char *t;
+
+    if (!((1<<feature) & logfeatures))
+    {
         return;
     }
-    if (level > loglevel){
+    if (level > loglevel)
+    {
         return;
     }
-	if(g_mutex == 0)
-	{
-		g_mutex = xSemaphoreCreateMutex( );
-	}
-	// TODO: semaphore
+
+    if(g_mutex == 0)
+    {
+        g_mutex = xSemaphoreCreateMutex( );
+    }
+    // TODO: semaphore
 
     taken = xSemaphoreTake( g_mutex, 100 );
-    if (taken == pdTRUE) {
+    if (taken == pdTRUE) 
+    {
+        tmp = (char*)os_malloc(tmp_len);
+        if (tmp != NULL)
+        {
+            memset(tmp, 0, tmp_len);
+            t = tmp;
+            if(feature == LOG_FEATURE_RAW) 
+            {
+                // raw means no prefixes
+            } else {
+                strncpy(t, loglevelnames[level], (tmp_len-(3+t-tmp)));
+                t += strlen(t);
+                if (feature < sizeof(logfeaturenames)/sizeof(*logfeaturenames))
+                {
+                    strncpy(t, logfeaturenames[feature], (tmp_len-(3+t-tmp)));
+                    t += strlen(t);
+                }
+            }
+            va_start(argList, fmt);
+            vsnprintf(t, (tmp_len-(3+t-tmp)), fmt, argList);
+            va_end(argList);
+            if (tmp[strlen(tmp)-1]=='\n') tmp[strlen(tmp)-1]='\0';
+            if (tmp[strlen(tmp)-1]=='\r') tmp[strlen(tmp)-1]='\0';
 
-		if(feature == LOG_FEATURE_RAW) {
-			// raw means no prefixes
-		} else {
-    		strncpy(t, loglevelnames[level], (sizeof(tmp)-(3+t-tmp)));
-			t += strlen(t);
-			if (feature < sizeof(logfeaturenames)/sizeof(*logfeaturenames)){
-        		strncpy(t, logfeaturenames[feature], (sizeof(tmp)-(3+t-tmp)));
-				t += strlen(t);
-			}
-		}
-		va_start(argList, fmt);
-        vsnprintf(t, (sizeof(tmp)-(3+t-tmp)), fmt, argList);
-		va_end(argList);
-        if (tmp[strlen(tmp)-1]=='\n') tmp[strlen(tmp)-1]='\0';
-        if (tmp[strlen(tmp)-1]=='\r') tmp[strlen(tmp)-1]='\0';
+            bk_printf(tmp);
+            bk_printf("\r\n");
+            if(g_extraSocketToSendLOG) 
+            {
+                send(g_extraSocketToSendLOG,tmp,strlen(tmp),0);
+            }
+            of_free(tmp);
 
-		bk_printf(tmp);
-		bk_printf("\r\n");
-		if(g_extraSocketToSendLOG) {
-			send(g_extraSocketToSendLOG,tmp,strlen(tmp),0);
-		}
-
-        xSemaphoreGive( g_mutex );
-        if (log_delay){
-            rtos_delay_milliseconds(log_delay);
+            xSemaphoreGive( g_mutex );
+            if (log_delay){
+                rtos_delay_milliseconds(log_delay);
+            }
         }
     }
 }
@@ -195,7 +227,8 @@ static struct tag_logMemory {
 
 static int initialised = 0;
 
-static void initLog( void ) {
+static void initLog( void ) 
+{
     bk_printf("Entering initLog()...\r\n");
     logMemory.head = logMemory.tailserial = logMemory.tailtcp = logMemory.tailhttp = 0;
     logMemory.mutex = xSemaphoreCreateMutex( );
@@ -217,9 +250,11 @@ static void initLog( void ) {
 
 // adds a log to the log memory
 // if head collides with either tail, move the tails on.
-void addLogAdv(int level, int feature, char *fmt, ...){
-    char tmp[1024];
-    char *t = tmp;
+void addLogAdv(int level, int feature, char *fmt, ...)
+{
+    const size_t tmp_len = 1024;
+    char *tmp;
+    char *t;
     if (!((1<<feature) & logfeatures)){
         return;
     }
@@ -232,74 +267,89 @@ void addLogAdv(int level, int feature, char *fmt, ...){
     if (!initialised) {
         initLog();
     }
-    BaseType_t taken = xSemaphoreTake( logMemory.mutex, 100 );
 
-	if(feature == LOG_FEATURE_RAW) {
-		// raw means no prefixes
-	} else {
-		strncpy(t, loglevelnames[level], (sizeof(tmp)-(3+t-tmp)));
-		t += strlen(t);
-		if (feature < sizeof(logfeaturenames)/sizeof(*logfeaturenames)){
-			strncpy(t, logfeaturenames[feature], (sizeof(tmp)-(3+t-tmp)));
-			t += strlen(t);
-		}
-	}
+    tmp = (char*)os_malloc(tmp_len);
+    if (tmp != NULL)
+    {
+        memset(tmp, 0, tmp_len);
+        t = tmp;
+        BaseType_t taken = xSemaphoreTake( logMemory.mutex, 100 );
+    
+        if(feature == LOG_FEATURE_RAW) 
+        {
+            // raw means no prefixes
+        } else {
+            strncpy(t, loglevelnames[level], (tmp_len-(3+t-tmp)));
+            t += strlen(t);
+            if (feature < sizeof(logfeaturenames)/sizeof(*logfeaturenames))
+            {
+                strncpy(t, logfeaturenames[feature], (tmp_len-(3+t-tmp)));
+                t += strlen(t);
+            }
+        }
 
-    va_start(argList, fmt);
-    vsnprintf(t, (sizeof(tmp)-(3+t-tmp)), fmt, argList);
-    va_end(argList);
-    if (tmp[strlen(tmp)-1]=='\n') tmp[strlen(tmp)-1]='\0';
-    if (tmp[strlen(tmp)-1]=='\r') tmp[strlen(tmp)-1]='\0';
+        va_start(argList, fmt);
+        vsnprintf(t, (tmp_len-(3+t-tmp)), fmt, argList);
+        va_end(argList);
+        if (tmp[strlen(tmp)-1]=='\n') tmp[strlen(tmp)-1]='\0';
+        if (tmp[strlen(tmp)-1]=='\r') tmp[strlen(tmp)-1]='\0';
 
-    int len = strlen(tmp); // save 3 bytes at end for /r/n/0
-    tmp[len++] = '\r';
-    tmp[len++] = '\n';
-    tmp[len] = '\0';
+        int len = strlen(tmp); // save 3 bytes at end for /r/n/0
+        tmp[len++] = '\r';
+        tmp[len++] = '\n';
+        tmp[len] = '\0';
 #if PLATFORM_XR809
-    printf(tmp);
+        printf(tmp);
 #endif
 #if PLATFORM_W600 || PLATFORM_W800
-  //  printf(tmp);
+        //printf(tmp);
 #endif
 //#if PLATFORM_BL602
-//    printf(tmp);
+        //printf(tmp);
 //#endif
-	if(g_extraSocketToSendLOG) {
-		send(g_extraSocketToSendLOG,tmp,strlen(tmp),0);
-	}
+        if(g_extraSocketToSendLOG) 
+        {
+            send(g_extraSocketToSendLOG,tmp,strlen(tmp),0);
+        }
 
-    if (direct_serial_log){
-        bk_printf(tmp);
+        if (direct_serial_log){
+            bk_printf(tmp);
+            if (taken == pdTRUE){
+                xSemaphoreGive( logMemory.mutex );
+            }
+            if (log_delay){
+                rtos_delay_milliseconds(log_delay);
+            }
+            os_free(tmp);
+            return;
+        }
+
+        for (int i = 0; i < len; i++)
+        {
+            logMemory.log[logMemory.head] = tmp[i];
+            logMemory.head = (logMemory.head + 1) % LOGSIZE;
+            if (logMemory.tailserial == logMemory.head)
+            {
+                logMemory.tailserial = (logMemory.tailserial + 1) % LOGSIZE;
+            }
+            if (logMemory.tailtcp == logMemory.head)
+            {
+                logMemory.tailtcp = (logMemory.tailtcp + 1) % LOGSIZE;
+            }
+            if (logMemory.tailhttp == logMemory.head)
+            {
+                logMemory.tailhttp = (logMemory.tailhttp + 1) % LOGSIZE;
+            }
+        }
+
         if (taken == pdTRUE){
             xSemaphoreGive( logMemory.mutex );
         }
         if (log_delay){
             rtos_delay_milliseconds(log_delay);
         }
-        return;
+        os_free(tmp);
     }
-
-    for (int i = 0; i < len; i++){
-        logMemory.log[logMemory.head] = tmp[i];
-        logMemory.head = (logMemory.head + 1) % LOGSIZE;
-        if (logMemory.tailserial == logMemory.head){
-            logMemory.tailserial = (logMemory.tailserial + 1) % LOGSIZE;
-        }
-        if (logMemory.tailtcp == logMemory.head){
-            logMemory.tailtcp = (logMemory.tailtcp + 1) % LOGSIZE;
-        }
-        if (logMemory.tailhttp == logMemory.head){
-            logMemory.tailhttp = (logMemory.tailhttp + 1) % LOGSIZE;
-        }
-    }
-
-    if (taken == pdTRUE){
-        xSemaphoreGive( logMemory.mutex );
-    }
-    if (log_delay){
-        rtos_delay_milliseconds(log_delay);
-    }
-
 }
 
 
@@ -350,10 +400,10 @@ void startLogServer(){
     OSStatus err = kNoErr;
 
     err = rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY,
-									"TCP_server",
-									(beken_thread_function_t)log_server_thread,
-									0x800,
-									(beken_thread_arg_t)0 );
+                                    "TCP_server",
+                                    (beken_thread_function_t)log_server_thread,
+                                    0x800,
+                                    (beken_thread_arg_t)0 );
     if(err != kNoErr)
     {
        bk_printf("create \"TCP_server\" thread failed!\r\n");
@@ -363,10 +413,10 @@ void startLogServer(){
 void startSerialLog(){
     OSStatus err = kNoErr;
     err = rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY,
-									"log_serial",
-									(beken_thread_function_t)log_serial_thread,
-									0x800,
-									(beken_thread_arg_t)0 );
+                                    "log_serial",
+                                    (beken_thread_function_t)log_serial_thread,
+                                    0x800,
+                                    (beken_thread_arg_t)0 );
     if(err != kNoErr)
     {
        bk_printf("create \"log_serial\" thread failed!\r\n");
@@ -411,20 +461,20 @@ void log_server_thread( beken_thread_arg_t arg )
                 //addLog( "TCP Log Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd );
                 if ( kNoErr
                      != rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY,
-							                     "Logging TCP Client",
+                                                 "Logging TCP Client",
                                                  (beken_thread_function_t)log_client_thread,
                                                  0x800,
                                                  (beken_thread_arg_t)client_fd ) )
                 {
                     close( client_fd );
-					client_fd = -1;
+                    client_fd = -1;
                 }
             }
         }
     }
 
     if ( err != kNoErr ) {
-		//addLog( "Server listener thread exit with err: %d", err );
+        //addLog( "Server listener thread exit with err: %d", err );
     }
 
     close( tcp_listen_fd );
@@ -448,7 +498,7 @@ static void log_client_thread( beken_thread_arg_t arg )
         rtos_delay_milliseconds(10);
     }
 
-	//addLog( "TCP client thread exit with err: %d", len );
+    //addLog( "TCP client thread exit with err: %d", len );
 
     close( fd );
     rtos_delete_thread( NULL );

@@ -31,6 +31,8 @@ portTickType energyCounterStamp;
 // how much update frames has passed without sending MQTT update of read values?
 int noChangeFrames[OBK_NUM_MEASUREMENTS];
 int noChangeFrameEnergyCounter;
+float lastSentEnergyCounterValue = 0.0f; 
+float changeSendThresholdEnergy = 0.1f;
 
 // how much of value have to change in order to be send over MQTT again?
 int changeSendThresholds[OBK_NUM_MEASUREMENTS] = {
@@ -46,6 +48,7 @@ const char *mqttNames[OBK_NUM_MEASUREMENTS] = {
 };
 
 int changeSendAlwaysFrames = 60;
+int changeDoNotSendMinFrames = 5;
 
 void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request) {
 	char tmp[128];
@@ -63,6 +66,22 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request) {
         energyCounter, stat_updatesSent, stat_updatesSkipped);
     hprintf128(request,tmp);
 
+}
+
+int BL0937_ResetEnergyCounter(const void *context, const char *cmd, const char *args, int cmdFlags)
+{
+    float value;
+
+    if(args==0||*args==0) 
+    {
+        energyCounter = 0.0f;
+        energyCounterStamp = xTaskGetTickCount();
+    } else {
+        value = atof(args);
+        energyCounter = value;
+        energyCounterStamp = xTaskGetTickCount();
+    }
+    return 0;
 }
 
 void BL_ProcessUpdate(float voltage, float current, float power) 
@@ -89,8 +108,10 @@ void BL_ProcessUpdate(float voltage, float current, float power)
 	for(i = 0; i < OBK_NUM_MEASUREMENTS; i++) 
     {
 		// send update only if there was a big change or if certain time has passed
-		if ( (abs(lastSentValues[i]-lastReadings[i]) > changeSendThresholds[i]) ||
-			 (noChangeFrames[i] > changeSendAlwaysFrames) )
+        // Do not send message with every measurement. 
+		if ( ((abs(lastSentValues[i]-lastReadings[i]) > changeSendThresholds[i]) &&
+               (noChangeFrames[i] >= changeDoNotSendMinFrames)) ||
+			 (noChangeFrames[i] >= changeSendAlwaysFrames) )
         {
 			noChangeFrames[i] = 0;
 			if(i == OBK_CURRENT) 
@@ -112,9 +133,11 @@ void BL_ProcessUpdate(float voltage, float current, float power)
 		}
     }
 
-    if ( (energy > 0.0f) || 
-         (noChangeFrameEnergyCounter > changeSendAlwaysFrames) )
+    if ( (((energyCounter - lastSentEnergyCounterValue) >= changeSendThresholdEnergy) &&
+          (noChangeFrameEnergyCounter >= changeDoNotSendMinFrames)) || 
+         (noChangeFrameEnergyCounter >= changeSendAlwaysFrames) )
     {
+        lastSentEnergyCounterValue = energyCounter;
         MQTT_PublishMain_StringFloat("energycounter", energyCounter);
         noChangeFrameEnergyCounter = 0;
         stat_updatesSent++;

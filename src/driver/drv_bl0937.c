@@ -120,6 +120,7 @@ int BL0937_CurrentSet(const void *context, const char *cmd, const char *args, in
 	}
 	return 0;
 }
+
 void BL0937_Init() {
 
 	// if not found, this will return the already set value
@@ -144,6 +145,7 @@ void BL0937_Init() {
 	CMD_RegisterCommand("PREF","",BL0937_PowerRef, "Sets the calibration multiplier", NULL);
 	CMD_RegisterCommand("VREF","",BL0937_VoltageRef, "Sets the calibration multiplier", NULL);
 	CMD_RegisterCommand("IREF","",BL0937_CurrentRef, "Sets the calibration multiplier", NULL);
+    CMD_RegisterCommand("EnergyCntReset", "", BL0937_ResetEnergyCounter, "Reset Energy Counter", NULL);
 }
 void BL0937_RunFrame() {
 	float final_v;

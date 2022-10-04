@@ -868,3 +868,35 @@ void Setup_Device_Zemismart_Light_Switch_KS_811_3() {
 	CFG_Save_SetupTimer();
 }
 
+void Setup_Device_TeslaSmartPlus_TSL_SPL_1() {
+
+    // CB2S
+    // Pins are:
+    // BL0937-CF1 - P6
+    // BL0937-CF - P7
+    // BL0937-SEL - P24
+    // Button - RX1 - P10
+    // Relay - P26
+    // Led - P8
+
+
+    CFG_ClearPins();
+    // Button
+    PIN_SetPinRoleForPinIndex(10, IOR_Button_n);
+    PIN_SetPinChannelForPinIndex(10, 0);
+    // Relay
+    PIN_SetPinRoleForPinIndex(8, IOR_LED_WIFI_n);
+    PIN_SetPinChannelForPinIndex(8, 0);
+    // Led
+    PIN_SetPinRoleForPinIndex(26, IOR_Relay);
+    PIN_SetPinChannelForPinIndex(26, 0);
+    // BL0937
+    PIN_SetPinRoleForPinIndex(6, IOR_BL0937_CF1);
+    PIN_SetPinChannelForPinIndex(6, 0);
+    PIN_SetPinRoleForPinIndex(7, IOR_BL0937_CF);
+    PIN_SetPinChannelForPinIndex(7, 0);
+    PIN_SetPinRoleForPinIndex(24, IOR_BL0937_SEL);
+    PIN_SetPinChannelForPinIndex(24, 0);
+
+    CFG_Save_SetupTimer();
+}
