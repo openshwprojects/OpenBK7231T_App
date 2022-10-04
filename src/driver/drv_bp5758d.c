@@ -18,6 +18,10 @@ static int g_pin_data = 24;
 static byte g_channelOrder[5] = { 0, 1, 2, 3, 4 };
 
 const byte BP5758D_DELAY = 2;
+static byte g_chosenCurrent = BP5758D_14MA;
+
+// allow user to select current by index? maybe, not yet
+//static byte g_currentTable[] = { BP5758D_2MA, BP5758D_5MA, BP5758D_8MA, BP5758D_10MA, BP5758D_14MA, BP5758D_15MA, BP5758D_65MA, BP5758D_90MA };
 
 bool bIsSleeping = false; //Save sleep state of Lamp
 
@@ -62,6 +66,25 @@ static void BP5758D_Start(uint8_t addr) {
 	BP5758D_WriteByte(addr);
 }
 
+static void BP5758D_SetCurrent(byte curVal) {
+	BP5758D_Stop();
+
+	usleep(BP5758D_DELAY);
+	g_chosenCurrent = curVal;
+
+    // For it's init sequence, BP5758D just sets all fields
+    BP5758D_Start(BP5758D_ADDR_SETUP);
+    // Output enabled: enable all outputs since we're using a RGBCW light
+    BP5758D_WriteByte(BP5758D_ENABLE_OUTPUTS_ALL);
+    // Set currents for OUT1-OUT5
+    BP5758D_WriteByte(g_chosenCurrent);
+    BP5758D_WriteByte(g_chosenCurrent);
+    BP5758D_WriteByte(g_chosenCurrent);
+    BP5758D_WriteByte(g_chosenCurrent);
+    BP5758D_WriteByte(g_chosenCurrent);
+    BP5758D_Stop();
+	usleep(BP5758D_DELAY);
+}
 static void BP5758D_PreInit() {
 	HAL_PIN_Setup_Output(g_pin_clk);
 	HAL_PIN_Setup_Output(g_pin_data);
@@ -75,11 +98,11 @@ static void BP5758D_PreInit() {
     // Output enabled: enable all outputs since we're using a RGBCW light
     BP5758D_WriteByte(BP5758D_ENABLE_OUTPUTS_ALL);
     // Set currents for OUT1-OUT5
-    BP5758D_WriteByte(BP5758D_14MA); //TODO: Make this configurable from webapp / console
-    BP5758D_WriteByte(BP5758D_14MA);
-    BP5758D_WriteByte(BP5758D_14MA);
-    BP5758D_WriteByte(BP5758D_14MA);
-    BP5758D_WriteByte(BP5758D_14MA);
+    BP5758D_WriteByte(g_chosenCurrent); //TODO: Make this configurable from webapp / console
+    BP5758D_WriteByte(g_chosenCurrent);
+    BP5758D_WriteByte(g_chosenCurrent);
+    BP5758D_WriteByte(g_chosenCurrent);
+    BP5758D_WriteByte(g_chosenCurrent);
     // Set grayscale levels ouf all outputs to 0
     BP5758D_WriteByte(0x00);
     BP5758D_WriteByte(0x00);
@@ -142,6 +165,20 @@ void BP5758D_Write(byte *rgbcw) {
 	return true;
 }
 
+
+static int BP5758D_Current(const void *context, const char *cmd, const char *args, int flags){
+	byte val;
+	Tokenizer_TokenizeString(args);
+
+	if(Tokenizer_GetArgsCount()==0) {
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "BP5758D_Current: requires one argument!\n");
+		return 0;
+	}
+	val = Tokenizer_GetArgInteger(0);
+	// reinit bulb
+	BP5758D_SetCurrent(val);
+	return 1;
+}
 
 static int BP5758D_RGBCW(const void *context, const char *cmd, const char *args, int flags){
 	const char *c = args;
@@ -222,6 +259,7 @@ void BP5758D_Init() {
 
     CMD_RegisterCommand("BP5758D_RGBCW", "", BP5758D_RGBCW, "qq", NULL);
     CMD_RegisterCommand("BP5758D_Map", "", BP5758D_Map, "qq", NULL);
+    CMD_RegisterCommand("BP5758D_Current", "", BP5758D_Current, "qq", NULL);
 }
 
 void BP5758D_RunFrame() {

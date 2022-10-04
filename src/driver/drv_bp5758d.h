@@ -20,10 +20,14 @@
 #define BP5758D_DISABLE_OUTPUTS_ALL 0x00
 
 // Current values: Bit 6 to 0 represent 30mA, 32mA, 16mA, 8mA, 4mA, 2mA, 1mA respectively
-#define BP5758D_10MA 0x0A // 0 0001010
-#define BP5758D_14MA 0x0E // 0 0001110
-#define BP5758D_15MA 0x0F // 0 0001111
-#define BP5758D_65MA 0x63 // 0 1100011
-#define BP5758D_90MA 0x7C // 0 1111100
+
+#define BP5758D_2MA 0x02 // 0 0000010 // added by me	// decimal 2
+#define BP5758D_5MA 0x05 // 0 0000101 // added by me	// decimal 5
+#define BP5758D_8MA 0x08 // 0 0001000 // added by me	// decimal 8
+#define BP5758D_10MA 0x0A // 0 0001010					// decimal 10
+#define BP5758D_14MA 0x0E // 0 0001110					// decimal 14
+#define BP5758D_15MA 0x0F // 0 0001111					// decimal 15
+#define BP5758D_65MA 0x63 // 0 1100011					// decimal 99 // wtf?
+#define BP5758D_90MA 0x7C // 0 1111100					// decimal 124 // wtf?
 
 
