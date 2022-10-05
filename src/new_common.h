@@ -292,3 +292,7 @@ int PingWatchDog_GetTotalReceived();
 
 int LWIP_GetMaxSockets();
 int LWIP_GetActiveSockets();
+
+// linear mapping function --> https://www.arduino.cc/reference/en/language/functions/math/map/
+
+#define MAP(x, in_min, in_max, out_min, out_max) (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;

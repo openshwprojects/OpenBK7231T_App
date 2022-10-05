@@ -125,7 +125,9 @@ void BP5758D_Write(byte *rgbcw) {
 
 	for(i = 0; i < 5; i++){
 		// convert 0-255 to 0-1023
-		cur_col_10[i] = rgbcw[g_channelOrder[i]] * 4;
+		//cur_col_10[i] = rgbcw[g_channelOrder[i]] * 4;
+		cur_col_10[i] = MAP(rgbcw[g_channelOrder[i]], 0, 255, 0, 1023);
+
 	}
 
 	// If we receive 0 for all channels, we'll assume that the lightbulb is off, and activate BP5758d's sleep mode.
@@ -138,7 +140,7 @@ void BP5758D_Write(byte *rgbcw) {
 		BP5758D_Stop();
 		return;
 	}
-	
+
 	if(bIsSleeping) {
 		bIsSleeping = false;				//No need to run it every time a val gets changed
 		BP5758D_Start(BP5758D_ADDR_SETUP);		//Sleep mode gets disabled too since bits 5:6 get set to 01
