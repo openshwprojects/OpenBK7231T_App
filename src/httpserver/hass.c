@@ -20,7 +20,11 @@
     "stat_t":"ESPURNA-9DE8F9/relay/0",
     "cmd_t":"ESPURNA-9DE8F9/relay/0/set"
 }
+
+Abbreviated node names - https://www.home-assistant.io/docs/mqtt/discovery/
+
 */
+
 
 /// @brief Populates HomeAssistant unique id for the entity.
 /// @param type Entity type
@@ -29,15 +33,21 @@
 void hass_populate_unique_id(ENTITY_TYPE type, int index, char *uniq_id){
     //https://developers.home-assistant.io/docs/entity_registry_index/#unique-id-requirements
     //mentions that mac can be used for unique_id and deviceName contains that.
-
     const char *longDeviceName = CFG_GetDeviceName();
+    
+    switch(type){
+        case ENTITY_LIGHT_PWM:
+            sprintf(uniq_id,"%s_%s_%d", longDeviceName, "light", index);
+            break;
 
-    //Entity type is `relay` or `light` - 5 char
-    if (type == ENTITY_LIGHT){
-        sprintf(uniq_id,"%s_%s_%d", longDeviceName, "light", index);
-    }
-    else{
-        sprintf(uniq_id,"%s_%s_%d", longDeviceName, "relay", index);
+        case ENTITY_LIGHT_RGB:
+        case ENTITY_LIGHT_RGBCW:
+            sprintf(uniq_id,"%s_%s", longDeviceName, "light");
+            break;
+        
+        case ENTITY_RELAY:
+            sprintf(uniq_id,"%s_%s_%d", longDeviceName, "relay", index);
+            break;
     }
 }
 
@@ -58,11 +68,16 @@ void hass_print_unique_id(http_request_t *request, const char *fmt, ENTITY_TYPE 
 /// @param info Device info
 void hass_populate_device_config_channel(ENTITY_TYPE type, char *uniq_id, HassDeviceInfo *info){
     //device_type is `switch` or `light`
-    if (type == ENTITY_LIGHT){
-        sprintf(info->channel, "light/%s/config", uniq_id);
-    }
-    else{
-        sprintf(info->channel, "switch/%s/config", uniq_id);
+    switch(type){
+        case ENTITY_LIGHT_PWM:
+        case ENTITY_LIGHT_RGB:
+        case ENTITY_LIGHT_RGBCW:
+            sprintf(info->channel, "light/%s/config", uniq_id);
+            break;
+        
+        case ENTITY_RELAY:
+            sprintf(info->channel, "switch/%s/config", uniq_id);
+            break;
     }
 }
 
@@ -88,21 +103,23 @@ cJSON *hass_build_device_node(cJSON *ids) {
 /// @param unique_id 
 /// @param payload_on 
 /// @param payload_off 
-void hass_populate_common(cJSON *root, int index, char *unique_id, char *payload_on, char *payload_off){
+/// @param isRGB If true, then state_topic and command_topic are not emitted.
+void hass_populate_common(cJSON *root, int index, char *unique_id, char *payload_on, char *payload_off, bool isRGB){
     const char *clientId = CFG_GetMQTTClientId();
     
     //We are stuffing CFG_GetShortDeviceName and clientId into tmp so it needs to be bigger than them
     char tmp[MAX(CGF_MQTT_CLIENT_ID_SIZE, CGF_SHORT_DEVICE_NAME_SIZE) + 16];
-
-    //Using abbreviated node names as per https://www.home-assistant.io/docs/mqtt/discovery/
+    
     sprintf(tmp,"%s %i",CFG_GetShortDeviceName(),index);
     cJSON_AddStringToObject(root, "name", tmp);
 
-    sprintf(tmp,"%s/%i/get",clientId,index);
-    cJSON_AddStringToObject(root, "stat_t", tmp);   //state_topic
+    if (isRGB == false){
+        sprintf(tmp,"%s/%i/get",clientId,index);
+        cJSON_AddStringToObject(root, "stat_t", tmp);   //state_topic
 
-    sprintf(tmp,"%s/%i/set",clientId,index);
-    cJSON_AddStringToObject(root, "cmd_t", tmp);    //command_topic
+        sprintf(tmp,"%s/%i/set",clientId,index);
+        cJSON_AddStringToObject(root, "cmd_t", tmp);    //command_topic
+    }
 
     sprintf(tmp,"%s/connected",clientId);
     cJSON_AddStringToObject(root, "avty_t", tmp);   //availability_topic
@@ -117,8 +134,9 @@ void hass_populate_common(cJSON *root, int index, char *unique_id, char *payload
 /// @param index 
 /// @param payload_on 
 /// @param payload_off 
+/// @param isRGB If true, then state_topic and command_topic are not emitted.
 /// @return 
-HassDeviceInfo *hass_init_device_info(ENTITY_TYPE type, int index, char *payload_on, char *payload_off){
+HassDeviceInfo *hass_init_device_info(ENTITY_TYPE type, int index, char *payload_on, char *payload_off, bool isRGB){
     HassDeviceInfo *info = os_malloc(sizeof(HassDeviceInfo));
     addLogAdv(LOG_INFO, LOG_FEATURE_HASS, "hass_init_device_info=%p", info);
     
@@ -135,8 +153,75 @@ HassDeviceInfo *hass_init_device_info(ENTITY_TYPE type, int index, char *payload
 
     cJSON_AddItemToObject(info->root, "dev", info->device);    //device
     
-    hass_populate_common(info->root, index, info->unique_id, payload_on, payload_off);
+    hass_populate_common(info->root, index, info->unique_id, payload_on, payload_off, isRGB);
     addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "root=%p", info->root);
+    return info;
+}
+
+/// @brief Initializes HomeAssistant relay device discovery storage.
+/// @param index
+/// @return 
+HassDeviceInfo *hass_init_relay_device_info(int index){
+    return hass_init_device_info(ENTITY_RELAY, index, "1", "0", false);
+}
+
+/// @brief Initializes HomeAssistant light device discovery storage.
+/// @param type 
+/// @param index
+/// @return 
+HassDeviceInfo *hass_init_light_device_info(ENTITY_TYPE type, int index){
+    char tmp[CGF_MQTT_CLIENT_ID_SIZE + 64];  //Used to generate values based on CFG_GetMQTTClientId
+    const char *clientId = CFG_GetMQTTClientId();
+    HassDeviceInfo *info = NULL;
+
+    switch(type){
+        case ENTITY_LIGHT_RGBCW:
+        case ENTITY_LIGHT_RGB:
+            info = hass_init_device_info(type, index, "1", "0", true);
+
+            cJSON_AddStringToObject(info->root, "rgb_cmd_tpl","{{'#%02x%02x%02x0000'|format(red, green, blue)}}");
+
+            sprintf(tmp,"cmnd/%s/led_basecolor_rgb",clientId);
+            cJSON_AddStringToObject(info->root, "rgb_stat_t", tmp);
+
+            sprintf(tmp,"cmnd/%s/led_basecolor_rgb",clientId);
+            cJSON_AddStringToObject(info->root, "rgb_cmd_t", tmp);
+
+            sprintf(tmp,"cmnd/%s/led_enableAll",clientId);
+            cJSON_AddStringToObject(info->root, "cmd_t", tmp);
+
+            sprintf(tmp,"cmnd/%s/led_dimmer",clientId);
+            cJSON_AddStringToObject(info->root, "bri_cmd_t", tmp);
+            cJSON_AddNumberToObject(info->root, "bri_scl", 100);
+            cJSON_AddStringToObject(info->root, "bri_val_tpl", "{{value_json.Dimmer}}");
+
+            if (type == ENTITY_LIGHT_RGBCW){
+                sprintf(tmp,"cmnd/%s/led_temperature",clientId);
+                cJSON_AddStringToObject(info->root, "clr_temp_cmd_t", tmp);
+
+                sprintf(tmp,"cmnd/%s/ctr",clientId);
+                cJSON_AddStringToObject(info->root, "clr_temp_stat_t", tmp);
+                
+                cJSON_AddStringToObject(info->root, "clr_temp_val_tpl", "{{value_json.CT}}");
+            }
+
+            break;
+
+        case ENTITY_LIGHT_PWM:
+            info = hass_init_device_info(type, index, "99", "0", false);
+            cJSON_AddStringToObject(info->root, "on_cmd_type", "brightness"); //on_command_type
+            cJSON_AddNumberToObject(info->root, "bri_scl", 99);   //brightness_scale
+            cJSON_AddNumberToObject(info->root, "bri_scl", 99);   //brightness_scale
+            cJSON_AddBoolToObject(info->root, "opt", cJSON_True);   //optimistic
+
+            sprintf(tmp,"%s/%i/set",clientId,index);
+            cJSON_AddStringToObject(info->root, "bri_cmd_t", tmp);    //brightness_command_topic
+            break;
+        
+        default:
+            addLogAdv(LOG_ERROR, LOG_FEATURE_HASS, "Unsupported light type %s", type);
+    }
+    
     return info;
 }
 
