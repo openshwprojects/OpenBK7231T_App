@@ -84,7 +84,7 @@ template_t g_templates [] = {
 	{ Setup_Device_TuyaSmartPFW02G, "Tuya Smart PFW02-G"},
     { Setup_Device_AvatarASL04, "Avatar ASL04 5v LED strip"},
     { Setup_Device_BL602_MagicHome_IR_RGB_LedStrip, "BL602 Magic Home LED RGB IR Strip"},
-    { Setup_Device_BL602_MagicHome_CCT_LedStrip, "BL602 Magic Home LED CCT Strip"},	
+    { Setup_Device_BL602_MagicHome_CCT_LedStrip, "BL602 Magic Home LED CCT Strip"},
     { Setup_Device_Sonoff_MiniR3, "Sonoff MiniR3"},
     { Setup_Device_WiFi_DIY_Switch_WB2S_ZN268131, "WB2S WiFi DIY Switch ZN268131"},
 	{ Setup_Device_DS_102_1Gang_WB3S, "DS-102 1 Gang Switch"},
@@ -100,7 +100,7 @@ template_t g_templates [] = {
     { Setup_Device_CasaLifeCCTDownlight, "CasaLife CCT LED Downlight SMART-AL2017-TGTS"},
     { Setup_Device_Enbrighten_WFD4103, "Enbrighten WFD4103 WiFi Switch BK7231T WB2S"} ,
     { Setup_Device_Zemismart_Light_Switch_KS_811_3, "Zemismart Light Switch (Neutral Optional) KS_811_3"} ,
-    { Setup_Device_TeslaSmartPlus_TSL_SPL_1, "Tesla Smart Plug. Model: (TSL-SPL-1)"} 
+    { Setup_Device_TeslaSmartPlus_TSL_SPL_1, "Tesla Smart Plug. Model: (TSL-SPL-1)"}
 };
 
 int g_total_templates = sizeof(g_templates)/sizeof(g_templates[0]);
@@ -126,23 +126,23 @@ void postFormAction(http_request_t *request, char *action, char *value){
 }
 
 /// @brief Generate a pair of label and field elements.
-/// @param request 
-/// @param label 
+/// @param request
+/// @param label
 /// @param fieldId This also gets used as the field name
-/// @param value 
-/// @param preContent 
+/// @param value
+/// @param preContent
 void add_label_input(http_request_t *request, char *inputType, char *label, char *fieldId, const char *value, char *preContent){
     if (strlen(preContent) > 0){
         poststr(request, preContent);
     }
-    
+
     //These individual strings should be less than 256 .. yes hprintf128 uses 256 char buffer
     hprintf128(request, "<label for=\"%s\">%s:</label><br>", fieldId, label);
     hprintf128(request, "<input type=\"%s\" id=\"%s\" name=\"%s\" value=\"%s\">", inputType, fieldId, fieldId, value);
 }
 
 /// @brief Generates a pair of label and text field elements.
-/// @param request 
+/// @param request
 /// @param label Label for the field
 /// @param fieldId Field id, this also gets used as the name
 /// @param value String value
@@ -152,7 +152,7 @@ void add_label_text_field(http_request_t *request, char *label, char *fieldId, c
 }
 
 /// @brief Generate a pair of label and numeric field elements.
-/// @param request 
+/// @param request
 /// @param label Label for the field
 /// @param fieldId Field id, this also gets used as the name
 /// @param value Integer value
@@ -203,7 +203,7 @@ int http_fn_index(http_request_t *request) {
             hprintf128(request,"<h3>Set RGB to %s!</h3>",tmpA);
             LED_SetBaseColor(0,"led_basecolor",tmpA,0);
         }
-        
+
         if(http_getArg(request->url,"off",tmpA,sizeof(tmpA))) {
             j = atoi(tmpA);
             hprintf128(request,"<h3>Disabled %i!</h3>",j);
@@ -267,7 +267,7 @@ int http_fn_index(http_request_t *request) {
         }
     }
     poststr(request, "</table>");
-    
+
     poststr(request, "<table width=\"100%\">");
     for(i = 0; i < CHANNEL_MAX; i++) {
 
@@ -281,7 +281,7 @@ int http_fn_index(http_request_t *request) {
             poststr(request, "<tr><td>");
             hprintf128(request,"Temperature Channel %i value %i C<br>",i, iValue);
             poststr(request, "</td></tr>");
-            
+
         } else if(channelType == ChType_Temperature_div10) {
 			int iValue;
 			float fValue;
@@ -339,7 +339,7 @@ int http_fn_index(http_request_t *request) {
 			const char *types5NoOff[] = { "Lowest", "Low", "Mid", "High", "Highest"};
 			int numTypes;
 			int iValue;
-			
+
 			if(channelType == ChType_OffLowMidHigh) {
 				types = types4;
 				numTypes = 4;
@@ -406,7 +406,7 @@ int http_fn_index(http_request_t *request) {
             }
         }
         else if((bRawPWMs&&h_isChannelPWM(i)) || (channelType == ChType_Dimmer)) {
-			
+
         	// PWM and dimmer both use a slider control
         	const char *inputName = h_isChannelPWM(i) ? "pwm" : "dim";
             int pwmValue;
@@ -500,7 +500,7 @@ int http_fn_index(http_request_t *request) {
             hprintf128(request,"<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">",inputName,SPECIAL_CHANNEL_TEMPERATURE);
             hprintf128(request,"<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>",SPECIAL_CHANNEL_TEMPERATURE);
 			poststr(request, "</td></tr>");
-		} 
+		}
 
 	}
     poststr(request, "</table>");
@@ -531,14 +531,14 @@ int http_fn_index(http_request_t *request) {
     hprintf128(request,"<h5>MQTT State: %s RES: %d(%s)<br>", (Main_HasMQTTConnected()==1)?"connected":"disconnected",
             MQTT_GetConnectResult(), get_error_name(MQTT_GetConnectResult()) );
     hprintf128(request,"MQTT ErrMsg: %s <br>", (MQTT_GetStatusMessage()!=NULL)?MQTT_GetStatusMessage():"");
-    hprintf128(request,"MQTT Stats:CONN: %d PUB: %d RECV: %d ERR: %d </h5>", MQTT_GetConnectEvents(), 
+    hprintf128(request,"MQTT Stats:CONN: %d PUB: %d RECV: %d ERR: %d </h5>", MQTT_GetConnectEvents(),
             MQTT_GetPublishEventCounter(), MQTT_GetReceivedEventCounter(), MQTT_GetPublishErrorCounter());
 
     // for normal page loads, show the rest of the HTML
     if(!http_getArg(request->url,"state",tmpA,sizeof(tmpA))) {
         poststr(request, "</div>"); // end div#state
 
-        // Shared UI elements 
+        // Shared UI elements
         poststr(request, "<form action=\"cfg\"><input type=\"submit\" value=\"Config\"/></form>");
 
         poststr(request, "<form action=\"/index\">"
@@ -556,7 +556,7 @@ int http_fn_index(http_request_t *request) {
         poststr(
             request,
             "<script type='text/javascript'>"
-            "var firstTime, lastTime, req=null;" 
+            "var firstTime, lastTime, req=null;"
             "eb=s=>document.getElementById(s);"
             "function showState() { "
                 "clearTimeout(firstTime);"
@@ -568,7 +568,7 @@ int http_fn_index(http_request_t *request) {
                         "if (!(document.activeElement.tagName=='INPUT' && "
                             "(document.activeElement.type=='number' || document.activeElement.type=='color'))) {"
                                 "var s=req.responseText;"
-                                "eb('state').innerHTML=s;" 
+                                "eb('state').innerHTML=s;"
                         "}"
                         "clearTimeout(firstTime);"
                         "clearTimeout(lastTime);"
@@ -608,7 +608,7 @@ int http_fn_cfg_mqtt(http_request_t *request) {
     add_label_text_field(request, "Client", "client", CFG_GetMQTTClientId(), "<br><br>");
     add_label_text_field(request, "User", "user", CFG_GetMQTTUserName(), "<br>");
     add_label_text_field(request, "Password", "password", CFG_GetMQTTPass(), "<br>");
-    
+
     poststr(request,"<br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MQTT data twice?')\">\
         </form> ");
@@ -737,7 +737,7 @@ int http_fn_cfg_ping(http_request_t *request) {
         </form> ");
     poststr(request,"<h2> Use this to enable pinger</h2>");
     add_label_text_field(request, "Host", "host", CFG_GetPingHost(), "<form action=\"/cfg_ping\">");
-    add_label_numeric_field(request, "Take action after this number of seconds with no reply", "disconnectTime", 
+    add_label_numeric_field(request, "Take action after this number of seconds with no reply", "disconnectTime",
         CFG_GetPingDisconnectedSecondsToRestart(), "<br>");
     poststr(request,"<br><br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure?')\">\
@@ -1201,12 +1201,12 @@ int http_fn_cfg_quick(http_request_t *request) {
 }
 
 /// @brief Computes the Relay and PWM count.
-/// @param relayCount 
-/// @param pwmCount 
+/// @param relayCount
+/// @param pwmCount
 void get_Relay_PWM_Count(int *relayCount, int *pwmCount){
     (*relayCount) = 0;
     (*pwmCount) = 0;
-    
+
     for(int i = 0; i < PLATFORM_GPIO_MAX; i++) {
         int role = PIN_GetPinRoleForPinIndex(i);
         if(role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
@@ -1219,8 +1219,8 @@ void get_Relay_PWM_Count(int *relayCount, int *pwmCount){
 }
 
 /// @brief Sends HomeAssistant discovery MQTT messages.
-/// @param request 
-/// @return 
+/// @param request
+/// @return
 int http_fn_ha_discovery(http_request_t *request) {
     int i;
     char topic[32];
@@ -1238,12 +1238,12 @@ int http_fn_ha_discovery(http_request_t *request) {
     if (!http_getArg(request->url, "prefix", topic, sizeof(topic))) {
         sprintf(topic, "homeassistant");    //default discovery topic is `homeassistant`
     }
-    
+
     struct cJSON_Hooks hooks;
     hooks.malloc_fn = os_malloc;
     hooks.free_fn = os_free;
     cJSON_InitHooks(&hooks);
-    
+
     if(relayCount > 0) {
         for(i = 0; i < CHANNEL_MAX; i++) {
             if(h_isChannelRelay(i)) {
@@ -1273,7 +1273,7 @@ int http_fn_ha_discovery(http_request_t *request) {
             }
         }
     }
-    
+
     poststr(request, NULL);
     return 0;
 }
@@ -1363,7 +1363,7 @@ int http_fn_ha_cfg(http_request_t *request) {
         hprintf128(request,"       color_temp_command_topic: \"cmnd/%s/led_temperature\"\n",clientId);
         hprintf128(request,"       color_temp_state_topic: \"cmnd/%s/ctr\"\n",clientId);
         hprintf128(request,"       color_temp_value_template: \"{{ value_json.CT }}\"\n");
-	} else 
+	} else
 	if(pwmCount == 3) {
 		// Enable + RGB control
         if (mqttAdded == 0){
@@ -1391,7 +1391,7 @@ int http_fn_ha_cfg(http_request_t *request) {
         //hprintf128(request,"       color_temp_state_topic: \"cmnd/%s/ctr\"\n",clientId);
         //hprintf128(request,"       color_temp_value_template: \"{{ value_json.CT }}\"\n");
 	} else if(pwmCount > 0) {
-                
+
         for(i = 0; i < CHANNEL_MAX; i++) {
             if(h_isChannelPWM(i)) {
                 if (mqttAdded == 0){
@@ -1499,7 +1499,7 @@ int http_tasmota_json_status_SNS(http_request_t *request) {
 	current = DRV_GetReading(OBK_CURRENT);
 	power = DRV_GetReading(OBK_POWER);
 #else
-	factor = 0; 
+	factor = 0;
 	voltage = 0;
 	current = 0;
 	power = 0;
@@ -1669,8 +1669,8 @@ int http_fn_cfg_pins(http_request_t *request) {
         // Anecdotally, if pins are configured badly, the
         // second-timer breaks. To reconfigure, force
         // saving the configuration instead of waiting.
-		//CFG_Save_SetupTimer(); 
-        CFG_Save_IfThereArePendingChanges(); 
+		//CFG_Save_SetupTimer();
+        CFG_Save_IfThereArePendingChanges();
         hprintf128(request, "Pins update - %i reqs, %i changed!<br><br>",iChangedRequested,iChanged);
     }
 //	strcat(outbuf,"<button type=\"button\">Click Me!</button>");
@@ -1744,6 +1744,7 @@ const char *g_obk_flagNames[] = {
 	"[MQTT] Broadcast self state on MQTT connect",
 	"[PWM] BK7231 use 600hz instead of 1khz default",
 	"[LED] remember LED driver state (RGBCW, enable, brightness, temperature) after reboot",
+  "[LED] always turn on bulb when color changes",
 	"error",
 	"error",
 };
@@ -1803,7 +1804,7 @@ int http_fn_cfg_generic(http_request_t *request) {
 	poststr(request,"<input type=\"hidden\" id=\"setFlags\" name=\"setFlags\" value=\"1\">");
 	poststr(request,"<input type=\"submit\" value=\"Submit\"></form>");
 
-    add_label_numeric_field(request, "Uptime seconds required to mark boot as ok", "boot_ok_delay", 
+    add_label_numeric_field(request, "Uptime seconds required to mark boot as ok", "boot_ok_delay",
         CFG_GetBootOkSeconds(), "<form action=\"/cfg_generic\">");
     poststr(request,"<br><input type=\"submit\" value=\"Save\"/></form>");
 

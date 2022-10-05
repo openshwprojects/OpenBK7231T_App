@@ -57,6 +57,8 @@ float g_hsv_v = 1; // 0 to 1
 float g_cfg_colorScaleToChannel = 100.0f/255.0f;
 int g_numBaseColors = 5;
 float g_brightness = 1.0f;
+// last brightness values
+int last_iVal = 100;
 
 // NOTE: in this system, enabling/disabling whole led light bulb
 // is not changing the stored channel and brightness values.
@@ -71,6 +73,7 @@ float g_cfg_brightnessMult = 0.01f;
 float led_temperature_min = HASS_TEMPERATURE_MIN;
 float led_temperature_max = HASS_TEMPERATURE_MAX;
 float led_temperature_current = 0;
+float last_led_temperature = 0;
 
 
 int isCWMode() {
@@ -284,6 +287,11 @@ void LED_SetTemperature(int tmpInteger, bool bApply) {
 	float f;
 
 	led_temperature_current = tmpInteger;
+	if(last_led_temperature != led_temperature_current && CFG_HasFlag(OBK_FLAG_LED_ON_CHANGE_TURN_ON)) {
+		g_lightEnableAll = 1;
+		last_led_temperature = led_temperature_current;
+	}
+	LED_SendEnableAllState();
 
 	f = LED_GetTemperature0to1Range();
 
@@ -359,6 +367,18 @@ float LED_GetDimmer() {
 }
 void LED_SetDimmer(int iVal) {
 
+	if(iVal < 1) {
+		g_lightEnableAll = 0;
+	}
+	else {
+		if(CFG_HasFlag(OBK_FLAG_LED_ON_CHANGE_TURN_ON)) {
+			g_lightEnableAll = 1;
+		}
+		else if(last_iVal == 0) {
+			g_lightEnableAll = 1;
+		}
+	}
+	last_iVal = iVal;
 	g_brightness = iVal * g_cfg_brightnessMult;
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
@@ -418,7 +438,12 @@ int LED_SetBaseColor(const void *context, const char *cmd, const char *args, int
    // support both '#' prefix and not
             const char *c = args;
             int val = 0;
-            ADDLOG_DEBUG(LOG_FEATURE_CMD, " BASECOLOR got %s", args);
+						if(CFG_HasFlag(OBK_FLAG_LED_ON_CHANGE_TURN_ON)) {
+     					g_lightEnableAll = 1;
+   					}
+   						LED_SendEnableAllState();
+
+						ADDLOG_DEBUG(LOG_FEATURE_CMD, " BASECOLOR got %s", args);
 
 			// some people prefix colors with #
 			if(c[0] == '#')
