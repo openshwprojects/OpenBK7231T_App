@@ -1333,7 +1333,7 @@ int http_fn_ha_cfg(http_request_t *request) {
                 }
 
                 hass_print_unique_id(request,"  - unique_id: \"%s\"\n", ENTITY_RELAY,i);
-                hprintf128(request,"    name: \"%s %i\"\n",shortDeviceName,i);
+                hprintf128(request,"    name: \"%s relay %i\"\n",shortDeviceName,i);
                 hprintf128(request,"    state_topic: \"%s/%i/get\"\n",clientId,i);
                 hprintf128(request,"    command_topic: \"%s/%i/set\"\n",clientId,i);
                 poststr(request,   "    qos: 1\n");
@@ -1414,7 +1414,7 @@ int http_fn_ha_cfg(http_request_t *request) {
                 }
 
                 hass_print_unique_id(request,"  - unique_id: \"%s\"\n", ENTITY_LIGHT_PWM,i);
-                hprintf128(request,"    name: \"%s %i\"\n",shortDeviceName,i);
+                hprintf128(request,"    name: \"%s light %i\"\n",shortDeviceName,i);
                 hprintf128(request,"    state_topic: \"%s/%i/get\"\n",clientId,i);
                 hprintf128(request,"    command_topic: \"%s/%i/set\"\n",clientId,i);
                 hprintf128(request,"    brightness_command_topic: \"%s/%i/set\"\n",clientId,i);
