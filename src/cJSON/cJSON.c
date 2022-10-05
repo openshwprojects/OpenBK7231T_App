@@ -259,6 +259,7 @@ CJSON_PUBLIC(void) cJSON_Delete(cJSON *item)
         if (!(item->type & cJSON_IsReference) && (item->child != NULL))
         {
             cJSON_Delete(item->child);
+            item->child = NULL;
         }
         if (!(item->type & cJSON_IsReference) && (item->valuestring != NULL))
         {
