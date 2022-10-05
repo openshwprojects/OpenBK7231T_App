@@ -110,8 +110,7 @@ cJSON *hass_build_device_node(cJSON *ids) {
 /// @param unique_id 
 /// @param payload_on 
 /// @param payload_off 
-/// @param isRGB If true, then state_topic and command_topic are not emitted.
-void hass_populate_common(cJSON *root, ENTITY_TYPE type, int index, char *unique_id, char *payload_on, char *payload_off, bool isRGB){
+void hass_populate_common(cJSON *root, ENTITY_TYPE type, int index, char *unique_id, char *payload_on, char *payload_off){
     const char *clientId = CFG_GetMQTTClientId();
     
     //We are stuffing CFG_GetShortDeviceName and clientId into tmp so it needs to be bigger than them. +16 for light/switch/etc.
@@ -125,6 +124,13 @@ void hass_populate_common(cJSON *root, ENTITY_TYPE type, int index, char *unique
             sprintf(tmp,"%s light %i",CFG_GetShortDeviceName(),index);
             break;
         case ENTITY_RELAY:
+            //state_topic and command_topic are only for relay
+            sprintf(tmp,"%s/%i/get",clientId,index);
+            cJSON_AddStringToObject(root, "stat_t", tmp);   //state_topic
+
+            sprintf(tmp,"%s/%i/set",clientId,index);
+            cJSON_AddStringToObject(root, "cmd_t", tmp);    //command_topic
+            
             sprintf(tmp,"%s switch %i",CFG_GetShortDeviceName(),index);
             break;
         case ENTITY_SENSOR:
@@ -132,14 +138,6 @@ void hass_populate_common(cJSON *root, ENTITY_TYPE type, int index, char *unique
     }
     
     cJSON_AddStringToObject(root, "name", tmp);
-
-    if (isRGB == false){
-        sprintf(tmp,"%s/%i/get",clientId,index);
-        cJSON_AddStringToObject(root, "stat_t", tmp);   //state_topic
-
-        sprintf(tmp,"%s/%i/set",clientId,index);
-        cJSON_AddStringToObject(root, "cmd_t", tmp);    //command_topic
-    }
 
     sprintf(tmp,"%s/connected",clientId);
     cJSON_AddStringToObject(root, "avty_t", tmp);   //availability_topic
@@ -154,9 +152,8 @@ void hass_populate_common(cJSON *root, ENTITY_TYPE type, int index, char *unique
 /// @param index 
 /// @param payload_on 
 /// @param payload_off 
-/// @param isRGB If true, then state_topic and command_topic are not emitted.
 /// @return 
-HassDeviceInfo *hass_init_device_info(ENTITY_TYPE type, int index, char *payload_on, char *payload_off, bool isRGB){
+HassDeviceInfo *hass_init_device_info(ENTITY_TYPE type, int index, char *payload_on, char *payload_off){
     HassDeviceInfo *info = os_malloc(sizeof(HassDeviceInfo));
     addLogAdv(LOG_INFO, LOG_FEATURE_HASS, "hass_init_device_info=%p", info);
     
@@ -173,7 +170,7 @@ HassDeviceInfo *hass_init_device_info(ENTITY_TYPE type, int index, char *payload
 
     cJSON_AddItemToObject(info->root, "dev", info->device);    //device
     
-    hass_populate_common(info->root, type, index, info->unique_id, payload_on, payload_off, isRGB);
+    hass_populate_common(info->root, type, index, info->unique_id, payload_on, payload_off);
     addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "root=%p", info->root);
     return info;
 }
@@ -182,7 +179,7 @@ HassDeviceInfo *hass_init_device_info(ENTITY_TYPE type, int index, char *payload
 /// @param index
 /// @return 
 HassDeviceInfo *hass_init_relay_device_info(int index){
-    return hass_init_device_info(ENTITY_RELAY, index, "1", "0", false);
+    return hass_init_device_info(ENTITY_RELAY, index, "1", "0");
 }
 
 /// @brief Initializes HomeAssistant light device discovery storage.
@@ -197,7 +194,7 @@ HassDeviceInfo *hass_init_light_device_info(ENTITY_TYPE type, int index){
     switch(type){
         case ENTITY_LIGHT_RGBCW:
         case ENTITY_LIGHT_RGB:
-            info = hass_init_device_info(type, index, "1", "0", true);
+            info = hass_init_device_info(type, index, "1", "0");
 
             cJSON_AddStringToObject(info->root, "rgb_cmd_tpl","{{'#%02x%02x%02x0000'|format(red, green, blue)}}");
 
@@ -228,7 +225,7 @@ HassDeviceInfo *hass_init_light_device_info(ENTITY_TYPE type, int index){
             break;
 
         case ENTITY_LIGHT_PWM:
-            info = hass_init_device_info(type, index, "99", "0", false);
+            info = hass_init_device_info(type, index, "99", "0");
             cJSON_AddStringToObject(info->root, "on_cmd_type", "brightness"); //on_command_type
             cJSON_AddNumberToObject(info->root, "bri_scl", 99);   //brightness_scale
             cJSON_AddNumberToObject(info->root, "bri_scl", 99);   //brightness_scale
