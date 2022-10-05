@@ -119,6 +119,11 @@ typedef struct pinsState_s {
 
 #define OBK_TOTAL_FLAGS 13
 
+
+#define CGF_MQTT_CLIENT_ID_SIZE			64
+#define CGF_SHORT_DEVICE_NAME_SIZE		32
+#define CGF_DEVICE_NAME_SIZE			64
+
 //
 // Main config structure (less than 2KB)
 //
@@ -143,7 +148,7 @@ typedef struct mainConfig_s {
 	char wifi_pass[64];
 	// MQTT information for Home Assistant
 	char mqtt_host[256];
-	char mqtt_clientId[64];
+	char mqtt_clientId[CGF_MQTT_CLIENT_ID_SIZE];
 	char mqtt_userName[64];
 	char mqtt_pass[128];
 	int mqtt_port;
@@ -152,8 +157,8 @@ typedef struct mainConfig_s {
 	// TODO?
 	byte mac[6];
 	// TODO?
-	char shortDeviceName[32];
-	char longDeviceName[64];
+	char shortDeviceName[CGF_SHORT_DEVICE_NAME_SIZE];
+	char longDeviceName[CGF_DEVICE_NAME_SIZE];
 	pinsState_t pins;
 	short startChannelValues[CHANNEL_MAX];
 	int dgr_sendFlags;
@@ -246,6 +251,7 @@ void Setup_Device_BK7231T_Raw_PrimeWiFiSmartOutletsOutdoor_CCWFIO232PK();
 void Setup_Device_AvatarASL04();
 void Setup_Device_TuyaSmartWIFISwith_4Gang_CB3S();
 void Setup_Device_BL602_MagicHome_IR_RGB_LedStrip();
+void Setup_Device_BL602_MagicHome_CCT_LedStrip();
 void Setup_Device_Sonoff_MiniR3();
 void Setup_Device_WiFi_DIY_Switch_WB2S_ZN268131();
 void Setup_Device_BK7231N_CB2S_LSPA9_BL0942();
