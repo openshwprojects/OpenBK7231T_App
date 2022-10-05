@@ -1294,7 +1294,6 @@ int http_fn_ha_cfg(http_request_t *request) {
     const char *clientId;
     int i;
     char mqttAdded = 0;
-    char *uniq_id;
     char switchAdded = 0;
     char lightAdded = 0;
 	int bLedDriverChipRunning;
