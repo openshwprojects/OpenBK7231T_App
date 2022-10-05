@@ -1159,7 +1159,8 @@ void MQTT_QueuePublish(char *topic, char *channel, char *value, int flags){
   if ((strlen(topic) > MQTT_PUBLISH_ITEM_TOPIC_LENGTH) ||
     (strlen(channel) > MQTT_PUBLISH_ITEM_CHANNEL_LENGTH) ||
     (strlen(value) > MQTT_PUBLISH_ITEM_VALUE_LENGTH)){
-    addLogAdv(LOG_ERROR,LOG_FEATURE_MQTT,"Unable to queue! Topic, channel or value exceeds size limit\r\n");
+    addLogAdv(LOG_ERROR,LOG_FEATURE_MQTT,"Unable to queue! Topic (%i), channel (%i) or value (%i) exceeds size limit\r\n", 
+      strlen(topic), strlen(channel), strlen(value));
     return;
   }
 
