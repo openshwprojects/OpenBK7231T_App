@@ -587,7 +587,9 @@ void NewLED_RestoreSavedStateIfNeeded() {
 		apply_smart_light();
 	} else {
 		// set, but do not apply (force a refresh)
-		LED_SetTemperature(led_temperature_current,0);
+		// NOW REMOVED - because users might want to force both C and W channels to 100% without using temperature calculation....
+		// FIXME - is this correct?
+		//LED_SetTemperature(led_temperature_current,0);
 	}
 
 	// "cmnd/obk8D38570E/led_dimmer_get""
