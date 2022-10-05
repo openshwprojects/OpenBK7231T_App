@@ -83,10 +83,9 @@ void BP1658CJ_Write(byte *rgbcw) {
 	for(int i = 0; i < 5; i++){
 		// convert 0-255 to 0-1023
 		//cur_col_10[i] = rgbcw[g_channelOrder[i]] * 4;
-    // Arduino mapping function
-    cur_col_10[i] = (rgbcw[g_channelOrder[i]] - 0x00) * (0x3FF - 0x00) / (0xFF - 0x00) + 0x00;
+    cur_col_10[i] = MAP(rgbcw[g_channelOrder[i]], 0, 255, 0, 1023);
 	}
-
+  //ADDLOG_DEBUG(LOG_FEATURE_CMD, "Writing to Lamp (hex): #%02X%02X%02X%02X%02X", cur_col_10[0], cur_col_10[1], cur_col_10[2], cur_col_10[3], cur_col_10[4]);
 	// If we receive 0 for all channels, we'll assume that the lightbulb is off, and activate BP1658CJ's sleep mode ([0x80] ).
 	if (cur_col_10[0]==0 && cur_col_10[1]==0 && cur_col_10[2]==0 && cur_col_10[3]==0 && cur_col_10[4]==0) {
 		BP1658CJ_Start(BP1658CJ_ADDR_SLEEP);
