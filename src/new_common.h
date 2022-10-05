@@ -61,6 +61,8 @@ This platform is not supported, error!
 #define BIT_TGL(PIN,N) (PIN ^=  (1<<N))
 #define BIT_CHECK(PIN,N) !!((PIN & (1<<N)))
 
+#define MIN(a,b)	(((a)<(b))?(a):(b))
+#define MAX(a,b)	(((a)>(b))?(a):(b))
 
 #if WINDOWS
 

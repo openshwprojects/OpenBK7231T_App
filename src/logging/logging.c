@@ -70,6 +70,7 @@ char *logfeaturenames[] = {
     "DGR:",// = 16
     "DDP:",// = 17
     "RAW:", // = 18 raw, without any prefix
+    "HASS:" // = 19
 };
 
 
