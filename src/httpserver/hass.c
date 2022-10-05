@@ -119,9 +119,12 @@ void hass_populate_common(cJSON *root, ENTITY_TYPE type, int index, char *unique
     //A device can have both relay and PWM and they would need to have separate names.
     switch(type){
         case ENTITY_LIGHT_PWM:
+            sprintf(tmp,"%s light %i",CFG_GetShortDeviceName(),index);
+            break;
         case ENTITY_LIGHT_RGB:
         case ENTITY_LIGHT_RGBCW:
-            sprintf(tmp,"%s light %i",CFG_GetShortDeviceName(),index);
+            //There can only be one RGB so we can skip including index in the name
+            sprintf(tmp,"%s light",CFG_GetShortDeviceName());
             break;
         case ENTITY_RELAY:
             //state_topic and command_topic are only for relay
