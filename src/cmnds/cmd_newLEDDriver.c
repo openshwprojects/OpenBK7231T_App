@@ -560,6 +560,9 @@ static int setHue(const void *context, const char *cmd, const char *args, int cm
 }
 
 void NewLED_InitCommands(){
+	// set, but do not apply (force a refresh)
+	LED_SetTemperature(led_temperature_current,0);
+
     CMD_RegisterCommand("led_dimmer", "", dimmer, "set output dimmer 0..100", NULL);
     CMD_RegisterCommand("led_enableAll", "", enableAll, "qqqq", NULL);
     CMD_RegisterCommand("led_basecolor_rgb", "", basecolor_rgb, "set PWN color using #RRGGBB", NULL);
@@ -586,10 +589,6 @@ void NewLED_RestoreSavedStateIfNeeded() {
 		baseColors[2] = rgb[2];
 		apply_smart_light();
 	} else {
-		// set, but do not apply (force a refresh)
-		// NOW REMOVED - because users might want to force both C and W channels to 100% without using temperature calculation....
-		// FIXME - is this correct?
-		//LED_SetTemperature(led_temperature_current,0);
 	}
 
 	// "cmnd/obk8D38570E/led_dimmer_get""
