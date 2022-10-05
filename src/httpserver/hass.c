@@ -48,6 +48,9 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char *uniq_id){
         case ENTITY_RELAY:
             sprintf(uniq_id,"%s_%s_%d", longDeviceName, "relay", index);
             break;
+
+        case ENTITY_SENSOR:
+            addLogAdv(LOG_ERROR, LOG_FEATURE_HASS, "ENTITY_SENSOR not yet supported");
     }
 }
 
@@ -78,6 +81,9 @@ void hass_populate_device_config_channel(ENTITY_TYPE type, char *uniq_id, HassDe
         case ENTITY_RELAY:
             sprintf(info->channel, "switch/%s/config", uniq_id);
             break;
+        
+        case ENTITY_SENSOR:
+            addLogAdv(LOG_ERROR, LOG_FEATURE_HASS, "ENTITY_SENSOR not yet supported");
     }
 }
 
@@ -99,18 +105,32 @@ cJSON *hass_build_device_node(cJSON *ids) {
 
 /// @brief Populates common values for HomeAssistant device discovery.
 /// @param root 
+/// @param type Entity type 
 /// @param index 
 /// @param unique_id 
 /// @param payload_on 
 /// @param payload_off 
 /// @param isRGB If true, then state_topic and command_topic are not emitted.
-void hass_populate_common(cJSON *root, int index, char *unique_id, char *payload_on, char *payload_off, bool isRGB){
+void hass_populate_common(cJSON *root, ENTITY_TYPE type, int index, char *unique_id, char *payload_on, char *payload_off, bool isRGB){
     const char *clientId = CFG_GetMQTTClientId();
     
-    //We are stuffing CFG_GetShortDeviceName and clientId into tmp so it needs to be bigger than them
-    char tmp[MAX(CGF_MQTT_CLIENT_ID_SIZE, CGF_SHORT_DEVICE_NAME_SIZE) + 16];
+    //We are stuffing CFG_GetShortDeviceName and clientId into tmp so it needs to be bigger than them. +16 for light/switch/etc.
+    char tmp[CGF_MQTT_CLIENT_ID_SIZE + 16];
     
-    sprintf(tmp,"%s %i",CFG_GetShortDeviceName(),index);
+    //A device can have both relay and PWM and they would need to have separate names.
+    switch(type){
+        case ENTITY_LIGHT_PWM:
+        case ENTITY_LIGHT_RGB:
+        case ENTITY_LIGHT_RGBCW:
+            sprintf(tmp,"%s light %i",CFG_GetShortDeviceName(),index);
+            break;
+        case ENTITY_RELAY:
+            sprintf(tmp,"%s switch %i",CFG_GetShortDeviceName(),index);
+            break;
+        case ENTITY_SENSOR:
+            addLogAdv(LOG_ERROR, LOG_FEATURE_HASS, "ENTITY_SENSOR not yet supported");
+    }
+    
     cJSON_AddStringToObject(root, "name", tmp);
 
     if (isRGB == false){
@@ -153,7 +173,7 @@ HassDeviceInfo *hass_init_device_info(ENTITY_TYPE type, int index, char *payload
 
     cJSON_AddItemToObject(info->root, "dev", info->device);    //device
     
-    hass_populate_common(info->root, index, info->unique_id, payload_on, payload_off, isRGB);
+    hass_populate_common(info->root, type, index, info->unique_id, payload_on, payload_off, isRGB);
     addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "root=%p", info->root);
     return info;
 }
