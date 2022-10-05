@@ -7,7 +7,6 @@
 #include "../cmnds/cmd_public.h"
 #include "../driver/drv_tuyaMCU.h"
 #include "../driver/drv_public.h"
-#include "../logging/logging.h"
 #include "../hal/hal_wifi.h"
 #include "../hal/hal_pins.h"
 #include "../hal/hal_flashConfig.h"
@@ -1325,10 +1324,7 @@ int http_fn_ha_cfg(http_request_t *request) {
                     switchAdded=1;
                 }
 
-                uniq_id = hass_build_unique_id(ENTITY_RELAY,i);
-                hprintf128(request,"  - unique_id: \"%s\"\n",uniq_id);
-                os_free(uniq_id);
-
+                hass_print_unique_id(request,"  - unique_id: \"%s\"\n", ENTITY_RELAY,i);
                 hprintf128(request,"    name: \"%s %i\"\n",shortDeviceName,i);
                 hprintf128(request,"    state_topic: \"%s/%i/get\"\n",clientId,i);
                 hprintf128(request,"    command_topic: \"%s/%i/set\"\n",clientId,i);
@@ -1352,13 +1348,8 @@ int http_fn_ha_cfg(http_request_t *request) {
             switchAdded=1;
         }
 
-        uniq_id = hass_build_unique_id(ENTITY_LIGHT,i);
-        hprintf128(request,"  - unique_id: \"%s\"\n",uniq_id);
-        os_free(uniq_id);
-
+        hass_print_unique_id(request,"  - unique_id: \"%s\"\n", ENTITY_LIGHT,i);
         hprintf128(request,"    name: \"%s %i\"\n",shortDeviceName,i);
-
-
         hprintf128(request,"       rgb_command_template: \"{{ '#%02x%02x%02x0000' | format(red, green, blue)}}\"\n");
         hprintf128(request,"       rgb_state_topic: \"cmnd/%s/led_basecolor_rgb\"\n",clientId);
         hprintf128(request,"       rgb_command_topic: \"cmnd/%s/led_basecolor_rgb\"\n",clientId);
@@ -1384,13 +1375,8 @@ int http_fn_ha_cfg(http_request_t *request) {
             switchAdded=1;
         }
 
-        uniq_id = hass_build_unique_id(ENTITY_LIGHT,i);
-        hprintf128(request,"  - unique_id: \"%s\"\n",uniq_id);
-        os_free(uniq_id);
-
+        hass_print_unique_id(request,"  - unique_id: \"%s\"\n", ENTITY_LIGHT,i);
         hprintf128(request,"    name: \"%s %i\"\n",shortDeviceName,i);
-
-
         hprintf128(request,"       rgb_command_template: \"{{ '#%02x%02x%02x0000' | format(red, green, blue)}}\"\n");
         hprintf128(request,"       rgb_state_topic: \"cmnd/%s/led_basecolor_rgb\"\n",clientId);
         hprintf128(request,"       rgb_command_topic: \"cmnd/%s/led_basecolor_rgb\"\n",clientId);
@@ -1417,10 +1403,7 @@ int http_fn_ha_cfg(http_request_t *request) {
                     lightAdded=1;
                 }
 
-                uniq_id = hass_build_unique_id(ENTITY_LIGHT,i);
-                hprintf128(request,"  - unique_id: \"%s\"\n",uniq_id);
-                os_free(uniq_id);
-
+                hass_print_unique_id(request,"  - unique_id: \"%s\"\n", ENTITY_LIGHT,i);
                 hprintf128(request,"    name: \"%s %i\"\n",shortDeviceName,i);
                 hprintf128(request,"    state_topic: \"%s/%i/get\"\n",clientId,i);
                 hprintf128(request,"    command_topic: \"%s/%i/set\"\n",clientId,i);

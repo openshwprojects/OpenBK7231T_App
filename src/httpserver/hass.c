@@ -1,6 +1,7 @@
 #include "hass.h"
 #include "../new_common.h"
 #include "../new_cfg.h"
+#include "../logging/logging.h"
 
 /* Sample Hass Discovery JSON
 {
@@ -21,44 +22,48 @@
 }
 */
 
-/// @brief Returns HomeAssistant unique id for the entity. The caller needs to free the returned pointer.
+/// @brief Populates HomeAssistant unique id for the entity.
 /// @param type Entity type
 /// @param index Entity index
-/// @return 
-char *hass_build_unique_id(ENTITY_TYPE type, int index){
-    //https://developers.home-assistant.io/docs/entity_registry_index/#unique-id-requirements mentions that mac can be used for
-    //unique_id and I think that longDeviceName should contain that e.g. longDeviceName_relay_1
+/// @param uniq_id Array to populate (should be of size HASS_UNIQUE_ID_SIZE)
+void hass_populate_unique_id(ENTITY_TYPE type, int index, char *uniq_id){
+    //https://developers.home-assistant.io/docs/entity_registry_index/#unique-id-requirements
+    //mentions that mac can be used for unique_id and deviceName contains that.
 
     const char *longDeviceName = CFG_GetDeviceName();
 
     //Entity type is `relay` or `light` - 5 char
-    char *uniq_id = (char *)os_malloc(strlen(longDeviceName) + 1 + 5 + 1 + 4);    //4 for index and nul char
     if (type == ENTITY_LIGHT){
         sprintf(uniq_id,"%s_%s_%d", longDeviceName, "light", index);
     }
     else{
         sprintf(uniq_id,"%s_%s_%d", longDeviceName, "relay", index);
     }
-
-    return uniq_id;
 }
 
-/// @brief Returns HomeAssistant device configuration MQTT channel e.g. switch/enbrighten_9de8f9_relay_0/config. The caller needs to free the returned pointer.
+/// @brief Prints HomeAssistant unique id for the entity.
+/// @param request
+/// @param fmt
+/// @param type Entity type
+/// @param index Entity index
+void hass_print_unique_id(http_request_t *request, const char *fmt, ENTITY_TYPE type, int index){
+    char uniq_id[HASS_UNIQUE_ID_SIZE];
+    hass_populate_unique_id(type, index, uniq_id);
+    hprintf128(request, fmt, uniq_id);
+}
+
+/// @brief Populates HomeAssistant device configuration MQTT channel e.g. switch/enbrighten_9de8f9_relay_0/config.
 /// @param type Entity type
 /// @param uniq_id Entity unique id
-/// @return 
-char *hass_get_device_config_channel(ENTITY_TYPE type, char *uniq_id){
-    //device_type is `switch` or `light` - 6 char
-    char *channel = (char *)os_malloc(6 + 1 + strlen(uniq_id) + 7 + 1);
-
+/// @param info Device info
+void hass_populate_device_config_channel(ENTITY_TYPE type, char *uniq_id, HassDeviceInfo *info){
+    //device_type is `switch` or `light`
     if (type == ENTITY_LIGHT){
-        sprintf(channel, "light/%s/config", uniq_id);
+        sprintf(info->channel, "light/%s/config", uniq_id);
     }
     else{
-        sprintf(channel, "switch/%s/config", uniq_id);
+        sprintf(info->channel, "switch/%s/config", uniq_id);
     }
-
-    return channel;
 }
 
 /// @brief Builds HomeAssistant device discovery info. The caller needs to free the returned pointer.
@@ -85,7 +90,9 @@ cJSON *hass_build_device_node(cJSON *ids) {
 /// @param payload_off 
 void hass_populate_common(cJSON *root, int index, char *unique_id, char *payload_on, char *payload_off){
     const char *clientId = CFG_GetMQTTClientId();
-    char tmp[64];  //CFG_GetShortDeviceName is 32 char max so 64 would be enough
+    
+    //We are stuffing CFG_GetShortDeviceName and clientId into tmp so it needs to be bigger than them
+    char tmp[MAX(CGF_MQTT_CLIENT_ID_SIZE, CGF_SHORT_DEVICE_NAME_SIZE) + 16];
 
     //Using abbreviated node names as per https://www.home-assistant.io/docs/mqtt/discovery/
     sprintf(tmp,"%s %i",CFG_GetShortDeviceName(),index);
@@ -100,8 +107,8 @@ void hass_populate_common(cJSON *root, int index, char *unique_id, char *payload
     sprintf(tmp,"%s/connected",clientId);
     cJSON_AddStringToObject(root, "avty_t", tmp);   //availability_topic
 
-    cJSON_AddStringToObject(root, "pl_on", "1");    //payload_on
-    cJSON_AddStringToObject(root, "pl_off", "0");   //payload_off
+    cJSON_AddStringToObject(root, "pl_on", payload_on);    //payload_on
+    cJSON_AddStringToObject(root, "pl_off", payload_off);   //payload_off
     cJSON_AddStringToObject(root, "uniq_id", unique_id);  //unique_id
 }
 
@@ -113,19 +120,23 @@ void hass_populate_common(cJSON *root, int index, char *unique_id, char *payload
 /// @return 
 HassDeviceInfo *hass_init_device_info(ENTITY_TYPE type, int index, char *payload_on, char *payload_off){
     HassDeviceInfo *info = os_malloc(sizeof(HassDeviceInfo));
-
-    info->unique_id = hass_build_unique_id(type, index);
-    info->channel = hass_get_device_config_channel(type, info->unique_id);
-
+    addLogAdv(LOG_INFO, LOG_FEATURE_HASS, "hass_init_device_info=%p", info);
+    
+    hass_populate_unique_id(type, index, info->unique_id);
+    addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "unique_id=%s", info->unique_id);
+    
+    hass_populate_device_config_channel(type, info->unique_id, info);
+  
     info->ids = cJSON_CreateArray();
     cJSON_AddItemToArray(info->ids, cJSON_CreateString(CFG_GetDeviceName()));
 
     info->device = hass_build_device_node(info->ids);
-
     info->root = cJSON_CreateObject();
+
     cJSON_AddItemToObject(info->root, "dev", info->device);    //device
     
     hass_populate_common(info->root, index, info->unique_id, payload_on, payload_off);
+    addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "root=%p", info->root);
     return info;
 }
 
@@ -133,7 +144,7 @@ HassDeviceInfo *hass_init_device_info(ENTITY_TYPE type, int index, char *payload
 /// @param info 
 /// @return 
 char *hass_build_discovery_json(HassDeviceInfo *info){
-    info->json = cJSON_PrintUnformatted(info->root);
+    cJSON_PrintPreallocated(info->root, info->json, HASS_JSON_SIZE, 0);
     return info->json;
 }
 
@@ -141,14 +152,11 @@ char *hass_build_discovery_json(HassDeviceInfo *info){
 /// @param info 
 void hass_free_device_info(HassDeviceInfo *info){
     if (info == NULL) return;
-
-    os_free(info->unique_id);
-    os_free(info->channel);
-    os_free(info->json);
+    addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "hass_free_device_info \r\n");
     
-    cJSON_Delete(info->root);
-    cJSON_Delete(info->device);
-    cJSON_Delete(info->ids);
+    if (info->root != NULL){
+        cJSON_Delete(info->root);
+    } 
 
     os_free(info);
 }
