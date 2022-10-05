@@ -70,7 +70,7 @@ float g_cfg_brightnessMult = 0.01f;
 //in homeassistant/util/color.py as HASS_COLOR_MIN and HASS_COLOR_MAX).
 float led_temperature_min = HASS_TEMPERATURE_MIN;
 float led_temperature_max = HASS_TEMPERATURE_MAX;
-float led_temperature_current = 0;
+float led_temperature_current = HASS_TEMPERATURE_MIN;
 
 
 int isCWMode() {
@@ -586,8 +586,8 @@ void NewLED_RestoreSavedStateIfNeeded() {
 		baseColors[2] = rgb[2];
 		apply_smart_light();
 	} else {
-		// set, but do not apply
-		LED_SetTemperature(250,0);
+		// set, but do not apply (force a refresh)
+		LED_SetTemperature(led_temperature_current,0);
 	}
 
 	// "cmnd/obk8D38570E/led_dimmer_get""
