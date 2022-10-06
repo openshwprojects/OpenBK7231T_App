@@ -1378,7 +1378,7 @@ int http_fn_ha_cfg(http_request_t *request) {
         hass_print_unique_id(request,"  - unique_id: \"%s\"\n", ENTITY_LIGHT,i);
         hprintf128(request,"    name: \"%s %i\"\n",shortDeviceName,i);
         hprintf128(request,"       rgb_command_template: \"{{ '#%02x%02x%02x0000' | format(red, green, blue)}}\"\n");
-        hprintf128(request,"       rgb_state_topic: \"cmnd/%s/led_basecolor_rgb\"\n",clientId);
+        hprintf128(request,"       rgb_state_topic: \"%s/led_basecolor_rgb/get\"\n",clientId);
         hprintf128(request,"       rgb_command_topic: \"cmnd/%s/led_basecolor_rgb\"\n",clientId);
         hprintf128(request,"       command_topic: \"cmnd/%s/led_enableAll\"\n",clientId);
         hprintf128(request,"       availability_topic: \"%s/connected\"\n",clientId);
