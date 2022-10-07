@@ -976,8 +976,16 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
       break;
   }
   
-	if(CHANNEL_IsInUse(idx)) {
-		 MQTT_ChannelPublish(g_publishItemIndex, OBK_PUBLISH_FLAG_MUTEX_SILENT);
+	// if LED driver is active, do not publish raw channel values
+	if(LED_IsRunningDriver() == false && idx >= 0) {
+		// This is because raw channels are like PWM values, RGBCW has 5 raw channels
+		// (unless it has I2C LED driver)
+		// We do not need raw values for RGBCW lights (or RGB, etc)
+		// because we are using led_basecolor_rgb, led_dimmer, led_enableAll, etc
+		// NOTE: negative indexes are not channels - they are special values
+		if(CHANNEL_IsInUse(idx)) {
+			 MQTT_ChannelPublish(g_publishItemIndex, OBK_PUBLISH_FLAG_MUTEX_SILENT);
+		}
 	}
 	return OBK_PUBLISH_WAS_NOT_REQUIRED; // didnt publish
 }
