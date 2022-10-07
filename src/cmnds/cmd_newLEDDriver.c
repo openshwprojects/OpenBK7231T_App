@@ -259,6 +259,23 @@ int LED_GetMode() {
 	return g_lightMode;
 }
 
+const char *GetLightModeStr(int mode) {
+	if(mode == Light_All)
+		return "all";
+	if(mode == Light_Temperature)
+		return "cw";
+	if(mode == Light_RGB)
+		return "rgb";
+	return "er";
+}
+void SET_LightMode(int newMode) {
+	if(g_lightMode != newMode) {
+        ADDLOG_INFO(LOG_FEATURE_CMD, "Changing LightMode from %s to %s",
+			GetLightModeStr(g_lightMode),
+			GetLightModeStr(newMode));
+		g_lightMode = newMode;
+	}
+}
 OBK_Publish_Result LED_SendCurrentLightMode() {
 
 	if(g_lightMode == Light_Temperature) {
@@ -291,7 +308,8 @@ void LED_SetTemperature(int tmpInteger, bool bApply) {
 	baseColors[4] = (255.0f) * f;
 
 	if(bApply) {
-		g_lightMode = Light_Temperature;
+		// set g_lightMode
+		SET_LightMode(Light_Temperature);
 		sendTemperatureChange();
 		apply_smart_light();
 	}
@@ -393,7 +411,7 @@ static int dimmer(const void *context, const char *cmd, const char *args, int cm
 	//return 0;
 }
 void LED_SetFinalRGB(byte r, byte g, byte b) {
-	g_lightMode = Light_RGB;
+	SET_LightMode(Light_RGB);
 
 	baseColors[0] = r;
 	baseColors[1] = g;
@@ -425,9 +443,9 @@ int LED_SetBaseColor(const void *context, const char *cmd, const char *args, int
 				c++;
 
 			if(bAll) {
-				g_lightMode = Light_All;
+				SET_LightMode(Light_All);
 			} else {
-				g_lightMode = Light_RGB;
+				SET_LightMode(Light_RGB);
 			}
 
 			g_numBaseColors = 0;
@@ -581,7 +599,7 @@ void NewLED_RestoreSavedStateIfNeeded() {
 		byte rgb[3];
 		byte mod;
 		HAL_FlashVars_ReadLED(&mod, &brig, &tmp, rgb);
-		g_lightMode = mod;
+		SET_LightMode(mod);
 		g_brightness = brig * g_cfg_brightnessMult;
 		LED_SetTemperature(tmp,0);
 		baseColors[0] = rgb[0];
