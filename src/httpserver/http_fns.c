@@ -1371,6 +1371,7 @@ int http_fn_ha_cfg(http_request_t *request) {
         hprintf128(request,"       brightness_scale: 100\n");
         hprintf128(request,"       color_temp_command_topic: \"cmnd/%s/led_temperature\"\n",clientId);
         hprintf128(request,"       color_temp_state_topic: \"%s/led_temperature/get\"\n",clientId);
+        
 	} else 
 	if(pwmCount == 3) {
 		// Enable + RGB control
