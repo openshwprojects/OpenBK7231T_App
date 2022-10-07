@@ -177,6 +177,8 @@ HassDeviceInfo *hass_init_light_device_info(ENTITY_TYPE type, int index){
             sprintf(g_hassBuffer,"cmnd/%s/led_basecolor_rgb",clientId);
             cJSON_AddStringToObject(info->root, "rgb_cmd_t", g_hassBuffer);  //rgb_command_topic
 
+            sprintf(g_hassBuffer,"%s/led_enableAll/get",clientId);
+            cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);  //state_topic
             sprintf(g_hassBuffer,"cmnd/%s/led_enableAll",clientId);
             cJSON_AddStringToObject(info->root, COMMAND_TOPIC_KEY, g_hassBuffer);  //command_topic
 
