@@ -213,7 +213,9 @@ static OBK_Publish_Result sendColorChange() {
 	c[1] = (byte)(baseColors[1]);
 	c[2] = (byte)(baseColors[2]);
 
-	sprintf(s,"%02X%02X%02X",c[0],c[1],c[2]);
+	//https://www.home-assistant.io/integrations/light.mqtt/
+	//Hass expects the payload to be RGB values separated by commas
+	sprintf(s,"%i,%i,%i",c[0],c[1],c[2]);
 
 	return MQTT_PublishMain_StringString("led_basecolor_rgb",s, 0);
 }
@@ -565,7 +567,7 @@ void NewLED_InitCommands(){
 
     CMD_RegisterCommand("led_dimmer", "", dimmer, "set output dimmer 0..100", NULL);
     CMD_RegisterCommand("led_enableAll", "", enableAll, "qqqq", NULL);
-    CMD_RegisterCommand("led_basecolor_rgb", "", basecolor_rgb, "set PWN color using #RRGGBB", NULL);
+    CMD_RegisterCommand("led_basecolor_rgb", "", basecolor_rgb, "set PWN color using R,G,B", NULL);
     CMD_RegisterCommand("led_basecolor_rgbcw", "", basecolor_rgbcw, "set PWN color using #RRGGBB[cw][ww]", NULL);
     CMD_RegisterCommand("led_temperature", "", temperature, "set qqqq", NULL);
     CMD_RegisterCommand("led_brightnessMult", "", brightnessMult, "set qqqq", NULL);
