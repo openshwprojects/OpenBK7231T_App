@@ -3,31 +3,18 @@
 #include "../new_cfg.h"
 #include "../logging/logging.h"
 
-/* Sample Hass Discovery JSON
-{
-    "dev":{
-        "ids":["espurna_9de8f9"],
-        "name":"ESPURNA_9DE8F9",
-        "sw":"1.15.0-dev.git0e55397a",
-        "mf":"NODEMCU",
-        "mdl":"LOLIN"
-    },
-    "avty_t":"ESPURNA-9DE8F9/status",
-    "pl_on":"1",
-    "pl_off":"0",
-    "uniq_id":"espurna_9de8f9_relay_0",
-    "name":"ESPURNA_9DE8F9 0",
-    "stat_t":"ESPURNA-9DE8F9/relay/0",
-    "cmd_t":"ESPURNA-9DE8F9/relay/0/set"
-}
-
+/*
 Abbreviated node names - https://www.home-assistant.io/docs/mqtt/discovery/
-
+Light - https://www.home-assistant.io/integrations/light.mqtt/
+Switch - https://www.home-assistant.io/integrations/switch.mqtt/
 */
 
-//Buffer for populates values with cJSON_Add* calls
-//We are values based on CFG_GetShortDeviceName and clientId so it needs to be bigger than them. +64 for light/switch/etc.
+//Buffer used to populate values in cJSON_Add* calls. The values are based on
+//CFG_GetShortDeviceName and clientId so it needs to be bigger than them. +64 for light/switch/etc.
 static char g_hassBuffer[CGF_MQTT_CLIENT_ID_SIZE + 64];
+
+static char *STATE_TOPIC_KEY = "stat_t";
+static char *COMMAND_TOPIC_KEY = "cmd_t";
 
 /// @brief Populates HomeAssistant unique id for the entity.
 /// @param type Entity type
@@ -117,8 +104,6 @@ HassDeviceInfo *hass_init_device_info(ENTITY_TYPE type, int index, char *payload
     addLogAdv(LOG_INFO, LOG_FEATURE_HASS, "hass_init_device_info=%p", info);
     
     hass_populate_unique_id(type, index, info->unique_id);
-    addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "unique_id=%s", info->unique_id);
-    
     hass_populate_device_config_channel(type, info->unique_id, info);
   
     info->ids = cJSON_CreateArray();
@@ -165,10 +150,9 @@ HassDeviceInfo *hass_init_relay_device_info(int index){
     cJSON_AddNumberToObject(info->root, "qos", 1);
 
     sprintf(g_hassBuffer,"%s/%i/get",clientId,index);
-    cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);   //state_topic
-
+    cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);   //state_topic
     sprintf(g_hassBuffer,"%s/%i/set",clientId,index);
-    cJSON_AddStringToObject(info->root, "cmd_t", g_hassBuffer);    //command_topic
+    cJSON_AddStringToObject(info->root, COMMAND_TOPIC_KEY, g_hassBuffer);    //command_topic
 
     return info;
 }
@@ -178,7 +162,6 @@ HassDeviceInfo *hass_init_relay_device_info(int index){
 /// @param index Ignored for RGB
 /// @return 
 HassDeviceInfo *hass_init_light_device_info(ENTITY_TYPE type, int index){
-    char tmp[CGF_MQTT_CLIENT_ID_SIZE + 64];  //Used to generate values based on CFG_GetMQTTClientId
     const char *clientId = CFG_GetMQTTClientId();
     HassDeviceInfo *info = NULL;
 
@@ -189,29 +172,26 @@ HassDeviceInfo *hass_init_light_device_info(ENTITY_TYPE type, int index){
 
             cJSON_AddStringToObject(info->root, "rgb_cmd_tpl","{{'#%02x%02x%02x0000'|format(red, green, blue)}}");  //rgb_command_template
 
-            sprintf(tmp,"cmnd/%s/led_basecolor_rgb",clientId);
-            cJSON_AddStringToObject(info->root, "rgb_stat_t", tmp); //rgb_state_topic
+            sprintf(g_hassBuffer,"%s/led_basecolor_rgb/get",clientId);
+            cJSON_AddStringToObject(info->root, "rgb_stat_t", g_hassBuffer); //rgb_state_topic
+            sprintf(g_hassBuffer,"cmnd/%s/led_basecolor_rgb",clientId);
+            cJSON_AddStringToObject(info->root, "rgb_cmd_t", g_hassBuffer);  //rgb_command_topic
 
-            sprintf(tmp,"cmnd/%s/led_basecolor_rgb",clientId);
-            cJSON_AddStringToObject(info->root, "rgb_cmd_t", tmp);  //rgb_command_topic
+            sprintf(g_hassBuffer,"cmnd/%s/led_enableAll",clientId);
+            cJSON_AddStringToObject(info->root, COMMAND_TOPIC_KEY, g_hassBuffer);  //command_topic
 
-            sprintf(tmp,"cmnd/%s/led_enableAll",clientId);
-            cJSON_AddStringToObject(info->root, "cmd_t", tmp);  //command_topic
-
-            sprintf(tmp,"cmnd/%s/led_dimmer",clientId);
-            cJSON_AddStringToObject(info->root, "bri_cmd_t", tmp);  //brightness_command_topic
+            sprintf(g_hassBuffer,"%s/led_dimmer/get",clientId);
+            cJSON_AddStringToObject(info->root, "bri_stat_t", g_hassBuffer);  //brightness_state_topic
+            sprintf(g_hassBuffer,"cmnd/%s/led_dimmer",clientId);
+            cJSON_AddStringToObject(info->root, "bri_cmd_t", g_hassBuffer);  //brightness_command_topic
 
             cJSON_AddNumberToObject(info->root, "bri_scl", 100);    //brightness_scale
-            cJSON_AddStringToObject(info->root, "bri_val_tpl", "{{value_json.Dimmer}}");    //brightness_value_template
 
             if (type == ENTITY_LIGHT_RGBCW){
-                sprintf(tmp,"cmnd/%s/led_temperature",clientId);
-                cJSON_AddStringToObject(info->root, "clr_temp_cmd_t", tmp); //color_temp_command_topic
-
-                sprintf(tmp,"cmnd/%s/ctr",clientId);
-                cJSON_AddStringToObject(info->root, "clr_temp_stat_t", tmp);    //color_temp_state_topic
-                
-                cJSON_AddStringToObject(info->root, "clr_temp_val_tpl", "{{value_json.CT}}");   //color_temp_value_template
+                sprintf(g_hassBuffer,"cmnd/%s/led_temperature",clientId);
+                cJSON_AddStringToObject(info->root, "clr_temp_cmd_t", g_hassBuffer); //color_temp_command_topic
+                sprintf(g_hassBuffer,"%s/led_temperature/get",clientId);
+                cJSON_AddStringToObject(info->root, "clr_temp_stat_t", g_hassBuffer);    //color_temp_state_topic
             }
 
             break;
@@ -222,15 +202,16 @@ HassDeviceInfo *hass_init_light_device_info(ENTITY_TYPE type, int index){
             cJSON_AddNumberToObject(info->root, "bri_scl", 99);   //brightness_scale
             cJSON_AddBoolToObject(info->root, "opt", cJSON_True);   //optimistic
             cJSON_AddNumberToObject(info->root, "qos", 1);
-
-            sprintf(tmp,"%s/%i/set",clientId,index);
-            cJSON_AddStringToObject(info->root, "bri_cmd_t", tmp);    //brightness_command_topic
+            
+            sprintf(g_hassBuffer,"%s/led_dimmer/get",clientId);
+            cJSON_AddStringToObject(info->root, "bri_stat_t", g_hassBuffer);  //brightness_state_topic
+            sprintf(g_hassBuffer,"cmnd/%s/led_dimmer",clientId);
+            cJSON_AddStringToObject(info->root, "bri_cmd_t", g_hassBuffer);  //brightness_command_topic
 
             sprintf(g_hassBuffer,"%s/%i/get",clientId,index);
-            cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);   //state_topic
-
+            cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);   //state_topic
             sprintf(g_hassBuffer,"%s/%i/set",clientId,index);
-            cJSON_AddStringToObject(info->root, "cmd_t", g_hassBuffer);    //command_topic
+            cJSON_AddStringToObject(info->root, COMMAND_TOPIC_KEY, g_hassBuffer);    //command_topic
 
             break;
         
