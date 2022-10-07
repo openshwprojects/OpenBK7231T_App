@@ -170,7 +170,8 @@ HassDeviceInfo *hass_init_light_device_info(ENTITY_TYPE type, int index){
         case ENTITY_LIGHT_RGB:
             info = hass_init_device_info(type, index, "1", "0");
 
-            cJSON_AddStringToObject(info->root, "rgb_cmd_tpl","{{'#%02x%02x%02x0000'|format(red, green, blue)}}");  //rgb_command_template
+            cJSON_AddStringToObject(info->root, "rgb_cmd_tpl","{{ '#%02x%02x%02x0000' | format(red, green, blue) }}");  //rgb_command_template
+            cJSON_AddStringToObject(info->root, "rgb_val_tpl","{{ value[1:3] | int(base=16) }},{{ value[3:5] | int(base=16) }},{{ value[5:7] | int(base=16) }}");  //rgb_value_template
 
             sprintf(g_hassBuffer,"%s/led_basecolor_rgb/get",clientId);
             cJSON_AddStringToObject(info->root, "rgb_stat_t", g_hassBuffer); //rgb_state_topic
@@ -191,7 +192,7 @@ HassDeviceInfo *hass_init_light_device_info(ENTITY_TYPE type, int index){
 
             if (type == ENTITY_LIGHT_RGBCW){
                 sprintf(g_hassBuffer,"cmnd/%s/led_temperature",clientId);
-                cJSON_AddStringToObject(info->root, "clr_temp_cmd_t", g_hassBuffer); //color_temp_command_topic
+                cJSON_AddStringToObject(info->root, "clr_temp_cmd_t", g_hassBuffer);    //color_temp_command_topic
                 sprintf(g_hassBuffer,"%s/led_temperature/get",clientId);
                 cJSON_AddStringToObject(info->root, "clr_temp_stat_t", g_hassBuffer);    //color_temp_state_topic
             }

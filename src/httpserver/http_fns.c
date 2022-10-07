@@ -1387,15 +1387,18 @@ int http_fn_ha_cfg(http_request_t *request) {
 
         hass_print_unique_id(request,"  - unique_id: \"%s\"\n", ENTITY_LIGHT_RGB,i);
         hprintf128(request,"    name: \"%s\"\n",shortDeviceName);
-        hprintf128(request,"       rgb_command_template: \"{{ '#%%02x%%02x%%02x0000' | format(red, green, blue)}}\"\n");
-        hprintf128(request,"       rgb_state_topic: \"%s/led_basecolor_rgb/get\"\n",clientId);
-        hprintf128(request,"       rgb_command_topic: \"cmnd/%s/led_basecolor_rgb\"\n",clientId);
-        hprintf128(request,"       command_topic: \"cmnd/%s/led_enableAll\"\n",clientId);
-        hprintf128(request,"       availability_topic: \"%s/connected\"\n",clientId);
-        hprintf128(request,"       payload_on: 1\n");
-        hprintf128(request,"       payload_off: 0\n");
-        hprintf128(request,"       brightness_command_topic: \"cmnd/%s/led_dimmer\"\n",clientId);
-        hprintf128(request,"       brightness_scale: 100\n");
+        hprintf128(request,"    rgb_command_template: \"{{ '#%%02x%%02x%%02x0000' | format(red, green, blue)}}\"\n");
+        hprintf128(request,"    rgb_value_template: \"{{ value[1:3] | int(base=16) }},{{ value[3:5] | int(base=16) }},{{ value[5:7] | int(base=16) }}\"\n");
+        hprintf128(request,"    rgb_state_topic: \"%s/led_basecolor_rgb/get\"\n",clientId);
+        hprintf128(request,"    rgb_command_topic: \"cmnd/%s/led_basecolor_rgb\"\n",clientId);
+        hprintf128(request,"    command_topic: \"cmnd/%s/led_enableAll\"\n",clientId);
+        hprintf128(request,"    state_topic: \"%s/led_enableAll/get\"\n",clientId);
+        hprintf128(request,"    availability_topic: \"%s/connected\"\n",clientId);
+        hprintf128(request,"    payload_on: 1\n");
+        hprintf128(request,"    payload_off: 0\n");
+        hprintf128(request,"    brightness_command_topic: \"cmnd/%s/led_dimmer\"\n",clientId);
+        hprintf128(request,"    brightness_scale: 100\n");
+        hprintf128(request,"    #brightness_value_template: \"{{ value }}\"\n");
 
 	} else if(pwmCount > 0) {
                 
