@@ -1367,6 +1367,7 @@ int http_fn_ha_cfg(http_request_t *request) {
         hprintf128(request,"       payload_on: 1\n");
         hprintf128(request,"       payload_off: 0\n");
         hprintf128(request,"       brightness_command_topic: \"cmnd/%s/led_dimmer\"\n",clientId);
+        hprintf128(request,"       brightness_state_topic: \"%s/led_dimmer/get\"\n",clientId);
         hprintf128(request,"       brightness_scale: 100\n");
         hprintf128(request,"       color_temp_command_topic: \"cmnd/%s/led_temperature\"\n",clientId);
         hprintf128(request,"       color_temp_state_topic: \"%s/led_temperature/get\"\n",clientId);
