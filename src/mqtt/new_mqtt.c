@@ -520,8 +520,7 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t *client, const
   if (pub_topic != NULL)
   {
     sprintf(pub_topic, "%s/%s%s", sTopic, sChannel, (appendGet == true ? "/get" : ""));
-    addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publishing to %s retain=%i",pub_topic, retain);
-    addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Published '%s' \n", sVal);
+    addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publishing val %s to %s retain=%i\n",sVal,pub_topic, retain);
 
     err = mqtt_publish(client, pub_topic, sVal, strlen(sVal), qos, retain, mqtt_pub_request_cb, 0);
     os_free(pub_topic);
