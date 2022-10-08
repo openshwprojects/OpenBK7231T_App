@@ -2,6 +2,7 @@
 #include "../new_common.h"
 #include "../new_cfg.h"
 #include "../logging/logging.h"
+#include "../hal/hal_wifi.h"
 
 /*
 Abbreviated node names - https://www.home-assistant.io/docs/mqtt/discovery/
