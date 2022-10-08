@@ -128,11 +128,20 @@ static void MQTT_Mutex_Free()
 	xSemaphoreGive( g_mutex );
 }
 
-void MQTT_PublishWholeDeviceState() 
+void MQTT_PublishWholeDeviceState_Internal(bool bAll) 
 {
   g_bPublishAllStatesNow = 1;
+  if(bAll) {
+	g_publishItemIndex = PUBLISHITEM_ALL_INDEX_FIRST;
+  } else {
+	g_publishItemIndex = PUBLISHITEM_DYNAMIC_INDEX_FIRST;
+  }
+}
+
+void MQTT_PublishWholeDeviceState() 
+{
   //Publish all status items once. Publish only dynamic items after that.
-  g_publishItemIndex = g_firstFullBroadcast == true ? PUBLISHITEM_ALL_INDEX_FIRST:PUBLISHITEM_DYNAMIC_INDEX_FIRST;
+	MQTT_PublishWholeDeviceState_Internal(g_firstFullBroadcast);
 }
 
 void MQTT_PublishOnlyDeviceChannelsIfPossible() 
@@ -860,6 +869,20 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 
 	return MQTT_PublishMain(mqtt_client,channelNameStr,valueStr, flags, true);
 }
+// This console command will trigger a publish of all used variables (channels and extra stuff)
+OBK_Publish_Result MQTT_PublishAll(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	
+	MQTT_PublishWholeDeviceState_Internal(false);
+
+	return 1;// TODO make return values consistent for all console commands
+}
+// This console command will trigger a publish of runtime variables
+OBK_Publish_Result MQTT_PublishChannels(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	
+	MQTT_PublishWholeDeviceState_Internal(true);
+
+	return 1;// TODO make return values consistent for all console commands
+}
 OBK_Publish_Result MQTT_PublishCommand(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *topic, *value;
 	OBK_Publish_Result ret;
@@ -902,6 +925,8 @@ void MQTT_init()
   mqtt_initialised = 1;
 
   CMD_RegisterCommand("publish","",MQTT_PublishCommand, "Sqqq", NULL);
+  CMD_RegisterCommand("publishAll","",MQTT_PublishAll, "Sqqq", NULL);
+  CMD_RegisterCommand("publishChannels","",MQTT_PublishChannels, "Sqqq", NULL);
 }
 
 OBK_Publish_Result MQTT_DoItemPublishString(const char *sChannel, const char *valueStr) 
