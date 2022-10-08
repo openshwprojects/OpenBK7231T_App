@@ -651,7 +651,7 @@ static void mqtt_sub_request_cb(void *arg, err_t result)
 static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status)
 {
   int i;
-	char tmp[64];
+	char tmp[CGF_MQTT_CLIENT_ID_SIZE + 16];
 	const char *clientId;
   err_t err = ERR_OK;
   const struct mqtt_connect_client_info_t* client_info = (const struct mqtt_connect_client_info_t*)arg;
