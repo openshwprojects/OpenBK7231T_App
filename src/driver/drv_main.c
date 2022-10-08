@@ -192,15 +192,17 @@ void DRV_StartDriver(const char *name) {
 // startDriver BL0942
 // startDriver BL0937
 static int DRV_Start(const void *context, const char *cmd, const char *args, int cmdFlags) {
-
 	DRV_StartDriver(args);
-
 	return 1;
 }
+static int DRV_Stop(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	DRV_StopDriver(args);
+	return 1;
+}
+
 void DRV_Generic_Init() {
-
 	CMD_RegisterCommand("startDriver","",DRV_Start, "Starts driver", NULL);
-
+	CMD_RegisterCommand("stopDriver","",DRV_Stop, "Stops driver", NULL);
 }
 void DRV_AppendInformationToHTTPIndexPage(http_request_t *request) {
 	int i, j;
