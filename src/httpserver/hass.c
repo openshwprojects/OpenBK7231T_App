@@ -90,6 +90,11 @@ cJSON *hass_build_device_node(cJSON *ids) {
 
     cJSON_AddStringToObject(dev, "mf", MANUFACTURER);   //manufacturer
     cJSON_AddStringToObject(dev, "mdl", PLATFORM_MCU_NAME);  //Using chipset for model
+
+    char *url[128];     //HAL_GetMyIPString is 64
+    sprintf(url,"http://%s/index",HAL_GetMyIPString());
+    cJSON_AddStringToObject(dev, "cu", url);  //configuration_url
+    
     return dev;
 }
 
