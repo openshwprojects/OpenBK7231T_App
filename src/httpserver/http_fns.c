@@ -1229,6 +1229,15 @@ void get_Relay_PWM_Count(int *relayCount, int *pwmCount){
     }
 }
 
+bool isLedDriverChipRunning()
+{
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	return DRV_IsRunning("SM2135") || DRV_IsRunning("BP5758D");
+#else
+	return false;
+#endif
+}
+
 /// @brief Sends HomeAssistant discovery MQTT messages.
 /// @param request 
 /// @return 
@@ -1237,16 +1246,9 @@ int http_fn_ha_discovery(http_request_t *request) {
     char topic[32];
     int relayCount = 0;
     int pwmCount = 0;
-    char bLedDriverChipRunning;
 
     http_setup(request, httpMimeTypeText);
     get_Relay_PWM_Count(&relayCount, &pwmCount);
-
-#ifndef OBK_DISABLE_ALL_DRIVERS
-	bLedDriverChipRunning = DRV_IsRunning("SM2135") || DRV_IsRunning("BP5758D");
-#else
-	bLedDriverChipRunning = 0;
-#endif
 
     if ((relayCount == 0) && (pwmCount == 0)) {
         poststr(request, NULL);
@@ -1272,7 +1274,7 @@ int http_fn_ha_discovery(http_request_t *request) {
         }
     }
 
-    if (pwmCount == 5 || bLedDriverChipRunning) {
+    if (pwmCount == 5 || isLedDriverChipRunning()) {
         // Enable + RGB control + CW control
         HassDeviceInfo *dev_info = hass_init_light_device_info(ENTITY_LIGHT_RGBCW, -1);
         MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
@@ -1294,6 +1296,17 @@ int http_fn_ha_discovery(http_request_t *request) {
         }
     }
     
+#ifndef OBK_DISABLE_ALL_DRIVERS
+    if (DRV_IsMeasuringPower()){
+        for(i = 0;i < OBK_NUM_MEASUREMENTS;i ++)
+        {
+            HassDeviceInfo *dev_info = hass_init_light_device_info(ENTITY_SENSOR, i);
+            MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+            hass_free_device_info(dev_info);
+        }
+    }
+#endif
+
     poststr(request, NULL);
     return 0;
 }
@@ -1321,7 +1334,6 @@ int http_fn_ha_cfg(http_request_t *request) {
     char mqttAdded = 0;
     char switchAdded = 0;
     char lightAdded = 0;
-	int bLedDriverChipRunning;
 
     shortDeviceName = CFG_GetShortDeviceName();
     clientId = CFG_GetMQTTClientId();
@@ -1337,12 +1349,6 @@ int http_fn_ha_cfg(http_request_t *request) {
     poststr(request,"<textarea rows=\"40\" cols=\"50\">");
 
     get_Relay_PWM_Count(&relayCount, &pwmCount);
-
-#ifndef OBK_DISABLE_ALL_DRIVERS
-	bLedDriverChipRunning = DRV_IsRunning("SM2135") || DRV_IsRunning("BP5758D");
-#else
-	bLedDriverChipRunning = 0;
-#endif
 
     if(relayCount > 0) {
 
@@ -1370,7 +1376,7 @@ int http_fn_ha_cfg(http_request_t *request) {
             }
         }
     }
-	if(pwmCount == 5 || bLedDriverChipRunning) {
+	if(pwmCount == 5 || isLedDriverChipRunning()) {
 		// Enable + RGB control + CW control
         if (mqttAdded == 0){
             poststr(request,HASS_MQTT_NODE);
