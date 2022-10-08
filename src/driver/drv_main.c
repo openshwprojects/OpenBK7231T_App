@@ -35,10 +35,14 @@ static driver_t g_drivers[] = {
 	{ "NTP", NTP_Init, NTP_OnEverySecond, NULL, NULL, NULL, NULL, false },
 	{ "I2C", DRV_I2C_Init, DRV_I2C_EverySecond, NULL, NULL, NULL, NULL, false },
 	
-	//These 3 measure power
+	//These 4 measure power
 	{ "BL0942", BL0942_Init, BL0942_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 	{ "BL0937", BL0937_Init, BL0937_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 	{ "CSE7766", CSE7766_Init, CSE7766_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+#if ENABLE_BL_TEST_DRIVER
+	{ "BLTEST", BLTest_Init, BLTest_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+#endif
+	
 
 #if PLATFORM_BEKEN
 	{ "DGR", DRV_DGR_Init, NULL, NULL, DRV_DGR_RunFrame, DRV_DGR_Shutdown, DRV_DGR_OnChannelChanged, false },
@@ -244,6 +248,11 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t *request) {
 
 bool DRV_IsMeasuringPower(){
 #ifndef OBK_DISABLE_ALL_DRIVERS
+
+#if ENABLE_BL_TEST_DRIVER
+	return DRV_IsRunning("BLTEST");
+#endif
+
 	return DRV_IsRunning("BL0937") || DRV_IsRunning("BL0942") || DRV_IsRunning("CSE7766");
 #else
 	return false;
