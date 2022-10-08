@@ -115,7 +115,6 @@ void BP1658CJ_Write(byte *rgbcw) {
 	BP1658CJ_WriteByte((uint8_t)(cur_col_10[3] >> 5));
 
 	BP1658CJ_Stop();
-	return true;
 }
 
 

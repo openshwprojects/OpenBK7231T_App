@@ -231,7 +231,7 @@ static void sendFinalColor() {
 	byte c[3];
 
 	if(shouldSendRGB()==0) {
-		return OBK_PUBLISH_WAS_NOT_REQUIRED;
+		return;
 	}
 
 	c[0] = (byte)(finalColors[0]);

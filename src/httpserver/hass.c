@@ -2,6 +2,7 @@
 #include "../new_common.h"
 #include "../new_cfg.h"
 #include "../logging/logging.h"
+#include "../hal/hal_wifi.h"
 
 /*
 Abbreviated node names - https://www.home-assistant.io/docs/mqtt/discovery/
@@ -90,6 +91,10 @@ cJSON *hass_build_device_node(cJSON *ids) {
 
     cJSON_AddStringToObject(dev, "mf", MANUFACTURER);   //manufacturer
     cJSON_AddStringToObject(dev, "mdl", PLATFORM_MCU_NAME);  //Using chipset for model
+
+    sprintf(g_hassBuffer,"http://%s/index",HAL_GetMyIPString());
+    cJSON_AddStringToObject(dev, "cu", g_hassBuffer);  //configuration_url
+    
     return dev;
 }
 
