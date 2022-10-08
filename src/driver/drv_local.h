@@ -10,6 +10,11 @@ void BL0937_RunFrame();
 void CSE7766_Init();
 void CSE7766_RunFrame();
 
+#if ENABLE_BL_TEST_DRIVER
+void BLTest_Init();
+void BLTest_RunFrame();
+#endif
+
 void DRV_DGR_Init();
 void DRV_DGR_RunFrame();
 void DRV_DGR_Shutdown();
