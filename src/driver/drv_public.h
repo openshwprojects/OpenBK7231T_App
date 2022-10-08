@@ -9,6 +9,9 @@ enum {
 	OBK_NUM_MEASUREMENTS,
 };
 
+// MQTT names of sensors (voltage, current, power)
+extern const char *sensor_mqttNames[];
+
 void DRV_Generic_Init();
 void DRV_AppendInformationToHTTPIndexPage(http_request_t *request);
 void DRV_OnEverySecond();
@@ -21,10 +24,7 @@ void SM2135_Write(byte *rgbcw);
 void BP5758D_Write(byte *rgbcw);
 void DRV_DGR_OnLedDimmerChange(int iVal);
 void DRV_DGR_OnLedEnableAllChange(int iVal);
+
 // OBK_POWER etc
 float DRV_GetReading(int type);
-
-
-
-
-
+bool DRV_IsMeasuringPower();

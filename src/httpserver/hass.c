@@ -2,11 +2,13 @@
 #include "../new_common.h"
 #include "../new_cfg.h"
 #include "../logging/logging.h"
+#include "../driver/drv_public.h"
 
 /*
 Abbreviated node names - https://www.home-assistant.io/docs/mqtt/discovery/
 Light - https://www.home-assistant.io/integrations/light.mqtt/
 Switch - https://www.home-assistant.io/integrations/switch.mqtt/
+Sensor - https://www.home-assistant.io/integrations/sensor.mqtt/
 */
 
 //Buffer used to populate values in cJSON_Add* calls. The values are based on
@@ -40,7 +42,8 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char *uniq_id){
             break;
 
         case ENTITY_SENSOR:
-            addLogAdv(LOG_ERROR, LOG_FEATURE_HASS, "ENTITY_SENSOR not yet supported");
+            sprintf(uniq_id,"%s_%s_%d", longDeviceName, "sensor", index);
+            break;
     }
 }
 
@@ -60,7 +63,6 @@ void hass_print_unique_id(http_request_t *request, const char *fmt, ENTITY_TYPE 
 /// @param uniq_id Entity unique id
 /// @param info Device info
 void hass_populate_device_config_channel(ENTITY_TYPE type, char *uniq_id, HassDeviceInfo *info){
-    //device_type is `switch` or `light`
     switch(type){
         case ENTITY_LIGHT_PWM:
         case ENTITY_LIGHT_RGB:
@@ -73,7 +75,8 @@ void hass_populate_device_config_channel(ENTITY_TYPE type, char *uniq_id, HassDe
             break;
         
         case ENTITY_SENSOR:
-            addLogAdv(LOG_ERROR, LOG_FEATURE_HASS, "ENTITY_SENSOR not yet supported");
+            sprintf(info->channel, "sensor/%s/config", uniq_id);
+            break;
     }
 }
 
@@ -95,7 +98,7 @@ cJSON *hass_build_device_node(cJSON *ids) {
 
 /// @brief Initializes HomeAssistant device discovery storage with common values.
 /// @param type 
-/// @param index Ignored for RGB
+/// @param index Ignored for RGB, for sensor this corresponds to sensor_mqttNames.
 /// @param payload_on 
 /// @param payload_off 
 /// @return 
@@ -125,7 +128,10 @@ HassDeviceInfo *hass_init_device_info(ENTITY_TYPE type, int index, char *payload
             sprintf(g_hassBuffer,"%s",CFG_GetShortDeviceName());
             break;
         case ENTITY_SENSOR:
-            addLogAdv(LOG_ERROR, LOG_FEATURE_HASS, "ENTITY_SENSOR not yet supported");
+#ifndef OBK_DISABLE_ALL_DRIVERS
+            sprintf(g_hassBuffer,"%s %s",CFG_GetShortDeviceName(), sensor_mqttNames[index]);
+#endif
+            break;
     }
     cJSON_AddStringToObject(info->root, "name", g_hassBuffer); 
 
@@ -134,6 +140,7 @@ HassDeviceInfo *hass_init_device_info(ENTITY_TYPE type, int index, char *payload
 
     cJSON_AddStringToObject(info->root, "pl_on", payload_on);    //payload_on
     cJSON_AddStringToObject(info->root, "pl_off", payload_off);   //payload_off
+
     cJSON_AddStringToObject(info->root, "uniq_id", info->unique_id);  //unique_id
 
     addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "root=%p", info->root);
@@ -159,7 +166,7 @@ HassDeviceInfo *hass_init_relay_device_info(int index){
 
 /// @brief Initializes HomeAssistant light device discovery storage.
 /// @param type 
-/// @param index Ignored for RGB
+/// @param index Ignored for RGB, for sensor this corresponds to sensor_mqttNames.
 /// @return 
 HassDeviceInfo *hass_init_light_device_info(ENTITY_TYPE type, int index){
     const char *clientId = CFG_GetMQTTClientId();
@@ -218,8 +225,19 @@ HassDeviceInfo *hass_init_light_device_info(ENTITY_TYPE type, int index){
 
             break;
         
-        default:
-            addLogAdv(LOG_ERROR, LOG_FEATURE_HASS, "Unsupported light type %s", type);
+        case ENTITY_SENSOR:
+#ifndef OBK_DISABLE_ALL_DRIVERS
+            info = hass_init_device_info(type, index, "1", "0");
+
+            //https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes
+            //device_class automatically assigns unit,icon
+            cJSON_AddStringToObject(info->root, "dev_cla", sensor_mqttNames[index]);   //device_class=voltage,current,power
+            
+            sprintf(g_hassBuffer,"%s/%s/get",clientId,sensor_mqttNames[index]);
+            cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
+#endif
+
+            break;
     }
     
     return info;

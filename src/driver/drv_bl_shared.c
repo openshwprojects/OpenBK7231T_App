@@ -40,12 +40,7 @@ int changeSendThresholds[OBK_NUM_MEASUREMENTS] = {
 	0.002f, // current - OBK_CURRENT
 	0.25f, // power - OBK_POWER
 };
-// how are they called in MQTT
-const char *mqttNames[OBK_NUM_MEASUREMENTS] = {
-	"voltage",
-	"current",
-	"power"
-};
+
 
 int changeSendAlwaysFrames = 60;
 int changeDoNotSendMinFrames = 5;
@@ -124,7 +119,7 @@ void BL_ProcessUpdate(float voltage, float current, float power)
 				EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_VOLTAGE+i, lastSentValues[i], lastReadings[i]);
 			}
 			lastSentValues[i] = lastReadings[i];
-			MQTT_PublishMain_StringFloat(mqttNames[i],lastReadings[i]);
+			MQTT_PublishMain_StringFloat(sensor_mqttNames[i],lastReadings[i]);
 			stat_updatesSent++;
 		} else {
 			// no change frame
