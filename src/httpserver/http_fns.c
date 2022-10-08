@@ -1226,9 +1226,16 @@ int http_fn_ha_discovery(http_request_t *request) {
     char topic[32];
     int relayCount = 0;
     int pwmCount = 0;
+    char bLedDriverChipRunning;
 
     http_setup(request, httpMimeTypeText);
     get_Relay_PWM_Count(&relayCount, &pwmCount);
+
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	bLedDriverChipRunning = DRV_IsRunning("SM2135") || DRV_IsRunning("BP5758D");
+#else
+	bLedDriverChipRunning = 0;
+#endif
 
     if ((relayCount == 0) && (pwmCount == 0)) {
         poststr(request, NULL);
@@ -1247,27 +1254,29 @@ int http_fn_ha_discovery(http_request_t *request) {
     if(relayCount > 0) {
         for(i = 0; i < CHANNEL_MAX; i++) {
             if(h_isChannelRelay(i)) {
-                HassDeviceInfo *dev_info = hass_init_device_info(ENTITY_RELAY, i, "1", "0");
+                HassDeviceInfo *dev_info = hass_init_relay_device_info(i);
                 MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
                 hass_free_device_info(dev_info);
             }
         }
     }
 
-    if(pwmCount > 0) {
-        char tmp[64];
-        const char *shortDeviceName = CFG_GetShortDeviceName();
-
+    if (pwmCount == 5 || bLedDriverChipRunning) {
+        // Enable + RGB control + CW control
+        HassDeviceInfo *dev_info = hass_init_light_device_info(ENTITY_LIGHT_RGBCW, -1);
+        MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+        hass_free_device_info(dev_info);
+    }
+    else if (pwmCount == 3) {
+        // Enable + RGB control
+        HassDeviceInfo *dev_info = hass_init_light_device_info(ENTITY_LIGHT_RGB, -1);
+        MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+        hass_free_device_info(dev_info);
+    }
+    else if(pwmCount > 0) {
         for(i = 0; i < CHANNEL_MAX; i++) {
             if(h_isChannelPWM(i)) {
-                HassDeviceInfo *dev_info = hass_init_device_info(ENTITY_LIGHT, i, "99", "0");
-
-                cJSON_AddStringToObject(dev_info->root, "on_cmd_type", "brightness"); //on_command_type
-                cJSON_AddNumberToObject(dev_info->root, "bri_scl", 99);   //brightness_scale
-
-                sprintf(tmp,"%s/%i/set",shortDeviceName,i);
-                cJSON_AddStringToObject(dev_info->root, "bri_cmd_t", tmp);    //brightness_command_topic
-
+                HassDeviceInfo *dev_info = hass_init_light_device_info(ENTITY_LIGHT_PWM, i);
                 MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
                 hass_free_device_info(dev_info);
             }
@@ -1285,7 +1294,6 @@ int http_fn_ha_cfg(http_request_t *request) {
     const char *clientId;
     int i;
     char mqttAdded = 0;
-    char *uniq_id;
     char switchAdded = 0;
     char lightAdded = 0;
 	int bLedDriverChipRunning;
@@ -1348,7 +1356,7 @@ int http_fn_ha_cfg(http_request_t *request) {
             switchAdded=1;
         }
 
-        hass_print_unique_id(request,"  - unique_id: \"%s\"\n", ENTITY_LIGHT,i);
+        hass_print_unique_id(request,"  - unique_id: \"%s\"\n", ENTITY_LIGHT_RGBCW,i);
         hprintf128(request,"    name: \"%s %i\"\n",shortDeviceName,i);
         hprintf128(request,"    rgb_command_template: \"{{ '#%%02x%%02x%%02x0000' | format(red, green, blue)}}\"\n");
         hprintf128(request,"    rgb_value_template: \"{{ value[1:3] | int(base=16) }},{{ value[3:5] | int(base=16) }},{{ value[5:7] | int(base=16) }}\"\n");
@@ -1377,8 +1385,8 @@ int http_fn_ha_cfg(http_request_t *request) {
             switchAdded=1;
         }
 
-        hass_print_unique_id(request,"  - unique_id: \"%s\"\n", ENTITY_LIGHT,i);
-        hprintf128(request,"    name: \"%s %i\"\n",shortDeviceName,i);
+        hass_print_unique_id(request,"  - unique_id: \"%s\"\n", ENTITY_LIGHT_RGB,i);
+        hprintf128(request,"    name: \"%s\"\n",shortDeviceName);
         hprintf128(request,"    rgb_command_template: \"{{ '#%%02x%%02x%%02x0000' | format(red, green, blue)}}\"\n");
         hprintf128(request,"    rgb_value_template: \"{{ value[1:3] | int(base=16) }},{{ value[3:5] | int(base=16) }},{{ value[5:7] | int(base=16) }}\"\n");
         hprintf128(request,"    rgb_state_topic: \"%s/led_basecolor_rgb/get\"\n",clientId);
@@ -1405,7 +1413,7 @@ int http_fn_ha_cfg(http_request_t *request) {
                     lightAdded=1;
                 }
 
-                hass_print_unique_id(request,"  - unique_id: \"%s\"\n", ENTITY_LIGHT,i);
+                hass_print_unique_id(request,"  - unique_id: \"%s\"\n", ENTITY_LIGHT_PWM,i);
                 hprintf128(request,"    name: \"%s %i\"\n",shortDeviceName,i);
                 hprintf128(request,"    state_topic: \"%s/%i/get\"\n",clientId,i);
                 hprintf128(request,"    command_topic: \"%s/%i/set\"\n",clientId,i);
