@@ -243,6 +243,9 @@ HassDeviceInfo *hass_init_light_device_info(ENTITY_TYPE type, int index){
 #endif
 
             break;
+
+        default:
+            addLogAdv(LOG_ERROR, LOG_FEATURE_HASS, "Unsupported light type %s", type);
     }
     
     return info;
