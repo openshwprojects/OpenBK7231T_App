@@ -140,8 +140,9 @@ HassDeviceInfo *hass_init_device_info(ENTITY_TYPE type, int index, char *payload
     }
     cJSON_AddStringToObject(info->root, "name", g_hassBuffer); 
 
-    sprintf(g_hassBuffer,"%s/connected",CFG_GetMQTTClientId());
-    cJSON_AddStringToObject(info->root, "avty_t", g_hassBuffer);   //availability_topic, `online` value is broadcasted
+    cJSON_AddStringToObject(info->root, "~", CFG_GetMQTTClientId());      //base topic
+
+    cJSON_AddStringToObject(info->root, "avty_t", "~/connected");   //availability_topic, `online` value is broadcasted
 
     cJSON_AddStringToObject(info->root, "pl_on", payload_on);    //payload_on
     cJSON_AddStringToObject(info->root, "pl_off", payload_off);   //payload_off
@@ -156,14 +157,12 @@ HassDeviceInfo *hass_init_device_info(ENTITY_TYPE type, int index, char *payload
 /// @param index
 /// @return 
 HassDeviceInfo *hass_init_relay_device_info(int index){
-    const char *clientId = CFG_GetMQTTClientId();
-
     HassDeviceInfo *info = hass_init_device_info(ENTITY_RELAY, index, "1", "0");
     cJSON_AddNumberToObject(info->root, "qos", 1);
 
-    sprintf(g_hassBuffer,"%s/%i/get",clientId,index);
+    sprintf(g_hassBuffer,"~/%i/get",index);
     cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);   //state_topic
-    sprintf(g_hassBuffer,"%s/%i/set",clientId,index);
+    sprintf(g_hassBuffer,"~/%i/set",index);
     cJSON_AddStringToObject(info->root, COMMAND_TOPIC_KEY, g_hassBuffer);    //command_topic
 
     return info;
@@ -182,21 +181,18 @@ HassDeviceInfo *hass_init_light_device_info(ENTITY_TYPE type, int index){
         case ENTITY_LIGHT_RGB:
             info = hass_init_device_info(type, index, "1", "0");
 
-            cJSON_AddStringToObject(info->root, "rgb_cmd_tpl","{{ '#%02x%02x%02x0000' | format(red, green, blue) }}");  //rgb_command_template
-            cJSON_AddStringToObject(info->root, "rgb_val_tpl","{{ value[1:3] | int(base=16) }},{{ value[3:5] | int(base=16) }},{{ value[5:7] | int(base=16) }}");  //rgb_value_template
+            cJSON_AddStringToObject(info->root, "rgb_cmd_tpl","{{'#%02x%02x%02x0000'|format(red,green,blue)}}");  //rgb_command_template
+            cJSON_AddStringToObject(info->root, "rgb_val_tpl","{{value[1:3]|int(base=16)}},{{value[3:5]|int(base=16)}},{{value[5:7]|int(base=16)}}");  //rgb_value_template
 
-            sprintf(g_hassBuffer,"%s/led_basecolor_rgb/get",clientId);
-            cJSON_AddStringToObject(info->root, "rgb_stat_t", g_hassBuffer); //rgb_state_topic
+            cJSON_AddStringToObject(info->root, "rgb_stat_t", "~/led_basecolor_rgb/get"); //rgb_state_topic
             sprintf(g_hassBuffer,"cmnd/%s/led_basecolor_rgb",clientId);
             cJSON_AddStringToObject(info->root, "rgb_cmd_t", g_hassBuffer);  //rgb_command_topic
 
-            sprintf(g_hassBuffer,"%s/led_enableAll/get",clientId);
-            cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);  //state_topic
+            cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, "~/led_enableAll/get");  //state_topic
             sprintf(g_hassBuffer,"cmnd/%s/led_enableAll",clientId);
             cJSON_AddStringToObject(info->root, COMMAND_TOPIC_KEY, g_hassBuffer);  //command_topic
 
-            sprintf(g_hassBuffer,"%s/led_dimmer/get",clientId);
-            cJSON_AddStringToObject(info->root, "bri_stat_t", g_hassBuffer);  //brightness_state_topic
+            cJSON_AddStringToObject(info->root, "bri_stat_t", "~/led_dimmer/get");  //brightness_state_topic
             sprintf(g_hassBuffer,"cmnd/%s/led_dimmer",clientId);
             cJSON_AddStringToObject(info->root, "bri_cmd_t", g_hassBuffer);  //brightness_command_topic
 
@@ -205,8 +201,8 @@ HassDeviceInfo *hass_init_light_device_info(ENTITY_TYPE type, int index){
             if (type == ENTITY_LIGHT_RGBCW){
                 sprintf(g_hassBuffer,"cmnd/%s/led_temperature",clientId);
                 cJSON_AddStringToObject(info->root, "clr_temp_cmd_t", g_hassBuffer);    //color_temp_command_topic
-                sprintf(g_hassBuffer,"%s/led_temperature/get",clientId);
-                cJSON_AddStringToObject(info->root, "clr_temp_stat_t", g_hassBuffer);    //color_temp_state_topic
+
+                cJSON_AddStringToObject(info->root, "clr_temp_stat_t", "~/led_temperature/get");    //color_temp_state_topic
             }
 
             break;
@@ -218,14 +214,13 @@ HassDeviceInfo *hass_init_light_device_info(ENTITY_TYPE type, int index){
             cJSON_AddBoolToObject(info->root, "opt", cJSON_True);   //optimistic
             cJSON_AddNumberToObject(info->root, "qos", 1);
             
-            sprintf(g_hassBuffer,"%s/led_dimmer/get",clientId);
-            cJSON_AddStringToObject(info->root, "bri_stat_t", g_hassBuffer);  //brightness_state_topic
+            cJSON_AddStringToObject(info->root, "bri_stat_t", "~/led_dimmer/get");  //brightness_state_topic
             sprintf(g_hassBuffer,"cmnd/%s/led_dimmer",clientId);
             cJSON_AddStringToObject(info->root, "bri_cmd_t", g_hassBuffer);  //brightness_command_topic
 
-            sprintf(g_hassBuffer,"%s/%i/get",clientId,index);
+            sprintf(g_hassBuffer,"~/%i/get",index);
             cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);   //state_topic
-            sprintf(g_hassBuffer,"%s/%i/set",clientId,index);
+            sprintf(g_hassBuffer,"~/%i/set",index);
             cJSON_AddStringToObject(info->root, COMMAND_TOPIC_KEY, g_hassBuffer);    //command_topic
 
             break;
