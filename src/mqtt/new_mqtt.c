@@ -57,7 +57,7 @@ static int g_timeSinceLastMQTTPublish = 0;
 static int mqtt_initialised = 0;
 static int mqtt_connect_events = 0;
 static int mqtt_connect_result = ERR_OK;
-static char *mqtt_status_message = NULL;
+static char mqtt_status_message[256];
 static int mqtt_published_events = 0;
 static int mqtt_publish_errors = 0;
 static int mqtt_received_events = 0;
@@ -651,7 +651,7 @@ static void mqtt_sub_request_cb(void *arg, err_t result)
 static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status)
 {
   int i;
-	char tmp[64];
+	char tmp[CGF_MQTT_CLIENT_ID_SIZE + 16];
 	const char *clientId;
   err_t err = ERR_OK;
   const struct mqtt_connect_client_info_t* client_info = (const struct mqtt_connect_client_info_t*)arg;
@@ -727,10 +727,17 @@ static void MQTT_do_connect(mqtt_client_t *client)
   struct hostent* hostEntry;
   char will_topic[32];
 
+  mqtt_host = CFG_GetMQTTHost();
+
+  if (!mqtt_host[0]){
+    addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"mqtt_host empty, not starting mqtt\r\n");
+    sprintf(mqtt_status_message, "mqtt_host empty, not starting mqtt");
+    return;
+  }
+
   mqtt_userName = CFG_GetMQTTUserName();
   mqtt_pass = CFG_GetMQTTPass();
   mqtt_clientID = CFG_GetMQTTClientId();
-  mqtt_host = CFG_GetMQTTHost();
 	mqtt_port = CFG_GetMQTTPort();
 
   addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"mqtt_userName %s\r\nmqtt_pass %s\r\nmqtt_clientID %s\r\nmqtt_host %s:%d\r\n",
@@ -740,15 +747,6 @@ static void MQTT_do_connect(mqtt_client_t *client)
     mqtt_host,
     mqtt_port
   );
-
-
-  if (!mqtt_host[0]){
-    addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"mqtt_host empty, not starting mqtt\r\n");
-    if (mqtt_status_message != NULL)
-      free(mqtt_status_message);
-    mqtt_status_message = strdup("mqtt_host empty, not starting mqtt");
-    return;
-  }
 
   // set pointer, there are no buffers to strcpy
   mqtt_client_info.client_id = mqtt_clientID;
@@ -772,9 +770,7 @@ static void MQTT_do_connect(mqtt_client_t *client)
       memcpy(&mqtt_ip, hostEntry->h_addr_list[0], len);
     } else {
       addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"mqtt_host resolves no addresses?\r\n");
-      if (mqtt_status_message != NULL)
-        free(mqtt_status_message);
-      mqtt_status_message = strdup("mqtt_host resolves no addresses?");
+      sprintf(mqtt_status_message, "mqtt_host resolves no addresses?");
       return;
     }
 
@@ -793,28 +789,18 @@ static void MQTT_do_connect(mqtt_client_t *client)
     mqtt_connect_result = res;
     if(res != ERR_OK) 
     {
-      addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Connect error in mqtt_client_connect - code: %d (%s)\n", res);
-      if (mqtt_status_message != NULL)
-        free(mqtt_status_message);
-      mqtt_status_message = strdup("mqtt_client_connect connect failed");
+      addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Connect error in mqtt_client_connect - code: %d (%s)\n", res, get_error_name(res));
+      sprintf(mqtt_status_message, "mqtt_client_connect connect failed");
       if (res == ERR_ISCONN)
       {
-        if (mqtt_client != 0)
-        {
-          mqtt_disconnect(mqtt_client);
-        }
+        mqtt_disconnect(mqtt_client);
       }
     } else {
-      if (mqtt_status_message != NULL)
-        free(mqtt_status_message);
-      mqtt_status_message = NULL;
+      mqtt_status_message[0] = '\0';
     }
   } else {
-   addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"mqtt_host %s not found by gethostbyname\r\n", mqtt_host);
-   if (mqtt_status_message != NULL)
-     free(mqtt_status_message);
-   mqtt_status_message = (char*)os_malloc(256);
-   sprintf(mqtt_status_message, "mqtt_host %s not found by gethostbyname", mqtt_host);
+    addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"mqtt_host %s not found by gethostbyname\r\n", mqtt_host);
+    sprintf(mqtt_status_message, "mqtt_host %s not found by gethostbyname", mqtt_host);
   }
 }
 
@@ -1063,12 +1049,12 @@ int MQTT_RunEverySecondUpdate()
 			{
 				mqtt_client = mqtt_client_new();
 			} else {
-                #if defined(MQTT_CLIENT_CLEANUP)
-                mqtt_client_cleanup(mqtt_client);
-                #endif
-            }
+				#if defined(MQTT_CLIENT_CLEANUP)
+				mqtt_client_cleanup(mqtt_client);
+				#endif
+			}
 			MQTT_do_connect(mqtt_client);
-            mqtt_connect_events++;
+			mqtt_connect_events++;
 			loopsWithDisconnected = 0;
 		}
 		MQTT_Mutex_Free();
@@ -1102,7 +1088,7 @@ int MQTT_RunEverySecondUpdate()
                 {
 					publishRes = MQTT_DoItemPublish(g_publishItemIndex);
 					if(publishRes != OBK_PUBLISH_WAS_NOT_REQUIRED)
-                    {
+					{
 						addLogAdv(LOG_INFO,LOG_FEATURE_MQTT, "[g_bPublishAllStatesNow] item %i result %i\n",g_publishItemIndex,publishRes);
 					}
 					// There are several things that can happen now

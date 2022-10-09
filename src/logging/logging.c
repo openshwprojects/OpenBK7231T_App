@@ -184,8 +184,7 @@ void addLogAdv(int level, int feature, char *fmt, ...)
             if (tmp[strlen(tmp)-1]=='\n') tmp[strlen(tmp)-1]='\0';
             if (tmp[strlen(tmp)-1]=='\r') tmp[strlen(tmp)-1]='\0';
 
-            bk_printf(tmp);
-            bk_printf("\r\n");
+            bk_printf("%s\r\n", tmp);
             if(g_extraSocketToSendLOG) 
             {
                 send(g_extraSocketToSendLOG,tmp,strlen(tmp),0);
@@ -314,7 +313,7 @@ void addLogAdv(int level, int feature, char *fmt, ...)
         }
 
         if (direct_serial_log){
-            bk_printf(tmp);
+            bk_printf("%s", tmp);
             if (taken == pdTRUE){
                 xSemaphoreGive( logMemory.mutex );
             }
@@ -513,7 +512,7 @@ static void log_serial_thread( beken_thread_arg_t arg )
     while ( 1 ){
         int count = getSerial(seriallogbuf, SERIALLOGBUFSIZE);
         if (count){
-            bk_printf(seriallogbuf);
+            bk_printf("%s", seriallogbuf);
         }
         rtos_delay_milliseconds(10);
     }
