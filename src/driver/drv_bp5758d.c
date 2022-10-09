@@ -164,7 +164,6 @@ void BP5758D_Write(byte *rgbcw) {
 	BP5758D_WriteByte((uint8_t)(cur_col_10[3] >> 5));
 
 	BP5758D_Stop();
-	return true;
 }
 
 // see drv_bp5758d.h for sample values

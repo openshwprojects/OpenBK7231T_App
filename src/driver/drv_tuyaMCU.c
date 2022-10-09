@@ -471,7 +471,8 @@ void TuyaMCU_Send_RawBuffer(byte *data, int len) {
 // and this will get states: 0x55 0xAA 0x00 0x02 0x00 0x01 0x04 0x06
 // uartSendHex 55AA000200010406
 /*Info:MAIN:Time 143, free 88864, MQTT 1, bWifi 1, secondsWithNoPing -1, socks 2/38
-Info:TuyaMCU:TUYAMCU received: 55 AA 00 08 00 0C 00 02 02 02 02 02 02 01 04 00 01 00 25 
+
+Info:TuyaMCU:TUYAMCU received: 55 AA 00 08 00 0C 00 02 02 02 02 02 02 01 04 00 01 00 25 
 
 Info:TuyaMCU:TuyaMCU_ProcessIncoming: processing V0 command 8 with 19 bytes
 
@@ -757,13 +758,13 @@ void TuyaMCU_V0_ParseRealTimeWithRecordStorage(const byte *data, int len) {
 	int fnId;
 	int dataType;
 
-	data[0]; // bDateValid
-	data[1]; //  year
-	data[2]; //  month
-	data[3]; //  day
-	data[4]; //  hour
-	data[5]; //  minute
-	data[6]; //  second
+	//data[0]; // bDateValid
+	//data[1]; //  year
+	//data[2]; //  month
+	//data[3]; //  day
+	//data[4]; //  hour
+	//data[5]; //  minute
+	//data[6]; //  second
 
 	ofs = 7;
 

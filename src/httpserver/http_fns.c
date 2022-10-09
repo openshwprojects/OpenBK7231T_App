@@ -35,6 +35,17 @@
     #include "BkDriverFlash.h"
 #endif
 
+static char *UNIQUE_ID_FORMAT            = "  - unique_id: \"%s\"\n";
+static char *HASS_INDEXED_NAME_CONFIG    = "    name: \"%s %i\"\n";
+static char *HASS_STATE_TOPIC_CONFIG     = "    state_topic: \"%s/%i/get\"\n";
+static char *HASS_COMMAND_TOPIC_CONFIG   = "    command_topic: \"%s/%i/set\"\n";
+static char *HASS_RETAIN_TRUE_CONFIG     = "    retain: true\n";
+static char *HASS_AVAILABILITY_CONFIG    = "    availability:\n";
+static char *HASS_CONNECTED_TOPIC_CONFIG = "      - topic: \"%s/connected\"\n";
+static char *HASS_QOS_CONFIG             = "    qos: 1\n";
+
+static char *HASS_MQTT_NODE  = "mqtt:\n";
+static char *HASS_LIGHT_NODE = "  light:\n";
 
 /*
 function send_ha_disc(){
@@ -1218,6 +1229,15 @@ void get_Relay_PWM_Count(int *relayCount, int *pwmCount){
     }
 }
 
+bool isLedDriverChipRunning()
+{
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	return DRV_IsRunning("SM2135") || DRV_IsRunning("BP5758D");
+#else
+	return false;
+#endif
+}
+
 /// @brief Sends HomeAssistant discovery MQTT messages.
 /// @param request
 /// @return
@@ -1247,27 +1267,29 @@ int http_fn_ha_discovery(http_request_t *request) {
     if(relayCount > 0) {
         for(i = 0; i < CHANNEL_MAX; i++) {
             if(h_isChannelRelay(i)) {
-                HassDeviceInfo *dev_info = hass_init_device_info(ENTITY_RELAY, i, "1", "0");
+                HassDeviceInfo *dev_info = hass_init_relay_device_info(i);
                 MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
                 hass_free_device_info(dev_info);
             }
         }
     }
 
-    if(pwmCount > 0) {
-        char tmp[64];
-        const char *shortDeviceName = CFG_GetShortDeviceName();
-
+    if (pwmCount == 5 || isLedDriverChipRunning()) {
+        // Enable + RGB control + CW control
+        HassDeviceInfo *dev_info = hass_init_light_device_info(ENTITY_LIGHT_RGBCW, -1);
+        MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+        hass_free_device_info(dev_info);
+    }
+    else if (pwmCount == 3) {
+        // Enable + RGB control
+        HassDeviceInfo *dev_info = hass_init_light_device_info(ENTITY_LIGHT_RGB, -1);
+        MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+        hass_free_device_info(dev_info);
+    }
+    else if(pwmCount > 0) {
         for(i = 0; i < CHANNEL_MAX; i++) {
             if(h_isChannelPWM(i)) {
-                HassDeviceInfo *dev_info = hass_init_device_info(ENTITY_LIGHT, i, "99", "0");
-
-                cJSON_AddStringToObject(dev_info->root, "on_cmd_type", "brightness"); //on_command_type
-                cJSON_AddNumberToObject(dev_info->root, "bri_scl", 99);   //brightness_scale
-
-                sprintf(tmp,"%s/%i/set",shortDeviceName,i);
-                cJSON_AddStringToObject(dev_info->root, "bri_cmd_t", tmp);    //brightness_command_topic
-
+                HassDeviceInfo *dev_info = hass_init_light_device_info(ENTITY_LIGHT_PWM, i);
                 MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
                 hass_free_device_info(dev_info);
             }
@@ -1278,6 +1300,20 @@ int http_fn_ha_discovery(http_request_t *request) {
     return 0;
 }
 
+void http_generate_rgb_cfg(http_request_t *request, char *clientId){
+    hprintf128(request,"    rgb_command_template: \"{{ '#%%02x%%02x%%02x0000' | format(red, green, blue)}}\"\n");
+    hprintf128(request,"    rgb_value_template: \"{{ value[1:3] | int(base=16) }},{{ value[3:5] | int(base=16) }},{{ value[5:7] | int(base=16) }}\"\n");
+    hprintf128(request,"    rgb_state_topic: \"%s/led_basecolor_rgb/get\"\n",clientId);
+    hprintf128(request,"    rgb_command_topic: \"cmnd/%s/led_basecolor_rgb\"\n",clientId);
+    hprintf128(request,"    command_topic: \"cmnd/%s/led_enableAll\"\n",clientId);
+    hprintf128(request,"    state_topic: \"%s/led_enableAll/get\"\n",clientId);
+    hprintf128(request,"    availability_topic: \"%s/connected\"\n",clientId);
+    hprintf128(request,"    payload_on: 1\n");
+    hprintf128(request,"    payload_off: 0\n");
+    hprintf128(request,"    brightness_command_topic: \"cmnd/%s/led_dimmer\"\n",clientId);
+    hprintf128(request,"    brightness_scale: 100\n");
+}
+
 int http_fn_ha_cfg(http_request_t *request) {
     int relayCount = 0;
     int pwmCount = 0;
@@ -1285,10 +1321,8 @@ int http_fn_ha_cfg(http_request_t *request) {
     const char *clientId;
     int i;
     char mqttAdded = 0;
-    char *uniq_id;
     char switchAdded = 0;
     char lightAdded = 0;
-	int bLedDriverChipRunning;
 
     shortDeviceName = CFG_GetShortDeviceName();
     clientId = CFG_GetMQTTClientId();
@@ -1305,18 +1339,12 @@ int http_fn_ha_cfg(http_request_t *request) {
 
     get_Relay_PWM_Count(&relayCount, &pwmCount);
 
-#ifndef OBK_DISABLE_ALL_DRIVERS
-	bLedDriverChipRunning = DRV_IsRunning("SM2135") || DRV_IsRunning("BP5758D");
-#else
-	bLedDriverChipRunning = 0;
-#endif
-
     if(relayCount > 0) {
 
         for(i = 0; i < CHANNEL_MAX; i++) {
             if(h_isChannelRelay(i)) {
                 if (mqttAdded == 0){
-                    poststr(request,"mqtt:\n");
+                    poststr(request,HASS_MQTT_NODE);
                     mqttAdded=1;
                 }
                 if (switchAdded == 0){
@@ -1324,99 +1352,78 @@ int http_fn_ha_cfg(http_request_t *request) {
                     switchAdded=1;
                 }
 
-                hass_print_unique_id(request,"  - unique_id: \"%s\"\n", ENTITY_RELAY,i);
-                hprintf128(request,"    name: \"%s %i\"\n",shortDeviceName,i);
-                hprintf128(request,"    state_topic: \"%s/%i/get\"\n",clientId,i);
-                hprintf128(request,"    command_topic: \"%s/%i/set\"\n",clientId,i);
-                poststr(request,   "    qos: 1\n");
+                hass_print_unique_id(request,UNIQUE_ID_FORMAT, ENTITY_RELAY,i);
+                hprintf128(request,HASS_INDEXED_NAME_CONFIG,shortDeviceName,i);
+                hprintf128(request,HASS_STATE_TOPIC_CONFIG,clientId,i);
+                hprintf128(request,HASS_COMMAND_TOPIC_CONFIG,clientId,i);
+                poststr(request,HASS_QOS_CONFIG);
                 poststr(request,   "    payload_on: 1\n");
                 poststr(request,   "    payload_off: 0\n");
-                poststr(request,   "    retain: true\n");
-                hprintf128(request,"    availability:\n");
-                hprintf128(request,"      - topic: \"%s/connected\"\n",clientId);
+                poststr(request,HASS_RETAIN_TRUE_CONFIG);
+                hprintf128(request,HASS_AVAILABILITY_CONFIG);
+                hprintf128(request,HASS_CONNECTED_TOPIC_CONFIG,clientId);
             }
         }
     }
-	if(pwmCount == 5 || bLedDriverChipRunning) {
+	if(pwmCount == 5 || isLedDriverChipRunning()) {
 		// Enable + RGB control + CW control
         if (mqttAdded == 0){
-            poststr(request,"mqtt:\n");
+            poststr(request,HASS_MQTT_NODE);
             mqttAdded=1;
         }
         if (switchAdded == 0){
-            poststr(request,"  light:\n");
+            poststr(request,HASS_LIGHT_NODE);
             switchAdded=1;
         }
-
-        hass_print_unique_id(request,"  - unique_id: \"%s\"\n", ENTITY_LIGHT,i);
-        hprintf128(request,"    name: \"%s %i\"\n",shortDeviceName,i);
-        hprintf128(request,"       rgb_command_template: \"{{ '#%02x%02x%02x0000' | format(red, green, blue)}}\"\n");
-        hprintf128(request,"       rgb_state_topic: \"cmnd/%s/led_basecolor_rgb\"\n",clientId);
-        hprintf128(request,"       rgb_command_topic: \"cmnd/%s/led_basecolor_rgb\"\n",clientId);
-        hprintf128(request,"       command_topic: \"cmnd/%s/led_enableAll\"\n",clientId);
-        hprintf128(request,"       availability_topic: \"%s/connected\"\n",clientId);
-        hprintf128(request,"       payload_on: 1\n");
-        hprintf128(request,"       payload_off: 0\n");
-        hprintf128(request,"       brightness_command_topic: \"cmnd/%s/led_dimmer\"\n",clientId);
-        hprintf128(request,"       brightness_scale: 100\n");
-        hprintf128(request,"       brightness_value_template: \"{{ value_json.Dimmer }}\"\n");
-        hprintf128(request,"       color_temp_command_topic: \"cmnd/%s/led_temperature\"\n",clientId);
-        hprintf128(request,"       color_temp_state_topic: \"cmnd/%s/ctr\"\n",clientId);
-        hprintf128(request,"       color_temp_value_template: \"{{ value_json.CT }}\"\n");
-	} else
+        hass_print_unique_id(request,UNIQUE_ID_FORMAT, ENTITY_LIGHT_RGBCW,i);
+        hprintf128(request,HASS_INDEXED_NAME_CONFIG,shortDeviceName,i);
+        http_generate_rgb_cfg(request, clientId);
+        hprintf128(request,"    #brightness_value_template: \"{{ value }}\"\n");
+        hprintf128(request,"    color_temp_command_topic: \"cmnd/%s/led_temperature\"\n",clientId);
+        hprintf128(request,"    color_temp_state_topic: \"%s/led_temperature/get\"\n",clientId);
+        hprintf128(request,"    #color_temp_value_template: \"{{ value }}\"\n");
+	} else 
 	if(pwmCount == 3) {
 		// Enable + RGB control
         if (mqttAdded == 0){
-            poststr(request,"mqtt:\n");
+            poststr(request,HASS_MQTT_NODE);
             mqttAdded=1;
         }
         if (switchAdded == 0){
-            poststr(request,"  light:\n");
+            poststr(request,HASS_LIGHT_NODE);
             switchAdded=1;
         }
 
-        hass_print_unique_id(request,"  - unique_id: \"%s\"\n", ENTITY_LIGHT,i);
-        hprintf128(request,"    name: \"%s %i\"\n",shortDeviceName,i);
-        hprintf128(request,"       rgb_command_template: \"{{ '#%02x%02x%02x0000' | format(red, green, blue)}}\"\n");
-        hprintf128(request,"       rgb_state_topic: \"cmnd/%s/led_basecolor_rgb\"\n",clientId);
-        hprintf128(request,"       rgb_command_topic: \"cmnd/%s/led_basecolor_rgb\"\n",clientId);
-        hprintf128(request,"       command_topic: \"cmnd/%s/led_enableAll\"\n",clientId);
-        hprintf128(request,"       availability_topic: \"%s/connected\"\n",clientId);
-        hprintf128(request,"       payload_on: 1\n");
-        hprintf128(request,"       payload_off: 0\n");
-        hprintf128(request,"       brightness_command_topic: \"cmnd/%s/led_dimmer\"\n",clientId);
-        hprintf128(request,"       brightness_scale: 100\n");
-        hprintf128(request,"       brightness_value_template: \"{{ value_json.Dimmer }}\"\n");
-        //hprintf128(request,"       color_temp_command_topic: \"cmnd/%s/led_temperature\"\n",clientId);
-        //hprintf128(request,"       color_temp_state_topic: \"cmnd/%s/ctr\"\n",clientId);
-        //hprintf128(request,"       color_temp_value_template: \"{{ value_json.CT }}\"\n");
+        hass_print_unique_id(request,UNIQUE_ID_FORMAT, ENTITY_LIGHT_RGB,i);
+        hprintf128(request,"    name: \"%s\"\n",shortDeviceName);
+        http_generate_rgb_cfg(request, clientId);
 	} else if(pwmCount > 0) {
 
         for(i = 0; i < CHANNEL_MAX; i++) {
             if(h_isChannelPWM(i)) {
                 if (mqttAdded == 0){
-                    poststr(request,"mqtt:\n");
+                    poststr(request,HASS_MQTT_NODE);
                     mqttAdded=1;
                 }
                 if (lightAdded == 0){
-                    poststr(request,"  light:\n");
+                    poststr(request,HASS_LIGHT_NODE);
                     lightAdded=1;
                 }
 
-                hass_print_unique_id(request,"  - unique_id: \"%s\"\n", ENTITY_LIGHT,i);
-                hprintf128(request,"    name: \"%s %i\"\n",shortDeviceName,i);
-                hprintf128(request,"    state_topic: \"%s/%i/get\"\n",clientId,i);
-                hprintf128(request,"    command_topic: \"%s/%i/set\"\n",clientId,i);
+                hass_print_unique_id(request,"  - unique_id: \"%s\"\n", ENTITY_LIGHT_PWM,i);
+                hprintf128(request,HASS_INDEXED_NAME_CONFIG,shortDeviceName,i);
+                hprintf128(request,HASS_STATE_TOPIC_CONFIG,clientId,i);
+                hprintf128(request,HASS_COMMAND_TOPIC_CONFIG,clientId,i);
                 hprintf128(request,"    brightness_command_topic: \"%s/%i/set\"\n",clientId,i);
                 poststr(request,   "    on_command_type: \"brightness\"\n");
                 poststr(request,   "    brightness_scale: 99\n");
-                poststr(request,   "    qos: 1\n");
+                poststr(request,HASS_QOS_CONFIG);
                 poststr(request,   "    payload_on: 99\n");
                 poststr(request,   "    payload_off: 0\n");
-                poststr(request,   "    retain: true\n");
+                poststr(request,HASS_RETAIN_TRUE_CONFIG);
                 poststr(request,   "    optimistic: true\n");
-                hprintf128(request,"    availability:\n");
-                hprintf128(request,"      - topic: \"%s/connected\"\n",clientId);
+                hprintf128(request,HASS_AVAILABILITY_CONFIG);
+                hprintf128(request,HASS_CONNECTED_TOPIC_CONFIG,clientId);
             }
         }
     }

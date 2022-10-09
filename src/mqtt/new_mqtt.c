@@ -128,11 +128,20 @@ static void MQTT_Mutex_Free()
 	xSemaphoreGive( g_mutex );
 }
 
-void MQTT_PublishWholeDeviceState() 
+void MQTT_PublishWholeDeviceState_Internal(bool bAll) 
 {
   g_bPublishAllStatesNow = 1;
+  if(bAll) {
+	g_publishItemIndex = PUBLISHITEM_ALL_INDEX_FIRST;
+  } else {
+	g_publishItemIndex = PUBLISHITEM_DYNAMIC_INDEX_FIRST;
+  }
+}
+
+void MQTT_PublishWholeDeviceState() 
+{
   //Publish all status items once. Publish only dynamic items after that.
-  g_publishItemIndex = g_firstFullBroadcast == true ? PUBLISHITEM_ALL_INDEX_FIRST:PUBLISHITEM_DYNAMIC_INDEX_FIRST;
+	MQTT_PublishWholeDeviceState_Internal(g_firstFullBroadcast);
 }
 
 void MQTT_PublishOnlyDeviceChannelsIfPossible() 
@@ -520,8 +529,7 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t *client, const
   if (pub_topic != NULL)
   {
     sprintf(pub_topic, "%s/%s%s", sTopic, sChannel, (appendGet == true ? "/get" : ""));
-    addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publishing to %s retain=%i",pub_topic, retain);
-    addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Published '%s' \n", sVal);
+    addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"Publishing val %s to %s retain=%i\n",sVal,pub_topic, retain);
 
     err = mqtt_publish(client, pub_topic, sVal, strlen(sVal), qos, retain, mqtt_pub_request_cb, 0);
     os_free(pub_topic);
@@ -861,6 +869,20 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 
 	return MQTT_PublishMain(mqtt_client,channelNameStr,valueStr, flags, true);
 }
+// This console command will trigger a publish of all used variables (channels and extra stuff)
+OBK_Publish_Result MQTT_PublishAll(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	
+	MQTT_PublishWholeDeviceState_Internal(false);
+
+	return 1;// TODO make return values consistent for all console commands
+}
+// This console command will trigger a publish of runtime variables
+OBK_Publish_Result MQTT_PublishChannels(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	
+	MQTT_PublishWholeDeviceState_Internal(true);
+
+	return 1;// TODO make return values consistent for all console commands
+}
 OBK_Publish_Result MQTT_PublishCommand(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *topic, *value;
 	OBK_Publish_Result ret;
@@ -903,6 +925,8 @@ void MQTT_init()
   mqtt_initialised = 1;
 
   CMD_RegisterCommand("publish","",MQTT_PublishCommand, "Sqqq", NULL);
+  CMD_RegisterCommand("publishAll","",MQTT_PublishAll, "Sqqq", NULL);
+  CMD_RegisterCommand("publishChannels","",MQTT_PublishChannels, "Sqqq", NULL);
 }
 
 OBK_Publish_Result MQTT_DoItemPublishString(const char *sChannel, const char *valueStr) 
@@ -976,8 +1000,16 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
       break;
   }
   
-	if(CHANNEL_IsInUse(idx)) {
-		 MQTT_ChannelPublish(g_publishItemIndex, OBK_PUBLISH_FLAG_MUTEX_SILENT);
+	// if LED driver is active, do not publish raw channel values
+	if(LED_IsRunningDriver() == false && idx >= 0) {
+		// This is because raw channels are like PWM values, RGBCW has 5 raw channels
+		// (unless it has I2C LED driver)
+		// We do not need raw values for RGBCW lights (or RGB, etc)
+		// because we are using led_basecolor_rgb, led_dimmer, led_enableAll, etc
+		// NOTE: negative indexes are not channels - they are special values
+		if(CHANNEL_IsInUse(idx)) {
+			 MQTT_ChannelPublish(g_publishItemIndex, OBK_PUBLISH_FLAG_MUTEX_SILENT);
+		}
 	}
 	return OBK_PUBLISH_WAS_NOT_REQUIRED; // didnt publish
 }
@@ -1152,7 +1184,8 @@ void MQTT_QueuePublish(char *topic, char *channel, char *value, int flags){
   if ((strlen(topic) > MQTT_PUBLISH_ITEM_TOPIC_LENGTH) ||
     (strlen(channel) > MQTT_PUBLISH_ITEM_CHANNEL_LENGTH) ||
     (strlen(value) > MQTT_PUBLISH_ITEM_VALUE_LENGTH)){
-    addLogAdv(LOG_ERROR,LOG_FEATURE_MQTT,"Unable to queue! Topic, channel or value exceeds size limit\r\n");
+    addLogAdv(LOG_ERROR,LOG_FEATURE_MQTT,"Unable to queue! Topic (%i), channel (%i) or value (%i) exceeds size limit\r\n", 
+      strlen(topic), strlen(channel), strlen(value));
     return;
   }
 
