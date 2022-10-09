@@ -29,4 +29,9 @@
 		// add further app wide defined here, and used them to control build inclusion.
 
 	#endif
+
+	#ifndef OBK_DISABLE_ALL_DRIVERS
+		//Change this to 1 to test power measurement
+		#define ENABLE_BL_TEST_DRIVER	0
+	#endif
 #endif

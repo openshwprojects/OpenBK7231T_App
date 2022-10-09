@@ -3,11 +3,13 @@
 #include "../new_cfg.h"
 #include "../logging/logging.h"
 #include "../hal/hal_wifi.h"
+#include "../driver/drv_public.h"
 
 /*
 Abbreviated node names - https://www.home-assistant.io/docs/mqtt/discovery/
 Light - https://www.home-assistant.io/integrations/light.mqtt/
 Switch - https://www.home-assistant.io/integrations/switch.mqtt/
+Sensor - https://www.home-assistant.io/integrations/sensor.mqtt/
 */
 
 //Buffer used to populate values in cJSON_Add* calls. The values are based on
@@ -41,7 +43,8 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char *uniq_id){
             break;
 
         case ENTITY_SENSOR:
-            addLogAdv(LOG_ERROR, LOG_FEATURE_HASS, "ENTITY_SENSOR not yet supported");
+            sprintf(uniq_id,"%s_%s_%d", longDeviceName, "sensor", index);
+            break;
     }
 }
 
@@ -61,7 +64,6 @@ void hass_print_unique_id(http_request_t *request, const char *fmt, ENTITY_TYPE 
 /// @param uniq_id Entity unique id
 /// @param info Device info
 void hass_populate_device_config_channel(ENTITY_TYPE type, char *uniq_id, HassDeviceInfo *info){
-    //device_type is `switch` or `light`
     switch(type){
         case ENTITY_LIGHT_PWM:
         case ENTITY_LIGHT_RGB:
@@ -74,7 +76,8 @@ void hass_populate_device_config_channel(ENTITY_TYPE type, char *uniq_id, HassDe
             break;
         
         case ENTITY_SENSOR:
-            addLogAdv(LOG_ERROR, LOG_FEATURE_HASS, "ENTITY_SENSOR not yet supported");
+            sprintf(info->channel, "sensor/%s/config", uniq_id);
+            break;
     }
 }
 
@@ -100,7 +103,7 @@ cJSON *hass_build_device_node(cJSON *ids) {
 
 /// @brief Initializes HomeAssistant device discovery storage with common values.
 /// @param type 
-/// @param index Ignored for RGB
+/// @param index Ignored for RGB, for sensor this corresponds to sensor_mqttNames.
 /// @param payload_on 
 /// @param payload_off 
 /// @return 
@@ -130,15 +133,20 @@ HassDeviceInfo *hass_init_device_info(ENTITY_TYPE type, int index, char *payload
             sprintf(g_hassBuffer,"%s",CFG_GetShortDeviceName());
             break;
         case ENTITY_SENSOR:
-            addLogAdv(LOG_ERROR, LOG_FEATURE_HASS, "ENTITY_SENSOR not yet supported");
+#ifndef OBK_DISABLE_ALL_DRIVERS
+            sprintf(g_hassBuffer,"%s %s",CFG_GetShortDeviceName(), sensor_mqttNames[index]);
+#endif
+            break;
     }
     cJSON_AddStringToObject(info->root, "name", g_hassBuffer); 
 
-    sprintf(g_hassBuffer,"%s/connected",CFG_GetMQTTClientId());
-    cJSON_AddStringToObject(info->root, "avty_t", g_hassBuffer);   //availability_topic, `online` value is broadcasted
+    cJSON_AddStringToObject(info->root, "~", CFG_GetMQTTClientId());      //base topic
+
+    cJSON_AddStringToObject(info->root, "avty_t", "~/connected");   //availability_topic, `online` value is broadcasted
 
     cJSON_AddStringToObject(info->root, "pl_on", payload_on);    //payload_on
     cJSON_AddStringToObject(info->root, "pl_off", payload_off);   //payload_off
+
     cJSON_AddStringToObject(info->root, "uniq_id", info->unique_id);  //unique_id
 
     addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "root=%p", info->root);
@@ -149,14 +157,12 @@ HassDeviceInfo *hass_init_device_info(ENTITY_TYPE type, int index, char *payload
 /// @param index
 /// @return 
 HassDeviceInfo *hass_init_relay_device_info(int index){
-    const char *clientId = CFG_GetMQTTClientId();
-
     HassDeviceInfo *info = hass_init_device_info(ENTITY_RELAY, index, "1", "0");
     cJSON_AddNumberToObject(info->root, "qos", 1);
 
-    sprintf(g_hassBuffer,"%s/%i/get",clientId,index);
+    sprintf(g_hassBuffer,"~/%i/get",index);
     cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);   //state_topic
-    sprintf(g_hassBuffer,"%s/%i/set",clientId,index);
+    sprintf(g_hassBuffer,"~/%i/set",index);
     cJSON_AddStringToObject(info->root, COMMAND_TOPIC_KEY, g_hassBuffer);    //command_topic
 
     return info;
@@ -164,7 +170,7 @@ HassDeviceInfo *hass_init_relay_device_info(int index){
 
 /// @brief Initializes HomeAssistant light device discovery storage.
 /// @param type 
-/// @param index Ignored for RGB
+/// @param index Ignored for RGB, for sensor this corresponds to sensor_mqttNames.
 /// @return 
 HassDeviceInfo *hass_init_light_device_info(ENTITY_TYPE type, int index){
     const char *clientId = CFG_GetMQTTClientId();
@@ -178,18 +184,15 @@ HassDeviceInfo *hass_init_light_device_info(ENTITY_TYPE type, int index){
             cJSON_AddStringToObject(info->root, "rgb_cmd_tpl","{{'#%02x%02x%02x0000'|format(red,green,blue)}}");  //rgb_command_template
             cJSON_AddStringToObject(info->root, "rgb_val_tpl","{{value[1:3]|int(base=16)}},{{value[3:5]|int(base=16)}},{{value[5:7]|int(base=16)}}");  //rgb_value_template
 
-            sprintf(g_hassBuffer,"%s/led_basecolor_rgb/get",clientId);
-            cJSON_AddStringToObject(info->root, "rgb_stat_t", g_hassBuffer); //rgb_state_topic
+            cJSON_AddStringToObject(info->root, "rgb_stat_t", "~/led_basecolor_rgb/get"); //rgb_state_topic
             sprintf(g_hassBuffer,"cmnd/%s/led_basecolor_rgb",clientId);
             cJSON_AddStringToObject(info->root, "rgb_cmd_t", g_hassBuffer);  //rgb_command_topic
 
-            sprintf(g_hassBuffer,"%s/led_enableAll/get",clientId);
-            cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);  //state_topic
+            cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, "~/led_enableAll/get");  //state_topic
             sprintf(g_hassBuffer,"cmnd/%s/led_enableAll",clientId);
             cJSON_AddStringToObject(info->root, COMMAND_TOPIC_KEY, g_hassBuffer);  //command_topic
 
-            sprintf(g_hassBuffer,"%s/led_dimmer/get",clientId);
-            cJSON_AddStringToObject(info->root, "bri_stat_t", g_hassBuffer);  //brightness_state_topic
+            cJSON_AddStringToObject(info->root, "bri_stat_t", "~/led_dimmer/get");  //brightness_state_topic
             sprintf(g_hassBuffer,"cmnd/%s/led_dimmer",clientId);
             cJSON_AddStringToObject(info->root, "bri_cmd_t", g_hassBuffer);  //brightness_command_topic
 
@@ -198,8 +201,8 @@ HassDeviceInfo *hass_init_light_device_info(ENTITY_TYPE type, int index){
             if (type == ENTITY_LIGHT_RGBCW){
                 sprintf(g_hassBuffer,"cmnd/%s/led_temperature",clientId);
                 cJSON_AddStringToObject(info->root, "clr_temp_cmd_t", g_hassBuffer);    //color_temp_command_topic
-                sprintf(g_hassBuffer,"%s/led_temperature/get",clientId);
-                cJSON_AddStringToObject(info->root, "clr_temp_stat_t", g_hassBuffer);    //color_temp_state_topic
+
+                cJSON_AddStringToObject(info->root, "clr_temp_stat_t", "~/led_temperature/get");    //color_temp_state_topic
             }
 
             break;
@@ -211,18 +214,31 @@ HassDeviceInfo *hass_init_light_device_info(ENTITY_TYPE type, int index){
             cJSON_AddBoolToObject(info->root, "opt", cJSON_True);   //optimistic
             cJSON_AddNumberToObject(info->root, "qos", 1);
             
-            sprintf(g_hassBuffer,"%s/led_dimmer/get",clientId);
-            cJSON_AddStringToObject(info->root, "bri_stat_t", g_hassBuffer);  //brightness_state_topic
+            cJSON_AddStringToObject(info->root, "bri_stat_t", "~/led_dimmer/get");  //brightness_state_topic
             sprintf(g_hassBuffer,"cmnd/%s/led_dimmer",clientId);
             cJSON_AddStringToObject(info->root, "bri_cmd_t", g_hassBuffer);  //brightness_command_topic
 
-            sprintf(g_hassBuffer,"%s/%i/get",clientId,index);
+            sprintf(g_hassBuffer,"~/%i/get",index);
             cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);   //state_topic
-            sprintf(g_hassBuffer,"%s/%i/set",clientId,index);
+            sprintf(g_hassBuffer,"~/%i/set",index);
             cJSON_AddStringToObject(info->root, COMMAND_TOPIC_KEY, g_hassBuffer);    //command_topic
 
             break;
         
+        case ENTITY_SENSOR:
+#ifndef OBK_DISABLE_ALL_DRIVERS
+            info = hass_init_device_info(type, index, "1", "0");
+
+            //https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes
+            //device_class automatically assigns unit,icon
+            cJSON_AddStringToObject(info->root, "dev_cla", sensor_mqttNames[index]);   //device_class=voltage,current,power
+            
+            sprintf(g_hassBuffer,"%s/%s/get",clientId,sensor_mqttNames[index]);
+            cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
+#endif
+
+            break;
+
         default:
             addLogAdv(LOG_ERROR, LOG_FEATURE_HASS, "Unsupported light type %s", type);
     }
