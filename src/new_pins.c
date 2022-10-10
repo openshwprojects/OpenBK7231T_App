@@ -662,6 +662,8 @@ int CHANNEL_FindMaxValueForChannel(int ch) {
 	}
 	if(g_cfg.pins.channelTypes[ch] == ChType_Dimmer)
 		return 100;
+	if(g_cfg.pins.channelTypes[ch] == ChType_Dimmer256)
+		return 256;
 	return 1;
 }
 // PWMs are toggled between 0 and 100 (0% and 100% PWM)
@@ -1034,6 +1036,8 @@ int CHANNEL_ParseChannelType(const char *s) {
 		return ChType_Toggle;
 	if(!stricmp(s,"dimmer") )
 		return ChType_Dimmer;
+	if(!stricmp(s,"dimmer256") )
+		return ChType_Dimmer256;
 	if(!stricmp(s,"LowMidHigh") )
 		return ChType_LowMidHigh;
 	if(!stricmp(s,"OffLowMidHigh") )

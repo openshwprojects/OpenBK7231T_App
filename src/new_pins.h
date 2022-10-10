@@ -55,6 +55,7 @@ enum ChannelType {
 	ChType_Humidity_div10,
 	ChType_Temperature_div10,
 	ChType_Toggle,
+	// 0-100 range
 	ChType_Dimmer,
 	ChType_LowMidHigh,
 	ChType_TextField,
@@ -65,6 +66,8 @@ enum ChannelType {
 	ChType_OffLowestLowMidHighHighest,
 	// only 5 speeds
 	ChType_LowestLowMidHighHighest,
+	// like dimmer, but 0-255
+	ChType_Dimmer256,
 };
 
 

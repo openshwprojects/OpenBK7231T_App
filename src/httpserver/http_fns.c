@@ -416,16 +416,21 @@ int http_fn_index(http_request_t *request) {
                 poststr(request, "</tr>");
             }
         }
-        else if((bRawPWMs&&h_isChannelPWM(i)) || (channelType == ChType_Dimmer)) {
-			
+        else if((bRawPWMs&&h_isChannelPWM(i)) || (channelType == ChType_Dimmer) || (channelType == ChType_Dimmer256)) {
+			int maxValue;
         	// PWM and dimmer both use a slider control
         	const char *inputName = h_isChannelPWM(i) ? "pwm" : "dim";
             int pwmValue;
 
+			if(channelType == ChType_Dimmer256) {
+				maxValue = 255;
+			} else {
+				maxValue = 100;
+			}
             pwmValue = CHANNEL_Get(i);
             poststr(request, "<tr><td>");
             hprintf128(request,"<form action=\"index\" id=\"form%i\">",i);
-            hprintf128(request,"<input type=\"range\" min=\"0\" max=\"100\" name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">",inputName,i,pwmValue);
+            hprintf128(request,"<input type=\"range\" min=\"0\" max=\"%i\" name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">",maxValue,inputName,i,pwmValue);
             hprintf128(request,"<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">",inputName,i);
             hprintf128(request,"<input type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>",i);
             poststr(request, "</td></tr>");
