@@ -188,9 +188,14 @@ void Button_OnDoubleClick(int index)
 	}
 }
 void Button_OnLongPressHold(int index) {
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"%i key_long_press_hold\r\n", index);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"%i Button_OnLongPressHold\r\n", index);
 	// fire event - button on pin <index> was held
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ONHOLD,index);
+}
+void Button_OnLongPressHoldStart(int index) {
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"%i Button_OnLongPressHoldStart\r\n", index);
+	// fire event - button on pin <index> was held
+	EventHandlers_FireEvent(CMD_EVENT_PIN_ONHOLDSTART,index);
 }
 
 bool BTN_ShouldInvert(int index) {
@@ -538,6 +543,9 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 			MQTT_ChannelChangeCallback(ch,iVal);
 		}
 	}
+	// Simple event - it just says that there was a change
+	EventHandlers_FireEvent(CMD_EVENT_CHANNEL_ONCHANGE,ch);
+	// more advanced events - change FROM value TO value
 	EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CHANNEL0 + ch, prevValue, iVal);
 	//addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_OnChanged: Channel index %i startChannelValues %i\n\r",ch,g_cfg.startChannelValues[ch]);
 
@@ -821,7 +829,7 @@ void PIN_Input_Handler(int pinIndex)
 
 		} else if(handle->ticks > BTN_LONG_TICKS) {
 			handle->event = (uint8_t)BTN_LONG_RRESS_START;
-			Button_OnLongPressHold(pinIndex);
+			Button_OnLongPressHoldStart(pinIndex);
 			EVENT_CB(BTN_LONG_RRESS_START);
 			handle->state = 5;
 		}
@@ -868,6 +876,7 @@ void PIN_Input_Handler(int pinIndex)
 		if(handle->button_level == handle->active_level) {
 			//continue hold trigger
 			handle->event = (uint8_t)BTN_LONG_PRESS_HOLD;
+			Button_OnLongPressHold(pinIndex);
 			EVENT_CB(BTN_LONG_PRESS_HOLD);
 		} else { //releasd
 			handle->event = (uint8_t)BTN_PRESS_UP;

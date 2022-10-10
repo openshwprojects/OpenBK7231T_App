@@ -31,6 +31,9 @@ enum EventCode {
 	CMD_EVENT_PIN_ONCLICK,
 	CMD_EVENT_PIN_ONDBLCLICK,
 	CMD_EVENT_PIN_ONHOLD,
+	CMD_EVENT_PIN_ONHOLDSTART,
+	// for simple event on any change (not with given value)
+	CMD_EVENT_CHANNEL_ONCHANGE,
 	// change events (with a value, so event can trigger only when
 	// argument becomes larger than a given threshold, or lower, etc)
 	CMD_EVENT_CHANGE_CHANNEL0,

@@ -101,6 +101,14 @@ void DRV_DGR_Send_Brightness(const char *groupName, byte brightness){
 
 	DRV_DGR_Send_Generic(message,len);
 }
+void DRV_DGR_Send_RGBCW(const char *groupName, byte *rgbcw){
+	int len;
+	byte message[64];
+
+	len = DGR_Quick_FormatRGBCW(message,sizeof(message),groupName,g_dgr_send_seq, 0, rgbcw[0],rgbcw[1],rgbcw[2],rgbcw[3],rgbcw[4]);
+
+	DRV_DGR_Send_Generic(message,len);
+}
 void DRV_DGR_CreateSocket_Receive() {
 
     struct sockaddr_in addr;
@@ -361,6 +369,7 @@ void DRV_DGR_Shutdown()
 }
 
 // DGR_SendPower testSocket 1 1
+// DGR_SendPower stringGroupName integerChannelValues integerChannelsCount
 int CMD_DGR_SendPower(const void *context, const char *cmd, const char *args, int flags) {
 	const char *groupName;
 	int channelValues;
@@ -435,6 +444,7 @@ void DRV_DGR_OnChannelChanged(int ch, int value) {
 	
 }
 // DGR_SendBrightness roomLEDstrips 128
+// DGR_SendBrightness stringGroupName integerBrightness
 int CMD_DGR_SendBrightness(const void *context, const char *cmd, const char *args, int flags) {
 	const char *groupName;
 	int brightness;
@@ -452,6 +462,29 @@ int CMD_DGR_SendBrightness(const void *context, const char *cmd, const char *arg
 
 	return 1;
 }
+// DGR_SendRGBCW roomLEDstrips 255 0 0
+// DGR_SendRGBCW stringGroupName r g b
+int CMD_DGR_SendRGBCW(const void *context, const char *cmd, const char *args, int flags) {
+	const char *groupName;
+	byte rgbcw[5];
+
+	Tokenizer_TokenizeString(args);
+
+	if(Tokenizer_GetArgsCount() < 4) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Command requires at least 4 arguments - groupname, r, g, b\n");
+		return 0;
+	}
+	groupName = Tokenizer_GetArg(0);
+	rgbcw[0] = Tokenizer_GetArgInteger(1);
+	rgbcw[1] = Tokenizer_GetArgInteger(2);
+	rgbcw[2] = Tokenizer_GetArgInteger(3);
+	rgbcw[3] = Tokenizer_GetArgInteger(4);
+	rgbcw[4] = Tokenizer_GetArgInteger(5);
+
+	DRV_DGR_Send_RGBCW(groupName,rgbcw);
+
+	return 1;
+}
 void DRV_DGR_Init()
 {
 	memset(&g_dgrMembers[0],0,sizeof(g_dgrMembers));
@@ -464,6 +497,7 @@ void DRV_DGR_Init()
 #endif
     CMD_RegisterCommand("DGR_SendPower", "", CMD_DGR_SendPower, "qqq", NULL);
     CMD_RegisterCommand("DGR_SendBrightness", "", CMD_DGR_SendBrightness, "qqq", NULL);
+    CMD_RegisterCommand("DGR_SendRGBCW", "", CMD_DGR_SendRGBCW, "qqq", NULL);
 }
 
 

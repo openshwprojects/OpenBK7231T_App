@@ -11,6 +11,19 @@
 // addEventHandler OnHold 5 addChannel 4 10
 // As above, but it will require a button hold and it will add value 10 to channel 4 (it will add a value to PWM, PWM channels are <0,100> range)
 
+/*
+startDriver DGR
+addEventHandler OnClick 8 DGR_SendBrightness roomLEDstrips 0
+addEventHandler OnClick 10 DGR_SendBrightness roomLEDstrips 100
+*/
+
+/*
+startDriver DGR
+addEventHandler OnClick 8 backlog setChannel 4 0; DGR_SendBrightness roomLEDstrips $CH4
+addEventHandler OnClick 10 backlog setChannel 4 255; DGR_SendBrightness roomLEDstrips $CH4
+addEventHandler OnHold 8 backlog addChannel 4 10 0 255; DGR_SendBrightness roomLEDstrips $CH4
+addEventHandler OnHold 10 backlog addChannel 4 -10 0 255; DGR_SendBrightness roomLEDstrips $CH4
+*/
 //
 // addEventHandler OnChannelChanged 5 ???
 // addEventHandler OnWifiLost ????
@@ -103,8 +116,12 @@ static int EVENT_ParseEventName(const char *s) {
 		return CMD_EVENT_PIN_ONTOGGLE;
 	if(!stricmp(s,"OnHold"))
 		return CMD_EVENT_PIN_ONHOLD;
+	if(!stricmp(s,"OnHoldStart"))
+		return CMD_EVENT_PIN_ONHOLDSTART;
 	if(!stricmp(s,"OnDblClick"))
 		return CMD_EVENT_PIN_ONDBLCLICK;
+	if(!stricmp(s,"OnChannelChange"))
+		return CMD_EVENT_CHANNEL_ONCHANGE;
 	return CMD_EVENT_NONE;
 }
 static bool EVENT_EvaluateCondition(int code, int argument, int next) {
