@@ -73,10 +73,12 @@ char *logfeaturenames[] = {
     "HASS:" // = 19
 };
 
+#define LOGGING_BUFFER_SIZE		1024
 
 int direct_serial_log = DEFAULT_DIRECT_SERIAL_LOG;
 
 static int g_extraSocketToSendLOG = 0;
+static char g_loggingBuffer[LOGGING_BUFFER_SIZE];
 
 void LOG_SetRawSocketCallback(int newFD) 
 {
@@ -252,7 +254,6 @@ static void initLog( void )
 // if head collides with either tail, move the tails on.
 void addLogAdv(int level, int feature, char *fmt, ...)
 {
-    const size_t tmp_len = 1024;
     char *tmp;
     char *t;
     if (!((1<<feature) & logfeatures)){
@@ -268,87 +269,82 @@ void addLogAdv(int level, int feature, char *fmt, ...)
         initLog();
     }
 
-    tmp = (char*)os_malloc(tmp_len);
-    if (tmp != NULL)
+		tmp = g_loggingBuffer;
+    memset(tmp, 0, LOGGING_BUFFER_SIZE);
+    t = tmp;
+    BaseType_t taken = xSemaphoreTake( logMemory.mutex, 100 );
+
+    if(feature == LOG_FEATURE_RAW)
     {
-        memset(tmp, 0, tmp_len);
-        t = tmp;
-        BaseType_t taken = xSemaphoreTake( logMemory.mutex, 100 );
-    
-        if(feature == LOG_FEATURE_RAW) 
+        // raw means no prefixes
+    } else {
+        strncpy(t, loglevelnames[level], (LOGGING_BUFFER_SIZE-(3+t-tmp)));
+        t += strlen(t);
+        if (feature < sizeof(logfeaturenames)/sizeof(*logfeaturenames))
         {
-            // raw means no prefixes
-        } else {
-            strncpy(t, loglevelnames[level], (tmp_len-(3+t-tmp)));
+            strncpy(t, logfeaturenames[feature], (LOGGING_BUFFER_SIZE-(3+t-tmp)));
             t += strlen(t);
-            if (feature < sizeof(logfeaturenames)/sizeof(*logfeaturenames))
-            {
-                strncpy(t, logfeaturenames[feature], (tmp_len-(3+t-tmp)));
-                t += strlen(t);
-            }
         }
+    }
 
-        va_start(argList, fmt);
-        vsnprintf(t, (tmp_len-(3+t-tmp)), fmt, argList);
-        va_end(argList);
-        if (tmp[strlen(tmp)-1]=='\n') tmp[strlen(tmp)-1]='\0';
-        if (tmp[strlen(tmp)-1]=='\r') tmp[strlen(tmp)-1]='\0';
+    va_start(argList, fmt);
+    vsnprintf(t, (LOGGING_BUFFER_SIZE-(3+t-tmp)), fmt, argList);
+    va_end(argList);
+    if (tmp[strlen(tmp)-1]=='\n') tmp[strlen(tmp)-1]='\0';
+    if (tmp[strlen(tmp)-1]=='\r') tmp[strlen(tmp)-1]='\0';
 
-        int len = strlen(tmp); // save 3 bytes at end for /r/n/0
-        tmp[len++] = '\r';
-        tmp[len++] = '\n';
-        tmp[len] = '\0';
+    int len = strlen(tmp); // save 3 bytes at end for /r/n/0
+    tmp[len++] = '\r';
+    tmp[len++] = '\n';
+    tmp[len] = '\0';
 #if PLATFORM_XR809
-        printf(tmp);
+    printf(tmp);
 #endif
 #if PLATFORM_W600 || PLATFORM_W800
-        //printf(tmp);
+    //printf(tmp);
 #endif
 //#if PLATFORM_BL602
-        //printf(tmp);
+    //printf(tmp);
 //#endif
-        if(g_extraSocketToSendLOG) 
-        {
-            send(g_extraSocketToSendLOG,tmp,strlen(tmp),0);
-        }
+    if(g_extraSocketToSendLOG) 
+    {
+        send(g_extraSocketToSendLOG,tmp,strlen(tmp),0);
+    }
 
-        if (direct_serial_log){
-            bk_printf("%s", tmp);
-            if (taken == pdTRUE){
-                xSemaphoreGive( logMemory.mutex );
-            }
-            if (log_delay){
-                rtos_delay_milliseconds(log_delay);
-            }
-            os_free(tmp);
-            return;
-        }
-
-        for (int i = 0; i < len; i++)
-        {
-            logMemory.log[logMemory.head] = tmp[i];
-            logMemory.head = (logMemory.head + 1) % LOGSIZE;
-            if (logMemory.tailserial == logMemory.head)
-            {
-                logMemory.tailserial = (logMemory.tailserial + 1) % LOGSIZE;
-            }
-            if (logMemory.tailtcp == logMemory.head)
-            {
-                logMemory.tailtcp = (logMemory.tailtcp + 1) % LOGSIZE;
-            }
-            if (logMemory.tailhttp == logMemory.head)
-            {
-                logMemory.tailhttp = (logMemory.tailhttp + 1) % LOGSIZE;
-            }
-        }
-
+    if (direct_serial_log){
+        bk_printf("%s", tmp);
         if (taken == pdTRUE){
             xSemaphoreGive( logMemory.mutex );
         }
         if (log_delay){
             rtos_delay_milliseconds(log_delay);
         }
-        os_free(tmp);
+        return;
+    }
+
+    for (int i = 0; i < len; i++)
+    {
+        logMemory.log[logMemory.head] = tmp[i];
+        logMemory.head = (logMemory.head + 1) % LOGSIZE;
+        if (logMemory.tailserial == logMemory.head)
+        {
+            logMemory.tailserial = (logMemory.tailserial + 1) % LOGSIZE;
+        }
+        if (logMemory.tailtcp == logMemory.head)
+        {
+            logMemory.tailtcp = (logMemory.tailtcp + 1) % LOGSIZE;
+        }
+        if (logMemory.tailhttp == logMemory.head)
+        {
+            logMemory.tailhttp = (logMemory.tailhttp + 1) % LOGSIZE;
+        }
+    }
+
+    if (taken == pdTRUE){
+        xSemaphoreGive( logMemory.mutex );
+    }
+    if (log_delay){
+        rtos_delay_milliseconds(log_delay);
     }
 }
 
