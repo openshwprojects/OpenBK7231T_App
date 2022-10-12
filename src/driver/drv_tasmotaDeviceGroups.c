@@ -279,6 +279,7 @@ dgrMember_t *findMember() {
 	if(i>=MAX_DGR_MEMBERS)
 		return 0;
 	memcpy(&g_dgrMembers[i].addr,&addr,sizeof(addr));
+	g_dgrMembers[i].lastSeq = 0;
 	return &g_dgrMembers[i];
 }
 
@@ -293,7 +294,7 @@ int DGR_CheckSequence(int seq) {
 		m->lastSeq = seq;
 		return 0;
 	}
-	if(seq + 4 < m->lastSeq) {
+	if(seq + 16 < m->lastSeq) {
 		// hard reset
 		m->lastSeq = seq;
 		return 0;
