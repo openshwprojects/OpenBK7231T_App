@@ -28,6 +28,7 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr
 	if(dev != 0) {
 		// right now, only single group support
 		if(strcmp(dev->gr.groupName,groupName)) {
+			addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR,"DGR ignoring message from group %s - device is in %s\n",groupName,dev->gr.groupName);
 			return -1;
 		}
 	}
@@ -40,20 +41,22 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr
 	}
 
 	if(dev->cbs.checkSequence(sequence)) {
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR,"DGR ignoring message from older sequence %i\n",sequence);
 		return 1;
 	}
 
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_Parse: [%s] seq %i, flags %i\n",inet_ntoa(((struct sockaddr_in *)addr)->sin_addr),sequence, flags);
+
 	while(MSG_EOF(&msg)==0) {
 		type = MSG_ReadByte(&msg);
-		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Next section - %i\n",type);
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"Next section - %i\n",type);
 		if(type == DGR_ITEM_EOL) {
 			bGotEOL = 1;
 		} else if(type < DGR_ITEM_MAX_8BIT) {
 			vals = MSG_ReadByte(&msg);
 			if(type == DGR_ITEM_BRI_POWER_ON) {
-				addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_ITEM_BRI_POWER_ON: %i\n",vals);
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"DGR_ITEM_BRI_POWER_ON: %i\n",vals);
 				// FORWARD TO PROCESSING BY API
 				if(dev) {
 					if(DGR_IsItemInMask(type, dev->gr.devGroupShare_In)) {
@@ -61,7 +64,7 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr
 					}
 				}
 			} else if(type == DGR_ITEM_LIGHT_BRI) {
-				addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_ITEM_LIGHT_BRI: %i\n",vals);
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"DGR_ITEM_LIGHT_BRI: %i\n",vals);
 				// FORWARD TO PROCESSING BY API
 				if(dev) {
 					if(DGR_IsItemInMask(type, dev->gr.devGroupShare_In)) {
@@ -86,15 +89,15 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr
 					}
 				}
 
-				addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Power event - values %i, numChannels %i, chans=",relayFlags,relaysCnt);
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"Power event - values %i, numChannels %i, chans=",relayFlags,relaysCnt);
 				for(i = 0; i < relaysCnt; i++) {
 					if(BIT_CHECK(relayFlags,i)) {
-						addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"[ON]");
+						addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"[ON]");
 					} else {
-						addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"[OFF]");
+						addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"[OFF]");
 					}
 				}
-				addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"\n");
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"\n");
 			} else {
 				MSG_SkipBytes(&msg,4);
 			}
@@ -104,7 +107,7 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr
 			// Gives sLen 4
 			if(type == DGR_ITEM_COMMAND) {
 				const char *cmd = MSG_GetStringPointerAtCurrentPosition(&msg);
-				addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_ITEM_COMMAND: %s\n",cmd);
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"DGR_ITEM_COMMAND: %s\n",cmd);
 			}
 			MSG_SkipBytes(&msg,sLen);
 		} else if(type == DGR_ITEM_LIGHT_CHANNELS) {

@@ -87,6 +87,7 @@ void DRV_DGR_Send_Generic(byte *message, int len) {
             (struct sockaddr*) &addr,
             sizeof(addr)
         );
+	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR,"DRV_DGR_Send_Generic: sent message with seq %i\n",g_dgr_send_seq);
 }
 void DRV_DGR_Send_Power(const char *groupName, int channelValues, int numChannels){
 	int len;
@@ -338,7 +339,7 @@ void DRV_DGR_RunQuickTick() {
 			//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"nothing\n");
             return ;
         }
-		//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Received %i bytes from %s\n",nbytes,inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr));
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR,"Received %i bytes from %s\n",nbytes,inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr));
         msgbuf[nbytes] = '\0';
 
 		strcpy(def.gr.groupName,CFG_DeviceGroups_GetName());
@@ -405,6 +406,7 @@ int CMD_DGR_SendPower(const void *context, const char *cmd, const char *args, in
 	channelsCount = Tokenizer_GetArgInteger(2);
 
 	DRV_DGR_Send_Power(groupName,channelValues,channelsCount);
+	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"CMD_DGR_SendPower: sent message to group %s\n",groupName);
 
 	return 1;
 }
@@ -478,6 +480,7 @@ int CMD_DGR_SendBrightness(const void *context, const char *cmd, const char *arg
 	brightness = Tokenizer_GetArgInteger(1);
 
 	DRV_DGR_Send_Brightness(groupName,brightness);
+	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_SendBrightness: sent message to group %s\n",groupName);
 
 	return 1;
 }
@@ -501,6 +504,7 @@ int CMD_DGR_SendRGBCW(const void *context, const char *cmd, const char *args, in
 	rgbcw[4] = Tokenizer_GetArgInteger(5);
 
 	DRV_DGR_Send_RGBCW(groupName,rgbcw);
+	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_SendRGBCW: sent message to group %s\n",groupName);
 
 	return 1;
 }
