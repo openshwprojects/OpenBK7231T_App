@@ -123,6 +123,7 @@ div#state {
 }
 div#changed {
   padding: 0;
+	height: 23px;
 }
 div#main {
   text-align: left;

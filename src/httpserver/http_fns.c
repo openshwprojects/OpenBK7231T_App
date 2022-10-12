@@ -170,9 +170,10 @@ int http_fn_index(http_request_t *request) {
 	bRawPWMs = CFG_HasFlag(OBK_FLAG_LED_RAWCHANNELSMODE);
 	forceShowRGBCW = CFG_HasFlag(OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER);
 
+    http_setup(request, httpMimeTypeHTML);	//Add mimetype regardless of the request
+
     // use ?state URL parameter to only request current state
     if(!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
-        http_setup(request, httpMimeTypeHTML);
         http_html_start(request, NULL);
 
         poststr(request, "<div id=\"changed\">");
