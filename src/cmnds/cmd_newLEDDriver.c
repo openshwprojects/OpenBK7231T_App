@@ -473,8 +473,8 @@ void LED_SetFinalCW(byte c, byte w) {
 
 	LED_SetTemperature0to1Range(tmp);
 
-	baseColors[4] = c;
-	baseColors[5] = w;
+	baseColors[3] = c;
+	baseColors[4] = w;
 
 	apply_smart_light();
 }
