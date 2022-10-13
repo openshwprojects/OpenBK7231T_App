@@ -6,7 +6,8 @@
 	"C_Cpp.clang_format_style": "{ BasedOnStyle: LLVM, UseTab: Always, IndentWidth: 4, TabWidth: 4, BreakBeforeBraces: Attach, AllowShortIfStatementsOnASingleLine: false, IndentCaseLabels: false, ColumnLimit: 0, AccessModifierOffset: -4, NamespaceIndentation: All, FixNamespaceComments: false }",
 	"C_Cpp.autocompleteAddParentheses": true,
 	"files.exclude": {
-		"**/*.o": true
+		"**/*.o": true,
+		"node_modules": true
 	},
 	"editor.insertSpaces": false,
 	"editor.tabSize": 4,
