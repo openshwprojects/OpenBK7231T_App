@@ -110,14 +110,14 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr
 		} else if(type == DGR_ITEM_LIGHT_CHANNELS) {
 			byte sLen = MSG_ReadByte(&msg);
 			if(sLen == 5) {
-				byte r, g, b, c, w;
-				r = MSG_ReadByte(&msg);
-				g = MSG_ReadByte(&msg);
-				b = MSG_ReadByte(&msg);
-				c = MSG_ReadByte(&msg);
-				w = MSG_ReadByte(&msg);
+				byte dat[5];;
+				dat[0] = MSG_ReadByte(&msg);
+				dat[1]= MSG_ReadByte(&msg);
+				dat[2] = MSG_ReadByte(&msg);
+				dat[3] = MSG_ReadByte(&msg);
+				dat[4] = MSG_ReadByte(&msg);
 
-				dev->cbs.processRGBCW(r,g,b,c,w);
+				dev->cbs.processRGBCW(dat);
 			} else {
 				MSG_SkipBytes(&msg,sLen);
 			}

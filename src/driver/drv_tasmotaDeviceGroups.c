@@ -204,8 +204,8 @@ void DRV_DGR_CreateSocket_Receive() {
 	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Waiting for packets\n");
 }
 
-void DRV_DGR_processRGBCW(byte r, byte g, byte b, byte c, byte w) {
-
+void DRV_DGR_processRGBCW(byte *rgbcw) {
+	LED_SetFinalRGBCW(rgbcw);
 }
 void DRV_DGR_processPower(int relayStates, byte relaysCount) {
 	int startIndex;

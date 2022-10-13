@@ -16,7 +16,7 @@ typedef struct dgrCallbacks_s {
 	// they are both sent together by Tasmota devices
 	void (*processBrightnessPowerOn)(byte brightness);
 	void (*processLightBrightness)(byte brightness);
-	void (*processRGBCW)(byte r, byte g, byte b, byte c, byte w);
+	void (*processRGBCW)(byte *rgbcw);
 	int (*checkSequence)(int seq);
 } dgrCallbacks_t;
 

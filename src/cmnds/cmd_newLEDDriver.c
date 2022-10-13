@@ -285,6 +285,9 @@ OBK_Publish_Result LED_SendCurrentLightMode() {
 	}
 	return OBK_PUBLISH_WAS_NOT_REQUIRED;
 }
+void LED_SetTemperature0to1Range(float f) {
+	led_temperature_current = led_temperature_min + (led_temperature_max-led_temperature_min) * f;
+}
 float LED_GetTemperature0to1Range() {
 	float f;
 
@@ -409,6 +412,34 @@ static int dimmer(const void *context, const char *cmd, const char *args, int cm
 		return 1;
 	//}
 	//return 0;
+}
+void LED_SetFinalRGBCW(byte *rgbcw) {
+	if(rgbcw[0] == 0 && rgbcw[1] == 0 && rgbcw[2] == 0 && rgbcw[3] == 0 && rgbcw[4] == 0) {
+
+	}
+
+	if(rgbcw[3] == 0 && rgbcw[4] == 0) {
+		LED_SetFinalRGB(rgbcw[0],rgbcw[1],rgbcw[2]);
+	} else {
+		LED_SetFinalCW(rgbcw[3],rgbcw[4]);
+	}
+}
+void LED_SetFinalCW(byte c, byte w) {
+	float tmp;
+
+	SET_LightMode(Light_Temperature);
+
+	// TODO: finish the calculation,
+	// the Device Group sent as White and Cool values in byte range,
+	// we need to get back Temperature value
+	tmp = c / 255.0f;
+
+	LED_SetTemperature0to1Range(tmp);
+
+	baseColors[4] = c;
+	baseColors[5] = w;
+
+	apply_smart_light();
 }
 void LED_SetFinalRGB(byte r, byte g, byte b) {
 	SET_LightMode(Light_RGB);
