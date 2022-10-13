@@ -8,5 +8,6 @@
     "files.exclude": {
         "**/*.o": true
     },
-    
+    "editor.insertSpaces": true,
+    "editor.tabSize": 4
 }
