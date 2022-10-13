@@ -372,7 +372,7 @@ int channelSet(mqtt_request_t* request){
   int channel = 0;
   int iValue = 0;
 
-  addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"channelSet topic %i", request->topic);
+  addLogAdv(LOG_DEBUG,LOG_FEATURE_MQTT,"channelSet topic %i with arg %s", request->topic, request->received);
 
   // TODO: better
   while(*p != '/') {
