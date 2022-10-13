@@ -5,11 +5,11 @@
 #include "../mqtt/new_mqtt.h"
 
 typedef enum {
-    ENTITY_RELAY = 0,
-    ENTITY_LIGHT_PWM = 1,
-    ENTITY_LIGHT_RGB = 2,
-    ENTITY_LIGHT_RGBCW = 3,
-    ENTITY_SENSOR = 4,
+	ENTITY_RELAY = 0,
+	ENTITY_LIGHT_PWM = 1,
+	ENTITY_LIGHT_RGB = 2,
+	ENTITY_LIGHT_RGBCW = 3,
+	ENTITY_SENSOR = 4,
 } ENTITY_TYPE;
 
 //unique_id is defined in hass_populate_unique_id and is based on CFG_GetDeviceName() whose size is CGF_DEVICE_NAME_SIZE.
@@ -25,13 +25,13 @@ typedef enum {
 
 /// @brief HomeAssistant device discovery information
 typedef struct HassDeviceInfo_s {
-    char unique_id[HASS_UNIQUE_ID_SIZE];
-    char channel[HASS_CHANNEL_SIZE];
-    char json[HASS_JSON_SIZE];
+	char unique_id[HASS_UNIQUE_ID_SIZE];
+	char channel[HASS_CHANNEL_SIZE];
+	char json[HASS_JSON_SIZE];
 
-    cJSON* root;
-    cJSON* device;
-    cJSON* ids;
+	cJSON* root;
+	cJSON* device;
+	cJSON* ids;
 } HassDeviceInfo;
 
 void hass_print_unique_id(http_request_t* request, const char* fmt, ENTITY_TYPE type, int index);

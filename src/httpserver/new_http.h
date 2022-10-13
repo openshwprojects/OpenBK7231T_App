@@ -23,28 +23,28 @@ extern const char* g_build_str;
 #define MAX_QUERY 16
 #define MAX_HEADERS 16
 typedef struct http_request_tag {
-    char* received; // partial or whole received data, up to 1024
-    int receivedLen;
-    int receivedLenmax; // sizeof received
+	char* received; // partial or whole received data, up to 1024
+	int receivedLen;
+	int receivedLenmax; // sizeof received
 
-    // filled by HTTP_ProcessPacket
-    int method;
-    char* url;
-    int numqueryitems;
-    char* querynames[MAX_QUERY];
-    char* queryvalues[MAX_QUERY];
-    int numheaders;
-    char* headers[MAX_HEADERS];
-    char* bodystart; /// start start of the body (maybe all of it)
-    int bodylen;
-    int contentLength;
-    int responseCode;
+	// filled by HTTP_ProcessPacket
+	int method;
+	char* url;
+	int numqueryitems;
+	char* querynames[MAX_QUERY];
+	char* queryvalues[MAX_QUERY];
+	int numheaders;
+	char* headers[MAX_HEADERS];
+	char* bodystart; /// start start of the body (maybe all of it)
+	int bodylen;
+	int contentLength;
+	int responseCode;
 
-    // used to respond
-    char* reply;
-    int replylen;
-    int replymaxlen;
-    int fd;
+	// used to respond
+	char* reply;
+	int replylen;
+	int replymaxlen;
+	int fd;
 } http_request_t;
 
 
@@ -64,11 +64,11 @@ int http_getArgInteger(const char* base, const char* name);
 int hprintf128(http_request_t* request, const char* fmt, ...);
 
 typedef enum {
-    HTTP_ANY = -1,
-    HTTP_GET = 0,
-    HTTP_PUT = 1,
-    HTTP_POST = 2,
-    HTTP_OPTIONS = 3
+	HTTP_ANY = -1,
+	HTTP_GET = 0,
+	HTTP_PUT = 1,
+	HTTP_POST = 2,
+	HTTP_OPTIONS = 3
 } METHODS;
 
 // callback function for http
