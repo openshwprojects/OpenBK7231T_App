@@ -45,7 +45,7 @@ static driver_t g_drivers[] = {
 	
 
 #if PLATFORM_BEKEN
-	{ "DGR", DRV_DGR_Init, NULL, NULL, DRV_DGR_RunFrame, DRV_DGR_Shutdown, DRV_DGR_OnChannelChanged, false },
+	{ "DGR", DRV_DGR_Init, NULL, DRV_DGR_RunEverySecond, DRV_DGR_RunQuickTick, DRV_DGR_Shutdown, DRV_DGR_OnChannelChanged, false },
 	{ "DDP", DRV_DDP_Init, NULL, NULL, DRV_DDP_RunFrame, DRV_DDP_Shutdown, NULL, false },
 #endif
 	{ "SM2135", SM2135_Init, SM2135_RunFrame, NULL, NULL, NULL, SM2135_OnChannelChanged, false },

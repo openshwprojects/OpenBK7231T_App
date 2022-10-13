@@ -38,6 +38,24 @@ Checkout [this repository](https://github.com/openshwprojects/OpenBK7231T_App) t
 Run ./build_oxr_sharedapp.sh
 
 
+# Building for BL602
+Get the SDK repo:
+https://github.com/openshwprojects/OpenBL602
+Clone it to a folder, e.g. `OpenBL602/`
+
+Clone the [app](https://github.com/openshwprojects/OpenBK7231T_App) repo into `OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared` (such that the `.git` folder is placed in the `shared` folder).
+
+On Windows, install [MSys2](https://www.msys2.org/) and open a Msys2 terminal. Install `make` using `pacman -S make`.
+Create a copy of the `OpenBL602/toolchain/riscv/MSYS` folder and rename it to `OpenBL602/toolchain/riscv/MINGW64`.
+
+Open a Msys2 terminal and browse to the `OpenBL602/customer_app/bl602_sharedApp` folder.
+
+Build using:
+`./genromap`
+
+The output binaries can be found at `OpenBL602/customer_app/bl602_sharedApp/build_out/bl602_sharedApp.bin`.
+
+
 # Building for W800/W801
 
 To build for W800, you need our W800 SDK fork:

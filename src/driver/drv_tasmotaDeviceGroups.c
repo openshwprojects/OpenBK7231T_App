@@ -13,6 +13,7 @@
 
 static const char* dgr_group = "239.255.250.250";
 static int dgr_port = 4447;
+static int dgr_retry_time_left = 20;
 //
 //int DRV_DGR_CreateSocket_Send() {
 //
@@ -57,8 +58,10 @@ void DRV_DGR_CreateSocket_Send() {
     //
     g_dgr_socket_send = socket(AF_INET, SOCK_DGRAM, 0);
     if (g_dgr_socket_send < 0) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_CreateSocket_Send: failed to do socket\n");
         return;
     }
+	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_CreateSocket_Send: socket created\n");
 
 
 
@@ -84,6 +87,7 @@ void DRV_DGR_Send_Generic(byte *message, int len) {
             (struct sockaddr*) &addr,
             sizeof(addr)
         );
+	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR,"DRV_DGR_Send_Generic: sent message with seq %i\n",g_dgr_send_seq);
 }
 void DRV_DGR_Send_Power(const char *groupName, int channelValues, int numChannels){
 	int len;
@@ -122,7 +126,7 @@ void DRV_DGR_CreateSocket_Receive() {
     g_dgr_socket_receive = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (g_dgr_socket_receive < 0) {
 		g_dgr_socket_receive = -1;
-		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"failed to do socket\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_CreateSocket_Receive: failed to do socket\n");
         return ;
     }
 
@@ -132,7 +136,7 @@ void DRV_DGR_CreateSocket_Receive() {
 		iResult = setsockopt(g_dgr_socket_receive, SOL_SOCKET, SO_BROADCAST, (char *)&flag, sizeof(flag));
 		if (iResult != 0)
 		{
-			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"failed to do setsockopt SO_BROADCAST\n");
+			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_CreateSocket_Receive: failed to do setsockopt SO_BROADCAST\n");
 			close(g_dgr_socket_receive);
 			g_dgr_socket_receive = -1;
 			return ;
@@ -146,7 +150,7 @@ void DRV_DGR_CreateSocket_Receive() {
 				g_dgr_socket_receive, SOL_SOCKET, SO_REUSEADDR, (char*) &flag, sizeof(flag)
 			) < 0
 		){
-			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"failed to do setsockopt SO_REUSEADDR\n");
+			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_CreateSocket_Receive: failed to do setsockopt SO_REUSEADDR\n");
 			close(g_dgr_socket_receive);
 			g_dgr_socket_receive = -1;
 		  return ;
@@ -163,7 +167,7 @@ void DRV_DGR_CreateSocket_Receive() {
     // bind to receive address
     //
     if (bind(g_dgr_socket_receive, (struct sockaddr*) &addr, sizeof(addr)) < 0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"failed to do bind\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_CreateSocket_Receive: failed to do bind\n");
 		close(g_dgr_socket_receive);
 		g_dgr_socket_receive = -1;
         return ;
@@ -192,7 +196,7 @@ void DRV_DGR_CreateSocket_Receive() {
 		if (
 			iResult < 0
 		){
-			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"failed to do setsockopt IP_ADD_MEMBERSHIP %i\n",iResult);
+			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_CreateSocket_Receive: failed to do setsockopt IP_ADD_MEMBERSHIP %i\n",iResult);
 			close(g_dgr_socket_receive);
 			g_dgr_socket_receive = -1;
 			return ;
@@ -201,7 +205,7 @@ void DRV_DGR_CreateSocket_Receive() {
 
 	lwip_fcntl(g_dgr_socket_receive, F_SETFL,O_NONBLOCK);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Waiting for packets\n");
+	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_CreateSocket_Receive: Socket created, waiting for packets\n");
 }
 
 void DRV_DGR_processRGBCW(byte *rgbcw) {
@@ -275,6 +279,7 @@ dgrMember_t *findMember() {
 	if(i>=MAX_DGR_MEMBERS)
 		return 0;
 	memcpy(&g_dgrMembers[i].addr,&addr,sizeof(addr));
+	g_dgrMembers[i].lastSeq = 0;
 	return &g_dgrMembers[i];
 }
 
@@ -289,21 +294,37 @@ int DGR_CheckSequence(int seq) {
 		m->lastSeq = seq;
 		return 0;
 	}
-	if(seq + 4 < m->lastSeq) {
+	if(seq + 16 < m->lastSeq) {
 		// hard reset
 		m->lastSeq = seq;
 		return 0;
 	}
 	return 1;
 }
-void DRV_DGR_RunFrame() {
+
+void DRV_DGR_RunEverySecond() {
+	if(g_dgr_socket_receive<=0 || g_dgr_socket_send <= 0) {
+		dgr_retry_time_left--;
+		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"no sockets, will retry creation soon, in %i secs\n",dgr_retry_time_left);
+
+		if(dgr_retry_time_left <= 0){
+			dgr_retry_time_left = 20;
+			if(g_dgr_socket_receive <= 0){
+				DRV_DGR_CreateSocket_Receive();
+			}
+			if(g_dgr_socket_send <= 0){
+				DRV_DGR_CreateSocket_Send();
+			}
+		}
+	}
+}
+void DRV_DGR_RunQuickTick() {
 	dgrDevice_t def;
     char msgbuf[64];
 
-	if(g_dgr_socket_receive<0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"no sock\n");
-            return ;
-        }
+	if(g_dgr_socket_receive<=0 || g_dgr_socket_send <= 0) {
+		return ;
+	}
     // now just enter a read-print loop
     //
         socklen_t addrlen = sizeof(addr);
@@ -319,7 +340,7 @@ void DRV_DGR_RunFrame() {
 			//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"nothing\n");
             return ;
         }
-		//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Received %i bytes from %s\n",nbytes,inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr));
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR,"Received %i bytes from %s\n",nbytes,inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr));
         msgbuf[nbytes] = '\0';
 
 		strcpy(def.gr.groupName,CFG_DeviceGroups_GetName());
@@ -341,7 +362,7 @@ void DRV_DGR_RunFrame() {
 //
 //	DRV_DGR_CreateSocket_Receive();
 //	while(1) {
-//		DRV_DGR_RunFrame();
+//		DRV_DGR_RunQuickTick();
 //	}
 //
 //	return ;
@@ -386,6 +407,7 @@ int CMD_DGR_SendPower(const void *context, const char *cmd, const char *args, in
 	channelsCount = Tokenizer_GetArgInteger(2);
 
 	DRV_DGR_Send_Power(groupName,channelValues,channelsCount);
+	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"CMD_DGR_SendPower: sent message to group %s\n",groupName);
 
 	return 1;
 }
@@ -459,6 +481,7 @@ int CMD_DGR_SendBrightness(const void *context, const char *cmd, const char *arg
 	brightness = Tokenizer_GetArgInteger(1);
 
 	DRV_DGR_Send_Brightness(groupName,brightness);
+	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_SendBrightness: sent message to group %s\n",groupName);
 
 	return 1;
 }
@@ -482,6 +505,7 @@ int CMD_DGR_SendRGBCW(const void *context, const char *cmd, const char *args, in
 	rgbcw[4] = Tokenizer_GetArgInteger(5);
 
 	DRV_DGR_Send_RGBCW(groupName,rgbcw);
+	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_SendRGBCW: sent message to group %s\n",groupName);
 
 	return 1;
 }

@@ -8,7 +8,7 @@
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 
-int loglevel = 4; // default to info
+int loglevel = LOG_INFO; // default to info
 unsigned int logfeatures = (
     (1 << 0) |
     (1 << 1) |
@@ -568,7 +568,7 @@ int log_command(const void *context, const char *cmd, const char *args, int cmdF
                     result = -1;
                 }
             } else {
-                ADDLOG_ERROR(LOG_FEATURE_CMD, "loglevel %s invalid?", args);
+                ADDLOG_ERROR(LOG_FEATURE_CMD, "loglevel '%s' invalid? current is %i", args,loglevel);
                 result = -1;
             }
             break;

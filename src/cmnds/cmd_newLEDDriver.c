@@ -10,6 +10,7 @@
 #include <ctype.h>
 #include "cmd_local.h"
 #include "../mqtt/new_mqtt.h"
+#include "../cJSON/cJSON.h"
 #ifdef BK_LITTLEFS
 	#include "../littlefs/our_lfs.h"
 #endif
@@ -405,9 +406,45 @@ static int dimmer(const void *context, const char *cmd, const char *args, int cm
 
         ADDLOG_INFO(LOG_FEATURE_CMD, " dimmer (%s) received with args %s",cmd,args);
 
-		iVal = parsePowerArgument(args);
+		// according to Elektroda.com users, domoticz sends following string:
+		// {"brightness":52,"state":"ON"}
+		if(args[0] == '{') {
+			cJSON *json;
+			const cJSON *brightness = NULL;
+			const cJSON *state = NULL;
 
-		LED_SetDimmer(iVal);
+			json = cJSON_Parse(args);
+
+			if(json == 0) {
+				ADDLOG_INFO(LOG_FEATURE_CMD, "Dimmer - failed cJSON_Parse");
+			} else {
+				brightness = cJSON_GetObjectItemCaseSensitive(json, "brightness");
+				if (brightness != 0 && cJSON_IsNumber(brightness))
+				{
+					ADDLOG_INFO(LOG_FEATURE_CMD, "Dimmer - cJSON_Parse says brightness is %i",brightness->valueint);
+
+					LED_SetDimmer(brightness->valueint);
+				}
+				state = cJSON_GetObjectItemCaseSensitive(json, "state");
+				if (state != 0 && cJSON_IsString(state) && (state->valuestring != NULL))
+				{
+					ADDLOG_INFO(LOG_FEATURE_CMD, "Dimmer - cJSON_Parse says state is %s",state->valuestring);
+
+					if(!stricmp(state->valuestring,"ON")) {
+						LED_SetEnableAll(true);
+					} else if(!stricmp(state->valuestring,"OFF")) {
+						LED_SetEnableAll(false);
+					} else {
+
+					}
+				}
+				cJSON_Delete(json);
+			}
+		} else {
+			iVal = parsePowerArgument(args);
+
+			LED_SetDimmer(iVal);
+		}
 
 		return 1;
 	//}

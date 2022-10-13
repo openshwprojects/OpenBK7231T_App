@@ -22,6 +22,7 @@
 #define BTN_DEBOUNCE_TICKS    3	//MAX 8
 #define BTN_SHORT_TICKS       (300 / PIN_TMR_DURATION)
 #define BTN_LONG_TICKS        (1000 / PIN_TMR_DURATION)
+#define BTN_HOLD_REPEAT_TICKS  (500 / PIN_TMR_DURATION)
 
 #define WIFI_LED_FAST_BLINK_DURATION 250
 #define WIFI_LED_SLOW_BLINK_DURATION 500
@@ -43,6 +44,7 @@ typedef void (*new_btn_callback)(void*);
 
 typedef struct pinButton_ {
 	uint16_t ticks;
+	uint16_t holdRepeatTicks;
 	uint8_t  repeat : 4;
 	uint8_t  event : 4;
 	uint8_t  state : 3;
@@ -662,6 +664,8 @@ int CHANNEL_FindMaxValueForChannel(int ch) {
 	}
 	if(g_cfg.pins.channelTypes[ch] == ChType_Dimmer)
 		return 100;
+	if(g_cfg.pins.channelTypes[ch] == ChType_Dimmer256)
+		return 256;
 	return 1;
 }
 // PWMs are toggled between 0 and 100 (0% and 100% PWM)
@@ -778,6 +782,7 @@ int CHANNEL_GetRoleForOutputChannel(int ch){
 #define PIN_TMR_LOOPS_PER_SECOND (1000/PIN_TMR_DURATION)
 #define ADC_SAMPLING_TICK_COUNT PIN_TMR_LOOPS_PER_SECOND
 
+
 void PIN_Input_Handler(int pinIndex)
 {
 	pinButton_s *handle;
@@ -876,7 +881,11 @@ void PIN_Input_Handler(int pinIndex)
 		if(handle->button_level == handle->active_level) {
 			//continue hold trigger
 			handle->event = (uint8_t)BTN_LONG_PRESS_HOLD;
-			Button_OnLongPressHold(pinIndex);
+			handle->holdRepeatTicks ++;
+			if(handle->holdRepeatTicks > BTN_HOLD_REPEAT_TICKS) {
+				Button_OnLongPressHold(pinIndex);
+				handle->holdRepeatTicks = 0;
+			}
 			EVENT_CB(BTN_LONG_PRESS_HOLD);
 		} else { //releasd
 			handle->event = (uint8_t)BTN_PRESS_UP;
@@ -1034,6 +1043,8 @@ int CHANNEL_ParseChannelType(const char *s) {
 		return ChType_Toggle;
 	if(!stricmp(s,"dimmer") )
 		return ChType_Dimmer;
+	if(!stricmp(s,"dimmer256") )
+		return ChType_Dimmer256;
 	if(!stricmp(s,"LowMidHigh") )
 		return ChType_LowMidHigh;
 	if(!stricmp(s,"OffLowMidHigh") )

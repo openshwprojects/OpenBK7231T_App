@@ -16,7 +16,8 @@ void BLTest_RunFrame();
 #endif
 
 void DRV_DGR_Init();
-void DRV_DGR_RunFrame();
+void DRV_DGR_RunQuickTick();
+void DRV_DGR_RunEverySecond();
 void DRV_DGR_Shutdown();
 void DRV_DGR_OnChannelChanged(int ch, int value);
 
