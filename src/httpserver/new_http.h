@@ -12,9 +12,9 @@ extern const char htmlFooterReturnToMenu[];
 extern const char htmlFooterRefreshLink[];
 extern const char htmlFooterReturnToCfgLink[];
 
-extern const char *htmlPinRoleNames[];
+extern const char* htmlPinRoleNames[];
 
-extern const char *g_build_str;
+extern const char* g_build_str;
 
 #define HTTP_RESPONSE_OK 200
 #define HTTP_RESPONSE_NOT_FOUND 404
@@ -23,45 +23,45 @@ extern const char *g_build_str;
 #define MAX_QUERY 16
 #define MAX_HEADERS 16
 typedef struct http_request_tag {
-    char *received; // partial or whole received data, up to 1024
+    char* received; // partial or whole received data, up to 1024
     int receivedLen;
     int receivedLenmax; // sizeof received
 
     // filled by HTTP_ProcessPacket
     int method;
-    char *url;
+    char* url;
     int numqueryitems;
-    char *querynames[MAX_QUERY];
-    char *queryvalues[MAX_QUERY];
+    char* querynames[MAX_QUERY];
+    char* queryvalues[MAX_QUERY];
     int numheaders;
-    char *headers[MAX_HEADERS];
-    char *bodystart; /// start start of the body (maybe all of it)
+    char* headers[MAX_HEADERS];
+    char* bodystart; /// start start of the body (maybe all of it)
     int bodylen;
     int contentLength;
     int responseCode;
 
     // used to respond
-    char *reply;
+    char* reply;
     int replylen;
     int replymaxlen;
     int fd;
 } http_request_t;
 
 
-int HTTP_ProcessPacket(http_request_t *request);
-void http_setup(http_request_t *request, const char *type);
-void http_html_start(http_request_t *request, const char *pagename);
-void http_html_end(http_request_t *request);
-int poststr(http_request_t *request, const char *str);
-int postany(http_request_t *request, const char *str, int len);
-void misc_formatUpTimeString(int totalSeconds, char *o);
+int HTTP_ProcessPacket(http_request_t* request);
+void http_setup(http_request_t* request, const char* type);
+void http_html_start(http_request_t* request, const char* pagename);
+void http_html_end(http_request_t* request);
+int poststr(http_request_t* request, const char* str);
+int postany(http_request_t* request, const char* str, int len);
+void misc_formatUpTimeString(int totalSeconds, char* o);
 // void HTTP_AddBuildFooter(http_request_t *request);
 // void HTTP_AddHeader(http_request_t *request);
-int http_getArg(const char *base, const char *name, char *o, int maxSize);
-int http_getArgInteger(const char *base, const char *name);
+int http_getArg(const char* base, const char* name, char* o, int maxSize);
+int http_getArgInteger(const char* base, const char* name);
 
 // poststr with format - for results LESS THAN 128
-int hprintf128(http_request_t *request, const char *fmt, ...);
+int hprintf128(http_request_t* request, const char* fmt, ...);
 
 typedef enum {
     HTTP_ANY = -1,
@@ -72,9 +72,9 @@ typedef enum {
 } METHODS;
 
 // callback function for http
-typedef int (*http_callback_fn)(http_request_t *request);
+typedef int (*http_callback_fn)(http_request_t* request);
 // url MUST start with '/'
 // urls must be unique (i.e. you can't have /about and /aboutme or /about/me)
-int HTTP_RegisterCallback( const char *url, int method, http_callback_fn callback);
+int HTTP_RegisterCallback(const char* url, int method, http_callback_fn callback);
 
 #endif
