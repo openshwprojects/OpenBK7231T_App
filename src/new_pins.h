@@ -270,5 +270,6 @@ void Setup_Device_Enbrighten_WFD4103();
 void Setup_Device_Aubess_Mini_Smart_Switch_16A();
 void Setup_Device_Zemismart_Light_Switch_KS_811_3();
 void Setup_Device_TeslaSmartPlus_TSL_SPL_1();
+void Setup_Device_Calex_900011_1_WB2S();
 
 #endif

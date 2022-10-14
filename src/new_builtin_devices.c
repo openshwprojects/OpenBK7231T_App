@@ -912,3 +912,21 @@ void Setup_Device_TeslaSmartPlus_TSL_SPL_1() {
 
     CFG_Save_SetupTimer();
 }
+
+void Setup_Device_Calex_900011_1_WB2S(){
+	CFG_ClearPins();
+
+	PIN_SetPinRoleForPinIndex(6, IOR_Button);
+	PIN_SetPinChannelForPinIndex(6, 1);
+
+	PIN_SetPinRoleForPinIndex(7, IOR_LED_n);
+	PIN_SetPinChannelForPinIndex(7, 1);
+
+	PIN_SetPinRoleForPinIndex(24, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(24, 1);
+
+	PIN_SetPinRoleForPinIndex(8, IOR_LED_WIFI_n);
+	PIN_SetPinChannelForPinIndex(8, 2);
+
+	CFG_Save_SetupTimer();
+}
