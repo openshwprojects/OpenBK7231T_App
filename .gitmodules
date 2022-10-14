@@ -18,4 +18,4 @@
 	url = https://github.com/openshwprojects/OpenW800.git
 [submodule "sdk/OpenW600"]
 	path = sdk/OpenW600
-	url = https://github.com/iprak/OpenW600.git
+	url = https://github.com/openshwprojects/OpenW600.git
