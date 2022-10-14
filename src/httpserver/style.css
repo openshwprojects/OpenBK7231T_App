@@ -1,0 +1,137 @@
+div,
+fieldset,
+input,
+select {
+  padding: 5px;
+  font-size: 1em;
+  margin: 0 0 0.2em 0;
+}
+fieldset {
+  background: #4f4f4f;
+}
+p {
+  margin: 0.5em 0;
+}
+input {
+  width: 100%;
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  background: #dddddd;
+  color: #000000;
+}
+form {
+  margin-bottom: 0.5em;
+}
+input[type="checkbox"],
+input[type="radio"] {
+  width: 1em;
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+input[type="range"] {
+  width: 99%;
+}
+select {
+  width: 100%;
+  background: #dddddd;
+  color: #000000;
+}
+textarea {
+  resize: vertical;
+  width: 98%;
+  height: 318px;
+  padding: 5px;
+  overflow: auto;
+  background: #1f1f1f;
+  color: #65c115;
+}
+body {
+  text-align: center;
+  font-family: verdana, sans-serif;
+  background: #21333e;
+  color: #eaeaea;
+}
+h1 a {
+  background: #21333e;
+  color: #eaeaea;
+}
+td {
+  padding: 0px;
+}
+input[type="submit"],
+button {
+  border: 0;
+  border-radius: 0.3rem;
+  background: #1fa3ec;
+  color: #faffff;
+  line-height: 2.4rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+input[type="submit"] {
+  width: 100%;
+  -webkit-transition-duration: 0.4s;
+  transition-duration: 0.4s;
+}
+input[type="submit"]:hover {
+  background: #0e70a4;
+}
+.bred {
+  background: #d43535 !important;
+}
+.bred:hover {
+  background: #931f1f !important;
+}
+.bgrn {
+  background: #47c266 !important;
+}
+.bgrn:hover {
+  background: #5aaf6f !important;
+}
+a {
+  color: #1fa3ec;
+  text-decoration: none;
+}
+.p {
+  float: left;
+  text-align: left;
+}
+.q {
+  float: right;
+  text-align: right;
+}
+.r {
+  border-radius: 0.3em;
+  padding: 2px;
+  margin: 6px 2px;
+}
+.hf {
+  display: none;
+}
+.hdiv {
+  width: 95%;
+  white-space: nowrap;
+}
+.hele {
+  width: 210px;
+  display: inline-block;
+  margin-left: 2px;
+}
+div#state {
+  padding: 0;
+}
+div#changed {
+  padding: 0;
+	height: 23px;
+}
+div#main {
+  text-align: left;
+  display: inline-block;
+  color: #eaeaea;
+  min-width: 340px;
+  max-width: 800px;
+}
+table {
+  table-layout: fixed;
+}

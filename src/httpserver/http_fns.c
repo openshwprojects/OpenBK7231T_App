@@ -47,26 +47,6 @@ static char *HASS_QOS_CONFIG             = "    qos: 1\n";
 static char *HASS_MQTT_NODE  = "mqtt:\n";
 static char *HASS_LIGHT_NODE = "  light:\n";
 
-/*
-function send_ha_disc(){
-	var xhr = new XMLHttpRequest();
-    xhr.open("GET", "/ha_discovery?prefix="+document.getElementById("ha_disc_topic").value, false);
-	xhr.onload = function() {
-	  if (xhr.status === 200) {
-	    alert("MQTT discovery queued");
-	  }
-      else if (xhr.status === 404) {
-		alert("Error invoking ha_discovery");
-	  }
-	}
-	xhr.onerror = function() {
-	  alert("Error invoking ha_discovery");
-	}
-	xhr.send();
-}
-*/
-const char HomeAssistantDiscoveryScript[] = "<script>function send_ha_disc(){var xhr=new XMLHttpRequest();xhr.open(\"GET\",\"/ha_discovery?prefix=\"+document.getElementById(\"ha_disc_topic\").value,false);xhr.onload=function(){if(xhr.status===200){alert(\"MQTT discovery queued\")}else if(xhr.status===404){alert(\"Error invoking ha_discovery\")}};xhr.onerror=function(){alert(\"Error invoking ha_discovery\")};xhr.send()}</script>";
-
 typedef struct template_s {
 	void (*setter)();
 	const char *name;
@@ -192,9 +172,10 @@ int http_fn_index(http_request_t *request) {
 	bRawPWMs = CFG_HasFlag(OBK_FLAG_LED_RAWCHANNELSMODE);
 	forceShowRGBCW = CFG_HasFlag(OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER);
 
+    http_setup(request, httpMimeTypeHTML);	//Add mimetype regardless of the request
+
     // use ?state URL parameter to only request current state
     if(!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
-        http_setup(request, httpMimeTypeHTML);
         http_html_start(request, NULL);
 
         poststr(request, "<div id=\"changed\">");
@@ -569,42 +550,10 @@ int http_fn_index(http_request_t *request) {
 
         poststr(request, htmlFooterRefreshLink);
         http_html_end(request);
-
-        // refresh status section every 3 seconds
-        poststr(
-            request,
-            "<script type='text/javascript'>"
-            "var firstTime, lastTime, req=null;" 
-            "eb=s=>document.getElementById(s);"
-            "function showState() { "
-                "clearTimeout(firstTime);"
-                "clearTimeout(lastTime);"
-                "if (req!=null) { req.abort() }"
-                "req=new XMLHttpRequest();"
-                "req.onreadystatechange=()=>{"
-                    "if(req.readyState==4 && req.status==200){"
-                        "if (!(document.activeElement.tagName=='INPUT' && "
-                            "(document.activeElement.type=='number' || document.activeElement.type=='color'))) {"
-                                "var s=req.responseText;"
-                                "eb('state').innerHTML=s;" 
-                        "}"
-                        "clearTimeout(firstTime);"
-                        "clearTimeout(lastTime);"
-                        "lastTime=setTimeout(showState, 3e3);"
-                "}};"
-                "req.open('GET','index?state=1', true);"
-                "req.send();"
-                "firstTime=setTimeout(showState, 3e3);"
-            "}"
-            "window.addEventListener('load', showState);"
-            "history.pushState(null, '', 'index');" // drop actions like 'toggle' from URL
-            "setTimeout(()=>{eb('changed').innerHTML=''}, 5e3);" // hide change info
-            "</script>"
-        );
     }
 
 	poststr(request, NULL);
-    return 0;
+	return 0;
 }
 
 int http_fn_about(http_request_t *request){
@@ -1451,7 +1400,7 @@ int http_fn_ha_cfg(http_request_t *request) {
     poststr(request,"<br/><div><label for=\"ha_disc_topic\">Discovery topic:</label><input id=\"ha_disc_topic\" value=\"homeassistant\"><button onclick=\"send_ha_disc();\">Start Home Assistant Discovery</button>&nbsp;<form action=\"cfg_mqtt\" style=\"display:inline-block;\"><button type=\"submit\">Configure MQTT</button></form></div><br/>");
     poststr(request,htmlFooterReturnToCfgLink);
     http_html_end(request);
-    poststr(request, HomeAssistantDiscoveryScript);
+    poststr(request, ha_discovery_script);
 	poststr(request, NULL);
     return 0;
 }

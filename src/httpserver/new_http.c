@@ -25,45 +25,6 @@ const char htmlHeadMain[] =
 	"<meta charset=\"utf-8\">"
 	"<meta name=\"viewport\" content=\"width=device-width,initial-scale=1,user-scalable=no\">"
 	"<meta name=\"robots\" content=\"none\">";
-const char htmlHeadStyle[] =
-	"<style>"
-		"div,fieldset,input,select{padding:5px;font-size:"
-		"1em;margin: 0 0 0.2em 0}"
-		"fieldset{background:#4f4f4f;}"
-		"p{margin:0.5em 0;}"
-		"input{width:100%;box-sizing:border-box;-webkit-box-sizing:border-box;-"
-		"moz-box-sizing:border-box;background:#dddddd;color:#000000;}"
-		"form{margin-bottom:0.5em}"
-		"input[type=checkbox],input[type=radio]{width:1em;margin-"
-		"right:6px;vertical-align:-1px;}"
-		"input[type=range]{width:99%;}"
-		"select{width:100%;background:#dddddd;color:#000000;}"
-		"textarea{resize:vertical;width:98%;height:318px;padding:5px;"
-		"overflow:auto;background:#1f1f1f;color:#65c115;}"
-		"body{text-align:center;font-family:verdana,sans-serif;background:#21333e; "
-		"color:#eaeaea}"
-		"h1 a{background:#21333e; color:#eaeaea}"
-		"td{padding:0px;}"
-		"input[type=submit],button{border:0;border-radius:0.3rem;background:#1fa3ec;"
-		"color:#faffff;line-height:2.4rem;font-size:1.2rem;"
-		"cursor:pointer;margin-buttom:0.5em}"
-		"input[type=submit]{width:100%;-webkit-transition-duration:0.4s;transition-duration:0.4s;}"
-		"input[type=submit]:hover{background:#0e70a4;}"
-		".bred{background:#d43535 !important;}"
-		".bred:hover{background:#931f1f !important;}"
-		".bgrn{background:#47c266 !important;}"
-		".bgrn:hover{background:#5aaf6f !important;}"
-		"a{color:#1fa3ec;text-decoration:none;}"
-		".p{float:left;text-align:left;}"
-		".q{float:right;text-align:right;}"
-		".r{border-radius:0.3em;padding:2px;margin:6px 2px;}"
-		".hf{display:none;}"
-		".hdiv{width:95%;white-space:nowrap;}"
-		".hele{width:210px;display:inline-block;margin-left:2px;}"
-		"div#state{padding:0} div#changed{padding:0}"
-		"div#main{text-align:left; display:inline-block; color:#eaeaea;min-width:340px;max-width:800px;}"
-		"table{table-layout:fixed}"
-	"</style>";
 const char htmlBodyStart[] =
 	"<body>"
 	"<noscript>To use this device, please enable JavaScript.<br></noscript>"
@@ -210,7 +171,6 @@ void http_setup(http_request_t *request, const char *type){
 }
 
 void http_html_start(http_request_t *request, const char *pagename) {
-// void HTTP_AddHeader(http_request_t *request) {
 	poststr(request, htmlDoctype);
 	poststr(request, "<title>");
 	poststr(request, CFG_GetDeviceName()); // todo: check escaping
@@ -227,7 +187,6 @@ void http_html_start(http_request_t *request, const char *pagename) {
 }
 
 void http_html_end(http_request_t *request) {
-// was void HTTP_AddBuildFooter(http_request_t *request) {
 	char upTimeStr[128];
 	unsigned char mac[32];
 
@@ -235,9 +194,8 @@ void http_html_end(http_request_t *request) {
 	poststr(request, htmlFooterInfo);
 	poststr(request, "<br>");
 	poststr(request, g_build_str);
-	poststr(request, "<br>Online for ");
-	misc_formatUpTimeString(Time_getUpTimeSeconds(), upTimeStr);
-	poststr(request, upTimeStr);
+
+	hprintf128(request, "<br>Online for&nbsp;<span id=\"onlineFor\" data-initial=\"%i\">-</span>", Time_getUpTimeSeconds());
 
 	WiFI_GetMacAddress((char *)mac);
 
@@ -247,6 +205,7 @@ void http_html_end(http_request_t *request) {
 	poststr(request, upTimeStr);
 
 	poststr(request, htmlBodyEnd);
+	poststr(request, pageScript);
 }
 
 const char *http_checkArg(const char *p, const char *n) {
@@ -459,38 +418,6 @@ int poststr(http_request_t *request, const char *str){
 	return postany(request, str, strlen(str));
 }
 
-void misc_formatUpTimeString(int totalSeconds, char *o) {
-	int rem_days;
-	int rem_hours;
-	int rem_minutes;
-	int rem_seconds;
-
-	rem_days = totalSeconds / (24*60*60);
-	totalSeconds = totalSeconds % (24*60*60);
-	rem_hours = totalSeconds / (60*60);
-	totalSeconds = totalSeconds % (60*60);
-	rem_minutes = totalSeconds / (60);
-	rem_seconds = totalSeconds % 60;
-
-	*o = 0;
-	if(rem_days > 0)
-	{
-		sprintf(o,"%i days, %i hours, %i minutes and %i seconds ",rem_days,rem_hours,rem_minutes,rem_seconds);
-	}
-	else if(rem_hours > 0)
-	{
-		sprintf(o,"%i hours, %i minutes and %i seconds ",rem_hours,rem_minutes,rem_seconds);
-	}
-	else if(rem_minutes > 0)
-	{
-		sprintf(o,"%i minutes and %i seconds ",rem_minutes,rem_seconds);
-	}
-	else
-	{
-		sprintf(o,"just %i seconds ",rem_seconds);
-	}
-}
-
 int hprintf128(http_request_t *request, const char *fmt, ...){
   va_list argList;
   //BaseType_t taken;
@@ -664,3 +591,25 @@ int HTTP_ProcessPacket(http_request_t *request) {
 
 	return http_fn_other(request);
 }
+
+/*
+To edit the following two fields:
+1. Edit the files script.js (pageScript) or script.css (htmlHeadStyle)
+2. Generate compressed content using gulp or online compressor such as https://www.minifier.org/
+
+For using gulp, you need to have nodejs (https://nodejs.org/en/) installed.
+After that run, `npm install` at the root folder to install dependent dev packages.
+And then run `gulp` which will automatically update the fields.
+*/
+
+//region_start htmlHeadStyle
+const char htmlHeadStyle[]="<style>div,fieldset,input,select{padding:5px;font-size:1em;margin:0 0 .2em}fieldset{background:#4f4f4f}p{margin:.5em 0}input{width:100%;box-sizing:border-box;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;background:#ddd;color:#000}form{margin-bottom:.5em}input[type=checkbox],input[type=radio]{width:1em;margin-right:6px;vertical-align:-1px}input[type=range]{width:99%}select{width:100%;background:#ddd;color:#000}textarea{resize:vertical;width:98%;height:318px;padding:5px;overflow:auto;background:#1f1f1f;color:#65c115}body{text-align:center;font-family:verdana,sans-serif}body,h1 a{background:#21333e;color:#eaeaea}td{padding:0}button,input[type=submit]{border:0;border-radius:.3rem;background:#1fa3ec;color:#faffff;line-height:2.4rem;font-size:1.2rem;cursor:pointer}input[type=submit]{width:100%;transition-duration:.4s}input[type=submit]:hover{background:#0e70a4}.bred{background:#d43535!important}.bred:hover{background:#931f1f!important}.bgrn{background:#47c266!important}.bgrn:hover{background:#5aaf6f!important}a{color:#1fa3ec;text-decoration:none}.p{float:left;text-align:left}.q{float:right;text-align:right}.r{border-radius:.3em;padding:2px;margin:6px 2px}.hf{display:none}.hdiv{width:95%;white-space:nowrap}.hele{width:210px;display:inline-block;margin-left:2px}div#state{padding:0}div#changed{padding:0;height:23px}div#main{text-align:left;display:inline-block;color:#eaeaea;min-width:340px;max-width:800px}table{table-layout:fixed}</style>";
+//region_end htmlHeadStyle
+
+//region_start pageScript
+const char pageScript[]="<script type='text/javascript'>var firstTime,lastTime,onlineFor,req=null,onlineForEl=null,getElement=e=>document.getElementById(e);function showState(){clearTimeout(firstTime),clearTimeout(lastTime),null!=req&&req.abort(),(req=new XMLHttpRequest).onreadystatechange=()=>{4==req.readyState&&200==req.status&&((\"INPUT\"!=document.activeElement.tagName||\"number\"!=document.activeElement.type&&\"color\"!=document.activeElement.type)&&(getElement(\"state\").innerHTML=req.responseText),clearTimeout(firstTime),clearTimeout(lastTime),lastTime=setTimeout(showState,3e3))},req.open(\"GET\",\"index?state=1\",!0),req.send(),firstTime=setTimeout(showState,3e3)}function fmtUpTime(e){var t,n,o=Math.floor(e/86400);return e%=86400,t=Math.floor(e/3600),e%=3600,n=Math.floor(e/60),e=e%60,0<o?o+` days, ${t} hours, ${n} minutes and ${e} seconds`:0<t?t+` hours, ${n} minutes and ${e} seconds`:0<n?n+` minutes and ${e} seconds`:`just ${e} seconds`}function updateOnlineFor(){onlineForEl.textContent=fmtUpTime(++onlineFor)}function onLoad(){(onlineForEl=getElement(\"onlineFor\"))&&(onlineFor=parseInt(onlineForEl.dataset.initial,10))&&setInterval(updateOnlineFor,1e3),showState()}window.addEventListener(\"load\",onLoad),history.pushState(null,\"\",\"index\"),setTimeout(()=>{getElement(\"changed\").innerHTML=\"\"},5e3);</script>";
+//region_end pageScript
+
+//region_start ha_discovery_script
+const char ha_discovery_script[]="<script type='text/javascript'>function send_ha_disc(){var e=new XMLHttpRequest;e.open(\"GET\",\"/ha_discovery?prefix=\"+document.getElementById(\"ha_disc_topic\").value,!1),e.onload=function(){200===e.status?alert(\"MQTT discovery queued\"):404===e.status&&alert(\"Error invoking ha_discovery\")},e.onerror=function(){alert(\"Error invoking ha_discovery\")},e.send()}</script>";
+//region_end ha_discovery_script
