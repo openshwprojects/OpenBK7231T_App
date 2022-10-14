@@ -926,16 +926,81 @@ void TuyaMCU_RunFrame() {
 
 	//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"UART ring buffer state: %i %i\n",g_recvBufIn,g_recvBufOut);
 
-	len = UART_TryToGetNextTuyaPacket(data,sizeof(data));
-	if(len > 0) {
-		buffer_for_log[0] = 0;
-		for(i = 0; i < len; i++) {
-			sprintf(buffer2,"%02X ",data[i]);
-			strcat_safe(buffer_for_log,buffer2,sizeof(buffer_for_log));
-		}
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TUYAMCU received: %s\n", buffer_for_log);
-		TuyaMCU_ProcessIncoming(data,len);
-	}
+    while (1)
+    {
+    	len = UART_TryToGetNextTuyaPacket(data,sizeof(data));
+	    if(len > 0) {
+    		buffer_for_log[0] = 0;
+	    	for(i = 0; i < len; i++) {
+		    	sprintf(buffer2,"%02X ",data[i]);
+			    strcat_safe(buffer_for_log,buffer2,sizeof(buffer_for_log));
+    		}
+	    	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TUYAMCU received: %s\n", buffer_for_log);
+		    TuyaMCU_ProcessIncoming(data,len);
+    	} else {
+            break;
+        }
+    }
+
+    /* Command controll */
+    if (heartbeat_timer == 0)
+    {
+        TuyaMCU_SendCommandWithData(TUYA_CMD_HEARTBEAT, NULL, 0);
+        heartbeat_timer = 3;
+        heartbeat_counter++;
+        if (heartbeat_counter>=4) 
+        {
+            heartbeat_valid = false;
+            product_information_valid = false;
+            working_mode_valid = false;
+            wifi_state_valid = false;
+            state_updated = false;
+        }
+    } else {
+        if (heartbeat_timer>0)
+        {
+            heartbeat_timer--;
+        } else {
+            heartbeat_timer = 0;
+        }
+        if (heartbeat_valid == true)
+        {
+            if (product_information_valid == false)
+            {
+                TuyaMCU_SendCommandWithData(TUYA_CMD_QUERY_PRODUCT, NULL, 0);
+            } 
+            else if (working_mode_valid == false)
+            {
+                TuyaMCU_SendCommandWithData(TUYA_CMD_MCU_CONF, NULL, 0);
+            }
+            else if ((wifi_state_valid == false) && (self_processing_mode == false))
+            {
+                Tuya_SetWifiState(0);
+                //TuyaMCU_SendCommandWithData(TUYA_CMD_WIFI_STATE, NULL, 0);
+            }
+            else if (state_updated == false)
+            {
+                TuyaMCU_SendCommandWithData(TUYA_CMD_QUERY_STATE, NULL, 0);
+            }
+            else 
+            {
+                if ((Main_HasWiFiConnected()!=0) && (Main_HasMQTTConnected()!=0))
+                {
+                    if (wifi_state == false)
+                    {
+                        Tuya_SetWifiState(4);
+                        wifi_state = true;
+                    }
+                } else {
+                    if (wifi_state == true)
+                    {
+                        Tuya_SetWifiState(0);
+                        wifi_state = false;
+                    }
+                }
+            }
+        }
+    }    
 }
 
 
