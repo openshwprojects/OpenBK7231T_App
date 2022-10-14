@@ -3,24 +3,29 @@
 #include "../hal_adc.h"
 #include "../../new_common.h"
 
+#if defined(PLATFORM_W800)
 
+//OpenW800\platform\drivers\gpio\wm_gpio_afsel.c
 static int adcToGpio[] = {
-	-1,		// ADC0 - VBAT
-	4, //GPIO4,	// ADC1
-	5, //GPIO5,	// ADC2
-	23,//GPIO23, // ADC3
-	2,//GPIO2,	// ADC4
-	3,//GPIO3,	// ADC5
-	12,//GPIO12, // ADC6
-	13,//GPIO13, // ADC7
+	WM_IO_PA_01,
+	WM_IO_PA_04
 };
-//static int c_adcToGpio = sizeof(adcToGpio)/sizeof(adcToGpio[0]);
+#else
+
+//OpenW600\platform\drivers\wm_gpio_afsel.c
+//More chip seem to support ADC but these 2 are ones usually accessible
+static int adcToGpio[] = {
+	WM_IO_PB_19,
+	WM_IO_PB_20
+};
+#endif
+
 
 static uint16_t adcData[1];
 
 static uint8_t gpioToAdc(int gpio) {
 	uint8_t i;
-	for ( i = 0; i < sizeof(adcToGpio); i++) {
+	for (i = 0; i < sizeof(adcToGpio); i++) {
 		if (adcToGpio[i] == gpio)
 			return i;
 	}
@@ -28,17 +33,12 @@ static uint8_t gpioToAdc(int gpio) {
 }
 
 void HAL_ADC_Init(int pinNumber) {
-
+	wm_adc_config(gpioToAdc(pinNumber));
 }
-
-
-
 
 int HAL_ADC_Read(int pinNumber)
 {
-
-    return -3;
+	return adc_get_inputVolt(gpioToAdc(pinNumber));
 }
-
 
 #endif
