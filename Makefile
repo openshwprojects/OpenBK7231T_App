@@ -64,6 +64,11 @@ sdk/OpenW800/sharedAppContainer/sharedApp:
 	@mkdir "sdk/OpenW800/sharedAppContainer"
 	ln -s "$(shell pwd)/" "sdk/OpenW800/sharedAppContainer/sharedApp"
 
+sdk/OpenW600/sharedAppContainer/sharedApp:
+	@echo Create symlink for $(APP_NAME) into sdk folder
+	@mkdir -p "sdk/OpenW600/sharedAppContainer"
+	ln -s "$(shell pwd)/" "sdk/OpenW600/sharedAppContainer/sharedApp"
+
 # Build main binaries
 OpenBK7231T:
 	$(MAKE) APP_NAME=OpenBK7231T TARGET_PLATFORM=bk7231t SDK_PATH=sdk/OpenBK7231T APPS_BUILD_PATH=../bk7231t_os build-BK7231
@@ -107,11 +112,23 @@ sdk/OpenW800/tools/w800/csky/bin: submodules
 	mkdir -p sdk/OpenW800/tools/w800/csky
 	cd sdk/OpenW800/tools/w800/csky && wget -q "https://occ-oss-prod.oss-cn-hangzhou.aliyuncs.com/resource/1356021/1619529111421/csky-elfabiv2-tools-x86_64-minilibc-20210423.tar.gz" && tar -xf *.tar.gz && rm -f *.tar.gz
 
+sdk/OpenW600/tools/gcc-arm-none-eabi-4_9-2014q4/bin: submodules
+	mkdir -p sdk/OpenW600/tools
+	cd sdk/OpenW600/tools && tar -xf ../support/*.tar.bz2
+
+.PHONY: OpenW800
 OpenW800: sdk/OpenW800/tools/w800/csky/bin sdk/OpenW800/sharedAppContainer/sharedApp
 	$(MAKE) -C sdk/OpenW800 EXTRA_CCFLAGS=-DPLATFORM_W800 CONFIG_W800_USE_LIB=n CONFIG_W800_TOOLCHAIN_PATH="$(shell realpath sdk/OpenW800/tools/w800/csky/bin)/"
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenW800/bin/w800/w800.fls output/$(APP_VERSION)/OpenW800_$(APP_VERSION).fls
 	cp sdk/OpenW800/bin/w800/w800_ota.img output/$(APP_VERSION)/OpenW800_$(APP_VERSION)_ota.img
+
+.PHONY: OpenW600
+OpenW600: sdk/OpenW600/tools/gcc-arm-none-eabi-4_9-2014q4/bin sdk/OpenW600/sharedAppContainer/sharedApp
+	$(MAKE) -C sdk/OpenW600 TOOL_CHAIN_PATH="$(shell realpath sdk/OpenW600/tools/gcc-arm-none-eabi-4_9-2014q4/bin)/" APP_VERSION=$(APP_VERSION)
+	mkdir -p output/$(APP_VERSION)
+	cp sdk/OpenW600/bin/w600/w600.fls output/$(APP_VERSION)/OpenW600_$(APP_VERSION).fls
+	cp sdk/OpenW600/bin/w600/w600_gz.img output/$(APP_VERSION)/OpenW600_$(APP_VERSION)_gz.img
 
 # clean .o files and output directory
 .PHONY: clean
@@ -121,6 +138,7 @@ clean:
 	$(MAKE) -C sdk/OpenXR809/src clean
 	$(MAKE) -C sdk/OpenXR809/project/oxr_sharedApp/gcc clean
 	$(MAKE) -C sdk/OpenW800 clean
+	$(MAKE) -C sdk/OpenW600 clean
 
 # Add custom Makefile if required
 -include custom.mk
