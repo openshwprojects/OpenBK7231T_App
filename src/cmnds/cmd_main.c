@@ -4,6 +4,8 @@
 #include "../obk_config.h"
 #include <ctype.h>
 #include "cmd_local.h"
+#include "../ir/ir_local.h"
+
 #ifdef BK_LITTLEFS
 	#include "../littlefs/our_lfs.h"
 #endif
@@ -29,6 +31,13 @@ static int generateHashValue(const char *fname) {
 }
 
 command_t *g_commands[HASH_SIZE] = { NULL };
+
+static int CMD_SimonTest(const void *context, const char *cmd, const char *args, int cmdFlags){
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SimonTest: ir test routine");
+
+	DRV_IR_Test();
+	return 1;
+}
 
 static int CMD_Restart(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int delaySeconds;
@@ -58,6 +67,7 @@ static int CMD_ClearConfig(const void *context, const char *cmd, const char *arg
 void CMD_Init() {
     CMD_RegisterCommand("restart", "", CMD_Restart, "Reboots the module", NULL);
     CMD_RegisterCommand("clearConfig", "", CMD_ClearConfig, "Clears all config", NULL);
+    CMD_RegisterCommand("simonirtest", "", CMD_SimonTest, "Simons Special Test", NULL);
 	if(CFG_HasFlag(OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER)) {
 		CMD_StartTCPCommandLine();
 	}
