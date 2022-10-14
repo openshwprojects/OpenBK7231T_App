@@ -8,6 +8,7 @@ This repository is named "OpenBK7231T_App", but now it's a multiplatform app, su
 - XR809 ([XR3](https://developer.tuya.com/en/docs/iot/xr3-datasheet?id=K98s9168qi49g), etc)
 - BL602
 - W800 (W800-C400, WinnerMicro WiFi & Bluetooth), W801
+- W600 (WinnerMicro chip), W601
 
 Please use automatically compiled binaries from the Releases tab. To build yourself for a given platform, just checkout first our version of SDK and then checkout this app repository into it, details later.
 
