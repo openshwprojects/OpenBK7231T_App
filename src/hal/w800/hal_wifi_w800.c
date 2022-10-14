@@ -84,10 +84,10 @@ void HAL_PrintNetworkInfo()
 		bss.rssi, bss.ssid, macstr, bss.channel);
 	print_security_type(bss.encryptype);
 
-	//ip_addr.addr etc are not populated
-	//char buffer[256];
-	//wm_vsnprintf(buffer, 256, "ip=%v,gate=%v,mask=%v\r\n", netif->ip_addr.addr, netif->gw, netif->netmask);
-	//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, buffer);
+	struct tls_ethif* tmpethif = tls_netif_get_ethif();
+	char buffer[256];
+	wm_vsnprintf(buffer, 256, "ip=%v,gate=%v,mask=%v,dns=%v\r\n", &tmpethif->ip_addr, &tmpethif->gw, &tmpethif->netmask, &tmpethif->dns1);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, buffer);
 }
 
 int HAL_GetWifiStrength()
