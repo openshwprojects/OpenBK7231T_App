@@ -79,6 +79,7 @@ generateNotes:
         - XR809 (XR3, etc)
         - BL602
         - W800 (W800-C400, WinnerMicro WiFi & Bluetooth), W801
+        - W600
 
       footerPartial: |
         {{#if noteGroups}}
@@ -106,6 +107,8 @@ generateNotes:
         | BL602    | UART Flash | [OpenBL602_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBL602_{{version}}.bin)             |
         | W800     | OTA Update | [OpenW800_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenW800_{{version}}_ota.img)       |
         | W800     | UART Flash | [OpenW800_{{version}}.fls]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenW800_{{version}}.fls)               |
+        | W600     | OTA Update | [OpenW600_{{version}}_gz.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenW600_{{version}}_gz.img)         |
+        | W600     | UART Flash | [OpenW600_{{version}}.fls]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenW600_{{version}}.fls)               |
 
         CCtr Flash = Tuya cloud Cutter flash
 
@@ -158,6 +161,7 @@ publish:
       - path: "output/**/*.rbl"
       - path: "output/**/*.img"
       - path: "output/**/OpenBL602*.bin"
+      - path: "output/**/OpenW600*"
       - path: "output/**/OpenW800*"
 
 success:
