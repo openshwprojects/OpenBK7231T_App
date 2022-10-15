@@ -1267,6 +1267,6 @@ OBK_Publish_Result PublishQueuedItems() {
 
 /// @brief Is MQTT sub system ready and connected?
 /// @return 
-bool MQTT_ready() {
+bool MQTT_IsReady() {
 	return mqtt_client && mqtt_client_is_connected(mqtt_client);
 }
