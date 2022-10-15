@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include "cmd_local.h"
 #include "../ir/ir_local.h"
+#include "../ir/irtestcpp.h"
 
 #ifdef BK_LITTLEFS
 	#include "../littlefs/our_lfs.h"
@@ -36,6 +37,9 @@ static int CMD_SimonTest(const void *context, const char *cmd, const char *args,
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SimonTest: ir test routine");
 
 	DRV_IR_Test();
+
+	testmehere();
+	
 	return 1;
 }
 
