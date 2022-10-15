@@ -86,7 +86,6 @@ OBK_Publish_Result MQTT_ChannelChangeCallback(int channel, int iVal);
 void MQTT_PublishOnlyDeviceChannelsIfPossible();
 void MQTT_QueuePublish(char* topic, char* channel, char* value, int flags);
 OBK_Publish_Result MQTT_Publish(char* sTopic, char* sChannel, char* value, int flags);
+bool MQTT_ready();
 
 #endif // __NEW_MQTT_H__
-
-

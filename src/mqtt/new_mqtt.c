@@ -200,6 +200,21 @@ int MQTT_GetConnectResult(void)
 	return mqtt_connect_result;
 }
 
+//Based on mqtt_connection_status_t and https://www.nongnu.org/lwip/2_1_x/group__mqtt.html
+const char* get_callback_error(int reason) {
+	switch (reason)
+	{
+	case MQTT_CONNECT_REFUSED_PROTOCOL_VERSION: return "Refused protocol version";
+	case MQTT_CONNECT_REFUSED_IDENTIFIER: return "Refused identifier";
+	case MQTT_CONNECT_REFUSED_SERVER: return "Refused server";
+	case MQTT_CONNECT_REFUSED_USERNAME_PASS: return "Refused user credentials";
+	case MQTT_CONNECT_REFUSED_NOT_AUTHORIZED_: return "Refused not authorized";
+	case MQTT_CONNECT_DISCONNECTED: return "Disconnected";
+	case MQTT_CONNECT_TIMEOUT: return "Timeout";
+	}
+	return "";
+}
+
 const char* get_error_name(int err)
 {
 	switch (err)
@@ -724,7 +739,7 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 		//        1);
 	}
 	else {
-		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_connection_cb: Disconnected, reason: %d\n", status);
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_connection_cb: Disconnected, reason: %d(%s)\n", status, get_callback_error(status));
 	}
 }
 
@@ -1247,4 +1262,11 @@ OBK_Publish_Result PublishQueuedItems() {
 	}
 
 	return result;
+}
+
+
+/// @brief Is MQTT sub system ready and connected?
+/// @return 
+bool MQTT_ready() {
+	return mqtt_client && mqtt_client_is_connected(mqtt_client);
 }
