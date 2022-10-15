@@ -749,7 +749,7 @@ static void MQTT_do_connect(mqtt_client_t* client)
 	int mqtt_port;
 	int res;
 	struct hostent* hostEntry;
-	char will_topic[32];
+	char will_topic[CGF_MQTT_CLIENT_ID_SIZE + 16];
 
 	mqtt_host = CFG_GetMQTTHost();
 
@@ -777,7 +777,7 @@ static void MQTT_do_connect(mqtt_client_t* client)
 	mqtt_client_info.client_pass = mqtt_pass;
 	mqtt_client_info.client_user = mqtt_userName;
 
-	sprintf(will_topic, "%s/connected", CFG_GetMQTTClientId());
+	sprintf(will_topic, "%s/connected", mqtt_clientID);
 	mqtt_client_info.will_topic = will_topic;
 	mqtt_client_info.will_msg = "offline";
 	mqtt_client_info.will_retain = true,
@@ -917,8 +917,8 @@ OBK_Publish_Result MQTT_PublishCommand(const void* context, const char* cmd, con
 // called from user_main
 void MQTT_init()
 {
-	char cbtopicbase[64];
-	char cbtopicsub[64];
+	char cbtopicbase[CGF_MQTT_CLIENT_ID_SIZE + 16];
+	char cbtopicsub[CGF_MQTT_CLIENT_ID_SIZE + 16];
 	const char* clientId;
 
 	clientId = CFG_GetMQTTClientId();
