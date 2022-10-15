@@ -13,8 +13,38 @@ extern "C" {
 }
 
 
+class cpptest2 {
+    public:
+        int initialised;
+        cpptest2(){
+        	// remove else static class may kill us!!!ADDLOG_INFO(LOG_FEATURE_CMD, "Log from Class constructor");
+            initialised = 42;
+        };
+        ~cpptest2(){
+            initialised = 24;
+        	ADDLOG_INFO(LOG_FEATURE_CMD, "Log from Class destructor");
+        }
+
+        void print(){
+        	ADDLOG_INFO(LOG_FEATURE_CMD, "Log from Class %d", initialised);
+        }
+};
+
+cpptest2 staticclass;
+
 void cpptest(){
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Log from CPP");
+
+    cpptest2 test;
+
+    test.print();
+
+    cpptest2 *test2 = new cpptest2();
+
+    test2->print();
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Log from static class (is it initialised?):");
+    staticclass.print();
 }
 
 extern "C" void testmehere(){
