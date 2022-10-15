@@ -200,6 +200,21 @@ int MQTT_GetConnectResult(void)
 	return mqtt_connect_result;
 }
 
+//Based on mqtt_connection_status_t and https://www.nongnu.org/lwip/2_1_x/group__mqtt.html
+const char* get_callback_error(int reason) {
+	switch (reason)
+	{
+	case MQTT_CONNECT_REFUSED_PROTOCOL_VERSION: return "Refused protocol version";
+	case MQTT_CONNECT_REFUSED_IDENTIFIER: return "Refused identifier";
+	case MQTT_CONNECT_REFUSED_SERVER: return "Refused server";
+	case MQTT_CONNECT_REFUSED_USERNAME_PASS: return "Refused user credentials";
+	case MQTT_CONNECT_REFUSED_NOT_AUTHORIZED_: return "Refused not authorized";
+	case MQTT_CONNECT_DISCONNECTED: return "Disconnected";
+	case MQTT_CONNECT_TIMEOUT: return "Timeout";
+	}
+	return "";
+}
+
 const char* get_error_name(int err)
 {
 	switch (err)
@@ -724,7 +739,7 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 		//        1);
 	}
 	else {
-		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_connection_cb: Disconnected, reason: %d\n", status);
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_connection_cb: Disconnected, reason: %d(%s)\n", status, get_callback_error(status));
 	}
 }
 
@@ -734,7 +749,7 @@ static void MQTT_do_connect(mqtt_client_t* client)
 	int mqtt_port;
 	int res;
 	struct hostent* hostEntry;
-	char will_topic[32];
+	char will_topic[CGF_MQTT_CLIENT_ID_SIZE + 16];
 
 	mqtt_host = CFG_GetMQTTHost();
 
@@ -762,7 +777,7 @@ static void MQTT_do_connect(mqtt_client_t* client)
 	mqtt_client_info.client_pass = mqtt_pass;
 	mqtt_client_info.client_user = mqtt_userName;
 
-	sprintf(will_topic, "%s/connected", CFG_GetMQTTClientId());
+	sprintf(will_topic, "%s/connected", mqtt_clientID);
 	mqtt_client_info.will_topic = will_topic;
 	mqtt_client_info.will_msg = "offline";
 	mqtt_client_info.will_retain = true,
@@ -902,8 +917,8 @@ OBK_Publish_Result MQTT_PublishCommand(const void* context, const char* cmd, con
 // called from user_main
 void MQTT_init()
 {
-	char cbtopicbase[64];
-	char cbtopicsub[64];
+	char cbtopicbase[CGF_MQTT_CLIENT_ID_SIZE + 16];
+	char cbtopicsub[CGF_MQTT_CLIENT_ID_SIZE + 16];
 	const char* clientId;
 
 	clientId = CFG_GetMQTTClientId();
@@ -1247,4 +1262,11 @@ OBK_Publish_Result PublishQueuedItems() {
 	}
 
 	return result;
+}
+
+
+/// @brief Is MQTT sub system ready and connected?
+/// @return 
+bool MQTT_IsReady() {
+	return mqtt_client && mqtt_client_is_connected(mqtt_client);
 }
