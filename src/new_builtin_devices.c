@@ -910,6 +910,9 @@ void Setup_Device_TeslaSmartPlus_TSL_SPL_1() {
     PIN_SetPinRoleForPinIndex(24, IOR_BL0937_SEL);
     PIN_SetPinChannelForPinIndex(24, 0);
 
+    CFG_SetFlag(2,1);
+    CFG_SetFlag(10,1);
+
     CFG_Save_SetupTimer();
 }
 
@@ -930,3 +933,33 @@ void Setup_Device_Calex_900011_1_WB2S(){
 
 	CFG_Save_SetupTimer();
 }
+void Setup_Device_Immax_NEO_LITE_NAS_WR07W()
+{
+    CFG_ClearPins();
+
+    // Button
+    PIN_SetPinRoleForPinIndex(9, IOR_Button_n);
+    PIN_SetPinChannelForPinIndex(9, 0);
+    // Relay
+    PIN_SetPinRoleForPinIndex(6, IOR_LED_WIFI_n);
+    PIN_SetPinChannelForPinIndex(6, 0);
+    // Led
+    PIN_SetPinRoleForPinIndex(26, IOR_Relay);
+    PIN_SetPinChannelForPinIndex(26, 0);
+
+    CFG_SetShortStartupCommand("backlog startDriver BL0942");
+    CFG_SetFlag(2,1);
+    CFG_SetFlag(10,1);
+
+    CFG_Save_SetupTimer();
+}
+
+void Setup_Device_MOES_TouchSwitch_WS_EU1_RFW_N()
+{
+    CFG_ClearPins();
+    CFG_SetShortStartupCommand("backlog startDriver TuyaMCU; setChannelType 1 toggle; linkTuyaMCUOutputToChannel 1 bool 1");
+    CFG_SetFlag(2,1);
+    CFG_SetFlag(10,1);
+    CFG_Save_SetupTimer();
+}
+

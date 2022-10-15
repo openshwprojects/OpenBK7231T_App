@@ -134,7 +134,10 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload
 		break;
 	case ENTITY_SENSOR:
 #ifndef OBK_DISABLE_ALL_DRIVERS
-		sprintf(g_hassBuffer, "%s %s", CFG_GetShortDeviceName(), sensor_mqttNames[index]);
+        if ((index >= OBK_VOLTAGE) && (index <= OBK_POWER))
+    		sprintf(g_hassBuffer, "%s %s", CFG_GetShortDeviceName(), sensor_mqttNames[index]);
+        if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_CONSUMPTION_STATS))
+            sprintf(g_hassBuffer, "%s %s", CFG_GetShortDeviceName(), counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
 #endif
 		break;
 	}
@@ -231,10 +234,20 @@ HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type, int index) {
 
 		//https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes
 		//device_class automatically assigns unit,icon
-		cJSON_AddStringToObject(info->root, "dev_cla", sensor_mqttNames[index]);   //device_class=voltage,current,power
+        if ((index >= OBK_VOLTAGE) && (index <= OBK_POWER))
+        {
+		    cJSON_AddStringToObject(info->root, "dev_cla", sensor_mqttNames[index]);   //device_class=voltage,current,power
 
-		sprintf(g_hassBuffer, "%s/%s/get", clientId, sensor_mqttNames[index]);
-		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
+    		sprintf(g_hassBuffer, "%s/%s/get", clientId, sensor_mqttNames[index]);
+	    	cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
+        }
+        if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_CONSUMPTION_STATS))
+        {
+            cJSON_AddStringToObject(info->root, "dev_cla", counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);  //device_class=consumption
+
+            sprintf(g_hassBuffer, "%s/%s/get", clientId, counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
+            cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
+        }
 #endif
 
 		break;
