@@ -598,13 +598,12 @@ int HTTP_ProcessPacket(http_request_t* request) {
 }
 
 /*
-To edit the following two fields:
-1. Edit the files script.js (pageScript) or script.css (htmlHeadStyle)
-2. Generate compressed content using gulp or online compressor such as https://www.minifier.org/
+NOTE:
 
-For using gulp, you need to have nodejs (https://nodejs.org/en/) installed.
-After that run, `npm install` at the root folder to install dependent dev packages.
-And then run `gulp` which will automatically update the fields.
+The following fields should not be manually edited.
+Instead, edit the script/css files in this folder and then re-generate the fields by running gulp.
+Gulp tasks should automatically appear in Visual Code or can be invoked from console.
+See https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md for gulp setup.
 */
 
 //region_start htmlHeadStyle

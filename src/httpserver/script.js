@@ -1,3 +1,5 @@
+//The content of this file get set into htmlHeadStyle (new_http.cs)
+
 var firstTime,
     lastTime,
     req = null;

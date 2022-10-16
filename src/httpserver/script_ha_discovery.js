@@ -1,3 +1,5 @@
+//The content of this file get set into ha_discovery_script (new_http.cs)
+
 function send_ha_disc() {
   var xhr = new XMLHttpRequest();
   xhr.open(
