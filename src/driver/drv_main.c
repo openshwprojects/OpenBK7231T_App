@@ -18,6 +18,12 @@ const char *sensor_mqttNames[OBK_NUM_MEASUREMENTS] = {
 	"power"
 };
 
+const char *counter_mqttNames[OBK_NUM_COUNTERS] = {
+    "energycounter",
+    "energycounter_last_hour",
+    "consumption_stats"
+};
+
 typedef struct driver_s {
 	const char *name;
 	void (*initFunc)();
@@ -54,7 +60,7 @@ static driver_t g_drivers[] = {
 	{ "tmSensor", TuyaMCU_Sensor_Init, TuyaMCU_Sensor_RunFrame, NULL, NULL, NULL, NULL, false }
 };
 
-static int g_numDrivers = sizeof(g_drivers)/sizeof(g_drivers[0]);
+static const int g_numDrivers = sizeof(g_drivers)/sizeof(g_drivers[0]);
 
 bool DRV_IsRunning(const char *name) {
 	int i;
@@ -144,7 +150,7 @@ void DRV_StopDriver(const char *name) {
 				if(g_drivers[i].stopFunc != 0) {
 					g_drivers[i].stopFunc();
 				}
-				g_drivers[i].bLoaded = 0;
+				g_drivers[i].bLoaded = false;
 				addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Drv %s has been stopped.\n",name);
 				break ;
 			} else {

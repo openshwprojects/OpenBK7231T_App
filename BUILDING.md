@@ -1,4 +1,21 @@
-# Building for BK7231T
+# Setup
+
+## Editor
+
+Any editor can be used for editing. However, the repository does have settings to ensure consistent formatting when using [Visual Code](https://code.visualstudio.com/). For other editors, please use `tab` instead of `spaces` with `tabSize` of `4` for indentation.
+
+## Nodejs
+
+You would need `nodejs` if you plan on making JavaScript/styling changes. This is to run `gulp` tasks and more things in future.
+
+- Install [nodejs](https://nodejs.org/en/).
+- Run `npm install` at the root folder to install dev packages.
+
+Gulp tasks should automatically appear in Explore pane in Visual Code. They can also be invoked from console by running `gulp`.
+
+# Building
+
+## Building for BK7231T
 
 Get the SDK repo:
 https://github.com/openshwprojects/OpenBK7231T
@@ -21,14 +38,12 @@ e.g. `./build_app.sh apps/openbk7231app openbk7231app 1.0.0`.
 
 The output binaries can be found at `apps/<appname>/output/<appversion>`.
 
-
-# Building for BK7231N
+## Building for BK7231N
 
 Same as for BK7231T, but use BK7231N SDK and you also might need to rename project directory from OpenBK7231T_App to OpenBK7231N_App:
 https://github.com/openshwprojects/OpenBK7231N
 
-
-# Building for XR809
+## Building for XR809
 
 Get XR809 SDK:
 https://github.com/openshwprojects/OpenXR809
@@ -37,8 +52,8 @@ Checkout [this repository](https://github.com/openshwprojects/OpenBK7231T_App) t
 
 Run ./build_oxr_sharedapp.sh
 
+## Building for BL602
 
-# Building for BL602
 Get the SDK repo:
 https://github.com/openshwprojects/OpenBL602
 Clone it to a folder, e.g. `OpenBL602/`
@@ -55,8 +70,11 @@ Build using:
 
 The output binaries can be found at `OpenBL602/customer_app/bl602_sharedApp/build_out/bl602_sharedApp.bin`.
 
+## Building for W600
 
-# Building for W800/W801
+https://github.com/openshwprojects/OpenW600
+
+## Building for W800/W801
 
 To build for W800, you need our W800 SDK fork:
 

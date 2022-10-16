@@ -67,8 +67,8 @@ int BL0942_TryToGetNextBL0942Packet() {
 	}
 	checksum ^= 0xFF;
 
-#if 0
-	{
+#if 1
+    {
 		char buffer_for_log[128];
 		char buffer2[32];
 		buffer_for_log[0] = 0;
@@ -93,7 +93,7 @@ int BL0942_TryToGetNextBL0942Packet() {
 	raw_unscaled_freq = (UART_GetNextByte(17) << 8) | UART_GetNextByte(16);
 
 	// those are not values like 230V, but unscaled
-	//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Unscaled current %d, voltage %d, power %d, freq %d\n", raw_unscaled_current, raw_unscaled_voltage,raw_unscaled_power,raw_unscaled_freq);
+	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Unscaled current %d, voltage %d, power %d, freq %d\n", raw_unscaled_current, raw_unscaled_voltage,raw_unscaled_power,raw_unscaled_freq);
 
 	// those are final values, like 230V
 	{

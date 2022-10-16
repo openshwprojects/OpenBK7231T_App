@@ -95,7 +95,9 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 		// 0   1  2  3  4  5  6  7  8 9  10 11 12 13 14 15 16 17 18 19 20 21 22 23
 		// H  Id VCal---- Voltage- ICal---- Current- PCal---- Power--- Ad CF--- Ck
 		// F2 5A 02 D5 00 00 05 A7 00 3C 05 03 2B F3 4D B2 A0 9C 98 CA 61 24 90 97 
-		// F2 5A 02 D5 00 00 05 A7 00 3C 05 03 77 4B 4D B2 A0 AA FE 56 61 24 90 3B 		// F2 5A 02 D5 00 00 05 AB 00 3C 05 03 77 4B 4D B2 A0 BA FC 48 61 24 90 3F 		// F2 5A 02 D5 00 00 05 AB 00 3C 05 05 38 DB 4D B2 A0 C9 60 D5 61 24 90 92 
+		// F2 5A 02 D5 00 00 05 A7 00 3C 05 03 77 4B 4D B2 A0 AA FE 56 61 24 90 3B 
+		// F2 5A 02 D5 00 00 05 AB 00 3C 05 03 77 4B 4D B2 A0 BA FC 48 61 24 90 3F 
+		// F2 5A 02 D5 00 00 05 AB 00 3C 05 05 38 DB 4D B2 A0 C9 60 D5 61 24 90 92 
 
 		// samples with disabled relay (?not sure, doing it remotely)
 		// power is 0, current still non-zero
@@ -103,7 +105,9 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 		/*
 		0   1  2  3  4  5  6  7  8 9  10 11 12 13 14 15 16 17 18 19 20 21 22 23
 		H  Id VCal---- Voltage- ICal---- Current- PCal---- Power--- Ad CF--- Ck
-		F2 5A 02 D5 00 00 05 B7 00 3C 05 03 5D C5 4D B2 A0 A7 BB 9C 61 2A 61 82 		F2 5A 02 D5 00 00 05 B7 00 3C 05 03 5D C5 4D B2 A0 B6 20 29 61 2A 61 83 		F2 5A 02 D5 00 00 F2 5A 02 D5 00 00 05 B7 00 3C 05 03 5D C5 4D B2 A0 C6 
+		F2 5A 02 D5 00 00 05 B7 00 3C 05 03 5D C5 4D B2 A0 A7 BB 9C 61 2A 61 82 
+		F2 5A 02 D5 00 00 05 B7 00 3C 05 03 5D C5 4D B2 A0 B6 20 29 61 2A 61 83 
+		F2 5A 02 D5 00 00 F2 5A 02 D5 00 00 05 B7 00 3C 05 03 5D C5 4D B2 A0 C6 
 		F2 5A 02 D5 00 00 05 B7 00 3C 05 03 5D C5 4D B2 A0 D4 82 A8 61 2A 61 82 
 		F2 5A 02 D5 00 00 05 B7 00 3C 05 03 76 DF 4D B2 A0 E4 7F 9B 61 2A E8 B5 
 
@@ -111,7 +115,15 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 		// samples with enabled relay (current, power, voltag enon-zero)
 		/*
 		0   1  2  3  4  5  6  7  8 9  10 11 12 13 14 15 16 17 18 19 20 21 22 23
-		H  Id VCal---- Voltage- ICal---- Current- PCal---- Power--- Ad CF--- Ck		55 5A 02 D5 00 00 05 A9 00 3C 38 00 FD 5C 4D B2 A0 02 95 7C 71 48 23 AD 		55 5A 02 D5 00 00 05 A9 00 3C 05 00 FD 73 4D B2 A0 02 97 27 71 48 28 76 		55 5A 02 D5 00 00 05 A7 00 3C 05 00 FD 73 4D B2 A0 02 96 1F 71 48 2E 71 		55 5A 02 D5 00 00 05 A7 00 3C 05 00 FD 73 4D B2 A0 02 97 5C 71 48 34 B5 		55 5A 02 D5 00 00 05 A7 00 3C 05 00 FD 9C 4D B2 A0 02 96 80 71 48 3A 07 		55 5A 02 D5 00 00 05 A6 00 3C 05 00 FD 9C 4D B2 A0 02 93 C2 71 48 40 4B 		55 5A 02 D5 00 00 05 A6 00 3C 05 00 FD 9C 4D B2 A0 02 96 54 71 48 46 E6 		55 5A 02 D5 00 00 05 A6 00 3C 05 00 FD AB 4D B2 A0 02 96 5F 71 48 4B 05 
+		H  Id VCal---- Voltage- ICal---- Current- PCal---- Power--- Ad CF--- Ck
+		55 5A 02 D5 00 00 05 A9 00 3C 38 00 FD 5C 4D B2 A0 02 95 7C 71 48 23 AD 
+		55 5A 02 D5 00 00 05 A9 00 3C 05 00 FD 73 4D B2 A0 02 97 27 71 48 28 76 
+		55 5A 02 D5 00 00 05 A7 00 3C 05 00 FD 73 4D B2 A0 02 96 1F 71 48 2E 71 
+		55 5A 02 D5 00 00 05 A7 00 3C 05 00 FD 73 4D B2 A0 02 97 5C 71 48 34 B5 
+		55 5A 02 D5 00 00 05 A7 00 3C 05 00 FD 9C 4D B2 A0 02 96 80 71 48 3A 07 
+		55 5A 02 D5 00 00 05 A6 00 3C 05 00 FD 9C 4D B2 A0 02 93 C2 71 48 40 4B 
+		55 5A 02 D5 00 00 05 A6 00 3C 05 00 FD 9C 4D B2 A0 02 96 54 71 48 46 E6 
+		55 5A 02 D5 00 00 05 A6 00 3C 05 00 FD AB 4D B2 A0 02 96 5F 71 48 4B 05 
 		*/
 		//
 			
@@ -148,9 +160,21 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 		// those are final values, like 230V
 		{
 			float power, voltage, current;
-			power = CSE7766_PREF / raw_unscaled_power;
-			voltage = CSE7766_UREF / raw_unscaled_voltage;
-			current = CSE7766_IREF / raw_unscaled_current;
+			if (raw_unscaled_power == 0) {
+				power = 0;
+			} else {
+				power = CSE7766_PREF / raw_unscaled_power;
+			}
+			if (raw_unscaled_voltage == 0) {
+				voltage = 0;
+			} else {
+				voltage = CSE7766_UREF / raw_unscaled_voltage;
+			}
+			if (raw_unscaled_current == 0) {
+				current = 0;
+			} else {
+				current = CSE7766_IREF / raw_unscaled_current;
+			}
 
 			BL_ProcessUpdate(voltage,current,power);
 		}
@@ -181,7 +205,7 @@ int CSE7766_PowerSet(const void *context, const char *cmd, const char *args, int
 		return 1;
 	}
 	realPower = atof(args);
-	CSE7766_PREF = realPower / raw_unscaled_power;
+	CSE7766_PREF = realPower * raw_unscaled_power;
 	{
 		char dbg[128];
 		sprintf(dbg,"PowerSet: you gave %f, set ref to %f\n", realPower, CSE7766_PREF);
@@ -224,7 +248,7 @@ int CSE7766_VoltageSet(const void *context, const char *cmd, const char *args, i
 		return 1;
 	}
 	realV = atof(args);
-	CSE7766_UREF = realV / raw_unscaled_voltage;
+	CSE7766_UREF = realV * raw_unscaled_voltage;
 	{
 		char dbg[128];
 		sprintf(dbg,"VoltageSet: you gave %f, set ref to %f\n", realV, CSE7766_UREF);
@@ -241,7 +265,7 @@ int CSE7766_CurrentSet(const void *context, const char *cmd, const char *args, i
 		return 1;
 	}
 	realI = atof(args);
-	CSE7766_IREF = realI / raw_unscaled_current;
+	CSE7766_IREF = realI * raw_unscaled_current;
 	{
 		char dbg[128];
 		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realI, CSE7766_IREF);

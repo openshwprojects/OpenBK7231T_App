@@ -9,6 +9,7 @@
 #include "drv_local.h"
 #include "drv_uart.h"
 #include "../httpserver/new_http.h"
+#include "../cJSON/cJSON.h"
 
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
@@ -28,49 +29,88 @@ float lastSentValues[OBK_NUM_MEASUREMENTS];
 float energyCounter = 0.0f;
 portTickType energyCounterStamp;
 
+float energyCounterMinutes[60];
+portTickType energyCounterMinutesStamp;
+long energyCounterMinutesIndex;
+
 // how much update frames has passed without sending MQTT update of read values?
 int noChangeFrames[OBK_NUM_MEASUREMENTS];
 int noChangeFrameEnergyCounter;
 float lastSentEnergyCounterValue = 0.0f; 
 float changeSendThresholdEnergy = 0.1f;
+float lastSentEnergyCounterLastHour = 0.0f;
 
 // how much of value have to change in order to be send over MQTT again?
 int changeSendThresholds[OBK_NUM_MEASUREMENTS] = {
-	0.25f, // voltage - OBK_VOLTAGE
-	0.002f, // current - OBK_CURRENT
-	0.25f, // power - OBK_POWER
+    0.25f, // voltage - OBK_VOLTAGE
+    0.002f, // current - OBK_CURRENT
+    0.25f, // power - OBK_POWER
 };
 
 
 int changeSendAlwaysFrames = 60;
 int changeDoNotSendMinFrames = 5;
 
-void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request) {
-	char tmp[128];
-	const char *mode;
+void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
+{
+    int i;
+    char tmp[128];
+    const char *mode;
+    char number[16];
 
-	if(DRV_IsRunning("BL0937")) {
-		mode = "BL0937";
-	} else if(DRV_IsRunning("BL0942")) {
-		mode = "BL0942";
-	} else {
-		mode = "PWR";
-	}
-	sprintf(tmp, "<h2>%s Voltage=%f, Current=%f, Power=%f, Consumption=%f (changes sent %i, skipped %i)</h2>",
-		mode, lastReadings[OBK_VOLTAGE],lastReadings[OBK_CURRENT], lastReadings[OBK_POWER],
+    if(DRV_IsRunning("BL0937")) {
+        mode = "BL0937";
+    } else if(DRV_IsRunning("BL0942")) {
+        mode = "BL0942";
+    } else {
+        mode = "PWR";
+    }
+    sprintf(tmp, "<h2>%s Voltage=%f, Current=%f, Power=%f, Consumption=%1.1f Wh (changes sent %i, skipped %i)</h2>",
+        mode, lastReadings[OBK_VOLTAGE],lastReadings[OBK_CURRENT], lastReadings[OBK_POWER],
         energyCounter, stat_updatesSent, stat_updatesSkipped);
     hprintf128(request,tmp);
 
+    /********************************************************************************************************************/
+    sprintf(tmp, "<h2>Last Hour Statistics</h2><h5>Consumption: %1.1f Wh<br>", DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+    hprintf128(request,tmp);
+    sprintf(tmp, "History per minute:<br>");
+    hprintf128(request,tmp);
+    memset(tmp,0,128);
+    for(i=0; i<60; i++)
+    {
+        if ((i%20)==0)
+        {
+            sprintf(number,"%1.1f", energyCounterMinutes[i]);
+        } else {
+            sprintf(number,", %1.1f", energyCounterMinutes[i]);
+        }
+        strcat(tmp, number);
+        if ((i%20)==19)
+        {
+            strcat(tmp, "<br>");
+            hprintf128(request,tmp);
+            memset(tmp,0,128);
+        }
+    }
+    hprintf128(request,"History Index: %d</h5>", energyCounterMinutesIndex);
+    /********************************************************************************************************************/
 }
 
 int BL0937_ResetEnergyCounter(const void *context, const char *cmd, const char *args, int cmdFlags)
 {
     float value;
+    int i;
 
     if(args==0||*args==0) 
     {
         energyCounter = 0.0f;
         energyCounterStamp = xTaskGetTickCount();
+        for(i = 0; i < 60; i++)
+        {
+            energyCounterMinutes[i] = 0.0;
+        }
+        energyCounterMinutesStamp = xTaskGetTickCount();
+        energyCounterMinutesIndex = 0;
     } else {
         value = atof(args);
         energyCounter = value;
@@ -81,14 +121,18 @@ int BL0937_ResetEnergyCounter(const void *context, const char *cmd, const char *
 
 void BL_ProcessUpdate(float voltage, float current, float power) 
 {
-	int i;
+    int i;
     float energy;    
     int xPassedTicks;
+    cJSON* root;
+    cJSON* stats;
+    char *msg;
+
 
     // those are final values, like 230V
-	lastReadings[OBK_POWER] = power;
-	lastReadings[OBK_VOLTAGE] = voltage;
-	lastReadings[OBK_CURRENT] = current;
+    lastReadings[OBK_POWER] = power;
+    lastReadings[OBK_VOLTAGE] = voltage;
+    lastReadings[OBK_CURRENT] = current;
     
     xPassedTicks = (int)(xTaskGetTickCount() - energyCounterStamp);
     if (xPassedTicks <= 0)
@@ -100,41 +144,83 @@ void BL_ProcessUpdate(float voltage, float current, float power)
     energyCounter += energy;
     energyCounterStamp = xTaskGetTickCount();
 
-	for(i = 0; i < OBK_NUM_MEASUREMENTS; i++) 
+    if ((xTaskGetTickCount() - energyCounterMinutesStamp) >= (60000 / portTICK_PERIOD_MS))
     {
-		// send update only if there was a big change or if certain time has passed
-        // Do not send message with every measurement. 
-		if ( ((abs(lastSentValues[i]-lastReadings[i]) > changeSendThresholds[i]) &&
-               (noChangeFrames[i] >= changeDoNotSendMinFrames)) ||
-			 (noChangeFrames[i] >= changeSendAlwaysFrames) )
+        root = cJSON_CreateObject();
+        cJSON_AddNumberToObject(root, "uptime", Time_getUpTimeSeconds());
+        cJSON_AddNumberToObject(root, "consumption_total", energyCounter );
+        cJSON_AddNumberToObject(root, "consumption_last_hour",  DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+        cJSON_AddNumberToObject(root, "consumption_stat_index", energyCounterMinutesIndex);
+
+        stats = cJSON_CreateArray();
+        for(i = 0; i < 60; i++)
         {
-			noChangeFrames[i] = 0;
-			if(i == OBK_CURRENT) 
+            cJSON_AddItemToArray(stats, cJSON_CreateNumber(energyCounterMinutes[i]));
+        }
+        cJSON_AddItemToObject(root, "consumption_minutes", stats);
+
+        msg = cJSON_Print(root);
+        cJSON_Delete(root);
+
+        MQTT_PublishMain_StringString(counter_mqttNames[2], msg, 0);
+        stat_updatesSent++;
+        os_free(msg);
+
+        for (i=59;i>0;i--)
+        {
+            energyCounterMinutes[i] = energyCounterMinutes[i-1];
+        }
+        energyCounterMinutes[0] = 0.0;
+        energyCounterMinutesStamp = xTaskGetTickCount();
+        energyCounterMinutesIndex++;
+
+        MQTT_PublishMain_StringFloat(counter_mqttNames[1], DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+        EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR, lastSentEnergyCounterLastHour, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+        lastSentEnergyCounterLastHour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
+        stat_updatesSent++;
+    }
+    energyCounterMinutes[0] += energy;
+
+    for(i = 0; i < OBK_NUM_MEASUREMENTS; i++)
+    {
+        // send update only if there was a big change or if certain time has passed
+        // Do not send message with every measurement. 
+        if ( ((abs(lastSentValues[i]-lastReadings[i]) > changeSendThresholds[i]) &&
+               (noChangeFrames[i] >= changeDoNotSendMinFrames)) ||
+             (noChangeFrames[i] >= changeSendAlwaysFrames) )
+        {
+            noChangeFrames[i] = 0;
+            if(i == OBK_CURRENT)
             {
-				int prev_mA, now_mA;
-				prev_mA = lastSentValues[i] * 1000;
-				now_mA = lastReadings[i] * 1000;
-				EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CURRENT, prev_mA,now_mA);
-			} else {
-				EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_VOLTAGE+i, lastSentValues[i], lastReadings[i]);
-			}
-			lastSentValues[i] = lastReadings[i];
-			MQTT_PublishMain_StringFloat(sensor_mqttNames[i],lastReadings[i]);
-			stat_updatesSent++;
-		} else {
-			// no change frame
-			noChangeFrames[i]++;
-			stat_updatesSkipped++;
-		}
+                int prev_mA, now_mA;
+                prev_mA = lastSentValues[i] * 1000;
+                now_mA = lastReadings[i] * 1000;
+                EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CURRENT, prev_mA,now_mA);
+            } else {
+                EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_VOLTAGE+i, lastSentValues[i], lastReadings[i]);
+            }
+            lastSentValues[i] = lastReadings[i];
+            MQTT_PublishMain_StringFloat(sensor_mqttNames[i],lastReadings[i]);
+            stat_updatesSent++;
+        } else {
+            // no change frame
+            noChangeFrames[i]++;
+            stat_updatesSkipped++;
+        }
     }
 
     if ( (((energyCounter - lastSentEnergyCounterValue) >= changeSendThresholdEnergy) &&
           (noChangeFrameEnergyCounter >= changeDoNotSendMinFrames)) || 
          (noChangeFrameEnergyCounter >= changeSendAlwaysFrames) )
     {
+        MQTT_PublishMain_StringFloat(counter_mqttNames[0], energyCounter);
+        EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CONSUMPTION_TOTAL, lastSentEnergyCounterValue, energyCounter);
         lastSentEnergyCounterValue = energyCounter;
-        MQTT_PublishMain_StringFloat("energycounter", energyCounter);
         noChangeFrameEnergyCounter = 0;
+        stat_updatesSent++;
+        MQTT_PublishMain_StringFloat(counter_mqttNames[1], DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+        EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR, lastSentEnergyCounterLastHour, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+        lastSentEnergyCounterLastHour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
         stat_updatesSent++;
     } else {
         noChangeFrameEnergyCounter++;
@@ -142,23 +228,48 @@ void BL_ProcessUpdate(float voltage, float current, float power)
     }
 }
 
-void BL_Shared_Init() 
+void BL_Shared_Init()
 {
-	int i;
+    int i;
 
-	for(i = 0; i < OBK_NUM_MEASUREMENTS; i++) 
+    for(i = 0; i < OBK_NUM_MEASUREMENTS; i++)
     {
-		noChangeFrames[i] = 0;
-		lastReadings[i] = 0;
-	}
+        noChangeFrames[i] = 0;
+        lastReadings[i] = 0;
+    }
     noChangeFrameEnergyCounter = 0;
     energyCounterStamp = xTaskGetTickCount(); 
+
+    for(i = 0; i < 60; i++)
+    {
+        energyCounterMinutes[i] = 0.0;
+    }
+    energyCounterMinutesStamp = xTaskGetTickCount();
+    energyCounterMinutesIndex = 0;
 }
 
 // OBK_POWER etc
 float DRV_GetReading(int type) 
 {
-	return lastReadings[type];
+    int i;
+    float hourly_sum = 0.0;
+    switch (type)
+    {
+        case OBK_VOLTAGE: // must match order in cmd_public.h
+        case OBK_CURRENT:
+        case OBK_POWER:
+            return lastReadings[type];
+        case OBK_CONSUMPTION_TOTAL:
+            return energyCounter;
+        case OBK_CONSUMPTION_LAST_HOUR:
+            for(i=0;i<60;i++)
+            {
+                hourly_sum += energyCounterMinutes[i];
+            }
+            return hourly_sum;
+        default:
+            break;
+    }
+    return 0.0f;
 }
-
 
