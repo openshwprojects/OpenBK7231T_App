@@ -28,6 +28,9 @@ bool isWhiteSpace(char ch) {
 int Tokenizer_GetArgsCount() {
 	return g_numArgs;
 }
+bool Tokenizer_IsArgInteger(int i) {
+	return strIsInteger(g_args[i]);
+}
 const char *Tokenizer_GetArg(int i) {
 	return g_args[i];
 }

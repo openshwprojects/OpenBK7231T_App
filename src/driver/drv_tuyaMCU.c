@@ -844,6 +844,7 @@ void TuyaMCU_ParseStateMessage(const byte *data, int len) {
 
 void TuyaMCU_ProcessIncoming(const byte *data, int len) {
 	int checkLen;
+	int dataCount;
 	int i;
 	byte checkCheckSum;
 	byte cmd;
@@ -893,6 +894,27 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
 
 		}
 		break;
+	case TUYA_CMD_MCU_CONF:
+		// https://github.com/openshwprojects/OpenBK7231T_App/issues/291
+		// header	ver	TUYA_CMD_MCU_CONF	LENGHT							Chksum
+		// Pushing
+		// 55 AA	01	02					00 03	FF 01 01			06 
+		// 55 AA	01	02					00 03	FF 01 00			05 
+		// Rotating down
+		// 55 AA	01	02					00 05	01 24 02 01 0A		39 
+		// 55 AA	01	02					00 03	01 09 00			0F 
+		// Rotating up
+		// 55 AA	01	02					00 05	01 24 01 01 0A		38 
+		// 55 AA	01	02					00 03	01 09 01			10 
+		dataCount = data[5];
+		if(5 + dataCount + 1 != len) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: TUYA_CMD_MCU_CONF had wrong data lenght?");
+		} else {
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: TUYA_CMD_MCU_CONF, TODO!");
+
+		}
+		break;
+		
 	default:
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: unhandled type %i",cmd);
 		break;

@@ -45,6 +45,10 @@ enum EventCode {
 
 	// this is for ToggleChannelOnToggle
 	CMD_EVENT_PIN_ONTOGGLE,
+	
+	// Argument is a string
+	// You can fire an event when TuyaMCU or something receives given string
+	CMD_EVENT_ON_UART,
 
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
@@ -74,6 +78,7 @@ int Tokenizer_GetArgsCount();
 const char *Tokenizer_GetArg(int i);
 const char *Tokenizer_GetArgFrom(int i);
 int Tokenizer_GetArgInteger(int i);
+bool Tokenizer_IsArgInteger(int i);
 int Tokenizer_GetArgIntegerRange(int i, int rangeMax, int rangeMin);
 void Tokenizer_TokenizeString(const char *s);
 // cmd_repeatingEvents.c
@@ -81,6 +86,7 @@ void RepeatingEvents_Init();
 void RepeatingEvents_OnEverySecond();
 // cmd_eventHandlers.c
 void EventHandlers_Init();
+void EventHandlers_FireEvent_String(byte eventCode, const char *argument);
 void EventHandlers_FireEvent(byte eventCode, int argument);
 void EventHandlers_ProcessVariableChange_Integer(byte eventCode, int oldValue, int newValue);
 // cmd_tasmota.c
