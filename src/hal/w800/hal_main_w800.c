@@ -8,7 +8,11 @@
 
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
+#if defined(PLATFORM_W800)
+//portTICK_RATE_MS is not defined in portmacro.h for W800. Copying this from W600.
 
+#define portTICK_RATE_MS			( ( portTickType ) 1000 / configTICK_RATE_HZ )
+#endif
 
 #if 0
 
