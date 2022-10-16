@@ -901,7 +901,28 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
             else if (checkLen == 2)
             {
                 self_processing_mode = false;
-            }
+            }	
+			else
+			{
+				int dataCount;
+				// https://github.com/openshwprojects/OpenBK7231T_App/issues/291
+				// header	ver	TUYA_CMD_MCU_CONF	LENGHT							Chksum
+				// Pushing
+				// 55 AA	01	02					00 03	FF 01 01			06 
+				// 55 AA	01	02					00 03	FF 01 00			05 
+				// Rotating down
+				// 55 AA	01	02					00 05	01 24 02 01 0A		39 
+				// 55 AA	01	02					00 03	01 09 00			0F 
+				// Rotating up
+				// 55 AA	01	02					00 05	01 24 01 01 0A		38 
+				// 55 AA	01	02					00 03	01 09 01			10 
+				dataCount = data[5];
+				if(5 + dataCount + 1 != len) {
+					addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: TUYA_CMD_MCU_CONF had wrong data lenght?");
+				} else {
+					addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: TUYA_CMD_MCU_CONF, TODO!");
+				}
+			}
             break;
         case TUYA_CMD_WIFI_STATE:
             wifi_state_valid = true;
@@ -974,6 +995,18 @@ void TuyaMCU_RunFrame() {
                 strcat_safe(buffer_for_log,buffer2,sizeof(buffer_for_log));
             }
             addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TUYAMCU received: %s\n", buffer_for_log);
+#if 1
+			// redo sprintf without spaces
+            buffer_for_log[0] = 0;
+            for(i = 0; i < len; i++) {
+                sprintf(buffer2,"%02X",data[i]);
+                strcat_safe(buffer_for_log,buffer2,sizeof(buffer_for_log));
+            }
+			// fire string event, as we already have it sprintfed
+			// This is so we can have event handlers that fire
+			// when an UART string is received...
+			EventHandlers_FireEvent_String(CMD_EVENT_ON_UART,buffer_for_log);
+#endif
             TuyaMCU_ProcessIncoming(data,len);
         } else {
             break;

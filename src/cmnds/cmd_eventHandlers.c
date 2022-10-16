@@ -268,9 +268,11 @@ void EventHandlers_FireEvent_String(byte eventCode, const char *argument) {
 
 	while(ev) {
 		if(eventCode==ev->eventCode) {
-			if(argument == ev->requiredArgument) {
-				ADDLOG_INFO(LOG_FEATURE_EVENT, "EventHandlers_ProcessVariableChange_Integer: executing command %s",ev->command);
-				CMD_ExecuteCommand(ev->command, COMMAND_FLAG_SOURCE_SCRIPT);
+			if(ev->requiredArgumentText != 0) {
+				if(!stricmp(argument,ev->requiredArgumentText)) {
+					ADDLOG_INFO(LOG_FEATURE_EVENT, "EventHandlers_FireEvent_String: executing command %s",ev->command);
+					CMD_ExecuteCommand(ev->command, COMMAND_FLAG_SOURCE_SCRIPT);
+				}
 			}
 		}
 		ev = ev->next;
