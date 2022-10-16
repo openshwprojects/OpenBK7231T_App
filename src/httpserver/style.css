@@ -1,3 +1,5 @@
+/*The content of this file get set into htmlHeadStyle (new_http.cs)*/
+
 div,
 fieldset,
 input,
@@ -123,7 +125,7 @@ div#state {
 }
 div#changed {
   padding: 0;
-	height: 23px;
+  height: 23px;
 }
 div#main {
   text-align: left;

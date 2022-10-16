@@ -31,7 +31,7 @@ function generateCode(field_name, is_script) {
 
       const prefix = is_script ? "<script type='text/javascript'>" : "<style>";
       const suffix = is_script ? "</script>" : "</style>";
-      output = `const char ${field_name}[]="${prefix}${output}${suffix}";`;
+      output = `const char ${field_name}[] = "${prefix}${output}${suffix}";`;
 
       const target_path = path.join(path.dirname(file.path), destination);
       //console.log(`Updated ${target_path}`);
@@ -96,23 +96,19 @@ function generateCode(field_name, is_script) {
 }
 
 function minifyJs() {
-  return (
-    gulp
-      .src("./src/httpserver/script.js")
-      .pipe(dumpFileSize())
-      .pipe(uglify())
-      .pipe(generateCode("pageScript", true))
-  );
+  return gulp
+    .src("./src/httpserver/script.js")
+    .pipe(dumpFileSize())
+    .pipe(uglify())
+    .pipe(generateCode("pageScript", true));
 }
 
 function minifyHassDiscoveryJs() {
-  return (
-    gulp
-      .src("./src/httpserver/script_ha_discovery.js")
-      .pipe(dumpFileSize())
-      .pipe(uglify())
-      .pipe(generateCode("ha_discovery_script", true))
-  );
+  return gulp
+    .src("./src/httpserver/script_ha_discovery.js")
+    .pipe(dumpFileSize())
+    .pipe(uglify())
+    .pipe(generateCode("ha_discovery_script", true));
 }
 
 function minifyCss() {
