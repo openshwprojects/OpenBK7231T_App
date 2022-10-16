@@ -148,6 +148,7 @@ static char *prod_info = NULL;
 static bool working_mode_valid = false;
 static bool wifi_state_valid = false;
 static bool wifi_state = false;
+static bool wifi_state_timer = 0;
 static bool self_processing_mode = true;
 static bool state_updated = false;
 
@@ -1057,17 +1058,22 @@ void TuyaMCU_RunFrame() {
             {
                 if ((Main_HasWiFiConnected()!=0) && (Main_HasMQTTConnected()!=0))
                 {
-                    if (wifi_state == false)
+                    if ((wifi_state == false) || (wifi_state_timer == 0))
                     {
                         Tuya_SetWifiState(4);
                         wifi_state = true;
                     }
                 } else {
-                    if (wifi_state == true)
+                    if ((wifi_state == true) || (wifi_state_timer == 0))
                     {
                         Tuya_SetWifiState(0);
                         wifi_state = false;
                     }
+                }
+                wifi_state_timer++;
+                if (wifi_state_timer >= 60)
+                {
+                    wifi_state_timer = 0;
                 }
             }
         }
