@@ -122,6 +122,10 @@ static int EVENT_ParseEventName(const char *s) {
 		return CMD_EVENT_PIN_ONDBLCLICK;
 	if(!stricmp(s,"OnChannelChange"))
 		return CMD_EVENT_CHANNEL_ONCHANGE;
+    if(!stricmp(s,"energycounter"))
+        return CMD_EVENT_CHANGE_CONSUMPTION_TOTAL;
+    if(!stricmp(s,"energycounter_last_hour"))
+        return CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR;
 	return CMD_EVENT_NONE;
 }
 static bool EVENT_EvaluateCondition(int code, int argument, int next) {

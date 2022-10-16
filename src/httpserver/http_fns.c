@@ -92,8 +92,9 @@ template_t g_templates[] = {
 	{ Setup_Device_Enbrighten_WFD4103, "Enbrighten WFD4103 WiFi Switch BK7231T WB2S"} ,
 	{ Setup_Device_Zemismart_Light_Switch_KS_811_3, "Zemismart Light Switch (Neutral Optional) KS_811_3"} ,
 	{ Setup_Device_TeslaSmartPlus_TSL_SPL_1, "Tesla Smart Plug. Model: (TSL-SPL-1)"},
-	{ Setup_Device_Calex_900011_1_WB2S, "Calex Smart Power Plug 900011.1"}
-
+    { Setup_Device_Calex_900011_1_WB2S, "Calex Smart Power Plug 900011.1"},
+    { Setup_Device_Immax_NEO_LITE_NAS_WR07W, "Immax NEO Lite. Model: (NAS-WR07W)"} ,
+    { Setup_Device_MOES_TouchSwitch_WS_EU1_RFW_N, "MOES Touch Switch 1gang Model:(WS-EU1-RFW-N)"}
 };
 
 int g_total_templates = sizeof(g_templates) / sizeof(g_templates[0]);
@@ -547,6 +548,34 @@ int http_fn_index(http_request_t* request) {
 	hprintf128(request, "MQTT ErrMsg: %s <br>", (MQTT_GetStatusMessage() != NULL) ? MQTT_GetStatusMessage() : "");
 	hprintf128(request, "MQTT Stats:CONN: %d PUB: %d RECV: %d ERR: %d </h5>", MQTT_GetConnectEvents(),
 		MQTT_GetPublishEventCounter(), MQTT_GetReceivedEventCounter(), MQTT_GetPublishErrorCounter());
+
+    /* Format current PINS input state for all unused pins */
+    if(CFG_HasFlag(OBK_FLAG_HTTP_PINMONITOR))
+    {
+        for (i=0;i<29;i++)
+        {
+            if ((PIN_GetPinRoleForPinIndex(i) == IOR_None) && (i!=10) && (i!=11))
+            {
+                HAL_PIN_Setup_Input(i);
+            }
+        }
+       
+        hprintf128(request,"<h5> PIN States<br>");
+        for (i=0;i<29;i++)
+        {
+            if ((PIN_GetPinRoleForPinIndex(i) != IOR_None) || (i==10) || (i==11))
+            {
+                hprintf128(request,"P%02i: NA ", i);
+            } else {
+                hprintf128(request,"P%02i: %i  ", i, (int)HAL_PIN_ReadDigitalInput(i));
+            }
+            if (i%10==9)
+            {
+                hprintf128(request,"<br>");
+            }
+        }
+        hprintf128(request,"</h5>");
+    }
 
 	// for normal page loads, show the rest of the HTML
 	if (!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
@@ -1280,7 +1309,7 @@ int http_fn_ha_discovery(http_request_t* request) {
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	if (DRV_IsMeasuringPower()) {
-		for (i = 0;i < OBK_NUM_MEASUREMENTS;i++)
+		for (i = 0;i < OBK_NUM_SENSOR_COUNT;i++)
 		{
 			HassDeviceInfo* dev_info = hass_init_light_device_info(ENTITY_SENSOR, i);
 			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
@@ -1500,24 +1529,32 @@ int http_tasmota_json_power(http_request_t* request) {
 */
 int http_tasmota_json_status_SNS(http_request_t* request) {
 	float power, factor, voltage, current;
+    float energy, energy_hour;
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	factor = 0; // TODO
 	voltage = DRV_GetReading(OBK_VOLTAGE);
 	current = DRV_GetReading(OBK_CURRENT);
 	power = DRV_GetReading(OBK_POWER);
+    energy = DRV_GetReading(OBK_CONSUMPTION_TOTAL);
+    energy_hour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
+
 #else
 	factor = 0;
 	voltage = 0;
 	current = 0;
 	power = 0;
+    energy = 0;
+    energy_hour = 0;
 #endif
 
 	hprintf128(request, "{\"StatusSNS\":{\"ENERGY\":{");
 	hprintf128(request, "\"Power\": %f,", power);
 	hprintf128(request, "\"ApparentPower\": 0,\"ReactivePower\": 0,\"Factor\":%f,", factor);
 	hprintf128(request, "\"Voltage\":%f,", voltage);
-	hprintf128(request, "\"Current\":%f}}}", current);
+	hprintf128(request, "\"Current\":%f,", current);
+    hprintf128(request, "\"ConsumptionTotal\":%f,", energy);
+    hprintf128(request, "\"ConsumptionLastHour\":%f}}}", energy_hour);
 
 	return 0;
 }
@@ -1756,6 +1793,7 @@ const char* g_obk_flagNames[] = {
 	"[MQTT] Broadcast self state on MQTT connect",
 	"[PWM] BK7231 use 600hz instead of 1khz default",
 	"[LED] remember LED driver state (RGBCW, enable, brightness, temperature) after reboot",
+    "[HTTP] Show actual PIN logic level for unconfigured pins", 
 	"error",
 	"error",
 };
