@@ -29,7 +29,10 @@ float lastSentValues[OBK_NUM_MEASUREMENTS];
 float energyCounter = 0.0f;
 portTickType energyCounterStamp;
 
-float energyCounterMinutes[60];
+bool energyCounterStatsEnable = true;
+int energyCounterSampleCount = 60;
+int energyCounterSampleInterval = 60;
+float *energyCounterMinutes = NULL;
 portTickType energyCounterMinutesStamp;
 long energyCounterMinutesIndex;
 
@@ -70,33 +73,45 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
         energyCounter, stat_updatesSent, stat_updatesSkipped);
     hprintf128(request,tmp);
 
-    /********************************************************************************************************************/
-    sprintf(tmp, "<h2>Last Hour Statistics</h2><h5>Consumption: %1.1f Wh<br>", DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
-    hprintf128(request,tmp);
-    sprintf(tmp, "History per minute:<br>");
-    hprintf128(request,tmp);
-    memset(tmp,0,128);
-    for(i=0; i<60; i++)
+    if (energyCounterStatsEnable == true)
     {
-        if ((i%20)==0)
+        /********************************************************************************************************************/
+        sprintf(tmp, "<h2>Periodic Statistics</h2><h5>Consumption: %1.1f Wh<br>", DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+        //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"'%s'\n", tmp);
+        hprintf128(request,tmp);
+        sprintf(tmp, "Sampling interval: %d sec<br>History length: %d samples<br>History per samples:<br>", 
+                energyCounterSampleInterval, energyCounterSampleCount);
+        //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"'%s'\n", tmp);
+        hprintf128(request,tmp);
+        memset(tmp,0,128);
+        if (energyCounterMinutes != NULL)
         {
-            sprintf(number,"%1.1f", energyCounterMinutes[i]);
-        } else {
-            sprintf(number,", %1.1f", energyCounterMinutes[i]);
-        }
-        strcat(tmp, number);
-        if ((i%20)==19)
-        {
-            strcat(tmp, "<br>");
-            hprintf128(request,tmp);
-            memset(tmp,0,128);
+            for(i=0; i<energyCounterSampleCount; i++)
+            {
+                if ((i%20)==0)
+                {
+                    sprintf(number,"%1.1f", energyCounterMinutes[i]);
+                } else {
+                    sprintf(number,", %1.1f", energyCounterMinutes[i]);
+                }
+                strcat(tmp, number);
+                if ((i%20)==19)
+                {
+                    strcat(tmp, "<br>");
+                    //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"'%s'\n", tmp);
+                    hprintf128(request,tmp);
+                    memset(tmp,0,128);
+                }
+            }
+            sprintf(tmp, "<br>History Index: %d </h5>", energyCounterMinutesIndex);
+            //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"'%s'\n", tmp);
+            hprintf128(request, tmp);
         }
     }
-    hprintf128(request,"History Index: %d</h5>", energyCounterMinutesIndex);
     /********************************************************************************************************************/
 }
 
-int BL0937_ResetEnergyCounter(const void *context, const char *cmd, const char *args, int cmdFlags)
+int BL09XX_ResetEnergyCounter(const void *context, const char *cmd, const char *args, int cmdFlags)
 {
     float value;
     int i;
@@ -105,16 +120,104 @@ int BL0937_ResetEnergyCounter(const void *context, const char *cmd, const char *
     {
         energyCounter = 0.0f;
         energyCounterStamp = xTaskGetTickCount();
-        for(i = 0; i < 60; i++)
+        if (energyCounterStatsEnable == true)
         {
-            energyCounterMinutes[i] = 0.0;
+            if (energyCounterMinutes != NULL)
+            {
+                for(i = 0; i < energyCounterSampleCount; i++)
+                {
+                    energyCounterMinutes[i] = 0.0;
+                }
+            }
+            energyCounterMinutesStamp = xTaskGetTickCount();
+            energyCounterMinutesIndex = 0;
         }
-        energyCounterMinutesStamp = xTaskGetTickCount();
-        energyCounterMinutesIndex = 0;
     } else {
         value = atof(args);
         energyCounter = value;
         energyCounterStamp = xTaskGetTickCount();
+    }
+    return 0;
+}
+
+int BL09XX_SetupEnergyStatistic(const void *context, const char *cmd, const char *args, int cmdFlags)
+{
+    // SetupEnergyStats enable sample_time sample_count
+    int enable;
+    int sample_time;
+    int sample_count;
+
+    Tokenizer_TokenizeString(args);
+
+    if(Tokenizer_GetArgsCount() < 3) 
+    {
+        addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"BL09XX_SetupEnergyStatistic: requires 3 arguments (enable, sample_time, sample_count)\n");
+        return -1;
+    }
+
+    enable = Tokenizer_GetArgInteger(0);
+    sample_time = Tokenizer_GetArgInteger(1);
+    sample_count = Tokenizer_GetArgInteger(2);
+ 
+    /* Security limits for sample interval */
+    if (sample_time <10)
+        sample_time = 10;
+    if (sample_time >900)
+        sample_time = 900;
+
+    /* Security limits for sample count */
+    if (sample_count < 10)
+        sample_count = 10;
+    if (sample_count > 180)
+        sample_count = 180;   
+
+    /* process changes */
+    if (enable != 0)
+    {
+        addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"Consumption History enabled\n");
+        /* Enable function */
+        energyCounterStatsEnable = true;
+        if (energyCounterSampleCount != sample_count)
+        {
+            /* upgrade sample count, free memory */
+            if (energyCounterMinutes != NULL)
+                os_free(energyCounterMinutes);
+            energyCounterMinutes = NULL;
+            energyCounterSampleCount = sample_count;
+        }
+        addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"Sample Count:    %d\n", energyCounterSampleCount);
+        if (energyCounterSampleInterval != sample_time)
+        {
+            /* change sample time */            
+            energyCounterSampleInterval = sample_time;
+            if (energyCounterMinutes != NULL)
+                memset(energyCounterMinutes, 0, energyCounterSampleCount*sizeof(float));
+        }
+        
+        if (energyCounterMinutes == NULL)
+        {
+            /* allocate new memeory */
+            energyCounterMinutes = (float*)os_malloc(sample_count*sizeof(float));
+            if (energyCounterMinutes != NULL)
+            {
+                memset(energyCounterMinutes, 0, energyCounterSampleCount*sizeof(float));
+            }
+        }
+        addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"Sample Interval: %d\n", energyCounterSampleInterval);
+
+        energyCounterMinutesStamp = xTaskGetTickCount();
+        energyCounterMinutesIndex = 0;
+    } else {
+        /* Disable Consimption Nistory */
+        addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"Consumption History disabled\n");
+        energyCounterStatsEnable = false;
+        if (energyCounterMinutes != NULL)
+        {
+            os_free(energyCounterMinutes);
+            energyCounterMinutes = NULL;
+        }
+        energyCounterSampleCount = sample_count;
+        energyCounterSampleInterval = sample_time;
     }
     return 0;
 }
@@ -127,7 +230,7 @@ void BL_ProcessUpdate(float voltage, float current, float power)
     cJSON* root;
     cJSON* stats;
     char *msg;
-
+    portTickType interval;
 
     // those are final values, like 230V
     lastReadings[OBK_POWER] = power;
@@ -144,42 +247,57 @@ void BL_ProcessUpdate(float voltage, float current, float power)
     energyCounter += energy;
     energyCounterStamp = xTaskGetTickCount();
 
-    if ((xTaskGetTickCount() - energyCounterMinutesStamp) >= (60000 / portTICK_PERIOD_MS))
+    if (energyCounterStatsEnable == true)
     {
-        root = cJSON_CreateObject();
-        cJSON_AddNumberToObject(root, "uptime", Time_getUpTimeSeconds());
-        cJSON_AddNumberToObject(root, "consumption_total", energyCounter );
-        cJSON_AddNumberToObject(root, "consumption_last_hour",  DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
-        cJSON_AddNumberToObject(root, "consumption_stat_index", energyCounterMinutesIndex);
-
-        stats = cJSON_CreateArray();
-        for(i = 0; i < 60; i++)
+        interval = energyCounterSampleInterval;
+        interval *= (1000 / portTICK_PERIOD_MS); 
+        if ((xTaskGetTickCount() - energyCounterMinutesStamp) >= interval)
         {
-            cJSON_AddItemToArray(stats, cJSON_CreateNumber(energyCounterMinutes[i]));
+            root = cJSON_CreateObject();
+            cJSON_AddNumberToObject(root, "uptime", Time_getUpTimeSeconds());
+            cJSON_AddNumberToObject(root, "consumption_total", energyCounter );
+            cJSON_AddNumberToObject(root, "consumption_last_hour",  DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+            cJSON_AddNumberToObject(root, "consumption_stat_index", energyCounterMinutesIndex);
+            cJSON_AddNumberToObject(root, "consumption_sample_count", energyCounterSampleCount);
+            cJSON_AddNumberToObject(root, "consumption_sampling_period", energyCounterSampleInterval);
+
+            if (energyCounterMinutes != NULL)
+            {
+                stats = cJSON_CreateArray();
+                for(i = 0; i < energyCounterSampleCount; i++)
+                {
+                    cJSON_AddItemToArray(stats, cJSON_CreateNumber(energyCounterMinutes[i]));
+                }
+                cJSON_AddItemToObject(root, "consumption_samples", stats);
+            }
+
+            msg = cJSON_Print(root);
+            cJSON_Delete(root);
+
+            MQTT_PublishMain_StringString(counter_mqttNames[2], msg, 0);
+            stat_updatesSent++;
+            os_free(msg);
+
+            if (energyCounterMinutes != NULL)
+            {
+                for (i=energyCounterSampleCount-1;i>0;i--)
+                {
+                    energyCounterMinutes[i] = energyCounterMinutes[i-1];
+                }
+                energyCounterMinutes[0] = 0.0;
+            }
+            energyCounterMinutesStamp = xTaskGetTickCount();
+            energyCounterMinutesIndex++;
+
+            MQTT_PublishMain_StringFloat(counter_mqttNames[1], DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+            EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR, lastSentEnergyCounterLastHour, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+            lastSentEnergyCounterLastHour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
+            stat_updatesSent++;
         }
-        cJSON_AddItemToObject(root, "consumption_minutes", stats);
 
-        msg = cJSON_Print(root);
-        cJSON_Delete(root);
-
-        MQTT_PublishMain_StringString(counter_mqttNames[2], msg, 0);
-        stat_updatesSent++;
-        os_free(msg);
-
-        for (i=59;i>0;i--)
-        {
-            energyCounterMinutes[i] = energyCounterMinutes[i-1];
-        }
-        energyCounterMinutes[0] = 0.0;
-        energyCounterMinutesStamp = xTaskGetTickCount();
-        energyCounterMinutesIndex++;
-
-        MQTT_PublishMain_StringFloat(counter_mqttNames[1], DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
-        EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR, lastSentEnergyCounterLastHour, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
-        lastSentEnergyCounterLastHour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
-        stat_updatesSent++;
+        if (energyCounterMinutes != NULL)
+            energyCounterMinutes[0] += energy;
     }
-    energyCounterMinutes[0] += energy;
 
     for(i = 0; i < OBK_NUM_MEASUREMENTS; i++)
     {
@@ -240,12 +358,25 @@ void BL_Shared_Init()
     noChangeFrameEnergyCounter = 0;
     energyCounterStamp = xTaskGetTickCount(); 
 
-    for(i = 0; i < 60; i++)
+    if (energyCounterStatsEnable = true)
     {
-        energyCounterMinutes[i] = 0.0;
+        if (energyCounterMinutes == NULL)
+        {
+            energyCounterMinutes = (float*)os_malloc(energyCounterSampleCount*sizeof(float));
+        }
+        if (energyCounterMinutes != NULL)
+        {
+            for(i = 0; i < energyCounterSampleCount; i++)
+            {
+                energyCounterMinutes[i] = 0.0;
+            }   
+        }
+        energyCounterMinutesStamp = xTaskGetTickCount();
+        energyCounterMinutesIndex = 0;
     }
-    energyCounterMinutesStamp = xTaskGetTickCount();
-    energyCounterMinutesIndex = 0;
+
+    CMD_RegisterCommand("EnergyCntReset", "", BL09XX_ResetEnergyCounter, "Reset Energy Counter", NULL);
+    CMD_RegisterCommand("SetupEnergyStats", "", BL09XX_SetupEnergyStatistic, "Setup Energy Statistic Parameters: [enable<0|1>] [sample_time<10..900>] [sample_count<10..180>]", NULL);
 }
 
 // OBK_POWER etc
@@ -262,9 +393,15 @@ float DRV_GetReading(int type)
         case OBK_CONSUMPTION_TOTAL:
             return energyCounter;
         case OBK_CONSUMPTION_LAST_HOUR:
-            for(i=0;i<60;i++)
+            if (energyCounterStatsEnable == true)
             {
-                hourly_sum += energyCounterMinutes[i];
+                if (energyCounterMinutes != NULL)
+                {
+                    for(i=0;i<energyCounterSampleCount;i++)
+                    {
+                        hourly_sum += energyCounterMinutes[i];
+                    }
+                }
             }
             return hourly_sum;
         default:

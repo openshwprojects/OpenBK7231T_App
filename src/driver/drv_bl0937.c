@@ -121,8 +121,9 @@ int BL0937_CurrentSet(const void *context, const char *cmd, const char *args, in
 	return 0;
 }
 
-void BL0937_Init() {
-
+void BL0937_Init() 
+{
+    BL_Shared_Init();
 	// if not found, this will return the already set value
 	GPIO_HLW_SEL = PIN_FindPinIndexForRole(IOR_BL0937_SEL,GPIO_HLW_SEL);
 	GPIO_HLW_CF = PIN_FindPinIndexForRole(IOR_BL0937_CF,GPIO_HLW_CF);
@@ -145,7 +146,6 @@ void BL0937_Init() {
 	CMD_RegisterCommand("PREF","",BL0937_PowerRef, "Sets the calibration multiplier", NULL);
 	CMD_RegisterCommand("VREF","",BL0937_VoltageRef, "Sets the calibration multiplier", NULL);
 	CMD_RegisterCommand("IREF","",BL0937_CurrentRef, "Sets the calibration multiplier", NULL);
-    CMD_RegisterCommand("EnergyCntReset", "", BL0937_ResetEnergyCounter, "Reset Energy Counter", NULL);
 }
 void BL0937_RunFrame() {
 	float final_v;
