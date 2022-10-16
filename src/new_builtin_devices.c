@@ -930,3 +930,31 @@ void Setup_Device_Calex_900011_1_WB2S(){
 
 	CFG_Save_SetupTimer();
 }
+
+// Deta Grid Connect Smart Double Touch Power Point With Dual USB (6920HA)
+// https://www.bunnings.com.au/deta-grid-connect-smart-double-touch-power-point-with-dual-usb_p0172780
+void Setup_Device_BK7231T_WB2S_6920HA_CSE7766() {
+
+	CFG_ClearPins();
+	// Relay 1
+	PIN_SetPinRoleForPinIndex(6, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(6, 1);
+	// Button 1
+	PIN_SetPinRoleForPinIndex(7, IOR_Button);
+	PIN_SetPinChannelForPinIndex(7, 1);
+
+	// LED
+	PIN_SetPinRoleForPinIndex(8, IOR_LED_WIFI_n);
+	PIN_SetPinChannelForPinIndex(8, 1);
+
+	// Button 2
+	PIN_SetPinRoleForPinIndex(24, IOR_Button);
+	PIN_SetPinChannelForPinIndex(24, 2);
+	// Relay 2
+	PIN_SetPinRoleForPinIndex(26, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(26, 2);
+
+	CFG_SetShortStartupCommand_AndExecuteNow("backlog startDriver CSE7766; VREF 383160; IREF 16520; PREF 10444800;");
+
+	CFG_Save_SetupTimer();
+}

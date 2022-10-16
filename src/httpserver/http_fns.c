@@ -92,7 +92,8 @@ template_t g_templates[] = {
 	{ Setup_Device_Enbrighten_WFD4103, "Enbrighten WFD4103 WiFi Switch BK7231T WB2S"} ,
 	{ Setup_Device_Zemismart_Light_Switch_KS_811_3, "Zemismart Light Switch (Neutral Optional) KS_811_3"} ,
 	{ Setup_Device_TeslaSmartPlus_TSL_SPL_1, "Tesla Smart Plug. Model: (TSL-SPL-1)"},
-	{ Setup_Device_Calex_900011_1_WB2S, "Calex Smart Power Plug 900011.1"}
+	{ Setup_Device_Calex_900011_1_WB2S, "Calex Smart Power Plug 900011.1"},
+	{ Setup_Device_BK7231T_WB2S_6920HA_CSE7766, "[BK7231T][WB2S] DETA Smart Double Touch Power Point With Dual USB and Power Monitoring (6920HA)"}
 
 };
 
