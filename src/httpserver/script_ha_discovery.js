@@ -9,7 +9,7 @@ function send_ha_disc() {
   );
   xhr.onload = function () {
     if (xhr.status === 200) {
-      alert("MQTT discovery queued");
+      alert(xhr.responseText);
     } else if (xhr.status === 404) {
       alert("Error invoking ha_discovery");
     }

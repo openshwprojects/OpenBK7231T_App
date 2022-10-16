@@ -1257,11 +1257,24 @@ int http_fn_ha_discovery(http_request_t* request) {
 	char topic[32];
 	int relayCount = 0;
 	int pwmCount = 0;
+	bool measuringPower = false;
 
 	http_setup(request, httpMimeTypeText);
+
+	if (MQTT_IsReady() == false) {
+		poststr(request, "MQTT not running.");
+		poststr(request, NULL);
+		return 0;
+	}
+
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	measuringPower = DRV_IsMeasuringPower();
+#endif
+
 	get_Relay_PWM_Count(&relayCount, &pwmCount);
 
-	if ((relayCount == 0) && (pwmCount == 0)) {
+	if ((relayCount == 0) && (pwmCount == 0) && !measuringPower) {
+		poststr(request, "No relay, PWM or power driver running.");
 		poststr(request, NULL);
 		return 0;
 	}
@@ -1308,8 +1321,8 @@ int http_fn_ha_discovery(http_request_t* request) {
 	}
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
-	if (DRV_IsMeasuringPower()) {
-		for (i = 0;i < OBK_NUM_SENSOR_COUNT;i++)
+	if (measuringPower == true) {
+		for (i = 0;i < OBK_NUM_MEASUREMENTS;i++)
 		{
 			HassDeviceInfo* dev_info = hass_init_light_device_info(ENTITY_SENSOR, i);
 			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
@@ -1318,6 +1331,7 @@ int http_fn_ha_discovery(http_request_t* request) {
 	}
 #endif
 
+	poststr(request, "MQTT discovery queued.");
 	poststr(request, NULL);
 	return 0;
 }
