@@ -68,7 +68,8 @@ addEventHandler OnHold 11 addChannel 1 -10
 
 AddEventHandler OnClick 0 addChannel 1 -10 0 100 AddEventHandler OnClick 1 addChannel 1 10 0 100
 
-
+// Event to fire on binary (hex) value received by TuyaMCU
+AddEventHandler OnUART 55AA00FF setChannel 0 1
 
 */
 //
