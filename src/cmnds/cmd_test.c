@@ -156,7 +156,7 @@ static int testJSON(const void * context, const char *cmd, const char *args, int
 		cJSON_AddNumberToObject(root, "consumption_sample_count", ra4);
 		cJSON_AddNumberToObject(root, "consumption_sampling_period", ra5);
 
-		stats = cJSON_CreateArray();
+			stats = cJSON_CreateArray();
 		for(i = 0; i < 23; i++)
 		{
 			cJSON_AddItemToArray(stats, cJSON_CreateNumber(rand()%10));
