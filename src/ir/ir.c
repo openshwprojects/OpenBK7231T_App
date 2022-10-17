@@ -6,7 +6,7 @@
 
 #include <ctype.h>
 
-static unsigned long counter = 0;
+unsigned long ir_counter = 0;
 
 #if PLATFORM_BK7231T
 
@@ -23,15 +23,16 @@ static unsigned long counter = 0;
 #include "icu_pub.h"
 #include "uart_pub.h"
 
+#ifdef IR_TESTONLY
 static void DRV_IR_ISR(UINT8 t){
-    counter++;
+    ir_counter++;
 }
 
 extern void (*p_TIMER_Int_Handler[TIMER_CHANNEL_NO])(UINT8);
 
 void DRV_IR_Test(){
 
-    counter = 0;
+    ir_counter = 0;
     UINT32 chan = BKTIMER0;
     UINT32 periodus = 50;
     UINT32 div = 1;
@@ -116,9 +117,10 @@ void DRV_IR_Test(){
 }
 #endif
 
-void DRV_IR_Print(){
-    if (counter){
-        ADDLOG_INFO(LOG_FEATURE_CMD, "IR counter: %u", counter);
-    }
+#else
+// stub if not OpenBK7231T
+void DRV_IR_Test(){
 }
+#endif
+
 

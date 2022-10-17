@@ -267,9 +267,9 @@ void Main_OnEverySecond()
     {
 		HAL_PrintNetworkInfo();
 
-		// IR TESTING ONLY!!!!
-		DRV_IR_Print();
 	}
+	// IR TESTING ONLY!!!!
+	DRV_IR_Print();
 
 	// when we hit 30s, mark as boot complete.
 	if(g_bBootMarkedOK==false) 

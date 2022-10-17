@@ -238,6 +238,11 @@ void Setup_Device_CalexLEDDimmerFiveChannel() {
 	PIN_SetPinChannelForPinIndex(26, 5);
 	PIN_SetPinRoleForPinIndex(26, IOR_PWM);
 
+	// IR Input
+	//PIN_SetPinChannelForPinIndex(25, 6);
+	//PIN_SetPinRoleForPinIndex(25, IO_IRIN);
+
+
 	CFG_Save_SetupTimer();
 }
 
