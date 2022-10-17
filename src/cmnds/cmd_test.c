@@ -90,6 +90,39 @@ static int testMallocFree(const void * context, const char *cmd, const char *arg
 
     return 0;
 }
+// Usage: addRepeatingEvent 1 -1 testRealloc 100
+static int testRealloc(const void * context, const char *cmd, const char *args, int cmdFlags){
+	int repeats;
+	int rep;
+    char *msg;
+	int i;
+	int ra1;
+	static int totalCalls = 0;
+
+	repeats = atoi(args);
+	if(repeats < 1)
+		repeats = 1;
+
+	totalCalls++;
+
+	for(rep = 0; rep < repeats; rep++) {
+		ra1 = 1 + abs(rand() % 1000);
+
+		msg = malloc(ra1);
+		
+		for(i = 0; i < 3; i++) {
+			ra1 += 1 + abs(rand()%10);
+			msg = realloc(msg,ra1);
+		}
+
+		os_free(msg);
+	}
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Realloc has been tested! Total calls %i, reps now %i",totalCalls,repeats);
+
+    return 0;
+}
+
 // Usage: addRepeatingEvent 1 -1 testJSON 100
 static int testJSON(const void * context, const char *cmd, const char *args, int cmdFlags){
     cJSON* root;
@@ -116,8 +149,8 @@ static int testJSON(const void * context, const char *cmd, const char *args, int
 
 
 		root = cJSON_CreateObject();
-		cJSON_AddNumberToObject(root, "uptime", Time_getUpTimeSeconds());
-		cJSON_AddNumberToObject(root, "consumption_total", ra1 );
+		//cJSON_AddNumberToObject(root, "uptime", Time_getUpTimeSeconds());
+		/*cJSON_AddNumberToObject(root, "consumption_total", ra1 );
 		cJSON_AddNumberToObject(root, "consumption_last_hour",  ra2);
 		cJSON_AddNumberToObject(root, "consumption_stat_index", ra3);
 		cJSON_AddNumberToObject(root, "consumption_sample_count", ra4);
@@ -128,11 +161,11 @@ static int testJSON(const void * context, const char *cmd, const char *args, int
 		{
 			cJSON_AddItemToArray(stats, cJSON_CreateNumber(rand()%10));
 		}
-		cJSON_AddItemToObject(root, "consumption_samples", stats);
+		cJSON_AddItemToObject(root, "consumption_samples", stats);*/
 
 		msg = cJSON_Print(root);
-		cJSON_Delete(root);
-		os_free(msg);
+		//cJSON_Delete(root);
+		//os_free(msg);
 	}
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "testJSON has been tested! Total calls %i, reps now %i",totalCalls,repeats);
@@ -142,6 +175,7 @@ static int testJSON(const void * context, const char *cmd, const char *args, int
 int fortest_commands_init(){
     CMD_RegisterCommand("addcmd", "", addcmd, "add a custom command", NULL);
     CMD_RegisterCommand("testMallocFree", "", testMallocFree, "", NULL);
+    CMD_RegisterCommand("testRealloc", "", testRealloc, "", NULL);
     CMD_RegisterCommand("testJSON", "", testJSON, "", NULL);
     return 0;
 }
