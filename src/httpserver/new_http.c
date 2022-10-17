@@ -615,5 +615,5 @@ const char pageScript[] = "<script type='text/javascript'>var firstTime,lastTime
 //region_end pageScript
 
 //region_start ha_discovery_script
-const char ha_discovery_script[] = "<script type='text/javascript'>function send_ha_disc(){var e=new XMLHttpRequest;e.open(\"GET\",\"/ha_discovery?prefix=\"+document.getElementById(\"ha_disc_topic\").value,!1),e.onload=function(){200===e.status?alert(\"MQTT discovery queued\"):404===e.status&&alert(\"Error invoking ha_discovery\")},e.onerror=function(){alert(\"Error invoking ha_discovery\")},e.send()}</script>";
+const char ha_discovery_script[] = "<script type='text/javascript'>function send_ha_disc(){var e=new XMLHttpRequest;e.open(\"GET\",\"/ha_discovery?prefix=\"+document.getElementById(\"ha_disc_topic\").value,!1),e.onload=function(){200===e.status?alert(e.responseText):404===e.status&&alert(\"Error invoking ha_discovery\")},e.onerror=function(){alert(\"Error invoking ha_discovery\")},e.send()}</script>";
 //region_end ha_discovery_script
