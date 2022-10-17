@@ -36,8 +36,6 @@ command_t *g_commands[HASH_SIZE] = { NULL };
 static int CMD_SimonTest(const void *context, const char *cmd, const char *args, int cmdFlags){
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SimonTest: ir test routine");
 
-	DRV_IR_Test();
-
 	testmehere();
 	
 	return 1;

@@ -1,8 +1,5 @@
-// test of c++
-
 
 #if PLATFORM_BK7231T
-
 
 extern "C" {
     // these cause error: conflicting declaration of 'int bk_wlan_mcu_suppress_and_sleep(unsigned int)' with 'C' linkage
@@ -24,7 +21,7 @@ extern "C" {
 
     #include <ctype.h>
 
-    extern unsigned long ir_counter;
+    unsigned long ir_counter = 0;
 
 }
 
@@ -164,7 +161,7 @@ class SpoofIrReceiver {
 
 SpoofIrReceiver IrReceiver;
 
-#include "Ourlibrary/IRRemote.hpp"
+#include "../libraries/Arduino-IRremote-mod/src/IRRemote.hpp"
 
 int pincounters[32] = {0};
 UINT32 pinvals[32] = {0};
@@ -199,6 +196,7 @@ extern "C" void DRV_IR_ISR(UINT8 t){
 
 IRrecv* ourReceiver = NULL;
 
+#ifdef TEST_CPP
 class cpptest2 {
     public:
         int initialised;
@@ -227,6 +225,8 @@ void cpptest(){
 	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Log from static class (is it initialised?):");
     staticclass.print();
 }
+#endif
+
 
 extern "C" void testmehere(){
 	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Log from extern C CPP");
@@ -236,8 +236,6 @@ extern "C" void testmehere(){
     ourReceiver = new IRrecv(pin);
 
     ourReceiver->start();
-
-    cpptest();
 }
 
 
@@ -312,6 +310,10 @@ void PrintIRData(IRData *aIRDataPtr){
     }
 }
 
+
+////////////////////////////////////////////////////
+// this polls the IR receive to see off there was any IR received
+// currently called once per sec from 
 extern "C" void DRV_IR_Print(){
     if (ir_counter){
         //ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"IR counter: %u", ir_counter);
@@ -374,8 +376,5 @@ extern "C" void DRV_IR_Print(){
         }
     }
 }
-
-
-
 
 #endif // platform T
