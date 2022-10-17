@@ -22,6 +22,7 @@ enum {
 // MQTT names of sensors (voltage, current, power)
 extern const char *sensor_mqttNames[];
 extern const char *counter_mqttNames[];
+extern const char *counter_devClasses[];
 
 void DRV_Generic_Init();
 void DRV_AppendInformationToHTTPIndexPage(http_request_t *request);

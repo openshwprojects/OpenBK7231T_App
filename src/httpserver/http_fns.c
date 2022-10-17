@@ -1322,7 +1322,7 @@ int http_fn_ha_discovery(http_request_t* request) {
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	if (measuringPower == true) {
-		for (i = 0;i < OBK_NUM_MEASUREMENTS;i++)
+		for (i = 0;i < OBK_NUM_SENSOR_COUNT;i++)
 		{
 			HassDeviceInfo* dev_info = hass_init_light_device_info(ENTITY_SENSOR, i);
 			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);

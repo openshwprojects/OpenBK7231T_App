@@ -24,6 +24,12 @@ const char *counter_mqttNames[OBK_NUM_COUNTERS] = {
     "consumption_stats"
 };
 
+const char *counter_devClasses[OBK_NUM_COUNTERS] = {
+    "energy",
+    "energy",
+    "None"
+};
+
 typedef struct driver_s {
 	const char *name;
 	void (*initFunc)();
