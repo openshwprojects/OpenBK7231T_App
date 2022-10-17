@@ -148,14 +148,17 @@ static int CMD_GetChannel(const void *context, const char *cmd, const char *args
 }
 static int CMD_GetReadings(const void *context, const char *cmd, const char *args, int cmdFlags){
 #ifndef OBK_DISABLE_ALL_DRIVERS
-	char tmp[64];
+	char tmp[96];
 	float v, c, p;
+    float e, elh;
 
 	v = DRV_GetReading(OBK_VOLTAGE);
 	c = DRV_GetReading(OBK_CURRENT);
 	p = DRV_GetReading(OBK_POWER);
+    e = DRV_GetReading(OBK_CONSUMPTION_TOTAL);
+    elh = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
 
-	sprintf(tmp, "%f %f %f",v,c,p);
+	sprintf(tmp, "%f %f %f %f %f",v,c,p,e,elh);
 
 	if(cmdFlags & COMMAND_FLAG_SOURCE_TCP) {
 		ADDLOG_INFO(LOG_FEATURE_RAW, tmp);

@@ -42,9 +42,15 @@ enum EventCode {
 	CMD_EVENT_CHANGE_VOLTAGE, // must match order in drv_bl0942.c
 	CMD_EVENT_CHANGE_CURRENT,
 	CMD_EVENT_CHANGE_POWER,
+    CMD_EVENT_CHANGE_CONSUMPTION_TOTAL,
+    CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR,
 
 	// this is for ToggleChannelOnToggle
 	CMD_EVENT_PIN_ONTOGGLE,
+	
+	// Argument is a string
+	// You can fire an event when TuyaMCU or something receives given string
+	CMD_EVENT_ON_UART,
 
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
@@ -74,6 +80,7 @@ int Tokenizer_GetArgsCount();
 const char *Tokenizer_GetArg(int i);
 const char *Tokenizer_GetArgFrom(int i);
 int Tokenizer_GetArgInteger(int i);
+bool Tokenizer_IsArgInteger(int i);
 int Tokenizer_GetArgIntegerRange(int i, int rangeMax, int rangeMin);
 void Tokenizer_TokenizeString(const char *s);
 // cmd_repeatingEvents.c
@@ -81,7 +88,14 @@ void RepeatingEvents_Init();
 void RepeatingEvents_OnEverySecond();
 // cmd_eventHandlers.c
 void EventHandlers_Init();
+// This is useful to fire an event when a certain UART string command is received.
+// For example, you can fire an event while getting 55 AA 01 02 00 03 FF 01 01 06  on UART..
+void EventHandlers_FireEvent_String(byte eventCode, const char *argument);
+// This is useful to fire an event when, for example, a button is pressed.
+// Then eventCode is a BUTTON_PRESS and argument is a button index.
 void EventHandlers_FireEvent(byte eventCode, int argument);
+// This is more advanced event handler. It will only fire handlers when a variable state changes from one to another.
+// For example, you can watch for Voltage from BL0942 to change below 230, and it will fire event only when it becomes below 230.
 void EventHandlers_ProcessVariableChange_Integer(byte eventCode, int oldValue, int newValue);
 // cmd_tasmota.c
 int taslike_commands_init();

@@ -70,7 +70,11 @@ static void BP5758D_SetCurrent(byte curVal) {
 	BP5758D_Stop();
 
 	usleep(BP5758D_DELAY);
-	g_chosenCurrent = curVal;
+	
+	// here is a conversion from human-readable format to BP's format
+	g_chosenCurrent = (curVal>63) ? (curVal+34) : curVal;
+	// That assumed that user knows the strange BP notation
+	//g_chosenCurrent = curVal;
 
     // For it's init sequence, BP5758D just sets all fields
     BP5758D_Start(BP5758D_ADDR_SETUP);

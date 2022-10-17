@@ -8,6 +8,7 @@ This repository is named "OpenBK7231T_App", but now it's a multiplatform app, su
 - XR809 ([XR3](https://developer.tuya.com/en/docs/iot/xr3-datasheet?id=K98s9168qi49g), etc)
 - BL602
 - W800 (W800-C400, WinnerMicro WiFi & Bluetooth), W801
+- W600 (WinnerMicro chip), W601
 
 Please use automatically compiled binaries from the Releases tab. To build yourself for a given platform, just checkout first our version of SDK and then checkout this app repository into it, details later.
 
@@ -198,7 +199,9 @@ There are multiple console commands that allow you to automate your devices. Com
 | CurrentSet     | [Value] | Used for BL0942/BL0937/etc calibration. Refer to BL0937 guide for more info. |
 | DGR_SendPower     | [GroupName][ChannelValues][ChannelsCount] | Sends a POWER message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
 | DGR_SendBrightness     | [GroupName][Brightness] | Sends a Brightness message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
-  
+| EnergyCntReset | | Used for BL0942/BL0937/etc consumption measurement data reset |
+| SetupEnergyStats | [enable] [sample_time] [sample_count] | Used for BL0942/BL0937/etc. Configure consumptio history stats. enable: 0/1 sample_time:10..900 sample_count: 10..180 |
+
       
 # Console Command Examples
 
