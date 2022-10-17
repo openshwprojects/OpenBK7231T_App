@@ -201,8 +201,9 @@ int BL0942_CurrentSet(const void *context, const char *cmd, const char *args, in
 	}
 	return 0;
 }
-void BL0942_Init() {
-
+void BL0942_Init() 
+{
+    BL_Shared_Init();
 	UART_InitUART(BL0942_BAUD_RATE);
 	UART_InitReceiveRingBuffer(256);
 	CMD_RegisterCommand("PowerSet","",BL0942_PowerSet, "Sets current power value for calibration", NULL);

@@ -199,7 +199,9 @@ There are multiple console commands that allow you to automate your devices. Com
 | CurrentSet     | [Value] | Used for BL0942/BL0937/etc calibration. Refer to BL0937 guide for more info. |
 | DGR_SendPower     | [GroupName][ChannelValues][ChannelsCount] | Sends a POWER message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
 | DGR_SendBrightness     | [GroupName][Brightness] | Sends a Brightness message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
-  
+| EnergyCntReset | | Used for BL0942/BL0937/etc consumption measurement data reset |
+| SetupEnergyStats | [enable] [sample_time] [sample_count] | Used for BL0942/BL0937/etc. Configure consumptio history stats. enable: 0/1 sample_time:10..900 sample_count: 10..180 |
+
       
 # Console Command Examples
 

@@ -273,8 +273,9 @@ int CSE7766_CurrentSet(const void *context, const char *cmd, const char *args, i
 	}
 	return 0;
 }
-void CSE7766_Init() {
-
+void CSE7766_Init() 
+{
+    BL_Shared_Init();
 	UART_InitUART(CSE7766_BAUD_RATE);
 	UART_InitReceiveRingBuffer(512);
 	CMD_RegisterCommand("PowerSet","",CSE7766_PowerSet, "Sets current power value for calibration", NULL);
@@ -284,6 +285,7 @@ void CSE7766_Init() {
 	CMD_RegisterCommand("VREF","",CSE7766_VoltageRef, "Sets the calibration multiplier", NULL);
 	CMD_RegisterCommand("IREF","",CSE7766_CurrentRef, "Sets the calibration multiplier", NULL);
 }
+
 void CSE7766_RunFrame() {
 
 	//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"UART buffer size %i\n", UART_GetDataSize());

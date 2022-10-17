@@ -425,7 +425,7 @@ int hprintf128(http_request_t* request, const char* fmt, ...) {
 	//BaseType_t taken;
 	char tmp[256];
 	va_start(argList, fmt);
-	vsprintf(tmp, fmt, argList);
+	vsnprintf(tmp, 255, fmt, argList);
 	va_end(argList);
 	return postany(request, tmp, strlen(tmp));
 }

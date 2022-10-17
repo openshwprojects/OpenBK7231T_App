@@ -4,6 +4,7 @@
 //Test driver
 
 void BLTest_Init() {
+    BL_Shared_Init();    
 }
 void BLTest_RunFrame() {
 	float final_v = 120;
