@@ -149,8 +149,8 @@ static int testJSON(const void * context, const char *cmd, const char *args, int
 
 
 		root = cJSON_CreateObject();
-		//cJSON_AddNumberToObject(root, "uptime", Time_getUpTimeSeconds());
-		/*cJSON_AddNumberToObject(root, "consumption_total", ra1 );
+		cJSON_AddNumberToObject(root, "uptime", Time_getUpTimeSeconds());
+		cJSON_AddNumberToObject(root, "consumption_total", ra1 );
 		cJSON_AddNumberToObject(root, "consumption_last_hour",  ra2);
 		cJSON_AddNumberToObject(root, "consumption_stat_index", ra3);
 		cJSON_AddNumberToObject(root, "consumption_sample_count", ra4);
@@ -161,11 +161,11 @@ static int testJSON(const void * context, const char *cmd, const char *args, int
 		{
 			cJSON_AddItemToArray(stats, cJSON_CreateNumber(rand()%10));
 		}
-		cJSON_AddItemToObject(root, "consumption_samples", stats);*/
+		cJSON_AddItemToObject(root, "consumption_samples", stats);
 
 		msg = cJSON_Print(root);
-		//cJSON_Delete(root);
-		//os_free(msg);
+		cJSON_Delete(root);
+		os_free(msg);
 	}
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "testJSON has been tested! Total calls %i, reps now %i",totalCalls,repeats);
