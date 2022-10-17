@@ -29,7 +29,7 @@ float lastSentValues[OBK_NUM_MEASUREMENTS];
 float energyCounter = 0.0f;
 portTickType energyCounterStamp;
 
-bool energyCounterStatsEnable = true;
+bool energyCounterStatsEnable = false;
 int energyCounterSampleCount = 60;
 int energyCounterSampleInterval = 60;
 float *energyCounterMinutes = NULL;
