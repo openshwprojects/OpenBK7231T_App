@@ -33,6 +33,7 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "light", index);
 		break;
 
+	case ENTITY_LIGHT_PWMCW:
 	case ENTITY_LIGHT_RGB:
 	case ENTITY_LIGHT_RGBCW:
 		sprintf(uniq_id, "%s_%s", longDeviceName, "light");
@@ -66,6 +67,7 @@ void hass_print_unique_id(http_request_t* request, const char* fmt, ENTITY_TYPE 
 void hass_populate_device_config_channel(ENTITY_TYPE type, char* uniq_id, HassDeviceInfo* info) {
 	switch (type) {
 	case ENTITY_LIGHT_PWM:
+	case ENTITY_LIGHT_PWMCW:
 	case ENTITY_LIGHT_RGB:
 	case ENTITY_LIGHT_RGBCW:
 		sprintf(info->channel, "light/%s/config", uniq_id);
@@ -103,9 +105,9 @@ cJSON* hass_build_device_node(cJSON* ids) {
 
 /// @brief Initializes HomeAssistant device discovery storage with common values.
 /// @param type 
-/// @param index Ignored for RGB, for sensor this corresponds to sensor_mqttNames.
-/// @param payload_on 
-/// @param payload_off 
+/// @param index This is used to generate generate unique_id and name. It is ignored for RGB. For sensor this corresponds to sensor_mqttNames.
+/// @param payload_on The payload that represents enabled state. This is not added for ENTITY_SENSOR.
+/// @param payload_off The payload that represents disabled state. This is not added for ENTITY_SENSOR.
 /// @return 
 HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload_on, char* payload_off) {
 	HassDeviceInfo* info = os_malloc(sizeof(HassDeviceInfo));
@@ -122,22 +124,25 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload
 	info->root = cJSON_CreateObject();
 	cJSON_AddItemToObject(info->root, "dev", info->device);    //device
 
+	//Build the `name`
 	switch (type) {
 	case ENTITY_LIGHT_PWM:
 	case ENTITY_RELAY:
 		sprintf(g_hassBuffer, "%s %i", CFG_GetShortDeviceName(), index);
 		break;
+	case ENTITY_LIGHT_PWMCW:
 	case ENTITY_LIGHT_RGB:
 	case ENTITY_LIGHT_RGBCW:
-		//There can only be one RGB so we can skip including index in the name
+		//There can only be one RGB so we can skip including index in the name. Do the same
+		//for 2 PWM case.
 		sprintf(g_hassBuffer, "%s", CFG_GetShortDeviceName());
 		break;
 	case ENTITY_SENSOR:
 #ifndef OBK_DISABLE_ALL_DRIVERS
-        if ((index >= OBK_VOLTAGE) && (index <= OBK_POWER))
-    		sprintf(g_hassBuffer, "%s %s", CFG_GetShortDeviceName(), sensor_mqttNames[index]);
-        if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_CONSUMPTION_STATS))
-            sprintf(g_hassBuffer, "%s %s", CFG_GetShortDeviceName(), counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
+		if ((index >= OBK_VOLTAGE) && (index <= OBK_POWER))
+			sprintf(g_hassBuffer, "%s %s", CFG_GetShortDeviceName(), sensor_mqttNames[index]);
+		if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_CONSUMPTION_STATS))
+			sprintf(g_hassBuffer, "%s %s", CFG_GetShortDeviceName(), counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
 #endif
 		break;
 	}
@@ -151,6 +156,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload
 	cJSON_AddStringToObject(info->root, "pl_off", payload_off);   //payload_off
 
 	cJSON_AddStringToObject(info->root, "uniq_id", info->unique_id);  //unique_id
+	cJSON_AddNumberToObject(info->root, "qos", 1);
 
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "root=%p", info->root);
 	return info;
@@ -161,7 +167,6 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload
 /// @return 
 HassDeviceInfo* hass_init_relay_device_info(int index) {
 	HassDeviceInfo* info = hass_init_device_info(ENTITY_RELAY, index, "1", "0");
-	cJSON_AddNumberToObject(info->root, "qos", 1);
 
 	sprintf(g_hassBuffer, "~/%i/get", index);
 	cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);   //state_topic
@@ -173,16 +178,20 @@ HassDeviceInfo* hass_init_relay_device_info(int index) {
 
 /// @brief Initializes HomeAssistant light device discovery storage.
 /// @param type 
-/// @param index Ignored for RGB, for sensor this corresponds to sensor_mqttNames.
 /// @return 
-HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type, int index) {
+HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type) {
 	const char* clientId = CFG_GetMQTTClientId();
 	HassDeviceInfo* info = NULL;
+	int brightness_scale;
+
+	//We can just use 1 to generate unique_id and name for single PWM.
+	//The payload_on/payload_off have to match the state_topic/command_topic values.
+	info = hass_init_device_info(type, 1, "1", "0");
 
 	switch (type) {
 	case ENTITY_LIGHT_RGBCW:
 	case ENTITY_LIGHT_RGB:
-		info = hass_init_device_info(type, index, "1", "0");
+		brightness_scale = 100;
 
 		cJSON_AddStringToObject(info->root, "rgb_cmd_tpl", "{{'#%02x%02x%02x0000'|format(red,green,blue)}}");  //rgb_command_template
 		cJSON_AddStringToObject(info->root, "rgb_val_tpl", "{{value[1:3]|int(base=16)}},{{value[3:5]|int(base=16)}},{{value[5:7]|int(base=16)}}");  //rgb_value_template
@@ -190,74 +199,72 @@ HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type, int index) {
 		cJSON_AddStringToObject(info->root, "rgb_stat_t", "~/led_basecolor_rgb/get"); //rgb_state_topic
 		sprintf(g_hassBuffer, "cmnd/%s/led_basecolor_rgb", clientId);
 		cJSON_AddStringToObject(info->root, "rgb_cmd_t", g_hassBuffer);  //rgb_command_topic
-
-		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, "~/led_enableAll/get");  //state_topic
-		sprintf(g_hassBuffer, "cmnd/%s/led_enableAll", clientId);
-		cJSON_AddStringToObject(info->root, COMMAND_TOPIC_KEY, g_hassBuffer);  //command_topic
-
-		cJSON_AddStringToObject(info->root, "bri_stat_t", "~/led_dimmer/get");  //brightness_state_topic
-		sprintf(g_hassBuffer, "cmnd/%s/led_dimmer", clientId);
-		cJSON_AddStringToObject(info->root, "bri_cmd_t", g_hassBuffer);  //brightness_command_topic
-
-		cJSON_AddNumberToObject(info->root, "bri_scl", 100);    //brightness_scale
-
-		if (type == ENTITY_LIGHT_RGBCW) {
-			sprintf(g_hassBuffer, "cmnd/%s/led_temperature", clientId);
-			cJSON_AddStringToObject(info->root, "clr_temp_cmd_t", g_hassBuffer);    //color_temp_command_topic
-
-			cJSON_AddStringToObject(info->root, "clr_temp_stat_t", "~/led_temperature/get");    //color_temp_state_topic
-		}
-
 		break;
 
 	case ENTITY_LIGHT_PWM:
-		info = hass_init_device_info(type, index, "99", "0");
-		cJSON_AddStringToObject(info->root, "on_cmd_type", "brightness"); //on_command_type
-		cJSON_AddNumberToObject(info->root, "bri_scl", 99);   //brightness_scale
-		cJSON_AddBoolToObject(info->root, "opt", cJSON_True);   //optimistic
-		cJSON_AddNumberToObject(info->root, "qos", 1);
+	case ENTITY_LIGHT_PWMCW:
+		brightness_scale = 99;
 
-		cJSON_AddStringToObject(info->root, "bri_stat_t", "~/led_dimmer/get");  //brightness_state_topic
-		sprintf(g_hassBuffer, "cmnd/%s/led_dimmer", clientId);
-		cJSON_AddStringToObject(info->root, "bri_cmd_t", g_hassBuffer);  //brightness_command_topic
-
-		sprintf(g_hassBuffer, "~/%i/get", index);
-		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);   //state_topic
-		sprintf(g_hassBuffer, "~/%i/set", index);
-		cJSON_AddStringToObject(info->root, COMMAND_TOPIC_KEY, g_hassBuffer);    //command_topic
-
-		break;
-
-	case ENTITY_SENSOR:
-#ifndef OBK_DISABLE_ALL_DRIVERS
-		info = hass_init_device_info(type, index, "1", "0");
-
-		//https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes
-		//device_class automatically assigns unit,icon
-        if ((index >= OBK_VOLTAGE) && (index <= OBK_POWER))
-        {
-		    cJSON_AddStringToObject(info->root, "dev_cla", sensor_mqttNames[index]);   //device_class=voltage,current,power
-
-    		sprintf(g_hassBuffer, "%s/%s/get", clientId, sensor_mqttNames[index]);
-	    	cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
-        }
-        if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_CONSUMPTION_STATS))
-        {
-            cJSON_AddStringToObject(info->root, "dev_cla", counter_devClasses[index - OBK_CONSUMPTION_TOTAL]);  //device_class=consumption
-
-            sprintf(g_hassBuffer, "%s/%s/get", clientId, counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
-            cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
-        }
-#endif
-
+		//Using `last` (the default) will send any style (brightness, color, etc) topics first and then a payload_on to the command_topic. 
+		//Using `first` will send the payload_on and then any style topics. 
+		//Using `brightness` will only send brightness commands instead of the payload_on to turn the light on.
+		cJSON_AddStringToObject(info->root, "on_cmd_type", "first");	//on_command_type
 		break;
 
 	default:
 		addLogAdv(LOG_ERROR, LOG_FEATURE_HASS, "Unsupported light type %s", type);
 	}
 
+	if ((type == ENTITY_LIGHT_PWMCW) || (type == ENTITY_LIGHT_RGBCW)) {
+		sprintf(g_hassBuffer, "cmnd/%s/led_temperature", clientId);
+		cJSON_AddStringToObject(info->root, "clr_temp_cmd_t", g_hassBuffer);    //color_temp_command_topic
+
+		cJSON_AddStringToObject(info->root, "clr_temp_stat_t", "~/led_temperature/get");    //color_temp_state_topic
+	}
+
+	cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, "~/led_enableAll/get");  //state_topic
+	sprintf(g_hassBuffer, "cmnd/%s/led_enableAll", clientId);
+	cJSON_AddStringToObject(info->root, COMMAND_TOPIC_KEY, g_hassBuffer);  //command_topic
+
+	cJSON_AddStringToObject(info->root, "bri_stat_t", "~/led_dimmer/get");  //brightness_state_topic
+	sprintf(g_hassBuffer, "cmnd/%s/led_dimmer", clientId);
+	cJSON_AddStringToObject(info->root, "bri_cmd_t", g_hassBuffer);  //brightness_command_topic
+
+	cJSON_AddNumberToObject(info->root, "bri_scl", brightness_scale);	//brightness_scale
+
 	return info;
 }
+
+#ifndef OBK_DISABLE_ALL_DRIVERS
+
+/// @brief Initializes HomeAssistant sensor device discovery storage.
+/// @param index Index corresponding to sensor_mqttNames.
+/// @return 
+HassDeviceInfo* hass_init_sensor_device_info(int index) {
+	const char* clientId = CFG_GetMQTTClientId();
+	HassDeviceInfo* info = hass_init_device_info(ENTITY_SENSOR, index, NULL, NULL);
+
+	//https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes
+	//device_class automatically assigns unit,icon
+	if ((index >= OBK_VOLTAGE) && (index <= OBK_POWER))
+	{
+		cJSON_AddStringToObject(info->root, "dev_cla", sensor_mqttNames[index]);   //device_class=voltage,current,power
+
+		sprintf(g_hassBuffer, "%s/%s/get", clientId, sensor_mqttNames[index]);
+		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
+	}
+	if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_CONSUMPTION_STATS))
+	{
+		cJSON_AddStringToObject(info->root, "dev_cla", counter_devClasses[index - OBK_CONSUMPTION_TOTAL]);  //device_class=consumption
+
+		sprintf(g_hassBuffer, "%s/%s/get", clientId, counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
+		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
+	}
+
+	return info;
+}
+
+#endif
 
 /// @brief Returns the discovery JSON.
 /// @param info 
