@@ -69,7 +69,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
     } else {
         mode = "PWR";
     }
-    sprintf(tmp, "<h2>%s Voltage=%f, Current=%f, Power=%f, Consumption=%1.1f Wh (changes sent %i, skipped %i)</h2>",
+    sprintf(tmp, "<h2>%s Voltage=%f, Current=%f, Power=%f, Total Consumption=%1.1f Wh (changes sent %i, skipped %i)</h2>",
         mode, lastReadings[OBK_VOLTAGE],lastReadings[OBK_CURRENT], lastReadings[OBK_POWER],
         energyCounter, stat_updatesSent, stat_updatesSkipped);
     hprintf128(request,tmp);
@@ -77,7 +77,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
     if (energyCounterStatsEnable == true)
     {
         /********************************************************************************************************************/
-        sprintf(tmp, "<h2>Periodic Statistics</h2><h5>Consumption: %1.1f Wh<br>", DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+        hprintf128("<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
+        sprintf(tmp, "%1.1f Wh<br>", DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
         //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"'%s'\n", tmp);
         hprintf128(request,tmp);
         sprintf(tmp, "Sampling interval: %d sec<br>History length: %d samples<br>History per samples:<br>", 
