@@ -4,8 +4,7 @@
 #include "../obk_config.h"
 #include <ctype.h>
 #include "cmd_local.h"
-#include "../ir/ir_local.h"
-#include "../ir/irtestcpp.h"
+#include "../driver/drv_ir.h"
 
 #ifdef BK_LITTLEFS
 	#include "../littlefs/our_lfs.h"
