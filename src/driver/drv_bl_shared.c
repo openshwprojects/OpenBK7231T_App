@@ -77,7 +77,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
     if (energyCounterStatsEnable == true)
     {
         /********************************************************************************************************************/
-        hprintf128("<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
+        hprintf128(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
         sprintf(tmp, "%1.1f Wh<br>", DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
         //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"'%s'\n", tmp);
         hprintf128(request,tmp);
@@ -372,7 +372,7 @@ void BL_Shared_Init()
     noChangeFrameEnergyCounter = 0;
     energyCounterStamp = xTaskGetTickCount(); 
 
-    if (energyCounterStatsEnable = true)
+    if (energyCounterStatsEnable == true)
     {
         if (energyCounterMinutes == NULL)
         {
