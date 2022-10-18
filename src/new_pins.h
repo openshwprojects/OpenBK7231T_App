@@ -229,7 +229,7 @@ int h_isChannelPWM(int tg_ch);
 int h_isChannelRelay(int tg_ch);
 
 
-int PIN_GetPWMIndexForPinIndex(int pin);
+//int PIN_GetPWMIndexForPinIndex(int pin);
 
 int PIN_ParsePinRoleName(const char *name);
 
