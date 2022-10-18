@@ -12,6 +12,8 @@ extern "C" {
     #include "bk_timer_pub.h"
     #include "drv_model_pub.h"
     #include <gpio_pub.h>
+    //#include "pwm.h"
+    #include "pwm_pub.h"
 
     #include "../../beken378/func/include/net_param_pub.h"
     #include "../../beken378/func/user_driver/BkDriverPwm.h"
@@ -112,8 +114,15 @@ void pinModeFast(unsigned char P, unsigned char V) {
 extern "C" void DRV_IR_ISR(UINT8 t);
 
 static UINT32 ir_chan = BKTIMER0;
-static UINT32 ir_periodus = 50;
 static UINT32 ir_div = 1;
+
+//static UINT32 ir_periodus = 50;
+//static UINT32 ir_rxcounts = 1;
+
+static UINT32 ir_periodus = 50;
+static UINT32 ir_rxcounts = 1; // we RX every interrupt
+static UINT32 ir_rxcount = 0; // we RX every interrupt
+
 
 void timerConfigForReceive() {
     ir_counter = 0;
@@ -161,81 +170,190 @@ class SpoofIrReceiver {
 
 SpoofIrReceiver IrReceiver;
 
+#include "../libraries/Arduino-IRremote-mod/src/IRProtocol.h"
+
+// this is to replicate places where the library uses the static class.
+// will need to update to call our dynamic class
+class SpoofIrSender {
+    public:
+        void enableIROut(uint_fast8_t freq){
+
+        }
+        void mark(unsigned int  aMarkMicros){
+
+        }
+        void space(unsigned int  aMarkMicros){
+
+        }
+        void sendPulseDistanceWidthFromArray(uint_fast8_t aFrequencyKHz, unsigned int aHeaderMarkMicros,
+            unsigned int aHeaderSpaceMicros, unsigned int aOneMarkMicros, unsigned int aOneSpaceMicros, unsigned int aZeroMarkMicros,
+            unsigned int aZeroSpaceMicros, uint32_t *aDecodedRawDataArray, unsigned int aNumberOfBits, bool aMSBFirst,
+            bool aSendStopBit, unsigned int aRepeatPeriodMillis, int_fast8_t aNumberOfRepeats) {
+
+        }
+        void sendPulseDistanceWidthFromArray(PulsePauseWidthProtocolConstants *aProtocolConstants, uint32_t *aDecodedRawDataArray,
+            unsigned int aNumberOfBits, int_fast8_t aNumberOfRepeats) {
+            
+        }
+
+};
+
+SpoofIrSender IrSender;
+
+// this is the actual IR library include.
+// it's all in .h and .hpp files, no .c or .cpp
 #include "../libraries/Arduino-IRremote-mod/src/IRRemote.hpp"
 
-int pincounters[32] = {0};
-UINT32 pinvals[32] = {0};
+static int PIN_GetPWMIndexForPinIndex(int pin) {
+	if(pin == 6)
+		return 0;
+	if(pin == 7)
+		return 1;
+	if(pin == 8)
+		return 2;
+	if(pin == 9)
+		return 3;
+	if(pin == 24)
+		return 4;
+	if(pin == 26)
+		return 5;
+	return -1;
+}
+
+// override aspects of sending for our own interrupt driven sends
+#define SEND_MAXBITS 128
+class myIRsend : public IRsend {
+    public:
+        myIRsend(uint_fast8_t aSendPin){
+            //IRsend::IRsend(aSendPin); - has been called already?
+        }
+
+        using IRsend::write;
+
+        void mark(unsigned int aMarkMicros){
+            // sends a high for aMarkMicros
+            times[timein] = aMarkMicros;
+            timein = (timein + 1)%(SEND_MAXBITS * 2);
+        }
+        void space(unsigned int aMarkMicros){
+            // sends a low for aMarkMicros
+            times[timein] = aMarkMicros;
+            timein = (timein + 1)%(SEND_MAXBITS * 2);
+        }
+
+        void resetsendqueue(){
+            // sends a low for aMarkMicros
+            timein = timeout = 0;
+            currentsendtime = 0;
+            currentbitval = 0;
+        }
+        int times[SEND_MAXBITS * 2]; // enough for 128 bits
+        unsigned short timein;
+        unsigned short timeout;
+
+        int getsendqueue(){
+            int val = 0;
+            if (timein != timeout){
+                val = times[timeout];
+                timeout = (timeout + 1)%(SEND_MAXBITS * 2);
+            }
+            return val;
+        }
+
+        int currentsendtime;
+        int currentbitval;
+
+        uint8_t sendPin;
+        uint8_t pwmIndex;
+
+};
+
+
+// our send/receive instances
+myIRsend *pIRsend = NULL;
+IRrecv *ourReceiver = NULL;
 
 // this is our ISR
 extern "C" void DRV_IR_ISR(UINT8 t){
-    IR_ISR();
-    ir_counter++;
-
-#ifdef READ_ALL_PINS
-    UINT32 pins = 0;
-    for (int id = 0; id < 32; id++){
-        UINT32 val = 0;
-        volatile UINT32 *gpio_cfg_addr;
-        gpio_cfg_addr = (volatile UINT32 *)(REG_GPIO_CFG_BASE_ADDR + id * 4);
-        val = REG_READ(gpio_cfg_addr);
-
-        //val = val & GCFG_INPUT_BIT);
-        UINT32 pinval = (val & GCFG_INPUT_BIT);
-        if (pinvals[id] != pinval){
-            pincounters[id]++;
-            pinvals[id] = pinval;
+    if (pIRsend && (pIRsend->pwmIndex >= 0)){
+        int pinval = 0;
+        if (pIRsend->currentsendtime){
+            pIRsend->currentsendtime -= ir_periodus;
+            if (pIRsend->currentsendtime <= 0){
+                pIRsend->currentbitval = pIRsend->currentbitval ^ 1;
+                pIRsend->currentsendtime = pIRsend->getsendqueue();
+            }
+        } else {
+            pIRsend->currentsendtime = pIRsend->getsendqueue();
+            if (!pIRsend->currentsendtime){
+                pIRsend->currentbitval = 0;
+            }
         }
-        if (val & GCFG_INPUT_BIT){
-            pins |= 1<<id;
+        pinval = pIRsend->currentbitval;
+
+        uint32_t pwmfrequency = 38000;
+    	uint32_t period = (26000000 / pwmfrequency);
+        uint32_t duty = period/2;
+        if (!pinval){
+            duty = 0;
         }
+#if PLATFORM_BK7231N
+        bk_pwm_update_param((bk_pwm_t)pIRsend->pwmIndex, period, duty,0,0);
+#else
+        bk_pwm_update_param((bk_pwm_t)pIRsend->pwmIndex, period, duty);
+#endif
     }
-#endif
 
+    ir_rxcount = (ir_rxcount + 1)%ir_rxcounts; // we RX every ir_rxcounts interrupt
+    if (!ir_rxcount){
+        IR_ISR();
+    }
+    ir_counter++;
 }
 
 
-IRrecv* ourReceiver = NULL;
 
-#ifdef TEST_CPP
-class cpptest2 {
-    public:
-        int initialised;
-        cpptest2(){
-        	// remove else static class may kill us!!!ADDLOG_INFO(LOG_FEATURE_CMD, "Log from Class constructor");
-            initialised = 42;
-        };
-        ~cpptest2(){
-            initialised = 24;
-        	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Log from Class destructor");
-        }
-
-        void print(){
-        	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Log from Class %d", initialised);
-        }
-};
-
-cpptest2 staticclass;
-
-void cpptest(){
-	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Log from CPP");
-    cpptest2 test;
-    test.print();
-    cpptest2 *test2 = new cpptest2();
-    test2->print();
-	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Log from static class (is it initialised?):");
-    staticclass.print();
-}
-#endif
-
-
+// test routine to start IR RX
 extern "C" void testmehere(){
 	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Log from extern C CPP");
 
     unsigned char pin = 9;// PWM3/25
+    unsigned char txpin = 24;// PWM3/25
+
+    if (ourReceiver){
+        IRrecv *temp = ourReceiver;
+        ourReceiver = NULL;
+        delete temp;
+    }
 
     ourReceiver = new IRrecv(pin);
-
     ourReceiver->start();
+
+    if (pIRsend){
+        myIRsend *pIRsendTemp = pIRsend;
+        pIRsend = NULL;
+        delete pIRsendTemp;
+    }
+
+	int pwmIndex = PIN_GetPWMIndexForPinIndex(txpin);
+	// is this pin capable of PWM?
+	if(pwmIndex != -1) {
+        uint32_t pwmfrequency = 38000;
+    	uint32_t frequency = (26000000 / pwmfrequency);
+        uint32_t duty = frequency/2;
+#if PLATFORM_BK7231N
+	    // OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
+	    bk_pwm_initialize((bk_pwm_t)pwmIndex, frequency, duty, 0, 0);
+#else
+	    bk_pwm_initialize((bk_pwm_t)pwmIndex, frequency, duty);
+#endif
+        bk_pwm_start((bk_pwm_t)pwmIndex);
+        myIRsend *pIRsendTemp = new myIRsend((uint_fast8_t) txpin);
+        pIRsendTemp->resetsendqueue();
+        pIRsendTemp->pwmIndex = pwmIndex;
+        pIRsend = pIRsendTemp;
+        //bk_pwm_stop((bk_pwm_t)pIRsend->pwmIndex);
+	}
 }
 
 
@@ -313,38 +431,41 @@ void PrintIRData(IRData *aIRDataPtr){
 
 ////////////////////////////////////////////////////
 // this polls the IR receive to see off there was any IR received
-// currently called once per sec from 
+// currently called once per sec from user_main timer
+// should probably be called every 100ms.
+int testcounter = 0;
+
+
 extern "C" void DRV_IR_Print(){
     if (ir_counter){
         //ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"IR counter: %u", ir_counter);
     }
 
-#ifdef READ_ALL_PINS
-    UINT32 pins = 0;
-    char pincounts[32*(8+1)+1];
-    int id;
-    for (id = 0; id < 32; id++){
-        UINT32 val = 0;
-        volatile UINT32 *gpio_cfg_addr;
-        gpio_cfg_addr = (volatile UINT32 *)(REG_GPIO_CFG_BASE_ADDR + id * 4);
-        val = REG_READ(gpio_cfg_addr);
-
-        //val = val & GCFG_INPUT_BIT);
-        if (val & GCFG_INPUT_BIT){
-            pins |= 1<<id;
+    testcounter++;
+    if (0 && pIRsend){
+        uint32_t pwmfrequency = 38000;
+    	uint32_t period = (26000000 / pwmfrequency);
+        uint32_t duty = period/2;
+        if (!(testcounter & 1)){
+            duty = 0;
         }
-        sprintf(&pincounts[id*(8+1)], "%08X", pincounters[id]);
-        pincounts[id*(8+1)+8] = ' ';
-    }
-    pincounts[id*(8+1)] = 0;
-    ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"GPIO pins: %08X", pins);
-    ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"pincounts: %s", pincounts);
+#if PLATFORM_BK7231N
+        bk_pwm_update_param((bk_pwm_t)pIRsend->pwmIndex, period, duty,0,0);
+#else
+        bk_pwm_update_param((bk_pwm_t)pIRsend->pwmIndex, period, duty);
 #endif
+    }
 
     if (ourReceiver){
         if (ourReceiver->decode()) {
             PrintIRData(&ourReceiver->decodedIRData);
             ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"IR decode returned true, protocol %d", (int)ourReceiver->decodedIRData.protocol);
+
+            if (pIRsend){
+                pIRsend->write(&ourReceiver->decodedIRData, (int_fast8_t) 0);
+
+                ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"IR send timein %d timeout %d", (int)pIRsend->timein, (int)pIRsend->timeout);
+            }
 
             // Print a short summary of received data
             //IrReceiver.printIRResultShort(&Serial);
@@ -376,5 +497,43 @@ extern "C" void DRV_IR_Print(){
         }
     }
 }
+
+
+
+
+
+#ifdef TEST_CPP
+// routines to test C++
+class cpptest2 {
+    public:
+        int initialised;
+        cpptest2(){
+        	// remove else static class may kill us!!!ADDLOG_INFO(LOG_FEATURE_CMD, "Log from Class constructor");
+            initialised = 42;
+        };
+        ~cpptest2(){
+            initialised = 24;
+        	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Log from Class destructor");
+        }
+
+        void print(){
+        	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Log from Class %d", initialised);
+        }
+};
+
+cpptest2 staticclass;
+
+void cpptest(){
+	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Log from CPP");
+    cpptest2 test;
+    test.print();
+    cpptest2 *test2 = new cpptest2();
+    test2->print();
+	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Log from static class (is it initialised?):");
+    staticclass.print();
+}
+#endif
+
+
 
 #endif // platform T
