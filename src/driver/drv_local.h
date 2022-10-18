@@ -10,10 +10,12 @@ void BL0937_RunFrame();
 void CSE7766_Init();
 void CSE7766_RunFrame();
 
-#if ENABLE_BL_TEST_DRIVER
-void BLTest_Init();
-void BLTest_RunFrame();
-#endif
+void Test_Power_Init();
+void Test_Power_RunFrame();
+
+void Test_LED_Driver_Init();
+void Test_LED_Driver_RunFrame();
+void Test_LED_Driver_OnChannelChanged(int ch, int value);
 
 void DRV_DGR_Init();
 void DRV_DGR_RunQuickTick();
@@ -38,11 +40,11 @@ void BP1658CJ_RunFrame();
 void BP1658CJ_OnChannelChanged(int ch, int value);
 
 void BL_ProcessUpdate(float voltage, float current, float power);
-void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request);
-bool DRV_IsRunning(const char *name);
+void BL09XX_AppendInformationToHTTPIndexPage(http_request_t* request);
+bool DRV_IsRunning(const char* name);
 
 
 void TuyaMCU_Sensor_RunFrame();
 void TuyaMCU_Sensor_Init();
 
-int BL09XX_ResetEnergyCounter(const void *context, const char *cmd, const char *args, int cmdFlags);
+int BL09XX_ResetEnergyCounter(const void* context, const char* cmd, const char* args, int cmdFlags);
