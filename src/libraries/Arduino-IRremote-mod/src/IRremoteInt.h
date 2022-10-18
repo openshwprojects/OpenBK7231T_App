@@ -477,8 +477,8 @@ public:
             unsigned int aZeroSpaceMicros, uint32_t aData, uint_fast8_t aNumberOfBits, bool aMSBfirst, bool aSendStopBit);
     void sendBiphaseData(unsigned int aBiphaseTimeUnit, uint32_t aData, uint_fast8_t aNumberOfBits);
 
-    void mark(unsigned int aMarkMicros);
-    static void space(unsigned int aSpaceMicros);
+    virtual void mark(unsigned int aMarkMicros);
+    virtual void space(unsigned int aSpaceMicros);
     void IRLedOff();
 
 // 8 Bit array
@@ -600,7 +600,9 @@ public:
 /*
  * The sender instance
  */
+#ifdef NOTHERE
 extern IRsend IrSender;
+#endif
 
 void sendNECSpecialRepeat();
 void sendLG2SpecialRepeat();

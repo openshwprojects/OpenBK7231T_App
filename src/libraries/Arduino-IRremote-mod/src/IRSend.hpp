@@ -44,7 +44,9 @@
  */
 
 // The sender instance
+#ifdef NOTHERE
 IRsend IrSender;
+#endif
 
 IRsend::IRsend() { // @suppress("Class members should be properly initialized")
 #if !defined(IR_SEND_PIN)
