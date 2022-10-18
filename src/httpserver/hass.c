@@ -147,13 +147,13 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload
 		break;
 	}
 	cJSON_AddStringToObject(info->root, "name", g_hassBuffer);
-
 	cJSON_AddStringToObject(info->root, "~", CFG_GetMQTTClientId());      //base topic
-
 	cJSON_AddStringToObject(info->root, "avty_t", "~/connected");   //availability_topic, `online` value is broadcasted
 
-	cJSON_AddStringToObject(info->root, "pl_on", payload_on);    //payload_on
-	cJSON_AddStringToObject(info->root, "pl_off", payload_off);   //payload_off
+	if (type != ENTITY_SENSOR) {
+		cJSON_AddStringToObject(info->root, "pl_on", payload_on);    //payload_on
+		cJSON_AddStringToObject(info->root, "pl_off", payload_off);   //payload_off
+	}
 
 	cJSON_AddStringToObject(info->root, "uniq_id", info->unique_id);  //unique_id
 	cJSON_AddNumberToObject(info->root, "qos", 1);
@@ -260,6 +260,9 @@ HassDeviceInfo* hass_init_sensor_device_info(int index) {
 		sprintf(g_hassBuffer, "%s/%s/get", clientId, counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
 		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
 	}
+
+	//state_class can be measurement, total or total_increasing. Something like daily power consumption could be total_increasing.
+	cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
 
 	return info;
 }
