@@ -197,7 +197,7 @@ SpoofIrSender IrSender;
 
 // this is the actual IR library include.
 // it's all in .h and .hpp files, no .c or .cpp
-#include "../libraries/Arduino-IRremote-mod/src/IRRemote.hpp"
+#include "../libraries/Arduino-IRremote-mod/src/IRremote.hpp"
 
 static int PIN_GetPWMIndexForPinIndex(int pin) {
 	if(pin == 6)
