@@ -108,7 +108,7 @@ void IRsend::sendNECRepeat() {
  * Static function for sending special repeat frame.
  * For use in ProtocolConstants. Saves up to 250 bytes compared to a member function.
  */
-void sendNECSpecialRepeat() {
+void sendNECSpecialRepeat(IRsend &IrSender) {
     IrSender.enableIROut(NEC_KHZ);           // 38 kHz
     IrSender.mark(NEC_HEADER_MARK);          // + 9000
     IrSender.space(NEC_REPEAT_HEADER_SPACE); // - 2250

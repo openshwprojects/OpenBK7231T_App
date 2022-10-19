@@ -452,12 +452,16 @@ public:
     void setSendPin(uint_fast8_t aSendPin); // required if we use IRsend() as constructor
 #endif
 
+    // so that we can overload these
+    virtual void delay(long int ms);
+    virtual uint32_t millis();
+
     // Not guarded for backward compatibility
     void begin(uint_fast8_t aSendPin, bool aEnableLEDFeedback, uint_fast8_t aFeedbackLEDPin = USE_DEFAULT_FEEDBACK_LED_PIN);
 
     size_t write(IRData *aIRSendData, int_fast8_t aNumberOfRepeats = NO_REPEATS);
 
-    void enableIROut(uint_fast8_t aFrequencyKHz);
+    virtual void enableIROut(uint_fast8_t aFrequencyKHz);
 
     void sendPulseDistanceWidthFromArray(uint_fast8_t aFrequencyKHz, unsigned int aHeaderMarkMicros,
             unsigned int aHeaderSpaceMicros, unsigned int aOneMarkMicros, unsigned int aOneSpaceMicros,
@@ -472,7 +476,7 @@ public:
     void sendPulseDistanceWidth(uint_fast8_t aFrequencyKHz, unsigned int aHeaderMarkMicros, unsigned int aHeaderSpaceMicros,
             unsigned int aOneMarkMicros, unsigned int aOneSpaceMicros, unsigned int aZeroMarkMicros, unsigned int aZeroSpaceMicros,
             uint32_t aData, uint_fast8_t aNumberOfBits, bool aMSBfirst, bool aSendStopBit, unsigned int aRepeatPeriodMillis,
-            int_fast8_t aNumberOfRepeats, void (*aSpecialSendRepeatFunction)() = NULL);
+            int_fast8_t aNumberOfRepeats, void (*aSpecialSendRepeatFunction)(IRsend &sender) = NULL);
     void sendPulseDistanceWidthData(unsigned int aOneMarkMicros, unsigned int aOneSpaceMicros, unsigned int aZeroMarkMicros,
             unsigned int aZeroSpaceMicros, uint32_t aData, uint_fast8_t aNumberOfBits, bool aMSBfirst, bool aSendStopBit);
     void sendBiphaseData(unsigned int aBiphaseTimeUnit, uint32_t aData, uint_fast8_t aNumberOfBits);
@@ -604,8 +608,8 @@ public:
 extern IRsend IrSender;
 #endif
 
-void sendNECSpecialRepeat();
-void sendLG2SpecialRepeat();
-void sendSamsungLGSpecialRepeat();
+void sendNECSpecialRepeat(IRsend &IrSender);
+void sendLG2SpecialRepeat(IRsend &IrSender);
+void sendSamsungLGSpecialRepeat(IRsend &IrSender);
 
 #endif // _IR_REMOTE_INT_H

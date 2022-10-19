@@ -101,6 +101,9 @@ const char string_Lego[] PROGMEM = "Lego";
 const char string_MagiQuest[] PROGMEM = "MagiQuest";
 const char string_Whynter[] PROGMEM = "Whynter";
 
+// fwd declaration
+class IRsend;
+
 struct PulsePauseWidthProtocolConstants {
     decode_type_t ProtocolIndex;
     uint_fast8_t FrequencyKHz;
@@ -113,7 +116,8 @@ struct PulsePauseWidthProtocolConstants {
     bool isMSBFirst;
     bool hasStopBit;
     unsigned int RepeatPeriodMillis;
-    void (*SpecialSendRepeatFunction)(); // using non member functions here saves up to 250 bytes for send demo
+
+    void (*SpecialSendRepeatFunction)(IRsend &sender); // using non member functions here saves up to 250 bytes for send demo
 //    void (IRsend::*SpecialSendRepeatFunction)();
 };
 

@@ -44,12 +44,14 @@ typedef unsigned short uint16_t;
 // dummy functions
 void noInterrupts(){}
 void interrupts(){}
+
 unsigned long millis(){ 
     return 0; 
 }
 unsigned long micros(){ 
     return 0;
 }
+
 
 void delay(int n){
     return;
@@ -115,14 +117,7 @@ extern "C" void DRV_IR_ISR(UINT8 t);
 
 static UINT32 ir_chan = BKTIMER0;
 static UINT32 ir_div = 1;
-
-//static UINT32 ir_periodus = 50;
-//static UINT32 ir_rxcounts = 1;
-
 static UINT32 ir_periodus = 50;
-static UINT32 ir_rxcounts = 1; // we RX every interrupt
-static UINT32 ir_rxcount = 0; // we RX every interrupt
-
 
 void timerConfigForReceive() {
     ir_counter = 0;
@@ -221,41 +216,87 @@ static int PIN_GetPWMIndexForPinIndex(int pin) {
 }
 
 // override aspects of sending for our own interrupt driven sends
+// basically, IRsend calls mark(us) and space(us) to send.
+// we simply note the numbers into a rolling buffer, assume the first is a mark()
+// and then every 50us service the rolling buffer, changing the PWM from 0 duty to 50% duty
+// appropriately.
 #define SEND_MAXBITS 128
 class myIRsend : public IRsend {
     public:
         myIRsend(uint_fast8_t aSendPin){
             //IRsend::IRsend(aSendPin); - has been called already?
+            our_us = 0;
+            our_ms = 0;
+            resetsendqueue();
         }
+
+        void enableIROut(uint_fast8_t aFrequencyKHz){
+            // just setup variables for use in ISR
+            pwmfrequency = ((uint32_t)aFrequencyKHz) * 1000;
+        	pwmperiod = (26000000 / pwmfrequency);
+            pwmduty = pwmperiod/2;
+        }
+
+        uint32_t millis(){
+            return our_ms;
+        }
+        void delay(long int ms){
+            // add a pure delay to our queue
+        	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Delay %dms", ms);
+            space(ms*1000);
+        }
+
 
         using IRsend::write;
 
         void mark(unsigned int aMarkMicros){
             // sends a high for aMarkMicros
-            times[timein] = aMarkMicros;
-            timein = (timein + 1)%(SEND_MAXBITS * 2);
+            uint32_t newtimein = (timein + 1)%(SEND_MAXBITS * 2);
+            if (newtimein != timeout){
+                // store mark bits in highest +ve bit of count
+                times[timein] = aMarkMicros | 0x10000000;
+                timein = newtimein;
+                timecount++;
+                timecounttotal++;
+            } else {
+                overflows++;
+            }
         }
         void space(unsigned int aMarkMicros){
             // sends a low for aMarkMicros
-            times[timein] = aMarkMicros;
-            timein = (timein + 1)%(SEND_MAXBITS * 2);
+            uint32_t newtimein = (timein + 1)%(SEND_MAXBITS * 2);
+            if (newtimein != timeout){
+                times[timein] = aMarkMicros;
+                timein = newtimein;
+                timecount++;
+                timecounttotal++;
+            } else {
+                overflows++;
+            }
         }
 
         void resetsendqueue(){
             // sends a low for aMarkMicros
             timein = timeout = 0;
+            timecount = 0;
+            overflows = 0;
             currentsendtime = 0;
             currentbitval = 0;
+            timecounttotal = 0;
         }
-        int times[SEND_MAXBITS * 2]; // enough for 128 bits
+        int32_t times[SEND_MAXBITS * 2]; // enough for 128 bits
         unsigned short timein;
         unsigned short timeout;
+        unsigned short timecount;
+        unsigned short overflows;
+        uint32_t timecounttotal;
 
-        int getsendqueue(){
-            int val = 0;
+        int32_t getsendqueue(){
+            int32_t val = 0;
             if (timein != timeout){
                 val = times[timeout];
                 timeout = (timeout + 1)%(SEND_MAXBITS * 2);
+                timecount--;
             }
             return val;
         }
@@ -265,7 +306,12 @@ class myIRsend : public IRsend {
 
         uint8_t sendPin;
         uint8_t pwmIndex;
+        uint32_t pwmfrequency;
+        uint32_t pwmperiod;
+        uint32_t pwmduty;
 
+        uint32_t our_ms;
+        uint32_t our_us;
 };
 
 
@@ -273,47 +319,68 @@ class myIRsend : public IRsend {
 myIRsend *pIRsend = NULL;
 IRrecv *ourReceiver = NULL;
 
-// this is our ISR
+// this is our ISR.
+// it is called every 50us, so we need to work on making it as efficient as possible.
 extern "C" void DRV_IR_ISR(UINT8 t){
     if (pIRsend && (pIRsend->pwmIndex >= 0)){
+        pIRsend->our_us += 50;
+        if (pIRsend->our_us > 1000){
+            pIRsend->our_ms++;
+            pIRsend->our_us -= 1000;
+        }
+
         int pinval = 0;
         if (pIRsend->currentsendtime){
             pIRsend->currentsendtime -= ir_periodus;
             if (pIRsend->currentsendtime <= 0){
-                pIRsend->currentbitval = pIRsend->currentbitval ^ 1;
-                pIRsend->currentsendtime = pIRsend->getsendqueue();
+                int32_t remains = pIRsend->currentsendtime;
+                int32_t newtime = pIRsend->getsendqueue();
+                if (0 == newtime){
+                    // if it was the last one
+                    pIRsend->currentsendtime = 0;    
+                    pIRsend->currentbitval = 0;
+                } else {
+                    // we got a new time
+                    // store mark bits in highest +ve bit of count
+                    pIRsend->currentbitval = (newtime & 0x10000000)? 1:0;
+                    pIRsend->currentsendtime = (newtime & 0xfffffff);
+                    // adjust the us value to keep the running accuracy
+                    // and avoid a running error?
+                    // note remains is -ve
+                    pIRsend->currentsendtime += remains;
+                }
             }
         } else {
-            pIRsend->currentsendtime = pIRsend->getsendqueue();
-            if (!pIRsend->currentsendtime){
+            int32_t newtime = pIRsend->getsendqueue();
+            if (!newtime){
+                pIRsend->currentsendtime = 0;
                 pIRsend->currentbitval = 0;
+            } else {
+                pIRsend->currentsendtime = (newtime & 0xfffffff);
+                pIRsend->currentbitval = (newtime & 0x10000000)? 1:0;
             }
         }
         pinval = pIRsend->currentbitval;
 
-        uint32_t pwmfrequency = 38000;
-    	uint32_t period = (26000000 / pwmfrequency);
-        uint32_t duty = period/2;
+        uint32_t duty = pIRsend->pwmduty;
         if (!pinval){
             duty = 0;
         }
 #if PLATFORM_BK7231N
-        bk_pwm_update_param((bk_pwm_t)pIRsend->pwmIndex, period, duty,0,0);
+        bk_pwm_update_param((bk_pwm_t)pIRsend->pwmIndex, pIRsend->pwmperiod, duty,0,0);
 #else
-        bk_pwm_update_param((bk_pwm_t)pIRsend->pwmIndex, period, duty);
+        bk_pwm_update_param((bk_pwm_t)pIRsend->pwmIndex, pIRsend->pwmperiod, duty);
 #endif
     }
 
-    ir_rxcount = (ir_rxcount + 1)%ir_rxcounts; // we RX every ir_rxcounts interrupt
-    if (!ir_rxcount){
-        IR_ISR();
-    }
+    IR_ISR();
     ir_counter++;
 }
 
 
 
-// test routine to start IR RX
+// test routine to start IR RX and TX
+// currently fixed pins for testing.
 extern "C" void testmehere(){
 	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Log from extern C CPP");
 
@@ -339,24 +406,29 @@ extern "C" void testmehere(){
 	// is this pin capable of PWM?
 	if(pwmIndex != -1) {
         uint32_t pwmfrequency = 38000;
-    	uint32_t frequency = (26000000 / pwmfrequency);
-        uint32_t duty = frequency/2;
+    	uint32_t period = (26000000 / pwmfrequency);
+        uint32_t duty = period/2;
 #if PLATFORM_BK7231N
 	    // OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
-	    bk_pwm_initialize((bk_pwm_t)pwmIndex, frequency, duty, 0, 0);
+	    bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty, 0, 0);
 #else
-	    bk_pwm_initialize((bk_pwm_t)pwmIndex, frequency, duty);
+	    bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty);
 #endif
         bk_pwm_start((bk_pwm_t)pwmIndex);
         myIRsend *pIRsendTemp = new myIRsend((uint_fast8_t) txpin);
         pIRsendTemp->resetsendqueue();
         pIRsendTemp->pwmIndex = pwmIndex;
+        pIRsendTemp->pwmfrequency = pwmfrequency;
+        pIRsendTemp->pwmperiod = period;
+        pIRsendTemp->pwmduty = duty;
+
         pIRsend = pIRsendTemp;
         //bk_pwm_stop((bk_pwm_t)pIRsend->pwmIndex);
 	}
 }
 
 
+// log the received IR
 void PrintIRData(IRData *aIRDataPtr){
     ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"IR decode returned true, protocol %d", (int)aIRDataPtr->protocol);
     if (aIRDataPtr->protocol == UNKNOWN) {
@@ -433,27 +505,17 @@ void PrintIRData(IRData *aIRDataPtr){
 // this polls the IR receive to see off there was any IR received
 // currently called once per sec from user_main timer
 // should probably be called every 100ms.
-int testcounter = 0;
-
-
 extern "C" void DRV_IR_Print(){
     if (ir_counter){
         //ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"IR counter: %u", ir_counter);
     }
-
-    testcounter++;
-    if (0 && pIRsend){
-        uint32_t pwmfrequency = 38000;
-    	uint32_t period = (26000000 / pwmfrequency);
-        uint32_t duty = period/2;
-        if (!(testcounter & 1)){
-            duty = 0;
+    if (pIRsend){
+        if (pIRsend->overflows){
+            ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"##### IR send overflows %d", (int)pIRsend->overflows);
+            pIRsend->resetsendqueue();
+        } else {
+            ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"IR send count %d remains %d currentus %d", (int)pIRsend->timecounttotal, (int)pIRsend->timecount, (int)pIRsend->currentsendtime);
         }
-#if PLATFORM_BK7231N
-        bk_pwm_update_param((bk_pwm_t)pIRsend->pwmIndex, period, duty,0,0);
-#else
-        bk_pwm_update_param((bk_pwm_t)pIRsend->pwmIndex, period, duty);
-#endif
     }
 
     if (ourReceiver){
@@ -462,7 +524,7 @@ extern "C" void DRV_IR_Print(){
             ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"IR decode returned true, protocol %d", (int)ourReceiver->decodedIRData.protocol);
 
             if (pIRsend){
-                pIRsend->write(&ourReceiver->decodedIRData, (int_fast8_t) 0);
+                pIRsend->write(&ourReceiver->decodedIRData, (int_fast8_t) 2);
 
                 ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"IR send timein %d timeout %d", (int)pIRsend->timein, (int)pIRsend->timeout);
             }

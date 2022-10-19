@@ -132,7 +132,7 @@ void IRsend::sendLG2Repeat() {
  * Static function for sending special repeat frame.
  * For use in ProtocolConstants. Saves up to 250 bytes compared to a member function.
  */
-void sendLG2SpecialRepeat() {
+void sendLG2SpecialRepeat(IRsend &IrSender) {
     IrSender.enableIROut(LG_KHZ);            // 38 kHz
     IrSender.mark(LG2_HEADER_MARK);          // + 3000
     IrSender.space(LG_REPEAT_HEADER_SPACE);  // - 2250

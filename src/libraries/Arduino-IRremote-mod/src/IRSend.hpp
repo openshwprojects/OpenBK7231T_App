@@ -111,6 +111,13 @@ void IRsend::setSendPin(uint_fast8_t aSendPin) {
 }
 #endif // defined(IR_SEND_PIN)
 
+uint32_t IRsend::millis(){
+    return ::millis();
+}
+void IRsend::delay(long int ms){
+    ::delay(ms);
+}
+
 /**
  * Initializes the send and feedback pin
  * @param aSendPin The Arduino pin number, where a IR sender diode is connected.
@@ -478,7 +485,7 @@ void IRsend::sendPulseDistanceWidth(PulsePauseWidthProtocolConstants *aProtocolC
 
     if (aNumberOfRepeats < 0) {
         if (aProtocolConstants->SpecialSendRepeatFunction != NULL) {
-            aProtocolConstants->SpecialSendRepeatFunction();
+            aProtocolConstants->SpecialSendRepeatFunction(*this);
             return;
         } else {
             aNumberOfRepeats = 0; // send a plain frame as repeat
@@ -494,7 +501,7 @@ void IRsend::sendPulseDistanceWidth(PulsePauseWidthProtocolConstants *aProtocolC
 
         if (tNumberOfCommands < ((uint_fast8_t) aNumberOfRepeats + 1) && aProtocolConstants->SpecialSendRepeatFunction != NULL) {
             // send special repeat
-            aProtocolConstants->SpecialSendRepeatFunction();
+            aProtocolConstants->SpecialSendRepeatFunction(*this);
         } else {
             // Header and regular frame
             mark(aProtocolConstants->HeaderMarkMicros);
@@ -523,11 +530,11 @@ void IRsend::sendPulseDistanceWidth(PulsePauseWidthProtocolConstants *aProtocolC
 void IRsend::sendPulseDistanceWidth(uint_fast8_t aFrequencyKHz, unsigned int aHeaderMarkMicros, unsigned int aHeaderSpaceMicros,
         unsigned int aOneMarkMicros, unsigned int aOneSpaceMicros, unsigned int aZeroMarkMicros, unsigned int aZeroSpaceMicros,
         uint32_t aData, uint_fast8_t aNumberOfBits, bool aMSBFirst, bool aSendStopBit, unsigned int aRepeatPeriodMillis,
-        int_fast8_t aNumberOfRepeats, void (*aSpecialSendRepeatFunction)()) {
+        int_fast8_t aNumberOfRepeats, void (*aSpecialSendRepeatFunction)(IRsend &sender)) {
 
     if (aNumberOfRepeats < 0) {
         if (aSpecialSendRepeatFunction != NULL) {
-            aSpecialSendRepeatFunction();
+            aSpecialSendRepeatFunction(*this);
             return;
         } else {
             aNumberOfRepeats = 0; // send a plain frame as repeat
@@ -543,7 +550,7 @@ void IRsend::sendPulseDistanceWidth(uint_fast8_t aFrequencyKHz, unsigned int aHe
 
         if (tNumberOfCommands < ((uint_fast8_t) aNumberOfRepeats + 1) && aSpecialSendRepeatFunction != NULL) {
             // send special repeat
-            aSpecialSendRepeatFunction();
+            aSpecialSendRepeatFunction(*this);
         } else {
             // Header and regular frame
             mark(aHeaderMarkMicros);

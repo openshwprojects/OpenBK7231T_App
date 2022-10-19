@@ -95,7 +95,7 @@ void IRsend::sendSamsungLGRepeat() {
  * Static function for sending special repeat frame.
  * For use in ProtocolConstants. Saves up to 250 bytes compared to a member function.
  */
-void sendSamsungLGSpecialRepeat() {
+void sendSamsungLGSpecialRepeat(IRsend &IrSender) {
     IrSender.enableIROut(SAMSUNG_KHZ);      // 38 kHz
     IrSender.mark(SAMSUNG_HEADER_MARK);     // + 4500
     IrSender.space(SAMSUNG_HEADER_SPACE);   // - 4500
