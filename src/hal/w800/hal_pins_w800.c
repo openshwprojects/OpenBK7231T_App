@@ -6,7 +6,7 @@
 #include "wm_include.h"
 
 typedef struct wmPin_s {
-	const char *name;
+	const char* name;
 	unsigned short code;
 	short pwm_channel;
 } wmPin_t;
@@ -35,7 +35,7 @@ static wmPin_t g_pins[] = {
 	{"PB20",WM_IO_PB_20, -1}
 };
 
-static int g_pwmChannelPins[] = {WM_IO_PB_00, WM_IO_PB_01, WM_IO_PB_02, WM_IO_PB_03, WM_IO_PA_07};
+static int g_pwmChannelPins[] = { WM_IO_PB_00, WM_IO_PB_01, WM_IO_PB_02, WM_IO_PB_03, WM_IO_PA_07 };
 
 #else
 
@@ -44,9 +44,9 @@ static wmPin_t g_pins[] = {
 	{"PA1",WM_IO_PA_01, -1},
 	{"PA4",WM_IO_PA_04, -1},
 	{"PA5",WM_IO_PA_05, -1},
-	{"PB8",WM_IO_PB_08, -1},
 	{"PB6",WM_IO_PB_06, -1},
 	{"PB7",WM_IO_PB_07, -1},
+	{"PB8",WM_IO_PB_08, -1},
 	{"PB9",WM_IO_PB_09, -1},
 	{"PB10",WM_IO_PB_10, -1},
 	{"PB11",WM_IO_PB_11, -1},
@@ -59,70 +59,70 @@ static wmPin_t g_pins[] = {
 	{"PB18",WM_IO_PB_18, 0}
 };
 
-static int g_pwmChannelPins[] = {WM_IO_PB_18, WM_IO_PB_17, WM_IO_PB_16, WM_IO_PB_15, WM_IO_PB_14};
+static int g_pwmChannelPins[] = { WM_IO_PB_18, WM_IO_PB_17, WM_IO_PB_16, WM_IO_PB_15, WM_IO_PB_14 };
 
 #endif
 
-static int g_numPins = sizeof(g_pins)/sizeof(g_pins[0]);
+static int g_numPins = sizeof(g_pins) / sizeof(g_pins[0]);
 
-static int IsPinIndexOk(int index){
-	if(index<0)
+static int IsPinIndexOk(int index) {
+	if (index < 0)
 		return 0;
-	if(index>=g_numPins)
+	if (index >= g_numPins)
 		return 0;
 	return 1;
 }
 static int PIN_GetPWMIndexForPinIndex(int index) {
 	return g_pins[index].pwm_channel;
 }
-const char *HAL_PIN_GetPinNameAlias(int index) {
-	if(IsPinIndexOk(index)==0)
+const char* HAL_PIN_GetPinNameAlias(int index) {
+	if (IsPinIndexOk(index) == 0)
 		return "error";
 	return g_pins[index].name;
 }
 
 int HAL_PIN_CanThisPinBePWM(int index) {
-	if(IsPinIndexOk(index)==0)
+	if (IsPinIndexOk(index) == 0)
 		return 0;
-	
+
 	return PIN_GetPWMIndexForPinIndex(index) == -1 ? 0 : 1;
 }
 void HAL_PIN_SetOutputValue(int index, int iVal) {
-	int realCode ;
-	if(IsPinIndexOk(index)==0)
+	int realCode;
+	if (IsPinIndexOk(index) == 0)
 		return;
 	realCode = g_pins[index].code;
 
-	tls_gpio_write(realCode,iVal);			/*Ð´¸ß*/
+	tls_gpio_write(realCode, iVal);			/*Ð´¸ß*/
 }
 
 int HAL_PIN_ReadDigitalInput(int index) {
-	int realCode ;
-	if(IsPinIndexOk(index)==0)
+	int realCode;
+	if (IsPinIndexOk(index) == 0)
 		return 0;
 	realCode = g_pins[index].code;
 
 	return tls_gpio_read(realCode);
 }
 void HAL_PIN_Setup_Input_Pullup(int index) {
-	int realCode ;
-	if(IsPinIndexOk(index)==0)
+	int realCode;
+	if (IsPinIndexOk(index) == 0)
 		return;
 	realCode = g_pins[index].code;
 
 	tls_gpio_cfg(realCode, WM_GPIO_DIR_INPUT, WM_GPIO_ATTR_PULLHIGH);
 }
 void HAL_PIN_Setup_Input(int index) {
-	int realCode ;
-	if(IsPinIndexOk(index)==0)
+	int realCode;
+	if (IsPinIndexOk(index) == 0)
 		return;
 	realCode = g_pins[index].code;
 
 	tls_gpio_cfg(realCode, WM_GPIO_DIR_INPUT, WM_GPIO_ATTR_FLOATING);
 }
 void HAL_PIN_Setup_Output(int index) {
-	int realCode ;
-	if(IsPinIndexOk(index)==0)
+	int realCode;
+	if (IsPinIndexOk(index) == 0)
 		return;
 	realCode = g_pins[index].code;
 
@@ -130,58 +130,58 @@ void HAL_PIN_Setup_Output(int index) {
 }
 
 static int pwm_demo_multiplex_config(u8 channel)
-{ 
+{
 	switch (channel)
 	{
-		case 0:
-		case 1:
-		case 2:
-		case 3:
-		case 4:
-			wm_pwm5_config(g_pwmChannelPins[channel]);
-			break;
-		default:
-			break;
+	case 0:
+	case 1:
+	case 2:
+	case 3:
+	case 4:
+		wm_pwm5_config(g_pwmChannelPins[channel]);
+		break;
+	default:
+		break;
 	}
- 
+
 	return 0;
 }
 
 void HAL_PIN_PWM_Stop(int index) {
 	int channel;
-	if(IsPinIndexOk(index)==0)
+	if (IsPinIndexOk(index) == 0)
 		return;
 	channel = PIN_GetPWMIndexForPinIndex(index);
-	if(channel == -1)
+	if (channel == -1)
 		return;
- 
+
 	tls_pwm_stop(channel);
 }
 
 void HAL_PIN_PWM_Start(int index) {
 	int ret;
 	int channel;
-	if(IsPinIndexOk(index)==0)
+	if (IsPinIndexOk(index) == 0)
 		return;
 	channel = PIN_GetPWMIndexForPinIndex(index);
-	if(channel == -1)
+	if (channel == -1)
 		return;
- 
-    pwm_demo_multiplex_config(channel);
-    ret = tls_pwm_init(channel, 1000, 0, 0);
-    if(ret != WM_SUCCESS)
-        return ;
-    tls_pwm_start(channel);
+
+	pwm_demo_multiplex_config(channel);
+	ret = tls_pwm_init(channel, 1000, 0, 0);
+	if (ret != WM_SUCCESS)
+		return;
+	tls_pwm_start(channel);
 }
 //value is in 0 100 range
 void HAL_PIN_PWM_Update(int index, int value) {
 	int channel;
-	if(IsPinIndexOk(index)==0)
+	if (IsPinIndexOk(index) == 0)
 		return;
 	channel = PIN_GetPWMIndexForPinIndex(index);
-	if(channel == -1)
+	if (channel == -1)
 		return;
- 
+
 	tls_pwm_duty_set(channel, value * 2.55f);
 }
 
