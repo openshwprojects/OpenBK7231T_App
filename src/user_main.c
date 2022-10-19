@@ -9,7 +9,8 @@
 #include "hal/hal_adc.h"
 #include "new_common.h"
 
-#include "driver/drv_ir.h"
+//#include "driver/drv_ir.h"
+#include "driver/drv_public.h"
 //#include "ir/ir_local.h"
 
 // Commands register, execution API and cmd tokenizer
@@ -270,7 +271,7 @@ void Main_OnEverySecond()
 	}
 	// IR TESTING ONLY!!!!
 #ifdef PLATFORM_BK7231T
-	DRV_IR_Print();
+	//DRV_IR_Print();
 #endif
 
 	// when we hit 30s, mark as boot complete.

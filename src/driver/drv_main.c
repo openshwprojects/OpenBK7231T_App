@@ -7,6 +7,7 @@
 #include "drv_local.h"
 #include "drv_uart.h"
 #include "drv_tuyaMCU.h"
+#include "drv_ir.h"
 #include "../i2c/drv_i2c_public.h"
 #include "drv_ntp.h"
 #include "../httpserver/new_http.h"
@@ -57,6 +58,7 @@ static driver_t g_drivers[] = {
 	
 
 #if PLATFORM_BEKEN
+	{ "IR", DRV_IR_Init, DRV_IR_RunFrame, NULL, NULL, NULL, NULL, false },
 	{ "DGR", DRV_DGR_Init, NULL, DRV_DGR_RunEverySecond, DRV_DGR_RunQuickTick, DRV_DGR_Shutdown, DRV_DGR_OnChannelChanged, false },
 	{ "DDP", DRV_DDP_Init, NULL, NULL, DRV_DDP_RunFrame, DRV_DDP_Shutdown, NULL, false },
 #endif

@@ -86,7 +86,7 @@ void LOG_SetRawSocketCallback(int newFD)
 }
 
 #ifdef WINDOWS
-void addLogAdv(int level, int feature, char *fmt, ...)
+void addLogAdv(int level, int feature, const char *fmt, ...)
 {
     va_list argList;
     const size_t tmp_len = 1024;
@@ -137,7 +137,7 @@ void addLogAdv(int level, int feature, char *fmt, ...)
 
 static SemaphoreHandle_t g_mutex = 0;
 
-void addLogAdv(int level, int feature, char *fmt, ...)
+void addLogAdv(int level, int feature, const char *fmt, ...)
 {
     va_list argList;
     BaseType_t taken;
@@ -252,7 +252,7 @@ static void initLog( void )
 
 // adds a log to the log memory
 // if head collides with either tail, move the tails on.
-void addLogAdv(int level, int feature, char *fmt, ...)
+void addLogAdv(int level, int feature, const char *fmt, ...)
 {
     char *tmp;
     char *t;

@@ -36,7 +36,7 @@ static int CMD_SimonTest(const void *context, const char *cmd, const char *args,
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SimonTest: ir test routine");
 
 #ifdef PLATFORM_BK7231T
-	testmehere();
+	// anything
 #endif
 
 	

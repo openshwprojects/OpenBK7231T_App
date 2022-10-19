@@ -1336,7 +1336,7 @@ int http_fn_ha_discovery(http_request_t* request) {
 	return 0;
 }
 
-void http_generate_rgb_cfg(http_request_t* request, char* clientId) {
+void http_generate_rgb_cfg(http_request_t* request, const char* clientId) {
 	hprintf128(request, "    rgb_command_template: \"{{ '#%%02x%%02x%%02x0000' | format(red, green, blue)}}\"\n");
 	hprintf128(request, "    rgb_value_template: \"{{ value[1:3] | int(base=16) }},{{ value[3:5] | int(base=16) }},{{ value[5:7] | int(base=16) }}\"\n");
 	hprintf128(request, "    rgb_state_topic: \"%s/led_basecolor_rgb/get\"\n", clientId);
