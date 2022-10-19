@@ -1,6 +1,4 @@
 
-#if PLATFORM_BK7231T
-
 extern "C" {
     // these cause error: conflicting declaration of 'int bk_wlan_mcu_suppress_and_sleep(unsigned int)' with 'C' linkage
     #include "include.h"
@@ -27,6 +25,7 @@ extern "C" {
 
 }
 
+#include "drv_ir.h"
 
 //#define USE_IRREMOTE_HPP_AS_PLAIN_INCLUDE 1
 #undef read
@@ -600,6 +599,3 @@ void cpptest(){
 }
 #endif
 
-
-
-#endif // platform T
