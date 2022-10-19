@@ -1,4 +1,6 @@
 
+#if PLATFORM_BEKEN
+
 extern "C" {
     // these cause error: conflicting declaration of 'int bk_wlan_mcu_suppress_and_sleep(unsigned int)' with 'C' linkage
     #include "include.h"
@@ -597,5 +599,7 @@ void cpptest(){
 	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Log from static class (is it initialised?):");
     staticclass.print();
 }
+#endif
+
 #endif
 
