@@ -232,6 +232,14 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\src\cJSON\cJSON.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\cJSON\cJSON.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\logging\logging.c"
 				>
 			</File>
@@ -728,7 +736,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\httpserver\new_http.h"
+				RelativePath=".\src\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -740,7 +748,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\new_http.h"
+				RelativePath=".\src\httpserver\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
