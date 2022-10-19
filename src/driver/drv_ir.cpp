@@ -197,7 +197,7 @@ SpoofIrSender IrSender;
 
 // this is the actual IR library include.
 // it's all in .h and .hpp files, no .c or .cpp
-#include "../libraries/Arduino-IRremote-mod/src/IRRemote.hpp"
+#include "../libraries/Arduino-IRremote-mod/src/IRremote.hpp"
 
 static int PIN_GetPWMIndexForPinIndex(int pin) {
 	if(pin == 6)
@@ -386,6 +386,10 @@ extern "C" void testmehere(){
 
     unsigned char pin = 9;// PWM3/25
     unsigned char txpin = 24;// PWM3/25
+
+	// allow user to change them
+	pin = PIN_FindPinIndexForRole(IOR_IRRecv,pin);
+	txpin = PIN_FindPinIndexForRole(IOR_IRSend,txpin);
 
     if (ourReceiver){
         IRrecv *temp = ourReceiver;
