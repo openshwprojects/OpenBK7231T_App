@@ -243,7 +243,7 @@ HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type, int index) {
         }
         if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_CONSUMPTION_STATS))
         {
-            cJSON_AddStringToObject(info->root, "dev_cla", counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);  //device_class=consumption
+            cJSON_AddStringToObject(info->root, "dev_cla", counter_devClasses[index - OBK_CONSUMPTION_TOTAL]);  //device_class=consumption
 
             sprintf(g_hassBuffer, "%s/%s/get", clientId, counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
             cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);

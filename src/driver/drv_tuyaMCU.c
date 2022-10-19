@@ -1017,11 +1017,13 @@ void TuyaMCU_RunFrame() {
     /* Command controll */
     if (heartbeat_timer == 0)
     {
+        /* Generate heartbeat to keep communication alove */
         TuyaMCU_SendCommandWithData(TUYA_CMD_HEARTBEAT, NULL, 0);
         heartbeat_timer = 3;
         heartbeat_counter++;
         if (heartbeat_counter>=4) 
         {
+            /* unanswerred heartbeats -> lost communication */
             heartbeat_valid = false;
             product_information_valid = false;
             working_mode_valid = false;
@@ -1029,6 +1031,7 @@ void TuyaMCU_RunFrame() {
             state_updated = false;
         }
     } else {
+        /* Heartbeat timer - sent every 3 seconds */
         if (heartbeat_timer>0)
         {
             heartbeat_timer--;
@@ -1037,25 +1040,32 @@ void TuyaMCU_RunFrame() {
         }
         if (heartbeat_valid == true)
         {
+            /* Connection Active */
             if (product_information_valid == false)
             {
+                /* Request production information */
                 TuyaMCU_SendCommandWithData(TUYA_CMD_QUERY_PRODUCT, NULL, 0);
             } 
             else if (working_mode_valid == false)
             {
+                /* Request working mode */
                 TuyaMCU_SendCommandWithData(TUYA_CMD_MCU_CONF, NULL, 0);
             }
             else if ((wifi_state_valid == false) && (self_processing_mode == false))
             {
+                /* Reset wifi state -> Aquirring network connection */ 
                 Tuya_SetWifiState(0);
-                //TuyaMCU_SendCommandWithData(TUYA_CMD_WIFI_STATE, NULL, 0);
+                TuyaMCU_SendCommandWithData(TUYA_CMD_WIFI_STATE, NULL, 0);
             }
             else if (state_updated == false)
             {
+                /* Request first state of all DP - this should list all existing DP */
                 TuyaMCU_SendCommandWithData(TUYA_CMD_QUERY_STATE, NULL, 0);
             }
             else 
             {
+                /* Monitor WIFI and MQTT connection and apply Wifi state 
+                 * State is updated when change is detected or after timeout */
                 if ((Main_HasWiFiConnected()!=0) && (Main_HasMQTTConnected()!=0))
                 {
                     if ((wifi_state == false) || (wifi_state_timer == 0))
@@ -1070,9 +1080,11 @@ void TuyaMCU_RunFrame() {
                         wifi_state = false;
                     }
                 }
+                /* wifi state timer */
                 wifi_state_timer++;
                 if (wifi_state_timer >= 60)
                 {
+                    /* timeout after ~1 minute */
                     wifi_state_timer = 0;
                 }
             }

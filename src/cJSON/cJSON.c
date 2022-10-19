@@ -213,7 +213,11 @@ CJSON_PUBLIC(void) cJSON_InitHooks(cJSON_Hooks* hooks)
         /* Reset hooks */
         global_hooks.allocate = malloc;
         global_hooks.deallocate = free;
+#if CJSON_REALLOC_DISABLED
+        global_hooks.reallocate = 0;
+#else
         global_hooks.reallocate = realloc;
+#endif
         return;
     }
 
@@ -233,7 +237,11 @@ CJSON_PUBLIC(void) cJSON_InitHooks(cJSON_Hooks* hooks)
     global_hooks.reallocate = NULL;
     if ((global_hooks.allocate == malloc) && (global_hooks.deallocate == free))
     {
+#if CJSON_REALLOC_DISABLED
+        global_hooks.reallocate = 0;
+#else
         global_hooks.reallocate = realloc;
+#endif
     }
 }
 
@@ -487,7 +495,7 @@ static unsigned char* ensure(printbuffer * const p, size_t needed)
         newsize = needed * 2;
     }
 
-    if (p->hooks.reallocate != NULL)
+    if (p->hooks.reallocate != NULL && !CJSON_REALLOC_DISABLED)
     {
         /* reallocate with realloc if available */
         newbuffer = (unsigned char*)p->hooks.reallocate(p->buffer, newsize);
@@ -1211,7 +1219,7 @@ static unsigned char *print(const cJSON * const item, cJSON_bool format, const i
     update_offset(buffer);
 
     /* check if reallocate is available */
-    if (hooks->reallocate != NULL)
+    if (hooks->reallocate != NULL && !CJSON_REALLOC_DISABLED)
     {
         printed = (unsigned char*) hooks->reallocate(buffer->buffer, buffer->offset + 1);
         if (printed == NULL) {

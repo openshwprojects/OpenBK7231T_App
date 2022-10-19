@@ -35,6 +35,7 @@ int energyCounterSampleInterval = 60;
 float *energyCounterMinutes = NULL;
 portTickType energyCounterMinutesStamp;
 long energyCounterMinutesIndex;
+bool energyCounterStatsJSONEnable = false;
 
 // how much update frames has passed without sending MQTT update of read values?
 int noChangeFrames[OBK_NUM_MEASUREMENTS];
@@ -68,7 +69,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
     } else {
         mode = "PWR";
     }
-    sprintf(tmp, "<h2>%s Voltage=%f, Current=%f, Power=%f, Consumption=%1.1f Wh (changes sent %i, skipped %i)</h2>",
+    sprintf(tmp, "<h2>%s Voltage=%f, Current=%f, Power=%f, Total Consumption=%1.1f Wh (changes sent %i, skipped %i)</h2>",
         mode, lastReadings[OBK_VOLTAGE],lastReadings[OBK_CURRENT], lastReadings[OBK_POWER],
         energyCounter, stat_updatesSent, stat_updatesSkipped);
     hprintf128(request,tmp);
@@ -76,7 +77,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
     if (energyCounterStatsEnable == true)
     {
         /********************************************************************************************************************/
-        sprintf(tmp, "<h2>Periodic Statistics</h2><h5>Consumption: %1.1f Wh<br>", DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+        hprintf128(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
+        sprintf(tmp, "%1.1f Wh<br>", DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
         //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"'%s'\n", tmp);
         hprintf128(request,tmp);
         sprintf(tmp, "Sampling interval: %d sec<br>History length: %d samples<br>History per samples:<br>", 
@@ -103,7 +105,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
                     memset(tmp,0,128);
                 }
             }
-            sprintf(tmp, "<br>History Index: %d </h5>", energyCounterMinutesIndex);
+            sprintf(tmp, "<br>History Index: %d<br>JSON Stats: %s </h5>", energyCounterMinutesIndex,
+                    (energyCounterStatsJSONEnable == true) ? "enabled" : "disabled");
             //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"'%s'\n", tmp);
             hprintf128(request, tmp);
         }
@@ -146,6 +149,7 @@ int BL09XX_SetupEnergyStatistic(const void *context, const char *cmd, const char
     int enable;
     int sample_time;
     int sample_count;
+    int json_enable;
 
     Tokenizer_TokenizeString(args);
 
@@ -158,7 +162,11 @@ int BL09XX_SetupEnergyStatistic(const void *context, const char *cmd, const char
     enable = Tokenizer_GetArgInteger(0);
     sample_time = Tokenizer_GetArgInteger(1);
     sample_count = Tokenizer_GetArgInteger(2);
- 
+    if (Tokenizer_GetArgsCount() >= 4)
+        json_enable = Tokenizer_GetArgInteger(3);
+    else
+        json_enable = 0;
+
     /* Security limits for sample interval */
     if (sample_time <10)
         sample_time = 10;
@@ -219,6 +227,9 @@ int BL09XX_SetupEnergyStatistic(const void *context, const char *cmd, const char
         energyCounterSampleCount = sample_count;
         energyCounterSampleInterval = sample_time;
     }
+
+    energyCounterStatsJSONEnable = (json_enable != 0) ? true : false; 
+
     return 0;
 }
 
@@ -253,30 +264,33 @@ void BL_ProcessUpdate(float voltage, float current, float power)
         interval *= (1000 / portTICK_PERIOD_MS); 
         if ((xTaskGetTickCount() - energyCounterMinutesStamp) >= interval)
         {
-            root = cJSON_CreateObject();
-            cJSON_AddNumberToObject(root, "uptime", Time_getUpTimeSeconds());
-            cJSON_AddNumberToObject(root, "consumption_total", energyCounter );
-            cJSON_AddNumberToObject(root, "consumption_last_hour",  DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
-            cJSON_AddNumberToObject(root, "consumption_stat_index", energyCounterMinutesIndex);
-            cJSON_AddNumberToObject(root, "consumption_sample_count", energyCounterSampleCount);
-            cJSON_AddNumberToObject(root, "consumption_sampling_period", energyCounterSampleInterval);
-
-            if (energyCounterMinutes != NULL)
+            if (energyCounterStatsJSONEnable == true)
             {
-                stats = cJSON_CreateArray();
-                for(i = 0; i < energyCounterSampleCount; i++)
+                root = cJSON_CreateObject();
+                cJSON_AddNumberToObject(root, "uptime", Time_getUpTimeSeconds());
+                cJSON_AddNumberToObject(root, "consumption_total", energyCounter );
+                cJSON_AddNumberToObject(root, "consumption_last_hour",  DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+                cJSON_AddNumberToObject(root, "consumption_stat_index", energyCounterMinutesIndex);
+                cJSON_AddNumberToObject(root, "consumption_sample_count", energyCounterSampleCount);
+                cJSON_AddNumberToObject(root, "consumption_sampling_period", energyCounterSampleInterval);
+
+                if (energyCounterMinutes != NULL)
                 {
-                    cJSON_AddItemToArray(stats, cJSON_CreateNumber(energyCounterMinutes[i]));
+                    stats = cJSON_CreateArray();
+                    for(i = 0; i < energyCounterSampleCount; i++)
+                    {
+                        cJSON_AddItemToArray(stats, cJSON_CreateNumber(energyCounterMinutes[i]));
+                    }
+                    cJSON_AddItemToObject(root, "consumption_samples", stats);
                 }
-                cJSON_AddItemToObject(root, "consumption_samples", stats);
+
+                msg = cJSON_Print(root);
+                cJSON_Delete(root);
+
+                MQTT_PublishMain_StringString(counter_mqttNames[2], msg, 0);
+                stat_updatesSent++;
+                os_free(msg);
             }
-
-            msg = cJSON_Print(root);
-            cJSON_Delete(root);
-
-            MQTT_PublishMain_StringString(counter_mqttNames[2], msg, 0);
-            stat_updatesSent++;
-            os_free(msg);
 
             if (energyCounterMinutes != NULL)
             {
@@ -358,7 +372,7 @@ void BL_Shared_Init()
     noChangeFrameEnergyCounter = 0;
     energyCounterStamp = xTaskGetTickCount(); 
 
-    if (energyCounterStatsEnable = true)
+    if (energyCounterStatsEnable == true)
     {
         if (energyCounterMinutes == NULL)
         {

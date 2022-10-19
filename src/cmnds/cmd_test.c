@@ -90,6 +90,39 @@ static int testMallocFree(const void * context, const char *cmd, const char *arg
 
     return 0;
 }
+// Usage: addRepeatingEvent 1 -1 testRealloc 100
+static int testRealloc(const void * context, const char *cmd, const char *args, int cmdFlags){
+	int repeats;
+	int rep;
+    char *msg;
+	int i;
+	int ra1;
+	static int totalCalls = 0;
+
+	repeats = atoi(args);
+	if(repeats < 1)
+		repeats = 1;
+
+	totalCalls++;
+
+	for(rep = 0; rep < repeats; rep++) {
+		ra1 = 1 + abs(rand() % 1000);
+
+		msg = malloc(ra1);
+		
+		for(i = 0; i < 3; i++) {
+			ra1 += 1 + abs(rand()%10);
+			msg = realloc(msg,ra1);
+		}
+
+		os_free(msg);
+	}
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Realloc has been tested! Total calls %i, reps now %i",totalCalls,repeats);
+
+    return 0;
+}
+
 // Usage: addRepeatingEvent 1 -1 testJSON 100
 static int testJSON(const void * context, const char *cmd, const char *args, int cmdFlags){
     cJSON* root;
@@ -123,7 +156,7 @@ static int testJSON(const void * context, const char *cmd, const char *args, int
 		cJSON_AddNumberToObject(root, "consumption_sample_count", ra4);
 		cJSON_AddNumberToObject(root, "consumption_sampling_period", ra5);
 
-		stats = cJSON_CreateArray();
+			stats = cJSON_CreateArray();
 		for(i = 0; i < 23; i++)
 		{
 			cJSON_AddItemToArray(stats, cJSON_CreateNumber(rand()%10));
@@ -142,6 +175,7 @@ static int testJSON(const void * context, const char *cmd, const char *args, int
 int fortest_commands_init(){
     CMD_RegisterCommand("addcmd", "", addcmd, "add a custom command", NULL);
     CMD_RegisterCommand("testMallocFree", "", testMallocFree, "", NULL);
+    CMD_RegisterCommand("testRealloc", "", testRealloc, "", NULL);
     CMD_RegisterCommand("testJSON", "", testJSON, "", NULL);
     return 0;
 }

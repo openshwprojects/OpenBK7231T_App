@@ -23,6 +23,14 @@
 #ifndef cJSON__h
 #define cJSON__h
 
+#ifdef PLATFORM_BK7231T
+#define CJSON_REALLOC_DISABLED 1
+#endif
+
+#ifndef CJSON_REALLOC_DISABLED
+#define CJSON_REALLOC_DISABLED 0
+#endif
+
 #ifdef __cplusplus
 extern "C"
 {
