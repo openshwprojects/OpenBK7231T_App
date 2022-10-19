@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WINDOWS"
+				PreprocessorDefinitions="WINDOWS;PLATFORM_BK7231T"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -736,7 +736,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\new_http.h"
+				RelativePath=".\src\httpserver\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -748,7 +748,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\httpserver\new_http.h"
+				RelativePath=".\src\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -873,6 +873,14 @@
 			</File>
 			<File
 				RelativePath=".\src\driver\drv_cse7766.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\driver\drv_ir.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\driver\drv_ir.h"
 				>
 			</File>
 			<File

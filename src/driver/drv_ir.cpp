@@ -387,6 +387,10 @@ extern "C" void testmehere(){
     unsigned char pin = 9;// PWM3/25
     unsigned char txpin = 24;// PWM3/25
 
+	// allow user to change them
+	pin = PIN_FindPinIndexForRole(IOR_IRRecv,pin);
+	txpin = PIN_FindPinIndexForRole(IOR_IRSend,txpin);
+
     if (ourReceiver){
         IRrecv *temp = ourReceiver;
         ourReceiver = NULL;

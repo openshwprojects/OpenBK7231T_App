@@ -41,6 +41,9 @@ enum IORole {
 
 	IOR_PWM_n,
 
+	IOR_IRRecv,
+	IOR_IRSend,
+
 	IOR_Total_Options,
 };
 
