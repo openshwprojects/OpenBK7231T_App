@@ -199,21 +199,7 @@ SpoofIrSender IrSender;
 // it's all in .h and .hpp files, no .c or .cpp
 #include "../libraries/Arduino-IRremote-mod/src/IRremote.hpp"
 
-static int PIN_GetPWMIndexForPinIndex(int pin) {
-	if(pin == 6)
-		return 0;
-	if(pin == 7)
-		return 1;
-	if(pin == 8)
-		return 2;
-	if(pin == 9)
-		return 3;
-	if(pin == 24)
-		return 4;
-	if(pin == 26)
-		return 5;
-	return -1;
-}
+extern "C" int PIN_GetPWMIndexForPinIndex(int pin) ;
 
 // override aspects of sending for our own interrupt driven sends
 // basically, IRsend calls mark(us) and space(us) to send.

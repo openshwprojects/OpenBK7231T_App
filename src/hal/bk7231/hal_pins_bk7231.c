@@ -17,7 +17,7 @@
 
 int pwmfrequency = PWM_FREQUENCY_DEFAULT;
 
-static int PIN_GetPWMIndexForPinIndex(int pin) {
+int PIN_GetPWMIndexForPinIndex(int pin) {
 	if(pin == 6)
 		return 0;
 	if(pin == 7)
