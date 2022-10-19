@@ -269,7 +269,9 @@ void Main_OnEverySecond()
 
 	}
 	// IR TESTING ONLY!!!!
+#ifdef PLATFORM_BK7231T
 	DRV_IR_Print();
+#endif
 
 	// when we hit 30s, mark as boot complete.
 	if(g_bBootMarkedOK==false) 
