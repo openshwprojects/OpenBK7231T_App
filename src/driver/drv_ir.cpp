@@ -3,6 +3,8 @@
 
 extern "C" {
     // these cause error: conflicting declaration of 'int bk_wlan_mcu_suppress_and_sleep(unsigned int)' with 'C' linkage
+    #include "../new_common.h"
+
     #include "include.h"
     #include "arm_arch.h"
     #include "../new_pins.h"
@@ -11,6 +13,11 @@ extern "C" {
     #include "../obk_config.h"
     #include "bk_timer_pub.h"
     #include "drv_model_pub.h"
+
+    // why can;t I call this?
+    //#include "../mqtt/new_mqtt.h"
+    OBK_Publish_Result MQTT_PublishMain_StringString(const char* sChannel, const char* valueStr, int flags);
+
     #include <gpio_pub.h>
     //#include "pwm.h"
     #include "pwm_pub.h"
@@ -518,11 +525,22 @@ extern "C" void DRV_IR_RunFrame(){
             PrintIRData(&ourReceiver->decodedIRData);
             ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"IR decode returned true, protocol %d", (int)ourReceiver->decodedIRData.protocol);
 
+            const char *name = ProtocolNames[ourReceiver->decodedIRData.protocol];
+            char out[40];
+            if (ourReceiver->decodedIRData.protocol == UNKNOWN){
+                sprintf(out, "%s-%X", name, ourReceiver->decodedIRData.decodedRawData);
+            } else {
+                sprintf(out, "%s-%X-%X", name, ourReceiver->decodedIRData.address, ourReceiver->decodedIRData.command);
+            }
+            MQTT_PublishMain_StringString("ir",out, 0);
+
+/*
             if (pIRsend){
                 pIRsend->write(&ourReceiver->decodedIRData, (int_fast8_t) 2);
 
                 ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"IR send timein %d timeout %d", (int)pIRsend->timein, (int)pIRsend->timeout);
             }
+*/
 
             // Print a short summary of received data
             //IrReceiver.printIRResultShort(&Serial);
