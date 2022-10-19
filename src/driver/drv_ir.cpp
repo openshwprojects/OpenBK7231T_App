@@ -371,8 +371,8 @@ extern "C" void DRV_IR_ISR(UINT8 t){
 extern "C" void DRV_IR_Init(){
 	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Log from extern C CPP");
 
-    unsigned char pin = 9;// PWM3/25
-    unsigned char txpin = 24;// PWM3/25
+	int pin = 9;// PWM3/25
+    int txpin = 24;// PWM3/25
 
 	// allow user to change them
 	pin = PIN_FindPinIndexForRole(IOR_IRRecv,pin);
@@ -383,6 +383,7 @@ extern "C" void DRV_IR_Init(){
         ourReceiver = NULL;
         delete temp;
     }
+	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"DRV_IR_Init: recv pin %i",pin);
 
     ourReceiver = new IRrecv(pin);
     ourReceiver->start();
@@ -498,7 +499,7 @@ void PrintIRData(IRData *aIRDataPtr){
 // should probably be called every 100ms.
 extern "C" void DRV_IR_RunFrame(){
     if (ir_counter){
-        //ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"IR counter: %u", ir_counter);
+        ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"IR counter: %u", ir_counter);
     }
     if (pIRsend){
         if (pIRsend->overflows){
