@@ -149,7 +149,7 @@ static bool product_information_valid = false;
 static bool working_mode_valid = false;
 static bool wifi_state_valid = false;
 static bool wifi_state = false;
-static bool wifi_state_timer = 0;
+static int wifi_state_timer = 0;
 static bool self_processing_mode = true;
 static bool state_updated = false;
 
@@ -1031,6 +1031,9 @@ void TuyaMCU_RunFrame() {
             wifi_state_valid = false;
             state_updated = false;
         }
+        //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "WFS: %d H%d P%d M%d W%d S%d", wifi_state_timer,
+        //        heartbeat_valid, product_information_valid, working_mode_valid, wifi_state_valid,
+        //        state_updated);
     } else {
         /* Heartbeat timer - sent every 3 seconds */
         if (heartbeat_timer>0)
@@ -1065,6 +1068,7 @@ void TuyaMCU_RunFrame() {
             }
             else 
             {
+                //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_WifiCheck %d ", wifi_state_timer);
                 /* Monitor WIFI and MQTT connection and apply Wifi state 
                  * State is updated when change is detected or after timeout */
                 if ((Main_HasWiFiConnected()!=0) && (Main_HasMQTTConnected()!=0))
@@ -1073,20 +1077,24 @@ void TuyaMCU_RunFrame() {
                     {
                         Tuya_SetWifiState(4);
                         wifi_state = true;
+                        wifi_state_timer++;
                     }
                 } else {
                     if ((wifi_state == true) || (wifi_state_timer == 0))
                     {
                         Tuya_SetWifiState(0);
                         wifi_state = false;
+                        wifi_state_timer++;
                     }
                 }
                 /* wifi state timer */
-                wifi_state_timer++;
+                if (wifi_state_timer > 0)
+                    wifi_state_timer++;
                 if (wifi_state_timer >= 60)
                 {
                     /* timeout after ~1 minute */
                     wifi_state_timer = 0;
+                    //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_Wifi_State timer");
                 }
             }
         }

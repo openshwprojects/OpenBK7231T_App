@@ -27,6 +27,7 @@ extern "C" {
 
 }
 
+#include "drv_ir.h"
 
 //#define USE_IRREMOTE_HPP_AS_PLAIN_INCLUDE 1
 #undef read
@@ -586,6 +587,5 @@ void cpptest(){
 }
 #endif
 
+#endif
 
-
-#endif // platform T
