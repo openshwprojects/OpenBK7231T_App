@@ -385,6 +385,9 @@ extern "C" void DRV_IR_Init(){
     }
 	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"DRV_IR_Init: recv pin %i",pin);
 
+    // setupp IRrecv pin as input
+	bk_gpio_config_input_pup((GPIO_INDEX)pin);
+
     ourReceiver = new IRrecv(pin);
     ourReceiver->start();
 

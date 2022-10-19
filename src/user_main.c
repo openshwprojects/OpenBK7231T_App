@@ -518,6 +518,12 @@ void Main_Init()
 #endif
 		}
 
+		if(PIN_FindPinIndexForRole(IOR_IRRecv,-1) != -1 || PIN_FindPinIndexForRole(IOR_IRSend,-1) != -1) {
+#ifndef OBK_DISABLE_ALL_DRIVERS
+			DRV_StartDriver("IR");
+#endif
+		}
+
 		CMD_ExecuteCommand(CFG_GetShortStartupCommand(), COMMAND_FLAG_SOURCE_SCRIPT);
 		CMD_ExecuteCommand("exec autoexec.bat", COMMAND_FLAG_SOURCE_SCRIPT);
 
