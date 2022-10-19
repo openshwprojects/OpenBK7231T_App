@@ -76,7 +76,7 @@ int NTP_SetServer(const void *context, const char *cmd, const char *args, int cm
 		addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Argument missing e.g. ntp_setServer ipAddress\n");
 		return 0;
 	}
-	char *newValue = Tokenizer_GetArg(0);
+	const char *newValue = Tokenizer_GetArg(0);
 	CFG_SetNTPServer(newValue);
 	addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP server set to %s\n", newValue);
 	return 1;

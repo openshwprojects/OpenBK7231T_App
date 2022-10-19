@@ -68,7 +68,7 @@ static int testMallocFree(const void * context, const char *cmd, const char *arg
 	int repeats;
 	int rep;
     char *msg;
-	int i;
+	//int i;
 	int ra1;
 	static int totalCalls = 0;
 

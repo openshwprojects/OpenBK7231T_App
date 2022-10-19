@@ -105,7 +105,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
                     memset(tmp,0,128);
                 }
             }
-            sprintf(tmp, "<br>History Index: %d<br>JSON Stats: %s </h5>", energyCounterMinutesIndex,
+			// energyCounterMinutesIndex is a long type, we need to use %ld instead of %d
+            sprintf(tmp, "<br>History Index: %ld<br>JSON Stats: %s </h5>", energyCounterMinutesIndex,
                     (energyCounterStatsJSONEnable == true) ? "enabled" : "disabled");
             //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"'%s'\n", tmp);
             hprintf128(request, tmp);

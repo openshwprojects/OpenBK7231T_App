@@ -144,7 +144,8 @@ static bool heartbeat_valid = false;
 static int heartbeat_timer = 0;
 static int heartbeat_counter = 0;
 static bool product_information_valid = false;
-static char *prod_info = NULL;
+// ?? it's unused atm
+//static char *prod_info = NULL;
 static bool working_mode_valid = false;
 static bool wifi_state_valid = false;
 static bool wifi_state = false;

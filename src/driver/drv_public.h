@@ -34,6 +34,7 @@ bool DRV_IsRunning(const char *name);
 void DRV_OnChannelChanged(int channel,int iVal);
 void SM2135_Write(byte *rgbcw);
 void BP5758D_Write(byte *rgbcw);
+void BP1658CJ_Write(byte *rgbcw);
 void DRV_DGR_OnLedDimmerChange(int iVal);
 void DRV_DGR_OnLedEnableAllChange(int iVal);
 

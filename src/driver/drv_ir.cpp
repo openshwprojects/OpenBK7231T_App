@@ -381,7 +381,7 @@ extern "C" void DRV_IR_ISR(UINT8 t){
 
 // test routine to start IR RX and TX
 // currently fixed pins for testing.
-extern "C" void testmehere(){
+extern "C" void DRV_IR_Init(){
 	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Log from extern C CPP");
 
     unsigned char pin = 9;// PWM3/25
@@ -509,7 +509,7 @@ void PrintIRData(IRData *aIRDataPtr){
 // this polls the IR receive to see off there was any IR received
 // currently called once per sec from user_main timer
 // should probably be called every 100ms.
-extern "C" void DRV_IR_Print(){
+extern "C" void DRV_IR_RunFrame(){
     if (ir_counter){
         //ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"IR counter: %u", ir_counter);
     }
