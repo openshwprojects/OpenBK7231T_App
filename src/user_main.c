@@ -9,7 +9,8 @@
 #include "hal/hal_adc.h"
 #include "new_common.h"
 
-#include "driver/drv_public.h"
+#include "driver/drv_ir.h"
+//#include "ir/ir_local.h"
 
 // Commands register, execution API and cmd tokenizer
 #include "cmnds/cmd_public.h"
@@ -265,7 +266,10 @@ void Main_OnEverySecond()
 	if (!(g_secondsElapsed % 10))
     {
 		HAL_PrintNetworkInfo();
+
 	}
+	// IR TESTING ONLY!!!!
+	DRV_IR_Print();
 
 	// when we hit 30s, mark as boot complete.
 	if(g_bBootMarkedOK==false) 
