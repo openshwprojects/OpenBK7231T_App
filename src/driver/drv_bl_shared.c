@@ -110,6 +110,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
             //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"'%s'\n", tmp);
             hprintf128(request, tmp);
         }
+    } else {
+        hprintf128(request,"<h5>Periodic Statistics disabled. Use startup command SetupEnergyStats to enable function.</h5>");
     }
     /********************************************************************************************************************/
 }
