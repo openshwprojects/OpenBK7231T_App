@@ -73,7 +73,7 @@ typedef struct mqtt_callback_tag {
 static mqtt_callback_t* callbacks[MAX_MQTT_CALLBACKS];
 static int numCallbacks = 0;
 // note: only one incomming can be processed at a time.
-static mqtt_request_t g_mqtt_request;
+static obk_mqtt_request_t g_mqtt_request;
 
 int loopsWithDisconnected = 0;
 int mqtt_reconnect = 0;
@@ -171,7 +171,7 @@ static struct mqtt_connect_client_info_t mqtt_client_info =
 };
 
 // channel set callback
-int channelSet(mqtt_request_t* request);
+int channelSet(obk_mqtt_request_t* request);
 static void MQTT_do_connect(mqtt_client_t* client);
 static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection_status_t status);
 
@@ -380,7 +380,7 @@ int MQTT_RemoveCallback(int ID) {
 }
 
 // this accepts obkXXXXXX/<chan>/set to receive data to set channels
-int channelSet(mqtt_request_t* request) {
+int channelSet(obk_mqtt_request_t* request) {
 	// we only need a few bytes to receive a decimal number 0-100
 	char copy[12];
 	int len = request->receivedLen;
@@ -447,7 +447,7 @@ int channelSet(mqtt_request_t* request) {
 
 
 // this accepts cmnd/<clientId>/<xxx> to receive data to set channels
-int tasCmnd(mqtt_request_t* request) {
+int tasCmnd(obk_mqtt_request_t* request) {
 	// we only need a few bytes to receive a decimal number 0-100
 	char copy[64];
 	int len = request->receivedLen;

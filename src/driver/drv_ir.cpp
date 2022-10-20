@@ -15,8 +15,7 @@ extern "C" {
     #include "drv_model_pub.h"
 
     // why can;t I call this?
-    //#include "../mqtt/new_mqtt.h"
-    OBK_Publish_Result MQTT_PublishMain_StringString(const char* sChannel, const char* valueStr, int flags);
+    #include "../mqtt/new_mqtt.h"
 
     #include <gpio_pub.h>
     //#include "pwm.h"
