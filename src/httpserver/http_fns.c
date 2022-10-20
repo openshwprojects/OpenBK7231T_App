@@ -554,7 +554,7 @@ int http_fn_index(http_request_t* request) {
 	{
 		for (i = 0;i < 29;i++)
 		{
-			if ((PIN_GetPinRoleForPinIndex(i) == IOR_None) && (i != 10) && (i != 11))
+			if (PIN_GetPinRoleForPinIndex(i) == IOR_None)
 			{
 				HAL_PIN_Setup_Input(i);
 			}
@@ -563,7 +563,7 @@ int http_fn_index(http_request_t* request) {
 		hprintf255(request, "<h5> PIN States<br>");
 		for (i = 0;i < 29;i++)
 		{
-			if ((PIN_GetPinRoleForPinIndex(i) != IOR_None) || (i == 10) || (i == 11))
+			if (PIN_GetPinRoleForPinIndex(i) != IOR_None)
 			{
 				hprintf255(request, "P%02i: NA ", i);
 			}
