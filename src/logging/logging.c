@@ -70,7 +70,8 @@ char *logfeaturenames[] = {
     "DGR:",// = 16
     "DDP:",// = 17
     "RAW:", // = 18 raw, without any prefix
-    "HASS:" // = 19
+    "HASS:", // = 19
+    "IR:" // = 20
 };
 
 #define LOGGING_BUFFER_SIZE		1024

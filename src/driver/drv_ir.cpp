@@ -137,25 +137,25 @@ void timerConfigForReceive() {
     };
     //GLOBAL_INT_DECLARATION();
 
-	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"ir timer init");
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer init");
     bk_timer_init();
-	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"ir timer init done");
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer init done");
     UINT32 res;
     res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_INIT_PARAM_US, &params);
-	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"ir timer setup %u", res);
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer setup %u", res);
     res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_UNIT_ENABLE, &ir_chan);
-	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"ir timer enabled %u", res);
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
 }
 
 static void timer_enable(){
     UINT32 res;
     res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_UNIT_ENABLE, &ir_chan);
-	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"ir timer enabled %u", res);
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
 }
 static void timer_disable(){
     UINT32 res;
     res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_UNIT_DISABLE, &ir_chan);
-	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"ir timer disabled %u", res);
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer disabled %u", res);
 }
 
 #define TIMER_ENABLE_RECEIVE_INTR timer_enable();
@@ -235,7 +235,7 @@ class myIRsend : public IRsend {
         }
         void delay(long int ms){
             // add a pure delay to our queue
-        	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Delay %dms", ms);
+        	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"Delay %dms", ms);
             space(ms*1000);
         }
 
@@ -375,7 +375,7 @@ extern "C" void DRV_IR_ISR(UINT8 t){
 // test routine to start IR RX and TX
 // currently fixed pins for testing.
 extern "C" void DRV_IR_Init(){
-	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Log from extern C CPP");
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"Log from extern C CPP");
 
 	int pin = 9;// PWM3/25
     int txpin = 24;// PWM3/25
@@ -389,7 +389,7 @@ extern "C" void DRV_IR_Init(){
         ourReceiver = NULL;
         delete temp;
     }
-	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"DRV_IR_Init: recv pin %i",pin);
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"DRV_IR_Init: recv pin %i",pin);
 
     // setupp IRrecv pin as input
 	bk_gpio_config_input_pup((GPIO_INDEX)pin);
@@ -431,12 +431,12 @@ extern "C" void DRV_IR_Init(){
 
 // log the received IR
 void PrintIRData(IRData *aIRDataPtr){
-    ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"IR decode returned true, protocol %d", (int)aIRDataPtr->protocol);
+    ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR decode returned true, protocol %d", (int)aIRDataPtr->protocol);
     if (aIRDataPtr->protocol == UNKNOWN) {
 #if defined(DECODE_HASH)
-        ADDLOG_INFO(LOG_FEATURE_CMD, (char *)" Hash=0x%X", (int)aIRDataPtr->decodedRawData);
+        ADDLOG_INFO(LOG_FEATURE_IR, (char *)" Hash=0x%X", (int)aIRDataPtr->decodedRawData);
 #endif
-        ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"%d bits (incl. gap and start) received", (int)((aIRDataPtr->rawDataPtr->rawlen + 1) / 2));
+        ADDLOG_INFO(LOG_FEATURE_IR, (char *)"%d bits (incl. gap and start) received", (int)((aIRDataPtr->rawDataPtr->rawlen + 1) / 2));
     } else {
 #if defined(DECODE_DISTANCE)
         if(aIRDataPtr->protocol != PULSE_DISTANCE) {
@@ -444,22 +444,22 @@ void PrintIRData(IRData *aIRDataPtr){
         /*
          * New decoders have address and command
          */
-        ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Address=0x%X", (int)aIRDataPtr->address);
-        ADDLOG_INFO(LOG_FEATURE_CMD, (char *)" Command=0x%X", (int)aIRDataPtr->command);
+        ADDLOG_INFO(LOG_FEATURE_IR, (char *)"Address=0x%X", (int)aIRDataPtr->address);
+        ADDLOG_INFO(LOG_FEATURE_IR, (char *)" Command=0x%X", (int)aIRDataPtr->command);
 
         if (aIRDataPtr->flags & IRDATA_FLAGS_EXTRA_INFO) {
-            ADDLOG_INFO(LOG_FEATURE_CMD, (char *)" Extra=0x%X", (int)aIRDataPtr->extra);
+            ADDLOG_INFO(LOG_FEATURE_IR, (char *)" Extra=0x%X", (int)aIRDataPtr->extra);
         }
 
         if (aIRDataPtr->flags & IRDATA_FLAGS_PARITY_FAILED) {
-            ADDLOG_INFO(LOG_FEATURE_CMD, (char *)" Parity fail");
+            ADDLOG_INFO(LOG_FEATURE_IR, (char *)" Parity fail");
         }
 
         if (aIRDataPtr->flags & IRDATA_TOGGLE_BIT_MASK) {
             if (aIRDataPtr->protocol == NEC) {
-                ADDLOG_INFO(LOG_FEATURE_CMD, (char *)" Special repeat");
+                ADDLOG_INFO(LOG_FEATURE_IR, (char *)" Special repeat");
             } else {
-                ADDLOG_INFO(LOG_FEATURE_CMD, (char *)" Toggle=1");
+                ADDLOG_INFO(LOG_FEATURE_IR, (char *)" Toggle=1");
             }
         }
 #if defined(DECODE_DISTANCE)
@@ -467,12 +467,12 @@ void PrintIRData(IRData *aIRDataPtr){
 #endif
         if (aIRDataPtr->flags & (IRDATA_FLAGS_IS_AUTO_REPEAT | IRDATA_FLAGS_IS_REPEAT)) {
             if (aIRDataPtr->flags & IRDATA_FLAGS_IS_AUTO_REPEAT) {
-                ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Auto-Repeat");
+                ADDLOG_INFO(LOG_FEATURE_IR, (char *)"Auto-Repeat");
             } else {
-                ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Repeat");
+                ADDLOG_INFO(LOG_FEATURE_IR, (char *)"Repeat");
             }
             if (1) {
-                ADDLOG_INFO(LOG_FEATURE_CMD, (char *)" Gap %uus", (uint32_t)aIRDataPtr->rawDataPtr->rawbuf[0] * MICROS_PER_TICK);
+                ADDLOG_INFO(LOG_FEATURE_IR, (char *)" Gap %uus", (uint32_t)aIRDataPtr->rawDataPtr->rawbuf[0] * MICROS_PER_TICK);
             }
         }
 
@@ -480,17 +480,17 @@ void PrintIRData(IRData *aIRDataPtr){
          * Print raw data
          */
         if (!(aIRDataPtr->flags & IRDATA_FLAGS_IS_REPEAT) || aIRDataPtr->decodedRawData != 0) {
-            ADDLOG_INFO(LOG_FEATURE_CMD, (char *)" Raw-Data=0x%X", aIRDataPtr->decodedRawData);
+            ADDLOG_INFO(LOG_FEATURE_IR, (char *)" Raw-Data=0x%X", aIRDataPtr->decodedRawData);
 
             /*
              * Print number of bits processed
              */
-            ADDLOG_INFO(LOG_FEATURE_CMD, (char *)" %d bits", aIRDataPtr->numberOfBits);
+            ADDLOG_INFO(LOG_FEATURE_IR, (char *)" %d bits", aIRDataPtr->numberOfBits);
 
             if (aIRDataPtr->flags & IRDATA_FLAGS_IS_MSB_FIRST) {
-                ADDLOG_INFO(LOG_FEATURE_CMD, (char *)" MSB first", aIRDataPtr->numberOfBits);
+                ADDLOG_INFO(LOG_FEATURE_IR, (char *)" MSB first", aIRDataPtr->numberOfBits);
             } else {
-                ADDLOG_INFO(LOG_FEATURE_CMD, (char *)" LSB first", aIRDataPtr->numberOfBits);
+                ADDLOG_INFO(LOG_FEATURE_IR, (char *)" LSB first", aIRDataPtr->numberOfBits);
             }
 
         } else {
@@ -509,26 +509,26 @@ void PrintIRData(IRData *aIRDataPtr){
 extern "C" void DRV_IR_RunFrame(){
 	// Debug-only check to see if the timer interrupt is running
     if (ir_counter){
-        //ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"IR counter: %u", ir_counter);
+        //ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR counter: %u", ir_counter);
     }
     if (pIRsend){
         if (pIRsend->overflows){
-            ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"##### IR send overflows %d", (int)pIRsend->overflows);
+            ADDLOG_INFO(LOG_FEATURE_IR, (char *)"##### IR send overflows %d", (int)pIRsend->overflows);
             pIRsend->resetsendqueue();
         } else {
-            ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"IR send count %d remains %d currentus %d", (int)pIRsend->timecounttotal, (int)pIRsend->timecount, (int)pIRsend->currentsendtime);
+            ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send count %d remains %d currentus %d", (int)pIRsend->timecounttotal, (int)pIRsend->timecount, (int)pIRsend->currentsendtime);
         }
     }
 
     if (ourReceiver){
         if (ourReceiver->decode()) {
+			char out[40];
             PrintIRData(&ourReceiver->decodedIRData);
             const char *name = ProtocolNames[ourReceiver->decodedIRData.protocol];
-            ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"IR decode returned true, protocol %s (%d)", name, (int)ourReceiver->decodedIRData.protocol);
+            ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR decode returned true, protocol %s (%d)", name, (int)ourReceiver->decodedIRData.protocol);
 
 			// if user wants us to publish every received IR data, do it now
 			if(CFG_HasFlag(OBK_FLAG_IR_PUBLISH_RECEIVED)) {
-				char out[40];
 				if (ourReceiver->decodedIRData.protocol == UNKNOWN){
 					sprintf(out, "%s-%X", name, ourReceiver->decodedIRData.decodedRawData);
 				} else {
@@ -536,12 +536,16 @@ extern "C" void DRV_IR_RunFrame(){
 				}
 				MQTT_PublishMain_StringString("ir",out, 0);
 			}
+			if(1) {
+				sprintf(out, "%X", ourReceiver->decodedIRData.command);
+
+			}
 
 /*
             if (pIRsend){
                 pIRsend->write(&ourReceiver->decodedIRData, (int_fast8_t) 2);
 
-                ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"IR send timein %d timeout %d", (int)pIRsend->timein, (int)pIRsend->timeout);
+                ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send timein %d timeout %d", (int)pIRsend->timein, (int)pIRsend->timeout);
             }
 */
 
@@ -549,12 +553,12 @@ extern "C" void DRV_IR_RunFrame(){
             //IrReceiver.printIRResultShort(&Serial);
             //IrReceiver.printIRSendUsage(&Serial);
             if (ourReceiver->decodedIRData.protocol == UNKNOWN) {
-                ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Received noise or an unknown (or not yet enabled) protocol");
+                ADDLOG_INFO(LOG_FEATURE_IR, (char *)"Received noise or an unknown (or not yet enabled) protocol");
                 //Serial.println(F("Received noise or an unknown (or not yet enabled) protocol"));
                 // We have an unknown protocol here, print more info
                 //IrReceiver.printIRResultRawFormatted(&Serial, true);
             } else {
-                ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Received cmd %08X", ourReceiver->decodedIRData.command);
+                ADDLOG_INFO(LOG_FEATURE_IR, (char *)"Received cmd %08X", ourReceiver->decodedIRData.command);
             }
             //Serial.println();
 
@@ -586,28 +590,28 @@ class cpptest2 {
     public:
         int initialised;
         cpptest2(){
-        	// remove else static class may kill us!!!ADDLOG_INFO(LOG_FEATURE_CMD, "Log from Class constructor");
+        	// remove else static class may kill us!!!ADDLOG_INFO(LOG_FEATURE_IR, "Log from Class constructor");
             initialised = 42;
         };
         ~cpptest2(){
             initialised = 24;
-        	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Log from Class destructor");
+        	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"Log from Class destructor");
         }
 
         void print(){
-        	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Log from Class %d", initialised);
+        	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"Log from Class %d", initialised);
         }
 };
 
 cpptest2 staticclass;
 
 void cpptest(){
-	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Log from CPP");
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"Log from CPP");
     cpptest2 test;
     test.print();
     cpptest2 *test2 = new cpptest2();
     test2->print();
-	ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"Log from static class (is it initialised?):");
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"Log from static class (is it initialised?):");
     staticclass.print();
 }
 #endif
