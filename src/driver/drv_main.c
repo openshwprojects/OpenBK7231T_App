@@ -52,10 +52,10 @@ static driver_t g_drivers[] = {
 	{ "BL0942", BL0942_Init, BL0942_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 	{ "BL0937", BL0937_Init, BL0937_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 	{ "CSE7766", CSE7766_Init, CSE7766_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
-#if ENABLE_BL_TEST_DRIVER
-	{ "BLTEST", BLTest_Init, BLTest_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
-#endif
-	
+
+	//Test drivers
+	{ "TESTPOWER", Test_Power_Init, Test_Power_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	{ "TESTLED", Test_LED_Driver_Init, Test_LED_Driver_RunFrame, NULL, NULL, NULL, Test_LED_Driver_OnChannelChanged, false },	
 
 #if PLATFORM_BEKEN
 	{ "IR", DRV_IR_Init, DRV_IR_RunFrame, NULL, NULL, NULL, NULL, false },
@@ -262,12 +262,7 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t *request) {
 
 bool DRV_IsMeasuringPower(){
 #ifndef OBK_DISABLE_ALL_DRIVERS
-
-#if ENABLE_BL_TEST_DRIVER
-	return DRV_IsRunning("BLTEST");
-#endif
-
-	return DRV_IsRunning("BL0937") || DRV_IsRunning("BL0942") || DRV_IsRunning("CSE7766");
+	return DRV_IsRunning("BL0937") || DRV_IsRunning("BL0942") || DRV_IsRunning("CSE7766") || DRV_IsRunning("TESTPOWER");
 #else
 	return false;
 #endif
