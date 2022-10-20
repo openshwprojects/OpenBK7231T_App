@@ -15,6 +15,8 @@ typedef int (*commandHandler_t)(const void *context, const char *cmd, const char
 #define COMMAND_FLAG_SOURCE_HTTP		8
 // command was sent by TCP CMD
 #define COMMAND_FLAG_SOURCE_TCP			16
+// command was sent by TCP CMD
+#define COMMAND_FLAG_SOURCE_IR			32
 
 
 
