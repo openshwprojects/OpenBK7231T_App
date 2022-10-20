@@ -49,7 +49,13 @@ typedef struct MqttPublishItem
 	char value[MQTT_PUBLISH_ITEM_VALUE_LENGTH];
 	int flags;
 	struct MqttPublishItem* next;
+	const char* command;
 } MqttPublishItem_t;
+
+#define MQTT_COMMAND_PUBLISH			"publish"
+#define MQTT_COMMAND_PUBLISH_ALL		"publishAll"
+#define MQTT_COMMAND_PUBLISH_CHANNELS	"publishChannels"
+
 
 // Count of queued items published at once.
 #define MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE	3
@@ -82,6 +88,7 @@ OBK_Publish_Result MQTT_PublishMain_StringString(const char* sChannel, const cha
 OBK_Publish_Result MQTT_ChannelChangeCallback(int channel, int iVal);
 void MQTT_PublishOnlyDeviceChannelsIfPossible();
 void MQTT_QueuePublish(char* topic, char* channel, char* value, int flags);
+void MQTT_QueuePublishWithCommand(char* topic, char* channel, char* value, int flags, const char* command);
 OBK_Publish_Result MQTT_Publish(char* sTopic, char* sChannel, char* value, int flags);
 bool MQTT_IsReady();
 

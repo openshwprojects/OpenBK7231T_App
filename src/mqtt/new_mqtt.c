@@ -933,9 +933,9 @@ void MQTT_init()
 
 	mqtt_initialised = 1;
 
-	CMD_RegisterCommand("publish", "", MQTT_PublishCommand, "Sqqq", NULL);
-	CMD_RegisterCommand("publishAll", "", MQTT_PublishAll, "Sqqq", NULL);
-	CMD_RegisterCommand("publishChannels", "", MQTT_PublishChannels, "Sqqq", NULL);
+	CMD_RegisterCommand(MQTT_COMMAND_PUBLISH, "", MQTT_PublishCommand, "Sqqq", NULL);
+	CMD_RegisterCommand(MQTT_COMMAND_PUBLISH_ALL, "", MQTT_PublishAll, "Sqqq", NULL);
+	CMD_RegisterCommand(MQTT_COMMAND_PUBLISH_CHANNELS, "", MQTT_PublishChannels, "Sqqq", NULL);
 }
 
 OBK_Publish_Result MQTT_DoItemPublishString(const char* sChannel, const char* valueStr)
@@ -1182,12 +1182,13 @@ MqttPublishItem_t* find_queue_reusable_item(MqttPublishItem_t* head) {
 	return head;
 }
 
-/// @brief Queue an entry for publish.
+/// @brief Queue an entry for publish and execute a command after the publish.
 /// @param topic 
 /// @param channel 
 /// @param value 
 /// @param flags
-void MQTT_QueuePublish(char* topic, char* channel, char* value, int flags) {
+/// @param command Command to execute after the publish
+void MQTT_QueuePublishWithCommand(char* topic, char* channel, char* value, int flags, const char* command) {
 	if (g_MqttPublishItemsQueued >= MQTT_MAX_QUEUE_SIZE) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "Unable to queue! %i items already present\r\n", g_MqttPublishItemsQueued);
 		return;
@@ -1223,11 +1224,22 @@ void MQTT_QueuePublish(char* topic, char* channel, char* value, int flags) {
 	os_strcpy(newItem->topic, topic);
 	os_strcpy(newItem->channel, channel);
 	os_strcpy(newItem->value, value);
+	newItem->command = command;
 	newItem->flags = flags;
 
 	g_MqttPublishItemsQueued++;
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Queued topic=%s/%s %i, items queued", newItem->topic, newItem->channel, g_MqttPublishItemsQueued);
 }
+
+/// @brief Queue an entry for publish.
+/// @param topic 
+/// @param channel 
+/// @param value 
+/// @param flags
+void MQTT_QueuePublish(char* topic, char* channel, char* value, int flags) {
+	MQTT_QueuePublishWithCommand(topic, channel, value, flags, NULL);
+}
+
 
 /// @brief Publish MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE queued items.
 /// @return 
@@ -1236,6 +1248,7 @@ OBK_Publish_Result PublishQueuedItems() {
 
 	int count = 0;
 	MqttPublishItem_t* head = g_MqttPublishQueueHead;
+	char* command;
 
 	//The next actionable item might not be at the front. The queue size is limited to MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE
 	//so this traversal is fast.
@@ -1249,6 +1262,10 @@ OBK_Publish_Result PublishQueuedItems() {
 
 			//Stop if last publish failed
 			if (result != OBK_PUBLISH_OK) break;
+
+			if (head->command != NULL) {
+				CMD_ExecuteCommand(head->command, COMMAND_FLAG_SOURCE_MQTT);
+			}
 		}
 		else {
 			//addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"PublishQueuedItems item skipped reusable");
