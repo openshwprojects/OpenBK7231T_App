@@ -1293,17 +1293,25 @@ int http_fn_ha_discovery(http_request_t* request) {
 	if (relayCount > 0) {
 		for (i = 0; i < CHANNEL_MAX; i++) {
 			if (h_isChannelRelay(i)) {
+				if (dev_info != NULL) {
+					MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+					hass_free_device_info(dev_info);
+				}
 				dev_info = hass_init_relay_device_info(i);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
 			}
+		}
+
+		//Invoke publishChannles after the last topic
+		if (dev_info != NULL) {
+			MQTT_QueuePublishWithCommand(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN, MQTT_COMMAND_PUBLISH_CHANNELS);
+			hass_free_device_info(dev_info);
 		}
 	}
 
 	if (pwmCount == 5 || isLedDriverChipRunning()) {
 		// Enable + RGB control + CW control
 		dev_info = hass_init_light_device_info(ENTITY_LIGHT_RGBCW);
-		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		MQTT_QueuePublishWithCommand(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN, MQTT_COMMAND_PUBLISH_CHANNELS);
 		hass_free_device_info(dev_info);
 	}
 	else if (pwmCount > 0) {
@@ -1323,7 +1331,7 @@ int http_fn_ha_discovery(http_request_t* request) {
 		}
 
 		if (dev_info != NULL) {
-			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+			MQTT_QueuePublishWithCommand(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN, MQTT_COMMAND_PUBLISH_CHANNELS);
 			hass_free_device_info(dev_info);
 		}
 	}
@@ -1669,7 +1677,7 @@ int http_fn_cfg(http_request_t* request) {
 	http_html_end(request);
 	poststr(request, NULL);
 	return 0;
-}
+	}
 
 int http_fn_cfg_pins(http_request_t* request) {
 	int iChanged = 0;
@@ -1733,7 +1741,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 				iChanged++;
 			}
 		}
-	}
+}
 	if (iChangedRequested > 0) {
 		// Anecdotally, if pins are configured badly, the
 		// second-timer breaks. To reconfigure, force

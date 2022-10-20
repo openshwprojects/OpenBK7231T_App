@@ -1248,7 +1248,6 @@ OBK_Publish_Result PublishQueuedItems() {
 
 	int count = 0;
 	MqttPublishItem_t* head = g_MqttPublishQueueHead;
-	char* command;
 
 	//The next actionable item might not be at the front. The queue size is limited to MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE
 	//so this traversal is fast.
