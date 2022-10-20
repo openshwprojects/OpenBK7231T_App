@@ -1816,6 +1816,9 @@ const char* g_obk_flagNames[] = {
 	"[PWM] BK7231 use 600hz instead of 1khz default",
 	"[LED] remember LED driver state (RGBCW, enable, brightness, temperature) after reboot",
 	"[HTTP] Show actual PIN logic level for unconfigured pins",
+	"[IR] Do MQTT publish for incoming IR data",
+	"error",
+	"error",
 	"error",
 	"error",
 };
