@@ -114,11 +114,15 @@ int Time_getUpTimeSeconds() {
 }
 
 
-static char scheduledDriverName[16];
-static int scheduledDelay = 0;
+static char scheduledDriverName[4][16];
+static int scheduledDelay[4] = {-1};
 static void ScheduleDriverStart(const char *name, int delay) {
-	scheduledDelay = delay;
-	strcpy(scheduledDriverName,name);
+	for (int i = 0; i < 4; i++){
+		if (scheduledDelay[i] == -1){
+			scheduledDelay[i] = delay;
+			strcpy(scheduledDriverName[i],name);
+		}
+	}
 }
 
 void Main_OnWiFiStatusChange(int code)
@@ -233,16 +237,18 @@ void Main_OnEverySecond()
 		}
 	}
 
-	if(scheduledDelay > 0) 
-    {
-		scheduledDelay--;
-		if(scheduledDelay<=0)
-        {
-			scheduledDelay = -1;
+	// allow for up to 4 scheduled driver starts.
+	for (int i = 0; i < 4; i++){
+		if (scheduledDelay[i] > 0){
+			scheduledDelay[i]--;
+			if(scheduledDelay[i] <= 0)
+			{
+				scheduledDelay[i] = -1;
 #ifndef OBK_DISABLE_ALL_DRIVERS
-			DRV_StopDriver(scheduledDriverName);
-			DRV_StartDriver(scheduledDriverName);
+				DRV_StopDriver(scheduledDriverName[i]);
+				DRV_StartDriver(scheduledDriverName[i]);
 #endif
+			}
 		}
 	}
 
@@ -519,8 +525,10 @@ void Main_Init()
 		}
 
 		if(PIN_FindPinIndexForRole(IOR_IRRecv,-1) != -1 || PIN_FindPinIndexForRole(IOR_IRSend,-1) != -1) {
+			// start IR driver 5 seconds after boot.  It may affect wifi connect?
+			// yet we also want it to start if no wifi for IR control...
 #ifndef OBK_DISABLE_ALL_DRIVERS
-			DRV_StartDriver("IR");
+			ScheduleDriverStart("IR",5);
 #endif
 		}
 

@@ -11,6 +11,7 @@ extern "C" {
     #include "../new_cfg.h"
     #include "../logging/logging.h"
     #include "../obk_config.h"
+    #include "../cmnds/cmd_public.h"
     #include "bk_timer_pub.h"
     #include "drv_model_pub.h"
 
@@ -370,15 +371,62 @@ extern "C" void DRV_IR_ISR(UINT8 t){
     ir_counter++;
 }
 
+extern "C" int IR_Send_Cmd(const void *context, const char *cmd, const char *args_in, int cmdFlags) {
+    int numProtocols = sizeof(ProtocolNames)/sizeof(*ProtocolNames);
+    if (!args_in) return 0;
+    char args[20];
+    strncpy(args, args_in, 19);
 
+    // split arg at hyphen;
+    char *p = args;
+    while (*p && (*p != '-')){
+        p++;
+    }
+
+    if (*p != '-') return 0;
+
+    int namelen = (p - args);
+    int protocol = 0;
+    for (int i = 0; i < numProtocols; i++){
+        const char *name = ProtocolNames[i];
+        if (!strncmp(name, args, namelen)){
+            protocol = i;
+            break;
+        }
+    }
+
+    p++;
+    int addr = strtol(p, &p, 16);
+    if (*p != '-') return 0;
+    p++;
+    int command = strtol(p, &p, 16);
+
+    IRData data;
+    memset(&data, 0, sizeof(data));
+
+    data.protocol = (decode_type_t)protocol;
+    data.address = addr;
+    data.command = command;
+    data.flags = 0;
+    int repeats = 0;
+
+    if (pIRsend){
+        pIRsend->write(&data, (int_fast8_t) repeats);
+        ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send %s protocol %d addr 0x%X cmd 0x%X repeats %d", args, (int)data.protocol, (int)data.address, (int)data.command, (int)repeats);
+        return 1;
+    } else {
+        ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR NOT send (no IRsend running) %s protocol %d addr 0x%X cmd 0x%X repeats %d", args, (int)data.protocol, (int)data.address, (int)data.command, (int)repeats);
+    }
+    return 0;
+}
 
 // test routine to start IR RX and TX
 // currently fixed pins for testing.
 extern "C" void DRV_IR_Init(){
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"Log from extern C CPP");
 
-	int pin = 9;// PWM3/25
-    int txpin = 24;// PWM3/25
+	int pin = -1; //9;// PWM3/25
+    int txpin = -1; //24;// PWM3/25
 
 	// allow user to change them
 	pin = PIN_FindPinIndexForRole(IOR_IRRecv,pin);
@@ -391,11 +439,13 @@ extern "C" void DRV_IR_Init(){
     }
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"DRV_IR_Init: recv pin %i",pin);
 
-    // setupp IRrecv pin as input
-	bk_gpio_config_input_pup((GPIO_INDEX)pin);
+    if (pin > 0){
+        // setup IRrecv pin as input
+        bk_gpio_config_input_pup((GPIO_INDEX)pin);
 
-    ourReceiver = new IRrecv(pin);
-    ourReceiver->start();
+        ourReceiver = new IRrecv(pin);
+        ourReceiver->start();
+    }
 
     if (pIRsend){
         myIRsend *pIRsendTemp = pIRsend;
@@ -403,29 +453,34 @@ extern "C" void DRV_IR_Init(){
         delete pIRsendTemp;
     }
 
-	int pwmIndex = PIN_GetPWMIndexForPinIndex(txpin);
-	// is this pin capable of PWM?
-	if(pwmIndex != -1) {
-        uint32_t pwmfrequency = 38000;
-    	uint32_t period = (26000000 / pwmfrequency);
-        uint32_t duty = period/2;
-#if PLATFORM_BK7231N
-	    // OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
-	    bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty, 0, 0);
-#else
-	    bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty);
-#endif
-        bk_pwm_start((bk_pwm_t)pwmIndex);
-        myIRsend *pIRsendTemp = new myIRsend((uint_fast8_t) txpin);
-        pIRsendTemp->resetsendqueue();
-        pIRsendTemp->pwmIndex = pwmIndex;
-        pIRsendTemp->pwmfrequency = pwmfrequency;
-        pIRsendTemp->pwmperiod = period;
-        pIRsendTemp->pwmduty = duty;
+    if (txpin > 0){
+        int pwmIndex = PIN_GetPWMIndexForPinIndex(txpin);
+        // is this pin capable of PWM?
+        if(pwmIndex != -1) {
+            uint32_t pwmfrequency = 38000;
+            uint32_t period = (26000000 / pwmfrequency);
+            uint32_t duty = period/2;
+    #if PLATFORM_BK7231N
+            // OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
+            bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty, 0, 0);
+    #else
+            bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty);
+    #endif
+            bk_pwm_start((bk_pwm_t)pwmIndex);
+            myIRsend *pIRsendTemp = new myIRsend((uint_fast8_t) txpin);
+            pIRsendTemp->resetsendqueue();
+            pIRsendTemp->pwmIndex = pwmIndex;
+            pIRsendTemp->pwmfrequency = pwmfrequency;
+            pIRsendTemp->pwmperiod = period;
+            pIRsendTemp->pwmduty = duty;
 
-        pIRsend = pIRsendTemp;
-        //bk_pwm_stop((bk_pwm_t)pIRsend->pwmIndex);
-	}
+            pIRsend = pIRsendTemp;
+            //bk_pwm_stop((bk_pwm_t)pIRsend->pwmIndex);
+
+            CMD_RegisterCommand("IRSend","",IR_Send_Cmd, "Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0", NULL);
+
+        }
+    }
 }
 
 
