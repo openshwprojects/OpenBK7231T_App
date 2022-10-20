@@ -559,8 +559,6 @@ void PrintIRData(IRData *aIRDataPtr){
 
 ////////////////////////////////////////////////////
 // this polls the IR receive to see off there was any IR received
-// currently called once per sec from user_main timer
-// should probably be called every 100ms.
 extern "C" void DRV_IR_RunFrame(){
 	// Debug-only check to see if the timer interrupt is running
     if (ir_counter){

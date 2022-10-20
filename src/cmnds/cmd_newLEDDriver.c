@@ -379,6 +379,20 @@ int LED_IsRunningDriver() {
 float LED_GetDimmer() {
 	return g_brightness / g_cfg_brightnessMult;
 }
+void LED_AddDimmer(int iVal) {
+	float cur;
+
+	cur = g_brightness / g_cfg_brightnessMult;
+
+	cur += iVal;
+
+	if(cur < 0)
+		cur = 0;
+	if(cur > 100)
+		cur = 100;
+
+	LED_SetDimmer(cur);
+}
 void LED_SetDimmer(int iVal) {
 
 	g_brightness = iVal * g_cfg_brightnessMult;
@@ -398,6 +412,14 @@ void LED_SetDimmer(int iVal) {
 			sendFinalColor();
 		}
 	}
+
+}
+static int add_dimmer(const void *context, const char *cmd, const char *args, int cmdFlags){
+	int iVal = 0;
+
+	iVal = atoi(args);
+
+	LED_AddDimmer(iVal);
 
 }
 static int dimmer(const void *context, const char *cmd, const char *args, int cmdFlags){
@@ -650,6 +672,7 @@ void NewLED_InitCommands(){
 	LED_SetTemperature(led_temperature_current,0);
 
     CMD_RegisterCommand("led_dimmer", "", dimmer, "set output dimmer 0..100", NULL);
+    CMD_RegisterCommand("add_dimmer", "", add_dimmer, "set output dimmer 0..100", NULL);
     CMD_RegisterCommand("led_enableAll", "", enableAll, "qqqq", NULL);
     CMD_RegisterCommand("led_basecolor_rgb", "", basecolor_rgb, "set PWN color using #RRGGBB", NULL);
     CMD_RegisterCommand("led_basecolor_rgbcw", "", basecolor_rgbcw, "set PWN color using #RRGGBB[cw][ww]", NULL);
