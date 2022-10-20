@@ -884,16 +884,12 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 }
 // This console command will trigger a publish of all used variables (channels and extra stuff)
 OBK_Publish_Result MQTT_PublishAll(const void* context, const char* cmd, const char* args, int cmdFlags) {
-
-	MQTT_PublishWholeDeviceState_Internal(false);
-
+	MQTT_PublishWholeDeviceState_Internal(true);
 	return 1;// TODO make return values consistent for all console commands
 }
 // This console command will trigger a publish of runtime variables
 OBK_Publish_Result MQTT_PublishChannels(const void* context, const char* cmd, const char* args, int cmdFlags) {
-
-	MQTT_PublishWholeDeviceState_Internal(true);
-
+	MQTT_PublishOnlyDeviceChannelsIfPossible();
 	return 1;// TODO make return values consistent for all console commands
 }
 OBK_Publish_Result MQTT_PublishCommand(const void* context, const char* cmd, const char* args, int cmdFlags) {
