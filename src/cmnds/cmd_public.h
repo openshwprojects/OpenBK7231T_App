@@ -54,6 +54,25 @@ enum EventCode {
 	// You can fire an event when TuyaMCU or something receives given string
 	CMD_EVENT_ON_UART,
 
+	// IR events
+	// There will be separate event types for common IR protocol,
+	// but we will also have a generic IR event with protocol name or index.
+	// I have decided to have both, because per-protocol events with
+	// a single integer arguments can be faster and easier to write,
+	// and we have a whole byte for event index so they don't
+	// add much overheat. So...
+	CMD_EVENT_IR_SAMSUNG, // Argument: [Address][Command]
+	CMD_EVENT_IR_RC5, // Argument: [Address][Command]
+	CMD_EVENT_IR_RC6, // Argument: [Address][Command]
+	CMD_EVENT_IR_SONY, // Argument: [Address][Command]
+	CMD_EVENT_IR_PANASONIC, // Argument: [Address][Command]
+	CMD_EVENT_IR_SAMSUNG_LG, // Argument: [Address][Command]
+	CMD_EVENT_IR_SHARP, // Argument: [Address][Command]
+	CMD_EVENT_IR_NEC, // Argument: [Address][Command]
+
+	//CMD_EVENT_GENERIC, // TODO?
+
+
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
 };
@@ -96,6 +115,7 @@ void EventHandlers_FireEvent_String(byte eventCode, const char *argument);
 // This is useful to fire an event when, for example, a button is pressed.
 // Then eventCode is a BUTTON_PRESS and argument is a button index.
 void EventHandlers_FireEvent(byte eventCode, int argument);
+void EventHandlers_FireEvent2(byte eventCode, int argument, int argument2);
 // This is more advanced event handler. It will only fire handlers when a variable state changes from one to another.
 // For example, you can watch for Voltage from BL0942 to change below 230, and it will fire event only when it becomes below 230.
 void EventHandlers_ProcessVariableChange_Integer(byte eventCode, int oldValue, int newValue);

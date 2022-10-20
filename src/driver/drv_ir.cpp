@@ -577,60 +577,86 @@ extern "C" void DRV_IR_RunFrame(){
 
     if (ourReceiver){
         if (ourReceiver->decode()) {
-			char out[40];
-            PrintIRData(&ourReceiver->decodedIRData);
-            const char *name = ProtocolNames[ourReceiver->decodedIRData.protocol];
-            ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR decode returned true, protocol %s (%d)", name, (int)ourReceiver->decodedIRData.protocol);
+			// 'UNKNOWN' protocol is by default disabled in flags
+			// This is because I am getting a lot of 'UNKNOWN' spam with no IR signals in room
+			if(ourReceiver->decodedIRData.protocol != UNKNOWN || (ourReceiver->decodedIRData.protocol == UNKNOWN && CFG_HasFlag(OBK_FLAG_IR_ALLOW_UNKNOWN))) {
+				char out[40];
+				PrintIRData(&ourReceiver->decodedIRData);
+				const char *name = ProtocolNames[ourReceiver->decodedIRData.protocol];
+				ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR decode returned true, protocol %s (%d)", name, (int)ourReceiver->decodedIRData.protocol);
 
-			// if user wants us to publish every received IR data, do it now
-			if(CFG_HasFlag(OBK_FLAG_IR_PUBLISH_RECEIVED)) {
-				if (ourReceiver->decodedIRData.protocol == UNKNOWN){
-					sprintf(out, "%s-%X", name, ourReceiver->decodedIRData.decodedRawData);
-				} else {
-					sprintf(out, "%s-%X-%X", name, ourReceiver->decodedIRData.address, ourReceiver->decodedIRData.command);
+				// if user wants us to publish every received IR data, do it now
+				if(CFG_HasFlag(OBK_FLAG_IR_PUBLISH_RECEIVED)) {
+					if (ourReceiver->decodedIRData.protocol == UNKNOWN){
+						sprintf(out, "%s-%X", name, ourReceiver->decodedIRData.decodedRawData);
+					} else {
+						sprintf(out, "%s-%X-%X", name, ourReceiver->decodedIRData.address, ourReceiver->decodedIRData.command);
+					}
+					MQTT_PublishMain_StringString("ir",out, 0);
 				}
-				MQTT_PublishMain_StringString("ir",out, 0);
+				if(ourReceiver->decodedIRData.protocol != UNKNOWN) {
+					sprintf(out, "%X", ourReceiver->decodedIRData.command);
+					int tgType = 0;
+					switch(ourReceiver->decodedIRData.protocol)
+					{
+					case NEC:
+						tgType = CMD_EVENT_IR_NEC;
+						break;
+					case SAMSUNG:
+						tgType = CMD_EVENT_IR_SAMSUNG;
+						break;
+					case SHARP:
+						tgType = CMD_EVENT_IR_SHARP;
+						break;
+					case RC5:
+						tgType = CMD_EVENT_IR_RC5;
+						break;
+					case RC6:
+						tgType = CMD_EVENT_IR_RC6;
+						break;
+					case SONY:
+						tgType = CMD_EVENT_IR_SONY;
+						break;
+					}
+					EventHandlers_FireEvent2(tgType,ourReceiver->decodedIRData.address,ourReceiver->decodedIRData.command);
+				}
+
+	/*
+				if (pIRsend){
+					pIRsend->write(&ourReceiver->decodedIRData, (int_fast8_t) 2);
+
+					ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send timein %d timeout %d", (int)pIRsend->timein, (int)pIRsend->timeout);
+				}
+	*/
+
+				// Print a short summary of received data
+				//IrReceiver.printIRResultShort(&Serial);
+				//IrReceiver.printIRSendUsage(&Serial);
+				if (ourReceiver->decodedIRData.protocol == UNKNOWN) {
+					ADDLOG_INFO(LOG_FEATURE_IR, (char *)"Received noise or an unknown (or not yet enabled) protocol");
+					//Serial.println(F("Received noise or an unknown (or not yet enabled) protocol"));
+					// We have an unknown protocol here, print more info
+					//IrReceiver.printIRResultRawFormatted(&Serial, true);
+				} else {
+					ADDLOG_INFO(LOG_FEATURE_IR, (char *)"Received cmd %08X", ourReceiver->decodedIRData.command);
+				}
+				//Serial.println();
+
+
+				/*
+				* Finally, check the received data and perform actions according to the received command
+				*/
+				if (ourReceiver->decodedIRData.command == 0x10) {
+					// do something
+				} else if (ourReceiver->decodedIRData.command == 0x11) {
+					// do something else
+				}
 			}
-			if(1) {
-				sprintf(out, "%X", ourReceiver->decodedIRData.command);
-
-			}
-
-/*
-            if (pIRsend){
-                pIRsend->write(&ourReceiver->decodedIRData, (int_fast8_t) 2);
-
-                ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send timein %d timeout %d", (int)pIRsend->timein, (int)pIRsend->timeout);
-            }
-*/
-
-            // Print a short summary of received data
-            //IrReceiver.printIRResultShort(&Serial);
-            //IrReceiver.printIRSendUsage(&Serial);
-            if (ourReceiver->decodedIRData.protocol == UNKNOWN) {
-                ADDLOG_INFO(LOG_FEATURE_IR, (char *)"Received noise or an unknown (or not yet enabled) protocol");
-                //Serial.println(F("Received noise or an unknown (or not yet enabled) protocol"));
-                // We have an unknown protocol here, print more info
-                //IrReceiver.printIRResultRawFormatted(&Serial, true);
-            } else {
-                ADDLOG_INFO(LOG_FEATURE_IR, (char *)"Received cmd %08X", ourReceiver->decodedIRData.command);
-            }
-            //Serial.println();
-
-            /*
-            * !!!Important!!! Enable receiving of the next value,
-            * since receiving has stopped after the end of the current received data packet.
-            */
-            ourReceiver->resume(); // Enable receiving of the next value
-
-            /*
-            * Finally, check the received data and perform actions according to the received command
-            */
-            if (ourReceiver->decodedIRData.command == 0x10) {
-                // do something
-            } else if (ourReceiver->decodedIRData.command == 0x11) {
-                // do something else
-            }
+			/*
+			* !!!Important!!! Enable receiving of the next value,
+			* since receiving has stopped after the end of the current received data packet.
+			*/
+			ourReceiver->resume(); // Enable receiving of the next value
         }
     }
 }

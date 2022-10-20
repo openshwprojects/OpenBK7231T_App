@@ -24,6 +24,9 @@ int strIsInteger(const char *s) {
 		return 0;
 	if(*s == 0)
 		return 0;
+	if(s[0]=='0' && s[1] == 'x'){
+		return 1;
+	}
 	while(*s) {
 		if(isdigit((unsigned char)*s)==false)
 			return 0;

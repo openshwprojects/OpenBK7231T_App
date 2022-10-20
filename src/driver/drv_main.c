@@ -58,7 +58,7 @@ static driver_t g_drivers[] = {
 	{ "TESTLED", Test_LED_Driver_Init, Test_LED_Driver_RunFrame, NULL, NULL, NULL, Test_LED_Driver_OnChannelChanged, false },	
 
 #if PLATFORM_BEKEN
-	{ "IR", DRV_IR_Init, DRV_IR_RunFrame, NULL, NULL, NULL, NULL, false },
+	{ "IR", DRV_IR_Init, NULL, NULL, DRV_IR_RunFrame, NULL, NULL, false },
 	{ "DGR", DRV_DGR_Init, NULL, DRV_DGR_RunEverySecond, DRV_DGR_RunQuickTick, DRV_DGR_Shutdown, DRV_DGR_OnChannelChanged, false },
 	{ "DDP", DRV_DDP_Init, NULL, NULL, DRV_DDP_RunFrame, DRV_DDP_Shutdown, NULL, false },
 #endif

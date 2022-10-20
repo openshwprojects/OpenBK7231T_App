@@ -1817,7 +1817,7 @@ const char* g_obk_flagNames[] = {
 	"[LED] remember LED driver state (RGBCW, enable, brightness, temperature) after reboot",
 	"[HTTP] Show actual PIN logic level for unconfigured pins",
 	"[IR] Do MQTT publish for incoming IR data",
-	"error",
+	"[IR] Allow 'unknown' protocol",
 	"error",
 	"error",
 	"error",
