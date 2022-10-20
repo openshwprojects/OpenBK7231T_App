@@ -507,8 +507,9 @@ void PrintIRData(IRData *aIRDataPtr){
 // currently called once per sec from user_main timer
 // should probably be called every 100ms.
 extern "C" void DRV_IR_RunFrame(){
+	// Debug-only check to see if the timer interrupt is running
     if (ir_counter){
-        ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"IR counter: %u", ir_counter);
+        //ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"IR counter: %u", ir_counter);
     }
     if (pIRsend){
         if (pIRsend->overflows){
@@ -522,16 +523,19 @@ extern "C" void DRV_IR_RunFrame(){
     if (ourReceiver){
         if (ourReceiver->decode()) {
             PrintIRData(&ourReceiver->decodedIRData);
-            ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"IR decode returned true, protocol %d", (int)ourReceiver->decodedIRData.protocol);
-
             const char *name = ProtocolNames[ourReceiver->decodedIRData.protocol];
-            char out[40];
-            if (ourReceiver->decodedIRData.protocol == UNKNOWN){
-                sprintf(out, "%s-%X", name, ourReceiver->decodedIRData.decodedRawData);
-            } else {
-                sprintf(out, "%s-%X-%X", name, ourReceiver->decodedIRData.address, ourReceiver->decodedIRData.command);
-            }
-            MQTT_PublishMain_StringString("ir",out, 0);
+            ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"IR decode returned true, protocol %s (%d)", name, (int)ourReceiver->decodedIRData.protocol);
+
+			// if user wants us to publish every received IR data, do it now
+			if(CFG_HasFlag(OBK_FLAG_IR_PUBLISH_RECEIVED)) {
+				char out[40];
+				if (ourReceiver->decodedIRData.protocol == UNKNOWN){
+					sprintf(out, "%s-%X", name, ourReceiver->decodedIRData.decodedRawData);
+				} else {
+					sprintf(out, "%s-%X-%X", name, ourReceiver->decodedIRData.address, ourReceiver->decodedIRData.command);
+				}
+				MQTT_PublishMain_StringString("ir",out, 0);
+			}
 
 /*
             if (pIRsend){
