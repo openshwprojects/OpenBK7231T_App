@@ -412,10 +412,10 @@ extern "C" int IR_Send_Cmd(const void *context, const char *cmd, const char *arg
 
     if (pIRsend){
         pIRsend->write(&data, (int_fast8_t) repeats);
-        ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"IR send %s protocol %d addr 0x%X cmd 0x%X repeats %d", args, (int)data.protocol, (int)data.address, (int)data.command, (int)repeats);
+        ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send %s protocol %d addr 0x%X cmd 0x%X repeats %d", args, (int)data.protocol, (int)data.address, (int)data.command, (int)repeats);
         return 1;
     } else {
-        ADDLOG_INFO(LOG_FEATURE_CMD, (char *)"IR NOT send (no IRsend running) %s protocol %d addr 0x%X cmd 0x%X repeats %d", args, (int)data.protocol, (int)data.address, (int)data.command, (int)repeats);
+        ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR NOT send (no IRsend running) %s protocol %d addr 0x%X cmd 0x%X repeats %d", args, (int)data.protocol, (int)data.address, (int)data.command, (int)repeats);
     }
     return 0;
 }
