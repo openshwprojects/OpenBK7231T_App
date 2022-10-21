@@ -569,7 +569,7 @@ extern "C" void DRV_IR_RunFrame(){
             ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)"##### IR send overflows %d", (int)pIRsend->overflows);
             pIRsend->resetsendqueue();
         } else {
-            ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)"IR send count %d remains %d currentus %d", (int)pIRsend->timecounttotal, (int)pIRsend->timecount, (int)pIRsend->currentsendtime);
+            //ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send count %d remains %d currentus %d", (int)pIRsend->timecounttotal, (int)pIRsend->timecount, (int)pIRsend->currentsendtime);
         }
     }
 
@@ -586,9 +586,9 @@ extern "C" void DRV_IR_RunFrame(){
 				// if user wants us to publish every received IR data, do it now
 				if(CFG_HasFlag(OBK_FLAG_IR_PUBLISH_RECEIVED)) {
 					if (ourReceiver->decodedIRData.protocol == UNKNOWN){
-						sprintf(out, "%s-%X", name, ourReceiver->decodedIRData.decodedRawData);
+						sprintf(out, "IR_%s 0x%X", name, ourReceiver->decodedIRData.decodedRawData);
 					} else {
-						sprintf(out, "%s-%X-%X", name, ourReceiver->decodedIRData.address, ourReceiver->decodedIRData.command);
+						sprintf(out, "IR_%s 0x%X 0x%X", name, ourReceiver->decodedIRData.address, ourReceiver->decodedIRData.command);
 					}
 					MQTT_PublishMain_StringString("ir",out, 0);
 				}
