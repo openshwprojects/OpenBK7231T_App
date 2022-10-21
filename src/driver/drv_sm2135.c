@@ -204,7 +204,7 @@ static int SM2135_Current(const void *context, const char *cmd, const char *args
 		return 0;
 	}
 	valRGB = Tokenizer_GetArgInteger(0);
-	valCW = Tokenizer_GetArgInteger(0);
+	valCW = Tokenizer_GetArgInteger(1);
 
 	SM2135_SetCurrent(valRGB,valCW);
 	return 1;
