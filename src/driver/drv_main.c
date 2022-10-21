@@ -134,9 +134,9 @@ void DRV_RunQuickTick() {
 void DRV_OnChannelChanged(int channel,int iVal) {
 	int i;
 
-	if(DRV_Mutex_Take(100)==false) {
-		return;
-	}
+	//if(DRV_Mutex_Take(100)==false) {
+	//	return;
+	//}
 	for(i = 0; i < g_numDrivers; i++) {
 		if(g_drivers[i].bLoaded){
 			if(g_drivers[i].onChannelChanged != 0) {
@@ -144,7 +144,7 @@ void DRV_OnChannelChanged(int channel,int iVal) {
 			}
 		}
 	}
-	DRV_Mutex_Free();
+	//DRV_Mutex_Free();
 }
 void DRV_StopDriver(const char *name) {
 	int i;
