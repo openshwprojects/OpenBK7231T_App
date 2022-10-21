@@ -421,6 +421,7 @@ static int add_dimmer(const void *context, const char *cmd, const char *args, in
 
 	LED_AddDimmer(iVal);
 
+	return 1;
 }
 static int dimmer(const void *context, const char *cmd, const char *args, int cmdFlags){
 	//if (!wal_strnicmp(cmd, "POWERALL", 8)){

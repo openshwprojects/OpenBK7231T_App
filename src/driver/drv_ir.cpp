@@ -566,10 +566,10 @@ extern "C" void DRV_IR_RunFrame(){
     }
     if (pIRsend){
         if (pIRsend->overflows){
-            ADDLOG_INFO(LOG_FEATURE_IR, (char *)"##### IR send overflows %d", (int)pIRsend->overflows);
+            ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)"##### IR send overflows %d", (int)pIRsend->overflows);
             pIRsend->resetsendqueue();
         } else {
-            ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send count %d remains %d currentus %d", (int)pIRsend->timecounttotal, (int)pIRsend->timecount, (int)pIRsend->currentsendtime);
+            ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)"IR send count %d remains %d currentus %d", (int)pIRsend->timecounttotal, (int)pIRsend->timecount, (int)pIRsend->currentsendtime);
         }
     }
 
