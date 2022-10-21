@@ -604,7 +604,12 @@ extern "C" void DRV_IR_RunFrame(){
                             sprintf(out, "IR_%s 0x%X 0x%X %d", name, ourReceiver->decodedIRData.address, ourReceiver->decodedIRData.command, repeat);
                         }
         				//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR MQTT publish %s", out);
+
+                        uint32_t counter_in = ir_counter;
                         MQTT_PublishMain_StringString("ir",out, 0);
+                        uint32_t counter_dur = ((ir_counter - counter_in)*50)/1000;
+        				ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR MQTT publish %s took %dms", out, counter_dur);
+
                     }
 				}
 				if(ourReceiver->decodedIRData.protocol != UNKNOWN) {
@@ -634,7 +639,10 @@ extern "C" void DRV_IR_RunFrame(){
 
                     // we should include repeat here?
                     // e.g. on/off button should not toggle on repeats, but up/down probably should eat them.
+                    uint32_t counter_in = ir_counter;
 					EventHandlers_FireEvent2(tgType,ourReceiver->decodedIRData.address,ourReceiver->decodedIRData.command);
+                    uint32_t counter_dur = ((ir_counter - counter_in)*50)/1000;
+      				ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR fire event took %dms", counter_dur);
 				}
 
 	/*
