@@ -199,7 +199,7 @@ static int SM2135_Current(const void *context, const char *cmd, const char *args
 	int valCW;
 	Tokenizer_TokenizeString(args);
 
-	if(Tokenizer_GetArgsCount()==0) {
+	if(Tokenizer_GetArgsCount()<=1) {
 		ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2135_Current: requires 2 arguments [RGB,CW]. Current value is: %i %i!\n",g_current_setting_rgb,g_current_setting_cw);
 		return 0;
 	}
