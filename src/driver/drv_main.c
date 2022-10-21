@@ -44,28 +44,28 @@ typedef struct driver_s {
 
 // startDriver BL0937
 static driver_t g_drivers[] = {
-	{ "TuyaMCU", TuyaMCU_Init, TuyaMCU_RunFrame, NULL, NULL, NULL, NULL, false },
-	{ "NTP", NTP_Init, NTP_OnEverySecond, NULL, NULL, NULL, NULL, false },
-	{ "I2C", DRV_I2C_Init, DRV_I2C_EverySecond, NULL, NULL, NULL, NULL, false },
+	{ "TuyaMCU",	TuyaMCU_Init,		TuyaMCU_RunFrame,			NULL, NULL, NULL, NULL, false },
+	{ "NTP",		NTP_Init,			NTP_OnEverySecond,			NULL, NULL, NULL, NULL, false },
+	{ "I2C",		DRV_I2C_Init,		DRV_I2C_EverySecond,		NULL, NULL, NULL, NULL, false },
 	
 	//These 4 measure power
-	{ "BL0942", BL0942_Init, BL0942_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
-	{ "BL0937", BL0937_Init, BL0937_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
-	{ "CSE7766", CSE7766_Init, CSE7766_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	{ "BL0942",		BL0942_Init,		BL0942_RunFrame,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	{ "BL0937",		BL0937_Init,		BL0937_RunFrame,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	{ "CSE7766",	CSE7766_Init,		CSE7766_RunFrame,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 
 	//Test drivers
-	{ "TESTPOWER", Test_Power_Init, Test_Power_RunFrame, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
-	{ "TESTLED", Test_LED_Driver_Init, Test_LED_Driver_RunFrame, NULL, NULL, NULL, Test_LED_Driver_OnChannelChanged, false },	
+	{ "TESTPOWER",	Test_Power_Init,	 Test_Power_RunFrame,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	{ "TESTLED",	Test_LED_Driver_Init, Test_LED_Driver_RunFrame, NULL, NULL, NULL, Test_LED_Driver_OnChannelChanged, false },	
 
 #if PLATFORM_BEKEN
-	{ "IR", DRV_IR_Init, NULL, NULL, DRV_IR_RunFrame, NULL, NULL, false },
-	{ "DGR", DRV_DGR_Init, NULL, DRV_DGR_RunEverySecond, DRV_DGR_RunQuickTick, DRV_DGR_Shutdown, DRV_DGR_OnChannelChanged, false },
-	{ "DDP", DRV_DDP_Init, NULL, NULL, DRV_DDP_RunFrame, DRV_DDP_Shutdown, NULL, false },
+	{ "IR",			DRV_IR_Init,		 NULL,						NULL, DRV_IR_RunFrame, NULL, NULL, false },
+	{ "DGR",		DRV_DGR_Init,		DRV_DGR_RunEverySecond,		NULL, DRV_DGR_RunQuickTick, DRV_DGR_Shutdown, DRV_DGR_OnChannelChanged, false },
+	{ "DDP",		DRV_DDP_Init,		NULL,						NULL, DRV_DDP_RunFrame, DRV_DDP_Shutdown, NULL, false },
 #endif
-	{ "SM2135", SM2135_Init, SM2135_RunFrame, NULL, NULL, NULL, SM2135_OnChannelChanged, false },
-	{ "BP5758D", BP5758D_Init, BP5758D_RunFrame, NULL, NULL, NULL, BP5758D_OnChannelChanged, false },
-	{ "BP1658CJ", BP1658CJ_Init, BP1658CJ_RunFrame, NULL, NULL, NULL, BP1658CJ_OnChannelChanged, false },
-	{ "tmSensor", TuyaMCU_Sensor_Init, TuyaMCU_Sensor_RunFrame, NULL, NULL, NULL, NULL, false }
+	{ "SM2135",		SM2135_Init,		SM2135_RunFrame,			NULL, NULL, NULL, SM2135_OnChannelChanged, false },
+	{ "BP5758D",	BP5758D_Init,		BP5758D_RunFrame,			NULL, NULL, NULL, BP5758D_OnChannelChanged, false },
+	{ "BP1658CJ",	BP1658CJ_Init,		BP1658CJ_RunFrame,			NULL, NULL, NULL, BP1658CJ_OnChannelChanged, false },
+	{ "tmSensor",	TuyaMCU_Sensor_Init, TuyaMCU_Sensor_RunFrame,	NULL, NULL, NULL, NULL, false }
 };
 
 static const int g_numDrivers = sizeof(g_drivers)/sizeof(g_drivers[0]);
