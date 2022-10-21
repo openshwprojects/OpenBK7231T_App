@@ -14,7 +14,8 @@
 
 static int g_pin_clk = 26;
 static int g_pin_data = 24;
-static int g_current_setting = SM2135_20MA;
+static int g_current_setting_cw = SM2135_20MA;
+static int g_current_setting_rgb = SM2135_20MA;
 // Mapping between RGBCW to current SM2135 channels
 static byte g_channelOrder[5] = { 2, 1, 0, 4, 3 };
 
@@ -89,7 +90,7 @@ void SM2135_Write(byte *rgbcw) {
 		}
 		if(bRGB) {
 			SM2135_Start(SM2135_ADDR_MC);
-			SM2135_WriteByte(g_current_setting);
+			SM2135_WriteByte(g_current_setting_rgb);
 			SM2135_WriteByte(SM2135_RGB);
 			SM2135_WriteByte(rgbcw[g_channelOrder[0]]);
 			SM2135_WriteByte(rgbcw[g_channelOrder[1]]);
@@ -97,7 +98,7 @@ void SM2135_Write(byte *rgbcw) {
 			SM2135_Stop();
 		} else {
 			SM2135_Start(SM2135_ADDR_MC);
-			SM2135_WriteByte(g_current_setting);
+			SM2135_WriteByte(g_current_setting_cw);
 			SM2135_WriteByte(SM2135_CW);
 			SM2135_Stop();
 			rtos_delay_milliseconds(SM2135_DELAY);
@@ -110,7 +111,7 @@ void SM2135_Write(byte *rgbcw) {
 		}
 	} else {
 		SM2135_Start(SM2135_ADDR_MC);
-		SM2135_WriteByte(g_current_setting);
+		SM2135_WriteByte(g_current_setting_rgb);
 		SM2135_WriteByte(SM2135_RGB);
 		SM2135_WriteByte(rgbcw[g_channelOrder[0]]);
 		SM2135_WriteByte(rgbcw[g_channelOrder[1]]);
@@ -188,21 +189,24 @@ static int SM2135_Map(const void *context, const char *cmd, const char *args, in
 	return 0;
 }
 
-static void SM2135_SetCurrent(int curVal) {
-	g_current_setting = curVal;
+static void SM2135_SetCurrent(int curValRGB, int curValCW) {
+	g_current_setting_rgb = curValRGB;
+	g_current_setting_cw = curValCW;
 }
 
 static int SM2135_Current(const void *context, const char *cmd, const char *args, int flags){
-	int val;
+	int valRGB;
+	int valCW;
 	Tokenizer_TokenizeString(args);
 
 	if(Tokenizer_GetArgsCount()==0) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2135_Current: requires one argument. Current value is: %i!\n",g_current_setting);
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2135_Current: requires 2 arguments [RGB,CW]. Current value is: %i %i!\n",g_current_setting_rgb,g_current_setting_cw);
 		return 0;
 	}
-	val = Tokenizer_GetArgInteger(0);
+	valRGB = Tokenizer_GetArgInteger(0);
+	valCW = Tokenizer_GetArgInteger(0);
 
-	SM2135_SetCurrent(val);
+	SM2135_SetCurrent(valRGB,valCW);
 	return 1;
 }
 
