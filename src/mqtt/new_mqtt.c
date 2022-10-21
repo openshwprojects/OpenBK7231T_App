@@ -884,16 +884,12 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 }
 // This console command will trigger a publish of all used variables (channels and extra stuff)
 OBK_Publish_Result MQTT_PublishAll(const void* context, const char* cmd, const char* args, int cmdFlags) {
-
-	MQTT_PublishWholeDeviceState_Internal(false);
-
+	MQTT_PublishWholeDeviceState_Internal(true);
 	return 1;// TODO make return values consistent for all console commands
 }
 // This console command will trigger a publish of runtime variables
 OBK_Publish_Result MQTT_PublishChannels(const void* context, const char* cmd, const char* args, int cmdFlags) {
-
-	MQTT_PublishWholeDeviceState_Internal(true);
-
+	MQTT_PublishOnlyDeviceChannelsIfPossible();
 	return 1;// TODO make return values consistent for all console commands
 }
 OBK_Publish_Result MQTT_PublishCommand(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -937,9 +933,9 @@ void MQTT_init()
 
 	mqtt_initialised = 1;
 
-	CMD_RegisterCommand("publish", "", MQTT_PublishCommand, "Sqqq", NULL);
-	CMD_RegisterCommand("publishAll", "", MQTT_PublishAll, "Sqqq", NULL);
-	CMD_RegisterCommand("publishChannels", "", MQTT_PublishChannels, "Sqqq", NULL);
+	CMD_RegisterCommand(MQTT_COMMAND_PUBLISH, "", MQTT_PublishCommand, "Sqqq", NULL);
+	CMD_RegisterCommand(MQTT_COMMAND_PUBLISH_ALL, "", MQTT_PublishAll, "Sqqq", NULL);
+	CMD_RegisterCommand(MQTT_COMMAND_PUBLISH_CHANNELS, "", MQTT_PublishChannels, "Sqqq", NULL);
 }
 
 OBK_Publish_Result MQTT_DoItemPublishString(const char* sChannel, const char* valueStr)
@@ -1186,12 +1182,13 @@ MqttPublishItem_t* find_queue_reusable_item(MqttPublishItem_t* head) {
 	return head;
 }
 
-/// @brief Queue an entry for publish.
+/// @brief Queue an entry for publish and execute a command after the publish.
 /// @param topic 
 /// @param channel 
 /// @param value 
 /// @param flags
-void MQTT_QueuePublish(char* topic, char* channel, char* value, int flags) {
+/// @param command Command to execute after the publish
+void MQTT_QueuePublishWithCommand(char* topic, char* channel, char* value, int flags, PostPublishCommands command) {
 	if (g_MqttPublishItemsQueued >= MQTT_MAX_QUEUE_SIZE) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "Unable to queue! %i items already present\r\n", g_MqttPublishItemsQueued);
 		return;
@@ -1227,11 +1224,22 @@ void MQTT_QueuePublish(char* topic, char* channel, char* value, int flags) {
 	os_strcpy(newItem->topic, topic);
 	os_strcpy(newItem->channel, channel);
 	os_strcpy(newItem->value, value);
+	newItem->command = command;
 	newItem->flags = flags;
 
 	g_MqttPublishItemsQueued++;
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Queued topic=%s/%s %i, items queued", newItem->topic, newItem->channel, g_MqttPublishItemsQueued);
 }
+
+/// @brief Queue an entry for publish.
+/// @param topic 
+/// @param channel 
+/// @param value 
+/// @param flags
+void MQTT_QueuePublish(char* topic, char* channel, char* value, int flags) {
+	MQTT_QueuePublishWithCommand(topic, channel, value, flags, None);
+}
+
 
 /// @brief Publish MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE queued items.
 /// @return 
@@ -1253,6 +1261,17 @@ OBK_Publish_Result PublishQueuedItems() {
 
 			//Stop if last publish failed
 			if (result != OBK_PUBLISH_OK) break;
+
+			switch (head->command) {
+			case None:
+				break;
+			case PublishAll:
+				CMD_ExecuteCommand(MQTT_COMMAND_PUBLISH_ALL, COMMAND_FLAG_SOURCE_MQTT);
+				break;
+			case PublishChannels:
+				CMD_ExecuteCommand(MQTT_COMMAND_PUBLISH_CHANNELS, COMMAND_FLAG_SOURCE_MQTT);
+				break;
+			}
 		}
 		else {
 			//addLogAdv(LOG_INFO,LOG_FEATURE_MQTT,"PublishQueuedItems item skipped reusable");
