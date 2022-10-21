@@ -146,7 +146,7 @@ int BL09XX_SetupEnergyStatistic(const void *context, const char *cmd, const char
 
     if(Tokenizer_GetArgsCount() < 3) 
     {
-        addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"BL09XX_SetupEnergyStatistic: requires 3 arguments (enable, sample_time, sample_count)\n");
+        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "BL09XX_SetupEnergyStatistic: requires 3 arguments (enable, sample_time, sample_count)\n");
         return -1;
     }
 
@@ -173,7 +173,7 @@ int BL09XX_SetupEnergyStatistic(const void *context, const char *cmd, const char
     /* process changes */
     if (enable != 0)
     {
-        addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"Consumption History enabled\n");
+        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Consumption History enabled\n");
         /* Enable function */
         energyCounterStatsEnable = true;
         if (energyCounterSampleCount != sample_count)
@@ -184,7 +184,7 @@ int BL09XX_SetupEnergyStatistic(const void *context, const char *cmd, const char
             energyCounterMinutes = NULL;
             energyCounterSampleCount = sample_count;
         }
-        addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"Sample Count:    %d\n", energyCounterSampleCount);
+        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Sample Count:    %d\n", energyCounterSampleCount);
         if (energyCounterSampleInterval != sample_time)
         {
             /* change sample time */            
@@ -202,13 +202,13 @@ int BL09XX_SetupEnergyStatistic(const void *context, const char *cmd, const char
                 memset(energyCounterMinutes, 0, energyCounterSampleCount*sizeof(float));
             }
         }
-        addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"Sample Interval: %d\n", energyCounterSampleInterval);
+        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Sample Interval: %d\n", energyCounterSampleInterval);
 
         energyCounterMinutesStamp = xTaskGetTickCount();
         energyCounterMinutesIndex = 0;
     } else {
         /* Disable Consimption Nistory */
-        addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"Consumption History disabled\n");
+        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Consumption History disabled\n");
         energyCounterStatsEnable = false;
         if (energyCounterMinutes != NULL)
         {
@@ -277,6 +277,8 @@ void BL_ProcessUpdate(float voltage, float current, float power)
 
                 msg = cJSON_Print(root);
                 cJSON_Delete(root);
+
+                addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "JSON Printed: %d bytes\n", strlen(msg));
 
                 MQTT_PublishMain_StringString(counter_mqttNames[2], msg, 0);
                 stat_updatesSent++;
