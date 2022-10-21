@@ -133,6 +133,16 @@ typedef struct pinsState_s {
 #define CGF_SHORT_DEVICE_NAME_SIZE		32
 #define CGF_DEVICE_NAME_SIZE			64
 
+typedef union cfgPowerMeasurementCal_u {
+	float f;
+	int i;
+} cfgPowerMeasurementCal_t;
+
+// 8 * 4 = 32 bytes
+typedef struct cfgPowerMeasurementCalibration_s {
+	cfgPowerMeasurementCal_t values[8];
+} cfgPowerMeasurementCalibration_t;
+
 //
 // Main config structure (less than 2KB)
 //
@@ -174,7 +184,8 @@ typedef struct mainConfig_s {
 	int dgr_recvFlags;
 	char dgr_name[16];
 	char ntpServer[32];
-	byte unusedSectorA[72];
+	cfgPowerMeasurementCalibration_t cal;
+	byte unusedSectorA[40];
 	byte unusedSectorB[128];
 	byte unusedSectorC[55];
 	byte timeRequiredToMarkBootSuccessfull;

@@ -5,6 +5,7 @@
 #include "../cmnds/cmd_public.h"
 #include "../mqtt/new_mqtt.h"
 #include "../logging/logging.h"
+#include "drv_public.h"
 #include "drv_local.h"
 #include "drv_uart.h"
 #include "../httpserver/new_http.h"
@@ -134,6 +135,10 @@ int BL0942_PowerSet(const void *context, const char *cmd, const char *args, int 
 	}
 	realPower = atof(args);
 	BL0942_PREF = raw_unscaled_power / realPower;
+
+	// UPDATE: now they are automatically saved
+	CFG_SetPowerMeasurementCalibrationFloat(OBK_POWER,BL0942_PREF);
+
 	{
 		char dbg[128];
 		sprintf(dbg,"PowerSet: you gave %f, set ref to %f\n", realPower, BL0942_PREF);
@@ -148,6 +153,10 @@ int BL0942_PowerRef(const void *context, const char *cmd, const char *args, int 
 		return 1;
 	}
 	BL0942_PREF = atof(args);
+
+	// UPDATE: now they are automatically saved
+	CFG_SetPowerMeasurementCalibrationFloat(OBK_POWER,BL0942_PREF);
+
 	return 0;
 }
 int BL0942_CurrentRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -157,6 +166,10 @@ int BL0942_CurrentRef(const void *context, const char *cmd, const char *args, in
 		return 1;
 	}
 	BL0942_IREF = atof(args);
+
+	// UPDATE: now they are automatically saved
+	CFG_SetPowerMeasurementCalibrationFloat(OBK_CURRENT,BL0942_IREF);
+
 	return 0;
 }
 int BL0942_VoltageRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -166,6 +179,10 @@ int BL0942_VoltageRef(const void *context, const char *cmd, const char *args, in
 		return 1;
 	}
 	BL0942_UREF = atof(args);
+
+	// UPDATE: now they are automatically saved
+	CFG_SetPowerMeasurementCalibrationFloat(OBK_VOLTAGE,BL0942_UREF);
+
 	return 0;
 }
 int BL0942_VoltageSet(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -177,6 +194,10 @@ int BL0942_VoltageSet(const void *context, const char *cmd, const char *args, in
 	}
 	realV = atof(args);
 	BL0942_UREF = raw_unscaled_voltage / realV;
+
+	// UPDATE: now they are automatically saved
+	CFG_SetPowerMeasurementCalibrationFloat(OBK_VOLTAGE,BL0942_UREF);
+
 	{
 		char dbg[128];
 		sprintf(dbg,"VoltageSet: you gave %f, set ref to %f\n", realV, BL0942_UREF);
@@ -194,6 +215,10 @@ int BL0942_CurrentSet(const void *context, const char *cmd, const char *args, in
 	}
 	realI = atof(args);
 	BL0942_IREF = raw_unscaled_current / realI;
+
+	// UPDATE: now they are automatically saved
+	CFG_SetPowerMeasurementCalibrationFloat(OBK_CURRENT,BL0942_IREF);
+
 	{
 		char dbg[128];
 		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realI, BL0942_IREF);
@@ -204,6 +229,12 @@ int BL0942_CurrentSet(const void *context, const char *cmd, const char *args, in
 void BL0942_Init() 
 {
     BL_Shared_Init();
+
+	// UPDATE: now they are automatically saved
+	BL0942_UREF = CFG_GetPowerMeasurementCalibrationFloat(OBK_VOLTAGE,BL0942_UREF);
+	BL0942_PREF = CFG_GetPowerMeasurementCalibrationFloat(OBK_POWER,BL0942_PREF);
+	BL0942_IREF = CFG_GetPowerMeasurementCalibrationFloat(OBK_CURRENT,BL0942_IREF);
+
 	UART_InitUART(BL0942_BAUD_RATE);
 	UART_InitReceiveRingBuffer(256);
 	CMD_RegisterCommand("PowerSet","",BL0942_PowerSet, "Sets current power value for calibration", NULL);

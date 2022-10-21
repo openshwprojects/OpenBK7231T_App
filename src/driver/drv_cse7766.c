@@ -6,6 +6,7 @@
 #include "../mqtt/new_mqtt.h"
 #include "../logging/logging.h"
 #include "drv_local.h"
+#include "drv_public.h"
 #include "drv_uart.h"
 #include "../httpserver/new_http.h"
 
@@ -206,6 +207,10 @@ int CSE7766_PowerSet(const void *context, const char *cmd, const char *args, int
 	}
 	realPower = atof(args);
 	CSE7766_PREF = realPower * raw_unscaled_power;
+
+	// UPDATE: now they are automatically saved
+	CFG_SetPowerMeasurementCalibrationFloat(OBK_POWER,CSE7766_PREF);
+
 	{
 		char dbg[128];
 		sprintf(dbg,"PowerSet: you gave %f, set ref to %f\n", realPower, CSE7766_PREF);
@@ -220,6 +225,10 @@ int CSE7766_PowerRef(const void *context, const char *cmd, const char *args, int
 		return 1;
 	}
 	CSE7766_PREF = atof(args);
+
+	// UPDATE: now they are automatically saved
+	CFG_SetPowerMeasurementCalibrationFloat(OBK_POWER,CSE7766_PREF);
+
 	return 0;
 }
 int CSE7766_CurrentRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -229,6 +238,10 @@ int CSE7766_CurrentRef(const void *context, const char *cmd, const char *args, i
 		return 1;
 	}
 	CSE7766_IREF = atof(args);
+
+	// UPDATE: now they are automatically saved
+	CFG_SetPowerMeasurementCalibrationFloat(OBK_CURRENT,CSE7766_IREF);
+
 	return 0;
 }
 int CSE7766_VoltageRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -238,6 +251,10 @@ int CSE7766_VoltageRef(const void *context, const char *cmd, const char *args, i
 		return 1;
 	}
 	CSE7766_UREF = atof(args);
+
+	// UPDATE: now they are automatically saved
+	CFG_SetPowerMeasurementCalibrationFloat(OBK_VOLTAGE,CSE7766_UREF);
+
 	return 0;
 }
 int CSE7766_VoltageSet(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -249,6 +266,10 @@ int CSE7766_VoltageSet(const void *context, const char *cmd, const char *args, i
 	}
 	realV = atof(args);
 	CSE7766_UREF = realV * raw_unscaled_voltage;
+
+	// UPDATE: now they are automatically saved
+	CFG_SetPowerMeasurementCalibrationFloat(OBK_VOLTAGE,CSE7766_UREF);
+
 	{
 		char dbg[128];
 		sprintf(dbg,"VoltageSet: you gave %f, set ref to %f\n", realV, CSE7766_UREF);
@@ -266,6 +287,10 @@ int CSE7766_CurrentSet(const void *context, const char *cmd, const char *args, i
 	}
 	realI = atof(args);
 	CSE7766_IREF = realI * raw_unscaled_current;
+	
+	// UPDATE: now they are automatically saved
+	CFG_SetPowerMeasurementCalibrationFloat(OBK_CURRENT,CSE7766_IREF);
+
 	{
 		char dbg[128];
 		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realI, CSE7766_IREF);
@@ -276,6 +301,12 @@ int CSE7766_CurrentSet(const void *context, const char *cmd, const char *args, i
 void CSE7766_Init() 
 {
     BL_Shared_Init();
+
+	// UPDATE: now they are automatically saved
+	CSE7766_UREF = CFG_GetPowerMeasurementCalibrationFloat(OBK_VOLTAGE,CSE7766_UREF);
+	CSE7766_PREF = CFG_GetPowerMeasurementCalibrationFloat(OBK_POWER,CSE7766_PREF);
+	CSE7766_IREF = CFG_GetPowerMeasurementCalibrationFloat(OBK_CURRENT,CSE7766_IREF);
+
 	UART_InitUART(CSE7766_BAUD_RATE);
 	UART_InitReceiveRingBuffer(512);
 	CMD_RegisterCommand("PowerSet","",CSE7766_PowerSet, "Sets current power value for calibration", NULL);

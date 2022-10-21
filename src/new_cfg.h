@@ -63,6 +63,13 @@ bool CFG_HasFlag(int flag);
 int CFG_GetFlags();
 const char* CFG_GetNTPServer();
 void CFG_SetNTPServer(const char *s);
+// BL0937, BL0942, etc constants
+// Functions below assume that 0 is not a valid value, it means "use default"
+// This is because we won't ever need to divide or multiply a measurement result by zero
+int CFG_GetPowerMeasurementCalibrationInteger(int index, int def);
+void CFG_SetPowerMeasurementCalibrationInteger(int index, int value);
+float CFG_GetPowerMeasurementCalibrationFloat(int index, float def);
+void CFG_SetPowerMeasurementCalibrationFloat(int index, float value);
 
 
 #endif 

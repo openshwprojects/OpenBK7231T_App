@@ -459,6 +459,30 @@ void CFG_SetNTPServer(const char *s) {
 		g_cfg_pendingChanges++;
 	}
 }
+int CFG_GetPowerMeasurementCalibrationInteger(int index, int def) {
+	if(g_cfg.cal.values[index].i == 0) {
+		return def;
+	}
+	return g_cfg.cal.values[index].i;
+}
+void CFG_SetPowerMeasurementCalibrationInteger(int index, int value) {
+	if(g_cfg.cal.values[index].i != value) {
+		g_cfg.cal.values[index].i = value;
+		g_cfg_pendingChanges++;
+	}
+}
+float CFG_GetPowerMeasurementCalibrationFloat(int index, float def) {
+	if(g_cfg.cal.values[index].i == 0) {
+		return def;
+	}
+	return g_cfg.cal.values[index].f;
+}
+void CFG_SetPowerMeasurementCalibrationFloat(int index, float value) {
+	if(g_cfg.cal.values[index].f != value) {
+		g_cfg.cal.values[index].f = value;
+		g_cfg_pendingChanges++;
+	}
+}
 
 void CFG_InitAndLoad() {
 	byte chkSum;

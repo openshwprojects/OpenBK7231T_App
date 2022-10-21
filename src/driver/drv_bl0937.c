@@ -6,6 +6,7 @@
 #include "../mqtt/new_mqtt.h"
 #include "../logging/logging.h"
 #include "../hal/hal_pins.h"
+#include "drv_public.h"
 #include "drv_local.h"
 #include "drv_uart.h"
 #include "../httpserver/new_http.h"
@@ -31,9 +32,9 @@ bool g_sel = true;
 uint32_t res_v = 0;
 uint32_t res_c = 0;
 uint32_t res_p = 0;
-float calib_v = 0.13253012048f;
-float calib_p = 1.5f;
-float calib_c = 0.0118577075f;
+float BL0937_VREF = 0.13253012048f;
+float BL0937_PREF = 1.5f;
+float BL0937_CREF = 0.0118577075f;
 
 volatile uint32_t g_vc_pulses = 0;
 volatile uint32_t g_p_pulses = 0;
@@ -52,10 +53,14 @@ int BL0937_PowerSet(const void *context, const char *cmd, const char *args, int 
 		return 1;
 	}
 	realPower = atof(args);
-	calib_p = realPower / res_p;
+	BL0937_PREF = realPower / res_p;
+
+	// UPDATE: now they are automatically saved
+	CFG_SetPowerMeasurementCalibrationFloat(OBK_POWER,BL0937_PREF);
+
 	{
 		char dbg[128];
-		sprintf(dbg,"PowerSet: you gave %f, set ref to %f\n", realPower, calib_p);
+		sprintf(dbg,"PowerSet: you gave %f, set ref to %f\n", realPower, BL0937_PREF);
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 	return 0;
@@ -66,7 +71,11 @@ int BL0937_PowerRef(const void *context, const char *cmd, const char *args, int 
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
 		return 1;
 	}
-	calib_p = atof(args);
+	BL0937_PREF = atof(args);
+
+	// UPDATE: now they are automatically saved
+	CFG_SetPowerMeasurementCalibrationFloat(OBK_POWER,BL0937_PREF);
+
 	return 0;
 }
 int BL0937_CurrentRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -75,7 +84,11 @@ int BL0937_CurrentRef(const void *context, const char *cmd, const char *args, in
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
 		return 1;
 	}
-	calib_c = atof(args);
+	BL0937_CREF = atof(args);
+
+	// UPDATE: now they are automatically saved
+	CFG_SetPowerMeasurementCalibrationFloat(OBK_CURRENT,BL0937_CREF);
+
 	return 0;
 }
 int BL0937_VoltageRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -84,7 +97,11 @@ int BL0937_VoltageRef(const void *context, const char *cmd, const char *args, in
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
 		return 1;
 	}
-	calib_v = atof(args);
+	BL0937_VREF = atof(args);
+
+	// UPDATE: now they are automatically saved
+	CFG_SetPowerMeasurementCalibrationFloat(OBK_VOLTAGE,BL0937_VREF);
+
 	return 0;
 }
 int BL0937_VoltageSet(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -95,10 +112,14 @@ int BL0937_VoltageSet(const void *context, const char *cmd, const char *args, in
 		return 1;
 	}
 	realV = atof(args);
-	calib_v = realV / res_v;
+	BL0937_VREF = realV / res_v;
+
+	// UPDATE: now they are automatically saved
+	CFG_SetPowerMeasurementCalibrationFloat(OBK_VOLTAGE,BL0937_VREF);
+
 	{
 		char dbg[128];
-		sprintf(dbg,"VoltageSet: you gave %f, set ref to %f\n", realV, calib_v);
+		sprintf(dbg,"VoltageSet: you gave %f, set ref to %f\n", realV, BL0937_VREF);
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 
@@ -112,10 +133,14 @@ int BL0937_CurrentSet(const void *context, const char *cmd, const char *args, in
 		return 1;
 	}
 	realI = atof(args);
-	calib_c = realI / res_c;
+	BL0937_CREF = realI / res_c;
+
+	// UPDATE: now they are automatically saved
+	CFG_SetPowerMeasurementCalibrationFloat(OBK_CURRENT,BL0937_CREF);
+
 	{
 		char dbg[128];
-		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realI, calib_c);
+		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realI, BL0937_CREF);
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 	return 0;
@@ -129,6 +154,10 @@ void BL0937_Init()
 	GPIO_HLW_CF = PIN_FindPinIndexForRole(IOR_BL0937_CF,GPIO_HLW_CF);
 	GPIO_HLW_CF1 = PIN_FindPinIndexForRole(IOR_BL0937_CF1,GPIO_HLW_CF1);
 
+	// UPDATE: now they are automatically saved
+	BL0937_VREF = CFG_GetPowerMeasurementCalibrationFloat(OBK_VOLTAGE,BL0937_VREF);
+	BL0937_PREF = CFG_GetPowerMeasurementCalibrationFloat(OBK_POWER,BL0937_PREF);
+	BL0937_CREF = CFG_GetPowerMeasurementCalibrationFloat(OBK_CURRENT,BL0937_CREF);
 
 	HAL_PIN_Setup_Output(GPIO_HLW_SEL);
     HAL_PIN_SetOutputValue(GPIO_HLW_SEL, g_sel);
@@ -168,9 +197,9 @@ void BL0937_RunFrame() {
 
 	//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
 
-	final_v = res_v * calib_v;
-	final_c = res_c * calib_c;
-	final_p = res_p * calib_p;
+	final_v = res_v * BL0937_VREF;
+	final_c = res_c * BL0937_CREF;
+	final_p = res_p * BL0937_PREF;
 #if 0
 	{
 		char dbg[128];
