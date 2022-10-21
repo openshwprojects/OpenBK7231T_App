@@ -578,19 +578,34 @@ extern "C" void DRV_IR_RunFrame(){
 			// 'UNKNOWN' protocol is by default disabled in flags
 			// This is because I am getting a lot of 'UNKNOWN' spam with no IR signals in room
 			if(ourReceiver->decodedIRData.protocol != UNKNOWN || (ourReceiver->decodedIRData.protocol == UNKNOWN && CFG_HasFlag(OBK_FLAG_IR_ALLOW_UNKNOWN))) {
-				char out[40];
+				char out[60];
 				PrintIRData(&ourReceiver->decodedIRData);
 				const char *name = ProtocolNames[ourReceiver->decodedIRData.protocol];
 				ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR decode returned true, protocol %s (%d)", name, (int)ourReceiver->decodedIRData.protocol);
+                int repeat = 0;
+                if (ourReceiver->decodedIRData.flags & (IRDATA_FLAGS_IS_AUTO_REPEAT | IRDATA_FLAGS_IS_REPEAT)) {
+                    if (ourReceiver->decodedIRData.flags & IRDATA_FLAGS_IS_AUTO_REPEAT) {
+                        repeat = 2;
+                    } else {
+                        repeat = 1;
+                    }
+                }
 
 				// if user wants us to publish every received IR data, do it now
 				if(CFG_HasFlag(OBK_FLAG_IR_PUBLISH_RECEIVED)) {
-					if (ourReceiver->decodedIRData.protocol == UNKNOWN){
-						sprintf(out, "IR_%s 0x%X", name, ourReceiver->decodedIRData.decodedRawData);
-					} else {
-						sprintf(out, "IR_%s 0x%X 0x%X", name, ourReceiver->decodedIRData.address, ourReceiver->decodedIRData.command);
-					}
-					MQTT_PublishMain_StringString("ir",out, 0);
+
+                    // another flag required?
+                    int publishrepeats = 1;
+
+                    if (publishrepeats || !repeat){
+                        if (ourReceiver->decodedIRData.protocol == UNKNOWN){
+                            sprintf(out, "IR_%s 0x%X %d", name, ourReceiver->decodedIRData.decodedRawData, repeat);
+                        } else {
+                            sprintf(out, "IR_%s 0x%X 0x%X %d", name, ourReceiver->decodedIRData.address, ourReceiver->decodedIRData.command, repeat);
+                        }
+        				//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR MQTT publish %s", out);
+                        MQTT_PublishMain_StringString("ir",out, 0);
+                    }
 				}
 				if(ourReceiver->decodedIRData.protocol != UNKNOWN) {
 					sprintf(out, "%X", ourReceiver->decodedIRData.command);
@@ -616,6 +631,9 @@ extern "C" void DRV_IR_RunFrame(){
 						tgType = CMD_EVENT_IR_SONY;
 						break;
 					}
+
+                    // we should include repeat here?
+                    // e.g. on/off button should not toggle on repeats, but up/down probably should eat them.
 					EventHandlers_FireEvent2(tgType,ourReceiver->decodedIRData.address,ourReceiver->decodedIRData.command);
 				}
 
