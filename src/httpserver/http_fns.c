@@ -1303,7 +1303,7 @@ int http_fn_ha_discovery(http_request_t* request) {
 
 		//Invoke publishChannles after the last topic
 		if (dev_info != NULL) {
-			MQTT_QueuePublishWithCommand(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN, MQTT_COMMAND_PUBLISH_CHANNELS);
+			MQTT_QueuePublishWithCommand(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN, PublishChannels);
 			hass_free_device_info(dev_info);
 		}
 	}
@@ -1311,7 +1311,7 @@ int http_fn_ha_discovery(http_request_t* request) {
 	if (pwmCount == 5 || isLedDriverChipRunning()) {
 		// Enable + RGB control + CW control
 		dev_info = hass_init_light_device_info(ENTITY_LIGHT_RGBCW);
-		MQTT_QueuePublishWithCommand(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN, MQTT_COMMAND_PUBLISH_CHANNELS);
+		MQTT_QueuePublishWithCommand(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN, PublishChannels);
 		hass_free_device_info(dev_info);
 	}
 	else if (pwmCount > 0) {
@@ -1331,7 +1331,7 @@ int http_fn_ha_discovery(http_request_t* request) {
 		}
 
 		if (dev_info != NULL) {
-			MQTT_QueuePublishWithCommand(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN, MQTT_COMMAND_PUBLISH_CHANNELS);
+			MQTT_QueuePublishWithCommand(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN, PublishChannels);
 			hass_free_device_info(dev_info);
 		}
 	}
@@ -1677,7 +1677,7 @@ int http_fn_cfg(http_request_t* request) {
 	http_html_end(request);
 	poststr(request, NULL);
 	return 0;
-	}
+}
 
 int http_fn_cfg_pins(http_request_t* request) {
 	int iChanged = 0;
@@ -1741,7 +1741,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 				iChanged++;
 			}
 		}
-}
+	}
 	if (iChangedRequested > 0) {
 		// Anecdotally, if pins are configured badly, the
 		// second-timer breaks. To reconfigure, force

@@ -1188,7 +1188,7 @@ MqttPublishItem_t* find_queue_reusable_item(MqttPublishItem_t* head) {
 /// @param value 
 /// @param flags
 /// @param command Command to execute after the publish
-void MQTT_QueuePublishWithCommand(char* topic, char* channel, char* value, int flags, const char* command) {
+void MQTT_QueuePublishWithCommand(char* topic, char* channel, char* value, int flags, PostPublishCommands command) {
 	if (g_MqttPublishItemsQueued >= MQTT_MAX_QUEUE_SIZE) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "Unable to queue! %i items already present\r\n", g_MqttPublishItemsQueued);
 		return;
@@ -1237,7 +1237,7 @@ void MQTT_QueuePublishWithCommand(char* topic, char* channel, char* value, int f
 /// @param value 
 /// @param flags
 void MQTT_QueuePublish(char* topic, char* channel, char* value, int flags) {
-	MQTT_QueuePublishWithCommand(topic, channel, value, flags, NULL);
+	MQTT_QueuePublishWithCommand(topic, channel, value, flags, None);
 }
 
 
@@ -1262,8 +1262,15 @@ OBK_Publish_Result PublishQueuedItems() {
 			//Stop if last publish failed
 			if (result != OBK_PUBLISH_OK) break;
 
-			if (head->command != NULL) {
-				CMD_ExecuteCommand(head->command, COMMAND_FLAG_SOURCE_MQTT);
+			switch (head->command) {
+			case None:
+				break;
+			case PublishAll:
+				CMD_ExecuteCommand(MQTT_COMMAND_PUBLISH_ALL, COMMAND_FLAG_SOURCE_MQTT);
+				break;
+			case PublishChannels:
+				CMD_ExecuteCommand(MQTT_COMMAND_PUBLISH_CHANNELS, COMMAND_FLAG_SOURCE_MQTT);
+				break;
 			}
 		}
 		else {
