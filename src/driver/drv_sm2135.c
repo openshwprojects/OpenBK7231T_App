@@ -188,6 +188,23 @@ static int SM2135_Map(const void *context, const char *cmd, const char *args, in
 	return 0;
 }
 
+static void SM2135_SetCurrent(int curVal) {
+	g_current_setting = curVal;
+}
+
+static int SM2135_Current(const void *context, const char *cmd, const char *args, int flags){
+	int val;
+	Tokenizer_TokenizeString(args);
+
+	if(Tokenizer_GetArgsCount()==0) {
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2135_Current: requires one argument. Current value is: %i!\n",g_current_setting);
+		return 0;
+	}
+	val = Tokenizer_GetArgInteger(0);
+
+	SM2135_SetCurrent(val);
+	return 1;
+}
 
 // startDriver SM2135
 // SM2135_RGBCW FF00000000
@@ -200,6 +217,7 @@ void SM2135_Init() {
 
     CMD_RegisterCommand("SM2135_RGBCW", "", SM2135_RGBCW, "qq", NULL);
     CMD_RegisterCommand("SM2135_Map", "", SM2135_Map, "qq", NULL);
+    CMD_RegisterCommand("SM2135_Current", "", SM2135_Current, "qq", NULL);
 }
 
 void SM2135_RunFrame() {
