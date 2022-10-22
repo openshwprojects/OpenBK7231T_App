@@ -81,7 +81,7 @@ static void tcp_client_thread(beken_thread_arg_t arg)
 			store = malloc(sizeof(TCP_CLIENT_STORE));
 			if (!store){
 				ADDLOG_ERROR(LOG_FEATURE_HTTP, "TCP Client failed to malloc buffer");
-				return;
+				goto exit;
 			}
 			memset(store, 0, sizeof(TCP_CLIENT_STORE));
 			store->inuse = 1;
@@ -96,11 +96,14 @@ static void tcp_client_thread(beken_thread_arg_t arg)
 			store = tcpClientStores[i];
 			memset(store, 0, sizeof(TCP_CLIENT_STORE));
 			store->inuse = 1;
-			reply = store->replyBuffer;
-			buf = store->incomingBuffer;
 			ADDLOG_INFO(LOG_FEATURE_HTTP, "TCP Client use store %d/%d", i, tcpClientStoreCount);
 			break;
 		}
+	}
+
+	if(store){
+		reply = store->replyBuffer;
+		buf = store->incomingBuffer;
 	}
 
 	//reply = (char*)malloc(replyBufferSize);
