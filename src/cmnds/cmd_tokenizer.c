@@ -76,7 +76,7 @@ void Tokenizer_TokenizeString(const char *s) {
 		return;
 	}
 
-	while(isWhiteSpace(*s)) {
+	while((*s) && isWhiteSpace(*s)) {
 		s++;
 	}
 
@@ -84,7 +84,7 @@ void Tokenizer_TokenizeString(const char *s) {
 		return;
 	}
 
-	strcpy(g_buffer,s);
+	strncpy(g_buffer,s, 500);
 	p = g_buffer;
 	g_args[g_numArgs] = p;
 	g_argsFrom[g_numArgs] = (s+(p-g_buffer));

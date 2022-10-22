@@ -243,14 +243,33 @@ void EventHandlers_ProcessVariableChange_Integer(byte eventCode, int oldValue, i
 
 void EventHandlers_AddEventHandler_Integer(byte eventCode, int type, int requiredArgument, int requiredArgument2, const char *commandToRun)
 {
-	eventHandler_t *ev = malloc(sizeof(eventHandler_t));
+	eventHandler_t *ev = g_eventHandlers;
+	while(ev){
+		if ((ev->eventType == type) &&
+			(ev->eventCode == eventCode) &&
+			(ev->requiredArgument == requiredArgument) &&
+			(ev->requiredArgument2 == requiredArgument2)){
+				break;
+		}
+		ev = ev->next;
+	}
 
-	ev->next = g_eventHandlers;
-	g_eventHandlers = ev;
+	// only re-allocate and pre-pend if we did not find it
+	if (!ev){
+		ev = (eventHandler_t *) malloc(sizeof(eventHandler_t));
+		ev->next = g_eventHandlers;
+		g_eventHandlers = ev;
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "EventHandlers_AddEventHandler_Integer: new event %s", commandToRun);
+	} else {
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "EventHandlers_AddEventHandler_Integer: replace event %s", commandToRun);
+	}
 
 	ev->requiredArgumentText = NULL;
 	ev->eventType = type;
-	ev->command = test_strdup(commandToRun);
+	if (strcmp(ev->command, commandToRun)){
+		free(ev->command);
+		ev->command = test_strdup(commandToRun);
+	}
 	ev->eventCode = eventCode;
 	ev->requiredArgument = requiredArgument;
 	ev->requiredArgument2 = requiredArgument2;
@@ -258,18 +277,39 @@ void EventHandlers_AddEventHandler_Integer(byte eventCode, int type, int require
 
 void EventHandlers_AddEventHandler_String(byte eventCode, int type, const char *requiredArgument, const char *commandToRun)
 {
-	eventHandler_t *ev = malloc(sizeof(eventHandler_t));
+	eventHandler_t *ev = g_eventHandlers;
+	while(ev){
+		if ((ev->eventType == type) &&
+			(!stricmp(ev->requiredArgumentText, requiredArgument)) &&
+			(ev->eventCode == eventCode) &&
+			(ev->requiredArgument == 0) &&
+			(ev->requiredArgument2 == 0)){
+				break;
+		}
+		ev = ev->next;
+	}
 
-	ev->next = g_eventHandlers;
-	g_eventHandlers = ev;
+	// only re-allocate and pre-pend if we did not find it
+	if (!ev){
+		ev = (eventHandler_t *) malloc(sizeof(eventHandler_t));
+		ev->next = g_eventHandlers;
+		g_eventHandlers = ev;
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "EventHandlers_AddEventHandler_String: new event %s", commandToRun);
+	} else {
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "EventHandlers_AddEventHandler_String: replace event %s", commandToRun);
+	}
 
 	ev->requiredArgumentText = test_strdup(requiredArgument);
 	ev->eventType = type;
-	ev->command = test_strdup(commandToRun);
+	if (strcmp(ev->command, commandToRun)){
+		free(ev->command);
+		ev->command = test_strdup(commandToRun);
+	}
 	ev->eventCode = eventCode;
 	ev->requiredArgument = 0;
 	ev->requiredArgument2 = 0;
 }
+
 void EventHandlers_FireEvent2(byte eventCode, int argument, int argument2) {
 	struct eventHandler_s *ev;
 
