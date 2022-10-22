@@ -51,6 +51,18 @@ int sendfn(int fd, char* data, int len) {
 	return -1;
 }
 
+typedef struct _TCP_CLIENT_STORE_TAG {
+	int inuse;
+	char replyBuffer[REPLY_BUFFER_SIZE];
+	char incomingBuffer[INCOMING_BUFFER_SIZE];
+} TCP_CLIENT_STORE;
+
+
+// don't de-allocate TCP client's storage.
+#define MAX_CONCURRENT_TCP_CLIENTS 10 
+TCP_CLIENT_STORE *tcpClientStores[MAX_CONCURRENT_TCP_CLIENTS] = {0};
+int tcpClientStoreCount = 0;
+
 static void tcp_client_thread(beken_thread_arg_t arg)
 {
 	OSStatus err = kNoErr;
@@ -59,13 +71,40 @@ static void tcp_client_thread(beken_thread_arg_t arg)
 	char* buf = NULL;
 	char* reply = NULL;
 	int replyBufferSize = REPLY_BUFFER_SIZE;
+	TCP_CLIENT_STORE *store = NULL;
 	//int res;
 	//char reply[8192];
 
   //my_fd = fd;
+	for (int i = 0; i < MAX_CONCURRENT_TCP_CLIENTS; i++){
+		if (!tcpClientStores[i]){
+			store = malloc(sizeof(TCP_CLIENT_STORE));
+			if (!store){
+				ADDLOG_ERROR(LOG_FEATURE_HTTP, "TCP Client failed to malloc buffer");
+				return;
+			}
+			memset(store, 0, sizeof(TCP_CLIENT_STORE));
+			store->inuse = 1;
+			tcpClientStores[i] = store;
+			tcpClientStoreCount = i+1;
+			ADDLOG_INFO(LOG_FEATURE_HTTP, "TCP Client allocate store %d/%d", i, tcpClientStoreCount);
+			break;
+		}
 
-	reply = (char*)os_malloc(replyBufferSize);
-	buf = (char*)os_malloc(INCOMING_BUFFER_SIZE);
+		// use an existing if available
+		if (!tcpClientStores[i]->inuse){
+			store = tcpClientStores[i];
+			memset(store, 0, sizeof(TCP_CLIENT_STORE));
+			store->inuse = 1;
+			reply = store->replyBuffer;
+			buf = store->incomingBuffer;
+			ADDLOG_INFO(LOG_FEATURE_HTTP, "TCP Client use store %d/%d", i, tcpClientStoreCount);
+			break;
+		}
+	}
+
+	//reply = (char*)malloc(replyBufferSize);
+	//buf = (char*)malloc(INCOMING_BUFFER_SIZE);
 
 	if (buf == 0 || reply == 0)
 	{
@@ -109,11 +148,14 @@ exit:
 	if (err != kNoErr)
 		ADDLOG_ERROR(LOG_FEATURE_HTTP, "TCP client thread exit with err: %d", err);
 
+/*
 	if (buf != NULL)
-		os_free(buf);
+		free(buf);
 	if (reply != NULL)
-		os_free(reply);
+		free(reply);
+*/
 
+	if (store) store->inuse = 0;
 	lwip_close(fd);;
 #if DISABLE_SEPARATE_THREAD_FOR_EACH_TCP_CLIENT
 
