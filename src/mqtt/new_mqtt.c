@@ -295,7 +295,7 @@ int MQTT_RegisterCallback(const char* basetopic, const char* subscriptiontopic, 
 		return -4;
 	}
 	if (!callbacks[index]) {
-		callbacks[index] = (mqtt_callback_t*)os_malloc(sizeof(mqtt_callback_t));
+		callbacks[index] = (mqtt_callback_t*)malloc(sizeof(mqtt_callback_t));
 		if (callbacks[index] != 0) {
 			memset(callbacks[index], 0, sizeof(mqtt_callback_t));
 		}
@@ -305,11 +305,11 @@ int MQTT_RegisterCallback(const char* basetopic, const char* subscriptiontopic, 
 	}
 	if (!callbacks[index]->topic || strcmp(callbacks[index]->topic, basetopic)) {
 		if (callbacks[index]->topic) {
-			os_free(callbacks[index]->topic);
+			free(callbacks[index]->topic);
 		}
-		callbacks[index]->topic = (char*)os_malloc(strlen(basetopic) + 1);
+		callbacks[index]->topic = (char*)malloc(strlen(basetopic) + 1);
 		if (!callbacks[index]->topic) {
-			os_free(callbacks[index]);
+			free(callbacks[index]);
 			return -3;
 		}
 		strcpy(callbacks[index]->topic, basetopic);
@@ -317,13 +317,13 @@ int MQTT_RegisterCallback(const char* basetopic, const char* subscriptiontopic, 
 
 	if (!callbacks[index]->subscriptionTopic || strcmp(callbacks[index]->subscriptionTopic, subscriptiontopic)) {
 		if (callbacks[index]->subscriptionTopic) {
-			os_free(callbacks[index]->subscriptionTopic);
+			free(callbacks[index]->subscriptionTopic);
 		}
-		callbacks[index]->subscriptionTopic = (char*)os_malloc(strlen(subscriptiontopic) + 1);
+		callbacks[index]->subscriptionTopic = (char*)malloc(strlen(subscriptiontopic) + 1);
 		callbacks[index]->subscriptionTopic[0] = '\0';
 		if (!callbacks[index]->subscriptionTopic) {
-			os_free(callbacks[index]->topic);
-			os_free(callbacks[index]);
+			free(callbacks[index]->topic);
+			free(callbacks[index]);
 			return -3;
 		}
 
@@ -362,14 +362,14 @@ int MQTT_RemoveCallback(int ID) {
 		if (callbacks[index]) {
 			if (callbacks[index]->ID == ID) {
 				if (callbacks[index]->topic) {
-					os_free(callbacks[index]->topic);
+					free(callbacks[index]->topic);
 					callbacks[index]->topic = NULL;
 				}
 				if (callbacks[index]->subscriptionTopic) {
-					os_free(callbacks[index]->subscriptionTopic);
+					free(callbacks[index]->subscriptionTopic);
 					callbacks[index]->subscriptionTopic = NULL;
 				}
-				os_free(callbacks[index]);
+				free(callbacks[index]);
 				callbacks[index] = NULL;
 				mqtt_reconnect = 8;
 				return 1;
@@ -543,14 +543,14 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 
 	g_timeSinceLastMQTTPublish = 0;
 
-	char* pub_topic = (char*)os_malloc(strlen(sTopic) + 1 + strlen(sChannel) + 5 + 1); //5 for /get
+	char* pub_topic = (char*)malloc(strlen(sTopic) + 1 + strlen(sChannel) + 5 + 1); //5 for /get
 	if (pub_topic != NULL)
 	{
 		sprintf(pub_topic, "%s/%s%s", sTopic, sChannel, (appendGet == true ? "/get" : ""));
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publishing val %s to %s retain=%i\n", sVal, pub_topic, retain);
 
 		err = mqtt_publish(client, pub_topic, sVal, strlen(sVal), qos, retain, mqtt_pub_request_cb, 0);
-		os_free(pub_topic);
+		free(pub_topic);
 
 		if (err != ERR_OK)
 		{
@@ -1207,14 +1207,14 @@ void MQTT_QueuePublishWithCommand(char* topic, char* channel, char* value, int f
 	MqttPublishItem_t* newItem;
 
 	if (g_MqttPublishQueueHead == NULL) {
-		g_MqttPublishQueueHead = newItem = os_malloc(sizeof(MqttPublishItem_t));
+		g_MqttPublishQueueHead = newItem = malloc(sizeof(MqttPublishItem_t));
 		newItem->next = NULL;
 	}
 	else {
 		newItem = find_queue_reusable_item(g_MqttPublishQueueHead);
 
 		if (newItem == NULL) {
-			newItem = os_malloc(sizeof(MqttPublishItem_t));
+			newItem = malloc(sizeof(MqttPublishItem_t));
 			newItem->next = NULL;
 			get_queue_tail(g_MqttPublishQueueHead)->next = newItem; //Append new item
 		}

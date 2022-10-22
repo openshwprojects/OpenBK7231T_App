@@ -111,7 +111,7 @@ typedef struct httprequest_t_tag{
  * @return           .
  * @par              HTTPClient_Async_SendGeneric Post Example
  * @code
- *                   httprequest_t *request = os_malloc(sizeof(httprequest_t));
+ *                   httprequest_t *request = malloc(sizeof(httprequest_t));
  *                   // NOTE: these MUST persist
  *                   char *url = "https://api.mediatek.com/mcs/v2/devices/D0n2yhrl/datapoints.csv";
  *                   char *header = "deviceKey:FZoo0S07CpwUHcrt\r\n";

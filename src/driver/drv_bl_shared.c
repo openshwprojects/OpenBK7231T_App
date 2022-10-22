@@ -192,7 +192,7 @@ int BL09XX_SetupEnergyStatistic(const void *context, const char *cmd, const char
         {
             /* upgrade sample count, free memory */
             if (energyCounterMinutes != NULL)
-                os_free(energyCounterMinutes);
+                free(energyCounterMinutes);
             energyCounterMinutes = NULL;
             energyCounterSampleCount = sample_count;
         }
@@ -208,7 +208,7 @@ int BL09XX_SetupEnergyStatistic(const void *context, const char *cmd, const char
         if (energyCounterMinutes == NULL)
         {
             /* allocate new memeory */
-            energyCounterMinutes = (float*)os_malloc(sample_count*sizeof(float));
+            energyCounterMinutes = (float*)malloc(sample_count*sizeof(float));
             if (energyCounterMinutes != NULL)
             {
                 memset(energyCounterMinutes, 0, energyCounterSampleCount*sizeof(float));
@@ -224,7 +224,7 @@ int BL09XX_SetupEnergyStatistic(const void *context, const char *cmd, const char
         energyCounterStatsEnable = false;
         if (energyCounterMinutes != NULL)
         {
-            os_free(energyCounterMinutes);
+            free(energyCounterMinutes);
             energyCounterMinutes = NULL;
         }
         energyCounterSampleCount = sample_count;
@@ -292,7 +292,7 @@ void BL_ProcessUpdate(float voltage, float current, float power)
 
                 MQTT_PublishMain_StringString(counter_mqttNames[2], msg, 0);
                 stat_updatesSent++;
-                os_free(msg);
+                free(msg);
             }
 
             if (energyCounterMinutes != NULL)
@@ -379,7 +379,7 @@ void BL_Shared_Init()
     {
         if (energyCounterMinutes == NULL)
         {
-            energyCounterMinutes = (float*)os_malloc(energyCounterSampleCount*sizeof(float));
+            energyCounterMinutes = (float*)malloc(energyCounterSampleCount*sizeof(float));
         }
         if (energyCounterMinutes != NULL)
         {

@@ -184,7 +184,7 @@ static int cmnd_lfsexec(const void * context, const char *cmd, const char *args,
 #ifdef BK_LITTLEFS
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "exec %s", args);
 	if (lfs_present()){
-		lfs_file_t *file = os_malloc(sizeof(lfs_file_t));
+		lfs_file_t *file = malloc(sizeof(lfs_file_t));
 		if (file){
 			int lfsres;
 			char line[256];
@@ -220,7 +220,7 @@ static int cmnd_lfsexec(const void * context, const char *cmd, const char *args,
 			} else {
 				ADDLOG_ERROR(LOG_FEATURE_CMD, "no file %s err %d", fname, lfsres);
 			}
-			os_free(file);
+			free(file);
 			file = NULL;
 		}
 	} else {

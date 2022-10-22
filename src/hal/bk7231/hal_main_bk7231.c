@@ -42,7 +42,7 @@ void user_main(void)
 // That's because Free is defined to os_free. It would be better to fix it elsewhere
 void Free(void* ptr)
 {
-    os_free(ptr);
+    free(ptr);
 }
 
 

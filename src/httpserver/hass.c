@@ -110,7 +110,7 @@ cJSON* hass_build_device_node(cJSON* ids) {
 /// @param payload_off The payload that represents disabled state. This is not added for ENTITY_SENSOR.
 /// @return 
 HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload_on, char* payload_off) {
-	HassDeviceInfo* info = os_malloc(sizeof(HassDeviceInfo));
+	HassDeviceInfo* info = malloc(sizeof(HassDeviceInfo));
 	addLogAdv(LOG_INFO, LOG_FEATURE_HASS, "hass_init_device_info=%p", info);
 
 	hass_populate_unique_id(type, index, info->unique_id);
@@ -285,5 +285,5 @@ void hass_free_device_info(HassDeviceInfo* info) {
 		cJSON_Delete(info->root);
 	}
 
-	os_free(info);
+	free(info);
 }

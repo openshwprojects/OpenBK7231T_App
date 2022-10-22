@@ -273,8 +273,8 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 
 	err = listen(tcp_listen_fd, 0);
 
-	reply = (char*)os_malloc(REPLY_BUFFER_SIZE);
-	buf = (char*)os_malloc(INCOMING_BUFFER_SIZE);
+	reply = (char*)malloc(REPLY_BUFFER_SIZE);
+	buf = (char*)malloc(INCOMING_BUFFER_SIZE);
 
 	while (1)
 	{

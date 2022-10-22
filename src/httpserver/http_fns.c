@@ -1286,8 +1286,8 @@ int http_fn_ha_discovery(http_request_t* request) {
 	}
 
 	struct cJSON_Hooks hooks;
-	hooks.malloc_fn = os_malloc;
-	hooks.free_fn = os_free;
+	hooks.malloc_fn = malloc;
+	hooks.free_fn = free;
 	cJSON_InitHooks(&hooks);
 
 	if (relayCount > 0) {

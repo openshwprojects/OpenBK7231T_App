@@ -32,7 +32,7 @@ int init_ota(unsigned int startaddr){
             addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"aborting OTS, sector already non-null\n");
             return 0;
         }
-        sector = os_malloc(SECTOR_SIZE);
+        sector = malloc(SECTOR_SIZE);
         sectorlen = 0;
         addr = startaddr;
         addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"init OTA, startaddr 0x%x\n", startaddr);
@@ -54,7 +54,7 @@ void close_ota(){
     }
     addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"close OTA, addr 0x%x\n", addr);
 
-    os_free(sector);
+    free(sector);
     sector = (void *)0;
 	  flash_protection_op(FLASH_XTX_16M_SR_WRITE_ENABLE, FLASH_UNPROTECT_LAST_BLOCK);
 }
@@ -139,7 +139,7 @@ int myhttpclientcallback(httprequest_t* request){
   //rtos_delay_milliseconds(500);
 
   if (request->state == 2){
-    //os_free(client_data->response_buf);
+    //free(client_data->response_buf);
     client_data->response_buf = (void*)0;
     client_data->response_buf_len = 0;
   }
@@ -173,7 +173,7 @@ void otarequest(const char *urlin){
   httpclient_data_t *client_data = &request->client_data;
 
   if (http_buf == (void *)0){
-    http_buf = os_malloc(BUF_SIZE+1);
+    http_buf = malloc(BUF_SIZE+1);
     if (http_buf == (void *)0) {
         addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"startrequest Malloc failed.\r\n");
         return;

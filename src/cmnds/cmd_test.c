@@ -43,17 +43,17 @@ static int addcmd(const void * context, const char *cmd, const char *args, int c
         }
 
         if (cmds[index]){
-            os_free(cmds[index]);
+            free(cmds[index]);
         }
         if (names[index]){
-            os_free(names[index]);
+            free(names[index]);
         }
-        cmds[index] = os_malloc(strlen(args)+1);
+        cmds[index] = malloc(strlen(args)+1);
 
         strcpy(cmds[index], args);
         //len =
 		get_cmd(args, cmd, 32, 1);
-        names[index] = os_malloc(strlen(cmd)+1);
+        names[index] = malloc(strlen(cmd)+1);
         strcpy(names[index], cmd);
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "cmd %d set to %s", index, cmd);
 
@@ -83,7 +83,7 @@ static int testMallocFree(const void * context, const char *cmd, const char *arg
 
 		msg = malloc(ra1);
 		memset(msg,rand()%255,ra1);
-		os_free(msg);
+		free(msg);
 	}
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Malloc has been tested! Total calls %i, reps now %i",totalCalls,repeats);
@@ -115,7 +115,7 @@ static int testRealloc(const void * context, const char *cmd, const char *args, 
 			msg = realloc(msg,ra1);
 		}
 
-		os_free(msg);
+		free(msg);
 	}
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Realloc has been tested! Total calls %i, reps now %i",totalCalls,repeats);
@@ -165,7 +165,7 @@ static int testJSON(const void * context, const char *cmd, const char *args, int
 
 		msg = cJSON_Print(root);
 		cJSON_Delete(root);
-		os_free(msg);
+		free(msg);
 	}
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "testJSON has been tested! Total calls %i, reps now %i",totalCalls,repeats);

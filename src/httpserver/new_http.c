@@ -104,13 +104,13 @@ int HTTP_RegisterCallback(const char* url, int method, http_callback_fn callback
 	if (numCallbacks >= MAX_HTTP_CALLBACKS) {
 		return -4;
 	}
-	callbacks[numCallbacks] = (http_callback_t*)os_malloc(sizeof(http_callback_t));
+	callbacks[numCallbacks] = (http_callback_t*)malloc(sizeof(http_callback_t));
 	if (!callbacks[numCallbacks]) {
 		return -2;
 	}
-	callbacks[numCallbacks]->url = (char*)os_malloc(strlen(url) + 1);
+	callbacks[numCallbacks]->url = (char*)malloc(strlen(url) + 1);
 	if (!callbacks[numCallbacks]->url) {
-		os_free(callbacks[numCallbacks]);
+		free(callbacks[numCallbacks]);
 		return -3;
 	}
 	strcpy(callbacks[numCallbacks]->url, url);

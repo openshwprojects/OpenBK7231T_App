@@ -288,21 +288,21 @@ int httpclient_send_header(httpclient_t *client, const char *url, int method, ht
     int port;
     int rc = SUCCESS_RETURN;
 
-    if (NULL == (host = (char *)os_malloc(HTTPCLIENT_MAX_HOST_LEN))) {
+    if (NULL == (host = (char *)malloc(HTTPCLIENT_MAX_HOST_LEN))) {
         ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "not enough memory");
         return FAIL_RETURN;
     }
-    if (NULL == (path = (char *)os_malloc(HTTPCLIENT_MAX_HOST_LEN))) {
+    if (NULL == (path = (char *)malloc(HTTPCLIENT_MAX_HOST_LEN))) {
         ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "not enough memory");
         rc = FAIL_RETURN;
         goto GO_ERR_3;
     }
-    if (NULL == (send_buf = (char *)os_malloc(HTTPCLIENT_SEND_BUF_SIZE))) {
+    if (NULL == (send_buf = (char *)malloc(HTTPCLIENT_SEND_BUF_SIZE))) {
         ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "not enough memory");
         rc = FAIL_RETURN;
         goto GO_ERR_2;
     }
-    if (NULL == (buf = (char *)os_malloc(HTTPCLIENT_SEND_BUF_SIZE))) {
+    if (NULL == (buf = (char *)malloc(HTTPCLIENT_SEND_BUF_SIZE))) {
         ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "not enough memory");
         rc = FAIL_RETURN;
         goto GO_ERR_1;
@@ -378,13 +378,13 @@ int httpclient_send_header(httpclient_t *client, const char *url, int method, ht
         rc = ERROR_HTTP_CONN;
     }
 GO_ERR:
-    os_free(buf);
+    free(buf);
 GO_ERR_1:
-    os_free(send_buf);
+    free(send_buf);
 GO_ERR_2:
-    os_free(path);
+    free(path);
 GO_ERR_3:
-    os_free(host);
+    free(host);
     return rc;//SUCCESS_RETURN;
 }
 
@@ -609,7 +609,7 @@ int httpclient_retrieve_content_old(httpclient_t *client, char *data, int len, u
         #endif
 
 
-        b_data =  os_malloc((TCP_LEN_MAX+1) * sizeof(char));
+        b_data =  malloc((TCP_LEN_MAX+1) * sizeof(char));
         //bk_http_ptr->do_data = 1;
         //bk_http_ptr->http_total = readLen - len;
         do {
@@ -625,7 +625,7 @@ int httpclient_retrieve_content_old(httpclient_t *client, char *data, int len, u
                 client_data->response_buf[client_data->response_buf_len - 1] = '\0';
                 client_data->response_buf_filled = client_data->response_buf_len - 1;
                 client_data->retrieve_len -= (client_data->response_buf_len - 1 - count);
-                os_free(b_data);
+                free(b_data);
                 b_data = NULL;
                 return HTTP_RETRIEVE_MORE_DATA;
             }
@@ -647,7 +647,7 @@ int httpclient_retrieve_content_old(httpclient_t *client, char *data, int len, u
 
                 ret = httpclient_recv(client, b_data, 1, max_len, &len, iotx_time_left(&timer));
                 if (ret == ERROR_HTTP_CONN) {
-                    os_free(b_data);
+                    free(b_data);
                     b_data = NULL;
                     return ret;
                 }
@@ -655,7 +655,7 @@ int httpclient_retrieve_content_old(httpclient_t *client, char *data, int len, u
         } while (readLen);
 
         //bk_http_ptr->do_data = 0;
-        os_free(b_data);
+        free(b_data);
         b_data = NULL;
 
         if (client_data->is_chunked) {
