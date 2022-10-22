@@ -231,6 +231,80 @@ static int cmnd_lfsexec(const void * context, const char *cmd, const char *args,
 }
 
 
+// Usage for continous test: addRepeatingEvent 1 -1 lfs_test1 ir.bat
+static int cmnd_lfs_test1(const void * context, const char *cmd, const char *args, int cmdFlags){
+#ifdef BK_LITTLEFS
+	if (lfs_present()){
+		lfs_file_t file;
+		int lfsres;
+		char a;
+		int cnt;
+
+		cnt = 0;
+
+		memset(&file, 0, sizeof(lfs_file_t));
+		lfsres = lfs_file_open(&lfs, &file, args, LFS_O_RDONLY);
+
+		ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: sizeof(lfs_file_t) %i", sizeof(lfs_file_t));
+		if (lfsres >= 0) {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: openned file %s", args);
+			do {
+				lfsres = lfs_file_read(&lfs, &file, &a, 1);
+				cnt++;
+			} while (lfsres > 0) ;
+			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: Stopped at char %i\n",cnt);
+
+			lfs_file_close(&lfs, &file);
+			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: closed file %s", args);
+		} else {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: failed to file %s", args);
+		}
+	} else {
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "cmnd_lfs_test1: lfs is absent");
+	}
+#endif
+	return 1;
+}
+// Usage for continous test: addRepeatingEvent 1 -1 lfs_test2 ir.bat
+static int cmnd_lfs_test2(const void * context, const char *cmd, const char *args, int cmdFlags){
+#ifdef BK_LITTLEFS
+	if (lfs_present()){
+		lfs_file_t *file;
+		int lfsres;
+		char a;
+		int cnt;
+
+		cnt = 0;
+
+		file = malloc(sizeof(lfs_file_t));
+		if(file == 0) {
+				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: failed to malloc for %s", args);
+		} else {
+			memset(file, 0, sizeof(lfs_file_t));
+			lfsres = lfs_file_open(&lfs, file, args, LFS_O_RDONLY);
+
+			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: sizeof(lfs_file_t) %i", sizeof(lfs_file_t));
+			if (lfsres >= 0) {
+				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: openned file %s", args);
+				do {
+					lfsres = lfs_file_read(&lfs, file, &a, 1);
+					cnt++;
+				} while (lfsres > 0) ;
+				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: Stopped at char %i\n",cnt);
+
+				lfs_file_close(&lfs, file);
+				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: closed file %s", args);
+			} else {
+				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: failed to file %s", args);
+			}
+			free(file);
+		}
+	} else {
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "cmnd_lfs_test2: lfs is absent");
+	}
+#endif
+	return 1;
+}
 int taslike_commands_init(){
     CMD_RegisterCommand("power", "", power, "set output POWERn 0..100", NULL);
     CMD_RegisterCommand("powerStateOnly", "", powerStateOnly, "ensures that device is on or off without changing pwm values", NULL);
@@ -238,5 +312,7 @@ int taslike_commands_init(){
     CMD_RegisterCommand("color", "", color, "set PWN color using #RRGGBB[cw][ww]", NULL);
 	CMD_RegisterCommand("backlog", "", cmnd_backlog, "run a sequence of ; separated commands", NULL);
 	CMD_RegisterCommand("exec", "", cmnd_lfsexec, "exec <file> - run autoexec.bat or other file from LFS if present", NULL);
+	CMD_RegisterCommand("lfs_test1", "", cmnd_lfs_test1, "", NULL);
+	CMD_RegisterCommand("lfs_test2", "", cmnd_lfs_test2, "", NULL);
     return 0;
 }
