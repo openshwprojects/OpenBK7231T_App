@@ -1134,7 +1134,7 @@ int HTTPClient_Async_SendGeneric(httprequest_t *request){
     err = rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY,
 									"httprequest",
 									(beken_thread_function_t)httprequest_thread,
-									0x800,
+									0x1000,
 									(beken_thread_arg_t)request );
     if(err != kNoErr)
     {

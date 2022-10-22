@@ -270,10 +270,10 @@ void addLogAdv(int level, int feature, const char *fmt, ...)
         initLog();
     }
 
-		tmp = g_loggingBuffer;
+    BaseType_t taken = xSemaphoreTake( logMemory.mutex, 100 );
+	tmp = g_loggingBuffer;
     memset(tmp, 0, LOGGING_BUFFER_SIZE);
     t = tmp;
-    BaseType_t taken = xSemaphoreTake( logMemory.mutex, 100 );
 
     if(feature == LOG_FEATURE_RAW)
     {
@@ -291,10 +291,14 @@ void addLogAdv(int level, int feature, const char *fmt, ...)
     va_start(argList, fmt);
     vsnprintf(t, (LOGGING_BUFFER_SIZE-(3+t-tmp)), fmt, argList);
     va_end(argList);
-    if (tmp[strlen(tmp)-1]=='\n') tmp[strlen(tmp)-1]='\0';
-    if (tmp[strlen(tmp)-1]=='\r') tmp[strlen(tmp)-1]='\0';
+    int len = strlen(t);
+    if (t[len-1]=='\n') { t[len-1]='\0'; len--; }
+    if (t[len-1]=='\r') { t[len-1]='\0'; len--; }
 
-    int len = strlen(tmp); // save 3 bytes at end for /r/n/0
+    if (t[len-1]=='\n') { t[len-1]='\0'; len--; }
+    if (t[len-1]=='\r') { t[len-1]='\0'; len--; }
+
+    len = strlen(tmp); // save 3 bytes at end for /r/n/0
     tmp[len++] = '\r';
     tmp[len++] = '\n';
     tmp[len] = '\0';
@@ -412,7 +416,7 @@ void startSerialLog(){
     err = rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY,
                                     "log_serial",
                                     (beken_thread_function_t)log_serial_thread,
-                                    0x800,
+                                    0x400,
                                     (beken_thread_arg_t)0 );
     if(err != kNoErr)
     {
@@ -457,10 +461,10 @@ void log_server_thread( beken_thread_arg_t arg )
                 os_strcpy( client_ip_str, inet_ntoa( client_addr.sin_addr ) );
                 //addLog( "TCP Log Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd );
                 if ( kNoErr
-                     != rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY,
+                    != rtos_create_thread( NULL, BEKEN_APPLICATION_PRIORITY,
                                                  "Logging TCP Client",
                                                  (beken_thread_function_t)log_client_thread,
-                                                 0x800,
+                                                 0x1000,
                                                  (beken_thread_arg_t)client_fd ) )
                 {
                     close( client_fd );

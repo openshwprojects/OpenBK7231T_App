@@ -32,13 +32,39 @@ static int generateHashValue(const char *fname) {
 
 command_t *g_commands[HASH_SIZE] = { NULL };
 
+static int callme(int calls){
+	//char test[200];
+	rtos_delay_milliseconds(40);
+	calls++;
+	//memset(test, 0, 200);
+	//char *test2 = malloc(100);
+	ADDLOG_INFO(LOG_FEATURE_CMD, " recurse %d", calls);
+	if (calls < 10){
+		callme(calls);
+	}
+	//free(test2);
+	return 0;
+}
+
 static int CMD_SimonTest(const void *context, const char *cmd, const char *args, int cmdFlags){
-	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SimonTest: ir test routine");
+
 
 #ifdef PLATFORM_BK7231T
-	// anything
-#endif
 
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SimonTest: starting");
+	char *test = malloc(4000);
+
+	callme(0);
+
+	if (test){
+		memset(test, 0xaa, 4000);
+		free(test);
+	} else {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SimonTest: #####MALLOC FAILE####");
+
+	}
+	//rtos_delay_milliseconds(500);
+#endif
 	
 	return 1;
 }

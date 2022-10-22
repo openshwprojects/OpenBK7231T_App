@@ -124,7 +124,7 @@ void CMD_StartTCPCommandLine()
     err = rtos_create_thread( &g_cmd_thread, 6,
 									"CMD_server",
 									(beken_thread_function_t)CMD_ServerThread,
-									0x800,
+									0x1000,
 									(beken_thread_arg_t)0 );
     if(err != kNoErr)
     {

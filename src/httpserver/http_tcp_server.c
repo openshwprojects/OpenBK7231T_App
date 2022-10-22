@@ -35,7 +35,7 @@ void HTTPServer_Start()
 	err = rtos_create_thread(&g_http_thread, BEKEN_APPLICATION_PRIORITY,
 		"TCP_server",
 		(beken_thread_function_t)tcp_server_thread,
-		0x800,
+		0x1000,
 		(beken_thread_arg_t)0);
 	if (err != kNoErr)
 	{
@@ -227,7 +227,7 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 					rtos_create_thread(NULL, BEKEN_APPLICATION_PRIORITY,
 						"HTTP Client",
 						(beken_thread_function_t)tcp_client_thread,
-						0x800,
+						0x1600,
 						(beken_thread_arg_t)client_fd)
 
 #endif
@@ -359,7 +359,7 @@ void HTTPServer_Start()
 	err = rtos_create_thread(&g_http_thread, BEKEN_APPLICATION_PRIORITY,
 		"TCP_server",
 		(beken_thread_function_t)tcp_server_thread,
-		0x800,
+		0x1000,
 		(beken_thread_arg_t)0);
 	if (err != kNoErr)
 	{
