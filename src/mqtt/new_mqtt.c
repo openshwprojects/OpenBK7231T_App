@@ -503,7 +503,9 @@ static void mqtt_pub_request_cb(void* arg, err_t result)
 static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const char* sTopic, const char* sChannel, const char* sVal, int flags, bool appendGet)
 {
 	err_t err;
-	u8_t qos = 2; /* 0 1 or 2, see MQTT specification */
+	// qos 2 is often NOT supported  by servers anyway, and involves a BIG overhead.
+	// so change to 1.
+	u8_t qos = 1; /* 0 1 or 2, see MQTT specification */
 	u8_t retain = 0; /* No don't retain such crappy payload... */
 
 	if (client == 0)
@@ -543,14 +545,23 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 
 	g_timeSinceLastMQTTPublish = 0;
 
-	char* pub_topic = (char*)malloc(strlen(sTopic) + 1 + strlen(sChannel) + 5 + 1); //5 for /get
+	char stack_pub_topic[50];
+	char* pub_topic;
+	int topiclen = strlen(sTopic) + 1 + strlen(sChannel) + 5 + 1;
+	if (topiclen > 49){
+		pub_topic = (char*)malloc(strlen(sTopic) + 1 + strlen(sChannel) + 5 + 1); //5 for /get
+	} else {
+		pub_topic = stack_pub_topic;
+		topiclen = 0;
+	}
+
 	if (pub_topic != NULL)
 	{
 		sprintf(pub_topic, "%s/%s%s", sTopic, sChannel, (appendGet == true ? "/get" : ""));
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publishing val %s to %s retain=%i\n", sVal, pub_topic, retain);
 
 		err = mqtt_publish(client, pub_topic, sVal, strlen(sVal), qos, retain, mqtt_pub_request_cb, 0);
-		free(pub_topic);
+		if (topiclen) free(pub_topic);
 
 		if (err != ERR_OK)
 		{
@@ -781,9 +792,9 @@ static void MQTT_do_connect(mqtt_client_t* client)
 	mqtt_client_info.will_topic = will_topic;
 	mqtt_client_info.will_msg = "offline";
 	mqtt_client_info.will_retain = true,
-		mqtt_client_info.will_qos = 2,
+	mqtt_client_info.will_qos = 1,
 
-		hostEntry = gethostbyname(mqtt_host);
+	hostEntry = gethostbyname(mqtt_host);
 	if (NULL != hostEntry) {
 		if (hostEntry->h_addr_list && hostEntry->h_addr_list[0]) {
 			int len = hostEntry->h_length;
