@@ -87,7 +87,7 @@ static void tcp_client_thread(beken_thread_arg_t arg)
 			store->inuse = 1;
 			tcpClientStores[i] = store;
 			tcpClientStoreCount = i+1;
-			ADDLOG_INFO(LOG_FEATURE_HTTP, "TCP Client allocate store %d/%d", i, tcpClientStoreCount);
+			ADDLOG_INFO(LOG_FEATURE_HTTP, "TCP Client allocate store %d/%d", i+1, tcpClientStoreCount);
 			break;
 		}
 
@@ -96,7 +96,7 @@ static void tcp_client_thread(beken_thread_arg_t arg)
 			store = tcpClientStores[i];
 			memset(store, 0, sizeof(TCP_CLIENT_STORE));
 			store->inuse = 1;
-			ADDLOG_INFO(LOG_FEATURE_HTTP, "TCP Client use store %d/%d", i, tcpClientStoreCount);
+//			ADDLOG_INFO(LOG_FEATURE_HTTP, "TCP Client use store %d/%d", i, tcpClientStoreCount);
 			break;
 		}
 	}
