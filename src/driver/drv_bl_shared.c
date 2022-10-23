@@ -58,58 +58,46 @@ int changeDoNotSendMinFrames = 5;
 void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 {
     int i;
-    char tmp[128];
     const char *mode;
-    char number[16];
 
     if(DRV_IsRunning("BL0937")) {
         mode = "BL0937";
     } else if(DRV_IsRunning("BL0942")) {
         mode = "BL0942";
+    } else if(DRV_IsRunning("CSE7766")) {
+        mode = "CSE7766";
     } else {
         mode = "PWR";
     }
-    sprintf(tmp, "<h2>%s Voltage=%f, Current=%f, Power=%f, Total Consumption=%1.1f Wh (changes sent %i, skipped %i)</h2>",
-        mode, lastReadings[OBK_VOLTAGE],lastReadings[OBK_CURRENT], lastReadings[OBK_POWER],
-        energyCounter, stat_updatesSent, stat_updatesSkipped);
-    hprintf128(request,tmp);
+	
+    hprintf128(request,"<h2>%s Voltage=%f, Current=%f, Power=%f",mode, lastReadings[OBK_VOLTAGE],lastReadings[OBK_CURRENT], lastReadings[OBK_POWER]);
+    hprintf128(request,", Total Consumption=%1.1f Wh (changes sent %i, skipped %i)</h2>",energyCounter, stat_updatesSent, stat_updatesSkipped);
 
     if (energyCounterStatsEnable == true)
     {
         /********************************************************************************************************************/
         hprintf128(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
-        sprintf(tmp, "%1.1f Wh<br>", DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
-        //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"'%s'\n", tmp);
-        hprintf128(request,tmp);
-        sprintf(tmp, "Sampling interval: %d sec<br>History length: %d samples<br>History per samples:<br>", 
-                energyCounterSampleInterval, energyCounterSampleCount);
-        //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"'%s'\n", tmp);
-        hprintf128(request,tmp);
-        memset(tmp,0,128);
+        hprintf128(request,"%1.1f Wh<br>", DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+        hprintf128(request,"Sampling interval: %d sec<br>History length: ",energyCounterSampleInterval);
+        hprintf128(request,"%d samples<br>History per samples:<br>",energyCounterSampleCount);
         if (energyCounterMinutes != NULL)
         {
             for(i=0; i<energyCounterSampleCount; i++)
             {
                 if ((i%20)==0)
                 {
-                    sprintf(number,"%1.1f", energyCounterMinutes[i]);
+                    hprintf128(request, "%1.1f", energyCounterMinutes[i]);
                 } else {
-                    sprintf(number,", %1.1f", energyCounterMinutes[i]);
+                    hprintf128(request, ", %1.1f", energyCounterMinutes[i]);
                 }
-                strcat(tmp, number);
                 if ((i%20)==19)
                 {
-                    strcat(tmp, "<br>");
-                    //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"'%s'\n", tmp);
-                    hprintf128(request,tmp);
-                    memset(tmp,0,128);
+                    hprintf128(request, "<br>");
                 }
             }
 			// energyCounterMinutesIndex is a long type, we need to use %ld instead of %d
-            sprintf(tmp, "<br>History Index: %ld<br>JSON Stats: %s </h5>", energyCounterMinutesIndex,
+            hprintf128(request, "<br>History Index: %ld<br>JSON Stats: %s </h5>", energyCounterMinutesIndex,
                     (energyCounterStatsJSONEnable == true) ? "enabled" : "disabled");
-            //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"'%s'\n", tmp);
-            hprintf128(request, tmp);
         }
     } else {
         hprintf128(request,"<h5>Periodic Statistics disabled. Use startup command SetupEnergyStats to enable function.</h5>");
