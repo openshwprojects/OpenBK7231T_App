@@ -84,7 +84,7 @@ void Tokenizer_TokenizeString(const char *s) {
 		return;
 	}
 
-	strncpy(g_buffer,s, 500);
+	strcpy_safe(g_buffer,s, MAX_CMD_LEN);
 	p = g_buffer;
 	g_args[g_numArgs] = p;
 	g_argsFrom[g_numArgs] = (s+(p-g_buffer));
