@@ -58,7 +58,7 @@ typedef struct driver_s {
 // startDriver BL0937
 static driver_t g_drivers[] = {
 	{ "TuyaMCU",	TuyaMCU_Init,		TuyaMCU_RunFrame,			NULL, NULL, NULL, NULL, false },
-	{ "NTP",		NTP_Init,			NTP_OnEverySecond,			NULL, NULL, NULL, NULL, false },
+	{ "NTP",		NTP_Init,			NTP_OnEverySecond,			NTP_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 	{ "I2C",		DRV_I2C_Init,		DRV_I2C_EverySecond,		NULL, NULL, NULL, NULL, false },
 
 	//These 4 measure power

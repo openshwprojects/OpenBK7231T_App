@@ -543,7 +543,11 @@ int http_fn_index(http_request_t* request) {
 
 	hprintf255(request, "<h5>Ping watchdog - %i lost, %i ok!</h5>",
 		PingWatchDog_GetTotalLost(), PingWatchDog_GetTotalReceived());
-	hprintf255(request, "<h5>MQTT State: %s RES: %d(%s)<br>", (Main_HasMQTTConnected() == 1) ? "connected" : "disconnected",
+    if (Main_HasWiFiConnected())
+    {
+        hprintf128(request, "<h5>Wifi RSSI: %i</h5>", HAL_GetWifiStrength());
+    }
+	hprintf128(request, "<h5>MQTT State: %s RES: %d(%s)<br>", (Main_HasMQTTConnected() == 1) ? "connected" : "disconnected",
 		MQTT_GetConnectResult(), get_error_name(MQTT_GetConnectResult()));
 	hprintf255(request, "MQTT ErrMsg: %s <br>", (MQTT_GetStatusMessage() != NULL) ? MQTT_GetStatusMessage() : "");
 	hprintf255(request, "MQTT Stats:CONN: %d PUB: %d RECV: %d ERR: %d </h5>", MQTT_GetConnectEvents(),

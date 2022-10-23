@@ -10,6 +10,8 @@
 #include "drv_uart.h"
 #include "../httpserver/new_http.h"
 #include "../cJSON/cJSON.h"
+#include <time.h>
+#include "drv_ntp.h"
 
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
@@ -43,6 +45,8 @@ int noChangeFrameEnergyCounter;
 float lastSentEnergyCounterValue = 0.0f; 
 float changeSendThresholdEnergy = 0.1f;
 float lastSentEnergyCounterLastHour = 0.0f;
+float dailyStats[8];
+int actual_mday = -1;
 
 // how much of value have to change in order to be send over MQTT again?
 int changeSendThresholds[OBK_NUM_MEASUREMENTS] = {
@@ -99,6 +103,22 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
             hprintf255(request, "<br>History Index: %ld<br>JSON Stats: %s </h5>", energyCounterMinutesIndex,
                     (energyCounterStatsJSONEnable == true) ? "enabled" : "disabled");
         }
+
+        if(NTP_IsTimeSynced() == true)
+        {
+            sprintf(tmp, "Today: %1.1f Wh DailyStats: [", dailyStats[0]);
+            for(i = 1; i < 8; i++)
+            {
+                if (i==1)
+                    sprintf(number, "%1.1f", dailyStats[i]);
+                else
+                    sprintf(number, ",%1.1f", dailyStats[i]);
+                strcat(tmp, number);
+            }
+            strcat(tmp, "]");
+        }
+        strcat(tmp, "</h5>");
+        hprintf128(request, tmp);
     } else {
         hprintf255(request,"<h5>Periodic Statistics disabled. Use startup command SetupEnergyStats to enable function.</h5>");
     }
@@ -233,6 +253,8 @@ void BL_ProcessUpdate(float voltage, float current, float power)
     cJSON* stats;
     char *msg;
     portTickType interval;
+    time_t g_time;
+    struct tm *ltm;
 
     // those are final values, like 230V
     lastReadings[OBK_POWER] = power;
@@ -248,6 +270,26 @@ void BL_ProcessUpdate(float voltage, float current, float power)
 
     energyCounter += energy;
     energyCounterStamp = xTaskGetTickCount();
+
+    if(NTP_IsTimeSynced() == true) 
+    {
+        g_time = (time_t)NTP_GetCurrentTime();
+        ltm = localtime(&g_time);
+        if (actual_mday == -1)
+        {
+            actual_mday = ltm->tm_mday;
+        }
+        if (actual_mday != ltm->tm_mday)
+        {
+            for(i = 7; i > 0; i--)
+            {
+                dailyStats[i] = dailyStats[i - 1];
+            } 
+            dailyStats[0] = 0.0;
+            actual_mday = ltm->tm_mday;
+        }
+    }
+    dailyStats[0] += energy;
 
     if (energyCounterStatsEnable == true)
     {
@@ -380,6 +422,11 @@ void BL_Shared_Init()
         }
         energyCounterMinutesStamp = xTaskGetTickCount();
         energyCounterMinutesIndex = 0;
+    }
+
+    for(i = 0; i < 8; i++)
+    {
+        dailyStats[i] = 0;
     }
 
     CMD_RegisterCommand("EnergyCntReset", "", BL09XX_ResetEnergyCounter, "Reset Energy Counter", NULL);

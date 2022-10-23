@@ -38,6 +38,7 @@ float BL0937_CREF = 0.0118577075f;
 
 volatile uint32_t g_vc_pulses = 0;
 volatile uint32_t g_p_pulses = 0;
+static portTickType pulseStamp;
 
 void HlwCf1Interrupt(unsigned char pinNum) {  // Service Voltage and Current
 	g_vc_pulses++;
@@ -175,12 +176,20 @@ void BL0937_Init()
 	CMD_RegisterCommand("PREF","",BL0937_PowerRef, "Sets the calibration multiplier", NULL);
 	CMD_RegisterCommand("VREF","",BL0937_VoltageRef, "Sets the calibration multiplier", NULL);
 	CMD_RegisterCommand("IREF","",BL0937_CurrentRef, "Sets the calibration multiplier", NULL);
+
+    g_vc_pulses = 0;
+    g_p_pulses = 0;
+    pulseStamp = xTaskGetTickCount();
 }
-void BL0937_RunFrame() {
+
+void BL0937_RunFrame() 
+{
 	float final_v;
 	float final_c;
 	float final_p;
+    portTickType ticksElapsed;
 
+    ticksElapsed = (xTaskGetTickCount() - pulseStamp);
 
 	if(g_sel) {
 		res_v = g_vc_pulses;
@@ -195,11 +204,20 @@ void BL0937_RunFrame() {
 	res_p = g_p_pulses;
 	g_p_pulses = 0;
 
+    pulseStamp = xTaskGetTickCount();
 	//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
 
 	final_v = res_v * BL0937_VREF;
-	final_c = res_c * BL0937_CREF;
-	final_p = res_p * BL0937_PREF;
+    final_v *= (float)ticksElapsed;
+    final_v /= (1000.0f / (float)portTICK_PERIOD_MS); 
+	
+    final_c = res_c * BL0937_CREF;
+    final_c *= (float)ticksElapsed;
+    final_c /= (1000.0f / (float)portTICK_PERIOD_MS);
+	
+    final_p = res_p * BL0937_PREF;
+    final_p *= (float)ticksElapsed;
+    final_p /= (1000.0f / (float)portTICK_PERIOD_MS);
 #if 0
 	{
 		char dbg[128];

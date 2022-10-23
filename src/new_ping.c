@@ -57,7 +57,7 @@ static struct raw_pcb *ping_pcb;
 static unsigned int ping_lost = 0;
 static unsigned int ping_received = 0;
 static int bReceivedLastOneSend = -1;
-//static int g_delayBetweenPings_MS = 1000;
+//static int g_delayBetweenPings_MS = 1000 / portTICK_PERIOD_MS;
 
 static void ping_prepare_echo( struct icmp_echo_hdr *iecho, u16_t len)
 {
@@ -101,6 +101,7 @@ static void ping_send(struct raw_pcb *raw, const ip_addr_t *addr)
 	if(bReceivedLastOneSend == 0) {
 		//addLogAdv(LOG_INFO,LOG_FEATURE_MAIN,"Ping lost: (total lost %i, recv %i)\r\n",ping_lost,ping_received);
 		ping_lost++;
+
 	}
 	bReceivedLastOneSend = 0;
 
@@ -166,8 +167,8 @@ int PingWatchDog_GetTotalLost() {
 int PingWatchDog_GetTotalReceived() {
 	return ping_received;
 }
-void Main_SetupPingWatchDog(const char *target/*, int delayBetweenPings_Seconds*/) {
-
+void Main_SetupPingWatchDog(const char *target/*, int delayBetweenPings_Seconds*/) 
+{
 	// none sent yet.
 	bReceivedLastOneSend = -1;
 	//g_delayBetweenPings_MS = delayBetweenPings_Seconds * 1000;
@@ -183,3 +184,4 @@ void Main_SetupPingWatchDog(const char *target/*, int delayBetweenPings_Seconds*
 	// void 	sys_timeout (u32_t msecs, sys_timeout_handler handler, void *arg)
     sys_timeout(PING_DELAY, ping_timeout, ping_pcb);
 }
+

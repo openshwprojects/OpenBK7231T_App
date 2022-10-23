@@ -223,9 +223,10 @@ void Main_OnEverySecond()
 	if(g_timeSinceLastPingReply != -1 && g_secondsElapsed > 60) 
     {
 		g_timeSinceLastPingReply++;
-		if(g_timeSinceLastPingReply == CFG_GetPingDisconnectedSecondsToRestart()) 
+		if(g_timeSinceLastPingReply >= CFG_GetPingDisconnectedSecondsToRestart()) 
         {
 			ADDLOGF_INFO("[Ping watchdog] No ping replies within %i seconds. Will try to reconnect.\n",g_timeSinceLastPingReply);
+            HAL_DisconnectFromWifi();
 			g_bHasWiFiConnected = 0;
 			g_connectToWiFi = 10;
 		}
@@ -321,7 +322,7 @@ void Main_OnEverySecond()
 		if(0==g_startPingWatchDogAfter) 
         {
 			const char *pingTargetServer;
-			///int pingInterval;
+			//int pingInterval;
 			int restartAfterNoPingsSeconds;
 
 			g_bPingWatchDogStarted = 1;
@@ -330,14 +331,13 @@ void Main_OnEverySecond()
 			//pingInterval = CFG_GetPingIntervalSeconds();
 			restartAfterNoPingsSeconds = CFG_GetPingDisconnectedSecondsToRestart();
 
-			if(*pingTargetServer /* && pingInterval > 0*/ && restartAfterNoPingsSeconds > 0) 
+			if((pingTargetServer != NULL) && (strlen(pingTargetServer)>0) && 
+               /*(pingInterval > 0) && */ (restartAfterNoPingsSeconds > 0)) 
             {
 				// mark as enabled
 				g_timeSinceLastPingReply = 0;
 			    //Main_SetupPingWatchDog(pingTargetServer,pingInterval);
-				Main_SetupPingWatchDog(pingTargetServer
-					/*,1*/
-					);
+				Main_SetupPingWatchDog(pingTargetServer);
 			} else {
 				// mark as disabled
 				g_timeSinceLastPingReply = -1;

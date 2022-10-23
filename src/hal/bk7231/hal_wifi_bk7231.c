@@ -240,6 +240,10 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key)
 	bk_wlan_start(&network_cfg);
 }
 
+void HAL_DisconnectFromWifi()
+{
+    bk_wlan_stop(STATION);
+}
 
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
