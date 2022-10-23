@@ -100,7 +100,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
                 }
             }
 			// energyCounterMinutesIndex is a long type, we need to use %ld instead of %d
-            hprintf255(request, "<br>History Index: %ld<br>JSON Stats: %s </h5>", energyCounterMinutesIndex,
+            if ((i%20)!=0)
+                hprintf255(request, "<br>");
+            hprintf255(request, "History Index: %ld<br>JSON Stats: %s <br>", energyCounterMinutesIndex,
                     (energyCounterStatsJSONEnable == true) ? "enabled" : "disabled");
         }
 
@@ -116,9 +118,12 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
             }
             hprintf128(request, "]");
         } else {
-            hprintf128(request,"Daily stats require NTP driver to sync real time.");
+            if(DRV_IsRunning("NTP")==false)
+                hprintf255(request,"NTP driver is not started, daily stats disbled.");
+            else
+                hprintf255(request,"Daily stats require NTP driver to sync real time.");
         }
-        hprintf128(request, "</h5>");
+        hprintf255(request, "</h5>");
     } else {
         hprintf255(request,"<h5>Periodic Statistics disabled. Use startup command SetupEnergyStats to enable function.</h5>");
     }
