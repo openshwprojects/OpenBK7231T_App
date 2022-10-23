@@ -252,6 +252,9 @@ void EventHandlers_AddEventHandler_Integer(byte eventCode, int type, int require
 	ev->eventCode = eventCode;
 	ev->requiredArgument = requiredArgument;
 	ev->requiredArgument2 = requiredArgument2;
+
+	ev->next = g_eventHandlers;
+	g_eventHandlers = ev;
 }
 
 void EventHandlers_AddEventHandler_String(byte eventCode, int type, const char *requiredArgument, const char *commandToRun)
@@ -265,6 +268,9 @@ void EventHandlers_AddEventHandler_String(byte eventCode, int type, const char *
 	ev->eventCode = eventCode;
 	ev->requiredArgument = 0;
 	ev->requiredArgument2 = 0;
+
+	ev->next = g_eventHandlers;
+	g_eventHandlers = ev;
 }
 
 void EventHandlers_FireEvent2(byte eventCode, int argument, int argument2) {
