@@ -10,6 +10,16 @@
 beken_timer_t g_main_timer_1s;
 
 
+#if PLATFORM_BK7231T
+
+// realloc fix - otherwise calling realloc crashes.
+// Just fall back to os_realloc.
+_PTR realloc _PARAMS ((_PTR a, size_t b)) {
+	return os_realloc(a,b);
+}
+
+#endif
+
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
 
