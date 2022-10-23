@@ -11,6 +11,15 @@
 #define INCOMING_BUFFER_SIZE		1024
 
 
+// it was 0x800 - 2048 - until 23 10 2022
+// The larger stack size for handling HTTP request is needed, for example, for commands
+// See: https://github.com/openshwprojects/OpenBK7231T_App/issues/314
+#if PLATFORM_BEKEN
+#define HTTP_CLIENT_STACK_SIZE 8192
+#else
+#define HTTP_CLIENT_STACK_SIZE 2048
+#endif
+
 #define CREATE_THREAD_PER_EACH_HTTP_CLIENT
 
 #ifdef CREATE_THREAD_PER_EACH_HTTP_CLIENT
@@ -182,7 +191,7 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 					rtos_create_thread(NULL, BEKEN_APPLICATION_PRIORITY,
 						"HTTP Client",
 						(beken_thread_function_t)tcp_client_thread,
-						0x800,
+						HTTP_CLIENT_STACK_SIZE,
 						(beken_thread_arg_t)client_fd)
 
 #endif

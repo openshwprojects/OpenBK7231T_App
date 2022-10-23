@@ -244,6 +244,7 @@ void EventHandlers_ProcessVariableChange_Integer(byte eventCode, int oldValue, i
 void EventHandlers_AddEventHandler_Integer(byte eventCode, int type, int requiredArgument, int requiredArgument2, const char *commandToRun)
 {
 	eventHandler_t *ev = malloc(sizeof(eventHandler_t));
+	memset(ev,0,sizeof(eventHandler_t));
 
 	ev->next = g_eventHandlers;
 	g_eventHandlers = ev;
@@ -259,6 +260,7 @@ void EventHandlers_AddEventHandler_Integer(byte eventCode, int type, int require
 void EventHandlers_AddEventHandler_String(byte eventCode, int type, const char *requiredArgument, const char *commandToRun)
 {
 	eventHandler_t *ev = malloc(sizeof(eventHandler_t));
+	memset(ev,0,sizeof(eventHandler_t));
 
 	ev->next = g_eventHandlers;
 	g_eventHandlers = ev;
