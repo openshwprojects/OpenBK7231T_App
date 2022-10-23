@@ -35,13 +35,15 @@ const char* sensor_mqtt_device_units[OBK_NUM_MEASUREMENTS] = {
 const char* counter_mqttNames[OBK_NUM_COUNTERS] = {
 	"energycounter",
 	"energycounter_last_hour",
-	"consumption_stats"
+	"consumption_stats",
+    "energycounter_yesterday"
 };
 
 const char* counter_devClasses[OBK_NUM_COUNTERS] = {
 	"energy",
 	"energy",
 	""
+    "energy"
 };
 
 typedef struct driver_s {

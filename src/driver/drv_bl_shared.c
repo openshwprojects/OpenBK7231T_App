@@ -280,6 +280,7 @@ void BL_ProcessUpdate(float voltage, float current, float power)
     {
         g_time = (time_t)NTP_GetCurrentTime();
         ltm = localtime(&g_time);
+
         if (actual_mday == -1)
         {
             actual_mday = ltm->tm_mday;
@@ -292,8 +293,11 @@ void BL_ProcessUpdate(float voltage, float current, float power)
             } 
             dailyStats[0] = 0.0;
             actual_mday = ltm->tm_mday;
+            MQTT_PublishMain_StringFloat(counter_mqttNames[3], dailyStats[1]);
+            stat_updatesSent++;
         }
     }
+
     dailyStats[0] += energy;
 
     if (energyCounterStatsEnable == true)
@@ -311,6 +315,8 @@ void BL_ProcessUpdate(float voltage, float current, float power)
                 cJSON_AddNumberToObject(root, "consumption_stat_index", energyCounterMinutesIndex);
                 cJSON_AddNumberToObject(root, "consumption_sample_count", energyCounterSampleCount);
                 cJSON_AddNumberToObject(root, "consumption_sampling_period", energyCounterSampleInterval);
+                cJSON_AddNumberToObject(root, "consumption_today", dailyStats[0]);
+                cJSON_AddNumberToObject(root, "consumption_yesterday", dailyStats[1]);
 
                 if (energyCounterMinutes != NULL)
                 {
@@ -321,6 +327,12 @@ void BL_ProcessUpdate(float voltage, float current, float power)
                     }
                     cJSON_AddItemToObject(root, "consumption_samples", stats);
                 }
+                stats = cJSON_CreateArray();
+                for(i = 0; i < 8; i++)
+                {
+                    cJSON_AddItemToArray(stats, cJSON_CreateNumber(dailyStats[i]));
+                }
+                cJSON_AddItemToObject(root, "consumption_daily", stats);
 
                 msg = cJSON_Print(root);
                 cJSON_Delete(root);
@@ -394,6 +406,8 @@ void BL_ProcessUpdate(float voltage, float current, float power)
         EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR, lastSentEnergyCounterLastHour, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
         lastSentEnergyCounterLastHour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
         stat_updatesSent++;
+        MQTT_PublishMain_StringFloat(counter_mqttNames[3], dailyStats[1]);
+        stat_updatesSent++;
     } else {
         noChangeFrameEnergyCounter++;
         stat_updatesSkipped++;
@@ -463,6 +477,8 @@ float DRV_GetReading(int type)
                 }
             }
             return hourly_sum;
+        case OBK_CONSUMPTION_YESTERDAY:
+            return dailyStats[1];
         default:
             break;
     }
