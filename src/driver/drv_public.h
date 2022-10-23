@@ -21,6 +21,8 @@ enum {
 
 // MQTT names of sensors (voltage, current, power)
 extern const char* sensor_mqttNames[];
+extern const char* sensor_mqtt_device_classes[];
+extern const char* sensor_mqtt_device_units[];
 extern const char* counter_mqttNames[];
 extern const char* counter_devClasses[];
 

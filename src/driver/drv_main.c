@@ -19,6 +19,19 @@ const char* sensor_mqttNames[OBK_NUM_MEASUREMENTS] = {
 	"power"
 };
 
+//sensor_device_classes just so happens to be the same as sensor_mqttNames.
+const char* sensor_mqtt_device_classes[OBK_NUM_MEASUREMENTS] = {
+	"voltage",
+	"current",
+	"power"
+};
+
+const char* sensor_mqtt_device_units[OBK_NUM_MEASUREMENTS] = {
+	"V",
+	"A",
+	"W"
+};
+
 const char* counter_mqttNames[OBK_NUM_COUNTERS] = {
 	"energycounter",
 	"energycounter_last_hour",
@@ -79,7 +92,7 @@ bool DRV_IsRunning(const char* name) {
 				return true;
 			}
 		}
-}
+	}
 	return false;
 }
 
