@@ -10,12 +10,12 @@
 #include "../driver/drv_public.h"
 #include "../driver/drv_ntp.h"
 
-#define DEDUPER_MAX_STRING_LEN 128
+#define DEDUPER_MAX_STRING_LEN 32
 
 // TODO: diferriate between string and int types, do not malloc buffer for int type
 typedef struct mqtt_dedup_slot_s {
 	char value[DEDUPER_MAX_STRING_LEN];
-	int iValue;
+	//int iValue;
 	int timeSinceLastSend;
 } mqtt_dedup_slot_t;
 
