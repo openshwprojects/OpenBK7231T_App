@@ -179,6 +179,62 @@ static int cmnd_backlog(const void * context, const char *cmd, const char *args,
 	return 1;
 }
 
+// Our wrapper for LFS.
+// Returns a buffer created with malloc.
+// You must free it later.
+byte *LFS_ReadFile(const char *fname) {
+#ifdef BK_LITTLEFS
+	if (lfs_present()){
+		lfs_file_t file;
+		int lfsres;
+		int len;
+		int cnt;
+		byte *res, *at;
+
+		cnt = 0;
+
+		memset(&file, 0, sizeof(lfs_file_t));
+		lfsres = lfs_file_open(&lfs, &file, fname, LFS_O_RDONLY);
+
+		if (lfsres >= 0) {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: openned file %s", fname);
+			//lfs_file_seek(&lfs,&file,0,LFS_SEEK_END);
+			//len = lfs_file_tell(&lfs,&file);
+			//lfs_file_seek(&lfs,&file,0,LFS_SEEK_SET);
+
+			len = lfs_file_size(&lfs,&file);
+
+			res = malloc(len);
+			at = res;
+
+			if(res == 0) {
+				ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: openned file %s but malloc failed for %i", fname, len);
+			} else {
+				char buffer[32];
+
+				while(1) {
+					lfsres = lfs_file_read(&lfs, &file, buffer, sizeof(buffer));
+					if(lfsres <= 0)
+						break;
+					memcpy(at,buffer,lfsres);
+
+					at += lfsres;
+					break;
+				}
+				ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: Loaded %i bytes\n",len);
+			}
+			lfs_file_close(&lfs, &file);
+			ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: closed file %s", fname);
+			return res;
+		} else {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: failed to file %s", fname);
+		}
+	} else {
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "LFS_ReadFile: lfs is absent");
+	}
+#endif
+	return 0;
+}
 
 static int cmnd_lfsexec(const void * context, const char *cmd, const char *args, int cmdFlags){
 #ifdef BK_LITTLEFS
@@ -231,6 +287,91 @@ static int cmnd_lfsexec(const void * context, const char *cmd, const char *args,
 }
 
 
+// Usage for continous test: addRepeatingEvent 1 -1 lfs_test1 ir.bat
+static int cmnd_lfs_test1(const void * context, const char *cmd, const char *args, int cmdFlags){
+#ifdef BK_LITTLEFS
+	if (lfs_present()){
+		lfs_file_t file;
+		int lfsres;
+		char a;
+		int cnt;
+
+		cnt = 0;
+
+		memset(&file, 0, sizeof(lfs_file_t));
+		lfsres = lfs_file_open(&lfs, &file, args, LFS_O_RDONLY);
+
+		ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: sizeof(lfs_file_t) %i", sizeof(lfs_file_t));
+		if (lfsres >= 0) {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: openned file %s", args);
+			do {
+				lfsres = lfs_file_read(&lfs, &file, &a, 1);
+				cnt++;
+			} while (lfsres > 0) ;
+			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: Stopped at char %i\n",cnt);
+
+			lfs_file_close(&lfs, &file);
+			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: closed file %s", args);
+		} else {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: failed to file %s", args);
+		}
+	} else {
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "cmnd_lfs_test1: lfs is absent");
+	}
+#endif
+	return 1;
+}
+// Usage for continous test: addRepeatingEvent 1 -1 lfs_test2 ir.bat
+static int cmnd_lfs_test2(const void * context, const char *cmd, const char *args, int cmdFlags){
+#ifdef BK_LITTLEFS
+	if (lfs_present()){
+		lfs_file_t *file;
+		int lfsres;
+		char a;
+		int cnt;
+
+		cnt = 0;
+
+		file = malloc(sizeof(lfs_file_t));
+		if(file == 0) {
+				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: failed to malloc for %s", args);
+		} else {
+			memset(file, 0, sizeof(lfs_file_t));
+			lfsres = lfs_file_open(&lfs, file, args, LFS_O_RDONLY);
+
+			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: sizeof(lfs_file_t) %i", sizeof(lfs_file_t));
+			if (lfsres >= 0) {
+				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: openned file %s", args);
+				do {
+					lfsres = lfs_file_read(&lfs, file, &a, 1);
+					cnt++;
+				} while (lfsres > 0) ;
+				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: Stopped at char %i\n",cnt);
+
+				lfs_file_close(&lfs, file);
+				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: closed file %s", args);
+			} else {
+				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: failed to file %s", args);
+			}
+			free(file);
+		}
+	} else {
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "cmnd_lfs_test2: lfs is absent");
+	}
+#endif
+	return 1;
+}
+// Usage for continous test: addRepeatingEvent 1 -1 lfs_test3 ir.bat
+static int cmnd_lfs_test3(const void * context, const char *cmd, const char *args, int cmdFlags){
+	byte *res;
+
+	res = LFS_ReadFile(args);
+
+	if(res) {
+		free(res);
+	}
+	return 1;
+}
 int taslike_commands_init(){
     CMD_RegisterCommand("power", "", power, "set output POWERn 0..100", NULL);
     CMD_RegisterCommand("powerStateOnly", "", powerStateOnly, "ensures that device is on or off without changing pwm values", NULL);
@@ -238,5 +379,8 @@ int taslike_commands_init(){
     CMD_RegisterCommand("color", "", color, "set PWN color using #RRGGBB[cw][ww]", NULL);
 	CMD_RegisterCommand("backlog", "", cmnd_backlog, "run a sequence of ; separated commands", NULL);
 	CMD_RegisterCommand("exec", "", cmnd_lfsexec, "exec <file> - run autoexec.bat or other file from LFS if present", NULL);
+	CMD_RegisterCommand("lfs_test1", "", cmnd_lfs_test1, "", NULL);
+	CMD_RegisterCommand("lfs_test2", "", cmnd_lfs_test2, "", NULL);
+	CMD_RegisterCommand("lfs_test3", "", cmnd_lfs_test3, "", NULL);
     return 0;
 }

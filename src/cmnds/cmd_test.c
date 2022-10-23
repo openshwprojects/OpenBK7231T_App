@@ -123,6 +123,15 @@ static int testRealloc(const void * context, const char *cmd, const char *args, 
     return 0;
 }
 
+static int testLog(const void * context, const char *cmd, const char *args, int cmdFlags){
+	int a = 123;
+	float b = 3.14;
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "This is an int - %i",a);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "This is a float - %f",b);
+	
+	return 1;
+}
 // Usage: addRepeatingEvent 1 -1 testJSON 100
 static int testJSON(const void * context, const char *cmd, const char *args, int cmdFlags){
     cJSON* root;
@@ -177,6 +186,7 @@ int fortest_commands_init(){
     CMD_RegisterCommand("testMallocFree", "", testMallocFree, "", NULL);
     CMD_RegisterCommand("testRealloc", "", testRealloc, "", NULL);
     CMD_RegisterCommand("testJSON", "", testJSON, "", NULL);
+    CMD_RegisterCommand("testLog", "", testLog, "", NULL);
     return 0;
 }
 

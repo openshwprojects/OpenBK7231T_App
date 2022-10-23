@@ -243,16 +243,8 @@ void EventHandlers_ProcessVariableChange_Integer(byte eventCode, int oldValue, i
 
 void EventHandlers_AddEventHandler_Integer(byte eventCode, int type, int requiredArgument, int requiredArgument2, const char *commandToRun)
 {
-	eventHandler_t *ev = g_eventHandlers;
-	while(ev){
-		if ((ev->eventType == type) &&
-			(ev->eventCode == eventCode) &&
-			(ev->requiredArgument == requiredArgument) &&
-			(ev->requiredArgument2 == requiredArgument2)){
-				break;
-		}
-		ev = ev->next;
-	}
+	eventHandler_t *ev = malloc(sizeof(eventHandler_t));
+	memset(ev,0,sizeof(eventHandler_t));
 
 	// only re-allocate and pre-pend if we did not find it
 	if (!ev){
@@ -277,17 +269,8 @@ void EventHandlers_AddEventHandler_Integer(byte eventCode, int type, int require
 
 void EventHandlers_AddEventHandler_String(byte eventCode, int type, const char *requiredArgument, const char *commandToRun)
 {
-	eventHandler_t *ev = g_eventHandlers;
-	while(ev){
-		if ((ev->eventType == type) &&
-			(!stricmp(ev->requiredArgumentText, requiredArgument)) &&
-			(ev->eventCode == eventCode) &&
-			(ev->requiredArgument == 0) &&
-			(ev->requiredArgument2 == 0)){
-				break;
-		}
-		ev = ev->next;
-	}
+	eventHandler_t *ev = malloc(sizeof(eventHandler_t));
+	memset(ev,0,sizeof(eventHandler_t));
 
 	// only re-allocate and pre-pend if we did not find it
 	if (!ev){
