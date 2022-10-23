@@ -57,6 +57,7 @@ static int CMD_SimonTest(const void *context, const char *cmd, const char *args,
 
 #ifdef PLATFORM_BK7231T
 	logStack("CMD_SimonTest");
+	mallocTest();
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SimonTest: starting stackvarsize %d", sizeof(StackType_t));
 
 	char *test = malloc(4000);

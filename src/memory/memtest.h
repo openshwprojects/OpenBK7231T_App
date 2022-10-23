@@ -7,7 +7,9 @@ extern int getMallocSize(void *ptr);
 // log the stack use and total size for the current task.
 void logStack(const char *name);
 // get total stack size and used in BYTES
-void getStack(uint32_t* pTotal, uint32_t* pUsed);
+int getStack(uint32_t* pTotal, uint32_t* pUsed);
+void mallocTest();
+
 
 #ifdef PLATFORM_BK7231T
 
@@ -106,23 +108,26 @@ typedef struct A_BLOCK_LINK
 	size_t xBlockSize;						/*<< The size of the free block. */
 } BlockLink_t;
 
-// read the SP and the current stacksize
+// read the SP
 #define GETSTACK \
 	register uint32_t SP = 0; \
-	__asm volatile ("mov %0, sp\n\t" : "=r" ( SP )	); \
-	uint32_t stacksize = SP - (uint32_t)pxCurrentTCB->pxStack;
+	__asm volatile ("mov %0, sp\n\t" : "=r" ( SP )	);
 
 // read the caller address for a fucntion
 #define GETCALLERADDR \
-    register uint32_t calleraddr; \
+    register uint32_t calleraddr = 0; \
     __asm volatile ("MOV %0, LR\n" : "=r" (calleraddr) ); 
 
 
 #else 
+
 // non-beken
 #define GETSTACK \
-	uint32_t SP = 0; \
-	uint32_t stacksize = 0;
+	uint32_t SP = 0;
+
+#define GETCALLERADDR \
+    register uint32_t calleraddr = 0;
+
 #endif
 
 
