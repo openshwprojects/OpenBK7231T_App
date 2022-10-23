@@ -67,7 +67,7 @@ const char* HAL_GetMACStr(char* macstr)
 }
 
 const char *get_security_type(int type) {
-	const char *t
+	const char *t = "Error";
 	switch (type)
 	{
 	case SECURITY_TYPE_NONE:
@@ -87,9 +87,6 @@ const char *get_security_type(int type) {
 		break;
 	case SECURITY_TYPE_AUTO:
 		t = "AUTO";
-		break;
-	default:
-		t = "Error";
 		break;
 	}
 
