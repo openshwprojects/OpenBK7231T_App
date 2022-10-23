@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include "cmd_local.h"
 #include "../driver/drv_ir.h"
+#include "../memory/memtest.h"
 
 #ifdef BK_LITTLEFS
 	#include "../littlefs/our_lfs.h"
@@ -32,8 +33,12 @@ static int generateHashValue(const char *fname) {
 
 command_t *g_commands[HASH_SIZE] = { NULL };
 
+
+
+
 static int callme(int calls){
-	//char test[200];
+#ifdef PLATFORM_BK7231T
+	logStack("callme");
 	rtos_delay_milliseconds(40);
 	calls++;
 	//memset(test, 0, 200);
@@ -43,6 +48,7 @@ static int callme(int calls){
 		callme(calls);
 	}
 	//free(test2);
+#endif	
 	return 0;
 }
 
@@ -50,8 +56,9 @@ static int CMD_SimonTest(const void *context, const char *cmd, const char *args,
 
 
 #ifdef PLATFORM_BK7231T
+	logStack("CMD_SimonTest");
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SimonTest: starting stackvarsize %d", sizeof(StackType_t));
 
-	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SimonTest: starting");
 	char *test = malloc(4000);
 
 	callme(0);
