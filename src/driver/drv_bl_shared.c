@@ -106,19 +106,19 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
         if(NTP_IsTimeSynced() == true)
         {
-            sprintf(tmp, "Today: %1.1f Wh DailyStats: [", dailyStats[0]);
+            hprintf128(request, "Today: %1.1f Wh DailyStats: [", dailyStats[0]);
             for(i = 1; i < 8; i++)
             {
                 if (i==1)
-                    sprintf(number, "%1.1f", dailyStats[i]);
+                    hprintf128(request, "%1.1f", dailyStats[i]);
                 else
-                    sprintf(number, ",%1.1f", dailyStats[i]);
-                strcat(tmp, number);
+                    hprintf128(request, ",%1.1f", dailyStats[i]);
             }
-            strcat(tmp, "]");
+            hprintf128(request, "]");
+        } else {
+            hprintf128(request,"Daily stats require NTP driver to sync real time.");
         }
-        strcat(tmp, "</h5>");
-        hprintf128(request, tmp);
+        hprintf128(request, "</h5>");
     } else {
         hprintf255(request,"<h5>Periodic Statistics disabled. Use startup command SetupEnergyStats to enable function.</h5>");
     }
