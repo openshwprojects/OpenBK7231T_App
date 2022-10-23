@@ -202,6 +202,7 @@ void apply_smart_light() {
 	}
 }
 
+
 static OBK_Publish_Result sendColorChange() {
 	char s[16];
 	byte c[3];
@@ -216,7 +217,7 @@ static OBK_Publish_Result sendColorChange() {
 
 	sprintf(s,"%02X%02X%02X",c[0],c[1],c[2]);
 
-	return MQTT_PublishMain_StringString("led_basecolor_rgb",s, 0);
+	return MQTT_PublishMain_StringString_DeDuped(DEDUP_LED_BASECOLOR_RGB,DEDUP_EXPIRE_TIME,"led_basecolor_rgb",s, 0);
 }
 void LED_GetBaseColorString(char * s) {
 	byte c[3];
@@ -241,17 +242,17 @@ static void sendFinalColor() {
 
 	sprintf(s,"%02X%02X%02X",c[0],c[1],c[2]);
 
-	MQTT_PublishMain_StringString("led_finalcolor_rgb",s, 0);
+	MQTT_PublishMain_StringString_DeDuped(DEDUP_LED_FINALCOLOR_RGB,DEDUP_EXPIRE_TIME,"led_finalcolor_rgb",s, 0);
 }
 OBK_Publish_Result LED_SendDimmerChange() {
 	int iValue;
 
 	iValue = g_brightness / g_cfg_brightnessMult;
 
-	return MQTT_PublishMain_StringInt("led_dimmer", iValue);
+	return MQTT_PublishMain_StringInt_DeDuped(DEDUP_LED_DIMMER,DEDUP_EXPIRE_TIME,"led_dimmer", iValue, 0);
 }
 static OBK_Publish_Result sendTemperatureChange(){
-	return MQTT_PublishMain_StringInt("led_temperature", (int)led_temperature_current);
+	return MQTT_PublishMain_StringInt_DeDuped(DEDUP_LED_TEMPERATURE,DEDUP_EXPIRE_TIME,"led_temperature", (int)led_temperature_current,0);
 }
 float LED_GetTemperature() {
 	return led_temperature_current;
@@ -336,7 +337,7 @@ static int temperature(const void *context, const char *cmd, const char *args, i
 	//return 0;
 }
 OBK_Publish_Result LED_SendEnableAllState() {
-	return MQTT_PublishMain_StringInt("led_enableAll",g_lightEnableAll);
+	return MQTT_PublishMain_StringInt_DeDuped(DEDUP_LED_ENABLEALL,DEDUP_EXPIRE_TIME,"led_enableAll",g_lightEnableAll,0);
 }
 void LED_SetEnableAll(int bEnable) {
 	g_lightEnableAll = bEnable;
