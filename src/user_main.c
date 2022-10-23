@@ -139,6 +139,8 @@ void Main_OnWiFiStatusChange(int code)
             break;
         case WIFI_STA_DISCONNECTED:
             // try to connect again in few seconds
+            if (g_bHasWiFiConnected != 0)
+                HAL_DisconnectFromWifi();
             g_connectToWiFi = 15;
 			g_bHasWiFiConnected = 0;
 			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_DISCONNECTED\r\n");
