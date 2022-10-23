@@ -246,22 +246,9 @@ void EventHandlers_AddEventHandler_Integer(byte eventCode, int type, int require
 	eventHandler_t *ev = malloc(sizeof(eventHandler_t));
 	memset(ev,0,sizeof(eventHandler_t));
 
-	// only re-allocate and pre-pend if we did not find it
-	if (!ev){
-		ev = (eventHandler_t *) malloc(sizeof(eventHandler_t));
-		ev->next = g_eventHandlers;
-		g_eventHandlers = ev;
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "EventHandlers_AddEventHandler_Integer: new event %s", commandToRun);
-	} else {
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "EventHandlers_AddEventHandler_Integer: replace event %s", commandToRun);
-	}
-
 	ev->requiredArgumentText = NULL;
 	ev->eventType = type;
-	if (strcmp(ev->command, commandToRun)){
-		free(ev->command);
-		ev->command = test_strdup(commandToRun);
-	}
+	ev->command = test_strdup(commandToRun);
 	ev->eventCode = eventCode;
 	ev->requiredArgument = requiredArgument;
 	ev->requiredArgument2 = requiredArgument2;
@@ -272,22 +259,9 @@ void EventHandlers_AddEventHandler_String(byte eventCode, int type, const char *
 	eventHandler_t *ev = malloc(sizeof(eventHandler_t));
 	memset(ev,0,sizeof(eventHandler_t));
 
-	// only re-allocate and pre-pend if we did not find it
-	if (!ev){
-		ev = (eventHandler_t *) malloc(sizeof(eventHandler_t));
-		ev->next = g_eventHandlers;
-		g_eventHandlers = ev;
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "EventHandlers_AddEventHandler_String: new event %s", commandToRun);
-	} else {
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "EventHandlers_AddEventHandler_String: replace event %s", commandToRun);
-	}
-
 	ev->requiredArgumentText = test_strdup(requiredArgument);
 	ev->eventType = type;
-	if (strcmp(ev->command, commandToRun)){
-		free(ev->command);
-		ev->command = test_strdup(commandToRun);
-	}
+	ev->command = test_strdup(commandToRun);
 	ev->eventCode = eventCode;
 	ev->requiredArgument = 0;
 	ev->requiredArgument2 = 0;
