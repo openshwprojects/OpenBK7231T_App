@@ -66,31 +66,34 @@ const char* HAL_GetMACStr(char* macstr)
 	return macstr;
 }
 
-void print_security_type(int type) {
+const char *get_security_type(int type) {
+	const char *t
 	switch (type)
 	{
 	case SECURITY_TYPE_NONE:
-		bk_printf("OPEN\r\n");
+		t = "OPEN";
 		break;
 	case SECURITY_TYPE_WEP:
-		bk_printf("WEP\r\n");
+		t = "WEP";
 		break;
 	case SECURITY_TYPE_WPA_TKIP:
-		bk_printf("TKIP\r\n");
+		t = "TKIP";
 		break;
 	case SECURITY_TYPE_WPA2_AES:
-		bk_printf("CCMP\r\n");
+		t = "CCMP";
 		break;
 	case SECURITY_TYPE_WPA2_MIXED:
-		bk_printf("MIXED\r\n");
+		t = "MIXED";
 		break;
 	case SECURITY_TYPE_AUTO:
-		bk_printf("AUTO\r\n");
+		t = "AUTO";
 		break;
 	default:
-		bk_printf("Error\r\n");
+		t = "Error";
 		break;
 	}
+
+	return t;
 }
 
 void HAL_PrintNetworkInfo()
@@ -110,9 +113,11 @@ void HAL_PrintNetworkInfo()
 	network_InitTypeDef_ap_st ap_info;
 	char ssid[33] = { 0 };
 #if CFG_IEEE80211N
-	bk_printf("sta: %d, softap: %d, b/g/n\r\n", sta_ip_is_start(), uap_ip_is_start());
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, 
+		"sta: %d, softap: %d, b/g/n\r\n", sta_ip_is_start(), uap_ip_is_start());
 #else
-	bk_printf("sta: %d, softap: %d, b/g\r\n", sta_ip_is_start(), uap_ip_is_start());
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, 
+		"sta: %d, softap: %d, b/g\r\n", sta_ip_is_start(), uap_ip_is_start());
 #endif
 
 	if (sta_ip_is_start())
@@ -121,10 +126,11 @@ void HAL_PrintNetworkInfo()
 		bk_wlan_get_link_status(&linkStatus);
 		memcpy(ssid, linkStatus.ssid, 32);
 
-		char* fmt = "sta:rssi=%d,ssid=%s,bssid=" MACSTR ",channel=%d,cipher_type:";
-		bk_printf(fmt,
-			linkStatus.wifi_strength, ssid, MAC2STR(linkStatus.bssid), linkStatus.channel);
-		print_security_type(bk_sta_cipher_type());
+		char* fmt = "sta:rssi=%d,ssid=%s,bssid=" MACSTR ",channel=%d,cipher_type:%s";
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, 
+			fmt,
+			linkStatus.wifi_strength, ssid, MAC2STR(linkStatus.bssid), linkStatus.channel,
+			get_security_type(bk_sta_cipher_type()));
 	}
 
 	if (uap_ip_is_start())
@@ -132,9 +138,9 @@ void HAL_PrintNetworkInfo()
 		os_memset(&ap_info, 0x0, sizeof(network_InitTypeDef_ap_st));
 		bk_wlan_ap_para_info_get(&ap_info);
 		memcpy(ssid, ap_info.wifi_ssid, 32);
-		bk_printf("softap:ssid=%s,channel=%d,dhcp=%d,cipher_type:",
-			ssid, ap_info.channel, ap_info.dhcp_mode);
-		print_security_type(ap_info.security);
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, 
+			"softap:ssid=%s,channel=%d,dhcp=%d,cipher_type:%s",
+			ssid, ap_info.channel, ap_info.dhcp_mode, get_security_type(ap_info.security));
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "ip=%s,gate=%s,mask=%s,dns=%s\r\n",
 			ap_info.local_ip_addr,
 			ap_info.gateway_ip_addr,
