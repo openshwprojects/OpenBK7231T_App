@@ -201,6 +201,7 @@ void Main_OnEverySecond()
 
 	// run_adc_test();
 	bMQTTconnected = MQTT_RunEverySecondUpdate();
+	MQTT_Dedup_Tick();
 	RepeatingEvents_OnEverySecond();
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();

@@ -30,6 +30,9 @@ enum OBK_Publish_Result_e {
 #define OBK_PUBLISH_FLAG_MUTEX_SILENT	1
 #define OBK_PUBLISH_FLAG_RETAIN			2
 
+#include "new_mqtt_deduper.h"
+
+
 // ability to register callbacks for MQTT data
 typedef struct obk_mqtt_request_tag {
 	const unsigned char* received; // note: NOT terminated, may be binary
