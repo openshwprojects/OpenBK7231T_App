@@ -254,7 +254,12 @@ HassDeviceInfo* hass_init_sensor_device_info(int index) {
 	}
 	if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_CONSUMPTION_STATS))
 	{
-		cJSON_AddStringToObject(info->root, "dev_cla", counter_devClasses[index - OBK_CONSUMPTION_TOTAL]);  //device_class=consumption
+		const char* device_class_value = counter_devClasses[index - OBK_CONSUMPTION_TOTAL];
+		cJSON_AddStringToObject(info->root, "dev_cla", device_class_value);  //device_class=consumption
+
+		if (strcmp(device_class_value, "None")) {
+			cJSON_AddStringToObject(info->root, "unit_of_meas", "Wh");   //unit_of_measurement
+		}
 
 		sprintf(g_hassBuffer, "%s/%s/get", clientId, counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
 		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
