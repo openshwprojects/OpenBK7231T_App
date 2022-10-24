@@ -579,6 +579,29 @@ void HAL_FlashVars_SaveLED(byte mode, short brightness, short temperature, byte 
 #endif
 }
 
+short HAL_FlashVars_ReadUsage() {
+#ifndef DISABLE_FLASH_VARS_VARS
+	return  flash_vars.savedValues[MAX_RETAIN_CHANNELS-1];
+#endif
+}
+void HAL_FlashVars_SaveTotalUsage(short usage) {
+#ifndef DISABLE_FLASH_VARS_VARS
+    FLASH_VARS_STRUCTURE data;
+
+
+    flash_vars_init();
+	flash_vars.savedValues[MAX_RETAIN_CHANNELS-1] = usage;
+    ADDLOG_INFO(LOG_FEATURE_CFG, "####### Flash Save Usage #######");
+    flash_vars_write();
+
+    flash_vars_read(&data);
+    ADDLOG_DEBUG(LOG_FEATURE_CFG, "re-read - offset %d, boot count %d, boot success %d, bootfailures %d",
+        flash_vars_offset,
+        data.boot_count,
+        data.boot_success_count,
+        data.boot_count - data.boot_success_count );
+#endif
+}
 // call once started (>30s?)
 void HAL_FlashVars_SaveBootComplete(){
 #ifndef DISABLE_FLASH_VARS_VARS
