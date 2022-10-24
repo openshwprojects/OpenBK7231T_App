@@ -246,14 +246,20 @@ HassDeviceInfo* hass_init_sensor_device_info(int index) {
 	//device_class automatically assigns unit,icon
 	if ((index >= OBK_VOLTAGE) && (index <= OBK_POWER))
 	{
-		cJSON_AddStringToObject(info->root, "dev_cla", sensor_mqttNames[index]);   //device_class=voltage,current,power
+		cJSON_AddStringToObject(info->root, "dev_cla", sensor_mqtt_device_classes[index]);   //device_class=voltage,current,power
+		cJSON_AddStringToObject(info->root, "unit_of_meas", sensor_mqtt_device_units[index]);   //unit_of_measurement
 
 		sprintf(g_hassBuffer, "%s/%s/get", clientId, sensor_mqttNames[index]);
 		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
 	}
 	if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_CONSUMPTION_STATS))
 	{
-		cJSON_AddStringToObject(info->root, "dev_cla", counter_devClasses[index - OBK_CONSUMPTION_TOTAL]);  //device_class=consumption
+		const char* device_class_value = counter_devClasses[index - OBK_CONSUMPTION_TOTAL];
+		cJSON_AddStringToObject(info->root, "dev_cla", device_class_value);  //device_class=consumption
+
+		if (strcmp(device_class_value, "None")) {
+			cJSON_AddStringToObject(info->root, "unit_of_meas", "Wh");   //unit_of_measurement
+		}
 
 		sprintf(g_hassBuffer, "%s/%s/get", clientId, counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
 		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
