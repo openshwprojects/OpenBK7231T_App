@@ -12,6 +12,11 @@ This repository is named "OpenBK7231T_App", but now it's a multiplatform app, su
 
 Please use automatically compiled binaries from the Releases tab. To build yourself for a given platform, just checkout first our version of SDK and then checkout this app repository into it, details later.
 
+# [Supported Devices List](https://openbekeniot.github.io/webapp/devicesList.html) (Teardown + Flashing Guide + Detailed photos + Template)
+We have our own interactive devices database that is maintained by users.
+The database is also accessible from inside our firmware (but requires internet connection to fetch).
+Have a not listed device? HELP US, submit a teardown [here](https://www.elektroda.com/rtvforum/forum507.html).
+
 # Features
 
 OpenBeken features:
