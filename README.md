@@ -16,6 +16,7 @@ Please use automatically compiled binaries from the Releases tab. To build yours
 We have our own interactive devices database that is maintained by users.
 The database is also accessible from inside our firmware (but requires internet connection to fetch).
 Have a not listed device? HELP US, submit a teardown [here](https://www.elektroda.com/rtvforum/forum507.html).
+NOTE: Obviously almost any device with supported chip (BK7231, BL602, W600, etc is potentially supported and it's not possible to list all available devices in the market, so feel free to try even if your device is not listed - *we are here to help and guide you step by step*!)
 
 # Features
 
