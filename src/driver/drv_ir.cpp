@@ -599,9 +599,9 @@ extern "C" void DRV_IR_RunFrame(){
 
                     if (publishrepeats || !repeat){
                         if (ourReceiver->decodedIRData.protocol == UNKNOWN){
-                            sprintf(out, "IR_%s 0x%X %d", name, ourReceiver->decodedIRData.decodedRawData, repeat);
+                            snprintf(out, sizeof(out), "IR_%s 0x%X %d", name, ourReceiver->decodedIRData.decodedRawData, repeat);
                         } else {
-                            sprintf(out, "IR_%s 0x%X 0x%X %d", name, ourReceiver->decodedIRData.address, ourReceiver->decodedIRData.command, repeat);
+                            snprintf(out, sizeof(out), "IR_%s 0x%X 0x%X %d", name, ourReceiver->decodedIRData.address, ourReceiver->decodedIRData.command, repeat);
                         }
         				//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR MQTT publish %s", out);
 
@@ -613,7 +613,7 @@ extern "C" void DRV_IR_RunFrame(){
                     }
 				}
 				if(ourReceiver->decodedIRData.protocol != UNKNOWN) {
-					sprintf(out, "%X", ourReceiver->decodedIRData.command);
+					snprintf(out, sizeof(out), "%X", ourReceiver->decodedIRData.command);
 					int tgType = 0;
 					switch(ourReceiver->decodedIRData.protocol)
 					{

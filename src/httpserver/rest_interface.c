@@ -351,7 +351,7 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 			int count = 0;
 			http_setup(request, httpMimeTypeJson);
 			ADDLOG_DEBUG(LOG_FEATURE_API, "opened folder %s lfs result %d", fpath, lfsres);
-			hprintf128(request, "{\"dir\":\"%s\",\"content\":[", fpath);
+			hprintf255(request, "{\"dir\":\"%s\",\"content\":[", fpath);
 			do {
 				// Read an entry in the directory
 				//
@@ -361,19 +361,19 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 				lfsres = lfs_dir_read(&lfs, dir, &info);
 				if (lfsres > 0) {
 					if (count) poststr(request, ",");
-					hprintf128(request, "{\"name\":\"%s\",\"type\":%d,\"size\":%d}",
+					hprintf255(request, "{\"name\":\"%s\",\"type\":%d,\"size\":%d}",
 						info.name, info.type, info.size);
 				}
 				else {
 					if (lfsres < 0) {
 						if (count) poststr(request, ",");
-						hprintf128(request, "{\"error\":%d}", lfsres);
+						hprintf255(request, "{\"error\":%d}", lfsres);
 					}
 				}
 				count++;
 			} while (lfsres > 0);
 
-			hprintf128(request, "]}");
+			hprintf255(request, "]}");
 
 			lfs_dir_close(&lfs, dir);
 			if (dir) os_free(dir);
@@ -385,7 +385,7 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 			request->responseCode = HTTP_RESPONSE_NOT_FOUND;
 			http_setup(request, httpMimeTypeJson);
 			ADDLOG_DEBUG(LOG_FEATURE_API, "failed to open %s lfs result %d", fpath, lfsres);
-			hprintf128(request, "{\"fname\":\"%s\",\"error\":%d}", fpath, lfsres);
+			hprintf255(request, "{\"fname\":\"%s\",\"error\":%d}", fpath, lfsres);
 		}
 	}
 	else {
@@ -432,7 +432,7 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 			request->responseCode = HTTP_RESPONSE_NOT_FOUND;
 			http_setup(request, httpMimeTypeJson);
 			ADDLOG_DEBUG(LOG_FEATURE_API, "failed to open %s lfs result %d", fpath, lfsres);
-			hprintf128(request, "{\"fname\":\"%s\",\"error\":%d}", fpath, lfsres);
+			hprintf255(request, "{\"fname\":\"%s\",\"error\":%d}", fpath, lfsres);
 		}
 	}
 	poststr(request, NULL);
@@ -493,7 +493,7 @@ static int http_rest_post_lfs_file(http_request_t* request) {
 			lfs_file_close(&lfs, file);
 			request->responseCode = HTTP_RESPONSE_SERVER_ERROR;
 			http_setup(request, httpMimeTypeJson);
-			hprintf128(request, "{\"fname\":\"%s\",\"error\":%d}", fpath, -20);
+			hprintf255(request, "{\"fname\":\"%s\",\"error\":%d}", fpath, -20);
 			goto exit;
 		}
 
@@ -521,13 +521,13 @@ static int http_rest_post_lfs_file(http_request_t* request) {
 		lfs_file_close(&lfs, file);
 		ADDLOG_DEBUG(LOG_FEATURE_API, "%d total bytes written", total);
 		http_setup(request, httpMimeTypeJson);
-		hprintf128(request, "{\"fname\":\"%s\",\"size\":%d}", fpath, total);
+		hprintf255(request, "{\"fname\":\"%s\",\"size\":%d}", fpath, total);
 	}
 	else {
 		request->responseCode = HTTP_RESPONSE_SERVER_ERROR;
 		http_setup(request, httpMimeTypeJson);
 		ADDLOG_DEBUG(LOG_FEATURE_API, "failed to open %s err %d", fpath, lfsres);
-		hprintf128(request, "{\"fname\":\"%s\",\"error\":%d}", fpath, lfsres);
+		hprintf255(request, "{\"fname\":\"%s\",\"error\":%d}", fpath, lfsres);
 	}
 exit:
 	poststr(request, NULL);
@@ -561,7 +561,7 @@ static int http_rest_get_seriallog(http_request_t* request) {
 		direct_serial_log = 0;
 	}
 	http_setup(request, httpMimeTypeJson);
-	hprintf128(request, "Direct serial logging set to %d", direct_serial_log);
+	hprintf255(request, "Direct serial logging set to %d", direct_serial_log);
 	poststr(request, NULL);
 	return 0;
 }
@@ -574,20 +574,20 @@ static int http_rest_get_pins(http_request_t* request) {
 	poststr(request, "{\"rolenames\":[");
 	for (i = 0; i < IOR_Total_Options; i++) {
 		if (i) {
-			hprintf128(request, ",\"%s\"", htmlPinRoleNames[i]);
+			hprintf255(request, ",\"%s\"", htmlPinRoleNames[i]);
 		}
 		else {
-			hprintf128(request, "\"%s\"", htmlPinRoleNames[i]);
+			hprintf255(request, "\"%s\"", htmlPinRoleNames[i]);
 		}
 	}
 	poststr(request, "],\"roles\":[");
 
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if (i) {
-			hprintf128(request, ",%d", g_cfg.pins.roles[i]);
+			hprintf255(request, ",%d", g_cfg.pins.roles[i]);
 		}
 		else {
-			hprintf128(request, "%d", g_cfg.pins.roles[i]);
+			hprintf255(request, "%d", g_cfg.pins.roles[i]);
 		}
 	}
 	// TODO: maybe we should cull futher channels that are not used?
@@ -595,10 +595,10 @@ static int http_rest_get_pins(http_request_t* request) {
 	poststr(request, "],\"channels\":[");
 	for (i = 0; i < CHANNEL_MAX; i++) {
 		if (i) {
-			hprintf128(request, ",%d", g_cfg.pins.channels[i]);
+			hprintf255(request, ",%d", g_cfg.pins.channels[i]);
 		}
 		else {
-			hprintf128(request, "%d", g_cfg.pins.channels[i]);
+			hprintf255(request, "%d", g_cfg.pins.channels[i]);
 		}
 	}
 	poststr(request, "]}");
@@ -613,24 +613,24 @@ static int http_rest_get_pins(http_request_t* request) {
 static int http_rest_get_logconfig(http_request_t* request) {
 	int i;
 	http_setup(request, httpMimeTypeJson);
-	hprintf128(request, "{\"level\":%d,", loglevel);
-	hprintf128(request, "\"features\":%d,", logfeatures);
+	hprintf255(request, "{\"level\":%d,", loglevel);
+	hprintf255(request, "\"features\":%d,", logfeatures);
 	poststr(request, "\"levelnames\":[");
 	for (i = 0; i < LOG_MAX; i++) {
 		if (i) {
-			hprintf128(request, ",\"%s\"", loglevelnames[i]);
+			hprintf255(request, ",\"%s\"", loglevelnames[i]);
 		}
 		else {
-			hprintf128(request, "\"%s\"", loglevelnames[i]);
+			hprintf255(request, "\"%s\"", loglevelnames[i]);
 		}
 	}
 	poststr(request, "],\"featurenames\":[");
 	for (i = 0; i < LOG_FEATURE_MAX; i++) {
 		if (i) {
-			hprintf128(request, ",\"%s\"", logfeaturenames[i]);
+			hprintf255(request, ",\"%s\"", logfeaturenames[i]);
 		}
 		else {
-			hprintf128(request, "\"%s\"", logfeaturenames[i]);
+			hprintf255(request, "\"%s\"", logfeaturenames[i]);
 		}
 	}
 	poststr(request, "]}");
@@ -698,7 +698,7 @@ static int http_rest_post_logconfig(http_request_t* request) {
 		else {
 			ADDLOG_ERROR(LOG_FEATURE_API, "Unexpected key: %.*s", t[i].end - t[i].start,
 				json_str + t[i].start);
-			sprintf(tmp, "Unexpected key: %.*s\n", t[i].end - t[i].start,
+			snprintf(tmp, sizeof(tmp), "Unexpected key: %.*s\n", t[i].end - t[i].start,
 				json_str + t[i].start);
 			poststr(request, tmp);
 		}
@@ -716,16 +716,16 @@ static int http_rest_post_logconfig(http_request_t* request) {
 static int http_rest_get_info(http_request_t* request) {
 	char macstr[3 * 6 + 1];
 	http_setup(request, httpMimeTypeJson);
-	hprintf128(request, "{\"uptime_s\":%d,", Time_getUpTimeSeconds());
-	hprintf128(request, "\"build\":\"%s\",", g_build_str);
-	hprintf128(request, "\"sys\":\"%s\",", obktype);
-	hprintf128(request, "\"ip\":\"%s\",", HAL_GetMyIPString());
-	hprintf128(request, "\"mac\":\"%s\",", HAL_GetMACStr(macstr));
-	hprintf128(request, "\"mqtthost\":\"%s:%d\",", CFG_GetMQTTHost(), CFG_GetMQTTPort());
-	hprintf128(request, "\"mqtttopic\":\"%s\",", CFG_GetMQTTClientId());
-	hprintf128(request, "\"chipset\":\"%s\",", PLATFORM_MCU_NAME);
-	hprintf128(request, "\"webapp\":\"%s\",", CFG_GetWebappRoot());
-	hprintf128(request, "\"supportsClientDeviceDB\":true}");
+	hprintf255(request, "{\"uptime_s\":%d,", Time_getUpTimeSeconds());
+	hprintf255(request, "\"build\":\"%s\",", g_build_str);
+	hprintf255(request, "\"sys\":\"%s\",", obktype);
+	hprintf255(request, "\"ip\":\"%s\",", HAL_GetMyIPString());
+	hprintf255(request, "\"mac\":\"%s\",", HAL_GetMACStr(macstr));
+	hprintf255(request, "\"mqtthost\":\"%s:%d\",", CFG_GetMQTTHost(), CFG_GetMQTTPort());
+	hprintf255(request, "\"mqtttopic\":\"%s\",", CFG_GetMQTTClientId());
+	hprintf255(request, "\"chipset\":\"%s\",", PLATFORM_MCU_NAME);
+	hprintf255(request, "\"webapp\":\"%s\",", CFG_GetWebappRoot());
+	hprintf255(request, "\"supportsClientDeviceDB\":true}");
 
 	poststr(request, NULL);
 	return 0;
@@ -856,10 +856,10 @@ static int http_rest_error(http_request_t* request, int code, char* msg) {
 	request->responseCode = code;
 	http_setup(request, httpMimeTypeJson);
 	if (code != 200) {
-		hprintf128(request, "{\"error\":%d, \"msg\":\"%s\"}", code, msg);
+		hprintf255(request, "{\"error\":%d, \"msg\":\"%s\"}", code, msg);
 	}
 	else {
-		hprintf128(request, "{\"success\":%d, \"msg\":\"%s\"}", code, msg);
+		hprintf255(request, "{\"success\":%d, \"msg\":\"%s\"}", code, msg);
 	}
 	poststr(request, NULL);
 	return 0;
@@ -910,7 +910,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr) {
 	} while ((towrite > 0) && (writelen >= 0));
 	ADDLOG_DEBUG(LOG_FEATURE_API, "%d total bytes written", total);
 	http_setup(request, httpMimeTypeJson);
-	hprintf128(request, "{\"size\":%d}", total);
+	hprintf255(request, "{\"size\":%d}", total);
 	close_ota();
 
 	poststr(request, NULL);
@@ -920,7 +920,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr) {
 
 static int http_rest_post_reboot(http_request_t* request) {
 	http_setup(request, httpMimeTypeJson);
-	hprintf128(request, "{\"reboot\":%d}", 3);
+	hprintf255(request, "{\"reboot\":%d}", 3);
 	ADDLOG_DEBUG(LOG_FEATURE_API, "Rebooting in 3 seconds...");
 	RESET_ScheduleModuleReset(3);
 	poststr(request, NULL);
@@ -1080,9 +1080,9 @@ static int http_rest_get_channels(http_request_t* request) {
 		int role = PIN_GetPinRoleForPinIndex(i);
 		if (role) {
 			if (addcomma) {
-				hprintf128(request, ",");
+				hprintf255(request, ",");
 			}
-			hprintf128(request, "\"%d\":%d", ch, CHANNEL_Get(ch));
+			hprintf255(request, "\"%d\":%d", ch, CHANNEL_Get(ch));
 			addcomma = 1;
 		}
 	}

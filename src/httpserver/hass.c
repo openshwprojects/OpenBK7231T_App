@@ -57,7 +57,7 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 void hass_print_unique_id(http_request_t* request, const char* fmt, ENTITY_TYPE type, int index) {
 	char uniq_id[HASS_UNIQUE_ID_SIZE];
 	hass_populate_unique_id(type, index, uniq_id);
-	hprintf128(request, fmt, uniq_id);
+	hprintf255(request, fmt, uniq_id);
 }
 
 /// @brief Populates HomeAssistant device configuration MQTT channel e.g. switch/enbrighten_9de8f9_relay_0/config.

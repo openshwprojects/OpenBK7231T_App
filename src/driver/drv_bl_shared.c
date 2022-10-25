@@ -70,37 +70,37 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
         mode = "PWR";
     }
 	
-    hprintf128(request,"<h2>%s Voltage=%f, Current=%f, Power=%f",mode, lastReadings[OBK_VOLTAGE],lastReadings[OBK_CURRENT], lastReadings[OBK_POWER]);
-    hprintf128(request,", Total Consumption=%1.1f Wh (changes sent %i, skipped %i)</h2>",energyCounter, stat_updatesSent, stat_updatesSkipped);
+    hprintf255(request,"<h2>%s Voltage=%f, Current=%f, Power=%f",mode, lastReadings[OBK_VOLTAGE],lastReadings[OBK_CURRENT], lastReadings[OBK_POWER]);
+    hprintf255(request,", Total Consumption=%1.1f Wh (changes sent %i, skipped %i)</h2>",energyCounter, stat_updatesSent, stat_updatesSkipped);
 
     if (energyCounterStatsEnable == true)
     {
         /********************************************************************************************************************/
-        hprintf128(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
-        hprintf128(request,"%1.1f Wh<br>", DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
-        hprintf128(request,"Sampling interval: %d sec<br>History length: ",energyCounterSampleInterval);
-        hprintf128(request,"%d samples<br>History per samples:<br>",energyCounterSampleCount);
+        hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
+        hprintf255(request,"%1.1f Wh<br>", DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+        hprintf255(request,"Sampling interval: %d sec<br>History length: ",energyCounterSampleInterval);
+        hprintf255(request,"%d samples<br>History per samples:<br>",energyCounterSampleCount);
         if (energyCounterMinutes != NULL)
         {
             for(i=0; i<energyCounterSampleCount; i++)
             {
                 if ((i%20)==0)
                 {
-                    hprintf128(request, "%1.1f", energyCounterMinutes[i]);
+                    hprintf255(request, "%1.1f", energyCounterMinutes[i]);
                 } else {
-                    hprintf128(request, ", %1.1f", energyCounterMinutes[i]);
+                    hprintf255(request, ", %1.1f", energyCounterMinutes[i]);
                 }
                 if ((i%20)==19)
                 {
-                    hprintf128(request, "<br>");
+                    hprintf255(request, "<br>");
                 }
             }
 			// energyCounterMinutesIndex is a long type, we need to use %ld instead of %d
-            hprintf128(request, "<br>History Index: %ld<br>JSON Stats: %s </h5>", energyCounterMinutesIndex,
+            hprintf255(request, "<br>History Index: %ld<br>JSON Stats: %s </h5>", energyCounterMinutesIndex,
                     (energyCounterStatsJSONEnable == true) ? "enabled" : "disabled");
         }
     } else {
-        hprintf128(request,"<h5>Periodic Statistics disabled. Use startup command SetupEnergyStats to enable function.</h5>");
+        hprintf255(request,"<h5>Periodic Statistics disabled. Use startup command SetupEnergyStats to enable function.</h5>");
     }
     /********************************************************************************************************************/
 }

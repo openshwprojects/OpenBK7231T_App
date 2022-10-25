@@ -116,7 +116,7 @@ int http_fn_empty_url(http_request_t* request) {
 
 void postFormAction(http_request_t* request, char* action, char* value) {
 	//"<form action=\"cfg_pins\"><input type=\"submit\" value=\"Configure Module\"/></form>"
-	hprintf128(request, "<form action=\"%s\"><input type=\"submit\" value=\"%s\"/></form>", action, value);
+	hprintf255(request, "<form action=\"%s\"><input type=\"submit\" value=\"%s\"/></form>", action, value);
 }
 
 /// @brief Generate a pair of label and field elements.
@@ -130,9 +130,9 @@ void add_label_input(http_request_t* request, char* inputType, char* label, char
 		poststr(request, preContent);
 	}
 
-	//These individual strings should be less than 256 .. yes hprintf128 uses 256 char buffer
-	hprintf128(request, "<label for=\"%s\">%s:</label><br>", fieldId, label);
-	hprintf128(request, "<input type=\"%s\" id=\"%s\" name=\"%s\" value=\"%s\">", inputType, fieldId, fieldId, value);
+	//These individual strings should be less than 256 .. yes hprintf255 uses 256 char buffer
+	hprintf255(request, "<label for=\"%s\">%s:</label><br>", fieldId, label);
+	hprintf255(request, "<input type=\"%s\" id=\"%s\" name=\"%s\" value=\"%s\">", inputType, fieldId, fieldId, value);
 }
 
 /// @brief Generates a pair of label and text field elements.
@@ -183,26 +183,26 @@ int http_fn_index(http_request_t* request) {
 		if (http_getArg(request->url, "tgl", tmpA, sizeof(tmpA))) {
 			j = atoi(tmpA);
 			if (j == SPECIAL_CHANNEL_LEDPOWER) {
-				hprintf128(request, "<h3>Toggled LED power!</h3>", j);
+				hprintf255(request, "<h3>Toggled LED power!</h3>", j);
 			}
 			else {
-				hprintf128(request, "<h3>Toggled %i!</h3>", j);
+				hprintf255(request, "<h3>Toggled %i!</h3>", j);
 			}
 			CHANNEL_Toggle(j);
 		}
 		if (http_getArg(request->url, "on", tmpA, sizeof(tmpA))) {
 			j = atoi(tmpA);
-			hprintf128(request, "<h3>Enabled %i!</h3>", j);
+			hprintf255(request, "<h3>Enabled %i!</h3>", j);
 			CHANNEL_Set(j, 255, 1);
 		}
 		if (http_getArg(request->url, "rgb", tmpA, sizeof(tmpA))) {
-			hprintf128(request, "<h3>Set RGB to %s!</h3>", tmpA);
+			hprintf255(request, "<h3>Set RGB to %s!</h3>", tmpA);
 			LED_SetBaseColor(0, "led_basecolor", tmpA, 0);
 		}
 
 		if (http_getArg(request->url, "off", tmpA, sizeof(tmpA))) {
 			j = atoi(tmpA);
-			hprintf128(request, "<h3>Disabled %i!</h3>", j);
+			hprintf255(request, "<h3>Disabled %i!</h3>", j);
 			CHANNEL_Set(j, 0, 1);
 		}
 		if (http_getArg(request->url, "pwm", tmpA, sizeof(tmpA))) {
@@ -210,10 +210,10 @@ int http_fn_index(http_request_t* request) {
 			http_getArg(request->url, "pwmIndex", tmpA, sizeof(tmpA));
 			j = atoi(tmpA);
 			if (j == SPECIAL_CHANNEL_TEMPERATURE) {
-				hprintf128(request, "<h3>Changed Temperature to %i!</h3>", newPWMValue);
+				hprintf255(request, "<h3>Changed Temperature to %i!</h3>", newPWMValue);
 			}
 			else {
-				hprintf128(request, "<h3>Changed pwm %i to %i!</h3>", j, newPWMValue);
+				hprintf255(request, "<h3>Changed pwm %i to %i!</h3>", j, newPWMValue);
 			}
 			CHANNEL_Set(j, newPWMValue, 1);
 		}
@@ -222,10 +222,10 @@ int http_fn_index(http_request_t* request) {
 			http_getArg(request->url, "dimIndex", tmpA, sizeof(tmpA));
 			j = atoi(tmpA);
 			if (j == SPECIAL_CHANNEL_BRIGHTNESS) {
-				hprintf128(request, "<h3>Changed LED brightness to %i!</h3>", newDimmerValue);
+				hprintf255(request, "<h3>Changed LED brightness to %i!</h3>", newDimmerValue);
 			}
 			else {
-				hprintf128(request, "<h3>Changed dimmer %i to %i!</h3>", j, newDimmerValue);
+				hprintf255(request, "<h3>Changed dimmer %i to %i!</h3>", j, newDimmerValue);
 			}
 			CHANNEL_Set(j, newDimmerValue, 1);
 		}
@@ -233,7 +233,7 @@ int http_fn_index(http_request_t* request) {
 			int newSetValue = atoi(tmpA);
 			http_getArg(request->url, "setIndex", tmpA, sizeof(tmpA));
 			j = atoi(tmpA);
-			hprintf128(request, "<h3>Changed channel %i to %i!</h3>", j, newSetValue);
+			hprintf255(request, "<h3>Changed channel %i to %i!</h3>", j, newSetValue);
 			CHANNEL_Set(j, newSetValue, 1);
 		}
 		if (http_getArg(request->url, "restart", tmpA, sizeof(tmpA))) {
@@ -251,7 +251,7 @@ int http_fn_index(http_request_t* request) {
 		channelType = CHANNEL_GetType(i);
 		if (h_isChannelRelay(i) || channelType == ChType_Toggle) {
 			if (i <= 1) {
-				hprintf128(request, "<tr>");
+				hprintf255(request, "<tr>");
 			}
 			if (CHANNEL_Check(i)) {
 				poststr(request, "<td style=\"text-align:center; font-weight:bold; font-size:54px\">ON</td>");
@@ -277,7 +277,7 @@ int http_fn_index(http_request_t* request) {
 
 			iValue = CHANNEL_Get(i);
 			poststr(request, "<tr><td>");
-			hprintf128(request, "Temperature Channel %i value %i C<br>", i, iValue);
+			hprintf255(request, "Temperature Channel %i value %i C<br>", i, iValue);
 			poststr(request, "</td></tr>");
 
 		}
@@ -289,7 +289,7 @@ int http_fn_index(http_request_t* request) {
 			fValue = iValue * 0.1f;
 
 			poststr(request, "<tr><td>");
-			hprintf128(request, "Temperature Channel %i value %f C<br>", i, fValue);
+			hprintf255(request, "Temperature Channel %i value %f C<br>", i, fValue);
 			poststr(request, "</td></tr>");
 
 		}
@@ -299,7 +299,7 @@ int http_fn_index(http_request_t* request) {
 			iValue = CHANNEL_Get(i);
 
 			poststr(request, "<tr><td>");
-			hprintf128(request, "Humidity Channel %i value %i Percent<br>", i, iValue);
+			hprintf255(request, "Humidity Channel %i value %i Percent<br>", i, iValue);
 			poststr(request, "</td></tr>");
 
 		}
@@ -311,7 +311,7 @@ int http_fn_index(http_request_t* request) {
 			fValue = iValue * 0.1f;
 
 			poststr(request, "<tr><td>");
-			hprintf128(request, "Humidity Channel %i value %f Percent<br>", i, fValue);
+			hprintf255(request, "Humidity Channel %i value %f Percent<br>", i, fValue);
 			poststr(request, "</td></tr>");
 
 		}
@@ -321,17 +321,17 @@ int http_fn_index(http_request_t* request) {
 			iValue = CHANNEL_Get(i);
 
 			poststr(request, "<tr><td>");
-			hprintf128(request, "<p>Select speed:</p><form action=\"index\">");
-			hprintf128(request, "<input type=\"hidden\" name=\"setIndex\" value=\"%i\">", i);
+			hprintf255(request, "<p>Select speed:</p><form action=\"index\">");
+			hprintf255(request, "<input type=\"hidden\" name=\"setIndex\" value=\"%i\">", i);
 			for (j = 0; j < 3; j++) {
 				const char* check;
 				if (j == iValue)
 					check = "checked";
 				else
 					check = "";
-				hprintf128(request, "<input type=\"radio\" name=\"set\" value=\"%i\" onchange=\"this.form.submit()\" %s>%s", j, check, types[j]);
+				hprintf255(request, "<input type=\"radio\" name=\"set\" value=\"%i\" onchange=\"this.form.submit()\" %s>%s", j, check, types[j]);
 			}
-			hprintf128(request, "</form>");
+			hprintf255(request, "</form>");
 			poststr(request, "</td></tr>");
 
 		}
@@ -359,17 +359,17 @@ int http_fn_index(http_request_t* request) {
 			iValue = CHANNEL_Get(i);
 
 			poststr(request, "<tr><td>");
-			hprintf128(request, "<p>Select speed:</p><form action=\"index\">");
-			hprintf128(request, "<input type=\"hidden\" name=\"setIndex\" value=\"%i\">", i);
+			hprintf255(request, "<p>Select speed:</p><form action=\"index\">");
+			hprintf255(request, "<input type=\"hidden\" name=\"setIndex\" value=\"%i\">", i);
 			for (j = 0; j < numTypes; j++) {
 				const char* check;
 				if (j == iValue)
 					check = "checked";
 				else
 					check = "";
-				hprintf128(request, "<input type=\"radio\" name=\"set\" value=\"%i\" onchange=\"this.form.submit()\" %s>%s", j, check, types[j]);
+				hprintf255(request, "<input type=\"radio\" name=\"set\" value=\"%i\" onchange=\"this.form.submit()\" %s>%s", j, check, types[j]);
 			}
-			hprintf128(request, "</form>");
+			hprintf255(request, "</form>");
 			poststr(request, "</td></tr>");
 
 		}
@@ -378,11 +378,11 @@ int http_fn_index(http_request_t* request) {
 			iValue = CHANNEL_Get(i);
 
 			poststr(request, "<tr><td>");
-			hprintf128(request, "<p>Change channel %i value:</p><form action=\"index\">", i);
-			hprintf128(request, "<input type=\"hidden\" name=\"setIndex\" value=\"%i\">", i);
-			hprintf128(request, "<input type=\"number\" name=\"set\" value=\"%i\" onblur=\"this.form.submit()\">", iValue);
-			hprintf128(request, "<input type=\"submit\" value=\"Set!\"/></form>");
-			hprintf128(request, "</form>");
+			hprintf255(request, "<p>Change channel %i value:</p><form action=\"index\">", i);
+			hprintf255(request, "<input type=\"hidden\" name=\"setIndex\" value=\"%i\">", i);
+			hprintf255(request, "<input type=\"number\" name=\"set\" value=\"%i\" onblur=\"this.form.submit()\">", iValue);
+			hprintf255(request, "<input type=\"submit\" value=\"Set!\"/></form>");
+			hprintf255(request, "</form>");
 			poststr(request, "</td></tr>");
 
 		}
@@ -391,13 +391,13 @@ int http_fn_index(http_request_t* request) {
 			iValue = CHANNEL_Get(i);
 
 			poststr(request, "<tr><td>");
-			hprintf128(request, "Channel %i = %i", i, iValue);
+			hprintf255(request, "Channel %i = %i", i, iValue);
 			poststr(request, "</td></tr>");
 
 		}
 		else if (h_isChannelRelay(i) || channelType == ChType_Toggle) {
 			if (i <= 1) {
-				hprintf128(request, "<tr>");
+				hprintf255(request, "<tr>");
 			}
 			const char* c;
 			if (CHANNEL_Check(i)) {
@@ -407,8 +407,8 @@ int http_fn_index(http_request_t* request) {
 				c = "bred";
 			}
 			poststr(request, "<td><form action=\"index\">");
-			hprintf128(request, "<input type=\"hidden\" name=\"tgl\" value=\"%i\">", i);
-			hprintf128(request, "<input class=\"%s\" type=\"submit\" value=\"Toggle %i\"/></form></td>", c, i);
+			hprintf255(request, "<input type=\"hidden\" name=\"tgl\" value=\"%i\">", i);
+			hprintf255(request, "<input class=\"%s\" type=\"submit\" value=\"Toggle %i\"/></form></td>", c, i);
 			if (i == CHANNEL_MAX - 1) {
 				poststr(request, "</tr>");
 			}
@@ -427,10 +427,10 @@ int http_fn_index(http_request_t* request) {
 			}
 			pwmValue = CHANNEL_Get(i);
 			poststr(request, "<tr><td>");
-			hprintf128(request, "<form action=\"index\" id=\"form%i\">", i);
-			hprintf128(request, "<input type=\"range\" min=\"0\" max=\"%i\" name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">", maxValue, inputName, i, pwmValue);
-			hprintf128(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, i);
-			hprintf128(request, "<input type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>", i);
+			hprintf255(request, "<form action=\"index\" id=\"form%i\">", i);
+			hprintf255(request, "<input type=\"range\" min=\"0\" max=\"%i\" name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">", maxValue, inputName, i, pwmValue);
+			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, i);
+			hprintf255(request, "<input type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>", i);
 			poststr(request, "</td></tr>");
 		}
 	}
@@ -456,8 +456,8 @@ int http_fn_index(http_request_t* request) {
 			}
 			poststr(request, "<tr><td>");
 			poststr(request, "<form action=\"index\">");
-			hprintf128(request, "<input type=\"hidden\" name=\"tgl\" value=\"%i\">", SPECIAL_CHANNEL_LEDPOWER);
-			hprintf128(request, "<input class=\"%s\" type=\"submit\" value=\"Toggle Light\"/></form>", c);
+			hprintf255(request, "<input type=\"hidden\" name=\"tgl\" value=\"%i\">", SPECIAL_CHANNEL_LEDPOWER);
+			hprintf255(request, "<input class=\"%s\" type=\"submit\" value=\"Toggle Light\"/></form>", c);
 			poststr(request, "</td></tr>");
 		}
 
@@ -470,11 +470,11 @@ int http_fn_index(http_request_t* request) {
 			pwmValue = LED_GetDimmer();
 
 			poststr(request, "<tr><td>");
-			hprintf128(request, "<h5> LED Dimmer/Brightness </h5>");
-			hprintf128(request, "<form action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_BRIGHTNESS);
-			hprintf128(request, "<input type=\"range\" min=\"0\" max=\"100\" name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">", inputName, SPECIAL_CHANNEL_BRIGHTNESS, pwmValue);
-			hprintf128(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, SPECIAL_CHANNEL_BRIGHTNESS);
-			hprintf128(request, "<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>", SPECIAL_CHANNEL_BRIGHTNESS);
+			hprintf255(request, "<h5> LED Dimmer/Brightness </h5>");
+			hprintf255(request, "<form action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_BRIGHTNESS);
+			hprintf255(request, "<input type=\"range\" min=\"0\" max=\"100\" name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">", inputName, SPECIAL_CHANNEL_BRIGHTNESS, pwmValue);
+			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, SPECIAL_CHANNEL_BRIGHTNESS);
+			hprintf255(request, "<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>", SPECIAL_CHANNEL_BRIGHTNESS);
 			poststr(request, "</td></tr>");
 		}
 		if (c_pwms >= 3) {
@@ -487,11 +487,11 @@ int http_fn_index(http_request_t* request) {
 
 			LED_GetBaseColorString(colorValue);
 			poststr(request, "<tr><td>");
-			hprintf128(request, "<h5> LED RGB Color %s </h5>", activeStr);
-			hprintf128(request, "<form action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_BASECOLOR);
-			hprintf128(request, "<input type=\"color\" name=\"%s\" id=\"color%i\" value=\"#%s\" onchange=\"this.form.submit()\">", inputName, SPECIAL_CHANNEL_BASECOLOR, colorValue);
-			hprintf128(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, SPECIAL_CHANNEL_BASECOLOR);
-			hprintf128(request, "<input  type=\"submit\" style=\"display:none;\" value=\"Toggle Light\"/></form>");
+			hprintf255(request, "<h5> LED RGB Color %s </h5>", activeStr);
+			hprintf255(request, "<form action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_BASECOLOR);
+			hprintf255(request, "<input type=\"color\" name=\"%s\" id=\"color%i\" value=\"#%s\" onchange=\"this.form.submit()\">", inputName, SPECIAL_CHANNEL_BASECOLOR, colorValue);
+			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, SPECIAL_CHANNEL_BASECOLOR);
+			hprintf255(request, "<input  type=\"submit\" style=\"display:none;\" value=\"Toggle Light\"/></form>");
 			poststr(request, "</td></tr>");
 		}
 		if (c_pwms == 2 || c_pwms == 5) {
@@ -508,12 +508,12 @@ int http_fn_index(http_request_t* request) {
 			pwmValue = LED_GetTemperature();
 
 			poststr(request, "<tr><td>");
-			hprintf128(request, "<h5> LED Temperature Slider %s (cur=%i, min=%i, max=%i) (Cold <--- ---> Warm) </h5>", activeStr, pwmValue, HASS_TEMPERATURE_MIN, HASS_TEMPERATURE_MAX);
-			hprintf128(request, "<form action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_TEMPERATURE);
-			hprintf128(request, "<input type=\"range\" min=\"%i\" max=\"%i\"", HASS_TEMPERATURE_MIN, HASS_TEMPERATURE_MAX);
-			hprintf128(request, "name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">", inputName, SPECIAL_CHANNEL_TEMPERATURE, pwmValue);
-			hprintf128(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, SPECIAL_CHANNEL_TEMPERATURE);
-			hprintf128(request, "<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>", SPECIAL_CHANNEL_TEMPERATURE);
+			hprintf255(request, "<h5> LED Temperature Slider %s (cur=%i, min=%i, max=%i) (Cold <--- ---> Warm) </h5>", activeStr, pwmValue, HASS_TEMPERATURE_MIN, HASS_TEMPERATURE_MAX);
+			hprintf255(request, "<form action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_TEMPERATURE);
+			hprintf255(request, "<input type=\"range\" min=\"%i\" max=\"%i\"", HASS_TEMPERATURE_MIN, HASS_TEMPERATURE_MAX);
+			hprintf255(request, "name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">", inputName, SPECIAL_CHANNEL_TEMPERATURE, pwmValue);
+			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, SPECIAL_CHANNEL_TEMPERATURE);
+			hprintf255(request, "<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>", SPECIAL_CHANNEL_TEMPERATURE);
 			poststr(request, "</td></tr>");
 		}
 
@@ -525,28 +525,28 @@ int http_fn_index(http_request_t* request) {
 
 	if (1) {
 		int bFirst = true;
-		hprintf128(request, "<h5>");
+		hprintf255(request, "<h5>");
 		for (i = 0; i < CHANNEL_MAX; i++) {
 			if (CHANNEL_IsInUse(i)) {
 				int value = CHANNEL_Get(i);
 				if (bFirst == false) {
-					hprintf128(request, ", ");
+					hprintf255(request, ", ");
 				}
-				hprintf128(request, "Channel %i = %i", i, value);
+				hprintf255(request, "Channel %i = %i", i, value);
 				bFirst = false;
 			}
 		}
-		hprintf128(request, "</h5>");
+		hprintf255(request, "</h5>");
 	}
-	hprintf128(request, "<h5>Cfg size: %i, change counter: %i, ota counter: %i, boot incompletes %i (might change to 0 if you wait to 30 sec)!</h5>",
+	hprintf255(request, "<h5>Cfg size: %i, change counter: %i, ota counter: %i, boot incompletes %i (might change to 0 if you wait to 30 sec)!</h5>",
 		sizeof(g_cfg), g_cfg.changeCounter, g_cfg.otaCounter, Main_GetLastRebootBootFailures());
 
-	hprintf128(request, "<h5>Ping watchdog - %i lost, %i ok!</h5>",
+	hprintf255(request, "<h5>Ping watchdog - %i lost, %i ok!</h5>",
 		PingWatchDog_GetTotalLost(), PingWatchDog_GetTotalReceived());
-	hprintf128(request, "<h5>MQTT State: %s RES: %d(%s)<br>", (Main_HasMQTTConnected() == 1) ? "connected" : "disconnected",
+	hprintf255(request, "<h5>MQTT State: %s RES: %d(%s)<br>", (Main_HasMQTTConnected() == 1) ? "connected" : "disconnected",
 		MQTT_GetConnectResult(), get_error_name(MQTT_GetConnectResult()));
-	hprintf128(request, "MQTT ErrMsg: %s <br>", (MQTT_GetStatusMessage() != NULL) ? MQTT_GetStatusMessage() : "");
-	hprintf128(request, "MQTT Stats:CONN: %d PUB: %d RECV: %d ERR: %d </h5>", MQTT_GetConnectEvents(),
+	hprintf255(request, "MQTT ErrMsg: %s <br>", (MQTT_GetStatusMessage() != NULL) ? MQTT_GetStatusMessage() : "");
+	hprintf255(request, "MQTT Stats:CONN: %d PUB: %d RECV: %d ERR: %d </h5>", MQTT_GetConnectEvents(),
 		MQTT_GetPublishEventCounter(), MQTT_GetReceivedEventCounter(), MQTT_GetPublishErrorCounter());
 
 	/* Format current PINS input state for all unused pins */
@@ -560,22 +560,22 @@ int http_fn_index(http_request_t* request) {
 			}
 		}
 
-		hprintf128(request, "<h5> PIN States<br>");
+		hprintf255(request, "<h5> PIN States<br>");
 		for (i = 0;i < 29;i++)
 		{
 			if ((PIN_GetPinRoleForPinIndex(i) != IOR_None) || (i == 10) || (i == 11))
 			{
-				hprintf128(request, "P%02i: NA ", i);
+				hprintf255(request, "P%02i: NA ", i);
 			}
 			else {
-				hprintf128(request, "P%02i: %i  ", i, (int)HAL_PIN_ReadDigitalInput(i));
+				hprintf255(request, "P%02i: %i  ", i, (int)HAL_PIN_ReadDigitalInput(i));
 			}
 			if (i % 10 == 9)
 			{
-				hprintf128(request, "<br>");
+				hprintf255(request, "<br>");
 			}
 		}
-		hprintf128(request, "</h5>");
+		hprintf255(request, "</h5>");
 	}
 
 	// for normal page loads, show the rest of the HTML
@@ -685,10 +685,10 @@ int http_fn_cfg_webapp_set(http_request_t* request) {
 
 	if (http_getArg(request->url, "url", tmpA, sizeof(tmpA))) {
 		if (CFG_SetWebappRoot(tmpA)) {
-			hprintf128(request, "Webapp url set to %s", tmpA);
+			hprintf255(request, "Webapp url set to %s", tmpA);
 		}
 		else {
-			hprintf128(request, "Webapp url change error - failed to save to flash.");
+			hprintf255(request, "Webapp url change error - failed to save to flash.");
 		}
 	}
 	else {
@@ -803,7 +803,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 		tuya_hal_wifi_all_ap_scan(&ar, &num);
 		bk_printf("Scan returned %i networks\r\n", num);
 		for (i = 0; i < num; i++) {
-			hprintf128(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", i, (int)num, ar[i].ssid, ar[i].channel, ar[i].rssi);
+			hprintf255(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", i, (int)num, ar[i].ssid, ar[i].channel, ar[i].rssi);
 		}
 		tuya_hal_wifi_release_ap(ar);
 #elif PLATFORM_BK7231N
@@ -816,7 +816,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 		tuya_os_adapt_wifi_all_ap_scan(&ar, &num);
 		bk_printf("Scan returned %i networks\r\n", num);
 		for (i = 0; i < num; i++) {
-			hprintf128(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", i + 1, (int)num, ar[i].ssid, ar[i].channel, ar[i].rssi);
+			hprintf255(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", i + 1, (int)num, ar[i].ssid, ar[i].channel, ar[i].rssi);
 		}
 		tuya_os_adapt_wifi_release_ap(ar);
 #else
@@ -1012,7 +1012,7 @@ int http_fn_flash_read_tool(http_request_t* request) {
 		unsigned char buffer[128];
 		len = atoi(tmpB);
 		ofs = atoi(tmpA);
-		hprintf128(request, "Memory at %i with len %i reads: ", ofs, len);
+		hprintf255(request, "Memory at %i with len %i reads: ", ofs, len);
 		poststr(request, "<br>");
 
 		///res = bekken_hal_flash_read (ofs, buffer,len);
@@ -1043,10 +1043,10 @@ int http_fn_flash_read_tool(http_request_t* request) {
 			for (i = 0; i < now; i++) {
 				unsigned char val = buffer[i];
 				if (!hex && isprint(val)) {
-					hprintf128(request, "'%c' ", val);
+					hprintf255(request, "'%c' ", val);
 				}
 				else {
-					hprintf128(request, "%02X ", val);
+					hprintf255(request, "%02X ", val);
 				}
 			}
 			rem -= now;
@@ -1117,9 +1117,9 @@ int http_fn_startup_command(http_request_t* request) {
 		"You can use them to init peripherals and drivers, like BL0942 energy sensor</h5>");
 
 	if (http_getArg(request->url, "data", tmpA, sizeof(tmpA))) {
-		//  hprintf128(request,"<h3>Set command to  %s!</h3>",tmpA);
+		//  hprintf255(request,"<h3>Set command to  %s!</h3>",tmpA);
 		  // tmpA can be longer than 128 bytes and this would crash
-		hprintf128(request, "<h3>Command changed!</h3>");
+		hprintf255(request, "<h3>Command changed!</h3>");
 		CFG_SetShortStartupCommand(tmpA);
 
 		CFG_Save_IfThereArePendingChanges();
@@ -1148,7 +1148,7 @@ int http_fn_uart_tool(http_request_t* request) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 		byte results[128];
 
-		hprintf128(request, "<h3>Sent %s!</h3>", tmpA);
+		hprintf255(request, "<h3>Sent %s!</h3>", tmpA);
 		if (0) {
 			TuyaMCU_Send((byte*)tmpA, strlen(tmpA));
 			//	bk_send_string(0,tmpA);
@@ -1206,13 +1206,13 @@ int http_fn_cfg_quick(http_request_t* request) {
 
 	if (http_getArg(request->url, "dev", tmpA, sizeof(tmpA))) {
 		j = atoi(tmpA);
-		hprintf128(request, "<h3>Set dev %i!</h3>", j);
+		hprintf255(request, "<h3>Set dev %i!</h3>", j);
 		g_templates[j].setter();
 	}
 	poststr(request, "<form action=\"cfg_quick\">");
 	poststr(request, "<select name=\"dev\">");
 	for (j = 0; j < g_total_templates; j++) {
-		hprintf128(request, "<option value=\"%i\">%s</option>", j, g_templates[j].name);
+		hprintf255(request, "<option value=\"%i\">%s</option>", j, g_templates[j].name);
 	}
 	poststr(request, "</select>");
 	poststr(request, "<input type=\"submit\" value=\"Set\"/></form>");
@@ -1353,17 +1353,17 @@ int http_fn_ha_discovery(http_request_t* request) {
 }
 
 void http_generate_rgb_cfg(http_request_t* request, const char* clientId) {
-	hprintf128(request, "    rgb_command_template: \"{{ '#%%02x%%02x%%02x0000' | format(red, green, blue)}}\"\n");
-	hprintf128(request, "    rgb_value_template: \"{{ value[1:3] | int(base=16) }},{{ value[3:5] | int(base=16) }},{{ value[5:7] | int(base=16) }}\"\n");
-	hprintf128(request, "    rgb_state_topic: \"%s/led_basecolor_rgb/get\"\n", clientId);
-	hprintf128(request, "    rgb_command_topic: \"cmnd/%s/led_basecolor_rgb\"\n", clientId);
-	hprintf128(request, "    command_topic: \"cmnd/%s/led_enableAll\"\n", clientId);
-	hprintf128(request, "    state_topic: \"%s/led_enableAll/get\"\n", clientId);
-	hprintf128(request, "    availability_topic: \"%s/connected\"\n", clientId);
-	hprintf128(request, "    payload_on: 1\n");
-	hprintf128(request, "    payload_off: 0\n");
-	hprintf128(request, "    brightness_command_topic: \"cmnd/%s/led_dimmer\"\n", clientId);
-	hprintf128(request, "    brightness_scale: 100\n");
+	hprintf255(request, "    rgb_command_template: \"{{ '#%%02x%%02x%%02x0000' | format(red, green, blue)}}\"\n");
+	hprintf255(request, "    rgb_value_template: \"{{ value[1:3] | int(base=16) }},{{ value[3:5] | int(base=16) }},{{ value[5:7] | int(base=16) }}\"\n");
+	hprintf255(request, "    rgb_state_topic: \"%s/led_basecolor_rgb/get\"\n", clientId);
+	hprintf255(request, "    rgb_command_topic: \"cmnd/%s/led_basecolor_rgb\"\n", clientId);
+	hprintf255(request, "    command_topic: \"cmnd/%s/led_enableAll\"\n", clientId);
+	hprintf255(request, "    state_topic: \"%s/led_enableAll/get\"\n", clientId);
+	hprintf255(request, "    availability_topic: \"%s/connected\"\n", clientId);
+	hprintf255(request, "    payload_on: 1\n");
+	hprintf255(request, "    payload_off: 0\n");
+	hprintf255(request, "    brightness_command_topic: \"cmnd/%s/led_dimmer\"\n", clientId);
+	hprintf255(request, "    brightness_scale: 100\n");
 }
 
 int http_fn_ha_cfg(http_request_t* request) {
@@ -1382,7 +1382,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Home Assistant Setup");
 	poststr(request, "<h4>Home Assistant Cfg</h4>");
-	hprintf128(request, "<h4>Note that your short device name is: %s</h4>", shortDeviceName);
+	hprintf255(request, "<h4>Note that your short device name is: %s</h4>", shortDeviceName);
 	poststr(request, "<h4>Paste this to configuration yaml</h4>");
 	poststr(request, "<h5>Make sure that you have \"switch:\" keyword only once! Home Assistant doesn't like dup keywords.</h5>");
 	poststr(request, "<h5>You can also use \"switch MyDeviceName:\" to avoid keyword duplication!</h5>");
@@ -1405,15 +1405,15 @@ int http_fn_ha_cfg(http_request_t* request) {
 				}
 
 				hass_print_unique_id(request, UNIQUE_ID_FORMAT, ENTITY_RELAY, i);
-				hprintf128(request, HASS_INDEXED_NAME_CONFIG, shortDeviceName, i);
-				hprintf128(request, HASS_STATE_TOPIC_CONFIG, clientId, i);
-				hprintf128(request, HASS_COMMAND_TOPIC_CONFIG, clientId, i);
+				hprintf255(request, HASS_INDEXED_NAME_CONFIG, shortDeviceName, i);
+				hprintf255(request, HASS_STATE_TOPIC_CONFIG, clientId, i);
+				hprintf255(request, HASS_COMMAND_TOPIC_CONFIG, clientId, i);
 				poststr(request, HASS_QOS_CONFIG);
 				poststr(request, "    payload_on: 1\n");
 				poststr(request, "    payload_off: 0\n");
 				poststr(request, HASS_RETAIN_TRUE_CONFIG);
-				hprintf128(request, HASS_AVAILABILITY_CONFIG);
-				hprintf128(request, HASS_CONNECTED_TOPIC_CONFIG, clientId);
+				hprintf255(request, HASS_AVAILABILITY_CONFIG);
+				hprintf255(request, HASS_CONNECTED_TOPIC_CONFIG, clientId);
 			}
 		}
 	}
@@ -1429,12 +1429,12 @@ int http_fn_ha_cfg(http_request_t* request) {
 		}
 
 		hass_print_unique_id(request, UNIQUE_ID_FORMAT, ENTITY_LIGHT_RGBCW, i);
-		hprintf128(request, HASS_INDEXED_NAME_CONFIG, shortDeviceName, i);
+		hprintf255(request, HASS_INDEXED_NAME_CONFIG, shortDeviceName, i);
 		http_generate_rgb_cfg(request, clientId);
-		hprintf128(request, "    #brightness_value_template: \"{{ value }}\"\n");
-		hprintf128(request, "    color_temp_command_topic: \"cmnd/%s/led_temperature\"\n", clientId);
-		hprintf128(request, "    color_temp_state_topic: \"%s/led_temperature/get\"\n", clientId);
-		hprintf128(request, "    #color_temp_value_template: \"{{ value }}\"\n");
+		hprintf255(request, "    #brightness_value_template: \"{{ value }}\"\n");
+		hprintf255(request, "    color_temp_command_topic: \"cmnd/%s/led_temperature\"\n", clientId);
+		hprintf255(request, "    color_temp_state_topic: \"%s/led_temperature/get\"\n", clientId);
+		hprintf255(request, "    #color_temp_value_template: \"{{ value }}\"\n");
 	}
 	else
 		if (pwmCount == 3) {
@@ -1449,7 +1449,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 			}
 
 			hass_print_unique_id(request, UNIQUE_ID_FORMAT, ENTITY_LIGHT_RGB, i);
-			hprintf128(request, "    name: \"%s\"\n", shortDeviceName);
+			hprintf255(request, "    name: \"%s\"\n", shortDeviceName);
 			http_generate_rgb_cfg(request, clientId);
 		}
 		else if (pwmCount > 0) {
@@ -1466,10 +1466,10 @@ int http_fn_ha_cfg(http_request_t* request) {
 					}
 
 					hass_print_unique_id(request, "  - unique_id: \"%s\"\n", ENTITY_LIGHT_PWM, i);
-					hprintf128(request, HASS_INDEXED_NAME_CONFIG, shortDeviceName, i);
-					hprintf128(request, HASS_STATE_TOPIC_CONFIG, clientId, i);
-					hprintf128(request, HASS_COMMAND_TOPIC_CONFIG, clientId, i);
-					hprintf128(request, "    brightness_command_topic: \"%s/%i/set\"\n", clientId, i);
+					hprintf255(request, HASS_INDEXED_NAME_CONFIG, shortDeviceName, i);
+					hprintf255(request, HASS_STATE_TOPIC_CONFIG, clientId, i);
+					hprintf255(request, HASS_COMMAND_TOPIC_CONFIG, clientId, i);
+					hprintf255(request, "    brightness_command_topic: \"%s/%i/set\"\n", clientId, i);
 					poststr(request, "    on_command_type: \"brightness\"\n");
 					poststr(request, "    brightness_scale: 99\n");
 					poststr(request, HASS_QOS_CONFIG);
@@ -1477,8 +1477,8 @@ int http_fn_ha_cfg(http_request_t* request) {
 					poststr(request, "    payload_off: 0\n");
 					poststr(request, HASS_RETAIN_TRUE_CONFIG);
 					poststr(request, "    optimistic: true\n");
-					hprintf128(request, HASS_AVAILABILITY_CONFIG);
-					hprintf128(request, HASS_CONNECTED_TOPIC_CONFIG, clientId);
+					hprintf255(request, HASS_AVAILABILITY_CONFIG);
+					hprintf255(request, HASS_CONNECTED_TOPIC_CONFIG, clientId);
 				}
 			}
 		}
@@ -1542,10 +1542,10 @@ int http_tasmota_json_power(http_request_t* request) {
 				if (h_isChannelRelay(i) || CHANNEL_GetType(i) == ChType_Toggle) {
 					lastRelayState = CHANNEL_Get(i);
 					if (lastRelayState) {
-						hprintf128(request, "{\"POWER%i\":\"ON\"}", i);
+						hprintf255(request, "{\"POWER%i\":\"ON\"}", i);
 					}
 					else {
-						hprintf128(request, "{\"POWER%i\":\"OFF\"}", i);
+						hprintf255(request, "{\"POWER%i\":\"OFF\"}", i);
 					}
 				}
 			}
@@ -1578,13 +1578,13 @@ int http_tasmota_json_status_SNS(http_request_t* request) {
 	energy_hour = 0;
 #endif
 
-	hprintf128(request, "{\"StatusSNS\":{\"ENERGY\":{");
-	hprintf128(request, "\"Power\": %f,", power);
-	hprintf128(request, "\"ApparentPower\": 0,\"ReactivePower\": 0,\"Factor\":%f,", factor);
-	hprintf128(request, "\"Voltage\":%f,", voltage);
-	hprintf128(request, "\"Current\":%f,", current);
-	hprintf128(request, "\"ConsumptionTotal\":%f,", energy);
-	hprintf128(request, "\"ConsumptionLastHour\":%f}}}", energy_hour);
+	hprintf255(request, "{\"StatusSNS\":{\"ENERGY\":{");
+	hprintf255(request, "\"Power\": %f,", power);
+	hprintf255(request, "\"ApparentPower\": 0,\"ReactivePower\": 0,\"Factor\":%f,", factor);
+	hprintf255(request, "\"Voltage\":%f,", voltage);
+	hprintf255(request, "\"Current\":%f,", current);
+	hprintf255(request, "\"ConsumptionTotal\":%f,", energy);
+	hprintf255(request, "\"ConsumptionLastHour\":%f}}}", energy_hour);
 
 	return 0;
 }
@@ -1600,14 +1600,14 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 	friendlyName = CFG_GetDeviceName();
 	clientId = CFG_GetMQTTClientId();
 
-	hprintf128(request, "{\"Status\":{\"Module\":0,\"DeviceName\":\"%s\"", deviceName);
-	hprintf128(request, ",\"FriendlyName\":[\"%s\"]", friendlyName);
-	hprintf128(request, ",\"Topic\":\"%s\",\"ButtonTopic\":\"0\"", clientId);
-	hprintf128(request, ",\"Power\":1,\"PowerOnState\":3,\"LedState\":1");
-	hprintf128(request, ",\"LedMask\":\"FFFF\",\"SaveData\":1,\"SaveState\":1");
-	hprintf128(request, ",\"SwitchTopic\":\"0\",\"SwitchMode\":[0,0,0,0,0,0,0,0]");
-	hprintf128(request, ",\"ButtonRetain\":0,\"SwitchRetain\":0,\"SensorRetain\":0");
-	hprintf128(request, ",\"PowerRetain\":0,\"InfoRetain\":0,\"StateRetain\":0}}");
+	hprintf255(request, "{\"Status\":{\"Module\":0,\"DeviceName\":\"%s\"", deviceName);
+	hprintf255(request, ",\"FriendlyName\":[\"%s\"]", friendlyName);
+	hprintf255(request, ",\"Topic\":\"%s\",\"ButtonTopic\":\"0\"", clientId);
+	hprintf255(request, ",\"Power\":1,\"PowerOnState\":3,\"LedState\":1");
+	hprintf255(request, ",\"LedMask\":\"FFFF\",\"SaveData\":1,\"SaveState\":1");
+	hprintf255(request, ",\"SwitchTopic\":\"0\",\"SwitchMode\":[0,0,0,0,0,0,0,0]");
+	hprintf255(request, ",\"ButtonRetain\":0,\"SwitchRetain\":0,\"SensorRetain\":0");
+	hprintf255(request, ",\"PowerRetain\":0,\"InfoRetain\":0,\"StateRetain\":0}}");
 
 
 
@@ -1665,11 +1665,11 @@ int http_fn_cfg(http_request_t* request) {
 	{
 		int i, j, k;
 		k = config_get_tableOffsets(BK_PARTITION_NET_PARAM, &i, &j);
-		hprintf128(request, "BK_PARTITION_NET_PARAM: bOk %i, at %i, len %i<br>", k, i, j);
+		hprintf255(request, "BK_PARTITION_NET_PARAM: bOk %i, at %i, len %i<br>", k, i, j);
 		k = config_get_tableOffsets(BK_PARTITION_RF_FIRMWARE, &i, &j);
-		hprintf128(request, "BK_PARTITION_RF_FIRMWARE: bOk %i, at %i, len %i<br>", k, i, j);
+		hprintf255(request, "BK_PARTITION_RF_FIRMWARE: bOk %i, at %i, len %i<br>", k, i, j);
 		k = config_get_tableOffsets(BK_PARTITION_OTA, &i, &j);
-		hprintf128(request, "BK_PARTITION_OTA: bOk %i, at %i, len %i<br>", k, i, j);
+		hprintf255(request, "BK_PARTITION_OTA: bOk %i, at %i, len %i<br>", k, i, j);
 	}
 #endif
 #endif
@@ -1748,7 +1748,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 		// saving the configuration instead of waiting.
 		//CFG_Save_SetupTimer(); 
 		CFG_Save_IfThereArePendingChanges();
-		hprintf128(request, "Pins update - %i reqs, %i changed!<br><br>", iChangedRequested, iChanged);
+		hprintf255(request, "Pins update - %i reqs, %i changed!<br><br>", iChangedRequested, iChanged);
 	}
 	//	strcat(outbuf,"<button type=\"button\">Click Me!</button>");
 	poststr(request, "<form action=\"cfg_pins\">");
@@ -1774,9 +1774,9 @@ int http_fn_cfg_pins(http_request_t* request) {
 			poststr(request, " ");
 		}
 		else {
-			hprintf128(request, "P%i ", i);
+			hprintf255(request, "P%i ", i);
 		}
-		hprintf128(request, "<select class=\"hele\" name=\"%i\">", i);
+		hprintf255(request, "<select class=\"hele\" name=\"%i\">", i);
 		for (j = 0; j < IOR_Total_Options; j++) {
 			// do not show hardware PWM on non-PWM pin
 			if (j == IOR_PWM || j == IOR_PWM_n) {
@@ -1786,19 +1786,19 @@ int http_fn_cfg_pins(http_request_t* request) {
 			}
 
 			if (j == si) {
-				hprintf128(request, "<option value=\"%i\" selected>%s</option>", j, htmlPinRoleNames[j]);
+				hprintf255(request, "<option value=\"%i\" selected>%s</option>", j, htmlPinRoleNames[j]);
 			}
 			else {
-				hprintf128(request, "<option value=\"%i\">%s</option>", j, htmlPinRoleNames[j]);
+				hprintf255(request, "<option value=\"%i\">%s</option>", j, htmlPinRoleNames[j]);
 			}
 		}
 		poststr(request, "</select>");
-		hprintf128(request, "<input class=\"hele\" name=\"r%i\" type=\"text\" value=\"%i\"/>", i, ch);
+		hprintf255(request, "<input class=\"hele\" name=\"r%i\" type=\"text\" value=\"%i\"/>", i, ch);
 
 		if (si == IOR_Button || si == IOR_Button_n)
 		{
 			// extra param. For button, is relay index to toggle on double click
-			hprintf128(request, "<input class=\"hele\" name=\"e%i\" type=\"text\" value=\"%i\"/>", i, ch2);
+			hprintf255(request, "<input class=\"hele\" name=\"e%i\" type=\"text\" value=\"%i\"/>", i, ch2);
 		}
 		poststr(request, "</div>");
 	}
@@ -1845,7 +1845,7 @@ int http_fn_cfg_generic(http_request_t* request) {
 			poststr(request, "<h5>Boot ok delay must be at least 1 second<h5>");
 			i = 1;
 		}
-		hprintf128(request, "<h5>Setting boot OK delay to %i<h5>", i);
+		hprintf255(request, "<h5>Setting boot OK delay to %i<h5>", i);
 		CFG_SetBootOkSeconds(i);
 	}
 
@@ -1860,14 +1860,14 @@ int http_fn_cfg_generic(http_request_t* request) {
 			else {
 				ni = 0;
 			}
-			hprintf128(request, "<h5>Setting flag %i to %i<h5>", i, ni);
+			hprintf255(request, "<h5>Setting flag %i to %i<h5>", i, ni);
 			CFG_SetFlag(i, ni);
 		}
 	}
 
 	CFG_Save_IfThereArePendingChanges();
 
-	hprintf128(request, "<h5>Flags (Current value=%i)<h5>", CFG_GetFlags());
+	hprintf255(request, "<h5>Flags (Current value=%i)<h5>", CFG_GetFlags());
 	poststr(request, "<form action=\"/cfg_generic\">");
 
 	for (i = 0; i < OBK_TOTAL_FLAGS; i++) {
@@ -1877,10 +1877,10 @@ int http_fn_cfg_generic(http_request_t* request) {
 		<label for="flag0">Flag 0 - [MQTT] Broadcast led params together (send dimmer and color when dimmer or color changes, topic name: YourDevName/led_basecolor_rgb/get, YourDevName/led_dimmer/get)</label>
 		</div>
 		*/
-		hprintf128(request, "<div><input type=\"checkbox\" name=\"flag%i\" id=\"flag%i\" value=\"1\"%s>",
+		hprintf255(request, "<div><input type=\"checkbox\" name=\"flag%i\" id=\"flag%i\" value=\"1\"%s>",
 			i, i, (CFG_HasFlag(i) ? " checked" : "")); //this is less that 128 char
 
-		hprintf128(request, "<label for=\"flag%i\">Flag %i - ", i, i);
+		hprintf255(request, "<label for=\"flag%i\">Flag %i - ", i, i);
 		poststr(request, flagName);
 		poststr(request, "</label></div>");
 	}
@@ -1904,13 +1904,13 @@ int http_fn_cfg_startup(http_request_t* request) {
 
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Config startup");
-	hprintf128(request, "<h5>Here you can set pin start values<h5>");
-	hprintf128(request, "<h5>For relays, simply use 1 or 0</h5>");
-	hprintf128(request, "<h5>For 'remember last power state', use -1 as a special value</h5>");
-	hprintf128(request, "<h5>For dimmers, range is 0 to 100</h5>");
-	hprintf128(request, "<h5>For custom values, you can set any number you want to</h5>");
-	hprintf128(request, "<h5>Remember that you can also use short startup command to run commands like led_baseColor #FF0000 and led_enableAll 1 etc</h5>");
-	hprintf128(request, "<h5><color=red>Remembering last state of LED driver is not yet fully supported, please wait!</color></h5>");
+	hprintf255(request, "<h5>Here you can set pin start values<h5>");
+	hprintf255(request, "<h5>For relays, simply use 1 or 0</h5>");
+	hprintf255(request, "<h5>For 'remember last power state', use -1 as a special value</h5>");
+	hprintf255(request, "<h5>For dimmers, range is 0 to 100</h5>");
+	hprintf255(request, "<h5>For custom values, you can set any number you want to</h5>");
+	hprintf255(request, "<h5>Remember that you can also use short startup command to run commands like led_baseColor #FF0000 and led_enableAll 1 etc</h5>");
+	hprintf255(request, "<h5><color=red>Remembering last state of LED driver is not yet fully supported, please wait!</color></h5>");
 
 	if (http_getArg(request->url, "idx", tmpA, sizeof(tmpA))) {
 		channelIndex = atoi(tmpA);
@@ -1921,7 +1921,7 @@ int http_fn_cfg_startup(http_request_t* request) {
 			CFG_SetChannelStartupValue(channelIndex, newValue);
 			// also save current value if marked as saved
 			Channel_SaveInFlashIfNeeded(channelIndex);
-			hprintf128(request, "<h5>Setting channel %i start value to %i<h5>", channelIndex, newValue);
+			hprintf255(request, "<h5>Setting channel %i start value to %i<h5>", channelIndex, newValue);
 
 			CFG_Save_IfThereArePendingChanges();
 		}
@@ -1935,13 +1935,13 @@ int http_fn_cfg_startup(http_request_t* request) {
 
 			poststr(request, "<br><form action=\"/cfg_startup\">\
 					<label for=\"boot_ok_delay\">New start value for channel ");
-			hprintf128(request, "%i", i);
+			hprintf255(request, "%i", i);
 			poststr(request, ":</label><br>\
 					<input type=\"hidden\" id=\"idx\" name=\"idx\" value=\"");
-			hprintf128(request, "%i", i);
+			hprintf255(request, "%i", i);
 			poststr(request, "\">");
 			poststr(request, "<input type=\"number\" id=\"value\" name=\"value\" value=\"");
-			hprintf128(request, "%i", startValue);
+			hprintf255(request, "%i", startValue);
 			poststr(request, "\"><br>");
 			poststr(request, "<input type=\"submit\" value=\"Save\"/></form>");
 		}
@@ -1959,7 +1959,7 @@ int http_fn_cfg_dgr(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Device groups");
 
-	hprintf128(request, "<h5>Here you can configure Tasmota Device Groups<h5>");
+	hprintf255(request, "<h5>Here you can configure Tasmota Device Groups<h5>");
 
 
 	if (http_getArg(request->url, "name", tmpA, sizeof(tmpA))) {
@@ -2050,7 +2050,7 @@ int http_fn_ota_exec(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "OTA request");
 	if (http_getArg(request->url, "host", tmpA, sizeof(tmpA))) {
-		hprintf128(request, "<h3>OTA requested for %s!</h3>", tmpA);
+		hprintf255(request, "<h3>OTA requested for %s!</h3>", tmpA);
 		addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "http_fn_ota_exec: will try to do OTA for %s \r\n", tmpA);
 #if WINDOWS
 

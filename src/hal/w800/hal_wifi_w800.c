@@ -76,7 +76,7 @@ void HAL_PrintNetworkInfo()
 
 	struct netif* netif = tls_get_netif();
 	MEMCPY(mac, &netif->hwaddr[0], ETH_ALEN);
-	sprintf(macstr, MACSTR, MAC2STR(mac));
+	snprintf(macstr, sizeof(macstr), MACSTR, MAC2STR(mac));
 
 	tls_wifi_get_current_bss(&bss);
 
