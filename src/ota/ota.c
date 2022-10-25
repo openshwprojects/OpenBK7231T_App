@@ -60,9 +60,14 @@ void close_ota(){
 }
 
 void add_otadata(unsigned char *data, int len){
+
     if (!sector) return;
     //addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"OTA DataRxed start: %02.2x %02.2x len %d\r\n", data[0], data[1], len);
     while (len){
+        // force it to sleep...  we MUST have some idle task processing
+	      // else task memory doesn't get freed
+	      rtos_delay_milliseconds(40);
+
         if (sectorlen < SECTOR_SIZE){
             int lenstore = SECTOR_SIZE - sectorlen;
             if (lenstore > len) lenstore = len;

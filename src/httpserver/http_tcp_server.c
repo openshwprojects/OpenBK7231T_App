@@ -72,6 +72,7 @@ static void tcp_client_thread(beken_thread_arg_t arg)
 	//char reply[8192];
 
   //my_fd = fd;
+	rtos_delay_milliseconds(20);
 
 	reply = (char*)os_malloc(replyBufferSize);
 	buf = (char*)os_malloc(INCOMING_BUFFER_SIZE);
@@ -112,7 +113,7 @@ static void tcp_client_thread(beken_thread_arg_t arg)
 		send(fd, reply, lenret, 0);
 	}
 
-	rtos_delay_milliseconds(10);
+	//rtos_delay_milliseconds(10);
 
 exit:
 	if (err != kNoErr)
@@ -177,6 +178,12 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 				// right now, I am getting OS_ThreadCreate everytime on XR809 platform
 				tcp_client_thread((beken_thread_arg_t)client_fd);
 #else
+				// delay each accept by 20ms
+				// this allows previous to finish if
+				// in a loop of sends from the browser, e.g. OTA
+				// and we MUST get some IDLE thread time, else
+				// thread resources are not deleted.
+				rtos_delay_milliseconds(20);
 				// Create separate thread for client
 				if (kNoErr !=
 #if PLATFORM_XR809
