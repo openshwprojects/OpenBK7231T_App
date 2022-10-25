@@ -255,25 +255,25 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t* request) {
 	}
 	DRV_Mutex_Free();
 
-	hprintf128(request, "<h5>%i drivers active", c_active);
+	hprintf255(request, "<h5>%i drivers active", c_active);
 	if (c_active > 0) {
 		j = 0;// printed 0 names so far
 		// generate active drivers list in (  )
-		hprintf128(request, " (");
+		hprintf255(request, " (");
 		for (i = 0; i < g_numDrivers; i++) {
 			if (g_drivers[i].bLoaded) {
 				// if at least one name printed, add separator
 				if (j != 0) {
-					hprintf128(request, ",");
+					hprintf255(request, ",");
 				}
-				hprintf128(request, g_drivers[i].name);
+				hprintf255(request, g_drivers[i].name);
 				// one more name printed
 				j++;
 			}
 		}
-		hprintf128(request, ")");
+		hprintf255(request, ")");
 	}
-	hprintf128(request, ", total %i</h5>", g_numDrivers);
+	hprintf255(request, ", total %i</h5>", g_numDrivers);
 }
 
 bool DRV_IsMeasuringPower() {

@@ -163,7 +163,7 @@ bool http_checkUrlBase(const char* base, const char* fileName) {
 }
 
 void http_setup(http_request_t* request, const char* type) {
-	hprintf128(request, httpHeader, request->responseCode, type);
+	hprintf255(request, httpHeader, request->responseCode, type);
 	poststr(request, "\r\n"); // next header
 	poststr(request, httpCorsHeaders);
 	poststr(request, "\r\n"); // end headers with double CRLF
@@ -195,7 +195,7 @@ void http_html_end(http_request_t* request) {
 	poststr(request, "<br>");
 	poststr(request, g_build_str);
 
-	hprintf128(request, "<br>Online for&nbsp;<span id=\"onlineFor\" data-initial=\"%i\">-</span>", Time_getUpTimeSeconds());
+	hprintf255(request, "<br>Online for&nbsp;<span id=\"onlineFor\" data-initial=\"%i\">-</span>", Time_getUpTimeSeconds());
 
 	WiFI_GetMacAddress((char*)mac);
 
@@ -420,7 +420,7 @@ int poststr(http_request_t* request, const char* str) {
 	return postany(request, str, strlen(str));
 }
 
-int hprintf128(http_request_t* request, const char* fmt, ...) {
+int hprintf255(http_request_t* request, const char* fmt, ...) {
 	va_list argList;
 	//BaseType_t taken;
 	char tmp[256];
