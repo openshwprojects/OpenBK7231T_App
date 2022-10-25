@@ -199,9 +199,9 @@ void http_html_end(http_request_t* request) {
 
 	WiFI_GetMacAddress((char*)mac);
 
-	sprintf(upTimeStr, "<br>Device MAC: %02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+	snprintf(upTimeStr, sizeof(upTimeStr), "<br>Device MAC: %02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 	poststr(request, upTimeStr);
-	sprintf(upTimeStr, "<br>Short name: %s, Chipset %s", CFG_GetShortDeviceName(), PLATFORM_MCU_NAME);
+	snprintf(upTimeStr, sizeof(upTimeStr), "<br>Short name: %s, Chipset %s", CFG_GetShortDeviceName(), PLATFORM_MCU_NAME);
 	poststr(request, upTimeStr);
 
 	poststr(request, htmlBodyEnd);

@@ -135,8 +135,8 @@ void CFG_SetDefaultConfig() {
 	memcpy(g_cfg.mac,mac,6);
 	strcpy(g_cfg.webappRoot, "https://openbekeniot.github.io/webapp/");
 	// Long unique device name, like OpenBK7231T_AABBCCDD
-	sprintf(g_cfg.longDeviceName,DEVICENAME_PREFIX_FULL"_%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
-	sprintf(g_cfg.shortDeviceName,DEVICENAME_PREFIX_SHORT"%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
+	snprintf(g_cfg.longDeviceName, sizeof(g_cfg.longDeviceName), DEVICENAME_PREFIX_FULL"_%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
+	snprintf(g_cfg.shortDeviceName, sizeof(g_cfg.shortDeviceName), DEVICENAME_PREFIX_SHORT"%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
 	strcpy_safe(g_cfg.mqtt_clientId, g_cfg.shortDeviceName, sizeof(g_cfg.mqtt_clientId));
 
 	strcpy(g_cfg.ntpServer, "217.147.223.78");	//bart.nexellent.net

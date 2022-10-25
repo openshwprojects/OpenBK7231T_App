@@ -158,7 +158,7 @@ static int CMD_GetReadings(const void *context, const char *cmd, const char *arg
     e = DRV_GetReading(OBK_CONSUMPTION_TOTAL);
     elh = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
 
-	sprintf(tmp, "%f %f %f %f %f",v,c,p,e,elh);
+	snprintf(tmp, sizeof(tmp), "%f %f %f %f %f",v,c,p,e,elh);
 
 	if(cmdFlags & COMMAND_FLAG_SOURCE_TCP) {
 		ADDLOG_INFO(LOG_FEATURE_RAW, tmp);

@@ -74,7 +74,7 @@ int BL0942_TryToGetNextBL0942Packet() {
 		char buffer2[32];
 		buffer_for_log[0] = 0;
 		for(i = 0; i < BL0942_PACKET_LEN; i++) {
-			sprintf(buffer2,"%02X ",UART_GetNextByte(i));
+			snprintf(buffer2, sizeof(buffer2), "%02X ",UART_GetNextByte(i));
 			strcat_safe(buffer_for_log,buffer2,sizeof(buffer_for_log));
 		}
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"BL0942 received: %s\n", buffer_for_log);
@@ -111,7 +111,7 @@ int BL0942_TryToGetNextBL0942Packet() {
 	{
 		char res[128];
 		// V=245.107925,I=109.921143,P=0.035618
-		sprintf(res,"V=%f,I=%f,P=%f\n",lastReadings[OBK_VOLTAGE],lastReadings[OBK_CURRENT],lastReadings[OBK_POWER]);
+		snprintf(res, sizeof(res),"V=%f,I=%f,P=%f\n",lastReadings[OBK_VOLTAGE],lastReadings[OBK_CURRENT],lastReadings[OBK_POWER]);
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,res );
 	}
 #endif
@@ -141,7 +141,7 @@ int BL0942_PowerSet(const void *context, const char *cmd, const char *args, int 
 
 	{
 		char dbg[128];
-		sprintf(dbg,"PowerSet: you gave %f, set ref to %f\n", realPower, BL0942_PREF);
+		snprintf(dbg, sizeof(dbg),"PowerSet: you gave %f, set ref to %f\n", realPower, BL0942_PREF);
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 	return 0;
@@ -200,7 +200,7 @@ int BL0942_VoltageSet(const void *context, const char *cmd, const char *args, in
 
 	{
 		char dbg[128];
-		sprintf(dbg,"VoltageSet: you gave %f, set ref to %f\n", realV, BL0942_UREF);
+		snprintf(dbg, sizeof(dbg),"VoltageSet: you gave %f, set ref to %f\n", realV, BL0942_UREF);
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 
@@ -221,7 +221,7 @@ int BL0942_CurrentSet(const void *context, const char *cmd, const char *args, in
 
 	{
 		char dbg[128];
-		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realI, BL0942_IREF);
+		snprintf(dbg, sizeof(dbg),"CurrentSet: you gave %f, set ref to %f\n", realI, BL0942_IREF);
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 	return 0;

@@ -23,7 +23,7 @@ uintptr_t HAL_TCP_Establish(const char *host, uint16_t port)
     hints.ai_family = AF_INET; //only IPv4
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
-    sprintf(service, "%u", port);
+    snprintf(service, sizeof(service), "%u", port);
 
     if ((rc = getaddrinfo(host, service, &hints, &addrInfoList)) != 0) {
         ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT,"getaddrinfo error");

@@ -221,7 +221,7 @@ int UART_TryToGetNextTuyaPacket(byte *out, int maxSize) {
         if(a != 0x55 || b != 0xAA) {
             UART_ConsumeBytes(1);
             if(c_garbage_consumed + 2 < sizeof(printfSkipDebug)) {
-                sprintf(buffer2,"%02X ",a);
+                snprintf(buffer2, sizeof(buffer2),"%02X ",a);
                 strcat_safe(printfSkipDebug,buffer2,sizeof(printfSkipDebug));
             }
             c_garbage_consumed++;
@@ -993,7 +993,7 @@ void TuyaMCU_RunFrame() {
         if(len > 0) {
             buffer_for_log[0] = 0;
             for(i = 0; i < len; i++) {
-                sprintf(buffer2,"%02X ",data[i]);
+                snprintf(buffer2, sizeof(buffer2),"%02X ",data[i]);
                 strcat_safe(buffer_for_log,buffer2,sizeof(buffer_for_log));
             }
             addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TUYAMCU received: %s\n", buffer_for_log);
@@ -1001,7 +1001,7 @@ void TuyaMCU_RunFrame() {
 			// redo sprintf without spaces
             buffer_for_log[0] = 0;
             for(i = 0; i < len; i++) {
-                sprintf(buffer2,"%02X",data[i]);
+                snprintf(buffer2, sizeof(buffer2),"%02X",data[i]);
                 strcat_safe(buffer_for_log,buffer2,sizeof(buffer_for_log));
             }
 			// fire string event, as we already have it sprintfed
