@@ -409,6 +409,9 @@ int Main_GetLastRebootBootFailures()
 
 #define RESTARTS_REQUIRED_FOR_SAFE_MODE 4
 
+
+// called from idle thread each loop.
+// - just so we know it is running.
 void isidle(){
 	idleCount++;
 }
@@ -420,7 +423,9 @@ void Main_Init()
 	// read or initialise the boot count flash area
 	HAL_FlashVars_IncreaseBootCount();
 	
+	#ifdef PLATFORM_BEKEN
 	bg_register_irda_check_func(isidle);
+	#endif
 
 	g_bootFailures = HAL_FlashVars_GetBootFailures();
 	if (g_bootFailures > RESTARTS_REQUIRED_FOR_SAFE_MODE)
