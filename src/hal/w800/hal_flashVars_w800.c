@@ -32,5 +32,18 @@ void HAL_FlashVars_ReadLED(byte *mode, short *brightness, short *temperature, by
 
 }
 
+int HAL_GetEnergyMeterStatus(ENERGY_METERING_DATA *data)
+{
+    return 0;
+}
+
+int HAL_SetEnergyMeterStatus(ENERGY_METERING_DATA *data)
+{
+    return 0;
+}
+
+void HAL_FlashVars_SaveTotalConsumption(float total_consumption)
+{
+}
 
 #endif

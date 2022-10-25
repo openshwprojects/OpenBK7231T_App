@@ -7,10 +7,12 @@
 //#include "flash.h"
 #include "../logging/logging.h"
 #include "../httpclient/http_client.h"
+#include "../driver/drv_public.h"
 
 static unsigned char *sector = (void *)0;
 int sectorlen = 0;
 unsigned int addr = 0xff000;
+int ota_status = -1;
 #define SECTOR_SIZE 0x1000
 static void store_sector(unsigned int addr, unsigned char *data);
 extern void flash_protection_op(UINT8 mode,PROTECT_TYPE type);
@@ -97,6 +99,7 @@ static void store_sector(unsigned int addr, unsigned char *data){
     flash_ctrl(CMD_FLASH_ERASE_SECTOR, &addr);
     flash_ctrl(CMD_FLASH_WRITE_ENABLE, (void *)0);
     flash_write((char *)data , SECTOR_SIZE, addr);
+    ota_status += SECTOR_SIZE;
 }
 
 
@@ -135,7 +138,10 @@ int myhttpclientcallback(httprequest_t* request){
       CFG_IncrementOTACount();
       // make sure it's saved before reboot
 	  CFG_Save_IfThereArePendingChanges();
-
+      if (DRV_IsMeasuringPower())
+      {
+        BL09XX_SaveEmeteringStatistics();
+      }
       rtos_delay_milliseconds(1000);
       bk_reboot();
       break;
@@ -197,5 +203,11 @@ void otarequest(const char *urlin){
   request->method = HTTPCLIENT_GET;
   request->timeout = 10000;
   HTTPClient_Async_SendGeneric(request);
+  ota_status = 0;
  }
+
+int ota_progress()
+{
+  return ota_status;
+}
 

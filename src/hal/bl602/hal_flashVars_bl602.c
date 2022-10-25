@@ -105,6 +105,20 @@ int HAL_FlashVars_GetChannelValue(int ch) {
 	return g_bootCounts.channelStates[ch];
 }
 
+int HAL_GetEnergyMeterStatus(ENERGY_METERING_DATA *data)
+{
+    return 0;
+}
+
+int HAL_SetEnergyMeterStatus(ENERGY_METERING_DATA *data)
+{
+    return 0;
+}
+
+void HAL_FlashVars_SaveTotalConsumption(float total_consumption)
+{
+}
+
 #endif // PLATFORM_BL602
 
 

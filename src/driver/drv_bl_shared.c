@@ -12,6 +12,9 @@
 #include "../cJSON/cJSON.h"
 #include <time.h>
 #include "drv_ntp.h"
+#include "../hal/hal_flashVars.h"
+
+#define DAILY_STATS_LENGTH 8
 
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
@@ -45,8 +48,11 @@ int noChangeFrameEnergyCounter;
 float lastSentEnergyCounterValue = 0.0f; 
 float changeSendThresholdEnergy = 0.1f;
 float lastSentEnergyCounterLastHour = 0.0f;
-float dailyStats[8];
+float dailyStats[DAILY_STATS_LENGTH];
 int actual_mday = -1;
+float lastSavedEnergyCounterValue = 0.0f;
+float changeSavedThresholdEnergy = 1.0f;
+long ConsumptionSaveCounter = 0;
 
 // how much of value have to change in order to be send over MQTT again?
 int changeSendThresholds[OBK_NUM_MEASUREMENTS] = {
@@ -75,7 +81,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
     }
 	
     hprintf255(request,"<h2>%s Voltage=%f, Current=%f, Power=%f",mode, lastReadings[OBK_VOLTAGE],lastReadings[OBK_CURRENT], lastReadings[OBK_POWER]);
-    hprintf255(request,", Total Consumption=%1.1f Wh (changes sent %i, skipped %i)</h2>",energyCounter, stat_updatesSent, stat_updatesSkipped);
+    hprintf255(request,", Total Consumption=%1.1f Wh (changes sent %i, skipped %i, saved %li)</h2>",energyCounter, stat_updatesSent, stat_updatesSkipped, 
+               ConsumptionSaveCounter);
 
     if (energyCounterStatsEnable == true)
     {
@@ -109,7 +116,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
         if(NTP_IsTimeSynced() == true)
         {
             hprintf255(request, "Today: %1.1f Wh DailyStats: [", dailyStats[0]);
-            for(i = 1; i < 8; i++)
+            for(i = 1; i < DAILY_STATS_LENGTH; i++)
             {
                 if (i==1)
                     hprintf255(request, "%1.1f", dailyStats[i]);
@@ -128,6 +135,22 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
         hprintf255(request,"<h5>Periodic Statistics disabled. Use startup command SetupEnergyStats to enable function.</h5>");
     }
     /********************************************************************************************************************/
+}
+
+void BL09XX_SaveEmeteringStatistics()
+{
+    ENERGY_METERING_DATA data;
+
+    memset(&data, 0, sizeof(ENERGY_METERING_DATA));
+
+    data.TotalConsumption = energyCounter;
+    data.TodayConsumpion = dailyStats[0];
+    data.YesterdayConsumption = dailyStats[1];
+    data.actual_mday = actual_mday;
+    ConsumptionSaveCounter++;
+    data.save_counter = ConsumptionSaveCounter;
+
+    HAL_SetEnergyMeterStatus(&data);
 }
 
 int BL09XX_ResetEnergyCounter(const void *context, const char *cmd, const char *args, int cmdFlags)
@@ -151,11 +174,16 @@ int BL09XX_ResetEnergyCounter(const void *context, const char *cmd, const char *
             energyCounterMinutesStamp = xTaskGetTickCount();
             energyCounterMinutesIndex = 0;
         }
+        for(i = 1; i < DAILY_STATS_LENGTH; i++)
+        {
+            dailyStats[i] = 0.0;
+        }
     } else {
         value = atof(args);
         energyCounter = value;
         energyCounterStamp = xTaskGetTickCount();
     }
+    BL09XX_SaveEmeteringStatistics();
     return 0;
 }
 
@@ -275,7 +303,8 @@ void BL_ProcessUpdate(float voltage, float current, float power)
 
     energyCounter += energy;
     energyCounterStamp = xTaskGetTickCount();
-
+    HAL_FlashVars_SaveTotalConsumption(energyCounter);
+    
     if(NTP_IsTimeSynced() == true) 
     {
         g_time = (time_t)NTP_GetCurrentTime();
@@ -295,6 +324,7 @@ void BL_ProcessUpdate(float voltage, float current, float power)
             actual_mday = ltm->tm_mday;
             MQTT_PublishMain_StringFloat(counter_mqttNames[3], dailyStats[1]);
             stat_updatesSent++;
+            BL09XX_SaveEmeteringStatistics();
         }
     }
 
@@ -328,7 +358,7 @@ void BL_ProcessUpdate(float voltage, float current, float power)
                     cJSON_AddItemToObject(root, "consumption_samples", stats);
                 }
                 stats = cJSON_CreateArray();
-                for(i = 0; i < 8; i++)
+                for(i = 0; i < DAILY_STATS_LENGTH; i++)
                 {
                     cJSON_AddItemToArray(stats, cJSON_CreateNumber(dailyStats[i]));
                 }
@@ -412,11 +442,17 @@ void BL_ProcessUpdate(float voltage, float current, float power)
         noChangeFrameEnergyCounter++;
         stat_updatesSkipped++;
     }
+    if ((energyCounter - lastSavedEnergyCounterValue) >= changeSavedThresholdEnergy)
+    {
+        lastSavedEnergyCounterValue = energyCounter;
+        BL09XX_SaveEmeteringStatistics();
+    }
 }
 
 void BL_Shared_Init()
 {
     int i;
+    ENERGY_METERING_DATA data;
 
     for(i = 0; i < OBK_NUM_MEASUREMENTS; i++)
     {
@@ -443,10 +479,20 @@ void BL_Shared_Init()
         energyCounterMinutesIndex = 0;
     }
 
-    for(i = 0; i < 8; i++)
+    for(i = 0; i < DAILY_STATS_LENGTH; i++)
     {
         dailyStats[i] = 0;
     }
+
+    HAL_GetEnergyMeterStatus(&data);
+    energyCounter = data.TotalConsumption;
+    dailyStats[0] = data.TodayConsumpion;
+    dailyStats[1] = data.YesterdayConsumption;
+    actual_mday = data.actual_mday;
+    lastSavedEnergyCounterValue = energyCounter;
+    ConsumptionSaveCounter = data.save_counter;
+
+    //int HAL_SetEnergyMeterStatus(ENERGY_METERING_DATA *data);
 
     CMD_RegisterCommand("EnergyCntReset", "", BL09XX_ResetEnergyCounter, "Reset Energy Counter", NULL);
     CMD_RegisterCommand("SetupEnergyStats", "", BL09XX_SetupEnergyStatistic, "Setup Energy Statistic Parameters: [enable<0|1>] [sample_time<10..900>] [sample_count<10..180>]", NULL);
@@ -479,6 +525,8 @@ float DRV_GetReading(int type)
             return hourly_sum;
         case OBK_CONSUMPTION_YESTERDAY:
             return dailyStats[1];
+        case OBK_CONSUMPTION_TODAY:
+            return dailyStats[0];
         default:
             break;
     }

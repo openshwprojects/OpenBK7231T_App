@@ -582,6 +582,11 @@ int http_fn_index(http_request_t* request) {
 		hprintf255(request, "</h5>");
 	}
 
+    if (ota_progress()>=0)
+    {
+        hprintf255(request, "<h5>OTA In Progress. Status: %06lXh</h5>", ota_progress());
+    }
+
 	// for normal page loads, show the rest of the HTML
 	if (!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
 		poststr(request, "</div>"); // end div#state
