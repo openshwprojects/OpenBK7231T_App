@@ -325,9 +325,10 @@ const char* htmlPinRoleNames[] = {
 	"PWM_n",
 	"IRRecv",
 	"IRSend",
-	"error",
-	"error",
-	"error",
+	"Btn_NextColor",
+	"Btn_NextColor_n",
+	"Btn_NextDimmer",
+	"Btn_NextDimmer_n",
 	"error",
 	"error",
 };

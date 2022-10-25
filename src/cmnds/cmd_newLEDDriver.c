@@ -339,6 +339,10 @@ static int temperature(const void *context, const char *cmd, const char *args, i
 OBK_Publish_Result LED_SendEnableAllState() {
 	return MQTT_PublishMain_StringInt_DeDuped(DEDUP_LED_ENABLEALL,DEDUP_EXPIRE_TIME,"led_enableAll",g_lightEnableAll,0);
 }
+
+void LED_ToggleEnabled() {
+	LED_SetEnableAll(!g_lightEnableAll);
+}
 void LED_SetEnableAll(int bEnable) {
 	g_lightEnableAll = bEnable;
 
@@ -380,19 +384,33 @@ int LED_IsRunningDriver() {
 float LED_GetDimmer() {
 	return g_brightness / g_cfg_brightnessMult;
 }
-void LED_AddDimmer(int iVal) {
+void LED_AddDimmer(int iVal, bool wrapAroundInsteadOfClamp, int minValue) {
 	float cur;
 
 	cur = g_brightness / g_cfg_brightnessMult;
 
 	cur += iVal;
 
-	if(cur < 0)
-		cur = 0;
-	if(cur > 100)
-		cur = 100;
+	if(wrapAroundInsteadOfClamp == 0) {
+		if(cur < minValue)
+			cur = minValue;
+		if(cur > 100)
+			cur = 100;
+	} else {
+		if(cur < minValue)
+			cur = 100;
+		if(cur > 100)
+			cur = minValue;
+	}
 
 	LED_SetDimmer(cur);
+}
+void LED_NextDimmerHold() {
+	// dimmer hold will use some kind of min value,
+	// because it's easy to get confused if we set accidentally dimmer to 0
+	// and then are unable to turn on the bulb (because despite of led_enableAll 1
+	// the dimmer is 0 and anyColor * 0 gives 0)
+	LED_AddDimmer(10, true, 2);
 }
 void LED_SetDimmer(int iVal) {
 
@@ -420,7 +438,7 @@ static int add_dimmer(const void *context, const char *cmd, const char *args, in
 
 	iVal = atoi(args);
 
-	LED_AddDimmer(iVal);
+	LED_AddDimmer(iVal, 0, 0);
 
 	return 1;
 }
@@ -647,6 +665,12 @@ static void led_setHue(float hue){
 
 	onHSVChanged();
 }
+static int nextColor(const void *context, const char *cmd, const char *args, int cmdFlags){
+   
+	LED_NextColor();
+
+	return 1;
+}
 static int setSaturation(const void *context, const char *cmd, const char *args, int cmdFlags){
     float f;
 
@@ -683,8 +707,10 @@ void NewLED_InitCommands(){
     CMD_RegisterCommand("led_colorMult", "", colorMult, "set qqqq", NULL);
     CMD_RegisterCommand("led_saturation", "", setSaturation, "set qqqq", NULL);
     CMD_RegisterCommand("led_hue", "", setHue, "set qqqq", NULL);
+    CMD_RegisterCommand("led_nextColor", "", nextColor, "set qqqq", NULL);
 
 }
+
 void NewLED_RestoreSavedStateIfNeeded() {
 	if(CFG_HasFlag(OBK_FLAG_LED_REMEMBERLASTSTATE)) {
 		short brig;

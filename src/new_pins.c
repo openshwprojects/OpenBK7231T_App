@@ -153,7 +153,23 @@ void Button_OnInitialPressDown(int index)
 			CHANNEL_DoSpecialToggleAll();
 			return;
 		}
-		CHANNEL_Toggle(g_cfg.pins.channels[index]);
+		if(g_cfg.pins.roles[index] == IOR_Button_NextColor || g_cfg.pins.roles[index] == IOR_Button_NextColor_n)
+		{
+			LED_NextColor();
+			return;
+		}
+		if(g_cfg.pins.roles[index] == IOR_Button_NextDimmer || g_cfg.pins.roles[index] == IOR_Button_NextDimmer_n)
+		{
+		
+			return;
+		}
+		// is it a device with RGB/CW/single color/etc LED driver?
+		if(LED_IsRunningDriver()) {
+			LED_ToggleEnabled();
+		} else {
+			// Relays
+			CHANNEL_Toggle(g_cfg.pins.channels[index]);
+		}
 	}
 }
 void Button_OnShortClick(int index)
@@ -169,7 +185,22 @@ void Button_OnShortClick(int index)
 			CHANNEL_DoSpecialToggleAll();
 			return;
 		}
-		CHANNEL_Toggle(g_cfg.pins.channels[index]);
+		if(g_cfg.pins.roles[index] == IOR_Button_NextColor || g_cfg.pins.roles[index] == IOR_Button_NextColor_n)
+		{
+			LED_NextColor();
+			return;
+		}
+		if(g_cfg.pins.roles[index] == IOR_Button_NextDimmer || g_cfg.pins.roles[index] == IOR_Button_NextDimmer_n)
+		{
+			return;
+		}
+		// is it a device with RGB/CW/single color/etc LED driver?
+		if(LED_IsRunningDriver()) {
+			LED_ToggleEnabled();
+		} else {
+			// Relays
+			CHANNEL_Toggle(g_cfg.pins.channels[index]);
+		}
 	}
 }
 void Button_OnDoubleClick(int index)
@@ -193,6 +224,10 @@ void Button_OnLongPressHold(int index) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"%i Button_OnLongPressHold\r\n", index);
 	// fire event - button on pin <index> was held
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ONHOLD,index);
+
+	if(g_cfg.pins.roles[index] == IOR_Button_NextDimmer || g_cfg.pins.roles[index] == IOR_Button_NextDimmer_n){
+		LED_NextDimmerHold();
+	}
 }
 void Button_OnLongPressHoldStart(int index) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"%i Button_OnLongPressHoldStart\r\n", index);
@@ -206,7 +241,8 @@ bool BTN_ShouldInvert(int index) {
 		return false;
 	}
 	if(g_cfg.pins.roles[index] == IOR_Button_n || g_cfg.pins.roles[index] == IOR_Button_ToggleAll_n||
-		g_cfg.pins.roles[index] == IOR_DigitalInput_n || 	g_cfg.pins.roles[index] == IOR_DigitalInput_NoPup_n) {
+		g_cfg.pins.roles[index] == IOR_DigitalInput_n || 	g_cfg.pins.roles[index] == IOR_DigitalInput_NoPup_n
+		 || 	g_cfg.pins.roles[index] == IOR_Button_NextColor_n  || 	g_cfg.pins.roles[index] == IOR_Button_NextDimmer_n) {
 		return true;
 	}
 	return false;
@@ -259,6 +295,10 @@ void CHANNEL_SetAll(int iVal, int iFlags) {
 		case IOR_Button_n:
 		case IOR_Button_ToggleAll:
 		case IOR_Button_ToggleAll_n:
+		case IOR_Button_NextColor:
+		case IOR_Button_NextColor_n:
+		case IOR_Button_NextDimmer:
+		case IOR_Button_NextDimmer_n:
 			{
 
 			}
@@ -356,6 +396,10 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_Button_n:
 		case IOR_Button_ToggleAll:
 		case IOR_Button_ToggleAll_n:
+		case IOR_Button_NextColor:
+		case IOR_Button_NextColor_n:
+		case IOR_Button_NextDimmer:
+		case IOR_Button_NextDimmer_n:
 			{
 				//pinButton_s *bt = &g_buttons[index];
 				// TODO: disable button
@@ -398,6 +442,10 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_Button_n:
 		case IOR_Button_ToggleAll:
 		case IOR_Button_ToggleAll_n:
+		case IOR_Button_NextColor:
+		case IOR_Button_NextColor_n:
+		case IOR_Button_NextDimmer:
+		case IOR_Button_NextDimmer_n:
 			{
 				pinButton_s *bt = &g_buttons[index];
 
@@ -956,7 +1004,9 @@ void PIN_ticks(void *param)
 		} else
 #endif
 		if(g_cfg.pins.roles[i] == IOR_Button || g_cfg.pins.roles[i] == IOR_Button_n
-			|| g_cfg.pins.roles[i] == IOR_Button_ToggleAll || g_cfg.pins.roles[i] == IOR_Button_ToggleAll_n) {
+			|| g_cfg.pins.roles[i] == IOR_Button_ToggleAll || g_cfg.pins.roles[i] == IOR_Button_ToggleAll_n
+			|| g_cfg.pins.roles[i] == IOR_Button_NextColor || g_cfg.pins.roles[i] == IOR_Button_NextColor_n
+			|| g_cfg.pins.roles[i] == IOR_Button_NextDimmer || g_cfg.pins.roles[i] == IOR_Button_NextDimmer_n) {
 			//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Test hold %i\r\n",i);
 			PIN_Input_Handler(i);
 		}

@@ -44,6 +44,14 @@ enum IORole {
 	IOR_IRRecv,
 	IOR_IRSend,
 
+	// I have a LED strip that has separate power button and a 'next mode' button
+	// It's a RGB strip
+	IOR_Button_NextColor,
+	IOR_Button_NextColor_n,
+
+	IOR_Button_NextDimmer,
+	IOR_Button_NextDimmer_n,
+
 	IOR_Total_Options,
 };
 
