@@ -52,6 +52,9 @@ enum IORole {
 	IOR_Button_NextDimmer,
 	IOR_Button_NextDimmer_n,
 
+	IOR_AlwaysHigh,
+	IOR_AlwaysLow,
+
 	IOR_Total_Options,
 };
 

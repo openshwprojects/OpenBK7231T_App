@@ -497,6 +497,18 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 				}
 			}
 			break;
+		case IOR_AlwaysHigh:
+			{
+				HAL_PIN_Setup_Output(index);
+				HAL_PIN_SetOutputValue(index,1);
+			}
+			break;
+		case IOR_AlwaysLow:
+			{
+				HAL_PIN_Setup_Output(index);
+				HAL_PIN_SetOutputValue(index,0);
+			}
+			break;
 		case IOR_LED_WIFI:
 		case IOR_LED_WIFI_n:
 		{

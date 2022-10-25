@@ -329,6 +329,10 @@ const char* htmlPinRoleNames[] = {
 	"Btn_NextColor_n",
 	"Btn_NextDimmer",
 	"Btn_NextDimmer_n",
+	"AlwaysHigh",
+	"AlwaysLow",
+	"error",
+	"error",
 	"error",
 	"error",
 };
