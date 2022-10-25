@@ -41,7 +41,7 @@ const char* counter_mqttNames[OBK_NUM_COUNTERS] = {
 const char* counter_devClasses[OBK_NUM_COUNTERS] = {
 	"energy",
 	"energy",
-	"None"
+	""
 };
 
 typedef struct driver_s {
