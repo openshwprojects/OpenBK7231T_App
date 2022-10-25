@@ -268,17 +268,15 @@ void NTP_OnEverySecond() {
 
 void NTP_AppendInformationToHTTPIndexPage(http_request_t* request)
 {
-    char tmp[128];
     struct tm *ltm;
 
     ltm = localtime(&g_time);
 
     if (g_synced == true)
-        sprintf(tmp, "<h5>NTP: Local Time: %04d/%02d/%02d %02d:%02d:%02d </h5>",
+        hprintf255(request, "<h5>NTP: Local Time: %04d/%02d/%02d %02d:%02d:%02d </h5>",
                 ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
     else 
-        sprintf(tmp, "<h5>NTP: Syncing....");
-    hprintf128(request,tmp);
+        hprintf255(request, "<h5>NTP: Syncing....");
 }
 
 bool NTP_IsTimeSynced()

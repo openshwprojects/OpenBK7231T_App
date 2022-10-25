@@ -108,15 +108,15 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
         if(NTP_IsTimeSynced() == true)
         {
-            hprintf128(request, "Today: %1.1f Wh DailyStats: [", dailyStats[0]);
+            hprintf255(request, "Today: %1.1f Wh DailyStats: [", dailyStats[0]);
             for(i = 1; i < 8; i++)
             {
                 if (i==1)
-                    hprintf128(request, "%1.1f", dailyStats[i]);
+                    hprintf255(request, "%1.1f", dailyStats[i]);
                 else
-                    hprintf128(request, ",%1.1f", dailyStats[i]);
+                    hprintf255(request, ",%1.1f", dailyStats[i]);
             }
-            hprintf128(request, "]");
+            hprintf255(request, "]");
         } else {
             if(DRV_IsRunning("NTP")==false)
                 hprintf255(request,"NTP driver is not started, daily stats disbled.");

@@ -140,9 +140,15 @@ void Main_OnWiFiStatusChange(int code)
         case WIFI_STA_DISCONNECTED:
             // try to connect again in few seconds
             if (g_bHasWiFiConnected != 0)
+            {
                 HAL_DisconnectFromWifi();
+                Main_PingWatchDogSilent();
+            }
             g_connectToWiFi = 15;
 			g_bHasWiFiConnected = 0;
+            g_timeSinceLastPingReply = -1;
+            g_bPingWatchDogStarted = 0;
+            g_startPingWatchDogAfter = 0;           
 			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_DISCONNECTED\r\n");
             break;
         case WIFI_STA_AUTH_FAILED:
@@ -227,10 +233,17 @@ void Main_OnEverySecond()
 		g_timeSinceLastPingReply++;
 		if(g_timeSinceLastPingReply >= CFG_GetPingDisconnectedSecondsToRestart()) 
         {
-			ADDLOGF_INFO("[Ping watchdog] No ping replies within %i seconds. Will try to reconnect.\n",g_timeSinceLastPingReply);
-            HAL_DisconnectFromWifi();
-			g_bHasWiFiConnected = 0;
-			g_connectToWiFi = 10;
+            if (g_bHasWiFiConnected != 0)
+            {
+    			ADDLOGF_INFO("[Ping watchdog] No ping replies within %i seconds. Will try to reconnect.\n",g_timeSinceLastPingReply);
+                HAL_DisconnectFromWifi();
+		    	g_bHasWiFiConnected = 0;
+			    g_connectToWiFi = 10;
+                g_timeSinceLastPingReply = -1;
+                g_bPingWatchDogStarted = 0;
+                g_startPingWatchDogAfter = 0;
+                Main_PingWatchDogSilent();
+            }
 		}
 	}
 
