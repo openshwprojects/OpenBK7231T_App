@@ -73,7 +73,7 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 		char buffer2[32];
 		buffer_for_log[0] = 0;
 		for(i = 0; i < CSE7766_PACKET_LEN; i++) {
-			sprintf(buffer2,"%02X ",UART_GetNextByte(i));
+			snprintf(buffer2, sizeof(buffer2), "%02X ",UART_GetNextByte(i));
 			strcat_safe(buffer_for_log,buffer2,sizeof(buffer_for_log));
 		}
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"CSE7766 received: %s\n", buffer_for_log);
@@ -188,7 +188,7 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 	{
 		char res[128];
 		// V=245.107925,I=109.921143,P=0.035618
-		sprintf(res,"V=%f,I=%f,P=%f\n",lastReadings[OBK_VOLTAGE],lastReadings[OBK_CURRENT],lastReadings[OBK_POWER]);
+		snprintf(res, sizeof(res), "V=%f,I=%f,P=%f\n",lastReadings[OBK_VOLTAGE],lastReadings[OBK_CURRENT],lastReadings[OBK_POWER]);
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,res );
 	}
 #endif
@@ -213,7 +213,7 @@ int CSE7766_PowerSet(const void *context, const char *cmd, const char *args, int
 
 	{
 		char dbg[128];
-		sprintf(dbg,"PowerSet: you gave %f, set ref to %f\n", realPower, CSE7766_PREF);
+		snprintf(dbg, sizeof(dbg),"PowerSet: you gave %f, set ref to %f\n", realPower, CSE7766_PREF);
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 	return 0;
@@ -272,7 +272,7 @@ int CSE7766_VoltageSet(const void *context, const char *cmd, const char *args, i
 
 	{
 		char dbg[128];
-		sprintf(dbg,"VoltageSet: you gave %f, set ref to %f\n", realV, CSE7766_UREF);
+		snprintf(dbg, sizeof(dbg),"VoltageSet: you gave %f, set ref to %f\n", realV, CSE7766_UREF);
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 
@@ -293,7 +293,7 @@ int CSE7766_CurrentSet(const void *context, const char *cmd, const char *args, i
 
 	{
 		char dbg[128];
-		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realI, CSE7766_IREF);
+		snprintf(dbg, sizeof(dbg),"CurrentSet: you gave %f, set ref to %f\n", realI, CSE7766_IREF);
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 	return 0;

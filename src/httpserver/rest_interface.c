@@ -698,7 +698,7 @@ static int http_rest_post_logconfig(http_request_t* request) {
 		else {
 			ADDLOG_ERROR(LOG_FEATURE_API, "Unexpected key: %.*s", t[i].end - t[i].start,
 				json_str + t[i].start);
-			sprintf(tmp, "Unexpected key: %.*s\n", t[i].end - t[i].start,
+			snprintf(tmp, sizeof(tmp), "Unexpected key: %.*s\n", t[i].end - t[i].start,
 				json_str + t[i].start);
 			poststr(request, tmp);
 		}

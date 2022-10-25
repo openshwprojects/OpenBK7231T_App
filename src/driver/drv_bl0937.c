@@ -60,7 +60,7 @@ int BL0937_PowerSet(const void *context, const char *cmd, const char *args, int 
 
 	{
 		char dbg[128];
-		sprintf(dbg,"PowerSet: you gave %f, set ref to %f\n", realPower, BL0937_PREF);
+		snprintf(dbg, sizeof(dbg),"PowerSet: you gave %f, set ref to %f\n", realPower, BL0937_PREF);
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 	return 0;
@@ -119,7 +119,7 @@ int BL0937_VoltageSet(const void *context, const char *cmd, const char *args, in
 
 	{
 		char dbg[128];
-		sprintf(dbg,"VoltageSet: you gave %f, set ref to %f\n", realV, BL0937_VREF);
+		snprintf(dbg, sizeof(dbg),"VoltageSet: you gave %f, set ref to %f\n", realV, BL0937_VREF);
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 
@@ -140,7 +140,7 @@ int BL0937_CurrentSet(const void *context, const char *cmd, const char *args, in
 
 	{
 		char dbg[128];
-		sprintf(dbg,"CurrentSet: you gave %f, set ref to %f\n", realI, BL0937_CREF);
+		snprintf(dbg, sizeof(dbg),"CurrentSet: you gave %f, set ref to %f\n", realI, BL0937_CREF);
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 	return 0;
@@ -203,7 +203,7 @@ void BL0937_RunFrame() {
 #if 0
 	{
 		char dbg[128];
-		sprintf(dbg,"Voltage %f, current %f, power %f\n", final_v, final_c, final_p);
+		snprintf(dbg, sizeof(dbg),"Voltage %f, current %f, power %f\n", final_v, final_c, final_p);
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 #endif

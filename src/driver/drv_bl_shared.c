@@ -69,7 +69,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
     } else {
         mode = "PWR";
     }
-    sprintf(tmp, "<h2>%s Voltage=%f, Current=%f, Power=%f, Total Consumption=%1.1f Wh (changes sent %i, skipped %i)</h2>",
+    snprintf(tmp, sizeof(tmp), "<h2>%s Voltage=%f, Current=%f, Power=%f, Total Consumption=%1.1f Wh (changes sent %i, skipped %i)</h2>",
         mode, lastReadings[OBK_VOLTAGE],lastReadings[OBK_CURRENT], lastReadings[OBK_POWER],
         energyCounter, stat_updatesSent, stat_updatesSkipped);
     hprintf128(request,tmp);
@@ -78,10 +78,10 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
     {
         /********************************************************************************************************************/
         hprintf128(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
-        sprintf(tmp, "%1.1f Wh<br>", DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+        snprintf(tmp, sizeof(tmp), "%1.1f Wh<br>", DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
         //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"'%s'\n", tmp);
         hprintf128(request,tmp);
-        sprintf(tmp, "Sampling interval: %d sec<br>History length: %d samples<br>History per samples:<br>", 
+        snprintf(tmp, sizeof(tmp), "Sampling interval: %d sec<br>History length: %d samples<br>History per samples:<br>", 
                 energyCounterSampleInterval, energyCounterSampleCount);
         //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"'%s'\n", tmp);
         hprintf128(request,tmp);
@@ -92,9 +92,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
             {
                 if ((i%20)==0)
                 {
-                    sprintf(number,"%1.1f", energyCounterMinutes[i]);
+                    snprintf(number, sizeof(number), "%1.1f", energyCounterMinutes[i]);
                 } else {
-                    sprintf(number,", %1.1f", energyCounterMinutes[i]);
+                    snprintf(number, sizeof(number), ", %1.1f", energyCounterMinutes[i]);
                 }
                 strcat(tmp, number);
                 if ((i%20)==19)
@@ -106,7 +106,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
                 }
             }
 			// energyCounterMinutesIndex is a long type, we need to use %ld instead of %d
-            sprintf(tmp, "<br>History Index: %ld<br>JSON Stats: %s </h5>", energyCounterMinutesIndex,
+            snprintf(tmp, sizeof(tmp), "<br>History Index: %ld<br>JSON Stats: %s </h5>", energyCounterMinutesIndex,
                     (energyCounterStatsJSONEnable == true) ? "enabled" : "disabled");
             //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"'%s'\n", tmp);
             hprintf128(request, tmp);

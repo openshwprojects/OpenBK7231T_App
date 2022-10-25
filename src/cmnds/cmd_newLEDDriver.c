@@ -214,7 +214,7 @@ static OBK_Publish_Result sendColorChange() {
 	c[1] = (byte)(baseColors[1]);
 	c[2] = (byte)(baseColors[2]);
 
-	sprintf(s,"%02X%02X%02X",c[0],c[1],c[2]);
+	snprintf(s, sizeof(s), "%02X%02X%02X",c[0],c[1],c[2]);
 
 	return MQTT_PublishMain_StringString("led_basecolor_rgb",s, 0);
 }
@@ -225,7 +225,7 @@ void LED_GetBaseColorString(char * s) {
 	c[1] = (byte)(baseColors[1]);
 	c[2] = (byte)(baseColors[2]);
 
-	sprintf(s,"%02X%02X%02X",c[0],c[1],c[2]);
+	sprintf(s, "%02X%02X%02X",c[0],c[1],c[2]);
 }
 static void sendFinalColor() {
 	char s[16];
@@ -239,7 +239,7 @@ static void sendFinalColor() {
 	c[1] = (byte)(finalColors[1]);
 	c[2] = (byte)(finalColors[2]);
 
-	sprintf(s,"%02X%02X%02X",c[0],c[1],c[2]);
+	snprintf(s, sizeof(s),"%02X%02X%02X",c[0],c[1],c[2]);
 
 	MQTT_PublishMain_StringString("led_finalcolor_rgb",s, 0);
 }

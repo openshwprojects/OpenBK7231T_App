@@ -712,7 +712,7 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 
 		clientId = CFG_GetMQTTClientId();
 
-		sprintf(tmp, "%s/connected", clientId);
+		snprintf(tmp, sizeof(tmp), "%s/connected", clientId);
 		err = mqtt_publish(client, tmp, "online", strlen("online"), 2, true, mqtt_pub_request_cb, 0);
 		if (err != ERR_OK) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish err: %d\n", err);
@@ -755,7 +755,7 @@ static void MQTT_do_connect(mqtt_client_t* client)
 
 	if (!mqtt_host[0]) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host empty, not starting mqtt\r\n");
-		sprintf(mqtt_status_message, "mqtt_host empty, not starting mqtt");
+		snprintf(mqtt_status_message, sizeof(mqtt_status_message), "mqtt_host empty, not starting mqtt");
 		return;
 	}
 
@@ -795,7 +795,7 @@ static void MQTT_do_connect(mqtt_client_t* client)
 		}
 		else {
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host resolves no addresses?\r\n");
-			sprintf(mqtt_status_message, "mqtt_host resolves no addresses?");
+			snprintf(mqtt_status_message, sizeof(mqtt_status_message), "mqtt_host resolves no addresses?");
 			return;
 		}
 
@@ -815,7 +815,7 @@ static void MQTT_do_connect(mqtt_client_t* client)
 		if (res != ERR_OK)
 		{
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Connect error in mqtt_client_connect - code: %d (%s)\n", res, get_error_name(res));
-			sprintf(mqtt_status_message, "mqtt_client_connect connect failed");
+			snprintf(mqtt_status_message, sizeof(mqtt_status_message), "mqtt_client_connect connect failed");
 			if (res == ERR_ISCONN)
 			{
 				mqtt_disconnect(mqtt_client);
@@ -827,7 +827,7 @@ static void MQTT_do_connect(mqtt_client_t* client)
 	}
 	else {
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host %s not found by gethostbyname\r\n", mqtt_host);
-		sprintf(mqtt_status_message, "mqtt_host %s not found by gethostbyname", mqtt_host);
+		snprintf(mqtt_status_message, sizeof(mqtt_status_message), "mqtt_host %s not found by gethostbyname", mqtt_host);
 	}
 }
 
@@ -920,14 +920,14 @@ void MQTT_init()
 	clientId = CFG_GetMQTTClientId();
 
 	// register the main set channel callback
-	sprintf(cbtopicbase, "%s/", clientId);
-	sprintf(cbtopicsub, "%s/+/set", clientId);
+	snprintf(cbtopicbase, sizeof(cbtopicbase), "%s/", clientId);
+	snprintf(cbtopicsub, sizeof(cbtopicsub), "%s/+/set", clientId);
 	// note: this may REPLACE an existing entry with the same ID.  ID 1 !!!
 	MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 1, channelSet);
 
 	// register the TAS cmnd callback
-	sprintf(cbtopicbase, "cmnd/%s/", clientId);
-	sprintf(cbtopicsub, "cmnd/%s/+", clientId);
+	snprintf(cbtopicbase, sizeof(cbtopicbase), "cmnd/%s/", clientId);
+	snprintf(cbtopicsub, sizeof(cbtopicsub), "cmnd/%s/+", clientId);
 	// note: this may REPLACE an existing entry with the same ID.  ID 2 !!!
 	MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 2, tasCmnd);
 

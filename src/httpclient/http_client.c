@@ -259,7 +259,7 @@ int httpclient_send_auth(httpclient_t *client, char *send_buf, int *send_idx)
     char base64buff[HTTPCLIENT_AUTHB_SIZE + 3];
 
     httpclient_get_info(client, send_buf, send_idx, "Authorization: Basic ", 0);
-    sprintf(base64buff, "%s:%s", client->auth_user, client->auth_password);
+    snprintf(base64buff, sizeof(base64buff), "%s:%s", client->auth_user, client->auth_password);
     ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "bAuth: %s", base64buff) ;
     httpclient_base64enc(b_auth, base64buff);
     b_auth[os_strlen(b_auth) + 1] = '\0';
