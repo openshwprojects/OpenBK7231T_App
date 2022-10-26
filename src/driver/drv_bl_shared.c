@@ -14,7 +14,7 @@
 #include "drv_ntp.h"
 #include "../hal/hal_flashVars.h"
 
-#define DAILY_STATS_LENGTH 8
+#define DAILY_STATS_LENGTH 5
 
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
@@ -147,6 +147,9 @@ void BL09XX_SaveEmeteringStatistics()
     data.TodayConsumpion = dailyStats[0];
     data.YesterdayConsumption = dailyStats[1];
     data.actual_mday = actual_mday;
+    data.ConsumptionHistory[0] = dailyStats[2];
+    data.ConsumptionHistory[1] = dailyStats[2];
+    data.ConsumptionHistory[2] = dailyStats[2];
     ConsumptionSaveCounter++;
     data.save_counter = ConsumptionSaveCounter;
 
@@ -323,6 +326,10 @@ void BL_ProcessUpdate(float voltage, float current, float power)
     energy = (float)xPassedTicks;
     energy *= power;
     energy /= (3600000.0f / (float)portTICK_PERIOD_MS);
+    if (energy < 0)
+    {
+        energy = 0.0;
+    }
 
     energyCounter += energy;
     energyCounterStamp = xTaskGetTickCount();
@@ -401,7 +408,12 @@ void BL_ProcessUpdate(float voltage, float current, float power)
             {
                 for (i=energyCounterSampleCount-1;i>0;i--)
                 {
-                    energyCounterMinutes[i] = energyCounterMinutes[i-1];
+                    if (energyCounterMinutes[i-1]>0.0)
+                    {
+                        energyCounterMinutes[i] = energyCounterMinutes[i-1];
+                    } else {
+                        energyCounterMinutes[i] = 0.0;
+                    }
                 }
                 energyCounterMinutes[0] = 0.0;
             }
@@ -513,8 +525,11 @@ void BL_Shared_Init()
     energyCounter = data.TotalConsumption;
     dailyStats[0] = data.TodayConsumpion;
     dailyStats[1] = data.YesterdayConsumption;
-    actual_mday = data.actual_mday;
+    actual_mday = data.actual_mday;    
     lastSavedEnergyCounterValue = energyCounter;
+    dailyStats[2] = data.ConsumptionHistory[0];
+    dailyStats[3] = data.ConsumptionHistory[1];
+    dailyStats[4] = data.ConsumptionHistory[2];
     ConsumptionSaveCounter = data.save_counter;
 
     //int HAL_SetEnergyMeterStatus(ENERGY_METERING_DATA *data);

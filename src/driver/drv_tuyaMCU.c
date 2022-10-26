@@ -436,7 +436,7 @@ struct tm * TuyaMCU_Get_NTP_Time() {
 
     g_time = NTP_GetCurrentTime();
     addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"MCU time to set: %i\n", g_time);
-    ptm = gmtime(&g_time);
+    ptm = gmtime((time_t*)&g_time);
     addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"ptime ->gmtime => tm_hour: %i\n",ptm->tm_hour );
     addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"ptime ->gmtime => tm_min: %i\n", ptm->tm_min );
 

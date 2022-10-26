@@ -243,7 +243,6 @@ void DRV_Generic_Init() {
 void DRV_AppendInformationToHTTPIndexPage(http_request_t* request) {
 	int i, j;
 	int c_active = 0;
-    char list[256];
 
 	if (DRV_Mutex_Take(100) == false) {
 		return;

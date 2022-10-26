@@ -212,7 +212,7 @@ void NTP_CheckForReceive() {
 	g_time = secsSince1900 - NTP_OFFSET;
 	g_time += g_timeOffsetHours;
 	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time  : %u\n",g_time);
-    ltm = localtime(&g_time);
+    ltm = localtime((time_t*)&g_time);
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Local Time : %04d/%02d/%02d %02d:%02d:%02d\n",
             ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
     g_synced = true;
@@ -270,7 +270,7 @@ void NTP_AppendInformationToHTTPIndexPage(http_request_t* request)
 {
     struct tm *ltm;
 
-    ltm = localtime(&g_time);
+    ltm = localtime((time_t*)&g_time);
 
     if (g_synced == true)
         hprintf255(request, "<h5>NTP: Local Time: %04d/%02d/%02d %02d:%02d:%02d </h5>",

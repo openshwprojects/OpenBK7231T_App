@@ -439,6 +439,7 @@ extern IRrecv IrReceiver;
 class IRsend {
 public:
     IRsend();
+    virtual ~IRsend() = default;
 
     /*
      * IR_SEND_PIN is defined

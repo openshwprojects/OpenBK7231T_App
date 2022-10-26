@@ -83,7 +83,9 @@ bool strCompareBound(const char *s, const char *templ, const char *stopper, int 
 		if(bAllowWildCard && *templ == '*') {
 
 		} else {
-			if(tolower(*s) != tolower(*templ)) {
+            char c1 = tolower((unsigned char)*s);
+            char c2 = tolower((unsigned char)*templ);
+			if(c1 != c2) {
 				return false;
 			}
 		}

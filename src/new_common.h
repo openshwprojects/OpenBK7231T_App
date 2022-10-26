@@ -161,8 +161,6 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 							beken_thread_function_t function,
 							uint32_t stack_size, beken_thread_arg_t arg );
 
-
-
 #include "common/framework/platform_init.h"
 
 #include "kernel/os/os.h"
@@ -223,6 +221,7 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 
 #define printf addLog
 
+void delay_ms(UINT32 ms_count);
 
 #endif
 

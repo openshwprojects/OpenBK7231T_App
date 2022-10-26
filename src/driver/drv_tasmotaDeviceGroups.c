@@ -352,7 +352,7 @@ void DRV_DGR_RunQuickTick() {
 		def.cbs.processRGBCW = DRV_DGR_processRGBCW;
 		def.cbs.checkSequence = DGR_CheckSequence;
 
-		DGR_Parse(msgbuf, nbytes, &def, &addr);
+		DGR_Parse((byte*)msgbuf, nbytes, &def, (struct sockaddr *)&addr);
 		//DGR_Parse(msgbuf, nbytes);
        // puts(msgbuf);
 }

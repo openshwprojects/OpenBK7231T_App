@@ -13,7 +13,8 @@ typedef struct ENERGY_METERING_DATA {
     float TodayConsumpion;
     float YesterdayConsumption;
     long save_counter;
-    unsigned char reseved[15];
+    float ConsumptionHistory[3];
+    unsigned char reseved[3];
     char actual_mday;
 } ENERGY_METERING_DATA;
 

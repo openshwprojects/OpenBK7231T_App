@@ -35,6 +35,9 @@
 #include "BkDriverFlash.h"
 #endif
 
+int tuya_os_adapt_wifi_all_ap_scan(AP_IF_S **ap_ary, unsigned int *num);
+int tuya_os_adapt_wifi_release_ap(AP_IF_S *ap);
+
 static char* UNIQUE_ID_FORMAT = "  - unique_id: \"%s\"\n";
 static char* HASS_INDEXED_NAME_CONFIG = "    name: \"%s %i\"\n";
 static char* HASS_STATE_TOPIC_CONFIG = "    state_topic: \"%s/%i/get\"\n";
@@ -822,7 +825,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 		uint32_t num;
 
 		bk_printf("Scan begin...\r\n");
-		tuya_os_adapt_wifi_all_ap_scan(&ar, &num);
+		tuya_os_adapt_wifi_all_ap_scan(&ar, (unsigned int*)&num);
 		bk_printf("Scan returned %i networks\r\n", num);
 		for (i = 0; i < num; i++) {
 			hprintf255(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", i + 1, (int)num, ar[i].ssid, ar[i].channel, ar[i].rssi);

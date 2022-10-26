@@ -223,6 +223,7 @@ class myIRsend : public IRsend {
             our_ms = 0;
             resetsendqueue();
         }
+        ~myIRsend() { }
 
         void enableIROut(uint_fast8_t aFrequencyKHz){
             // just setup variables for use in ISR
@@ -599,7 +600,7 @@ extern "C" void DRV_IR_RunFrame(){
 
                     if (publishrepeats || !repeat){
                         if (ourReceiver->decodedIRData.protocol == UNKNOWN){
-                            snprintf(out, sizeof(out), "IR_%s 0x%X %d", name, ourReceiver->decodedIRData.decodedRawData, repeat);
+                            snprintf(out, sizeof(out), "IR_%s 0x%lX %d", name, (unsigned long)ourReceiver->decodedIRData.decodedRawData, repeat);
                         } else {
                             snprintf(out, sizeof(out), "IR_%s 0x%X 0x%X %d", name, ourReceiver->decodedIRData.address, ourReceiver->decodedIRData.command, repeat);
                         }
@@ -635,6 +636,8 @@ extern "C" void DRV_IR_RunFrame(){
 					case SONY:
 						tgType = CMD_EVENT_IR_SONY;
 						break;
+                    default:                        
+                        break;
 					}
 
                     // we should include repeat here?
