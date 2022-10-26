@@ -397,10 +397,12 @@ void Main_OnEverySecond()
 		if (!g_reset){
 			// ensure any config changes are saved before reboot.
 			CFG_Save_IfThereArePendingChanges();
+#ifndef OBK_DISABLE_ALL_DRIVERS
             if (DRV_IsMeasuringPower()) 
             {
                 BL09XX_SaveEmeteringStatistics();
             }
+#endif            
 			ADDLOGF_INFO("Going to call HAL_RebootModule\r\n");
 			HAL_RebootModule();
 		} else {
