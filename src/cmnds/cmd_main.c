@@ -72,6 +72,7 @@ void CMD_Init() {
     CMD_RegisterCommand("restart", "", CMD_Restart, "Reboots the module", NULL);
     CMD_RegisterCommand("clearConfig", "", CMD_ClearConfig, "Clears all config", NULL);
     CMD_RegisterCommand("simonirtest", "", CMD_SimonTest, "Simons Special Test", NULL);
+    CMD_RegisterCommand("if", "", CMD_If, "", NULL);
 	if(CFG_HasFlag(OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER)) {
 		CMD_StartTCPCommandLine();
 	}

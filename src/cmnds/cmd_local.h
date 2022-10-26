@@ -17,6 +17,10 @@ int get_cmd(const char *s, char *dest, int maxlen, int stripnum);
 bool isWhiteSpace(char ch);
 
 
+int CMD_If(const void *context, const char *cmd, const char *args, int cmdFlags);
+
+
+
 
 
 

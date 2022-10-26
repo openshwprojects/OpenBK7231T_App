@@ -55,7 +55,7 @@ static int alias(const void * context, const char *cmd, const char *args, int cm
 	cmdMem = test_strdup(ocmd);
 	aliasMem = test_strdup(alias);
 
-	ADDLOG_ERROR(LOG_FEATURE_CMD, "alias %s runs %s", alias, ocmd);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "New alias has been set: %s runs %s", alias, ocmd);
 
     CMD_RegisterCommand(aliasMem, "", runcmd, "custom", cmdMem);
 	return 1;
