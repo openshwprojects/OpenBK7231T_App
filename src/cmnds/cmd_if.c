@@ -152,8 +152,8 @@ int CMD_EvaluateCondition(const char *s, const char *stop) {
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateCondition: MQTTOn");
 		return Main_HasMQTTConnected();
 	}
-	if(strCompareBound(s,"CH*", stop, 1)) {
-		c = atoi(s+2);
+	if(strCompareBound(s,"$CH*", stop, 1)) {
+		c = atoi(s+3);
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateCondition: channel value of idx %i",c);
 		return CHANNEL_Get(c);
 	}
