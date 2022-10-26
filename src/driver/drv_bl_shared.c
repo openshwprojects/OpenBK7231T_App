@@ -177,7 +177,7 @@ int BL09XX_ResetEnergyCounter(const void *context, const char *cmd, const char *
             energyCounterMinutesStamp = xTaskGetTickCount();
             energyCounterMinutesIndex = 0;
         }
-        for(i = 1; i < DAILY_STATS_LENGTH; i++)
+        for(i = 0; i < DAILY_STATS_LENGTH; i++)
         {
             dailyStats[i] = 0.0;
         }
