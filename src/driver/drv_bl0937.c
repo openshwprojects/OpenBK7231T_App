@@ -35,6 +35,8 @@ uint32_t res_p = 0;
 float BL0937_VREF = 0.13253012048f;
 float BL0937_PREF = 1.5f;
 float BL0937_CREF = 0.0118577075f;
+float BL0937_PMAX = 3680.0f;
+float last_p = 0.0f;
 
 volatile uint32_t g_vc_pulses = 0;
 volatile uint32_t g_p_pulses = 0;
@@ -57,7 +59,7 @@ int BL0937_PowerSet(const void *context, const char *cmd, const char *args, int 
 	BL0937_PREF = realPower / res_p;
 
 	// UPDATE: now they are automatically saved
-	CFG_SetPowerMeasurementCalibrationFloat(OBK_POWER,BL0937_PREF);
+	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_POWER,BL0937_PREF);
 
 	{
 		char dbg[128];
@@ -66,6 +68,29 @@ int BL0937_PowerSet(const void *context, const char *cmd, const char *args, int 
 	}
 	return 0;
 }
+
+int BL0937_PowerMax(const void *context, const char *cmd, const char *args, int cmdFlags) {
+    float maxPower;
+
+    if(args==0||*args==0) {
+        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
+        return 1;
+    }
+    maxPower = atof(args);
+    if ((maxPower>200.0) && (maxPower<7200.0f))
+    {
+        BL0937_PMAX = maxPower;
+        // UPDATE: now they are automatically saved
+        CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_POWER_MAX, BL0937_PMAX);           
+        {
+            char dbg[128];
+            snprintf(dbg, sizeof(dbg),"PowerMax: set max to %f\n", BL0937_PMAX);
+            addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
+        }
+    }
+    return 0;
+}
+
 int BL0937_PowerRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
 	if(args==0||*args==0) {
@@ -75,7 +100,7 @@ int BL0937_PowerRef(const void *context, const char *cmd, const char *args, int 
 	BL0937_PREF = atof(args);
 
 	// UPDATE: now they are automatically saved
-	CFG_SetPowerMeasurementCalibrationFloat(OBK_POWER,BL0937_PREF);
+	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_POWER,BL0937_PREF);
 
 	return 0;
 }
@@ -88,7 +113,7 @@ int BL0937_CurrentRef(const void *context, const char *cmd, const char *args, in
 	BL0937_CREF = atof(args);
 
 	// UPDATE: now they are automatically saved
-	CFG_SetPowerMeasurementCalibrationFloat(OBK_CURRENT,BL0937_CREF);
+	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT,BL0937_CREF);
 
 	return 0;
 }
@@ -101,7 +126,7 @@ int BL0937_VoltageRef(const void *context, const char *cmd, const char *args, in
 	BL0937_VREF = atof(args);
 
 	// UPDATE: now they are automatically saved
-	CFG_SetPowerMeasurementCalibrationFloat(OBK_VOLTAGE,BL0937_VREF);
+	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE,BL0937_VREF);
 
 	return 0;
 }
@@ -116,7 +141,7 @@ int BL0937_VoltageSet(const void *context, const char *cmd, const char *args, in
 	BL0937_VREF = realV / res_v;
 
 	// UPDATE: now they are automatically saved
-	CFG_SetPowerMeasurementCalibrationFloat(OBK_VOLTAGE,BL0937_VREF);
+	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE,BL0937_VREF);
 
 	{
 		char dbg[128];
@@ -137,7 +162,7 @@ int BL0937_CurrentSet(const void *context, const char *cmd, const char *args, in
 	BL0937_CREF = realI / res_c;
 
 	// UPDATE: now they are automatically saved
-	CFG_SetPowerMeasurementCalibrationFloat(OBK_CURRENT,BL0937_CREF);
+	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT,BL0937_CREF);
 
 	{
 		char dbg[128];
@@ -156,9 +181,10 @@ void BL0937_Init()
 	GPIO_HLW_CF1 = PIN_FindPinIndexForRole(IOR_BL0937_CF1,GPIO_HLW_CF1);
 
 	// UPDATE: now they are automatically saved
-	BL0937_VREF = CFG_GetPowerMeasurementCalibrationFloat(OBK_VOLTAGE,BL0937_VREF);
-	BL0937_PREF = CFG_GetPowerMeasurementCalibrationFloat(OBK_POWER,BL0937_PREF);
-	BL0937_CREF = CFG_GetPowerMeasurementCalibrationFloat(OBK_CURRENT,BL0937_CREF);
+	BL0937_VREF = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE,BL0937_VREF);
+	BL0937_PREF = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER,BL0937_PREF);
+	BL0937_CREF = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT,BL0937_CREF);
+    BL0937_PMAX = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER_MAX,BL0937_PMAX);
 
 	HAL_PIN_Setup_Output(GPIO_HLW_SEL);
     HAL_PIN_SetOutputValue(GPIO_HLW_SEL, g_sel);
@@ -176,6 +202,7 @@ void BL0937_Init()
 	CMD_RegisterCommand("PREF","",BL0937_PowerRef, "Sets the calibration multiplier", NULL);
 	CMD_RegisterCommand("VREF","",BL0937_VoltageRef, "Sets the calibration multiplier", NULL);
 	CMD_RegisterCommand("IREF","",BL0937_CurrentRef, "Sets the calibration multiplier", NULL);
+    CMD_RegisterCommand("PowerMax","",BL0937_PowerMax, "Sets Maximum power value measurement limiter", NULL);
 
     g_vc_pulses = 0;
     g_p_pulses = 0;
@@ -191,6 +218,8 @@ void BL0937_RunFrame()
 
     ticksElapsed = (xTaskGetTickCount() - pulseStamp);
 
+    GLOBAL_INT_DECLARATION();
+    GLOBAL_INT_DISABLE();
 	if(g_sel) {
 		res_v = g_vc_pulses;
 		g_sel = false;
@@ -203,6 +232,7 @@ void BL0937_RunFrame()
 
 	res_p = g_p_pulses;
 	g_p_pulses = 0;
+    GLOBAL_INT_RESTORE();
 
     pulseStamp = xTaskGetTickCount();
 	//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
@@ -218,6 +248,21 @@ void BL0937_RunFrame()
     final_p = res_p * BL0937_PREF;
     final_p *= (float)ticksElapsed;
     final_p /= (1000.0f / (float)portTICK_PERIOD_MS);
+
+    /* patch to limit max power reading, filter random reading errors */
+    if (final_p > BL0937_PMAX)
+    {
+        /* MAX value breach, use last value */
+        {
+            char dbg[128];
+            snprintf(dbg, sizeof(dbg),"Power reading: %f exceeded MAX limit: %f, Last: %f\n", final_p, BL0937_PMAX, last_p);
+            addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, dbg);
+        }
+        final_p = last_p;
+    } else {
+        /* Valid value save for next time */
+        last_p = final_p;
+    }    
 #if 0
 	{
 		char dbg[128];

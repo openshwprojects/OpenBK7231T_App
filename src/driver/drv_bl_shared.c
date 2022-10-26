@@ -51,7 +51,7 @@ float lastSentEnergyCounterLastHour = 0.0f;
 float dailyStats[DAILY_STATS_LENGTH];
 int actual_mday = -1;
 float lastSavedEnergyCounterValue = 0.0f;
-float changeSavedThresholdEnergy = 1.0f;
+float changeSavedThresholdEnergy = 10.0f;
 long ConsumptionSaveCounter = 0;
 
 // how much of value have to change in order to be send over MQTT again?
@@ -277,6 +277,29 @@ int BL09XX_SetupEnergyStatistic(const void *context, const char *cmd, const char
     return 0;
 }
 
+int BL09XX_SetupConsumptionThreshold(const void *context, const char *cmd, const char *args, int cmdFlags)
+{
+    float threshold;
+    Tokenizer_TokenizeString(args,0);
+
+    if(Tokenizer_GetArgsCount() < 1)
+    {
+          addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "BL09XX_SetupConsumptionThreshold: requires argument (threshold)\n");
+          return -1;
+    }
+    
+    threshold = atof(Tokenizer_GetArg(0)); 
+
+    if (threshold<1.0f)
+        threshold = 1.0f;
+    if (threshold>200.0f)
+        threshold = 200.0f;
+    changeSavedThresholdEnergy = threshold;
+    addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "ConsumptionThreshold: %1.1f\n", changeSavedThresholdEnergy);
+
+    return 0;
+}
+
 void BL_ProcessUpdate(float voltage, float current, float power) 
 {
     int i;
@@ -496,6 +519,7 @@ void BL_Shared_Init()
 
     CMD_RegisterCommand("EnergyCntReset", "", BL09XX_ResetEnergyCounter, "Reset Energy Counter", NULL);
     CMD_RegisterCommand("SetupEnergyStats", "", BL09XX_SetupEnergyStatistic, "Setup Energy Statistic Parameters: [enable<0|1>] [sample_time<10..900>] [sample_count<10..180>]", NULL);
+    CMD_RegisterCommand("ConsumptionThresold", "", BL09XX_SetupConsumptionThreshold, "Setup value for automatic save of consumption data [1..100]", NULL);
 }
 
 // OBK_POWER etc

@@ -159,6 +159,13 @@ typedef struct cfgPowerMeasurementCalibration_s {
 #define CFG_DEFAULT_BTN_LONG	10
 #define CFG_DEFAULT_BTN_REPEAT	5
 
+enum {
+    CFG_OBK_VOLTAGE = 0,
+    CFG_OBK_CURRENT,
+    CFG_OBK_POWER,
+    CFG_OBK_POWER_MAX
+};
+
 //
 // Main config structure (less than 2KB)
 //

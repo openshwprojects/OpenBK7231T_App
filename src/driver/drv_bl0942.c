@@ -137,7 +137,7 @@ int BL0942_PowerSet(const void *context, const char *cmd, const char *args, int 
 	BL0942_PREF = raw_unscaled_power / realPower;
 
 	// UPDATE: now they are automatically saved
-	CFG_SetPowerMeasurementCalibrationFloat(OBK_POWER,BL0942_PREF);
+	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_POWER,BL0942_PREF);
 
 	{
 		char dbg[128];
@@ -155,7 +155,7 @@ int BL0942_PowerRef(const void *context, const char *cmd, const char *args, int 
 	BL0942_PREF = atof(args);
 
 	// UPDATE: now they are automatically saved
-	CFG_SetPowerMeasurementCalibrationFloat(OBK_POWER,BL0942_PREF);
+	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_POWER,BL0942_PREF);
 
 	return 0;
 }
@@ -168,7 +168,7 @@ int BL0942_CurrentRef(const void *context, const char *cmd, const char *args, in
 	BL0942_IREF = atof(args);
 
 	// UPDATE: now they are automatically saved
-	CFG_SetPowerMeasurementCalibrationFloat(OBK_CURRENT,BL0942_IREF);
+	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT,BL0942_IREF);
 
 	return 0;
 }
@@ -181,7 +181,7 @@ int BL0942_VoltageRef(const void *context, const char *cmd, const char *args, in
 	BL0942_UREF = atof(args);
 
 	// UPDATE: now they are automatically saved
-	CFG_SetPowerMeasurementCalibrationFloat(OBK_VOLTAGE,BL0942_UREF);
+	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE,BL0942_UREF);
 
 	return 0;
 }
@@ -196,7 +196,7 @@ int BL0942_VoltageSet(const void *context, const char *cmd, const char *args, in
 	BL0942_UREF = raw_unscaled_voltage / realV;
 
 	// UPDATE: now they are automatically saved
-	CFG_SetPowerMeasurementCalibrationFloat(OBK_VOLTAGE,BL0942_UREF);
+	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE,BL0942_UREF);
 
 	{
 		char dbg[128];
@@ -217,7 +217,7 @@ int BL0942_CurrentSet(const void *context, const char *cmd, const char *args, in
 	BL0942_IREF = raw_unscaled_current / realI;
 
 	// UPDATE: now they are automatically saved
-	CFG_SetPowerMeasurementCalibrationFloat(OBK_CURRENT,BL0942_IREF);
+	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT,BL0942_IREF);
 
 	{
 		char dbg[128];
@@ -231,9 +231,9 @@ void BL0942_Init()
     BL_Shared_Init();
 
 	// UPDATE: now they are automatically saved
-	BL0942_UREF = CFG_GetPowerMeasurementCalibrationFloat(OBK_VOLTAGE,BL0942_UREF);
-	BL0942_PREF = CFG_GetPowerMeasurementCalibrationFloat(OBK_POWER,BL0942_PREF);
-	BL0942_IREF = CFG_GetPowerMeasurementCalibrationFloat(OBK_CURRENT,BL0942_IREF);
+	BL0942_UREF = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE,BL0942_UREF);
+	BL0942_PREF = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER,BL0942_PREF);
+	BL0942_IREF = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT,BL0942_IREF);    
 
 	UART_InitUART(BL0942_BAUD_RATE);
 	UART_InitReceiveRingBuffer(256);
