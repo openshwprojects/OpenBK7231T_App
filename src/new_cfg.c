@@ -141,6 +141,14 @@ void CFG_SetDefaultConfig() {
 
 	strcpy(g_cfg.ntpServer, "217.147.223.78");	//bart.nexellent.net
 
+	
+	// default value is 5, which means 500ms
+	g_cfg.buttonHoldRepeat = CFG_DEFAULT_BTN_REPEAT;
+	// default value is 3, which means 300ms
+	g_cfg.buttonShortPress = CFG_DEFAULT_BTN_SHORT;
+	// default value is 10, which means 1000ms
+	g_cfg.buttonLongPress = CFG_DEFAULT_BTN_LONG;
+
 	g_cfg_pendingChanges++;
 }
 
@@ -483,7 +491,24 @@ void CFG_SetPowerMeasurementCalibrationFloat(int index, float value) {
 		g_cfg_pendingChanges++;
 	}
 }
-
+void CFG_SetButtonLongPressTime(int value) {
+	if(g_cfg.buttonLongPress != value) {
+		g_cfg.buttonLongPress = value;
+		g_cfg_pendingChanges++;
+	}
+}
+void CFG_SetButtonShortPressTime(int value) {
+	if(g_cfg.buttonShortPress != value) {
+		g_cfg.buttonShortPress = value;
+		g_cfg_pendingChanges++;
+	}
+}
+void CFG_SetButtonRepeatPressTime(int value) {
+	if(g_cfg.buttonHoldRepeat != value) {
+		g_cfg.buttonHoldRepeat = value;
+		g_cfg_pendingChanges++;
+	}
+}
 void CFG_InitAndLoad() {
 	byte chkSum;
 
@@ -510,6 +535,18 @@ void CFG_InitAndLoad() {
 		g_cfg_pendingChanges++;
 	}
 
+	if(g_cfg.buttonHoldRepeat == 0) {
+		// default value is 5, which means 500ms
+		g_cfg.buttonHoldRepeat = CFG_DEFAULT_BTN_REPEAT;
+	}
+	if(g_cfg.buttonShortPress == 0) {
+		// default value is 3, which means 300ms
+		g_cfg.buttonShortPress = CFG_DEFAULT_BTN_SHORT;
+	}
+	if(g_cfg.buttonLongPress == 0) {
+		// default value is 3, which means 100ms
+		g_cfg.buttonLongPress = CFG_DEFAULT_BTN_LONG;
+	}
 	g_configInitialized = 1;
 	CFG_Save_IfThereArePendingChanges();
 }

@@ -70,6 +70,9 @@ int CFG_GetPowerMeasurementCalibrationInteger(int index, int def);
 void CFG_SetPowerMeasurementCalibrationInteger(int index, int value);
 float CFG_GetPowerMeasurementCalibrationFloat(int index, float def);
 void CFG_SetPowerMeasurementCalibrationFloat(int index, float value);
+void CFG_SetButtonLongPressTime(int value);
+void CFG_SetButtonShortPressTime(int value);
+void CFG_SetButtonRepeatPressTime(int value);
 
 
 #endif 

@@ -20,9 +20,15 @@
 //According to your need to modify the constants.
 #define PIN_TMR_DURATION      5 // Delay (in ms) between button scan iterations
 #define BTN_DEBOUNCE_TICKS    3	//MAX 8
-#define BTN_SHORT_TICKS       (300 / PIN_TMR_DURATION)
-#define BTN_LONG_TICKS        (1000 / PIN_TMR_DURATION)
-#define BTN_HOLD_REPEAT_TICKS  (500 / PIN_TMR_DURATION)
+
+//#define BTN_SHORT_TICKS       (300 / PIN_TMR_DURATION)
+//#define BTN_LONG_TICKS        (1000 / PIN_TMR_DURATION)
+//#define BTN_HOLD_REPEAT_TICKS  (500 / PIN_TMR_DURATION)
+// Now they are adjustable in CFG
+int BTN_SHORT_TICKS;
+int BTN_LONG_TICKS;
+int BTN_HOLD_REPEAT_TICKS;
+
 
 #define WIFI_LED_FAST_BLINK_DURATION 250
 #define WIFI_LED_SLOW_BLINK_DURATION 500
@@ -979,6 +985,10 @@ void PIN_ticks(void *param)
 	int i;
 	int value;
 
+	BTN_SHORT_TICKS = (g_cfg.buttonShortPress * 100 / PIN_TMR_DURATION);
+	BTN_LONG_TICKS = (g_cfg.buttonLongPress * 100 / PIN_TMR_DURATION);
+	BTN_HOLD_REPEAT_TICKS = (g_cfg.buttonHoldRepeat * 100 / PIN_TMR_DURATION);
+
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_RunQuickTick();
 #endif
@@ -1122,6 +1132,32 @@ int CHANNEL_ParseChannelType(const char *s) {
 	if(!stricmp(s,"ReadOnly") )
 		return ChType_ReadOnly;
 	return ChType_Error;
+}
+static int CMD_SetButtonTimes(const void *context, const char *cmd, const char *args, int cmdFlags){
+
+
+	Tokenizer_TokenizeString(args,0);
+
+	if(Tokenizer_GetArgsCount() < 3) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"This command requires 3 arguments - timeLong, timeShort, timeRepeat - current %i %i %i",
+			g_cfg.buttonLongPress, g_cfg.buttonShortPress, g_cfg.buttonHoldRepeat);
+		return 1;
+	}
+
+	CFG_SetButtonLongPressTime(Tokenizer_GetArgInteger(0));
+
+	CFG_SetButtonShortPressTime(Tokenizer_GetArgInteger(1));
+
+	CFG_SetButtonRepeatPressTime(Tokenizer_GetArgInteger(2));
+
+	CFG_Save_IfThereArePendingChanges();
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Times set, %i %i %i. Config autosaved to flash.",
+		g_cfg.buttonLongPress, g_cfg.buttonShortPress, g_cfg.buttonHoldRepeat
+		);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"If something is wrong, you can restore defaults - %i %i %i",
+		CFG_DEFAULT_BTN_LONG, CFG_DEFAULT_BTN_SHORT,CFG_DEFAULT_BTN_REPEAT);
+	return 0;
 }
 static int CMD_ShowChannelValues(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int i;
@@ -1269,5 +1305,6 @@ void PIN_AddCommands(void)
 	CMD_RegisterCommand("showgpi", NULL, showgpi, "log stat of all GPIs", NULL);
 	CMD_RegisterCommand("setChannelType", NULL, CMD_SetChannelType, "qqqqqqqq", NULL);
 	CMD_RegisterCommand("showChannelValues", NULL,CMD_ShowChannelValues, "log channel values", NULL);
+	CMD_RegisterCommand("setButtonTimes", NULL,CMD_SetButtonTimes, "", NULL);
 
 }

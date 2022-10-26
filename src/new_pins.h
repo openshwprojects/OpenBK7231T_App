@@ -154,6 +154,11 @@ typedef struct cfgPowerMeasurementCalibration_s {
 	cfgPowerMeasurementCal_t values[8];
 } cfgPowerMeasurementCalibration_t;
 
+// unit is 0.1s
+#define CFG_DEFAULT_BTN_SHORT	3
+#define CFG_DEFAULT_BTN_LONG	10
+#define CFG_DEFAULT_BTN_REPEAT	5
+
 //
 // Main config structure (less than 2KB)
 //
@@ -196,7 +201,12 @@ typedef struct mainConfig_s {
 	char dgr_name[16];
 	char ntpServer[32];
 	cfgPowerMeasurementCalibration_t cal;
-	byte unusedSectorA[40];
+	// short press 1 means 100 ms short press time
+	// So basically unit is 0.1 second
+	byte buttonShortPress;
+	byte buttonLongPress;
+	byte buttonHoldRepeat;
+	byte unusedSectorA[37];
 	byte unusedSectorB[128];
 	byte unusedSectorC[55];
 	byte timeRequiredToMarkBootSuccessfull;
