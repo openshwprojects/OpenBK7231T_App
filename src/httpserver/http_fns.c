@@ -587,10 +587,12 @@ int http_fn_index(http_request_t* request) {
 		hprintf255(request, "</h5>");
 	}
 
+#if defined(PLATFORM_BK7231T) || defined(PLATFORM_BK7231N)
     if (ota_progress()>=0)
     {
         hprintf255(request, "<h5>OTA In Progress. Status: %06lXh</h5>", ota_progress());
     }
+#endif
 
 	// for normal page loads, show the rest of the HTML
 	if (!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
