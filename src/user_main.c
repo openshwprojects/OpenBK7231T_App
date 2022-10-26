@@ -58,6 +58,8 @@ static int g_timeSinceLastPingReply = 0;
 // was it ran?
 static int g_bPingWatchDogStarted = 0;
 
+uint32_t idleCount = 0;
+
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
 
@@ -264,8 +266,8 @@ void Main_OnEverySecond()
 		//int mqtt_max, mqtt_cur, mqtt_mem;
 		//MQTT_GetStats(&mqtt_cur, &mqtt_max, &mqtt_mem);
 	    //ADDLOGF_INFO("mqtt req %i/%i, free mem %i\n", mqtt_cur,mqtt_max,mqtt_mem);
-		ADDLOGF_INFO("%sTime %i, free %d, MQTT %i(%i), bWifi %i, secondsWithNoPing %i, socks %i/%i\n",
-			safe, g_secondsElapsed, xPortGetFreeHeapSize(),bMQTTconnected, MQTT_GetConnectEvents(), 
+		ADDLOGF_INFO("%sTime %i, idle %i, free %d, MQTT %i(%i), bWifi %i, secondsWithNoPing %i, socks %i/%i\n",
+			safe, g_secondsElapsed, idleCount, xPortGetFreeHeapSize(),bMQTTconnected, MQTT_GetConnectEvents(), 
             g_bHasWiFiConnected, g_timeSinceLastPingReply, LWIP_GetActiveSockets(), LWIP_GetMaxSockets());
 
 	}
@@ -375,6 +377,9 @@ void Main_OnEverySecond()
 		}
 	}
 
+	// force it to sleep...  we MUST have some idle task processing
+	// else task memory doesn't get freed
+	rtos_delay_milliseconds(1);
 
 }
 
@@ -404,12 +409,23 @@ int Main_GetLastRebootBootFailures()
 
 #define RESTARTS_REQUIRED_FOR_SAFE_MODE 4
 
+
+// called from idle thread each loop.
+// - just so we know it is running.
+void isidle(){
+	idleCount++;
+}
+
 void Main_Init()
 {
 	const char *wifi_ssid, *wifi_pass;
 
 	// read or initialise the boot count flash area
 	HAL_FlashVars_IncreaseBootCount();
+	
+	#ifdef PLATFORM_BEKEN
+	bg_register_irda_check_func(isidle);
+	#endif
 
 	g_bootFailures = HAL_FlashVars_GetBootFailures();
 	if (g_bootFailures > RESTARTS_REQUIRED_FOR_SAFE_MODE)
