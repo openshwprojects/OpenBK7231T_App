@@ -12,11 +12,6 @@
 #endif
 
 
-
-char *cmds[16] = { NULL };
-char *names[16] = { NULL };
-
-
 // run an aliased command
 static int runcmd(const void * context, const char *cmd, const char *args, int cmdFlags){
     char *c = (char *)context;
@@ -31,36 +26,39 @@ static int runcmd(const void * context, const char *cmd, const char *args, int c
 
 // run an aliased command
 static int alias(const void * context, const char *cmd, const char *args, int cmdFlags){
-	if (!wal_strnicmp(cmd, "alias", 6)){
-		int index = 0;
-        char cmd[32];
-        //int len;
-		if (strlen(cmd) > 6) {
-			index = atoi(cmd+6);
-		}
-        if ((index < 0) || (index > 16)){
-            return 0;
-        }
+	const char *alias;
+	const char *ocmd;
+	char *cmdMem;
+	char *aliasMem;
+	command_t *existing;
 
-        if (cmds[index]){
-            os_free(cmds[index]);
-        }
-        if (names[index]){
-            os_free(names[index]);
-        }
-        cmds[index] = os_malloc(strlen(args)+1);
-
-        strcpy(cmds[index], args);
-        //len =
-		get_cmd(args, cmd, sizeof(cmd), 1);
-        names[index] = os_malloc(strlen(cmd)+1);
-        strcpy(names[index], cmd);
-		ADDLOG_ERROR(LOG_FEATURE_CMD, "cmd %d set to %s", index, cmd);
-
-        CMD_RegisterCommand(names[index], "", runcmd, "custom", cmds[index]);
+	if(args==0||*args==0) {
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_Alias: command require 2 args");
 		return 1;
 	}
-	return 0;
+	Tokenizer_TokenizeString(args,0);
+	if(Tokenizer_GetArgsCount() < 2) {
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_Alias: command require 2 args");
+		return 1;
+	}
+
+	alias = Tokenizer_GetArg(0);
+	ocmd = Tokenizer_GetArgFrom(1);
+
+	existing = CMD_Find(alias);
+
+	if(existing!=0) {
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_Alias: the alias you are trying to use is already in use (as an alias or as a command)");
+		return 1;
+	}
+
+	cmdMem = test_strdup(ocmd);
+	aliasMem = test_strdup(alias);
+
+	ADDLOG_ERROR(LOG_FEATURE_CMD, "alias %s runs %s", alias, ocmd);
+
+    CMD_RegisterCommand(aliasMem, "", runcmd, "custom", cmdMem);
+	return 1;
 }
 
 // Usage: addRepeatingEvent 1 -1 testMallocFree 100
