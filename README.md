@@ -77,6 +77,9 @@ e.g.
 
 see https://github.com/OpenBekenIOT/hid_download_py/blob/master/SPIFlash.md
 
+## SPI (new, tested tool for BK7231 SPI mode)
+See: https://github.com/openshwprojects/BK7231_SPI_Flasher
+
 ## OTA
 
 Once the firmware has been flashed for the first time, it can be flashed over wifi (note: change hardcoded firmware URL in new_http.c)
