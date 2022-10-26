@@ -35,8 +35,10 @@
 #include "BkDriverFlash.h"
 #endif
 
+#if defined(PLATFORM_BK7231T) || defined(PLATFORM_BK7231N)
 int tuya_os_adapt_wifi_all_ap_scan(AP_IF_S **ap_ary, unsigned int *num);
 int tuya_os_adapt_wifi_release_ap(AP_IF_S *ap);
+#endif
 
 static char* UNIQUE_ID_FORMAT = "  - unique_id: \"%s\"\n";
 static char* HASS_INDEXED_NAME_CONFIG = "    name: \"%s %i\"\n";
