@@ -130,6 +130,22 @@ static int testLog(const void * context, const char *cmd, const char *args, int 
 	
 	return 1;
 }
+// testArgs "one" "tw o" "thr ee" "fo ur" five
+// testArgs one "tw o" "thr ee" "fo ur" five
+static int testArgs(const void * context, const char *cmd, const char *args, int cmdFlags){
+	int i, cnt;
+
+	
+	Tokenizer_TokenizeString(args,1);
+	cnt = Tokenizer_GetArgsCount();
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Args count: %i",cnt);
+	for(i = 0; i < cnt; i++) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Arg %i is %s",i,Tokenizer_GetArg(i));
+	}
+
+
+	return 1;
+}
 // Usage: addRepeatingEvent 1 -1 testJSON 100
 static int testJSON(const void * context, const char *cmd, const char *args, int cmdFlags){
     cJSON* root;
@@ -185,6 +201,7 @@ int fortest_commands_init(){
     CMD_RegisterCommand("testRealloc", "", testRealloc, "", NULL);
     CMD_RegisterCommand("testJSON", "", testJSON, "", NULL);
     CMD_RegisterCommand("testLog", "", testLog, "", NULL);
+    CMD_RegisterCommand("testArgs", "", testArgs, "", NULL);
     return 0;
 }
 

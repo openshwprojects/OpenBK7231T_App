@@ -14,15 +14,29 @@ Example usage 1:
 	alias mydrk backlog led_dimmer 10; led_enableAll
 	if MQTTOn then mybri else mydrk
 
+	if $CH6<5 then mybri else mydrk
+
 Example usage 2:
 	if MQTTOn then "backlog led_dimmer 100; led_enableAll" else "backlog led_dimmer 10; led_enableAll"
 
+	if $CH6<5 then "backlog led_dimmer 100; led_enableAll" else "backlog led_dimmer 10; led_enableAll"
 */
 
 typedef struct sOperator_s {
 	const char *txt;
 	byte len;
 } sOperator_t;
+
+typedef enum {
+	OP_EQUAL,
+	OP_EQUAL_OR_GREATER,
+	OP_EQUAL_OR_LESS,
+	OP_NOT_EQUAL,
+	OP_GREATER,
+	OP_LESS,
+	OP_AND,
+	OP_OR,
+} opCode_t;
 
 static sOperator_t g_operators[] = {
 	{ "==", 2 },
@@ -31,13 +45,15 @@ static sOperator_t g_operators[] = {
 	{ "!=", 2 },
 	{ ">", 1 },
 	{ "<", 1 },
+	{ "&&", 2 },
+	{ "||", 2 },
 };
 static int g_numOperators = sizeof(g_operators)/sizeof(g_operators[0]);
 
-const char *CMD_FindOperator(const char *s, byte *oCode) {
+const char *CMD_FindOperator(const char *s, const char *stop, byte *oCode) {
 	int o = 0;
 
-	while(s[0] && s[1]) {
+	while(s[0] && s[1] && (s < stop || stop == 0)) {
 		for(o = 0; o < g_numOperators; o++) {
 			if(!strncmp(s,g_operators[o].txt,g_operators[o].len)) {
 				*oCode = o;
@@ -48,7 +64,7 @@ const char *CMD_FindOperator(const char *s, byte *oCode) {
 	}
 	return 0;
 }
-bool strCompareBound(const char *s, const char *templ, const char *stopper) {
+bool strCompareBound(const char *s, const char *templ, const char *stopper, int bAllowWildCard) {
 	while(true) {
 		// template ended and reached stopper
 		if(s == stopper && *templ == 0) {
@@ -64,38 +80,84 @@ bool strCompareBound(const char *s, const char *templ, const char *stopper) {
 			return false;
 		}
 		// are the chars the same?
-		if(tolower(*s) != tolower(*templ)) {
-			return false;
+		if(bAllowWildCard && *templ == '*') {
+
+		} else {
+			if(tolower(*s) != tolower(*templ)) {
+				return false;
+			}
 		}
 		s++;
 		templ++;
 	}
 	return false;
 }
-int CMD_EvaluateCondition(const char *s) {
+int CMD_EvaluateCondition(const char *s, const char *stop) {
 	byte opCode;
 	const char *op;
+	int a, b, c;
 
 	ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateCondition: will run '%s'",s);
 
-	if(s[0] == '!') {
-		return !CMD_EvaluateCondition(s+1);
-	}
-	if(!stricmp(s,"MQTTOn")) {
-		return Main_HasMQTTConnected();
-	}
-	if(!stricmp(s,"WiFiOn")) {
-		return Main_HasWiFiConnected();
-	}
-	op = CMD_FindOperator(s,&opCode);
+	op = CMD_FindOperator(s, stop, &opCode);
 	if(op) {
 		const char *p2;
+	
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateCondition: operator %i",opCode);
+
 		// first token block begins at 's' and ends at 'op'
 		// second token block begins at 'p2' and ends at NULL
-		p2 = s + g_operators[opCode].len;
+		p2 = op + g_operators[opCode].len;
 
+		a = CMD_EvaluateCondition(s, op);
+		b = CMD_EvaluateCondition(p2, 0);
+
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateCondition: a = %i, b = %i", a, b);
+		switch(opCode)
+		{
+		case OP_EQUAL:
+			c = a == b;
+			break;
+		case OP_EQUAL_OR_GREATER:
+			c = a >= b;
+			break;
+		case OP_EQUAL_OR_LESS:
+			c = a <= b;
+			break;
+		case OP_NOT_EQUAL:
+			c = a != b;
+			break;
+		case OP_GREATER:
+			c = a > b;
+			break;
+		case OP_LESS:
+			c = a < b;
+			break;
+		case OP_AND:
+			c = a && b;
+			break;
+		case OP_OR:
+			c = a || b;
+			break;
+		default:
+			c = 0;
+			break;
+		}
+		return c;
 	}
-	return 0;
+	if(s[0] == '!') {
+		return !CMD_EvaluateCondition(s+1,0);
+	}
+	if(strCompareBound(s,"MQTTOn", stop, false)) {
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateCondition: MQTTOn");
+		return Main_HasMQTTConnected();
+	}
+	if(strCompareBound(s,"CH*", stop, 1)) {
+		c = atoi(s+2);
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateCondition: channel value of idx %i",c);
+		return CHANNEL_Get(c);
+	}
+	return atoi(s);
 }
 
 // if MQTTOnline then "qq" else "qq"
@@ -110,9 +172,9 @@ int CMD_If(const void *context, const char *cmd, const char *args, int cmdFlags)
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: command require 5 args");
 		return 1;
 	}
-	Tokenizer_TokenizeString(args,0);
+	Tokenizer_TokenizeString(args,1);
 	if(Tokenizer_GetArgsCount() != 5) {
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: command require 5 args");
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: command require 5 args, you gave %i",Tokenizer_GetArgsCount());
 		return 1;
 	}
 	condition = Tokenizer_GetArg(0);
@@ -131,7 +193,7 @@ int CMD_If(const void *context, const char *cmd, const char *args, int cmdFlags)
 	ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: cmdB is '%s'",cmdB);
 	ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: condition is '%s'",condition);
 
-	value = CMD_EvaluateCondition(condition);
+	value = CMD_EvaluateCondition(condition, 0);
 
 	// This buffer is here because we may need to exec commands recursively
 	// and the Tokenizer_ etc is global?

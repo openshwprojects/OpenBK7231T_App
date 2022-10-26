@@ -92,22 +92,30 @@ void Tokenizer_TokenizeString(const char *s, int bAllowQuotedStrings) {
 	while(*p != 0) {
 		if(isWhiteSpace(*p)) {
 			*p = 0;
-			if((p[1] != 0)) {
+			if(p[1] != 0 && isWhiteSpace(p[1])==false) {
+				// we need to rewrite this function
+				if(bAllowQuotedStrings && p[1] == '"') { 
+					p++;
+					goto quote;
+				}
 				g_args[g_numArgs] = p+1;
 				g_argsFrom[g_numArgs] = (s+((p+1)-g_buffer));
 				g_numArgs++;
 			}
 		}
-		if(bAllowQuotedStrings && *p == ',') {
+		if(*p == ',') {
 			*p = 0;
 			g_args[g_numArgs] = p+1;
 			g_argsFrom[g_numArgs] = (s+((p+1)-g_buffer));
 			g_numArgs++;
 		}
-		if(*p == '"') {
+		if(bAllowQuotedStrings && *p == '"') {
+quote:
 			*p = 0;
+			g_argsFrom[g_numArgs] = (s+((p+1)-g_buffer));
 			p++;
 			g_args[g_numArgs] = p;
+			g_numArgs++;
 			while(*p != 0) {
 				if(*p == '"') {
 					*p = 0;
