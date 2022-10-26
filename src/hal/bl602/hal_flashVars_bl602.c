@@ -15,6 +15,7 @@ typedef struct bl602_bootCounts_s {
     unsigned short boot_count; // number of times the device has booted
     unsigned short boot_success_count; // if a device boots completely (>30s), will equal boot_success_count
     short channelStates[BL602_SAVED_CHANNELS_MAX];
+    ENERGY_METERING_DATA emetering;
 } bl602_bootCounts_t;
 
 static bl602_bootCounts_t g_bootCounts;
@@ -107,18 +108,31 @@ int HAL_FlashVars_GetChannelValue(int ch) {
 
 int HAL_GetEnergyMeterStatus(ENERGY_METERING_DATA *data)
 {
+    if (data != NULL)
+    {
+        if (g_loaded==0) 
+        {
+            BL602_ReadFlashVars(&g_bootCounts,sizeof(g_bootCounts));
+        }
+        memcpy(data, &g_bootCounts.emetering, sizeof(ENERGY_METERING_DATA));
+    }
     return 0;
 }
 
 int HAL_SetEnergyMeterStatus(ENERGY_METERING_DATA *data)
 {
+    if (data != NULL)
+    {
+        memcpy(&g_bootCounts.emetering, data, sizeof(ENERGY_METERING_DATA));
+        BL602_SaveFlashVars(&g_bootCounts,sizeof(g_bootCounts));
+    }
     return 0;
 }
 
 void HAL_FlashVars_SaveTotalConsumption(float total_consumption)
 {
+    g_bootCounts.emetering.TotalConsumption = total_consumption;
 }
 
 #endif // PLATFORM_BL602
-
 

@@ -507,6 +507,8 @@ void BL_Shared_Init()
         dailyStats[i] = 0;
     }
 
+    addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Read ENERGYMETER status values. sizeof(ENERGY_METERING_DATA)=%d\n", sizeof(ENERGY_METERING_DATA));
+
     HAL_GetEnergyMeterStatus(&data);
     energyCounter = data.TotalConsumption;
     dailyStats[0] = data.TodayConsumpion;

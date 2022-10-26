@@ -30,6 +30,12 @@ void HAL_FlashVars_ReadLED(byte *mode, short *brightness, short *temperature, by
 
 int HAL_GetEnergyMeterStatus(ENERGY_METERING_DATA *data)
 {
+    /* default values */
+    if (data != NULL)
+    {
+        memset(data, 0, sizeof(ENERGY_METERING_DATA));
+        data->actual_mday = -1;
+    }
     return 0;
 }
 

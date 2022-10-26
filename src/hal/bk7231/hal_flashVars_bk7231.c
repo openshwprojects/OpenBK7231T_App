@@ -646,6 +646,10 @@ int HAL_FlashVars_GetChannelValue(int ch){
 int HAL_GetEnergyMeterStatus(ENERGY_METERING_DATA *data)
 {
 #ifndef DISABLE_FLASH_VARS_VARS
+    if (!flash_vars_initialised)
+    {
+        flash_vars_init();
+    }
     if (data != NULL)
     {
         memcpy(data, &flash_vars.emetering, sizeof(ENERGY_METERING_DATA));
