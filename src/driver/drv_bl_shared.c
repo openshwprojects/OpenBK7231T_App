@@ -148,8 +148,8 @@ void BL09XX_SaveEmeteringStatistics()
     data.YesterdayConsumption = dailyStats[1];
     data.actual_mday = actual_mday;
     data.ConsumptionHistory[0] = dailyStats[2];
-    data.ConsumptionHistory[1] = dailyStats[2];
-    data.ConsumptionHistory[2] = dailyStats[2];
+    data.ConsumptionHistory[1] = dailyStats[3];
+    data.ConsumptionHistory[2] = dailyStats[4];
     ConsumptionSaveCounter++;
     data.save_counter = ConsumptionSaveCounter;
 
