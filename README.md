@@ -157,6 +157,13 @@ Currently available pin roles:
 - DigitalInput_NoPullUp - same as DigitalInput but with no programmable pull up resistor. This is used for, for example, XR809 water sensor and door sensor.
 - DigitalInput_NoPullUp_n (as above but inversed)
 - ADC (Analog to Digital converter) - converts voltage to channel value which is later published by MQTT and also can be used to trigger scriptable events
+- AlwaysHigh - always outputs 1
+- AlwaysLow - always outputs 0
+- Btn_NextColor (and _n) - for RGB strip with buttons; sets next predefined color
+- Btn_NextDimmer (and _n) - for RGB strip with buttons; when hold, adjusts the brightness
+- IRRecv - IR receiver
+- IRSend - IR sender 
+- PWM_n - as PWM, but inversed value
   
 # Safe mode
   
@@ -202,6 +209,8 @@ There are multiple console commands that allow you to automate your devices. Com
 | EnergyCntReset | | Used for BL0942/BL0937/etc consumption measurement data reset |
 | SetupEnergyStats | [enable] [sample_time] [sample_count] [enableJSON] | Used for BL0942/BL0937/etc. Configure consumptio history stats. enable: 0/1 sample_time:10..900 sample_count: 10..180 enableJSON: 0/1 |
 
+There is also a conditional exec command. Example:
+if MQTTOn then "backlog led_dimmer 100; led_enableAll" else "backlog led_dimmer 10; led_enableAll"
       
 # Console Command Examples
 
