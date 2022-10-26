@@ -176,7 +176,7 @@ void BP5758D_Write(byte *rgbcw) {
 // https://imgur.com/a/VKM6jOb
 static int BP5758D_Current(const void *context, const char *cmd, const char *args, int flags){
 	byte val;
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args,0);
 
 	if(Tokenizer_GetArgsCount()==0) {
 		ADDLOG_DEBUG(LOG_FEATURE_CMD, "BP5758D_Current: requires one argument!\n");
@@ -235,7 +235,7 @@ static int BP5758D_RGBCW(const void *context, const char *cmd, const char *args,
 
 static int BP5758D_Map(const void *context, const char *cmd, const char *args, int flags){
 
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args,0);
 
 	if(Tokenizer_GetArgsCount()==0) {
 		ADDLOG_DEBUG(LOG_FEATURE_CMD, "BP5758D_Map current order is %i %i %i    %i %i! ",

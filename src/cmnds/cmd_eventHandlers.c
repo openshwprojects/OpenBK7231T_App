@@ -334,7 +334,7 @@ static int CMD_AddEventHandler(const void *context, const char *cmd, const char 
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddEventHandler: command requires argument");
 		return 1;
 	}
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 3) {
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddEventHandler: command requires 3 arguments");
 		return 1;
@@ -396,7 +396,7 @@ static int CMD_AddChangeHandler(const void *context, const char *cmd, const char
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddChangeHandler: command requires argument");
 		return 1;
 	}
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 4) {
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddChangeHandler: command requires 4 arguments");
 		return 1;

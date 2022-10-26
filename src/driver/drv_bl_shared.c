@@ -142,7 +142,7 @@ int BL09XX_SetupEnergyStatistic(const void *context, const char *cmd, const char
     int sample_count;
     int json_enable;
 
-    Tokenizer_TokenizeString(args);
+    Tokenizer_TokenizeString(args,0);
 
     if(Tokenizer_GetArgsCount() < 3) 
     {

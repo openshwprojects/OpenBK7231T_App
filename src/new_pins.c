@@ -1139,7 +1139,7 @@ static int CMD_SetChannelType(const void *context, const char *cmd, const char *
 	const char *type;
 	int typeCode;
 
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args,0);
 
 	if(Tokenizer_GetArgsCount() < 2) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"This command requires 2 arguments");

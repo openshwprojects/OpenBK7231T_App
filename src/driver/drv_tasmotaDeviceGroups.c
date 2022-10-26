@@ -396,7 +396,7 @@ int CMD_DGR_SendPower(const void *context, const char *cmd, const char *args, in
 	int channelValues;
 	int channelsCount;
 
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args,0);
 
 	if(Tokenizer_GetArgsCount() < 3) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Command requires 3 arguments - groupname, channelvalues, valuescount\n");
@@ -471,7 +471,7 @@ int CMD_DGR_SendBrightness(const void *context, const char *cmd, const char *arg
 	const char *groupName;
 	int brightness;
 
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args,0);
 
 	if(Tokenizer_GetArgsCount() < 2) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Command requires 2 arguments - groupname, brightess\n");
@@ -491,7 +491,7 @@ int CMD_DGR_SendRGBCW(const void *context, const char *cmd, const char *args, in
 	const char *groupName;
 	byte rgbcw[5];
 
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args,0);
 
 	if(Tokenizer_GetArgsCount() < 4) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Command requires at least 4 arguments - groupname, r, g, b\n");

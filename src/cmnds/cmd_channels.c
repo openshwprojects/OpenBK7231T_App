@@ -14,7 +14,7 @@ static int CMD_SetChannel(const void *context, const char *cmd, const char *args
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetChannel: command requires argument");
 		return 1;
 	}
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 2) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetChannel: command requires 2 arguments");
 		return 1;
@@ -34,7 +34,7 @@ static int CMD_AddChannel(const void *context, const char *cmd, const char *args
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_AddChannel: command requires 2 arguments (next 2, min and max, are optionsl)");
 		return 1;
 	}
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 2) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_AddChannel: command requires 2 arguments (next 2, min and max, are optionsl)");
 		return 1;
@@ -63,7 +63,7 @@ static int CMD_ClampChannel(const void *context, const char *cmd, const char *ar
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ClampChannel: command requires argument");
 		return 1;
 	}
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 2) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ClampChannel: command requires 3 arguments");
 		return 1;
@@ -86,7 +86,7 @@ static int CMD_SetPinRole(const void *context, const char *cmd, const char *args
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetPinRole: command requires argument");
 		return 1;
 	}
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 2) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetPinRole: command requires 2 arguments");
 		return 1;
@@ -111,7 +111,7 @@ static int CMD_SetPinChannel(const void *context, const char *cmd, const char *a
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetPinChannel: command requires argument");
 		return 1;
 	}
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 2) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetPinChannel: command requires 2 arguments");
 		return 1;
@@ -130,7 +130,7 @@ static int CMD_GetChannel(const void *context, const char *cmd, const char *args
 	if(args==0||*args==0) {
 		return 1;
 	}
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 1) {
 		return 1;
 	}

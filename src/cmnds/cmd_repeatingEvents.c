@@ -105,7 +105,7 @@ int RepeatingEvents_Cmd_AddRepeatingEvent(const void *context, const char *cmd, 
 
 	// linkTuyaMCUOutputToChannel dpID channelID [varType]
 	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"addRepeatingEvent: will tokenize %s\n",args);
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args,0);
 
 	if(Tokenizer_GetArgsCount() < 2) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"addRepeatingEvent: requires 2 arguments\n");
@@ -132,7 +132,7 @@ int RepeatingEvents_Cmd_CancelRepeatingEvent(const void *context, const char *cm
 
 	// linkTuyaMCUOutputToChannel dpID channelID [varType]
 	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"cancelRepeatingEvent: will tokenize %s\n",args);
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args,0);
 
 	if(Tokenizer_GetArgsCount() < 1) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"cancelRepeatingEvent: requires 1 argument\n");

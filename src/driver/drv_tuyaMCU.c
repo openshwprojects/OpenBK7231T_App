@@ -520,7 +520,7 @@ int TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, con
 
     // linkTuyaMCUOutputToChannel dpId varType channelID
     // linkTuyaMCUOutputToChannel 1 val 1
-    Tokenizer_TokenizeString(args);
+    Tokenizer_TokenizeString(args,0);
 
     if(Tokenizer_GetArgsCount() < 3) {
         addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_LinkTuyaMCUOutputToChannel: requires 3 arguments (dpId, dpType, channelIndex)\n");
@@ -590,7 +590,7 @@ void TuyaMCU_Send(byte *data, int size) {
 }
 
 int TuyaMCU_SetDimmerRange(const void *context, const char *cmd, const char *args, int cmdFlags) {
-    Tokenizer_TokenizeString(args);
+    Tokenizer_TokenizeString(args,0);
 
     if(Tokenizer_GetArgsCount() < 2) {
         addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"tuyaMcu_setDimmerRange: requires 2 arguments (dimmerRangeMin, dimmerRangeMax)\n");
@@ -625,7 +625,7 @@ int TuyaMCU_SendStateCmd(const void *context, const char *cmd, const char *args,
     int dpType;
     int value;
 
-    Tokenizer_TokenizeString(args);
+    Tokenizer_TokenizeString(args,0);
 
     if(Tokenizer_GetArgsCount() < 3) {
         addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"tuyaMcu_sendState: requires 3 arguments (dpId, dpType, value)\n");
@@ -1103,7 +1103,7 @@ void TuyaMCU_RunFrame() {
 
 
 int TuyaMCU_SetBaudRate(const void *context, const char *cmd, const char *args, int cmdFlags) {
-    Tokenizer_TokenizeString(args);
+    Tokenizer_TokenizeString(args,0);
 
     if(Tokenizer_GetArgsCount() < 1) {
         addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_SetBaudRate: requires 1 arguments (baudRate)\n");

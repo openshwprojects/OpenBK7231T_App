@@ -59,7 +59,7 @@ static unsigned int g_time;
 static int g_timeOffsetHours;
 
 int NTP_SetTimeZoneOfs(const void *context, const char *cmd, const char *args, int cmdFlags) {
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 1) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Command requires one argument\n");
 		return 0;
@@ -71,7 +71,7 @@ int NTP_SetTimeZoneOfs(const void *context, const char *cmd, const char *args, i
 
 //Set custom NTP server
 int NTP_SetServer(const void *context, const char *cmd, const char *args, int cmdFlags) {
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 1) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Argument missing e.g. ntp_setServer ipAddress\n");
 		return 0;

@@ -30,8 +30,8 @@ static int runcmd(const void * context, const char *cmd, const char *args, int c
 }
 
 // run an aliased command
-static int addcmd(const void * context, const char *cmd, const char *args, int cmdFlags){
-	if (!wal_strnicmp(cmd, "addcmd", 6)){
+static int alias(const void * context, const char *cmd, const char *args, int cmdFlags){
+	if (!wal_strnicmp(cmd, "alias", 6)){
 		int index = 0;
         char cmd[32];
         //int len;
@@ -52,7 +52,7 @@ static int addcmd(const void * context, const char *cmd, const char *args, int c
 
         strcpy(cmds[index], args);
         //len =
-		get_cmd(args, cmd, 32, 1);
+		get_cmd(args, cmd, sizeof(cmd), 1);
         names[index] = os_malloc(strlen(cmd)+1);
         strcpy(names[index], cmd);
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "cmd %d set to %s", index, cmd);
@@ -182,7 +182,7 @@ static int testJSON(const void * context, const char *cmd, const char *args, int
     return 0;
 }
 int fortest_commands_init(){
-    CMD_RegisterCommand("addcmd", "", addcmd, "add a custom command", NULL);
+    CMD_RegisterCommand("alias", "", alias, "add a custom command", NULL);
     CMD_RegisterCommand("testMallocFree", "", testMallocFree, "", NULL);
     CMD_RegisterCommand("testRealloc", "", testRealloc, "", NULL);
     CMD_RegisterCommand("testJSON", "", testJSON, "", NULL);

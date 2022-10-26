@@ -228,7 +228,7 @@ int DRV_I2C_LCD_PCF8574_GoTo_Internal(int bClear, const void *context, const cha
 	i2cDevice_PCF8574_t *lcd;
 	byte x, y;
 
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args,0);
 	i2cModuleStr = Tokenizer_GetArg(0);
 	address = Tokenizer_GetArgInteger(1);
 
@@ -271,7 +271,7 @@ int DRV_I2C_LCD_PCF8574_Print(const void *context, const char *cmd, const char *
 	i2cDevice_PCF8574_t *lcd;
 	const char *msg;
 
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args,0);
 	i2cModuleStr = Tokenizer_GetArg(0);
 	address = Tokenizer_GetArgInteger(1);
 
@@ -301,7 +301,7 @@ int DRV_I2C_LCD_PCF8574_Clear(const void *context, const char *cmd, const char *
 	i2cDevice_t *dev;
 	i2cDevice_PCF8574_t *lcd;
 
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args,0);
 	i2cModuleStr = Tokenizer_GetArg(0);
 	address = Tokenizer_GetArgInteger(1);
 

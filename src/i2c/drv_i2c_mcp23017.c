@@ -120,7 +120,7 @@ int DRV_I2C_MCP23017_MapPinToChannel(const void *context, const char *cmd, const
 	i2cBusType_t busType;
 	i2cDevice_MCP23017_t *mcp;
 
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args,0);
 	i2cModuleStr = Tokenizer_GetArg(0);
 	address = Tokenizer_GetArgInteger(1);
 	targetPin = Tokenizer_GetArgInteger(2);

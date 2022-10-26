@@ -169,7 +169,7 @@ static int SM2135_RGBCW(const void *context, const char *cmd, const char *args, 
 
 static int SM2135_Map(const void *context, const char *cmd, const char *args, int flags){
 	
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args,0);
 
 	if(Tokenizer_GetArgsCount()==0) {
 		ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2135_Map current order is %i %i %i    %i %i! ",
@@ -197,7 +197,7 @@ static void SM2135_SetCurrent(int curValRGB, int curValCW) {
 static int SM2135_Current(const void *context, const char *cmd, const char *args, int flags){
 	int valRGB;
 	int valCW;
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args,0);
 
 	if(Tokenizer_GetArgsCount()<=1) {
 		ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2135_Current: requires 2 arguments [RGB,CW]. Current value is: %i %i!\n",g_current_setting_rgb,g_current_setting_cw);

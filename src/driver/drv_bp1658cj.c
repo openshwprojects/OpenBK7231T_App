@@ -163,7 +163,7 @@ static int BP1658CJ_RGBCW(const void *context, const char *cmd, const char *args
 
 static int BP1658CJ_Map(const void *context, const char *cmd, const char *args, int flags){
 
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args,0);
 
 	if(Tokenizer_GetArgsCount()==0) {
 		ADDLOG_DEBUG(LOG_FEATURE_CMD, "BP1658CJ_Map current order is %i %i %i    %i %i! ",

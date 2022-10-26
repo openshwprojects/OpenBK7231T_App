@@ -103,7 +103,7 @@ const char *Tokenizer_GetArgFrom(int i);
 int Tokenizer_GetArgInteger(int i);
 bool Tokenizer_IsArgInteger(int i);
 int Tokenizer_GetArgIntegerRange(int i, int rangeMax, int rangeMin);
-void Tokenizer_TokenizeString(const char *s);
+void Tokenizer_TokenizeString(const char *s, int bAllowQuotedStrings);
 // cmd_repeatingEvents.c
 void RepeatingEvents_Init();
 void RepeatingEvents_OnEverySecond();
