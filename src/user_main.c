@@ -34,7 +34,9 @@
 
 #include "driver/drv_ntp.h"
 
+#ifdef PLATFORM_BEKEN
 void bg_register_irda_check_func(FUNCPTR func);
+#endif
 
 static int g_secondsElapsed = 0;
 // open access point after this number of seconds
