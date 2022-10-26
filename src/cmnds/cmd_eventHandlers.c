@@ -75,6 +75,11 @@ AddEventHandler OnUART 55AA00FF setChannel 0 1
 // IR events
 addEventHandler2 Samsung 0x707 0x68 setChannel 1 0
 
+// MQTT state
+
+addEventHandler MQTTState 0 setChannel 1 0
+addEventHandler MQTTState 1 setChannel 1 1
+
 
 */
 //
@@ -130,6 +135,8 @@ static int EVENT_ParseEventName(const char *s) {
 		return CMD_EVENT_CHANNEL_ONCHANGE;
 	if(!stricmp(s,"OnUART"))
 		return CMD_EVENT_ON_UART;
+	if(!stricmp(s,"MQTTState"))
+		return CMD_EVENT_MQTT_STATE;
     if(!stricmp(s,"energycounter"))
         return CMD_EVENT_CHANGE_CONSUMPTION_TOTAL;
     if(!stricmp(s,"energycounter_last_hour"))

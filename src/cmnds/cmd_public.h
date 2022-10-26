@@ -72,6 +72,7 @@ enum EventCode {
 
 	//CMD_EVENT_GENERIC, // TODO?
 
+	CMD_EVENT_MQTT_STATE,
 
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES

@@ -199,10 +199,19 @@ int Main_HasWiFiConnected()
 
 void Main_OnEverySecond()
 {
+	int newMQTTState;
 	const char *safe;
 
 	// run_adc_test();
-	bMQTTconnected = MQTT_RunEverySecondUpdate();
+	newMQTTState = MQTT_RunEverySecondUpdate();
+	if(newMQTTState != bMQTTconnected) {
+		bMQTTconnected = newMQTTState;
+		if(newMQTTState) {
+			EventHandlers_FireEvent(CMD_EVENT_MQTT_STATE,1);
+		} else {
+			EventHandlers_FireEvent(CMD_EVENT_MQTT_STATE,0);
+		}
+	}
 	MQTT_Dedup_Tick();
 	RepeatingEvents_OnEverySecond();
 #ifndef OBK_DISABLE_ALL_DRIVERS
