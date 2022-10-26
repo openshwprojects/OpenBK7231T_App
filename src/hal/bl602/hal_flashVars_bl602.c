@@ -1,6 +1,7 @@
 #ifdef PLATFORM_BL602
 
 #include "../hal_flashConfig.h"
+#include "../hal_flashVars.h"
 #include "../../logging/logging.h"
 
 #include <easyflash.h>

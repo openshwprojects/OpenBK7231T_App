@@ -1,6 +1,7 @@
 #ifdef PLATFORM_XR809
 
 #include "../hal_flashConfig.h"
+#include "../hal_flashVars.h"
 #include "../../logging/logging.h"
 
 void HAL_FlashVars_SaveBootComplete(){
