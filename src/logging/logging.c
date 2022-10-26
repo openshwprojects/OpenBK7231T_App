@@ -196,6 +196,10 @@ void addLogAdv(int level, int feature, const char *fmt, ...)
 
             xSemaphoreGive( g_mutex );
             if (log_delay){
+                if (log_delay < 0){
+                    int cps = (115200/8);
+                    timems = (1000*len)/cps;
+                }
                 rtos_delay_milliseconds(log_delay);
             }
         }
@@ -270,10 +274,10 @@ void addLogAdv(int level, int feature, const char *fmt, ...)
         initLog();
     }
 
-		tmp = g_loggingBuffer;
+    BaseType_t taken = xSemaphoreTake( logMemory.mutex, 100 );
+	tmp = g_loggingBuffer;
     memset(tmp, 0, LOGGING_BUFFER_SIZE);
     t = tmp;
-    BaseType_t taken = xSemaphoreTake( logMemory.mutex, 100 );
 
     if(feature == LOG_FEATURE_RAW)
     {
@@ -317,9 +321,15 @@ void addLogAdv(int level, int feature, const char *fmt, ...)
         if (taken == pdTRUE){
             xSemaphoreGive( logMemory.mutex );
         }
+        /* no need to delay becasue bk_printf currently delays
         if (log_delay){
+            if (log_delay < 0){
+                int cps = (115200/8);
+                timems = (1000*len)/cps;
+            }
             rtos_delay_milliseconds(log_delay);
         }
+        */
         return;
     }
 
@@ -345,10 +355,17 @@ void addLogAdv(int level, int feature, const char *fmt, ...)
         xSemaphoreGive( logMemory.mutex );
     }
     if (log_delay){
-        rtos_delay_milliseconds(log_delay);
+        int timems = log_delay;
+        // is log_delay set -ve, then calculate delay
+        // required for the number of characters to TX
+        // plus 2ms to be sure.
+        if (log_delay < 0){
+            int cps = (115200/8);
+            timems = ((1000*len)/cps) + 2;
+        }
+        rtos_delay_milliseconds(timems);
     }
 }
-
 
 
 static int getData(char *buff, int buffsize, int *tail) {
