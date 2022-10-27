@@ -412,7 +412,7 @@ static int getSerial(char *buff, int buffsize){
 // so in our thread, send until full, and never spin waiting to send...
 // H/W TX fifo seems to be 256 bytes!!!
 static void getSerial2() {
-    if (!initialised) return 0;
+    if (!initialised) return;
     int * tail = &logMemory.tailserial;
     char c;
     BaseType_t taken = xSemaphoreTake( logMemory.mutex, 100 );
