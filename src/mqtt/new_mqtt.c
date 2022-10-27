@@ -788,10 +788,11 @@ static void MQTT_do_connect(mqtt_client_t* client)
 	mqtt_client_info.will_topic = will_topic;
 	mqtt_client_info.will_msg = "offline";
 	mqtt_client_info.will_retain = true,
-		mqtt_client_info.will_qos = 2,
+	mqtt_client_info.will_qos = 2,
 
-		hostEntry = gethostbyname(mqtt_host);
-	if (NULL != hostEntry) {
+	hostEntry = gethostbyname(mqtt_host);
+	if (NULL != hostEntry) 
+    {
 		if (hostEntry->h_addr_list && hostEntry->h_addr_list[0]) {
 			int len = hostEntry->h_length;
 			if (len > 4) {
@@ -1073,13 +1074,15 @@ int MQTT_RunEverySecondUpdate()
     {
         //addLogAdv(LOG_INFO,LOG_FEATURE_MAIN, "Timer discovers disconnected mqtt %i\n",loopsWithDisconnected);
         loopsWithDisconnected++;
-        if (loopsWithDisconnected > 10)
+        if (loopsWithDisconnected > 15)
         {
             if (mqtt_client == 0)
             {
                 mqtt_client = mqtt_client_new();
             }
-            else {
+            else 
+            {
+                mqtt_disconnect(mqtt_client);
 #if defined(MQTT_CLIENT_CLEANUP)
                 mqtt_client_cleanup(mqtt_client);
 #endif
