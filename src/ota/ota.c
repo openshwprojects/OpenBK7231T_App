@@ -130,6 +130,7 @@ int myhttpclientcallback(httprequest_t* request){
       break;
     case 2: // ended, write any remaining bytes to the sector
       close_ota();
+      ota_status = -1;
       addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"\r\nmyhttpclientcallback state %d total %d/%d\r\n", request->state, total_bytes, request->client_data.response_content_len);
 
       addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"Rebooting in 1 seconds...");
