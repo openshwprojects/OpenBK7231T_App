@@ -234,13 +234,14 @@ static struct tag_logMemory {
 
 static int initialised = 0;
 
+#if PLATFORM_BEKEN
 // to get uart.h
 #include "command_line.h"
 
 #define UART_PORT UART2_PORT 
 #define UART_DEV_NAME UART2_DEV_NAME
 #define UART_PORT_INDEX 1 
-
+#endif
 
 static void initLog( void ) 
 {
@@ -561,8 +562,8 @@ static void log_client_thread( beken_thread_arg_t arg )
 }
 
 
-#define SERIALLOGBUFSIZE 128
-static char seriallogbuf[SERIALLOGBUFSIZE];
+//#define SERIALLOGBUFSIZE 128
+//static char seriallogbuf[SERIALLOGBUFSIZE];
 static void log_serial_thread( beken_thread_arg_t arg )
 {
     while ( 1 ){
