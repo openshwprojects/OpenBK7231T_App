@@ -568,22 +568,26 @@ static void log_client_thread( beken_thread_arg_t arg )
 }
 
 
-//#define SERIALLOGBUFSIZE 128
-//static char seriallogbuf[SERIALLOGBUFSIZE];
-static void log_serial_thread( beken_thread_arg_t arg )
-{
 #if PLATFORM_BEKEN
-    while ( 1 ){
-        getSerial2();
-        rtos_delay_milliseconds(10);
+    static void log_serial_thread( beken_thread_arg_t arg )
+    {
+        while ( 1 ){
+            getSerial2();
+            rtos_delay_milliseconds(10);
+        }
     }
+
 #else 
-    int count = getSerial(seriallogbuf, SERIALLOGBUFSIZE);
-    if (count){
-        bk_printf("%s", seriallogbuf);
+    #define SERIALLOGBUFSIZE 128
+    static char seriallogbuf[SERIALLOGBUFSIZE];
+    static void log_serial_thread( beken_thread_arg_t arg )
+    {
+        int count = getSerial(seriallogbuf, SERIALLOGBUFSIZE);
+        if (count){
+            bk_printf("%s", seriallogbuf);
+        }
     }
 #endif
-}
 
 
 static int http_getlograw(http_request_t *request){
