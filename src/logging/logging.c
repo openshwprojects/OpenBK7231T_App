@@ -234,6 +234,14 @@ static struct tag_logMemory {
 
 static int initialised = 0;
 
+// to get uart.h
+#include "command_line.h"
+
+#define UART_PORT UART2_PORT 
+#define UART_DEV_NAME UART2_DEV_NAME
+#define UART_PORT_INDEX 1 
+
+
 static void initLog( void ) 
 {
     bk_printf("Entering initLog()...\r\n");
@@ -398,6 +406,40 @@ static int getSerial(char *buff, int buffsize){
     return len;
 }
 
+// for T & N, we can send bytes if TX fifo is not full,
+// and not wait.
+// so in our thread, send until full, and never spin waiting to send...
+// H/W TX fifo seems to be 256 bytes!!!
+static void getSerial2() {
+    if (!initialised) return 0;
+    int * tail = &logMemory.tailserial;
+    char c;
+    BaseType_t taken = xSemaphoreTake( logMemory.mutex, 100 );
+    char overflow = 0;
+
+    // if we hit overflow
+    if (logMemory.tailserial == (logMemory.head + 1) % LOGSIZE){
+        overflow = 1;
+    }
+
+    while((*tail != logMemory.head) && !uart_is_tx_fifo_full(UART_PORT)){
+        c = logMemory.log[*tail];
+        if (overflow) {
+            c = '^'; // replace the first char with ^ if we overflowed....
+            overflow = 0;
+        }
+
+        (*tail) = ((*tail) + 1) % LOGSIZE;
+        UART_WRITE_BYTE(UART_PORT_INDEX,c);
+    }
+
+    if (taken == pdTRUE){
+        xSemaphoreGive( logMemory.mutex );
+    }
+    return;
+}
+
+
 static int getTcp(char *buff, int buffsize){
     int len = getData(buff, buffsize, &logMemory.tailtcp);
     //bk_printf("got tcp: %d:%s\r\n", len,buff);
@@ -524,10 +566,7 @@ static char seriallogbuf[SERIALLOGBUFSIZE];
 static void log_serial_thread( beken_thread_arg_t arg )
 {
     while ( 1 ){
-        int count = getSerial(seriallogbuf, SERIALLOGBUFSIZE);
-        if (count){
-            bk_printf("%s", seriallogbuf);
-        }
+        getSerial2();
         rtos_delay_milliseconds(10);
     }
 }
