@@ -187,7 +187,7 @@ There are multiple console commands that allow you to automate your devices. Com
 | addChangeHandler     | [Variable][Relation][Constant][Command] | This can listen to change in channel value (for example channel 0 becoming 100), or for a voltage/current/power change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be "Power", or "Current" or "Voltage" |
 | sendGet     | [TargetURL] | Sends a HTTP GET request to target URL. May include GET arguments. Can be used to control devices by Tasmota HTTP protocol. |
 | publish     | [Topic][Value] | Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get |
-| linkTuyaMCUOutputToChannel     | TODO | Used to map between TuyaMCU dpIDs and our internal channels. Mapping works both ways. |
+| linkTuyaMCUOutputToChannel     | [dpId][varType][channelID] | Used to map between TuyaMCU dpIDs and our internal channels. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap  |
 | tuyaMcu_setBaudRate     | [BaudValue] | Sets the baud rate used by TuyaMCU UART communication. Default value is 9600. |
 | led_enableAll     | [1or0] | Power on/off LED but remember the RGB(CW) values. |
 | led_basecolor_rgb     | [HexValue] | Puts the LED driver in RGB mode and sets given color. |
