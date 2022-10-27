@@ -322,6 +322,7 @@ void BL_ProcessUpdate(float voltage, float current, float power)
     portTickType interval;
     time_t g_time;
     struct tm *ltm;
+    char datetime[64];
 
     // those are final values, like 230V
     lastReadings[OBK_POWER] = power;
@@ -366,6 +367,11 @@ void BL_ProcessUpdate(float voltage, float current, float power)
             stat_updatesSent++;
             BL09XX_SaveEmeteringStatistics();
             lastConsumptionSaveStamp = xTaskGetTickCount();
+            ltm = localtime(&ConsumptionResetTime);
+            sprintf(datetime, "%04i-%02i-%02i %02i:%02i:%02i", 
+                    ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+            MQTT_PublishMain_StringString(counter_mqttNames[5], datetime, 0);
+            stat_updatesSent++;
         }
     }
 
@@ -388,6 +394,10 @@ void BL_ProcessUpdate(float voltage, float current, float power)
                 cJSON_AddNumberToObject(root, "consumption_sampling_period", energyCounterSampleInterval);
                 cJSON_AddNumberToObject(root, "consumption_today", dailyStats[0]);
                 cJSON_AddNumberToObject(root, "consumption_yesterday", dailyStats[1]);
+                ltm = localtime(&ConsumptionResetTime);
+                sprintf(datetime, "%04i-%02i-%02i %02i:%02i:%02i", 
+                        ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+                cJSON_AddStringToObject(root, "consumption_clear_date", datetime);
 
                 if (energyCounterMinutes != NULL)
                 {
@@ -483,6 +493,13 @@ void BL_ProcessUpdate(float voltage, float current, float power)
         lastSentEnergyCounterLastHour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
         stat_updatesSent++;
         MQTT_PublishMain_StringFloat(counter_mqttNames[3], dailyStats[1]);
+        stat_updatesSent++;
+        MQTT_PublishMain_StringFloat(counter_mqttNames[4], dailyStats[0]);
+        stat_updatesSent++;
+        ltm = localtime(&ConsumptionResetTime);
+        sprintf(datetime, "%04i-%02i-%02i %02i:%02i:%02i",
+                ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+        MQTT_PublishMain_StringString(counter_mqttNames[5], datetime, 0);
         stat_updatesSent++;
     } else {
         noChangeFrameEnergyCounter++;
