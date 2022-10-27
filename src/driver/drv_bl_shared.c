@@ -53,6 +53,7 @@ int actual_mday = -1;
 float lastSavedEnergyCounterValue = 0.0f;
 float changeSavedThresholdEnergy = 10.0f;
 long ConsumptionSaveCounter = 0;
+portTickType lastConsumptionSaveStamp;
 
 // how much of value have to change in order to be send over MQTT again?
 int changeSendThresholds[OBK_NUM_MEASUREMENTS] = {
@@ -187,6 +188,7 @@ int BL09XX_ResetEnergyCounter(const void *context, const char *cmd, const char *
         energyCounterStamp = xTaskGetTickCount();
     }
     BL09XX_SaveEmeteringStatistics();
+    lastConsumptionSaveStamp = xTaskGetTickCount();
     return 0;
 }
 
@@ -355,6 +357,7 @@ void BL_ProcessUpdate(float voltage, float current, float power)
             MQTT_PublishMain_StringFloat(counter_mqttNames[3], dailyStats[1]);
             stat_updatesSent++;
             BL09XX_SaveEmeteringStatistics();
+            lastConsumptionSaveStamp = xTaskGetTickCount();
         }
     }
 
@@ -477,10 +480,12 @@ void BL_ProcessUpdate(float voltage, float current, float power)
         noChangeFrameEnergyCounter++;
         stat_updatesSkipped++;
     }
-    if ((energyCounter - lastSavedEnergyCounterValue) >= changeSavedThresholdEnergy)
+    if (((energyCounter - lastSavedEnergyCounterValue) >= changeSavedThresholdEnergy) ||
+        ((xTaskGetTickCount() - lastConsumptionSaveStamp) >= (6 * 3600 * 1000 / portTICK_PERIOD_MS)))
     {
         lastSavedEnergyCounterValue = energyCounter;
         BL09XX_SaveEmeteringStatistics();
+        lastConsumptionSaveStamp = xTaskGetTickCount();
     }
 }
 
@@ -531,6 +536,7 @@ void BL_Shared_Init()
     dailyStats[3] = data.ConsumptionHistory[1];
     dailyStats[4] = data.ConsumptionHistory[2];
     ConsumptionSaveCounter = data.save_counter;
+    lastConsumptionSaveStamp = xTaskGetTickCount();
 
     //int HAL_SetEnergyMeterStatus(ENERGY_METERING_DATA *data);
 
