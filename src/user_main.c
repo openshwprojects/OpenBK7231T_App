@@ -551,6 +551,10 @@ void Main_Init()
 		// but DON't run autoexec if we have had 2+ boot failures
 		CMD_Init();
 
+        /* Automatic disable of PIN MONITOR after reboot */
+        if (CFG_HasFlag(OBK_FLAG_HTTP_PINMONITOR))
+            CFG_SetFlag(OBK_FLAG_HTTP_PINMONITOR, false);
+
 		// autostart drivers
 		if(PIN_FindPinIndexForRole(IOR_SM2135_CLK,-1) != -1 && PIN_FindPinIndexForRole(IOR_SM2135_DAT,-1) != -1) 
         {
