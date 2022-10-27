@@ -1,5 +1,7 @@
 #include "new_common.h"
 
+const char *str_rssi[] = { "N/A", "Weak", "Fair", "Good", "Excellent" };
+
 // Why strdup breaks strings?
 // backlog lcd_clearAndGoto I2C1 0x23 1 1; lcd_print I2C1 0x23 Enabled
 // it got broken around 64 char
@@ -142,5 +144,24 @@ void urldecode2_safe(char *dst, const char *srcin, int maxDstLen)
 		curLen++;
         }
         *dst++ = '\0';
+}
+
+WIFI_RSSI_LEVEL wifi_rssi_scale(int8_t rssi_value)
+{
+    #define LEVEL_WEAK      -70     //-70
+    #define LEVEL_FAIR      -60     //-60
+    #define LEVEL_GOOD      -50     //-50
+
+    WIFI_RSSI_LEVEL retVal = NOT_CONNECTED;
+
+    if (rssi_value <= LEVEL_WEAK)
+        retVal = WEAK;
+    else if ((rssi_value <= LEVEL_FAIR) && (rssi_value > LEVEL_WEAK))
+        retVal = FAIR;
+    else if ((rssi_value <= LEVEL_GOOD) && (rssi_value > LEVEL_FAIR))
+        retVal = GOOD; 
+    else if (rssi_value > LEVEL_GOOD)
+        retVal = EXCELLENT;
+    return retVal;
 }
 

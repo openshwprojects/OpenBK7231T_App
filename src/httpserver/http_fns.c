@@ -550,7 +550,7 @@ int http_fn_index(http_request_t* request) {
 		PingWatchDog_GetTotalLost(), PingWatchDog_GetTotalReceived());
     if (Main_HasWiFiConnected())
     {
-        hprintf255(request, "<h5>Wifi RSSI: %i</h5>", HAL_GetWifiStrength());
+        hprintf255(request, "<h5>Wifi RSSI: %s (%idBm)</h5>", str_rssi[wifi_rssi_scale(HAL_GetWifiStrength())], HAL_GetWifiStrength());
     }
 	hprintf255(request, "<h5>MQTT State: %s RES: %d(%s)<br>", (Main_HasMQTTConnected() == 1) ? "connected" : "disconnected",
 		MQTT_GetConnectResult(), get_error_name(MQTT_GetConnectResult()));
