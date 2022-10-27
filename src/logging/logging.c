@@ -401,11 +401,7 @@ static int getData(char *buff, int buffsize, int *tail) {
     return count;
 }
 
-static int getSerial(char *buff, int buffsize){
-    int len = getData(buff, buffsize, &logMemory.tailserial);
-    //bk_printf("got serial: %d:%s\r\n", len,buff);
-    return len;
-}
+#if PLATFORM_BEKEN
 
 // for T & N, we can send bytes if TX fifo is not full,
 // and not wait.
@@ -439,6 +435,16 @@ static void getSerial2() {
     }
     return;
 }
+
+#else
+
+static int getSerial(char *buff, int buffsize){
+    int len = getData(buff, buffsize, &logMemory.tailserial);
+    bk_printf("got serial: %d:%s\r\n", len,buff);
+    return len;
+}
+
+#endif
 
 
 static int getTcp(char *buff, int buffsize){
@@ -566,10 +572,17 @@ static void log_client_thread( beken_thread_arg_t arg )
 //static char seriallogbuf[SERIALLOGBUFSIZE];
 static void log_serial_thread( beken_thread_arg_t arg )
 {
+#if PLATFORM_BEKEN
     while ( 1 ){
         getSerial2();
         rtos_delay_milliseconds(10);
     }
+#else 
+    int count = getSerial(seriallogbuf, SERIALLOGBUFSIZE);
+    if (count){
+        bk_printf("%s", seriallogbuf);
+    }
+#endif
 }
 
 
