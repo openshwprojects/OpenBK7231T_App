@@ -180,22 +180,23 @@ There are multiple console commands that allow you to automate your devices. Com
 | ------------- |:-------------:| -----:|
 | setChannel     | [ChannelIndex][ChannelValue] | Sets a raw channel to given value. Relay channels are using 1 and 0 values. PWM channels are within [0,100] range. Do not use this for LED control, because there is a better and more advanced LED driver with dimming and configuration memory (remembers setting after on/off), LED driver commands has "led_" prefix. |
 | addChannel     | [ChannelIndex][ValueToAdd][ClampMin][ClampMax] | Ads a given value to the channel. Can be used to change PWM brightness. Clamp min and max arguments are optional. |
-| setPinRole     | [PinRole][RoleIndexOrName] | qqq |
-| setPinChannel     | [PinRole][ChannelIndex] | qqq |
+| setPinRole     | [PinRole][RoleIndexOrName] | This allows you to set a pin role, for example a Relay role, or Button, etc. Usually it's easier to do this through WWW panel, so you don't have to use this command.  |
+| setPinChannel     | [PinRole][ChannelIndex] | This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command. |
 | addRepeatingEvent     | [IntervalSeconds][RepeatsOr-1][CommandToRun] | Starts a timer/interval command. Use "backlog" to fit multiple commands in a single string. |
 | addEventHandler     | [EventName][EventArgument][CommandToRun] | This can be used to trigger an action on a button click, long press, etc |
 | addChangeHandler     | [Variable][Relation][Constant][Command] | This can listen to change in channel value (for example channel 0 becoming 100), or for a voltage/current/power change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be "Power", or "Current" or "Voltage" |
 | sendGet     | [TargetURL] | Sends a HTTP GET request to target URL. May include GET arguments. Can be used to control devices by Tasmota HTTP protocol. |
 | publish     | [Topic][Value] | Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get |
-| linkTuyaMCUOutputToChannel     | TODO | Used to map between TuyaMCU dpIDs and our internal channels. Mapping works both ways. |
+| linkTuyaMCUOutputToChannel     | [dpId][varType][channelID] | Used to map between TuyaMCU dpIDs and our internal channels. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap  |
 | tuyaMcu_setBaudRate     | [BaudValue] | Sets the baud rate used by TuyaMCU UART communication. Default value is 9600. |
 | led_enableAll     | [1or0] | Power on/off LED but remember the RGB(CW) values. |
 | led_basecolor_rgb     | [HexValue] | Puts the LED driver in RGB mode and sets given color. |
 | led_basecolor_rgbcw     | [HexValue] | TODO |
 | led_temperature     | [TempValue] | Toggles LED driver into temperature mode and sets given temperature. It using Home Assistant temperature range (in the range from 154-500 defined in homeassistant/util/color.py as HASS_COLOR_MIN and HASS_COLOR_MAX) |
 | led_dimmer     | [DimmerValue] | Used to dim all kinds of lights, works for both RGB and CW modes. |
+| add_dimmer     | [DimmerDeltaValue] | This ads a given value (can be negative) to current dimmer settings, works for both RGB and CW modes. |
 | led_brightnessMult     | [Value] | Internal usage only. |
-| led_colorMult     | [Value] | TODO |
+| led_colorMult     | [Value] | Internal usage only. |
 | led_saturation     | [Value] | This is an alternate way to set the LED color. |
 | led_hue     | [Value] | This is an alternate way to set the LED color. |
 | SM2135_Map     | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of SM2135 channels. This is because SM2135 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. |
@@ -214,6 +215,9 @@ There are multiple console commands that allow you to automate your devices. Com
 | PowerMax | [limit] | Used for BL0937 to setup limiter for maximal output filter based on device definition 3680W for 16A devices. Prevention of sending ridicilus numbers to Cloud |
 | ConsumptionThreshold | [threshold] | Used for BL0942/BL0937/etc for define threshold for change of total counter to execute automatic store of consumption counters to flash |
 
+Are you looking for extra commands? Just search the code:
+https://github.com/openshwprojects/OpenBK7231T_App/search?q=CMD_RegisterCommand
+
 There is also a conditional exec command. Example:
 if MQTTOn then "backlog led_dimmer 100; led_enableAll" else "backlog led_dimmer 10; led_enableAll"
       
@@ -221,7 +225,7 @@ if MQTTOn then "backlog led_dimmer 100; led_enableAll" else "backlog led_dimmer 
 
 | Command        | Description  |
 | ------------- | -----:|
-| addRepeatingEvent 15 -1 SendGet http://192.168.0.112/cm?cmnd=Power0%20Toggle | This will send a Tasmota HTTP Toggle command every 15 seconds to given device |
+| addRepeatingEvent 15 -1 SendGet http://192.168.0.112/cm?cmnd=Power0%20Toggle | This will send a Tasmota HTTP Toggle command every 15 seconds to given device. Repeats value here is "-1" because we want this event to stay forever. |
 | addEventHandler OnClick 8 SendGet http://192.168.0.112/cm?cmnd=Power0%20Toggle     | This will send a Tasmota HTTP Toggle command to given device when a button on pin 8 is clicked (pin 8, NOT channel 8) |
 | addChangeHandler Channel1 != 0  SendGet http://192.168.0.112/cm?cmnd=Power0%20On | This will set a Tasmota HTTP Power0 ON command when a channel 1 value become non-zero |
 | addChangeHandler Channel1 == 0  SendGet http://192.168.0.112/cm?cmnd=Power0%20Off | This will set a Tasmota HTTP Power0 OFF command when a channel 1 value become zero |
