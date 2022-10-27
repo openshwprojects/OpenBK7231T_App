@@ -14,7 +14,7 @@
 #include "drv_ntp.h"
 #include "../hal/hal_flashVars.h"
 
-#define DAILY_STATS_LENGTH 5
+#define DAILY_STATS_LENGTH 4
 
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
@@ -54,6 +54,7 @@ float lastSavedEnergyCounterValue = 0.0f;
 float changeSavedThresholdEnergy = 10.0f;
 long ConsumptionSaveCounter = 0;
 portTickType lastConsumptionSaveStamp;
+time_t ConsumptionResetTime = 0;
 
 // how much of value have to change in order to be send over MQTT again?
 int changeSendThresholds[OBK_NUM_MEASUREMENTS] = {
@@ -70,6 +71,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 {
     int i;
     const char *mode;
+    struct tm *ltm;
 
     if(DRV_IsRunning("BL0937")) {
         mode = "BL0937";
@@ -124,7 +126,10 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
                 else
                     hprintf255(request, ",%1.1f", dailyStats[i]);
             }
-            hprintf255(request, "]");
+            hprintf255(request, "]<br>");
+            ltm = localtime(&ConsumptionResetTime);
+            hprintf255(request, "Consumption Reset Time: %04d/%02d/%02d %02d:%02d:%02d",
+                       ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
         } else {
             if(DRV_IsRunning("NTP")==false)
                 hprintf255(request,"NTP driver is not started, daily stats disbled.");
@@ -150,7 +155,7 @@ void BL09XX_SaveEmeteringStatistics()
     data.actual_mday = actual_mday;
     data.ConsumptionHistory[0] = dailyStats[2];
     data.ConsumptionHistory[1] = dailyStats[3];
-    data.ConsumptionHistory[2] = dailyStats[4];
+    data.ConsumptionResetTime = ConsumptionResetTime;
     ConsumptionSaveCounter++;
     data.save_counter = ConsumptionSaveCounter;
 
@@ -187,6 +192,7 @@ int BL09XX_ResetEnergyCounter(const void *context, const char *cmd, const char *
         energyCounter = value;
         energyCounterStamp = xTaskGetTickCount();
     }
+    ConsumptionResetTime = (time_t)NTP_GetCurrentTime(); 
     BL09XX_SaveEmeteringStatistics();
     lastConsumptionSaveStamp = xTaskGetTickCount();
     return 0;
@@ -341,6 +347,8 @@ void BL_ProcessUpdate(float voltage, float current, float power)
     {
         g_time = (time_t)NTP_GetCurrentTime();
         ltm = localtime(&g_time);
+        if (ConsumptionResetTime == 0)
+            ConsumptionResetTime = (time_t)g_time;
 
         if (actual_mday == -1)
         {
@@ -534,7 +542,7 @@ void BL_Shared_Init()
     lastSavedEnergyCounterValue = energyCounter;
     dailyStats[2] = data.ConsumptionHistory[0];
     dailyStats[3] = data.ConsumptionHistory[1];
-    dailyStats[4] = data.ConsumptionHistory[2];
+    ConsumptionResetTime = data.ConsumptionResetTime;
     ConsumptionSaveCounter = data.save_counter;
     lastConsumptionSaveStamp = xTaskGetTickCount();
 
