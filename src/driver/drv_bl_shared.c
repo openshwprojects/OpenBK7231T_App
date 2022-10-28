@@ -192,9 +192,12 @@ int BL09XX_ResetEnergyCounter(const void *context, const char *cmd, const char *
         energyCounter = value;
         energyCounterStamp = xTaskGetTickCount();
     }
-    ConsumptionResetTime = (time_t)NTP_GetCurrentTime(); 
-    BL09XX_SaveEmeteringStatistics();
-    lastConsumptionSaveStamp = xTaskGetTickCount();
+    ConsumptionResetTime = (time_t)NTP_GetCurrentTime();
+    if (ota_progress()==-1)
+    { 
+        BL09XX_SaveEmeteringStatistics();
+        lastConsumptionSaveStamp = xTaskGetTickCount();
+    }
     return 0;
 }
 
@@ -365,8 +368,11 @@ void BL_ProcessUpdate(float voltage, float current, float power)
             actual_mday = ltm->tm_mday;
             MQTT_PublishMain_StringFloat(counter_mqttNames[3], dailyStats[1]);
             stat_updatesSent++;
-            BL09XX_SaveEmeteringStatistics();
-            lastConsumptionSaveStamp = xTaskGetTickCount();
+            if (ota_progress()==-1)
+            {
+                BL09XX_SaveEmeteringStatistics();
+                lastConsumptionSaveStamp = xTaskGetTickCount();
+            }
             ltm = localtime(&ConsumptionResetTime);
             sprintf(datetime, "%04i-%02i-%02i %02i:%02i:%02i", 
                     ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
@@ -518,9 +524,12 @@ void BL_ProcessUpdate(float voltage, float current, float power)
     if (((energyCounter - lastSavedEnergyCounterValue) >= changeSavedThresholdEnergy) ||
         ((xTaskGetTickCount() - lastConsumptionSaveStamp) >= (6 * 3600 * 1000 / portTICK_PERIOD_MS)))
     {
-        lastSavedEnergyCounterValue = energyCounter;
-        BL09XX_SaveEmeteringStatistics();
-        lastConsumptionSaveStamp = xTaskGetTickCount();
+        if (ota_progress() == -1)
+        {
+            lastSavedEnergyCounterValue = energyCounter;
+            BL09XX_SaveEmeteringStatistics();
+            lastConsumptionSaveStamp = xTaskGetTickCount();
+        }
     }
 }
 
