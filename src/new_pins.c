@@ -459,7 +459,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 				HAL_PIN_Setup_Input_Pullup(index);
 
 				// init button after initializing pin role
-				NEW_button_init(bt, button_generic_get_gpio_value, 1);
+				NEW_button_init(bt, button_generic_get_gpio_value, 0);
 			}
 			break;
 		case IOR_ToggleChannelOnToggle:
