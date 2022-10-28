@@ -98,7 +98,8 @@ scriptFile_t *SVM_RegisterFile(const char *fname) {
 	r = malloc(sizeof(scriptFile_t));
 	memset(r,0,sizeof(scriptFile_t));
 	r->fname = test_strdup(fname);
-	r->data = LFS_ReadFile(fname);
+	// cast from byte* to char*
+	r->data = (char*)LFS_ReadFile(fname);
 	r->next = g_scriptFiles;
 	g_scriptFiles = r;
 	return r;
@@ -251,7 +252,6 @@ void SVM_StartScript(const char *fname, const char *label) {
 static int CMD_GoTo(const void *context, const char *cmd, const char *args, int cmdFlags){
 	const char *fname;
 	const char *label;
-	scriptFile_t *scr;
 
 	if(args==0||*args==0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_GoTo: command requires argument");
