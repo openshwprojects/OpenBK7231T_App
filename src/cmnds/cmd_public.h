@@ -156,4 +156,7 @@ int CMD_InitSendCommands();
 // cmd_tcp.c
 void CMD_StartTCPCommandLine();
 
+void SVM_RunThreads(int deltaMS);
+void CMD_InitScripting();
+
 #endif // __CMD_PUBLIC_H__

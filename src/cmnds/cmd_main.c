@@ -69,8 +69,17 @@ static int CMD_ClearConfig(const void *context, const char *cmd, const char *arg
 
 	return 1;
 }
+static int CMD_Echo(const void *context, const char *cmd, const char *args, int cmdFlags){
+
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, args);
+
+	return 1;
+}
+
 
 void CMD_Init() {
+    CMD_RegisterCommand("echo", "", CMD_Echo, "qqqe", NULL);
     CMD_RegisterCommand("restart", "", CMD_Restart, "Reboots the module", NULL);
     CMD_RegisterCommand("clearConfig", "", CMD_ClearConfig, "Clears all config", NULL);
     CMD_RegisterCommand("simonirtest", "", CMD_SimonTest, "Simons Special Test", NULL);
@@ -78,6 +87,9 @@ void CMD_Init() {
 	if(CFG_HasFlag(OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER)) {
 		CMD_StartTCPCommandLine();
 	}
+#if PLATFORM_BEKEN
+	//CMD_InitScripting();
+#endif
 }
 
 
