@@ -215,7 +215,6 @@ void SVM_GoTo(scriptInstance_t *th, const char *fname, const char *label) {
 	return;
 }
 void SVM_GoToLocal(scriptInstance_t *th, const char *label) {
-	scriptFile_t *f;
 
 	if(th == 0) {
 

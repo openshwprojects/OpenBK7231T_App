@@ -158,5 +158,7 @@ void CMD_StartTCPCommandLine();
 
 void SVM_RunThreads(int deltaMS);
 void CMD_InitScripting();
+byte *LFS_ReadFile(const char *fname);
+
 
 #endif // __CMD_PUBLIC_H__
