@@ -13,6 +13,7 @@
 #include <time.h>
 #include "drv_ntp.h"
 #include "../hal/hal_flashVars.h"
+#include "../ota/ota.h"
 
 #define DAILY_STATS_LENGTH 4
 
