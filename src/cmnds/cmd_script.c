@@ -221,7 +221,7 @@ void SVM_GoToLocal(scriptInstance_t *th, const char *label) {
 
 		return;
 	}
-	th->curLine = SVM_FindLabel(th->curFile,label);
+	th->curLine = SVM_FindLabel(th->curFile->data,label);
 
 	return;
 }
