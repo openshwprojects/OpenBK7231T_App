@@ -36,8 +36,8 @@
 #endif
 
 #if defined(PLATFORM_BK7231T) || defined(PLATFORM_BK7231N)
-int tuya_os_adapt_wifi_all_ap_scan(AP_IF_S **ap_ary, unsigned int *num);
-int tuya_os_adapt_wifi_release_ap(AP_IF_S *ap);
+int tuya_os_adapt_wifi_all_ap_scan(AP_IF_S** ap_ary, unsigned int* num);
+int tuya_os_adapt_wifi_release_ap(AP_IF_S* ap);
 #endif
 
 static char* UNIQUE_ID_FORMAT = "  - unique_id: \"%s\"\n";
@@ -548,10 +548,10 @@ int http_fn_index(http_request_t* request) {
 
 	hprintf255(request, "<h5>Ping watchdog - %i lost, %i ok!</h5>",
 		PingWatchDog_GetTotalLost(), PingWatchDog_GetTotalReceived());
-    if (Main_HasWiFiConnected())
-    {
-        hprintf255(request, "<h5>Wifi RSSI: %s (%idBm)</h5>", str_rssi[wifi_rssi_scale(HAL_GetWifiStrength())], HAL_GetWifiStrength());
-    }
+	if (Main_HasWiFiConnected())
+	{
+		hprintf255(request, "<h5>Wifi RSSI: %s (%idBm)</h5>", str_rssi[wifi_rssi_scale(HAL_GetWifiStrength())], HAL_GetWifiStrength());
+	}
 	hprintf255(request, "<h5>MQTT State: %s RES: %d(%s)<br>", (Main_HasMQTTConnected() == 1) ? "connected" : "disconnected",
 		MQTT_GetConnectResult(), get_error_name(MQTT_GetConnectResult()));
 	hprintf255(request, "MQTT ErrMsg: %s <br>", (MQTT_GetStatusMessage() != NULL) ? MQTT_GetStatusMessage() : "");
@@ -576,8 +576,8 @@ int http_fn_index(http_request_t* request) {
 			{
 				hprintf255(request, "P%02i: NA ", i);
 			}
-			else 
-            {
+			else
+			{
 				hprintf255(request, "P%02i: %i  ", i, (int)HAL_PIN_ReadDigitalInput(i));
 			}
 			if (i % 10 == 9)
@@ -589,10 +589,10 @@ int http_fn_index(http_request_t* request) {
 	}
 
 #if defined(PLATFORM_BK7231T) || defined(PLATFORM_BK7231N)
-    if (ota_progress()>=0)
-    {
-        hprintf255(request, "<h5>OTA In Progress. Status: %06lXh</h5>", ota_progress());
-    }
+	if (ota_progress() >= 0)
+	{
+		hprintf255(request, "<h5>OTA In Progress. Status: %06lXh</h5>", ota_progress());
+	}
 #endif
 
 	// for normal page loads, show the rest of the HTML
@@ -1670,7 +1670,7 @@ int http_fn_cfg(http_request_t* request) {
 	postFormAction(request, "cfg_mac", "Change MAC");
 	postFormAction(request, "cfg_ping", "Ping Watchdog (Network lost restarter)");
 	postFormAction(request, "cfg_webapp", "Configure Webapp");
-	postFormAction(request, "ha_cfg", "Generate Home Assistant cfg");
+	postFormAction(request, "ha_cfg", "Home Assistant Configuration");
 	postFormAction(request, "ota", "OTA (update software by WiFi)");
 	postFormAction(request, "cmd_tool", "Execute custom command");
 	postFormAction(request, "flash_read_tool", "Flash Read Tool");
