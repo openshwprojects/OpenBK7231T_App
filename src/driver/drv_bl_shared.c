@@ -422,7 +422,7 @@ void BL_ProcessUpdate(float voltage, float current, float power)
                     cJSON_AddItemToObject(root, "consumption_daily", stats);
                 }
 
-                msg = cJSON_Print(root);
+                msg = cJSON_PrintUnformatted(root);
                 cJSON_Delete(root);
 
                 addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "JSON Printed: %d bytes\n", strlen(msg));
