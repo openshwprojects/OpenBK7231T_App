@@ -234,6 +234,15 @@ static struct tag_logMemory {
 
 static int initialised = 0;
 
+#if PLATFORM_BEKEN
+// to get uart.h
+#include "command_line.h"
+
+#define UART_PORT UART2_PORT 
+#define UART_DEV_NAME UART2_DEV_NAME
+#define UART_PORT_INDEX 1 
+#endif
+
 static void initLog( void ) 
 {
     bk_printf("Entering initLog()...\r\n");
@@ -392,11 +401,51 @@ static int getData(char *buff, int buffsize, int *tail) {
     return count;
 }
 
+#if PLATFORM_BEKEN
+
+// for T & N, we can send bytes if TX fifo is not full,
+// and not wait.
+// so in our thread, send until full, and never spin waiting to send...
+// H/W TX fifo seems to be 256 bytes!!!
+static void getSerial2() {
+    if (!initialised) return;
+    int * tail = &logMemory.tailserial;
+    char c;
+    BaseType_t taken = xSemaphoreTake( logMemory.mutex, 100 );
+    char overflow = 0;
+
+    // if we hit overflow
+    if (logMemory.tailserial == (logMemory.head + 1) % LOGSIZE){
+        overflow = 1;
+    }
+
+    while((*tail != logMemory.head) && !uart_is_tx_fifo_full(UART_PORT)){
+        c = logMemory.log[*tail];
+        if (overflow) {
+            c = '^'; // replace the first char with ^ if we overflowed....
+            overflow = 0;
+        }
+
+        (*tail) = ((*tail) + 1) % LOGSIZE;
+        UART_WRITE_BYTE(UART_PORT_INDEX,c);
+    }
+
+    if (taken == pdTRUE){
+        xSemaphoreGive( logMemory.mutex );
+    }
+    return;
+}
+
+#else
+
 static int getSerial(char *buff, int buffsize){
     int len = getData(buff, buffsize, &logMemory.tailserial);
-    //bk_printf("got serial: %d:%s\r\n", len,buff);
+    bk_printf("got serial: %d:%s\r\n", len,buff);
     return len;
 }
+
+#endif
+
 
 static int getTcp(char *buff, int buffsize){
     int len = getData(buff, buffsize, &logMemory.tailtcp);
@@ -519,18 +568,26 @@ static void log_client_thread( beken_thread_arg_t arg )
 }
 
 
-#define SERIALLOGBUFSIZE 128
-static char seriallogbuf[SERIALLOGBUFSIZE];
-static void log_serial_thread( beken_thread_arg_t arg )
-{
-    while ( 1 ){
+#if PLATFORM_BEKEN
+    static void log_serial_thread( beken_thread_arg_t arg )
+    {
+        while ( 1 ){
+            getSerial2();
+            rtos_delay_milliseconds(10);
+        }
+    }
+
+#else 
+    #define SERIALLOGBUFSIZE 128
+    static char seriallogbuf[SERIALLOGBUFSIZE];
+    static void log_serial_thread( beken_thread_arg_t arg )
+    {
         int count = getSerial(seriallogbuf, SERIALLOGBUFSIZE);
         if (count){
             bk_printf("%s", seriallogbuf);
         }
-        rtos_delay_milliseconds(10);
     }
-}
+#endif
 
 
 static int http_getlograw(http_request_t *request){
