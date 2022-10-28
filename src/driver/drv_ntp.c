@@ -2,13 +2,16 @@
 // Based on my previous work here:
 // https://www.elektroda.pl/rtvforum/topic3712112.html
 
+#include <time.h>
+
 #include "../new_common.h"
 #include "../new_cfg.h"
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
-
-
+#include "../httpserver/new_http.h"
 #include "../logging/logging.h"
+
+#include "drv_ntp.h"
 
 #define LOG_FEATURE LOG_FEATURE_NTP
 
@@ -55,6 +58,7 @@ static int adrLen;
 static int g_ntp_delay = 5;
 // current time
 static unsigned int g_time;
+static bool g_synced;
 // time offset (time zone?)
 static int g_timeOffsetHours;
 
@@ -95,6 +99,7 @@ void NTP_Init() {
 	CMD_RegisterCommand("ntp_info", "", NTP_Info, "Display NTP related settings", NULL);
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP driver initialized with server=%s, offset=%d\n", CFG_GetNTPServer(), g_timeOffsetHours);
+    g_synced = false;
 }
 
 unsigned int NTP_GetCurrentTime() {
@@ -112,7 +117,7 @@ void NTP_Shutdown() {
 	}
 	g_ntp_socket = 0;
 	// can attempt in next 10 seconds
-	g_ntp_delay = 10;
+	g_ntp_delay = 60;
 }
 void NTP_SendRequest(bool bBlocking) {
 	byte *ptr;
@@ -182,6 +187,7 @@ void NTP_CheckForReceive() {
 	unsigned int secsSince1900;
 	ntp_packet packet = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	ptr = (byte*)&packet;
+    struct tm *ltm;
 
     // Receive the server's response:
 	i = sizeof(packet);
@@ -201,11 +207,15 @@ void NTP_CheckForReceive() {
     // combine the four bytes (two words) into a long integer
     // this is NTP time (seconds since Jan 1 1900):
     secsSince1900 = highWord << 16 | lowWord;
-	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Seconds since Jan 1 1900 = %u",secsSince1900);
+	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Seconds since Jan 1 1900 = %u\n",secsSince1900);
 
 	g_time = secsSince1900 - NTP_OFFSET;
 	g_time += g_timeOffsetHours;
-	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time = %u",g_time);
+	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time  : %u\n",g_time);
+    ltm = localtime((time_t*)&g_time);
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Local Time : %04d/%02d/%02d %02d:%02d:%02d\n",
+            ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+    g_synced = true;
 #if 0
 	//ptm = localtime (&g_time);
 	ptm = gmtime(&g_time);
@@ -255,3 +265,22 @@ void NTP_OnEverySecond() {
 		}
 	}
 }
+
+void NTP_AppendInformationToHTTPIndexPage(http_request_t* request)
+{
+    struct tm *ltm;
+
+    ltm = localtime((time_t*)&g_time);
+
+    if (g_synced == true)
+        hprintf255(request, "<h5>NTP: Local Time: %04d/%02d/%02d %02d:%02d:%02d </h5>",
+                ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+    else 
+        hprintf255(request, "<h5>NTP: Syncing....");
+}
+
+bool NTP_IsTimeSynced()
+{
+    return g_synced;
+}
+

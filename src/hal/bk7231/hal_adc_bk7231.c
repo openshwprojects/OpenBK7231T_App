@@ -13,6 +13,7 @@
 #include <saradc_pub.h>
 #include <drv_model_pub.h>
 
+void turnon_PA_in_temp_dect(void);
 
 static int adcToGpio[] = {
 	-1,		// ADC0 - VBAT

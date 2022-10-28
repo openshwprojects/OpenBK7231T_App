@@ -1,4 +1,5 @@
-
+#ifndef __DRV_PUBLIC_H__
+#define __DRV_PUBLIC_H__
 
 #include "../httpserver/new_http.h"
 
@@ -13,7 +14,10 @@ enum {
 	OBK_CONSUMPTION_TOTAL = OBK_NUM_MEASUREMENTS,
 	OBK_CONSUMPTION_LAST_HOUR,
 	OBK_CONSUMPTION_STATS,
-	OBK_NUM_EMUNS_MAX
+    OBK_CONSUMPTION_YESTERDAY,
+    OBK_CONSUMPTION_TODAY,
+    OBK_CONSUMPTION_CLEAR_DATE,
+    OBK_NUM_EMUNS_MAX
 };
 
 #define OBK_NUM_COUNTERS            (OBK_NUM_EMUNS_MAX-OBK_NUM_MEASUREMENTS)
@@ -43,3 +47,7 @@ void DRV_DGR_OnLedEnableAllChange(int iVal);
 // OBK_POWER etc
 float DRV_GetReading(int type);
 bool DRV_IsMeasuringPower();
+void BL09XX_SaveEmeteringStatistics();
+
+#endif /* __DRV_PUBLIC_H__ */
+

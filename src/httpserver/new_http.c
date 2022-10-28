@@ -429,6 +429,7 @@ int hprintf255(http_request_t* request, const char* fmt, ...) {
 	va_list argList;
 	//BaseType_t taken;
 	char tmp[256];
+    memset(tmp, 0, 256);
 	va_start(argList, fmt);
 	vsnprintf(tmp, 255, fmt, argList);
 	va_end(argList);

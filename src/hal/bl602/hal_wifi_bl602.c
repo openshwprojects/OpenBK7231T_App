@@ -30,6 +30,12 @@ void HAL_ConnectToWiFi(const char *ssid, const char *psk)
 
 	g_bAccessPointMode = 0;
 }
+
+void HAL_DisconnectFromWifi()
+{
+    
+}
+
 int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
 
     uint8_t hidden_ssid = 0;

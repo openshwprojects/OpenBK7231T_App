@@ -209,7 +209,7 @@ int CSE7766_PowerSet(const void *context, const char *cmd, const char *args, int
 	CSE7766_PREF = realPower * raw_unscaled_power;
 
 	// UPDATE: now they are automatically saved
-	CFG_SetPowerMeasurementCalibrationFloat(OBK_POWER,CSE7766_PREF);
+	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_POWER,CSE7766_PREF);
 
 	{
 		char dbg[128];
@@ -227,7 +227,7 @@ int CSE7766_PowerRef(const void *context, const char *cmd, const char *args, int
 	CSE7766_PREF = atof(args);
 
 	// UPDATE: now they are automatically saved
-	CFG_SetPowerMeasurementCalibrationFloat(OBK_POWER,CSE7766_PREF);
+	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_POWER,CSE7766_PREF);
 
 	return 0;
 }
@@ -240,7 +240,7 @@ int CSE7766_CurrentRef(const void *context, const char *cmd, const char *args, i
 	CSE7766_IREF = atof(args);
 
 	// UPDATE: now they are automatically saved
-	CFG_SetPowerMeasurementCalibrationFloat(OBK_CURRENT,CSE7766_IREF);
+	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT,CSE7766_IREF);
 
 	return 0;
 }
@@ -253,7 +253,7 @@ int CSE7766_VoltageRef(const void *context, const char *cmd, const char *args, i
 	CSE7766_UREF = atof(args);
 
 	// UPDATE: now they are automatically saved
-	CFG_SetPowerMeasurementCalibrationFloat(OBK_VOLTAGE,CSE7766_UREF);
+	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE,CSE7766_UREF);
 
 	return 0;
 }
@@ -268,7 +268,7 @@ int CSE7766_VoltageSet(const void *context, const char *cmd, const char *args, i
 	CSE7766_UREF = realV * raw_unscaled_voltage;
 
 	// UPDATE: now they are automatically saved
-	CFG_SetPowerMeasurementCalibrationFloat(OBK_VOLTAGE,CSE7766_UREF);
+	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE,CSE7766_UREF);
 
 	{
 		char dbg[128];
@@ -289,7 +289,7 @@ int CSE7766_CurrentSet(const void *context, const char *cmd, const char *args, i
 	CSE7766_IREF = realI * raw_unscaled_current;
 	
 	// UPDATE: now they are automatically saved
-	CFG_SetPowerMeasurementCalibrationFloat(OBK_CURRENT,CSE7766_IREF);
+	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT,CSE7766_IREF);
 
 	{
 		char dbg[128];
@@ -303,9 +303,9 @@ void CSE7766_Init()
     BL_Shared_Init();
 
 	// UPDATE: now they are automatically saved
-	CSE7766_UREF = CFG_GetPowerMeasurementCalibrationFloat(OBK_VOLTAGE,CSE7766_UREF);
-	CSE7766_PREF = CFG_GetPowerMeasurementCalibrationFloat(OBK_POWER,CSE7766_PREF);
-	CSE7766_IREF = CFG_GetPowerMeasurementCalibrationFloat(OBK_CURRENT,CSE7766_IREF);
+	CSE7766_UREF = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE,CSE7766_UREF);
+	CSE7766_PREF = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER,CSE7766_PREF);
+	CSE7766_IREF = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT,CSE7766_IREF);
 
 	UART_InitUART(CSE7766_BAUD_RATE);
 	UART_InitReceiveRingBuffer(512);

@@ -26,15 +26,17 @@
 
 typedef struct flash_vars_structure
 {
-	// offset 0
+	// offset  0
     unsigned short boot_count; // number of times the device has booted
     unsigned short boot_success_count; // if a device boots completely (>30s), will equal boot_success_count
-	// offset 4
+	// offset  4
 	short savedValues[MAX_RETAIN_CHANNELS];
 	// offset 28
+    ENERGY_METERING_DATA emetering;
+    // offset 60
     unsigned char rgb[3];
     unsigned char len; // length of the whole structure (i.e. 2+2+1 = 5)  MUST NOT BE 255
-	// size 32
+	// size   64
 } FLASH_VARS_STRUCTURE;
 
 extern FLASH_VARS_STRUCTURE flash_vars;
@@ -641,5 +643,42 @@ int HAL_FlashVars_GetChannelValue(int ch){
 	return flash_vars.savedValues[ch];
 }
 
+int HAL_GetEnergyMeterStatus(ENERGY_METERING_DATA *data)
+{
+#ifndef DISABLE_FLASH_VARS_VARS
+    if (!flash_vars_initialised)
+    {
+        flash_vars_init();
+    }
+    if (data != NULL)
+    {
+        memcpy(data, &flash_vars.emetering, sizeof(ENERGY_METERING_DATA));
+    }
+#endif    
+    return 0;
+}
+
+int HAL_SetEnergyMeterStatus(ENERGY_METERING_DATA *data)
+{
+#ifndef DISABLE_FLASH_VARS_VARS
+    FLASH_VARS_STRUCTURE tmp;
+    // mark that we have completed a boot.
+    if (data != NULL)
+    {
+        memcpy(&flash_vars.emetering, data, sizeof(ENERGY_METERING_DATA));
+        flash_vars_write();
+        flash_vars_read(&tmp);
+    }
+#endif
+    return 0;
+}
+
+void HAL_FlashVars_SaveTotalConsumption(float total_consumption)
+{
+#ifndef DISABLE_FLASH_VARS_VARS
+    flash_vars.emetering.TotalConsumption = total_consumption;
+#endif
+}
 
 #endif
+

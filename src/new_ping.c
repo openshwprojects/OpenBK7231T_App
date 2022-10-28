@@ -57,7 +57,10 @@ static struct raw_pcb *ping_pcb;
 static unsigned int ping_lost = 0;
 static unsigned int ping_received = 0;
 static int bReceivedLastOneSend = -1;
-//static int g_delayBetweenPings_MS = 1000;
+static bool ping_handler_active = false;
+static bool ping_handler_silent = false;
+
+//static int g_delayBetweenPings_MS = 1000 / portTICK_PERIOD_MS;
 
 static void ping_prepare_echo( struct icmp_echo_hdr *iecho, u16_t len)
 {
@@ -101,6 +104,7 @@ static void ping_send(struct raw_pcb *raw, const ip_addr_t *addr)
 	if(bReceivedLastOneSend == 0) {
 		//addLogAdv(LOG_INFO,LOG_FEATURE_MAIN,"Ping lost: (total lost %i, recv %i)\r\n",ping_lost,ping_received);
 		ping_lost++;
+
 	}
 	bReceivedLastOneSend = 0;
 
@@ -116,11 +120,13 @@ static void ping_timeout(void *arg)
 {
   struct raw_pcb *pcb = (struct raw_pcb*)arg;
 
-  LWIP_ASSERT("ping_timeout: no pcb given!", pcb != NULL);
+  if (ping_handler_silent == false)
+  {
+    LWIP_ASSERT("ping_timeout: no pcb given!", pcb != NULL);
 
-  ping_send(pcb, &ping_target);
-
-	// void 	sys_timeout (u32_t msecs, sys_timeout_handler handler, void *arg)
+    ping_send(pcb, &ping_target);
+  }
+  // void 	sys_timeout (u32_t msecs, sys_timeout_handler handler, void *arg)
   sys_timeout(PING_DELAY, ping_timeout, pcb);
 }
 
@@ -166,20 +172,32 @@ int PingWatchDog_GetTotalLost() {
 int PingWatchDog_GetTotalReceived() {
 	return ping_received;
 }
-void Main_SetupPingWatchDog(const char *target/*, int delayBetweenPings_Seconds*/) {
-
+void Main_SetupPingWatchDog(const char *target/*, int delayBetweenPings_Seconds*/) 
+{
 	// none sent yet.
 	bReceivedLastOneSend = -1;
-	//g_delayBetweenPings_MS = delayBetweenPings_Seconds * 1000;
-    ///ipaddr_aton("192.168.0.1",&ping_target)
-    //ipaddr_aton("8.8.8.8",&ping_target);
-    ipaddr_aton(target,&ping_target);
+    if (ping_handler_active == false)
+    {
+    	//g_delayBetweenPings_MS = delayBetweenPings_Seconds * 1000;
+        ///ipaddr_aton("192.168.0.1",&ping_target)
+        //ipaddr_aton("8.8.8.8",&ping_target);
+        ipaddr_aton(target,&ping_target);
 
-    ping_pcb = raw_new(IP_PROTO_ICMP);
-    LWIP_ASSERT("ping_pcb != NULL", ping_pcb != NULL);
+        ping_pcb = raw_new(IP_PROTO_ICMP);
+        LWIP_ASSERT("ping_pcb != NULL", ping_pcb != NULL);
 
-    raw_recv(ping_pcb, ping_recv, NULL);
-    raw_bind(ping_pcb, IP_ADDR_ANY);
-	// void 	sys_timeout (u32_t msecs, sys_timeout_handler handler, void *arg)
-    sys_timeout(PING_DELAY, ping_timeout, ping_pcb);
+        raw_recv(ping_pcb, ping_recv, NULL);
+        raw_bind(ping_pcb, IP_ADDR_ANY);
+	    // void 	sys_timeout (u32_t msecs, sys_timeout_handler handler, void *arg)
+        sys_timeout(PING_DELAY, ping_timeout, ping_pcb);
+    }
+    ping_handler_active = true;
+    ping_handler_silent = false;
+
 }
+
+void Main_PingWatchDogSilent()
+{
+    ping_handler_silent = true;
+}
+

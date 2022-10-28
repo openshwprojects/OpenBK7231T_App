@@ -14,7 +14,6 @@
 #define LCD_PIC_LINE_3_ADDRESS 0x14
 #define LCD_PIC_LINE_4_ADDRESS 0x54
 
-
 static byte PCF8574_LCD_Build_Byte(i2cDevice_PCF8574_t *lcd)
 {
     byte ret = 0x00;

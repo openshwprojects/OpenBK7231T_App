@@ -35,13 +35,19 @@ const char* sensor_mqtt_device_units[OBK_NUM_MEASUREMENTS] = {
 const char* counter_mqttNames[OBK_NUM_COUNTERS] = {
 	"energycounter",
 	"energycounter_last_hour",
-	"consumption_stats"
+	"consumption_stats",
+    "energycounter_yesterday",
+    "energycounter_today",
+    "energycounter_clear_date",    
 };
 
 const char* counter_devClasses[OBK_NUM_COUNTERS] = {
 	"energy",
 	"energy",
-	""
+	"",
+    "energy",
+    "energy",
+    "date"
 };
 
 typedef struct driver_s {
@@ -58,7 +64,7 @@ typedef struct driver_s {
 // startDriver BL0937
 static driver_t g_drivers[] = {
 	{ "TuyaMCU",	TuyaMCU_Init,		TuyaMCU_RunFrame,			NULL, NULL, NULL, NULL, false },
-	{ "NTP",		NTP_Init,			NTP_OnEverySecond,			NULL, NULL, NULL, NULL, false },
+	{ "NTP",		NTP_Init,			NTP_OnEverySecond,			NTP_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 	{ "I2C",		DRV_I2C_Init,		DRV_I2C_EverySecond,		NULL, NULL, NULL, NULL, false },
 
 	//These 4 measure power

@@ -40,6 +40,12 @@ void HAL_ConnectToWiFi(const char *ssid, const char *psk)
 	//OS_Sleep(60);
 	printf("ok set wifii\n\r");
 }
+
+void HAL_DisconnectFromWifi()
+{
+
+}
+
 int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
 	char ap_psk[8] = { 0 };
 

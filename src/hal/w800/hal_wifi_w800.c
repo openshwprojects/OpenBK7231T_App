@@ -188,6 +188,12 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key)
 	connect_wifi_demo(oob_ssid, connect_key);
 }
 
+void HAL_DisconnectFromWifi()
+{
+
+}
+
+
 /*1)Add sta add callback function
   2)Add sta list monitor task*/
 static tls_os_timer_t* sta_monitor_tim = NULL;

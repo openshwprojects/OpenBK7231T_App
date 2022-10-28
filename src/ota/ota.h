@@ -1,4 +1,5 @@
-
+#ifndef __OTA_H__
+#define __OTA_H__
 
 // NOTE: this offset was taken from BkDriverFlash.c
 // search for BK_PARTITION_OTA
@@ -22,3 +23,8 @@ void add_otadata(unsigned char *data, int len);
 void close_ota();
 
 void otarequest(const char *urlin);
+
+int ota_progress();
+
+#endif /* __OTA_H__ */
+

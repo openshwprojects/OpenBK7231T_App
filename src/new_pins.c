@@ -258,7 +258,7 @@ static uint8_t PIN_ReadDigitalInputValue_WithInversionIncluded(int index) {
 
 	// support inverted button
 	if(BTN_ShouldInvert(index)) {
-		return !iVal;
+		return (iVal==0) ? 1 : 0;
 	}
 	return iVal;
 }
@@ -446,7 +446,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		{
 		case IOR_Button:
 		case IOR_Button_n:
-		case IOR_Button_ToggleAll:
+        case IOR_Button_ToggleAll:
 		case IOR_Button_ToggleAll_n:
 		case IOR_Button_NextColor:
 		case IOR_Button_NextColor_n:
@@ -459,7 +459,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 				HAL_PIN_Setup_Input_Pullup(index);
 
 				// init button after initializing pin role
-				NEW_button_init(bt, button_generic_get_gpio_value, 0);
+				NEW_button_init(bt, button_generic_get_gpio_value, 1);
 			}
 			break;
 		case IOR_ToggleChannelOnToggle:

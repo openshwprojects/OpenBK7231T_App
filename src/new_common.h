@@ -161,8 +161,6 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 							beken_thread_function_t function,
 							uint32_t stack_size, beken_thread_arg_t arg );
 
-
-
 #include "common/framework/platform_init.h"
 
 #include "kernel/os/os.h"
@@ -223,13 +221,13 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 
 #define printf addLog
 
+void delay_ms(UINT32 ms_count);
 
 #endif
 
 typedef unsigned char byte;
 
 
-#endif
 
 #if PLATFORM_XR809
 #define LWIP_COMPAT_SOCKETS 1
@@ -290,6 +288,7 @@ void Main_OnPingCheckerReply(int ms);
 
 // new_ping.c
 void Main_SetupPingWatchDog(const char *target/*, int delayBetweenPings_Seconds*/);
+void Main_PingWatchDogSilent();
 int PingWatchDog_GetTotalLost();
 int PingWatchDog_GetTotalReceived();
 
@@ -301,3 +300,18 @@ int LWIP_GetActiveSockets();
 // linear mapping function --> https://www.arduino.cc/reference/en/language/functions/math/map/
 
 #define MAP(x, in_min, in_max, out_min, out_max) (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+
+typedef enum
+{
+    NOT_CONNECTED,
+    WEAK,
+    FAIR,
+    GOOD,
+    EXCELLENT,
+} WIFI_RSSI_LEVEL;
+
+WIFI_RSSI_LEVEL wifi_rssi_scale(int8_t rssi_value);
+extern const char *str_rssi[];
+
+#endif /* __NEW_COMMON_H__ */
+

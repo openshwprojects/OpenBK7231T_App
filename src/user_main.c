@@ -34,6 +34,10 @@
 
 #include "driver/drv_ntp.h"
 
+#ifdef PLATFORM_BEKEN
+void bg_register_irda_check_func(FUNCPTR func);
+#endif
+
 static int g_secondsElapsed = 0;
 // open access point after this number of seconds
 static int g_openAP = 0;
@@ -139,8 +143,16 @@ void Main_OnWiFiStatusChange(int code)
             break;
         case WIFI_STA_DISCONNECTED:
             // try to connect again in few seconds
+            if (g_bHasWiFiConnected != 0)
+            {
+                HAL_DisconnectFromWifi();
+                Main_PingWatchDogSilent();
+            }
             g_connectToWiFi = 15;
 			g_bHasWiFiConnected = 0;
+            g_timeSinceLastPingReply = -1;
+            g_bPingWatchDogStarted = 0;
+            g_startPingWatchDogAfter = 0;           
 			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_DISCONNECTED\r\n");
             break;
         case WIFI_STA_AUTH_FAILED:
@@ -223,11 +235,19 @@ void Main_OnEverySecond()
 	if(g_timeSinceLastPingReply != -1 && g_secondsElapsed > 60) 
     {
 		g_timeSinceLastPingReply++;
-		if(g_timeSinceLastPingReply == CFG_GetPingDisconnectedSecondsToRestart()) 
+		if(g_timeSinceLastPingReply >= CFG_GetPingDisconnectedSecondsToRestart()) 
         {
-			ADDLOGF_INFO("[Ping watchdog] No ping replies within %i seconds. Will try to reconnect.\n",g_timeSinceLastPingReply);
-			g_bHasWiFiConnected = 0;
-			g_connectToWiFi = 10;
+            if (g_bHasWiFiConnected != 0)
+            {
+    			ADDLOGF_INFO("[Ping watchdog] No ping replies within %i seconds. Will try to reconnect.\n",g_timeSinceLastPingReply);
+                HAL_DisconnectFromWifi();
+		    	g_bHasWiFiConnected = 0;
+			    g_connectToWiFi = 10;
+                g_timeSinceLastPingReply = -1;
+                g_bPingWatchDogStarted = 0;
+                g_startPingWatchDogAfter = 0;
+                Main_PingWatchDogSilent();
+            }
 		}
 	}
 
@@ -321,7 +341,7 @@ void Main_OnEverySecond()
 		if(0==g_startPingWatchDogAfter) 
         {
 			const char *pingTargetServer;
-			///int pingInterval;
+			//int pingInterval;
 			int restartAfterNoPingsSeconds;
 
 			g_bPingWatchDogStarted = 1;
@@ -330,14 +350,13 @@ void Main_OnEverySecond()
 			//pingInterval = CFG_GetPingIntervalSeconds();
 			restartAfterNoPingsSeconds = CFG_GetPingDisconnectedSecondsToRestart();
 
-			if(*pingTargetServer /* && pingInterval > 0*/ && restartAfterNoPingsSeconds > 0) 
+			if((pingTargetServer != NULL) && (strlen(pingTargetServer)>0) && 
+               /*(pingInterval > 0) && */ (restartAfterNoPingsSeconds > 0)) 
             {
 				// mark as enabled
 				g_timeSinceLastPingReply = 0;
 			    //Main_SetupPingWatchDog(pingTargetServer,pingInterval);
-				Main_SetupPingWatchDog(pingTargetServer
-					/*,1*/
-					);
+				Main_SetupPingWatchDog(pingTargetServer);
 			} else {
 				// mark as disabled
 				g_timeSinceLastPingReply = -1;
@@ -378,6 +397,12 @@ void Main_OnEverySecond()
 		if (!g_reset){
 			// ensure any config changes are saved before reboot.
 			CFG_Save_IfThereArePendingChanges();
+#ifndef OBK_DISABLE_ALL_DRIVERS
+            if (DRV_IsMeasuringPower()) 
+            {
+                BL09XX_SaveEmeteringStatistics();
+            }
+#endif            
 			ADDLOGF_INFO("Going to call HAL_RebootModule\r\n");
 			HAL_RebootModule();
 		} else {
@@ -525,6 +550,10 @@ void Main_Init()
 		// so ALL commands expected in autoexec.bat should have been registered by now...
 		// but DON't run autoexec if we have had 2+ boot failures
 		CMD_Init();
+
+        /* Automatic disable of PIN MONITOR after reboot */
+        if (CFG_HasFlag(OBK_FLAG_HTTP_PINMONITOR))
+            CFG_SetFlag(OBK_FLAG_HTTP_PINMONITOR, false);
 
 		// autostart drivers
 		if(PIN_FindPinIndexForRole(IOR_SM2135_CLK,-1) != -1 && PIN_FindPinIndexForRole(IOR_SM2135_DAT,-1) != -1) 
