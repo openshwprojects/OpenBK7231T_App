@@ -1,5 +1,6 @@
 {
-    "recommendations": [
-        "ms-vscode.cpptools"
-    ]
+	"recommendations": [
+		"ms-vscode.cpptools",
+		"esbenp.prettier-vscode"
+	]
 }
