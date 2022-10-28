@@ -94,6 +94,11 @@ void addLogAdv(int level, int feature, const char *fmt, ...)
     char *tmp;
     char *t;
 
+	if(fmt == 0)
+	{
+		return;
+	}
+
     if (!((1<<feature) & logfeatures))
     {
         return;
@@ -146,6 +151,10 @@ void addLogAdv(int level, int feature, const char *fmt, ...)
     char *tmp;
     char *t;
 
+	if(fmt == 0)
+	{
+		return;
+	}
     if (!((1<<feature) & logfeatures))
     {
         return;
@@ -270,6 +279,11 @@ void addLogAdv(int level, int feature, const char *fmt, ...)
 {
     char *tmp;
     char *t;
+
+	if(fmt == 0)
+	{
+		return;
+	}
     if (!((1<<feature) & logfeatures)){
         return;
     }
