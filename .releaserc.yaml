@@ -100,6 +100,7 @@ generateNotes:
         | BK7231T  | OTA Update | [OpenBK7231T_{{version}}.rbl]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231T_{{version}}.rbl)         |
         | BK7231T  | CCtr Flash | [OpenBK7231T_UG_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231T_UG_{{version}}.bin)   |
         | BK7231T  | UART Flash | [OpenBK7231T_UA_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231T_UA_{{version}}.bin)   |
+        | BK7231T  | SPI Flash | [OpenBK7231T_QIO_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231T_QIO_{{version}}.bin) |
         | BK7231N  | OTA Update | [OpenBK7231N_{{version}}.rbl]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231N_{{version}}.rbl)         |
         | BK7231N  | CCtr Flash | [OpenBK7231N_UG_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231N_UG_{{version}}.bin)   |
         | BK7231N  | UART Flash | [OpenBK7231N_QIO_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231N_QIO_{{version}}.bin) |
@@ -111,6 +112,7 @@ generateNotes:
         | W600     | UART Flash | [OpenW600_{{version}}.fls]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenW600_{{version}}.fls)               |
 
         CCtr Flash = Tuya cloud Cutter flash
+        SPI Flash can be flashed through SPI, even if you broke BK bootloader
 
         Flashing instructions are available on the project's [README.md]({{host}}/{{owner}}/{{repository}}#readme)
     preset: conventionalcommits
