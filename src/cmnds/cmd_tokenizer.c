@@ -30,10 +30,15 @@ int Tokenizer_GetArgsCount() {
 	return g_numArgs;
 }
 bool Tokenizer_IsArgInteger(int i) {
+	if(i >= g_numArgs)
+		return false;
 	return strIsInteger(g_args[i]);
 }
 const char *Tokenizer_GetArg(int i) {
 	const char *s;
+
+	if(i >= g_numArgs)
+		return 0;
 
 	s = g_args[i];
 
