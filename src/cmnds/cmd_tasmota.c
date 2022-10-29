@@ -204,7 +204,7 @@ byte *LFS_ReadFile(const char *fname) {
 
 			len = lfs_file_size(&lfs,&file);
 
-			res = malloc(len);
+			res = malloc(len+1);
 			at = res;
 
 			if(res == 0) {
@@ -221,7 +221,9 @@ byte *LFS_ReadFile(const char *fname) {
 					at += lfsres;
 					break;
 				}
+				res[len] = 0;
 				ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: Loaded %i bytes\n",len);
+				//ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: Loaded %s\n",res);
 			}
 			lfs_file_close(&lfs, &file);
 			ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: closed file %s", fname);
