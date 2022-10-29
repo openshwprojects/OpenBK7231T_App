@@ -14,6 +14,10 @@ static const char *g_args[MAX_ARGS];
 static char g_argsExpanded[MAX_ARGS][8];
 static const char *g_argsFrom[MAX_ARGS];
 static int g_numArgs = 0;
+static int tok_flags = 0;
+
+#define g_bAllowQuotes (tok_flags&TOKENIZER_ALLOW_QUOTES)
+#define g_bAllowExpand (!(tok_flags&TOKENIZER_DONT_EXPAND))
 
 bool isWhiteSpace(char ch) {
 	if(ch == ' ')
@@ -42,7 +46,7 @@ const char *Tokenizer_GetArg(int i) {
 
 	s = g_args[i];
 
-	if(s[0] == '$' && s[1] == 'C' && s[2] == 'H') {
+	if(g_bAllowExpand && s[0] == '$' && s[1] == 'C' && s[2] == 'H') {
 		int channelIndex;
 		int value;
 
@@ -80,7 +84,7 @@ int Tokenizer_GetArgInteger(int i) {
 		sscanf(s, "%x", &ret);
 		return ret;
 	}
-	if(s[0] == '$') {
+	if(g_bAllowExpand && s[0] == '$') {
 		// constant
 		if(s[1] == 'C' && s[2] == 'H') {
 			channelIndex = atoi(s+3);
@@ -89,9 +93,10 @@ int Tokenizer_GetArgInteger(int i) {
 	}
 	return atoi(s);
 }
-void Tokenizer_TokenizeString(const char *s, int bAllowQuotedStrings) {
+void Tokenizer_TokenizeString(const char *s, int flags) {
 	char *p;
 
+	tok_flags = flags;
 	g_numArgs = 0;
 
 	if(s == 0) {
@@ -116,7 +121,7 @@ void Tokenizer_TokenizeString(const char *s, int bAllowQuotedStrings) {
 			*p = 0;
 			if(p[1] != 0 && isWhiteSpace(p[1])==false) {
 				// we need to rewrite this function
-				if(bAllowQuotedStrings && p[1] == '"') { 
+				if(g_bAllowQuotes && p[1] == '"') { 
 					p++;
 					goto quote;
 				}
@@ -131,7 +136,7 @@ void Tokenizer_TokenizeString(const char *s, int bAllowQuotedStrings) {
 			g_argsFrom[g_numArgs] = (s+((p+1)-g_buffer));
 			g_numArgs++;
 		}
-		if(bAllowQuotedStrings && *p == '"') {
+		if(g_bAllowQuotes && *p == '"') {
 quote:
 			*p = 0;
 			g_argsFrom[g_numArgs] = (s+((p+1)-g_buffer));

@@ -14,6 +14,10 @@ startScript test1.bat
 Example 1:
 
 
+// Loop demo
+// Requirements: 
+// - channel 1 - output relay
+
 again:
 	echo "Step 1"
 	setChannel 1 0
@@ -27,6 +31,35 @@ again:
 
 Example 2:
 
+// Loop & if demo
+// Requirements: 
+// - channel 1 - output relay
+// - channel 11 - loop variable counter
+
+restart:
+	// Channel 11 is a counter variable and starts at 0
+	setChannel 11 0
+again:
+
+	// If channel 11 value reached 10, go to done
+	if $CH11>=10 then goto done
+	// otherwise toggle channel 1, wait and loop
+	toggleChannel 1
+	addChannel 11 1
+	delay_ms 250
+	goto again
+done:
+	toggleChannel 1
+	delay_s 1
+	toggleChannel 1
+	delay_s 1
+	toggleChannel 1
+	delay_s 1
+	toggleChannel 1
+	delay_s 1
+	goto restart
+
+Example 3:
 
 addEventHandler OnClick 8 startScript myScript2.txt::label1
 addEventHandler OnClick 9 startScript myScript2.txt::label2
@@ -78,14 +111,21 @@ scriptInstance_t *SVM_RegisterThread() {
 	r = g_scriptThreads;
 
 	while(r) {
-		if(r->curLine == 0)
-			return r;
+		if(r->curLine == 0) {
+			break;
+		}
 		r = r->next;
 	}
-	r = malloc(sizeof(scriptInstance_t));
-	memset(r,0,sizeof(scriptInstance_t));
-	r->next = g_scriptThreads;
-	g_scriptThreads = r;
+	if(r == 0) {
+		r = malloc(sizeof(scriptInstance_t));
+		memset(r,0,sizeof(scriptInstance_t));
+		r->next = g_scriptThreads;
+		g_scriptThreads = r;
+	}
+	r->uniqueID = 0;
+	r->curLine = 0;
+	r->curFile = 0;
+	r->currentDelayMS = 0;
 	return r;
 }
 
@@ -130,7 +170,7 @@ const char *SVM_SkipLine(const char *p) {
 	return p;
 }
 
-const char *SVM_FindLabel(const char *text, const char *label) {
+const char *SVM_FindLabel(const char *text, const char *label, const char *fname) {
 	int labLen;
 
 	if(label == 0)
@@ -151,6 +191,7 @@ const char *SVM_FindLabel(const char *text, const char *label) {
 			text = SVM_SkipWS(text); 
 		}
 	}
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Label %s not found in %s - will go to the start of file",label,fname);
 	return text;
 }
 void SVM_RunThread(scriptInstance_t *t) {
@@ -246,15 +287,32 @@ void SVM_GoTo(scriptInstance_t *th, const char *fname, const char *label) {
 		return;
 	}
 	th->curFile = f;
-	th->curLine = SVM_FindLabel(f->data,label);
+	th->curLine = SVM_FindLabel(f->data,label,f->fname);
 
 	return;
+}
+void SVM_FreeAllFiles() {
+	scriptFile_t *f; 
+
+	f = g_scriptFiles;
+	while(f) {
+		scriptFile_t *n;
+
+		n = f->next;
+
+		free(f->data);
+		free(f->fname);
+		free(f);
+
+		f = n;
+	}
+	g_scriptFiles = 0;
 }
 void SVM_StopAllScripts() {
 	scriptInstance_t *t;
 
 	t = g_scriptThreads;
-	while(g_activeThread) {
+	while(t) {
 		t->curLine = 0;
 		t->curFile = 0;
 		t->uniqueID = 0;
@@ -283,7 +341,7 @@ void SVM_GoToLocal(scriptInstance_t *th, const char *label) {
 
 		return;
 	}
-	th->curLine = SVM_FindLabel(th->curFile->data,label);
+	th->curLine = SVM_FindLabel(th->curFile->data,label,th->curFile->fname);
 
 	return;
 }
@@ -310,9 +368,13 @@ void SVM_StartScript(const char *fname, const char *label, int uniqueID) {
 	}
 	th->uniqueID = uniqueID;
 	th->curFile = f;
-	th->curLine = SVM_FindLabel(f->data,label);
+	th->curLine = SVM_FindLabel(f->data,label,f->fname);
 
-	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: started %s",fname);
+	if(label==0) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: started %s at the beginning",fname);
+	} else {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: started %s at label %s",fname,label);
+	}
 
 	return;
 }
@@ -402,6 +464,31 @@ static int CMD_Delay_s(const void *context, const char *cmd, const char *args, i
 
 	return 1;
 }
+static int CMD_Delay_ms(const void *context, const char *cmd, const char *args, int cmdFlags){
+	int del;
+
+	if(args==0||*args==0) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_ms: command requires argument");
+		return 1;
+	}
+	Tokenizer_TokenizeString(args,0);
+	if(Tokenizer_GetArgsCount() < 1) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_ms: command requires 1 argument");
+		return 1;
+	}
+	if(g_activeThread == 0) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_ms: this can be only used from a script");
+		return 1;
+	}
+
+	del = Tokenizer_GetArgInteger(0);
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_ms: thread will delay %i\n",del);
+	g_activeThread->currentDelayMS += del;
+
+
+	return 1;
+}
 static int CMD_Return(const void *context, const char *cmd, const char *args, int cmdFlags){
 
 	if(g_activeThread == 0) {
@@ -434,13 +521,19 @@ static int CMD_StopScript(const void *context, const char *cmd, const char *args
 }
 static int CMD_ListScripts(const void *context, const char *cmd, const char *args, int cmdFlags){
 	scriptInstance_t *t;
+	int cnt;
 
+
+	cnt = 0;
 	t = g_scriptThreads;
 	while(t) {
 		if(t->curFile) {
-			ADDLOG_INFO(LOG_FEATURE_CMD, "Thread UID %i - at file %s",t->uniqueID,t->curFile->fname);
+			ADDLOG_INFO(LOG_FEATURE_CMD, "[%i] Thread UID %i - at file %s",cnt,t->uniqueID,t->curFile->fname);
+		} else {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "[%i] Empty thread.",cnt);
 		}
 
+		cnt++;
 		t = t->next;
 	}
 
@@ -453,6 +546,16 @@ static int CMD_StopAllScripts(const void *context, const char *cmd, const char *
 
 	return 1;
 }
+static int CMD_resetSVM(const void *context, const char *cmd, const char *args, int cmdFlags){
+
+
+	// stop scripts
+	SVM_StopAllScripts();
+	// clear files
+	SVM_FreeAllFiles();
+
+	return 1;
+}
 void CMD_InitScripting(){
     CMD_RegisterCommand("startScript", "", CMD_StartScript, "qqqqq0", NULL);
     CMD_RegisterCommand("stopScript", "", CMD_StopScript, "qqqqq0", NULL);
@@ -460,7 +563,9 @@ void CMD_InitScripting(){
     CMD_RegisterCommand("listScripts", "", CMD_ListScripts, "qqqqq0", NULL);
     CMD_RegisterCommand("goto", "", CMD_GoTo, "qqqqq0", NULL);
     CMD_RegisterCommand("delay_s", "", CMD_Delay_s, "qqqqq0", NULL);
+    CMD_RegisterCommand("delay_ms", "", CMD_Delay_ms, "qqqqq0", NULL);
     CMD_RegisterCommand("return", "", CMD_Return, "qqqqq0", NULL);
+    CMD_RegisterCommand("resetSVM", "", CMD_resetSVM, "qqqqq0", NULL);
 
 }
 
