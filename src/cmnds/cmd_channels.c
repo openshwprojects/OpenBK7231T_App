@@ -56,6 +56,25 @@ static int CMD_AddChannel(const void *context, const char *cmd, const char *args
 
 	return 1;
 }
+static int CMD_ToggleChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
+	int ch;
+
+	if(args==0||*args==0) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ToggleChannel: command requires 1 argument");
+		return 1;
+	}
+	Tokenizer_TokenizeString(args,0);
+	if(Tokenizer_GetArgsCount() < 1) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ToggleChannel: command requires 1 argument");
+		return 1;
+	}
+
+	ch = Tokenizer_GetArgInteger(0);
+
+	CHANNEL_Toggle(ch);
+
+	return 1;
+}
 static int CMD_ClampChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int ch, max, min;
 
@@ -182,6 +201,7 @@ static int CMD_ShortName(const void *context, const char *cmd, const char *args,
 }
 void CMD_InitChannelCommands(){
     CMD_RegisterCommand("SetChannel", "", CMD_SetChannel, "qqqqq0", NULL);
+    CMD_RegisterCommand("ToggleChannel", "", CMD_ToggleChannel, "qqqqq0", NULL);
     CMD_RegisterCommand("AddChannel", "", CMD_AddChannel, "qqqqq0", NULL);
     CMD_RegisterCommand("ClampChannel", "", CMD_ClampChannel, "qqqqq0", NULL);
     CMD_RegisterCommand("SetPinRole", "", CMD_SetPinRole, "qqqqq0", NULL);
