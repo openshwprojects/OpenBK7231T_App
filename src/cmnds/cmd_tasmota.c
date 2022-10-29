@@ -204,23 +204,42 @@ byte *LFS_ReadFile(const char *fname) {
 
 			len = lfs_file_size(&lfs,&file);
 
+			lfs_file_seek(&lfs,&file,0,LFS_SEEK_SET);
+
 			res = malloc(len+1);
 			at = res;
 
 			if(res == 0) {
 				ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: openned file %s but malloc failed for %i", fname, len);
 			} else {
+#if 0
 				char buffer[32];
-
-				while(1) {
+				while(at - res < len) {
 					lfsres = lfs_file_read(&lfs, &file, buffer, sizeof(buffer));
 					if(lfsres <= 0)
 						break;
 					memcpy(at,buffer,lfsres);
 
 					at += lfsres;
-					break;
 				}
+#elif 1
+				lfsres = lfs_file_read(&lfs, &file, res, len);
+#elif 0
+				int ofs;
+				for(ofs = 0; ofs < len; ofs++) {
+					lfsres = lfs_file_read(&lfs, &file, &res[ofs], 1);
+					if(lfsres <= 0)
+						break;
+
+				}
+#else
+				while(at - res < len) {
+					lfsres = lfs_file_read(&lfs, &file, at, 1);
+					if(lfsres <= 0)
+						break;
+					at++;
+				}
+#endif
 				res[len] = 0;
 				ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: Loaded %i bytes\n",len);
 				//ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: Loaded %s\n",res);

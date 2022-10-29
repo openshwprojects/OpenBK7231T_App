@@ -8,6 +8,9 @@
 #include "cmd_local.h"
 
 /*
+startScript test1.bat
+
+
 Example 1:
 
 
@@ -54,6 +57,7 @@ typedef struct scriptFile_s {
 
 typedef struct scriptInstance_s {
 	scriptFile_t *curFile;
+	int uniqueID;
 	const char *curLine;
 	int currentDelayMS;
 
@@ -105,6 +109,8 @@ scriptFile_t *SVM_RegisterFile(const char *fname) {
 	return r;
 }
 const char *SVM_SkipWS(const char *p) {
+	if(p==0)
+		return 0;
 	// skip also whitespaces
 	while(*p == ' ' || *p == '\r' || *p == '\t') {
 		p++;
@@ -112,6 +118,8 @@ const char *SVM_SkipWS(const char *p) {
 	return p;
 }
 const char *SVM_SkipLine(const char *p) {
+	if(p==0)
+		return 0;
 	while(*p) {
 		if(*p == '\n') {
 			p++;
@@ -149,7 +157,7 @@ void SVM_RunThread(scriptInstance_t *t) {
 	int maxLoops = 10;
 	int loop = 0;
 	const char *start, *end;
-	int len;
+	int len, p;
 
 	while(loop++ < maxLoops) {
 		if(t->curLine == 0) {
@@ -157,6 +165,7 @@ void SVM_RunThread(scriptInstance_t *t) {
 			t->curFile = 0;
 			return;
 		}
+		t->curLine = SVM_SkipWS(t->curLine); 
 		if(t->curLine[0] == 0) {
 			t->curLine = 0;
 			t->curFile = 0;
@@ -170,18 +179,36 @@ void SVM_RunThread(scriptInstance_t *t) {
 			end = SVM_SkipLine(start);
 			t->curLine = SVM_SkipWS(end); 
 
-			len = end - start;
-			if(len >= MAX_SCRIPT_LINE) {
-				len = MAX_SCRIPT_LINE-1;
-			}
-			strncpy(g_scrBuffer,start,len);
+			len = (end - start);
+			if(*end != 0)
+				len--; // skip '\n'
+			ADDLOG_INFO(LOG_FEATURE_CMD, "Script len: %i",len);
 
-			CMD_ExecuteCommand(g_scrBuffer,0);
+			if(len > 0) {
+				if(len >= MAX_SCRIPT_LINE) {
+					len = MAX_SCRIPT_LINE-1;
+				}
+				memcpy(g_scrBuffer,start,len);
+				g_scrBuffer[len] = 0;
+
+				p = start-t->curFile->data;
+				ADDLOG_INFO(LOG_FEATURE_CMD, "[Loop %i] Script line: %s, char index %i",loop,g_scrBuffer,p);
+				CMD_ExecuteCommand(g_scrBuffer,0);
+
+				// did we get a sleep?
+				if(t->currentDelayMS > 0) {
+					return;
+				}	
+			}
 		}
 	}
 }
 
 void SVM_RunThreads(int deltaMS) {
+	int c_sleep, c_run;
+
+	c_sleep = 0;
+	c_run = 0;
 	svm_deltaMS = deltaMS;
 
 	if(g_scrBuffer == 0) {
@@ -190,9 +217,17 @@ void SVM_RunThreads(int deltaMS) {
 
 	g_activeThread = g_scriptThreads;
 	while(g_activeThread) {
-		SVM_RunThread(g_activeThread);
+		if(g_activeThread->currentDelayMS > 0) {
+			g_activeThread->currentDelayMS -= deltaMS;
+			c_sleep++;
+		} else {
+			SVM_RunThread(g_activeThread);
+			c_run++;
+		}
 		g_activeThread = g_activeThread->next;
 	}
+
+	//ADDLOG_INFO(LOG_FEATURE_CMD, "SCR sleep %i, ran %i",c_sleep,c_run);
 }
 void SVM_GoTo(scriptInstance_t *th, const char *fname, const char *label) {
 	scriptFile_t *f;
@@ -215,6 +250,33 @@ void SVM_GoTo(scriptInstance_t *th, const char *fname, const char *label) {
 
 	return;
 }
+void SVM_StopAllScripts() {
+	scriptInstance_t *t;
+
+	t = g_scriptThreads;
+	while(g_activeThread) {
+		t->curLine = 0;
+		t->curFile = 0;
+		t->uniqueID = 0;
+		t->currentDelayMS = 0;
+
+		t = t->next;
+	}
+}
+void SVM_StopScripts(int id) {
+	scriptInstance_t *t;
+
+	t = g_scriptThreads;
+	while(t) {
+		if(t->uniqueID == id) {
+			t->curLine = 0;
+			t->curFile = 0;
+			t->uniqueID = 0;
+			t->currentDelayMS = 0;
+		} 
+		t = t->next;
+	}
+}
 void SVM_GoToLocal(scriptInstance_t *th, const char *label) {
 
 	if(th == 0) {
@@ -225,26 +287,32 @@ void SVM_GoToLocal(scriptInstance_t *th, const char *label) {
 
 	return;
 }
-void SVM_StartScript(const char *fname, const char *label) {
+void SVM_StartScript(const char *fname, const char *label, int uniqueID) {
 	scriptFile_t *f;
 	scriptInstance_t *th;
 
 	f = SVM_RegisterFile(fname);
 	if(f == 0) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: failed to get file %s",fname);
 
 		return;
 	}
 	if(f->data == 0) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: failed to get file %s dataa",fname);
 
 		return;
 	}
 	th = SVM_RegisterThread();
 	if(th == 0) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: failed to alloc thread");
 
 		return;
 	}
+	th->uniqueID = uniqueID;
 	th->curFile = f;
 	th->curLine = SVM_FindLabel(f->data,label);
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: started %s",fname);
 
 	return;
 }
@@ -269,10 +337,15 @@ static int CMD_GoTo(const void *context, const char *cmd, const char *args, int 
 
 	if(Tokenizer_GetArgsCount() == 1) {
 		label = Tokenizer_GetArg(0);
+
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_GoTo: goto local %s\n",label);
+
 		SVM_GoToLocal(g_activeThread,label);
 	} else {
+
 		fname = Tokenizer_GetArg(0);
 		label = Tokenizer_GetArg(1);
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_GoTo: goto global %s %s\n",fname,label);
 		SVM_GoTo(g_activeThread,fname,label);
 	}
 
@@ -282,6 +355,7 @@ static int CMD_GoTo(const void *context, const char *cmd, const char *args, int 
 static int CMD_StartScript(const void *context, const char *cmd, const char *args, int cmdFlags){
 	const char *fname;
 	const char *label;
+	int uniqueID;
 
 	if(args==0||*args==0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: command requires argument");
@@ -295,9 +369,10 @@ static int CMD_StartScript(const void *context, const char *cmd, const char *arg
 
 	fname = Tokenizer_GetArg(0);
 	label = Tokenizer_GetArg(1);
+	uniqueID = Tokenizer_GetArgInteger(2);
 
 
-	SVM_StartScript(fname,label);
+	SVM_StartScript(fname,label,uniqueID);
 
 
 	return 1;
@@ -321,7 +396,8 @@ static int CMD_Delay_s(const void *context, const char *cmd, const char *args, i
 
 	del = Tokenizer_GetArgInteger(0);
 
-	g_activeThread->currentDelayMS += del;
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_s: thread will delay %i\n",del);
+	g_activeThread->currentDelayMS += del * 1000;
 
 
 	return 1;
@@ -333,6 +409,7 @@ static int CMD_Return(const void *context, const char *cmd, const char *args, in
 		return 1;
 	}
 
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Return: thread will return\n");
 	g_activeThread->curFile = 0;
 	g_activeThread->curLine = 0;
 
@@ -340,8 +417,47 @@ static int CMD_Return(const void *context, const char *cmd, const char *args, in
 	return 1;
 }
 
+static int CMD_StopScript(const void *context, const char *cmd, const char *args, int cmdFlags){
+	int idToStop;
+
+	Tokenizer_TokenizeString(args,0);
+	if(Tokenizer_GetArgsCount() < 1) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StopScript: command requires 1 argument (unique ID)");
+		return 1;
+	}
+
+	idToStop = Tokenizer_GetArgInteger(0);
+
+	SVM_StopScripts(idToStop);
+
+	return 1;
+}
+static int CMD_ListScripts(const void *context, const char *cmd, const char *args, int cmdFlags){
+	scriptInstance_t *t;
+
+	t = g_scriptThreads;
+	while(t) {
+		if(t->curFile) {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "Thread UID %i - at file %s",t->uniqueID,t->curFile->fname);
+		}
+
+		t = t->next;
+	}
+
+	return 1;
+}
+static int CMD_StopAllScripts(const void *context, const char *cmd, const char *args, int cmdFlags){
+
+
+	SVM_StopAllScripts();
+
+	return 1;
+}
 void CMD_InitScripting(){
     CMD_RegisterCommand("startScript", "", CMD_StartScript, "qqqqq0", NULL);
+    CMD_RegisterCommand("stopScript", "", CMD_StopScript, "qqqqq0", NULL);
+    CMD_RegisterCommand("stopAllScripts", "", CMD_StopAllScripts, "qqqqq0", NULL);
+    CMD_RegisterCommand("listScripts", "", CMD_ListScripts, "qqqqq0", NULL);
     CMD_RegisterCommand("goto", "", CMD_GoTo, "qqqqq0", NULL);
     CMD_RegisterCommand("delay_s", "", CMD_Delay_s, "qqqqq0", NULL);
     CMD_RegisterCommand("return", "", CMD_Return, "qqqqq0", NULL);
