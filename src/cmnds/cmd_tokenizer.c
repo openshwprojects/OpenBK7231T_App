@@ -11,6 +11,7 @@
 
 static char g_buffer[MAX_CMD_LEN];
 static const char *g_args[MAX_ARGS];
+static char g_argsExpanded[MAX_ARGS][8];
 static const char *g_argsFrom[MAX_ARGS];
 static int g_numArgs = 0;
 
@@ -32,6 +33,22 @@ bool Tokenizer_IsArgInteger(int i) {
 	return strIsInteger(g_args[i]);
 }
 const char *Tokenizer_GetArg(int i) {
+	const char *s;
+
+	s = g_args[i];
+
+	if(s[0] == '$' && s[1] == 'C' && s[2] == 'H') {
+		int channelIndex;
+		int value;
+
+		channelIndex = atoi(s+3);
+		value = CHANNEL_Get(channelIndex);
+		
+		sprintf(g_argsExpanded[i],"%i",value);
+
+		return g_argsExpanded[i];
+	}
+
 	return g_args[i];
 }
 const char *Tokenizer_GetArgFrom(int i) {
