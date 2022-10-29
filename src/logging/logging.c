@@ -457,7 +457,7 @@ static void getSerial2() {
 
 static int getSerial(char* buff, int buffsize) {
 	int len = getData(buff, buffsize, &logMemory.tailserial);
-	bk_printf("got serial: %d:%s\r\n", len, buff);
+	//bk_printf("got serial: %d:%s\r\n", len, buff);
 	return len;
 }
 
@@ -599,9 +599,12 @@ static void log_serial_thread(beken_thread_arg_t arg)
 static char seriallogbuf[SERIALLOGBUFSIZE];
 static void log_serial_thread(beken_thread_arg_t arg)
 {
-	int count = getSerial(seriallogbuf, SERIALLOGBUFSIZE);
-	if (count) {
-		bk_printf("%s", seriallogbuf);
+	while (1) {
+		int count = getSerial(seriallogbuf, SERIALLOGBUFSIZE);
+		if (count) {
+			bk_printf("%s", seriallogbuf);
+		}
+		rtos_delay_milliseconds(10);
 	}
 }
 #endif
