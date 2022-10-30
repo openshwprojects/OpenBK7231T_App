@@ -82,6 +82,14 @@ enum ChannelType {
 	ChType_LowestLowMidHighHighest,
 	// like dimmer, but 0-255
 	ChType_Dimmer256,
+	// like dimmer, but 0-1000
+	ChType_Dimmer1000,
+	// for TuyaMCU power metering
+	//NOTE: not used for BL0937 etc
+	ChType_Frequency_mHz,
+	ChType_Voltage,
+	ChType_Power,
+	ChType_Current,
 };
 
 

@@ -418,7 +418,7 @@ int http_fn_index(http_request_t* request) {
 				poststr(request, "</tr>");
 			}
 		}
-		else if ((bRawPWMs && h_isChannelPWM(i)) || (channelType == ChType_Dimmer) || (channelType == ChType_Dimmer256)) {
+		else if ((bRawPWMs && h_isChannelPWM(i)) || (channelType == ChType_Dimmer) || (channelType == ChType_Dimmer256)|| (channelType == ChType_Dimmer1000)) {
 			int maxValue;
 			// PWM and dimmer both use a slider control
 			const char* inputName = h_isChannelPWM(i) ? "pwm" : "dim";
@@ -426,6 +426,9 @@ int http_fn_index(http_request_t* request) {
 
 			if (channelType == ChType_Dimmer256) {
 				maxValue = 255;
+			}
+			else if (channelType == ChType_Dimmer1000) {
+				maxValue = 1000;
 			}
 			else {
 				maxValue = 100;

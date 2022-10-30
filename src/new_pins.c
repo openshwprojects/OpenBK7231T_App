@@ -732,6 +732,8 @@ int CHANNEL_FindMaxValueForChannel(int ch) {
 		return 100;
 	if(g_cfg.pins.channelTypes[ch] == ChType_Dimmer256)
 		return 256;
+	if(g_cfg.pins.channelTypes[ch] == ChType_Dimmer1000)
+		return 1000;
 	return 1;
 }
 // PWMs are toggled between 0 and 100 (0% and 100% PWM)
@@ -989,6 +991,9 @@ void PIN_ticks(void *param)
 	BTN_LONG_TICKS = (g_cfg.buttonLongPress * 100 / PIN_TMR_DURATION);
 	BTN_HOLD_REPEAT_TICKS = (g_cfg.buttonHoldRepeat * 100 / PIN_TMR_DURATION);
 
+#if PLATFORM_BEKEN
+	//SVM_RunThreads(PIN_TMR_DURATION);
+#endif
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_RunQuickTick();
 #endif
@@ -1117,6 +1122,8 @@ int CHANNEL_ParseChannelType(const char *s) {
 		return ChType_Dimmer;
 	if(!stricmp(s,"dimmer256") )
 		return ChType_Dimmer256;
+	if(!stricmp(s,"dimmer1000") )
+		return ChType_Dimmer1000;
 	if(!stricmp(s,"LowMidHigh") )
 		return ChType_LowMidHigh;
 	if(!stricmp(s,"OffLowMidHigh") )
@@ -1131,6 +1138,14 @@ int CHANNEL_ParseChannelType(const char *s) {
 		return ChType_TextField;
 	if(!stricmp(s,"ReadOnly") )
 		return ChType_ReadOnly;
+	if(!stricmp(s,"Frequency_mHz") )
+		return ChType_Frequency_mHz;
+	if(!stricmp(s,"Voltage") )
+		return ChType_Voltage;
+	if(!stricmp(s,"Power") )
+		return ChType_Power;
+	if(!stricmp(s,"Current") )
+		return ChType_Current;
 	return ChType_Error;
 }
 static int CMD_SetButtonTimes(const void *context, const char *cmd, const char *args, int cmdFlags){

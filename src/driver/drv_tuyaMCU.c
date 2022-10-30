@@ -686,6 +686,10 @@ void TuyaMCU_ApplyMapping(int fnID, int value) {
         // map TuyaMCU's dimmer range to OpenBK7231T_App's dimmer range 0..256
         mappedValue = ((value - g_dimmerRangeMin) * 256) / (g_dimmerRangeMax - g_dimmerRangeMin);
         break;
+    case ChType_Dimmer1000:
+        // map TuyaMCU's dimmer range to OpenBK7231T_App's dimmer range 0..1000
+        mappedValue = ((value - g_dimmerRangeMin) * 1000) / (g_dimmerRangeMax - g_dimmerRangeMin);
+        break;
     default:
         break;
     }
@@ -726,6 +730,10 @@ void TuyaMCU_OnChannelChanged(int channel, int iVal) {
     case ChType_Dimmer256:
         // map OpenBK7231T_App's dimmer range 0..256 to TuyaMCU's dimmer range
         mappediVal = (((g_dimmerRangeMax - g_dimmerRangeMin) * iVal) / 256) + g_dimmerRangeMin;
+        break;
+    case ChType_Dimmer1000:
+        // map OpenBK7231T_App's dimmer range 0..256 to TuyaMCU's dimmer range
+        mappediVal = (((g_dimmerRangeMax - g_dimmerRangeMin) * iVal) / 1000) + g_dimmerRangeMin;
         break;
     default:
         break;

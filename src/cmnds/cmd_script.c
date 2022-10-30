@@ -113,6 +113,25 @@ label2:
 
 
 
+Example 4:
+
+// Using channel value as a variable demo
+// Requirements: 
+// - channel 1 - output relay
+// - channel 11 - you may use it as ADC, or just use setChannel 11 100 or setChannel 11 500 in console to change delay
+
+// set default value
+setChannel 11 500
+// if you don't have ADC, use this to force-display 11 as a slider on GUI
+setChannelType 11 dimmer1000
+
+looper:
+	setChannel 1 0
+	delay_ms $CH11
+	setChannel 1 1
+	delay_ms $CH11
+	goto looper
+
 */
 
 typedef struct scriptFile_s {
