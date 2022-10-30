@@ -1,7 +1,7 @@
 
+extern int DRV_SSDP_Active;
 
-
-void DRV_SSDP_RunEverySecond();
-void DRV_SSDP_RunQuickTick();
-void DRV_SSDP_Shutdown();
-void DRV_SSDP_Init();
+extern void DRV_SSDP_Init();
+extern void DRV_SSDP_RunEverySecond();
+extern void DRV_SSDP_RunQuickTick();
+extern void DRV_SSDP_Shutdown();

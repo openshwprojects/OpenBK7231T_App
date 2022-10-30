@@ -176,8 +176,16 @@ void Main_OnWiFiStatusChange(int code)
 			g_bHasWiFiConnected = 1;
 			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTED\r\n");
 
-			if(bSafeMode == 0 && strlen(CFG_DeviceGroups_GetName())>0){
-				ScheduleDriverStart("DGR",5);
+			if(bSafeMode == 0){
+				if(strlen(CFG_DeviceGroups_GetName())>0){
+					ScheduleDriverStart("DGR",5);
+				}
+				// if SSDP should be active, 
+				// restart it now.
+				if (DRV_SSDP_Active){
+					ScheduleDriverStart("SSDP",5);
+					//DRV_SSDP_Restart(); // this kills things
+				}
 			}
 
             break;
