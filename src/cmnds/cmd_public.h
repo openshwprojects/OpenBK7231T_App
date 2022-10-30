@@ -105,6 +105,7 @@ const char *Tokenizer_GetArg(int i);
 const char *Tokenizer_GetArgFrom(int i);
 int Tokenizer_GetArgInteger(int i);
 bool Tokenizer_IsArgInteger(int i);
+float Tokenizer_GetArgFloat(int i);
 int Tokenizer_GetArgIntegerRange(int i, int rangeMax, int rangeMin);
 void Tokenizer_TokenizeString(const char *s, int flags);
 // cmd_repeatingEvents.c

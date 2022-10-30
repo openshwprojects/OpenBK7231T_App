@@ -93,6 +93,19 @@ int Tokenizer_GetArgInteger(int i) {
 	}
 	return atoi(s);
 }
+float Tokenizer_GetArgFloat(int i) {
+	int channelIndex;
+	const char *s;
+	s = g_args[i];
+	if(g_bAllowExpand && s[0] == '$') {
+		// constant
+		if(s[1] == 'C' && s[2] == 'H') {
+			channelIndex = atoi(s+3);
+			return CHANNEL_Get(channelIndex);
+		}
+	}
+	return atof(s);
+}
 void Tokenizer_TokenizeString(const char *s, int flags) {
 	char *p;
 

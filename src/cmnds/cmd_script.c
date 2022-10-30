@@ -61,20 +61,54 @@ done:
 
 Example 3:
 
-addEventHandler OnClick 8 startScript myScript2.txt::label1
-addEventHandler OnClick 9 startScript myScript2.txt::label2
+// Thread cancelation demo and exclude self demo
+// Requirements: 
+// - channel 1 - output relay
+// - pin 8 - button
+// - pin 9 - button
+
+// 'this' is a special keyword - it mean search for script/label in this file
+// 123 and 456 are unique script thread names
+addEventHandler OnClick 8 startScript this label1 123
+addEventHandler OnClick 9 startScript this label2 456
 
 label1:
+	// stopScript ID bExcludeSelf
+	// this will stop all other instances
+	stopScript 456 1
+	stopScript 123 1
 	setChannel 1 0
-	delay_s 2
+	delay_s 1
 	setChannel 1 1
-	delay_s 2
+	delay_s 1
+	setChannel 1 0
+	delay_s 1
+	setChannel 1 1
+	delay_s 1
+	setChannel 1 0
+	delay_s 1
+	setChannel 1 1
+	delay_s 1
 	exit;
 label2:
+	// stopScript ID bExcludeSelf
+	// this will stop all other instances
+	stopScript 456 1
+	stopScript 123 1
 	setChannel 1 0
-	delay_s 2
+	delay_s 0.25
 	setChannel 1 1
-	delay_s 2
+	delay_s 0.25
+	setChannel 1 0
+	delay_s 0.25
+	setChannel 1 1
+	delay_s 0.25
+	setChannel 1 0
+	delay_s 0.25
+	setChannel 1 1
+	delay_s 0.25
+	setChannel 1 0
+	delay_s 0.25
 	exit;
 
 
@@ -135,8 +169,11 @@ scriptFile_t *SVM_RegisterFile(const char *fname) {
 	r = g_scriptFiles;
 
 	while(r) {
-		if(!stricmp(fname,r->fname))
+		if(!stricmp(fname,r->fname)) {
+			if(r->data == 0)
+				return 0;
 			return r;
+		}
 		r = r->next;
 	}
 	r = malloc(sizeof(scriptFile_t));
@@ -146,6 +183,8 @@ scriptFile_t *SVM_RegisterFile(const char *fname) {
 	r->data = (char*)LFS_ReadFile(fname);
 	r->next = g_scriptFiles;
 	g_scriptFiles = r;
+	if(r->data == 0)
+		return 0;
 	return r;
 }
 const char *SVM_SkipWS(const char *p) {
@@ -321,17 +360,21 @@ void SVM_StopAllScripts() {
 		t = t->next;
 	}
 }
-void SVM_StopScripts(int id) {
+void SVM_StopScripts(int id, int bExcludeSelf) {
 	scriptInstance_t *t;
 
 	t = g_scriptThreads;
 	while(t) {
-		if(t->uniqueID == id) {
-			t->curLine = 0;
-			t->curFile = 0;
-			t->uniqueID = 0;
-			t->currentDelayMS = 0;
-		} 
+		if(t == g_activeThread && bExcludeSelf) {
+			// excluded
+		} else {
+			if(t->uniqueID == id) {
+				t->curLine = 0;
+				t->curFile = 0;
+				t->uniqueID = 0;
+				t->currentDelayMS = 0;
+			} 
+		}
 		t = t->next;
 	}
 }
@@ -440,7 +483,7 @@ static int CMD_StartScript(const void *context, const char *cmd, const char *arg
 	return 1;
 }
 static int CMD_Delay_s(const void *context, const char *cmd, const char *args, int cmdFlags){
-	int del;
+	float del;
 
 	if(args==0||*args==0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_s: command requires argument");
@@ -456,9 +499,9 @@ static int CMD_Delay_s(const void *context, const char *cmd, const char *args, i
 		return 1;
 	}
 
-	del = Tokenizer_GetArgInteger(0);
+	del = Tokenizer_GetArgFloat(0);
 
-	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_s: thread will delay %i\n",del);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_s: thread will delay %f\n",del);
 	g_activeThread->currentDelayMS += del * 1000;
 
 
@@ -505,7 +548,7 @@ static int CMD_Return(const void *context, const char *cmd, const char *args, in
 }
 
 static int CMD_StopScript(const void *context, const char *cmd, const char *args, int cmdFlags){
-	int idToStop;
+	int idToStop, excludeSelf;
 
 	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 1) {
@@ -514,8 +557,9 @@ static int CMD_StopScript(const void *context, const char *cmd, const char *args
 	}
 
 	idToStop = Tokenizer_GetArgInteger(0);
+	excludeSelf = Tokenizer_GetArgInteger(1);
 
-	SVM_StopScripts(idToStop);
+	SVM_StopScripts(idToStop,excludeSelf);
 
 	return 1;
 }
