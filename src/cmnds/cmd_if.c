@@ -154,7 +154,7 @@ int CMD_EvaluateCondition(const char *s, const char *stop) {
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateCondition: MQTTOn");
 		return Main_HasMQTTConnected();
 	}
-	if(strCompareBound(s,"$CH*", stop, 1)) {
+	if(strCompareBound(s,"$CH*", stop, 1) || strCompareBound(s,"$CH**", stop, 1)) {
 		c = atoi(s+3);
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateCondition: channel value of idx %i",c);
 		return CHANNEL_Get(c);
@@ -171,12 +171,12 @@ int CMD_If(const void *context, const char *cmd, const char *args, int cmdFlags)
 	int value;
 
 	if(args==0||*args==0) {
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: command require 5 args");
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: command require at least 3 args");
 		return 1;
 	}
-	Tokenizer_TokenizeString(args,1);
-	if(Tokenizer_GetArgsCount() != 5) {
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: command require 5 args, you gave %i",Tokenizer_GetArgsCount());
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+	if(Tokenizer_GetArgsCount() < 3) {
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: command require at least 3 args, you gave %i",Tokenizer_GetArgsCount());
 		return 1;
 	}
 	condition = Tokenizer_GetArg(0);
@@ -184,15 +184,22 @@ int CMD_If(const void *context, const char *cmd, const char *args, int cmdFlags)
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: second argument always must be 'then', but it's '%s'",Tokenizer_GetArg(1));
 		return 1;
 	}
-	cmdA = Tokenizer_GetArg(2);
-	if(stricmp(Tokenizer_GetArg(3),"else")) {
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: fourth argument always must be 'else', but it's '%s'",Tokenizer_GetArg(3));
-		return 1;
+	if(Tokenizer_GetArgsCount() >= 5) {
+		cmdA = Tokenizer_GetArg(2);
+		if(stricmp(Tokenizer_GetArg(3),"else")) {
+			ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: fourth argument always must be 'else', but it's '%s'",Tokenizer_GetArg(3));
+			return 1;
+		}
+		cmdB = Tokenizer_GetArg(4);
+	} else {
+		cmdA = Tokenizer_GetArgFrom(2);
+		cmdB = 0;
 	}
-	cmdB = Tokenizer_GetArg(4);
 
 	ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: cmdA is '%s'",cmdA);
-	ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: cmdB is '%s'",cmdB);
+	if(cmdB) {
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: cmdB is '%s'",cmdB);
+	}
 	ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: condition is '%s'",condition);
 
 	value = CMD_EvaluateCondition(condition, 0);
@@ -206,8 +213,11 @@ int CMD_If(const void *context, const char *cmd, const char *args, int cmdFlags)
 	//CMD_ExecuteCommand(buffer,0);
 	if(value)
 		CMD_ExecuteCommand(cmdA,0);
-	else
-		CMD_ExecuteCommand(cmdB,0);
+	else {
+		if(cmdB) {
+			CMD_ExecuteCommand(cmdB,0);
+		}
+	}
 
 	return 1;
 }

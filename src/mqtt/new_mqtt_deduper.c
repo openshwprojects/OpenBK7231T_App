@@ -33,7 +33,7 @@ void MQTT_Dedup_Tick() {
 		}
 	}
 	
-    ADDLOG_INFO(LOG_FEATURE_MQTT, "MQTT deduper sent %i, culled %i",stat_deduper_send,stat_deduper_culled);
+    ADDLOG_DEBUG(LOG_FEATURE_MQTT, "MQTT deduper sent %i, culled %i",stat_deduper_send,stat_deduper_culled);
 
 }
 OBK_Publish_Result MQTT_PublishMain_StringInt_DeDuped(int slotCode, int expireTime, const char* sChannel, int val, int flags) {
