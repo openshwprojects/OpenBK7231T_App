@@ -1927,7 +1927,8 @@ int http_fn_cfg_startup(http_request_t* request) {
 	hprintf255(request, "<h5>For dimmers, range is 0 to 100</h5>");
 	hprintf255(request, "<h5>For custom values, you can set any number you want to</h5>");
 	hprintf255(request, "<h5>Remember that you can also use short startup command to run commands like led_baseColor #FF0000 and led_enableAll 1 etc</h5>");
-	hprintf255(request, "<h5><color=red>Remembering last state of LED driver is not yet fully supported, please wait!</color></h5>");
+	hprintf255(request, "<h5><color=red>Remembering last state of LED driver also fully you can set it in");
+	hprintf255(request, "Options->General, set Flag 12 - [LED] remember LED driver state (RGBCW, enable, brightness, temperature) after reboot!</color></h5>");
 
 	if (http_getArg(request->url, "idx", tmpA, sizeof(tmpA))) {
 		channelIndex = atoi(tmpA);
