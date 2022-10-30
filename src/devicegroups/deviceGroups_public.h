@@ -17,7 +17,7 @@ typedef struct dgrCallbacks_s {
 	void (*processBrightnessPowerOn)(byte brightness);
 	void (*processLightBrightness)(byte brightness);
 	void (*processRGBCW)(byte *rgbcw);
-	int (*checkSequence)(int seq);
+	int (*checkSequence)(uint16_t seq);
 } dgrCallbacks_t;
 
 typedef struct dgrGroupDef_s {
@@ -33,9 +33,9 @@ typedef struct dgrDevice_s {
 
 int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr);
 
-int DGR_Quick_FormatPowerState(byte *buffer, int maxSize, const char *groupName, int sequence, int flags, int channels, int numChannels);
-int DGR_Quick_FormatBrightness(byte *buffer, int maxSize, const char *groupName, int sequence, int flags, byte brightness);
-int DGR_Quick_FormatRGBCW(byte *buffer, int maxSize, const char *groupName, int sequence, int flags, byte r, byte g, byte b, byte c, byte w);
+int DGR_Quick_FormatPowerState(byte *buffer, int maxSize, const char *groupName, uint16_t sequence, int flags, int channels, int numChannels);
+int DGR_Quick_FormatBrightness(byte *buffer, int maxSize, const char *groupName, uint16_t sequence, int flags, byte brightness);
+int DGR_Quick_FormatRGBCW(byte *buffer, int maxSize, const char *groupName, uint16_t sequence, int flags, byte r, byte g, byte b, byte c, byte w);
 
 
 

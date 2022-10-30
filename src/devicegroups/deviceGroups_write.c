@@ -2,19 +2,24 @@
 #include "../bitmessage/bitmessage_public.h"
 #include "../logging/logging.h"
 
+void DRV_DGR_Dump(byte *message, int len);
+
 int DGR_BeginWriting(bitMessage_t *msg, const char *groupName, unsigned short sequence, unsigned short flags) {
 	if(MSG_WriteBytes(msg,TASMOTA_DEVICEGROUPS_HEADER,strlen(TASMOTA_DEVICEGROUPS_HEADER))==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_BeginWriting: no space for header\n");
 		return 1;
 	}
+
 	if(MSG_WriteString(msg,groupName) <= 0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_BeginWriting: no space for group name\n");
 		return 1;
 	}
+
 	if(MSG_WriteU16(msg,sequence) <= 0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_BeginWriting: no space for sequence\n");
 		return 1;
 	}
+
 	if(MSG_WriteU16(msg,flags) <= 0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_BeginWriting: no space for flags\n");
 		return 1;
@@ -42,10 +47,11 @@ void DGR_AppendDimmer(bitMessage_t *msg, byte dimmValue) {
 void DGR_Finish(bitMessage_t *msg) {
 	MSG_WriteByte(msg,DGR_ITEM_EOL);
 
+	DRV_DGR_Dump(msg->data, msg->position);
 }
 
 
-int DGR_Quick_FormatPowerState(byte *buffer, int maxSize, const char *groupName, int sequence, int flags, int channels, int numChannels) {
+int DGR_Quick_FormatPowerState(byte *buffer, int maxSize, const char *groupName, uint16_t sequence, int flags, int channels, int numChannels) {
 	bitMessage_t msg;
 	MSG_BeginWriting(&msg,buffer,maxSize);
 	DGR_BeginWriting(&msg,groupName, sequence,flags);
@@ -54,7 +60,7 @@ int DGR_Quick_FormatPowerState(byte *buffer, int maxSize, const char *groupName,
 	return msg.position;
 }
 
-int DGR_Quick_FormatBrightness(byte *buffer, int maxSize, const char *groupName, int sequence,int flags, byte brightness) {
+int DGR_Quick_FormatBrightness(byte *buffer, int maxSize, const char *groupName, uint16_t sequence,int flags, byte brightness) {
 	bitMessage_t msg;
 	MSG_BeginWriting(&msg,buffer,maxSize);
 	DGR_BeginWriting(&msg,groupName, sequence,flags);
@@ -63,7 +69,7 @@ int DGR_Quick_FormatBrightness(byte *buffer, int maxSize, const char *groupName,
 	return msg.position;
 }
 
-int DGR_Quick_FormatRGBCW(byte *buffer, int maxSize, const char *groupName, int sequence,int flags, byte r, byte g, byte b, byte c, byte w) {
+int DGR_Quick_FormatRGBCW(byte *buffer, int maxSize, const char *groupName, uint16_t sequence,int flags, byte r, byte g, byte b, byte c, byte w) {
 	bitMessage_t msg;
 	MSG_BeginWriting(&msg,buffer,maxSize);
 	DGR_BeginWriting(&msg,groupName, sequence,flags);

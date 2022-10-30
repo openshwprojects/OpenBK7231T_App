@@ -9,7 +9,8 @@
 int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr) {
 	bitMessage_t msg;
 	char groupName[32];
-	int sequence, flags, type;
+	uint16_t sequence;
+	int flags, type;
 	int bGotEOL = 0;
 	int relayFlags,i;
 	byte vals;
@@ -25,6 +26,9 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_Parse: data chunk with len %i failed to read group name\n",len);
 		return 1;
 	}
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_Parse: grp name %s len %d\n", groupName, strlen(groupName));
+
 	if(dev != 0) {
 		// right now, only single group support
 		if(strcmp(dev->gr.groupName,groupName)) {
@@ -41,12 +45,12 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr
 	}
 
 	if(dev->cbs.checkSequence(sequence)) {
-		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR,"DGR ignoring message from older sequence %i\n",sequence);
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR,"DGR ignoring message from duplicate or older sequence %i\n",sequence);
 		return 1;
 	}
 
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_Parse: [%s] seq %i, flags %i\n",inet_ntoa(((struct sockaddr_in *)addr)->sin_addr),sequence, flags);
+	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_Parse: [%s] seq 0x%04X, flags 0x%02X\n",inet_ntoa(((struct sockaddr_in *)addr)->sin_addr),sequence, flags);
 
 	while(MSG_EOF(&msg)==0) {
 		type = MSG_ReadByte(&msg);
