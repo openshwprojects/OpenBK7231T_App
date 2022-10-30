@@ -33,6 +33,7 @@
 
 
 #include "driver/drv_ntp.h"
+#include "driver/drv_ssdp.h"
 
 #ifdef PLATFORM_BEKEN
 void bg_register_irda_check_func(FUNCPTR func);
