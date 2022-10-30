@@ -63,6 +63,7 @@ template_t g_templates[] = {
 	{ Setup_Device_BK7231N_CB2S_QiachipSmartSwitch, "[BK7231N][CB2S] QiaChip Smart Switch"},
 	{ Setup_Device_BK7231N_KS_602_TOUCH, "[BK7231N] KS 602 Touch Switch US"},
 	{ Setup_Device_Aubess_Mini_Smart_Switch_16A, "[BK7231N] Aubess Mini Smart Switch 16A"},
+	{ Setup_Device_BK7231N_Aubess_A5C_30E1_02, "[BK7231N] Aubess Mini Smart Switch A5C-30E1-02"},
 	// BK7231T devices
 	{ Setup_Device_BK7231T_WB2S_QiachipSmartSwitch, "[BK7231T][WB2S] QiaChip Smart Switch"},
 	{ Setup_Device_TuyaWL_SW01_16A, "WL SW01 16A"},

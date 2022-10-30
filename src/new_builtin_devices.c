@@ -851,6 +851,26 @@ void Setup_Device_Aubess_Mini_Smart_Switch_16A() {
 	CFG_Save_SetupTimer();
 }
 
+// Aubess Mini Smart Switch 16A, alternative pin configuration
+// https://www.aliexpress.com/item/1005002740558678.html
+void Setup_Device_BK7231N_Aubess_A5C_30E1_02() {
+	CFG_ClearPins();
+	// LED
+	PIN_SetPinRoleForPinIndex(7, IOR_LED_WIFI_n);
+	PIN_SetPinChannelForPinIndex(7, 1);
+	// Embedded Button
+	PIN_SetPinRoleForPinIndex(6, IOR_Button);
+	PIN_SetPinChannelForPinIndex(6, 1);
+	// Relay
+	PIN_SetPinRoleForPinIndex(24, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(24, 1);
+	// External toggle sensor
+	PIN_SetPinRoleForPinIndex(26, IOR_ToggleChannelOnToggle);
+	PIN_SetPinChannelForPinIndex(26, 1);
+
+	CFG_Save_SetupTimer();
+}
+
 // Zemismart Light Switch (Neutral Optional) KS_811_3
 // https://www.aliexpress.com/item/4000979779573.html
 // Has a BK7231N direct on board, but easy access to UART on back with removal of 4 screws.

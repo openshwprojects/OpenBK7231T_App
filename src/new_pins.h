@@ -311,6 +311,7 @@ void Setup_Device_BK7231T_Gosund_Switch_SW5_A_V2_1();
 void Setup_Device_13A_Socket_CB2S();
 void Setup_Device_Deta_Smart_Double_Power_Point_6922HA_Series2();
 void Setup_Device_BK7231N_KS_602_TOUCH();
+void Setup_Device_BK7231N_Aubess_A5C_30E1_02();
 void Setup_Device_Enbrighten_WFD4103();
 void Setup_Device_Aubess_Mini_Smart_Switch_16A();
 void Setup_Device_Zemismart_Light_Switch_KS_811_3();
