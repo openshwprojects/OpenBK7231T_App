@@ -14,6 +14,13 @@
 static const char* dgr_group = "239.255.250.250";
 static int dgr_port = 4447;
 static int dgr_retry_time_left = 20;
+
+static int g_inCmdProcessing = 0;
+
+const char *HAL_GetMyIPString();
+
+void DRV_DGR_Dump(byte *message, int len);
+
 //
 //int DRV_DGR_CreateSocket_Send() {
 //
@@ -52,7 +59,7 @@ byte Val100ToVal255(byte v){
 }
 static int g_dgr_socket_receive = -1;
 static int g_dgr_socket_send = -1;
-static int g_dgr_send_seq = 0;
+static uint16_t g_dgr_send_seq = 0;
 void DRV_DGR_CreateSocket_Send() {
     // create what looks like an ordinary UDP socket
     //
@@ -69,6 +76,13 @@ void DRV_DGR_CreateSocket_Send() {
 void DRV_DGR_Send_Generic(byte *message, int len) {
     struct sockaddr_in addr;
 	int nbytes;
+
+	// if this send is as a result of use RXing something, 
+	// don't send it....
+	if (g_inCmdProcessing){
+		return;
+	}
+
 
 	g_dgr_send_seq++;
 
@@ -87,11 +101,46 @@ void DRV_DGR_Send_Generic(byte *message, int len) {
             (struct sockaddr*) &addr,
             sizeof(addr)
         );
+
+	rtos_delay_milliseconds(1);
+
+	// send twice with same seq.
+    nbytes = sendto(
+            g_dgr_socket_send,
+           (const char*) message,
+            len,
+            0,
+            (struct sockaddr*) &addr,
+            sizeof(addr)
+        );
+
+	DRV_DGR_Dump(message, len);
+
 	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR,"DRV_DGR_Send_Generic: sent message with seq %i\n",g_dgr_send_seq);
+
 }
+
+void DRV_DGR_Dump(byte *message, int len){
+#ifdef DGRLOADMOREDEBUG	
+	char tmp[100];
+	char *p = tmp;
+	for (int i = 0; i < len && i < 49; i++){
+		sprintf(p, "%02X", message[i]);
+		p+=2;
+	}
+	*p = 0;
+	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_Send_Generic: %s",tmp);
+#endif	
+}
+
 void DRV_DGR_Send_Power(const char *groupName, int channelValues, int numChannels){
 	int len;
 	byte message[64];
+	// if this send is as a result of use RXing something, 
+	// don't send it....
+	if (g_inCmdProcessing){
+		return;
+	}
 
 	len = DGR_Quick_FormatPowerState(message,sizeof(message),groupName,g_dgr_send_seq, 0,channelValues, numChannels);
 
@@ -100,6 +149,11 @@ void DRV_DGR_Send_Power(const char *groupName, int channelValues, int numChannel
 void DRV_DGR_Send_Brightness(const char *groupName, byte brightness){
 	int len;
 	byte message[64];
+	// if this send is as a result of use RXing something, 
+	// don't send it....
+	if (g_inCmdProcessing){
+		return;
+	}
 
 	len = DGR_Quick_FormatBrightness(message,sizeof(message),groupName,g_dgr_send_seq, 0, brightness);
 
@@ -108,6 +162,11 @@ void DRV_DGR_Send_Brightness(const char *groupName, byte brightness){
 void DRV_DGR_Send_RGBCW(const char *groupName, byte *rgbcw){
 	int len;
 	byte message[64];
+	// if this send is as a result of use RXing something, 
+	// don't send it....
+	if (g_inCmdProcessing){
+		return;
+	}
 
 	len = DGR_Quick_FormatRGBCW(message,sizeof(message),groupName,g_dgr_send_seq, 0, rgbcw[0],rgbcw[1],rgbcw[2],rgbcw[3],rgbcw[4]);
 
@@ -260,7 +319,7 @@ void DRV_DGR_processLightBrightness(byte brightness) {
 }
 typedef struct dgrMmember_s {
     struct sockaddr_in addr;
-	int lastSeq;
+	uint16_t lastSeq;
 } dgrMember_t;
 
 #define MAX_DGR_MEMBERS 32
@@ -278,19 +337,25 @@ dgrMember_t *findMember() {
 	i = g_curDGRMembers;
 	if(i>=MAX_DGR_MEMBERS)
 		return 0;
+	g_curDGRMembers ++;
 	memcpy(&g_dgrMembers[i].addr,&addr,sizeof(addr));
 	g_dgrMembers[i].lastSeq = 0;
 	return &g_dgrMembers[i];
 }
 
-int DGR_CheckSequence(int seq) {
+int DGR_CheckSequence(uint16_t seq) {
 	dgrMember_t *m;
 	
 	m = findMember();
 	
 	if(m == 0)
 		return 1;
-	if(seq > m->lastSeq) {
+	
+	// make it work past wrap at
+	if((seq > m->lastSeq) || (seq+10 > m->lastSeq+10)) {
+		if(seq != (m->lastSeq+1)){
+			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Seq for %s skip %i->%i\n",inet_ntoa(m->addr.sin_addr), m->lastSeq, seq);
+		}
 		m->lastSeq = seq;
 		return 0;
 	}
@@ -327,6 +392,8 @@ void DRV_DGR_RunQuickTick() {
 	}
     // now just enter a read-print loop
     //
+
+	// NOTE: 'addr' is global, and used in callbacks to determine the member.
         socklen_t addrlen = sizeof(addr);
         int nbytes = recvfrom(
             g_dgr_socket_receive,
@@ -340,6 +407,17 @@ void DRV_DGR_RunQuickTick() {
 			//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"nothing\n");
             return ;
         }
+
+	    struct sockaddr_in me;
+
+		const char *myip = HAL_GetMyIPString();
+		me.sin_addr.s_addr = inet_addr(myip);
+
+		if (me.sin_addr.s_addr == addr.sin_addr.s_addr){
+			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Ignoring message from self");
+			return;
+		}
+
 		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR,"Received %i bytes from %s\n",nbytes,inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr));
         msgbuf[nbytes] = '\0';
 
@@ -352,7 +430,13 @@ void DRV_DGR_RunQuickTick() {
 		def.cbs.processRGBCW = DRV_DGR_processRGBCW;
 		def.cbs.checkSequence = DGR_CheckSequence;
 
+		// don't send things that result from something we rxed...
+		g_inCmdProcessing = 1;
+		DRV_DGR_Dump((byte*)msgbuf, nbytes);
+
 		DGR_Parse((byte*)msgbuf, nbytes, &def, (struct sockaddr *)&addr);
+		g_inCmdProcessing = 0;
+
 		//DGR_Parse(msgbuf, nbytes);
        // puts(msgbuf);
 }
@@ -416,6 +500,12 @@ void DRV_DGR_OnLedDimmerChange(int iVal) {
 	if(g_dgr_socket_receive==0) {
 		return;
 	}
+	// if this send is as a result of use RXing something, 
+	// don't send it....
+	if (g_inCmdProcessing){
+		return;
+	}
+
 	if((CFG_DeviceGroups_GetSendFlags() & DGR_SHARE_LIGHT_BRI)==0) {
 
 		return;
@@ -428,6 +518,12 @@ void DRV_DGR_OnLedEnableAllChange(int iVal) {
 	if(g_dgr_socket_receive==0) {
 		return;
 	}
+	// if this send is as a result of use RXing something, 
+	// don't send it....
+	if (g_inCmdProcessing){
+		return;
+	}
+
 	if((CFG_DeviceGroups_GetSendFlags() & DGR_SHARE_POWER)==0) {
 
 		return;
@@ -440,6 +536,15 @@ void DRV_DGR_OnChannelChanged(int ch, int value) {
 	int channelsCount;
 	int i;
 	const char *groupName;
+
+	if(g_dgr_socket_receive==0) {
+		return;
+	}
+	// if this send is as a result of use RXing something, 
+	// don't send it....
+	if (g_inCmdProcessing){
+		return;
+	}
 
 	if((CFG_DeviceGroups_GetSendFlags() & DGR_SHARE_POWER)==0) {
 

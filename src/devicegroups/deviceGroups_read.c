@@ -9,7 +9,8 @@
 int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr) {
 	bitMessage_t msg;
 	char groupName[32];
-	int sequence, flags, type;
+	uint16_t sequence;
+	int flags, type;
 	int bGotEOL = 0;
 	int relayFlags,i;
 	byte vals;
@@ -25,6 +26,9 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_Parse: data chunk with len %i failed to read group name\n",len);
 		return 1;
 	}
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_Parse: grp name %s len %d\n", groupName, strlen(groupName));
+
 	if(dev != 0) {
 		// right now, only single group support
 		if(strcmp(dev->gr.groupName,groupName)) {
@@ -41,12 +45,12 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr
 	}
 
 	if(dev->cbs.checkSequence(sequence)) {
-		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR,"DGR ignoring message from older sequence %i\n",sequence);
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR,"DGR ignoring message from duplicate or older sequence %i\n",sequence);
 		return 1;
 	}
 
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_Parse: [%s] seq %i, flags %i\n",inet_ntoa(((struct sockaddr_in *)addr)->sin_addr),sequence, flags);
+	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_Parse: [%s] seq 0x%04X, flags 0x%02X\n",inet_ntoa(((struct sockaddr_in *)addr)->sin_addr),sequence, flags);
 
 	while(MSG_EOF(&msg)==0) {
 		type = MSG_ReadByte(&msg);
@@ -112,18 +116,37 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr
 			MSG_SkipBytes(&msg,sLen);
 		} else if(type == DGR_ITEM_LIGHT_CHANNELS) {
 			byte sLen = MSG_ReadByte(&msg);
-			if(sLen == 5) {
-				byte dat[5];;
-				dat[0] = MSG_ReadByte(&msg);
-				dat[1]= MSG_ReadByte(&msg);
-				dat[2] = MSG_ReadByte(&msg);
-				dat[3] = MSG_ReadByte(&msg);
-				dat[4] = MSG_ReadByte(&msg);
+			// array of channels.
+			// process as many as we find
+			// note: from TAS h801, I get 6?!!
 
+			// NOTE2: If byte is zero -> no change????
+			// e.g. from h801, I get 00 00 00 xx yy
+
+			// NOTE3: last byte (dat[5], 6th byte) in array seems to be an 8 bit sequence for color cmds?
+
+			if(sLen > 0) {
+				int count = 0;
+				byte dat[6] = {0,0,0,0,0, 0};
+
+				while (sLen && count < 6){
+					dat[count] = MSG_ReadByte(&msg);
+					count++;
+					sLen--;
+				}
+
+				if (count == 3){
+					// should we do something different for 3?
+					// no, other byts woill be zero, so process will work.
+				}
+				if ((count == 5) || (count == 6)){
+
+				}
 				dev->cbs.processRGBCW(dat);
-			} else {
-				MSG_SkipBytes(&msg,sLen);
 			}
+			// skip any remaining from array.
+			MSG_SkipBytes(&msg,sLen);
+			
 		} else {
 			byte sLen = MSG_ReadByte(&msg);
 			MSG_SkipBytes(&msg,sLen);

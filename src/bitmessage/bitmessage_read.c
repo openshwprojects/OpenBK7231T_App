@@ -21,6 +21,7 @@ int MSG_ReadString(bitMessage_t *msg, char *out, int outBufferSize) {
 	const char *start;
 
 	start = (const char*)(msg->data + msg->position);
+	int len = 0;
 	while(1) {
 		if(msg->position >= msg->totalSize) {
 			return -1;
@@ -30,21 +31,24 @@ int MSG_ReadString(bitMessage_t *msg, char *out, int outBufferSize) {
 			break;
 		}
 		msg->position++;
+		len++;
 	} 
 	
 	strcpy_safe(out, start,outBufferSize);
+	out[len] = 0;
 	return strlen(out);
 }
 unsigned short MSG_ReadU16(bitMessage_t *msg) {
-	unsigned short ret;
+	unsigned short ret = 0;
 
 	if(msg->position + sizeof(unsigned short) > msg->totalSize)
 		return 0;
 
-	ret = *(unsigned short*)(msg->data + msg->position);
-
-	msg->position += sizeof(unsigned short);
-
+	// ##### NOTE IS THIS CORRECT BYTE ORDERINGFOR TAS???
+	byte *p = (byte *)&ret;
+	*p = MSG_ReadByte(msg);
+	p++;
+	*p = MSG_ReadByte(msg);
 	return ret;
 }
 int MSG_Read3Bytes(bitMessage_t *msg) {
