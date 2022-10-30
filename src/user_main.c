@@ -122,19 +122,29 @@ int Time_getUpTimeSeconds() {
 
 
 static char scheduledDriverName[4][16];
-static int scheduledDelay[4] = {-1};
+static int scheduledDelay[4] = {-1, -1, -1, -1};
 static void ScheduleDriverStart(const char *name, int delay) {
 	for (int i = 0; i < 4; i++){
+		// if already scheduled, just change delay.
+		if (!strcmp(scheduledDriverName[i], name)){
+			scheduledDelay[i] = delay;
+			return;
+		}
+	}
+	for (int i = 0; i < 4; i++){
+		// first empty slot
 		if (scheduledDelay[i] == -1){
 			scheduledDelay[i] = delay;
-			strcpy(scheduledDriverName[i],name);
+			strncpy(scheduledDriverName[i], name, 16);
+			return;
 		}
 	}
 }
 
 void Main_OnWiFiStatusChange(int code)
 {
-
+	// careful what you do in here.
+	// e.g. creata socket?  probably not....
     switch(code)
     {
         case WIFI_STA_CONNECTING:
@@ -281,6 +291,7 @@ void Main_OnEverySecond()
 				DRV_StopDriver(scheduledDriverName[i]);
 				DRV_StartDriver(scheduledDriverName[i]);
 #endif
+				scheduledDriverName[i][0] = 0;
 			}
 		}
 	}
