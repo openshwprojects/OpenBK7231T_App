@@ -132,6 +132,51 @@ looper:
 	delay_ms $CH11
 	goto looper
 
+
+Example 5:
+
+// Math operations demo.
+// Just run and check channel values.
+
+setChannelType 10 ReadOnly
+setChannelType 11 ReadOnly
+setChannelType 12 ReadOnly
+setChannelType 13 ReadOnly
+setChannelType 14 ReadOnly
+setChannelType 15 ReadOnly
+setChannelType 16 ReadOnly
+setChannelType 17 ReadOnly
+setChannelType 18 ReadOnly
+setChannelType 19 ReadOnly
+setChannelType 20 ReadOnly
+
+setChannel 10 40
+setChannel 10 $CH10+10
+
+setChannel 11 $CH10
+setChannel 12 10*$CH10
+setChannel 13 $CH10+10
+setChannel 14 $CH10>5
+setChannel 15 $CH10/5
+setChannel 16 $CH12+$CH11+$CH14
+setChannel 17 500*0.01
+setChannel 18 0.01*500
+setChannel 19 1.0==1.0
+setChannel 20 1.1==1.0
+
+// Expected results:
+// Channel 10 = 50
+// Channel 11 = 50
+// Channel 12 = 500
+// Channel 13 = 60
+// Channel 14 = 1
+// Channel 15 = 10
+// Channel 16 = 551
+// Channel 17 = 5
+// Channel 18 = 5
+// Channel 19 = 1
+// Channel 20 = 0
+
 */
 
 typedef struct scriptFile_s {
@@ -503,6 +548,7 @@ static int CMD_StartScript(const void *context, const char *cmd, const char *arg
 }
 static int CMD_Delay_s(const void *context, const char *cmd, const char *args, int cmdFlags){
 	float del;
+	int delMS;
 
 	if(args==0||*args==0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_s: command requires argument");
@@ -519,9 +565,9 @@ static int CMD_Delay_s(const void *context, const char *cmd, const char *args, i
 	}
 
 	del = Tokenizer_GetArgFloat(0);
-
-	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_s: thread will delay %f\n",del);
-	g_activeThread->currentDelayMS += del * 1000;
+	delMS = del * 1000;
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_s: thread will delay %i extra ms\n",delMS);
+	g_activeThread->currentDelayMS += delMS;
 
 
 	return 1;

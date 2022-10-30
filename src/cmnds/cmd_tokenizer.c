@@ -1,6 +1,7 @@
 
 #include "../new_common.h"
 #include "cmd_public.h"
+#include "cmd_local.h"
 #include "../httpserver/new_http.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
@@ -76,27 +77,41 @@ int Tokenizer_GetArgIntegerRange(int i, int rangeMin, int rangeMax) {
 	return ret;
 }
 int Tokenizer_GetArgInteger(int i) {
-	int channelIndex;
 	const char *s;
+	int ret;
+
 	s = g_args[i];
 	if(s[0] == '0' && s[1] == 'x') {
-		int ret;
 		sscanf(s, "%x", &ret);
 		return ret;
 	}
+#if 0
 	if(g_bAllowExpand && s[0] == '$') {
 		// constant
+		int channelIndex;
 		if(s[1] == 'C' && s[2] == 'H') {
 			channelIndex = atoi(s+3);
 			return CHANNEL_Get(channelIndex);
 		}
 	}
+#else
+	// TODO: make sure it's ok
+	// It is supposed to handle expressions like:
+	// - 5*10
+	// - $CH5+$CH11
+	// - $CH8*10
+	if(g_bAllowExpand) {
+		ret = CMD_EvaluateExpression(s,0);
+		return ret;
+	}
+#endif
 	return atoi(s);
 }
 float Tokenizer_GetArgFloat(int i) {
 	int channelIndex;
 	const char *s;
 	s = g_args[i];
+#if 0
 	if(g_bAllowExpand && s[0] == '$') {
 		// constant
 		if(s[1] == 'C' && s[2] == 'H') {
@@ -104,6 +119,16 @@ float Tokenizer_GetArgFloat(int i) {
 			return CHANNEL_Get(channelIndex);
 		}
 	}
+#else
+	// TODO: make sure it's ok
+	// It is supposed to handle expressions like:
+	// - 5*10
+	// - $CH5+$CH11
+	// - $CH8*10
+	if(g_bAllowExpand) {
+		return CMD_EvaluateExpression(s,0);
+	}
+#endif
 	return atof(s);
 }
 void Tokenizer_TokenizeString(const char *s, int flags) {

@@ -80,6 +80,7 @@ typedef unsigned char u8;
 typedef unsigned char uint8_t;
 typedef unsigned int uint32_t;
 typedef unsigned short uint16_t;
+typedef char int8_t;
 
 
 
@@ -226,7 +227,6 @@ void delay_ms(UINT32 ms_count);
 #endif
 
 typedef unsigned char byte;
-
 
 
 #if PLATFORM_XR809

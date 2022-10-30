@@ -1,3 +1,5 @@
+#ifndef __CMD_LOCAL_H__
+#define __CMD_LOCAL_H__
 
 #include "cmd_public.h"
 
@@ -17,7 +19,12 @@ int get_cmd(const char *s, char *dest, int maxlen, int stripnum);
 bool isWhiteSpace(char ch);
 
 
+float CMD_EvaluateExpression(const char *s, const char *stop);
 int CMD_If(const void *context, const char *cmd, const char *args, int cmdFlags);
+
+#endif // __CMD_LOCAL_H__
+
+
 
 
 

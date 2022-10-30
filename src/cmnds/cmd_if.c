@@ -36,6 +36,10 @@ typedef enum {
 	OP_LESS,
 	OP_AND,
 	OP_OR,
+	OP_ADD,
+	OP_SUB,
+	OP_MUL,
+	OP_DIV,
 } opCode_t;
 
 static sOperator_t g_operators[] = {
@@ -47,6 +51,10 @@ static sOperator_t g_operators[] = {
 	{ "<", 1 },
 	{ "&&", 2 },
 	{ "||", 2 },
+	{ "+", 1 },
+	{ "-", 1 },
+	{ "*", 1 },
+	{ "/", 1 },
 };
 static int g_numOperators = sizeof(g_operators)/sizeof(g_operators[0]);
 
@@ -94,27 +102,55 @@ bool strCompareBound(const char *s, const char *templ, const char *stopper, int 
 	}
 	return false;
 }
-int CMD_EvaluateCondition(const char *s, const char *stop) {
+char *g_expDebugBuffer = 0;
+#define EXPRESSION_DEBUG_BUFFER_SIZE 128
+float CMD_EvaluateExpression(const char *s, const char *stop) {
 	byte opCode;
 	const char *op;
-	int a, b, c;
+	float a, b, c;
+	int idx;
 
-	ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateCondition: will run '%s'",s);
+	if(s == 0)
+		return 0;
+	if(*s == 0)
+		return 0;
+
+	// cull whitespaces at the end of expression
+	if(stop == 0) {
+		stop = s + strlen(s);
+	}
+	while(stop > s && iswspace(stop[-1])) {
+		stop --;
+	}
+	if(g_expDebugBuffer==0){
+		g_expDebugBuffer = malloc(EXPRESSION_DEBUG_BUFFER_SIZE);
+	}
+	if(1) {
+		idx = stop - s;
+		memcpy(g_expDebugBuffer,s,idx);
+		g_expDebugBuffer[idx] = 0;
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: will run '%s'",g_expDebugBuffer);
+	}
 
 	op = CMD_FindOperator(s, stop, &opCode);
 	if(op) {
 		const char *p2;
 	
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateCondition: operator %i",opCode);
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: operator %i",opCode);
 
 		// first token block begins at 's' and ends at 'op'
 		// second token block begins at 'p2' and ends at NULL
 		p2 = op + g_operators[opCode].len;
 
-		a = CMD_EvaluateCondition(s, op);
-		b = CMD_EvaluateCondition(p2, 0);
+		a = CMD_EvaluateExpression(s, op);
+		b = CMD_EvaluateExpression(p2, stop);
 
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateCondition: a = %i, b = %i", a, b);
+		// Why, again, %f crashes?
+		//ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: a = %f, b = %f", a, b);
+		// It crashes even on sprintf.
+		//sprintf(g_expDebugBuffer,"CMD_EvaluateExpression: a = %f, b = %f", a, b);
+		//ADDLOG_INFO(LOG_FEATURE_EVENT, g_expDebugBuffer);
+
 		switch(opCode)
 		{
 		case OP_EQUAL:
@@ -136,10 +172,22 @@ int CMD_EvaluateCondition(const char *s, const char *stop) {
 			c = a < b;
 			break;
 		case OP_AND:
-			c = a && b;
+			c = ((int)a) && ((int)b);
 			break;
 		case OP_OR:
-			c = a || b;
+			c = ((int)a) || ((int)b);
+			break;
+		case OP_ADD:
+			c = a + b;
+			break;
+		case OP_SUB:
+			c = a - b;
+			break;
+		case OP_MUL:
+			c = a * b;
+			break;
+		case OP_DIV:
+			c = a / b;
 			break;
 		default:
 			c = 0;
@@ -148,18 +196,19 @@ int CMD_EvaluateCondition(const char *s, const char *stop) {
 		return c;
 	}
 	if(s[0] == '!') {
-		return !CMD_EvaluateCondition(s+1,0);
+		return !CMD_EvaluateExpression(s+1,stop);
 	}
 	if(strCompareBound(s,"MQTTOn", stop, false)) {
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateCondition: MQTTOn");
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: MQTTOn");
 		return Main_HasMQTTConnected();
 	}
 	if(strCompareBound(s,"$CH*", stop, 1) || strCompareBound(s,"$CH**", stop, 1)) {
-		c = atoi(s+3);
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateCondition: channel value of idx %i",c);
-		return CHANNEL_Get(c);
+		idx = atoi(s+3);
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: channel value of idx %i",idx);
+		return CHANNEL_Get(idx);
 	}
-	return atoi(s);
+	ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: will call atof for %s",s);
+	return atof(s);
 }
 
 // if MQTTOnline then "qq" else "qq"
@@ -202,7 +251,7 @@ int CMD_If(const void *context, const char *cmd, const char *args, int cmdFlags)
 	}
 	ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: condition is '%s'",condition);
 
-	value = CMD_EvaluateCondition(condition, 0);
+	value = CMD_EvaluateExpression(condition, 0);
 
 	// This buffer is here because we may need to exec commands recursively
 	// and the Tokenizer_ etc is global?
