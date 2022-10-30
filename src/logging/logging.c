@@ -108,7 +108,7 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 		return;
 	}
 
-	tmp = (char*)os_malloc(tmp_len);
+	tmp = (char*)malloc(tmp_len);
 	if (tmp != NULL)
 	{
 		memset(tmp, 0, tmp_len);
@@ -134,7 +134,7 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 
 		printf(tmp);
 		printf("\r\n");
-		os_free(tmp);
+		free(tmp);
 	}
 }
 #else // from WINDOWS
