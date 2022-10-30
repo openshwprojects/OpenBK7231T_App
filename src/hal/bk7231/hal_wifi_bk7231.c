@@ -308,6 +308,8 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 
 	wNetConfig.wifi_mode = SOFT_AP;
 	wNetConfig.dhcp_mode = DHCP_SERVER;
+	os_strncpy((char*)wNetConfig.gateway_ip_addr, (char*)APP_DRONE_DEF_NET_GW, sizeof(wNetConfig.gateway_ip_addr));
+	os_strncpy((char*)wNetConfig.dns_server_ip_addr, (char*)APP_DRONE_DEF_NET_GW, sizeof(wNetConfig.dns_server_ip_addr));
 	wNetConfig.wifi_retry_interval = 100;
 
 	if (1)
