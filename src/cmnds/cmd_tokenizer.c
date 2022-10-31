@@ -85,7 +85,7 @@ int Tokenizer_GetArgInteger(int i) {
 		sscanf(s, "%x", &ret);
 		return ret;
 	}
-#if 0
+#if !PLATFORM_BEKEN
 	if(g_bAllowExpand && s[0] == '$') {
 		// constant
 		int channelIndex;
@@ -111,7 +111,7 @@ float Tokenizer_GetArgFloat(int i) {
 	int channelIndex;
 	const char *s;
 	s = g_args[i];
-#if 0
+#if !PLATFORM_BEKEN
 	if(g_bAllowExpand && s[0] == '$') {
 		// constant
 		if(s[1] == 'C' && s[2] == 'H') {
