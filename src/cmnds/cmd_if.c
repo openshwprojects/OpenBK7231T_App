@@ -1,5 +1,3 @@
-#include <wctype.h>
-
 #include "../new_common.h"
 #include "cmd_local.h"
 #include "../httpserver/new_http.h"
