@@ -361,7 +361,9 @@ static int enableAll(const void *context, const char *cmd, const char *args, int
 		int bEnable;
         ADDLOG_INFO(LOG_FEATURE_CMD, " enableAll (%s) received with args %s",cmd,args);
 
-		bEnable = parsePowerArgument(args);
+		Tokenizer_TokenizeString(args, 0);
+
+		bEnable = Tokenizer_GetArgInteger(0);
 
 		LED_SetEnableAll(bEnable);
 
@@ -483,7 +485,9 @@ static int dimmer(const void *context, const char *cmd, const char *args, int cm
 				cJSON_Delete(json);
 			}
 		} else {
-			iVal = parsePowerArgument(args);
+			Tokenizer_TokenizeString(args, 0);
+
+			iVal = Tokenizer_GetArgInteger(0);
 
 			LED_SetDimmer(iVal);
 		}

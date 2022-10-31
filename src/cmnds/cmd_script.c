@@ -178,6 +178,29 @@ setChannel 20 1.1==1.0
 // Channel 19 = 1
 // Channel 20 = 0
 
+// Example 6:
+
+// brightness loop
+// First makes it gradually brighter, then darker
+// Channel 10 is dimmer delta
+// Channel 11 is delay step in ms
+// NOTE: with the current state of things, this is a MQTT killer
+
+setChannel 10 2
+setChannel 11 25
+led_enableAll 1
+
+again:
+
+if $led_dimmer>100 then "setChannel 10 -2"
+if $led_dimmer<0 then "setChannel 10 2"
+
+delay_ms $CH11
+led_dimmer $led_dimmer+$CH10
+goto again
+
+
+
 */
 
 typedef struct scriptFile_s {

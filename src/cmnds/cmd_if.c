@@ -106,6 +106,40 @@ bool strCompareBound(const char *s, const char *templ, const char *stopper, int 
 }
 char *g_expDebugBuffer = 0;
 #define EXPRESSION_DEBUG_BUFFER_SIZE 128
+
+// tries to expand a given string into a constant
+// So, for $CH1 it will set out to given channel value
+// For $led_dimmer it will set out to current led_dimmer value
+// Etc etc
+// Returns true if constant matches
+// Returns false if no constants found
+bool CMD_ExpandConstant(const char *s, const char *stop, float *out) {
+	int idx;
+
+	if(strCompareBound(s,"MQTTOn", stop, false)) {
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_ExpandConstant: MQTTOn");
+		*out = Main_HasMQTTConnected();
+		return true;
+	}
+	if(strCompareBound(s,"$CH*", stop, 1) || strCompareBound(s,"$CH**", stop, 1)) {
+		idx = atoi(s+3);
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_ExpandConstant: channel value of idx %i",idx);
+		*out =  CHANNEL_Get(idx);
+		return true;
+	}
+	if(strCompareBound(s,"$led_dimmer", stop, 1)) {
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_dimmer");
+		*out = LED_GetDimmer();
+		return true;
+	}
+	if(strCompareBound(s,"$led_enableAll", stop, 1)) {
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_enableAll");
+		*out = LED_GetEnableAll();
+		return true;
+	}
+
+	return false;
+}
 float CMD_EvaluateExpression(const char *s, const char *stop) {
 	byte opCode;
 	const char *op;
@@ -200,15 +234,10 @@ float CMD_EvaluateExpression(const char *s, const char *stop) {
 	if(s[0] == '!') {
 		return !CMD_EvaluateExpression(s+1,stop);
 	}
-	if(strCompareBound(s,"MQTTOn", stop, false)) {
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: MQTTOn");
-		return Main_HasMQTTConnected();
+	if(CMD_ExpandConstant(s,stop,&c)) {
+		return c;
 	}
-	if(strCompareBound(s,"$CH*", stop, 1) || strCompareBound(s,"$CH**", stop, 1)) {
-		idx = atoi(s+3);
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: channel value of idx %i",idx);
-		return CHANNEL_Get(idx);
-	}
+
 	ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: will call atof for %s",s);
 	return atof(s);
 }
