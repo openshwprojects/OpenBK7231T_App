@@ -41,6 +41,14 @@ OpenBeken features:
 
 For more Information refer to the [WIKI](https://github.com/openshwprojects/OpenBK7231T_App/wiki/Wiki-Home)
 
+# FAQ (Frequently Asked Questions)
+
+Q: How do I enable more logging? How to make more logs visible?
+A: First type "loglevel x" in console, where x is 0 to 7, default value is 3 (log all up to info), value 4 will also log debug logs, and value 5 will include "extradebug". Then, on online panel, also switch filter to "All" (both steps must be done for logs to show up)
+
+Q: I entered wrong SSID and my device is not accessible. How to recover?
+A: Do five short power on/power off cycles (but not too short, because device might have capacitors and they need to discharge every time). Device will go back to AP mode (aka Safe Mode)
+
 # Building
 
 OpenBeken supports online builds for all platforms (BK7231T, BK7231N, XR809, BL602, W800), but if you want to compile it yourself, see  [BUILDING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md)
