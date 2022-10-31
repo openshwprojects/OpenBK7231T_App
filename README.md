@@ -151,11 +151,11 @@ It is also possible to build a part of our App for Windows platform. It basicall
 You can set pin roles in "Configure Module" section or use one of predefined templates from "Quick config" subpage.
 For each pin, you also set coresponding channel value. This is needed for modules with multiple relays. If you have 3 relays and 3 buttons, you need to use channel values like 1, 2, and 3. Just enter '1' in the text field, etc.
 Currently available pin roles:
-- Button 
+- Button - a typical button of Tuya device with active-low state (a button that connects IO pin to ground when pressed and also has a 10k or so pull up resistor)
 - Button_n (as Button but pin logical value is inversed)
-- Relay 
+- Relay - an active-high relay. This relay is closed when a logical 1 value is on linked channel
 - Relay_n (as Relay but pin logical value is inversed)
-- LED 
+- LED - an active-high LED. The internals of "LED" are the same as of "Relay". Names are just separate to make it easier for users.
 - LED_n (as Led but pin logical value is inversed)
 - Button Toggle All - this button toggles all channels at once
 - Button Toggle All_n (as above but pin logical value is inversed)
