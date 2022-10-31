@@ -108,7 +108,7 @@ int Tokenizer_GetArgInteger(int i) {
 	return atoi(s);
 }
 float Tokenizer_GetArgFloat(int i) {
-	int channelIndex;
+	//int channelIndex;
 	const char *s;
 	s = g_args[i];
 #if !PLATFORM_BEKEN

@@ -9,6 +9,7 @@
 #include "../hal/hal_wifi.h"
 #include "../driver/drv_public.h"
 #include "../driver/drv_ntp.h"
+#include "../ota/ota.h"
 
 #ifndef LWIP_MQTT_EXAMPLE_IPADDR_INIT
 #if LWIP_IPV4
@@ -75,6 +76,7 @@ static int numCallbacks = 0;
 // note: only one incomming can be processed at a time.
 static obk_mqtt_request_t g_mqtt_request;
 
+#define LOOPS_WITH_DISCONNECTED 15
 int loopsWithDisconnected = 0;
 int mqtt_reconnect = 0;
 // set for the device to broadcast self state on start
@@ -572,6 +574,9 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
             else {
                 addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish err: %d\n", err);
             }
+            mqtt_publish_errors++;
+            MQTT_Mutex_Free();
+            return OBK_PUBLISH_MEM_FAIL;
         }
         mqtt_published_events++;
         MQTT_Mutex_Free();
@@ -917,6 +922,162 @@ OBK_Publish_Result MQTT_PublishCommand(const void* context, const char* cmd, con
 
     return ret;
 }
+
+/****************************************************************************************************
+ *
+ ****************************************************************************************************/
+#define MQTT_TMR_DURATION      50
+
+typedef struct BENCHMARK_TEST_INFO
+{
+    portTickType TestStartTick;
+    portTickType TestStopTick;
+    long msg_cnt;
+    long msg_num;    
+    char topic[256];
+    char value[256];
+    float bench_time;
+    float bench_rate;
+    bool report_published;
+} BENCHMARK_TEST_INFO;
+
+void MQTT_Test_Tick(void *param)
+{
+    BENCHMARK_TEST_INFO *info = (BENCHMARK_TEST_INFO*)param;
+    int block = 1;
+    err_t err;
+    int qos = 2;
+    int retain = 0;
+
+    if (info != NULL)
+    {
+        while (1)
+        {
+            if (mqtt_client_is_connected(mqtt_client) == 0)
+                break;
+            if (info->msg_cnt < info->msg_num)
+            {
+                sprintf(info->value, "TestMSG: %li/%li Time: %i s, Rate: %i msg/s", info->msg_cnt, info->msg_num,
+                        (int)info->bench_time, (int)info->bench_rate);
+                err = mqtt_publish(mqtt_client, info->topic, info->value, strlen(info->value), qos, retain, mqtt_pub_request_cb, 0);
+                if (err == ERR_OK)
+                {
+                    /* MSG published */
+                    info->msg_cnt++;
+                    info->TestStopTick = xTaskGetTickCount();
+                    /* calculate stats */
+                    info->bench_time = (float)(info->TestStopTick - info->TestStartTick);
+                    info->bench_time /= (float)(1000 / portTICK_PERIOD_MS);
+                    info->bench_rate = (float)info->msg_cnt;
+                    if (info->bench_time != 0.0)
+                        info->bench_rate /= info->bench_time;
+                    block--;
+                    if (block <= 0)
+                        break;
+                } else {
+                    /* MSG not published, error occured */
+                    break;
+                }
+            } else {
+                /* All messages publiched */
+                if (info->report_published == false)
+                {
+                    /* Publish report */
+                    sprintf(info->value, "Benchmark completed. %li msg published. Total Time: %i s MsgRate: %i msg/s",
+                            info->msg_cnt, (int)info->bench_time, (int)info->bench_rate);
+                    err = mqtt_publish(mqtt_client, info->topic, info->value, strlen(info->value), qos, retain, mqtt_pub_request_cb, 0);
+                    if (err == ERR_OK)
+                    {    
+                        /* Report published */
+                        addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, info->value);
+                        info->report_published = true;
+                        /* Stop timer */
+                    }
+                }
+                break;
+            }
+        }
+    }
+}
+
+#if WINDOWS
+
+#elif PLATFORM_BL602
+static void mqtt_timer_thread(void *param)
+{
+    while(1)
+    {
+        vTaskDelay(MQTT_TMR_DURATION);
+        MQTT_Test_Tick(param);
+    }
+}
+#elif PLATFORM_W600 || PLATFORM_W800
+static void mqtt_timer_thread(void *param)
+{
+    while(1) {
+        vTaskDelay(MQTT_TMR_DURATION);
+        MQTT_Test_Tick(param);
+    }
+}
+#elif PLATFORM_XR809
+static OS_Timer_t timer;
+#else
+static BENCHMARK_TEST_INFO *info = NULL;
+static beken_timer_t g_mqtt_timer;
+#endif
+
+int MQTT_StartMQTTTestThread(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+    if (info != NULL)
+    {
+        /* Benchmark test already started */
+        /* try to restart */
+        info->TestStartTick = xTaskGetTickCount();
+        info->msg_cnt = 0;
+        info->report_published = false;
+        return 0;
+    }
+
+    info = (BENCHMARK_TEST_INFO*)os_malloc(sizeof(BENCHMARK_TEST_INFO));
+    if (info == NULL)
+    {
+        return -1;
+    }
+
+    memset(info, 0, sizeof(BENCHMARK_TEST_INFO));
+    info->TestStartTick = xTaskGetTickCount();    
+    info->msg_num = 1000;
+    sprintf(info->topic, "%s/benchmark", CFG_GetMQTTClientId());
+
+#if WINDOWS
+
+#elif PLATFORM_BL602
+    xTaskCreate(mqtt_timer_thread, "mqtt", 1024, (void *)info, 15, NULL);
+#elif PLATFORM_W600 || PLATFORM_W800
+    xTaskCreate(mqtt_timer_thread, "mqtt", 1024, (void *)info, 15, NULL);
+#elif PLATFORM_XR809
+    OS_TimerSetInvalid(&timer);
+    if (OS_TimerCreate(&timer, OS_TIMER_PERIODIC, MQTT_Test_Tick, (void *)info, MQTT_TMR_DURATION) != OS_OK)
+    {
+        printf("PIN_AddCommands timer create failed\n");
+        return -1;
+    }
+    OS_TimerStart(&timer); /* start OS timer to feed watchdog */
+#else
+    OSStatus result;
+
+    result = rtos_init_timer(&g_mqtt_timer, MQTT_TMR_DURATION, MQTT_Test_Tick, (void *)info);
+    ASSERT(kNoErr == result);
+    result = rtos_start_timer(&g_mqtt_timer);
+    ASSERT(kNoErr == result);
+#endif
+    return 0;
+}
+
+/****************************************************************************************************
+ *
+ ****************************************************************************************************/
+
 // initialise things MQTT
 // called from user_main
 void MQTT_init()
@@ -944,6 +1105,8 @@ void MQTT_init()
 	CMD_RegisterCommand(MQTT_COMMAND_PUBLISH, "", MQTT_PublishCommand, "Sqqq", NULL);
 	CMD_RegisterCommand(MQTT_COMMAND_PUBLISH_ALL, "", MQTT_PublishAll, "Sqqq", NULL);
 	CMD_RegisterCommand(MQTT_COMMAND_PUBLISH_CHANNELS, "", MQTT_PublishChannels, "Sqqq", NULL);
+    CMD_RegisterCommand(MQTT_COMMAND_PUBLISH_BENCHMARK, "", MQTT_StartMQTTTestThread, "", NULL);
+
 }
 
 OBK_Publish_Result MQTT_DoItemPublishString(const char* sChannel, const char* valueStr)
@@ -1039,7 +1202,11 @@ int MQTT_RunEverySecondUpdate()
         return 0;
 
     if (Main_HasWiFiConnected() == 0)
+    {
+        mqtt_reconnect = 0;
+        loopsWithDisconnected = LOOPS_WITH_DISCONNECTED - 2;
         return 0;
+    }
 
     // take mutex for connect and disconnect operations
     if (MQTT_Mutex_Take(100) == 0)
@@ -1065,7 +1232,7 @@ int MQTT_RunEverySecondUpdate()
             if (mqtt_client && mqtt_client_is_connected(mqtt_client))
             {
                 MQTT_disconnect(mqtt_client);
-                loopsWithDisconnected = 8;
+                loopsWithDisconnected = LOOPS_WITH_DISCONNECTED - 2;
             }
         }
     }
@@ -1073,24 +1240,27 @@ int MQTT_RunEverySecondUpdate()
     if (mqtt_client == 0 || mqtt_client_is_connected(mqtt_client) == 0)
     {
         //addLogAdv(LOG_INFO,LOG_FEATURE_MAIN, "Timer discovers disconnected mqtt %i\n",loopsWithDisconnected);
-        loopsWithDisconnected++;
-        if (loopsWithDisconnected > 15)
+        if (ota_progress() == -1)
         {
-            if (mqtt_client == 0)
-            {
-                mqtt_client = mqtt_client_new();
-            }
-            else 
-            {
-                mqtt_disconnect(mqtt_client);
+           loopsWithDisconnected++;
+           if (loopsWithDisconnected > LOOPS_WITH_DISCONNECTED)
+           { 
+               if (mqtt_client == 0)
+               {
+                   mqtt_client = mqtt_client_new();
+               }
+               else 
+               {
+                   mqtt_disconnect(mqtt_client);
 #if defined(MQTT_CLIENT_CLEANUP)
-                mqtt_client_cleanup(mqtt_client);
+                   mqtt_client_cleanup(mqtt_client);
 #endif
+               }
+               MQTT_do_connect(mqtt_client);
+               mqtt_connect_events++;
+               loopsWithDisconnected = 0;
             }
-            MQTT_do_connect(mqtt_client);
-            mqtt_connect_events++;
-            loopsWithDisconnected = 0;
-        }
+        } 
         MQTT_Mutex_Free();
         return 0;
     }
@@ -1100,6 +1270,12 @@ int MQTT_RunEverySecondUpdate()
 
         // it is connected
         g_timeSinceLastMQTTPublish++;
+        if (ota_progress() != -1)
+        {
+            addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "OTA started MQTT will be closed\n");
+            mqtt_disconnect(mqtt_client);
+            return 1;
+        }
 
         // do we want to broadcast full state?
         // Do it slowly in order not to overload the buffers
@@ -1114,7 +1290,7 @@ int MQTT_RunEverySecondUpdate()
         else if (g_bPublishAllStatesNow)
         {
             // Doing step by a step a full publish state
-            if (g_timeSinceLastMQTTPublish > 2)
+            //if (g_timeSinceLastMQTTPublish > 2)
             {
                 OBK_Publish_Result publishRes;
                 int g_sent_thisFrame = 0;
@@ -1299,3 +1475,4 @@ OBK_Publish_Result PublishQueuedItems() {
 bool MQTT_IsReady() {
     return mqtt_client && mqtt_client_is_connected(mqtt_client);
 }
+

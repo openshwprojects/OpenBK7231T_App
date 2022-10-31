@@ -65,6 +65,7 @@ typedef struct MqttPublishItem
 #define MQTT_COMMAND_PUBLISH			"publish"
 #define MQTT_COMMAND_PUBLISH_ALL		"publishAll"
 #define MQTT_COMMAND_PUBLISH_CHANNELS	"publishChannels"
+#define MQTT_COMMAND_PUBLISH_BENCHMARK  "publishBenchmark"
 
 
 // Count of queued items published at once.

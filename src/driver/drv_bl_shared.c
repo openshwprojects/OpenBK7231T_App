@@ -14,6 +14,7 @@
 #include "drv_ntp.h"
 #include "../hal/hal_flashVars.h"
 #include "../ota/ota.h"
+#include <math.h>
 
 #define DAILY_STATS_LENGTH 4
 
@@ -374,11 +375,23 @@ void BL_ProcessUpdate(float voltage, float current, float power)
                 BL09XX_SaveEmeteringStatistics();
                 lastConsumptionSaveStamp = xTaskGetTickCount();
             }
-            ltm = localtime(&ConsumptionResetTime);
-            sprintf(datetime, "%04i-%02i-%02i %02i:%02i:%02i", 
-                    ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
-            MQTT_PublishMain_StringString(counter_mqttNames[5], datetime, 0);
-            stat_updatesSent++;
+            if (MQTT_IsReady() == true)
+            {
+                ltm = localtime(&ConsumptionResetTime);
+                /* 2019-09-07T15:50-04:00 */
+                if (NTP_GetTimesZoneOfs()>0)
+                {
+                    sprintf(datetime, "%04i-%02i-%02iT%02i:%02i+%02i:%02i",
+                            ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
+                            NTP_GetTimesZoneOfs()/3600, (NTP_GetTimesZoneOfs()/60) % 60);
+                } else {
+                    sprintf(datetime, "%04i-%02i-%02iT%02i:%02i-%02i:%02i",
+                            ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
+                            abs(NTP_GetTimesZoneOfs()/3600), (abs(NTP_GetTimesZoneOfs())/60) % 60);
+                }
+                MQTT_PublishMain_StringString(counter_mqttNames[5], datetime, 0);
+                stat_updatesSent++;
+            }
         }
     }
 
@@ -390,7 +403,7 @@ void BL_ProcessUpdate(float voltage, float current, float power)
         interval *= (1000 / portTICK_PERIOD_MS); 
         if ((xTaskGetTickCount() - energyCounterMinutesStamp) >= interval)
         {
-            if (energyCounterStatsJSONEnable == true)
+            if ((energyCounterStatsJSONEnable == true) && (MQTT_IsReady() == true))
             {
                 root = cJSON_CreateObject();
                 cJSON_AddNumberToObject(root, "uptime", Time_getUpTimeSeconds());
@@ -404,8 +417,16 @@ void BL_ProcessUpdate(float voltage, float current, float power)
                     cJSON_AddNumberToObject(root, "consumption_today", dailyStats[0]);
                     cJSON_AddNumberToObject(root, "consumption_yesterday", dailyStats[1]);
                     ltm = localtime(&ConsumptionResetTime);
-                    sprintf(datetime, "%04i-%02i-%02i %02i:%02i:%02i", 
-                            ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+                    if (NTP_GetTimesZoneOfs()>0)
+                    {
+                       sprintf(datetime, "%04i-%02i-%02iT%02i:%02i+%02i:%02i",
+                               ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
+                               NTP_GetTimesZoneOfs()/3600, (NTP_GetTimesZoneOfs()/60) % 60);
+                    } else {
+                       sprintf(datetime, "%04i-%02i-%02iT%02i:%02i-%02i:%02i",
+                               ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
+                               abs(NTP_GetTimesZoneOfs()/3600), (abs(NTP_GetTimesZoneOfs())/60) % 60);
+                    }
                     cJSON_AddStringToObject(root, "consumption_clear_date", datetime);
                 }
 
@@ -455,10 +476,13 @@ void BL_ProcessUpdate(float voltage, float current, float power)
             energyCounterMinutesStamp = xTaskGetTickCount();
             energyCounterMinutesIndex++;
 
-            MQTT_PublishMain_StringFloat(counter_mqttNames[1], DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
-            EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR, lastSentEnergyCounterLastHour, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
-            lastSentEnergyCounterLastHour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
-            stat_updatesSent++;
+            if (MQTT_IsReady() == false)
+            {
+                MQTT_PublishMain_StringFloat(counter_mqttNames[1], DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+                EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR, lastSentEnergyCounterLastHour, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+                lastSentEnergyCounterLastHour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
+                stat_updatesSent++;
+            }
         }
 
         if (energyCounterMinutes != NULL)
@@ -483,9 +507,12 @@ void BL_ProcessUpdate(float voltage, float current, float power)
             } else {
                 EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_VOLTAGE+i, lastSentValues[i], lastReadings[i]);
             }
-            lastSentValues[i] = lastReadings[i];
-            MQTT_PublishMain_StringFloat(sensor_mqttNames[i],lastReadings[i]);
-            stat_updatesSent++;
+            if (MQTT_IsReady() == true)
+            {
+                lastSentValues[i] = lastReadings[i];
+                MQTT_PublishMain_StringFloat(sensor_mqttNames[i],lastReadings[i]);
+                stat_updatesSent++;
+            }
         } else {
             // no change frame
             noChangeFrames[i]++;
@@ -497,26 +524,29 @@ void BL_ProcessUpdate(float voltage, float current, float power)
           (noChangeFrameEnergyCounter >= changeDoNotSendMinFrames)) || 
          (noChangeFrameEnergyCounter >= changeSendAlwaysFrames) )
     {
-        MQTT_PublishMain_StringFloat(counter_mqttNames[0], energyCounter);
-        EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CONSUMPTION_TOTAL, lastSentEnergyCounterValue, energyCounter);
-        lastSentEnergyCounterValue = energyCounter;
-        noChangeFrameEnergyCounter = 0;
-        stat_updatesSent++;
-        MQTT_PublishMain_StringFloat(counter_mqttNames[1], DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
-        EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR, lastSentEnergyCounterLastHour, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
-        lastSentEnergyCounterLastHour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
-        stat_updatesSent++;
-        if(NTP_IsTimeSynced() == true)
+        if (MQTT_IsReady() == true)
         {
-            MQTT_PublishMain_StringFloat(counter_mqttNames[3], dailyStats[1]);
+            MQTT_PublishMain_StringFloat(counter_mqttNames[0], energyCounter);
+            EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CONSUMPTION_TOTAL, lastSentEnergyCounterValue, energyCounter);
+            lastSentEnergyCounterValue = energyCounter;
+            noChangeFrameEnergyCounter = 0;
             stat_updatesSent++;
-            MQTT_PublishMain_StringFloat(counter_mqttNames[4], dailyStats[0]);
+            MQTT_PublishMain_StringFloat(counter_mqttNames[1], DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+            EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR, lastSentEnergyCounterLastHour, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+            lastSentEnergyCounterLastHour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
             stat_updatesSent++;
-            ltm = localtime(&ConsumptionResetTime);
-            sprintf(datetime, "%04i-%02i-%02i %02i:%02i:%02i",
-                    ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
-            MQTT_PublishMain_StringString(counter_mqttNames[5], datetime, 0);
-            stat_updatesSent++;
+            if(NTP_IsTimeSynced() == true)
+            {
+                MQTT_PublishMain_StringFloat(counter_mqttNames[3], dailyStats[1]);
+                stat_updatesSent++;
+                MQTT_PublishMain_StringFloat(counter_mqttNames[4], dailyStats[0]);
+                stat_updatesSent++;
+                ltm = localtime(&ConsumptionResetTime);
+                sprintf(datetime, "%04i-%02i-%02i %02i:%02i:%02i",
+                        ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+                MQTT_PublishMain_StringString(counter_mqttNames[5], datetime, 0);
+                stat_updatesSent++;
+            }
         }
     } else {
         noChangeFrameEnergyCounter++;
