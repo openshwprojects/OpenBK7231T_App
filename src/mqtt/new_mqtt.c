@@ -967,7 +967,7 @@ void MQTT_Test_Tick(void *param)
                     info->TestStopTick = xTaskGetTickCount();
                     /* calculate stats */
                     info->bench_time = (float)(info->TestStopTick - info->TestStartTick);
-                    info->bench_time /= (float)(1000 / portTICK_PERIOD_MS);
+                    info->bench_time /= (float)(1000 / portTICK_RATE_MS);
                     info->bench_rate = (float)info->msg_cnt;
                     if (info->bench_time != 0.0)
                         info->bench_rate /= info->bench_time;
@@ -1000,6 +1000,8 @@ void MQTT_Test_Tick(void *param)
     }
 }
 
+static BENCHMARK_TEST_INFO *info = NULL;
+
 #if WINDOWS
 
 #elif PLATFORM_BL602
@@ -1022,7 +1024,6 @@ static void mqtt_timer_thread(void *param)
 #elif PLATFORM_XR809
 static OS_Timer_t timer;
 #else
-static BENCHMARK_TEST_INFO *info = NULL;
 static beken_timer_t g_mqtt_timer;
 #endif
 
