@@ -347,12 +347,14 @@ void SVM_RunThread(scriptInstance_t *t) {
 			end = SVM_SkipLine(start);
 			t->curLine = SVM_SkipWS(end); 
 
+			while(end > start && (end[-1]==' '||end[-1]=='\r'||end[-1]=='\n'||end[-1]=='\t')) {
+				end--;
+			}
 			len = (end - start);
-			if(*end != 0)
-				len--; // skip '\n'
-			ADDLOG_INFO(LOG_FEATURE_CMD, "Script len: %i",len);
+			//ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "Script len: %i",len);
 
-			if(len > 0) {
+			// skip empty lines and skip labels
+			if(len > 0 && start[len-1] != ':') {
 				if(len >= MAX_SCRIPT_LINE) {
 					len = MAX_SCRIPT_LINE-1;
 				}
@@ -360,7 +362,7 @@ void SVM_RunThread(scriptInstance_t *t) {
 				g_scrBuffer[len] = 0;
 
 				p = start-t->curFile->data;
-				ADDLOG_INFO(LOG_FEATURE_CMD, "[Loop %i] Script line: %s, char index %i",loop,g_scrBuffer,p);
+				///ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "[Loop %i] Script line: %s, char index %i",loop,g_scrBuffer,p);
 				CMD_ExecuteCommand(g_scrBuffer,0);
 
 				// did we get a sleep?
@@ -531,14 +533,14 @@ static int CMD_GoTo(const void *context, const char *cmd, const char *args, int 
 	if(Tokenizer_GetArgsCount() == 1) {
 		label = Tokenizer_GetArg(0);
 
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_GoTo: goto local %s\n",label);
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "CMD_GoTo: goto local %s\n",label);
 
 		SVM_GoToLocal(g_activeThread,label);
 	} else {
 
 		fname = Tokenizer_GetArg(0);
 		label = Tokenizer_GetArg(1);
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_GoTo: goto global %s %s\n",fname,label);
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "CMD_GoTo: goto global %s %s\n",fname,label);
 		SVM_GoTo(g_activeThread,fname,label);
 	}
 
@@ -590,7 +592,7 @@ static int CMD_Delay_s(const void *context, const char *cmd, const char *args, i
 
 	del = Tokenizer_GetArgFloat(0);
 	delMS = del * 1000;
-	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_s: thread will delay %i extra ms\n",delMS);
+	ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "CMD_Delay_s: thread will delay %i extra ms\n",delMS);
 	g_activeThread->currentDelayMS += delMS;
 
 
@@ -615,7 +617,7 @@ static int CMD_Delay_ms(const void *context, const char *cmd, const char *args, 
 
 	del = Tokenizer_GetArgInteger(0);
 
-	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_ms: thread will delay %i\n",del);
+	ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "CMD_Delay_ms: thread will delay %i\n",del);
 	g_activeThread->currentDelayMS += del;
 
 

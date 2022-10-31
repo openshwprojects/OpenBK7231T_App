@@ -272,7 +272,7 @@ const char *GetLightModeStr(int mode) {
 }
 void SET_LightMode(int newMode) {
 	if(g_lightMode != newMode) {
-        ADDLOG_INFO(LOG_FEATURE_CMD, "Changing LightMode from %s to %s",
+        ADDLOG_DEBUG(LOG_FEATURE_CMD, "Changing LightMode from %s to %s",
 			GetLightModeStr(g_lightMode),
 			GetLightModeStr(newMode));
 		g_lightMode = newMode;
@@ -325,7 +325,7 @@ static int temperature(const void *context, const char *cmd, const char *args, i
 	int tmp;
 	//if (!wal_strnicmp(cmd, "POWERALL", 8)){
 
-        ADDLOG_INFO(LOG_FEATURE_CMD, " temperature (%s) received with args %s",cmd,args);
+        ADDLOG_DEBUG(LOG_FEATURE_CMD, " temperature (%s) received with args %s",cmd,args);
 
 
 		tmp = atoi(args);
@@ -359,7 +359,7 @@ int LED_GetEnableAll() {
 static int enableAll(const void *context, const char *cmd, const char *args, int cmdFlags){
 	//if (!wal_strnicmp(cmd, "POWERALL", 8)){
 		int bEnable;
-        ADDLOG_INFO(LOG_FEATURE_CMD, " enableAll (%s) received with args %s",cmd,args);
+        ADDLOG_DEBUG(LOG_FEATURE_CMD, " enableAll (%s) received with args %s",cmd,args);
 
 		Tokenizer_TokenizeString(args, 0);
 
@@ -448,7 +448,7 @@ static int dimmer(const void *context, const char *cmd, const char *args, int cm
 	//if (!wal_strnicmp(cmd, "POWERALL", 8)){
 		int iVal = 0;
 
-        ADDLOG_INFO(LOG_FEATURE_CMD, " dimmer (%s) received with args %s",cmd,args);
+        ADDLOG_DEBUG(LOG_FEATURE_CMD, " dimmer (%s) received with args %s",cmd,args);
 
 		// according to Elektroda.com users, domoticz sends following string:
 		// {"brightness":52,"state":"ON"}
@@ -621,7 +621,7 @@ static int basecolor_rgbcw(const void *context, const char *cmd, const char *arg
 
 // CONFIG-ONLY command!
 static int colorMult(const void *context, const char *cmd, const char *args, int cmdFlags){
-        ADDLOG_INFO(LOG_FEATURE_CMD, " g_cfg_colorScaleToChannel (%s) received with args %s",cmd,args);
+        ADDLOG_DEBUG(LOG_FEATURE_CMD, " g_cfg_colorScaleToChannel (%s) received with args %s",cmd,args);
 
 		g_cfg_colorScaleToChannel = atof(args);
 
@@ -631,7 +631,7 @@ static int colorMult(const void *context, const char *cmd, const char *args, int
 }
 // CONFIG-ONLY command!
 static int brightnessMult(const void *context, const char *cmd, const char *args, int cmdFlags){
-        ADDLOG_INFO(LOG_FEATURE_CMD, " brightnessMult (%s) received with args %s",cmd,args);
+        ADDLOG_DEBUG(LOG_FEATURE_CMD, " brightnessMult (%s) received with args %s",cmd,args);
 
 		g_cfg_brightnessMult = atof(args);
 
