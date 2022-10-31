@@ -249,8 +249,12 @@ if MQTTOn then "backlog led_dimmer 100; led_enableAll" else "backlog led_dimmer 
   
 # Example configurations (example autoexec.bat files for LittleFS system)
 
-Configuration for EDM-01AA-EU dimmer with TuyaMCU.
-<textarea>
+
+
+
+[Configuration for EDM-01AA-EU dimmer with TuyaMCU](https://www.elektroda.com/rtvforum/topic3929151.html)
+
+```
 startDriver TuyaMCU
 setChannelType 1 toggle
 setChannelType 2 dimmer
@@ -259,12 +263,152 @@ tuyaMcu_setDimmerRange 1 1000
 // linkTuyaMCUOutputToChannel dpId verType tgChannel
 linkTuyaMCUOutputToChannel 1 bool 1
 linkTuyaMCUOutputToChannel 2 val 2
-</textarea>
+```
+
+[Configuration for QIACHIP Universal WIFI Ceiling Fan Light Remote Control Kit - BK7231N - CB2S with TuyaMCU](https://www.elektroda.com/rtvforum/topic3895301.html)
+
+```
+// start MCU driver
+startDriver TuyaMCU
+// let's say that channel 1 is dpid1 - fan on/off
+setChannelType 1 toggle
+// map dpid1 to channel1, var type 1 (boolean)
+linkTuyaMCUOutputToChannel 1 1 1
+// let's say that channel 2 is dpid9 - light on/off
+setChannelType 2 toggle
+// map dpid9 to channel2, var type 1 (boolean)
+linkTuyaMCUOutputToChannel 9 1 2
+//channel 3 is dpid3 - fan speed
+setChannelType 3 LowMidHigh
+// map dpid3 to channel3, var type 4 (enum)
+linkTuyaMCUOutputToChannel 3 4 3
+//dpId 17 = beep on/off
+setChannelType 4 toggle
+linkTuyaMCUOutputToChannel 17 1 4
+//
+//
+//dpId 6, dataType 4-DP_TYPE_ENUM = set timer
+setChannelType 5 TextField
+linkTuyaMCUOutputToChannel 6 4 5
+//
+//
+//dpId 7, dataType 2-DP_TYPE_VALUE = timer remaining
+setChannelType 6 ReadOnly
+linkTuyaMCUOutputToChannel 7 2 6
+```
       
 # Scripting engine
   
-  Scripting engine with threads is coming soon
+  Our scripting engine is able to process script files from LittleFS file system. Each script execution acts like a separate thread (but that's not a real RTOS thread, of course) and can process console commands, conditionals and delays.
+  
+  To create script, go to secondary web panel (JavaScript App), go to LittleFS tab, click "create file" and enter some content. Use buttons to stop all scripts or to save and run the one you are writing. From a console, you can also use 'startScript fileName label' syntax.
+  
+<br><b>Script example 1:</b><br>
+Loop demo. Features a 'goto' script command (for use within script)
+and, obviously, a label.<br>
+Requirements: <br>
+- channel 1 - output relay<br>
 
+```
+again:
+	echo "Step 1"
+	setChannel 1 0
+	echo "Step 2"
+	delay_s 2
+	echo "Step 3"
+	setChannel 1 1
+	echo "Step 4"
+	delay_s 2
+	goto again
+```
+
+ <br><b>Script example 2:</b> <br>
+Loop & if demo<br>
+This example shows how you can use a dummy channel as a variable to create a loop<br>
+Requirements: <br>
+ - channel 1 - output relay<br>
+ - channel 11 - loop variable counter<br>
+
+```
+restart:
+	// Channel 11 is a counter variable and starts at 0
+	setChannel 11 0
+again:
+
+	// If channel 11 value reached 10, go to done
+	if $CH11>=10 then goto done
+	// otherwise toggle channel 1, wait and loop
+	toggleChannel 1
+	addChannel 11 1
+	delay_ms 250
+	goto again
+done:
+	toggleChannel 1
+	delay_s 1
+	toggleChannel 1
+	delay_s 1
+	toggleChannel 1
+	delay_s 1
+	toggleChannel 1
+	delay_s 1
+	goto restart
+``` 
+  
+ 
+ <br><b>Script example 3:</b> <br>
+Thread cancelation demo and exclude self demo<br>
+  This example shows how you can create a script thread with an unique ID and use this ID to cancel the thread later<br>
+ Requirements: <br>
+ - channel 1 - output relay<br>
+ - pin 8 - button<br>
+ - pin 9 - button<br>
+
+```
+// 'this' is a special keyword - it mean search for script/label in this file
+// 123 and 456 are unique script thread names
+addEventHandler OnClick 8 startScript this label1 123
+addEventHandler OnClick 9 startScript this label2 456
+
+label1:
+	// stopScript ID bExcludeSelf
+	// this will stop all other instances
+	stopScript 456 1
+	stopScript 123 1
+	setChannel 1 0
+	delay_s 1
+	setChannel 1 1
+	delay_s 1
+	setChannel 1 0
+	delay_s 1
+	setChannel 1 1
+	delay_s 1
+	setChannel 1 0
+	delay_s 1
+	setChannel 1 1
+	delay_s 1
+	exit;
+label2:
+	// stopScript ID bExcludeSelf
+	// this will stop all other instances
+	stopScript 456 1
+	stopScript 123 1
+	setChannel 1 0
+	delay_s 0.25
+	setChannel 1 1
+	delay_s 0.25
+	setChannel 1 0
+	delay_s 0.25
+	setChannel 1 1
+	delay_s 0.25
+	setChannel 1 0
+	delay_s 0.25
+	setChannel 1 1
+	delay_s 0.25
+	setChannel 1 0
+	delay_s 0.25
+	exit;
+```  
+  
 # Channel Types
 
 Channel types are often not required and don't have to be configured, but in some cases they are required for better device control from OpenBeken web panel. Channel types describes the kind of value stored in channel, for example, if you have a Tuya Fan Controller with 3 speeds control,  you can set the channel type to LowMidHigh and it will display the correct setting on OpenBeken panel.
