@@ -408,7 +408,29 @@ label2:
 	delay_s 0.25
 	exit;
 ```  
-  
+
+ 
+ <br><b>Script example 4:</b> <br>
+Using channel value as a variable demo<br>
+Requirements: <br>
+- channel 1 - output relay<br>
+- channel 11 - you may use it as ADC, or just use setChannel 11 100 or setChannel 11 500 in console to change delay<br>
+
+```
+
+// set default value
+setChannel 11 500
+// if you don't have ADC, use this to force-display 11 as a slider on GUI
+setChannelType 11 dimmer1000
+
+looper:
+	setChannel 1 0
+	delay_ms $CH11
+	setChannel 1 1
+	delay_ms $CH11
+	goto looper
+```  
+
 # Channel Types
 
 Channel types are often not required and don't have to be configured, but in some cases they are required for better device control from OpenBeken web panel. Channel types describes the kind of value stored in channel, for example, if you have a Tuya Fan Controller with 3 speeds control,  you can set the channel type to LowMidHigh and it will display the correct setting on OpenBeken panel.
