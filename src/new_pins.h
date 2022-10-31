@@ -187,6 +187,7 @@ typedef struct mainConfig_s {
 	byte ident1;
 	byte ident2;
 	byte crc;
+	// 0x4
 	int version;
 	int genericFlags;
 	// unused
@@ -198,38 +199,57 @@ typedef struct mainConfig_s {
 	char wifi_pass[64];
 	// MQTT information for Home Assistant
 	char mqtt_host[256];
+	// note: #define CGF_MQTT_CLIENT_ID_SIZE			64
 	char mqtt_clientId[CGF_MQTT_CLIENT_ID_SIZE];
 	char mqtt_userName[64];
 	char mqtt_pass[128];
+	//mqtt_port at offs 0x00000294 
 	int mqtt_port;
 	// addon JavaScript panel is hosted on external server
 	char webappRoot[64];
 	// TODO?
 	byte mac[6];
+	// NOTE: NO LONGER 4 byte aligned!!!
 	// TODO?
+	// #define CGF_SHORT_DEVICE_NAME_SIZE		32
 	char shortDeviceName[CGF_SHORT_DEVICE_NAME_SIZE];
+	// #define CGF_DEVICE_NAME_SIZE			64
 	char longDeviceName[CGF_DEVICE_NAME_SIZE];
+
+	//pins at offs 0x0000033E
+	// 160 bytes
 	pinsState_t pins;
+	// startChannelValues at offs 0x000003DE
+	// 64 * 2
 	short startChannelValues[CHANNEL_MAX];
+	// dgr_sendFlags at offs 0x00000460 
+	short unused_fill; // correct alignment
 	int dgr_sendFlags;
 	int dgr_recvFlags;
 	char dgr_name[16];
 	char ntpServer[32];
+	// 8 * 4 = 32 bytes
 	cfgPowerMeasurementCalibration_t cal;
+	// offs 0x000004B8
 	// short press 1 means 100 ms short press time
 	// So basically unit is 0.1 second
 	byte buttonShortPress;
 	byte buttonLongPress;
 	byte buttonHoldRepeat;
-	byte unusedSectorA[37];
-	byte unusedSectorB[128];
-	byte unusedSectorC[55];
+	byte unused_fill1;
+
+	//unsigned long LFS_Size; will be here, and next reduced by one
+	unsigned long unusedSectorA[54];
+	// offs 0x00000594
+	byte unused_bytefill[3];
 	byte timeRequiredToMarkBootSuccessfull;
+	//offs 0x00000598
 	int ping_interval;
 	int ping_seconds;
+	// 0x000005A0
 	char ping_host[64];
 	char initCommandLine[512];
-} mainConfig_t;
+} mainConfig_t; // size 0x000007E0
 
 extern mainConfig_t g_cfg;
 
