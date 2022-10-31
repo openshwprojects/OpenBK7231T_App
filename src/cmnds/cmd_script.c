@@ -14,7 +14,8 @@ startScript test1.bat
 Example 1:
 
 
-// Loop demo
+// Loop demo. Features a 'goto' script command (for use within script)
+// and, obviously, a label.
 // Requirements: 
 // - channel 1 - output relay
 

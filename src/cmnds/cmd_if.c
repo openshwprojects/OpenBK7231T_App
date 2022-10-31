@@ -5,6 +5,8 @@
 #include "../logging/logging.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
+#include <ctype.h> // isspace
+
 /*
 An ability to evaluate a conditional string.
 For use in conjuction with command aliases.
@@ -119,7 +121,7 @@ float CMD_EvaluateExpression(const char *s, const char *stop) {
 	if(stop == 0) {
 		stop = s + strlen(s);
 	}
-	while(stop > s && iswspace(stop[-1])) {
+	while(stop > s && isspace(stop[-1])) {
 		stop --;
 	}
 	if(g_expDebugBuffer==0){
