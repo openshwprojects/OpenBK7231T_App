@@ -246,6 +246,21 @@ if MQTTOn then "backlog led_dimmer 100; led_enableAll" else "backlog led_dimmer 
   Every console command that takes an integer argument supports following constant expansion:
 - $CH[CHANNEL_NUMBER] - so, $CH0 is a channel 0 value, etc, so SetChannel 1 $CH2 will get current value of Channel2 and set it to Channel 1
       
+  
+# Example configurations (example autoexec.bat files for LittleFS system)
+
+Configuration for EDM-01AA-EU dimmer with TuyaMCU.
+<textarea>
+startDriver TuyaMCU
+setChannelType 1 toggle
+setChannelType 2 dimmer
+tuyaMcu_setBaudRate 115200
+tuyaMcu_setDimmerRange 1 1000
+// linkTuyaMCUOutputToChannel dpId verType tgChannel
+linkTuyaMCUOutputToChannel 1 bool 1
+linkTuyaMCUOutputToChannel 2 val 2
+</textarea>
+      
 # Scripting engine
   
   Scripting engine with threads is coming soon
