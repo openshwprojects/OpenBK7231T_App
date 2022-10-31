@@ -216,3 +216,8 @@ int ota_progress()
   return ota_status;
 }
 
+int ota_total_bytes()
+{
+  return total_bytes;
+}
+
