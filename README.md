@@ -41,6 +41,14 @@ OpenBeken features:
 
 For more Information refer to the [WIKI](https://github.com/openshwprojects/OpenBK7231T_App/wiki/Wiki-Home)
 
+# FAQ (Frequently Asked Questions)
+
+<em>Q: How do I enable more logging? How to make more logs visible?</em><br>
+A: First type "loglevel x" in console, where x is 0 to 7, default value is 3 (log all up to info), value 4 will also log debug logs, and value 5 will include "extradebug". Then, on online panel, also switch filter to "All" (both steps must be done for logs to show up)
+
+<em>Q: I entered wrong SSID and my device is not accessible. How to recover?</em><br>
+A: Do five short power on/power off cycles (but not too short, because device might have capacitors and they need to discharge every time). Device will go back to AP mode (aka Safe Mode)
+
 # Building
 
 OpenBeken supports online builds for all platforms (BK7231T, BK7231N, XR809, BL602, W800), but if you want to compile it yourself, see  [BUILDING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md)
@@ -143,11 +151,11 @@ It is also possible to build a part of our App for Windows platform. It basicall
 You can set pin roles in "Configure Module" section or use one of predefined templates from "Quick config" subpage.
 For each pin, you also set coresponding channel value. This is needed for modules with multiple relays. If you have 3 relays and 3 buttons, you need to use channel values like 1, 2, and 3. Just enter '1' in the text field, etc.
 Currently available pin roles:
-- Button 
+- Button - a typical button of Tuya device with active-low state (a button that connects IO pin to ground when pressed and also has a 10k or so pull up resistor)
 - Button_n (as Button but pin logical value is inversed)
-- Relay 
+- Relay - an active-high relay. This relay is closed when a logical 1 value is on linked channel
 - Relay_n (as Relay but pin logical value is inversed)
-- LED 
+- LED - an active-high LED. The internals of "LED" are the same as of "Relay". Names are just separate to make it easier for users.
 - LED_n (as Led but pin logical value is inversed)
 - Button Toggle All - this button toggles all channels at once
 - Button Toggle All_n (as above but pin logical value is inversed)
@@ -203,6 +211,8 @@ There are multiple console commands that allow you to automate your devices. Com
 | SM2135_RGBCW     | [HexColor] | Don't use it. It's for direct access of SM2135 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
 | BP5758D_Map     | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP5758D channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. |
 | BP5758D_RGBCW     | [HexColor] | Don't use it. It's for direct access of BP5758D driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
+| loglevel     | [Value]  | Correct values are 0 to 7. Default is 3. Higher value includes more logs. Log levels are: ERROR = 1, WARN = 2, INFO = 3, DEBUG = 4, EXTRADEBUG = 5. WARNING: you also must separately select logging level filter on web panel in order for more logs to show up there |
+| logdelay     | [Value] | Value is a number of ms. This will add an artificial delay in each log call. Useful for debugging. This way you can see step by step what happens. |
 | restart     |  | Reboots the device. |
 | clearConfig     |  | Clears all the device config and returns it to AP mode. |
 | VoltageSet     | [Value] | Used for BL0942/BL0937/etc calibration. Refer to BL0937 guide for more info. |
@@ -236,9 +246,190 @@ if MQTTOn then "backlog led_dimmer 100; led_enableAll" else "backlog led_dimmer 
   Every console command that takes an integer argument supports following constant expansion:
 - $CH[CHANNEL_NUMBER] - so, $CH0 is a channel 0 value, etc, so SetChannel 1 $CH2 will get current value of Channel2 and set it to Channel 1
       
+  
+# Example configurations (example autoexec.bat files for LittleFS system)
+
+
+
+
+[Configuration for EDM-01AA-EU dimmer with TuyaMCU](https://www.elektroda.com/rtvforum/topic3929151.html)
+
+```
+startDriver TuyaMCU
+setChannelType 1 toggle
+setChannelType 2 dimmer
+tuyaMcu_setBaudRate 115200
+tuyaMcu_setDimmerRange 1 1000
+// linkTuyaMCUOutputToChannel dpId verType tgChannel
+linkTuyaMCUOutputToChannel 1 bool 1
+linkTuyaMCUOutputToChannel 2 val 2
+```
+
+[Configuration for QIACHIP Universal WIFI Ceiling Fan Light Remote Control Kit - BK7231N - CB2S with TuyaMCU](https://www.elektroda.com/rtvforum/topic3895301.html)
+
+```
+// start MCU driver
+startDriver TuyaMCU
+// let's say that channel 1 is dpid1 - fan on/off
+setChannelType 1 toggle
+// map dpid1 to channel1, var type 1 (boolean)
+linkTuyaMCUOutputToChannel 1 1 1
+// let's say that channel 2 is dpid9 - light on/off
+setChannelType 2 toggle
+// map dpid9 to channel2, var type 1 (boolean)
+linkTuyaMCUOutputToChannel 9 1 2
+//channel 3 is dpid3 - fan speed
+setChannelType 3 LowMidHigh
+// map dpid3 to channel3, var type 4 (enum)
+linkTuyaMCUOutputToChannel 3 4 3
+//dpId 17 = beep on/off
+setChannelType 4 toggle
+linkTuyaMCUOutputToChannel 17 1 4
+//
+//
+//dpId 6, dataType 4-DP_TYPE_ENUM = set timer
+setChannelType 5 TextField
+linkTuyaMCUOutputToChannel 6 4 5
+//
+//
+//dpId 7, dataType 2-DP_TYPE_VALUE = timer remaining
+setChannelType 6 ReadOnly
+linkTuyaMCUOutputToChannel 7 2 6
+```
+      
 # Scripting engine
   
-  Scripting engine with threads is coming soon
+  Our scripting engine is able to process script files from LittleFS file system. Each script execution acts like a separate thread (but that's not a real RTOS thread, of course) and can process console commands, conditionals and delays.
+  
+  To create script, go to secondary web panel (JavaScript App), go to LittleFS tab, click "create file" and enter some content. Use buttons to stop all scripts or to save and run the one you are writing. From a console, you can also use 'startScript fileName label' syntax.
+  
+<br><b>Script example 1:</b><br>
+Loop demo. Features a 'goto' script command (for use within script)
+and, obviously, a label.<br>
+Requirements: <br>
+- channel 1 - output relay<br>
+
+```
+again:
+	echo "Step 1"
+	setChannel 1 0
+	echo "Step 2"
+	delay_s 2
+	echo "Step 3"
+	setChannel 1 1
+	echo "Step 4"
+	delay_s 2
+	goto again
+```
+
+ <br><b>Script example 2:</b> <br>
+Loop & if demo<br>
+This example shows how you can use a dummy channel as a variable to create a loop<br>
+Requirements: <br>
+ - channel 1 - output relay<br>
+ - channel 11 - loop variable counter<br>
+
+```
+restart:
+	// Channel 11 is a counter variable and starts at 0
+	setChannel 11 0
+again:
+
+	// If channel 11 value reached 10, go to done
+	if $CH11>=10 then goto done
+	// otherwise toggle channel 1, wait and loop
+	toggleChannel 1
+	addChannel 11 1
+	delay_ms 250
+	goto again
+done:
+	toggleChannel 1
+	delay_s 1
+	toggleChannel 1
+	delay_s 1
+	toggleChannel 1
+	delay_s 1
+	toggleChannel 1
+	delay_s 1
+	goto restart
+``` 
+  
+ 
+ <br><b>Script example 3:</b> <br>
+Thread cancelation demo and exclude self demo<br>
+  This example shows how you can create a script thread with an unique ID and use this ID to cancel the thread later<br>
+ Requirements: <br>
+ - channel 1 - output relay<br>
+ - pin 8 - button<br>
+ - pin 9 - button<br>
+
+```
+// 'this' is a special keyword - it mean search for script/label in this file
+// 123 and 456 are unique script thread names
+addEventHandler OnClick 8 startScript this label1 123
+addEventHandler OnClick 9 startScript this label2 456
+
+label1:
+	// stopScript ID bExcludeSelf
+	// this will stop all other instances
+	stopScript 456 1
+	stopScript 123 1
+	setChannel 1 0
+	delay_s 1
+	setChannel 1 1
+	delay_s 1
+	setChannel 1 0
+	delay_s 1
+	setChannel 1 1
+	delay_s 1
+	setChannel 1 0
+	delay_s 1
+	setChannel 1 1
+	delay_s 1
+	exit;
+label2:
+	// stopScript ID bExcludeSelf
+	// this will stop all other instances
+	stopScript 456 1
+	stopScript 123 1
+	setChannel 1 0
+	delay_s 0.25
+	setChannel 1 1
+	delay_s 0.25
+	setChannel 1 0
+	delay_s 0.25
+	setChannel 1 1
+	delay_s 0.25
+	setChannel 1 0
+	delay_s 0.25
+	setChannel 1 1
+	delay_s 0.25
+	setChannel 1 0
+	delay_s 0.25
+	exit;
+```  
+
+ 
+ <br><b>Script example 4:</b> <br>
+Using channel value as a variable demo<br>
+Requirements: <br>
+- channel 1 - output relay<br>
+- channel 11 - you may use it as ADC, or just use setChannel 11 100 or setChannel 11 500 in console to change delay<br>
+
+```
+
+// set default value
+setChannel 11 500
+// if you don't have ADC, use this to force-display 11 as a slider on GUI
+setChannelType 11 dimmer1000
+
+looper:
+	setChannel 1 0
+	delay_ms $CH11
+	setChannel 1 1
+	delay_ms $CH11
+	goto looper
+```  
 
 # Channel Types
 
