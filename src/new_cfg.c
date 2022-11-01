@@ -7,6 +7,10 @@
 #include "hal/hal_wifi.h"
 #include "hal/hal_flashConfig.h"
 #include "cmnds/cmd_public.h"
+#ifdef BK_LITTLEFS
+#include "littlefs/our_lfs.h"
+#endif
+
 
 #define DEFAULT_BOOT_SUCCESS_TIME 30
 
@@ -509,6 +513,24 @@ void CFG_SetButtonRepeatPressTime(int value) {
 		g_cfg_pendingChanges++;
 	}
 }
+
+#ifdef BK_LITTLEFS
+void CFG_SetLFS_Size(uint32_t value) {
+	if(g_cfg.LFS_Size != value) {
+		g_cfg.LFS_Size = value;
+		g_cfg_pendingChanges++;
+	}
+}
+
+uint32_t CFG_GetLFS_Size() {
+	uint32_t size = g_cfg.LFS_Size;
+	if (size == 0){
+		size = LFS_BLOCKS_DEFAULT_LEN;
+	}
+	return size;
+}
+#endif
+
 void CFG_InitAndLoad() {
 	byte chkSum;
 
