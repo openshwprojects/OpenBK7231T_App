@@ -66,6 +66,8 @@ static int g_bPingWatchDogStarted = 0;
 
 uint32_t idleCount = 0;
 
+int DRV_SSDP_Active = 0;
+
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
 

@@ -27,7 +27,7 @@
 #include "../httpserver/new_http.h"
 #include "common_math.h"
 
-int DRV_SSDP_Active = 0;
+extern int DRV_SSDP_Active;
 
 static const char* ssdp_group = "239.255.255.250";
 static int ssdp_port = 1900;
