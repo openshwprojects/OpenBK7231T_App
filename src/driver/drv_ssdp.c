@@ -27,6 +27,8 @@
 #include "../httpserver/new_http.h"
 #include "common_math.h"
 
+extern int DRV_SSDP_Active;
+
 static const char* ssdp_group = "239.255.255.250";
 static int ssdp_port = 1900;
 
@@ -325,6 +327,7 @@ static int DRV_SSDP_Service_Http(http_request_t* request){
 
 void DRV_SSDP_Init()
 {
+    addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"DRV_SSDP_Init");
     // like "e427ce1a-3e80-43d0-ad6f-89ec42e46363";
     sprintf(g_ssdp_uuid, "%08x-%04x-%04x-%04x-%04x%08x",
         (unsigned int)rand(), 
@@ -338,6 +341,8 @@ void DRV_SSDP_Init()
 	DRV_SSDP_CreateSocket_Receive();
     HTTP_RegisterCallback("/ssdp.xml", HTTP_GET, DRV_SSDP_Service_Http);
     //CMD_RegisterCommand("SSDPNotify", "", CMD_SSDP_Notify, "qqq", NULL);
+
+    DRV_SSDP_Active = 1;
 }
 
 void DRV_SSDP_RunEverySecond() {
@@ -403,8 +408,10 @@ void DRV_SSDP_RunQuickTick() {
 }
 
 
-void DRV_SSDP_Shutdown()
-{
+void DRV_SSDP_Shutdown(){
+    addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"DRV_SSDP_Shutdown");
+    DRV_SSDP_Active = 0;
+
 	if(g_ssdp_socket_receive>=0) {
 		close(g_ssdp_socket_receive);
 		g_ssdp_socket_receive = -1;

@@ -33,6 +33,7 @@
 
 
 #include "driver/drv_ntp.h"
+#include "driver/drv_ssdp.h"
 
 #ifdef PLATFORM_BEKEN
 void bg_register_irda_check_func(FUNCPTR func);
@@ -64,6 +65,8 @@ static int g_timeSinceLastPingReply = -1;
 static int g_bPingWatchDogStarted = 0;
 
 uint32_t idleCount = 0;
+
+int DRV_SSDP_Active = 0;
 
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
@@ -122,19 +125,29 @@ int Time_getUpTimeSeconds() {
 
 
 static char scheduledDriverName[4][16];
-static int scheduledDelay[4] = {-1};
+static int scheduledDelay[4] = {-1, -1, -1, -1};
 static void ScheduleDriverStart(const char *name, int delay) {
 	for (int i = 0; i < 4; i++){
+		// if already scheduled, just change delay.
+		if (!strcmp(scheduledDriverName[i], name)){
+			scheduledDelay[i] = delay;
+			return;
+		}
+	}
+	for (int i = 0; i < 4; i++){
+		// first empty slot
 		if (scheduledDelay[i] == -1){
 			scheduledDelay[i] = delay;
-			strcpy(scheduledDriverName[i],name);
+			strncpy(scheduledDriverName[i], name, 16);
+			return;
 		}
 	}
 }
 
 void Main_OnWiFiStatusChange(int code)
 {
-
+	// careful what you do in here.
+	// e.g. creata socket?  probably not....
     switch(code)
     {
         case WIFI_STA_CONNECTING:
@@ -166,8 +179,16 @@ void Main_OnWiFiStatusChange(int code)
 			g_bHasWiFiConnected = 1;
 			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTED\r\n");
 
-			if(bSafeMode == 0 && strlen(CFG_DeviceGroups_GetName())>0){
-				ScheduleDriverStart("DGR",5);
+			if(bSafeMode == 0){
+				if(strlen(CFG_DeviceGroups_GetName())>0){
+					ScheduleDriverStart("DGR",5);
+				}
+				// if SSDP should be active, 
+				// restart it now.
+				if (DRV_SSDP_Active){
+					ScheduleDriverStart("SSDP",5);
+					//DRV_SSDP_Restart(); // this kills things
+				}
 			}
 
             break;
@@ -281,6 +302,7 @@ void Main_OnEverySecond()
 				DRV_StopDriver(scheduledDriverName[i]);
 				DRV_StartDriver(scheduledDriverName[i]);
 #endif
+				scheduledDriverName[i][0] = 0;
 			}
 		}
 	}
