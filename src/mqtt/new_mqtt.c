@@ -1241,7 +1241,13 @@ int MQTT_RunEverySecondUpdate()
     if (mqtt_client == 0 || mqtt_client_is_connected(mqtt_client) == 0)
     {
         //addLogAdv(LOG_INFO,LOG_FEATURE_MAIN, "Timer discovers disconnected mqtt %i\n",loopsWithDisconnected);
+#if WINDOWS
+#elif PLATFORM_BL602
+#elif PLATFORM_W600 || PLATFORM_W800
+#elif PLATFORM_XR809
+#elif PLATFORM_BK7231N || PLATFORM_BK7231T
         if (ota_progress() == -1)
+#endif
         {
            loopsWithDisconnected++;
            if (loopsWithDisconnected > LOOPS_WITH_DISCONNECTED)
@@ -1271,13 +1277,18 @@ int MQTT_RunEverySecondUpdate()
 
         // it is connected
         g_timeSinceLastMQTTPublish++;
+#if WINDOWS
+#elif PLATFORM_BL602
+#elif PLATFORM_W600 || PLATFORM_W800
+#elif PLATFORM_XR809
+#elif PLATFORM_BK7231N || PLATFORM_BK7231T
         if (ota_progress() != -1)
         {
             addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "OTA started MQTT will be closed\n");
             mqtt_disconnect(mqtt_client);
             return 1;
         }
-
+#endif
         // do we want to broadcast full state?
         // Do it slowly in order not to overload the buffers
         // The item indexes start at negative values for special items

@@ -195,7 +195,13 @@ int BL09XX_ResetEnergyCounter(const void *context, const char *cmd, const char *
         energyCounterStamp = xTaskGetTickCount();
     }
     ConsumptionResetTime = (time_t)NTP_GetCurrentTime();
+#if WINDOWS
+#elif PLATFORM_BL602
+#elif PLATFORM_W600 || PLATFORM_W800
+#elif PLATFORM_XR809
+#elif PLATFORM_BK7231N || PLATFORM_BK7231T
     if (ota_progress()==-1)
+#endif
     { 
         BL09XX_SaveEmeteringStatistics();
         lastConsumptionSaveStamp = xTaskGetTickCount();
@@ -370,7 +376,13 @@ void BL_ProcessUpdate(float voltage, float current, float power)
             actual_mday = ltm->tm_mday;
             MQTT_PublishMain_StringFloat(counter_mqttNames[3], dailyStats[1]);
             stat_updatesSent++;
+#if WINDOWS
+#elif PLATFORM_BL602
+#elif PLATFORM_W600 || PLATFORM_W800
+#elif PLATFORM_XR809
+#elif PLATFORM_BK7231N || PLATFORM_BK7231T
             if (ota_progress()==-1)
+#endif
             {
                 BL09XX_SaveEmeteringStatistics();
                 lastConsumptionSaveStamp = xTaskGetTickCount();
@@ -555,7 +567,13 @@ void BL_ProcessUpdate(float voltage, float current, float power)
     if (((energyCounter - lastSavedEnergyCounterValue) >= changeSavedThresholdEnergy) ||
         ((xTaskGetTickCount() - lastConsumptionSaveStamp) >= (6 * 3600 * 1000 / portTICK_PERIOD_MS)))
     {
+#if WINDOWS
+#elif PLATFORM_BL602
+#elif PLATFORM_W600 || PLATFORM_W800
+#elif PLATFORM_XR809
+#elif PLATFORM_BK7231N || PLATFORM_BK7231T
         if (ota_progress() == -1)
+#endif
         {
             lastSavedEnergyCounterValue = energyCounter;
             BL09XX_SaveEmeteringStatistics();

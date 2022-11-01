@@ -254,10 +254,16 @@ void NTP_OnEverySecond()
     {
         return;
     }
+#if WINDOWS
+#elif PLATFORM_BL602
+#elif PLATFORM_W600 || PLATFORM_W800
+#elif PLATFORM_XR809
+#elif PLATFORM_BK7231N || PLATFORM_BK7231T
     if (ota_progress() != -1)
     {
         return;
     }
+#endif
     if(g_ntp_socket == 0) {
         // if no socket, this is a reconnect delay
         if(g_ntp_delay > 0) {
