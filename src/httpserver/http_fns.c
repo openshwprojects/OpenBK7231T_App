@@ -418,7 +418,7 @@ int http_fn_index(http_request_t* request) {
 				poststr(request, "</tr>");
 			}
 		}
-		else if ((bRawPWMs && h_isChannelPWM(i)) || (channelType == ChType_Dimmer) || (channelType == ChType_Dimmer256)|| (channelType == ChType_Dimmer1000)) {
+		else if ((bRawPWMs && h_isChannelPWM(i)) || (channelType == ChType_Dimmer) || (channelType == ChType_Dimmer256) || (channelType == ChType_Dimmer1000)) {
 			int maxValue;
 			// PWM and dimmer both use a slider control
 			const char* inputName = h_isChannelPWM(i) ? "pwm" : "dim";
@@ -708,12 +708,9 @@ int http_fn_cfg_webapp_set(http_request_t* request) {
 	http_html_start(request, "Saving Webapp");
 
 	if (http_getArg(request->url, "url", tmpA, sizeof(tmpA))) {
-		if (CFG_SetWebappRoot(tmpA)) {
-			hprintf255(request, "Webapp url set to %s", tmpA);
-		}
-		else {
-			hprintf255(request, "Webapp url change error - failed to save to flash.");
-		}
+		CFG_SetWebappRoot(tmpA);
+		CFG_Save_IfThereArePendingChanges();
+		hprintf255(request, "Webapp url set to %s", tmpA);
 	}
 	else {
 		poststr(request, "Webapp url not set because you didn't specify the argument.");
@@ -767,6 +764,7 @@ int http_fn_cfg_ping(http_request_t* request) {
 		bChanged = 1;
 	}
 	if (bChanged) {
+		CFG_Save_IfThereArePendingChanges();
 		poststr(request, "<h4> Changes will be applied after restarting</h4>");
 	}
 	poststr(request, "<form action=\"/cfg_ping\">\
@@ -883,6 +881,8 @@ int http_fn_cfg_name(http_request_t* request) {
 	if (http_getArg(request->url, "name", tmpA, sizeof(tmpA))) {
 		CFG_SetDeviceName(tmpA);
 	}
+	CFG_Save_IfThereArePendingChanges();
+
 	poststr(request, "<h2> Use this to change device names</h2>");
 	add_label_text_field(request, "ShortName", "shortName", CFG_GetShortDeviceName(), "<form action=\"/cfg_name\">");
 	add_label_text_field(request, "Full Name", "name", CFG_GetDeviceName(), "<br>");
