@@ -48,7 +48,7 @@ const char* counter_devClasses[OBK_NUM_COUNTERS] = {
 	"",
     "energy",
     "energy",
-    "date"
+    "timestamp"
 };
 
 typedef struct driver_s {

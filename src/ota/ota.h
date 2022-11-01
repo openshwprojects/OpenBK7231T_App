@@ -25,6 +25,7 @@ void close_ota();
 void otarequest(const char *urlin);
 
 int ota_progress();
+int ota_total_bytes();
 
 #endif /* __OTA_H__ */
 
