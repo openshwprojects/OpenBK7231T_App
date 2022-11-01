@@ -111,7 +111,7 @@ cJSON* hass_build_device_node(cJSON* ids) {
 /// @return 
 HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload_on, char* payload_off) {
 	HassDeviceInfo* info = os_malloc(sizeof(HassDeviceInfo));
-	addLogAdv(LOG_INFO, LOG_FEATURE_HASS, "hass_init_device_info=%p", info);
+	addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "hass_init_device_info=%p", info);
 
 	hass_populate_unique_id(type, index, info->unique_id);
 	hass_populate_device_config_channel(type, info->unique_id, info);
@@ -239,7 +239,6 @@ HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type) {
 /// @param index Index corresponding to sensor_mqttNames.
 /// @return 
 HassDeviceInfo* hass_init_sensor_device_info(int index) {
-	const char* clientId = CFG_GetMQTTClientId();
 	HassDeviceInfo* info = hass_init_device_info(ENTITY_SENSOR, index, NULL, NULL);
 
 	//https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes
@@ -249,7 +248,7 @@ HassDeviceInfo* hass_init_sensor_device_info(int index) {
 		cJSON_AddStringToObject(info->root, "dev_cla", sensor_mqtt_device_classes[index]);   //device_class=voltage,current,power
 		cJSON_AddStringToObject(info->root, "unit_of_meas", sensor_mqtt_device_units[index]);   //unit_of_measurement
 
-		sprintf(g_hassBuffer, "%s/%s/get", clientId, sensor_mqttNames[index]);
+		sprintf(g_hassBuffer, "~/%s/get", sensor_mqttNames[index]);
 		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
 	}
 	if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_CONSUMPTION_STATS))
@@ -260,7 +259,7 @@ HassDeviceInfo* hass_init_sensor_device_info(int index) {
 			cJSON_AddStringToObject(info->root, "unit_of_meas", "Wh");   //unit_of_measurement
 		}
 
-		sprintf(g_hassBuffer, "%s/%s/get", clientId, counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
+		sprintf(g_hassBuffer, "~/%s/get", counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
 		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
 	}
 
