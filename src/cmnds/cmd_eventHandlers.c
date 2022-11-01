@@ -390,7 +390,25 @@ static int CMD_AddEventHandler(const void *context, const char *cmd, const char 
 
 	return 1;
 }
+static int CMD_ClearAllHandlers(const void *context, const char *cmd, const char *args, int cmdFlags){
 
+	eventHandler_t *ev, *next;
+
+	ev = g_eventHandlers;
+
+	while(ev != 0) {
+		next = ev->next;
+
+		free(ev->command);
+		free(ev);
+
+		ev = next;
+	}
+
+	g_eventHandlers = 0;
+
+	return 1;
+}
 static int CMD_AddChangeHandler(const void *context, const char *cmd, const char *args, int cmdFlags){
 	const char *eventName;
 	const char *relation;
@@ -454,6 +472,7 @@ void EventHandlers_Init() {
     CMD_RegisterCommand("AddEventHandler", "", CMD_AddEventHandler, "qqqqq0", NULL);
     CMD_RegisterCommand("AddChangeHandler", "", CMD_AddChangeHandler, "qqqqq0", NULL);
     CMD_RegisterCommand("listEvents", "", CMD_ListEvents, "qqqqq0", NULL);
+    CMD_RegisterCommand("clearAllHandlers", "", CMD_ClearAllHandlers, "qqqqq0", NULL);
 
 }
 
