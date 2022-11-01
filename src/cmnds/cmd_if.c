@@ -117,23 +117,23 @@ bool CMD_ExpandConstant(const char *s, const char *stop, float *out) {
 	int idx;
 
 	if(strCompareBound(s,"MQTTOn", stop, false)) {
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_ExpandConstant: MQTTOn");
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: MQTTOn");
 		*out = Main_HasMQTTConnected();
 		return true;
 	}
 	if(strCompareBound(s,"$CH*", stop, 1) || strCompareBound(s,"$CH**", stop, 1)) {
 		idx = atoi(s+3);
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_ExpandConstant: channel value of idx %i",idx);
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: channel value of idx %i",idx);
 		*out =  CHANNEL_Get(idx);
 		return true;
 	}
 	if(strCompareBound(s,"$led_dimmer", stop, 1)) {
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_dimmer");
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_dimmer");
 		*out = LED_GetDimmer();
 		return true;
 	}
 	if(strCompareBound(s,"$led_enableAll", stop, 1)) {
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_enableAll");
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_enableAll");
 		*out = LED_GetEnableAll();
 		return true;
 	}
@@ -165,14 +165,14 @@ float CMD_EvaluateExpression(const char *s, const char *stop) {
 		idx = stop - s;
 		memcpy(g_expDebugBuffer,s,idx);
 		g_expDebugBuffer[idx] = 0;
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: will run '%s'",g_expDebugBuffer);
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: will run '%s'",g_expDebugBuffer);
 	}
 
 	op = CMD_FindOperator(s, stop, &opCode);
 	if(op) {
 		const char *p2;
 	
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: operator %i",opCode);
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: operator %i",opCode);
 
 		// first token block begins at 's' and ends at 'op'
 		// second token block begins at 'p2' and ends at NULL
@@ -238,7 +238,7 @@ float CMD_EvaluateExpression(const char *s, const char *stop) {
 		return c;
 	}
 
-	ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: will call atof for %s",s);
+	ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: will call atof for %s",s);
 	return atof(s);
 }
 
@@ -276,11 +276,11 @@ int CMD_If(const void *context, const char *cmd, const char *args, int cmdFlags)
 		cmdB = 0;
 	}
 
-	ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: cmdA is '%s'",cmdA);
+	ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_If: cmdA is '%s'",cmdA);
 	if(cmdB) {
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: cmdB is '%s'",cmdB);
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_If: cmdB is '%s'",cmdB);
 	}
-	ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: condition is '%s'",condition);
+	ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_If: condition is '%s'",condition);
 
 	value = CMD_EvaluateExpression(condition, 0);
 
