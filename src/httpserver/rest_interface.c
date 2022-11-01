@@ -55,7 +55,7 @@ static int http_rest_post_lfs_file(http_request_t* request);
 static int http_favicon(http_request_t* request);
 
 static int http_rest_post_reboot(http_request_t* request);
-static int http_rest_post_flash(http_request_t* request, int startaddr);
+static int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr);
 static int http_rest_get_flash(http_request_t* request, int startaddr, int len);
 static int http_rest_get_flash_advanced(http_request_t* request);
 static int http_rest_post_flash_advanced(http_request_t* request);
@@ -166,7 +166,22 @@ static int http_rest_get(http_request_t* request) {
 
 #ifdef BK_LITTLEFS
 	if (!strcmp(request->url, "api/fsblock")) {
-		return http_rest_get_flash(request, LFS_BLOCKS_START, LFS_BLOCKS_LEN);
+        uint32_t newsize = CFG_GetLFS_Size();
+        uint32_t newstart = (LFS_BLOCKS_END - newsize);
+
+        newsize = (newsize/LFS_BLOCK_SIZE)*LFS_BLOCK_SIZE;
+
+        // double check again that we're within bounds - don't want
+        // boot overwrite or anything nasty....
+        if (newstart < LFS_BLOCKS_START_MIN){
+            return http_rest_error(request, -20, "LFS Size mismatch");
+        }
+        if ((newstart + newsize > LFS_BLOCKS_END) ||
+            (newstart + newsize < LFS_BLOCKS_START_MIN)){
+            return http_rest_error(request, -20, "LFS Size mismatch");
+        }
+
+		return http_rest_get_flash(request, newstart, newsize);
 	}
 #endif
 
@@ -225,9 +240,9 @@ static int http_rest_post(http_request_t* request) {
 	}
 	if (!strcmp(request->url, "api/ota")) {
 #if PLATFORM_BK7231T
-		return http_rest_post_flash(request, START_ADR_OF_BK_PARTITION_OTA);
+		return http_rest_post_flash(request, START_ADR_OF_BK_PARTITION_OTA, LFS_BLOCKS_END);
 #elif PLATFORM_BK7231N
-		return http_rest_post_flash(request, START_ADR_OF_BK_PARTITION_OTA);
+		return http_rest_post_flash(request, START_ADR_OF_BK_PARTITION_OTA, LFS_BLOCKS_END);
 #else
 		// TODO
 #endif
@@ -246,8 +261,23 @@ static int http_rest_post(http_request_t* request) {
 		if (lfs_present()) {
 			release_lfs();
 		}
+        uint32_t newsize = CFG_GetLFS_Size();
+        uint32_t newstart = (LFS_BLOCKS_END - newsize);
+
+        newsize = (newsize/LFS_BLOCK_SIZE)*LFS_BLOCK_SIZE;
+
+        // double check again that we're within bounds - don't want
+        // boot overwrite or anything nasty....
+        if (newstart < LFS_BLOCKS_START_MIN){
+            return http_rest_error(request, -20, "LFS Size mismatch");
+        }
+        if ((newstart + newsize > LFS_BLOCKS_END) ||
+            (newstart + newsize < LFS_BLOCKS_START_MIN)){
+            return http_rest_error(request, -20, "LFS Size mismatch");
+        }
+
 		// we are writing the lfs block
-		int res = http_rest_post_flash(request, LFS_BLOCKS_START);
+		int res = http_rest_post_flash(request, newstart, LFS_BLOCKS_END);
 		// initialise the filesystem, it should be there now.
 		// don't create if it does not mount
 		init_lfs(0);
@@ -866,7 +896,7 @@ static int http_rest_error(http_request_t* request, int code, char* msg) {
 }
 
 
-static int http_rest_post_flash(http_request_t* request, int startaddr) {
+static int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr) {
 #if PLATFORM_XR809
 
 #elif PLATFORM_BL602
@@ -890,7 +920,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr) {
 		towrite = request->contentLength;
 	}
 
-	if (writelen < 0 || (startaddr + writelen > 0x200000)) {
+	if (writelen < 0 || (startaddr + writelen > maxaddr)) {
 		ADDLOG_DEBUG(LOG_FEATURE_API, "ABORTED: %d bytes to write", writelen);
 		return http_rest_error(request, -20, "writelen < 0 or end > 0x200000");
 	}
@@ -899,6 +929,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr) {
 		//ADDLOG_DEBUG(LOG_FEATURE_API, "%d bytes to write", writelen);
 		add_otadata((unsigned char*)writebuf, writelen);
 		total += writelen;
+		startaddr += writelen;
 		towrite -= writelen;
 		if (towrite > 0) {
 			writebuf = request->received;
@@ -945,7 +976,8 @@ static int http_rest_post_flash_advanced(http_request_t* request) {
 	int sres;
 	sres = sscanf(params, "%x", &startaddr);
 	if (sres == 1 && startaddr >= START_ADR_OF_BK_PARTITION_OTA) {
-		return http_rest_post_flash(request, startaddr);
+		// allow up to end of flash
+		return http_rest_post_flash(request, startaddr, 0x200000);
 	}
 	return http_rest_error(request, -1, "invalid url");
 }

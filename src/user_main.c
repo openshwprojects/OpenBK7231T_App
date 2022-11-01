@@ -296,10 +296,11 @@ void Main_OnEverySecond()
 		//int mqtt_max, mqtt_cur, mqtt_mem;
 		//MQTT_GetStats(&mqtt_cur, &mqtt_max, &mqtt_mem);
 	    //ADDLOGF_INFO("mqtt req %i/%i, free mem %i\n", mqtt_cur,mqtt_max,mqtt_mem);
-		ADDLOGF_INFO("%sTime %i, idle %i, free %d, MQTT %i(%i), bWifi %i, secondsWithNoPing %i, socks %i/%i\n",
+		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d, MQTT %i(%i), bWifi %i, secondsWithNoPing %i, socks %i/%i\n",
 			safe, g_secondsElapsed, idleCount, xPortGetFreeHeapSize(),bMQTTconnected, MQTT_GetConnectEvents(), 
             g_bHasWiFiConnected, g_timeSinceLastPingReply, LWIP_GetActiveSockets(), LWIP_GetMaxSockets());
-
+		// reset so it's a per-second counter.
+		idleCount = 0;
 	}
 
 	// print network info
@@ -505,6 +506,11 @@ void Main_Init()
 
 	HTTPServer_Start();
 	ADDLOGF_DEBUG("Started http tcp server\r\n");
+
+#ifdef BK_LITTLEFS
+	LFSAddCmds(); // setlfssize
+#endif
+
 	// only initialise certain things if we are not in AP mode
 	if (!bSafeMode)
     {
