@@ -1309,6 +1309,10 @@ int http_fn_ha_discovery(http_request_t* request) {
 		sprintf(topic, "homeassistant");    //default discovery topic is `homeassistant`
 	}
 
+	//Note: PublishChannels should be done for the last MQTT publish except for power measurement which always
+	//sends out MQTT updates.
+	bool ledDriverChipRunning = isLedDriverChipRunning();
+
 	struct cJSON_Hooks hooks;
 	hooks.malloc_fn = os_malloc;
 	hooks.free_fn = os_free;
@@ -1327,12 +1331,18 @@ int http_fn_ha_discovery(http_request_t* request) {
 
 		//Invoke publishChannles after the last topic
 		if (dev_info != NULL) {
-			MQTT_QueuePublishWithCommand(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN, PublishChannels);
+			PostPublishCommands ppCommand = PublishChannels;
+
+			if (ledDriverChipRunning || (pwmCount > 0)) {
+				ppCommand = None;
+			}
+
+			MQTT_QueuePublishWithCommand(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN, ppCommand);
 			hass_free_device_info(dev_info);
 		}
 	}
 
-	if (pwmCount == 5 || isLedDriverChipRunning()) {
+	if (pwmCount == 5 || ledDriverChipRunning) {
 		// Enable + RGB control + CW control
 		dev_info = hass_init_light_device_info(ENTITY_LIGHT_RGBCW);
 		MQTT_QueuePublishWithCommand(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN, PublishChannels);
