@@ -1148,6 +1148,29 @@ int CHANNEL_ParseChannelType(const char *s) {
 		return ChType_Current;
 	return ChType_Error;
 }
+static int CMD_setButtonHoldRepeat(const void *context, const char *cmd, const char *args, int cmdFlags){
+
+
+	Tokenizer_TokenizeString(args,0);
+
+	if(Tokenizer_GetArgsCount() < 1) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"This command requires 1 argument - timeRepeat - current %i",
+			g_cfg.buttonHoldRepeat);
+		return 1;
+	}
+
+
+	CFG_SetButtonRepeatPressTime(Tokenizer_GetArgInteger(0));
+
+	CFG_Save_IfThereArePendingChanges();
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Times set, %i. Config autosaved to flash.",
+		 g_cfg.buttonHoldRepeat
+		);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"If something is wrong, you can restore default %i",
+		CFG_DEFAULT_BTN_REPEAT);
+	return 0;
+}
 static int CMD_SetButtonTimes(const void *context, const char *cmd, const char *args, int cmdFlags){
 
 
@@ -1321,5 +1344,6 @@ void PIN_AddCommands(void)
 	CMD_RegisterCommand("setChannelType", NULL, CMD_SetChannelType, "qqqqqqqq", NULL);
 	CMD_RegisterCommand("showChannelValues", NULL,CMD_ShowChannelValues, "log channel values", NULL);
 	CMD_RegisterCommand("setButtonTimes", NULL,CMD_SetButtonTimes, "", NULL);
+	CMD_RegisterCommand("setButtonHoldRepeat", NULL,CMD_setButtonHoldRepeat, "", NULL);
 
 }
