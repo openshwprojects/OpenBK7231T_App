@@ -488,7 +488,7 @@ void BL_ProcessUpdate(float voltage, float current, float power)
             energyCounterMinutesStamp = xTaskGetTickCount();
             energyCounterMinutesIndex++;
 
-            if (MQTT_IsReady() == false)
+            if (MQTT_IsReady() == true)
             {
                 MQTT_PublishMain_StringFloat(counter_mqttNames[1], DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
                 EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR, lastSentEnergyCounterLastHour, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));

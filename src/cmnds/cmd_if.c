@@ -154,7 +154,7 @@ float CMD_EvaluateExpression(const char *s, const char *stop) {
 	if(stop == 0) {
 		stop = s + strlen(s);
 	}
-	while(stop > s && isspace(stop[-1])) {
+	while(stop > s && isspace(((int)stop[-1]))) {
 		stop --;
 	}
 	if(g_expDebugBuffer==0){
