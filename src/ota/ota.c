@@ -61,18 +61,20 @@ void close_ota(){
 	  flash_protection_op(FLASH_XTX_16M_SR_WRITE_ENABLE, FLASH_UNPROTECT_LAST_BLOCK);
 }
 
-void add_otadata(unsigned char *data, int len){
-
+void add_otadata(unsigned char *data, int len)
+{
     if (!sector) return;
     //addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"OTA DataRxed start: %02.2x %02.2x len %d\r\n", data[0], data[1], len);
-    while (len){
+    while (len > 0)
+    {
         // force it to sleep...  we MUST have some idle task processing
-	      // else task memory doesn't get freed
-	      rtos_delay_milliseconds(40);
+	    // else task memory doesn't get freed
 
-        if (sectorlen < SECTOR_SIZE){
+        if (sectorlen < SECTOR_SIZE)
+        {
             int lenstore = SECTOR_SIZE - sectorlen;
-            if (lenstore > len) lenstore = len;
+            if (lenstore > len) 
+                lenstore = len;
             memcpy(sector + sectorlen, data, lenstore);
             data += lenstore;
             len -= lenstore;
@@ -86,12 +88,14 @@ void add_otadata(unsigned char *data, int len){
             sectorlen = 0;
         } else {
             //addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"OTA sectorlen 0x%x not yet 0x%x\n", sectorlen, SECTOR_SIZE);
+            rtos_delay_milliseconds(10);
         }
     }
 }
 
 static void store_sector(unsigned int addr, unsigned char *data){
-    if (!(addr % 0x4000)){
+    //if (!(addr % 0x4000))
+    {
       addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"%x", addr);
     }
     //addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"writing OTA, addr 0x%x\n", addr);
@@ -166,7 +170,7 @@ static char url[256] = "http://raspberrypi:1880/firmware";
 static const char *header = "";
 static char *content_type = "text/csv";
 static char *post_data = "";
-#define BUF_SIZE 1024
+#define BUF_SIZE 2048
 
 char *http_buf = (void *)0;
 
@@ -210,5 +214,10 @@ void otarequest(const char *urlin){
 int ota_progress()
 {
   return ota_status;
+}
+
+int ota_total_bytes()
+{
+  return total_bytes;
 }
 
