@@ -941,6 +941,10 @@ typedef struct BENCHMARK_TEST_INFO
     bool report_published;
 } BENCHMARK_TEST_INFO;
 
+#ifndef portTICK_RATE_MS
+#define portTICK_RATE_MS ( ( portTickType ) 1000 / configTICK_RATE_HZ )
+#endif
+
 void MQTT_Test_Tick(void *param)
 {
     BENCHMARK_TEST_INFO *info = (BENCHMARK_TEST_INFO*)param;
