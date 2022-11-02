@@ -40,6 +40,7 @@ void RepeatingEvents_CancelRepeatingEvents(int userID)
 void RepeatingEvents_AddRepeatingEvent(const char *command, int secondsInterval, int times, int userID)
 {
 	repeatingEvent_t *ev;
+	char *cmd_copy;
 
 	// reuse existing
 	for(ev = g_repeatingEvents; ev; ev = ev->next) {
@@ -55,10 +56,20 @@ void RepeatingEvents_AddRepeatingEvent(const char *command, int secondsInterval,
 	}
 	// create new
 	ev = malloc(sizeof(repeatingEvent_t));
+	if(ev == 0) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"RepeatingEvents_OnEverySecond: failed to malloc new event\n");
+		return;
+	}
+	cmd_copy = strdup(command);
+	if(cmd_copy == 0) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"RepeatingEvents_OnEverySecond: failed to malloc command text copy\n");
+		free(ev);
+		return;
+	}
 
 	ev->next = g_repeatingEvents;
 	g_repeatingEvents = ev;
-	ev->command = strdup(command);
+	ev->command = cmd_copy;
 	ev->intervalSeconds = secondsInterval;
 	ev->times = times;
 	ev->userID = userID;
