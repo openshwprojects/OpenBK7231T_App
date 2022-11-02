@@ -39,7 +39,9 @@ static char g_ssdp_uuid[40] = "e427ce1a-3e80-43d0-ad6f-89ec42e46363";
 static void DRV_SSDP_Send_Notify();
 static int ssdp_timercount = 0;
 
-const char *HAL_GetMyIPString();
+extern const char *HAL_GetMyIPString();
+extern int Main_IsConnectedToWiFi();
+
 
 // allocated at first use, freed if stopped
 static char *advert_message = NULL;
@@ -85,7 +87,7 @@ static void obkDeviceTick(uint32_t ip){
 static void obkDeviceList(){
     for (int i = 0; i < MAX_OBK_DEVICES; i++){
         if (obkDevices[i].ip != 0){
-            addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_HTTP,"obk device 0x%08x", obkDevices[i].ip);
+            addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"obk device 0x%08x", obkDevices[i].ip);
         }
     }
 }
@@ -128,7 +130,7 @@ static void DRV_SSDP_CreateSocket_Receive() {
     g_ssdp_socket_receive = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (g_ssdp_socket_receive < 0) {
 		g_ssdp_socket_receive = -1;
-		addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"DRV_SSDP_CreateSocket_Receive: failed to do socket\n");
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP,"DRV_SSDP_CreateSocket_Receive: failed to do socket\n");
         return ;
     }
 
@@ -138,7 +140,7 @@ static void DRV_SSDP_CreateSocket_Receive() {
 		iResult = setsockopt(g_ssdp_socket_receive, SOL_SOCKET, SO_BROADCAST, (char *)&flag, sizeof(flag));
 		if (iResult != 0)
 		{
-			addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"DRV_SSDP_CreateSocket_Receive: failed to do setsockopt SO_BROADCAST\n");
+			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP,"DRV_SSDP_CreateSocket_Receive: failed to do setsockopt SO_BROADCAST\n");
 			close(g_ssdp_socket_receive);
 			g_ssdp_socket_receive = -1;
 			return ;
@@ -152,7 +154,7 @@ static void DRV_SSDP_CreateSocket_Receive() {
 				g_ssdp_socket_receive, SOL_SOCKET, SO_REUSEADDR, (char*) &flag, sizeof(flag)
 			) < 0
 		){
-			addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"DRV_SSDP_CreateSocket_Receive: failed to do setsockopt SO_REUSEADDR\n");
+			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP,"DRV_SSDP_CreateSocket_Receive: failed to do setsockopt SO_REUSEADDR\n");
 			close(g_ssdp_socket_receive);
 			g_ssdp_socket_receive = -1;
 		  return ;
@@ -169,7 +171,7 @@ static void DRV_SSDP_CreateSocket_Receive() {
     // bind to receive address
     //
     if (bind(g_ssdp_socket_receive, (struct sockaddr*) &addr, sizeof(addr)) < 0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"DRV_DGR_CreateSocket_Receive: failed to do bind\n");
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP,"DRV_DGR_CreateSocket_Receive: failed to do bind\n");
 		close(g_ssdp_socket_receive);
 		g_ssdp_socket_receive = -1;
         return ;
@@ -194,7 +196,7 @@ static void DRV_SSDP_CreateSocket_Receive() {
 		if (
 			iResult < 0
 		){
-			addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"DRV_SSDP_CreateSocket_Receive: failed to do setsockopt IP_ADD_MEMBERSHIP %i\n",iResult);
+			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP,"DRV_SSDP_CreateSocket_Receive: failed to do setsockopt IP_ADD_MEMBERSHIP %i\n",iResult);
 			close(g_ssdp_socket_receive);
 			g_ssdp_socket_receive = -1;
 			return ;
@@ -232,7 +234,7 @@ static void DRV_SSDP_Send_Advert_To(struct sockaddr_in *addr) {
     const char *myip = HAL_GetMyIPString();
 
 	if (g_ssdp_socket_receive <= 0) {
-    	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"DRV_SSDP_Send_Advert_To: no socket");
+    	addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP,"DRV_SSDP_Send_Advert_To: no socket");
 		return ;
 	}
 
@@ -256,7 +258,7 @@ static void DRV_SSDP_Send_Advert_To(struct sockaddr_in *addr) {
         sizeof(struct sockaddr)
     );
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"DRV_SSDP_Send_Advert_To: sent message");
+	addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"DRV_SSDP_Send_Advert_To: sent message");
 }
 
 
@@ -369,7 +371,7 @@ static int DRV_SSDP_Service_Http(http_request_t* request){
         http_message = (char *)malloc(http_message_len);
     }
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"###################### DRV_SSDP_Service_Http");
+	addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP, "DRV_SSDP_Service_Http");
 
     snprintf(http_message, http_message_len, http_reply, 
         freindly_name,
@@ -397,6 +399,12 @@ static int Cmd_obkDeviceList(const void *context, const char *cmd, const char *a
 
 void DRV_SSDP_Init()
 {
+    if (!Main_IsConnectedToWiFi()){
+        addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"DRV_SSDP_Init - no wifi, so await connection");
+        DRV_SSDP_Active = 1;
+        return;
+    }
+
     memset(obkDevices, 0, sizeof(obkDevices));
 
     addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"DRV_SSDP_Init");
@@ -421,6 +429,10 @@ void DRV_SSDP_Init()
 
 
 void DRV_SSDP_RunEverySecond() {
+	if (g_ssdp_socket_receive <= 0) {
+		return ;
+	}
+
     ssdp_timercount++;
     if (ssdp_timercount >= 30){
         // multicast a notify
