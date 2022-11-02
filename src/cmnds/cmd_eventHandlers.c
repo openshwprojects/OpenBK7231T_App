@@ -338,20 +338,20 @@ static int CMD_AddEventHandler(const void *context, const char *cmd, const char 
 	int bTwoArgsMode;
 
 	if(args==0||*args==0) {
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddEventHandler: command requires argument");
+		ADDLOG_ERROR(LOG_FEATURE_EVENT, "CMD_AddEventHandler: command requires argument");
 		return 1;
 	}
 	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 3) {
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddEventHandler: command requires 3 arguments");
+		ADDLOG_ERROR(LOG_FEATURE_EVENT, "CMD_AddEventHandler: command requires 3 arguments");
 		return 1;
 	}
 	if(cmd[strlen("addEventHandler2")-1]=='2') {
 		bTwoArgsMode = 1;
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddEventHandler: will expect two args.");
+		ADDLOG_DEBUG(LOG_FEATURE_EVENT, "CMD_AddEventHandler: will expect two args.");
 	} else {
 		bTwoArgsMode = 0;
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddEventHandler: will expect 1 arg.");
+		ADDLOG_DEBUG(LOG_FEATURE_EVENT, "CMD_AddEventHandler: will expect 1 arg.");
 	}
 
 	arg2 = 0;
@@ -365,9 +365,9 @@ static int CMD_AddEventHandler(const void *context, const char *cmd, const char 
 		reqArg = Tokenizer_GetArgInteger(1);
 		if(bTwoArgsMode) {
 			arg2 = Tokenizer_GetArgInteger(2);
-			ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddEventHandler: arg2 = %i.",arg2);
+			ADDLOG_DEBUG(LOG_FEATURE_EVENT, "CMD_AddEventHandler: arg2 = %i.",arg2);
 		}
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddEventHandler: arg1 = %i.",reqArg);
+		ADDLOG_DEBUG(LOG_FEATURE_EVENT, "CMD_AddEventHandler: arg1 = %i.",reqArg);
 	}
 	if(bTwoArgsMode) {
 		cmdToCall = Tokenizer_GetArgFrom(3);
@@ -377,7 +377,7 @@ static int CMD_AddEventHandler(const void *context, const char *cmd, const char 
 
 	eventCode = EVENT_ParseEventName(eventName);
 	if(eventCode == CMD_EVENT_NONE) {
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddEventHandler: %s is not a valid event",eventName);
+		ADDLOG_ERROR(LOG_FEATURE_EVENT, "CMD_AddEventHandler: %s is not a valid event",eventName);
 		return 1;
 	}
 
