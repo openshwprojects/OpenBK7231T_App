@@ -135,6 +135,7 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 							uint8_t priority, const char* name,
 							beken_thread_function_t function,
 							uint32_t stack_size, beken_thread_arg_t arg );
+typedef unsigned int u32;
 
 #elif PLATFORM_XR809
 

@@ -25,7 +25,7 @@
 #include "lwip/inet.h"
 #include "../obk_config.h"
 #include "../httpserver/new_http.h"
-#include "common_math.h"
+//#include "common_math.h"
 
 extern int DRV_SSDP_Active;
 

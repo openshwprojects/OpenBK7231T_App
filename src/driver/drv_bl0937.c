@@ -11,6 +11,8 @@
 #include "drv_uart.h"
 #include "../httpserver/new_http.h"
 
+#if PLATFORM_BEKEN
+
 #include "BkDriverTimer.h"
 #include "BkDriverGpio.h"
 #include "sys_timer.h"
@@ -20,6 +22,9 @@
 
 #define ELE_HW_TIME 1
 #define HW_TIMER_ID 0
+#else
+
+#endif
 
 
 // Those can be set by Web page pins configurator
@@ -191,10 +196,17 @@ void BL0937_Init()
 
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF1);
 
+#if PLATFORM_BEKEN
     gpio_int_enable(GPIO_HLW_CF1,IRQ_TRIGGER_FALLING_EDGE,HlwCf1Interrupt);
+#else
 
+#endif
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF);
+#if PLATFORM_BEKEN
     gpio_int_enable(GPIO_HLW_CF,IRQ_TRIGGER_FALLING_EDGE,HlwCfInterrupt);
+#else
+
+#endif
 
 	CMD_RegisterCommand("PowerSet","",BL0937_PowerSet, "Sets current power value for calibration", NULL);
 	CMD_RegisterCommand("VoltageSet","",BL0937_VoltageSet, "Sets current V value for calibration", NULL);
@@ -218,8 +230,12 @@ void BL0937_RunFrame()
 
     ticksElapsed = (xTaskGetTickCount() - pulseStamp);
 
+#if PLATFORM_BEKEN
     GLOBAL_INT_DECLARATION();
     GLOBAL_INT_DISABLE();
+#else
+
+#endif
 	if(g_sel) {
 		res_v = g_vc_pulses;
 		g_sel = false;
@@ -232,7 +248,11 @@ void BL0937_RunFrame()
 
 	res_p = g_p_pulses;
 	g_p_pulses = 0;
+#if PLATFORM_BEKEN
     GLOBAL_INT_RESTORE();
+#else
+
+#endif
 
     pulseStamp = xTaskGetTickCount();
 	//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
