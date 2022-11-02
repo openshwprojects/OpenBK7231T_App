@@ -12,8 +12,18 @@
 
 #include "drv_bp5758d.h"
 
+// Some platforms have less pins than BK7231T.
+// For example, BL602 doesn't have pin number 26.
+// The pin code would crash BL602 while trying to access pin 26.
+// This is why the default settings here a per-platform.
+#if PLATFORM_BEKEN
 static int g_pin_clk = 26;
 static int g_pin_data = 24;
+#else
+static int g_pin_clk = 0;
+static int g_pin_data = 1;
+#endif
+
 // Mapping between RGBCW to current BP5758D channels
 static byte g_channelOrder[5] = { 0, 1, 2, 3, 4 };
 

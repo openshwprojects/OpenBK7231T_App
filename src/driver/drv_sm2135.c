@@ -12,8 +12,18 @@
 
 #include "drv_sm2135.h"
 
+// Some platforms have less pins than BK7231T.
+// For example, BL602 doesn't have pin number 26.
+// The pin code would crash BL602 while trying to access pin 26.
+// This is why the default settings here a per-platform.
+#if PLATFORM_BEKEN
 static int g_pin_clk = 26;
 static int g_pin_data = 24;
+#else
+static int g_pin_clk = 0;
+static int g_pin_data = 1;
+#endif
+
 static int g_current_setting_cw = SM2135_20MA;
 static int g_current_setting_rgb = SM2135_20MA;
 // Mapping between RGBCW to current SM2135 channels
