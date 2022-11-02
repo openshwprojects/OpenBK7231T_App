@@ -52,8 +52,8 @@ static int alias(const void * context, const char *cmd, const char *args, int cm
 		return 1;
 	}
 
-	cmdMem = test_strdup(ocmd);
-	aliasMem = test_strdup(alias);
+	cmdMem = strdup(ocmd);
+	aliasMem = strdup(alias);
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "New alias has been set: %s runs %s", alias, ocmd);
 
@@ -85,6 +85,36 @@ static int testMallocFree(const void * context, const char *cmd, const char *arg
 	}
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Malloc has been tested! Total calls %i, reps now %i",totalCalls,repeats);
+
+    return 0;
+}
+// Usage: addRepeatingEvent 1 -1 testStrdup
+static int testStrdup(const void * context, const char *cmd, const char *args, int cmdFlags){
+	int repeats;
+	int rep;
+    char *msg;
+	int i;
+	int ra1;
+	static int totalCalls = 0;
+	const char *s = "Strdup test123";
+
+	repeats = atoi(args);
+	if(repeats < 1)
+		repeats = 1;
+
+	totalCalls++;
+
+	for(rep = 0; rep < repeats; rep++) {
+		ra1 = 1 + abs(rand() % 1000);
+
+		msg = strdup(s);
+		
+	
+
+		os_free(msg);
+	}
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "testStrdup has been tested! Total calls %i, reps now %i",totalCalls,repeats);
 
     return 0;
 }
@@ -202,6 +232,7 @@ int fortest_commands_init(){
     CMD_RegisterCommand("testJSON", "", testJSON, "", NULL);
     CMD_RegisterCommand("testLog", "", testLog, "", NULL);
     CMD_RegisterCommand("testArgs", "", testArgs, "", NULL);
+    CMD_RegisterCommand("testStrdup", "", testStrdup, "", NULL);
     return 0;
 }
 

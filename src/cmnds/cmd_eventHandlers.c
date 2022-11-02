@@ -258,7 +258,7 @@ void EventHandlers_AddEventHandler_Integer(byte eventCode, int type, int require
 
 	ev->requiredArgumentText = NULL;
 	ev->eventType = type;
-	ev->command = test_strdup(commandToRun);
+	ev->command = strdup(commandToRun);
 	ev->eventCode = eventCode;
 	ev->requiredArgument = requiredArgument;
 	ev->requiredArgument2 = requiredArgument2;
@@ -272,9 +272,9 @@ void EventHandlers_AddEventHandler_String(byte eventCode, int type, const char *
 	ev->next = g_eventHandlers;
 	g_eventHandlers = ev;
 
-	ev->requiredArgumentText = test_strdup(requiredArgument);
+	ev->requiredArgumentText = strdup(requiredArgument);
 	ev->eventType = type;
-	ev->command = test_strdup(commandToRun);
+	ev->command = strdup(commandToRun);
 	ev->eventCode = eventCode;
 	ev->requiredArgument = 0;
 	ev->requiredArgument2 = 0;

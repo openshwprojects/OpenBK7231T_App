@@ -17,7 +17,7 @@ typedef int OBK_Publish_Result;
 // because when I did, the WiFi broke somehow
 // It seems some libraries must have the full version of vsnprintf available.
 
-#if 0
+#if 1
 #define vsnprintf vsnprintf2
 #define snprintf snprintf2
 #define sprintf sprintf2
@@ -280,7 +280,7 @@ int wal_stricmp(const char *a, const char *b) ;
 
 #endif
 
-char *test_strdup(const char *s);
+char *strdup(const char *s);
 int wal_stricmp(const char *a, const char *b);
 int wal_strnicmp(const char *a, const char *b, int count);
 int strcat_safe(char *tg, const char *src, int tgMaxLen);

@@ -1165,7 +1165,7 @@ int HTTPClient_Async_SendGet(const char *url_in){
 	strcpy(tmp,url_in);
 	url = tmp;
 #else
-	url = test_strdup(url_in);
+	url = strdup(url_in);
 #endif
 	if(url==0) {
 		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendGet for %s, failed to alloc URL memory\r\n");

@@ -8,7 +8,9 @@ const char *str_rssi[] = { "N/A", "Weak", "Fair", "Good", "Excellent" };
 // backlog lcd_clearAndGoto I2C1 0x23 1 1; lcd_print I2C1 0x23 Enabled
 // it got broken around 64 char
 // where is buffer with [64] bytes?
-char *test_strdup(const char *s)
+// 2022-11-02 update: It was also causing crash on OpenBL602. Original strdup was crashing while my strdup works.
+// Let's just rename test_strdup to strdup and let it be our main correct strdup
+char *strdup(const char *s)
 {
     char *res;
     size_t len;

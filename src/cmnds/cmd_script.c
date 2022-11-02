@@ -288,7 +288,7 @@ scriptFile_t *SVM_RegisterFile(const char *fname) {
 	}
 	r = malloc(sizeof(scriptFile_t));
 	memset(r,0,sizeof(scriptFile_t));
-	r->fname = test_strdup(fname);
+	r->fname = strdup(fname);
 	// cast from byte* to char*
 	r->data = (char*)LFS_ReadFile(fname);
 	r->next = g_scriptFiles;
