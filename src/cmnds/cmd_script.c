@@ -199,7 +199,29 @@ delay_ms $CH11
 led_dimmer $led_dimmer+$CH10
 goto again
 
+Example 7:
 
+// Button OnHoldStart and OnHold demo
+// Requires a button on pin 20
+// Channel 10 is used as variable
+// When button hold start happens, channel 10 is set 0
+// When a button is held, the value is added to channel 10 repeatedly.
+// Also, when adding, the channel 10 is used as a brightness for Tasmota Devices Group
+
+// clear previous handlers
+clearAllHandlers
+
+// make sure that DGR is running
+startDriver DGR
+// generate repeat after 100 ms - yes, unit here is times 100ms
+// so 1 means every 100ms
+// 2 means every 200ms
+setButtonHoldRepeat 1
+// when Hold starts, zero the variable
+addEventHandler OnHoldStart 20 SetChannel 10 0
+// when Hold repeats, add a 10 value as a step
+// AddChannelSyntax: channelindex delta minValue maxValue
+addEventHandler OnHold 20 backlog AddChannel 10 2 0 255; DGR_SendBrightness roomLEDstrips $CH10
 
 */
 
