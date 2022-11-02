@@ -15,7 +15,7 @@
 // put 1 to enable deduper of fast changing values
 // This is used to avoid sending, let's say, 20 packets per second for a led_dimmer that
 // is increased by one 20 times per second
-#define DEDUPER_ENABLE_DELAY_SEND_OF_FAST_CHANGING_VALUES 0
+#define DEDUPER_ENABLE_DELAY_SEND_OF_FAST_CHANGING_VALUES 1
 // If option above is enabled,
 // do not send the same publish (even with differnt value) more often that this:
 #define MIN_INTERVAL_BETWEEN_SENDS 1
@@ -69,6 +69,8 @@ void MQTT_Dedup_Tick() {
 			mqtt_dedups[i]->timeSinceLastSend++;
 #if DEDUPER_ENABLE_DELAY_SEND_OF_FAST_CHANGING_VALUES
 			if(mqtt_dedups[i]->timeSinceLastSend > MIN_INTERVAL_BETWEEN_SENDS && mqtt_dedups[i]->bValueDirty) {
+				// Some values of this publish were not published, because we had too many publish requests in one second or so.
+				// Now the cooldown has passed, so we can send the LATEST, most up-to-date value of this publish.
 				MQTT_PublishMain_StringString(mqtt_dedups[i]->name,mqtt_dedups[i]->value,mqtt_dedups[i]->flags);
 				mqtt_dedups[i]->bValueDirty = false;
 				mqtt_dedups[i]->timeSinceLastSend = 0;

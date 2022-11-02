@@ -88,7 +88,7 @@ void CMD_Init() {
 		CMD_StartTCPCommandLine();
 	}
 #if PLATFORM_BEKEN
-	//CMD_InitScripting();
+	CMD_InitScripting();
 #endif
 }
 

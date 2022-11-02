@@ -87,6 +87,7 @@ int __cdecl main(void)
 	
 	ltm = localtime(&ConsumptionResetTime);
 
+	addLogAdv(1,1,"Simon test %f!",1.0f/3.0f);
 	addLogAdv(1,1,"Test %i, %f!",2010,3.14f);
     addLogAdv(1,1, "History Index: %ld<br>JSON Stats: %s <br>", energyCounterMinutesIndex,
                     (energyCounterStatsJSONEnable == true) ? "enabled" : "disabled");

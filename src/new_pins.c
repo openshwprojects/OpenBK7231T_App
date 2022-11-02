@@ -992,7 +992,7 @@ void PIN_ticks(void *param)
 	BTN_HOLD_REPEAT_TICKS = (g_cfg.buttonHoldRepeat * 100 / PIN_TMR_DURATION);
 
 #if PLATFORM_BEKEN
-	//SVM_RunThreads(PIN_TMR_DURATION);
+	SVM_RunThreads(PIN_TMR_DURATION);
 #endif
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_RunQuickTick();
