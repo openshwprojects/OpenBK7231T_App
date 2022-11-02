@@ -478,9 +478,24 @@ void Main_Init()
 {
 	const char *wifi_ssid, *wifi_pass;
 
+	// wait 100ms at the start.
+	// TCP is being setup in a different thread, and there does not seem to be a way to find out if it's complete yet?
+	// so just wait a bit, and then start.
+	int startDelay = 750;
+	bk_printf("\r\ndelaying start\r\n");
+	for (int i = 0; i < startDelay/10; i++){
+		rtos_delay_milliseconds(10);
+		bk_printf("#Startup delayed %dms#\r\n", i*10);
+	}
+	bk_printf("\r\nstarting....\r\n");
+
+	// through testing, 'Initializing TCP/IP stack' appears at ~500ms
+	// so we should wait at least 750?
+
 	// read or initialise the boot count flash area
 	HAL_FlashVars_IncreaseBootCount();
 	
+
 	#ifdef PLATFORM_BEKEN
 	bg_register_irda_check_func(isidle);
 	#endif
