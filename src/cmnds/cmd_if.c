@@ -237,8 +237,13 @@ float CMD_EvaluateExpression(const char *s, const char *stop) {
 		return c;
 	}
 
-	ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: will call atof for %s",s);
-	return atof(s);
+	if(1) {
+		idx = stop - s;
+		memcpy(g_expDebugBuffer,s,idx);
+		g_expDebugBuffer[idx] = 0;
+	}
+	ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: will call atof for %s",g_expDebugBuffer);
+	return atof(g_expDebugBuffer);
 }
 
 // if MQTTOnline then "qq" else "qq"
