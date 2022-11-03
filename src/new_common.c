@@ -14,6 +14,11 @@ const char *str_rssi[] = { "N/A", "Weak", "Fair", "Good", "Excellent" };
 
 // Compile nanoprintf in this translation unit.
 #define NANOPRINTF_IMPLEMENTATION
+
+#ifndef ssize_t
+#define ssize_t int
+#endif
+
 #include "nanoprintf.h"
 
 
