@@ -126,14 +126,29 @@ bool CMD_ExpandConstant(const char *s, const char *stop, float *out) {
 		*out =  CHANNEL_Get(idx);
 		return true;
 	}
-	if(strCompareBound(s,"$led_dimmer", stop, 1)) {
+	if(strCompareBound(s,"$led_dimmer", stop, 0)) {
 		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_dimmer");
 		*out = LED_GetDimmer();
 		return true;
 	}
-	if(strCompareBound(s,"$led_enableAll", stop, 1)) {
+	if(strCompareBound(s,"$led_enableAll", stop, 0)) {
 		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_enableAll");
 		*out = LED_GetEnableAll();
+		return true;
+	}
+	if(strCompareBound(s,"$led_hue", stop, 0)) {
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_hue");
+		*out = LED_GetHue();
+		return true;
+	}
+	if(strCompareBound(s,"$led_saturation", stop, 0)) {
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_saturation");
+		*out = LED_GetSaturation();
+		return true;
+	}
+	if(strCompareBound(s,"$led_temperature", stop, 0)) {
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_temperature");
+		*out = LED_GetTemperature();
 		return true;
 	}
 
