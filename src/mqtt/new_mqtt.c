@@ -785,9 +785,19 @@ static void MQTT_do_connect(mqtt_client_t* client)
 	);
 
 	// set pointer, there are no buffers to strcpy
+	// empty field for us means "no password", etc,
+	// but LWIP (without mods) expects a NULL pointer in that case...
 	mqtt_client_info.client_id = mqtt_clientID;
-	mqtt_client_info.client_pass = mqtt_pass;
-	mqtt_client_info.client_user = mqtt_userName;
+	if(mqtt_pass[0] != 0) {
+		mqtt_client_info.client_pass = mqtt_pass;
+	} else {
+		mqtt_client_info.client_pass = 0;
+	}
+	if(mqtt_userName[0] != 0) {
+		mqtt_client_info.client_user = mqtt_userName;
+	} else {
+		mqtt_client_info.client_user = 0;
+	}
 
 	sprintf(will_topic, "%s/connected", mqtt_clientID);
 	mqtt_client_info.will_topic = will_topic;
