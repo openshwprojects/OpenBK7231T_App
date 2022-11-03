@@ -4,6 +4,41 @@
 
 const char *str_rssi[] = { "N/A", "Weak", "Fair", "Good", "Excellent" };
 
+
+#define NANOPRINTF_USE_FIELD_WIDTH_FORMAT_SPECIFIERS 1
+#define NANOPRINTF_USE_PRECISION_FORMAT_SPECIFIERS 1
+#define NANOPRINTF_USE_LARGE_FORMAT_SPECIFIERS 1
+#define NANOPRINTF_USE_FLOAT_FORMAT_SPECIFIERS 1
+#define NANOPRINTF_USE_BINARY_FORMAT_SPECIFIERS 1
+#define NANOPRINTF_USE_WRITEBACK_FORMAT_SPECIFIERS 0
+
+// Compile nanoprintf in this translation unit.
+#define NANOPRINTF_IMPLEMENTATION
+#include "nanoprintf.h"
+
+int vsnprintf3(char *buffer, size_t bufsz, const char *fmt, va_list val) {
+    int const rv = npf_vsnprintf(buffer, bufsz, fmt, val);
+    return rv;
+}
+
+int snprintf3(char *buffer, size_t bufsz, const char *fmt, ...) {
+   	va_list val;
+    va_start(val, fmt);
+    int const rv = npf_vsnprintf(buffer, bufsz, fmt, val);
+    va_end(val);
+    return rv;
+}
+
+#define SPRINTFMAX 100
+int sprintf3(char *buffer, const char *fmt, ...) {
+   	va_list val;
+    va_start(val, fmt);
+    int const rv = npf_vsnprintf(buffer, SPRINTFMAX, fmt, val);
+    va_end(val);
+    return rv;
+}
+
+
 // Why strdup breaks strings?
 // backlog lcd_clearAndGoto I2C1 0x23 1 1; lcd_print I2C1 0x23 Enabled
 // it got broken around 64 char
@@ -217,7 +252,16 @@ static int normalize(double *val) {
     return exponent;
 }
 
-void ftoa_fixed(char *buffer, double value) {  
+void ftoa_fixed(char *buffer, double value){
+	int intr = (int)value;
+	int ttt = (int)round(value * 1000.0);
+	if (ttt < 0) ttt = -ttt;
+	ttt = ttt % 1000;
+
+	sprintf(buffer, "%d.%03d", intr, ttt);
+}
+
+void ftoa_fixed_x(char *buffer, double value) {  
     /* carry out a fixed conversion of a double value to a string, with a precision of 5 decimal digits. 
      * Values with absolute values less than 0.000001 are rounded to 0.0
      * Note: this blindly assumes that the buffer will be large enough to hold the largest possible result.
@@ -422,7 +466,11 @@ int vsnprintf2(char *o, size_t olen, char const *fmt, va_list arg) {
 					o = add_str(baseOut,o,olen,buffer);
 
 					fmt+=1;
-            }
+            } else {
+					// unknown format
+                    u.int_temp = va_arg(arg, int);
+
+			}
         }
         else {
 			o = add_char(baseOut,o,olen,ch);
