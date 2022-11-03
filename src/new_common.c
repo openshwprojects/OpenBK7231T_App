@@ -175,7 +175,7 @@ WIFI_RSSI_LEVEL wifi_rssi_scale(int8_t rssi_value)
 
 #if 1
 
-static void ftoa_fixed(char *buffer, double value);
+void ftoa_fixed(char *buffer, double value);
 static void ftoa_sci(char *buffer, double value);
 
 static char *add_char(char *base, char *cur, int max, char ch) {
@@ -217,7 +217,7 @@ static int normalize(double *val) {
     return exponent;
 }
 
-static void ftoa_fixed(char *buffer, double value) {  
+void ftoa_fixed(char *buffer, double value) {  
     /* carry out a fixed conversion of a double value to a string, with a precision of 5 decimal digits. 
      * Values with absolute values less than 0.000001 are rounded to 0.0
      * Note: this blindly assumes that the buffer will be large enough to hold the largest possible result.
