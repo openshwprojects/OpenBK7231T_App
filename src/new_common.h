@@ -236,7 +236,7 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 
 #include "../../beken378/func/key/multi_button.h"
 
-#define printf addLog
+#define printf(...) addLog(__VA_ARGS__)
 
 void delay_ms(UINT32 ms_count);
 
