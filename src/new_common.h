@@ -17,7 +17,7 @@ typedef int OBK_Publish_Result;
 // because when I did, the WiFi broke somehow
 // It seems some libraries must have the full version of vsnprintf available.
 
-#if 1
+#if 0
 #define vsnprintf vsnprintf2
 #define snprintf snprintf2
 #define sprintf sprintf2
