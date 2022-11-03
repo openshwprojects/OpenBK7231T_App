@@ -151,7 +151,6 @@ static int testRealloc(const void * context, const char *cmd, const char *args, 
     return 0;
 }
 
-extern void ftoa_fixed(char *buffer, double value);
 static int testLog(const void * context, const char *cmd, const char *args, int cmdFlags){
 	int a = 123;
 	float b = 3.14;
@@ -167,27 +166,6 @@ static int testFloats(const void * context, const char *cmd, const char *args, i
 	float b = 3.14;
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "This is an int - %i",a);
-
-	ADDLOG_INFO(LOG_FEATURE_CMD, "will do ftoa_fixed(buffer, float=0.01);");
-	char buff[40];
-	float t = 0.01;
-	ftoa_fixed(buff, t);
-	buff[39] = 0;
-	ADDLOG_INFO(LOG_FEATURE_CMD, "result %s, will do ftoa_fixed(buffer, double=0.01);", buff);
-	double q = 0.01;
-	ftoa_fixed(buff, q);
-	buff[39] = 0;
-	ADDLOG_INFO(LOG_FEATURE_CMD, "result %s, will do ftoa_fixed(buffer, double=1/3);", buff);
-	q = 1.0;
-	q = q/3.0;
-	ftoa_fixed(buff, q);
-	buff[39] = 0;
-	ADDLOG_INFO(LOG_FEATURE_CMD, "result %s, will do ftoa_fixed(buffer, double=2/3);", buff);
-	q = 2.0;
-	q = q/3.0;
-	ftoa_fixed(buff, q);
-	buff[39] = 0;
-	ADDLOG_INFO(LOG_FEATURE_CMD, "result %s", buff);
 	ADDLOG_INFO(LOG_FEATURE_CMD, "This is a float float - %f %f",b,b);
 	double d = (double)b;
 	ADDLOG_INFO(LOG_FEATURE_CMD, "This is a double double - %f %f",d, d);
