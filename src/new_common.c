@@ -16,6 +16,14 @@ const char *str_rssi[] = { "N/A", "Weak", "Fair", "Good", "Excellent" };
 #define NANOPRINTF_IMPLEMENTATION
 #include "nanoprintf.h"
 
+
+#ifdef WRAP_PRINTF
+#define vsnprintf3 __wrap_vsnprintf
+#define snprintf3 __wrap_snprintf
+#define sprintf3 __wrap_sprintf
+#define vsprintf3 __wrap_vsprintf
+#endif
+
 int vsnprintf3(char *buffer, size_t bufsz, const char *fmt, va_list val) {
     int const rv = npf_vsnprintf(buffer, bufsz, fmt, val);
     return rv;
@@ -37,6 +45,14 @@ int sprintf3(char *buffer, const char *fmt, ...) {
     va_end(val);
     return rv;
 }
+
+int vsprintf3(char *buffer, const char *fmt, va_list val) {
+    int const rv = npf_vsnprintf(buffer, SPRINTFMAX, fmt, val);
+    return rv;
+}
+
+
+
 
 
 // Why strdup breaks strings?

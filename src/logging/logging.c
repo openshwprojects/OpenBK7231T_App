@@ -319,9 +319,9 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 	}
 
 	va_start(argList, fmt);
-	vsnprintf3(t, (LOGGING_BUFFER_SIZE - (3 + t - tmp)), fmt, argList);
+	//vsnprintf3(t, (LOGGING_BUFFER_SIZE - (3 + t - tmp)), fmt, argList);
 	//vsnprintf2(t, (LOGGING_BUFFER_SIZE - (3 + t - tmp)), fmt, argList);
-	//vsnprintf(t, (LOGGING_BUFFER_SIZE - (3 + t - tmp)), fmt, argList);
+	vsnprintf(t, (LOGGING_BUFFER_SIZE - (3 + t - tmp)), fmt, argList);
 	va_end(argList);
 	if (tmp[strlen(tmp) - 1] == '\n') tmp[strlen(tmp) - 1] = '\0';
 	if (tmp[strlen(tmp) - 1] == '\r') tmp[strlen(tmp) - 1] = '\0';
