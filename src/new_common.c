@@ -229,7 +229,7 @@ WIFI_RSSI_LEVEL wifi_rssi_scale(int8_t rssi_value)
     return retVal;
 }
 
-#if 1
+#if 0
 
 void ftoa_fixed(char *buffer, double value);
 static void ftoa_sci(char *buffer, double value);
