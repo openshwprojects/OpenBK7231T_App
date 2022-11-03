@@ -168,13 +168,23 @@ static int testFloats(const void * context, const char *cmd, const char *args, i
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "This is an int - %i",a);
 
-	ADDLOG_INFO(LOG_FEATURE_CMD, "will do ftoa_fixed(buffer, float);");
+	ADDLOG_INFO(LOG_FEATURE_CMD, "will do ftoa_fixed(buffer, float=0.01);");
 	char buff[40];
 	float t = 0.01;
 	ftoa_fixed(buff, t);
 	buff[39] = 0;
-	ADDLOG_INFO(LOG_FEATURE_CMD, "result %s, will do ftoa_fixed(buffer, double);", buff);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "result %s, will do ftoa_fixed(buffer, double=0.01);", buff);
 	double q = 0.01;
+	ftoa_fixed(buff, q);
+	buff[39] = 0;
+	ADDLOG_INFO(LOG_FEATURE_CMD, "result %s, will do ftoa_fixed(buffer, double=1/3);", buff);
+	q = 1.0;
+	q = q/3.0;
+	ftoa_fixed(buff, q);
+	buff[39] = 0;
+	ADDLOG_INFO(LOG_FEATURE_CMD, "result %s, will do ftoa_fixed(buffer, double=2/3);", buff);
+	q = 2.0;
+	q = q/3.0;
 	ftoa_fixed(buff, q);
 	buff[39] = 0;
 	ADDLOG_INFO(LOG_FEATURE_CMD, "result %s", buff);
