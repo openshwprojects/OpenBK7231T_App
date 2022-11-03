@@ -147,6 +147,8 @@ void LED_SetEnableAll(int bEnable);
 int LED_GetEnableAll();
 void LED_GetBaseColorString(char * s);
 int LED_GetMode();
+float LED_GetHue();
+float LED_GetSaturation();
 OBK_Publish_Result LED_SendEnableAllState();
 OBK_Publish_Result LED_SendDimmerChange();
 OBK_Publish_Result LED_SendCurrentLightMode();

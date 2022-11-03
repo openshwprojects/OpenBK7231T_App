@@ -687,6 +687,9 @@ static int setSaturation(const void *context, const char *cmd, const char *args,
 
 	return 1;
 }
+float LED_GetSaturation() {
+	return g_hsv_s * 100.0f;
+}
 static int setHue(const void *context, const char *cmd, const char *args, int cmdFlags){
     float f;
 
@@ -697,6 +700,9 @@ static int setHue(const void *context, const char *cmd, const char *args, int cm
 	return 1;
 }
 
+float LED_GetHue() {
+	return g_hsv_h;
+}
 void NewLED_InitCommands(){
 	// set, but do not apply (force a refresh)
 	LED_SetTemperature(led_temperature_current,0);

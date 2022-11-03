@@ -81,12 +81,15 @@ int __cdecl main(void)
     struct tm *ltm;
 	time_t ConsumptionResetTime;
 	int i;
+	unsigned int max_scheme_len = 12345;
+	unsigned int some_uint_32 = 5667;
 
 	ConsumptionResetTime = time(0);
           
 	
 	ltm = localtime(&ConsumptionResetTime);
 
+	addLogAdv(1,1,"Scheme str is too small (%u >= %u)", max_scheme_len, some_uint_32);
 	addLogAdv(1,1,"Simon test %f!",1.0f/3.0f);
 	addLogAdv(1,1,"Test %i, %f!",2010,3.14f);
     addLogAdv(1,1, "History Index: %ld<br>JSON Stats: %s <br>", energyCounterMinutesIndex,

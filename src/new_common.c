@@ -315,6 +315,7 @@ int vsnprintf2(char *o, size_t olen, char const *fmt, va_list arg) {
     char buffer[16];
 	union {
 		int int_temp;
+		unsigned int unsigned_int_temp;
 		char char_temp;
 		char *string_temp;
 		double double_temp;
@@ -338,6 +339,16 @@ int vsnprintf2(char *o, size_t olen, char const *fmt, va_list arg) {
                 /* %c: print out a character    */
                     u.char_temp = va_arg(arg, int);
 					o = add_char(baseOut,o,olen,u.char_temp);
+
+					fmt+=1;
+			} else if(fmt[0] == 'u') {
+                /* %u: unsigned int */
+                    u.unsigned_int_temp = va_arg(arg, unsigned int);
+					// TODO: better way
+					// (it does a conversion from uint to int...)
+                    itoa(u.unsigned_int_temp, buffer, 10);
+
+					o = add_str(baseOut,o,olen,buffer);
 
 					fmt+=1;
 			} else if(fmt[0] == 's') {
