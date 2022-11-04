@@ -127,7 +127,11 @@ static UINT32 ir_chan = BKTIMER0;
 static UINT32 ir_div = 1;
 static UINT32 ir_periodus = 50;
 
-void timerConfigForReceive() {
+void timerConfigForReceive(){
+    // nothing here`
+}
+
+void _timerConfigForReceive() {
     ir_counter = 0;
 
     timer_param_t params = {
@@ -167,11 +171,15 @@ void timerConfigForReceive() {
 }
 
 static void timer_enable(){
+}
+static void timer_disable(){
+}
+static void _timer_enable(){
     UINT32 res;
     res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_UNIT_ENABLE, &ir_chan);
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
 }
-static void timer_disable(){
+static void _timer_disable(){
     UINT32 res;
     res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_UNIT_DISABLE, &ir_chan);
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer disabled %u", res);
@@ -386,7 +394,9 @@ extern "C" void DRV_IR_ISR(UINT8 t){
 #endif
     }
 
-    IR_ISR();
+    if (ourReceiver){
+        IR_ISR();
+    }
     ir_counter++;
 }
 
@@ -457,6 +467,11 @@ extern "C" void DRV_IR_Init(){
         delete temp;
     }
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"DRV_IR_Init: recv pin %i",pin);
+    if ((pin > 0) || (txpin > 0)){
+    } else {
+        _timer_disable();
+    }
+
 
     if (pin > 0){
         // setup IRrecv pin as input
@@ -499,6 +514,11 @@ extern "C" void DRV_IR_Init(){
             CMD_RegisterCommand("IRSend","",IR_Send_Cmd, "Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0", NULL);
 
         }
+    }
+    if ((pin > 0) || (txpin > 0)){
+        // both tx and rx need the interrupt
+        _timerConfigForReceive();
+        _timer_enable();
     }
 }
 
