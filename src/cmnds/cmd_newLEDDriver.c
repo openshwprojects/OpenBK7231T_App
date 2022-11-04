@@ -572,11 +572,12 @@ int LED_SetBaseColor(const void *context, const char *cmd, const char *args, int
 					baseColors[4] = rand()%255;
 				}
 			} else {
-				while (*c){
+				while (*c && g_numBaseColors < 5){
 					char tmp[3];
 					int r;
 					tmp[0] = *(c++);
-					if (!*c) break;
+					if (!*c)
+						break;
 					tmp[1] = *(c++);
 					tmp[2] = '\0';
 					r = sscanf(tmp, "%x", &val);
