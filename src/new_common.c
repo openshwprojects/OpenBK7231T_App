@@ -4,6 +4,62 @@
 
 const char *str_rssi[] = { "N/A", "Weak", "Fair", "Good", "Excellent" };
 
+
+#define NANOPRINTF_USE_FIELD_WIDTH_FORMAT_SPECIFIERS 1
+#define NANOPRINTF_USE_PRECISION_FORMAT_SPECIFIERS 1
+#define NANOPRINTF_USE_LARGE_FORMAT_SPECIFIERS 1
+#define NANOPRINTF_USE_FLOAT_FORMAT_SPECIFIERS 1
+#define NANOPRINTF_USE_BINARY_FORMAT_SPECIFIERS 1
+#define NANOPRINTF_USE_WRITEBACK_FORMAT_SPECIFIERS 0
+
+// Compile nanoprintf in this translation unit.
+#define NANOPRINTF_IMPLEMENTATION
+
+#ifndef ssize_t
+#define ssize_t int
+#endif
+
+#include "nanoprintf.h"
+
+
+#ifdef WRAP_PRINTF
+#define vsnprintf3 __wrap_vsnprintf
+#define snprintf3 __wrap_snprintf
+#define sprintf3 __wrap_sprintf
+#define vsprintf3 __wrap_vsprintf
+#endif
+
+int vsnprintf3(char *buffer, size_t bufsz, const char *fmt, va_list val) {
+    int const rv = npf_vsnprintf(buffer, bufsz, fmt, val);
+    return rv;
+}
+
+int snprintf3(char *buffer, size_t bufsz, const char *fmt, ...) {
+   	va_list val;
+    va_start(val, fmt);
+    int const rv = npf_vsnprintf(buffer, bufsz, fmt, val);
+    va_end(val);
+    return rv;
+}
+
+#define SPRINTFMAX 100
+int sprintf3(char *buffer, const char *fmt, ...) {
+   	va_list val;
+    va_start(val, fmt);
+    int const rv = npf_vsnprintf(buffer, SPRINTFMAX, fmt, val);
+    va_end(val);
+    return rv;
+}
+
+int vsprintf3(char *buffer, const char *fmt, va_list val) {
+    int const rv = npf_vsnprintf(buffer, SPRINTFMAX, fmt, val);
+    return rv;
+}
+
+
+
+
+
 // Why strdup breaks strings?
 // backlog lcd_clearAndGoto I2C1 0x23 1 1; lcd_print I2C1 0x23 Enabled
 // it got broken around 64 char
@@ -173,294 +229,3 @@ WIFI_RSSI_LEVEL wifi_rssi_scale(int8_t rssi_value)
     return retVal;
 }
 
-#if 1
-
-void ftoa_fixed(char *buffer, double value);
-static void ftoa_sci(char *buffer, double value);
-
-static char *add_char(char *base, char *cur, int max, char ch) {
-	int curLen;
-	curLen = cur - base;
-	if(curLen + 2 >= max)
-		return cur;
-	*cur = ch;
-	cur++;;
-	return cur;
-}
-static char *add_str(char *base, char *cur, int max, const char *s) {
-	int curLen;
-	curLen = cur - base;
-	while(*s) {
-		if(curLen + 2 >= max)
-			return cur;
-		*cur = *s;
-		s++;
-		cur++;
-		curLen++;
-	}
-	return cur;
-}
-static int normalize(double *val) {
-    int exponent = 0;
-    double value = *val;
-
-    while (value >= 1.0) {
-        value /= 10.0;
-        ++exponent;
-    }
-
-    while (value < 0.1) {
-        value *= 10.0;
-        --exponent;
-    }
-    *val = value;
-    return exponent;
-}
-
-void ftoa_fixed(char *buffer, double value) {  
-    /* carry out a fixed conversion of a double value to a string, with a precision of 5 decimal digits. 
-     * Values with absolute values less than 0.000001 are rounded to 0.0
-     * Note: this blindly assumes that the buffer will be large enough to hold the largest possible result.
-     * The largest value we expect is an IEEE 754 double precision real, with maximum magnitude of approximately
-     * e+308. The C standard requires an implementation to allow a single conversion to produce up to 512 
-     * characters, so that's what we really expect as the buffer size.     
-     */
-
-    int exponent = 0;
-    int places = 0;
-    static const int width = 4;
-
-    if (value == 0.0) {
-        buffer[0] = '0';
-        buffer[1] = '\0';
-        return;
-    }         
-
-    if (value < 0.0) {
-        *buffer++ = '-';
-        value = -value;
-    }
-
-    exponent = normalize(&value);
-
-    while (exponent > 0) {
-        int digit = value * 10;
-        *buffer++ = digit + '0';
-        value = value * 10 - digit;
-        ++places;
-        --exponent;
-    }
-
-    if (places == 0)
-        *buffer++ = '0';
-
-    *buffer++ = '.';
-
-    while (exponent < 0 && places < width) {
-        *buffer++ = '0';
-        --exponent;
-        ++places;
-    }
-
-    while (places < width) {
-        int digit = value * 10.0;
-        *buffer++ = digit + '0';
-        value = value * 10.0 - digit;
-        ++places;
-    }
-    *buffer = '\0';
-}
-
-static void ftoa_sci(char *buffer, double value) {
-    int exponent = 0;
-    //int places = 0;
-    int digit;
-	int i;
-    static const int width = 4;
-
-    if (value == 0.0) {
-        buffer[0] = '0';
-        buffer[1] = '\0';
-        return;
-    }
-
-    if (value < 0.0) {
-        *buffer++ = '-';
-        value = -value;
-    }
-
-    exponent = normalize(&value);
-
-    digit = value * 10.0;
-    *buffer++ = digit + '0';
-    value = value * 10.0 - digit;
-    --exponent;
-
-    *buffer++ = '.';
-
-    for (i = 0; i < width; i++) {
-        digit = value * 10.0;
-        *buffer++ = digit + '0';
-        value = value * 10.0 - digit;
-    }
-
-    *buffer++ = 'e';
-    itoa(exponent, buffer, 10);
-}
-
-
-int vsnprintf2(char *o, size_t olen, char const *fmt, va_list arg) {
-	char *baseOut;
-    char ch;
-    char buffer[16];
-	union {
-		int int_temp;
-		unsigned int unsigned_int_temp;
-		char char_temp;
-		char *string_temp;
-		double double_temp;
-	} u;
-
-	*o = 0;
-	baseOut = o;
-
-    while ( (ch = *fmt++) ) {
-		u.int_temp = o - baseOut;
-		if(u.int_temp + 2 >= olen) {
-			break;
-		}
-        if ( '%' == ch ) {
-			if(fmt[0] == '%') {
-                /* %% - print out a single %    */
-					o = add_char(baseOut,o,olen,'%');
-
-					fmt+=1;
-			} else if(fmt[0] == 'c') {
-                /* %c: print out a character    */
-                    u.char_temp = va_arg(arg, int);
-					o = add_char(baseOut,o,olen,u.char_temp);
-
-					fmt+=1;
-			} else if(fmt[0] == 'u') {
-                /* %u: unsigned int */
-                    u.unsigned_int_temp = va_arg(arg, unsigned int);
-					// TODO: better way
-					// (it does a conversion from uint to int...)
-                    itoa(u.unsigned_int_temp, buffer, 10);
-
-					o = add_str(baseOut,o,olen,buffer);
-
-					fmt+=1;
-			} else if(fmt[0] == 's') {
-                /* %s: print out a string       */
-                   u.string_temp = va_arg(arg, char *);
-					
-					o = add_str(baseOut,o,olen,u.string_temp);
-
-					fmt+=1;
-			} else if(fmt[0] == '0' && fmt[1] == '2' && fmt[3] == 'X') {
-              // %02X
-                    u.int_temp = va_arg(arg, long int);
-                    itoa(u.int_temp, buffer, 16);
-					// pad to number of digits
-					u.int_temp = (fmt[1] - '0') - strlen(buffer);
-					while(u.int_temp > 0) {
-						o = add_char(baseOut,o,olen,'0');
-						u.int_temp--;
-					}
-
-					o = add_str(baseOut,o,olen,buffer);
-
-					fmt+=3;
-			} else if(fmt[0] == '0' && (fmt[2] == 'd' || fmt[2] == 'i')) {
-              // %02d, %04d
-                    u.int_temp = va_arg(arg, long int);
-                    itoa(u.int_temp, buffer, 10);
-					// pad to number of digits
-					u.int_temp = (fmt[1] - '0') - strlen(buffer);
-					while(u.int_temp > 0) {
-						o = add_char(baseOut,o,olen,'0');
-						u.int_temp--;
-					}
-
-					o = add_str(baseOut,o,olen,buffer);
-
-					fmt+=3;
-			} else if(fmt[0] == '1' && fmt[1] == '.' && fmt[2] == '1' && fmt[3] == 'f') {
-              //placeholder for %1.1f Wh<
-                    u.double_temp = va_arg(arg, double);
-                    ftoa_fixed(buffer, u.double_temp);
-					o = add_str(baseOut,o,olen,buffer);
-
-					fmt+=4;
-			} else if(fmt[0] == 'l' && fmt[1] == 'd') {
-              // %ld, long int
-                    u.int_temp = va_arg(arg, long int);
-                    itoa(u.int_temp, buffer, 10);
-					o = add_str(baseOut,o,olen,buffer);
-
-					fmt+=2;
-			} else if(fmt[0] == 'l' && fmt[1] == 'i') {
-              // %li, long int
-                    u.int_temp = va_arg(arg, long int);
-                    itoa(u.int_temp, buffer, 10);
-					o = add_str(baseOut,o,olen,buffer);
-
-					fmt+=2;
-			} else if(fmt[0] == 'd' || fmt[0] == 'i') {
-                /* %d: print out an int         */
-                    u.int_temp = va_arg(arg, int);
-                    itoa(u.int_temp, buffer, 10);
-					o = add_str(baseOut,o,olen,buffer);
-
-					fmt+=1;
-			} else if(fmt[0] == 'x') {
-                /* %x: print out an int in hex  */
-                    u.int_temp = va_arg(arg, int);
-                    itoa(u.int_temp, buffer, 16);
-					o = add_str(baseOut,o,olen,buffer);
-
-					fmt+=1;
-			} else if(fmt[0] == 'f') {
-                    u.double_temp = va_arg(arg, double);
-                    ftoa_fixed(buffer, u.double_temp);
-					o = add_str(baseOut,o,olen,buffer);
-
-					fmt+=1;
-			} else if(fmt[0] == 'e') {
-                    u.double_temp = va_arg(arg, double);
-                    ftoa_sci(buffer, u.double_temp);
-					o = add_str(baseOut,o,olen,buffer);
-
-					fmt+=1;
-            }
-        }
-        else {
-			o = add_char(baseOut,o,olen,ch);
-        }
-    }
-	u.int_temp = o - baseOut;
-	baseOut[u.int_temp] = 0;
-    return u.int_temp;
-}
-int snprintf2(char *o, size_t olen, const char* fmt, ...)
-{
-	int len;
-	va_list argList;
-
-	va_start(argList, fmt);
-	len = vsnprintf2(o, olen, fmt, argList);
-	va_end(argList);
-	return len;
-}
-int sprintf2(char *o, const char* fmt, ...)
-{
-	int len;
-	va_list argList;
-
-	va_start(argList, fmt);
-	len = vsnprintf2(o, 8192, fmt, argList);
-	va_end(argList);
-	return len;
-}
-#endif

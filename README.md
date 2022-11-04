@@ -50,6 +50,9 @@ A: First type "loglevel x" in console, where x is 0 to 7, default value is 3 (lo
 <em>Q: I entered wrong SSID and my device is not accessible. How to recover?</em><br>
 A: Do five short power on/power off cycles (but not too short, because device might have capacitors and they need to discharge every time). Device will go back to AP mode (aka Safe Mode)
 
+<em>Q: I somehow lost my MAC address and I am unable to change it in Options! My MAC ends with 000000, how to fix?</em><br>
+A: You have most likely overwrote the TLV header of RF partition of BK7231. For BK7231T, we have a way to restore it - open Web App, go to Flash tab, and press "Restore RF Config"
+
 # Building
 
 OpenBeken supports online builds for all platforms (BK7231T, BK7231N, XR809, BL602, W800), but if you want to compile it yourself, see  [BUILDING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md)
