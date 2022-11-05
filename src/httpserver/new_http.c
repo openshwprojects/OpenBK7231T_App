@@ -331,7 +331,7 @@ const char* htmlPinRoleNames[] = {
 	"Btn_NextDimmer_n",
 	"AlwaysHigh",
 	"AlwaysLow",
-	"error",
+	"UCS1912_DIN",
 	"error",
 	"error",
 	"error",
