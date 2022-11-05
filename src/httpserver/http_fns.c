@@ -885,7 +885,11 @@ int http_fn_cfg_name(http_request_t* request) {
 
 	poststr(request, "<h2> Use this to change device names</h2>");
 	add_label_text_field(request, "ShortName", "shortName", CFG_GetShortDeviceName(), "<form action=\"/cfg_name\">");
-	add_label_text_field(request, "Full Name", "name", CFG_GetDeviceName(), "<br>");
+
+	char escapedDeviceName[256];
+	html_escape(CFG_GetDeviceName(), escapedDeviceName, 255);
+	add_label_text_field(request, "Full Name", "name", escapedDeviceName, "<br>");
+
 	poststr(request, "<br><br>");
 	poststr(request, "<input type=\"submit\" value=\"Submit\" "
 		"onclick=\"return confirm('Are you sure? "

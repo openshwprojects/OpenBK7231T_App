@@ -52,7 +52,6 @@ static int http_rest_get_logconfig(http_request_t* request);
 static int http_rest_get_lfs_file(http_request_t* request);
 static int http_rest_post_lfs_file(http_request_t* request);
 #endif
-static int http_favicon(http_request_t* request);
 
 static int http_rest_post_reboot(http_request_t* request);
 static int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr);
@@ -77,56 +76,7 @@ void init_rest() {
 	HTTP_RegisterCallback("/api/", HTTP_GET, http_rest_get);
 	HTTP_RegisterCallback("/api/", HTTP_POST, http_rest_post);
 	HTTP_RegisterCallback("/app", HTTP_GET, http_rest_app);
-	HTTP_RegisterCallback("/favicon.ico", HTTP_GET, http_favicon);
 }
-
-const char* apppage1 =
-"<!DOCTYPE html>"
-"<html>"
-"    <head>"
-"        <script>"
-"            var root = '";
-#if WINDOWS
-const char* obktype = "windows";
-const char* apppage2 = "';"
-"            var obktype = 'windows';"
-"            var device = 'http://";
-#elif PLATFORM_XR809
-const char* obktype = "XR809";
-const char* apppage2 = "';"
-"            var obktype = 'XR809';"
-"            var device = 'http://";
-#elif PLATFORM_BL602
-const char* obktype = "BL602";
-const char* apppage2 = "';"
-"            var obktype = 'BL602';"
-"            var device = 'http://";
-#elif PLATFORM_W600
-const char* obktype = "W600";
-const char* apppage2 = "';"
-"            var obktype = 'W600';"
-"            var device = 'http://";
-#elif PLATFORM_W800
-const char* obktype = "W800";
-const char* apppage2 = "';"
-"            var obktype = 'W800';"
-"            var device = 'http://";
-#else
-const char* obktype = "beken";
-const char* apppage2 = "';"
-"            var obktype = 'beken';"
-"            var device = 'http://";
-#endif
-
-const char* apppage3 = "';"
-"        </script>"
-"        <script src=\"";
-const char* apppage4 = "startup.js\"></script>"
-"    </head>"
-"<body>"
-"</body>"
-"</html>";
-
 
 /* Extracts string token value into outBuffer (128 char). Returns true if the operation was successful. */
 bool tryGetTokenString(const char* json, jsmntok_t* tok, char* outBuffer) {
@@ -166,20 +116,20 @@ static int http_rest_get(http_request_t* request) {
 
 #ifdef BK_LITTLEFS
 	if (!strcmp(request->url, "api/fsblock")) {
-        uint32_t newsize = CFG_GetLFS_Size();
-        uint32_t newstart = (LFS_BLOCKS_END - newsize);
+		uint32_t newsize = CFG_GetLFS_Size();
+		uint32_t newstart = (LFS_BLOCKS_END - newsize);
 
-        newsize = (newsize/LFS_BLOCK_SIZE)*LFS_BLOCK_SIZE;
+		newsize = (newsize / LFS_BLOCK_SIZE) * LFS_BLOCK_SIZE;
 
-        // double check again that we're within bounds - don't want
-        // boot overwrite or anything nasty....
-        if (newstart < LFS_BLOCKS_START_MIN){
-            return http_rest_error(request, -20, "LFS Size mismatch");
-        }
-        if ((newstart + newsize > LFS_BLOCKS_END) ||
-            (newstart + newsize < LFS_BLOCKS_START_MIN)){
-            return http_rest_error(request, -20, "LFS Size mismatch");
-        }
+		// double check again that we're within bounds - don't want
+		// boot overwrite or anything nasty....
+		if (newstart < LFS_BLOCKS_START_MIN) {
+			return http_rest_error(request, -20, "LFS Size mismatch");
+		}
+		if ((newstart + newsize > LFS_BLOCKS_END) ||
+			(newstart + newsize < LFS_BLOCKS_START_MIN)) {
+			return http_rest_error(request, -20, "LFS Size mismatch");
+		}
 
 		return http_rest_get_flash(request, newstart, newsize);
 	}
@@ -261,20 +211,20 @@ static int http_rest_post(http_request_t* request) {
 		if (lfs_present()) {
 			release_lfs();
 		}
-        uint32_t newsize = CFG_GetLFS_Size();
-        uint32_t newstart = (LFS_BLOCKS_END - newsize);
+		uint32_t newsize = CFG_GetLFS_Size();
+		uint32_t newstart = (LFS_BLOCKS_END - newsize);
 
-        newsize = (newsize/LFS_BLOCK_SIZE)*LFS_BLOCK_SIZE;
+		newsize = (newsize / LFS_BLOCK_SIZE) * LFS_BLOCK_SIZE;
 
-        // double check again that we're within bounds - don't want
-        // boot overwrite or anything nasty....
-        if (newstart < LFS_BLOCKS_START_MIN){
-            return http_rest_error(request, -20, "LFS Size mismatch");
-        }
-        if ((newstart + newsize > LFS_BLOCKS_END) ||
-            (newstart + newsize < LFS_BLOCKS_START_MIN)){
-            return http_rest_error(request, -20, "LFS Size mismatch");
-        }
+		// double check again that we're within bounds - don't want
+		// boot overwrite or anything nasty....
+		if (newstart < LFS_BLOCKS_START_MIN) {
+			return http_rest_error(request, -20, "LFS Size mismatch");
+		}
+		if ((newstart + newsize > LFS_BLOCKS_END) ||
+			(newstart + newsize < LFS_BLOCKS_START_MIN)) {
+			return http_rest_error(request, -20, "LFS Size mismatch");
+		}
 
 		// we are writing the lfs block
 		int res = http_rest_post_flash(request, newstart, LFS_BLOCKS_END);
@@ -308,13 +258,17 @@ static int http_rest_app(http_request_t* request) {
 	const char* ourip = HAL_GetMyIPString(); //CFG_GetOurIP();
 	http_setup(request, httpMimeTypeHTML);
 	if (webhost && ourip) {
-		poststr(request, apppage1);
-		poststr(request, webhost);
-		poststr(request, apppage2);
-		poststr(request, ourip);
-		poststr(request, apppage3);
-		poststr(request, webhost);
-		poststr(request, apppage4);
+		poststr(request, htmlDoctype);
+
+		char escapedDeviceName[256];
+		html_escape(CFG_GetDeviceName(), escapedDeviceName, 255);
+		hprintf255(request, "<head><title>%s</title>", escapedDeviceName);
+
+		poststr(request, htmlShortcutIcon);
+		poststr(request, htmlHeadMeta);
+		hprintf255(request, "<script>var root='%s',device='http://%s';</script>", webhost, ourip);
+		hprintf255(request, "<script src='%s/startup.js'></script>", webhost);
+		poststr(request, "</head><body></body></html>");
 	}
 	else {
 		http_html_start(request, "Not available");
@@ -567,18 +521,18 @@ exit:
 	return 0;
 }
 
-static int http_favicon(http_request_t* request) {
-	request->url = "api/lfs/favicon.ico";
-	return http_rest_get_lfs_file(request);
-}
+// static int http_favicon(http_request_t* request) {
+// 	request->url = "api/lfs/favicon.ico";
+// 	return http_rest_get_lfs_file(request);
+// }
 
 #else
-static int http_favicon(http_request_t* request) {
-	request->responseCode = HTTP_RESPONSE_NOT_FOUND;
-	http_setup(request, httpMimeTypeHTML);
-	poststr(request, NULL);
-	return 0;
-}
+// static int http_favicon(http_request_t* request) {
+// 	request->responseCode = HTTP_RESPONSE_NOT_FOUND;
+// 	http_setup(request, httpMimeTypeHTML);
+// 	poststr(request, NULL);
+// 	return 0;
+// }
 #endif
 
 
@@ -748,7 +702,6 @@ static int http_rest_get_info(http_request_t* request) {
 	http_setup(request, httpMimeTypeJson);
 	hprintf255(request, "{\"uptime_s\":%d,", Time_getUpTimeSeconds());
 	hprintf255(request, "\"build\":\"%s\",", g_build_str);
-	hprintf255(request, "\"sys\":\"%s\",", obktype);
 	hprintf255(request, "\"ip\":\"%s\",", HAL_GetMyIPString());
 	hprintf255(request, "\"mac\":\"%s\",", HAL_GetMACStr(macstr));
 	hprintf255(request, "\"mqtthost\":\"%s:%d\",", CFG_GetMQTTHost(), CFG_GetMQTTPort());

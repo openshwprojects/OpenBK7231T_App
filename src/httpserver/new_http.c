@@ -19,9 +19,12 @@ const char httpMimeTypeHTML[] = "text/html";              // HTML MIME type
 const char httpMimeTypeText[] = "text/plain";           // TEXT MIME type
 const char httpMimeTypeJson[] = "application/json";           // TEXT MIME type
 const char httpMimeTypeBinary[] = "application/octet-stream";   // binary/file MIME type
+
+const char htmlShortcutIcon[] = "<link rel='shortcut icon' href='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAHESURBVDhPpZPLS1VhFMV/pyuFb1HIHhDcixGU/glpNKg7ihLCMnOUQQ/6K5LmIg0ciQMRFMeZIMmlbFxEFIaYUCGIUQoRer7Wut/B8BVFC9Y5++y9Nuxvffsk7I9asVcM4oi4Jv4TStdaCF2i4tmY+jNaxZfiotjfXEWa3iWYzZWkzmU1a6zdhbmhc6Tvu0lPNRCqKwibdyKrFDvnmjXSvogtcCB7G0faj8HJBpLxi7ChwRe+RW4qnlDONWuEo+WnkMvexuHpJdo7JGhrgjONhOdf4O0q3D4NHcdJXq9A5xOSlR88ln4mtkW3Sz6nxz6UI0wWSfP1hGJfpGPnXLMm86TkXl/jPbk9OHpB9+Wxv8PkB8JMK8mDIVWFgT44/4bQWSDJ10Giru6nMDbPfXvgvt/Y9rE/Mln5VSPOeiy7vXUEuV68tfsI1mRH8G7U2MSf4vD6BgcLdZydvhQNO1FNqF+C/DJcb4ErGv9yAaY+ahnWeKSem1nvFhZ9z0GL86orTjLfI96IsXOuWWNtbNm+B5+ffYJ3XwlXp6BCRuV1PzYtp9g516yxtvzcAa+nN2xB3GuVH2a1OXHPVd6Jv/qZ/vN3hl/Pmb41kmFXMgAAAABJRU5ErkJggg==' />";
+
 const char htmlDoctype[] =
 "<!DOCTYPE html><html>";
-const char htmlHeadMain[] =
+const char htmlHeadMeta[] =
 "<meta charset=\"utf-8\">"
 "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1,user-scalable=no\">"
 "<meta name=\"robots\" content=\"none\">";
@@ -136,6 +139,78 @@ int my_strnicmp(char* a, char* b, int len) {
 	return 0;
 }
 
+
+/// @brief Escape special characters in html.
+/// @param in
+/// @param outBuffer 
+/// @param outBufferLength
+/// @param script_safe Pass true, if the content part of script
+void html_escape(char* in, char* outBuffer, int outBufferLength) {
+	int outPos = 0;
+	bool canCopy = true;
+	for (int i = 0; canCopy && (i < strlen(in)); i++) {
+		switch (in[i]) {
+		case '<':
+			if ((outPos + 5) < outBufferLength) {
+				outBuffer[outPos++] = '&';
+				outBuffer[outPos++] = 'l';
+				outBuffer[outPos++] = 't';
+				outBuffer[outPos++] = ';';
+			}
+			else {
+				canCopy = false;
+			}
+			break;
+		case '>':
+			if ((outPos + 5) < outBufferLength) {
+				outBuffer[outPos++] = '&';
+				outBuffer[outPos++] = 'g';
+				outBuffer[outPos++] = 't';
+				outBuffer[outPos++] = ';';
+			}
+			else {
+				canCopy = false;
+			}
+			break;
+		case '&':
+			if ((outPos + 6) < outBufferLength) {
+				outBuffer[outPos++] = '&';
+				outBuffer[outPos++] = 'a';
+				outBuffer[outPos++] = 'm';
+				outBuffer[outPos++] = 'p';
+				outBuffer[outPos++] = ';';
+			}
+			else {
+				canCopy = false;
+			}
+			break;
+		case '"':
+			if ((outPos + 7) < outBufferLength) {
+				outBuffer[outPos++] = '&';
+				outBuffer[outPos++] = 'q';
+				outBuffer[outPos++] = 'u';
+				outBuffer[outPos++] = 'o';
+				outBuffer[outPos++] = 't';
+				outBuffer[outPos++] = ';';
+			}
+			else {
+				canCopy = false;
+			}
+			break;
+		default:
+			if ((outPos + 1) < outBufferLength) {
+				outBuffer[outPos++] = in[i];
+			}
+			else {
+				canCopy = false;
+			}
+			break;
+		}
+	}
+
+	outBuffer[outPos] = 0;
+}
+
 bool http_startsWith(const char* base, const char* substr) {
 	while (*substr != 0) {
 		if (*base != *substr)
@@ -172,17 +247,23 @@ void http_setup(http_request_t* request, const char* type) {
 
 void http_html_start(http_request_t* request, const char* pagename) {
 	poststr(request, htmlDoctype);
-	poststr(request, "<title>");
-	poststr(request, CFG_GetDeviceName()); // todo: check escaping
+	poststr(request, "<head><title>");
+
+	char escapedDeviceName[256];
+	html_escape(CFG_GetDeviceName(), escapedDeviceName, 255);
+	poststr(request, escapedDeviceName);
+
 	if (pagename) {
 		poststr(request, " - ");
 		poststr(request, pagename);
 	}
 	poststr(request, "</title>");
-	poststr(request, htmlHeadMain);
+	poststr(request, htmlShortcutIcon);
+	poststr(request, htmlHeadMeta);
 	poststr(request, htmlHeadStyle);
+	poststr(request, "</head>");
 	poststr(request, htmlBodyStart);
-	poststr(request, CFG_GetDeviceName()); // todo: check escaping
+	poststr(request, escapedDeviceName);
 	poststr(request, htmlBodyStart2);
 }
 
@@ -429,7 +510,7 @@ int hprintf255(http_request_t* request, const char* fmt, ...) {
 	va_list argList;
 	//BaseType_t taken;
 	char tmp[256];
-    memset(tmp, 0, 256);
+	memset(tmp, 0, 256);
 	va_start(argList, fmt);
 	vsnprintf(tmp, 255, fmt, argList);
 	va_end(argList);
@@ -556,7 +637,7 @@ int HTTP_ProcessPacket(http_request_t* request) {
 			int method = callbacks[i]->method;
 			if (method == HTTP_ANY || method == request->method) {
 				return callbacks[i]->callback(request);
-			}
+		}
 		}
 	}
 	if (http_checkUrlBase(urlStr, "")) return http_fn_empty_url(request);

@@ -8,6 +8,10 @@ extern const char httpMimeTypeText[];           // TEXT MIME type
 extern const char httpMimeTypeJson[];
 extern const char httpMimeTypeBinary[];
 
+extern const char htmlShortcutIcon[];
+extern const char htmlDoctype[];
+extern const char htmlHeadMeta[];
+
 extern const char htmlFooterReturnToMenu[];
 extern const char htmlFooterRefreshLink[];
 extern const char htmlFooterReturnToCfgLink[];
@@ -80,5 +84,7 @@ typedef int (*http_callback_fn)(http_request_t* request);
 // url MUST start with '/'
 // urls must be unique (i.e. you can't have /about and /aboutme or /about/me)
 int HTTP_RegisterCallback(const char* url, int method, http_callback_fn callback);
+
+void html_escape(char* in, char* outBuffer, int outBufferLength);
 
 #endif
