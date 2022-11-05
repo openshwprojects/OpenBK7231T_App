@@ -394,13 +394,6 @@
 			<File
 				RelativePath=".\src\logging\logging.c"
 				>
-				<FileConfiguration
-					Name="Debug Win32 ScriptOnly|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\src\new_builtin_devices.c"
@@ -429,13 +422,6 @@
 			<File
 				RelativePath=".\src\new_common.c"
 				>
-				<FileConfiguration
-					Name="Debug Win32 ScriptOnly|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\src\mqtt\new_mqtt.c"
@@ -1224,7 +1210,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\new_http.h"
+				RelativePath=".\src\httpserver\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1236,7 +1222,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\httpserver\new_http.h"
+				RelativePath=".\src\new_http.h"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1318,13 +1304,6 @@
 			<File
 				RelativePath=".\src\cmnds\cmd_main.c"
 				>
-				<FileConfiguration
-					Name="Debug Win32 ScriptOnly|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\src\cmnds\cmd_newLEDDriver.c"
@@ -1425,13 +1404,6 @@
 			<File
 				RelativePath=".\src\cmnds\cmd_tokenizer.c"
 				>
-				<FileConfiguration
-					Name="Debug Win32 ScriptOnly|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
@@ -1712,6 +1684,10 @@
 						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\driver\drv_ucs1912.c"
+				>
 			</File>
 		</Filter>
 		<Filter
