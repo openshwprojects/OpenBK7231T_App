@@ -33,6 +33,8 @@ extern "C" {
     unsigned long ir_counter = 0;
     uint8_t gEnableIRSendWhilstReceive = 0;
     uint32_t gIRProtocolEnable = 0xFFFFFFFF;
+    // 0 == active low.  1 = active hi
+    uint8_t gIRPinPolarity = 0;
 
     extern int my_strnicmp(const char* a, const char* b, int len);
 }
@@ -391,7 +393,11 @@ extern "C" void DRV_IR_ISR(UINT8 t){
 
         uint32_t duty = pIRsend->pwmduty;
         if (!pinval){
-            duty = 0;
+            if (gIRPinPolarity){
+                duty = pIRsend->pwmperiod;
+            } else {
+                duty = 0;
+            }
         }
 #if PLATFORM_BK7231N
         bk_pwm_update_param((bk_pwm_t)pIRsend->pwmIndex, pIRsend->pwmperiod, duty,0,0);
@@ -466,6 +472,9 @@ extern "C" int IR_Send_Cmd(const void *context, const char *cmd, const char *arg
 
     if (pIRsend){
         pIRsend->write(&data, (int_fast8_t) repeats);
+        // add a 100ms delay after command
+        // NOTE: this is NOT a delay here.  it adds 100ms 'space' in the TX queue
+        pIRsend->delay(100);
         ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send %s protocol %d addr 0x%X cmd 0x%X repeats %d", args, (int)data.protocol, (int)data.address, (int)data.command, (int)repeats);
         return 1;
     } else {
@@ -497,6 +506,22 @@ extern "C" int IR_Enable(const void *context, const char *cmd, const char *args_
         ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IREnable RX whilst TX enable set %d", enable);
         return 1;
     }
+
+    if (!my_strnicmp(p, "invert", 6)){
+        // default normal.
+        enable = 0;
+        p += 6;
+        if (*p == ' '){
+            p++;
+            if (*p){
+                enable = atoi(p);
+            }
+        }
+        gIRPinPolarity = enable;
+        ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IREnable invert set %d", enable);
+        return 1;
+    }
+    
 
     // find length of first arg.
     while (*p && (*p != ' ')){
