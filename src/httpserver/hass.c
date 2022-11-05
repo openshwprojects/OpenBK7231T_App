@@ -192,7 +192,7 @@ HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type) {
 	case ENTITY_LIGHT_RGBCW:
 	case ENTITY_LIGHT_RGB:
 		cJSON_AddStringToObject(info->root, "rgb_cmd_tpl", "{{'#%02x%02x%02x0000'|format(red,green,blue)}}");  //rgb_command_template
-		cJSON_AddStringToObject(info->root, "rgb_val_tpl", "{{value[1:3]|int(base=16)}},{{value[3:5]|int(base=16)}},{{value[5:7]|int(base=16)}}");  //rgb_value_template
+		cJSON_AddStringToObject(info->root, "rgb_val_tpl", "{{ value[0:2]|int(base=16) }},{{ value[2:4]|int(base=16) }},{{ value[4:6]|int(base=16) }}");  //rgb_value_template
 
 		cJSON_AddStringToObject(info->root, "rgb_stat_t", "~/led_basecolor_rgb/get"); //rgb_state_topic
 		sprintf(g_hassBuffer, "cmnd/%s/led_basecolor_rgb", clientId);
