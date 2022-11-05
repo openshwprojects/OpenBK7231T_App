@@ -121,6 +121,8 @@ static int EVENT_ParseEventName(const char *s) {
 		return CMD_EVENT_CHANGE_CURRENT;
 	if(!stricmp(s,"power"))
 		return CMD_EVENT_CHANGE_POWER;
+	if(!stricmp(s,"OnRelease"))
+		return CMD_EVENT_PIN_ONRELEASE;
 	if(!stricmp(s,"OnClick"))
 		return CMD_EVENT_PIN_ONCLICK;
 	if(!stricmp(s,"OnToggle"))

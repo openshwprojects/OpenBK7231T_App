@@ -148,6 +148,10 @@ void RAW_SetPinValue(int index, int iVal){
 		HAL_PIN_SetOutputValue(index, iVal);
 	}
 }
+void Button_OnPressRelease(int index) {
+	// fire event - button on pin <index> was released
+	EventHandlers_FireEvent(CMD_EVENT_PIN_ONRELEASE,index);
+}
 void Button_OnInitialPressDown(int index) 
 {
 	//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"%i Button_OnInitialPressDown\r\n", index);
@@ -899,6 +903,7 @@ void PIN_Input_Handler(int pinIndex)
 		if(handle->button_level != handle->active_level) { //released press up
 			handle->event = (uint8_t)BTN_PRESS_UP;
 			EVENT_CB(BTN_PRESS_UP);
+			Button_OnPressRelease(pinIndex);
 			handle->ticks = 0;
 			handle->state = 2;
 
@@ -938,6 +943,7 @@ void PIN_Input_Handler(int pinIndex)
 		if(handle->button_level != handle->active_level) { //released press up
 			handle->event = (uint8_t)BTN_PRESS_UP;
 			EVENT_CB(BTN_PRESS_UP);
+			Button_OnPressRelease(pinIndex);
 			if(handle->ticks < BTN_SHORT_TICKS) {
 				handle->ticks = 0;
 				handle->state = 2; //repeat press
@@ -960,6 +966,7 @@ void PIN_Input_Handler(int pinIndex)
 		} else { //releasd
 			handle->event = (uint8_t)BTN_PRESS_UP;
 			EVENT_CB(BTN_PRESS_UP);
+			Button_OnPressRelease(pinIndex);
 			handle->state = 0; //reset
 		}
 		break;

@@ -73,6 +73,9 @@ enum EventCode {
 
 	CMD_EVENT_MQTT_STATE,
 
+	// for buttons
+	CMD_EVENT_PIN_ONRELEASE,
+
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
 };
