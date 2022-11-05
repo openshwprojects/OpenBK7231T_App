@@ -408,11 +408,14 @@ extern "C" int IR_Send_Cmd(const void *context, const char *cmd, const char *arg
 
     // split arg at hyphen;
     char *p = args;
-    while (*p && (*p != '-')){
+    while (*p && (*p != '-') && (*p != ' ')){
         p++;
     }
 
-    if (*p != '-') return 0;
+    if ((*p != '-') && (*p != ' ')) {
+        ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRSend cmnd not valid [%s] not like [NEC-0-1A] or [NEC 0 1A 1].", args);
+        return 0;
+    }
 
     int namelen = (p - args);
     int protocol = 0;
@@ -426,18 +429,26 @@ extern "C" int IR_Send_Cmd(const void *context, const char *cmd, const char *arg
 
     p++;
     int addr = strtol(p, &p, 16);
-    if (*p != '-') return 0;
+    if ((*p != '-') && (*p != ' ')) {
+        ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRSend cmnd not valid [%s] not like [NEC-0-1A] or [NEC 0 1A 1].", args);
+        return 0;
+    }
     p++;
     int command = strtol(p, &p, 16);
 
     IRData data;
     memset(&data, 0, sizeof(data));
+    int repeats = 0;
+
+    if ((*p == '-') || (*p == ' ')) {
+        p++;
+        repeats = strtol(p, &p, 16);
+    }
 
     data.protocol = (decode_type_t)protocol;
     data.address = addr;
     data.command = command;
     data.flags = 0;
-    int repeats = 0;
 
     if (pIRsend){
         pIRsend->write(&data, (int_fast8_t) repeats);
