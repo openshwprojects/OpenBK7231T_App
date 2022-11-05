@@ -1282,6 +1282,7 @@ int http_fn_ha_discovery(http_request_t* request) {
 	char topic[32];
 	int relayCount;
 	int pwmCount;
+	bool ledDriverChipRunning;
 	HassDeviceInfo* dev_info = NULL;
 	bool measuringPower = false;
 
@@ -1299,7 +1300,11 @@ int http_fn_ha_discovery(http_request_t* request) {
 
 	get_Relay_PWM_Count(&relayCount, &pwmCount);
 
-	if ((relayCount == 0) && (pwmCount == 0) && !measuringPower) {
+	//Note: PublishChannels should be done for the last MQTT publish except for power measurement which always
+	//sends out MQTT updates.
+	ledDriverChipRunning = isLedDriverChipRunning();
+
+	if ((relayCount == 0) && (pwmCount == 0) && !measuringPower && !ledDriverChipRunning) {
 		poststr(request, "No relay, PWM or power driver running.");
 		poststr(request, NULL);
 		return 0;
@@ -1309,9 +1314,6 @@ int http_fn_ha_discovery(http_request_t* request) {
 		sprintf(topic, "homeassistant");    //default discovery topic is `homeassistant`
 	}
 
-	//Note: PublishChannels should be done for the last MQTT publish except for power measurement which always
-	//sends out MQTT updates.
-	bool ledDriverChipRunning = isLedDriverChipRunning();
 
 	struct cJSON_Hooks hooks;
 	hooks.malloc_fn = os_malloc;
