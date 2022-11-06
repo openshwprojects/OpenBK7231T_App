@@ -123,7 +123,7 @@ int HTTP_RegisterCallback(const char* url, int method, http_callback_fn callback
 	return 0;
 }
 
-int my_strnicmp(char* a, char* b, int len) {
+int my_strnicmp(const char* a, const char* b, int len) {
 	int i;
 	for (i = 0; i < len; i++) {
 		char x = *a;
