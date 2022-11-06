@@ -202,6 +202,11 @@ int http_fn_index(http_request_t* request) {
 		}
 		if (http_getArg(request->url, "rgb", tmpA, sizeof(tmpA))) {
 			hprintf255(request, "<h3>Set RGB to %s!</h3>", tmpA);
+			// auto enable - but only for changes made from WWW panel
+			// This happens when users changes COLOR
+			if(CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_WWW_ACTION)) {
+				LED_SetEnableAll(true);
+			}
 			LED_SetBaseColor(0, "led_basecolor", tmpA, 0);
 		}
 
@@ -216,6 +221,11 @@ int http_fn_index(http_request_t* request) {
 			j = atoi(tmpA);
 			if (j == SPECIAL_CHANNEL_TEMPERATURE) {
 				hprintf255(request, "<h3>Changed Temperature to %i!</h3>", newPWMValue);
+				// auto enable - but only for changes made from WWW panel
+				// This happens when users changes Temperature
+				if(CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_WWW_ACTION)) {
+					LED_SetEnableAll(true);
+				}
 			}
 			else {
 				hprintf255(request, "<h3>Changed pwm %i to %i!</h3>", j, newPWMValue);
@@ -228,6 +238,11 @@ int http_fn_index(http_request_t* request) {
 			j = atoi(tmpA);
 			if (j == SPECIAL_CHANNEL_BRIGHTNESS) {
 				hprintf255(request, "<h3>Changed LED brightness to %i!</h3>", newDimmerValue);
+				// auto enable - but only for changes made from WWW panel
+				// This happens when users changes DIMMER
+				if(CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_WWW_ACTION)) {
+					LED_SetEnableAll(true);
+				}
 			}
 			else {
 				hprintf255(request, "<h3>Changed dimmer %i to %i!</h3>", j, newDimmerValue);
@@ -1863,7 +1878,7 @@ const char* g_obk_flagNames[] = {
 	"[IR] Do MQTT publish for incoming IR data",
 	"[IR] Allow 'unknown' protocol",
 	"[MQTT] Broadcast led final color RGBCW (topic name: YourDevName/led_finalcolor_rgbcw/get)",
-	"error",
+	"[LED] Automatically enable Light when changing brightness, color or temperature on WWW panel",
 	"error",
 	"error",
 };
