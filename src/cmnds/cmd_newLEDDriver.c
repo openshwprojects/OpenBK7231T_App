@@ -103,6 +103,26 @@ int shouldSendRGB() {
 }
 
 
+// One user requested ability to broadcast full RGBCW
+static void sendFullRGBCW_IfEnabled() {
+	char s[16];
+	byte c[5];
+
+	if(CFG_HasFlag(OBK_FLAG_LED_BROADCAST_FULL_RGBCW) == false) {
+		return;
+	}
+
+	c[0] = (byte)(finalColors[0]);
+	c[1] = (byte)(finalColors[1]);
+	c[2] = (byte)(finalColors[2]);
+	c[3] = (byte)(finalColors[3]);
+	c[4] = (byte)(finalColors[4]);
+
+	snprintf(s, sizeof(s),"%02X%02X%02X%02X%02X",c[0],c[1],c[2],c[3],c[4]);
+
+	MQTT_PublishMain_StringString_DeDuped(DEDUP_LED_FINALCOLOR_RGBCW,DEDUP_EXPIRE_TIME,"led_finalcolor_rgbcw",s, 0);
+}
+
 void apply_smart_light() {
 	int i;
 	int firstChannelIndex;
@@ -200,6 +220,10 @@ void apply_smart_light() {
 	if(CFG_HasFlag(OBK_FLAG_LED_REMEMBERLASTSTATE)) {
 		HAL_FlashVars_SaveLED(g_lightMode,g_brightness / g_cfg_brightnessMult, led_temperature_current,baseColors[0],baseColors[1],baseColors[2]);
 	}
+
+	// I am not sure if it's the best place to do it
+	// NOTE: this will broadcast MQTT only if a flag is set
+	sendFullRGBCW_IfEnabled();
 }
 
 

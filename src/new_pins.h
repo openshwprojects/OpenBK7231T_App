@@ -146,8 +146,10 @@ typedef struct pinsState_s {
 #define OBK_FLAG_HTTP_PINMONITOR					13
 #define OBK_FLAG_IR_PUBLISH_RECEIVED				14
 #define OBK_FLAG_IR_ALLOW_UNKNOWN					15
+#define OBK_FLAG_LED_BROADCAST_FULL_RGBCW			16
 
-#define OBK_TOTAL_FLAGS 16
+
+#define OBK_TOTAL_FLAGS 17
 
 
 #define CGF_MQTT_CLIENT_ID_SIZE			64

@@ -1862,6 +1862,7 @@ const char* g_obk_flagNames[] = {
 	"[HTTP] Show actual PIN logic level for unconfigured pins",
 	"[IR] Do MQTT publish for incoming IR data",
 	"[IR] Allow 'unknown' protocol",
+	"[MQTT] Broadcast led final color RGBCW (topic name: YourDevName/led_finalcolor_rgbcw/get)",
 	"error",
 	"error",
 	"error",
