@@ -478,7 +478,7 @@ int http_fn_index(http_request_t* request) {
 			pwmValue = LED_GetDimmer();
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "<h5> LED Dimmer/Brightness </h5>");
+			hprintf255(request, "<h5>LED Dimmer/Brightness</h5>");
 			hprintf255(request, "<form action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_BRIGHTNESS);
 			hprintf255(request, "<input type=\"range\" min=\"0\" max=\"100\" name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">", inputName, SPECIAL_CHANNEL_BRIGHTNESS, pwmValue);
 			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, SPECIAL_CHANNEL_BRIGHTNESS);
@@ -495,7 +495,7 @@ int http_fn_index(http_request_t* request) {
 
 			LED_GetBaseColorString(colorValue);
 			poststr(request, "<tr><td>");
-			hprintf255(request, "<h5> LED RGB Color %s </h5>", activeStr);
+			hprintf255(request, "<h5>LED RGB Color %s</h5>", activeStr);
 			hprintf255(request, "<form action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_BASECOLOR);
 			hprintf255(request, "<input type=\"color\" name=\"%s\" id=\"color%i\" value=\"#%s\" onchange=\"this.form.submit()\">", inputName, SPECIAL_CHANNEL_BASECOLOR, colorValue);
 			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, SPECIAL_CHANNEL_BASECOLOR);
@@ -516,8 +516,8 @@ int http_fn_index(http_request_t* request) {
 			pwmValue = LED_GetTemperature();
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "<h5> LED Temperature Slider %s (cur=%i, min=%i, max=%i) (Cold <--- ---> Warm) </h5>", activeStr, pwmValue, HASS_TEMPERATURE_MIN, HASS_TEMPERATURE_MAX);
-			hprintf255(request, "<form action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_TEMPERATURE);
+			hprintf255(request, "<h5>LED Temperature Slider %s (cur=%i, min=%i, max=%i) Mired (Cool <--- ---> Warm)</h5>", activeStr, pwmValue, HASS_TEMPERATURE_MIN, HASS_TEMPERATURE_MAX);
+			hprintf255(request, "<form class='r' style='background: linear-gradient(to right, rgb(166, 209, 255), rgb(255, 160, 0));' action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_TEMPERATURE);
 			hprintf255(request, "<input type=\"range\" min=\"%i\" max=\"%i\"", HASS_TEMPERATURE_MIN, HASS_TEMPERATURE_MAX);
 			hprintf255(request, "name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">", inputName, SPECIAL_CHANNEL_TEMPERATURE, pwmValue);
 			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, SPECIAL_CHANNEL_TEMPERATURE);
