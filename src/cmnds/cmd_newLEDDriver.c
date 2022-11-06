@@ -703,7 +703,10 @@ static int nextColor(const void *context, const char *cmd, const char *args, int
 static int setSaturation(const void *context, const char *cmd, const char *args, int cmdFlags){
     float f;
 
-	f = atof(args);
+	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
+	Tokenizer_TokenizeString(args);
+
+	f = Tokenizer_GetArgFloat(0);
 
 	// input is in 0-100 range
 	f *= 0.01f;
@@ -718,7 +721,10 @@ float LED_GetSaturation() {
 static int setHue(const void *context, const char *cmd, const char *args, int cmdFlags){
     float f;
 
-	f = atof(args);
+	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
+	Tokenizer_TokenizeString(args);
+
+	f = Tokenizer_GetArgFloat(0);
 
 	led_setHue(f);
 
