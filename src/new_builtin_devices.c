@@ -862,13 +862,13 @@ void Setup_Device_Jinvoo_AC_TV_Box_IR_Controller() {
 	// IR leds - IRSend = P26
 
 	CFG_ClearPins();
-	// Led
-	PIN_SetPinRoleForPinIndex(6, IOR_Button);
 	// Embedded Button
+	PIN_SetPinRoleForPinIndex(6, IOR_Button);
+	// IR receiver
 	PIN_SetPinRoleForPinIndex(7, IOR_IRRecv);
-	// Switch
+	// LED
 	PIN_SetPinRoleForPinIndex(8, IOR_LED_WIFI);
-	// Relay
+	// IR LEDs
 	PIN_SetPinRoleForPinIndex(26, IOR_IRSend);
 
 	CFG_Save_SetupTimer();
