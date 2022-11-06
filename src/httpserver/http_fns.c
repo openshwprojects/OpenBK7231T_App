@@ -1918,7 +1918,7 @@ int http_fn_cfg_generic(http_request_t* request) {
 			else {
 				ni = 0;
 			}
-			hprintf255(request, "<h5>Setting flag %i to %i<h5>", i, ni);
+			//hprintf255(request, "<h5>Setting flag %i to %i<h5>", i, ni);
 			CFG_SetFlag(i, ni);
 		}
 	}
