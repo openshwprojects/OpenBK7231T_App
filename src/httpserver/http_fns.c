@@ -202,12 +202,12 @@ int http_fn_index(http_request_t* request) {
 		}
 		if (http_getArg(request->url, "rgb", tmpA, sizeof(tmpA))) {
 			hprintf255(request, "<h3>Set RGB to %s!</h3>", tmpA);
+			LED_SetBaseColor(0, "led_basecolor", tmpA, 0);
 			// auto enable - but only for changes made from WWW panel
 			// This happens when users changes COLOR
 			if(CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_WWW_ACTION)) {
 				LED_SetEnableAll(true);
 			}
-			LED_SetBaseColor(0, "led_basecolor", tmpA, 0);
 		}
 
 		if (http_getArg(request->url, "off", tmpA, sizeof(tmpA))) {
@@ -221,16 +221,19 @@ int http_fn_index(http_request_t* request) {
 			j = atoi(tmpA);
 			if (j == SPECIAL_CHANNEL_TEMPERATURE) {
 				hprintf255(request, "<h3>Changed Temperature to %i!</h3>", newPWMValue);
-				// auto enable - but only for changes made from WWW panel
-				// This happens when users changes Temperature
-				if(CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_WWW_ACTION)) {
-					LED_SetEnableAll(true);
-				}
 			}
 			else {
 				hprintf255(request, "<h3>Changed pwm %i to %i!</h3>", j, newPWMValue);
 			}
 			CHANNEL_Set(j, newPWMValue, 1);
+			
+			if (j == SPECIAL_CHANNEL_TEMPERATURE) {
+				// auto enable - but only for changes made from WWW panel
+				// This happens when users changes TEMPERATURE
+				if(CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_WWW_ACTION)) {
+					LED_SetEnableAll(true);
+				}
+			}
 		}
 		if (http_getArg(request->url, "dim", tmpA, sizeof(tmpA))) {
 			int newDimmerValue = atoi(tmpA);
@@ -238,16 +241,19 @@ int http_fn_index(http_request_t* request) {
 			j = atoi(tmpA);
 			if (j == SPECIAL_CHANNEL_BRIGHTNESS) {
 				hprintf255(request, "<h3>Changed LED brightness to %i!</h3>", newDimmerValue);
+			}
+			else {
+				hprintf255(request, "<h3>Changed dimmer %i to %i!</h3>", j, newDimmerValue);
+			}
+			CHANNEL_Set(j, newDimmerValue, 1);
+			
+			if (j == SPECIAL_CHANNEL_BRIGHTNESS) {
 				// auto enable - but only for changes made from WWW panel
 				// This happens when users changes DIMMER
 				if(CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_WWW_ACTION)) {
 					LED_SetEnableAll(true);
 				}
 			}
-			else {
-				hprintf255(request, "<h3>Changed dimmer %i to %i!</h3>", j, newDimmerValue);
-			}
-			CHANNEL_Set(j, newDimmerValue, 1);
 		}
 		if (http_getArg(request->url, "set", tmpA, sizeof(tmpA))) {
 			int newSetValue = atoi(tmpA);
