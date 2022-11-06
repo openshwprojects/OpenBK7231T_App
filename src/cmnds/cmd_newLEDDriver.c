@@ -62,7 +62,7 @@ float g_brightness = 1.0f;
 // NOTE: in this system, enabling/disabling whole led light bulb
 // is not changing the stored channel and brightness values.
 // They are kept intact so you can reenable the bulb and keep your color setting
-int g_lightEnableAll = 1;
+int g_lightEnableAll = 0;
 // config only stuff
 float g_cfg_brightnessMult = 0.01f;
 
@@ -218,7 +218,7 @@ void apply_smart_light() {
 	}
 #endif
 	if(CFG_HasFlag(OBK_FLAG_LED_REMEMBERLASTSTATE)) {
-		HAL_FlashVars_SaveLED(g_lightMode,g_brightness / g_cfg_brightnessMult, led_temperature_current,baseColors[0],baseColors[1],baseColors[2]);
+		HAL_FlashVars_SaveLED(g_lightMode,g_brightness / g_cfg_brightnessMult, led_temperature_current,baseColors[0],baseColors[1],baseColors[2],g_lightEnableAll);
 	}
 
 	// I am not sure if it's the best place to do it
@@ -752,7 +752,11 @@ void NewLED_RestoreSavedStateIfNeeded() {
 		short tmp;
 		byte rgb[3];
 		byte mod;
-		HAL_FlashVars_ReadLED(&mod, &brig, &tmp, rgb);
+		byte bEnableAll;
+
+		HAL_FlashVars_ReadLED(&mod, &brig, &tmp, rgb, &bEnableAll);
+
+		g_lightEnableAll = bEnableAll;
 		SET_LightMode(mod);
 		g_brightness = brig * g_cfg_brightnessMult;
 		LED_SetTemperature(tmp,0);
