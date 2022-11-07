@@ -50,6 +50,7 @@ int parsePowerArgument(const char *s);
 int g_lightMode = Light_RGB;
 // Those are base colors, normalized, without brightness applied
 float baseColors[5] = { 255, 255, 255, 255, 255 };
+// Those have brightness included
 float finalColors[5] = { 255, 255, 255, 255, 255 };
 float g_hsv_h = 0; // 0 to 360
 float g_hsv_s = 0; // 0 to 1
@@ -123,6 +124,77 @@ static void sendFullRGBCW_IfEnabled() {
 	MQTT_PublishMain_StringString_DeDuped(DEDUP_LED_FINALCOLOR_RGBCW,DEDUP_EXPIRE_TIME,"led_finalcolor_rgbcw",s, 0);
 }
 
+float led_rawLerpCurrent[5] = { 0 };
+float Mathf_MoveTowards(float cur, float tg, float dt) {
+	float rem = tg - cur;
+	if(abs(rem) < dt) {
+		return tg;
+	}
+	if(rem < 0) {
+		return cur - dt;
+	}
+	return cur + dt;
+}
+// Colors are in 0-255 range.
+// This value determines how fast color can change.
+// 100 means that in one second color will go from 0 to 100
+// 200 means that in one second color will go from 0 to 200
+float led_lerpSpeedUnitsPerSecond = 200.f;
+
+void LED_RunQuickColorLerp(int deltaMS) {
+	int i;
+	int firstChannelIndex;
+	float deltaSeconds;
+	byte finalRGBCW[5];
+
+	deltaSeconds = deltaMS * 0.001f;
+
+	// The color order is RGBCW.
+	// some people set RED to channel 0, and some of them set RED to channel 1
+	// Let's detect if there is a PWM on channel 0
+	if(CHANNEL_HasChannelPinWithRoleOrRole(0, IOR_PWM, IOR_PWM_n)) {
+		firstChannelIndex = 0;
+	} else {
+		firstChannelIndex = 1;
+	}
+
+	for(i = 0; i < 5; i++) {
+		// This is the most silly and primitive approach, but it works
+		// In future we might implement better lerp algorithms, use HUE, etc
+		led_rawLerpCurrent[i] = Mathf_MoveTowards(led_rawLerpCurrent[i],finalColors[i], deltaSeconds * led_lerpSpeedUnitsPerSecond);
+	}
+
+	if(isCWMode() && CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
+		// OBK_FLAG_LED_ALTERNATE_CW_MODE means we have a driver that takes one PWM for brightness and second for temperature
+
+	} else {
+		if(isCWMode()) { 
+			// In CW mode, user sets just two PWMs. So we have: PWM0 and PWM1 (or maybe PWM1 and PWM2)
+			// But we still have RGBCW internally
+			// So, we need to map. Map component 3 of RGBCW to first channel, and component 4 to second.
+			CHANNEL_Set(firstChannelIndex + 0, led_rawLerpCurrent[3] * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+			CHANNEL_Set(firstChannelIndex + 1, led_rawLerpCurrent[4] * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+		} else {
+			finalRGBCW[i] = led_rawLerpCurrent[i];
+			// This should work for both RGB and RGBCW
+			// This also could work for a SINGLE COLOR strips
+			for(i = 0; i < 5; i++) {
+				CHANNEL_Set(firstChannelIndex + i, led_rawLerpCurrent[i] * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+			}
+		}
+	}
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	if(DRV_IsRunning("SM2135")) {
+		SM2135_Write(finalRGBCW);
+	}
+	if(DRV_IsRunning("BP5758D")) {
+		BP5758D_Write(finalRGBCW);
+	}
+	if(DRV_IsRunning("BP1658CJ")) {
+		BP1658CJ_Write(finalRGBCW);
+	}
+#endif
+}
 void apply_smart_light() {
 	int i;
 	int firstChannelIndex;
@@ -154,8 +226,10 @@ void apply_smart_light() {
 				finalRGBCW[i] = baseColors[i] * g_brightness;
 			}
 		}
-		CHANNEL_Set(firstChannelIndex, value_cold_or_warm, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-		CHANNEL_Set(firstChannelIndex+1, value_brightness, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+		if(CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == false) {
+			CHANNEL_Set(firstChannelIndex, value_cold_or_warm, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+			CHANNEL_Set(firstChannelIndex+1, value_brightness, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+		}
 	} else {
 		for(i = 0; i < 5; i++) {
 			float raw, final;
@@ -192,31 +266,36 @@ void apply_smart_light() {
 			//ADDLOG_INFO(LOG_FEATURE_CMD, "apply_smart_light: ch %i raw is %f, bright %f, final %f, enableAll is %i",
 			//	channelToUse,raw,g_brightness,final,g_lightEnableAll);
 
-			if(isCWMode()) {
-				// in CW mode, we have only set two channels
-				// We don't have RGB channels
-				// so, do simple mapping
-				if(i == 3) {
-					CHANNEL_Set(firstChannelIndex+0, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-				} else if(i == 4) {
-					CHANNEL_Set(firstChannelIndex+1, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+			if(CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == false) {
+				if(isCWMode()) {
+					// in CW mode, we have only set two channels
+					// We don't have RGB channels
+					// so, do simple mapping
+					if(i == 3) {
+						CHANNEL_Set(firstChannelIndex+0, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+					} else if(i == 4) {
+						CHANNEL_Set(firstChannelIndex+1, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+					}
+				} else {
+					CHANNEL_Set(channelToUse, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 				}
-			} else {
-				CHANNEL_Set(channelToUse, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 			}
 		}
 	}
+	if(CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == false) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
-	if(DRV_IsRunning("SM2135")) {
-		SM2135_Write(finalRGBCW);
-	}
-	if(DRV_IsRunning("BP5758D")) {
-		BP5758D_Write(finalRGBCW);
-	}
-	if(DRV_IsRunning("BP1658CJ")) {
-		BP1658CJ_Write(finalRGBCW);
-	}
+		if(DRV_IsRunning("SM2135")) {
+			SM2135_Write(finalRGBCW);
+		}
+		if(DRV_IsRunning("BP5758D")) {
+			BP5758D_Write(finalRGBCW);
+		}
+		if(DRV_IsRunning("BP1658CJ")) {
+			BP1658CJ_Write(finalRGBCW);
+		}
 #endif
+	}
+
 	if(CFG_HasFlag(OBK_FLAG_LED_REMEMBERLASTSTATE)) {
 		HAL_FlashVars_SaveLED(g_lightMode,g_brightness / g_cfg_brightnessMult, led_temperature_current,baseColors[0],baseColors[1],baseColors[2],g_lightEnableAll);
 	}
@@ -700,6 +779,14 @@ static int nextColor(const void *context, const char *cmd, const char *args, int
 
 	return 1;
 }
+static int lerpSpeed(const void *context, const char *cmd, const char *args, int cmdFlags){
+	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
+	Tokenizer_TokenizeString(args, 0);
+
+	led_lerpSpeedUnitsPerSecond = Tokenizer_GetArgFloat(0);
+
+	return 1;
+}
 static int setSaturation(const void *context, const char *cmd, const char *args, int cmdFlags){
     float f;
 
@@ -749,6 +836,7 @@ void NewLED_InitCommands(){
     CMD_RegisterCommand("led_saturation", "", setSaturation, "set qqqq", NULL);
     CMD_RegisterCommand("led_hue", "", setHue, "set qqqq", NULL);
     CMD_RegisterCommand("led_nextColor", "", nextColor, "set qqqq", NULL);
+    CMD_RegisterCommand("led_lerpSpeed", "", lerpSpeed, "set qqqq", NULL);
 
 }
 
