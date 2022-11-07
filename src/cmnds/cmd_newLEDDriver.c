@@ -704,7 +704,7 @@ static int setSaturation(const void *context, const char *cmd, const char *args,
     float f;
 
 	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args, 0);
 
 	f = Tokenizer_GetArgFloat(0);
 
@@ -722,7 +722,7 @@ static int setHue(const void *context, const char *cmd, const char *args, int cm
     float f;
 
 	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
-	Tokenizer_TokenizeString(args);
+	Tokenizer_TokenizeString(args, 0);
 
 	f = Tokenizer_GetArgFloat(0);
 
