@@ -444,13 +444,13 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	char* protocol;
 	//int bChanged = 0;
 	char* urlStr = "";
+	char* recvbuf;
 
 	if (request->received == 0) {
 		ADDLOGF_ERROR("You gave request with NULL input");
 		return 0;
 	}
-
-	char* recvbuf = request->received;
+	recvbuf = request->received;
 	for (i = 0; i < sizeof(methodNames) / sizeof(*methodNames); i++) {
 		if (http_startsWith(recvbuf, methodNames[i])) {
 			urlStr = recvbuf + strlen(methodNames[i]) + 2; // skip method name plus space, plus slash

@@ -164,10 +164,11 @@ static int testLog(const void * context, const char *cmd, const char *args, int 
 static int testFloats(const void * context, const char *cmd, const char *args, int cmdFlags){
 	int a = 123;
 	float b = 3.14;
+	double d;
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "This is an int - %i",a);
 	ADDLOG_INFO(LOG_FEATURE_CMD, "This is a float float - %f %f",b,b);
-	double d = (double)b;
+	d = (double)b;
 	ADDLOG_INFO(LOG_FEATURE_CMD, "This is a double double - %f %f",d, d);
 	
 	return 1;

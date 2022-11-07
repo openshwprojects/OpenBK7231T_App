@@ -87,10 +87,12 @@ static void BP1658CJ_PreInit() {
 
 
 void BP1658CJ_Write(byte *rgbcw) {
-  ADDLOG_DEBUG(LOG_FEATURE_CMD, "Writing to Lamp: #%02X%02X%02X%02X%02X", rgbcw[0], rgbcw[1], rgbcw[2], rgbcw[3], rgbcw[4]);
   unsigned short cur_col_10[5];
+  int i;
 
-	for(int i = 0; i < 5; i++){
+  ADDLOG_DEBUG(LOG_FEATURE_CMD, "Writing to Lamp: #%02X%02X%02X%02X%02X", rgbcw[0], rgbcw[1], rgbcw[2], rgbcw[3], rgbcw[4]);
+
+	for(i = 0; i < 5; i++){
 		// convert 0-255 to 0-1023
 		//cur_col_10[i] = rgbcw[g_channelOrder[i]] * 4;
     cur_col_10[i] = MAP(rgbcw[g_channelOrder[i]], 0, 255, 0, 1023);
@@ -100,7 +102,7 @@ void BP1658CJ_Write(byte *rgbcw) {
 	if (cur_col_10[0]==0 && cur_col_10[1]==0 && cur_col_10[2]==0 && cur_col_10[3]==0 && cur_col_10[4]==0) {
 		BP1658CJ_Start(BP1658CJ_ADDR_SLEEP);
                 BP1658CJ_WriteByte(BP1658CJ_SUBADDR);
-                for(int i = 0; i<10; ++i) //set all 10 channels to 00
+                for(i = 0; i<10; ++i) //set all 10 channels to 00
                     BP1658CJ_WriteByte(0x00);
 		BP1658CJ_Stop();
 		return;
