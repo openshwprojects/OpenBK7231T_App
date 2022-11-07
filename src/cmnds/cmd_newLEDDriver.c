@@ -175,10 +175,10 @@ void LED_RunQuickColorLerp(int deltaMS) {
 			CHANNEL_Set(firstChannelIndex + 0, led_rawLerpCurrent[3] * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 			CHANNEL_Set(firstChannelIndex + 1, led_rawLerpCurrent[4] * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 		} else {
-			finalRGBCW[i] = led_rawLerpCurrent[i];
 			// This should work for both RGB and RGBCW
 			// This also could work for a SINGLE COLOR strips
 			for(i = 0; i < 5; i++) {
+				finalRGBCW[i] = led_rawLerpCurrent[i];
 				CHANNEL_Set(firstChannelIndex + i, led_rawLerpCurrent[i] * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 			}
 		}
