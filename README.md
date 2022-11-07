@@ -244,6 +244,10 @@ if MQTTOn then "backlog led_dimmer 100; led_enableAll" else "backlog led_dimmer 
 | addChangeHandler Channel1 != 0  SendGet http://192.168.0.112/cm?cmnd=Power0%20On | This will set a Tasmota HTTP Power0 ON command when a channel 1 value become non-zero |
 | addChangeHandler Channel1 == 0  SendGet http://192.168.0.112/cm?cmnd=Power0%20Off | This will set a Tasmota HTTP Power0 OFF command when a channel 1 value become zero |
 | addChangeHandler Channel1 == 1 addRepeatingEvent 60 1 setChannel 1 0 | This will create a new repeating events with 1 repeat count and 60 seconds delay everytime Channel1 becomes 1. Basically, it will automatically turn off the light 60 seconds after you turn it on. TODO: clear previous event instance? |
+| addRepeatingEvent 5 -1 led_enableAll !$led_enableAll | This simple timer will toggle LED state every 5 seconds. -1 hear means infinite repeats. The ! stands for negation and $led_enableAll is a constant that you can read to get 0 or 1. It works like $CH11, $CH4 etc (any number) for accessing channel value |
+
+
+
 
 # Console Command argument expansion 
 
