@@ -260,9 +260,9 @@ static int http_rest_app(http_request_t* request) {
 	if (webhost && ourip) {
 		poststr(request, htmlDoctype);
 
-		char escapedDeviceName[256];
-		html_escape(CFG_GetDeviceName(), escapedDeviceName, sizeof(escapedDeviceName));
-		hprintf255(request, "<head><title>%s</title>", escapedDeviceName);
+		poststr(request, "<head><title>");
+		poststr_escaped(request, CFG_GetDeviceName());
+		poststr(request, "</title>");
 
 		poststr(request, htmlShortcutIcon);
 		poststr(request, htmlHeadMeta);

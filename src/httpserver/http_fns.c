@@ -137,7 +137,9 @@ void add_label_input(http_request_t* request, char* inputType, char* label, char
 
 	//These individual strings should be less than 256 .. yes hprintf255 uses 256 char buffer
 	hprintf255(request, "<label for=\"%s\">%s:</label><br>", fieldId, label);
-	hprintf255(request, "<input type=\"%s\" id=\"%s\" name=\"%s\" value=\"%s\">", inputType, fieldId, fieldId, value);
+	hprintf255(request, "<input type=\"%s\" id=\"%s\" name=\"%s\" value=\"", inputType, fieldId, fieldId);
+	poststr_escaped(request, value);	//All values should be escaped to ensure generate HTML is correct
+	poststr(request, "\">");
 }
 
 /// @brief Generates a pair of label and text field elements.
@@ -885,10 +887,7 @@ int http_fn_cfg_name(http_request_t* request) {
 
 	poststr(request, "<h2> Use this to change device names</h2>");
 	add_label_text_field(request, "ShortName", "shortName", CFG_GetShortDeviceName(), "<form action=\"/cfg_name\">");
-
-	char escapedDeviceName[256];
-	html_escape(CFG_GetDeviceName(), escapedDeviceName, sizeof(escapedDeviceName));
-	add_label_text_field(request, "Full Name", "name", escapedDeviceName, "<br>");
+	add_label_text_field(request, "Full Name", "name", CFG_GetDeviceName(), "<br>");
 
 	poststr(request, "<br><br>");
 	poststr(request, "<input type=\"submit\" value=\"Submit\" "

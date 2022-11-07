@@ -140,75 +140,61 @@ int my_strnicmp(char* a, char* b, int len) {
 }
 
 
-/// @brief Escape special characters in html.
-/// @param in
-/// @param outBuffer 
-/// @param outBufferLength
-/// @param script_safe Pass true, if the content part of script
-void html_escape(char* in, char* outBuffer, int outBufferLength) {
-	int outPos = 0;
-	bool canCopy = true;
-	for (int i = 0; canCopy && (i < strlen(in)); i++) {
-		switch (in[i]) {
+/// @brief Write escaped data to the response.
+/// @param request
+/// @param str
+void poststr_escaped(http_request_t* request, char* str) {
+	if (str == NULL) {
+		postany(request, NULL, 0);
+		return;
+	}
+
+	int i;
+	bool foundChar = false;
+	int len = strlen(str);
+
+	//Do a quick check if escaping is necessary
+	for (i = 0; (foundChar == false) && (i < len); i++) {
+		switch (str[i]) {
 		case '<':
-			if ((outPos + 5) < outBufferLength) {
-				outBuffer[outPos++] = '&';
-				outBuffer[outPos++] = 'l';
-				outBuffer[outPos++] = 't';
-				outBuffer[outPos++] = ';';
-			}
-			else {
-				canCopy = false;
-			}
+			foundChar = true;
 			break;
 		case '>':
-			if ((outPos + 5) < outBufferLength) {
-				outBuffer[outPos++] = '&';
-				outBuffer[outPos++] = 'g';
-				outBuffer[outPos++] = 't';
-				outBuffer[outPos++] = ';';
-			}
-			else {
-				canCopy = false;
-			}
+			foundChar = true;
 			break;
 		case '&':
-			if ((outPos + 6) < outBufferLength) {
-				outBuffer[outPos++] = '&';
-				outBuffer[outPos++] = 'a';
-				outBuffer[outPos++] = 'm';
-				outBuffer[outPos++] = 'p';
-				outBuffer[outPos++] = ';';
-			}
-			else {
-				canCopy = false;
-			}
+			foundChar = true;
 			break;
 		case '"':
-			if ((outPos + 7) < outBufferLength) {
-				outBuffer[outPos++] = '&';
-				outBuffer[outPos++] = 'q';
-				outBuffer[outPos++] = 'u';
-				outBuffer[outPos++] = 'o';
-				outBuffer[outPos++] = 't';
-				outBuffer[outPos++] = ';';
-			}
-			else {
-				canCopy = false;
-			}
-			break;
-		default:
-			if ((outPos + 1) < outBufferLength) {
-				outBuffer[outPos++] = in[i];
-			}
-			else {
-				canCopy = false;
-			}
+			foundChar = true;
 			break;
 		}
 	}
 
-	outBuffer[outPos] = 0;
+	if (foundChar) {
+		for (i = 0; i < len; i++) {
+			switch (str[i]) {
+			case '<':
+				postany(request, "&lt;", 4);
+				break;
+			case '>':
+				postany(request, "&gt;", 4);
+				break;
+			case '&':
+				postany(request, "&amp;", 5);
+				break;
+			case '"':
+				postany(request, "&quot;", 6);
+				break;
+			default:
+				postany(request, str + i, 1);
+				break;
+			}
+		}
+	}
+	else {
+		postany(request, str, strlen(str));
+	}
 }
 
 bool http_startsWith(const char* base, const char* substr) {
@@ -248,14 +234,10 @@ void http_setup(http_request_t* request, const char* type) {
 void http_html_start(http_request_t* request, const char* pagename) {
 	poststr(request, htmlDoctype);
 	poststr(request, "<head><title>");
-
-	char escapedDeviceName[256];
-	html_escape(CFG_GetDeviceName(), escapedDeviceName, sizeof(escapedDeviceName));
-	poststr(request, escapedDeviceName);
+	poststr_escaped(request, CFG_GetDeviceName());
 
 	if (pagename) {
-		poststr(request, " - ");
-		poststr(request, pagename);
+		hprintf255(request, " - %s", pagename);
 	}
 	poststr(request, "</title>");
 	poststr(request, htmlShortcutIcon);
@@ -263,7 +245,7 @@ void http_html_start(http_request_t* request, const char* pagename) {
 	poststr(request, htmlHeadStyle);
 	poststr(request, "</head>");
 	poststr(request, htmlBodyStart);
-	poststr(request, escapedDeviceName);
+	poststr_escaped(request, CFG_GetDeviceName());
 	poststr(request, htmlBodyStart2);
 }
 

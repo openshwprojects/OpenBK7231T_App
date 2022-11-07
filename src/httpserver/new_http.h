@@ -61,6 +61,7 @@ void http_setup(http_request_t* request, const char* type);
 void http_html_start(http_request_t* request, const char* pagename);
 void http_html_end(http_request_t* request);
 int poststr(http_request_t* request, const char* str);
+void poststr_escaped(http_request_t* request, char* str);
 int postany(http_request_t* request, const char* str, int len);
 void misc_formatUpTimeString(int totalSeconds, char* o);
 // void HTTP_AddBuildFooter(http_request_t *request);
@@ -84,7 +85,5 @@ typedef int (*http_callback_fn)(http_request_t* request);
 // url MUST start with '/'
 // urls must be unique (i.e. you can't have /about and /aboutme or /about/me)
 int HTTP_RegisterCallback(const char* url, int method, http_callback_fn callback);
-
-void html_escape(char* in, char* outBuffer, int outBufferLength);
 
 #endif
