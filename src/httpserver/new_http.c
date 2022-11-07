@@ -44,6 +44,8 @@ const char htmlFooterInfo[] =
 "href=\"https://www.elektroda.com/rtvforum/"
 "viewtopic.php?p=19841301#19841301\">Read more</a> | "
 "<a target=\"_blank\" "
+"href=\"https://openbekeniot.github.io/webapp/devicesList.html\">Devices List</a> | "
+"<a target=\"_blank\" "
 "href=\"https://paypal.me/openshwprojects\">Support project</a><br>";
 
 // make sure that USER_SW_VER is set on all platforms

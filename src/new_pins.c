@@ -1006,6 +1006,10 @@ void PIN_ticks(void *param)
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_RunQuickTick();
 #endif
+	
+	if(CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == true) {
+		LED_RunQuickColorLerp(PIN_TMR_DURATION);
+	}
 
 	// WiFi LED
 	// In Open Access point mode, fast blink

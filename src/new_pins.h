@@ -148,9 +148,10 @@ typedef struct pinsState_s {
 #define OBK_FLAG_IR_ALLOW_UNKNOWN					15
 #define OBK_FLAG_LED_BROADCAST_FULL_RGBCW			16
 #define OBK_FLAG_LED_AUTOENABLE_ON_WWW_ACTION		17
+#define OBK_FLAG_LED_SMOOTH_TRANSITIONS				18
 
 
-#define OBK_TOTAL_FLAGS 18
+#define OBK_TOTAL_FLAGS 19
 
 
 #define CGF_MQTT_CLIENT_ID_SIZE			64
@@ -311,44 +312,60 @@ int h_isChannelRelay(int tg_ch);
 int PIN_ParsePinRoleName(const char *name);
 
 // from new_builtin.c
-void Setup_Device_Empty();
-void Setup_Device_TuyaWL_SW01_16A();
-void Setup_Device_TuyaSmartLife4CH10A();
-void Setup_Device_BK7231N_TuyaLightBulb_RGBCW_5PWMs();
-void Setup_Device_IntelligentLife_NF101A();
-void Setup_Device_TuyaLEDDimmerSingleChannel();
-void Setup_Device_CalexLEDDimmerFiveChannel();
-void Setup_Device_CalexPowerStrip_900018_1v1_0UK();
-void Setup_Device_ArlecCCTDownlight();
-void Setup_Device_ArlecRGBCCTDownlight();
-void Setup_Device_CasaLifeCCTDownlight();
-void Setup_Device_NedisWIFIPO120FWT_16A();
-void Setup_Device_NedisWIFIP130FWT_10A();
-void Setup_Device_EmaxHome_EDU8774();
-void Setup_Device_TuyaSmartPFW02G();
-void Setup_Device_BK7231N_CB2S_QiachipSmartSwitch();
-void Setup_Device_BK7231T_WB2S_QiachipSmartSwitch();
-void Setup_Device_BK7231T_Raw_PrimeWiFiSmartOutletsOutdoor_CCWFIO232PK();
-void Setup_Device_AvatarASL04();
-void Setup_Device_TuyaSmartWIFISwith_4Gang_CB3S();
-void Setup_Device_BL602_MagicHome_IR_RGB_LedStrip();
-void Setup_Device_BL602_MagicHome_CCT_LedStrip();
-void Setup_Device_Sonoff_MiniR3();
-void Setup_Device_WiFi_DIY_Switch_WB2S_ZN268131();
-void Setup_Device_BK7231N_CB2S_LSPA9_BL0942();
-void Setup_Device_LSC_Smart_Connect_Plug_CB2S();
-void Setup_Device_DS_102_1Gang_WB3S();
-void Setup_Device_DS_102_2Gang_WB3S();
-void Setup_Device_DS_102_3Gang_WB3S();
-void Setup_Device_BK7231T_Gosund_Switch_SW5_A_V2_1();
-void Setup_Device_13A_Socket_CB2S();
-void Setup_Device_Deta_Smart_Double_Power_Point_6922HA_Series2();
-void Setup_Device_BK7231N_KS_602_TOUCH();
-void Setup_Device_Enbrighten_WFD4103();
-void Setup_Device_Aubess_Mini_Smart_Switch_16A();
-void Setup_Device_Zemismart_Light_Switch_KS_811_3();
-void Setup_Device_TeslaSmartPlus_TSL_SPL_1();
-void Setup_Device_Calex_900011_1_WB2S();
-void Setup_Device_Immax_NEO_LITE_NAS_WR07W();
-void Setup_Device_MOES_TouchSwitch_WS_EU1_RFW_N();
+/*
+
+WARNING! THIS IS OBSOLETE NOW!
+
+WE ARE USING THIS DATABASE:
+https://github.com/OpenBekenIOT/webapp/blob/gh-pages/devices.json
+Submit pull requests to the list above! Post teardowns on Elektroda.com!
+
+
+HERE IS FRONTEND:
+https://openbekeniot.github.io/webapp/devicesList.html
+See above link for more info!
+
+*/
+//void Setup_Device_Empty();
+//void Setup_Device_TuyaWL_SW01_16A();
+//void Setup_Device_TuyaSmartLife4CH10A();
+//void Setup_Device_BK7231N_TuyaLightBulb_RGBCW_5PWMs();
+//void Setup_Device_IntelligentLife_NF101A();
+//void Setup_Device_TuyaLEDDimmerSingleChannel();
+//void Setup_Device_CalexLEDDimmerFiveChannel();
+//void Setup_Device_CalexPowerStrip_900018_1v1_0UK();
+//void Setup_Device_ArlecCCTDownlight();
+//void Setup_Device_ArlecRGBCCTDownlight();
+//void Setup_Device_CasaLifeCCTDownlight();
+//void Setup_Device_NedisWIFIPO120FWT_16A();
+//void Setup_Device_NedisWIFIP130FWT_10A();
+//void Setup_Device_EmaxHome_EDU8774();
+//void Setup_Device_TuyaSmartPFW02G();
+//void Setup_Device_BK7231N_CB2S_QiachipSmartSwitch();
+//void Setup_Device_BK7231T_WB2S_QiachipSmartSwitch();
+//void Setup_Device_BK7231T_Raw_PrimeWiFiSmartOutletsOutdoor_CCWFIO232PK();
+//void Setup_Device_AvatarASL04();
+//void Setup_Device_TuyaSmartWIFISwith_4Gang_CB3S();
+//void Setup_Device_BL602_MagicHome_IR_RGB_LedStrip();
+//void Setup_Device_BL602_MagicHome_CCT_LedStrip();
+//void Setup_Device_Sonoff_MiniR3();
+//void Setup_Device_WiFi_DIY_Switch_WB2S_ZN268131();
+//void Setup_Device_BK7231N_CB2S_LSPA9_BL0942();
+//void Setup_Device_LSC_Smart_Connect_Plug_CB2S();
+//void Setup_Device_DS_102_1Gang_WB3S();
+//void Setup_Device_DS_102_2Gang_WB3S();
+//void Setup_Device_DS_102_3Gang_WB3S();
+//void Setup_Device_BK7231T_Gosund_Switch_SW5_A_V2_1();
+//void Setup_Device_13A_Socket_CB2S();
+//void Setup_Device_Deta_Smart_Double_Power_Point_6922HA_Series2();
+//void Setup_Device_BK7231N_KS_602_TOUCH();
+//void Setup_Device_Enbrighten_WFD4103();
+//void Setup_Device_Aubess_Mini_Smart_Switch_16A();
+//void Setup_Device_Zemismart_Light_Switch_KS_811_3();
+//void Setup_Device_TeslaSmartPlus_TSL_SPL_1();
+//void Setup_Device_Calex_900011_1_WB2S();
+//void Setup_Device_Immax_NEO_LITE_NAS_WR07W();
+//void Setup_Device_MOES_TouchSwitch_WS_EU1_RFW_N();
+
+
 #endif

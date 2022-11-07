@@ -52,57 +52,75 @@ static char* HASS_QOS_CONFIG = "    qos: 1\n";
 static char* HASS_MQTT_NODE = "mqtt:\n";
 static char* HASS_LIGHT_NODE = "  light:\n";
 
-typedef struct template_s {
-	void (*setter)();
-	const char* name;
-} template_t;
 
-template_t g_templates[] = {
-	{ Setup_Device_Empty, "Empty"},
-	// BK7231N devices
-	{ Setup_Device_BK7231N_CB2S_QiachipSmartSwitch, "[BK7231N][CB2S] QiaChip Smart Switch"},
-	{ Setup_Device_BK7231N_KS_602_TOUCH, "[BK7231N] KS 602 Touch Switch US"},
-	{ Setup_Device_Aubess_Mini_Smart_Switch_16A, "[BK7231N] Aubess Mini Smart Switch 16A"},
-	// BK7231T devices
-	{ Setup_Device_BK7231T_WB2S_QiachipSmartSwitch, "[BK7231T][WB2S] QiaChip Smart Switch"},
-	{ Setup_Device_TuyaWL_SW01_16A, "WL SW01 16A"},
-	{ Setup_Device_TuyaSmartLife4CH10A, "Smart Life 4CH 10A"},
-	{ Setup_Device_IntelligentLife_NF101A, "Intelligent Life NF101A"},
-	{ Setup_Device_TuyaLEDDimmerSingleChannel, "Tuya LED Dimmer Single Channel PWM WB3S"},
-	{ Setup_Device_CalexLEDDimmerFiveChannel, "Calex RGBWW LED Dimmer Five Channel PWM BK7231S"},
-	{ Setup_Device_CalexPowerStrip_900018_1v1_0UK, "Calex UK power strip 900018.1 v1.0 UK"},
-	{ Setup_Device_ArlecCCTDownlight, "Arlec CCT LED Downlight ALD029CHA"},
-	{ Setup_Device_NedisWIFIPO120FWT_16A, "Nedis WIFIPO120FWT SmartPlug 16A"},
-	{ Setup_Device_NedisWIFIP130FWT_10A, "Nedis WIFIP130FWT SmartPlug 10A"},
-	{ Setup_Device_BK7231T_Raw_PrimeWiFiSmartOutletsOutdoor_CCWFIO232PK, "Prime SmartOutlet Outdoor 2x Costco"},
-	{ Setup_Device_EmaxHome_EDU8774, "Emax Home EDU8774 SmartPlug 16A"},
-	{ Setup_Device_BK7231N_TuyaLightBulb_RGBCW_5PWMs, "Tuya E27 LED RGBCW 5PWMs BK7231N"},
-	{ Setup_Device_TuyaSmartPFW02G, "Tuya Smart PFW02-G"},
-	{ Setup_Device_AvatarASL04, "Avatar ASL04 5v LED strip"},
-	{ Setup_Device_BL602_MagicHome_IR_RGB_LedStrip, "BL602 Magic Home LED RGB IR Strip"},
-	{ Setup_Device_BL602_MagicHome_CCT_LedStrip, "BL602 Magic Home LED CCT Strip"},
-	{ Setup_Device_Sonoff_MiniR3, "Sonoff MiniR3"},
-	{ Setup_Device_WiFi_DIY_Switch_WB2S_ZN268131, "WB2S WiFi DIY Switch ZN268131"},
-	{ Setup_Device_DS_102_1Gang_WB3S, "DS-102 1 Gang Switch"},
-	{ Setup_Device_DS_102_2Gang_WB3S, "DS-102 2 Gang Switch"},
-	{ Setup_Device_DS_102_3Gang_WB3S, "DS-102 3 Gang Switch"},
-	{ Setup_Device_TuyaSmartWIFISwith_4Gang_CB3S, "[BK7231N][CB3S] Tuya Smart Wifi Switch 4 Gang"},
-	{ Setup_Device_BK7231N_CB2S_LSPA9_BL0942, "[BK7231N][CB2S] LSPA9 power metering plug BL0942 version"},
-	{ Setup_Device_LSC_Smart_Connect_Plug_CB2S, "[BK7231N][CB2S] LSC Smart Connect Plug"},
-	{ Setup_Device_BK7231T_Gosund_Switch_SW5_A_V2_1, "BK7231T Gosund Smart Switch SW5-A-V2.1"},
-	{ Setup_Device_13A_Socket_CB2S, "BK7231N CB2S 13A Aliexpress socket"},
-	{ Setup_Device_Deta_Smart_Double_Power_Point_6922HA_Series2, "BK7231T DETA SMART Double Power Point 6922HA-Series 2"},
-	{ Setup_Device_ArlecRGBCCTDownlight, "Arlec RGB+CCT LED Downlight ALD092RHA"},
-	{ Setup_Device_CasaLifeCCTDownlight, "CasaLife CCT LED Downlight SMART-AL2017-TGTS"},
-	{ Setup_Device_Enbrighten_WFD4103, "Enbrighten WFD4103 WiFi Switch BK7231T WB2S"} ,
-	{ Setup_Device_Zemismart_Light_Switch_KS_811_3, "Zemismart Light Switch (Neutral Optional) KS_811_3"} ,
-	{ Setup_Device_TeslaSmartPlus_TSL_SPL_1, "Tesla Smart Plug. Model: (TSL-SPL-1)"},
-	{ Setup_Device_Calex_900011_1_WB2S, "Calex Smart Power Plug 900011.1"},
-	{ Setup_Device_Immax_NEO_LITE_NAS_WR07W, "Immax NEO Lite. Model: (NAS-WR07W)"} ,
-	{ Setup_Device_MOES_TouchSwitch_WS_EU1_RFW_N, "MOES Touch Switch 1gang Model:(WS-EU1-RFW-N)"}
-};
 
-int g_total_templates = sizeof(g_templates) / sizeof(g_templates[0]);
+/*
+
+WARNING! THIS IS OBSOLETE NOW!
+
+WE ARE USING THIS DATABASE:
+https://github.com/OpenBekenIOT/webapp/blob/gh-pages/devices.json
+Submit pull requests to the list above! Post teardowns on Elektroda.com!
+
+
+HERE IS FRONTEND:
+https://openbekeniot.github.io/webapp/devicesList.html
+See above link for more info!
+
+*/
+//
+//typedef struct template_s {
+//	void (*setter)();
+//	const char* name;
+//} template_t;
+//
+//template_t g_templates[] = {
+//	{ Setup_Device_Empty, "Empty"},
+//	// BK7231N devices
+//	{ Setup_Device_BK7231N_CB2S_QiachipSmartSwitch, "[BK7231N][CB2S] QiaChip Smart Switch"},
+//	{ Setup_Device_BK7231N_KS_602_TOUCH, "[BK7231N] KS 602 Touch Switch US"},
+//	{ Setup_Device_Aubess_Mini_Smart_Switch_16A, "[BK7231N] Aubess Mini Smart Switch 16A"},
+//	{ Setup_Device_Jinvoo_AC_TV_Box_IR_Controller, "[BK7231N] Jinvoo AC/TV Box IR Controller"},
+//	// BK7231T devices
+//	{ Setup_Device_BK7231T_WB2S_QiachipSmartSwitch, "[BK7231T][WB2S] QiaChip Smart Switch"},
+//	{ Setup_Device_TuyaWL_SW01_16A, "WL SW01 16A"},
+//	{ Setup_Device_TuyaSmartLife4CH10A, "Smart Life 4CH 10A"},
+//	{ Setup_Device_IntelligentLife_NF101A, "Intelligent Life NF101A"},
+//	{ Setup_Device_TuyaLEDDimmerSingleChannel, "Tuya LED Dimmer Single Channel PWM WB3S"},
+//	{ Setup_Device_CalexLEDDimmerFiveChannel, "Calex RGBWW LED Dimmer Five Channel PWM BK7231S"},
+//	{ Setup_Device_CalexPowerStrip_900018_1v1_0UK, "Calex UK power strip 900018.1 v1.0 UK"},
+//	{ Setup_Device_ArlecCCTDownlight, "Arlec CCT LED Downlight ALD029CHA"},
+//	{ Setup_Device_NedisWIFIPO120FWT_16A, "Nedis WIFIPO120FWT SmartPlug 16A"},
+//	{ Setup_Device_NedisWIFIP130FWT_10A, "Nedis WIFIP130FWT SmartPlug 10A"},
+//	{ Setup_Device_BK7231T_Raw_PrimeWiFiSmartOutletsOutdoor_CCWFIO232PK, "Prime SmartOutlet Outdoor 2x Costco"},
+//	{ Setup_Device_EmaxHome_EDU8774, "Emax Home EDU8774 SmartPlug 16A"},
+//	{ Setup_Device_BK7231N_TuyaLightBulb_RGBCW_5PWMs, "Tuya E27 LED RGBCW 5PWMs BK7231N"},
+//	{ Setup_Device_TuyaSmartPFW02G, "Tuya Smart PFW02-G"},
+//	{ Setup_Device_AvatarASL04, "Avatar ASL04 5v LED strip"},
+//	{ Setup_Device_BL602_MagicHome_IR_RGB_LedStrip, "BL602 Magic Home LED RGB IR Strip"},
+//	{ Setup_Device_BL602_MagicHome_CCT_LedStrip, "BL602 Magic Home LED CCT Strip"},
+//	{ Setup_Device_Sonoff_MiniR3, "Sonoff MiniR3"},
+//	{ Setup_Device_WiFi_DIY_Switch_WB2S_ZN268131, "WB2S WiFi DIY Switch ZN268131"},
+//	{ Setup_Device_DS_102_1Gang_WB3S, "DS-102 1 Gang Switch"},
+//	{ Setup_Device_DS_102_2Gang_WB3S, "DS-102 2 Gang Switch"},
+//	{ Setup_Device_DS_102_3Gang_WB3S, "DS-102 3 Gang Switch"},
+//	{ Setup_Device_TuyaSmartWIFISwith_4Gang_CB3S, "[BK7231N][CB3S] Tuya Smart Wifi Switch 4 Gang"},
+//	{ Setup_Device_BK7231N_CB2S_LSPA9_BL0942, "[BK7231N][CB2S] LSPA9 power metering plug BL0942 version"},
+//	{ Setup_Device_LSC_Smart_Connect_Plug_CB2S, "[BK7231N][CB2S] LSC Smart Connect Plug"},
+//	{ Setup_Device_BK7231T_Gosund_Switch_SW5_A_V2_1, "BK7231T Gosund Smart Switch SW5-A-V2.1"},
+//	{ Setup_Device_13A_Socket_CB2S, "BK7231N CB2S 13A Aliexpress socket"},
+//	{ Setup_Device_Deta_Smart_Double_Power_Point_6922HA_Series2, "BK7231T DETA SMART Double Power Point 6922HA-Series 2"},
+//	{ Setup_Device_ArlecRGBCCTDownlight, "Arlec RGB+CCT LED Downlight ALD092RHA"},
+//	{ Setup_Device_CasaLifeCCTDownlight, "CasaLife CCT LED Downlight SMART-AL2017-TGTS"},
+//	{ Setup_Device_Enbrighten_WFD4103, "Enbrighten WFD4103 WiFi Switch BK7231T WB2S"} ,
+//	{ Setup_Device_Zemismart_Light_Switch_KS_811_3, "Zemismart Light Switch (Neutral Optional) KS_811_3"} ,
+//	{ Setup_Device_TeslaSmartPlus_TSL_SPL_1, "Tesla Smart Plug. Model: (TSL-SPL-1)"},
+//	{ Setup_Device_Calex_900011_1_WB2S, "Calex Smart Power Plug 900011.1"},
+//	{ Setup_Device_Immax_NEO_LITE_NAS_WR07W, "Immax NEO Lite. Model: (NAS-WR07W)"} ,
+//	{ Setup_Device_MOES_TouchSwitch_WS_EU1_RFW_N, "MOES Touch Switch 1gang Model:(WS-EU1-RFW-N)"}
+//};
+
+//int g_total_templates = sizeof(g_templates) / sizeof(g_templates[0]);
 
 unsigned char hexdigit(char hex) {
 	return (hex <= '9') ? hex - '0' :
@@ -1249,7 +1267,27 @@ int http_fn_cfg_quick(http_request_t* request) {
 	http_html_start(request, "Quick Config");
 	poststr(request, "<h4>Quick Config</h4>");
 
-	if (http_getArg(request->url, "dev", tmpA, sizeof(tmpA))) {
+		
+	/*
+
+	WARNING! THIS IS OBSOLETE NOW!
+
+	WE ARE USING THIS DATABASE:
+	https://github.com/OpenBekenIOT/webapp/blob/gh-pages/devices.json
+	Submit pull requests to the list above! Post teardowns on Elektroda.com!
+
+
+	HERE IS FRONTEND:
+	https://openbekeniot.github.io/webapp/devicesList.html
+	See above link for more info!
+
+	*/
+
+	poststr(request, "<h3>This is obsolete now - please config through Web App</h3>");
+	poststr(request, "<h3><a href=\"https://openbekeniot.github.io/webapp/devicesList.html\">Also please see here</a></h3>");
+
+
+	/*if (http_getArg(request->url, "dev", tmpA, sizeof(tmpA))) {
 		j = atoi(tmpA);
 		hprintf255(request, "<h3>Set dev %i!</h3>", j);
 		g_templates[j].setter();
@@ -1260,7 +1298,7 @@ int http_fn_cfg_quick(http_request_t* request) {
 		hprintf255(request, "<option value=\"%i\">%s</option>", j, g_templates[j].name);
 	}
 	poststr(request, "</select>");
-	poststr(request, "<input type=\"submit\" value=\"Set\"/></form>");
+	poststr(request, "<input type=\"submit\" value=\"Set\"/></form>");*/
 
 	poststr(request, htmlFooterReturnToCfgLink);
 	http_html_end(request);
@@ -1885,6 +1923,8 @@ const char* g_obk_flagNames[] = {
 	"[IR] Allow 'unknown' protocol",
 	"[MQTT] Broadcast led final color RGBCW (topic name: YourDevName/led_finalcolor_rgbcw/get)",
 	"[LED] Automatically enable Light when changing brightness, color or temperature on WWW panel",
+	"[LED] Smooth transitions for LED (EXPERIMENTAL)",
+	"error",
 	"error",
 	"error",
 };
