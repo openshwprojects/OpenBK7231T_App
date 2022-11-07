@@ -253,6 +253,10 @@ if MQTTOn then "backlog led_dimmer 100; led_enableAll" else "backlog led_dimmer 
 
   Every console command that takes an integer argument supports following constant expansion:
 - $CH[CHANNEL_NUMBER] - so, $CH0 is a channel 0 value, etc, so SetChannel 1 $CH2 will get current value of Channel2 and set it to Channel 1
+- $led_enableAll - this is the state of led driver, returns 1 or 0
+- $led_hue
+- $led_saturation
+- $led_dimmer
       
   
 # Example configurations (example autoexec.bat files for LittleFS system)
