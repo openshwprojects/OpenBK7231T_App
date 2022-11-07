@@ -250,7 +250,7 @@ void http_html_start(http_request_t* request, const char* pagename) {
 	poststr(request, "<head><title>");
 
 	char escapedDeviceName[256];
-	html_escape(CFG_GetDeviceName(), escapedDeviceName, 255);
+	html_escape(CFG_GetDeviceName(), escapedDeviceName, sizeof(escapedDeviceName));
 	poststr(request, escapedDeviceName);
 
 	if (pagename) {
@@ -510,7 +510,7 @@ int hprintf255(http_request_t* request, const char* fmt, ...) {
 	va_list argList;
 	//BaseType_t taken;
 	char tmp[256];
-	memset(tmp, 0, 256);
+	memset(tmp, 0, sizeof(tmp));
 	va_start(argList, fmt);
 	vsnprintf(tmp, 255, fmt, argList);
 	va_end(argList);
@@ -637,7 +637,7 @@ int HTTP_ProcessPacket(http_request_t* request) {
 			int method = callbacks[i]->method;
 			if (method == HTTP_ANY || method == request->method) {
 				return callbacks[i]->callback(request);
-		}
+			}
 		}
 	}
 	if (http_checkUrlBase(urlStr, "")) return http_fn_empty_url(request);

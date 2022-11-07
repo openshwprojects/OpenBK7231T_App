@@ -261,7 +261,7 @@ static int http_rest_app(http_request_t* request) {
 		poststr(request, htmlDoctype);
 
 		char escapedDeviceName[256];
-		html_escape(CFG_GetDeviceName(), escapedDeviceName, 255);
+		html_escape(CFG_GetDeviceName(), escapedDeviceName, sizeof(escapedDeviceName));
 		hprintf255(request, "<head><title>%s</title>", escapedDeviceName);
 
 		poststr(request, htmlShortcutIcon);

@@ -887,7 +887,7 @@ int http_fn_cfg_name(http_request_t* request) {
 	add_label_text_field(request, "ShortName", "shortName", CFG_GetShortDeviceName(), "<form action=\"/cfg_name\">");
 
 	char escapedDeviceName[256];
-	html_escape(CFG_GetDeviceName(), escapedDeviceName, 255);
+	html_escape(CFG_GetDeviceName(), escapedDeviceName, sizeof(escapedDeviceName));
 	add_label_text_field(request, "Full Name", "name", escapedDeviceName, "<br>");
 
 	poststr(request, "<br><br>");
