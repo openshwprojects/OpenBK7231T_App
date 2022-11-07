@@ -851,6 +851,29 @@ void Setup_Device_Aubess_Mini_Smart_Switch_16A() {
 	CFG_Save_SetupTimer();
 }
 
+// Jinvoo AC/TV Box IR Controller (SM-AW502S)
+// https://www.elektroda.com/rtvforum/topic3931868.html
+void Setup_Device_Jinvoo_AC_TV_Box_IR_Controller() {
+
+	// pins are:
+	// embedded button - Btn = P6
+	// IR receiver - IRRecv = P7
+	// led - WifiLED = P8
+	// IR leds - IRSend = P26
+
+	CFG_ClearPins();
+	// Embedded Button
+	PIN_SetPinRoleForPinIndex(6, IOR_Button);
+	// IR receiver
+	PIN_SetPinRoleForPinIndex(7, IOR_IRRecv);
+	// LED
+	PIN_SetPinRoleForPinIndex(8, IOR_LED_WIFI);
+	// IR LEDs
+	PIN_SetPinRoleForPinIndex(26, IOR_IRSend);
+
+	CFG_Save_SetupTimer();
+}
+
 // Zemismart Light Switch (Neutral Optional) KS_811_3
 // https://www.aliexpress.com/item/4000979779573.html
 // Has a BK7231N direct on board, but easy access to UART on back with removal of 4 screws.
