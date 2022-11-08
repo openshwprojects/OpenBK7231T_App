@@ -19,9 +19,10 @@ int MSG_SkipBytes(bitMessage_t *msg, int c) {
 }
 int MSG_ReadString(bitMessage_t *msg, char *out, int outBufferSize) {
 	const char *start;
+	int len;
 
 	start = (const char*)(msg->data + msg->position);
-	int len = 0;
+	len = 0;
 	while(1) {
 		if(msg->position >= msg->totalSize) {
 			return -1;
@@ -39,13 +40,14 @@ int MSG_ReadString(bitMessage_t *msg, char *out, int outBufferSize) {
 	return strlen(out);
 }
 unsigned short MSG_ReadU16(bitMessage_t *msg) {
+	byte *p;
 	unsigned short ret = 0;
 
 	if(msg->position + sizeof(unsigned short) > msg->totalSize)
 		return 0;
 
 	// ##### NOTE IS THIS CORRECT BYTE ORDERINGFOR TAS???
-	byte *p = (byte *)&ret;
+	p = (byte *)&ret;
 	*p = MSG_ReadByte(msg);
 	p++;
 	*p = MSG_ReadByte(msg);

@@ -386,6 +386,10 @@ void DRV_DGR_RunEverySecond() {
 void DRV_DGR_RunQuickTick() {
 	dgrDevice_t def;
     char msgbuf[64];
+	struct sockaddr_in me;
+	const char *myip;
+	socklen_t addrlen;
+	int nbytes;
 
 	if(g_dgr_socket_receive<=0 || g_dgr_socket_send <= 0) {
 		return ;
@@ -394,8 +398,8 @@ void DRV_DGR_RunQuickTick() {
     //
 
 	// NOTE: 'addr' is global, and used in callbacks to determine the member.
-        socklen_t addrlen = sizeof(addr);
-        int nbytes = recvfrom(
+        addrlen = sizeof(addr);
+        nbytes = recvfrom(
             g_dgr_socket_receive,
             msgbuf,
             sizeof(msgbuf),
@@ -408,9 +412,7 @@ void DRV_DGR_RunQuickTick() {
             return ;
         }
 
-	    struct sockaddr_in me;
-
-		const char *myip = HAL_GetMyIPString();
+		myip = HAL_GetMyIPString();
 		me.sin_addr.s_addr = inet_addr(myip);
 
 		if (me.sin_addr.s_addr == addr.sin_addr.s_addr){

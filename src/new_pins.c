@@ -765,11 +765,13 @@ void CHANNEL_Toggle(int ch) {
 	Channel_OnChanged(ch,prev,0);
 }
 int CHANNEL_HasChannelPinWithRoleOrRole(int ch, int iorType, int iorType2) {
+	int i;
+
 	if(ch < 0 || ch >= CHANNEL_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_HasChannelPinWithRole: Channel index %i is out of range <0,%i)\n\r",ch,CHANNEL_MAX);
 		return 0;
 	}
-	for(int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if(g_cfg.pins.channels[i] == ch) {
 			if(g_cfg.pins.roles[i] == iorType)
 				return 1;
@@ -780,11 +782,13 @@ int CHANNEL_HasChannelPinWithRoleOrRole(int ch, int iorType, int iorType2) {
 	return 0;
 }
 int CHANNEL_HasChannelPinWithRole(int ch, int iorType) {
+	int i;
+
 	if(ch < 0 || ch >= CHANNEL_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_HasChannelPinWithRole: Channel index %i is out of range <0,%i)\n\r",ch,CHANNEL_MAX);
 		return 0;
 	}
-	for(int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if(g_cfg.pins.channels[i] == ch) {
 			if(g_cfg.pins.roles[i] == iorType)
 				return 1;

@@ -32,8 +32,12 @@ const int BP1658CJ_DELAY = 1; //delay*10 --> nops
 
 void usleep(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 {
+#ifdef WIN32
+	// not possible on Windows port
+#else
   for(volatile int i=0; i<r; i++)
     __asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+#endif
 }
 
 static void BP1658CJ_Stop() {

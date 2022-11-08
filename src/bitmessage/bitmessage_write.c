@@ -14,9 +14,12 @@ int MSG_WriteBytes(bitMessage_t *msg, const void *p, int numBytes) {
 	return numBytes;
 }
 int MSG_WriteString(bitMessage_t *msg, const char *s) {
-	int len = strlen(s);
+	int len;
+	int res;
+
+	len = strlen(s);
 	len++;
-	int res = MSG_WriteBytes(msg, s, len);
+	res = MSG_WriteBytes(msg, s, len);
 	return res;
 	//return MSG_WriteBytes(msg,s,strlen(s)+1);
 }

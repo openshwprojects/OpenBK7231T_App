@@ -86,7 +86,9 @@ This platform is not supported, error!
 
 #if WINDOWS
 
+#include <time.h>
 
+// generic
 typedef int bool;
 #define true 1
 #define false 0
@@ -94,11 +96,26 @@ typedef int bool;
 typedef unsigned char u8;
 typedef unsigned char uint8_t;
 typedef unsigned int uint32_t;
+typedef unsigned long uint64_t;
 typedef unsigned short uint16_t;
 typedef char int8_t;
+typedef int int32_t;
 typedef unsigned int u32;
 
+#ifndef UINT32_MAX
+#define UINT32_MAX  (0xffffffff)
+#endif
 
+// os
+#define os_free free
+#define os_malloc malloc
+
+// RTOS
+typedef long portTickType;
+#define portTICK_PERIOD_MS 1
+typedef int SemaphoreHandle_t;
+#define pdTRUE 1
+#define pdFALSE 0
 
 #elif PLATFORM_BL602
 

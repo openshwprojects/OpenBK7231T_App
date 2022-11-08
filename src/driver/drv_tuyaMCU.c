@@ -336,13 +336,14 @@ void TuyaMCU_SendEnum(uint8_t id, uint32_t value)
 }
 
 static uint16_t convertHexStringtoBytes (uint8_t * dest, char src[], uint16_t src_len){
+  char hexbyte[3];
+  uint16_t i;
+
   if (NULL == dest || NULL == src || 0 == src_len){
     return 0;
   }
 
-  char hexbyte[3];
   hexbyte[2] = 0;
-  uint16_t i;
 
   for (i = 0; i < src_len; i++) {
     hexbyte[0] = src[2*i];
@@ -354,6 +355,9 @@ static uint16_t convertHexStringtoBytes (uint8_t * dest, char src[], uint16_t sr
 }
 
 void TuyaMCU_SendHexString(uint8_t id, char data[]) {
+#ifdef WIN32
+
+#else
 
   uint16_t len = strlen(data)/2;
   uint16_t payload_len = 4 + len;
@@ -363,13 +367,16 @@ void TuyaMCU_SendHexString(uint8_t id, char data[]) {
   payload_buffer[2] = len >> 8;
   payload_buffer[3] = len & 0xFF;
 
-  (void) convertHexStringtoBytes(&payload_buffer[4], data, len);
+  convertHexStringtoBytes(&payload_buffer[4], data, len);
 
   TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, payload_buffer, payload_len);
+#endif
 }
 
 void TuyaMCU_SendString(uint8_t id, char data[]) {
+#ifdef WIN32
 
+#else
   uint16_t len = strlen(data);
   uint16_t payload_len = 4 + len;
   uint8_t payload_buffer[payload_len];
@@ -383,9 +390,13 @@ void TuyaMCU_SendString(uint8_t id, char data[]) {
   }
 
   TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, payload_buffer, payload_len);
+#endif
 }
 
 void TuyaMCU_SendRaw(uint8_t id, char data[]) {
+#ifdef WIN32
+
+#else
   char* beginPos = strchr(data, 'x');
   if(!beginPos) {
     beginPos = strchr(data, 'X');
@@ -404,9 +415,10 @@ void TuyaMCU_SendRaw(uint8_t id, char data[]) {
   payload_buffer[2] = len >> 8;
   payload_buffer[3] = len & 0xFF;
 
-  (void) convertHexStringtoBytes(&payload_buffer[4], beginPos, len);
+  convertHexStringtoBytes(&payload_buffer[4], beginPos, len);
 
   TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, payload_buffer, payload_len);
+#endif
 }
 
 void TuyaMCU_Send_SetTime(struct tm *pTime) {

@@ -127,14 +127,16 @@ int Time_getUpTimeSeconds() {
 static char scheduledDriverName[4][16];
 static int scheduledDelay[4] = {-1, -1, -1, -1};
 static void ScheduleDriverStart(const char *name, int delay) {
-	for (int i = 0; i < 4; i++){
+	int i;
+
+	for (i = 0; i < 4; i++){
 		// if already scheduled, just change delay.
 		if (!strcmp(scheduledDriverName[i], name)){
 			scheduledDelay[i] = delay;
 			return;
 		}
 	}
-	for (int i = 0; i < 4; i++){
+	for (i = 0; i < 4; i++){
 		// first empty slot
 		if (scheduledDelay[i] == -1){
 			scheduledDelay[i] = delay;
@@ -235,6 +237,7 @@ void Main_OnEverySecond()
 {
 	int newMQTTState;
 	const char *safe;
+	int i;
 
 	// run_adc_test();
 	newMQTTState = MQTT_RunEverySecondUpdate();
@@ -275,7 +278,6 @@ void Main_OnEverySecond()
 
 	if(bSafeMode == 0) 
     {
-		int i;
 
 		for(i = 0; i < PLATFORM_GPIO_MAX; i++) 
         {
@@ -292,7 +294,7 @@ void Main_OnEverySecond()
 	}
 
 	// allow for up to 4 scheduled driver starts.
-	for (int i = 0; i < 4; i++){
+	for (i = 0; i < 4; i++){
 		if (scheduledDelay[i] > 0){
 			scheduledDelay[i]--;
 			if(scheduledDelay[i] <= 0)
@@ -477,13 +479,14 @@ void isidle(){
 void Main_Init()
 {
 	const char *wifi_ssid, *wifi_pass;
+	int i;
 
 	// wait 100ms at the start.
 	// TCP is being setup in a different thread, and there does not seem to be a way to find out if it's complete yet?
 	// so just wait a bit, and then start.
 	int startDelay = 750;
 	bk_printf("\r\ndelaying start\r\n");
-	for (int i = 0; i < startDelay/10; i++){
+	for (i = 0; i < startDelay/10; i++){
 		rtos_delay_milliseconds(10);
 		bk_printf("#Startup delayed %dms#\r\n", i*10);
 	}

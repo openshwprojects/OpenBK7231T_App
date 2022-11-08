@@ -81,12 +81,14 @@ int NTP_SetTimeZoneOfs(const void *context, const char *cmd, const char *args, i
 
 //Set custom NTP server
 int NTP_SetServer(const void *context, const char *cmd, const char *args, int cmdFlags) {
+    const char *newValue;
+
     Tokenizer_TokenizeString(args,0);
     if(Tokenizer_GetArgsCount() < 1) {
         addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Argument missing e.g. ntp_setServer ipAddress\n");
         return 0;
     }
-    const char *newValue = Tokenizer_GetArg(0);
+    newValue = Tokenizer_GetArg(0);
     CFG_SetNTPServer(newValue);
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP server set to %s\n", newValue);
     return 1;
@@ -191,9 +193,9 @@ void NTP_CheckForReceive() {
     unsigned short highWord;
     unsigned short lowWord;
     unsigned int secsSince1900;
+    struct tm *ltm;
     ntp_packet packet = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     ptr = (byte*)&packet;
-    struct tm *ltm;
 
     // Receive the server's response:
     i = sizeof(packet);

@@ -5,6 +5,10 @@
 const char *str_rssi[] = { "N/A", "Weak", "Fair", "Good", "Excellent" };
 
 
+#ifdef WIN32
+
+#else
+
 #define NANOPRINTF_USE_FIELD_WIDTH_FORMAT_SPECIFIERS 1
 #define NANOPRINTF_USE_PRECISION_FORMAT_SPECIFIERS 1
 #define NANOPRINTF_USE_LARGE_FORMAT_SPECIFIERS 1
@@ -56,7 +60,7 @@ int vsprintf3(char *buffer, const char *fmt, va_list val) {
     return rv;
 }
 
-
+#endif
 
 
 

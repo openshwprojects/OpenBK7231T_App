@@ -440,10 +440,10 @@ int http_fn_index(http_request_t* request) {
 
 		}
 		else if (h_isChannelRelay(i) || channelType == ChType_Toggle) {
+			const char* c;
 			if (i <= 1) {
 				hprintf255(request, "<tr>");
 			}
-			const char* c;
 			if (CHANNEL_Check(i)) {
 				c = "bgrn";
 			}
@@ -1013,6 +1013,7 @@ int http_fn_cfg_mac(http_request_t* request) {
 	unsigned char mac[6];
 	char tmpA[128];
 	int i;
+	char macStr[16];
 
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Set MAC address");
@@ -1036,7 +1037,6 @@ int http_fn_cfg_mac(http_request_t* request) {
 
 	poststr(request, "<h2> Here you can change MAC address.</h2>");
 
-	char macStr[16];
 	sprintf(macStr, "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 	add_label_text_field(request, "MAC", "mac", macStr, "<form action=\"/cfg_mac\">");
 	poststr(request, "<br><br>\
@@ -1310,10 +1310,11 @@ int http_fn_cfg_quick(http_request_t* request) {
 /// @param relayCount Number of relay and LED channels.
 /// @param pwmCount Number of PWM channels.
 void get_Relay_PWM_Count(int* relayCount, int* pwmCount) {
+	int i;
 	(*relayCount) = 0;
 	(*pwmCount) = 0;
 
-	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		int role = PIN_GetPinRoleForPinIndex(i);
 		if (role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
 			(*relayCount)++;
@@ -1344,6 +1345,7 @@ int http_fn_ha_discovery(http_request_t* request) {
 	bool ledDriverChipRunning;
 	HassDeviceInfo* dev_info = NULL;
 	bool measuringPower = false;
+	struct cJSON_Hooks hooks;
 
 	http_setup(request, httpMimeTypeText);
 
@@ -1374,7 +1376,6 @@ int http_fn_ha_discovery(http_request_t* request) {
 	}
 
 
-	struct cJSON_Hooks hooks;
 	hooks.malloc_fn = os_malloc;
 	hooks.free_fn = os_free;
 	cJSON_InitHooks(&hooks);

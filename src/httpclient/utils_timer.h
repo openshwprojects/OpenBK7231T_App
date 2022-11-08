@@ -6,6 +6,7 @@
 #define _UTILS_TIMER_H_
 
 //#include "iot_import.h"
+#include "../new_common.h"
 
 typedef struct {
     uint32_t time;

@@ -152,6 +152,7 @@ int httpclient_parse_host(const char *url, char *host, int *port, uint32_t maxho
     const char *host_ptr = (const char *) os_strstr(url, "://");
     uint32_t host_len = 0;
     char *path_ptr;
+    char *port_ptr;
 
     ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "Parse url %s\r\n", url);
 
@@ -183,12 +184,15 @@ int httpclient_parse_host(const char *url, char *host, int *port, uint32_t maxho
     host[host_len] = '\0';
 
     // parse port from host, and truncate host if found.
-    char *port_ptr = os_strchr(host, ':');
+    port_ptr = os_strchr(host, ':');
     if (port_ptr){
+		int p;
+		int num;
+
         *port_ptr = 0;
         port_ptr++;
-        int p = 0;
-        int num = sscanf(port_ptr, "%d", &p);
+        p = 0;
+        num = sscanf(port_ptr, "%d", &p);
         if (num == 1){
             *port = p;
         }

@@ -48,6 +48,7 @@ static bool SM2135_PreInit(void) {
 
 static bool SM2135_WriteByte(uint8_t value) {
 	uint8_t curr;
+	uint8_t ack;
 
 	for (curr = 0X80; curr != 0; curr >>= 1) {
 		if (curr & value) {
@@ -63,7 +64,7 @@ static bool SM2135_WriteByte(uint8_t value) {
 	SM2135_SetHigh(g_pin_data);
 	SM2135_SetHigh(g_pin_clk);
 	rtos_delay_milliseconds(SM2135_DELAY / 2);
-	uint8_t ack = HAL_PIN_ReadDigitalInput(g_pin_data);
+	ack = HAL_PIN_ReadDigitalInput(g_pin_data);
 	SM2135_SetLow(g_pin_clk);
 	rtos_delay_milliseconds(SM2135_DELAY / 2);
 	SM2135_SetLow(g_pin_data);
