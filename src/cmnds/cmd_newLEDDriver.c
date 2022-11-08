@@ -141,6 +141,9 @@ float Mathf_MoveTowards(float cur, float tg, float dt) {
 // 200 means that in one second color will go from 0 to 200
 float led_lerpSpeedUnitsPerSecond = 200.f;
 
+float led_current_value_brightness = 0;
+float led_current_value_cold_or_warm = 0;
+
 void LED_RunQuickColorLerp(int deltaMS) {
 	int i;
 	int firstChannelIndex;
@@ -166,7 +169,17 @@ void LED_RunQuickColorLerp(int deltaMS) {
 
 	if(isCWMode() && CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
 		// OBK_FLAG_LED_ALTERNATE_CW_MODE means we have a driver that takes one PWM for brightness and second for temperature
+		int target_value_brightness = 0;
+		int target_value_cold_or_warm = 0;
 
+		target_value_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
+		target_value_brightness = g_brightness * 100.0f;
+
+		led_current_value_brightness = Mathf_MoveTowards(led_current_value_brightness, target_value_brightness, deltaSeconds * led_lerpSpeedUnitsPerSecond);
+		led_current_value_cold_or_warm = Mathf_MoveTowards(led_current_value_cold_or_warm, target_value_cold_or_warm, deltaSeconds * led_lerpSpeedUnitsPerSecond);
+
+		CHANNEL_Set(firstChannelIndex, led_current_value_cold_or_warm, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+		CHANNEL_Set(firstChannelIndex+1, led_current_value_brightness, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 	} else {
 		if(isCWMode()) { 
 			// In CW mode, user sets just two PWMs. So we have: PWM0 and PWM1 (or maybe PWM1 and PWM2)
