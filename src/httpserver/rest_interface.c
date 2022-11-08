@@ -130,11 +130,12 @@ const char* apppage4 = "startup.js\"></script>"
 
 /* Extracts string token value into outBuffer (128 char). Returns true if the operation was successful. */
 bool tryGetTokenString(const char* json, jsmntok_t* tok, char* outBuffer) {
+	int length;
 	if (tok == NULL || tok->type != JSMN_STRING) {
 		return false;
 	}
 
-	int length = tok->end - tok->start;
+	length = tok->end - tok->start;
 
 	//Don't have enough buffer
 	if (length > MAX_JSON_VALUE_LENGTH) {
@@ -842,12 +843,13 @@ static int http_rest_post_pins(http_request_t* request) {
 			i += t[i + 1].size + 1;
 		}
 		else if (strcmp(tokenStrValue, "deviceFlag") == 0) {
+			int flag;
 			jsmntok_t* flagTok = &t[i + 1];
 			if (flagTok == NULL || flagTok->type != JSMN_PRIMITIVE) {
 				continue;
 			}
 
-			int flag = atoi(json_str + flagTok->start);
+			flag = atoi(json_str + flagTok->start);
 			ADDLOG_DEBUG(LOG_FEATURE_API, "received deviceFlag %d", flag);
 
 			if (flag >= 0 && flag <= 10) {

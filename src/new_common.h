@@ -88,11 +88,14 @@ This platform is not supported, error!
 
 #include <time.h>
 
+#define bk_printf printf
+
 // generic
 typedef int bool;
 #define true 1
 #define false 0
 
+typedef int BaseType_t;
 typedef unsigned char u8;
 typedef unsigned char u8_t;
 typedef unsigned int u32;
@@ -112,6 +115,7 @@ typedef unsigned short u16_t;
 //#define UINT32_MAX  (0xffffffff)
 //#endif
 
+#define		LWIP_UNUSED_ARG(x)
 #define 	LWIP_CONST_CAST(target_type, val)   ((target_type)(val))
 
 // os
@@ -119,8 +123,11 @@ typedef unsigned short u16_t;
 #define os_malloc malloc
 #define os_strlen strlen
 #define os_memset memset
+#define os_memcpy memcpy
 #define os_strstr strstr
 #define os_strcpy strcpy
+#define os_strchr strchr
+#define os_strcmp strcmp
 #define os_memmove memmove
 
 // RTOS
@@ -302,6 +309,8 @@ typedef unsigned char byte;
 #include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #else
 

@@ -316,6 +316,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="&quot;.\src\win32\stubs\&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -395,10 +396,26 @@
 			<File
 				RelativePath=".\src\httpserver\hass.c"
 				>
+				<FileConfiguration
+					Name="Debug Win32 ScriptOnly|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\src\httpserver\hass.h"
 				>
+				<FileConfiguration
+					Name="Debug Win32 ScriptOnly|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\src\logging\logging.c"
@@ -472,6 +489,30 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\mqtt\new_mqtt_deduper.c"
+				>
+				<FileConfiguration
+					Name="Debug Win32 ScriptOnly|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\mqtt\new_mqtt_deduper.h"
+				>
+				<FileConfiguration
+					Name="Debug Win32 ScriptOnly|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -574,10 +615,26 @@
 			<File
 				RelativePath=".\src\rgb2hsv.c"
 				>
+				<FileConfiguration
+					Name="Debug Win32 ScriptOnly|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\src\rgb2hsv.h"
 				>
+				<FileConfiguration
+					Name="Debug Win32 ScriptOnly|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\src\tiny_crc8.c"
@@ -1368,6 +1425,14 @@
 			<File
 				RelativePath=".\src\cmnds\cmd_newLEDDriver_colors.c"
 				>
+				<FileConfiguration
+					Name="Debug Win32 ScriptOnly|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\src\cmnds\cmd_public.h"
@@ -1680,6 +1745,14 @@
 			<File
 				RelativePath=".\src\driver\drv_test_drivers.c"
 				>
+				<FileConfiguration
+					Name="Debug Win32 ScriptOnly|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\src\driver\drv_tuyaMCU.c"
@@ -1744,6 +1817,14 @@
 			<File
 				RelativePath=".\src\driver\drv_ucs1912.c"
 				>
+				<FileConfiguration
+					Name="Debug Win32 ScriptOnly|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
@@ -2358,6 +2439,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\httpserver\http_tcp_server_nonblocking.c"
+				>
+			</File>
+			<File
 				RelativePath=".\src\httpclient\iot_export_errno.h"
 				>
 				<FileConfiguration
@@ -2430,7 +2515,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug Win32|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2592,6 +2676,18 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+		</Filter>
+		<Filter
+			Name="Win32Stubs"
+			>
+			<File
+				RelativePath=".\src\win32\stubs\lwip\mqtt.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\win32\stubs\rtos.c"
+				>
 			</File>
 		</Filter>
 	</Files>

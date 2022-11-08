@@ -29,8 +29,22 @@ int snprintf(char *buffer, unsigned int len, const char *fmt, ...) {
     va_end(val);
     return rv;
 }
+void CMD_StartTCPCommandLine() {
 
+}
 
+void Main_SetupPingWatchDog(const char *target/*, int delayBetweenPings_Seconds*/) {
+
+}
+void Main_PingWatchDogSilent() {
+
+}
+int PingWatchDog_GetTotalLost() {
+    return 0;
+}
+int PingWatchDog_GetTotalReceived() {
+    return 0;
+}
 void strcat_safe_test(){
 	char tmpA[16];
 	char tmpB[16];
@@ -63,14 +77,14 @@ void strcat_safe_test(){
 	urldecode2_safe(buff,"qqqqqq%40qqqq",sizeof(buff));
 
 
-	misc_formatUpTimeString(15, timeStrA);
-	misc_formatUpTimeString(65, timeStrB);
-	misc_formatUpTimeString(125, timeStrC);
-	misc_formatUpTimeString(60*60, timeStrD);
-	misc_formatUpTimeString(4*60*60, timeStrE);
-	misc_formatUpTimeString(24*60*60, timeStrF);
-	misc_formatUpTimeString(24*60*60+60*60+50, timeStrG);
-	misc_formatUpTimeString(100*24*60*60+60*60+15*60+50, timeStrH);
+	//misc_formatUpTimeString(15, timeStrA);
+	//misc_formatUpTimeString(65, timeStrB);
+	//misc_formatUpTimeString(125, timeStrC);
+	//misc_formatUpTimeString(60*60, timeStrD);
+	//misc_formatUpTimeString(4*60*60, timeStrE);
+	//misc_formatUpTimeString(24*60*60, timeStrF);
+	//misc_formatUpTimeString(24*60*60+60*60+50, timeStrG);
+	//misc_formatUpTimeString(100*24*60*60+60*60+15*60+50, timeStrH);
 
 	// some command examples, compatible with Tasmota syntax
 	//CMD_ExecuteCommand("TuyaSend3 108,ff0000646464ff");
@@ -86,15 +100,15 @@ void strcat_safe_test(){
 	//CMD_ExecuteCommand("Tuyqqqqqqqqqq");
 
 }
-int Time_getUpTimeSeconds() {
-	return rand()% 100000;
-}
+
 // placeholder - TODO
 char myIP[] = "127.0.0.1";
 char *getMyIp(){
     return myIP;
 }
+void __asm__(const char *s) {
 
+}
 DWORD WINAPI Thread_EverySecond(void* arg)
 {
 	while(1){
@@ -134,9 +148,6 @@ DWORD WINAPI Thread_SimulateTUYAMCUSendingData(void* arg)
     return 0;
 }
 
-int Main_IsConnectedToWiFi() {
-	return 1;
-}
 //void addLogAdv(int level, int feature, char *fmt, ...){
 //	char t[512];
 //    va_list argList;
@@ -147,7 +158,59 @@ int Main_IsConnectedToWiFi() {
 //
 //	printf(t);
 //}
+
 int __cdecl main(void)
+{
+	int accum_time = 0;
+
+    WSADATA wsaData;
+    int iResult;
+    // Initialize Winsock
+    iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
+    if (iResult != 0) {
+        printf("WSAStartup failed with error: %d\n", iResult);
+        return 1;
+    }
+
+	Main_Init();
+
+	while(1) {
+		accum_time += 5;
+		Sleep(5);
+		PIN_ticks(0);
+		HTTPServer_RunQuickTick();
+		if(accum_time>1000){
+			accum_time = 0;
+			Main_OnEverySecond();
+		}
+	}
+	return 0;
+}
+UINT32 flash_read(char* user_buf, UINT32 count, UINT32 address){
+	return 0;
+}
+// initialise OTA flash starting at startaddr
+int init_ota(unsigned int startaddr) {
+	return 0;
+}
+
+// add any length of data to OTA
+void add_otadata(unsigned char *data, int len) {
+	return;
+}
+
+// finalise OTA flash (write last sector if incomplete)
+void close_ota() {
+	return;
+}
+
+void otarequest(const char *urlin) {
+	return;
+}
+
+int ota_progress();
+int ota_total_bytes();
+int __cdecl main_old(void)
 {
     WSADATA wsaData;
     int iResult;
@@ -183,9 +246,9 @@ int __cdecl main(void)
         printf("WSAStartup failed with error: %d\n", iResult);
         return 1;
     }
-	NTP_SendRequest_BlockingMode();
-	Sleep(500);
-        return 1;
+	//NTP_SendRequest_BlockingMode();
+	//Sleep(500);
+   //     return 1;
 
 	CreateThread(NULL, 0, Thread_EverySecond, 0, 0, NULL);
 	CreateThread(NULL, 0, Thread_SimulateTUYAMCUSendingData, 0, 0, NULL);
@@ -197,6 +260,7 @@ int __cdecl main(void)
     hints.ai_protocol = IPPROTO_TCP;
     hints.ai_flags = AI_PASSIVE;
 
+	HTTPServer_Start();
     // Resolve the server address and port
     iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
     if ( iResult != 0 ) {

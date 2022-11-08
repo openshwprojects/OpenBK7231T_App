@@ -86,7 +86,7 @@ void LOG_SetRawSocketCallback(int newFD)
 	g_extraSocketToSendLOG = newFD;
 }
 
-#ifdef WINDOWS
+#ifdef WINDOWS_SIMPLE_LOGGER
 void addLogAdv(int level, int feature, const char* fmt, ...)
 {
 	va_list argList;
@@ -281,6 +281,10 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 {
 	char* tmp;
 	char* t;
+	int len;
+	va_list argList;
+	BaseType_t taken;
+	int i;
 
 	if (fmt == 0)
 	{
@@ -293,13 +297,12 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 		return;
 	}
 
-	va_list argList;
 	// if not initialised, direct output
 	if (!initialised) {
 		initLog();
 	}
 
-	BaseType_t taken = xSemaphoreTake(logMemory.mutex, 100);
+	taken = xSemaphoreTake(logMemory.mutex, 100);
 	tmp = g_loggingBuffer;
 	memset(tmp, 0, LOGGING_BUFFER_SIZE);
 	t = tmp;
@@ -326,10 +329,13 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 	if (tmp[strlen(tmp) - 1] == '\n') tmp[strlen(tmp) - 1] = '\0';
 	if (tmp[strlen(tmp) - 1] == '\r') tmp[strlen(tmp) - 1] = '\0';
 
-	int len = strlen(tmp); // save 3 bytes at end for /r/n/0
+	len = strlen(tmp); // save 3 bytes at end for /r/n/0
 	tmp[len++] = '\r';
 	tmp[len++] = '\n';
 	tmp[len] = '\0';
+#if WINDOWS
+	printf(tmp);
+#endif
 #if PLATFORM_XR809
 	printf(tmp);
 #endif
@@ -361,7 +367,7 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 		return;
 	}
 
-	for (int i = 0; i < len; i++)
+	for ( i = 0; i < len; i++)
 	{
 		logMemory.log[logMemory.head] = tmp[i];
 		logMemory.head = (logMemory.head + 1) % LOGSIZE;
@@ -397,11 +403,15 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 
 
 static int getData(char* buff, int buffsize, int* tail) {
-	if (!initialised) return 0;
-	BaseType_t taken = xSemaphoreTake(logMemory.mutex, 100);
+	BaseType_t taken;
+	int count;
+	char* p;
+	if (!initialised)
+		return 0;
+	taken = xSemaphoreTake(logMemory.mutex, 100);
 
-	int count = 0;
-	char* p = buff;
+	count = 0;
+	p = buff;
 	while (buffsize > 1) {
 		if (*tail == logMemory.head) {
 			break;
@@ -510,6 +520,7 @@ void startSerialLog() {
 void log_server_thread(beken_thread_arg_t arg)
 {
 	//(void)( arg );
+	int tcp_select_fd;
 	OSStatus err = kNoErr;
 	struct sockaddr_in server_addr, client_addr;
 	socklen_t sockaddr_t_size = sizeof(client_addr);
@@ -518,7 +529,7 @@ void log_server_thread(beken_thread_arg_t arg)
 	fd_set readfds;
 
 	tcp_listen_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	int tcp_select_fd = tcp_listen_fd + 1;
+	tcp_select_fd = tcp_listen_fd + 1;
 
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_addr.s_addr = INADDR_ANY;/* Accept conenction request on all network interface */
@@ -613,8 +624,8 @@ static void log_serial_thread(beken_thread_arg_t arg)
 
 
 static int http_getlograw(http_request_t* request) {
-	http_setup(request, httpMimeTypeHTML);
 	int len = 0;
+	http_setup(request, httpMimeTypeHTML);
 
 	// get log in small chunks, posting on http
 	do {
@@ -630,12 +641,12 @@ static int http_getlograw(http_request_t* request) {
 }
 
 static int http_getlog(http_request_t* request) {
+	char* post = "</pre>";
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Log");
 	poststr(request, htmlFooterReturnToMenu);
 
 	poststr(request, "<pre>");
-	char* post = "</pre>";
 
 	http_getlograw(request);
 
