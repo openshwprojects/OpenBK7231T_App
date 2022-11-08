@@ -284,6 +284,7 @@ int httpclient_send_header(httpclient_t *client, const char *url, int method, ht
     //char send_buf[HTTPCLIENT_SEND_BUF_SIZE] = { 0 };
     //char buf[HTTPCLIENT_SEND_BUF_SIZE] = { 0 };
     char *send_buf;
+	int res;
     char *buf;
     char *meth = (method == HTTPCLIENT_GET) ? "GET" : (method == HTTPCLIENT_POST) ? "POST" :
                  (method == HTTPCLIENT_PUT) ? "PUT" : (method == HTTPCLIENT_DELETE) ? "DELETE" :
@@ -312,7 +313,7 @@ int httpclient_send_header(httpclient_t *client, const char *url, int method, ht
         goto GO_ERR_1;
     }
     /* First we need to parse the url (http[s]://host[:port][/[path]]) */
-    int res = httpclient_parse_url(url, scheme, sizeof(scheme), host, HTTPCLIENT_MAX_HOST_LEN, &port, path, HTTPCLIENT_MAX_HOST_LEN);
+    res = httpclient_parse_url(url, scheme, sizeof(scheme), host, HTTPCLIENT_MAX_HOST_LEN, &port, path, HTTPCLIENT_MAX_HOST_LEN);
     if (res != SUCCESS_RETURN) {
         ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "httpclient_parse_url returned %d\r\n", res);
         //return res;
@@ -697,13 +698,14 @@ int httpclient_response_parse(httpclient_t *client, char *data, int len, uint32_
 {
     int crlf_pos;
     iotx_time_t timer;
+    char *crlf_ptr;
 
     iotx_time_init(&timer);
     utils_time_countdown_ms(&timer, timeout_ms);
 
     client_data->response_content_len = -1;
 
-    char *crlf_ptr = os_strstr(data, "\r\n");
+    crlf_ptr = os_strstr(data, "\r\n");
     if (crlf_ptr == NULL) {
         ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "\r\n not found");
         return ERROR_HTTP_UNRESOLVED_DNS;
@@ -842,6 +844,8 @@ iotx_err_t httpclient_recv_response(httpclient_t *client, uint32_t timeout_ms, h
     int reclen = 0, ret = ERROR_HTTP_CONN;
     char buf[HTTPCLIENT_CHUNK_SIZE] = { 0 };
     iotx_time_t timer;
+    int max_len;
+	int lentoget;
 
     iotx_time_init(&timer);
     utils_time_countdown_ms(&timer, timeout_ms);
@@ -851,8 +855,8 @@ iotx_err_t httpclient_recv_response(httpclient_t *client, uint32_t timeout_ms, h
         return ret;
     }
 
-    int max_len = client_data->response_buf_len;
-    int lentoget = HTTPCLIENT_CHUNK_SIZE - 1;
+    max_len = client_data->response_buf_len;
+    lentoget = HTTPCLIENT_CHUNK_SIZE - 1;
     if (lentoget > max_len){
         lentoget = max_len;
     }
@@ -987,7 +991,9 @@ iotx_err_t iotx_post(
 static void httprequest_thread( beken_thread_arg_t arg )
 {
     httprequest_t *request = (httprequest_t *)arg;
-
+    iotx_time_t timer;
+    int ret = 0;
+    char host[HTTPCLIENT_MAX_HOST_LEN] = { 0 };
     httpclient_t *client = &request->client;
     const char *url = request->url;
     const char *header = request->header;
@@ -1009,9 +1015,6 @@ static void httprequest_thread( beken_thread_arg_t arg )
     //addLog("after HTTPClient_SetCustomHeader\r\n");
     //rtos_delay_milliseconds(500);
 
-    iotx_time_t timer;
-    int ret = 0;
-    char host[HTTPCLIENT_MAX_HOST_LEN] = { 0 };
 
     request->state = 0;
 

@@ -21,6 +21,16 @@
 #include "httpserver\new_http.h"
 #include "new_pins.h"
 
+int snprintf(char *buffer, unsigned int len, const char *fmt, ...) {
+	int rv;
+   	va_list val;
+    va_start(val, fmt);
+    rv = vsnprintf(buffer, len, fmt, val);
+    va_end(val);
+    return rv;
+}
+
+
 void strcat_safe_test(){
 	char tmpA[16];
 	char tmpB[16];

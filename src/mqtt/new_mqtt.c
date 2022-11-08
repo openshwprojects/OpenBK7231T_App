@@ -510,6 +510,7 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 	u8_t qos = 2; /* 0 1 or 2, see MQTT specification */
 	u8_t retain = 0; /* No don't retain such crappy payload... */
 	size_t sVal_len;
+	char* pub_topic;
 
 	if (client == 0)
 		return OBK_PUBLISH_WAS_DISCONNECTED;
@@ -547,7 +548,7 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 
 	g_timeSinceLastMQTTPublish = 0;
 
-	char* pub_topic = (char*)os_malloc(strlen(sTopic) + 1 + strlen(sChannel) + 5 + 1); //5 for /get
+	pub_topic = (char*)os_malloc(strlen(sTopic) + 1 + strlen(sChannel) + 5 + 1); //5 for /get
 	if ((pub_topic != NULL) && (sVal != NULL))
 	{
 		sVal_len = strlen(sVal);
@@ -1135,6 +1136,7 @@ OBK_Publish_Result MQTT_DoItemPublishString(const char* sChannel, const char* va
 
 OBK_Publish_Result MQTT_DoItemPublish(int idx)
 {
+	int role;
 	char dataStr[3 * 6 + 1];  //This is sufficient to hold mac value
 
 	switch (idx) {
@@ -1203,7 +1205,7 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 	// We do not need raw values for RGBCW lights (or RGB, etc)
 	// because we are using led_basecolor_rgb, led_dimmer, led_enableAll, etc
 	// NOTE: negative indexes are not channels - they are special values
-	int role = CHANNEL_GetRoleForOutputChannel(idx);
+	role = CHANNEL_GetRoleForOutputChannel(idx);
 	if (role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
 		MQTT_ChannelPublish(g_publishItemIndex, OBK_PUBLISH_FLAG_MUTEX_SILENT);
 	}
@@ -1403,6 +1405,7 @@ MqttPublishItem_t* find_queue_reusable_item(MqttPublishItem_t* head) {
 /// @param flags
 /// @param command Command to execute after the publish
 void MQTT_QueuePublishWithCommand(char* topic, char* channel, char* value, int flags, PostPublishCommands command) {
+	MqttPublishItem_t* newItem;
 	if (g_MqttPublishItemsQueued >= MQTT_MAX_QUEUE_SIZE) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "Unable to queue! %i items already present\r\n", g_MqttPublishItemsQueued);
 		return;
@@ -1418,7 +1421,6 @@ void MQTT_QueuePublishWithCommand(char* topic, char* channel, char* value, int f
 
 	//Queue data for publish. This might be a new item in the queue or an existing item. This is done to prevent
 	//memory fragmentation. The total queue length is limited to MQTT_MAX_QUEUE_SIZE.
-	MqttPublishItem_t* newItem;
 
 	if (g_MqttPublishQueueHead == NULL) {
 		g_MqttPublishQueueHead = newItem = os_malloc(sizeof(MqttPublishItem_t));

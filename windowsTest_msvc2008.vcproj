@@ -247,6 +247,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="&quot;.\src\win32\stubs\&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -392,6 +393,14 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\httpserver\hass.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\httpserver\hass.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\logging\logging.c"
 				>
 			</File>
@@ -452,7 +461,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug Win32|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -470,6 +478,14 @@
 			<File
 				RelativePath=".\src\new_ping.c"
 				>
+				<FileConfiguration
+					Name="Debug Win32|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug Win32 ScriptOnly|Win32"
 					ExcludedFromBuild="true"
@@ -539,6 +555,14 @@
 				RelativePath=".\src\littlefs\our_lfs.c"
 				>
 				<FileConfiguration
+					Name="Debug Win32|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Debug Win32 ScriptOnly|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -546,6 +570,14 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\rgb2hsv.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\rgb2hsv.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\tiny_crc8.c"
@@ -587,14 +619,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug Win32|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Debug Win32 ScriptOnly|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -618,6 +642,14 @@
 			<File
 				RelativePath=".\src\win_main_scriptOnly.c"
 				>
+				<FileConfiguration
+					Name="Debug Win32|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\src\win_stubs.c"
@@ -1025,6 +1057,14 @@
 				RelativePath="..\..\platforms\bk7231t\bk7231t_os\beken378\func\lwip_intf\lwip-2.0.2\src\api\sockets.c"
 				>
 				<FileConfiguration
+					Name="Debug Win32|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Debug Win32 ScriptOnly|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -1036,6 +1076,14 @@
 			<File
 				RelativePath="..\..\platforms\bk7231t\bk7231t_os\beken378\func\lwip_intf\lwip-2.0.2\src\core\tcp.c"
 				>
+				<FileConfiguration
+					Name="Debug Win32|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug Win32 ScriptOnly|Win32"
 					ExcludedFromBuild="true"
@@ -1316,6 +1364,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\cmnds\cmd_newLEDDriver_colors.c"
+				>
 			</File>
 			<File
 				RelativePath=".\src\cmnds\cmd_public.h"
@@ -1626,6 +1678,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\driver\drv_test_drivers.c"
+				>
+			</File>
+			<File
 				RelativePath=".\src\driver\drv_tuyaMCU.c"
 				>
 				<FileConfiguration
@@ -1799,26 +1855,74 @@
 				<File
 					RelativePath=".\src\hal\bl602\hal_flashConfig_bl602.c"
 					>
+					<FileConfiguration
+						Name="Debug Win32|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\src\hal\bl602\hal_flashVars_bl602.c"
 					>
+					<FileConfiguration
+						Name="Debug Win32|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\src\hal\bl602\hal_generic_bl602.c"
 					>
+					<FileConfiguration
+						Name="Debug Win32|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\src\hal\bl602\hal_main_bl602.c"
 					>
+					<FileConfiguration
+						Name="Debug Win32|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\src\hal\bl602\hal_pins_bl602.c"
 					>
+					<FileConfiguration
+						Name="Debug Win32|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\src\hal\bl602\hal_wifi_bl602.c"
 					>
+					<FileConfiguration
+						Name="Debug Win32|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 			</Filter>
 			<Filter
@@ -1827,6 +1931,14 @@
 				<File
 					RelativePath=".\src\hal\bk7231\hal_flashConfig_bk7231.c"
 					>
+					<FileConfiguration
+						Name="Debug Win32|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug Win32 ScriptOnly|Win32"
 						ExcludedFromBuild="true"
@@ -1840,6 +1952,14 @@
 					RelativePath=".\src\hal\bk7231\hal_flashVars_bk7231.c"
 					>
 					<FileConfiguration
+						Name="Debug Win32|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug Win32 ScriptOnly|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -1851,6 +1971,14 @@
 				<File
 					RelativePath=".\src\hal\bk7231\hal_generic_bk7231.c"
 					>
+					<FileConfiguration
+						Name="Debug Win32|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug Win32 ScriptOnly|Win32"
 						ExcludedFromBuild="true"
@@ -1864,6 +1992,14 @@
 					RelativePath=".\src\hal\bk7231\hal_main_bk7231.c"
 					>
 					<FileConfiguration
+						Name="Debug Win32|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug Win32 ScriptOnly|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -1876,6 +2012,14 @@
 					RelativePath=".\src\hal\bk7231\hal_pins_bk7231.c"
 					>
 					<FileConfiguration
+						Name="Debug Win32|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Debug Win32 ScriptOnly|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -1887,6 +2031,14 @@
 				<File
 					RelativePath=".\src\hal\bk7231\hal_wifi_bk7231.c"
 					>
+					<FileConfiguration
+						Name="Debug Win32|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug Win32 ScriptOnly|Win32"
 						ExcludedFromBuild="true"
@@ -1903,26 +2055,74 @@
 				<File
 					RelativePath=".\src\hal\xr809\hal_flashConfig_xr809.c"
 					>
+					<FileConfiguration
+						Name="Debug Win32|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\src\hal\xr809\hal_flashVars_xr809.c"
 					>
+					<FileConfiguration
+						Name="Debug Win32|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\src\hal\xr809\hal_generic_xr809.c"
 					>
+					<FileConfiguration
+						Name="Debug Win32|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\src\hal\xr809\hal_main_xr809.c"
 					>
+					<FileConfiguration
+						Name="Debug Win32|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\src\hal\xr809\hal_pins_xr809.c"
 					>
+					<FileConfiguration
+						Name="Debug Win32|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\src\hal\xr809\hal_wifi_xr809.c"
 					>
+					<FileConfiguration
+						Name="Debug Win32|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 			</Filter>
 			<Filter
@@ -1931,29 +2131,117 @@
 				<File
 					RelativePath=".\src\hal\w800\hal_adc_w800.c"
 					>
+					<FileConfiguration
+						Name="Debug Win32|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\src\hal\w800\hal_flashConfig_w800.c"
 					>
+					<FileConfiguration
+						Name="Debug Win32|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\src\hal\w800\hal_flashVars_w800.c"
 					>
+					<FileConfiguration
+						Name="Debug Win32|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\src\hal\w800\hal_generic_w800.c"
 					>
+					<FileConfiguration
+						Name="Debug Win32|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\src\hal\w800\hal_main_w800.c"
 					>
+					<FileConfiguration
+						Name="Debug Win32|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\src\hal\w800\hal_pins_w800.c"
 					>
+					<FileConfiguration
+						Name="Debug Win32|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\src\hal\w800\hal_wifi_w800.c"
+					>
+					<FileConfiguration
+						Name="Debug Win32|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+			</Filter>
+			<Filter
+				Name="Win32"
+				>
+				<File
+					RelativePath=".\src\hal\win32\hal_adc_win32.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\hal\win32\hal_flashConfig_win32.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\hal\win32\hal_flashVars_win32.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\hal\win32\hal_generic_win32.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\hal\win32\hal_main_win32.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\hal\win32\hal_pins_win32.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\hal\win32\hal_wifi_win32.c"
 					>
 				</File>
 			</Filter>
@@ -1964,6 +2252,14 @@
 			<File
 				RelativePath="..\main.c"
 				>
+				<FileConfiguration
+					Name="Debug Win32|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug Win32 ScriptOnly|Win32"
 					ExcludedFromBuild="true"

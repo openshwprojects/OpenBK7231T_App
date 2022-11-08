@@ -94,28 +94,51 @@ typedef int bool;
 #define false 0
 
 typedef unsigned char u8;
-typedef unsigned char uint8_t;
-typedef unsigned int uint32_t;
-typedef unsigned long uint64_t;
-typedef unsigned short uint16_t;
-typedef char int8_t;
-typedef int int32_t;
+typedef unsigned char u8_t;
 typedef unsigned int u32;
+typedef unsigned int u32_t;
+typedef unsigned short u16_t;
+//typedef unsigned char uint8_t;
+//typedef unsigned int uint32_t;
+//typedef unsigned long uint64_t;
+//typedef unsigned short uint16_t;
+//typedef char int8_t;
+//typedef int int32_t;
 
-#ifndef UINT32_MAX
-#define UINT32_MAX  (0xffffffff)
-#endif
+// it is not in my Windows compiler, but I added it manually
+#include <stdint.h>
+//
+//#ifndef UINT32_MAX
+//#define UINT32_MAX  (0xffffffff)
+//#endif
+
+#define 	LWIP_CONST_CAST(target_type, val)   ((target_type)(val))
 
 // os
 #define os_free free
 #define os_malloc malloc
+#define os_strlen strlen
+#define os_memset memset
+#define os_strstr strstr
+#define os_strcpy strcpy
+#define os_memmove memmove
 
 // RTOS
 typedef long portTickType;
 #define portTICK_PERIOD_MS 1
+#define configTICK_RATE_HZ 1
 typedef int SemaphoreHandle_t;
 #define pdTRUE 1
 #define pdFALSE 0
+typedef int OSStatus;
+
+enum {
+	kNoErr = 0,
+};
+
+typedef void * beken_thread_arg_t;
+typedef int (*beken_thread_function_t)(void *p);
+#define BEKEN_APPLICATION_PRIORITY 1
 
 #elif PLATFORM_BL602
 
