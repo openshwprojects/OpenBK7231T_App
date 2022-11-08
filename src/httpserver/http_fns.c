@@ -223,7 +223,7 @@ int http_fn_index(http_request_t* request) {
 			LED_SetBaseColor(0, "led_basecolor", tmpA, 0);
 			// auto enable - but only for changes made from WWW panel
 			// This happens when users changes COLOR
-			if(CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_WWW_ACTION)) {
+			if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_WWW_ACTION)) {
 				LED_SetEnableAll(true);
 			}
 		}
@@ -244,11 +244,11 @@ int http_fn_index(http_request_t* request) {
 				hprintf255(request, "<h3>Changed pwm %i to %i!</h3>", j, newPWMValue);
 			}
 			CHANNEL_Set(j, newPWMValue, 1);
-			
+
 			if (j == SPECIAL_CHANNEL_TEMPERATURE) {
 				// auto enable - but only for changes made from WWW panel
 				// This happens when users changes TEMPERATURE
-				if(CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_WWW_ACTION)) {
+				if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_WWW_ACTION)) {
 					LED_SetEnableAll(true);
 				}
 			}
@@ -264,11 +264,11 @@ int http_fn_index(http_request_t* request) {
 				hprintf255(request, "<h3>Changed dimmer %i to %i!</h3>", j, newDimmerValue);
 			}
 			CHANNEL_Set(j, newDimmerValue, 1);
-			
+
 			if (j == SPECIAL_CHANNEL_BRIGHTNESS) {
 				// auto enable - but only for changes made from WWW panel
 				// This happens when users changes DIMMER
-				if(CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_WWW_ACTION)) {
+				if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_WWW_ACTION)) {
 					LED_SetEnableAll(true);
 				}
 			}
@@ -553,15 +553,20 @@ int http_fn_index(http_request_t* request) {
 			inputName = "pwm";
 
 			pwmValue = LED_GetTemperature();
+			long pwmKelvin = 1000000 / pwmValue;
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "<h5>LED Temperature Slider %s (cur=%i, min=%i, max=%i) Mired (Cool <--- ---> Warm)</h5>", activeStr, pwmValue, HASS_TEMPERATURE_MIN, HASS_TEMPERATURE_MAX);
-			hprintf255(request, "<form class='r' style='background: linear-gradient(to right, rgb(166, 209, 255), rgb(255, 160, 0));' action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_TEMPERATURE);
-			hprintf255(request, "<input type=\"range\" min=\"%i\" max=\"%i\"", HASS_TEMPERATURE_MIN, HASS_TEMPERATURE_MAX);
-			hprintf255(request, "name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">", inputName, SPECIAL_CHANNEL_TEMPERATURE, pwmValue);
-			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, SPECIAL_CHANNEL_TEMPERATURE);
-			hprintf255(request, "<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>", SPECIAL_CHANNEL_TEMPERATURE);
-			poststr(request, "</td></tr>");
+			hprintf255(request, "<h5>LED Temperature Slider %s (%ld K) (Warm <--- ---> Cool)</h5>", activeStr, pwmKelvin);
+			hprintf255(request, "<form class='r' style='background: linear-gradient(to right, rgb(255, 160, 0), rgb(166, 209, 255));' action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_TEMPERATURE);
+
+			//(KELVIN_TEMPERATURE_MAX - KELVIN_TEMPERATURE_MIN) / (HASS_TEMPERATURE_MAX - HASS_TEMPERATURE_MIN) = 13
+			hprintf255(request, "<input type=\"range\" step='13' min=\"%ld\" max=\"%ld\" ", KELVIN_TEMPERATURE_MIN, KELVIN_TEMPERATURE_MAX);
+			hprintf255(request, "value=\"%ld\" onchange=\"submitTemperature(this);\"/>", pwmKelvin);
+
+			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\"/>", inputName, SPECIAL_CHANNEL_TEMPERATURE);
+			hprintf255(request, "<input id=\"kelvin%i\" type=\"hidden\" name=\"%s\" />", SPECIAL_CHANNEL_TEMPERATURE, inputName);
+
+			poststr(request, "</form></td></tr>");
 		}
 
 	}
@@ -1267,7 +1272,7 @@ int http_fn_cfg_quick(http_request_t* request) {
 	http_html_start(request, "Quick Config");
 	poststr(request, "<h4>Quick Config</h4>");
 
-		
+
 	/*
 
 	WARNING! THIS IS OBSOLETE NOW!
