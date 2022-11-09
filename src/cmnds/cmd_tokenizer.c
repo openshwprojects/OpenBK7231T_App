@@ -81,6 +81,8 @@ int Tokenizer_GetArgInteger(int i) {
 	int ret;
 
 	s = g_args[i];
+	if (s == 0)
+		return 0;
 	if(s[0] == '0' && s[1] == 'x') {
 		sscanf(s, "%x", &ret);
 		return ret;
