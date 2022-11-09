@@ -1004,7 +1004,7 @@ void PIN_ticks(void *param)
 	BTN_LONG_TICKS = (g_cfg.buttonLongPress * 100 / PIN_TMR_DURATION);
 	BTN_HOLD_REPEAT_TICKS = (g_cfg.buttonHoldRepeat * 100 / PIN_TMR_DURATION);
 
-#if PLATFORM_BEKEN
+#if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	SVM_RunThreads(PIN_TMR_DURATION);
 #endif
 #ifndef OBK_DISABLE_ALL_DRIVERS

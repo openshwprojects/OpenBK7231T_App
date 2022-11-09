@@ -87,7 +87,7 @@ void CMD_Init() {
 	if(CFG_HasFlag(OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER)) {
 		CMD_StartTCPCommandLine();
 	}
-#if PLATFORM_BEKEN
+#if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	CMD_InitScripting();
 #endif
 }

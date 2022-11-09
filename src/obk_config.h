@@ -14,6 +14,9 @@
 
 #elif WINDOWS
 
+// comment out to remove littlefs
+#define BK_LITTLEFS
+
 #elif PLATFORM_BL602
 
 // I have enabled drivers on BL602

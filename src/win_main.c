@@ -21,14 +21,14 @@
 #include "httpserver\new_http.h"
 #include "new_pins.h"
 
-int snprintf(char *buffer, unsigned int len, const char *fmt, ...) {
-	int rv;
-   	va_list val;
-    va_start(val, fmt);
-    rv = vsnprintf(buffer, len, fmt, val);
-    va_end(val);
-    return rv;
-}
+//int snprintf(char *buffer, unsigned int len, const char *fmt, ...) {
+//	int rv;
+//   	va_list val;
+//    va_start(val, fmt);
+//    rv = vsnprintf(buffer, len, fmt, val);
+//    va_end(val);
+//    return rv;
+//}
 void CMD_StartTCPCommandLine() {
 
 }
@@ -186,9 +186,7 @@ int __cdecl main(void)
 	}
 	return 0;
 }
-UINT32 flash_read(char* user_buf, UINT32 count, UINT32 address){
-	return 0;
-}
+
 // initialise OTA flash starting at startaddr
 int init_ota(unsigned int startaddr) {
 	return 0;

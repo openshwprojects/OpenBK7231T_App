@@ -87,6 +87,7 @@ This platform is not supported, error!
 #if WINDOWS
 
 #include <time.h>
+#include <stdint.h>
 
 #define bk_printf printf
 
@@ -117,6 +118,10 @@ typedef unsigned short u16_t;
 
 #define		LWIP_UNUSED_ARG(x)
 #define 	LWIP_CONST_CAST(target_type, val)   ((target_type)(val))
+
+#define 	GLOBAL_INT_DECLARATION		doNothing
+#define 	GLOBAL_INT_DISABLE			doNothing
+#define 	GLOBAL_INT_RESTORE			doNothing
 
 // os
 #define os_free free
