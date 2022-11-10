@@ -196,6 +196,9 @@ int http_fn_index(http_request_t* request) {
 	bRawPWMs = CFG_HasFlag(OBK_FLAG_LED_RAWCHANNELSMODE);
 	forceShowRGBCW = CFG_HasFlag(OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER);
 
+	if (LED_IsLedDriverChipRunning()) {
+		forceShowRGBCW = true;
+	}
 	http_setup(request, httpMimeTypeHTML);	//Add mimetype regardless of the request
 
 	// use ?state URL parameter to only request current state
@@ -1325,14 +1328,6 @@ void get_Relay_PWM_Count(int* relayCount, int* pwmCount) {
 	}
 }
 
-bool isLedDriverChipRunning()
-{
-#ifndef OBK_DISABLE_ALL_DRIVERS
-	return DRV_IsRunning("SM2135") || DRV_IsRunning("BP5758D") || DRV_IsRunning("TESTLED");
-#else
-	return false;
-#endif
-}
 
 /// @brief Sends HomeAssistant discovery MQTT messages.
 /// @param request 
@@ -1363,7 +1358,7 @@ int http_fn_ha_discovery(http_request_t* request) {
 
 	//Note: PublishChannels should be done for the last MQTT publish except for power measurement which always
 	//sends out MQTT updates.
-	ledDriverChipRunning = isLedDriverChipRunning();
+	ledDriverChipRunning = LED_IsLedDriverChipRunning();
 
 	if ((relayCount == 0) && (pwmCount == 0) && !measuringPower && !ledDriverChipRunning) {
 		poststr(request, "No relay, PWM or power driver running.");
@@ -1513,7 +1508,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 			}
 		}
 	}
-	if (pwmCount == 5 || isLedDriverChipRunning()) {
+	if (pwmCount == 5 || LED_IsLedDriverChipRunning()) {
 		// Enable + RGB control + CW control
 		if (mqttAdded == 0) {
 			poststr(request, HASS_MQTT_NODE);
@@ -1619,7 +1614,7 @@ int http_tasmota_json_power(http_request_t* request) {
 	numRelays = 0;
 
 	// LED driver (if has PWMs)
-	if (numPWMs > 0) {
+	if (LED_IsLEDRunning()) {
 		int dimmer = LED_GetDimmer();
 		hprintf255(request, "\"Dimmer\":%i,", dimmer);
 		hprintf255(request, "\"Fade\":\"OFF\",");
@@ -1746,7 +1741,7 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 
 	get_Relay_PWM_Count(&relayCount, &pwmCount);
 
-	if (pwmCount > 0) {
+	if (LED_IsLEDRunning()) {
 		powerCode = LED_GetEnableAll();
 	}
 	else {

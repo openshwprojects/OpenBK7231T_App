@@ -24,18 +24,28 @@ static int power(const void *context, const char *cmd, const char *args, int cmd
 		int channel = 0;
 		int iVal = 0;
 		int i;
+		bool bRelayIndexingStartsWithZero;
+		
+		bRelayIndexingStartsWithZero  = CHANNEL_HasChannelPinWithRoleOrRole(0, IOR_Relay, IOR_Relay_n);
 
         ADDLOG_INFO(LOG_FEATURE_CMD, "tasCmnd POWER (%s) received with args %s",cmd,args);
 
 		if (strlen(cmd) > 5) {
 			channel = atoi(cmd+5);
 
-			if (PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n) > 0) {
+			if (LED_IsLEDRunning()) {
 				channel = SPECIAL_CHANNEL_LEDPOWER;
+			}
+			else {
+				if (bRelayIndexingStartsWithZero) {
+					channel--;
+					if (channel < 0)
+						channel = 0;
+				}
 			}
 		} else {
 			// if new LED driver active
-			if(PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n) > 0) {
+			if(LED_IsLEDRunning()) {
 				channel = SPECIAL_CHANNEL_LEDPOWER;
 			} else {
 				// find first active channel, because some people index with 0 and some with 1

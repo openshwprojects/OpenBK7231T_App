@@ -146,6 +146,8 @@ void LED_SetFinalRGB(byte r, byte g, byte b);
 void LED_SetFinalRGBCW(byte *rgbcw);
 void LED_NextColor();
 void LED_ToggleEnabled();
+bool LED_IsLedDriverChipRunning();
+bool LED_IsLEDRunning();
 void LED_SetEnableAll(int bEnable);
 int LED_GetEnableAll();
 void LED_GetBaseColorString(char * s);

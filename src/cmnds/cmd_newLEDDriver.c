@@ -75,6 +75,27 @@ float led_temperature_max = HASS_TEMPERATURE_MAX;
 float led_temperature_current = HASS_TEMPERATURE_MIN;
 
 
+bool LED_IsLedDriverChipRunning()
+{
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	return DRV_IsRunning("SM2135") || DRV_IsRunning("BP5758D") || DRV_IsRunning("TESTLED");
+#else
+	return false;
+#endif
+}
+bool LED_IsLEDRunning()
+{
+	int pwmCount;
+
+	if (LED_IsLedDriverChipRunning())
+		return true;
+
+	pwmCount = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
+	if (pwmCount > 0)
+		return true;
+	return false;
+}
+
 int isCWMode() {
 	int pwmCount;
 
