@@ -37,18 +37,18 @@ const char* counter_mqttNames[OBK_NUM_COUNTERS] = {
 	"energycounter",
 	"energycounter_last_hour",
 	"consumption_stats",
-    "energycounter_yesterday",
-    "energycounter_today",
-    "energycounter_clear_date",    
+	"energycounter_yesterday",
+	"energycounter_today",
+	"energycounter_clear_date",
 };
 
 const char* counter_devClasses[OBK_NUM_COUNTERS] = {
 	"energy",
 	"energy",
 	"",
-    "energy",
-    "energy",
-    "timestamp"
+	"energy",
+	"energy",
+	"timestamp"
 };
 
 typedef struct driver_s {
@@ -181,11 +181,11 @@ void DRV_StopDriver(const char* name) {
 					g_drivers[i].stopFunc();
 				}
 				g_drivers[i].bLoaded = false;
-				addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "Drv %s has been stopped.\n", name);
+				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Drv %s has been stopped.\n", name);
 				break;
 			}
 			else {
-				addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "Drv %s is not running.\n", name);
+				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Drv %s is not running.\n", name);
 				break;
 			}
 		}
@@ -203,7 +203,7 @@ void DRV_StartDriver(const char* name) {
 	for (i = 0; i < g_numDrivers; i++) {
 		if (!stricmp(g_drivers[i].name, name)) {
 			if (g_drivers[i].bLoaded) {
-				addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "Drv %s is already loaded.\n", name);
+				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Drv %s is already loaded.\n", name);
 				bStarted = 1;
 				break;
 
@@ -211,21 +211,21 @@ void DRV_StartDriver(const char* name) {
 			else {
 				g_drivers[i].initFunc();
 				g_drivers[i].bLoaded = true;
-				addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "Started %s.\n", name);
+				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Started %s.\n", name);
 				bStarted = 1;
 				break;
 			}
 		}
 	}
 	if (!bStarted) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "Driver %s is not known in this build.\n", name);
-		addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "Available drivers: ");
+		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Driver %s is not known in this build.\n", name);
+		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Available drivers: ");
 		for (i = 0; i < g_numDrivers; i++) {
 			if (i == 0) {
-				addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "%s", g_drivers[i].name);
+				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "%s", g_drivers[i].name);
 			}
 			else {
-				addLogAdv(LOG_INFO, LOG_FEATURE_NTP, ", %s", g_drivers[i].name);
+				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, ", %s", g_drivers[i].name);
 			}
 		}
 	}
