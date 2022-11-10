@@ -49,6 +49,7 @@ static int http_rest_post_logconfig(http_request_t* request);
 static int http_rest_get_logconfig(http_request_t* request);
 
 #ifdef BK_LITTLEFS
+static int http_rest_get_lfs_delete(http_request_t* request);
 static int http_rest_get_lfs_file(http_request_t* request);
 static int http_rest_post_lfs_file(http_request_t* request);
 #endif
@@ -189,6 +190,9 @@ static int http_rest_get(http_request_t* request) {
 #ifdef BK_LITTLEFS
 	if (!strncmp(request->url, "api/lfs/", 8)) {
 		return http_rest_get_lfs_file(request);
+	}
+	if (!strncmp(request->url, "api/del/", 8)) {
+		return http_rest_get_lfs_delete(request);
 	}
 #endif
 
@@ -470,6 +474,41 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 	if (fpath) os_free(fpath);
 	if (file) os_free(file);
 	if (buff) os_free(buff);
+	return 0;
+}
+
+static int http_rest_get_lfs_delete(http_request_t* request) {
+	char* fpath;
+	int lfsres;
+
+	// don't start LFS just because we're trying to read a file -
+	// it won't exist anyway
+	if (!lfs_present()) {
+		request->responseCode = HTTP_RESPONSE_NOT_FOUND;
+		http_setup(request, httpMimeTypeText);
+		poststr(request, "Not found");
+		poststr(request, NULL);
+		return 0;
+	}
+
+	fpath = os_malloc(strlen(request->url) - strlen("api/del/") + 1);
+
+	strcpy(fpath, request->url + strlen("api/del/"));
+
+	ADDLOG_DEBUG(LOG_FEATURE_API, "LFS delete of %s", fpath);
+	lfsres = lfs_remove(&lfs,fpath);
+
+	if (lfsres == LFS_ERR_OK) {
+		ADDLOG_DEBUG(LOG_FEATURE_API, "LFS delete of %s OK", fpath);
+
+		poststr(request, "OK");
+	}
+	else {
+		ADDLOG_DEBUG(LOG_FEATURE_API, "LFS delete of %s error %i", fpath,lfsres);
+		poststr(request, "Error");
+	}
+	poststr(request, NULL);
+	if (fpath) os_free(fpath);
 	return 0;
 }
 
