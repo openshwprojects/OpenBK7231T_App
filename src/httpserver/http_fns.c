@@ -223,7 +223,7 @@ int http_fn_index(http_request_t* request) {
 			LED_SetBaseColor(0, "led_basecolor", tmpA, 0);
 			// auto enable - but only for changes made from WWW panel
 			// This happens when users changes COLOR
-			if(CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_WWW_ACTION)) {
+			if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_WWW_ACTION)) {
 				LED_SetEnableAll(true);
 			}
 		}
@@ -244,11 +244,11 @@ int http_fn_index(http_request_t* request) {
 				hprintf255(request, "<h3>Changed pwm %i to %i!</h3>", j, newPWMValue);
 			}
 			CHANNEL_Set(j, newPWMValue, 1);
-			
+
 			if (j == SPECIAL_CHANNEL_TEMPERATURE) {
 				// auto enable - but only for changes made from WWW panel
 				// This happens when users changes TEMPERATURE
-				if(CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_WWW_ACTION)) {
+				if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_WWW_ACTION)) {
 					LED_SetEnableAll(true);
 				}
 			}
@@ -264,11 +264,11 @@ int http_fn_index(http_request_t* request) {
 				hprintf255(request, "<h3>Changed dimmer %i to %i!</h3>", j, newDimmerValue);
 			}
 			CHANNEL_Set(j, newDimmerValue, 1);
-			
+
 			if (j == SPECIAL_CHANNEL_BRIGHTNESS) {
 				// auto enable - but only for changes made from WWW panel
 				// This happens when users changes DIMMER
-				if(CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_WWW_ACTION)) {
+				if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_WWW_ACTION)) {
 					LED_SetEnableAll(true);
 				}
 			}
@@ -1261,13 +1261,11 @@ int http_fn_config_dump_table(http_request_t* request) {
 
 
 int http_fn_cfg_quick(http_request_t* request) {
-	char tmpA[128];
-	int j;
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Quick Config");
 	poststr(request, "<h4>Quick Config</h4>");
 
-		
+
 	/*
 
 	WARNING! THIS IS OBSOLETE NOW!
@@ -1736,8 +1734,8 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 	//friendlyName - "Tasmota";
 
 #if 0
-	const char *dbg = "{\"Status\":{\"Module\":0,\"DeviceName\":\"Tasmota\",\"FriendlyName\":[\"Tasmota\"],\"Topic\":\"tasmota_D79E2C\",\"ButtonTopic\":\"0\",\"Power\":1,\"PowerOnState\":3,\"LedState\":1,\"LedMask\":\"FFFF\",\"SaveData\":1,\"SaveState\":1,\"SwitchTopic\":\"0\",\"SwitchMode\":[0,0,0,0,0,0,0,0],\"ButtonRetain\":0,\"SwitchRetain\":0,\"SensorRetain\":0,\"PowerRetain\":0,\"InfoRetain\":0,\"StateRetain\":0},\"StatusPRM\":{\"Baudrate\":115200,\"SerialConfig\":\"8N1\",\"GroupTopic\":\"tasmotas\",\"OtaUrl\":\"http://ota.tasmota.com/tasmota/release/tasmota.bin.gz\",\"RestartReason\":\"Hardware Watchdog\",\"Uptime\":\"30T03:43:17\",\"StartupUTC\":\"2022-10-10T16:09:41\",\"Sleep\":50,\"CfgHolder\":4617,\"BootCount\":22,\"BCResetTime\":\"2022-01-27T16:10:56\",\"SaveCount\":1235,\"SaveAddress\":\"F9000\"},\"StatusFWR\":{\"Version\":\"10.1.0(tasmota)\",\"BuildDateTime\":\"2021-12-08T14:47:33\",\"Boot\":7,\"Core\":\"2_7_4_9\",\"SDK\":\"2.2.2-dev(38a443e)\",\"CpuFrequency\":80,\"Hardware\":\"ESP8266EX\",\"CR\":\"465/699\"},\"StatusLOG\":{\"SerialLog\":2,\"WebLog\":2,\"MqttLog\":0,\"SysLog\":0,\"LogHost\":\"\",\"LogPort\":514,\"SSId\":[\"DLINK_FastNet\",\"\"],\"TelePeriod\":300,\"Resolution\":\"558180C0\",\"SetOption\":[\"000A8009\",\"2805C80001000600003C5A0A000000000000\",\"00000280\",\"00006008\",\"00004000\"]},\"StatusMEM\":{\"ProgramSize\":616,\"Free\":384,\"Heap\":25,\"ProgramFlashSize\":1024,\"FlashSize\":2048,\"FlashChipId\":\"1540A1\",\"FlashFrequency\":40,\"FlashMode\":3,\"Features\":[\"00000809\",\"8FDAC787\",\"04368001\",\"000000CF\",\"010013C0\",\"C000F981\",\"00004004\",\"00001000\",\"00000020\"],\"Drivers\":\"1,2,3,4,5,6,7,8,9,10,12,16,18,19,20,21,22,24,26,27,29,30,35,37,45\",\"Sensors\":\"1,2,3,4,5,6\"},\"StatusNET\":{\"Hostname\":\"tasmota-D79E2C-7724\",\"IPAddress\":\"192.168.0.104\",\"Gateway\":\"192.168.0.1\",\"Subnetmask\":\"255.255.255.0\",\"DNSServer1\":\"192.168.0.1\",\"DNSServer2\":\"0.0.0.0\",\"Mac\":\"10:52:1C:D7:9E:2C\",\"Webserver\":2,\"HTTP_API\":1,\"WifiConfig\":4,\"WifiPower\":17.0},\"StatusMQT\":{\"MqttHost\":\"192.168.0.113\",\"MqttPort\":1883,\"MqttClientMask\":\"core-mosquitto\",\"MqttClient\":\"core-mosquitto\",\"MqttUser\":\"homeassistant\",\"MqttCount\":23,\"MAX_PACKET_SIZE\":1200,\"KEEPALIVE\":30,\"SOCKET_TIMEOUT\":4},\"StatusTIM\":{\"UTC\":\"2022-11-09T19:52:58\",\"Local\":\"2022-11-09T20:52:58\",\"StartDST\":\"2022-03-27T02:00:00\",\"EndDST\":\"2022-10-30T03:00:00\",\"Timezone\":\"+01:00\",\"Sunrise\":\"07:50\",\"Sunset\":\"17:17\"},\"StatusSNS\":{\"Time\":\"2022-11-09T20:52:58\"},\"StatusSTS\":{\"Time\":\"2022-11-09T20:52:58\",\"Uptime\":\"30T03:43:17\",\"UptimeSec\":2605397,\"Heap\":25,\"SleepMode\":\"Dynamic\",\"Sleep\":10,\"LoadAvg\":99,\"MqttCount\":23,\"POWER\":\"ON\",\"Dimmer\":99,\"Fade\":\"OFF\",\"Speed\":1,\"LedTable\":\"ON\",\"Wifi\":{\"AP\":1,\"SSId\":\"DLINK_FastNet\",\"BSSId\":\"30:B5:C2:5D:70:72\",\"Channel\":11,\"Mode\":\"11n\",\"RSSI\":80,\"Signal\":-60,\"LinkCount\":21,\"Downtime\":\"0T06:13:34\"}}}";
-	poststr(request,dbg);
+	const char* dbg = "{\"Status\":{\"Module\":0,\"DeviceName\":\"Tasmota\",\"FriendlyName\":[\"Tasmota\"],\"Topic\":\"tasmota_D79E2C\",\"ButtonTopic\":\"0\",\"Power\":1,\"PowerOnState\":3,\"LedState\":1,\"LedMask\":\"FFFF\",\"SaveData\":1,\"SaveState\":1,\"SwitchTopic\":\"0\",\"SwitchMode\":[0,0,0,0,0,0,0,0],\"ButtonRetain\":0,\"SwitchRetain\":0,\"SensorRetain\":0,\"PowerRetain\":0,\"InfoRetain\":0,\"StateRetain\":0},\"StatusPRM\":{\"Baudrate\":115200,\"SerialConfig\":\"8N1\",\"GroupTopic\":\"tasmotas\",\"OtaUrl\":\"http://ota.tasmota.com/tasmota/release/tasmota.bin.gz\",\"RestartReason\":\"Hardware Watchdog\",\"Uptime\":\"30T03:43:17\",\"StartupUTC\":\"2022-10-10T16:09:41\",\"Sleep\":50,\"CfgHolder\":4617,\"BootCount\":22,\"BCResetTime\":\"2022-01-27T16:10:56\",\"SaveCount\":1235,\"SaveAddress\":\"F9000\"},\"StatusFWR\":{\"Version\":\"10.1.0(tasmota)\",\"BuildDateTime\":\"2021-12-08T14:47:33\",\"Boot\":7,\"Core\":\"2_7_4_9\",\"SDK\":\"2.2.2-dev(38a443e)\",\"CpuFrequency\":80,\"Hardware\":\"ESP8266EX\",\"CR\":\"465/699\"},\"StatusLOG\":{\"SerialLog\":2,\"WebLog\":2,\"MqttLog\":0,\"SysLog\":0,\"LogHost\":\"\",\"LogPort\":514,\"SSId\":[\"DLINK_FastNet\",\"\"],\"TelePeriod\":300,\"Resolution\":\"558180C0\",\"SetOption\":[\"000A8009\",\"2805C80001000600003C5A0A000000000000\",\"00000280\",\"00006008\",\"00004000\"]},\"StatusMEM\":{\"ProgramSize\":616,\"Free\":384,\"Heap\":25,\"ProgramFlashSize\":1024,\"FlashSize\":2048,\"FlashChipId\":\"1540A1\",\"FlashFrequency\":40,\"FlashMode\":3,\"Features\":[\"00000809\",\"8FDAC787\",\"04368001\",\"000000CF\",\"010013C0\",\"C000F981\",\"00004004\",\"00001000\",\"00000020\"],\"Drivers\":\"1,2,3,4,5,6,7,8,9,10,12,16,18,19,20,21,22,24,26,27,29,30,35,37,45\",\"Sensors\":\"1,2,3,4,5,6\"},\"StatusNET\":{\"Hostname\":\"tasmota-D79E2C-7724\",\"IPAddress\":\"192.168.0.104\",\"Gateway\":\"192.168.0.1\",\"Subnetmask\":\"255.255.255.0\",\"DNSServer1\":\"192.168.0.1\",\"DNSServer2\":\"0.0.0.0\",\"Mac\":\"10:52:1C:D7:9E:2C\",\"Webserver\":2,\"HTTP_API\":1,\"WifiConfig\":4,\"WifiPower\":17.0},\"StatusMQT\":{\"MqttHost\":\"192.168.0.113\",\"MqttPort\":1883,\"MqttClientMask\":\"core-mosquitto\",\"MqttClient\":\"core-mosquitto\",\"MqttUser\":\"homeassistant\",\"MqttCount\":23,\"MAX_PACKET_SIZE\":1200,\"KEEPALIVE\":30,\"SOCKET_TIMEOUT\":4},\"StatusTIM\":{\"UTC\":\"2022-11-09T19:52:58\",\"Local\":\"2022-11-09T20:52:58\",\"StartDST\":\"2022-03-27T02:00:00\",\"EndDST\":\"2022-10-30T03:00:00\",\"Timezone\":\"+01:00\",\"Sunrise\":\"07:50\",\"Sunset\":\"17:17\"},\"StatusSNS\":{\"Time\":\"2022-11-09T20:52:58\"},\"StatusSTS\":{\"Time\":\"2022-11-09T20:52:58\",\"Uptime\":\"30T03:43:17\",\"UptimeSec\":2605397,\"Heap\":25,\"SleepMode\":\"Dynamic\",\"Sleep\":10,\"LoadAvg\":99,\"MqttCount\":23,\"POWER\":\"ON\",\"Dimmer\":99,\"Fade\":\"OFF\",\"Speed\":1,\"LedTable\":\"ON\",\"Wifi\":{\"AP\":1,\"SSId\":\"DLINK_FastNet\",\"BSSId\":\"30:B5:C2:5D:70:72\",\"Channel\":11,\"Mode\":\"11n\",\"RSSI\":80,\"Signal\":-60,\"LinkCount\":21,\"Downtime\":\"0T06:13:34\"}}}";
+	poststr(request, dbg);
 	return;
 
 #endif
@@ -1834,8 +1832,8 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 	hprintf255(request, "\"Version\":\"%s\",", DEVICENAME_PREFIX_FULL"_"USER_SW_VER);
 	hprintf255(request, "\"BuildDateTime\":\"%s\",", __DATE__ " " __TIME__);
 	hprintf255(request, "\"Boot\":7,");
-	hprintf255(request, "\"Core\":\"%s\",","0.0");
-	hprintf255(request, "\"SDK\":\"\",","obk");
+	hprintf255(request, "\"Core\":\"%s\",", "0.0");
+	hprintf255(request, "\"SDK\":\"\",", "obk");
 	hprintf255(request, "\"CpuFrequency\":80,");
 	hprintf255(request, "\"Hardware\":\"%s\",", PLATFORM_MCU_NAME);
 	hprintf255(request, "\"CR\":\"465/699\"");
@@ -1946,7 +1944,7 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 	hprintf255(request, "}");
 
 	hprintf255(request, ",");
-	
+
 	hprintf255(request, "\"StatusSTS\":{");
 
 	hprintf255(request, "\"Time\":\"2022-11-09T20:09:11\",");
@@ -1982,18 +1980,18 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 	//	}
 	//}
 	hprintf255(request, "\"Wifi\":{");
-		hprintf255(request, "\"AP\":1,");
-		hprintf255(request, "\"SSId\":\"SSIIIIIIIIIIIID\",");
-		hprintf255(request, "\"BSSId\":\"30:B5:C2:5D:70:72\",");
-		hprintf255(request, "\"Channel\":11,");
-		hprintf255(request, "\"Mode\":\"11n\",");
-		hprintf255(request, "\"RSSI\":78,");
-		hprintf255(request, "\"Signal\":-61,");
-		hprintf255(request, "\"LinkCount\":21,");
-		hprintf255(request, "\"Downtime\":\"0T06:13:34\"");
-		hprintf255(request, "}");
+	hprintf255(request, "\"AP\":1,");
+	hprintf255(request, "\"SSId\":\"SSIIIIIIIIIIIID\",");
+	hprintf255(request, "\"BSSId\":\"30:B5:C2:5D:70:72\",");
+	hprintf255(request, "\"Channel\":11,");
+	hprintf255(request, "\"Mode\":\"11n\",");
+	hprintf255(request, "\"RSSI\":78,");
+	hprintf255(request, "\"Signal\":-61,");
+	hprintf255(request, "\"LinkCount\":21,");
+	hprintf255(request, "\"Downtime\":\"0T06:13:34\"");
 	hprintf255(request, "}");
-		
+	hprintf255(request, "}");
+
 
 
 
