@@ -13,7 +13,7 @@
 
 int parsePowerArgument(const char *s) {
 	if(!stricmp(s,"ON"))
-		return 255;
+		return 1;
 	if(!stricmp(s,"OFF"))
 		return 0;
 	return atoi(s);
@@ -29,6 +29,10 @@ static int power(const void *context, const char *cmd, const char *args, int cmd
 
 		if (strlen(cmd) > 5) {
 			channel = atoi(cmd+5);
+
+			if (PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n) > 0) {
+				channel = SPECIAL_CHANNEL_LEDPOWER;
+			}
 		} else {
 			// if new LED driver active
 			if(PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n) > 0) {

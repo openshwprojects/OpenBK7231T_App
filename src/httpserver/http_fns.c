@@ -1603,6 +1603,16 @@ int http_tasmota_json_power(http_request_t* request) {
 	int numPWMs;
 	int i;
 	int lastRelayState;
+	bool bRelayIndexingStartsWithZero;
+	int relayIndexingOffset;
+
+	bRelayIndexingStartsWithZero = CHANNEL_HasChannelPinWithRoleOrRole(0, IOR_Relay, IOR_Relay_n);
+	if (bRelayIndexingStartsWithZero) {
+		relayIndexingOffset = 0;
+	}
+	else {
+		relayIndexingOffset = 1;
+	}
 
 	// try to return status
 	numPWMs = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
@@ -1610,11 +1620,16 @@ int http_tasmota_json_power(http_request_t* request) {
 
 	// LED driver (if has PWMs)
 	if (numPWMs > 0) {
+		int dimmer = LED_GetDimmer();
+		hprintf255(request, "\"Dimmer\":%i,", dimmer);
+		hprintf255(request, "\"Fade\":\"OFF\",");
+		hprintf255(request, "\"Speed\":1,");
+		hprintf255(request, "\"LedTable\":\"ON\",");
 		if (LED_GetEnableAll() == 0) {
-			poststr(request, "{\"POWER\":\"OFF\"}");
+			poststr(request, "\"POWER\":\"OFF\"");
 		}
 		else {
-			poststr(request, "{\"POWER\":\"ON\"}");
+			poststr(request, "\"POWER\":\"ON\"");
 		}
 	}
 	else {
@@ -1627,22 +1642,35 @@ int http_tasmota_json_power(http_request_t* request) {
 		}
 		if (numRelays == 1) {
 			if (lastRelayState) {
-				poststr(request, "{\"POWER\":\"ON\"}");
+				poststr(request, "\"POWER\":\"ON\"");
 			}
 			else {
-				poststr(request, "{\"POWER\":\"OFF\"}");
+				poststr(request, "\"POWER\":\"OFF\"");
 			}
 		}
 		else {
+			int c_posted = 0;
 			for (i = 0; i < CHANNEL_MAX; i++) {
 				if (h_isChannelRelay(i) || CHANNEL_GetType(i) == ChType_Toggle) {
-					lastRelayState = CHANNEL_Get(i);
-					if (lastRelayState) {
-						hprintf255(request, "{\"POWER%i\":\"ON\"}", i);
+					int indexStartingFrom1;
+
+					if (bRelayIndexingStartsWithZero) {
+						indexStartingFrom1 = i + 1;
 					}
 					else {
-						hprintf255(request, "{\"POWER%i\":\"OFF\"}", i);
+						indexStartingFrom1 = i;
 					}
+					lastRelayState = CHANNEL_Get(i);
+					if (c_posted) {
+						hprintf255(request, ",");
+					}
+					if (lastRelayState) {
+						hprintf255(request, "\"POWER%i\":\"ON\"", indexStartingFrom1);
+					}
+					else {
+						hprintf255(request, "\"POWER%i\":\"OFF\"", indexStartingFrom1);
+					}
+					c_posted++;
 				}
 			}
 		}
@@ -1654,33 +1682,38 @@ int http_tasmota_json_power(http_request_t* request) {
 {"StatusSNS":{"Time":"2022-07-30T10:11:26","ENERGY":{"TotalStartTime":"2022-05-12T10:56:31","Total":0.003,"Yesterday":0.003,"Today":0.000,"Power": 0,"ApparentPower": 0,"ReactivePower": 0,"Factor":0.00,"Voltage":236,"Current":0.000}}}
 */
 int http_tasmota_json_status_SNS(http_request_t* request) {
-	float power, factor, voltage, current;
-	float energy, energy_hour;
+
+	hprintf255(request, "{\"StatusSNS\":{");
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
-	factor = 0; // TODO
-	voltage = DRV_GetReading(OBK_VOLTAGE);
-	current = DRV_GetReading(OBK_CURRENT);
-	power = DRV_GetReading(OBK_POWER);
-	energy = DRV_GetReading(OBK_CONSUMPTION_TOTAL);
-	energy_hour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
+	if (DRV_IsMeasuringPower()) {
 
-#else
-	factor = 0;
-	voltage = 0;
-	current = 0;
-	power = 0;
-	energy = 0;
-	energy_hour = 0;
+		float power, factor, voltage, current;
+		float energy, energy_hour;
+
+		factor = 0; // TODO
+		voltage = DRV_GetReading(OBK_VOLTAGE);
+		current = DRV_GetReading(OBK_CURRENT);
+		power = DRV_GetReading(OBK_POWER);
+		energy = DRV_GetReading(OBK_CONSUMPTION_TOTAL);
+		energy_hour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
+
+
+		// begin ENERGY block
+		hprintf255(request, "\"ENERGY\":{");
+		hprintf255(request, "\"Power\": %f,", power);
+		hprintf255(request, "\"ApparentPower\": 0,\"ReactivePower\": 0,\"Factor\":%f,", factor);
+		hprintf255(request, "\"Voltage\":%f,", voltage);
+		hprintf255(request, "\"Current\":%f,", current);
+		hprintf255(request, "\"ConsumptionTotal\":%f,", energy);
+		hprintf255(request, "\"ConsumptionLastHour\":%f", energy_hour);
+		// close ENERGY block
+		hprintf255(request, "}");
+	}
 #endif
 
-	hprintf255(request, "{\"StatusSNS\":{\"ENERGY\":{");
-	hprintf255(request, "\"Power\": %f,", power);
-	hprintf255(request, "\"ApparentPower\": 0,\"ReactivePower\": 0,\"Factor\":%f,", factor);
-	hprintf255(request, "\"Voltage\":%f,", voltage);
-	hprintf255(request, "\"Current\":%f,", current);
-	hprintf255(request, "\"ConsumptionTotal\":%f,", energy);
-	hprintf255(request, "\"ConsumptionLastHour\":%f}}}", energy_hour);
+	hprintf255(request, "}");
+	hprintf255(request, "}");
 
 	return 0;
 }
@@ -1691,19 +1724,284 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 	const char* deviceName;
 	const char* friendlyName;
 	const char* clientId;
+	int powerCode;
+	int relayCount, pwmCount, i;
+	bool bRelayIndexingStartsWithZero;
 
 	deviceName = CFG_GetShortDeviceName();
 	friendlyName = CFG_GetDeviceName();
 	clientId = CFG_GetMQTTClientId();
 
-	hprintf255(request, "{\"Status\":{\"Module\":0,\"DeviceName\":\"%s\"", deviceName);
-	hprintf255(request, ",\"FriendlyName\":[\"%s\"]", friendlyName);
+	//deviceName = "Tasmota";
+	//friendlyName - "Tasmota";
+
+#if 0
+	const char *dbg = "{\"Status\":{\"Module\":0,\"DeviceName\":\"Tasmota\",\"FriendlyName\":[\"Tasmota\"],\"Topic\":\"tasmota_D79E2C\",\"ButtonTopic\":\"0\",\"Power\":1,\"PowerOnState\":3,\"LedState\":1,\"LedMask\":\"FFFF\",\"SaveData\":1,\"SaveState\":1,\"SwitchTopic\":\"0\",\"SwitchMode\":[0,0,0,0,0,0,0,0],\"ButtonRetain\":0,\"SwitchRetain\":0,\"SensorRetain\":0,\"PowerRetain\":0,\"InfoRetain\":0,\"StateRetain\":0},\"StatusPRM\":{\"Baudrate\":115200,\"SerialConfig\":\"8N1\",\"GroupTopic\":\"tasmotas\",\"OtaUrl\":\"http://ota.tasmota.com/tasmota/release/tasmota.bin.gz\",\"RestartReason\":\"Hardware Watchdog\",\"Uptime\":\"30T03:43:17\",\"StartupUTC\":\"2022-10-10T16:09:41\",\"Sleep\":50,\"CfgHolder\":4617,\"BootCount\":22,\"BCResetTime\":\"2022-01-27T16:10:56\",\"SaveCount\":1235,\"SaveAddress\":\"F9000\"},\"StatusFWR\":{\"Version\":\"10.1.0(tasmota)\",\"BuildDateTime\":\"2021-12-08T14:47:33\",\"Boot\":7,\"Core\":\"2_7_4_9\",\"SDK\":\"2.2.2-dev(38a443e)\",\"CpuFrequency\":80,\"Hardware\":\"ESP8266EX\",\"CR\":\"465/699\"},\"StatusLOG\":{\"SerialLog\":2,\"WebLog\":2,\"MqttLog\":0,\"SysLog\":0,\"LogHost\":\"\",\"LogPort\":514,\"SSId\":[\"DLINK_FastNet\",\"\"],\"TelePeriod\":300,\"Resolution\":\"558180C0\",\"SetOption\":[\"000A8009\",\"2805C80001000600003C5A0A000000000000\",\"00000280\",\"00006008\",\"00004000\"]},\"StatusMEM\":{\"ProgramSize\":616,\"Free\":384,\"Heap\":25,\"ProgramFlashSize\":1024,\"FlashSize\":2048,\"FlashChipId\":\"1540A1\",\"FlashFrequency\":40,\"FlashMode\":3,\"Features\":[\"00000809\",\"8FDAC787\",\"04368001\",\"000000CF\",\"010013C0\",\"C000F981\",\"00004004\",\"00001000\",\"00000020\"],\"Drivers\":\"1,2,3,4,5,6,7,8,9,10,12,16,18,19,20,21,22,24,26,27,29,30,35,37,45\",\"Sensors\":\"1,2,3,4,5,6\"},\"StatusNET\":{\"Hostname\":\"tasmota-D79E2C-7724\",\"IPAddress\":\"192.168.0.104\",\"Gateway\":\"192.168.0.1\",\"Subnetmask\":\"255.255.255.0\",\"DNSServer1\":\"192.168.0.1\",\"DNSServer2\":\"0.0.0.0\",\"Mac\":\"10:52:1C:D7:9E:2C\",\"Webserver\":2,\"HTTP_API\":1,\"WifiConfig\":4,\"WifiPower\":17.0},\"StatusMQT\":{\"MqttHost\":\"192.168.0.113\",\"MqttPort\":1883,\"MqttClientMask\":\"core-mosquitto\",\"MqttClient\":\"core-mosquitto\",\"MqttUser\":\"homeassistant\",\"MqttCount\":23,\"MAX_PACKET_SIZE\":1200,\"KEEPALIVE\":30,\"SOCKET_TIMEOUT\":4},\"StatusTIM\":{\"UTC\":\"2022-11-09T19:52:58\",\"Local\":\"2022-11-09T20:52:58\",\"StartDST\":\"2022-03-27T02:00:00\",\"EndDST\":\"2022-10-30T03:00:00\",\"Timezone\":\"+01:00\",\"Sunrise\":\"07:50\",\"Sunset\":\"17:17\"},\"StatusSNS\":{\"Time\":\"2022-11-09T20:52:58\"},\"StatusSTS\":{\"Time\":\"2022-11-09T20:52:58\",\"Uptime\":\"30T03:43:17\",\"UptimeSec\":2605397,\"Heap\":25,\"SleepMode\":\"Dynamic\",\"Sleep\":10,\"LoadAvg\":99,\"MqttCount\":23,\"POWER\":\"ON\",\"Dimmer\":99,\"Fade\":\"OFF\",\"Speed\":1,\"LedTable\":\"ON\",\"Wifi\":{\"AP\":1,\"SSId\":\"DLINK_FastNet\",\"BSSId\":\"30:B5:C2:5D:70:72\",\"Channel\":11,\"Mode\":\"11n\",\"RSSI\":80,\"Signal\":-60,\"LinkCount\":21,\"Downtime\":\"0T06:13:34\"}}}";
+	poststr(request,dbg);
+	return;
+
+#endif
+
+	bRelayIndexingStartsWithZero = CHANNEL_HasChannelPinWithRoleOrRole(0, IOR_Relay, IOR_Relay_n);
+
+	get_Relay_PWM_Count(&relayCount, &pwmCount);
+
+	if (pwmCount > 0) {
+		powerCode = LED_GetEnableAll();
+	}
+	else {
+		powerCode = 0;
+		for (i = 0; i < CHANNEL_MAX; i++) {
+			bool bRelay;
+			int useIdx;
+			int iValue;
+			if (bRelayIndexingStartsWithZero) {
+				useIdx = i;
+			}
+			else {
+				useIdx = i + 1;
+			}
+			bRelay = CHANNEL_HasChannelPinWithRoleOrRole(useIdx, IOR_Relay, IOR_Relay_n);
+			if (bRelay) {
+				iValue = CHANNEL_Get(useIdx);
+				if (iValue)
+					BIT_SET(powerCode, i);
+				else
+					BIT_CLEAR(powerCode, i);
+			}
+		}
+	}
+
+	hprintf255(request, "{");
+	// Status section
+	hprintf255(request, "\"Status\":{\"Module\":0,\"DeviceName\":\"%s\"", deviceName);
+	hprintf255(request, ",\"FriendlyName\":[");
+	if (relayCount == 0) {
+		hprintf255(request, "\"%s\"", deviceName);
+	}
+	else {
+		int c_printed = 0;
+		for (i = 0; i < CHANNEL_MAX; i++) {
+			bool bRelay;
+			bRelay = CHANNEL_HasChannelPinWithRoleOrRole(i, IOR_Relay, IOR_Relay_n);
+			if (bRelay) {
+				int useIdx;
+				if (bRelayIndexingStartsWithZero) {
+					useIdx = i + 1;
+				}
+				else {
+					useIdx = i;
+				}
+				if (c_printed) {
+					hprintf255(request, ",");
+				}
+				hprintf255(request, "\"%s_%i\"", deviceName, useIdx);
+				c_printed++;
+			}
+		}
+	}
+	hprintf255(request, "]");
 	hprintf255(request, ",\"Topic\":\"%s\",\"ButtonTopic\":\"0\"", clientId);
-	hprintf255(request, ",\"Power\":1,\"PowerOnState\":3,\"LedState\":1");
+	hprintf255(request, ",\"Power\":%i,\"PowerOnState\":3,\"LedState\":1", powerCode);
 	hprintf255(request, ",\"LedMask\":\"FFFF\",\"SaveData\":1,\"SaveState\":1");
 	hprintf255(request, ",\"SwitchTopic\":\"0\",\"SwitchMode\":[0,0,0,0,0,0,0,0]");
 	hprintf255(request, ",\"ButtonRetain\":0,\"SwitchRetain\":0,\"SensorRetain\":0");
-	hprintf255(request, ",\"PowerRetain\":0,\"InfoRetain\":0,\"StateRetain\":0}}");
+	hprintf255(request, ",\"PowerRetain\":0,\"InfoRetain\":0,\"StateRetain\":0");
+	hprintf255(request, "}");
+
+	hprintf255(request, ",");
+
+
+	hprintf255(request, "\"StatusPRM\":{");
+	hprintf255(request, "\"Baudrate\":115200,");
+	hprintf255(request, "\"SerialConfig\":\"8N1\",");
+	hprintf255(request, "\"GroupTopic\":\"tasmotas\",");
+	hprintf255(request, "\"OtaUrl\":\"http://ota.tasmota.com/tasmota/release/tasmota.bin.gz\",");
+	hprintf255(request, "\"RestartReason\":\"HardwareWatchdog\",");
+	hprintf255(request, "\"Uptime\":\"30T02:59:30\",");
+	hprintf255(request, "\"StartupUTC\":\"2022-10-10T16:09:41\",");
+	hprintf255(request, "\"Sleep\":50,");
+	hprintf255(request, "\"CfgHolder\":4617,");
+	hprintf255(request, "\"BootCount\":22,");
+	hprintf255(request, "\"BCResetTime\":\"2022-01-27T16:10:56\",");
+	hprintf255(request, "\"SaveCount\":1235,");
+	hprintf255(request, "\"SaveAddress\":\"F9000\"");
+	hprintf255(request, "}");
+
+	hprintf255(request, ",");
+
+	hprintf255(request, "\"StatusFWR\":{");
+	hprintf255(request, "\"Version\":\"%s\",", DEVICENAME_PREFIX_FULL"_"USER_SW_VER);
+	hprintf255(request, "\"BuildDateTime\":\"%s\",", __DATE__ " " __TIME__);
+	hprintf255(request, "\"Boot\":7,");
+	hprintf255(request, "\"Core\":\"%s\",","0.0");
+	hprintf255(request, "\"SDK\":\"\",","obk");
+	hprintf255(request, "\"CpuFrequency\":80,");
+	hprintf255(request, "\"Hardware\":\"%s\",", PLATFORM_MCU_NAME);
+	hprintf255(request, "\"CR\":\"465/699\"");
+	hprintf255(request, "}");
+
+	hprintf255(request, ",");
+
+
+
+	hprintf255(request, "\"StatusLOG\":{");
+	hprintf255(request, "\"SerialLog\":2,");
+	hprintf255(request, "\"WebLog\":2,");
+	hprintf255(request, "\"MqttLog\":0,");
+	hprintf255(request, "\"SysLog\":0,");
+	hprintf255(request, "\"LogHost\":\"\",");
+	hprintf255(request, "\"LogPort\":514,");
+	hprintf255(request, "\"SSId\":[");
+	hprintf255(request, "\"DLINK_FastNet\",");
+	hprintf255(request, "\"\"");
+	hprintf255(request, "],");
+	hprintf255(request, "\"TelePeriod\":300,");
+	hprintf255(request, "\"Resolution\":\"558180C0\",");
+	hprintf255(request, "\"SetOption\":[");
+	hprintf255(request, "\"000A8009\",");
+	hprintf255(request, "\"2805C80001000600003C5A0A000000000000\",");
+	hprintf255(request, "\"00000280\",");
+	hprintf255(request, "\"00006008\",");
+	hprintf255(request, "\"00004000\"");
+	hprintf255(request, "]");
+	hprintf255(request, "}");
+
+	hprintf255(request, ",");
+
+
+
+	hprintf255(request, "\"StatusMEM\":{");
+	hprintf255(request, "\"ProgramSize\":616,");
+	hprintf255(request, "\"Free\":384,");
+	hprintf255(request, "\"Heap\":25,");
+	hprintf255(request, "\"ProgramFlashSize\":1024,");
+	hprintf255(request, "\"FlashSize\":2048,");
+	hprintf255(request, "\"FlashChipId\":\"1540A1\",");
+	hprintf255(request, "\"FlashFrequency\":40,");
+	hprintf255(request, "\"FlashMode\":3,");
+	hprintf255(request, "\"Features\":[");
+	hprintf255(request, "\"00000809\",");
+	hprintf255(request, "\"8FDAC787\",");
+	hprintf255(request, "\"04368001\",");
+	hprintf255(request, "\"000000CF\",");
+	hprintf255(request, "\"010013C0\",");
+	hprintf255(request, "\"C000F981\",");
+	hprintf255(request, "\"00004004\",");
+	hprintf255(request, "\"00001000\",");
+	hprintf255(request, "\"00000020\"");
+	hprintf255(request, "],");
+	hprintf255(request, "\"Drivers\":\"1,2,3,4,5,6,7,8,9,10,12,16,18,19,20,21,22,24,26,27,29,30,35,37,45\",");
+	hprintf255(request, "\"Sensors\":\"1,2,3,4,5,6\"");
+	hprintf255(request, "}");
+
+	hprintf255(request, ",");
+
+
+	hprintf255(request, "\"StatusNET\":{");
+	hprintf255(request, "\"Hostname\":\"tasmota-D79E2C-7724\",");
+	hprintf255(request, "\"IPAddress\":\"192.168.0.104\",");
+	hprintf255(request, "\"Gateway\":\"192.168.0.1\",");
+	hprintf255(request, "\"Subnetmask\":\"255.255.255.0\",");
+	hprintf255(request, "\"DNSServer1\":\"192.168.0.1\",");
+	hprintf255(request, "\"DNSServer2\":\"0.0.0.0\",");
+	hprintf255(request, "\"Mac\":\"10:52:1C:D7:9E:2C\",");
+	hprintf255(request, "\"Webserver\":2,");
+	hprintf255(request, "\"HTTP_API\":1,");
+	hprintf255(request, "\"WifiConfig\":4,");
+	hprintf255(request, "\"WifiPower\":17.0");
+	hprintf255(request, "}");
+	hprintf255(request, ",");
+
+
+
+
+	hprintf255(request, "\"StatusMQT\":{");
+	hprintf255(request, "\"MqttHost\":\"192.168.0.113\",");
+	hprintf255(request, "\"MqttPort\":1883,");
+	hprintf255(request, "\"MqttClientMask\":\"core-mosquitto\",");
+	hprintf255(request, "\"MqttClient\":\"core-mosquitto\",");
+	hprintf255(request, "\"MqttUser\":\"homeassistant\",");
+	hprintf255(request, "\"MqttCount\":23,");
+	hprintf255(request, "\"MAX_PACKET_SIZE\":1200,");
+	hprintf255(request, "\"KEEPALIVE\":30,");
+	hprintf255(request, "\"SOCKET_TIMEOUT\":4");
+	hprintf255(request, "}");
+
+	hprintf255(request, ",");
+	hprintf255(request, "\"StatusTIM\":{");
+	hprintf255(request, "\"UTC\":\"2022-11-09T19:09:11\",");
+	hprintf255(request, "\"Local\":\"2022-11-09T20:09:11\",");
+	hprintf255(request, "\"StartDST\":\"2022-03-27T02:00:00\",");
+	hprintf255(request, "\"EndDST\":\"2022-10-30T03:00:00\",");
+	hprintf255(request, "\"Timezone\":\"+01:00\",");
+	hprintf255(request, "\"Sunrise\":\"07:50\",");
+	hprintf255(request, "\"Sunset\":\"17:17\"");
+	hprintf255(request, "}");
+
+	hprintf255(request, ",");
+
+	hprintf255(request, "\"StatusSNS\":{");
+	hprintf255(request, "\"Time\":\"2022-11-09T19:09:11\"");
+	hprintf255(request, "}");
+
+	hprintf255(request, ",");
+	
+	hprintf255(request, "\"StatusSTS\":{");
+
+	hprintf255(request, "\"Time\":\"2022-11-09T20:09:11\",");
+	hprintf255(request, "\"Uptime\":\"30T02:59:30\",");
+	hprintf255(request, "\"UptimeSec\":2602770,");
+	hprintf255(request, "\"Heap\":25,");
+	hprintf255(request, "\"SleepMode\":\"Dynamic\",");
+	hprintf255(request, "\"Sleep\":10,");
+	hprintf255(request, "\"LoadAvg\":99,");
+	hprintf255(request, "\"MqttCount\":23,");
+
+	http_tasmota_json_power(request);
+	hprintf255(request, ",");
+	//if(0)
+	//{
+	//	hprintf255(request, "\"POWER\":\"ON\",");
+	//	hprintf255(request, "\"Dimmer\":99,");
+	//	hprintf255(request, "\"Fade\":\"OFF\",");
+	//	hprintf255(request, "\"Speed\":1,");
+	//	hprintf255(request, "\"LedTable\":\"ON\",");
+	//}
+	//else
+	//{
+	//	for (i = 0; i < CHANNEL_MAX; i++) {
+	//		bool bRelay;
+	//		int iValue;
+	//		bRelay = CHANNEL_HasChannelPinWithRoleOrRole(i, IOR_Relay, IOR_Relay_n);
+	//		iValue = CHANNEL_Get(i);
+	//		if (bRelay) {
+	//			hprintf255(request, "\"POWER%i\":\"%s\",",i, iValue == 0 ? "OFF" : "ON");
+	//		}
+
+	//	}
+	//}
+	hprintf255(request, "\"Wifi\":{");
+		hprintf255(request, "\"AP\":1,");
+		hprintf255(request, "\"SSId\":\"SSIIIIIIIIIIIID\",");
+		hprintf255(request, "\"BSSId\":\"30:B5:C2:5D:70:72\",");
+		hprintf255(request, "\"Channel\":11,");
+		hprintf255(request, "\"Mode\":\"11n\",");
+		hprintf255(request, "\"RSSI\":78,");
+		hprintf255(request, "\"Signal\":-61,");
+		hprintf255(request, "\"LinkCount\":21,");
+		hprintf255(request, "\"Downtime\":\"0T06:13:34\"");
+		hprintf255(request, "}");
+	hprintf255(request, "}");
+		
+
+
+
+
+
+
+	// end
+	hprintf255(request, "}");
 
 
 
@@ -1718,9 +2016,12 @@ int http_fn_cm(http_request_t* request) {
 		CMD_ExecuteCommand(tmpA, COMMAND_FLAG_SOURCE_HTTP);
 
 		if (!wal_strnicmp(tmpA, "POWER", 5)) {
+
+			poststr(request, "{");
 			http_tasmota_json_power(request);
+			poststr(request, "}");
 		}
-		else if (!wal_strnicmp(tmpA, "STATUS 8", 8)) {
+		else if (!wal_strnicmp(tmpA, "STATUS 8", 8) || !wal_strnicmp(tmpA, "STATUS 10", 10)) {
 			http_tasmota_json_status_SNS(request);
 		}
 		else {

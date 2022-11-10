@@ -48,28 +48,6 @@ const char htmlFooterInfo[] =
 "<a target=\"_blank\" "
 "href=\"https://paypal.me/openshwprojects\">Support project</a><br>";
 
-// make sure that USER_SW_VER is set on all platforms
-// Automatic Github builds are setting it externally,
-// but it may not be set while doing a test build on developer PC
-#ifndef USER_SW_VER
-#ifdef WINDOWS
-#define USER_SW_VER "Win_Test"
-#elif PLATFORM_XR809
-#define USER_SW_VER "XR809_Test"
-#elif defined(PLATFORM_BK7231N)
-#define USER_SW_VER "BK7231N_Test"
-#elif defined(PLATFORM_BK7231T)
-#define USER_SW_VER "BK7231T_Test"
-#elif defined(PLATFORM_BL602)
-#define USER_SW_VER "BL602_Test"
-#elif defined(PLATFORM_W600)
-#define USER_SW_VER "W600_Test"
-#elif defined(PLATFORM_W800)
-#define USER_SW_VER "W800_Test"
-#else
-#define USER_SW_VER "unknown"
-#endif
-#endif
 const char* g_build_str = "Build on " __DATE__ " " __TIME__ " version " USER_SW_VER; // Show GIT version at Build line;
 
 const char httpCorsHeaders[] = "Access-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept";           // TEXT MIME type
@@ -168,6 +146,21 @@ void http_setup(http_request_t* request, const char* type) {
 	hprintf255(request, httpHeader, request->responseCode, type);
 	poststr(request, "\r\n"); // next header
 	poststr(request, httpCorsHeaders);
+#if 0
+	poststr(request, "Server: Tasmota/10.1.0 (ESP8266EX)");
+	poststr(request, "\r\n");
+	poststr(request, "Cache-Control: no-cache, no-store, must-revalidate");
+	poststr(request, "\r\n");
+	poststr(request, "Pragma: no-cache");
+	poststr(request, "\r\n");
+	poststr(request, "Expires: -1");
+	poststr(request, "\r\n");
+	poststr(request, "Accept-Ranges: none");
+	poststr(request, "\r\n");
+	poststr(request, "Transfer-Encoding: chunked");
+	poststr(request, "\r\n");
+	poststr(request, "Connection: close");
+#endif
 	poststr(request, "\r\n"); // end headers with double CRLF
 	poststr(request, "\r\n");
 }
@@ -485,13 +478,15 @@ int HTTP_ProcessPacket(http_request_t* request) {
 
 	// chop URL at space
 	p = strchr(urlStr, ' ');
-	if (*p) {
-		*p = '\0';
-		p++; // past space
-	}
-	else {
-		ADDLOGF_ERROR("invalid request\n");
-		return 0;
+	if (p != 0) {
+		if (*p) {
+			*p = '\0';
+			p++; // past space
+		}
+		else {
+			ADDLOGF_ERROR("invalid request\n");
+			return 0;
+		}
 	}
 
 	request->url = urlStr;
@@ -499,51 +494,61 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	// protocol is next, termed by \r\n
 	protocol = p;
 	p = strchr(protocol, '\r');
-	if (*p) {
-		*p = '\0';
-		p++; // past \r
-		p++; // past \n
-	}
-	else {
-		ADDLOGF_ERROR("invalid request\n");
-		return 0;
+	if (p != 0) {
+		if (*p) {
+			*p = '\0';
+			p++; // past \r
+			p++; // past \n
+		}
+		else {
+			ADDLOGF_ERROR("invalid request\n");
+			return 0;
+		}
 	}
 	// i.e. not received
 	request->contentLength = -1;
 	headers = p;
-	do {
-		p = strchr(headers, '\r');
-		if (p != headers) {
-			if (p) {
-				if (request->numheaders < 16) {
-					request->headers[request->numheaders] = headers;
-					request->numheaders++;
-				}
-				// pick out contentLength
-				if (!my_strnicmp(headers, "Content-Length:", 15)) {
-					request->contentLength = atoi(headers + 15);
-				}
+	if (headers != 0) {
+		do {
+			p = strchr(headers, '\r');
+			if (p != headers) {
+				if (p) {
+					if (request->numheaders < 16) {
+						request->headers[request->numheaders] = headers;
+						request->numheaders++;
+					}
+					// pick out contentLength
+					if (!my_strnicmp(headers, "Content-Length:", 15)) {
+						request->contentLength = atoi(headers + 15);
+					}
 
-				*p = 0;
-				p++; // past \r
-				p++; // past \n
-				headers = p;
+					*p = 0;
+					p++; // past \r
+					p++; // past \n
+					headers = p;
+				}
+				else {
+					break;
+				}
 			}
-			else {
+			if (*p == '\r') {
+				// end of headers
+				*p = 0;
+				p++;
+				p++;
 				break;
 			}
-		}
-		if (*p == '\r') {
-			// end of headers
-			*p = 0;
-			p++;
-			p++;
-			break;
-		}
-	} while (1);
+		} while (1);
+	}
 
-	request->bodystart = p;
-	request->bodylen = request->receivedLen - (p - request->received);
+	if (p == 0) {
+		request->bodystart = 0;
+		request->bodylen = 0;
+	}
+	else {
+		request->bodystart = p;
+		request->bodylen = request->receivedLen - (p - request->received);
+	}
 #if 0
 	postany(request, "test", 4);
 	return 0;

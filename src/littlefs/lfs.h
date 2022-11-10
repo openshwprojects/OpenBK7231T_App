@@ -8,7 +8,9 @@
 #define LFS_H
 
 #include "../logging/logging.h"
+#ifdef WINDOWS
 #include "../new_common.h"
+#endif
 
 
 #define LFS_ERROR(y, ...) addLogAdv(LOG_ERROR, LOG_FEATURE_LFS, y, ##__VA_ARGS__)
