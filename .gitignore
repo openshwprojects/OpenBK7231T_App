@@ -5,8 +5,10 @@ output/**
 *.exe
 *.pdb
 *.ncb
+*.bak
 **/*.d
 /custom.mk
 /.vs
 .vscode
 node_modules
+Debug*/**
