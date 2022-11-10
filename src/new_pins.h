@@ -174,10 +174,10 @@ typedef struct cfgPowerMeasurementCalibration_s {
 #define CFG_DEFAULT_BTN_REPEAT	5
 
 enum {
-    CFG_OBK_VOLTAGE = 0,
-    CFG_OBK_CURRENT,
-    CFG_OBK_POWER,
-    CFG_OBK_POWER_MAX
+	CFG_OBK_VOLTAGE = 0,
+	CFG_OBK_CURRENT,
+	CFG_OBK_POWER,
+	CFG_OBK_POWER_MAX
 };
 
 //
@@ -228,7 +228,7 @@ typedef struct mainConfig_s {
 	// startChannelValues at offs 0x000003DE
 	// 64 * 2
 	short startChannelValues[CHANNEL_MAX];
-	// dgr_sendFlags at offs 0x00000460 
+	// dgr_sendFlags at offs 0x0000045E 
 	short unused_fill; // correct alignment
 	int dgr_sendFlags;
 	int dgr_recvFlags;
@@ -276,7 +276,7 @@ int PIN_GetPinRoleForPinIndex(int index);
 int PIN_GetPinChannelForPinIndex(int index);
 int PIN_GetPinChannel2ForPinIndex(int index);
 int PIN_FindPinIndexForRole(int role, int defaultIndexToReturnIfNotFound);
-const char *PIN_GetPinNameAlias(int index);
+const char* PIN_GetPinNameAlias(int index);
 void PIN_SetPinRoleForPinIndex(int index, int role);
 void PIN_SetPinChannelForPinIndex(int index, int ch);
 void PIN_SetPinChannel2ForPinIndex(int index, int ch);
@@ -309,7 +309,7 @@ int h_isChannelRelay(int tg_ch);
 
 //int PIN_GetPWMIndexForPinIndex(int pin);
 
-int PIN_ParsePinRoleName(const char *name);
+int PIN_ParsePinRoleName(const char* name);
 
 // from new_builtin.c
 /*
