@@ -144,6 +144,9 @@ int LED_SetBaseColor(const void *context, const char *cmd, const char *args, int
 void LED_SetFinalCW(byte c, byte w);
 void LED_SetFinalRGB(byte r, byte g, byte b);
 void LED_SetFinalRGBCW(byte *rgbcw);
+void LED_GetFinalChannels100(byte *rgbcw);
+void LED_GetFinalHSV(int *hsv);
+void LED_GetFinalRGBCW(byte *rgbcw);
 void LED_NextColor();
 void LED_ToggleEnabled();
 bool LED_IsLedDriverChipRunning();

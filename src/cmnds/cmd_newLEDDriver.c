@@ -644,6 +644,25 @@ void LED_SetFinalRGBCW(byte *rgbcw) {
 		LED_SetFinalCW(rgbcw[3],rgbcw[4]);
 	}
 }
+void LED_GetFinalChannels100(byte *rgbcw) {
+	rgbcw[0] = finalColors[0] * (100.0f / 255.0f);
+	rgbcw[1] = finalColors[1] * (100.0f / 255.0f);
+	rgbcw[2] = finalColors[2] * (100.0f / 255.0f);
+	rgbcw[3] = finalColors[3] * (100.0f / 255.0f);
+	rgbcw[4] = finalColors[4] * (100.0f / 255.0f);
+}
+void LED_GetFinalHSV(int *hsv) {
+	hsv[0] = g_hsv_h;
+	hsv[1] = g_hsv_s;
+	hsv[2] = g_hsv_v;
+}
+void LED_GetFinalRGBCW(byte *rgbcw) {
+	rgbcw[0] = finalColors[0];
+	rgbcw[1] = finalColors[1];
+	rgbcw[2] = finalColors[2];
+	rgbcw[3] = finalColors[3];
+	rgbcw[4] = finalColors[4];
+}
 void LED_SetFinalCW(byte c, byte w) {
 	float tmp;
 

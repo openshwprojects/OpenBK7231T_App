@@ -1618,6 +1618,33 @@ int http_tasmota_json_power(http_request_t* request) {
 		hprintf255(request, "\"Fade\":\"OFF\",");
 		hprintf255(request, "\"Speed\":1,");
 		hprintf255(request, "\"LedTable\":\"ON\",");
+		if (LED_IsLedDriverChipRunning() || numPWMs >= 3) {
+			/*
+			{
+			POWER: "OFF",
+			Dimmer: 100,
+			Color: "255,0,157",
+			HSBColor: "323,100,100",
+			Channel: [
+			100,
+			0,
+			62
+			]
+			}*/
+			// Eg: Color: "255,0,157",
+			byte rgbcw[5];
+			int hsv[3];
+			byte channels[5];
+
+			LED_GetFinalRGBCW(rgbcw);
+			LED_GetFinalHSV(hsv);
+			LED_GetFinalChannels100(channels);
+
+			hprintf255(request, "\"Color\":\"%i,%i,%i\",", (int)rgbcw[0], (int)rgbcw[1], (int)rgbcw[2]);
+			hprintf255(request, "\"HSBColor\":\"%i,%i,%i\",", hsv[0], hsv[1], hsv[2]);
+			hprintf255(request, "\"Channel\":[%i,%i,%i],", (int)channels[0], (int)channels[1], (int)channels[2]);
+
+		}
 		if (LED_GetEnableAll() == 0) {
 			poststr(request, "\"POWER\":\"OFF\"");
 		}
