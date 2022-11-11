@@ -234,8 +234,7 @@ void http_setup(http_request_t* request, const char* type) {
 void http_html_start(http_request_t* request, const char* pagename) {
 	poststr(request, htmlDoctype);
 	poststr(request, "<head><title>");
-	poststr_escaped(request, CFG_GetDeviceName());
-
+	poststr(request, CFG_GetDeviceName());
 	if (pagename) {
 		hprintf255(request, " - %s", pagename);
 	}
@@ -245,7 +244,7 @@ void http_html_start(http_request_t* request, const char* pagename) {
 	poststr(request, htmlHeadStyle);
 	poststr(request, "</head>");
 	poststr(request, htmlBodyStart);
-	poststr_escaped(request, CFG_GetDeviceName());
+	poststr(request, CFG_GetDeviceName());
 	poststr(request, htmlBodyStart2);
 }
 

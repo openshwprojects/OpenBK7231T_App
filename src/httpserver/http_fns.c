@@ -124,6 +124,22 @@ void postFormAction(http_request_t* request, char* action, char* value) {
 	hprintf255(request, "<form action=\"%s\"><input type=\"submit\" value=\"%s\"/></form>", action, value);
 }
 
+/// @brief Generate a pair of label and field elements for Name type entry. The field is limited to entry of a-zA-Z0-9_- characters.
+/// @param request 
+/// @param label 
+/// @param fieldId This also gets used as the field name
+/// @param value 
+/// @param preContent
+void add_label_name_field(http_request_t* request, char* label, char* fieldId, const char* value, char* preContent) {
+	if (strlen(preContent) > 0) {
+		poststr(request, preContent);
+	}
+
+	hprintf255(request, "<label for=\"%s\">%s:</label><br>", fieldId, label);
+	hprintf255(request, "<input type=\"text\" id=\"%s\" name=\"%s\" value=\"%s\" ", fieldId, fieldId, value);
+	poststr(request, "pattern=\"^[a-zA-Z0-9_-]+$\" title=\"Only alphanumerics, underscore and hyphen characters allowed.\">");
+}
+
 /// @brief Generate a pair of label and field elements.
 /// @param request 
 /// @param label 
@@ -135,11 +151,8 @@ void add_label_input(http_request_t* request, char* inputType, char* label, char
 		poststr(request, preContent);
 	}
 
-	//These individual strings should be less than 256 .. yes hprintf255 uses 256 char buffer
 	hprintf255(request, "<label for=\"%s\">%s:</label><br>", fieldId, label);
-	hprintf255(request, "<input type=\"%s\" id=\"%s\" name=\"%s\" value=\"", inputType, fieldId, fieldId);
-	poststr_escaped(request, value);	//All values should be escaped to ensure generate HTML is correct
-	poststr(request, "\">");
+	hprintf255(request, "<input type=\"%s\" id=\"%s\" name=\"%s\" value=\"%s\">", inputType, fieldId, fieldId, value);
 }
 
 /// @brief Generates a pair of label and text field elements.
@@ -886,8 +899,8 @@ int http_fn_cfg_name(http_request_t* request) {
 	CFG_Save_IfThereArePendingChanges();
 
 	poststr(request, "<h2> Use this to change device names</h2>");
-	add_label_text_field(request, "ShortName", "shortName", CFG_GetShortDeviceName(), "<form action=\"/cfg_name\">");
-	add_label_text_field(request, "Full Name", "name", CFG_GetDeviceName(), "<br>");
+	add_label_name_field(request, "ShortName", "shortName", CFG_GetShortDeviceName(), "<form action=\"/cfg_name\">");
+	add_label_name_field(request, "Full Name", "name", CFG_GetDeviceName(), "<br>");
 
 	poststr(request, "<br><br>");
 	poststr(request, "<input type=\"submit\" value=\"Submit\" "

@@ -261,7 +261,7 @@ static int http_rest_app(http_request_t* request) {
 		poststr(request, htmlDoctype);
 
 		poststr(request, "<head><title>");
-		poststr_escaped(request, CFG_GetDeviceName());
+		poststr(request, CFG_GetDeviceName());
 		poststr(request, "</title>");
 
 		poststr(request, htmlShortcutIcon);
