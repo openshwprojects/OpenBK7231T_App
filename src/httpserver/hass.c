@@ -84,7 +84,7 @@ void hass_populate_device_config_channel(ENTITY_TYPE type, char* uniq_id, HassDe
 }
 
 /// @brief Builds HomeAssistant device discovery info. The caller needs to free the returned pointer.
-/// @param ids 
+/// @param ids
 cJSON* hass_build_device_node(cJSON* ids) {
 	cJSON* dev = cJSON_CreateObject();
 	cJSON_AddItemToObject(dev, "ids", ids);     //identifiers
@@ -104,11 +104,11 @@ cJSON* hass_build_device_node(cJSON* ids) {
 }
 
 /// @brief Initializes HomeAssistant device discovery storage with common values.
-/// @param type 
+/// @param type
 /// @param index This is used to generate generate unique_id and name. It is ignored for RGB. For sensor this corresponds to sensor_mqttNames.
 /// @param payload_on The payload that represents enabled state. This is not added for ENTITY_SENSOR.
 /// @param payload_off The payload that represents disabled state. This is not added for ENTITY_SENSOR.
-/// @return 
+/// @return
 HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload_on, char* payload_off) {
 	HassDeviceInfo* info = os_malloc(sizeof(HassDeviceInfo));
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "hass_init_device_info=%p", info);
@@ -164,7 +164,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload
 
 /// @brief Initializes HomeAssistant relay device discovery storage.
 /// @param index
-/// @return 
+/// @return
 HassDeviceInfo* hass_init_relay_device_info(int index) {
 	HassDeviceInfo* info = hass_init_device_info(ENTITY_RELAY, index, "1", "0");
 
@@ -177,8 +177,8 @@ HassDeviceInfo* hass_init_relay_device_info(int index) {
 }
 
 /// @brief Initializes HomeAssistant light device discovery storage.
-/// @param type 
-/// @return 
+/// @param type
+/// @return
 HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type) {
 	const char* clientId = CFG_GetMQTTClientId();
 	HassDeviceInfo* info = NULL;
@@ -203,8 +203,8 @@ HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type) {
 	case ENTITY_LIGHT_PWMCW:
 		brightness_scale = 99;
 
-		//Using `last` (the default) will send any style (brightness, color, etc) topics first and then a payload_on to the command_topic. 
-		//Using `first` will send the payload_on and then any style topics. 
+		//Using `last` (the default) will send any style (brightness, color, etc) topics first and then a payload_on to the command_topic.
+		//Using `first` will send the payload_on and then any style topics.
 		//Using `brightness` will only send brightness commands instead of the payload_on to turn the light on.
 		cJSON_AddStringToObject(info->root, "on_cmd_type", "first");	//on_command_type
 		break;
@@ -237,12 +237,13 @@ HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type) {
 
 /// @brief Initializes HomeAssistant sensor device discovery storage.
 /// @param index Index corresponding to sensor_mqttNames.
-/// @return 
+/// @return
 HassDeviceInfo* hass_init_sensor_device_info(int index) {
 	HassDeviceInfo* info = hass_init_device_info(ENTITY_SENSOR, index, NULL, NULL);
 
 	//https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes
 	//device_class automatically assigns unit,icon
+	char state_class = "measurement"; // default
 	if ((index >= OBK_VOLTAGE) && (index <= OBK_POWER))
 	{
 		cJSON_AddStringToObject(info->root, "dev_cla", sensor_mqtt_device_classes[index]);   //device_class=voltage,current,power
@@ -261,10 +262,11 @@ HassDeviceInfo* hass_init_sensor_device_info(int index) {
 
 		sprintf(g_hassBuffer, "~/%s/get", counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
 		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
+		state_class = "total_increasing"; // overwrite for energy sensors 
 	}
 
 	//state_class can be measurement, total or total_increasing. Something like daily power consumption could be total_increasing.
-	cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
+	cJSON_AddStringToObject(info->root, "stat_cla", state_class);
 
 	return info;
 }
@@ -272,15 +274,15 @@ HassDeviceInfo* hass_init_sensor_device_info(int index) {
 #endif
 
 /// @brief Returns the discovery JSON.
-/// @param info 
-/// @return 
+/// @param info
+/// @return
 char* hass_build_discovery_json(HassDeviceInfo* info) {
 	cJSON_PrintPreallocated(info->root, info->json, HASS_JSON_SIZE, 0);
 	return info->json;
 }
 
 /// @brief Release allocated memory.
-/// @param info 
+/// @param info
 void hass_free_device_info(HassDeviceInfo* info) {
 	if (info == NULL) return;
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "hass_free_device_info \r\n");
