@@ -571,15 +571,20 @@ int http_fn_index(http_request_t* request) {
 			inputName = "pwm";
 
 			pwmValue = LED_GetTemperature();
+			long pwmKelvin = 1000000 / pwmValue;
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "<h5>LED Temperature Slider %s (cur=%i, min=%i, max=%i) Mired (Cool <--- ---> Warm)</h5>", activeStr, pwmValue, HASS_TEMPERATURE_MIN, HASS_TEMPERATURE_MAX);
-			hprintf255(request, "<form class='r' style='background: linear-gradient(to right, rgb(166, 209, 255), rgb(255, 160, 0));' action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_TEMPERATURE);
-			hprintf255(request, "<input type=\"range\" min=\"%i\" max=\"%i\"", HASS_TEMPERATURE_MIN, HASS_TEMPERATURE_MAX);
-			hprintf255(request, "name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">", inputName, SPECIAL_CHANNEL_TEMPERATURE, pwmValue);
-			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, SPECIAL_CHANNEL_TEMPERATURE);
-			hprintf255(request, "<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>", SPECIAL_CHANNEL_TEMPERATURE);
-			poststr(request, "</td></tr>");
+			hprintf255(request, "<h5>LED Temperature Slider %s (%ld K) (Warm <--- ---> Cool)</h5>", activeStr, pwmKelvin);
+			hprintf255(request, "<form class='r' style='background: linear-gradient(to right, rgb(255, 160, 0), rgb(166, 209, 255));' action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_TEMPERATURE);
+
+			//(KELVIN_TEMPERATURE_MAX - KELVIN_TEMPERATURE_MIN) / (HASS_TEMPERATURE_MAX - HASS_TEMPERATURE_MIN) = 13
+			hprintf255(request, "<input type=\"range\" step='13' min=\"%ld\" max=\"%ld\" ", KELVIN_TEMPERATURE_MIN, KELVIN_TEMPERATURE_MAX);
+			hprintf255(request, "value=\"%ld\" onchange=\"submitTemperature(this);\"/>", pwmKelvin);
+
+			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\"/>", inputName, SPECIAL_CHANNEL_TEMPERATURE);
+			hprintf255(request, "<input id=\"kelvin%i\" type=\"hidden\" name=\"%s\" />", SPECIAL_CHANNEL_TEMPERATURE, inputName);
+
+			poststr(request, "</form></td></tr>");
 		}
 
 	}
