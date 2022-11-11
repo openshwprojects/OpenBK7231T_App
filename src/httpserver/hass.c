@@ -141,7 +141,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload
 #ifndef OBK_DISABLE_ALL_DRIVERS
 		if ((index >= OBK_VOLTAGE) && (index <= OBK_POWER))
 			sprintf(g_hassBuffer, "%s %s", CFG_GetShortDeviceName(), sensor_mqttNames[index]);
-		if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_CONSUMPTION_STATS))
+		else if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_CONSUMPTION_STATS))
 			sprintf(g_hassBuffer, "%s %s", CFG_GetShortDeviceName(), counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
 #endif
 		break;
@@ -250,21 +250,23 @@ HassDeviceInfo* hass_init_sensor_device_info(int index) {
 
 		sprintf(g_hassBuffer, "~/%s/get", sensor_mqttNames[index]);
 		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
+
+		cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
 	}
-	if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_CONSUMPTION_STATS))
+	else if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_CONSUMPTION_STATS))
 	{
 		const char* device_class_value = counter_devClasses[index - OBK_CONSUMPTION_TOTAL];
 		if (strlen(device_class_value) > 0) {
 			cJSON_AddStringToObject(info->root, "dev_cla", device_class_value);  //device_class=energy
 			cJSON_AddStringToObject(info->root, "unit_of_meas", "Wh");   //unit_of_measurement
+
+			//state_class can be measurement, total or total_increasing. Energy values should be total_increasing.
+			cJSON_AddStringToObject(info->root, "stat_cla", "total_increasing");
 		}
 
 		sprintf(g_hassBuffer, "~/%s/get", counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
 		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
 	}
-
-	//state_class can be measurement, total or total_increasing. Something like daily power consumption could be total_increasing.
-	cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
 
 	return info;
 }
