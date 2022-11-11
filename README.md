@@ -146,9 +146,11 @@ wm_tool.exe will then wait for device reset. Repower it or connect RESET to grou
   
   Create a HTTP server (maybe with Node-Red), then use the update mechanism by HTTP link. Give link to w800_ota.img file from the build. The second OTA mechanism (on javascript panel, by drag and drop) is not ready yet for W800/W801. Wait for device to restart, do not repower it manually.
   
-# Testing HTTP server on Windows
+# Building for Windows
   
-It is also possible to build a part of our App for Windows platform. It basically creates a Windows .exe for our HTTP server, so developers can create our configurator, etc, pages faster, without having any Tuya modules at hand. For building on Windows, use MSVC projects in the app directory. It is using Winsock and creates a TCP listening socket on port 80, so make sure your machine has it free to use.
+It is also possible to build OpenBeken for Windows. Entire OBK builds correctly, along with script support, but MQTT from LWIP library on Windows is currently a stub and there a minor issue in Winsock code which breaks Tasmota Control compatibility. To build for Windows, open openBeken_win32_mvsc2017 in Microsoft Visual Studio Community 2017 and select configuration Debug Windows or Debug Windows Scriptonly and press build.
+This should make development and testing easier.
+LittleFS works in Windows build, it operates on 2MB memory saved in file, so you can even test scripting, etc
   
 # Pin roles
  

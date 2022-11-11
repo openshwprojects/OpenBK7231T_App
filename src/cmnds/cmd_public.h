@@ -3,7 +3,7 @@
 
 #include "../new_common.h"
 
-typedef int (*commandHandler_t)(const void *context, const char *cmd, const char *args, int flags);
+typedef int (*commandHandler_t)(const void* context, const char* cmd, const char* args, int flags);
 
 // command was entered in console (web app etc)
 #define COMMAND_FLAG_SOURCE_CONSOLE		1
@@ -21,9 +21,9 @@ typedef int (*commandHandler_t)(const void *context, const char *cmd, const char
 
 //
 void CMD_Init();
-void CMD_RegisterCommand(const char *name, const char *args, commandHandler_t handler, const char *userDesc, void *context);
-int CMD_ExecuteCommand(const char *s, int cmdFlags);
-int CMD_ExecuteCommandArgs(const char *cmd, const char *args, int cmdFlags);
+void CMD_RegisterCommand(const char* name, const char* args, commandHandler_t handler, const char* userDesc, void* context);
+int CMD_ExecuteCommand(const char* s, int cmdFlags);
+int CMD_ExecuteCommandArgs(const char* cmd, const char* args, int cmdFlags);
 
 enum EventCode {
 	CMD_EVENT_NONE,
@@ -43,12 +43,12 @@ enum EventCode {
 	CMD_EVENT_CHANGE_VOLTAGE, // must match order in drv_bl0942.c
 	CMD_EVENT_CHANGE_CURRENT,
 	CMD_EVENT_CHANGE_POWER,
-    CMD_EVENT_CHANGE_CONSUMPTION_TOTAL,
-    CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR,
+	CMD_EVENT_CHANGE_CONSUMPTION_TOTAL,
+	CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR,
 
 	// this is for ToggleChannelOnToggle
 	CMD_EVENT_PIN_ONTOGGLE,
-	
+
 	// Argument is a string
 	// You can fire an event when TuyaMCU or something receives given string
 	CMD_EVENT_ON_UART,
@@ -87,6 +87,8 @@ enum EventCode {
 
 #define HASS_TEMPERATURE_MIN 154
 #define HASS_TEMPERATURE_MAX 500
+#define KELVIN_TEMPERATURE_MIN 2000
+#define KELVIN_TEMPERATURE_MAX 6500
 
 // In general, LED can be in two modes:
 // - Temperature (Cool and Warm LEDs are on)
@@ -104,13 +106,13 @@ enum LightMode {
 
 // cmd_tokenizer.c
 int Tokenizer_GetArgsCount();
-const char *Tokenizer_GetArg(int i);
-const char *Tokenizer_GetArgFrom(int i);
+const char* Tokenizer_GetArg(int i);
+const char* Tokenizer_GetArgFrom(int i);
 int Tokenizer_GetArgInteger(int i);
 bool Tokenizer_IsArgInteger(int i);
 float Tokenizer_GetArgFloat(int i);
 int Tokenizer_GetArgIntegerRange(int i, int rangeMax, int rangeMin);
-void Tokenizer_TokenizeString(const char *s, int flags);
+void Tokenizer_TokenizeString(const char* s, int flags);
 // cmd_repeatingEvents.c
 void RepeatingEvents_Init();
 void RepeatingEvents_OnEverySecond();
@@ -118,7 +120,7 @@ void RepeatingEvents_OnEverySecond();
 void EventHandlers_Init();
 // This is useful to fire an event when a certain UART string command is received.
 // For example, you can fire an event while getting 55 AA 01 02 00 03 FF 01 01 06  on UART..
-void EventHandlers_FireEvent_String(byte eventCode, const char *argument);
+void EventHandlers_FireEvent_String(byte eventCode, const char* argument);
 // This is useful to fire an event when, for example, a button is pressed.
 // Then eventCode is a BUTTON_PRESS and argument is a button index.
 void EventHandlers_FireEvent(byte eventCode, int argument);
@@ -140,20 +142,20 @@ void LED_SetTemperature(int tmpInteger, bool bApply);
 float LED_GetTemperature0to1Range();
 void LED_SetTemperature0to1Range(float f);
 void LED_SetDimmer(int iVal);
-int LED_SetBaseColor(const void *context, const char *cmd, const char *args, int bAll);
+int LED_SetBaseColor(const void* context, const char* cmd, const char* args, int bAll);
 void LED_SetFinalCW(byte c, byte w);
 void LED_SetFinalRGB(byte r, byte g, byte b);
-void LED_SetFinalRGBCW(byte *rgbcw);
-void LED_GetFinalChannels100(byte *rgbcw);
-void LED_GetFinalHSV(int *hsv);
-void LED_GetFinalRGBCW(byte *rgbcw);
+void LED_SetFinalRGBCW(byte* rgbcw);
+void LED_GetFinalChannels100(byte* rgbcw);
+void LED_GetFinalHSV(int* hsv);
+void LED_GetFinalRGBCW(byte* rgbcw);
 void LED_NextColor();
 void LED_ToggleEnabled();
 bool LED_IsLedDriverChipRunning();
 bool LED_IsLEDRunning();
 void LED_SetEnableAll(int bEnable);
 int LED_GetEnableAll();
-void LED_GetBaseColorString(char * s);
+void LED_GetBaseColorString(char* s);
 int LED_GetMode();
 float LED_GetHue();
 float LED_GetSaturation();
@@ -172,7 +174,7 @@ void CMD_StartTCPCommandLine();
 
 void SVM_RunThreads(int deltaMS);
 void CMD_InitScripting();
-byte *LFS_ReadFile(const char *fname);
+byte* LFS_ReadFile(const char* fname);
 
 
 #endif // __CMD_PUBLIC_H__

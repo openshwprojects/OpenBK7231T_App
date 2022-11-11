@@ -142,6 +142,22 @@ void postFormAction(http_request_t* request, char* action, char* value) {
 	hprintf255(request, "<form action=\"%s\"><input type=\"submit\" value=\"%s\"/></form>", action, value);
 }
 
+/// @brief Generate a pair of label and field elements for Name type entry. The field is limited to entry of a-zA-Z0-9_- characters.
+/// @param request 
+/// @param label 
+/// @param fieldId This also gets used as the field name
+/// @param value 
+/// @param preContent
+void add_label_name_field(http_request_t* request, char* label, char* fieldId, const char* value, char* preContent) {
+	if (strlen(preContent) > 0) {
+		poststr(request, preContent);
+	}
+
+	hprintf255(request, "<label for=\"%s\">%s:</label><br>", fieldId, label);
+	hprintf255(request, "<input type=\"text\" id=\"%s\" name=\"%s\" value=\"%s\" ", fieldId, fieldId, value);
+	poststr(request, "pattern=\"^[a-zA-Z0-9_-]+$\" title=\"Only alphanumerics, underscore and hyphen characters allowed.\">");
+}
+
 /// @brief Generate a pair of label and field elements.
 /// @param request 
 /// @param label 
@@ -153,7 +169,6 @@ void add_label_input(http_request_t* request, char* inputType, char* label, char
 		poststr(request, preContent);
 	}
 
-	//These individual strings should be less than 256 .. yes hprintf255 uses 256 char buffer
 	hprintf255(request, "<label for=\"%s\">%s:</label><br>", fieldId, label);
 	hprintf255(request, "<input type=\"%s\" id=\"%s\" name=\"%s\" value=\"%s\">", inputType, fieldId, fieldId, value);
 }
@@ -556,15 +571,20 @@ int http_fn_index(http_request_t* request) {
 			inputName = "pwm";
 
 			pwmValue = LED_GetTemperature();
+			long pwmKelvin = 1000000 / pwmValue;
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "<h5>LED Temperature Slider %s (cur=%i, min=%i, max=%i) Mired (Cool <--- ---> Warm)</h5>", activeStr, pwmValue, HASS_TEMPERATURE_MIN, HASS_TEMPERATURE_MAX);
-			hprintf255(request, "<form class='r' style='background: linear-gradient(to right, rgb(166, 209, 255), rgb(255, 160, 0));' action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_TEMPERATURE);
-			hprintf255(request, "<input type=\"range\" min=\"%i\" max=\"%i\"", HASS_TEMPERATURE_MIN, HASS_TEMPERATURE_MAX);
-			hprintf255(request, "name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">", inputName, SPECIAL_CHANNEL_TEMPERATURE, pwmValue);
-			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, SPECIAL_CHANNEL_TEMPERATURE);
-			hprintf255(request, "<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>", SPECIAL_CHANNEL_TEMPERATURE);
-			poststr(request, "</td></tr>");
+			hprintf255(request, "<h5>LED Temperature Slider %s (%ld K) (Warm <--- ---> Cool)</h5>", activeStr, pwmKelvin);
+			hprintf255(request, "<form class='r' style='background: linear-gradient(to right, rgb(255, 160, 0), rgb(166, 209, 255));' action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_TEMPERATURE);
+
+			//(KELVIN_TEMPERATURE_MAX - KELVIN_TEMPERATURE_MIN) / (HASS_TEMPERATURE_MAX - HASS_TEMPERATURE_MIN) = 13
+			hprintf255(request, "<input type=\"range\" step='13' min=\"%ld\" max=\"%ld\" ", KELVIN_TEMPERATURE_MIN, KELVIN_TEMPERATURE_MAX);
+			hprintf255(request, "value=\"%ld\" onchange=\"submitTemperature(this);\"/>", pwmKelvin);
+
+			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\"/>", inputName, SPECIAL_CHANNEL_TEMPERATURE);
+			hprintf255(request, "<input id=\"kelvin%i\" type=\"hidden\" name=\"%s\" />", SPECIAL_CHANNEL_TEMPERATURE, inputName);
+
+			poststr(request, "</form></td></tr>");
 		}
 
 	}
@@ -926,8 +946,9 @@ int http_fn_cfg_name(http_request_t* request) {
 	CFG_Save_IfThereArePendingChanges();
 
 	poststr(request, "<h2> Use this to change device names</h2>");
-	add_label_text_field(request, "ShortName", "shortName", CFG_GetShortDeviceName(), "<form action=\"/cfg_name\">");
-	add_label_text_field(request, "Full Name", "name", CFG_GetDeviceName(), "<br>");
+	add_label_name_field(request, "ShortName", "shortName", CFG_GetShortDeviceName(), "<form action=\"/cfg_name\">");
+	add_label_name_field(request, "Full Name", "name", CFG_GetDeviceName(), "<br>");
+
 	poststr(request, "<br><br>");
 	poststr(request, "<input type=\"submit\" value=\"Submit\" "
 		"onclick=\"return confirm('Are you sure? "

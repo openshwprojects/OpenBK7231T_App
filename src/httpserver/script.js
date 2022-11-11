@@ -77,6 +77,13 @@ function onLoad() {
 	showState();
 }
 
+function submitTemperature(slider) {
+	var form = getElement("form132");
+	var kelvinField = getElement("kelvin132");
+	kelvinField.value = Math.round(1000000 / parseInt(slider.value));
+	form.submit();
+}
+
 window.addEventListener("load", onLoad);
 history.pushState(null, "", "index"); // drop actions like 'toggle' from URL
 

@@ -8,6 +8,10 @@ extern const char httpMimeTypeText[];           // TEXT MIME type
 extern const char httpMimeTypeJson[];
 extern const char httpMimeTypeBinary[];
 
+extern const char htmlShortcutIcon[];
+extern const char htmlDoctype[];
+extern const char htmlHeadMeta[];
+
 extern const char htmlFooterReturnToMenu[];
 extern const char htmlFooterRefreshLink[];
 extern const char htmlFooterReturnToCfgLink[];
@@ -57,6 +61,7 @@ void http_setup(http_request_t* request, const char* type);
 void http_html_start(http_request_t* request, const char* pagename);
 void http_html_end(http_request_t* request);
 int poststr(http_request_t* request, const char* str);
+void poststr_escaped(http_request_t* request, char* str);
 int postany(http_request_t* request, const char* str, int len);
 void misc_formatUpTimeString(int totalSeconds, char* o);
 // void HTTP_AddBuildFooter(http_request_t *request);
@@ -82,3 +87,4 @@ typedef int (*http_callback_fn)(http_request_t* request);
 int HTTP_RegisterCallback(const char* url, int method, http_callback_fn callback);
 
 #endif
+
