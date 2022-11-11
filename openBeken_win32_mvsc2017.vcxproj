@@ -1,0 +1,674 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug BL602|Win32">
+      <Configuration>Debug BL602</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug Win32 ScriptOnly|Win32">
+      <Configuration>Debug Win32 ScriptOnly</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug Win32|Win32">
+      <Configuration>Debug Win32</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{EE06C1F3-28B1-4580-A0FA-9F7422C7E456}</ProjectGuid>
+    <RootNamespace>myHTTP2022</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>15.0.28307.799</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WINDOWS;PLATFORM_BK7231T;BK_LITTLEFS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>PLATFORM_BL602;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>.\src\win32\stubs\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>.\src\win32\stubs\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\platforms\bk7231t\bk7231t_os\beken378\driver\common\dd.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\key\multi_button.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\lwip_intf\lwip-2.0.2\port\ethernetif.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\lwip_intf\lwip-2.0.2\src\api\sockets.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\lwip_intf\lwip-2.0.2\src\apps\mqtt\mqtt.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\lwip_intf\lwip-2.0.2\src\core\tcp.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\net_param_intf\net_param.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\main.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\bitmessage\bitmessage_read.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\bitmessage\bitmessage_write.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\cJSON\cJSON.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_channels.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_eventHandlers.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_if.c" />
+    <ClCompile Include="src\cmnds\cmd_main.c" />
+    <ClCompile Include="src\cmnds\cmd_newLEDDriver.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_newLEDDriver_colors.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_repeatingEvents.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_script.c" />
+    <ClCompile Include="src\cmnds\cmd_send.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_tasmota.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_tcp.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_test.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_tokenizer.c" />
+    <ClCompile Include="src\devicegroups\deviceGroups_read.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\devicegroups\deviceGroups_util.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\devicegroups\deviceGroups_write.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_bl0937.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_bl0942.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_bl_shared.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_bp1658cj.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_bp5758d.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_cse7766.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_ir.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_main.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_ntp.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_sm2135.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_tasmotaDeviceGroups.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_test_drivers.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_tuyaMCU.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_tuyaMCUSensor.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_uart.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_ucs1912.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\hal\bk7231\hal_flashConfig_bk7231.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\hal\bk7231\hal_flashVars_bk7231.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\hal\bk7231\hal_generic_bk7231.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\hal\bk7231\hal_main_bk7231.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\hal\bk7231\hal_pins_bk7231.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\hal\bk7231\hal_wifi_bk7231.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\hal\bl602\hal_flashConfig_bl602.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\hal\bl602\hal_flashVars_bl602.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\hal\bl602\hal_generic_bl602.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\hal\bl602\hal_main_bl602.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\hal\bl602\hal_pins_bl602.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\hal\bl602\hal_wifi_bl602.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\hal\w800\hal_adc_w800.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\hal\w800\hal_flashConfig_w800.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\hal\w800\hal_flashVars_w800.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\hal\w800\hal_generic_w800.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\hal\w800\hal_main_w800.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\hal\w800\hal_pins_w800.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\hal\w800\hal_wifi_w800.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\hal\win32\hal_adc_win32.c" />
+    <ClCompile Include="src\hal\win32\hal_flashConfig_win32.c" />
+    <ClCompile Include="src\hal\win32\hal_flashVars_win32.c" />
+    <ClCompile Include="src\hal\win32\hal_generic_win32.c" />
+    <ClCompile Include="src\hal\win32\hal_main_win32.c" />
+    <ClCompile Include="src\hal\win32\hal_pins_win32.c" />
+    <ClCompile Include="src\hal\win32\hal_wifi_win32.c" />
+    <ClCompile Include="src\hal\xr809\hal_flashConfig_xr809.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\hal\xr809\hal_flashVars_xr809.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\hal\xr809\hal_generic_xr809.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\hal\xr809\hal_main_xr809.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\hal\xr809\hal_pins_xr809.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\hal\xr809\hal_wifi_xr809.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\httpclient\http_client.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\httpclient\utils_net.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\httpclient\utils_timer.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\httpserver\hass.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\httpserver\http_fns.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\httpserver\http_tcp_server.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\httpserver\http_tcp_server_nonblocking.c" />
+    <ClCompile Include="src\httpserver\new_http.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\httpserver\rest_interface.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\i2c\drv_i2c_lcd_pcf8574t.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\i2c\drv_i2c_main.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\i2c\drv_i2c_mcp23017.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\i2c\drv_i2c_tc74.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\jsmn\jsmn.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\littlefs\lfs.c" />
+    <ClCompile Include="src\littlefs\lfs_util.c" />
+    <ClCompile Include="src\littlefs\our_lfs.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\logging\logging.c" />
+    <ClCompile Include="src\mqtt\new_mqtt.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\mqtt\new_mqtt_deduper.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\new_builtin_devices.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\new_cfg.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\new_common.c" />
+    <ClCompile Include="src\new_ping.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\new_pins.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\ota\ota.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\rgb2hsv.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\tiny_crc8.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\user_main.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\win32\stubs\lwip\win_mqtt_stub.c" />
+    <ClCompile Include="src\win32\stubs\win_rtos_stub.c" />
+    <ClCompile Include="src\win32\stubs\win_flash_stub.c" />
+    <ClCompile Include="src\win_main.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\win_main_scriptOnly.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\win_stubs.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\include\net_param_pub.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\key\multi_button.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\lwip_intf\lwip-2.0.2\src\include\lwip\apps\mqtt.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\user_driver\BkDriverI2c.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="src\bitmessage\bitmessage_public.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="src\cJSON\cJSON.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="src\cmnds\cmd_local.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="src\cmnds\cmd_public.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="src\devicegroups\deviceGroups_local.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="src\devicegroups\deviceGroups_public.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="src\driver\drv_bp1658cj.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="src\driver\drv_bp5758d.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="src\driver\drv_config.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="src\driver\drv_ir.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="src\driver\drv_local.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="src\driver\drv_public.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="src\driver\drv_sm2135.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="src\driver\drv_tuyaMCU.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="src\driver\drv_uart.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="src\drv_bl0942.h" />
+    <CustomBuild Include="src\drv_i2c_public.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <ClInclude Include="src\drv_public.h" />
+    <CustomBuild Include="src\drv_tuyaMCU.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <ClInclude Include="src\drv_uart.h" />
+    <ClInclude Include="src\hal\hal_adc.h" />
+    <ClInclude Include="src\hal\hal_flashConfig.h" />
+    <ClInclude Include="src\hal\hal_flashVars.h" />
+    <ClInclude Include="src\hal\hal_generic.h" />
+    <ClInclude Include="src\hal\hal_pins.h" />
+    <ClInclude Include="src\hal\hal_wifi.h" />
+    <CustomBuild Include="src\httpclient\http_client.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="src\httpclient\iot_export_errno.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="src\httpclient\utils_net.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="src\httpclient\utils_timer.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="src\httpserver\hass.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="src\httpserver\http_fns.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <ClInclude Include="src\httpserver\http_tcp_server.h" />
+    <CustomBuild Include="src\httpserver\new_http.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="src\i2c\drv_i2c_local.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="src\i2c\drv_i2c_mcp23017.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="src\i2c\drv_i2c_public.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <ClInclude Include="src\littlefs\lfs.h" />
+    <ClInclude Include="src\littlefs\lfs_util.h" />
+    <CustomBuild Include="src\mqtt\new_mqtt_deduper.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <ClInclude Include="src\new_cfg.h" />
+    <ClInclude Include="src\new_cmd.h" />
+    <ClInclude Include="src\new_common.h" />
+    <CustomBuild Include="src\new_http.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <ClInclude Include="src\new_main.h" />
+    <ClInclude Include="src\new_pins.h" />
+    <ClInclude Include="src\new_repeatingEvents.h" />
+    <ClInclude Include="src\new_tokenizer.h" />
+    <ClInclude Include="src\ntp_time.h" />
+    <ClInclude Include="src\obk_config.h" />
+    <CustomBuild Include="src\rgb2hsv.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\application.mk">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
