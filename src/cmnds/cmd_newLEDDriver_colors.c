@@ -64,9 +64,9 @@ static byte g_color[][3] = {
 	{ 255, 192, 203 },
 	// 11 = white (using RGB channels CT 153)
 	{ 255, 255, 255 },
-	// 12	= warm white (CT 500)
+	// 12	= 	COLD WHITE (CT 153)
 #define SPECIAL_INDEX_CT153				12
-	// 13	= CT 250
+	// 13	= WARM white (CT 500)
 #define SPECIAL_INDEX_CT500				13
 	// 14	= CT 327
 #define SPECIAL_INDEX_CT327				13
