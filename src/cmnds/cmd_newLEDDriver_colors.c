@@ -37,37 +37,42 @@ Set color to
 */
 static byte g_color[][3] = {
 	// 0 = idk?
-	{ 125, 0, 255 },
-	// 1 = red
+	// CHANGED NOW. LET'S ASSUME THAT INDEXING STARTS AT 0
+	// SO 0 = RED, 1 = GREEN, 2 = BLUE...
+	//{ 125, 0, 255 },
+	// 0 = red
 	{ 255, 0, 0 }, 
-	// 2 = green
+	// 1 = green
 	{ 0, 255, 0 },
-	// 3 = blue
+	// 2 = blue
 	{ 0, 0, 255 },
-	// 4 = orange
+	// 3 = orange
 	{ 255, 165, 0 },
-	// 5 = light green
+	// 4 = light green
 	{ 144, 238, 144 },
-	// 6 = light blue
+	// 5 = light blue
 	{ 173, 216, 230 },
-	// 7 = amber
+	// 6 = amber
 	{ 255, 191, 0 },
-	// 8 = amber
+	// 7 = amber
 	{ 0, 255, 255 },
-	// 9 = purple
+	// 8 = purple
 	{ 221, 160, 221 },
-	// 10 = yellow
+	// 9 = yellow
 	{ 255, 255, 153 },
-	// 11 = pink
+	// 10 = pink
 	{ 255, 192, 203 },
-	// 12 = white (using RGB channels CT 153)
+	// 11 = white (using RGB channels CT 153)
 	{ 255, 255, 255 },
-	// 13	= warm white (CT 500)
-#define SPECIAL_INDEX_WARM_WHITE_CT500	13
-	// 14	= CT 250
-#define SPECIAL_INDEX_CT250				14
+	// 12	= warm white (CT 500)
+#define SPECIAL_INDEX_CT153				12
+	// 13	= CT 250
+#define SPECIAL_INDEX_CT500				13
+	// 14	= CT 327
+#define SPECIAL_INDEX_CT327				13
 
 };
+// https://www.elektroda.com/rtvforum/viewtopic.php?p=20280817#20280817
 static byte g_numColors = sizeof(g_color)/sizeof(g_color[0]);
 
 
@@ -76,15 +81,22 @@ void LED_SetColorByIndex(int index) {
 	const byte *c;
 
 	// special CT indices
-	if (index == SPECIAL_INDEX_WARM_WHITE_CT500) {
+	if (index == SPECIAL_INDEX_CT500) {
 		LED_SetTemperature(500, true);
 		if (LED_GetEnableAll() == 0) {
 			LED_SetEnableAll(1);
 		}
 		return;
 	}
-	if (index == SPECIAL_INDEX_CT250) {
-		LED_SetTemperature(250, true);
+	if (index == SPECIAL_INDEX_CT327) {
+		LED_SetTemperature(327, true);
+		if (LED_GetEnableAll() == 0) {
+			LED_SetEnableAll(1);
+		}
+		return;
+	}
+	if (index == SPECIAL_INDEX_CT153) {
+		LED_SetTemperature(153, true);
 		if (LED_GetEnableAll() == 0) {
 			LED_SetEnableAll(1);
 		}
