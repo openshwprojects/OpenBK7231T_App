@@ -36,12 +36,37 @@ Set color to
 - = previous color
 */
 static byte g_color[][3] = {
-	{ 255, 0, 0 },
+	// 0 = idk?
+	{ 125, 0, 255 },
+	// 1 = red
+	{ 255, 0, 0 }, 
+	// 2 = green
 	{ 0, 255, 0 },
+	// 3 = blue
 	{ 0, 0, 255 },
-	{ 255, 255, 0 },
-	{ 255, 0, 255 },
+	// 4 = orange
+	{ 255, 165, 0 },
+	// 5 = light green
+	{ 144, 238, 144 },
+	// 6 = light blue
+	{ 173, 216, 230 },
+	// 7 = amber
+	{ 255, 191, 0 },
+	// 8 = amber
 	{ 0, 255, 255 },
+	// 9 = purple
+	{ 221, 160, 221 },
+	// 10 = yellow
+	{ 255, 255, 153 },
+	// 11 = pink
+	{ 255, 192, 203 },
+	// 12 = white (using RGB channels CT 153)
+	{ 255, 255, 255 },
+	// 13	= warm white (CT 500)
+#define SPECIAL_INDEX_WARM_WHITE_CT500	13
+	// 14	= CT 250
+#define SPECIAL_INDEX_CT250				14
+
 };
 static byte g_numColors = sizeof(g_color)/sizeof(g_color[0]);
 
@@ -50,19 +75,37 @@ void LED_SetColorByIndex(int index) {
 	char tmp[8];
 	const byte *c;
 
+	// special CT indices
+	if (index == SPECIAL_INDEX_WARM_WHITE_CT500) {
+		LED_SetTemperature(500, true);
+		if (LED_GetEnableAll() == 0) {
+			LED_SetEnableAll(1);
+		}
+		return;
+	}
+	if (index == SPECIAL_INDEX_CT250) {
+		LED_SetTemperature(250, true);
+		if (LED_GetEnableAll() == 0) {
+			LED_SetEnableAll(1);
+		}
+		return;
+	}
+	// roll indices
 	if (index < 0)
 		index = g_numColors - 1;
 	if (index >= g_numColors)
 		index = 0;
 
+	g_curColor = index;
+
 	c = g_color[g_curColor];
 
 	sprintf(tmp, "%02X%02X%02X", c[0], c[1], c[2]);
 
+	LED_SetBaseColor(0, "led_basecolor_rgb", tmp, 0);
 	if (LED_GetEnableAll() == 0) {
 		LED_SetEnableAll(1);
 	}
-	LED_SetBaseColor(0, "led_basecolor_rgb", tmp, 0);
 }
 void LED_NextColor() {
 
