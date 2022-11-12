@@ -406,5 +406,7 @@ typedef enum
 WIFI_RSSI_LEVEL wifi_rssi_scale(int8_t rssi_value);
 extern const char *str_rssi[];
 
+extern uint8_t g_StartupDelayOver;
+
 #endif /* __NEW_COMMON_H__ */
 
