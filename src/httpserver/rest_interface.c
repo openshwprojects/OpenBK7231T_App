@@ -195,9 +195,9 @@ static int http_rest_post(http_request_t* request) {
 	}
 	if (!strcmp(request->url, "api/ota")) {
 #if PLATFORM_BK7231T
-		return http_rest_post_flash(request, START_ADR_OF_BK_PARTITION_OTA, LFS_BLOCKS_END);
+		return http_rest_post_flash(request, START_ADR_OF_BK_PARTITION_OTA, END_ADR_BK_PARTITION_OTA);
 #elif PLATFORM_BK7231N
-		return http_rest_post_flash(request, START_ADR_OF_BK_PARTITION_OTA, LFS_BLOCKS_END);
+		return http_rest_post_flash(request, START_ADR_OF_BK_PARTITION_OTA, END_ADR_BK_PARTITION_OTA);
 #else
 		// TODO
 #endif
@@ -905,13 +905,16 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 
 	ADDLOG_DEBUG(LOG_FEATURE_API, "OTA post len %d", request->contentLength);
 
-	init_ota(startaddr, maxaddr);
-
 	towrite = request->bodylen;
 	writebuf = request->bodystart;
 	writelen = request->bodylen;
 	if (request->contentLength >= 0) {
 		towrite = request->contentLength;
+	}
+
+	if (!init_ota(startaddr, maxaddr)){
+		ADDLOG_ERROR(LOG_FEATURE_API, "ABORTED: OTA refuse init %d bytes to write at 0x%X-0x%X maxaddr 0x%X", writelen, startaddr, startaddr + writelen, maxaddr);
+		return http_rest_error(request, -20, "OTA refused init");
 	}
 
 	if (writelen < 0 || (startaddr + writelen > maxaddr)) {
@@ -978,11 +981,14 @@ static int http_rest_get_flash_advanced(http_request_t* request) {
 static int http_rest_post_flash_advanced(http_request_t* request) {
 	char* params = request->url + 10;
 	int startaddr = 0;
+	int len = 0;
+	int end = 0;
 	int sres;
-	sres = sscanf(params, "%x", &startaddr);
-	if (sres == 1 && startaddr >= START_ADR_OF_BK_PARTITION_OTA) {
-		// allow up to end of flash
-		return http_rest_post_flash(request, startaddr, 0x200000);
+	sres = sscanf(params, "%x-%x", &startaddr, &len);
+	if (sres == 2 && startaddr >= START_ADR_OF_BK_PARTITION_OTA) {
+		end = startaddr + len;
+		// allow up to end
+		return http_rest_post_flash(request, startaddr, end);
 	}
 	return http_rest_error(request, -1, "invalid url");
 }

@@ -22,6 +22,8 @@ unsigned int ota_minaddr = 0xff000;
 unsigned int ota_maxaddr = 0x1B3000;
 
 
+// 'OTA' is used for general flash write as well.
+// e.g. writing RF sector or config sector from HTTP.
 
 
 // from wlan_ui.c
@@ -34,11 +36,10 @@ extern UINT32 flash_ctrl(UINT32 cmd, void *parm);
 
 
 int init_ota(unsigned int startaddr, unsigned int endaddr){
-    flash_init();
-	  flash_protection_op(FLASH_XTX_16M_SR_WRITE_ENABLE, FLASH_PROTECT_NONE);
     if (startaddr > 0xff000){
+        // prevent two concurrent OTA operations
         if (sector){
-            addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"aborting OTS, sector already non-null\n");
+            addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"aborting OTA, sector already non-null\n");
             return 0;
         }
         ota_minaddr = startaddr;
@@ -46,7 +47,10 @@ int init_ota(unsigned int startaddr, unsigned int endaddr){
         sector = os_malloc(SECTOR_SIZE);
         sectorlen = 0;
         addr = startaddr;
-        addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"init OTA, startaddr 0x%x\n", startaddr);
+        addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"init OTA, addrs 0x%x-0x%x", startaddr, endaddr);
+
+        flash_init();
+        flash_protection_op(FLASH_XTX_16M_SR_WRITE_ENABLE, FLASH_PROTECT_NONE);
         return 1;
     }
     addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"aborting OTA, startaddr 0x%x < 0xff000\n", startaddr);

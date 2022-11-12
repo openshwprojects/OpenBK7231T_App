@@ -13,6 +13,9 @@
 // end of OTA flash
 // also used in OTA
 #define LFS_BLOCKS_END 0x1B3000
+// note: on T, OTA ends at 0x1C8000
+// note: on N, OTA ends at 0x1D0000
+// so actually, we are well inside the OTA partition.
 
 #ifdef BK_LITTLEFS
 #include "lfs.h"
