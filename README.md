@@ -472,7 +472,37 @@ Channel types are often not required and don't have to be configured, but in som
 - ShortName
 the commands above return a single ASCII string as a reply so it's easy to parse.
   
+# MQTT topics of published variables
+
+Some MQTT variables are being published only at the startup, some are published periodically (if you enable "broadcast every minute" flag), some are published only when a given value is changed. Below is the table of used publish topics (TODO: add full descriptions)
+
+Hint: in HA, you can use MQTT wildcard to listen to publishes. OBK_DEV_NAME/#
+
+Publishes send by OBK device:
+| Topic        | Sample Value  | Description  |
+| ------------- |:-------------:| -------------:|
+| OBK_DEV_NAME/connected | "online" | Send on connect. |
+| OBK_DEV_NAME/sockets |"5" | Send on connect and every minute (if enabled) |
+| OBK_DEV_NAME/rssi |"-70" | Send on connect and every minute (if enabled) |
+| OBK_DEV_NAME/uptime | "653" |Send on connect and every minute (if enabled) |
+| OBK_DEV_NAME/freeheap |"95168" | Send on connect and every minute (if enabled) | 
+| OBK_DEV_NAME/ip | "192.168.0.123" |Send on connect and every minute (if enabled) | 
+| OBK_DEV_NAME/datetime | "" |Send on connect and every minute (if enabled) |
+| OBK_DEV_NAME/mac | "84:e3:42:65:d1:87 " |Send on connect and every minute (if enabled) |
+| OBK_DEV_NAME/build | "Build on Nov 12 2022 12:39:44 version 1.0.0" |Send on connect and every minute (if enabled) | 
+| OBK_DEV_NAME/host |"obk_t_fourRelays" | Send on connect and every minute (if enabled) |
+| OBK_DEV_NAME/voltage/get |"221" | voltage from BL0942/BL0937 etc |
+| OBK_DEV_NAME/led_enableAll/get | "1" |send when LED On/Off changes or when periodic broadcast is enabled |
+| OBK_DEV_NAME/led_basecolor_rgb/get |"FFAABB" | send when LED color changes or when periodic broadcast is enabled.  |
+| OBK_DEV_NAME/led_dimmer/get |"100" | send when LED dimmer changes or when periodic broadcast is enabled |
   
+  
+ Publishes received by OBK device:
+ | Topic        | Sample Value  | Description  |
+| ------------- |:-------------:| -------------:|
+| OBK_DEV_NAME/INDEX/set | "1" | Sets the channel of INDEX to given value. This can set relays and also provide DIRECT PWM access. If channel is mapped to TuyaMCU, TuyaMCU will also be updated |
+| todo |"100" | tooodo |
+
 # RGBCW Tuya 5 PWMs LED bulb control compatible with Home Assistant
   
   RGBCW light bulbs are now supported and they are compatible with HA by rgb_command_template, brightness_value_template, color_temp_value_template commands. Please follow the guide below showing how to flash, setup and pair them with HA by MQTT:
