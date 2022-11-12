@@ -472,6 +472,28 @@ Channel types are often not required and don't have to be configured, but in som
 - ShortName
 the commands above return a single ASCII string as a reply so it's easy to parse.
   
+# MQTT topics of published variables
+
+Some MQTT variables are being published only at the startup, some are published periodically (if you enable "broadcast every minute" flag), some are published only when a given value is changed. Below is the table of used publish topics (TODO: add full descriptions)
+
+Hint: in HA, you can use MQTT wildcard to listen to publishes. OBK_DEV_NAME/#
+
+| Topic        | Description  |
+| ------------- |-------------:| 
+| OBK_DEV_NAME/connected | Send on connect. Send value is "online". |
+| OBK_DEV_NAME/sockets | Send on connect and every minute (if enabled) |
+| OBK_DEV_NAME/rssi | Send on connect and every minute (if enabled) |
+| OBK_DEV_NAME/uptime | Send on connect and every minute (if enabled) |
+| OBK_DEV_NAME/freeheap | Send on connect and every minute (if enabled) | 
+| OBK_DEV_NAME/ip | Send on connect and every minute (if enabled) | 
+| OBK_DEV_NAME/datetime | Send on connect and every minute (if enabled) |
+| OBK_DEV_NAME/mac | Send on connect and every minute (if enabled) |
+| OBK_DEV_NAME/build | Send on connect and every minute (if enabled) | 
+| OBK_DEV_NAME/host | Send on connect and every minute (if enabled) |
+| OBK_DEV_NAME/voltage/get | voltage from BL0942/BL0937 etc |
+| OBK_DEV_NAME/led_enableAll/get | send when LED On/Off changes or when periodic broadcast is enabled |
+| OBK_DEV_NAME/led_basecolor_rgb/get | send when LED color changes or when periodic broadcast is enabled. Format is like "FFAABB" |
+| OBK_DEV_NAME/led_dimmer/get | send when LED dimmer changes or when periodic broadcast is enabled |
   
 # RGBCW Tuya 5 PWMs LED bulb control compatible with Home Assistant
   
