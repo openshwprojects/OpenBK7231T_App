@@ -21,6 +21,61 @@ const char *HAL_GetMyIPString();
 
 void DRV_DGR_Dump(byte *message, int len);
 
+// send all DGR on quick tick?
+/*
+#define MAX_DGR_PACKET 64;
+
+typedef struct dgrPacket_s {
+	dgrPacket_t *next;
+	byte buffer[MAX_DGR_PACKET];
+	byte length;
+} dgrPacket_t;
+
+dgrPacket_t *dgr_pending = 0;
+
+
+void DGR_AddToSendQueue(byte *data, int len) {
+	dgrPacket_t *p;
+
+	p = dgr_pending;
+	while(p) {
+		if(p->length == 0) {
+			
+			break;
+		}
+		p = p->next;
+	}
+	if(p == 0) {
+		p = malloc(sizeof(dgrPacket_t));
+		p->next = dgr_pending;
+		dgr_pending = p;
+	}
+	p->length = len;
+	memcpy(p->buffer,data,len);
+}
+void DGR_FlushSendQueue() {
+	dgrPacket_t *p;
+
+	p = dgr_pending;
+	while(p) {
+		if(p->length != 0) {
+			
+			p->length = 0;
+		}
+		p = p->next;
+	}
+
+}
+
+*/
+// DGR send can be called from MQTT LED driver, but doing a DGR send
+// directly from there may cause crashes.
+// This is a temporary solution to avoid this problem.
+bool g_dgr_ledDimmerPendingSend = false;
+int g_dgr_ledDimmerPendingSend_value;
+bool g_dgr_ledPowerPendingSend = false;
+int g_dgr_ledPowerPendingSend_value;
+
 //
 //int DRV_DGR_CreateSocket_Send() {
 //
@@ -400,8 +455,15 @@ void DRV_DGR_RunQuickTick() {
 	if(g_dgr_socket_receive<=0 || g_dgr_socket_send <= 0) {
 		return ;
 	}
-    // now just enter a read-print loop
-    //
+    // send pending
+	if (g_dgr_ledDimmerPendingSend) {
+		g_dgr_ledDimmerPendingSend = false;
+		DRV_DGR_Send_Brightness(CFG_DeviceGroups_GetName(), Val100ToVal255(g_dgr_ledDimmerPendingSend_value));
+	}
+	if (g_dgr_ledPowerPendingSend) {
+		g_dgr_ledPowerPendingSend = false;
+		DRV_DGR_Send_Power(CFG_DeviceGroups_GetName(), g_dgr_ledPowerPendingSend_value, 1);
+	}
 
 	// NOTE: 'addr' is global, and used in callbacks to determine the member.
         addrlen = sizeof(addr);
@@ -506,23 +568,28 @@ int CMD_DGR_SendPower(const void *context, const char *cmd, const char *args, in
 }
 void DRV_DGR_OnLedDimmerChange(int iVal) {
 	//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_OnLedDimmerChange: called\n");
-	if(g_dgr_socket_receive==0) {
+	if (g_dgr_socket_receive == 0) {
 		return;
 	}
 	// if this send is as a result of use RXing something, 
 	// don't send it....
-	if (g_inCmdProcessing){
+	if (g_inCmdProcessing) {
 		return;
 	}
-
-	if((CFG_DeviceGroups_GetSendFlags() & DGR_SHARE_LIGHT_BRI)==0) {
+	if ((CFG_DeviceGroups_GetSendFlags() & DGR_SHARE_LIGHT_BRI) == 0) {
 
 		return;
 	}
-
-	//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_OnLedDimmerChange: will send Brightness\n");
-	DRV_DGR_Send_Brightness(CFG_DeviceGroups_GetName(),Val100ToVal255(iVal));
+#if 1
+	g_dgr_ledDimmerPendingSend = true;
+	g_dgr_ledDimmerPendingSend_value = iVal;
+#else
+	DRV_DGR_Send_Brightness(CFG_DeviceGroups_GetName(), Val100ToVal255(g_dgr_ledDimmerPendingSend_value));
+#endif
 }
+
+
+
 void DRV_DGR_OnLedEnableAllChange(int iVal) {
 	if(g_dgr_socket_receive==0) {
 		return;
@@ -538,7 +605,12 @@ void DRV_DGR_OnLedEnableAllChange(int iVal) {
 		return;
 	}
 
-	DRV_DGR_Send_Power(CFG_DeviceGroups_GetName(),iVal,1);
+#if 1
+	g_dgr_ledPowerPendingSend = true;
+	g_dgr_ledPowerPendingSend_value = iVal;
+#else
+	DRV_DGR_Send_Power(CFG_DeviceGroups_GetName(), iVal, 1);
+#endif
 }
 void DRV_DGR_OnChannelChanged(int ch, int value) {
 	int channelValues;
