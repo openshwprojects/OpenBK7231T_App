@@ -311,6 +311,12 @@ void DRV_DGR_processBrightnessPowerOn(byte brightness) {
 	//CHANNEL_Set(idx_channel,brightness,0);
 	
 }
+void DRV_DGR_processLightFixedColor(byte fixedColor) {
+	addLogAdv(LOG_INFO, LOG_FEATURE_DGR, "DRV_DGR_processLightFixedColor: %i\n", (int)fixedColor);
+
+	LED_SetColorByIndex(fixedColor);
+
+}
 void DRV_DGR_processLightBrightness(byte brightness) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_processLightBrightness: %i\n",(int)brightness);
 
@@ -428,6 +434,7 @@ void DRV_DGR_RunQuickTick() {
 		def.gr.devGroupShare_Out = CFG_DeviceGroups_GetSendFlags();
 		def.cbs.processBrightnessPowerOn = DRV_DGR_processBrightnessPowerOn;
 		def.cbs.processLightBrightness = DRV_DGR_processLightBrightness;
+		def.cbs.processLightFixedColor = DRV_DGR_processLightFixedColor;
 		def.cbs.processPower = DRV_DGR_processPower;
 		def.cbs.processRGBCW = DRV_DGR_processRGBCW;
 		def.cbs.checkSequence = DGR_CheckSequence;

@@ -75,8 +75,17 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr
 						dev->cbs.processLightBrightness(vals);
 					}
 				}
+			}
+			else if (type == DGR_ITEM_LIGHT_FIXED_COLOR) {
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR, "DGR_ITEM_LIGHT_FIXED_COLOR: %i\n", vals);
+				// FORWARD TO PROCESSING BY API
+				if (dev) {
+					if (DGR_IsItemInMask(type, dev->gr.devGroupShare_In)) {
+						dev->cbs.processLightFixedColor(vals);
+					}
+				}
 			} else {
-
+				
 			}
 		} else if(type < DGR_ITEM_MAX_16BIT) {
 			MSG_SkipBytes(&msg,2);

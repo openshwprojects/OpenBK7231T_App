@@ -149,6 +149,8 @@ void LED_SetFinalRGBCW(byte* rgbcw);
 void LED_GetFinalChannels100(byte* rgbcw);
 void LED_GetFinalHSV(int* hsv);
 void LED_GetFinalRGBCW(byte* rgbcw);
+// color indices are as in Tasmota
+void LED_SetColorByIndex(int index);
 void LED_NextColor();
 void LED_ToggleEnabled();
 bool LED_IsLedDriverChipRunning();
