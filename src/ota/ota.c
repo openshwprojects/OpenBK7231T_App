@@ -8,6 +8,7 @@
 #include "../logging/logging.h"
 #include "../httpclient/http_client.h"
 #include "../driver/drv_public.h"
+#include "../littlefs/our_lfs.h"
 
 static unsigned char *sector = (void *)0;
 int sectorlen = 0;
@@ -16,6 +17,12 @@ int ota_status = -1;
 #define SECTOR_SIZE 0x1000
 static void store_sector(unsigned int addr, unsigned char *data);
 extern void flash_protection_op(UINT8 mode,PROTECT_TYPE type);
+
+unsigned int ota_minaddr = 0xff000;
+unsigned int ota_maxaddr = 0x1B3000;
+
+
+
 
 // from wlan_ui.c
 void bk_reboot(void);
@@ -26,7 +33,7 @@ extern UINT32 flash_write(char *user_buf, UINT32 count, UINT32 address);
 extern UINT32 flash_ctrl(UINT32 cmd, void *parm);
 
 
-int init_ota(unsigned int startaddr){
+int init_ota(unsigned int startaddr, unsigned int endaddr){
     flash_init();
 	  flash_protection_op(FLASH_XTX_16M_SR_WRITE_ENABLE, FLASH_PROTECT_NONE);
     if (startaddr > 0xff000){
@@ -34,6 +41,8 @@ int init_ota(unsigned int startaddr){
             addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"aborting OTS, sector already non-null\n");
             return 0;
         }
+        ota_minaddr = startaddr;
+        ota_maxaddr = endaddr;
         sector = os_malloc(SECTOR_SIZE);
         sectorlen = 0;
         addr = startaddr;
@@ -44,8 +53,9 @@ int init_ota(unsigned int startaddr){
     return 0;
 }
 
-void close_ota(){
+void close_ota(int nofinal){
     addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"\r\n");
+    if (nofinal) sectorlen = 0;
     if (sectorlen){
         addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"close OTA, additional 0x%x FF added \n", SECTOR_SIZE - sectorlen);
         memset(sector+sectorlen, 0xff, SECTOR_SIZE - sectorlen);
@@ -94,6 +104,17 @@ void add_otadata(unsigned char *data, int len)
 }
 
 static void store_sector(unsigned int addr, unsigned char *data){
+    // belt and braces protection to not write outside of expected area
+    if (addr < ota_minaddr){
+      addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"NOT WRITING %x < %x", addr, ota_minaddr);
+      return;
+    }
+
+    if (addr > ota_maxaddr){
+      addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"NOT WRITING %x > %x", addr, ota_maxaddr);
+      return;
+    }
+
     //if (!(addr % 0x4000))
     {
       addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"%x", addr);
@@ -122,18 +143,23 @@ int myhttpclientcallback(httprequest_t* request){
     case 0: // start
       //init_ota(0xff000);
 
-      init_ota(START_ADR_OF_BK_PARTITION_OTA);
+      init_ota(START_ADR_OF_BK_PARTITION_OTA, LFS_BLOCKS_END);
       addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"\r\nmyhttpclientcallback state %d total %d/%d\r\n", request->state, total_bytes, request->client_data.response_content_len);
       break;
     case 1: // data
       if (request->client_data.response_buf_filled){
         unsigned char *d = (unsigned char *)request->client_data.response_buf;
         int l = request->client_data.response_buf_filled;
-        add_otadata(d, l);
+        if (total_bytes + l > (LFS_BLOCKS_END - START_ADR_OF_BK_PARTITION_OTA)){
+          addLogAdv(LOG_ERROR, LOG_FEATURE_OTA,"OTA Trying to write outside of OTA flash");
+          close_ota(1);
+        } else {
+          add_otadata(d, l);
+        }
       }
       break;
     case 2: // ended, write any remaining bytes to the sector
-      close_ota();
+      close_ota(0);
       ota_status = -1;
       addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"\r\nmyhttpclientcallback state %d total %d/%d\r\n", request->state, total_bytes, request->client_data.response_content_len);
 

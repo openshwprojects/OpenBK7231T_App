@@ -188,7 +188,7 @@ int __cdecl main(void)
 }
 
 // initialise OTA flash starting at startaddr
-int init_ota(unsigned int startaddr) {
+int init_ota(unsigned int startaddr, unsigned int endaddr) {
 	return 0;
 }
 

@@ -14,13 +14,13 @@
 #endif
 
 // initialise OTA flash starting at startaddr
-int init_ota(unsigned int startaddr);
+int init_ota(unsigned int startaddr, unsigned int endaddr);
 
 // add any length of data to OTA
 void add_otadata(unsigned char *data, int len);
 
 // finalise OTA flash (write last sector if incomplete)
-void close_ota();
+void close_ota(int nofinalise);
 
 void otarequest(const char *urlin);
 
