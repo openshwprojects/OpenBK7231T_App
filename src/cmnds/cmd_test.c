@@ -15,13 +15,13 @@
 // run an aliased command
 static int runcmd(const void * context, const char *cmd, const char *args, int cmdFlags){
     char *c = (char *)context;
-    char *p = c;
+ //   char *p = c;
 
-    while (*p && !isWhiteSpace(*p)) {
-        p++;
-	}
-    if (*p) p++;
-    return CMD_ExecuteCommand(p,cmdFlags);
+ //   while (*p && !isWhiteSpace(*p)) {
+ //       p++;
+	//}
+ //   if (*p) p++;
+    return CMD_ExecuteCommand(c,cmdFlags);
 }
 
 // run an aliased command
