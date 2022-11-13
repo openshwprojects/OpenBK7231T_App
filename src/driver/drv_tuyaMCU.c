@@ -50,6 +50,8 @@ void TuyaMCU_RunFrame();
 #define         DP_TYPE_ENUM                    0x04        //enum type
 #define         DP_TYPE_BITMAP                  0x05        //fault type
 
+// Subtypes of raw - added for OpenBeken - not Tuya standard
+#define         DP_TYPE_RAW_DDS238Packet        200
 
 const char *TuyaMCU_GetDataTypeString(int dpId){
     if(DP_TYPE_RAW == dpId)
@@ -529,12 +531,14 @@ int TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, con
     const char *dpTypeString;
     int dpType;
     int channelID;
+	int argsCount;
 
     // linkTuyaMCUOutputToChannel dpId varType channelID
     // linkTuyaMCUOutputToChannel 1 val 1
     Tokenizer_TokenizeString(args,0);
 
-    if(Tokenizer_GetArgsCount() < 3) {
+	argsCount = Tokenizer_GetArgsCount();
+    if(argsCount < 2) {
         addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_LinkTuyaMCUOutputToChannel: requires 3 arguments (dpId, dpType, channelIndex)\n");
         return -1;
     }
@@ -550,6 +554,9 @@ int TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, con
         dpType = DP_TYPE_ENUM;
     } else if(!stricmp(dpTypeString,"raw")) {
         dpType = DP_TYPE_RAW;
+	} else if (!stricmp(dpTypeString, "RAW_DDS238")) {
+		// linkTuyaMCUOutputToChannel 6 RAW_DDS238
+		dpType = DP_TYPE_RAW_DDS238Packet;
     } else {
         if(strIsInteger(dpTypeString)) {
             dpType = atoi(dpTypeString);
@@ -558,7 +565,12 @@ int TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, con
             return -1;
         }
     }
-    channelID = Tokenizer_GetArgInteger(2);
+	if (argsCount < 2) {
+		channelID = -999;
+	}
+	else {
+		channelID = Tokenizer_GetArgInteger(2);
+	}
 
     TuyaMCU_MapIDToChannel(dpId, dpType, channelID);
 
@@ -844,6 +856,8 @@ void TuyaMCU_ParseStateMessage(const byte *data, int len) {
     int sectorLen;
     int fnId;
     int dataType;
+	int channelType;
+	int iVal;
 
     ofs = 0;
 
@@ -856,17 +870,44 @@ void TuyaMCU_ParseStateMessage(const byte *data, int len) {
 
 
         if(sectorLen == 1) {
-            int iVal = (int)data[ofs+4];
+            iVal = (int)data[ofs+4];
             addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ParseStateMessage: raw data 1 byte: %c\n",iVal);
             // apply to channels
             TuyaMCU_ApplyMapping(fnId,iVal);
         }
-        if(sectorLen == 4) {
-            int iVal = data[ofs + 4] << 24 | data[ofs + 5] << 16 | data[ofs + 6] << 8 | data[ofs + 7];
+        else if(sectorLen == 4) {
+            iVal = data[ofs + 4] << 24 | data[ofs + 5] << 16 | data[ofs + 6] << 8 | data[ofs + 7];
             addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ParseStateMessage: raw data 4 int: %i\n",iVal);
             // apply to channels
             TuyaMCU_ApplyMapping(fnId,iVal);
         }
+		else {
+			tuyaMCUMapping_t *mapping;
+
+			mapping = TuyaMCU_FindDefForID(fnId);
+
+			if (mapping != 0) {
+				switch (mapping->dpType) {
+					case DP_TYPE_RAW_DDS238Packet:
+					{
+						if (sectorLen != 15) {
+
+						} else {
+							// FREQ??
+							iVal = data[ofs + 8 + 4] << 8 | data[ofs + 9 + 4];
+							//CHANNEL_SetAllChannelsByType(QQQQQQ, iVal);
+							// 06 46 = 1606 => A x 100? ?
+							iVal = data[ofs + 11 + 4] << 8 | data[ofs + 12 + 4];
+							//CHANNEL_SetAllChannelsByType(QQQQQQ, iVal);
+							// Voltage?
+							iVal = data[ofs + 13 + 4] << 8 | data[ofs + 14 + 4];
+							CHANNEL_SetAllChannelsByType(ChType_Voltage_div10, iVal);
+						}
+					}
+					break;
+				}
+			}
+		}
 
         // size of header (type, datatype, len 2 bytes) + data sector size
         ofs += (4+sectorLen);
