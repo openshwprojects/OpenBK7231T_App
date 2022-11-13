@@ -1,8 +1,7 @@
 branches: 
-  - 'main'
-  - 'alpha'
+  - name: 'main'
   - name: 'alpha'
-    prerelease: true
+    prerelease: 'alpha'
 preset: "angular"
 tagFormat: "${version}"
 plugins:
