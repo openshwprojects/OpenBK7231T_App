@@ -244,6 +244,7 @@ static struct tag_logMemory {
 
 
 static int initialised = 0;
+static int tcpLogStarted = 0;
 
 #if PLATFORM_BEKEN
 // to get uart.h
@@ -261,19 +262,22 @@ static void initLog(void)
 	logMemory.mutex = xSemaphoreCreateMutex();
 	initialised = 1;
 	startSerialLog();
-	startLogServer();
 	HTTP_RegisterCallback("/logs", HTTP_GET, http_getlog);
 	HTTP_RegisterCallback("/lograw", HTTP_GET, http_getlograw);
 
 	CMD_RegisterCommand("loglevel", "", log_command, "set log level <0..6>", NULL);
 	CMD_RegisterCommand("logfeature", "", log_command, "set log feature filter, <0..10> <0|1>", NULL);
 	CMD_RegisterCommand("logtype", "", log_command, "logtype direct|all - direct logs only to serial immediately", NULL);
-	CMD_RegisterCommand("logdelay", "", log_command, "logdelay 0..n - impose ms delay after every log", NULL);
+	CMD_RegisterCommand("logdelay", "", log_command, "logdelay -1|0..n - impose ms delay after every log, -1 to delay be character count", NULL);
 
 	bk_printf("Commands registered!\r\n");
 	bk_printf("initLog() done!\r\n");
 }
 
+static void inittcplog(){
+	startLogServer();
+	tcpLogStarted = 1;
+}
 
 // adds a log to the log memory
 // if head collides with either tail, move the tails on.
@@ -301,6 +305,10 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 	if (!initialised) {
 		initLog();
 	}
+	if (g_StartupDelayOver && !tcpLogStarted){
+		inittcplog();
+	}
+
 
 	taken = xSemaphoreTake(logMemory.mutex, 100);
 	tmp = g_loggingBuffer;
