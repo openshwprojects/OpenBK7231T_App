@@ -9,16 +9,21 @@
 *****************************************************************************/
 
 #include "../obk_config.h"
-#include "lfs.h"
+
+// end of OTA flash
+// also used in OTA
+#define LFS_BLOCKS_END 0x1B3000
+// note: on T, OTA ends at 0x1C8000
+// note: on N, OTA ends at 0x1D0000
+// so actually, we are well inside the OTA partition.
 
 #ifdef BK_LITTLEFS
+#include "lfs.h"
 
 // start 0x1000 after OTA addr
 #define LFS_BLOCKS_START 0x133000
 #define LFS_BLOCKS_START_MIN 0x133000
 
-// end of OTA flash
-#define LFS_BLOCKS_END 0x1B3000
 // 512k MAX - i.e. no more that 0x80000
 // 0x8000 = 32k
 #define LFS_BLOCKS_MIN_LEN 0x4000

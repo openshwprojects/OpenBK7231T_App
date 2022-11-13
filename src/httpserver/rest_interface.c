@@ -195,9 +195,9 @@ static int http_rest_post(http_request_t* request) {
 	}
 	if (!strcmp(request->url, "api/ota")) {
 #if PLATFORM_BK7231T
-		return http_rest_post_flash(request, START_ADR_OF_BK_PARTITION_OTA, LFS_BLOCKS_END);
+		return http_rest_post_flash(request, START_ADR_OF_BK_PARTITION_OTA, END_ADR_BK_PARTITION_OTA);
 #elif PLATFORM_BK7231N
-		return http_rest_post_flash(request, START_ADR_OF_BK_PARTITION_OTA, LFS_BLOCKS_END);
+		return http_rest_post_flash(request, START_ADR_OF_BK_PARTITION_OTA, END_ADR_BK_PARTITION_OTA);
 #else
 		// TODO
 #endif
@@ -905,8 +905,6 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 
 	ADDLOG_DEBUG(LOG_FEATURE_API, "OTA post len %d", request->contentLength);
 
-	init_ota(startaddr);
-
 	towrite = request->bodylen;
 	writebuf = request->bodystart;
 	writelen = request->bodylen;
@@ -914,14 +912,27 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 		towrite = request->contentLength;
 	}
 
+	if (!init_ota(startaddr, maxaddr)){
+		ADDLOG_ERROR(LOG_FEATURE_API, "ABORTED: OTA refuse init %d bytes to write at 0x%X-0x%X maxaddr 0x%X", writelen, startaddr, startaddr + writelen, maxaddr);
+		return http_rest_error(request, -20, "OTA refused init");
+	}
+
 	if (writelen < 0 || (startaddr + writelen > maxaddr)) {
-		ADDLOG_DEBUG(LOG_FEATURE_API, "ABORTED: %d bytes to write", writelen);
-		return http_rest_error(request, -20, "writelen < 0 or end > 0x200000");
+		ADDLOG_ERROR(LOG_FEATURE_API, "ABORTED: %d bytes to write at 0x%X-0x%X beyond maxaddr 0x%X", writelen, startaddr, startaddr + writelen, maxaddr);
+		close_ota(1);
+		return http_rest_error(request, -20, "writelen < 0 or end > maxaddr");
 	}
 
 	do {
 		//ADDLOG_DEBUG(LOG_FEATURE_API, "%d bytes to write", writelen);
+		if (startaddr + writelen > maxaddr) {
+			ADDLOG_ERROR(LOG_FEATURE_API, "ABORTED: %d bytes to write at 0x%X-0x%X beyond maxaddr 0x%X", writelen, startaddr, startaddr + writelen, maxaddr);
+			close_ota(1);
+			return http_rest_error(request, -20, "end > maxaddr");
+		}
+
 		add_otadata((unsigned char*)writebuf, writelen);
+
 		total += writelen;
 		startaddr += writelen;
 		towrite -= writelen;
@@ -932,11 +943,14 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 				ADDLOG_DEBUG(LOG_FEATURE_API, "recv returned %d - end of data - remaining %d", writelen, towrite);
 			}
 		}
+
+
 	} while ((towrite > 0) && (writelen >= 0));
+
 	ADDLOG_DEBUG(LOG_FEATURE_API, "%d total bytes written", total);
 	http_setup(request, httpMimeTypeJson);
 	hprintf255(request, "{\"size\":%d}", total);
-	close_ota();
+	close_ota(0);
 
 	poststr(request, NULL);
 #endif
@@ -967,11 +981,14 @@ static int http_rest_get_flash_advanced(http_request_t* request) {
 static int http_rest_post_flash_advanced(http_request_t* request) {
 	char* params = request->url + 10;
 	int startaddr = 0;
+	int len = 0;
+	int end = 0;
 	int sres;
-	sres = sscanf(params, "%x", &startaddr);
-	if (sres == 1 && startaddr >= START_ADR_OF_BK_PARTITION_OTA) {
-		// allow up to end of flash
-		return http_rest_post_flash(request, startaddr, 0x200000);
+	sres = sscanf(params, "%x-%x", &startaddr, &len);
+	if (sres == 2 && startaddr >= START_ADR_OF_BK_PARTITION_OTA) {
+		end = startaddr + len;
+		// allow up to end
+		return http_rest_post_flash(request, startaddr, end);
 	}
 	return http_rest_error(request, -1, "invalid url");
 }
