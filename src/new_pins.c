@@ -1158,14 +1158,26 @@ int CHANNEL_ParseChannelType(const char *s) {
 		return ChType_TextField;
 	if(!stricmp(s,"ReadOnly") )
 		return ChType_ReadOnly;
-	if(!stricmp(s,"Frequency_mHz") )
-		return ChType_Frequency_mHz;
-	if(!stricmp(s,"Voltage") )
-		return ChType_Voltage;
+	if(!stricmp(s,"Frequency_div100") )
+		return ChType_Frequency_div100;
+	if(!stricmp(s,"Voltage_div10") )
+		return ChType_Voltage_div10;
 	if(!stricmp(s,"Power") )
 		return ChType_Power;
-	if(!stricmp(s,"Current") )
-		return ChType_Current;
+	if(!stricmp(s,"Current_div100") )
+		return ChType_Current_div100;
+	if (!stricmp(s, "ActivePower"))
+		return ChType_ActivePower;
+	if (!stricmp(s, "PowerFactor_div1000"))
+		return ChType_PowerFactor_div1000;
+	if (!stricmp(s, "ReactivePower"))
+		return ChType_ReactivePower;
+	if (!stricmp(s, "EnergyTotal_kWh_div1000"))
+		return ChType_EnergyTotal_kWh_div1000;
+	if (!stricmp(s, "EnergyExport_kWh_div1000"))
+		return ChType_EnergyExport_kWh_div1000;
+	if (!stricmp(s, "EnergyToday_kWh_div1000"))
+		return ChType_EnergyToday_kWh_div1000;
 	return ChType_Error;
 }
 static int CMD_setButtonHoldRepeat(const void *context, const char *cmd, const char *args, int cmdFlags){

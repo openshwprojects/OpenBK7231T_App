@@ -88,10 +88,16 @@ enum ChannelType {
 	ChType_Dimmer1000,
 	// for TuyaMCU power metering
 	//NOTE: not used for BL0937 etc
-	ChType_Frequency_mHz,
-	ChType_Voltage,
+	ChType_Frequency_div100,
+	ChType_Voltage_div10,
 	ChType_Power,
-	ChType_Current,
+	ChType_Current_div100,
+	ChType_ActivePower,
+	ChType_PowerFactor_div1000,
+	ChType_ReactivePower,
+	ChType_EnergyTotal_kWh_div1000,
+	ChType_EnergyExport_kWh_div1000,
+	ChType_EnergyToday_kWh_div1000,
 };
 
 
