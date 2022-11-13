@@ -1010,6 +1010,9 @@ void PIN_ticks(void *param)
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_RunQuickTick();
 #endif
+#ifdef WINDOWS
+	NewTuyaMCUSimulator_RunQuickTick(PIN_TMR_DURATION);
+#endif
 	
 	if(CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == true) {
 		LED_RunQuickColorLerp(PIN_TMR_DURATION);

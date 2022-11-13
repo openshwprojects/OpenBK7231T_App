@@ -264,6 +264,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\cmnds\cmd_tokenizer.c" />
+    <ClCompile Include="src\debug_tuyaMCUsimulator.c" />
     <ClCompile Include="src\devicegroups\deviceGroups_read.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
