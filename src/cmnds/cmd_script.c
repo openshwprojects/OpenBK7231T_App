@@ -276,6 +276,12 @@ scriptInstance_t *SVM_RegisterThread() {
 scriptFile_t *SVM_RegisterFile(const char *fname) {
 	scriptFile_t *r;
 
+	if (!stricmp(fname, "this")) {
+		if (g_activeThread != 0)
+			return g_activeThread->curFile;
+		return 0;
+	}
+
 	r = g_scriptFiles;
 
 	while(r) {
