@@ -1,5 +1,6 @@
 branches: 
   - 'main'
+  - 'alpha'
   - name: 'alpha'
     prerelease: true
 preset: "angular"
