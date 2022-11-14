@@ -1,6 +1,7 @@
 let fs = require('fs');
 
 let commands = [];
+let cmdindex = {};
 
 let inFile = 0;
 
@@ -22,29 +23,71 @@ function getFolder(name, cb){
         if (s.isDirectory()){
             getFolder(file, cb);
         } else {
-            if (file.toLowerCase().endsWith('.c') || file.toLowerCase().endsWith('.cpp')){
+            if (file.toLowerCase().endsWith('.c') || 
+                file.toLowerCase().endsWith('.cpp')){
                 inFile++;
                 console.log('file:'+file);
                 let data = fs.readFileSync(file);
                 let text = data.toString('utf-8');
                 let lines = text.split('\n');
+                let newlines = [];
+                let modified = 0;
                 for (let i = 0; i < lines.length; i++){
                     let line = lines[i].trim();
                     // like CMD_RegisterCommand("SetChannel", "", CMD_SetChannel, "qqqqq0", NULL);
+                    if (line.startsWith('//cmddetail:')){
+                        let json = line.slice(12);
+                        try{
+                            let cmd = JSON.parse(json);
+                            if (cmdindex[cmd.name]){
+                                console.error('duplicate command docs at file: '+file+' line: '+line);
+                                console.error(line);
+                            } else {
+                                commands.push(cmd);
+                                cmdindex[cmd.name] = cmd;
+                            }
+                        } catch(e) {
+                            console.error('error in json at file: '+file+' line: '+line);
+                            console.error(line);
+                        }
+                    }
 
                     if (line.startsWith('CMD_RegisterCommand(')){
                         line = line.slice('CMD_RegisterCommand('.length);
                         parts = line.split(',');
+                        //cmddetail:{"name":"SetChannel", "args":"TODO", "fn":"CMD_SetChannel", "descr":"qqqqq0", "example":"", "file":"");
+
                         let cmd = {
                             name: mytrim(parts[0]),
                             args: mytrim(parts[1]),
-                            function: mytrim(parts[2]),
-                            userDesc: mytrim(parts[3]),
+                            fn: mytrim(parts[2]),
+                            descr: mytrim(parts[3]),
+                            examples: "",
                             file: file.slice(6),
                         };
-                        commands.push(cmd);
+
+                        if (!cmdindex[cmd.name]){
+                            // it did not have a doc line before
+                            let json = JSON.stringify(cmd);
+                            newlines.push('//cmddetail:'+json);
+                            modified++;
+                            commands.push(cmd);
+                            cmdindex[cmd.name] = cmd;
+                        }
+                    }
+
+                    newlines.push(lines[i]);
+                }
+                if (modified){
+                    let newdata = newlines.join('\n');
+                    try{
+                        fs.writeFileSync(file, newdata);
+                        console.log('updated '+file);
+                    } catch (e){
+                        console.error('failed to update '+file);
                     }
                 }
+
                 inFile--;
 
                 if (!inFile){
@@ -77,7 +120,7 @@ for (let i = 0; i < commands.length; i++){
     */
     let cmd = commands[i];
 
-    md += `| ${cmd.name} | ${cmd.args} | ${cmd.userDesc} | ${cmd.function} | ${cmd.file} |\n`;
+    md += `| ${cmd.name} | ${cmd.args} | ${cmd.descr} | ${cmd.fn} | ${cmd.file} |\n`;
 
 }
 
