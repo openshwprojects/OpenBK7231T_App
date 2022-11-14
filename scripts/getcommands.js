@@ -13,7 +13,7 @@ function mytrim(text){
 
 
 function getFolder(name, cb){
-    console.log('dir:'+name);
+    //console.log('dir:'+name);
 
     let list = fs.readdirSync(name);
     for (let i = 0; i < list.length; i++){
@@ -26,7 +26,7 @@ function getFolder(name, cb){
             if (file.toLowerCase().endsWith('.c') || 
                 file.toLowerCase().endsWith('.cpp')){
                 inFile++;
-                console.log('file:'+file);
+                //console.log('file:'+file);
                 let data = fs.readFileSync(file);
                 let text = data.toString('utf-8');
                 let lines = text.split('\n');
@@ -36,7 +36,20 @@ function getFolder(name, cb){
                     let line = lines[i].trim();
                     // like CMD_RegisterCommand("SetChannel", "", CMD_SetChannel, "qqqqq0", NULL);
                     if (line.startsWith('//cmddetail:')){
-                        let json = line.slice(12);
+                        let commentlines = [];
+                        let j;
+                        for (j = i; j < lines.length; j++){
+                            let l = lines[j].trim();
+                            if (l.startsWith('//cmddetail:')){
+                                l = l.slice(12);
+                                commentlines.push(l);
+                            } else {
+                                break;
+                            }
+                        }
+                        // move our parsing forward to skip all found
+                        i = j-1;
+                        let json = commentlines.join('\n');
                         try{
                             let cmd = JSON.parse(json);
                             if (cmdindex[cmd.name]){
@@ -48,7 +61,7 @@ function getFolder(name, cb){
                             }
                         } catch(e) {
                             console.error('error in json at file: '+file+' line: '+line);
-                            console.error(line);
+                            console.error(json);
                         }
                     }
 
@@ -60,16 +73,28 @@ function getFolder(name, cb){
                         let cmd = {
                             name: mytrim(parts[0]),
                             args: mytrim(parts[1]),
-                            fn: mytrim(parts[2]),
                             descr: mytrim(parts[3]),
-                            examples: "",
+                            fn: mytrim(parts[2]),
                             file: file.slice(6),
+                            requires:"",
+                            examples: "",
                         };
 
                         if (!cmdindex[cmd.name]){
                             // it did not have a doc line before
                             let json = JSON.stringify(cmd);
-                            newlines.push('//cmddetail:'+json);
+                            // insert CR at "fn":
+                            json = json.split('"descr":');
+                            json = json.join('\n"descr":');
+                            json = json.split('"fn":');
+                            json = json.join('\n"fn":');
+                            json = json.split('"examples":');
+                            json = json.join('\n"examples":');
+                            let jsonlines = json.split('\n');
+                            for (let j = 0; j < jsonlines.length; j++){
+                                jsonlines[j] = '\t//cmddetail:'+jsonlines[j];
+                            }
+                            newlines.push(... jsonlines);
                             modified++;
                             commands.push(cmd);
                             cmdindex[cmd.name] = cmd;
@@ -104,12 +129,20 @@ console.log('starting');
 getFolder('./src');
 
 
-let md = 
+let mdshort = 
 `# Commands
 
-| Command        | Arguments          | Description  | fn | File |
-| ------------- |:-------------:| -----:| ------ | ------ |
+| Command        | Arguments          | Description  |
+|:------------- |:------------- | -----:|
 `;
+
+let mdlong = 
+`# Commands
+
+| Command        | Arguments          | Description  | Loc |
+|:------------- |:-------------:|:----- | ------:|
+`;
+
 for (let i = 0; i < commands.length; i++){
 
     /* like:
@@ -120,13 +153,24 @@ for (let i = 0; i < commands.length; i++){
     */
     let cmd = commands[i];
 
-    md += `| ${cmd.name} | ${cmd.args} | ${cmd.descr} | ${cmd.fn} | ${cmd.file} |\n`;
+    let textshort = `| ${cmd.name} | ${cmd.args}${cmd.requires?'\nReq:'+cmd.requires:''} | ${cmd.descr}${cmd.examples?'\ne.g.:'+cmd.examples:''} |`;
+    let textlong = `| ${cmd.name} | ${cmd.args}${cmd.requires?'\nReq:'+cmd.requires:''} | ${cmd.descr}${cmd.examples?'\ne.g.:'+cmd.examples:''} | ${cmd.file}\n${cmd.fn} |`;
 
+    // allow multi-row entries in table entries.
+    textshort = textshort.replace(/\n/g, '<br/>');
+    textlong = textlong.replace(/\n/g, '<br/>');
+
+    mdshort += textshort;
+    mdshort += '\n';
+    mdlong += textlong;
+    mdlong += '\n';
 }
 
-md += '\n';
+mdshort += '\n';
+mdlong += '\n';
 
-fs.writeFileSync('commands.md', md);
-
+fs.writeFileSync('docs/commands.md', mdshort);
 console.log('wrote commands.md');
+fs.writeFileSync('docs/commands-extended.md', mdlong);
+console.log('wrote commands-extended.md');
 
