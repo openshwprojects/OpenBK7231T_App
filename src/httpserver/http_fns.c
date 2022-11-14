@@ -207,6 +207,8 @@ int http_fn_index(http_request_t* request) {
 	char tmpA[128];
 	int bRawPWMs;
 	int forceShowRGBCW;
+	float fValue;
+	int iValue;
 
 	bRawPWMs = CFG_HasFlag(OBK_FLAG_LED_RAWCHANNELSMODE);
 	forceShowRGBCW = CFG_HasFlag(OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER);
@@ -335,7 +337,6 @@ int http_fn_index(http_request_t* request) {
 
 		channelType = CHANNEL_GetType(i);
 		if (channelType == ChType_Temperature) {
-			int iValue;
 
 			iValue = CHANNEL_Get(i);
 			poststr(request, "<tr><td>");
@@ -344,8 +345,6 @@ int http_fn_index(http_request_t* request) {
 
 		}
 		else if (channelType == ChType_Temperature_div10) {
-			int iValue;
-			float fValue;
 
 			iValue = CHANNEL_Get(i);
 			fValue = iValue * 0.1f;
@@ -356,7 +355,6 @@ int http_fn_index(http_request_t* request) {
 
 		}
 		else  if (channelType == ChType_Humidity) {
-			int iValue;
 
 			iValue = CHANNEL_Get(i);
 
@@ -366,8 +364,6 @@ int http_fn_index(http_request_t* request) {
 
 		}
 		else if (channelType == ChType_Humidity_div10) {
-			int iValue;
-			float fValue;
 
 			iValue = CHANNEL_Get(i);
 			fValue = iValue * 0.1f;
@@ -379,7 +375,6 @@ int http_fn_index(http_request_t* request) {
 		}
 		else if (channelType == ChType_LowMidHigh) {
 			const char* types[] = { "Low","Mid","High" };
-			int iValue;
 			iValue = CHANNEL_Get(i);
 
 			poststr(request, "<tr><td>");
@@ -403,7 +398,6 @@ int http_fn_index(http_request_t* request) {
 			const char* types6[] = { "Off", "Lowest", "Low", "Mid", "High", "Highest" };
 			const char* types5NoOff[] = { "Lowest", "Low", "Mid", "High", "Highest" };
 			int numTypes;
-			int iValue;
 
 			if (channelType == ChType_OffLowMidHigh) {
 				types = types4;
@@ -436,7 +430,6 @@ int http_fn_index(http_request_t* request) {
 
 		}
 		else if (channelType == ChType_TextField) {
-			int iValue;
 			iValue = CHANNEL_Get(i);
 
 			poststr(request, "<tr><td>");
@@ -449,13 +442,97 @@ int http_fn_index(http_request_t* request) {
 
 		}
 		else if (channelType == ChType_ReadOnly) {
-			int iValue;
 			iValue = CHANNEL_Get(i);
 
 			poststr(request, "<tr><td>");
 			hprintf255(request, "Channel %i = %i", i, iValue);
 			poststr(request, "</td></tr>");
+		}
+		else if (channelType == ChType_Frequency_div100) {
+			iValue = CHANNEL_Get(i);
+			fValue = iValue * 0.01f;
 
+			poststr(request, "<tr><td>");
+			hprintf255(request, "Frequency %fHz (ch %i)", fValue, i);
+			poststr(request, "</td></tr>");
+		}
+		else if (channelType == ChType_EnergyToday_kWh_div1000) {
+			iValue = CHANNEL_Get(i);
+			fValue = iValue * 0.001f;
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "EnergyToday %fkWh (ch %i)", fValue, i);
+			poststr(request, "</td></tr>");
+		}
+		else if (channelType == ChType_EnergyExport_kWh_div1000) {
+			iValue = CHANNEL_Get(i);
+			fValue = iValue * 0.001f;
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "EnergyExport(back to grid) %fkWh (ch %i)", fValue, i);
+			poststr(request, "</td></tr>");
+		}
+		else if (channelType == ChType_EnergyTotal_kWh_div1000) {
+			iValue = CHANNEL_Get(i);
+			fValue = iValue * 0.001f;
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "EnergyTotal %fkWh (ch %i)", fValue, i);
+			poststr(request, "</td></tr>");
+		}
+		else if (channelType == ChType_EnergyTotal_kWh_div100) {
+			iValue = CHANNEL_Get(i);
+			fValue = iValue * 0.01f;
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "EnergyTotal %fkWh (ch %i)", fValue, i);
+			poststr(request, "</td></tr>");
+		}
+		else if (channelType == ChType_Voltage_div10) {
+			iValue = CHANNEL_Get(i);
+			fValue = iValue * 0.1f;
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "Voltage %fV (ch %i)", fValue, i);
+			poststr(request, "</td></tr>");
+		}
+		else if (channelType == ChType_ReactivePower) {
+			iValue = CHANNEL_Get(i);
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "ReactivePower %iVAr (ch %i)", iValue, i);
+			poststr(request, "</td></tr>");
+		}
+		else if (channelType == ChType_Power) {
+			iValue = CHANNEL_Get(i);
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "Power %iW (ch %i)", iValue, i);
+			poststr(request, "</td></tr>");
+		}
+		else if (channelType == ChType_PowerFactor_div1000) {
+			iValue = CHANNEL_Get(i);
+			fValue = iValue * 0.001f;
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "PowerFactor %f (ch %i)", fValue, i);
+			poststr(request, "</td></tr>");
+		}
+		else if (channelType == ChType_Current_div100) {
+			iValue = CHANNEL_Get(i);
+			fValue = iValue * 0.01f;
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "Current %fA (ch %i)", fValue, i);
+			poststr(request, "</td></tr>");
+		}
+		else if (channelType == ChType_Current_div1000) {
+			iValue = CHANNEL_Get(i);
+			fValue = iValue * 0.001f;
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "Current %fA (ch %i)", fValue, i);
+			poststr(request, "</td></tr>");
 		}
 		else if (h_isChannelRelay(i) || channelType == ChType_Toggle) {
 			const char* c;
@@ -1720,7 +1797,7 @@ int http_tasmota_json_power(http_request_t* request) {
 	return 0;
 }
 /*
-{"StatusSNS":{"Time":"2022-07-30T10:11:26","ENERGY":{"TotalStartTime":"2022-05-12T10:56:31","Total":0.003,"Yesterday":0.003,"Today":0.000,"Power": 0,"ApparentPower": 0,"ReactivePower": 0,"Factor":0.00,"Voltage":236,"Current":0.000}}}
+{"StatusSNS":{"Time":"2022-07-30T10:11:26","ENERGY":{"TotalStartTime":"2022-05-12T10:56:31","Total":0.003,"Yesterday":0.003,"Today":0.000,"Power": 0,"ApparentPower": 0,"ReactivePower": 0,"Factor":0.00,"Voltage":236,"Current_div100":0.000}}}
 */
 int http_tasmota_json_status_SNS(http_request_t* request) {
 
@@ -1745,7 +1822,7 @@ int http_tasmota_json_status_SNS(http_request_t* request) {
 		hprintf255(request, "\"Power\": %f,", power);
 		hprintf255(request, "\"ApparentPower\": 0,\"ReactivePower\": 0,\"Factor\":%f,", factor);
 		hprintf255(request, "\"Voltage\":%f,", voltage);
-		hprintf255(request, "\"Current\":%f,", current);
+		hprintf255(request, "\"Current_div100\":%f,", current);
 		hprintf255(request, "\"ConsumptionTotal\":%f,", energy);
 		hprintf255(request, "\"ConsumptionLastHour\":%f", energy_hour);
 		// close ENERGY block
@@ -2308,7 +2385,7 @@ int http_fn_cfg_generic(http_request_t* request) {
 
 	CFG_Save_IfThereArePendingChanges();
 
-	hprintf255(request, "<h5>Flags (Current value=%i)<h5>", CFG_GetFlags());
+	hprintf255(request, "<h5>Flags (Current_div100 value=%i)<h5>", CFG_GetFlags());
 	poststr(request, "<form action=\"/cfg_generic\">");
 
 	for (i = 0; i < OBK_TOTAL_FLAGS; i++) {

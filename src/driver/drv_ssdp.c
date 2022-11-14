@@ -45,9 +45,11 @@ extern int Main_IsConnectedToWiFi();
 
 // allocated at first use, freed if stopped
 static char *advert_message = NULL;
+int advert_maxlen = 0;
 static char *udp_msgbuf = NULL;
 #define UDP_MSGBUF_LEN 500
 static char *notify_message = NULL;
+int notify_maxlen = 0;
 static char *http_message = NULL;
 int http_message_len = 0;
 
@@ -239,10 +241,11 @@ static void DRV_SSDP_Send_Advert_To(struct sockaddr_in *addr) {
 	}
 
     if (!advert_message){
-        advert_message = (char *)malloc(strlen(message_template) +  100);
+        advert_maxlen = strlen(message_template) +  100;
+        advert_message = (char *)malloc(advert_maxlen+1);
     }
 
-    sprintf(advert_message, message_template, 
+    snprintf(advert_message, advert_maxlen, message_template, 
         myip, 
         g_ssdp_uuid, 
         g_ssdp_uuid);
@@ -271,7 +274,7 @@ static const char notify_template[] =
 "SERVER: OpenBk\r\n" \
 "HOST: 239.255.255.250:1900\r\n" \
 "CACHE-CONTROL: max-age=1800\r\n" \
-"LOCATION: http://%s:80/ssdp.xml'\r\n" \
+"LOCATION: http://%s:80/ssdp.xml\r\n" \
 "NTS: ssdp:alive\r\n" \
 "NT: upnp:rootdevice\r\n" \
 "USN: uuid:%s::upnp:rootdevice\r\n" \
@@ -299,17 +302,23 @@ static void DRV_SSDP_Send_Notify() {
     const char *myip = HAL_GetMyIPString();
 
     if (!notify_message){
-        notify_message = (char *)malloc(strlen(notify_template) +  100);
+        notify_maxlen = strlen(notify_template) +  100;
+        notify_message = (char *)malloc(notify_maxlen+1);
     }
 
-    sprintf(notify_message, notify_template, myip, g_ssdp_uuid);
+    snprintf(notify_message, notify_maxlen, notify_template, myip, g_ssdp_uuid);
+
+    int len = strlen(notify_message);
+
+	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_HTTP,"DRV_SSDP_Send_Notify: space: %d msg:%d", strlen(notify_template) +  100, len);
+	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_HTTP,"DRV_SSDP_Send_Notify: \r\n%s\r\n", notify_message);
 
     // set up destination address
     //
     nbytes = sendto(
         g_ssdp_socket_receive,
         (const char*) notify_message,
-        strlen(notify_message),
+        len,
         0,
         (struct sockaddr*) &multicastaddr,
         sizeof(multicastaddr)
@@ -368,7 +377,7 @@ static int DRV_SSDP_Service_Http(http_request_t* request){
             strlen(myip) + 
             strlen(myip) + 
             40;
-        http_message = (char *)malloc(http_message_len);
+        http_message = (char *)malloc(http_message_len+1);
     }
 
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP, "DRV_SSDP_Service_Http");
@@ -409,7 +418,7 @@ void DRV_SSDP_Init()
 
     addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"DRV_SSDP_Init");
     // like "e427ce1a-3e80-43d0-ad6f-89ec42e46363";
-    sprintf(g_ssdp_uuid, "%08x-%04x-%04x-%04x-%04x%08x",
+    snprintf(g_ssdp_uuid, sizeof(g_ssdp_uuid), "%08x-%04x-%04x-%04x-%04x%08x",
         (unsigned int)rand(), 
         (unsigned int)rand()&0xffff,
         (unsigned int)rand()&0xffff,
@@ -465,7 +474,7 @@ void DRV_SSDP_RunQuickTick() {
     memset(&addr, 0, sizeof(addr));
 
     if (!udp_msgbuf){
-        udp_msgbuf = (char *)malloc(UDP_MSGBUF_LEN);
+        udp_msgbuf = (char *)malloc(UDP_MSGBUF_LEN+1);
     }
 
     socklen_t addrlen = sizeof(addr);
@@ -477,6 +486,7 @@ void DRV_SSDP_RunQuickTick() {
         (struct sockaddr *) &addr,
         &addrlen
     );
+    udp_msgbuf[UDP_MSGBUF_LEN] = 0;
     if (nbytes <= 0) {
         //addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"nothing\n");
         return ;

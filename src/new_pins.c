@@ -287,6 +287,15 @@ void NEW_button_init(pinButton_s* handle, uint8_t(*pin_level)(void *self), uint8
 	handle->button_level = handle->hal_button_Level(handle);
 	handle->active_level = active_level;
 }
+void CHANNEL_SetAllChannelsByType(int requiredType, int newVal) {
+	int i;
+
+	for (i = 0; i < CHANNEL_MAX; i++) {
+		if (CHANNEL_GetType(i) == requiredType) {
+			CHANNEL_Set(i, newVal, 0);
+		}
+	}
+}
 void CHANNEL_SetType(int ch, int type) {
 	g_cfg.pins.channelTypes[ch] = type;
 }
@@ -1158,14 +1167,30 @@ int CHANNEL_ParseChannelType(const char *s) {
 		return ChType_TextField;
 	if(!stricmp(s,"ReadOnly") )
 		return ChType_ReadOnly;
-	if(!stricmp(s,"Frequency_mHz") )
-		return ChType_Frequency_mHz;
-	if(!stricmp(s,"Voltage") )
-		return ChType_Voltage;
+	if(!stricmp(s,"Frequency_div100") )
+		return ChType_Frequency_div100;
+	if(!stricmp(s,"Voltage_div10") )
+		return ChType_Voltage_div10;
 	if(!stricmp(s,"Power") )
 		return ChType_Power;
-	if(!stricmp(s,"Current") )
-		return ChType_Current;
+	if(!stricmp(s,"Current_div100") )
+		return ChType_Current_div100;
+	if (!stricmp(s, "ActivePower"))
+		return ChType_ActivePower;
+	if (!stricmp(s, "PowerFactor_div1000"))
+		return ChType_PowerFactor_div1000;
+	if (!stricmp(s, "ReactivePower"))
+		return ChType_ReactivePower;
+	if (!stricmp(s, "EnergyTotal_kWh_div1000"))
+		return ChType_EnergyTotal_kWh_div1000;
+	if (!stricmp(s, "EnergyTotal_kWh_div100"))
+		return ChType_EnergyTotal_kWh_div100;
+	if (!stricmp(s, "EnergyExport_kWh_div1000"))
+		return ChType_EnergyExport_kWh_div1000;
+	if (!stricmp(s, "EnergyToday_kWh_div1000"))
+		return ChType_EnergyToday_kWh_div1000;
+	if (!stricmp(s, "Current_div1000"))
+		return ChType_Current_div1000;
 	return ChType_Error;
 }
 static int CMD_setButtonHoldRepeat(const void *context, const char *cmd, const char *args, int cmdFlags){
