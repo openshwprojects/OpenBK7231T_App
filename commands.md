@@ -70,12 +70,6 @@
 | VREF |  | Sets the calibration multiplier | BL0937_VoltageRef | driver/drv_bl0937.c |
 | IREF |  | Sets the calibration multiplier | BL0937_CurrentRef | driver/drv_bl0937.c |
 | PowerMax |  | Sets Maximum power value measurement limiter | BL0937_PowerMax | driver/drv_bl0937.c |
-| PowerSet |  | Sets current power value for calibration | BL0942_PowerSet | driver/drv_bl0942.c |
-| VoltageSet |  | Sets current V value for calibration | BL0942_VoltageSet | driver/drv_bl0942.c |
-| CurrentSet |  | Sets current I value for calibration | BL0942_CurrentSet | driver/drv_bl0942.c |
-| PREF |  | Sets the calibration multiplier | BL0942_PowerRef | driver/drv_bl0942.c |
-| VREF |  | Sets the calibration multiplier | BL0942_VoltageRef | driver/drv_bl0942.c |
-| IREF |  | Sets the calibration multiplier | BL0942_CurrentRef | driver/drv_bl0942.c |
 | EnergyCntReset |  | Reset Energy Counter | BL09XX_ResetEnergyCounter | driver/drv_bl_shared.c |
 | SetupEnergyStats |  | Setup Energy Statistic Parameters: [enable<0|1>] [sample_time<10..900>] [sample_count<10..180>] | BL09XX_SetupEnergyStatistic | driver/drv_bl_shared.c |
 | ConsumptionThresold |  | Setup value for automatic save of consumption data [1..100] | BL09XX_SetupConsumptionThreshold | driver/drv_bl_shared.c |
@@ -84,12 +78,6 @@
 | BP5758D_RGBCW |  | qq | BP5758D_RGBCW | driver/drv_bp5758d.c |
 | BP5758D_Map |  | qq | BP5758D_Map | driver/drv_bp5758d.c |
 | BP5758D_Current |  | qq | BP5758D_Current | driver/drv_bp5758d.c |
-| PowerSet |  | Sets current power value for calibration | CSE7766_PowerSet | driver/drv_cse7766.c |
-| VoltageSet |  | Sets current V value for calibration | CSE7766_VoltageSet | driver/drv_cse7766.c |
-| CurrentSet |  | Sets current I value for calibration | CSE7766_CurrentSet | driver/drv_cse7766.c |
-| PREF |  | Sets the calibration multiplier | CSE7766_PowerRef | driver/drv_cse7766.c |
-| VREF |  | Sets the calibration multiplier | CSE7766_VoltageRef | driver/drv_cse7766.c |
-| IREF |  | Sets the calibration multiplier | CSE7766_CurrentRef | driver/drv_cse7766.c |
 | IRSend |  | Sends IR commands in the form PROT-ADDR-CMD-RE | IR_Send_Cmd | driver/drv_ir.cpp |
 | IREnable |  | Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol | IR_Enable | driver/drv_ir.cpp |
 | startDriver |  | Starts driver | DRV_Start | driver/drv_main.c |
@@ -100,7 +88,7 @@
 | SM2135_RGBCW |  | qq | SM2135_RGBCW | driver/drv_sm2135.c |
 | SM2135_Map |  | qq | SM2135_Map | driver/drv_sm2135.c |
 | SM2135_Current |  | qq | SM2135_Current | driver/drv_sm2135.c |
-| obkDeviceList |  | qqq | Cmd_obkDeviceList | driver/drv_ssdp.c |
+| obkDeviceList | none | Lists OBK devices<br/>seen sending SSDP NOTIFY | Cmd_obkDeviceList | driver/drv_ssdp.c |
 | DGR_SendPower |  | qqq | CMD_DGR_SendPower | driver/drv_tasmotaDeviceGroups.c |
 | DGR_SendBrightness |  | qqq | CMD_DGR_SendBrightness | driver/drv_tasmotaDeviceGroups.c |
 | DGR_SendRGBCW |  | qqq | CMD_DGR_SendRGBCW | driver/drv_tasmotaDeviceGroups.c |
