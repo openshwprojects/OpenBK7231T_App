@@ -1183,6 +1183,8 @@ int CHANNEL_ParseChannelType(const char *s) {
 		return ChType_ReactivePower;
 	if (!stricmp(s, "EnergyTotal_kWh_div1000"))
 		return ChType_EnergyTotal_kWh_div1000;
+	if (!stricmp(s, "EnergyTotal_kWh_div100"))
+		return ChType_EnergyTotal_kWh_div100;
 	if (!stricmp(s, "EnergyExport_kWh_div1000"))
 		return ChType_EnergyExport_kWh_div1000;
 	if (!stricmp(s, "EnergyToday_kWh_div1000"))

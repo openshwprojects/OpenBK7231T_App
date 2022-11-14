@@ -480,6 +480,14 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "EnergyTotal %fkWh (ch %i)", fValue, i);
 			poststr(request, "</td></tr>");
 		}
+		else if (channelType == ChType_EnergyTotal_kWh_div100) {
+			iValue = CHANNEL_Get(i);
+			fValue = iValue * 0.01f;
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "EnergyTotal %fkWh (ch %i)", fValue, i);
+			poststr(request, "</td></tr>");
+		}
 		else if (channelType == ChType_Voltage_div10) {
 			iValue = CHANNEL_Get(i);
 			fValue = iValue * 0.1f;

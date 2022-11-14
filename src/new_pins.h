@@ -99,6 +99,7 @@ enum ChannelType {
 	ChType_EnergyExport_kWh_div1000,
 	ChType_EnergyToday_kWh_div1000,
 	ChType_Current_div1000,
+	ChType_EnergyTotal_kWh_div100,
 };
 
 
