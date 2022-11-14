@@ -265,9 +265,25 @@ static void initLog(void)
 	HTTP_RegisterCallback("/logs", HTTP_GET, http_getlog);
 	HTTP_RegisterCallback("/lograw", HTTP_GET, http_getlograw);
 
+	//cmddetail:{"name":"loglevel","args":"",
+	//cmddetail:"descr":"set log level <0..6>",
+	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("loglevel", "", log_command, "set log level <0..6>", NULL);
+	//cmddetail:{"name":"logfeature","args":"",
+	//cmddetail:"descr":"set log feature filte",
+	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("logfeature", "", log_command, "set log feature filter, <0..10> <0|1>", NULL);
+	//cmddetail:{"name":"logtype","args":"",
+	//cmddetail:"descr":"logtype direct|all - direct logs only to serial immediately",
+	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("logtype", "", log_command, "logtype direct|all - direct logs only to serial immediately", NULL);
+	//cmddetail:{"name":"logdelay","args":"",
+	//cmddetail:"descr":"logdelay -1|0..n - impose ms delay after every lo",
+	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("logdelay", "", log_command, "logdelay -1|0..n - impose ms delay after every log, -1 to delay be character count", NULL);
 
 	bk_printf("Commands registered!\r\n");

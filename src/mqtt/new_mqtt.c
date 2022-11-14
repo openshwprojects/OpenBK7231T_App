@@ -1122,9 +1122,25 @@ void MQTT_init()
 
 	mqtt_initialised = 1;
 
+	//cmddetail:{"name":"MQTT_COMMAND_PUBLISH","args":"",
+	//cmddetail:"descr":"Sqqq",
+	//cmddetail:"fn":"MQTT_PublishCommand","file":"mqtt/new_mqtt.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand(MQTT_COMMAND_PUBLISH, "", MQTT_PublishCommand, "Sqqq", NULL);
+	//cmddetail:{"name":"MQTT_COMMAND_PUBLISH_ALL","args":"",
+	//cmddetail:"descr":"Sqqq",
+	//cmddetail:"fn":"MQTT_PublishAll","file":"mqtt/new_mqtt.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand(MQTT_COMMAND_PUBLISH_ALL, "", MQTT_PublishAll, "Sqqq", NULL);
+	//cmddetail:{"name":"MQTT_COMMAND_PUBLISH_CHANNELS","args":"",
+	//cmddetail:"descr":"Sqqq",
+	//cmddetail:"fn":"MQTT_PublishChannels","file":"mqtt/new_mqtt.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand(MQTT_COMMAND_PUBLISH_CHANNELS, "", MQTT_PublishChannels, "Sqqq", NULL);
+	//cmddetail:{"name":"MQTT_COMMAND_PUBLISH_BENCHMARK","args":"",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"MQTT_StartMQTTTestThread","file":"mqtt/new_mqtt.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand(MQTT_COMMAND_PUBLISH_BENCHMARK, "", MQTT_StartMQTTTestThread, "", NULL);
 
 }

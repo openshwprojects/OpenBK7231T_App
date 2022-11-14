@@ -1141,19 +1141,71 @@ void TuyaMCU_Init()
     UART_InitUART(g_baudRate);
     UART_InitReceiveRingBuffer(256);
     // uartSendHex 55AA0008000007
+	//cmddetail:{"name":"tuyaMcu_testSendTime","args":"",
+	//cmddetail:"descr":"Sends a example date by TuyaMCU to clock/callendar MCU",
+	//cmddetail:"fn":"TuyaMCU_Send_SetTime_Example","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_testSendTime","",TuyaMCU_Send_SetTime_Example, "Sends a example date by TuyaMCU to clock/callendar MCU", NULL);
+	//cmddetail:{"name":"tuyaMcu_sendCurTime","args":"",
+	//cmddetail:"descr":"Sends a current date by TuyaMCU to clock/callendar MCU",
+	//cmddetail:"fn":"TuyaMCU_Send_SetTime_Current","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_sendCurTime","",TuyaMCU_Send_SetTime_Current, "Sends a current date by TuyaMCU to clock/callendar MCU", NULL);
+	//cmddetail:{"name":"uartSendHex","args":"",
+	//cmddetail:"descr":"Sends raw data by TuyaMCU UAR",
+	//cmddetail:"fn":"TuyaMCU_Send_Hex","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("uartSendHex","",TuyaMCU_Send_Hex, "Sends raw data by TuyaMCU UART, you must write whole packet with checksum yourself", NULL);
+	//cmddetail:{"name":"tuyaMcu_fakeHex","args":"",
+	//cmddetail:"descr":"qq",
+	//cmddetail:"fn":"TuyaMCU_Fake_Hex","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_fakeHex","",TuyaMCU_Fake_Hex, "qq", NULL);
     ///CMD_RegisterCommand("tuyaMcu_sendSimple","",TuyaMCU_Send_Simple, "Appends a 0x55 0xAA header to a data, append a checksum at end and send");
+	//cmddetail:{"name":"linkTuyaMCUOutputToChannel","args":"",
+	//cmddetail:"descr":"Map value send from TuyaMCU (eg. humidity or temperature) to channel",
+	//cmddetail:"fn":"TuyaMCU_LinkTuyaMCUOutputToChannel","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("linkTuyaMCUOutputToChannel","",TuyaMCU_LinkTuyaMCUOutputToChannel, "Map value send from TuyaMCU (eg. humidity or temperature) to channel", NULL);
+	//cmddetail:{"name":"tuyaMcu_setDimmerRange","args":"",
+	//cmddetail:"descr":"Set dimmer range used by TuyaMCU",
+	//cmddetail:"fn":"TuyaMCU_SetDimmerRange","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_setDimmerRange","",TuyaMCU_SetDimmerRange, "Set dimmer range used by TuyaMCU", NULL);
+	//cmddetail:{"name":"tuyaMcu_sendHeartbeat","args":"",
+	//cmddetail:"descr":"Send heartbeat to TuyaMCU",
+	//cmddetail:"fn":"TuyaMCU_SendHeartbeat","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_sendHeartbeat","",TuyaMCU_SendHeartbeat, "Send heartbeat to TuyaMCU", NULL);
+	//cmddetail:{"name":"tuyaMcu_sendQueryState","args":"",
+	//cmddetail:"descr":"Send query state command",
+	//cmddetail:"fn":"TuyaMCU_SendQueryState","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_sendQueryState","",TuyaMCU_SendQueryState, "Send query state command", NULL);
+	//cmddetail:{"name":"tuyaMcu_sendProductInformation","args":"",
+	//cmddetail:"descr":"Send qqq",
+	//cmddetail:"fn":"TuyaMCU_SendQueryProductInformation","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_sendProductInformation","",TuyaMCU_SendQueryProductInformation, "Send qqq", NULL);
+	//cmddetail:{"name":"tuyaMcu_sendState","args":"",
+	//cmddetail:"descr":"Send set state command",
+	//cmddetail:"fn":"TuyaMCU_SendStateCmd","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_sendState","",TuyaMCU_SendStateCmd, "Send set state command", NULL);
+	//cmddetail:{"name":"tuyaMcu_sendMCUConf","args":"",
+	//cmddetail:"descr":"Send MCU conf command",
+	//cmddetail:"fn":"TuyaMCU_SendMCUConf","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_sendMCUConf","",TuyaMCU_SendMCUConf, "Send MCU conf command", NULL);
+	//cmddetail:{"name":"fakeTuyaPacket","args":"",
+	//cmddetail:"descr":"qq",
+	//cmddetail:"fn":"TuyaMCU_FakePacket","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("fakeTuyaPacket","",TuyaMCU_FakePacket, "qq", NULL);
+	//cmddetail:{"name":"tuyaMcu_setBaudRate","args":"",
+	//cmddetail:"descr":"Set the serial baud rate used to communicate with the TuyaMCU",
+	//cmddetail:"fn":"TuyaMCU_SetBaudRate","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_setBaudRate","",TuyaMCU_SetBaudRate, "Set the serial baud rate used to communicate with the TuyaMCU", NULL);
 }
 // Door sensor with TuyaMCU version 0 (not 3), so all replies have x00 and not 0x03 byte

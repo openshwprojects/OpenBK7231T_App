@@ -230,8 +230,20 @@ void SM2135_Init() {
 	g_pin_clk = PIN_FindPinIndexForRole(IOR_SM2135_CLK,g_pin_clk);
 	g_pin_data = PIN_FindPinIndexForRole(IOR_SM2135_DAT,g_pin_data);
 
+	//cmddetail:{"name":"SM2135_RGBCW","args":"",
+	//cmddetail:"descr":"qq",
+	//cmddetail:"fn":"SM2135_RGBCW","file":"driver/drv_sm2135.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("SM2135_RGBCW", "", SM2135_RGBCW, "qq", NULL);
+	//cmddetail:{"name":"SM2135_Map","args":"",
+	//cmddetail:"descr":"qq",
+	//cmddetail:"fn":"SM2135_Map","file":"driver/drv_sm2135.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("SM2135_Map", "", SM2135_Map, "qq", NULL);
+	//cmddetail:{"name":"SM2135_Current","args":"",
+	//cmddetail:"descr":"qq",
+	//cmddetail:"fn":"SM2135_Current","file":"driver/drv_sm2135.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("SM2135_Current", "", SM2135_Current, "qq", NULL);
 }
 

@@ -705,8 +705,20 @@ void DRV_DGR_Init()
 	DRV_DGR_CreateSocket_Send();
 
 #endif
+	//cmddetail:{"name":"DGR_SendPower","args":"",
+	//cmddetail:"descr":"qqq",
+	//cmddetail:"fn":"CMD_DGR_SendPower","file":"driver/drv_tasmotaDeviceGroups.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("DGR_SendPower", "", CMD_DGR_SendPower, "qqq", NULL);
+	//cmddetail:{"name":"DGR_SendBrightness","args":"",
+	//cmddetail:"descr":"qqq",
+	//cmddetail:"fn":"CMD_DGR_SendBrightness","file":"driver/drv_tasmotaDeviceGroups.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("DGR_SendBrightness", "", CMD_DGR_SendBrightness, "qqq", NULL);
+	//cmddetail:{"name":"DGR_SendRGBCW","args":"",
+	//cmddetail:"descr":"qqq",
+	//cmddetail:"fn":"CMD_DGR_SendRGBCW","file":"driver/drv_tasmotaDeviceGroups.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("DGR_SendRGBCW", "", CMD_DGR_SendRGBCW, "qqq", NULL);
 }
 

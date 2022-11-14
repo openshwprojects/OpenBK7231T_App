@@ -626,7 +626,15 @@ extern "C" void DRV_IR_Init(){
             pIRsend = pIRsendTemp;
             //bk_pwm_stop((bk_pwm_t)pIRsend->pwmIndex);
 
+	//cmddetail:{"name":"IRSend","args":"",
+	//cmddetail:"descr":"Sends IR commands in the form PROT-ADDR-CMD-RE",
+	//cmddetail:"fn":"IR_Send_Cmd","file":"driver/drv_ir.cpp","requires":"",
+	//cmddetail:"examples":""}
             CMD_RegisterCommand("IRSend","",IR_Send_Cmd, "Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0", NULL);
+	//cmddetail:{"name":"IREnable","args":"",
+	//cmddetail:"descr":"Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol",
+	//cmddetail:"fn":"IR_Enable","file":"driver/drv_ir.cpp","requires":"",
+	//cmddetail:"examples":""}
             CMD_RegisterCommand("IREnable", "", IR_Enable, "Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol", NULL);
         }
     }

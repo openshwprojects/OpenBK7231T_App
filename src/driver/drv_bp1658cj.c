@@ -209,7 +209,15 @@ void BP1658CJ_Init() {
 
     BP1658CJ_PreInit();
 
+	//cmddetail:{"name":"BP1658CJ_RGBCW","args":"",
+	//cmddetail:"descr":"qq",
+	//cmddetail:"fn":"BP1658CJ_RGBCW","file":"driver/drv_bp1658cj.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("BP1658CJ_RGBCW", "", BP1658CJ_RGBCW, "qq", NULL);
+	//cmddetail:{"name":"BP1658CJ_Map","args":"",
+	//cmddetail:"descr":"qq",
+	//cmddetail:"fn":"BP1658CJ_Map","file":"driver/drv_bp1658cj.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("BP1658CJ_Map", "", BP1658CJ_Map, "qq", NULL);
 }
 

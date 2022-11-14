@@ -76,6 +76,10 @@ void UCS1912_Init() {
 
 	HAL_PIN_Setup_Output(g_pin_di);
 
+	//cmddetail:{"name":"UCS1912_Test","args":"",
+	//cmddetail:"descr":"qq",
+	//cmddetail:"fn":"UCS1912_Test","file":"driver/drv_ucs1912.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("UCS1912_Test", "", UCS1912_Test, "qq", NULL);
 }
 

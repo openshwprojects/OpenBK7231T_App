@@ -278,8 +278,20 @@ void BP5758D_Init() {
 
     BP5758D_PreInit();
 
+	//cmddetail:{"name":"BP5758D_RGBCW","args":"",
+	//cmddetail:"descr":"qq",
+	//cmddetail:"fn":"BP5758D_RGBCW","file":"driver/drv_bp5758d.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("BP5758D_RGBCW", "", BP5758D_RGBCW, "qq", NULL);
+	//cmddetail:{"name":"BP5758D_Map","args":"",
+	//cmddetail:"descr":"qq",
+	//cmddetail:"fn":"BP5758D_Map","file":"driver/drv_bp5758d.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("BP5758D_Map", "", BP5758D_Map, "qq", NULL);
+	//cmddetail:{"name":"BP5758D_Current","args":"",
+	//cmddetail:"descr":"qq",
+	//cmddetail:"fn":"BP5758D_Current","file":"driver/drv_bp5758d.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("BP5758D_Current", "", BP5758D_Current, "qq", NULL);
 }
 

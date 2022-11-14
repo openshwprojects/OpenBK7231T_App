@@ -633,8 +633,20 @@ void BL_Shared_Init()
 
     //int HAL_SetEnergyMeterStatus(ENERGY_METERING_DATA *data);
 
+	//cmddetail:{"name":"EnergyCntReset","args":"",
+	//cmddetail:"descr":"Reset Energy Counter",
+	//cmddetail:"fn":"BL09XX_ResetEnergyCounter","file":"driver/drv_bl_shared.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("EnergyCntReset", "", BL09XX_ResetEnergyCounter, "Reset Energy Counter", NULL);
+	//cmddetail:{"name":"SetupEnergyStats","args":"",
+	//cmddetail:"descr":"Setup Energy Statistic Parameters: [enable<0|1>] [sample_time<10..900>] [sample_count<10..180>]",
+	//cmddetail:"fn":"BL09XX_SetupEnergyStatistic","file":"driver/drv_bl_shared.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("SetupEnergyStats", "", BL09XX_SetupEnergyStatistic, "Setup Energy Statistic Parameters: [enable<0|1>] [sample_time<10..900>] [sample_count<10..180>]", NULL);
+	//cmddetail:{"name":"ConsumptionThresold","args":"",
+	//cmddetail:"descr":"Setup value for automatic save of consumption data [1..100]",
+	//cmddetail:"fn":"BL09XX_SetupConsumptionThreshold","file":"driver/drv_bl_shared.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("ConsumptionThresold", "", BL09XX_SetupConsumptionThreshold, "Setup value for automatic save of consumption data [1..100]", NULL);
 }
 

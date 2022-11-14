@@ -244,7 +244,15 @@ static int DRV_Stop(const void* context, const char* cmd, const char* args, int 
 }
 
 void DRV_Generic_Init() {
+	//cmddetail:{"name":"startDriver","args":"",
+	//cmddetail:"descr":"Starts driver",
+	//cmddetail:"fn":"DRV_Start","file":"driver/drv_main.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("startDriver", "", DRV_Start, "Starts driver", NULL);
+	//cmddetail:{"name":"stopDriver","args":"",
+	//cmddetail:"descr":"Stops driver",
+	//cmddetail:"fn":"DRV_Stop","file":"driver/drv_main.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("stopDriver", "", DRV_Stop, "Stops driver", NULL);
 }
 void DRV_AppendInformationToHTTPIndexPage(http_request_t* request) {

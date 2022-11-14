@@ -471,9 +471,25 @@ static int CMD_ListEvents(const void *context, const char *cmd, const char *args
 }
 void EventHandlers_Init() {
 
+	//cmddetail:{"name":"AddEventHandler","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_AddEventHandler","file":"cmnds/cmd_eventHandlers.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("AddEventHandler", "", CMD_AddEventHandler, "qqqqq0", NULL);
+	//cmddetail:{"name":"AddChangeHandler","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_AddChangeHandler","file":"cmnds/cmd_eventHandlers.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("AddChangeHandler", "", CMD_AddChangeHandler, "qqqqq0", NULL);
+	//cmddetail:{"name":"listEvents","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_ListEvents","file":"cmnds/cmd_eventHandlers.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("listEvents", "", CMD_ListEvents, "qqqqq0", NULL);
+	//cmddetail:{"name":"clearAllHandlers","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_ClearAllHandlers","file":"cmnds/cmd_eventHandlers.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("clearAllHandlers", "", CMD_ClearAllHandlers, "qqqqq0", NULL);
 
 }

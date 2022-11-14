@@ -102,8 +102,20 @@ int NTP_Info(const void *context, const char *cmd, const char *args, int cmdFlag
 
 void NTP_Init() {
 
+	//cmddetail:{"name":"ntp_timeZoneOfs","args":"",
+	//cmddetail:"descr":"Sets the time zone offset in hours",
+	//cmddetail:"fn":"NTP_SetTimeZoneOfs","file":"driver/drv_ntp.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("ntp_timeZoneOfs","",NTP_SetTimeZoneOfs, "Sets the time zone offset in hours", NULL);
+	//cmddetail:{"name":"ntp_setServer","args":"",
+	//cmddetail:"descr":"Sets the NTP server",
+	//cmddetail:"fn":"NTP_SetServer","file":"driver/drv_ntp.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("ntp_setServer", "", NTP_SetServer, "Sets the NTP server", NULL);
+	//cmddetail:{"name":"ntp_info","args":"",
+	//cmddetail:"descr":"Display NTP related settings",
+	//cmddetail:"fn":"NTP_Info","file":"driver/drv_ntp.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("ntp_info", "", NTP_Info, "Display NTP related settings", NULL);
 
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP driver initialized with server=%s, offset=%d\n", CFG_GetNTPServer(), g_timeOffsetHours);
