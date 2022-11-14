@@ -234,17 +234,17 @@ void SM2135_Init() {
 	//cmddetail:"descr":"qq",
 	//cmddetail:"fn":"SM2135_RGBCW","file":"driver/drv_sm2135.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("SM2135_RGBCW", "", SM2135_RGBCW, "qq", NULL);
+    CMD_RegisterCommand("SM2135_RGBCW", "", SM2135_RGBCW, NULL, NULL);
 	//cmddetail:{"name":"SM2135_Map","args":"",
 	//cmddetail:"descr":"qq",
 	//cmddetail:"fn":"SM2135_Map","file":"driver/drv_sm2135.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("SM2135_Map", "", SM2135_Map, "qq", NULL);
+    CMD_RegisterCommand("SM2135_Map", "", SM2135_Map, NULL, NULL);
 	//cmddetail:{"name":"SM2135_Current","args":"",
 	//cmddetail:"descr":"qq",
 	//cmddetail:"fn":"SM2135_Current","file":"driver/drv_sm2135.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("SM2135_Current", "", SM2135_Current, "qq", NULL);
+    CMD_RegisterCommand("SM2135_Current", "", SM2135_Current, NULL, NULL);
 }
 
 void SM2135_RunFrame() {

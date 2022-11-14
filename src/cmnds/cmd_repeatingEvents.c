@@ -164,20 +164,20 @@ void RepeatingEvents_Init() {
 	//cmddetail:"descr":"qqqq",
 	//cmddetail:"fn":"RepeatingEvents_Cmd_AddRepeatingEvent","file":"cmnds/cmd_repeatingEvents.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("addRepeatingEvent","",RepeatingEvents_Cmd_AddRepeatingEvent, "qqqq", NULL);
+	CMD_RegisterCommand("addRepeatingEvent","",RepeatingEvents_Cmd_AddRepeatingEvent, NULL, NULL);
 	// addRepeatingEventID [DelaySeconds] [Repeats] [UserIDInteger] [Command With Spaces Allowed]
 	// addRepeatingEventID 2 -1 123 Power0 Toggle
 	//cmddetail:{"name":"addRepeatingEventID","args":"",
 	//cmddetail:"descr":"qqqq",
 	//cmddetail:"fn":"RepeatingEvents_Cmd_AddRepeatingEvent","file":"cmnds/cmd_repeatingEvents.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("addRepeatingEventID","",RepeatingEvents_Cmd_AddRepeatingEvent, "qqqq", NULL);
+	CMD_RegisterCommand("addRepeatingEventID","",RepeatingEvents_Cmd_AddRepeatingEvent, NULL, NULL);
 	// cancelRepeatingEvent [UserIDInteger]
 	//cmddetail:{"name":"cancelRepeatingEvent","args":"",
 	//cmddetail:"descr":"qqqq",
 	//cmddetail:"fn":"RepeatingEvents_Cmd_CancelRepeatingEvent","file":"cmnds/cmd_repeatingEvents.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("cancelRepeatingEvent","",RepeatingEvents_Cmd_CancelRepeatingEvent, "qqqq", NULL);
+	CMD_RegisterCommand("cancelRepeatingEvent","",RepeatingEvents_Cmd_CancelRepeatingEvent, NULL, NULL);
 
 
 }

@@ -412,46 +412,46 @@ int taslike_commands_init(){
 	//cmddetail:"descr":"set output POWERn 0..100",
 	//cmddetail:"fn":"power","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("power", "", power, "set output POWERn 0..100", NULL);
+    CMD_RegisterCommand("power", "", power, NULL, NULL);
 	//cmddetail:{"name":"powerStateOnly","args":"",
 	//cmddetail:"descr":"ensures that device is on or off without changing pwm values",
 	//cmddetail:"fn":"powerStateOnly","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("powerStateOnly", "", powerStateOnly, "ensures that device is on or off without changing pwm values", NULL);
+    CMD_RegisterCommand("powerStateOnly", "", powerStateOnly, NULL, NULL);
 	//cmddetail:{"name":"powerAll","args":"",
 	//cmddetail:"descr":"set all outputs",
 	//cmddetail:"fn":"powerAll","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("powerAll", "", powerAll, "set all outputs", NULL);
+    CMD_RegisterCommand("powerAll", "", powerAll, NULL, NULL);
 	//cmddetail:{"name":"color","args":"",
 	//cmddetail:"descr":"set PWN color using #RRGGBB[cw][ww]",
 	//cmddetail:"fn":"color","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("color", "", color, "set PWN color using #RRGGBB[cw][ww]", NULL);
+    CMD_RegisterCommand("color", "", color, NULL, NULL);
 	//cmddetail:{"name":"backlog","args":"",
 	//cmddetail:"descr":"run a sequence of ; separated commands",
 	//cmddetail:"fn":"cmnd_backlog","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("backlog", "", cmnd_backlog, "run a sequence of ; separated commands", NULL);
+	CMD_RegisterCommand("backlog", "", cmnd_backlog, NULL, NULL);
 	//cmddetail:{"name":"exec","args":"",
 	//cmddetail:"descr":"exec <file> - run autoexec.bat or other file from LFS if present",
 	//cmddetail:"fn":"cmnd_lfsexec","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("exec", "", cmnd_lfsexec, "exec <file> - run autoexec.bat or other file from LFS if present", NULL);
+	CMD_RegisterCommand("exec", "", cmnd_lfsexec, NULL, NULL);
 	//cmddetail:{"name":"lfs_test1","args":"",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"cmnd_lfs_test1","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("lfs_test1", "", cmnd_lfs_test1, "", NULL);
+	CMD_RegisterCommand("lfs_test1", NULL, cmnd_lfs_test1, NULL, NULL);
 	//cmddetail:{"name":"lfs_test2","args":"",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"cmnd_lfs_test2","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("lfs_test2", "", cmnd_lfs_test2, "", NULL);
+	CMD_RegisterCommand("lfs_test2", NULL, cmnd_lfs_test2, NULL, NULL);
 	//cmddetail:{"name":"lfs_test3","args":"",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"cmnd_lfs_test3","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("lfs_test3", "", cmnd_lfs_test3, "", NULL);
+	CMD_RegisterCommand("lfs_test3", NULL, cmnd_lfs_test3, NULL, NULL);
     return 0;
 }

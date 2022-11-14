@@ -15,10 +15,10 @@
 | AddChangeHandler |  | qqqqq0 | cmnds/cmd_eventHandlers.c<br/>CMD_AddChangeHandler |
 | listEvents |  | qqqqq0 | cmnds/cmd_eventHandlers.c<br/>CMD_ListEvents |
 | clearAllHandlers |  | qqqqq0 | cmnds/cmd_eventHandlers.c<br/>CMD_ClearAllHandlers |
-| echo |  | qqqe | cmnds/cmd_main.c<br/>CMD_Echo |
-| restart |  | Reboots the module | cmnds/cmd_main.c<br/>CMD_Restart |
-| clearConfig |  | Clears all config | cmnds/cmd_main.c<br/>CMD_ClearConfig |
-| simonirtest |  | Simons Special Test | cmnds/cmd_main.c<br/>CMD_SimonTest |
+| echo | [string to echo] | Echo something to logs and serial<br/>e.g.:echo hello | cmnds/cmd_main.c<br/>CMD_Echo |
+| restart | [delay in seconds, default 3] | Reboots the module<br/>e.g.:restart 5 | cmnds/cmd_main.c<br/>CMD_Restart |
+| clearConfig | none | Clears all config, and restarts in AP mode | cmnds/cmd_main.c<br/>CMD_ClearConfig |
+| simonirtest | depends? | Simons Special Test<br/>e.g.:don't do it | cmnds/cmd_main.c<br/>CMD_SimonTest |
 | if |  |  | cmnds/cmd_main.c<br/>CMD_If |
 | led_dimmer |  | set output dimmer 0..100 | cmnds/cmd_newLEDDriver.c<br/>dimmer |
 | add_dimmer |  | set output dimmer 0..100 | cmnds/cmd_newLEDDriver.c<br/>add_dimmer |
@@ -78,7 +78,7 @@
 | BP5758D_RGBCW |  | qq | driver/drv_bp5758d.c<br/>BP5758D_RGBCW |
 | BP5758D_Map |  | qq | driver/drv_bp5758d.c<br/>BP5758D_Map |
 | BP5758D_Current |  | qq | driver/drv_bp5758d.c<br/>BP5758D_Current |
-| IRSend |  | Sends IR commands in the form PROT-ADDR-CMD-RE | driver/drv_ir.cpp<br/>IR_Send_Cmd |
+| IRSend |  | Sends IR commands in the form PROT-ADDR-CMD-RE<br/>e.g.:IRSend NEC-1-1A-0 | driver/drv_ir.cpp<br/>IR_Send_Cmd |
 | IREnable |  | Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol | driver/drv_ir.cpp<br/>IR_Enable |
 | startDriver |  | Starts driver | driver/drv_main.c<br/>DRV_Start |
 | stopDriver |  | Stops driver | driver/drv_main.c<br/>DRV_Stop |
@@ -94,7 +94,7 @@
 | DGR_SendRGBCW |  | qqq | driver/drv_tasmotaDeviceGroups.c<br/>CMD_DGR_SendRGBCW |
 | tuyaMcu_testSendTime |  | Sends a example date by TuyaMCU to clock/callendar MCU | driver/drv_tuyaMCU.c<br/>TuyaMCU_Send_SetTime_Example |
 | tuyaMcu_sendCurTime |  | Sends a current date by TuyaMCU to clock/callendar MCU | driver/drv_tuyaMCU.c<br/>TuyaMCU_Send_SetTime_Current |
-| uartSendHex |  | Sends raw data by TuyaMCU UAR | driver/drv_tuyaMCU.c<br/>TuyaMCU_Send_Hex |
+| uartSendHex |  | Sends raw data by TuyaMCU UART, you must write whole packet with checksum yourself | driver/drv_tuyaMCU.c<br/>TuyaMCU_Send_Hex |
 | tuyaMcu_fakeHex |  | qq | driver/drv_tuyaMCU.c<br/>TuyaMCU_Fake_Hex |
 | linkTuyaMCUOutputToChannel |  | Map value send from TuyaMCU (eg. humidity or temperature) to channel | driver/drv_tuyaMCU.c<br/>TuyaMCU_LinkTuyaMCUOutputToChannel |
 | tuyaMcu_setDimmerRange |  | Set dimmer range used by TuyaMCU | driver/drv_tuyaMCU.c<br/>TuyaMCU_SetDimmerRange |
@@ -115,14 +115,14 @@
 | addI2CDevice_LCM1602 |  | Adds a new I2C device | i2c/drv_i2c_main.c<br/>DRV_I2C_AddDevice_LCM1602 |
 | addI2CDevice_LCD_PCF8574 |  | Adds a new I2C device | i2c/drv_i2c_main.c<br/>DRV_I2C_AddDevice_PCF8574 |
 | MCP23017_MapPinToChannel |  | Adds a new I2C device | i2c/drv_i2c_main.c<br/>DRV_I2C_MCP23017_MapPinToChannel |
-| lfssize | NULL | Log or Set LFS size - will apply and re-format next boo | littlefs/our_lfs.c<br/>CMD_LFS_Size |
-| lfsunmount | NULL | Un-mount LFS | littlefs/our_lfs.c<br/>CMD_LFS_Unmount |
-| lfsmount | NULL | Mount LFS | littlefs/our_lfs.c<br/>CMD_LFS_Mount |
-| lfsformat | NULL | Unmount and format LFS.  Optionally add new size as argument | littlefs/our_lfs.c<br/>CMD_LFS_Format |
+| lfssize | NULL | Log or Set LFS size - will apply and re-format next boot<br/>e.g.:lfssize 0x10000 | littlefs/our_lfs.c<br/>CMD_LFS_Size |
+| lfsunmount | NULL | Un-mount LFS<br/>e.g.:lfsunmount | littlefs/our_lfs.c<br/>CMD_LFS_Unmount |
+| lfsmount | NULL | Mount LFS<br/>e.g.:lfsmount | littlefs/our_lfs.c<br/>CMD_LFS_Mount |
+| lfsformat | NULL | Unmount and format LFS.  Optionally add new size as argument<br/>e.g.:lfsformat | lfsformat 0x18000 | littlefs/our_lfs.c<br/>CMD_LFS_Format |
 | loglevel |  | set log level <0..6> | logging/logging.c<br/>log_command |
-| logfeature |  | set log feature filte | logging/logging.c<br/>log_command |
+| logfeature |  | set log feature filter, <0..10> <0|1> | logging/logging.c<br/>log_command |
 | logtype |  | logtype direct|all - direct logs only to serial immediately | logging/logging.c<br/>log_command |
-| logdelay |  | logdelay -1|0..n - impose ms delay after every lo | logging/logging.c<br/>log_command |
+| logdelay |  | logdelay -1|0..n - impose ms delay after every log, -1 to delay be character count<br/>e.g.:logdelay 200 | logging/logging.c<br/>log_command |
 | MQTT_COMMAND_PUBLISH |  | Sqqq | mqtt/new_mqtt.c<br/>MQTT_PublishCommand |
 | MQTT_COMMAND_PUBLISH_ALL |  | Sqqq | mqtt/new_mqtt.c<br/>MQTT_PublishAll |
 | MQTT_COMMAND_PUBLISH_CHANNELS |  | Sqqq | mqtt/new_mqtt.c<br/>MQTT_PublishChannels |

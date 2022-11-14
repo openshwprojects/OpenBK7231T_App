@@ -237,12 +237,12 @@ void BL0942_Init()
 
 	UART_InitUART(BL0942_BAUD_RATE);
 	UART_InitReceiveRingBuffer(256);
-	CMD_RegisterCommand("PowerSet","",BL0942_PowerSet, "Sets current power value for calibration", NULL);
-	CMD_RegisterCommand("VoltageSet","",BL0942_VoltageSet, "Sets current V value for calibration", NULL);
-	CMD_RegisterCommand("CurrentSet","",BL0942_CurrentSet, "Sets current I value for calibration", NULL);
-	CMD_RegisterCommand("PREF","",BL0942_PowerRef, "Sets the calibration multiplier", NULL);
-	CMD_RegisterCommand("VREF","",BL0942_VoltageRef, "Sets the calibration multiplier", NULL);
-	CMD_RegisterCommand("IREF","",BL0942_CurrentRef, "Sets the calibration multiplier", NULL);
+	CMD_RegisterCommand("PowerSet","",BL0942_PowerSet, NULL, NULL);
+	CMD_RegisterCommand("VoltageSet","",BL0942_VoltageSet, NULL, NULL);
+	CMD_RegisterCommand("CurrentSet","",BL0942_CurrentSet, NULL, NULL);
+	CMD_RegisterCommand("PREF","",BL0942_PowerRef, NULL, NULL);
+	CMD_RegisterCommand("VREF","",BL0942_VoltageRef, NULL, NULL);
+	CMD_RegisterCommand("IREF","",BL0942_CurrentRef, NULL, NULL);
 }
 void BL0942_RunFrame() {
 	int len;

@@ -43,12 +43,13 @@ function getFolder(name, cb){
                             if (l.startsWith('//cmddetail:')){
                                 l = l.slice(12);
                                 commentlines.push(l);
+                                newlines.push(lines[j]);
                             } else {
                                 break;
                             }
                         }
                         // move our parsing forward to skip all found
-                        i = j-1;
+                        i = j;
                         let json = commentlines.join('\n');
                         try{
                             let cmd = JSON.parse(json);
@@ -65,6 +66,9 @@ function getFolder(name, cb){
                         }
                     }
 
+                    // i may have changed...
+                    line = lines[i].trim();
+
                     if (line.startsWith('CMD_RegisterCommand(')){
                         line = line.slice('CMD_RegisterCommand('.length);
                         parts = line.split(',');
@@ -79,6 +83,12 @@ function getFolder(name, cb){
                             requires:"",
                             examples: "",
                         };
+
+                        if (cmd.descr !== 'NULL'){
+                            console.log('replace "'+cmd.descr+'" with NULL');
+                            lines[i] = lines[i].replace('"'+cmd.descr+'"', 'NULL');
+                            modified++;
+                        }
 
                         if (!cmdindex[cmd.name]){
                             // it did not have a doc line before

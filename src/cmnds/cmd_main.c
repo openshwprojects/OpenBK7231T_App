@@ -82,31 +82,31 @@ static int CMD_Echo(const void *context, const char *cmd, const char *args, int 
 
 
 void CMD_Init_Early() {
-	//cmddetail:{"name":"echo","args":"",
-	//cmddetail:"descr":"qqqe",
+	//cmddetail:{"name":"echo","args":"[string to echo]",
+	//cmddetail:"descr":"Echo something to logs and serial",
 	//cmddetail:"fn":"CMD_Echo","file":"cmnds/cmd_main.c","requires":"",
-	//cmddetail:"examples":""}
-    CMD_RegisterCommand("echo", "", CMD_Echo, "qqqe", NULL);
-	//cmddetail:{"name":"restart","args":"",
+	//cmddetail:"examples":"echo hello"}
+    CMD_RegisterCommand("echo", "", CMD_Echo, NULL, NULL);
+	//cmddetail:{"name":"restart","args":"[delay in seconds, default 3]",
 	//cmddetail:"descr":"Reboots the module",
 	//cmddetail:"fn":"CMD_Restart","file":"cmnds/cmd_main.c","requires":"",
-	//cmddetail:"examples":""}
-    CMD_RegisterCommand("restart", "", CMD_Restart, "Reboots the module", NULL);
-	//cmddetail:{"name":"clearConfig","args":"",
-	//cmddetail:"descr":"Clears all config",
+	//cmddetail:"examples":"restart 5"}
+    CMD_RegisterCommand("restart", "", CMD_Restart, NULL, NULL);
+	//cmddetail:{"name":"clearConfig","args":"none",
+	//cmddetail:"descr":"Clears all config, and restarts in AP mode",
 	//cmddetail:"fn":"CMD_ClearConfig","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("clearConfig", "", CMD_ClearConfig, "Clears all config", NULL);
-	//cmddetail:{"name":"simonirtest","args":"",
+    CMD_RegisterCommand("clearConfig", "", CMD_ClearConfig, NULL, NULL);
+	//cmddetail:{"name":"simonirtest","args":"depends?",
 	//cmddetail:"descr":"Simons Special Test",
 	//cmddetail:"fn":"CMD_SimonTest","file":"cmnds/cmd_main.c","requires":"",
-	//cmddetail:"examples":""}
-    CMD_RegisterCommand("simonirtest", "", CMD_SimonTest, "Simons Special Test", NULL);
+	//cmddetail:"examples":"don't do it"}
+    CMD_RegisterCommand("simonirtest", "", CMD_SimonTest, NULL, NULL);
 	//cmddetail:{"name":"if","args":"",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"CMD_If","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("if", "", CMD_If, "", NULL);
+    CMD_RegisterCommand("if", NULL, CMD_If, NULL, NULL);
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	CMD_InitScripting();
 #endif

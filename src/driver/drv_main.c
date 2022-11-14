@@ -248,12 +248,12 @@ void DRV_Generic_Init() {
 	//cmddetail:"descr":"Starts driver",
 	//cmddetail:"fn":"DRV_Start","file":"driver/drv_main.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("startDriver", "", DRV_Start, "Starts driver", NULL);
+	CMD_RegisterCommand("startDriver", "", DRV_Start, NULL, NULL);
 	//cmddetail:{"name":"stopDriver","args":"",
 	//cmddetail:"descr":"Stops driver",
 	//cmddetail:"fn":"DRV_Stop","file":"driver/drv_main.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("stopDriver", "", DRV_Stop, "Stops driver", NULL);
+	CMD_RegisterCommand("stopDriver", "", DRV_Stop, NULL, NULL);
 }
 void DRV_AppendInformationToHTTPIndexPage(http_request_t* request) {
 	int i, j;

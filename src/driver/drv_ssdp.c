@@ -433,7 +433,7 @@ void DRV_SSDP_Init()
 	//cmddetail:"descr":"qqq",
 	//cmddetail:"fn":"Cmd_obkDeviceList","file":"driver/drv_ssdp.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("obkDeviceList", "", Cmd_obkDeviceList, "qqq", NULL);
+    CMD_RegisterCommand("obkDeviceList", "", Cmd_obkDeviceList, NULL, NULL);
 
     HTTP_RegisterCallback("/obkdevicelist", HTTP_GET, http_rest_get_devicelist);
 

@@ -25,7 +25,7 @@ int CMD_InitSendCommands(){
 	//cmddetail:"descr":"qq",
 	//cmddetail:"fn":"CMD_SendGET","file":"cmnds/cmd_send.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("sendGet", "", CMD_SendGET, "qq", NULL);
+    CMD_RegisterCommand("sendGet", "", CMD_SendGET, NULL, NULL);
 
     return 0;
 }

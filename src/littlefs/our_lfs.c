@@ -200,25 +200,25 @@ static int CMD_LFS_Format(const void *context, const char *cmd, const char *args
 
 void LFSAddCmds(){
 	//cmddetail:{"name":"lfssize","args":"NULL",
-	//cmddetail:"descr":"Log or Set LFS size - will apply and re-format next boo",
+	//cmddetail:"descr":"Log or Set LFS size - will apply and re-format next boot",
 	//cmddetail:"fn":"CMD_LFS_Size","file":"littlefs/our_lfs.c","requires":"",
-	//cmddetail:"examples":""}
-    CMD_RegisterCommand("lfssize", NULL, CMD_LFS_Size, "Log or Set LFS size - will apply and re-format next boot, usage setlfssize 0x10000", NULL);	
+	//cmddetail:"examples":"lfssize 0x10000"}
+    CMD_RegisterCommand("lfssize", NULL, CMD_LFS_Size, NULL, NULL);	
 	//cmddetail:{"name":"lfsunmount","args":"NULL",
 	//cmddetail:"descr":"Un-mount LFS",
 	//cmddetail:"fn":"CMD_LFS_Unmount","file":"littlefs/our_lfs.c","requires":"",
-	//cmddetail:"examples":""}
-    CMD_RegisterCommand("lfsunmount", NULL, CMD_LFS_Unmount, "Un-mount LFS", NULL);	
+	//cmddetail:"examples":"lfsunmount"}
+    CMD_RegisterCommand("lfsunmount", NULL, CMD_LFS_Unmount, NULL, NULL);	
 	//cmddetail:{"name":"lfsmount","args":"NULL",
 	//cmddetail:"descr":"Mount LFS",
 	//cmddetail:"fn":"CMD_LFS_Mount","file":"littlefs/our_lfs.c","requires":"",
-	//cmddetail:"examples":""}
-    CMD_RegisterCommand("lfsmount", NULL, CMD_LFS_Mount, "Mount LFS", NULL);	
+	//cmddetail:"examples":"lfsmount"}
+    CMD_RegisterCommand("lfsmount", NULL, CMD_LFS_Mount, NULL, NULL);	
 	//cmddetail:{"name":"lfsformat","args":"NULL",
 	//cmddetail:"descr":"Unmount and format LFS.  Optionally add new size as argument",
 	//cmddetail:"fn":"CMD_LFS_Format","file":"littlefs/our_lfs.c","requires":"",
-	//cmddetail:"examples":""}
-    CMD_RegisterCommand("lfsformat", NULL, CMD_LFS_Format, "Unmount and format LFS.  Optionally add new size as argument", NULL);	
+	//cmddetail:"examples":"lfsformat | lfsformat 0x18000"}
+    CMD_RegisterCommand("lfsformat", NULL, CMD_LFS_Format, NULL, NULL);	
 }
 
 
