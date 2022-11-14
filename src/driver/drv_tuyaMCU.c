@@ -898,7 +898,7 @@ void TuyaMCU_ParseStateMessage(const byte *data, int len) {
 							//CHANNEL_SetAllChannelsByType(QQQQQQ, iVal);
 							// 06 46 = 1606 => A x 100? ?
 							iVal = data[ofs + 11 + 4] << 8 | data[ofs + 12 + 4];
-							//CHANNEL_SetAllChannelsByType(QQQQQQ, iVal);
+							CHANNEL_SetAllChannelsByType(ChType_Current_div1000, iVal);
 							// Voltage?
 							iVal = data[ofs + 13 + 4] << 8 | data[ofs + 14 + 4];
 							CHANNEL_SetAllChannelsByType(ChType_Voltage_div10, iVal);

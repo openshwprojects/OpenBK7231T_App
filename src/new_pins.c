@@ -1187,6 +1187,8 @@ int CHANNEL_ParseChannelType(const char *s) {
 		return ChType_EnergyExport_kWh_div1000;
 	if (!stricmp(s, "EnergyToday_kWh_div1000"))
 		return ChType_EnergyToday_kWh_div1000;
+	if (!stricmp(s, "Current_div1000"))
+		return ChType_Current_div1000;
 	return ChType_Error;
 }
 static int CMD_setButtonHoldRepeat(const void *context, const char *cmd, const char *args, int cmdFlags){

@@ -518,6 +518,14 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "Current %fA (ch %i)", fValue, i);
 			poststr(request, "</td></tr>");
 		}
+		else if (channelType == ChType_Current_div1000) {
+			iValue = CHANNEL_Get(i);
+			fValue = iValue * 0.001f;
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "Current %fA (ch %i)", fValue, i);
+			poststr(request, "</td></tr>");
+		}
 		else if (h_isChannelRelay(i) || channelType == ChType_Toggle) {
 			const char* c;
 			if (i <= 1) {
