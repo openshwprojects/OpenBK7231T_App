@@ -722,6 +722,7 @@ int log_command(const void* context, const char* cmd, const char* args, int cmdF
 			else {
 				direct_serial_log = 0;
 			}
+			result = 1;
 			break;
 		}
 		if (!stricmp(cmd, "logdelay")) {
@@ -733,6 +734,7 @@ int log_command(const void* context, const char* cmd, const char* args, int cmdF
 			else {
 				log_delay = 0;
 			}
+			result = 1;
 			break;
 		}
 
