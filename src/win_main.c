@@ -159,9 +159,37 @@ DWORD WINAPI Thread_SimulateTUYAMCUSendingData(void* arg)
 //	printf(t);
 //}
 
+int accum_time = 0;
+int win_frameNum = 0;
+void Sim_RunFrame() {
+	win_frameNum++;
+	accum_time += 5;
+	PIN_ticks(0);
+	HTTPServer_RunQuickTick();
+	if (accum_time > 1000) {
+		accum_time = 0;
+		Main_OnEverySecond();
+	}
+}
+void Sim_RunFrames(int n) {
+	int i;
+
+	for (i = 0; i < n; i++) {
+		Sim_RunFrame();
+	}
+}
+
+void Win_DoUnitTests() {
+	//CFG_ClearPins();
+
+	Test_Expressions_RunTests_Basic();
+	Test_LEDDriver();
+	Test_Commands_Channels();
+	Test_TuyaMCU_Basic();
+
+}
 int __cdecl main(void)
 {
-	int accum_time = 0;
 
     WSADATA wsaData;
     int iResult;
@@ -175,13 +203,10 @@ int __cdecl main(void)
 	Main_Init();
 
 	while(1) {
-		accum_time += 5;
 		Sleep(5);
-		PIN_ticks(0);
-		HTTPServer_RunQuickTick();
-		if(accum_time>1000){
-			accum_time = 0;
-			Main_OnEverySecond();
+		Sim_RunFrame();
+		if (win_frameNum == 50) {
+			Win_DoUnitTests();
 		}
 	}
 	return 0;

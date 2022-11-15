@@ -61,17 +61,7 @@ void CFG_SetDefaultConfig() {
 void RESET_ScheduleModuleReset(int delSeconds){ 
 
 }
-int g_errors = 0;
-void assertExpression(const char *s, float expectedResult) {
-	float res;
-	res = CMD_EvaluateExpression(s,0);
-	if(abs(res-expectedResult)>0.001f) {
-		printf("CHECK: [%s]=%f ERROR, retuned %f\n",s,expectedResult,res);
-		g_errors++;
-	} else {
-		printf("CHECK: [%s]=%f OK\n",s,expectedResult);
-	}
-}
+
 
 void addLogAdv(int level, int feature, const char* fmt, ...);
 int __cdecl main(void)
@@ -112,28 +102,6 @@ int __cdecl main(void)
                 else
                     addLogAdv(1,1,  ",%1.1f", 3.145f);
             }
-	assertExpression("-1",-1);
-	assertExpression("10.0",10.0f);
-	assertExpression("  10.0   ",10.0f);
-	assertExpression("  10.0*2   ",20.0f);
-	assertExpression("  10.0*2.4   ",24.0f);
-	assertExpression("  10.0+2.4   ",12.40f);
-	assertExpression("$CH10*10.0",100.0f);
-	assertExpression("$CH10+10.0",20.0f);
-	assertExpression("10.0+$CH10",20.0f);
-	assertExpression("10.0+$CH10 \r\n",20.0f);
-	assertExpression("10.0+$CH10\n\r",20.0f);
-	assertExpression("15.0+$CH15\n\r",30.0f);
-	assertExpression("15.0/$CH15\n\r",1.0f);
-	assertExpression("1.50/$CH15\n\r",0.1f);
-	if(g_errors){
-		printf("ERRORS DETECTED!!!!\n");
-		printf("There were %i errors!\n");
-		printf("ERRORS DETECTED!!!!\n");
-	}
-	else{
-		printf("All tests ok\n");
-	}
 	SVM_StartScript("testScripts/testGoto.txt",0,0);
 	while(1) {
 		SVM_RunThreads(5);

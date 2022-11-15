@@ -1,0 +1,35 @@
+#ifdef WINDOWS
+
+#include "selftest_local.h".
+
+void Test_Expressions_RunTests_Basic() {
+	// reset whole device
+	CMD_ExecuteCommand("clearAll", 0);
+
+	SELFTEST_ASSERT(Float_Equals(CMD_EvaluateExpression("-1",0), -1.0f));
+	SELFTEST_ASSERT(Float_Equals(CMD_EvaluateExpression("-11", 0), -11.0f));
+
+	SELFTEST_ASSERT_EXPRESSION("10.0", 10.0f);
+	SELFTEST_ASSERT_EXPRESSION("  10.0   ", 10.0f);
+	SELFTEST_ASSERT_EXPRESSION("  10.0*2   ", 20.0f);
+	SELFTEST_ASSERT_EXPRESSION("  10.0*2.4   ", 24.0f);
+	SELFTEST_ASSERT_EXPRESSION("  10.0+2.4   ", 12.40f);
+	SELFTEST_ASSERT_EXPRESSION("  10.0+ 3.4   ", 13.40f);
+	SELFTEST_ASSERT_EXPRESSION("  10.0 + 4.4   ", 14.40f);
+	CHANNEL_Set(12, 10, 0);
+
+	SELFTEST_ASSERT_EXPRESSION("$CH12*10.0", 100.0f);
+	SELFTEST_ASSERT_EXPRESSION("$CH12+10.0", 20.0f);
+	SELFTEST_ASSERT_EXPRESSION("10.0+$CH12", 20.0f);
+	SELFTEST_ASSERT_EXPRESSION("10.0+$CH12 \r\n", 20.0f);
+	SELFTEST_ASSERT_EXPRESSION("10.0+$CH12\n\r", 20.0f);
+
+
+	CHANNEL_Set(18, 15, 0);
+	SELFTEST_ASSERT_EXPRESSION("15.0+$CH18\n\r", 30.0f);
+	SELFTEST_ASSERT_EXPRESSION("15.0/$CH18\n\r", 1.0f);
+	SELFTEST_ASSERT_EXPRESSION("1.50/$CH18\n\r", 0.1f);
+
+}
+
+#endif
