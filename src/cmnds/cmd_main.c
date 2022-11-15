@@ -60,6 +60,17 @@ static int CMD_Restart(const void *context, const char *cmd, const char *args, i
 
 	return 1;
 }
+static int CMD_ClearAll(const void *context, const char *cmd, const char *args, int cmdFlags) {
+
+	CFG_SetDefaultConfig();
+	CFG_Save_IfThereArePendingChanges();
+
+	CHANNEL_ClearAllChannels();
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ClearAll: all clear");
+
+	return 1;
+}
 static int CMD_ClearConfig(const void *context, const char *cmd, const char *args, int cmdFlags){
 
 	CFG_SetDefaultConfig();
@@ -82,6 +93,7 @@ void CMD_Init() {
     CMD_RegisterCommand("echo", "", CMD_Echo, "qqqe", NULL);
     CMD_RegisterCommand("restart", "", CMD_Restart, "Reboots the module", NULL);
     CMD_RegisterCommand("clearConfig", "", CMD_ClearConfig, "Clears all config", NULL);
+	CMD_RegisterCommand("clearAll", "", CMD_ClearAll, "Clears all things", NULL);
     CMD_RegisterCommand("simonirtest", "", CMD_SimonTest, "Simons Special Test", NULL);
     CMD_RegisterCommand("if", "", CMD_If, "", NULL);
 	if(CFG_HasFlag(OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER)) {

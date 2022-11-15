@@ -654,6 +654,13 @@ int CHANNEL_Get(int ch) {
 	}
 	return g_channelValues[ch];
 }
+void CHANNEL_ClearAllChannels() {
+	int i;
+
+	for (i = 0; i < CHANNEL_MAX; i++) {
+		CHANNEL_Set(i, 0, CHANNEL_SET_FLAG_SILENT);
+	}
+}
 
 void CHANNEL_Set(int ch, int iVal, int iFlags) {
 	int prevValue;
