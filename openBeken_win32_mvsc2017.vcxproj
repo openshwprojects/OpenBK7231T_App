@@ -499,8 +499,11 @@
     </ClCompile>
     <ClCompile Include="src\selftest\selftest_cmd_channels.c" />
     <ClCompile Include="src\selftest\selftest_expressions.c" />
+    <ClCompile Include="src\selftest\selftest_if.c" />
     <ClCompile Include="src\selftest\selftest_led.c" />
+    <ClCompile Include="src\selftest\selftest_lfs.c" />
     <ClCompile Include="src\selftest\selftest_main.c" />
+    <ClCompile Include="src\selftest\selftest_tokenizer.c" />
     <ClCompile Include="src\selftest\selftest_tuyaMCU.c" />
     <ClCompile Include="src\tiny_crc8.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>

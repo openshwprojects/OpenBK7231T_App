@@ -14,6 +14,8 @@ void SelfTest_Failed(const char *file, int line, const char *exp);
 
 #define SELFTEST_ASSERT_EXPRESSION(exp, res) SELFTEST_ASSERT(Float_Equals(CMD_EvaluateExpression(exp,0), res));
 #define SELFTEST_ASSERT_CHANNEL(channelIndex, res) SELFTEST_ASSERT(Float_Equals(CHANNEL_Get(channelIndex), res));
+#define SELFTEST_ASSERT_ARGUMENT(argumentIndex, res) SELFTEST_ASSERT(!strcmp(Tokenizer_GetArg(argumentIndex), res));
+#define SELFTEST_ASSERT_ARGUMENTS_COUNT(wantedCount) SELFTEST_ASSERT((Tokenizer_GetArgsCount()==wantedCount));
 
 //#define FLOAT_EQUALS (a,b) (abs(a-b)<0.001f)
 inline bool Float_Equals(float a, float b) {
@@ -25,7 +27,10 @@ inline bool Float_Equals(float a, float b) {
 void Test_Commands_Channels();
 void Test_LEDDriver();
 void Test_TuyaMCU_Basic();
-
+void Test_Command_If();
+void Test_Command_If_Else();
+void Test_LFS();
+void Test_Tokenizer();
 
 
 #endif

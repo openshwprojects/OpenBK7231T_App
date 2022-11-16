@@ -44,6 +44,24 @@ void Test_Commands_Channels() {
 	// So 112-20 = 92
 	CMD_ExecuteCommand("addChannel 5 -$CH2*2", 0);
 	SELFTEST_ASSERT_CHANNEL(5, 92);
+
+	// test clamping
+	// addChannel can take a max and min value
+	// So...
+	// let's start with 19, add 91 and see if it gets clamped to 100
+	CMD_ExecuteCommand("setChannel 11 19", 0);
+	SELFTEST_ASSERT_CHANNEL(11, 19);
+
+	CMD_ExecuteCommand("addChannel 11 91 0 100", 0);
+	SELFTEST_ASSERT_CHANNEL(11, 100);
+
+	CMD_ExecuteCommand("addChannel 11 91 0 100", 0);
+	SELFTEST_ASSERT_CHANNEL(11, 100);
+
+	// clamp to 200
+	CMD_ExecuteCommand("addChannel 11 291 0 200", 0);
+	SELFTEST_ASSERT_CHANNEL(11, 200);
+
 	// this check will fail obviously!
 	//SELFTEST_ASSERT_CHANNEL(5, 666);
 }

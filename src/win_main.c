@@ -186,6 +186,9 @@ void Win_DoUnitTests() {
 	Test_LEDDriver();
 	Test_Commands_Channels();
 	Test_TuyaMCU_Basic();
+	Test_Command_If();
+	//Test_Command_If_Else(); 
+	Test_Tokenizer();
 
 }
 int __cdecl main(void)
