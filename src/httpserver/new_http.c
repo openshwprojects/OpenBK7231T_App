@@ -575,7 +575,7 @@ int HTTP_ProcessPacket(http_request_t* request) {
 			p = strchr(headers, '\r');
 			if (p != headers) {
 				if (p) {
-					if (request->numheaders < 16) {
+					if (request->numheaders < MAX_HEADERS) {
 						request->headers[request->numheaders] = headers;
 						request->numheaders++;
 					}
