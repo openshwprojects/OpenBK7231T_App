@@ -439,11 +439,14 @@ int postany(http_request_t* request, const char* str, int len) {
 	int addlen = len;
 
 	if (NULL == str) {
-		if (request->replylen > 0) {
-			send(request->fd, request->reply, request->replylen, 0);
+		// fd will be NULL for unit tests where HTTP packet is faked locally
+		if (request->fd != 0) {
+			if (request->replylen > 0) {
+				send(request->fd, request->reply, request->replylen, 0);
+			}
+			request->reply[0] = 0;
+			request->replylen = 0;
 		}
-		request->reply[0] = 0;
-		request->replylen = 0;
 		return 0;
 	}
 

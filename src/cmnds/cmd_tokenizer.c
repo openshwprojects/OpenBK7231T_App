@@ -153,8 +153,16 @@ void Tokenizer_TokenizeString(const char *s, int flags) {
 		return;
 	}
 
+	// not really needed, but nice for testing
+	memset(g_args, 0, sizeof(g_args));
+	memset(g_argsFrom, 0, sizeof(g_argsFrom));
+
 	strcpy(g_buffer,s);
 	p = g_buffer;
+	// we need to rewrite this function and check it well with unit tests
+	if (*p == '"') {
+		goto quote;
+	}
 	g_args[g_numArgs] = p;
 	g_argsFrom[g_numArgs] = (s+(p-g_buffer));
 	g_numArgs++;
@@ -162,7 +170,7 @@ void Tokenizer_TokenizeString(const char *s, int flags) {
 		if(isWhiteSpace(*p)) {
 			*p = 0;
 			if(p[1] != 0 && isWhiteSpace(p[1])==false) {
-				// we need to rewrite this function
+				// we need to rewrite this function and check it well with unit tests
 				if(g_bAllowQuotes && p[1] == '"') { 
 					p++;
 					goto quote;
