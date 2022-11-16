@@ -499,6 +499,7 @@
     </ClCompile>
     <ClCompile Include="src\selftest\selftest_cmd_channels.c" />
     <ClCompile Include="src\selftest\selftest_expressions.c" />
+    <ClCompile Include="src\selftest\selftest_http.c" />
     <ClCompile Include="src\selftest\selftest_if.c" />
     <ClCompile Include="src\selftest\selftest_led.c" />
     <ClCompile Include="src\selftest\selftest_lfs.c" />

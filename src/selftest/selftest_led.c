@@ -41,6 +41,15 @@ void Test_LEDDriver_CW() {
 	SELFTEST_ASSERT_CHANNEL(1, 100);
 	SELFTEST_ASSERT_CHANNEL(2, 0);
 
+	// Tasmota style command should disable LED
+	Test_FakeHTTPClientPacket("cm?cmnd=POWER%200");
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	// Tasmota style command should enable LED
+	Test_FakeHTTPClientPacket("cm?cmnd=POWER%201");
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+
 
 }
 
@@ -112,6 +121,17 @@ void Test_LEDDriver_RGB() {
 	// reenable, it should remember last state
 	CMD_ExecuteCommand("led_enableAll 1", 0);
 	printf("Channel R is %i, channel G is %i, channel B is %i\n", CHANNEL_Get(1), CHANNEL_Get(2), CHANNEL_Get(3));
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 90);
+
+	// Tasmota style command should disable LED
+	Test_FakeHTTPClientPacket("cm?cmnd=POWER%200");
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	// Tasmota style command should enable LED
+	Test_FakeHTTPClientPacket("cm?cmnd=POWER%201");
 	SELFTEST_ASSERT_CHANNEL(1, 0);
 	SELFTEST_ASSERT_CHANNEL(2, 0);
 	SELFTEST_ASSERT_CHANNEL(3, 90);

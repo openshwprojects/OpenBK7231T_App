@@ -30,6 +30,18 @@ void Test_Expressions_RunTests_Basic() {
 	SELFTEST_ASSERT_EXPRESSION("15.0/$CH18\n\r", 1.0f);
 	SELFTEST_ASSERT_EXPRESSION("1.50/$CH18\n\r", 0.1f);
 
+	// Logical operators
+	// &&
+	SELFTEST_ASSERT_EXPRESSION("1&&1\n\r", 1.0f);
+	SELFTEST_ASSERT_EXPRESSION("1&&0\n\r", 0.0f);
+	SELFTEST_ASSERT_EXPRESSION("0&&0\n\r", 0.0f);
+	SELFTEST_ASSERT_EXPRESSION("0&&1\n\r", 0.0f);
+	// ||
+	SELFTEST_ASSERT_EXPRESSION("1||1\n\r", 1.0f);
+	SELFTEST_ASSERT_EXPRESSION("1||0\n\r", 1.0f);
+	SELFTEST_ASSERT_EXPRESSION("0||0\n\r", 0.0f);
+	SELFTEST_ASSERT_EXPRESSION("0||1\n\r", 1.0f);
+
 }
 
 #endif

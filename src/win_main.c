@@ -185,11 +185,13 @@ void Win_DoUnitTests() {
 	Test_Expressions_RunTests_Basic();
 	Test_LEDDriver();
 	Test_Commands_Channels();
-	Test_TuyaMCU_Basic();
 	Test_Command_If();
-	//Test_Command_If_Else(); 
+	Test_Command_If_Else(); 
 	Test_Tokenizer();
+	Test_Http();
 
+	// this is slowest
+	Test_TuyaMCU_Basic();
 }
 int __cdecl main(void)
 {
