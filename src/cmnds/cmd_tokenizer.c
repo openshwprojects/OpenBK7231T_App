@@ -188,7 +188,6 @@ quote:
 			while(*p != 0) {
 				if(*p == '"') {
 					*p = 0;
-					p++;
 					break;
 				}
 				p++;
