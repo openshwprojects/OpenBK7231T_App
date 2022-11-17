@@ -177,36 +177,56 @@ int BL0937_CurrentSet(const void *context, const char *cmd, const char *args, in
 	return 0;
 }
 
-void BL0937_Init() 
+void BL0937_Shutdown_Pins()
 {
-    BL_Shared_Init();
+
+#if PLATFORM_BEKEN
+	gpio_int_disable(GPIO_HLW_CF1);
+#else
+
+#endif
+#if PLATFORM_BEKEN
+	gpio_int_disable(GPIO_HLW_CF);
+#else
+
+#endif
+
+}
+void BL0937_Init_Pins() {
 	// if not found, this will return the already set value
-	GPIO_HLW_SEL = PIN_FindPinIndexForRole(IOR_BL0937_SEL,GPIO_HLW_SEL);
-	GPIO_HLW_CF = PIN_FindPinIndexForRole(IOR_BL0937_CF,GPIO_HLW_CF);
-	GPIO_HLW_CF1 = PIN_FindPinIndexForRole(IOR_BL0937_CF1,GPIO_HLW_CF1);
+	GPIO_HLW_SEL = PIN_FindPinIndexForRole(IOR_BL0937_SEL, GPIO_HLW_SEL);
+	GPIO_HLW_CF = PIN_FindPinIndexForRole(IOR_BL0937_CF, GPIO_HLW_CF);
+	GPIO_HLW_CF1 = PIN_FindPinIndexForRole(IOR_BL0937_CF1, GPIO_HLW_CF1);
 
 	// UPDATE: now they are automatically saved
-	BL0937_VREF = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE,BL0937_VREF);
-	BL0937_PREF = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER,BL0937_PREF);
-	BL0937_CREF = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT,BL0937_CREF);
-    BL0937_PMAX = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER_MAX,BL0937_PMAX);
+	BL0937_VREF = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE, BL0937_VREF);
+	BL0937_PREF = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER, BL0937_PREF);
+	BL0937_CREF = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, BL0937_CREF);
+	BL0937_PMAX = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER_MAX, BL0937_PMAX);
 
 	HAL_PIN_Setup_Output(GPIO_HLW_SEL);
-    HAL_PIN_SetOutputValue(GPIO_HLW_SEL, g_sel);
+	HAL_PIN_SetOutputValue(GPIO_HLW_SEL, g_sel);
 
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF1);
 
 #if PLATFORM_BEKEN
-    gpio_int_enable(GPIO_HLW_CF1,IRQ_TRIGGER_FALLING_EDGE,HlwCf1Interrupt);
+	gpio_int_enable(GPIO_HLW_CF1, IRQ_TRIGGER_FALLING_EDGE, HlwCf1Interrupt);
 #else
 
 #endif
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF);
 #if PLATFORM_BEKEN
-    gpio_int_enable(GPIO_HLW_CF,IRQ_TRIGGER_FALLING_EDGE,HlwCfInterrupt);
+	gpio_int_enable(GPIO_HLW_CF, IRQ_TRIGGER_FALLING_EDGE, HlwCfInterrupt);
 #else
 
 #endif
+	g_vc_pulses = 0;
+	g_p_pulses = 0;
+	pulseStamp = xTaskGetTickCount();
+}
+void BL0937_Init() 
+{
+    BL_Shared_Init();
 
 	CMD_RegisterCommand("PowerSet","",BL0937_PowerSet, "Sets current power value for calibration", NULL);
 	CMD_RegisterCommand("VoltageSet","",BL0937_VoltageSet, "Sets current V value for calibration", NULL);
@@ -216,9 +236,7 @@ void BL0937_Init()
 	CMD_RegisterCommand("IREF","",BL0937_CurrentRef, "Sets the calibration multiplier", NULL);
     CMD_RegisterCommand("PowerMax","",BL0937_PowerMax, "Sets Maximum power value measurement limiter", NULL);
 
-    g_vc_pulses = 0;
-    g_p_pulses = 0;
-    pulseStamp = xTaskGetTickCount();
+	BL0937_Init_Pins();
 }
 
 void BL0937_RunFrame() 
@@ -226,7 +244,19 @@ void BL0937_RunFrame()
 	float final_v;
 	float final_c;
 	float final_p;
-    portTickType ticksElapsed;
+	bool bNeedRestart;
+	portTickType ticksElapsed;
+
+	bNeedRestart = false;
+	if (GPIO_HLW_SEL != PIN_FindPinIndexForRole(IOR_BL0937_SEL, GPIO_HLW_SEL)) {
+		bNeedRestart = true;
+	}
+	if (GPIO_HLW_CF != PIN_FindPinIndexForRole(IOR_BL0937_CF, GPIO_HLW_CF)) {
+		bNeedRestart = true;
+	}
+	if (GPIO_HLW_CF1 != PIN_FindPinIndexForRole(IOR_BL0937_CF1, GPIO_HLW_CF1)) {
+		bNeedRestart = true;
+	}
 
     ticksElapsed = (xTaskGetTickCount() - pulseStamp);
 
@@ -234,6 +264,23 @@ void BL0937_RunFrame()
     GLOBAL_INT_DECLARATION();
     GLOBAL_INT_DISABLE();
 #else
+
+#endif
+
+#if 1
+	if (bNeedRestart) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "BL0937 pins have changed, will reset the interrupts");
+
+		BL0937_Shutdown_Pins();
+		BL0937_Init_Pins();
+#if PLATFORM_BEKEN
+		GLOBAL_INT_RESTORE();
+#else
+
+#endif
+		return;
+	}
+
 
 #endif
 	if(g_sel) {
