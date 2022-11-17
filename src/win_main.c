@@ -182,6 +182,7 @@ void Sim_RunFrames(int n) {
 void Win_DoUnitTests() {
 	//CFG_ClearPins();
 
+	Test_Commands_Alias();
 	Test_Expressions_RunTests_Basic();
 	Test_LEDDriver();
 	Test_Commands_Channels();

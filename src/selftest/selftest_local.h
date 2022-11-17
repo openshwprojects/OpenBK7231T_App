@@ -34,6 +34,7 @@ void Test_Command_If();
 void Test_Command_If_Else();
 void Test_LFS();
 void Test_Tokenizer();
+void Test_Commands_Alias();
 
 void Test_FakeHTTPClientPacket(const char *tg);
 

@@ -252,7 +252,7 @@ void Test_Http_FourRelays() {
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 0b1110);
 }
 /*
-StatusSTS sample from Tasmota:
+StatusSTS sample from Tasmota RGB (3 PWMs set):
 
    "StatusSTS":{
 	  "Time":"2022-11-17T09:35:58",
@@ -278,7 +278,7 @@ StatusSTS sample from Tasmota:
 	  "LedTable":"ON",
 	  "Wifi":{
 		 "AP":1,
-		 "SSId":"DLINK_FastNet",
+		 "SSId":"5G_FULL_POWER",
 		 "BSSId":"30:B5:C2:5D:70:72",
 		 "Channel":11,
 		 "Mode":"11n",
@@ -289,6 +289,83 @@ StatusSTS sample from Tasmota:
 	  }
    }
 
+StatusSTS sample from Tasmota CW (2 PWMs set):
+
+
+   "StatusSTS":{
+	  "Time":"2022-11-17T09:43:50",
+	  "Uptime":"0T00:00:13",
+	  "UptimeSec":13,
+	  "Heap":25,
+	  "SleepMode":"Dynamic",
+	  "Sleep":10,
+	  "LoadAvg":97,
+	  "MqttCount":0,
+	  "POWER":"ON",
+	  "Dimmer":100,
+	  "Color":"255,0",
+	  "White":100,
+	  "CT":153,
+	  "Channel":[
+		 100,
+		 0
+	  ],
+	  "Fade":"OFF",
+	  "Speed":1,
+	  "LedTable":"ON",
+	  "Wifi":{
+		 "AP":1,
+		 "SSId":"5G_FULL_POWER",
+		 "BSSId":"30:B5:C2:5D:70:72",
+		 "Channel":11,
+		 "Mode":"11n",
+		 "RSSI":64,
+		 "Signal":-68,
+		 "LinkCount":1,
+		 "Downtime":"0T00:00:03"
+	  }
+   }
+
+StatusSTS sample from Tasmota RGBCW (5 PWMs set):
+
+   "StatusSTS":{
+	  "Time":"2022-11-17T10:12:49",
+	  "Uptime":"0T00:00:31",
+	  "UptimeSec":31,
+	  "Heap":25,
+	  "SleepMode":"Dynamic",
+	  "Sleep":10,
+	  "LoadAvg":110,
+	  "MqttCount":0,
+	  "POWER":"ON",
+	  "Dimmer":100,
+	  "Color":"0,0,0,0,255",
+	  "HSBColor":"0,0,0",
+	  "White":100,
+	  "CT":500,
+	  "Channel":[
+		 0,
+		 0,
+		 0,
+		 0,
+		 100
+	  ],
+	  "Scheme":0,
+	  "Fade":"OFF",
+	  "Speed":1,
+	  "LedTable":"ON",
+	  "Wifi":{
+		 "AP":1,
+		 "SSId":"5G_FULL_POWER",
+		 "BSSId":"30:B5:C2:5D:70:72",
+		 "Channel":11,
+		 "Mode":"11n",
+		 "RSSI":62,
+		 "Signal":-69,
+		 "LinkCount":1,
+		 "Downtime":"0T00:00:03"
+	  }
+   }
 */
 void Test_Http_LED_SingleChannel() {
 
@@ -326,6 +403,154 @@ void Test_Http_LED_SingleChannel() {
 
 
 }
+void Test_Http_LED_CW() {
+
+	CMD_ExecuteCommand("clearAll", 0);
+	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(24, 1);
+
+	PIN_SetPinRoleForPinIndex(26, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(26, 2);
+
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+	CMD_ExecuteCommand("led_dimmer 100", 0);
+	CMD_ExecuteCommand("led_temperature 153", 0);
+
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+
+	// StatusSTS contains POWER and Dimmer
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "CT", 153);
+
+	CMD_ExecuteCommand("led_enableAll 0", 0);
+	// StatusSTS contains POWER and Dimmer
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "OFF");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "CT", 153);
+
+	CMD_ExecuteCommand("led_dimmer 61", 0);
+	// StatusSTS contains POWER and Dimmer
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 61);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "OFF");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "CT", 153);
+
+
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+	// StatusSTS contains POWER and Dimmer
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 61);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "CT", 153);
+
+	CMD_ExecuteCommand("led_temperature 500", 0);
+	// StatusSTS contains POWER and Dimmer
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 61);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "CT", 500);
+
+
+}
+void Test_Http_LED_RGB() {
+
+	CMD_ExecuteCommand("clearAll", 0);
+	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(24, 1);
+
+	PIN_SetPinRoleForPinIndex(26, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(26, 2);
+
+	PIN_SetPinRoleForPinIndex(9, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(9, 3);
+
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+	CMD_ExecuteCommand("led_dimmer 100", 0);
+	CMD_ExecuteCommand("led_basecolor_rgb FF0000", 0);
+
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+
+	// StatusSTS contains POWER and Dimmer
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "255,0,0");
+
+
+	CMD_ExecuteCommand("led_basecolor_rgb FFFF00", 0);
+
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	SELFTEST_ASSERT_CHANNEL(2, 100);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+
+	// StatusSTS contains POWER and Dimmer
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "255,255,0");
+
+	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
+	CMD_ExecuteCommand("led_dimmer 50", 0);
+
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 50);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
+	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "127,127,0");
+
+
+	CMD_ExecuteCommand("led_basecolor_rgb 0000FF", 0);
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 50);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
+	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "0,0,127");
+	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
+	CMD_ExecuteCommand("led_dimmer 100", 0);
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
+	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "0,0,255");
+
+	/*
+	CMD_ExecuteCommand("led_enableAll 0", 0);
+	// StatusSTS contains POWER and Dimmer
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "OFF");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Color", "255,0,0");
+
+	CMD_ExecuteCommand("led_dimmer 61", 0);
+	// StatusSTS contains POWER and Dimmer
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 61);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "OFF");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "CT", 153);
+
+
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+	// StatusSTS contains POWER and Dimmer
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 61);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "CT", 153);
+
+	CMD_ExecuteCommand("led_temperature 500", 0);
+	// StatusSTS contains POWER and Dimmer
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 61);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "CT", 500);
+	*/
+
+}
 void Test_Http() {
 	Test_Http_SingleRelayOnChannel1();
 	Test_Http_TwoRelays();
@@ -333,6 +558,8 @@ void Test_Http() {
 
 
 	Test_Http_LED_SingleChannel();
+	Test_Http_LED_CW();
+	Test_Http_LED_RGB();
 }
 
 
