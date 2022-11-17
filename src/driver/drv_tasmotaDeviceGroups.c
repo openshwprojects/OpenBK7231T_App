@@ -37,6 +37,10 @@ dgrPacket_t *dgr_pending = 0;
 void DGR_AddToSendQueue(byte *data, int len) {
 	dgrPacket_t *p;
 
+	if(len > MAX_DGR_PACKET) {
+
+		return;
+	}
 	p = dgr_pending;
 	while(p) {
 		if(p->length == 0) {
@@ -55,11 +59,34 @@ void DGR_AddToSendQueue(byte *data, int len) {
 }
 void DGR_FlushSendQueue() {
 	dgrPacket_t *p;
+    struct sockaddr_in addr;
+	int nbytes;
+
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = inet_addr(dgr_group);
+    addr.sin_port = htons(dgr_port);
 
 	p = dgr_pending;
 	while(p) {
 		if(p->length != 0) {
-			
+			nbytes = sendto(
+				g_dgr_socket_send,
+			   (const char*) p->buffer,
+				p->length,
+				0,
+				(struct sockaddr*) &addr,
+				sizeof(addr)
+			);
+			rtos_delay_milliseconds(1);
+			nbytes = sendto(
+				g_dgr_socket_send,
+			   (const char*) p->buffer,
+				p->length,
+				0,
+				(struct sockaddr*) &addr,
+				sizeof(addr)
+			);
 			p->length = 0;
 		}
 		p = p->next;
