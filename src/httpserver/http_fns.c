@@ -1696,6 +1696,8 @@ int http_tasmota_json_power(http_request_t* request) {
 	int lastRelayState;
 	bool bRelayIndexingStartsWithZero;
 	int relayIndexingOffset;
+	int temperature; 
+	int dimmer;
 
 	bRelayIndexingStartsWithZero = CHANNEL_HasChannelPinWithRoleOrRole(0, IOR_Relay, IOR_Relay_n);
 	if (bRelayIndexingStartsWithZero) {
@@ -1711,7 +1713,7 @@ int http_tasmota_json_power(http_request_t* request) {
 
 	// LED driver (if has PWMs)
 	if (LED_IsLEDRunning()) {
-		int dimmer = LED_GetDimmer();
+		dimmer = LED_GetDimmer();
 		hprintf255(request, "\"Dimmer\":%i,", dimmer);
 		hprintf255(request, "\"Fade\":\"OFF\",");
 		hprintf255(request, "\"Speed\":1,");
@@ -1738,10 +1740,23 @@ int http_tasmota_json_power(http_request_t* request) {
 			LED_GetFinalHSV(hsv);
 			LED_GetFinalChannels100(channels);
 
-			hprintf255(request, "\"Color\":\"%i,%i,%i\",", (int)rgbcw[0], (int)rgbcw[1], (int)rgbcw[2]);
+			// it looks like they include C and W in color
+			if (LED_IsLedDriverChipRunning() || numPWMs == 5) {
+				hprintf255(request, "\"Color\":\"%i,%i,%i,%i,%i\",", 
+					(int)rgbcw[0], (int)rgbcw[1], (int)rgbcw[2], (int)rgbcw[3], (int)rgbcw[4]);
+			}
+			else {
+				hprintf255(request, "\"Color\":\"%i,%i,%i\",", (int)rgbcw[0], (int)rgbcw[1], (int)rgbcw[2]);
+			}
 			hprintf255(request, "\"HSBColor\":\"%i,%i,%i\",", hsv[0], hsv[1], hsv[2]);
 			hprintf255(request, "\"Channel\":[%i,%i,%i],", (int)channels[0], (int)channels[1], (int)channels[2]);
 
+		}
+		if (LED_IsLedDriverChipRunning() || numPWMs == 5 || numPWMs == 2) {
+			// 154 to 500 range
+			temperature = LED_GetTemperature();
+			// Temperature 
+			hprintf255(request, "\"CT\":%i,", temperature);
 		}
 		if (LED_GetEnableAll() == 0) {
 			poststr(request, "\"POWER\":\"OFF\"");
