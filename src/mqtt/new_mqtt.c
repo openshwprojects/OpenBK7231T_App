@@ -1207,7 +1207,7 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 	// NOTE: negative indexes are not channels - they are special values
 	role = CHANNEL_GetRoleForOutputChannel(idx);
 	if (role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
-		MQTT_ChannelPublish(g_publishItemIndex, OBK_PUBLISH_FLAG_MUTEX_SILENT);
+		return MQTT_ChannelPublish(g_publishItemIndex, OBK_PUBLISH_FLAG_MUTEX_SILENT);
 	}
 
 	return OBK_PUBLISH_WAS_NOT_REQUIRED; // didnt publish
