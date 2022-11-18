@@ -9,6 +9,7 @@
 #include "../hal/hal_wifi.h"
 #include "../driver/drv_public.h"
 #include "../driver/drv_ntp.h"
+#include "../driver/drv_tuyaMCU.h"
 #include "../ota/ota.h"
 
 #ifndef LWIP_MQTT_EXAMPLE_IPADDR_INIT
@@ -1136,8 +1137,10 @@ OBK_Publish_Result MQTT_DoItemPublishString(const char* sChannel, const char* va
 
 OBK_Publish_Result MQTT_DoItemPublish(int idx)
 {
+	int type;
 	int role;
 	char dataStr[3 * 6 + 1];  //This is sufficient to hold mac value
+	bool bWantsToPublish;
 
 	switch (idx) {
 	case PUBLISHITEM_SELF_STATIC_RESERVED_2:
@@ -1205,8 +1208,19 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 	// We do not need raw values for RGBCW lights (or RGB, etc)
 	// because we are using led_basecolor_rgb, led_dimmer, led_enableAll, etc
 	// NOTE: negative indexes are not channels - they are special values
+	bWantsToPublish = false;
 	role = CHANNEL_GetRoleForOutputChannel(idx);
 	if (role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
+		bWantsToPublish = true;
+	}
+	// publish if channel is used by TuyaMCU (no pin role set), for example door sensor state with power saving V0 protocol
+	// Not enabled by default, you have to set OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS flag
+	if (CFG_HasFlag(OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS) && TuyaMCU_IsChannelUsedByTuyaMCU(idx)) {
+		bWantsToPublish = true;
+	}
+	// TODO
+	//type = CHANNEL_GetType(idx);
+	if (bWantsToPublish) {
 		return MQTT_ChannelPublish(g_publishItemIndex, OBK_PUBLISH_FLAG_MUTEX_SILENT);
 	}
 

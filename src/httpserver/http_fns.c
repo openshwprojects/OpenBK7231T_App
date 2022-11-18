@@ -2359,7 +2359,7 @@ const char* g_obk_flagNames[] = {
 	"[MQTT] Broadcast led final color RGBCW (topic name: YourDevName/led_finalcolor_rgbcw/get)",
 	"[LED] Automatically enable Light when changing brightness, color or temperature on WWW panel",
 	"[LED] Smooth transitions for LED (EXPERIMENTAL)",
-	"error",
+	"[MQTT] Always publish channels used by TuyaMCU",
 	"error",
 	"error",
 };

@@ -727,6 +727,17 @@ void TuyaMCU_ApplyMapping(int fnID, int value) {
     CHANNEL_Set(mapping->channel,mappedValue,0);
 }
 
+bool TuyaMCU_IsChannelUsedByTuyaMCU(int channel) {
+	tuyaMCUMapping_t *mapping;
+
+	// find mapping
+	mapping = TuyaMCU_FindDefForChannel(channel);
+
+	if (mapping == 0) {
+		return false;
+	}
+	return true;
+}
 void TuyaMCU_OnChannelChanged(int channel, int iVal) {
     tuyaMCUMapping_t *mapping;
     int mappediVal = iVal;
