@@ -19,6 +19,15 @@
 #endif
 #endif
 
+// proxy functions....
+int mqtt_client_connect_proxy(mqtt_client_t *client, const ip_addr_t *ipaddr, 
+	u16_t port, mqtt_connection_cb_t cb, void *arg,
+    const struct mqtt_connect_client_info_t *client_info);
+mqtt_client_t* mqtt_client_new_proxy();
+void mqtt_disconnect_proxy(mqtt_client_t* client);
+int mqtt_client_is_connected_proxy();
+
+
 int wal_stricmp(const char* a, const char* b) {
 	int ca, cb;
 	do {
@@ -40,6 +49,7 @@ int wal_strnicmp(const char* a, const char* b, int count) {
 	} while ((ca == cb) && (ca != '\0') && (count > 0));
 	return ca - cb;
 }
+
 
 #define MQTT_QUEUE_ITEM_IS_REUSABLE(x)  (x->topic[0] == 0)
 #define MQTT_QUEUE_ITEM_SET_REUSABLE(x) (x->topic[0] = 0)
@@ -490,7 +500,7 @@ static void MQTT_disconnect(mqtt_client_t* client)
 	if (!client)
 		return;
 	// this is what it was renamed to.  why?
-	mqtt_disconnect(client);
+	mqtt_disconnect_proxy(client);
 }
 
 /* Called when publish is complete either with sucess or failure */
@@ -539,7 +549,7 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 		retain = 1;
 	}
 
-	if (mqtt_client_is_connected(client) == 0)
+	if (mqtt_client_is_connected_proxy(client) == 0)
 	{
 		g_my_reconnect_mqtt_after_time = 5;
 		MQTT_Mutex_Free();
@@ -833,7 +843,7 @@ static void MQTT_do_connect(mqtt_client_t* client)
 		  to establish a connection with the server.
 		  For now MQTT version 3.1.1 is always used */
 
-		res = mqtt_client_connect(mqtt_client,
+		res = mqtt_client_connect_proxy(mqtt_client,
 			&mqtt_ip, mqtt_port,
 			mqtt_connection_cb, LWIP_CONST_CAST(void*, &mqtt_client_info),
 			&mqtt_client_info);
@@ -970,7 +980,7 @@ void MQTT_Test_Tick(void* param)
 	{
 		while (1)
 		{
-			if (mqtt_client_is_connected(mqtt_client) == 0)
+			if (mqtt_client_is_connected_proxy(mqtt_client) == 0)
 				break;
 			if (info->msg_cnt < info->msg_num)
 			{
@@ -1248,7 +1258,7 @@ int MQTT_RunEverySecondUpdate()
 		if (mqtt_reconnect == 0)
 		{
 			// then if connected, disconnect, and then it will reconnect automatically in 2s
-			if (mqtt_client && mqtt_client_is_connected(mqtt_client))
+			if (mqtt_client && mqtt_client_is_connected_proxy(mqtt_client))
 			{
 				MQTT_disconnect(mqtt_client);
 				loopsWithDisconnected = LOOPS_WITH_DISCONNECTED - 2;
@@ -1256,7 +1266,7 @@ int MQTT_RunEverySecondUpdate()
 		}
 	}
 
-	if (mqtt_client == 0 || mqtt_client_is_connected(mqtt_client) == 0)
+	if (mqtt_client == 0 || mqtt_client_is_connected_proxy(mqtt_client) == 0)
 	{
 		//addLogAdv(LOG_INFO,LOG_FEATURE_MAIN, "Timer discovers disconnected mqtt %i\n",loopsWithDisconnected);
 #if WINDOWS
@@ -1272,11 +1282,11 @@ int MQTT_RunEverySecondUpdate()
 			{
 				if (mqtt_client == 0)
 				{
-					mqtt_client = mqtt_client_new();
+					mqtt_client = mqtt_client_new_proxy();
 				}
 				else
 				{
-					mqtt_disconnect(mqtt_client);
+					mqtt_disconnect_proxy(mqtt_client);
 #if defined(MQTT_CLIENT_CLEANUP)
 					mqtt_client_cleanup(mqtt_client);
 #endif
@@ -1303,7 +1313,7 @@ int MQTT_RunEverySecondUpdate()
 		if (ota_progress() != -1)
 		{
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "OTA started MQTT will be closed\n");
-			mqtt_disconnect(mqtt_client);
+			mqtt_disconnect_proxy(mqtt_client);
 			return 1;
 		}
 #endif
@@ -1503,6 +1513,79 @@ OBK_Publish_Result PublishQueuedItems() {
 /// @brief Is MQTT sub system ready and connected?
 /// @return 
 bool MQTT_IsReady() {
-	return mqtt_client && mqtt_client_is_connected(mqtt_client);
+	return mqtt_client && mqtt_client_is_connected_proxy(mqtt_client);
+}
+
+
+
+static int mqtt_proxy_is_connected = 0;
+// this is called from within the tcp_thread context
+void mqtt_client_is_connected_proxy_cb(void *ctx){
+	mqtt_proxy_is_connected = mqtt_client_is_connected(mqtt_client);
+}
+
+int mqtt_client_is_connected_proxy(){
+	tcpip_callback(mqtt_client_is_connected_proxy_cb, NULL);
+	return mqtt_proxy_is_connected;
+}
+
+
+static struct mqtt_client_connect_proxy_cb_str_tag {
+	mqtt_client_t *client;
+	const ip_addr_t *ipaddr; 
+	u16_t port;
+	mqtt_connection_cb_t cb;
+	void *arg;
+    const struct mqtt_connect_client_info_t *client_info;
+} mqtt_client_connect_proxy_str;
+static int mqtt_client_connect_proxy_cb_res = 0;
+void mqtt_client_connect_proxy_cb(void *ctx){
+	struct mqtt_client_connect_proxy_cb_str_tag *p = (struct mqtt_client_connect_proxy_cb_str_tag *) ctx;
+	int res = mqtt_client_connect_proxy_cb_res = mqtt_client_connect(
+		p->client,
+		p->ipaddr, 
+		p->port,
+		p->cb, 
+		p->arg,
+		p->client_info);
+	mqtt_client_connect_proxy_cb_res = res;
+}
+
+int mqtt_client_connect_proxy(mqtt_client_t *client, const ip_addr_t *ipaddr, 
+	u16_t port, mqtt_connection_cb_t cb, void *arg,
+    const struct mqtt_connect_client_info_t *client_info){
+
+	mqtt_client_connect_proxy_str.client = client;
+	mqtt_client_connect_proxy_str.ipaddr = ipaddr;
+	mqtt_client_connect_proxy_str.port = port;
+	mqtt_client_connect_proxy_str.cb = cb;
+	mqtt_client_connect_proxy_str.arg = arg;
+	mqtt_client_connect_proxy_str.client_info = client_info;
+	tcpip_callback(mqtt_client_connect_proxy_cb, &mqtt_client_connect_proxy_str);
+	return mqtt_client_connect_proxy_cb_res;
+}
+
+
+
+static mqtt_client_t* mqtt_client_new_proxy_res = NULL;
+void mqtt_client_new_proxy_cb(void *ctx){
+	mqtt_client_new_proxy_res = mqtt_client_new();
+}
+
+mqtt_client_t* mqtt_client_new_proxy(){
+	tcpip_callback(mqtt_client_connect_proxy_cb, NULL);
+	return mqtt_client_new_proxy_res;
+}
+
+
+
+void mqtt_disconnect_proxy_cb(void *ctx){
+	mqtt_client_t* client = (mqtt_client_t *)ctx;
+	mqtt_disconnect(client);
+}
+
+void mqtt_disconnect_proxy(mqtt_client_t* client){
+	tcpip_callback(mqtt_client_connect_proxy_cb, client);
+	return;
 }
 
