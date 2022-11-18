@@ -1213,11 +1213,13 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 	if (role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
 		bWantsToPublish = true;
 	}
+#ifndef OBK_DISABLE_ALL_DRIVERS
 	// publish if channel is used by TuyaMCU (no pin role set), for example door sensor state with power saving V0 protocol
 	// Not enabled by default, you have to set OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS flag
 	if (CFG_HasFlag(OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS) && TuyaMCU_IsChannelUsedByTuyaMCU(idx)) {
 		bWantsToPublish = true;
 	}
+#endif
 	// TODO
 	//type = CHANNEL_GetType(idx);
 	if (bWantsToPublish) {
