@@ -13,60 +13,98 @@
 
 static const char* dgr_group = "239.255.250.250";
 static int dgr_port = 4447;
-static int dgr_retry_time_left = 20;
-
+static int dgr_retry_time_left = 5;
 static int g_inCmdProcessing = 0;
+static int g_dgr_socket_receive = -1;
+static int g_dgr_socket_send = -1;
+static uint16_t g_dgr_send_seq = 0;
 
 const char *HAL_GetMyIPString();
 
 void DRV_DGR_Dump(byte *message, int len);
 
-// send all DGR on quick tick?
-/*
-#define MAX_DGR_PACKET 64;
+//
+// A DGR outgoing packets queue mechanism.
+// Used to send all DGR on quick tick 
+// (instead of doing it in-place, from MQTT callback etc)
+//
+// TODO: MUTEX !!!!!
+//
+// Maximum number of bytes in pendings DGR packet
+#define MAX_DGR_PACKET 128
+// limits the total number of dgrPacket_t we can alloc
+#define MAX_DGR_QUEUE_SIZE 8
 
 typedef struct dgrPacket_s {
-	dgrPacket_t *next;
+	struct dgrPacket_s *next;
 	byte buffer[MAX_DGR_PACKET];
 	byte length;
 } dgrPacket_t;
 
+// the list is not allocated before first use
 dgrPacket_t *dgr_pending = 0;
+int dgr_total_alloced_queue_size = 0;
 
+static SemaphoreHandle_t g_mutex = 0;
 
+// Adds a packet to DGR send queue. Can be called from anywhere, MQTT callback, etc.
+// We don't send UDP DGR packets directly from MQTT callback, because it would crash device in some cases....
 void DGR_AddToSendQueue(byte *data, int len) {
 	dgrPacket_t *p;
-
+	bool taken;
 	if(len > MAX_DGR_PACKET) {
-
+		addLogAdv(LOG_INFO, LOG_FEATURE_DGR, "DGR_AddToSendQueue: DGR packet too long - %i\n",len);
+		return;
+	}	
+	if (g_mutex == 0)
+	{
+		g_mutex = xSemaphoreCreateMutex();
+	}
+	taken = xSemaphoreTake(g_mutex, 10);
+	if (taken == false) {
 		return;
 	}
 	p = dgr_pending;
 	while(p) {
 		if(p->length == 0) {
-			
+			// this packet can be reused
 			break;
 		}
 		p = p->next;
 	}
 	if(p == 0) {
+		if (dgr_total_alloced_queue_size >= MAX_DGR_QUEUE_SIZE) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_DGR, "DGR_AddToSendQueue: DGR queue grew to big, will drop packet\n");
+			return;
+		}
+		dgr_total_alloced_queue_size++;
 		p = malloc(sizeof(dgrPacket_t));
 		p->next = dgr_pending;
 		dgr_pending = p;
 	}
 	p->length = len;
 	memcpy(p->buffer,data,len);
+	xSemaphoreGive(g_mutex);
 }
 void DGR_FlushSendQueue() {
 	dgrPacket_t *p;
     struct sockaddr_in addr;
 	int nbytes;
+	bool taken;
 
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = inet_addr(dgr_group);
     addr.sin_port = htons(dgr_port);
 
+	if (g_mutex == 0)
+	{
+		g_mutex = xSemaphoreCreateMutex();
+	}
+	taken = xSemaphoreTake(g_mutex, 1);
+	if (taken == false) {
+		return;
+	}
 	p = dgr_pending;
 	while(p) {
 		if(p->length != 0) {
@@ -78,6 +116,7 @@ void DGR_FlushSendQueue() {
 				(struct sockaddr*) &addr,
 				sizeof(addr)
 			);
+#if 0
 			rtos_delay_milliseconds(1);
 			nbytes = sendto(
 				g_dgr_socket_send,
@@ -87,21 +126,22 @@ void DGR_FlushSendQueue() {
 				(struct sockaddr*) &addr,
 				sizeof(addr)
 			);
+#endif
 			p->length = 0;
 		}
 		p = p->next;
 	}
+	xSemaphoreGive(g_mutex);
 
 }
 
-*/
 // DGR send can be called from MQTT LED driver, but doing a DGR send
 // directly from there may cause crashes.
 // This is a temporary solution to avoid this problem.
-bool g_dgr_ledDimmerPendingSend = false;
-int g_dgr_ledDimmerPendingSend_value;
-bool g_dgr_ledPowerPendingSend = false;
-int g_dgr_ledPowerPendingSend_value;
+//bool g_dgr_ledDimmerPendingSend = false;
+//int g_dgr_ledDimmerPendingSend_value;
+//bool g_dgr_ledPowerPendingSend = false;
+//int g_dgr_ledPowerPendingSend_value;
 
 //
 //int DRV_DGR_CreateSocket_Send() {
@@ -139,9 +179,6 @@ byte Val100ToVal255(byte v){
 	v = fr * 255;
 	return v;
 }
-static int g_dgr_socket_receive = -1;
-static int g_dgr_socket_send = -1;
-static uint16_t g_dgr_send_seq = 0;
 void DRV_DGR_CreateSocket_Send() {
     // create what looks like an ordinary UDP socket
     //
@@ -167,6 +204,10 @@ void DRV_DGR_Send_Generic(byte *message, int len) {
 
 
 	g_dgr_send_seq++;
+
+#if 1
+	DGR_AddToSendQueue(message, len);
+#else
 
     // set up destination address
     //
@@ -199,6 +240,7 @@ void DRV_DGR_Send_Generic(byte *message, int len) {
 	DRV_DGR_Dump(message, len);
 
 	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR,"DRV_DGR_Send_Generic: sent message with seq %i\n",g_dgr_send_seq);
+#endif
 
 }
 
@@ -461,7 +503,7 @@ void DRV_DGR_RunEverySecond() {
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"no sockets, will retry creation soon, in %i secs\n",dgr_retry_time_left);
 
 		if(dgr_retry_time_left <= 0){
-			dgr_retry_time_left = 20;
+			dgr_retry_time_left = 5;
 			if(g_dgr_socket_receive <= 0){
 				DRV_DGR_CreateSocket_Receive();
 			}
@@ -483,14 +525,15 @@ void DRV_DGR_RunQuickTick() {
 		return ;
 	}
     // send pending
-	if (g_dgr_ledDimmerPendingSend) {
-		g_dgr_ledDimmerPendingSend = false;
-		DRV_DGR_Send_Brightness(CFG_DeviceGroups_GetName(), Val100ToVal255(g_dgr_ledDimmerPendingSend_value));
-	}
-	if (g_dgr_ledPowerPendingSend) {
-		g_dgr_ledPowerPendingSend = false;
-		DRV_DGR_Send_Power(CFG_DeviceGroups_GetName(), g_dgr_ledPowerPendingSend_value, 1);
-	}
+	DGR_FlushSendQueue();
+	//if (g_dgr_ledDimmerPendingSend) {
+	//	g_dgr_ledDimmerPendingSend = false;
+	//	DRV_DGR_Send_Brightness(CFG_DeviceGroups_GetName(), Val100ToVal255(g_dgr_ledDimmerPendingSend_value));
+	//}
+	//if (g_dgr_ledPowerPendingSend) {
+	//	g_dgr_ledPowerPendingSend = false;
+	//	DRV_DGR_Send_Power(CFG_DeviceGroups_GetName(), g_dgr_ledPowerPendingSend_value, 1);
+	//}
 
 	// NOTE: 'addr' is global, and used in callbacks to determine the member.
         addrlen = sizeof(addr);
@@ -607,11 +650,11 @@ void DRV_DGR_OnLedDimmerChange(int iVal) {
 
 		return;
 	}
-#if 1
+#if 0
 	g_dgr_ledDimmerPendingSend = true;
 	g_dgr_ledDimmerPendingSend_value = iVal;
 #else
-	DRV_DGR_Send_Brightness(CFG_DeviceGroups_GetName(), Val100ToVal255(g_dgr_ledDimmerPendingSend_value));
+	DRV_DGR_Send_Brightness(CFG_DeviceGroups_GetName(), Val100ToVal255(iVal));
 #endif
 }
 
@@ -632,7 +675,7 @@ void DRV_DGR_OnLedEnableAllChange(int iVal) {
 		return;
 	}
 
-#if 1
+#if 0
 	g_dgr_ledPowerPendingSend = true;
 	g_dgr_ledPowerPendingSend_value = iVal;
 #else
@@ -644,6 +687,7 @@ void DRV_DGR_OnChannelChanged(int ch, int value) {
 	int channelsCount;
 	int i;
 	const char *groupName;
+	int firstChannelOffset;
 
 	if(g_dgr_socket_receive==0) {
 		return;
@@ -662,11 +706,23 @@ void DRV_DGR_OnChannelChanged(int ch, int value) {
 	channelsCount = 0;
 	groupName = CFG_DeviceGroups_GetName();
 
-	for(i = 0; i < CHANNEL_MAX; i++) {
-		if(CHANNEL_HasChannelPinWithRole(i,IOR_Relay) || CHANNEL_HasChannelPinWithRole(i,IOR_Relay_n)
-			|| CHANNEL_HasChannelPinWithRole(i,IOR_LED) || CHANNEL_HasChannelPinWithRole(i,IOR_LED_n)) {
+	// we have channel indices starting from 0 but some people start with 1
+	// check if we need to offset
+	if (CHANNEL_HasChannelPinWithRole(0, IOR_Relay) || CHANNEL_HasChannelPinWithRole(0, IOR_Relay_n)
+		|| CHANNEL_HasChannelPinWithRole(0, IOR_LED) || CHANNEL_HasChannelPinWithRole(0, IOR_LED_n)) {
+		firstChannelOffset = 0;
+	}
+	else {
+		firstChannelOffset = 1;
+	}
+
+
+	for(i = 0; i < CHANNEL_MAX-1; i++) {
+		int chIndex = i + firstChannelOffset;
+		if(CHANNEL_HasChannelPinWithRole(chIndex,IOR_Relay) || CHANNEL_HasChannelPinWithRole(chIndex,IOR_Relay_n)
+			|| CHANNEL_HasChannelPinWithRole(chIndex,IOR_LED) || CHANNEL_HasChannelPinWithRole(chIndex,IOR_LED_n)) {
 			channelsCount = i + 1;
-			if(CHANNEL_Get(i)) {
+			if(CHANNEL_Get(chIndex)) {
 				BIT_SET(channelValues ,i);
 			}
 		} 
