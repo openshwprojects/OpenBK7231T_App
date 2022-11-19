@@ -80,9 +80,11 @@ static driver_t g_drivers[] = {
 
 #if PLATFORM_BEKEN
 	{ "IR",			DRV_IR_Init,		 NULL,						NULL, DRV_IR_RunFrame, NULL, NULL, false },
-	{ "DGR",		DRV_DGR_Init,		DRV_DGR_RunEverySecond,		NULL, DRV_DGR_RunQuickTick, DRV_DGR_Shutdown, DRV_DGR_OnChannelChanged, false },
 	{ "DDP",		DRV_DDP_Init,		NULL,						NULL, DRV_DDP_RunFrame, DRV_DDP_Shutdown, NULL, false },
 	{ "SSDP",		DRV_SSDP_Init,		DRV_SSDP_RunEverySecond,	NULL, DRV_SSDP_RunQuickTick, DRV_SSDP_Shutdown, NULL, false },
+#endif
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+	{ "DGR",		DRV_DGR_Init,		DRV_DGR_RunEverySecond,		NULL, DRV_DGR_RunQuickTick, DRV_DGR_Shutdown, DRV_DGR_OnChannelChanged, false },
 #endif
 	{ "SM2135",		SM2135_Init,		SM2135_RunFrame,			NULL, NULL, NULL, SM2135_OnChannelChanged, false },
 	{ "BP5758D",	BP5758D_Init,		BP5758D_RunFrame,			NULL, NULL, NULL, BP5758D_OnChannelChanged, false },
