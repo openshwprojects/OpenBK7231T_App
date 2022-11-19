@@ -193,8 +193,8 @@ void DRV_DGR_CreateSocket_Send() {
 
 }
 void DRV_DGR_Send_Generic(byte *message, int len) {
-    struct sockaddr_in addr;
-	int nbytes;
+    //struct sockaddr_in addr;
+	//int nbytes;
 
 	// if this send is as a result of use RXing something, 
 	// don't send it....
@@ -206,6 +206,8 @@ void DRV_DGR_Send_Generic(byte *message, int len) {
 	g_dgr_send_seq++;
 
 #if 1
+	// This is here only because sending UDP from MQTT callback crashes BK for me
+	// So instead, we are making a queue which is sent in quick tick
 	DGR_AddToSendQueue(message, len);
 #else
 
@@ -295,6 +297,19 @@ void DRV_DGR_Send_RGBCW(const char *groupName, byte *rgbcw){
 	len = DGR_Quick_FormatRGBCW(message,sizeof(message),groupName,g_dgr_send_seq, 0, rgbcw[0],rgbcw[1],rgbcw[2],rgbcw[3],rgbcw[4]);
 
 	DRV_DGR_Send_Generic(message,len);
+}
+void DRV_DGR_Send_FixedColor(const char *groupName, int colorIndex) {
+	int len;
+	byte message[64];
+	// if this send is as a result of use RXing something, 
+	// don't send it....
+	if (g_inCmdProcessing) {
+		return;
+	}
+
+	len = DGR_Quick_FormatFixedColor(message, sizeof(message), groupName, g_dgr_send_seq, 0, colorIndex);
+
+	DRV_DGR_Send_Generic(message, len);
 }
 void DRV_DGR_CreateSocket_Receive() {
 
@@ -778,6 +793,25 @@ int CMD_DGR_SendRGBCW(const void *context, const char *cmd, const char *args, in
 
 	return 1;
 }
+// CMD_DGR_SendFixedColor stringGroupName tasmotaColorIndex
+int CMD_DGR_SendFixedColor(const void *context, const char *cmd, const char *args, int flags) {
+	const char *groupName;
+	int colorIndex;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 2) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_DGR, "Command requires at least 2 arguments - groupname, colorIndex\n");
+		return 0;
+	}
+	groupName = Tokenizer_GetArg(0);
+	colorIndex = Tokenizer_GetArgInteger(1);
+
+	DRV_DGR_Send_FixedColor(groupName, colorIndex);
+	addLogAdv(LOG_INFO, LOG_FEATURE_DGR, "CMD_DGR_SendFixedColor: sent message to group %s\n", groupName);
+
+	return 1;
+}
 void DRV_DGR_Init()
 {
 	memset(&g_dgrMembers[0],0,sizeof(g_dgrMembers));
@@ -791,6 +825,7 @@ void DRV_DGR_Init()
     CMD_RegisterCommand("DGR_SendPower", "", CMD_DGR_SendPower, "qqq", NULL);
     CMD_RegisterCommand("DGR_SendBrightness", "", CMD_DGR_SendBrightness, "qqq", NULL);
     CMD_RegisterCommand("DGR_SendRGBCW", "", CMD_DGR_SendRGBCW, "qqq", NULL);
+	CMD_RegisterCommand("DGR_SendFixedColor", "", CMD_DGR_SendFixedColor, "qqq", NULL);
 }
 
 
