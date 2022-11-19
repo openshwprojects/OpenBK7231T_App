@@ -867,7 +867,7 @@ void TuyaMCU_ParseStateMessage(const byte *data, int len) {
     int sectorLen;
     int fnId;
     int dataType;
-	int channelType;
+	//int channelType;
 	int iVal;
 
     ofs = 0;

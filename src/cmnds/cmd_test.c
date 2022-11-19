@@ -93,7 +93,6 @@ static int testStrdup(const void * context, const char *cmd, const char *args, i
 	int repeats;
 	int rep;
     char *msg;
-	int i;
 	int ra1;
 	static int totalCalls = 0;
 	const char *s = "Strdup test123";
@@ -108,8 +107,6 @@ static int testStrdup(const void * context, const char *cmd, const char *args, i
 		ra1 = 1 + abs(rand() % 1000);
 
 		msg = strdup(s);
-		
-	
 
 		os_free(msg);
 	}
