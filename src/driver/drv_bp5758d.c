@@ -35,7 +35,6 @@ static byte g_chosenCurrent = BP5758D_14MA;
 
 bool bIsSleeping = false; //Save sleep state of Lamp
 
-void usleep(int r); //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 
 static void BP5758D_Stop() {
 	HAL_PIN_SetOutputValue(g_pin_clk, 1);

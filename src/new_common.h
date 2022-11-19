@@ -390,6 +390,9 @@ int PingWatchDog_GetTotalReceived();
 int LWIP_GetMaxSockets();
 int LWIP_GetActiveSockets();
 
+//delay function do 10*r nops, because rtos_delay_milliseconds is too much
+void usleep(int r);
+
 // linear mapping function --> https://www.arduino.cc/reference/en/language/functions/math/map/
 
 #define MAP(x, in_min, in_max, out_min, out_max) (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
