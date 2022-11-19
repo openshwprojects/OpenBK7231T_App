@@ -36,6 +36,121 @@ err_t mqtt_publish_proxy(
     mqtt_request_cb_t cb, 
 	void *arg);
 
+
+static SemaphoreHandle_t g_mutex = 0;
+
+static bool MQTT_Mutex_Take(int del) {
+	int taken;
+
+	if (g_mutex == 0)
+	{
+		g_mutex = xSemaphoreCreateMutex();
+	}
+	taken = xSemaphoreTake(g_mutex, del);
+	if (taken == pdTRUE) {
+		return true;
+	}
+	return false;
+}
+
+static void MQTT_Mutex_Free()
+{
+	xSemaphoreGive(g_mutex);
+}
+
+
+
+/////////////////////////////////////////////////////////////
+// mqtt receive buffer, so we can action in our threads, not
+// in tcp_thread
+//
+#define MQTT_RX_BUFFER_MAX 4096
+unsigned char mqtt_rx_buffer[MQTT_RX_BUFFER_MAX];
+int mqtt_rx_buffer_head;
+int mqtt_rx_buffer_tail;
+int mqtt_rx_buffer_count;
+unsigned char temp_topic[128];
+unsigned char temp_data[128];
+
+int addLenData(int len, unsigned char *data){
+	mqtt_rx_buffer[mqtt_rx_buffer_head] = (len >> 8) & 0xff;
+	mqtt_rx_buffer_head = (mqtt_rx_buffer_head + 1) % MQTT_RX_BUFFER_MAX;
+	mqtt_rx_buffer_count++;
+	mqtt_rx_buffer[mqtt_rx_buffer_head] = (len) & 0xff;
+	mqtt_rx_buffer_head = (mqtt_rx_buffer_head + 1) % MQTT_RX_BUFFER_MAX;
+	mqtt_rx_buffer_count++;
+	for (int i = 0; i < len; i++){
+		mqtt_rx_buffer[mqtt_rx_buffer_head] = data[i];
+		mqtt_rx_buffer_head = (mqtt_rx_buffer_head + 1) % MQTT_RX_BUFFER_MAX;
+		mqtt_rx_buffer_count++;
+	}
+	return len + 2;
+}
+
+int getLenData(int *len, unsigned char *data, int maxlen){
+	int l;
+	l = mqtt_rx_buffer[mqtt_rx_buffer_tail];
+	mqtt_rx_buffer_tail = (mqtt_rx_buffer_tail + 1) % MQTT_RX_BUFFER_MAX;
+	mqtt_rx_buffer_count--;
+	l = l<<8;
+	l |= mqtt_rx_buffer[mqtt_rx_buffer_tail];
+	mqtt_rx_buffer_tail = (mqtt_rx_buffer_tail + 1) % MQTT_RX_BUFFER_MAX;
+	mqtt_rx_buffer_count--;
+
+	for (int i = 0; i < l; i++){
+		if (i < maxlen){
+			data[i] = mqtt_rx_buffer[mqtt_rx_buffer_tail];
+		}
+		mqtt_rx_buffer_tail = (mqtt_rx_buffer_tail + 1) % MQTT_RX_BUFFER_MAX;
+		mqtt_rx_buffer_count--;
+	}
+	if (mqtt_rx_buffer_count < 0){
+		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "MQTT_rx buffer underflow!!!");
+		mqtt_rx_buffer_count = 0;
+		mqtt_rx_buffer_tail = mqtt_rx_buffer_head = 0;
+	}
+
+	if (l > maxlen){
+		*len = maxlen;
+	} else {
+		*len = l;
+	}
+	return l + 2;
+}
+
+
+// this is called from tcp_thread context to queue received mqtt,
+// and then we'll retrieve them from our own thread for processing.
+int post_received(char *topic, int topiclen, unsigned char *data, int datalen){
+	MQTT_Mutex_Take(100);
+	if ((MQTT_RX_BUFFER_MAX - 1 - mqtt_rx_buffer_count) < topiclen + datalen + 2 + 2){
+		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "MQTT_rx buffer overflow for topic %s", topic);
+	} else {
+		addLenData(topiclen, topic);
+		addLenData(datalen, data);
+	}
+	MQTT_Mutex_Free();
+	return 1;
+}
+
+int get_received(char **topic, int *topiclen, unsigned char **data, int *datalen){
+	int res = 0;
+	MQTT_Mutex_Take(100);
+	if (mqtt_rx_buffer_tail != mqtt_rx_buffer_head){
+		getLenData(topiclen, temp_topic, sizeof(temp_topic)-1);
+		temp_topic[*topiclen] = 0;
+		getLenData(datalen, temp_data, sizeof(temp_data)-1);
+		temp_data[*datalen] = 0;
+		*topic = temp_topic;
+		*data = temp_data;
+		res = 1;
+	}
+	MQTT_Mutex_Free();
+	return res;
+}
+//
+//////////////////////////////////////////////////////////////////////
+
 int wal_stricmp(const char* a, const char* b) {
 	int ca, cb;
 	do {
@@ -132,26 +247,6 @@ int g_publishItemIndex = PUBLISHITEM_ALL_INDEX_FIRST;
 static bool g_firstFullBroadcast = true;  //Flag indicating that we need to do a full broadcast
 
 int g_memoryErrorsThisSession = 0;
-static SemaphoreHandle_t g_mutex = 0;
-
-static bool MQTT_Mutex_Take(int del) {
-	int taken;
-
-	if (g_mutex == 0)
-	{
-		g_mutex = xSemaphoreCreateMutex();
-	}
-	taken = xSemaphoreTake(g_mutex, del);
-	if (taken == pdTRUE) {
-		return true;
-	}
-	return false;
-}
-
-static void MQTT_Mutex_Free()
-{
-	xSemaphoreGive(g_mutex);
-}
 
 void MQTT_PublishWholeDeviceState_Internal(bool bAll)
 {
@@ -663,15 +758,54 @@ static void mqtt_incoming_data_cb(void* arg, const u8_t* data, u16_t len, u8_t f
 			char* cbtopic = callbacks[i]->topic;
 			if (!strncmp(g_mqtt_request.topic, cbtopic, strlen(cbtopic)))
 			{
+				post_received(g_mqtt_request.topic, strlen(g_mqtt_request.topic), data, len);
+				// if ANYONE is interested, store it.
+				break;
 				// note - callback must return 1 to say it ate the mqtt, else further processing can be performed.
 				// i.e. multiple people can get each topic if required.
-				if (callbacks[i]->callback(&g_mqtt_request))
-				{
-					return;
-				}
+				//if (callbacks[i]->callback(&g_mqtt_request))
+				//{
+				//	return;
+				//}
 			}
 		}
 	}
+}
+
+
+// run from userland (quicktick or wakeable thread)
+int MQTT_process_received(){
+	char *topic;
+	int topiclen;
+	unsigned char *data;
+	int datalen;
+	int found = 0;
+	int count = 0;
+	do{
+		found = get_received(&topic, &topiclen, &data, &datalen);
+		if (found){
+			count++;
+			strncpy(g_mqtt_request.topic, topic, sizeof(g_mqtt_request.topic));
+			g_mqtt_request.received = data;
+			g_mqtt_request.receivedLen = datalen;
+			for (int i = 0; i < numCallbacks; i++)
+			{
+				char* cbtopic = callbacks[i]->topic;
+				if (!strncmp(topic, cbtopic, strlen(cbtopic)))
+				{
+					// note - callback must return 1 to say it ate the mqtt, else further processing can be performed.
+					// i.e. multiple people can get each topic if required.
+					if (callbacks[i]->callback(&g_mqtt_request))
+					{
+						// if no further processing, then break this loop.
+						break;
+					}
+				}
+			}
+		}
+	} while (found);
+
+	return count;
 }
 
 
@@ -1251,6 +1385,13 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 }
 static int g_secondsBeforeNextFullBroadcast = 30;
 
+
+// from 5ms quicktick
+int MQTT_RunQuickTick(){
+	MQTT_process_received();
+}
+
+
 // called from user timer.
 int MQTT_RunEverySecondUpdate()
 {
@@ -1712,7 +1853,7 @@ err_t mqtt_publish_proxy(
 	tcpip_callback(mqtt_publish_proxy_cb, &mqtt_publish_proxy_str);
 	while (mqtt_publish_proxy_res == -10){
 		rtos_delay_milliseconds(5);
-		bk_printf("d");
+		bk_printf("p");
 	}
 	return mqtt_publish_proxy_res;
 }
