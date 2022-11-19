@@ -100,6 +100,10 @@ enum ChannelType {
 	ChType_EnergyToday_kWh_div1000,
 	ChType_Current_div1000,
 	ChType_EnergyTotal_kWh_div100,
+	ChType_OpenClosed,
+	ChType_OpenClosed_Inv,
+
+
 };
 
 

@@ -1198,6 +1198,10 @@ int CHANNEL_ParseChannelType(const char *s) {
 		return ChType_EnergyToday_kWh_div1000;
 	if (!stricmp(s, "Current_div1000"))
 		return ChType_Current_div1000;
+	if (!stricmp(s, "OpenClosed"))
+		return ChType_OpenClosed;
+	if (!stricmp(s, "OpenClosed_inv"))
+		return ChType_OpenClosed_Inv;
 	return ChType_Error;
 }
 static int CMD_setButtonHoldRepeat(const void *context, const char *cmd, const char *args, int cmdFlags){

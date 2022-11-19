@@ -534,6 +534,30 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "Current %fA (ch %i)", fValue, i);
 			poststr(request, "</td></tr>");
 		}
+		else if (channelType == ChType_OpenClosed) {
+			iValue = CHANNEL_Get(i);
+
+			poststr(request, "<tr><td>");
+			if (iValue) {
+				hprintf255(request, "CLOSED (ch %i)", i);
+			}
+			else {
+				hprintf255(request, "OPEN (ch %i)", i);
+			}
+			poststr(request, "</td></tr>");
+		}
+		else if (channelType == ChType_OpenClosed_Inv) {
+			iValue = CHANNEL_Get(i);
+
+			poststr(request, "<tr><td>");
+			if (!iValue) {
+				hprintf255(request, "CLOSED (ch %i)", i);
+			}
+			else {
+				hprintf255(request, "OPEN (ch %i)", i);
+			}
+			poststr(request, "</td></tr>");
+		}
 		else if (h_isChannelRelay(i) || channelType == ChType_Toggle) {
 			const char* c;
 			if (i <= 1) {
