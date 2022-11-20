@@ -57,34 +57,34 @@ static bool SM2135_WriteByte(uint8_t value) {
 			SM2135_SetLow(g_pin_data);
 		}
 		SM2135_SetHigh(g_pin_clk);
-		rtos_delay_milliseconds(SM2135_DELAY);
+		usleep(SM2135_DELAY);
 		SM2135_SetLow(g_pin_clk);
 	}
 	// get Ack or Nak
 	SM2135_SetHigh(g_pin_data);
 	SM2135_SetHigh(g_pin_clk);
-	rtos_delay_milliseconds(SM2135_DELAY / 2);
+	usleep(SM2135_DELAY / 2);
 	ack = HAL_PIN_ReadDigitalInput(g_pin_data);
 	SM2135_SetLow(g_pin_clk);
-	rtos_delay_milliseconds(SM2135_DELAY / 2);
+	usleep(SM2135_DELAY / 2);
 	SM2135_SetLow(g_pin_data);
 	return (0 == ack);
 }
 
 static bool SM2135_Start(uint8_t addr) {
 	SM2135_SetLow(g_pin_data);
-	rtos_delay_milliseconds(SM2135_DELAY);
+	usleep(SM2135_DELAY);
 	SM2135_SetLow(g_pin_clk);
 	return SM2135_WriteByte(addr);
 }
 
 static void SM2135_Stop(void) {
 	SM2135_SetLow(g_pin_data);
-	rtos_delay_milliseconds(SM2135_DELAY);
+	usleep(SM2135_DELAY);
 	SM2135_SetHigh(g_pin_clk);
-	rtos_delay_milliseconds(SM2135_DELAY);
+	usleep(SM2135_DELAY);
 	SM2135_SetHigh(g_pin_data);
-	rtos_delay_milliseconds(SM2135_DELAY);
+	usleep(SM2135_DELAY);
 }
 
 void SM2135_Write(byte *rgbcw) {
@@ -112,7 +112,7 @@ void SM2135_Write(byte *rgbcw) {
 			SM2135_WriteByte(g_current_setting_cw);
 			SM2135_WriteByte(SM2135_CW);
 			SM2135_Stop();
-			rtos_delay_milliseconds(SM2135_DELAY);
+			usleep(SM2135_DELAY);
 
 			SM2135_Start(SM2135_ADDR_C);
 			SM2135_WriteByte(rgbcw[g_channelOrder[3]]);

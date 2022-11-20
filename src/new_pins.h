@@ -100,6 +100,10 @@ enum ChannelType {
 	ChType_EnergyToday_kWh_div1000,
 	ChType_Current_div1000,
 	ChType_EnergyTotal_kWh_div100,
+	ChType_OpenClosed,
+	ChType_OpenClosed_Inv,
+
+
 };
 
 
@@ -157,9 +161,10 @@ typedef struct pinsState_s {
 #define OBK_FLAG_LED_BROADCAST_FULL_RGBCW			16
 #define OBK_FLAG_LED_AUTOENABLE_ON_WWW_ACTION		17
 #define OBK_FLAG_LED_SMOOTH_TRANSITIONS				18
+#define OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS		19
 
 
-#define OBK_TOTAL_FLAGS 19
+#define OBK_TOTAL_FLAGS 20
 
 
 #define CGF_MQTT_CLIENT_ID_SIZE			64
@@ -292,6 +297,7 @@ void CHANNEL_Toggle(int ch);
 void CHANNEL_DoSpecialToggleAll();
 bool CHANNEL_Check(int ch);
 void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex));
+void CHANNEL_ClearAllChannels();
 // CHANNEL_SET_FLAG_*
 void CHANNEL_Set(int ch, int iVal, int iFlags);
 void CHANNEL_Add(int ch, int iVal);

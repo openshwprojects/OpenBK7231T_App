@@ -40,6 +40,11 @@ void DGR_AppendColorRGBCW(bitMessage_t *msg, byte r, byte g, byte b, byte c, byt
 	MSG_WriteByte(msg,c);
 	MSG_WriteByte(msg,w);
 }
+void DGR_AppendFixedColor(bitMessage_t *msg, int colorIndex) {
+	MSG_WriteByte(msg, DGR_ITEM_LIGHT_FIXED_COLOR);
+	// This is a single 8 bit value. No need to put a size byte there.
+	MSG_WriteByte(msg, colorIndex);
+}
 void DGR_AppendDimmer(bitMessage_t *msg, byte dimmValue) {
 	MSG_WriteByte(msg,DGR_ITEM_LIGHT_BRI);
 	MSG_WriteByte(msg,dimmValue);
@@ -77,6 +82,16 @@ int DGR_Quick_FormatRGBCW(byte *buffer, int maxSize, const char *groupName, uint
 	DGR_Finish(&msg);
 	return msg.position;
 }
+int DGR_Quick_FormatFixedColor(byte *buffer, int maxSize, const char *groupName, uint16_t sequence, int flags, int color) {
+	bitMessage_t msg;
+	MSG_BeginWriting(&msg, buffer, maxSize);
+	DGR_BeginWriting(&msg, groupName, sequence, flags);
+	DGR_AppendFixedColor(&msg, color);
+	DGR_Finish(&msg);
+	return msg.position;
+}
+
+
 
 
 

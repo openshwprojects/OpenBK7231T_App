@@ -654,6 +654,13 @@ int CHANNEL_Get(int ch) {
 	}
 	return g_channelValues[ch];
 }
+void CHANNEL_ClearAllChannels() {
+	int i;
+
+	for (i = 0; i < CHANNEL_MAX; i++) {
+		CHANNEL_Set(i, 0, CHANNEL_SET_FLAG_SILENT);
+	}
+}
 
 void CHANNEL_Set(int ch, int iVal, int iFlags) {
 	int prevValue;
@@ -1191,6 +1198,10 @@ int CHANNEL_ParseChannelType(const char *s) {
 		return ChType_EnergyToday_kWh_div1000;
 	if (!stricmp(s, "Current_div1000"))
 		return ChType_Current_div1000;
+	if (!stricmp(s, "OpenClosed"))
+		return ChType_OpenClosed;
+	if (!stricmp(s, "OpenClosed_inv"))
+		return ChType_OpenClosed_Inv;
 	return ChType_Error;
 }
 static int CMD_setButtonHoldRepeat(const void *context, const char *cmd, const char *args, int cmdFlags){

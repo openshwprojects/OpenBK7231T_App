@@ -439,6 +439,10 @@ int postany(http_request_t* request, const char* str, int len) {
 	int addlen = len;
 
 	if (NULL == str) {
+		// fd will be NULL for unit tests where HTTP packet is faked locally
+		if (request->fd == 0) {
+			return request->replylen;
+		}
 		if (request->replylen > 0) {
 			send(request->fd, request->reply, request->replylen, 0);
 		}
@@ -575,7 +579,7 @@ int HTTP_ProcessPacket(http_request_t* request) {
 			p = strchr(headers, '\r');
 			if (p != headers) {
 				if (p) {
-					if (request->numheaders < 16) {
+					if (request->numheaders < MAX_HEADERS) {
 						request->headers[request->numheaders] = headers;
 						request->numheaders++;
 					}

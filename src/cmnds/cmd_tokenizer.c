@@ -87,7 +87,7 @@ int Tokenizer_GetArgInteger(int i) {
 		sscanf(s, "%x", &ret);
 		return ret;
 	}
-#if !PLATFORM_BEKEN
+#if (!PLATFORM_BEKEN && !WINDOWS)
 	if(g_bAllowExpand && s[0] == '$') {
 		// constant
 		int channelIndex;
@@ -115,7 +115,7 @@ float Tokenizer_GetArgFloat(int i) {
 #endif
 	const char *s;
 	s = g_args[i];
-#if !PLATFORM_BEKEN
+#if (!PLATFORM_BEKEN && !WINDOWS)
 	if(g_bAllowExpand && s[0] == '$') {
 		// constant
 		if(s[1] == 'C' && s[2] == 'H') {
@@ -153,8 +153,16 @@ void Tokenizer_TokenizeString(const char *s, int flags) {
 		return;
 	}
 
+	// not really needed, but nice for testing
+	memset(g_args, 0, sizeof(g_args));
+	memset(g_argsFrom, 0, sizeof(g_argsFrom));
+
 	strcpy(g_buffer,s);
 	p = g_buffer;
+	// we need to rewrite this function and check it well with unit tests
+	if (*p == '"') {
+		goto quote;
+	}
 	g_args[g_numArgs] = p;
 	g_argsFrom[g_numArgs] = (s+(p-g_buffer));
 	g_numArgs++;
@@ -162,7 +170,7 @@ void Tokenizer_TokenizeString(const char *s, int flags) {
 		if(isWhiteSpace(*p)) {
 			*p = 0;
 			if(p[1] != 0 && isWhiteSpace(p[1])==false) {
-				// we need to rewrite this function
+				// we need to rewrite this function and check it well with unit tests
 				if(g_bAllowQuotes && p[1] == '"') { 
 					p++;
 					goto quote;
@@ -188,7 +196,6 @@ quote:
 			while(*p != 0) {
 				if(*p == '"') {
 					*p = 0;
-					p++;
 					break;
 				}
 				p++;
