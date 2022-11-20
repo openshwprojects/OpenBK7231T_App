@@ -157,7 +157,11 @@ void Tokenizer_TokenizeString(const char *s, int flags) {
 	memset(g_args, 0, sizeof(g_args));
 	memset(g_argsFrom, 0, sizeof(g_argsFrom));
 
-	strcpy(g_buffer,s);
+	if (flags & TOKENIZER_ALTERNATE_EXPAND_AT_START) {
+		CMD_ExpandConstantsWithinString(s, g_buffer, sizeof(g_buffer));
+	} else {
+		strcpy_safe(g_buffer, s, sizeof(g_buffer));
+	}
 	p = g_buffer;
 	// we need to rewrite this function and check it well with unit tests
 	if (*p == '"') {

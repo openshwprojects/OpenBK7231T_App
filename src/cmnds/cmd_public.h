@@ -101,8 +101,10 @@ enum LightMode {
 	Light_All,
 };
 
-#define TOKENIZER_ALLOW_QUOTES			1
-#define TOKENIZER_DONT_EXPAND			2
+#define TOKENIZER_ALLOW_QUOTES					1
+#define TOKENIZER_DONT_EXPAND					2
+// expand constants within whole command and not per-argumenet
+#define TOKENIZER_ALTERNATE_EXPAND_AT_START		4
 
 // cmd_tokenizer.c
 int Tokenizer_GetArgsCount();

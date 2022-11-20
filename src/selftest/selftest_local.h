@@ -6,7 +6,7 @@
 #include "../cmnds/cmd_public.h"
 #include "../cmnds/cmd_local.h"
 
-void SelfTest_Failed(const char *file, int line, const char *exp);
+void SelfTest_Failed(const char *file, const char *function, int line, const char *exp);
 
 #define SELFTEST_ASSERT(expr) \
 	if (!(expr)) \
@@ -19,6 +19,7 @@ void SelfTest_Failed(const char *file, int line, const char *exp);
 #define SELFTEST_ASSERT_ARGUMENTS_COUNT(wantedCount) SELFTEST_ASSERT((Tokenizer_GetArgsCount()==wantedCount));
 #define SELFTEST_ASSERT_JSON_VALUE_STRING(obj, varName, res) SELFTEST_ASSERT(!strcmp(Test_GetJSONValue_String(varName,obj), res));
 #define SELFTEST_ASSERT_JSON_VALUE_INTEGER(obj, varName, res) SELFTEST_ASSERT((Test_GetJSONValue_Integer(varName,obj) == res));
+#define SELFTEST_ASSERT_STRING(current,expected) SELFTEST_ASSERT((strcmp(expected,current) == 0));
 
 //#define FLOAT_EQUALS (a,b) (abs(a-b)<0.001f)
 inline bool Float_Equals(float a, float b) {
@@ -35,6 +36,7 @@ void Test_Command_If_Else();
 void Test_LFS();
 void Test_Tokenizer();
 void Test_Commands_Alias();
+void Test_ExpandConstant();
 
 void Test_FakeHTTPClientPacket(const char *tg);
 

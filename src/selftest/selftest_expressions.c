@@ -6,9 +6,16 @@ void Test_Expressions_RunTests_Basic() {
 	// reset whole device
 	CMD_ExecuteCommand("clearAll", 0);
 
+	// parser must be able to both handle '-' as an operation and '-' as a negative sign before number
 	SELFTEST_ASSERT(Float_Equals(CMD_EvaluateExpression("-1",0), -1.0f));
 	SELFTEST_ASSERT(Float_Equals(CMD_EvaluateExpression("-11", 0), -11.0f));
 
+	SELFTEST_ASSERT_EXPRESSION("-1-1", -2);
+	SELFTEST_ASSERT_EXPRESSION("1-1", 0);
+	SELFTEST_ASSERT_EXPRESSION("1+1", 2);
+	SELFTEST_ASSERT_EXPRESSION("-1.0-1.0", -2);
+
+	// test spaces
 	SELFTEST_ASSERT_EXPRESSION("10.0", 10.0f);
 	SELFTEST_ASSERT_EXPRESSION("  10.0   ", 10.0f);
 	SELFTEST_ASSERT_EXPRESSION("  10.0*2   ", 20.0f);
@@ -24,6 +31,13 @@ void Test_Expressions_RunTests_Basic() {
 	SELFTEST_ASSERT_EXPRESSION("10.0+$CH12 \r\n", 20.0f);
 	SELFTEST_ASSERT_EXPRESSION("10.0+$CH12\n\r", 20.0f);
 
+	// same as above but channel 1 instead of 12 and value 1 instead of 10
+	CHANNEL_Set(1, 1, 0);
+	SELFTEST_ASSERT_EXPRESSION("$CH1*10.0", 10.0f);
+	SELFTEST_ASSERT_EXPRESSION("$CH1+10.0", 11.0f);
+	SELFTEST_ASSERT_EXPRESSION("10.0+$CH1", 11.0f);
+	SELFTEST_ASSERT_EXPRESSION("10.0+$CH1 \r\n", 11.0f);
+	SELFTEST_ASSERT_EXPRESSION("10.0+$CH1\n\r", 11.0f);
 
 	CHANNEL_Set(18, 15, 0);
 	SELFTEST_ASSERT_EXPRESSION("15.0+$CH18\n\r", 30.0f);
@@ -41,7 +55,34 @@ void Test_Expressions_RunTests_Basic() {
 	SELFTEST_ASSERT_EXPRESSION("1||0\n\r", 1.0f);
 	SELFTEST_ASSERT_EXPRESSION("0||0\n\r", 0.0f);
 	SELFTEST_ASSERT_EXPRESSION("0||1\n\r", 1.0f);
+	// Channel 1 is 1, it was set to 1 above
+	// &&
+	SELFTEST_ASSERT_EXPRESSION("$CH1&&$CH1\n\r", 1.0f);
+	SELFTEST_ASSERT_EXPRESSION("$CH1&&0\n\r", 0.0f);
+	SELFTEST_ASSERT_EXPRESSION("0&&0\n\r", 0.0f);
+	SELFTEST_ASSERT_EXPRESSION("0&&$CH1\n\r", 0.0f);
+	// ||
+	SELFTEST_ASSERT_EXPRESSION("$CH1||$CH1\n\r", 1.0f);
+	SELFTEST_ASSERT_EXPRESSION("$CH1||0\n\r", 1.0f);
+	SELFTEST_ASSERT_EXPRESSION("0||0\n\r", 0.0f);
+	SELFTEST_ASSERT_EXPRESSION("0||$CH1\n\r", 1.0f);
+	// set $CH1 to 0
+	CHANNEL_Set(1, 0, 0);
+	// &&
+	SELFTEST_ASSERT_EXPRESSION("1&&1\n\r", 1.0f);
+	SELFTEST_ASSERT_EXPRESSION("1&&$CH1\n\r", 0.0f);
+	SELFTEST_ASSERT_EXPRESSION("$CH1&&$CH1\n\r", 0.0f);
+	SELFTEST_ASSERT_EXPRESSION("$CH1&&1\n\r", 0.0f);
+	// ||
+	SELFTEST_ASSERT_EXPRESSION("1||1\n\r", 1.0f);
+	SELFTEST_ASSERT_EXPRESSION("1||$CH1\n\r", 1.0f);
+	SELFTEST_ASSERT_EXPRESSION("$CH1||$CH1\n\r", 0.0f);
+	SELFTEST_ASSERT_EXPRESSION("$CH1||1\n\r", 1.0f);
 
+	// Logical operators
+	// !
+	SELFTEST_ASSERT_EXPRESSION("!0\n\r", 1.0f);
+	SELFTEST_ASSERT_EXPRESSION("!1\n\r", 0.0f);
 }
 
 #endif

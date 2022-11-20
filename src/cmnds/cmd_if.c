@@ -62,6 +62,15 @@ static int g_numOperators = sizeof(g_operators)/sizeof(g_operators[0]);
 const char *CMD_FindOperator(const char *s, const char *stop, byte *oCode) {
 	int o = 0;
 
+	if (*s == 0)
+		return 0;
+	// special case for number like -12 at the start of the string
+	if (s[0] == '-' && isdigit(s[1])) {
+		s++;// "-" is a part of the digit, not an operator
+	}
+	if (*s == 0)
+		return 0;
+
 	while(s[0] && s[1] && (s < stop || stop == 0)) {
 		for(o = 0; o < g_numOperators; o++) {
 			if(!strncmp(s,g_operators[o].txt,g_operators[o].len)) {
@@ -73,35 +82,53 @@ const char *CMD_FindOperator(const char *s, const char *stop, byte *oCode) {
 	}
 	return 0;
 }
-bool strCompareBound(const char *s, const char *templ, const char *stopper, int bAllowWildCard) {
+const char *strCompareBound(const char *s, const char *templ, const char *stopper, int bAllowWildCard) {
+	const char *s_start;
+
+	s_start = s;
+
 	while(true) {
-		// template ended and reached stopper
-		if(s == stopper && *templ == 0) {
-			return true;
+		if (stopper == 0) {
+			// allow early end
+			// template ended and reached stopper
+			if (*templ == 0) {
+				return s;
+			}
+		}
+		else {
+			// template ended and reached stopper
+			if (s == stopper && *templ == 0) {
+				return s;
+			}
 		}
 		// template ended and reached end of string
 		if(*s == 0 && *templ == 0) {
-			return true;
+			return s;
 		}
 		// reached end of string but template still has smth
 		if(*s == 0)
 		{
-			return false;
+			return 0;
 		}
 		// are the chars the same?
 		if(bAllowWildCard && *templ == '*') {
+			if (isdigit(*s)) {
 
+			}
+			else {
+				return 0;
+			}
 		} else {
             char c1 = tolower((unsigned char)*s);
             char c2 = tolower((unsigned char)*templ);
 			if(c1 != c2) {
-				return false;
+				return 0;
 			}
 		}
 		s++;
 		templ++;
 	}
-	return false;
+	return 0;
 }
 char *g_expDebugBuffer = 0;
 #define EXPRESSION_DEBUG_BUFFER_SIZE 128
@@ -112,47 +139,138 @@ char *g_expDebugBuffer = 0;
 // Etc etc
 // Returns true if constant matches
 // Returns false if no constants found
-bool CMD_ExpandConstant(const char *s, const char *stop, float *out) {
+const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
 	int idx;
+	const char *ret;
 
-	if(strCompareBound(s,"MQTTOn", stop, false)) {
+	ret = strCompareBound(s, "MQTTOn", stop, false);
+	if(ret) {
 		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: MQTTOn");
 		*out = Main_HasMQTTConnected();
-		return true;
+		return ret;
 	}
-	if(strCompareBound(s,"$CH*", stop, 1) || strCompareBound(s,"$CH**", stop, 1)) {
-		idx = atoi(s+3);
-		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: channel value of idx %i",idx);
-		*out =  CHANNEL_Get(idx);
-		return true;
+	ret = strCompareBound(s, "$CH**", stop, 1);
+	if (ret) {
+		idx = atoi(s + 3);
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: channel value of idx %i", idx);
+		*out = CHANNEL_Get(idx);
+		return ret;
 	}
-	if(strCompareBound(s,"$led_dimmer", stop, 0)) {
+	ret = strCompareBound(s, "$CH*", stop, 1);
+	if (ret) {
+		idx = atoi(s + 3);
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: channel value of idx %i", idx);
+		*out = CHANNEL_Get(idx);
+		return ret;
+	}
+	ret = strCompareBound(s, "$led_dimmer", stop, 0);
+	if(ret) {
 		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_dimmer");
 		*out = LED_GetDimmer();
-		return true;
+		return ret;
 	}
-	if(strCompareBound(s,"$led_enableAll", stop, 0)) {
+	ret = strCompareBound(s, "$led_enableAll", stop, 0);
+	if(ret) {
 		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_enableAll");
 		*out = LED_GetEnableAll();
-		return true;
+		return ret;
 	}
-	if(strCompareBound(s,"$led_hue", stop, 0)) {
+	ret = strCompareBound(s, "$led_hue", stop, 0);
+	if(ret) {
 		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_hue");
 		*out = LED_GetHue();
-		return true;
+		return ret;
 	}
-	if(strCompareBound(s,"$led_saturation", stop, 0)) {
+	ret = strCompareBound(s, "$led_saturation", stop, 0);
+	if(ret) {
 		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_saturation");
 		*out = LED_GetSaturation();
-		return true;
+		return ret;
 	}
-	if(strCompareBound(s,"$led_temperature", stop, 0)) {
+	ret = strCompareBound(s, "$led_temperature", stop, 0);
+	if(ret) {
 		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_temperature");
 		*out = LED_GetTemperature();
-		return true;
+		return ret;
 	}
 
 	return false;
+}
+const char *CMD_ExpandConstantToString(const char *constant, char *out, char *stop) {
+	int outLen;
+	float value;
+	int valueInt;
+	const char *after;
+
+	outLen = (stop - out) - 1;
+
+	after = CMD_ExpandConstant(constant, 0, &value);
+	if (after == 0)
+		return 0;
+
+	valueInt = (int)value;
+	if (abs(valueInt - value) < 0.001f) {
+		snprintf(out, outLen, "%i", valueInt);
+	}
+	else {
+		snprintf(out, outLen, "%f", value);
+	}
+	return after;
+}
+void CMD_ExpandConstantsWithinString(const char *in, char *out, int outLen) {
+	char *outStop;
+	const char *tmp;
+	// just let us be on the safe side, someone else might forget about that -1
+	outStop = out + outLen - 1;
+
+	while (*in) {
+		if (out >= outStop) {
+			break;
+		}
+		if (*in == '$') {
+			tmp = CMD_ExpandConstantToString(in, out, outStop);
+			while (*out)
+				out++;
+			if (tmp == 0)
+				break;
+			in = tmp;
+		}
+		else {
+			*out = *in;
+			out++;
+			in++;
+		}
+	}
+	*out = 0;
+}
+const char *CMD_ExpandingStrdup(const char *in) {
+	const char *p;
+	char *ret;
+	int varCount;
+	int realLen;
+
+	realLen = 0;
+	varCount = 0;
+	// I am not sure which approach should I take
+	// It could be easily done with external buffer, but it would have to be on stack or a global one...
+	// Maybe let's just assume that variables cannot grow string way too big
+	p = in;
+	while (*p) {
+		if (*p == '$') {
+			varCount++;
+		}
+		realLen++;
+		p++;
+	}
+
+	// not all var names are short, some are long...
+	// but $CH1 is short and could expand to something longer like, idk, 123456?
+	// just to be on safe side....
+	realLen += varCount * 5;
+
+	ret = (char*)malloc(realLen);
+	CMD_ExpandConstantsWithinString(in, ret, realLen);
+	return ret;
 }
 float CMD_EvaluateExpression(const char *s, const char *stop) {
 	byte opCode;
@@ -268,6 +386,7 @@ int CMD_If(const void *context, const char *cmd, const char *args, int cmdFlags)
 	const char *condition;
 	//char buffer[256];
 	int value;
+	int argsCount;
 
 	if(args==0||*args==0) {
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: command require at least 3 args");
@@ -283,7 +402,8 @@ int CMD_If(const void *context, const char *cmd, const char *args, int cmdFlags)
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: second argument always must be 'then', but it's '%s'",Tokenizer_GetArg(1));
 		return 1;
 	}
-	if(Tokenizer_GetArgsCount() >= 5) {
+	argsCount = Tokenizer_GetArgsCount();
+	if(argsCount >= 5) {
 		cmdA = Tokenizer_GetArg(2);
 		if(stricmp(Tokenizer_GetArg(3),"else")) {
 			ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: fourth argument always must be 'else', but it's '%s'",Tokenizer_GetArg(3));

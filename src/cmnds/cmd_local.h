@@ -19,8 +19,10 @@ int get_cmd(const char *s, char *dest, int maxlen, int stripnum);
 bool isWhiteSpace(char ch);
 
 
+const char *CMD_ExpandingStrdup(const char *in);
 float CMD_EvaluateExpression(const char *s, const char *stop);
 int CMD_If(const void *context, const char *cmd, const char *args, int cmdFlags);
+void CMD_ExpandConstantsWithinString(const char *in, char *out, int outLen);
 
 #endif // __CMD_LOCAL_H__
 

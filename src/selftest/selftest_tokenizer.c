@@ -92,6 +92,21 @@ void Test_Tokenizer() {
 	SELFTEST_ASSERT_ARGUMENT(2, "too!");
 
 #endif
+	// check constant expansion
+	CMD_ExecuteCommand("setChannel 1 55",0);
+	CMD_ExecuteCommand("setChannel 3 66",0);
+	CMD_ExecuteCommand("setChannel 5 77",0);
+
+	Tokenizer_TokenizeString("$CH1 2 $CH3 4 $CH5", 0);
+	SELFTEST_ASSERT_ARGUMENTS_COUNT(5);
+	SELFTEST_ASSERT_ARGUMENT_INTEGER(0, 55); // $CH1
+	SELFTEST_ASSERT_ARGUMENT(1, "2");
+	SELFTEST_ASSERT_ARGUMENT_INTEGER(1, 2);
+	SELFTEST_ASSERT_ARGUMENT_INTEGER(2, 66); // $CH2
+	SELFTEST_ASSERT_ARGUMENT(3, "4");
+	SELFTEST_ASSERT_ARGUMENT_INTEGER(3, 4);
+	SELFTEST_ASSERT_ARGUMENT_INTEGER(4, 77);// $CH3
+
 
 	//system("pause");
 }
