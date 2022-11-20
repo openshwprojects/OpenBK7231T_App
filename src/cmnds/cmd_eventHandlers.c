@@ -66,6 +66,10 @@ addEventHandler OnHold 11 addChannel 1 -10
 // addChangeHandler Channel1 == 0 backlog lcd_clearAndGoto I2C1 0x23 1 1; lcd_print I2C1 0x23 Disabled
 
 
+// This will automatically turn off relay after about 2 seconds
+// NOTE: addRepeatingEvent [RepeatTime] [RepeatCount]
+// addChangeHandler Channel0 != 0 addRepeatingEvent 2 1 setChannel 0 0
+
 AddEventHandler OnClick 0 addChannel 1 -10 0 100 AddEventHandler OnClick 1 addChannel 1 10 0 100
 
 // Event to fire on binary (hex) value received by TuyaMCU
