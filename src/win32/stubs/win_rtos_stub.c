@@ -55,6 +55,16 @@ void rtos_delete_thread(int i) {
 	
 }
 int lwip_fcntl(int s, int cmd, int val) {
+	int argp;
+
+	argp = 1;
+	if (ioctlsocket(s,
+		FIONBIO,
+		&argp) == SOCKET_ERROR)
+	{
+		printf("ioctlsocket() error %d\n", WSAGetLastError());
+		return 1;
+	}
 
 	return 0;
 }
