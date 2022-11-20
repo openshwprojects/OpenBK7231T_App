@@ -40,6 +40,11 @@ err_t mqtt_publish_proxy(
 	u8_t retain,
     mqtt_request_cb_t cb, 
 	void *arg);
+
+// from hal_main_bk7231.c
+// triggers a one-shot timer to cause read.
+extern void MQTT_TriggerRead();
+
 #else
 // for other platforms, use the 'normal' functions unprotected
 	#define mqtt_client_connect_proxy mqtt_client_connect
@@ -147,6 +152,11 @@ int post_received(const char *topic, int topiclen, const unsigned char *data, in
 		addLenData(datalen, data);
 	}
 	MQTT_Mutex_Free();
+
+
+#ifdef PLATFORM_BEKEN
+	MQTT_TriggerRead();
+#endif
 	return 1;
 }
 
@@ -1421,7 +1431,10 @@ static int g_secondsBeforeNextFullBroadcast = 30;
 
 // from 5ms quicktick
 int MQTT_RunQuickTick(){
+#ifndef PLATFORM_BEKEN
+	// on Beken, we use a one-shot timer for this.
 	MQTT_process_received();
+#endif
 	return 0;
 }
 
