@@ -19,7 +19,12 @@
 #endif
 #endif
 
+
+#ifdef PLATFORM_BEKEN
+#include <tcpip.h>
 // proxy functions....
+// these call the mqtt_ functions from tcp_threas, and await the result
+// before returning.
 int mqtt_client_connect_proxy(mqtt_client_t *client, const ip_addr_t *ipaddr, 
 	u16_t port, mqtt_connection_cb_t cb, void *arg,
     const struct mqtt_connect_client_info_t *client_info);
@@ -35,6 +40,14 @@ err_t mqtt_publish_proxy(
 	u8_t retain,
     mqtt_request_cb_t cb, 
 	void *arg);
+#else
+// for other platforms, use the 'normal' functions unprotected
+	#define mqtt_client_connect_proxy mqtt_client_connect
+	#define mqtt_client_new_proxy mqtt_client_new
+	#define mqtt_disconnect_proxy mqtt_disconnect
+	#define mqtt_client_is_connected mqtt_client_is_connected
+	#define mqtt_publish_proxy mqtt_publish
+#endif
 
 
 static SemaphoreHandle_t g_mutex = 0;
@@ -72,7 +85,7 @@ int mqtt_rx_buffer_count;
 unsigned char temp_topic[128];
 unsigned char temp_data[128];
 
-int addLenData(int len, unsigned char *data){
+int addLenData(int len, const unsigned char *data){
 	mqtt_rx_buffer[mqtt_rx_buffer_head] = (len >> 8) & 0xff;
 	mqtt_rx_buffer_head = (mqtt_rx_buffer_head + 1) % MQTT_RX_BUFFER_MAX;
 	mqtt_rx_buffer_count++;
@@ -121,12 +134,12 @@ int getLenData(int *len, unsigned char *data, int maxlen){
 
 // this is called from tcp_thread context to queue received mqtt,
 // and then we'll retrieve them from our own thread for processing.
-int post_received(char *topic, int topiclen, unsigned char *data, int datalen){
+int post_received(const char *topic, int topiclen, const unsigned char *data, int datalen){
 	MQTT_Mutex_Take(100);
 	if ((MQTT_RX_BUFFER_MAX - 1 - mqtt_rx_buffer_count) < topiclen + datalen + 2 + 2){
 		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "MQTT_rx buffer overflow for topic %s", topic);
 	} else {
-		addLenData(topiclen, topic);
+		addLenData(topiclen, (unsigned char *)topic);
 		addLenData(datalen, data);
 	}
 	MQTT_Mutex_Free();
@@ -141,7 +154,7 @@ int get_received(char **topic, int *topiclen, unsigned char **data, int *datalen
 		temp_topic[*topiclen] = 0;
 		getLenData(datalen, temp_data, sizeof(temp_data)-1);
 		temp_data[*datalen] = 0;
-		*topic = temp_topic;
+		*topic = (char *)temp_topic;
 		*data = temp_data;
 		res = 1;
 	}
@@ -1293,10 +1306,26 @@ void MQTT_init()
 
 	mqtt_initialised = 1;
 
-	CMD_RegisterCommand(MQTT_COMMAND_PUBLISH, "", MQTT_PublishCommand, "Sqqq", NULL);
-	CMD_RegisterCommand(MQTT_COMMAND_PUBLISH_ALL, "", MQTT_PublishAll, "Sqqq", NULL);
-	CMD_RegisterCommand(MQTT_COMMAND_PUBLISH_CHANNELS, "", MQTT_PublishChannels, "Sqqq", NULL);
-	CMD_RegisterCommand(MQTT_COMMAND_PUBLISH_BENCHMARK, "", MQTT_StartMQTTTestThread, "", NULL);
+	//cmddetail:{"name":"MQTT_COMMAND_PUBLISH","args":"",
+	//cmddetail:"descr":"Sqqq",
+	//cmddetail:"fn":"MQTT_PublishCommand","file":"mqtt/new_mqtt.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand(MQTT_COMMAND_PUBLISH, "", MQTT_PublishCommand, NULL, NULL);
+	//cmddetail:{"name":"MQTT_COMMAND_PUBLISH_ALL","args":"",
+	//cmddetail:"descr":"Sqqq",
+	//cmddetail:"fn":"MQTT_PublishAll","file":"mqtt/new_mqtt.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand(MQTT_COMMAND_PUBLISH_ALL, "", MQTT_PublishAll, NULL, NULL);
+	//cmddetail:{"name":"MQTT_COMMAND_PUBLISH_CHANNELS","args":"",
+	//cmddetail:"descr":"Sqqq",
+	//cmddetail:"fn":"MQTT_PublishChannels","file":"mqtt/new_mqtt.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand(MQTT_COMMAND_PUBLISH_CHANNELS, "", MQTT_PublishChannels, NULL, NULL);
+	//cmddetail:{"name":"MQTT_COMMAND_PUBLISH_BENCHMARK","args":"",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"MQTT_StartMQTTTestThread","file":"mqtt/new_mqtt.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand(MQTT_COMMAND_PUBLISH_BENCHMARK, NULL, MQTT_StartMQTTTestThread, NULL, NULL);
 
 }
 
@@ -1389,6 +1418,7 @@ static int g_secondsBeforeNextFullBroadcast = 30;
 // from 5ms quicktick
 int MQTT_RunQuickTick(){
 	MQTT_process_received();
+	return 0;
 }
 
 
@@ -1698,98 +1728,110 @@ bool MQTT_IsReady() {
 
 
 
-static volatile int mqtt_proxy_is_connected = -10;
+#ifdef PLATFORM_BEKEN
+
 // this is called from within the tcp_thread context
 void mqtt_client_is_connected_proxy_cb(void *ctx){
 	LWIP_ASSERT_CORE_LOCKED();
-	mqtt_proxy_is_connected = mqtt_client_is_connected(mqtt_client);
+	int *res = (int *)ctx;
+	*res = mqtt_client_is_connected(mqtt_client);
 }
 
 int mqtt_client_is_connected_proxy(){
-	mqtt_proxy_is_connected = -10;	
-	tcpip_callback(mqtt_client_is_connected_proxy_cb, NULL);
-	while (mqtt_proxy_is_connected == -10){
+	volatile int res = -10;
+	tcpip_callback(mqtt_client_is_connected_proxy_cb, (void *)&res);
+	while (res == -10){
 		rtos_delay_milliseconds(5);
 		bk_printf("D");
 	}
-	return mqtt_proxy_is_connected;
+	return res;
 }
 
 
-static struct mqtt_client_connect_proxy_cb_str_tag {
+typedef struct mqtt_client_connect_proxy_cb_str_tag {
 	mqtt_client_t *client;
 	const ip_addr_t *ipaddr; 
 	u16_t port;
 	mqtt_connection_cb_t cb;
 	void *arg;
     const struct mqtt_connect_client_info_t *client_info;
-} mqtt_client_connect_proxy_str;
-static volatile int mqtt_client_connect_proxy_cb_res = -10;
+
+	int res;
+} mqtt_client_connect_proxy_cb_str;
+
 void mqtt_client_connect_proxy_cb(void *ctx){
 	LWIP_ASSERT_CORE_LOCKED();
-	struct mqtt_client_connect_proxy_cb_str_tag *p = (struct mqtt_client_connect_proxy_cb_str_tag *) ctx;
-	int res = mqtt_client_connect_proxy_cb_res = mqtt_client_connect(
+	mqtt_client_connect_proxy_cb_str *p = (mqtt_client_connect_proxy_cb_str *) ctx;
+	p->res = mqtt_client_connect(
 		p->client,
 		p->ipaddr, 
 		p->port,
 		p->cb, 
 		p->arg,
 		p->client_info);
-	mqtt_client_connect_proxy_cb_res = res;
 }
 
 int mqtt_client_connect_proxy(mqtt_client_t *client, const ip_addr_t *ipaddr, 
 	u16_t port, mqtt_connection_cb_t cb, void *arg,
     const struct mqtt_connect_client_info_t *client_info){
 
-	mqtt_client_connect_proxy_cb_res = -10;
+	volatile mqtt_client_connect_proxy_cb_str str;
 
-	mqtt_client_connect_proxy_str.client = client;
-	mqtt_client_connect_proxy_str.ipaddr = ipaddr;
-	mqtt_client_connect_proxy_str.port = port;
-	mqtt_client_connect_proxy_str.cb = cb;
-	mqtt_client_connect_proxy_str.arg = arg;
-	mqtt_client_connect_proxy_str.client_info = client_info;
-	tcpip_callback(mqtt_client_connect_proxy_cb, &mqtt_client_connect_proxy_str);
-	while (mqtt_client_connect_proxy_cb_res == -10){
+	str.client = client;
+	str.ipaddr = ipaddr;
+	str.port = port;
+	str.cb = cb;
+	str.arg = arg;
+	str.client_info = client_info;
+
+	str.res = -10;
+
+	tcpip_callback(mqtt_client_connect_proxy_cb, (void *)&str);
+	while (str.res == -10){
 		rtos_delay_milliseconds(5);
 		bk_printf("C");
 	}
 
-	return mqtt_client_connect_proxy_cb_res;
+	return str.res;
 }
 
 
-static volatile mqtt_client_t* mqtt_client_new_proxy_res = (void*)-10;
 void mqtt_client_new_proxy_cb(void *ctx){
+	mqtt_client_t** res = (mqtt_client_t**)ctx;
 	LWIP_ASSERT_CORE_LOCKED();
-	mqtt_client_new_proxy_res = mqtt_client_new();
+	*res = mqtt_client_new();
 }
 
 mqtt_client_t* mqtt_client_new_proxy(){
-	mqtt_client_new_proxy_res = (void*)-10;
-	tcpip_callback(mqtt_client_new_proxy_cb, NULL);
-	while (mqtt_client_new_proxy_res == (void*)-10){
+	volatile mqtt_client_t* res = (void*)-10;
+	tcpip_callback(mqtt_client_new_proxy_cb, (void *)&res);
+	while (res == (void*)-10){
 		rtos_delay_milliseconds(5);
 		bk_printf("N");
 	}
-	return mqtt_client_new_proxy_res;
+	return (mqtt_client_t*)res;
 }
 
 
+typedef struct mqtt_client_disconnect_proxy_cb_res_tag {
+	mqtt_client_t* client;
+	int res;
+} mqtt_client_disconnect_proxy_cb_res;
 
-static volatile int mqtt_client_disconnect_proxy_cb_res = -10;
 void mqtt_disconnect_proxy_cb(void *ctx){
 	LWIP_ASSERT_CORE_LOCKED();
-	mqtt_client_t* client = (mqtt_client_t *)ctx;
+	mqtt_client_disconnect_proxy_cb_res *str = (mqtt_client_disconnect_proxy_cb_res*)ctx;
+	mqtt_client_t* client = str->client;
 	mqtt_disconnect(client);
-	mqtt_client_disconnect_proxy_cb_res = 0;
+	str->res = 0;
 }
 
 void mqtt_disconnect_proxy(mqtt_client_t* client){
-	mqtt_client_disconnect_proxy_cb_res = -10;
-	tcpip_callback(mqtt_disconnect_proxy_cb, client);
-	while (mqtt_client_disconnect_proxy_cb_res == -10){
+	volatile mqtt_client_disconnect_proxy_cb_res str;
+	str.client = client;
+	str.res = -10;
+	tcpip_callback(mqtt_disconnect_proxy_cb, (void *)&str);
+	while (str.res == -10){
 		rtos_delay_milliseconds(5);
 		bk_printf("d");
 	}
@@ -1799,9 +1841,7 @@ void mqtt_disconnect_proxy(mqtt_client_t* client){
 
 
 
-volatile err_t mqtt_publish_proxy_res = -10;
-
-static struct mqtt_publish_proxy_cb_str_tag {
+typedef struct mqtt_publish_proxy_cb_str_tag {
 	mqtt_client_t *client;
 	const char *topic;
 	const void *payload;
@@ -1810,12 +1850,15 @@ static struct mqtt_publish_proxy_cb_str_tag {
 	u8_t retain;
     mqtt_request_cb_t cb;
 	void *arg;
-} mqtt_publish_proxy_str;
+
+	err_t res;
+} mqtt_publish_proxy_cb_str;
+
 
 void mqtt_publish_proxy_cb(void *ctx){
 	LWIP_ASSERT_CORE_LOCKED();
-	struct mqtt_publish_proxy_cb_str_tag* p = (struct mqtt_publish_proxy_cb_str_tag *)ctx;
-	mqtt_publish_proxy_res = mqtt_publish(
+	mqtt_publish_proxy_cb_str* p = (mqtt_publish_proxy_cb_str *)ctx;
+	p->res = mqtt_publish(
 		p->client, 
 		p->topic, 
 		p->payload, 
@@ -1835,26 +1878,28 @@ err_t mqtt_publish_proxy(
 	u8_t retain,
     mqtt_request_cb_t cb, 
 	void *arg){
-	
 
 	/// test
 	//return 0;
-	
-	mqtt_publish_proxy_str.client = client;
-	mqtt_publish_proxy_str.topic = topic;
-	mqtt_publish_proxy_str.payload = payload;
-	mqtt_publish_proxy_str.payload_length = payload_length; 
-	mqtt_publish_proxy_str.qos = qos;
-	mqtt_publish_proxy_str.retain = retain;
-    mqtt_publish_proxy_str.cb = cb;
-	mqtt_publish_proxy_str.arg = arg;
+	volatile mqtt_publish_proxy_cb_str str;
 
-	mqtt_publish_proxy_res = -10;
-	tcpip_callback(mqtt_publish_proxy_cb, &mqtt_publish_proxy_str);
-	while (mqtt_publish_proxy_res == -10){
+	str.client = client;
+	str.topic = topic;
+	str.payload = payload;
+	str.payload_length = payload_length; 
+	str.qos = qos;
+	str.retain = retain;
+    str.cb = cb;
+	str.arg = arg;
+
+	str.res = -10;
+	tcpip_callback(mqtt_publish_proxy_cb, (void *)&str);
+	while (str.res == -10){
 		rtos_delay_milliseconds(5);
 		bk_printf("p");
 	}
-	return mqtt_publish_proxy_res;
+	return str.res;
 }
+
+#endif
 
