@@ -45,8 +45,12 @@ err_t mqtt_publish_proxy(
 	#define mqtt_client_connect_proxy mqtt_client_connect
 	#define mqtt_client_new_proxy mqtt_client_new
 	#define mqtt_disconnect_proxy mqtt_disconnect
-	#define mqtt_client_is_connected mqtt_client_is_connected
+	#define mqtt_client_is_connected_proxy mqtt_client_is_connected
 	#define mqtt_publish_proxy mqtt_publish
+#endif
+
+#ifndef LWIP_ASSERT_CORE_LOCKED
+	#define LWIP_ASSERT_CORE_LOCKED()
 #endif
 
 
