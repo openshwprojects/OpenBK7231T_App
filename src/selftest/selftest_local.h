@@ -20,6 +20,7 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 #define SELFTEST_ASSERT_JSON_VALUE_STRING(obj, varName, res) SELFTEST_ASSERT(!strcmp(Test_GetJSONValue_String(varName,obj), res));
 #define SELFTEST_ASSERT_JSON_VALUE_INTEGER(obj, varName, res) SELFTEST_ASSERT((Test_GetJSONValue_Integer(varName,obj) == res));
 #define SELFTEST_ASSERT_STRING(current,expected) SELFTEST_ASSERT((strcmp(expected,current) == 0));
+#define SELFTEST_ASSERT_HTML_REPLY(expected) SELFTEST_ASSERT((strcmp(Test_GetLastHTMLReply(),expected) == 0));
 
 //#define FLOAT_EQUALS (a,b) (abs(a-b)<0.001f)
 inline bool Float_Equals(float a, float b) {
@@ -38,6 +39,8 @@ void Test_Tokenizer();
 void Test_Commands_Alias();
 void Test_ExpandConstant();
 
-void Test_FakeHTTPClientPacket(const char *tg);
+void Test_FakeHTTPClientPacket_GET(const char *tg);
+void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data);
+const char *Test_GetLastHTMLReply();
 
 #endif

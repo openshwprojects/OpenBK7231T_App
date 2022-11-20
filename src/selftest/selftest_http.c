@@ -24,6 +24,24 @@ const char *http_get_template1 = "GET /%s HTTP/1.1\r\n"
 "\r\n"
 "\r\n";
 
+const char *http_post_template1 = "POST /%s HTTP/1.1\r\n"
+"Host: 127.0.0.1\r\n"
+"Connection: keep - alive\r\n"
+"Content-Length: %i\r\n"
+"sec-ch-ua: \"Google Chrome\";v=\"107\", \"Chromium\";v=\"107\", \"Not=A?Brand\";v=\"24\"\r\n"
+"sec-ch-ua-mobile: ? 0\r\n"
+"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36\r\n"
+"sec-ch-ua-platform: \"Windows\"\r\n"
+"Accept: */*\r\n"
+"Sec-Fetch-Site: same-origin\r\n"
+"Sec-Fetch-Mode: cors\r\n"
+"Sec-Fetch-Dest: empty\r\n"
+"Referer: http://127.0.0.1/app\r\n"
+"Accept-Encoding: gzip, deflate, br\r\n"
+"Accept-Language: pl-PL,pl;q=0.9,en-US;q=0.8,en;q=0.7,de;q=0.6\r\n"
+"\r\n"
+"%s";
+
 //jsmn_parser parser;
 cJSON *g_json;
 cJSON *g_sec_power;
@@ -43,13 +61,12 @@ static char buffer[8192];
 static const char *replyAt;
 //static jsmntok_t tokens[256]; /* We expect no more than qq JSON tokens */
 
-void Test_FakeHTTPClientPacket(const char *tg) {
+void Test_FakeHTTPClientPacket_Generic() {
 	int iResult;
 	int len;
 
 	http_request_t request;
 
-	sprintf(buffer, http_get_template1, tg);
 
 	iResult = strlen(buffer);
 
@@ -65,17 +82,27 @@ void Test_FakeHTTPClientPacket(const char *tg) {
 
 	request.replymaxlen = sizeof(outbuf);
 
-	printf("Test_FakeHTTPClientPacket fake bytes sent: %d \n", iResult);
+	printf("Test_FakeHTTPClientPacket_GET fake bytes sent: %d \n", iResult);
  	len = HTTP_ProcessPacket(&request);
 	outbuf[request.replylen] = 0;
-	printf("Test_FakeHTTPClientPacket fake bytes received: %d \n", len);
+	printf("Test_FakeHTTPClientPacket_GET fake bytes received: %d \n", len);
 
 	replyAt = Helper_GetPastHTTPHeader(outbuf);
 
 }
+void Test_FakeHTTPClientPacket_GET(const char *tg) {
+	sprintf(buffer, http_get_template1, tg);
+	Test_FakeHTTPClientPacket_Generic();
+}
+void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data) {
+	int dataLen = strlen(data);
+
+	sprintf(buffer, http_post_template1, tg, dataLen, data);
+	Test_FakeHTTPClientPacket_Generic();
+}
 void Test_FakeHTTPClientPacket_JSON(const char *tg) {
 	int r;
-	Test_FakeHTTPClientPacket(tg);
+	Test_FakeHTTPClientPacket_GET(tg);
 
 	//jsmn_init(&parser);
 	//r = jsmn_parse(&parser, replyAt, strlen(replyAt), tokens, 256);
@@ -120,7 +147,9 @@ const char *Test_GetJSONValue_String(const char *keyword, const char *obj) {
 	printf("Test_GetJSONValue_String will return %s for %s\n", tmp->valuestring, keyword);
 	return tmp->valuestring;
 }
-
+const char *Test_GetLastHTMLReply() {
+	return replyAt;
+}
 void Test_Http_SingleRelayOnChannel1() {
 
 	CMD_ExecuteCommand("clearAll", 0);
@@ -130,7 +159,7 @@ void Test_Http_SingleRelayOnChannel1() {
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=POWER");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "OFF");
 
-	Test_FakeHTTPClientPacket("index?tgl=1");
+	Test_FakeHTTPClientPacket_GET("index?tgl=1");
 
 	// read power
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=POWER");
@@ -176,7 +205,7 @@ void Test_Http_TwoRelays() {
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 0);
 
-	Test_FakeHTTPClientPacket("index?tgl=1");
+	Test_FakeHTTPClientPacket_GET("index?tgl=1");
 
 	// Channel 1 On
 	// Channel 2 Off
@@ -184,7 +213,7 @@ void Test_Http_TwoRelays() {
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 0b1);
 
-	Test_FakeHTTPClientPacket("index?tgl=2");
+	Test_FakeHTTPClientPacket_GET("index?tgl=2");
 	// Channel 1 On
 	// Channel 2 On
 	// In STATUS register, power is encoded as integer...
@@ -192,7 +221,7 @@ void Test_Http_TwoRelays() {
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 0b11);
 
 
-	Test_FakeHTTPClientPacket("index?tgl=1");
+	Test_FakeHTTPClientPacket_GET("index?tgl=1");
 	// Channel 1 Off
 	// Channel 2 On
 	// In STATUS register, power is encoded as integer...
@@ -222,7 +251,7 @@ void Test_Http_FourRelays() {
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 0);
 
-	Test_FakeHTTPClientPacket("index?tgl=3");
+	Test_FakeHTTPClientPacket_GET("index?tgl=3");
 
 	// Channel 1 Off
 	// Channel 2 Off
@@ -232,7 +261,7 @@ void Test_Http_FourRelays() {
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 0b0100);
 
-	Test_FakeHTTPClientPacket("index?tgl=2");
+	Test_FakeHTTPClientPacket_GET("index?tgl=2");
 	// Channel 1 Off
 	// Channel 2 On
 	// Channel 3 On
@@ -242,7 +271,7 @@ void Test_Http_FourRelays() {
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 0b0110);
 
 
-	Test_FakeHTTPClientPacket("index?tgl=4");
+	Test_FakeHTTPClientPacket_GET("index?tgl=4");
 	// Channel 1 Off
 	// Channel 2 On
 	// Channel 3 On

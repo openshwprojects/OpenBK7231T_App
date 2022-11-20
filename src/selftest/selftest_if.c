@@ -12,6 +12,10 @@ void Test_Command_If() {
 	SELFTEST_ASSERT_CHANNEL(1, 1521);
 	CMD_ExecuteCommand("if 1 then \"setChannel 1 1500+67\"", 0);
 	SELFTEST_ASSERT_CHANNEL(1, 1567);
+	CMD_ExecuteCommand("if !1 then \"setChannel 1 3333+1111\"", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 1567);
+	CMD_ExecuteCommand("if !0 then \"setChannel 1 3333+1111\"", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 4444);
 
 	CMD_ExecuteCommand("setChannel 10 0", 0);
 	CMD_ExecuteCommand("setChannel 11 1", 0);
