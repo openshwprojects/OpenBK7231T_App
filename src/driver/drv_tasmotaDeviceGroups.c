@@ -837,7 +837,11 @@ void DRV_DGR_Init()
 	//cmddetail:"fn":"CMD_DGR_SendRGBCW","file":"driver/drv_tasmotaDeviceGroups.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("DGR_SendRGBCW", "", CMD_DGR_SendRGBCW, NULL, NULL);
-	CMD_RegisterCommand("DGR_SendFixedColor", "", CMD_DGR_SendFixedColor, "qqq", NULL);
+	//cmddetail:{"name":"DGR_SendFixedColor","args":"",
+	//cmddetail:"descr":"qqq",
+	//cmddetail:"fn":"CMD_DGR_SendFixedColor","file":"driver/drv_tasmotaDeviceGroups.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("DGR_SendFixedColor", "", CMD_DGR_SendFixedColor, NULL, NULL);
 }
 
 

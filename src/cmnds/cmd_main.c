@@ -108,7 +108,11 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_ClearConfig","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("clearConfig", "", CMD_ClearConfig, NULL, NULL);
-	CMD_RegisterCommand("clearAll", "", CMD_ClearAll, "Clears all things", NULL);
+	//cmddetail:{"name":"clearAll","args":"",
+	//cmddetail:"descr":"Clears all things",
+	//cmddetail:"fn":"CMD_ClearAll","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("clearAll", "", CMD_ClearAll, NULL, NULL);
 	//cmddetail:{"name":"simonirtest","args":"depends?",
 	//cmddetail:"descr":"Simons Special Test",
 	//cmddetail:"fn":"CMD_SimonTest","file":"cmnds/cmd_main.c","requires":"",

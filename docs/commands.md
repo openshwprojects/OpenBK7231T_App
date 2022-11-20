@@ -18,6 +18,7 @@
 | echo | [string to echo] | Echo something to logs and serial<br/>e.g.:echo hello |
 | restart | [delay in seconds, default 3] | Reboots the module<br/>e.g.:restart 5 |
 | clearConfig | none | Clears all config, and restarts in AP mode |
+| clearAll |  | Clears all things |
 | simonirtest | depends? | Simons Special Test<br/>e.g.:don't do it |
 | if |  |  |
 | led_dimmer |  | set output dimmer 0..100 |
@@ -92,6 +93,7 @@
 | DGR_SendPower |  | qqq |
 | DGR_SendBrightness |  | qqq |
 | DGR_SendRGBCW |  | qqq |
+| DGR_SendFixedColor |  | qqq |
 | tuyaMcu_testSendTime |  | Sends a example date by TuyaMCU to clock/callendar MCU |
 | tuyaMcu_sendCurTime |  | Sends a current date by TuyaMCU to clock/callendar MCU |
 | uartSendHex |  | Sends raw data by TuyaMCU UART, you must write whole packet with checksum yourself |

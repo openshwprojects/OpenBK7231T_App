@@ -18,6 +18,7 @@
 | echo | [string to echo] | Echo something to logs and serial<br/>e.g.:echo hello | cmnds/cmd_main.c<br/>CMD_Echo |
 | restart | [delay in seconds, default 3] | Reboots the module<br/>e.g.:restart 5 | cmnds/cmd_main.c<br/>CMD_Restart |
 | clearConfig | none | Clears all config, and restarts in AP mode | cmnds/cmd_main.c<br/>CMD_ClearConfig |
+| clearAll |  | Clears all things | cmnds/cmd_main.c<br/>CMD_ClearAll |
 | simonirtest | depends? | Simons Special Test<br/>e.g.:don't do it | cmnds/cmd_main.c<br/>CMD_SimonTest |
 | if |  |  | cmnds/cmd_main.c<br/>CMD_If |
 | led_dimmer |  | set output dimmer 0..100 | cmnds/cmd_newLEDDriver.c<br/>dimmer |
@@ -92,6 +93,7 @@
 | DGR_SendPower |  | qqq | driver/drv_tasmotaDeviceGroups.c<br/>CMD_DGR_SendPower |
 | DGR_SendBrightness |  | qqq | driver/drv_tasmotaDeviceGroups.c<br/>CMD_DGR_SendBrightness |
 | DGR_SendRGBCW |  | qqq | driver/drv_tasmotaDeviceGroups.c<br/>CMD_DGR_SendRGBCW |
+| DGR_SendFixedColor |  | qqq | driver/drv_tasmotaDeviceGroups.c<br/>CMD_DGR_SendFixedColor |
 | tuyaMcu_testSendTime |  | Sends a example date by TuyaMCU to clock/callendar MCU | driver/drv_tuyaMCU.c<br/>TuyaMCU_Send_SetTime_Example |
 | tuyaMcu_sendCurTime |  | Sends a current date by TuyaMCU to clock/callendar MCU | driver/drv_tuyaMCU.c<br/>TuyaMCU_Send_SetTime_Current |
 | uartSendHex |  | Sends raw data by TuyaMCU UART, you must write whole packet with checksum yourself | driver/drv_tuyaMCU.c<br/>TuyaMCU_Send_Hex |
