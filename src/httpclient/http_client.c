@@ -1172,7 +1172,10 @@ int HTTPClient_Async_SendGet(const char *url_in){
 	strcpy(tmp,url_in);
 	url = tmp;
 #else
-	url = strdup(url_in);
+	// OBK UPDATE: use our own strdup which expands constants
+	// So $CH5 gets changed to channel value integer, etc...
+	url = CMD_ExpandingStrdup(url_in);
+	//url = strdup(url_in);
 #endif
 	if(url==0) {
 		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendGet for %s, failed to alloc URL memory\r\n");
