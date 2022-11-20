@@ -187,6 +187,7 @@ void Win_DoUnitTests() {
 	Test_Expressions_RunTests_Basic();
 	Test_LEDDriver();
 	Test_LFS();
+	Test_Scripting();
 	Test_Commands_Channels();
 	Test_Command_If();
 	Test_Command_If_Else(); 

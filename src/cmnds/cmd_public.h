@@ -175,6 +175,8 @@ void CMD_InitChannelCommands();
 int CMD_InitSendCommands();
 // cmd_tcp.c
 void CMD_StartTCPCommandLine();
+// cmd_script.c
+int CMD_GetCountActiveScriptThreads();
 
 void SVM_RunThreads(int deltaMS);
 void CMD_InitScripting();

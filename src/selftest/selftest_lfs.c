@@ -53,6 +53,14 @@ void Test_LFS() {
 	// run command by alias
 	CMD_ExecuteCommand("myexecs", 0);
 	SELFTEST_ASSERT_CHANNEL(10, 22);
+	// 3*10 = 30
+	CMD_ExecuteCommand("alias myexecs_3 backlog myexecs; myexecs; myexecs", 0);
+	CMD_ExecuteCommand("myexecs_3", 0);
+	// should be increased by 30
+	SELFTEST_ASSERT_CHANNEL(10, 52);
+	CMD_ExecuteCommand("myexecs_3", 0);
+	// should be increased by 30
+	SELFTEST_ASSERT_CHANNEL(10, 82);
 
 	//system("pause");
 }

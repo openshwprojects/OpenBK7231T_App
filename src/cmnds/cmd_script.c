@@ -355,10 +355,14 @@ void SVM_RunThread(scriptInstance_t *t) {
 	const char *start, *end;
 	int len, p;
 
-	while(loop++ < maxLoops) {
+	while(1) {
+		loop++;
 		if(t->curLine == 0) {
 			t->curLine = 0;
 			t->curFile = 0;
+			return;
+		}
+		if (loop > maxLoops) {
 			return;
 		}
 		t->curLine = SVM_SkipWS(t->curLine); 
@@ -681,6 +685,22 @@ static int CMD_StopScript(const void *context, const char *cmd, const char *args
 	SVM_StopScripts(idToStop,excludeSelf);
 
 	return 1;
+}
+int CMD_GetCountActiveScriptThreads() {
+	scriptInstance_t *t;
+	int cnt;
+
+	cnt = 0;
+	t = g_scriptThreads;
+	while (t) {
+		// is this an active script thread? or just a blank entry?
+		if (t->curFile) {
+			cnt++;
+		}
+		t = t->next;
+	}
+
+	return cnt;
 }
 static int CMD_ListScripts(const void *context, const char *cmd, const char *args, int cmdFlags){
 	scriptInstance_t *t;
