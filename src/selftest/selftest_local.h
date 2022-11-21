@@ -40,9 +40,16 @@ void Test_Tokenizer();
 void Test_Commands_Alias();
 void Test_ExpandConstant();
 void Test_Scripting();
+void Test_RepeatingEvents();
+void Test_HTTP_Client();
 
 void Test_FakeHTTPClientPacket_GET(const char *tg);
 void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data);
 const char *Test_GetLastHTMLReply();
+
+// TODO: move elsewhere?
+void Sim_RunMiliseconds(int ms);
+void Sim_RunSeconds(float f);
+void Sim_RunFrames(int n);
 
 #endif

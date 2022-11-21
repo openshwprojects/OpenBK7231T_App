@@ -10,7 +10,7 @@
 static int CMD_SendGET(const void *context, const char *cmd, const char *args, int cmdFlags){
 	ADDLOG_INFO(LOG_FEATURE_CMD, " CMD_SendGET received with args %s",args);
 
-#if PLATFORM_BEKEN
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	HTTPClient_Async_SendGet(args);
 #else
 	ADDLOG_INFO(LOG_FEATURE_CMD, " CMD_SendGET not supported!");

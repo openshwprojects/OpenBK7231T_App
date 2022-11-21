@@ -110,6 +110,10 @@ int32_t HAL_TCP_Destroy(uintptr_t fd)
 
 int32_t HAL_TCP_Write(uintptr_t fd, const char *buf, uint32_t len, uint32_t timeout_ms)
 {
+#if 0
+	uint32_t len_sent;
+	len_sent = send(fd, buf, len, 0);
+#else
     int ret, err_code;
     uint32_t len_sent;
     uint64_t t_end, t_left;
@@ -173,13 +177,18 @@ int32_t HAL_TCP_Write(uintptr_t fd, const char *buf, uint32_t len, uint32_t time
             }
         }
     } while((len_sent < len) && (utils_time_left(t_end, utils_time_get_ms()) > 0));
-
+#endif
     return len_sent;
 }
 
 
 int32_t HAL_TCP_Read(uintptr_t fd, char *buf, uint32_t len, uint32_t timeout_ms)
 {
+#if 0
+	int err_code = 0;
+	uint32_t len_recv;
+	len_recv = recv(fd, buf, len, 0);
+#else
     int ret, err_code,data_over;
     uint32_t len_recv;
     uint64_t t_end, t_left;
@@ -248,7 +257,7 @@ int32_t HAL_TCP_Read(uintptr_t fd, char *buf, uint32_t len, uint32_t timeout_ms)
        {
        }
     }while(/*(bk_http_ptr->do_data == 1 && len_recv < bk_http_ptr->http_total) || */((len_recv < len) && (0 == data_over)));
-
+#endif
     //priority to return data bytes if any data be received from TCP connection.
     //It will get error code on next calling
     return (0 != len_recv) ? len_recv : err_code;

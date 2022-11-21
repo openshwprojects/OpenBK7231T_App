@@ -587,7 +587,7 @@ void Main_Init()
 		taslike_commands_init();
 		fortest_commands_init();
 		NewLED_InitCommands();
-#if PLATFORM_BEKEN
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 		CMD_InitSendCommands();
 #endif
 		CMD_InitChannelCommands();

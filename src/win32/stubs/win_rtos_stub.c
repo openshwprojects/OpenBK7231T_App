@@ -1,7 +1,9 @@
 #ifdef WINDOWS
 
 #include "../../new_common.h"
+#include <timeapi.h>
 
+DWORD startTime = 0;
 
 int xSemaphoreTake(int semaphore, int blockTime) {
 	return 1;
@@ -37,18 +39,27 @@ int LWIP_GetActiveSockets() {
 	return 1;
 }
 int lwip_close(int socket) {
-	return close(socket);
+	return closesocket(socket);
 }
 int lwip_close_force(int socket) {
-	return close(socket);
+	return closesocket(socket);
 }
 int hal_machw_time() {
-	return 1;
+	DWORD timeNow = timeGetTime();
+	if (startTime == 0)
+		startTime = timeNow;
+	DWORD ret = timeNow - startTime;
+	return ret;
 }
 int hal_machw_time_past(int tt) {
+	int t = hal_machw_time();
+	if (t < tt)
+		return 0;
 	return 1;
 }
-int rtos_create_thread() {
+int rtos_create_thread(int *out, int prio, const char *name, LPTHREAD_START_ROUTINE function, int stackSize, void *arg) {
+	int handle;
+	handle = CreateThread(NULL, 0, function, arg, 0, NULL);
 	return 0;
 }
 void rtos_delete_thread(int i) {

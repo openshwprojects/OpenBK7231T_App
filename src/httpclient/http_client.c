@@ -1167,6 +1167,9 @@ int HTTPClient_Async_SendGet(const char *url_in){
 	httpclient_data_t *client_data;
 	char *url;
 
+	// TEST
+	//url_in = "http://192.168.0.104/cm?cmnd=POWER%20TOGGLE";
+
 	// it must be copied, but we can free it automatically later
 #if DBG_HTTPCLIENT_MEMLEAK
 	strcpy(tmp,url_in);

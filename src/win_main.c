@@ -13,6 +13,7 @@
 // Need to link with Ws2_32.lib
 #pragma comment (lib, "Ws2_32.lib")
 // #pragma comment (lib, "Mswsock.lib")
+#pragma comment (lib, "Winmm.lib")
 
 #define DEFAULT_BUFLEN 16384
 #define DEFAULT_PORT "80"
@@ -161,15 +162,26 @@ DWORD WINAPI Thread_SimulateTUYAMCUSendingData(void* arg)
 
 int accum_time = 0;
 int win_frameNum = 0;
+int frameTime = 5;
 void Sim_RunFrame() {
 	win_frameNum++;
-	accum_time += 5;
+	accum_time += frameTime;
 	PIN_ticks(0);
 	HTTPServer_RunQuickTick();
 	if (accum_time > 1000) {
 		accum_time = 0;
 		Main_OnEverySecond();
 	}
+}
+void Sim_RunMiliseconds(int ms) {
+	while (ms > 0) {
+		Sim_RunFrame();
+		ms -= frameTime;
+	}
+}
+void Sim_RunSeconds(float f) {
+	int ms = f * 1000;
+	Sim_RunMiliseconds(ms);
 }
 void Sim_RunFrames(int n) {
 	int i;
@@ -182,7 +194,10 @@ void Sim_RunFrames(int n) {
 void Win_DoUnitTests() {
 	//CFG_ClearPins();
 
+
+	Test_HTTP_Client();
 	Test_ExpandConstant();
+	Test_RepeatingEvents();
 	Test_ButtonEvents();
 	Test_Commands_Alias();
 	Test_Expressions_RunTests_Basic();
