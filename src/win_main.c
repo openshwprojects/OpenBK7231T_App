@@ -173,20 +173,26 @@ void Sim_RunFrame() {
 		Main_OnEverySecond();
 	}
 }
-void Sim_RunMiliseconds(int ms) {
+void Sim_RunMiliseconds(int ms, bool bApplyRealtimeWait) {
 	while (ms > 0) {
+		if (bApplyRealtimeWait) {
+			Sleep(5);
+		}
 		Sim_RunFrame();
 		ms -= frameTime;
 	}
 }
-void Sim_RunSeconds(float f) {
+void Sim_RunSeconds(float f, bool bApplyRealtimeWait) {
 	int ms = f * 1000;
-	Sim_RunMiliseconds(ms);
+	Sim_RunMiliseconds(ms, bApplyRealtimeWait);
 }
-void Sim_RunFrames(int n) {
+void Sim_RunFrames(int n, bool bApplyRealtimeWait) {
 	int i;
 
 	for (i = 0; i < n; i++) {
+		if (bApplyRealtimeWait) {
+			Sleep(5);
+		}
 		Sim_RunFrame();
 	}
 }
@@ -197,6 +203,7 @@ void Win_DoUnitTests() {
 
 	Test_HTTP_Client();
 	Test_ExpandConstant();
+	Test_ChangeHandlers();
 	Test_RepeatingEvents();
 	Test_ButtonEvents();
 	Test_Commands_Alias();

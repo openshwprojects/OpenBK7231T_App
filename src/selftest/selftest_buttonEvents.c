@@ -23,23 +23,23 @@ void Test_ButtonEvents() {
 	SELFTEST_ASSERT_CHANNEL(12, 0);
 	SELFTEST_ASSERT_CHANNEL(13, 0);
 	// NOTE: respect BTN_DEBOUNCE_TICKS
-	Sim_RunFrames(15);
+	Sim_RunFrames(15, false);
 	// user presses the button and shorts it to ground
 	SIM_SetSimulatedPinValue(9, false);
-	Sim_RunFrames(15);
+	Sim_RunFrames(15, false);
 	SELFTEST_ASSERT_CHANNEL(10, 345);
 	SELFTEST_ASSERT_CHANNEL(11, 0);
 	SELFTEST_ASSERT_CHANNEL(12, 0);
 	SELFTEST_ASSERT_CHANNEL(13, 0);
-	Sim_RunFrames(15);
+	Sim_RunFrames(15, false);
 	SIM_SetSimulatedPinValue(9, true);
-	Sim_RunFrames(15);
+	Sim_RunFrames(15, false);
 	SELFTEST_ASSERT_CHANNEL(10, 345);
 	SELFTEST_ASSERT_CHANNEL(11, 123);
 	SELFTEST_ASSERT_CHANNEL(12, 0);
 	SELFTEST_ASSERT_CHANNEL(13, 0);
 	// wait extra frames for the click event to fire
-	Sim_RunFrames(100);
+	Sim_RunFrames(100, false);
 	// the click happens with a certain delay after "onRelease" because it waits
 	// too see if it's a click or a double click
 	SELFTEST_ASSERT_CHANNEL(10, 345);
@@ -50,32 +50,32 @@ void Test_ButtonEvents() {
 	//
 	// Test OnPress and OnRelease and OnDblClick
 	//
-	Sim_RunFrames(1000);
-	Sim_RunFrames(1000);
+	Sim_RunFrames(1000, false);
+	Sim_RunFrames(1000, false);
 	SELFTEST_ASSERT_CHANNEL(10, 345);
 	SELFTEST_ASSERT_CHANNEL(11, 123);
 	SELFTEST_ASSERT_CHANNEL(12, 22);
 	SELFTEST_ASSERT_CHANNEL(13, 0);
 	// user presses the button and shorts it to ground
 	SIM_SetSimulatedPinValue(9, false);
-	Sim_RunFrames(15);
+	Sim_RunFrames(15, false);
 	SELFTEST_ASSERT_CHANNEL(10, (345 + 345));
 	SELFTEST_ASSERT_CHANNEL(11, 123);
 	SELFTEST_ASSERT_CHANNEL(12, 22);
 	SELFTEST_ASSERT_CHANNEL(13, 0);
 	// user releases it
 	SIM_SetSimulatedPinValue(9, true);
-	Sim_RunFrames(15);
+	Sim_RunFrames(15, false);
 	SELFTEST_ASSERT_CHANNEL(10, (345 + 345));
 	SELFTEST_ASSERT_CHANNEL(11, (123 + 123));
 	SELFTEST_ASSERT_CHANNEL(12, 22);
 	SELFTEST_ASSERT_CHANNEL(13, 0);
 	// within a short time, the click is repeated
 	// but the Click event will not get called, only DblClick
-	Sim_RunFrames(25);
+	Sim_RunFrames(25, false);
 	//  SECOND TIME user presses the button and shorts it to ground
 	SIM_SetSimulatedPinValue(9, false);
-	Sim_RunFrames(15);
+	Sim_RunFrames(15, false);
 	// Double Click is not like a click - it does not wait extra cycles after button release.
 	// It fires just after it's relased, it's quicker
 	// Double click will happen now:
@@ -85,12 +85,12 @@ void Test_ButtonEvents() {
 	SELFTEST_ASSERT_CHANNEL(13, 1201);
 	// user releases it
 	SIM_SetSimulatedPinValue(9, true);
-	Sim_RunFrames(15);
+	Sim_RunFrames(15, false);
 	SELFTEST_ASSERT_CHANNEL(10, (345 + 345));
 	SELFTEST_ASSERT_CHANNEL(11, (123 + 123 + 123));
 	SELFTEST_ASSERT_CHANNEL(12, 22);
 	SELFTEST_ASSERT_CHANNEL(13, 1201);
-	Sim_RunFrames(100);
+	Sim_RunFrames(100, false);
 	SELFTEST_ASSERT_CHANNEL(10, (345 + 345));
 	SELFTEST_ASSERT_CHANNEL(11, (123 + 123 + 123));
 	SELFTEST_ASSERT_CHANNEL(12, 22);

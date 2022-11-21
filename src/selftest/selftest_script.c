@@ -27,7 +27,7 @@ void Test_Scripting() {
 	SELFTEST_ASSERT_INTEGER(CMD_GetCountActiveScriptThreads(), 1);
 	// should execute and quit within few frames
 	// (we have a limit of scripting executed per frame)
-	Sim_RunFrames(15);
+	Sim_RunFrames(15, false);
 	SELFTEST_ASSERT_INTEGER(CMD_GetCountActiveScriptThreads(), 0);
 	SELFTEST_ASSERT_CHANNEL(10, 3);
 	SELFTEST_ASSERT_CHANNEL(11, 234);

@@ -48,8 +48,8 @@ void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data);
 const char *Test_GetLastHTMLReply();
 
 // TODO: move elsewhere?
-void Sim_RunMiliseconds(int ms);
-void Sim_RunSeconds(float f);
-void Sim_RunFrames(int n);
+void Sim_RunMiliseconds(int ms, bool bApplyRealtimeWait);
+void Sim_RunSeconds(float f, bool bApplyRealtimeWait);
+void Sim_RunFrames(int n, bool bApplyRealtimeWait);
 
 #endif

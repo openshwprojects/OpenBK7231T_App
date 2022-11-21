@@ -498,15 +498,18 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\selftest\selftest_buttonEvents.c" />
+    <ClCompile Include="src\selftest\selftest_changeHandlers.c" />
     <ClCompile Include="src\selftest\selftest_cmd_alias.c" />
     <ClCompile Include="src\selftest\selftest_cmd_channels.c" />
     <ClCompile Include="src\selftest\selftest_expandConstant.c" />
     <ClCompile Include="src\selftest\selftest_expressions.c" />
     <ClCompile Include="src\selftest\selftest_http.c" />
+    <ClCompile Include="src\selftest\selftest_http_client.c" />
     <ClCompile Include="src\selftest\selftest_if.c" />
     <ClCompile Include="src\selftest\selftest_led.c" />
     <ClCompile Include="src\selftest\selftest_lfs.c" />
     <ClCompile Include="src\selftest\selftest_main.c" />
+    <ClCompile Include="src\selftest\selftest_repeatingEvents.c" />
     <ClCompile Include="src\selftest\selftest_script.c" />
     <ClCompile Include="src\selftest\selftest_tokenizer.c" />
     <ClCompile Include="src\selftest\selftest_tuyaMCU.c" />
