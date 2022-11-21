@@ -79,21 +79,24 @@ size_t xPortGetFreeHeapSize() {
 }
 #endif
 
-#ifdef PLATFORM_BEKEN
+#ifdef PLATFORM_BK7231T
 	// this function waits for the extended app functions to finish starting.
 	extern void extended_app_waiting_for_launch(void);
+	void extended_app_waiting_for_launch2(){
+		extended_app_waiting_for_launch();
+	}
 #else
-	void extended_app_waiting_for_launch(void){
+	void extended_app_waiting_for_launch2(void){
 		// do nothing?
 
 		// define FIXED_DELAY if delay wanted on non-beken platforms.
-	#ifdef FIXED_DELAY
+	#ifdef PLATFORM_BK7231N
 		// wait 100ms at the start.
 		// TCP is being setup in a different thread, and there does not seem to be a way to find out if it's complete yet?
 		// so just wait a bit, and then start.
 		int startDelay = 750;
 		bk_printf("\r\ndelaying start\r\n");
-		for (i = 0; i < startDelay/10; i++){
+		for (int i = 0; i < startDelay/10; i++){
 			rtos_delay_milliseconds(10);
 			bk_printf("#Startup delayed %dms#\r\n", i*10);
 		}
@@ -633,7 +636,7 @@ void Main_Init_Delay()
 	ADDLOGF_INFO("Main_Init_Delay");
 	bk_printf("\r\nMain_Init_Delay\r\n");
 
-	extended_app_waiting_for_launch();
+	extended_app_waiting_for_launch2();
 
 	ADDLOGF_INFO("Main_Init_Delay done");
 	bk_printf("\r\nMain_Init_Delay done\r\n");
@@ -731,6 +734,7 @@ void Main_Init()
 	Main_Init_Delay();
 	// do things we want after TCP/IP stack is ready
 	Main_Init_After_Delay();
+
 }
 
 
