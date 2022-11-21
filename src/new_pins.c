@@ -58,10 +58,11 @@ typedef struct pinButton_ {
 	uint8_t  repeat : 4;
 	uint8_t  event : 4;
 	uint8_t  state : 3;
-	uint8_t  debounce_cnt : 3;
 	uint8_t  active_level : 1;
 	uint8_t  button_level : 1;
 
+	uint8_t  debounce_cnt; // make a full byte, so we can count ms
+	
 	uint8_t  (*hal_button_Level)(void *self);
 	new_btn_callback  cb[BTN_number_of_event];
 }pinButton_s;
