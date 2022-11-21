@@ -489,6 +489,9 @@ static int getHttp(char* buff, int buffsize) {
 }
 
 void startLogServer() {
+#if WINDOWS
+
+#else
 	OSStatus err = kNoErr;
 
 	err = rtos_create_thread(NULL, BEKEN_APPLICATION_PRIORITY,
@@ -500,9 +503,13 @@ void startLogServer() {
 	{
 		bk_printf("create \"TCP_server\" thread failed!\r\n");
 	}
+#endif
 }
 
 void startSerialLog() {
+#if WINDOWS
+
+#else
 	OSStatus err = kNoErr;
 	err = rtos_create_thread(NULL, BEKEN_APPLICATION_PRIORITY,
 		"log_serial",
@@ -513,6 +520,7 @@ void startSerialLog() {
 	{
 		bk_printf("create \"log_serial\" thread failed!\r\n");
 	}
+#endif
 }
 
 
