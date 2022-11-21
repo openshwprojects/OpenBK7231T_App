@@ -25,8 +25,18 @@
 // from hal_main_bk7231.c
 // triggers a one-shot timer to cause read.
 extern void MQTT_TriggerRead();
-
 #endif
+
+
+// these won't exist except on Beken?
+#ifndef LOCK_TCPIP_CORE
+	#define LOCK_TCPIP_CORE()
+#endif
+
+#ifndef UNLOCK_TCPIP_CORE
+	#define UNLOCK_TCPIP_CORE()
+#endif
+
 /////////////////////////////////////////////////////////////
 // mqtt receive buffer, so we can action in our threads, not
 // in tcp_thread
