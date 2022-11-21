@@ -89,7 +89,7 @@ static int CMD_Echo(const void *context, const char *cmd, const char *args, int 
 }
 
 
-void CMD_Init() {
+void CMD_Init_Early() {
 	//cmddetail:{"name":"echo","args":"",
 	//cmddetail:"descr":"qqqe",
 	//cmddetail:"fn":"CMD_Echo","file":"cmnds/cmd_main.c","requires":"",
@@ -120,12 +120,16 @@ void CMD_Init() {
 	//cmddetail:"fn":"CMD_If","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("if", NULL, CMD_If, NULL, NULL);
-	if(CFG_HasFlag(OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER)) {
-		CMD_StartTCPCommandLine();
-	}
+	
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	CMD_InitScripting();
 #endif
+}
+
+void CMD_Init_Delayed() {
+	if(CFG_HasFlag(OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER)) {
+		CMD_StartTCPCommandLine();
+	}
 }
 
 

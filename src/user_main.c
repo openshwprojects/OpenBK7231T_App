@@ -64,6 +64,8 @@ static int g_timeSinceLastPingReply = -1;
 // was it ran?
 static int g_bPingWatchDogStarted = 0;
 
+uint8_t g_StartupDelayOver = 0;
+
 uint32_t idleCount = 0;
 
 int DRV_SSDP_Active = 0;
@@ -75,6 +77,36 @@ int DRV_SSDP_Active = 0;
 size_t xPortGetFreeHeapSize() {
 	return 0;
 }
+#endif
+
+#ifdef PLATFORM_BK7231T
+	// this function waits for the extended app functions to finish starting.
+	extern void extended_app_waiting_for_launch(void);
+	void extended_app_waiting_for_launch2(){
+		extended_app_waiting_for_launch();
+	}
+#else
+	void extended_app_waiting_for_launch2(void){
+		// do nothing?
+
+		// define FIXED_DELAY if delay wanted on non-beken platforms.
+	#ifdef PLATFORM_BK7231N
+		// wait 100ms at the start.
+		// TCP is being setup in a different thread, and there does not seem to be a way to find out if it's complete yet?
+		// so just wait a bit, and then start.
+		int startDelay = 750;
+		bk_printf("\r\ndelaying start\r\n");
+		for (int i = 0; i < startDelay/10; i++){
+			rtos_delay_milliseconds(10);
+			bk_printf("#Startup delayed %dms#\r\n", i*10);
+		}
+		bk_printf("\r\nstarting....\r\n");
+
+		// through testing, 'Initializing TCP/IP stack' appears at ~500ms
+		// so we should wait at least 750?
+	#endif
+
+	}
 #endif
 
 #if defined(PLATFORM_BL602) || defined(PLATFORM_W800) || defined(PLATFORM_W600)
@@ -476,30 +508,22 @@ void isidle(){
 	idleCount++;
 }
 
-void Main_Init()
+
+//////////////////////////////////////////////////////
+// do things which should happen BEFORE we delay at Startup
+// e.g. set lights to last value, so we get immediate response at
+// power on.
+void Main_Init_Before_Delay()
 {
-	const char *wifi_ssid, *wifi_pass;
-	int i;
-
-	// wait 100ms at the start.
-	// TCP is being setup in a different thread, and there does not seem to be a way to find out if it's complete yet?
-	// so just wait a bit, and then start.
-	int startDelay = 750;
-	bk_printf("\r\ndelaying start\r\n");
-	for (i = 0; i < startDelay/10; i++){
-		rtos_delay_milliseconds(10);
-		bk_printf("#Startup delayed %dms#\r\n", i*10);
-	}
-	bk_printf("\r\nstarting....\r\n");
-
-	// through testing, 'Initializing TCP/IP stack' appears at ~500ms
-	// so we should wait at least 750?
-
+	ADDLOGF_INFO("Main_Init_Before_Delay");
 	// read or initialise the boot count flash area
 	HAL_FlashVars_IncreaseBootCount();
 	
 
 	#ifdef PLATFORM_BEKEN
+	// this just increments our idle counter variable.
+	// it registers a cllback from RTOS IDLE function.
+	// why is it called IRDA??  is this where they check for IR?
 	bg_register_irda_check_func(isidle);
 	#endif
 
@@ -509,8 +533,132 @@ void Main_Init()
 		bSafeMode = 1;
 		ADDLOGF_INFO("###### safe mode activated - boot failures %d", g_bootFailures);
 	}
-
 	CFG_InitAndLoad();
+
+	// only initialise certain things if we are not in AP mode
+	if (!bSafeMode)
+    {
+#ifndef OBK_DISABLE_ALL_DRIVERS
+		DRV_Generic_Init();
+#endif
+		RepeatingEvents_Init();
+
+		// set initial values for channels.
+		// this is done early so lights come on at the flick of a switch.
+		CFG_ApplyChannelStartValues();
+		PIN_AddCommands();
+		ADDLOGF_DEBUG("Initialised pins\r\n");
+
+#ifdef BK_LITTLEFS
+		// initialise the filesystem, only if present.
+		// don't create if it does not mount
+		// do this for ST mode only, as it may be something in FS which is killing us,
+		// and we may add a command to empty fs just be writing first sector?
+		init_lfs(0);
+#endif
+
+#ifdef BK_LITTLEFS
+		LFSAddCmds(); // setlfssize
+#endif
+
+		PIN_SetGenericDoubleClickCallback(app_on_generic_dbl_click);
+		ADDLOGF_DEBUG("Initialised other callbacks\r\n");
+
+		// initialise rest interface
+		init_rest();
+
+		// add some commands...
+		taslike_commands_init();
+		fortest_commands_init();
+		NewLED_InitCommands();
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+		CMD_InitSendCommands();
+#endif
+		CMD_InitChannelCommands();
+		EventHandlers_Init();
+
+		// CMD_Init() is now split into Early and Delayed
+		// so ALL commands expected in autoexec.bat should have been registered by now...
+		// but DON't run autoexec if we have had 2+ boot failures
+		CMD_Init_Early();
+
+        /* Automatic disable of PIN MONITOR after reboot */
+        if (CFG_HasFlag(OBK_FLAG_HTTP_PINMONITOR)) {
+            CFG_SetFlag(OBK_FLAG_HTTP_PINMONITOR, false);
+		}
+
+		CMD_ExecuteCommand("exec early.bat", COMMAND_FLAG_SOURCE_SCRIPT);
+
+		// autostart drivers
+		if(PIN_FindPinIndexForRole(IOR_SM2135_CLK,-1) != -1 && PIN_FindPinIndexForRole(IOR_SM2135_DAT,-1) != -1) 
+        {
+#ifndef OBK_DISABLE_ALL_DRIVERS
+			DRV_StartDriver("SM2135");
+#endif
+		}
+		if(PIN_FindPinIndexForRole(IOR_BP5758D_CLK,-1) != -1 && PIN_FindPinIndexForRole(IOR_BP5758D_DAT,-1) != -1) 
+        {
+#ifndef OBK_DISABLE_ALL_DRIVERS
+			DRV_StartDriver("BP5758D");
+#endif
+		}
+		if(PIN_FindPinIndexForRole(IOR_BP1658CJ_CLK,-1) != -1 && PIN_FindPinIndexForRole(IOR_BP1658CJ_DAT,-1) != -1) {
+#ifndef OBK_DISABLE_ALL_DRIVERS
+			DRV_StartDriver("BP1658CJ");
+#endif
+		}
+		if(PIN_FindPinIndexForRole(IOR_BL0937_CF,-1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_CF1,-1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_SEL,-1) != -1) {
+#ifndef OBK_DISABLE_ALL_DRIVERS
+			DRV_StartDriver("BL0937");
+#endif
+		}
+
+		g_enable_pins = 1;
+		// this actually sets the pins, moved out so we could avoid if necessary
+		PIN_SetupPins();
+		PIN_StartButtonScanThread();
+
+		NewLED_RestoreSavedStateIfNeeded();
+	}
+
+	ADDLOGF_INFO("Main_Init_Before_Delay done");
+	bk_printf("\r\nMain_Init_Before_Delay done\r\n");
+}
+
+// a fixed delay of 750ms to wait for calibration routines in core thread,
+// which must complete before LWIP etc. are intialised,
+// and crucially before we use certain TCP/IP features.
+// it would be nicer to understand more about why, and to wait for TCPIP to be ready
+// rather than use a fixed delay.
+// (e.g. are we delayed by it reading temperature?)
+void Main_Init_Delay()
+{
+	ADDLOGF_INFO("Main_Init_Delay");
+	bk_printf("\r\nMain_Init_Delay\r\n");
+
+	extended_app_waiting_for_launch2();
+
+	ADDLOGF_INFO("Main_Init_Delay done");
+	bk_printf("\r\nMain_Init_Delay done\r\n");
+
+	// use this variable wherever to determine if we have TCP/IP features.
+	// e.g. in logging to determine if we can start TCP thread
+	g_StartupDelayOver = 1;
+}
+
+
+// do things after the start delay.
+// i.e. things that use TCP/IP like NTP, SSDP, DGR
+void Main_Init_After_Delay()
+{
+	const char *wifi_ssid, *wifi_pass;
+	ADDLOGF_INFO("Main_Init_After_Delay");
+
+	// we can log this after delay.
+	if (bSafeMode){
+		ADDLOGF_INFO("###### safe mode activated - boot failures %d", g_bootFailures);
+	}
+
 	wifi_ssid = CFG_GetWiFiSSID();
 	wifi_pass = CFG_GetWiFiPass();
 
@@ -547,103 +695,46 @@ void Main_Init()
 	HTTPServer_Start();
 	ADDLOGF_DEBUG("Started http tcp server\r\n");
 
-#ifdef BK_LITTLEFS
-	LFSAddCmds(); // setlfssize
-#endif
 
 	// only initialise certain things if we are not in AP mode
 	if (!bSafeMode)
     {
-#ifndef OBK_DISABLE_ALL_DRIVERS
-		DRV_Generic_Init();
-#endif
-		RepeatingEvents_Init();
-
-		CFG_ApplyChannelStartValues();
-
-		PIN_AddCommands();
-
-		//CFG_ApplyStartChannelValues();
-		ADDLOGF_DEBUG("Initialised pins\r\n");
-
 		// initialise MQTT - just sets up variables.
 		// all MQTT happens in timer thread?
 		MQTT_init();
 
-		PIN_SetGenericDoubleClickCallback(app_on_generic_dbl_click);
-		ADDLOGF_DEBUG("Initialised other callbacks\r\n");
-
-#ifdef BK_LITTLEFS
-		// initialise the filesystem, only if present.
-		// don't create if it does not mount
-		// do this for ST mode only, as it may be something in FS which is killing us,
-		// and we may add a command to empty fs just be writing first sector?
-		init_lfs(0);
-#endif
-		// initialise rest interface
-		init_rest();
-
-		// add some commands...
-		taslike_commands_init();
-		fortest_commands_init();
-		NewLED_InitCommands();
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
-		CMD_InitSendCommands();
-#endif
-		CMD_InitChannelCommands();
-		EventHandlers_Init();
-
 		// NOTE: this will try to read autoexec.bat,
 		// so ALL commands expected in autoexec.bat should have been registered by now...
 		// but DON't run autoexec if we have had 2+ boot failures
-		CMD_Init();
-
-        /* Automatic disable of PIN MONITOR after reboot */
-        if (CFG_HasFlag(OBK_FLAG_HTTP_PINMONITOR))
-            CFG_SetFlag(OBK_FLAG_HTTP_PINMONITOR, false);
-
-		// autostart drivers
-		if(PIN_FindPinIndexForRole(IOR_SM2135_CLK,-1) != -1 && PIN_FindPinIndexForRole(IOR_SM2135_DAT,-1) != -1) 
-        {
-#ifndef OBK_DISABLE_ALL_DRIVERS
-			DRV_StartDriver("SM2135");
-#endif
-		}
-		if(PIN_FindPinIndexForRole(IOR_BP5758D_CLK,-1) != -1 && PIN_FindPinIndexForRole(IOR_BP5758D_DAT,-1) != -1) 
-        {
-#ifndef OBK_DISABLE_ALL_DRIVERS
-			DRV_StartDriver("BP5758D");
-#endif
-		}
-		if(PIN_FindPinIndexForRole(IOR_BP1658CJ_CLK,-1) != -1 && PIN_FindPinIndexForRole(IOR_BP1658CJ_DAT,-1) != -1) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
-			DRV_StartDriver("BP1658CJ");
-#endif
-		}
-		if(PIN_FindPinIndexForRole(IOR_BL0937_CF,-1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_CF1,-1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_SEL,-1) != -1) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
-			DRV_StartDriver("BL0937");
-#endif
-		}
+		CMD_Init_Delayed();
 
 		if(PIN_FindPinIndexForRole(IOR_IRRecv,-1) != -1 || PIN_FindPinIndexForRole(IOR_IRSend,-1) != -1) {
 			// start IR driver 5 seconds after boot.  It may affect wifi connect?
 			// yet we also want it to start if no wifi for IR control...
 #ifndef OBK_DISABLE_ALL_DRIVERS
-			ScheduleDriverStart("IR",5);
+			DRV_StartDriver("IR");
+			//ScheduleDriverStart("IR",5);
 #endif
 		}
 
 		CMD_ExecuteCommand(CFG_GetShortStartupCommand(), COMMAND_FLAG_SOURCE_SCRIPT);
 		CMD_ExecuteCommand("exec autoexec.bat", COMMAND_FLAG_SOURCE_SCRIPT);
-
-
-		g_enable_pins = 1;
-		// this actually sets the pins, moved out so we could avoid if necessary
-		PIN_SetupPins();
-		PIN_StartButtonScanThread();
-
-		NewLED_RestoreSavedStateIfNeeded();
 	}
+
+	ADDLOGF_INFO("Main_Init_After_Delay done");
 }
+
+
+
+void Main_Init()
+{
+	// do things we want to happen immediately on boot
+	Main_Init_Before_Delay();
+	// delay until TCP/IP stack is ready
+	Main_Init_Delay();
+	// do things we want after TCP/IP stack is ready
+	Main_Init_After_Delay();
+
+}
+
 
