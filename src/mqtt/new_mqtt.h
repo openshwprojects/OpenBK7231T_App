@@ -17,6 +17,7 @@ extern ip_addr_t mqtt_ip;
 extern mqtt_client_t* mqtt_client;
 
 void MQTT_init();
+int MQTT_RunQuickTick();
 int MQTT_RunEverySecondUpdate();
 
 enum OBK_Publish_Result_e {

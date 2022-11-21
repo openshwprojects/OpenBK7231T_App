@@ -20,6 +20,129 @@
 #endif
 #endif
 
+#ifdef PLATFORM_BEKEN
+#include <tcpip.h>
+// from hal_main_bk7231.c
+// triggers a one-shot timer to cause read.
+extern void MQTT_TriggerRead();
+
+#endif
+/////////////////////////////////////////////////////////////
+// mqtt receive buffer, so we can action in our threads, not
+// in tcp_thread
+//
+#define MQTT_RX_BUFFER_MAX 4096
+unsigned char mqtt_rx_buffer[MQTT_RX_BUFFER_MAX];
+int mqtt_rx_buffer_head;
+int mqtt_rx_buffer_tail;
+int mqtt_rx_buffer_count;
+unsigned char temp_topic[128];
+unsigned char temp_data[128];
+
+int addLenData(int len, const unsigned char *data){
+	mqtt_rx_buffer[mqtt_rx_buffer_head] = (len >> 8) & 0xff;
+	mqtt_rx_buffer_head = (mqtt_rx_buffer_head + 1) % MQTT_RX_BUFFER_MAX;
+	mqtt_rx_buffer_count++;
+	mqtt_rx_buffer[mqtt_rx_buffer_head] = (len) & 0xff;
+	mqtt_rx_buffer_head = (mqtt_rx_buffer_head + 1) % MQTT_RX_BUFFER_MAX;
+	mqtt_rx_buffer_count++;
+	for (int i = 0; i < len; i++){
+		mqtt_rx_buffer[mqtt_rx_buffer_head] = data[i];
+		mqtt_rx_buffer_head = (mqtt_rx_buffer_head + 1) % MQTT_RX_BUFFER_MAX;
+		mqtt_rx_buffer_count++;
+	}
+	return len + 2;
+}
+
+int getLenData(int *len, unsigned char *data, int maxlen){
+	int l;
+	l = mqtt_rx_buffer[mqtt_rx_buffer_tail];
+	mqtt_rx_buffer_tail = (mqtt_rx_buffer_tail + 1) % MQTT_RX_BUFFER_MAX;
+	mqtt_rx_buffer_count--;
+	l = l<<8;
+	l |= mqtt_rx_buffer[mqtt_rx_buffer_tail];
+	mqtt_rx_buffer_tail = (mqtt_rx_buffer_tail + 1) % MQTT_RX_BUFFER_MAX;
+	mqtt_rx_buffer_count--;
+
+	for (int i = 0; i < l; i++){
+		if (i < maxlen){
+			data[i] = mqtt_rx_buffer[mqtt_rx_buffer_tail];
+		}
+		mqtt_rx_buffer_tail = (mqtt_rx_buffer_tail + 1) % MQTT_RX_BUFFER_MAX;
+		mqtt_rx_buffer_count--;
+	}
+	if (mqtt_rx_buffer_count < 0){
+		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "MQTT_rx buffer underflow!!!");
+		mqtt_rx_buffer_count = 0;
+		mqtt_rx_buffer_tail = mqtt_rx_buffer_head = 0;
+	}
+
+	if (l > maxlen){
+		*len = maxlen;
+	} else {
+		*len = l;
+	}
+	return l + 2;
+}
+
+static SemaphoreHandle_t g_mutex = 0;
+
+static bool MQTT_Mutex_Take(int del) {
+	int taken;
+
+	if (g_mutex == 0)
+	{
+		g_mutex = xSemaphoreCreateMutex();
+	}
+	taken = xSemaphoreTake(g_mutex, del);
+	if (taken == pdTRUE) {
+		return true;
+	}
+	return false;
+}
+
+static void MQTT_Mutex_Free()
+{
+	xSemaphoreGive(g_mutex);
+}
+
+// this is called from tcp_thread context to queue received mqtt,
+// and then we'll retrieve them from our own thread for processing.
+int post_received(const char *topic, int topiclen, const unsigned char *data, int datalen){
+	MQTT_Mutex_Take(100);
+	if ((MQTT_RX_BUFFER_MAX - 1 - mqtt_rx_buffer_count) < topiclen + datalen + 2 + 2){
+		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "MQTT_rx buffer overflow for topic %s", topic);
+	} else {
+		addLenData(topiclen, (unsigned char *)topic);
+		addLenData(datalen, data);
+	}
+	MQTT_Mutex_Free();
+
+
+#ifdef PLATFORM_BEKEN
+	MQTT_TriggerRead();
+#endif
+	return 1;
+}
+
+int get_received(char **topic, int *topiclen, unsigned char **data, int *datalen){
+	int res = 0;
+	MQTT_Mutex_Take(100);
+	if (mqtt_rx_buffer_tail != mqtt_rx_buffer_head){
+		getLenData(topiclen, temp_topic, sizeof(temp_topic)-1);
+		temp_topic[*topiclen] = 0;
+		getLenData(datalen, temp_data, sizeof(temp_data)-1);
+		temp_data[*datalen] = 0;
+		*topic = (char *)temp_topic;
+		*data = temp_data;
+		res = 1;
+	}
+	MQTT_Mutex_Free();
+	return res;
+}
+//
+//////////////////////////////////////////////////////////////////////
+
 int wal_stricmp(const char* a, const char* b) {
 	int ca, cb;
 	do {
@@ -64,6 +187,9 @@ static int mqtt_published_events = 0;
 static int mqtt_publish_errors = 0;
 static int mqtt_received_events = 0;
 
+static int g_just_connected = 0;
+
+
 typedef struct mqtt_callback_tag {
 	char* topic;
 	char* subscriptionTopic;
@@ -76,6 +202,7 @@ static mqtt_callback_t* callbacks[MAX_MQTT_CALLBACKS];
 static int numCallbacks = 0;
 // note: only one incomming can be processed at a time.
 static obk_mqtt_request_t g_mqtt_request;
+static obk_mqtt_request_t g_mqtt_request_cb;
 
 #define LOOPS_WITH_DISCONNECTED 15
 int loopsWithDisconnected = 0;
@@ -112,26 +239,6 @@ int g_publishItemIndex = PUBLISHITEM_ALL_INDEX_FIRST;
 static bool g_firstFullBroadcast = true;  //Flag indicating that we need to do a full broadcast
 
 int g_memoryErrorsThisSession = 0;
-static SemaphoreHandle_t g_mutex = 0;
-
-static bool MQTT_Mutex_Take(int del) {
-	int taken;
-
-	if (g_mutex == 0)
-	{
-		g_mutex = xSemaphoreCreateMutex();
-	}
-	taken = xSemaphoreTake(g_mutex, del);
-	if (taken == pdTRUE) {
-		return true;
-	}
-	return false;
-}
-
-static void MQTT_Mutex_Free()
-{
-	xSemaphoreGive(g_mutex);
-}
 
 void MQTT_PublishWholeDeviceState_Internal(bool bAll)
 {
@@ -491,7 +598,10 @@ static void MQTT_disconnect(mqtt_client_t* client)
 	if (!client)
 		return;
 	// this is what it was renamed to.  why?
+    LOCK_TCPIP_CORE();
 	mqtt_disconnect(client);
+    UNLOCK_TCPIP_CORE();
+
 }
 
 /* Called when publish is complete either with sucess or failure */
@@ -540,7 +650,11 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 		retain = 1;
 	}
 
-	if (mqtt_client_is_connected(client) == 0)
+	LOCK_TCPIP_CORE();
+	int res = mqtt_client_is_connected(client);
+	UNLOCK_TCPIP_CORE();
+
+	if (res == 0)
 	{
 		g_my_reconnect_mqtt_after_time = 5;
 		MQTT_Mutex_Free();
@@ -562,7 +676,9 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publishing val (%d bytes) to %s retain=%i\n", sVal_len, pub_topic, retain);
 		}
 
+    	LOCK_TCPIP_CORE();
 		err = mqtt_publish(client, pub_topic, sVal, strlen(sVal), qos, retain, mqtt_pub_request_cb, 0);
+    	UNLOCK_TCPIP_CORE();
 		os_free(pub_topic);
 
 		if (err != ERR_OK)
@@ -615,6 +731,9 @@ void MQTT_OBK_Printf(char* s) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, s);
 }
 
+////////////////////////////////////////
+// called from tcp_thread context.
+// we should do callbacks from one of our threads?
 static void mqtt_incoming_data_cb(void* arg, const u8_t* data, u16_t len, u8_t flags)
 {
 	int i;
@@ -636,17 +755,59 @@ static void mqtt_incoming_data_cb(void* arg, const u8_t* data, u16_t len, u8_t f
 			char* cbtopic = callbacks[i]->topic;
 			if (!strncmp(g_mqtt_request.topic, cbtopic, strlen(cbtopic)))
 			{
+				post_received(g_mqtt_request.topic, strlen(g_mqtt_request.topic), data, len);
+				// if ANYONE is interested, store it.
+				break;
 				// note - callback must return 1 to say it ate the mqtt, else further processing can be performed.
 				// i.e. multiple people can get each topic if required.
-				if (callbacks[i]->callback(&g_mqtt_request))
-				{
-					return;
-				}
+				//if (callbacks[i]->callback(&g_mqtt_request))
+				//{
+				//	return;
+				//}
 			}
 		}
 	}
 }
 
+
+// run from userland (quicktick or wakeable thread)
+int MQTT_process_received(){
+	char *topic;
+	int topiclen;
+	unsigned char *data;
+	int datalen;
+	int found = 0;
+	int count = 0;
+	do{
+		found = get_received(&topic, &topiclen, &data, &datalen);
+		if (found){
+			count++;
+			strncpy(g_mqtt_request_cb.topic, topic, sizeof(g_mqtt_request_cb.topic));
+			g_mqtt_request_cb.received = data;
+			g_mqtt_request_cb.receivedLen = datalen;
+			for (int i = 0; i < numCallbacks; i++)
+			{
+				char* cbtopic = callbacks[i]->topic;
+				if (!strncmp(topic, cbtopic, strlen(cbtopic)))
+				{
+					// note - callback must return 1 to say it ate the mqtt, else further processing can be performed.
+					// i.e. multiple people can get each topic if required.
+					if (callbacks[i]->callback(&g_mqtt_request_cb))
+					{
+						// if no further processing, then break this loop.
+						break;
+					}
+				}
+			}
+		}
+	} while (found);
+
+	return count;
+}
+
+
+////////////////////////////////
+// called from tcp_thread context
 static void mqtt_incoming_publish_cb(void* arg, const char* topic, u32_t tot_len)
 {
 	//const char *p;
@@ -685,6 +846,8 @@ static void mqtt_sub_request_cb(void* arg, err_t result)
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Subscribe result: %i\n", result);
 }
 
+/////////////////////////////////////////////
+// should be called in tcp_thread context.
 static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection_status_t status)
 {
 	int i;
@@ -701,10 +864,12 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 	{
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_connection_cb: Successfully connected\n");
 
+    	//LOCK_TCPIP_CORE();
 		mqtt_set_inpub_callback(mqtt_client,
 			mqtt_incoming_publish_cb,
 			mqtt_incoming_data_cb,
 			LWIP_CONST_CAST(void*, &mqtt_client_info));
+    	//UNLOCK_TCPIP_CORE();
 
 		// subscribe to all callback subscription topics
 		// this makes a BIG assumption that we can subscribe multiple times to the same one?
@@ -729,7 +894,9 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 		clientId = CFG_GetMQTTClientId();
 
 		snprintf(tmp, sizeof(tmp), "%s/connected", clientId);
+    	//LOCK_TCPIP_CORE();
 		err = mqtt_publish(client, tmp, "online", strlen("online"), 2, true, mqtt_pub_request_cb, 0);
+    	//UNLOCK_TCPIP_CORE();
 		if (err != ERR_OK) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish err: %d\n", err);
 			if (err == ERR_CONN) {
@@ -737,13 +904,7 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 			}
 		}
 
-		// publish all values on state
-		if (CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEONCONNECT)) {
-			MQTT_PublishWholeDeviceState();
-		}
-		else {
-			//MQTT_PublishOnlyDeviceChannelsIfPossible();
-		}
+		g_just_connected = 1;
 
 		//mqtt_sub_unsub(client,
 		//        "topic_qos1", 1,
@@ -834,10 +995,12 @@ static void MQTT_do_connect(mqtt_client_t* client)
 		  to establish a connection with the server.
 		  For now MQTT version 3.1.1 is always used */
 
+    	LOCK_TCPIP_CORE();
 		res = mqtt_client_connect(mqtt_client,
 			&mqtt_ip, mqtt_port,
 			mqtt_connection_cb, LWIP_CONST_CAST(void*, &mqtt_client_info),
 			&mqtt_client_info);
+    	UNLOCK_TCPIP_CORE();
 		mqtt_connect_result = res;
 		if (res != ERR_OK)
 		{
@@ -971,13 +1134,20 @@ void MQTT_Test_Tick(void* param)
 	{
 		while (1)
 		{
-			if (mqtt_client_is_connected(mqtt_client) == 0)
+		
+    		LOCK_TCPIP_CORE();
+			int res = mqtt_client_is_connected(mqtt_client);
+    		UNLOCK_TCPIP_CORE();
+
+			if (res == 0)
 				break;
 			if (info->msg_cnt < info->msg_num)
 			{
 				sprintf(info->value, "TestMSG: %li/%li Time: %i s, Rate: %i msg/s", info->msg_cnt, info->msg_num,
 					(int)info->bench_time, (int)info->bench_rate);
+    			LOCK_TCPIP_CORE();
 				err = mqtt_publish(mqtt_client, info->topic, info->value, strlen(info->value), qos, retain, mqtt_pub_request_cb, 0);
+	    		UNLOCK_TCPIP_CORE();
 				if (err == ERR_OK)
 				{
 					/* MSG published */
@@ -1005,7 +1175,9 @@ void MQTT_Test_Tick(void* param)
 					/* Publish report */
 					sprintf(info->value, "Benchmark completed. %li msg published. Total Time: %i s MsgRate: %i msg/s",
 						info->msg_cnt, (int)info->bench_time, (int)info->bench_rate);
+	    			LOCK_TCPIP_CORE();
 					err = mqtt_publish(mqtt_client, info->topic, info->value, strlen(info->value), qos, retain, mqtt_pub_request_cb, 0);
+		    		UNLOCK_TCPIP_CORE();
 					if (err == ERR_OK)
 					{
 						/* Report published */
@@ -1230,6 +1402,16 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 }
 static int g_secondsBeforeNextFullBroadcast = 30;
 
+
+// from 5ms quicktick
+int MQTT_RunQuickTick(){
+#ifndef PLATFORM_BEKEN
+	// on Beken, we use a one-shot timer for this.
+	MQTT_process_received();
+#endif
+	return 0;
+}
+
 // called from user timer.
 int MQTT_RunEverySecondUpdate()
 {
@@ -1257,6 +1439,12 @@ int MQTT_RunEverySecondUpdate()
 		mqtt_reconnect = 5;
 	}
 
+	int res = 0;
+	if (mqtt_client){
+		LOCK_TCPIP_CORE();
+		res = mqtt_client_is_connected(mqtt_client);
+		UNLOCK_TCPIP_CORE();
+	}
 	// if asked to reconnect (e.g. change of topic(s))
 	if (mqtt_reconnect > 0)
 	{
@@ -1264,7 +1452,7 @@ int MQTT_RunEverySecondUpdate()
 		if (mqtt_reconnect == 0)
 		{
 			// then if connected, disconnect, and then it will reconnect automatically in 2s
-			if (mqtt_client && mqtt_client_is_connected(mqtt_client))
+			if (mqtt_client && res)
 			{
 				MQTT_disconnect(mqtt_client);
 				loopsWithDisconnected = LOOPS_WITH_DISCONNECTED - 2;
@@ -1272,7 +1460,7 @@ int MQTT_RunEverySecondUpdate()
 		}
 	}
 
-	if (mqtt_client == 0 || mqtt_client_is_connected(mqtt_client) == 0)
+	if (mqtt_client == 0 || res == 0)
 	{
 		//addLogAdv(LOG_INFO,LOG_FEATURE_MAIN, "Timer discovers disconnected mqtt %i\n",loopsWithDisconnected);
 #if WINDOWS
@@ -1288,14 +1476,18 @@ int MQTT_RunEverySecondUpdate()
 			{
 				if (mqtt_client == 0)
 				{
+					LOCK_TCPIP_CORE();
 					mqtt_client = mqtt_client_new();
+					UNLOCK_TCPIP_CORE();
 				}
 				else
 				{
+					LOCK_TCPIP_CORE();
 					mqtt_disconnect(mqtt_client);
 #if defined(MQTT_CLIENT_CLEANUP)
 					mqtt_client_cleanup(mqtt_client);
 #endif
+					UNLOCK_TCPIP_CORE();
 				}
 				MQTT_do_connect(mqtt_client);
 				mqtt_connect_events++;
@@ -1306,6 +1498,18 @@ int MQTT_RunEverySecondUpdate()
 		return 0;
 	}
 	else {
+		// things to do in our threads on connection accepted.
+		if (g_just_connected){
+			g_just_connected = 0;
+			// publish all values on state
+			if (CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEONCONNECT)) {
+				MQTT_PublishWholeDeviceState();
+			}
+			else {
+				//MQTT_PublishOnlyDeviceChannelsIfPossible();
+			}
+		}
+
 		MQTT_Mutex_Free();
 		// below mutex is not required any more
 
@@ -1319,7 +1523,9 @@ int MQTT_RunEverySecondUpdate()
 		if (ota_progress() != -1)
 		{
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "OTA started MQTT will be closed\n");
+			LOCK_TCPIP_CORE();
 			mqtt_disconnect(mqtt_client);
+			UNLOCK_TCPIP_CORE();
 			return 1;
 		}
 #endif
@@ -1519,6 +1725,12 @@ OBK_Publish_Result PublishQueuedItems() {
 /// @brief Is MQTT sub system ready and connected?
 /// @return 
 bool MQTT_IsReady() {
-	return mqtt_client && mqtt_client_is_connected(mqtt_client);
+	int res = 0;
+	if (mqtt_client){
+		LOCK_TCPIP_CORE();
+		res = mqtt_client_is_connected(mqtt_client);
+		UNLOCK_TCPIP_CORE();
+	}
+	return mqtt_client && res;
 }
 
