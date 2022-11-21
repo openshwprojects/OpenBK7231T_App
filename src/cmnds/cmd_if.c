@@ -268,6 +268,9 @@ const char *CMD_ExpandingStrdup(const char *in) {
 	// just to be on safe side....
 	realLen += varCount * 5;
 
+	// space for NULL and also space to be sure
+	realLen += 2;
+
 	ret = (char*)malloc(realLen);
 	CMD_ExpandConstantsWithinString(in, ret, realLen);
 	return ret;
