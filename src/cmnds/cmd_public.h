@@ -20,7 +20,8 @@ typedef int (*commandHandler_t)(const void* context, const char* cmd, const char
 
 
 //
-void CMD_Init();
+void CMD_Init_Early();
+void CMD_Init_Delayed();
 void CMD_RegisterCommand(const char* name, const char* args, commandHandler_t handler, const char* userDesc, void* context);
 int CMD_ExecuteCommand(const char* s, int cmdFlags);
 int CMD_ExecuteCommandArgs(const char* cmd, const char* args, int cmdFlags);

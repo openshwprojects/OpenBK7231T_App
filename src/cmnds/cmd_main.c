@@ -89,19 +89,22 @@ static int CMD_Echo(const void *context, const char *cmd, const char *args, int 
 }
 
 
-void CMD_Init() {
+void CMD_Init_Early() {
     CMD_RegisterCommand("echo", "", CMD_Echo, "qqqe", NULL);
     CMD_RegisterCommand("restart", "", CMD_Restart, "Reboots the module", NULL);
     CMD_RegisterCommand("clearConfig", "", CMD_ClearConfig, "Clears all config", NULL);
 	CMD_RegisterCommand("clearAll", "", CMD_ClearAll, "Clears all things", NULL);
     CMD_RegisterCommand("simonirtest", "", CMD_SimonTest, "Simons Special Test", NULL);
     CMD_RegisterCommand("if", "", CMD_If, "", NULL);
-	if(CFG_HasFlag(OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER)) {
-		CMD_StartTCPCommandLine();
-	}
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	CMD_InitScripting();
 #endif
+}
+
+void CMD_Init_Delayed() {
+	if(CFG_HasFlag(OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER)) {
+		CMD_StartTCPCommandLine();
+	}
 }
 
 

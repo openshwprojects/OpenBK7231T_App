@@ -244,6 +244,7 @@ static struct tag_logMemory {
 
 
 static int initialised = 0;
+static int tcpLogStarted = 0;
 
 #if PLATFORM_BEKEN
 // to get uart.h
@@ -261,7 +262,6 @@ static void initLog(void)
 	logMemory.mutex = xSemaphoreCreateMutex();
 	initialised = 1;
 	startSerialLog();
-	startLogServer();
 	HTTP_RegisterCallback("/logs", HTTP_GET, http_getlog);
 	HTTP_RegisterCallback("/lograw", HTTP_GET, http_getlograw);
 
@@ -274,6 +274,10 @@ static void initLog(void)
 	bk_printf("initLog() done!\r\n");
 }
 
+static void inittcplog(){
+	startLogServer();
+	tcpLogStarted = 1;
+}
 
 // adds a log to the log memory
 // if head collides with either tail, move the tails on.
@@ -301,6 +305,10 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 	if (!initialised) {
 		initLog();
 	}
+	if (g_StartupDelayOver && !tcpLogStarted){
+		inittcplog();
+	}
+
 
 	taken = xSemaphoreTake(logMemory.mutex, 100);
 	tmp = g_loggingBuffer;
