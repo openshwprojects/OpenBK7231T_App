@@ -183,6 +183,7 @@ void Win_DoUnitTests() {
 	//CFG_ClearPins();
 
 	Test_ExpandConstant();
+	Test_ButtonEvents();
 	Test_Commands_Alias();
 	Test_Expressions_RunTests_Basic();
 	Test_LEDDriver();
