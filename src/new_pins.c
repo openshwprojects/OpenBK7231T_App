@@ -155,6 +155,7 @@ void Button_OnPressRelease(int index) {
 void Button_OnInitialPressDown(int index) 
 {
 	//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"%i Button_OnInitialPressDown\r\n", index);
+	EventHandlers_FireEvent(CMD_EVENT_PIN_ONPRESS, index);
 	
 	// so-called SetOption13 - instant reaction to touch instead of waiting for release
 	if(CFG_HasFlag(OBK_FLAG_BTN_INSTANTTOUCH)) {
@@ -906,7 +907,7 @@ void PIN_Input_Handler(int pinIndex)
 
 	/*-----------------State machine-------------------*/
 	switch (handle->state) {
-	case 0:
+	case 0: 
 		if(handle->button_level == handle->active_level) {	//start press down
 			handle->event = (uint8_t)BTN_PRESS_DOWN;
 			EVENT_CB(BTN_PRESS_DOWN);

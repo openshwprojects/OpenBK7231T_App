@@ -76,6 +76,8 @@ enum EventCode {
 	// for buttons
 	CMD_EVENT_PIN_ONRELEASE,
 
+	CMD_EVENT_PIN_ONPRESS,
+
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
 };
