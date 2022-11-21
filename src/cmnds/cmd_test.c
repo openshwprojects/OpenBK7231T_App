@@ -57,7 +57,11 @@ static int alias(const void * context, const char *cmd, const char *args, int cm
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "New alias has been set: %s runs %s", alias, ocmd);
 
-    CMD_RegisterCommand(aliasMem, "", runcmd, "custom", cmdMem);
+	//cmddetail:{"name":"aliasMem","args":"",
+	//cmddetail:"descr":"custom",
+	//cmddetail:"fn":"runcmd","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand(aliasMem, "", runcmd, NULL, cmdMem);
 	return 1;
 }
 
@@ -236,15 +240,47 @@ static int testJSON(const void * context, const char *cmd, const char *args, int
     return 0;
 }
 int fortest_commands_init(){
-    CMD_RegisterCommand("alias", "", alias, "add a custom command", NULL);
-    CMD_RegisterCommand("testMallocFree", "", testMallocFree, "", NULL);
-    CMD_RegisterCommand("testRealloc", "", testRealloc, "", NULL);
-    CMD_RegisterCommand("testJSON", "", testJSON, "", NULL);
-    CMD_RegisterCommand("testLog", "", testLog, "", NULL);
-    CMD_RegisterCommand("testFloats", "", testFloats, "", NULL);
+	//cmddetail:{"name":"alias","args":"",
+	//cmddetail:"descr":"add a custom command",
+	//cmddetail:"fn":"alias","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("alias", "", alias, NULL, NULL);
+	//cmddetail:{"name":"testMallocFree","args":"",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"testMallocFree","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("testMallocFree", NULL, testMallocFree, NULL, NULL);
+	//cmddetail:{"name":"testRealloc","args":"",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"testRealloc","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("testRealloc", NULL, testRealloc, NULL, NULL);
+	//cmddetail:{"name":"testJSON","args":"",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"testJSON","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("testJSON", NULL, testJSON, NULL, NULL);
+	//cmddetail:{"name":"testLog","args":"",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"testLog","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("testLog", NULL, testLog, NULL, NULL);
+	//cmddetail:{"name":"testFloats","args":"",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"testFloats","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("testFloats", NULL, testFloats, NULL, NULL);
 
-    CMD_RegisterCommand("testArgs", "", testArgs, "", NULL);
-    CMD_RegisterCommand("testStrdup", "", testStrdup, "", NULL);
+	//cmddetail:{"name":"testArgs","args":"",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"testArgs","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("testArgs", NULL, testArgs, NULL, NULL);
+	//cmddetail:{"name":"testStrdup","args":"",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"testStrdup","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("testStrdup", NULL, testStrdup, NULL, NULL);
     return 0;
 }
 

@@ -740,15 +740,51 @@ static int CMD_resetSVM(const void *context, const char *cmd, const char *args, 
 	return 1;
 }
 void CMD_InitScripting(){
-    CMD_RegisterCommand("startScript", "", CMD_StartScript, "qqqqq0", NULL);
-    CMD_RegisterCommand("stopScript", "", CMD_StopScript, "qqqqq0", NULL);
-    CMD_RegisterCommand("stopAllScripts", "", CMD_StopAllScripts, "qqqqq0", NULL);
-    CMD_RegisterCommand("listScripts", "", CMD_ListScripts, "qqqqq0", NULL);
-    CMD_RegisterCommand("goto", "", CMD_GoTo, "qqqqq0", NULL);
-    CMD_RegisterCommand("delay_s", "", CMD_Delay_s, "qqqqq0", NULL);
-    CMD_RegisterCommand("delay_ms", "", CMD_Delay_ms, "qqqqq0", NULL);
-    CMD_RegisterCommand("return", "", CMD_Return, "qqqqq0", NULL);
-    CMD_RegisterCommand("resetSVM", "", CMD_resetSVM, "qqqqq0", NULL);
+	//cmddetail:{"name":"startScript","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_StartScript","file":"cmnds/cmd_script.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("startScript", "", CMD_StartScript, NULL, NULL);
+	//cmddetail:{"name":"stopScript","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_StopScript","file":"cmnds/cmd_script.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("stopScript", "", CMD_StopScript, NULL, NULL);
+	//cmddetail:{"name":"stopAllScripts","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_StopAllScripts","file":"cmnds/cmd_script.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("stopAllScripts", "", CMD_StopAllScripts, NULL, NULL);
+	//cmddetail:{"name":"listScripts","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_ListScripts","file":"cmnds/cmd_script.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("listScripts", "", CMD_ListScripts, NULL, NULL);
+	//cmddetail:{"name":"goto","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_GoTo","file":"cmnds/cmd_script.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("goto", "", CMD_GoTo, NULL, NULL);
+	//cmddetail:{"name":"delay_s","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_Delay_s","file":"cmnds/cmd_script.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("delay_s", "", CMD_Delay_s, NULL, NULL);
+	//cmddetail:{"name":"delay_ms","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_Delay_ms","file":"cmnds/cmd_script.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("delay_ms", "", CMD_Delay_ms, NULL, NULL);
+	//cmddetail:{"name":"return","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_Return","file":"cmnds/cmd_script.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("return", "", CMD_Return, NULL, NULL);
+	//cmddetail:{"name":"resetSVM","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_resetSVM","file":"cmnds/cmd_script.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("resetSVM", "", CMD_resetSVM, NULL, NULL);
 
 }
 
