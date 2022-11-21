@@ -8,6 +8,7 @@
 
 // main timer tick every 1s
 beken_timer_t g_main_timer_1s;
+beken2_timer_t g_mqtt_timer_oneshot;
 
 
 #if PLATFORM_BK7231T
@@ -21,6 +22,15 @@ _PTR realloc _PARAMS ((_PTR a, size_t b)) {
 #endif
 
 #define LOG_FEATURE LOG_FEATURE_MAIN
+extern int MQTT_process_received();
+void MQTT_process_received_timer(void *a, void*b){
+  MQTT_process_received();
+}
+
+void MQTT_TriggerRead(){
+  OSStatus err;
+  err = rtos_start_oneshot_timer(&g_mqtt_timer_oneshot);
+}
 
 
 void user_main(void)
@@ -38,6 +48,13 @@ void user_main(void)
   err = rtos_start_timer(&g_main_timer_1s);
   ASSERT(kNoErr == err);
 	ADDLOGF_DEBUG("started timer\r\n");
+
+  // initialise a one-shot timer, triggered by MQTT_TriggerRead()
+  err = rtos_init_oneshot_timer(&g_mqtt_timer_oneshot,
+                        1,
+                        MQTT_process_received_timer,
+                        (void *)0,
+                        (void *)0);
 }
 
 #if PLATFORM_BK7231N

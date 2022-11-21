@@ -1058,6 +1058,9 @@ void PIN_ticks(void *param)
 #ifdef WINDOWS
 	NewTuyaMCUSimulator_RunQuickTick(PIN_TMR_DURATION);
 #endif
+
+	// process recieved messages here..
+	MQTT_RunQuickTick();
 	
 	if(CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == true) {
 		LED_RunQuickColorLerp(PIN_TMR_DURATION);
