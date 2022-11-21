@@ -19,16 +19,20 @@
 
 //According to your need to modify the constants.
 #define PIN_TMR_DURATION      5 // Delay (in ms) between button scan iterations
-#define BTN_DEBOUNCE_TICKS    3	//MAX 8
+//#define BTN_DEBOUNCE_TICKS    3	//MAX 8
+#define BTN_DEBOUNCE_MS    		15	//MAX 8*5
 
 //#define BTN_SHORT_TICKS       (300 / PIN_TMR_DURATION)
 //#define BTN_LONG_TICKS        (1000 / PIN_TMR_DURATION)
 //#define BTN_HOLD_REPEAT_TICKS  (500 / PIN_TMR_DURATION)
 // Now they are adjustable in CFG
-int BTN_SHORT_TICKS;
-int BTN_LONG_TICKS;
-int BTN_HOLD_REPEAT_TICKS;
+//int BTN_SHORT_TICKS;
+//int BTN_LONG_TICKS;
+//int BTN_HOLD_REPEAT_TICKS;
 
+int BTN_SHORT_MS;
+int BTN_LONG_MS;
+int BTN_HOLD_REPEAT_MS;
 
 #define WIFI_LED_FAST_BLINK_DURATION 250
 #define WIFI_LED_SLOW_BLINK_DURATION 500
@@ -878,7 +882,7 @@ int CHANNEL_GetRoleForOutputChannel(int ch){
 #define ADC_SAMPLING_TICK_COUNT PIN_TMR_LOOPS_PER_SECOND
 
 
-void PIN_Input_Handler(int pinIndex)
+void PIN_Input_Handler(int pinIndex, uint32_t ms_since_last)
 {
 	pinButton_s *handle;
 	uint8_t read_gpio_level;
@@ -892,12 +896,14 @@ void PIN_Input_Handler(int pinIndex)
 
 	//ticks counter working..
 	if((handle->state) > 0)
-		handle->ticks++;
+		handle->ticks += ms_since_last;
 
 	/*------------button debounce handle---------------*/
 	if(read_gpio_level != handle->button_level) { //not equal to prev one
 		//continue read 3 times same new level change
-		if(++(handle->debounce_cnt) >= BTN_DEBOUNCE_TICKS) {
+		handle->debounce_cnt += ms_since_last;
+
+		if(handle->debounce_cnt >= BTN_DEBOUNCE_MS) {
 			handle->button_level = read_gpio_level;
 			handle->debounce_cnt = 0;
 		}
@@ -928,7 +934,7 @@ void PIN_Input_Handler(int pinIndex)
 			handle->ticks = 0;
 			handle->state = 2;
 
-		} else if(handle->ticks > BTN_LONG_TICKS) {
+		} else if(handle->ticks > BTN_LONG_MS) {
 			handle->event = (uint8_t)BTN_LONG_RRESS_START;
 			Button_OnLongPressHoldStart(pinIndex);
 			EVENT_CB(BTN_LONG_RRESS_START);
@@ -948,7 +954,7 @@ void PIN_Input_Handler(int pinIndex)
 			EVENT_CB(BTN_PRESS_REPEAT); // repeat hit
 			handle->ticks = 0;
 			handle->state = 3;
-		} else if(handle->ticks > BTN_SHORT_TICKS) { //released timeout
+		} else if(handle->ticks > BTN_SHORT_MS) { //released timeout
 			if(handle->repeat == 1) {
 				handle->event = (uint8_t)BTN_SINGLE_CLICK;
 				EVENT_CB(BTN_SINGLE_CLICK);
@@ -965,7 +971,7 @@ void PIN_Input_Handler(int pinIndex)
 			handle->event = (uint8_t)BTN_PRESS_UP;
 			EVENT_CB(BTN_PRESS_UP);
 			Button_OnPressRelease(pinIndex);
-			if(handle->ticks < BTN_SHORT_TICKS) {
+			if(handle->ticks < BTN_SHORT_MS) {
 				handle->ticks = 0;
 				handle->state = 2; //repeat press
 			} else {
@@ -978,8 +984,8 @@ void PIN_Input_Handler(int pinIndex)
 		if(handle->button_level == handle->active_level) {
 			//continue hold trigger
 			handle->event = (uint8_t)BTN_LONG_PRESS_HOLD;
-			handle->holdRepeatTicks ++;
-			if(handle->holdRepeatTicks > BTN_HOLD_REPEAT_TICKS) {
+			handle->holdRepeatTicks += ms_since_last;
+			if(handle->holdRepeatTicks > BTN_HOLD_REPEAT_MS) {
 				Button_OnLongPressHold(pinIndex);
 				handle->holdRepeatTicks = 0;
 			}
@@ -1010,6 +1016,9 @@ static void PIN_set_wifi_led(int value){
 
 static int g_wifiLedToggleTime = 0;
 static int g_wifi_ledState = 0;
+static uint32_t g_time = 0;
+static uint32_t g_last_time = 0;
+
 #define TOGGLE_PIN_DEBOUNCE_CYCLES 50
 //  background ticks, timer repeat invoking interval defined by PIN_TMR_DURATION.
 void PIN_ticks(void *param)
@@ -1017,9 +1026,27 @@ void PIN_ticks(void *param)
 	int i;
 	int value;
 
-	BTN_SHORT_TICKS = (g_cfg.buttonShortPress * 100 / PIN_TMR_DURATION);
-	BTN_LONG_TICKS = (g_cfg.buttonLongPress * 100 / PIN_TMR_DURATION);
-	BTN_HOLD_REPEAT_TICKS = (g_cfg.buttonHoldRepeat * 100 / PIN_TMR_DURATION);
+#ifdef PLATFORM_BEKEN
+	g_time = rtos_get_time();
+#else
+	g_time += PIN_TMR_DURATION;
+#endif
+	uint32_t t_diff = g_last_time - g_time;
+	// cope with wrap
+	if (t_diff > 0x4000){
+		t_diff = ((g_last_time + 0x4000) - (g_time + 0x4000));
+	}
+	g_last_time = g_time;
+
+
+//	BTN_SHORT_TICKS = (g_cfg.buttonShortPress * 100 / PIN_TMR_DURATION);
+//	BTN_LONG_TICKS = (g_cfg.buttonLongPress * 100 / PIN_TMR_DURATION);
+//	BTN_HOLD_REPEAT_TICKS = (g_cfg.buttonHoldRepeat * 100 / PIN_TMR_DURATION);
+
+	BTN_SHORT_MS = (g_cfg.buttonShortPress * 100);
+	BTN_LONG_MS = (g_cfg.buttonLongPress * 100);
+	BTN_HOLD_REPEAT_MS = (g_cfg.buttonHoldRepeat * 100);
+
 
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	SVM_RunThreads(PIN_TMR_DURATION);
@@ -1038,7 +1065,7 @@ void PIN_ticks(void *param)
 	// WiFi LED
 	// In Open Access point mode, fast blink
 	if(Main_IsOpenAccessPointMode()) {
-		g_wifiLedToggleTime += PIN_TMR_DURATION;
+		g_wifiLedToggleTime += t_diff;
 		if(g_wifiLedToggleTime > WIFI_LED_FAST_BLINK_DURATION) {
 			g_wifi_ledState = !g_wifi_ledState;
 			g_wifiLedToggleTime = 0;
@@ -1049,7 +1076,7 @@ void PIN_ticks(void *param)
 		PIN_set_wifi_led(1);
 	} else {
 		// in connecting mode, slow blink
-		g_wifiLedToggleTime += PIN_TMR_DURATION;
+		g_wifiLedToggleTime += t_diff;
 		if(g_wifiLedToggleTime > WIFI_LED_SLOW_BLINK_DURATION) {
 			g_wifi_ledState = !g_wifi_ledState;
 			g_wifiLedToggleTime = 0;
@@ -1072,7 +1099,7 @@ void PIN_ticks(void *param)
 			|| g_cfg.pins.roles[i] == IOR_Button_NextColor || g_cfg.pins.roles[i] == IOR_Button_NextColor_n
 			|| g_cfg.pins.roles[i] == IOR_Button_NextDimmer || g_cfg.pins.roles[i] == IOR_Button_NextDimmer_n) {
 			//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Test hold %i\r\n",i);
-			PIN_Input_Handler(i);
+			PIN_Input_Handler(i, t_diff);
 		}
 		else if(g_cfg.pins.roles[i] == IOR_DigitalInput || g_cfg.pins.roles[i] == IOR_DigitalInput_n
 			||

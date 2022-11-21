@@ -130,7 +130,7 @@ void HAL_PrintNetworkInfo()
 		memcpy(ssid, linkStatus.ssid, 32);
 
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, 
-			"sta:rssi=%d,ssid=%s,bssid=" MACSTR ",channel=%d,cipher_type:",
+			"sta:rssi=%d,ssid=%s,bssid=" MACSTR ",channel=%d,cipher_type:%s",
 			linkStatus.wifi_strength, 
 			ssid, 
 			MAC2STR(linkStatus.bssid), 
