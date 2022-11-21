@@ -82,6 +82,33 @@ static void MQTT_Mutex_Free()
 
 
 
+///////////////////////////////////////
+// used to enforce only one proxy call at a time
+static SemaphoreHandle_t g_mutex_proxy = 0;
+
+static bool MQTT_Proxy_Mutex_Take(int del) {
+	int taken;
+
+	if (g_mutex_proxy == 0)
+	{
+		g_mutex_proxy = xSemaphoreCreateMutex();
+	}
+	taken = xSemaphoreTake(g_mutex_proxy, del);
+	if (taken == pdTRUE) {
+		return true;
+	}
+	return false;
+}
+
+static void MQTT_Proxy_Mutex_Free()
+{
+	xSemaphoreGive(g_mutex_proxy);
+}
+//
+///////////////////////////////////////
+
+
+
 /////////////////////////////////////////////////////////////
 // mqtt receive buffer, so we can action in our threads, not
 // in tcp_thread
@@ -238,6 +265,7 @@ static mqtt_callback_t* callbacks[MAX_MQTT_CALLBACKS];
 static int numCallbacks = 0;
 // note: only one incomming can be processed at a time.
 static obk_mqtt_request_t g_mqtt_request;
+static obk_mqtt_request_t g_mqtt_request_cb;
 
 #define LOOPS_WITH_DISCONNECTED 15
 int loopsWithDisconnected = 0;
@@ -812,9 +840,9 @@ int MQTT_process_received(){
 		found = get_received(&topic, &topiclen, &data, &datalen);
 		if (found){
 			count++;
-			strncpy(g_mqtt_request.topic, topic, sizeof(g_mqtt_request.topic));
-			g_mqtt_request.received = data;
-			g_mqtt_request.receivedLen = datalen;
+			strncpy(g_mqtt_request_cb.topic, topic, sizeof(g_mqtt_request_cb.topic));
+			g_mqtt_request_cb.received = data;
+			g_mqtt_request_cb.receivedLen = datalen;
 			for (int i = 0; i < numCallbacks; i++)
 			{
 				char* cbtopic = callbacks[i]->topic;
@@ -822,7 +850,7 @@ int MQTT_process_received(){
 				{
 					// note - callback must return 1 to say it ate the mqtt, else further processing can be performed.
 					// i.e. multiple people can get each topic if required.
-					if (callbacks[i]->callback(&g_mqtt_request))
+					if (callbacks[i]->callback(&g_mqtt_request_cb))
 					{
 						// if no further processing, then break this loop.
 						break;
@@ -1747,21 +1775,40 @@ bool MQTT_IsReady() {
 
 #ifdef PLATFORM_BEKEN
 
+typedef struct mqtt_client_disconnect_proxy_cb_res_tag {
+	mqtt_client_t* client;
+	int res;
+} mqtt_client_disconnect_proxy_cb_res;
+
 // this is called from within the tcp_thread context
 void mqtt_client_is_connected_proxy_cb(void *ctx){
 	LWIP_ASSERT_CORE_LOCKED();
-	int *res = (int *)ctx;
-	*res = mqtt_client_is_connected(mqtt_client);
+	mqtt_client_disconnect_proxy_cb_res *str = (mqtt_client_disconnect_proxy_cb_res*)ctx;
+	mqtt_client_t* client = str->client;
+	str->res = mqtt_client_is_connected(client);
 }
 
-int mqtt_client_is_connected_proxy(){
-	volatile int res = -10;
-	tcpip_callback(mqtt_client_is_connected_proxy_cb, (void *)&res);
-	while (res == -10){
+int mqtt_client_is_connected_proxy(mqtt_client_t *client){
+	volatile mqtt_client_disconnect_proxy_cb_res str;
+	str.client = client;
+	str.res = -10;
+	int loops = 5;
+	err_t cberr;
+	MQTT_Proxy_Mutex_Take(100);
+	do {
+		cberr = tcpip_callback(mqtt_client_is_connected_proxy_cb, (void *)&str);
+	  	if (cberr == ERR_OK) {
+			while (str.res == -10){
+				rtos_delay_milliseconds(5);
+				bk_printf("c");
+			}
+			break;
+		}
+	    bk_printf("#c%d", cberr);
 		rtos_delay_milliseconds(5);
-		bk_printf("D");
-	}
-	return res;
+	} while (loops-- > 0 && cberr != ERR_OK);
+	MQTT_Proxy_Mutex_Free();
+	return str.res;
 }
 
 
@@ -1803,11 +1850,22 @@ int mqtt_client_connect_proxy(mqtt_client_t *client, const ip_addr_t *ipaddr,
 
 	str.res = -10;
 
-	tcpip_callback(mqtt_client_connect_proxy_cb, (void *)&str);
-	while (str.res == -10){
+	int loops = 5;
+	err_t cberr;
+	MQTT_Proxy_Mutex_Take(100);
+	do {
+		cberr = tcpip_callback(mqtt_client_connect_proxy_cb, (void *)&str);
+	  	if (cberr == ERR_OK) {
+			while (str.res == -10){
+				rtos_delay_milliseconds(5);
+				bk_printf("C");
+			}
+			break;
+		}
+	    bk_printf("#C%d", cberr);
 		rtos_delay_milliseconds(5);
-		bk_printf("C");
-	}
+	} while (loops-- > 0 && cberr != ERR_OK);
+	MQTT_Proxy_Mutex_Free();
 
 	return str.res;
 }
@@ -1821,19 +1879,30 @@ void mqtt_client_new_proxy_cb(void *ctx){
 
 mqtt_client_t* mqtt_client_new_proxy(){
 	volatile mqtt_client_t* res = (void*)-10;
-	tcpip_callback(mqtt_client_new_proxy_cb, (void *)&res);
-	while (res == (void*)-10){
+	int loops = 5;
+	err_t cberr;
+	MQTT_Proxy_Mutex_Take(100);
+	do {
+		cberr = tcpip_callback(mqtt_client_new_proxy_cb, (void *)&res);
+	  	if (cberr == ERR_OK) {
+			while (res == (void*)-10){
+				rtos_delay_milliseconds(5);
+				bk_printf("N");
+			}
+			break;
+		}
+	    bk_printf("#N%d", cberr);
 		rtos_delay_milliseconds(5);
-		bk_printf("N");
+	} while (loops-- > 0 && cberr != ERR_OK);
+	MQTT_Proxy_Mutex_Free();
+	if (res == (void*)-10){
+		res = NULL;
 	}
+
 	return (mqtt_client_t*)res;
 }
 
 
-typedef struct mqtt_client_disconnect_proxy_cb_res_tag {
-	mqtt_client_t* client;
-	int res;
-} mqtt_client_disconnect_proxy_cb_res;
 
 void mqtt_disconnect_proxy_cb(void *ctx){
 	LWIP_ASSERT_CORE_LOCKED();
@@ -1847,15 +1916,25 @@ void mqtt_disconnect_proxy(mqtt_client_t* client){
 	volatile mqtt_client_disconnect_proxy_cb_res str;
 	str.client = client;
 	str.res = -10;
-	tcpip_callback(mqtt_disconnect_proxy_cb, (void *)&str);
-	while (str.res == -10){
+	int loops = 5;
+	err_t cberr;
+	MQTT_Proxy_Mutex_Take(100);
+	do {
+		cberr = tcpip_callback(mqtt_disconnect_proxy_cb, (void *)&str);
+	  	if (cberr == ERR_OK) {
+			while (str.res == -10){
+				rtos_delay_milliseconds(5);
+				bk_printf("d");
+			}
+			break;
+		}
+	    bk_printf("#d%d", cberr);
 		rtos_delay_milliseconds(5);
-		bk_printf("d");
-	}
+	} while (loops-- > 0 && cberr != ERR_OK);
+	MQTT_Proxy_Mutex_Free();
+
 	return;
 }
-
-
 
 
 typedef struct mqtt_publish_proxy_cb_str_tag {
@@ -1910,12 +1989,26 @@ err_t mqtt_publish_proxy(
 	str.arg = arg;
 
 	str.res = -10;
-	tcpip_callback(mqtt_publish_proxy_cb, (void *)&str);
-	while (str.res == -10){
+	int loops = 5;
+	err_t cberr;
+
+	MQTT_Proxy_Mutex_Take(100);
+	do {
+		cberr = tcpip_callback(mqtt_publish_proxy_cb, (void *)&str);
+	  	if (cberr == ERR_OK) {
+			while (str.res == -10){
+				rtos_delay_milliseconds(5);
+				bk_printf("p");
+			}
+			break;
+		}
+	    bk_printf("#p%d", cberr);
 		rtos_delay_milliseconds(5);
-		bk_printf("p");
-	}
+	} while (loops-- > 0 && cberr != ERR_OK);
+	MQTT_Proxy_Mutex_Free();
+
 	return str.res;
+
 }
 
 #endif
