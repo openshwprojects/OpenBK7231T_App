@@ -326,10 +326,26 @@ static int g_i2c_cmds_lcd_init = 0;
 
 void DRV_I2C_Commands_Init() {
 
-	CMD_RegisterCommand("lcd_clearAndGoto","",DRV_I2C_LCD_PCF8574_ClearAndGoTo, "Adds a new I2C device", NULL);
-	CMD_RegisterCommand("lcd_goto","",DRV_I2C_LCD_PCF8574_GoTo, "Adds a new I2C device", NULL);
-	CMD_RegisterCommand("lcd_print","",DRV_I2C_LCD_PCF8574_Print, "Adds a new I2C device", NULL);
-	CMD_RegisterCommand("lcd_clear","",DRV_I2C_LCD_PCF8574_Clear, "Adds a new I2C device", NULL);
+	//cmddetail:{"name":"lcd_clearAndGoto","args":"",
+	//cmddetail:"descr":"Adds a new I2C device",
+	//cmddetail:"fn":"DRV_I2C_LCD_PCF8574_ClearAndGoTo","file":"i2c/drv_i2c_lcd_pcf8574t.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("lcd_clearAndGoto","",DRV_I2C_LCD_PCF8574_ClearAndGoTo, NULL, NULL);
+	//cmddetail:{"name":"lcd_goto","args":"",
+	//cmddetail:"descr":"Adds a new I2C device",
+	//cmddetail:"fn":"DRV_I2C_LCD_PCF8574_GoTo","file":"i2c/drv_i2c_lcd_pcf8574t.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("lcd_goto","",DRV_I2C_LCD_PCF8574_GoTo, NULL, NULL);
+	//cmddetail:{"name":"lcd_print","args":"",
+	//cmddetail:"descr":"Adds a new I2C device",
+	//cmddetail:"fn":"DRV_I2C_LCD_PCF8574_Print","file":"i2c/drv_i2c_lcd_pcf8574t.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("lcd_print","",DRV_I2C_LCD_PCF8574_Print, NULL, NULL);
+	//cmddetail:{"name":"lcd_clear","args":"",
+	//cmddetail:"descr":"Adds a new I2C device",
+	//cmddetail:"fn":"DRV_I2C_LCD_PCF8574_Clear","file":"i2c/drv_i2c_lcd_pcf8574t.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("lcd_clear","",DRV_I2C_LCD_PCF8574_Clear, NULL, NULL);
 }
 /// backlog startDriver I2C; addI2CDevice_LCD_PCF8574 I2C1 0x23 0 0 0
 // lcd_print I2C1 0x23 Hello123

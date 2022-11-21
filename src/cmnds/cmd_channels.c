@@ -200,14 +200,50 @@ static int CMD_ShortName(const void *context, const char *cmd, const char *args,
 	return 1;
 }
 void CMD_InitChannelCommands(){
-    CMD_RegisterCommand("SetChannel", "", CMD_SetChannel, "qqqqq0", NULL);
-    CMD_RegisterCommand("ToggleChannel", "", CMD_ToggleChannel, "qqqqq0", NULL);
-    CMD_RegisterCommand("AddChannel", "", CMD_AddChannel, "qqqqq0", NULL);
-    CMD_RegisterCommand("ClampChannel", "", CMD_ClampChannel, "qqqqq0", NULL);
-    CMD_RegisterCommand("SetPinRole", "", CMD_SetPinRole, "qqqqq0", NULL);
-    CMD_RegisterCommand("SetPinChannel", "", CMD_SetPinChannel, "qqqqq0", NULL);
-    CMD_RegisterCommand("GetChannel", "", CMD_GetChannel, "qqqqq0", NULL);
-    CMD_RegisterCommand("GetReadings", "", CMD_GetReadings, "qqqqq0", NULL);
-    CMD_RegisterCommand("ShortName", "", CMD_ShortName, "qqqqq0", NULL);
+	//cmddetail:{"name":"SetChannel","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_SetChannel","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("SetChannel", "", CMD_SetChannel, NULL, NULL);
+	//cmddetail:{"name":"ToggleChannel","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_ToggleChannel","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("ToggleChannel", "", CMD_ToggleChannel, NULL, NULL);
+	//cmddetail:{"name":"AddChannel","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_AddChannel","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("AddChannel", "", CMD_AddChannel, NULL, NULL);
+	//cmddetail:{"name":"ClampChannel","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_ClampChannel","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("ClampChannel", "", CMD_ClampChannel, NULL, NULL);
+	//cmddetail:{"name":"SetPinRole","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_SetPinRole","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("SetPinRole", "", CMD_SetPinRole, NULL, NULL);
+	//cmddetail:{"name":"SetPinChannel","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_SetPinChannel","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("SetPinChannel", "", CMD_SetPinChannel, NULL, NULL);
+	//cmddetail:{"name":"GetChannel","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_GetChannel","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("GetChannel", "", CMD_GetChannel, NULL, NULL);
+	//cmddetail:{"name":"GetReadings","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_GetReadings","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("GetReadings", "", CMD_GetReadings, NULL, NULL);
+	//cmddetail:{"name":"ShortName","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_ShortName","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("ShortName", "", CMD_ShortName, NULL, NULL);
 
 }

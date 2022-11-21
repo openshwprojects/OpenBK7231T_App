@@ -429,7 +429,11 @@ void DRV_SSDP_Init()
 
 	DRV_SSDP_CreateSocket_Receive();
     HTTP_RegisterCallback("/ssdp.xml", HTTP_GET, DRV_SSDP_Service_Http);
-    CMD_RegisterCommand("obkDeviceList", "", Cmd_obkDeviceList, "qqq", NULL);
+	//cmddetail:{"name":"obkDeviceList","args":"",
+	//cmddetail:"descr":"qqq",
+	//cmddetail:"fn":"Cmd_obkDeviceList","file":"driver/drv_ssdp.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("obkDeviceList", "", Cmd_obkDeviceList, NULL, NULL);
 
     HTTP_RegisterCallback("/obkdevicelist", HTTP_GET, http_rest_get_devicelist);
 

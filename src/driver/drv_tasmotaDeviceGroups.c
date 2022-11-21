@@ -822,10 +822,26 @@ void DRV_DGR_Init()
 	DRV_DGR_CreateSocket_Send();
 
 #endif
-    CMD_RegisterCommand("DGR_SendPower", "", CMD_DGR_SendPower, "qqq", NULL);
-    CMD_RegisterCommand("DGR_SendBrightness", "", CMD_DGR_SendBrightness, "qqq", NULL);
-    CMD_RegisterCommand("DGR_SendRGBCW", "", CMD_DGR_SendRGBCW, "qqq", NULL);
-	CMD_RegisterCommand("DGR_SendFixedColor", "", CMD_DGR_SendFixedColor, "qqq", NULL);
+	//cmddetail:{"name":"DGR_SendPower","args":"",
+	//cmddetail:"descr":"qqq",
+	//cmddetail:"fn":"CMD_DGR_SendPower","file":"driver/drv_tasmotaDeviceGroups.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("DGR_SendPower", "", CMD_DGR_SendPower, NULL, NULL);
+	//cmddetail:{"name":"DGR_SendBrightness","args":"",
+	//cmddetail:"descr":"qqq",
+	//cmddetail:"fn":"CMD_DGR_SendBrightness","file":"driver/drv_tasmotaDeviceGroups.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("DGR_SendBrightness", "", CMD_DGR_SendBrightness, NULL, NULL);
+	//cmddetail:{"name":"DGR_SendRGBCW","args":"",
+	//cmddetail:"descr":"qqq",
+	//cmddetail:"fn":"CMD_DGR_SendRGBCW","file":"driver/drv_tasmotaDeviceGroups.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("DGR_SendRGBCW", "", CMD_DGR_SendRGBCW, NULL, NULL);
+	//cmddetail:{"name":"DGR_SendFixedColor","args":"",
+	//cmddetail:"descr":"qqq",
+	//cmddetail:"fn":"CMD_DGR_SendFixedColor","file":"driver/drv_tasmotaDeviceGroups.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("DGR_SendFixedColor", "", CMD_DGR_SendFixedColor, NULL, NULL);
 }
 
 
