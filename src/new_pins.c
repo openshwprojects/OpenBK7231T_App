@@ -1029,7 +1029,7 @@ void PIN_ticks(void *param)
 #ifdef PLATFORM_BEKEN
 	g_time = rtos_get_time();
 #else
-	g_time += PIN_TMR_DURATION
+	g_time += PIN_TMR_DURATION;
 #endif
 	uint32_t t_diff = g_last_time - g_time;
 	// cope with wrap
