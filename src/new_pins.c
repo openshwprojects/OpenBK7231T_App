@@ -19,16 +19,16 @@
 
 //According to your need to modify the constants.
 #define PIN_TMR_DURATION      5 // Delay (in ms) between button scan iterations
-#define BTN_DEBOUNCE_TICKS    3	//MAX 8
+//#define BTN_DEBOUNCE_TICKS    3	//MAX 8
 #define BTN_DEBOUNCE_MS    		15	//MAX 8*5
 
 //#define BTN_SHORT_TICKS       (300 / PIN_TMR_DURATION)
 //#define BTN_LONG_TICKS        (1000 / PIN_TMR_DURATION)
 //#define BTN_HOLD_REPEAT_TICKS  (500 / PIN_TMR_DURATION)
 // Now they are adjustable in CFG
-int BTN_SHORT_TICKS;
-int BTN_LONG_TICKS;
-int BTN_HOLD_REPEAT_TICKS;
+//int BTN_SHORT_TICKS;
+//int BTN_LONG_TICKS;
+//int BTN_HOLD_REPEAT_TICKS;
 
 int BTN_SHORT_MS;
 int BTN_LONG_MS;
@@ -1039,9 +1039,9 @@ void PIN_ticks(void *param)
 	g_last_time = g_time;
 
 
-	BTN_SHORT_TICKS = (g_cfg.buttonShortPress * 100 / PIN_TMR_DURATION);
-	BTN_LONG_TICKS = (g_cfg.buttonLongPress * 100 / PIN_TMR_DURATION);
-	BTN_HOLD_REPEAT_TICKS = (g_cfg.buttonHoldRepeat * 100 / PIN_TMR_DURATION);
+//	BTN_SHORT_TICKS = (g_cfg.buttonShortPress * 100 / PIN_TMR_DURATION);
+//	BTN_LONG_TICKS = (g_cfg.buttonLongPress * 100 / PIN_TMR_DURATION);
+//	BTN_HOLD_REPEAT_TICKS = (g_cfg.buttonHoldRepeat * 100 / PIN_TMR_DURATION);
 
 	BTN_SHORT_MS = (g_cfg.buttonShortPress * 100);
 	BTN_LONG_MS = (g_cfg.buttonLongPress * 100);
