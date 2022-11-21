@@ -8,6 +8,8 @@
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 
+extern uint8_t g_StartupDelayOver;
+
 int loglevel = LOG_INFO; // default to info
 unsigned int logfeatures = (
 	(1 << 0) |
