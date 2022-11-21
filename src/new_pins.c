@@ -1429,10 +1429,30 @@ void PIN_StartButtonScanThread(void)
 
 void PIN_AddCommands(void)
 {
-	CMD_RegisterCommand("showgpi", NULL, showgpi, "log stat of all GPIs", NULL);
-	CMD_RegisterCommand("setChannelType", NULL, CMD_SetChannelType, "qqqqqqqq", NULL);
-	CMD_RegisterCommand("showChannelValues", NULL,CMD_ShowChannelValues, "log channel values", NULL);
-	CMD_RegisterCommand("setButtonTimes", NULL,CMD_SetButtonTimes, "", NULL);
-	CMD_RegisterCommand("setButtonHoldRepeat", NULL,CMD_setButtonHoldRepeat, "", NULL);
+	//cmddetail:{"name":"showgpi","args":"NULL",
+	//cmddetail:"descr":"log stat of all GPIs",
+	//cmddetail:"fn":"showgpi","file":"new_pins.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("showgpi", NULL, showgpi, NULL, NULL);
+	//cmddetail:{"name":"setChannelType","args":"NULL",
+	//cmddetail:"descr":"qqqqqqqq",
+	//cmddetail:"fn":"CMD_SetChannelType","file":"new_pins.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("setChannelType", NULL, CMD_SetChannelType, NULL, NULL);
+	//cmddetail:{"name":"showChannelValues","args":"NULL",
+	//cmddetail:"descr":"log channel values",
+	//cmddetail:"fn":"CMD_ShowChannelValues","file":"new_pins.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("showChannelValues", NULL,CMD_ShowChannelValues, NULL, NULL);
+	//cmddetail:{"name":"setButtonTimes","args":"NULL",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_SetButtonTimes","file":"new_pins.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("setButtonTimes", NULL,CMD_SetButtonTimes, NULL, NULL);
+	//cmddetail:{"name":"setButtonHoldRepeat","args":"NULL",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_setButtonHoldRepeat","file":"new_pins.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("setButtonHoldRepeat", NULL,CMD_setButtonHoldRepeat, NULL, NULL);
 
 }

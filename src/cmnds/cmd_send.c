@@ -21,7 +21,11 @@ static int CMD_SendGET(const void *context, const char *cmd, const char *args, i
 
 
 int CMD_InitSendCommands(){
-    CMD_RegisterCommand("sendGet", "", CMD_SendGET, "qq", NULL);
+	//cmddetail:{"name":"sendGet","args":"",
+	//cmddetail:"descr":"qq",
+	//cmddetail:"fn":"CMD_SendGET","file":"cmnds/cmd_send.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("sendGet", "", CMD_SendGET, NULL, NULL);
 
     return 0;
 }

@@ -309,12 +309,12 @@ void CSE7766_Init()
 
 	UART_InitUART(CSE7766_BAUD_RATE);
 	UART_InitReceiveRingBuffer(512);
-	CMD_RegisterCommand("PowerSet","",CSE7766_PowerSet, "Sets current power value for calibration", NULL);
-	CMD_RegisterCommand("VoltageSet","",CSE7766_VoltageSet, "Sets current V value for calibration", NULL);
-	CMD_RegisterCommand("CurrentSet","",CSE7766_CurrentSet, "Sets current I value for calibration", NULL);
-	CMD_RegisterCommand("PREF","",CSE7766_PowerRef, "Sets the calibration multiplier", NULL);
-	CMD_RegisterCommand("VREF","",CSE7766_VoltageRef, "Sets the calibration multiplier", NULL);
-	CMD_RegisterCommand("IREF","",CSE7766_CurrentRef, "Sets the calibration multiplier", NULL);
+	CMD_RegisterCommand("PowerSet","",CSE7766_PowerSet, NULL, NULL);
+	CMD_RegisterCommand("VoltageSet","",CSE7766_VoltageSet, NULL, NULL);
+	CMD_RegisterCommand("CurrentSet","",CSE7766_CurrentSet, NULL, NULL);
+	CMD_RegisterCommand("PREF","",CSE7766_PowerRef, NULL, NULL);
+	CMD_RegisterCommand("VREF","",CSE7766_VoltageRef, NULL, NULL);
+	CMD_RegisterCommand("IREF","",CSE7766_CurrentRef, NULL, NULL);
 }
 
 void CSE7766_RunFrame() {

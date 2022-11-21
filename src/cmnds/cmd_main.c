@@ -90,12 +90,36 @@ static int CMD_Echo(const void *context, const char *cmd, const char *args, int 
 
 
 void CMD_Init() {
-    CMD_RegisterCommand("echo", "", CMD_Echo, "qqqe", NULL);
-    CMD_RegisterCommand("restart", "", CMD_Restart, "Reboots the module", NULL);
-    CMD_RegisterCommand("clearConfig", "", CMD_ClearConfig, "Clears all config", NULL);
-	CMD_RegisterCommand("clearAll", "", CMD_ClearAll, "Clears all things", NULL);
-    CMD_RegisterCommand("simonirtest", "", CMD_SimonTest, "Simons Special Test", NULL);
-    CMD_RegisterCommand("if", "", CMD_If, "", NULL);
+	//cmddetail:{"name":"echo","args":"",
+	//cmddetail:"descr":"qqqe",
+	//cmddetail:"fn":"CMD_Echo","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("echo", "", CMD_Echo, NULL, NULL);
+	//cmddetail:{"name":"restart","args":"",
+	//cmddetail:"descr":"Reboots the module",
+	//cmddetail:"fn":"CMD_Restart","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("restart", "", CMD_Restart, NULL, NULL);
+	//cmddetail:{"name":"clearConfig","args":"",
+	//cmddetail:"descr":"Clears all config",
+	//cmddetail:"fn":"CMD_ClearConfig","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("clearConfig", "", CMD_ClearConfig, NULL, NULL);
+	//cmddetail:{"name":"clearAll","args":"",
+	//cmddetail:"descr":"Clears all things",
+	//cmddetail:"fn":"CMD_ClearAll","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("clearAll", "", CMD_ClearAll, NULL, NULL);
+	//cmddetail:{"name":"simonirtest","args":"",
+	//cmddetail:"descr":"Simons Special Test",
+	//cmddetail:"fn":"CMD_SimonTest","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("simonirtest", "", CMD_SimonTest, NULL, NULL);
+	//cmddetail:{"name":"if","args":"",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_If","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("if", NULL, CMD_If, NULL, NULL);
 	if(CFG_HasFlag(OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER)) {
 		CMD_StartTCPCommandLine();
 	}
