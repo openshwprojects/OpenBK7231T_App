@@ -1031,7 +1031,7 @@ void PIN_ticks(void *param)
 #else
 	g_time += PIN_TMR_DURATION;
 #endif
-	uint32_t t_diff = g_last_time - g_time;
+	uint32_t t_diff = g_time - g_last_time;
 	// cope with wrap
 	if (t_diff > 0x4000){
 		t_diff = ((g_last_time + 0x4000) - (g_time + 0x4000));
