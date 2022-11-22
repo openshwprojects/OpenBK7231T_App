@@ -58,6 +58,7 @@ static int g_bootFailures = 0;
 static int g_saveCfgAfter = 0;
 static int g_startPingWatchDogAfter = 0;
 
+
 // not really <time>, but rather a loop count, but it doesn't really matter much
 // start disabled.
 static int g_timeSinceLastPingReply = -1;
