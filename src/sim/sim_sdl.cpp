@@ -7,6 +7,14 @@
 #include "Coord.h"
 #include "Simulator.h"
 #include "Simulation.h"
+#include "Wire.h"
+#include "Junction.h"
+#include "Text.h"
+#include "Line.h"
+#include "Rect.h"
+#include "Tool_Base.h"
+#include "Tool_Wire.h"
+#include "CursorManager.h"
 
 #pragma comment (lib, "SDL2.lib")
 #pragma comment (lib, "Opengl32.lib")
@@ -33,37 +41,45 @@ Coord roundToGrid(Coord c) {
 	return Coord(roundToGrid(c.getX()), roundToGrid(c.getY()));
 }
 
-class CWire  {
-	std::vector<class CJunction*> junctions;
-
-public:
-	CWire(const Coord &a, const Coord &b);
-	void drawWire();
-	void addPoint(const Coord &p);
+enum AnimTarget {
+	ANT_BASEPOS,
+	ANT_TARGETPOS,
 };
-class CJunction : public CShape {
-	std::string name;
+
+class CAnimation {
+	CShape *target;
+	Coord basePos;
+	Coord targetPos;
+	float time;
 public:
-	CJunction(int _x, int _y, const char *s) {
-		this->x = _x;
-		this->y = _y;
-		this->name = s;
+	void update(AnimTarget tg) {
+
 	}
-	virtual void drawShape();
 };
-
-
 void CJunction::drawShape() {
 	glPointSize(8.0f);
 	glColor3f(0, 1, 0);
 	glBegin(GL_POINTS);
-	glVertex2f(x, y);
+	glVertex2f(getX(), getY());
 	glEnd();
 	glColor3f(1, 1, 1);
 }
+Coord GetMousePos() {
+	Coord r;
+	int mx, my;
+	//SDL_GetGlobalMouseState(&mx, &my);
+	SDL_GetMouseState(&mx, &my);
+	r.set(mx, my);
+	return r;
+}
+void CSimulation::recalcBounds() {
+	for (int i = 0; i < objects.size(); i++) {
+		objects[i]->recalcBoundsAll();
+	}
+}
 void CSimulation::drawSim() {
 	for (int i = 0; i < objects.size(); i++) {
-		objects[i]->drawWithChildren();
+		objects[i]->drawWithChildren(0);
 	}
 	for (int i = 0; i < wires.size(); i++) {
 		wires[i]->drawWire();
@@ -77,6 +93,13 @@ void CWire::drawWire() {
 	}
 	glEnd();
 }
+class CShape *CSimulation::findShapeByBoundsPoint(const class Coord &p) {
+	for (int i = 0; i < objects.size(); i++) {
+		if (objects[i]->hasWorldPointInside(p))
+			return objects[i];
+	}
+	return 0;
+}
 class CWire *CSimulation::addWire(const class Coord &a, const class Coord &b) {
 	class CWire *cw = new CWire(a, b);
 	wires.push_back(cw);
@@ -89,68 +112,146 @@ CObject * CSimulation::addObject(CObject *o) {
 void CSimulation::createDemo() {
 	addObject(generateWB3S())->setPosition(300, 200);
 	addObject(generateButton())->setPosition(500, 200);
+	recalcBounds();
 }
 class CBaseObject {
 
 };
-class CRectangle : public CShape {
-	int w, h;
+enum {
+	EVE_NONE,
+	EVE_LMB_HOLD,
 };
-class CLine : public CShape {
-	int x2, y2;
+class CControllerBase {
+
 public:
-	CLine(int _x, int _y, int _x2, int _y2) {
-		this->x = _x;
-		this->y = _y;
-		this->x2 = _x2;
-		this->y2 = _y2;
-	}
-	virtual void drawShape() {
-		glBegin(GL_LINES);
-		glVertex2f(x, y);
-		glVertex2f(x2, y2);
-		glEnd();
-	}
-}; 
-class CText : public CShape {
-	std::string txt;
-public:
-	CText(int _x, int _y, const char *s) {
-		this->x = _x;
-		this->y = _y;
-		this->txt = s;
-	}
-	virtual void drawShape() {
-		drawText(x, y, txt.c_str());
-	}
+	virtual void onDrawn() { }
+	virtual void sendEvent(int code) { }
 };
-class CRect : public CShape {
-	int w, h;
+class CControllerButton : public CControllerBase {
+	Coord openPos;
+	Coord closedPos;
+	CShape *mover;
+	float timeAfterMouseHold;
 public:
-	CRect(int _x, int _y, int _w, int _h) {
-		this->x = _x;
-		this->y = _y;
-		this->w = _w;
-		this->h = _h;
+	CControllerButton();
+	void setMover(CShape *p) {
+		mover = p;
 	}
-	virtual void drawShape() {
-		glBegin(GL_LINE_LOOP);
-		glVertex2f(x, y);
-		glVertex2f(x+w, y);
-		glVertex2f(x+w, y+h);
-		glVertex2f(x, y+h);
-		glEnd();
-	}
+	virtual void sendEvent(int code);
+	virtual void onDrawn();
 };
+CControllerButton::CControllerButton() {
+	timeAfterMouseHold = 99.0f;
+	openPos.set(0, 8);
+	closedPos.set(0, -8);
+}
+void CControllerButton::sendEvent(int code) {
+	if (code == EVE_LMB_HOLD) {
+		timeAfterMouseHold = 0;
+	}
+}
+void CControllerButton::onDrawn() {
+	float speed = 0.8f;
+	if (timeAfterMouseHold < 0.2f) {
+		mover->moveTowards(closedPos, speed);
+	}
+	else {
+		mover->moveTowards(openPos, speed);
+	}
+	timeAfterMouseHold += 0.1f;
+}
+
+void CLine::recalcBoundsSelf() {
+	bounds.clear();
+	bounds.addPoint(Coord(0,0));
+	bounds.addPoint(Coord(x2, y2) - getPosition());
+}
+void CRect::recalcBoundsSelf() {
+	bounds.clear();
+	bounds.addPoint(Coord(0, 0));
+	bounds.addPoint(Coord(w, h));
+}
+void CLine::drawShape() {
+	glBegin(GL_LINES);
+	glVertex2f(getX(), getY());
+	glVertex2f(x2, y2);
+	glEnd();
+}
+
+
+void CText::drawShape() {
+	drawText(getX(),getY(), txt.c_str());
+}
+
+
+void CRect::drawShape() {
+	glBegin(GL_LINE_LOOP);
+	glVertex2f(getX(),getY());
+	glVertex2f(getX() + w, getY());
+	glVertex2f(getX() + w, getY() + h);
+	glVertex2f(getX(), getY() +h);
+	glEnd();
+}
+
+void CursorManager::setCursor(int cursorCode) {
+	switch (cursorCode) {
+	case SDL_SYSTEM_CURSOR_HAND:
+	{
+		if (hand == 0) {
+			hand = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
+		}
+		SDL_SetCursor(hand);
+		break;
+	}
+	case SDL_SYSTEM_CURSOR_SIZEALL:
+	{
+		if (sizeAll == 0) {
+			sizeAll = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL);
+		}
+		SDL_SetCursor(sizeAll);
+		break;
+	}
+	case SDL_SYSTEM_CURSOR_CROSSHAIR:
+	{
+		if (crosshair == 0) {
+			crosshair = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_CROSSHAIR);
+		}
+		SDL_SetCursor(crosshair);
+		break;
+	}
+	case SDL_SYSTEM_CURSOR_ARROW:
+	{
+		if (arrow == 0) {
+			arrow = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+		}
+		SDL_SetCursor(arrow);
+		break;
+	}
+	case SDL_SYSTEM_CURSOR_NO:
+	{
+		if (no == 0) {
+			no = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO);
+		}
+		SDL_SetCursor(no);
+		break;
+	}
+	}
+}
 class CObject *CSimulation::generateButton() {
 	CObject *o = new CObject();
-
+	CControllerButton *btn = new CControllerButton();
+	o->setController(btn);
 	o->addJunction(-40, -10);
 	o->addJunction(40, -10);
 	o->addLine(40, -10, 20, -10);
 	o->addLine(-40, -10, -20, -10);
-	o->addLine(20, 10, -20, 10);
-	o->addLine(0, 20, 0, 10);
+	CShape *mover = new CShape();
+	mover->addLine(20, 10, -20, 10);
+	mover->addLine(0, 20, 0, 10);
+	o->addShape(mover);
+	btn->setMover(mover);
+
+	o->translateEachChild(0, 10);
 	return o;
 }
 class CObject *CSimulation::generateWB3S() {
@@ -187,106 +288,178 @@ class CObject *CSimulation::generateWB3S() {
 	}
 	return o;
 }
-class Tool_Base {
-protected:
-	CSimulator *sim;
-public:
-	void setSimulator(CSimulator *s) {
-		this->sim = s;
-	}
-	virtual void onKeyDown(int button) {
 
-	}
-	virtual void onMouseDown(Coord pos, int button) {
-
-	}
-	virtual void drawTool() {
-
-	}
-};
 class Tool_Move : public Tool_Base {
-
-};
-Coord GetMousePos() {
-	Coord r;
-	int mx, my;
-	//SDL_GetGlobalMouseState(&mx, &my);
-	SDL_GetMouseState(&mx, &my);
-	r.set(mx, my);
-	return r;
-}
-class Tool_Wire : public Tool_Base {
-	Coord basePos;
-	bool bActive;
-	bool bSideness;
-	class CWire *newWire;
-	Coord a, b, c;
+	class CShape *currentTarget;
+	Coord prevPos;
 public:
-	Tool_Wire() {
-		newWire = 0;
-		bActive = false;
-	}
-	virtual void onKeyDown(int button) {
-		if (button == SDLK_ESCAPE) {
-			bActive = false;
-		}
-	}
-	virtual void onMouseDown(Coord pos, int button) {
-		if (button == 3) {
-			bSideness = !bSideness;
-		}
-		if (button == 1) {
-			Coord curPos = roundToGrid(GetMousePos());
-			if (bActive) {
-				if (newWire == 0) {
-					newWire = sim->getSim()->addWire(a, b);
-					newWire->addPoint(c);
-				} else {
-					newWire->addPoint(b);
-					newWire->addPoint(c);
-				}
-				basePos = curPos;
-			}
-			else {
-				basePos = curPos;
-				bActive = true;
-			}
-		}
-	}
-	virtual void drawTool() {
-		Coord m;
-		m = roundToGrid(GetMousePos());
-		if (bActive) {
-			if (0) {
-				glBegin(GL_LINES);
-				glVertex2fv(basePos);
-				glVertex2fv(m);
-				glEnd();
-			}
-			a = basePos;
-			b = basePos;
-			if (bSideness) {
-				b.setX(m.getX());
-			}
-			else {
-				b.setY(m.getY());
-			}
-			c = m;
-			glBegin(GL_LINE_STRIP);
-			glVertex2fv(a);
-			glVertex2fv(b);
-			glVertex2fv(c);
-			glEnd();
-
-		}
-	}
+	Tool_Move();
+	virtual void drawTool();
+	virtual void onMouseDown(const Coord &pos, int button);
+	virtual void onMouseUp(const Coord &pos, int button);
 };
+class Tool_Use : public Tool_Base {
+	class CShape *currentTarget;
+public:
+	virtual void drawTool();
+	virtual void onMouseDown(const Coord &pos, int button);
+};
+void Tool_Use::onMouseDown(const Coord &pos, int button) {
+
+}
+class Tool_Delete : public Tool_Base {
+
+};
+Tool_Move::Tool_Move() {
+	currentTarget = 0;
+}
+void Tool_Move::onMouseUp(const Coord &pos, int button) {
+	//sim->getCursorMgr()->setCursor(SDL_SYSTEM_CURSOR_ARROW);
+
+}
+void Tool_Move::onMouseDown(const Coord &pos, int button) {
+	currentTarget = sim->getShapeUnderCursor();
+	if (currentTarget) {
+		prevPos = GetMousePos();
+		prevPos = roundToGrid(prevPos);
+		//sim->getCursorMgr()->setCursor(SDL_SYSTEM_CURSOR_SIZEALL);
+	}
+	else {
+		//sim->getCursorMgr()->setCursor(SDL_SYSTEM_CURSOR_ARROW);
+	}
+
+}
+void Tool_Move::drawTool() {
+	if (sim->isMouseButtonHold(SDL_BUTTON_LEFT)) {
+		if (currentTarget != 0) {
+			Coord nowPos = GetMousePos();
+			nowPos = roundToGrid(nowPos);
+			Coord delta = nowPos - prevPos;
+			if (delta.isNonZero()) {
+				prevPos = nowPos;
+				currentTarget->translate(delta);
+			}
+
+		}
+	}
+	else {
+		CShape *o = sim->getShapeUnderCursor();
+		if(o){
+			sim->getCursorMgr()->setCursor(SDL_SYSTEM_CURSOR_SIZEALL);
+		}
+		else {
+			sim->getCursorMgr()->setCursor(SDL_SYSTEM_CURSOR_ARROW);
+		}
+	}
+
+}
+void Tool_Use::drawTool() {
+	currentTarget = sim->getShapeUnderCursor();
+	if (currentTarget) {
+		sim->getCursorMgr()->setCursor(SDL_SYSTEM_CURSOR_HAND);
+	}
+	else {
+		sim->getCursorMgr()->setCursor(SDL_SYSTEM_CURSOR_ARROW);
+	}
+	if (currentTarget != 0) {
+		CControllerBase *cntrl = currentTarget->getController();
+		if (cntrl != 0) {
+			if (sim->isMouseButtonHold(SDL_BUTTON_LEFT)) {
+				cntrl->sendEvent(EVE_LMB_HOLD);
+			}
+		}
+	}
+}
+Tool_Wire::Tool_Wire() {
+	newWire = 0;
+	bActive = false;
+}
+void Tool_Wire::onKeyDown(int button) {
+	if (button == SDLK_ESCAPE) {
+		bActive = false;
+		newWire = 0;
+	}
+}
+void Tool_Wire::onMouseDown(const Coord &pos, int button) {
+	if (button == SDL_BUTTON_RIGHT) {
+		bSideness = !bSideness;
+	}
+	if (button == SDL_BUTTON_LEFT) {
+		Coord curPos = roundToGrid(GetMousePos());
+		if (bActive) {
+			if (newWire == 0) {
+				newWire = sim->getSim()->addWire(a, b);
+				newWire->addPoint(c);
+			} else {
+				newWire->addPoint(b);
+				newWire->addPoint(c);
+			}
+			basePos = curPos;
+		}
+		else {
+			basePos = curPos;
+			bActive = true;
+		}
+	}
+}
+void Tool_Wire::drawTool() {
+	Coord m;
+	m = roundToGrid(GetMousePos());
+	if (bActive) {
+		if (0) {
+			glBegin(GL_LINES);
+			glVertex2fv(basePos);
+			glVertex2fv(m);
+			glEnd();
+		}
+		a = basePos;
+		b = basePos;
+		if (bSideness) {
+			b.setX(m.getX());
+		}
+		else {
+			b.setY(m.getY());
+		}
+		c = m;
+		glBegin(GL_LINE_STRIP);
+		glVertex2fv(a);
+		glVertex2fv(b);
+		glVertex2fv(c);
+		glEnd();
+
+	}
+}
 
 
+
+void CShape::translateEachChild(float oX, float oY) {
+	for (int i = 0; i < shapes.size(); i++) {
+		shapes[i]->translate(oX, oY);
+	}
+}
+bool CShape::hasWorldPointInside(const Coord &p)const {
+	Coord loc = p - this->getPosition();
+	return hasLocalPointInside(loc);
+}
+bool CShape::hasLocalPointInside(const Coord &p)const {
+	return bounds.isInside(p);
+}
+void CShape::recalcBoundsAll() {
+	bounds.clear();
+	this->recalcBoundsSelf();
+	for (int i = 0; i < shapes.size(); i++) {
+		shapes[i]->recalcBoundsAll();
+		bounds.addBounds(shapes[i]->getBounds(), shapes[i]->getPosition());
+	}
+}
 class CShape* CShape::addLine(int x, int y, int x2, int y2) {
 	CLine *n = new CLine(x, y, x2, y2);
 	shapes.push_back(n);
 	return n;
+}
+class CShape* CShape::addShape(CShape *p) {
+	shapes.push_back(p);
+	return p;
 }
 class CShape* CShape::addJunction(int x, int y, const char *name) {
 	CJunction *n = new CJunction(x, y, name);
@@ -303,27 +476,56 @@ class CShape* CShape::addText(int x, int y, const char *s) {
 	shapes.push_back(n);
 	return n;
 }
-void CShape::drawWithChildren() {
+void CShape::moveTowards(const Coord &tg,float dt) {
+	pos = pos.moveTowards(tg, dt);
+}
+void CShape::drawWithChildren(int depth) {
+	if (controller != 0) {
+		controller->onDrawn();
+	}
 	drawShape();
 	glPushMatrix();
-	glTranslatef(x, y, 0);
+	glTranslatef(getX(), getY(), 0);
 	for (int i = 0; i < shapes.size(); i++) {
-		shapes[i]->drawWithChildren();
+		shapes[i]->drawWithChildren(depth+1);
+	}
+	//recalcBoundsAll();
+	if (depth == 0) {
+		glColor3f(0, 1, 0);
+		glLineWidth(0.5f);
+		glBegin(GL_LINE_LOOP);
+		Bounds bb = bounds;
+		bb.extend(4);
+		for (int i = 0; i < 4; i++) {
+			glVertex2fv(bb.getCorner(i));
+		}
+		glEnd();
 	}
 	glPopMatrix();
 }
 CSimulator::CSimulator() {
+	memset(bMouseButtonStates,0, sizeof(bMouseButtonStates));
+	activeTool = 0;
 	Window = 0;
 	Context = 0;
 	WindowFlags = SDL_WINDOW_OPENGL;
 	Running = 1;
 	FullScreen = 0;
-	activeTool = new Tool_Wire();
+	//setTool(new Tool_Wire());
+	//setTool(new Tool_Use());
+	setTool(new Tool_Move());
 	sim = new CSimulation();
-	activeTool->setSimulator(this);
 	sim->createDemo();
 }
-
+void CSimulator::setTool(Tool_Base *tb) {
+	if (activeTool) {
+		activeTool->onEnd();
+		delete activeTool;
+	}
+	activeTool = tb;
+	activeTool->setSimulator(this);
+	activeTool->onBegin();
+}
 CWire::CWire(const Coord &a, const Coord &b) {
 	addPoint(a);
 	addPoint(b);
@@ -336,40 +538,52 @@ void CWire::addPoint(const Coord &p) {
 
 
 
+class CShape *CSimulator::getShapeUnderCursor() {
+	Coord p = GetMousePos();
+	return sim->findShapeByBoundsPoint(p);
+}
 void CSimulator::createWindow() {
 	Window = SDL_CreateWindow("OpenGL Test", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WinWidth, WinHeight, WindowFlags);
 	assert(Window);
 	Context = SDL_GL_CreateContext(Window);
+	cur = new CursorManager();
 }
 
+void CSimulator::onKeyDown(int keyCode) {
+	//SDL_Cursor* cursor;
+	//cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_CROSSHAIR);
+	//SDL_SetCursor(cursor);
+
+	if (activeTool) {
+		activeTool->onKeyDown(keyCode);
+	}
+	switch (keyCode)
+	{
+	case SDLK_ESCAPE:
+		//Running = 0;
+		break;
+	case 'f':
+		FullScreen = !FullScreen;
+		if (FullScreen)
+		{
+			SDL_SetWindowFullscreen(Window, WindowFlags | SDL_WINDOW_FULLSCREEN_DESKTOP);
+		}
+		else
+		{
+			SDL_SetWindowFullscreen(Window, WindowFlags);
+		}
+		break;
+	default:
+		break;
+	}
+}
 void CSimulator::drawWindow() {
 	SDL_Event Event;
 	while (SDL_PollEvent(&Event))
 	{
 		if (Event.type == SDL_KEYDOWN)
 		{
-			if (activeTool) {
-				activeTool->onKeyDown(Event.key.keysym.sym);
-			}
-			switch (Event.key.keysym.sym)
-			{
-			case SDLK_ESCAPE:
-				//Running = 0;
-				break;
-			case 'f':
-				FullScreen = !FullScreen;
-				if (FullScreen)
-				{
-					SDL_SetWindowFullscreen(Window, WindowFlags | SDL_WINDOW_FULLSCREEN_DESKTOP);
-				}
-				else
-				{
-					SDL_SetWindowFullscreen(Window, WindowFlags);
-				}
-				break;
-			default:
-				break;
-			}
+			onKeyDown(Event.key.keysym.sym);
 		}
 		else if (Event.type == SDL_MOUSEBUTTONDOWN)
 		{
@@ -379,6 +593,17 @@ void CSimulator::drawWindow() {
 			if (activeTool) {
 				activeTool->onMouseDown(Coord(x, y), which);
 			}
+			bMouseButtonStates[Event.button.button] = true;
+		}
+		else if (Event.type == SDL_MOUSEBUTTONUP)
+		{
+			int x = Event.button.x;
+			int y = Event.button.y;
+			int which = Event.button.button;
+			if (activeTool) {
+				activeTool->onMouseUp(Coord(x, y), which);
+			}
+			bMouseButtonStates[Event.button.button] = false;
 		}
 		else if (Event.type == SDL_QUIT)
 		{
