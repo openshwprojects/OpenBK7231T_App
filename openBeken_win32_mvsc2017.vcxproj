@@ -146,7 +146,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\src\win32\stubs\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\src\libs\SDL2-2.24.2\include;.\src\win32\stubs\;.\src\libs\DevIL-Windows-SDK-1.8.0\include;.\src\libs\freeglut-MSVC-3.0.0-2.mp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -157,6 +157,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalLibraryDirectories>.\src\libs\SDL2-2.24.2\lib\x86;.\src\libs\DevIL-Windows-SDK-1.8.0\lib\x86\Release;.\src\libs\freeglut-MSVC-3.0.0-2.mp\lib</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">
@@ -513,6 +514,9 @@
     <ClCompile Include="src\selftest\selftest_script.c" />
     <ClCompile Include="src\selftest\selftest_tokenizer.c" />
     <ClCompile Include="src\selftest\selftest_tuyaMCU.c" />
+    <ClCompile Include="src\sim\sim_sdl.cpp" />
+    <ClCompile Include="src\sim\Texture.cpp" />
+    <ClCompile Include="src\sim\TextureManager.cpp" />
     <ClCompile Include="src\tiny_crc8.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -537,6 +541,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\selftest\selftest_local.h" />
+    <ClInclude Include="src\sim\sim_local.h" />
+    <ClInclude Include="src\sim\Texture.h" />
+    <ClInclude Include="src\sim\TextureManager.h" />
     <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\include\net_param_pub.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
