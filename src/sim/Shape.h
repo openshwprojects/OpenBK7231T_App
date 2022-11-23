@@ -6,18 +6,45 @@
 #include "Bounds.h"
 
 class CShape {
+	CShape *parent;
 	std::vector<class CShape*> shapes;
 	class CControllerBase *controller;
 
+	virtual void rotateDegreesAround_internal(float f, const Coord &p);
 	virtual void recalcBoundsSelf() {}
 protected:
 	Bounds bounds;
 	Coord pos;
 public:
 	CShape() {
+		parent = 0;
 		controller = 0;
 	}
-	void moveTowards(const Coord &tg, float dt);
+	virtual ~CShape() {
+
+	}
+	int getShapesCount() const {
+		return shapes.size();
+	}
+	CShape *getShape(int s) {
+		return shapes[s];
+	}
+	void setParent(CShape *p) {
+		parent = p;
+	}
+	const CShape *getParent() const {
+		return parent;
+	}
+	CShape *getParent() {
+		return parent;
+	}
+	float positionDistance(const CShape *o) const {
+		return getPosition().dist(o->getPosition());
+	}
+	float absPositionDistance(const CShape *o) const {
+		return getAbsPosition().dist(o->getAbsPosition());
+	}
+	virtual void moveTowards(const Coord &tg, float dt);
 	void setController(CControllerBase *c) {
 		controller = c;
 	}
@@ -30,24 +57,35 @@ public:
 	const Coord &getPosition() const {
 		return pos;
 	}
-	void setPosition(float nX, float nY) {
+	Coord getAbsPosition() const;
+	void setPosition(const Coord &c) {
+		pos = c;
+	}
+	CShape* setPosition(float nX, float nY) {
 		pos.set(nX, nY);
+		return this;
 	}
-	virtual void translate(float oX, float oY) {
-		pos.add(oX, oY);
+	void translate(float oX, float oY) {
+		translate(Coord(oX, oY));
 	}
-	virtual void translate(const Coord &o) {
-		pos += o;
-	}
+	virtual void translate(const Coord &o);
 	float getX() const {
 		return pos.getX();
 	}
 	float getY() const {
 		return pos.getY();
 	}
+	virtual bool isWire() const {
+		return false;
+	}
+	virtual bool isJunction() const {
+		return false;
+	}
 	virtual void drawWithChildren(int depth);
 	virtual void drawShape() { }
 
+	void rotateDegreesAround(float f, const Coord &p);
+	void rotateDegreesAroundSelf(float f);
 	class CShape* addLine(int x, int y, int x2, int y2);
 	class CShape* addRect(int x, int y, int w, int h);
 	class CShape* addText(int x, int y, const char *s);

@@ -21,6 +21,7 @@ public:
 	CSimulator();
 	void drawWindow();
 	void createWindow();
+	void destroyObject(CShape *s);
 	class CShape *getShapeUnderCursor();
 	class CSimulation*getSim() {
 		return sim;
