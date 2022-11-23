@@ -1,5 +1,8 @@
 #ifdef WINDOWS
 
+#ifndef __SIM_LOCAL_H__
+#define __SIM_LOCAL_H__
+
 #include <math.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -21,4 +24,19 @@ typedef uint32_t u32;
 #define DEG2RAD(angleInDegrees) ((angleInDegrees) * M_PI / 180.0)
 #define RAD2DEG(angleInRadians) ((angleInRadians) * 180.0 / M_PI)
 
+enum {
+	EVE_NONE,
+	EVE_LMB_HOLD,
+};
+
+int drawText(int x, int y, const char* fmt, ...);
+#include "Coord.h"
+Coord roundToGrid(Coord c);
+Coord GetMousePos();
+
+extern int WinWidth;
+extern int WinHeight;
+extern int gridSize;
+
+#endif
 #endif

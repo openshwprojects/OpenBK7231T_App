@@ -2,10 +2,11 @@
 #define __JUNCTION_H__
 
 #include "sim_local.h"
+#include "Shape.h"
 #include "Coord.h"
 
 class CEdge : public CShape {
-	CJunction *a, *b;
+	class CJunction *a, *b;
 public:
 	CEdge(CJunction * _a, CJunction * _b) {
 		this->a = _a;

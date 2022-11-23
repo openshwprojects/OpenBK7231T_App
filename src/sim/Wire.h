@@ -3,6 +3,7 @@
 
 #include "sim_local.h"
 #include "Shape.h"
+#include "Coord.h"
 
 class CWire : public CShape {
 	std::vector<class CJunction*> junctions;

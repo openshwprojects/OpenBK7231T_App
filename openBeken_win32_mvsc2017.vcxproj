@@ -514,9 +514,24 @@
     <ClCompile Include="src\selftest\selftest_script.c" />
     <ClCompile Include="src\selftest\selftest_tokenizer.c" />
     <ClCompile Include="src\selftest\selftest_tuyaMCU.c" />
+    <ClCompile Include="src\sim\Circle.cpp" />
+    <ClCompile Include="src\sim\Controller_Button.cpp" />
+    <ClCompile Include="src\sim\CursorManager.cpp" />
+    <ClCompile Include="src\sim\Junction.cpp" />
+    <ClCompile Include="src\sim\Line.cpp" />
+    <ClCompile Include="src\sim\Rect.cpp" />
+    <ClCompile Include="src\sim\Shape.cpp" />
+    <ClCompile Include="src\sim\Simulation.cpp" />
+    <ClCompile Include="src\sim\Simulator.cpp" />
     <ClCompile Include="src\sim\sim_sdl.cpp" />
+    <ClCompile Include="src\sim\Text.cpp" />
     <ClCompile Include="src\sim\Texture.cpp" />
     <ClCompile Include="src\sim\TextureManager.cpp" />
+    <ClCompile Include="src\sim\Tool_Delete.cpp" />
+    <ClCompile Include="src\sim\Tool_Move.cpp" />
+    <ClCompile Include="src\sim\Tool_Use.cpp" />
+    <ClCompile Include="src\sim\Tool_Wire.cpp" />
+    <ClCompile Include="src\sim\Wire.cpp" />
     <ClCompile Include="src\tiny_crc8.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -675,9 +690,6 @@
     <ClInclude Include="src\new_cfg.h" />
     <ClInclude Include="src\new_cmd.h" />
     <ClInclude Include="src\new_common.h" />
-    <CustomBuild Include="src\new_http.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </CustomBuild>
     <ClInclude Include="src\new_main.h" />
     <ClInclude Include="src\new_pins.h" />
     <ClInclude Include="src\new_repeatingEvents.h" />

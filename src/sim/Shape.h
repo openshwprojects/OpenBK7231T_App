@@ -20,9 +20,7 @@ public:
 		parent = 0;
 		controller = 0;
 	}
-	virtual ~CShape() {
-
-	}
+	virtual ~CShape();
 	int getShapesCount() const {
 		return shapes.size();
 	}
@@ -88,6 +86,7 @@ public:
 	void rotateDegreesAroundSelf(float f);
 	class CShape* addLine(int x, int y, int x2, int y2);
 	class CShape* addRect(int x, int y, int w, int h);
+	class CShape* addCircle(float x, float y, float r);
 	class CShape* addText(int x, int y, const char *s);
 	class CShape* addJunction(int x, int y, const char *name = "");
 	class CShape* addShape(CShape *p);

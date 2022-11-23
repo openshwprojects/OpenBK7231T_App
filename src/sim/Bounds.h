@@ -35,6 +35,9 @@ public:
 		if (p.getY() > maxs.getY())
 			maxs.setY(p.getY());
 	}
+	void addPoint(float _x, float _y) {
+		addPoint(Coord(_x, _y));
+	}
 	void translate(const Coord &ofs) {
 		mins += ofs;
 		maxs += ofs;

@@ -2,7 +2,8 @@
 #define __LINE_H__
 
 #include "sim_local.h"
-
+#include "Shape.h"
+#include "Coord.h"
 
 class CLine : public CShape {
 	Coord pos2;

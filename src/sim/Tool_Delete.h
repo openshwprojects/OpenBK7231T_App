@@ -9,6 +9,9 @@ class Tool_Delete : public Tool_Base {
 	class CShape *currentTarget;
 public:
 	Tool_Delete();
+	virtual const char *getName() const {
+		return "Delete";
+	}
 	virtual void drawTool();
 	virtual void onMouseDown(const Coord &pos, int button);
 

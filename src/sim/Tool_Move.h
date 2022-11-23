@@ -10,6 +10,9 @@ class Tool_Move : public Tool_Base {
 	Coord prevPos;
 public:
 	Tool_Move();
+	virtual const char *getName() const {
+		return "Move";
+	}
 	virtual void onEnd();
 	virtual void drawTool();
 	virtual void onMouseDown(const Coord &pos, int button);

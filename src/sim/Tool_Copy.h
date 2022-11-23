@@ -5,16 +5,12 @@
 #include "Tool_Base.h"
 #include "Coord.h"
 
-class Tool_Wire : public Tool_Base {
-	Coord basePos;
-	bool bActive;
-	bool bSideness;
-	class CWire *newWire;
-	Coord a, b, c;
+class Tool_Copy : public Tool_Base {
+	CObject *copyingObject;
 public:
-	Tool_Wire();
+	Tool_Copy();
 	virtual const char *getName() const {
-		return "Wire";
+		return "Copy";
 	}
 	virtual void onKeyDown(int button);
 	virtual void onMouseDown(const Coord &pos, int button);

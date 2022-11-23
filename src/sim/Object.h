@@ -5,4 +5,10 @@
 class CObject : public CShape {
 
 public:
+	CObject() {
+
+	}
+	CObject(CShape *s) {
+		addShape(s);
+	}
 };

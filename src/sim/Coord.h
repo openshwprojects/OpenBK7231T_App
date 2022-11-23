@@ -28,6 +28,12 @@ public:
 	void setY(float _y) {
 		this->y = _y;
 	}
+	void addX(float _x) {
+		this->x += _x;
+	}
+	void addY(float _y) {
+		this->y += _y;
+	}
 	bool isNonZero() const {
 		if (abs(x) > 0.001f)
 			return true;

@@ -7,16 +7,22 @@ class Tool_Base {
 protected:
 	class CSimulator *sim;
 public:
+	Tool_Base() {
+		sim = 0;
+	}
 	void setSimulator(class CSimulator *s) {
 		this->sim = s;
+	}
+	virtual const char *getName() const {
+		return "UnnamedTool";
 	}
 	virtual void onKeyDown(int button) {
 
 	}
-	virtual void onMouseDown(const Coord &pos, int button) {
+	virtual void onMouseDown(const class Coord &pos, int button) {
 
 	}
-	virtual void onMouseUp(const Coord &pos, int button) {
+	virtual void onMouseUp(const class Coord &pos, int button) {
 
 	}
 	virtual void drawTool() {
@@ -27,6 +33,9 @@ public:
 	}
 	virtual void onEnd() {
 
+	}
+	virtual int drawTextStats(int h) {
+		return h;
 	}
 };
 

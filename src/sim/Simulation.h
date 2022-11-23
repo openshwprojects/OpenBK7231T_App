@@ -10,6 +10,7 @@ class CSimulation {
 public:
 
 	void recalcBounds();
+	class CObject *generateBulb();
 	class CObject *generateWB3S();
 	class CObject *generateButton();
 	class CObject *generateTest();
@@ -25,6 +26,7 @@ public:
 	void matchJunction(class CJunction *j);
 	void matchJunction(class CWire *w);
 	void matchJunctionsOf_r(class CShape *s);
+	int drawTextStats(int h);
 };
 
 #endif
