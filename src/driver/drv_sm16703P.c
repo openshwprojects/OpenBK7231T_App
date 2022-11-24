@@ -16,7 +16,7 @@ static int g_pin_di = 0;
 
 /*1 equals about 5 us*/
 // From platforms/bk7231t/bk7231t_os/beken378/driver/codec/driver_codec_es8374.c 
-static void es8374_codec_i2c_delayqq(int us)
+static void es8374_codec_i2c_delay1equalsabout5us(int us)
 {
 	volatile int i, j;
 	for (i = 0; i < us; i++)
@@ -36,7 +36,7 @@ static void es8374_codec_i2c_delay(int us)
 	}
 }
 #define SM16703P_SLEEP_300	__asm("nop\nnop\nnop");
-#define SM16703P_SLEEP_900	__asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+#define SM16703P_SLEEP_900	__asm("nop\nnop\nnop\nnop\nnop\nnop\nnop");
 
 void gpio_output(UINT32 id, UINT32 val);
 
@@ -75,11 +75,15 @@ static void SM16703P_Send(byte *data, int dataSize){
 	UINT32 reg_val;
 	volatile UINT32 *gpio_cfg_addr;
 	UINT32 id;
-	volatile UINT32 reg_val_HIGH;
-	volatile UINT32 reg_val_LOW;
+	volatile UINT32 reg_val_HIGH = 0x02;
+	volatile UINT32 reg_val_LOW = 0x00;
+
 
 	GLOBAL_INT_DECLARATION();
 	GLOBAL_INT_DISABLE();
+
+	// let things settle down a bit
+	es8374_codec_i2c_delay1equalsabout5us(100);
 
 	id = g_pin_di;
 
@@ -88,13 +92,6 @@ static void SM16703P_Send(byte *data, int dataSize){
 		id += 16;
 #endif // (CFG_SOC_NAME != SOC_BK7231)
 	gpio_cfg_addr = (volatile UINT32 *)(REG_GPIO_CFG_BASE_ADDR + id * 4);
-	reg_val = REG_READ(gpio_cfg_addr);
-	reg_val_HIGH = reg_val;
-	reg_val_HIGH &= ~GCFG_OUTPUT_BIT;
-	reg_val_HIGH |= (0x01 & 0x01) << GCFG_OUTPUT_POS;
-	reg_val_LOW = reg_val;
-	reg_val_LOW &= ~GCFG_OUTPUT_BIT;
-	reg_val_LOW |= (0x00 & 0x01) << GCFG_OUTPUT_POS;
 
 	SM16703P_SET_LOW;
 	SM16703P_SET_LOW;
@@ -108,7 +105,6 @@ static void SM16703P_Send(byte *data, int dataSize){
 	SM16703P_SEND_T0;
 	SM16703P_SEND_T0;
 	SM16703P_SEND_T0; 
-	//SM16703P_SLEEP_900;
 	SM16703P_SEND_T0;
 
 /*	SM16703P_SLEEP_900;
@@ -171,6 +167,40 @@ static int SM16703P_Test_3xOne(const void *context, const char *cmd, const char 
 
 	return 1;
 }
+static int SM16703P_Send_Cmd(const void *context, const char *cmd, const char *args, int flags) {
+	byte test[32];
+	int i;
+	const char *c;
+	int numBytes;
+
+	numBytes = 0;
+	c = args;
+
+	for (i = 0; i < sizeof(test) && *c; i++) {
+		char tmp[3];
+		int val;
+		int r;
+		tmp[0] = *c;
+		c++;
+		if (!*c)
+			break;
+		tmp[1] = *c;
+		c++;
+		tmp[2] = 0;
+		r = sscanf(tmp, "%x", &val);
+		if (!r) {
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "SM16703P_Send_Cmd no sscanf hex result from %s", tmp);
+			break;
+		}
+		test[i] = val;
+		numBytes++;
+	}
+	ADDLOG_ERROR(LOG_FEATURE_CMD, "Will send %i bytes", numBytes);
+	SM16703P_Send(test, numBytes);
+
+
+	return 1;
+}
 // startDriver SM16703P
 // backlog startDriver SM16703P; SM16703P_Test
 void SM16703P_Init() {
@@ -185,6 +215,7 @@ void SM16703P_Init() {
 	//cmddetail:"fn":"SM16703P_Test","file":"driver/drv_ucs1912.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SM16703P_Test", "", SM16703P_Test, NULL, NULL);
+	CMD_RegisterCommand("SM16703P_Send", "", SM16703P_Send_Cmd, NULL, NULL);
 	CMD_RegisterCommand("SM16703P_Test_3xZero", "", SM16703P_Test_3xZero, NULL, NULL);
 	CMD_RegisterCommand("SM16703P_Test_3xOne", "", SM16703P_Test_3xOne, NULL, NULL);
 }
