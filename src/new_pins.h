@@ -56,6 +56,7 @@ enum IORole {
 	IOR_AlwaysLow,
 
 	IOR_UCS1912_DIN,
+	IOR_SM16703P_DIN,
 
 	IOR_Total_Options,
 };
