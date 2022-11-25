@@ -1336,7 +1336,6 @@ OBK_Publish_Result MQTT_DoItemPublishString(const char* sChannel, const char* va
 OBK_Publish_Result MQTT_DoItemPublish(int idx)
 {
 	int type;
-	int role;
 	char dataStr[3 * 6 + 1];  //This is sufficient to hold mac value
 	bool bWantsToPublish;
 
@@ -1407,8 +1406,7 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 	// because we are using led_basecolor_rgb, led_dimmer, led_enableAll, etc
 	// NOTE: negative indexes are not channels - they are special values
 	bWantsToPublish = false;
-	role = CHANNEL_GetRoleForOutputChannel(idx);
-	if (role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
+	if (CHANNEL_HasRoleThatShouldBePublished(idx)) {
 		bWantsToPublish = true;
 	}
 #ifndef OBK_DISABLE_ALL_DRIVERS

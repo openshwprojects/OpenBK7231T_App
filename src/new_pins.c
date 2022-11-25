@@ -849,8 +849,20 @@ bool CHANNEL_IsInUse(int ch) {
 }
 
 
-bool CHANNEL_HasChannelSomeOutputPin(int ch) {
-	return CHANNEL_GetRoleForOutputChannel(ch) != IOR_None;
+bool CHANNEL_HasRoleThatShouldBePublished(int ch) {
+	int i;
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (g_cfg.pins.channels[i] == ch) {
+			int role = g_cfg.pins.roles[i];	if (role == IOR_Relay || role == IOR_Relay_n
+				|| role == IOR_LED || role == IOR_LED_n
+				|| role == IOR_ADC
+				|| role == IOR_DigitalInput || role == IOR_DigitalInput_n
+				|| role == IOR_DigitalInput_NoPup || role == IOR_DigitalInput_NoPup_n) {
+				return true;
+			}
+		}
+	}
+	return false;
 }
 int CHANNEL_GetRoleForOutputChannel(int ch){
 	int i;
