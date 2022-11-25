@@ -2010,7 +2010,7 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 	hprintf255(request, "\"LogHost\":\"\",");
 	hprintf255(request, "\"LogPort\":514,");
 	hprintf255(request, "\"SSId\":[");
-	hprintf255(request, "\"DLINK_FastNet\",");
+	hprintf255(request, "\"%s\",", CFG_GetWiFiSSID());
 	hprintf255(request, "\"\"");
 	hprintf255(request, "],");
 	hprintf255(request, "\"TelePeriod\":300,");
@@ -2056,8 +2056,8 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 
 
 	hprintf255(request, "\"StatusNET\":{");
-	hprintf255(request, "\"Hostname\":\"tasmota-D79E2C-7724\",");
-	hprintf255(request, "\"IPAddress\":\"192.168.0.104\",");
+	hprintf255(request, "\"Hostname\":\"%s\",", CFG_GetShortDeviceName());
+	hprintf255(request, "\"IPAddress\":\"%s\",", HAL_GetMyIPString());
 	hprintf255(request, "\"Gateway\":\"192.168.0.1\",");
 	hprintf255(request, "\"Subnetmask\":\"255.255.255.0\",");
 	hprintf255(request, "\"DNSServer1\":\"192.168.0.1\",");
@@ -2075,10 +2075,10 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 
 	hprintf255(request, "\"StatusMQT\":{");
 	hprintf255(request, "\"MqttHost\":\"192.168.0.113\",");
-	hprintf255(request, "\"MqttPort\":1883,");
+	hprintf255(request, "\"MqttPort\":%i,", CFG_GetMQTTPort());
 	hprintf255(request, "\"MqttClientMask\":\"core-mosquitto\",");
-	hprintf255(request, "\"MqttClient\":\"core-mosquitto\",");
-	hprintf255(request, "\"MqttUser\":\"homeassistant\",");
+	hprintf255(request, "\"MqttClient\":\"%s\",",CFG_GetMQTTClientId());
+	hprintf255(request, "\"MqttUser\":\"%s\",", CFG_GetMQTTUserName());
 	hprintf255(request, "\"MqttCount\":23,");
 	hprintf255(request, "\"MAX_PACKET_SIZE\":1200,");
 	hprintf255(request, "\"KEEPALIVE\":30,");
@@ -2108,7 +2108,7 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 
 	hprintf255(request, "\"Time\":\"2022-11-09T20:09:11\",");
 	hprintf255(request, "\"Uptime\":\"30T02:59:30\",");
-	hprintf255(request, "\"UptimeSec\":2602770,");
+	hprintf255(request, "\"UptimeSec\":%i,", Time_getUpTimeSeconds());
 	hprintf255(request, "\"Heap\":25,");
 	hprintf255(request, "\"SleepMode\":\"Dynamic\",");
 	hprintf255(request, "\"Sleep\":10,");
@@ -2140,7 +2140,7 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 	//}
 	hprintf255(request, "\"Wifi\":{");
 	hprintf255(request, "\"AP\":1,");
-	hprintf255(request, "\"SSId\":\"SSIIIIIIIIIIIID\",");
+	hprintf255(request, "\"SSId\":\"%s\",", CFG_GetWiFiSSID());
 	hprintf255(request, "\"BSSId\":\"30:B5:C2:5D:70:72\",");
 	hprintf255(request, "\"Channel\":11,");
 	hprintf255(request, "\"Mode\":\"11n\",");
