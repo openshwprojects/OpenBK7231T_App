@@ -15,7 +15,9 @@ public:
 	class CObject *generateButton();
 	class CObject *generateTest();
 	class CObject *generateGND();
+	class CObject *generateVDD();
 	void createDemo();
+	void matchAllJunctions();
 	void drawSim();
 	class CObject *addObject(CObject *o);
 	class CWire *addWire(const class Coord &a, const class Coord &b);

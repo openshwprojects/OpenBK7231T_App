@@ -6,6 +6,7 @@
 #include "Coord.h"
 
 class Tool_Move : public Tool_Base {
+	bool bMovingButtonHeld;
 	class CShape *currentTarget;
 	Coord prevPos;
 public:
@@ -13,6 +14,7 @@ public:
 	virtual const char *getName() const {
 		return "Move";
 	}
+	virtual int drawTextStats(int h);
 	virtual void onEnd();
 	virtual void drawTool();
 	virtual void onMouseDown(const Coord &pos, int button);

@@ -34,6 +34,8 @@ public:
 		return "CJunction";
 	}
 	virtual ~CJunction();
+	void translateLinked(const Coord &o);
+	void setPosLinked(const Coord &o);
 	void rotateDegreesAround_internal(float f, const Coord &p);
 	void unlink(class CJunction *o);
 	bool isWireJunction() const;
@@ -45,7 +47,6 @@ public:
 	}
 	bool hasLinkedOnlyWires() const;
 	virtual void translate(const Coord &o);
-	void translateLinked(const Coord &o);
 	void addLink(CJunction *j) {
 		linked.push_back(j);
 	}

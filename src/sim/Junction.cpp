@@ -32,10 +32,16 @@ void CJunction::translateLinked(const Coord &o) {
 		oj->setPosition(oj->getPosition() + o);
 	}
 }
+void CJunction::setPosLinked(const Coord &o) {
+	for (int i = 0; i < linked.size(); i++) {
+		CJunction *oj = linked[i];
+		oj->setPosition(o);
+	}
+}
 void CJunction::translate(const Coord &o) {
 	if (hasLinkedOnlyWires()) {
 		CShape::translate(o);
-		translateLinked(o);
+		setPosLinked(this->getPosition());
 	}
 }
 void CJunction::drawShape() {

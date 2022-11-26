@@ -15,6 +15,20 @@ void Tool_Move::onMouseUp(const Coord &pos, int button) {
 void Tool_Move::onEnd() {
 	sim->getCursorMgr()->setCursor(SDL_SYSTEM_CURSOR_ARROW);
 }
+int Tool_Move::drawTextStats(int h) {
+	if (currentTarget) {
+		if (bMovingButtonHeld) {
+			h = drawText(20, h, "Moving %s", currentTarget->getClassName());
+		}
+		else {
+			h = drawText(20, h, "Last target %s", currentTarget->getClassName());
+		}
+	}
+	else {
+		h = drawText(20, h, "No target");
+	}
+	return h;
+}
 void Tool_Move::onMouseDown(const Coord &pos, int button) {
 	if (button == SDL_BUTTON_LEFT) {
 		currentTarget = sim->getShapeUnderCursor();
@@ -35,7 +49,8 @@ void Tool_Move::onMouseDown(const Coord &pos, int button) {
 
 }
 void Tool_Move::drawTool() {
-	if (sim->isMouseButtonHold(SDL_BUTTON_LEFT)) {
+	bMovingButtonHeld = sim->isMouseButtonHold(SDL_BUTTON_LEFT);
+	if (bMovingButtonHeld) {
 		if (currentTarget != 0) {
 			Coord nowPos = GetMousePos();
 			nowPos = roundToGrid(nowPos);

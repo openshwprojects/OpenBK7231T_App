@@ -53,7 +53,7 @@ void CSimulation::createDemo() {
 	addObject(generateWB3S())->setPosition(300, 200);
 	addObject(generateButton())->setPosition(500, 260)->rotateDegreesAroundSelf(180);
 	addObject(generateTest())->setPosition(500, 400);
-	addObject(generateGND())->setPosition(600, 400);
+	addObject(generateGND())->setPosition(600, 420);
 	addWire(Coord(460, 260), Coord(380, 260));
 	addWire(Coord(540, 260), Coord(600, 260));
 	addWire(Coord(600, 400), Coord(600, 260));
@@ -63,17 +63,32 @@ void CSimulation::createDemo() {
 	addObject(generateButton())->setPosition(600, 220)->rotateDegreesAroundSelf(180);
 	addWire(Coord(640, 220), Coord(700, 220));
 	addWire(Coord(700, 400), Coord(700, 220));
-	addObject(generateGND())->setPosition(700, 400);
+	addObject(generateGND())->setPosition(700, 420);
 	//addObject(new CObject(new CCircle(800, 500, 100)));
 	addObject(generateBulb())->setPosition(440, 140)->rotateDegreesAroundSelf(90);
 	addWire(Coord(440, 60), Coord(440, 120));
 	addWire(Coord(440, 200), Coord(440, 160));
 	addWire(Coord(440, 200), Coord(380, 200));
+	addObject(generateVDD())->setPosition(440, 60);
+	matchAllJunctions();
 	recalcBounds();
+}
+void CSimulation::matchAllJunctions() {
+	for (int i = 0; i < wires.size(); i++) {
+		CWire *w = wires[i];
+		matchJunction(w);
+	}
 }
 
 
 
+class CObject *CSimulation::generateVDD() {
+	CObject *o = new CObject();
+	o->addJunction(0, 0, "pad_a");
+	o->addLine(0, -20, 0, 0);
+	o->addCircle(0, -30, 10);
+	return o;
+}
 class CObject *CSimulation::generateGND() {
 	CObject *o = new CObject();
 	o->addJunction(0, -20, "pad_a");
@@ -193,6 +208,8 @@ void CSimulation::tryMatchJunction(class CJunction *jn, class CJunction *oj) {
 		return;
 	if (oj == jn)
 		return;
+	// cannot connect two objects directly without wire
+	// (in Eagle, such connection will automatically create wire, but let's keep it simple)
 	if (oj->isWireJunction() == false && jn->isWireJunction() == false)
 		return;
 	if (oj->absPositionDistance(jn) < 1) {

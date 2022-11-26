@@ -16,7 +16,7 @@ CWire::~CWire() {
 }
 class CShape* CWire::findSubPart(const Coord &p) {
 	for (int i = 0; i < junctions.size(); i++) {
-		if (p.isWithinDist(junctions[i]->getPosition(), 5))
+		if (p.isWithinDist(junctions[i]->getPosition(), 15))
 		{
 			return junctions[i];
 		}
