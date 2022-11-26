@@ -420,7 +420,7 @@ extern "C" void DRV_IR_ISR(UINT8 t){
 
 extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, const char *args_in, int cmdFlags) {
     int numProtocols = sizeof(ProtocolNames)/sizeof(*ProtocolNames);
-    if (!args_in) return 0;
+    if (!args_in) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     char args[20];
     strncpy(args, args_in, 19);
     args[19] = 0;
