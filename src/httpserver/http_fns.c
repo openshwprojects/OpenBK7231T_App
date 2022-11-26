@@ -2324,8 +2324,12 @@ int http_fn_cfg_pins(http_request_t* request) {
 		alias = HAL_PIN_GetPinNameAlias(i);
 		poststr(request, "<div class=\"hdiv\">");
 		if (alias) {
+#ifdef PLATFORM_BEKEN
+			hprintf255(request, "P%i (%s) ", i, alias);
+#else
 			poststr(request, alias);
 			poststr(request, " ");
+#endif
 		}
 		else {
 			hprintf255(request, "P%i ", i);

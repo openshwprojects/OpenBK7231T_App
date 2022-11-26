@@ -34,6 +34,27 @@ int PIN_GetPWMIndexForPinIndex(int pin) {
 }
 
 const char *HAL_PIN_GetPinNameAlias(int index) {
+	// some of pins have special roles
+	if (index == 23)
+		return "ADC3";
+	if (index == 26)
+		return "PWM5";
+	if (index == 24)
+		return "PWM4";
+	if (index == 6)
+		return "PWM0";
+	if (index == 0)
+		return "TXD2";
+	if (index == 1)
+		return "RXD2";
+	if (index == 9)
+		return "PWM3";
+	if (index == 8)
+		return "PWM2";
+	if (index == 10)
+		return "RXD1";
+	if (index == 11)
+		return "TXD1";
 	return 0;
 }
 
