@@ -89,7 +89,7 @@ int lfs_present(){
 static commandResult_t CMD_LFS_Size(const void *context, const char *cmd, const char *args, int cmdFlags){
     if (!args || !args[0]){
         ADDLOG_INFO(LOG_FEATURE_CMD, "unchanged LFS size 0x%X configured 0x%X", LFS_Size, CFG_GetLFS_Size());
-        return 1;
+        return CMD_RES_OK;
     }
 
     const char *p = args;

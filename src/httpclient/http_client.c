@@ -7,6 +7,7 @@
  */
 
 #include "../new_common.h"
+#include "../cmnds/cmd_public.h"
 #include "include.h"
 #include "utils_timer.h"
 //#include "lite-log.h"

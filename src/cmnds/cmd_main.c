@@ -42,7 +42,7 @@ static commandResult_t CMD_SimonTest(const void *context, const char *cmd, const
 #endif
 
 	
-	return 1;
+	return CMD_RES_OK;
 }
 
 static commandResult_t CMD_Restart(const void *context, const char *cmd, const char *args, int cmdFlags){
