@@ -673,6 +673,27 @@ void DRV_DGR_OnLedDimmerChange(int iVal) {
 #endif
 }
 
+void DRV_DGR_OnLedFinalColorsChange(byte rgbcw[5]) {
+	//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_OnLedFinalColorsChange: called\n");
+	if (g_dgr_socket_receive == 0) {
+		return;
+	}
+	// if this send is as a result of use RXing something, 
+	// don't send it....
+	if (g_inCmdProcessing) {
+		return;
+	}
+	if ((CFG_DeviceGroups_GetSendFlags() & DGR_SHARE_LIGHT_COLOR) == 0) {
+
+		return;
+	}
+#if 0
+	//g_dgr_ledDimmerPendingSend = true;
+	//g_dgr_ledDimmerPendingSend_value = iVal;
+#else
+	DRV_DGR_Send_RGBCW(CFG_DeviceGroups_GetName(), rgbcw);
+#endif
+}
 
 
 void DRV_DGR_OnLedEnableAllChange(int iVal) {

@@ -333,6 +333,9 @@ void apply_smart_light() {
 	if(CFG_HasFlag(OBK_FLAG_LED_REMEMBERLASTSTATE)) {
 		HAL_FlashVars_SaveLED(g_lightMode,g_brightness / g_cfg_brightnessMult, led_temperature_current,baseColors[0],baseColors[1],baseColors[2],g_lightEnableAll);
 	}
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	DRV_DGR_OnLedFinalColorsChange(finalRGBCW);
+#endif
 
 	// I am not sure if it's the best place to do it
 	// NOTE: this will broadcast MQTT only if a flag is set
