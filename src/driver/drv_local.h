@@ -50,4 +50,3 @@ bool DRV_IsRunning(const char* name);
 void TuyaMCU_Sensor_RunFrame();
 void TuyaMCU_Sensor_Init();
 
-int BL09XX_ResetEnergyCounter(const void* context, const char* cmd, const char* args, int cmdFlags);
