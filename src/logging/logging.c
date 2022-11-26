@@ -257,6 +257,8 @@ static int tcpLogStarted = 0;
 #define UART_PORT_INDEX 1 
 #endif
 
+commandResult_t log_command(const void* context, const char* cmd, const char* args, int cmdFlags);
+
 static void initLog(void)
 {
 	bk_printf("Entering initLog()...\r\n");
