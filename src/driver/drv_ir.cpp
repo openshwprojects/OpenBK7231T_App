@@ -418,7 +418,7 @@ extern "C" void DRV_IR_ISR(UINT8 t){
     ir_counter++;
 }
 
-extern "C" int IR_Send_Cmd(const void *context, const char *cmd, const char *args_in, int cmdFlags) {
+extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, const char *args_in, int cmdFlags) {
     int numProtocols = sizeof(ProtocolNames)/sizeof(*ProtocolNames);
     if (!args_in) return 0;
     char args[20];
@@ -433,7 +433,7 @@ extern "C" int IR_Send_Cmd(const void *context, const char *cmd, const char *arg
 
     if ((*p != '-') && (*p != ' ')) {
         ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRSend cmnd not valid [%s] not like [NEC-0-1A] or [NEC 0 1A 1].", args);
-        return 0;
+        return CMD_RES_BAD_ARGUMENT;
     }
 
     int ournamelen = (p - args);
@@ -451,7 +451,7 @@ extern "C" int IR_Send_Cmd(const void *context, const char *cmd, const char *arg
     int addr = strtol(p, &p, 16);
     if ((*p != '-') && (*p != ' ')) {
         ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRSend cmnd not valid [%s] not like [NEC-0-1A] or [NEC 0 1A 1].", args);
-        return 0;
+        return CMD_RES_BAD_ARGUMENT;
     }
     p++;
     int command = strtol(p, &p, 16);
@@ -476,17 +476,17 @@ extern "C" int IR_Send_Cmd(const void *context, const char *cmd, const char *arg
         // NOTE: this is NOT a delay here.  it adds 100ms 'space' in the TX queue
         pIRsend->delay(100);
         ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send %s protocol %d addr 0x%X cmd 0x%X repeats %d", args, (int)data.protocol, (int)data.address, (int)data.command, (int)repeats);
-        return 1;
+        return CMD_RES_OK;
     } else {
         ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR NOT send (no IRsend running) %s protocol %d addr 0x%X cmd 0x%X repeats %d", args, (int)data.protocol, (int)data.address, (int)data.command, (int)repeats);
     }
-    return 0;
+    return CMD_RES_ERROR;
 }
 
-extern "C" int IR_Enable(const void *context, const char *cmd, const char *args_in, int cmdFlags) {
+extern "C" commandResult_t IR_Enable(const void *context, const char *cmd, const char *args_in, int cmdFlags) {
     if (!args_in || !args_in[0]) {
         ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IREnable expects arguments");
-        return 1;
+        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
 
     char args[20];
@@ -504,7 +504,7 @@ extern "C" int IR_Enable(const void *context, const char *cmd, const char *args_
         }
         gEnableIRSendWhilstReceive = enable;
         ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IREnable RX whilst TX enable set %d", enable);
-        return 1;
+        return CMD_RES_OK;
     }
 
     if (!my_strnicmp(p, "invert", 6)){
@@ -519,7 +519,7 @@ extern "C" int IR_Enable(const void *context, const char *cmd, const char *args_
         }
         gIRPinPolarity = enable;
         ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IREnable invert set %d", enable);
-        return 1;
+        return CMD_RES_OK;
     }
     
 
@@ -549,7 +549,7 @@ extern "C" int IR_Enable(const void *context, const char *cmd, const char *args_
     uint32_t thisbit = (1 << protocol);
     if (protocol < 0){
         ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IREnable invalid protocol %s", args);
-        return 1;
+        return CMD_RES_BAD_ARGUMENT;
     } else {
         ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IREnable found protocol %s(%d), enable %d from %s, bitmask 0x%08X", ProtocolNames[protocol], protocol, enable, p, thisbit);
     }
@@ -559,7 +559,7 @@ extern "C" int IR_Enable(const void *context, const char *cmd, const char *args_
         gIRProtocolEnable = gIRProtocolEnable & (~thisbit);
     }
     ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IREnable Protocol mask now 0x%08X", gIRProtocolEnable);
-    return 1;
+    return CMD_RES_OK;
     
 }
 
