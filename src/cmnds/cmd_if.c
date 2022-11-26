@@ -383,7 +383,7 @@ float CMD_EvaluateExpression(const char *s, const char *stop) {
 }
 
 // if MQTTOnline then "qq" else "qq"
-int CMD_If(const void *context, const char *cmd, const char *args, int cmdFlags){
+commandResult_t CMD_If(const void *context, const char *cmd, const char *args, int cmdFlags){
 	const char *cmdA;
 	const char *cmdB;
 	const char *condition;
@@ -393,24 +393,24 @@ int CMD_If(const void *context, const char *cmd, const char *args, int cmdFlags)
 
 	if(args==0||*args==0) {
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: command require at least 3 args");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
 	if(Tokenizer_GetArgsCount() < 3) {
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: command require at least 3 args, you gave %i",Tokenizer_GetArgsCount());
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	condition = Tokenizer_GetArg(0);
 	if(stricmp(Tokenizer_GetArg(1),"then")) {
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: second argument always must be 'then', but it's '%s'",Tokenizer_GetArg(1));
-		return 1;
+		return CMD_RES_BAD_ARGUMENT;
 	}
 	argsCount = Tokenizer_GetArgsCount();
 	if(argsCount >= 5) {
 		cmdA = Tokenizer_GetArg(2);
 		if(stricmp(Tokenizer_GetArg(3),"else")) {
 			ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: fourth argument always must be 'else', but it's '%s'",Tokenizer_GetArg(3));
-			return 1;
+			return CMD_RES_BAD_ARGUMENT;
 		}
 		cmdB = Tokenizer_GetArg(4);
 	} else {
@@ -441,6 +441,6 @@ int CMD_If(const void *context, const char *cmd, const char *args, int cmdFlags)
 		}
 	}
 
-	return 1;
+	return CMD_RES_OK;
 }
 

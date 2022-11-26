@@ -397,9 +397,9 @@ static int DRV_SSDP_Service_Http(http_request_t* request){
 // end private functions
 ///////////////////////////////
 
-static int Cmd_obkDeviceList(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t Cmd_obkDeviceList(const void *context, const char *cmd, const char *args, int cmdFlags){
     obkDeviceList();
-    return 1;
+    return CMD_RES_OK;
 }
 
 ///////////////////////////////////////////////

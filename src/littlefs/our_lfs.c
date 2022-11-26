@@ -86,7 +86,7 @@ int lfs_present(){
     return lfs_initialised;
 }
 
-static int CMD_LFS_Size(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_LFS_Size(const void *context, const char *cmd, const char *args, int cmdFlags){
     if (!args || !args[0]){
         ADDLOG_INFO(LOG_FEATURE_CMD, "unchanged LFS size 0x%X configured 0x%X", LFS_Size, CFG_GetLFS_Size());
         return 1;
@@ -105,48 +105,48 @@ static int CMD_LFS_Size(const void *context, const char *cmd, const char *args, 
             LFS_BLOCKS_MIN_LEN,
             LFS_BLOCKS_MAX_LEN
             );
-        return 1;
+        return CMD_RES_ERROR;
     }
 
     // double check again that we're within bounds - don't want
     // boot overwrite or anything nasty....
     if ((newstart < LFS_BLOCKS_START_MIN) || (newstart >= LFS_BLOCKS_END)){
         ADDLOG_ERROR(LOG_FEATURE_CMD, "LFSSize OUT OF BOUNDS start 0x%X ", newstart);
-        return 1;
+        return CMD_RES_ERROR;
     }
     if ((newstart + newsize > LFS_BLOCKS_END) ||
         (newstart + newsize < LFS_BLOCKS_START_MIN)){
         ADDLOG_ERROR(LOG_FEATURE_CMD, "LFSSize OUT OF BOUNDS end 0x%X", newstart + newsize);
-        return 1;
+        return CMD_RES_ERROR;
     }
 
 
     CFG_SetLFS_Size(newsize);
     ADDLOG_INFO(LOG_FEATURE_CMD, "LFS size 0x%X new configured 0x%X", LFS_Size, CFG_GetLFS_Size());
-    return 1;
+    return CMD_RES_OK;
 }
 
-static int CMD_LFS_Unmount(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_LFS_Unmount(const void *context, const char *cmd, const char *args, int cmdFlags){
     if (lfs_initialised){
         release_lfs();
         ADDLOG_INFO(LOG_FEATURE_CMD, "unmounted LFS size 0x%X", LFS_Size);
     } else {
         ADDLOG_INFO(LOG_FEATURE_CMD, "LFS was not mounted - size 0x%X", LFS_Size);
     }
-    return 1;
+    return CMD_RES_OK;
 }
 
-static int CMD_LFS_Mount(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_LFS_Mount(const void *context, const char *cmd, const char *args, int cmdFlags){
     if (lfs_initialised){
         ADDLOG_INFO(LOG_FEATURE_CMD, "LFS already mounted size 0x%X", LFS_Size);
     } else {
         init_lfs(1);
         ADDLOG_INFO(LOG_FEATURE_CMD, "LFS mounted size 0x%X", LFS_Size);
     }
-    return 1;
+    return CMD_RES_OK;
 }
 
-static int CMD_LFS_Format(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_LFS_Format(const void *context, const char *cmd, const char *args, int cmdFlags){
     if (lfs_initialised){
         release_lfs();
         ADDLOG_INFO(LOG_FEATURE_CMD, "LFS released size 0x%X", LFS_Size);
@@ -175,12 +175,12 @@ static int CMD_LFS_Format(const void *context, const char *cmd, const char *args
     // boot overwrite or anything nasty....
     if (newstart < LFS_BLOCKS_START_MIN){
         ADDLOG_ERROR(LOG_FEATURE_CMD, "LFS OUT OF BOUNDS start 0x%X too small", newstart);
-        return 1;
+        return CMD_RES_ERROR;
     }
     if ((newstart + newsize > LFS_BLOCKS_END) ||
         (newstart + newsize < LFS_BLOCKS_START_MIN)){
         ADDLOG_ERROR(LOG_FEATURE_CMD, "LFS OUT OF BOUNDS end 0x%X too big", newstart + newsize);
-        return 1;
+        return CMD_RES_ERROR;
     }
 
     LFS_Start = newstart;
@@ -195,7 +195,7 @@ static int CMD_LFS_Format(const void *context, const char *cmd, const char *args
     } else {
         ADDLOG_INFO(LOG_FEATURE_CMD, "LFS mounted");
     }
-    return 1;
+    return CMD_RES_OK;
 }
 
 void LFSAddCmds(){

@@ -164,7 +164,7 @@ void BL09XX_SaveEmeteringStatistics()
     HAL_SetEnergyMeterStatus(&data);
 }
 
-int BL09XX_ResetEnergyCounter(const void *context, const char *cmd, const char *args, int cmdFlags)
+commandResult_t BL09XX_ResetEnergyCounter(const void *context, const char *cmd, const char *args, int cmdFlags)
 {
     float value;
     int i;
@@ -206,10 +206,10 @@ int BL09XX_ResetEnergyCounter(const void *context, const char *cmd, const char *
         BL09XX_SaveEmeteringStatistics();
         lastConsumptionSaveStamp = xTaskGetTickCount();
     }
-    return 0;
+    return CMD_RES_OK;
 }
 
-int BL09XX_SetupEnergyStatistic(const void *context, const char *cmd, const char *args, int cmdFlags)
+commandResult_t BL09XX_SetupEnergyStatistic(const void *context, const char *cmd, const char *args, int cmdFlags)
 {
     // SetupEnergyStats enable sample_time sample_count
     int enable;
@@ -222,7 +222,7 @@ int BL09XX_SetupEnergyStatistic(const void *context, const char *cmd, const char
     if(Tokenizer_GetArgsCount() < 3) 
     {
         addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "BL09XX_SetupEnergyStatistic: requires 3 arguments (enable, sample_time, sample_count)\n");
-        return -1;
+        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
 
     enable = Tokenizer_GetArgInteger(0);
@@ -296,10 +296,10 @@ int BL09XX_SetupEnergyStatistic(const void *context, const char *cmd, const char
 
     energyCounterStatsJSONEnable = (json_enable != 0) ? true : false; 
 
-    return 0;
+    return CMD_RES_OK;
 }
 
-int BL09XX_SetupConsumptionThreshold(const void *context, const char *cmd, const char *args, int cmdFlags)
+commandResult_t BL09XX_SetupConsumptionThreshold(const void *context, const char *cmd, const char *args, int cmdFlags)
 {
     float threshold;
     Tokenizer_TokenizeString(args,0);
@@ -307,7 +307,7 @@ int BL09XX_SetupConsumptionThreshold(const void *context, const char *cmd, const
     if(Tokenizer_GetArgsCount() < 1)
     {
           addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "BL09XX_SetupConsumptionThreshold: requires argument (threshold)\n");
-          return -1;
+          return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
     
     threshold = atof(Tokenizer_GetArg(0)); 
@@ -319,7 +319,7 @@ int BL09XX_SetupConsumptionThreshold(const void *context, const char *cmd, const
     changeSavedThresholdEnergy = threshold;
     addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "ConsumptionThreshold: %1.1f\n", changeSavedThresholdEnergy);
 
-    return 0;
+    return CMD_RES_OK;
 }
 
 void BL_ProcessUpdate(float voltage, float current, float power) 

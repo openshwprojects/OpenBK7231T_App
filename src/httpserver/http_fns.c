@@ -1265,23 +1265,36 @@ int http_fn_flash_read_tool(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
-
+const char *CMD_GetResultString(commandResult_t r) {
+	if (r == CMD_RES_OK)
+		return "OK";
+	if (r == CMD_RES_EMPTY_STRING)
+		return "No command entered";
+	if (r == CMD_RES_ERROR)
+		return "Command found but returned error";
+	if (r == CMD_RES_NOT_ENOUGH_ARGUMENTS)
+		return "Not enough arguments for this command";
+	if (r == CMD_RES_UNKNOWN_COMMAND)
+		return "Unknown command";
+	if (r == CMD_RES_BAD_ARGUMENT)
+		return "Bad argument";
+	return "Unknown error";
+}
 int http_fn_cmd_tool(http_request_t* request) {
-	int i;
+	commandResult_t res;
+	const char *resStr;
 	char tmpA[128];
 
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Command tool");
 	poststr(request, "<h4>Command Tool</h4>");
+	poststr(request, "This is a basic command line. <br>");
+	poststr(request, "Please consider using 'Web Application' console with more options and real time log view. <br>");
 
 	if (http_getArg(request->url, "cmd", tmpA, sizeof(tmpA))) {
-		i = CMD_ExecuteCommand(tmpA, COMMAND_FLAG_SOURCE_CONSOLE);
-		if (i == 0) {
-			poststr(request, "Command not found");
-		}
-		else {
-			poststr(request, "Executed");
-		}
+		res = CMD_ExecuteCommand(tmpA, COMMAND_FLAG_SOURCE_CONSOLE);
+		resStr = CMD_GetResultString(res);
+		hprintf255(request, "<h3>%s</h3>", resStr);
 		poststr(request, "<br>");
 	}
 	add_label_text_field(request, "Command", "cmd", tmpA, "<form action=\"/cmd_tool\">");

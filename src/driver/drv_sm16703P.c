@@ -129,7 +129,7 @@ static void SM16703P_Send(byte *data, int dataSize){
 	// For P12, it says 0
 	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Reg val is %i", reg_val);
 }
-static int SM16703P_Test(const void *context, const char *cmd, const char *args, int flags){
+static commandResult_t SM16703P_Test(const void *context, const char *cmd, const char *args, int flags){
 	byte test[3];
 	int i;
 
@@ -138,11 +138,11 @@ static int SM16703P_Test(const void *context, const char *cmd, const char *args,
 	}
 	SM16703P_Send(test,3);
 
-	return 1;
+	return CMD_RES_OK;
 }
 
 // backlog startDriver SM16703P; SM16703P_Test_3xZero
-static int SM16703P_Test_3xZero(const void *context, const char *cmd, const char *args, int flags) {
+static commandResult_t SM16703P_Test_3xZero(const void *context, const char *cmd, const char *args, int flags) {
 	byte test[3];
 	int i;
 
@@ -152,10 +152,10 @@ static int SM16703P_Test_3xZero(const void *context, const char *cmd, const char
 	SM16703P_Send(test, 3);
 
 
-	return 1;
+	return CMD_RES_OK;
 }
 // backlog startDriver SM16703P; SM16703P_Test_3xOne
-static int SM16703P_Test_3xOne(const void *context, const char *cmd, const char *args, int flags) {
+static commandResult_t SM16703P_Test_3xOne(const void *context, const char *cmd, const char *args, int flags) {
 	byte test[3];
 	int i;
 
@@ -165,9 +165,9 @@ static int SM16703P_Test_3xOne(const void *context, const char *cmd, const char 
 	SM16703P_Send(test, 3);
 
 
-	return 1;
+	return CMD_RES_OK;
 }
-static int SM16703P_Send_Cmd(const void *context, const char *cmd, const char *args, int flags) {
+static commandResult_t SM16703P_Send_Cmd(const void *context, const char *cmd, const char *args, int flags) {
 	byte test[32];
 	int i;
 	const char *c;
@@ -199,7 +199,7 @@ static int SM16703P_Send_Cmd(const void *context, const char *cmd, const char *a
 	SM16703P_Send(test, numBytes);
 
 
-	return 1;
+	return CMD_RES_OK;
 }
 // startDriver SM16703P
 // backlog startDriver SM16703P; SM16703P_Test

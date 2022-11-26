@@ -1335,7 +1335,7 @@ OBK_Publish_Result MQTT_DoItemPublishString(const char* sChannel, const char* va
 
 OBK_Publish_Result MQTT_DoItemPublish(int idx)
 {
-	int type;
+	//int type;
 	char dataStr[3 * 6 + 1];  //This is sufficient to hold mac value
 	bool bWantsToPublish;
 

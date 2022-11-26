@@ -461,7 +461,7 @@ void LED_SetTemperature(int tmpInteger, bool bApply) {
 
 }
 
-static int temperature(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t temperature(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int tmp;
 	//if (!wal_strnicmp(cmd, "POWERALL", 8)){
 
@@ -496,7 +496,7 @@ void LED_SetEnableAll(int bEnable) {
 int LED_GetEnableAll() {
 	return g_lightEnableAll;
 }
-static int enableAll(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t enableAll(const void *context, const char *cmd, const char *args, int cmdFlags){
 	//if (!wal_strnicmp(cmd, "POWERALL", 8)){
 		int bEnable;
         ADDLOG_DEBUG(LOG_FEATURE_CMD, " enableAll (%s) received with args %s",cmd,args);
