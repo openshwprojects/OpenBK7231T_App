@@ -185,7 +185,7 @@ static commandResult_t SM2135_Map(const void *context, const char *cmd, const ch
 	if(Tokenizer_GetArgsCount()==0) {
 		ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2135_Map current order is %i %i %i    %i %i! ",
 			(int)g_channelOrder[0],(int)g_channelOrder[1],(int)g_channelOrder[2],(int)g_channelOrder[3],(int)g_channelOrder[4]);
-		return 0;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
 	g_channelOrder[0] = Tokenizer_GetArgIntegerRange(0, 0, 4);
@@ -212,7 +212,7 @@ static commandResult_t SM2135_Current(const void *context, const char *cmd, cons
 
 	if(Tokenizer_GetArgsCount()<=1) {
 		ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2135_Current: requires 2 arguments [RGB,CW]. Current value is: %i %i!\n",g_current_setting_rgb,g_current_setting_cw);
-		return 0;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	valRGB = Tokenizer_GetArgInteger(0);
 	valCW = Tokenizer_GetArgInteger(1);
