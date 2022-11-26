@@ -198,7 +198,7 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 	return CSE7766_PACKET_LEN;
 }
 
-int CSE7766_PowerSet(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t CSE7766_PowerSet(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	float realPower;
 
 	if(args==0||*args==0) {
@@ -216,9 +216,9 @@ int CSE7766_PowerSet(const void *context, const char *cmd, const char *args, int
 		snprintf(dbg, sizeof(dbg),"PowerSet: you gave %f, set ref to %f\n", realPower, CSE7766_PREF);
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
-	return 0;
+	return CMD_RES_OK;
 }
-int CSE7766_PowerRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t CSE7766_PowerRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
@@ -231,7 +231,7 @@ int CSE7766_PowerRef(const void *context, const char *cmd, const char *args, int
 
 	return 0;
 }
-int CSE7766_CurrentRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t CSE7766_CurrentRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
@@ -242,9 +242,9 @@ int CSE7766_CurrentRef(const void *context, const char *cmd, const char *args, i
 	// UPDATE: now they are automatically saved
 	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT,CSE7766_IREF);
 
-	return 0;
+	return CMD_RES_OK;
 }
-int CSE7766_VoltageRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t CSE7766_VoltageRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
@@ -255,9 +255,9 @@ int CSE7766_VoltageRef(const void *context, const char *cmd, const char *args, i
 	// UPDATE: now they are automatically saved
 	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE,CSE7766_UREF);
 
-	return 0;
+	return CMD_RES_OK;
 }
-int CSE7766_VoltageSet(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t CSE7766_VoltageSet(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	float realV;
 
 	if(args==0||*args==0) {
@@ -276,9 +276,9 @@ int CSE7766_VoltageSet(const void *context, const char *cmd, const char *args, i
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 
-	return 0;
+	return CMD_RES_OK;
 }
-int CSE7766_CurrentSet(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t CSE7766_CurrentSet(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	float realI;
 
 	if(args==0||*args==0) {
@@ -296,7 +296,7 @@ int CSE7766_CurrentSet(const void *context, const char *cmd, const char *args, i
 		snprintf(dbg, sizeof(dbg),"CurrentSet: you gave %f, set ref to %f\n", realI, CSE7766_IREF);
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
-	return 0;
+	return CMD_RES_OK;
 }
 void CSE7766_Init() 
 {

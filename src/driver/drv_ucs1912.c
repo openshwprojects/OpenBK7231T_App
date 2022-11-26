@@ -56,7 +56,7 @@ static void UCS1912_Send(byte *data, int dataSize){
 		UCS1912_SEND_BIT(b,7);
 	}
 }
-static int UCS1912_Test(const void *context, const char *cmd, const char *args, int flags){
+static commandResult_t UCS1912_Test(const void *context, const char *cmd, const char *args, int flags){
 	byte test[12];
 	int i;
 
@@ -65,7 +65,7 @@ static int UCS1912_Test(const void *context, const char *cmd, const char *args, 
 	}
 	UCS1912_Send(test,12);
 
-	return 1;
+	return CMD_RES_OK;
 }
 
 // startDriver UCS1912

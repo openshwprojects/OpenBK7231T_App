@@ -134,7 +134,7 @@ void BP1658CJ_Write(byte *rgbcw) {
 }
 
 
-static int BP1658CJ_RGBCW(const void *context, const char *cmd, const char *args, int flags){
+static commandResult_t BP1658CJ_RGBCW(const void *context, const char *cmd, const char *args, int flags){
 	const char *c = args;
 	byte col[5] = { 0, 0, 0, 0, 0 };
 	int ci;
@@ -171,13 +171,13 @@ static int BP1658CJ_RGBCW(const void *context, const char *cmd, const char *args
 
 	BP1658CJ_Write(col);
 
-	return 0;
+	return CMD_RES_OK;
 }
 // BP1658CJ_Map is used to map the RGBCW indices to BP1658CJ indices
 // This is how you uset RGB CW order:
 // BP1658CJ_Map 0 1 2 3 4
 
-static int BP1658CJ_Map(const void *context, const char *cmd, const char *args, int flags){
+static commandResult_t BP1658CJ_Map(const void *context, const char *cmd, const char *args, int flags){
 
 	Tokenizer_TokenizeString(args,0);
 
@@ -196,7 +196,7 @@ static int BP1658CJ_Map(const void *context, const char *cmd, const char *args, 
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "BP1658CJ_Map new order is %i %i %i    %i %i! ",
 		(int)g_channelOrder[0],(int)g_channelOrder[1],(int)g_channelOrder[2],(int)g_channelOrder[3],(int)g_channelOrder[4]);
 
-	return 0;
+	return CMD_RES_OK;
 }
 
 

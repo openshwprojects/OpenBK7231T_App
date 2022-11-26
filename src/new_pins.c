@@ -1248,7 +1248,7 @@ int CHANNEL_ParseChannelType(const char *s) {
 		return ChType_OpenClosed_Inv;
 	return ChType_Error;
 }
-static int CMD_setButtonHoldRepeat(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_setButtonHoldRepeat(const void *context, const char *cmd, const char *args, int cmdFlags){
 
 
 	Tokenizer_TokenizeString(args,0);
@@ -1256,7 +1256,7 @@ static int CMD_setButtonHoldRepeat(const void *context, const char *cmd, const c
 	if(Tokenizer_GetArgsCount() < 1) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"This command requires 1 argument - timeRepeat - current %i",
 			g_cfg.buttonHoldRepeat);
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
 
@@ -1269,9 +1269,9 @@ static int CMD_setButtonHoldRepeat(const void *context, const char *cmd, const c
 		);
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"If something is wrong, you can restore default %i",
 		CFG_DEFAULT_BTN_REPEAT);
-	return 0;
+	return CMD_RES_OK;
 }
-static int CMD_SetButtonTimes(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_SetButtonTimes(const void *context, const char *cmd, const char *args, int cmdFlags){
 
 
 	Tokenizer_TokenizeString(args,0);
@@ -1279,7 +1279,7 @@ static int CMD_SetButtonTimes(const void *context, const char *cmd, const char *
 	if(Tokenizer_GetArgsCount() < 3) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"This command requires 3 arguments - timeLong, timeShort, timeRepeat - current %i %i %i",
 			g_cfg.buttonLongPress, g_cfg.buttonShortPress, g_cfg.buttonHoldRepeat);
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
 	CFG_SetButtonLongPressTime(Tokenizer_GetArgInteger(0));
@@ -1297,7 +1297,7 @@ static int CMD_SetButtonTimes(const void *context, const char *cmd, const char *
 		CFG_DEFAULT_BTN_LONG, CFG_DEFAULT_BTN_SHORT,CFG_DEFAULT_BTN_REPEAT);
 	return 0;
 }
-static int CMD_ShowChannelValues(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_ShowChannelValues(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int i;
 
 	for(i = 0; i < CHANNEL_MAX; i++) {
@@ -1306,9 +1306,9 @@ static int CMD_ShowChannelValues(const void *context, const char *cmd, const cha
 		}
 	}
 
-	return 0;
+	return CMD_RES_OK;
 }
-static int CMD_SetChannelType(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_SetChannelType(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int channel;
 	const char *type;
 	int typeCode;
@@ -1317,7 +1317,7 @@ static int CMD_SetChannelType(const void *context, const char *cmd, const char *
 
 	if(Tokenizer_GetArgsCount() < 2) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"This command requires 2 arguments");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	channel = Tokenizer_GetArgInteger(0);
 	type = Tokenizer_GetArg(1);
@@ -1326,13 +1326,13 @@ static int CMD_SetChannelType(const void *context, const char *cmd, const char *
 	if(typeCode == ChType_Error) {
 
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Channel %i type not set because %s is not a known type", channel,type);
-		return 1;
+		return CMD_RES_BAD_ARGUMENT;
 	}
 
 	CHANNEL_SetType(channel,typeCode);
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Channel %i type changed to %s", channel,type);
-	return 0;
+	return CMD_RES_OK;
 }
 
 int h_isChannelPWM(int tg_ch){
@@ -1366,7 +1366,7 @@ int h_isChannelRelay(int tg_ch) {
     }
 	return false;
 }
-static int showgpi(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t showgpi(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int i;
 	unsigned int value = 0;
 
@@ -1378,7 +1378,7 @@ static int showgpi(const void *context, const char *cmd, const char *args, int c
 		value |= ((val & 1)<<i);
 	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"GPIs are 0x%x", value);
-	return 1;
+	return CMD_RES_OK;
 }
 
 

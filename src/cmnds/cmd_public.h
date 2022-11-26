@@ -3,7 +3,17 @@
 
 #include "../new_common.h"
 
-typedef int (*commandHandler_t)(const void* context, const char* cmd, const char* args, int flags);
+typedef enum commandResult_e {
+	CMD_RES_OK,
+	CMD_RES_UNKNOWN_COMMAND,
+	CMD_RES_NOT_ENOUGH_ARGUMENTS,
+	CMD_RES_EMPTY_STRING,
+	CMD_RES_BAD_ARGUMENT,
+	CMD_RES_ERROR,
+
+} commandResult_t;
+
+typedef commandResult_t (*commandHandler_t)(const void* context, const char* cmd, const char* args, int flags);
 
 // command was entered in console (web app etc)
 #define COMMAND_FLAG_SOURCE_CONSOLE		1
@@ -23,8 +33,8 @@ typedef int (*commandHandler_t)(const void* context, const char* cmd, const char
 void CMD_Init_Early();
 void CMD_Init_Delayed();
 void CMD_RegisterCommand(const char* name, const char* args, commandHandler_t handler, const char* userDesc, void* context);
-int CMD_ExecuteCommand(const char* s, int cmdFlags);
-int CMD_ExecuteCommandArgs(const char* cmd, const char* args, int cmdFlags);
+commandResult_t CMD_ExecuteCommand(const char* s, int cmdFlags);
+commandResult_t CMD_ExecuteCommandArgs(const char* cmd, const char* args, int cmdFlags);
 
 enum EventCode {
 	CMD_EVENT_NONE,

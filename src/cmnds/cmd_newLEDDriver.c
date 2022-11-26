@@ -472,7 +472,7 @@ static int temperature(const void *context, const char *cmd, const char *args, i
 
 		LED_SetTemperature(tmp, 1);
 
-		return 1;
+		return CMD_RES_OK;
 	//}
 	//return 0;
 }
@@ -512,7 +512,7 @@ static int enableAll(const void *context, const char *cmd, const char *args, int
 	//	sendDimmerChange();
 	//	sendTemperatureChange();
 
-		return 1;
+		return CMD_RES_OK;
 	//}
 	//return 0;
 }
@@ -575,16 +575,16 @@ void LED_SetDimmer(int iVal) {
 	}
 
 }
-static int add_dimmer(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t add_dimmer(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int iVal = 0;
 
 	iVal = atoi(args);
 
 	LED_AddDimmer(iVal, 0, 0);
 
-	return 1;
+	return CMD_RES_OK;
 }
-static int dimmer(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t dimmer(const void *context, const char *cmd, const char *args, int cmdFlags){
 	//if (!wal_strnicmp(cmd, "POWERALL", 8)){
 		int iVal = 0;
 
@@ -705,7 +705,7 @@ void LED_SetFinalRGB(byte r, byte g, byte b) {
 		}
 	}
 }
-int LED_SetBaseColor(const void *context, const char *cmd, const char *args, int bAll){
+commandResult_t LED_SetBaseColor(const void *context, const char *cmd, const char *args, int bAll){
    // support both '#' prefix and not
             const char *c = args;
             int val = 0;
@@ -767,35 +767,35 @@ int LED_SetBaseColor(const void *context, const char *cmd, const char *args, int
 				sendFinalColor();
 			}
 
-        return 1;
+        return CMD_RES_OK;
   //  }
    // return 0;
 }
 
-static int basecolor_rgb(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t basecolor_rgb(const void *context, const char *cmd, const char *args, int cmdFlags){
 	return LED_SetBaseColor(context,cmd,args,0);
 }
-static int basecolor_rgbcw(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t basecolor_rgbcw(const void *context, const char *cmd, const char *args, int cmdFlags){
 	return LED_SetBaseColor(context,cmd,args,1);
 }
 
 // CONFIG-ONLY command!
-static int colorMult(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t colorMult(const void *context, const char *cmd, const char *args, int cmdFlags){
         ADDLOG_DEBUG(LOG_FEATURE_CMD, " g_cfg_colorScaleToChannel (%s) received with args %s",cmd,args);
 
 		g_cfg_colorScaleToChannel = atof(args);
 
-		return 1;
+		return CMD_RES_OK;
 	//}
 	//return 0;
 }
 // CONFIG-ONLY command!
-static int brightnessMult(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t brightnessMult(const void *context, const char *cmd, const char *args, int cmdFlags){
         ADDLOG_DEBUG(LOG_FEATURE_CMD, " brightnessMult (%s) received with args %s",cmd,args);
 
 		g_cfg_brightnessMult = atof(args);
 
-		return 1;
+		return CMD_RES_OK;
 	//}
 	//return 0;
 }
@@ -829,21 +829,21 @@ static void led_setHue(float hue){
 
 	onHSVChanged();
 }
-static int nextColor(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t nextColor(const void *context, const char *cmd, const char *args, int cmdFlags){
    
 	LED_NextColor();
 
-	return 1;
+	return CMD_RES_OK;
 }
-static int lerpSpeed(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t lerpSpeed(const void *context, const char *cmd, const char *args, int cmdFlags){
 	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
 	Tokenizer_TokenizeString(args, 0);
 
 	led_lerpSpeedUnitsPerSecond = Tokenizer_GetArgFloat(0);
 
-	return 1;
+	return CMD_RES_OK;
 }
-static int setSaturation(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t setSaturation(const void *context, const char *cmd, const char *args, int cmdFlags){
     float f;
 
 	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
@@ -856,12 +856,12 @@ static int setSaturation(const void *context, const char *cmd, const char *args,
 
 	led_setSaturation(f);
 
-	return 1;
+	return CMD_RES_OK;
 }
 float LED_GetSaturation() {
 	return g_hsv_s * 100.0f;
 }
-static int setHue(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t setHue(const void *context, const char *cmd, const char *args, int cmdFlags){
     float f;
 
 	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
@@ -871,7 +871,7 @@ static int setHue(const void *context, const char *cmd, const char *args, int cm
 
 	led_setHue(f);
 
-	return 1;
+	return CMD_RES_OK;
 }
 
 float LED_GetHue() {

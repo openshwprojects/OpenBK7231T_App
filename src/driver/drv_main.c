@@ -237,13 +237,13 @@ void DRV_StartDriver(const char* name) {
 // startDriver DGR
 // startDriver BL0942
 // startDriver BL0937
-static int DRV_Start(const void* context, const char* cmd, const char* args, int cmdFlags) {
+static commandResult_t DRV_Start(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	DRV_StartDriver(args);
-	return 1;
+	return CMD_RES_OK;
 }
-static int DRV_Stop(const void* context, const char* cmd, const char* args, int cmdFlags) {
+static commandResult_t DRV_Stop(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	DRV_StopDriver(args);
-	return 1;
+	return CMD_RES_OK;
 }
 
 void DRV_Generic_Init() {

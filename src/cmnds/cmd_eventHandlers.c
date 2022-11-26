@@ -336,7 +336,7 @@ void EventHandlers_FireEvent_String(byte eventCode, const char *argument) {
 
 }
 
-static int CMD_AddEventHandler(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_AddEventHandler(const void *context, const char *cmd, const char *args, int cmdFlags){
 	const char *eventName;
 	int reqArg;
 	int arg2;
@@ -347,12 +347,12 @@ static int CMD_AddEventHandler(const void *context, const char *cmd, const char 
 
 	if(args==0||*args==0) {
 		ADDLOG_ERROR(LOG_FEATURE_EVENT, "CMD_AddEventHandler: command requires argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 3) {
 		ADDLOG_ERROR(LOG_FEATURE_EVENT, "CMD_AddEventHandler: command requires 3 arguments");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	if(cmd[strlen("addEventHandler2")-1]=='2') {
 		bTwoArgsMode = 1;
@@ -386,7 +386,7 @@ static int CMD_AddEventHandler(const void *context, const char *cmd, const char 
 	eventCode = EVENT_ParseEventName(eventName);
 	if(eventCode == CMD_EVENT_NONE) {
 		ADDLOG_ERROR(LOG_FEATURE_EVENT, "CMD_AddEventHandler: %s is not a valid event",eventName);
-		return 1;
+		return CMD_RES_BAD_ARGUMENT;
 	}
 
 	ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddEventHandler: added %s with cmd %s",eventName,cmdToCall);
@@ -396,9 +396,9 @@ static int CMD_AddEventHandler(const void *context, const char *cmd, const char 
 		EventHandlers_AddEventHandler_Integer(eventCode,EVENT_DEFAULT,reqArg,arg2,cmdToCall);
 	}
 
-	return 1;
+	return CMD_RES_OK;
 }
-static int CMD_ClearAllHandlers(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_ClearAllHandlers(const void *context, const char *cmd, const char *args, int cmdFlags){
 
 	eventHandler_t *ev, *next;
 
@@ -415,9 +415,9 @@ static int CMD_ClearAllHandlers(const void *context, const char *cmd, const char
 
 	g_eventHandlers = 0;
 
-	return 1;
+	return CMD_RES_OK;
 }
-static int CMD_AddChangeHandler(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_AddChangeHandler(const void *context, const char *cmd, const char *args, int cmdFlags){
 	const char *eventName;
 	const char *relation;
 	int reqArg;
@@ -427,12 +427,12 @@ static int CMD_AddChangeHandler(const void *context, const char *cmd, const char
 
 	if(args==0||*args==0) {
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddChangeHandler: command requires argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 4) {
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddChangeHandler: command requires 4 arguments");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
 	eventName = Tokenizer_GetArg(0);
@@ -444,22 +444,22 @@ static int CMD_AddChangeHandler(const void *context, const char *cmd, const char
 
 	if(relationCode == EVENT_DEFAULT) {
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddChangeHandler: %s is not a valid relation",relation);
-		return 1;
+		return CMD_RES_BAD_ARGUMENT;
 	}
 	eventCode = EVENT_ParseEventName(eventName);
 	if(eventCode == CMD_EVENT_NONE) {
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddChangeHandler: %s is not a valid event",eventName);
-		return 1;
+		return CMD_RES_BAD_ARGUMENT;
 	}
 
 
 	ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddChangeHandler: added %s with cmd %s",eventName,cmdToCall);
 	EventHandlers_AddEventHandler_Integer(eventCode,relationCode,reqArg,0,cmdToCall);
 
-	return 1;
+	return CMD_RES_OK;
 }
 
-static int CMD_ListEvents(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_ListEvents(const void *context, const char *cmd, const char *args, int cmdFlags){
 	struct eventHandler_s *ev;
 	int c;
 
@@ -473,7 +473,7 @@ static int CMD_ListEvents(const void *context, const char *cmd, const char *args
 		c++;
 	}
 
-	return 1;
+	return CMD_RES_OK;
 }
 void EventHandlers_Init() {
 

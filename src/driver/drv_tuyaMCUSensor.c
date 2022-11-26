@@ -35,11 +35,14 @@ void TuyaMCU_Sensor_RunFrame() {
 		if(Main_HasMQTTConnected()) {
 			g_hadMQTT++;
 			if(g_hadMQTT > 2){
+				// count down to 0
 				g_cur_delay_publish--;
+				// has reached 0?
 				if (g_cur_delay_publish <= 0) {
-
+					MQTT_PublishOnlyDeviceChannelsIfPossible();
+					// start counting down, again from 10 (or given value)
+					g_cur_delay_publish = g_delay_between_publishes;
 				}
-				MQTT_PublishOnlyDeviceChannelsIfPossible();
 			}
 		} else {
 			g_hadMQTT = 0;

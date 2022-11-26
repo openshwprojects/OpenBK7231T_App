@@ -108,7 +108,7 @@ void RepeatingEvents_OnEverySecond() {
 
 	//addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"RepeatingEvents_OnEverySecond checked %i events, ran %i\n",c_checked,c_ran);
 }
-int RepeatingEvents_Cmd_AddRepeatingEvent(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t RepeatingEvents_Cmd_AddRepeatingEvent(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int interval;
 	int times;
 	const char *cmdToRepeat;
@@ -120,7 +120,7 @@ int RepeatingEvents_Cmd_AddRepeatingEvent(const void *context, const char *cmd, 
 
 	if(Tokenizer_GetArgsCount() < 2) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"addRepeatingEvent: requires 2 arguments\n");
-		return -1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	interval = Tokenizer_GetArgInteger(0);
 	times = Tokenizer_GetArgInteger(1);
@@ -136,9 +136,9 @@ int RepeatingEvents_Cmd_AddRepeatingEvent(const void *context, const char *cmd, 
 
 	RepeatingEvents_AddRepeatingEvent(cmdToRepeat,interval, times, userID);
 
-	return 1;
+	return CMD_RES_OK;
 }
-int RepeatingEvents_Cmd_CancelRepeatingEvent(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t RepeatingEvents_Cmd_CancelRepeatingEvent(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int userID;
 
 	// linkTuyaMCUOutputToChannel dpID channelID [varType]
@@ -147,7 +147,7 @@ int RepeatingEvents_Cmd_CancelRepeatingEvent(const void *context, const char *cm
 
 	if(Tokenizer_GetArgsCount() < 1) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"cancelRepeatingEvent: requires 1 argument\n");
-		return -1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	userID = Tokenizer_GetArgInteger(0);
 
@@ -155,7 +155,7 @@ int RepeatingEvents_Cmd_CancelRepeatingEvent(const void *context, const char *cm
 
 	RepeatingEvents_CancelRepeatingEvents(userID);
 
-	return 1;
+	return CMD_RES_OK;
 }
 void RepeatingEvents_Init() {
 	// addRepeatingEvent [DelaySeconds] [Repeats] [Command With Spaces Allowed]

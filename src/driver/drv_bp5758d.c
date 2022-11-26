@@ -183,7 +183,7 @@ void BP5758D_Write(byte *rgbcw) {
 // Also see here for Datasheet table:
 // https://user-images.githubusercontent.com/19175445/193464004-d5e8072b-d7a8-4950-8f06-118c01796616.png
 // https://imgur.com/a/VKM6jOb
-static int BP5758D_Current(const void *context, const char *cmd, const char *args, int flags){
+static commandResult_t BP5758D_Current(const void *context, const char *cmd, const char *args, int flags){
 	byte val;
 	Tokenizer_TokenizeString(args,0);
 
@@ -194,10 +194,10 @@ static int BP5758D_Current(const void *context, const char *cmd, const char *arg
 	val = Tokenizer_GetArgInteger(0);
 	// reinit bulb
 	BP5758D_SetCurrent(val);
-	return 1;
+	return CMD_RES_OK;
 }
 
-static int BP5758D_RGBCW(const void *context, const char *cmd, const char *args, int flags){
+static commandResult_t BP5758D_RGBCW(const void *context, const char *cmd, const char *args, int flags){
 	const char *c = args;
 	byte col[5] = { 0, 0, 0, 0, 0 };
 	int ci;
@@ -234,7 +234,7 @@ static int BP5758D_RGBCW(const void *context, const char *cmd, const char *args,
 
 	BP5758D_Write(col);
 
-	return 0;
+	return CMD_RES_OK;
 }
 // BP5758D_Map is used to map the RGBCW indices to BP5758D indices
 // This is how you uset RGB CW order:
@@ -242,7 +242,7 @@ static int BP5758D_RGBCW(const void *context, const char *cmd, const char *args,
 // This is the order used on my polish Spectrum WOJ14415 bulb:
 // BP5758D_Map 2 1 0 4 3
 
-static int BP5758D_Map(const void *context, const char *cmd, const char *args, int flags){
+static commandResult_t BP5758D_Map(const void *context, const char *cmd, const char *args, int flags){
 
 	Tokenizer_TokenizeString(args,0);
 
@@ -261,7 +261,7 @@ static int BP5758D_Map(const void *context, const char *cmd, const char *args, i
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "BP5758D_Map new order is %i %i %i    %i %i! ",
 		(int)g_channelOrder[0],(int)g_channelOrder[1],(int)g_channelOrder[2],(int)g_channelOrder[3],(int)g_channelOrder[4]);
 
-	return 0;
+	return CMD_RES_OK;
 }
 
 

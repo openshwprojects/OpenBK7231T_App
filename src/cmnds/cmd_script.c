@@ -544,18 +544,18 @@ void SVM_StartScript(const char *fname, const char *label, int uniqueID) {
 	return;
 }
 
-static int CMD_GoTo(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_GoTo(const void *context, const char *cmd, const char *args, int cmdFlags){
 	const char *fname;
 	const char *label;
 
 	if(args==0||*args==0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_GoTo: command requires argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 1) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_GoTo: command requires 1 argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	if(g_activeThread == 0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_GoTo: this can be only used from a script");
@@ -576,22 +576,22 @@ static int CMD_GoTo(const void *context, const char *cmd, const char *args, int 
 		SVM_GoTo(g_activeThread,fname,label);
 	}
 
-	return 1;
+	return CMD_RES_OK;
 }
 
-static int CMD_StartScript(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_StartScript(const void *context, const char *cmd, const char *args, int cmdFlags){
 	const char *fname;
 	const char *label;
 	int uniqueID;
 
 	if(args==0||*args==0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: command requires argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 1) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: command requires 1 argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
 	fname = Tokenizer_GetArg(0);
@@ -602,24 +602,24 @@ static int CMD_StartScript(const void *context, const char *cmd, const char *arg
 	SVM_StartScript(fname,label,uniqueID);
 
 
-	return 1;
+	return CMD_RES_OK;
 }
-static int CMD_Delay_s(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_Delay_s(const void *context, const char *cmd, const char *args, int cmdFlags){
 	float del;
 	int delMS;
 
 	if(args==0||*args==0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_s: command requires argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 1) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_s: command requires 1 argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	if(g_activeThread == 0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_s: this can be only used from a script");
-		return 1;
+		return CMD_RES_ERROR;
 	}
 
 	del = Tokenizer_GetArgFloat(0);
@@ -628,23 +628,23 @@ static int CMD_Delay_s(const void *context, const char *cmd, const char *args, i
 	g_activeThread->currentDelayMS += delMS;
 
 
-	return 1;
+	return CMD_RES_OK;
 }
-static int CMD_Delay_ms(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_Delay_ms(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int del;
 
 	if(args==0||*args==0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_ms: command requires argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 1) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_ms: command requires 1 argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	if(g_activeThread == 0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_ms: this can be only used from a script");
-		return 1;
+		return CMD_RES_ERROR;
 	}
 
 	del = Tokenizer_GetArgInteger(0);
@@ -653,13 +653,13 @@ static int CMD_Delay_ms(const void *context, const char *cmd, const char *args, 
 	g_activeThread->currentDelayMS += del;
 
 
-	return 1;
+	return CMD_RES_OK;
 }
-static int CMD_Return(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_Return(const void *context, const char *cmd, const char *args, int cmdFlags){
 
 	if(g_activeThread == 0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Return: this can be only used from a script");
-		return 1;
+		return CMD_RES_ERROR;
 	}
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Return: thread will return\n");
@@ -667,16 +667,16 @@ static int CMD_Return(const void *context, const char *cmd, const char *args, in
 	g_activeThread->curLine = 0;
 
 
-	return 1;
+	return CMD_RES_OK;
 }
 
-static int CMD_StopScript(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_StopScript(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int idToStop, excludeSelf;
 
 	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 1) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StopScript: command requires 1 argument (unique ID)");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
 	idToStop = Tokenizer_GetArgInteger(0);
@@ -684,7 +684,7 @@ static int CMD_StopScript(const void *context, const char *cmd, const char *args
 
 	SVM_StopScripts(idToStop,excludeSelf);
 
-	return 1;
+	return CMD_RES_OK;
 }
 int CMD_GetCountActiveScriptThreads() {
 	scriptInstance_t *t;
@@ -702,7 +702,7 @@ int CMD_GetCountActiveScriptThreads() {
 
 	return cnt;
 }
-static int CMD_ListScripts(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_ListScripts(const void *context, const char *cmd, const char *args, int cmdFlags){
 	scriptInstance_t *t;
 	int cnt;
 
@@ -720,16 +720,16 @@ static int CMD_ListScripts(const void *context, const char *cmd, const char *arg
 		t = t->next;
 	}
 
-	return 1;
+	return CMD_RES_OK;
 }
-static int CMD_StopAllScripts(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_StopAllScripts(const void *context, const char *cmd, const char *args, int cmdFlags){
 
 
 	SVM_StopAllScripts();
 
-	return 1;
+	return CMD_RES_OK;
 }
-static int CMD_resetSVM(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_resetSVM(const void *context, const char *cmd, const char *args, int cmdFlags){
 
 
 	// stop scripts
@@ -737,7 +737,7 @@ static int CMD_resetSVM(const void *context, const char *cmd, const char *args, 
 	// clear files
 	SVM_FreeAllFiles();
 
-	return 1;
+	return CMD_RES_OK;
 }
 void CMD_InitScripting(){
 	//cmddetail:{"name":"startScript","args":"",

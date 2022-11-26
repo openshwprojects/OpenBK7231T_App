@@ -169,7 +169,7 @@ void DRV_I2C_AddDevice_TC74_Internal(int busType,int address, int targetChannel)
 
 	DRV_I2C_AddNextDevice((i2cDevice_t*)dev);
 }
-int DRV_I2C_AddDevice_TC74(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t DRV_I2C_AddDevice_TC74(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *i2cModuleStr;
 	int address;
 	int targetChannel;
@@ -193,7 +193,7 @@ int DRV_I2C_AddDevice_TC74(const void *context, const char *cmd, const char *arg
 
 	return 1;
 }
-int DRV_I2C_AddDevice_MCP23017(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t DRV_I2C_AddDevice_MCP23017(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *i2cModuleStr;
 	int address;
 	i2cBusType_t busType;
@@ -206,18 +206,18 @@ int DRV_I2C_AddDevice_MCP23017(const void *context, const char *cmd, const char 
 
 	if(DRV_I2C_FindDevice(busType,address)) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_AddDevice_MCP23017: there is already some device on this bus with such addr\n");
-		return 1;
+		return CMD_RES_BAD_ARGUMENT;
 	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_AddDevice_MCP23017: module %s, address %i\n", i2cModuleStr, address);
 
 
 	DRV_I2C_AddDevice_MCP23017_Internal(busType,address);
 
-	return 1;
+	return CMD_RES_OK;
 }
 
 //
-int DRV_I2C_AddDevice_PCF8574(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t DRV_I2C_AddDevice_PCF8574(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *i2cModuleStr;
 	int address;
 	i2cBusType_t busType;
@@ -231,7 +231,7 @@ int DRV_I2C_AddDevice_PCF8574(const void *context, const char *cmd, const char *
 
 	if(DRV_I2C_FindDevice(busType,address)) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_AddDevice_PCF8574: there is already some device on this bus with such addr\n");
-		return 1;
+		return CMD_RES_BAD_ARGUMENT;
 	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_AddDevice_PCF8574: module %s, address %i\n", i2cModuleStr, address);
 
@@ -242,10 +242,10 @@ int DRV_I2C_AddDevice_PCF8574(const void *context, const char *cmd, const char *
 
 	DRV_I2C_AddDevice_PCF8574_Internal(busType,address,lcd_cols,lcd_rows,charsize);
 
-	return 1;
+	return CMD_RES_OK;
 }
 
-int DRV_I2C_AddDevice_LCM1602(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t DRV_I2C_AddDevice_LCM1602(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *i2cModuleStr;
 	int address;
 	i2cBusType_t busType;
@@ -258,13 +258,13 @@ int DRV_I2C_AddDevice_LCM1602(const void *context, const char *cmd, const char *
 
 	if(DRV_I2C_FindDevice(busType,address)) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_AddDevice_LCM1602: there is already some device on this bus with such addr\n");
-		return 1;
+		return CMD_RES_BAD_ARGUMENT;
 	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_AddDevice_LCM1602: module %s, address %i\n", i2cModuleStr, address);
 
 	// DRV_I2C_AddDevice_LCM1602_Internal(busType,address);
 
-	return 1;
+	return CMD_RES_OK;
 }
 //
 //	TC74 - I2C temperature sensor - read only single integer value, temperature in C

@@ -1083,16 +1083,16 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 	return MQTT_PublishMain(mqtt_client, channelNameStr, valueStr, flags, true);
 }
 // This console command will trigger a publish of all used variables (channels and extra stuff)
-OBK_Publish_Result MQTT_PublishAll(const void* context, const char* cmd, const char* args, int cmdFlags) {
+commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	MQTT_PublishWholeDeviceState_Internal(true);
-	return 1;// TODO make return values consistent for all console commands
+	return CMD_RES_OK;// TODO make return values consistent for all console commands
 }
 // This console command will trigger a publish of runtime variables
-OBK_Publish_Result MQTT_PublishChannels(const void* context, const char* cmd, const char* args, int cmdFlags) {
+commandResult_t MQTT_PublishChannels(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	MQTT_PublishOnlyDeviceChannelsIfPossible();
-	return 1;// TODO make return values consistent for all console commands
+	return CMD_RES_OK;// TODO make return values consistent for all console commands
 }
-OBK_Publish_Result MQTT_PublishCommand(const void* context, const char* cmd, const char* args, int cmdFlags) {
+commandResult_t MQTT_PublishCommand(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	const char* topic, * value;
 	OBK_Publish_Result ret;
 
@@ -1100,14 +1100,14 @@ OBK_Publish_Result MQTT_PublishCommand(const void* context, const char* cmd, con
 
 	if (Tokenizer_GetArgsCount() < 2) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish command requires two arguments (topic and value)");
-		return 0;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	topic = Tokenizer_GetArg(0);
 	value = Tokenizer_GetArg(1);
 
 	ret = MQTT_PublishMain_StringString(topic, value, 0);
 
-	return ret;
+	return CMD_RES_OK;
 }
 
 /****************************************************************************************************
@@ -1229,7 +1229,7 @@ static OS_Timer_t timer;
 static beken_timer_t g_mqtt_timer;
 #endif
 
-int MQTT_StartMQTTTestThread(const void* context, const char* cmd, const char* args, int cmdFlags)
+commandResult_t MQTT_StartMQTTTestThread(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
 	if (info != NULL)
 	{
@@ -1238,13 +1238,13 @@ int MQTT_StartMQTTTestThread(const void* context, const char* cmd, const char* a
 		info->TestStartTick = xTaskGetTickCount();
 		info->msg_cnt = 0;
 		info->report_published = false;
-		return 0;
+		return CMD_RES_OK;
 	}
 
 	info = (BENCHMARK_TEST_INFO*)os_malloc(sizeof(BENCHMARK_TEST_INFO));
 	if (info == NULL)
 	{
-		return -1;
+		return CMD_RES_ERROR;
 	}
 
 	memset(info, 0, sizeof(BENCHMARK_TEST_INFO));
@@ -1263,7 +1263,7 @@ int MQTT_StartMQTTTestThread(const void* context, const char* cmd, const char* a
 	if (OS_TimerCreate(&timer, OS_TIMER_PERIODIC, MQTT_Test_Tick, (void*)info, MQTT_TMR_DURATION) != OS_OK)
 	{
 		printf("PIN_AddCommands timer create failed\n");
-		return -1;
+		return CMD_RES_ERROR;
 	}
 	OS_TimerStart(&timer); /* start OS timer to feed watchdog */
 #else
@@ -1274,7 +1274,7 @@ int MQTT_StartMQTTTestThread(const void* context, const char* cmd, const char* a
 	result = rtos_start_timer(&g_mqtt_timer);
 	ASSERT(kNoErr == result);
 #endif
-	return 0;
+	return CMD_RES_OK;
 }
 
 /****************************************************************************************************

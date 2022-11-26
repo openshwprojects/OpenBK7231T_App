@@ -457,7 +457,7 @@ struct tm * TuyaMCU_Get_NTP_Time() {
     return ptm;
 }
 // 
-int TuyaMCU_Fake_Hex(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_Fake_Hex(const void *context, const char *cmd, const char *args, int cmdFlags) {
     //const char *args = CMD_GetArg(1);
     //byte rawData[128];
     //int curCnt;
@@ -465,7 +465,7 @@ int TuyaMCU_Fake_Hex(const void *context, const char *cmd, const char *args, int
     //curCnt = 0;
     if(!(*args)) {
         addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_Fake_Hex: requires 1 argument (hex string, like FFAABB00CCDD\n");
-        return -1;
+        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
     while(*args) {
         byte b;
@@ -509,11 +509,11 @@ Info:TuyaMCU:TuyaMCU_V0_ParseRealTimeWithRecordStorage: raw data 1 byte:
 Info:GEN:No change in channel 1 (still set to 0) - ignoring
 */
 
-int TuyaMCU_Send_Hex(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_Send_Hex(const void *context, const char *cmd, const char *args, int cmdFlags) {
     //const char *args = CMD_GetArg(1);
     if(!(*args)) {
         addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_Send_Hex: requires 1 argument (hex string, like FFAABB00CCDD\n");
-        return -1;
+        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
     while(*args) {
         byte b;
@@ -523,10 +523,10 @@ int TuyaMCU_Send_Hex(const void *context, const char *cmd, const char *args, int
 
         args += 2;
     }
-    return 1;
+    return CMD_RES_OK;
 }
 
-int TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, const char *args, int cmdFlags) {
     int dpId;
     const char *dpTypeString;
     int dpType;
@@ -540,7 +540,7 @@ int TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, con
 	argsCount = Tokenizer_GetArgsCount();
     if(argsCount < 2) {
         addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_LinkTuyaMCUOutputToChannel: requires 3 arguments (dpId, dpType, channelIndex)\n");
-        return -1;
+        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
     dpId = Tokenizer_GetArgInteger(0);
     dpTypeString = Tokenizer_GetArg(1);
@@ -562,7 +562,7 @@ int TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, con
             dpType = atoi(dpTypeString);
         } else {
             addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_LinkTuyaMCUOutputToChannel: %s is not a valid var type\n",dpTypeString);
-            return -1;
+            return CMD_RES_BAD_ARGUMENT;
         }
     }
 	if (argsCount < 2) {
@@ -574,16 +574,16 @@ int TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, con
 
     TuyaMCU_MapIDToChannel(dpId, dpType, channelID);
 
-    return 1;
+    return CMD_RES_OK;
 }
 
-int TuyaMCU_Send_SetTime_Current(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_Send_SetTime_Current(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
     TuyaMCU_Send_SetTime(TuyaMCU_Get_NTP_Time());
 
-    return 1;
+    return CMD_RES_OK;
 }
-int TuyaMCU_Send_SetTime_Example(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_Send_SetTime_Example(const void *context, const char *cmd, const char *args, int cmdFlags) {
     struct tm testTime;
 
     testTime.tm_year = 2012;
@@ -595,7 +595,7 @@ int TuyaMCU_Send_SetTime_Example(const void *context, const char *cmd, const cha
     testTime.tm_sec = 32;
 
     TuyaMCU_Send_SetTime(&testTime);
-    return 1;
+    return CMD_RES_OK;
 }
 
 void TuyaMCU_Send(byte *data, int size) {
@@ -613,38 +613,38 @@ void TuyaMCU_Send(byte *data, int size) {
     addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"\nWe sent %i bytes to Tuya MCU\n",size+1);
 }
 
-int TuyaMCU_SetDimmerRange(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_SetDimmerRange(const void *context, const char *cmd, const char *args, int cmdFlags) {
     Tokenizer_TokenizeString(args,0);
 
     if(Tokenizer_GetArgsCount() < 2) {
         addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"tuyaMcu_setDimmerRange: requires 2 arguments (dimmerRangeMin, dimmerRangeMax)\n");
-        return -1;
+        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
 
     g_dimmerRangeMin = Tokenizer_GetArgInteger(0);
     g_dimmerRangeMax = Tokenizer_GetArgInteger(1);
 
-    return 1;
+    return CMD_RES_OK;
 }
 
-int TuyaMCU_SendHeartbeat(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_SendHeartbeat(const void *context, const char *cmd, const char *args, int cmdFlags) {
     TuyaMCU_SendCommandWithData(TUYA_CMD_HEARTBEAT, NULL, 0);
 
-    return 1;
+    return CMD_RES_OK;
 }
 
-int TuyaMCU_SendQueryProductInformation(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_SendQueryProductInformation(const void *context, const char *cmd, const char *args, int cmdFlags) {
     TuyaMCU_SendCommandWithData(TUYA_CMD_QUERY_PRODUCT, NULL, 0);
 
-    return 1;
+    return CMD_RES_OK;
 }
-int TuyaMCU_SendQueryState(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_SendQueryState(const void *context, const char *cmd, const char *args, int cmdFlags) {
     TuyaMCU_SendCommandWithData(TUYA_CMD_QUERY_STATE, NULL, 0);
 
-    return 1;
+    return CMD_RES_OK;
 }
 
-int TuyaMCU_SendStateCmd(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_SendStateCmd(const void *context, const char *cmd, const char *args, int cmdFlags) {
     int dpId;
     int dpType;
     int value;
@@ -653,7 +653,7 @@ int TuyaMCU_SendStateCmd(const void *context, const char *cmd, const char *args,
 
     if(Tokenizer_GetArgsCount() < 3) {
         addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"tuyaMcu_sendState: requires 3 arguments (dpId, dpType, value)\n");
-        return -1;
+        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
 
     dpId = Tokenizer_GetArgInteger(0);
@@ -662,13 +662,13 @@ int TuyaMCU_SendStateCmd(const void *context, const char *cmd, const char *args,
 
     TuyaMCU_SendState(dpId, dpType, (uint8_t *)&value);
 
-    return 1;
+    return CMD_RES_OK;
 }
 
-int TuyaMCU_SendMCUConf(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_SendMCUConf(const void *context, const char *cmd, const char *args, int cmdFlags) {
     TuyaMCU_SendCommandWithData(TUYA_CMD_MCU_CONF, NULL, 0);
 
-    return 1;
+    return CMD_RES_OK;
 }
 
 void Tuya_SetWifiState(uint8_t state)
@@ -1031,12 +1031,12 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
     }
 }
 
-int TuyaMCU_FakePacket(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_FakePacket(const void *context, const char *cmd, const char *args, int cmdFlags) {
     byte packet[256];
     int c = 0;
     if(!(*args)) {
         addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_FakePacket: requires 1 argument (hex string, like FFAABB00CCDD\n");
-        return -1;
+        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
     while(*args) {
         byte b;
@@ -1049,7 +1049,7 @@ int TuyaMCU_FakePacket(const void *context, const char *cmd, const char *args, i
         args += 2;
     }
     TuyaMCU_ProcessIncoming(packet,c);
-    return 1;
+    return CMD_RES_OK;
 }
 void TuyaMCU_RunFrame() {
     byte data[128];
@@ -1174,17 +1174,17 @@ void TuyaMCU_RunFrame() {
 }
 
 
-int TuyaMCU_SetBaudRate(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_SetBaudRate(const void *context, const char *cmd, const char *args, int cmdFlags) {
     Tokenizer_TokenizeString(args,0);
 
     if(Tokenizer_GetArgsCount() < 1) {
         addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_SetBaudRate: requires 1 arguments (baudRate)\n");
-        return -1;
+        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
 
     g_baudRate = Tokenizer_GetArgInteger(0);
     
-    return 1;
+    return CMD_RES_OK;
 }
 
 

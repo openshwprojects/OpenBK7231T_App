@@ -692,10 +692,10 @@ static int http_getlog(http_request_t* request) {
 }
 
 
-int log_command(const void* context, const char* cmd, const char* args, int cmdFlags) {
+commandResult_t log_command(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int result = 0;
-	if (!cmd) return -1;
-	if (!args) return -1;
+	if (!cmd) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	if (!args) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	do {
 		if (!stricmp(cmd, "loglevel")) {
 			int res, level;
@@ -703,17 +703,17 @@ int log_command(const void* context, const char* cmd, const char* args, int cmdF
 			if (res == 1) {
 				if ((level >= 0) && (level <= 9)) {
 					loglevel = level;
-					result = 1;
+					result = CMD_RES_OK;
 					ADDLOG_DEBUG(LOG_FEATURE_CMD, "loglevel set %d", level);
 				}
 				else {
 					ADDLOG_ERROR(LOG_FEATURE_CMD, "loglevel %d out of range", level);
-					result = -1;
+					result = CMD_RES_BAD_ARGUMENT;
 				}
 			}
 			else {
 				ADDLOG_ERROR(LOG_FEATURE_CMD, "loglevel '%s' invalid? current is %i", args, loglevel);
-				result = -1;
+				result = CMD_RES_BAD_ARGUMENT;
 			}
 			break;
 		}
@@ -728,16 +728,16 @@ int log_command(const void* context, const char* cmd, const char* args, int cmdF
 						logfeatures |= (1 << feat);
 					}
 					ADDLOG_DEBUG(LOG_FEATURE_CMD, "logfeature set 0x%08X", logfeatures);
-					result = 1;
+					result = CMD_RES_OK;
 				}
 				else {
 					ADDLOG_ERROR(LOG_FEATURE_CMD, "logfeature %d out of range", feat);
-					result = -1;
+					result = CMD_RES_BAD_ARGUMENT;
 				}
 			}
 			else {
 				ADDLOG_ERROR(LOG_FEATURE_CMD, "logfeature %s invalid?", args);
-				result = -1;
+				result = CMD_RES_BAD_ARGUMENT;
 			}
 			break;
 		}
@@ -748,7 +748,7 @@ int log_command(const void* context, const char* cmd, const char* args, int cmdF
 			else {
 				direct_serial_log = 0;
 			}
-			result = 1;
+			result = CMD_RES_OK;
 			break;
 		}
 		if (!stricmp(cmd, "logdelay")) {
@@ -760,7 +760,7 @@ int log_command(const void* context, const char* cmd, const char* args, int cmdF
 			else {
 				log_delay = 0;
 			}
-			result = 1;
+			result = CMD_RES_OK;
 			break;
 		}
 
