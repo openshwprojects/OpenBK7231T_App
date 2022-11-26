@@ -15,7 +15,7 @@ inline float fMIN(float a, float b) {
 		return a;
 	return b;
 }
-void CLine::moveTowards(const Coord &tg, float dt) {
+float CLine::moveTowards(const Coord &tg, float dt) {
 	const float l2 = pos.distSq(pos2);  // i.e. |w-v|^2 -  avoid a sqrt
 	float t = fMAX(0, fMIN(1, Coord::dot(tg - pos, pos2 - pos) / l2));
 	const Coord projection = pos + t * (pos2 - pos);  // Projection falls on the segment
@@ -27,6 +27,7 @@ void CLine::moveTowards(const Coord &tg, float dt) {
 		pos += dir * dt;
 		pos2 += dir * dt;
 	}
+	return rem;
 }
 void CLine::recalcBoundsSelf() {
 	bounds.clear();

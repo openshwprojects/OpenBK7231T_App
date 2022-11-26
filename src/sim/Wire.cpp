@@ -40,6 +40,8 @@ void CWire::addPoint(const Coord &p) {
 	junctions.push_back(j);
 	if (prev != 0) {
 		CEdge *e = new CEdge(prev, j);
+		prev->addEdge(e);
+		j->addEdge(e);
 		e->setParent(this);
 		edges.push_back(e);
 	}

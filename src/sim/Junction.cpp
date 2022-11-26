@@ -26,6 +26,13 @@ bool CJunction::hasLinkedOnlyWires() const {
 	}
 	return true;
 }
+bool CJunction::shouldLightUpBulb(class CJunction *other) {
+	float v = other->getVoltage();
+	float v2 = this->getVoltage();
+	if (abs(v - v2) > 1.5f)
+		return true;
+	return false;
+}
 void CJunction::translateLinked(const Coord &o) {
 	for (int i = 0; i < linked.size(); i++) {
 		CJunction *oj = linked[i];
@@ -46,7 +53,15 @@ void CJunction::translate(const Coord &o) {
 }
 void CJunction::drawShape() {
 	glPointSize(8.0f);
-	glColor3f(0, 1, 0);
+	if (voltage < 0) {
+		glColor3f(0, 1, 0);
+	} else if (voltage < 1) {
+		glColor3f(0, 0, 1);
+	}
+	else {
+		glColor3f(1, 0, 0);
+	}
+	//glColor3f(0, 1, 0);
 	glBegin(GL_POINTS);
 	glVertex2f(getX(), getY());
 	glEnd();

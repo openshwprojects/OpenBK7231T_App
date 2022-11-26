@@ -16,7 +16,7 @@ public:
 		pos.add(p.getX(), p.getY());
 		pos2.add(p.getX(), p.getY());
 	}
-	virtual void moveTowards(const Coord &tg, float dt);
+	virtual float moveTowards(const Coord &tg, float dt);
 	virtual void rotateDegreesAround_internal(float f, const Coord &p);
 	virtual void recalcBoundsSelf();
 	virtual void drawShape();

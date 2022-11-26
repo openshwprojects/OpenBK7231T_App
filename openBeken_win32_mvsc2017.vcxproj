@@ -515,7 +515,9 @@
     <ClCompile Include="src\selftest\selftest_tokenizer.c" />
     <ClCompile Include="src\selftest\selftest_tuyaMCU.c" />
     <ClCompile Include="src\sim\Circle.cpp" />
+    <ClCompile Include="src\sim\Controller_Bulb.cpp" />
     <ClCompile Include="src\sim\Controller_Button.cpp" />
+    <ClCompile Include="src\sim\Controller_SimulatorLink.cpp" />
     <ClCompile Include="src\sim\CursorManager.cpp" />
     <ClCompile Include="src\sim\Junction.cpp" />
     <ClCompile Include="src\sim\Line.cpp" />
@@ -528,6 +530,7 @@
     <ClCompile Include="src\sim\Texture.cpp" />
     <ClCompile Include="src\sim\TextureManager.cpp" />
     <ClCompile Include="src\sim\Tool_Delete.cpp" />
+    <ClCompile Include="src\sim\Tool_Info.cpp" />
     <ClCompile Include="src\sim\Tool_Move.cpp" />
     <ClCompile Include="src\sim\Tool_Use.cpp" />
     <ClCompile Include="src\sim\Tool_Wire.cpp" />
@@ -559,6 +562,7 @@
     <ClInclude Include="src\sim\sim_local.h" />
     <ClInclude Include="src\sim\Texture.h" />
     <ClInclude Include="src\sim\TextureManager.h" />
+    <ClInclude Include="src\sim\Tool_Info.h" />
     <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\include\net_param_pub.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>

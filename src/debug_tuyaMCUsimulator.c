@@ -4,6 +4,8 @@
 
 const char *dataToSimulate[] =
 {
+	// dummy entry in order to avoid problems with empty table
+	"",
 #if 0
 #elif 0
 	"55AA0307000801020004000000041C",
@@ -19,7 +21,7 @@ const char *dataToSimulate[] =
 	"55AA030700086D0200040000000387",
 	"55AA030700086E0200040000001095",
 	"55AA030700086F020004000001BE45",
-#elif 0
+#elif 1
 
 #else
 	"55AA030700130600000F000000BF0000013C01F800064F0930B4",
@@ -37,6 +39,8 @@ const char *curP = 0;
 int current_delay_to_wait_ms = 1000;
 
 void NewTuyaMCUSimulator_RunQuickTick(int deltaMS) {
+	byte b;
+
 	if (g_totalStrings <= 0) {
 		return;
 	}
@@ -48,9 +52,11 @@ void NewTuyaMCUSimulator_RunQuickTick(int deltaMS) {
 		curP = dataToSimulate[curString];
 	}
 
-	byte b = hexbyte(curP);
-	UART_AppendByteToCircularBuffer(b);
-	curP += 2;
+	if (*curP != 0) {
+		b = hexbyte(curP);
+		UART_AppendByteToCircularBuffer(b);
+		curP += 2;
+	}
 	if (*curP == 0) {
 		curString++;
 		if (curString >= g_totalStrings)

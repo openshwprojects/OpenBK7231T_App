@@ -13,14 +13,29 @@ void CCircle::rotateDegreesAround_internal(float f, const Coord &p) {
 	pos = pos.rotateDegreesAround(f, p);
 }
 void CCircle::drawShape() {
-	glBegin(GL_LINE_LOOP);
-	for (int i = 0; i < corners; i++) {
-		float a = (2.0f * M_PI) * (i / (float)corners);
-		Coord p = this->pos;
-		p.addX(sin(a) * radius);
-		p.addY(cos(a) * radius);
-		glVertex2fv(p);
+	if (bFill) {
+		glColor3f(1, 1, 0);
+		glBegin(GL_TRIANGLE_FAN);
+		for (int i = 0; i < corners; i++) {
+			float a = (2.0f * M_PI) * (i / (float)corners);
+			Coord p = this->pos;
+			p.addX(sin(a) * radius);
+			p.addY(cos(a) * radius);
+			glVertex2fv(p);
+		}
+		glEnd();
 	}
-	glEnd();
+	else {
+		glColor3f(0, 1, 0);
+		glBegin(GL_LINE_LOOP);
+		for (int i = 0; i < corners; i++) {
+			float a = (2.0f * M_PI) * (i / (float)corners);
+			Coord p = this->pos;
+			p.addX(sin(a) * radius);
+			p.addY(cos(a) * radius);
+			glVertex2fv(p);
+		}
+		glEnd();
+	}
 }
 #endif

@@ -79,16 +79,15 @@ const Coord &CEdge::getPositionA() const {
 const Coord &CEdge::getPositionB() const {
 	return b->getPosition();
 }
-int main(int argc, char **argv)
+CSimulator *sim;
+extern "C" int SIM_CreateWindow(int argc, char **argv)
 {
 	glutInit(&argc, argv);
-	CSimulator *sim = new CSimulator();
+	sim = new CSimulator();
 	sim->createWindow();
-
-	while (1)
-	{
-		sim->drawWindow();
-	}
 	return 0;
+}
+extern "C" void SIM_RunWindow() {
+	sim->drawWindow();
 }
 #endif

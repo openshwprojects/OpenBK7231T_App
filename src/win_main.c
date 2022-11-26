@@ -220,9 +220,10 @@ void Win_DoUnitTests() {
 	// this is slowest
 	Test_TuyaMCU_Basic();
 }
-int __cdecl main(void)
+#include "sim/sim_public.h"
+int __cdecl main(int argc, char **argv)
 {
-
+	bool bWantsUnitTests = false;
     WSADATA wsaData;
     int iResult;
     // Initialize Winsock
@@ -232,12 +233,16 @@ int __cdecl main(void)
         return 1;
     }
 
+	SIM_CreateWindow(argc, argv);
+
 	Main_Init();
 
 	while(1) {
 		Sleep(5);
 		Sim_RunFrame();
-		if (win_frameNum == 50) {
+		SIM_RunWindow();
+
+		if (bWantsUnitTests && win_frameNum == 50) {
 			Win_DoUnitTests();
 		}
 	}

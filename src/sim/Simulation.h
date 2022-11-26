@@ -4,9 +4,17 @@
 #include "sim_local.h"
 
 class CSimulation {
-	std::vector<class CObject*> objects;
-	std::vector<class CWire*> wires;
+	TArray<class CObject*> objects;
+	TArray<class CWire*> wires;
 
+	void removeJunctions(class CShape *s);
+	void removeJunction(class CJunction *ju);
+	bool isJunctionOnList(class CJunction *ju);
+	void registerJunction(class CJunction *ju);
+	void registerJunctions(class CWire *w);
+	void registerJunctions(class CShape *s);
+	void floodJunctions(CJunction *ju, float voltage);
+	TArray<class CJunction*> junctions;
 public:
 
 	void recalcBounds();
@@ -19,7 +27,7 @@ public:
 	void createDemo();
 	void matchAllJunctions();
 	void drawSim();
-	class CObject *addObject(CObject *o);
+	class CObject *addObject(class CObject *o);
 	class CWire *addWire(const class Coord &a, const class Coord &b);
 	class CShape *findShapeByBoundsPoint(const class Coord &p);
 	void destroyObject(CShape *s);

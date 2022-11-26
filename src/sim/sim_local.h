@@ -38,5 +38,13 @@ extern int WinWidth;
 extern int WinHeight;
 extern int gridSize;
 
+template <typename T>
+class TArray : public std::vector<T> {
+public:
+	void remove(T o) {
+		this->erase(std::remove(this->begin(), this->end(), o), this->end());
+	}
+};
+
 #endif
 #endif

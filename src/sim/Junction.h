@@ -19,20 +19,59 @@ public:
 	virtual void translate(const Coord &o);
 	const Coord &getPositionA() const;
 	const Coord &getPositionB() const;
+	class CJunction *getOther(CJunction *x) {
+		if (x == a)
+			return b;
+		return a;
+	}
 };
 
 class CJunction : public CShape {
 	std::string name;
-	std::vector<class CJunction *> linked;
+	int gpioIndex;
+	TArray<class CJunction *> linked;
+	TArray<class CEdge*> myEdges;
+	float voltage;
+	int visitCount;
+	bool bCurrentSource;
 public:
-	CJunction(int _x, int _y, const char *s) {
+	CJunction(int _x, int _y, const char *s, int gpio = -1) {
 		this->setPosition(_x, _y);
 		this->name = s;
+		this->gpioIndex = gpio;
+		this->voltage = -1;
+		this->visitCount = 0;
+		this->bCurrentSource = false;
+	}
+	void setCurrentSource(bool b) {
+		bCurrentSource = b;
+	}
+	bool isCurrentSource() const {
+		return bCurrentSource;
+	}
+	bool hasName(const char *s) const {
+		return !stricmp(s, name.c_str());
+	}
+	float getVoltage() const {
+		return voltage;
+	}
+	int getGPIO() const {
+		return gpioIndex;
+	}
+	void setVoltage(float f) {
+		voltage = f;
+	}
+	void setVisitCount(int i) {
+		visitCount = i;
+	}
+	int getVisitCount() const {
+		return visitCount;
 	}
 	float drawInformation2D(float x, float h);
 	virtual const char *getClassName() const {
 		return "CJunction";
 	}
+	bool shouldLightUpBulb(class CJunction *other);
 	virtual ~CJunction();
 	void translateLinked(const Coord &o);
 	void setPosLinked(const Coord &o);
@@ -41,6 +80,21 @@ public:
 	bool isWireJunction() const;
 	void clearLinks() {
 		linked.clear();
+	}
+	int getLinksCount() const {
+		return linked.size();
+	}
+	class CJunction *getLink(int i) {
+		return linked[i];
+	}
+	int getEdgesCount() const {
+		return myEdges.size();
+	}
+	void addEdge(CEdge *ed) {
+		myEdges.push_back(ed);
+	}
+	class CEdge *getEdge(int i) {
+		return myEdges[i];
 	}
 	virtual bool isJunction() const {
 		return true;

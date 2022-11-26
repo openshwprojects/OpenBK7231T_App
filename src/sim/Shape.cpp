@@ -81,8 +81,8 @@ class CShape* CShape::addShape(CShape *p) {
 	shapes.push_back(p);
 	return p;
 }
-class CShape* CShape::addJunction(int x, int y, const char *name) {
-	CJunction *n = new CJunction(x, y, name);
+class CJunction* CShape::addJunction(int x, int y, const char *name, int gpio) {
+	CJunction *n = new CJunction(x, y, name, gpio);
 	addShape(n);
 	return n;
 }
@@ -128,10 +128,14 @@ void CShape::rotateDegreesAround_internal(float f, const Coord &p) {
 
 
 
-void CShape::moveTowards(const Coord &tg, float dt) {
+float CShape::moveTowards(const Coord &tg, float dt) {
 	pos = pos.moveTowards(tg, dt);
+	return pos.dist(tg);
 }
 void CShape::drawWithChildren(int depth) {
+	if (bActive == false) {
+		return;
+	}
 	if (controller != 0) {
 		controller->onDrawn();
 	}

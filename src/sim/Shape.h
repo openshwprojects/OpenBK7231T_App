@@ -7,19 +7,42 @@
 
 
 class CShape {
+	bool bActive;
 	CShape *parent;
-	std::vector<class CShape*> shapes;
+	TArray<class CShape*> shapes;
 	class CControllerBase *controller;
-
+	//class CControlelrBase *referencedController;
+	
 	virtual void rotateDegreesAround_internal(float f, const Coord &p);
 	virtual void recalcBoundsSelf() {}
 protected:
+	bool bFill;
 	Bounds bounds;
 	Coord pos;
 public:
 	CShape() {
 		parent = 0;
 		controller = 0;
+		bActive = true;
+		bFill = false;
+	}
+	void setFill(bool b) {
+		bFill = b;
+	}
+	void setActive(bool b) {
+		bActive = b;
+	}
+	bool isActive() const {
+		return bActive;
+	}
+	class CControllerBase *findOwnerController_r() {
+		CShape *c = this;
+		while (c) {
+			if (c->getController() != 0)
+				return c->getController();
+			c = c->parent;
+		}
+		return 0;
 	}
 	virtual ~CShape();
 	virtual const char *getClassName() const {
@@ -48,7 +71,7 @@ public:
 	float absPositionDistance(const CShape *o) const {
 		return getAbsPosition().dist(o->getAbsPosition());
 	}
-	virtual void moveTowards(const Coord &tg, float dt);
+	virtual float moveTowards(const Coord &tg, float dt);
 	void setController(CControllerBase *c) {
 		controller = c;
 	}
@@ -94,7 +117,7 @@ public:
 	class CShape* addRect(int x, int y, int w, int h);
 	class CShape* addCircle(float x, float y, float r);
 	class CShape* addText(int x, int y, const char *s);
-	class CShape* addJunction(int x, int y, const char *name = "");
+	class CJunction* addJunction(int x, int y, const char *name = "", int gpio = -1);
 	class CShape* addShape(CShape *p);
 	void recalcBoundsAll();
 	bool hasWorldPointInside(const Coord &p)const;
