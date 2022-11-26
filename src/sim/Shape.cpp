@@ -19,6 +19,22 @@ CShape::~CShape() {
 	}
 }
 
+float CShape::drawPrivateInformation2D(float x, float h) {
+	h = drawText(x, h, "Position: %f %f", this->getX(), getY());
+	return h;
+}
+float CShape::drawInformation2D(float x, float h) {
+	h = drawText(x, h, "ClassName: %s", this->getClassName());
+	h = drawPrivateInformation2D(x, h);
+	if (shapes.size()) {
+		h = drawText(x, h, "SubShapes: %i", shapes.size());
+		for (int i = 0; i < shapes.size(); i++) {
+			h = drawText(x + 20, h, "SubShape: %i/%i", i, shapes.size());
+			h = shapes[i]->drawInformation2D(x + 40, h);
+		}
+	}
+	return h;
+}
 
 void CShape::translateEachChild(float oX, float oY) {
 	for (int i = 0; i < shapes.size(); i++) {

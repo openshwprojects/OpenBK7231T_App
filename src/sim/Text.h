@@ -13,6 +13,10 @@ public:
 		this->setPosition(_x, _y);
 		this->txt = s;
 	}
+	virtual float drawPrivateInformation2D(float x, float h);
+	virtual const char *getClassName() const {
+		return "CShape";
+	}
 	virtual void drawShape();
 };
 

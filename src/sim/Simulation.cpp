@@ -65,7 +65,10 @@ void CSimulation::createDemo() {
 	addWire(Coord(700, 400), Coord(700, 220));
 	addObject(generateGND())->setPosition(700, 400);
 	//addObject(new CObject(new CCircle(800, 500, 100)));
-	addObject(generateBulb())->setPosition(800, 400);
+	addObject(generateBulb())->setPosition(440, 140)->rotateDegreesAroundSelf(90);
+	addWire(Coord(440, 60), Coord(440, 120));
+	addWire(Coord(440, 200), Coord(440, 160));
+	addWire(Coord(440, 200), Coord(380, 200));
 	recalcBounds();
 }
 

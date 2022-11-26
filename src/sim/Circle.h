@@ -15,6 +15,9 @@ public:
 		this->radius = _r;
 		this->corners = _corners;
 	}
+	virtual const char *getClassName() const {
+		return "CCircle";
+	}
 	virtual void drawShape();
 };
 

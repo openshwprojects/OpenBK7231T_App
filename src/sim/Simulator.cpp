@@ -10,6 +10,7 @@
 #include "Tool_Use.h"
 #include "Tool_Delete.h"
 #include "Tool_Move.h"
+#include "Tool_Info.h"
 #include "Simulation.h"
 #include "CursorManager.h"
 
@@ -163,6 +164,9 @@ void CSimulator::onKeyDown(int keyCode) {
 	}
 	if (keyCode == '4') {
 		setTool(new Tool_Delete());
+	}
+	if (keyCode == '5') {
+		setTool(new Tool_Info());
 	}
 	//SDL_Cursor* cursor;
 	//cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_CROSSHAIR);

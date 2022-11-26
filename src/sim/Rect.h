@@ -16,6 +16,9 @@ public:
 		this->w = _w;
 		this->h = _h;
 	}
+	virtual const char *getClassName() const {
+		return "CRect";
+	}
 	void setFromTwoPoints(const class Coord &a, const class Coord &b) {
 		setPosition(a);
 		w = b.getX() - a.getX();

@@ -63,6 +63,12 @@ Coord GetMousePos() {
 
 
 
+float CEdge::drawInformation2D(float x, float h) {
+	h = CShape::drawInformation2D(x, h);
+	h = a->drawInformation2D(x + 20, h);
+	h = b->drawInformation2D(x + 20, h);
+	return h;
+}
 void CEdge::translate(const Coord &o) {
 	a->translate(o);
 	b->translate(o);

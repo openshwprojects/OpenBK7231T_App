@@ -12,6 +12,9 @@ class CWire : public CShape {
 public:
 	CWire(const Coord &a, const Coord &b);
 	virtual ~CWire();
+	virtual const char *getClassName() const {
+		return "CWire";
+	}
 	void drawWire();
 	void addPoint(const Coord &p); 
 	class CShape* findSubPart(const Coord &p);

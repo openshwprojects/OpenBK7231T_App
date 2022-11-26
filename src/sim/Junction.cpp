@@ -7,6 +7,11 @@ CJunction::~CJunction() {
 		oj->unlink(this);
 	}
 }
+float CJunction::drawInformation2D(float x, float h) {
+	h = CShape::drawInformation2D(x, h);
+	h = drawText(x, h, "Position: %f %f", getX(), getY());
+	return h;
+}
 bool CJunction::isWireJunction() const {
 	return getParent()->isWire();
 }

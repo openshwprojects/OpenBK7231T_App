@@ -12,6 +12,10 @@ public:
 		this->a = _a;
 		this->b = _b;
 	}
+	virtual const char *getClassName() const {
+		return "CEdge";
+	}
+	float drawInformation2D(float x, float h);
 	virtual void translate(const Coord &o);
 	const Coord &getPositionA() const;
 	const Coord &getPositionB() const;
@@ -24,6 +28,10 @@ public:
 	CJunction(int _x, int _y, const char *s) {
 		this->setPosition(_x, _y);
 		this->name = s;
+	}
+	float drawInformation2D(float x, float h);
+	virtual const char *getClassName() const {
+		return "CJunction";
 	}
 	virtual ~CJunction();
 	void rotateDegreesAround_internal(float f, const Coord &p);

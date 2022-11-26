@@ -5,6 +5,7 @@
 #include "Coord.h"
 #include "Bounds.h"
 
+
 class CShape {
 	CShape *parent;
 	std::vector<class CShape*> shapes;
@@ -21,6 +22,11 @@ public:
 		controller = 0;
 	}
 	virtual ~CShape();
+	virtual const char *getClassName() const {
+		return "CShape";
+	}
+	float drawInformation2D(float x, float y);
+	virtual float drawPrivateInformation2D(float x, float y);
 	int getShapesCount() const {
 		return shapes.size();
 	}
