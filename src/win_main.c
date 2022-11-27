@@ -117,7 +117,7 @@ void Win_DoUnitTests() {
 #include "sim/sim_public.h"
 int __cdecl main(int argc, char **argv)
 {
-	bool bWantsUnitTests = false;
+	bool bWantsUnitTests = 1;
     WSADATA wsaData;
     int iResult;
     // Initialize Winsock
@@ -126,19 +126,22 @@ int __cdecl main(int argc, char **argv)
         printf("WSAStartup failed with error: %d\n", iResult);
         return 1;
     }
-
-	SIM_CreateWindow(argc, argv);
-
 	Main_Init();
 
+
+	if (bWantsUnitTests) {
+		// let things warm up a little
+		Sim_RunFrames(50, false);
+		// run tests
+		Win_DoUnitTests();
+		Sim_RunFrames(50, false);
+	}
+
+	SIM_CreateWindow(argc, argv);
 	while(1) {
 		Sleep(5);
 		Sim_RunFrame();
 		SIM_RunWindow();
-
-		if (bWantsUnitTests && win_frameNum == 50) {
-			Win_DoUnitTests();
-		}
 	}
 	return 0;
 }
