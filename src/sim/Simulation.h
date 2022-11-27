@@ -4,8 +4,12 @@
 #include "sim_local.h"
 
 class CSimulation {
+	// all allocated objects (must be fried later)
 	TArray<class CObject*> objects;
+	// all allocated wires (must be fried later)
 	TArray<class CWire*> wires;
+	// only pointers to junctions that belongs to allocated objects or wires
+	TArray<class CJunction*> junctions;
 
 	void removeJunctions(class CShape *s);
 	void removeJunction(class CJunction *ju);
@@ -13,8 +17,6 @@ class CSimulation {
 	void registerJunction(class CJunction *ju);
 	void registerJunctions(class CWire *w);
 	void registerJunctions(class CShape *s);
-	void floodJunctions(CJunction *ju, float voltage);
-	TArray<class CJunction*> junctions;
 public:
 
 	int getJunctionsCount() const {

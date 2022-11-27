@@ -43,6 +43,7 @@ public:
 		this->visitCount = 0;
 		this->bCurrentSource = false;
 	}
+	virtual ~CJunction();
 	void setCurrentSource(bool b) {
 		bCurrentSource = b;
 	}
@@ -72,7 +73,6 @@ public:
 		return "CJunction";
 	}
 	bool shouldLightUpBulb(class CJunction *other);
-	virtual ~CJunction();
 	void translateLinked(const Coord &o);
 	void setPosLinked(const Coord &o);
 	void rotateDegreesAround_internal(float f, const Coord &p);

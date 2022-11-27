@@ -313,9 +313,9 @@ void CSimulation::destroyObject(CShape *s) {
 	CJunction *j = 0;
 	CEdge *ed = 0;
 	CShape *p = s->getParent();
-	removeJunctions(s);
 	CWire *w = dynamic_cast<CWire*>(p);
 	if (w) {
+		removeJunctions(w);
 		j = dynamic_cast<CJunction*>(s);
 		if (j) {
 		}
@@ -326,6 +326,7 @@ void CSimulation::destroyObject(CShape *s) {
 		}
 	}
 	else {
+		removeJunctions(s);
 		CObject *o = dynamic_cast<CObject*>(s);
 		if (o != 0) {
 			delete o;
