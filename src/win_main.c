@@ -9,43 +9,20 @@
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "new_common.h"
+#include "httpserver\new_http.h"
+#include "new_pins.h"
 
 // Need to link with Ws2_32.lib
 #pragma comment (lib, "Ws2_32.lib")
 // #pragma comment (lib, "Mswsock.lib")
 #pragma comment (lib, "Winmm.lib")
 
-#define DEFAULT_BUFLEN 16384
-#define DEFAULT_PORT "80"
+int accum_time = 0;
+int win_frameNum = 0;
+int frameTime = 5;
 
-#include "new_common.h"
-#include "httpserver\new_http.h"
-#include "new_pins.h"
 
-//int snprintf(char *buffer, unsigned int len, const char *fmt, ...) {
-//	int rv;
-//   	va_list val;
-//    va_start(val, fmt);
-//    rv = vsnprintf(buffer, len, fmt, val);
-//    va_end(val);
-//    return rv;
-//}
-void CMD_StartTCPCommandLine() {
-
-}
-
-void Main_SetupPingWatchDog(const char *target/*, int delayBetweenPings_Seconds*/) {
-
-}
-void Main_PingWatchDogSilent() {
-
-}
-int PingWatchDog_GetTotalLost() {
-    return 0;
-}
-int PingWatchDog_GetTotalReceived() {
-    return 0;
-}
 void strcat_safe_test(){
 	char tmpA[16];
 	char tmpB[16];
@@ -78,91 +55,8 @@ void strcat_safe_test(){
 	urldecode2_safe(buff,"qqqqqq%40qqqq",sizeof(buff));
 
 
-	//misc_formatUpTimeString(15, timeStrA);
-	//misc_formatUpTimeString(65, timeStrB);
-	//misc_formatUpTimeString(125, timeStrC);
-	//misc_formatUpTimeString(60*60, timeStrD);
-	//misc_formatUpTimeString(4*60*60, timeStrE);
-	//misc_formatUpTimeString(24*60*60, timeStrF);
-	//misc_formatUpTimeString(24*60*60+60*60+50, timeStrG);
-	//misc_formatUpTimeString(100*24*60*60+60*60+15*60+50, timeStrH);
-
-	// some command examples, compatible with Tasmota syntax
-	//CMD_ExecuteCommand("TuyaSend3 108,ff0000646464ff");
-	//CMD_ExecuteCommand("TuyaSend4 103,2");
-	//CMD_ExecuteCommand("TuyaSend5 108, ABCD");
-	//CMD_ExecuteCommand("TuyaSend8");
-	//// TODO
-	////CMD_ExecuteCommand("Backlog Dimmer 10; Dimmer 100 ");
-	////CMD_ExecuteCommand("Backlog Status 1; Power2 on; Delay 20; Power2 off; Status 4");
-	//CMD_ExecuteCommand("Tuyqqqqqqqqqq arg1 arg2 arg3 arg4");
-	//CMD_ExecuteCommand("Tuyqqqqqqqqqq");
-	//CMD_ExecuteCommand("Tuyqqqqqqqqqq");
-	//CMD_ExecuteCommand("Tuyqqqqqqqqqq");
-
 }
 
-// placeholder - TODO
-char myIP[] = "127.0.0.1";
-char *getMyIp(){
-    return myIP;
-}
-void __asm__(const char *s) {
-
-}
-DWORD WINAPI Thread_EverySecond(void* arg)
-{
-	while(1){
-		TuyaMCU_RunFrame();
-		Sleep(1000);
-	}
-    return 0;
-}
-// WINDOWS TEST ONLY - simulate UART receiving bytes, byte after byte
-DWORD WINAPI Thread_SimulateTUYAMCUSendingData(void* arg)
-{
-	int r;
-	const char *p;
-	const char  *packets[] = {
-		"55AA00000000FF",
-		"55AA00000000FF",
-		"55AA0001000000",
-		"55AA0002000001",
-		"55AA002400010024",
-		"55AA001C0008000000000000000023",
-	};
-	int g_numPackets = sizeof(packets)/sizeof(packets[0]);
-	while(1){
-		int ch;
-		ch = rand()%g_numPackets;
-		p = packets[ch];
-		while(*p) {
-			byte b;
-			b = hexbyte(p);
-			UART_AppendByteToCircularBuffer(b);
-			p += 2;
-			Sleep(10);
-		}
-
-		Sleep(1000);
-	}
-    return 0;
-}
-
-//void addLogAdv(int level, int feature, char *fmt, ...){
-//	char t[512];
-//    va_list argList;
-//
-//    va_start(argList, fmt);
-//    vsprintf(t, fmt, argList);
-//    va_end(argList);
-//
-//	printf(t);
-//}
-
-int accum_time = 0;
-int win_frameNum = 0;
-int frameTime = 5;
 void Sim_RunFrame() {
 	win_frameNum++;
 	accum_time += frameTime;
@@ -270,173 +164,5 @@ void otarequest(const char *urlin) {
 
 int ota_progress();
 int ota_total_bytes();
-int __cdecl main_old(void)
-{
-    WSADATA wsaData;
-    int iResult;
-	int len;
-
-    SOCKET ListenSocket = INVALID_SOCKET;
-    SOCKET ClientSocket = INVALID_SOCKET;
-
-    struct addrinfo *result = NULL;
-    struct addrinfo hints;
-
-    int iSendResult;
-    char recvbuf[DEFAULT_BUFLEN];
-    char outbuf[DEFAULT_BUFLEN];
-    int recvbuflen = DEFAULT_BUFLEN;
-
-	strcat_safe_test();
-
-	Tokenizer_TokenizeString("dsfafd dasfdsaf dsaf dsaf dsa fdsaf dsafdsa");
-
-	CFG_ClearPins();
-	PIN_SetPinChannelForPinIndex(1,1);
-	PIN_SetPinRoleForPinIndex(1,IOR_Relay);
-
-	PIN_SetPinChannelForPinIndex(2,2);
-	PIN_SetPinRoleForPinIndex(2,IOR_PWM);
-
-	TuyaMCU_Init();
-
-    // Initialize Winsock
-    iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
-    if (iResult != 0) {
-        printf("WSAStartup failed with error: %d\n", iResult);
-        return 1;
-    }
-	//NTP_SendRequest_BlockingMode();
-	//Sleep(500);
-   //     return 1;
-
-	CreateThread(NULL, 0, Thread_EverySecond, 0, 0, NULL);
-	CreateThread(NULL, 0, Thread_SimulateTUYAMCUSendingData, 0, 0, NULL);
-
-
-    ZeroMemory(&hints, sizeof(hints));
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;
-    hints.ai_flags = AI_PASSIVE;
-
-	HTTPServer_Start();
-    // Resolve the server address and port
-    iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
-    if ( iResult != 0 ) {
-        printf("getaddrinfo failed with error: %d\n", iResult);
-        WSACleanup();
-        return 1;
-    }
-
-    // Create a SOCKET for connecting to server
-    ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-    if (ListenSocket == INVALID_SOCKET) {
-        printf("socket failed with error: %ld\n", WSAGetLastError());
-        freeaddrinfo(result);
-        WSACleanup();
-        return 1;
-    }
-
-    // Setup the TCP listening socket
-    iResult = bind( ListenSocket, result->ai_addr, (int)result->ai_addrlen);
-    if (iResult == SOCKET_ERROR) {
-        printf("bind failed with error: %d\n", WSAGetLastError());
-        freeaddrinfo(result);
-        closesocket(ListenSocket);
-        WSACleanup();
-        return 1;
-    }
-
-    freeaddrinfo(result);
-
-	iResult = listen(ListenSocket, SOMAXCONN);
-	if (iResult == SOCKET_ERROR) {
-		printf("listen failed with error: %d\n", WSAGetLastError());
-		closesocket(ListenSocket);
-		WSACleanup();
-		return 1;
-	}
-
-	while(1)
-	{
-		// Accept a client socket
-		ClientSocket = accept(ListenSocket, NULL, NULL);
-		if (ClientSocket == INVALID_SOCKET) {
-			printf("accept failed with error: %d\n", WSAGetLastError());
-			closesocket(ListenSocket);
-			WSACleanup();
-			return 1;
-		}
-
-
-		// Receive until the peer shuts down the connection
-		do {
-
-			iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
-			if (iResult > 0) {
-				http_request_t request;
-				memset(&request, 0, sizeof(request));
-
-				recvbuf[iResult] = 0;
-
-				request.fd = ClientSocket;
-				request.received = recvbuf;
-				request.receivedLen = iResult;
-				outbuf[0] = '\0';
-				request.reply = outbuf;
-				request.replylen = 0;
-
-				request.replymaxlen = DEFAULT_BUFLEN;
-
-				printf("Bytes received: %d \n", iResult);
-				len = HTTP_ProcessPacket(&request);
-
-				if(len > 0) {
-					printf("Bytes rremaining tosend %d\n", len);
-					//printf("%s\n",outbuf);
-					// Echo the buffer back to the sender
-					//leen =  strlen(request.reply);
-					iSendResult = send( ClientSocket, outbuf,len, 0 );
-					if (iSendResult == SOCKET_ERROR) {
-						printf("send failed with error: %d\n", WSAGetLastError());
-						closesocket(ClientSocket);
-						WSACleanup();
-						return 1;
-					}
-					printf("Bytes sent: %d\n", iSendResult);
-				}
-			}
-			else if (iResult == 0)
-				printf("Connection closing...\n");
-			else  {
-				printf("recv failed with error: %d\n", WSAGetLastError());
-				closesocket(ClientSocket);
-				WSACleanup();
-				return 1;
-			}
-			break;
-		} while (iResult > 0);
-
-		// shutdown the connection since we're done
-		iResult = shutdown(ClientSocket, SD_SEND);
-		if (iResult == SOCKET_ERROR) {
-			printf("shutdown failed with error: %d\n", WSAGetLastError());
-			closesocket(ClientSocket);
-			//WSACleanup();
-			//return 1;
-		}
-	}
-
-	// No longer need server socket
-	closesocket(ListenSocket);
-
-    // cleanup
-    closesocket(ClientSocket);
-    WSACleanup();
-
-    return 0;
-}
-
 #endif
 

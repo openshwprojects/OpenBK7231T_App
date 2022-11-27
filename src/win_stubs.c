@@ -3,14 +3,31 @@
 
 #if WINDOWS
 
+void CMD_StartTCPCommandLine() {
 
-int bekken_hal_flash_read(const uint32_t addr, uint8_t *dst, const uint32_t size) {
-	int i;
-	memset(dst,0,size);
-	for(i = 0; i < size; i++){
-		dst[i] = rand()%128;
-	}
+}
+
+void Main_SetupPingWatchDog(const char *target/*, int delayBetweenPings_Seconds*/) {
+
+}
+void Main_PingWatchDogSilent() {
+
+}
+int PingWatchDog_GetTotalLost() {
 	return 0;
+}
+int PingWatchDog_GetTotalReceived() {
+	return 0;
+}
+
+
+// placeholder - TODO
+char myIP[] = "127.0.0.1";
+char *getMyIp() {
+	return myIP;
+}
+void __asm__(const char *s) {
+
 }
 
 #endif

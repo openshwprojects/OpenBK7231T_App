@@ -36,6 +36,9 @@ UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address) {
 	//fclose(f);
 	return 0;
 }
+int bekken_hal_flash_read(const uint32_t addr, uint8_t *dst, const uint32_t size) {
+	return flash_read(dst, size, addr);;
+}
 UINT32 flash_write(char *user_buf, UINT32 count, UINT32 address) {
 	FILE *f;
 
