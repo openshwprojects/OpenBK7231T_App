@@ -11,4 +11,6 @@ public:
 	CObject(CShape *s) {
 		addShape(s);
 	}
+	virtual CShape *cloneShape();
+	class CObject *cloneObject();
 };

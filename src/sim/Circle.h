@@ -10,11 +10,16 @@ class CCircle : public CShape {
 	virtual void recalcBoundsSelf();
 	void rotateDegreesAround_internal(float f, const Coord &p);
 public:
+	CCircle() {
+		radius = 0;
+		corners = 0;
+	}
 	CCircle(float _x, float _y, float _r, int _corners = 20) {
 		this->setPosition(_x, _y);
 		this->radius = _r;
 		this->corners = _corners;
 	}
+	virtual CShape *cloneShape();
 	virtual const char *getClassName() const {
 		return "CCircle";
 	}

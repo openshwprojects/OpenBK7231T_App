@@ -26,6 +26,9 @@ public:
 		bActive = true;
 		bFill = false;
 	}
+	void snapToGrid();
+	void cloneShapeTo(CShape *o);
+	virtual CShape *cloneShape();
 	void setFill(bool b) {
 		bFill = b;
 	}

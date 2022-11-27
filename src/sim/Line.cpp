@@ -35,6 +35,13 @@ void CLine::recalcBoundsSelf() {
 	bounds.addPoint(pos2 - getPosition());
 }
 
+CShape *CLine::cloneShape() {
+	CLine *n = new CLine();
+	n->pos = this->pos;
+	n->pos2 = this->pos2;
+	this->cloneShapeTo(n);
+	return n;
+}
 void CLine::drawShape() {
 	glBegin(GL_LINES);
 	glVertex2f(getX(), getY());

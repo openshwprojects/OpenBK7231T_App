@@ -13,6 +13,9 @@ void Tool_Delete::onMouseDown(const Coord &pos, int button) {
 		sim->destroyObject(currentTarget);
 	}
 }
+void Tool_Delete::onEnd() {
+	sim->getCursorMgr()->setCursor(SDL_SYSTEM_CURSOR_ARROW);
+}
 void Tool_Delete::drawTool() {
 	currentTarget = sim->getShapeUnderCursor();
 	if (currentTarget) {

@@ -11,11 +11,16 @@ class CRect : public CShape {
 	virtual void recalcBoundsSelf();
 	void rotateDegreesAround_internal(float f, const class Coord &p);
 public:
+	CRect() {
+		this->w = 0;
+		this->h = 0;
+	}
 	CRect(int _x, int _y, int _w, int _h) {
 		this->setPosition(_x, _y);
 		this->w = _w;
 		this->h = _h;
 	}
+	virtual CShape *cloneShape();
 	virtual const char *getClassName() const {
 		return "CRect";
 	}

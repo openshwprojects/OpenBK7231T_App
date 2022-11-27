@@ -1,6 +1,14 @@
 #ifdef WINDOWS
 #include "Circle.h"
 
+CShape *CCircle::cloneShape() {
+	CCircle *r = new CCircle();
+	r->pos = this->pos;
+	r->radius = this->radius;
+	r->corners = this->corners;
+	this->cloneShapeTo(r);
+	return r;
+}
 void CCircle::recalcBoundsSelf() {
 	bounds.clear();
 	bounds.addPoint(Coord(0, 0));

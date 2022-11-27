@@ -1,6 +1,15 @@
 #ifdef WINDOWS
 #include "Text.h"
 
+CShape *CText::cloneShape() {
+	CText *r = new CText();
+	r->pos = this->pos;
+	r->txt = this->txt;
+	this->cloneShapeTo(r);
+	return r;
+}
+
+
 void CText::drawShape() {
 	drawText(getX(), getY(), txt.c_str());
 }

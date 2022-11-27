@@ -13,6 +13,7 @@ public:
 		return "Delete";
 	}
 	virtual void drawTool();
+	virtual void onEnd();
 	virtual void onMouseDown(const Coord &pos, int button);
 
 };

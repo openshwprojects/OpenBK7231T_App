@@ -35,6 +35,9 @@ class CJunction : public CShape {
 	int visitCount;
 	bool bCurrentSource;
 public:
+	CJunction() {
+
+	}
 	CJunction(int _x, int _y, const char *s, int gpio = -1) {
 		this->setPosition(_x, _y);
 		this->name = s;
@@ -44,6 +47,7 @@ public:
 		this->bCurrentSource = false;
 	}
 	virtual ~CJunction();
+	virtual CShape *cloneShape();
 	void setCurrentSource(bool b) {
 		bCurrentSource = b;
 	}

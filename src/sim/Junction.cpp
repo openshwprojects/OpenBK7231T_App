@@ -7,6 +7,18 @@ CJunction::~CJunction() {
 		oj->unlink(this);
 	}
 }
+CShape *CJunction::cloneShape() {
+	CJunction *r = new CJunction();
+	r->pos = this->pos;
+	r->name = this->name;
+	r->gpioIndex = this->gpioIndex;
+	r->voltage = this->voltage;
+	r->visitCount = this->visitCount;
+	r->bCurrentSource = this->bCurrentSource;
+	this->cloneShapeTo(r);
+	return r;
+}
+
 float CJunction::drawInformation2D(float x, float h) {
 	h = CShape::drawInformation2D(x, h);
 	h = drawText(x, h, "Position: %f %f", getX(), getY());

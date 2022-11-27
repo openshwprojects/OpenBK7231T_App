@@ -11,6 +11,7 @@
 #include "Tool_Delete.h"
 #include "Tool_Move.h"
 #include "Tool_Info.h"
+#include "Tool_Copy.h"
 #include "Simulation.h"
 #include "CursorManager.h"
 #include "Solver.h"
@@ -171,6 +172,9 @@ void CSimulator::onKeyDown(int keyCode) {
 		setTool(new Tool_Delete());
 	}
 	if (keyCode == '5') {
+		setTool(new Tool_Copy());
+	}
+	if (keyCode == '6') {
 		setTool(new Tool_Info());
 	}
 	//SDL_Cursor* cursor;

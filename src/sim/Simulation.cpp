@@ -98,7 +98,8 @@ CObject * CSimulation::addObject(CObject *o) {
 	return o;
 }
 void CSimulation::createDemo() {
-	addObject(generateWB3S())->setPosition(300, 200);
+	CObject *wb3s = addObject(generateWB3S());
+	wb3s->setPosition(300, 200);
 	addObject(generateButton())->setPosition(500, 260)->rotateDegreesAroundSelf(180);
 	addObject(generateTest())->setPosition(500, 400);
 	addObject(generateGND())->setPosition(600, 420);
@@ -119,13 +120,33 @@ void CSimulation::createDemo() {
 	addWire(Coord(700, 400), Coord(700, 240));
 	addObject(generateGND())->setPosition(700, 420);
 	//addObject(new CObject(new CCircle(800, 500, 100)));
-	addObject(generateBulb())->setPosition(440, 140)->rotateDegreesAroundSelf(90);
+	CObject *bulb2 = addObject(generateBulb());
+	bulb2->setPosition(440, 140)->rotateDegreesAroundSelf(90);
 	addWire(Coord(440, 60), Coord(440, 120));
 	addWire(Coord(440, 200), Coord(440, 160));
 	addWire(Coord(440, 200), Coord(380, 200));
 	addObject(generateVDD())->setPosition(440, 60);
+
+	CObject *bulb2_copy = bulb2->cloneObject();
+	bulb2_copy->setPosition(640, 140);
+	addObject(bulb2_copy);
+
+
+	CObject *wb3s_copy = wb3s->cloneObject();
+	wb3s_copy->setPosition(640, 440);
+	addObject(wb3s_copy);
+
 	matchAllJunctions();
 	recalcBounds();
+}
+CShape *CObject::cloneShape() {
+	CObject *no = new CObject();
+	this->cloneShapeTo(no);
+	return no;
+}
+class CObject *CObject::cloneObject() {
+	CShape *sh = cloneShape();
+	return dynamic_cast<CObject*>(sh);
 }
 void CSimulation::matchAllJunctions() {
 	for (int i = 0; i < wires.size(); i++) {

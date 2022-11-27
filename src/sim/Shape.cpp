@@ -18,6 +18,22 @@ CShape::~CShape() {
 		controller = 0;
 	}
 }
+void CShape::snapToGrid() {
+	Coord n = roundToGrid(getPosition());
+	setPosition(n);
+}
+void CShape::cloneShapeTo(CShape *o) {
+	o->pos = this->pos;
+	o->bounds = this->bounds;
+	for (int i = 0; i < shapes.size(); i++) {
+		o->addShape(shapes[i]->cloneShape());
+	}
+}
+CShape *CShape::cloneShape() {
+	CShape *r = new CShape();
+	this->cloneShapeTo(r);
+	return r;
+}
 
 float CShape::drawPrivateInformation2D(float x, float h) {
 	h = drawText(x, h, "Position: %f %f", this->getX(), getY());

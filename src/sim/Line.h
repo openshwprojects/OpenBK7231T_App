@@ -8,6 +8,9 @@
 class CLine : public CShape {
 	Coord pos2;
 public:
+	CLine() {
+
+	}
 	CLine(float _x, float _y, float _x2, float _y2) {
 		this->setPosition(_x, _y);
 		this->pos2.set(_x2, _y2);
@@ -20,6 +23,7 @@ public:
 	virtual void rotateDegreesAround_internal(float f, const Coord &p);
 	virtual void recalcBoundsSelf();
 	virtual void drawShape();
+	virtual CShape *cloneShape();
 };
 
 #endif // __LINE_H__

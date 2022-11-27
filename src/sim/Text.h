@@ -9,10 +9,14 @@ class CText : public CShape {
 
 	void rotateDegreesAround_internal(float f, const class Coord &p);
 public:
+	CText() {
+
+	}
 	CText(int _x, int _y, const char *s) {
 		this->setPosition(_x, _y);
 		this->txt = s;
 	}
+	virtual CShape *cloneShape();
 	virtual float drawPrivateInformation2D(float x, float h);
 	virtual const char *getClassName() const {
 		return "CShape";

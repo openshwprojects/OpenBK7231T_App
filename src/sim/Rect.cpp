@@ -4,6 +4,14 @@
 
 
 
+CShape *CRect::cloneShape() {
+	CRect *n = new CRect();
+	n->pos = this->pos;
+	n->w = this->w;
+	n->h = this->h;
+	this->cloneShapeTo(n);
+	return n;
+}
 void CRect::drawShape() {
 	glBegin(GL_LINE_LOOP);
 	glVertex2f(getX(), getY());
