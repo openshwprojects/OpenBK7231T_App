@@ -243,7 +243,9 @@ void CMD_ExpandConstantsWithinString(const char *in, char *out, int outLen) {
 	}
 	*out = 0;
 }
-const char *CMD_ExpandingStrdup(const char *in) {
+// like a strdup, but will expand constants.
+// Please remember to free the returned string
+char *CMD_ExpandingStrdup(const char *in) {
 	const char *p;
 	char *ret;
 	int varCount;

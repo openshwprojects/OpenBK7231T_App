@@ -35,7 +35,9 @@ void CMD_Init_Delayed();
 void CMD_RegisterCommand(const char* name, const char* args, commandHandler_t handler, const char* userDesc, void* context);
 commandResult_t CMD_ExecuteCommand(const char* s, int cmdFlags);
 commandResult_t CMD_ExecuteCommandArgs(const char* cmd, const char* args, int cmdFlags);
-const char *CMD_ExpandingStrdup(const char *in);
+// like a strdup, but will expand constants.
+// Please remember to free the returned string
+char *CMD_ExpandingStrdup(const char *in);
 
 enum EventCode {
 	CMD_EVENT_NONE,
