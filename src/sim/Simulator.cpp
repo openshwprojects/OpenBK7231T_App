@@ -13,6 +13,7 @@
 #include "Tool_Info.h"
 #include "Simulation.h"
 #include "CursorManager.h"
+#include "Solver.h"
 
 
 CSimulator::CSimulator() {
@@ -28,6 +29,7 @@ CSimulator::CSimulator() {
 	setTool(new Tool_Move());
 	sim = new CSimulation();
 	sim->createDemo();
+	solver = new CSolver();
 }
 
 void CSimulator::setTool(Tool_Base *tb) {
@@ -113,6 +115,9 @@ void CSimulator::drawWindow() {
 	//glEnd();
 
 	sim->drawSim();
+	// sim
+	solver->setSimulation(sim);
+	solver->solveVoltages();
 
 	if (activeTool) {
 		activeTool->drawTool();

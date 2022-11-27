@@ -14,6 +14,7 @@ class CSimulator {
 	class Tool_Base *activeTool;
 	class CSimulation *sim;
 	class CursorManager *cur;
+	class CSolver *solver;
 
 	void onKeyDown(int keyCode);
 	void setTool(Tool_Base *tb);

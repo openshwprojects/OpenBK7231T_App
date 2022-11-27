@@ -17,6 +17,13 @@ class CSimulation {
 	TArray<class CJunction*> junctions;
 public:
 
+	int getJunctionsCount() const {
+		return junctions.size();
+	}
+	class CJunction *getJunction(int i) {
+		return junctions[i];
+	}
+
 	void recalcBounds();
 	class CObject *generateBulb();
 	class CObject *generateWB3S();
