@@ -55,7 +55,7 @@ const char *HAL_PIN_GetPinNameAlias(int index) {
 		return "RXD1";
 	if (index == 11)
 		return "TXD1";
-	return 0;
+	return "N/A";
 }
 
 int HAL_PIN_CanThisPinBePWM(int index) {
