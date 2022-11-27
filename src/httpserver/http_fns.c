@@ -1280,6 +1280,9 @@ const char *CMD_GetResultString(commandResult_t r) {
 		return "Bad argument";
 	return "Unknown error";
 }
+// all log printfs made by command will be sent also to request
+void LOG_SetCommandHTTPRedirectReply(http_request_t* request);
+
 int http_fn_cmd_tool(http_request_t* request) {
 	commandResult_t res;
 	const char *resStr;
@@ -1290,9 +1293,14 @@ int http_fn_cmd_tool(http_request_t* request) {
 	poststr(request, "<h4>Command Tool</h4>");
 	poststr(request, "This is a basic command line. <br>");
 	poststr(request, "Please consider using 'Web Application' console with more options and real time log view. <br>");
+	poststr(request, "Remember that some commands are added after a restart when a driver is activated... <br>");
 
 	if (http_getArg(request->url, "cmd", tmpA, sizeof(tmpA))) {
+		poststr(request, "<br>");
+		// all log printfs made by command will be sent also to request
+		LOG_SetCommandHTTPRedirectReply(request);
 		res = CMD_ExecuteCommand(tmpA, COMMAND_FLAG_SOURCE_CONSOLE);
+		LOG_SetCommandHTTPRedirectReply(0);
 		resStr = CMD_GetResultString(res);
 		hprintf255(request, "<h3>%s</h3>", resStr);
 		poststr(request, "<br>");

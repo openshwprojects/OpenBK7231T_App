@@ -298,7 +298,13 @@ static void inittcplog(){
 	startLogServer();
 	tcpLogStarted = 1;
 }
+http_request_t *g_log_alsoPrintToHTTP = 0;
+bool b_guard_recursivePrint = false;
 
+// all log printfs made by command will be sent also to request
+void LOG_SetCommandHTTPRedirectReply(http_request_t* request) {
+	g_log_alsoPrintToHTTP = request;
+}
 // adds a log to the log memory
 // if head collides with either tail, move the tails on.
 void addLogAdv(int level, int feature, const char* fmt, ...)
@@ -373,6 +379,16 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 //#if PLATFORM_BL602
 	//printf(tmp);
 //#endif
+	// This is used by HTTP console
+	if (g_log_alsoPrintToHTTP) {
+		// guard here is used for the rare case when poststr attempts to do an addLogAdv as well
+		if (b_guard_recursivePrint == false) {
+			b_guard_recursivePrint = true;
+			poststr(g_log_alsoPrintToHTTP, tmp);
+			poststr(g_log_alsoPrintToHTTP, "<br>");
+			b_guard_recursivePrint = false;
+		}
+	}
 	if (g_extraSocketToSendLOG)
 	{
 		send(g_extraSocketToSendLOG, tmp, strlen(tmp), 0);
