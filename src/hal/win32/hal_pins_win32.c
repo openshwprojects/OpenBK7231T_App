@@ -4,8 +4,18 @@
 #include "../../new_pins.h"
 #include "../../logging/logging.h"
 
+
+typedef enum simulatedPinMode_e {
+	SIM_PIN_NONE,
+	SIM_PIN_OUTPUT,
+	SIM_PIN_PWM,
+	SIM_PIN_INPUT_PULLUP,
+	SIM_PIN_INPUT,
+} simulatedPinMode_t;
+
 int g_simulatedPinStates[PLATFORM_GPIO_MAX];
-bool g_bInput[PLATFORM_GPIO_MAX];
+int g_simulatedPWMs[PLATFORM_GPIO_MAX];
+simulatedPinMode_t g_pinModes[PLATFORM_GPIO_MAX];
 
 void SIM_SetSimulatedPinValue(int pinIndex, bool bHigh) {
 	g_simulatedPinStates[pinIndex] = bHigh;
@@ -14,8 +24,30 @@ bool SIM_GetSimulatedPinValue(int pinIndex) {
 	return g_simulatedPinStates[pinIndex];
 }
 bool SIM_IsPinInput(int index) {
-	return g_bInput[index];
+	if (g_pinModes[index] == SIM_PIN_INPUT_PULLUP)
+		return true;
+	if (g_pinModes[index] == SIM_PIN_INPUT)
+		return true;
+	return false;
 }
+
+
+int PIN_GetPWMIndexForPinIndex(int pin) {
+	if (pin == 6)
+		return 0;
+	if (pin == 7)
+		return 1;
+	if (pin == 8)
+		return 2;
+	if (pin == 9)
+		return 3;
+	if (pin == 24)
+		return 4;
+	if (pin == 26)
+		return 5;
+	return -1;
+}
+
 
 const char *HAL_PIN_GetPinNameAlias(int index) {
 	// some of pins have special roles
@@ -44,7 +76,10 @@ const char *HAL_PIN_GetPinNameAlias(int index) {
 
 
 int HAL_PIN_CanThisPinBePWM(int index) {
-	return 0;
+	int pwmIndex = PIN_GetPWMIndexForPinIndex(index);
+	if (pwmIndex == -1)
+		return 0;
+	return 1;
 }
 void HAL_PIN_SetOutputValue(int index, int iVal) {
 	g_simulatedPinStates[index] = iVal;
@@ -54,14 +89,14 @@ int HAL_PIN_ReadDigitalInput(int index) {
 	return g_simulatedPinStates[index];
 }
 void HAL_PIN_Setup_Input_Pullup(int index) {
-	g_bInput[index] = true;
+	g_pinModes[index] = SIM_PIN_INPUT_PULLUP;
 }
 void HAL_PIN_Setup_Input(int index) {
-	g_bInput[index] = true;
+	g_pinModes[index] = SIM_PIN_INPUT;
 }
 
 void HAL_PIN_Setup_Output(int index) {
-	g_bInput[index] = false;
+	g_pinModes[index] = SIM_PIN_OUTPUT;
 }
 
 
@@ -69,11 +104,14 @@ void HAL_PIN_PWM_Stop(int pinIndex) {
 }
 
 void HAL_PIN_PWM_Start(int index) {
-	g_bInput[index] = false;
+	g_pinModes[index] = SIM_PIN_PWM;
 }
 void HAL_PIN_PWM_Update(int index, int value) {
-
-
+	if (value < 0)
+		value = 0;
+	if (value > 100)
+		value = 100;
+	g_simulatedPWMs[index] = value;
 }
 
 
