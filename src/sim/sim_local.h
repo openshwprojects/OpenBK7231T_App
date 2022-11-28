@@ -44,6 +44,18 @@ public:
 	void remove(T o) {
 		this->erase(std::remove(this->begin(), this->end(), o), this->end());
 	}
+	bool contains(const T&o) const {
+		for (unsigned int i = 0; i < size(); i++) {
+			if ((*this)[i] == o)
+				return true;
+		}
+		return false;
+	}
+	void add_unique(const T&o) {
+		if (contains(o) == false) {
+			this->push_back(o);
+		}
+	}
 };
 
 #endif

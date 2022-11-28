@@ -106,7 +106,7 @@ public:
 	bool hasLinkedOnlyWires() const;
 	virtual void translate(const Coord &o);
 	void addLink(CJunction *j) {
-		linked.push_back(j);
+		linked.add_unique(j);
 	}
 	virtual void drawShape();
 };
