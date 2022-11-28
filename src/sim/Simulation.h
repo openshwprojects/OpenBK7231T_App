@@ -27,6 +27,8 @@ public:
 	}
 
 	void recalcBounds();
+	class CObject *generateLED_CW();
+	class CObject *generateLED_RGB();
 	class CObject *generateBulb();
 	class CObject *generateWB3S();
 	class CObject *generateButton();

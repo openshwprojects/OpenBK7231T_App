@@ -122,6 +122,10 @@ void CSimulation::createDemo() {
 	//addObject(new CObject(new CCircle(800, 500, 100)));
 	CObject *bulb2 = addObject(generateBulb());
 	bulb2->setPosition(440, 140)->rotateDegreesAroundSelf(90);
+
+	addObject(generateLED_CW())->setPosition(560, 140)->rotateDegreesAroundSelf(90);
+	addObject(generateLED_RGB())->setPosition(760, 140)->rotateDegreesAroundSelf(90);
+	
 	addWire(Coord(440, 60), Coord(440, 120));
 	addWire(Coord(440, 200), Coord(440, 160));
 	addWire(Coord(440, 200), Coord(380, 200));
@@ -248,6 +252,50 @@ class CObject *CSimulation::generateWB3S() {
 		link->addRelatedJunction(a);
 		link->addRelatedJunction(b);
 	}
+	return o;
+}
+class CObject *CSimulation::generateLED_CW() {
+	float bulb_radius = 20.0f;
+
+	CObject *o = new CObject();
+	o->addText(-40, -25, "CW");
+	//CShape *filler = o->addCircle(0, 0, bulb_radius);
+	CShape *body = o->addCircle(0, 0, bulb_radius);
+	//filler->setFill(true);
+	CJunction *a = o->addJunction(-bulb_radius, 0);
+	a->addText(-5, -5, "");
+	CJunction *b1 = o->addJunction(bulb_radius, 20);
+	b1->addText(-5, -5, "C");
+	CJunction *b2 = o->addJunction(bulb_radius, -20);
+	b2->addText(-5, -5, "W");
+
+	//bulb->setShape(filler);
+	float mul = sqrt(2) * 0.5f;
+	o->addLine(-bulb_radius * mul, -bulb_radius * mul, bulb_radius * mul, bulb_radius * mul);
+	o->addLine(-bulb_radius * mul, bulb_radius * mul, bulb_radius * mul, -bulb_radius * mul);
+	return o;
+}
+class CObject *CSimulation::generateLED_RGB() {
+	float bulb_radius = 20.0f;
+
+	CObject *o = new CObject();
+	o->addText(-40, -25, "RGB");
+	//CShape *filler = o->addCircle(0, 0, bulb_radius);
+	CShape *body = o->addCircle(0, 0, bulb_radius);
+	//filler->setFill(true);
+	CJunction *a = o->addJunction(-bulb_radius, 0);
+	a->addText(-5, -5, "");
+	CJunction *b1 = o->addJunction(bulb_radius, 20);
+	b1->addText(-5, -5, "R");
+	CJunction *b2 = o->addJunction(bulb_radius, 0);
+	b2->addText(-5, -5, "G");
+	CJunction *b3 = o->addJunction(bulb_radius, -20);
+	b3->addText(-5, -5, "B");
+
+	//bulb->setShape(filler);
+	float mul = sqrt(2) * 0.5f;
+	o->addLine(-bulb_radius * mul, -bulb_radius * mul, bulb_radius * mul, bulb_radius * mul);
+	o->addLine(-bulb_radius * mul, bulb_radius * mul, bulb_radius * mul, -bulb_radius * mul);
 	return o;
 }
 
