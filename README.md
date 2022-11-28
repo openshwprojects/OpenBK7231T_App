@@ -53,6 +53,12 @@ A: Do five short power on/power off cycles (but not too short, because device mi
 <em>Q: I somehow lost my MAC address and I am unable to change it in Options! My MAC ends with 000000, how to fix?</em><br>
 A: You have most likely overwrote the TLV header of RF partition of BK7231. For BK7231T, we have a way to restore it - open Web App, go to Flash tab, and press "Restore RF Config"
 
+<em>Q: How do I setup single button to control two relays (first on click, second on double click)?</em><br>
+A: If you set a pin role to "Button", you will get a second textbox after saving pins. First checkbox is a channel to toggle on single click, and second textbox is a channel to toggle on double click.
+
+<em>Q: My wall touch switch reacts slowly! It's laggy, how to make it react instantly?</em><br>
+A: It's like with Tasmota - go to our Options/General-Flags and set flag "6 - [BTN] Instant touch reaction instead of waiting for release (aka SetOption 13)"
+
 # Building
 
 OpenBeken supports online builds for all platforms (BK7231T, BK7231N, XR809, BL602, W800), but if you want to compile it yourself, see  [BUILDING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md)
