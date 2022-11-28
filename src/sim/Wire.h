@@ -18,6 +18,7 @@ public:
 	void drawWire();
 	void addPoint(const Coord &p); 
 	class CShape* findSubPart(const Coord &p);
+	class CJunction *getJunctionForPos(const Coord &p);
 	int getJunctionsCount() const {
 		return junctions.size();
 	}

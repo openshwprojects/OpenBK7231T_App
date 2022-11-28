@@ -14,6 +14,15 @@ CWire::~CWire() {
 		delete edges[i];
 	}
 }
+class CJunction *CWire::getJunctionForPos(const Coord &p) {
+	for (int i = 0; i < junctions.size(); i++) {
+		if (p.isWithinDist(junctions[i]->getPosition(), 15))
+		{
+			return junctions[i];
+		}
+	}
+	return 0;
+}
 class CShape* CWire::findSubPart(const Coord &p) {
 	for (int i = 0; i < junctions.size(); i++) {
 		if (p.isWithinDist(junctions[i]->getPosition(), 15))

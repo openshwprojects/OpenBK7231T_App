@@ -3,6 +3,8 @@
 #include "Simulator.h"
 #include "Simulation.h"
 #include "CursorManager.h"
+#include "Junction.h"
+#include "Wire.h"
 
 Tool_Wire::Tool_Wire() {
 	newWire = 0;
@@ -22,8 +24,22 @@ void Tool_Wire::onMouseDown(const Coord &pos, int button) {
 		Coord curPos = roundToGrid(GetMousePos());
 		if (bActive) {
 #if 1				
-			newWire = sim->getSim()->addWire(a, b);
+			CWire *newWireOld = sim->getSim()->addWire(a, b);
 			newWire = sim->getSim()->addWire(b, c);
+			if (newWire != 0) {
+				CJunction *jun = newWire->getJunctionForPos(c);
+				if (jun->getLinksCount() > 0) {
+					// hit target, stop wire
+					bActive = false;
+				}
+			}
+			else if (newWireOld != 0) {
+				CJunction *jun = newWireOld->getJunctionForPos(b);
+				if (jun->getLinksCount() > 0) {
+					// hit target, stop wire
+					bActive = false;
+				}
+			}
 #else
 			if (newWire == 0) {
 				newWire = sim->getSim()->addWire(a, b);
