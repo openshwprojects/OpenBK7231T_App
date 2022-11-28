@@ -229,6 +229,7 @@ There are multiple console commands that allow you to automate your devices. Com
 | loglevel     | [Value]  | Correct values are 0 to 7. Default is 3. Higher value includes more logs. Log levels are: ERROR = 1, WARN = 2, INFO = 3, DEBUG = 4, EXTRADEBUG = 5. WARNING: you also must separately select logging level filter on web panel in order for more logs to show up there |
 | logdelay     | [Value] | Value is a number of ms. This will add an artificial delay in each log call. Useful for debugging. This way you can see step by step what happens. |
 | restart     |  | Reboots the device. |
+| ntp_setServer     | IP | Sets the address of NTP server. |
 | clearConfig     |  | Clears all the device config and returns it to AP mode. |
 | VoltageSet     | [Value] | Used for BL0942/BL0937/etc calibration. Refer to BL0937 guide for more info. |
 | PowerSet     | [Value] | Used for BL0942/BL0937/etc calibration. Refer to BL0937 guide for more info. |
