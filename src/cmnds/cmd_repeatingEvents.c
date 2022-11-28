@@ -163,9 +163,9 @@ commandResult_t RepeatingEvents_Cmd_ClearRepeatingEvents(const void *context, co
 	cur = g_repeatingEvents;
 	while (cur) {
 		rem = cur;
+		cur = cur->next;
 		free(rem->command);
 		free(rem);
-		cur = cur->next;
 		c++;
 	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Fried %i rep. events\n", c);
