@@ -15,6 +15,7 @@
 #include "Simulation.h"
 #include "CursorManager.h"
 #include "Solver.h"
+#include "WinMenuBar.h"
 
 
 CSimulator::CSimulator() {
@@ -47,6 +48,9 @@ void CSimulator::drawWindow() {
 	SDL_Event Event;
 	while (SDL_PollEvent(&Event))
 	{
+		if (winMenu) {
+			winMenu->processEvent(Event);
+		}
 		if (Event.type == SDL_KEYDOWN)
 		{
 			onKeyDown(Event.key.keysym.sym);
@@ -151,13 +155,16 @@ class CShape *CSimulator::getShapeUnderCursor() {
 	Coord p = GetMousePos();
 	return sim->findShapeByBoundsPoint(p);
 }
+
+
 void CSimulator::createWindow() {
 	Window = SDL_CreateWindow("OpenGL Test", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WinWidth, WinHeight, WindowFlags);
 	assert(Window);
+	winMenu = new CWinMenuBar();
+	winMenu->createMenuBar(Window);
 	Context = SDL_GL_CreateContext(Window);
 	cur = new CursorManager();
 }
-
 void CSimulator::onKeyDown(int keyCode) {
 	if (keyCode == '1') {
 		setTool(new Tool_Use());

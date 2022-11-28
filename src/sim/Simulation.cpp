@@ -135,10 +135,11 @@ void CSimulation::createDemo() {
 	bulb2_copy->setPosition(640, 140);
 	addObject(bulb2_copy);
 
-
-	CObject *wb3s_copy = wb3s->cloneObject();
-	wb3s_copy->setPosition(640, 440);
-	addObject(wb3s_copy);
+	if (0) {
+		CObject *wb3s_copy = wb3s->cloneObject();
+		wb3s_copy->setPosition(640, 440);
+		addObject(wb3s_copy);
+	}
 
 	matchAllJunctions();
 	recalcBounds();
