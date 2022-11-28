@@ -336,6 +336,7 @@ void EventHandlers_FireEvent_String(byte eventCode, const char *argument) {
 
 }
 
+// NOTE: this also handles addEventHandler2, an event handler with two arguments
 static commandResult_t CMD_AddEventHandler(const void *context, const char *cmd, const char *args, int cmdFlags){
 	const char *eventName;
 	int reqArg;
@@ -398,8 +399,9 @@ static commandResult_t CMD_AddEventHandler(const void *context, const char *cmd,
 
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_ClearAllHandlers(const void *context, const char *cmd, const char *args, int cmdFlags){
+commandResult_t CMD_ClearAllHandlers(const void *context, const char *cmd, const char *args, int cmdFlags){
 
+	int c = 0;
 	eventHandler_t *ev, *next;
 
 	ev = g_eventHandlers;
@@ -411,8 +413,10 @@ static commandResult_t CMD_ClearAllHandlers(const void *context, const char *cmd
 		free(ev);
 
 		ev = next;
+		c++;
 	}
 
+	addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Fried %i handlers\n", c);
 	g_eventHandlers = 0;
 
 	return CMD_RES_OK;
@@ -459,7 +463,7 @@ static commandResult_t CMD_AddChangeHandler(const void *context, const char *cmd
 	return CMD_RES_OK;
 }
 
-static commandResult_t CMD_ListEvents(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_ListEventHandlers(const void *context, const char *cmd, const char *args, int cmdFlags){
 	struct eventHandler_s *ev;
 	int c;
 
@@ -491,7 +495,7 @@ void EventHandlers_Init() {
 	//cmddetail:"descr":"qqqqq0",
 	//cmddetail:"fn":"CMD_ListEvents","file":"cmnds/cmd_eventHandlers.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("listEvents", "", CMD_ListEvents, NULL, NULL);
+    CMD_RegisterCommand("listEventHandlers", "", CMD_ListEventHandlers, NULL, NULL);
 	//cmddetail:{"name":"clearAllHandlers","args":"",
 	//cmddetail:"descr":"qqqqq0",
 	//cmddetail:"fn":"CMD_ClearAllHandlers","file":"cmnds/cmd_eventHandlers.c","requires":"",
