@@ -197,8 +197,11 @@ There are multiple console commands that allow you to automate your devices. Com
 | setPinRole     | [PinRole][RoleIndexOrName] | This allows you to set a pin role, for example a Relay role, or Button, etc. Usually it's easier to do this through WWW panel, so you don't have to use this command.  |
 | setPinChannel     | [PinRole][ChannelIndex] | This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command. |
 | addRepeatingEvent     | [IntervalSeconds][RepeatsOr-1][CommandToRun] | Starts a timer/interval command. Use "backlog" to fit multiple commands in a single string. |
+| addRepeatingEventID | [IntervalSeconds][RepeatsOr-1][UserID][CommandToRun] | as above, but with a given ID |
+| cancelRepeatingEvent | [UserID] | Stops a given repeating event with a specified ID |
 | addEventHandler     | [EventName][EventArgument][CommandToRun] | This can be used to trigger an action on a button click, long press, etc |
 | addChangeHandler     | [Variable][Relation][Constant][Command] | This can listen to change in channel value (for example channel 0 becoming 100), or for a voltage/current/power change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be "Power", or "Current" or "Voltage" |
+| clearAllHandlers | | This clears all added event handlers |
 | sendGet     | [TargetURL] | Sends a HTTP GET request to target URL. May include GET arguments. Can be used to control devices by Tasmota HTTP protocol. |
 | publish     | [Topic][Value] | Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get |
 | linkTuyaMCUOutputToChannel     | [dpId][varType][channelID] | Used to map between TuyaMCU dpIDs and our internal channels. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap  |
