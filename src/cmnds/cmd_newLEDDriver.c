@@ -518,10 +518,12 @@ void LED_SetEnableAll(int bEnable) {
 	DRV_DGR_OnLedEnableAllChange(bEnable);
 #endif
 	LED_SendEnableAllState();
-	// if enable all was set to 1 this frame, also send dimmer
-	// https://github.com/openshwprojects/OpenBK7231T_App/issues/498
-	// TODO: check if it's OK 
-	LED_SendDimmerChange();
+	if (bEnableAllWasSetTo1) {
+		// if enable all was set to 1 this frame, also send dimmer
+		// https://github.com/openshwprojects/OpenBK7231T_App/issues/498
+		// TODO: check if it's OK 
+		LED_SendDimmerChange();
+	}
 }
 int LED_GetEnableAll() {
 	return g_lightEnableAll;
