@@ -34,6 +34,9 @@ public:
 	bool isMouseButtonHold(int idx) const {
 		return bMouseButtonStates[idx];
 	}
+	bool createSimulation(const char *s);
+	bool loadSimulation(const char *s);
+	bool saveSimulationAs(const char *s);
 };
 
 #endif

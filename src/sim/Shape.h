@@ -11,6 +11,7 @@ class CShape {
 	CShape *parent;
 	TArray<class CShape*> shapes;
 	class CControllerBase *controller;
+	float rotationAccum;
 	//class CControlelrBase *referencedController;
 	
 	virtual void rotateDegreesAround_internal(float f, const Coord &p);
@@ -25,6 +26,7 @@ public:
 		controller = 0;
 		bActive = true;
 		bFill = false;
+		rotationAccum = 0;
 	}
 	void snapToGrid();
 	void cloneShapeTo(CShape *o);
@@ -97,6 +99,9 @@ public:
 	}
 	void translate(float oX, float oY) {
 		translate(Coord(oX, oY));
+	}
+	float getRotationAccum() const {
+		return rotationAccum;
 	}
 	virtual void translate(const Coord &o);
 	float getX() const {

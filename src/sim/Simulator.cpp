@@ -16,6 +16,7 @@
 #include "CursorManager.h"
 #include "Solver.h"
 #include "WinMenuBar.h"
+#include "../cJSON/cJSON.h"
 
 
 CSimulator::CSimulator() {
@@ -155,15 +156,86 @@ class CShape *CSimulator::getShapeUnderCursor() {
 	Coord p = GetMousePos();
 	return sim->findShapeByBoundsPoint(p);
 }
+bool CSimulator::createSimulation(const char *s) {
+	CString memPath = CString::constructPathByStrippingExt(s, "flashMemory.bin");
+	CString simPath = CString::constructPathByStrippingExt(s, "simulation.txt");
+
+	cJSON *root_proj = cJSON_CreateObject();
+	cJSON_AddStringToObject(root_proj, "created", "qqq");
+	cJSON_AddStringToObject(root_proj, "lastModified", "qqq");
+
+	//sim->saveTo(simPath.c_str());
+	cJSON *root_sim = cJSON_CreateObject();
+	cJSON *main_sim = cJSON_AddObjectToObject(root_sim, "simulation");
+	cJSON *main_objects = cJSON_AddObjectToObject(main_sim, "objects");
+	for (int i = 0; i < sim->getObjectsCount(); i++) {
+		CObject *obj = sim->getObject(i);
+		cJSON *j_obj = cJSON_AddObjectToObject(main_objects, "object");
+		const Coord &pos = obj->getPosition();
+		float rot = obj->getRotationAccum();
+		const char *name = obj->getName();
+		cJSON_AddStringToObject(j_obj, "name", name);
+		cJSON_AddNumberToObject(j_obj, "rotation", rot);
+		cJSON_AddNumberToObject(j_obj, "x", pos.getX());
+		cJSON_AddNumberToObject(j_obj, "y", pos.getY());
+	}
+	cJSON *main_wires = cJSON_AddObjectToObject(main_sim, "wires");
+	for (int i = 0; i < sim->getWiresCount(); i++) {
+		CWire *wire = sim->getWires(i);
+		cJSON *j_wire = cJSON_AddObjectToObject(main_wires, "wire");
+		CJunction *jA = wire->getJunction(0);
+		CJunction *jB = wire->getJunction(1);
+		cJSON_AddNumberToObject(j_wire, "x0", jA->getX());
+		cJSON_AddNumberToObject(j_wire, "y0", jB->getY());
+		cJSON_AddNumberToObject(j_wire, "x1", jA->getX());
+		cJSON_AddNumberToObject(j_wire, "y1", jB->getY());
+	}
+	char *msg = cJSON_Print(root_sim);
+	cJSON *n_jSim = cJSON_Parse(msg);
+	cJSON *n_jSimSim = cJSON_GetObjectItemCaseSensitive(n_jSim, "simulation");
+	cJSON *n_jWires = cJSON_GetObjectItemCaseSensitive(n_jSimSim, "wires");
+	cJSON *n_jObjects = cJSON_GetObjectItemCaseSensitive(n_jSimSim, "objects");
+	cJSON *jObject;
+	cJSON *jWire;
+	cJSON_ArrayForEach(jObject, n_jObjects)
+	{
+		cJSON *jX = cJSON_GetObjectItemCaseSensitive(jObject, "x");
+		cJSON *jY = cJSON_GetObjectItemCaseSensitive(jObject, "y");
+		cJSON *jName = cJSON_GetObjectItemCaseSensitive(jObject, "name");
+
+	}
+	cJSON_ArrayForEach(jWire, n_jWires)
+	{
+		cJSON *jX0 = cJSON_GetObjectItemCaseSensitive(jWire, "x0");
+		cJSON *jY0 = cJSON_GetObjectItemCaseSensitive(jWire, "y0");
+		cJSON *jX1 = cJSON_GetObjectItemCaseSensitive(jWire, "x1");
+		cJSON *jY1 = cJSON_GetObjectItemCaseSensitive(jWire, "y1");
+
+	}
+	FILE *f = fopen("test.txt", "w");
+	fprintf(f, msg);
+	fclose(f);
+	return false;
+}
+bool CSimulator::loadSimulation(const char *s) {
+
+	return false;
+}
+bool CSimulator::saveSimulationAs(const char *s) {
+
+	return false;
+}
 
 
 void CSimulator::createWindow() {
 	Window = SDL_CreateWindow("OpenGL Test", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WinWidth, WinHeight, WindowFlags);
 	assert(Window);
 	winMenu = new CWinMenuBar();
+	winMenu->setSimulator(this);
 	winMenu->createMenuBar(Window);
 	Context = SDL_GL_CreateContext(Window);
 	cur = new CursorManager();
+	createSimulation("default.obkproj");
 }
 void CSimulator::onKeyDown(int keyCode) {
 	if (keyCode == '1') {

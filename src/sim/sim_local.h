@@ -58,5 +58,32 @@ public:
 	}
 };
 
+class CString : public std::string {
+
+public:
+	CString() {
+
+	}
+	CString(const char *s) : std::string(s) {
+	}
+	void stripExtension() {
+		int lst = this->find_last_of(".");
+		if (lst > 0) {
+			this->resize(lst);
+		}
+	}
+	static CString getWithoutExtension(const char *s) {
+		CString r = s;
+		r.stripExtension();
+		return r;
+	}
+	static CString constructPathByStrippingExt(const char *dir, const char *subfile) {
+		CString r = dir;
+		r.stripExtension();
+		r.append("/");
+		r.append(subfile);
+		return r;
+	}
+};
 #endif
 #endif

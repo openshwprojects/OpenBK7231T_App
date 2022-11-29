@@ -164,6 +164,7 @@ void CSimulation::matchAllJunctions() {
 
 class CObject *CSimulation::generateVDD() {
 	CObject *o = new CObject();
+	o->setName("VDD");
 	o->addJunction(0, 0, "VDD");
 	o->addLine(0, -20, 0, 0);
 	o->addCircle(0, -30, 10);
@@ -171,6 +172,7 @@ class CObject *CSimulation::generateVDD() {
 }
 class CObject *CSimulation::generateGND() {
 	CObject *o = new CObject();
+	o->setName("GND");
 	o->addJunction(0, -20, "GND");
 	o->addLine(0, -20, 0, 0);
 	o->addLine(-10, 0, 10, 0);
@@ -181,6 +183,7 @@ class CObject *CSimulation::generateGND() {
 }
 class CObject *CSimulation::generateButton() {
 	CObject *o = new CObject();
+	o->setName("Button");
 	CJunction *a = o->addJunction(-40, -10, "pad_a");
 	CJunction *b = o->addJunction(40, -10, "pad_b");
 	o->addLine(40, -10, 20, -10);
@@ -205,6 +208,7 @@ class CObject *CSimulation::generateButton() {
 class CObject *CSimulation::generateTest() {
 
 	CObject *o = new CObject();
+	o->setName("test");
 	o->addLine(50, 10, -50, 10);
 	o->addLine(50, -10, -50, -10);
 	o->addLine(50, -10, 50, 10);
@@ -214,6 +218,7 @@ class CObject *CSimulation::generateTest() {
 class CObject *CSimulation::generateWB3S() {
 
 	CObject *o = new CObject();
+	o->setName("WB3S");
 	CControllerSimulatorLink *link = new CControllerSimulatorLink();
 	o->setController(link);
 	o->addText(-40, -25, "WB3S");
@@ -259,6 +264,7 @@ class CObject *CSimulation::generateLED_CW() {
 	float bulb_radius = 20.0f;
 
 	CObject *o = new CObject();
+	o->setName("LED_CW");
 	o->addText(-40, -25, "CW");
 	//CShape *filler = o->addCircle(0, 0, bulb_radius);
 	CShape *body = o->addCircle(0, 0, bulb_radius);
@@ -281,6 +287,7 @@ class CObject *CSimulation::generateLED_RGB() {
 
 	CObject *o = new CObject();
 	o->addText(-40, -25, "RGB");
+	o->setName("LED_RGB");
 	//CShape *filler = o->addCircle(0, 0, bulb_radius);
 	CShape *body = o->addCircle(0, 0, bulb_radius);
 	//filler->setFill(true);
@@ -305,6 +312,7 @@ class CObject *CSimulation::generateBulb() {
 
 	CObject *o = new CObject();
 	o->addText(-40, -25, "Bulb");
+	o->setName("Bulb");
 	CShape *filler = o->addCircle(0, 0, bulb_radius);
 	CShape *body = o->addCircle(0, 0, bulb_radius);
 	filler->setFill(true);

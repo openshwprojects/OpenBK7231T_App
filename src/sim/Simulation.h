@@ -19,6 +19,18 @@ class CSimulation {
 	void registerJunctions(class CShape *s);
 public:
 
+	int getObjectsCount() const {
+		return objects.size();
+	}
+	class CObject *getObject(int i) {
+		return objects[i];
+	}
+	int getWiresCount() const {
+		return wires.size();
+	}
+	class CWire *getWires(int i) {
+		return wires[i];
+	}
 	int getJunctionsCount() const {
 		return junctions.size();
 	}

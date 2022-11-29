@@ -6,6 +6,7 @@
 #include <SDL_syswm.h>
 
 class CWinMenuBar {
+	class CSimulator *sim;
 	HMENU hMenuBar;
 	HMENU hFile;
 	HMENU hEdit;
@@ -15,6 +16,10 @@ class CWinMenuBar {
 	HWND getHWNDForSDLWindow(SDL_Window* win);
 public:
 	CWinMenuBar();
+
+	void setSimulator(class CSimulator *s) {
+		this->sim = s;
+	}
 
 	void createMenuBar(SDL_Window *win);
 	void processEvent(const SDL_Event &Event);

@@ -3,7 +3,7 @@
 #include "Shape.h"
 
 class CObject : public CShape {
-
+	CString name;
 public:
 	CObject() {
 
@@ -13,4 +13,10 @@ public:
 	}
 	virtual CShape *cloneShape();
 	class CObject *cloneObject();
+	void setName(const char *s) {
+		name = s;
+	}
+	const char *getName() const {
+		return name.c_str();
+	}
 };

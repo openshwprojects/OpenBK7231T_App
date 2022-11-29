@@ -78,6 +78,7 @@ void CShape::rotateDegreesAround(float f, const Coord &p) {
 void CShape::rotateDegreesAroundSelf(float f) {
 	//rotateDegreesAround(f, Coord(0, 0));
 	rotateDegreesAround(f, getPosition());
+	rotationAccum += f;
 }
 void CShape::recalcBoundsAll() {
 	bounds.clear();
