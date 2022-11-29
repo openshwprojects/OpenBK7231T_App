@@ -4,6 +4,7 @@
 #include "sim_local.h"
 
 class CSimulation {
+	class CSimulator *sim;
 	// all allocated objects (must be fried later)
 	TArray<class CObject*> objects;
 	// all allocated wires (must be fried later)
@@ -18,7 +19,9 @@ class CSimulation {
 	void registerJunctions(class CWire *w);
 	void registerJunctions(class CShape *s);
 public:
-
+	void setSimulator(class CSimulator *ssim) {
+		this->sim = ssim;
+	}
 	int getObjectsCount() const {
 		return objects.size();
 	}
@@ -39,14 +42,6 @@ public:
 	}
 
 	void recalcBounds();
-	class CObject *generateLED_CW();
-	class CObject *generateLED_RGB();
-	class CObject *generateBulb();
-	class CObject *generateWB3S();
-	class CObject *generateButton();
-	class CObject *generateTest();
-	class CObject *generateGND();
-	class CObject *generateVDD();
 	void createDemo();
 	void matchAllJunctions();
 	void drawSim();

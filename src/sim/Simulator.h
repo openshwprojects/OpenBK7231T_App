@@ -16,6 +16,7 @@ class CSimulator {
 	class CursorManager *cur;
 	class CSolver *solver;
 	class CWinMenuBar *winMenu;
+	class PrefabManager *prefabs;
 
 	void onKeyDown(int keyCode);
 	void setTool(Tool_Base *tb);
@@ -27,6 +28,9 @@ public:
 	class CShape *getShapeUnderCursor();
 	class CSimulation*getSim() {
 		return sim;
+	}
+	class PrefabManager*getPfbs() {
+		return prefabs;
 	}
 	class CursorManager*getCursorMgr() {
 		return cur;

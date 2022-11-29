@@ -18,15 +18,32 @@ CShape::~CShape() {
 		controller = 0;
 	}
 }
+class CShape *CShape::findShapeByName_r(const char *name) {
+	if (this->hasName(name))
+		return this;
+	for (int i = 0; i < shapes.size(); i++) {
+		CShape *r = shapes[i]->findShapeByName_r(name);
+		if (r != 0)
+			return r;
+	}
+	return 0;
+}
+class CJunction *CShape::asJunction() {
+	return dynamic_cast<CJunction*>(this);
+}
 void CShape::snapToGrid() {
 	Coord n = roundToGrid(getPosition());
 	setPosition(n);
 }
 void CShape::cloneShapeTo(CShape *o) {
+	o->name = this->name;
 	o->pos = this->pos;
 	o->bounds = this->bounds;
 	for (int i = 0; i < shapes.size(); i++) {
 		o->addShape(shapes[i]->cloneShape());
+	}
+	if (this->controller != 0) {
+		o->setController(this->controller->cloneController(this,o));
 	}
 }
 CShape *CShape::cloneShape() {
@@ -40,7 +57,7 @@ float CShape::drawPrivateInformation2D(float x, float h) {
 	return h;
 }
 float CShape::drawInformation2D(float x, float h) {
-	h = drawText(x, h, "ClassName: %s", this->getClassName());
+	h = drawText(x, h, "ClassName: %s, int. name %s", this->getClassName(), this->getName());
 	h = drawPrivateInformation2D(x, h);
 	if (shapes.size()) {
 		h = drawText(x, h, "SubShapes: %i", shapes.size());
@@ -62,7 +79,9 @@ bool CShape::hasWorldPointInside(const Coord &p)const {
 	return hasLocalPointInside(loc);
 }
 bool CShape::hasLocalPointInside(const Coord &p)const {
-	return bounds.isInside(p);
+	if (bounds.isInside(p))
+		return true;
+	return false;
 }
 void CShape::rotateDegreesAround(float f, const Coord &p) {
 	Coord p_i = p - this->getPosition();

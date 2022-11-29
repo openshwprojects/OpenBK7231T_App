@@ -29,6 +29,8 @@ enum {
 	EVE_LMB_HOLD,
 };
 
+#define WINDOWS_MOUSE_MENUBAR_OFFSET 20
+
 int drawText(int x, int y, const char* fmt, ...);
 #include "Coord.h"
 Coord roundToGrid(Coord c);

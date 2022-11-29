@@ -3,10 +3,9 @@
 #include "Shape.h"
 #include "Object.h"
 #include "Wire.h"
-#include "Controller_Button.h"
-#include "Controller_Bulb.h"
-#include "Controller_SimulatorLink.h"
 #include "Junction.h"
+#include "Simulator.h"
+#include "PrefabManager.h"
 
 
 void CSimulation::removeJunctions(class CShape *s) {
@@ -83,6 +82,9 @@ void CSimulation::registerJunctions(class CWire *w) {
 	}
 }
 void CSimulation::registerJunctions(class CShape *s) {
+	if (s == 0) {
+		return;
+	}
 	CJunction *j = dynamic_cast<CJunction*>(s);
 	if (j != 0) {
 		registerJunction(j);
@@ -93,16 +95,19 @@ void CSimulation::registerJunctions(class CShape *s) {
 	}
 }
 CObject * CSimulation::addObject(CObject *o) {
+	if (o == 0) {
+		return 0;
+	}
 	objects.push_back(o);
 	registerJunctions(o);
 	return o;
 }
 void CSimulation::createDemo() {
-	CObject *wb3s = addObject(generateWB3S());
+	CObject *wb3s = addObject(sim->getPfbs()->instantiatePrefab("WB3S"));
 	wb3s->setPosition(300, 200);
-	addObject(generateButton())->setPosition(500, 260)->rotateDegreesAroundSelf(180);
-	addObject(generateTest())->setPosition(500, 400);
-	addObject(generateGND())->setPosition(600, 420);
+	addObject(sim->getPfbs()->instantiatePrefab("Button"))->setPosition(500, 260)->rotateDegreesAroundSelf(180);
+	addObject(sim->getPfbs()->instantiatePrefab("Test"))->setPosition(500, 400);
+	addObject(sim->getPfbs()->instantiatePrefab("GND"))->setPosition(600, 420);
 	addWire(Coord(460, 260), Coord(380, 260));
 	addWire(Coord(540, 260), Coord(600, 260));
 	addWire(Coord(600, 400), Coord(600, 260));
@@ -110,26 +115,26 @@ void CSimulation::createDemo() {
 
 	addWire(Coord(500, 220), Coord(380, 220));
 	addWire(Coord(500, 220), Coord(500, 160));
-	addObject(generateBulb())->setPosition(500, 140)->rotateDegreesAroundSelf(90);
+	addObject(sim->getPfbs()->instantiatePrefab("Bulb"))->setPosition(500, 140)->rotateDegreesAroundSelf(90);
 	addWire(Coord(500, 60), Coord(500, 120));
-	addObject(generateVDD())->setPosition(500, 60);
+	addObject(sim->getPfbs()->instantiatePrefab("VDD"))->setPosition(500, 60);
 
 	addWire(Coord(560, 240), Coord(380, 240));
-	addObject(generateButton())->setPosition(600, 240)->rotateDegreesAroundSelf(180);
+	addObject(sim->getPfbs()->instantiatePrefab("Button"))->setPosition(600, 240)->rotateDegreesAroundSelf(180);
 	addWire(Coord(640, 240), Coord(700, 240));
 	addWire(Coord(700, 400), Coord(700, 240));
-	addObject(generateGND())->setPosition(700, 420);
+	addObject(sim->getPfbs()->instantiatePrefab("GND"))->setPosition(700, 420);
 	//addObject(new CObject(new CCircle(800, 500, 100)));
-	CObject *bulb2 = addObject(generateBulb());
+	CObject *bulb2 = addObject(sim->getPfbs()->instantiatePrefab("Bulb"));
 	bulb2->setPosition(440, 140)->rotateDegreesAroundSelf(90);
 
-	addObject(generateLED_CW())->setPosition(560, 140)->rotateDegreesAroundSelf(90);
-	addObject(generateLED_RGB())->setPosition(760, 140)->rotateDegreesAroundSelf(90);
+	addObject(sim->getPfbs()->instantiatePrefab("LED_CW"))->setPosition(560, 140)->rotateDegreesAroundSelf(90);
+	addObject(sim->getPfbs()->instantiatePrefab("LED_RGB"))->setPosition(760, 140)->rotateDegreesAroundSelf(90);
 	
 	addWire(Coord(440, 60), Coord(440, 120));
 	addWire(Coord(440, 200), Coord(440, 160));
 	addWire(Coord(440, 200), Coord(380, 200));
-	addObject(generateVDD())->setPosition(440, 60);
+	addObject(sim->getPfbs()->instantiatePrefab("VDD"))->setPosition(440, 60);
 
 	CObject *bulb2_copy = bulb2->cloneObject();
 	bulb2_copy->setPosition(640, 140);
@@ -159,176 +164,6 @@ void CSimulation::matchAllJunctions() {
 		matchJunction(w);
 	}
 }
-
-
-
-class CObject *CSimulation::generateVDD() {
-	CObject *o = new CObject();
-	o->setName("VDD");
-	o->addJunction(0, 0, "VDD");
-	o->addLine(0, -20, 0, 0);
-	o->addCircle(0, -30, 10);
-	return o;
-}
-class CObject *CSimulation::generateGND() {
-	CObject *o = new CObject();
-	o->setName("GND");
-	o->addJunction(0, -20, "GND");
-	o->addLine(0, -20, 0, 0);
-	o->addLine(-10, 0, 10, 0);
-	o->addLine(-8, 2, 8, 2);
-	o->addLine(-6, 4, 6, 4);
-	o->addLine(-4, 6, 4, 6);
-	return o;
-}
-class CObject *CSimulation::generateButton() {
-	CObject *o = new CObject();
-	o->setName("Button");
-	CJunction *a = o->addJunction(-40, -10, "pad_a");
-	CJunction *b = o->addJunction(40, -10, "pad_b");
-	o->addLine(40, -10, 20, -10);
-	o->addLine(-40, -10, -20, -10);
-#if 0
-	CShape *mover = new CShape();
-	mover->addLine(20, 10, -20, 10);
-	mover->addLine(0, 20, 0, 10);
-	o->addShape(mover);
-#else
-	CShape *mover = o->addLine(20, 10, -20, 10);
-	//	mover->addLine(-20, 0, -20, 10);
-
-#endif
-
-	CControllerButton *btn = new CControllerButton(a,b);
-	btn->setMover(mover);
-	o->setController(btn);
-	o->translateEachChild(0, 10);
-	return o;
-}
-class CObject *CSimulation::generateTest() {
-
-	CObject *o = new CObject();
-	o->setName("test");
-	o->addLine(50, 10, -50, 10);
-	o->addLine(50, -10, -50, -10);
-	o->addLine(50, -10, 50, 10);
-	o->addLine(-50, 10, -50, -10);
-	return o;
-}
-class CObject *CSimulation::generateWB3S() {
-
-	CObject *o = new CObject();
-	o->setName("WB3S");
-	CControllerSimulatorLink *link = new CControllerSimulatorLink();
-	o->setController(link);
-	o->addText(-40, -25, "WB3S");
-	o->addRect(-50, -20, 100, 180);
-	struct PinDef_s {
-		const char *name;
-		int gpio;
-	};
-	PinDef_s wb3sPinsRight[] = {
-		{ "TXD1", 11 },
-		{ "RXD1", 10 },
-		{ "PWM2", 8 },
-		{ "PWM3", 9 },
-		{ "RXD2", 1 },
-		{ "TXD2", 0 },
-		{ "PWM1", 7 },
-		{ "GND", -1 }
-	};
-	PinDef_s wb3sPinsLeft[] = {
-		{ "CEN", -1 },
-		{ "ADC3", 23 },
-		{ "EN", -1 },
-		{ "P14", 14 },
-		{ "PWM5", 26 },
-		{ "PWM4", 24 },
-		{ "PWM0", 6 },
-		{ "VCC", -1 }
-	};
-	for (int i = 0; i < 8; i++) {
-		int y = i * 20;
-		o->addLine(50, y, 80, y);
-		o->addLine(-50, y, -80, y);
-		CJunction *a = o->addJunction(-80, y, "", wb3sPinsLeft[i].gpio);
-		a->addText(-5, -5, wb3sPinsLeft[i].name);
-		CJunction *b = o->addJunction(80, y, "", wb3sPinsRight[i].gpio);
-		b->addText(-25, -5, wb3sPinsRight[i].name);
-		link->addRelatedJunction(a);
-		link->addRelatedJunction(b);
-	}
-	return o;
-}
-class CObject *CSimulation::generateLED_CW() {
-	float bulb_radius = 20.0f;
-
-	CObject *o = new CObject();
-	o->setName("LED_CW");
-	o->addText(-40, -25, "CW");
-	//CShape *filler = o->addCircle(0, 0, bulb_radius);
-	CShape *body = o->addCircle(0, 0, bulb_radius);
-	//filler->setFill(true);
-	CJunction *a = o->addJunction(-bulb_radius, 0);
-	a->addText(-5, -5, "");
-	CJunction *b1 = o->addJunction(bulb_radius, 20);
-	b1->addText(-5, -5, "C");
-	CJunction *b2 = o->addJunction(bulb_radius, -20);
-	b2->addText(-5, -5, "W");
-
-	//bulb->setShape(filler);
-	float mul = sqrt(2) * 0.5f;
-	o->addLine(-bulb_radius * mul, -bulb_radius * mul, bulb_radius * mul, bulb_radius * mul);
-	o->addLine(-bulb_radius * mul, bulb_radius * mul, bulb_radius * mul, -bulb_radius * mul);
-	return o;
-}
-class CObject *CSimulation::generateLED_RGB() {
-	float bulb_radius = 20.0f;
-
-	CObject *o = new CObject();
-	o->addText(-40, -25, "RGB");
-	o->setName("LED_RGB");
-	//CShape *filler = o->addCircle(0, 0, bulb_radius);
-	CShape *body = o->addCircle(0, 0, bulb_radius);
-	//filler->setFill(true);
-	CJunction *a = o->addJunction(-bulb_radius, 0);
-	a->addText(-5, -5, "");
-	CJunction *b1 = o->addJunction(bulb_radius, 20);
-	b1->addText(-5, -5, "R");
-	CJunction *b2 = o->addJunction(bulb_radius, 0);
-	b2->addText(-5, -5, "G");
-	CJunction *b3 = o->addJunction(bulb_radius, -20);
-	b3->addText(-5, -5, "B");
-
-	//bulb->setShape(filler);
-	float mul = sqrt(2) * 0.5f;
-	o->addLine(-bulb_radius * mul, -bulb_radius * mul, bulb_radius * mul, bulb_radius * mul);
-	o->addLine(-bulb_radius * mul, bulb_radius * mul, bulb_radius * mul, -bulb_radius * mul);
-	return o;
-}
-
-class CObject *CSimulation::generateBulb() {
-	float bulb_radius = 20.0f;
-
-	CObject *o = new CObject();
-	o->addText(-40, -25, "Bulb");
-	o->setName("Bulb");
-	CShape *filler = o->addCircle(0, 0, bulb_radius);
-	CShape *body = o->addCircle(0, 0, bulb_radius);
-	filler->setFill(true);
-	CJunction *a = o->addJunction(-bulb_radius, 0);
-	a->addText(-5, -5, "");
-	CJunction *b = o->addJunction(bulb_radius, 0);
-	b->addText(-25, -5, "");
-	CControllerBulb *bulb = new CControllerBulb(a, b);
-	o->setController(bulb);
-	bulb->setShape(filler);
-	float mul = sqrt(2) * 0.5f;
-	o->addLine(-bulb_radius * mul, -bulb_radius * mul, bulb_radius * mul, bulb_radius * mul);
-	o->addLine(-bulb_radius * mul, bulb_radius * mul, bulb_radius * mul, -bulb_radius * mul);
-	return o;
-}
-
 
 
 void CSimulation::matchJunctionsOf_r(class CShape *s) {

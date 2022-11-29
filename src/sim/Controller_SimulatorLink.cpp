@@ -7,11 +7,20 @@ extern "C" {
 	void SIM_SetSimulatedPinValue(int pinIndex, bool bHigh);
 	bool SIM_GetSimulatedPinValue(int pinIndex);
 	bool SIM_IsPinInput(int index);
+	bool SIM_IsPinPWM(int index);
+	int SIM_GetPWMValue(int index);
 };
 
 
 CControllerSimulatorLink::CControllerSimulatorLink() {
 
+}
+class CControllerBase *CControllerSimulatorLink::cloneController(class CShape *origOwner, class CShape *newOwner) {
+	CControllerSimulatorLink *r = new CControllerSimulatorLink();
+	for (int i = 0; i < related.size(); i++) {
+		r->addRelatedJunction(newOwner->findShapeByName_r(related[i]->getName())->asJunction());
+	}
+	return r;
 }
 void CControllerSimulatorLink::onDrawn() {
 	for (int i = 0; i < related.size(); i++) {

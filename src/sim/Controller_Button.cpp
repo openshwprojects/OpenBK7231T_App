@@ -1,6 +1,7 @@
 #ifdef WINDOWS
 #include "Controller_Button.h"
 #include "Shape.h"
+#include "Junction.h"
 
 CControllerButton::CControllerButton(class CJunction *_a, class CJunction *_b) {
 	timeAfterMouseHold = 99.0f;
@@ -9,6 +10,17 @@ CControllerButton::CControllerButton(class CJunction *_a, class CJunction *_b) {
 	a = _a;
 	b = _b;
 	remDist = 0;
+}
+class CControllerBase *CControllerButton::cloneController(class CShape *origOwner, class CShape *newOwner) {
+	CControllerButton *r = new CControllerButton();
+	r->openPos = this->openPos;
+	r->closedPos = this->closedPos;
+	r->remDist = this->remDist;
+	r->timeAfterMouseHold = this->timeAfterMouseHold;
+	r->mover = newOwner->findShapeByName_r(this->mover->getName());
+	r->a = newOwner->findShapeByName_r(this->a->getName())->asJunction();
+	r->b = newOwner->findShapeByName_r(this->b->getName())->asJunction();
+	return r;
 }
 class CJunction *CControllerButton::findOtherJunctionIfPassable(class CJunction *ju) {
 	//float dst = mover->getPosition().dist(closedPos);

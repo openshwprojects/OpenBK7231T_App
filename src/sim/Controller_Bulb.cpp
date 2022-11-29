@@ -13,5 +13,14 @@ void CControllerBulb::onDrawn() {
 	}
 
 }
+class CControllerBase *CControllerBulb::cloneController(class CShape *origOwner, class CShape *newOwner) {
+	CControllerBulb *r = new CControllerBulb();
+	const char *searchName = this->shape->getName();
+	class CShape *newShape = newOwner->findShapeByName_r(searchName);
+	r->setShape(newShape);
+	r->a = newOwner->findShapeByName_r(a->getName())->asJunction();
+	r->b = newOwner->findShapeByName_r(b->getName())->asJunction();
+	return r;
+}
 
 #endif

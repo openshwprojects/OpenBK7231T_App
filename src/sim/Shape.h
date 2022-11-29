@@ -7,6 +7,7 @@
 
 
 class CShape {
+	CString name;
 	bool bActive;
 	CShape *parent;
 	TArray<class CShape*> shapes;
@@ -28,6 +29,17 @@ public:
 		bFill = false;
 		rotationAccum = 0;
 	}
+	void setName(const char *s) {
+		name = s;
+	}
+	bool hasName(const char *s) const {
+		return !strcmp(s, name.c_str());
+	}
+	class CShape *findShapeByName_r(const char *name);
+	const char *getName() const {
+		return name.c_str();
+	}
+	class CJunction *asJunction();
 	void snapToGrid();
 	void cloneShapeTo(CShape *o);
 	virtual CShape *cloneShape();

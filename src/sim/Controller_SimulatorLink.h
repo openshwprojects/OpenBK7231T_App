@@ -12,7 +12,9 @@ public:
 	void addRelatedJunction(CJunction *p) {
 		related.push_back(p);
 	}
-	virtual void onDrawn();
+	virtual void onDrawn(); 
+	class CControllerBase *cloneController(class CShape *origOwner, class CShape *newOwner);
+
 };
 
 #endif // __CONTROLLER_BUTTON_H__

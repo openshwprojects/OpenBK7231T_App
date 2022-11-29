@@ -14,6 +14,7 @@
 #include "Tool_Copy.h"
 #include "Simulation.h"
 #include "CursorManager.h"
+#include "PrefabManager.h"
 #include "Solver.h"
 #include "WinMenuBar.h"
 #include "../cJSON/cJSON.h"
@@ -30,8 +31,6 @@ CSimulator::CSimulator() {
 	//setTool(new Tool_Wire());
 	//setTool(new Tool_Use());
 	setTool(new Tool_Move());
-	sim = new CSimulation();
-	sim->createDemo();
 	solver = new CSolver();
 }
 
@@ -58,11 +57,12 @@ void CSimulator::drawWindow() {
 		}
 		else if (Event.type == SDL_MOUSEBUTTONDOWN)
 		{
-			int x = Event.button.x;
-			int y = Event.button.y;
+			//int x = Event.button.x;
+			//int y = Event.button.y;
+			Coord mouse = GetMousePos();
 			int which = Event.button.button;
 			if (activeTool) {
-				activeTool->onMouseDown(Coord(x, y), which);
+				activeTool->onMouseDown(mouse, which);
 			}
 			bMouseButtonStates[Event.button.button] = true;
 		}
@@ -232,9 +232,14 @@ void CSimulator::createWindow() {
 	assert(Window);
 	winMenu = new CWinMenuBar();
 	winMenu->setSimulator(this);
+	prefabs = new PrefabManager(this);
+	prefabs->createDefaultPrefabs();
 	winMenu->createMenuBar(Window);
 	Context = SDL_GL_CreateContext(Window);
 	cur = new CursorManager();
+	sim = new CSimulation();
+	sim->setSimulator(this);
+	sim->createDemo();
 	createSimulation("default.obkproj");
 }
 void CSimulator::onKeyDown(int keyCode) {

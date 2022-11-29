@@ -11,6 +11,7 @@ public:
 	virtual void rotateDegreesAround(float f, const class Coord &p) { }
 	// for buttons
 	virtual class CJunction *findOtherJunctionIfPassable(class CJunction *ju) { return 0; }
+	virtual class CControllerBase *cloneController(class CShape *origOwner, class CShape *newOwner) { return 0; }
 };
 
 

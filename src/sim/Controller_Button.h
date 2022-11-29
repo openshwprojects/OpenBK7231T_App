@@ -13,6 +13,9 @@ class CControllerButton : public CControllerBase {
 	float timeAfterMouseHold;
 	class CJunction *a, *b;
 public:
+	CControllerButton() {
+
+	}
 	CControllerButton(class CJunction *_a, class CJunction *_b);
 	void setMover(CShape *p) {
 		mover = p;
@@ -21,6 +24,7 @@ public:
 	virtual void onDrawn();
 	virtual void rotateDegreesAround(float f, const Coord &p);
 	virtual class CJunction *findOtherJunctionIfPassable(class CJunction *ju);
+	virtual class CControllerBase *cloneController(class CShape *origOwner, class CShape *newOwner);
 };
 
 #endif // __CONTROLLER_BUTTON_H__
