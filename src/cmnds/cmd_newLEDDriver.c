@@ -503,6 +503,14 @@ void LED_ToggleEnabled() {
 	LED_SetEnableAll(!g_lightEnableAll);
 }
 void LED_SetEnableAll(int bEnable) {
+	bool bEnableAllWasSetTo1;
+
+	if (g_lightEnableAll == 0 && bEnable == 1) {
+		bEnableAllWasSetTo1 = true;
+	}
+	else {
+		bEnableAllWasSetTo1 = false;
+	}
 	g_lightEnableAll = bEnable;
 
 	apply_smart_light();
@@ -510,7 +518,10 @@ void LED_SetEnableAll(int bEnable) {
 	DRV_DGR_OnLedEnableAllChange(bEnable);
 #endif
 	LED_SendEnableAllState();
-
+	// if enable all was set to 1 this frame, also send dimmer
+	// https://github.com/openshwprojects/OpenBK7231T_App/issues/498
+	// TODO: check if it's OK 
+	LED_SendDimmerChange();
 }
 int LED_GetEnableAll() {
 	return g_lightEnableAll;
