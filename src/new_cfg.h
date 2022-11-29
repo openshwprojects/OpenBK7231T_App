@@ -12,7 +12,6 @@ const char *CFG_GetDeviceName();
 const char *CFG_GetShortDeviceName();
 void CFG_SetShortDeviceName(const char *s);
 void CFG_SetDeviceName(const char *s);
-void CFG_CreateDeviceNameUnique();
 int CFG_GetMQTTPort();
 void CFG_SetMQTTPort(int p);
 void CFG_SetOpenAccessPoint();
