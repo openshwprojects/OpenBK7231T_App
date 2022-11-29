@@ -85,7 +85,8 @@ commandResult_t NTP_SetServer(const void *context, const char *cmd, const char *
 
     Tokenizer_TokenizeString(args,0);
     if(Tokenizer_GetArgsCount() < 1) {
-        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Argument missing e.g. ntp_setServer ipAddress\n");
+        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Argument missing e.g. ntp_setServer ipAddress. Current sv is %s\n",
+			CFG_GetNTPServer());
         return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
     newValue = Tokenizer_GetArg(0);
@@ -141,6 +142,7 @@ void NTP_Shutdown() {
 }
 void NTP_SendRequest(bool bBlocking) {
     byte *ptr;
+	const char *adrString;
     //int i, recv_len;
     //char buf[64];
     ntp_packet packet = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -171,9 +173,16 @@ void NTP_SendRequest(bool bBlocking) {
 
     memset((char *) &g_address, 0, sizeof(g_address));
 
-        g_address.sin_family = AF_INET;
-        g_address.sin_addr.s_addr = inet_addr(CFG_GetNTPServer()); // this is address of host which I want to send the socket
-        g_address.sin_port = htons(123);
+	adrString = CFG_GetNTPServer();
+	if (adrString == 0 || adrString[0] == 0) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP_SendRequest: somehow ntp server in config was empty, setting non-empty");
+		CFG_SetNTPServer(DEFAULT_NTP_SERVER);
+		adrString = CFG_GetNTPServer();
+	}
+
+    g_address.sin_family = AF_INET;
+    g_address.sin_addr.s_addr = inet_addr(adrString);
+    g_address.sin_port = htons(123);
 
 
     // Send the message to server:
@@ -305,10 +314,10 @@ void NTP_AppendInformationToHTTPIndexPage(http_request_t* request)
     ltm = localtime((time_t*)&g_time);
 
     if (g_synced == true)
-        hprintf255(request, "<h5>NTP: Local Time: %04d/%02d/%02d %02d:%02d:%02d </h5>",
-                ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+        hprintf255(request, "<h5>NTP (%s): Local Time: %04d/%02d/%02d %02d:%02d:%02d </h5>",
+			CFG_GetNTPServer(),ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
     else 
-        hprintf255(request, "<h5>NTP: Syncing....");
+        hprintf255(request, "<h5>NTP: Syncing with %s....",CFG_GetNTPServer());
 }
 
 bool NTP_IsTimeSynced()

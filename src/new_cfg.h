@@ -3,6 +3,8 @@
 
 #include "new_common.h"
 
+// bart.nexellent.net
+#define DEFAULT_NTP_SERVER "217.147.223.78"
 
 extern int g_cfg_pendingChanges;
 
