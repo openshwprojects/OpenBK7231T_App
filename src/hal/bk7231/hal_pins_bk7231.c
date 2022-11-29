@@ -107,7 +107,7 @@ void HAL_PIN_PWM_Start(int index) {
 		return;
 	}
 	//Use slow pwm if user has set checkbox in webif
-	if(CFG_HasFlag(OBK_FLAG_SLOW_PWM)) pwmfrequency = PWM_FREQUENCY_SLOW; //11 = OBK_FLAG_PWM_SLOW
+	if(CFG_HasFlag(OBK_FLAG_SLOW_PWM)) pwmfrequency = PWM_FREQUENCY_SLOW; 
 
 	uint32_t frequency = (26000000 / pwmfrequency);
 #if PLATFORM_BK7231N
