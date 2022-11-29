@@ -5,6 +5,7 @@
 
 class CSimulator {
 	// window
+	CString projectPath;
 	bool bMouseButtonStates[10];
 	SDL_Window *Window;
 	SDL_GLContext Context;
@@ -17,6 +18,8 @@ class CSimulator {
 	class CSolver *solver;
 	class CWinMenuBar *winMenu;
 	class PrefabManager *prefabs;
+	class CSaveLoad *saveLoad;
+	class CProject *project;
 
 	void onKeyDown(int keyCode);
 	void setTool(Tool_Base *tb);
@@ -38,9 +41,16 @@ public:
 	bool isMouseButtonHold(int idx) const {
 		return bMouseButtonStates[idx];
 	}
-	bool createSimulation(const char *s);
+	bool createSimulation(bool bDemo);
 	bool loadSimulation(const char *s);
 	bool saveSimulationAs(const char *s);
+	bool saveSimulation();
+
+	bool hasProjectPath() const {
+		if (projectPath.size() > 0)
+			return true;
+		return false;
+	}
 };
 
 #endif

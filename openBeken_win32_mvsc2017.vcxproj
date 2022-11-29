@@ -146,7 +146,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\src\libs\SDL2-2.24.2\include;.\src\win32\stubs\;.\src\libs\DevIL-Windows-SDK-1.8.0\include;.\src\libs\freeglut-MSVC-3.0.0-2.mp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\src\libs\SDL2-2.24.2\include;.\src\win32\stubs\;.\src\libs\DevIL-Windows-SDK-1.8.0\include;.\src\libs\freeglut-MSVC-3.0.0-2.mp\include;.\src\libs\nativefiledialog\src\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -157,7 +157,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>.\src\libs\SDL2-2.24.2\lib\x86;.\src\libs\DevIL-Windows-SDK-1.8.0\lib\x86\Release;.\src\libs\freeglut-MSVC-3.0.0-2.mp\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>.\src\libs\SDL2-2.24.2\lib\x86;.\src\libs\DevIL-Windows-SDK-1.8.0\lib\x86\Release;.\src\libs\freeglut-MSVC-3.0.0-2.mp\lib;.\src\libs\nativefiledialog\build\lib\Debug\x86</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">
@@ -521,19 +521,24 @@
     <ClCompile Include="src\sim\CursorManager.cpp" />
     <ClCompile Include="src\sim\Junction.cpp" />
     <ClCompile Include="src\sim\Line.cpp" />
+    <ClCompile Include="src\sim\PrefabManager.cpp" />
     <ClCompile Include="src\sim\Rect.cpp" />
+    <ClCompile Include="src\sim\SaveLoad.cpp" />
     <ClCompile Include="src\sim\Shape.cpp" />
     <ClCompile Include="src\sim\Simulation.cpp" />
     <ClCompile Include="src\sim\Simulator.cpp" />
     <ClCompile Include="src\sim\sim_sdl.cpp" />
+    <ClCompile Include="src\sim\Solver.cpp" />
     <ClCompile Include="src\sim\Text.cpp" />
     <ClCompile Include="src\sim\Texture.cpp" />
     <ClCompile Include="src\sim\TextureManager.cpp" />
+    <ClCompile Include="src\sim\Tool_Copy.cpp" />
     <ClCompile Include="src\sim\Tool_Delete.cpp" />
     <ClCompile Include="src\sim\Tool_Info.cpp" />
     <ClCompile Include="src\sim\Tool_Move.cpp" />
     <ClCompile Include="src\sim\Tool_Use.cpp" />
     <ClCompile Include="src\sim\Tool_Wire.cpp" />
+    <ClCompile Include="src\sim\WinMenuBar.cpp" />
     <ClCompile Include="src\sim\Wire.cpp" />
     <ClCompile Include="src\tiny_crc8.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
@@ -559,10 +564,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\selftest\selftest_local.h" />
+    <ClInclude Include="src\sim\PrefabManager.h" />
+    <ClInclude Include="src\sim\SaveLoad.h" />
     <ClInclude Include="src\sim\sim_local.h" />
+    <ClInclude Include="src\sim\Solver.h" />
     <ClInclude Include="src\sim\Texture.h" />
     <ClInclude Include="src\sim\TextureManager.h" />
+    <ClInclude Include="src\sim\Tool_Copy.h" />
     <ClInclude Include="src\sim\Tool_Info.h" />
+    <ClInclude Include="src\sim\WinMenuBar.h" />
     <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\include\net_param_pub.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>

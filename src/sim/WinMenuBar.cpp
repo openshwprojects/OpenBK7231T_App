@@ -11,8 +11,10 @@ CWinMenuBar::CWinMenuBar() {
 }
 enum {
 	ID_NEW,
+	ID_NEW_DEMO,
 	ID_LOAD,
 	ID_SAVEAS,
+	ID_SAVE,
 	ID_EXIT,
 	ID_OPTIONS,
 	ID_ABOUT,
@@ -28,8 +30,10 @@ void CWinMenuBar::createWindowsMenu(HWND windowRef) {
 	AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hEdit, "Edit");
 	AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hHelp, "Help");
 
-	AppendMenu(hFile, MF_STRING, ID_NEW, "New...");
+	AppendMenu(hFile, MF_STRING, ID_NEW, "New (empty)");
+	AppendMenu(hFile, MF_STRING, ID_NEW_DEMO, "New (built-in demo)");
 	AppendMenu(hFile, MF_STRING, ID_LOAD, "Load...");
+	AppendMenu(hFile, MF_STRING, ID_SAVE, "Save");
 	AppendMenu(hFile, MF_STRING, ID_SAVEAS, "Save as...");
 	AppendMenu(hFile, MF_STRING, ID_EXIT, "Exit");
 
@@ -55,6 +59,19 @@ void CWinMenuBar::createMenuBar(SDL_Window *win) {
 	//Enable WinAPI Events Processing
 	SDL_EventState(SDL_SYSWMEVENT, SDL_ENABLE);
 }
+void CWinMenuBar::showSaveAsDialog() {
+	nfdchar_t *outPath = NULL;
+	nfdresult_t result;
+	CString tmp;
+	result = NFD_SaveDialog("obkproj", NULL, &outPath);
+	if (result == NFD_OKAY) {
+		tmp = outPath;
+		if (tmp.hasExtension() == false) {
+			tmp.append(".obkproj");
+		}
+		sim->saveSimulationAs(tmp.c_str());
+	}
+}
 void CWinMenuBar::processEvent(const SDL_Event &Event) {
 	nfdchar_t *outPath = NULL;
 	nfdresult_t result;
@@ -67,27 +84,31 @@ void CWinMenuBar::processEvent(const SDL_Event &Event) {
 			}
 			else if (LOWORD(Event.syswm.msg->msg.win.wParam) == ID_NEW)
 			{
-				//nfdchar_t *outPath = NULL;
-				//nfdresult_t result = NFD_PickFolder(NULL, &outPath);
-				result = NFD_SaveDialog("sim",NULL, &outPath);
-				if (result == NFD_OKAY) {
-					sim->createSimulation(outPath);
-				}
+				sim->createSimulation(false);
+			}
+			else if (LOWORD(Event.syswm.msg->msg.win.wParam) == ID_NEW_DEMO)
+			{
+				sim->createSimulation(true);
 			}
 			else if (LOWORD(Event.syswm.msg->msg.win.wParam) == ID_LOAD)
 			{
-				result = NFD_OpenDialog("sim", NULL, &outPath);
+				result = NFD_OpenDialog("obkproj", NULL, &outPath);
 				if (result == NFD_OKAY) {
 					sim->loadSimulation(outPath);
 				}
 			}
 			else if (LOWORD(Event.syswm.msg->msg.win.wParam) == ID_SAVEAS)
 			{
-				result = NFD_SaveDialog("sim", NULL, &outPath);
-				if (result == NFD_OKAY) {
-					sim->saveSimulationAs(outPath);
+				showSaveAsDialog();
+			}
+			else if (LOWORD(Event.syswm.msg->msg.win.wParam) == ID_SAVE)
+			{
+				if (sim->hasProjectPath()) {
+					sim->saveSimulation();
 				}
-
+				else {
+					showSaveAsDialog();
+				}
 			}
 		}
 	}

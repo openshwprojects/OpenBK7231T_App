@@ -24,6 +24,9 @@ int HTTPServer_Start() {
     hints.ai_protocol = IPPROTO_TCP;
     hints.ai_flags = AI_PASSIVE;
 
+	if (ListenSocket != INVALID_SOCKET) {
+		closesocket(ListenSocket);
+	}
     // Resolve the server address and port
     iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
     if ( iResult != 0 ) {
@@ -109,6 +112,17 @@ void HTTPServer_RunQuickTick() {
 
 				recvbuf[iResult] = 0;
 
+#if 1
+				// debug test code, you can disable it but dont remove it
+				if (1) {
+					FILE *f;
+
+					f = fopen("lastHTTPPacket.txt", "wb");
+					fwrite(recvbuf, 1, recvbuflen, f);
+					fclose(f);
+				}
+#endif
+
 				request.fd = ClientSocket;
 				request.received = recvbuf;
 				request.receivedLen = iResult;
@@ -155,14 +169,23 @@ void HTTPServer_RunQuickTick() {
 		//Sleep(50);
 		// shutdown the connection since we're done
 		iResult = shutdown(ClientSocket, SD_SEND);
+		while (1) {
+			iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
+			if (iResult == 0)
+				break;
+			err = WSAGetLastError();
+			if (err != WSAEWOULDBLOCK) {
+				break;
+			}
+		}
 		//Sleep(50);
 		//iResult = closesocket(ClientSocket);
-		if (iResult == SOCKET_ERROR) {
-			printf("shutdown failed with error: %d\n", WSAGetLastError());
+		//if (iResult == SOCKET_ERROR) {
+		///	printf("shutdown failed with error: %d\n", WSAGetLastError());
 			closesocket(ClientSocket);
 			//WSACleanup();
 			//return 1;
-		}
+		//}
 }
 
 #endif

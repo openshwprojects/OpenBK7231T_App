@@ -39,6 +39,8 @@ void CShape::cloneShapeTo(CShape *o) {
 	o->name = this->name;
 	o->pos = this->pos;
 	o->bounds = this->bounds;
+	o->bFill = this->bFill;
+	o->rotationAccum = this->rotationAccum;
 	for (int i = 0; i < shapes.size(); i++) {
 		o->addShape(shapes[i]->cloneShape());
 	}

@@ -114,10 +114,20 @@ void Win_DoUnitTests() {
 	// this is slowest
 	Test_TuyaMCU_Basic();
 }
+bool bObkStarted = false;
+void SIM_ClearOBK() {
+	if (bObkStarted) {
+		CMD_ExecuteCommand("clearAll", 0);
+	}
+}
+void SIM_DoFreshOBKBoot() {
+	bObkStarted = true;
+	Main_Init();
+}
 #include "sim/sim_public.h"
 int __cdecl main(int argc, char **argv)
 {
-	bool bWantsUnitTests = 1;
+	bool bWantsUnitTests = 0;
     WSADATA wsaData;
     int iResult;
     // Initialize Winsock
@@ -126,10 +136,10 @@ int __cdecl main(int argc, char **argv)
         printf("WSAStartup failed with error: %d\n", iResult);
         return 1;
     }
-	Main_Init();
 
 
 	if (bWantsUnitTests) {
+		SIM_DoFreshOBKBoot();
 		// let things warm up a little
 		Sim_RunFrames(50, false);
 		// run tests

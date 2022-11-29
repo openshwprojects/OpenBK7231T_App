@@ -43,10 +43,12 @@ public:
 
 	void recalcBounds();
 	void createDemo();
+	void createDemoOnlyWB3S();
 	void matchAllJunctions();
 	void drawSim();
 	class CObject *addObject(class CObject *o);
 	class CWire *addWire(const class Coord &a, const class Coord &b);
+	class CWire *addWire(float x0, float y0, float x1, float y1);
 	class CShape *findShapeByBoundsPoint(const class Coord &p);
 	void destroyObject(CShape *s);
 	void tryMatchJunction(class CJunction *jn, class CJunction *other);

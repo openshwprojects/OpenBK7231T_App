@@ -2,14 +2,7 @@
 #include "Controller_SimulatorLink.h"
 #include "Shape.h"
 #include "Junction.h"
-
-extern "C" {
-	void SIM_SetSimulatedPinValue(int pinIndex, bool bHigh);
-	bool SIM_GetSimulatedPinValue(int pinIndex);
-	bool SIM_IsPinInput(int index);
-	bool SIM_IsPinPWM(int index);
-	int SIM_GetPWMValue(int index);
-};
+#include "sim_import.h"
 
 
 CControllerSimulatorLink::CControllerSimulatorLink() {

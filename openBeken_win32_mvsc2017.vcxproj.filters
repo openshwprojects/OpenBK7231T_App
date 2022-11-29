@@ -1,0 +1,585 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\platforms\bk7231t\bk7231t_os\beken378\driver\common\dd.c" />
+    <ClCompile Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\key\multi_button.c" />
+    <ClCompile Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\lwip_intf\lwip-2.0.2\port\ethernetif.c" />
+    <ClCompile Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\lwip_intf\lwip-2.0.2\src\api\sockets.c" />
+    <ClCompile Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\lwip_intf\lwip-2.0.2\src\apps\mqtt\mqtt.c" />
+    <ClCompile Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\lwip_intf\lwip-2.0.2\src\core\tcp.c" />
+    <ClCompile Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\net_param_intf\net_param.c" />
+    <ClCompile Include="..\main.c" />
+    <ClCompile Include="src\debug_tuyaMCUsimulator.c" />
+    <ClCompile Include="src\httpclient\utils_net.c" />
+    <ClCompile Include="src\httpclient\utils_timer.c" />
+    <ClCompile Include="src\httpserver\new_http.c" />
+    <ClCompile Include="src\httpserver\rest_interface.c" />
+    <ClCompile Include="src\littlefs\our_lfs.c" />
+    <ClCompile Include="src\logging\logging.c" />
+    <ClCompile Include="src\mqtt\new_mqtt.c" />
+    <ClCompile Include="src\mqtt\new_mqtt_deduper.c" />
+    <ClCompile Include="src\new_builtin_devices.c" />
+    <ClCompile Include="src\new_cfg.c" />
+    <ClCompile Include="src\new_common.c" />
+    <ClCompile Include="src\new_ping.c" />
+    <ClCompile Include="src\new_pins.c" />
+    <ClCompile Include="src\ota\ota.c" />
+    <ClCompile Include="src\rgb2hsv.c" />
+    <ClCompile Include="src\tiny_crc8.c" />
+    <ClCompile Include="src\user_main.c" />
+    <ClCompile Include="src\win32\stubs\lwip\win_mqtt_stub.c" />
+    <ClCompile Include="src\win32\stubs\win_rtos_stub.c" />
+    <ClCompile Include="src\win32\stubs\win_flash_stub.c" />
+    <ClCompile Include="src\win_main.c" />
+    <ClCompile Include="src\win_main_scriptOnly.c" />
+    <ClCompile Include="src\win_stubs.c" />
+    <ClCompile Include="src\sim\Circle.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_channels.c">
+      <Filter>Cmd</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_eventHandlers.c">
+      <Filter>Cmd</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_if.c">
+      <Filter>Cmd</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_main.c">
+      <Filter>Cmd</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_newLEDDriver.c">
+      <Filter>Cmd</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_newLEDDriver_colors.c">
+      <Filter>Cmd</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_repeatingEvents.c">
+      <Filter>Cmd</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_script.c">
+      <Filter>Cmd</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_send.c">
+      <Filter>Cmd</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_tasmota.c">
+      <Filter>Cmd</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_tcp.c">
+      <Filter>Cmd</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_test.c">
+      <Filter>Cmd</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_tokenizer.c">
+      <Filter>Cmd</Filter>
+    </ClCompile>
+    <ClCompile Include="src\devicegroups\deviceGroups_read.c">
+      <Filter>DGR</Filter>
+    </ClCompile>
+    <ClCompile Include="src\devicegroups\deviceGroups_util.c">
+      <Filter>DGR</Filter>
+    </ClCompile>
+    <ClCompile Include="src\devicegroups\deviceGroups_write.c">
+      <Filter>DGR</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\CursorManager.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\Controller_Button.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\bitmessage\bitmessage_read.c">
+      <Filter>DGR</Filter>
+    </ClCompile>
+    <ClCompile Include="src\bitmessage\bitmessage_write.c">
+      <Filter>DGR</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_bl_shared.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_bl0937.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_bl0942.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_bp1658cj.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_bp5758d.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_cse7766.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\i2c\drv_i2c_lcd_pcf8574t.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\i2c\drv_i2c_main.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\i2c\drv_i2c_mcp23017.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\i2c\drv_i2c_tc74.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_ir.cpp">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_main.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_ntp.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_sm2135.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_tasmotaDeviceGroups.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_test_drivers.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_tuyaMCU.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_tuyaMCUSensor.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_uart.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_ucs1912.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\w800\hal_adc_w800.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\win32\hal_adc_win32.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\bk7231\hal_flashConfig_bk7231.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\bl602\hal_flashConfig_bl602.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\w800\hal_flashConfig_w800.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\win32\hal_flashConfig_win32.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\xr809\hal_flashConfig_xr809.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\bk7231\hal_flashVars_bk7231.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\bl602\hal_flashVars_bl602.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\w800\hal_flashVars_w800.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\win32\hal_flashVars_win32.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\xr809\hal_flashVars_xr809.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\bk7231\hal_generic_bk7231.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\bl602\hal_generic_bl602.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\w800\hal_generic_w800.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\win32\hal_generic_win32.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\xr809\hal_generic_xr809.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\bk7231\hal_main_bk7231.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\bl602\hal_main_bl602.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\w800\hal_main_w800.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\win32\hal_main_win32.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\xr809\hal_main_xr809.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\bk7231\hal_pins_bk7231.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\bl602\hal_pins_bl602.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\w800\hal_pins_w800.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\win32\hal_pins_win32.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\xr809\hal_pins_xr809.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\bk7231\hal_wifi_bk7231.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\bl602\hal_wifi_bl602.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\w800\hal_wifi_w800.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\win32\hal_wifi_win32.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\xr809\hal_wifi_xr809.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\Junction.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\Line.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cJSON\cJSON.c">
+      <Filter>HTTP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\httpserver\hass.c">
+      <Filter>HTTP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\httpclient\http_client.c">
+      <Filter>HTTP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\httpserver\http_fns.c">
+      <Filter>HTTP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\httpserver\http_tcp_server.c">
+      <Filter>HTTP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\httpserver\http_tcp_server_nonblocking.c">
+      <Filter>HTTP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\jsmn\jsmn.c">
+      <Filter>HTTP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\littlefs\lfs.c">
+      <Filter>LFS</Filter>
+    </ClCompile>
+    <ClCompile Include="src\littlefs\lfs_util.c">
+      <Filter>LFS</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\Shape.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\Rect.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\Text.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\Texture.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\TextureManager.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\Tool_Delete.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\Tool_Move.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\Tool_Use.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\Tool_Wire.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\Simulator.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\Simulation.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\Wire.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\sim_sdl.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_buttonEvents.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_changeHandlers.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_cmd_alias.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_cmd_channels.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_expandConstant.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_expressions.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_http.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_http_client.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_if.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_led.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_lfs.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_main.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_repeatingEvents.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_script.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_tokenizer.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_tuyaMCU.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\Tool_Info.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\Controller_SimulatorLink.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\Controller_Bulb.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\Solver.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\Tool_Copy.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\WinMenuBar.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\PrefabManager.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\SaveLoad.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\new_cfg.h" />
+    <ClInclude Include="src\new_cmd.h" />
+    <ClInclude Include="src\new_common.h" />
+    <ClInclude Include="src\new_main.h" />
+    <ClInclude Include="src\new_pins.h" />
+    <ClInclude Include="src\new_repeatingEvents.h" />
+    <ClInclude Include="src\new_tokenizer.h" />
+    <ClInclude Include="src\ntp_time.h" />
+    <ClInclude Include="src\obk_config.h" />
+    <ClInclude Include="src\drv_public.h">
+      <Filter>Drv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drv_uart.h">
+      <Filter>Drv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\hal\hal_adc.h">
+      <Filter>HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\hal\hal_flashConfig.h">
+      <Filter>HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\hal\hal_flashVars.h">
+      <Filter>HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\hal\hal_generic.h">
+      <Filter>HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\hal\hal_pins.h">
+      <Filter>HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\hal\hal_wifi.h">
+      <Filter>HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\httpserver\http_tcp_server.h">
+      <Filter>HTTP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\littlefs\lfs.h">
+      <Filter>LFS</Filter>
+    </ClInclude>
+    <ClInclude Include="src\littlefs\lfs_util.h">
+      <Filter>LFS</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\Texture.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\TextureManager.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\sim_local.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\selftest\selftest_local.h">
+      <Filter>SelfTest</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\Tool_Info.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\Solver.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\Tool_Copy.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\WinMenuBar.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\PrefabManager.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\SaveLoad.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\include\net_param_pub.h" />
+    <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\key\multi_button.h" />
+    <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\lwip_intf\lwip-2.0.2\src\include\lwip\apps\mqtt.h" />
+    <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\user_driver\BkDriverI2c.h" />
+    <CustomBuild Include="src\httpclient\iot_export_errno.h" />
+    <CustomBuild Include="src\httpclient\utils_net.h" />
+    <CustomBuild Include="src\httpclient\utils_timer.h" />
+    <CustomBuild Include="src\httpserver\new_http.h" />
+    <CustomBuild Include="src\mqtt\new_mqtt_deduper.h" />
+    <CustomBuild Include="src\rgb2hsv.h" />
+    <CustomBuild Include="src\cmnds\cmd_local.h">
+      <Filter>Cmd</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\cmnds\cmd_public.h">
+      <Filter>Cmd</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\devicegroups\deviceGroups_local.h">
+      <Filter>DGR</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\devicegroups\deviceGroups_public.h">
+      <Filter>DGR</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\bitmessage\bitmessage_public.h">
+      <Filter>DGR</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\drv_bl0942.h">
+      <Filter>Drv</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\driver\drv_bp1658cj.h">
+      <Filter>Drv</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\driver\drv_bp5758d.h">
+      <Filter>Drv</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\driver\drv_config.h">
+      <Filter>Drv</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\i2c\drv_i2c_local.h">
+      <Filter>Drv</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\i2c\drv_i2c_mcp23017.h">
+      <Filter>Drv</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\drv_i2c_public.h">
+      <Filter>Drv</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\i2c\drv_i2c_public.h">
+      <Filter>Drv</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\driver\drv_ir.h">
+      <Filter>Drv</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\driver\drv_local.h">
+      <Filter>Drv</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\driver\drv_public.h">
+      <Filter>Drv</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\driver\drv_sm2135.h">
+      <Filter>Drv</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\driver\drv_tuyaMCU.h">
+      <Filter>Drv</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\drv_tuyaMCU.h">
+      <Filter>Drv</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\driver\drv_uart.h">
+      <Filter>Drv</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\cJSON\cJSON.h">
+      <Filter>HTTP</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\httpserver\hass.h">
+      <Filter>HTTP</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\httpclient\http_client.h">
+      <Filter>HTTP</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\httpserver\http_fns.h">
+      <Filter>HTTP</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\application.mk" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Simulator">
+      <UniqueIdentifier>{9f4c6f6e-a873-459a-851f-f1d1765678cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Cmd">
+      <UniqueIdentifier>{c80fadcc-89e7-4380-8c8e-262dfab4240c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DGR">
+      <UniqueIdentifier>{b2359e07-df0d-4c96-990e-3c39516c8d34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Drv">
+      <UniqueIdentifier>{542e4943-f31c-4550-978f-20adbb8d7933}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HAL">
+      <UniqueIdentifier>{e385d68c-eb29-44e3-bbb3-560d53712634}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HTTP">
+      <UniqueIdentifier>{e980596d-3f72-423b-9b22-afc2901a273f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LFS">
+      <UniqueIdentifier>{ea59e797-47c5-4aa4-b0df-13a40b08dd3c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SelfTest">
+      <UniqueIdentifier>{0d71deec-4234-4353-b50a-d55394522055}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

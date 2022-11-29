@@ -56,6 +56,9 @@ class CShape *CSimulation::findShapeByBoundsPoint(const class Coord &p) {
 	}
 	return 0;
 }
+class CWire *CSimulation::addWire(float x0, float y0, float x1, float y1) {
+	return addWire(Coord(x0, y0), Coord(x1, y1));
+}
 class CWire *CSimulation::addWire(const class Coord &a, const class Coord &b) {
 	if (a.dist(b) < 5) {
 		return 0;
@@ -101,6 +104,12 @@ CObject * CSimulation::addObject(CObject *o) {
 	objects.push_back(o);
 	registerJunctions(o);
 	return o;
+}
+void CSimulation::createDemoOnlyWB3S() {
+	CObject *wb3s = addObject(sim->getPfbs()->instantiatePrefab("WB3S"));
+	wb3s->setPosition(300, 200);
+	matchAllJunctions();
+	recalcBounds();
 }
 void CSimulation::createDemo() {
 	CObject *wb3s = addObject(sim->getPfbs()->instantiatePrefab("WB3S"));

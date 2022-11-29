@@ -30,6 +30,15 @@ bool SIM_IsPinInput(int index) {
 		return true;
 	return false;
 }
+bool SIM_IsPinPWM(int index) {
+	if (g_pinModes[index] == SIM_PIN_PWM)
+		return true;
+	return false;
+}
+int SIM_GetPWMValue(int index) {
+	return g_simulatedPWMs[index];
+}
+
 
 
 int PIN_GetPWMIndexForPinIndex(int pin) {
