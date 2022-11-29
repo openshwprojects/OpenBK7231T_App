@@ -10,7 +10,11 @@ void doNothing() {
 char fname[512] = { 0 };
 byte *g_flash = 0;
 bool g_flashLoaded = false;
+bool g_bFlashModified = false;
 
+bool SIM_IsFlashModified() {
+	return g_bFlashModified;
+}
 void allocFlashIfNeeded() {
 	if (g_flash != 0) {
 		return;
@@ -35,6 +39,7 @@ void SIM_SaveFlashData(const char *targetPath) {
 		f = fopen(fname, "wb");
 		fwrite(g_flash, FLASH_SIZE, 1, f);
 		fclose(f);
+		g_bFlashModified = false;
 	}
 }
 void SIM_SetupFlashFileReading(const char *flashPath) {
@@ -48,12 +53,14 @@ void SIM_SetupFlashFileReading(const char *flashPath) {
 			printf("SIM_SetupFlashFileReading: failed to read whole memory\n");
 		}
 		fclose(f);
+		g_bFlashModified = false;
 	}
 }
 void SIM_SetupNewFlashFile(const char *flashPath) {
 	allocFlashIfNeeded();
 	strcpy(fname, flashPath);
 	SIM_SaveFlashData(fname);
+	g_bFlashModified = false;
 }
 
 
@@ -75,8 +82,10 @@ int bekken_hal_flash_read(const uint32_t addr, uint8_t *dst, const uint32_t size
 UINT32 flash_write(char *user_buf, UINT32 count, UINT32 address) {
 
 	allocFlashIfNeeded();
-
-	memcpy(g_flash + address, user_buf, count);
+	if (memcmp(g_flash + address, user_buf, count)) {
+		g_bFlashModified = true;
+		memcpy(g_flash + address, user_buf, count);
+	}
 	return 0;
 }
 UINT32 flash_ctrl(UINT32 cmd, void *parm) {

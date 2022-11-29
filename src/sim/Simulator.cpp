@@ -48,6 +48,19 @@ void CSimulator::setTool(Tool_Base *tb) {
 }
 
 void CSimulator::drawWindow() {
+	char buffer[256];
+	const char *projectPathDisp = projectPath.c_str();
+	if (*projectPathDisp == 0)
+		projectPathDisp = "none";
+	sprintf(buffer, "OpenBeken Simulator - %s", projectPathDisp);
+	if (SIM_IsFlashModified()) {
+		strcat(buffer, " (FLASH MODIFIED)");
+	}
+	if (bSchematicModified) {
+		strcat(buffer, " (SCHEMATIC MODIFIED)");
+	}
+	SDL_SetWindowTitle(Window, buffer);
+
 	SDL_Event Event;
 	while (SDL_PollEvent(&Event))
 	{
@@ -199,6 +212,7 @@ bool CSimulator::loadSimulation(const char *s) {
 	SIM_ClearOBK();
 	SIM_SetupFlashFileReading(memPath.c_str());
 	SIM_DoFreshOBKBoot();
+	bSchematicModified = false;
 
 	return false;
 }
@@ -220,13 +234,13 @@ bool CSimulator::saveSimulationAs(const char *s) {
 	saveLoad->saveProjectToFile(project, projectPath.c_str());
 	saveLoad->saveSimulationToFile(sim, simPath.c_str());
 	SIM_SaveFlashData(memPath.c_str());
-
+	bSchematicModified = false;
 	return false;
 }
 
 
 void CSimulator::createWindow() {
-	Window = SDL_CreateWindow("OpenGL Test", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WinWidth, WinHeight, WindowFlags);
+	Window = SDL_CreateWindow("OpenBeken Simulator", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WinWidth, WinHeight, WindowFlags);
 	assert(Window);
 	winMenu = new CWinMenuBar();
 	winMenu->setSimulator(this);

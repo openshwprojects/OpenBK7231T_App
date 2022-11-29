@@ -24,6 +24,7 @@ void Tool_Wire::onMouseDown(const Coord &pos, int button) {
 		Coord curPos = roundToGrid(GetMousePos());
 		if (bActive) {
 #if 1				
+			sim->markAsModified();
 			CWire *newWireOld = sim->getSim()->addWire(a, b);
 			newWire = sim->getSim()->addWire(b, c);
 			if (newWire != 0) {

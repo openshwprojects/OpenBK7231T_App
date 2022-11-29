@@ -10,6 +10,7 @@ Tool_Delete::Tool_Delete() {
 }
 void Tool_Delete::onMouseDown(const Coord &pos, int button) {
 	if (currentTarget != 0) {
+		sim->markAsModified();
 		sim->destroyObject(currentTarget);
 	}
 }

@@ -13,4 +13,5 @@ extern "C" {
 	void SIM_SetupEmptyFlashModeNoFile();
 	void SIM_DoFreshOBKBoot();
 	void SIM_ClearOBK();
+	bool SIM_IsFlashModified();
 };

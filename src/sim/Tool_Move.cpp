@@ -43,6 +43,7 @@ void Tool_Move::onMouseDown(const Coord &pos, int button) {
 	}
 	if (button == SDL_BUTTON_RIGHT) {
 		if (currentTarget) {
+			sim->markAsModified();
 			currentTarget->rotateDegreesAroundSelf(90);
 		}
 	}
@@ -57,6 +58,7 @@ void Tool_Move::drawTool() {
 			Coord delta = nowPos - prevPos;
 			if (delta.isNonZero()) {
 				prevPos = nowPos;
+				sim->markAsModified();
 				currentTarget->translate(delta);
 				sim->getSim()->matchJunctionsOf_r(currentTarget);
 			}

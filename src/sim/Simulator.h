@@ -20,6 +20,7 @@ class CSimulator {
 	class PrefabManager *prefabs;
 	class CSaveLoad *saveLoad;
 	class CProject *project;
+	bool bSchematicModified;
 
 	void onKeyDown(int keyCode);
 	void setTool(Tool_Base *tb);
@@ -46,6 +47,9 @@ public:
 	bool saveSimulationAs(const char *s);
 	bool saveSimulation();
 
+	void markAsModified() {
+		bSchematicModified = true;
+	}
 	bool hasProjectPath() const {
 		if (projectPath.size() > 0)
 			return true;

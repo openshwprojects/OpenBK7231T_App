@@ -27,6 +27,7 @@ void Tool_Copy::onMouseDown(const Coord &pos, int button) {
 		}
 	}
 	else {
+		sim->markAsModified();
 		copyingObject->snapToGrid();
 		sim->getSim()->addObject(copyingObject);
 		copyingObject = 0;
@@ -40,6 +41,7 @@ void Tool_Copy::drawTool() {
 	if (copyingObject) {
 		copyingObject->translate(delta);
 		copyingObject->drawWithChildren(0);
+		sim->markAsModified();
 	}
 	prevMousePos = nowMousePos;
 }
