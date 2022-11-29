@@ -170,6 +170,15 @@ void LED_RunQuickColorLerp(int deltaMS) {
 	int firstChannelIndex;
 	float deltaSeconds;
 	byte finalRGBCW[5];
+	int maxPossibleIndexToSet;
+
+	if (CFG_HasFlag(OBK_FLAG_LED_FORCE_MODE_RGB)) {
+		// only allow setting pwm 0, 1 and 2, force-skip 3 and 4
+		maxPossibleIndexToSet = 3;
+	}
+	else {
+		maxPossibleIndexToSet = 5;
+	}
 
 	deltaSeconds = deltaMS * 0.001f;
 
@@ -211,7 +220,7 @@ void LED_RunQuickColorLerp(int deltaMS) {
 		} else {
 			// This should work for both RGB and RGBCW
 			// This also could work for a SINGLE COLOR strips
-			for(i = 0; i < 5; i++) {
+			for(i = 0; i < maxPossibleIndexToSet; i++) {
 				finalRGBCW[i] = led_rawLerpCurrent[i];
 				CHANNEL_Set(firstChannelIndex + i, led_rawLerpCurrent[i] * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 			}
@@ -234,6 +243,7 @@ void apply_smart_light() {
 	int firstChannelIndex;
 	int channelToUse;
 	byte finalRGBCW[5];
+	int maxPossibleIndexToSet;
 
 	// The color order is RGBCW.
 	// some people set RED to channel 0, and some of them set RED to channel 1
@@ -243,6 +253,15 @@ void apply_smart_light() {
 	} else {
 		firstChannelIndex = 1;
 	}
+
+	if (CFG_HasFlag(OBK_FLAG_LED_FORCE_MODE_RGB)) {
+		// only allow setting pwm 0, 1 and 2, force-skip 3 and 4
+		maxPossibleIndexToSet = 3;
+	}
+	else {
+		maxPossibleIndexToSet = 5;
+	}
+
 
 	if(isCWMode() && CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
 		int value_brightness = 0;
@@ -265,7 +284,7 @@ void apply_smart_light() {
 			CHANNEL_Set(firstChannelIndex+1, value_brightness, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 		}
 	} else {
-		for(i = 0; i < 5; i++) {
+		for(i = 0; i < maxPossibleIndexToSet; i++) {
 			float raw, final;
 
 			raw = baseColors[i];

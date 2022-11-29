@@ -206,15 +206,17 @@ int http_fn_index(http_request_t* request) {
 	int j, i;
 	char tmpA[128];
 	int bRawPWMs;
-	int forceShowRGBCW;
+	bool bForceShowRGBCW;
 	float fValue;
 	int iValue;
+	bool bForceShowRGB;
 
 	bRawPWMs = CFG_HasFlag(OBK_FLAG_LED_RAWCHANNELSMODE);
-	forceShowRGBCW = CFG_HasFlag(OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER);
+	bForceShowRGBCW = CFG_HasFlag(OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER);
+	bForceShowRGB = CFG_HasFlag(OBK_FLAG_LED_FORCE_MODE_RGB);
 
 	if (LED_IsLedDriverChipRunning()) {
-		forceShowRGBCW = true;
+		bForceShowRGBCW = true;
 	}
 	http_setup(request, httpMimeTypeHTML);	//Add mimetype regardless of the request
 
@@ -601,15 +603,18 @@ int http_fn_index(http_request_t* request) {
 		}
 	}
 
-	if (bRawPWMs == 0 || forceShowRGBCW) {
+	if (bRawPWMs == 0 || bForceShowRGBCW || bForceShowRGB) {
 		int c_pwms;
 		int lm;
 
 		lm = LED_GetMode();
 
 		c_pwms = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
-		if (forceShowRGBCW) {
+		if (bForceShowRGBCW) {
 			c_pwms = 5;
+		}
+		else if (bForceShowRGB) {
+			c_pwms = 3;
 		}
 
 		if (c_pwms > 0) {
@@ -2409,6 +2414,10 @@ const char* g_obk_flagNames[] = {
 	"[LED] Automatically enable Light when changing brightness, color or temperature on WWW panel",
 	"[LED] Smooth transitions for LED (EXPERIMENTAL)",
 	"[MQTT] Always publish channels used by TuyaMCU",
+	"[LED] Force RGB mode (3 PWMs for LEDs) and ignore futher PWMs if they are set",
+	"error",
+	"error",
+	"error",
 	"error",
 	"error",
 };
