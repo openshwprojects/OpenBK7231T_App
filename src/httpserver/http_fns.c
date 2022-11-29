@@ -2415,12 +2415,12 @@ const char* g_obk_flagNames[] = {
 	"[LED] Smooth transitions for LED (EXPERIMENTAL)",
 	"[MQTT] Always publish channels used by TuyaMCU",
 	"[LED] Force RGB mode (3 PWMs for LEDs) and ignore futher PWMs if they are set",
+	"[MQTT] Retain power channels (Relay channels, etc)",
 	"error",
 	"error",
 	"error",
 	"error",
-	"error",
-};
+}; 
 
 int http_fn_cfg_generic(http_request_t* request) {
 	int i;

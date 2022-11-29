@@ -849,6 +849,17 @@ bool CHANNEL_IsInUse(int ch) {
 }
 
 
+bool CHANNEL_IsPowerRelayChannel(int ch) {
+	int i;
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (g_cfg.pins.channels[i] == ch) {
+			int role = g_cfg.pins.roles[i];	if (role == IOR_Relay || role == IOR_Relay_n) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
 bool CHANNEL_HasRoleThatShouldBePublished(int ch) {
 	int i;
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {

@@ -1059,13 +1059,22 @@ OBK_Publish_Result MQTT_ChannelChangeCallback(int channel, int iVal)
 {
 	char channelNameStr[8];
 	char valueStr[16];
-
+	int flags;
+	
+	flags = 0;
 	addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Channel has changed! Publishing change %i with %i \n", channel, iVal);
 
 	sprintf(channelNameStr, "%i", channel);
 	sprintf(valueStr, "%i", iVal);
 
-	return MQTT_PublishMain(mqtt_client, channelNameStr, valueStr, 0, true);
+	// This will set RETAIN flag for all channels that are used for RELAY
+	if (CFG_HasFlag(OBK_FLAG_MQTT_RETAIN_POWER_CHANNELS)) {
+		if (CHANNEL_IsPowerRelayChannel(channel)) {
+			flags |= OBK_PUBLISH_FLAG_RETAIN;
+		}
+	}
+
+	return MQTT_PublishMain(mqtt_client, channelNameStr, valueStr, flags, true);
 }
 OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 {
@@ -1079,6 +1088,13 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 
 	sprintf(channelNameStr, "%i", channel);
 	sprintf(valueStr, "%i", iValue);
+
+	// This will set RETAIN flag for all channels that are used for RELAY
+	if (CFG_HasFlag(OBK_FLAG_MQTT_RETAIN_POWER_CHANNELS)) {
+		if (CHANNEL_IsPowerRelayChannel(channel)) {
+			flags |= OBK_PUBLISH_FLAG_RETAIN;
+		}
+	}
 
 	return MQTT_PublishMain(mqtt_client, channelNameStr, valueStr, flags, true);
 }

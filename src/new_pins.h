@@ -164,9 +164,10 @@ typedef struct pinsState_s {
 #define OBK_FLAG_LED_SMOOTH_TRANSITIONS				18
 #define OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS		19
 #define OBK_FLAG_LED_FORCE_MODE_RGB					20
+#define OBK_FLAG_MQTT_RETAIN_POWER_CHANNELS			21
 
 
-#define OBK_TOTAL_FLAGS 20
+#define OBK_TOTAL_FLAGS 22
 
 
 #define CGF_MQTT_CLIENT_ID_SIZE			64
@@ -307,6 +308,7 @@ void CHANNEL_AddClamped(int ch, int iVal, int min, int max);
 int CHANNEL_Get(int ch);
 int CHANNEL_GetRoleForOutputChannel(int ch);
 bool CHANNEL_HasRoleThatShouldBePublished(int ch);
+bool CHANNEL_IsPowerRelayChannel(int ch);
 // See: enum ChannelType
 void CHANNEL_SetType(int ch, int type);
 int CHANNEL_GetType(int ch);
