@@ -68,6 +68,8 @@ const char *HAL_PIN_GetPinNameAlias(int index) {
 		return "PWM4";
 	if (index == 6)
 		return "PWM0";
+	if (index == 7)
+		return "PWM1";
 	if (index == 0)
 		return "TXD2";
 	if (index == 1)
