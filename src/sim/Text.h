@@ -12,6 +12,10 @@ public:
 	CText() {
 
 	}
+	CText(const Coord &np, const char *s) {
+		this->setPosition(np);
+		this->txt = s;
+	}
 	CText(int _x, int _y, const char *s) {
 		this->setPosition(_x, _y);
 		this->txt = s;

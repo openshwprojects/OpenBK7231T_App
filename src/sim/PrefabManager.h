@@ -6,24 +6,24 @@
 
 class PrefabManager {
 	class CSimulator *sim;
-	TArray<class CObject*> prefabs;
+	TArray<class CShape*> prefabs;
 
-	class CObject *generateLED_CW();
-	class CObject *generateLED_RGB();
-	class CObject *generateBulb();
-	class CObject *generateWB3S();
-	class CObject *generateButton();
-	class CObject *generateTest();
-	class CObject *generateGND();
-	class CObject *generateVDD();
+	class CShape *generateLED_CW();
+	class CShape *generateLED_RGB();
+	class CShape *generateBulb();
+	class CShape *generateWB3S();
+	class CShape *generateButton();
+	class CShape *generateTest();
+	class CShape *generateGND();
+	class CShape *generateVDD();
 public:
 	PrefabManager(CSimulator *ps) {
 		sim = ps;
 	}
 	void createDefaultPrefabs();
-	void addPrefab(CObject *o);
-	CObject *findPrefab(const char *name);
-	CObject *instantiatePrefab(const char *name);
+	void addPrefab(CShape *o);
+	CShape *findPrefab(const char *name);
+	CShape *instantiatePrefab(const char *name);
 
 };
 #endif

@@ -21,9 +21,11 @@ Tool_Copy::~Tool_Copy() {
 void Tool_Copy::onMouseDown(const Coord &pos, int button) {
 	if (copyingObject == 0) {
 		CShape *s = sim->getShapeUnderCursor();
-		CObject *o = dynamic_cast<CObject*>(s);
-		if (o != 0) {
-			copyingObject = o->cloneObject();
+		if (s != 0) {
+			// can it be copied? you can't copy wires
+			if (s->isWireJunction() == false && s->isWire() == false) {
+				copyingObject = s->cloneShape();
+			}
 		}
 	}
 	else {

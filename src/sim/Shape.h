@@ -43,6 +43,9 @@ public:
 	void snapToGrid();
 	void cloneShapeTo(CShape *o);
 	virtual CShape *cloneShape();
+	virtual bool isWireJunction() const {
+		return false;
+	}
 	void setFill(bool b) {
 		bFill = b;
 	}

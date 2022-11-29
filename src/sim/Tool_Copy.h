@@ -6,7 +6,7 @@
 #include "Coord.h"
 
 class Tool_Copy : public Tool_Base {
-	class CObject *copyingObject;
+	class CShape *copyingObject;
 	Coord prevMousePos;
 public:
 	Tool_Copy();

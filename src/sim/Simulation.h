@@ -6,7 +6,7 @@
 class CSimulation {
 	class CSimulator *sim;
 	// all allocated objects (must be fried later)
-	TArray<class CObject*> objects;
+	TArray<class CShape*> objects;
 	// all allocated wires (must be fried later)
 	TArray<class CWire*> wires;
 	// only pointers to junctions that belongs to allocated objects or wires
@@ -25,7 +25,7 @@ public:
 	int getObjectsCount() const {
 		return objects.size();
 	}
-	class CObject *getObject(int i) {
+	class CShape *getObject(int i) {
 		return objects[i];
 	}
 	int getWiresCount() const {
@@ -46,7 +46,8 @@ public:
 	void createDemoOnlyWB3S();
 	void matchAllJunctions();
 	void drawSim();
-	class CObject *addObject(class CObject *o);
+	class CShape *addObject(class CShape *o);
+	class CText *addText(const class Coord &p, const char *txt);
 	class CWire *addWire(const class Coord &a, const class Coord &b);
 	class CWire *addWire(float x0, float y0, float x1, float y1);
 	class CShape *findShapeByBoundsPoint(const class Coord &p);

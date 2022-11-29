@@ -536,6 +536,7 @@
     <ClCompile Include="src\sim\Tool_Delete.cpp" />
     <ClCompile Include="src\sim\Tool_Info.cpp" />
     <ClCompile Include="src\sim\Tool_Move.cpp" />
+    <ClCompile Include="src\sim\Tool_Text.cpp" />
     <ClCompile Include="src\sim\Tool_Use.cpp" />
     <ClCompile Include="src\sim\Tool_Wire.cpp" />
     <ClCompile Include="src\sim\WinMenuBar.cpp" />
@@ -572,6 +573,7 @@
     <ClInclude Include="src\sim\TextureManager.h" />
     <ClInclude Include="src\sim\Tool_Copy.h" />
     <ClInclude Include="src\sim\Tool_Info.h" />
+    <ClInclude Include="src\sim\Tool_Text.h" />
     <ClInclude Include="src\sim\WinMenuBar.h" />
     <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\include\net_param_pub.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'">true</ExcludedFromBuild>

@@ -396,6 +396,9 @@
     <ClCompile Include="src\sim\SaveLoad.cpp">
       <Filter>Simulator</Filter>
     </ClCompile>
+    <ClCompile Include="src\sim\Tool_Text.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />
@@ -468,6 +471,9 @@
       <Filter>Simulator</Filter>
     </ClInclude>
     <ClInclude Include="src\sim\SaveLoad.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\Tool_Text.h">
       <Filter>Simulator</Filter>
     </ClInclude>
   </ItemGroup>

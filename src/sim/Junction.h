@@ -81,7 +81,7 @@ public:
 	void setPosLinked(const Coord &o);
 	void rotateDegreesAround_internal(float f, const Coord &p);
 	void unlink(class CJunction *o);
-	bool isWireJunction() const;
+	virtual bool isWireJunction() const;
 	void clearLinks() {
 		linked.clear();
 	}

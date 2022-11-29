@@ -12,6 +12,7 @@
 #include "Tool_Move.h"
 #include "Tool_Info.h"
 #include "Tool_Copy.h"
+#include "Tool_Text.h"
 #include "Simulation.h"
 #include "CursorManager.h"
 #include "PrefabManager.h"
@@ -343,6 +344,9 @@ void CSimulator::onKeyDown(int keyCode) {
 	}
 	if (keyCode == '6') {
 		setTool(new Tool_Info());
+	}
+	if (keyCode == '7') {
+		setTool(new Tool_Text());
 	}
 	//SDL_Cursor* cursor;
 	//cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_CROSSHAIR);

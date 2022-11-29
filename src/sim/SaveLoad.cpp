@@ -60,7 +60,7 @@ class CSimulation *CSaveLoad::loadSimulationFromFile(const char *fname) {
 		int rotInteger = rot->valuedouble;
 		rotInteger %= 360;
 
-		CObject *o = sim->getPfbs()->instantiatePrefab(jName->valuestring);
+		CShape *o = sim->getPfbs()->instantiatePrefab(jName->valuestring);
 		o->setPosition(jX->valuedouble, jY->valuedouble);
 		s->addObject(o);
 		o->rotateDegreesAroundSelf(rotInteger);
@@ -84,7 +84,7 @@ void CSaveLoad::saveSimulationToFile(class CSimulation *simToSave, const char *f
 	cJSON *main_sim = cJSON_AddObjectToObject(root_sim, "simulation");
 	cJSON *main_objects = cJSON_AddObjectToObject(main_sim, "objects");
 	for (int i = 0; i < simToSave->getObjectsCount(); i++) {
-		CObject *obj = simToSave->getObject(i);
+		CShape *obj = simToSave->getObject(i);
 		cJSON *j_obj = cJSON_AddObjectToObject(main_objects, "object");
 		const Coord &pos = obj->getPosition();
 		float rot = obj->getRotationAccum();

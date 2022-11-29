@@ -8,16 +8,16 @@
 #include "Controller_SimulatorLink.h"
 #include "Junction.h"
 
-class CObject *PrefabManager::generateVDD() {
-	CObject *o = new CObject();
+class CShape *PrefabManager::generateVDD() {
+	CShape *o = new CShape();
 	o->setName("VDD");
 	o->addJunction(0, 0, "VDD");
 	o->addLine(0, -20, 0, 0);
 	o->addCircle(0, -30, 10);
 	return o;
 }
-class CObject *PrefabManager::generateGND() {
-	CObject *o = new CObject();
+class CShape *PrefabManager::generateGND() {
+	CShape *o = new CShape();
 	o->setName("GND");
 	o->addJunction(0, -20, "GND");
 	o->addLine(0, -20, 0, 0);
@@ -27,8 +27,8 @@ class CObject *PrefabManager::generateGND() {
 	o->addLine(-4, 6, 4, 6);
 	return o;
 }
-class CObject *PrefabManager::generateButton() {
-	CObject *o = new CObject();
+class CShape *PrefabManager::generateButton() {
+	CShape *o = new CShape();
 	o->setName("Button");
 	CJunction *a = o->addJunction(-40, -10, "pad_a");
 	CJunction *b = o->addJunction(40, -10, "pad_b");
@@ -53,9 +53,9 @@ class CObject *PrefabManager::generateButton() {
 	o->translateEachChild(0, 10);
 	return o;
 }
-class CObject *PrefabManager::generateTest() {
+class CShape *PrefabManager::generateTest() {
 
-	CObject *o = new CObject();
+	CShape *o = new CShape();
 	o->setName("Test");
 	o->addLine(50, 10, -50, 10);
 	o->addLine(50, -10, -50, -10);
@@ -63,8 +63,8 @@ class CObject *PrefabManager::generateTest() {
 	o->addLine(-50, 10, -50, -10);
 	return o;
 }
-class CObject *PrefabManager::generateWB3S() {
-	CObject *o = new CObject();
+class CShape *PrefabManager::generateWB3S() {
+	CShape *o = new CShape();
 	o->setName("WB3S");
 	CControllerSimulatorLink *link = new CControllerSimulatorLink();
 	o->setController(link);
@@ -109,10 +109,10 @@ class CObject *PrefabManager::generateWB3S() {
 	}
 	return o;
 }
-class CObject *PrefabManager::generateLED_CW() {
+class CShape *PrefabManager::generateLED_CW() {
 	float bulb_radius = 20.0f;
 
-	CObject *o = new CObject();
+	CShape *o = new CShape();
 	o->setName("LED_CW");
 	o->addText(-40, -25, "CW");
 	//CShape *filler = o->addCircle(0, 0, bulb_radius);
@@ -135,10 +135,10 @@ class CObject *PrefabManager::generateLED_CW() {
 	o->addLine(-bulb_radius * mul, bulb_radius * mul, bulb_radius * mul, -bulb_radius * mul);
 	return o;
 }
-class CObject *PrefabManager::generateLED_RGB() {
+class CShape *PrefabManager::generateLED_RGB() {
 	float bulb_radius = 20.0f;
 
-	CObject *o = new CObject();
+	CShape *o = new CShape();
 	o->addText(-40, -25, "RGB");
 	o->setName("LED_RGB");
 	//CShape *filler = o->addCircle(0, 0, bulb_radius);
@@ -165,10 +165,10 @@ class CObject *PrefabManager::generateLED_RGB() {
 	return o;
 }
 
-class CObject *PrefabManager::generateBulb() {
+class CShape *PrefabManager::generateBulb() {
 	float bulb_radius = 20.0f;
 
-	CObject *o = new CObject();
+	CShape *o = new CShape();
 	o->addText(-40, -25, "Bulb");
 	o->setName("Bulb");
 	CShape *filler = o->addCircle(0, 0, bulb_radius);
@@ -191,21 +191,21 @@ class CObject *PrefabManager::generateBulb() {
 }
 
 
-void PrefabManager::addPrefab(CObject *o) {
+void PrefabManager::addPrefab(CShape *o) {
 	prefabs.add_unique(o);
 }
-CObject *PrefabManager::findPrefab(const char *name) {
+CShape *PrefabManager::findPrefab(const char *name) {
 	for (int i = 0; i < prefabs.size(); i++) {
 		if (prefabs[i]->hasName(name))
 			return prefabs[i];
 	}
 	return 0;
 }
-CObject *PrefabManager::instantiatePrefab(const char *name) {
-	CObject *ret = findPrefab(name);
+CShape *PrefabManager::instantiatePrefab(const char *name) {
+	CShape *ret = findPrefab(name);
 	if (ret == 0)
 		return 0;
-	return ret->cloneObject();
+	return ret->cloneShape();
 }
 void PrefabManager::createDefaultPrefabs() {
 

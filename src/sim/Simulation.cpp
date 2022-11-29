@@ -4,6 +4,7 @@
 #include "Object.h"
 #include "Wire.h"
 #include "Junction.h"
+#include "Text.h"
 #include "Simulator.h"
 #include "PrefabManager.h"
 
@@ -97,7 +98,12 @@ void CSimulation::registerJunctions(class CShape *s) {
 		registerJunctions(s2);
 	}
 }
-CObject * CSimulation::addObject(CObject *o) {
+class CText *CSimulation::addText(const class Coord &p, const char *txt) {
+	CText *txtObject = new CText(p, txt);
+	addObject(txtObject);
+	return txtObject;
+}
+CShape * CSimulation::addObject(CShape *o) {
 	if (o == 0) {
 		return 0;
 	}
@@ -106,13 +112,13 @@ CObject * CSimulation::addObject(CObject *o) {
 	return o;
 }
 void CSimulation::createDemoOnlyWB3S() {
-	CObject *wb3s = addObject(sim->getPfbs()->instantiatePrefab("WB3S"));
+	CShape *wb3s = addObject(sim->getPfbs()->instantiatePrefab("WB3S"));
 	wb3s->setPosition(300, 200);
 	matchAllJunctions();
 	recalcBounds();
 }
 void CSimulation::createDemo() {
-	CObject *wb3s = addObject(sim->getPfbs()->instantiatePrefab("WB3S"));
+	CShape *wb3s = addObject(sim->getPfbs()->instantiatePrefab("WB3S"));
 	wb3s->setPosition(300, 200);
 	addObject(sim->getPfbs()->instantiatePrefab("Button"))->setPosition(500, 260)->rotateDegreesAroundSelf(180);
 	addObject(sim->getPfbs()->instantiatePrefab("Test"))->setPosition(500, 400);
@@ -133,8 +139,8 @@ void CSimulation::createDemo() {
 	addWire(Coord(640, 240), Coord(700, 240));
 	addWire(Coord(700, 400), Coord(700, 240));
 	addObject(sim->getPfbs()->instantiatePrefab("GND"))->setPosition(700, 420);
-	//addObject(new CObject(new CCircle(800, 500, 100)));
-	CObject *bulb2 = addObject(sim->getPfbs()->instantiatePrefab("Bulb"));
+	//addObject(new CShape(new CCircle(800, 500, 100)));
+	CShape *bulb2 = addObject(sim->getPfbs()->instantiatePrefab("Bulb"));
 	bulb2->setPosition(440, 140)->rotateDegreesAroundSelf(90);
 
 	addObject(sim->getPfbs()->instantiatePrefab("LED_CW"))->setPosition(560, 140)->rotateDegreesAroundSelf(90);
@@ -145,27 +151,18 @@ void CSimulation::createDemo() {
 	addWire(Coord(440, 200), Coord(380, 200));
 	addObject(sim->getPfbs()->instantiatePrefab("VDD"))->setPosition(440, 60);
 
-	CObject *bulb2_copy = bulb2->cloneObject();
+	CShape *bulb2_copy = bulb2->cloneShape();
 	bulb2_copy->setPosition(640, 140);
 	addObject(bulb2_copy);
 
 	if (0) {
-		CObject *wb3s_copy = wb3s->cloneObject();
+		CShape *wb3s_copy = wb3s->cloneShape();
 		wb3s_copy->setPosition(640, 440);
 		addObject(wb3s_copy);
 	}
 
 	matchAllJunctions();
 	recalcBounds();
-}
-CShape *CObject::cloneShape() {
-	CObject *no = new CObject();
-	this->cloneShapeTo(no);
-	return no;
-}
-class CObject *CObject::cloneObject() {
-	CShape *sh = cloneShape();
-	return dynamic_cast<CObject*>(sh);
 }
 void CSimulation::matchAllJunctions() {
 	for (int i = 0; i < wires.size(); i++) {
@@ -243,13 +240,13 @@ void CSimulation::destroyObject(CShape *s) {
 		}
 		ed = dynamic_cast<CEdge*>(s);
 		if (ed) {
-			delete w;
-			wires.remove(w);
 		}
+		delete w;
+		wires.remove(w);
 	}
 	else {
 		removeJunctions(s);
-		CObject *o = dynamic_cast<CObject*>(s);
+		CShape *o = dynamic_cast<CShape*>(s);
 		if (o != 0) {
 			delete o;
 			objects.remove(o);
