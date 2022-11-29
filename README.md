@@ -59,6 +59,10 @@ A: If you set a pin role to "Button", you will get a second textbox after saving
 <em>Q: My wall touch switch reacts slowly! It's laggy, how to make it react instantly?</em><br>
 A: It's like with Tasmota - go to our Options/General-Flags and set flag "6 - [BTN] Instant touch reaction instead of waiting for release (aka SetOption 13)"
 
+<em>Q: How to enter multiple startup commands? For example, to start both NTP and BL0942 drivers?</em><br>
+A: Use backlog - like in Tasmota. Open Config->Short startup command, and enter, for example: backlog startDriver BL0942; startDriver NTP; ntp_setServer 217.147.223.78
+
+
 # Building
 
 OpenBeken supports online builds for all platforms (BK7231T, BK7231N, XR809, BL602, W800), but if you want to compile it yourself, see  [BUILDING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md)
