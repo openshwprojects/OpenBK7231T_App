@@ -80,7 +80,7 @@ void CWinMenuBar::processEvent(const SDL_Event &Event) {
 		{
 			if (LOWORD(Event.syswm.msg->msg.win.wParam) == ID_EXIT)
 			{
-				exit(0);
+				sim->onUserClose();
 			}
 			else if (LOWORD(Event.syswm.msg->msg.win.wParam) == ID_NEW)
 			{
@@ -103,12 +103,7 @@ void CWinMenuBar::processEvent(const SDL_Event &Event) {
 			}
 			else if (LOWORD(Event.syswm.msg->msg.win.wParam) == ID_SAVE)
 			{
-				if (sim->hasProjectPath()) {
-					sim->saveSimulation();
-				}
-				else {
-					showSaveAsDialog();
-				}
+				sim->saveOrShowSaveAsDialogIfNeeded();
 			}
 		}
 	}

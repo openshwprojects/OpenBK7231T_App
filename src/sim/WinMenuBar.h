@@ -14,7 +14,6 @@ class CWinMenuBar {
 
 	void createWindowsMenu(HWND windowRef);
 	HWND getHWNDForSDLWindow(SDL_Window* win);
-	void showSaveAsDialog();
 public:
 	CWinMenuBar();
 
@@ -22,6 +21,7 @@ public:
 		this->sim = s;
 	}
 
+	void showSaveAsDialog();
 	void createMenuBar(SDL_Window *win);
 	void processEvent(const SDL_Event &Event);
 

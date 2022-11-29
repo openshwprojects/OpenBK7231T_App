@@ -28,6 +28,8 @@ public:
 	CSimulator();
 	void drawWindow();
 	void createWindow();
+	void onUserClose();
+	void showExitSaveMessageBox();
 	void destroyObject(class CShape *s);
 	class CShape *getShapeUnderCursor();
 	class CSimulation*getSim() {
@@ -46,6 +48,7 @@ public:
 	bool loadSimulation(const char *s);
 	bool saveSimulationAs(const char *s);
 	bool saveSimulation();
+	void saveOrShowSaveAsDialogIfNeeded();
 
 	void markAsModified() {
 		bSchematicModified = true;

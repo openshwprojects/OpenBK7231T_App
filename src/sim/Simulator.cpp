@@ -97,6 +97,17 @@ void CSimulator::drawWindow() {
 		{
 			Running = 0;
 		}
+		else if (Event.type == SDL_WINDOWEVENT) {
+			switch (Event.window.event) {
+
+			case SDL_WINDOWEVENT_CLOSE:   // exit game
+				onUserClose();
+				break;
+
+			default:
+				break;
+			}
+		}
 	}
 
 	glViewport(0, 0, WinWidth, WinHeight);
@@ -216,6 +227,14 @@ bool CSimulator::loadSimulation(const char *s) {
 
 	return false;
 }
+void CSimulator::saveOrShowSaveAsDialogIfNeeded() {
+	if (this->hasProjectPath()) {
+		this->saveSimulation();
+	}
+	else {
+		winMenu->showSaveAsDialog();
+	}
+}
 bool CSimulator::saveSimulation() {
 
 	saveSimulationAs(projectPath.c_str());
@@ -239,6 +258,61 @@ bool CSimulator::saveSimulationAs(const char *s) {
 }
 
 
+void CSimulator::showExitSaveMessageBox() {
+	const SDL_MessageBoxButtonData buttons[] =
+	{
+		{ /* .flags, .buttonid, .text */        0, 0, "No" },
+		{ SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "Yes" },
+		{ SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "Cancel" },
+	};
+	const SDL_MessageBoxColorScheme colorScheme =
+	{
+		{ /* .colors (.r, .g, .b) */
+			/* [SDL_MESSAGEBOX_COLOR_BACKGROUND] */
+			{ 255,   0,   0 },
+			/* [SDL_MESSAGEBOX_COLOR_TEXT] */
+			{   0, 255,   0 },
+			/* [SDL_MESSAGEBOX_COLOR_BUTTON_BORDER] */
+			{ 255, 255,   0 },
+			/* [SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] */
+			{   0,   0, 255 },
+			/* [SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] */
+			{ 255,   0, 255 }
+		}
+	};
+	const SDL_MessageBoxData messageboxdata =
+	{
+		SDL_MESSAGEBOX_INFORMATION, /* .flags */
+		NULL, /* .window */
+		"Save changes?", /* .title */
+		"Do you want to save changes (yes), exit without saving (no), or cancel?", /* .message */
+		SDL_arraysize(buttons), /* .numbuttons */
+		buttons, /* .buttons */
+		&colorScheme /* .colorScheme */
+	};
+	int buttonid;
+	if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0)
+	{
+		SDL_Log("error displaying message box");
+		return;
+	}
+	if (buttonid == 0) {
+		exit(0);
+	}
+	else if (buttonid == 1) {
+		saveOrShowSaveAsDialogIfNeeded();
+		exit(0);
+	}
+	else {
+		// cancel
+	}
+}
+void CSimulator::onUserClose() {
+	if (SIM_IsFlashModified()==false && !bSchematicModified) {
+		exit(0);
+	}
+	showExitSaveMessageBox();
+}
 void CSimulator::createWindow() {
 	Window = SDL_CreateWindow("OpenBeken Simulator", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WinWidth, WinHeight, WindowFlags);
 	assert(Window);
