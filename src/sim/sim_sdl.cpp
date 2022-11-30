@@ -3,7 +3,6 @@
 #include "sim_local.h"
 #include "Texture.h"
 #include "Shape.h"
-#include "Object.h"
 #include "Coord.h"
 #include "Simulator.h"
 #include "Simulation.h"

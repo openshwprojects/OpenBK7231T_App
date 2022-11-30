@@ -2,11 +2,11 @@
 #include "SaveLoad.h"
 #include "Simulator.h"
 #include "Shape.h"
-#include "Object.h"
 #include "Junction.h"
 #include "Wire.h"
 #include "Simulation.h"
 #include "PrefabManager.h"
+#include "Text.h"
 #include "../cJSON/cJSON.h"
 
 class CProject *CSaveLoad::loadProjectFile(const char *fname) {
@@ -55,15 +55,29 @@ class CSimulation *CSaveLoad::loadSimulationFromFile(const char *fname) {
 	{
 		cJSON *jX = cJSON_GetObjectItemCaseSensitive(jObject, "x");
 		cJSON *jY = cJSON_GetObjectItemCaseSensitive(jObject, "y");
+		cJSON *jClassName = cJSON_GetObjectItemCaseSensitive(jObject, "classname");
 		cJSON *jName = cJSON_GetObjectItemCaseSensitive(jObject, "name");
+		cJSON *jText = cJSON_GetObjectItemCaseSensitive(jObject, "text");
 		cJSON *rot = cJSON_GetObjectItemCaseSensitive(jObject, "rotation");
 		int rotInteger = rot->valuedouble;
 		rotInteger %= 360;
 
 		CShape *o = sim->getPfbs()->instantiatePrefab(jName->valuestring);
-		o->setPosition(jX->valuedouble, jY->valuedouble);
-		s->addObject(o);
-		o->rotateDegreesAroundSelf(rotInteger);
+		if (o == 0) {
+			o = sim->allocByClassName(jClassName->valuestring);
+		}
+		if (o == 0) {
+			printf("Failed to alloc object of class %s\n", jClassName->valuestring);
+		}
+		else {
+			CText *as_text = dynamic_cast<CText*>(o);
+			o->setPosition(jX->valuedouble, jY->valuedouble);
+			s->addObject(o);
+			o->rotateDegreesAroundSelf(rotInteger);
+			if (jText != 0 && as_text != 0) {
+				as_text->setText(jText->valuestring);
+			}
+		}
 	}
 	cJSON_ArrayForEach(jWire, n_jWires)
 	{
@@ -89,10 +103,16 @@ void CSaveLoad::saveSimulationToFile(class CSimulation *simToSave, const char *f
 		const Coord &pos = obj->getPosition();
 		float rot = obj->getRotationAccum();
 		const char *name = obj->getName();
+		const char *classname = obj->getClassName();
+		CText *as_text = dynamic_cast<CText*>(obj);
 		cJSON_AddStringToObject(j_obj, "name", name);
+		cJSON_AddStringToObject(j_obj, "classname", classname);
 		cJSON_AddNumberToObject(j_obj, "rotation", rot);
 		cJSON_AddNumberToObject(j_obj, "x", pos.getX());
 		cJSON_AddNumberToObject(j_obj, "y", pos.getY());
+		if (as_text) {
+			cJSON_AddStringToObject(j_obj, "text", as_text->getText());
+		}
 	}
 	cJSON *main_wires = cJSON_AddObjectToObject(main_sim, "wires");
 	for (int i = 0; i < simToSave->getWiresCount(); i++) {

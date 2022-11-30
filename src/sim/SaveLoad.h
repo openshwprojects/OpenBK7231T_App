@@ -3,10 +3,28 @@
 
 #include "sim_local.h"
 
+
+
+#include <time.h>
+
 class CProject {
 	CString created;
 	CString lastModified;
 public:
+	CProject() {
+		char text[64];
+		time_t now = time(NULL);
+		struct tm *t = localtime(&now);
+		strftime(text, sizeof(text) - 1, "%Y-%m-%d %H:%M", t);
+		created = text;
+	}
+	void setModifiedDate() {
+		char text[64];
+		time_t now = time(NULL);
+		struct tm *t = localtime(&now);
+		strftime(text, sizeof(text) - 1, "%Y-%m-%d %H:%M", t);
+		lastModified = text;
+	}
 	const char *getLastModified() const {
 		return lastModified.c_str();
 	}

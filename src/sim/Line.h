@@ -24,6 +24,9 @@ public:
 	virtual void recalcBoundsSelf();
 	virtual void drawShape();
 	virtual CShape *cloneShape();
+	virtual const char *getClassName() const {
+		return "CLine";
+	}
 };
 
 #endif // __LINE_H__

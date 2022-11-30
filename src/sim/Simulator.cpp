@@ -1,8 +1,8 @@
 #ifdef WINDOWS
 #include "Simulator.h"
 #include "Shape.h"
-#include "Object.h"
 #include "Wire.h"
+#include "Text.h"
 #include "Controller_Button.h"
 #include "Junction.h"
 #include "Tool_Base.h"
@@ -23,6 +23,7 @@
 
 
 CSimulator::CSimulator() {
+	currentlyEditingText = 0;
 	memset(bMouseButtonStates, 0, sizeof(bMouseButtonStates));
 	activeTool = 0;
 	Window = 0;
@@ -70,7 +71,15 @@ void CSimulator::drawWindow() {
 		}
 		if (Event.type == SDL_KEYDOWN)
 		{
-			onKeyDown(Event.key.keysym.sym);
+			if (currentlyEditingText) {
+				if (currentlyEditingText->processKeyDown(Event.key.keysym.sym)) {
+					currentlyEditingText->setTextEditMode(false);
+					currentlyEditingText = 0;
+				}
+			}
+			else {
+				onKeyDown(Event.key.keysym.sym);
+			}
 		}
 		else if (Event.type == SDL_MOUSEBUTTONDOWN)
 		{
@@ -93,6 +102,22 @@ void CSimulator::drawWindow() {
 				activeTool->onMouseUp(mouse, which);
 			}
 			bMouseButtonStates[Event.button.button] = false;
+		}
+		else if (Event.type == SDL_TEXTEDITING)
+		{
+			printf("SDL_TEXTEDITING %s %i %i\n", Event.edit.text,Event.edit.start, Event.edit.length);
+		}
+		else if (Event.type == SDL_TEXTINPUT)
+		{
+			printf("SDL_TEXTINPUT %s\n", Event.text.text);
+			if (currentlyEditingText) {
+				currentlyEditingText->appendText(Event.text.text);
+			}
+			else {
+				if (activeTool) {
+					activeTool->onTextInput(Event.text.text);
+				}
+			}
 		}
 		else if (Event.type == SDL_QUIT)
 		{
@@ -178,6 +203,21 @@ void CSimulator::drawWindow() {
 	//glDisable(GL_TEXTURE_2D);
 	SDL_GL_SwapWindow(Window);
 }
+class CShape *CSimulator::allocByClassName(const char *className) {
+	if (!stricmp(className, "CText"))
+		return new CText();
+	printf("CSimulator::allocByClassName: unhandled class %s\n", className);
+	return 0;
+}
+void CSimulator::beginEditingText(class CText *txt) {
+	if (currentlyEditingText != 0) {
+		currentlyEditingText->setTextEditMode(false);
+	}
+	currentlyEditingText = txt;
+	if (currentlyEditingText) {
+		currentlyEditingText->setTextEditMode(true);
+	}
+}
 void CSimulator::destroyObject(CShape *s) {
 	sim->destroyObject(s);
 }
@@ -245,6 +285,7 @@ bool CSimulator::saveSimulation() {
 bool CSimulator::saveSimulationAs(const char *s) {
 	printf("CSimulator::saveSimulationAs: called with name %s\n", s);
 	projectPath = s;
+	project->setModifiedDate();
 	CString simPath = CString::constructPathByStrippingExt(projectPath.c_str(), "simulation.json");
 	CString memPath = CString::constructPathByStrippingExt(projectPath.c_str(), "flashMemory.bin");
 	printf("CSimulator::saveSimulationAs: simPath %s\n", simPath.c_str());

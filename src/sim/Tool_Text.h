@@ -17,7 +17,8 @@ public:
 	virtual void drawTool();
 	virtual void onMouseDown(const Coord &pos, int button);
 	virtual void onMouseUp(const Coord &pos, int button);
+	virtual void onTextInput(const char *inputText);
+	virtual void onKeyDown(int button);
 };
-
 
 #endif // __TOOL_TEXT_H__

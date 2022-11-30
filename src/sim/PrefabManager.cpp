@@ -1,7 +1,6 @@
 #ifdef WINDOWS
 #include "PrefabManager.h"
 #include "Shape.h"
-#include "Object.h"
 #include "Wire.h"
 #include "Controller_Button.h"
 #include "Controller_Bulb.h"

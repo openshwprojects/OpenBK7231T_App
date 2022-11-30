@@ -1,7 +1,6 @@
 #ifdef WINDOWS
 #include "Simulation.h"
 #include "Shape.h"
-#include "Object.h"
 #include "Wire.h"
 #include "Junction.h"
 #include "Text.h"
@@ -109,6 +108,7 @@ CShape * CSimulation::addObject(CShape *o) {
 	}
 	objects.push_back(o);
 	registerJunctions(o);
+	o->recalcBoundsAll();
 	return o;
 }
 void CSimulation::createDemoOnlyWB3S() {

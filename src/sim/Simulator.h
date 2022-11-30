@@ -21,9 +21,10 @@ class CSimulator {
 	class CSaveLoad *saveLoad;
 	class CProject *project;
 	bool bSchematicModified;
+	class CText *currentlyEditingText;
 
 	void onKeyDown(int keyCode);
-	void setTool(Tool_Base *tb);
+	void setTool(class Tool_Base *tb);
 public:
 	CSimulator();
 	void drawWindow();
@@ -31,6 +32,7 @@ public:
 	void onUserClose();
 	void showExitSaveMessageBox();
 	void destroyObject(class CShape *s);
+	void beginEditingText(class CText *txt);
 	class CShape *getShapeUnderCursor();
 	class CSimulation*getSim() {
 		return sim;
@@ -41,6 +43,7 @@ public:
 	class CursorManager*getCursorMgr() {
 		return cur;
 	}
+	class CShape *allocByClassName(const char *className);
 	bool isMouseButtonHold(int idx) const {
 		return bMouseButtonStates[idx];
 	}

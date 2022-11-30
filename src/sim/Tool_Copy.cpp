@@ -3,7 +3,6 @@
 #include "Tool_Copy.h"
 #include "Simulator.h"
 #include "Shape.h"
-#include "Object.h"
 #include "CursorManager.h"
 #include "Simulation.h"
 

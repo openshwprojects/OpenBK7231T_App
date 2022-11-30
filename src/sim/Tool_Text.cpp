@@ -3,10 +3,18 @@
 #include "Simulator.h"
 #include "Simulation.h"
 #include "Shape.h"
+#include "Text.h"
 #include "CursorManager.h"
 
 Tool_Text::Tool_Text() {
 	currentTarget = 0;
+}
+void Tool_Text::onTextInput(const char *inputText) {
+
+}
+void Tool_Text::onKeyDown(int button) {
+
+
 }
 void Tool_Text::onMouseUp(const Coord &pos, int button) {
 
@@ -17,8 +25,23 @@ int Tool_Text::drawTextStats(int h) {
 	return h;
 }
 void Tool_Text::onMouseDown(const Coord &pos, int button) {
-	currentTarget = sim->getSim()->addText(pos, "TEXT");
-
+	if (currentTarget) {
+		sim->beginEditingText(0);
+		currentTarget = 0;
+		return;
+	}
+	CShape *candid = sim->getShapeUnderCursor();
+	if (candid != 0) {
+		CText *txt = dynamic_cast<CText*>(candid);
+		if (txt != 0) {
+			currentTarget = txt;
+			sim->beginEditingText(currentTarget);
+		}
+	}
+	else {
+		currentTarget = sim->getSim()->addText(pos, "TEXT");
+		sim->beginEditingText(currentTarget);
+	}
 }
 void Tool_Text::drawTool() {
 	

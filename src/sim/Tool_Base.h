@@ -22,6 +22,9 @@ public:
 	virtual void onMouseDown(const class Coord &pos, int button) {
 
 	}
+	virtual void onTextInput(const char *inputText) {
+
+	}
 	virtual void onMouseUp(const class Coord &pos, int button) {
 
 	}
