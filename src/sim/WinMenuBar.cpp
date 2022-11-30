@@ -2,6 +2,7 @@
 
 #include "WinMenuBar.h"
 #include "Simulator.h"
+#include "RecentList.h"
 #include <nfd.h>
 #pragma comment (lib, "nfd_d.lib")
 
@@ -16,6 +17,8 @@ enum {
 	ID_SAVEAS,
 	ID_SAVE,
 	ID_EXIT,
+	ID_OPEN_RECENT_FIRST,
+	ID_OPEN_RECENT_LAST = ID_OPEN_RECENT_FIRST + 100,
 	ID_OPTIONS,
 	ID_ABOUT,
 };
@@ -25,6 +28,7 @@ void CWinMenuBar::createWindowsMenu(HWND windowRef) {
 	hFile = CreateMenu();
 	hEdit = CreateMenu();
 	hHelp = CreateMenu();
+	HMENU hRecent = CreateMenu();
 
 	AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hFile, "File");
 	AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hEdit, "Edit");
@@ -35,6 +39,16 @@ void CWinMenuBar::createWindowsMenu(HWND windowRef) {
 	AppendMenu(hFile, MF_STRING, ID_LOAD, "Load...");
 	AppendMenu(hFile, MF_STRING, ID_SAVE, "Save");
 	AppendMenu(hFile, MF_STRING, ID_SAVEAS, "Save as...");
+	AppendMenu(hFile, MF_POPUP, (UINT_PTR)hRecent, "Open recent");
+	CRecentList *rList = sim->getRecents();
+	recents.clear();
+	for (int i = 0; i < rList->getSizeCappedAt(10); i++) {
+		const char *entr = rList->get(i);
+		recents.push_back(entr);
+		CString tmp = "Open ";
+		tmp.append(entr);
+		AppendMenu(hRecent, MF_STRING, ID_OPEN_RECENT_FIRST + i, tmp.c_str());
+	}
 	AppendMenu(hFile, MF_STRING, ID_EXIT, "Exit");
 
 	AppendMenu(hEdit, MF_STRING, ID_OPTIONS, "Options");
@@ -78,32 +92,39 @@ void CWinMenuBar::processEvent(const SDL_Event &Event) {
 	if (Event.type == SDL_SYSWMEVENT) {
 		if (Event.syswm.msg->msg.win.msg == WM_COMMAND)
 		{
-			if (LOWORD(Event.syswm.msg->msg.win.wParam) == ID_EXIT)
+			int id = LOWORD(Event.syswm.msg->msg.win.wParam);
+			if (id == ID_EXIT)
 			{
 				sim->onUserClose();
 			}
-			else if (LOWORD(Event.syswm.msg->msg.win.wParam) == ID_NEW)
+			else if (id == ID_NEW)
 			{
 				sim->createSimulation(false);
 			}
-			else if (LOWORD(Event.syswm.msg->msg.win.wParam) == ID_NEW_DEMO)
+			else if (id == ID_NEW_DEMO)
 			{
 				sim->createSimulation(true);
 			}
-			else if (LOWORD(Event.syswm.msg->msg.win.wParam) == ID_LOAD)
+			else if (id == ID_LOAD)
 			{
 				result = NFD_OpenDialog("obkproj", NULL, &outPath);
 				if (result == NFD_OKAY) {
 					sim->loadSimulation(outPath);
 				}
 			}
-			else if (LOWORD(Event.syswm.msg->msg.win.wParam) == ID_SAVEAS)
+			else if (id == ID_SAVEAS)
 			{
 				showSaveAsDialog();
 			}
-			else if (LOWORD(Event.syswm.msg->msg.win.wParam) == ID_SAVE)
+			else if (id == ID_SAVE)
 			{
 				sim->saveOrShowSaveAsDialogIfNeeded();
+			}
+			else if (id >= ID_OPEN_RECENT_FIRST && id <= ID_OPEN_RECENT_LAST)
+			{
+				int recentID = id - ID_OPEN_RECENT_FIRST;
+				const char *recentStr = recents[recentID].c_str();
+				sim->loadSimulation(outPath);
 			}
 		}
 	}

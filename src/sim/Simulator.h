@@ -22,6 +22,7 @@ class CSimulator {
 	class CProject *project;
 	bool bSchematicModified;
 	class CText *currentlyEditingText;
+	class CRecentList *recents;
 
 	void onKeyDown(int keyCode);
 	void setTool(class Tool_Base *tb);
@@ -36,6 +37,9 @@ public:
 	class CShape *getShapeUnderCursor();
 	class CSimulation*getSim() {
 		return sim;
+	}
+	class CRecentList *getRecents() {
+		return recents;
 	}
 	class PrefabManager*getPfbs() {
 		return prefabs;

@@ -522,6 +522,7 @@
     <ClCompile Include="src\sim\Junction.cpp" />
     <ClCompile Include="src\sim\Line.cpp" />
     <ClCompile Include="src\sim\PrefabManager.cpp" />
+    <ClCompile Include="src\sim\RecentList.cpp" />
     <ClCompile Include="src\sim\Rect.cpp" />
     <ClCompile Include="src\sim\SaveLoad.cpp" />
     <ClCompile Include="src\sim\Shape.cpp" />
@@ -566,6 +567,7 @@
   <ItemGroup>
     <ClInclude Include="src\selftest\selftest_local.h" />
     <ClInclude Include="src\sim\PrefabManager.h" />
+    <ClInclude Include="src\sim\RecentList.h" />
     <ClInclude Include="src\sim\SaveLoad.h" />
     <ClInclude Include="src\sim\sim_local.h" />
     <ClInclude Include="src\sim\Solver.h" />

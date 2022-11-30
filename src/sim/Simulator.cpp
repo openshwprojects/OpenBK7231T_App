@@ -20,6 +20,7 @@
 #include "WinMenuBar.h"
 #include "SaveLoad.h"
 #include "sim_import.h"
+#include "RecentList.h"
 
 
 CSimulator::CSimulator() {
@@ -37,6 +38,8 @@ CSimulator::CSimulator() {
 	solver = new CSolver();
 	saveLoad = new CSaveLoad();
 	saveLoad->setSimulator(this);
+	recents = new CRecentList();
+	recents->load();
 }
 
 void CSimulator::setTool(Tool_Base *tb) {
@@ -261,6 +264,7 @@ bool CSimulator::loadSimulation(const char *s) {
 	projectPath = s;
 	project = saveLoad->loadProjectFile(s);
 	sim = saveLoad->loadSimulationFromFile(simPath.c_str());
+	recents->registerAndSave(projectPath.c_str());
 	SIM_ClearOBK();
 	SIM_SetupFlashFileReading(memPath.c_str());
 	SIM_DoFreshOBKBoot();
@@ -292,6 +296,7 @@ bool CSimulator::saveSimulationAs(const char *s) {
 	printf("CSimulator::saveSimulationAs: memPath %s\n", memPath.c_str());
 	FS_CreateDirectoriesForPath(simPath.c_str());
 	FS_CreateDirectoriesForPath(memPath.c_str());
+	recents->registerAndSave(projectPath.c_str());
 	saveLoad->saveProjectToFile(project, projectPath.c_str());
 	saveLoad->saveSimulationToFile(sim, simPath.c_str());
 	SIM_SaveFlashData(memPath.c_str());

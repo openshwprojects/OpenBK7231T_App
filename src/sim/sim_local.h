@@ -50,6 +50,9 @@ public:
 	void remove(T o) {
 		this->erase(std::remove(this->begin(), this->end(), o), this->end());
 	}
+	void removeAt(int i) {
+		this->erase(this->begin() + i);
+	}
 	bool contains(const T&o) const {
 		for (unsigned int i = 0; i < size(); i++) {
 			if ((*this)[i] == o)
