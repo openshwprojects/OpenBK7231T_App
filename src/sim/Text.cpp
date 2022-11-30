@@ -3,12 +3,26 @@
 
 void CText::recalcBoundsSelf() {
 	bounds.clear();
-	//bounds.addPoint(pos);
-	int useLen = txt.size();
-	if (bTextEditMode)
-		useLen += 1;
-	bounds.addPoint(Coord(9 * useLen, 5));
+	int line = 0;
+	int ch = 0;;
+	const char *p = txt.c_str();
 	bounds.addPoint(Coord(0, -8));
+	while (*p) {
+		if (p[0] == '\n') {
+			line++;
+			ch = 0;
+		}
+		else {
+			ch++;
+		}
+		bounds.addPoint(Coord(9 * ch, 5 + 15 * line));
+		p++;
+	}
+	//int useLen = txt.size();
+	//if (bTextEditMode)
+	//	useLen += 1;
+	//bounds.addPoint(Coord(9 * useLen, 5));
+	//bounds.addPoint(Coord(0, -8));
 }
 CShape *CText::cloneShape() {
 	CText *r = new CText();
@@ -41,6 +55,9 @@ bool CText::processKeyDown(int keyCode) {
 	}
 	if (keyCode == SDLK_ESCAPE) {
 		return true;
+	}
+	if (keyCode == SDLK_RETURN) {
+		appendText("\n");
 	}
 	return false;
 }

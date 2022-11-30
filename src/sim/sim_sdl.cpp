@@ -35,10 +35,19 @@ int drawText(int x, int y, const char* fmt, ...) {
 	vsnprintf(buffer, sizeof(buffer), fmt, argList);
 	va_end(argList);
 	glRasterPos2i(x, y);
-	for (int i = 0; i < strlen(buffer); i++) {
-		glutBitmapCharacter(GLUT_BITMAP_9_BY_15, (int)buffer[i]);
+	const char *p = buffer;
+	while(*p) {
+		if (*p == '\n') {
+			y += 15;
+			glRasterPos2i(x, y);
+		}
+		else {
+			glutBitmapCharacter(GLUT_BITMAP_9_BY_15, (int)*p);
+		}
+		p++;
 	}
-	return y + 15;
+	y += 15;
+	return y;
 }
 int gridSize = 20;
 float roundToGrid(float f) {
