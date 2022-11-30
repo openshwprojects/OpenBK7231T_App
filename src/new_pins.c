@@ -864,7 +864,8 @@ bool CHANNEL_HasRoleThatShouldBePublished(int ch) {
 	int i;
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if (g_cfg.pins.channels[i] == ch) {
-			int role = g_cfg.pins.roles[i];	if (role == IOR_Relay || role == IOR_Relay_n
+			int role = g_cfg.pins.roles[i];	
+			if (role == IOR_Relay || role == IOR_Relay_n
 				|| role == IOR_LED || role == IOR_LED_n
 				|| role == IOR_ADC
 				|| role == IOR_DigitalInput || role == IOR_DigitalInput_n
