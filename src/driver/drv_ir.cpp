@@ -744,7 +744,7 @@ extern "C" void DRV_IR_RunFrame(){
                ) {
 
 
-				char out[60];
+				char out[128];
 				PrintIRData(&ourReceiver->decodedIRData);
 				ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)"IR decode returned true, protocol %s (%d)", name, (int)ourReceiver->decodedIRData.protocol);
                 int repeat = 0;
@@ -761,8 +761,6 @@ extern "C" void DRV_IR_RunFrame(){
                 } else {
                     snprintf(out, sizeof(out), "IR_%s 0x%X 0x%X %d", name, ourReceiver->decodedIRData.address, ourReceiver->decodedIRData.command, repeat);
                 }
-
-
 				// if user wants us to publish every received IR data, do it now
 				if(CFG_HasFlag(OBK_FLAG_IR_PUBLISH_RECEIVED)) {
 
@@ -782,6 +780,15 @@ extern "C" void DRV_IR_RunFrame(){
 				} else {
             		ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR %s", out);
                 }
+
+				if (CFG_HasFlag(OBK_FLAG_IR_PUBLISH_RECEIVED_IN_JSON)) {
+					// {"IrReceived":{"Protocol":"RC_5","Bits":0x1,"Data":"0xC"}}
+					// 
+					snprintf(out, sizeof(out), "{\"IrReceived\":{\"Protocol\":\"%s\",\"Bits\":%i,\"Data\":\"0x%lX\"}}",
+						name, (int)ourReceiver->decodedIRData.numberOfBits, (unsigned long)ourReceiver->decodedIRData.decodedRawData);
+					MQTT_PublishMain_StringString("RESULT", out, OBK_PUBLISH_FLAG_FORCE_REMOVE_GET);
+				}
+
 				if(ourReceiver->decodedIRData.protocol != UNKNOWN) {
 					snprintf(out, sizeof(out), "%X", ourReceiver->decodedIRData.command);
 					int tgType = 0;

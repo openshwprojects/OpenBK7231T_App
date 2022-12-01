@@ -28,8 +28,9 @@ enum OBK_Publish_Result_e {
 	OBK_PUBLISH_MEM_FAIL,
 };
 
-#define OBK_PUBLISH_FLAG_MUTEX_SILENT	1
-#define OBK_PUBLISH_FLAG_RETAIN			2
+#define OBK_PUBLISH_FLAG_MUTEX_SILENT			1
+#define OBK_PUBLISH_FLAG_RETAIN					2
+#define OBK_PUBLISH_FLAG_FORCE_REMOVE_GET		4
 
 #include "new_mqtt_deduper.h"
 

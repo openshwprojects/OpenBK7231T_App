@@ -78,7 +78,10 @@ AddEventHandler OnUART 55AA00FF setChannel 0 1
 
 // IR events
 addEventHandler2 Samsung 0x707 0x68 setChannel 1 0
+addEventHandler2 Samsung 0x707 0x69 setChannel 1 1
 
+addEventHandler2 Samsung 0x707 0x60 setChannel 1 0
+addEventHandler2 Samsung 0x707 0x61 setChannel 1 1
 // MQTT state
 
 addEventHandler MQTTState 0 setChannel 1 0

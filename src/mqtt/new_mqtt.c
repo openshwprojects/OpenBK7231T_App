@@ -659,6 +659,10 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 	{
 		retain = 1;
 	}
+	if (flags & OBK_PUBLISH_FLAG_FORCE_REMOVE_GET)
+	{
+		appendGet = false;
+	}
 
 	LOCK_TCPIP_CORE();
 	int res = mqtt_client_is_connected(client);
