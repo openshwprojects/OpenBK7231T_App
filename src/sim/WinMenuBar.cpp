@@ -124,7 +124,7 @@ void CWinMenuBar::processEvent(const SDL_Event &Event) {
 			{
 				int recentID = id - ID_OPEN_RECENT_FIRST;
 				const char *recentStr = recents[recentID].c_str();
-				sim->loadSimulation(outPath);
+				sim->loadSimulation(recentStr);
 			}
 		}
 	}

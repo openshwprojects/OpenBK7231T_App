@@ -121,6 +121,9 @@ void FS_CreateDirectoriesForPath(const char *file_path) {
 	free(dir_path);
 }
 bool FS_Exists(const char *fname) {
+	if (fname == 0)
+		return false;
+
 	FILE *f = fopen(fname, "rb");
 	if (f == 0)
 		return false;
@@ -128,6 +131,8 @@ bool FS_Exists(const char *fname) {
 	return true;
 }
 char *FS_ReadTextFile(const char *fname) {
+	if (fname == 0)
+		return 0;
 	FILE *f = fopen(fname, "r");
 	if (f == 0)
 		return 0;
