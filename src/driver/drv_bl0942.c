@@ -131,7 +131,7 @@ commandResult_t BL0942_PowerSet(const void *context, const char *cmd, const char
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	realPower = atof(args);
 	BL0942_PREF = raw_unscaled_power / realPower;
@@ -150,7 +150,7 @@ commandResult_t BL0942_PowerRef(const void *context, const char *cmd, const char
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	BL0942_PREF = atof(args);
 
@@ -163,7 +163,7 @@ commandResult_t BL0942_CurrentRef(const void *context, const char *cmd, const ch
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	BL0942_IREF = atof(args);
 
@@ -176,7 +176,7 @@ commandResult_t BL0942_VoltageRef(const void *context, const char *cmd, const ch
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	BL0942_UREF = atof(args);
 
@@ -190,7 +190,7 @@ commandResult_t BL0942_VoltageSet(const void *context, const char *cmd, const ch
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	realV = atof(args);
 	BL0942_UREF = raw_unscaled_voltage / realV;
@@ -211,7 +211,7 @@ commandResult_t BL0942_CurrentSet(const void *context, const char *cmd, const ch
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	realI = atof(args);
 	BL0942_IREF = raw_unscaled_current / realI;

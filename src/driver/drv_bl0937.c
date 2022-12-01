@@ -58,7 +58,7 @@ commandResult_t BL0937_PowerSet(const void *context, const char *cmd, const char
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	realPower = atof(args);
 	BL0937_PREF = realPower / res_p;
@@ -79,7 +79,7 @@ commandResult_t BL0937_PowerMax(const void *context, const char *cmd, const char
 
     if(args==0||*args==0) {
         addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-        return 1;
+        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
     maxPower = atof(args);
     if ((maxPower>200.0) && (maxPower<7200.0f))
@@ -100,7 +100,7 @@ commandResult_t BL0937_PowerRef(const void *context, const char *cmd, const char
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	BL0937_PREF = atof(args);
 
@@ -113,7 +113,7 @@ commandResult_t BL0937_CurrentRef(const void *context, const char *cmd, const ch
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	BL0937_CREF = atof(args);
 
@@ -126,7 +126,7 @@ commandResult_t BL0937_VoltageRef(const void *context, const char *cmd, const ch
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	BL0937_VREF = atof(args);
 
@@ -140,7 +140,7 @@ commandResult_t BL0937_VoltageSet(const void *context, const char *cmd, const ch
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	realV = atof(args);
 	BL0937_VREF = realV / res_v;
@@ -161,7 +161,7 @@ commandResult_t BL0937_CurrentSet(const void *context, const char *cmd, const ch
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	realI = atof(args);
 	BL0937_CREF = realI / res_c;

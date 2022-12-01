@@ -203,7 +203,7 @@ commandResult_t CSE7766_PowerSet(const void *context, const char *cmd, const cha
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	realPower = atof(args);
 	CSE7766_PREF = realPower * raw_unscaled_power;
@@ -222,7 +222,7 @@ commandResult_t CSE7766_PowerRef(const void *context, const char *cmd, const cha
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	CSE7766_PREF = atof(args);
 
@@ -235,7 +235,7 @@ commandResult_t CSE7766_CurrentRef(const void *context, const char *cmd, const c
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	CSE7766_IREF = atof(args);
 
@@ -248,7 +248,7 @@ commandResult_t CSE7766_VoltageRef(const void *context, const char *cmd, const c
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	CSE7766_UREF = atof(args);
 
@@ -262,7 +262,7 @@ commandResult_t CSE7766_VoltageSet(const void *context, const char *cmd, const c
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	realV = atof(args);
 	CSE7766_UREF = realV * raw_unscaled_voltage;
@@ -283,7 +283,7 @@ commandResult_t CSE7766_CurrentSet(const void *context, const char *cmd, const c
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	realI = atof(args);
 	CSE7766_IREF = realI * raw_unscaled_current;
