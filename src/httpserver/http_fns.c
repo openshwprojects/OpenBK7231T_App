@@ -225,6 +225,11 @@ int http_fn_index(http_request_t* request) {
 		http_html_start(request, NULL);
 
 		poststr(request, "<div id=\"changed\">");
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+		if (DRV_IsRunning("PWMToggler")) {
+			DRV_Toggler_ProcessChanges(request);
+		}
+#endif
 		if (http_getArg(request->url, "tgl", tmpA, sizeof(tmpA))) {
 			j = atoi(tmpA);
 			if (j == SPECIAL_CHANNEL_LEDPOWER) {
@@ -694,6 +699,12 @@ int http_fn_index(http_request_t* request) {
 		}
 
 	}
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+	if (DRV_IsRunning("PWMToggler")) {
+		DRV_Toggler_AddToHtmlPage(request);
+	}
+#endif
+
 	poststr(request, "</table>");
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_AppendInformationToHTTPIndexPage(request);

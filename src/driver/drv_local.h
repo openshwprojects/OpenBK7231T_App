@@ -50,3 +50,9 @@ bool DRV_IsRunning(const char* name);
 void TuyaMCU_Sensor_RunFrame();
 void TuyaMCU_Sensor_Init();
 
+
+void DRV_Toggler_ProcessChanges(http_request_t *request);
+void DRV_Toggler_AddToHtmlPage(http_request_t *request);
+void DRV_Toggler_AppendInformationToHTTPIndexPage(http_request_t* request);
+void DRV_InitPWMToggler();
+
