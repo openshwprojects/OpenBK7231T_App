@@ -686,7 +686,7 @@ void Main_Init_After_Delay()
 	bForceOpenAP = 1;
 #endif
 
-	if((*wifi_ssid == 0) || (*wifi_pass == 0))
+	if((*wifi_ssid == 0))
     {
 		// start AP mode in 5 seconds
 		g_openAP = 5;
