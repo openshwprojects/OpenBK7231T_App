@@ -162,7 +162,7 @@ void Test_Http_SingleRelayOnChannel1() {
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=POWER");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "OFF");
 
-	CMD_ExecuteCommand("setChannek 1 1",0);
+	CMD_ExecuteCommand("setChannel 1 1",0);
 	// The empty power packet should not affect relay
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=POWER");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "ON");
@@ -170,7 +170,7 @@ void Test_Http_SingleRelayOnChannel1() {
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "ON");
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=POWER");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "ON");
-	CMD_ExecuteCommand("setChannek 1 0", 0);
+	CMD_ExecuteCommand("setChannel 1 0", 0);
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=POWER");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "OFF");
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=POWER");
