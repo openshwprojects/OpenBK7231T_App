@@ -196,6 +196,22 @@ const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
 
 	return false;
 }
+const char *CMD_ExpandConstantString(const char *s, const char *stop, char *out, int outLen) {
+	int idx;
+	const char *ret;
+
+	ret = strCompareBound(s, "$autoexec.bat", stop, false);
+	if (ret) {
+		byte* data = LFS_ReadFile("autoexec.bat");
+		if (data == 0)
+			return false;
+		strcpy_safe(out, (char*)data, outLen);
+		free(data);
+		return ret;
+	}
+	return false;
+}
+
 const char *CMD_ExpandConstantToString(const char *constant, char *out, char *stop) {
 	int outLen;
 	float value;
@@ -205,6 +221,12 @@ const char *CMD_ExpandConstantToString(const char *constant, char *out, char *st
 	outLen = (stop - out) - 1;
 
 	after = CMD_ExpandConstant(constant, 0, &value);
+#if WINDOWS
+	if (after == 0) {
+		after = CMD_ExpandConstantString(constant, 0, out, outLen);
+		return after;
+	}
+#endif
 	if (after == 0)
 		return 0;
 
@@ -228,6 +250,7 @@ void CMD_ExpandConstantsWithinString(const char *in, char *out, int outLen) {
 			break;
 		}
 		if (*in == '$') {
+			*out = 0;
 			tmp = CMD_ExpandConstantToString(in, out, outStop);
 			while (*out)
 				out++;
