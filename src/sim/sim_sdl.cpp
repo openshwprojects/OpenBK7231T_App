@@ -28,18 +28,17 @@ int WinWidth = 1680;
 int WinHeight = 940;
 #undef main
 
-int drawText(int x, int y, const char* fmt, ...) {
-	va_list argList;
-	char buffer[512];
-	va_start(argList, fmt);
-	vsnprintf(buffer, sizeof(buffer), fmt, argList);
-	va_end(argList);
-	glRasterPos2i(x, y);
+CStyle g_style_shapes(CColor(165, 75, 75), 3.0f);
+CStyle g_style_wires(CColor(75, 165, 75), 3.0f);
+CStyle g_style_text(CColor(131, 131, 131), 3.0f);
+
+int drawTextInternal(float x, float y, const char *buffer) {
+	glRasterPos2f(x, y);
 	const char *p = buffer;
-	while(*p) {
+	while (*p) {
 		if (*p == '\n') {
 			y += 15;
-			glRasterPos2i(x, y);
+			glRasterPos2f(x, y);
 		}
 		else {
 			glutBitmapCharacter(GLUT_BITMAP_9_BY_15, (int)*p);
@@ -48,6 +47,18 @@ int drawText(int x, int y, const char* fmt, ...) {
 	}
 	y += 15;
 	return y;
+}
+int drawText(int x, int y, const char* fmt, ...) {
+	va_list argList;
+	char buffer[512];
+	va_start(argList, fmt);
+	vsnprintf(buffer, sizeof(buffer), fmt, argList);
+	va_end(argList);
+	g_style_text.apply();
+	float ret = drawTextInternal(x, y, buffer);
+	drawTextInternal(x + 0.5f, y + 0.5f, buffer);
+	drawTextInternal(x - 0.5f, y - 0.5f, buffer);
+	return ret;
 }
 int gridSize = 20;
 float roundToGrid(float f) {

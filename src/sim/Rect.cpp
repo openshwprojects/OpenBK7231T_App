@@ -13,6 +13,7 @@ CShape *CRect::cloneShape() {
 	return n;
 }
 void CRect::drawShape() {
+	g_style_shapes.apply();
 	glBegin(GL_LINE_LOOP);
 	glVertex2f(getX(), getY());
 	glVertex2f(getX() + w, getY());

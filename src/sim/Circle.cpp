@@ -34,7 +34,7 @@ void CCircle::drawShape() {
 		glEnd();
 	}
 	else {
-		glColor3f(0, 1, 0);
+		g_style_shapes.apply();
 		glBegin(GL_LINE_LOOP);
 		for (int i = 0; i < corners; i++) {
 			float a = (2.0f * M_PI) * (i / (float)corners);

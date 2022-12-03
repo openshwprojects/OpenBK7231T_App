@@ -59,8 +59,7 @@ void CWire::addPoint(const Coord &p) {
 
 
 void CWire::drawWire() {
-	glColor3f(0, 1, 0);
-	glLineWidth(2.0f);
+	g_style_wires.apply();
 	glBegin(GL_LINE_STRIP);
 	for (int i = 0; i < junctions.size(); i++) {
 		CJunction *j = junctions[i];

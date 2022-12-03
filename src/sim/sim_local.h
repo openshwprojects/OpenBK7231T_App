@@ -103,5 +103,49 @@ public:
 		return r;
 	}
 };
+
+class CColor {
+	float r, g, b, a;
+public:
+	CColor() {
+		r = g = b = a = 1;
+	}
+	CColor(float _r, float _g, float _b, float _a = 1) {
+		r = _r;
+		g = _g;
+		b = _b;
+		a = _a;
+	}
+	CColor(int _r, int _g, int _b, int _a = 255) {
+		r = _r/255.0f;
+		g = _g / 255.0f;
+		b = _b / 255.0f;
+		a = _a / 255.0f;
+	}
+	operator float*() {
+		return &r;
+	}
+
+	operator const float *() {
+		return &r;
+	}
+};
+class CStyle {
+	CColor color;
+	float lineWidth;
+public:
+	CStyle(const CColor &col, float lw) {
+		color = col;
+		lineWidth = lw;
+	}
+	void apply() {
+		glColor3fv(color);
+		glLineWidth(lineWidth);
+	}
+};
+extern CStyle g_style_shapes;
+extern CStyle g_style_wires;
+extern CStyle g_style_text;
+
 #endif
 #endif

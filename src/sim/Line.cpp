@@ -43,6 +43,7 @@ CShape *CLine::cloneShape() {
 	return n;
 }
 void CLine::drawShape() {
+	g_style_shapes.apply();
 	glBegin(GL_LINES);
 	glVertex2f(getX(), getY());
 	glVertex2f(pos2.getX(), pos2.getY());
