@@ -48,12 +48,15 @@ int drawTextInternal(float x, float y, const char *buffer) {
 	y += 15;
 	return y;
 }
+
 int drawText(int x, int y, const char* fmt, ...) {
 	va_list argList;
+	char buffer2[512];
 	char buffer[512];
 	va_start(argList, fmt);
-	vsnprintf(buffer, sizeof(buffer), fmt, argList);
+	vsnprintf(buffer2, sizeof(buffer2), fmt, argList);
 	va_end(argList);
+	CMD_ExpandConstantsWithinString(buffer2, buffer, sizeof(buffer));
 	g_style_text.apply();
 	float ret = drawTextInternal(x, y, buffer);
 	drawTextInternal(x + 0.5f, y + 0.5f, buffer);

@@ -5,8 +5,12 @@ void CText::recalcBoundsSelf() {
 	bounds.clear();
 	int line = 0;
 	int ch = 0;;
-	const char *p = txt.c_str();
+	char buffer[512];
+	CMD_ExpandConstantsWithinString(txt.c_str(), buffer, sizeof(buffer));
+	const char *p = buffer;
 	bounds.addPoint(Coord(0, -8));
+	// do not go smaller than that
+	bounds.addPoint(Coord(9, 5));
 	while (*p) {
 		if (p[0] == '\n') {
 			line++;

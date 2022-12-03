@@ -44,6 +44,10 @@ extern int WinWidth;
 extern int WinHeight;
 extern int gridSize;
 
+extern "C" {
+	void CMD_ExpandConstantsWithinString(const char *in, char *out, int outLen);
+}
+
 template <typename T>
 class TArray : public std::vector<T> {
 public:

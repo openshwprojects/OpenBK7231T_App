@@ -148,14 +148,17 @@ void CSimulator::drawWindow() {
 	glLoadIdentity();
 	glOrtho(0.0f, WinWidth, WinHeight, 0.0f, 0.0f, 1.0f);
 
-	int h = 20;
-	h = drawText(10, h, "Demo %i", 1);
+	int h = 40;
+	h = drawText(10, h, "OpenBeken Simulator");
 	if (sim != 0) {
 		h = sim->drawTextStats(h);
 	}
 	if (activeTool != 0) {
 		h = drawText(10, h, "Active Tool: %s", activeTool->getName());
 		h = activeTool->drawTextStats(h);
+	}
+	if (currentlyEditingText) {
+		h = drawText(10, h, "You are currently editing a text field.");
 	}
 
 	glColor3f(0.7f, 0.7f, 0.7f);
@@ -269,6 +272,7 @@ bool CSimulator::loadSimulation(const char *s) {
 	SIM_ClearOBK();
 	SIM_SetupFlashFileReading(memPath.c_str());
 	SIM_DoFreshOBKBoot();
+	sim->recalcBounds();
 	bSchematicModified = false;
 
 	return false;
