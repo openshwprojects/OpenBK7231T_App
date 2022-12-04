@@ -51,7 +51,7 @@ Configuration:
 		qos: 1
 
 
-// MQTT state
+// Script to make PWM toggler follow the LED state
 
 // this will make disabling LED also disable both togglers (laser and motor)
 addEventHandler LEDState 0 backlog toggler_enable0 0; toggler_enable1 0; 
@@ -85,6 +85,10 @@ void publish_value(int index) {
 	MQTT_PublishMain_StringInt(topic, g_values[index]);
 }
 void apply(int index) {
+	if (index < 0)
+		return;
+	if (index >= MAX_ONOFF_SLOTS)
+		return;
 	if (g_enabled[index]) {
 		CHANNEL_Set(g_channels[index], g_values[index], 0);
 	}
@@ -95,10 +99,18 @@ void apply(int index) {
 	publish_value(index);
 }
 void Toggler_Set(int index, int value) {
+	if (index < 0)
+		return;
+	if (index >= MAX_ONOFF_SLOTS)
+		return;
 	g_values[index] = value;
 	apply(index);
 }
 void Toggler_Toggle(int index) {
+	if (index < 0)
+		return;
+	if (index >= MAX_ONOFF_SLOTS)
+		return;
 	g_enabled[index] = !g_enabled[index];
 	apply(index);
 }
@@ -115,6 +127,10 @@ commandResult_t Toggler_NameX(const void *context, const char *cmd, const char *
 	indexStr = cmd + strlen("toggler_name");
 	index = atoi(indexStr);
 
+	if (index < 0 || index >= MAX_ONOFF_SLOTS) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Given index is out of range");
+		return CMD_RES_BAD_ARGUMENT;
+	}
 	if (g_names[index])
 		free(g_names[index]);
 	g_names[index] = strdup(args);
@@ -133,6 +149,10 @@ commandResult_t Toggler_EnableX(const void *context, const char *cmd, const char
 
 	indexStr = cmd + strlen("toggler_enable");
 	index = atoi(indexStr);
+	if (index < 0 || index >= MAX_ONOFF_SLOTS) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Given index is out of range");
+		return CMD_RES_BAD_ARGUMENT;
+	}
 
 	bEnabled = parsePowerArgument(args);
 	g_enabled[index] = bEnabled;
@@ -155,6 +175,10 @@ commandResult_t Toggler_SetX(const void *context, const char *cmd, const char *a
 
 	indexStr = cmd + strlen("toggler_set");
 	index = atoi(indexStr);
+	if (index < 0 || index >= MAX_ONOFF_SLOTS) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Given index is out of range");
+		return CMD_RES_BAD_ARGUMENT;
+	}
 
 	g_values[index] = atoi(args);
 
@@ -175,12 +199,19 @@ commandResult_t Toggler_ChannelX(const void *context, const char *cmd, const cha
 
 	indexStr = cmd + strlen("toggler_channel");
 	index = atoi(indexStr);
+	if (index < 0 || index >= MAX_ONOFF_SLOTS) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Given index is out of range");
+		return CMD_RES_BAD_ARGUMENT;
+	}
 
 	g_channels[index] = atoi(args);
 
 	return CMD_RES_OK;
 }
 const char *Toggler_GetName(int i) {
+	if (i < 0 || i >= MAX_ONOFF_SLOTS) {
+		return "";
+	}
 	const char *name = g_names[i];
 	if (name == 0)
 		name = "Unnamed";
