@@ -92,6 +92,8 @@ enum EventCode {
 
 	CMD_EVENT_PIN_ONPRESS,
 
+	CMD_EVENT_LED_STATE,
+
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
 };

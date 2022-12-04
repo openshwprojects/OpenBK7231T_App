@@ -502,6 +502,8 @@ OBK_Publish_Result LED_SendEnableAllState() {
 void LED_ToggleEnabled() {
 	LED_SetEnableAll(!g_lightEnableAll);
 }
+bool g_guard_led_enable_event_cast = false;
+
 void LED_SetEnableAll(int bEnable) {
 	bool bEnableAllWasSetTo1;
 
@@ -510,6 +512,23 @@ void LED_SetEnableAll(int bEnable) {
 	}
 	else {
 		bEnableAllWasSetTo1 = false;
+	}
+
+	// was there a change?
+	if (g_lightEnableAll != bEnable) {
+		// do not cast events recursively...
+		// TODO: better fix
+		if (g_guard_led_enable_event_cast == false) {
+			g_guard_led_enable_event_cast = true;
+			// cast event
+			if (bEnable) {
+				EventHandlers_FireEvent(CMD_EVENT_LED_STATE, 1);
+			}
+			else {
+				EventHandlers_FireEvent(CMD_EVENT_LED_STATE, 0);
+			}
+			g_guard_led_enable_event_cast = false;
+		}
 	}
 	g_lightEnableAll = bEnable;
 

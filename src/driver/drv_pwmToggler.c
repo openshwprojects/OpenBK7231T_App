@@ -51,6 +51,13 @@ Configuration:
 		qos: 1
 
 
+// MQTT state
+
+// this will make disabling LED also disable both togglers (laser and motor)
+addEventHandler LEDState 0 backlog toggler_enable0 0; toggler_enable1 0; 
+// this will make enabling LED also enable both togglers (laser and motor)
+// Comment out if you don't want it!
+addEventHandler LEDState 1 backlog toggler_enable0 1; toggler_enable1 1; 
 
 
 
