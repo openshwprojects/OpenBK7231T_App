@@ -58,6 +58,9 @@ enum IORole {
 	IOR_UCS1912_DIN,
 	IOR_SM16703P_DIN,
 
+	IOR_Button_NextTemperature,
+	IOR_Button_NextTemperature_n,
+
 	IOR_Total_Options,
 };
 

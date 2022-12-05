@@ -578,6 +578,28 @@ int LED_IsRunningDriver() {
 float LED_GetDimmer() {
 	return g_brightness / g_cfg_brightnessMult;
 }
+void LED_AddTemperature(int iVal, bool wrapAroundInsteadOfClamp) {
+	float cur;
+
+	cur = led_temperature_current;
+
+	cur += iVal;
+
+	if (wrapAroundInsteadOfClamp == 0) {
+		if (cur < led_temperature_min)
+			cur = led_temperature_min;
+		if (cur > led_temperature_max)
+			cur = led_temperature_max;
+	}
+	else {
+		if (cur < led_temperature_min)
+			cur = led_temperature_max;
+		if (cur > led_temperature_max)
+			cur = led_temperature_min;
+	}
+
+	LED_SetTemperature(cur, true);
+}
 void LED_AddDimmer(int iVal, bool wrapAroundInsteadOfClamp, int minValue) {
 	float cur;
 
@@ -598,6 +620,9 @@ void LED_AddDimmer(int iVal, bool wrapAroundInsteadOfClamp, int minValue) {
 	}
 
 	LED_SetDimmer(cur);
+}
+void LED_NextTemperatureHold() {
+	LED_AddTemperature(25, true);
 }
 void LED_NextDimmerHold() {
 	// dimmer hold will use some kind of min value,
