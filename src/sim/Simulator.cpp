@@ -248,6 +248,15 @@ bool CSimulator::createSimulation(bool bDemo) {
 
 	return false;
 }
+bool CSimulator::beginAddingPrefab(const char *s) {
+	CShape *newShape = prefabs->instantiatePrefab(s);
+	if (newShape == 0) {
+		return true;
+	}
+	newShape->setPosition(80, 80);
+	sim->addObject(newShape);
+	return false;
+}
 bool CSimulator::loadSimulation(const char *s) {
 	CString fixed;
 	if (FS_Exists(s) == false) {

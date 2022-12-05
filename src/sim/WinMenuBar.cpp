@@ -3,6 +3,8 @@
 #include "WinMenuBar.h"
 #include "Simulator.h"
 #include "RecentList.h"
+#include "Shape.h"
+#include "PrefabManager.h"
 #include <nfd.h>
 #pragma comment (lib, "nfd_d.lib")
 
@@ -19,6 +21,8 @@ enum {
 	ID_EXIT,
 	ID_OPEN_RECENT_FIRST,
 	ID_OPEN_RECENT_LAST = ID_OPEN_RECENT_FIRST + 100,
+	ID_CREATE_FIRST,
+	ID_CREATE_LAST = ID_CREATE_FIRST + 100,
 	ID_OPTIONS,
 	ID_ABOUT,
 };
@@ -29,6 +33,7 @@ void CWinMenuBar::createWindowsMenu(HWND windowRef) {
 	hEdit = CreateMenu();
 	hHelp = CreateMenu();
 	HMENU hRecent = CreateMenu();
+	HMENU hCreate = CreateMenu();
 
 	AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hFile, "File");
 	AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hEdit, "Edit");
@@ -50,8 +55,17 @@ void CWinMenuBar::createWindowsMenu(HWND windowRef) {
 		AppendMenu(hRecent, MF_STRING, ID_OPEN_RECENT_FIRST + i, tmp.c_str());
 	}
 	AppendMenu(hFile, MF_STRING, ID_EXIT, "Exit");
-
+	prefabNames.clear();
 	AppendMenu(hEdit, MF_STRING, ID_OPTIONS, "Options");
+	AppendMenu(hEdit, MF_POPUP, (UINT_PTR)hCreate, "Add..");
+	PrefabManager *prefabs = sim->getPfbs();
+	for (int i = 0; i < prefabs->size(); i++) {
+		CShape *sh = prefabs->get(i);
+		prefabNames.push_back(sh->getName());
+		CString tmp = "Add ";
+		tmp.append(sh->getName());
+		AppendMenu(hCreate, MF_STRING, ID_CREATE_FIRST + i, tmp.c_str());
+	}
 
 	AppendMenu(hHelp, MF_STRING, ID_ABOUT, "About");
 
@@ -125,6 +139,12 @@ void CWinMenuBar::processEvent(const SDL_Event &Event) {
 				int recentID = id - ID_OPEN_RECENT_FIRST;
 				const char *recentStr = recents[recentID].c_str();
 				sim->loadSimulation(recentStr);
+			}
+			else if (id >= ID_CREATE_FIRST && id <= ID_CREATE_LAST)
+			{
+				int createID = id - ID_CREATE_FIRST;
+				const char *createStr = prefabNames[createID].c_str();
+				sim->beginAddingPrefab(createStr);
 			}
 		}
 	}

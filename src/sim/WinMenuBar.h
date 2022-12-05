@@ -12,6 +12,7 @@ class CWinMenuBar {
 	HMENU hEdit;
 	HMENU hHelp;
 	TArray<CString> recents;
+	TArray<CString> prefabNames;
 
 	void createWindowsMenu(HWND windowRef);
 	HWND getHWNDForSDLWindow(SDL_Window* win);

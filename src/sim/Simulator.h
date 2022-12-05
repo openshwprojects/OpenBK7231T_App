@@ -51,6 +51,7 @@ public:
 	bool isMouseButtonHold(int idx) const {
 		return bMouseButtonStates[idx];
 	}
+	bool beginAddingPrefab(const char *s);
 	bool createSimulation(bool bDemo);
 	bool loadSimulation(const char *s);
 	bool saveSimulationAs(const char *s);

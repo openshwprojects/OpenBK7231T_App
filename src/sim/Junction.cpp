@@ -38,6 +38,21 @@ bool CJunction::hasLinkedOnlyWires() const {
 	}
 	return true;
 }
+float CJunction::determineLEDLightFraction(class CJunction *other) {
+	bool bInv = false;
+	if (this->getVoltage() > 1.5f) {
+		bInv = true;
+	}
+	float frac_c = 0;
+	if (other->getVisitCount()) {
+		if (other->getVoltage() > 1.5f) {
+			frac_c = other->getDutyRange01();
+			if (bInv)
+				frac_c = 1.0f - frac_c;
+		}
+	}
+	return frac_c;
+}
 bool CJunction::shouldLightUpBulb(class CJunction *other) {
 	float v = other->getVoltage();
 	float v2 = this->getVoltage();

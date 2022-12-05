@@ -1303,6 +1303,9 @@ static commandResult_t CMD_setButtonHoldRepeat(const void *context, const char *
 		CFG_DEFAULT_BTN_REPEAT);
 	return CMD_RES_OK;
 }
+// SetButtonTimes [ValLongPress] [ValShortPress] [ValRepeat]
+// Each value is times 100ms, so:
+// SetButtonTimes 2 1 1
 static commandResult_t CMD_SetButtonTimes(const void *context, const char *cmd, const char *args, int cmdFlags){
 
 

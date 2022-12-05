@@ -27,6 +27,12 @@ public:
 	void addPrefab(CShape *o);
 	CShape *findPrefab(const char *name);
 	CShape *instantiatePrefab(const char *name);
+	unsigned int size() const {
+		return prefabs.size();
+	}
+	CShape *get(int i) {
+		return prefabs[i];
+	}
 
 };
 #endif

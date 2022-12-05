@@ -65,6 +65,9 @@ public:
 	float getDuty() const {
 		return duty;
 	}
+	bool isDutyPercent(float per) const {
+		return abs(duty - per) > 0.1f;
+	}
 	float getDutyRange01() const {
 		return duty*0.01f;
 	}
@@ -88,6 +91,7 @@ public:
 		return "CJunction";
 	}
 	bool shouldLightUpBulb(class CJunction *other);
+	float determineLEDLightFraction(class CJunction *other);
 	void translateLinked(const Coord &o);
 	void setPosLinked(const Coord &o);
 	void rotateDegreesAround_internal(float f, const Coord &p);
