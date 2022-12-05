@@ -960,6 +960,11 @@ void NewLED_InitCommands(){
 	// set, but do not apply (force a refresh)
 	LED_SetTemperature(led_temperature_current,0);
 
+	// if this is CW, switch from default RGB to CW
+	if (isCWMode()) {
+		g_lightMode = Light_Temperature;
+	}
+
 	//cmddetail:{"name":"led_dimmer","args":"",
 	//cmddetail:"descr":"set output dimmer 0..100",
 	//cmddetail:"fn":"dimmer","file":"cmnds/cmd_newLEDDriver.c","requires":"",
