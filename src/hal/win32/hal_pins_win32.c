@@ -3,7 +3,7 @@
 #include "../../new_common.h"
 #include "../../new_pins.h"
 #include "../../logging/logging.h"
-
+#include "../hal_pins.h"
 
 typedef enum simulatedPinMode_e {
 	SIM_PIN_NONE,
@@ -40,6 +40,34 @@ int SIM_GetPWMValue(int index) {
 }
 
 
+void SIM_GeneratePinStatesDesc(char *o, int outLen) {
+	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		int mode = g_pinModes[i];
+		if (mode == SIM_PIN_NONE)
+			continue;
+		const char *alias = HAL_PIN_GetPinNameAlias(i);
+		char tmp[64];
+		if (alias && *alias) {
+		}
+		else {
+			alias = "N/A";
+		}
+		sprintf(tmp, "P%i (%s) ", i, alias);
+		strcat_safe(o, tmp, outLen);
+		if (mode == SIM_PIN_PWM) {
+			sprintf(tmp, "PWM - %i", g_simulatedPWMs[i]);
+			strcat_safe(o, tmp, outLen);
+		}
+		else if (mode == SIM_PIN_OUTPUT) {
+			sprintf(tmp, "Output - %i", g_simulatedPinStates[i]);
+			strcat_safe(o, tmp, outLen);
+		} else {
+			sprintf(tmp, "Input - %i", g_simulatedPinStates[i]);
+			strcat_safe(o, tmp, outLen);
+		}
+		strcat_safe(o, "\n", outLen);
+	}
+}
 
 int PIN_GetPWMIndexForPinIndex(int pin) {
 	if (pin == 6)

@@ -878,6 +878,15 @@ static commandResult_t brightnessMult(const void *context, const char *cmd, cons
 	//}
 	//return 0;
 }
+float LED_GetGreen255() {
+	return baseColors[1];
+}
+float LED_GetRed255() {
+	return baseColors[0];
+}
+float LED_GetBlue255() {
+	return baseColors[2];
+}
 static void onHSVChanged() {
 	float r, g, b;
 

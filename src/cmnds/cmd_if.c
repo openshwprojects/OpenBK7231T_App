@@ -181,6 +181,24 @@ const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
 		*out = LED_GetHue();
 		return ret;
 	}
+	ret = strCompareBound(s, "$led_red", stop, 0);
+	if (ret) {
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_red");
+		*out = LED_GetRed255();
+		return ret;
+	}
+	ret = strCompareBound(s, "$led_green", stop, 0);
+	if (ret) {
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: $led_green");
+		*out = LED_GetGreen255();
+		return ret;
+	}
+	ret = strCompareBound(s, "$led_blue", stop, 0);
+	if (ret) {
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: $led_blue");
+		*out = LED_GetBlue255();
+		return ret;
+	}
 	ret = strCompareBound(s, "$led_saturation", stop, 0);
 	if(ret) {
 		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_saturation");
@@ -207,6 +225,11 @@ const char *CMD_ExpandConstantString(const char *s, const char *stop, char *out,
 			return false;
 		strcpy_safe(out, (char*)data, outLen);
 		free(data);
+		return ret;
+	}
+	ret = strCompareBound(s, "$pinstates", stop, false);
+	if (ret) {
+		SIM_GeneratePinStatesDesc(out, outLen);
 		return ret;
 	}
 	return false;
@@ -254,9 +277,14 @@ void CMD_ExpandConstantsWithinString(const char *in, char *out, int outLen) {
 			tmp = CMD_ExpandConstantToString(in, out, outStop);
 			while (*out)
 				out++;
-			if (tmp == 0)
-				break;
-			in = tmp;
+			if (tmp != 0) {
+				in = tmp;
+			}
+			else {
+				*out = *in;
+				out++;
+				in++;
+			}
 		}
 		else {
 			*out = *in;
