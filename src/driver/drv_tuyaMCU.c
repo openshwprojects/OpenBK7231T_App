@@ -53,6 +53,8 @@ void TuyaMCU_RunFrame();
 // Subtypes of raw - added for OpenBeken - not Tuya standard
 #define         DP_TYPE_RAW_DDS238Packet        200
 #define			DP_TYPE_RAW_TAC2121C_VCP		201
+#define			DP_TYPE_RAW_TAC2121C_YESTERDAY	202
+#define			DP_TYPE_RAW_TAC2121C_LASTMONTH	203
 
 const char *TuyaMCU_GetDataTypeString(int dpId){
     if(DP_TYPE_RAW == dpId)
@@ -570,6 +572,12 @@ commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const ch
 	else if (!stricmp(dpTypeString, "RAW_TAC2121C_VCP")) {
 		// linkTuyaMCUOutputToChannel 6 RAW_TAC2121C_VCP
 		dpType = DP_TYPE_RAW_TAC2121C_VCP;
+	}
+	else if (!stricmp(dpTypeString, "RAW_TAC2121C_Yesterday")) {
+		dpType = DP_TYPE_RAW_TAC2121C_YESTERDAY;
+	}
+	else if (!stricmp(dpTypeString, "RAW_TAC2121C_LastMonth")) {
+		dpType = DP_TYPE_RAW_TAC2121C_LASTMONTH;
     } else {
         if(strIsInteger(dpTypeString)) {
             dpType = atoi(dpTypeString);
@@ -891,6 +899,7 @@ void TuyaMCU_ParseStateMessage(const byte *data, int len) {
     int sectorLen;
     int fnId;
     int dataType;
+	int day, month, year;
 	//int channelType;
 	int iVal;
 
@@ -923,6 +932,38 @@ void TuyaMCU_ParseStateMessage(const byte *data, int len) {
 
 			if (mapping != 0) {
 				switch (mapping->dpType) {
+					case DP_TYPE_RAW_TAC2121C_YESTERDAY:
+					{
+						if (sectorLen != 8) {
+
+						}
+						else {
+							month = data[ofs + 4];
+							day = data[ofs + 4 + 1];
+							// consumption
+							iVal = data[ofs + 6 + 4] << 8 | data[ofs + 7 + 4];
+							addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TAC2121C_YESTERDAY: day %i, month %i, val %i\n", 
+								day, month, iVal);
+
+						}
+					}
+					break;
+					case DP_TYPE_RAW_TAC2121C_LASTMONTH:
+					{
+						if (sectorLen != 8) {
+
+						}
+						else {
+							year = data[ofs + 4];
+							month = data[ofs + 4 + 1];
+							// consumption
+							iVal = data[ofs + 6 + 4] << 8 | data[ofs + 7 + 4];
+							addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "DP_TYPE_RAW_TAC2121C_LASTMONTH: month %i, year %i, val %i\n",
+								month, year, iVal);
+
+						}
+					}
+					break;
 					case DP_TYPE_RAW_TAC2121C_VCP:
 					{
 						if (sectorLen != 8) {
