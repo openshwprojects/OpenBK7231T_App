@@ -52,6 +52,7 @@ void TuyaMCU_RunFrame();
 
 // Subtypes of raw - added for OpenBeken - not Tuya standard
 #define         DP_TYPE_RAW_DDS238Packet        200
+#define			DP_TYPE_RAW_TAC2121C_VCP		201
 
 const char *TuyaMCU_GetDataTypeString(int dpId){
     if(DP_TYPE_RAW == dpId)
@@ -425,22 +426,29 @@ void TuyaMCU_SendRaw(uint8_t id, char data[]) {
 
 void TuyaMCU_Send_SetTime(struct tm *pTime) {
     byte payload_buffer[8];
-    byte tuya_day_of_week;
 
-    if (pTime->tm_wday == 1) {
-        tuya_day_of_week = 7;
-    } else {
-        tuya_day_of_week = pTime->tm_wday-1;
-    }
-
-    payload_buffer[0] = 0x01;
-    payload_buffer[1] = pTime->tm_year % 100;
-    payload_buffer[2] = pTime->tm_mon;
-    payload_buffer[3] = pTime->tm_mday;
-    payload_buffer[4] = pTime->tm_hour;
-    payload_buffer[5] = pTime->tm_min;
-    payload_buffer[6] = pTime->tm_sec;
-    payload_buffer[7] = tuya_day_of_week; //1 for Monday in TUYA Doc
+	if (pTime == 0) {
+		memset(payload_buffer, 0, sizeof(payload_buffer));
+	}
+	else {
+		byte tuya_day_of_week;
+		if (pTime->tm_wday == 1) {
+			tuya_day_of_week = 7;
+		}
+		else {
+			tuya_day_of_week = pTime->tm_wday - 1;
+		}
+		// valid flag
+		payload_buffer[0] = 0x01;
+		// datetime
+		payload_buffer[1] = pTime->tm_year % 100;
+		payload_buffer[2] = pTime->tm_mon;
+		payload_buffer[3] = pTime->tm_mday;
+		payload_buffer[4] = pTime->tm_hour;
+		payload_buffer[5] = pTime->tm_min;
+		payload_buffer[6] = pTime->tm_sec;
+		payload_buffer[7] = tuya_day_of_week; //1 for Monday in TUYA Doc
+	}
 
     TuyaMCU_SendCommandWithData(TUYA_CMD_SET_TIME, payload_buffer, 8);
 }
@@ -451,9 +459,10 @@ struct tm * TuyaMCU_Get_NTP_Time() {
     g_time = NTP_GetCurrentTime();
     addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"MCU time to set: %i\n", g_time);
     ptm = gmtime((time_t*)&g_time);
-    addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"ptime ->gmtime => tm_hour: %i\n",ptm->tm_hour );
-    addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"ptime ->gmtime => tm_min: %i\n", ptm->tm_min );
-
+	if (ptm != 0) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ptime ->gmtime => tm_hour: %i\n", ptm->tm_hour);
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ptime ->gmtime => tm_min: %i\n", ptm->tm_min);
+	}
     return ptm;
 }
 // 
@@ -557,6 +566,10 @@ commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const ch
 	} else if (!stricmp(dpTypeString, "RAW_DDS238")) {
 		// linkTuyaMCUOutputToChannel 6 RAW_DDS238
 		dpType = DP_TYPE_RAW_DDS238Packet;
+	}
+	else if (!stricmp(dpTypeString, "RAW_TAC2121C_VCP")) {
+		// linkTuyaMCUOutputToChannel 6 RAW_TAC2121C_VCP
+		dpType = DP_TYPE_RAW_TAC2121C_VCP;
     } else {
         if(strIsInteger(dpTypeString)) {
             dpType = atoi(dpTypeString);
@@ -571,7 +584,7 @@ commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const ch
 	else {
 		channelID = Tokenizer_GetArgInteger(2);
 	}
-
+	
     TuyaMCU_MapIDToChannel(dpId, dpType, channelID);
 
     return CMD_RES_OK;
@@ -910,6 +923,24 @@ void TuyaMCU_ParseStateMessage(const byte *data, int len) {
 
 			if (mapping != 0) {
 				switch (mapping->dpType) {
+					case DP_TYPE_RAW_TAC2121C_VCP:
+					{
+						if (sectorLen != 8) {
+
+						}
+						else {
+							// voltage
+							iVal = data[ofs + 0 + 4] << 8 | data[ofs + 1 + 4];
+							CHANNEL_SetAllChannelsByType(ChType_Voltage_div10, iVal);
+							// current
+							iVal = data[ofs + 3 + 4] << 8 | data[ofs + 4 + 4];
+							CHANNEL_SetAllChannelsByType(ChType_Current_div1000, iVal);
+							// power
+							iVal = data[ofs + 6 + 4] << 8 | data[ofs + 7 + 4];
+							CHANNEL_SetAllChannelsByType(ChType_Power, iVal);
+						}
+					}
+					break;
 					case DP_TYPE_RAW_DDS238Packet:
 					{
 						if (sectorLen != 15) {
