@@ -816,26 +816,37 @@ void TuyaMCU_ParseQueryProductInformation(const byte *data, int len) {
 // Packet ID: 0x08
 
 
+// When bIncludesDate = true
 //55AA 00 08 000C  00 02 02 02 02 02 02 01 01 00 01 01 23
 //Head v0 ID lengh bV YY MM DD HH MM SS                CHKSUM
 // after that, there are status data uniys
 // 01   01   0001   01
 // dpId Type Len    Value
-void TuyaMCU_V0_ParseRealTimeWithRecordStorage(const byte *data, int len) {
+//
+// When bIncludesDate = false
+// 55AA 00 06 0005  10   0100 01 00 1C
+// Head v0 ID lengh fnId leen tp vl CHKSUM
+
+void TuyaMCU_V0_ParseRealTimeWithRecordStorage(const byte *data, int len, bool bIncludesDate) {
     int ofs;
     int sectorLen;
     int fnId;
     int dataType;
 
-    //data[0]; // bDateValid
-    //data[1]; //  year
-    //data[2]; //  month
-    //data[3]; //  day
-    //data[4]; //  hour
-    //data[5]; //  minute
-    //data[6]; //  second
+	if (bIncludesDate) {
+		//data[0]; // bDateValid
+		//data[1]; //  year
+		//data[2]; //  month
+		//data[3]; //  day
+		//data[4]; //  hour
+		//data[5]; //  minute
+		//data[6]; //  second
 
-    ofs = 7;
+		ofs = 7;
+	}
+	else {
+		ofs = 0;
+	}
 
     while(ofs + 4 < len) {
         sectorLen = data[ofs + 2] << 8 | data[ofs + 3];
@@ -1020,11 +1031,22 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
         case TUYA_CMD_QUERY_STATE:
             if(version == 0) {
                 // 0x08 packet for version 0 (not 0x03) of TuyaMCU
-                TuyaMCU_V0_ParseRealTimeWithRecordStorage(data+6,len-6);
+				// This packet includes first a DateTime, then RealTimeDataStorage
+                TuyaMCU_V0_ParseRealTimeWithRecordStorage(data+6,len-6, true);
             } else {
     
             }
             break;
+		case 0x06:
+			// See: https://www.elektroda.com/rtvforum/viewtopic.php?p=20319441#20319441
+			if (version == 0) {
+				// This packet includes NO DateTime, ONLY RealTimeDataStorage
+				TuyaMCU_V0_ParseRealTimeWithRecordStorage(data + 6, len - 6, false);
+			}
+			else {
+
+			}
+			break;
         default:
             addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: unhandled type %i",cmd);
             break;
