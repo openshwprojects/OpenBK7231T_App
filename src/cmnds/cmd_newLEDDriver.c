@@ -486,8 +486,9 @@ static commandResult_t temperature(const void *context, const char *cmd, const c
 
         ADDLOG_DEBUG(LOG_FEATURE_CMD, " temperature (%s) received with args %s",cmd,args);
 
+		Tokenizer_TokenizeString(args, 0);
 
-		tmp = atoi(args);
+		tmp = Tokenizer_GetArgInteger(0);
 
 		LED_SetTemperature(tmp, 1);
 
@@ -629,7 +630,9 @@ void LED_SetDimmer(int iVal) {
 static commandResult_t add_dimmer(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int iVal = 0;
 
-	iVal = atoi(args);
+	Tokenizer_TokenizeString(args, 0);
+
+	iVal = Tokenizer_GetArgInteger(0);
 
 	LED_AddDimmer(iVal, 0, 0);
 
