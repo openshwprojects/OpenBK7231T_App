@@ -6,7 +6,7 @@
 class CSolver {
 	class CSimulation *sim;
 
-	void floodJunctions(class CJunction *ju, float voltage);
+	void floodJunctions(class CJunction *ju, float voltage, float duty);
 public:
 	void setSimulation(class CSimulation *p) {
 		sim = p;

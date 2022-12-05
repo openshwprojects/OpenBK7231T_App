@@ -22,19 +22,26 @@ void CControllerSimulatorLink::onDrawn() {
 		float v = ju->getVoltage();
 		if (gpio < 0)
 			continue;
-		if (!SIM_IsPinInput(gpio)) {
+		if (SIM_IsPinPWM(gpio)) {
+			int pwm = SIM_GetPWMValue(gpio);
+			ju->setCurrentSource(true);
+			ju->setVoltage(3.3f);
+			ju->setDuty(pwm);
+		} else if (!SIM_IsPinInput(gpio)) {
 			bool bVal = SIM_GetSimulatedPinValue(gpio);
 			ju->setCurrentSource(true);
 			if (bVal)
 				ju->setVoltage(3.3f);
 			else
 				ju->setVoltage(0.0f);
+			ju->setDuty(100.0f);
 		}
 		else {
 			if (ju->getVisitCount() == 0)
 				v = 3.3f;
 			SIM_SetSimulatedPinValue(gpio, v > 1.5f);
 			ju->setCurrentSource(false);
+			ju->setDuty(100.0f);
 		}
 	}
 }

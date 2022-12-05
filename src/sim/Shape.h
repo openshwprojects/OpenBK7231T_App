@@ -14,7 +14,8 @@ class CShape {
 	class CControllerBase *controller;
 	float rotationAccum;
 	//class CControlelrBase *referencedController;
-	
+	CColor fillColor;
+
 	virtual void rotateDegreesAround_internal(float f, const Coord &p);
 	virtual void recalcBoundsSelf() {}
 protected:
@@ -28,6 +29,12 @@ public:
 		bActive = true;
 		bFill = false;
 		rotationAccum = 0;
+	}
+	const CColor &getFillColor() const {
+		return fillColor;
+	}
+	void setFillColor(const CColor &c) {
+		fillColor = c;
 	}
 	void setName(const char *s) {
 		name = s;

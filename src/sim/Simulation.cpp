@@ -155,6 +155,14 @@ void CSimulation::createDemo() {
 	bulb2_copy->setPosition(640, 140);
 	addObject(bulb2_copy);
 
+	CShape *strip1 = addObject(sim->getPfbs()->instantiatePrefab("StripSingleColor"));
+	strip1->setPosition(400, 500);
+
+	CShape *strip2 = addObject(sim->getPfbs()->instantiatePrefab("StripCW"));
+	strip2->setPosition(400, 600);
+
+	//CShape *strip3 = addObject(sim->getPfbs()->instantiatePrefab("StripRGB"));
+	//strip3->setPosition(400, 700);
 	if (0) {
 		CShape *wb3s_copy = wb3s->cloneShape();
 		wb3s_copy->setPosition(640, 440);

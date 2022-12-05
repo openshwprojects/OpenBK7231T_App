@@ -32,6 +32,7 @@ class CJunction : public CShape {
 	TArray<class CJunction *> linked;
 	TArray<class CEdge*> myEdges;
 	float voltage;
+	float duty;
 	int visitCount;
 	bool bCurrentSource;
 public:
@@ -43,6 +44,7 @@ public:
 		this->name = s;
 		this->gpioIndex = gpio;
 		this->voltage = -1;
+		this->duty = 100;
 		this->visitCount = 0;
 		this->bCurrentSource = false;
 	}
@@ -60,11 +62,20 @@ public:
 	float getVoltage() const {
 		return voltage;
 	}
+	float getDuty() const {
+		return duty;
+	}
+	float getDutyRange01() const {
+		return duty*0.01f;
+	}
 	int getGPIO() const {
 		return gpioIndex;
 	}
 	void setVoltage(float f) {
 		voltage = f;
+	}
+	void setDuty(float f) {
+		duty = f;
 	}
 	void setVisitCount(int i) {
 		visitCount = i;

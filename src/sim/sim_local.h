@@ -126,11 +126,26 @@ public:
 		b = _b / 255.0f;
 		a = _a / 255.0f;
 	}
+	CColor operator-()const {
+		return CColor(-r, -g, -b, -a);
+	}
+	CColor operator+(const CColor& rhs) const {
+		return CColor(this->r + rhs.r, this->g + rhs.g, this->b + rhs.b, this->a + rhs.a);
+	}
+	CColor operator-(const CColor& rhs) const {
+		return CColor(this->r - rhs.r, this->g - rhs.g, this->b - rhs.b, this->a - rhs.a);
+	}
+	CColor operator*(float f) const {
+		return CColor(this->r * f, this->g * f, this->b * f, this->a * f);
+	}
+	friend CColor operator*(float f, const CColor &o) {
+		return CColor(o.r * f, o.g* f, o.b* f, o.a* f);
+	}
 	operator float*() {
 		return &r;
 	}
 
-	operator const float *() {
+	operator const float *() const  {
 		return &r;
 	}
 };

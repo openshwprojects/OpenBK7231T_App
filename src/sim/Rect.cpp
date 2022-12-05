@@ -13,13 +13,24 @@ CShape *CRect::cloneShape() {
 	return n;
 }
 void CRect::drawShape() {
-	g_style_shapes.apply();
-	glBegin(GL_LINE_LOOP);
-	glVertex2f(getX(), getY());
-	glVertex2f(getX() + w, getY());
-	glVertex2f(getX() + w, getY() + h);
-	glVertex2f(getX(), getY() + h);
-	glEnd();
+	if (bFill) {
+		glColor3fv(getFillColor());
+		glBegin(GL_QUADS);
+		glVertex2f(getX(), getY());
+		glVertex2f(getX() + w, getY());
+		glVertex2f(getX() + w, getY() + h);
+		glVertex2f(getX(), getY() + h);
+		glEnd();
+	}
+	else {
+		g_style_shapes.apply();
+		glBegin(GL_LINE_LOOP);
+		glVertex2f(getX(), getY());
+		glVertex2f(getX() + w, getY());
+		glVertex2f(getX() + w, getY() + h);
+		glVertex2f(getX(), getY() + h);
+		glEnd();
+	}
 }
 
 

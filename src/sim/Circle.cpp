@@ -22,7 +22,7 @@ void CCircle::rotateDegreesAround_internal(float f, const Coord &p) {
 }
 void CCircle::drawShape() {
 	if (bFill) {
-		glColor3f(1, 1, 0);
+		glColor3fv(getFillColor());
 		glBegin(GL_TRIANGLE_FAN);
 		for (int i = 0; i < corners; i++) {
 			float a = (2.0f * M_PI) * (i / (float)corners);
