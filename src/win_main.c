@@ -12,6 +12,7 @@
 #include "new_common.h"
 #include "httpserver\new_http.h"
 #include "new_pins.h"
+#include <timeapi.h>
 
 // Need to link with Ws2_32.lib
 #pragma comment (lib, "Ws2_32.lib")
@@ -20,7 +21,7 @@
 
 int accum_time = 0;
 int win_frameNum = 0;
-int frameTime = 5;
+#define DEFAULT_FRAME_TIME 5
 
 
 void strcat_safe_test(){
@@ -57,23 +58,24 @@ void strcat_safe_test(){
 
 }
 
-void Sim_RunFrame() {
+void Sim_RunFrame(int frameTime) {
+	//printf("Sim_RunFrame: frametime %i\n", frameTime);
 	win_frameNum++;
 	accum_time += frameTime;
 	PIN_ticks(0);
 	HTTPServer_RunQuickTick();
 	if (accum_time > 1000) {
-		accum_time = 0;
+		accum_time -= 1000;
 		Main_OnEverySecond();
 	}
 }
 void Sim_RunMiliseconds(int ms, bool bApplyRealtimeWait) {
 	while (ms > 0) {
 		if (bApplyRealtimeWait) {
-			Sleep(5);
+			Sleep(DEFAULT_FRAME_TIME);
 		}
-		Sim_RunFrame();
-		ms -= frameTime;
+		Sim_RunFrame(DEFAULT_FRAME_TIME);
+		ms -= DEFAULT_FRAME_TIME;
 	}
 }
 void Sim_RunSeconds(float f, bool bApplyRealtimeWait) {
@@ -85,9 +87,9 @@ void Sim_RunFrames(int n, bool bApplyRealtimeWait) {
 
 	for (i = 0; i < n; i++) {
 		if (bApplyRealtimeWait) {
-			Sleep(5);
+			Sleep(DEFAULT_FRAME_TIME);
 		}
-		Sim_RunFrame();
+		Sim_RunFrame(DEFAULT_FRAME_TIME);
 	}
 }
 
@@ -124,12 +126,23 @@ void SIM_DoFreshOBKBoot() {
 	bObkStarted = true;
 	Main_Init();
 }
+long start_time = 0;
+bool bStartTimeSet = false;
+long SIM_GetTime() {
+	long cur = timeGetTime();
+	if (bStartTimeSet == false) {
+		start_time = cur;
+		bStartTimeSet = true;
+	}
+	return cur - start_time;
+}
 #include "sim/sim_public.h"
 int __cdecl main(int argc, char **argv)
 {
 	bool bWantsUnitTests = 0;
     WSADATA wsaData;
     int iResult;
+
     // Initialize Winsock
     iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
     if (iResult != 0) {
@@ -148,10 +161,24 @@ int __cdecl main(int argc, char **argv)
 	}
 
 	SIM_CreateWindow(argc, argv);
-	while(1) {
-		Sleep(5);
-		Sim_RunFrame();
-		SIM_RunWindow();
+	if (false) {
+		while (1) {
+			Sleep(DEFAULT_FRAME_TIME);
+			Sim_RunFrame(DEFAULT_FRAME_TIME);
+			SIM_RunWindow();
+		}
+	}
+	else {
+		long prev_time = SIM_GetTime();
+		while (1) {
+			long cur_time = SIM_GetTime();
+			long delta = cur_time - prev_time;
+			if (delta <= 0)
+				continue;
+			Sim_RunFrame(delta);
+			SIM_RunWindow();
+			prev_time = cur_time;
+		}
 	}
 	return 0;
 }
