@@ -1109,6 +1109,18 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
     
             }
             break;
+		case 0x05:
+			// This was added for this user:
+			// https://www.elektroda.com/rtvforum/topic3937723.html
+			if (version == 0) {
+				// 0x08 packet for version 0 (not 0x03) of TuyaMCU
+				// This packet includes first a DateTime, then RealTimeDataStorage
+				TuyaMCU_V0_ParseRealTimeWithRecordStorage(data + 6, len - 6, false);
+			}
+			else {
+
+			}
+			break;
 		case 0x06:
 			// See: https://www.elektroda.com/rtvforum/viewtopic.php?p=20319441#20319441
 			// UPDATE: not needed, it is send from us to device
