@@ -240,11 +240,25 @@ void DRV_StartDriver(const char* name) {
 // startDriver BL0942
 // startDriver BL0937
 static commandResult_t DRV_Start(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	DRV_StartDriver(args);
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 1) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Requires driver name\n");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	DRV_StartDriver(Tokenizer_GetArg(0));
 	return CMD_RES_OK;
 }
 static commandResult_t DRV_Stop(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	DRV_StopDriver(args);
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 1) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Requires driver name\n");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	DRV_StopDriver(Tokenizer_GetArg(0));
 	return CMD_RES_OK;
 }
 
