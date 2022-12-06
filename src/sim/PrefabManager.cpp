@@ -264,6 +264,53 @@ class CShape *PrefabManager::generateStrip_CW() {
 	return o;
 }
 
+class CShape *PrefabManager::generateStrip_RGBCW() {
+	float bulb_radius = 20.0f;
+
+	CShape *o = new CShape();
+	o->addText(-40, -25, "Strip RGBCW");
+	o->setName("StripRGBCW");
+	int w = 200;
+	o->addRect(-w, -20, w * 2, 40);
+	int leds = 8;
+	int ofs = 10;
+	float start = ofs - w;
+	float len = 2 * w - ofs * 2;
+	float ledlen = len / (leds + 1);
+	CJunction *red = o->addJunction(-w, 20);
+	red->setName("R");
+	red->addText(-5, -5, "R");
+	CJunction *green = o->addJunction(-w, 0);
+	green->setName("G");
+	green->addText(-5, -5, "G");
+	CJunction *blue = o->addJunction(-w, -20);
+	blue->setName("B");
+	blue->addText(-5, -5, "B");
+	CJunction *gnd = o->addJunction(w, 0);
+	gnd->setName("GND");
+	gnd->addText(-25, -5, "GND");
+	CJunction *cool = o->addJunction(w, 20);
+	cool->setName("C");
+	cool->addText(-25, -5, "C");
+	CJunction *warm = o->addJunction(w, -20);
+	warm->setName("W");
+	warm->addText(-25, -5, "W");
+	CControllerBulb *bulb = new CControllerBulb(red, green, blue, cool, warm, gnd);
+	o->setController(bulb);
+	for (int i = 0; i < leds; i++) {
+		float x = start + (len / leds) * i;
+		float y = -15;
+		int filler_ofs = 1;
+		CShape *shape_outer = o->addRect(x, y, ledlen, 30);
+		CShape *shape_filler = o->addRect(x + filler_ofs, y + filler_ofs, ledlen - 2 * filler_ofs, 30 - 2 * filler_ofs);
+		shape_filler->setFill(true);
+		bulb->addShape(shape_filler);
+		char str[16];
+		sprintf(str, "LED_%i", i);
+		shape_filler->setName(str);
+	}
+	return o;
+}
 class CShape *PrefabManager::generateStrip_RGB() {
 	float bulb_radius = 20.0f;
 
@@ -327,6 +374,7 @@ void PrefabManager::createDefaultPrefabs() {
 	addPrefab(generateStrip_SingleColor());
 	addPrefab(generateStrip_CW());
 	addPrefab(generateStrip_RGB());
+	addPrefab(generateStrip_RGBCW());
 	addPrefab(generateLED_CW());
 	addPrefab(generateLED_RGB());
 	addPrefab(generateBulb());

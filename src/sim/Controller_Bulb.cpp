@@ -16,6 +16,12 @@ void CControllerBulb::setShapesFillColor(const CColor &c) {
 	}
 }
 void CControllerBulb::onDrawn() {
+	CColor col_red(255, 0, 0);
+	CColor col_green(0, 255, 0);
+	CColor col_blue(0, 0, 255);
+	CColor col_yellow(255, 255, 0);
+	CColor col_cool(167, 209, 253);
+	CColor col_warm(254, 160, 3);
 	switch (mode) {
 		case BM_BULB:
 		{
@@ -29,7 +35,6 @@ void CControllerBulb::onDrawn() {
 				setShapesActive(false);
 				return;
 			}
-			CColor col_yellow(255, 255, 0);
 			float frac_bulb;
 			if (a->isDutyPercent(100.0f)) {
 				frac_bulb = a->determineLEDLightFraction(b);
@@ -55,8 +60,6 @@ void CControllerBulb::onDrawn() {
 			}
 			float frac_c = gnd->determineLEDLightFraction(cool);
 			float frac_w = gnd->determineLEDLightFraction(warm);
-			CColor col_cool(167, 209, 253);
-			CColor col_warm(254, 160, 3);
 			CColor fin = col_cool * frac_c + col_warm * frac_w;
 
 			setShapesActive(true);
@@ -73,10 +76,26 @@ void CControllerBulb::onDrawn() {
 			float frac_red = gnd->determineLEDLightFraction(red);
 			float frac_green = gnd->determineLEDLightFraction(green);
 			float frac_blue = gnd->determineLEDLightFraction(blue);
-			CColor col_red(255, 0, 0);
-			CColor col_green(0, 255, 0);
-			CColor col_blue(0, 0, 255);
 			CColor fin = col_red * frac_red + col_green * frac_green + col_blue * frac_blue;
+
+			setShapesActive(true);
+			setShapesFillColor(fin);
+		}
+		break;
+		case BM_RGBCW:
+		{
+			if (gnd->getVisitCount() == 0)
+			{
+				setShapesActive(false);
+				return;
+			}
+			float frac_red = gnd->determineLEDLightFraction(red);
+			float frac_green = gnd->determineLEDLightFraction(green);
+			float frac_blue = gnd->determineLEDLightFraction(blue);
+			float frac_cool = gnd->determineLEDLightFraction(cool);
+			float frac_warm = gnd->determineLEDLightFraction(warm);
+			CColor fin = col_red * frac_red + col_green * frac_green + col_blue * frac_blue
+				+ col_warm * frac_warm + col_cool * frac_cool;
 
 			setShapesActive(true);
 			setShapesFillColor(fin);

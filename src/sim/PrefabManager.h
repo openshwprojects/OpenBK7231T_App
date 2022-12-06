@@ -13,6 +13,7 @@ class PrefabManager {
 	class CShape *generateStrip_SingleColor();
 	class CShape *generateStrip_CW();
 	class CShape *generateStrip_RGB();
+	class CShape *generateStrip_RGBCW();
 	class CShape *generateBulb();
 	class CShape *generateWB3S();
 	class CShape *generateButton();

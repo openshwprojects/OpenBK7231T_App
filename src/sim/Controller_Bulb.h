@@ -9,7 +9,8 @@ enum BulbMode {
 	BM_NONE,
 	BM_BULB,
 	BM_CW,
-	BM_RGB
+	BM_RGB,
+	BM_RGBCW
 };
 class CControllerBulb : public CControllerBase {
 	TArray<class CShape *>shapes;
@@ -42,12 +43,23 @@ public:
 	}
 	CControllerBulb(class CJunction *_r, class CJunction *_g, class CJunction *_b, class CJunction *_gnd) {
 		mode = BM_RGB;
-		red = green = blue = warm = cool = gnd = 0;
+		warm = cool = 0;
 		a = b = 0;
 		gnd = _gnd;
 		red = _r;
 		green = _g;
 		blue = _b;
+	}
+	CControllerBulb(class CJunction *_r, class CJunction *_g, class CJunction *_b, 
+		class CJunction *_c, class CJunction *_w, class CJunction *_gnd) {
+		mode = BM_RGBCW;
+		a = b = 0;
+		gnd = _gnd;
+		red = _r;
+		green = _g;
+		blue = _b;
+		cool = _c;
+		warm = _w;
 	}
 	void setShape(CShape *p) {
 		shapes.clear();
