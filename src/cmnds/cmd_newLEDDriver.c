@@ -784,6 +784,65 @@ void LED_SetFinalRGB(byte r, byte g, byte b) {
 		}
 	}
 }
+static void onHSVChanged() {
+	float r, g, b;
+
+	HSVtoRGB(&r, &g, &b, g_hsv_h, g_hsv_s, g_hsv_v);
+
+	baseColors[0] = r * 255.0f;
+	baseColors[1] = g * 255.0f;
+	baseColors[2] = b * 255.0f;
+
+	sendColorChange();
+
+	apply_smart_light();
+
+
+	if (CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTLEDFINALCOLOR)) {
+		sendFinalColor();
+	}
+}
+commandResult_t LED_SetBaseColor_HSB(const void *context, const char *cmd, const char *args, int bAll) {
+	int hue, sat, bri;
+	const char *p;
+
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_GetArgsCount() == 1) {
+		p = args;
+		hue = atoi(p);
+		while (*p) {
+			if (*p == ',')
+			{
+				p++;
+				break;
+			}
+			p++;
+		}
+		sat = atoi(p);
+		while (*p) {
+			if (*p == ',')
+			{
+				p++;
+				break;
+			}
+			p++;
+		}
+		bri = atoi(p);
+	}
+	else {
+		hue = Tokenizer_GetArgInteger(0);
+		sat = Tokenizer_GetArgInteger(1);
+		bri = Tokenizer_GetArgInteger(2);
+	}
+
+	g_hsv_h = hue;
+	g_hsv_s = sat * 0.01f;
+	g_hsv_v = bri * 0.01f;
+
+	onHSVChanged();
+
+	return CMD_RES_OK;
+}
 commandResult_t LED_SetBaseColor(const void *context, const char *cmd, const char *args, int bAll){
    // support both '#' prefix and not
             const char *c = args;
@@ -887,23 +946,11 @@ float LED_GetRed255() {
 float LED_GetBlue255() {
 	return baseColors[2];
 }
-static void onHSVChanged() {
-	float r, g, b;
+static void led_setBrightness(float sat) {
 
-	HSVtoRGB(&r,&g,&b, g_hsv_h,g_hsv_s,g_hsv_v);
+	g_hsv_v = sat;
 
-	baseColors[0] = r * 255.0f;
-	baseColors[1] = g * 255.0f;
-	baseColors[2] = b * 255.0f;
-
-	sendColorChange();
-
-	apply_smart_light();
-
-
-	if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTLEDFINALCOLOR)) {
-		sendFinalColor();
-	}
+	onHSVChanged();
 }
 static void led_setSaturation(float sat){
 
@@ -928,6 +975,21 @@ static commandResult_t lerpSpeed(const void *context, const char *cmd, const cha
 	Tokenizer_TokenizeString(args, 0);
 
 	led_lerpSpeedUnitsPerSecond = Tokenizer_GetArgFloat(0);
+
+	return CMD_RES_OK;
+}
+static commandResult_t setBrightness(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	float f;
+
+	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
+	Tokenizer_TokenizeString(args, 0);
+
+	f = Tokenizer_GetArgFloat(0);
+
+	// input is in 0-100 range
+	f *= 0.01f;
+
+	led_setBrightness(f);
 
 	return CMD_RES_OK;
 }
@@ -1035,6 +1097,16 @@ void NewLED_InitCommands(){
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_lerpSpeed", "", lerpSpeed, NULL, NULL);
 
+	// HSBColor 360,100,100 - red
+	// HSBColor 90,100,100 - green
+	// HSBColor	<hue>,<sat>,<bri> = set color by hue, saturation and brightness
+	CMD_RegisterCommand("HSBColor", "", LED_SetBaseColor_HSB, NULL, NULL);
+	// HSBColor1	0..360 = set hue
+	CMD_RegisterCommand("HSBColor1", "", setHue, NULL, NULL);
+	// HSBColor2	0..100 = set saturation
+	CMD_RegisterCommand("HSBColor2", "", setSaturation, NULL, NULL);
+	// HSBColor3	0..100 = set brightness
+	CMD_RegisterCommand("HSBColor3", "", setBrightness, NULL, NULL);
 }
 
 void NewLED_RestoreSavedStateIfNeeded() {
