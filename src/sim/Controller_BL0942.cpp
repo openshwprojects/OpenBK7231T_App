@@ -18,14 +18,20 @@ void CControllerBL0942::onDrawn() {
 	if (1) {
 		CMD_ExecuteCommand("startDriver BL0942", 0);
 	}
+	if (txt_voltage->isBeingEdited() == false) {
+		realVoltage = txt_voltage->getFloat();
+	}
+	if (txt_power->isBeingEdited() == false) {
+		realPower = txt_power->getFloat();
+	}
+	if (txt_current->isBeingEdited() == false) {
+		realCurrent = txt_current->getFloat();
+	}
 	int i;
 	byte data[BL0942_PACKET_LEN];
 	memset(data, 0, sizeof(data));
 	data[0] = 0x55;
 	byte checksum = BL0942_READ_COMMAND;
-	float realCurrent = 0.25f;
-	float realPower = 60.0f;
-	float realVoltage = 220.0f;
 
 	int bl_current = BL0942_IREF * realCurrent;
 	int bl_power = BL0942_PREF * realPower;

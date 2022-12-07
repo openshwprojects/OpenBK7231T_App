@@ -64,12 +64,15 @@ class CShape *PrefabManager::generateBL0942() {
 	o->addText(-w + 5, -h + 15, "U:");
 	o->addText(-w + 5, -h + 35, "I:");
 	o->addText(-w + 5, -h + 55, "P:");
+	o->addText(-w + 5, -h + 75, "F:");
 	CText *tx_voltage = o->addText(-w + 25, -h + 15, "230V", true, false)->asText();
 	tx_voltage->setName("text_voltage");
 	CText *tx_current = o->addText(-w + 25, -h + 35, "0.24A", true, false)->asText();
 	tx_current->setName("text_current");
 	CText *tx_power = o->addText(-w + 25, -h + 55, "60W", true, false)->asText();
 	tx_power->setName("text_power");
+	CText *tx_freq = o->addText(-w + 25, -h + 75, "60Hz", true, false)->asText();
+	tx_freq->setName("text_freq");
 	o->addRect(-w, -h, w * 2, 80);
 	CJunction *rx = o->addJunction(-w-20, -20, "RX");
 	o->addLine(-w-20, -20, -w, -20);
@@ -88,7 +91,7 @@ class CShape *PrefabManager::generateBL0942() {
 	o->addLine(w + 20, 20, w, 20);
 	gnd->setName("GND");
 	gnd->addText(-5, -5, "GND");
-	CControllerBL0942 *cntr = new CControllerBL0942(rx, tx, tx_voltage, tx_current, tx_power);
+	CControllerBL0942 *cntr = new CControllerBL0942(rx, tx, tx_voltage, tx_current, tx_power, tx_freq);
 	o->setController(cntr);
 	return o;
 }

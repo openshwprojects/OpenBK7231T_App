@@ -38,6 +38,9 @@ public:
 	void setAllowNewLine(bool b) {
 		bAllowNewLine = b;
 	}
+	bool isBeingEdited() const {
+		return bTextEditMode;
+	}
 	void setTextEditMode(bool b) {
 		bTextEditMode = b;
 	}
@@ -51,6 +54,7 @@ public:
 	void setDeepText(bool b) {
 		bDeepText = b;
 	}
+	float getFloat() const;
 	virtual bool isDeepText() const {
 		return bDeepText;
 	}

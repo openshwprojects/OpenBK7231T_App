@@ -69,6 +69,9 @@ bool CText::processKeyDown(int keyCode) {
 	}
 	return false;
 }
+float CText::getFloat() const {
+	return atof(txt.c_str());
+}
 void CText::appendText(const char *s) {
 	//txt.append(s);
 	txt.insert(cursorPos, s);
