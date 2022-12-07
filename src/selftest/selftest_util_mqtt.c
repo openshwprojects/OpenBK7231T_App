@@ -11,5 +11,12 @@ void SIM_SendFakeMQTTAndRunSimFrame_CMND(const char *command, const char *argume
 	Sim_RunFrames(1, false);
 
 }
+void SIM_SendFakeMQTTRawChannelSet(int channelIndex, const char *arguments) {
+	const char *myName = CFG_GetMQTTClientId();
+	char buffer[256];
+	sprintf(buffer, "%s/%i/set", myName, channelIndex);
+	MQTT_Post_Received_Str(buffer, arguments);
+	Sim_RunFrames(1, false);
+}
 
 #endif

@@ -54,5 +54,6 @@ void Sim_RunFrames(int n, bool bApplyRealtimeWait);
 
 
 void SIM_SendFakeMQTTAndRunSimFrame_CMND(const char *command, const char *arguments);
+void SIM_SendFakeMQTTRawChannelSet(int channelIndex, const char *arguments);
 
 #endif

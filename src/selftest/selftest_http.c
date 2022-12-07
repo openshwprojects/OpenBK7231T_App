@@ -207,6 +207,24 @@ void Test_Http_SingleRelayOnChannel1() {
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 1);
 
+	// direct channel access - set to 0, is it 0?
+	SIM_SendFakeMQTTRawChannelSet(1, "0");
+	// In STATUS register, power is encoded as integer...
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 0);
+
+	// direct channel access - set to 1, is it 1?
+	SIM_SendFakeMQTTRawChannelSet(1, "1");
+	// In STATUS register, power is encoded as integer...
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 1);
+
+	// direct channel access - set to 0, is it 0?
+	SIM_SendFakeMQTTRawChannelSet(1, "0");
+	// In STATUS register, power is encoded as integer...
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 0);
+
 }
 void Test_Http_TwoRelays() {
 
@@ -222,6 +240,9 @@ void Test_Http_TwoRelays() {
 	// In STATUS register, power is encoded as integer...
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 0);
+		SELFTEST_ASSERT_CHANNEL(1, false);
+		SELFTEST_ASSERT_CHANNEL(2, false);
+
 
 	Test_FakeHTTPClientPacket_GET("index?tgl=1");
 
@@ -230,6 +251,8 @@ void Test_Http_TwoRelays() {
 	// In STATUS register, power is encoded as integer...
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 0b1);
+		SELFTEST_ASSERT_CHANNEL(1, true);
+		SELFTEST_ASSERT_CHANNEL(2, false);
 
 	Test_FakeHTTPClientPacket_GET("index?tgl=2");
 	// Channel 1 On
@@ -237,6 +260,8 @@ void Test_Http_TwoRelays() {
 	// In STATUS register, power is encoded as integer...
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 0b11);
+		SELFTEST_ASSERT_CHANNEL(1, true);
+		SELFTEST_ASSERT_CHANNEL(2, true);
 
 
 	Test_FakeHTTPClientPacket_GET("index?tgl=1");
@@ -245,6 +270,32 @@ void Test_Http_TwoRelays() {
 	// In STATUS register, power is encoded as integer...
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 0b10);
+		SELFTEST_ASSERT_CHANNEL(1, false);
+		SELFTEST_ASSERT_CHANNEL(2, true);
+
+	// Channel 1 should become On.
+	// Both On now.
+	SIM_SendFakeMQTTRawChannelSet(1, "1");
+	// In STATUS register, power is encoded as integer...
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 0b11);
+		SELFTEST_ASSERT_CHANNEL(1, true);
+		SELFTEST_ASSERT_CHANNEL(2, true);
+	// Disable channel 1, should be Off again
+	SIM_SendFakeMQTTRawChannelSet(1, "0");
+	// In STATUS register, power is encoded as integer...
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 0b10);
+		SELFTEST_ASSERT_CHANNEL(1, false);
+		SELFTEST_ASSERT_CHANNEL(2, true);
+	// disable channel 2... both will be off
+	SIM_SendFakeMQTTRawChannelSet(2, "0");
+	// In STATUS register, power is encoded as integer...
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 0b00);
+		SELFTEST_ASSERT_CHANNEL(1, false);
+		SELFTEST_ASSERT_CHANNEL(2, false);
+
 }
 void Test_Http_FourRelays() {
 
@@ -565,6 +616,15 @@ void Test_Http_LED_RGB() {
 	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
 	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
 	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "0,0,255");
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("POWER", "OFF");
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "OFF");
+	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "0,0,0");
+
+
 
 	/*
 	CMD_ExecuteCommand("led_enableAll 0", 0);
