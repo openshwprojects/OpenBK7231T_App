@@ -319,6 +319,10 @@ void Test_Http_FourRelays() {
 	// In STATUS register, power is encoded as integer...
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 0);
+		SELFTEST_ASSERT_CHANNEL(1, false);
+		SELFTEST_ASSERT_CHANNEL(2, false);
+		SELFTEST_ASSERT_CHANNEL(3, false);
+		SELFTEST_ASSERT_CHANNEL(4, false);
 
 	Test_FakeHTTPClientPacket_GET("index?tgl=3");
 
@@ -329,6 +333,10 @@ void Test_Http_FourRelays() {
 	// In STATUS register, power is encoded as integer...
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 0b0100);
+		SELFTEST_ASSERT_CHANNEL(1, false);
+		SELFTEST_ASSERT_CHANNEL(2, false);
+		SELFTEST_ASSERT_CHANNEL(3, true);
+		SELFTEST_ASSERT_CHANNEL(4, false);
 
 	Test_FakeHTTPClientPacket_GET("index?tgl=2");
 	// Channel 1 Off
@@ -338,6 +346,10 @@ void Test_Http_FourRelays() {
 	// In STATUS register, power is encoded as integer...
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 0b0110);
+		SELFTEST_ASSERT_CHANNEL(1, false);
+		SELFTEST_ASSERT_CHANNEL(2, true);
+		SELFTEST_ASSERT_CHANNEL(3, true);
+		SELFTEST_ASSERT_CHANNEL(4, false);
 
 
 	Test_FakeHTTPClientPacket_GET("index?tgl=4");
@@ -348,6 +360,52 @@ void Test_Http_FourRelays() {
 	// In STATUS register, power is encoded as integer...
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 0b1110);
+		SELFTEST_ASSERT_CHANNEL(1, false);
+		SELFTEST_ASSERT_CHANNEL(2, true);
+		SELFTEST_ASSERT_CHANNEL(3, true);
+		SELFTEST_ASSERT_CHANNEL(4, true);
+
+	// disable channel 4..
+	SIM_SendFakeMQTTRawChannelSet(4, "0");
+	// Channel 1 Off
+	// Channel 2 On
+	// Channel 3 On
+	// Channel 4 Off
+	// In STATUS register, power is encoded as integer...
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 0b0110);
+		SELFTEST_ASSERT_CHANNEL(1, false);
+		SELFTEST_ASSERT_CHANNEL(2, true);
+		SELFTEST_ASSERT_CHANNEL(3, true);
+		SELFTEST_ASSERT_CHANNEL(4, false);
+
+	// disable channel 3..
+	SIM_SendFakeMQTTRawChannelSet(3, "0");
+	// Channel 1 Off
+	// Channel 2 On
+	// Channel 3 Off
+	// Channel 4 Off
+	// In STATUS register, power is encoded as integer...
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 0b0010);
+		SELFTEST_ASSERT_CHANNEL(1, false);
+		SELFTEST_ASSERT_CHANNEL(2, true);
+		SELFTEST_ASSERT_CHANNEL(3, false);
+		SELFTEST_ASSERT_CHANNEL(4, false);
+
+	// enable channel 3..
+	SIM_SendFakeMQTTRawChannelSet(1, "1");
+	// Channel 1 On
+	// Channel 2 On
+	// Channel 3 Off
+	// Channel 4 Off
+	// In STATUS register, power is encoded as integer...
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 0b0011);
+	SELFTEST_ASSERT_CHANNEL(1, true);
+	SELFTEST_ASSERT_CHANNEL(2, true);
+	SELFTEST_ASSERT_CHANNEL(3, false);
+	SELFTEST_ASSERT_CHANNEL(4, false);
 }
 /*
 StatusSTS sample from Tasmota RGB (3 PWMs set):
@@ -624,7 +682,67 @@ void Test_Http_LED_RGB() {
 	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
 	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "0,0,0");
 
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("POWER", "1");
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
+	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "0,0,255");
 
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("led_dimmer", "50");
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 50);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
+	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "0,0,127");
+
+	// dimmer back to 100
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("led_dimmer", "100");
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
+	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "0,0,255");
+
+	// check Tasmota HSBColor
+	/*
+	NOTE:
+	HTTP Request: http://192.168.0.153/cm?cmnd=HSBColor%200,100,100
+	Return value: {"POWER":"ON","Dimmer":100,"Color":"FF00000000","HSBColor":"0,100,100","White":0,"CT":479,"Channel":[100,0,0,0,0]}
+	
+	*/
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("HSBColor", "0,100,100");
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
+	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "255,0,0");
+	// check Tasmota HSBColor
+	/*
+	NOTE:
+	HTTP Request: http://192.168.0.153/cm?cmnd=HSBColor%2090,100,100
+	Return value: {"POWER":"ON","Dimmer":100,"Color":"7FFF000000","HSBColor":"90,100,100","White":0,"CT":479,"Channel":[50,100,0,0,0]}
+
+	*/
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("HSBColor", "90,100,100");
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
+	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "127,255,0");
+	// check Tasmota HSBColor
+	/*
+	NOTE:
+	HTTP Request: http://192.168.0.153/cm?cmnd=HSBColor%20180,100,100
+	Return value: {"POWER":"ON","Dimmer":100,"Color":"00FFFF0000","HSBColor":"180,100,100","White":0,"CT":479,"Channel":[0,100,100,0,0]}
+	*/
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("HSBColor", "180,100,100");
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
+	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "0,255,255");
 
 	/*
 	CMD_ExecuteCommand("led_enableAll 0", 0);

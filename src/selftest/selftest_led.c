@@ -37,27 +37,32 @@ void Test_LEDDriver_CW() {
 	CMD_ExecuteCommand("led_temperature 154", 0);
 	// check read access
 	SELFTEST_ASSERT_EXPRESSION("$led_temperature", 154.0f);
-
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll", 1.0f);
 	SELFTEST_ASSERT_CHANNEL(1, 100);
 	SELFTEST_ASSERT_CHANNEL(2, 0);
 
 	// Tasmota style command should disable LED
 	Test_FakeHTTPClientPacket_GET("cm?cmnd=POWER%200");
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll", 0.0f);
 	SELFTEST_ASSERT_CHANNEL(1, 0);
 	SELFTEST_ASSERT_CHANNEL(2, 0);
 	// Tasmota style command should enable LED
 	Test_FakeHTTPClientPacket_GET("cm?cmnd=POWER%201");
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll", 1.0f);
 	SELFTEST_ASSERT_CHANNEL(1, 100);
 	SELFTEST_ASSERT_CHANNEL(2, 0);
 
 
 	SIM_SendFakeMQTTAndRunSimFrame_CMND("POWER", "ON");
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll", 1.0f);
 	SELFTEST_ASSERT_CHANNEL(1, 100);
 	SELFTEST_ASSERT_CHANNEL(2, 0);
 	SIM_SendFakeMQTTAndRunSimFrame_CMND("POWER", "OFF");
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll", 0.0f);
 	SELFTEST_ASSERT_CHANNEL(1, 0);
 	SELFTEST_ASSERT_CHANNEL(2, 0);
 	SIM_SendFakeMQTTAndRunSimFrame_CMND("POWER", "ON");
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll", 1.0f);
 	SELFTEST_ASSERT_CHANNEL(1, 100);
 	SELFTEST_ASSERT_CHANNEL(2, 0);
 
@@ -85,6 +90,14 @@ void Test_LEDDriver_RGB() {
 	CMD_ExecuteCommand("led_baseColor_rgb FF0000", 0);
 	// full brightness
 	CMD_ExecuteCommand("led_dimmer 100", 0);
+	SELFTEST_ASSERT_EXPRESSION("$led_dimmer", 100.0f);
+	SELFTEST_ASSERT_EXPRESSION("123*$led_dimmer", 12300.0f);
+	SELFTEST_ASSERT_EXPRESSION("123-$led_dimmer", 23.0f);
+	SELFTEST_ASSERT_EXPRESSION("$led_dimmer-123", -23.0f);
+	SELFTEST_ASSERT_EXPRESSION("$led_dimmer*0.01", 1.0f);
+	SELFTEST_ASSERT_EXPRESSION("$led_dimmer*0.001", 0.1f);
+	SELFTEST_ASSERT_EXPRESSION("$led_dimmer/100", 1.0f);
+	SELFTEST_ASSERT_EXPRESSION("$led_dimmer/1000", 0.1f);
 
 	printf("Channel R is %i, channel G is %i, channel B is %i\n", CHANNEL_Get(1), CHANNEL_Get(2), CHANNEL_Get(3));
 	SELFTEST_ASSERT_CHANNEL(1, 100);
