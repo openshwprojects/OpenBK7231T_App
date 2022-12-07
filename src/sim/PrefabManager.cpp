@@ -7,6 +7,7 @@
 #include "Controller_Bulb.h"
 #include "Controller_SimulatorLink.h"
 #include "Controller_BL0942.h"
+#include "Controller_Pot.h"
 #include "Junction.h"
 
 class CShape *PrefabManager::generateVDD() {
@@ -307,6 +308,39 @@ class CShape *PrefabManager::generateStrip_CW() {
 	return o;
 }
 
+class CShape *PrefabManager::generatePot() {
+	float bulb_radius = 20.0f;
+
+	CShape *o = new CShape();
+	o->addText(-40, -25, "Pot");
+	o->setName("Pot");
+	int w = 200;
+	o->addRect(-w, -20, w * 2, 40);
+	CShape *handle = o->addRect(-10, -60, 20, 40);
+	handle->setName("pot_handle_mover");
+	int leds = 8;
+	int ofs = 10;
+	float start = ofs - w;
+	float len = 2 * w - ofs * 2;
+	float ledlen = len / (leds + 1);
+	CJunction *out = o->addJunction(-w+80, 40);
+	out->setName("OUT");
+	out->addText(-5, -5, "OUT");
+	CJunction *vdd = o->addJunction(-w+20, 40);
+	vdd->setName("VDD");
+	vdd->addText(-5, -5, "VDD");
+	CJunction *gnd = o->addJunction(w-20, 40);
+	gnd->setName("GND");
+	gnd->addText(-25, -5, "GND");
+	o->addLine(w - 20, 40, w - 20, 20);
+	o->addLine(-w + 20, 40, -w + 20, 20);
+	o->addLine(-w + 80, 40, -w + 80, 20);
+	CControllerPot *pot = new CControllerPot(gnd, vdd, out);
+	pot->setMover(handle);
+	o->setController(pot);
+	return o;
+}
+
 class CShape *PrefabManager::generateStrip_RGBCW() {
 	float bulb_radius = 20.0f;
 
@@ -427,6 +461,7 @@ void PrefabManager::createDefaultPrefabs() {
 	addPrefab(generateGND());
 	addPrefab(generateVDD());
 	addPrefab(generateBL0942());
+	addPrefab(generatePot());
 }
 
 

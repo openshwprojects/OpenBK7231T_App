@@ -1,22 +1,21 @@
-#ifndef __CONTROLLER_BUTTON_H__
-#define __CONTROLLER_BUTTON_H__
+#ifndef __CONTROLLER_POT_H__
+#define __CONTROLLER_POT_H__
 
 #include "sim_local.h"
 #include "Controller_Base.h"
 #include "Coord.h"
 
-class CControllerButton : public CControllerBase {
-	float remDist;
-	Coord openPos;
-	Coord closedPos;
+class CControllerPot : public CControllerBase {
+	Coord posA, posB;
+	float frac;
 	class CShape *mover;
-	float timeAfterMouseHold;
-	class CJunction *a, *b;
+	class CJunction *a, *b, *o;
 public:
-	CControllerButton() {
-
+	CControllerPot() {
+		mover = 0;
+		a = b = o = 0;
 	}
-	CControllerButton(class CJunction *_a, class CJunction *_b);
+	CControllerPot(class CJunction *_a, class CJunction *_b, class CJunction *_o);
 	void setMover(CShape *p) {
 		mover = p;
 	}
@@ -27,4 +26,4 @@ public:
 	virtual class CControllerBase *cloneController(class CShape *origOwner, class CShape *newOwner);
 };
 
-#endif // __CONTROLLER_BUTTON_H__
+#endif // __CONTROLLER_POT_H__

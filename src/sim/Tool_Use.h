@@ -7,6 +7,7 @@
 
 class Tool_Use : public Tool_Base {
 	class CShape *currentTarget;
+	Coord prevPos;
 public:
 	Tool_Use() {
 		currentTarget = 0;
@@ -17,6 +18,7 @@ public:
 	virtual void drawTool();
 	virtual void onEnd();
 	virtual void onMouseDown(const Coord &pos, int button);
+	virtual void onMouseUp(const Coord &pos, int button);
 };
 
 #endif // __TOOL_USE_H__

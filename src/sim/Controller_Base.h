@@ -7,7 +7,7 @@ class CControllerBase {
 
 public:
 	virtual void onDrawn() { }
-	virtual void sendEvent(int code) { }
+	virtual void sendEvent(int code, const class Coord &mouseOfs) { }
 	virtual void rotateDegreesAround(float f, const class Coord &p) { }
 	// for buttons
 	virtual class CJunction *findOtherJunctionIfPassable(class CJunction *ju) { return 0; }

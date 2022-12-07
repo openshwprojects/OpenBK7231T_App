@@ -41,6 +41,10 @@ public:
 			return true;
 		return false;
 	}
+	Coord lerp(const Coord &b, float f) const {
+		Coord delta = b - *this;
+		return *this + delta * f;
+	}
 	Coord& operator+=(const Coord& rhs) {
 		this->x += rhs.x;
 		this->y += rhs.y;

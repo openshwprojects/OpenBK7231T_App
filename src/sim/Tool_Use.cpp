@@ -6,6 +6,12 @@
 #include "Controller_Base.h"
 
 void Tool_Use::onMouseDown(const Coord &pos, int button) {
+	currentTarget = sim->getShapeUnderCursor();
+	prevPos = GetMousePos();
+
+}
+void Tool_Use::onMouseUp(const Coord &pos, int button) {
+	currentTarget = 0;
 
 }
 
@@ -13,18 +19,26 @@ void Tool_Use::onEnd() {
 	sim->getCursorMgr()->setCursor(SDL_SYSTEM_CURSOR_ARROW);
 }
 void Tool_Use::drawTool() {
-	currentTarget = sim->getShapeUnderCursor();
 	if (currentTarget) {
 		sim->getCursorMgr()->setCursor(SDL_SYSTEM_CURSOR_HAND);
 	}
 	else {
-		sim->getCursorMgr()->setCursor(SDL_SYSTEM_CURSOR_ARROW);
+		CShape *currentUnder = sim->getShapeUnderCursor();
+		if (currentUnder) {
+			sim->getCursorMgr()->setCursor(SDL_SYSTEM_CURSOR_HAND);
+		}
+		else {
+			sim->getCursorMgr()->setCursor(SDL_SYSTEM_CURSOR_ARROW);
+		}
 	}
 	if (currentTarget != 0) {
+		Coord curPos = GetMousePos();
+		Coord delta = curPos - prevPos;
+		prevPos = curPos;
 		CControllerBase *cntrl = currentTarget->getController();
 		if (cntrl != 0) {
 			if (sim->isMouseButtonHold(SDL_BUTTON_LEFT)) {
-				cntrl->sendEvent(EVE_LMB_HOLD);
+				cntrl->sendEvent(EVE_LMB_HOLD, delta);
 			}
 		}
 	}

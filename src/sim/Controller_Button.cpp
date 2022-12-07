@@ -35,7 +35,7 @@ void CControllerButton::rotateDegreesAround(float f, const Coord &p) {
 	openPos = openPos.rotateDegreesAround(f, p);
 	closedPos = closedPos.rotateDegreesAround(f, p);
 }
-void CControllerButton::sendEvent(int code) {
+void CControllerButton::sendEvent(int code, const class Coord &mouseOfs) {
 	if (code == EVE_LMB_HOLD) {
 		timeAfterMouseHold = 0;
 	}

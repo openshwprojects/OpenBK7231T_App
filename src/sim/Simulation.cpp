@@ -162,7 +162,9 @@ void CSimulation::createDemo() {
 
 	addObject(sim->getPfbs()->instantiatePrefab("LED_CW"))->setPosition(560, 140)->rotateDegreesAroundSelf(90);
 	addObject(sim->getPfbs()->instantiatePrefab("LED_RGB"))->setPosition(760, 140)->rotateDegreesAroundSelf(90);
-	
+
+	addObject(sim->getPfbs()->instantiatePrefab("Pot"))->setPosition(960, 240);
+
 	addWire(Coord(440, 60), Coord(440, 120));
 	addWire(Coord(440, 200), Coord(440, 160));
 	addWire(Coord(440, 200), Coord(380, 200));
