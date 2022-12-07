@@ -32,6 +32,8 @@ CShape *CText::cloneShape() {
 	CText *r = new CText();
 	r->pos = this->pos;
 	r->txt = this->txt;
+	r->bDeepText = this->bDeepText;
+	r->bAllowNewLine = this->bAllowNewLine;
 	this->cloneShapeTo(r);
 	return r;
 }
@@ -61,7 +63,9 @@ bool CText::processKeyDown(int keyCode) {
 		return true;
 	}
 	if (keyCode == SDLK_RETURN) {
-		appendText("\n");
+		if (bAllowNewLine) {
+			appendText("\n");
+		}
 	}
 	return false;
 }

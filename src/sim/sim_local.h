@@ -15,6 +15,7 @@
 #include <GL/gl.h>
 #include <GL/glut.h>
 
+typedef unsigned char byte;
 typedef int32_t i32;
 typedef uint32_t u32;
 
@@ -46,6 +47,9 @@ extern int gridSize;
 
 extern "C" {
 	void CMD_ExpandConstantsWithinString(const char *in, char *out, int outLen);
+	int UART_GetDataSize();
+	void UART_AppendByteToCircularBuffer(int rc);
+	int CMD_ExecuteCommand(const char* s, int cmdFlags);
 }
 
 template <typename T>

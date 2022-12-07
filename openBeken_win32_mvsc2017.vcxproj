@@ -516,6 +516,7 @@
     <ClCompile Include="src\selftest\selftest_tokenizer.c" />
     <ClCompile Include="src\selftest\selftest_tuyaMCU.c" />
     <ClCompile Include="src\sim\Circle.cpp" />
+    <ClCompile Include="src\sim\Controller_BL0942.cpp" />
     <ClCompile Include="src\sim\Controller_Bulb.cpp" />
     <ClCompile Include="src\sim\Controller_Button.cpp" />
     <ClCompile Include="src\sim\Controller_SimulatorLink.cpp" />
@@ -567,6 +568,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\selftest\selftest_local.h" />
+    <ClInclude Include="src\sim\Controller_BL0942.h" />
     <ClInclude Include="src\sim\PrefabManager.h" />
     <ClInclude Include="src\sim\RecentList.h" />
     <ClInclude Include="src\sim\SaveLoad.h" />

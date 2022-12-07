@@ -34,7 +34,7 @@ public:
 	void showExitSaveMessageBox();
 	void destroyObject(class CShape *s);
 	void beginEditingText(class CText *txt);
-	class CShape *getShapeUnderCursor();
+	class CShape *getShapeUnderCursor(bool bIncludeDeepText = false);
 	class CSimulation*getSim() {
 		return sim;
 	}

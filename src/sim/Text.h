@@ -5,6 +5,8 @@
 #include "Shape.h"
 
 class CText : public CShape {
+	bool bDeepText;
+	bool bAllowNewLine;
 	std::string txt;
 	bool bTextEditMode;
 	int cursorPos;
@@ -14,18 +16,27 @@ public:
 	CText() {
 		cursorPos = 0;
 		bTextEditMode = false;
+		bDeepText = false;
+		bAllowNewLine = true;
 	}
 	CText(const Coord &np, const char *s) {
 		this->setPosition(np);
 		this->txt = s;
 		cursorPos = strlen(s);
 		bTextEditMode = false;
+		bDeepText = false;
+		bAllowNewLine = true;
 	}
 	CText(int _x, int _y, const char *s) {
 		this->setPosition(_x, _y);
 		this->txt = s;
 		cursorPos = strlen(s);
 		bTextEditMode = false;
+		bDeepText = false;
+		bAllowNewLine = true;
+	}
+	void setAllowNewLine(bool b) {
+		bAllowNewLine = b;
 	}
 	void setTextEditMode(bool b) {
 		bTextEditMode = b;
@@ -36,6 +47,12 @@ public:
 	}
 	const char *getText() const {
 		return this->txt.c_str();
+	}
+	void setDeepText(bool b) {
+		bDeepText = b;
+	}
+	virtual bool isDeepText() const {
+		return bDeepText;
 	}
 	void appendText(const char *s);
 	bool processKeyDown(int keyCode);

@@ -405,6 +405,9 @@
     <ClCompile Include="src\driver\drv_pwmToggler.c">
       <Filter>Drv</Filter>
     </ClCompile>
+    <ClCompile Include="src\sim\Controller_BL0942.cpp">
+      <Filter>Simulator</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />
@@ -483,6 +486,9 @@
       <Filter>Simulator</Filter>
     </ClInclude>
     <ClInclude Include="src\sim\RecentList.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\Controller_BL0942.h">
       <Filter>Simulator</Filter>
     </ClInclude>
   </ItemGroup>

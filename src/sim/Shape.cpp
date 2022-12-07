@@ -31,6 +31,9 @@ class CShape *CShape::findShapeByName_r(const char *name) {
 class CJunction *CShape::asJunction() {
 	return dynamic_cast<CJunction*>(this);
 }
+class CText *CShape::asText() {
+	return dynamic_cast<CText*>(this);
+}
 void CShape::snapToGrid() {
 	Coord n = roundToGrid(getPosition());
 	setPosition(n);
@@ -134,8 +137,10 @@ class CShape* CShape::addRect(int x, int y, int w, int h) {
 	addShape(n);
 	return n;
 }
-class CShape* CShape::addText(int x, int y, const char *s) {
+class CShape* CShape::addText(int x, int y, const char *s, bool bDeepText, bool bAllowNewLine) {
 	CText *n = new CText(x, y, s);
+	n->setDeepText(bDeepText);
+	n->setAllowNewLine(bAllowNewLine);
 	addShape(n);
 	return n;
 }

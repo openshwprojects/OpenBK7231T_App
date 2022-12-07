@@ -2,9 +2,11 @@
 #include "PrefabManager.h"
 #include "Shape.h"
 #include "Wire.h"
+#include "Text.h"
 #include "Controller_Button.h"
 #include "Controller_Bulb.h"
 #include "Controller_SimulatorLink.h"
+#include "Controller_BL0942.h"
 #include "Junction.h"
 
 class CShape *PrefabManager::generateVDD() {
@@ -50,6 +52,44 @@ class CShape *PrefabManager::generateButton() {
 	btn->setMover(mover);
 	o->setController(btn);
 	o->translateEachChild(0, 10);
+	return o;
+}
+class CShape *PrefabManager::generateBL0942() {
+
+	CShape *o = new CShape();
+	o->setName("BL0942");
+	int w = 40;
+	int h = 40;
+	o->addText(-w-5, -h-5, "BL0942");
+	o->addText(-w + 5, -h + 15, "U:");
+	o->addText(-w + 5, -h + 35, "I:");
+	o->addText(-w + 5, -h + 55, "P:");
+	CText *tx_voltage = o->addText(-w + 25, -h + 15, "230V", true, false)->asText();
+	tx_voltage->setName("text_voltage");
+	CText *tx_current = o->addText(-w + 25, -h + 35, "0.24A", true, false)->asText();
+	tx_current->setName("text_current");
+	CText *tx_power = o->addText(-w + 25, -h + 55, "60W", true, false)->asText();
+	tx_power->setName("text_power");
+	o->addRect(-w, -h, w * 2, 80);
+	CJunction *rx = o->addJunction(-w-20, -20, "RX");
+	o->addLine(-w-20, -20, -w, -20);
+	rx->setName("RX");
+	rx->addText(-5, -5, "RX");
+	CJunction *tx = o->addJunction(-w - 20, 20, "TX");
+	o->addLine(-w - 20, 20, -w, 20);
+	tx->setName("TX");
+	tx->addText(-5, -5, "TX");
+
+	CJunction *vdd = o->addJunction(w + 20, -20, "VDD");
+	o->addLine(w + 20, -20, w, -20);
+	vdd->setName("VDD");
+	vdd->addText(-5, -5, "VDD");
+	CJunction *gnd = o->addJunction(w + 20, 20, "GND");
+	o->addLine(w + 20, 20, w, 20);
+	gnd->setName("GND");
+	gnd->addText(-5, -5, "GND");
+	CControllerBL0942 *cntr = new CControllerBL0942(rx, tx, tx_voltage, tx_current, tx_power);
+	o->setController(cntr);
 	return o;
 }
 class CShape *PrefabManager::generateTest() {
@@ -383,6 +423,7 @@ void PrefabManager::createDefaultPrefabs() {
 	addPrefab(generateTest());
 	addPrefab(generateGND());
 	addPrefab(generateVDD());
+	addPrefab(generateBL0942());
 }
 
 

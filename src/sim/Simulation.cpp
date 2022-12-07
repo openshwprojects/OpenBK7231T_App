@@ -44,10 +44,27 @@ void CSimulation::drawSim() {
 		wires[i]->drawWire();
 	}
 }
-class CShape *CSimulation::findShapeByBoundsPoint(const class Coord &p) {
+class CShape *CSimulation::findDeepText_r(const class Coord &p, class CShape *cur) {
+	Coord local = p - cur->getPosition();
+	for (int i = 0; i < cur->getShapesCount(); i++) {
+		CShape *ch = cur->getShape(i);
+		if (ch->hasWorldPointInside(local)) {
+			if (ch->isDeepText())
+				return ch;
+		}
+	}
+	return 0;
+}
+class CShape *CSimulation::findShapeByBoundsPoint(const class Coord &p, bool bIncludeDeepText) {
 	for (int i = 0; i < objects.size(); i++) {
-		if (objects[i]->hasWorldPointInside(p))
+		if (objects[i]->hasWorldPointInside(p)) {
+			if (bIncludeDeepText) {
+				CShape *r = findDeepText_r(p,objects[i]);
+				if (r != 0)
+					return r;
+			}
 			return objects[i];
+		}
 	}
 	for (int i = 0; i < wires.size(); i++) {
 		CShape *r = wires[i]->findSubPart(p);
@@ -161,6 +178,8 @@ void CSimulation::createDemo() {
 	CShape *strip2 = addObject(sim->getPfbs()->instantiatePrefab("StripCW"));
 	strip2->setPosition(400, 600);
 
+	CShape *bl0942 = addObject(sim->getPfbs()->instantiatePrefab("BL0942"));
+	bl0942->setPosition(800, 600);
 	//CShape *strip3 = addObject(sim->getPfbs()->instantiatePrefab("StripRGB"));
 	//strip3->setPosition(400, 700);
 	if (0) {

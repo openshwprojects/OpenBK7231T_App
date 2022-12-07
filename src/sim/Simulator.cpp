@@ -230,9 +230,9 @@ void CSimulator::beginEditingText(class CText *txt) {
 void CSimulator::destroyObject(CShape *s) {
 	sim->destroyObject(s);
 }
-class CShape *CSimulator::getShapeUnderCursor() {
+class CShape *CSimulator::getShapeUnderCursor(bool bIncludeDeepText) {
 	Coord p = GetMousePos();
-	return sim->findShapeByBoundsPoint(p);
+	return sim->findShapeByBoundsPoint(p,bIncludeDeepText);
 }
 bool CSimulator::createSimulation(bool bDemo) {
 	projectPath = "";

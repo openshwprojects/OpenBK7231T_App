@@ -3,6 +3,7 @@
 
 #include "sim_local.h"
 
+
 class CSimulation {
 	class CSimulator *sim;
 	// all allocated objects (must be fried later)
@@ -18,6 +19,7 @@ class CSimulation {
 	void registerJunction(class CJunction *ju);
 	void registerJunctions(class CWire *w);
 	void registerJunctions(class CShape *s);
+	class CShape *findDeepText_r(const class Coord &p, class CShape *cur);
 public:
 	void setSimulator(class CSimulator *ssim) {
 		this->sim = ssim;
@@ -50,7 +52,7 @@ public:
 	class CText *addText(const class Coord &p, const char *txt);
 	class CWire *addWire(const class Coord &a, const class Coord &b);
 	class CWire *addWire(float x0, float y0, float x1, float y1);
-	class CShape *findShapeByBoundsPoint(const class Coord &p);
+	class CShape *findShapeByBoundsPoint(const class Coord &p, bool bIncludeDeepText = false);
 	void destroyObject(CShape *s);
 	void tryMatchJunction(class CJunction *jn, class CJunction *other);
 	void matchJunction_r(class CShape *sh, class CJunction *j);
