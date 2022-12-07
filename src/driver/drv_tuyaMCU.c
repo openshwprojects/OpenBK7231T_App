@@ -444,7 +444,9 @@ void TuyaMCU_Send_SetTime(struct tm *pTime) {
 		payload_buffer[0] = 0x01;
 		// datetime
 		payload_buffer[1] = pTime->tm_year % 100;
-		payload_buffer[2] = pTime->tm_mon;
+		// tm uses: int tm_mon;   // months since January - [0, 11]
+		// Tuya uses:  Data[1] indicates the month, ranging from 1 to 12.
+		payload_buffer[2] = pTime->tm_mon + 1;
 		payload_buffer[3] = pTime->tm_mday;
 		payload_buffer[4] = pTime->tm_hour;
 		payload_buffer[5] = pTime->tm_min;
