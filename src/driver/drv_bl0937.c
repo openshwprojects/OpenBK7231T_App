@@ -53,12 +53,12 @@ void HlwCf1Interrupt(unsigned char pinNum) {  // Service Voltage and Current
 void HlwCfInterrupt(unsigned char pinNum) {  // Service Power
 	g_p_pulses++;
 }
-int BL0937_PowerSet(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t BL0937_PowerSet(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	float realPower;
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	realPower = atof(args);
 	BL0937_PREF = realPower / res_p;
@@ -71,15 +71,15 @@ int BL0937_PowerSet(const void *context, const char *cmd, const char *args, int 
 		snprintf(dbg, sizeof(dbg),"PowerSet: you gave %f, set ref to %f\n", realPower, BL0937_PREF);
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
-	return 0;
+	return CMD_RES_OK;
 }
 
-int BL0937_PowerMax(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t BL0937_PowerMax(const void *context, const char *cmd, const char *args, int cmdFlags) {
     float maxPower;
 
     if(args==0||*args==0) {
         addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-        return 1;
+        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
     maxPower = atof(args);
     if ((maxPower>200.0) && (maxPower<7200.0f))
@@ -93,54 +93,54 @@ int BL0937_PowerMax(const void *context, const char *cmd, const char *args, int 
             addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
         }
     }
-    return 0;
+    return CMD_RES_OK;
 }
 
-int BL0937_PowerRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t BL0937_PowerRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	BL0937_PREF = atof(args);
 
 	// UPDATE: now they are automatically saved
 	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_POWER,BL0937_PREF);
 
-	return 0;
+	return CMD_RES_OK;
 }
-int BL0937_CurrentRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t BL0937_CurrentRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	BL0937_CREF = atof(args);
 
 	// UPDATE: now they are automatically saved
 	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT,BL0937_CREF);
 
-	return 0;
+	return CMD_RES_OK;
 }
-int BL0937_VoltageRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t BL0937_VoltageRef(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	BL0937_VREF = atof(args);
 
 	// UPDATE: now they are automatically saved
 	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE,BL0937_VREF);
 
-	return 0;
+	return CMD_RES_OK;
 }
-int BL0937_VoltageSet(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t BL0937_VoltageSet(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	float realV;
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	realV = atof(args);
 	BL0937_VREF = realV / res_v;
@@ -154,14 +154,14 @@ int BL0937_VoltageSet(const void *context, const char *cmd, const char *args, in
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 
-	return 0;
+	return CMD_RES_OK;
 }
-int BL0937_CurrentSet(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t BL0937_CurrentSet(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	float realI;
 
 	if(args==0||*args==0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	realI = atof(args);
 	BL0937_CREF = realI / res_c;
@@ -174,7 +174,7 @@ int BL0937_CurrentSet(const void *context, const char *cmd, const char *args, in
 		snprintf(dbg, sizeof(dbg),"CurrentSet: you gave %f, set ref to %f\n", realI, BL0937_CREF);
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
-	return 0;
+	return CMD_RES_OK;
 }
 
 void BL0937_Shutdown_Pins()

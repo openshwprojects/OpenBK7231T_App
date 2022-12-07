@@ -179,6 +179,11 @@ void Button_OnInitialPressDown(int index)
 		
 			return;
 		}
+		if (g_cfg.pins.roles[index] == IOR_Button_NextTemperature || g_cfg.pins.roles[index] == IOR_Button_NextTemperature_n)
+		{
+
+			return;
+		}
 		// is it a device with RGB/CW/single color/etc LED driver?
 		if(LED_IsRunningDriver()) {
 			LED_ToggleEnabled();
@@ -207,6 +212,10 @@ void Button_OnShortClick(int index)
 			return;
 		}
 		if(g_cfg.pins.roles[index] == IOR_Button_NextDimmer || g_cfg.pins.roles[index] == IOR_Button_NextDimmer_n)
+		{
+			return;
+		}
+		if (g_cfg.pins.roles[index] == IOR_Button_NextTemperature || g_cfg.pins.roles[index] == IOR_Button_NextTemperature_n)
 		{
 			return;
 		}
@@ -244,6 +253,9 @@ void Button_OnLongPressHold(int index) {
 	if(g_cfg.pins.roles[index] == IOR_Button_NextDimmer || g_cfg.pins.roles[index] == IOR_Button_NextDimmer_n){
 		LED_NextDimmerHold();
 	}
+	if (g_cfg.pins.roles[index] == IOR_Button_NextTemperature || g_cfg.pins.roles[index] == IOR_Button_NextTemperature_n) {
+		LED_NextTemperatureHold();
+	}
 }
 void Button_OnLongPressHoldStart(int index) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"%i Button_OnLongPressHoldStart\r\n", index);
@@ -258,7 +270,8 @@ bool BTN_ShouldInvert(int index) {
 	}
 	if(g_cfg.pins.roles[index] == IOR_Button_n || g_cfg.pins.roles[index] == IOR_Button_ToggleAll_n||
 		g_cfg.pins.roles[index] == IOR_DigitalInput_n || 	g_cfg.pins.roles[index] == IOR_DigitalInput_NoPup_n
-		 || 	g_cfg.pins.roles[index] == IOR_Button_NextColor_n  || 	g_cfg.pins.roles[index] == IOR_Button_NextDimmer_n) {
+		 || 	g_cfg.pins.roles[index] == IOR_Button_NextColor_n  || 	g_cfg.pins.roles[index] == IOR_Button_NextDimmer_n
+		|| g_cfg.pins.roles[index] == IOR_Button_NextTemperature_n ) {
 		return true;
 	}
 	return false;
@@ -324,6 +337,8 @@ void CHANNEL_SetAll(int iVal, int iFlags) {
 		case IOR_Button_NextColor_n:
 		case IOR_Button_NextDimmer:
 		case IOR_Button_NextDimmer_n:
+		case IOR_Button_NextTemperature:
+		case IOR_Button_NextTemperature_n:
 			{
 
 			}
@@ -425,6 +440,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_Button_NextColor_n:
 		case IOR_Button_NextDimmer:
 		case IOR_Button_NextDimmer_n:
+		case IOR_Button_NextTemperature:
+		case IOR_Button_NextTemperature_n:
 			{
 				//pinButton_s *bt = &g_buttons[index];
 				// TODO: disable button
@@ -471,6 +488,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_Button_NextColor_n:
 		case IOR_Button_NextDimmer:
 		case IOR_Button_NextDimmer_n:
+		case IOR_Button_NextTemperature:
+		case IOR_Button_NextTemperature_n:
 			{
 				pinButton_s *bt = &g_buttons[index];
 
@@ -849,8 +868,32 @@ bool CHANNEL_IsInUse(int ch) {
 }
 
 
-bool CHANNEL_HasChannelSomeOutputPin(int ch) {
-	return CHANNEL_GetRoleForOutputChannel(ch) != IOR_None;
+bool CHANNEL_IsPowerRelayChannel(int ch) {
+	int i;
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (g_cfg.pins.channels[i] == ch) {
+			int role = g_cfg.pins.roles[i];	if (role == IOR_Relay || role == IOR_Relay_n) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+bool CHANNEL_HasRoleThatShouldBePublished(int ch) {
+	int i;
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (g_cfg.pins.channels[i] == ch) {
+			int role = g_cfg.pins.roles[i];	
+			if (role == IOR_Relay || role == IOR_Relay_n
+				|| role == IOR_LED || role == IOR_LED_n
+				|| role == IOR_ADC
+				|| role == IOR_DigitalInput || role == IOR_DigitalInput_n
+				|| role == IOR_DigitalInput_NoPup || role == IOR_DigitalInput_NoPup_n) {
+				return true;
+			}
+		}
+	}
+	return false;
 }
 int CHANNEL_GetRoleForOutputChannel(int ch){
 	int i;
@@ -1101,7 +1144,8 @@ void PIN_ticks(void *param)
 		if(g_cfg.pins.roles[i] == IOR_Button || g_cfg.pins.roles[i] == IOR_Button_n
 			|| g_cfg.pins.roles[i] == IOR_Button_ToggleAll || g_cfg.pins.roles[i] == IOR_Button_ToggleAll_n
 			|| g_cfg.pins.roles[i] == IOR_Button_NextColor || g_cfg.pins.roles[i] == IOR_Button_NextColor_n
-			|| g_cfg.pins.roles[i] == IOR_Button_NextDimmer || g_cfg.pins.roles[i] == IOR_Button_NextDimmer_n) {
+			|| g_cfg.pins.roles[i] == IOR_Button_NextDimmer || g_cfg.pins.roles[i] == IOR_Button_NextDimmer_n
+			|| g_cfg.pins.roles[i] == IOR_Button_NextTemperature || g_cfg.pins.roles[i] == IOR_Button_NextTemperature_n) {
 			//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Test hold %i\r\n",i);
 			PIN_Input_Handler(i, t_diff);
 		}
@@ -1236,7 +1280,7 @@ int CHANNEL_ParseChannelType(const char *s) {
 		return ChType_OpenClosed_Inv;
 	return ChType_Error;
 }
-static int CMD_setButtonHoldRepeat(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_setButtonHoldRepeat(const void *context, const char *cmd, const char *args, int cmdFlags){
 
 
 	Tokenizer_TokenizeString(args,0);
@@ -1244,7 +1288,7 @@ static int CMD_setButtonHoldRepeat(const void *context, const char *cmd, const c
 	if(Tokenizer_GetArgsCount() < 1) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"This command requires 1 argument - timeRepeat - current %i",
 			g_cfg.buttonHoldRepeat);
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
 
@@ -1257,9 +1301,12 @@ static int CMD_setButtonHoldRepeat(const void *context, const char *cmd, const c
 		);
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"If something is wrong, you can restore default %i",
 		CFG_DEFAULT_BTN_REPEAT);
-	return 0;
+	return CMD_RES_OK;
 }
-static int CMD_SetButtonTimes(const void *context, const char *cmd, const char *args, int cmdFlags){
+// SetButtonTimes [ValLongPress] [ValShortPress] [ValRepeat]
+// Each value is times 100ms, so:
+// SetButtonTimes 2 1 1
+static commandResult_t CMD_SetButtonTimes(const void *context, const char *cmd, const char *args, int cmdFlags){
 
 
 	Tokenizer_TokenizeString(args,0);
@@ -1267,7 +1314,7 @@ static int CMD_SetButtonTimes(const void *context, const char *cmd, const char *
 	if(Tokenizer_GetArgsCount() < 3) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"This command requires 3 arguments - timeLong, timeShort, timeRepeat - current %i %i %i",
 			g_cfg.buttonLongPress, g_cfg.buttonShortPress, g_cfg.buttonHoldRepeat);
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
 	CFG_SetButtonLongPressTime(Tokenizer_GetArgInteger(0));
@@ -1285,7 +1332,7 @@ static int CMD_SetButtonTimes(const void *context, const char *cmd, const char *
 		CFG_DEFAULT_BTN_LONG, CFG_DEFAULT_BTN_SHORT,CFG_DEFAULT_BTN_REPEAT);
 	return 0;
 }
-static int CMD_ShowChannelValues(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_ShowChannelValues(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int i;
 
 	for(i = 0; i < CHANNEL_MAX; i++) {
@@ -1294,9 +1341,9 @@ static int CMD_ShowChannelValues(const void *context, const char *cmd, const cha
 		}
 	}
 
-	return 0;
+	return CMD_RES_OK;
 }
-static int CMD_SetChannelType(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_SetChannelType(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int channel;
 	const char *type;
 	int typeCode;
@@ -1305,7 +1352,7 @@ static int CMD_SetChannelType(const void *context, const char *cmd, const char *
 
 	if(Tokenizer_GetArgsCount() < 2) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"This command requires 2 arguments");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	channel = Tokenizer_GetArgInteger(0);
 	type = Tokenizer_GetArg(1);
@@ -1314,13 +1361,13 @@ static int CMD_SetChannelType(const void *context, const char *cmd, const char *
 	if(typeCode == ChType_Error) {
 
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Channel %i type not set because %s is not a known type", channel,type);
-		return 1;
+		return CMD_RES_BAD_ARGUMENT;
 	}
 
 	CHANNEL_SetType(channel,typeCode);
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Channel %i type changed to %s", channel,type);
-	return 0;
+	return CMD_RES_OK;
 }
 
 int h_isChannelPWM(int tg_ch){
@@ -1354,7 +1401,7 @@ int h_isChannelRelay(int tg_ch) {
     }
 	return false;
 }
-static int showgpi(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t showgpi(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int i;
 	unsigned int value = 0;
 
@@ -1366,7 +1413,7 @@ static int showgpi(const void *context, const char *cmd, const char *args, int c
 		value |= ((val & 1)<<i);
 	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"GPIs are 0x%x", value);
-	return 1;
+	return CMD_RES_OK;
 }
 
 

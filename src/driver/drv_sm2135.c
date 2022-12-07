@@ -133,7 +133,7 @@ void SM2135_Write(byte *rgbcw) {
 	}
 }
 
-static int SM2135_RGBCW(const void *context, const char *cmd, const char *args, int flags){
+static commandResult_t SM2135_RGBCW(const void *context, const char *cmd, const char *args, int flags){
 	const char *c = args;
 	byte col[5] = { 0, 0, 0, 0, 0 };
 	int ci;
@@ -170,7 +170,7 @@ static int SM2135_RGBCW(const void *context, const char *cmd, const char *args, 
 
 	SM2135_Write(col);
 
-	return 0;
+	return CMD_RES_OK;
 }
 // SM2135_Map is used to map the RGBCW indices to SM2135 indices
 // This is how you uset RGB CW order:
@@ -178,14 +178,14 @@ static int SM2135_RGBCW(const void *context, const char *cmd, const char *args, 
 // This is the order used on my polish Spectrum WOJ14415 bulb:
 // SM2135_Map 2 1 0 4 3 
 
-static int SM2135_Map(const void *context, const char *cmd, const char *args, int flags){
+static commandResult_t SM2135_Map(const void *context, const char *cmd, const char *args, int flags){
 	
 	Tokenizer_TokenizeString(args,0);
 
 	if(Tokenizer_GetArgsCount()==0) {
 		ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2135_Map current order is %i %i %i    %i %i! ",
 			(int)g_channelOrder[0],(int)g_channelOrder[1],(int)g_channelOrder[2],(int)g_channelOrder[3],(int)g_channelOrder[4]);
-		return 0;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
 	g_channelOrder[0] = Tokenizer_GetArgIntegerRange(0, 0, 4);
@@ -197,7 +197,7 @@ static int SM2135_Map(const void *context, const char *cmd, const char *args, in
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2135_Map new order is %i %i %i    %i %i! ",
 		(int)g_channelOrder[0],(int)g_channelOrder[1],(int)g_channelOrder[2],(int)g_channelOrder[3],(int)g_channelOrder[4]);
 
-	return 0;
+	return CMD_RES_OK;
 }
 
 static void SM2135_SetCurrent(int curValRGB, int curValCW) {
@@ -205,20 +205,20 @@ static void SM2135_SetCurrent(int curValRGB, int curValCW) {
 	g_current_setting_cw = curValCW;
 }
 
-static int SM2135_Current(const void *context, const char *cmd, const char *args, int flags){
+static commandResult_t SM2135_Current(const void *context, const char *cmd, const char *args, int flags){
 	int valRGB;
 	int valCW;
 	Tokenizer_TokenizeString(args,0);
 
 	if(Tokenizer_GetArgsCount()<=1) {
 		ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2135_Current: requires 2 arguments [RGB,CW]. Current value is: %i %i!\n",g_current_setting_rgb,g_current_setting_cw);
-		return 0;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	valRGB = Tokenizer_GetArgInteger(0);
 	valCW = Tokenizer_GetArgInteger(1);
 
 	SM2135_SetCurrent(valRGB,valCW);
-	return 1;
+	return CMD_RES_OK;
 }
 
 // startDriver SM2135

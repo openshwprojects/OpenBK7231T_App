@@ -19,7 +19,7 @@ int parsePowerArgument(const char *s) {
 	return atoi(s);
 }
 
-static int power(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t power(const void *context, const char *cmd, const char *args, int cmdFlags){
 	//if (!wal_strnicmp(cmd, "POWER", 5)){
 		int channel = 0;
 		int iVal = 0;
@@ -74,12 +74,12 @@ static int power(const void *context, const char *cmd, const char *args, int cmd
 			iVal = parsePowerArgument(args);
 			CHANNEL_Set(channel, iVal, false);
 		}
-		return 1;
+		return CMD_RES_OK;
 	//}
 	//return 0;
 }
 
-static int powerAll(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t powerAll(const void *context, const char *cmd, const char *args, int cmdFlags){
 	//if (!wal_strnicmp(cmd, "POWERALL", 8)){
 		int iVal = 0;
 
@@ -88,13 +88,13 @@ static int powerAll(const void *context, const char *cmd, const char *args, int 
 		iVal = parsePowerArgument(args);
 
 		CHANNEL_SetAll(iVal, false);
-		return 1;
+		return CMD_RES_OK;
 	//}
 	//return 0;
 }
 
 
-static int powerStateOnly(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t powerStateOnly(const void *context, const char *cmd, const char *args, int cmdFlags){
 	//if (!wal_strnicmp(cmd, "POWERALL", 8)){
 		int iVal = 0;
 
@@ -103,12 +103,12 @@ static int powerStateOnly(const void *context, const char *cmd, const char *args
 		iVal = parsePowerArgument(args);
 
 		CHANNEL_SetStateOnly(iVal);
-		return 1;
+		return CMD_RES_OK;
 	//}
 	//return 0;
 }
 
-static int color(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t color(const void *context, const char *cmd, const char *args, int cmdFlags){
    // if (!wal_strnicmp(cmd, "COLOR", 5)){
         if (args[0] != '#'){
             ADDLOG_ERROR(LOG_FEATURE_CMD, "tasCmnd COLOR expected a # prefixed color, you sent %s",args);
@@ -152,13 +152,13 @@ static int color(const void *context, const char *cmd, const char *args, int cmd
               //  ADDLOG_DEBUG(LOG_FEATURE_CMD, "COLOR arg ended");
             }
         }
-        return 1;
+        return CMD_RES_OK;
   //  }
    // return 0;
 }
 
 
-static int cmnd_backlog(const void * context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t cmnd_backlog(const void * context, const char *cmd, const char *args, int cmdFlags){
 	const char *subcmd;
 	const char *p;
 	int count = 0;
@@ -190,7 +190,7 @@ static int cmnd_backlog(const void * context, const char *cmd, const char *args,
 	}
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "backlog executed %d", count);
 
-	return 1;
+	return CMD_RES_OK;
 }
 
 // Our wrapper for LFS.
@@ -271,7 +271,7 @@ byte *LFS_ReadFile(const char *fname) {
 	return 0;
 }
 
-static int cmnd_lfsexec(const void * context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t cmnd_lfsexec(const void * context, const char *cmd, const char *args, int cmdFlags){
 #ifdef BK_LITTLEFS
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "exec %s", args);
 	if (lfs_present()){
@@ -318,12 +318,12 @@ static int cmnd_lfsexec(const void * context, const char *cmd, const char *args,
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "lfs is absent");
 	}
 #endif
-	return 1;
+	return CMD_RES_OK;
 }
 
 
 // Usage for continous test: addRepeatingEvent 1 -1 lfs_test1 ir.bat
-static int cmnd_lfs_test1(const void * context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t cmnd_lfs_test1(const void * context, const char *cmd, const char *args, int cmdFlags){
 #ifdef BK_LITTLEFS
 	if (lfs_present()){
 		lfs_file_t file;
@@ -354,10 +354,10 @@ static int cmnd_lfs_test1(const void * context, const char *cmd, const char *arg
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "cmnd_lfs_test1: lfs is absent");
 	}
 #endif
-	return 1;
+	return CMD_RES_OK;
 }
 // Usage for continous test: addRepeatingEvent 1 -1 lfs_test2 ir.bat
-static int cmnd_lfs_test2(const void * context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t cmnd_lfs_test2(const void * context, const char *cmd, const char *args, int cmdFlags){
 #ifdef BK_LITTLEFS
 	if (lfs_present()){
 		lfs_file_t *file;
@@ -394,10 +394,10 @@ static int cmnd_lfs_test2(const void * context, const char *cmd, const char *arg
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "cmnd_lfs_test2: lfs is absent");
 	}
 #endif
-	return 1;
+	return CMD_RES_OK;
 }
 // Usage for continous test: addRepeatingEvent 1 -1 lfs_test3 ir.bat
-static int cmnd_lfs_test3(const void * context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t cmnd_lfs_test3(const void * context, const char *cmd, const char *args, int cmdFlags){
 	byte *res;
 
 	res = LFS_ReadFile(args);
@@ -405,7 +405,7 @@ static int cmnd_lfs_test3(const void * context, const char *cmd, const char *arg
 	if(res) {
 		free(res);
 	}
-	return 1;
+	return CMD_RES_OK;
 }
 int taslike_commands_init(){
 	//cmddetail:{"name":"power","args":"",

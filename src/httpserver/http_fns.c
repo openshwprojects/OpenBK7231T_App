@@ -206,15 +206,17 @@ int http_fn_index(http_request_t* request) {
 	int j, i;
 	char tmpA[128];
 	int bRawPWMs;
-	int forceShowRGBCW;
+	bool bForceShowRGBCW;
 	float fValue;
 	int iValue;
+	bool bForceShowRGB;
 
 	bRawPWMs = CFG_HasFlag(OBK_FLAG_LED_RAWCHANNELSMODE);
-	forceShowRGBCW = CFG_HasFlag(OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER);
+	bForceShowRGBCW = CFG_HasFlag(OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER);
+	bForceShowRGB = CFG_HasFlag(OBK_FLAG_LED_FORCE_MODE_RGB);
 
 	if (LED_IsLedDriverChipRunning()) {
-		forceShowRGBCW = true;
+		bForceShowRGBCW = true;
 	}
 	http_setup(request, httpMimeTypeHTML);	//Add mimetype regardless of the request
 
@@ -223,6 +225,11 @@ int http_fn_index(http_request_t* request) {
 		http_html_start(request, NULL);
 
 		poststr(request, "<div id=\"changed\">");
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+		if (DRV_IsRunning("PWMToggler")) {
+			DRV_Toggler_ProcessChanges(request);
+		}
+#endif
 		if (http_getArg(request->url, "tgl", tmpA, sizeof(tmpA))) {
 			j = atoi(tmpA);
 			if (j == SPECIAL_CHANNEL_LEDPOWER) {
@@ -601,15 +608,18 @@ int http_fn_index(http_request_t* request) {
 		}
 	}
 
-	if (bRawPWMs == 0 || forceShowRGBCW) {
+	if (bRawPWMs == 0 || bForceShowRGBCW || bForceShowRGB) {
 		int c_pwms;
 		int lm;
 
 		lm = LED_GetMode();
 
 		c_pwms = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
-		if (forceShowRGBCW) {
+		if (bForceShowRGBCW) {
 			c_pwms = 5;
+		}
+		else if (bForceShowRGB) {
+			c_pwms = 3;
 		}
 
 		if (c_pwms > 0) {
@@ -689,6 +699,12 @@ int http_fn_index(http_request_t* request) {
 		}
 
 	}
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+	if (DRV_IsRunning("PWMToggler")) {
+		DRV_Toggler_AddToHtmlPage(request);
+	}
+#endif
+
 	poststr(request, "</table>");
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_AppendInformationToHTTPIndexPage(request);
@@ -1265,23 +1281,44 @@ int http_fn_flash_read_tool(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
+const char *CMD_GetResultString(commandResult_t r) {
+	if (r == CMD_RES_OK)
+		return "OK";
+	if (r == CMD_RES_EMPTY_STRING)
+		return "No command entered";
+	if (r == CMD_RES_ERROR)
+		return "Command found but returned error";
+	if (r == CMD_RES_NOT_ENOUGH_ARGUMENTS)
+		return "Not enough arguments for this command";
+	if (r == CMD_RES_UNKNOWN_COMMAND)
+		return "Unknown command";
+	if (r == CMD_RES_BAD_ARGUMENT)
+		return "Bad argument";
+	return "Unknown error";
+}
+// all log printfs made by command will be sent also to request
+void LOG_SetCommandHTTPRedirectReply(http_request_t* request);
 
 int http_fn_cmd_tool(http_request_t* request) {
-	int i;
+	commandResult_t res;
+	const char *resStr;
 	char tmpA[128];
 
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Command tool");
 	poststr(request, "<h4>Command Tool</h4>");
+	poststr(request, "This is a basic command line. <br>");
+	poststr(request, "Please consider using 'Web Application' console with more options and real time log view. <br>");
+	poststr(request, "Remember that some commands are added after a restart when a driver is activated... <br>");
 
 	if (http_getArg(request->url, "cmd", tmpA, sizeof(tmpA))) {
-		i = CMD_ExecuteCommand(tmpA, COMMAND_FLAG_SOURCE_CONSOLE);
-		if (i == 0) {
-			poststr(request, "Command not found");
-		}
-		else {
-			poststr(request, "Executed");
-		}
+		poststr(request, "<br>");
+		// all log printfs made by command will be sent also to request
+		LOG_SetCommandHTTPRedirectReply(request);
+		res = CMD_ExecuteCommand(tmpA, COMMAND_FLAG_SOURCE_CONSOLE);
+		LOG_SetCommandHTTPRedirectReply(0);
+		resStr = CMD_GetResultString(res);
+		hprintf255(request, "<h3>%s</h3>", resStr);
 		poststr(request, "<br>");
 	}
 	add_label_text_field(request, "Command", "cmd", tmpA, "<form action=\"/cmd_tool\">");
@@ -1302,7 +1339,8 @@ int http_fn_startup_command(http_request_t* request) {
 	poststr(request, "<h4>Set/Change/Clear startup command line</h4>");
 	poststr(request, "<h5>Startup command is a shorter, smaller alternative to LittleFS autoexec.bat."
 		"The startup commands are ran at device startup."
-		"You can use them to init peripherals and drivers, like BL0942 energy sensor</h5>");
+		"You can use them to init peripherals and drivers, like BL0942 energy sensor."
+		"Use backlog cmd1; cmd2; cmd3; etc to enter multiple commands</h5>");
 
 	if (http_getArg(request->url, "data", tmpA, sizeof(tmpA))) {
 		//  hprintf255(request,"<h3>Set command to  %s!</h3>",tmpA);
@@ -2010,7 +2048,7 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 	hprintf255(request, "\"LogHost\":\"\",");
 	hprintf255(request, "\"LogPort\":514,");
 	hprintf255(request, "\"SSId\":[");
-	hprintf255(request, "\"DLINK_FastNet\",");
+	hprintf255(request, "\"%s\",", CFG_GetWiFiSSID());
 	hprintf255(request, "\"\"");
 	hprintf255(request, "],");
 	hprintf255(request, "\"TelePeriod\":300,");
@@ -2056,8 +2094,8 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 
 
 	hprintf255(request, "\"StatusNET\":{");
-	hprintf255(request, "\"Hostname\":\"tasmota-D79E2C-7724\",");
-	hprintf255(request, "\"IPAddress\":\"192.168.0.104\",");
+	hprintf255(request, "\"Hostname\":\"%s\",", CFG_GetShortDeviceName());
+	hprintf255(request, "\"IPAddress\":\"%s\",", HAL_GetMyIPString());
 	hprintf255(request, "\"Gateway\":\"192.168.0.1\",");
 	hprintf255(request, "\"Subnetmask\":\"255.255.255.0\",");
 	hprintf255(request, "\"DNSServer1\":\"192.168.0.1\",");
@@ -2075,10 +2113,10 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 
 	hprintf255(request, "\"StatusMQT\":{");
 	hprintf255(request, "\"MqttHost\":\"192.168.0.113\",");
-	hprintf255(request, "\"MqttPort\":1883,");
+	hprintf255(request, "\"MqttPort\":%i,", CFG_GetMQTTPort());
 	hprintf255(request, "\"MqttClientMask\":\"core-mosquitto\",");
-	hprintf255(request, "\"MqttClient\":\"core-mosquitto\",");
-	hprintf255(request, "\"MqttUser\":\"homeassistant\",");
+	hprintf255(request, "\"MqttClient\":\"%s\",",CFG_GetMQTTClientId());
+	hprintf255(request, "\"MqttUser\":\"%s\",", CFG_GetMQTTUserName());
 	hprintf255(request, "\"MqttCount\":23,");
 	hprintf255(request, "\"MAX_PACKET_SIZE\":1200,");
 	hprintf255(request, "\"KEEPALIVE\":30,");
@@ -2108,7 +2146,7 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 
 	hprintf255(request, "\"Time\":\"2022-11-09T20:09:11\",");
 	hprintf255(request, "\"Uptime\":\"30T02:59:30\",");
-	hprintf255(request, "\"UptimeSec\":2602770,");
+	hprintf255(request, "\"UptimeSec\":%i,", Time_getUpTimeSeconds());
 	hprintf255(request, "\"Heap\":25,");
 	hprintf255(request, "\"SleepMode\":\"Dynamic\",");
 	hprintf255(request, "\"Sleep\":10,");
@@ -2140,7 +2178,7 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 	//}
 	hprintf255(request, "\"Wifi\":{");
 	hprintf255(request, "\"AP\":1,");
-	hprintf255(request, "\"SSId\":\"SSIIIIIIIIIIIID\",");
+	hprintf255(request, "\"SSId\":\"%s\",", CFG_GetWiFiSSID());
 	hprintf255(request, "\"BSSId\":\"30:B5:C2:5D:70:72\",");
 	hprintf255(request, "\"Channel\":11,");
 	hprintf255(request, "\"Mode\":\"11n\",");
@@ -2324,8 +2362,12 @@ int http_fn_cfg_pins(http_request_t* request) {
 		alias = HAL_PIN_GetPinNameAlias(i);
 		poststr(request, "<div class=\"hdiv\">");
 		if (alias) {
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+			hprintf255(request, "P%i (%s) ", i, alias);
+#else
 			poststr(request, alias);
 			poststr(request, " ");
+#endif
 		}
 		else {
 			hprintf255(request, "P%i ", i);
@@ -2378,15 +2420,19 @@ const char* g_obk_flagNames[] = {
 	"[PWM] BK7231 use 600hz instead of 1khz default",
 	"[LED] remember LED driver state (RGBCW, enable, brightness, temperature) after reboot",
 	"[HTTP] Show actual PIN logic level for unconfigured pins",
-	"[IR] Do MQTT publish for incoming IR data",
+	"[IR] Do MQTT publish (RAW STRING) for incoming IR data",
 	"[IR] Allow 'unknown' protocol",
 	"[MQTT] Broadcast led final color RGBCW (topic name: YourDevName/led_finalcolor_rgbcw/get)",
 	"[LED] Automatically enable Light when changing brightness, color or temperature on WWW panel",
 	"[LED] Smooth transitions for LED (EXPERIMENTAL)",
 	"[MQTT] Always publish channels used by TuyaMCU",
+	"[LED] Force RGB mode (3 PWMs for LEDs) and ignore futher PWMs if they are set",
+	"[MQTT] Retain power channels (Relay channels, etc)",
+	"[IR] Do MQTT publish (Tasmota JSON format) for incoming IR data",
 	"error",
 	"error",
-};
+	"error",
+}; 
 
 int http_fn_cfg_generic(http_request_t* request) {
 	int i;

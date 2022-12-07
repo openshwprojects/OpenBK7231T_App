@@ -13,7 +13,7 @@
 
 
 // run an aliased command
-static int runcmd(const void * context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t runcmd(const void * context, const char *cmd, const char *args, int cmdFlags){
     char *c = (char *)context;
  //   char *p = c;
 
@@ -25,7 +25,7 @@ static int runcmd(const void * context, const char *cmd, const char *args, int c
 }
 
 // run an aliased command
-static int alias(const void * context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t alias(const void * context, const char *cmd, const char *args, int cmdFlags){
 	const char *alias;
 	const char *ocmd;
 	char *cmdMem;
@@ -34,12 +34,12 @@ static int alias(const void * context, const char *cmd, const char *args, int cm
 
 	if(args==0||*args==0) {
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_Alias: command require 2 args");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 2) {
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_Alias: command require 2 args");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
 	alias = Tokenizer_GetArg(0);
@@ -49,7 +49,7 @@ static int alias(const void * context, const char *cmd, const char *args, int cm
 
 	if(existing!=0) {
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_Alias: the alias you are trying to use is already in use (as an alias or as a command)");
-		return 1;
+		return CMD_RES_BAD_ARGUMENT;
 	}
 
 	cmdMem = strdup(ocmd);
@@ -62,11 +62,11 @@ static int alias(const void * context, const char *cmd, const char *args, int cm
 	//cmddetail:"fn":"runcmd","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand(aliasMem, "", runcmd, NULL, cmdMem);
-	return 1;
+	return CMD_RES_OK;
 }
 
 // Usage: addRepeatingEvent 1 -1 testMallocFree 100
-static int testMallocFree(const void * context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t testMallocFree(const void * context, const char *cmd, const char *args, int cmdFlags){
 	int repeats;
 	int rep;
     char *msg;
@@ -90,10 +90,10 @@ static int testMallocFree(const void * context, const char *cmd, const char *arg
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Malloc has been tested! Total calls %i, reps now %i",totalCalls,repeats);
 
-    return 0;
+    return CMD_RES_OK;
 }
 // Usage: addRepeatingEvent 1 -1 testStrdup
-static int testStrdup(const void * context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t testStrdup(const void * context, const char *cmd, const char *args, int cmdFlags){
 	int repeats;
 	int rep;
     char *msg;
@@ -117,10 +117,10 @@ static int testStrdup(const void * context, const char *cmd, const char *args, i
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "testStrdup has been tested! Total calls %i, reps now %i",totalCalls,repeats);
 
-    return 0;
+    return CMD_RES_OK;
 }
 // Usage: addRepeatingEvent 1 -1 testRealloc 100
-static int testRealloc(const void * context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t testRealloc(const void * context, const char *cmd, const char *args, int cmdFlags){
 	int repeats;
 	int rep;
     char *msg;
@@ -149,20 +149,20 @@ static int testRealloc(const void * context, const char *cmd, const char *args, 
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Realloc has been tested! Total calls %i, reps now %i",totalCalls,repeats);
 
-    return 0;
+    return CMD_RES_OK;
 }
 
-static int testLog(const void * context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t testLog(const void * context, const char *cmd, const char *args, int cmdFlags){
 	int a = 123;
 	float b = 3.14;
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "This is an int - %i",a);
 	ADDLOG_INFO(LOG_FEATURE_CMD, "This is a float - %f",b);
 	
-	return 1;
+	return CMD_RES_OK;
 }
 
-static int testFloats(const void * context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t testFloats(const void * context, const char *cmd, const char *args, int cmdFlags){
 	int a = 123;
 	float b = 3.14;
 	double d;
@@ -172,11 +172,11 @@ static int testFloats(const void * context, const char *cmd, const char *args, i
 	d = (double)b;
 	ADDLOG_INFO(LOG_FEATURE_CMD, "This is a double double - %f %f",d, d);
 	
-	return 1;
+	return CMD_RES_OK;
 }
 // testArgs "one" "tw o" "thr ee" "fo ur" five
 // testArgs one "tw o" "thr ee" "fo ur" five
-static int testArgs(const void * context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t testArgs(const void * context, const char *cmd, const char *args, int cmdFlags){
 	int i, cnt;
 
 	
@@ -188,10 +188,10 @@ static int testArgs(const void * context, const char *cmd, const char *args, int
 	}
 
 
-	return 1;
+	return CMD_RES_OK;
 }
 // Usage: addRepeatingEvent 1 -1 testJSON 100
-static int testJSON(const void * context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t testJSON(const void * context, const char *cmd, const char *args, int cmdFlags){
     cJSON* root;
     cJSON* stats;
 	int repeats;
@@ -237,7 +237,7 @@ static int testJSON(const void * context, const char *cmd, const char *args, int
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "testJSON has been tested! Total calls %i, reps now %i",totalCalls,repeats);
 
-    return 0;
+    return CMD_RES_OK;
 }
 int fortest_commands_init(){
 	//cmddetail:{"name":"alias","args":"",

@@ -39,6 +39,8 @@ void BP1658CJ_Init();
 void BP1658CJ_RunFrame();
 void BP1658CJ_OnChannelChanged(int ch, int value);
 
+void SM16703P_Init();
+
 void BL_Shared_Init();
 void BL_ProcessUpdate(float voltage, float current, float power);
 void BL09XX_AppendInformationToHTTPIndexPage(http_request_t* request);
@@ -48,4 +50,9 @@ bool DRV_IsRunning(const char* name);
 void TuyaMCU_Sensor_RunFrame();
 void TuyaMCU_Sensor_Init();
 
-int BL09XX_ResetEnergyCounter(const void* context, const char* cmd, const char* args, int cmdFlags);
+
+void DRV_Toggler_ProcessChanges(http_request_t *request);
+void DRV_Toggler_AddToHtmlPage(http_request_t *request);
+void DRV_Toggler_AppendInformationToHTTPIndexPage(http_request_t* request);
+void DRV_InitPWMToggler();
+

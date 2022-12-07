@@ -56,6 +56,10 @@ enum IORole {
 	IOR_AlwaysLow,
 
 	IOR_UCS1912_DIN,
+	IOR_SM16703P_DIN,
+
+	IOR_Button_NextTemperature,
+	IOR_Button_NextTemperature_n,
 
 	IOR_Total_Options,
 };
@@ -162,9 +166,12 @@ typedef struct pinsState_s {
 #define OBK_FLAG_LED_AUTOENABLE_ON_WWW_ACTION		17
 #define OBK_FLAG_LED_SMOOTH_TRANSITIONS				18
 #define OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS		19
+#define OBK_FLAG_LED_FORCE_MODE_RGB					20
+#define OBK_FLAG_MQTT_RETAIN_POWER_CHANNELS			21
+#define OBK_FLAG_IR_PUBLISH_RECEIVED_IN_JSON		22
 
 
-#define OBK_TOTAL_FLAGS 20
+#define OBK_TOTAL_FLAGS 23
 
 
 #define CGF_MQTT_CLIENT_ID_SIZE			64
@@ -304,6 +311,8 @@ void CHANNEL_Add(int ch, int iVal);
 void CHANNEL_AddClamped(int ch, int iVal, int min, int max);
 int CHANNEL_Get(int ch);
 int CHANNEL_GetRoleForOutputChannel(int ch);
+bool CHANNEL_HasRoleThatShouldBePublished(int ch);
+bool CHANNEL_IsPowerRelayChannel(int ch);
 // See: enum ChannelType
 void CHANNEL_SetType(int ch, int type);
 int CHANNEL_GetType(int ch);
@@ -315,7 +324,6 @@ int CHANNEL_HasChannelPinWithRole(int ch, int iorType);
 int CHANNEL_HasChannelPinWithRoleOrRole(int ch, int iorType, int iorType2);
 bool CHANNEL_IsInUse(int ch);
 void Channel_SaveInFlashIfNeeded(int ch);
-bool CHANNEL_HasChannelSomeOutputPin(int ch);
 int CHANNEL_FindMaxValueForChannel(int ch);
 
 int h_isChannelPWM(int tg_ch);

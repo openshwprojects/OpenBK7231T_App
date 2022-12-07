@@ -43,6 +43,7 @@ void BP5758D_Write(byte* rgbcw);
 void BP1658CJ_Write(byte* rgbcw);
 void DRV_DGR_OnLedDimmerChange(int iVal);
 void DRV_DGR_OnLedEnableAllChange(int iVal);
+void DRV_DGR_OnLedFinalColorsChange(byte rgbcw[5]);
 
 // OBK_POWER etc
 float DRV_GetReading(int type);

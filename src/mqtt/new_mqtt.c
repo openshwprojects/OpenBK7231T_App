@@ -118,7 +118,11 @@ static void MQTT_Mutex_Free()
 
 // this is called from tcp_thread context to queue received mqtt,
 // and then we'll retrieve them from our own thread for processing.
-int post_received(const char *topic, int topiclen, const unsigned char *data, int datalen){
+//
+// NOTE: this function is now public, but only because my unit tests
+// system can use it to spoof MQTT packets to check if MQTT commands
+// are working...
+int MQTT_Post_Received(const char *topic, int topiclen, const unsigned char *data, int datalen){
 	MQTT_Mutex_Take(100);
 	if ((MQTT_RX_BUFFER_MAX - 1 - mqtt_rx_buffer_count) < topiclen + datalen + 2 + 2){
 		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "MQTT_rx buffer overflow for topic %s", topic);
@@ -134,7 +138,9 @@ int post_received(const char *topic, int topiclen, const unsigned char *data, in
 #endif
 	return 1;
 }
-
+int MQTT_Post_Received_Str(const char *topic, const char *data) {
+	return MQTT_Post_Received(topic, strlen(topic), (const unsigned char*)data, strlen(data));
+}
 int get_received(char **topic, int *topiclen, unsigned char **data, int *datalen){
 	int res = 0;
 	MQTT_Mutex_Take(100);
@@ -659,6 +665,10 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 	{
 		retain = 1;
 	}
+	if (flags & OBK_PUBLISH_FLAG_FORCE_REMOVE_GET)
+	{
+		appendGet = false;
+	}
 
 	LOCK_TCPIP_CORE();
 	int res = mqtt_client_is_connected(client);
@@ -765,7 +775,7 @@ static void mqtt_incoming_data_cb(void* arg, const u8_t* data, u16_t len, u8_t f
 			char* cbtopic = callbacks[i]->topic;
 			if (!strncmp(g_mqtt_request.topic, cbtopic, strlen(cbtopic)))
 			{
-				post_received(g_mqtt_request.topic, strlen(g_mqtt_request.topic), data, len);
+				MQTT_Post_Received(g_mqtt_request.topic, strlen(g_mqtt_request.topic), data, len);
 				// if ANYONE is interested, store it.
 				break;
 				// note - callback must return 1 to say it ate the mqtt, else further processing can be performed.
@@ -1059,13 +1069,22 @@ OBK_Publish_Result MQTT_ChannelChangeCallback(int channel, int iVal)
 {
 	char channelNameStr[8];
 	char valueStr[16];
-
+	int flags;
+	
+	flags = 0;
 	addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Channel has changed! Publishing change %i with %i \n", channel, iVal);
 
 	sprintf(channelNameStr, "%i", channel);
 	sprintf(valueStr, "%i", iVal);
 
-	return MQTT_PublishMain(mqtt_client, channelNameStr, valueStr, 0, true);
+	// This will set RETAIN flag for all channels that are used for RELAY
+	if (CFG_HasFlag(OBK_FLAG_MQTT_RETAIN_POWER_CHANNELS)) {
+		if (CHANNEL_IsPowerRelayChannel(channel)) {
+			flags |= OBK_PUBLISH_FLAG_RETAIN;
+		}
+	}
+
+	return MQTT_PublishMain(mqtt_client, channelNameStr, valueStr, flags, true);
 }
 OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 {
@@ -1080,19 +1099,26 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 	sprintf(channelNameStr, "%i", channel);
 	sprintf(valueStr, "%i", iValue);
 
+	// This will set RETAIN flag for all channels that are used for RELAY
+	if (CFG_HasFlag(OBK_FLAG_MQTT_RETAIN_POWER_CHANNELS)) {
+		if (CHANNEL_IsPowerRelayChannel(channel)) {
+			flags |= OBK_PUBLISH_FLAG_RETAIN;
+		}
+	}
+
 	return MQTT_PublishMain(mqtt_client, channelNameStr, valueStr, flags, true);
 }
 // This console command will trigger a publish of all used variables (channels and extra stuff)
-OBK_Publish_Result MQTT_PublishAll(const void* context, const char* cmd, const char* args, int cmdFlags) {
+commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	MQTT_PublishWholeDeviceState_Internal(true);
-	return 1;// TODO make return values consistent for all console commands
+	return CMD_RES_OK;// TODO make return values consistent for all console commands
 }
 // This console command will trigger a publish of runtime variables
-OBK_Publish_Result MQTT_PublishChannels(const void* context, const char* cmd, const char* args, int cmdFlags) {
+commandResult_t MQTT_PublishChannels(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	MQTT_PublishOnlyDeviceChannelsIfPossible();
-	return 1;// TODO make return values consistent for all console commands
+	return CMD_RES_OK;// TODO make return values consistent for all console commands
 }
-OBK_Publish_Result MQTT_PublishCommand(const void* context, const char* cmd, const char* args, int cmdFlags) {
+commandResult_t MQTT_PublishCommand(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	const char* topic, * value;
 	OBK_Publish_Result ret;
 
@@ -1100,14 +1126,14 @@ OBK_Publish_Result MQTT_PublishCommand(const void* context, const char* cmd, con
 
 	if (Tokenizer_GetArgsCount() < 2) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish command requires two arguments (topic and value)");
-		return 0;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	topic = Tokenizer_GetArg(0);
 	value = Tokenizer_GetArg(1);
 
 	ret = MQTT_PublishMain_StringString(topic, value, 0);
 
-	return ret;
+	return CMD_RES_OK;
 }
 
 /****************************************************************************************************
@@ -1229,7 +1255,7 @@ static OS_Timer_t timer;
 static beken_timer_t g_mqtt_timer;
 #endif
 
-int MQTT_StartMQTTTestThread(const void* context, const char* cmd, const char* args, int cmdFlags)
+commandResult_t MQTT_StartMQTTTestThread(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
 	if (info != NULL)
 	{
@@ -1238,13 +1264,13 @@ int MQTT_StartMQTTTestThread(const void* context, const char* cmd, const char* a
 		info->TestStartTick = xTaskGetTickCount();
 		info->msg_cnt = 0;
 		info->report_published = false;
-		return 0;
+		return CMD_RES_OK;
 	}
 
 	info = (BENCHMARK_TEST_INFO*)os_malloc(sizeof(BENCHMARK_TEST_INFO));
 	if (info == NULL)
 	{
-		return -1;
+		return CMD_RES_ERROR;
 	}
 
 	memset(info, 0, sizeof(BENCHMARK_TEST_INFO));
@@ -1263,7 +1289,7 @@ int MQTT_StartMQTTTestThread(const void* context, const char* cmd, const char* a
 	if (OS_TimerCreate(&timer, OS_TIMER_PERIODIC, MQTT_Test_Tick, (void*)info, MQTT_TMR_DURATION) != OS_OK)
 	{
 		printf("PIN_AddCommands timer create failed\n");
-		return -1;
+		return CMD_RES_ERROR;
 	}
 	OS_TimerStart(&timer); /* start OS timer to feed watchdog */
 #else
@@ -1274,7 +1300,7 @@ int MQTT_StartMQTTTestThread(const void* context, const char* cmd, const char* a
 	result = rtos_start_timer(&g_mqtt_timer);
 	ASSERT(kNoErr == result);
 #endif
-	return 0;
+	return CMD_RES_OK;
 }
 
 /****************************************************************************************************
@@ -1335,8 +1361,7 @@ OBK_Publish_Result MQTT_DoItemPublishString(const char* sChannel, const char* va
 
 OBK_Publish_Result MQTT_DoItemPublish(int idx)
 {
-	int type;
-	int role;
+	//int type;
 	char dataStr[3 * 6 + 1];  //This is sufficient to hold mac value
 	bool bWantsToPublish;
 
@@ -1407,8 +1432,7 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 	// because we are using led_basecolor_rgb, led_dimmer, led_enableAll, etc
 	// NOTE: negative indexes are not channels - they are special values
 	bWantsToPublish = false;
-	role = CHANNEL_GetRoleForOutputChannel(idx);
-	if (role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
+	if (CHANNEL_HasRoleThatShouldBePublished(idx)) {
 		bWantsToPublish = true;
 	}
 #ifndef OBK_DISABLE_ALL_DRIVERS

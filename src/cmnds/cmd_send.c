@@ -7,7 +7,7 @@
 // SendGet http://192.168.0.112/cm?cmnd=Power0%20Toggle
 // addRepeatingEvent 5 SendGet http://192.168.0.112/cm?cmnd=Power0%20Toggle
 // addEventHandler OnClick 8 SendGet http://192.168.0.112/cm?cmnd=Power0%20Toggle
-static int CMD_SendGET(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_SendGET(const void *context, const char *cmd, const char *args, int cmdFlags){
 	ADDLOG_INFO(LOG_FEATURE_CMD, " CMD_SendGET received with args %s",args);
 
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
@@ -16,7 +16,7 @@ static int CMD_SendGET(const void *context, const char *cmd, const char *args, i
 	ADDLOG_INFO(LOG_FEATURE_CMD, " CMD_SendGET not supported!");
 
 #endif
-	return 1;
+	return CMD_RES_OK;
 }
 
 

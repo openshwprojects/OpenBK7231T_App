@@ -3,7 +3,17 @@
 
 #include "../new_common.h"
 
-typedef int (*commandHandler_t)(const void* context, const char* cmd, const char* args, int flags);
+typedef enum commandResult_e {
+	CMD_RES_OK,
+	CMD_RES_UNKNOWN_COMMAND,
+	CMD_RES_NOT_ENOUGH_ARGUMENTS,
+	CMD_RES_EMPTY_STRING,
+	CMD_RES_BAD_ARGUMENT,
+	CMD_RES_ERROR,
+
+} commandResult_t;
+
+typedef commandResult_t (*commandHandler_t)(const void* context, const char* cmd, const char* args, int flags);
 
 // command was entered in console (web app etc)
 #define COMMAND_FLAG_SOURCE_CONSOLE		1
@@ -23,8 +33,11 @@ typedef int (*commandHandler_t)(const void* context, const char* cmd, const char
 void CMD_Init_Early();
 void CMD_Init_Delayed();
 void CMD_RegisterCommand(const char* name, const char* args, commandHandler_t handler, const char* userDesc, void* context);
-int CMD_ExecuteCommand(const char* s, int cmdFlags);
-int CMD_ExecuteCommandArgs(const char* cmd, const char* args, int cmdFlags);
+commandResult_t CMD_ExecuteCommand(const char* s, int cmdFlags);
+commandResult_t CMD_ExecuteCommandArgs(const char* cmd, const char* args, int cmdFlags);
+// like a strdup, but will expand constants.
+// Please remember to free the returned string
+char *CMD_ExpandingStrdup(const char *in);
 
 enum EventCode {
 	CMD_EVENT_NONE,
@@ -78,6 +91,8 @@ enum EventCode {
 	CMD_EVENT_PIN_ONRELEASE,
 
 	CMD_EVENT_PIN_ONPRESS,
+
+	CMD_EVENT_LED_STATE,
 
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
@@ -140,14 +155,16 @@ void NewLED_InitCommands();
 void NewLED_RestoreSavedStateIfNeeded();
 float LED_GetDimmer();
 void LED_AddDimmer(int iVal, bool wrapAroundInsteadOfClamp, int minValue);
+void LED_AddTemperature(int iVal, bool wrapAroundInsteadOfClamp);
 void LED_NextDimmerHold();
+void LED_NextTemperatureHold();
 int LED_IsRunningDriver();
 float LED_GetTemperature();
 void LED_SetTemperature(int tmpInteger, bool bApply);
 float LED_GetTemperature0to1Range();
 void LED_SetTemperature0to1Range(float f);
 void LED_SetDimmer(int iVal);
-int LED_SetBaseColor(const void* context, const char* cmd, const char* args, int bAll);
+commandResult_t LED_SetBaseColor(const void* context, const char* cmd, const char* args, int bAll);
 void LED_SetFinalCW(byte c, byte w);
 void LED_SetFinalRGB(byte r, byte g, byte b);
 void LED_SetFinalRGBCW(byte* rgbcw);
@@ -166,6 +183,9 @@ void LED_GetBaseColorString(char* s);
 int LED_GetMode();
 float LED_GetHue();
 float LED_GetSaturation();
+float LED_GetGreen255();
+float LED_GetRed255();
+float LED_GetBlue255();
 void LED_RunQuickColorLerp(int deltaMS);
 OBK_Publish_Result LED_SendEnableAllState();
 OBK_Publish_Result LED_SendDimmerChange();
@@ -185,5 +205,7 @@ void SVM_RunThreads(int deltaMS);
 void CMD_InitScripting();
 byte* LFS_ReadFile(const char* fname);
 
+commandResult_t CMD_ClearAllHandlers(const void *context, const char *cmd, const char *args, int cmdFlags);
+commandResult_t RepeatingEvents_Cmd_ClearRepeatingEvents(const void *context, const char *cmd, const char *args, int cmdFlags);
 
 #endif // __CMD_PUBLIC_H__

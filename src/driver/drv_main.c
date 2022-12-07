@@ -77,13 +77,16 @@ static driver_t g_drivers[] = {
 	//Test drivers
 	{ "TESTPOWER",	Test_Power_Init,	 Test_Power_RunFrame,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 	{ "TESTLED",	Test_LED_Driver_Init, Test_LED_Driver_RunFrame, NULL, NULL, NULL, Test_LED_Driver_OnChannelChanged, false },
+	
 
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN	
+	{ "SM16703P",	SM16703P_Init,		NULL,						NULL, NULL, NULL, NULL, false },
 	{ "IR",			DRV_IR_Init,		 NULL,						NULL, DRV_IR_RunFrame, NULL, NULL, false },
 	{ "DDP",		DRV_DDP_Init,		NULL,						NULL, DRV_DDP_RunFrame, DRV_DDP_Shutdown, NULL, false },
 	{ "SSDP",		DRV_SSDP_Init,		DRV_SSDP_RunEverySecond,	NULL, DRV_SSDP_RunQuickTick, DRV_SSDP_Shutdown, NULL, false },
 #endif
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+	{ "PWMToggler",	DRV_InitPWMToggler, NULL, DRV_Toggler_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 	{ "DGR",		DRV_DGR_Init,		DRV_DGR_RunEverySecond,		NULL, DRV_DGR_RunQuickTick, DRV_DGR_Shutdown, DRV_DGR_OnChannelChanged, false },
 #endif
 	{ "SM2135",		SM2135_Init,		SM2135_RunFrame,			NULL, NULL, NULL, SM2135_OnChannelChanged, false },
@@ -236,13 +239,27 @@ void DRV_StartDriver(const char* name) {
 // startDriver DGR
 // startDriver BL0942
 // startDriver BL0937
-static int DRV_Start(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	DRV_StartDriver(args);
-	return 1;
+static commandResult_t DRV_Start(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 1) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Requires driver name\n");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	DRV_StartDriver(Tokenizer_GetArg(0));
+	return CMD_RES_OK;
 }
-static int DRV_Stop(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	DRV_StopDriver(args);
-	return 1;
+static commandResult_t DRV_Stop(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 1) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Requires driver name\n");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	DRV_StopDriver(Tokenizer_GetArg(0));
+	return CMD_RES_OK;
 }
 
 void DRV_Generic_Init() {

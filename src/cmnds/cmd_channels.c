@@ -7,17 +7,17 @@
 #include <ctype.h>
 #include "cmd_local.h"
 
-static int CMD_SetChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_SetChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int ch, val;
 
 	if(args==0||*args==0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetChannel: command requires argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 2) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetChannel: command requires 2 arguments");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
 	ch = Tokenizer_GetArgInteger(0);
@@ -25,19 +25,19 @@ static int CMD_SetChannel(const void *context, const char *cmd, const char *args
 
 	CHANNEL_Set(ch,val, false);
 
-	return 1;
+	return CMD_RES_OK;
 }
-static int CMD_AddChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_AddChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int ch, val;
 
 	if(args==0||*args==0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_AddChannel: command requires 2 arguments (next 2, min and max, are optionsl)");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 2) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_AddChannel: command requires 2 arguments (next 2, min and max, are optionsl)");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
 	ch = Tokenizer_GetArgInteger(0);
@@ -54,38 +54,38 @@ static int CMD_AddChannel(const void *context, const char *cmd, const char *args
 	}
 
 
-	return 1;
+	return CMD_RES_OK;
 }
-static int CMD_ToggleChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_ToggleChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int ch;
 
 	if(args==0||*args==0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ToggleChannel: command requires 1 argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 1) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ToggleChannel: command requires 1 argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
 	ch = Tokenizer_GetArgInteger(0);
 
 	CHANNEL_Toggle(ch);
 
-	return 1;
+	return CMD_RES_OK;
 }
-static int CMD_ClampChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_ClampChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int ch, max, min;
 
 	if(args==0||*args==0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ClampChannel: command requires argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 2) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ClampChannel: command requires 3 arguments");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
 	ch = Tokenizer_GetArgInteger(0);
@@ -94,21 +94,21 @@ static int CMD_ClampChannel(const void *context, const char *cmd, const char *ar
 
 	CHANNEL_AddClamped(ch,0, min, max);
 
-	return 1;
+	return CMD_RES_OK;
 }
 
-static int CMD_SetPinRole(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_SetPinRole(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int pin, roleIndex;
 	const char *role;
 
 	if(args==0||*args==0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetPinRole: command requires argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 2) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetPinRole: command requires 2 arguments");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
 	pin = Tokenizer_GetArgInteger(0);
@@ -121,19 +121,19 @@ static int CMD_SetPinRole(const void *context, const char *cmd, const char *args
 		PIN_SetPinRoleForPinIndex(pin,roleIndex);
 	}
 
-	return 1;
+	return CMD_RES_OK;
 }
-static int CMD_SetPinChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_SetPinChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int pin, ch;
 
 	if(args==0||*args==0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetPinChannel: command requires argument");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 2) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetPinChannel: command requires 2 arguments");
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
 	pin = Tokenizer_GetArgInteger(0);
@@ -141,9 +141,9 @@ static int CMD_SetPinChannel(const void *context, const char *cmd, const char *a
 
 	PIN_SetPinChannelForPinIndex(pin,ch);
 
-	return 1;
+	return CMD_RES_OK;
 }
-static int CMD_GetChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_GetChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int ch, val;
 
 	if(args==0||*args==0) {
@@ -151,7 +151,7 @@ static int CMD_GetChannel(const void *context, const char *cmd, const char *args
 	}
 	Tokenizer_TokenizeString(args,0);
 	if(Tokenizer_GetArgsCount() < 1) {
-		return 1;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
 	ch = Tokenizer_GetArgInteger(0);
@@ -163,9 +163,9 @@ static int CMD_GetChannel(const void *context, const char *cmd, const char *args
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_GetChannel: channel %i is %i",ch, val);
 	}
 
-	return 1;
+	return CMD_RES_OK;
 }
-static int CMD_GetReadings(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_GetReadings(const void *context, const char *cmd, const char *args, int cmdFlags){
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	char tmp[96];
 	float v, c, p;
@@ -185,9 +185,9 @@ static int CMD_GetReadings(const void *context, const char *cmd, const char *arg
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_GetReadings: readings are %s",tmp);
 	}
 #endif
-	return 1;
+	return CMD_RES_OK;
 }
-static int CMD_ShortName(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_ShortName(const void *context, const char *cmd, const char *args, int cmdFlags){
 	const char *s;
 
 	s = CFG_GetShortDeviceName();
@@ -197,7 +197,7 @@ static int CMD_ShortName(const void *context, const char *cmd, const char *args,
 	} else {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ShortName: name is %s", s);
 	}
-	return 1;
+	return CMD_RES_OK;
 }
 void CMD_InitChannelCommands(){
 	//cmddetail:{"name":"SetChannel","args":"",

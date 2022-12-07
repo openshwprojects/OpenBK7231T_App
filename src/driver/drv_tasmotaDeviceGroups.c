@@ -631,7 +631,7 @@ void DRV_DGR_Shutdown()
 
 // DGR_SendPower testSocket 1 1
 // DGR_SendPower stringGroupName integerChannelValues integerChannelsCount
-int CMD_DGR_SendPower(const void *context, const char *cmd, const char *args, int flags) {
+commandResult_t CMD_DGR_SendPower(const void *context, const char *cmd, const char *args, int flags) {
 	const char *groupName;
 	int channelValues;
 	int channelsCount;
@@ -640,7 +640,7 @@ int CMD_DGR_SendPower(const void *context, const char *cmd, const char *args, in
 
 	if(Tokenizer_GetArgsCount() < 3) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Command requires 3 arguments - groupname, channelvalues, valuescount\n");
-		return 0;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	groupName = Tokenizer_GetArg(0);
 	channelValues = Tokenizer_GetArgInteger(1);
@@ -649,7 +649,7 @@ int CMD_DGR_SendPower(const void *context, const char *cmd, const char *args, in
 	DRV_DGR_Send_Power(groupName,channelValues,channelsCount);
 	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"CMD_DGR_SendPower: sent message to group %s\n",groupName);
 
-	return 1;
+	return CMD_RES_OK;
 }
 void DRV_DGR_OnLedDimmerChange(int iVal) {
 	//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_OnLedDimmerChange: called\n");
@@ -673,6 +673,27 @@ void DRV_DGR_OnLedDimmerChange(int iVal) {
 #endif
 }
 
+void DRV_DGR_OnLedFinalColorsChange(byte rgbcw[5]) {
+	//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_OnLedFinalColorsChange: called\n");
+	if (g_dgr_socket_receive == 0) {
+		return;
+	}
+	// if this send is as a result of use RXing something, 
+	// don't send it....
+	if (g_inCmdProcessing) {
+		return;
+	}
+	if ((CFG_DeviceGroups_GetSendFlags() & DGR_SHARE_LIGHT_COLOR) == 0) {
+
+		return;
+	}
+#if 0
+	//g_dgr_ledDimmerPendingSend = true;
+	//g_dgr_ledDimmerPendingSend_value = iVal;
+#else
+	DRV_DGR_Send_RGBCW(CFG_DeviceGroups_GetName(), rgbcw);
+#endif
+}
 
 
 void DRV_DGR_OnLedEnableAllChange(int iVal) {
@@ -751,7 +772,7 @@ void DRV_DGR_OnChannelChanged(int ch, int value) {
 }
 // DGR_SendBrightness roomLEDstrips 128
 // DGR_SendBrightness stringGroupName integerBrightness
-int CMD_DGR_SendBrightness(const void *context, const char *cmd, const char *args, int flags) {
+commandResult_t CMD_DGR_SendBrightness(const void *context, const char *cmd, const char *args, int flags) {
 	const char *groupName;
 	int brightness;
 
@@ -759,7 +780,7 @@ int CMD_DGR_SendBrightness(const void *context, const char *cmd, const char *arg
 
 	if(Tokenizer_GetArgsCount() < 2) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Command requires 2 arguments - groupname, brightess\n");
-		return 0;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	groupName = Tokenizer_GetArg(0);
 	brightness = Tokenizer_GetArgInteger(1);
@@ -767,11 +788,11 @@ int CMD_DGR_SendBrightness(const void *context, const char *cmd, const char *arg
 	DRV_DGR_Send_Brightness(groupName,brightness);
 	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_SendBrightness: sent message to group %s\n",groupName);
 
-	return 1;
+	return CMD_RES_OK;
 }
 // DGR_SendRGBCW roomLEDstrips 255 0 0
 // DGR_SendRGBCW stringGroupName r g b
-int CMD_DGR_SendRGBCW(const void *context, const char *cmd, const char *args, int flags) {
+commandResult_t CMD_DGR_SendRGBCW(const void *context, const char *cmd, const char *args, int flags) {
 	const char *groupName;
 	byte rgbcw[5];
 
@@ -779,7 +800,7 @@ int CMD_DGR_SendRGBCW(const void *context, const char *cmd, const char *args, in
 
 	if(Tokenizer_GetArgsCount() < 4) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Command requires at least 4 arguments - groupname, r, g, b\n");
-		return 0;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	groupName = Tokenizer_GetArg(0);
 	rgbcw[0] = Tokenizer_GetArgInteger(1);
@@ -791,10 +812,10 @@ int CMD_DGR_SendRGBCW(const void *context, const char *cmd, const char *args, in
 	DRV_DGR_Send_RGBCW(groupName,rgbcw);
 	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_SendRGBCW: sent message to group %s\n",groupName);
 
-	return 1;
+	return CMD_RES_OK;
 }
 // CMD_DGR_SendFixedColor stringGroupName tasmotaColorIndex
-int CMD_DGR_SendFixedColor(const void *context, const char *cmd, const char *args, int flags) {
+commandResult_t CMD_DGR_SendFixedColor(const void *context, const char *cmd, const char *args, int flags) {
 	const char *groupName;
 	int colorIndex;
 
@@ -802,7 +823,7 @@ int CMD_DGR_SendFixedColor(const void *context, const char *cmd, const char *arg
 
 	if (Tokenizer_GetArgsCount() < 2) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR, "Command requires at least 2 arguments - groupname, colorIndex\n");
-		return 0;
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	groupName = Tokenizer_GetArg(0);
 	colorIndex = Tokenizer_GetArgInteger(1);
@@ -810,7 +831,7 @@ int CMD_DGR_SendFixedColor(const void *context, const char *cmd, const char *arg
 	DRV_DGR_Send_FixedColor(groupName, colorIndex);
 	addLogAdv(LOG_INFO, LOG_FEATURE_DGR, "CMD_DGR_SendFixedColor: sent message to group %s\n", groupName);
 
-	return 1;
+	return CMD_RES_OK;
 }
 void DRV_DGR_Init()
 {

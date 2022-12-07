@@ -53,6 +53,16 @@ A: Do five short power on/power off cycles (but not too short, because device mi
 <em>Q: I somehow lost my MAC address and I am unable to change it in Options! My MAC ends with 000000, how to fix?</em><br>
 A: You have most likely overwrote the TLV header of RF partition of BK7231. For BK7231T, we have a way to restore it - open Web App, go to Flash tab, and press "Restore RF Config"
 
+<em>Q: How do I setup single button to control two relays (first on click, second on double click)?</em><br>
+A: If you set a pin role to "Button", you will get a second textbox after saving pins. First checkbox is a channel to toggle on single click, and second textbox is a channel to toggle on double click.
+
+<em>Q: My wall touch switch reacts slowly! It's laggy, how to make it react instantly?</em><br>
+A: It's like with Tasmota - go to our Options/General-Flags and set flag "6 - [BTN] Instant touch reaction instead of waiting for release (aka SetOption 13)"
+
+<em>Q: How to enter multiple startup commands? For example, to start both NTP and BL0942 drivers?</em><br>
+A: Use backlog - like in Tasmota. Open Config->Short startup command, and enter, for example: backlog startDriver BL0942; startDriver NTP; ntp_setServer 217.147.223.78
+
+
 # Building
 
 OpenBeken supports online builds for all platforms (BK7231T, BK7231N, XR809, BL602, W800), but if you want to compile it yourself, see  [BUILDING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md)
@@ -197,8 +207,11 @@ There are multiple console commands that allow you to automate your devices. Com
 | setPinRole     | [PinRole][RoleIndexOrName] | This allows you to set a pin role, for example a Relay role, or Button, etc. Usually it's easier to do this through WWW panel, so you don't have to use this command.  |
 | setPinChannel     | [PinRole][ChannelIndex] | This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command. |
 | addRepeatingEvent     | [IntervalSeconds][RepeatsOr-1][CommandToRun] | Starts a timer/interval command. Use "backlog" to fit multiple commands in a single string. |
+| addRepeatingEventID | [IntervalSeconds][RepeatsOr-1][UserID][CommandToRun] | as above, but with a given ID |
+| cancelRepeatingEvent | [UserID] | Stops a given repeating event with a specified ID |
 | addEventHandler     | [EventName][EventArgument][CommandToRun] | This can be used to trigger an action on a button click, long press, etc |
 | addChangeHandler     | [Variable][Relation][Constant][Command] | This can listen to change in channel value (for example channel 0 becoming 100), or for a voltage/current/power change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be "Power", or "Current" or "Voltage" |
+| clearAllHandlers | | This clears all added event handlers |
 | sendGet     | [TargetURL] | Sends a HTTP GET request to target URL. May include GET arguments. Can be used to control devices by Tasmota HTTP protocol. |
 | publish     | [Topic][Value] | Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get |
 | linkTuyaMCUOutputToChannel     | [dpId][varType][channelID] | Used to map between TuyaMCU dpIDs and our internal channels. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap  |
@@ -220,6 +233,7 @@ There are multiple console commands that allow you to automate your devices. Com
 | loglevel     | [Value]  | Correct values are 0 to 7. Default is 3. Higher value includes more logs. Log levels are: ERROR = 1, WARN = 2, INFO = 3, DEBUG = 4, EXTRADEBUG = 5. WARNING: you also must separately select logging level filter on web panel in order for more logs to show up there |
 | logdelay     | [Value] | Value is a number of ms. This will add an artificial delay in each log call. Useful for debugging. This way you can see step by step what happens. |
 | restart     |  | Reboots the device. |
+| ntp_setServer     | IP | Sets the address of NTP server. |
 | clearConfig     |  | Clears all the device config and returns it to AP mode. |
 | VoltageSet     | [Value] | Used for BL0942/BL0937/etc calibration. Refer to BL0937 guide for more info. |
 | PowerSet     | [Value] | Used for BL0942/BL0937/etc calibration. Refer to BL0937 guide for more info. |

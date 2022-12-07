@@ -32,7 +32,7 @@ static int generateHashValue(const char *fname) {
 
 command_t *g_commands[HASH_SIZE] = { NULL };
 
-static int CMD_SimonTest(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_SimonTest(const void *context, const char *cmd, const char *args, int cmdFlags){
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SimonTest: ir test routine");
 
 #ifdef PLATFORM_BK7231T
@@ -42,10 +42,10 @@ static int CMD_SimonTest(const void *context, const char *cmd, const char *args,
 #endif
 
 	
-	return 1;
+	return CMD_RES_OK;
 }
 
-static int CMD_Restart(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_Restart(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int delaySeconds;
 
 	if(args==0||*args==0) {
@@ -58,34 +58,36 @@ static int CMD_Restart(const void *context, const char *cmd, const char *args, i
 
 	RESET_ScheduleModuleReset(delaySeconds);
 
-	return 1;
+	return CMD_RES_OK;
 }
-static int CMD_ClearAll(const void *context, const char *cmd, const char *args, int cmdFlags) {
+static commandResult_t CMD_ClearAll(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
 	CFG_SetDefaultConfig();
 	CFG_Save_IfThereArePendingChanges();
 
 	CHANNEL_ClearAllChannels();
+	CMD_ClearAllHandlers(0, 0, 0, 0);
+	RepeatingEvents_Cmd_ClearRepeatingEvents(0, 0, 0, 0);
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ClearAll: all clear");
 
-	return 1;
+	return CMD_RES_OK;
 }
-static int CMD_ClearConfig(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_ClearConfig(const void *context, const char *cmd, const char *args, int cmdFlags){
 
 	CFG_SetDefaultConfig();
 	CFG_Save_IfThereArePendingChanges();
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ClearConfig: whole device config has been cleared, restart device to connect to clear AP");
 
-	return 1;
+	return CMD_RES_OK;
 }
-static int CMD_Echo(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_Echo(const void *context, const char *cmd, const char *args, int cmdFlags){
 
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, args);
 
-	return 1;
+	return CMD_RES_OK;
 }
 
 
@@ -209,7 +211,7 @@ int get_cmd(const char *s, char *dest, int maxlen, int stripnum){
 
 
 // execute a command from cmd and args - used below and in MQTT
-int CMD_ExecuteCommandArgs(const char *cmd, const char *args, int cmdFlags) {
+commandResult_t CMD_ExecuteCommandArgs(const char *cmd, const char *args, int cmdFlags) {
 	command_t *newCmd;
 	//int len;
 
@@ -225,22 +227,22 @@ int CMD_ExecuteCommandArgs(const char *cmd, const char *args, int cmdFlags) {
 		if (!newCmd) {
 			// if still not found, then error
 			ADDLOG_ERROR(LOG_FEATURE_CMD, "cmd %s NOT found (args %s)", cmd, args);
-			return 0;
+			return CMD_RES_UNKNOWN_COMMAND;
 		}
 	} else {
 	}
 
 	if (newCmd->handler){
-		int res;
+		commandResult_t res;
 		res = newCmd->handler(newCmd->context, cmd, args, cmdFlags);
 		return res;
 	}
-	return 0;
+	return CMD_RES_UNKNOWN_COMMAND;
 }
 
 
 // execute a raw command - single string
-int CMD_ExecuteCommand(const char *s, int cmdFlags) {
+commandResult_t CMD_ExecuteCommand(const char *s, int cmdFlags) {
 	const char *p;
 	const char *args;
 
@@ -249,14 +251,14 @@ int CMD_ExecuteCommand(const char *s, int cmdFlags) {
 	//const char *org;
 
 	if(s == 0 || *s == 0) {
-		return 0;
+		return CMD_RES_EMPTY_STRING;
 	}
 
 	while(isWhiteSpace(*s)) {
 		s++;
 	}
 	if(*s == 0) {
-		return 0;
+		return CMD_RES_EMPTY_STRING;
 	}
 	if((cmdFlags & COMMAND_FLAG_SOURCE_TCP)==0) {
 		ADDLOG_DEBUG(LOG_FEATURE_CMD, "cmd [%s]", s);

@@ -287,6 +287,19 @@ void Main_OnEverySecond()
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();
 #endif
+
+
+#if WINDOWS
+#elif PLATFORM_BL602
+#elif PLATFORM_W600 || PLATFORM_W800
+#elif PLATFORM_XR809
+#elif PLATFORM_BK7231N || PLATFORM_BK7231T
+    if (ota_progress()==-1)
+#endif
+    {
+		CFG_Save_IfThereArePendingChanges();
+    }
+
 	// some users say that despite our simple reconnect mechanism
 	// there are some rare cases when devices stuck outside network
 	// That is why we can also reconnect them by basing on ping
@@ -673,7 +686,7 @@ void Main_Init_After_Delay()
 	bForceOpenAP = 1;
 #endif
 
-	if((*wifi_ssid == 0) || (*wifi_pass == 0))
+	if((*wifi_ssid == 0))
     {
 		// start AP mode in 5 seconds
 		g_openAP = 5;

@@ -52,6 +52,9 @@ void TuyaMCU_RunFrame();
 
 // Subtypes of raw - added for OpenBeken - not Tuya standard
 #define         DP_TYPE_RAW_DDS238Packet        200
+#define			DP_TYPE_RAW_TAC2121C_VCP		201
+#define			DP_TYPE_RAW_TAC2121C_YESTERDAY	202
+#define			DP_TYPE_RAW_TAC2121C_LASTMONTH	203
 
 const char *TuyaMCU_GetDataTypeString(int dpId){
     if(DP_TYPE_RAW == dpId)
@@ -425,22 +428,31 @@ void TuyaMCU_SendRaw(uint8_t id, char data[]) {
 
 void TuyaMCU_Send_SetTime(struct tm *pTime) {
     byte payload_buffer[8];
-    byte tuya_day_of_week;
 
-    if (pTime->tm_wday == 1) {
-        tuya_day_of_week = 7;
-    } else {
-        tuya_day_of_week = pTime->tm_wday-1;
-    }
-
-    payload_buffer[0] = 0x01;
-    payload_buffer[1] = pTime->tm_year % 100;
-    payload_buffer[2] = pTime->tm_mon;
-    payload_buffer[3] = pTime->tm_mday;
-    payload_buffer[4] = pTime->tm_hour;
-    payload_buffer[5] = pTime->tm_min;
-    payload_buffer[6] = pTime->tm_sec;
-    payload_buffer[7] = tuya_day_of_week; //1 for Monday in TUYA Doc
+	if (pTime == 0) {
+		memset(payload_buffer, 0, sizeof(payload_buffer));
+	}
+	else {
+		byte tuya_day_of_week;
+		if (pTime->tm_wday == 1) {
+			tuya_day_of_week = 7;
+		}
+		else {
+			tuya_day_of_week = pTime->tm_wday - 1;
+		}
+		// valid flag
+		payload_buffer[0] = 0x01;
+		// datetime
+		payload_buffer[1] = pTime->tm_year % 100;
+		// tm uses: int tm_mon;   // months since January - [0, 11]
+		// Tuya uses:  Data[1] indicates the month, ranging from 1 to 12.
+		payload_buffer[2] = pTime->tm_mon + 1;
+		payload_buffer[3] = pTime->tm_mday;
+		payload_buffer[4] = pTime->tm_hour;
+		payload_buffer[5] = pTime->tm_min;
+		payload_buffer[6] = pTime->tm_sec;
+		payload_buffer[7] = tuya_day_of_week; //1 for Monday in TUYA Doc
+	}
 
     TuyaMCU_SendCommandWithData(TUYA_CMD_SET_TIME, payload_buffer, 8);
 }
@@ -451,13 +463,14 @@ struct tm * TuyaMCU_Get_NTP_Time() {
     g_time = NTP_GetCurrentTime();
     addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"MCU time to set: %i\n", g_time);
     ptm = gmtime((time_t*)&g_time);
-    addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"ptime ->gmtime => tm_hour: %i\n",ptm->tm_hour );
-    addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"ptime ->gmtime => tm_min: %i\n", ptm->tm_min );
-
+	if (ptm != 0) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ptime ->gmtime => tm_hour: %i\n", ptm->tm_hour);
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ptime ->gmtime => tm_min: %i\n", ptm->tm_min);
+	}
     return ptm;
 }
 // 
-int TuyaMCU_Fake_Hex(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_Fake_Hex(const void *context, const char *cmd, const char *args, int cmdFlags) {
     //const char *args = CMD_GetArg(1);
     //byte rawData[128];
     //int curCnt;
@@ -465,7 +478,7 @@ int TuyaMCU_Fake_Hex(const void *context, const char *cmd, const char *args, int
     //curCnt = 0;
     if(!(*args)) {
         addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_Fake_Hex: requires 1 argument (hex string, like FFAABB00CCDD\n");
-        return -1;
+        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
     while(*args) {
         byte b;
@@ -509,11 +522,11 @@ Info:TuyaMCU:TuyaMCU_V0_ParseRealTimeWithRecordStorage: raw data 1 byte:
 Info:GEN:No change in channel 1 (still set to 0) - ignoring
 */
 
-int TuyaMCU_Send_Hex(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_Send_Hex(const void *context, const char *cmd, const char *args, int cmdFlags) {
     //const char *args = CMD_GetArg(1);
     if(!(*args)) {
         addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_Send_Hex: requires 1 argument (hex string, like FFAABB00CCDD\n");
-        return -1;
+        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
     while(*args) {
         byte b;
@@ -523,10 +536,10 @@ int TuyaMCU_Send_Hex(const void *context, const char *cmd, const char *args, int
 
         args += 2;
     }
-    return 1;
+    return CMD_RES_OK;
 }
 
-int TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, const char *args, int cmdFlags) {
     int dpId;
     const char *dpTypeString;
     int dpType;
@@ -540,7 +553,7 @@ int TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, con
 	argsCount = Tokenizer_GetArgsCount();
     if(argsCount < 2) {
         addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_LinkTuyaMCUOutputToChannel: requires 3 arguments (dpId, dpType, channelIndex)\n");
-        return -1;
+        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
     dpId = Tokenizer_GetArgInteger(0);
     dpTypeString = Tokenizer_GetArg(1);
@@ -557,12 +570,22 @@ int TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, con
 	} else if (!stricmp(dpTypeString, "RAW_DDS238")) {
 		// linkTuyaMCUOutputToChannel 6 RAW_DDS238
 		dpType = DP_TYPE_RAW_DDS238Packet;
+	}
+	else if (!stricmp(dpTypeString, "RAW_TAC2121C_VCP")) {
+		// linkTuyaMCUOutputToChannel 6 RAW_TAC2121C_VCP
+		dpType = DP_TYPE_RAW_TAC2121C_VCP;
+	}
+	else if (!stricmp(dpTypeString, "RAW_TAC2121C_Yesterday")) {
+		dpType = DP_TYPE_RAW_TAC2121C_YESTERDAY;
+	}
+	else if (!stricmp(dpTypeString, "RAW_TAC2121C_LastMonth")) {
+		dpType = DP_TYPE_RAW_TAC2121C_LASTMONTH;
     } else {
         if(strIsInteger(dpTypeString)) {
             dpType = atoi(dpTypeString);
         } else {
             addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_LinkTuyaMCUOutputToChannel: %s is not a valid var type\n",dpTypeString);
-            return -1;
+            return CMD_RES_BAD_ARGUMENT;
         }
     }
 	if (argsCount < 2) {
@@ -571,19 +594,19 @@ int TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, con
 	else {
 		channelID = Tokenizer_GetArgInteger(2);
 	}
-
+	
     TuyaMCU_MapIDToChannel(dpId, dpType, channelID);
 
-    return 1;
+    return CMD_RES_OK;
 }
 
-int TuyaMCU_Send_SetTime_Current(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_Send_SetTime_Current(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
     TuyaMCU_Send_SetTime(TuyaMCU_Get_NTP_Time());
 
-    return 1;
+    return CMD_RES_OK;
 }
-int TuyaMCU_Send_SetTime_Example(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_Send_SetTime_Example(const void *context, const char *cmd, const char *args, int cmdFlags) {
     struct tm testTime;
 
     testTime.tm_year = 2012;
@@ -595,7 +618,7 @@ int TuyaMCU_Send_SetTime_Example(const void *context, const char *cmd, const cha
     testTime.tm_sec = 32;
 
     TuyaMCU_Send_SetTime(&testTime);
-    return 1;
+    return CMD_RES_OK;
 }
 
 void TuyaMCU_Send(byte *data, int size) {
@@ -613,38 +636,38 @@ void TuyaMCU_Send(byte *data, int size) {
     addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"\nWe sent %i bytes to Tuya MCU\n",size+1);
 }
 
-int TuyaMCU_SetDimmerRange(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_SetDimmerRange(const void *context, const char *cmd, const char *args, int cmdFlags) {
     Tokenizer_TokenizeString(args,0);
 
     if(Tokenizer_GetArgsCount() < 2) {
         addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"tuyaMcu_setDimmerRange: requires 2 arguments (dimmerRangeMin, dimmerRangeMax)\n");
-        return -1;
+        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
 
     g_dimmerRangeMin = Tokenizer_GetArgInteger(0);
     g_dimmerRangeMax = Tokenizer_GetArgInteger(1);
 
-    return 1;
+    return CMD_RES_OK;
 }
 
-int TuyaMCU_SendHeartbeat(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_SendHeartbeat(const void *context, const char *cmd, const char *args, int cmdFlags) {
     TuyaMCU_SendCommandWithData(TUYA_CMD_HEARTBEAT, NULL, 0);
 
-    return 1;
+    return CMD_RES_OK;
 }
 
-int TuyaMCU_SendQueryProductInformation(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_SendQueryProductInformation(const void *context, const char *cmd, const char *args, int cmdFlags) {
     TuyaMCU_SendCommandWithData(TUYA_CMD_QUERY_PRODUCT, NULL, 0);
 
-    return 1;
+    return CMD_RES_OK;
 }
-int TuyaMCU_SendQueryState(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_SendQueryState(const void *context, const char *cmd, const char *args, int cmdFlags) {
     TuyaMCU_SendCommandWithData(TUYA_CMD_QUERY_STATE, NULL, 0);
 
-    return 1;
+    return CMD_RES_OK;
 }
 
-int TuyaMCU_SendStateCmd(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_SendStateCmd(const void *context, const char *cmd, const char *args, int cmdFlags) {
     int dpId;
     int dpType;
     int value;
@@ -653,7 +676,7 @@ int TuyaMCU_SendStateCmd(const void *context, const char *cmd, const char *args,
 
     if(Tokenizer_GetArgsCount() < 3) {
         addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"tuyaMcu_sendState: requires 3 arguments (dpId, dpType, value)\n");
-        return -1;
+        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
 
     dpId = Tokenizer_GetArgInteger(0);
@@ -662,13 +685,13 @@ int TuyaMCU_SendStateCmd(const void *context, const char *cmd, const char *args,
 
     TuyaMCU_SendState(dpId, dpType, (uint8_t *)&value);
 
-    return 1;
+    return CMD_RES_OK;
 }
 
-int TuyaMCU_SendMCUConf(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_SendMCUConf(const void *context, const char *cmd, const char *args, int cmdFlags) {
     TuyaMCU_SendCommandWithData(TUYA_CMD_MCU_CONF, NULL, 0);
 
-    return 1;
+    return CMD_RES_OK;
 }
 
 void Tuya_SetWifiState(uint8_t state)
@@ -816,26 +839,37 @@ void TuyaMCU_ParseQueryProductInformation(const byte *data, int len) {
 // Packet ID: 0x08
 
 
+// When bIncludesDate = true
 //55AA 00 08 000C  00 02 02 02 02 02 02 01 01 00 01 01 23
 //Head v0 ID lengh bV YY MM DD HH MM SS                CHKSUM
 // after that, there are status data uniys
 // 01   01   0001   01
 // dpId Type Len    Value
-void TuyaMCU_V0_ParseRealTimeWithRecordStorage(const byte *data, int len) {
+//
+// When bIncludesDate = false
+// 55AA 00 06 0005  10   0100 01 00 1C
+// Head v0 ID lengh fnId leen tp vl CHKSUM
+
+void TuyaMCU_V0_ParseRealTimeWithRecordStorage(const byte *data, int len, bool bIncludesDate) {
     int ofs;
     int sectorLen;
     int fnId;
     int dataType;
 
-    //data[0]; // bDateValid
-    //data[1]; //  year
-    //data[2]; //  month
-    //data[3]; //  day
-    //data[4]; //  hour
-    //data[5]; //  minute
-    //data[6]; //  second
+	if (bIncludesDate) {
+		//data[0]; // bDateValid
+		//data[1]; //  year
+		//data[2]; //  month
+		//data[3]; //  day
+		//data[4]; //  hour
+		//data[5]; //  minute
+		//data[6]; //  second
 
-    ofs = 7;
+		ofs = 7;
+	}
+	else {
+		ofs = 0;
+	}
 
     while(ofs + 4 < len) {
         sectorLen = data[ofs + 2] << 8 | data[ofs + 3];
@@ -867,6 +901,7 @@ void TuyaMCU_ParseStateMessage(const byte *data, int len) {
     int sectorLen;
     int fnId;
     int dataType;
+	int day, month, year;
 	//int channelType;
 	int iVal;
 
@@ -899,6 +934,56 @@ void TuyaMCU_ParseStateMessage(const byte *data, int len) {
 
 			if (mapping != 0) {
 				switch (mapping->dpType) {
+					case DP_TYPE_RAW_TAC2121C_YESTERDAY:
+					{
+						if (sectorLen != 8) {
+
+						}
+						else {
+							month = data[ofs + 4];
+							day = data[ofs + 4 + 1];
+							// consumption
+							iVal = data[ofs + 6 + 4] << 8 | data[ofs + 7 + 4];
+							addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TAC2121C_YESTERDAY: day %i, month %i, val %i\n", 
+								day, month, iVal);
+
+						}
+					}
+					break;
+					case DP_TYPE_RAW_TAC2121C_LASTMONTH:
+					{
+						if (sectorLen != 8) {
+
+						}
+						else {
+							year = data[ofs + 4];
+							month = data[ofs + 4 + 1];
+							// consumption
+							iVal = data[ofs + 6 + 4] << 8 | data[ofs + 7 + 4];
+							addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "DP_TYPE_RAW_TAC2121C_LASTMONTH: month %i, year %i, val %i\n",
+								month, year, iVal);
+
+						}
+					}
+					break;
+					case DP_TYPE_RAW_TAC2121C_VCP:
+					{
+						if (sectorLen != 8) {
+
+						}
+						else {
+							// voltage
+							iVal = data[ofs + 0 + 4] << 8 | data[ofs + 1 + 4];
+							CHANNEL_SetAllChannelsByType(ChType_Voltage_div10, iVal);
+							// current
+							iVal = data[ofs + 3 + 4] << 8 | data[ofs + 4 + 4];
+							CHANNEL_SetAllChannelsByType(ChType_Current_div1000, iVal);
+							// power
+							iVal = data[ofs + 6 + 4] << 8 | data[ofs + 7 + 4];
+							CHANNEL_SetAllChannelsByType(ChType_Power, iVal);
+						}
+					}
+					break;
 					case DP_TYPE_RAW_DDS238Packet:
 					{
 						if (sectorLen != 15) {
@@ -1020,23 +1105,47 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
         case TUYA_CMD_QUERY_STATE:
             if(version == 0) {
                 // 0x08 packet for version 0 (not 0x03) of TuyaMCU
-                TuyaMCU_V0_ParseRealTimeWithRecordStorage(data+6,len-6);
+				// This packet includes first a DateTime, then RealTimeDataStorage
+                TuyaMCU_V0_ParseRealTimeWithRecordStorage(data+6,len-6, true);
             } else {
     
             }
             break;
+		case 0x05:
+			// This was added for this user:
+			// https://www.elektroda.com/rtvforum/topic3937723.html
+			if (version == 0) {
+				// 0x08 packet for version 0 (not 0x03) of TuyaMCU
+				// This packet includes first a DateTime, then RealTimeDataStorage
+				TuyaMCU_V0_ParseRealTimeWithRecordStorage(data + 6, len - 6, false);
+			}
+			else {
+
+			}
+			break;
+		case 0x06:
+			// See: https://www.elektroda.com/rtvforum/viewtopic.php?p=20319441#20319441
+			// UPDATE: not needed, it is send from us to device
+			//if (version == 0) {
+			//	// This packet includes NO DateTime, ONLY RealTimeDataStorage
+			//	TuyaMCU_V0_ParseRealTimeWithRecordStorage(data + 6, len - 6, false);
+			//}
+			//else {
+
+			//}
+			break;
         default:
             addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: unhandled type %i",cmd);
             break;
     }
 }
 
-int TuyaMCU_FakePacket(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_FakePacket(const void *context, const char *cmd, const char *args, int cmdFlags) {
     byte packet[256];
     int c = 0;
     if(!(*args)) {
         addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_FakePacket: requires 1 argument (hex string, like FFAABB00CCDD\n");
-        return -1;
+        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
     while(*args) {
         byte b;
@@ -1049,7 +1158,7 @@ int TuyaMCU_FakePacket(const void *context, const char *cmd, const char *args, i
         args += 2;
     }
     TuyaMCU_ProcessIncoming(packet,c);
-    return 1;
+    return CMD_RES_OK;
 }
 void TuyaMCU_RunFrame() {
     byte data[128];
@@ -1174,17 +1283,17 @@ void TuyaMCU_RunFrame() {
 }
 
 
-int TuyaMCU_SetBaudRate(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t TuyaMCU_SetBaudRate(const void *context, const char *cmd, const char *args, int cmdFlags) {
     Tokenizer_TokenizeString(args,0);
 
     if(Tokenizer_GetArgsCount() < 1) {
         addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_SetBaudRate: requires 1 arguments (baudRate)\n");
-        return -1;
+        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
 
     g_baudRate = Tokenizer_GetArgInteger(0);
     
-    return 1;
+    return CMD_RES_OK;
 }
 
 

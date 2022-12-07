@@ -112,7 +112,7 @@ void DRV_I2C_MCP23017_OnChannelChanged(i2cDevice_t *dev, int channel, int iVal)
 		}
 	}
 }
-int DRV_I2C_MCP23017_MapPinToChannel(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t DRV_I2C_MCP23017_MapPinToChannel(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *i2cModuleStr;
 	int address;
 	int targetPin;
@@ -133,7 +133,7 @@ int DRV_I2C_MCP23017_MapPinToChannel(const void *context, const char *cmd, const
 	mcp = (i2cDevice_MCP23017_t *)DRV_I2C_FindDeviceExt( busType, address,I2CDEV_MCP23017);
 	if(mcp == 0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_MCP23017_MapPinToChannel: no such device exists\n" );
-		return 0;
+		return CMD_RES_BAD_ARGUMENT;
 	}
 
 	mcp->pinMapping[targetPin] = targetChannel;
@@ -141,7 +141,7 @@ int DRV_I2C_MCP23017_MapPinToChannel(const void *context, const char *cmd, const
 	// send refresh
 	DRV_I2C_MCP23017_OnChannelChanged((i2cDevice_t*)mcp, targetChannel, CHANNEL_Get(targetChannel));
 
-	return 1;
+	return CMD_RES_OK;
 }
 void DRV_I2C_MCP23017_RunDevice(i2cDevice_t *dev)
 {

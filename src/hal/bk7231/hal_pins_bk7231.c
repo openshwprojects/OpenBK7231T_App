@@ -2,6 +2,7 @@
 #include "../../new_common.h"
 #include "../../logging/logging.h"
 #include "../../new_cfg.h"
+#include "../../new_pins.h"
 //#include "../../new_pins.h"
 #include <gpio_pub.h>
 
@@ -34,7 +35,30 @@ int PIN_GetPWMIndexForPinIndex(int pin) {
 }
 
 const char *HAL_PIN_GetPinNameAlias(int index) {
-	return 0;
+	// some of pins have special roles
+	if (index == 23)
+		return "ADC3";
+	if (index == 26)
+		return "PWM5";
+	if (index == 24)
+		return "PWM4";
+	if (index == 6)
+		return "PWM0";
+	if (index == 7)
+		return "PWM1";
+	if (index == 0)
+		return "TXD2";
+	if (index == 1)
+		return "RXD2";
+	if (index == 9)
+		return "PWM3";
+	if (index == 8)
+		return "PWM2";
+	if (index == 10)
+		return "RXD1";
+	if (index == 11)
+		return "TXD1";
+	return "N/A";
 }
 
 int HAL_PIN_CanThisPinBePWM(int index) {
@@ -83,7 +107,7 @@ void HAL_PIN_PWM_Start(int index) {
 		return;
 	}
 	//Use slow pwm if user has set checkbox in webif
-	if(CFG_HasFlag(11)) pwmfrequency = PWM_FREQUENCY_SLOW; //11 = OBK_FLAG_PWM_SLOW
+	if(CFG_HasFlag(OBK_FLAG_SLOW_PWM)) pwmfrequency = PWM_FREQUENCY_SLOW; 
 
 	uint32_t frequency = (26000000 / pwmfrequency);
 #if PLATFORM_BK7231N
