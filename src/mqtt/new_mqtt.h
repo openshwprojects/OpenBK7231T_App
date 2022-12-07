@@ -93,6 +93,15 @@ int MQTT_GetReceivedEventCounter(void);
 int MQTT_RegisterCallback(const char* basetopic, const char* subscriptiontopic, int ID, mqtt_callback_fn callback);
 int MQTT_RemoveCallback(int ID);
 
+// this is called from tcp_thread context to queue received mqtt,
+// and then we'll retrieve them from our own thread for processing.
+//
+// NOTE: this function is now public, but only because my unit tests
+// system can use it to spoof MQTT packets to check if MQTT commands
+// are working...
+int MQTT_Post_Received(const char *topic, int topiclen, const unsigned char *data, int datalen);
+int MQTT_Post_Received_Str(const char *topic, const char *data);
+
 void MQTT_GetStats(int* outUsed, int* outMax, int* outFreeMem);
 
 OBK_Publish_Result MQTT_PublishMain_StringFloat(const char* sChannel, float f);

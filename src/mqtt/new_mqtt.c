@@ -118,7 +118,11 @@ static void MQTT_Mutex_Free()
 
 // this is called from tcp_thread context to queue received mqtt,
 // and then we'll retrieve them from our own thread for processing.
-int post_received(const char *topic, int topiclen, const unsigned char *data, int datalen){
+//
+// NOTE: this function is now public, but only because my unit tests
+// system can use it to spoof MQTT packets to check if MQTT commands
+// are working...
+int MQTT_Post_Received(const char *topic, int topiclen, const unsigned char *data, int datalen){
 	MQTT_Mutex_Take(100);
 	if ((MQTT_RX_BUFFER_MAX - 1 - mqtt_rx_buffer_count) < topiclen + datalen + 2 + 2){
 		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "MQTT_rx buffer overflow for topic %s", topic);
@@ -134,7 +138,9 @@ int post_received(const char *topic, int topiclen, const unsigned char *data, in
 #endif
 	return 1;
 }
-
+int MQTT_Post_Received_Str(const char *topic, const char *data) {
+	return MQTT_Post_Received(topic, strlen(topic), (const unsigned char*)data, strlen(data));
+}
 int get_received(char **topic, int *topiclen, unsigned char **data, int *datalen){
 	int res = 0;
 	MQTT_Mutex_Take(100);
@@ -769,7 +775,7 @@ static void mqtt_incoming_data_cb(void* arg, const u8_t* data, u16_t len, u8_t f
 			char* cbtopic = callbacks[i]->topic;
 			if (!strncmp(g_mqtt_request.topic, cbtopic, strlen(cbtopic)))
 			{
-				post_received(g_mqtt_request.topic, strlen(g_mqtt_request.topic), data, len);
+				MQTT_Post_Received(g_mqtt_request.topic, strlen(g_mqtt_request.topic), data, len);
 				// if ANYONE is interested, store it.
 				break;
 				// note - callback must return 1 to say it ate the mqtt, else further processing can be performed.

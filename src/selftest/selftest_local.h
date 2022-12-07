@@ -52,4 +52,7 @@ void Sim_RunMiliseconds(int ms, bool bApplyRealtimeWait);
 void Sim_RunSeconds(float f, bool bApplyRealtimeWait);
 void Sim_RunFrames(int n, bool bApplyRealtimeWait);
 
+
+void SIM_SendFakeMQTTAndRunSimFrame_CMND(const char *command, const char *arguments);
+
 #endif
