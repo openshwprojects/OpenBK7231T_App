@@ -835,6 +835,8 @@ commandResult_t LED_SetBaseColor_HSB(const void *context, const char *cmd, const
 		bri = Tokenizer_GetArgInteger(2);
 	}
 
+	SET_LightMode(Light_RGB);
+
 	g_hsv_h = hue;
 	g_hsv_s = sat * 0.01f;
 	g_hsv_v = bri * 0.01f;
@@ -989,6 +991,8 @@ static commandResult_t setBrightness(const void *context, const char *cmd, const
 	// input is in 0-100 range
 	f *= 0.01f;
 
+	SET_LightMode(Light_RGB);
+
 	led_setBrightness(f);
 
 	return CMD_RES_OK;
@@ -1004,6 +1008,8 @@ static commandResult_t setSaturation(const void *context, const char *cmd, const
 	// input is in 0-100 range
 	f *= 0.01f;
 
+	SET_LightMode(Light_RGB);
+
 	led_setSaturation(f);
 
 	return CMD_RES_OK;
@@ -1018,6 +1024,8 @@ static commandResult_t setHue(const void *context, const char *cmd, const char *
 	Tokenizer_TokenizeString(args, 0);
 
 	f = Tokenizer_GetArgFloat(0);
+
+	SET_LightMode(Light_RGB);
 
 	led_setHue(f);
 
