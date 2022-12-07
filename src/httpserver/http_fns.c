@@ -1339,7 +1339,8 @@ int http_fn_startup_command(http_request_t* request) {
 	poststr(request, "<h4>Set/Change/Clear startup command line</h4>");
 	poststr(request, "<h5>Startup command is a shorter, smaller alternative to LittleFS autoexec.bat."
 		"The startup commands are ran at device startup."
-		"You can use them to init peripherals and drivers, like BL0942 energy sensor</h5>");
+		"You can use them to init peripherals and drivers, like BL0942 energy sensor."
+		"Use backlog cmd1; cmd2; cmd3; etc to enter multiple commands</h5>");
 
 	if (http_getArg(request->url, "data", tmpA, sizeof(tmpA))) {
 		//  hprintf255(request,"<h3>Set command to  %s!</h3>",tmpA);
