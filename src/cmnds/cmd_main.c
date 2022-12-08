@@ -67,7 +67,8 @@ static commandResult_t CMD_ClearAll(const void *context, const char *cmd, const 
 
 	CHANNEL_ClearAllChannels();
 	CMD_ClearAllHandlers(0, 0, 0, 0);
-	RepeatingEvents_Cmd_ClearRepeatingEvents(0, 0, 0, 0);
+	RepeatingEvents_Cmd_ClearRepeatingEvents(0, 0, 0, 0); 
+	CMD_resetSVM(0, 0, 0, 0);
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ClearAll: all clear");
 

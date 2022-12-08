@@ -209,5 +209,6 @@ byte* LFS_ReadFile(const char* fname);
 
 commandResult_t CMD_ClearAllHandlers(const void *context, const char *cmd, const char *args, int cmdFlags);
 commandResult_t RepeatingEvents_Cmd_ClearRepeatingEvents(const void *context, const char *cmd, const char *args, int cmdFlags);
+commandResult_t CMD_resetSVM(const void *context, const char *cmd, const char *args, int cmdFlags);
 
 #endif // __CMD_PUBLIC_H__
