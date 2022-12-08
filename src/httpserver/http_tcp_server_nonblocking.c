@@ -6,6 +6,7 @@
 #include "lwip/inet.h"
 #include "../logging/logging.h"
 #include "new_http.h"
+#include <timeapi.h>
 
  SOCKET ListenSocket = INVALID_SOCKET;
 
@@ -132,7 +133,7 @@ void HTTPServer_RunQuickTick() {
 
 				request.replymaxlen = DEFAULT_BUFLEN;
 
-				printf("Bytes received: %d \n", iResult);
+				printf("HTTP Server for Windows: Bytes received: %d \n", iResult);
 				len = HTTP_ProcessPacket(&request);
 
 				if(len > 0) {
@@ -146,7 +147,7 @@ void HTTPServer_RunQuickTick() {
 						closesocket(ClientSocket);
 						return 1;
 					}
-					printf("Bytes sent: %d\n", iSendResult);
+					printf("HTTP Server for Windows: Bytes sent: %d\n", iSendResult);
 				}
 				break;
 			}
@@ -169,6 +170,7 @@ void HTTPServer_RunQuickTick() {
 		//Sleep(50);
 		// shutdown the connection since we're done
 		iResult = shutdown(ClientSocket, SD_SEND);
+		long firstAttempt = timeGetTime();
 		while (1) {
 			iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
 			if (iResult == 0)
@@ -176,6 +178,12 @@ void HTTPServer_RunQuickTick() {
 			err = WSAGetLastError();
 			if (err != WSAEWOULDBLOCK) {
 				break;
+			}
+			long delta = timeGetTime() - firstAttempt;
+			if (delta > 100) {
+				printf("HTTP server would freeze to long!\n");
+				break; // too long freeze!
+
 			}
 		}
 		//Sleep(50);
