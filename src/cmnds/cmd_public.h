@@ -190,6 +190,7 @@ void LED_RunQuickColorLerp(int deltaMS);
 OBK_Publish_Result LED_SendEnableAllState();
 OBK_Publish_Result LED_SendDimmerChange();
 OBK_Publish_Result LED_SendCurrentLightMode();
+void LED_ResetGlobalVariablesToDefaults();
 // cmd_test.c
 int fortest_commands_init();
 // cmd_channels.c

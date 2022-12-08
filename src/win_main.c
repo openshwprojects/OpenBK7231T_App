@@ -22,6 +22,8 @@
 
 int accum_time = 0;
 int win_frameNum = 0;
+// this time counter is simulated, I need this for unit tests to work
+int g_simulatedTimeNow = 0;
 #define DEFAULT_FRAME_TIME 5
 
 
@@ -62,6 +64,8 @@ void strcat_safe_test(){
 void Sim_RunFrame(int frameTime) {
 	//printf("Sim_RunFrame: frametime %i\n", frameTime);
 	win_frameNum++;
+	// this time counter is simulated, I need this for unit tests to work
+	g_simulatedTimeNow += frameTime;
 	accum_time += frameTime;
 	PIN_ticks(0);
 	HTTPServer_RunQuickTick();
@@ -140,6 +144,10 @@ long SIM_GetTime() {
 		bStartTimeSet = true;
 	}
 	return cur - start_time;
+}
+// this time counter is simulated, I need this for unit tests to work
+int rtos_get_time() {
+	return g_simulatedTimeNow;
 }
 #include "sim/sim_public.h"
 int __cdecl main(int argc, char **argv)

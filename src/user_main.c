@@ -532,14 +532,18 @@ void Main_Init_Before_Delay()
 	ADDLOGF_INFO("Main_Init_Before_Delay");
 	// read or initialise the boot count flash area
 	HAL_FlashVars_IncreaseBootCount();
-	
 
-	#ifdef PLATFORM_BEKEN
+#ifdef WINDOWS
+	// on windows, Main_Init may happen multiple time so we need to reset variables
+	LED_ResetGlobalVariablesToDefaults();
+#endif
+
+#ifdef PLATFORM_BEKEN
 	// this just increments our idle counter variable.
 	// it registers a cllback from RTOS IDLE function.
 	// why is it called IRDA??  is this where they check for IR?
 	bg_register_irda_check_func(isidle);
-	#endif
+#endif
 
 	g_bootFailures = HAL_FlashVars_GetBootFailures();
 	if (g_bootFailures > RESTARTS_REQUIRED_FOR_SAFE_MODE)
