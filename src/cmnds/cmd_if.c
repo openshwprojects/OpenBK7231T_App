@@ -271,10 +271,36 @@ void SIM_GenerateChannelStatesDesc(char *o, int outLen) {
 const char *CMD_ExpandConstantString(const char *s, const char *stop, char *out, int outLen) {
 	int idx;
 	const char *ret;
+	char tmp[32];
 
 	ret = strCompareBound(s, "$autoexec.bat", stop, false);
 	if (ret) {
 		byte* data = LFS_ReadFile("autoexec.bat");
+		if (data == 0)
+			return false;
+		strcpy_safe(out, (char*)data, outLen);
+		free(data);
+		return ret;
+	}
+	ret = strCompareBound(s, "$readfile(", stop, false);
+	if (ret) {
+		const char *opening = ret;
+		const char *closingBrace = ret;
+		while (1) {
+			if (*closingBrace == 0)
+				return false; // fail
+			if (*closingBrace == ')') {
+				break;
+			}
+			closingBrace++;
+		}
+		ret = closingBrace + 1;
+		idx = closingBrace - opening;
+		if (idx >= sizeof(tmp) - 1)
+			idx = sizeof(tmp) - 2;
+		strncpy(tmp, opening, idx);
+		tmp[idx] = 0;
+		byte* data = LFS_ReadFile(tmp);
 		if (data == 0)
 			return false;
 		strcpy_safe(out, (char*)data, outLen);
