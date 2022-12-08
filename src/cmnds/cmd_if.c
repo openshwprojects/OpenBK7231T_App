@@ -4,6 +4,7 @@
 #include "../logging/logging.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
+#include "../driver/drv_public.h"
 #include <ctype.h> // isspace
 
 /*
@@ -212,7 +213,26 @@ const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
 		*out = LED_GetTemperature();
 		return ret;
 	}
+	ret = strCompareBound(s, "$voltage", stop, 0);
+	if (ret) {
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: voltage");
+		*out = DRV_GetReading(OBK_VOLTAGE);
+		return ret;
+	}
+	ret = strCompareBound(s, "$current", stop, 0);
+	if (ret) {
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: $current");
+		*out = DRV_GetReading(OBK_CURRENT);
+		return ret;
+	}
+	ret = strCompareBound(s, "$power", stop, 0);
+	if (ret) {
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: $power");
+		*out = DRV_GetReading(OBK_POWER);
+		return ret;
+	}
 
+	
 	return false;
 }
 #if WINDOWS
