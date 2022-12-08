@@ -69,6 +69,8 @@ typedef struct MqttPublishItem
 #define MQTT_COMMAND_PUBLISH_CHANNELS	"publishChannels"
 #define MQTT_COMMAND_PUBLISH_BENCHMARK  "publishBenchmark"
 
+// Maximum length to log data parameters
+#define MQTT_MAX_DATA_LOG_LENGTH					12
 
 // Count of queued items published at once.
 #define MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE	3
