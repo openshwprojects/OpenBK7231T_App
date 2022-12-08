@@ -92,6 +92,7 @@ int MQTT_GetPublishEventCounter(void);
 int MQTT_GetPublishErrorCounter(void);
 int MQTT_GetReceivedEventCounter(void);
 
+void MQTT_ClearCallbacks();
 int MQTT_RegisterCallback(const char* basetopic, const char* subscriptiontopic, int ID, mqtt_callback_fn callback);
 int MQTT_RemoveCallback(int ID);
 

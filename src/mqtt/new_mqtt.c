@@ -390,6 +390,17 @@ char* MQTT_GetStatusMessage(void)
 	return mqtt_status_message;
 }
 
+void MQTT_ClearCallbacks() {
+	int i;
+	for (i = 0; i < MAX_MQTT_CALLBACKS; i++) {
+		if (callbacks[i]) {
+			free(callbacks[i]->topic);
+			free(callbacks[i]->subscriptionTopic);
+			free(callbacks[i]);
+			callbacks[i] = 0;
+		}
+	}
+}
 // this can REPLACE callbacks, since we MAY wish to change the root topic....
 // in which case we would re-resigster all callbacks?
 int MQTT_RegisterCallback(const char* basetopic, const char* subscriptiontopic, int ID, mqtt_callback_fn callback) {
@@ -1313,6 +1324,11 @@ void MQTT_init()
 	char cbtopicbase[CGF_MQTT_CLIENT_ID_SIZE + 16];
 	char cbtopicsub[CGF_MQTT_CLIENT_ID_SIZE + 16];
 	const char* clientId;
+
+	// WINDOWS must support reinit
+#ifdef WINDOWS
+	MQTT_ClearCallbacks();
+#endif
 
 	clientId = CFG_GetMQTTClientId();
 

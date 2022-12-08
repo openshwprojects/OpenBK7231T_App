@@ -129,6 +129,7 @@ void SIM_ClearOBK() {
 		DRV_ShutdownAllDrivers();
 		SIM_Hack_ClearSimulatedPinRoles();
 		CMD_ExecuteCommand("clearAll", 0);
+		Main_Init();
 	}
 }
 void SIM_DoFreshOBKBoot() {

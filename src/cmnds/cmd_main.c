@@ -148,6 +148,21 @@ void CMD_ListAllCommands(void *userData, void (*callback)(command_t *cmd, void *
 	}
 
 }
+void CMD_FreeAllCommands() {
+	int i;
+	command_t *cmd, *next;
+
+	for (i = 0; i < HASH_SIZE; i++) {
+		cmd = g_commands[i];
+		while (cmd) {
+			next = cmd->next;
+			free(cmd);
+			cmd = next;
+		}
+		g_commands[i] = 0;
+	}
+
+}
 void CMD_RegisterCommand(const char *name, const char *args, commandHandler_t handler, const char *userDesc, void *context) {
 	int hash;
 	command_t *newCmd;

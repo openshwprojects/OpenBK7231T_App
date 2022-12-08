@@ -535,7 +535,9 @@ void Main_Init_Before_Delay()
 
 #ifdef WINDOWS
 	// on windows, Main_Init may happen multiple time so we need to reset variables
-	LED_ResetGlobalVariablesToDefaults();
+	LED_ResetGlobalVariablesToDefaults(); 
+	// on windows, we don't want to remember commands from previous session
+	CMD_FreeAllCommands();
 #endif
 
 #ifdef PLATFORM_BEKEN
