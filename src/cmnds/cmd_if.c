@@ -213,6 +213,7 @@ const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
 		*out = LED_GetTemperature();
 		return ret;
 	}
+#ifndef OBK_DISABLE_ALL_DRIVERS
 	ret = strCompareBound(s, "$voltage", stop, 0);
 	if (ret) {
 		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: voltage");
@@ -231,6 +232,7 @@ const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
 		*out = DRV_GetReading(OBK_POWER);
 		return ret;
 	}
+#endif
 
 	
 	return false;
@@ -298,6 +300,7 @@ const char *CMD_ExpandConstantToString(const char *constant, char *out, char *st
 	float value;
 	int valueInt;
 	const char *after;
+	float delta;
 
 	outLen = (stop - out) - 1;
 
@@ -312,11 +315,14 @@ const char *CMD_ExpandConstantToString(const char *constant, char *out, char *st
 		return 0;
 
 	valueInt = (int)value;
-	if (abs(valueInt - value) < 0.001f) {
-		snprintf(out, outLen, "%i", valueInt);
+	delta = valueInt - value;
+	if (delta < 0)
+		delta = -delta;
+	if (delta < 0.001f) {
+		snprintf(out, outLen,  "%i", valueInt);
 	}
 	else {
-		snprintf(out, outLen, "%f", value);
+		snprintf(out, outLen,"%f", value);
 	}
 	return after;
 }

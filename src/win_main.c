@@ -98,8 +98,23 @@ void Sim_RunFrames(int n, bool bApplyRealtimeWait) {
 	}
 }
 
+bool bObkStarted = false;
+void SIM_Hack_ClearSimulatedPinRoles();
+
+void SIM_ClearOBK() {
+	if (bObkStarted) {
+		DRV_ShutdownAllDrivers();
+		release_lfs();
+		SIM_Hack_ClearSimulatedPinRoles();
+		CMD_ExecuteCommand("clearAll", 0);
+		Main_Init();
+	}
+}
+void SIM_DoFreshOBKBoot() {
+	bObkStarted = true;
+	Main_Init();
+}
 void Win_DoUnitTests() {
-	//CFG_ClearPins();
 
 
 	Test_HTTP_Client();
@@ -120,21 +135,14 @@ void Win_DoUnitTests() {
 
 	// this is slowest
 	Test_TuyaMCU_Basic();
-}
-bool bObkStarted = false;
-void SIM_Hack_ClearSimulatedPinRoles();
 
-void SIM_ClearOBK() {
-	if (bObkStarted) {
-		DRV_ShutdownAllDrivers();
-		SIM_Hack_ClearSimulatedPinRoles();
-		CMD_ExecuteCommand("clearAll", 0);
-		Main_Init();
-	}
-}
-void SIM_DoFreshOBKBoot() {
-	bObkStarted = true;
-	Main_Init();
+
+
+
+	// Just to be sure
+	// Must be last step
+	// reset whole device
+	SIM_ClearOBK();
 }
 long start_time = 0;
 bool bStartTimeSet = false;

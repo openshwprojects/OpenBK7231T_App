@@ -583,7 +583,7 @@ int channelSet(obk_mqtt_request_t* request) {
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT client in mqtt_incoming_data_cb data is %.*s for ch %i\n", MQTT_MAX_DATA_LOG_LENGTH, request->received, channel);
 
-	iValue = atoi(request->received);
+	iValue = atoi(((const char*)request->received));
 	CHANNEL_Set(channel, iValue, 0);
 
 	// return 1 to stop processing callbacks here.
