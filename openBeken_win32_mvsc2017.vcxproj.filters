@@ -411,6 +411,12 @@
     <ClCompile Include="src\sim\Controller_Pot.cpp">
       <Filter>Simulator</Filter>
     </ClCompile>
+    <ClCompile Include="src\selftest\selftest_util_mqtt.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\bk7231\hal_adc_bk7231.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />

@@ -152,7 +152,7 @@ const char *Test_GetLastHTMLReply() {
 }
 void Test_Http_SingleRelayOnChannel1() {
 
-	CMD_ExecuteCommand("clearAll", 0);
+	SIM_ClearOBK();
 	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(9, 1);
 
@@ -228,7 +228,7 @@ void Test_Http_SingleRelayOnChannel1() {
 }
 void Test_Http_TwoRelays() {
 
-	CMD_ExecuteCommand("clearAll", 0);
+	SIM_ClearOBK();
 	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(9, 1);
 
@@ -299,7 +299,7 @@ void Test_Http_TwoRelays() {
 }
 void Test_Http_FourRelays() {
 
-	CMD_ExecuteCommand("clearAll", 0);
+	SIM_ClearOBK();
 	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(9, 1);
 
@@ -525,7 +525,7 @@ StatusSTS sample from Tasmota RGBCW (5 PWMs set):
 */
 void Test_Http_LED_SingleChannel() {
 
-	CMD_ExecuteCommand("clearAll", 0);
+	SIM_ClearOBK();
 	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
 	PIN_SetPinChannelForPinIndex(24, 1);
 
@@ -561,7 +561,7 @@ void Test_Http_LED_SingleChannel() {
 }
 void Test_Http_LED_CW() {
 
-	CMD_ExecuteCommand("clearAll", 0);
+	SIM_ClearOBK();
 	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
 	PIN_SetPinChannelForPinIndex(24, 1);
 
@@ -611,10 +611,16 @@ void Test_Http_LED_CW() {
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "CT", 500);
 
 
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("led_dimmer", "100");
+	// StatusSTS contains POWER and Dimmer
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "CT", 500);
 }
 void Test_Http_LED_RGB() {
 
-	CMD_ExecuteCommand("clearAll", 0);
+	SIM_ClearOBK();
 	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
 	PIN_SetPinChannelForPinIndex(24, 1);
 

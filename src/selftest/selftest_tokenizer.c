@@ -4,7 +4,7 @@
 
 void Test_Tokenizer() {
 	// reset whole device
-	CMD_ExecuteCommand("clearAll", 0);
+	SIM_ClearOBK();
 
 	Tokenizer_TokenizeString("Hello", 0);
 	SELFTEST_ASSERT_ARGUMENTS_COUNT(1);

@@ -72,6 +72,14 @@ bool CText::processKeyDown(int keyCode) {
 float CText::getFloat() const {
 	return atof(txt.c_str());
 }
+void CText::setTextf(const char *fmt, ...) {
+	va_list argList;
+	char buffer[512];
+	va_start(argList, fmt);
+	vsnprintf(buffer, sizeof(buffer), fmt, argList);
+	va_end(argList);
+	setText(buffer);
+}
 void CText::appendText(const char *s) {
 	//txt.append(s);
 	txt.insert(cursorPos, s);

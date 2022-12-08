@@ -9,6 +9,7 @@ class CControllerPot : public CControllerBase {
 	Coord posA, posB;
 	float frac;
 	class CShape *mover;
+	class CText *display;
 	class CJunction *a, *b, *o;
 public:
 	CControllerPot() {
@@ -18,6 +19,9 @@ public:
 	CControllerPot(class CJunction *_a, class CJunction *_b, class CJunction *_o);
 	void setMover(CShape *p) {
 		mover = p;
+	}
+	void setDisplay(CText *p) {
+		display = p;
 	}
 	virtual void sendEvent(int code, const class Coord &mouseOfs);
 	virtual void onDrawn();

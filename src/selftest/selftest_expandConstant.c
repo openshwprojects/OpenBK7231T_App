@@ -8,7 +8,7 @@ void Test_ExpandConstant() {
 	char smallBuffer[8];
 
 	// reset whole device
-	CMD_ExecuteCommand("clearAll", 0);
+	SIM_ClearOBK();
 
 	CMD_ExpandConstantsWithinString("Hello", buffer, sizeof(buffer), 0);
 	SELFTEST_ASSERT_STRING(buffer, "Hello");
@@ -110,6 +110,9 @@ void Test_ExpandConstant() {
 	SELFTEST_ASSERT_STRING(ptr, "ba456");
 	free(ptr);
 
+	ptr = CMD_ExpandingStrdup("$CH1+$CH11");
+	SELFTEST_ASSERT_STRING(ptr, "456+2022");
+	free(ptr);
 	//system("pause");
 }
 

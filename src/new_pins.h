@@ -333,6 +333,7 @@ int h_isChannelRelay(int tg_ch);
 //int PIN_GetPWMIndexForPinIndex(int pin);
 
 int PIN_ParsePinRoleName(const char* name);
+const char *PIN_RoleToString(int role);
 
 // from new_builtin.c
 /*

@@ -4,7 +4,7 @@
 
 void Test_ButtonEvents() {
 	// reset whole device
-	CMD_ExecuteCommand("clearAll", 0);
+	SIM_ClearOBK();
 
 	// by default, we have a pull up resistor - so high level
 	SIM_SetSimulatedPinValue(9, true);

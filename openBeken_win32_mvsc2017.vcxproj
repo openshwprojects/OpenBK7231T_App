@@ -324,6 +324,9 @@
     <ClCompile Include="src\driver\drv_ucs1912.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\hal\bk7231\hal_adc_bk7231.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\hal\bk7231\hal_flashConfig_bk7231.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
@@ -515,6 +518,7 @@
     <ClCompile Include="src\selftest\selftest_script.c" />
     <ClCompile Include="src\selftest\selftest_tokenizer.c" />
     <ClCompile Include="src\selftest\selftest_tuyaMCU.c" />
+    <ClCompile Include="src\selftest\selftest_util_mqtt.c" />
     <ClCompile Include="src\sim\Circle.cpp" />
     <ClCompile Include="src\sim\Controller_BL0942.cpp" />
     <ClCompile Include="src\sim\Controller_Bulb.cpp" />

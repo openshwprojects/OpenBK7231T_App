@@ -4,7 +4,7 @@
 
 void Test_ChangeHandlers() {
 	// reset whole device
-	CMD_ExecuteCommand("clearAll", 0);
+	SIM_ClearOBK();
 
 	// this will only happens when Channel1 value changes from not equal to 0 to the one equal to 0
 	CMD_ExecuteCommand("addChangeHandler Channel1 == 0 addChannel 10 1111", 0);

@@ -48,6 +48,7 @@ public:
 		this->txt = s;
 		cursorPos = strlen(s);
 	}
+	void setTextf(const char *s, ...);
 	const char *getText() const {
 		return this->txt.c_str();
 	}

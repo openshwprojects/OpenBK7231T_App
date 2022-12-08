@@ -4,7 +4,7 @@
 
 void Test_RepeatingEvents() {
 	// reset whole device
-	CMD_ExecuteCommand("clearAll", 0);
+	SIM_ClearOBK();
 	SELFTEST_ASSERT_CHANNEL(10, 0);
 	// NOTE: addRepeatingEvent [RepeatTime] [RepeatCount]
 	// This should fire once due to RepeatCount 1

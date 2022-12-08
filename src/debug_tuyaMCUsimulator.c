@@ -7,8 +7,13 @@ const char *dataToSimulate[] =
 	// dummy entry in order to avoid problems with empty table
 	"",
 #if 1
-	"55AA03070014060000080916000099000023010200040000000310"
-
+	"55AA00050005010400010110",
+	"55AA0005000501040001000F"
+#elif 0
+	"55AA03070014060000080916000099000023010200040000000310",
+	"55AA0307000C03000008160C160C0000000367",
+	"55AA0307000C040000080C010C01000000033E",
+	"55AA030700140600000809350000F800003A010200040000002FD1"
 #elif 0
 	"55AA030000010003",
 	"55AA0301002A7B2270223A226C696834766A656F79616F346A656B75222C2276223A22322E302E30222C226D223A307D41",
@@ -58,7 +63,7 @@ int delay_between_packets = 20;
 int max_bytes_per_frame = 200;
 int curString = 0;
 const char *curP = 0;
-int current_delay_to_wait_ms = 1000;
+int current_delay_to_wait_ms = 100;
 
 void NewTuyaMCUSimulator_RunQuickTick(int deltaMS) {
 	byte b;
@@ -75,6 +80,16 @@ void NewTuyaMCUSimulator_RunQuickTick(int deltaMS) {
 		curP = dataToSimulate[curString];
 	}
 
+#if 1
+
+#elif 0
+	if (DRV_IsRunning("TuyaMCU") == 0) {
+		CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+		CMD_ExecuteCommand("startDriver tmSensor ", 0);
+		CMD_ExecuteCommand("setChannelType 1 readonly", 0);
+		CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 1 val 1", 0);
+	}
+#else
 	if (DRV_IsRunning("TuyaMCU") == 0) {
 		CMD_ExecuteCommand("startDriver TuyaMCU", 0);
 		CMD_ExecuteCommand("startDriver NTP", 0);
@@ -82,11 +97,19 @@ void NewTuyaMCUSimulator_RunQuickTick(int deltaMS) {
 		CMD_ExecuteCommand("setChannelType 2 Voltage_div10", 0);
 		CMD_ExecuteCommand("setChannelType 3 Power", 0);
 		CMD_ExecuteCommand("setChannelType 4 Current_div1000", 0);
+		CMD_ExecuteCommand("setChannelType 5 EnergyTotal_kWh_div100", 0);
 		CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 16 bool 1", 0);
+		CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 1 val 5", 0);
 		// TAC2121C VoltageCurrentPower Packet
 		CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 6 RAW_TAC2121C_VCP", 0);
+		CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 4 RAW_TAC2121C_Yesterday", 0);
+		CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 3 RAW_TAC2121C_LastMonth", 0);
 	}
-
+#endif
+	// make sure that buffer has free size
+	if (UART_GetDataSize() != 0) {
+		return;
+	}
 	while (*curP != 0) {
 		c_added++;
 		if (c_added >= max_bytes_per_frame) {

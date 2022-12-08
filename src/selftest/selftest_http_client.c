@@ -4,7 +4,7 @@
 
 void Test_HTTP_Client() {
 	// reset whole device
-	CMD_ExecuteCommand("clearAll", 0);
+	SIM_ClearOBK();
 
 
 	PIN_SetPinRoleForPinIndex(9, IOR_Relay);

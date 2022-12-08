@@ -117,8 +117,11 @@ void Win_DoUnitTests() {
 	Test_TuyaMCU_Basic();
 }
 bool bObkStarted = false;
+void SIM_Hack_ClearSimulatedPinRoles();
+
 void SIM_ClearOBK() {
 	if (bObkStarted) {
+		SIM_Hack_ClearSimulatedPinRoles();
 		CMD_ExecuteCommand("clearAll", 0);
 	}
 }
