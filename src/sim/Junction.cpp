@@ -21,7 +21,7 @@ CShape *CJunction::cloneShape() {
 
 float CJunction::drawInformation2D(float x, float h) {
 	h = CShape::drawInformation2D(x, h);
-	h = drawText(x, h, "Position: %f %f", getX(), getY());
+	h = drawText(NULL, x, h, "Position: %f %f", getX(), getY());
 	return h;
 }
 bool CJunction::isWireJunction() const {

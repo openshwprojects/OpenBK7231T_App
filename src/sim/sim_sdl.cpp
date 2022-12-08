@@ -31,6 +31,7 @@ int WinHeight = 940;
 CStyle g_style_shapes(CColor(165, 75, 75), 3.0f);
 CStyle g_style_wires(CColor(75, 165, 75), 3.0f);
 CStyle g_style_text(CColor(131, 131, 131), 3.0f);
+CStyle g_style_text_red(CColor(255, 131, 131), 3.0f);
 
 int drawTextInternal(float x, float y, const char *buffer) {
 	glRasterPos2f(x, y);
@@ -49,7 +50,7 @@ int drawTextInternal(float x, float y, const char *buffer) {
 	return y;
 }
 
-int drawText(int x, int y, const char* fmt, ...) {
+int drawText(class CStyle *style, int x, int y, const char* fmt, ...) {
 	va_list argList;
 	char buffer2[512];
 	char buffer[512];
@@ -57,7 +58,12 @@ int drawText(int x, int y, const char* fmt, ...) {
 	vsnprintf(buffer2, sizeof(buffer2), fmt, argList);
 	va_end(argList);
 	CMD_ExpandConstantsWithinString(buffer2, buffer, sizeof(buffer));
-	g_style_text.apply();
+	if (style == 0) {
+		g_style_text.apply();
+	}
+	else {
+		style->apply();
+	}
 	float ret = drawTextInternal(x, y, buffer);
 	drawTextInternal(x + 0.5f, y + 0.5f, buffer);
 	drawTextInternal(x - 0.5f, y - 0.5f, buffer);

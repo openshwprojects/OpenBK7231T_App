@@ -7,6 +7,8 @@ const char *dataToSimulate[] =
 	// dummy entry in order to avoid problems with empty table
 	"",
 #if 1
+
+#elif 0
 	"55AA00050005010400010110",
 	"55AA0005000501040001000F"
 #elif 0

@@ -26,7 +26,7 @@ void Tool_Info::drawTool() {
 		//h = drawString(pos.getX(), h, "Nothing");
 	}
 	else {
-		h = drawText(pos.getX(), h, "Nothing");
+		h = drawText(NULL, pos.getX(), h, "Nothing");
 	}
 }
 
