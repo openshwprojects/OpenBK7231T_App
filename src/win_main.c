@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "new_common.h"
+#include "driver\drv_public.h"
 #include "httpserver\new_http.h"
 #include "new_pins.h"
 #include <timeapi.h>
@@ -121,6 +122,7 @@ void SIM_Hack_ClearSimulatedPinRoles();
 
 void SIM_ClearOBK() {
 	if (bObkStarted) {
+		DRV_ShutdownAllDrivers();
 		SIM_Hack_ClearSimulatedPinRoles();
 		CMD_ExecuteCommand("clearAll", 0);
 	}

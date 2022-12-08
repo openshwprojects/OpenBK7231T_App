@@ -173,6 +173,15 @@ void DRV_OnChannelChanged(int channel, int iVal) {
 	}
 	//DRV_Mutex_Free();
 }
+// right now only used by simulator
+void DRV_ShutdownAllDrivers() {
+	int i;
+	for (i = 0; i < g_numDrivers; i++) {
+		if (g_drivers[i].bLoaded) {
+			DRV_StopDriver(g_drivers[i].name);
+		}
+	}
+}
 void DRV_StopDriver(const char* name) {
 	int i;
 
