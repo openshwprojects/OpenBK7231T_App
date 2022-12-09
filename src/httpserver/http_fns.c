@@ -785,7 +785,7 @@ int http_fn_index(http_request_t* request) {
 	}
 #endif
 	if (bSafeMode) {
-		hprintf255(request, "<h5 style='color:red'>You are in safe mode (AP mode) because full reboot failed %i times.",
+		hprintf255(request, "<h5 style='color:red'>You are in safe mode (AP mode) because full reboot failed %i times. ",
 			Main_GetLastRebootBootFailures());
 		hprintf255(request, "Pins, relays, etc are disabled.</h5>");
 		
