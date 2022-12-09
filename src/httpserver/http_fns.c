@@ -311,6 +311,10 @@ int http_fn_index(http_request_t* request) {
 			poststr(request, "<h5> Module will restart soon</h5>");
 			RESET_ScheduleModuleReset(3);
 		}
+		if (http_getArg(request->url, "unsafe", tmpA, sizeof(tmpA))) {
+			poststr(request, "<h5> Will try to do unsafe init in few seconds</h5>");
+			MAIN_ScheduleUnsafeInit(3);
+		}
 		poststr(request, "</div>"); // end div#change
 		poststr(request, "<div id=\"state\">"); // replaceable content follows
 	}
@@ -780,7 +784,12 @@ int http_fn_index(http_request_t* request) {
 		hprintf255(request, "<h5>OTA In Progress. Downloaded: %i B Flashed: %06lXh</h5>", ota_total_bytes(), ota_progress());
 	}
 #endif
-
+	if (bSafeMode) {
+		hprintf255(request, "<h5 style='color:red'>You are in safe mode (AP mode) because full reboot failed %i times.",
+			Main_GetLastRebootBootFailures());
+		hprintf255(request, "Pins, relays, etc are disabled.</h5>");
+		
+	}
 	// for normal page loads, show the rest of the HTML
 	if (!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
 		poststr(request, "</div>"); // end div#state
@@ -793,6 +802,13 @@ int http_fn_index(http_request_t* request) {
 			"<input class=\"bred\" type=\"submit\" value=\"Restart\" onclick=\"return confirm('Are you sure to restart module?')\">"
 			"</form>");
 
+		if (bSafeMode) {
+			poststr(request, "<form action=\"/index\">"
+				"<input type=\"hidden\" id=\"unsafe\" name=\"unsafe\" value=\"1\">"
+				"<input class=\"bred\" type=\"submit\" value=\"Exit safe mode\" onclick=\"");
+			poststr(request, "return confirm('Are you sure to try exiting safe mode? NOTE: This will enable rest interface etc, but still wont run autoexec')\">"
+				"</form>");
+		}
 		poststr(request, "<form action=\"/app\" target=\"_blank\"><input type=\"submit\" value=\"Launch Web Application\"\"></form> ");
 		poststr(request, "<form action=\"about\"><input type=\"submit\" value=\"About\"/></form>");
 
