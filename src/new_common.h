@@ -370,6 +370,7 @@ int strIsInteger(const char *s);
 int Time_getUpTimeSeconds();
 char Tiny_CRC8(const char *data,int length);
 void RESET_ScheduleModuleReset(int delSeconds);
+void MAIN_ScheduleUnsafeInit(int delSeconds);
 int Main_IsConnectedToWiFi();
 int Main_IsOpenAccessPointMode();
 void Main_Init();
@@ -408,6 +409,7 @@ typedef enum
 
 WIFI_RSSI_LEVEL wifi_rssi_scale(int8_t rssi_value);
 extern const char *str_rssi[];
+extern int bSafeMode;
 
 #endif /* __NEW_COMMON_H__ */
 

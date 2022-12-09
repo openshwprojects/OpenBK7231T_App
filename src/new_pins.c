@@ -1070,7 +1070,7 @@ void PIN_ticks(void *param)
 	int i;
 	int value;
 
-#ifdef PLATFORM_BEKEN
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	g_time = rtos_get_time();
 #else
 	g_time += PIN_TMR_DURATION;
@@ -1093,20 +1093,20 @@ void PIN_ticks(void *param)
 
 
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
-	SVM_RunThreads(PIN_TMR_DURATION);
+	SVM_RunThreads(t_diff);
 #endif
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_RunQuickTick();
 #endif
 #ifdef WINDOWS
-	NewTuyaMCUSimulator_RunQuickTick(PIN_TMR_DURATION);
+	NewTuyaMCUSimulator_RunQuickTick(t_diff);
 #endif
 
 	// process recieved messages here..
 	MQTT_RunQuickTick();
 	
 	if(CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == true) {
-		LED_RunQuickColorLerp(PIN_TMR_DURATION);
+		LED_RunQuickColorLerp(t_diff);
 	}
 
 	// WiFi LED

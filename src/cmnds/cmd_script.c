@@ -330,6 +330,10 @@ const char *SVM_FindLabel(const char *text, const char *label, const char *fname
 
 	if(label == 0)
 		return text;
+	if (!strcmp(label, "*"))
+		return text;
+	if (*label == 0)
+		return text;
 
 	labLen = strlen(label);
 
@@ -421,6 +425,10 @@ void SVM_RunThreads(int deltaMS) {
 	while(g_activeThread) {
 		if(g_activeThread->currentDelayMS > 0) {
 			g_activeThread->currentDelayMS -= deltaMS;
+			// the following block is needed to handle with long freezes on simulator
+			if (g_activeThread->currentDelayMS < 0) {
+				g_activeThread->currentDelayMS = 0;
+			}
 			c_sleep++;
 		} else {
 			SVM_RunThread(g_activeThread);
@@ -729,7 +737,7 @@ static commandResult_t CMD_StopAllScripts(const void *context, const char *cmd, 
 
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_resetSVM(const void *context, const char *cmd, const char *args, int cmdFlags){
+commandResult_t CMD_resetSVM(const void *context, const char *cmd, const char *args, int cmdFlags){
 
 
 	// stop scripts

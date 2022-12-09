@@ -36,12 +36,8 @@ void CControllerBulb::onDrawn() {
 				return;
 			}
 			float frac_bulb;
-			if (a->isDutyPercent(100.0f)) {
-				frac_bulb = a->determineLEDLightFraction(b);
-			}
-			else {
-				frac_bulb = b->determineLEDLightFraction(a);
-			}
+			// TODO: better calc, this is straight up wrong in most cases
+			frac_bulb = a->getDutyRange01() * b->getDutyRange01();
 			setShapesFillColor(frac_bulb * col_yellow);
 			if (a->shouldLightUpBulb(b)) {
 				setShapesActive(true);

@@ -299,8 +299,10 @@ void init_lfs(int create){
 }
 
 void release_lfs(){
-    lfs_unmount(&lfs);
-    lfs_initialised = 0;
+	if (lfs_initialised) {
+		lfs_unmount(&lfs);
+		lfs_initialised = 0;
+	}
 }
 
 

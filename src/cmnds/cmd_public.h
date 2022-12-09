@@ -32,6 +32,7 @@ typedef commandResult_t (*commandHandler_t)(const void* context, const char* cmd
 //
 void CMD_Init_Early();
 void CMD_Init_Delayed();
+void CMD_FreeAllCommands();
 void CMD_RegisterCommand(const char* name, const char* args, commandHandler_t handler, const char* userDesc, void* context);
 commandResult_t CMD_ExecuteCommand(const char* s, int cmdFlags);
 commandResult_t CMD_ExecuteCommandArgs(const char* cmd, const char* args, int cmdFlags);
@@ -190,6 +191,7 @@ void LED_RunQuickColorLerp(int deltaMS);
 OBK_Publish_Result LED_SendEnableAllState();
 OBK_Publish_Result LED_SendDimmerChange();
 OBK_Publish_Result LED_SendCurrentLightMode();
+void LED_ResetGlobalVariablesToDefaults();
 // cmd_test.c
 int fortest_commands_init();
 // cmd_channels.c
@@ -207,5 +209,6 @@ byte* LFS_ReadFile(const char* fname);
 
 commandResult_t CMD_ClearAllHandlers(const void *context, const char *cmd, const char *args, int cmdFlags);
 commandResult_t RepeatingEvents_Cmd_ClearRepeatingEvents(const void *context, const char *cmd, const char *args, int cmdFlags);
+commandResult_t CMD_resetSVM(const void *context, const char *cmd, const char *args, int cmdFlags);
 
 #endif // __CMD_PUBLIC_H__

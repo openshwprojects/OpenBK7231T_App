@@ -72,6 +72,14 @@ bool CText::processKeyDown(int keyCode) {
 float CText::getFloat() const {
 	return atof(txt.c_str());
 }
+void CText::setTextf(const char *fmt, ...) {
+	va_list argList;
+	char buffer[512];
+	va_start(argList, fmt);
+	vsnprintf(buffer, sizeof(buffer), fmt, argList);
+	va_end(argList);
+	setText(buffer);
+}
 void CText::appendText(const char *s) {
 	//txt.append(s);
 	txt.insert(cursorPos, s);
@@ -90,17 +98,17 @@ void CText::drawShape() {
 		buffer[cursorPos] = 0;
 		strcat(buffer, "|");
 		strcat(buffer, txt.c_str()+ cursorPos);
-		drawText(getX(), getY(), buffer);
+		drawText(NULL, getX(), getY(), buffer);
 	}
 	else {
-		drawText(getX(), getY(), txt.c_str());
+		drawText(NULL, getX(), getY(), txt.c_str());
 	}
 }
 
 
 
 float CText::drawPrivateInformation2D(float x, float h) {
-	h = drawText(x, h, "Text: %s", this->txt.c_str());
+	h = drawText(NULL, x, h, "Text: %s", this->txt.c_str());
 	return h;
 }
 

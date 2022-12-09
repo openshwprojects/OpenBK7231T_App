@@ -11,12 +11,52 @@ typedef enum simulatedPinMode_e {
 	SIM_PIN_PWM,
 	SIM_PIN_INPUT_PULLUP,
 	SIM_PIN_INPUT,
+	SIM_PIN_ADC,
 } simulatedPinMode_t;
 
 int g_simulatedPinStates[PLATFORM_GPIO_MAX];
 int g_simulatedPWMs[PLATFORM_GPIO_MAX];
 simulatedPinMode_t g_pinModes[PLATFORM_GPIO_MAX];
+int g_simulatedADCValues[PLATFORM_GPIO_MAX];
 
+void SIM_Hack_ClearSimulatedPinRoles() {
+	memset(g_simulatedPinStates, 0, sizeof(g_simulatedPinStates));
+	memset(g_simulatedPWMs, 0, sizeof(g_simulatedPWMs));
+	memset(g_pinModes, 0, sizeof(g_pinModes));
+	memset(g_simulatedADCValues, 0, sizeof(g_simulatedADCValues));
+}
+
+static int adcToGpio[] = {
+	-1,		// ADC0 - VBAT
+	4, //GPIO4,	// ADC1
+	5, //GPIO5,	// ADC2
+	23,//GPIO23, // ADC3
+	2,//GPIO2,	// ADC4
+	3,//GPIO3,	// ADC5
+	12,//GPIO12, // ADC6
+	13,//GPIO13, // ADC7
+};
+static int c_adcToGpio = sizeof(adcToGpio)/sizeof(adcToGpio[0]);
+
+
+static int gpioToAdc(int gpio) {
+	int i;
+	for (i = 0; i < c_adcToGpio; i++) {
+		if (adcToGpio[i] == gpio)
+			return i;
+	}
+	return -1;
+}
+
+void HAL_ADC_Init(int pinNumber) {
+	g_pinModes[pinNumber] = SIM_PIN_ADC;
+}
+int HAL_ADC_Read(int pinNumber) {
+	int channel = gpioToAdc(pinNumber);
+	if (channel == -1)
+		return 0;
+	return g_simulatedADCValues[pinNumber];
+}
 void SIM_SetSimulatedPinValue(int pinIndex, bool bHigh) {
 	g_simulatedPinStates[pinIndex] = bHigh;
 }
@@ -34,6 +74,23 @@ bool SIM_IsPinPWM(int index) {
 	if (g_pinModes[index] == SIM_PIN_PWM)
 		return true;
 	return false;
+}
+bool SIM_IsPinADC(int index) {
+	if (g_pinModes[index] == SIM_PIN_ADC)
+		return true;
+	return false;
+}
+void SIM_SetVoltageOnADCPin(int index, float v) {
+	if (g_pinModes[index] != SIM_PIN_ADC)
+		return;
+	//printf("SIM_SetVoltageOnADCPin: %i has %f\n", index, v);
+	if (v > 3.3f)
+		v = 3.3f;
+	if (v < 0)
+		v = 0;
+	float f = v / 3.3f;
+	int iVal = f * 1024;
+	g_simulatedADCValues[index] = iVal;
 }
 int SIM_GetPWMValue(int index) {
 	return g_simulatedPWMs[index];
@@ -56,6 +113,10 @@ void SIM_GeneratePinStatesDesc(char *o, int outLen) {
 		strcat_safe(o, tmp, outLen);
 		if (mode == SIM_PIN_PWM) {
 			sprintf(tmp, "PWM - %i", g_simulatedPWMs[i]);
+			strcat_safe(o, tmp, outLen);
+		}
+		else if (mode == SIM_PIN_ADC) {
+			sprintf(tmp, "ADC - %i", g_simulatedADCValues[i]);
 			strcat_safe(o, tmp, outLen);
 		}
 		else if (mode == SIM_PIN_OUTPUT) {

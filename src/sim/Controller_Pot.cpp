@@ -2,6 +2,7 @@
 #include "Controller_Pot.h"
 #include "Shape.h"
 #include "Junction.h"
+#include "Text.h"
 
 CControllerPot::CControllerPot(class CJunction *_a, class CJunction *_b, class CJunction *_o) {
 	a = _a;
@@ -20,6 +21,7 @@ class CControllerBase *CControllerPot::cloneController(class CShape *origOwner, 
 	r->a = newOwner->findShapeByName_r(this->a->getName())->asJunction();
 	r->b = newOwner->findShapeByName_r(this->b->getName())->asJunction();
 	r->o = newOwner->findShapeByName_r(this->o->getName())->asJunction();
+	r->display = newOwner->findShapeByName_r(this->display->getName())->asText();
 	return r;
 }
 class CJunction *CControllerPot::findOtherJunctionIfPassable(class CJunction *ju) {
@@ -40,6 +42,20 @@ void CControllerPot::sendEvent(int code, const class Coord &mouseOfs) {
 		frac = 1;
 }
 void CControllerPot::onDrawn() {
+	if (a->getVisitCount() > 0 && b->getVisitCount() > 0) {
+		float aVal = a->getVoltage();
+		float bVal = b->getVoltage();
+		float fin = aVal + (bVal - aVal) * frac;
+		o->setCurrentSource(true);
+		o->setVoltage(fin);
+		o->setVisitCount(1);
+		display->setTextf("%f", fin);
+	}
+	else {
+		o->setCurrentSource(false);
+		o->setVoltage(0);
+		display->setTextf("Not connected");
+	}
 	mover->setPosition(posA.lerp(posB, frac));
 }
 

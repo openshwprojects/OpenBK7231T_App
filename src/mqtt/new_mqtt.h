@@ -69,6 +69,8 @@ typedef struct MqttPublishItem
 #define MQTT_COMMAND_PUBLISH_CHANNELS	"publishChannels"
 #define MQTT_COMMAND_PUBLISH_BENCHMARK  "publishBenchmark"
 
+// Maximum length to log data parameters
+#define MQTT_MAX_DATA_LOG_LENGTH					12
 
 // Count of queued items published at once.
 #define MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE	3
@@ -90,6 +92,7 @@ int MQTT_GetPublishEventCounter(void);
 int MQTT_GetPublishErrorCounter(void);
 int MQTT_GetReceivedEventCounter(void);
 
+void MQTT_ClearCallbacks();
 int MQTT_RegisterCallback(const char* basetopic, const char* subscriptiontopic, int ID, mqtt_callback_fn callback);
 int MQTT_RemoveCallback(int ID);
 

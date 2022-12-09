@@ -4,6 +4,7 @@
 #include "../logging/logging.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
+#include "../driver/drv_public.h"
 #include <ctype.h> // isspace
 
 /*
@@ -116,14 +117,15 @@ const char *strCompareBound(const char *s, const char *templ, const char *stoppe
 
 			}
 			else {
-				return 0;
+			return 0;
 			}
-		} else {
-            char c1 = tolower((unsigned char)*s);
-            char c2 = tolower((unsigned char)*templ);
-			if(c1 != c2) {
-				return 0;
-			}
+		}
+ else {
+ char c1 = tolower((unsigned char)*s);
+ char c2 = tolower((unsigned char)*templ);
+ if (c1 != c2) {
+	 return 0;
+ }
 		}
 		s++;
 		templ++;
@@ -144,7 +146,7 @@ const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
 	const char *ret;
 
 	ret = strCompareBound(s, "MQTTOn", stop, false);
-	if(ret) {
+	if (ret) {
 		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: MQTTOn");
 		*out = Main_HasMQTTConnected();
 		return ret;
@@ -164,19 +166,19 @@ const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
 		return ret;
 	}
 	ret = strCompareBound(s, "$led_dimmer", stop, 0);
-	if(ret) {
+	if (ret) {
 		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_dimmer");
 		*out = LED_GetDimmer();
 		return ret;
 	}
 	ret = strCompareBound(s, "$led_enableAll", stop, 0);
-	if(ret) {
+	if (ret) {
 		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_enableAll");
 		*out = LED_GetEnableAll();
 		return ret;
 	}
 	ret = strCompareBound(s, "$led_hue", stop, 0);
-	if(ret) {
+	if (ret) {
 		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_hue");
 		*out = LED_GetHue();
 		return ret;
@@ -200,28 +202,105 @@ const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
 		return ret;
 	}
 	ret = strCompareBound(s, "$led_saturation", stop, 0);
-	if(ret) {
+	if (ret) {
 		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_saturation");
 		*out = LED_GetSaturation();
 		return ret;
 	}
 	ret = strCompareBound(s, "$led_temperature", stop, 0);
-	if(ret) {
+	if (ret) {
 		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_temperature");
 		*out = LED_GetTemperature();
 		return ret;
 	}
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	ret = strCompareBound(s, "$voltage", stop, 0);
+	if (ret) {
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: voltage");
+		*out = DRV_GetReading(OBK_VOLTAGE);
+		return ret;
+	}
+	ret = strCompareBound(s, "$current", stop, 0);
+	if (ret) {
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: $current");
+		*out = DRV_GetReading(OBK_CURRENT);
+		return ret;
+	}
+	ret = strCompareBound(s, "$power", stop, 0);
+	if (ret) {
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: $power");
+		*out = DRV_GetReading(OBK_POWER);
+		return ret;
+	}
+#endif
 
+	
 	return false;
 }
 #if WINDOWS
+
+void SIM_GenerateChannelStatesDesc(char *o, int outLen) {
+	int role;
+	const  char *roleStr;
+	char buffer[64];
+	for (int i = 0; i < CHANNEL_MAX; i++) {
+		bool bFound = false;
+		for (int j = 0; j < PLATFORM_GPIO_MAX; j++) {
+			if (g_cfg.pins.roles[j] == IOR_None)
+				continue;
+			if (g_cfg.pins.channels[j] != i)
+				continue;
+			if (bFound == false) {
+				bFound = true;
+				snprintf(buffer, sizeof(buffer), "Ch %i - value %i - ",i,CHANNEL_Get(i));
+				strcat_safe(o, buffer, outLen);
+			}
+			else {
+				strcat_safe(o, ", ", outLen);
+			}
+			role = g_cfg.pins.roles[j];
+			roleStr = PIN_RoleToString(role);
+			strcat_safe(o, roleStr, outLen);
+		}
+		if (bFound) {
+			strcat_safe(o, "\n", outLen);
+		}
+	}
+}
+
 const char *CMD_ExpandConstantString(const char *s, const char *stop, char *out, int outLen) {
 	int idx;
 	const char *ret;
+	char tmp[32];
 
 	ret = strCompareBound(s, "$autoexec.bat", stop, false);
 	if (ret) {
 		byte* data = LFS_ReadFile("autoexec.bat");
+		if (data == 0)
+			return false;
+		strcpy_safe(out, (char*)data, outLen);
+		free(data);
+		return ret;
+	}
+	ret = strCompareBound(s, "$readfile(", stop, false);
+	if (ret) {
+		const char *opening = ret;
+		const char *closingBrace = ret;
+		while (1) {
+			if (*closingBrace == 0)
+				return false; // fail
+			if (*closingBrace == ')') {
+				break;
+			}
+			closingBrace++;
+		}
+		ret = closingBrace + 1;
+		idx = closingBrace - opening;
+		if (idx >= sizeof(tmp) - 1)
+			idx = sizeof(tmp) - 2;
+		strncpy(tmp, opening, idx);
+		tmp[idx] = 0;
+		byte* data = LFS_ReadFile(tmp);
 		if (data == 0)
 			return false;
 		strcpy_safe(out, (char*)data, outLen);
@@ -233,6 +312,11 @@ const char *CMD_ExpandConstantString(const char *s, const char *stop, char *out,
 		SIM_GeneratePinStatesDesc(out, outLen);
 		return ret;
 	}
+	ret = strCompareBound(s, "$channelstates", stop, false);
+	if (ret) {
+		SIM_GenerateChannelStatesDesc(out, outLen);
+		return ret;
+	}
 	return false;
 }
 #endif
@@ -242,6 +326,7 @@ const char *CMD_ExpandConstantToString(const char *constant, char *out, char *st
 	float value;
 	int valueInt;
 	const char *after;
+	float delta;
 
 	outLen = (stop - out) - 1;
 
@@ -256,11 +341,14 @@ const char *CMD_ExpandConstantToString(const char *constant, char *out, char *st
 		return 0;
 
 	valueInt = (int)value;
-	if (abs(valueInt - value) < 0.001f) {
-		snprintf(out, outLen, "%i", valueInt);
+	delta = valueInt - value;
+	if (delta < 0)
+		delta = -delta;
+	if (delta < 0.001f) {
+		snprintf(out, outLen,  "%i", valueInt);
 	}
 	else {
-		snprintf(out, outLen, "%f", value);
+		snprintf(out, outLen,"%f", value);
 	}
 	return after;
 }

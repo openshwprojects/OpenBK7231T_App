@@ -5,6 +5,7 @@
 #include "../new_cfg.h"
 #include "../cmnds/cmd_public.h"
 #include "../cmnds/cmd_local.h"
+#include "../sim/sim_import.h"
 
 void SelfTest_Failed(const char *file, const char *function, int line, const char *exp);
 

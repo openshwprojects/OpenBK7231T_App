@@ -18,14 +18,14 @@ void Tool_Move::onEnd() {
 int Tool_Move::drawTextStats(int h) {
 	if (currentTarget) {
 		if (bMovingButtonHeld) {
-			h = drawText(20, h, "Moving %s", currentTarget->getClassName());
+			h = drawText(NULL, 20, h, "Moving %s", currentTarget->getClassName());
 		}
 		else {
-			h = drawText(20, h, "Last target %s", currentTarget->getClassName());
+			h = drawText(NULL, 20, h, "Last target %s", currentTarget->getClassName());
 		}
 	}
 	else {
-		h = drawText(20, h, "No target");
+		h = drawText(NULL, 20, h, "No target");
 	}
 	return h;
 }

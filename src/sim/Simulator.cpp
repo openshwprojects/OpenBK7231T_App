@@ -149,19 +149,19 @@ void CSimulator::drawWindow() {
 	glOrtho(0.0f, WinWidth, WinHeight, 0.0f, 0.0f, 1.0f);
 
 	int h = 40;
-	h = drawText(10, h, "OpenBeken Simulator");
+	h = drawText(NULL, 10, h, "OpenBeken Simulator");
 	if (sim != 0) {
 		h = sim->drawTextStats(h);
 	}
 	if (activeTool != 0) {
-		h = drawText(10, h, "Active Tool: %s", activeTool->getName());
+		h = drawText(NULL, 10, h, "Active Tool: %s", activeTool->getName());
 		h = activeTool->drawTextStats(h);
 	}
 	if (currentlyEditingText) {
-		h = drawText(10, h, "You are currently editing a text field.");
+		h = drawText(NULL, 10, h, "You are currently editing a text field.");
 	}
 	glColor3f(1.0f, 0.0f, 0.0f);
-	drawText(260, 40, "WARNING: The following sketch may not be a correct circuit schematic. Connections in this simulator are simplified.");
+	drawText(&g_style_text_red, 260, 40, "WARNING: The following sketch may not be a correct circuit schematic. Connections in this simulator are simplified.");
 
 	glColor3f(0.7f, 0.7f, 0.7f);
 	glLineWidth(0.25f);

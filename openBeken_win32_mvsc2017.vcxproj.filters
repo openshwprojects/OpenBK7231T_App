@@ -411,6 +411,12 @@
     <ClCompile Include="src\sim\Controller_Pot.cpp">
       <Filter>Simulator</Filter>
     </ClCompile>
+    <ClCompile Include="src\selftest\selftest_util_mqtt.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hal\bk7231\hal_adc_bk7231.c">
+      <Filter>HAL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />
@@ -495,6 +501,54 @@
       <Filter>Simulator</Filter>
     </ClInclude>
     <ClInclude Include="src\sim\Controller_Pot.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\Tool_Move.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\Tool_Delete.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\Tool_Use.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\Tool_Wire.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\Wire.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\Text.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\Shape.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\Rect.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\Line.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\Junction.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\CursorManager.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\Controller_SimulatorLink.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\Controller_Button.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\Controller_Bulb.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\Circle.h">
+      <Filter>Simulator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sim\Bounds.h">
       <Filter>Simulator</Filter>
     </ClInclude>
   </ItemGroup>

@@ -15,9 +15,10 @@ void CControllerBL0942::onDrawn() {
 	if (currentPending > 0) {
 		return;
 	}
-	if (1) {
-		CMD_ExecuteCommand("startDriver BL0942", 0);
-	}
+	
+	// Now you must do it by hand in simulation (or put in autoexec.bat)
+	//CMD_ExecuteCommand("startDriver BL0942", 0);
+
 	if (txt_voltage->isBeingEdited() == false) {
 		realVoltage = txt_voltage->getFloat();
 	}

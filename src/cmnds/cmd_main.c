@@ -67,7 +67,10 @@ static commandResult_t CMD_ClearAll(const void *context, const char *cmd, const 
 
 	CHANNEL_ClearAllChannels();
 	CMD_ClearAllHandlers(0, 0, 0, 0);
-	RepeatingEvents_Cmd_ClearRepeatingEvents(0, 0, 0, 0);
+	RepeatingEvents_Cmd_ClearRepeatingEvents(0, 0, 0, 0); 
+#if defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_BEKEN)
+	CMD_resetSVM(0, 0, 0, 0);
+#endif
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ClearAll: all clear");
 
@@ -145,6 +148,21 @@ void CMD_ListAllCommands(void *userData, void (*callback)(command_t *cmd, void *
 			callback(newCmd,userData);
 			newCmd = newCmd->next;
 		}
+	}
+
+}
+void CMD_FreeAllCommands() {
+	int i;
+	command_t *cmd, *next;
+
+	for (i = 0; i < HASH_SIZE; i++) {
+		cmd = g_commands[i];
+		while (cmd) {
+			next = cmd->next;
+			free(cmd);
+			cmd = next;
+		}
+		g_commands[i] = 0;
 	}
 
 }

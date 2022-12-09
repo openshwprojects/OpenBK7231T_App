@@ -74,6 +74,26 @@ float led_temperature_min = HASS_TEMPERATURE_MIN;
 float led_temperature_max = HASS_TEMPERATURE_MAX;
 float led_temperature_current = HASS_TEMPERATURE_MIN;
 
+void LED_ResetGlobalVariablesToDefaults() {
+	int i;
+
+	g_lightMode = Light_RGB;
+	for (i = 0; i < 5; i++) {
+		baseColors[i] = 255;
+		finalColors[i] = 255;
+	}
+	g_hsv_h = 0; // 0 to 360
+	g_hsv_s = 0; // 0 to 1
+	g_hsv_v = 1; // 0 to 1
+	g_cfg_colorScaleToChannel = 100.0f / 255.0f;
+	g_numBaseColors = 5;
+	g_brightness = 1.0f;
+	g_lightEnableAll = 0;
+	g_cfg_brightnessMult = 0.01f;
+	led_temperature_min = HASS_TEMPERATURE_MIN;
+	led_temperature_max = HASS_TEMPERATURE_MAX;
+	led_temperature_current = HASS_TEMPERATURE_MIN;
+}
 
 bool LED_IsLedDriverChipRunning()
 {

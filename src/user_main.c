@@ -44,19 +44,19 @@ static int g_secondsElapsed = 0;
 static int g_openAP = 0;
 // connect to wifi after this number of seconds
 static int g_connectToWiFi = 0;
-// many boots failed? do not run pins or anything risky
-static int bSafeMode = 0;
 // reset after this number of seconds
 static int g_reset = 0;
 // is connected to WiFi?
 static int g_bHasWiFiConnected = 0;
 // is Open Access point or a client?
 static int g_bOpenAccessPointMode = 0;
-
-static int g_bootFailures = 0;
-
+// in safe mode, user can press a button to enter the unsafe one
+static int g_doUnsafeInitIn = 0;
+int g_bootFailures = 0;
 static int g_saveCfgAfter = 0;
 static int g_startPingWatchDogAfter = 0;
+// many boots failed? do not run pins or anything risky
+int bSafeMode = 0;
 
 
 // not really <time>, but rather a loop count, but it doesn't really matter much
@@ -73,6 +73,7 @@ int DRV_SSDP_Active = 0;
 
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
+void Main_ForceUnsafeInit();
 
 #if PLATFORM_XR809
 size_t xPortGetFreeHeapSize() {
@@ -148,6 +149,9 @@ OSStatus rtos_delete_thread( beken_thread_t* thread ) {
 	return kNoErr;
 }
 #endif
+void MAIN_ScheduleUnsafeInit(int delSeconds) {
+	g_doUnsafeInitIn = delSeconds;
+}
 void RESET_ScheduleModuleReset(int delSeconds) {
 	g_reset = delSeconds;
 }
@@ -464,6 +468,13 @@ void Main_OnEverySecond()
 			CFG_Save_IfThereArePendingChanges();
 		}
 	}
+	if (g_doUnsafeInitIn) {
+		g_doUnsafeInitIn--;
+		if (!g_doUnsafeInitIn) {
+			ADDLOGF_INFO("Going to call Main_ForceUnsafeInit\r\n");
+			Main_ForceUnsafeInit();
+		}
+	}
 	if (g_reset){
 		g_reset--;
 		if (!g_reset){
@@ -522,7 +533,127 @@ void isidle(){
 	idleCount++;
 }
 
+bool g_unsafeInitDone = false;
 
+void Main_Init_AfterDelay_Unsafe(bool bStartAutoRunScripts) {
+
+	// initialise MQTT - just sets up variables.
+	// all MQTT happens in timer thread?
+	MQTT_init();
+
+	CMD_Init_Delayed();
+
+	if (bStartAutoRunScripts) {
+		if (PIN_FindPinIndexForRole(IOR_IRRecv, -1) != -1 || PIN_FindPinIndexForRole(IOR_IRSend, -1) != -1) {
+			// start IR driver 5 seconds after boot.  It may affect wifi connect?
+			// yet we also want it to start if no wifi for IR control...
+#ifndef OBK_DISABLE_ALL_DRIVERS
+			DRV_StartDriver("IR");
+			//ScheduleDriverStart("IR",5);
+#endif
+		}
+
+		// NOTE: this will try to read autoexec.bat,
+		// so ALL commands expected in autoexec.bat should have been registered by now...
+		CMD_ExecuteCommand(CFG_GetShortStartupCommand(), COMMAND_FLAG_SOURCE_SCRIPT);
+		CMD_ExecuteCommand("exec autoexec.bat", COMMAND_FLAG_SOURCE_SCRIPT);
+	}
+}
+void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
+	g_unsafeInitDone = true;
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	DRV_Generic_Init();
+#endif
+	RepeatingEvents_Init();
+
+	// set initial values for channels.
+	// this is done early so lights come on at the flick of a switch.
+	CFG_ApplyChannelStartValues();
+	PIN_AddCommands();
+	ADDLOGF_DEBUG("Initialised pins\r\n");
+
+#ifdef BK_LITTLEFS
+	// initialise the filesystem, only if present.
+	// don't create if it does not mount
+	// do this for ST mode only, as it may be something in FS which is killing us,
+	// and we may add a command to empty fs just be writing first sector?
+	init_lfs(0);
+#endif
+
+#ifdef BK_LITTLEFS
+	LFSAddCmds(); // setlfssize
+#endif
+
+	PIN_SetGenericDoubleClickCallback(app_on_generic_dbl_click);
+	ADDLOGF_DEBUG("Initialised other callbacks\r\n");
+
+	// initialise rest interface
+	init_rest();
+
+	// add some commands...
+	taslike_commands_init();
+	fortest_commands_init();
+	NewLED_InitCommands();
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+	CMD_InitSendCommands();
+#endif
+	CMD_InitChannelCommands();
+	EventHandlers_Init();
+
+	// CMD_Init() is now split into Early and Delayed
+	// so ALL commands expected in autoexec.bat should have been registered by now...
+	// but DON't run autoexec if we have had 2+ boot failures
+	CMD_Init_Early();
+
+	/* Automatic disable of PIN MONITOR after reboot */
+	if (CFG_HasFlag(OBK_FLAG_HTTP_PINMONITOR)) {
+		CFG_SetFlag(OBK_FLAG_HTTP_PINMONITOR, false);
+	}
+
+	if (bAutoRunScripts) {
+		CMD_ExecuteCommand("exec early.bat", COMMAND_FLAG_SOURCE_SCRIPT);
+
+		// autostart drivers
+		if (PIN_FindPinIndexForRole(IOR_SM2135_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_SM2135_DAT, -1) != -1)
+		{
+#ifndef OBK_DISABLE_ALL_DRIVERS
+			DRV_StartDriver("SM2135");
+#endif
+		}
+		if (PIN_FindPinIndexForRole(IOR_BP5758D_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_BP5758D_DAT, -1) != -1)
+		{
+#ifndef OBK_DISABLE_ALL_DRIVERS
+			DRV_StartDriver("BP5758D");
+#endif
+		}
+		if (PIN_FindPinIndexForRole(IOR_BP1658CJ_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_BP1658CJ_DAT, -1) != -1) {
+#ifndef OBK_DISABLE_ALL_DRIVERS
+			DRV_StartDriver("BP1658CJ");
+#endif
+		}
+		if (PIN_FindPinIndexForRole(IOR_BL0937_CF, -1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_CF1, -1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_SEL, -1) != -1) {
+#ifndef OBK_DISABLE_ALL_DRIVERS
+			DRV_StartDriver("BL0937");
+#endif
+		}
+	}
+
+	g_enable_pins = 1;
+	// this actually sets the pins, moved out so we could avoid if necessary
+	PIN_SetupPins();
+	PIN_StartButtonScanThread();
+
+	NewLED_RestoreSavedStateIfNeeded();
+}
+void Main_ForceUnsafeInit() {
+	if (g_unsafeInitDone) {
+		ADDLOGF_INFO("It was already done.\r\n");
+		return;
+	}
+	Main_Init_BeforeDelay_Unsafe(false);
+	Main_Init_AfterDelay_Unsafe(false);
+	bSafeMode = 0;
+}
 //////////////////////////////////////////////////////
 // do things which should happen BEFORE we delay at Startup
 // e.g. set lights to last value, so we get immediate response at
@@ -532,14 +663,20 @@ void Main_Init_Before_Delay()
 	ADDLOGF_INFO("Main_Init_Before_Delay");
 	// read or initialise the boot count flash area
 	HAL_FlashVars_IncreaseBootCount();
-	
 
-	#ifdef PLATFORM_BEKEN
+#ifdef WINDOWS
+	// on windows, Main_Init may happen multiple time so we need to reset variables
+	LED_ResetGlobalVariablesToDefaults(); 
+	// on windows, we don't want to remember commands from previous session
+	CMD_FreeAllCommands();
+#endif
+
+#ifdef PLATFORM_BEKEN
 	// this just increments our idle counter variable.
 	// it registers a cllback from RTOS IDLE function.
 	// why is it called IRDA??  is this where they check for IR?
 	bg_register_irda_check_func(isidle);
-	#endif
+#endif
 
 	g_bootFailures = HAL_FlashVars_GetBootFailures();
 	if (g_bootFailures > RESTARTS_REQUIRED_FOR_SAFE_MODE)
@@ -552,87 +689,7 @@ void Main_Init_Before_Delay()
 	// only initialise certain things if we are not in AP mode
 	if (!bSafeMode)
     {
-#ifndef OBK_DISABLE_ALL_DRIVERS
-		DRV_Generic_Init();
-#endif
-		RepeatingEvents_Init();
-
-		// set initial values for channels.
-		// this is done early so lights come on at the flick of a switch.
-		CFG_ApplyChannelStartValues();
-		PIN_AddCommands();
-		ADDLOGF_DEBUG("Initialised pins\r\n");
-
-#ifdef BK_LITTLEFS
-		// initialise the filesystem, only if present.
-		// don't create if it does not mount
-		// do this for ST mode only, as it may be something in FS which is killing us,
-		// and we may add a command to empty fs just be writing first sector?
-		init_lfs(0);
-#endif
-
-#ifdef BK_LITTLEFS
-		LFSAddCmds(); // setlfssize
-#endif
-
-		PIN_SetGenericDoubleClickCallback(app_on_generic_dbl_click);
-		ADDLOGF_DEBUG("Initialised other callbacks\r\n");
-
-		// initialise rest interface
-		init_rest();
-
-		// add some commands...
-		taslike_commands_init();
-		fortest_commands_init();
-		NewLED_InitCommands();
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
-		CMD_InitSendCommands();
-#endif
-		CMD_InitChannelCommands();
-		EventHandlers_Init();
-
-		// CMD_Init() is now split into Early and Delayed
-		// so ALL commands expected in autoexec.bat should have been registered by now...
-		// but DON't run autoexec if we have had 2+ boot failures
-		CMD_Init_Early();
-
-        /* Automatic disable of PIN MONITOR after reboot */
-        if (CFG_HasFlag(OBK_FLAG_HTTP_PINMONITOR)) {
-            CFG_SetFlag(OBK_FLAG_HTTP_PINMONITOR, false);
-		}
-
-		CMD_ExecuteCommand("exec early.bat", COMMAND_FLAG_SOURCE_SCRIPT);
-
-		// autostart drivers
-		if(PIN_FindPinIndexForRole(IOR_SM2135_CLK,-1) != -1 && PIN_FindPinIndexForRole(IOR_SM2135_DAT,-1) != -1) 
-        {
-#ifndef OBK_DISABLE_ALL_DRIVERS
-			DRV_StartDriver("SM2135");
-#endif
-		}
-		if(PIN_FindPinIndexForRole(IOR_BP5758D_CLK,-1) != -1 && PIN_FindPinIndexForRole(IOR_BP5758D_DAT,-1) != -1) 
-        {
-#ifndef OBK_DISABLE_ALL_DRIVERS
-			DRV_StartDriver("BP5758D");
-#endif
-		}
-		if(PIN_FindPinIndexForRole(IOR_BP1658CJ_CLK,-1) != -1 && PIN_FindPinIndexForRole(IOR_BP1658CJ_DAT,-1) != -1) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
-			DRV_StartDriver("BP1658CJ");
-#endif
-		}
-		if(PIN_FindPinIndexForRole(IOR_BL0937_CF,-1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_CF1,-1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_SEL,-1) != -1) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
-			DRV_StartDriver("BL0937");
-#endif
-		}
-
-		g_enable_pins = 1;
-		// this actually sets the pins, moved out so we could avoid if necessary
-		PIN_SetupPins();
-		PIN_StartButtonScanThread();
-
-		NewLED_RestoreSavedStateIfNeeded();
+		Main_Init_BeforeDelay_Unsafe(true);
 	}
 
 	ADDLOGF_INFO("Main_Init_Before_Delay done");
@@ -713,26 +770,7 @@ void Main_Init_After_Delay()
 	// only initialise certain things if we are not in AP mode
 	if (!bSafeMode)
     {
-		// initialise MQTT - just sets up variables.
-		// all MQTT happens in timer thread?
-		MQTT_init();
-
-		// NOTE: this will try to read autoexec.bat,
-		// so ALL commands expected in autoexec.bat should have been registered by now...
-		// but DON't run autoexec if we have had 2+ boot failures
-		CMD_Init_Delayed();
-
-		if(PIN_FindPinIndexForRole(IOR_IRRecv,-1) != -1 || PIN_FindPinIndexForRole(IOR_IRSend,-1) != -1) {
-			// start IR driver 5 seconds after boot.  It may affect wifi connect?
-			// yet we also want it to start if no wifi for IR control...
-#ifndef OBK_DISABLE_ALL_DRIVERS
-			DRV_StartDriver("IR");
-			//ScheduleDriverStart("IR",5);
-#endif
-		}
-
-		CMD_ExecuteCommand(CFG_GetShortStartupCommand(), COMMAND_FLAG_SOURCE_SCRIPT);
-		CMD_ExecuteCommand("exec autoexec.bat", COMMAND_FLAG_SOURCE_SCRIPT);
+		Main_Init_AfterDelay_Unsafe(true);
 	}
 
 	ADDLOGF_INFO("Main_Init_After_Delay done");
@@ -742,6 +780,8 @@ void Main_Init_After_Delay()
 
 void Main_Init()
 {
+	g_unsafeInitDone = false;
+
 	// do things we want to happen immediately on boot
 	Main_Init_Before_Delay();
 	// delay until TCP/IP stack is ready

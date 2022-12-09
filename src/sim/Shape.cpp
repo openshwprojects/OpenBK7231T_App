@@ -58,16 +58,16 @@ CShape *CShape::cloneShape() {
 }
 
 float CShape::drawPrivateInformation2D(float x, float h) {
-	h = drawText(x, h, "Position: %f %f", this->getX(), getY());
+	h = drawText(NULL, x, h, "Position: %f %f", this->getX(), getY());
 	return h;
 }
 float CShape::drawInformation2D(float x, float h) {
-	h = drawText(x, h, "ClassName: %s, int. name %s", this->getClassName(), this->getName());
+	h = drawText(NULL, x, h, "ClassName: %s, int. name %s", this->getClassName(), this->getName());
 	h = drawPrivateInformation2D(x, h);
 	if (shapes.size()) {
-		h = drawText(x, h, "SubShapes: %i", shapes.size());
+		h = drawText(NULL, x, h, "SubShapes: %i", shapes.size());
 		for (int i = 0; i < shapes.size(); i++) {
-			h = drawText(x + 20, h, "SubShape: %i/%i", i, shapes.size());
+			h = drawText(NULL, x + 20, h, "SubShape: %i/%i", i, shapes.size());
 			h = shapes[i]->drawInformation2D(x + 40, h);
 		}
 	}

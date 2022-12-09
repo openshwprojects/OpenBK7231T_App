@@ -4,7 +4,7 @@
 
 void Test_Commands_Channels() {
 	// reset whole device
-	CMD_ExecuteCommand("clearAll", 0);
+	SIM_ClearOBK();
 
 	CMD_ExecuteCommand("setChannel 5 12", 0);
 

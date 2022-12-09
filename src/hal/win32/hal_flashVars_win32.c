@@ -12,6 +12,7 @@ int HAL_FlashVars_GetBootCount(){
 }
 int HAL_FlashVars_GetBootFailures(){
     int diff = 0;
+	//diff = 10;
     return diff;
 }
 void HAL_FlashVars_IncreaseBootCount(){

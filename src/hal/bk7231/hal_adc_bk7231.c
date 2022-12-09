@@ -25,12 +25,12 @@ static int adcToGpio[] = {
 	12,//GPIO12, // ADC6
 	13,//GPIO13, // ADC7
 };
-//static int c_adcToGpio = sizeof(adcToGpio)/sizeof(adcToGpio[0]);
+static int c_adcToGpio = sizeof(adcToGpio)/sizeof(adcToGpio[0]);
 
 
-static uint8_t gpioToAdc(int gpio) {
-	uint8_t i;
-	for ( i = 0; i < sizeof(adcToGpio); i++) {
+static int gpioToAdc(int gpio) {
+	int i;
+	for ( i = 0; i < c_adcToGpio; i++) {
 		if (adcToGpio[i] == gpio)
 			return i;
 	}

@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "new_common.h"
+#include "driver\drv_public.h"
 #include "httpserver\new_http.h"
 #include "new_pins.h"
 #include <timeapi.h>
@@ -21,6 +22,8 @@
 
 int accum_time = 0;
 int win_frameNum = 0;
+// this time counter is simulated, I need this for unit tests to work
+int g_simulatedTimeNow = 0;
 #define DEFAULT_FRAME_TIME 5
 
 
@@ -61,6 +64,8 @@ void strcat_safe_test(){
 void Sim_RunFrame(int frameTime) {
 	//printf("Sim_RunFrame: frametime %i\n", frameTime);
 	win_frameNum++;
+	// this time counter is simulated, I need this for unit tests to work
+	g_simulatedTimeNow += frameTime;
 	accum_time += frameTime;
 	PIN_ticks(0);
 	HTTPServer_RunQuickTick();
@@ -93,8 +98,23 @@ void Sim_RunFrames(int n, bool bApplyRealtimeWait) {
 	}
 }
 
+bool bObkStarted = false;
+void SIM_Hack_ClearSimulatedPinRoles();
+
+void SIM_ClearOBK() {
+	if (bObkStarted) {
+		DRV_ShutdownAllDrivers();
+		release_lfs();
+		SIM_Hack_ClearSimulatedPinRoles();
+		CMD_ExecuteCommand("clearAll", 0);
+		Main_Init();
+	}
+}
+void SIM_DoFreshOBKBoot() {
+	bObkStarted = true;
+	Main_Init();
+}
 void Win_DoUnitTests() {
-	//CFG_ClearPins();
 
 
 	Test_HTTP_Client();
@@ -115,16 +135,14 @@ void Win_DoUnitTests() {
 
 	// this is slowest
 	Test_TuyaMCU_Basic();
-}
-bool bObkStarted = false;
-void SIM_ClearOBK() {
-	if (bObkStarted) {
-		CMD_ExecuteCommand("clearAll", 0);
-	}
-}
-void SIM_DoFreshOBKBoot() {
-	bObkStarted = true;
-	Main_Init();
+
+
+
+
+	// Just to be sure
+	// Must be last step
+	// reset whole device
+	SIM_ClearOBK();
 }
 long start_time = 0;
 bool bStartTimeSet = false;
@@ -135,6 +153,10 @@ long SIM_GetTime() {
 		bStartTimeSet = true;
 	}
 	return cur - start_time;
+}
+// this time counter is simulated, I need this for unit tests to work
+int rtos_get_time() {
+	return g_simulatedTimeNow;
 }
 #include "sim/sim_public.h"
 int __cdecl main(int argc, char **argv)

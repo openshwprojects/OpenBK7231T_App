@@ -390,6 +390,17 @@ char* MQTT_GetStatusMessage(void)
 	return mqtt_status_message;
 }
 
+void MQTT_ClearCallbacks() {
+	int i;
+	for (i = 0; i < MAX_MQTT_CALLBACKS; i++) {
+		if (callbacks[i]) {
+			free(callbacks[i]->topic);
+			free(callbacks[i]->subscriptionTopic);
+			free(callbacks[i]);
+			callbacks[i] = 0;
+		}
+	}
+}
 // this can REPLACE callbacks, since we MAY wish to change the root topic....
 // in which case we would re-resigster all callbacks?
 int MQTT_RegisterCallback(const char* basetopic, const char* subscriptiontopic, int ID, mqtt_callback_fn callback) {
@@ -507,32 +518,52 @@ int MQTT_RemoveCallback(int ID) {
 	return 0;
 }
 
+/** From a MQTT topic formatted <client>/<topic>, check if <client> is present
+ *  and return <topic>.
+ *
+ *  @param topic	The topic to parse
+ *  @return 		The topic without the client, or NULL if <client>/ wasn't present
+ */
+char* MQTT_RemoveClientFromTopic(char* topic) {
+	// Get the current client ID.
+	const char* clientId;
+	clientId = CFG_GetMQTTClientId();
+
+	// TODO: cache the client ID length somewhere so we don't have to keep calculating it.
+	int clientLen = strlen(clientId);
+
+	// check if we have the client in the topic.
+	char* hasClient = strstr(topic, clientId);
+
+	topic = topic + clientLen;
+	// check if we have a '/' after the topic.
+	if (*topic != '/') {
+		hasClient = NULL;
+	}
+	
+	// If we have the client/, return the pointer, otherwise, return NULL.
+	return hasClient ? topic + 1 : NULL; 
+}
+
 // this accepts obkXXXXXX/<chan>/set to receive data to set channels
 int channelSet(obk_mqtt_request_t* request) {
-	// we only need a few bytes to receive a decimal number 0-100
-	char copy[12];
 	int len = request->receivedLen;
-	char* p = request->topic;
 	int channel = 0;
 	int iValue = 0;
+	char* p;
 
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "channelSet topic %i with arg %s", request->topic, request->received);
 
-	// TODO: better
-	while (*p != '/') {
-		if (*p == 0)
-			return 0;
-		p++;
-	}
-	p++;
-	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelSet part topic %s", p);
+	p = MQTT_RemoveClientFromTopic(request->topic);
 
-	if ((*p - '0' >= 0) && (*p - '0' <= 9)) {
-		channel = atoi(p);
+	if (p == NULL) {
+		return 0;
 	}
-	else {
-		channel = -1;
-	}
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelSet part topic %s", p);
+	
+	// atoi won't parse any non-decimal chars, so it should skip over the rest of the topic.
+	channel = atoi(p);
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelSet channel %i", channel);
 
@@ -541,31 +572,18 @@ int channelSet(obk_mqtt_request_t* request) {
 		return 0;
 	}
 
-	// find something after channel - should be <base>/<chan>/set
-	while (*p != '/') {
-		if (*p == 0)
-			return 0;
-		p++;
-	}
-	p++;
+	// make sure the topic ends with '/set'.
+	p = strchr(p, '/');
 
 	// if not /set, then stop here
-	if (strcmp(p, "set")) {
+	if (strcmp(p, "/set")) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelSet NOT 'set'");
 		return 0;
 	}
 
-	if (len > sizeof(copy) - 1) {
-		len = sizeof(copy) - 1;
-	}
+	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT client in mqtt_incoming_data_cb data is %.*s for ch %i\n", MQTT_MAX_DATA_LOG_LENGTH, request->received, channel);
 
-	strncpy(copy, (char*)request->received, len);
-	// strncpy does not terminate??!!!!
-	copy[len] = '\0';
-
-	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT client in mqtt_incoming_data_cb data is %s for ch %i\n", copy, channel);
-
-	iValue = atoi((char*)copy);
+	iValue = atoi(((const char*)request->received));
 	CHANNEL_Set(channel, iValue, 0);
 
 	// return 1 to stop processing callbacks here.
@@ -856,14 +874,6 @@ mqtt_request_cb(void* arg, err_t err)
 	const struct mqtt_connect_client_info_t* client_info = (const struct mqtt_connect_client_info_t*)arg;
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT client \"%s\" request cb: err %d\n", client_info->client_id, (int)err);
-}
-
-static void mqtt_sub_request_cb(void* arg, err_t result)
-{
-	/* Just print the result code here for simplicity,
-	   normal behaviour would be to take some action if subscribe fails like
-	   notifying user, retry subscribe or disconnect from server */
-	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Subscribe result: %i\n", result);
 }
 
 /////////////////////////////////////////////
@@ -1314,6 +1324,11 @@ void MQTT_init()
 	char cbtopicbase[CGF_MQTT_CLIENT_ID_SIZE + 16];
 	char cbtopicsub[CGF_MQTT_CLIENT_ID_SIZE + 16];
 	const char* clientId;
+
+	// WINDOWS must support reinit
+#ifdef WINDOWS
+	MQTT_ClearCallbacks();
+#endif
 
 	clientId = CFG_GetMQTTClientId();
 

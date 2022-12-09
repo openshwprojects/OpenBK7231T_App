@@ -324,6 +324,9 @@
     <ClCompile Include="src\driver\drv_ucs1912.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\hal\bk7231\hal_adc_bk7231.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\hal\bk7231\hal_flashConfig_bk7231.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
@@ -515,6 +518,7 @@
     <ClCompile Include="src\selftest\selftest_script.c" />
     <ClCompile Include="src\selftest\selftest_tokenizer.c" />
     <ClCompile Include="src\selftest\selftest_tuyaMCU.c" />
+    <ClCompile Include="src\selftest\selftest_util_mqtt.c" />
     <ClCompile Include="src\sim\Circle.cpp" />
     <ClCompile Include="src\sim\Controller_BL0942.cpp" />
     <ClCompile Include="src\sim\Controller_Bulb.cpp" />
@@ -569,19 +573,35 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\selftest\selftest_local.h" />
+    <ClInclude Include="src\sim\Bounds.h" />
+    <ClInclude Include="src\sim\Circle.h" />
     <ClInclude Include="src\sim\Controller_BL0942.h" />
+    <ClInclude Include="src\sim\Controller_Bulb.h" />
+    <ClInclude Include="src\sim\Controller_Button.h" />
     <ClInclude Include="src\sim\Controller_Pot.h" />
+    <ClInclude Include="src\sim\Controller_SimulatorLink.h" />
+    <ClInclude Include="src\sim\CursorManager.h" />
+    <ClInclude Include="src\sim\Junction.h" />
+    <ClInclude Include="src\sim\Line.h" />
     <ClInclude Include="src\sim\PrefabManager.h" />
     <ClInclude Include="src\sim\RecentList.h" />
+    <ClInclude Include="src\sim\Rect.h" />
     <ClInclude Include="src\sim\SaveLoad.h" />
+    <ClInclude Include="src\sim\Shape.h" />
     <ClInclude Include="src\sim\sim_local.h" />
     <ClInclude Include="src\sim\Solver.h" />
+    <ClInclude Include="src\sim\Text.h" />
     <ClInclude Include="src\sim\Texture.h" />
     <ClInclude Include="src\sim\TextureManager.h" />
     <ClInclude Include="src\sim\Tool_Copy.h" />
+    <ClInclude Include="src\sim\Tool_Delete.h" />
     <ClInclude Include="src\sim\Tool_Info.h" />
+    <ClInclude Include="src\sim\Tool_Move.h" />
     <ClInclude Include="src\sim\Tool_Text.h" />
+    <ClInclude Include="src\sim\Tool_Use.h" />
+    <ClInclude Include="src\sim\Tool_Wire.h" />
     <ClInclude Include="src\sim\WinMenuBar.h" />
+    <ClInclude Include="src\sim\Wire.h" />
     <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\include\net_param_pub.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>

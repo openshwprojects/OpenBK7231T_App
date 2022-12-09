@@ -335,8 +335,11 @@ class CShape *PrefabManager::generatePot() {
 	o->addLine(w - 20, 40, w - 20, 20);
 	o->addLine(-w + 20, 40, -w + 20, 20);
 	o->addLine(-w + 80, 40, -w + 80, 20);
+	CShape *text_value = o->addText(0, 0, "1.23V");
+	text_value->setName("text_value");
 	CControllerPot *pot = new CControllerPot(gnd, vdd, out);
 	pot->setMover(handle);
+	pot->setDisplay(text_value->asText());
 	o->setController(pot);
 	return o;
 }

@@ -4,7 +4,7 @@
 
 void Test_Commands_Alias() {
 	// reset whole device
-	CMD_ExecuteCommand("clearAll", 0);
+	SIM_ClearOBK();
 
 	CMD_ExecuteCommand("alias test1 addChannel 2 10", 0);
 	SELFTEST_ASSERT_CHANNEL(2, 0);

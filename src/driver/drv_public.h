@@ -36,6 +36,8 @@ void DRV_OnEverySecond();
 void DRV_RunQuickTick();
 void DRV_StartDriver(const char* name);
 void DRV_StopDriver(const char* name);
+// right now only used by simulator
+void DRV_ShutdownAllDrivers();
 bool DRV_IsRunning(const char* name);
 void DRV_OnChannelChanged(int channel, int iVal);
 void SM2135_Write(byte* rgbcw);

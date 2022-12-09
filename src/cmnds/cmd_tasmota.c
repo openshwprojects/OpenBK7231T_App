@@ -211,7 +211,7 @@ byte *LFS_ReadFile(const char *fname) {
 		lfsres = lfs_file_open(&lfs, &file, fname, LFS_O_RDONLY);
 
 		if (lfsres >= 0) {
-			ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: openned file %s", fname);
+			ADDLOG_DEBUG(LOG_FEATURE_CMD, "LFS_ReadFile: openned file %s", fname);
 			//lfs_file_seek(&lfs,&file,0,LFS_SEEK_END);
 			//len = lfs_file_tell(&lfs,&file);
 			//lfs_file_seek(&lfs,&file,0,LFS_SEEK_SET);
@@ -255,11 +255,11 @@ byte *LFS_ReadFile(const char *fname) {
 				}
 #endif
 				res[len] = 0;
-				ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: Loaded %i bytes\n",len);
+				ADDLOG_DEBUG(LOG_FEATURE_CMD, "LFS_ReadFile: Loaded %i bytes\n",len);
 				//ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: Loaded %s\n",res);
 			}
 			lfs_file_close(&lfs, &file);
-			ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: closed file %s", fname);
+			ADDLOG_DEBUG(LOG_FEATURE_CMD, "LFS_ReadFile: closed file %s", fname);
 			return res;
 		} else {
 			ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: failed to file %s", fname);
