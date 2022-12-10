@@ -40,6 +40,9 @@ void MQTT_process_received_timer(void *a, void*b){
   // this function allows a function to be queued on the timer thread.
   // initially this seemed attractive, but using a oneshot timer is probably better,
   // so currently unused
+
+  // HMM... the delay here is max time to wait for queue space.
+  // NOT the delay before the function is called...!!!
   OSStatus OBK_rtos_callback_in_timer_thread( PendedFunction_t xFunctionToPend, void *pvParameter1, uint32_t ulParameter2, uint32_t delay_ms)
   {
     signed portBASE_TYPE result;
@@ -95,18 +98,21 @@ void OBK_timer_cb(void *a, uint32_t cmd){
     case ONESHOT_BUTTON_PROCESS:
       //MQTT_process_received();
       // 0 means it's a poll
-      PIN_ticks(0);
+      trigger_50ms_oneshot(ONESHOT_BUTTON_PROCESS);
+      break;
   }
 }
 
-void OBK_TriggerButtonPoll(int delay_ms){
+// defer to a DIFFERENT function in timer thread, else we can't set the timer from within itself...
+void OBK_TriggerButtonPoll(){
   OSStatus err;
-  err = OBK_rtos_callback_in_timer_thread( OBK_timer_cb, NULL, ONESHOT_BUTTON_PROCESS, delay_ms);
+  err = OBK_rtos_callback_in_timer_thread( OBK_timer_cb, NULL, ONESHOT_BUTTON_PROCESS, 100);
 }
 
 
 // this is a bitfield for oneshot timer requests
 uint32_t g_timer_triggers = 0;
+uint32_t g_50ms_timer_triggers = 0;
 
 void process_oneshot_timer(void *a, void*b){
   // if mqtt process incomming data requested
@@ -123,9 +129,19 @@ void process_oneshot_timer(void *a, void*b){
   }
 }
 
+void process_50ms_oneshot_timer(void *a, void*b){
+  if (g_50ms_timer_triggers & ONESHOT_BUTTON_PROCESS){
+    //MQTT_process_received();
+    // 1 means it's a trigger/interrupt
+    PIN_ticks((void *)0);
+    g_50ms_timer_triggers &= ~ONESHOT_BUTTON_PROCESS;
+  }
+}
+
 // we use this only if FreeRTOS is not configured for xTimerPendFunctionCall
 // with #define INCLUDE_xTimerPendFunctionCall 1 in FreeRTOSConfig.h
 beken2_timer_t g_timer_oneshot;
+beken2_timer_t g_50ms_timer_oneshot;
 
 void trigger_oneshot(uint32_t type){
   OSStatus err;
@@ -139,12 +155,30 @@ void trigger_oneshot(uint32_t type){
   err = rtos_start_oneshot_timer(&g_timer_oneshot);
 }
 
+void trigger_50ms_oneshot(uint32_t type){
+  OSStatus err;
+  int fire = 1;
+  if (g_50ms_timer_triggers) fire = 0;
+  // note that we watn MQTT input to be processed
+  g_50ms_timer_triggers |= type;
+  // will start or reset the oneshot timer.
+  // the timer should fire 1ms after this call.
+  // if two calls are made before the timer fires, it will fire ONCE
+  // 1ms after the last call....
+  // the timer calls process_oneshot_timer
+  if (fire) err = rtos_start_oneshot_timer(&g_50ms_timer_oneshot);
+}
+
 // these functions should (are) safe to call from ISR or task.
 void MQTT_TriggerRead(){
   trigger_oneshot(ONESHOT_MQTT_PROCESS);
 }
 void BUTTON_TriggerRead(){
   trigger_oneshot(ONESHOT_BUTTON_PROCESS);
+}
+
+void BUTTON_TriggerRead_50ms(){
+  OBK_TriggerButtonPoll();
 }
 
 void user_main(void)
@@ -163,9 +197,6 @@ void user_main(void)
   ASSERT(kNoErr == err);
 	ADDLOGF_DEBUG("started timer");
 
-#ifdef OBK_USE_PENDFUNCTION
-  // timer not required
-#else
   // initialise a one-shot timer, triggered by MQTT_TriggerRead()
   err = rtos_init_oneshot_timer(&g_timer_oneshot,
                         1,
@@ -173,8 +204,15 @@ void user_main(void)
                         (void *)0,
                         (void *)0);
   ASSERT(kNoErr == err);
-	ADDLOGF_DEBUG("initialised oneshot timer");
-#endif
+
+  err = rtos_init_oneshot_timer(&g_50ms_timer_oneshot,
+                        50,
+                        process_50ms_oneshot_timer,
+                        (void *)0,
+                        (void *)0);
+  ASSERT(kNoErr == err);
+
+	ADDLOGF_DEBUG("initialised oneshot timers");
 }
 
 #if PLATFORM_BK7231N

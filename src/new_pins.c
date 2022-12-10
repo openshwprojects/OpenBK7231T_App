@@ -126,8 +126,11 @@ void PIN_IntHandler(unsigned char index){
 }
 
 extern void OBK_TriggerButtonPoll(int delay_ms);
-void PIN_TriggerPoll(int delay_ms){
-	OBK_TriggerButtonPoll(delay_ms);
+
+extern void BUTTON_TriggerRead_50ms();
+
+void PIN_TriggerPoll(){
+	BUTTON_TriggerRead_50ms();
 }
 
 #endif
@@ -1143,6 +1146,9 @@ static uint32_t g_last_time = 0;
 static uint32_t g_time_tick = 0;
 static uint32_t g_last_time_tick = 0;
 
+static uint32_t activepolls = 0;
+
+
 #define TOGGLE_PIN_DEBOUNCE_CYCLES 50
 
 
@@ -1223,11 +1229,6 @@ void PIN_ticks(void *param)
 	}
 	g_last_time = g_time;
 
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
-	if (param){
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL,"Pin intr at %d (+%d)", g_time, t_diff);
-	}
-#endif
 
 //	BTN_SHORT_TICKS = (g_cfg.buttonShortPress * 100 / PIN_TMR_DURATION);
 //	BTN_LONG_TICKS = (g_cfg.buttonLongPress * 100 / PIN_TMR_DURATION);
@@ -1238,6 +1239,7 @@ void PIN_ticks(void *param)
 	BTN_HOLD_REPEAT_MS = (g_cfg.buttonHoldRepeat * 100);
 
 	int activepins = 0;
+	UINT32 pinvalues = 0;
 	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
 
 #ifdef PLATFORM_BEKEN
@@ -1251,10 +1253,15 @@ void PIN_ticks(void *param)
 			int rawval = HAL_PIN_ReadDigitalInput(i);
 			if (rawval && mode == GPIO_INT_LEVEL_RISING){
 				activepins ++;
+				pinvalues |= (1 << i);
 			}
 			if (!rawval && mode == GPIO_INT_LEVEL_FALLING){
 				activepins ++;
+				pinvalues |= (1 << i);
 			}
+		}
+		if (activepins){
+			activepolls = 20; //20 x 50ms polls after button release
 		}
 #endif
 
@@ -1344,11 +1351,21 @@ void PIN_ticks(void *param)
 	}
 
 #ifdef PLATFORM_BEKEN
-	if (activepins){
-		// setup to poll in 20ms
-		PIN_TriggerPoll(20);
+	if (param){
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL,"Pin intr at %d (+%d) (%x)", g_time, t_diff, pinvalues);
+	}
+
+	if (activepolls){
+		activepolls--;
+		// setup to poll in 50ms
+		PIN_TriggerPoll();
+		if (activepins){
+			addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL,"Pins active at %d (%x)", g_time, pinvalues);
+		} else {
+			addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL,"Pins ->inactive at %d (%x)", g_time, pinvalues);
+		}
 	} else {
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL,"Pins inactive at %d", g_time);
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL,"Pins inactive at %d", g_time, pinvalues);
 	}
 #endif
 }
