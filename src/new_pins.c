@@ -1237,9 +1237,10 @@ void PIN_ticks(void *param)
 	BTN_LONG_MS = (g_cfg.buttonLongPress * 100);
 	BTN_HOLD_REPEAT_MS = (g_cfg.buttonHoldRepeat * 100);
 
-#ifdef PLATFORM_BEKEN
 	int activepins = 0;
 	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
+
+#ifdef PLATFORM_BEKEN
 		// note pins which are active - i.e. would not trigger an edge interrupt on change.
 		// if we have any, then we must poll until none
 		if (g_gpio_index_map & (1<<i)){
