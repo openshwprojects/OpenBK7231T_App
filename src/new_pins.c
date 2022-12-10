@@ -99,6 +99,9 @@ static byte g_lastValidState[PLATFORM_GPIO_MAX];
 uint32_t g_gpio_index_map = 0;
 uint32_t g_gpio_edge_map = 0; // note: 0->rising, 1->falling
 
+void PIN_ticks(void *param);
+
+
 void setGPIActive(int index, int active, int falling){
 	if (active){
 		g_gpio_index_map |= (1<<index);
@@ -1234,6 +1237,7 @@ void PIN_ticks(void *param)
 	BTN_LONG_MS = (g_cfg.buttonLongPress * 100);
 	BTN_HOLD_REPEAT_MS = (g_cfg.buttonHoldRepeat * 100);
 
+#ifdef PLATFORM_BEKEN
 	int activepins = 0;
 	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		// note pins which are active - i.e. would not trigger an edge interrupt on change.
@@ -1251,6 +1255,7 @@ void PIN_ticks(void *param)
 				activepins ++;
 			}
 		}
+#endif
 
 #if 1
 		if(g_cfg.pins.roles[i] == IOR_PWM) {
@@ -1337,7 +1342,7 @@ void PIN_ticks(void *param)
 		}
 	}
 
-#if defined(PLATFORM_BEKEN)
+#ifdef PLATFORM_BEKEN
 	if (activepins){
 		// setup to poll in 20ms
 		PIN_TriggerPoll(20);
