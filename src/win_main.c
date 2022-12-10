@@ -132,6 +132,7 @@ void Win_DoUnitTests() {
 	Test_Command_If_Else(); 
 	Test_Tokenizer();
 	Test_Http();
+	Test_DeviceGroups();
 
 	// this is slowest
 	Test_TuyaMCU_Basic();

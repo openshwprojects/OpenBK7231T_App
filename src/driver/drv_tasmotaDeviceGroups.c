@@ -417,11 +417,12 @@ void DRV_DGR_processPower(int relayStates, byte relaysCount) {
 	if(PIN_CountPinsWithRoleOrRole(IOR_PWM,IOR_PWM_n) > 0) {
 		LED_SetEnableAll(BIT_CHECK(relayStates,0));
 	} else {
-		//if(CHANNEL_HasChannelSomeOutputPin(0)) {
+		// does indexing starts with zero?
+		if(CHANNEL_HasChannelPinWithRoleOrRole(0, IOR_Relay, IOR_Relay_n)) {
 			startIndex = 0;
-		//} else {
-		//	startIndex = 1;
-		//}
+		} else {
+			startIndex = 1;
+		}
 		for(i = 0; i < relaysCount; i++) {
 			int bOn;
 			bOn = BIT_CHECK(relayStates,i);
@@ -528,8 +529,36 @@ void DRV_DGR_RunEverySecond() {
 		}
 	}
 }
-void DRV_DGR_RunQuickTick() {
+void DGR_SpoofNextDGRPacketSource(const char *ipStrs) {
+	memset(&addr, 0, sizeof(addr));
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = inet_addr(ipStrs);
+	addr.sin_port = htons(dgr_port);
+}
+void DGR_ProcessIncomingPacket(char *msgbuf, int nbytes) {
 	dgrDevice_t def;
+
+	msgbuf[nbytes] = '\0';
+
+	strcpy(def.gr.groupName, CFG_DeviceGroups_GetName());
+	def.gr.devGroupShare_In = CFG_DeviceGroups_GetRecvFlags();
+	def.gr.devGroupShare_Out = CFG_DeviceGroups_GetSendFlags();
+	def.cbs.processBrightnessPowerOn = DRV_DGR_processBrightnessPowerOn;
+	def.cbs.processLightBrightness = DRV_DGR_processLightBrightness;
+	def.cbs.processLightFixedColor = DRV_DGR_processLightFixedColor;
+	def.cbs.processPower = DRV_DGR_processPower;
+	def.cbs.processRGBCW = DRV_DGR_processRGBCW;
+	def.cbs.checkSequence = DGR_CheckSequence;
+
+	// don't send things that result from something we rxed...
+	g_inCmdProcessing = 1;
+	DRV_DGR_Dump((byte*)msgbuf, nbytes);
+
+	DGR_Parse((byte*)msgbuf, nbytes, &def, (struct sockaddr *)&addr);
+	g_inCmdProcessing = 0;
+
+}
+void DRV_DGR_RunQuickTick() {
     char msgbuf[64];
 	struct sockaddr_in me;
 	const char *myip;
@@ -574,27 +603,8 @@ void DRV_DGR_RunQuickTick() {
 		}
 
 		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR,"Received %i bytes from %s\n",nbytes,inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr));
-        msgbuf[nbytes] = '\0';
 
-		strcpy(def.gr.groupName,CFG_DeviceGroups_GetName());
-		def.gr.devGroupShare_In = CFG_DeviceGroups_GetRecvFlags();
-		def.gr.devGroupShare_Out = CFG_DeviceGroups_GetSendFlags();
-		def.cbs.processBrightnessPowerOn = DRV_DGR_processBrightnessPowerOn;
-		def.cbs.processLightBrightness = DRV_DGR_processLightBrightness;
-		def.cbs.processLightFixedColor = DRV_DGR_processLightFixedColor;
-		def.cbs.processPower = DRV_DGR_processPower;
-		def.cbs.processRGBCW = DRV_DGR_processRGBCW;
-		def.cbs.checkSequence = DGR_CheckSequence;
-
-		// don't send things that result from something we rxed...
-		g_inCmdProcessing = 1;
-		DRV_DGR_Dump((byte*)msgbuf, nbytes);
-
-		DGR_Parse((byte*)msgbuf, nbytes, &def, (struct sockaddr *)&addr);
-		g_inCmdProcessing = 0;
-
-		//DGR_Parse(msgbuf, nbytes);
-       // puts(msgbuf);
+		DGR_ProcessIncomingPacket(msgbuf, nbytes);
 }
 //static void DRV_DGR_Thread(beken_thread_arg_t arg) {
 //
@@ -624,8 +634,20 @@ void DRV_DGR_RunQuickTick() {
 void DRV_DGR_Shutdown()
 {
 	if(g_dgr_socket_receive>=0) {
+#if WINDOWS
+		closesocket(g_dgr_socket_receive);
+#else
 		close(g_dgr_socket_receive);
+#endif
 		g_dgr_socket_receive = -1;
+	}
+	if (g_dgr_socket_send >= 0) {
+#if WINDOWS
+		closesocket(g_dgr_socket_send);
+#else
+		close(g_dgr_socket_send);
+#endif
+		g_dgr_socket_send = -1;
 	}
 }
 

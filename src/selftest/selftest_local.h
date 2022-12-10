@@ -43,6 +43,7 @@ void Test_ExpandConstant();
 void Test_Scripting();
 void Test_RepeatingEvents();
 void Test_HTTP_Client();
+void Test_DeviceGroups();
 
 void Test_FakeHTTPClientPacket_GET(const char *tg);
 void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data);

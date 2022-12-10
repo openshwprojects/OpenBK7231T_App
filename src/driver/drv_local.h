@@ -46,6 +46,9 @@ void BL_ProcessUpdate(float voltage, float current, float power);
 void BL09XX_AppendInformationToHTTPIndexPage(http_request_t* request);
 bool DRV_IsRunning(const char* name);
 
+// this is exposed here only for debug tool with automatic testing
+void DGR_ProcessIncomingPacket(char *msgbuf, int nbytes);
+void DGR_SpoofNextDGRPacketSource(const char *ipStrs);
 
 void TuyaMCU_Sensor_RunFrame();
 void TuyaMCU_Sensor_Init();
