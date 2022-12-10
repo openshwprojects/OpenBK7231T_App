@@ -51,7 +51,7 @@ int g_lightMode = Light_RGB;
 // Those are base colors, normalized, without brightness applied
 float baseColors[5] = { 255, 255, 255, 255, 255 };
 // Those have brightness included
-float finalColors[5] = { 255, 255, 255, 255, 255 };
+float finalColors[5] = { 0, 0, 0, 0, 0 };
 float g_hsv_h = 0; // 0 to 360
 float g_hsv_s = 0; // 0 to 1
 float g_hsv_v = 1; // 0 to 1
@@ -80,7 +80,7 @@ void LED_ResetGlobalVariablesToDefaults() {
 	g_lightMode = Light_RGB;
 	for (i = 0; i < 5; i++) {
 		baseColors[i] = 255;
-		finalColors[i] = 255;
+		finalColors[i] = 0;
 	}
 	g_hsv_h = 0; // 0 to 360
 	g_hsv_s = 0; // 0 to 1
@@ -222,8 +222,10 @@ void LED_RunQuickColorLerp(int deltaMS) {
 		int target_value_brightness = 0;
 		int target_value_cold_or_warm = 0;
 
-		target_value_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
-		target_value_brightness = g_brightness * 100.0f;
+		if (g_lightEnableAll) {
+			target_value_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
+			target_value_brightness = g_brightness * 100.0f;
+		}
 
 		led_current_value_brightness = Mathf_MoveTowards(led_current_value_brightness, target_value_brightness, deltaSeconds * led_lerpSpeedUnitsPerSecond);
 		led_current_value_cold_or_warm = Mathf_MoveTowards(led_current_value_cold_or_warm, target_value_cold_or_warm, deltaSeconds * led_lerpSpeedUnitsPerSecond);
