@@ -16,6 +16,9 @@
 #include "hal/hal_pins.h"
 #include "hal/hal_adc.h"
 
+#ifdef PLATFORM_BEKEN
+#include <gpio_pub.h>
+#endif
 
 //According to your need to modify the constants.
 #define PIN_TMR_DURATION      5 // Delay (in ms) between button scan iterations
@@ -84,12 +87,68 @@ static byte g_timesUp[PLATFORM_GPIO_MAX];
 static byte g_lastValidState[PLATFORM_GPIO_MAX];
 
 
+// a bitfield indicating which GPI are inputs.
+// could be used to control edge triggered interrupts...
+/*  @param  gpio_index_map:The gpio bitmap which set 1 enable wakeup deep sleep.
+ *              gpio_index_map is hex and every bits is map to gpio0-gpio31.
+ *          gpio_edge_map:The gpio edge bitmap for wakeup gpios,
+ *              gpio_edge_map is hex and every bits is map to gpio0-gpio31.
+ *              0:rising,1:falling.
+ */
+// these map directly to void bk_enter_deep_sleep(UINT32 gpio_index_map,UINT32 gpio_edge_map);
+uint32_t g_gpio_index_map = 0;
+uint32_t g_gpio_edge_map = 0; // note: 0->rising, 1->falling
+
+void setGPIActive(int index, int active, int falling){
+	if (active){
+		g_gpio_index_map |= (1<<index);
+	} else {
+		g_gpio_index_map &= ~(1<<index);
+	}
+	if (falling){
+		g_gpio_edge_map |= (1<<index);
+	} else {
+		g_gpio_edge_map &= ~(1<<index);
+	}
+}
+
+#ifdef PLATFORM_BEKEN
+extern void BUTTON_TriggerRead();
+
+// NOTE: ISR!!!!
+// triggers one-shot timer to fire in 1ms
+// from hal_main_bk7231.c
+void PIN_IntHandler(unsigned char index){
+  BUTTON_TriggerRead();
+}
+
+extern void OBK_TriggerButtonPoll(int delay_ms);
+void PIN_TriggerPoll(int delay_ms){
+	OBK_TriggerButtonPoll(delay_ms);
+}
+
+#endif
+
 void PIN_SetupPins() {
 	int i;
 	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		PIN_SetPinRoleForPinIndex(i,g_cfg.pins.roles[i]);
 	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"PIN_SetupPins pins have been set up.\r\n");
+
+#ifdef PLATFORM_BEKEN
+	for (UINT32 i = 0; i < 32; i++){
+		if (g_gpio_index_map & (1<<i)){
+			UINT32 mode = GPIO_INT_LEVEL_RISING;
+			if (g_gpio_edge_map & (1<<i)){
+				mode = GPIO_INT_LEVEL_FALLING;
+			}
+			gpio_int_enable(i, mode, PIN_IntHandler);
+		} else {
+			gpio_int_disable(i);
+		}
+	}
+#endif
 }
 
 int PIN_GetPinRoleForPinIndex(int index) {
@@ -430,6 +489,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 	}
 #endif
 	if (g_enable_pins) {
+		// remove from active inputs
+		setGPIActive(index, 0, 0);
 		switch(g_cfg.pins.roles[index])
 		{
 		case IOR_Button:
@@ -477,21 +538,25 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 	}
 
 	if (g_enable_pins) {
+		int falling = 0;
 		// init new role
 		switch(role)
 		{
 		case IOR_Button:
-		case IOR_Button_n:
         case IOR_Button_ToggleAll:
-		case IOR_Button_ToggleAll_n:
 		case IOR_Button_NextColor:
-		case IOR_Button_NextColor_n:
 		case IOR_Button_NextDimmer:
-		case IOR_Button_NextDimmer_n:
 		case IOR_Button_NextTemperature:
+			falling = 1;
+		case IOR_Button_n:
+		case IOR_Button_ToggleAll_n:
+		case IOR_Button_NextColor_n:
+		case IOR_Button_NextDimmer_n:
 		case IOR_Button_NextTemperature_n:
 			{
 				pinButton_s *bt = &g_buttons[index];
+				// add to active inputs
+				setGPIActive(index, 1, falling);
 
 				// digital input
 				HAL_PIN_Setup_Input_Pullup(index);
@@ -502,22 +567,31 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			break;
 		case IOR_ToggleChannelOnToggle:
 			{
+				// add to active inputs
+				falling = 1;
+				setGPIActive(index, 1, falling);
 				// digital input
 				HAL_PIN_Setup_Input_Pullup(index);
 				// otherwise we get a toggle on start
 				g_lastValidState[index] = PIN_ReadDigitalInputValue_WithInversionIncluded(index);
 			}
 			break;
-		case IOR_DigitalInput:
 		case IOR_DigitalInput_n:
+			falling = 1;
+		case IOR_DigitalInput:
 			{
+				// add to active inputs
+				setGPIActive(index, 1, falling);
 				// digital input
 				HAL_PIN_Setup_Input_Pullup(index);
 			}
 			break;
-		case IOR_DigitalInput_NoPup:
 		case IOR_DigitalInput_NoPup_n:
+			falling = 1;
+		case IOR_DigitalInput_NoPup:
 			{
+				// add to active inputs
+				setGPIActive(index, 1, falling);
 				// digital input
 				HAL_PIN_Setup_Input(index);
 			}
@@ -1063,34 +1137,29 @@ static int g_wifi_ledState = 0;
 static uint32_t g_time = 0;
 static uint32_t g_last_time = 0;
 
-#define TOGGLE_PIN_DEBOUNCE_CYCLES 50
-//  background ticks, timer repeat invoking interval defined by PIN_TMR_DURATION.
-void PIN_ticks(void *param)
-{
-	int i;
-	int value;
+static uint32_t g_time_tick = 0;
+static uint32_t g_last_time_tick = 0;
 
+#define TOGGLE_PIN_DEBOUNCE_CYCLES 50
+
+
+//  background ticks, timer repeat invoking interval defined by PIN_TMR_DURATION.
+void QUICK_ticks(void *param){
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
-	g_time = rtos_get_time();
+	g_time_tick = rtos_get_time();
 #else
-	g_time += PIN_TMR_DURATION;
+	g_time_tick += PIN_TMR_DURATION;
 #endif
-	uint32_t t_diff = g_time - g_last_time;
+	uint32_t t_diff = g_time_tick - g_last_time_tick;
 	// cope with wrap
 	if (t_diff > 0x4000){
-		t_diff = ((g_time + 0x4000) - (g_last_time + 0x4000));
+		t_diff = ((g_time_tick + 0x4000) - (g_last_time_tick + 0x4000));
 	}
-	g_last_time = g_time;
+	g_last_time_tick = g_time_tick;
 
-
-//	BTN_SHORT_TICKS = (g_cfg.buttonShortPress * 100 / PIN_TMR_DURATION);
-//	BTN_LONG_TICKS = (g_cfg.buttonLongPress * 100 / PIN_TMR_DURATION);
-//	BTN_HOLD_REPEAT_TICKS = (g_cfg.buttonHoldRepeat * 100 / PIN_TMR_DURATION);
-
-	BTN_SHORT_MS = (g_cfg.buttonShortPress * 100);
-	BTN_LONG_MS = (g_cfg.buttonLongPress * 100);
-	BTN_HOLD_REPEAT_MS = (g_cfg.buttonHoldRepeat * 100);
-
+#ifndef PLATFORM_BEKEN
+	PIN_ticks(param);
+#endif
 
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	SVM_RunThreads(t_diff);
@@ -1130,9 +1199,59 @@ void PIN_ticks(void *param)
 			PIN_set_wifi_led(g_wifi_ledState);
 		}
 	}
+}
 
 
+// read GPI inputs
+void PIN_ticks(void *param)
+{
+	int i;
+	int value;
+
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+	g_time = rtos_get_time();
+#else
+	g_time += PIN_TMR_DURATION;
+#endif
+	uint32_t t_diff = g_time - g_last_time;
+	// cope with wrap
+	if (t_diff > 0x4000){
+		t_diff = ((g_time + 0x4000) - (g_last_time + 0x4000));
+	}
+	g_last_time = g_time;
+
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+	if (param){
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL,"Pin intr at %d (+%d)", g_time, t_diff);
+	}
+#endif
+
+//	BTN_SHORT_TICKS = (g_cfg.buttonShortPress * 100 / PIN_TMR_DURATION);
+//	BTN_LONG_TICKS = (g_cfg.buttonLongPress * 100 / PIN_TMR_DURATION);
+//	BTN_HOLD_REPEAT_TICKS = (g_cfg.buttonHoldRepeat * 100 / PIN_TMR_DURATION);
+
+	BTN_SHORT_MS = (g_cfg.buttonShortPress * 100);
+	BTN_LONG_MS = (g_cfg.buttonLongPress * 100);
+	BTN_HOLD_REPEAT_MS = (g_cfg.buttonHoldRepeat * 100);
+
+	int activepins = 0;
 	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		// note pins which are active - i.e. would not trigger an edge interrupt on change.
+		// if we have any, then we must poll until none
+		if (g_gpio_index_map & (1<<i)){
+			UINT32 mode = GPIO_INT_LEVEL_RISING;
+			if (g_gpio_edge_map & (1<<i)){
+				mode = GPIO_INT_LEVEL_FALLING;
+			}
+			int rawval = HAL_PIN_ReadDigitalInput(i);
+			if (rawval && mode == GPIO_INT_LEVEL_RISING){
+				activepins ++;
+			}
+			if (!rawval && mode == GPIO_INT_LEVEL_FALLING){
+				activepins ++;
+			}
+		}
+
 #if 1
 		if(g_cfg.pins.roles[i] == IOR_PWM) {
 			HAL_PIN_PWM_Update(i,g_channelValues[g_cfg.pins.channels[i]]);
@@ -1217,7 +1336,17 @@ void PIN_ticks(void *param)
 			}
 		}
 	}
+
+#if defined(PLATFORM_BEKEN)
+	if (activepins){
+		// setup to poll in 20ms
+		PIN_TriggerPoll(20);
+	} else {
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL,"Pins inactive at %d", g_time);
+	}
+#endif
 }
+
 // setChannelType 3 LowMidHigh
 int CHANNEL_ParseChannelType(const char *s) {
 	if(!stricmp(s,"temperature"))
@@ -1425,7 +1554,7 @@ void button_timer_thread(void *param)
 {
     while(1) {
         vTaskDelay(PIN_TMR_DURATION);
-		PIN_ticks(0);
+		QUICK_ticks(0);
     }
 }
 #elif PLATFORM_W600 || PLATFORM_W800
@@ -1433,7 +1562,7 @@ void button_timer_thread(void *param)
 {
     while(1) {
         vTaskDelay(PIN_TMR_DURATION);
-		PIN_ticks(0);
+		QUICK_ticks(0);
     }
 }
 #elif PLATFORM_XR809
@@ -1454,7 +1583,7 @@ void PIN_StartButtonScanThread(void)
 #elif PLATFORM_XR809
 
 	OS_TimerSetInvalid(&timer);
-	if (OS_TimerCreate(&timer, OS_TIMER_PERIODIC, PIN_ticks, NULL,
+	if (OS_TimerCreate(&timer, OS_TIMER_PERIODIC, QUICK_ticks, NULL,
 	                   PIN_TMR_DURATION) != OS_OK) {
 		printf("PIN_AddCommands timer create failed\n");
 		return;
@@ -1466,7 +1595,7 @@ void PIN_StartButtonScanThread(void)
 
     result = rtos_init_timer(&g_pin_timer,
                             PIN_TMR_DURATION,
-                            PIN_ticks,
+                            QUICK_ticks,
                             (void *)0);
     ASSERT(kNoErr == result);
 
