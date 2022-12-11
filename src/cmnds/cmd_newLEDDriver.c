@@ -492,6 +492,10 @@ void LED_SetTemperature(int tmpInteger, bool bApply) {
 	baseColors[4] = (255.0f) * f;
 
 	if(bApply) {
+		if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_ANY_ACTION)) {
+			LED_SetEnableAll(true);
+		}
+
 		// set g_lightMode
 		SET_LightMode(Light_Temperature);
 		sendTemperatureChange();
@@ -662,6 +666,10 @@ void LED_SetDimmer(int iVal) {
 
 	g_brightness = iVal * g_cfg_brightnessMult;
 
+	if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_ANY_ACTION)) {
+		LED_SetEnableAll(true);
+	}
+
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_DGR_OnLedDimmerChange(iVal);
 #endif
@@ -786,6 +794,10 @@ void LED_SetFinalCW(byte c, byte w) {
 
 	LED_SetTemperature0to1Range(tmp);
 
+	if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_ANY_ACTION)) {
+		LED_SetEnableAll(true);
+	}
+
 	baseColors[3] = c;
 	baseColors[4] = w;
 
@@ -799,6 +811,10 @@ void LED_SetFinalRGB(byte r, byte g, byte b) {
 	baseColors[2] = b;
 
 	RGBtoHSV(baseColors[0]/255.0f, baseColors[1]/255.0f, baseColors[2]/255.0f, &g_hsv_h, &g_hsv_s, &g_hsv_v);
+
+	if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_ANY_ACTION)) {
+		LED_SetEnableAll(true);
+	}
 
 	apply_smart_light();
 
@@ -821,6 +837,10 @@ static void onHSVChanged() {
 	baseColors[0] = r * 255.0f;
 	baseColors[1] = g * 255.0f;
 	baseColors[2] = b * 255.0f;
+
+	if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_ANY_ACTION)) {
+		LED_SetEnableAll(true);
+	}
 
 	sendColorChange();
 
@@ -927,6 +947,9 @@ commandResult_t LED_SetBaseColor(const void *context, const char *cmd, const cha
 
 			RGBtoHSV(baseColors[0]/255.0f, baseColors[1]/255.0f, baseColors[2]/255.0f, &g_hsv_h, &g_hsv_s, &g_hsv_v);
 
+			if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_ANY_ACTION)) {
+				LED_SetEnableAll(true);
+			}
 			apply_smart_light();
 			sendColorChange();
 			if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTLEDPARAMSTOGETHER)) {

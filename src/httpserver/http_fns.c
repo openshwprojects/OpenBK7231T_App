@@ -2445,11 +2445,10 @@ const char* g_obk_flagNames[] = {
 	"[LED] Force RGB mode (3 PWMs for LEDs) and ignore futher PWMs if they are set",
 	"[MQTT] Retain power channels (Relay channels, etc)",
 	"[IR] Do MQTT publish (Tasmota JSON format) for incoming IR data",
-	"error",
+	"[LED] Automatically enable Light on any change of brightness, color or temperature",
 	"error",
 	"error",
 }; 
-
 int http_fn_cfg_generic(http_request_t* request) {
 	int i;
 	char tmpA[64];
