@@ -674,12 +674,14 @@ void LED_SetDimmer(int iVal) {
 }
 static commandResult_t add_dimmer(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int iVal = 0;
+	int bWrapAroundInsteadOfHold;
 
 	Tokenizer_TokenizeString(args, 0);
 
 	iVal = Tokenizer_GetArgInteger(0);
+	bWrapAroundInsteadOfHold = Tokenizer_GetArgInteger(1);
 
-	LED_AddDimmer(iVal, 0, 0);
+	LED_AddDimmer(iVal, bWrapAroundInsteadOfHold, 0);
 
 	return CMD_RES_OK;
 }
