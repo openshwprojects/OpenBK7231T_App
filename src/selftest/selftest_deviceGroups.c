@@ -16,6 +16,23 @@ void SIM_SendFakeDGRPowerPacketToSelf(const char *groupName, int seq, int powerB
 	DGR_ProcessIncomingPacket((char*)buffer, len);
 }
 
+void SIM_SendFakeDGRBrightnessPacketToSelf(const char *groupName, int seq, byte brightness) {
+	byte buffer[256];
+	int len;
+
+	len = DGR_Quick_FormatBrightness(buffer, sizeof(buffer), groupName, seq, 0, brightness);
+
+	DGR_SpoofNextDGRPacketSource("192.168.0.123");
+	DGR_ProcessIncomingPacket((char*)buffer, len);
+}
+
+void SIM_SendFakeDGRBrightnessPacketToSelf_Next(const char *groupName, byte brightness) {
+
+	sim_fakeSeq++;
+
+	SIM_SendFakeDGRBrightnessPacketToSelf(groupName, sim_fakeSeq,  brightness);
+}
+
 void SIM_SendFakeDGRPowerPacketToSelf_Next(const char *groupName, int powerBits, int powerCount) {
 	
 	sim_fakeSeq++;
@@ -124,6 +141,32 @@ void Test_DeviceGroups_RGB() {
 	SELFTEST_ASSERT_CHANNEL(1, 100);
 	SELFTEST_ASSERT_CHANNEL(2, 0);
 	SELFTEST_ASSERT_CHANNEL(3, 0);
+
+	SIM_SendFakeDGRBrightnessPacketToSelf_Next(testName, 127);
+
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+
+	CFG_DeviceGroups_SetRecvFlags(DGR_SHARE_POWER | DGR_SHARE_LIGHT_BRI);
+	CFG_DeviceGroups_SetSendFlags(0);
+
+	SIM_SendFakeDGRBrightnessPacketToSelf_Next(testName, 127);
+
+	printf("R %i G % B %\n", CHANNEL_Get(1), CHANNEL_Get(2), CHANNEL_Get(3));
+
+	SELFTEST_ASSERT_CHANNEL(1, 49);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+
+	SIM_SendFakeDGRBrightnessPacketToSelf_Next(testName, 255);
+
+	printf("R %i G % B %\n", CHANNEL_Get(1), CHANNEL_Get(2), CHANNEL_Get(3));
+
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+
 }
 void Test_DeviceGroups() {
 
