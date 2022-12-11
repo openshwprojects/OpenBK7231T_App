@@ -137,6 +137,7 @@ void Tokenizer_TokenizeString(const char* s, int flags);
 // cmd_repeatingEvents.c
 void RepeatingEvents_Init();
 void RepeatingEvents_OnEverySecond();
+void SIM_GenerateRepeatingEventsDesc(char *o, int outLen);
 // cmd_eventHandlers.c
 void EventHandlers_Init();
 // This is useful to fire an event when a certain UART string command is received.

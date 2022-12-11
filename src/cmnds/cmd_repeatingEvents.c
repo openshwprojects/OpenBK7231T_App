@@ -89,6 +89,25 @@ void RepeatingEvents_AddRepeatingEvent(const char *command, int secondsInterval,
 	// fire after full interval
 	ev->currentInterval = secondsInterval;
 }
+void SIM_GenerateRepeatingEventsDesc(char *o, int outLen) {
+	repeatingEvent_t *cur;
+	//int ci = 0;
+	char buffer[32];
+	cur = g_repeatingEvents;
+	while (cur) {
+		// -1 means 'forever'
+		if (cur->times > 0 || cur->times == -1) {
+			//ci++;
+			snprintf(buffer, outLen,"ID %i, repeats %i",(int) cur->userID, (int)cur->times);
+			strcat_safe(o, buffer, outLen);
+			snprintf(buffer, outLen, ", interval %i", (int)cur->intervalSeconds);
+			snprintf(buffer, outLen, " (cur left %i), cmd: ", (int)cur->currentInterval);
+			strcat_safe(o, buffer, outLen);
+			strcat_safe(o, cur->command, outLen);
+		}
+		cur = cur->next;
+	}
+}
 void RepeatingEvents_OnEverySecond() {
 	repeatingEvent_t *cur;
 	int c_checked = 0;

@@ -317,6 +317,11 @@ const char *CMD_ExpandConstantString(const char *s, const char *stop, char *out,
 		SIM_GenerateChannelStatesDesc(out, outLen);
 		return ret;
 	}
+	ret = strCompareBound(s, "$repeatingevents", stop, false);
+	if (ret) {
+		SIM_GenerateRepeatingEventsDesc(out, outLen);
+		return ret;
+	}
 	return false;
 }
 #endif
