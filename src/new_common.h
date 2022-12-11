@@ -27,6 +27,9 @@ int vsnprintf2(char *o, size_t olen, char const *fmt, va_list arg);
 int snprintf2(char *o, size_t olen, const char* fmt, ...);
 int sprintf2(char *o, const char* fmt, ...);
 
+// from http_fns.  should move to a utils file.
+extern unsigned char hexbyte(const char* hex);
+
 #if WINDOWS
 #define DEVICENAME_PREFIX_FULL "WinTest"
 #define DEVICENAME_PREFIX_SHORT "WT"

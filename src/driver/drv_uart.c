@@ -10,10 +10,18 @@
 #include "../../beken378/func/user_driver/BkDriverUart.h"
 #endif
 
+#if PLATFORM_BL602
+#include <bl_uart.h>
+#include <bl_irq.h>
+#endif
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
 	// from uart_bk.c
 	extern void bk_send_byte(UINT8 uport, UINT8 data);
 #elif WINDOWS
+
+#elif PLATFORM_BL602 
+//int g_fd;
+uint8_t g_id = 1;
 #else
 #endif
 
@@ -76,6 +84,25 @@ void test_ty_read_uart_data_to_buffer(int port, void* param)
 
 }
 #endif
+
+#ifdef PLATFORM_BL602
+//void UART_RunQuickTick() {
+//}
+void MY_UART1_IRQHandler(void)
+{
+	int length;
+	byte buffer[16];
+	//length = aos_read(g_fd, buffer, 1);
+	//if (length > 0) {
+	//	UART_AppendByteToCircularBuffer(buffer[0]);
+	//}
+	int res = bl_uart_data_recv(g_id);
+	if (res >= 0) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "UART received: %i\n", res);
+		UART_AppendByteToCircularBuffer(res);
+	}
+}
+#endif
 void UART_SendByte(byte b) {
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
 	// BK_UART_1 is defined to 0
@@ -83,10 +110,47 @@ void UART_SendByte(byte b) {
 #elif WINDOWS
 	// STUB - for testing
     addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"%02X", b);
+#elif PLATFORM_BL602
+	//aos_write(g_fd, &b, 1);
+	bl_uart_data_send(g_id, b);
 #else
 
 
 #endif
+}
+
+commandResult_t CMD_UART_Send_Hex(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	//const char *args = CMD_GetArg(1);
+	if (!(*args)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "CMD_UART_Send_Hex: requires 1 argument (hex string, like FFAABB00CCDD\n");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	while (*args) {
+		byte b;
+		b = hexbyte(args);
+
+		UART_SendByte(b);
+
+		args += 2;
+	}
+	return CMD_RES_OK;
+}
+
+
+// uartSendASCII test123
+commandResult_t CMD_UART_Send_ASCII(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	//const char *args = CMD_GetArg(1);
+	if (!(*args)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "CMD_UART_Send_ASCII: requires 1 argument (hex string, like hellp world\n");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	while (*args) {
+
+		UART_SendByte(*args);
+
+		args++;
+	}
+	return CMD_RES_OK;
 }
 void UART_InitUART(int baud) {
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
@@ -103,10 +167,24 @@ void UART_InitUART(int baud) {
     bk_uart_initialize(BK_UART_1, &config, NULL);
 	// BK_UART_1 is defined to 0
     bk_uart_set_rx_callback(BK_UART_1, test_ty_read_uart_data_to_buffer, NULL);
+#elif PLATFORM_BL602
+	uint8_t tx_pin = 16;
+	uint8_t rx_pin = 7;
+	bl_uart_init(g_id, tx_pin, rx_pin, 0, 0, baud);
+	//g_fd = aos_open(name, 0);
+	bl_uart_int_rx_enable(1);
+	bl_irq_register(UART1_IRQn, MY_UART1_IRQHandler);
+	bl_irq_enable(UART1_IRQn);
 #else
 
 
 #endif
+	//cmddetail:{"name":"uartSendHex","args":"",
+	//cmddetail:"descr":"Sends raw data by TuyaMCU UART, you must write whole packet with checksum yourself",
+	//cmddetail:"fn":"CMD_UART_Send_Hex","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("uartSendHex", NULL, CMD_UART_Send_Hex, NULL, NULL);
+	CMD_RegisterCommand("uartSendASCII", NULL, CMD_UART_Send_ASCII, NULL, NULL);
 }
 
 

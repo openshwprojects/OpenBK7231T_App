@@ -71,8 +71,6 @@ const char *TuyaMCU_GetDataTypeString(int dpId){
         return "DP_TYPE_BITMAP";
     return "DP_ERROR";
 }
-// from http_fns.  should move to a utils file.
-extern unsigned char hexbyte( const char* hex );
 
 
 
@@ -521,23 +519,6 @@ Info:TuyaMCU:TuyaMCU_V0_ParseRealTimeWithRecordStorage: processing dpId 1, dataT
 Info:TuyaMCU:TuyaMCU_V0_ParseRealTimeWithRecordStorage: raw data 1 byte: 
 Info:GEN:No change in channel 1 (still set to 0) - ignoring
 */
-
-commandResult_t TuyaMCU_Send_Hex(const void *context, const char *cmd, const char *args, int cmdFlags) {
-    //const char *args = CMD_GetArg(1);
-    if(!(*args)) {
-        addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_Send_Hex: requires 1 argument (hex string, like FFAABB00CCDD\n");
-        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-    }
-    while(*args) {
-        byte b;
-        b = hexbyte(args);
-
-        UART_SendByte(b);
-
-        args += 2;
-    }
-    return CMD_RES_OK;
-}
 
 commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, const char *args, int cmdFlags) {
     int dpId;
@@ -1312,11 +1293,6 @@ void TuyaMCU_Init()
 	//cmddetail:"fn":"TuyaMCU_Send_SetTime_Current","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_sendCurTime","",TuyaMCU_Send_SetTime_Current, NULL, NULL);
-	//cmddetail:{"name":"uartSendHex","args":"",
-	//cmddetail:"descr":"Sends raw data by TuyaMCU UART, you must write whole packet with checksum yourself",
-	//cmddetail:"fn":"TuyaMCU_Send_Hex","file":"driver/drv_tuyaMCU.c","requires":"",
-	//cmddetail:"examples":""}
-    CMD_RegisterCommand("uartSendHex",NULL,TuyaMCU_Send_Hex, NULL, NULL);
 	//cmddetail:{"name":"tuyaMcu_fakeHex","args":"",
 	//cmddetail:"descr":"qq",
 	//cmddetail:"fn":"TuyaMCU_Fake_Hex","file":"driver/drv_tuyaMCU.c","requires":"",
