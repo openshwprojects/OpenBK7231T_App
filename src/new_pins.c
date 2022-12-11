@@ -184,6 +184,11 @@ void Button_OnInitialPressDown(int index)
 
 			return;
 		}
+		if (g_cfg.pins.roles[index] == IOR_Button_ScriptOnly || g_cfg.pins.roles[index] == IOR_Button_ScriptOnly_n)
+		{
+
+			return;
+		}
 		// is it a device with RGB/CW/single color/etc LED driver?
 		if(LED_IsRunningDriver()) {
 			LED_ToggleEnabled();
@@ -219,6 +224,10 @@ void Button_OnShortClick(int index)
 		{
 			return;
 		}
+		if (g_cfg.pins.roles[index] == IOR_Button_ScriptOnly || g_cfg.pins.roles[index] == IOR_Button_ScriptOnly_n)
+		{
+			return;
+		}
 		// is it a device with RGB/CW/single color/etc LED driver?
 		if(LED_IsRunningDriver()) {
 			LED_ToggleEnabled();
@@ -238,8 +247,12 @@ void Button_OnDoubleClick(int index)
 	}
 	// fire event - button on pin <index> was dbclicked
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ONDBLCLICK,index);
-	// double click toggles SECOND CHANNEL linked to this button
-	CHANNEL_Toggle(g_cfg.pins.channels2[index]);
+
+	if (g_cfg.pins.roles[index] == IOR_Button || g_cfg.pins.roles[index] == IOR_Button_n)
+	{
+		// double click toggles SECOND CHANNEL linked to this button
+		CHANNEL_Toggle(g_cfg.pins.channels2[index]);
+	}
 
 	if(g_doubleClickCallback!=0) {
 		g_doubleClickCallback(index);
@@ -271,7 +284,7 @@ bool BTN_ShouldInvert(int index) {
 	if(g_cfg.pins.roles[index] == IOR_Button_n || g_cfg.pins.roles[index] == IOR_Button_ToggleAll_n||
 		g_cfg.pins.roles[index] == IOR_DigitalInput_n || 	g_cfg.pins.roles[index] == IOR_DigitalInput_NoPup_n
 		 || 	g_cfg.pins.roles[index] == IOR_Button_NextColor_n  || 	g_cfg.pins.roles[index] == IOR_Button_NextDimmer_n
-		|| g_cfg.pins.roles[index] == IOR_Button_NextTemperature_n ) {
+		|| g_cfg.pins.roles[index] == IOR_Button_NextTemperature_n || g_cfg.pins.roles[index] == IOR_Button_ScriptOnly_n) {
 		return true;
 	}
 	return false;
@@ -339,6 +352,8 @@ void CHANNEL_SetAll(int iVal, int iFlags) {
 		case IOR_Button_NextDimmer_n:
 		case IOR_Button_NextTemperature:
 		case IOR_Button_NextTemperature_n:
+		case IOR_Button_ScriptOnly:
+		case IOR_Button_ScriptOnly_n:
 			{
 
 			}
@@ -442,6 +457,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_Button_NextDimmer_n:
 		case IOR_Button_NextTemperature:
 		case IOR_Button_NextTemperature_n:
+		case IOR_Button_ScriptOnly:
+		case IOR_Button_ScriptOnly_n:
 			{
 				//pinButton_s *bt = &g_buttons[index];
 				// TODO: disable button
@@ -490,6 +507,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_Button_NextDimmer_n:
 		case IOR_Button_NextTemperature:
 		case IOR_Button_NextTemperature_n:
+		case IOR_Button_ScriptOnly:
+		case IOR_Button_ScriptOnly_n:
 			{
 				pinButton_s *bt = &g_buttons[index];
 
@@ -1145,7 +1164,8 @@ void PIN_ticks(void *param)
 			|| g_cfg.pins.roles[i] == IOR_Button_ToggleAll || g_cfg.pins.roles[i] == IOR_Button_ToggleAll_n
 			|| g_cfg.pins.roles[i] == IOR_Button_NextColor || g_cfg.pins.roles[i] == IOR_Button_NextColor_n
 			|| g_cfg.pins.roles[i] == IOR_Button_NextDimmer || g_cfg.pins.roles[i] == IOR_Button_NextDimmer_n
-			|| g_cfg.pins.roles[i] == IOR_Button_NextTemperature || g_cfg.pins.roles[i] == IOR_Button_NextTemperature_n) {
+			|| g_cfg.pins.roles[i] == IOR_Button_NextTemperature || g_cfg.pins.roles[i] == IOR_Button_NextTemperature_n
+			|| g_cfg.pins.roles[i] == IOR_Button_ScriptOnly || g_cfg.pins.roles[i] == IOR_Button_ScriptOnly_n) {
 			//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Test hold %i\r\n",i);
 			PIN_Input_Handler(i, t_diff);
 		}

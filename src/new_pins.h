@@ -61,6 +61,9 @@ enum IORole {
 	IOR_Button_NextTemperature,
 	IOR_Button_NextTemperature_n,
 
+	IOR_Button_ScriptOnly,
+	IOR_Button_ScriptOnly_n,
+
 	IOR_Total_Options,
 };
 
