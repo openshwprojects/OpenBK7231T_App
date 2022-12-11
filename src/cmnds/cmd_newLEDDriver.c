@@ -571,11 +571,18 @@ int LED_GetEnableAll() {
 static commandResult_t enableAll(const void *context, const char *cmd, const char *args, int cmdFlags){
 	//if (!wal_strnicmp(cmd, "POWERALL", 8)){
 		int bEnable;
+		const char *a;
         ADDLOG_DEBUG(LOG_FEATURE_CMD, " enableAll (%s) received with args %s",cmd,args);
 
 		Tokenizer_TokenizeString(args, 0);
 
-		bEnable = Tokenizer_GetArgInteger(0);
+		a = Tokenizer_GetArg(0);
+		if (a && !stricmp(a, "toggle")) {
+			bEnable = !g_lightEnableAll;
+		}
+		else {
+			bEnable = Tokenizer_GetArgInteger(0);
+		}
 
 		LED_SetEnableAll(bEnable);
 
