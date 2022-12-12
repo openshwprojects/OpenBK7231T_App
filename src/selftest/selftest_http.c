@@ -187,8 +187,16 @@ void Test_Http_SingleRelayOnChannel1() {
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=POWER%20ON");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "ON");
 
+	// get power status (IT SHOULD NOT CHANGE POWER value)
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=POWER%20Status");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "ON");
+
 	// set power OFF
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=POWER%20OFF");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "OFF");
+
+	// get power status (IT SHOULD NOT CHANGE POWER value)
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=POWER%20Status");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "OFF");
 
 	// set power OFF

@@ -68,6 +68,9 @@ static commandResult_t power(const void *context, const char *cmd, const char *a
 #endif
 		if(args == 0 || *args == 0) {
 			// this should only check status
+		}
+		else if (!stricmp(args, "STATUS")) {
+			// this should only check status
 		} else if(!stricmp(args,"TOGGLE")) {
 			CHANNEL_Toggle(channel);
 		} else {
