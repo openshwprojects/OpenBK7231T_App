@@ -52,8 +52,8 @@ int drawTextInternal(float x, float y, const char *buffer) {
 
 int drawText(class CStyle *style, int x, int y, const char* fmt, ...) {
 	va_list argList;
-	char buffer2[512];
-	char buffer[512];
+	char buffer2[4096];
+	char buffer[4096];
 	va_start(argList, fmt);
 	vsnprintf(buffer2, sizeof(buffer2), fmt, argList);
 	va_end(argList);

@@ -293,6 +293,7 @@
     <ClCompile Include="src\driver\drv_cse7766.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_ddp.c" />
     <ClCompile Include="src\driver\drv_ir.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -306,6 +307,7 @@
     <ClCompile Include="src\driver\drv_sm2135.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_ssdp.c" />
     <ClCompile Include="src\driver\drv_tasmotaDeviceGroups.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -506,6 +508,7 @@
     <ClCompile Include="src\selftest\selftest_changeHandlers.c" />
     <ClCompile Include="src\selftest\selftest_cmd_alias.c" />
     <ClCompile Include="src\selftest\selftest_cmd_channels.c" />
+    <ClCompile Include="src\selftest\selftest_deviceGroups.c" />
     <ClCompile Include="src\selftest\selftest_expandConstant.c" />
     <ClCompile Include="src\selftest\selftest_expressions.c" />
     <ClCompile Include="src\selftest\selftest_http.c" />

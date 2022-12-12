@@ -279,8 +279,8 @@ typedef struct mainConfig_s {
 	// 0x000005A0
 	char ping_host[64];
 	char initCommandLine[512];
-} mainConfig_t; // size 0x000007E0
-
+} mainConfig_t; // size 0x000007E0 (2016 decimal)
+#define MAGIC_CONFIG_SIZE		2016
 extern mainConfig_t g_cfg;
 
 extern char g_enable_pins;

@@ -5,7 +5,7 @@ void CText::recalcBoundsSelf() {
 	bounds.clear();
 	int line = 0;
 	int ch = 0;;
-	char buffer[512];
+	char buffer[4096];
 	CMD_ExpandConstantsWithinString(txt.c_str(), buffer, sizeof(buffer));
 	const char *p = buffer;
 	bounds.addPoint(Coord(0, -8));
@@ -74,7 +74,7 @@ float CText::getFloat() const {
 }
 void CText::setTextf(const char *fmt, ...) {
 	va_list argList;
-	char buffer[512];
+	char buffer[4096];
 	va_start(argList, fmt);
 	vsnprintf(buffer, sizeof(buffer), fmt, argList);
 	va_end(argList);
@@ -89,7 +89,7 @@ void CText::appendText(const char *s) {
 
 
 void CText::drawShape() {
-	char buffer[512];
+	char buffer[4096];
 	if (bTextEditMode) {
 		recalcBoundsSelf();
 	}

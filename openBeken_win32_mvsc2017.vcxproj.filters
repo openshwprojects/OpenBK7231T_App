@@ -417,6 +417,15 @@
     <ClCompile Include="src\hal\bk7231\hal_adc_bk7231.c">
       <Filter>HAL</Filter>
     </ClCompile>
+    <ClCompile Include="src\selftest\selftest_deviceGroups.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_ssdp.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_ddp.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />

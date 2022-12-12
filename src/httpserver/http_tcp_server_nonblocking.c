@@ -133,7 +133,7 @@ void HTTPServer_RunQuickTick() {
 
 				request.replymaxlen = DEFAULT_BUFLEN;
 
-				printf("HTTP Server for Windows: Bytes received: %d \n", iResult);
+				//printf("HTTP Server for Windows: Bytes received: %d \n", iResult);
 				len = HTTP_ProcessPacket(&request);
 
 				if(len > 0) {
@@ -180,7 +180,7 @@ void HTTPServer_RunQuickTick() {
 				break;
 			}
 			long delta = timeGetTime() - firstAttempt;
-			if (delta > 100) {
+			if (delta > 2) {
 				printf("HTTP server would freeze to long!\n");
 				break; // too long freeze!
 

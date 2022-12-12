@@ -276,6 +276,10 @@ void Main_OnEverySecond()
 	const char *safe;
 	int i;
 
+#ifdef WINDOWS
+	g_bHasWiFiConnected = 1;
+#endif
+
 	// run_adc_test();
 	newMQTTState = MQTT_RunEverySecondUpdate();
 	if(newMQTTState != bMQTTconnected) {

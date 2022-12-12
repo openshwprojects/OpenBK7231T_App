@@ -145,6 +145,10 @@ void Win_DoUnitTests() {
 	// reset whole device
 	SIM_ClearOBK();
 }
+long g_delta;
+float SIM_GetDeltaTimeSeconds() {
+	return g_delta * 0.001f;
+}
 long start_time = 0;
 bool bStartTimeSet = false;
 long SIM_GetTime() {
@@ -172,8 +176,10 @@ int __cdecl main(int argc, char **argv)
         printf("WSAStartup failed with error: %d\n", iResult);
         return 1;
     }
-
-
+	if (sizeof(mainConfig_t) != MAGIC_CONFIG_SIZE) {
+		printf("sizeof(mainConfig_t) != MAGIC_CONFIG_SIZE!: %i\n", sizeof(mainConfig_t));
+		system("pause");
+	}
 	if (bWantsUnitTests) {
 		SIM_DoFreshOBKBoot();
 		// let things warm up a little
@@ -195,10 +201,10 @@ int __cdecl main(int argc, char **argv)
 		long prev_time = SIM_GetTime();
 		while (1) {
 			long cur_time = SIM_GetTime();
-			long delta = cur_time - prev_time;
-			if (delta <= 0)
+			g_delta = cur_time - prev_time;
+			if (g_delta <= 0)
 				continue;
-			Sim_RunFrame(delta);
+			Sim_RunFrame(g_delta);
 			SIM_RunWindow();
 			prev_time = cur_time;
 		}

@@ -2,6 +2,7 @@
 #include "Controller_Button.h"
 #include "Shape.h"
 #include "Junction.h"
+#include "sim_import.h"
 
 CControllerButton::CControllerButton(class CJunction *_a, class CJunction *_b) {
 	timeAfterMouseHold = 99.0f;
@@ -41,7 +42,8 @@ void CControllerButton::sendEvent(int code, const class Coord &mouseOfs) {
 	}
 }
 void CControllerButton::onDrawn() {
-	float speed = 2.0f;
+	float dt = SIM_GetDeltaTimeSeconds();
+	float speed = 160.0f * dt;
 	if (timeAfterMouseHold < 0.2f) {
 		remDist = mover->moveTowards(closedPos, speed);
 	}
@@ -49,7 +51,7 @@ void CControllerButton::onDrawn() {
 		remDist = 9999;
 		mover->moveTowards(openPos, speed);
 	}
-	timeAfterMouseHold += 0.1f;
+	timeAfterMouseHold += dt;
 }
 
 #endif

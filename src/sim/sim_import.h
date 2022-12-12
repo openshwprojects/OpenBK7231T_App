@@ -18,6 +18,7 @@ extern "C" {
 	void SIM_DoFreshOBKBoot();
 	void SIM_ClearOBK();
 	bool SIM_IsFlashModified();
+	float SIM_GetDeltaTimeSeconds();
 #ifdef __cplusplus
 }
 #endif
