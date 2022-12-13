@@ -156,6 +156,7 @@ static bool wifi_state = false;
 static int wifi_state_timer = 0;
 static bool self_processing_mode = true;
 static bool state_updated = false;
+static int g_sendQueryStatePackets = 0;
 
 tuyaMCUMapping_t *TuyaMCU_FindDefForID(int fnId) {
     tuyaMCUMapping_t *cur;
@@ -1095,6 +1096,7 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
         case TUYA_CMD_STATE:
             TuyaMCU_ParseStateMessage(data+6,len-6);
             state_updated = true;
+			g_sendQueryStatePackets = 0;
             break;
         case TUYA_CMD_SET_TIME:
             addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: received TUYA_CMD_SET_TIME, so sending back time");
@@ -1165,6 +1167,40 @@ commandResult_t TuyaMCU_FakePacket(const void *context, const char *cmd, const c
     TuyaMCU_ProcessIncoming(packet,c);
     return CMD_RES_OK;
 }
+void TuyaMCU_RunWiFiUpdateAndPackets() {
+	//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_WifiCheck %d ", wifi_state_timer);
+	/* Monitor WIFI and MQTT connection and apply Wifi state
+	 * State is updated when change is detected or after timeout */
+	if ((Main_HasWiFiConnected() != 0) && (Main_HasMQTTConnected() != 0))
+	{
+		if ((wifi_state == false) || (wifi_state_timer == 0))
+		{
+			addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send SetWiFiState 4.\n");
+			Tuya_SetWifiState(4);
+			wifi_state = true;
+			wifi_state_timer++;
+		}
+	}
+	else {
+		if ((wifi_state == true) || (wifi_state_timer == 0))
+		{
+			addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send SetWiFiState 0.\n");
+
+			Tuya_SetWifiState(0);
+			wifi_state = false;
+			wifi_state_timer++;
+		}
+	}
+	/* wifi state timer */
+	if (wifi_state_timer > 0)
+		wifi_state_timer++;
+	if (wifi_state_timer >= 60)
+	{
+		/* timeout after ~1 minute */
+		wifi_state_timer = 0;
+		//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_Wifi_State timer");
+	}
+}
 void TuyaMCU_RunFrame() {
     byte data[128];
     char buffer_for_log[256];
@@ -1222,6 +1258,7 @@ void TuyaMCU_RunFrame() {
             working_mode_valid = false;
             wifi_state_valid = false;
             state_updated = false;
+			g_sendQueryStatePackets = 0;
         }
         //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "WFS: %d H%d P%d M%d W%d S%d", wifi_state_timer,
         //        heartbeat_valid, product_information_valid, working_mode_valid, wifi_state_valid,
@@ -1258,43 +1295,22 @@ void TuyaMCU_RunFrame() {
             }
             else if (state_updated == false)
             {
-                /* Request first state of all DP - this should list all existing DP */
-				addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_QUERY_STATE (state_updated==false).\n");
-                TuyaMCU_SendCommandWithData(TUYA_CMD_QUERY_STATE, NULL, 0);
+				// fix for this device getting stuck?
+				// https://www.elektroda.com/rtvforum/topic3936455.html
+				if (g_sendQueryStatePackets > 1 && (g_sendQueryStatePackets % 2 == 0)) {
+					TuyaMCU_RunWiFiUpdateAndPackets();
+				}
+				else {
+					/* Request first state of all DP - this should list all existing DP */
+					addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_QUERY_STATE (state_updated==false, try %i).\n",
+						g_sendQueryStatePackets);
+						TuyaMCU_SendCommandWithData(TUYA_CMD_QUERY_STATE, NULL, 0);
+					g_sendQueryStatePackets++;
+				}
             }
             else 
             {
-                //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_WifiCheck %d ", wifi_state_timer);
-                /* Monitor WIFI and MQTT connection and apply Wifi state 
-                 * State is updated when change is detected or after timeout */
-                if ((Main_HasWiFiConnected()!=0) && (Main_HasMQTTConnected()!=0))
-                {
-                    if ((wifi_state == false) || (wifi_state_timer == 0))
-                    {
-						addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send SetWiFiState 4.\n");
-                        Tuya_SetWifiState(4);
-                        wifi_state = true;
-                        wifi_state_timer++;
-                    }
-                } else {
-                    if ((wifi_state == true) || (wifi_state_timer == 0))
-                    {
-						addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send SetWiFiState 0.\n");
-
-                        Tuya_SetWifiState(0);
-                        wifi_state = false;
-                        wifi_state_timer++;
-                    }
-                }
-                /* wifi state timer */
-                if (wifi_state_timer > 0)
-                    wifi_state_timer++;
-                if (wifi_state_timer >= 60)
-                {
-                    /* timeout after ~1 minute */
-                    wifi_state_timer = 0;
-                    //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_Wifi_State timer");
-                }
+				TuyaMCU_RunWiFiUpdateAndPackets();
             }
         }
     }    
