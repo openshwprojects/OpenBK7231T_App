@@ -8,12 +8,12 @@ static int FLASH_VARS_STRUCTURE_SIZE = sizeof(FLASH_VARS_STRUCTURE);
 
 //W800 - 0x1F0303 is based on sdk\OpenW600\demo\wm_flash_demo.c
 //W600 - 0xF0000 is based on sdk\OpenW600\demo\wm_flash_demo.c
-//3072 was picked to accomodate the current sizeof(mainConfig_t) which is 2016
+//2528 was picked based on current sizeof(mainConfig_t) which is 2016 with 512 buffer bytes.
 
 #if defined(PLATFORM_W800) 
-#define FLASH_VARS_STRUCTURE_ADDR (0x1F0303 + 3072)
+#define FLASH_VARS_STRUCTURE_ADDR (0x1F0303 + 2528)
 #else
-#define FLASH_VARS_STRUCTURE_ADDR (0xF0000 + 3072)
+#define FLASH_VARS_STRUCTURE_ADDR (0xF0000 + 2528)
 #endif
 
 
