@@ -668,13 +668,6 @@ void Main_Init_Before_Delay()
 	// read or initialise the boot count flash area
 	HAL_FlashVars_IncreaseBootCount();
 
-#ifdef WINDOWS
-	// on windows, Main_Init may happen multiple time so we need to reset variables
-	LED_ResetGlobalVariablesToDefaults(); 
-	// on windows, we don't want to remember commands from previous session
-	CMD_FreeAllCommands();
-#endif
-
 #ifdef PLATFORM_BEKEN
 	// this just increments our idle counter variable.
 	// it registers a cllback from RTOS IDLE function.
@@ -785,6 +778,13 @@ void Main_Init_After_Delay()
 void Main_Init()
 {
 	g_unsafeInitDone = false;
+
+#ifdef WINDOWS
+	// on windows, Main_Init may happen multiple time so we need to reset variables
+	LED_ResetGlobalVariablesToDefaults();
+	// on windows, we don't want to remember commands from previous session
+	CMD_FreeAllCommands();
+#endif
 
 	// do things we want to happen immediately on boot
 	Main_Init_Before_Delay();

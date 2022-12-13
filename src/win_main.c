@@ -104,6 +104,7 @@ void SIM_Hack_ClearSimulatedPinRoles();
 void SIM_ClearOBK() {
 	if (bObkStarted) {
 		DRV_ShutdownAllDrivers();
+		LOG_DeInit();
 		release_lfs();
 		SIM_Hack_ClearSimulatedPinRoles();
 		CMD_ExecuteCommand("clearAll", 0);
@@ -166,7 +167,7 @@ int rtos_get_time() {
 #include "sim/sim_public.h"
 int __cdecl main(int argc, char **argv)
 {
-	bool bWantsUnitTests = 1;
+	bool bWantsUnitTests = 0;
     WSADATA wsaData;
     int iResult;
 

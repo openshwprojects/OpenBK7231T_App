@@ -301,6 +301,9 @@ static void inittcplog(){
 http_request_t *g_log_alsoPrintToHTTP = 0;
 bool b_guard_recursivePrint = false;
 
+void LOG_DeInit() {
+	initialised = 0;
+}
 // all log printfs made by command will be sent also to request
 void LOG_SetCommandHTTPRedirectReply(http_request_t* request) {
 	g_log_alsoPrintToHTTP = request;
