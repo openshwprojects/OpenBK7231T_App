@@ -436,7 +436,7 @@ void TuyaMCU_Send_RSSI(int rssi) {
 
 	payload_signedByte = rssi;
 
-	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_RSSI, &payload_signedByte, 1);
+	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_RSSI, (byte*)&payload_signedByte, 1);
 }
 commandResult_t Cmd_TuyaMCU_Send_RSSI(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int toSend;
