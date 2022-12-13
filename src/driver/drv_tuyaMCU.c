@@ -33,6 +33,7 @@ https://developer.tuya.com/en/docs/iot/tuyacloudlowpoweruniversalserialaccesspro
 #define TUYA_CMD_STATE         0x07
 #define TUYA_CMD_QUERY_STATE   0x08
 #define TUYA_CMD_SET_TIME      0x1C
+#define TUYA_CMD_SET_RSSI      0x24
 
 void TuyaMCU_RunFrame();
 
@@ -424,6 +425,32 @@ void TuyaMCU_SendRaw(uint8_t id, char data[]) {
 #endif
 }
 
+/*
+For setting the Wifi Signal Strength. I tested by using the following.
+Take the RSSI for the front web interface (eg -54), calculate the 2's complement (0xCA), 
+and manually calculate the checksum and it works.
+"uartSendHex 55AA 00 24 0001 CA EE"
+*/
+void TuyaMCU_Send_RSSI(int rssi) {
+	char payload_signedByte;
+
+	payload_signedByte = rssi;
+
+	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_RSSI, &payload_signedByte, 1);
+}
+commandResult_t Cmd_TuyaMCU_Send_RSSI(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	int toSend;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 1) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "Requires 1 argument\n");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	toSend = Tokenizer_GetArgInteger(0);
+	TuyaMCU_Send_RSSI(toSend);
+	return CMD_RES_OK;
+}
 void TuyaMCU_Send_SetTime(struct tm *pTime) {
     byte payload_buffer[8];
 
@@ -1344,6 +1371,14 @@ void TuyaMCU_Init()
 	//cmddetail:"fn":"TuyaMCU_SetBaudRate","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_setBaudRate","",TuyaMCU_SetBaudRate, NULL, NULL);
+
+
+	//cmddetail:{"name":"tuyaMcu_setBaudRate","args":"",
+	//cmddetail:"descr":"Set the serial baud rate used to communicate with the TuyaMCU",
+	//cmddetail:"fn":"TuyaMCU_SetBaudRate","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("tuyaMcu_sendRSSI", "", Cmd_TuyaMCU_Send_RSSI, NULL, NULL);
+	
 }
 // Door sensor with TuyaMCU version 0 (not 3), so all replies have x00 and not 0x03 byte
 // fakeTuyaPacket 55AA0008000C00010101010101030400010223
