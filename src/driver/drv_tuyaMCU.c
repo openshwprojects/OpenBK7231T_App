@@ -1305,8 +1305,8 @@ void TuyaMCU_RunFrame() {
 					addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_QUERY_STATE (state_updated==false, try %i).\n",
 						g_sendQueryStatePackets);
 						TuyaMCU_SendCommandWithData(TUYA_CMD_QUERY_STATE, NULL, 0);
-					g_sendQueryStatePackets++;
 				}
+				g_sendQueryStatePackets++;
             }
             else 
             {
