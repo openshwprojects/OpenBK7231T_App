@@ -1078,6 +1078,14 @@ static commandResult_t setBrightness(const void *context, const char *cmd, const
 
 	return CMD_RES_OK;
 }
+static commandResult_t led_finishFullLerp(const void *context, const char *cmd, const char *args, int cmdFlags) {
+
+	if (CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == true) {
+		LED_RunQuickColorLerp(9999.0f);
+	}
+
+	return CMD_RES_OK;
+}
 static commandResult_t setSaturation(const void *context, const char *cmd, const char *args, int cmdFlags){
     float f;
 
@@ -1196,6 +1204,7 @@ void NewLED_InitCommands(){
 	CMD_RegisterCommand("HSBColor2", "", setSaturation, NULL, NULL);
 	// HSBColor3	0..100 = set brightness
 	CMD_RegisterCommand("HSBColor3", "", setBrightness, NULL, NULL);
+	CMD_RegisterCommand("led_finishFullLerp", "", led_finishFullLerp, NULL, NULL);
 }
 
 void NewLED_RestoreSavedStateIfNeeded() {
