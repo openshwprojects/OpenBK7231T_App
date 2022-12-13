@@ -191,6 +191,7 @@ void LED_RunQuickColorLerp(int deltaMS) {
 	float deltaSeconds;
 	byte finalRGBCW[5];
 	int maxPossibleIndexToSet;
+	int emulatedCool = -1;
 
 	if (CFG_HasFlag(OBK_FLAG_LED_FORCE_MODE_RGB)) {
 		// only allow setting pwm 0, 1 and 2, force-skip 3 and 4
@@ -199,6 +200,7 @@ void LED_RunQuickColorLerp(int deltaMS) {
 	else {
 		maxPossibleIndexToSet = 5;
 	}
+
 
 	deltaSeconds = deltaMS * 0.001f;
 
@@ -209,6 +211,9 @@ void LED_RunQuickColorLerp(int deltaMS) {
 		firstChannelIndex = 0;
 	} else {
 		firstChannelIndex = 1;
+	}
+	if (CFG_HasFlag(OBK_FLAG_LED_EMULATE_COOL_WITH_RGB)) {
+		emulatedCool = firstChannelIndex + 3;
 	}
 
 	for(i = 0; i < 5; i++) {
@@ -242,7 +247,16 @@ void LED_RunQuickColorLerp(int deltaMS) {
 			// This also could work for a SINGLE COLOR strips
 			for(i = 0; i < maxPossibleIndexToSet; i++) {
 				finalRGBCW[i] = led_rawLerpCurrent[i];
-				CHANNEL_Set(firstChannelIndex + i, led_rawLerpCurrent[i] * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+				float chVal = led_rawLerpCurrent[i] * g_cfg_colorScaleToChannel;
+				int channelToUse = firstChannelIndex + i;
+				if (channelToUse == emulatedCool && g_lightMode == Light_Temperature) {
+					CHANNEL_Set(firstChannelIndex + 0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+					CHANNEL_Set(firstChannelIndex + 1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+					CHANNEL_Set(firstChannelIndex + 2, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+				}
+				else {
+					CHANNEL_Set(channelToUse, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+				}
 			}
 		}
 	}
@@ -264,6 +278,7 @@ void apply_smart_light() {
 	int channelToUse;
 	byte finalRGBCW[5];
 	int maxPossibleIndexToSet;
+	int emulatedCool = -1;
 
 	// The color order is RGBCW.
 	// some people set RED to channel 0, and some of them set RED to channel 1
@@ -272,6 +287,10 @@ void apply_smart_light() {
 		firstChannelIndex = 0;
 	} else {
 		firstChannelIndex = 1;
+	}
+
+	if (CFG_HasFlag(OBK_FLAG_LED_EMULATE_COOL_WITH_RGB)) {
+		emulatedCool = firstChannelIndex + 3;
 	}
 
 	if (CFG_HasFlag(OBK_FLAG_LED_FORCE_MODE_RGB)) {
@@ -339,18 +358,26 @@ void apply_smart_light() {
 			//ADDLOG_INFO(LOG_FEATURE_CMD, "apply_smart_light: ch %i raw is %f, bright %f, final %f, enableAll is %i",
 			//	channelToUse,raw,g_brightness,final,g_lightEnableAll);
 
+			float chVal = final * g_cfg_colorScaleToChannel;
 			if(CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == false) {
 				if(isCWMode()) {
 					// in CW mode, we have only set two channels
 					// We don't have RGB channels
 					// so, do simple mapping
 					if(i == 3) {
-						CHANNEL_Set(firstChannelIndex+0, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+						CHANNEL_Set(firstChannelIndex+0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 					} else if(i == 4) {
-						CHANNEL_Set(firstChannelIndex+1, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+						CHANNEL_Set(firstChannelIndex+1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 					}
 				} else {
-					CHANNEL_Set(channelToUse, final * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+					if (channelToUse == emulatedCool && g_lightMode == Light_Temperature) {
+						CHANNEL_Set(firstChannelIndex + 0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+						CHANNEL_Set(firstChannelIndex + 1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+						CHANNEL_Set(firstChannelIndex + 2, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+					}
+					else {
+						CHANNEL_Set(channelToUse, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+					}
 				}
 			}
 		}

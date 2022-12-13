@@ -683,7 +683,7 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "<input  type=\"submit\" style=\"display:none;\" value=\"Toggle Light\"/></form>");
 			poststr(request, "</td></tr>");
 		}
-		if (c_pwms == 2 || c_pwms == 5) {
+		if (c_pwms == 2 || c_pwms >= 4) {
 			// TODO: temperature slider
 			int pwmValue;
 			const char* inputName;
@@ -2455,6 +2455,10 @@ const char* g_obk_flagNames[] = {
 	"[MQTT] Retain power channels (Relay channels, etc)",
 	"[IR] Do MQTT publish (Tasmota JSON format) for incoming IR data",
 	"[LED] Automatically enable Light on any change of brightness, color or temperature",
+	"[LED] Emulate Cool White with RGB in device with four PWMS - Red is 0, Green 1, Blue 2, and Warm is 4",
+	"error",
+	"error",
+	"error",
 	"error",
 	"error",
 }; 
