@@ -109,7 +109,7 @@ enum ChannelType {
 	ChType_EnergyTotal_kWh_div100,
 	ChType_OpenClosed,
 	ChType_OpenClosed_Inv,
-
+	ChType_BatteryLevelPercent,
 
 };
 

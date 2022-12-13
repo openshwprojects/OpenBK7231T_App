@@ -1298,6 +1298,8 @@ int CHANNEL_ParseChannelType(const char *s) {
 		return ChType_OpenClosed;
 	if (!stricmp(s, "OpenClosed_inv"))
 		return ChType_OpenClosed_Inv;
+	if (!stricmp(s, "BatteryLevelPercent"))
+		return ChType_BatteryLevelPercent;
 	return ChType_Error;
 }
 static commandResult_t CMD_setButtonHoldRepeat(const void *context, const char *cmd, const char *args, int cmdFlags){

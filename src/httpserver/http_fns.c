@@ -545,6 +545,15 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "Current %fA (ch %i)", fValue, i);
 			poststr(request, "</td></tr>");
 		}
+		else if (channelType == ChType_BatteryLevelPercent) {
+			iValue = CHANNEL_Get(i);
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "Battery level: %i", iValue);
+			poststr(request, "%");
+			hprintf255(request, " (ch %i)", i);
+			poststr(request, "</td></tr>");
+		}
 		else if (channelType == ChType_OpenClosed) {
 			iValue = CHANNEL_Get(i);
 
