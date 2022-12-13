@@ -665,18 +665,32 @@ void LED_AddDimmer(int iVal, bool wrapAroundInsteadOfClamp, int minValue) {
 
 	cur = g_brightness / g_cfg_brightnessMult;
 
-	cur += iVal;
 
 	if(wrapAroundInsteadOfClamp == 0) {
+		cur += iVal;
+		// clamp
 		if(cur < minValue)
 			cur = minValue;
 		if(cur > 100)
 			cur = 100;
 	} else {
-		if(cur < minValue)
+		// wrap, but first always reach max/min.
+		// So, if we are at min/max then wrap around, otherwise add and clamp...
+		if (cur <= minValue && iVal < 0) {
+			// wrapping around from min to max
 			cur = 100;
-		if(cur > 100)
+		}
+		else if (cur >= 100 && iVal > 0) {
+			// wrapping around from max to min
 			cur = minValue;
+		}
+		else {
+			cur += iVal;
+			if (cur < minValue)
+				cur = minValue;
+			if (cur > 100)
+				cur = 100;
+		}
 	}
 
 	LED_SetDimmer(cur);
