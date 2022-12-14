@@ -32,6 +32,15 @@ static int generateHashValue(const char *fname) {
 
 command_t *g_commands[HASH_SIZE] = { NULL };
 
+static commandResult_t CMD_PowerSave(const void *context, const char *cmd, const char *args, int cmdFlags){
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_PowerSave: enable power save");
+#ifdef PLATFORM_BEKEN
+    bk_wlan_power_save_set_level(/*PS_DEEP_SLEEP_BIT */  PS_RF_SLEEP_BIT | PS_MCU_SLEEP_BIT);	
+#endif
+	return CMD_RES_OK;
+}
+
+
 static commandResult_t CMD_SimonTest(const void *context, const char *cmd, const char *args, int cmdFlags){
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SimonTest: ir test routine");
 
@@ -115,6 +124,11 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_ClearAll","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("clearAll", "", CMD_ClearAll, NULL, NULL);
+	//cmddetail:{"name":"PowerSave","args":"",
+	//cmddetail:"descr":"Enable power save on N & T",
+	//cmddetail:"fn":"CMD_PowerSave","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("PowerSave", "", CMD_PowerSave, NULL, NULL);	
 	//cmddetail:{"name":"simonirtest","args":"",
 	//cmddetail:"descr":"Simons Special Test",
 	//cmddetail:"fn":"CMD_SimonTest","file":"cmnds/cmd_main.c","requires":"",
