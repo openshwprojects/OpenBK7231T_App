@@ -278,21 +278,6 @@ void LED_RunQuickColorLerp(int deltaMS) {
 
 int exponential_mode = 2;
 
-/* exponential mode command handler, usage: led_expoMode <0|1|2|3|4>
-   exponential modes: 0 = Off
-                      1 = 1% min brightness with moderate exponential
-                      2 = 1% min brightness with full exponential
-                      3 = 0.1% min brightness with moderate exponential
-                      4 = 0.1% min brightness with full exponential
-*/
-static commandResult_t exponentialMode (const void *context, const char *cmd, const char *args, int cmdFlags) {
-	int mode = atoi (args);
-	if((mode >= 0) && (mode <= 4)) {
-		exponential_mode = mode;
-		apply_smart_light ();
-	}
-	return CMD_RES_OK;
-}
 
 void apply_smart_light() {
 	int i;
@@ -455,6 +440,21 @@ void apply_smart_light() {
 }
 
 
+/* exponential mode command handler, usage: led_expoMode <0|1|2|3|4>
+   exponential modes: 0 = Off
+					  1 = 1% min brightness with moderate exponential
+					  2 = 1% min brightness with full exponential
+					  3 = 0.1% min brightness with moderate exponential
+					  4 = 0.1% min brightness with full exponential
+*/
+static commandResult_t exponentialMode(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	int mode = atoi(args);
+	if ((mode >= 0) && (mode <= 4)) {
+		exponential_mode = mode;
+		apply_smart_light();
+	}
+	return CMD_RES_OK;
+}
 static OBK_Publish_Result sendColorChange() {
 	char s[16];
 	byte c[3];
