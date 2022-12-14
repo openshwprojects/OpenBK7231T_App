@@ -22,6 +22,34 @@ _PTR realloc _PARAMS ((_PTR a, size_t b)) {
 #endif
 
 #define LOG_FEATURE LOG_FEATURE_MAIN
+
+// from rtos_pub.c
+extern uint32_t  ms_to_tick_ratio;
+
+// note, if called from an ISR, delay is ignored
+// this function allows a function to be queued on the timer thread.
+OSStatus OBK_rtos_callback_in_timer_thread( PendedFunction_t xFunctionToPend, void *pvParameter1, uint32_t ulParameter2, uint32_t delay_ms)
+{
+  signed portBASE_TYPE result;
+
+  if ( platform_is_in_interrupt_context() == RTOS_SUCCESS ) {
+    signed portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+    result = xTimerPendFunctionCallFromISR( xFunctionToPend, pvParameter1, ulParameter2, &xHigherPriorityTaskWoken );
+    portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
+  } 
+  else
+  {
+    result = xTimerPendFunctionCall( xFunctionToPend, pvParameter1, ulParameter2, ( delay_ms / ms_to_tick_ratio ));
+  }
+
+  if ( result != pdPASS )
+  {
+      return kGeneralErr;
+  }
+
+  return kNoErr;
+}
+
 extern int MQTT_process_received();
 void MQTT_process_received_timer(void *a, void*b){
   MQTT_process_received();
