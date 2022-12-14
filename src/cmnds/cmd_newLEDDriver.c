@@ -700,16 +700,32 @@ void LED_AddTemperature(int iVal, bool wrapAroundInsteadOfClamp) {
 	cur += iVal;
 
 	if (wrapAroundInsteadOfClamp == 0) {
+		cur += iVal;
+		// clamp
 		if (cur < led_temperature_min)
 			cur = led_temperature_min;
 		if (cur > led_temperature_max)
 			cur = led_temperature_max;
 	}
 	else {
-		if (cur < led_temperature_min)
+		// wrap, but first always reach max/min.
+		// So, if we are at min/max then wrap around, otherwise add and clamp...
+		if (cur <= led_temperature_min && iVal < 0) {
+			// wrapping around from min to max
 			cur = led_temperature_max;
-		if (cur > led_temperature_max)
+		}
+		else if (cur >= led_temperature_max && iVal > 0) {
+			// wrapping around from max to min
 			cur = led_temperature_min;
+		}
+		else {
+			cur += iVal;
+			// clamp below is CORRECT. We want it to stop at max/min
+			if (cur < led_temperature_min)
+				cur = led_temperature_min;
+			if (cur > led_temperature_max)
+				cur = led_temperature_max;
+		}
 	}
 
 	LED_SetTemperature(cur, true);
@@ -783,6 +799,19 @@ void LED_SetDimmer(int iVal) {
 		}
 	}
 
+}
+static commandResult_t add_temperature(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	int iVal = 0;
+	int bWrapAroundInsteadOfHold;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	iVal = Tokenizer_GetArgInteger(0);
+	bWrapAroundInsteadOfHold = Tokenizer_GetArgInteger(1);
+
+	LED_AddTemperature(iVal, bWrapAroundInsteadOfHold);
+
+	return CMD_RES_OK;
 }
 static commandResult_t add_dimmer(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int iVal = 0;
@@ -1226,6 +1255,11 @@ void NewLED_InitCommands(){
 	//cmddetail:"fn":"basecolor_rgbcw","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_basecolor_rgbcw", "", basecolor_rgbcw, NULL, NULL);
+	//cmddetail:{"name":"led_temperature","args":"",
+	//cmddetail:"descr":"set qqqq",
+	//cmddetail:"fn":"temperature","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("add_temperature", "", add_temperature, NULL, NULL);
 	//cmddetail:{"name":"led_temperature","args":"",
 	//cmddetail:"descr":"set qqqq",
 	//cmddetail:"fn":"temperature","file":"cmnds/cmd_newLEDDriver.c","requires":"",
