@@ -294,6 +294,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\driver\drv_ddp.c" />
+    <ClCompile Include="src\driver\drv_httpButtons.c" />
     <ClCompile Include="src\driver\drv_ir.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>

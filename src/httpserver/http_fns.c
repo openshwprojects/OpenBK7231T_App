@@ -230,6 +230,11 @@ int http_fn_index(http_request_t* request) {
 			DRV_Toggler_ProcessChanges(request);
 		}
 #endif
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+		if (DRV_IsRunning("httpButtons")) {
+			DRV_HTTPButtons_ProcessChanges(request);
+		}
+#endif
 		if (http_getArg(request->url, "tgl", tmpA, sizeof(tmpA))) {
 			j = atoi(tmpA);
 			if (j == SPECIAL_CHANNEL_LEDPOWER) {
@@ -715,6 +720,11 @@ int http_fn_index(http_request_t* request) {
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	if (DRV_IsRunning("PWMToggler")) {
 		DRV_Toggler_AddToHtmlPage(request);
+	}
+#endif
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+	if (DRV_IsRunning("httpButtons")) {
+		DRV_HTTPButtons_AddToHtmlPage(request);
 	}
 #endif
 
