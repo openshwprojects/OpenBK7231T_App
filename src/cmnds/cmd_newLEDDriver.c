@@ -448,10 +448,20 @@ void apply_smart_light() {
 					  4 = 0.1% min brightness with full exponential
 */
 static commandResult_t exponentialMode(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	if (*args == 0) {
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "Command requires 1 arg");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
 	int mode = atoi(args);
 	if ((mode >= 0) && (mode <= 4)) {
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "Mode changed to %i", mode);
 		exponential_mode = mode;
 		apply_smart_light();
+	}
+	else {
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "Invalid argument");
+		return CMD_RES_BAD_ARGUMENT;
 	}
 	return CMD_RES_OK;
 }
