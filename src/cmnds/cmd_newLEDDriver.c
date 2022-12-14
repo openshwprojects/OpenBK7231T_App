@@ -11,6 +11,7 @@
 #include "cmd_local.h"
 #include "../mqtt/new_mqtt.h"
 #include "../cJSON/cJSON.h"
+#include <math.h>
 #ifdef BK_LITTLEFS
 	#include "../littlefs/our_lfs.h"
 #endif
@@ -372,7 +373,7 @@ void apply_smart_light() {
 						expo_factor  = 74.115f;
 						expo_offset -=  0.013f;
 					}
-					final = raw * (pow(expo_base, g_brightness * expo_factor) / expo_factor + expo_offset);
+					final = raw * (powf(expo_base, g_brightness * expo_factor) / expo_factor + expo_offset);
 				}
 			}
 			if(g_lightMode == Light_Temperature) {
