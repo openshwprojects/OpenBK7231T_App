@@ -120,7 +120,7 @@ commandResult_t Toggler_NameX(const void *context, const char *cmd, const char *
 	bool bEnabled;
 
 	if (args == 0 || *args == 0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "This command needs one argument");
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "This command needs one argument");
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
@@ -128,7 +128,7 @@ commandResult_t Toggler_NameX(const void *context, const char *cmd, const char *
 	index = atoi(indexStr);
 
 	if (index < 0 || index >= MAX_ONOFF_SLOTS) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Given index is out of range");
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Given index is out of range");
 		return CMD_RES_BAD_ARGUMENT;
 	}
 	if (g_names[index])
@@ -143,14 +143,14 @@ commandResult_t Toggler_EnableX(const void *context, const char *cmd, const char
 	bool bEnabled;
 
 	if (args == 0 || *args == 0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "This command needs one argument");
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "This command needs one argument");
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
 	indexStr = cmd + strlen("toggler_enable");
 	index = atoi(indexStr);
 	if (index < 0 || index >= MAX_ONOFF_SLOTS) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Given index is out of range");
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Given index is out of range");
 		return CMD_RES_BAD_ARGUMENT;
 	}
 
@@ -169,14 +169,14 @@ commandResult_t Toggler_SetX(const void *context, const char *cmd, const char *a
 	bool bEnabled;
 
 	if (args == 0 || *args == 0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "This command needs one argument");
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "This command needs one argument");
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
 	indexStr = cmd + strlen("toggler_set");
 	index = atoi(indexStr);
 	if (index < 0 || index >= MAX_ONOFF_SLOTS) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Given index is out of range");
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Given index is out of range");
 		return CMD_RES_BAD_ARGUMENT;
 	}
 
@@ -193,14 +193,14 @@ commandResult_t Toggler_ChannelX(const void *context, const char *cmd, const cha
 	bool bEnabled;
 
 	if (args == 0 || *args == 0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "This command needs one argument");
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "This command needs one argument");
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
 	indexStr = cmd + strlen("toggler_channel");
 	index = atoi(indexStr);
 	if (index < 0 || index >= MAX_ONOFF_SLOTS) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Given index is out of range");
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Given index is out of range");
 		return CMD_RES_BAD_ARGUMENT;
 	}
 
