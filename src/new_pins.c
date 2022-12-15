@@ -18,7 +18,7 @@
 
 
 //According to your need to modify the constants.
-#define PIN_TMR_DURATION      5 // Delay (in ms) between button scan iterations
+#define PIN_TMR_DURATION      25 // Delay (in ms) between button scan iterations
 //#define BTN_DEBOUNCE_TICKS    3	//MAX 8
 #define BTN_DEBOUNCE_MS    		15	//MAX 8*5
 
