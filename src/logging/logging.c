@@ -83,6 +83,10 @@ int direct_serial_log = DEFAULT_DIRECT_SERIAL_LOG;
 static int g_extraSocketToSendLOG = 0;
 static char g_loggingBuffer[LOGGING_BUFFER_SIZE];
 
+#define MAX_TCP_LOG_PORTS 2
+int tcp_log_ports[MAX_TCP_LOG_PORTS] = {-1};
+
+
 void LOG_SetRawSocketCallback(int newFD)
 {
 	g_extraSocketToSendLOG = newFD;
@@ -308,6 +312,37 @@ void LOG_DeInit() {
 void LOG_SetCommandHTTPRedirectReply(http_request_t* request) {
 	g_log_alsoPrintToHTTP = request;
 }
+
+
+
+#ifdef PLATFORM_BEKEN
+// run serial via timer thread.
+	OSStatus OBK_rtos_callback_in_timer_thread( PendedFunction_t xFunctionToPend, void *pvParameter1, uint32_t ulParameter2, uint32_t delay_ms);
+	void RunSerialLog();
+	static void send_to_tcp();
+
+	// called from timer thread
+	void log_timer_cb(void *a, uint32_t cmd){
+		RunSerialLog();
+		send_to_tcp();
+	}
+
+	void trigger_log_send(){
+		// pend the function on timer thread.
+		// as this is called form ISR, delay is ignored.
+		OBK_rtos_callback_in_timer_thread( log_timer_cb, NULL, 0, 0);
+	}
+
+	static int getSerial2();
+
+	void RunSerialLog() {
+		// send what we can.  if some remain, re-trigger send
+		if (getSerial2()){
+			trigger_log_send();
+		}
+	}
+#endif
+
 // adds a log to the log memory
 // if head collides with either tail, move the tails on.
 void addLogAdv(int level, int feature, const char* fmt, ...)
@@ -435,6 +470,9 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 	if (taken == pdTRUE) {
 		xSemaphoreGive(logMemory.mutex);
 	}
+#ifdef PLATFORM_BEKEN
+	trigger_log_send();
+#endif	
 	if (log_delay) {
 		int timems = log_delay;
 		// is log_delay set -ve, then calculate delay
@@ -483,8 +521,8 @@ static int getData(char* buff, int buffsize, int* tail) {
 // and not wait.
 // so in our thread, send until full, and never spin waiting to send...
 // H/W TX fifo seems to be 256 bytes!!!
-static void getSerial2() {
-	if (!initialised) return;
+static int getSerial2() {
+	if (!initialised) return 0;
 	int* tail = &logMemory.tailserial;
 	char c;
 	BaseType_t taken = xSemaphoreTake(logMemory.mutex, 100);
@@ -506,10 +544,12 @@ static void getSerial2() {
 		UART_WRITE_BYTE(UART_PORT_INDEX, c);
 	}
 
+	int remains = (*tail != logMemory.head);
+
 	if (taken == pdTRUE) {
 		xSemaphoreGive(logMemory.mutex);
 	}
-	return;
+	return remains;
 }
 
 #else
@@ -557,6 +597,8 @@ void startSerialLog() {
 #if WINDOWS
 
 #else
+
+#ifndef PLATFORM_BEKEN
 	OSStatus err = kNoErr;
 	err = rtos_create_thread(NULL, BEKEN_APPLICATION_PRIORITY,
 		"log_serial",
@@ -567,6 +609,8 @@ void startSerialLog() {
 	{
 		bk_printf("create \"log_serial\" thread failed!\r\n");
 	}
+#endif
+
 #endif
 }
 
@@ -606,17 +650,33 @@ void log_server_thread(beken_thread_arg_t arg)
 			if (client_fd >= 0)
 			{
 				os_strcpy(client_ip_str, inet_ntoa(client_addr.sin_addr));
-				//addLog( "TCP Log Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd );
-				if (kNoErr
-					!= rtos_create_thread(NULL, BEKEN_APPLICATION_PRIORITY,
-						"Logging TCP Client",
-						(beken_thread_function_t)log_client_thread,
-						0x800,
-						(beken_thread_arg_t)client_fd))
-				{
+#ifdef PLATFORM_BEKEN
+				// Just note the new client port, if we have an available slot out of the two we record.
+				int found_port_slot = 0;
+				for (int i = 0; i < MAX_TCP_LOG_PORTS; i++) {
+					if (tcp_log_ports[i] == -1){
+						tcp_log_ports[i] = client_fd;
+						found_port_slot = 1;
+						break;
+					}
+				}
+				if (!found_port_slot){
 					close(client_fd);
 					client_fd = -1;
 				}
+#else
+				//addLog( "TCP Log Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd );
+                if (kNoErr
+                    != rtos_create_thread(NULL, BEKEN_APPLICATION_PRIORITY,
+                        "Logging TCP Client",
+                        (beken_thread_function_t)log_client_thread,
+                        0x800,
+                        (beken_thread_arg_t)client_fd))
+                {
+					close(client_fd);
+					client_fd = -1;
+				}
+#endif
 			}
 		}
 	}
@@ -631,6 +691,43 @@ void log_server_thread(beken_thread_arg_t arg)
 
 #define TCPLOGBUFSIZE 128
 static char tcplogbuf[TCPLOGBUFSIZE];
+
+#ifdef PLATFORM_BEKEN
+static void send_to_tcp(){
+	int i;
+	for (i = 0; i < MAX_TCP_LOG_PORTS; i++){
+		if (tcp_log_ports[i] >= 0){
+			break;
+		}
+	}
+	// no ports to send to
+	if (i == MAX_TCP_LOG_PORTS){
+		return;
+	}
+	int count;
+	do {
+		count = getTcp(tcplogbuf, TCPLOGBUFSIZE);
+		if (count) {
+			for (i = 0; i < MAX_TCP_LOG_PORTS; i++){
+				if (tcp_log_ports[i] >= 0){
+					int len = send(tcp_log_ports[i], tcplogbuf, count, 0);
+					// if some error, close socket
+					if (len != count) {
+						// this is the only place this port can be closed.
+						close(tcp_log_ports[i]);
+						tcp_log_ports[i] = -1;
+					}
+				}
+			}
+		}
+	} while(count);
+}
+#endif
+
+// on beken, we trigger log send from timer thread
+#ifndef PLATFORM_BEKEN
+
+// non-beken
 static void log_client_thread(beken_thread_arg_t arg)
 {
 	int fd = (int)arg;
@@ -653,16 +750,7 @@ static void log_client_thread(beken_thread_arg_t arg)
 }
 
 
-#if PLATFORM_BEKEN
-static void log_serial_thread(beken_thread_arg_t arg)
-{
-	while (1) {
-		getSerial2();
-		rtos_delay_milliseconds(10);
-	}
-}
 
-#else 
 #define SERIALLOGBUFSIZE 128
 static char seriallogbuf[SERIALLOGBUFSIZE];
 static void log_serial_thread(beken_thread_arg_t arg)
