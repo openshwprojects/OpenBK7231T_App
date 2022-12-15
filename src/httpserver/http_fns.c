@@ -807,7 +807,7 @@ int http_fn_index(http_request_t* request) {
 		hprintf255(request, "<h5 style='color:red'>You are in safe mode (AP mode) because full reboot failed %i times. ",
 			Main_GetLastRebootBootFailures());
 		hprintf255(request, "Pins, relays, etc are disabled.</h5>");
-		
+
 	}
 	// for normal page loads, show the rest of the HTML
 	if (!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
@@ -1316,7 +1316,7 @@ int http_fn_flash_read_tool(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
-const char *CMD_GetResultString(commandResult_t r) {
+const char* CMD_GetResultString(commandResult_t r) {
 	if (r == CMD_RES_OK)
 		return "OK";
 	if (r == CMD_RES_EMPTY_STRING)
@@ -1336,7 +1336,7 @@ void LOG_SetCommandHTTPRedirectReply(http_request_t* request);
 
 int http_fn_cmd_tool(http_request_t* request) {
 	commandResult_t res;
-	const char *resStr;
+	const char* resStr;
 	char tmpA[128];
 
 	http_setup(request, httpMimeTypeHTML);
@@ -1406,7 +1406,7 @@ int http_fn_uart_tool(http_request_t* request) {
 	poststr(request, "<h4>UART Tool</h4>");
 
 	if (http_getArg(request->url, "data", tmpA, sizeof(tmpA))) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#ifdef DRIVER_ENABLE_TUYAMCU
 		byte results[128];
 
 		hprintf255(request, "<h3>Sent %s!</h3>", tmpA);
@@ -1793,7 +1793,7 @@ int http_tasmota_json_power(http_request_t* request) {
 	int lastRelayState;
 	bool bRelayIndexingStartsWithZero;
 	int relayIndexingOffset;
-	int temperature; 
+	int temperature;
 	int dimmer;
 
 	bRelayIndexingStartsWithZero = CHANNEL_HasChannelPinWithRoleOrRole(0, IOR_Relay, IOR_Relay_n);
@@ -1839,7 +1839,7 @@ int http_tasmota_json_power(http_request_t* request) {
 
 			// it looks like they include C and W in color
 			if (LED_IsLedDriverChipRunning() || numPWMs == 5) {
-				hprintf255(request, "\"Color\":\"%i,%i,%i,%i,%i\",", 
+				hprintf255(request, "\"Color\":\"%i,%i,%i,%i,%i\",",
 					(int)rgbcw[0], (int)rgbcw[1], (int)rgbcw[2], (int)rgbcw[3], (int)rgbcw[4]);
 			}
 			else {
@@ -2150,7 +2150,7 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 	hprintf255(request, "\"MqttHost\":\"192.168.0.113\",");
 	hprintf255(request, "\"MqttPort\":%i,", CFG_GetMQTTPort());
 	hprintf255(request, "\"MqttClientMask\":\"core-mosquitto\",");
-	hprintf255(request, "\"MqttClient\":\"%s\",",CFG_GetMQTTClientId());
+	hprintf255(request, "\"MqttClient\":\"%s\",", CFG_GetMQTTClientId());
 	hprintf255(request, "\"MqttUser\":\"%s\",", CFG_GetMQTTUserName());
 	hprintf255(request, "\"MqttCount\":23,");
 	hprintf255(request, "\"MAX_PACKET_SIZE\":1200,");
@@ -2471,7 +2471,7 @@ const char* g_obk_flagNames[] = {
 	"error",
 	"error",
 	"error",
-}; 
+};
 int http_fn_cfg_generic(http_request_t* request) {
 	int i;
 	char tmpA[64];

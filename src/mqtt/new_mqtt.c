@@ -30,11 +30,11 @@ extern void MQTT_TriggerRead();
 
 // these won't exist except on Beken?
 #ifndef LOCK_TCPIP_CORE
-	#define LOCK_TCPIP_CORE()
+#define LOCK_TCPIP_CORE()
 #endif
 
 #ifndef UNLOCK_TCPIP_CORE
-	#define UNLOCK_TCPIP_CORE()
+#define UNLOCK_TCPIP_CORE()
 #endif
 
 /////////////////////////////////////////////////////////////
@@ -49,14 +49,14 @@ int mqtt_rx_buffer_count;
 unsigned char temp_topic[128];
 unsigned char temp_data[128];
 
-int addLenData(int len, const unsigned char *data){
+int addLenData(int len, const unsigned char* data) {
 	mqtt_rx_buffer[mqtt_rx_buffer_head] = (len >> 8) & 0xff;
 	mqtt_rx_buffer_head = (mqtt_rx_buffer_head + 1) % MQTT_RX_BUFFER_MAX;
 	mqtt_rx_buffer_count++;
 	mqtt_rx_buffer[mqtt_rx_buffer_head] = (len) & 0xff;
 	mqtt_rx_buffer_head = (mqtt_rx_buffer_head + 1) % MQTT_RX_BUFFER_MAX;
 	mqtt_rx_buffer_count++;
-	for (int i = 0; i < len; i++){
+	for (int i = 0; i < len; i++) {
 		mqtt_rx_buffer[mqtt_rx_buffer_head] = data[i];
 		mqtt_rx_buffer_head = (mqtt_rx_buffer_head + 1) % MQTT_RX_BUFFER_MAX;
 		mqtt_rx_buffer_count++;
@@ -64,32 +64,33 @@ int addLenData(int len, const unsigned char *data){
 	return len + 2;
 }
 
-int getLenData(int *len, unsigned char *data, int maxlen){
+int getLenData(int* len, unsigned char* data, int maxlen) {
 	int l;
 	l = mqtt_rx_buffer[mqtt_rx_buffer_tail];
 	mqtt_rx_buffer_tail = (mqtt_rx_buffer_tail + 1) % MQTT_RX_BUFFER_MAX;
 	mqtt_rx_buffer_count--;
-	l = l<<8;
+	l = l << 8;
 	l |= mqtt_rx_buffer[mqtt_rx_buffer_tail];
 	mqtt_rx_buffer_tail = (mqtt_rx_buffer_tail + 1) % MQTT_RX_BUFFER_MAX;
 	mqtt_rx_buffer_count--;
 
-	for (int i = 0; i < l; i++){
-		if (i < maxlen){
+	for (int i = 0; i < l; i++) {
+		if (i < maxlen) {
 			data[i] = mqtt_rx_buffer[mqtt_rx_buffer_tail];
 		}
 		mqtt_rx_buffer_tail = (mqtt_rx_buffer_tail + 1) % MQTT_RX_BUFFER_MAX;
 		mqtt_rx_buffer_count--;
 	}
-	if (mqtt_rx_buffer_count < 0){
+	if (mqtt_rx_buffer_count < 0) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "MQTT_rx buffer underflow!!!");
 		mqtt_rx_buffer_count = 0;
 		mqtt_rx_buffer_tail = mqtt_rx_buffer_head = 0;
 	}
 
-	if (l > maxlen){
+	if (l > maxlen) {
 		*len = maxlen;
-	} else {
+	}
+	else {
 		*len = l;
 	}
 	return l + 2;
@@ -122,12 +123,13 @@ static void MQTT_Mutex_Free()
 // NOTE: this function is now public, but only because my unit tests
 // system can use it to spoof MQTT packets to check if MQTT commands
 // are working...
-int MQTT_Post_Received(const char *topic, int topiclen, const unsigned char *data, int datalen){
+int MQTT_Post_Received(const char* topic, int topiclen, const unsigned char* data, int datalen) {
 	MQTT_Mutex_Take(100);
-	if ((MQTT_RX_BUFFER_MAX - 1 - mqtt_rx_buffer_count) < topiclen + datalen + 2 + 2){
+	if ((MQTT_RX_BUFFER_MAX - 1 - mqtt_rx_buffer_count) < topiclen + datalen + 2 + 2) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "MQTT_rx buffer overflow for topic %s", topic);
-	} else {
-		addLenData(topiclen, (unsigned char *)topic);
+	}
+	else {
+		addLenData(topiclen, (unsigned char*)topic);
 		addLenData(datalen, data);
 	}
 	MQTT_Mutex_Free();
@@ -138,18 +140,18 @@ int MQTT_Post_Received(const char *topic, int topiclen, const unsigned char *dat
 #endif
 	return 1;
 }
-int MQTT_Post_Received_Str(const char *topic, const char *data) {
+int MQTT_Post_Received_Str(const char* topic, const char* data) {
 	return MQTT_Post_Received(topic, strlen(topic), (const unsigned char*)data, strlen(data));
 }
-int get_received(char **topic, int *topiclen, unsigned char **data, int *datalen){
+int get_received(char** topic, int* topiclen, unsigned char** data, int* datalen) {
 	int res = 0;
 	MQTT_Mutex_Take(100);
-	if (mqtt_rx_buffer_tail != mqtt_rx_buffer_head){
-		getLenData(topiclen, temp_topic, sizeof(temp_topic)-1);
+	if (mqtt_rx_buffer_tail != mqtt_rx_buffer_head) {
+		getLenData(topiclen, temp_topic, sizeof(temp_topic) - 1);
 		temp_topic[*topiclen] = 0;
-		getLenData(datalen, temp_data, sizeof(temp_data)-1);
+		getLenData(datalen, temp_data, sizeof(temp_data) - 1);
 		temp_data[*datalen] = 0;
-		*topic = (char *)temp_topic;
+		*topic = (char*)temp_topic;
 		*data = temp_data;
 		res = 1;
 	}
@@ -540,9 +542,9 @@ char* MQTT_RemoveClientFromTopic(char* topic) {
 	if (*topic != '/') {
 		hasClient = NULL;
 	}
-	
+
 	// If we have the client/, return the pointer, otherwise, return NULL.
-	return hasClient ? topic + 1 : NULL; 
+	return hasClient ? topic + 1 : NULL;
 }
 
 // this accepts obkXXXXXX/<chan>/set to receive data to set channels
@@ -561,7 +563,7 @@ int channelSet(obk_mqtt_request_t* request) {
 	}
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelSet part topic %s", p);
-	
+
 	// atoi won't parse any non-decimal chars, so it should skip over the rest of the topic.
 	channel = atoi(p);
 
@@ -632,9 +634,9 @@ static void MQTT_disconnect(mqtt_client_t* client)
 	if (!client)
 		return;
 	// this is what it was renamed to.  why?
-    LOCK_TCPIP_CORE();
+	LOCK_TCPIP_CORE();
 	mqtt_disconnect(client);
-    UNLOCK_TCPIP_CORE();
+	UNLOCK_TCPIP_CORE();
 
 }
 
@@ -714,9 +716,9 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publishing val (%d bytes) to %s retain=%i\n", sVal_len, pub_topic, retain);
 		}
 
-    	LOCK_TCPIP_CORE();
+		LOCK_TCPIP_CORE();
 		err = mqtt_publish(client, pub_topic, sVal, strlen(sVal), qos, retain, mqtt_pub_request_cb, 0);
-    	UNLOCK_TCPIP_CORE();
+		UNLOCK_TCPIP_CORE();
 		os_free(pub_topic);
 
 		if (err != ERR_OK)
@@ -809,16 +811,16 @@ static void mqtt_incoming_data_cb(void* arg, const u8_t* data, u16_t len, u8_t f
 
 
 // run from userland (quicktick or wakeable thread)
-int MQTT_process_received(){
-	char *topic;
+int MQTT_process_received() {
+	char* topic;
 	int topiclen;
-	unsigned char *data;
+	unsigned char* data;
 	int datalen;
 	int found = 0;
 	int count = 0;
-	do{
+	do {
 		found = get_received(&topic, &topiclen, &data, &datalen);
-		if (found){
+		if (found) {
 			count++;
 			strncpy(g_mqtt_request_cb.topic, topic, sizeof(g_mqtt_request_cb.topic));
 			g_mqtt_request_cb.received = data;
@@ -894,12 +896,12 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 	{
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_connection_cb: Successfully connected\n");
 
-    	//LOCK_TCPIP_CORE();
+		//LOCK_TCPIP_CORE();
 		mqtt_set_inpub_callback(mqtt_client,
 			mqtt_incoming_publish_cb,
 			mqtt_incoming_data_cb,
 			LWIP_CONST_CAST(void*, &mqtt_client_info));
-    	//UNLOCK_TCPIP_CORE();
+		//UNLOCK_TCPIP_CORE();
 
 		// subscribe to all callback subscription topics
 		// this makes a BIG assumption that we can subscribe multiple times to the same one?
@@ -924,9 +926,9 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 		clientId = CFG_GetMQTTClientId();
 
 		snprintf(tmp, sizeof(tmp), "%s/connected", clientId);
-    	//LOCK_TCPIP_CORE();
+		//LOCK_TCPIP_CORE();
 		err = mqtt_publish(client, tmp, "online", strlen("online"), 2, true, mqtt_pub_request_cb, 0);
-    	//UNLOCK_TCPIP_CORE();
+		//UNLOCK_TCPIP_CORE();
 		if (err != ERR_OK) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish err: %d\n", err);
 			if (err == ERR_CONN) {
@@ -983,14 +985,16 @@ static void MQTT_do_connect(mqtt_client_t* client)
 	// empty field for us means "no password", etc,
 	// but LWIP (without mods) expects a NULL pointer in that case...
 	mqtt_client_info.client_id = mqtt_clientID;
-	if(mqtt_pass[0] != 0) {
+	if (mqtt_pass[0] != 0) {
 		mqtt_client_info.client_pass = mqtt_pass;
-	} else {
+	}
+	else {
 		mqtt_client_info.client_pass = 0;
 	}
-	if(mqtt_userName[0] != 0) {
+	if (mqtt_userName[0] != 0) {
 		mqtt_client_info.client_user = mqtt_userName;
-	} else {
+	}
+	else {
 		mqtt_client_info.client_user = 0;
 	}
 
@@ -1025,12 +1029,12 @@ static void MQTT_do_connect(mqtt_client_t* client)
 		  to establish a connection with the server.
 		  For now MQTT version 3.1.1 is always used */
 
-    	LOCK_TCPIP_CORE();
+		LOCK_TCPIP_CORE();
 		res = mqtt_client_connect(mqtt_client,
 			&mqtt_ip, mqtt_port,
 			mqtt_connection_cb, LWIP_CONST_CAST(void*, &mqtt_client_info),
 			&mqtt_client_info);
-    	UNLOCK_TCPIP_CORE();
+		UNLOCK_TCPIP_CORE();
 		mqtt_connect_result = res;
 		if (res != ERR_OK)
 		{
@@ -1080,7 +1084,7 @@ OBK_Publish_Result MQTT_ChannelChangeCallback(int channel, int iVal)
 	char channelNameStr[8];
 	char valueStr[16];
 	int flags;
-	
+
 	flags = 0;
 	addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Channel has changed! Publishing change %i with %i \n", channel, iVal);
 
@@ -1180,10 +1184,10 @@ void MQTT_Test_Tick(void* param)
 	{
 		while (1)
 		{
-		
-    		LOCK_TCPIP_CORE();
+
+			LOCK_TCPIP_CORE();
 			int res = mqtt_client_is_connected(mqtt_client);
-    		UNLOCK_TCPIP_CORE();
+			UNLOCK_TCPIP_CORE();
 
 			if (res == 0)
 				break;
@@ -1191,9 +1195,9 @@ void MQTT_Test_Tick(void* param)
 			{
 				sprintf(info->value, "TestMSG: %li/%li Time: %i s, Rate: %i msg/s", info->msg_cnt, info->msg_num,
 					(int)info->bench_time, (int)info->bench_rate);
-    			LOCK_TCPIP_CORE();
+				LOCK_TCPIP_CORE();
 				err = mqtt_publish(mqtt_client, info->topic, info->value, strlen(info->value), qos, retain, mqtt_pub_request_cb, 0);
-	    		UNLOCK_TCPIP_CORE();
+				UNLOCK_TCPIP_CORE();
 				if (err == ERR_OK)
 				{
 					/* MSG published */
@@ -1221,9 +1225,9 @@ void MQTT_Test_Tick(void* param)
 					/* Publish report */
 					sprintf(info->value, "Benchmark completed. %li msg published. Total Time: %i s MsgRate: %i msg/s",
 						info->msg_cnt, (int)info->bench_time, (int)info->bench_rate);
-	    			LOCK_TCPIP_CORE();
+					LOCK_TCPIP_CORE();
 					err = mqtt_publish(mqtt_client, info->topic, info->value, strlen(info->value), qos, retain, mqtt_pub_request_cb, 0);
-		    		UNLOCK_TCPIP_CORE();
+					UNLOCK_TCPIP_CORE();
 					if (err == ERR_OK)
 					{
 						/* Report published */
@@ -1450,7 +1454,7 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 	if (CHANNEL_HasRoleThatShouldBePublished(idx)) {
 		bWantsToPublish = true;
 	}
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#ifdef DRIVER_ENABLE_TUYAMCU
 	// publish if channel is used by TuyaMCU (no pin role set), for example door sensor state with power saving V0 protocol
 	// Not enabled by default, you have to set OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS flag
 	if (CFG_HasFlag(OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS) && TuyaMCU_IsChannelUsedByTuyaMCU(idx)) {
@@ -1469,7 +1473,7 @@ static int g_secondsBeforeNextFullBroadcast = 30;
 
 
 // from 5ms quicktick
-int MQTT_RunQuickTick(){
+int MQTT_RunQuickTick() {
 #ifndef PLATFORM_BEKEN
 	// on Beken, we use a one-shot timer for this.
 	MQTT_process_received();
@@ -1505,7 +1509,7 @@ int MQTT_RunEverySecondUpdate()
 	}
 
 	int res = 0;
-	if (mqtt_client){
+	if (mqtt_client) {
 		LOCK_TCPIP_CORE();
 		res = mqtt_client_is_connected(mqtt_client);
 		UNLOCK_TCPIP_CORE();
@@ -1564,7 +1568,7 @@ int MQTT_RunEverySecondUpdate()
 	}
 	else {
 		// things to do in our threads on connection accepted.
-		if (g_just_connected){
+		if (g_just_connected) {
 			g_just_connected = 0;
 			// publish all values on state
 			if (CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEONCONNECT)) {
@@ -1791,7 +1795,7 @@ OBK_Publish_Result PublishQueuedItems() {
 /// @return 
 bool MQTT_IsReady() {
 	int res = 0;
-	if (mqtt_client){
+	if (mqtt_client) {
 		LOCK_TCPIP_CORE();
 		res = mqtt_client_is_connected(mqtt_client);
 		UNLOCK_TCPIP_CORE();

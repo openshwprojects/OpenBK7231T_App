@@ -186,6 +186,24 @@ float led_lerpSpeedUnitsPerSecond = 200.f;
 float led_current_value_brightness = 0;
 float led_current_value_cold_or_warm = 0;
 
+void led_Save_finalRGBCW(byte* finalRGBCW) {
+#ifndef OBK_DISABLE_ALL_DRIVERS
+
+#ifndef PLATFORM_W600
+	if (DRV_IsRunning("SM2135")) {
+		SM2135_Write(finalRGBCW);
+	}
+	if (DRV_IsRunning("BP5758D")) {
+		BP5758D_Write(finalRGBCW);
+	}
+	if (DRV_IsRunning("BP1658CJ")) {
+		BP1658CJ_Write(finalRGBCW);
+	}
+#endif
+
+#endif
+}
+
 void LED_RunQuickColorLerp(int deltaMS) {
 	int i;
 	int firstChannelIndex;
@@ -263,17 +281,8 @@ void LED_RunQuickColorLerp(int deltaMS) {
 			}
 		}
 	}
-#ifndef OBK_DISABLE_ALL_DRIVERS
-	if(DRV_IsRunning("SM2135")) {
-		SM2135_Write(finalRGBCW);
-	}
-	if(DRV_IsRunning("BP5758D")) {
-		BP5758D_Write(finalRGBCW);
-	}
-	if(DRV_IsRunning("BP1658CJ")) {
-		BP1658CJ_Write(finalRGBCW);
-	}
-#endif
+	
+	led_Save_finalRGBCW(finalRGBCW);
 }
 
 int exponential_mode = 2;
@@ -414,17 +423,7 @@ void apply_smart_light() {
 		}
 	}
 	if(CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == false) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
-		if(DRV_IsRunning("SM2135")) {
-			SM2135_Write(finalRGBCW);
-		}
-		if(DRV_IsRunning("BP5758D")) {
-			BP5758D_Write(finalRGBCW);
-		}
-		if(DRV_IsRunning("BP1658CJ")) {
-			BP1658CJ_Write(finalRGBCW);
-		}
-#endif
+		led_Save_finalRGBCW(finalRGBCW);
 	}
 
 	if(CFG_HasFlag(OBK_FLAG_LED_REMEMBERLASTSTATE)) {

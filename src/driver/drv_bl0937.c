@@ -211,15 +211,20 @@ void BL0937_Init_Pins() {
 
 #if PLATFORM_BEKEN
 	gpio_int_enable(GPIO_HLW_CF1, IRQ_TRIGGER_FALLING_EDGE, HlwCf1Interrupt);
-#else
-
+#elif PLATFORM_W600
+	tls_gpio_isr_register(GPIO_HLW_CF1, HlwCf1Interrupt, NULL);
+	tls_gpio_irq_enable(GPIO_HLW_CF1, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
 #endif
+
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF);
+
 #if PLATFORM_BEKEN
 	gpio_int_enable(GPIO_HLW_CF, IRQ_TRIGGER_FALLING_EDGE, HlwCfInterrupt);
-#else
-
+#elif PLATFORM_W600
+	tls_gpio_isr_register(GPIO_HLW_CF, HlwCfInterrupt, NULL);
+	tls_gpio_irq_enable(GPIO_HLW_CF, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
 #endif
+
 	g_vc_pulses = 0;
 	g_p_pulses = 0;
 	pulseStamp = xTaskGetTickCount();
