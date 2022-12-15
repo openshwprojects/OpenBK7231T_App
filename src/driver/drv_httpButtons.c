@@ -15,8 +15,8 @@ typedef struct {
 	char color[16];
 } httpButton_t;
 
-httpButton_t **g_buttons = 0;
-int g_buttonCount = 0;
+static httpButton_t **g_buttons = 0;
+static int g_buttonCount = 0;
 
 httpButton_t *getOrAlloc(int idx) {
 	int i;
