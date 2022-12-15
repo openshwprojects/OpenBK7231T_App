@@ -36,6 +36,8 @@
 #include "driver/drv_ssdp.h"
 
 #ifdef PLATFORM_BEKEN
+#include <mcu_ps.h>
+#include <fake_clock_pub.h>
 void bg_register_irda_check_func(FUNCPTR func);
 #endif
 
@@ -270,6 +272,57 @@ int Main_HasWiFiConnected()
     return g_bHasWiFiConnected;
 }
 
+#ifdef OBK_MCU_SLEEP_METRICS_ENABLE
+extern OBK_MCU_SLEEP_METRICS OBK_Mcu_metrics;
+void Main_LogPowerSave(){
+	if (!OBK_Mcu_metrics.nexttask){
+		OBK_Mcu_metrics.nexttask = "unkn";
+	}
+	if (!OBK_Mcu_metrics.task){
+		OBK_Mcu_metrics.task = "unkn2";
+	}
+	ADDLOGF_DEBUG("PS: %ums/%ums longests:%ums/%ums req:%ums/%ums %s %s",
+		BK_TICKS_TO_MS(OBK_Mcu_metrics.slept_ticks),
+		BK_TICKS_TO_MS(OBK_Mcu_metrics.sleep_requested_ticks),
+		BK_TICKS_TO_MS(OBK_Mcu_metrics.longest_sleep_1s),
+		BK_TICKS_TO_MS(OBK_Mcu_metrics.longest_sleep),
+		BK_TICKS_TO_MS(OBK_Mcu_metrics.longest_sleep_req_1s),
+		BK_TICKS_TO_MS(OBK_Mcu_metrics.longest_sleep_req),
+		OBK_Mcu_metrics.nexttask,
+		OBK_Mcu_metrics.task
+	);
+	// see mcu_ps.c for reasons...
+	ADDLOGF_DEBUG("PS: nosleep reasons %d %d %d %d %d",
+		OBK_Mcu_metrics.reasons[0], // not enabled
+		OBK_Mcu_metrics.reasons[1], // peri_busy
+		OBK_Mcu_metrics.reasons[2], // mcu_prevent
+		OBK_Mcu_metrics.reasons[3], // txl_sleep_check
+		OBK_Mcu_metrics.reasons[4] // too short (<=2ms?)
+	);
+	memset(OBK_Mcu_metrics.reasons, 0, sizeof(OBK_Mcu_metrics.reasons));
+
+	OBK_Mcu_metrics.slept_ticks = 0;
+	OBK_Mcu_metrics.sleep_requested_ticks = 0;
+	OBK_Mcu_metrics.longest_sleep_1s = 0;
+	OBK_Mcu_metrics.longest_sleep_req_1s = 0;
+
+/*	
+	extern int bk_wlan_power_save_set_level(BK_PS_LEVEL level);
+
+	if (g_sleep == 1){		
+		OBK_Mcu_metrics.longest_sleep = 0;
+		g_sleep = 2;
+		bk_wlan_power_save_set_level(
+			// PS_DEEP_SLEEP_BIT | 
+			PS_RF_SLEEP_BIT | 
+			PS_MCU_SLEEP_BIT);
+	}
+*/	
+}
+#endif		
+
+
+
 void Main_OnEverySecond()
 {
 	int newMQTTState;
@@ -380,6 +433,11 @@ void Main_OnEverySecond()
 		// reset so it's a per-second counter.
 		idleCount = 0;
 	}
+
+#ifdef OBK_MCU_SLEEP_METRICS_ENABLE
+	Main_LogPowerSave();
+#endif
+
 
 	// print network info
 	if (!(g_secondsElapsed % 10))
