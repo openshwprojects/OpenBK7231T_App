@@ -278,6 +278,38 @@ void LED_RunQuickColorLerp(int deltaMS) {
 
 int exponential_mode = 2;
 
+float LED_BrightnessMapping(float raw, float brig) {
+	float final = 0;
+	// make brightness exponential:
+	if (exponential_mode == 0) {
+		final = raw * brig;
+	}
+	else if (g_brightness == 0.0f) {
+		final = 0.0f;
+	}
+	else {
+		float expo_base;
+		float expo_factor;
+		float expo_offset = 0.0;
+		if ((exponential_mode == 1) || (exponential_mode == 2)) {
+			expo_offset = 0.009f;
+		}
+		if ((exponential_mode == 1) || (exponential_mode == 3)) {
+			expo_base = 1.2f;     // moderate exponential
+			expo_factor = 15.32f;
+			expo_offset -= 0.06609f;
+		}
+		else {
+			expo_base = 1.06f;    // full exponential
+			expo_factor = 74.115f;
+			expo_offset -= 0.013f;
+		}
+		final = raw * (powf(expo_base, brig * expo_factor) / expo_factor + expo_offset);
+	}
+	if (final > 255.0f)
+		final = 255.0f;
+	return final;
+}
 
 void apply_smart_light() {
 	int i;
@@ -337,29 +369,7 @@ void apply_smart_light() {
 			final = 0.0f;
 
 			if(g_lightEnableAll) {
-				// make brightness exponential:
-				if (exponential_mode == 0) {
-					final = raw * g_brightness;
-				} else if (g_brightness == 0.0f) {
-					final = 0.0f;
-				} else {
-					float expo_base;
-					float expo_factor;
-					float expo_offset = 0.0;
-					if ((exponential_mode == 1) || (exponential_mode == 2)) {
-						expo_offset = 0.009f;
-					}
-					if ((exponential_mode == 1) || (exponential_mode == 3)) {
-						expo_base    =  1.2f;     // moderate exponential
-						expo_factor  = 15.32f;
-						expo_offset -=  0.06609f;
-					} else {
-						expo_base    =  1.06f;    // full exponential
-						expo_factor  = 74.115f;
-						expo_offset -=  0.013f;
-					}
-					final = raw * (powf(expo_base, g_brightness * expo_factor) / expo_factor + expo_offset);
-				}
+				final = LED_BrightnessMapping(raw, g_brightness);
 			}
 			if(g_lightMode == Light_Temperature) {
 				// skip channels 0, 1, 2
