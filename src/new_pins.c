@@ -3,6 +3,7 @@
 
 #include "new_common.h"
 #include "new_pins.h"
+#include "quicktick.h"
 #include "new_cfg.h"
 #include "httpserver/new_http.h"
 #include "logging/logging.h"
@@ -18,7 +19,7 @@
 
 
 //According to your need to modify the constants.
-#define PIN_TMR_DURATION      25 // Delay (in ms) between button scan iterations
+#define PIN_TMR_DURATION      QUICK_TMR_DURATION // Delay (in ms) between button scan iterations
 //#define BTN_DEBOUNCE_TICKS    3	//MAX 8
 #define BTN_DEBOUNCE_MS    		15	//MAX 8*5
 
@@ -34,8 +35,6 @@ int BTN_SHORT_MS;
 int BTN_LONG_MS;
 int BTN_HOLD_REPEAT_MS;
 
-#define WIFI_LED_FAST_BLINK_DURATION 250
-#define WIFI_LED_SLOW_BLINK_DURATION 500
 
 typedef enum {
 	BTN_PRESS_DOWN = 0,
@@ -1063,8 +1062,7 @@ void PIN_Input_Handler(int pinIndex, uint32_t ms_since_last)
 	}
 }
 
-
-static void PIN_set_wifi_led(int value){
+void PIN_set_wifi_led(int value){
 	int i;
 	for ( i = 0; i < PLATFORM_GPIO_MAX; i++){
 		if (g_cfg.pins.roles[i] == IOR_LED_WIFI){
@@ -1076,9 +1074,6 @@ static void PIN_set_wifi_led(int value){
 	}
 }
 
-
-static int g_wifiLedToggleTime = 0;
-static int g_wifi_ledState = 0;
 static uint32_t g_time = 0;
 static uint32_t g_last_time = 0;
 
@@ -1109,47 +1104,6 @@ void PIN_ticks(void *param)
 	BTN_SHORT_MS = (g_cfg.buttonShortPress * 100);
 	BTN_LONG_MS = (g_cfg.buttonLongPress * 100);
 	BTN_HOLD_REPEAT_MS = (g_cfg.buttonHoldRepeat * 100);
-
-
-#if (defined WINDOWS) || (defined PLATFORM_BEKEN)
-	SVM_RunThreads(t_diff);
-#endif
-#ifndef OBK_DISABLE_ALL_DRIVERS
-	DRV_RunQuickTick();
-#endif
-#ifdef WINDOWS
-	NewTuyaMCUSimulator_RunQuickTick(t_diff);
-#endif
-
-	// process recieved messages here..
-	MQTT_RunQuickTick();
-	
-	if(CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == true) {
-		LED_RunQuickColorLerp(t_diff);
-	}
-
-	// WiFi LED
-	// In Open Access point mode, fast blink
-	if(Main_IsOpenAccessPointMode()) {
-		g_wifiLedToggleTime += t_diff;
-		if(g_wifiLedToggleTime > WIFI_LED_FAST_BLINK_DURATION) {
-			g_wifi_ledState = !g_wifi_ledState;
-			g_wifiLedToggleTime = 0;
-			PIN_set_wifi_led(g_wifi_ledState);
-		}
-	} else if(Main_IsConnectedToWiFi()) {
-		// In WiFi client success mode, just stay enabled
-		PIN_set_wifi_led(1);
-	} else {
-		// in connecting mode, slow blink
-		g_wifiLedToggleTime += t_diff;
-		if(g_wifiLedToggleTime > WIFI_LED_SLOW_BLINK_DURATION) {
-			g_wifi_ledState = !g_wifi_ledState;
-			g_wifiLedToggleTime = 0;
-			PIN_set_wifi_led(g_wifi_ledState);
-		}
-	}
-
 
 	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
 #if 1
@@ -1437,69 +1391,6 @@ static commandResult_t showgpi(const void *context, const char *cmd, const char 
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"GPIs are 0x%x", value);
 	return CMD_RES_OK;
 }
-
-
-
-#if WINDOWS
-
-#elif PLATFORM_BL602
-void button_timer_thread(void *param)
-{
-    while(1) {
-        vTaskDelay(PIN_TMR_DURATION);
-		PIN_ticks(0);
-    }
-}
-#elif PLATFORM_W600 || PLATFORM_W800
-void button_timer_thread(void *param)
-{
-    while(1) {
-        vTaskDelay(PIN_TMR_DURATION);
-		PIN_ticks(0);
-    }
-}
-#elif PLATFORM_XR809
-OS_Timer_t timer;
-#else
-beken_timer_t g_pin_timer;
-#endif
-void PIN_StartButtonScanThread(void)
-{
-#if WINDOWS
-
-#elif PLATFORM_BL602
-
-    xTaskCreate(button_timer_thread, "buttons", 1024, NULL, 15, NULL);
-#elif PLATFORM_W600 || PLATFORM_W800
-
-    xTaskCreate(button_timer_thread, "buttons", 1024, NULL, 15, NULL);
-#elif PLATFORM_XR809
-
-	OS_TimerSetInvalid(&timer);
-	if (OS_TimerCreate(&timer, OS_TIMER_PERIODIC, PIN_ticks, NULL,
-	                   PIN_TMR_DURATION) != OS_OK) {
-		printf("PIN_AddCommands timer create failed\n");
-		return;
-	}
-
-	OS_TimerStart(&timer); /* start OS timer to feed watchdog */
-#else
-	OSStatus result;
-
-    result = rtos_init_timer(&g_pin_timer,
-                            PIN_TMR_DURATION,
-                            PIN_ticks,
-                            (void *)0);
-    ASSERT(kNoErr == result);
-
-    result = rtos_start_timer(&g_pin_timer);
-    ASSERT(kNoErr == result);
-#endif
-
-
-
-}
-
 void PIN_AddCommands(void)
 {
 	//cmddetail:{"name":"showgpi","args":"NULL",

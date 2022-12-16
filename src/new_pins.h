@@ -290,9 +290,11 @@ extern char g_enable_pins;
 #define CHANNEL_SET_FLAG_SKIP_MQTT	2
 #define CHANNEL_SET_FLAG_SILENT		4
 
+void PIN_ticks(void *param);
+
+void PIN_set_wifi_led(int value);
 void PIN_AddCommands(void);
 void PIN_SetupPins();
-void PIN_StartButtonScanThread(void);
 void PIN_OnReboot();
 void CFG_ClearPins();
 int PIN_CountPinsWithRole(int role);
