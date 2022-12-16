@@ -579,14 +579,14 @@ static uint32_t g_last_time = 0;
 
 /////////////////////////////////////////////////////
 // this is what we do in a qucik tick
-void quick_tick(void *param)
+void QuickTick(void *param)
 {
 	PIN_ticks(param);
 
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	g_time = rtos_get_time();
 #else
-	g_time += PIN_TMR_DURATION;
+	g_time += QUICK_TMR_DURATION;
 #endif
 	uint32_t t_diff = g_time - g_last_time;
 	// cope with wrap
@@ -647,16 +647,16 @@ void quick_tick(void *param)
 void quick_timer_thread(void *param)
 {
     while(1) {
-        vTaskDelay(PIN_TMR_DURATION);
-		quick_tick(0);
+        vTaskDelay(QUICK_TMR_DURATION);
+		QuickTick(0);
     }
 }
 #elif PLATFORM_W600 || PLATFORM_W800
 void quick_timer_thread(void *param)
 {
     while(1) {
-        vTaskDelay(PIN_TMR_DURATION);
-		quick_tick(0);
+        vTaskDelay(QUICK_TMR_DURATION);
+		QuickTick(0);
     }
 }
 #elif PLATFORM_XR809
@@ -677,7 +677,7 @@ void QuickTick_StartThread(void)
 #elif PLATFORM_XR809
 
 	OS_TimerSetInvalid(&g_quick_timer);
-	if (OS_TimerCreate(&g_quick_timer, OS_TIMER_PERIODIC, quick_tick, NULL,
+	if (OS_TimerCreate(&g_quick_timer, OS_TIMER_PERIODIC, QuickTick, NULL,
 	                   QUICK_TMR_DURATION) != OS_OK) {
 		printf("Quick timer create failed\n");
 		return;
@@ -689,7 +689,7 @@ void QuickTick_StartThread(void)
 
     result = rtos_init_timer(&g_quick_timer,
                             QUICK_TMR_DURATION,
-                            quick_tick,
+                            QuickTick,
                             (void *)0);
     ASSERT(kNoErr == result);
 
