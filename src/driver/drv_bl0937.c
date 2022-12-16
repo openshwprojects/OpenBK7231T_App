@@ -63,7 +63,7 @@ void HlwCfInterrupt(unsigned char pinNum) {  // Service Power
 
 static void HlwCf1Interrupt(void* context) {
 	tls_clr_gpio_irq_status(GPIO_HLW_CF1_pin);
-	g_vc_pulses;
+	g_vc_pulses++;
 }
 static void HlwCfInterrupt(void* context) {
 	tls_clr_gpio_irq_status(GPIO_HLW_CF_pin);
@@ -215,6 +215,8 @@ void BL0937_Init_Pins() {
 #if PLATFORM_W600
 	GPIO_HLW_CF1_pin = HAL_GetGPIOPin(GPIO_HLW_CF1);
 	GPIO_HLW_CF_pin = HAL_GetGPIOPin(GPIO_HLW_CF);
+	//printf("GPIO_HLW_CF=%d GPIO_HLW_CF1=%d\n", GPIO_HLW_CF, GPIO_HLW_CF1);
+	//printf("GPIO_HLW_CF1_pin=%d GPIO_HLW_CF_pin=%d\n", GPIO_HLW_CF1_pin, GPIO_HLW_CF_pin);
 #endif
 
 	// UPDATE: now they are automatically saved
@@ -392,5 +394,5 @@ void BL0937_RunFrame()
 	}
 #endif
 	BL_ProcessUpdate(final_v, final_c, final_p);
-}
+	}
 
