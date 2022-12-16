@@ -33,9 +33,9 @@ int GPIO_HLW_SEL = 24; // pwm4
 int GPIO_HLW_CF = 7;
 int GPIO_HLW_CF1 = 8;
 
-//The above actually pin indices. For W600 the actual gpio_pins are different.
-unsigned int real_GPIO_HLW_CF;
-unsigned int real_GPIO_HLW_CF1;
+//The above three actually are pin indices. For W600 the actual gpio_pins are different.
+unsigned int GPIO_HLW_CF_pin;
+unsigned int GPIO_HLW_CF1_pin;
 
 bool g_sel = true;
 uint32_t res_v = 0;
@@ -62,11 +62,11 @@ void HlwCfInterrupt(unsigned char pinNum) {  // Service Power
 #elif PLATFORM_W600
 
 static void HlwCf1Interrupt(void* context) {
-	tls_clr_gpio_irq_status(real_GPIO_HLW_CF1);
+	tls_clr_gpio_irq_status(GPIO_HLW_CF1_pin);
 	g_vc_pulses;
 }
 static void HlwCfInterrupt(void* context) {
-	tls_clr_gpio_irq_status(real_GPIO_HLW_CF);
+	tls_clr_gpio_irq_status(GPIO_HLW_CF_pin);
 	g_p_pulses++;
 }
 #endif
@@ -197,19 +197,15 @@ commandResult_t BL0937_CurrentSet(const void* context, const char* cmd, const ch
 
 void BL0937_Shutdown_Pins()
 {
-
 #if PLATFORM_BEKEN
 	gpio_int_disable(GPIO_HLW_CF1);
-#else
-
-#endif
-#if PLATFORM_BEKEN
 	gpio_int_disable(GPIO_HLW_CF);
-#else
-
+#elif PLATFORM_W600
+	tls_gpio_irq_disable(GPIO_HLW_CF1_pin);
+	tls_gpio_irq_disable(GPIO_HLW_CF_pin);
 #endif
-
 }
+
 void BL0937_Init_Pins() {
 	// if not found, this will return the already set value
 	GPIO_HLW_SEL = PIN_FindPinIndexForRole(IOR_BL0937_SEL, GPIO_HLW_SEL);
@@ -217,8 +213,8 @@ void BL0937_Init_Pins() {
 	GPIO_HLW_CF1 = PIN_FindPinIndexForRole(IOR_BL0937_CF1, GPIO_HLW_CF1);
 
 #if PLATFORM_W600
-	real_GPIO_HLW_CF1 = HAL_GetGPIOPin(GPIO_HLW_CF1);
-	real_GPIO_HLW_CF = HAL_GetGPIOPin(GPIO_HLW_CF);
+	GPIO_HLW_CF1_pin = HAL_GetGPIOPin(GPIO_HLW_CF1);
+	GPIO_HLW_CF_pin = HAL_GetGPIOPin(GPIO_HLW_CF);
 #endif
 
 	// UPDATE: now they are automatically saved
@@ -235,8 +231,8 @@ void BL0937_Init_Pins() {
 #if PLATFORM_BEKEN
 	gpio_int_enable(GPIO_HLW_CF1, IRQ_TRIGGER_FALLING_EDGE, HlwCf1Interrupt);
 #elif PLATFORM_W600
-	tls_gpio_isr_register(real_GPIO_HLW_CF1, HlwCf1Interrupt, NULL);
-	tls_gpio_irq_enable(real_GPIO_HLW_CF1, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
+	tls_gpio_isr_register(GPIO_HLW_CF1_pin, HlwCf1Interrupt, NULL);
+	tls_gpio_irq_enable(GPIO_HLW_CF1_pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
 #endif
 
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF);
@@ -244,8 +240,8 @@ void BL0937_Init_Pins() {
 #if PLATFORM_BEKEN
 	gpio_int_enable(GPIO_HLW_CF, IRQ_TRIGGER_FALLING_EDGE, HlwCfInterrupt);
 #elif PLATFORM_W600
-	tls_gpio_isr_register(real_GPIO_HLW_CF, HlwCfInterrupt, NULL);
-	tls_gpio_irq_enable(real_GPIO_HLW_CF, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
+	tls_gpio_isr_register(GPIO_HLW_CF_pin, HlwCfInterrupt, NULL);
+	tls_gpio_irq_enable(GPIO_HLW_CF_pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
 #endif
 
 	g_vc_pulses = 0;
@@ -396,5 +392,5 @@ void BL0937_RunFrame()
 	}
 #endif
 	BL_ProcessUpdate(final_v, final_c, final_p);
-	}
+}
 
