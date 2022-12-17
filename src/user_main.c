@@ -581,7 +581,12 @@ static uint32_t g_last_time = 0;
 // this is what we do in a qucik tick
 void QuickTick(void *param)
 {
+
+#if defined(PLATFORM_BEKEN) && defined(BEKEN_PIN_GPI_INTERRUPTS)
+	// if using interrupt driven GPI for pins, don't call PIN_ticks() in QuickTick
+#else
 	PIN_ticks(param);
+#endif
 
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	g_time = rtos_get_time();
