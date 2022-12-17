@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include "cmd_local.h"
 #include "../new_pins.h"
+#include "../new_cfg.h"
 #ifdef BK_LITTLEFS
 	#include "../littlefs/our_lfs.h"
 #endif
@@ -410,6 +411,71 @@ static commandResult_t cmnd_lfs_test3(const void * context, const char *cmd, con
 	}
 	return CMD_RES_OK;
 }
+static commandResult_t cmnd_SSID1(const void * context, const char *cmd, const char *args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+	if (Tokenizer_GetArgsCount()==0) {
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "This command requires 1 argument");
+	}
+	else {
+		CFG_SetWiFiSSID(Tokenizer_GetArg(0));
+	}
+	return CMD_RES_OK;
+}
+static commandResult_t cmnd_Password1(const void * context, const char *cmd, const char *args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+
+	if (Tokenizer_GetArgsCount() == 0) {
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "This command requires 1 argument");
+	}
+	else {
+		CFG_SetWiFiPass(Tokenizer_GetArg(0));
+	}
+	return CMD_RES_OK;
+}
+static commandResult_t cmnd_MqttHost(const void * context, const char *cmd, const char *args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+
+	if (Tokenizer_GetArgsCount() == 0) {
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "This command requires 1 argument");
+	}
+	else {
+		CFG_SetMQTTHost(Tokenizer_GetArg(0));
+	}
+	return CMD_RES_OK;
+}
+static commandResult_t cmnd_MqttUser(const void * context, const char *cmd, const char *args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+
+	if (Tokenizer_GetArgsCount() == 0) {
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "This command requires 1 argument");
+	}
+	else {
+		CFG_SetMQTTUserName(Tokenizer_GetArg(0));
+	}
+	return CMD_RES_OK;
+}
+static commandResult_t cmnd_MqttClient(const void * context, const char *cmd, const char *args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+
+	if (Tokenizer_GetArgsCount() == 0) {
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "This command requires 1 argument");
+	}
+	else {
+		CFG_SetMQTTClientId(Tokenizer_GetArg(0));
+	}
+	return CMD_RES_OK;
+}
+static commandResult_t cmnd_MqttPassword(const void * context, const char *cmd, const char *args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+
+	if (Tokenizer_GetArgsCount() == 0) {
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "This command requires 1 argument");
+	}
+	else {
+		CFG_SetMQTTPass(Tokenizer_GetArg(0));
+	}
+	return CMD_RES_OK;
+}
 int taslike_commands_init(){
 	//cmddetail:{"name":"power","args":"",
 	//cmddetail:"descr":"set output POWERn 0..100",
@@ -456,5 +522,11 @@ int taslike_commands_init(){
 	//cmddetail:"fn":"cmnd_lfs_test3","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_test3", NULL, cmnd_lfs_test3, NULL, NULL);
+	CMD_RegisterCommand("SSID1", NULL, cmnd_SSID1, NULL, NULL);
+	CMD_RegisterCommand("Password1", NULL, cmnd_Password1, NULL, NULL);
+	CMD_RegisterCommand("MqttHost", NULL, cmnd_MqttHost, NULL, NULL);
+	CMD_RegisterCommand("MqttUser", NULL, cmnd_MqttUser, NULL, NULL);
+	CMD_RegisterCommand("MqttPassword", NULL, cmnd_MqttPassword, NULL, NULL);
+	CMD_RegisterCommand("MqttClient", NULL, cmnd_MqttClient, NULL, NULL);
     return 0;
 }

@@ -189,14 +189,37 @@ static commandResult_t CMD_GetReadings(const void *context, const char *cmd, con
 }
 static commandResult_t CMD_ShortName(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *s;
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 
 	s = CFG_GetShortDeviceName();
-
-	if (cmdFlags & COMMAND_FLAG_SOURCE_TCP) {
-		ADDLOG_INFO(LOG_FEATURE_RAW, s);
+	if (Tokenizer_GetArgsCount() == 0) {
+		if (cmdFlags & COMMAND_FLAG_SOURCE_TCP) {
+			ADDLOG_INFO(LOG_FEATURE_RAW, s);
+		}
+		else {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ShortName: name is %s", s);
+		}
 	}
 	else {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ShortName: name is %s", s);
+		CFG_SetShortDeviceName(Tokenizer_GetArg(0));
+	}
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_FriendlyName(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	const char *s;
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+
+	s = CFG_GetDeviceName();
+	if (Tokenizer_GetArgsCount() == 0) {
+		if (cmdFlags & COMMAND_FLAG_SOURCE_TCP) {
+			ADDLOG_INFO(LOG_FEATURE_RAW, s);
+		}
+		else {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_FriendlyName: name is %s", s);
+		}
+	}
+	else {
+		CFG_SetDeviceName(Tokenizer_GetArg(0));
 	}
 	return CMD_RES_OK;
 }
@@ -251,6 +274,11 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_ShortName","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ShortName", "", CMD_ShortName, NULL, NULL);
+	//cmddetail:{"name":"ShortName","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_ShortName","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("FriendlyName", "", CMD_FriendlyName, NULL, NULL);
 	//cmddetail:{"name":"ShortName","args":"",
 	//cmddetail:"descr":"qqqqq0",
 	//cmddetail:"fn":"CMD_ShortName","file":"cmnds/cmd_channels.c","requires":"",
