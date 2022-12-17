@@ -169,6 +169,7 @@ void LED_SetDimmer(int iVal);
 commandResult_t LED_SetBaseColor(const void* context, const char* cmd, const char* args, int bAll);
 void LED_SetFinalCW(byte c, byte w);
 void LED_SetFinalRGB(byte r, byte g, byte b);
+float LED_BrightnessMapping(float raw, float brig);
 void LED_SetFinalRGBCW(byte* rgbcw);
 void LED_GetFinalChannels100(byte* rgbcw);
 void LED_GetFinalHSV(int* hsv);

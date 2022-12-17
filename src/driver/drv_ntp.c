@@ -126,6 +126,10 @@ void NTP_Init() {
 unsigned int NTP_GetCurrentTime() {
     return g_time;
 }
+unsigned int NTP_GetCurrentTimeWithoutOffset() {
+	return g_time - g_timeOffsetHours;
+}
+
 
 
 void NTP_Shutdown() {

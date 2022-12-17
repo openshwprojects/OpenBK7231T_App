@@ -109,6 +109,8 @@ This platform is not supported, error!
 #define MAX(a,b)	(((a)>(b))?(a):(b))
 #endif
 
+#define OBK_IS_NAN(x) ((x)!=(x))
+
 #if WINDOWS
 
 #include <time.h>
