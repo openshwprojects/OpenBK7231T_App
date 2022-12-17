@@ -1363,6 +1363,9 @@ int http_fn_cmd_tool(http_request_t* request) {
 				res = CMD_ExecuteCommand(long_str_alloced, COMMAND_FLAG_SOURCE_CONSOLE);
 				free(long_str_alloced);
 			}
+			else {
+				res = CMD_RES_ERROR;
+			}
 		}
 		else {
 			res = CMD_ExecuteCommand(tmpA, COMMAND_FLAG_SOURCE_CONSOLE);
