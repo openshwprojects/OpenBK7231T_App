@@ -322,7 +322,11 @@ void LOG_SetCommandHTTPRedirectReply(http_request_t* request) {
 	static void send_to_tcp();
 
 	// called from timer thread
+	volatile char log_timer_pended = 0;
 	void log_timer_cb(void *a, uint32_t cmd){
+		// we can pend another during this call...
+		// so clear pended first
+		log_timer_pended = 0;
 		RunSerialLog();
 		send_to_tcp();
 	}
@@ -330,7 +334,11 @@ void LOG_SetCommandHTTPRedirectReply(http_request_t* request) {
 	void trigger_log_send(){
 		// pend the function on timer thread.
 		// as this is called form ISR, delay is ignored.
-		OBK_rtos_callback_in_timer_thread( log_timer_cb, NULL, 0, 0);
+		// only allow one to pend at a time.
+		if (!log_timer_pended){
+			log_timer_pended = 1;
+			OBK_rtos_callback_in_timer_thread( log_timer_cb, NULL, 0, 0);
+		}
 	}
 
 	static int getSerial2();
