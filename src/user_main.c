@@ -21,6 +21,7 @@
 
 #include "httpserver/new_http.h"
 #include "new_pins.h"
+#include "quicktick.h"
 #include "new_cfg.h"
 #include "logging/logging.h"
 #include "httpserver/http_tcp_server.h"
@@ -562,6 +563,143 @@ void Main_OnEverySecond()
 
 }
 
+
+//////////////////////////////////////////////////////
+// Quick tick
+
+#define WIFI_LED_FAST_BLINK_DURATION 250
+#define WIFI_LED_SLOW_BLINK_DURATION 500
+
+
+
+static int g_wifiLedToggleTime = 0;
+static int g_wifi_ledState = 0;
+static uint32_t g_time = 0;
+static uint32_t g_last_time = 0;
+
+/////////////////////////////////////////////////////
+// this is what we do in a qucik tick
+void QuickTick(void *param)
+{
+	PIN_ticks(param);
+
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+	g_time = rtos_get_time();
+#else
+	g_time += QUICK_TMR_DURATION;
+#endif
+	uint32_t t_diff = g_time - g_last_time;
+	// cope with wrap
+	if (t_diff > 0x4000){
+		t_diff = ((g_time + 0x4000) - (g_last_time + 0x4000));
+	}
+	g_last_time = g_time;
+
+
+#if (defined WINDOWS) || (defined PLATFORM_BEKEN)
+	SVM_RunThreads(t_diff);
+#endif
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	DRV_RunQuickTick();
+#endif
+#ifdef WINDOWS
+	NewTuyaMCUSimulator_RunQuickTick(t_diff);
+#endif
+
+	// process recieved messages here..
+	MQTT_RunQuickTick();
+	
+	if(CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == true) {
+		LED_RunQuickColorLerp(t_diff);
+	}
+
+	// WiFi LED
+	// In Open Access point mode, fast blink
+	if(Main_IsOpenAccessPointMode()) {
+		g_wifiLedToggleTime += t_diff;
+		if(g_wifiLedToggleTime > WIFI_LED_FAST_BLINK_DURATION) {
+			g_wifi_ledState = !g_wifi_ledState;
+			g_wifiLedToggleTime = 0;
+			PIN_set_wifi_led(g_wifi_ledState);
+		}
+	} else if(Main_IsConnectedToWiFi()) {
+		// In WiFi client success mode, just stay enabled
+		PIN_set_wifi_led(1);
+	} else {
+		// in connecting mode, slow blink
+		g_wifiLedToggleTime += t_diff;
+		if(g_wifiLedToggleTime > WIFI_LED_SLOW_BLINK_DURATION) {
+			g_wifi_ledState = !g_wifi_ledState;
+			g_wifiLedToggleTime = 0;
+			PIN_set_wifi_led(g_wifi_ledState);
+		}
+	}
+
+}
+
+
+
+////////////////////////////////////////////////////////
+// this is the bit which runs the quick tick timer
+#if WINDOWS
+
+#elif PLATFORM_BL602
+void quick_timer_thread(void *param)
+{
+    while(1) {
+        vTaskDelay(QUICK_TMR_DURATION);
+		QuickTick(0);
+    }
+}
+#elif PLATFORM_W600 || PLATFORM_W800
+void quick_timer_thread(void *param)
+{
+    while(1) {
+        vTaskDelay(QUICK_TMR_DURATION);
+		QuickTick(0);
+    }
+}
+#elif PLATFORM_XR809
+OS_Timer_t g_quick_timer;
+#else
+beken_timer_t g_quick_timer;
+#endif
+void QuickTick_StartThread(void)
+{
+#if WINDOWS
+
+#elif PLATFORM_BL602
+
+    xTaskCreate(quick_timer_thread, "quick", 1024, NULL, 15, NULL);
+#elif PLATFORM_W600 || PLATFORM_W800
+
+    xTaskCreate(quick_timer_thread, "quick", 1024, NULL, 15, NULL);
+#elif PLATFORM_XR809
+
+	OS_TimerSetInvalid(&g_quick_timer);
+	if (OS_TimerCreate(&g_quick_timer, OS_TIMER_PERIODIC, QuickTick, NULL,
+	                   QUICK_TMR_DURATION) != OS_OK) {
+		printf("Quick timer create failed\n");
+		return;
+	}
+
+	OS_TimerStart(&g_quick_timer); /* start OS timer to feed watchdog */
+#else
+	OSStatus result;
+
+    result = rtos_init_timer(&g_quick_timer,
+                            QUICK_TMR_DURATION,
+                            QuickTick,
+                            (void *)0);
+    ASSERT(kNoErr == result);
+
+    result = rtos_start_timer(&g_quick_timer);
+    ASSERT(kNoErr == result);
+#endif
+}
+///////////////////////////////////////////////////////
+
+
 void app_on_generic_dbl_click(int btnIndex)
 {
 	if(g_secondsElapsed < 5) 
@@ -703,7 +841,7 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	g_enable_pins = 1;
 	// this actually sets the pins, moved out so we could avoid if necessary
 	PIN_SetupPins();
-	PIN_StartButtonScanThread();
+	QuickTick_StartThread();
 
 	NewLED_RestoreSavedStateIfNeeded();
 }
