@@ -96,7 +96,7 @@ static byte g_lastValidState[PLATFORM_GPIO_MAX];
  *              gpio_edge_map is hex and every bits is map to gpio0-gpio31.
  *              0:rising,1:falling.
  */
-// these map directly to void bk_enter_deep_sleep(UINT32 gpio_index_map,UINT32 gpio_edge_map);
+// these map directly to void bk_enter_deep_sleep(uint32_t gpio_index_map,uint32_t gpio_edge_map);
 uint32_t g_gpio_index_map = 0;
 uint32_t g_gpio_edge_map = 0; // note: 0->rising, 1->falling
 
@@ -156,7 +156,7 @@ void PIN_SetupPins() {
 	// NOT YET ENABLED
 	for (int i = 0; i < 32; i++){
 		if (g_gpio_index_map & (1<<i)){
-			UINT32 mode = GPIO_INT_LEVEL_RISING;
+			uint32_t mode = GPIO_INT_LEVEL_RISING;
 			if (g_gpio_edge_map & (1<<i)){
 				mode = GPIO_INT_LEVEL_FALLING;
 			}
@@ -1221,14 +1221,14 @@ void PIN_ticks(void *param)
 	BTN_HOLD_REPEAT_MS = (g_cfg.buttonHoldRepeat * 100);
 
 	int activepins = 0;
-	UINT32 pinvalues = 0;
+	uint32_t pinvalues = 0;
 	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		// note pins which are active - i.e. would not trigger an edge interrupt on change.
 		// if we have any, then we must poll until none
 		// TODO: this will only be used when GPI interrupt triggeringis used.
 		// but it's useful info anyway...
 		if (g_gpio_index_map & (1<<i)){
-			UINT32 level = 1;
+			uint32_t level = 1;
 			if (g_gpio_edge_map & (1<<i)){
 				level = 0;
 			}
