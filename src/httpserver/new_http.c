@@ -219,9 +219,9 @@ void http_setup(http_request_t* request, const char* type) {
 	poststr(request, "Accept-Ranges: none");
 	poststr(request, "\r\n");
 	poststr(request, "Transfer-Encoding: chunked");
+#endif
 	poststr(request, "\r\n");
 	poststr(request, "Connection: close");
-#endif
 	poststr(request, "\r\n"); // end headers with double CRLF
 	poststr(request, "\r\n");
 }
@@ -277,11 +277,14 @@ const char* http_checkArg(const char* p, const char* n) {
 	return p;
 }
 
-void http_copyCarg(const char* atin, char* to, int maxSize) {
+int http_copyCarg(const char* atin, char* to, int maxSize) {
 	int a, b;
+	int realSize;
 	const unsigned char* at = (unsigned char*)atin;
 
-	while (*at != 0 && *at != '&' && *at != ' ' && maxSize > 1) {
+	realSize = 0;
+
+	while (*at != 0 && *at != '&' && *at != ' ') {
 #if 0
 		* to = *at;
 		to++;
@@ -303,20 +306,36 @@ void http_copyCarg(const char* atin, char* to, int maxSize) {
 				b -= ('A' - 10);
 			else
 				b -= '0';
-			*to++ = 16 * a + b;
+			// can we afford to place this char in the target?
+			if (maxSize > 1) {
+				maxSize--;
+				*to++ = 16 * a + b;
+			}
+			realSize++;
 			at += 3;
 		}
 		else if (*at == '+') {
-			*to++ = ' ';
+			// can we afford to place this char in the target?
+			if (maxSize > 1) {
+				maxSize--;
+				*to++ = ' ';
+			}
+			realSize++;
 			at++;
 		}
 		else {
-			*to++ = *at++;
+			// can we afford to place this char in the target?
+			if (maxSize > 1) {
+				maxSize--;
+				*to++ = *at;
+			}
+			realSize++;
+			at++;
 		}
-		maxSize--;
 #endif
 	}
 	*to = 0;
+	return realSize;
 }
 
 int http_getArg(const char* base, const char* name, char* o, int maxSize) {
@@ -331,8 +350,7 @@ int http_getArg(const char* base, const char* name, char* o, int maxSize) {
 		const char* at = http_checkArg(base, name);
 		if (at) {
 			at++;
-			http_copyCarg(at, o, maxSize);
-			return 1;
+			return http_copyCarg(at, o, maxSize);
 		}
 		while (*base != '&') {
 			if (*base == 0) {

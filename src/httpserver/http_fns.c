@@ -1340,6 +1340,8 @@ int http_fn_cmd_tool(http_request_t* request) {
 	commandResult_t res;
 	const char *resStr;
 	char tmpA[128];
+	char *long_str_alloced = 0;
+	int commandLen;
 
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Command tool");
@@ -1348,11 +1350,23 @@ int http_fn_cmd_tool(http_request_t* request) {
 	poststr(request, "Please consider using 'Web Application' console with more options and real time log view. <br>");
 	poststr(request, "Remember that some commands are added after a restart when a driver is activated... <br>");
 
-	if (http_getArg(request->url, "cmd", tmpA, sizeof(tmpA))) {
+	commandLen = http_getArg(request->url, "cmd", tmpA, sizeof(tmpA));
+	if (commandLen) {
 		poststr(request, "<br>");
 		// all log printfs made by command will be sent also to request
 		LOG_SetCommandHTTPRedirectReply(request);
-		res = CMD_ExecuteCommand(tmpA, COMMAND_FLAG_SOURCE_CONSOLE);
+		if (commandLen > (sizeof(tmpA) - 5)) {
+			commandLen += 8;
+			long_str_alloced = (char*)malloc(commandLen);
+			if (long_str_alloced) {
+				http_getArg(request->url, "cmd", long_str_alloced, commandLen);
+				CMD_ExecuteCommand(long_str_alloced, COMMAND_FLAG_SOURCE_CONSOLE);
+				free(long_str_alloced);
+			}
+		}
+		else {
+			CMD_ExecuteCommand(tmpA, COMMAND_FLAG_SOURCE_CONSOLE);
+		}
 		LOG_SetCommandHTTPRedirectReply(0);
 		resStr = CMD_GetResultString(res);
 		hprintf255(request, "<h3>%s</h3>", resStr);
@@ -2268,11 +2282,25 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 }
 int http_fn_cm(http_request_t* request) {
 	char tmpA[128];
+	char *long_str_alloced = 0;
+	int commandLen;
 
 	http_setup(request, httpMimeTypeJson);
 	// exec command
-	if (http_getArg(request->url, "cmnd", tmpA, sizeof(tmpA))) {
-		CMD_ExecuteCommand(tmpA, COMMAND_FLAG_SOURCE_HTTP);
+	commandLen = http_getArg(request->url, "cmnd", tmpA, sizeof(tmpA));
+	if (commandLen) {
+		if (commandLen > (sizeof(tmpA) - 5)) {
+			commandLen += 8;
+			long_str_alloced = (char*)malloc(commandLen);
+			if (long_str_alloced) {
+				http_getArg(request->url, "cmnd", long_str_alloced, commandLen);
+				CMD_ExecuteCommand(long_str_alloced, COMMAND_FLAG_SOURCE_HTTP);
+				free(long_str_alloced);
+			}
+		}
+		else {
+			CMD_ExecuteCommand(tmpA, COMMAND_FLAG_SOURCE_HTTP);
+		}
 
 		if (!wal_strnicmp(tmpA, "POWER", 5)) {
 

@@ -91,6 +91,13 @@ void Test_FakeHTTPClientPacket_Generic() {
 
 }
 void Test_FakeHTTPClientPacket_GET(const char *tg) {
+	//char bufferTemp[8192];
+	//va_list argList;
+
+	//va_start(argList, tg);
+	//vsnprintf(bufferTemp, sizeof(bufferTemp), tg, argList);
+	//va_end(argList);
+
 	sprintf(buffer, http_get_template1, tg);
 	Test_FakeHTTPClientPacket_Generic();
 }
@@ -101,6 +108,13 @@ void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data) {
 	Test_FakeHTTPClientPacket_Generic();
 }
 void Test_FakeHTTPClientPacket_JSON(const char *tg) {
+	/*char bufferTemp[8192];
+	va_list argList;
+
+	va_start(argList, tg);
+	vsnprintf(bufferTemp, sizeof(bufferTemp), tg, argList);
+	va_end(argList);
+*/
 	int r;
 	Test_FakeHTTPClientPacket_GET(tg);
 

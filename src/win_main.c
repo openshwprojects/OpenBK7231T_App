@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include "new_common.h"
 #include "driver\drv_public.h"
+#include "cmnds\cmd_public.h"
 #include "httpserver\new_http.h"
 #include "new_pins.h"
 #include <timeapi.h>
@@ -67,7 +68,7 @@ void Sim_RunFrame(int frameTime) {
 	// this time counter is simulated, I need this for unit tests to work
 	g_simulatedTimeNow += frameTime;
 	accum_time += frameTime;
-	PIN_ticks(0);
+	QuickTick(0);
 	HTTPServer_RunQuickTick();
 	if (accum_time > 1000) {
 		accum_time -= 1000;
@@ -108,6 +109,7 @@ void SIM_ClearOBK() {
 		release_lfs();
 		SIM_Hack_ClearSimulatedPinRoles();
 		CMD_ExecuteCommand("clearAll", 0);
+		CMD_ExecuteCommand("led_expoMode", 0);
 		Main_Init();
 	}
 }
@@ -167,10 +169,17 @@ int rtos_get_time() {
 #include "sim/sim_public.h"
 int __cdecl main(int argc, char **argv)
 {
-	bool bWantsUnitTests = 0;
+	bool bWantsUnitTests = 1;
     WSADATA wsaData;
     int iResult;
 
+	int maxTest = 100;
+	for (int i = 0; i <= maxTest; i++) {
+		float frac = (float)i / (float)(maxTest);
+		float in = frac;
+		float res = LED_BrightnessMapping(255, in);
+		printf("Brightness %f with color %f gives %f\n", in, 255.0f, res);
+	}
     // Initialize Winsock
     iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
     if (iResult != 0) {
