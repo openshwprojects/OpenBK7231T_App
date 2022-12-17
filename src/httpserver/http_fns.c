@@ -1460,17 +1460,6 @@ int http_fn_uart_tool(http_request_t* request) {
 	return 0;
 }
 
-int http_fn_config_dump_table(http_request_t* request) {
-	http_setup(request, httpMimeTypeHTML);
-	http_html_start(request, "Dump config");
-	poststr(request, "Not implemented <br>");
-
-	poststr(request, htmlFooterReturnToCfgLink);
-	http_html_end(request);
-	poststr(request, NULL);
-	return 0;
-}
-
 
 
 
