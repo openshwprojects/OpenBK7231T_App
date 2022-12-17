@@ -1943,6 +1943,7 @@ int http_tasmota_json_status_SNS(http_request_t* request) {
 			energy_hour = 0;
 		}
 		// begin ENERGY block
+		hprintf255(request, ",");
 		hprintf255(request, "\"ENERGY\":{");
 		hprintf255(request, "\"Power\": %f,", power);
 		hprintf255(request, "\"ApparentPower\": 0,\"ReactivePower\": 0,\"Factor\":%f,", factor);
