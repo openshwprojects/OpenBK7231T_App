@@ -15,6 +15,8 @@
 #include "../mqtt/new_mqtt.h"
 #include "hass.h"
 #include "../cJSON/cJSON.h"
+#include <time.h>
+#include "../driver/drv_ntp.h"
 
 #ifdef WINDOWS
 	// nothing
@@ -1909,11 +1911,16 @@ int http_tasmota_json_power(http_request_t* request) {
 	return 0;
 }
 /*
-{"StatusSNS":{"Time":"2022-07-30T10:11:26","ENERGY":{"TotalStartTime":"2022-05-12T10:56:31","Total":0.003,"Yesterday":0.003,"Today":0.000,"Power": 0,"ApparentPower": 0,"ReactivePower": 0,"Factor":0.00,"Voltage":236,"Current_div100":0.000}}}
+{"StatusSNS":{"Time":"2022-07-30T10:11:26","ENERGY":{"TotalStartTime":"2022-05-12T10:56:31","Total":0.003,"Yesterday":0.003,"Today":0.000,"Power": 0,"ApparentPower": 0,"ReactivePower": 0,"Factor":0.00,"Voltage":236,"Current":0.000}}}
 */
 int http_tasmota_json_status_SNS(http_request_t* request) {
+	char buff[20];
 
-	hprintf255(request, "{\"StatusSNS\":{");
+	hprintf255(request, "\"StatusSNS\":{");
+
+	time_t localTime = (time_t)NTP_GetCurrentTime();
+	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", localtime(&localTime));
+	hprintf255(request, "\"Time\":\"%s\"", buff);
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	if (DRV_IsMeasuringPower()) {
@@ -1928,13 +1935,19 @@ int http_tasmota_json_status_SNS(http_request_t* request) {
 		energy = DRV_GetReading(OBK_CONSUMPTION_TOTAL);
 		energy_hour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
 
-
+		// following check will clear NaN values
+		if (OBK_IS_NAN(energy)) {
+			energy = 0;
+		}
+		if (OBK_IS_NAN(energy_hour)) {
+			energy_hour = 0;
+		}
 		// begin ENERGY block
 		hprintf255(request, "\"ENERGY\":{");
 		hprintf255(request, "\"Power\": %f,", power);
 		hprintf255(request, "\"ApparentPower\": 0,\"ReactivePower\": 0,\"Factor\":%f,", factor);
 		hprintf255(request, "\"Voltage\":%f,", voltage);
-		hprintf255(request, "\"Current_div100\":%f,", current);
+		hprintf255(request, "\"Current\":%f,", current);
 		hprintf255(request, "\"ConsumptionTotal\":%f,", energy);
 		hprintf255(request, "\"ConsumptionLastHour\":%f", energy_hour);
 		// close ENERGY block
@@ -1942,7 +1955,6 @@ int http_tasmota_json_status_SNS(http_request_t* request) {
 	}
 #endif
 
-	hprintf255(request, "}");
 	hprintf255(request, "}");
 
 	return 0;
@@ -1957,6 +1969,7 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 	int powerCode;
 	int relayCount, pwmCount, i;
 	bool bRelayIndexingStartsWithZero;
+	char buff[20];
 
 	deviceName = CFG_GetShortDeviceName();
 	friendlyName = CFG_GetDeviceName();
@@ -2147,7 +2160,7 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 
 
 	hprintf255(request, "\"StatusMQT\":{");
-	hprintf255(request, "\"MqttHost\":\"192.168.0.113\",");
+	hprintf255(request, "\"MqttHost\":\"%s\",", CFG_GetMQTTHost());
 	hprintf255(request, "\"MqttPort\":%i,", CFG_GetMQTTPort());
 	hprintf255(request, "\"MqttClientMask\":\"core-mosquitto\",");
 	hprintf255(request, "\"MqttClient\":\"%s\",",CFG_GetMQTTClientId());
@@ -2159,27 +2172,34 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 	hprintf255(request, "}");
 
 	hprintf255(request, ",");
-	hprintf255(request, "\"StatusTIM\":{");
-	hprintf255(request, "\"UTC\":\"2022-11-09T19:09:11\",");
-	hprintf255(request, "\"Local\":\"2022-11-09T20:09:11\",");
-	hprintf255(request, "\"StartDST\":\"2022-03-27T02:00:00\",");
-	hprintf255(request, "\"EndDST\":\"2022-10-30T03:00:00\",");
-	hprintf255(request, "\"Timezone\":\"+01:00\",");
-	hprintf255(request, "\"Sunrise\":\"07:50\",");
-	hprintf255(request, "\"Sunset\":\"17:17\"");
-	hprintf255(request, "}");
+	time_t localTime = (time_t)NTP_GetCurrentTime();
+	{
+		time_t localUTC = (time_t)NTP_GetCurrentTimeWithoutOffset();
+
+		hprintf255(request, "\"StatusTIM\":{");
+		strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", localtime(&localUTC));
+		hprintf255(request, "\"UTC\":\"%s\",", buff);
+		strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", localtime(&localTime));
+		hprintf255(request, "\"Local\":\"%s\",", buff);
+		hprintf255(request, "\"StartDST\":\"2022-03-27T02:00:00\",");
+		hprintf255(request, "\"EndDST\":\"2022-10-30T03:00:00\",");
+		hprintf255(request, "\"Timezone\":\"+01:00\",");
+		hprintf255(request, "\"Sunrise\":\"07:50\",");
+		hprintf255(request, "\"Sunset\":\"17:17\"");
+		hprintf255(request, "}");
+	}
 
 	hprintf255(request, ",");
 
-	hprintf255(request, "\"StatusSNS\":{");
-	hprintf255(request, "\"Time\":\"2022-11-09T19:09:11\"");
-	hprintf255(request, "}");
+
+	http_tasmota_json_status_SNS(request);
 
 	hprintf255(request, ",");
 
 	hprintf255(request, "\"StatusSTS\":{");
 
-	hprintf255(request, "\"Time\":\"2022-11-09T20:09:11\",");
+	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", localtime(&localTime));
+	hprintf255(request, "\"Time\":\"%s\",", buff);
 	hprintf255(request, "\"Uptime\":\"30T02:59:30\",");
 	hprintf255(request, "\"UptimeSec\":%i,", Time_getUpTimeSeconds());
 	hprintf255(request, "\"Heap\":25,");
@@ -2218,7 +2238,7 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 	hprintf255(request, "\"Channel\":11,");
 	hprintf255(request, "\"Mode\":\"11n\",");
 	hprintf255(request, "\"RSSI\":78,");
-	hprintf255(request, "\"Signal\":-61,");
+	hprintf255(request, "\"Signal\":%i,", HAL_GetWifiStrength());
 	hprintf255(request, "\"LinkCount\":21,");
 	hprintf255(request, "\"Downtime\":\"0T06:13:34\"");
 	hprintf255(request, "}");
@@ -2252,7 +2272,9 @@ int http_fn_cm(http_request_t* request) {
 			poststr(request, "}");
 		}
 		else if (!wal_strnicmp(tmpA, "STATUS 8", 8) || !wal_strnicmp(tmpA, "STATUS 10", 10)) {
+			hprintf255(request, "{");
 			http_tasmota_json_status_SNS(request);
+			hprintf255(request, "}");
 		}
 		else {
 			http_tasmota_json_status_generic(request);
