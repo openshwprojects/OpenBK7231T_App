@@ -2318,7 +2318,7 @@ int http_fn_cfg(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Config");
 	postFormAction(request, "cfg_pins", "Configure Module");
-	postFormAction(request, "cfg_generic", "Configure General");
+	postFormAction(request, "cfg_generic", "Configure General/Flags");
 	postFormAction(request, "cfg_startup", "Configure Startup");
 	postFormAction(request, "cfg_dgr", "Configure Device Groups");
 	postFormAction(request, "cfg_quick", "Quick Config");
