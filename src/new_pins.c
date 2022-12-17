@@ -102,7 +102,11 @@ uint32_t g_gpio_edge_map = 0; // note: 0->rising, 1->falling
 
 
 void PINS_BeginDeepSleep() {
+#ifdef PLATFORM_BK7231T
 	bk_enter_deep_sleep(g_gpio_index_map, g_gpio_edge_map);
+#else
+
+#endif
 }
 void setGPIActive(int index, int active, int falling){
 	if (active){
