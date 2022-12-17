@@ -1360,12 +1360,12 @@ int http_fn_cmd_tool(http_request_t* request) {
 			long_str_alloced = (char*)malloc(commandLen);
 			if (long_str_alloced) {
 				http_getArg(request->url, "cmd", long_str_alloced, commandLen);
-				CMD_ExecuteCommand(long_str_alloced, COMMAND_FLAG_SOURCE_CONSOLE);
+				res = CMD_ExecuteCommand(long_str_alloced, COMMAND_FLAG_SOURCE_CONSOLE);
 				free(long_str_alloced);
 			}
 		}
 		else {
-			CMD_ExecuteCommand(tmpA, COMMAND_FLAG_SOURCE_CONSOLE);
+			res = CMD_ExecuteCommand(tmpA, COMMAND_FLAG_SOURCE_CONSOLE);
 		}
 		LOG_SetCommandHTTPRedirectReply(0);
 		resStr = CMD_GetResultString(res);
