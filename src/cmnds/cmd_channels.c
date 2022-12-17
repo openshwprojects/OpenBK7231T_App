@@ -187,16 +187,22 @@ static commandResult_t CMD_GetReadings(const void *context, const char *cmd, con
 #endif
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_ShortName(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_ShortName(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *s;
 
 	s = CFG_GetShortDeviceName();
 
-	if(cmdFlags & COMMAND_FLAG_SOURCE_TCP) {
+	if (cmdFlags & COMMAND_FLAG_SOURCE_TCP) {
 		ADDLOG_INFO(LOG_FEATURE_RAW, s);
-	} else {
+	}
+	else {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ShortName: name is %s", s);
 	}
+	return CMD_RES_OK;
+}
+extern int g_bWantDeepSleep;
+static commandResult_t CMD_StartDeepSleep(const void *context, const char *cmd, const char *args, int cmdFlags){
+	g_bWantDeepSleep = 1;
 	return CMD_RES_OK;
 }
 void CMD_InitChannelCommands(){
@@ -245,5 +251,10 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_ShortName","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ShortName", "", CMD_ShortName, NULL, NULL);
+	//cmddetail:{"name":"ShortName","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_ShortName","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("startDeepSleep", "", CMD_StartDeepSleep, NULL, NULL);
 
 }

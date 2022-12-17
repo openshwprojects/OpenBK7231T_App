@@ -100,6 +100,10 @@ static byte g_lastValidState[PLATFORM_GPIO_MAX];
 uint32_t g_gpio_index_map = 0;
 uint32_t g_gpio_edge_map = 0; // note: 0->rising, 1->falling
 
+
+void PINS_BeginDeepSleep() {
+	bk_enter_deep_sleep(g_gpio_index_map, g_gpio_edge_map);
+}
 void setGPIActive(int index, int active, int falling){
 	if (active){
 		g_gpio_index_map |= (1<<index);

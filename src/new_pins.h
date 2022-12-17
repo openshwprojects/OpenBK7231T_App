@@ -294,6 +294,7 @@ void PIN_ticks(void *param);
 
 void PIN_set_wifi_led(int value);
 void PIN_AddCommands(void);
+void PINS_BeginDeepSleep();
 void PIN_SetupPins();
 void PIN_OnReboot();
 void CFG_ClearPins();

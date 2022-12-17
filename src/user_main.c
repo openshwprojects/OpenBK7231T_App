@@ -576,11 +576,17 @@ static int g_wifiLedToggleTime = 0;
 static int g_wifi_ledState = 0;
 static uint32_t g_time = 0;
 static uint32_t g_last_time = 0;
+int g_bWantDeepSleep;
 
 /////////////////////////////////////////////////////
 // this is what we do in a qucik tick
 void QuickTick(void *param)
 {
+	if (g_bWantDeepSleep) {
+		PINS_BeginDeepSleep();
+		g_bWantDeepSleep = 0;
+		return;
+	}
 
 #if defined(PLATFORM_BEKEN) && defined(BEKEN_PIN_GPI_INTERRUPTS)
 	// if using interrupt driven GPI for pins, don't call PIN_ticks() in QuickTick
