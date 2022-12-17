@@ -60,7 +60,7 @@ static int g_ntp_delay = 5;
 // current time
 static unsigned int g_time;
 static bool g_synced;
-// time offset (time zone?)
+// time offset (time zone?) in seconds
 static int g_timeOffsetHours;
 
 int NTP_GetTimesZoneOfs()

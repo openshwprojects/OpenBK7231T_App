@@ -275,8 +275,11 @@ void LED_RunQuickColorLerp(int deltaMS) {
 	}
 #endif
 }
-
+#if WINDOWS
+int exponential_mode = 0;
+#else
 int exponential_mode = 2;
+#endif
 
 float LED_BrightnessMapping(float raw, float brig) {
 	float final = 0;
