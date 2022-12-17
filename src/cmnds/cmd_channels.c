@@ -223,6 +223,25 @@ static commandResult_t CMD_FriendlyName(const void *context, const char *cmd, co
 	}
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_SetFlag(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	const char *s;
+	int flag;
+	int bOn;
+	Tokenizer_TokenizeString(args, 0);
+
+	s = CFG_GetDeviceName();
+	if (Tokenizer_GetArgsCount() <= 1) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Usage: [flag] [1or0]");
+		return CMD_RES_BAD_ARGUMENT;
+	}
+	flag = Tokenizer_GetArgInteger(0);
+	bOn = Tokenizer_GetArgInteger(1);
+
+	CFG_SetFlag(flag, bOn);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Flag %i set to %i",flag,bOn);
+
+	return CMD_RES_OK;
+}
 extern int g_bWantDeepSleep;
 static commandResult_t CMD_StartDeepSleep(const void *context, const char *cmd, const char *args, int cmdFlags){
 	g_bWantDeepSleep = 1;
@@ -284,5 +303,10 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_ShortName","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("startDeepSleep", "", CMD_StartDeepSleep, NULL, NULL);
+	//cmddetail:{"name":"ShortName","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_ShortName","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("SetFlag", "", CMD_SetFlag, NULL, NULL);
 
 }
