@@ -223,6 +223,21 @@ static commandResult_t CMD_FriendlyName(const void *context, const char *cmd, co
 	}
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_FullBootTime(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	int v;
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 1) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Requires 1 arg");
+		return CMD_RES_BAD_ARGUMENT;
+	}
+	v = Tokenizer_GetArgInteger(0);
+
+	CFG_SetBootOkSeconds(v);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Boot time to %i",v);
+
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_SetFlag(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *s;
 	int flag;
@@ -308,5 +323,10 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_ShortName","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetFlag", "", CMD_SetFlag, NULL, NULL);
+	//cmddetail:{"name":"ShortName","args":"",
+	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"fn":"CMD_ShortName","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("FullBootTime", "", CMD_FullBootTime, NULL, NULL);
 
 }
