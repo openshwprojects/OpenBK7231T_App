@@ -144,6 +144,8 @@ void RepeatingEvents_OnEverySecond() {
 
 	//addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"RepeatingEvents_OnEverySecond checked %i events, ran %i\n",c_checked,c_ran);
 }
+// addRepeatingEventID 1234 5 -1 DGR_SendPower "testgr" 1 1 
+// cancelRepeatingEvent 1234
 commandResult_t RepeatingEvents_Cmd_AddRepeatingEvent(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int interval;
 	int times;
