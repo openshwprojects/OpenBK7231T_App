@@ -33,8 +33,8 @@ https://developer.tuya.com/en/docs/iot/tuyacloudlowpoweruniversalserialaccesspro
 #define TUYA_CMD_STATE         0x07
 #define TUYA_CMD_QUERY_STATE   0x08
 #define TUYA_CMD_SET_TIME      0x1C
+#define TUYA_CMD_WEATHERDATA   0x21
 #define TUYA_CMD_SET_RSSI      0x24
-
 void TuyaMCU_RunFrame();
 
 
@@ -97,6 +97,8 @@ const char *TuyaMCU_GetCommandTypeLabel(int t) {
         return "QueryState";
     if(t == TUYA_CMD_SET_TIME)
         return "SetTime";
+	if (t == TUYA_CMD_WEATHERDATA)
+		return "WeatherData";
     return "Unknown";
 }
 typedef struct rtcc_s {
@@ -843,6 +845,56 @@ void TuyaMCU_ParseQueryProductInformation(const byte *data, int len) {
 
     addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ParseQueryProductInformation: received %s\n", name);
 }
+// See: https://www.elektroda.com/rtvforum/viewtopic.php?p=20345606#20345606
+void TuyaMCU_ParseWeatherData(const byte *data, int len) {
+	int ofs;
+	byte bValid;
+	int checkLen;
+	int iValue;
+	byte stringLen;
+	byte varType;
+	char buffer[64];
+	const char *stringData;
+	const char *stringDataValue;
+	ofs = 0;
+
+	while (ofs + 4 < len) {
+		bValid = data[ofs];
+		stringLen = data[ofs + 1];
+		stringData = (const char*)(data + (ofs + 2));
+		if (stringLen >= (sizeof(buffer) - 1))
+			stringLen = sizeof(buffer) - 2;
+		memcpy(buffer, stringData, stringLen);
+		buffer[stringLen] = 0;
+		varType = data[ofs + 2 + stringLen];
+		// T: 0x00 indicates an integer and 0x01 indicates a string.
+		ofs += (2 + stringLen);
+		ofs++;
+		stringLen = data[ofs];
+		stringData = data + (ofs + 1);
+		if (varType == 0x00) {
+			// integer
+			if (stringLen == 4) {
+				iValue = data[ofs + 1] << 24 | data[ofs + 2] << 16 | data[ofs + 3] << 8 | data[ofs + 4];
+			}
+			else if (stringLen == 2) {
+				iValue = data[ofs + 1] << 8 | data[ofs + 2];
+			}
+			else if (stringLen == 1) {
+				iValue = data[ofs + 1];
+			}
+			else {
+				iValue = 0;
+			}
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU_ParseWeatherData: key %s, val integer %i\n",buffer, iValue);
+		}
+		else {
+			// string
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU_ParseWeatherData: key %s, string not yet handled\n", buffer);
+		}
+		ofs += stringLen;
+	}
+}
 // Protocol version - 0x00 (not 0x03)
 // Used for battery powered devices, eg. door sensor.
 // Packet ID: 0x08
@@ -1129,6 +1181,9 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
 			else {
 
 			}
+			break;
+		case TUYA_CMD_WEATHERDATA:
+			TuyaMCU_ParseWeatherData(data + 6, len - 6);
 			break;
 		case 0x24:
 			// This is send by TH06
