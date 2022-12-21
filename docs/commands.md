@@ -20,7 +20,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | FullBootTime | [Value] | Sets time in seconds after which boot is marked as valid. This is related to emergency AP mode which is enabled by powering on/off device 5 times quickly. |
 | AddEventHandler | [EventName][EventArgument][CommandToRun] | This can be used to trigger an action on a button click, long press, etc |
 | AddChangeHandler | [Variable][Relation][Constant][Command] | This can listen to change in channel value (for example channel 0 becoming 100), or for a voltage/current/power change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be 'Power', or 'Current' or 'Voltage' |
-| listEventHandlers |  |  |
+| listEventHandlers |  | Prints full list of added event handlers |
 | clearAllHandlers |  | This clears all added event handlers |
 | echo | [Message] | Sends given message back to console. |
 | restart |  | Reboots the module |
@@ -43,10 +43,10 @@ Do not add anything here, as it will overwritten with next rebuild.
 | led_nextColor |  | Sets the next color from predefined colours list. Our list is the same as in Tasmota. |
 | led_lerpSpeed | [LerpSpeed] | Sets the speed of colour interpolation, where speed is defined as a number of RGB units per second, so 255 will lerp from 0 to 255 in one second |
 | led_expoMode | [IntegerMode] | set brightness exponential mode 0..4<br/>e.g.:led_expoMode 4 |
-| HSBColor |  | NULL |
-| HSBColor1 |  | NULL |
-| HSBColor2 |  | NULL |
-| HSBColor3 |  | NULL |
+| HSBColor | [H][S][B] | Tasmota-style colour access. Hue in 0-360 range, saturation in 0-100 and brightness in 0-100 range. |
+| HSBColor1 | [Hue] | Tasmota-style colour access. Sets hue in 0 to 360 range. |
+| HSBColor2 | [Saturation] | Tasmota-style colour access. Set saturation in 0 to 100 range. |
+| HSBColor3 | [Brightness] | Tasmota-style colour access. Sets brightness in 0 to 100 range. |
 | led_finishFullLerp |  | NULL |
 | addRepeatingEvent | [IntervalSeconds][RepeatsOr-1][CommandToRun] | Starts a timer/interval command. Use 'backlog' to fit multiple commands in a single string. |
 | addRepeatingEventID | [IntervalSeconds][RepeatsOr-1][UserID][CommandToRun] | as addRepeatingEvent, but with a given ID. You can later cancel it with cancelRepeatingEvent.<br/>e.g.:addRepeatingEventID 2 -1 123 Power0 Toggle |

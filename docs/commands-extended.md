@@ -20,7 +20,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | FullBootTime | [Value] | Sets time in seconds after which boot is marked as valid. This is related to emergency AP mode which is enabled by powering on/off device 5 times quickly. | File: cmnds/cmd_channels.c<br/>Function: CMD_FullBootTime |
 | AddEventHandler | [EventName][EventArgument][CommandToRun] | This can be used to trigger an action on a button click, long press, etc | File: cmnds/cmd_eventHandlers.c<br/>Function: CMD_AddEventHandler |
 | AddChangeHandler | [Variable][Relation][Constant][Command] | This can listen to change in channel value (for example channel 0 becoming 100), or for a voltage/current/power change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be 'Power', or 'Current' or 'Voltage' | File: cmnds/cmd_eventHandlers.c<br/>Function: CMD_AddChangeHandler |
-| listEventHandlers |  |  | File: cmnds/cmd_eventHandlers.c<br/>Function: CMD_ListEventHandlers |
+| listEventHandlers |  | Prints full list of added event handlers | File: cmnds/cmd_eventHandlers.c<br/>Function: CMD_ListEventHandlers |
 | clearAllHandlers |  | This clears all added event handlers | File: cmnds/cmd_eventHandlers.c<br/>Function: CMD_ClearAllHandlers |
 | echo | [Message] | Sends given message back to console. | File: cmnds/cmd_main.c<br/>Function: CMD_Echo |
 | restart |  | Reboots the module | File: cmnds/cmd_main.c<br/>Function: CMD_Restart |
@@ -43,10 +43,10 @@ Do not add anything here, as it will overwritten with next rebuild.
 | led_nextColor |  | Sets the next color from predefined colours list. Our list is the same as in Tasmota. | File: cmnds/cmd_newLEDDriver.c<br/>Function: nextColor |
 | led_lerpSpeed | [LerpSpeed] | Sets the speed of colour interpolation, where speed is defined as a number of RGB units per second, so 255 will lerp from 0 to 255 in one second | File: cmnds/cmd_newLEDDriver.c<br/>Function: lerpSpeed |
 | led_expoMode | [IntegerMode] | set brightness exponential mode 0..4<br/>e.g.:led_expoMode 4 | File: cmnds/cmd_newLEDDriver.c<br/>Function: exponentialMode |
-| HSBColor |  | NULL | File: cmnds/cmd_newLEDDriver.c<br/>Function: LED_SetBaseColor_HSB |
-| HSBColor1 |  | NULL | File: cmnds/cmd_newLEDDriver.c<br/>Function: setHue |
-| HSBColor2 |  | NULL | File: cmnds/cmd_newLEDDriver.c<br/>Function: setSaturation |
-| HSBColor3 |  | NULL | File: cmnds/cmd_newLEDDriver.c<br/>Function: setBrightness |
+| HSBColor | [H][S][B] | Tasmota-style colour access. Hue in 0-360 range, saturation in 0-100 and brightness in 0-100 range. | File: cmnds/cmd_newLEDDriver.c<br/>Function: LED_SetBaseColor_HSB |
+| HSBColor1 | [Hue] | Tasmota-style colour access. Sets hue in 0 to 360 range. | File: cmnds/cmd_newLEDDriver.c<br/>Function: setHue |
+| HSBColor2 | [Saturation] | Tasmota-style colour access. Set saturation in 0 to 100 range. | File: cmnds/cmd_newLEDDriver.c<br/>Function: setSaturation |
+| HSBColor3 | [Brightness] | Tasmota-style colour access. Sets brightness in 0 to 100 range. | File: cmnds/cmd_newLEDDriver.c<br/>Function: setBrightness |
 | led_finishFullLerp |  | NULL | File: cmnds/cmd_newLEDDriver.c<br/>Function: led_finishFullLerp |
 | addRepeatingEvent | [IntervalSeconds][RepeatsOr-1][CommandToRun] | Starts a timer/interval command. Use 'backlog' to fit multiple commands in a single string. | File: cmnds/cmd_repeatingEvents.c<br/>Function: RepeatingEvents_Cmd_AddRepeatingEvent |
 | addRepeatingEventID | [IntervalSeconds][RepeatsOr-1][UserID][CommandToRun] | as addRepeatingEvent, but with a given ID. You can later cancel it with cancelRepeatingEvent.<br/>e.g.:addRepeatingEventID 2 -1 123 Power0 Toggle | File: cmnds/cmd_repeatingEvents.c<br/>Function: RepeatingEvents_Cmd_AddRepeatingEvent |

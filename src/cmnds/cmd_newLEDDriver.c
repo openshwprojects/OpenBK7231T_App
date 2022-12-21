@@ -1317,26 +1317,26 @@ void NewLED_InitCommands(){
 	// HSBColor 360,100,100 - red
 	// HSBColor 90,100,100 - green
 	// HSBColor	<hue>,<sat>,<bri> = set color by hue, saturation and brightness
-	//cmddetail:{"name":"HSBColor","args":"",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:{"name":"HSBColor","args":"[H][S][B]",
+	//cmddetail:"descr":"Tasmota-style colour access. Hue in 0-360 range, saturation in 0-100 and brightness in 0-100 range. ",
 	//cmddetail:"fn":"LED_SetBaseColor_HSB","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HSBColor", "", LED_SetBaseColor_HSB, NULL, NULL);
 	// HSBColor1	0..360 = set hue
-	//cmddetail:{"name":"HSBColor1","args":"",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:{"name":"HSBColor1","args":"[Hue]",
+	//cmddetail:"descr":"Tasmota-style colour access. Sets hue in 0 to 360 range.",
 	//cmddetail:"fn":"setHue","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HSBColor1", "", setHue, NULL, NULL);
 	// HSBColor2	0..100 = set saturation
-	//cmddetail:{"name":"HSBColor2","args":"",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:{"name":"HSBColor2","args":"[Saturation]",
+	//cmddetail:"descr":"Tasmota-style colour access. Set saturation in 0 to 100 range.",
 	//cmddetail:"fn":"setSaturation","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HSBColor2", "", setSaturation, NULL, NULL);
 	// HSBColor3	0..100 = set brightness
-	//cmddetail:{"name":"HSBColor3","args":"",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:{"name":"HSBColor3","args":"[Brightness]",
+	//cmddetail:"descr":"Tasmota-style colour access. Sets brightness in 0 to 100 range.",
 	//cmddetail:"fn":"setBrightness","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HSBColor3", "", setBrightness, NULL, NULL);
