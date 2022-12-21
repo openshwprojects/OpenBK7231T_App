@@ -1769,10 +1769,10 @@ OBK_Publish_Result PublishQueuedItems() {
 			case None:
 				break;
 			case PublishAll:
-				CMD_ExecuteCommand(MQTT_COMMAND_PUBLISH_ALL, COMMAND_FLAG_SOURCE_MQTT);
+				CMD_ExecuteCommand("publishAll", COMMAND_FLAG_SOURCE_MQTT);
 				break;
 			case PublishChannels:
-				CMD_ExecuteCommand(MQTT_COMMAND_PUBLISH_CHANNELS, COMMAND_FLAG_SOURCE_MQTT);
+				CMD_ExecuteCommand("publishChannels", COMMAND_FLAG_SOURCE_MQTT);
 				break;
 			}
 		}
