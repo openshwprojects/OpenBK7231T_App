@@ -258,7 +258,7 @@ void BL0937_Init()
 	//cmddetail:"fn":"BL0937_CurrentRef","file":"driver/drv_bl0937.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("IREF","",BL0937_CurrentRef, NULL, NULL);
-	//cmddetail:{"name":"PowerMax","args":"",
+	//cmddetail:{"name":"PowerMax","args":"[limit]",
 	//cmddetail:"descr":"Sets Maximum power value measurement limiter",
 	//cmddetail:"fn":"BL0937_PowerMax","file":"driver/drv_bl0937.c","requires":"",
 	//cmddetail:"examples":""}

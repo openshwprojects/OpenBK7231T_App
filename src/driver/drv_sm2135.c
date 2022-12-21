@@ -230,18 +230,18 @@ void SM2135_Init() {
 	g_pin_clk = PIN_FindPinIndexForRole(IOR_SM2135_CLK,g_pin_clk);
 	g_pin_data = PIN_FindPinIndexForRole(IOR_SM2135_DAT,g_pin_data);
 
-	//cmddetail:{"name":"SM2135_RGBCW","args":"",
-	//cmddetail:"descr":"qq",
+	//cmddetail:{"name":"SM2135_RGBCW","args":"[HexColor]",
+	//cmddetail:"descr":"Don't use it. It's for direct access of SM2135 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",
 	//cmddetail:"fn":"SM2135_RGBCW","file":"driver/drv_sm2135.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SM2135_RGBCW", "", SM2135_RGBCW, NULL, NULL);
-	//cmddetail:{"name":"SM2135_Map","args":"",
-	//cmddetail:"descr":"qq",
+	//cmddetail:{"name":"SM2135_Map","args":"[Ch0][Ch1][Ch2][Ch3][Ch4]",
+	//cmddetail:"descr":"Maps the RGBCW values to given indices of SM2135 channels. This is because SM2135 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc.",
 	//cmddetail:"fn":"SM2135_Map","file":"driver/drv_sm2135.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SM2135_Map", "", SM2135_Map, NULL, NULL);
 	//cmddetail:{"name":"SM2135_Current","args":"",
-	//cmddetail:"descr":"qq",
+	//cmddetail:"descr":"",
 	//cmddetail:"fn":"SM2135_Current","file":"driver/drv_sm2135.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SM2135_Current", "", SM2135_Current, NULL, NULL);

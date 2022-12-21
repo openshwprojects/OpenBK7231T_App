@@ -277,18 +277,18 @@ void BP5758D_Init() {
 
     BP5758D_PreInit();
 
-	//cmddetail:{"name":"BP5758D_RGBCW","args":"",
-	//cmddetail:"descr":"qq",
+	//cmddetail:{"name":"BP5758D_RGBCW","args":"[HexColor]",
+	//cmddetail:"descr":"Don't use it. It's for direct access of BP5758D driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",
 	//cmddetail:"fn":"BP5758D_RGBCW","file":"driver/drv_bp5758d.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("BP5758D_RGBCW", "", BP5758D_RGBCW, NULL, NULL);
-	//cmddetail:{"name":"BP5758D_Map","args":"",
-	//cmddetail:"descr":"qq",
+	//cmddetail:{"name":"BP5758D_Map","args":"[Ch0][Ch1][Ch2][Ch3][Ch4]",
+	//cmddetail:"descr":"Maps the RGBCW values to given indices of BP5758D channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc.",
 	//cmddetail:"fn":"BP5758D_Map","file":"driver/drv_bp5758d.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("BP5758D_Map", "", BP5758D_Map, NULL, NULL);
 	//cmddetail:{"name":"BP5758D_Current","args":"",
-	//cmddetail:"descr":"qq",
+	//cmddetail:"descr":"",
 	//cmddetail:"fn":"BP5758D_Current","file":"driver/drv_bp5758d.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("BP5758D_Current", "", BP5758D_Current, NULL, NULL);

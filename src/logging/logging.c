@@ -273,8 +273,8 @@ static void initLog(void)
 	HTTP_RegisterCallback("/logs", HTTP_GET, http_getlog);
 	HTTP_RegisterCallback("/lograw", HTTP_GET, http_getlograw);
 
-	//cmddetail:{"name":"loglevel","args":"",
-	//cmddetail:"descr":"set log level <0..6>",
+	//cmddetail:{"name":"loglevel","args":"[Value]",
+	//cmddetail:"descr":"Correct values are 0 to 7. Default is 3. Higher value includes more logs. Log levels are: ERROR = 1, WARN = 2, INFO = 3, DEBUG = 4, EXTRADEBUG = 5. WARNING: you also must separately select logging level filter on web panel in order for more logs to show up there",
 	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("loglevel", "", log_command, NULL, NULL);
@@ -288,8 +288,8 @@ static void initLog(void)
 	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("logtype", "", log_command, NULL, NULL);
-	//cmddetail:{"name":"logdelay","args":"",
-	//cmddetail:"descr":"logdelay 0..n - impose ms delay after every log",
+	//cmddetail:{"name":"logdelay","args":"[Value]",
+	//cmddetail:"descr":"Value is a number of ms. This will add an artificial delay in each log call. Useful for debugging. This way you can see step by step what happens.",
 	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("logdelay", "", log_command, NULL, NULL);

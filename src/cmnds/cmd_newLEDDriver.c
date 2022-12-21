@@ -1253,13 +1253,13 @@ void NewLED_InitCommands(){
 	//cmddetail:"fn":"add_dimmer","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("add_dimmer", "", add_dimmer, NULL, NULL);
-	//cmddetail:{"name":"led_enableAll","args":"",
-	//cmddetail:"descr":"qqqq",
+	//cmddetail:{"name":"led_enableAll","args":"[1or0orToggle]",
+	//cmddetail:"descr":"Power on/off LED but remember the RGB(CW) values",
 	//cmddetail:"fn":"enableAll","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_enableAll", "", enableAll, NULL, NULL);
-	//cmddetail:{"name":"led_basecolor_rgb","args":"",
-	//cmddetail:"descr":"set PWN color using #RRGGBB",
+	//cmddetail:{"name":"led_basecolor_rgb","args":"[HexValue]",
+	//cmddetail:"descr":"Puts the LED driver in RGB mode and sets given color.",
 	//cmddetail:"fn":"basecolor_rgb","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_basecolor_rgb", "", basecolor_rgb, NULL, NULL);
@@ -1273,38 +1273,38 @@ void NewLED_InitCommands(){
 	//cmddetail:"fn":"add_temperature","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("add_temperature", "", add_temperature, NULL, NULL);
-	//cmddetail:{"name":"led_temperature","args":"",
-	//cmddetail:"descr":"set qqqq",
+	//cmddetail:{"name":"led_temperature","args":"[TempValue]",
+	//cmddetail:"descr":"Toggles LED driver into temperature mode and sets given temperature. It using Home Assistant temperature range (in the range from 154-500 defined in homeassistant/util/color.py as HASS_COLOR_MIN and HASS_COLOR_MAX)",
 	//cmddetail:"fn":"temperature","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_temperature", "", temperature, NULL, NULL);
 	//cmddetail:{"name":"led_brightnessMult","args":"",
-	//cmddetail:"descr":"set qqqq",
+	//cmddetail:"descr":"",
 	//cmddetail:"fn":"brightnessMult","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_brightnessMult", "", brightnessMult, NULL, NULL);
 	//cmddetail:{"name":"led_colorMult","args":"",
-	//cmddetail:"descr":"set qqqq",
+	//cmddetail:"descr":"",
 	//cmddetail:"fn":"colorMult","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_colorMult", "", colorMult, NULL, NULL);
-	//cmddetail:{"name":"led_saturation","args":"",
-	//cmddetail:"descr":"set qqqq",
+	//cmddetail:{"name":"led_saturation","args":"[Value]",
+	//cmddetail:"descr":"This is an alternate way to set the LED color.",
 	//cmddetail:"fn":"setSaturation","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_saturation", "", setSaturation, NULL, NULL);
-	//cmddetail:{"name":"led_hue","args":"",
-	//cmddetail:"descr":"set qqqq",
+	//cmddetail:{"name":"led_hue","args":"[Value]",
+	//cmddetail:"descr":"This is an alternate way to set the LED color.",
 	//cmddetail:"fn":"setHue","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_hue", "", setHue, NULL, NULL);
 	//cmddetail:{"name":"led_nextColor","args":"",
-	//cmddetail:"descr":"set qqqq",
+	//cmddetail:"descr":"",
 	//cmddetail:"fn":"nextColor","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_nextColor", "", nextColor, NULL, NULL);
 	//cmddetail:{"name":"led_lerpSpeed","args":"",
-	//cmddetail:"descr":"set qqqq",
+	//cmddetail:"descr":"",
 	//cmddetail:"fn":"lerpSpeed","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_lerpSpeed", "", lerpSpeed, NULL, NULL);

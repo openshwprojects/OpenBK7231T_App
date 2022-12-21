@@ -231,15 +231,15 @@ static commandResult_t RepeatingEvents_Cmd_ListRepeatingEvents(const void *conte
 void RepeatingEvents_Init() {
 	// addRepeatingEvent [DelaySeconds] [Repeats] [Command With Spaces Allowed]
 	// addRepeatingEvent 5 -1 Power0 Toggle
-	//cmddetail:{"name":"addRepeatingEvent","args":"",
-	//cmddetail:"descr":"qqqq",
+	//cmddetail:{"name":"addRepeatingEvent","args":"[IntervalSeconds][RepeatsOr-1][CommandToRun]",
+	//cmddetail:"descr":"Starts a timer/interval command. Use 'backlog' to fit multiple commands in a single string.",
 	//cmddetail:"fn":"RepeatingEvents_Cmd_AddRepeatingEvent","file":"cmnds/cmd_repeatingEvents.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("addRepeatingEvent","",RepeatingEvents_Cmd_AddRepeatingEvent, NULL, NULL);
 	// addRepeatingEventID [DelaySeconds] [Repeats] [UserIDInteger] [Command With Spaces Allowed]
 	// addRepeatingEventID 2 -1 123 Power0 Toggle
-	//cmddetail:{"name":"addRepeatingEventID","args":"",
-	//cmddetail:"descr":"qqqq",
+	//cmddetail:{"name":"addRepeatingEventID","args":"[IntervalSeconds][RepeatsOr-1][UserID][CommandToRun]",
+	//cmddetail:"descr":"as addRepeatingEvent, but with a given ID. You can later cancel it with cancelRepeatingEvent.",
 	//cmddetail:"fn":"RepeatingEvents_Cmd_AddRepeatingEvent","file":"cmnds/cmd_repeatingEvents.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("addRepeatingEventID","",RepeatingEvents_Cmd_AddRepeatingEvent, NULL, NULL);
@@ -250,13 +250,13 @@ void RepeatingEvents_Init() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("cancelRepeatingEvent","",RepeatingEvents_Cmd_CancelRepeatingEvent, NULL, NULL);
 
-	//cmddetail:{"name":"clearRepeatingEvents","args":"",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:{"name":"clearRepeatingEvents","args":"[UserID]",
+	//cmddetail:"descr":"Stops a given repeating event with a specified ID",
 	//cmddetail:"fn":"RepeatingEvents_Cmd_ClearRepeatingEvents","file":"cmnds/cmd_repeatingEvents.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("clearRepeatingEvents", "", RepeatingEvents_Cmd_ClearRepeatingEvents, NULL, NULL);
 	//cmddetail:{"name":"listRepeatingEvents","args":"",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:"descr":"lists all repeating events",
 	//cmddetail:"fn":"RepeatingEvents_Cmd_ListRepeatingEvents","file":"cmnds/cmd_repeatingEvents.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("listRepeatingEvents", "", RepeatingEvents_Cmd_ListRepeatingEvents, NULL, NULL);

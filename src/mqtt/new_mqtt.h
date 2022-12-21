@@ -64,10 +64,6 @@ typedef struct MqttPublishItem
 	PostPublishCommands command;
 } MqttPublishItem_t;
 
-#define MQTT_COMMAND_PUBLISH			"publish"
-#define MQTT_COMMAND_PUBLISH_ALL		"publishAll"
-#define MQTT_COMMAND_PUBLISH_CHANNELS	"publishChannels"
-#define MQTT_COMMAND_PUBLISH_BENCHMARK  "publishBenchmark"
 
 // Maximum length to log data parameters
 #define MQTT_MAX_DATA_LOG_LENGTH					12

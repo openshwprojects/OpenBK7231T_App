@@ -1342,13 +1342,13 @@ void TuyaMCU_Init()
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_sendCurTime","",TuyaMCU_Send_SetTime_Current, NULL, NULL);
 	//cmddetail:{"name":"tuyaMcu_fakeHex","args":"",
-	//cmddetail:"descr":"qq",
+	//cmddetail:"descr":"",
 	//cmddetail:"fn":"TuyaMCU_Fake_Hex","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_fakeHex","",TuyaMCU_Fake_Hex, NULL, NULL);
     ///CMD_RegisterCommand("tuyaMcu_sendSimple","",TuyaMCU_Send_Simple, "Appends a 0x55 0xAA header to a data, append a checksum at end and send");
-	//cmddetail:{"name":"linkTuyaMCUOutputToChannel","args":"",
-	//cmddetail:"descr":"Map value send from TuyaMCU (eg. humidity or temperature) to channel",
+	//cmddetail:{"name":"linkTuyaMCUOutputToChannel","args":"[dpId][varType][channelID]",
+	//cmddetail:"descr":"Used to map between TuyaMCU dpIDs and our internal channels. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap",
 	//cmddetail:"fn":"TuyaMCU_LinkTuyaMCUOutputToChannel","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("linkTuyaMCUOutputToChannel","",TuyaMCU_LinkTuyaMCUOutputToChannel, NULL, NULL);
@@ -1383,12 +1383,12 @@ void TuyaMCU_Init()
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_sendMCUConf","",TuyaMCU_SendMCUConf, NULL, NULL);
 	//cmddetail:{"name":"fakeTuyaPacket","args":"",
-	//cmddetail:"descr":"qq",
+	//cmddetail:"descr":"",
 	//cmddetail:"fn":"TuyaMCU_FakePacket","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("fakeTuyaPacket","",TuyaMCU_FakePacket, NULL, NULL);
-	//cmddetail:{"name":"tuyaMcu_setBaudRate","args":"",
-	//cmddetail:"descr":"Set the serial baud rate used to communicate with the TuyaMCU",
+	//cmddetail:{"name":"tuyaMcu_setBaudRate","args":"[BaudValue]",
+	//cmddetail:"descr":"Sets the baud rate used by TuyaMCU UART communication. Default value is 9600.",
 	//cmddetail:"fn":"TuyaMCU_SetBaudRate","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_setBaudRate","",TuyaMCU_SetBaudRate, NULL, NULL);

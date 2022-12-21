@@ -1346,26 +1346,26 @@ void MQTT_init()
 
 	mqtt_initialised = 1;
 
-	//cmddetail:{"name":"MQTT_COMMAND_PUBLISH","args":"",
-	//cmddetail:"descr":"Sqqq",
+	//cmddetail:{"name":"publish","args":"[Topic][Value]",
+	//cmddetail:"descr":"Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get. You can use argument expansion here, so $CH11 will change to value of the channel 11",
 	//cmddetail:"fn":"MQTT_PublishCommand","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand(MQTT_COMMAND_PUBLISH, "", MQTT_PublishCommand, NULL, NULL);
-	//cmddetail:{"name":"MQTT_COMMAND_PUBLISH_ALL","args":"",
-	//cmddetail:"descr":"Sqqq",
+	CMD_RegisterCommand("publish", "", MQTT_PublishCommand, NULL, NULL);
+	//cmddetail:{"name":"publishAll","args":"",
+	//cmddetail:"descr":"Starts the step by step publish of all available values",
 	//cmddetail:"fn":"MQTT_PublishAll","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand(MQTT_COMMAND_PUBLISH_ALL, "", MQTT_PublishAll, NULL, NULL);
-	//cmddetail:{"name":"MQTT_COMMAND_PUBLISH_CHANNELS","args":"",
-	//cmddetail:"descr":"Sqqq",
+	CMD_RegisterCommand("publishAll", "", MQTT_PublishAll, NULL, NULL);
+	//cmddetail:{"name":"publishChannels","args":"",
+	//cmddetail:"descr":"Starts the step by step publish of all channel values",
 	//cmddetail:"fn":"MQTT_PublishChannels","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand(MQTT_COMMAND_PUBLISH_CHANNELS, "", MQTT_PublishChannels, NULL, NULL);
-	//cmddetail:{"name":"MQTT_COMMAND_PUBLISH_BENCHMARK","args":"",
+	CMD_RegisterCommand("publishChannels", "", MQTT_PublishChannels, NULL, NULL);
+	//cmddetail:{"name":"publishBenchmark","args":"",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"MQTT_StartMQTTTestThread","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand(MQTT_COMMAND_PUBLISH_BENCHMARK, NULL, MQTT_StartMQTTTestThread, NULL, NULL);
+	CMD_RegisterCommand("publishBenchmark", NULL, MQTT_StartMQTTTestThread, NULL, NULL);
 
 }
 
