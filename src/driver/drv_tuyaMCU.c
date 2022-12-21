@@ -1337,12 +1337,12 @@ void TuyaMCU_Init()
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_testSendTime","",TuyaMCU_Send_SetTime_Example, NULL, NULL);
 	//cmddetail:{"name":"tuyaMcu_sendCurTime","args":"",
-	//cmddetail:"descr":"Sends a current date by TuyaMCU to clock/callendar MCU",
+	//cmddetail:"descr":"Sends a current date by TuyaMCU to clock/callendar MCU. Time is taken from NTP driver, so NTP also should be already running.",
 	//cmddetail:"fn":"TuyaMCU_Send_SetTime_Current","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_sendCurTime","",TuyaMCU_Send_SetTime_Current, NULL, NULL);
-	//cmddetail:{"name":"tuyaMcu_fakeHex","args":"",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"tuyaMcu_fakeHex","args":"[HexString]",
+	//cmddetail:"descr":"Spoofs a fake hex packet so it looks like TuyaMCU send that to us. Used for testing.",
 	//cmddetail:"fn":"TuyaMCU_Fake_Hex","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_fakeHex","",TuyaMCU_Fake_Hex, NULL, NULL);

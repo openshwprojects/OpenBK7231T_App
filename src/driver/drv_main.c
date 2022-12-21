@@ -273,12 +273,12 @@ static commandResult_t DRV_Stop(const void* context, const char* cmd, const char
 }
 
 void DRV_Generic_Init() {
-	//cmddetail:{"name":"startDriver","args":"",
+	//cmddetail:{"name":"startDriver","args":"[DriverName]",
 	//cmddetail:"descr":"Starts driver",
 	//cmddetail:"fn":"DRV_Start","file":"driver/drv_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("startDriver", "", DRV_Start, NULL, NULL);
-	//cmddetail:{"name":"stopDriver","args":"",
+	//cmddetail:{"name":"stopDriver","args":"[DriverName]",
 	//cmddetail:"descr":"Stops driver",
 	//cmddetail:"fn":"DRV_Stop","file":"driver/drv_main.c","requires":"",
 	//cmddetail:"examples":""}

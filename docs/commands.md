@@ -108,15 +108,15 @@ Do not add anything here, as it will overwritten with next rebuild.
 | setButtonEnabled |  | NULL |
 | IRSend |  | Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0 |
 | IREnable |  | Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol |
-| startDriver |  | Starts driver |
-| stopDriver |  | Stops driver |
-| ntp_timeZoneOfs |  | Sets the time zone offset in hours |
-| ntp_setServer |  | Sets the NTP server |
+| startDriver | [DriverName] | Starts driver |
+| stopDriver | [DriverName] | Stops driver |
+| ntp_timeZoneOfs | [Value] | Sets the time zone offset in hours |
+| ntp_setServer | [ServerIP] | Sets the NTP server |
 | ntp_info |  | Display NTP related settings |
-| toggler_enable |  | NULL |
-| toggler_set |  | NULL |
-| toggler_channel |  | NULL |
-| toggler_name |  | NULL |
+| toggler_enable | [1or0] | Sets the given output ON or OFF.  handles toggler_enable0, toggler_enable1, etc |
+| toggler_set | [Value] | Sets the VALUE of given output. Handles toggler_set0, toggler_set1, etc. The last digit after command name is changed to slot index. |
+| toggler_channel | [ChannelIndex] | handles toggler_channel0, toggler_channel1. Sets channel linked to given toggler slot. |
+| toggler_name |  | Handles toggler_name0, toggler_name1, etc. Sets the name of a toggler for GUI. |
 | SM16703P_Test |  | qq |
 | SM16703P_Send |  | NULL |
 | SM16703P_Test_3xZero |  | NULL |
@@ -130,8 +130,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | DGR_SendRGBCW | [GroupName][HexRGBCW] | Sends a RGBCW message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
 | DGR_SendFixedColor | [GroupName][TasColorIndex] | Sends a FixedColor message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
 | tuyaMcu_testSendTime |  | Sends a example date by TuyaMCU to clock/callendar MCU |
-| tuyaMcu_sendCurTime |  | Sends a current date by TuyaMCU to clock/callendar MCU |
-| tuyaMcu_fakeHex |  |  |
+| tuyaMcu_sendCurTime |  | Sends a current date by TuyaMCU to clock/callendar MCU. Time is taken from NTP driver, so NTP also should be already running. |
+| tuyaMcu_fakeHex | [HexString] | Spoofs a fake hex packet so it looks like TuyaMCU send that to us. Used for testing. |
 | linkTuyaMCUOutputToChannel | [dpId][varType][channelID] | Used to map between TuyaMCU dpIDs and our internal channels. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap |
 | tuyaMcu_setDimmerRange |  | Set dimmer range used by TuyaMCU |
 | tuyaMcu_sendHeartbeat |  | Send heartbeat to TuyaMCU |

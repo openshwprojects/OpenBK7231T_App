@@ -108,15 +108,15 @@ Do not add anything here, as it will overwritten with next rebuild.
 | setButtonEnabled |  | NULL | driver/drv_httpButtons.c<br/>CMD_setButtonEnabled |
 | IRSend |  | Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0 | driver/drv_ir.cpp<br/>IR_Send_Cmd |
 | IREnable |  | Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol | driver/drv_ir.cpp<br/>IR_Enable |
-| startDriver |  | Starts driver | driver/drv_main.c<br/>DRV_Start |
-| stopDriver |  | Stops driver | driver/drv_main.c<br/>DRV_Stop |
-| ntp_timeZoneOfs |  | Sets the time zone offset in hours | driver/drv_ntp.c<br/>NTP_SetTimeZoneOfs |
-| ntp_setServer |  | Sets the NTP server | driver/drv_ntp.c<br/>NTP_SetServer |
+| startDriver | [DriverName] | Starts driver | driver/drv_main.c<br/>DRV_Start |
+| stopDriver | [DriverName] | Stops driver | driver/drv_main.c<br/>DRV_Stop |
+| ntp_timeZoneOfs | [Value] | Sets the time zone offset in hours | driver/drv_ntp.c<br/>NTP_SetTimeZoneOfs |
+| ntp_setServer | [ServerIP] | Sets the NTP server | driver/drv_ntp.c<br/>NTP_SetServer |
 | ntp_info |  | Display NTP related settings | driver/drv_ntp.c<br/>NTP_Info |
-| toggler_enable |  | NULL | driver/drv_pwmToggler.c<br/>Toggler_EnableX |
-| toggler_set |  | NULL | driver/drv_pwmToggler.c<br/>Toggler_SetX |
-| toggler_channel |  | NULL | driver/drv_pwmToggler.c<br/>Toggler_ChannelX |
-| toggler_name |  | NULL | driver/drv_pwmToggler.c<br/>Toggler_NameX |
+| toggler_enable | [1or0] | Sets the given output ON or OFF.  handles toggler_enable0, toggler_enable1, etc | driver/drv_pwmToggler.c<br/>Toggler_EnableX |
+| toggler_set | [Value] | Sets the VALUE of given output. Handles toggler_set0, toggler_set1, etc. The last digit after command name is changed to slot index. | driver/drv_pwmToggler.c<br/>Toggler_SetX |
+| toggler_channel | [ChannelIndex] | handles toggler_channel0, toggler_channel1. Sets channel linked to given toggler slot. | driver/drv_pwmToggler.c<br/>Toggler_ChannelX |
+| toggler_name |  | Handles toggler_name0, toggler_name1, etc. Sets the name of a toggler for GUI. | driver/drv_pwmToggler.c<br/>Toggler_NameX |
 | SM16703P_Test |  | qq | driver/drv_ucs1912.c<br/>SM16703P_Test |
 | SM16703P_Send |  | NULL | driver/drv_sm16703P.c<br/>SM16703P_Send_Cmd |
 | SM16703P_Test_3xZero |  | NULL | driver/drv_sm16703P.c<br/>SM16703P_Test_3xZero |
@@ -130,8 +130,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | DGR_SendRGBCW | [GroupName][HexRGBCW] | Sends a RGBCW message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. | driver/drv_tasmotaDeviceGroups.c<br/>CMD_DGR_SendRGBCW |
 | DGR_SendFixedColor | [GroupName][TasColorIndex] | Sends a FixedColor message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. | driver/drv_tasmotaDeviceGroups.c<br/>CMD_DGR_SendFixedColor |
 | tuyaMcu_testSendTime |  | Sends a example date by TuyaMCU to clock/callendar MCU | driver/drv_tuyaMCU.c<br/>TuyaMCU_Send_SetTime_Example |
-| tuyaMcu_sendCurTime |  | Sends a current date by TuyaMCU to clock/callendar MCU | driver/drv_tuyaMCU.c<br/>TuyaMCU_Send_SetTime_Current |
-| tuyaMcu_fakeHex |  |  | driver/drv_tuyaMCU.c<br/>TuyaMCU_Fake_Hex |
+| tuyaMcu_sendCurTime |  | Sends a current date by TuyaMCU to clock/callendar MCU. Time is taken from NTP driver, so NTP also should be already running. | driver/drv_tuyaMCU.c<br/>TuyaMCU_Send_SetTime_Current |
+| tuyaMcu_fakeHex | [HexString] | Spoofs a fake hex packet so it looks like TuyaMCU send that to us. Used for testing. | driver/drv_tuyaMCU.c<br/>TuyaMCU_Fake_Hex |
 | linkTuyaMCUOutputToChannel | [dpId][varType][channelID] | Used to map between TuyaMCU dpIDs and our internal channels. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap | driver/drv_tuyaMCU.c<br/>TuyaMCU_LinkTuyaMCUOutputToChannel |
 | tuyaMcu_setDimmerRange |  | Set dimmer range used by TuyaMCU | driver/drv_tuyaMCU.c<br/>TuyaMCU_SetDimmerRange |
 | tuyaMcu_sendHeartbeat |  | Send heartbeat to TuyaMCU | driver/drv_tuyaMCU.c<br/>TuyaMCU_SendHeartbeat |

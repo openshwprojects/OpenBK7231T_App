@@ -302,29 +302,23 @@ void DRV_InitPWMToggler() {
 		g_channels[i] = -1;
 		g_names[i] = 0;
 	}
-	// sets the given output ON or OFF
-	// handles toggler_enable0, toggler_enable1, etc
-	//cmddetail:{"name":"toggler_enable","args":"",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:{"name":"toggler_enable","args":"[1or0]",
+	//cmddetail:"descr":"Sets the given output ON or OFF.  handles toggler_enable0, toggler_enable1, etc",
 	//cmddetail:"fn":"Toggler_EnableX","file":"driver/drv_pwmToggler.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("toggler_enable", "", Toggler_EnableX, NULL, NULL);
-	// sets the VALUE of given output
-	// handles toggler_set0, toggler_set1, etc
-	//cmddetail:{"name":"toggler_set","args":"",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:{"name":"toggler_set","args":"[Value]",
+	//cmddetail:"descr":"Sets the VALUE of given output. Handles toggler_set0, toggler_set1, etc. The last digit after command name is changed to slot index.",
 	//cmddetail:"fn":"Toggler_SetX","file":"driver/drv_pwmToggler.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("toggler_set", "", Toggler_SetX, NULL, NULL);
-	// handles toggler_channel0, toggler_channel1
-	//cmddetail:{"name":"toggler_channel","args":"",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:{"name":"toggler_channel","args":"[ChannelIndex]",
+	//cmddetail:"descr":"handles toggler_channel0, toggler_channel1. Sets channel linked to given toggler slot.",
 	//cmddetail:"fn":"Toggler_ChannelX","file":"driver/drv_pwmToggler.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("toggler_channel", "", Toggler_ChannelX, NULL, NULL);
-	// handles toggler_name0 etc
 	//cmddetail:{"name":"toggler_name","args":"",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:"descr":"Handles toggler_name0, toggler_name1, etc. Sets the name of a toggler for GUI.",
 	//cmddetail:"fn":"Toggler_NameX","file":"driver/drv_pwmToggler.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("toggler_name", "", Toggler_NameX, NULL, NULL);

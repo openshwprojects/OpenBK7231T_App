@@ -103,12 +103,12 @@ commandResult_t NTP_Info(const void *context, const char *cmd, const char *args,
 
 void NTP_Init() {
 
-	//cmddetail:{"name":"ntp_timeZoneOfs","args":"",
+	//cmddetail:{"name":"ntp_timeZoneOfs","args":"[Value]",
 	//cmddetail:"descr":"Sets the time zone offset in hours",
 	//cmddetail:"fn":"NTP_SetTimeZoneOfs","file":"driver/drv_ntp.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ntp_timeZoneOfs","",NTP_SetTimeZoneOfs, NULL, NULL);
-	//cmddetail:{"name":"ntp_setServer","args":"",
+	//cmddetail:{"name":"ntp_setServer","args":"[ServerIP]",
 	//cmddetail:"descr":"Sets the NTP server",
 	//cmddetail:"fn":"NTP_SetServer","file":"driver/drv_ntp.c","requires":"",
 	//cmddetail:"examples":""}
