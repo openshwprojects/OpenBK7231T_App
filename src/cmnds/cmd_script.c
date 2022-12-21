@@ -784,7 +784,7 @@ void CMD_InitScripting(){
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("delay_ms", "", CMD_Delay_ms, NULL, NULL);
 	//cmddetail:{"name":"return","args":"",
-	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"descr":"Script-only command. Currently it just stops totally current script thread.",
 	//cmddetail:"fn":"CMD_Return","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("return", "", CMD_Return, NULL, NULL);

@@ -43,11 +43,11 @@ Do not add anything here, as it will overwritten with next rebuild.
 | led_nextColor |  | Sets the next color from predefined colours list. Our list is the same as in Tasmota. | File: cmnds/cmd_newLEDDriver.c<br/>Function: nextColor |
 | led_lerpSpeed | [LerpSpeed] | Sets the speed of colour interpolation, where speed is defined as a number of RGB units per second, so 255 will lerp from 0 to 255 in one second | File: cmnds/cmd_newLEDDriver.c<br/>Function: lerpSpeed |
 | led_expoMode | [IntegerMode] | set brightness exponential mode 0..4<br/>e.g.:led_expoMode 4 | File: cmnds/cmd_newLEDDriver.c<br/>Function: exponentialMode |
-| HSBColor | [H][S][B] | Tasmota-style colour access. Hue in 0-360 range, saturation in 0-100 and brightness in 0-100 range. | File: cmnds/cmd_newLEDDriver.c<br/>Function: LED_SetBaseColor_HSB |
+| HSBColor | [H][S][B] | Tasmota-style colour access. Hue in 0-360 range, saturation in 0-100 and brightness in 0-100 range.  | File: cmnds/cmd_newLEDDriver.c<br/>Function: LED_SetBaseColor_HSB |
 | HSBColor1 | [Hue] | Tasmota-style colour access. Sets hue in 0 to 360 range. | File: cmnds/cmd_newLEDDriver.c<br/>Function: setHue |
 | HSBColor2 | [Saturation] | Tasmota-style colour access. Set saturation in 0 to 100 range. | File: cmnds/cmd_newLEDDriver.c<br/>Function: setSaturation |
 | HSBColor3 | [Brightness] | Tasmota-style colour access. Sets brightness in 0 to 100 range. | File: cmnds/cmd_newLEDDriver.c<br/>Function: setBrightness |
-| led_finishFullLerp |  | NULL | File: cmnds/cmd_newLEDDriver.c<br/>Function: led_finishFullLerp |
+| led_finishFullLerp |  | This will force-finish LED color interpolation. You can call it after setting the colour to skip the interpolation/smooth transition time. Of course, it makes only sense if you enabled smooth colour transitions. | File: cmnds/cmd_newLEDDriver.c<br/>Function: led_finishFullLerp |
 | addRepeatingEvent | [IntervalSeconds][RepeatsOr-1][CommandToRun] | Starts a timer/interval command. Use 'backlog' to fit multiple commands in a single string. | File: cmnds/cmd_repeatingEvents.c<br/>Function: RepeatingEvents_Cmd_AddRepeatingEvent |
 | addRepeatingEventID | [IntervalSeconds][RepeatsOr-1][UserID][CommandToRun] | as addRepeatingEvent, but with a given ID. You can later cancel it with cancelRepeatingEvent.<br/>e.g.:addRepeatingEventID 2 -1 123 Power0 Toggle | File: cmnds/cmd_repeatingEvents.c<br/>Function: RepeatingEvents_Cmd_AddRepeatingEvent |
 | cancelRepeatingEvent | [UserIDInteger] | Stops a given repeating event with a specified ID | File: cmnds/cmd_repeatingEvents.c<br/>Function: RepeatingEvents_Cmd_CancelRepeatingEvent |
@@ -60,10 +60,10 @@ Do not add anything here, as it will overwritten with next rebuild.
 | goto | [LabelStr] | Script-only command. IF single argument is given, then goes to given label from within current script file. If two arguments are given, then jumps to any other script file by label - first argument is file, second label | File: cmnds/cmd_script.c<br/>Function: CMD_GoTo |
 | delay_s | [ValueSeconds] | Script-only command. Pauses current script thread for given amount of seconds. | File: cmnds/cmd_script.c<br/>Function: CMD_Delay_s |
 | delay_ms | [ValueMS] | Script-only command. Pauses current script thread for given amount of ms. | File: cmnds/cmd_script.c<br/>Function: CMD_Delay_ms |
-| return |  | qqqqq0 | File: cmnds/cmd_script.c<br/>Function: CMD_Return |
+| return |  | Script-only command. Currently it just stops totally current script thread. | File: cmnds/cmd_script.c<br/>Function: CMD_Return |
 | resetSVM |  | Resets all SVM and clears all scripts. | File: cmnds/cmd_script.c<br/>Function: CMD_resetSVM |
 | sendGet | [TargetURL] | Sends a HTTP GET request to target URL. May include GET arguments. Can be used to control devices by Tasmota HTTP protocol. Command supports argument expansion, so $CH11 changes to value of channel 11, etc, etc. | File: cmnds/cmd_send.c<br/>Function: CMD_SendGET |
-| power |  | set output POWERn 0..100 | File: cmnds/cmd_tasmota.c<br/>Function: power |
+| power | [OnorOfforToggle] | Tasmota-style POWER command. Should work for both LEDs and relay-based devices. You can write POWER0, POWER1, etc to access specific relays. | File: cmnds/cmd_tasmota.c<br/>Function: power |
 | powerStateOnly |  | ensures that device is on or off without changing pwm values | File: cmnds/cmd_tasmota.c<br/>Function: powerStateOnly |
 | powerAll |  | set all outputs | File: cmnds/cmd_tasmota.c<br/>Function: powerAll |
 | color | [HexString] | set PWN color using #RRGGBB[cw][ww]. Do not use it. Use led_basecolor_rgb | File: cmnds/cmd_tasmota.c<br/>Function: color |

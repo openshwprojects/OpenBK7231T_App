@@ -1341,7 +1341,7 @@ void NewLED_InitCommands(){
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HSBColor3", "", setBrightness, NULL, NULL);
 	//cmddetail:{"name":"led_finishFullLerp","args":"",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:"descr":"This will force-finish LED color interpolation. You can call it after setting the colour to skip the interpolation/smooth transition time. Of course, it makes only sense if you enabled smooth colour transitions.",
 	//cmddetail:"fn":"led_finishFullLerp","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("led_finishFullLerp", "", led_finishFullLerp, NULL, NULL);

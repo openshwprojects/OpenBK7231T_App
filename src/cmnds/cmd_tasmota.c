@@ -477,8 +477,8 @@ static commandResult_t cmnd_MqttPassword(const void * context, const char *cmd, 
 	return CMD_RES_OK;
 }
 int taslike_commands_init(){
-	//cmddetail:{"name":"power","args":"",
-	//cmddetail:"descr":"set output POWERn 0..100",
+	//cmddetail:{"name":"power","args":"[OnorOfforToggle]",
+	//cmddetail:"descr":"Tasmota-style POWER command. Should work for both LEDs and relay-based devices. You can write POWER0, POWER1, etc to access specific relays.",
 	//cmddetail:"fn":"power","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("power", "", power, NULL, NULL);
