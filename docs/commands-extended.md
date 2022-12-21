@@ -6,18 +6,18 @@ Do not add anything here, as it will overwritten with next rebuild.
 | Command        | Arguments          | Description  | Loc |
 |:------------- |:-------------:|:----- | ------:|
 | SetChannel | [ChannelIndex][ChannelValue] | Sets a raw channel to given value. Relay channels are using 1 and 0 values. PWM channels are within [0,100] range. Do not use this for LED control, because there is a better and more advanced LED driver with dimming and configuration memory (remembers setting after on/off), LED driver commands has 'led_' prefix. | cmnds/cmd_channels.c<br/>CMD_SetChannel |
-| ToggleChannel |  | qqqqq0 | cmnds/cmd_channels.c<br/>CMD_ToggleChannel |
+| ToggleChannel | [ChannelIndex] | Toggles given channel value. Non-zero becomes zero, zero becomes 1. | cmnds/cmd_channels.c<br/>CMD_ToggleChannel |
 | AddChannel | [ChannelIndex][ValueToAdd][ClampMin][ClampMax] | Adds a given value to the channel. Can be used to change PWM brightness. Clamp min and max arguments are optional. | cmnds/cmd_channels.c<br/>CMD_AddChannel |
-| ClampChannel |  | qqqqq0 | cmnds/cmd_channels.c<br/>CMD_ClampChannel |
+| ClampChannel | [ChannelIndex][Min][Max] | Clamps given channel value to a range. | cmnds/cmd_channels.c<br/>CMD_ClampChannel |
 | SetPinRole | [PinRole][RoleIndexOrName] | This allows you to set a pin role, for example a Relay role, or Button, etc. Usually it's easier to do this through WWW panel, so you don't have to use this command. | cmnds/cmd_channels.c<br/>CMD_SetPinRole |
 | SetPinChannel | [PinRole][ChannelIndex] | This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command. | cmnds/cmd_channels.c<br/>CMD_SetPinChannel |
-| GetChannel |  | qqqqq0 | cmnds/cmd_channels.c<br/>CMD_GetChannel |
-| GetReadings |  | qqqqq0 | cmnds/cmd_channels.c<br/>CMD_GetReadings |
-| ShortName |  | qqqqq0 | cmnds/cmd_channels.c<br/>CMD_ShortName |
-| FriendlyName |  | NULL | cmnds/cmd_channels.c<br/>CMD_FriendlyName |
+| GetChannel | [ChannelIndex] | Prints given channel value to console. | cmnds/cmd_channels.c<br/>CMD_GetChannel |
+| GetReadings |  | Prints voltage etc readings to console. | cmnds/cmd_channels.c<br/>CMD_GetReadings |
+| ShortName | [Name] | Sets the short name of the device. | cmnds/cmd_channels.c<br/>CMD_ShortName |
+| FriendlyName | [Name] | Sets the full name of the device | cmnds/cmd_channels.c<br/>CMD_FriendlyName |
 | startDeepSleep |  | NULL | cmnds/cmd_channels.c<br/>CMD_StartDeepSleep |
-| SetFlag |  | NULL | cmnds/cmd_channels.c<br/>CMD_SetFlag |
-| FullBootTime |  | NULL | cmnds/cmd_channels.c<br/>CMD_FullBootTime |
+| SetFlag | [FlagIndex][1or0] | Enables/disables given flag. | cmnds/cmd_channels.c<br/>CMD_SetFlag |
+| FullBootTime | [Value] | Sets time in seconds after which boot is marked as valid. This is related to emergency AP mode which is enabled by powering on/off device 5 times quickly. | cmnds/cmd_channels.c<br/>CMD_FullBootTime |
 | AddEventHandler | [EventName][EventArgument][CommandToRun] | This can be used to trigger an action on a button click, long press, etc | cmnds/cmd_eventHandlers.c<br/>CMD_AddEventHandler |
 | AddChangeHandler | [Variable][Relation][Constant][Command] | This can listen to change in channel value (for example channel 0 becoming 100), or for a voltage/current/power change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be 'Power', or 'Current' or 'Voltage' | cmnds/cmd_eventHandlers.c<br/>CMD_AddChangeHandler |
 | listEventHandlers |  |  | cmnds/cmd_eventHandlers.c<br/>CMD_ListEventHandlers |

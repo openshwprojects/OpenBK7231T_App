@@ -268,8 +268,8 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_SetChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SetChannel", "", CMD_SetChannel, NULL, NULL);
-	//cmddetail:{"name":"ToggleChannel","args":"",
-	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:{"name":"ToggleChannel","args":"[ChannelIndex]",
+	//cmddetail:"descr":"Toggles given channel value. Non-zero becomes zero, zero becomes 1.",
 	//cmddetail:"fn":"CMD_ToggleChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ToggleChannel", "", CMD_ToggleChannel, NULL, NULL);
@@ -278,8 +278,8 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_AddChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("AddChannel", "", CMD_AddChannel, NULL, NULL);
-	//cmddetail:{"name":"ClampChannel","args":"",
-	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:{"name":"ClampChannel","args":"[ChannelIndex][Min][Max]",
+	//cmddetail:"descr":"Clamps given channel value to a range.",
 	//cmddetail:"fn":"CMD_ClampChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ClampChannel", "", CMD_ClampChannel, NULL, NULL);
@@ -293,23 +293,23 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_SetPinChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SetPinChannel", "", CMD_SetPinChannel, NULL, NULL);
-	//cmddetail:{"name":"GetChannel","args":"",
-	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:{"name":"GetChannel","args":"[ChannelIndex]",
+	//cmddetail:"descr":"Prints given channel value to console.",
 	//cmddetail:"fn":"CMD_GetChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("GetChannel", "", CMD_GetChannel, NULL, NULL);
 	//cmddetail:{"name":"GetReadings","args":"",
-	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"descr":"Prints voltage etc readings to console.",
 	//cmddetail:"fn":"CMD_GetReadings","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("GetReadings", "", CMD_GetReadings, NULL, NULL);
-	//cmddetail:{"name":"ShortName","args":"",
-	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:{"name":"ShortName","args":"[Name]",
+	//cmddetail:"descr":"Sets the short name of the device.",
 	//cmddetail:"fn":"CMD_ShortName","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ShortName", "", CMD_ShortName, NULL, NULL);
-	//cmddetail:{"name":"FriendlyName","args":"",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:{"name":"FriendlyName","args":"[Name]",
+	//cmddetail:"descr":"Sets the full name of the device",
 	//cmddetail:"fn":"CMD_FriendlyName","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("FriendlyName", "", CMD_FriendlyName, NULL, NULL);
@@ -318,13 +318,13 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_StartDeepSleep","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("startDeepSleep", "", CMD_StartDeepSleep, NULL, NULL);
-	//cmddetail:{"name":"SetFlag","args":"",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:{"name":"SetFlag","args":"[FlagIndex][1or0]",
+	//cmddetail:"descr":"Enables/disables given flag.",
 	//cmddetail:"fn":"CMD_SetFlag","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetFlag", "", CMD_SetFlag, NULL, NULL);
-	//cmddetail:{"name":"FullBootTime","args":"",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:{"name":"FullBootTime","args":"[Value]",
+	//cmddetail:"descr":"Sets time in seconds after which boot is marked as valid. This is related to emergency AP mode which is enabled by powering on/off device 5 times quickly.",
 	//cmddetail:"fn":"CMD_FullBootTime","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("FullBootTime", "", CMD_FullBootTime, NULL, NULL);

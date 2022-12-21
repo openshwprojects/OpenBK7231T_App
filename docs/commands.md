@@ -6,18 +6,18 @@ Do not add anything here, as it will overwritten with next rebuild.
 | Command        | Arguments          | Description  |
 |:------------- |:------------- | -----:|
 | SetChannel | [ChannelIndex][ChannelValue] | Sets a raw channel to given value. Relay channels are using 1 and 0 values. PWM channels are within [0,100] range. Do not use this for LED control, because there is a better and more advanced LED driver with dimming and configuration memory (remembers setting after on/off), LED driver commands has 'led_' prefix. |
-| ToggleChannel |  | qqqqq0 |
+| ToggleChannel | [ChannelIndex] | Toggles given channel value. Non-zero becomes zero, zero becomes 1. |
 | AddChannel | [ChannelIndex][ValueToAdd][ClampMin][ClampMax] | Adds a given value to the channel. Can be used to change PWM brightness. Clamp min and max arguments are optional. |
-| ClampChannel |  | qqqqq0 |
+| ClampChannel | [ChannelIndex][Min][Max] | Clamps given channel value to a range. |
 | SetPinRole | [PinRole][RoleIndexOrName] | This allows you to set a pin role, for example a Relay role, or Button, etc. Usually it's easier to do this through WWW panel, so you don't have to use this command. |
 | SetPinChannel | [PinRole][ChannelIndex] | This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command. |
-| GetChannel |  | qqqqq0 |
-| GetReadings |  | qqqqq0 |
-| ShortName |  | qqqqq0 |
-| FriendlyName |  | NULL |
+| GetChannel | [ChannelIndex] | Prints given channel value to console. |
+| GetReadings |  | Prints voltage etc readings to console. |
+| ShortName | [Name] | Sets the short name of the device. |
+| FriendlyName | [Name] | Sets the full name of the device |
 | startDeepSleep |  | NULL |
-| SetFlag |  | NULL |
-| FullBootTime |  | NULL |
+| SetFlag | [FlagIndex][1or0] | Enables/disables given flag. |
+| FullBootTime | [Value] | Sets time in seconds after which boot is marked as valid. This is related to emergency AP mode which is enabled by powering on/off device 5 times quickly. |
 | AddEventHandler | [EventName][EventArgument][CommandToRun] | This can be used to trigger an action on a button click, long press, etc |
 | AddChangeHandler | [Variable][Relation][Constant][Command] | This can listen to change in channel value (for example channel 0 becoming 100), or for a voltage/current/power change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be 'Power', or 'Current' or 'Voltage' |
 | listEventHandlers |  |  |
