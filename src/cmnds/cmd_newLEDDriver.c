@@ -1243,13 +1243,13 @@ void NewLED_InitCommands(){
 		g_lightMode = Light_Temperature;
 	}
 
-	//cmddetail:{"name":"led_dimmer","args":"",
+	//cmddetail:{"name":"led_dimmer","args":"[Value]",
 	//cmddetail:"descr":"set output dimmer 0..100",
 	//cmddetail:"fn":"dimmer","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_dimmer", "", dimmer, NULL, NULL);
-	//cmddetail:{"name":"add_dimmer","args":"",
-	//cmddetail:"descr":"set output dimmer 0..100",
+	//cmddetail:{"name":"add_dimmer","args":"[Value][bWrapAroundInsteadOfHold]",
+	//cmddetail:"descr":"Adds a given value to current LED dimmer. Function can wrap or clamp if max/min is exceeded.",
 	//cmddetail:"fn":"add_dimmer","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("add_dimmer", "", add_dimmer, NULL, NULL);
@@ -1268,8 +1268,8 @@ void NewLED_InitCommands(){
 	//cmddetail:"fn":"basecolor_rgbcw","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_basecolor_rgbcw", "", basecolor_rgbcw, NULL, NULL);
-	//cmddetail:{"name":"add_temperature","args":"",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:{"name":"add_temperature","args":"[DeltaValue][bWrapAroundInsteadOfHold]",
+	//cmddetail:"descr":"Adds a given value to current LED temperature. Function can wrap or clamp if max/min is exceeded.",
 	//cmddetail:"fn":"add_temperature","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("add_temperature", "", add_temperature, NULL, NULL);
@@ -1278,13 +1278,13 @@ void NewLED_InitCommands(){
 	//cmddetail:"fn":"temperature","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_temperature", "", temperature, NULL, NULL);
-	//cmddetail:{"name":"led_brightnessMult","args":"",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"led_brightnessMult","args":"[Value]",
+	//cmddetail:"descr":"Internal usage.",
 	//cmddetail:"fn":"brightnessMult","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_brightnessMult", "", brightnessMult, NULL, NULL);
-	//cmddetail:{"name":"led_colorMult","args":"",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"led_colorMult","args":"[Value]",
+	//cmddetail:"descr":"Internal usage.",
 	//cmddetail:"fn":"colorMult","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_colorMult", "", colorMult, NULL, NULL);
@@ -1299,16 +1299,16 @@ void NewLED_InitCommands(){
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_hue", "", setHue, NULL, NULL);
 	//cmddetail:{"name":"led_nextColor","args":"",
-	//cmddetail:"descr":"",
+	//cmddetail:"descr":"Sets the next color from predefined colours list. Our list is the same as in Tasmota.",
 	//cmddetail:"fn":"nextColor","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_nextColor", "", nextColor, NULL, NULL);
-	//cmddetail:{"name":"led_lerpSpeed","args":"",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"led_lerpSpeed","args":"[LerpSpeed]",
+	//cmddetail:"descr":"Sets the speed of colour interpolation, where speed is defined as a number of RGB units per second, so 255 will lerp from 0 to 255 in one second",
 	//cmddetail:"fn":"lerpSpeed","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_lerpSpeed", "", lerpSpeed, NULL, NULL);
-	//cmddetail:{"name":"led_expoMode","args":"",
+	//cmddetail:{"name":"led_expoMode","args":"[IntegerMode]",
 	//cmddetail:"descr":"set brightness exponential mode 0..4",
 	//cmddetail:"fn":"exponentialMode","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":"led_expoMode 4"}

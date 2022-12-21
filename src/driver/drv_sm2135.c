@@ -240,8 +240,8 @@ void SM2135_Init() {
 	//cmddetail:"fn":"SM2135_Map","file":"driver/drv_sm2135.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SM2135_Map", "", SM2135_Map, NULL, NULL);
-	//cmddetail:{"name":"SM2135_Current","args":"",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"SM2135_Current","args":"[Value]",
+	//cmddetail:"descr":"Sets the maximum current for LED driver.",
 	//cmddetail:"fn":"SM2135_Current","file":"driver/drv_sm2135.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SM2135_Current", "", SM2135_Current, NULL, NULL);

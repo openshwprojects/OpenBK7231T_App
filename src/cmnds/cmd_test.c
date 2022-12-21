@@ -58,7 +58,7 @@ static commandResult_t alias(const void * context, const char *cmd, const char *
 	ADDLOG_INFO(LOG_FEATURE_CMD, "New alias has been set: %s runs %s", alias, ocmd);
 
 	//cmddetail:{"name":"aliasMem","args":"",
-	//cmddetail:"descr":"custom",
+	//cmddetail:"descr":"Internal usage only. See docs for 'alias' command.",
 	//cmddetail:"fn":"runcmd","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand(aliasMem, "", runcmd, NULL, cmdMem);

@@ -278,12 +278,12 @@ static void initLog(void)
 	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("loglevel", "", log_command, NULL, NULL);
-	//cmddetail:{"name":"logfeature","args":"",
-	//cmddetail:"descr":"set log feature filter, <0..10> <0|1>",
+	//cmddetail:{"name":"logfeature","args":"[Index][1or0]",
+	//cmddetail:"descr":"set log feature filter, as an index and a 1 or 0",
 	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("logfeature", NULL, log_command, NULL, NULL);
-	//cmddetail:{"name":"logtype","args":"",
+	//cmddetail:{"name":"logtype","args":"[TypeStr]",
 	//cmddetail:"descr":"logtype direct|all - direct logs only to serial immediately",
 	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}

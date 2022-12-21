@@ -492,63 +492,63 @@ int taslike_commands_init(){
 	//cmddetail:"fn":"powerAll","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("powerAll", "", powerAll, NULL, NULL);
-	//cmddetail:{"name":"color","args":"",
-	//cmddetail:"descr":"set PWN color using #RRGGBB[cw][ww]",
+	//cmddetail:{"name":"color","args":"[HexString]",
+	//cmddetail:"descr":"set PWN color using #RRGGBB[cw][ww]. Do not use it. Use led_basecolor_rgb",
 	//cmddetail:"fn":"color","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("color", "", color, NULL, NULL);
-	//cmddetail:{"name":"backlog","args":"",
+	//cmddetail:{"name":"backlog","args":"[string of commands separated with ;]",
 	//cmddetail:"descr":"run a sequence of ; separated commands",
 	//cmddetail:"fn":"cmnd_backlog","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("backlog", "", cmnd_backlog, NULL, NULL);
-	//cmddetail:{"name":"exec","args":"",
+	//cmddetail:{"name":"exec","args":"[Filename]",
 	//cmddetail:"descr":"exec <file> - run autoexec.bat or other file from LFS if present",
 	//cmddetail:"fn":"cmnd_lfsexec","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("exec", "", cmnd_lfsexec, NULL, NULL);
-	//cmddetail:{"name":"lfs_test1","args":"",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"lfs_test1","args":"[FileName]",
+	//cmddetail:"descr":"Tests the LFS file reading feature.",
 	//cmddetail:"fn":"cmnd_lfs_test1","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_test1", NULL, cmnd_lfs_test1, NULL, NULL);
-	//cmddetail:{"name":"lfs_test2","args":"",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"lfs_test2","args":"[FileName]",
+	//cmddetail:"descr":"Tests the LFS file reading feature.",
 	//cmddetail:"fn":"cmnd_lfs_test2","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_test2", NULL, cmnd_lfs_test2, NULL, NULL);
-	//cmddetail:{"name":"lfs_test3","args":"",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"lfs_test3","args":"[FileName]",
+	//cmddetail:"descr":"Tests the LFS file reading feature.",
 	//cmddetail:"fn":"cmnd_lfs_test3","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_test3", NULL, cmnd_lfs_test3, NULL, NULL);
-	//cmddetail:{"name":"SSID1","args":"NULL",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:{"name":"SSID1","args":"[ValueString]",
+	//cmddetail:"descr":"Sets the SSID of target WiFi. Command keeps Tasmota syntax.",
 	//cmddetail:"fn":"cmnd_SSID1","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SSID1", NULL, cmnd_SSID1, NULL, NULL);
-	//cmddetail:{"name":"Password1","args":"NULL",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:{"name":"Password1","args":"[ValueString]",
+	//cmddetail:"descr":"Sets the Pass of target WiFi. Command keeps Tasmota syntax",
 	//cmddetail:"fn":"cmnd_Password1","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Password1", NULL, cmnd_Password1, NULL, NULL);
-	//cmddetail:{"name":"MqttHost","args":"NULL",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:{"name":"MqttHost","args":"[ValueString]",
+	//cmddetail:"descr":"Sets the MQTT host. Command keeps Tasmota syntax",
 	//cmddetail:"fn":"cmnd_MqttHost","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MqttHost", NULL, cmnd_MqttHost, NULL, NULL);
-	//cmddetail:{"name":"MqttUser","args":"NULL",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:{"name":"MqttUser","args":"[ValueString]",
+	//cmddetail:"descr":"Sets the MQTT user. Command keeps Tasmota syntax",
 	//cmddetail:"fn":"cmnd_MqttUser","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MqttUser", NULL, cmnd_MqttUser, NULL, NULL);
-	//cmddetail:{"name":"MqttPassword","args":"NULL",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:{"name":"MqttPassword","args":"[ValueString]",
+	//cmddetail:"descr":"Sets the MQTT pass. Command keeps Tasmota syntax",
 	//cmddetail:"fn":"cmnd_MqttPassword","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MqttPassword", NULL, cmnd_MqttPassword, NULL, NULL);
-	//cmddetail:{"name":"MqttClient","args":"NULL",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:{"name":"MqttClient","args":"[ValueString]",
+	//cmddetail:"descr":"Sets the MQTT client. Command keeps Tasmota syntax",
 	//cmddetail:"fn":"cmnd_MqttClient","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MqttClient", NULL, cmnd_MqttClient, NULL, NULL);

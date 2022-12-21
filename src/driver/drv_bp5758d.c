@@ -287,8 +287,8 @@ void BP5758D_Init() {
 	//cmddetail:"fn":"BP5758D_Map","file":"driver/drv_bp5758d.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("BP5758D_Map", "", BP5758D_Map, NULL, NULL);
-	//cmddetail:{"name":"BP5758D_Current","args":"",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"BP5758D_Current","args":"[MaxCurrent]",
+	//cmddetail:"descr":"Sets the maximum current limit for BP5758D driver",
 	//cmddetail:"fn":"BP5758D_Current","file":"driver/drv_bp5758d.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("BP5758D_Current", "", BP5758D_Current, NULL, NULL);

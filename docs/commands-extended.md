@@ -29,20 +29,20 @@ Do not add anything here, as it will overwritten with next rebuild.
 | PowerSave |  | Enable power save on N & T | File: cmnds/cmd_main.c<br/>Function: CMD_PowerSave |
 | simonirtest |  | Simons Special Test | File: cmnds/cmd_main.c<br/>Function: CMD_SimonTest |
 | if | [Condition]['then'][CommandA]['else'][CommandB] | Executed a conditional. Condition should be single line. You must always use 'then' after condition. 'else' is optional. Use aliases or quotes for commands with spaces | File: cmnds/cmd_main.c<br/>Function: CMD_If |
-| led_dimmer |  | set output dimmer 0..100 | File: cmnds/cmd_newLEDDriver.c<br/>Function: dimmer |
-| add_dimmer |  | set output dimmer 0..100 | File: cmnds/cmd_newLEDDriver.c<br/>Function: add_dimmer |
+| led_dimmer | [Value] | set output dimmer 0..100 | File: cmnds/cmd_newLEDDriver.c<br/>Function: dimmer |
+| add_dimmer | [Value][bWrapAroundInsteadOfHold] | Adds a given value to current LED dimmer. Function can wrap or clamp if max/min is exceeded. | File: cmnds/cmd_newLEDDriver.c<br/>Function: add_dimmer |
 | led_enableAll | [1or0orToggle] | Power on/off LED but remember the RGB(CW) values | File: cmnds/cmd_newLEDDriver.c<br/>Function: enableAll |
 | led_basecolor_rgb | [HexValue] | Puts the LED driver in RGB mode and sets given color. | File: cmnds/cmd_newLEDDriver.c<br/>Function: basecolor_rgb |
 | led_basecolor_rgbcw |  | set PWN color using #RRGGBB[cw][ww] | File: cmnds/cmd_newLEDDriver.c<br/>Function: basecolor_rgbcw |
-| add_temperature |  | NULL | File: cmnds/cmd_newLEDDriver.c<br/>Function: add_temperature |
+| add_temperature | [DeltaValue][bWrapAroundInsteadOfHold] | Adds a given value to current LED temperature. Function can wrap or clamp if max/min is exceeded. | File: cmnds/cmd_newLEDDriver.c<br/>Function: add_temperature |
 | led_temperature | [TempValue] | Toggles LED driver into temperature mode and sets given temperature. It using Home Assistant temperature range (in the range from 154-500 defined in homeassistant/util/color.py as HASS_COLOR_MIN and HASS_COLOR_MAX) | File: cmnds/cmd_newLEDDriver.c<br/>Function: temperature |
-| led_brightnessMult |  |  | File: cmnds/cmd_newLEDDriver.c<br/>Function: brightnessMult |
-| led_colorMult |  |  | File: cmnds/cmd_newLEDDriver.c<br/>Function: colorMult |
+| led_brightnessMult | [Value] | Internal usage. | File: cmnds/cmd_newLEDDriver.c<br/>Function: brightnessMult |
+| led_colorMult | [Value] | Internal usage. | File: cmnds/cmd_newLEDDriver.c<br/>Function: colorMult |
 | led_saturation | [Value] | This is an alternate way to set the LED color. | File: cmnds/cmd_newLEDDriver.c<br/>Function: setSaturation |
 | led_hue | [Value] | This is an alternate way to set the LED color. | File: cmnds/cmd_newLEDDriver.c<br/>Function: setHue |
-| led_nextColor |  |  | File: cmnds/cmd_newLEDDriver.c<br/>Function: nextColor |
-| led_lerpSpeed |  |  | File: cmnds/cmd_newLEDDriver.c<br/>Function: lerpSpeed |
-| led_expoMode |  | set brightness exponential mode 0..4<br/>e.g.:led_expoMode 4 | File: cmnds/cmd_newLEDDriver.c<br/>Function: exponentialMode |
+| led_nextColor |  | Sets the next color from predefined colours list. Our list is the same as in Tasmota. | File: cmnds/cmd_newLEDDriver.c<br/>Function: nextColor |
+| led_lerpSpeed | [LerpSpeed] | Sets the speed of colour interpolation, where speed is defined as a number of RGB units per second, so 255 will lerp from 0 to 255 in one second | File: cmnds/cmd_newLEDDriver.c<br/>Function: lerpSpeed |
+| led_expoMode | [IntegerMode] | set brightness exponential mode 0..4<br/>e.g.:led_expoMode 4 | File: cmnds/cmd_newLEDDriver.c<br/>Function: exponentialMode |
 | HSBColor |  | NULL | File: cmnds/cmd_newLEDDriver.c<br/>Function: LED_SetBaseColor_HSB |
 | HSBColor1 |  | NULL | File: cmnds/cmd_newLEDDriver.c<br/>Function: setHue |
 | HSBColor2 |  | NULL | File: cmnds/cmd_newLEDDriver.c<br/>Function: setSaturation |
@@ -53,32 +53,32 @@ Do not add anything here, as it will overwritten with next rebuild.
 | cancelRepeatingEvent | [UserIDInteger] | Stops a given repeating event with a specified ID | File: cmnds/cmd_repeatingEvents.c<br/>Function: RepeatingEvents_Cmd_CancelRepeatingEvent |
 | clearRepeatingEvents |  | Clears all repeating events. | File: cmnds/cmd_repeatingEvents.c<br/>Function: RepeatingEvents_Cmd_ClearRepeatingEvents |
 | listRepeatingEvents |  | lists all repeating events | File: cmnds/cmd_repeatingEvents.c<br/>Function: RepeatingEvents_Cmd_ListRepeatingEvents |
-| startScript |  | qqqqq0 | File: cmnds/cmd_script.c<br/>Function: CMD_StartScript |
-| stopScript |  | qqqqq0 | File: cmnds/cmd_script.c<br/>Function: CMD_StopScript |
-| stopAllScripts |  | qqqqq0 | File: cmnds/cmd_script.c<br/>Function: CMD_StopAllScripts |
-| listScripts |  | qqqqq0 | File: cmnds/cmd_script.c<br/>Function: CMD_ListScripts |
-| goto |  | qqqqq0 | File: cmnds/cmd_script.c<br/>Function: CMD_GoTo |
-| delay_s |  | qqqqq0 | File: cmnds/cmd_script.c<br/>Function: CMD_Delay_s |
-| delay_ms |  | qqqqq0 | File: cmnds/cmd_script.c<br/>Function: CMD_Delay_ms |
+| startScript | [FileName][Label][UniqueID] | Starts a script thread from given file, at given label - can be * for whole file, with given unique ID | File: cmnds/cmd_script.c<br/>Function: CMD_StartScript |
+| stopScript | [UniqueID] | Force-stop given script thread by ID | File: cmnds/cmd_script.c<br/>Function: CMD_StopScript |
+| stopAllScripts |  | Stops all running scripts | File: cmnds/cmd_script.c<br/>Function: CMD_StopAllScripts |
+| listScripts |  | Lists all running scripts. | File: cmnds/cmd_script.c<br/>Function: CMD_ListScripts |
+| goto | [LabelStr] | Script-only command. IF single argument is given, then goes to given label from within current script file. If two arguments are given, then jumps to any other script file by label - first argument is file, second label | File: cmnds/cmd_script.c<br/>Function: CMD_GoTo |
+| delay_s | [ValueSeconds] | Script-only command. Pauses current script thread for given amount of seconds. | File: cmnds/cmd_script.c<br/>Function: CMD_Delay_s |
+| delay_ms | [ValueMS] | Script-only command. Pauses current script thread for given amount of ms. | File: cmnds/cmd_script.c<br/>Function: CMD_Delay_ms |
 | return |  | qqqqq0 | File: cmnds/cmd_script.c<br/>Function: CMD_Return |
-| resetSVM |  | qqqqq0 | File: cmnds/cmd_script.c<br/>Function: CMD_resetSVM |
+| resetSVM |  | Resets all SVM and clears all scripts. | File: cmnds/cmd_script.c<br/>Function: CMD_resetSVM |
 | sendGet | [TargetURL] | Sends a HTTP GET request to target URL. May include GET arguments. Can be used to control devices by Tasmota HTTP protocol. Command supports argument expansion, so $CH11 changes to value of channel 11, etc, etc. | File: cmnds/cmd_send.c<br/>Function: CMD_SendGET |
 | power |  | set output POWERn 0..100 | File: cmnds/cmd_tasmota.c<br/>Function: power |
 | powerStateOnly |  | ensures that device is on or off without changing pwm values | File: cmnds/cmd_tasmota.c<br/>Function: powerStateOnly |
 | powerAll |  | set all outputs | File: cmnds/cmd_tasmota.c<br/>Function: powerAll |
-| color |  | set PWN color using #RRGGBB[cw][ww] | File: cmnds/cmd_tasmota.c<br/>Function: color |
-| backlog |  | run a sequence of ; separated commands | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_backlog |
-| exec |  | exec <file> - run autoexec.bat or other file from LFS if present | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_lfsexec |
-| lfs_test1 |  |  | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_lfs_test1 |
-| lfs_test2 |  |  | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_lfs_test2 |
-| lfs_test3 |  |  | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_lfs_test3 |
-| SSID1 | NULL | NULL | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_SSID1 |
-| Password1 | NULL | NULL | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_Password1 |
-| MqttHost | NULL | NULL | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_MqttHost |
-| MqttUser | NULL | NULL | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_MqttUser |
-| MqttPassword | NULL | NULL | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_MqttPassword |
-| MqttClient | NULL | NULL | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_MqttClient |
-| aliasMem |  | custom | File: cmnds/cmd_test.c<br/>Function: runcmd |
+| color | [HexString] | set PWN color using #RRGGBB[cw][ww]. Do not use it. Use led_basecolor_rgb | File: cmnds/cmd_tasmota.c<br/>Function: color |
+| backlog | [string of commands separated with ;] | run a sequence of ; separated commands | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_backlog |
+| exec | [Filename] | exec <file> - run autoexec.bat or other file from LFS if present | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_lfsexec |
+| lfs_test1 | [FileName] | Tests the LFS file reading feature. | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_lfs_test1 |
+| lfs_test2 | [FileName] | Tests the LFS file reading feature. | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_lfs_test2 |
+| lfs_test3 | [FileName] | Tests the LFS file reading feature. | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_lfs_test3 |
+| SSID1 | [ValueString] | Sets the SSID of target WiFi. Command keeps Tasmota syntax. | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_SSID1 |
+| Password1 | [ValueString] | Sets the Pass of target WiFi. Command keeps Tasmota syntax | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_Password1 |
+| MqttHost | [ValueString] | Sets the MQTT host. Command keeps Tasmota syntax | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_MqttHost |
+| MqttUser | [ValueString] | Sets the MQTT user. Command keeps Tasmota syntax | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_MqttUser |
+| MqttPassword | [ValueString] | Sets the MQTT pass. Command keeps Tasmota syntax | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_MqttPassword |
+| MqttClient | [ValueString] | Sets the MQTT client. Command keeps Tasmota syntax | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_MqttClient |
+| aliasMem |  | Internal usage only. See docs for 'alias' command. | File: cmnds/cmd_test.c<br/>Function: runcmd |
 | alias | [Alias][Command with spaces] | add an aliased command, so a command with spaces can be called with a short, nospaced alias | File: cmnds/cmd_test.c<br/>Function: alias |
 | testMallocFree |  | Test malloc and free functionality to see if the device crashes | File: cmnds/cmd_test.c<br/>Function: testMallocFree |
 | testRealloc |  | Test realloc and free functions to see if the device crashes | File: cmnds/cmd_test.c<br/>Function: testRealloc |
@@ -95,19 +95,19 @@ Do not add anything here, as it will overwritten with next rebuild.
 | IREF |  | Sets the calibration multiplier | File: driver/drv_bl0937.c<br/>Function: BL0937_CurrentRef |
 | PowerMax | [limit] | Sets Maximum power value measurement limiter | File: driver/drv_bl0937.c<br/>Function: BL0937_PowerMax |
 | EnergyCntReset |  | Reset Energy Counter | File: driver/drv_bl_shared.c<br/>Function: BL09XX_ResetEnergyCounter |
-| SetupEnergyStats |  | Setup Energy Statistic Parameters: [enable<0|1>] [sample_time<10..900>] [sample_count<10..180>] | File: driver/drv_bl_shared.c<br/>Function: BL09XX_SetupEnergyStatistic |
-| ConsumptionThresold |  | Setup value for automatic save of consumption data [1..100] | File: driver/drv_bl_shared.c<br/>Function: BL09XX_SetupConsumptionThreshold |
+| SetupEnergyStats | [Enable1or0][SampleTime][SampleCount] | Setup Energy Statistic Parameters: [enable<0|1>] [sample_time<10..900>] [sample_count<10..180>] | File: driver/drv_bl_shared.c<br/>Function: BL09XX_SetupEnergyStatistic |
+| ConsumptionThresold | [FloatValue] | Setup value for automatic save of consumption data [1..100] | File: driver/drv_bl_shared.c<br/>Function: BL09XX_SetupConsumptionThreshold |
 | BP1658CJ_RGBCW | [HexColor] | Don't use it. It's for direct access of BP1658CJ driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb | File: driver/drv_bp1658cj.c<br/>Function: BP1658CJ_RGBCW |
 | BP1658CJ_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP1658CJ channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. | File: driver/drv_bp1658cj.c<br/>Function: BP1658CJ_Map |
 | BP5758D_RGBCW | [HexColor] | Don't use it. It's for direct access of BP5758D driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb | File: driver/drv_bp5758d.c<br/>Function: BP5758D_RGBCW |
 | BP5758D_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP5758D channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. | File: driver/drv_bp5758d.c<br/>Function: BP5758D_Map |
-| BP5758D_Current |  |  | File: driver/drv_bp5758d.c<br/>Function: BP5758D_Current |
+| BP5758D_Current | [MaxCurrent] | Sets the maximum current limit for BP5758D driver | File: driver/drv_bp5758d.c<br/>Function: BP5758D_Current |
 | setButtonColor | [ButtonIndex][Color] | Sets the colour of custom scriptable HTTP page button | File: driver/drv_httpButtons.c<br/>Function: CMD_setButtonColor |
 | setButtonCommand | [ButtonIndex][Command] | Sets the command of custom scriptable HTTP page button | File: driver/drv_httpButtons.c<br/>Function: CMD_setButtonCommand |
 | setButtonLabel | [ButtonIndex][Label] | Sets the label of custom scriptable HTTP page button | File: driver/drv_httpButtons.c<br/>Function: CMD_setButtonLabel |
 | setButtonEnabled | [ButtonIndex][1or0] | Sets the visibility of custom scriptable HTTP page button | File: driver/drv_httpButtons.c<br/>Function: CMD_setButtonEnabled |
-| IRSend |  | Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0 | File: driver/drv_ir.cpp<br/>Function: IR_Send_Cmd |
-| IREnable |  | Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol | File: driver/drv_ir.cpp<br/>Function: IR_Enable |
+| IRSend | [PROT-ADDR-CMD-REP] | Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0 | File: driver/drv_ir.cpp<br/>Function: IR_Send_Cmd |
+| IREnable | [Str][1or0] | Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol | File: driver/drv_ir.cpp<br/>Function: IR_Enable |
 | startDriver | [DriverName] | Starts driver | File: driver/drv_main.c<br/>Function: DRV_Start |
 | stopDriver | [DriverName] | Stops driver | File: driver/drv_main.c<br/>Function: DRV_Stop |
 | ntp_timeZoneOfs | [Value] | Sets the time zone offset in hours | File: driver/drv_ntp.c<br/>Function: NTP_SetTimeZoneOfs |
@@ -123,8 +123,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | SM16703P_Test_3xOne |  | NULL | File: driver/drv_sm16703P.c<br/>Function: SM16703P_Test_3xOne |
 | SM2135_RGBCW | [HexColor] | Don't use it. It's for direct access of SM2135 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb | File: driver/drv_sm2135.c<br/>Function: SM2135_RGBCW |
 | SM2135_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of SM2135 channels. This is because SM2135 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. | File: driver/drv_sm2135.c<br/>Function: SM2135_Map |
-| SM2135_Current |  |  | File: driver/drv_sm2135.c<br/>Function: SM2135_Current |
-| obkDeviceList |  | qqq | File: driver/drv_ssdp.c<br/>Function: Cmd_obkDeviceList |
+| SM2135_Current | [Value] | Sets the maximum current for LED driver. | File: driver/drv_sm2135.c<br/>Function: SM2135_Current |
+| obkDeviceList |  | Generate the SSDP list of OpenBeken devices found on the network. | File: driver/drv_ssdp.c<br/>Function: Cmd_obkDeviceList |
 | DGR_SendPower | [GroupName][ChannelValues][ChannelsCount] | Sends a POWER message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. | File: driver/drv_tasmotaDeviceGroups.c<br/>Function: CMD_DGR_SendPower |
 | DGR_SendBrightness | [GroupName][Brightness] | Sends a Brightness message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. | File: driver/drv_tasmotaDeviceGroups.c<br/>Function: CMD_DGR_SendBrightness |
 | DGR_SendRGBCW | [GroupName][HexRGBCW] | Sends a RGBCW message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. | File: driver/drv_tasmotaDeviceGroups.c<br/>Function: CMD_DGR_SendRGBCW |
@@ -133,7 +133,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | tuyaMcu_sendCurTime |  | Sends a current date by TuyaMCU to clock/callendar MCU. Time is taken from NTP driver, so NTP also should be already running. | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_Send_SetTime_Current |
 | tuyaMcu_fakeHex | [HexString] | Spoofs a fake hex packet so it looks like TuyaMCU send that to us. Used for testing. | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_Fake_Hex |
 | linkTuyaMCUOutputToChannel | [dpId][varType][channelID] | Used to map between TuyaMCU dpIDs and our internal channels. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_LinkTuyaMCUOutputToChannel |
-| tuyaMcu_setDimmerRange |  | Set dimmer range used by TuyaMCU | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_SetDimmerRange |
+| tuyaMcu_setDimmerRange | [Min][Max] | Set dimmer range used by TuyaMCU | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_SetDimmerRange |
 | tuyaMcu_sendHeartbeat |  | Send heartbeat to TuyaMCU | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_SendHeartbeat |
 | tuyaMcu_sendQueryState |  | Send query state command | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_SendQueryState |
 | tuyaMcu_sendProductInformation |  | Send qqq | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_SendQueryProductInformation |
@@ -142,33 +142,33 @@ Do not add anything here, as it will overwritten with next rebuild.
 | fakeTuyaPacket |  |  | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_FakePacket |
 | tuyaMcu_setBaudRate | [BaudValue] | Sets the baud rate used by TuyaMCU UART communication. Default value is 9600. | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_SetBaudRate |
 | tuyaMcu_sendRSSI |  | NULL | File: driver/drv_tuyaMCU.c<br/>Function: Cmd_TuyaMCU_Send_RSSI |
-| uartSendHex |  | Sends raw data by TuyaMCU UART, you must write whole packet with checksum yourself | File: driver/drv_tuyaMCU.c<br/>Function: CMD_UART_Send_Hex |
-| uartSendASCII | NULL | NULL | File: driver/drv_uart.c<br/>Function: CMD_UART_Send_ASCII |
+| uartSendHex | [HexString] | Sends raw data by UART, can be used to send TuyaMCU data, but you must write whole packet with checksum yourself | File: driver/drv_tuyaMCU.c<br/>Function: CMD_UART_Send_Hex |
+| uartSendASCII | [AsciiString] | Sends given string by UART. | File: driver/drv_uart.c<br/>Function: CMD_UART_Send_ASCII |
 | UCS1912_Test |  |  | File: driver/drv_ucs1912.c<br/>Function: UCS1912_Test |
-| lcd_clearAndGoto |  | Adds a new I2C device | File: i2c/drv_i2c_lcd_pcf8574t.c<br/>Function: DRV_I2C_LCD_PCF8574_ClearAndGoTo |
-| lcd_goto |  | Adds a new I2C device | File: i2c/drv_i2c_lcd_pcf8574t.c<br/>Function: DRV_I2C_LCD_PCF8574_GoTo |
-| lcd_print |  | Adds a new I2C device | File: i2c/drv_i2c_lcd_pcf8574t.c<br/>Function: DRV_I2C_LCD_PCF8574_Print |
-| lcd_clear |  | Adds a new I2C device | File: i2c/drv_i2c_lcd_pcf8574t.c<br/>Function: DRV_I2C_LCD_PCF8574_Clear |
+| lcd_clearAndGoto |  | Clears LCD and go to pos | File: i2c/drv_i2c_lcd_pcf8574t.c<br/>Function: DRV_I2C_LCD_PCF8574_ClearAndGoTo |
+| lcd_goto |  | Go to position on LCD | File: i2c/drv_i2c_lcd_pcf8574t.c<br/>Function: DRV_I2C_LCD_PCF8574_GoTo |
+| lcd_print |  | Prints a string on the LCD | File: i2c/drv_i2c_lcd_pcf8574t.c<br/>Function: DRV_I2C_LCD_PCF8574_Print |
+| lcd_clear |  | Clears the LCD | File: i2c/drv_i2c_lcd_pcf8574t.c<br/>Function: DRV_I2C_LCD_PCF8574_Clear |
 | addI2CDevice_TC74 |  | Adds a new I2C device - TC74 | File: i2c/drv_i2c_main.c<br/>Function: DRV_I2C_AddDevice_TC74 |
 | addI2CDevice_MCP23017 |  | Adds a new I2C device - MCP23017 | File: i2c/drv_i2c_main.c<br/>Function: DRV_I2C_AddDevice_MCP23017 |
 | addI2CDevice_LCM1602 |  | Adds a new I2C device - LCM1602 | File: i2c/drv_i2c_main.c<br/>Function: DRV_I2C_AddDevice_LCM1602 |
 | addI2CDevice_LCD_PCF8574 |  | Adds a new I2C device - PCF8574 | File: i2c/drv_i2c_main.c<br/>Function: DRV_I2C_AddDevice_PCF8574 |
 | MCP23017_MapPinToChannel |  | Maps port expander bit to OBK channel | File: i2c/drv_i2c_main.c<br/>Function: DRV_I2C_MCP23017_MapPinToChannel |
-| lfssize | NULL | Log or Set LFS size - will apply and re-format next boot, usage setlfssize 0x10000 | File: littlefs/our_lfs.c<br/>Function: CMD_LFS_Size |
-| lfsunmount | NULL | Un-mount LFS | File: littlefs/our_lfs.c<br/>Function: CMD_LFS_Unmount |
-| lfsmount | NULL | Mount LFS | File: littlefs/our_lfs.c<br/>Function: CMD_LFS_Mount |
-| lfsformat | NULL | Unmount and format LFS.  Optionally add new size as argument | File: littlefs/our_lfs.c<br/>Function: CMD_LFS_Format |
+| lfssize | [MaxSize] | Log or Set LFS size - will apply and re-format next boot, usage setlfssize 0x10000 | File: littlefs/our_lfs.c<br/>Function: CMD_LFS_Size |
+| lfsunmount |  | Un-mount LFS | File: littlefs/our_lfs.c<br/>Function: CMD_LFS_Unmount |
+| lfsmount |  | Mount LFS | File: littlefs/our_lfs.c<br/>Function: CMD_LFS_Mount |
+| lfsformat |  | Unmount and format LFS.  Optionally add new size as argument | File: littlefs/our_lfs.c<br/>Function: CMD_LFS_Format |
 | loglevel | [Value] | Correct values are 0 to 7. Default is 3. Higher value includes more logs. Log levels are: ERROR = 1, WARN = 2, INFO = 3, DEBUG = 4, EXTRADEBUG = 5. WARNING: you also must separately select logging level filter on web panel in order for more logs to show up there | File: logging/logging.c<br/>Function: log_command |
-| logfeature |  | set log feature filter, <0..10> <0|1> | File: logging/logging.c<br/>Function: log_command |
-| logtype |  | logtype direct|all - direct logs only to serial immediately | File: logging/logging.c<br/>Function: log_command |
+| logfeature | [Index][1or0] | set log feature filter, as an index and a 1 or 0 | File: logging/logging.c<br/>Function: log_command |
+| logtype | [TypeStr] | logtype direct|all - direct logs only to serial immediately | File: logging/logging.c<br/>Function: log_command |
 | logdelay | [Value] | Value is a number of ms. This will add an artificial delay in each log call. Useful for debugging. This way you can see step by step what happens. | File: logging/logging.c<br/>Function: log_command |
 | publish | [Topic][Value] | Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get. You can use argument expansion here, so $CH11 will change to value of the channel 11 | File: mqtt/new_mqtt.c<br/>Function: MQTT_PublishCommand |
 | publishAll |  | Starts the step by step publish of all available values | File: mqtt/new_mqtt.c<br/>Function: MQTT_PublishAll |
 | publishChannels |  | Starts the step by step publish of all channel values | File: mqtt/new_mqtt.c<br/>Function: MQTT_PublishChannels |
 | publishBenchmark |  |  | File: mqtt/new_mqtt.c<br/>Function: MQTT_StartMQTTTestThread |
 | showgpi | NULL | log stat of all GPIs | File: new_pins.c<br/>Function: showgpi |
-| setChannelType | NULL | qqqqqqqq | File: new_pins.c<br/>Function: CMD_SetChannelType |
-| showChannelValues | NULL | log channel values | File: new_pins.c<br/>Function: CMD_ShowChannelValues |
-| setButtonTimes | NULL |  | File: new_pins.c<br/>Function: CMD_SetButtonTimes |
-| setButtonHoldRepeat | NULL |  | File: new_pins.c<br/>Function: CMD_setButtonHoldRepeat |
+| setChannelType | [ChannelIndex][TypeString] | Sets a custom type for channel. Types are mostly used to determine how to display channel value on GUI | File: new_pins.c<br/>Function: CMD_SetChannelType |
+| showChannelValues |  | log channel values | File: new_pins.c<br/>Function: CMD_ShowChannelValues |
+| setButtonTimes | [ValLongPress][ValShortPress][ValRepeat] | Each value is times 100ms, so: SetButtonTimes 2 1 1 means 200ms long press, 100ms short and 100ms repeat | File: new_pins.c<br/>Function: CMD_SetButtonTimes |
+| setButtonHoldRepeat | [Value] | Sets just the hold button repeat time, given value is times 100ms, so write 1 for 100ms, 2 for 200ms, etc | File: new_pins.c<br/>Function: CMD_setButtonHoldRepeat |
 

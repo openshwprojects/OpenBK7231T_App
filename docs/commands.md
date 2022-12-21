@@ -29,20 +29,20 @@ Do not add anything here, as it will overwritten with next rebuild.
 | PowerSave |  | Enable power save on N & T |
 | simonirtest |  | Simons Special Test |
 | if | [Condition]['then'][CommandA]['else'][CommandB] | Executed a conditional. Condition should be single line. You must always use 'then' after condition. 'else' is optional. Use aliases or quotes for commands with spaces |
-| led_dimmer |  | set output dimmer 0..100 |
-| add_dimmer |  | set output dimmer 0..100 |
+| led_dimmer | [Value] | set output dimmer 0..100 |
+| add_dimmer | [Value][bWrapAroundInsteadOfHold] | Adds a given value to current LED dimmer. Function can wrap or clamp if max/min is exceeded. |
 | led_enableAll | [1or0orToggle] | Power on/off LED but remember the RGB(CW) values |
 | led_basecolor_rgb | [HexValue] | Puts the LED driver in RGB mode and sets given color. |
 | led_basecolor_rgbcw |  | set PWN color using #RRGGBB[cw][ww] |
-| add_temperature |  | NULL |
+| add_temperature | [DeltaValue][bWrapAroundInsteadOfHold] | Adds a given value to current LED temperature. Function can wrap or clamp if max/min is exceeded. |
 | led_temperature | [TempValue] | Toggles LED driver into temperature mode and sets given temperature. It using Home Assistant temperature range (in the range from 154-500 defined in homeassistant/util/color.py as HASS_COLOR_MIN and HASS_COLOR_MAX) |
-| led_brightnessMult |  |  |
-| led_colorMult |  |  |
+| led_brightnessMult | [Value] | Internal usage. |
+| led_colorMult | [Value] | Internal usage. |
 | led_saturation | [Value] | This is an alternate way to set the LED color. |
 | led_hue | [Value] | This is an alternate way to set the LED color. |
-| led_nextColor |  |  |
-| led_lerpSpeed |  |  |
-| led_expoMode |  | set brightness exponential mode 0..4<br/>e.g.:led_expoMode 4 |
+| led_nextColor |  | Sets the next color from predefined colours list. Our list is the same as in Tasmota. |
+| led_lerpSpeed | [LerpSpeed] | Sets the speed of colour interpolation, where speed is defined as a number of RGB units per second, so 255 will lerp from 0 to 255 in one second |
+| led_expoMode | [IntegerMode] | set brightness exponential mode 0..4<br/>e.g.:led_expoMode 4 |
 | HSBColor |  | NULL |
 | HSBColor1 |  | NULL |
 | HSBColor2 |  | NULL |
@@ -53,32 +53,32 @@ Do not add anything here, as it will overwritten with next rebuild.
 | cancelRepeatingEvent | [UserIDInteger] | Stops a given repeating event with a specified ID |
 | clearRepeatingEvents |  | Clears all repeating events. |
 | listRepeatingEvents |  | lists all repeating events |
-| startScript |  | qqqqq0 |
-| stopScript |  | qqqqq0 |
-| stopAllScripts |  | qqqqq0 |
-| listScripts |  | qqqqq0 |
-| goto |  | qqqqq0 |
-| delay_s |  | qqqqq0 |
-| delay_ms |  | qqqqq0 |
+| startScript | [FileName][Label][UniqueID] | Starts a script thread from given file, at given label - can be * for whole file, with given unique ID |
+| stopScript | [UniqueID] | Force-stop given script thread by ID |
+| stopAllScripts |  | Stops all running scripts |
+| listScripts |  | Lists all running scripts. |
+| goto | [LabelStr] | Script-only command. IF single argument is given, then goes to given label from within current script file. If two arguments are given, then jumps to any other script file by label - first argument is file, second label |
+| delay_s | [ValueSeconds] | Script-only command. Pauses current script thread for given amount of seconds. |
+| delay_ms | [ValueMS] | Script-only command. Pauses current script thread for given amount of ms. |
 | return |  | qqqqq0 |
-| resetSVM |  | qqqqq0 |
+| resetSVM |  | Resets all SVM and clears all scripts. |
 | sendGet | [TargetURL] | Sends a HTTP GET request to target URL. May include GET arguments. Can be used to control devices by Tasmota HTTP protocol. Command supports argument expansion, so $CH11 changes to value of channel 11, etc, etc. |
 | power |  | set output POWERn 0..100 |
 | powerStateOnly |  | ensures that device is on or off without changing pwm values |
 | powerAll |  | set all outputs |
-| color |  | set PWN color using #RRGGBB[cw][ww] |
-| backlog |  | run a sequence of ; separated commands |
-| exec |  | exec <file> - run autoexec.bat or other file from LFS if present |
-| lfs_test1 |  |  |
-| lfs_test2 |  |  |
-| lfs_test3 |  |  |
-| SSID1 | NULL | NULL |
-| Password1 | NULL | NULL |
-| MqttHost | NULL | NULL |
-| MqttUser | NULL | NULL |
-| MqttPassword | NULL | NULL |
-| MqttClient | NULL | NULL |
-| aliasMem |  | custom |
+| color | [HexString] | set PWN color using #RRGGBB[cw][ww]. Do not use it. Use led_basecolor_rgb |
+| backlog | [string of commands separated with ;] | run a sequence of ; separated commands |
+| exec | [Filename] | exec <file> - run autoexec.bat or other file from LFS if present |
+| lfs_test1 | [FileName] | Tests the LFS file reading feature. |
+| lfs_test2 | [FileName] | Tests the LFS file reading feature. |
+| lfs_test3 | [FileName] | Tests the LFS file reading feature. |
+| SSID1 | [ValueString] | Sets the SSID of target WiFi. Command keeps Tasmota syntax. |
+| Password1 | [ValueString] | Sets the Pass of target WiFi. Command keeps Tasmota syntax |
+| MqttHost | [ValueString] | Sets the MQTT host. Command keeps Tasmota syntax |
+| MqttUser | [ValueString] | Sets the MQTT user. Command keeps Tasmota syntax |
+| MqttPassword | [ValueString] | Sets the MQTT pass. Command keeps Tasmota syntax |
+| MqttClient | [ValueString] | Sets the MQTT client. Command keeps Tasmota syntax |
+| aliasMem |  | Internal usage only. See docs for 'alias' command. |
 | alias | [Alias][Command with spaces] | add an aliased command, so a command with spaces can be called with a short, nospaced alias |
 | testMallocFree |  | Test malloc and free functionality to see if the device crashes |
 | testRealloc |  | Test realloc and free functions to see if the device crashes |
@@ -95,19 +95,19 @@ Do not add anything here, as it will overwritten with next rebuild.
 | IREF |  | Sets the calibration multiplier |
 | PowerMax | [limit] | Sets Maximum power value measurement limiter |
 | EnergyCntReset |  | Reset Energy Counter |
-| SetupEnergyStats |  | Setup Energy Statistic Parameters: [enable<0|1>] [sample_time<10..900>] [sample_count<10..180>] |
-| ConsumptionThresold |  | Setup value for automatic save of consumption data [1..100] |
+| SetupEnergyStats | [Enable1or0][SampleTime][SampleCount] | Setup Energy Statistic Parameters: [enable<0|1>] [sample_time<10..900>] [sample_count<10..180>] |
+| ConsumptionThresold | [FloatValue] | Setup value for automatic save of consumption data [1..100] |
 | BP1658CJ_RGBCW | [HexColor] | Don't use it. It's for direct access of BP1658CJ driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
 | BP1658CJ_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP1658CJ channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. |
 | BP5758D_RGBCW | [HexColor] | Don't use it. It's for direct access of BP5758D driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
 | BP5758D_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP5758D channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. |
-| BP5758D_Current |  |  |
+| BP5758D_Current | [MaxCurrent] | Sets the maximum current limit for BP5758D driver |
 | setButtonColor | [ButtonIndex][Color] | Sets the colour of custom scriptable HTTP page button |
 | setButtonCommand | [ButtonIndex][Command] | Sets the command of custom scriptable HTTP page button |
 | setButtonLabel | [ButtonIndex][Label] | Sets the label of custom scriptable HTTP page button |
 | setButtonEnabled | [ButtonIndex][1or0] | Sets the visibility of custom scriptable HTTP page button |
-| IRSend |  | Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0 |
-| IREnable |  | Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol |
+| IRSend | [PROT-ADDR-CMD-REP] | Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0 |
+| IREnable | [Str][1or0] | Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol |
 | startDriver | [DriverName] | Starts driver |
 | stopDriver | [DriverName] | Stops driver |
 | ntp_timeZoneOfs | [Value] | Sets the time zone offset in hours |
@@ -123,8 +123,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | SM16703P_Test_3xOne |  | NULL |
 | SM2135_RGBCW | [HexColor] | Don't use it. It's for direct access of SM2135 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
 | SM2135_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of SM2135 channels. This is because SM2135 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. |
-| SM2135_Current |  |  |
-| obkDeviceList |  | qqq |
+| SM2135_Current | [Value] | Sets the maximum current for LED driver. |
+| obkDeviceList |  | Generate the SSDP list of OpenBeken devices found on the network. |
 | DGR_SendPower | [GroupName][ChannelValues][ChannelsCount] | Sends a POWER message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
 | DGR_SendBrightness | [GroupName][Brightness] | Sends a Brightness message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
 | DGR_SendRGBCW | [GroupName][HexRGBCW] | Sends a RGBCW message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
@@ -133,7 +133,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | tuyaMcu_sendCurTime |  | Sends a current date by TuyaMCU to clock/callendar MCU. Time is taken from NTP driver, so NTP also should be already running. |
 | tuyaMcu_fakeHex | [HexString] | Spoofs a fake hex packet so it looks like TuyaMCU send that to us. Used for testing. |
 | linkTuyaMCUOutputToChannel | [dpId][varType][channelID] | Used to map between TuyaMCU dpIDs and our internal channels. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap |
-| tuyaMcu_setDimmerRange |  | Set dimmer range used by TuyaMCU |
+| tuyaMcu_setDimmerRange | [Min][Max] | Set dimmer range used by TuyaMCU |
 | tuyaMcu_sendHeartbeat |  | Send heartbeat to TuyaMCU |
 | tuyaMcu_sendQueryState |  | Send query state command |
 | tuyaMcu_sendProductInformation |  | Send qqq |
@@ -142,33 +142,33 @@ Do not add anything here, as it will overwritten with next rebuild.
 | fakeTuyaPacket |  |  |
 | tuyaMcu_setBaudRate | [BaudValue] | Sets the baud rate used by TuyaMCU UART communication. Default value is 9600. |
 | tuyaMcu_sendRSSI |  | NULL |
-| uartSendHex |  | Sends raw data by TuyaMCU UART, you must write whole packet with checksum yourself |
-| uartSendASCII | NULL | NULL |
+| uartSendHex | [HexString] | Sends raw data by UART, can be used to send TuyaMCU data, but you must write whole packet with checksum yourself |
+| uartSendASCII | [AsciiString] | Sends given string by UART. |
 | UCS1912_Test |  |  |
-| lcd_clearAndGoto |  | Adds a new I2C device |
-| lcd_goto |  | Adds a new I2C device |
-| lcd_print |  | Adds a new I2C device |
-| lcd_clear |  | Adds a new I2C device |
+| lcd_clearAndGoto |  | Clears LCD and go to pos |
+| lcd_goto |  | Go to position on LCD |
+| lcd_print |  | Prints a string on the LCD |
+| lcd_clear |  | Clears the LCD |
 | addI2CDevice_TC74 |  | Adds a new I2C device - TC74 |
 | addI2CDevice_MCP23017 |  | Adds a new I2C device - MCP23017 |
 | addI2CDevice_LCM1602 |  | Adds a new I2C device - LCM1602 |
 | addI2CDevice_LCD_PCF8574 |  | Adds a new I2C device - PCF8574 |
 | MCP23017_MapPinToChannel |  | Maps port expander bit to OBK channel |
-| lfssize | NULL | Log or Set LFS size - will apply and re-format next boot, usage setlfssize 0x10000 |
-| lfsunmount | NULL | Un-mount LFS |
-| lfsmount | NULL | Mount LFS |
-| lfsformat | NULL | Unmount and format LFS.  Optionally add new size as argument |
+| lfssize | [MaxSize] | Log or Set LFS size - will apply and re-format next boot, usage setlfssize 0x10000 |
+| lfsunmount |  | Un-mount LFS |
+| lfsmount |  | Mount LFS |
+| lfsformat |  | Unmount and format LFS.  Optionally add new size as argument |
 | loglevel | [Value] | Correct values are 0 to 7. Default is 3. Higher value includes more logs. Log levels are: ERROR = 1, WARN = 2, INFO = 3, DEBUG = 4, EXTRADEBUG = 5. WARNING: you also must separately select logging level filter on web panel in order for more logs to show up there |
-| logfeature |  | set log feature filter, <0..10> <0|1> |
-| logtype |  | logtype direct|all - direct logs only to serial immediately |
+| logfeature | [Index][1or0] | set log feature filter, as an index and a 1 or 0 |
+| logtype | [TypeStr] | logtype direct|all - direct logs only to serial immediately |
 | logdelay | [Value] | Value is a number of ms. This will add an artificial delay in each log call. Useful for debugging. This way you can see step by step what happens. |
 | publish | [Topic][Value] | Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get. You can use argument expansion here, so $CH11 will change to value of the channel 11 |
 | publishAll |  | Starts the step by step publish of all available values |
 | publishChannels |  | Starts the step by step publish of all channel values |
 | publishBenchmark |  |  |
 | showgpi | NULL | log stat of all GPIs |
-| setChannelType | NULL | qqqqqqqq |
-| showChannelValues | NULL | log channel values |
-| setButtonTimes | NULL |  |
-| setButtonHoldRepeat | NULL |  |
+| setChannelType | [ChannelIndex][TypeString] | Sets a custom type for channel. Types are mostly used to determine how to display channel value on GUI |
+| showChannelValues |  | log channel values |
+| setButtonTimes | [ValLongPress][ValShortPress][ValRepeat] | Each value is times 100ms, so: SetButtonTimes 2 1 1 means 200ms long press, 100ms short and 100ms repeat |
+| setButtonHoldRepeat | [Value] | Sets just the hold button repeat time, given value is times 100ms, so write 1 for 100ms, 2 for 200ms, etc |
 

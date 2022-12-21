@@ -199,22 +199,22 @@ static commandResult_t CMD_LFS_Format(const void *context, const char *cmd, cons
 }
 
 void LFSAddCmds(){
-	//cmddetail:{"name":"lfssize","args":"NULL",
+	//cmddetail:{"name":"lfssize","args":"[MaxSize]",
 	//cmddetail:"descr":"Log or Set LFS size - will apply and re-format next boot, usage setlfssize 0x10000",
 	//cmddetail:"fn":"CMD_LFS_Size","file":"littlefs/our_lfs.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("lfssize", NULL, CMD_LFS_Size, NULL, NULL);	
-	//cmddetail:{"name":"lfsunmount","args":"NULL",
+	//cmddetail:{"name":"lfsunmount","args":"",
 	//cmddetail:"descr":"Un-mount LFS",
 	//cmddetail:"fn":"CMD_LFS_Unmount","file":"littlefs/our_lfs.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("lfsunmount", NULL, CMD_LFS_Unmount, NULL, NULL);	
-	//cmddetail:{"name":"lfsmount","args":"NULL",
+	//cmddetail:{"name":"lfsmount","args":"",
 	//cmddetail:"descr":"Mount LFS",
 	//cmddetail:"fn":"CMD_LFS_Mount","file":"littlefs/our_lfs.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("lfsmount", NULL, CMD_LFS_Mount, NULL, NULL);	
-	//cmddetail:{"name":"lfsformat","args":"NULL",
+	//cmddetail:{"name":"lfsformat","args":"",
 	//cmddetail:"descr":"Unmount and format LFS.  Optionally add new size as argument",
 	//cmddetail:"fn":"CMD_LFS_Format","file":"littlefs/our_lfs.c","requires":"",
 	//cmddetail:"examples":""}

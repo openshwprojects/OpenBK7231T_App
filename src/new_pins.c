@@ -1467,8 +1467,7 @@ static commandResult_t CMD_setButtonHoldRepeat(const void *context, const char *
 	return CMD_RES_OK;
 }
 // SetButtonTimes [ValLongPress] [ValShortPress] [ValRepeat]
-// Each value is times 100ms, so:
-// SetButtonTimes 2 1 1
+// Each value is times 100ms, so: SetButtonTimes 2 1 1 means 200ms long press, 100ms short and 100ms repeat
 static commandResult_t CMD_SetButtonTimes(const void *context, const char *cmd, const char *args, int cmdFlags){
 
 
@@ -1585,23 +1584,23 @@ void PIN_AddCommands(void)
 	//cmddetail:"fn":"showgpi","file":"new_pins.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("showgpi", NULL, showgpi, NULL, NULL);
-	//cmddetail:{"name":"setChannelType","args":"NULL",
-	//cmddetail:"descr":"qqqqqqqq",
+	//cmddetail:{"name":"setChannelType","args":"[ChannelIndex][TypeString]",
+	//cmddetail:"descr":"Sets a custom type for channel. Types are mostly used to determine how to display channel value on GUI",
 	//cmddetail:"fn":"CMD_SetChannelType","file":"new_pins.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("setChannelType", NULL, CMD_SetChannelType, NULL, NULL);
-	//cmddetail:{"name":"showChannelValues","args":"NULL",
+	//cmddetail:{"name":"showChannelValues","args":"",
 	//cmddetail:"descr":"log channel values",
 	//cmddetail:"fn":"CMD_ShowChannelValues","file":"new_pins.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("showChannelValues", NULL,CMD_ShowChannelValues, NULL, NULL);
-	//cmddetail:{"name":"setButtonTimes","args":"NULL",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"setButtonTimes","args":"[ValLongPress][ValShortPress][ValRepeat]",
+	//cmddetail:"descr":"Each value is times 100ms, so: SetButtonTimes 2 1 1 means 200ms long press, 100ms short and 100ms repeat",
 	//cmddetail:"fn":"CMD_SetButtonTimes","file":"new_pins.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("setButtonTimes", NULL,CMD_SetButtonTimes, NULL, NULL);
-	//cmddetail:{"name":"setButtonHoldRepeat","args":"NULL",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"setButtonHoldRepeat","args":"[Value]",
+	//cmddetail:"descr":"Sets just the hold button repeat time, given value is times 100ms, so write 1 for 100ms, 2 for 200ms, etc",
 	//cmddetail:"fn":"CMD_setButtonHoldRepeat","file":"new_pins.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("setButtonHoldRepeat", NULL,CMD_setButtonHoldRepeat, NULL, NULL);

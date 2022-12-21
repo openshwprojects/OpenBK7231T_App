@@ -1352,7 +1352,7 @@ void TuyaMCU_Init()
 	//cmddetail:"fn":"TuyaMCU_LinkTuyaMCUOutputToChannel","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("linkTuyaMCUOutputToChannel","",TuyaMCU_LinkTuyaMCUOutputToChannel, NULL, NULL);
-	//cmddetail:{"name":"tuyaMcu_setDimmerRange","args":"",
+	//cmddetail:{"name":"tuyaMcu_setDimmerRange","args":"[Min][Max]",
 	//cmddetail:"descr":"Set dimmer range used by TuyaMCU",
 	//cmddetail:"fn":"TuyaMCU_SetDimmerRange","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
