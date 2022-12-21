@@ -104,8 +104,8 @@ static commandResult_t CMD_Echo(const void *context, const char *cmd, const char
 
 
 void CMD_Init_Early() {
-	//cmddetail:{"name":"echo","args":"",
-	//cmddetail:"descr":"qqqe",
+	//cmddetail:{"name":"echo","args":"[Message]",
+	//cmddetail:"descr":"Sends given message back to console.",
 	//cmddetail:"fn":"CMD_Echo","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("echo", "", CMD_Echo, NULL, NULL);
@@ -115,12 +115,12 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("restart", "", CMD_Restart, NULL, NULL);
 	//cmddetail:{"name":"clearConfig","args":"",
-	//cmddetail:"descr":"Clears all config",
+	//cmddetail:"descr":"Clears all config, including WiFi data",
 	//cmddetail:"fn":"CMD_ClearConfig","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("clearConfig", "", CMD_ClearConfig, NULL, NULL);
 	//cmddetail:{"name":"clearAll","args":"",
-	//cmddetail:"descr":"Clears all things",
+	//cmddetail:"descr":"Clears config and all remaining features, like runtime scripts, events, etc",
 	//cmddetail:"fn":"CMD_ClearAll","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("clearAll", "", CMD_ClearAll, NULL, NULL);
@@ -134,8 +134,8 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_SimonTest","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("simonirtest", "", CMD_SimonTest, NULL, NULL);
-	//cmddetail:{"name":"if","args":"",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"if","args":"[Condition]['then'][CommandA]['else'][CommandB]",
+	//cmddetail:"descr":"Executed a conditional. Condition should be single line. You must always use 'then' after condition. 'else' is optional. Use aliases or quotes for commands with spaces",
 	//cmddetail:"fn":"CMD_If","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("if", NULL, CMD_If, NULL, NULL);

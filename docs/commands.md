@@ -22,13 +22,13 @@ Do not add anything here, as it will overwritten with next rebuild.
 | AddChangeHandler | [Variable][Relation][Constant][Command] | This can listen to change in channel value (for example channel 0 becoming 100), or for a voltage/current/power change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be 'Power', or 'Current' or 'Voltage' |
 | listEventHandlers |  |  |
 | clearAllHandlers |  | This clears all added event handlers |
-| echo |  | qqqe |
+| echo | [Message] | Sends given message back to console. |
 | restart |  | Reboots the module |
-| clearConfig |  | Clears all config |
-| clearAll |  | Clears all things |
+| clearConfig |  | Clears all config, including WiFi data |
+| clearAll |  | Clears config and all remaining features, like runtime scripts, events, etc |
 | PowerSave |  | Enable power save on N & T |
 | simonirtest |  | Simons Special Test |
-| if |  |  |
+| if | [Condition]['then'][CommandA]['else'][CommandB] | Executed a conditional. Condition should be single line. You must always use 'then' after condition. 'else' is optional. Use aliases or quotes for commands with spaces |
 | led_dimmer |  | set output dimmer 0..100 |
 | add_dimmer |  | set output dimmer 0..100 |
 | led_enableAll | [1or0orToggle] | Power on/off LED but remember the RGB(CW) values |
@@ -49,9 +49,9 @@ Do not add anything here, as it will overwritten with next rebuild.
 | HSBColor3 |  | NULL |
 | led_finishFullLerp |  | NULL |
 | addRepeatingEvent | [IntervalSeconds][RepeatsOr-1][CommandToRun] | Starts a timer/interval command. Use 'backlog' to fit multiple commands in a single string. |
-| addRepeatingEventID | [IntervalSeconds][RepeatsOr-1][UserID][CommandToRun] | as addRepeatingEvent, but with a given ID. You can later cancel it with cancelRepeatingEvent. |
-| cancelRepeatingEvent |  | qqqq |
-| clearRepeatingEvents | [UserID] | Stops a given repeating event with a specified ID |
+| addRepeatingEventID | [IntervalSeconds][RepeatsOr-1][UserID][CommandToRun] | as addRepeatingEvent, but with a given ID. You can later cancel it with cancelRepeatingEvent.<br/>e.g.:addRepeatingEventID 2 -1 123 Power0 Toggle |
+| cancelRepeatingEvent | [UserIDInteger] | Stops a given repeating event with a specified ID |
+| clearRepeatingEvents |  | Clears all repeating events. |
 | listRepeatingEvents |  | lists all repeating events |
 | startScript |  | qqqqq0 |
 | stopScript |  | qqqqq0 |
@@ -79,14 +79,14 @@ Do not add anything here, as it will overwritten with next rebuild.
 | MqttPassword | NULL | NULL |
 | MqttClient | NULL | NULL |
 | aliasMem |  | custom |
-| alias |  | add a custom command |
-| testMallocFree |  |  |
-| testRealloc |  |  |
-| testJSON |  |  |
-| testLog |  |  |
-| testFloats |  |  |
-| testArgs |  |  |
-| testStrdup |  |  |
+| alias | [Alias][Command with spaces] | add an aliased command, so a command with spaces can be called with a short, nospaced alias |
+| testMallocFree |  | Test malloc and free functionality to see if the device crashes |
+| testRealloc |  | Test realloc and free functions to see if the device crashes |
+| testJSON |  | Test the JSON library |
+| testLog |  | Do some test printfs to log with integer and a float |
+| testFloats |  | Do some more test printfs with floating point numbers |
+| testArgs |  | Test tokenizer for args and print back all the given args to console |
+| testStrdup |  | Test strdup function to see if it allocs news string correctly, also test freeing the string |
 | PowerSet |  | Sets current power value for calibration |
 | VoltageSet |  | Sets current V value for calibration |
 | CurrentSet |  | Sets current I value for calibration |
@@ -102,10 +102,10 @@ Do not add anything here, as it will overwritten with next rebuild.
 | BP5758D_RGBCW | [HexColor] | Don't use it. It's for direct access of BP5758D driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
 | BP5758D_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP5758D channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. |
 | BP5758D_Current |  |  |
-| setButtonColor |  | NULL |
-| setButtonCommand |  | NULL |
-| setButtonLabel |  | NULL |
-| setButtonEnabled |  | NULL |
+| setButtonColor | [ButtonIndex][Color] | Sets the colour of custom scriptable HTTP page button |
+| setButtonCommand | [ButtonIndex][Command] | Sets the command of custom scriptable HTTP page button |
+| setButtonLabel | [ButtonIndex][Label] | Sets the label of custom scriptable HTTP page button |
+| setButtonEnabled | [ButtonIndex][1or0] | Sets the visibility of custom scriptable HTTP page button |
 | IRSend |  | Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0 |
 | IREnable |  | Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol |
 | startDriver | [DriverName] | Starts driver |
@@ -149,11 +149,11 @@ Do not add anything here, as it will overwritten with next rebuild.
 | lcd_goto |  | Adds a new I2C device |
 | lcd_print |  | Adds a new I2C device |
 | lcd_clear |  | Adds a new I2C device |
-| addI2CDevice_TC74 |  | Adds a new I2C device |
-| addI2CDevice_MCP23017 |  | Adds a new I2C device |
-| addI2CDevice_LCM1602 |  | Adds a new I2C device |
-| addI2CDevice_LCD_PCF8574 |  | Adds a new I2C device |
-| MCP23017_MapPinToChannel |  | Adds a new I2C device |
+| addI2CDevice_TC74 |  | Adds a new I2C device - TC74 |
+| addI2CDevice_MCP23017 |  | Adds a new I2C device - MCP23017 |
+| addI2CDevice_LCM1602 |  | Adds a new I2C device - LCM1602 |
+| addI2CDevice_LCD_PCF8574 |  | Adds a new I2C device - PCF8574 |
+| MCP23017_MapPinToChannel |  | Maps port expander bit to OBK channel |
 | lfssize | NULL | Log or Set LFS size - will apply and re-format next boot, usage setlfssize 0x10000 |
 | lfsunmount | NULL | Un-mount LFS |
 | lfsmount | NULL | Mount LFS |
