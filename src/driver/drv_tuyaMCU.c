@@ -1392,11 +1392,9 @@ void TuyaMCU_Init()
 	//cmddetail:"fn":"TuyaMCU_SetBaudRate","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_setBaudRate","",TuyaMCU_SetBaudRate, NULL, NULL);
-
-
-	//cmddetail:{"name":"tuyaMcu_setBaudRate","args":"",
-	//cmddetail:"descr":"Set the serial baud rate used to communicate with the TuyaMCU",
-	//cmddetail:"fn":"TuyaMCU_SetBaudRate","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:{"name":"tuyaMcu_sendRSSI","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"Cmd_TuyaMCU_Send_RSSI","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_sendRSSI", "", Cmd_TuyaMCU_Send_RSSI, NULL, NULL);
 	

@@ -522,11 +522,35 @@ int taslike_commands_init(){
 	//cmddetail:"fn":"cmnd_lfs_test3","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_test3", NULL, cmnd_lfs_test3, NULL, NULL);
+	//cmddetail:{"name":"SSID1","args":"NULL",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"cmnd_SSID1","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SSID1", NULL, cmnd_SSID1, NULL, NULL);
+	//cmddetail:{"name":"Password1","args":"NULL",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"cmnd_Password1","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Password1", NULL, cmnd_Password1, NULL, NULL);
+	//cmddetail:{"name":"MqttHost","args":"NULL",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"cmnd_MqttHost","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MqttHost", NULL, cmnd_MqttHost, NULL, NULL);
+	//cmddetail:{"name":"MqttUser","args":"NULL",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"cmnd_MqttUser","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MqttUser", NULL, cmnd_MqttUser, NULL, NULL);
+	//cmddetail:{"name":"MqttPassword","args":"NULL",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"cmnd_MqttPassword","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MqttPassword", NULL, cmnd_MqttPassword, NULL, NULL);
+	//cmddetail:{"name":"MqttClient","args":"NULL",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"cmnd_MqttClient","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MqttClient", NULL, cmnd_MqttClient, NULL, NULL);
     return 0;
 }

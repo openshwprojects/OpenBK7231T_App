@@ -211,9 +211,25 @@ commandResult_t CMD_setButtonEnabled(const void *context, const char *cmd, const
 	return CMD_RES_OK;
 }
 void DRV_InitHTTPButtons() {
+	//cmddetail:{"name":"setButtonColor","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"CMD_setButtonColor","file":"driver/drv_httpButtons.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("setButtonColor", "", CMD_setButtonColor, NULL, NULL);
+	//cmddetail:{"name":"setButtonCommand","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"CMD_setButtonCommand","file":"driver/drv_httpButtons.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("setButtonCommand", "", CMD_setButtonCommand, NULL, NULL);
+	//cmddetail:{"name":"setButtonLabel","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"CMD_setButtonLabel","file":"driver/drv_httpButtons.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("setButtonLabel", "", CMD_setButtonLabel, NULL, NULL);
+	//cmddetail:{"name":"setButtonEnabled","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"CMD_setButtonEnabled","file":"driver/drv_httpButtons.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("setButtonEnabled", "", CMD_setButtonEnabled, NULL, NULL);
 }
 

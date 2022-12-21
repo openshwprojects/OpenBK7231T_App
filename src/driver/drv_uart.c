@@ -153,6 +153,18 @@ commandResult_t CMD_UART_Send_ASCII(const void *context, const char *cmd, const 
 	return CMD_RES_OK;
 }
 bool b_uart_commands_added = false;
+void UART_AddCommands() {
+	//cmddetail:{"name":"uartSendHex","args":"",
+	//cmddetail:"descr":"Sends raw data by TuyaMCU UART, you must write whole packet with checksum yourself",
+	//cmddetail:"fn":"CMD_UART_Send_Hex","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("uartSendHex", NULL, CMD_UART_Send_Hex, NULL, NULL);
+	//cmddetail:{"name":"uartSendASCII","args":"NULL",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"CMD_UART_Send_ASCII","file":"driver/drv_uart.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("uartSendASCII", NULL, CMD_UART_Send_ASCII, NULL, NULL);
+}
 void UART_InitUART(int baud) {
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
 	bk_uart_config_t config;
@@ -180,14 +192,10 @@ void UART_InitUART(int baud) {
 
 
 #endif
-	//cmddetail:{"name":"uartSendHex","args":"",
-	//cmddetail:"descr":"Sends raw data by TuyaMCU UART, you must write whole packet with checksum yourself",
-	//cmddetail:"fn":"CMD_UART_Send_Hex","file":"driver/drv_tuyaMCU.c","requires":"",
-	//cmddetail:"examples":""}
+
 	if (b_uart_commands_added == false) {
 		b_uart_commands_added = true;
-		CMD_RegisterCommand("uartSendHex", NULL, CMD_UART_Send_Hex, NULL, NULL);
-		CMD_RegisterCommand("uartSendASCII", NULL, CMD_UART_Send_ASCII, NULL, NULL);
+		UART_AddCommands();
 	}
 }
 

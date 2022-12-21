@@ -263,8 +263,8 @@ static commandResult_t CMD_StartDeepSleep(const void *context, const char *cmd, 
 	return CMD_RES_OK;
 }
 void CMD_InitChannelCommands(){
-	//cmddetail:{"name":"SetChannel","args":"",
-	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:{"name":"SetChannel","args":"[ChannelIndex][ChannelValue]",
+	//cmddetail:"descr":"Sets a raw channel to given value. Relay channels are using 1 and 0 values. PWM channels are within [0,100] range. Do not use this for LED control, because there is a better and more advanced LED driver with dimming and configuration memory (remembers setting after on/off), LED driver commands has 'led_' prefix.",
 	//cmddetail:"fn":"CMD_SetChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SetChannel", "", CMD_SetChannel, NULL, NULL);
@@ -273,8 +273,8 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_ToggleChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ToggleChannel", "", CMD_ToggleChannel, NULL, NULL);
-	//cmddetail:{"name":"AddChannel","args":"",
-	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:{"name":"AddChannel","args":"[ChannelIndex][ValueToAdd][ClampMin][ClampMax]",
+	//cmddetail:"descr":"Adds a given value to the channel. Can be used to change PWM brightness. Clamp min and max arguments are optional.",
 	//cmddetail:"fn":"CMD_AddChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("AddChannel", "", CMD_AddChannel, NULL, NULL);
@@ -283,13 +283,13 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_ClampChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ClampChannel", "", CMD_ClampChannel, NULL, NULL);
-	//cmddetail:{"name":"SetPinRole","args":"",
-	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:{"name":"SetPinRole","args":"[PinRole][RoleIndexOrName]",
+	//cmddetail:"descr":"This allows you to set a pin role, for example a Relay role, or Button, etc. Usually it's easier to do this through WWW panel, so you don't have to use this command.",
 	//cmddetail:"fn":"CMD_SetPinRole","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SetPinRole", "", CMD_SetPinRole, NULL, NULL);
-	//cmddetail:{"name":"SetPinChannel","args":"",
-	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:{"name":"SetPinChannel","args":"[PinRole][ChannelIndex]",
+	//cmddetail:"descr":"This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command.",
 	//cmddetail:"fn":"CMD_SetPinChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SetPinChannel", "", CMD_SetPinChannel, NULL, NULL);
@@ -308,24 +308,24 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_ShortName","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ShortName", "", CMD_ShortName, NULL, NULL);
-	//cmddetail:{"name":"ShortName","args":"",
-	//cmddetail:"descr":"qqqqq0",
-	//cmddetail:"fn":"CMD_ShortName","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:{"name":"FriendlyName","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"CMD_FriendlyName","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("FriendlyName", "", CMD_FriendlyName, NULL, NULL);
-	//cmddetail:{"name":"ShortName","args":"",
-	//cmddetail:"descr":"qqqqq0",
-	//cmddetail:"fn":"CMD_ShortName","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:{"name":"startDeepSleep","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"CMD_StartDeepSleep","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("startDeepSleep", "", CMD_StartDeepSleep, NULL, NULL);
-	//cmddetail:{"name":"ShortName","args":"",
-	//cmddetail:"descr":"qqqqq0",
-	//cmddetail:"fn":"CMD_ShortName","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:{"name":"SetFlag","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"CMD_SetFlag","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetFlag", "", CMD_SetFlag, NULL, NULL);
-	//cmddetail:{"name":"ShortName","args":"",
-	//cmddetail:"descr":"qqqqq0",
-	//cmddetail:"fn":"CMD_ShortName","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:{"name":"FullBootTime","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"CMD_FullBootTime","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("FullBootTime", "", CMD_FullBootTime, NULL, NULL);
 

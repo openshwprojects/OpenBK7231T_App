@@ -1268,9 +1268,9 @@ void NewLED_InitCommands(){
 	//cmddetail:"fn":"basecolor_rgbcw","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_basecolor_rgbcw", "", basecolor_rgbcw, NULL, NULL);
-	//cmddetail:{"name":"led_temperature","args":"",
-	//cmddetail:"descr":"set qqqq",
-	//cmddetail:"fn":"temperature","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:{"name":"add_temperature","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"add_temperature","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("add_temperature", "", add_temperature, NULL, NULL);
 	//cmddetail:{"name":"led_temperature","args":"",
@@ -1317,13 +1317,33 @@ void NewLED_InitCommands(){
 	// HSBColor 360,100,100 - red
 	// HSBColor 90,100,100 - green
 	// HSBColor	<hue>,<sat>,<bri> = set color by hue, saturation and brightness
+	//cmddetail:{"name":"HSBColor","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"LED_SetBaseColor_HSB","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HSBColor", "", LED_SetBaseColor_HSB, NULL, NULL);
 	// HSBColor1	0..360 = set hue
+	//cmddetail:{"name":"HSBColor1","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"setHue","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HSBColor1", "", setHue, NULL, NULL);
 	// HSBColor2	0..100 = set saturation
+	//cmddetail:{"name":"HSBColor2","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"setSaturation","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HSBColor2", "", setSaturation, NULL, NULL);
 	// HSBColor3	0..100 = set brightness
+	//cmddetail:{"name":"HSBColor3","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"setBrightness","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HSBColor3", "", setBrightness, NULL, NULL);
+	//cmddetail:{"name":"led_finishFullLerp","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"led_finishFullLerp","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("led_finishFullLerp", "", led_finishFullLerp, NULL, NULL);
 }
 

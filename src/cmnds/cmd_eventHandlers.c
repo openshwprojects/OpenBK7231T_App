@@ -496,9 +496,9 @@ void EventHandlers_Init() {
 	//cmddetail:"fn":"CMD_AddChangeHandler","file":"cmnds/cmd_eventHandlers.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("AddChangeHandler", "", CMD_AddChangeHandler, NULL, NULL);
-	//cmddetail:{"name":"listEvents","args":"",
-	//cmddetail:"descr":"qqqqq0",
-	//cmddetail:"fn":"CMD_ListEvents","file":"cmnds/cmd_eventHandlers.c","requires":"",
+	//cmddetail:{"name":"listEventHandlers","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"CMD_ListEventHandlers","file":"cmnds/cmd_eventHandlers.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("listEventHandlers", "", CMD_ListEventHandlers, NULL, NULL);
 	//cmddetail:{"name":"clearAllHandlers","args":"",

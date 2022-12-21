@@ -250,7 +250,15 @@ void RepeatingEvents_Init() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("cancelRepeatingEvent","",RepeatingEvents_Cmd_CancelRepeatingEvent, NULL, NULL);
 
+	//cmddetail:{"name":"clearRepeatingEvents","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"RepeatingEvents_Cmd_ClearRepeatingEvents","file":"cmnds/cmd_repeatingEvents.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("clearRepeatingEvents", "", RepeatingEvents_Cmd_ClearRepeatingEvents, NULL, NULL);
+	//cmddetail:{"name":"listRepeatingEvents","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"RepeatingEvents_Cmd_ListRepeatingEvents","file":"cmnds/cmd_repeatingEvents.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("listRepeatingEvents", "", RepeatingEvents_Cmd_ListRepeatingEvents, NULL, NULL);
 
 
