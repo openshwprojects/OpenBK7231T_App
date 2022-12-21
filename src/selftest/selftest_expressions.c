@@ -101,6 +101,14 @@ void Test_Expressions_RunTests_Basic() {
 	// !
 	SELFTEST_ASSERT_EXPRESSION("!0\n\r", 1.0f);
 	SELFTEST_ASSERT_EXPRESSION("!1\n\r", 0.0f);
+	// set $CH1 to 0
+	CHANNEL_Set(1, 0, 0);
+	SELFTEST_ASSERT_EXPRESSION("!$CH1\n\r", 1.0f);
+	SELFTEST_ASSERT_EXPRESSION("$CH1\n\r", 0.0f);
+	// set $CH1 to 1
+	CHANNEL_Set(1, 1, 0);
+	SELFTEST_ASSERT_EXPRESSION("!$CH1\n\r", 0.0f);
+	SELFTEST_ASSERT_EXPRESSION("$CH1\n\r", 1.0f);
 }
 
 #endif
