@@ -871,7 +871,7 @@ void TuyaMCU_ParseWeatherData(const byte *data, int len) {
 		ofs += (2 + stringLen);
 		ofs++;
 		stringLen = data[ofs];
-		stringData = data + (ofs + 1);
+		stringData = (const char*)(data + (ofs + 1));
 		if (varType == 0x00) {
 			// integer
 			if (stringLen == 4) {
