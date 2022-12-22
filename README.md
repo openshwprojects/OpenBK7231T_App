@@ -82,18 +82,18 @@ then re-power the device (or reset with CEN by temporary connecting CEN to groun
   
 ## UART (multiplatform method, Python required)
 
-clone the repo https://github.com/OpenBekenIOT/hid_download_py
+Install [bk7231tools](https://github.com/tuya-cloudcutter/bk7231tools) using `python -m pip install bk7231tools`
   
 Use USB to TTL converter with 3.3V logic levels, like HW 597 
 
 connect the PC to TX1 and RX1 on the bk7231 (TX2 and RX2 are optional, only for log)
 
 start flash using:
-`python uartprogram <sdk folder>\apps\<folder>\output\1.0.0\<appname>_UA_<appversion>.bin -d <port> -w`
+`python bk7231tools write_flash -d <port> --start 0x11000 <sdk folder>\apps\<folder>\output\1.0.0\<appname>_UA_<appversion>.bin`
 then re-power the device (or reset with CEN temporary connecting CEN to ground) until the flashing program continues, repeat if required.
 
 e.g.
-`python uartprogram C:\DataNoBackup\tuya\tuya-iotos-embeded-sdk-wifi-ble-bk7231t\apps\my_alpha_demo\output\1.0.0\my_alpha_demo_UA_1.0.0.bin -d com4 -w`
+`python bk7231tools write_flash -d COM4 --start 0x11000 C:\DataNoBackup\tuya\tuya-iotos-embeded-sdk-wifi-ble-bk7231t\apps\my_alpha_demo\output\1.0.0\my_alpha_demo_UA_1.0.0.bin`
 
 ## SPI
 
@@ -123,15 +123,15 @@ After a reboot, the device should connect to your lan.
 # Flashing for BK7231N
 
 BKwriter 1.60 doesn't work for BK7231N for me, in BK7231 mode it errors with "invalid CRC" and in BK7231N mode it fails to unprotect the device.
-For BK7231N, one should use:
-  
-https://github.com/OpenBekenIOT/hid_download_py
+`hid_download_py` can't check if CRC is correct.
+
+Install [bk7231tools](https://github.com/tuya-cloudcutter/bk7231tools) using `python -m pip install bk7231tools`
   
 Flash BK7231N QIO binary, like that:
   
-`python uartprogram W:\GIT\OpenBK7231N\apps\OpenBK7231N_App\output\1.0.0\OpenBK7231N_app_QIO_1.0.0.bin --unprotect -d com10 -w --startaddr 0x0`
+`python bk7231tools write_flash -d com10 --start 0x0 -B W:\GIT\OpenBK7231N\apps\OpenBK7231N_App\output\1.0.0\OpenBK7231N_app_QIO_1.0.0.bin`
   
-  Remember - QIO binary with --unprotect and --startaddr 0x0, this is for N chip, not for T.
+  Remember - QIO binary with --start 0x0 and -B (this means to write bootloader), this is for N chip, not for T.
  
 You can see an example of detailed teardown and BK7231N flashing here: https://www.elektroda.com/rtvforum/topic3874289.html
   
@@ -208,14 +208,14 @@ if MQTTOn then "backlog led_dimmer 100; led_enableAll" else "backlog led_dimmer 
       
 # Console Command Examples
 
-| Command        | Description  |
-| ------------- | -----:|
-| addRepeatingEvent 15 -1 SendGet http://192.168.0.112/cm?cmnd=Power0%20Toggle | This will send a Tasmota HTTP Toggle command every 15 seconds to given device. Repeats value here is "-1" because we want this event to stay forever. |
-| addEventHandler OnClick 8 SendGet http://192.168.0.112/cm?cmnd=Power0%20Toggle     | This will send a Tasmota HTTP Toggle command to given device when a button on pin 8 is clicked (pin 8, NOT channel 8) |
-| addChangeHandler Channel1 != 0  SendGet http://192.168.0.112/cm?cmnd=Power0%20On | This will set a Tasmota HTTP Power0 ON command when a channel 1 value become non-zero |
-| addChangeHandler Channel1 == 0  SendGet http://192.168.0.112/cm?cmnd=Power0%20Off | This will set a Tasmota HTTP Power0 OFF command when a channel 1 value become zero |
-| addChangeHandler Channel1 == 1 addRepeatingEvent 60 1 setChannel 1 0 | This will create a new repeating events with 1 repeat count and 60 seconds delay everytime Channel1 becomes 1. Basically, it will automatically turn off the light 60 seconds after you turn it on. TODO: clear previous event instance? |
-| addRepeatingEvent 5 -1 led_enableAll !$led_enableAll | This simple timer will toggle LED state every 5 seconds. -1 hear means infinite repeats. The ! stands for negation and $led_enableAll is a constant that you can read to get 0 or 1. It works like $CH11, $CH4 etc (any number) for accessing channel value |
+| Command                                                                           |                                                                                                                                                                                                                                                 Description |
+|-----------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+| addRepeatingEvent 15 -1 SendGet http://192.168.0.112/cm?cmnd=Power0%20Toggle      |                                                                                                       This will send a Tasmota HTTP Toggle command every 15 seconds to given device. Repeats value here is "-1" because we want this event to stay forever. |
+| addEventHandler OnClick 8 SendGet http://192.168.0.112/cm?cmnd=Power0%20Toggle    |                                                                                                                                       This will send a Tasmota HTTP Toggle command to given device when a button on pin 8 is clicked (pin 8, NOT channel 8) |
+| addChangeHandler Channel1 != 0  SendGet http://192.168.0.112/cm?cmnd=Power0%20On  |                                                                                                                                                                       This will set a Tasmota HTTP Power0 ON command when a channel 1 value become non-zero |
+| addChangeHandler Channel1 == 0  SendGet http://192.168.0.112/cm?cmnd=Power0%20Off |                                                                                                                                                                          This will set a Tasmota HTTP Power0 OFF command when a channel 1 value become zero |
+| addChangeHandler Channel1 == 1 addRepeatingEvent 60 1 setChannel 1 0              |                    This will create a new repeating events with 1 repeat count and 60 seconds delay everytime Channel1 becomes 1. Basically, it will automatically turn off the light 60 seconds after you turn it on. TODO: clear previous event instance? |
+| addRepeatingEvent 5 -1 led_enableAll !$led_enableAll                              | This simple timer will toggle LED state every 5 seconds. -1 hear means infinite repeats. The ! stands for negation and $led_enableAll is a constant that you can read to get 0 or 1. It works like $CH11, $CH4 etc (any number) for accessing channel value |
 
 
 
@@ -420,28 +420,28 @@ Channel types are often not required and don't have to be configured, but in som
 
 Some channels have "_div10" or "_div100" sufixes. This is for TuyaMCU. This is needed because TuyaMCU sends values as integers, so it sends, for example, 215 for 21.5C temperature, and we store it internally as 215 and only convert to float for display.
 
-| CodeName        | Description  | Screenshot  |
-| ------------- |:-------------:| -----:|
-| Toggle | Simple on/off Toggle | TODO |
-| LowMidHigh | 3 options - Low (0), Mid (1), High (2). Used for TuyaMCU Fan Controller. | TODO |
-| OffLowMidHigh | 4 options - Off(0), Low (1), Mid (2), High (3). Used for TuyaMCU Fan Controller. | TODO |
-| OffLowestLowMidHighHighest | 6 options. Used for TuyaMCU Fan Controller. | TODO |
-| LowestLowMidHighHighest | 5 options. Used for TuyaMCU Fan Controller. | TODO |
-| Dimmer | Display slider for TuyaMCU dimmer. | TODO |
-| TextField | Display textfield so you can enter any number. Used for testing, can be also used for time countdown on TuyaMCU devices. | TODO |
-| ReadOnly | Display a read only value on web panel. | TODO |
-| Temperature | Display a text value with 'C suffix, I am using it with I2C TC74 temperature sensor | TODO |
-| temperature_div10 | First divide given value by 10, then display result value with 'C suffix. This is for TuyaMCU LCD/Clock/Calendar/Temperature Sensor/Humidity meter | TODO |
-| OpenClosed | Read only value, displays "Open" if 0 and "Closed" if 1. | TODO |
-| OpenClosed_Inv | Read only value, displays "Open" if 1 and "Closed" if 0. | TODO |
-| humidity | Display value as a % humidity. | TODO |
-| humidity_div10 | Divide by 10 and display value as a % humidity. | TODO |
-| Frequency_div100 | Divide by 100 and display value as a Hz frequency. | TODO |
-| Voltage_div100 | Divide by 100 and display value as a V voltage. | TODO |
-| Power | Power in W. | TODO |
-| Voltage_div10 | Divide by 10 and display value as a V voltage. | TODO |
-| Current_div100 | Divide by 100 and display value as a A current. | TODO |
-| Current_div1000 | Divide by 1000 and display value as a A current. | TODO |
+| CodeName                   |                                                                    Description                                                                     | Screenshot |
+|----------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------:|-----------:|
+| Toggle                     |                                                                Simple on/off Toggle                                                                |       TODO |
+| LowMidHigh                 |                                      3 options - Low (0), Mid (1), High (2). Used for TuyaMCU Fan Controller.                                      |       TODO |
+| OffLowMidHigh              |                                  4 options - Off(0), Low (1), Mid (2), High (3). Used for TuyaMCU Fan Controller.                                  |       TODO |
+| OffLowestLowMidHighHighest |                                                    6 options. Used for TuyaMCU Fan Controller.                                                     |       TODO |
+| LowestLowMidHighHighest    |                                                    5 options. Used for TuyaMCU Fan Controller.                                                     |       TODO |
+| Dimmer                     |                                                         Display slider for TuyaMCU dimmer.                                                         |       TODO |
+| TextField                  |              Display textfield so you can enter any number. Used for testing, can be also used for time countdown on TuyaMCU devices.              |       TODO |
+| ReadOnly                   |                                                      Display a read only value on web panel.                                                       |       TODO |
+| Temperature                |                                Display a text value with 'C suffix, I am using it with I2C TC74 temperature sensor                                 |       TODO |
+| temperature_div10          | First divide given value by 10, then display result value with 'C suffix. This is for TuyaMCU LCD/Clock/Calendar/Temperature Sensor/Humidity meter |       TODO |
+| OpenClosed                 |                                              Read only value, displays "Open" if 0 and "Closed" if 1.                                              |       TODO |
+| OpenClosed_Inv             |                                              Read only value, displays "Open" if 1 and "Closed" if 0.                                              |       TODO |
+| humidity                   |                                                           Display value as a % humidity.                                                           |       TODO |
+| humidity_div10             |                                                  Divide by 10 and display value as a % humidity.                                                   |       TODO |
+| Frequency_div100           |                                                 Divide by 100 and display value as a Hz frequency.                                                 |       TODO |
+| Voltage_div100             |                                                  Divide by 100 and display value as a V voltage.                                                   |       TODO |
+| Power                      |                                                                    Power in W.                                                                     |       TODO |
+| Voltage_div10              |                                                   Divide by 10 and display value as a V voltage.                                                   |       TODO |
+| Current_div100             |                                                  Divide by 100 and display value as a A current.                                                   |       TODO |
+| Current_div1000            |                                                  Divide by 1000 and display value as a A current.                                                  |       TODO |
   
 # Simple TCP command server for scripting
   
@@ -460,29 +460,29 @@ Some MQTT variables are being published only at the startup, some are published 
 Hint: in HA, you can use MQTT wildcard to listen to publishes. OBK_DEV_NAME/#
 
 Publishes send by OBK device:
-| Topic        | Sample Value  | Description  |
-| ------------- |:-------------:| -------------:|
-| OBK_DEV_NAME/connected | "online" | Send on connect. |
-| OBK_DEV_NAME/sockets |"5" | Send on connect and every minute (if enabled) |
-| OBK_DEV_NAME/rssi |"-70" | Send on connect and every minute (if enabled) |
-| OBK_DEV_NAME/uptime | "653" |Send on connect and every minute (if enabled) |
-| OBK_DEV_NAME/freeheap |"95168" | Send on connect and every minute (if enabled) | 
-| OBK_DEV_NAME/ip | "192.168.0.123" |Send on connect and every minute (if enabled) | 
-| OBK_DEV_NAME/datetime | "" |Send on connect and every minute (if enabled) |
-| OBK_DEV_NAME/mac | "84:e3:42:65:d1:87 " |Send on connect and every minute (if enabled) |
-| OBK_DEV_NAME/build | "Build on Nov 12 2022 12:39:44 version 1.0.0" |Send on connect and every minute (if enabled) | 
-| OBK_DEV_NAME/host |"obk_t_fourRelays" | Send on connect and every minute (if enabled) |
-| OBK_DEV_NAME/voltage/get |"221" | voltage from BL0942/BL0937 etc |
-| OBK_DEV_NAME/led_enableAll/get | "1" |send when LED On/Off changes or when periodic broadcast is enabled |
-| OBK_DEV_NAME/led_basecolor_rgb/get |"FFAABB" | send when LED color changes or when periodic broadcast is enabled.  |
-| OBK_DEV_NAME/led_dimmer/get |"100" | send when LED dimmer changes or when periodic broadcast is enabled |
+| Topic                              |                 Sample Value                  |                                                        Description |
+|------------------------------------|:---------------------------------------------:|-------------------------------------------------------------------:|
+| OBK_DEV_NAME/connected             |                   "online"                    |                                                   Send on connect. |
+| OBK_DEV_NAME/sockets               |                      "5"                      |                      Send on connect and every minute (if enabled) |
+| OBK_DEV_NAME/rssi                  |                     "-70"                     |                      Send on connect and every minute (if enabled) |
+| OBK_DEV_NAME/uptime                |                     "653"                     |                      Send on connect and every minute (if enabled) |
+| OBK_DEV_NAME/freeheap              |                    "95168"                    |                      Send on connect and every minute (if enabled) |
+| OBK_DEV_NAME/ip                    |                "192.168.0.123"                |                      Send on connect and every minute (if enabled) |
+| OBK_DEV_NAME/datetime              |                      ""                       |                      Send on connect and every minute (if enabled) |
+| OBK_DEV_NAME/mac                   |             "84:e3:42:65:d1:87 "              |                      Send on connect and every minute (if enabled) |
+| OBK_DEV_NAME/build                 | "Build on Nov 12 2022 12:39:44 version 1.0.0" |                      Send on connect and every minute (if enabled) |
+| OBK_DEV_NAME/host                  |              "obk_t_fourRelays"               |                      Send on connect and every minute (if enabled) |
+| OBK_DEV_NAME/voltage/get           |                     "221"                     |                                     voltage from BL0942/BL0937 etc |
+| OBK_DEV_NAME/led_enableAll/get     |                      "1"                      | send when LED On/Off changes or when periodic broadcast is enabled |
+| OBK_DEV_NAME/led_basecolor_rgb/get |                   "FFAABB"                    | send when LED color changes or when periodic broadcast is enabled. |
+| OBK_DEV_NAME/led_dimmer/get        |                     "100"                     | send when LED dimmer changes or when periodic broadcast is enabled |
   
   
  Publishes received by OBK device:
- | Topic        | Sample Value  | Description  |
-| ------------- |:-------------:| -------------:|
-| OBK_DEV_NAME/INDEX/set | "1" | Sets the channel of INDEX to given value. This can set relays and also provide DIRECT PWM access. If channel is mapped to TuyaMCU, TuyaMCU will also be updated |
-| todo |"100" | tooodo |
+| Topic                  | Sample Value |                                                                                                                                                     Description |
+|------------------------|:------------:|----------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+| OBK_DEV_NAME/INDEX/set |     "1"      | Sets the channel of INDEX to given value. This can set relays and also provide DIRECT PWM access. If channel is mapped to TuyaMCU, TuyaMCU will also be updated |
+| todo                   |    "100"     |                                                                                                                                                          tooodo |
 
 # RGBCW Tuya 5 PWMs LED bulb control compatible with Home Assistant
   
