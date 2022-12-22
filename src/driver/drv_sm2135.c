@@ -91,7 +91,7 @@ void SM2135_Write(byte *rgbcw) {
 	int i;
 	int bRGB;
 
-	//if(CFG_HasFlag(OBK_FLAG_SM2135_SEPARATE_MODES)) {
+	if(CFG_HasFlag(OBK_FLAG_SM2135_SEPARATE_MODES)) {
 		bRGB = 0;
 		for(i = 0; i < 3; i++){
 			if(rgbcw[g_channelOrder[i]]!=0) {
@@ -120,17 +120,17 @@ void SM2135_Write(byte *rgbcw) {
 			SM2135_Stop();
 
 		}
-	//} else {
-	//	SM2135_Start(SM2135_ADDR_MC);
-	//	SM2135_WriteByte(g_current_setting_rgb);
-	//	SM2135_WriteByte(SM2135_RGB);
-	//	SM2135_WriteByte(rgbcw[g_channelOrder[0]]);
-	//	SM2135_WriteByte(rgbcw[g_channelOrder[1]]);
-	//	SM2135_WriteByte(rgbcw[g_channelOrder[2]]); 
-	//	SM2135_WriteByte(rgbcw[g_channelOrder[3]]); 
-	//	SM2135_WriteByte(rgbcw[g_channelOrder[4]]); 
-	//	SM2135_Stop();
-	//}
+	} else {
+		SM2135_Start(SM2135_ADDR_MC);
+		SM2135_WriteByte(g_current_setting_rgb);
+		SM2135_WriteByte(SM2135_RGB);
+		SM2135_WriteByte(rgbcw[g_channelOrder[0]]);
+		SM2135_WriteByte(rgbcw[g_channelOrder[1]]);
+		SM2135_WriteByte(rgbcw[g_channelOrder[2]]); 
+		SM2135_WriteByte(rgbcw[g_channelOrder[3]]); 
+		SM2135_WriteByte(rgbcw[g_channelOrder[4]]); 
+		SM2135_Stop();
+	}
 }
 
 static commandResult_t SM2135_RGBCW(const void *context, const char *cmd, const char *args, int flags){
