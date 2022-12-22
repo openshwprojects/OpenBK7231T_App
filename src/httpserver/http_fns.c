@@ -2736,6 +2736,19 @@ int http_fn_cfg_dgr(http_request_t* request) {
 
 void XR809_RequestOTAHTTP(const char* s);
 
+void OTA_RequestDownloadFromHTTP(const char *s) {
+#if WINDOWS
+
+#elif PLATFORM_BL602
+
+#elif PLATFORM_W600 || PLATFORM_W800
+	t_http_fwup(tmpA);
+#elif PLATFORM_XR809
+	XR809_RequestOTAHTTP(tmpA);
+#else
+	otarequest(tmpA);
+#endif
+}
 int http_fn_ota_exec(http_request_t* request) {
 	char tmpA[128];
 	//char tmpB[64];
@@ -2745,17 +2758,7 @@ int http_fn_ota_exec(http_request_t* request) {
 	if (http_getArg(request->url, "host", tmpA, sizeof(tmpA))) {
 		hprintf255(request, "<h3>OTA requested for %s!</h3>", tmpA);
 		addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "http_fn_ota_exec: will try to do OTA for %s \r\n", tmpA);
-#if WINDOWS
-
-#elif PLATFORM_BL602
-
-#elif PLATFORM_W600 || PLATFORM_W800
-		t_http_fwup(tmpA);
-#elif PLATFORM_XR809
-		XR809_RequestOTAHTTP(tmpA);
-#else
-		otarequest(tmpA);
-#endif
+		OTA_RequestDownloadFromHTTP(tmpA);
 	}
 	poststr(request, htmlFooterReturnToMenu);
 	http_html_end(request);

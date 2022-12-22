@@ -41,6 +41,18 @@ static commandResult_t CMD_PowerSave(const void *context, const char *cmd, const
 }
 
 
+static commandResult_t CMD_HTTPOTA(const void *context, const char *cmd, const char *args, int cmdFlags) {
+
+	if (args && *args) {
+		OTA_RequestDownloadFromHTTP(args);
+	}
+	else {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Command requires 1 argument");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_SimonTest(const void *context, const char *cmd, const char *args, int cmdFlags){
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SimonTest: ir test routine");
 
@@ -139,6 +151,11 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_If","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("if", NULL, CMD_If, NULL, NULL);
+	//cmddetail:{"name":"ota_http","args":"[HTTP_URL]",
+	//cmddetail:"descr":"Starts the firmware update procedure, the argument should be a reachable HTTP server file. You can easily setup HTTP server with Xampp, or Visual Code, or Python, etc. Make sure you are using OTA file for a correct platform (getting N platform RBL on T will brick device, etc etc)",
+	//cmddetail:"fn":"CMD_HTTPOTA","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("ota_http", "", CMD_HTTPOTA, NULL, NULL);
 	
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	CMD_InitScripting();

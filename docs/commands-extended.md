@@ -29,6 +29,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | PowerSave |  | Enable power save on N & T | File: cmnds/cmd_main.c<br/>Function: CMD_PowerSave |
 | simonirtest |  | Simons Special Test | File: cmnds/cmd_main.c<br/>Function: CMD_SimonTest |
 | if | [Condition]['then'][CommandA]['else'][CommandB] | Executed a conditional. Condition should be single line. You must always use 'then' after condition. 'else' is optional. Use aliases or quotes for commands with spaces | File: cmnds/cmd_main.c<br/>Function: CMD_If |
+| ota_http | [HTTP_URL] | Starts the firmware update procedure, the argument should be a reachable HTTP server file. You can easily setup HTTP server with Xampp, or Visual Code, or Python, etc. Make sure you are using OTA file for a correct platform (getting N platform RBL on T will brick device, etc etc) | File: cmnds/cmd_main.c<br/>Function: CMD_HTTPOTA |
 | led_dimmer | [Value] | set output dimmer 0..100 | File: cmnds/cmd_newLEDDriver.c<br/>Function: dimmer |
 | add_dimmer | [Value][bWrapAroundInsteadOfHold] | Adds a given value to current LED dimmer. Function can wrap or clamp if max/min is exceeded. | File: cmnds/cmd_newLEDDriver.c<br/>Function: add_dimmer |
 | led_enableAll | [1or0orToggle] | Power on/off LED but remember the RGB(CW) values | File: cmnds/cmd_newLEDDriver.c<br/>Function: enableAll |

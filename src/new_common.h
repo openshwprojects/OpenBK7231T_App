@@ -30,6 +30,8 @@ int sprintf2(char *o, const char* fmt, ...);
 // from http_fns.  should move to a utils file.
 extern unsigned char hexbyte(const char* hex);
 
+void OTA_RequestDownloadFromHTTP(const char *s);
+
 #if WINDOWS
 #define DEVICENAME_PREFIX_FULL "WinTest"
 #define DEVICENAME_PREFIX_SHORT "WT"
