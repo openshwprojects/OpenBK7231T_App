@@ -2742,11 +2742,11 @@ void OTA_RequestDownloadFromHTTP(const char *s) {
 #elif PLATFORM_BL602
 
 #elif PLATFORM_W600 || PLATFORM_W800
-	t_http_fwup(tmpA);
+	t_http_fwup(s);
 #elif PLATFORM_XR809
-	XR809_RequestOTAHTTP(tmpA);
+	XR809_RequestOTAHTTP(s);
 #else
-	otarequest(tmpA);
+	otarequest(s);
 #endif
 }
 int http_fn_ota_exec(http_request_t* request) {
