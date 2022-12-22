@@ -166,6 +166,8 @@ long SIM_GetTime() {
 int rtos_get_time() {
 	return g_simulatedTimeNow;
 }
+int g_bDoingUnitTestsNow = 0;
+
 #include "sim/sim_public.h"
 int __cdecl main(int argc, char **argv)
 {
@@ -191,12 +193,14 @@ int __cdecl main(int argc, char **argv)
 		system("pause");
 	}
 	if (bWantsUnitTests) {
+		g_bDoingUnitTestsNow = 1;
 		SIM_DoFreshOBKBoot();
 		// let things warm up a little
 		Sim_RunFrames(50, false);
 		// run tests
 		Win_DoUnitTests();
 		Sim_RunFrames(50, false);
+		g_bDoingUnitTestsNow = 0;
 	}
 
 	SIM_CreateWindow(argc, argv);
