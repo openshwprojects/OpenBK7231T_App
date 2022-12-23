@@ -20,6 +20,7 @@
 #include "obk_config.h"
 
 #include "httpserver/new_http.h"
+#include "httpserver/http_fns.h"
 #include "new_pins.h"
 #include "quicktick.h"
 #include "new_cfg.h"
@@ -260,6 +261,7 @@ void Main_OnPingCheckerReply(int ms)
 	g_timeSinceLastPingReply = 0;
 }
 
+int g_doHomeAssistantDiscoveryIn = 0;
 int g_bBootMarkedOK = 0;
 static int bMQTTconnected = 0;
 
@@ -323,6 +325,9 @@ void Main_LogPowerSave(){
 #endif		
 
 
+void Main_ScheduleHomeAssistantDiscovery(int seconds) {
+	g_doHomeAssistantDiscoveryIn = seconds;
+}
 
 void Main_OnEverySecond()
 {
@@ -464,6 +469,21 @@ void Main_OnEverySecond()
 		}
 	}
 
+	if (g_doHomeAssistantDiscoveryIn) {
+		if (MQTT_IsReady()) {
+			g_doHomeAssistantDiscoveryIn--;
+			if (g_doHomeAssistantDiscoveryIn == 0) {
+				ADDLOGF_INFO("Will do request HA discovery now.\n");
+				doHomeAssistantDiscovery(0, 0);
+			}
+			else {
+				ADDLOGF_INFO("Will scheduled HA discovery in %i seconds\n", g_doHomeAssistantDiscoveryIn);
+			}
+		}
+		else {
+			ADDLOGF_INFO("HA discovery is scheduled, but MQTT connection is present yet\n");
+		}
+	}
 	if (g_openAP)
     {
 		g_openAP--;

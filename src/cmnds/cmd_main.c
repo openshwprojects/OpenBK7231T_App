@@ -41,6 +41,20 @@ static commandResult_t CMD_PowerSave(const void *context, const char *cmd, const
 }
 
 
+static commandResult_t CMD_ScheduleHADiscovery(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	int delay;
+
+	if (args && *args) {
+		delay = atoi(args);
+	}
+	else {
+		delay = 5;
+	}
+
+	Main_ScheduleHomeAssistantDiscovery(delay);
+
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_HTTPOTA(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
 	if (args && *args) {
@@ -156,6 +170,11 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_HTTPOTA","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("ota_http", "", CMD_HTTPOTA, NULL, NULL);
+	//cmddetail:{"name":"scheduleHADiscovery","args":"[Seconds]",
+	//cmddetail:"descr":"This will schedule HA discovery, the discovery will happen with given number of seconds, but timer only counts when MQTT is connected. It will not work without MQTT online, so you must set MQTT credentials first.",
+	//cmddetail:"fn":"CMD_ScheduleHADiscovery","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("scheduleHADiscovery", "", CMD_ScheduleHADiscovery, NULL, NULL);
 	
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	CMD_InitScripting();

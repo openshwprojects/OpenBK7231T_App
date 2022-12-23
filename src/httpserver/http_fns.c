@@ -1530,12 +1530,8 @@ void get_Relay_PWM_Count(int* relayCount, int* pwmCount) {
 }
 
 
-/// @brief Sends HomeAssistant discovery MQTT messages.
-/// @param request 
-/// @return 
-int http_fn_ha_discovery(http_request_t* request) {
+void doHomeAssistantDiscovery(const char *topic, http_request_t *request) {
 	int i;
-	char topic[32];
 	int relayCount;
 	int pwmCount;
 	bool ledDriverChipRunning;
@@ -1543,14 +1539,9 @@ int http_fn_ha_discovery(http_request_t* request) {
 	bool measuringPower = false;
 	struct cJSON_Hooks hooks;
 
-	http_setup(request, httpMimeTypeText);
-
-	if (MQTT_IsReady() == false) {
-		poststr(request, "MQTT not running.");
-		poststr(request, NULL);
-		return 0;
+	if (topic == 0 || *topic == 0) {
+		topic = "homeassistant";
 	}
-
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	measuringPower = DRV_IsMeasuringPower();
 #endif
@@ -1562,15 +1553,16 @@ int http_fn_ha_discovery(http_request_t* request) {
 	ledDriverChipRunning = LED_IsLedDriverChipRunning();
 
 	if ((relayCount == 0) && (pwmCount == 0) && !measuringPower && !ledDriverChipRunning) {
-		poststr(request, "No relay, PWM or power driver running.");
-		poststr(request, NULL);
-		return 0;
+		const char *msg = "No relay, PWM or power driver running.";
+		if (request) {
+			poststr(request, msg);
+			poststr(request, NULL);
+		}
+		else {
+			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "HA discovery: %s\r\n", msg);
+		}
+		return;
 	}
-
-	if (!http_getArg(request->url, "prefix", topic, sizeof(topic))) {
-		sprintf(topic, "homeassistant");    //default discovery topic is `homeassistant`
-	}
-
 
 	hooks.malloc_fn = os_malloc;
 	hooks.free_fn = os_free;
@@ -1630,7 +1622,7 @@ int http_fn_ha_discovery(http_request_t* request) {
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	if (measuringPower == true) {
-		for (i = 0;i < OBK_NUM_SENSOR_COUNT;i++)
+		for (i = 0; i < OBK_NUM_SENSOR_COUNT; i++)
 		{
 			dev_info = hass_init_sensor_device_info(i);
 			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
@@ -1638,6 +1630,26 @@ int http_fn_ha_discovery(http_request_t* request) {
 		}
 	}
 #endif
+}
+
+/// @brief Sends HomeAssistant discovery MQTT messages.
+/// @param request 
+/// @return 
+int http_fn_ha_discovery(http_request_t* request) {
+	char topic[32];
+
+	http_setup(request, httpMimeTypeText);
+
+	if (MQTT_IsReady() == false) {
+		poststr(request, "MQTT not running.");
+		poststr(request, NULL);
+		return 0;
+	}
+
+	// even if it returns the empty HA topic,
+	// the function call below will set default
+	http_getArg(request->url, "prefix", topic, sizeof(topic));
+	doHomeAssistantDiscovery(topic, request);
 
 	poststr(request, "MQTT discovery queued.");
 	poststr(request, NULL);
