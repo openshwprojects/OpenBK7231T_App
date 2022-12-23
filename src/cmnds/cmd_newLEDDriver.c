@@ -187,7 +187,7 @@ float led_current_value_brightness = 0;
 float led_current_value_cold_or_warm = 0;
 
 void led_Save_finalRGBCW(byte* finalRGBCW) {
-#ifdef LED_DRIVER_SUPPORT
+#ifdef ENABLE_DRIVER_LED
 	if (DRV_IsRunning("SM2135")) {
 		SM2135_Write(finalRGBCW);
 	}

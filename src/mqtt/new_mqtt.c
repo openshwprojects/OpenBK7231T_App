@@ -1450,7 +1450,7 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 	if (CHANNEL_HasRoleThatShouldBePublished(idx)) {
 		bWantsToPublish = true;
 	}
-#ifdef TUYA_SUPPORT
+#ifdef ENABLE_DRIVER_TUYAMCU
 	// publish if channel is used by TuyaMCU (no pin role set), for example door sensor state with power saving V0 protocol
 	// Not enabled by default, you have to set OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS flag
 	if (CFG_HasFlag(OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS) && TuyaMCU_IsChannelUsedByTuyaMCU(idx)) {

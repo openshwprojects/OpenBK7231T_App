@@ -748,7 +748,7 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 	iVal = g_channelValues[ch];
 	bOn = iVal > 0;
 
-#if I2C_SUPPORT
+#if ENABLE_I2C
 	I2C_OnChannelChanged(ch,iVal);
 #endif
 
@@ -756,7 +756,7 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 	DRV_OnChannelChanged(ch,iVal);
 #endif
 
-#if TUYA_SUPPORT
+#if ENABLE_DRIVER_TUYAMCU
 	TuyaMCU_OnChannelChanged(ch, iVal);
 #endif
 

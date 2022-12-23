@@ -6,13 +6,13 @@
 
 //Start with all driver flags undefined
 
-#undef BASIC_DRIVER_SUPPORT    //This includes Test drivers, NTP and HttpButton
-#undef LED_DRIVER_SUPPORT      //This includes all LED driver variants
-#undef I2C_SUPPORT
-#undef POWER_BL0937_SUPPORT
-#undef POWER_BL0942_SUPPORT
-#undef POWER_CSE7766_SUPPORT
-#undef TUYA_SUPPORT            //This includes TuyaMCU and tmSensor
+//ENABLE_BASIC_DRIVERS - Enable support for Test drivers, NTP and HttpButton
+//ENABLE_DRIVER_LED - Enable support for all LED drivers
+//ENABLE_I2C - Enable support for I2C
+//ENABLE_DRIVER_BL0937 - Enable support for BL0937
+//ENABLE_DRIVER_BL0942 - Enable support for BL0942
+//ENABLE_DRIVER_CSE7766 - Enable support for CSE7766
+//ENABLE_DRIVER_TUYAMCU - Enable support for TuyaMCU and tmSensor
 
 
 #if PLATFORM_XR809
@@ -22,8 +22,8 @@
 #elif PLATFORM_W600
 
 //Some limited drivers are supported on W600, OBK_DISABLE_ALL_DRIVERS is not defined
-#define BASIC_DRIVER_SUPPORT    1
-#define POWER_BL0937_SUPPORT    1
+#define ENABLE_BASIC_DRIVERS    1
+#define ENABLE_DRIVER_BL0937    1
 
 #elif PLATFORM_W800
 
@@ -34,23 +34,23 @@
 // comment out to remove littlefs
 #define BK_LITTLEFS
 
-#define BASIC_DRIVER_SUPPORT    1
-#define LED_DRIVER_SUPPORT      1
-#define POWER_BL0937_SUPPORT    1
-#define POWER_BL0942_SUPPORT    1
-#define POWER_CSE7766_SUPPORT   1
-#define TUYA_SUPPORT            1
+#define ENABLE_BASIC_DRIVERS    1
+#define ENABLE_DRIVER_LED       1
+#define ENABLE_DRIVER_BL0937    1
+#define ENABLE_DRIVER_BL0942    1
+#define ENABLE_DRIVER_CSE7766   1
+#define ENABLE_DRIVER_TUYAMCU   1
 
 
 #elif PLATFORM_BL602
 
 // I have enabled drivers on BL602
-#define BASIC_DRIVER_SUPPORT    1
-#define LED_DRIVER_SUPPORT      1
-#define POWER_BL0937_SUPPORT    1
-#define POWER_BL0942_SUPPORT    1
-#define POWER_CSE7766_SUPPORT   1
-#define TUYA_SUPPORT            1
+#define ENABLE_BASIC_DRIVERS    1
+#define ENABLE_DRIVER_LED       1
+#define ENABLE_DRIVER_BL0937    1
+#define ENABLE_DRIVER_BL0942    1
+#define ENABLE_DRIVER_CSE7766   1
+#define ENABLE_DRIVER_TUYAMCU   1
 
 #else
 
@@ -61,12 +61,12 @@
 
 // add further app wide defined here, and used them to control build inclusion.
 
-#define BASIC_DRIVER_SUPPORT    1
-#define LED_DRIVER_SUPPORT      1
-#define POWER_BL0937_SUPPORT    1
-#define POWER_BL0942_SUPPORT    1
-#define POWER_CSE7766_SUPPORT   1
-#define TUYA_SUPPORT            1
+#define ENABLE_BASIC_DRIVERS    1
+#define ENABLE_DRIVER_LED       1
+#define ENABLE_DRIVER_BL0937    1
+#define ENABLE_DRIVER_BL0942    1
+#define ENABLE_DRIVER_CSE7766   1
+#define ENABLE_DRIVER_TUYAMCU   1
 
 
 #endif

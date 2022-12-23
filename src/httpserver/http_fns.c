@@ -1425,7 +1425,7 @@ int http_fn_uart_tool(http_request_t* request) {
 	poststr(request, "<h4>UART Tool</h4>");
 
 	if (http_getArg(request->url, "data", tmpA, sizeof(tmpA))) {
-#ifdef TUYA_SUPPORT
+#ifdef ENABLE_DRIVER_TUYAMCU
 		byte results[128];
 
 		hprintf255(request, "<h3>Sent %s!</h3>", tmpA);
@@ -1966,7 +1966,7 @@ int http_tasmota_json_status_SNS(http_request_t* request) {
 
 	return 0;
 }
-#ifndef BASIC_DRIVER_SUPPORT
+#ifndef ENABLE_BASIC_DRIVERS
 unsigned int NTP_GetCurrentTime() {
 	return 0;
 }
