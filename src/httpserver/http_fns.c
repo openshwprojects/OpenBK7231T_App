@@ -1966,6 +1966,11 @@ int http_tasmota_json_status_SNS(http_request_t* request) {
 
 	return 0;
 }
+
+#ifdef PLATFORM_XR809
+//XR809 does not support drivers but its build script compiles many drivers including ntp.
+
+#else
 #ifndef ENABLE_BASIC_DRIVERS
 unsigned int NTP_GetCurrentTime() {
 	return 0;
@@ -1974,6 +1979,8 @@ unsigned int NTP_GetCurrentTimeWithoutOffset() {
 	return 0;
 }
 #endif
+#endif
+
 /*
 {"Status":{"Module":0,"DeviceName":"Tasmota","FriendlyName":["Tasmota"],"Topic":"tasmota_48E7F3","ButtonTopic":"0","Power":1,"PowerOnState":3,"LedState":1,"LedMask":"FFFF","SaveData":1,"SaveState":1,"SwitchTopic":"0","SwitchMode":[0,0,0,0,0,0,0,0],"ButtonRetain":0,"SwitchRetain":0,"SensorRetain":0,"PowerRetain":0,"InfoRetain":0,"StateRetain":0}}
 */
