@@ -335,6 +335,14 @@ void BL_ProcessUpdate(float voltage, float current, float power)
     struct tm *ltm;
     char datetime[64];
 
+	if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)==false) {
+		if (power < 0)
+			power = 0;
+		if (voltage < 0)
+			voltage = 0;
+		if (current < 0)
+			current = 0;
+	}
     // those are final values, like 230V
     lastReadings[OBK_POWER] = power;
     lastReadings[OBK_VOLTAGE] = voltage;

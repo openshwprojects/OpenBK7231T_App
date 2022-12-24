@@ -2529,7 +2529,7 @@ const char* g_obk_flagNames[] = {
 	"[IR] Do MQTT publish (Tasmota JSON format) for incoming IR data",
 	"[LED] Automatically enable Light on any change of brightness, color or temperature",
 	"[LED] Emulate Cool White with RGB in device with four PWMS - Red is 0, Green 1, Blue 2, and Warm is 4",
-	"error",
+	"[POWER] Allow negative current/power for power measurement (all chips, BL0937, BL0942, etc)",
 	"error",
 	"error",
 	"error",
