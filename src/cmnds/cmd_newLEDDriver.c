@@ -193,6 +193,8 @@ void LED_RunQuickColorLerp(int deltaMS) {
 	byte finalRGBCW[5];
 	int maxPossibleIndexToSet;
 	int emulatedCool = -1;
+	int target_value_brightness = 0;
+	int target_value_cold_or_warm = 0;
 
 	if (CFG_HasFlag(OBK_FLAG_LED_FORCE_MODE_RGB)) {
 		// only allow setting pwm 0, 1 and 2, force-skip 3 and 4
@@ -223,19 +225,16 @@ void LED_RunQuickColorLerp(int deltaMS) {
 		led_rawLerpCurrent[i] = Mathf_MoveTowards(led_rawLerpCurrent[i],finalColors[i], deltaSeconds * led_lerpSpeedUnitsPerSecond);
 	}
 
+	if (g_lightEnableAll) {
+		target_value_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
+		target_value_brightness = g_brightness * 100.0f;
+	}
+
+	led_current_value_brightness = Mathf_MoveTowards(led_current_value_brightness, target_value_brightness, deltaSeconds * led_lerpSpeedUnitsPerSecond);
+	led_current_value_cold_or_warm = Mathf_MoveTowards(led_current_value_cold_or_warm, target_value_cold_or_warm, deltaSeconds * led_lerpSpeedUnitsPerSecond);
+
+	// OBK_FLAG_LED_ALTERNATE_CW_MODE means we have a driver that takes one PWM for brightness and second for temperature
 	if(isCWMode() && CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
-		// OBK_FLAG_LED_ALTERNATE_CW_MODE means we have a driver that takes one PWM for brightness and second for temperature
-		int target_value_brightness = 0;
-		int target_value_cold_or_warm = 0;
-
-		if (g_lightEnableAll) {
-			target_value_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
-			target_value_brightness = g_brightness * 100.0f;
-		}
-
-		led_current_value_brightness = Mathf_MoveTowards(led_current_value_brightness, target_value_brightness, deltaSeconds * led_lerpSpeedUnitsPerSecond);
-		led_current_value_cold_or_warm = Mathf_MoveTowards(led_current_value_cold_or_warm, target_value_cold_or_warm, deltaSeconds * led_lerpSpeedUnitsPerSecond);
-
 		CHANNEL_Set(firstChannelIndex, led_current_value_cold_or_warm, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 		CHANNEL_Set(firstChannelIndex+1, led_current_value_brightness, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 	} else {
@@ -252,12 +251,22 @@ void LED_RunQuickColorLerp(int deltaMS) {
 				finalRGBCW[i] = led_rawLerpCurrent[i];
 				float chVal = led_rawLerpCurrent[i] * g_cfg_colorScaleToChannel;
 				int channelToUse = firstChannelIndex + i;
+				// emulated cool is -1 by default, so this block will only execute
+				// if the cool emulation was enabled
 				if (channelToUse == emulatedCool && g_lightMode == Light_Temperature) {
 					CHANNEL_Set(firstChannelIndex + 0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 					CHANNEL_Set(firstChannelIndex + 1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 					CHANNEL_Set(firstChannelIndex + 2, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 				}
 				else {
+					if (CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
+						if (i == 3) {
+							chVal = led_current_value_cold_or_warm;
+						}
+						else if (i == 4) {
+							chVal = led_current_value_brightness;
+						}
+					}
 					CHANNEL_Set(channelToUse, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 				}
 			}
@@ -321,6 +330,8 @@ void apply_smart_light() {
 	byte finalRGBCW[5];
 	int maxPossibleIndexToSet;
 	int emulatedCool = -1;
+	int value_brightness = 0;
+	int value_cold_or_warm = 0;
 
 	// The color order is RGBCW.
 	// some people set RED to channel 0, and some of them set RED to channel 1
@@ -343,18 +354,19 @@ void apply_smart_light() {
 		maxPossibleIndexToSet = 5;
 	}
 
+	if (CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
+		if (g_lightEnableAll) {
+			value_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
+			value_brightness = g_brightness * 100.0f;
+		}
+	}
 
 	if(isCWMode() && CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
-		int value_brightness = 0;
-		int value_cold_or_warm = 0;
-
 		for(i = 0; i < 5; i++) {
 			finalColors[i] = 0;
 			finalRGBCW[i] = 0;
 		}
 		if(g_lightEnableAll) {
-			value_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
-			value_brightness = g_brightness * 100.0f;
 			for(i = 3; i < 5; i++) {
 				finalColors[i] = baseColors[i] * g_brightness;
 				finalRGBCW[i] = baseColors[i] * g_brightness;
@@ -404,22 +416,33 @@ void apply_smart_light() {
 			//	channelToUse,raw,g_brightness,final,g_lightEnableAll);
 
 			if(CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == false) {
-				if(isCWMode()) {
+				if (isCWMode()) {
 					// in CW mode, we have only set two channels
 					// We don't have RGB channels
 					// so, do simple mapping
-					if(i == 3) {
-						CHANNEL_Set(firstChannelIndex+0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-					} else if(i == 4) {
-						CHANNEL_Set(firstChannelIndex+1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+					if (i == 3) {
+						CHANNEL_Set(firstChannelIndex + 0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+					}
+					else if (i == 4) {
+						CHANNEL_Set(firstChannelIndex + 1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 					}
 				} else {
+					// emulated cool is -1 by default, so this block will only execute
+					// if the cool emulation was enabled
 					if (channelToUse == emulatedCool && g_lightMode == Light_Temperature) {
 						CHANNEL_Set(firstChannelIndex + 0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 						CHANNEL_Set(firstChannelIndex + 1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 						CHANNEL_Set(firstChannelIndex + 2, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 					}
 					else {
+						if (CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
+							if (i == 3) {
+								chVal = value_cold_or_warm;
+							}
+							else if (i == 4) {
+								chVal = value_brightness;
+							}
+						}
 						CHANNEL_Set(channelToUse, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 					}
 				}
