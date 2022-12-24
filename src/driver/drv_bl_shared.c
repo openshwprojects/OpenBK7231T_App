@@ -335,13 +335,15 @@ void BL_ProcessUpdate(float voltage, float current, float power)
     struct tm *ltm;
     char datetime[64];
 
+	// I had reports that BL0942 sometimes gives 
+	// a large, negative peak of current/power
 	if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)==false) {
-		if (power < 0)
-			power = 0;
-		if (voltage < 0)
-			voltage = 0;
-		if (current < 0)
-			current = 0;
+		if (power < -0.1f)
+			return;
+		if (voltage < -0.1f)
+			return;
+		if (current < -0.1f)
+			return;
 	}
     // those are final values, like 230V
     lastReadings[OBK_POWER] = power;
