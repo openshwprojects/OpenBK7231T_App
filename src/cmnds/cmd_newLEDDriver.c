@@ -226,8 +226,10 @@ void LED_RunQuickColorLerp(int deltaMS) {
 	}
 
 	if (g_lightEnableAll) {
-		target_value_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
-		target_value_brightness = g_brightness * 100.0f;
+		if (g_lightMode == Light_Temperature) {
+			target_value_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
+			target_value_brightness = g_brightness * 100.0f;
+		}
 	}
 
 	led_current_value_brightness = Mathf_MoveTowards(led_current_value_brightness, target_value_brightness, deltaSeconds * led_lerpSpeedUnitsPerSecond);
@@ -356,8 +358,10 @@ void apply_smart_light() {
 
 	if (CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
 		if (g_lightEnableAll) {
-			value_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
-			value_brightness = g_brightness * 100.0f;
+			if (g_lightMode == Light_Temperature) {
+				value_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
+				value_brightness = g_brightness * 100.0f;
+			}
 		}
 	}
 
