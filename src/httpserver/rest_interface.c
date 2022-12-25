@@ -12,24 +12,31 @@
 #include "../littlefs/our_lfs.h"
 #endif
 #include "lwip/sockets.h"
+
 #if PLATFORM_XR809
+
 #include <image/flash.h>
-#elif PLATFORM_BL602
+
+uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
+#define FLASH_INDEX_XR809 0
+
+#elif PLATFORM_W600
+
+#include "wm_socket_fwup.h"
+#include "wm_fwup.h"
+
+#elif PLATFORM_W800
 
 #else
+
+extern UINT32 flash_read(char* user_buf, UINT32 count, UINT32 address);
+
 #endif
+
 #include "../new_cfg.h"
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 
-#if PLATFORM_XR809
-uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
-#define FLASH_INDEX_XR809 0
-#elif PLATFORM_BL602
-#elif PLATFORM_W600 || PLATFORM_W800
-#else
-extern UINT32 flash_read(char* user_buf, UINT32 count, UINT32 address);
-#endif
 
 #define MAX_JSON_VALUE_LENGTH   128
 
@@ -198,6 +205,8 @@ static int http_rest_post(http_request_t* request) {
 		return http_rest_post_flash(request, START_ADR_OF_BK_PARTITION_OTA, LFS_BLOCKS_END);
 #elif PLATFORM_BK7231N
 		return http_rest_post_flash(request, START_ADR_OF_BK_PARTITION_OTA, LFS_BLOCKS_END);
+#elif PLATFORM_W600
+		return http_rest_post_flash(request, -1, -1);
 #else
 		// TODO
 #endif
@@ -450,7 +459,7 @@ static int http_rest_get_lfs_delete(http_request_t* request) {
 	strcpy(fpath, request->url + strlen("api/del/"));
 
 	ADDLOG_DEBUG(LOG_FEATURE_API, "LFS delete of %s", fpath);
-	lfsres = lfs_remove(&lfs,fpath);
+	lfsres = lfs_remove(&lfs, fpath);
 
 	if (lfsres == LFS_ERR_OK) {
 		ADDLOG_DEBUG(LOG_FEATURE_API, "LFS delete of %s OK", fpath);
@@ -458,7 +467,7 @@ static int http_rest_get_lfs_delete(http_request_t* request) {
 		poststr(request, "OK");
 	}
 	else {
-		ADDLOG_DEBUG(LOG_FEATURE_API, "LFS delete of %s error %i", fpath,lfsres);
+		ADDLOG_DEBUG(LOG_FEATURE_API, "LFS delete of %s error %i", fpath, lfsres);
 		poststr(request, "Error");
 	}
 	poststr(request, NULL);
@@ -891,25 +900,131 @@ static int http_rest_error(http_request_t* request, int code, char* msg) {
 
 
 static int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr) {
-#if PLATFORM_XR809
 
-#elif PLATFORM_BL602
+#if PLATFORM_XR809 || PLATFORM_BL602 || PLATFORM_W800
+	return 0;	//Operation not supported yet
+#endif
 
-#elif PLATFORM_W600 || PLATFORM_W800
 
-#else
 	int total = 0;
-	int towrite;
-	char* writebuf;
-	int writelen;
+	int towrite = request->bodylen;
+	char* writebuf = request->bodystart;
+	int writelen = request->bodylen;
+	int nRetCode = 0;
+	char error_message[256];
 
 	ADDLOG_DEBUG(LOG_FEATURE_API, "OTA post len %d", request->contentLength);
 
+#ifdef PLATFORM_W600
+
+	if (writelen < 0) {
+		ADDLOG_DEBUG(LOG_FEATURE_API, "ABORTED: %d bytes to write", writelen);
+		return http_rest_error(request, -20, "writelen < 0");
+	}
+
+	struct pbuf* p;
+
+	//Data is uploaded in 1024 sized chunks, creating a bigger buffer just in case this assumption changes.
+	//The code below is based on sdk\OpenW600\src\app\ota\wm_http_fwup.c
+	char* Buffer = (char*)os_malloc(2048 + 3);
+	memset(Buffer, 0, 2048 + 3);
+
+	if (request->contentLength >= 0) {
+		towrite = request->contentLength;
+	}
+
+	int recvLen = 0;
+	int totalLen = 0;
+	//printf("\ntowrite %d writelen=%d\n", towrite, writelen);
+
+	do
+	{
+		if (writelen > 0) {
+			//printf("Copying %d from writebuf to Buffer towrite=%d\n", writelen, towrite);
+			memcpy(Buffer + 3, writebuf, writelen);
+
+			if (recvLen == 0) {
+				T_BOOTER* booter = (T_BOOTER*)(Buffer + 3);
+
+				//printf("magic_no=%u %u\n", booter->magic_no, htonl(booter->magic_no));
+				//printf("img_type=%d\n", booter->img_type);
+				//printf("zip_type=%d\n", booter->zip_type);
+
+				if (TRUE == tls_fwup_img_header_check(booter))
+				{
+					totalLen = booter->upd_img_len + sizeof(T_BOOTER);
+				}
+				else
+				{
+					sprintf(error_message, "Image header check failed");
+					nRetCode = -19;
+					break;
+				}
+
+				nRetCode = socket_fwup_accept(0, ERR_OK);
+				if (nRetCode != ERR_OK) {
+					sprintf(error_message, "Firmware update startup failed");
+					break;
+				}
+			}
+
+			p = pbuf_alloc(PBUF_TRANSPORT, writelen + 3, PBUF_REF);
+			if (!p) {
+				sprintf(error_message, "Unable to allocate memory for buffer");
+				nRetCode = -18;
+				break;
+			}
+
+			if (recvLen == 0) {
+				*Buffer = SOCKET_FWUP_START;
+			}
+			else if (recvLen == (totalLen - writelen)) {
+				*Buffer = SOCKET_FWUP_END;
+			}
+			else {
+				*Buffer = SOCKET_FWUP_DATA;
+			}
+
+			*(Buffer + 1) = (writelen >> 8) & 0xFF;
+			*(Buffer + 2) = writelen & 0xFF;
+			p->payload = Buffer;
+			p->len = p->tot_len = writelen + 3;
+
+			nRetCode = socket_fwup_recv(0, p, ERR_OK);
+			if (nRetCode != ERR_OK) {
+				sprintf(error_message, "Firmware data processing failed");
+				break;
+			}
+			else {
+				recvLen += writelen;
+				//printf("Downloaded %d / %d\n", recvLen, totalLen);
+			}
+
+			towrite -= writelen;
+		}
+
+		if (towrite > 0) {
+			writebuf = request->received;
+			writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
+			if (writelen < 0) {
+				sprintf(error_message, "recv returned %d - end of data - remaining %d", writelen, towrite);
+				nRetCode = -17;
+			}
+		}
+	} while ((nRetCode == 0) && (towrite > 0) && (writelen >= 0));
+
+	tls_mem_free(Buffer);
+
+	if (nRetCode != 0) {
+		printf("OTA failed: %s", error_message);
+		ADDLOG_DEBUG(LOG_FEATURE_API, error_message);
+		return http_rest_error(request, nRetCode, error_message);
+	}
+
+#else
+
 	init_ota(startaddr);
 
-	towrite = request->bodylen;
-	writebuf = request->bodystart;
-	writelen = request->bodylen;
 	if (request->contentLength >= 0) {
 		towrite = request->contentLength;
 	}
@@ -933,13 +1048,13 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 			}
 		}
 	} while ((towrite > 0) && (writelen >= 0));
+	close_ota();
+#endif
+
 	ADDLOG_DEBUG(LOG_FEATURE_API, "%d total bytes written", total);
 	http_setup(request, httpMimeTypeJson);
 	hprintf255(request, "{\"size\":%d}", total);
-	close_ota();
-
 	poststr(request, NULL);
-#endif
 	return 0;
 }
 
