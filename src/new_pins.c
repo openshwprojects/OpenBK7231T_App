@@ -1002,8 +1002,11 @@ bool CHANNEL_IsInUse(int ch) {
 	}
 
 	for(i = 0; i < PLATFORM_GPIO_MAX; i++){
-		if(g_cfg.pins.roles[i] != IOR_None){
-				if(g_cfg.pins.channels[i] == ch) {
+		if(g_cfg.pins.roles[i] != IOR_None) {
+			if(g_cfg.pins.channels[i] == ch) {
+				return true;
+			}
+			if (g_cfg.pins.channels2[i] == ch) {
 				return true;
 			}
 		}
