@@ -447,10 +447,11 @@ commandResult_t Cmd_TuyaMCU_Send_RSSI(const void *context, const char *cmd, cons
 	Tokenizer_TokenizeString(args, 0);
 
 	if (Tokenizer_GetArgsCount() < 1) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "Requires 1 argument\n");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+		toSend = HAL_GetWifiStrength();
 	}
-	toSend = Tokenizer_GetArgInteger(0);
+	else {
+		toSend = Tokenizer_GetArgInteger(0);
+	}
 	TuyaMCU_Send_RSSI(toSend);
 	return CMD_RES_OK;
 }
