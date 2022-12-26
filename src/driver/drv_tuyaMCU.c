@@ -17,6 +17,7 @@ https://developer.tuya.com/en/docs/iot/tuyacloudlowpoweruniversalserialaccesspro
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 #include "../logging/logging.h"
+#include "../hal/hal_wifi.h"
 #include "drv_tuyaMCU.h"
 #include "drv_uart.h"
 #include <time.h>
