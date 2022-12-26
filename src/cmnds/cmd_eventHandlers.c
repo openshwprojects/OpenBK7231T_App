@@ -136,6 +136,8 @@ static int EVENT_ParseEventName(const char *s) {
 		return CMD_EVENT_PIN_ONCLICK;
 	if(!stricmp(s,"OnToggle"))
 		return CMD_EVENT_PIN_ONTOGGLE;
+	if (!stricmp(s, "IPChange"))
+		return CMD_EVENT_IPCHANGE;
 	if(!stricmp(s,"OnHold"))
 		return CMD_EVENT_PIN_ONHOLD;
 	if(!stricmp(s,"OnHoldStart"))

@@ -368,13 +368,13 @@ void Main_OnEverySecond()
     }
 
 	if (bSafeMode == 0) {
-		if (MQTT_IsReady()) {
-			const char *ip = HAL_GetMyIPString();
-			// this will return non-zero if there were any changes
-			if (strcpy_safe_checkForChanges(g_currentIPString, ip, sizeof(g_currentIPString))) {
-				// mark as dirty (value has changed)
+		const char *ip = HAL_GetMyIPString();
+		// this will return non-zero if there were any changes
+		if (strcpy_safe_checkForChanges(g_currentIPString, ip, sizeof(g_currentIPString))) {
+			if (MQTT_IsReady()) {
 				MQTT_DoItemPublish(PUBLISHITEM_SELF_IP);
 			}
+			EventHandlers_FireEvent(CMD_EVENT_IPCHANGE, 0);
 		}
 	}
 
@@ -589,7 +589,9 @@ void Main_OnEverySecond()
 	}
 
 	if (bSafeMode == 0) {
+#ifdef PLATFORM_BEKEN
 		DHT_OnEverySecond();
+#endif
 	}
 
 	// force it to sleep...  we MUST have some idle task processing
