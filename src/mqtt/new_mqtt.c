@@ -47,7 +47,7 @@ int mqtt_rx_buffer_head;
 int mqtt_rx_buffer_tail;
 int mqtt_rx_buffer_count;
 unsigned char temp_topic[128];
-unsigned char temp_data[128];
+unsigned char temp_data[2048];
 
 int addLenData(int len, const unsigned char *data){
 	mqtt_rx_buffer[mqtt_rx_buffer_head] = (len >> 8) & 0xff;
@@ -577,19 +577,7 @@ int channelSet(obk_mqtt_request_t* request) {
 // will do echo, toggle power and do ecoh
 //
 int tasCmnd(obk_mqtt_request_t* request) {
-	// we only need a few bytes to receive a decimal number 0-100
-	char copy[64];
-	int len = request->receivedLen;
 	const char* p = request->topic;
-
-	// assume a string input here, copy and terminate
-	if (len > sizeof(copy) - 1) {
-		len = sizeof(copy) - 1;
-	}
-	strncpy(copy, (char*)request->received, len);
-	// strncpy does not terminate??!!!!
-	copy[len] = '\0';
-
 	// TODO: better
 	// skip to after second forward slash
 	while (*p != '/') { if (*p == 0) return 0; p++; }
@@ -597,9 +585,38 @@ int tasCmnd(obk_mqtt_request_t* request) {
 	while (*p != '/') { if (*p == 0) return 0; p++; }
 	p++;
 
-	// use command executor....
-	CMD_ExecuteCommandArgs(p, copy, COMMAND_FLAG_SOURCE_MQTT);
-
+#if 1
+	// I think that our function get_received always ensured that
+	// there is a NULL terminating character after payload of MQTT
+	// So we can feed it directly as command
+	CMD_ExecuteCommandArgs(p, (const char *)request->received, COMMAND_FLAG_SOURCE_MQTT);
+#else
+	int len = request->receivedLen;
+	char copy[64];
+	char *allocated;
+	// assume a string input here, copy and terminate
+	// Try to avoid free/malloc
+	if (len > sizeof(copy) - 2) {
+		allocated = (char*)malloc(len + 1);
+		if (allocated) {
+			strncpy(allocated, (char*)request->received, len);
+			// strncpy does not terminate??!!!!
+			allocated[len] = '\0';
+		}
+		// use command executor....
+		CMD_ExecuteCommandArgs(p, allocated, COMMAND_FLAG_SOURCE_MQTT);
+		if (allocated) {
+			free(allocated);
+		}
+	}
+	else {
+		strncpy(copy, (char*)request->received, len);
+		// strncpy does not terminate??!!!!
+		copy[len] = '\0';
+		// use command executor....
+		CMD_ExecuteCommandArgs(p, copy, COMMAND_FLAG_SOURCE_MQTT);
+	}
+#endif
 	// return 1 to stop processing callbacks here.
 	// return 0 to allow later callbacks to process this topic.
 	return 1;
