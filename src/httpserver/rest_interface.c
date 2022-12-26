@@ -935,20 +935,20 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 
 	int recvLen = 0;
 	int totalLen = 0;
-	//printf("\ntowrite %d writelen=%d\n", towrite, writelen);
+	//bk_printf("\ntowrite %d writelen=%d\n", towrite, writelen);
 
 	do
 	{
 		if (writelen > 0) {
-			//printf("Copying %d from writebuf to Buffer towrite=%d\n", writelen, towrite);
+			//bk_printf("Copying %d from writebuf to Buffer towrite=%d\n", writelen, towrite);
 			memcpy(Buffer + 3, writebuf, writelen);
 
 			if (recvLen == 0) {
 				T_BOOTER* booter = (T_BOOTER*)(Buffer + 3);
 
-				//printf("magic_no=%u %u\n", booter->magic_no, htonl(booter->magic_no));
-				//printf("img_type=%d\n", booter->img_type);
-				//printf("zip_type=%d\n", booter->zip_type);
+				//bk_printf("magic_no=%u %u\n", booter->magic_no, htonl(booter->magic_no));
+				//bk_printf("img_type=%d\n", booter->img_type);
+				//bk_printf("zip_type=%d\n", booter->zip_type);
 
 				if (TRUE == tls_fwup_img_header_check(booter))
 				{
@@ -997,7 +997,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 			}
 			else {
 				recvLen += writelen;
-				//printf("Downloaded %d / %d\n", recvLen, totalLen);
+				bk_printf("Downloaded %d / %d\n", recvLen, totalLen);
 			}
 
 			towrite -= writelen;
@@ -1016,7 +1016,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	tls_mem_free(Buffer);
 
 	if (nRetCode != 0) {
-		printf("OTA failed: %s", error_message);
+		bk_printf("OTA failed: %s", error_message);
 		ADDLOG_DEBUG(LOG_FEATURE_API, error_message);
 		return http_rest_error(request, nRetCode, error_message);
 	}
