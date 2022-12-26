@@ -824,7 +824,7 @@ int http_fn_index(http_request_t* request) {
 		hprintf255(request, "<h5 style='color:red'>You are in safe mode (AP mode) because full reboot failed %i times. ",
 			Main_GetLastRebootBootFailures());
 		hprintf255(request, "Pins, relays, etc are disabled.</h5>");
-		
+
 	}
 	// for normal page loads, show the rest of the HTML
 	if (!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
@@ -1440,7 +1440,7 @@ int http_fn_uart_tool(http_request_t* request) {
 	poststr(request, "<h4>UART Tool</h4>");
 
 	if (http_getArg(request->url, "data", tmpA, sizeof(tmpA))) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#ifdef ENABLE_DRIVER_TUYAMCU
 		byte results[128];
 
 		hprintf255(request, "<h3>Sent %s!</h3>", tmpA);
@@ -1828,7 +1828,7 @@ int http_tasmota_json_power(http_request_t* request) {
 	int lastRelayState;
 	bool bRelayIndexingStartsWithZero;
 	int relayIndexingOffset;
-	int temperature; 
+	int temperature;
 	int dimmer;
 
 	bRelayIndexingStartsWithZero = CHANNEL_HasChannelPinWithRoleOrRole(0, IOR_Relay, IOR_Relay_n);
@@ -1874,7 +1874,7 @@ int http_tasmota_json_power(http_request_t* request) {
 
 			// it looks like they include C and W in color
 			if (LED_IsLedDriverChipRunning() || numPWMs == 5) {
-				hprintf255(request, "\"Color\":\"%i,%i,%i,%i,%i\",", 
+				hprintf255(request, "\"Color\":\"%i,%i,%i,%i,%i\",",
 					(int)rgbcw[0], (int)rgbcw[1], (int)rgbcw[2], (int)rgbcw[3], (int)rgbcw[4]);
 			}
 			else {
@@ -1993,7 +1993,12 @@ int http_tasmota_json_status_SNS(http_request_t* request) {
 
 	return 0;
 }
-#if defined(PLATFORM_W600) || defined (PLATFORM_W800)
+
+#ifdef PLATFORM_XR809
+//XR809 does not support drivers but its build script compiles many drivers including ntp.
+
+#else
+#ifndef ENABLE_BASIC_DRIVERS
 unsigned int NTP_GetCurrentTime() {
 	return 0;
 }
@@ -2001,6 +2006,8 @@ unsigned int NTP_GetCurrentTimeWithoutOffset() {
 	return 0;
 }
 #endif
+#endif
+
 /*
 {"Status":{"Module":0,"DeviceName":"Tasmota","FriendlyName":["Tasmota"],"Topic":"tasmota_48E7F3","ButtonTopic":"0","Power":1,"PowerOnState":3,"LedState":1,"LedMask":"FFFF","SaveData":1,"SaveState":1,"SwitchTopic":"0","SwitchMode":[0,0,0,0,0,0,0,0],"ButtonRetain":0,"SwitchRetain":0,"SensorRetain":0,"PowerRetain":0,"InfoRetain":0,"StateRetain":0}}
 */
@@ -2552,7 +2559,7 @@ const char* g_obk_flagNames[] = {
 	"error",
 	"error",
 	"error",
-}; 
+};
 int http_fn_cfg_generic(http_request_t* request) {
 	int i;
 	char tmpA[64];

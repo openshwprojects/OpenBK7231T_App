@@ -9,9 +9,5 @@ void HAL_PIN_PWM_Start(int index);
 // Value range is 0 to 100, value is clamped
 void HAL_PIN_PWM_Update(int index, int value);
 int HAL_PIN_CanThisPinBePWM(int index);
-const char *HAL_PIN_GetPinNameAlias(int index);
-
-
-
-
-
+const char* HAL_PIN_GetPinNameAlias(int index);
+unsigned int HAL_GetGPIOPin(int index);

@@ -30,11 +30,11 @@ extern void MQTT_TriggerRead();
 
 // these won't exist except on Beken?
 #ifndef LOCK_TCPIP_CORE
-	#define LOCK_TCPIP_CORE()
+#define LOCK_TCPIP_CORE()
 #endif
 
 #ifndef UNLOCK_TCPIP_CORE
-	#define UNLOCK_TCPIP_CORE()
+#define UNLOCK_TCPIP_CORE()
 #endif
 
 /////////////////////////////////////////////////////////////
@@ -514,9 +514,9 @@ char* MQTT_RemoveClientFromTopic(char* topic) {
 	if (*topic != '/') {
 		hasClient = NULL;
 	}
-	
+
 	// If we have the client/, return the pointer, otherwise, return NULL.
-	return hasClient ? topic + 1 : NULL; 
+	return hasClient ? topic + 1 : NULL;
 }
 
 // this accepts obkXXXXXX/<chan>/set to receive data to set channels
@@ -535,7 +535,7 @@ int channelSet(obk_mqtt_request_t* request) {
 	}
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelSet part topic %s", p);
-	
+
 	// atoi won't parse any non-decimal chars, so it should skip over the rest of the topic.
 	channel = atoi(p);
 
@@ -606,9 +606,9 @@ static void MQTT_disconnect(mqtt_client_t* client)
 	if (!client)
 		return;
 	// this is what it was renamed to.  why?
-    LOCK_TCPIP_CORE();
+	LOCK_TCPIP_CORE();
 	mqtt_disconnect(client);
-    UNLOCK_TCPIP_CORE();
+	UNLOCK_TCPIP_CORE();
 
 }
 
@@ -688,9 +688,9 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publishing val (%d bytes) to %s retain=%i\n", sVal_len, pub_topic, retain);
 		}
 
-    	LOCK_TCPIP_CORE();
+		LOCK_TCPIP_CORE();
 		err = mqtt_publish(client, pub_topic, sVal, strlen(sVal), qos, retain, mqtt_pub_request_cb, 0);
-    	UNLOCK_TCPIP_CORE();
+		UNLOCK_TCPIP_CORE();
 		os_free(pub_topic);
 
 		if (err != ERR_OK)
@@ -868,12 +868,12 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 	{
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_connection_cb: Successfully connected\n");
 
-    	//LOCK_TCPIP_CORE();
+		//LOCK_TCPIP_CORE();
 		mqtt_set_inpub_callback(mqtt_client,
 			mqtt_incoming_publish_cb,
 			mqtt_incoming_data_cb,
 			LWIP_CONST_CAST(void*, &mqtt_client_info));
-    	//UNLOCK_TCPIP_CORE();
+		//UNLOCK_TCPIP_CORE();
 
 		// subscribe to all callback subscription topics
 		// this makes a BIG assumption that we can subscribe multiple times to the same one?
@@ -898,9 +898,9 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 		clientId = CFG_GetMQTTClientId();
 
 		snprintf(tmp, sizeof(tmp), "%s/connected", clientId);
-    	//LOCK_TCPIP_CORE();
+		//LOCK_TCPIP_CORE();
 		err = mqtt_publish(client, tmp, "online", strlen("online"), 2, true, mqtt_pub_request_cb, 0);
-    	//UNLOCK_TCPIP_CORE();
+		//UNLOCK_TCPIP_CORE();
 		if (err != ERR_OK) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish err: %d\n", err);
 			if (err == ERR_CONN) {
@@ -999,12 +999,12 @@ static void MQTT_do_connect(mqtt_client_t* client)
 		  to establish a connection with the server.
 		  For now MQTT version 3.1.1 is always used */
 
-    	LOCK_TCPIP_CORE();
+		LOCK_TCPIP_CORE();
 		res = mqtt_client_connect(mqtt_client,
 			&mqtt_ip, mqtt_port,
 			mqtt_connection_cb, LWIP_CONST_CAST(void*, &mqtt_client_info),
 			&mqtt_client_info);
-    	UNLOCK_TCPIP_CORE();
+		UNLOCK_TCPIP_CORE();
 		mqtt_connect_result = res;
 		if (res != ERR_OK)
 		{
@@ -1054,7 +1054,7 @@ OBK_Publish_Result MQTT_ChannelChangeCallback(int channel, int iVal)
 	char channelNameStr[8];
 	char valueStr[16];
 	int flags;
-	
+
 	flags = 0;
 	addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Channel has changed! Publishing change %i with %i \n", channel, iVal);
 
@@ -1154,10 +1154,10 @@ void MQTT_Test_Tick(void* param)
 	{
 		while (1)
 		{
-		
-    		LOCK_TCPIP_CORE();
+
+			LOCK_TCPIP_CORE();
 			int res = mqtt_client_is_connected(mqtt_client);
-    		UNLOCK_TCPIP_CORE();
+			UNLOCK_TCPIP_CORE();
 
 			if (res == 0)
 				break;
@@ -1165,9 +1165,9 @@ void MQTT_Test_Tick(void* param)
 			{
 				sprintf(info->value, "TestMSG: %li/%li Time: %i s, Rate: %i msg/s", info->msg_cnt, info->msg_num,
 					(int)info->bench_time, (int)info->bench_rate);
-    			LOCK_TCPIP_CORE();
+				LOCK_TCPIP_CORE();
 				err = mqtt_publish(mqtt_client, info->topic, info->value, strlen(info->value), qos, retain, mqtt_pub_request_cb, 0);
-	    		UNLOCK_TCPIP_CORE();
+				UNLOCK_TCPIP_CORE();
 				if (err == ERR_OK)
 				{
 					/* MSG published */
@@ -1195,9 +1195,9 @@ void MQTT_Test_Tick(void* param)
 					/* Publish report */
 					sprintf(info->value, "Benchmark completed. %li msg published. Total Time: %i s MsgRate: %i msg/s",
 						info->msg_cnt, (int)info->bench_time, (int)info->bench_rate);
-	    			LOCK_TCPIP_CORE();
+					LOCK_TCPIP_CORE();
 					err = mqtt_publish(mqtt_client, info->topic, info->value, strlen(info->value), qos, retain, mqtt_pub_request_cb, 0);
-		    		UNLOCK_TCPIP_CORE();
+					UNLOCK_TCPIP_CORE();
 					if (err == ERR_OK)
 					{
 						/* Report published */
@@ -1424,7 +1424,7 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 	if (CHANNEL_HasRoleThatShouldBePublished(idx)) {
 		bWantsToPublish = true;
 	}
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#ifdef ENABLE_DRIVER_TUYAMCU
 	// publish if channel is used by TuyaMCU (no pin role set), for example door sensor state with power saving V0 protocol
 	// Not enabled by default, you have to set OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS flag
 	if (CFG_HasFlag(OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS) && TuyaMCU_IsChannelUsedByTuyaMCU(idx)) {
