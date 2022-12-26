@@ -20,6 +20,8 @@
 uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
 #define FLASH_INDEX_XR809 0
 
+#elif PLATFORM_BL602
+
 #elif PLATFORM_W600
 
 #include "wm_socket_fwup.h"
