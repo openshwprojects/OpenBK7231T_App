@@ -64,8 +64,16 @@ enum IORole {
 	IOR_Button_ScriptOnly,
 	IOR_Button_ScriptOnly_n,
 
+	IOR_DHT11,
+	IOR_DHT12,
+	IOR_DHT21,
+	IOR_DHT22,
+
+
 	IOR_Total_Options,
 };
+
+#define IS_PIN_DHT_ROLE(role) (((role)>=IOR_DHT11) &&((role)<=IOR_DHT22))
 
 enum ChannelType {
 	ChType_Default,

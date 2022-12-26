@@ -349,6 +349,21 @@ int http_fn_index(http_request_t* request) {
 	poststr(request, "</table>");
 
 	poststr(request, "<table width=\"100%\">");
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		int role;
+
+		role = PIN_GetPinRoleForPinIndex(i);
+
+		if (IS_PIN_DHT_ROLE(role)) {
+			// DHT pin has two channels - temperature and humidity
+			poststr(request, "<tr><td>");
+			iValue = CHANNEL_Get(PIN_GetPinChannelForPinIndex(i));
+			hprintf255(request, "Sensor %s on pin %i temperature %.2fC", PIN_RoleToString(role), i,(float) (iValue*0.1f));
+			iValue = CHANNEL_Get(PIN_GetPinChannel2ForPinIndex(i));
+			hprintf255(request, ", humidity %.1f%%<br>", (float)iValue);
+			poststr(request, "</td></tr>");
+		}
+	}
 	for (i = 0; i < CHANNEL_MAX; i++) {
 
 		int channelType;
@@ -2489,7 +2504,10 @@ int http_fn_cfg_pins(http_request_t* request) {
 		poststr(request, "</select>");
 		hprintf255(request, "<input class=\"hele\" name=\"r%i\" type=\"text\" value=\"%i\"/>", i, ch);
 
-		if (si == IOR_Button || si == IOR_Button_n)
+		if (si == IOR_Button || si == IOR_Button_n
+			|| si == IOR_DHT11 || si == IOR_DHT22
+			|| si == IOR_DHT12 || si == IOR_DHT21
+			)
 		{
 			// extra param. For button, is relay index to toggle on double click
 			hprintf255(request, "<input class=\"hele\" name=\"e%i\" type=\"text\" value=\"%i\"/>", i, ch2);
