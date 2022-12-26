@@ -12,7 +12,8 @@
 
 static void (*g_wifiStatusCallback)(int code);
 
-static char g_IP[3 + 3 + 3 + 3 + 1 + 1 + 1] = "unknown";
+// lenght of "192.168.103.103" is 15 but we also need a NULL terminating character
+static char g_IP[32] = "unknown";
 static int g_bOpenAccessPointMode = 0;
 char *get_security_type(int type);
 
@@ -41,17 +42,9 @@ void getMAC(unsigned char* mac) {
 
 int WiFI_SetMacAddress(char* mac)
 {
-#if WINDOWS
-	return 0;
-#elif PLATFORM_BL602
-	return 0;
-#elif PLATFORM_XR809
-
-#else
 	if (wifi_set_mac_address((char*)mac))
 		return 1;
 	return 0; // error
-#endif
 }
 
 void WiFI_GetMacAddress(char* mac)

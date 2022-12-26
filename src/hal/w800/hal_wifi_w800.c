@@ -12,7 +12,8 @@
 
 static void (*g_wifiStatusCallback)(int code);
 
-static char g_IP[3 + 3 + 3 + 3 + 1 + 1 + 1] = "unknown";
+// lenght of "192.168.103.103" is 15 but we also need a NULL terminating character
+static char g_IP[32] = "unknown";
 static int g_bOpenAccessPointMode = 0;
 
 const char* security_names[] = {
