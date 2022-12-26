@@ -566,7 +566,16 @@ int channelSet(obk_mqtt_request_t* request) {
 }
 
 
-// this accepts cmnd/<clientId>/<xxx> to receive data to set channels
+// this accepts cmnd/<clientId>/<xxx> to execute any supported console command
+// Example 1: 
+// Topic: cmnd/obk8C112233/power
+// Payload: toggle
+// this will toggle power
+// Example 2:
+// Topic: cmnd/obk8C112233/backlog
+// Payload: echo Test1; power toggle; echo Test2
+// will do echo, toggle power and do ecoh
+//
 int tasCmnd(obk_mqtt_request_t* request) {
 	// we only need a few bytes to receive a decimal number 0-100
 	char copy[64];
