@@ -289,8 +289,10 @@ bool DHT_read(dht_t *dht, bool force) {
 	}
 
 	uint32_t cycles[80];
+#ifdef PLATFORM_BEKEN
 	GLOBAL_INT_DECLARATION();
 	GLOBAL_INT_DISABLE();
+#endif
 	{
 		// End the start signal by setting data line high for 40 microseconds.
 		HAL_PIN_Setup_Input_Pullup(dht->_pin);
@@ -306,13 +308,17 @@ bool DHT_read(dht_t *dht, bool force) {
 		// First expect a low signal for ~80 microseconds followed by a high signal
 		// for ~80 microseconds again.
 		if (DHT_expectPulse(dht,false) == TIMEOUT) {
+#ifdef PLATFORM_BEKEN
 			GLOBAL_INT_RESTORE();
+#endif
 			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "DHT timeout waiting for start signal low pulse.");
 			dht->_lastresult = false;
 			return dht->_lastresult;
 		}
 		if (DHT_expectPulse(dht, true) == TIMEOUT) {
+#ifdef PLATFORM_BEKEN
 			GLOBAL_INT_RESTORE();
+#endif
 			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "DHT timeout waiting for start signal high pulse.");
 			dht->_lastresult = false;
 			return dht->_lastresult;
@@ -332,7 +338,9 @@ bool DHT_read(dht_t *dht, bool force) {
 		}
 	} // Timing critical code is now complete.
 
+#ifdef PLATFORM_BEKEN
 	GLOBAL_INT_RESTORE();
+#endif
 	// Inspect pulses and determine which ones are 0 (high state cycle count < low
 	// state cycle count), or 1 (high state cycle count > low state cycle count).
 	for (int i = 0; i < 40; ++i) {
