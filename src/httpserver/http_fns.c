@@ -383,7 +383,7 @@ int http_fn_index(http_request_t* request) {
 			fValue = iValue * 0.1f;
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "Temperature Channel %i value %f C<br>", i, fValue);
+			hprintf255(request, "Temperature Channel %i value %.2f C<br>", i, fValue);
 			poststr(request, "</td></tr>");
 
 		}
@@ -402,7 +402,7 @@ int http_fn_index(http_request_t* request) {
 			fValue = iValue * 0.1f;
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "Humidity Channel %i value %f Percent<br>", i, fValue);
+			hprintf255(request, "Humidity Channel %i value %.2f Percent<br>", i, fValue);
 			poststr(request, "</td></tr>");
 
 		}
@@ -486,7 +486,7 @@ int http_fn_index(http_request_t* request) {
 			fValue = iValue * 0.01f;
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "Frequency %fHz (ch %i)", fValue, i);
+			hprintf255(request, "Frequency %.2fHz (ch %i)", fValue, i);
 			poststr(request, "</td></tr>");
 		}
 		else if (channelType == ChType_EnergyToday_kWh_div1000) {
@@ -494,7 +494,7 @@ int http_fn_index(http_request_t* request) {
 			fValue = iValue * 0.001f;
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "EnergyToday %fkWh (ch %i)", fValue, i);
+			hprintf255(request, "EnergyToday %.2fkWh (ch %i)", fValue, i);
 			poststr(request, "</td></tr>");
 		}
 		else if (channelType == ChType_EnergyExport_kWh_div1000) {
@@ -502,7 +502,7 @@ int http_fn_index(http_request_t* request) {
 			fValue = iValue * 0.001f;
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "EnergyExport(back to grid) %fkWh (ch %i)", fValue, i);
+			hprintf255(request, "EnergyExport(back to grid) %.2fkWh (ch %i)", fValue, i);
 			poststr(request, "</td></tr>");
 		}
 		else if (channelType == ChType_EnergyTotal_kWh_div1000) {
@@ -510,7 +510,7 @@ int http_fn_index(http_request_t* request) {
 			fValue = iValue * 0.001f;
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "EnergyTotal %fkWh (ch %i)", fValue, i);
+			hprintf255(request, "EnergyTotal %.2fkWh (ch %i)", fValue, i);
 			poststr(request, "</td></tr>");
 		}
 		else if (channelType == ChType_EnergyTotal_kWh_div100) {
@@ -518,7 +518,7 @@ int http_fn_index(http_request_t* request) {
 			fValue = iValue * 0.01f;
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "EnergyTotal %fkWh (ch %i)", fValue, i);
+			hprintf255(request, "EnergyTotal %.2fkWh (ch %i)", fValue, i);
 			poststr(request, "</td></tr>");
 		}
 		else if (channelType == ChType_Voltage_div10) {
@@ -526,7 +526,7 @@ int http_fn_index(http_request_t* request) {
 			fValue = iValue * 0.1f;
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "Voltage %fV (ch %i)", fValue, i);
+			hprintf255(request, "Voltage %.2fV (ch %i)", fValue, i);
 			poststr(request, "</td></tr>");
 		}
 		else if (channelType == ChType_ReactivePower) {
@@ -548,7 +548,7 @@ int http_fn_index(http_request_t* request) {
 			fValue = iValue * 0.001f;
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "PowerFactor %f (ch %i)", fValue, i);
+			hprintf255(request, "PowerFactor %.2f (ch %i)", fValue, i);
 			poststr(request, "</td></tr>");
 		}
 		else if (channelType == ChType_Current_div100) {
@@ -556,7 +556,7 @@ int http_fn_index(http_request_t* request) {
 			fValue = iValue * 0.01f;
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "Current %fA (ch %i)", fValue, i);
+			hprintf255(request, "Current %.2fA (ch %i)", fValue, i);
 			poststr(request, "</td></tr>");
 		}
 		else if (channelType == ChType_Current_div1000) {
@@ -564,7 +564,7 @@ int http_fn_index(http_request_t* request) {
 			fValue = iValue * 0.001f;
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "Current %fA (ch %i)", fValue, i);
+			hprintf255(request, "Current %.2fA (ch %i)", fValue, i);
 			poststr(request, "</td></tr>");
 		}
 		else if (channelType == ChType_BatteryLevelPercent) {
