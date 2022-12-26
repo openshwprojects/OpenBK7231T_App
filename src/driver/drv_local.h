@@ -39,6 +39,8 @@ void BP1658CJ_Init();
 void BP1658CJ_RunFrame();
 void BP1658CJ_OnChannelChanged(int ch, int value);
 
+void DHT_OnEverySecond();
+
 void SM16703P_Init();
 
 void BL_Shared_Init();

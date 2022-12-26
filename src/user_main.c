@@ -356,7 +356,6 @@ void Main_OnEverySecond()
 	DRV_OnEverySecond();
 #endif
 
-
 #if WINDOWS
 #elif PLATFORM_BL602
 #elif PLATFORM_W600 || PLATFORM_W800
@@ -587,6 +586,10 @@ void Main_OnEverySecond()
 
 			ADDLOGF_INFO("Module reboot in %i...\r\n",g_reset);
 		}
+	}
+
+	if (bSafeMode == 0) {
+		DHT_OnEverySecond();
 	}
 
 	// force it to sleep...  we MUST have some idle task processing
