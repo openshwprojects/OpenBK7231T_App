@@ -225,32 +225,6 @@ int loopsWithDisconnected = 0;
 int mqtt_reconnect = 0;
 // set for the device to broadcast self state on start
 int g_bPublishAllStatesNow = 0;
-
-#define PUBLISHITEM_ALL_INDEX_FIRST   -15
-
-//These 3 values are pretty much static
-#define PUBLISHITEM_SELF_STATIC_RESERVED_2      -15
-#define PUBLISHITEM_SELF_STATIC_RESERVED_1      -14
-#define PUBLISHITEM_SELF_HOSTNAME               -13  //Device name
-#define PUBLISHITEM_SELF_BUILD                  -12  //Build
-#define PUBLISHITEM_SELF_MAC                    -11  //Device mac
-
-#define PUBLISHITEM_DYNAMIC_INDEX_FIRST         -10
-
-#define PUBLISHITEM_QUEUED_VALUES               -10  //Publish queued items
-
-//These values are dynamic
-#define PUBLISHITEM_SELF_DATETIME               -9  //Current unix datetime
-#define PUBLISHITEM_SELF_SOCKETS                -8  //Active sockets
-#define PUBLISHITEM_SELF_RSSI                   -7  //Link strength
-#define PUBLISHITEM_SELF_UPTIME                 -6  //Uptime
-#define PUBLISHITEM_SELF_FREEHEAP               -5  //Free heap
-#define PUBLISHITEM_SELF_IP                     -4  //ip address
-
-#define PUBLISHITEM_SELF_DYNAMIC_LIGHTSTATE     -3
-#define PUBLISHITEM_SELF_DYNAMIC_LIGHTMODE      -2
-#define PUBLISHITEM_SELF_DYNAMIC_DIMMER         -1
-
 int g_publishItemIndex = PUBLISHITEM_ALL_INDEX_FIRST;
 static bool g_firstFullBroadcast = true;  //Flag indicating that we need to do a full broadcast
 

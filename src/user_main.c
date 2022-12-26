@@ -61,13 +61,14 @@ static int g_saveCfgAfter = 0;
 static int g_startPingWatchDogAfter = 0;
 // many boots failed? do not run pins or anything risky
 int bSafeMode = 0;
-
-
 // not really <time>, but rather a loop count, but it doesn't really matter much
 // start disabled.
 static int g_timeSinceLastPingReply = -1;
 // was it ran?
 static int g_bPingWatchDogStarted = 0;
+// current IP string, this is compared with IP returned from HAL
+// and if it changes, the MQTT publish is done
+static char g_currentIPString[32] = { 0 };
 
 uint8_t g_StartupDelayOver = 0;
 
@@ -366,6 +367,17 @@ void Main_OnEverySecond()
     {
 		CFG_Save_IfThereArePendingChanges();
     }
+
+	if (bSafeMode == 0) {
+		if (MQTT_IsReady()) {
+			const char *ip = HAL_GetMyIPString();
+			// this will return non-zero if there were any changes
+			if (strcpy_safe_checkForChanges(g_currentIPString, ip, sizeof(g_currentIPString))) {
+				// mark as dirty (value has changed)
+				MQTT_DoItemPublish(PUBLISHITEM_SELF_IP);
+			}
+		}
+	}
 
 	// some users say that despite our simple reconnect mechanism
 	// there are some rare cases when devices stuck outside network
