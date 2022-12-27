@@ -168,6 +168,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | publishAll |  | Starts the step by step publish of all available values | File: mqtt/new_mqtt.c<br/>Function: MQTT_PublishAll |
 | publishChannels |  | Starts the step by step publish of all channel values | File: mqtt/new_mqtt.c<br/>Function: MQTT_PublishChannels |
 | publishBenchmark |  |  | File: mqtt/new_mqtt.c<br/>Function: MQTT_StartMQTTTestThread |
+| mqtt_broadcastInterval | [ValueSeconds] | If broadcast self state every 60 seconds/minute is enabled in flags, this value allows you to change the delay, change this 60 seconds to any other value in seconds. This value is not saved, you must use autoexec.bat or short startup command to execute it on every reboot. | File: mqtt/new_mqtt.c<br/>Function: MQTT_SetBroadcastInterval |
+| mqtt_broadcastItemsPerSec | [PublishCountPerSecond] | If broadcast self state (this option in flags) is started, then gradually device info is published, with a speed of N publishes per second. Do not set too high value, it may overload LWIP MQTT library. This value is not saved, you must use autoexec.bat or short startup command to execute it on every reboot. | File: mqtt/new_mqtt.c<br/>Function: MQTT_SetMaxBroadcastItemsPublishedPerSecond |
 | showgpi | NULL | log stat of all GPIs | File: new_pins.c<br/>Function: showgpi |
 | setChannelType | [ChannelIndex][TypeString] | Sets a custom type for channel. Types are mostly used to determine how to display channel value on GUI | File: new_pins.c<br/>Function: CMD_SetChannelType |
 | showChannelValues |  | log channel values | File: new_pins.c<br/>Function: CMD_ShowChannelValues |

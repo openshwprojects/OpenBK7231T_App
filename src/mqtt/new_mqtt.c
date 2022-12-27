@@ -37,6 +37,18 @@ extern void MQTT_TriggerRead();
 #define UNLOCK_TCPIP_CORE()
 #endif
 
+//
+// Variables for periodical self state broadcast
+//
+// current time left (counting down)
+static int g_secondsBeforeNextFullBroadcast = 30;
+// constant value, how much interval between self state broadcast (enabled by flag)
+// You can change it with command: mqtt_broadcastInterval 60
+static int g_intervalBetweenMQTTBroadcasts = 60;
+// While doing self state broadcast, it limits the number of publishes 
+// per second in order not to overload LWIP
+static int g_maxBroadcastItemsPublishedPerSecond = 1;
+
 /////////////////////////////////////////////////////////////
 // mqtt receive buffer, so we can action in our threads, not
 // in tcp_thread
@@ -1238,6 +1250,30 @@ void MQTT_Test_Tick(void* param)
 	}
 }
 
+commandResult_t MQTT_SetMaxBroadcastItemsPublishedPerSecond(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 1) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Requires 1 arg");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	g_maxBroadcastItemsPublishedPerSecond = Tokenizer_GetArgInteger(0);
+
+	return CMD_RES_OK;
+}
+commandResult_t MQTT_SetBroadcastInterval(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 1) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Requires 1 arg");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	g_intervalBetweenMQTTBroadcasts = Tokenizer_GetArgInteger(0);
+
+	return CMD_RES_OK;
+}
 static BENCHMARK_TEST_INFO* info = NULL;
 
 #if WINDOWS
@@ -1366,7 +1402,16 @@ void MQTT_init()
 	//cmddetail:"fn":"MQTT_StartMQTTTestThread","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("publishBenchmark", NULL, MQTT_StartMQTTTestThread, NULL, NULL);
-
+	//cmddetail:{"name":"mqtt_broadcastInterval","args":"[ValueSeconds]",
+	//cmddetail:"descr":"If broadcast self state every 60 seconds/minute is enabled in flags, this value allows you to change the delay, change this 60 seconds to any other value in seconds. This value is not saved, you must use autoexec.bat or short startup command to execute it on every reboot.",
+	//cmddetail:"fn":"MQTT_SetBroadcastInterval","file":"mqtt/new_mqtt.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("mqtt_broadcastInterval", NULL, MQTT_SetBroadcastInterval, NULL, NULL);
+	//cmddetail:{"name":"mqtt_broadcastItemsPerSec","args":"[PublishCountPerSecond]",
+	//cmddetail:"descr":"If broadcast self state (this option in flags) is started, then gradually device info is published, with a speed of N publishes per second. Do not set too high value, it may overload LWIP MQTT library. This value is not saved, you must use autoexec.bat or short startup command to execute it on every reboot.",
+	//cmddetail:"fn":"MQTT_SetMaxBroadcastItemsPublishedPerSecond","file":"mqtt/new_mqtt.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("mqtt_broadcastItemsPerSec", NULL, MQTT_SetMaxBroadcastItemsPublishedPerSecond, NULL, NULL);
 }
 
 OBK_Publish_Result MQTT_DoItemPublishString(const char* sChannel, const char* valueStr)
@@ -1465,8 +1510,6 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 
 	return OBK_PUBLISH_WAS_NOT_REQUIRED; // didnt publish
 }
-static int g_secondsBeforeNextFullBroadcast = 30;
-
 
 // from 5ms quicktick
 int MQTT_RunQuickTick(){
@@ -1624,7 +1667,7 @@ int MQTT_RunEverySecondUpdate()
 					if (publishRes == OBK_PUBLISH_OK)
 					{
 						g_sent_thisFrame++;
-						if (g_sent_thisFrame >= 1)
+						if (g_sent_thisFrame >= g_maxBroadcastItemsPublishedPerSecond)
 						{
 							g_publishItemIndex++;
 							break;
@@ -1657,7 +1700,7 @@ int MQTT_RunEverySecondUpdate()
 				g_secondsBeforeNextFullBroadcast--;
 				if (g_secondsBeforeNextFullBroadcast <= 0)
 				{
-					g_secondsBeforeNextFullBroadcast = 60;
+					g_secondsBeforeNextFullBroadcast = g_intervalBetweenMQTTBroadcasts;
 					MQTT_PublishWholeDeviceState();
 				}
 			}
