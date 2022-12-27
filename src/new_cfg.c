@@ -153,6 +153,9 @@ void CFG_SetDefaultConfig() {
 	// default value is 10, which means 1000ms
 	g_cfg.buttonLongPress = CFG_DEFAULT_BTN_LONG;
 
+	// This is helpful for users
+	CFG_SetFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEONCONNECT,true);
+
 	g_cfg_pendingChanges++;
 }
 
