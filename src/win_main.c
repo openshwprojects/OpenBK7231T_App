@@ -121,6 +121,7 @@ void Win_DoUnitTests() {
 
 
 	Test_NTP();
+	Test_MQTT();
 	Test_HTTP_Client();
 	Test_ExpandConstant();
 	Test_ChangeHandlers();

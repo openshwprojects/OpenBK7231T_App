@@ -678,6 +678,7 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 		appendGet = false;
 	}
 
+
 	LOCK_TCPIP_CORE();
 	int res = mqtt_client_is_connected(client);
 	UNLOCK_TCPIP_CORE();
@@ -703,6 +704,7 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 		else {
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publishing val (%d bytes) to %s retain=%i\n", sVal_len, pub_topic, retain);
 		}
+
 
 		LOCK_TCPIP_CORE();
 		err = mqtt_publish(client, pub_topic, sVal, strlen(sVal), qos, retain, mqtt_pub_request_cb, 0);

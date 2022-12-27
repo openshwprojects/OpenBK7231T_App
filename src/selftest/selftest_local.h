@@ -24,6 +24,7 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 #define SELFTEST_ASSERT_STRING(current,expected) SELFTEST_ASSERT((strcmp(expected,current) == 0));
 #define SELFTEST_ASSERT_INTEGER(current,expected) SELFTEST_ASSERT((expected==current));
 #define SELFTEST_ASSERT_HTML_REPLY(expected) SELFTEST_ASSERT((strcmp(Test_GetLastHTMLReply(),expected) == 0));
+#define SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR(topic, value, bRetain) SELFTEST_ASSERT(SIM_CheckMQTTHistoryForString(topic,value,bRetain));
 
 //#define FLOAT_EQUALS (a,b) (abs(a-b)<0.001f)
 inline bool Float_Equals(float a, float b) {
@@ -46,6 +47,7 @@ void Test_RepeatingEvents();
 void Test_HTTP_Client();
 void Test_DeviceGroups();
 void Test_NTP();
+void Test_MQTT();
 
 void Test_FakeHTTPClientPacket_GET(const char *tg);
 void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data);
@@ -60,5 +62,8 @@ void Sim_RunFrames(int n, bool bApplyRealtimeWait);
 
 void SIM_SendFakeMQTTAndRunSimFrame_CMND(const char *command, const char *arguments);
 void SIM_SendFakeMQTTRawChannelSet(int channelIndex, const char *arguments);
+void SIM_ClearMQTTHistory();
+bool SIM_CheckMQTTHistoryForString(const char *topic, const char *value, bool bRetain);
+
 
 #endif
