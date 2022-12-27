@@ -13,6 +13,7 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 	if (!(expr)) \
 	SelfTest_Failed(__FILE__, __FUNCTION__, __LINE__, #expr)
 
+#define SELFTEST_ASSERT_FLOATCOMPARE(exp, res) SELFTEST_ASSERT(Float_Equals(exp, res));
 #define SELFTEST_ASSERT_EXPRESSION(exp, res) SELFTEST_ASSERT(Float_Equals(CMD_EvaluateExpression(exp,0), res));
 #define SELFTEST_ASSERT_CHANNEL(channelIndex, res) SELFTEST_ASSERT(Float_Equals(CHANNEL_Get(channelIndex), res));
 #define SELFTEST_ASSERT_ARGUMENT(argumentIndex, res) SELFTEST_ASSERT(!strcmp(Tokenizer_GetArg(argumentIndex), res));
@@ -44,6 +45,7 @@ void Test_Scripting();
 void Test_RepeatingEvents();
 void Test_HTTP_Client();
 void Test_DeviceGroups();
+void Test_NTP();
 
 void Test_FakeHTTPClientPacket_GET(const char *tg);
 void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data);

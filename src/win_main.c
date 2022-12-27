@@ -120,6 +120,7 @@ void SIM_DoFreshOBKBoot() {
 void Win_DoUnitTests() {
 
 
+	Test_NTP();
 	Test_HTTP_Client();
 	Test_ExpandConstant();
 	Test_ChangeHandlers();

@@ -61,20 +61,34 @@ static int g_ntp_delay = 5;
 static unsigned int g_time;
 static bool g_synced;
 // time offset (time zone?) in seconds
-static int g_timeOffsetHours;
+static int g_timeOffsetSeconds;
 
-int NTP_GetTimesZoneOfs()
+int NTP_GetTimesZoneOfsSeconds()
 {
-    return g_timeOffsetHours;
+    return g_timeOffsetSeconds;
 }
-
 commandResult_t NTP_SetTimeZoneOfs(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	int a, b;
+	const char *arg;
+
     Tokenizer_TokenizeString(args,0);
     if(Tokenizer_GetArgsCount() < 1) {
-        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Command requires one argument\n");
+        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Command requires one argument. Number of hours or HH:MM format.\n");
         return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
-    g_timeOffsetHours = Tokenizer_GetArgInteger(0) * 60 * 60;
+	arg = Tokenizer_GetArg(0);
+	if (strchr(arg, ':')) {
+		int useSign = 1;
+		if (*arg == '-') {
+			arg++;
+			useSign = -1;
+		}
+		sscanf(arg, "%i:%i", &a, &b);
+		g_timeOffsetSeconds = useSign * (a * 60 * 60 + b * 60);
+	}
+	else {
+		g_timeOffsetSeconds = Tokenizer_GetArgInteger(0) * 60 * 60;
+	}
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP offset set, wait for next ntp packet to apply changes\n");
     return CMD_RES_OK;
 }
@@ -97,14 +111,14 @@ commandResult_t NTP_SetServer(const void *context, const char *cmd, const char *
 
 //Display settings used by the NTP driver
 commandResult_t NTP_Info(const void *context, const char *cmd, const char *args, int cmdFlags) {
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "Server=%s, Time offset=%d\n", CFG_GetNTPServer(), g_timeOffsetHours);
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "Server=%s, Time offset=%d\n", CFG_GetNTPServer(), g_timeOffsetSeconds);
     return CMD_RES_OK;
 }
 
 void NTP_Init() {
 
 	//cmddetail:{"name":"ntp_timeZoneOfs","args":"[Value]",
-	//cmddetail:"descr":"Sets the time zone offset in hours",
+	//cmddetail:"descr":"Sets the time zone offset in hours. Also supports HH:MM syntax if you want to specify value in minutes. For negative values, use -HH:MM syntax, for example -5:30 will shift time by 5 hours and 30 minutes negative.",
 	//cmddetail:"fn":"NTP_SetTimeZoneOfs","file":"driver/drv_ntp.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ntp_timeZoneOfs","",NTP_SetTimeZoneOfs, NULL, NULL);
@@ -119,7 +133,7 @@ void NTP_Init() {
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ntp_info", "", NTP_Info, NULL, NULL);
 
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP driver initialized with server=%s, offset=%d\n", CFG_GetNTPServer(), g_timeOffsetHours);
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP driver initialized with server=%s, offset=%d\n", CFG_GetNTPServer(), g_timeOffsetSeconds);
     g_synced = false;
 }
 
@@ -127,7 +141,7 @@ unsigned int NTP_GetCurrentTime() {
     return g_time;
 }
 unsigned int NTP_GetCurrentTimeWithoutOffset() {
-	return g_time - g_timeOffsetHours;
+	return g_time - g_timeOffsetSeconds;
 }
 
 
@@ -243,7 +257,7 @@ void NTP_CheckForReceive() {
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Seconds since Jan 1 1900 = %u\n",secsSince1900);
 
     g_time = secsSince1900 - NTP_OFFSET;
-    g_time += g_timeOffsetHours;
+    g_time += g_timeOffsetSeconds;
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time  : %u\n",g_time);
     ltm = localtime((time_t*)&g_time);
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Local Time : %04d/%02d/%02d %02d:%02d:%02d\n",
