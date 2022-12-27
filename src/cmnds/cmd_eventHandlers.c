@@ -172,6 +172,9 @@ static int EVENT_ParseEventName(const char *s) {
 		return CMD_EVENT_IR_SHARP;
     if(!stricmp(s,"IR_SONY"))
 		return CMD_EVENT_IR_SONY;
+	// WiFi state has single argument: HALWifiStatus_t
+	if (!stricmp(s, "WiFiState"))
+		return CMD_EVENT_WIFI_STATE;
 	return CMD_EVENT_NONE;
 }
 static bool EVENT_EvaluateCondition(int code, int argument, int next) {

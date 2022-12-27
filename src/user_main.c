@@ -69,6 +69,8 @@ static int g_bPingWatchDogStarted = 0;
 // current IP string, this is compared with IP returned from HAL
 // and if it changes, the MQTT publish is done
 static char g_currentIPString[32] = { 0 };
+static HALWifiStatus_t g_newWiFiStatus = WIFI_UNDEFINED;
+static HALWifiStatus_t g_prevWiFiStatus = WIFI_UNDEFINED;
 
 uint8_t g_StartupDelayOver = 0;
 
@@ -248,7 +250,7 @@ void Main_OnWiFiStatusChange(int code)
         default:
             break;
     }
-
+	g_newWiFiStatus = code;
 }
 
 
@@ -349,6 +351,11 @@ void Main_OnEverySecond()
 		} else {
 			EventHandlers_FireEvent(CMD_EVENT_MQTT_STATE,0);
 		}
+	}
+	if (g_newWiFiStatus != g_prevWiFiStatus) {
+		g_newWiFiStatus = g_prevWiFiStatus;
+		// Argument type here is HALWifiStatus_t enumeration
+		EventHandlers_FireEvent(CMD_EVENT_WIFI_STATE, g_newWiFiStatus);
 	}
 	MQTT_Dedup_Tick();
 	RepeatingEvents_OnEverySecond();

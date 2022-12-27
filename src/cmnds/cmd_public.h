@@ -97,6 +97,8 @@ enum EventCode {
 
 	CMD_EVENT_IPCHANGE,
 
+	CMD_EVENT_WIFI_STATE, // Argument: [HALWifiStatus_t]
+
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
 };
