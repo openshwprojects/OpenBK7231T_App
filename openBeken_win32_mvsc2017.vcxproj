@@ -520,6 +520,7 @@
     <ClCompile Include="src\selftest\selftest_led.c" />
     <ClCompile Include="src\selftest\selftest_lfs.c" />
     <ClCompile Include="src\selftest\selftest_main.c" />
+    <ClCompile Include="src\selftest\selftest_ntp.c" />
     <ClCompile Include="src\selftest\selftest_repeatingEvents.c" />
     <ClCompile Include="src\selftest\selftest_script.c" />
     <ClCompile Include="src\selftest\selftest_tokenizer.c" />
@@ -679,18 +680,6 @@
     <CustomBuild Include="src\driver\drv_uart.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </CustomBuild>
-    <CustomBuild Include="src\drv_bl0942.h" />
-    <CustomBuild Include="src\drv_i2c_public.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </CustomBuild>
-    <ClInclude Include="src\drv_public.h" />
-    <CustomBuild Include="src\drv_tuyaMCU.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </CustomBuild>
-    <ClInclude Include="src\drv_uart.h" />
     <ClInclude Include="src\hal\hal_adc.h" />
     <ClInclude Include="src\hal\hal_flashConfig.h" />
     <ClInclude Include="src\hal\hal_flashVars.h" />

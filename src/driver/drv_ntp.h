@@ -10,7 +10,7 @@ unsigned int NTP_GetCurrentTime();
 unsigned int NTP_GetCurrentTimeWithoutOffset();
 void NTP_AppendInformationToHTTPIndexPage(http_request_t* request);
 bool NTP_IsTimeSynced();
-int NTP_GetTimesZoneOfs();
+int NTP_GetTimesZoneOfsSeconds();
 
 #endif /* __DRV_NTP_H__ */
 
