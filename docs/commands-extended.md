@@ -112,7 +112,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | IREnable | [Str][1or0] | Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol | File: driver/drv_ir.cpp<br/>Function: IR_Enable |
 | startDriver | [DriverName] | Starts driver | File: driver/drv_main.c<br/>Function: DRV_Start |
 | stopDriver | [DriverName] | Stops driver | File: driver/drv_main.c<br/>Function: DRV_Stop |
-| ntp_timeZoneOfs | [Value] | Sets the time zone offset in hours | File: driver/drv_ntp.c<br/>Function: NTP_SetTimeZoneOfs |
+| ntp_timeZoneOfs | [Value] | Sets the time zone offset in hours. Also supports HH:MM syntax if you want to specify value in minutes. For negative values, use -HH:MM syntax, for example -5:30 will shift time by 5 hours and 30 minutes negative. | File: driver/drv_ntp.c<br/>Function: NTP_SetTimeZoneOfs |
 | ntp_setServer | [ServerIP] | Sets the NTP server | File: driver/drv_ntp.c<br/>Function: NTP_SetServer |
 | ntp_info |  | Display NTP related settings | File: driver/drv_ntp.c<br/>Function: NTP_Info |
 | toggler_enable | [1or0] | Sets the given output ON or OFF.  handles toggler_enable0, toggler_enable1, etc | File: driver/drv_pwmToggler.c<br/>Function: Toggler_EnableX |

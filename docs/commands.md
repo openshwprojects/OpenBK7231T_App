@@ -112,7 +112,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | IREnable | [Str][1or0] | Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol |
 | startDriver | [DriverName] | Starts driver |
 | stopDriver | [DriverName] | Stops driver |
-| ntp_timeZoneOfs | [Value] | Sets the time zone offset in hours |
+| ntp_timeZoneOfs | [Value] | Sets the time zone offset in hours. Also supports HH:MM syntax if you want to specify value in minutes. For negative values, use -HH:MM syntax, for example -5:30 will shift time by 5 hours and 30 minutes negative. |
 | ntp_setServer | [ServerIP] | Sets the NTP server |
 | ntp_info |  | Display NTP related settings |
 | toggler_enable | [1or0] | Sets the given output ON or OFF.  handles toggler_enable0, toggler_enable1, etc |
