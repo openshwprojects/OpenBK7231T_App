@@ -171,28 +171,6 @@ int get_received(char **topic, int *topiclen, unsigned char **data, int *datalen
 //
 //////////////////////////////////////////////////////////////////////
 
-int wal_stricmp(const char* a, const char* b) {
-	int ca, cb;
-	do {
-		ca = (unsigned char)*a++;
-		cb = (unsigned char)*b++;
-		ca = tolower(toupper(ca));
-		cb = tolower(toupper(cb));
-	} while ((ca == cb) && (ca != '\0'));
-	return ca - cb;
-}
-int wal_strnicmp(const char* a, const char* b, int count) {
-	int ca, cb;
-	do {
-		ca = (unsigned char)*a++;
-		cb = (unsigned char)*b++;
-		ca = tolower(toupper(ca));
-		cb = tolower(toupper(cb));
-		count--;
-	} while ((ca == cb) && (ca != '\0') && (count > 0));
-	return ca - cb;
-}
-
 #define MQTT_QUEUE_ITEM_IS_REUSABLE(x)  (x->topic[0] == 0)
 #define MQTT_QUEUE_ITEM_SET_REUSABLE(x) (x->topic[0] = 0)
 
@@ -735,14 +713,14 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 		{
 			if (err == ERR_CONN)
 			{
-				addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish err: ERR_CONN aka %d\n", err);
+				addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "Publish err: ERR_CONN aka %d\n", err);
 			}
 			else if (err == ERR_MEM) {
-				addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish err: ERR_MEM aka %d\n", err);
+				addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "Publish err: ERR_MEM aka %d\n", err);
 				g_memoryErrorsThisSession++;
 			}
 			else {
-				addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish err: %d\n", err);
+				addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "Publish err: %d\n", err);
 			}
 			mqtt_publish_errors++;
 			MQTT_Mutex_Free();
@@ -880,12 +858,11 @@ static void mqtt_incoming_publish_cb(void* arg, const char* topic, u32_t tot_len
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT client in mqtt_incoming_publish_cb topic %s\n", topic);
 }
 
-static void
-mqtt_request_cb(void* arg, err_t err)
+static void mqtt_request_cb(void* arg, err_t err)
 {
 	const struct mqtt_connect_client_info_t* client_info = (const struct mqtt_connect_client_info_t*)arg;
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT client \"%s\" request cb: err %d\n", client_info->client_id, (int)err);
+	addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "MQTT client \"%s\" request cb: err %d\n", client_info->client_id, (int)err);
 }
 
 /////////////////////////////////////////////
@@ -940,7 +917,7 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 		err = mqtt_publish(client, tmp, "online", strlen("online"), 2, true, mqtt_pub_request_cb, 0);
 		//UNLOCK_TCPIP_CORE();
 		if (err != ERR_OK) {
-			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish err: %d\n", err);
+			addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "Publish err: %d\n", err);
 			if (err == ERR_CONN) {
 				// g_my_reconnect_mqtt_after_time = 5;
 			}

@@ -214,6 +214,28 @@ void urldecode2_safe(char *dst, const char *srcin, int maxDstLen)
         *dst++ = '\0';
 }
 
+int wal_stricmp(const char* a, const char* b) {
+	int ca, cb;
+	do {
+		ca = (unsigned char)*a++;
+		cb = (unsigned char)*b++;
+		ca = tolower(toupper(ca));
+		cb = tolower(toupper(cb));
+	} while ((ca == cb) && (ca != '\0'));
+	return ca - cb;
+}
+int wal_strnicmp(const char* a, const char* b, int count) {
+	int ca, cb;
+	do {
+		ca = (unsigned char)*a++;
+		cb = (unsigned char)*b++;
+		ca = tolower(toupper(ca));
+		cb = tolower(toupper(cb));
+		count--;
+	} while ((ca == cb) && (ca != '\0') && (count > 0));
+	return ca - cb;
+}
+
 WIFI_RSSI_LEVEL wifi_rssi_scale(int8_t rssi_value)
 {
     #define LEVEL_WEAK      -70     //-70
