@@ -199,7 +199,7 @@ void Main_OnWiFiStatusChange(int code)
         case WIFI_STA_CONNECTING:
 			g_bHasWiFiConnected = 0;
             g_connectToWiFi = 120;
-			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTING\r\n");
+			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTING - %i\r\n", code);
             break;
         case WIFI_STA_DISCONNECTED:
             // try to connect again in few seconds
@@ -213,17 +213,17 @@ void Main_OnWiFiStatusChange(int code)
             g_timeSinceLastPingReply = -1;
             g_bPingWatchDogStarted = 0;
             g_startPingWatchDogAfter = 0;           
-			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_DISCONNECTED\r\n");
+			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_DISCONNECTED - %i\r\n", code);
             break;
         case WIFI_STA_AUTH_FAILED:
             // try to connect again in few seconds
             g_connectToWiFi = 60;
 			g_bHasWiFiConnected = 0;
-			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_AUTH_FAILED\r\n");
+			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_AUTH_FAILED - %i\r\n", code);
             break;
         case WIFI_STA_CONNECTED:
 			g_bHasWiFiConnected = 1;
-			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTED\r\n");
+			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTED - %i\r\n", code);
 
 			if(bSafeMode == 0){
 				if(strlen(CFG_DeviceGroups_GetName())>0){
@@ -241,11 +241,11 @@ void Main_OnWiFiStatusChange(int code)
         /* for softap mode */
         case WIFI_AP_CONNECTED:
 			g_bHasWiFiConnected = 1;
-			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_AP_CONNECTED\r\n");
+			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_AP_CONNECTED - %i\r\n", code);
             break;
         case WIFI_AP_FAILED:
 			g_bHasWiFiConnected = 0;
-			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_AP_FAILED\r\n");
+			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_AP_FAILED - %i\r\n",code);
             break;
         default:
             break;

@@ -165,6 +165,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | logtype | [TypeStr] | logtype direct|all - direct logs only to serial immediately |
 | logdelay | [Value] | Value is a number of ms. This will add an artificial delay in each log call. Useful for debugging. This way you can see step by step what happens. |
 | publish | [Topic][Value] | Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get. You can use argument expansion here, so $CH11 will change to value of the channel 11 |
+| publishInt | [Topic][Value] | Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an integer, so you can also use math expressions like $CH10*10, etc. |
+| publishFloat | [Topic][Value] | Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an float, so you can also use math expressions like $CH10*0.0, etc. |
 | publishAll |  | Starts the step by step publish of all available values |
 | publishChannels |  | Starts the step by step publish of all channel values |
 | publishBenchmark |  |  |

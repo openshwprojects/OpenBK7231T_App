@@ -47,6 +47,20 @@ bool SIM_CheckMQTTHistoryForString(const char *topic, const char *value, bool bR
 	}
 	return false;
 }
+bool SIM_CheckMQTTHistoryForFloat(const char *topic, float value, bool bRetain) {
+	mqttHistoryEntry_t *ne;
+	int cur = history_tail;
+	while (cur != history_head) {
+		ne = &mqtt_history[cur];
+		float neVal = atof(ne->value);
+		if (!strcmp(ne->topic, topic) && Float_Equals(neVal, value) && ne->bRetain == bRetain) {
+			return true;
+		}
+		cur++;
+		cur %= MAX_MQTT_HISTORY;
+	}
+	return false;
+}
 void SIM_OnMQTTPublish(const char *topic, const char *value, int len, int qos, bool bRetain) {
 	mqttHistoryEntry_t *ne;
 

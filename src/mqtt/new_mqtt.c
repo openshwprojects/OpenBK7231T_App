@@ -1136,7 +1136,47 @@ commandResult_t MQTT_PublishCommand(const void* context, const char* cmd, const 
 
 	return CMD_RES_OK;
 }
+// we have a separate command for integer because it can support math expressions
+// (so it handled like $CH10*10, etc)
+commandResult_t MQTT_PublishCommandInteger(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	const char* topic;
+	int value;
+	OBK_Publish_Result ret;
 
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 2) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish command requires two arguments (topic and value)");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	topic = Tokenizer_GetArg(0);
+	value = Tokenizer_GetArgInteger(1);
+
+	ret = MQTT_PublishMain_StringInt(topic, value);
+
+	return CMD_RES_OK;
+}
+
+// we have a separate command for float because it can support math expressions
+// (so it handled like $CH10*0.01, etc)
+commandResult_t MQTT_PublishCommandFloat(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	const char* topic;
+	float value;
+	OBK_Publish_Result ret;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 2) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish command requires two arguments (topic and value)");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	topic = Tokenizer_GetArg(0);
+	value = Tokenizer_GetArgFloat(1);
+
+	ret = MQTT_PublishMain_StringFloat(topic, value);
+
+	return CMD_RES_OK;
+}
 /****************************************************************************************************
  *
  ****************************************************************************************************/
@@ -1366,6 +1406,16 @@ void MQTT_init()
 	//cmddetail:"fn":"MQTT_PublishCommand","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("publish", "", MQTT_PublishCommand, NULL, NULL);
+	//cmddetail:{"name":"publishInt","args":"[Topic][Value]",
+	//cmddetail:"descr":"Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an integer, so you can also use math expressions like $CH10*10, etc.",
+	//cmddetail:"fn":"MQTT_PublishCommand","file":"mqtt/new_mqtt.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("publishInt", "", MQTT_PublishCommandInteger, NULL, NULL);
+	//cmddetail:{"name":"publishFloat","args":"[Topic][Value]",
+	//cmddetail:"descr":"Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an float, so you can also use math expressions like $CH10*0.0, etc.",
+	//cmddetail:"fn":"MQTT_PublishCommand","file":"mqtt/new_mqtt.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("publishFloat", "", MQTT_PublishCommandFloat, NULL, NULL);
 	//cmddetail:{"name":"publishAll","args":"",
 	//cmddetail:"descr":"Starts the step by step publish of all available values",
 	//cmddetail:"fn":"MQTT_PublishAll","file":"mqtt/new_mqtt.c","requires":"",

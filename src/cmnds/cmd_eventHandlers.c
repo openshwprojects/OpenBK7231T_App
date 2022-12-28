@@ -25,7 +25,7 @@ addEventHandler OnHold 8 backlog addChannel 4 10 0 255; DGR_SendBrightness roomL
 addEventHandler OnHold 10 backlog addChannel 4 -10 0 255; DGR_SendBrightness roomLEDstrips $CH4
 */
 //
-// addEventHandler OnChannelChanged 5 ???
+// addEventHandler OnChannelChange 5 ???
 // addEventHandler OnWifiLost ????
 //
 //

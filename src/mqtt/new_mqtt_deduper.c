@@ -93,6 +93,11 @@ OBK_Publish_Result MQTT_PublishMain_StringString_DeDuped(int slotCode, int expir
 	mqtt_dedup_slot_t *slot;
 	OBK_Publish_Result res;
 
+	// for simulator, we don't currently need dups removal
+#ifdef WINDOWS
+	return MQTT_PublishMain_StringString(sChannel, valueStr, flags);
+#endif
+
 	// alloc only when it's required
 	if(mqtt_dedups[slotCode] == 0) {
 		mqtt_dedups[slotCode] = malloc(sizeof(mqtt_dedup_slot_t));

@@ -183,7 +183,7 @@ static commandResult_t cmnd_backlog(const void * context, const char *cmd, const
 				break;
 			}
             *(c) = *(p++);
-            if (c - copy < 127){
+            if (c - copy < (sizeof(copy)-1)){
                 c++;
             }
 		}
