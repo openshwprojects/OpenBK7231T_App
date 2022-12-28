@@ -915,12 +915,12 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	int nRetCode = 0;
 	char error_message[256];
 
-	ADDLOG_DEBUG(LOG_FEATURE_API, "OTA post len %d", request->contentLength);
+	ADDLOG_DEBUG(LOG_FEATURE_OTA, "OTA post len %d", request->contentLength);
 
 #ifdef PLATFORM_W600
 
 	if (writelen < 0) {
-		ADDLOG_DEBUG(LOG_FEATURE_API, "ABORTED: %d bytes to write", writelen);
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "ABORTED: %d bytes to write", writelen);
 		return http_rest_error(request, -20, "writelen < 0");
 	}
 
@@ -947,10 +947,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 
 			if (recvLen == 0) {
 				T_BOOTER* booter = (T_BOOTER*)(Buffer + 3);
-
-				//bk_printf("magic_no=%u %u\n", booter->magic_no, htonl(booter->magic_no));
-				//bk_printf("img_type=%d\n", booter->img_type);
-				//bk_printf("zip_type=%d\n", booter->zip_type);
+				bk_printf("magic_no=%u, img_type=%u, zip_type=%u\n", booter->magic_no, booter->img_type, booter->zip_type);
 
 				if (TRUE == tls_fwup_img_header_check(booter))
 				{
@@ -1018,8 +1015,8 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	tls_mem_free(Buffer);
 
 	if (nRetCode != 0) {
-		bk_printf("OTA failed: %s", error_message);
-		ADDLOG_DEBUG(LOG_FEATURE_API, error_message);
+		ADDLOG_ERROR(LOG_FEATURE_OTA, error_message);
+		socket_fwup_err(0, nRetCode);
 		return http_rest_error(request, nRetCode, error_message);
 	}
 
@@ -1032,12 +1029,12 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	}
 
 	if (writelen < 0 || (startaddr + writelen > maxaddr)) {
-		ADDLOG_DEBUG(LOG_FEATURE_API, "ABORTED: %d bytes to write", writelen);
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "ABORTED: %d bytes to write", writelen);
 		return http_rest_error(request, -20, "writelen < 0 or end > 0x200000");
 	}
 
 	do {
-		//ADDLOG_DEBUG(LOG_FEATURE_API, "%d bytes to write", writelen);
+		//ADDLOG_DEBUG(LOG_FEATURE_OTA, "%d bytes to write", writelen);
 		add_otadata((unsigned char*)writebuf, writelen);
 		total += writelen;
 		startaddr += writelen;
@@ -1046,14 +1043,14 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 			writebuf = request->received;
 			writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
 			if (writelen < 0) {
-				ADDLOG_DEBUG(LOG_FEATURE_API, "recv returned %d - end of data - remaining %d", writelen, towrite);
+				ADDLOG_DEBUG(LOG_FEATURE_OTA, "recv returned %d - end of data - remaining %d", writelen, towrite);
 			}
 		}
 	} while ((towrite > 0) && (writelen >= 0));
 	close_ota();
 #endif
 
-	ADDLOG_DEBUG(LOG_FEATURE_API, "%d total bytes written", total);
+	ADDLOG_DEBUG(LOG_FEATURE_OTA, "%d total bytes written", total);
 	http_setup(request, httpMimeTypeJson);
 	hprintf255(request, "{\"size\":%d}", total);
 	poststr(request, NULL);
