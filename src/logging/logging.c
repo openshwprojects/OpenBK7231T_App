@@ -78,7 +78,7 @@ char* logfeaturenames[] = {
 
 #define LOGGING_BUFFER_SIZE		1024
 
-int direct_serial_log = DEFAULT_DIRECT_SERIAL_LOG;
+volatile int direct_serial_log = DEFAULT_DIRECT_SERIAL_LOG;
 
 static int g_extraSocketToSendLOG = 0;
 static char g_loggingBuffer[LOGGING_BUFFER_SIZE];
@@ -153,7 +153,7 @@ static void initLog(void)
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("logfeature", NULL, log_command, NULL, NULL);
 	//cmddetail:{"name":"logtype","args":"[TypeStr]",
-	//cmddetail:"descr":"logtype direct|all - direct logs only to serial immediately",
+	//cmddetail:"descr":"logtype direct|thread|none - type of serial logging - thread (in a thread; default), direct (logged directly to serial), none (no UART logging)",
 	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("logtype", "", log_command, NULL, NULL);
@@ -309,7 +309,7 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 		send(g_extraSocketToSendLOG, tmp, strlen(tmp), 0);
 	}
 
-	if (direct_serial_log) {
+	if (direct_serial_log == LOGTYPE_DIRECT) {
 		bk_printf("%s", tmp);
 		if (taken == pdTRUE) {
 			xSemaphoreGive(logMemory.mutex);
@@ -635,7 +635,9 @@ static void log_serial_thread(beken_thread_arg_t arg)
 	while (1) {
 		int count = getSerial(seriallogbuf, SERIALLOGBUFSIZE);
 		if (count) {
-			bk_printf("%s", seriallogbuf);
+			if (direct_serial_log == LOGTYPE_THREAD) {
+				bk_printf("%s", seriallogbuf);
+			}
 		}
 		rtos_delay_milliseconds(10);
 	}
@@ -728,12 +730,16 @@ commandResult_t log_command(const void* context, const char* cmd, const char* ar
 			break;
 		}
 		if (!stricmp(cmd, "logtype")) {
-			if (!strcmp(args, "direct")) {
-				direct_serial_log = 1;
+			if (!stricmp(args, "none")) {
+				direct_serial_log = LOGTYPE_NONE;
+			}
+			else if (!stricmp(args, "direct")) {
+				direct_serial_log = LOGTYPE_DIRECT;
 			}
 			else {
-				direct_serial_log = 0;
+				direct_serial_log = LOGTYPE_THREAD;
 			}
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "logtype changed to %i", direct_serial_log);
 			result = CMD_RES_OK;
 			break;
 		}
