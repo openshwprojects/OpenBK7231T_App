@@ -42,19 +42,6 @@ int tuya_os_adapt_wifi_all_ap_scan(AP_IF_S** ap_ary, unsigned int* num);
 int tuya_os_adapt_wifi_release_ap(AP_IF_S* ap);
 #endif
 
-static char* UNIQUE_ID_FORMAT = "  - unique_id: \"%s\"\n";
-static char* HASS_INDEXED_NAME_CONFIG = "    name: \"%s %i\"\n";
-static char* HASS_STATE_TOPIC_CONFIG = "    state_topic: \"%s/%i/get\"\n";
-static char* HASS_COMMAND_TOPIC_CONFIG = "    command_topic: \"%s/%i/set\"\n";
-static char* HASS_RETAIN_TRUE_CONFIG = "    retain: true\n";
-static char* HASS_AVAILABILITY_CONFIG = "    availability:\n";
-static char* HASS_CONNECTED_TOPIC_CONFIG = "      - topic: \"%s/connected\"\n";
-static char* HASS_QOS_CONFIG = "    qos: 1\n";
-
-static char* HASS_MQTT_NODE = "mqtt:\n";
-static char* HASS_LIGHT_NODE = "  light:\n";
-
-
 
 /*
 
@@ -358,7 +345,7 @@ int http_fn_index(http_request_t* request) {
 			// DHT pin has two channels - temperature and humidity
 			poststr(request, "<tr><td>");
 			iValue = CHANNEL_Get(PIN_GetPinChannelForPinIndex(i));
-			hprintf255(request, "Sensor %s on pin %i temperature %.2fC", PIN_RoleToString(role), i,(float) (iValue*0.1f));
+			hprintf255(request, "Sensor %s on pin %i temperature %.2fC", PIN_RoleToString(role), i, (float)(iValue*0.1f));
 			iValue = CHANNEL_Get(PIN_GetPinChannel2ForPinIndex(i));
 			hprintf255(request, ", humidity %.1f%%<br>", (float)iValue);
 			poststr(request, "</td></tr>");
@@ -783,7 +770,7 @@ int http_fn_index(http_request_t* request) {
 	/* Format current PINS input state for all unused pins */
 	if (CFG_HasFlag(OBK_FLAG_HTTP_PINMONITOR))
 	{
-		for (i = 0;i < 29;i++)
+		for (i = 0; i < 29; i++)
 		{
 			if ((PIN_GetPinRoleForPinIndex(i) == IOR_None) && (i != 0) && (i != 1))
 			{
@@ -792,7 +779,7 @@ int http_fn_index(http_request_t* request) {
 		}
 
 		hprintf255(request, "<h5> PIN States<br>");
-		for (i = 0;i < 29;i++)
+		for (i = 0; i < 29; i++)
 		{
 			if ((PIN_GetPinRoleForPinIndex(i) != IOR_None) || (i == 0) || (i == 1))
 			{
@@ -1685,7 +1672,28 @@ void http_generate_rgb_cfg(http_request_t* request, const char* clientId) {
 	hprintf255(request, "    brightness_state_topic: \"%s/led_dimmer/get\"\n", clientId);
 	hprintf255(request, "    brightness_scale: 100\n");
 }
-
+void http_generate_cw_cfg(http_request_t* request, const char* clientId) {
+	hprintf255(request, "    command_topic: \"cmnd/%s/led_enableAll\"\n", clientId);
+	hprintf255(request, "    state_topic: \"%s/led_enableAll/get\"\n", clientId);
+	hprintf255(request, "    availability_topic: \"%s/connected\"\n", clientId);
+	hprintf255(request, "    payload_on: 1\n");
+	hprintf255(request, "    payload_off: 0\n");
+	hprintf255(request, "    brightness_command_topic: \"cmnd/%s/led_dimmer\"\n", clientId);
+	hprintf255(request, "    brightness_state_topic: \"%s/led_dimmer/get\"\n", clientId);
+	hprintf255(request, "    brightness_scale: 100\n");
+	hprintf255(request, "    color_temp_command_topic: \"cmnd/%s/led_temperature\"\n", clientId);
+	hprintf255(request, "    color_temp_state_topic: \"%s/led_temperature/get\"\n", clientId);
+}
+void http_generate_singleColor_cfg(http_request_t* request, const char* clientId) {
+	hprintf255(request, "    command_topic: \"cmnd/%s/led_enableAll\"\n", clientId);
+	hprintf255(request, "    state_topic: \"%s/led_enableAll/get\"\n", clientId);
+	hprintf255(request, "    availability_topic: \"%s/connected\"\n", clientId);
+	hprintf255(request, "    payload_on: 1\n");
+	hprintf255(request, "    payload_off: 0\n");
+	hprintf255(request, "    brightness_command_topic: \"cmnd/%s/led_dimmer\"\n", clientId);
+	hprintf255(request, "    brightness_state_topic: \"%s/led_dimmer/get\"\n", clientId);
+	hprintf255(request, "    brightness_scale: 100\n");
+}
 int http_fn_ha_cfg(http_request_t* request) {
 	int relayCount;
 	int pwmCount;
@@ -1695,6 +1703,8 @@ int http_fn_ha_cfg(http_request_t* request) {
 	char mqttAdded = 0;
 	char switchAdded = 0;
 	char lightAdded = 0;
+
+	i = 0;
 
 	shortDeviceName = CFG_GetShortDeviceName();
 	clientId = CFG_GetMQTTClientId();
@@ -1716,7 +1726,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 		for (i = 0; i < CHANNEL_MAX; i++) {
 			if (h_isChannelRelay(i)) {
 				if (mqttAdded == 0) {
-					poststr(request, HASS_MQTT_NODE);
+					poststr(request, "mqtt:\n");
 					mqttAdded = 1;
 				}
 				if (switchAdded == 0) {
@@ -1724,32 +1734,32 @@ int http_fn_ha_cfg(http_request_t* request) {
 					switchAdded = 1;
 				}
 
-				hass_print_unique_id(request, UNIQUE_ID_FORMAT, ENTITY_RELAY, i);
-				hprintf255(request, HASS_INDEXED_NAME_CONFIG, shortDeviceName, i);
-				hprintf255(request, HASS_STATE_TOPIC_CONFIG, clientId, i);
-				hprintf255(request, HASS_COMMAND_TOPIC_CONFIG, clientId, i);
-				poststr(request, HASS_QOS_CONFIG);
+				hass_print_unique_id(request, "  - unique_id: \"%s\"\n", ENTITY_RELAY, i);
+				hprintf255(request, "    name: \"%s %i\"\n", shortDeviceName, i);
+				hprintf255(request, "    state_topic: \"%s/%i/get\"\n", clientId, i);
+				hprintf255(request, "    command_topic: \"%s/%i/set\"\n", clientId, i);
+				poststr(request, "    qos: 1\n");
 				poststr(request, "    payload_on: 1\n");
 				poststr(request, "    payload_off: 0\n");
-				poststr(request, HASS_RETAIN_TRUE_CONFIG);
-				hprintf255(request, HASS_AVAILABILITY_CONFIG);
-				hprintf255(request, HASS_CONNECTED_TOPIC_CONFIG, clientId);
+				poststr(request, "    retain: true\n");
+				hprintf255(request, "    availability:\n");
+				hprintf255(request, "      - topic: \"%s/connected\"\n", clientId);
 			}
 		}
 	}
 	if (pwmCount == 5 || LED_IsLedDriverChipRunning()) {
 		// Enable + RGB control + CW control
 		if (mqttAdded == 0) {
-			poststr(request, HASS_MQTT_NODE);
+			poststr(request, "mqtt:\n");
 			mqttAdded = 1;
 		}
 		if (switchAdded == 0) {
-			poststr(request, HASS_LIGHT_NODE);
+			poststr(request, "  light:\n");
 			switchAdded = 1;
 		}
 
-		hass_print_unique_id(request, UNIQUE_ID_FORMAT, ENTITY_LIGHT_RGBCW, i);
-		hprintf255(request, HASS_INDEXED_NAME_CONFIG, shortDeviceName, i);
+		hass_print_unique_id(request, "  - unique_id: \"%s\"\n", ENTITY_LIGHT_RGBCW, i);
+		hprintf255(request, "    name: \"%s %i\"\n", shortDeviceName, i);
 		http_generate_rgb_cfg(request, clientId);
 		hprintf255(request, "    #brightness_value_template: \"{{ value }}\"\n");
 		hprintf255(request, "    color_temp_command_topic: \"cmnd/%s/led_temperature\"\n", clientId);
@@ -1760,45 +1770,75 @@ int http_fn_ha_cfg(http_request_t* request) {
 		if (pwmCount == 3) {
 			// Enable + RGB control
 			if (mqttAdded == 0) {
-				poststr(request, HASS_MQTT_NODE);
+				poststr(request, "mqtt:\n");
 				mqttAdded = 1;
 			}
 			if (switchAdded == 0) {
-				poststr(request, HASS_LIGHT_NODE);
+				poststr(request, "  light:\n");
 				switchAdded = 1;
 			}
 
-			hass_print_unique_id(request, UNIQUE_ID_FORMAT, ENTITY_LIGHT_RGB, i);
+			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", ENTITY_LIGHT_RGB, i);
 			hprintf255(request, "    name: \"%s\"\n", shortDeviceName);
 			http_generate_rgb_cfg(request, clientId);
+		}
+		else if (pwmCount == 1) {
+			// single color
+			if (mqttAdded == 0) {
+				poststr(request, "mqtt:\n");
+				mqttAdded = 1;
+			}
+			if (switchAdded == 0) {
+				poststr(request, "  light:\n");
+				switchAdded = 1;
+			}
+
+			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", ENTITY_LIGHT_PWM, i);
+			hprintf255(request, "    name: \"%s\"\n", shortDeviceName);
+			http_generate_singleColor_cfg(request, clientId);
+		}
+		else if (pwmCount == 2) {
+			// CW
+			if (mqttAdded == 0) {
+				poststr(request, "mqtt:\n");
+				mqttAdded = 1;
+			}
+			if (switchAdded == 0) {
+				poststr(request, "  light:\n");
+				switchAdded = 1;
+			}
+
+			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", ENTITY_LIGHT_PWMCW, i);
+			hprintf255(request, "    name: \"%s\"\n", shortDeviceName);
+			http_generate_cw_cfg(request, clientId);
 		}
 		else if (pwmCount > 0) {
 
 			for (i = 0; i < CHANNEL_MAX; i++) {
 				if (h_isChannelPWM(i)) {
 					if (mqttAdded == 0) {
-						poststr(request, HASS_MQTT_NODE);
+						poststr(request, "mqtt:\n");
 						mqttAdded = 1;
 					}
 					if (lightAdded == 0) {
-						poststr(request, HASS_LIGHT_NODE);
+						poststr(request, "  light:\n");
 						lightAdded = 1;
 					}
 
 					hass_print_unique_id(request, "  - unique_id: \"%s\"\n", ENTITY_LIGHT_PWM, i);
-					hprintf255(request, HASS_INDEXED_NAME_CONFIG, shortDeviceName, i);
-					hprintf255(request, HASS_STATE_TOPIC_CONFIG, clientId, i);
-					hprintf255(request, HASS_COMMAND_TOPIC_CONFIG, clientId, i);
+					hprintf255(request, "    name: \"%s %i\"\n", shortDeviceName, i);
+					hprintf255(request, "    state_topic: \"%s/%i/get\"\n", clientId, i);
+					hprintf255(request, "    command_topic: \"%s/%i/set\"\n", clientId, i);
 					hprintf255(request, "    brightness_command_topic: \"%s/%i/set\"\n", clientId, i);
 					poststr(request, "    on_command_type: \"brightness\"\n");
 					poststr(request, "    brightness_scale: 99\n");
-					poststr(request, HASS_QOS_CONFIG);
+					poststr(request, "    qos: 1\n");
 					poststr(request, "    payload_on: 99\n");
 					poststr(request, "    payload_off: 0\n");
-					poststr(request, HASS_RETAIN_TRUE_CONFIG);
+					poststr(request, "    retain: true\n");
 					poststr(request, "    optimistic: true\n");
-					hprintf255(request, HASS_AVAILABILITY_CONFIG);
-					hprintf255(request, HASS_CONNECTED_TOPIC_CONFIG, clientId);
+					hprintf255(request, "    availability:\n");
+					hprintf255(request, "      - topic: \"%s/connected\"\n", clientId);
 				}
 			}
 		}
@@ -2213,7 +2253,7 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 	hprintf255(request, "\"MqttHost\":\"%s\",", CFG_GetMQTTHost());
 	hprintf255(request, "\"MqttPort\":%i,", CFG_GetMQTTPort());
 	hprintf255(request, "\"MqttClientMask\":\"core-mosquitto\",");
-	hprintf255(request, "\"MqttClient\":\"%s\",",CFG_GetMQTTClientId());
+	hprintf255(request, "\"MqttClient\":\"%s\",", CFG_GetMQTTClientId());
 	hprintf255(request, "\"MqttUser\":\"%s\",", CFG_GetMQTTUserName());
 	hprintf255(request, "\"MqttCount\":23,");
 	hprintf255(request, "\"MAX_PACKET_SIZE\":1200,");
