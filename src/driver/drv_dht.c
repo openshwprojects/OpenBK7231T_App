@@ -74,10 +74,12 @@ void DHT_OnEverySecond() {
 				humid = DHT_readHumidity(g_dhts[i], false);
 				temp = DHT_readTemperature(g_dhts[i], false, false);
 
-				// don't want to loose accuracy, so multiply by 10
-				// We have a channel types to handle that
-				CHANNEL_Set(g_cfg.pins.channels[i], (int)(temp * 10), 0);
-				CHANNEL_Set(g_cfg.pins.channels2[i], (int)(humid), 0);
+				if (g_dhts[i]->_lastresult != 0) {
+					// don't want to loose accuracy, so multiply by 10
+					// We have a channel types to handle that
+					CHANNEL_Set(g_cfg.pins.channels[i], (int)(temp * 10), 0);
+					CHANNEL_Set(g_cfg.pins.channels2[i], (int)(humid), 0);
+				}
 			}
 		}
 		else {
