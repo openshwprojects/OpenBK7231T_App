@@ -1682,6 +1682,7 @@ void http_generate_rgb_cfg(http_request_t* request, const char* clientId) {
 	hprintf255(request, "    payload_on: 1\n");
 	hprintf255(request, "    payload_off: 0\n");
 	hprintf255(request, "    brightness_command_topic: \"cmnd/%s/led_dimmer\"\n", clientId);
+	hprintf255(request, "    brightness_state_topic: \"%s/led_dimmer/get\"\n", clientId);
 	hprintf255(request, "    brightness_scale: 100\n");
 }
 
