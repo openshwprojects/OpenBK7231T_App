@@ -418,7 +418,10 @@ static int getSerial2() {
 		}
 
 		(*tail) = ((*tail) + 1) % LOGSIZE;
-		UART_WRITE_BYTE(UART_PORT_INDEX, c);
+
+		if (direct_serial_log == LOGTYPE_THREAD) {
+			UART_WRITE_BYTE(UART_PORT_INDEX, c);
+		}
 	}
 
 	int remains = (*tail != logMemory.head);
