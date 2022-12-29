@@ -59,7 +59,7 @@ portTickType lastConsumptionSaveStamp;
 time_t ConsumptionResetTime = 0;
 
 // how much of value have to change in order to be send over MQTT again?
-int changeSendThresholds[OBK_NUM_MEASUREMENTS] = {
+float changeSendThresholds[OBK_NUM_MEASUREMENTS] = {
     0.25f, // voltage - OBK_VOLTAGE
     0.002f, // current - OBK_CURRENT
     0.25f, // power - OBK_POWER
@@ -515,7 +515,8 @@ void BL_ProcessUpdate(float voltage, float current, float power)
     {
         // send update only if there was a big change or if certain time has passed
         // Do not send message with every measurement. 
-        if ( ((abs(lastSentValues[i]-lastReadings[i]) > changeSendThresholds[i]) &&
+		float diff = fabs(lastSentValues[i] - lastReadings[i]);
+        if ( ((diff > changeSendThresholds[i]) &&
                (noChangeFrames[i] >= changeDoNotSendMinFrames)) ||
              (noChangeFrames[i] >= changeSendAlwaysFrames) )
         {
