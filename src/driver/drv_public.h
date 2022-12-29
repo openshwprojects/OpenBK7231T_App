@@ -33,6 +33,7 @@ extern const char* counter_devClasses[];
 void DRV_Generic_Init();
 void DRV_AppendInformationToHTTPIndexPage(http_request_t* request);
 void DRV_OnEverySecond();
+void DHT_OnEverySecond();
 void DRV_RunQuickTick();
 void DRV_StartDriver(const char* name);
 void DRV_StopDriver(const char* name);
@@ -46,6 +47,7 @@ void BP1658CJ_Write(byte* rgbcw);
 void DRV_DGR_OnLedDimmerChange(int iVal);
 void DRV_DGR_OnLedEnableAllChange(int iVal);
 void DRV_DGR_OnLedFinalColorsChange(byte rgbcw[5]);
+void UART_RunQuickTick();
 
 // OBK_POWER etc
 float DRV_GetReading(int type);
