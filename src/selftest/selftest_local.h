@@ -49,6 +49,7 @@ void Test_HTTP_Client();
 void Test_DeviceGroups();
 void Test_NTP();
 void Test_MQTT();
+void Test_Tasmota();
 
 void Test_FakeHTTPClientPacket_GET(const char *tg);
 void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data);

@@ -208,6 +208,7 @@ void Test_MQTT(){
 	Test_MQTT_Channels();
 	Test_MQTT_LED_CW();
 	Test_MQTT_LED_RGB();
+	Test_Tasmota();
 }
 
 #endif
