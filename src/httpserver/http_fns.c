@@ -172,6 +172,16 @@ void add_label_text_field(http_request_t* request, char* label, char* fieldId, c
 	add_label_input(request, "text", label, fieldId, value, preContent);
 }
 
+/// @brief Generates a pair of label and text field elements.
+/// @param request 
+/// @param label Label for the field
+/// @param fieldId Field id, this also gets used as the name
+/// @param value String value
+/// @param preContent Content before the label
+void add_label_password_field(http_request_t* request, char* label, char* fieldId, const char* value, char* preContent) {
+	add_label_input(request, "password", label, fieldId, value, preContent);
+}
+
 /// @brief Generate a pair of label and numeric field elements.
 /// @param request 
 /// @param label Label for the field
@@ -861,7 +871,7 @@ int http_fn_cfg_mqtt(http_request_t* request) {
 	add_label_numeric_field(request, "Port", "port", CFG_GetMQTTPort(), "<br>");
 	add_label_text_field(request, "Client", "client", CFG_GetMQTTClientId(), "<br><br>");
 	add_label_text_field(request, "User", "user", CFG_GetMQTTUserName(), "<br>");
-	add_label_text_field(request, "Password", "password", CFG_GetMQTTPass(), "<br>");
+	add_label_password_field(request, "Password", "password", CFG_GetMQTTPass(), "<br>");
 
 	poststr(request, "<br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MQTT data twice?')\">\
@@ -1075,7 +1085,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
         </form> ");
 	poststr(request, "<h2> Use this to connect to your WiFi</h2>");
 	add_label_text_field(request, "SSID", "ssid", CFG_GetWiFiSSID(), "<form action=\"/cfg_wifi_set\">");
-	add_label_text_field(request, "Password", "pass", CFG_GetWiFiPass(), "<br>");
+	add_label_password_field(request, "Password", "pass", CFG_GetWiFiPass(), "<br>");
 	poststr(request, "<br><br>\
             <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check SSID and pass twice?')\">\
         </form> ");
@@ -1987,6 +1997,58 @@ int http_tasmota_json_power(http_request_t* request) {
 /*
 {"StatusSNS":{"Time":"2022-07-30T10:11:26","ENERGY":{"TotalStartTime":"2022-05-12T10:56:31","Total":0.003,"Yesterday":0.003,"Today":0.000,"Power": 0,"ApparentPower": 0,"ReactivePower": 0,"Factor":0.00,"Voltage":236,"Current":0.000}}}
 */
+
+
+int http_tasmota_json_ENERGY(http_request_t* request) {
+	float power, factor, voltage, current;
+	float energy, energy_hour;
+
+	factor = 0; // TODO
+	voltage = DRV_GetReading(OBK_VOLTAGE);
+	current = DRV_GetReading(OBK_CURRENT);
+	power = DRV_GetReading(OBK_POWER);
+	energy = DRV_GetReading(OBK_CONSUMPTION_TOTAL);
+	energy_hour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
+
+	// following check will clear NaN values
+	if (OBK_IS_NAN(energy)) {
+		energy = 0;
+	}
+	if (OBK_IS_NAN(energy_hour)) {
+		energy_hour = 0;
+	}
+	hprintf255(request, "{");
+	hprintf255(request, "\"Power\": %f,", power);
+	hprintf255(request, "\"ApparentPower\": 0,\"ReactivePower\": 0,\"Factor\":%f,", factor);
+	hprintf255(request, "\"Voltage\":%f,", voltage);
+	hprintf255(request, "\"Current\":%f,", current);
+	hprintf255(request, "\"ConsumptionTotal\":%f,", energy);
+	hprintf255(request, "\"ConsumptionLastHour\":%f", energy_hour);
+	// close ENERGY block
+	hprintf255(request, "}");
+	return 0;
+}
+
+// Topic: tele/tasmota_48E7F3/SENSOR at 3:06 AM:
+// Sample:
+/*
+{
+	"Time": "2022-12-30T03:06:36",
+	"ENERGY": {
+		"TotalStartTime": "2022-05-12T10:56:31",
+		"Total": 0.007,
+		"Yesterday": 0,
+		"Today": 0,
+		"Period": 0,
+		"Power": 0,
+		"ApparentPower": 0,
+		"ReactivePower": 0,
+		"Factor": 0,
+		"Voltage": 241,
+		"Current": 0
+	}
+}
+*/
 int http_tasmota_json_status_SNS(http_request_t* request) {
 	char buff[20];
 
@@ -1999,34 +2061,10 @@ int http_tasmota_json_status_SNS(http_request_t* request) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	if (DRV_IsMeasuringPower()) {
 
-		float power, factor, voltage, current;
-		float energy, energy_hour;
-
-		factor = 0; // TODO
-		voltage = DRV_GetReading(OBK_VOLTAGE);
-		current = DRV_GetReading(OBK_CURRENT);
-		power = DRV_GetReading(OBK_POWER);
-		energy = DRV_GetReading(OBK_CONSUMPTION_TOTAL);
-		energy_hour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
-
-		// following check will clear NaN values
-		if (OBK_IS_NAN(energy)) {
-			energy = 0;
-		}
-		if (OBK_IS_NAN(energy_hour)) {
-			energy_hour = 0;
-		}
 		// begin ENERGY block
 		hprintf255(request, ",");
-		hprintf255(request, "\"ENERGY\":{");
-		hprintf255(request, "\"Power\": %f,", power);
-		hprintf255(request, "\"ApparentPower\": 0,\"ReactivePower\": 0,\"Factor\":%f,", factor);
-		hprintf255(request, "\"Voltage\":%f,", voltage);
-		hprintf255(request, "\"Current\":%f,", current);
-		hprintf255(request, "\"ConsumptionTotal\":%f,", energy);
-		hprintf255(request, "\"ConsumptionLastHour\":%f", energy_hour);
-		// close ENERGY block
-		hprintf255(request, "}");
+		hprintf255(request, "\"ENERGY\":");
+		http_tasmota_json_ENERGY(request);
 	}
 #endif
 
@@ -2049,6 +2087,62 @@ unsigned int NTP_GetCurrentTimeWithoutOffset() {
 #endif
 #endif
 
+// Topic:  tele/tasmota_48E7F3/STATE
+// Sample:
+/*
+{
+	"Time": "2022-12-30T03:06:36",
+	"Uptime": "0T06:16:14",
+	"UptimeSec": 22574,
+	"Heap": 26,
+	"SleepMode": "Dynamic",
+	"Sleep": 50,
+	"LoadAvg": 19,
+	"MqttCount": 1,
+	"POWER": "ON",
+	"Wifi": {
+		"AP": 1,
+		"SSId": "ASUS_25G_WIFI",
+		"BSSId": "32:21:BA:10:F6:6D",
+		"Channel": 3,
+		"Mode": "11n",
+		"RSSI": 62,
+		"Signal": -69,
+		"LinkCount": 1,
+		"Downtime": "0T00:00:04"
+	}
+}
+*/
+int http_tasmota_json_status_STS(http_request_t* request) {
+	char buff[20];
+	time_t localTime = (time_t)NTP_GetCurrentTime();
+
+	hprintf255(request, "{");
+	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", localtime(&localTime));
+	hprintf255(request, "\"Time\":\"%s\",", buff);
+	hprintf255(request, "\"Uptime\":\"30T02:59:30\",");
+	hprintf255(request, "\"UptimeSec\":%i,", Time_getUpTimeSeconds());
+	hprintf255(request, "\"Heap\":25,");
+	hprintf255(request, "\"SleepMode\":\"Dynamic\",");
+	hprintf255(request, "\"Sleep\":10,");
+	hprintf255(request, "\"LoadAvg\":99,");
+	hprintf255(request, "\"MqttCount\":23,");
+
+	http_tasmota_json_power(request);
+	hprintf255(request, ",");
+	hprintf255(request, "\"Wifi\":{"); // open WiFi
+	hprintf255(request, "\"AP\":1,");
+	hprintf255(request, "\"SSId\":\"%s\",", CFG_GetWiFiSSID());
+	hprintf255(request, "\"BSSId\":\"30:B5:C2:5D:70:72\",");
+	hprintf255(request, "\"Channel\":11,");
+	hprintf255(request, "\"Mode\":\"11n\",");
+	hprintf255(request, "\"RSSI\":78,");
+	hprintf255(request, "\"Signal\":%i,", HAL_GetWifiStrength());
+	hprintf255(request, "\"LinkCount\":21,");
+	hprintf255(request, "\"Downtime\":\"0T06:13:34\"");
+	hprintf255(request, "}"); // close WiFi
+	hprintf255(request, "}");
+}
 /*
 {"Status":{"Module":0,"DeviceName":"Tasmota","FriendlyName":["Tasmota"],"Topic":"tasmota_48E7F3","ButtonTopic":"0","Power":1,"PowerOnState":3,"LedState":1,"LedMask":"FFFF","SaveData":1,"SaveState":1,"SwitchTopic":"0","SwitchMode":[0,0,0,0,0,0,0,0],"ButtonRetain":0,"SwitchRetain":0,"SensorRetain":0,"PowerRetain":0,"InfoRetain":0,"StateRetain":0}}
 */
@@ -2286,59 +2380,9 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 
 	hprintf255(request, ",");
 
-	hprintf255(request, "\"StatusSTS\":{");
+	hprintf255(request, "\"StatusSTS\":");
 
-	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", localtime(&localTime));
-	hprintf255(request, "\"Time\":\"%s\",", buff);
-	hprintf255(request, "\"Uptime\":\"30T02:59:30\",");
-	hprintf255(request, "\"UptimeSec\":%i,", Time_getUpTimeSeconds());
-	hprintf255(request, "\"Heap\":25,");
-	hprintf255(request, "\"SleepMode\":\"Dynamic\",");
-	hprintf255(request, "\"Sleep\":10,");
-	hprintf255(request, "\"LoadAvg\":99,");
-	hprintf255(request, "\"MqttCount\":23,");
-
-	http_tasmota_json_power(request);
-	hprintf255(request, ",");
-	//if(0)
-	//{
-	//	hprintf255(request, "\"POWER\":\"ON\",");
-	//	hprintf255(request, "\"Dimmer\":99,");
-	//	hprintf255(request, "\"Fade\":\"OFF\",");
-	//	hprintf255(request, "\"Speed\":1,");
-	//	hprintf255(request, "\"LedTable\":\"ON\",");
-	//}
-	//else
-	//{
-	//	for (i = 0; i < CHANNEL_MAX; i++) {
-	//		bool bRelay;
-	//		int iValue;
-	//		bRelay = CHANNEL_HasChannelPinWithRoleOrRole(i, IOR_Relay, IOR_Relay_n);
-	//		iValue = CHANNEL_Get(i);
-	//		if (bRelay) {
-	//			hprintf255(request, "\"POWER%i\":\"%s\",",i, iValue == 0 ? "OFF" : "ON");
-	//		}
-
-	//	}
-	//}
-	hprintf255(request, "\"Wifi\":{");
-	hprintf255(request, "\"AP\":1,");
-	hprintf255(request, "\"SSId\":\"%s\",", CFG_GetWiFiSSID());
-	hprintf255(request, "\"BSSId\":\"30:B5:C2:5D:70:72\",");
-	hprintf255(request, "\"Channel\":11,");
-	hprintf255(request, "\"Mode\":\"11n\",");
-	hprintf255(request, "\"RSSI\":78,");
-	hprintf255(request, "\"Signal\":%i,", HAL_GetWifiStrength());
-	hprintf255(request, "\"LinkCount\":21,");
-	hprintf255(request, "\"Downtime\":\"0T06:13:34\"");
-	hprintf255(request, "}");
-	hprintf255(request, "}");
-
-
-
-
-
-
+	http_tasmota_json_status_STS(request);
 
 	// end
 	hprintf255(request, "}");
