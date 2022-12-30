@@ -117,6 +117,7 @@ This platform is not supported, error!
 
 #include <time.h>
 #include <stdint.h>
+#include <math.h>
 
 #define bk_printf printf
 

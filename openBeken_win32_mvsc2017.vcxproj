@@ -512,6 +512,7 @@
     <ClCompile Include="src\selftest\selftest_cmd_alias.c" />
     <ClCompile Include="src\selftest\selftest_cmd_channels.c" />
     <ClCompile Include="src\selftest\selftest_deviceGroups.c" />
+    <ClCompile Include="src\selftest\selftest_energyMeter.c" />
     <ClCompile Include="src\selftest\selftest_expandConstant.c" />
     <ClCompile Include="src\selftest\selftest_expressions.c" />
     <ClCompile Include="src\selftest\selftest_http.c" />
@@ -524,6 +525,7 @@
     <ClCompile Include="src\selftest\selftest_ntp.c" />
     <ClCompile Include="src\selftest\selftest_repeatingEvents.c" />
     <ClCompile Include="src\selftest\selftest_script.c" />
+    <ClCompile Include="src\selftest\selftest_tasmota.c" />
     <ClCompile Include="src\selftest\selftest_tokenizer.c" />
     <ClCompile Include="src\selftest\selftest_tuyaMCU.c" />
     <ClCompile Include="src\selftest\selftest_util_mqtt.c" />

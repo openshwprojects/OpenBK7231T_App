@@ -120,6 +120,8 @@ void SIM_DoFreshOBKBoot() {
 void Win_DoUnitTests() {
 
 
+	Test_EnergyMeter();
+	Test_Tasmota();
 	Test_NTP();
 	Test_MQTT();
 	Test_HTTP_Client();

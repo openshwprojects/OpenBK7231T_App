@@ -124,8 +124,23 @@ void Test_FakeHTTPClientPacket_JSON(const char *tg) {
 	if (g_json) {
 		cJSON_Delete(g_json);
 	}
+	printf("Received JSON: %s\n", replyAt);
 	g_json = cJSON_Parse(replyAt);
 	g_sec_power = cJSON_GetObjectItemCaseSensitive(g_json, "POWER");
+}
+cJSON *Test_GetJSONValue_Generic_Nested2(const char *par1, const char *par2, const char *keyword) {
+	cJSON *tmp;
+	cJSON *parent;
+	parent = cJSON_GetObjectItemCaseSensitive(g_json, par1);
+	if (parent == 0)
+		return 0;
+	parent = cJSON_GetObjectItemCaseSensitive(parent, par2);
+	if (parent == 0)
+		return 0;
+	tmp = cJSON_GetObjectItemCaseSensitive(parent, keyword);
+	if (tmp == 0)
+		return 0;
+	return tmp;
 }
 cJSON *Test_GetJSONValue_Generic(const char *keyword, const char *obj) {
 	cJSON *tmp;
@@ -143,7 +158,26 @@ cJSON *Test_GetJSONValue_Generic(const char *keyword, const char *obj) {
 		return 0;
 	return tmp;
 }
-const char *Test_GetJSONValue_Integer(const char *keyword, const char *obj) {
+int Test_GetJSONValue_Integer_Nested2(const char *par1, const char *par2, const char *keyword) {
+	cJSON *tmp;
+	tmp = Test_GetJSONValue_Generic_Nested2(par1, par2, keyword);
+	if (tmp == 0) {
+		return -999999;
+	}
+	printf("Test_GetJSONValue_Integer_Nested2 will return %i for %s\n", tmp->valueint, keyword);
+	return tmp->valueint;
+}
+float Test_GetJSONValue_Float_Nested2(const char *par1, const char *par2, const char *keyword) {
+	cJSON *tmp;
+	tmp = Test_GetJSONValue_Generic_Nested2(par1, par2, keyword);
+	if (tmp == 0) {
+		return -999999;
+	}
+	float ret = tmp->valuedouble;
+	printf("Test_GetJSONValue_Float_Nested2 will return %f for %s\n", ret, keyword);
+	return ret;
+}
+int Test_GetJSONValue_Integer(const char *keyword, const char *obj) {
 	cJSON *tmp;
 	tmp = Test_GetJSONValue_Generic(keyword, obj);
 	if (tmp == 0) {

@@ -441,6 +441,12 @@
     <ClCompile Include="src\selftest\selftest_mqtt.c">
       <Filter>SelfTest</Filter>
     </ClCompile>
+    <ClCompile Include="src\selftest\selftest_tasmota.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_energyMeter.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />
