@@ -7,7 +7,7 @@ const char *dataToSimulate[] =
 	// dummy entry in order to avoid problems with empty table
 	"",
 #if 1
-
+	""
 #elif 1
 	// 0x21 packet type - Weather Data - for testing
 	"55AA002100400108772E74656D702E300004000000160C772E68756D69646974792E3000040000004608772E706D32352E3000040000002607772E6171692E3000040000006C30",
@@ -144,6 +144,10 @@ void NewTuyaMCUSimulator_RunQuickTick(int deltaMS) {
 		return;
 	}
 	while (*curP != 0) {
+		if (*curP == ' ') {
+			curP++;
+			continue;
+		}
 		c_added++;
 		if (c_added >= max_bytes_per_frame) {
 			break;
