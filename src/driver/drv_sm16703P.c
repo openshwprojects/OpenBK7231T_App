@@ -70,9 +70,9 @@ void gpio_output(UINT32 id, UINT32 val);
 #include "icu_pub.h"
 
 static void SM16703P_Send(byte *data, int dataSize){
-	int i;
-	byte b;
-	UINT32 reg_val;
+	//int i;
+	//byte b;
+	UINT32 reg_val = 0;
 	volatile UINT32 *gpio_cfg_addr;
 	UINT32 id;
 	volatile UINT32 reg_val_HIGH = 0x02;

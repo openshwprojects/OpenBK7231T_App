@@ -511,7 +511,7 @@ char* MQTT_RemoveClientFromTopic(char* topic) {
 
 // this accepts obkXXXXXX/<chan>/set to receive data to set channels
 int channelSet(obk_mqtt_request_t* request) {
-	int len = request->receivedLen;
+	//int len = request->receivedLen;
 	int channel = 0;
 	int iValue = 0;
 	char* p;
@@ -752,7 +752,7 @@ static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t* client, const char* sC
 /// @param sVal 
 /// @param flags
 /// @return 
-OBK_Publish_Result MQTT_Publish(char* sTopic, char* sChannel, char* sVal, int flags)
+OBK_Publish_Result MQTT_Publish(const char* sTopic, const char* sChannel, const char* sVal, int flags)
 {
 	return MQTT_PublishTopicToClient(mqtt_client, sTopic, sChannel, sVal, flags, false);
 }
@@ -1763,7 +1763,7 @@ MqttPublishItem_t* find_queue_reusable_item(MqttPublishItem_t* head) {
 /// @param value 
 /// @param flags
 /// @param command Command to execute after the publish
-void MQTT_QueuePublishWithCommand(char* topic, char* channel, char* value, int flags, PostPublishCommands command) {
+void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const char* value, int flags, PostPublishCommands command) {
 	MqttPublishItem_t* newItem;
 	if (g_MqttPublishItemsQueued >= MQTT_MAX_QUEUE_SIZE) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "Unable to queue! %i items already present\r\n", g_MqttPublishItemsQueued);
@@ -1811,7 +1811,7 @@ void MQTT_QueuePublishWithCommand(char* topic, char* channel, char* value, int f
 /// @param channel 
 /// @param value 
 /// @param flags
-void MQTT_QueuePublish(char* topic, char* channel, char* value, int flags) {
+void MQTT_QueuePublish(const char* topic, const char* channel, const char* value, int flags) {
 	MQTT_QueuePublishWithCommand(topic, channel, value, flags, None);
 }
 

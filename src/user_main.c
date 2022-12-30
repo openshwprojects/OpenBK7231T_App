@@ -28,6 +28,7 @@
 #include "httpserver/http_tcp_server.h"
 #include "httpserver/rest_interface.h"
 #include "mqtt/new_mqtt.h"
+#include "ota/ota.h"
 
 #ifdef BK_LITTLEFS
 #include "littlefs/our_lfs.h"

@@ -117,7 +117,6 @@ void Toggler_Toggle(int index) {
 commandResult_t Toggler_NameX(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *indexStr;
 	int index;
-	bool bEnabled;
 
 	if (args == 0 || *args == 0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "This command needs one argument");
@@ -166,7 +165,6 @@ commandResult_t Toggler_EnableX(const void *context, const char *cmd, const char
 commandResult_t Toggler_SetX(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *indexStr;
 	int index;
-	bool bEnabled;
 
 	if (args == 0 || *args == 0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "This command needs one argument");
@@ -190,7 +188,6 @@ commandResult_t Toggler_SetX(const void *context, const char *cmd, const char *a
 commandResult_t Toggler_ChannelX(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *indexStr;
 	int index;
-	bool bEnabled;
 
 	if (args == 0 || *args == 0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "This command needs one argument");

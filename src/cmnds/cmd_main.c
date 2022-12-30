@@ -71,8 +71,8 @@ static commandResult_t CMD_SimonTest(const void *context, const char *cmd, const
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SimonTest: ir test routine");
 
 #ifdef PLATFORM_BK7231T
-	stackCrash(0);
-	CrashMalloc();
+	//stackCrash(0);
+	//CrashMalloc();
 	// anything
 #endif
 

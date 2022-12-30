@@ -17,6 +17,7 @@
 #include "../cJSON/cJSON.h"
 #include <time.h>
 #include "../driver/drv_ntp.h"
+#include "../driver/drv_local.h"
 
 #ifdef WINDOWS
 	// nothing

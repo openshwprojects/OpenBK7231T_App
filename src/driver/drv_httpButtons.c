@@ -94,7 +94,6 @@ setButtonCommand 1 "backlog led_basecolor_rgb FF0000; led_dimmer 50; led_enableA
 
 void DRV_HTTPButtons_ProcessChanges(http_request_t *request) {
 	int j;
-	int val;
 	char tmpA[8];
 	httpButton_t *bt;
 

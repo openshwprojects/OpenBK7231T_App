@@ -851,13 +851,13 @@ void TuyaMCU_ParseQueryProductInformation(const byte *data, int len) {
 void TuyaMCU_ParseWeatherData(const byte *data, int len) {
 	int ofs;
 	byte bValid;
-	int checkLen;
+	//int checkLen;
 	int iValue;
 	byte stringLen;
 	byte varType;
 	char buffer[64];
 	const char *stringData;
-	const char *stringDataValue;
+	//const char *stringDataValue;
 	ofs = 0;
 
 	while (ofs + 4 < len) {
