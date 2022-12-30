@@ -200,8 +200,11 @@ HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type) {
 		break;
 
 	case ENTITY_LIGHT_PWM:
+		brightness_scale = 100;
+		break;
+
 	case ENTITY_LIGHT_PWMCW:
-		brightness_scale = 99;
+		brightness_scale = 100;
 
 		//Using `last` (the default) will send any style (brightness, color, etc) topics first and then a payload_on to the command_topic. 
 		//Using `first` will send the payload_on and then any style topics. 
