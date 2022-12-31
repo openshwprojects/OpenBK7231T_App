@@ -59,6 +59,19 @@ void Test_MQTT_Channels() {
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("myTestDevice/nextVal/get", 0.505f, false);
 	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
 	SIM_ClearMQTTHistory();
+
+	// This should trigger MQTT publish
+	CMD_ExecuteCommand("addEventHandler OnChannelChange 20 publishFloat myAliasedVal $CH20*0.1", 0);
+	CMD_ExecuteCommand("setChannel 20 5", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("myTestDevice/myAliasedVal/get", 0.5f, false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	// next test
+	CMD_ExecuteCommand("setChannel 20 123", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("myTestDevice/myAliasedVal/get", 12.3f, false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
 }
 void Test_MQTT_LED_CW() {
 	SIM_ClearOBK();

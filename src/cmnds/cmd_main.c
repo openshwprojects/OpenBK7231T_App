@@ -35,6 +35,7 @@ command_t *g_commands[HASH_SIZE] = { NULL };
 static commandResult_t CMD_PowerSave(const void *context, const char *cmd, const char *args, int cmdFlags){
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_PowerSave: enable power save");
 #ifdef PLATFORM_BEKEN
+	extern int bk_wlan_power_save_set_level(BK_PS_LEVEL level);
     bk_wlan_power_save_set_level(/*PS_DEEP_SLEEP_BIT */  PS_RF_SLEEP_BIT | PS_MCU_SLEEP_BIT);	
 #endif
 	return CMD_RES_OK;
