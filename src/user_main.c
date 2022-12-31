@@ -596,7 +596,7 @@ void Main_OnEverySecond()
 	}
 
 	if (bSafeMode == 0) {
-#if defined(PLATFORM_BEKEN) || defined(PLATFORM_BL602)
+#if defined(PLATFORM_BEKEN) || defined(PLATFORM_BL602) || defined(PLATFORM_W600)
 		DHT_OnEverySecond();
 #endif
 	}
