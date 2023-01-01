@@ -92,5 +92,8 @@ void HAL_PIN_PWM_Update(int index, int value) {
 
 }
 
+unsigned int HAL_GetGPIOPin(int index) {
+	return index;
+}
 
 #endif
