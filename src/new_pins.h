@@ -75,7 +75,7 @@ enum IORole {
 
 #define IS_PIN_DHT_ROLE(role) (((role)>=IOR_DHT11) &&((role)<=IOR_DHT22))
 
-enum ChannelType {
+typedef enum {
 	ChType_Default,
 	ChType_Error,
 	ChType_Temperature,
@@ -119,7 +119,7 @@ enum ChannelType {
 	ChType_OpenClosed_Inv,
 	ChType_BatteryLevelPercent,
 
-};
+} ChannelType;
 
 
 #if PLATFORM_BL602
@@ -317,6 +317,7 @@ const char* PIN_GetPinNameAlias(int index);
 void PIN_SetPinRoleForPinIndex(int index, int role);
 void PIN_SetPinChannelForPinIndex(int index, int ch);
 void PIN_SetPinChannel2ForPinIndex(int index, int ch);
+bool PIN_SetPinChannelTypeForPinIndex(int index, ChannelType type);
 void CHANNEL_Toggle(int ch);
 void CHANNEL_DoSpecialToggleAll();
 bool CHANNEL_Check(int ch);
@@ -331,8 +332,7 @@ int CHANNEL_GetRoleForOutputChannel(int ch);
 bool CHANNEL_HasRoleThatShouldBePublished(int ch);
 bool CHANNEL_IsPowerRelayChannel(int ch);
 // See: enum ChannelType
-void CHANNEL_SetType(int ch, int type);
-int CHANNEL_GetType(int ch);
+ChannelType CHANNEL_GetType(int ch);
 void CHANNEL_SetAllChannelsByType(int requiredType, int newVal);
 // CHANNEL_SET_FLAG_*
 void CHANNEL_SetAll(int iVal, int iFlags);

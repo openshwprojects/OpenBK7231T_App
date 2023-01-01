@@ -2495,6 +2495,8 @@ int http_fn_cfg_pins(http_request_t* request) {
 	poststr(request, "<h5>BK7231N/BK7231T supports PWM only on pins 6, 7, 8, 9, 24 and 26!</h5>");
 #endif
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		bool is_role_dht = false;
+
 		sprintf(tmpA, "%i", i);
 		if (http_getArg(request->url, tmpA, tmpB, sizeof(tmpB))) {
 			int role;
@@ -2503,6 +2505,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 			iChangedRequested++;
 
 			role = atoi(tmpB);
+			is_role_dht = IS_PIN_DHT_ROLE(role);
 
 			pr = PIN_GetPinRoleForPinIndex(i);
 			if (pr != role) {
@@ -2524,6 +2527,10 @@ int http_fn_cfg_pins(http_request_t* request) {
 				PIN_SetPinChannelForPinIndex(i, rel);
 				iChanged++;
 			}
+
+			if (is_role_dht && PIN_SetPinChannelTypeForPinIndex(rel, ChType_Temperature)){
+				iChanged++;
+			}
 		}
 		sprintf(tmpA, "e%i", i);
 		if (http_getArg(request->url, tmpA, tmpB, sizeof(tmpB))) {
@@ -2537,6 +2544,10 @@ int http_fn_cfg_pins(http_request_t* request) {
 			prevRel = PIN_GetPinChannel2ForPinIndex(i);
 			if (prevRel != rel) {
 				PIN_SetPinChannel2ForPinIndex(i, rel);
+				iChanged++;
+			}
+
+			if (is_role_dht && PIN_SetPinChannelTypeForPinIndex(rel, ChType_Humidity)){
 				iChanged++;
 			}
 		}

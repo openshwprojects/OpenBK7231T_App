@@ -455,6 +455,18 @@ void PIN_SetPinChannel2ForPinIndex(int index, int ch) {
 		g_cfg.pins.channels2[index] = ch;
 	}
 }
+bool PIN_SetPinChannelTypeForPinIndex(int index, ChannelType type) {
+	if(index < 0 || index >= PLATFORM_GPIO_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "PIN_SetPinChannelTypeForPinIndex: Pin index %i out of range <0,%i).",index,PLATFORM_GPIO_MAX);
+		return false;
+	}
+	if(g_cfg.pins.channelTypes[index] != type) {
+		g_cfg_pendingChanges++;
+		g_cfg.pins.channelTypes[index] = type;
+		return true;
+	}
+	return false;
+}
 //void CFG_ApplyStartChannelValues() {
 //	int i;
 //
