@@ -512,6 +512,7 @@
     <ClCompile Include="src\selftest\selftest_cmd_alias.c" />
     <ClCompile Include="src\selftest\selftest_cmd_channels.c" />
     <ClCompile Include="src\selftest\selftest_deviceGroups.c" />
+    <ClCompile Include="src\selftest\selftest_DHT.c" />
     <ClCompile Include="src\selftest\selftest_energyMeter.c" />
     <ClCompile Include="src\selftest\selftest_expandConstant.c" />
     <ClCompile Include="src\selftest\selftest_expressions.c" />

@@ -53,6 +53,7 @@ void Test_NTP();
 void Test_MQTT();
 void Test_Tasmota();
 void Test_EnergyMeter();
+void Test_DHT();
 
 void Test_FakeHTTPClientPacket_GET(const char *tg);
 void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data);

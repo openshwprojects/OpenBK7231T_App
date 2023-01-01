@@ -596,11 +596,13 @@ void Main_OnEverySecond()
 		}
 	}
 
-	if (bSafeMode == 0) {
-#if defined(PLATFORM_BEKEN) || defined(PLATFORM_BL602) || defined(PLATFORM_W600)
-		DHT_OnEverySecond();
-#endif
+#if defined(PLATFORM_BEKEN) || defined(PLATFORM_BL602) || defined(PLATFORM_W600) || defined(WINDOWS)
+	if (g_dhtsCount>0) {
+		if (bSafeMode == 0) {
+			DHT_OnEverySecond();
+		}
 	}
+#endif
 
 	// force it to sleep...  we MUST have some idle task processing
 	// else task memory doesn't get freed

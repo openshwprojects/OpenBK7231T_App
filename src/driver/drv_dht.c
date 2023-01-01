@@ -40,29 +40,53 @@ int translateDHTType(int role) {
 		return DHT22;
 	return 0;
 }
-void DHT_OnEverySecond() {
-	int i;
-	int bHasDHT;
+int g_dhtsCount = 0;
 
-	bHasDHT = false;
+void DHT_OnPinsConfigChanged() {
+	int i;
+
+	g_dhtsCount = 0;
 
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if (IS_PIN_DHT_ROLE(g_cfg.pins.roles[i])) {
-			bHasDHT = true;
+			g_dhtsCount++;
 		}
 	}
-	if (bHasDHT == false) {
+	if (g_dhtsCount == 0) {
 		if (g_dhts) {
+			for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+				if (g_dhts[i]) {
+					free(g_dhts[i]);
+					g_dhts[i] = 0;
+				}
+			}
 			free(g_dhts);
 			g_dhts = 0;
 		}
 		// nothing to do here
 		return;
 	}
-	if (g_dhts==0) {
+	if (g_dhts == 0) {
 		g_dhts = (dht_t**)malloc(sizeof(dht_t*)*PLATFORM_GPIO_MAX);
 		memset(g_dhts, 0, sizeof(dht_t*)*PLATFORM_GPIO_MAX);
 	}
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (IS_PIN_DHT_ROLE(g_cfg.pins.roles[i])) {
+			if (g_dhts[i] == 0) {
+				g_dhts[i] = DHT_Create(i, translateDHTType(g_cfg.pins.roles[i]));
+			}
+		}
+		else {
+			if (g_dhts[i] != 0) {
+				free(g_dhts[i]);
+				g_dhts[i] = 0;
+			}
+		}
+	}
+}
+void DHT_OnEverySecond() {
+	int i;
+
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if (IS_PIN_DHT_ROLE(g_cfg.pins.roles[i])) {
 			if (g_dhts[i] == 0) {
@@ -89,6 +113,4 @@ void DHT_OnEverySecond() {
 			}
 		}
 	}
-
-
 }

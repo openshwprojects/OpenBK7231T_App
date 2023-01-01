@@ -514,6 +514,8 @@ void CHANNEL_DoSpecialToggleAll() {
 
 }
 void PIN_SetPinRoleForPinIndex(int index, int role) {
+	bool bDHTChange = false;
+
 	if(index < 0 || index >= PLATFORM_GPIO_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "PIN_SetPinRoleForPinIndex: Pin index %i out of range <0,%i).",index,PLATFORM_GPIO_MAX);
 		return;
@@ -585,6 +587,16 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 	}
 	// set new role
 	if(g_cfg.pins.roles[index] != role) {
+		if (g_enable_pins) {
+			// if old role is DHT
+			if (IS_PIN_DHT_ROLE(g_cfg.pins.roles[index])) {
+				bDHTChange = true;
+			}
+			// or new role is DHT
+			if (IS_PIN_DHT_ROLE(role)) {
+				bDHTChange = true;
+			}
+		}
 		g_cfg.pins.roles[index] = role;
 		g_cfg_pendingChanges++;
 	}
@@ -725,6 +737,12 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		default:
 			break;
 		}
+	}
+	if (bDHTChange) {
+#if defined(PLATFORM_BEKEN) || defined(PLATFORM_BL602) || defined(PLATFORM_W600) || defined(WINDOWS)
+		// TODO: better place to call?
+		DHT_OnPinsConfigChanged();
+#endif
 	}
 }
 
