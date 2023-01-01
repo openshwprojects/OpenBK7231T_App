@@ -23,7 +23,9 @@ static void helloworld_task(void *arg)
 		Main_OnEverySecond();
 		if(g_xr_ota_requested) {
 			ADDLOGF_DEBUG("Going to call cmd_ota_http_exec with %s\n",g_otaRequest);
+			Main_SetOTAInProgress(true);
 			cmd_ota_http_exec(g_otaRequest);
+			Main_SetOTAInProgress(false);
 			g_xr_ota_requested = 0;
 		}
 	}

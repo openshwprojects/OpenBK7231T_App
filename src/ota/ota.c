@@ -104,6 +104,7 @@ static void store_sector(unsigned int addr, unsigned char *data){
     flash_ctrl(CMD_FLASH_WRITE_ENABLE, (void *)0);
     flash_write((char *)data , SECTOR_SIZE, addr);
     ota_status += SECTOR_SIZE;
+    Main_SetOTAInProgress(true);
 }
 
 
@@ -135,6 +136,7 @@ int myhttpclientcallback(httprequest_t* request){
     case 2: // ended, write any remaining bytes to the sector
       close_ota();
       ota_status = -1;
+      Main_SetOTAInProgress(false);
       addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"\r\nmyhttpclientcallback state %d total %d/%d\r\n", request->state, total_bytes, request->client_data.response_content_len);
 
       addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"Rebooting in 1 seconds...");
@@ -209,6 +211,7 @@ void otarequest(const char *urlin){
   request->timeout = 10000;
   HTTPClient_Async_SendGeneric(request);
   ota_status = 0;
+  Main_SetOTAInProgress(true);
  }
 
 int ota_progress()

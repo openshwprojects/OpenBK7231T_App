@@ -905,6 +905,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 
 	ADDLOG_DEBUG(LOG_FEATURE_API, "OTA post len %d", request->contentLength);
 
+	Main_SetOTAInProgress(true);
 	init_ota(startaddr);
 
 	towrite = request->bodylen;
@@ -937,6 +938,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	http_setup(request, httpMimeTypeJson);
 	hprintf255(request, "{\"size\":%d}", total);
 	close_ota();
+	Main_SetOTAInProgress(false);
 
 	poststr(request, NULL);
 #endif

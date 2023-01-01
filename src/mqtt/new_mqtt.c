@@ -1073,7 +1073,7 @@ OBK_Publish_Result MQTT_ChannelChangeCallback(int channel, int iVal)
 	int flags;
 
 	flags = 0;
-	addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Channel has changed! Publishing change %i with %i \n", channel, iVal);
+	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Channel has changed! Publishing change %i with %i \n", channel, iVal);
 
 	sprintf(channelNameStr, "%i", channel);
 	sprintf(valueStr, "%i", iVal);
@@ -1095,7 +1095,7 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 
 	iValue = CHANNEL_Get(channel);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Forced channel publish! Publishing val %i to %i", iValue, channel);
+	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Forced channel publish! Publishing val %i to %i", iValue, channel);
 
 	sprintf(channelNameStr, "%i", channel);
 	sprintf(valueStr, "%i", iValue);
@@ -1605,7 +1605,7 @@ int MQTT_RunEverySecondUpdate()
 #elif PLATFORM_W600 || PLATFORM_W800
 #elif PLATFORM_XR809
 #elif PLATFORM_BK7231N || PLATFORM_BK7231T
-		if (ota_progress() == -1)
+		if (!Main_GetOTAInProgress())
 #endif
 		{
 			loopsWithDisconnected++;
@@ -1657,7 +1657,7 @@ int MQTT_RunEverySecondUpdate()
 #elif PLATFORM_W600 || PLATFORM_W800
 #elif PLATFORM_XR809
 #elif PLATFORM_BK7231N || PLATFORM_BK7231T
-		if (ota_progress() != -1)
+		if (!Main_GetOTAInProgress())
 		{
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "OTA started MQTT will be closed\n");
 			LOCK_TCPIP_CORE();

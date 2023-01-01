@@ -388,6 +388,8 @@ void Main_Init();
 void Main_OnEverySecond();
 int Main_HasMQTTConnected();
 int Main_HasWiFiConnected();
+bool Main_GetOTAInProgress();
+void Main_SetOTAInProgress(bool value);
 int Main_GetLastRebootBootFailures();
 void Main_OnPingCheckerReply(int ms);
 
