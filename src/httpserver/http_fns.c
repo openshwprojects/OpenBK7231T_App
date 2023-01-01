@@ -2525,10 +2525,11 @@ int http_fn_cfg_pins(http_request_t* request) {
 			prevRel = PIN_GetPinChannelForPinIndex(i);
 			if (prevRel != rel) {
 				PIN_SetPinChannelForPinIndex(i, rel);
-				iChanged++;
-			}
 
-			if (is_role_dht && PIN_SetPinChannelTypeForPinIndex(rel, ChType_Temperature)){
+				if (is_role_dht) {
+					PIN_SetPinChannelTypeForPinIndex(rel, ChType_Temperature_div10);
+				}
+
 				iChanged++;
 			}
 		}
@@ -2544,10 +2545,11 @@ int http_fn_cfg_pins(http_request_t* request) {
 			prevRel = PIN_GetPinChannel2ForPinIndex(i);
 			if (prevRel != rel) {
 				PIN_SetPinChannel2ForPinIndex(i, rel);
-				iChanged++;
-			}
 
-			if (is_role_dht && PIN_SetPinChannelTypeForPinIndex(rel, ChType_Humidity)){
+				if (is_role_dht) {
+					PIN_SetPinChannelTypeForPinIndex(rel, ChType_Humidity);
+				}
+
 				iChanged++;
 			}
 		}
