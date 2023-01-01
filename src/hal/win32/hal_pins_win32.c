@@ -214,7 +214,9 @@ void HAL_PIN_PWM_Update(int index, int value) {
 	g_simulatedPWMs[index] = value;
 }
 
-
+unsigned int HAL_GetGPIOPin(int index) {
+	return index;
+}
 
 #endif
 

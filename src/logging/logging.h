@@ -82,8 +82,9 @@ typedef enum {
 	LOG_FEATURE_RAW				= 18,
     // add in here - but also in names in logging.c
     LOG_FEATURE_HASS            = 19,
-    LOG_FEATURE_IR		        = 20,
-    LOG_FEATURE_MAX             = 21,
+    LOG_FEATURE_IR              = 20,
+    LOG_FEATURE_DHT             = 21,
+    LOG_FEATURE_MAX             = 22,
 } log_features;
 
 #endif
