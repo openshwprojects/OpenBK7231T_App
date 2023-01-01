@@ -515,6 +515,7 @@ int channelSet(obk_mqtt_request_t* request) {
 	int channel = 0;
 	int iValue = 0;
 	char* p;
+	const char *argument;
 
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "channelSet topic %i with arg %s", request->topic, request->received);
 
@@ -547,8 +548,15 @@ int channelSet(obk_mqtt_request_t* request) {
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT client in mqtt_incoming_data_cb data is %.*s for ch %i\n", MQTT_MAX_DATA_LOG_LENGTH, request->received, channel);
 
-	iValue = atoi(((const char*)request->received));
-	CHANNEL_Set(channel, iValue, 0);
+	argument = ((const char*)request->received);
+
+	if (!wal_strnicmp(argument, "toggle", 6)) {
+		CHANNEL_Toggle(channel);
+	}
+	else {
+		iValue = atoi(argument);
+		CHANNEL_Set(channel, iValue, 0);
+	}
 
 	// return 1 to stop processing callbacks here.
 	// return 0 to allow later callbacks to process this topic.

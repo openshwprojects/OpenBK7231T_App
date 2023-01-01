@@ -34,6 +34,42 @@ void Test_MQTT_Channels() {
 	SIM_ClearMQTTHistory();
 
 	// This should trigger MQTT publish
+	CMD_ExecuteCommand("setChannel 1 1", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/1/get", "1", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	// This should trigger MQTT publish
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/1/get", "0", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	// This should trigger MQTT publish
+	SIM_SendFakeMQTTRawChannelSet(1, "toggle");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/1/get", "1", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	// This should trigger MQTT publish
+	SIM_SendFakeMQTTRawChannelSet(1, "toggle");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/1/get", "0", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	// This should trigger MQTT publish
+	SIM_SendFakeMQTTRawChannelSet(1, "toggle");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/1/get", "1", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	// This should trigger MQTT publish
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/1/get", "0", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	// This should trigger MQTT publish
 	CMD_ExecuteCommand("publish myTestVal 123", 0);
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/myTestVal/get", "123", false);
 	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
