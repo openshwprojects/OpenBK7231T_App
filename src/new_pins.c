@@ -180,7 +180,10 @@ void PIN_SetupPins() {
 	}
 #endif
 #endif
-
+#if defined(PLATFORM_BEKEN) || defined(PLATFORM_BL602) || defined(PLATFORM_W600) || defined(WINDOWS)
+	// TODO: better place to call?
+	DHT_OnPinsConfigChanged();
+#endif
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"PIN_SetupPins pins have been set up.\r\n");
 }
 
