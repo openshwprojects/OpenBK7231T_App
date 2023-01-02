@@ -1073,7 +1073,7 @@ OBK_Publish_Result MQTT_ChannelChangeCallback(int channel, int iVal)
 	int flags;
 
 	flags = 0;
-	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Channel has changed! Publishing change %i with %i \n", channel, iVal);
+	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Channel has changed! Publishing %i to channel %i \n", iVal, channel);
 
 	sprintf(channelNameStr, "%i", channel);
 	sprintf(valueStr, "%i", iVal);
