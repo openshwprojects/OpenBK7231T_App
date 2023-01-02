@@ -383,7 +383,7 @@ void Main_OnEverySecond()
 				MQTT_DoItemPublish(PUBLISHITEM_SELF_IP);
 			}
 			EventHandlers_FireEvent(CMD_EVENT_IPCHANGE, 0);
-			
+
 			Main_ScheduleHomeAssistantDiscovery(1);	//Invoke Hass discovery in the next pass
 		}
 	}
@@ -502,7 +502,7 @@ void Main_OnEverySecond()
 			}
 		}
 		else {
-			ADDLOGF_INFO("HA discovery is scheduled, but MQTT connection is present yet\n");
+			ADDLOGF_INFO("HA discovery is scheduled, but MQTT connection is not present yet\n");
 		}
 	}
 	if (g_openAP)
