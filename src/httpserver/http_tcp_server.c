@@ -16,6 +16,8 @@
 // See: https://github.com/openshwprojects/OpenBK7231T_App/issues/314
 #if PLATFORM_BEKEN
 #define HTTP_CLIENT_STACK_SIZE 8192
+#elif PLATFORM_W600
+#define HTTP_CLIENT_STACK_SIZE 8192
 #else
 #define HTTP_CLIENT_STACK_SIZE 2048
 #endif
