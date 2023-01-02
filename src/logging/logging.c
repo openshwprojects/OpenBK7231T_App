@@ -73,7 +73,14 @@ char* logfeaturenames[] = {
 	"DDP:",// = 17
 	"RAW:", // = 18 raw, without any prefix
 	"HASS:", // = 19
-	"IR:" // = 20
+	"IR:", // = 20
+	"DHT", // = 21
+	"ERROR",// = 22,
+	"ERROR",// = 23,
+	"ERROR",// = 24,
+	"ERROR",// = 25,
+	"ERROR",// = 26,
+	"ERROR",// = 27,
 };
 
 #define LOGGING_BUFFER_SIZE		1024
