@@ -383,6 +383,8 @@ void Main_OnEverySecond()
 				MQTT_DoItemPublish(PUBLISHITEM_SELF_IP);
 			}
 			EventHandlers_FireEvent(CMD_EVENT_IPCHANGE, 0);
+			
+			Main_ScheduleHomeAssistantDiscovery(1);	//Invoke Hass discovery in the next pass
 		}
 	}
 
