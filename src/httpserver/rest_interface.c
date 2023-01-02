@@ -39,6 +39,9 @@ extern UINT32 flash_read(char* user_buf, UINT32 count, UINT32 address);
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 
+#ifndef OBK_DISABLE_ALL_DRIVERS
+#include "../driver/drv_local.h"
+#endif
 
 #define MAX_JSON_VALUE_LENGTH   128
 
@@ -759,6 +762,13 @@ static int http_rest_get_info(http_request_t* request) {
 	hprintf255(request, "\"mqtttopic\":\"%s\",", CFG_GetMQTTClientId());
 	hprintf255(request, "\"chipset\":\"%s\",", PLATFORM_MCU_NAME);
 	hprintf255(request, "\"webapp\":\"%s\",", CFG_GetWebappRoot());
+
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	hprintf255(request, "\"supportsSSDP\":%d,", DRV_IsRunning("SSDP") ? 1 : 0);
+#else
+	hprintf255(request, "\"supportsSSDP\":0,");
+#endif
+
 	hprintf255(request, "\"supportsClientDeviceDB\":true}");
 
 	poststr(request, NULL);
