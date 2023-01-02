@@ -39,6 +39,9 @@ extern UINT32 flash_read(char* user_buf, UINT32 count, UINT32 address);
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 
+#ifndef OBK_DISABLE_ALL_DRIVERS
+#include "../driver/drv_local.h"
+#endif
 
 #define MAX_JSON_VALUE_LENGTH   128
 
