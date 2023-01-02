@@ -16,6 +16,8 @@
 #include "new_pins.h"
 #include <timeapi.h>
 
+#define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
+
 // Need to link with Ws2_32.lib
 #pragma comment (lib, "Ws2_32.lib")
 // #pragma comment (lib, "Mswsock.lib")
@@ -192,8 +194,31 @@ int __cdecl main(int argc, char **argv)
         printf("WSAStartup failed with error: %d\n", iResult);
         return 1;
     }
+	printf("sizeof(short) = %d\n", (int)sizeof(short));
+	printf("sizeof(int) = %d\n", (int)sizeof(int));
+	printf("sizeof(long) = %d\n", (int)sizeof(long));
+	printf("sizeof(float) = %d\n", (int)sizeof(float));
+	printf("sizeof(double) = %d\n", (int)sizeof(double));
+	printf("sizeof(long double) = %d\n", (int)sizeof(long double));
+	//printf("Offset MQTT Group: %i", OFFSETOF(mainConfig_t, mqtt_group));
 	if (sizeof(mainConfig_t) != MAGIC_CONFIG_SIZE) {
 		printf("sizeof(mainConfig_t) != MAGIC_CONFIG_SIZE!: %i\n", sizeof(mainConfig_t));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, ping_host) != 0x000005A0) {
+		printf("OFFSETOF(mainConfig_t, ping_host) != 0x000005A0: %i\n", OFFSETOF(mainConfig_t, ping_host));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, buttonShortPress) != 0x000004B8) {
+		printf("OFFSETOF(mainConfig_t, buttonShortPress) != 0x000004B8: %i\n", OFFSETOF(mainConfig_t, buttonShortPress));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, pins) != 0x0000033E) {
+		printf("OFFSETOF(mainConfig_t, pins) != 0x0000033E: %i\n", OFFSETOF(mainConfig_t, pins));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, version) != 0x00000004) {
+		printf("OFFSETOF(mainConfig_t, version) != 0x00000004: %i\n", OFFSETOF(mainConfig_t, version));
 		system("pause");
 	}
 	if (bWantsUnitTests) {

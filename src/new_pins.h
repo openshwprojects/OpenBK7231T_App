@@ -279,7 +279,9 @@ typedef struct mainConfig_s {
 	byte unused_fill1;
 
 	unsigned long LFS_Size; // szie of LFS volume.  it's aligned against the end of OTA
-	unsigned long unusedSectorA[53];
+	byte unusedSectorAB[148];
+	// alternate topic name for receiving MQTT commands
+	char mqtt_group[64];
 	// offs 0x00000594
 	byte unused_bytefill[3];
 	byte timeRequiredToMarkBootSuccessfull;

@@ -1387,6 +1387,7 @@ void MQTT_init()
 	char cbtopicbase[CGF_MQTT_CLIENT_ID_SIZE + 16];
 	char cbtopicsub[CGF_MQTT_CLIENT_ID_SIZE + 16];
 	const char* clientId;
+	const char* groupId;
 
 	// WINDOWS must support reinit
 #ifdef WINDOWS
@@ -1394,6 +1395,7 @@ void MQTT_init()
 #endif
 
 	clientId = CFG_GetMQTTClientId();
+	groupId = CFG_GetMQTTGroupTopic();
 
 	// register the main set channel callback
 	snprintf(cbtopicbase, sizeof(cbtopicbase), "%s/", clientId);
@@ -1401,11 +1403,22 @@ void MQTT_init()
 	// note: this may REPLACE an existing entry with the same ID.  ID 1 !!!
 	MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 1, channelSet);
 
+	// base topic
 	// register the TAS cmnd callback
 	snprintf(cbtopicbase, sizeof(cbtopicbase), "cmnd/%s/", clientId);
 	snprintf(cbtopicsub, sizeof(cbtopicsub), "cmnd/%s/+", clientId);
 	// note: this may REPLACE an existing entry with the same ID.  ID 2 !!!
 	MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 2, tasCmnd);
+
+	// so-called "Group topic", a secondary topic that can be set on multiple devices 
+	// to control them together
+	// register the TAS cmnd callback
+	if (*groupId) {
+		snprintf(cbtopicbase, sizeof(cbtopicbase), "cmnd/%s/", groupId);
+		snprintf(cbtopicsub, sizeof(cbtopicsub), "cmnd/%s/+", groupId);
+		// note: this may REPLACE an existing entry with the same ID.  ID 2 !!!
+		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 2, tasCmnd);
+	}
 
 	mqtt_initialised = 1;
 

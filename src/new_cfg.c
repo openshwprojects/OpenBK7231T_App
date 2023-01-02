@@ -142,6 +142,7 @@ void CFG_SetDefaultConfig() {
 	snprintf(g_cfg.longDeviceName, sizeof(g_cfg.longDeviceName), DEVICENAME_PREFIX_FULL"_%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
 	snprintf(g_cfg.shortDeviceName, sizeof(g_cfg.shortDeviceName), DEVICENAME_PREFIX_SHORT"%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
 	strcpy_safe(g_cfg.mqtt_clientId, g_cfg.shortDeviceName, sizeof(g_cfg.mqtt_clientId));
+	strcpy_safe(g_cfg.mqtt_group, "bekens", sizeof(g_cfg.mqtt_group));
 
 	strcpy(g_cfg.ntpServer, DEFAULT_NTP_SERVER);
 
@@ -306,6 +307,9 @@ const char *CFG_GetMQTTHost() {
 const char *CFG_GetMQTTClientId() {
 	return g_cfg.mqtt_clientId;
 }
+const char *CFG_GetMQTTGroupTopic() {
+	return g_cfg.mqtt_group;
+}
 const char *CFG_GetMQTTUserName() {
 	return g_cfg.mqtt_userName;
 }
@@ -322,6 +326,13 @@ void CFG_SetMQTTHost(const char *s) {
 void CFG_SetMQTTClientId(const char *s) {
 	// this will return non-zero if there were any changes
 	if(strcpy_safe_checkForChanges(g_cfg.mqtt_clientId, s,sizeof(g_cfg.mqtt_clientId))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+void CFG_SetMQTTGroupTopic(const char *s) {
+	// this will return non-zero if there were any changes
+	if (strcpy_safe_checkForChanges(g_cfg.mqtt_group, s, sizeof(g_cfg.mqtt_group))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
 	}

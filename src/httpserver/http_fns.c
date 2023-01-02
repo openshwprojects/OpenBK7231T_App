@@ -868,9 +868,15 @@ int http_fn_cfg_mqtt(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "MQTT");
 	poststr(request, "<h2>Use this to connect to your MQTT</h2>");
+
+	hprintf255(request, "<h5>Currently, your device command topic is cmnd/%s/[Command]</h5>", CFG_GetMQTTClientId());
+	hprintf255(request, "<h5>Currently, your device publish data topic is %s/[Channel]/get</h5>", CFG_GetMQTTClientId());
+	hprintf255(request, "<h5>Currently, your device receive data topic is %s/[Channel]/set</h5>", CFG_GetMQTTClientId());
+
 	add_label_text_field(request, "Host", "host", CFG_GetMQTTHost(), "<form action=\"/cfg_mqtt_set\">");
 	add_label_numeric_field(request, "Port", "port", CFG_GetMQTTPort(), "<br>");
-	add_label_text_field(request, "Client", "client", CFG_GetMQTTClientId(), "<br><br>");
+	add_label_text_field(request, "Client Topic (Base Topic)", "client", CFG_GetMQTTClientId(), "<br><br>");
+	add_label_text_field(request, "Group Topic (Secondary Topic to only receive cmnds)", "group", CFG_GetMQTTGroupTopic(), "<br>");
 	add_label_text_field(request, "User", "user", CFG_GetMQTTUserName(), "<br>");
 	add_label_password_field(request, "Password", "password", CFG_GetMQTTPass(), "<br>");
 
@@ -902,6 +908,9 @@ int http_fn_cfg_mqtt_set(http_request_t* request) {
 	}
 	if (http_getArg(request->url, "client", tmpA, sizeof(tmpA))) {
 		CFG_SetMQTTClientId(tmpA);
+	}
+	if (http_getArg(request->url, "group", tmpA, sizeof(tmpA))) {
+		CFG_SetMQTTGroupTopic(tmpA);
 	}
 
 	CFG_Save_SetupTimer();
