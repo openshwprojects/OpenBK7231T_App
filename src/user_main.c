@@ -72,7 +72,7 @@ static int g_bPingWatchDogStarted = 0;
 static char g_currentIPString[32] = { 0 };
 static HALWifiStatus_t g_newWiFiStatus = WIFI_UNDEFINED;
 static HALWifiStatus_t g_prevWiFiStatus = WIFI_UNDEFINED;
-static bool g_bOTAInProgress = false;
+
 uint8_t g_StartupDelayOver = 0;
 
 uint32_t idleCount = 0;
@@ -279,15 +279,6 @@ int Main_HasWiFiConnected()
     return g_bHasWiFiConnected;
 }
 
-bool Main_GetOTAInProgress()
-{
-	return g_bOTAInProgress;
-}
-void Main_SetOTAInProgress(bool value)
-{
-	g_bOTAInProgress = value;
-}
-
 #ifdef OBK_MCU_SLEEP_METRICS_ENABLE
 extern OBK_MCU_SLEEP_METRICS OBK_Mcu_metrics;
 void Main_LogPowerSave(){
@@ -378,7 +369,7 @@ void Main_OnEverySecond()
 #elif PLATFORM_W600 || PLATFORM_W800
 #elif PLATFORM_XR809
 #elif PLATFORM_BK7231N || PLATFORM_BK7231T
-    if (!Main_GetOTAInProgress())
+    if (ota_progress()==-1)
 #endif
     {
 		CFG_Save_IfThereArePendingChanges();
@@ -605,7 +596,7 @@ void Main_OnEverySecond()
 		}
 	}
 
-	if (bSafeMode == 0 && !Main_GetOTAInProgress()) {
+	if (bSafeMode == 0) {
 #if defined(PLATFORM_BEKEN) || defined(PLATFORM_BL602) || defined(PLATFORM_W600)
 		DHT_OnEverySecond();
 #endif

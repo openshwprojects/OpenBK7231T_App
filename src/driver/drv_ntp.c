@@ -300,7 +300,7 @@ void NTP_OnEverySecond()
 #elif PLATFORM_W600 || PLATFORM_W800
 #elif PLATFORM_XR809
 #elif PLATFORM_BK7231N || PLATFORM_BK7231T
-    if (Main_GetOTAInProgress())
+    if (ota_progress() != -1)
     {
         return;
     }
