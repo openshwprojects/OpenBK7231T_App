@@ -759,6 +759,13 @@ static int http_rest_get_info(http_request_t* request) {
 	hprintf255(request, "\"mqtttopic\":\"%s\",", CFG_GetMQTTClientId());
 	hprintf255(request, "\"chipset\":\"%s\",", PLATFORM_MCU_NAME);
 	hprintf255(request, "\"webapp\":\"%s\",", CFG_GetWebappRoot());
+
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	hprintf255(request, "\"supportsSSDP\":%d,", DRV_IsRunning("SSDP") ? 1 : 0);
+#else
+	hprintf255(request, "\"supportsSSDP\":0,");
+#endif
+
 	hprintf255(request, "\"supportsClientDeviceDB\":true}");
 
 	poststr(request, NULL);
