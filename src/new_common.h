@@ -280,6 +280,7 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 #define os_free free
 #define os_memset memset
 
+#define portTICK_PERIOD_MS	portTICK_RATE_MS
 
 #define portTICK_PERIOD_MS portTICK_RATE_MS
 
