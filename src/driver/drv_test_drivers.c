@@ -28,6 +28,10 @@ commandResult_t TestPower_Setup(const void* context, const char* cmd, const char
 void Test_Power_Init() {
 	BL_Shared_Init();
 
+	//cmddetail:{"name":"SetupTestPower","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"TestPower_Setup","file":"driver/drv_test_drivers.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetupTestPower", "", TestPower_Setup, NULL, NULL);
 }
 void Test_Power_RunFrame() {

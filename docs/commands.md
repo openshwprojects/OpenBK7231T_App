@@ -131,6 +131,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | DGR_SendBrightness | [GroupName][Brightness] | Sends a Brightness message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
 | DGR_SendRGBCW | [GroupName][HexRGBCW] | Sends a RGBCW message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
 | DGR_SendFixedColor | [GroupName][TasColorIndex] | Sends a FixedColor message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
+| SetupTestPower |  | NULL |
 | tuyaMcu_testSendTime |  | Sends a example date by TuyaMCU to clock/callendar MCU |
 | tuyaMcu_sendCurTime |  | Sends a current date by TuyaMCU to clock/callendar MCU. Time is taken from NTP driver, so NTP also should be already running. |
 | tuyaMcu_fakeHex | [HexString] | Spoofs a fake hex packet so it looks like TuyaMCU send that to us. Used for testing. |
@@ -156,13 +157,18 @@ Do not add anything here, as it will overwritten with next rebuild.
 | addI2CDevice_LCM1602 |  | Adds a new I2C device - LCM1602 |
 | addI2CDevice_LCD_PCF8574 |  | Adds a new I2C device - PCF8574 |
 | MCP23017_MapPinToChannel |  | Maps port expander bit to OBK channel |
-| lfssize | [MaxSize] | Log or Set LFS size - will apply and re-format next boot, usage setlfssize 0x10000 |
-| lfsunmount |  | Un-mount LFS |
-| lfsmount |  | Mount LFS |
-| lfsformat |  | Unmount and format LFS.  Optionally add new size as argument |
+| lfs_size | [MaxSize] | Log or Set LFS size - will apply and re-format next boot, usage setlfssize 0x10000 |
+| lfs_unmount |  | Un-mount LFS |
+| lfs_mount |  | Mount LFS |
+| lfs_format |  | Unmount and format LFS.  Optionally add new size as argument |
+| lfs_append | [FileName][String] | Appends a string to LFS file |
+| lfs_appendLine | [FileName][String] | Appends a string to LFS file with a next line marker |
+| lfs_remove | [FileName] | Deletes a LittleFS file |
+| lfs_write | [FileName][String] | Resets a LFS file and writes a new string to it |
+| lfs_writeLine | [FileName][String] | Resets a LFS file and writes a new string to it with newline |
 | loglevel | [Value] | Correct values are 0 to 7. Default is 3. Higher value includes more logs. Log levels are: ERROR = 1, WARN = 2, INFO = 3, DEBUG = 4, EXTRADEBUG = 5. WARNING: you also must separately select logging level filter on web panel in order for more logs to show up there |
 | logfeature | [Index][1or0] | set log feature filter, as an index and a 1 or 0 |
-| logtype | [TypeStr] | logtype direct|all - direct logs only to serial immediately |
+| logtype | [TypeStr] | logtype direct|thread|none - type of serial logging - thread (in a thread; default), direct (logged directly to serial), none (no UART logging) |
 | logdelay | [Value] | Value is a number of ms. This will add an artificial delay in each log call. Useful for debugging. This way you can see step by step what happens. |
 | publish | [Topic][Value] | Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get. You can use argument expansion here, so $CH11 will change to value of the channel 11 |
 | publishInt | [Topic][Value] | Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an integer, so you can also use math expressions like $CH10*10, etc. |

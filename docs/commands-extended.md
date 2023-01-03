@@ -131,6 +131,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | DGR_SendBrightness | [GroupName][Brightness] | Sends a Brightness message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. | File: driver/drv_tasmotaDeviceGroups.c<br/>Function: CMD_DGR_SendBrightness |
 | DGR_SendRGBCW | [GroupName][HexRGBCW] | Sends a RGBCW message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. | File: driver/drv_tasmotaDeviceGroups.c<br/>Function: CMD_DGR_SendRGBCW |
 | DGR_SendFixedColor | [GroupName][TasColorIndex] | Sends a FixedColor message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. | File: driver/drv_tasmotaDeviceGroups.c<br/>Function: CMD_DGR_SendFixedColor |
+| SetupTestPower |  | NULL | File: driver/drv_test_drivers.c<br/>Function: TestPower_Setup |
 | tuyaMcu_testSendTime |  | Sends a example date by TuyaMCU to clock/callendar MCU | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_Send_SetTime_Example |
 | tuyaMcu_sendCurTime |  | Sends a current date by TuyaMCU to clock/callendar MCU. Time is taken from NTP driver, so NTP also should be already running. | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_Send_SetTime_Current |
 | tuyaMcu_fakeHex | [HexString] | Spoofs a fake hex packet so it looks like TuyaMCU send that to us. Used for testing. | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_Fake_Hex |
@@ -156,13 +157,18 @@ Do not add anything here, as it will overwritten with next rebuild.
 | addI2CDevice_LCM1602 |  | Adds a new I2C device - LCM1602 | File: i2c/drv_i2c_main.c<br/>Function: DRV_I2C_AddDevice_LCM1602 |
 | addI2CDevice_LCD_PCF8574 |  | Adds a new I2C device - PCF8574 | File: i2c/drv_i2c_main.c<br/>Function: DRV_I2C_AddDevice_PCF8574 |
 | MCP23017_MapPinToChannel |  | Maps port expander bit to OBK channel | File: i2c/drv_i2c_main.c<br/>Function: DRV_I2C_MCP23017_MapPinToChannel |
-| lfssize | [MaxSize] | Log or Set LFS size - will apply and re-format next boot, usage setlfssize 0x10000 | File: littlefs/our_lfs.c<br/>Function: CMD_LFS_Size |
-| lfsunmount |  | Un-mount LFS | File: littlefs/our_lfs.c<br/>Function: CMD_LFS_Unmount |
-| lfsmount |  | Mount LFS | File: littlefs/our_lfs.c<br/>Function: CMD_LFS_Mount |
-| lfsformat |  | Unmount and format LFS.  Optionally add new size as argument | File: littlefs/our_lfs.c<br/>Function: CMD_LFS_Format |
+| lfs_size | [MaxSize] | Log or Set LFS size - will apply and re-format next boot, usage setlfssize 0x10000 | File: littlefs/our_lfs.c<br/>Function: CMD_LFS_Size |
+| lfs_unmount |  | Un-mount LFS | File: littlefs/our_lfs.c<br/>Function: CMD_LFS_Unmount |
+| lfs_mount |  | Mount LFS | File: littlefs/our_lfs.c<br/>Function: CMD_LFS_Mount |
+| lfs_format |  | Unmount and format LFS.  Optionally add new size as argument | File: littlefs/our_lfs.c<br/>Function: CMD_LFS_Format |
+| lfs_append | [FileName][String] | Appends a string to LFS file | File: cmnds/cmd_main.c<br/>Function: CMD_LFS_Append |
+| lfs_appendLine | [FileName][String] | Appends a string to LFS file with a next line marker | File: cmnds/cmd_main.c<br/>Function: CMD_LFS_AppendLine |
+| lfs_remove | [FileName] | Deletes a LittleFS file | File: cmnds/cmd_main.c<br/>Function: CMD_LFS_Remove |
+| lfs_write | [FileName][String] | Resets a LFS file and writes a new string to it | File: cmnds/cmd_main.c<br/>Function: CMD_LFS_Write |
+| lfs_writeLine | [FileName][String] | Resets a LFS file and writes a new string to it with newline | File: cmnds/cmd_main.c<br/>Function: CMD_LFS_WriteLine |
 | loglevel | [Value] | Correct values are 0 to 7. Default is 3. Higher value includes more logs. Log levels are: ERROR = 1, WARN = 2, INFO = 3, DEBUG = 4, EXTRADEBUG = 5. WARNING: you also must separately select logging level filter on web panel in order for more logs to show up there | File: logging/logging.c<br/>Function: log_command |
 | logfeature | [Index][1or0] | set log feature filter, as an index and a 1 or 0 | File: logging/logging.c<br/>Function: log_command |
-| logtype | [TypeStr] | logtype direct|all - direct logs only to serial immediately | File: logging/logging.c<br/>Function: log_command |
+| logtype | [TypeStr] | logtype direct|thread|none - type of serial logging - thread (in a thread; default), direct (logged directly to serial), none (no UART logging) | File: logging/logging.c<br/>Function: log_command |
 | logdelay | [Value] | Value is a number of ms. This will add an artificial delay in each log call. Useful for debugging. This way you can see step by step what happens. | File: logging/logging.c<br/>Function: log_command |
 | publish | [Topic][Value] | Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get. You can use argument expansion here, so $CH11 will change to value of the channel 11 | File: mqtt/new_mqtt.c<br/>Function: MQTT_PublishCommand |
 | publishInt | [Topic][Value] | Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an integer, so you can also use math expressions like $CH10*10, etc. | File: mqtt/new_mqtt.c<br/>Function: MQTT_PublishCommand |
