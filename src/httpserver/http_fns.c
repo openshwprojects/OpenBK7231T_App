@@ -2556,6 +2556,12 @@ int http_fn_cfg_pins(http_request_t* request) {
 		// saving the configuration instead of waiting.
 		//CFG_Save_SetupTimer(); 
 		CFG_Save_IfThereArePendingChanges();
+
+		//Invoke Hass discovery if configuration has changed
+		if(!bSafeMode && CFG_HasFlag(OBK_FLAG_AUTOMAIC_HASS_DISCOVERY)) {
+			Main_ScheduleHomeAssistantDiscovery(1);
+		}
+
 		hprintf255(request, "Pins update - %i reqs, %i changed!<br><br>", iChangedRequested, iChanged);
 	}
 	//	strcat(outbuf,"<button type=\"button\">Click Me!</button>");
@@ -2658,6 +2664,7 @@ const char* g_obk_flagNames[] = {
 #else
 	"[UART] Use alternate UART for BL0942, CSE, TuyaMCU, etc",
 #endif
+	"[HASS] Invoke HomeAssistant discovery on change to ip address, configuration",
 	"error",
 	"error",
 	"error",

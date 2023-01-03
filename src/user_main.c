@@ -326,9 +326,10 @@ void Main_LogPowerSave(){
 	}
 */	
 }
-#endif		
+#endif
 
-
+/// @brief Schedule HomeAssistant discovery. The caller should check OBK_FLAG_AUTOMAIC_HASS_DISCOVERY if necessary.
+/// @param seconds 
 void Main_ScheduleHomeAssistantDiscovery(int seconds) {
 	g_doHomeAssistantDiscoveryIn = seconds;
 }
@@ -384,7 +385,10 @@ void Main_OnEverySecond()
 			}
 			EventHandlers_FireEvent(CMD_EVENT_IPCHANGE, 0);
 
-			Main_ScheduleHomeAssistantDiscovery(1);	//Invoke Hass discovery in the next pass
+			//Invoke Hass discovery if ipaddr changed
+			if(CFG_HasFlag(OBK_FLAG_AUTOMAIC_HASS_DISCOVERY)) {
+				Main_ScheduleHomeAssistantDiscovery(1);
+			}
 		}
 	}
 
@@ -1019,6 +1023,10 @@ void Main_Init_After_Delay()
 	HTTPServer_Start();
 	ADDLOGF_DEBUG("Started http tcp server\r\n");
 
+	//Always invoke discovery on startup. This accounts for change in ipaddr before startup and firmware update.
+	if(CFG_HasFlag(OBK_FLAG_AUTOMAIC_HASS_DISCOVERY)) {
+		Main_ScheduleHomeAssistantDiscovery(1);
+	}
 
 	// only initialise certain things if we are not in AP mode
 	if (!bSafeMode)
