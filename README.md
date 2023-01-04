@@ -67,9 +67,14 @@ A: Use backlog - like in Tasmota. Open Config->Short startup command, and enter,
 
 OpenBeken supports online builds for all platforms (BK7231T, BK7231N, XR809, BL602, W800), but if you want to compile it yourself, see  [BUILDING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md)
 
-# Flashing for BK7231T
+# Flashing for BK7231 (BK7231T and BK7231N) on Windows - easy method for beginners
 
-## UART (Windows only)
+Use our new BK7231 GUI Flash tool:
+https://github.com/openshwprojects/BK7231GUIFlashTool
+
+# Flashing for BK7231T (alternate method)
+
+## UART (obsolete method; Windows only)
 
 get BKwriter 1.60 exe (extract zip) from [here](https://github.com/openshwprojects/OpenBK7231T/blob/master/bk_writer1.60.zip)
   
@@ -80,7 +85,7 @@ connect the PC to TX1 and RX1 on the bk7231 (TX2 and RX2 are optional, only for 
 start flash in BKwriter 1.60 (select COM port, etc)
 then re-power the device (or reset with CEN by temporary connecting CEN to ground) until the flashing program continues, repeat if required.
   
-## UART (multiplatform method, Python required)
+## UART (obsolete method; multiplatform method, Python required)
 
 clone the repo https://github.com/OpenBekenIOT/hid_download_py
   
@@ -104,11 +109,9 @@ See: https://github.com/openshwprojects/BK7231_SPI_Flasher
 
 ## OTA
 
-Once the firmware has been flashed for the first time, it can be flashed over wifi (note: change hardcoded firmware URL in new_http.c)
+Once the firmware has been flashed for the first time, it can be flashed over wifi.
 
-Setup a simple webserver to serve `<sdk folder>\apps\<folder>\output\1.0.0\<appname>_<appversion>.rbl`
-
-Visit <ip>/ota - here start the flashing process.
+Go to "Open Web Application", OTA tab, drag and drop proper RBL file on the field, press a button to start OTA proccess
 
 ## First run
 
@@ -120,7 +123,7 @@ Once you are connected and have an IP, go to http://192.168.4.1/index , select c
 
 After a reboot, the device should connect to your lan.
 
-# Flashing for BK7231N
+# Flashing for BK7231N (obsolete method)
 
 BKwriter 1.60 doesn't work for BK7231N for me, in BK7231 mode it errors with "invalid CRC" and in BK7231N mode it fails to unprotect the device.
 For BK7231N, one should use:
