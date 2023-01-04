@@ -6,15 +6,21 @@
 #include "../obk_config.h"
 #include "../driver/drv_public.h"
 #include "../hal/hal_flashVars.h"
+#include "../hal/hal_flashConfig.h"
 #include "../rgb2hsv.h"
 #include <ctype.h>
 #include "cmd_local.h"
 #include "../mqtt/new_mqtt.h"
 #include "../cJSON/cJSON.h"
+#include <string.h>
 #include <math.h>
 #ifdef BK_LITTLEFS
 	#include "../littlefs/our_lfs.h"
 #endif
+
+// add some prototypes from tuya_hal_storage.h - TODO: include the file instead, or use different functions
+int tuya_hal_flash_erase (const uint32_t addr, const uint32_t size);
+int tuya_hal_flash_write (const uint32_t addr, const uint8_t *src, const uint32_t size);
 
 //  My HA config for system below:
 /*
@@ -60,6 +66,14 @@ float g_hsv_v = 1; // 0 to 1
 float g_cfg_colorScaleToChannel = 100.0f/255.0f;
 int g_numBaseColors = 5;
 float g_brightness = 1.0f;
+
+struct led_corr_s { // LED gamma correction and calibration data block
+	char  tag[16];        // LED gamma block tag
+	float rgb_cal[3];     // RGB correction factors, range 0.0-1.0, 1.0 = no correction
+	float led_gamma;      // LED gamma value, range 1.0-3.0
+	float rgb_bright_min; // RGB minimum brightness, range 0.0-10.0%
+	float cw_bright_min;  // CW minimum brightness, range 0.0-10.0%
+} led_corr;
 
 // NOTE: in this system, enabling/disabling whole led light bulb
 // is not changing the stored channel and brightness values.
@@ -234,9 +248,10 @@ void LED_RunQuickColorLerp(int deltaMS) {
 	}
 
 	for(i = 0; i < 5; i++) {
+		float ch_rgb_cal = (i < 3)? led_corr.rgb_cal[i] : 1.0f; // adjust change rate with RGB calibration
 		// This is the most silly and primitive approach, but it works
 		// In future we might implement better lerp algorithms, use HUE, etc
-		led_rawLerpCurrent[i] = Mathf_MoveTowards(led_rawLerpCurrent[i],finalColors[i], deltaSeconds * led_lerpSpeedUnitsPerSecond);
+		led_rawLerpCurrent[i] = Mathf_MoveTowards(led_rawLerpCurrent[i],finalColors[i], deltaSeconds * led_lerpSpeedUnitsPerSecond * ch_rgb_cal);
 	}
 
 	target_value_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
@@ -247,7 +262,7 @@ void LED_RunQuickColorLerp(int deltaMS) {
 	}
 
 	led_current_value_brightness = Mathf_MoveTowards(led_current_value_brightness, target_value_brightness, deltaSeconds * led_lerpSpeedUnitsPerSecond);
-	led_current_value_cold_or_warm = Mathf_MoveTowards(led_current_value_cold_or_warm, target_value_cold_or_warm, deltaSeconds * led_lerpSpeedUnitsPerSecond);
+	led_current_value_cold_or_warm = Mathf_MoveTowards(led_current_value_cold_or_warm, target_value_cold_or_warm, deltaSeconds * led_lerpSpeedUnitsPerSecond );
 
 	// OBK_FLAG_LED_ALTERNATE_CW_MODE means we have a driver that takes one PWM for brightness and second for temperature
 	if(isCWMode() && CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
@@ -291,44 +306,41 @@ void LED_RunQuickColorLerp(int deltaMS) {
 	
 	led_Save_finalRGBCW(finalRGBCW);
 }
-#if WINDOWS
-int exponential_mode = 0;
-#else
-int exponential_mode = 2;
-#endif
 
-float LED_BrightnessMapping(float raw, float brig) {
-	float final = 0;
-	// make brightness exponential:
-	if (exponential_mode == 0) {
-		final = raw * brig;
+int led_gamma_enable_channel_messages = 0;
+
+float led_gamma_correction (int color, float iVal) { // apply LED gamma and RGB correction
+	if ((color < 0) || (color > 4)) {
+		return iVal;
 	}
-	else if (g_brightness == 0.0f) {
-		final = 0.0f;
+
+	// apply LED gamma correction:
+	float ch_bright_min = led_corr.rgb_bright_min / 100;
+	if (color > 2) {
+		ch_bright_min = led_corr.cw_bright_min / 100;
 	}
-	else {
-		float expo_base;
-		float expo_factor;
-		float expo_offset = 0.0;
-		if ((exponential_mode == 1) || (exponential_mode == 2)) {
-			expo_offset = 0.009f;
+	float oVal = (powf (g_brightness, led_corr.led_gamma) * (1 - ch_bright_min) + ch_bright_min) * iVal;
+
+	// apply RGB level correction:
+	if (color < 3) {
+		float ch_correction = led_corr.rgb_cal[color];
+		// boost gain to get full brightness when one RGB base color is dominant:
+		float sum_other_colors = baseColors[0] + baseColors[1] + baseColors[2] - baseColors[color];
+		if (baseColors[color] > sum_other_colors) {
+			ch_correction += (1.0f - ch_correction) * (1.0f - sum_other_colors / baseColors[color]);
 		}
-		if ((exponential_mode == 1) || (exponential_mode == 3)) {
-			expo_base = 1.2f;     // moderate exponential
-			expo_factor = 15.32f;
-			expo_offset -= 0.06609f;
-		}
-		else {
-			expo_base = 1.06f;    // full exponential
-			expo_factor = 74.115f;
-			expo_offset -= 0.013f;
-		}
-		final = raw * (powf(expo_base, brig * expo_factor) / expo_factor + expo_offset);
+		oVal *= ch_correction;
 	}
-	if (final > 255.0f)
-		final = 255.0f;
-	return final;
-}
+
+	if (led_gamma_enable_channel_messages &&
+			(((g_lightMode == Light_RGB) && (color < 3)) || ((g_lightMode != Light_RGB) && (color >= 3)))) {
+		addLogAdv (LOG_INFO, LOG_FEATURE_CMD, "channel %i set to %.2f\%\r\n", color, oVal / 2.55);
+	}
+	if (oVal > 255.0f) {
+		oVal = 255.0f;
+	}
+	return oVal;
+} //
 
 void apply_smart_light() {
 	int i;
@@ -387,13 +399,10 @@ void apply_smart_light() {
 		}
 	} else {
 		for(i = 0; i < maxPossibleIndexToSet; i++) {
-			float raw, final;
-
-			raw = baseColors[i];
-			final = 0.0f;
+			float final = 0.0f;
 
 			if(g_lightEnableAll) {
-				final = LED_BrightnessMapping(raw, g_brightness);
+				final = led_gamma_correction (i, baseColors[i]);
 			}
 			if(g_lightMode == Light_Temperature) {
 				// skip channels 0, 1, 2
@@ -414,9 +423,9 @@ void apply_smart_light() {
 			finalColors[i] = final;
 			finalRGBCW[i] = final;
 
-			int chVal = (int)(final * g_cfg_colorScaleToChannel);
-			if (chVal > 100)
-				chVal = 100;
+			float chVal = final * g_cfg_colorScaleToChannel;
+			if (chVal > 100.0f)
+				chVal = 100.0f;
 
 			channelToUse = firstChannelIndex + i;
 
@@ -474,32 +483,140 @@ void apply_smart_light() {
 	sendFullRGBCW_IfEnabled();
 }
 
+/*
+	led_gamma_control () - led_gammaCtrl command handler, usage: led_gammaCtrl <sub-command> [parameter(s)]
+		sub-commands:
+			cal [f f f]   - set RGB calibration values from color-picker or parameters
+			gamma <f>     - LED gamma correction, range 1.0-3.0: 1.0 = gamma off, default = 2.2
+			brtMinRGB <f> - minimum brightness in % for RGB mode, range 0.0-10.0%, default = 0.1
+			brtMinCW <f>  - minimum brightness in % for CW mode, range 0.0-10.0%, default = 0.1
+			list          - list settings (and enable additional messages)
+		Results will be displayed as Logs Info:CFG: messages (may want to turn off MAIN, MQTT and GEN to silence other messages)
+		Any sub-command will enable channel messages containing output values in %
 
-/* exponential mode command handler, usage: led_expoMode <0|1|2|3|4>
-   exponential modes: 0 = Off
-					  1 = 1% min brightness with moderate exponential
-					  2 = 1% min brightness with full exponential
-					  3 = 0.1% min brightness with moderate exponential
-					  4 = 0.1% min brightness with full exponential
+		Calibration sequence:
+			1: clear current calibration values (= 1.0, default) by one of these methods:
+			   a: set color-picker to "white", i.e. #FFFFFF and enter command "led_gammaCtrl cal"
+			   b: or set values directly with command "led_gammaCtrl cal 1.0 1.0 1.0"
+			2: adjust RGB LEDs to emit white light of preferred temperature and brightness
+			3: enter command "led_gammaCtrl cal" - if successful the settings will be listed and stored in flash
+
+		Use command "gamma <f>" to set gamma value. Range 1.0-3.0: 1.0 = gamma off, default is 2.2.
+		  To fully disable gamma correction you may also want to set brtMinX to 0.0.
+		Use commands "brtMinRGB <f>" and "brtMinCW <f>" to set minimum brightness for RGB and CW LEDs.
+			Valid range is 0.0-10.0% of full range (including brightness 0). "channel messages" is useful in finding suitable
+			range: adjust brightness to desired minimum level and use the highest channel % value as brtMinX parameter.
+			Channels 0-2 is RGB, channels 3-4 is CW
+		Use command "list" to view gamma and calibration settings.
 */
-static commandResult_t exponentialMode(const void *context, const char *cmd, const char *args, int cmdFlags) {
-	if (*args == 0) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "Command requires 1 arg");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+void led_gamma_list (void) { // list RGB gamma settings
+	led_gamma_enable_channel_messages = 1;
+	addLogAdv (LOG_INFO, LOG_FEATURE_CFG, "RGB correction:  R %f  G %f  B %f\r\n",
+			   led_corr.rgb_cal[0], led_corr.rgb_cal[1], led_corr.rgb_cal[2]);
+	addLogAdv (LOG_INFO, LOG_FEATURE_CFG, "LED gamma %.2f  RGB min %.2f\%  CW min %.2f\%\r\n",
+			   led_corr.led_gamma, led_corr.rgb_bright_min, led_corr.cw_bright_min);
+}
+
+# define LED_GAMMA_FLASH_ADDR 0x1df000 // LED gamma config flash address
+
+void led_gamma_flash_save (void) { // save RGB gamma correction in Flash
+	strcpy (led_corr.tag, "LED_Calibration");
+	tuya_hal_flash_erase (LED_GAMMA_FLASH_ADDR, sizeof (led_corr));
+	tuya_hal_flash_write (LED_GAMMA_FLASH_ADDR, (const uint8_t *)&led_corr, sizeof (led_corr));
+	addLogAdv (LOG_INFO, LOG_FEATURE_CFG, "LED calibration saved to flash:\r\n");
+	led_gamma_list ();
+}
+
+void led_gamma_flash_load (void) { // load RGB gamma correction from Flash
+	bekken_hal_flash_read (LED_GAMMA_FLASH_ADDR, (void *)&led_corr, sizeof (led_corr));
+	if (strcmp (led_corr.tag, "LED_Calibration") == 0) {
+		addLogAdv (LOG_INFO, LOG_FEATURE_CFG,"RGB calibration read from flash\r\n");
+	} else {
+		addLogAdv (LOG_INFO, LOG_FEATURE_CFG,"RGB calibration not found in flash, using defaults\r\n");
+		for (int c = 0; c < 3; c++) {
+			led_corr.rgb_cal[c] = 1.0f;
+		}
+		led_corr.led_gamma = 2.2f;
+		led_corr.rgb_bright_min = 0.1f;
+		led_corr.cw_bright_min  = 0.1f;
+	}
+}
+
+commandResult_t led_gamma_control (const void *context, const char *cmd, const char *args, int cmdFlags) {
+	int c;
+
+	if (strncmp ("cal", args, 3) == 0) { // calibrate RGB
+		float cal_factor[3];
+		if (args[3] == 0) { // no parameters - use baseColors[] to calculate calibration values
+			// find color with highest start-point value:
+			int ref_color = 0;
+			if (baseColors[ref_color] < baseColors[1])
+				ref_color = 1;
+			if (baseColors[ref_color] < baseColors[2])
+				ref_color = 2;
+	
+			// calculate RGB correction factors:
+			for (c = 0; c < 3; c++) {
+				cal_factor[c] = (1.0f / baseColors[ref_color]) * baseColors[c];
+			}
+		} else { // use parameters as calibration values
+			const char *p = args;
+			for (c = 0; c < 3; c++) {
+				p = strstr (p + 1, " ");
+				if (p != NULL) {
+					cal_factor[c] = atof (p);
+				} else {
+					break;
+				}
+			}
+		}
+		if (c == 3) { // validate calibration values
+			c = 0;
+			if ((cal_factor[0] == 1.0f) || (cal_factor[1] == 1.0f) || (cal_factor[2] == 1.0f)) {
+				for (; c < 3; c++) {
+					if ((cal_factor[c] < 0.0f) || (cal_factor[c] > 1.0f)) {
+						break;
+					}
+				}
+			}
+			if (c == 3) {
+				for (c = 0; c < 3; c++) {
+					led_corr.rgb_cal[c] = cal_factor[c];
+				}
+				led_gamma_flash_save ();
+			}
+		}
+
+	} else if (strncmp ("gamma", args, 5) == 0) {
+		float gamma_par = atof (args + 6);
+		if ((gamma_par >= 1.0f) && (gamma_par <= 3.0f)) {
+			led_corr.led_gamma = gamma_par;
+			led_gamma_flash_save ();
+		}
+
+	} else if (strncmp ("brtMin", args, 6) == 0) {
+		const char *p = strstr (args, " ");
+		float bright_min = atof (p);
+		if ((bright_min >= 0.0f) && (bright_min <= 10.0f)) {
+			if (strncmp ("RGB", args + 6, 3) == 0) {
+				led_corr.rgb_bright_min = bright_min;
+			} else {
+				led_corr.cw_bright_min = bright_min;
+			}
+			led_gamma_flash_save ();
+		}
+
+	} else if (strcmp ("list", args) == 0) {
+		led_gamma_list ();
+
+	} else {
+		addLogAdv (LOG_INFO, LOG_FEATURE_CFG,
+		           "%s sub-command NOT recognized - Use: cal [f f f], gamma <f>, brtMinRGB <f>, brtMinCW <f>, list\r\n", cmd);
 	}
 
-	int mode = atoi(args);
-	if ((mode >= 0) && (mode <= 4)) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "Mode changed to %i", mode);
-		exponential_mode = mode;
-		apply_smart_light();
-	}
-	else {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "Invalid argument");
-		return CMD_RES_BAD_ARGUMENT;
-	}
 	return CMD_RES_OK;
-}
+} //
+
 static OBK_Publish_Result sendColorChange() {
 	char s[16];
 	byte c[3];
@@ -1330,12 +1447,6 @@ void NewLED_InitCommands(){
 	//cmddetail:"fn":"lerpSpeed","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_lerpSpeed", "", lerpSpeed, NULL, NULL);
-	//cmddetail:{"name":"led_expoMode","args":"[IntegerMode]",
-	//cmddetail:"descr":"set brightness exponential mode 0..4",
-	//cmddetail:"fn":"exponentialMode","file":"cmnds/cmd_newLEDDriver.c","requires":"",
-	//cmddetail:"examples":"led_expoMode 4"}
-    CMD_RegisterCommand("led_expoMode", "", exponentialMode, NULL, NULL);
-
 	// HSBColor 360,100,100 - red
 	// HSBColor 90,100,100 - green
 	// HSBColor	<hue>,<sat>,<bri> = set color by hue, saturation and brightness
@@ -1367,6 +1478,13 @@ void NewLED_InitCommands(){
 	//cmddetail:"fn":"led_finishFullLerp","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("led_finishFullLerp", "", led_finishFullLerp, NULL, NULL);
+	//cmddetail:{"name":"led_gammaCtrl","args":"sub-cmd [par]",
+	//cmddetail:"descr":"control LED Gamma Correction and Calibration",
+	//cmddetail:"fn":"rgb_gamma_control","file":"cmnds/cmd_rgbGamma.c","requires":"",
+	//cmddetail:"examples":"led_gammaCtrl on"}
+    CMD_RegisterCommand("led_gammaCtrl", "", led_gamma_control, NULL, NULL);
+
+	led_gamma_flash_load (); // load LED gamma correction and calibration data from Flash
 }
 
 void NewLED_RestoreSavedStateIfNeeded() {
