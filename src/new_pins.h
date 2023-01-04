@@ -326,7 +326,7 @@ bool CHANNEL_Check(int ch);
 void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex));
 void CHANNEL_ClearAllChannels();
 // CHANNEL_SET_FLAG_*
-void CHANNEL_Set(int ch, int iVal, int iFlags);
+void CHANNEL_Set(int ch, float iVal, int iFlags);
 void CHANNEL_Add(int ch, int iVal);
 void CHANNEL_AddClamped(int ch, int iVal, int min, int max);
 int CHANNEL_Get(int ch);
