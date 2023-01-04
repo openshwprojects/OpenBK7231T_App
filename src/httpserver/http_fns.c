@@ -2557,8 +2557,8 @@ int http_fn_cfg_pins(http_request_t* request) {
 		//CFG_Save_SetupTimer(); 
 		CFG_Save_IfThereArePendingChanges();
 
-		//Invoke Hass discovery if configuration has changed
-		if(!bSafeMode && CFG_HasFlag(OBK_FLAG_AUTOMAIC_HASS_DISCOVERY)) {
+		// Invoke Hass discovery if configuration has changed and not in safe mode.
+		if (!bSafeMode && CFG_HasFlag(OBK_FLAG_AUTOMAIC_HASS_DISCOVERY)) {
 			Main_ScheduleHomeAssistantDiscovery(1);
 		}
 
