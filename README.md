@@ -72,7 +72,7 @@ OpenBeken supports online builds for all platforms (BK7231T, BK7231N, XR809, BL6
 Use our new BK7231 GUI Flash tool:
 https://github.com/openshwprojects/BK7231GUIFlashTool
 
-# Flashing for BK7231T
+# Flashing for BK7231T (alternate method)
 
 ## UART (obsolete method; Windows only)
 
@@ -109,11 +109,9 @@ See: https://github.com/openshwprojects/BK7231_SPI_Flasher
 
 ## OTA
 
-Once the firmware has been flashed for the first time, it can be flashed over wifi (note: change hardcoded firmware URL in new_http.c)
+Once the firmware has been flashed for the first time, it can be flashed over wifi.
 
-Setup a simple webserver to serve `<sdk folder>\apps\<folder>\output\1.0.0\<appname>_<appversion>.rbl`
-
-Visit <ip>/ota - here start the flashing process.
+Go to "Open Web Application", OTA tab, drag and drop proper RBL file on the field, press a button to start OTA proccess
 
 ## First run
 
