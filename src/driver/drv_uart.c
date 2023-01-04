@@ -81,8 +81,9 @@
 // backlog logtype none; startDriver BL0942
 #endif
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
-	// from uart_bk.c
-	extern void bk_send_byte(UINT8 uport, UINT8 data);
+// from uart_bk.c
+extern void bk_send_byte(UINT8 uport, UINT8 data);
+int g_chosenUART = BK_UART_1;
 #elif WINDOWS
 
 #elif PLATFORM_BL602 
@@ -196,7 +197,7 @@ static void console_cb_read(int fd, void *param)
 void UART_SendByte(byte b) {
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
 	// BK_UART_1 is defined to 0
-	bk_send_byte(BK_UART_1, b);
+	bk_send_byte(g_chosenUART, b);
 #elif WINDOWS
 	// STUB - for testing
     addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"%02X", b);
@@ -266,10 +267,16 @@ void UART_InitUART(int baud) {
 	config.flow_control = 0;   //FLOW_CTRL_DISABLED
 	config.flags = 0;
 
+
 	// BK_UART_1 is defined to 0
-	bk_uart_initialize(BK_UART_1, &config, NULL);
-	// BK_UART_1 is defined to 0
-	bk_uart_set_rx_callback(BK_UART_1, test_ty_read_uart_data_to_buffer, NULL);
+	if (CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART)) {
+		g_chosenUART = BK_UART_2;
+	}
+	else {
+		g_chosenUART = BK_UART_1;
+	}
+	bk_uart_initialize(g_chosenUART, &config, NULL);
+	bk_uart_set_rx_callback(g_chosenUART, test_ty_read_uart_data_to_buffer, NULL);
 #elif PLATFORM_BL602
 	if (fd_console < 0) {
 		//uint8_t tx_pin = 16;
@@ -280,7 +287,13 @@ void UART_InitUART(int baud) {
 		//bl_irq_register(UART1_IRQn, MY_UART1_IRQHandler);
 		//bl_irq_enable(UART1_IRQn);
 		//vfs_uart_init_simple_mode(0, 7, 16, baud, "/dev/ttyS0");
-		fd_console = aos_open("/dev/ttyS0", 0);
+
+		if (CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART)) {
+			fd_console = aos_open("/dev/ttyS1", 0);
+		}
+		else {
+			fd_console = aos_open("/dev/ttyS0", 0);
+		}
 		if (fd_console >= 0) {
 			aos_ioctl(fd_console, IOCTL_UART_IOC_BAUD_MODE, baud);
 			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Init CLI with event Driven\r\n");

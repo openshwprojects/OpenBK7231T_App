@@ -2651,7 +2651,13 @@ const char* g_obk_flagNames[] = {
 	"[LED] Automatically enable Light on any change of brightness, color or temperature",
 	"[LED] Emulate Cool White with RGB in device with four PWMS - Red is 0, Green 1, Blue 2, and Warm is 4",
 	"[POWER] Allow negative current/power for power measurement (all chips, BL0937, BL0942, etc)",
-	"error",
+#if PLATFORM_BL602
+	"[UART] Use alternate UART for BL0942, CSE, TuyaMCU, etc. If marked, uses /dev/ttyS1, otherwise S0",
+#elif PLATFORM_BEKEN
+	"[UART] Use alternate UART for BL0942, CSE, TuyaMCU, etc. If marked, uses UART2, otherwise UART1",
+#else
+	"[UART] Use alternate UART for BL0942, CSE, TuyaMCU, etc",
+#endif
 	"error",
 	"error",
 	"error",
