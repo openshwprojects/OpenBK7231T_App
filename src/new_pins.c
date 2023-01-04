@@ -49,6 +49,8 @@ typedef enum {
 	BTN_DOUBLE_CLICK,
 	BTN_LONG_RRESS_START,
 	BTN_LONG_PRESS_HOLD,
+	BTN_TRIPLE_CLICK,
+	BTN_QUADRUPLE_CLICK,
 	BTN_number_of_event,
 	BTN_NONE_PRESS
 }BTN_PRESS_EVT;
@@ -352,6 +354,18 @@ void Button_OnDoubleClick(int index)
 	if(g_doubleClickCallback!=0) {
 		g_doubleClickCallback(index);
 	}
+}
+void Button_OnTripleClick(int index)
+{
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i key_triple_press\r\n", index);
+	// fire event - button on pin <index> was 3clicked
+	EventHandlers_FireEvent(CMD_EVENT_PIN_ON3CLICK, index);
+}
+void Button_OnQuadrupleClick(int index)
+{
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i key_quadruple_press\r\n", index);
+	// fire event - button on pin <index> was 4clicked
+	EventHandlers_FireEvent(CMD_EVENT_PIN_ON4CLICK, index);
 }
 void Button_OnLongPressHold(int index) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"%i Button_OnLongPressHold\r\n", index);
@@ -1159,10 +1173,10 @@ void PIN_Input_Handler(int pinIndex, uint32_t ms_since_last)
 			handle->event = (uint8_t)BTN_PRESS_DOWN;
 			EVENT_CB(BTN_PRESS_DOWN);
 			handle->repeat++;
-			if(handle->repeat == 2) {
-				EVENT_CB(BTN_DOUBLE_CLICK); // repeat hit
-				Button_OnDoubleClick(pinIndex);
-			}
+			//if(handle->repeat == 2) {
+			//	EVENT_CB(BTN_DOUBLE_CLICK); // repeat hit
+			//	Button_OnDoubleClick(pinIndex);
+			//}
 			EVENT_CB(BTN_PRESS_REPEAT); // repeat hit
 			handle->ticks = 0;
 			handle->state = 3;
@@ -1173,6 +1187,13 @@ void PIN_Input_Handler(int pinIndex, uint32_t ms_since_last)
 				Button_OnShortClick(pinIndex);
 			} else if(handle->repeat == 2) {
 				handle->event = (uint8_t)BTN_DOUBLE_CLICK;
+				Button_OnDoubleClick(pinIndex);
+			} else if (handle->repeat == 3) {
+				handle->event = (uint8_t)BTN_TRIPLE_CLICK;
+				Button_OnTripleClick(pinIndex);
+			} else if (handle->repeat == 4) {
+				handle->event = (uint8_t)BTN_QUADRUPLE_CLICK;
+				Button_OnQuadrupleClick(pinIndex);
 			}
 			handle->state = 0;
 		}

@@ -99,6 +99,9 @@ enum EventCode {
 
 	CMD_EVENT_WIFI_STATE, // Argument: [HALWifiStatus_t]
 
+	CMD_EVENT_PIN_ON3CLICK,
+	CMD_EVENT_PIN_ON4CLICK,
+
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
 };
