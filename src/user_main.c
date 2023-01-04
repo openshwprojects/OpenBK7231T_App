@@ -386,7 +386,7 @@ void Main_OnEverySecond()
 			EventHandlers_FireEvent(CMD_EVENT_IPCHANGE, 0);
 
 			//Invoke Hass discovery if ipaddr changed
-			if(CFG_HasFlag(OBK_FLAG_AUTOMAIC_HASS_DISCOVERY)) {
+			if (CFG_HasFlag(OBK_FLAG_AUTOMAIC_HASS_DISCOVERY)) {
 				Main_ScheduleHomeAssistantDiscovery(1);
 			}
 		}
@@ -1023,14 +1023,14 @@ void Main_Init_After_Delay()
 	HTTPServer_Start();
 	ADDLOGF_DEBUG("Started http tcp server\r\n");
 
-	//Always invoke discovery on startup. This accounts for change in ipaddr before startup and firmware update.
-	if(CFG_HasFlag(OBK_FLAG_AUTOMAIC_HASS_DISCOVERY)) {
-		Main_ScheduleHomeAssistantDiscovery(1);
-	}
-
 	// only initialise certain things if we are not in AP mode
 	if (!bSafeMode)
-    {
+	{
+		//Always invoke discovery on startup. This accounts for change in ipaddr before startup and firmware update.
+		if (CFG_HasFlag(OBK_FLAG_AUTOMAIC_HASS_DISCOVERY)) {
+			Main_ScheduleHomeAssistantDiscovery(1);
+		}
+
 		Main_Init_AfterDelay_Unsafe(true);
 	}
 
