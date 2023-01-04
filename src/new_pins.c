@@ -77,7 +77,7 @@ char g_enable_pins = 0;
 
 // it was nice to have it as bits but now that we support PWM...
 //int g_channelStates;
-int g_channelValues[CHANNEL_MAX] = { 0 };
+float g_channelValues[CHANNEL_MAX] = { 0.0f };
 
 pinButton_s g_buttons[PLATFORM_GPIO_MAX];
 
@@ -87,6 +87,13 @@ static byte g_timesDown[PLATFORM_GPIO_MAX];
 static byte g_timesUp[PLATFORM_GPIO_MAX];
 static byte g_lastValidState[PLATFORM_GPIO_MAX];
 
+inline int chVal_float2int(float f) // convert channel float value to int
+{
+	if ((f > 0.0f) && (f < 1.0f))   // set non-zero value to minimum 1.0
+		return 1;
+	else
+		return (int)f;
+}
 
 // a bitfield indicating which GPI are inputs.
 // could be used to control edge triggered interrupts...
@@ -686,7 +693,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 				int channelValue;
 
 				channelIndex = PIN_GetPinChannelForPinIndex(index);
-				channelValue = g_channelValues[channelIndex];
+				channelValue = chVal_float2int (g_channelValues[channelIndex]);
 
 				HAL_PIN_Setup_Output(index);
 				if(role == IOR_LED_n || role == IOR_Relay_n) { 
@@ -722,7 +729,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_PWM:
 			{
 				int channelIndex;
-				int channelValue;
+				float channelValue;
 
 				channelIndex = PIN_GetPinChannelForPinIndex(index);
 				channelValue = g_channelValues[channelIndex];
@@ -755,12 +762,12 @@ void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex)) {
 void Channel_SaveInFlashIfNeeded(int ch) {
 	// save, if marked as save value in flash (-1)
 	if(g_cfg.startChannelValues[ch] == -1) {
-		HAL_FlashVars_SaveChannel(ch,g_channelValues[ch]);
+		HAL_FlashVars_SaveChannel(ch, chVal_float2int (g_channelValues[ch]));
 	}
 }
-static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
+static void Channel_OnChanged(int ch, float prevValue, int iFlags) {
 	int i;
-	int iVal;
+	float iVal;
 	int bOn;
 	int bCallCb = 0;
 
@@ -842,7 +849,7 @@ int CHANNEL_Get(int ch) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Get: Channel index %i is out of range <0,%i)\n\r",ch,CHANNEL_MAX);
 		return 0;
 	}
-	return g_channelValues[ch];
+	return chVal_float2int (g_channelValues[ch]);
 }
 void CHANNEL_ClearAllChannels() {
 	int i;
@@ -852,8 +859,8 @@ void CHANNEL_ClearAllChannels() {
 	}
 }
 
-void CHANNEL_Set(int ch, int iVal, int iFlags) {
-	int prevValue;
+void CHANNEL_Set(int ch, float iVal, int iFlags) {
+	float prevValue;
 	int bForce;
 	int bSilent;
 	bForce = iFlags & CHANNEL_SET_FLAG_FORCE;
@@ -882,20 +889,20 @@ void CHANNEL_Set(int ch, int iVal, int iFlags) {
 	if(bForce == 0) {
 		if(prevValue == iVal) {
 			if(bSilent==0) {
-				addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"No change in channel %i (still set to %i) - ignoring\n\r",ch, prevValue);
+				addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"No change in channel %i (still set to %f) - ignoring\n\r",ch, prevValue);
 			}
 			return;
 		}
 	}
 	if(bSilent==0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"CHANNEL_Set channel %i has changed to %i (flags %i)\n\r",ch,iVal,iFlags);
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"CHANNEL_Set channel %i has changed to %f (flags %i)\n\r",ch,iVal,iFlags);
 	}
 	g_channelValues[ch] = iVal;
 
 	Channel_OnChanged(ch,prevValue,iFlags);
 }
 void CHANNEL_AddClamped(int ch, int iVal, int min, int max) {
-	int prevValue;
+	float prevValue;
 	if(ch < 0 || ch >= CHANNEL_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_AddClamped: Channel index %i is out of range <0,%i)\n\r",ch,CHANNEL_MAX);
 		return;
@@ -908,12 +915,12 @@ void CHANNEL_AddClamped(int ch, int iVal, int min, int max) {
 	if(g_channelValues[ch]<min)
 		g_channelValues[ch] = min;
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"CHANNEL_AddClamped channel %i has changed to %i\n\r",ch,g_channelValues[ch]);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"CHANNEL_AddClamped channel %i has changed to %f\n\r",ch,g_channelValues[ch]);
 
 	Channel_OnChanged(ch,prevValue,0);
 }
 void CHANNEL_Add(int ch, int iVal) {
-	int prevValue;
+	float prevValue;
 	if(ch < 0 || ch >= CHANNEL_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Add: Channel index %i is out of range <0,%i)\n\r",ch,CHANNEL_MAX);
 		return;
@@ -921,7 +928,7 @@ void CHANNEL_Add(int ch, int iVal) {
 	prevValue = g_channelValues[ch];
 	g_channelValues[ch] = g_channelValues[ch] + iVal;
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"CHANNEL_Add channel %i has changed to %i\n\r",ch,g_channelValues[ch]);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"CHANNEL_Add channel %i has changed to %f\n\r",ch,g_channelValues[ch]);
 
 	Channel_OnChanged(ch,prevValue,0);
 }
@@ -951,7 +958,7 @@ int CHANNEL_FindMaxValueForChannel(int ch) {
 // PWMs are toggled between 0 and 100 (0% and 100% PWM)
 // Relays and everything else is toggled between 0 (off) and 1 (on)
 void CHANNEL_Toggle(int ch) {
-	int prev;
+	float prev;
 
 	// special channels
 	if(ch == SPECIAL_CHANNEL_LEDPOWER) {
@@ -1282,7 +1289,36 @@ void PIN_ticks(void *param)
 		if (activepins){
 			activepoll_time = 1000; //20 x 50ms = 1s of polls after button release
 		}
+	}
 
+
+	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
+
+		// read ADC, filter and publish if pin 23 (only ADC pin on BK7231), output range 0-100:
+		if ((g_cfg.pins.roles[i] == IOR_ADC) && (i == 23)) {
+			int adcVal = HAL_ADC_Read (i);
+			if (adcVal >= 0) {
+				int outVal;
+				static int adcFlt = 61425, prevAdcFlt = 0, prevOutVal = -1;
+				adcFlt = adcFlt + adcVal - adcFlt / 25; // adcFlt range = 29-122850 (0-4095 from ADC) 102375
+				outVal = (adcFlt + 511) / 1023;         // adjust output range to 0-100
+
+				if ((outVal != prevOutVal) && (outVal != 0) && (outVal != 100) && (abs (adcFlt - prevAdcFlt) < 511)) {
+					outVal = prevOutVal; // ignore small changes (noise)
+				}
+				if (outVal != prevOutVal) {
+					static int publishTimer = 0;
+					if (publishTimer >= PIN_TMR_LOOPS_PER_SECOND) {
+						publishTimer = 0;
+						prevOutVal = outVal;
+						prevAdcFlt = adcFlt;
+						MQTT_PublishMain_StringInt ("adc_value_pct", outVal);
+					} else {
+						publishTimer++;
+					}
+				}
+			}
+		}  // ADC end
 #if 1
 		if(g_cfg.pins.roles[i] == IOR_PWM) {
 			HAL_PIN_PWM_Update(i,g_channelValues[g_cfg.pins.channels[i]]);
