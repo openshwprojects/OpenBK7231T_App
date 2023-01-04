@@ -121,6 +121,7 @@ void SIM_DoFreshOBKBoot() {
 }
 void Win_DoUnitTests() {
 
+	Test_Flags();
 	Test_DHT();
 	Test_EnergyMeter();
 	Test_Tasmota();

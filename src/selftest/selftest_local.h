@@ -28,6 +28,7 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 #define SELFTEST_ASSERT_HTML_REPLY(expected) SELFTEST_ASSERT((strcmp(Test_GetLastHTMLReply(),expected) == 0));
 #define SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR(topic, value, bRetain) SELFTEST_ASSERT(SIM_CheckMQTTHistoryForString(topic,value,bRetain));
 #define SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT(topic, value, bRetain) SELFTEST_ASSERT(SIM_CheckMQTTHistoryForFloat(topic,value,bRetain));
+#define SELFTEST_ASSERT_FLAG(flag, value) SELFTEST_ASSERT(CFG_HasFlag(flag)==value);
 
 //#define FLOAT_EQUALS (a,b) (fabs(a-b)<0.001f)
 inline bool Float_Equals(float a, float b) {
@@ -54,6 +55,7 @@ void Test_MQTT();
 void Test_Tasmota();
 void Test_EnergyMeter();
 void Test_DHT();
+void Test_Flags();
 
 void Test_FakeHTTPClientPacket_GET(const char *tg);
 void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data);

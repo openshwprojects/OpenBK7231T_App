@@ -402,15 +402,31 @@ int CFG_DeviceGroups_GetSendFlags() {
 int CFG_DeviceGroups_GetRecvFlags() {
 	return g_cfg.dgr_recvFlags;
 }
+void CFG_SetFlags(int first4bytes, int second4bytes) {
+	if (g_cfg.genericFlags != first4bytes || g_cfg.genericFlags2 != second4bytes) {
+		g_cfg.genericFlags = first4bytes;
+		g_cfg.genericFlags2 = second4bytes;
+		g_cfg_pendingChanges++;
+	}
+}
 void CFG_SetFlag(int flag, bool bValue) {
-	int nf = g_cfg.genericFlags;
+	int *cfgValue;
+	if (flag >= 32) {
+		cfgValue = &g_cfg.genericFlags2;
+		flag -= 32;
+	}
+	else {
+		cfgValue = &g_cfg.genericFlags;
+	}
+
+	int nf = *cfgValue;
 	if(bValue) {
 		BIT_SET(nf,flag);
 	} else {
 		BIT_CLEAR(nf,flag);
 	}
-	if(nf != g_cfg.genericFlags) {
-		g_cfg.genericFlags = nf;
+	if(nf != *cfgValue) {
+		*cfgValue = nf;
 		g_cfg_pendingChanges++;
 		// this will start only if it wasnt running
 		if(bValue && flag == OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER) {
@@ -422,6 +438,10 @@ int CFG_GetFlags() {
 	return g_cfg.genericFlags;
 }
 bool CFG_HasFlag(int flag) {
+	if (flag >= 32) {
+		flag -= 32;
+		return BIT_CHECK(g_cfg.genericFlags2, flag);
+	}
 	return BIT_CHECK(g_cfg.genericFlags,flag);
 }
 

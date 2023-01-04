@@ -516,6 +516,7 @@
     <ClCompile Include="src\selftest\selftest_energyMeter.c" />
     <ClCompile Include="src\selftest\selftest_expandConstant.c" />
     <ClCompile Include="src\selftest\selftest_expressions.c" />
+    <ClCompile Include="src\selftest\selftest_flags.c" />
     <ClCompile Include="src\selftest\selftest_http.c" />
     <ClCompile Include="src\selftest\selftest_http_client.c" />
     <ClCompile Include="src\selftest\selftest_if.c" />
