@@ -21,7 +21,10 @@ typedef enum {
 	ENTITY_LIGHT_RGBCW,
 
 	/// @brief Sensor (voltage, current, power)
-	ENTITY_SENSOR
+	ENTITY_SENSOR,
+
+	/// @Brief Binary Sensor
+	ENTITY_BINARY_SENSOR
 } ENTITY_TYPE;
 
 //unique_id is defined in hass_populate_unique_id and is based on CFG_GetDeviceName() whose size is CGF_DEVICE_NAME_SIZE.

@@ -1618,6 +1618,21 @@ int h_isChannelRelay(int tg_ch) {
     }
 	return false;
 }
+int h_isChannelDigitalInput(int tg_ch) {
+    int i;
+	int role;
+
+    for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
+        int ch = PIN_GetPinChannelForPinIndex(i);
+		if(tg_ch != ch)
+			continue;
+        role = PIN_GetPinRoleForPinIndex(i);
+        if(role == IOR_DigitalInput || role == IOR_DigitalInput_n || role == IOR_DigitalInput_NoPup || role == IOR_DigitalInput_NoPup_n) {
+			return true;
+        }
+    }
+	return false;
+}
 static commandResult_t showgpi(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int i;
 	unsigned int value = 0;
