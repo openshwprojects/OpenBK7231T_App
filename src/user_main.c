@@ -508,10 +508,10 @@ void Main_OnEverySecond()
 		}
 	}
 
-	ADDLOGF_INFO("g_startPingWatchDogAfter %i, g_bPingWatchDogStarted %i ", g_startPingWatchDogAfter, g_bPingWatchDogStarted);
+	//ADDLOGF_INFO("g_startPingWatchDogAfter %i, g_bPingWatchDogStarted %i ", g_startPingWatchDogAfter, g_bPingWatchDogStarted);
 	if(g_bHasWiFiConnected) {
 		if (g_startPingWatchDogAfter) {
-			ADDLOGF_INFO("g_startPingWatchDogAfter %i", g_startPingWatchDogAfter);
+			//ADDLOGF_INFO("g_startPingWatchDogAfter %i", g_startPingWatchDogAfter);
 			g_startPingWatchDogAfter--;
 			if (0 == g_startPingWatchDogAfter)
 			{
