@@ -766,7 +766,7 @@ int http_fn_index(http_request_t* request) {
 		sizeof(g_cfg), g_cfg.changeCounter, g_cfg.otaCounter, Main_GetLastRebootBootFailures());
 
 	inputName = CFG_GetPingHost();
-	if (inputName && *inputName) {
+	if (inputName && *inputName && CFG_GetPingDisconnectedSecondsToRestart()) {
 		hprintf255(request, "<h5>Ping watchdog (%s) - ", inputName);
 		if (g_startPingWatchDogAfter > 0) {
 			hprintf255(request, "will start in %i!</h5>", g_startPingWatchDogAfter);
