@@ -145,6 +145,7 @@ int g_dimmerRangeMin = 0;
 int g_dimmerRangeMax = 100;
 
 // serial baud rate used to communicate with the TuyaMCU
+// common baud rates are 9600 bit/s and 115200 bit/s
 int g_baudRate = 9600;
 
 static bool heartbeat_valid = false;
