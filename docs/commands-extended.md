@@ -32,6 +32,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | ota_http | [HTTP_URL] | Starts the firmware update procedure, the argument should be a reachable HTTP server file. You can easily setup HTTP server with Xampp, or Visual Code, or Python, etc. Make sure you are using OTA file for a correct platform (getting N platform RBL on T will brick device, etc etc) | File: cmnds/cmd_main.c<br/>Function: CMD_HTTPOTA |
 | scheduleHADiscovery | [Seconds] | This will schedule HA discovery, the discovery will happen with given number of seconds, but timer only counts when MQTT is connected. It will not work without MQTT online, so you must set MQTT credentials first. | File: cmnds/cmd_main.c<br/>Function: CMD_ScheduleHADiscovery |
 | flags | [IntegerValue] | Sets the device flags | File: cmnds/cmd_main.c<br/>Function: CMD_Flags |
+| ClearNoPingTime |  | Command for ping watchdog; it sets the 'time since last ping reply' to 0 again | File: cmnds/cmd_main.c<br/>Function: CMD_ClearNoPingTime |
 | led_dimmer | [Value] | set output dimmer 0..100 | File: cmnds/cmd_newLEDDriver.c<br/>Function: dimmer |
 | add_dimmer | [Value][bWrapAroundInsteadOfHold] | Adds a given value to current LED dimmer. Function can wrap or clamp if max/min is exceeded. | File: cmnds/cmd_newLEDDriver.c<br/>Function: add_dimmer |
 | led_enableAll | [1or0orToggle] | Power on/off LED but remember the RGB(CW) values | File: cmnds/cmd_newLEDDriver.c<br/>Function: enableAll |
