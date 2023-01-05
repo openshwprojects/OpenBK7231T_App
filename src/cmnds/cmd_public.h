@@ -95,6 +95,15 @@ enum EventCode {
 
 	CMD_EVENT_LED_STATE,
 
+	CMD_EVENT_IPCHANGE,
+
+	CMD_EVENT_WIFI_STATE, // Argument: [HALWifiStatus_t]
+
+	CMD_EVENT_PIN_ON3CLICK,
+	CMD_EVENT_PIN_ON4CLICK,
+
+	CMD_EVENT_CHANGE_NOPINGTIME,
+
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
 };
@@ -169,6 +178,7 @@ void LED_SetDimmer(int iVal);
 commandResult_t LED_SetBaseColor(const void* context, const char* cmd, const char* args, int bAll);
 void LED_SetFinalCW(byte c, byte w);
 void LED_SetFinalRGB(byte r, byte g, byte b);
+float LED_BrightnessMapping(float raw, float brig);
 void LED_SetFinalRGBCW(byte* rgbcw);
 void LED_GetFinalChannels100(byte* rgbcw);
 void LED_GetFinalHSV(int* hsv);

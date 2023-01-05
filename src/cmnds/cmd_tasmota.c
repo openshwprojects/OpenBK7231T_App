@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include "cmd_local.h"
 #include "../new_pins.h"
+#include "../new_cfg.h"
 #ifdef BK_LITTLEFS
 	#include "../littlefs/our_lfs.h"
 #endif
@@ -182,7 +183,7 @@ static commandResult_t cmnd_backlog(const void * context, const char *cmd, const
 				break;
 			}
             *(c) = *(p++);
-            if (c - copy < 127){
+            if (c - copy < (sizeof(copy)-1)){
                 c++;
             }
 		}
@@ -410,9 +411,74 @@ static commandResult_t cmnd_lfs_test3(const void * context, const char *cmd, con
 	}
 	return CMD_RES_OK;
 }
+static commandResult_t cmnd_SSID1(const void * context, const char *cmd, const char *args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+	if (Tokenizer_GetArgsCount()==0) {
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "This command requires 1 argument");
+	}
+	else {
+		CFG_SetWiFiSSID(Tokenizer_GetArg(0));
+	}
+	return CMD_RES_OK;
+}
+static commandResult_t cmnd_Password1(const void * context, const char *cmd, const char *args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+
+	if (Tokenizer_GetArgsCount() == 0) {
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "This command requires 1 argument");
+	}
+	else {
+		CFG_SetWiFiPass(Tokenizer_GetArg(0));
+	}
+	return CMD_RES_OK;
+}
+static commandResult_t cmnd_MqttHost(const void * context, const char *cmd, const char *args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+
+	if (Tokenizer_GetArgsCount() == 0) {
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "This command requires 1 argument");
+	}
+	else {
+		CFG_SetMQTTHost(Tokenizer_GetArg(0));
+	}
+	return CMD_RES_OK;
+}
+static commandResult_t cmnd_MqttUser(const void * context, const char *cmd, const char *args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+
+	if (Tokenizer_GetArgsCount() == 0) {
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "This command requires 1 argument");
+	}
+	else {
+		CFG_SetMQTTUserName(Tokenizer_GetArg(0));
+	}
+	return CMD_RES_OK;
+}
+static commandResult_t cmnd_MqttClient(const void * context, const char *cmd, const char *args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+
+	if (Tokenizer_GetArgsCount() == 0) {
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "This command requires 1 argument");
+	}
+	else {
+		CFG_SetMQTTClientId(Tokenizer_GetArg(0));
+	}
+	return CMD_RES_OK;
+}
+static commandResult_t cmnd_MqttPassword(const void * context, const char *cmd, const char *args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+
+	if (Tokenizer_GetArgsCount() == 0) {
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "This command requires 1 argument");
+	}
+	else {
+		CFG_SetMQTTPass(Tokenizer_GetArg(0));
+	}
+	return CMD_RES_OK;
+}
 int taslike_commands_init(){
-	//cmddetail:{"name":"power","args":"",
-	//cmddetail:"descr":"set output POWERn 0..100",
+	//cmddetail:{"name":"power","args":"[OnorOfforToggle]",
+	//cmddetail:"descr":"Tasmota-style POWER command. Should work for both LEDs and relay-based devices. You can write POWER0, POWER1, etc to access specific relays.",
 	//cmddetail:"fn":"power","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("power", "", power, NULL, NULL);
@@ -426,35 +492,65 @@ int taslike_commands_init(){
 	//cmddetail:"fn":"powerAll","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("powerAll", "", powerAll, NULL, NULL);
-	//cmddetail:{"name":"color","args":"",
-	//cmddetail:"descr":"set PWN color using #RRGGBB[cw][ww]",
+	//cmddetail:{"name":"color","args":"[HexString]",
+	//cmddetail:"descr":"set PWN color using #RRGGBB[cw][ww]. Do not use it. Use led_basecolor_rgb",
 	//cmddetail:"fn":"color","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("color", "", color, NULL, NULL);
-	//cmddetail:{"name":"backlog","args":"",
+	//cmddetail:{"name":"backlog","args":"[string of commands separated with ;]",
 	//cmddetail:"descr":"run a sequence of ; separated commands",
 	//cmddetail:"fn":"cmnd_backlog","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("backlog", "", cmnd_backlog, NULL, NULL);
-	//cmddetail:{"name":"exec","args":"",
+	//cmddetail:{"name":"exec","args":"[Filename]",
 	//cmddetail:"descr":"exec <file> - run autoexec.bat or other file from LFS if present",
 	//cmddetail:"fn":"cmnd_lfsexec","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("exec", "", cmnd_lfsexec, NULL, NULL);
-	//cmddetail:{"name":"lfs_test1","args":"",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"lfs_test1","args":"[FileName]",
+	//cmddetail:"descr":"Tests the LFS file reading feature.",
 	//cmddetail:"fn":"cmnd_lfs_test1","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_test1", NULL, cmnd_lfs_test1, NULL, NULL);
-	//cmddetail:{"name":"lfs_test2","args":"",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"lfs_test2","args":"[FileName]",
+	//cmddetail:"descr":"Tests the LFS file reading feature.",
 	//cmddetail:"fn":"cmnd_lfs_test2","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_test2", NULL, cmnd_lfs_test2, NULL, NULL);
-	//cmddetail:{"name":"lfs_test3","args":"",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"lfs_test3","args":"[FileName]",
+	//cmddetail:"descr":"Tests the LFS file reading feature.",
 	//cmddetail:"fn":"cmnd_lfs_test3","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_test3", NULL, cmnd_lfs_test3, NULL, NULL);
+	//cmddetail:{"name":"SSID1","args":"[ValueString]",
+	//cmddetail:"descr":"Sets the SSID of target WiFi. Command keeps Tasmota syntax.",
+	//cmddetail:"fn":"cmnd_SSID1","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("SSID1", NULL, cmnd_SSID1, NULL, NULL);
+	//cmddetail:{"name":"Password1","args":"[ValueString]",
+	//cmddetail:"descr":"Sets the Pass of target WiFi. Command keeps Tasmota syntax",
+	//cmddetail:"fn":"cmnd_Password1","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("Password1", NULL, cmnd_Password1, NULL, NULL);
+	//cmddetail:{"name":"MqttHost","args":"[ValueString]",
+	//cmddetail:"descr":"Sets the MQTT host. Command keeps Tasmota syntax",
+	//cmddetail:"fn":"cmnd_MqttHost","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("MqttHost", NULL, cmnd_MqttHost, NULL, NULL);
+	//cmddetail:{"name":"MqttUser","args":"[ValueString]",
+	//cmddetail:"descr":"Sets the MQTT user. Command keeps Tasmota syntax",
+	//cmddetail:"fn":"cmnd_MqttUser","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("MqttUser", NULL, cmnd_MqttUser, NULL, NULL);
+	//cmddetail:{"name":"MqttPassword","args":"[ValueString]",
+	//cmddetail:"descr":"Sets the MQTT pass. Command keeps Tasmota syntax",
+	//cmddetail:"fn":"cmnd_MqttPassword","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("MqttPassword", NULL, cmnd_MqttPassword, NULL, NULL);
+	//cmddetail:{"name":"MqttClient","args":"[ValueString]",
+	//cmddetail:"descr":"Sets the MQTT client. Command keeps Tasmota syntax",
+	//cmddetail:"fn":"cmnd_MqttClient","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("MqttClient", NULL, cmnd_MqttClient, NULL, NULL);
     return 0;
 }

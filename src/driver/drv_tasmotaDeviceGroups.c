@@ -865,23 +865,23 @@ void DRV_DGR_Init()
 	DRV_DGR_CreateSocket_Send();
 
 #endif
-	//cmddetail:{"name":"DGR_SendPower","args":"",
-	//cmddetail:"descr":"qqq",
+	//cmddetail:{"name":"DGR_SendPower","args":"[GroupName][ChannelValues][ChannelsCount]",
+	//cmddetail:"descr":"Sends a POWER message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit.",
 	//cmddetail:"fn":"CMD_DGR_SendPower","file":"driver/drv_tasmotaDeviceGroups.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("DGR_SendPower", "", CMD_DGR_SendPower, NULL, NULL);
-	//cmddetail:{"name":"DGR_SendBrightness","args":"",
-	//cmddetail:"descr":"qqq",
+	//cmddetail:{"name":"DGR_SendBrightness","args":"[GroupName][Brightness]",
+	//cmddetail:"descr":"Sends a Brightness message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit.",
 	//cmddetail:"fn":"CMD_DGR_SendBrightness","file":"driver/drv_tasmotaDeviceGroups.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("DGR_SendBrightness", "", CMD_DGR_SendBrightness, NULL, NULL);
-	//cmddetail:{"name":"DGR_SendRGBCW","args":"",
-	//cmddetail:"descr":"qqq",
+	//cmddetail:{"name":"DGR_SendRGBCW","args":"[GroupName][HexRGBCW]",
+	//cmddetail:"descr":"Sends a RGBCW message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit.",
 	//cmddetail:"fn":"CMD_DGR_SendRGBCW","file":"driver/drv_tasmotaDeviceGroups.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("DGR_SendRGBCW", "", CMD_DGR_SendRGBCW, NULL, NULL);
-	//cmddetail:{"name":"DGR_SendFixedColor","args":"",
-	//cmddetail:"descr":"qqq",
+	//cmddetail:{"name":"DGR_SendFixedColor","args":"[GroupName][TasColorIndex]",
+	//cmddetail:"descr":"Sends a FixedColor message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit.",
 	//cmddetail:"fn":"CMD_DGR_SendFixedColor","file":"driver/drv_tasmotaDeviceGroups.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DGR_SendFixedColor", "", CMD_DGR_SendFixedColor, NULL, NULL);

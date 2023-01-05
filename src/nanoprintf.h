@@ -143,7 +143,16 @@ NPF_VISIBILITY int npf_vpprintf(
 #if NANOPRINTF_HAVE_GCC_WARNING_PRAGMAS
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wunused-function"
-  #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+  #if PLATFORM_BEKEN
+	// not supported?
+	/*
+	In file included from ../../../apps/OpenBK7231T_App/src/new_common.c:26:0:
+	../../../apps/OpenBK7231T_App/src/nanoprintf.h:146:11: warning: unknown option after '#pragma GCC diagnostic' kind [-Wpragmas]
+	   #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+	*/
+  #else
+	#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+  #endif
   #ifdef __cplusplus
     #pragma GCC diagnostic ignored "-Wold-style-cast"
   #endif

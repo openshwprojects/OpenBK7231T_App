@@ -67,9 +67,14 @@ A: Use backlog - like in Tasmota. Open Config->Short startup command, and enter,
 
 OpenBeken supports online builds for all platforms (BK7231T, BK7231N, XR809, BL602, W800), but if you want to compile it yourself, see  [BUILDING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md)
 
-# Flashing for BK7231T
+# Flashing for BK7231 (BK7231T and BK7231N) on Windows - easy method for beginners
 
-## UART (Windows only)
+Use our new BK7231 GUI Flash tool:
+https://github.com/openshwprojects/BK7231GUIFlashTool
+
+# Flashing for BK7231T (alternate method)
+
+## UART (obsolete method; Windows only)
 
 get BKwriter 1.60 exe (extract zip) from [here](https://github.com/openshwprojects/OpenBK7231T/blob/master/bk_writer1.60.zip)
   
@@ -80,7 +85,7 @@ connect the PC to TX1 and RX1 on the bk7231 (TX2 and RX2 are optional, only for 
 start flash in BKwriter 1.60 (select COM port, etc)
 then re-power the device (or reset with CEN by temporary connecting CEN to ground) until the flashing program continues, repeat if required.
   
-## UART (multiplatform method, Python required)
+## UART (obsolete method; multiplatform method, Python required)
 
 clone the repo https://github.com/OpenBekenIOT/hid_download_py
   
@@ -104,11 +109,9 @@ See: https://github.com/openshwprojects/BK7231_SPI_Flasher
 
 ## OTA
 
-Once the firmware has been flashed for the first time, it can be flashed over wifi (note: change hardcoded firmware URL in new_http.c)
+Once the firmware has been flashed for the first time, it can be flashed over wifi.
 
-Setup a simple webserver to serve `<sdk folder>\apps\<folder>\output\1.0.0\<appname>_<appversion>.rbl`
-
-Visit <ip>/ota - here start the flashing process.
+Go to "Open Web Application", OTA tab, drag and drop proper RBL file on the field, press a button to start OTA proccess
 
 ## First run
 
@@ -120,7 +123,7 @@ Once you are connected and have an IP, go to http://192.168.4.1/index , select c
 
 After a reboot, the device should connect to your lan.
 
-# Flashing for BK7231N
+# Flashing for BK7231N (obsolete method)
 
 BKwriter 1.60 doesn't work for BK7231N for me, in BK7231 mode it errors with "invalid CRC" and in BK7231N mode it fails to unprotect the device.
 For BK7231N, one should use:
@@ -200,54 +203,8 @@ Currently available pin roles:
 
 There are multiple console commands that allow you to automate your devices. Commands can be entered manually in command line, can be send by HTTP (just like in Tasmota), can be send by MQTT and also can be scripted.
 
-| Command        | Arguments          | Description  |
-| ------------- |:-------------:| -----:|
-| setChannel     | [ChannelIndex][ChannelValue] | Sets a raw channel to given value. Relay channels are using 1 and 0 values. PWM channels are within [0,100] range. Do not use this for LED control, because there is a better and more advanced LED driver with dimming and configuration memory (remembers setting after on/off), LED driver commands has "led_" prefix. |
-| addChannel     | [ChannelIndex][ValueToAdd][ClampMin][ClampMax] | Ads a given value to the channel. Can be used to change PWM brightness. Clamp min and max arguments are optional. |
-| setPinRole     | [PinRole][RoleIndexOrName] | This allows you to set a pin role, for example a Relay role, or Button, etc. Usually it's easier to do this through WWW panel, so you don't have to use this command.  |
-| setPinChannel     | [PinRole][ChannelIndex] | This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command. |
-| addRepeatingEvent     | [IntervalSeconds][RepeatsOr-1][CommandToRun] | Starts a timer/interval command. Use "backlog" to fit multiple commands in a single string. |
-| addRepeatingEventID | [IntervalSeconds][RepeatsOr-1][UserID][CommandToRun] | as above, but with a given ID |
-| cancelRepeatingEvent | [UserID] | Stops a given repeating event with a specified ID |
-| addEventHandler     | [EventName][EventArgument][CommandToRun] | This can be used to trigger an action on a button click, long press, etc |
-| addChangeHandler     | [Variable][Relation][Constant][Command] | This can listen to change in channel value (for example channel 0 becoming 100), or for a voltage/current/power change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be "Power", or "Current" or "Voltage" |
-| clearAllHandlers | | This clears all added event handlers |
-| sendGet     | [TargetURL] | Sends a HTTP GET request to target URL. May include GET arguments. Can be used to control devices by Tasmota HTTP protocol. |
-| publish     | [Topic][Value] | Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get |
-| linkTuyaMCUOutputToChannel     | [dpId][varType][channelID] | Used to map between TuyaMCU dpIDs and our internal channels. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap  |
-| tuyaMcu_setBaudRate     | [BaudValue] | Sets the baud rate used by TuyaMCU UART communication. Default value is 9600. |
-| led_enableAll     | [1or0] | Power on/off LED but remember the RGB(CW) values. |
-| led_basecolor_rgb     | [HexValue] | Puts the LED driver in RGB mode and sets given color. |
-| led_basecolor_rgbcw     | [HexValue] | TODO |
-| led_temperature     | [TempValue] | Toggles LED driver into temperature mode and sets given temperature. It using Home Assistant temperature range (in the range from 154-500 defined in homeassistant/util/color.py as HASS_COLOR_MIN and HASS_COLOR_MAX) |
-| led_dimmer     | [DimmerValue] | Used to dim all kinds of lights, works for both RGB and CW modes. |
-| add_dimmer     | [DimmerDeltaValue] | This ads a given value (can be negative) to current dimmer settings, works for both RGB and CW modes. |
-| led_brightnessMult     | [Value] | Internal usage only. |
-| led_colorMult     | [Value] | Internal usage only. |
-| led_saturation     | [Value] | This is an alternate way to set the LED color. |
-| led_hue     | [Value] | This is an alternate way to set the LED color. |
-| SM2135_Map     | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of SM2135 channels. This is because SM2135 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. |
-| SM2135_RGBCW     | [HexColor] | Don't use it. It's for direct access of SM2135 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
-| BP5758D_Map     | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP5758D channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. |
-| BP5758D_RGBCW     | [HexColor] | Don't use it. It's for direct access of BP5758D driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
-| loglevel     | [Value]  | Correct values are 0 to 7. Default is 3. Higher value includes more logs. Log levels are: ERROR = 1, WARN = 2, INFO = 3, DEBUG = 4, EXTRADEBUG = 5. WARNING: you also must separately select logging level filter on web panel in order for more logs to show up there |
-| logdelay     | [Value] | Value is a number of ms. This will add an artificial delay in each log call. Useful for debugging. This way you can see step by step what happens. |
-| restart     |  | Reboots the device. |
-| ntp_setServer     | IP | Sets the address of NTP server. |
-| clearConfig     |  | Clears all the device config and returns it to AP mode. |
-| VoltageSet     | [Value] | Used for BL0942/BL0937/etc calibration. Refer to BL0937 guide for more info. |
-| PowerSet     | [Value] | Used for BL0942/BL0937/etc calibration. Refer to BL0937 guide for more info. |
-| CurrentSet     | [Value] | Used for BL0942/BL0937/etc calibration. Refer to BL0937 guide for more info. |
-| DGR_SendPower     | [GroupName][ChannelValues][ChannelsCount] | Sends a POWER message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
-| DGR_SendBrightness     | [GroupName][Brightness] | Sends a Brightness message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
-| DGR_SendRGBCW     | [GroupName][RGBCW] | Sends a RGBCW message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. Format is hex - eg. 00FF000000 for green color |
-| EnergyCntReset | | Used for BL0942/BL0937/etc consumption measurement data reset |
-| SetupEnergyStats | [enable] [sample_time] [sample_count] [enableJSON] | Used for BL0942/BL0937/etc. Configure consumptio history stats. enable: 0/1 sample_time:10..900 sample_count: 10..180 enableJSON: 0/1 |
-| PowerMax | [limit] | Used for BL0937 to setup limiter for maximal output filter based on device definition 3680W for 16A devices. Prevention of sending ridicilus numbers to Cloud |
-| ConsumptionThreshold | [threshold] | Used for BL0942/BL0937/etc for define threshold for change of total counter to execute automatic store of consumption counters to flash |
-
-Are you looking for extra commands? Just search the code:
-https://github.com/openshwprojects/OpenBK7231T_App/search?q=CMD_RegisterCommand
+## [Autogenerated Complete Commands List](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/commands.md)
+## [Autogenerated Complete Commands List - Extended Info](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/commands-extended.md)
 
 There is also a conditional exec command. Example:
 if MQTTOn then "backlog led_dimmer 100; led_enableAll" else "backlog led_dimmer 10; led_enableAll"

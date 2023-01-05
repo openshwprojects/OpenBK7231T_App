@@ -1,12 +1,13 @@
 #include "new_http.h"
 
 
+// TODO: move it out 
+void doHomeAssistantDiscovery(const char *topic, http_request_t *request);
 
 int http_fn_about(http_request_t* request);
 int http_fn_cfg_mqtt(http_request_t* request);
 int http_fn_cfg_mqtt_set(http_request_t* request);
 int http_fn_cfg_webapp(http_request_t* request);
-int http_fn_config_dump_table(http_request_t* request);
 int http_fn_cfg_webapp_set(http_request_t* request);
 int http_fn_cfg_wifi_set(http_request_t* request);
 int http_fn_cfg_name(http_request_t* request);

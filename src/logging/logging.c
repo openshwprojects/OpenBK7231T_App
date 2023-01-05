@@ -73,152 +73,32 @@ char* logfeaturenames[] = {
 	"DDP:",// = 17
 	"RAW:", // = 18 raw, without any prefix
 	"HASS:", // = 19
-	"IR:" // = 20
+	"IR:", // = 20
+	"DHT", // = 21
+	"ERROR",// = 22,
+	"ERROR",// = 23,
+	"ERROR",// = 24,
+	"ERROR",// = 25,
+	"ERROR",// = 26,
+	"ERROR",// = 27,
 };
 
 #define LOGGING_BUFFER_SIZE		1024
 
-int direct_serial_log = DEFAULT_DIRECT_SERIAL_LOG;
+volatile int direct_serial_log = DEFAULT_DIRECT_SERIAL_LOG;
 
 static int g_extraSocketToSendLOG = 0;
 static char g_loggingBuffer[LOGGING_BUFFER_SIZE];
+
+#define MAX_TCP_LOG_PORTS 2
+int tcp_log_ports[MAX_TCP_LOG_PORTS] = {-1};
+
 
 void LOG_SetRawSocketCallback(int newFD)
 {
 	g_extraSocketToSendLOG = newFD;
 }
 
-#ifdef WINDOWS_SIMPLE_LOGGER
-void addLogAdv(int level, int feature, const char* fmt, ...)
-{
-	va_list argList;
-	const size_t tmp_len = 1024;
-	char* tmp;
-	char* t;
-
-	if (fmt == 0)
-	{
-		return;
-	}
-
-	if (!((1 << feature) & logfeatures))
-	{
-		return;
-	}
-	if (level > loglevel)
-	{
-		return;
-	}
-
-	tmp = (char*)malloc(tmp_len);
-	if (tmp != NULL)
-	{
-		memset(tmp, 0, tmp_len);
-		t = tmp;
-		if (feature == LOG_FEATURE_RAW)
-		{
-			// raw means no prefixes
-		}
-		else {
-			strncpy(t, loglevelnames[level], (tmp_len - (3 + t - tmp)));
-			t += strlen(t);
-			if (feature < sizeof(logfeaturenames) / sizeof(*logfeaturenames))
-			{
-				strncpy(t, logfeaturenames[feature], (tmp_len - (3 + t - tmp)));
-				t += strlen(t);
-			}
-		}
-		va_start(argList, fmt);
-		vsnprintf(t, (tmp_len - (3 + t - tmp)), fmt, argList);
-		va_end(argList);
-		if (tmp[strlen(tmp) - 1] == '\n') tmp[strlen(tmp) - 1] = '\0';
-		if (tmp[strlen(tmp) - 1] == '\r') tmp[strlen(tmp) - 1] = '\0';
-
-		printf(tmp);
-		printf("\r\n");
-		free(tmp);
-	}
-}
-#else // from WINDOWS
-
-
-#ifdef DEBUG_USE_SIMPLE_LOGGER
-
-static SemaphoreHandle_t g_mutex = 0;
-
-void addLogAdv(int level, int feature, const char* fmt, ...)
-{
-	va_list argList;
-	BaseType_t taken;
-	const size_t tmp_len = 1024;
-	char* tmp;
-	char* t;
-
-	if (fmt == 0)
-	{
-		return;
-	}
-	if (!((1 << feature) & logfeatures))
-	{
-		return;
-	}
-	if (level > loglevel)
-	{
-		return;
-	}
-
-	if (g_mutex == 0)
-	{
-		g_mutex = xSemaphoreCreateMutex();
-	}
-	// TODO: semaphore
-
-	taken = xSemaphoreTake(g_mutex, 100);
-	if (taken == pdTRUE)
-	{
-		tmp = (char*)os_malloc(tmp_len);
-		if (tmp != NULL)
-		{
-			memset(tmp, 0, tmp_len);
-			t = tmp;
-			if (feature == LOG_FEATURE_RAW)
-			{
-				// raw means no prefixes
-			}
-			else {
-				strncpy(t, loglevelnames[level], (tmp_len - (3 + t - tmp)));
-				t += strlen(t);
-				if (feature < sizeof(logfeaturenames) / sizeof(*logfeaturenames))
-				{
-					strncpy(t, logfeaturenames[feature], (tmp_len - (3 + t - tmp)));
-					t += strlen(t);
-				}
-			}
-			va_start(argList, fmt);
-			vsnprintf(t, (tmp_len - (3 + t - tmp)), fmt, argList);
-			va_end(argList);
-			if (tmp[strlen(tmp) - 1] == '\n') tmp[strlen(tmp) - 1] = '\0';
-			if (tmp[strlen(tmp) - 1] == '\r') tmp[strlen(tmp) - 1] = '\0';
-
-			bk_printf("%s\r\n", tmp);
-			if (g_extraSocketToSendLOG)
-			{
-				send(g_extraSocketToSendLOG, tmp, strlen(tmp), 0);
-			}
-			of_free(tmp);
-
-			xSemaphoreGive(g_mutex);
-			if (log_delay) {
-				if (log_delay < 0) {
-					int cps = (115200 / 8);
-					timems = (1000 * len) / cps;
-				}
-				rtos_delay_milliseconds(log_delay);
-			}
-		}
-	}
-}
-#else
 
 static int http_getlog(http_request_t* request);
 static int http_getlograw(http_request_t* request);
@@ -269,23 +149,23 @@ static void initLog(void)
 	HTTP_RegisterCallback("/logs", HTTP_GET, http_getlog);
 	HTTP_RegisterCallback("/lograw", HTTP_GET, http_getlograw);
 
-	//cmddetail:{"name":"loglevel","args":"",
-	//cmddetail:"descr":"set log level <0..6>",
+	//cmddetail:{"name":"loglevel","args":"[Value]",
+	//cmddetail:"descr":"Correct values are 0 to 7. Default is 3. Higher value includes more logs. Log levels are: ERROR = 1, WARN = 2, INFO = 3, DEBUG = 4, EXTRADEBUG = 5. WARNING: you also must separately select logging level filter on web panel in order for more logs to show up there",
 	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("loglevel", "", log_command, NULL, NULL);
-	//cmddetail:{"name":"logfeature","args":"",
-	//cmddetail:"descr":"set log feature filter, <0..10> <0|1>",
+	//cmddetail:{"name":"logfeature","args":"[Index][1or0]",
+	//cmddetail:"descr":"set log feature filter, as an index and a 1 or 0",
 	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("logfeature", NULL, log_command, NULL, NULL);
-	//cmddetail:{"name":"logtype","args":"",
-	//cmddetail:"descr":"logtype direct|all - direct logs only to serial immediately",
+	//cmddetail:{"name":"logtype","args":"[TypeStr]",
+	//cmddetail:"descr":"logtype direct|thread|none - type of serial logging - thread (in a thread; default), direct (logged directly to serial), none (no UART logging)",
 	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("logtype", "", log_command, NULL, NULL);
-	//cmddetail:{"name":"logdelay","args":"",
-	//cmddetail:"descr":"logdelay 0..n - impose ms delay after every log",
+	//cmddetail:{"name":"logdelay","args":"[Value]",
+	//cmddetail:"descr":"Value is a number of ms. This will add an artificial delay in each log call. Useful for debugging. This way you can see step by step what happens.",
 	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("logdelay", "", log_command, NULL, NULL);
@@ -308,6 +188,45 @@ void LOG_DeInit() {
 void LOG_SetCommandHTTPRedirectReply(http_request_t* request) {
 	g_log_alsoPrintToHTTP = request;
 }
+
+
+
+#ifdef PLATFORM_BEKEN
+// run serial via timer thread.
+	OSStatus OBK_rtos_callback_in_timer_thread( PendedFunction_t xFunctionToPend, void *pvParameter1, uint32_t ulParameter2, uint32_t delay_ms);
+	void RunSerialLog();
+	static void send_to_tcp();
+
+	// called from timer thread
+	volatile char log_timer_pended = 0;
+	void log_timer_cb(void *a, uint32_t cmd){
+		// we can pend another during this call...
+		// so clear pended first
+		log_timer_pended = 0;
+		RunSerialLog();
+		send_to_tcp();
+	}
+
+	void trigger_log_send(){
+		// pend the function on timer thread.
+		// as this is called form ISR, delay is ignored.
+		// only allow one to pend at a time.
+		if (!log_timer_pended){
+			log_timer_pended = 1;
+			OBK_rtos_callback_in_timer_thread( log_timer_cb, NULL, 0, 0);
+		}
+	}
+
+	static int getSerial2();
+
+	void RunSerialLog() {
+		// send what we can.  if some remain, re-trigger send
+		if (getSerial2()){
+			trigger_log_send();
+		}
+	}
+#endif
+
 // adds a log to the log memory
 // if head collides with either tail, move the tails on.
 void addLogAdv(int level, int feature, const char* fmt, ...)
@@ -397,7 +316,7 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 		send(g_extraSocketToSendLOG, tmp, strlen(tmp), 0);
 	}
 
-	if (direct_serial_log) {
+	if (direct_serial_log == LOGTYPE_DIRECT) {
 		bk_printf("%s", tmp);
 		if (taken == pdTRUE) {
 			xSemaphoreGive(logMemory.mutex);
@@ -435,6 +354,9 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 	if (taken == pdTRUE) {
 		xSemaphoreGive(logMemory.mutex);
 	}
+#ifdef PLATFORM_BEKEN
+	trigger_log_send();
+#endif	
 	if (log_delay) {
 		int timems = log_delay;
 		// is log_delay set -ve, then calculate delay
@@ -483,8 +405,8 @@ static int getData(char* buff, int buffsize, int* tail) {
 // and not wait.
 // so in our thread, send until full, and never spin waiting to send...
 // H/W TX fifo seems to be 256 bytes!!!
-static void getSerial2() {
-	if (!initialised) return;
+static int getSerial2() {
+	if (!initialised) return 0;
 	int* tail = &logMemory.tailserial;
 	char c;
 	BaseType_t taken = xSemaphoreTake(logMemory.mutex, 100);
@@ -503,13 +425,18 @@ static void getSerial2() {
 		}
 
 		(*tail) = ((*tail) + 1) % LOGSIZE;
-		UART_WRITE_BYTE(UART_PORT_INDEX, c);
+
+		if (direct_serial_log == LOGTYPE_THREAD) {
+			UART_WRITE_BYTE(UART_PORT_INDEX, c);
+		}
 	}
+
+	int remains = (*tail != logMemory.head);
 
 	if (taken == pdTRUE) {
 		xSemaphoreGive(logMemory.mutex);
 	}
-	return;
+	return remains;
 }
 
 #else
@@ -557,6 +484,8 @@ void startSerialLog() {
 #if WINDOWS
 
 #else
+
+#ifndef PLATFORM_BEKEN
 	OSStatus err = kNoErr;
 	err = rtos_create_thread(NULL, BEKEN_APPLICATION_PRIORITY,
 		"log_serial",
@@ -567,6 +496,8 @@ void startSerialLog() {
 	{
 		bk_printf("create \"log_serial\" thread failed!\r\n");
 	}
+#endif
+
 #endif
 }
 
@@ -606,17 +537,33 @@ void log_server_thread(beken_thread_arg_t arg)
 			if (client_fd >= 0)
 			{
 				os_strcpy(client_ip_str, inet_ntoa(client_addr.sin_addr));
-				//addLog( "TCP Log Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd );
-				if (kNoErr
-					!= rtos_create_thread(NULL, BEKEN_APPLICATION_PRIORITY,
-						"Logging TCP Client",
-						(beken_thread_function_t)log_client_thread,
-						0x800,
-						(beken_thread_arg_t)client_fd))
-				{
+#ifdef PLATFORM_BEKEN
+				// Just note the new client port, if we have an available slot out of the two we record.
+				int found_port_slot = 0;
+				for (int i = 0; i < MAX_TCP_LOG_PORTS; i++) {
+					if (tcp_log_ports[i] == -1){
+						tcp_log_ports[i] = client_fd;
+						found_port_slot = 1;
+						break;
+					}
+				}
+				if (!found_port_slot){
 					close(client_fd);
 					client_fd = -1;
 				}
+#else
+				//addLog( "TCP Log Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd );
+                if (kNoErr
+                    != rtos_create_thread(NULL, BEKEN_APPLICATION_PRIORITY,
+                        "Logging TCP Client",
+                        (beken_thread_function_t)log_client_thread,
+                        0x800,
+                        (beken_thread_arg_t)client_fd))
+                {
+					close(client_fd);
+					client_fd = -1;
+				}
+#endif
 			}
 		}
 	}
@@ -631,6 +578,43 @@ void log_server_thread(beken_thread_arg_t arg)
 
 #define TCPLOGBUFSIZE 128
 static char tcplogbuf[TCPLOGBUFSIZE];
+
+#ifdef PLATFORM_BEKEN
+static void send_to_tcp(){
+	int i;
+	for (i = 0; i < MAX_TCP_LOG_PORTS; i++){
+		if (tcp_log_ports[i] >= 0){
+			break;
+		}
+	}
+	// no ports to send to
+	if (i == MAX_TCP_LOG_PORTS){
+		return;
+	}
+	int count;
+	do {
+		count = getTcp(tcplogbuf, TCPLOGBUFSIZE);
+		if (count) {
+			for (i = 0; i < MAX_TCP_LOG_PORTS; i++){
+				if (tcp_log_ports[i] >= 0){
+					int len = send(tcp_log_ports[i], tcplogbuf, count, 0);
+					// if some error, close socket
+					if (len != count) {
+						// this is the only place this port can be closed.
+						close(tcp_log_ports[i]);
+						tcp_log_ports[i] = -1;
+					}
+				}
+			}
+		}
+	} while(count);
+}
+#endif
+
+// on beken, we trigger log send from timer thread
+#ifndef PLATFORM_BEKEN
+
+// non-beken
 static void log_client_thread(beken_thread_arg_t arg)
 {
 	int fd = (int)arg;
@@ -653,16 +637,7 @@ static void log_client_thread(beken_thread_arg_t arg)
 }
 
 
-#if PLATFORM_BEKEN
-static void log_serial_thread(beken_thread_arg_t arg)
-{
-	while (1) {
-		getSerial2();
-		rtos_delay_milliseconds(10);
-	}
-}
 
-#else 
 #define SERIALLOGBUFSIZE 128
 static char seriallogbuf[SERIALLOGBUFSIZE];
 static void log_serial_thread(beken_thread_arg_t arg)
@@ -670,7 +645,9 @@ static void log_serial_thread(beken_thread_arg_t arg)
 	while (1) {
 		int count = getSerial(seriallogbuf, SERIALLOGBUFSIZE);
 		if (count) {
-			bk_printf("%s", seriallogbuf);
+			if (direct_serial_log == LOGTYPE_THREAD) {
+				bk_printf("%s", seriallogbuf);
+			}
 		}
 		rtos_delay_milliseconds(10);
 	}
@@ -763,12 +740,16 @@ commandResult_t log_command(const void* context, const char* cmd, const char* ar
 			break;
 		}
 		if (!stricmp(cmd, "logtype")) {
-			if (!strcmp(args, "direct")) {
-				direct_serial_log = 1;
+			if (!stricmp(args, "none")) {
+				direct_serial_log = LOGTYPE_NONE;
+			}
+			else if (!stricmp(args, "direct")) {
+				direct_serial_log = LOGTYPE_DIRECT;
 			}
 			else {
-				direct_serial_log = 0;
+				direct_serial_log = LOGTYPE_THREAD;
 			}
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "logtype changed to %i", direct_serial_log);
 			result = CMD_RES_OK;
 			break;
 		}
@@ -790,6 +771,3 @@ commandResult_t log_command(const void* context, const char* cmd, const char* ar
 	return result;
 }
 
-
-#endif // else from simple logger
-#endif // else from windows

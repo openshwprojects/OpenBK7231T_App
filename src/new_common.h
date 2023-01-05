@@ -30,6 +30,8 @@ int sprintf2(char *o, const char* fmt, ...);
 // from http_fns.  should move to a utils file.
 extern unsigned char hexbyte(const char* hex);
 
+void OTA_RequestDownloadFromHTTP(const char *s);
+
 #if WINDOWS
 #define DEVICENAME_PREFIX_FULL "WinTest"
 #define DEVICENAME_PREFIX_SHORT "WT"
@@ -109,10 +111,13 @@ This platform is not supported, error!
 #define MAX(a,b)	(((a)>(b))?(a):(b))
 #endif
 
+#define OBK_IS_NAN(x) ((x)!=(x))
+
 #if WINDOWS
 
 #include <time.h>
 #include <stdint.h>
+#include <math.h>
 
 #define bk_printf printf
 
@@ -275,6 +280,9 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 #define os_free free
 #define os_memset memset
 
+#define portTICK_PERIOD_MS	portTICK_RATE_MS
+
+#define portTICK_PERIOD_MS portTICK_RATE_MS
 
 #define rtos_delay_milliseconds sys_msleep
 #define delay_ms sys_msleep
@@ -374,6 +382,7 @@ int Time_getUpTimeSeconds();
 char Tiny_CRC8(const char *data,int length);
 void RESET_ScheduleModuleReset(int delSeconds);
 void MAIN_ScheduleUnsafeInit(int delSeconds);
+void Main_ScheduleHomeAssistantDiscovery(int seconds);
 int Main_IsConnectedToWiFi();
 int Main_IsOpenAccessPointMode();
 void Main_Init();
@@ -385,7 +394,6 @@ void Main_OnPingCheckerReply(int ms);
 
 // new_ping.c
 void Main_SetupPingWatchDog(const char *target/*, int delayBetweenPings_Seconds*/);
-void Main_PingWatchDogSilent();
 int PingWatchDog_GetTotalLost();
 int PingWatchDog_GetTotalReceived();
 
@@ -413,6 +421,8 @@ typedef enum
 WIFI_RSSI_LEVEL wifi_rssi_scale(int8_t rssi_value);
 extern const char *str_rssi[];
 extern int bSafeMode;
+extern int g_timeSinceLastPingReply;
+extern int g_startPingWatchDogAfter;
 
 #endif /* __NEW_COMMON_H__ */
 

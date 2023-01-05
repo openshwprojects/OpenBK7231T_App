@@ -58,7 +58,7 @@ static commandResult_t alias(const void * context, const char *cmd, const char *
 	ADDLOG_INFO(LOG_FEATURE_CMD, "New alias has been set: %s runs %s", alias, ocmd);
 
 	//cmddetail:{"name":"aliasMem","args":"",
-	//cmddetail:"descr":"custom",
+	//cmddetail:"descr":"Internal usage only. See docs for 'alias' command.",
 	//cmddetail:"fn":"runcmd","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand(aliasMem, "", runcmd, NULL, cmdMem);
@@ -240,44 +240,44 @@ static commandResult_t testJSON(const void * context, const char *cmd, const cha
     return CMD_RES_OK;
 }
 int fortest_commands_init(){
-	//cmddetail:{"name":"alias","args":"",
-	//cmddetail:"descr":"add a custom command",
+	//cmddetail:{"name":"alias","args":"[Alias][Command with spaces]",
+	//cmddetail:"descr":"add an aliased command, so a command with spaces can be called with a short, nospaced alias",
 	//cmddetail:"fn":"alias","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("alias", "", alias, NULL, NULL);
 	//cmddetail:{"name":"testMallocFree","args":"",
-	//cmddetail:"descr":"",
+	//cmddetail:"descr":"Test malloc and free functionality to see if the device crashes",
 	//cmddetail:"fn":"testMallocFree","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("testMallocFree", NULL, testMallocFree, NULL, NULL);
 	//cmddetail:{"name":"testRealloc","args":"",
-	//cmddetail:"descr":"",
+	//cmddetail:"descr":"Test realloc and free functions to see if the device crashes",
 	//cmddetail:"fn":"testRealloc","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("testRealloc", NULL, testRealloc, NULL, NULL);
 	//cmddetail:{"name":"testJSON","args":"",
-	//cmddetail:"descr":"",
+	//cmddetail:"descr":"Test the JSON library",
 	//cmddetail:"fn":"testJSON","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("testJSON", NULL, testJSON, NULL, NULL);
 	//cmddetail:{"name":"testLog","args":"",
-	//cmddetail:"descr":"",
+	//cmddetail:"descr":"Do some test printfs to log with integer and a float",
 	//cmddetail:"fn":"testLog","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("testLog", NULL, testLog, NULL, NULL);
 	//cmddetail:{"name":"testFloats","args":"",
-	//cmddetail:"descr":"",
+	//cmddetail:"descr":"Do some more test printfs with floating point numbers",
 	//cmddetail:"fn":"testFloats","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("testFloats", NULL, testFloats, NULL, NULL);
 
 	//cmddetail:{"name":"testArgs","args":"",
-	//cmddetail:"descr":"",
+	//cmddetail:"descr":"Test tokenizer for args and print back all the given args to console",
 	//cmddetail:"fn":"testArgs","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("testArgs", NULL, testArgs, NULL, NULL);
 	//cmddetail:{"name":"testStrdup","args":"",
-	//cmddetail:"descr":"",
+	//cmddetail:"descr":"Test strdup function to see if it allocs news string correctly, also test freeing the string",
 	//cmddetail:"fn":"testStrdup","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("testStrdup", NULL, testStrdup, NULL, NULL);

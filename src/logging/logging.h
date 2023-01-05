@@ -36,11 +36,17 @@ extern char *loglevelnames[];
 extern unsigned int logfeatures;
 extern char *logfeaturenames[];
 
-extern int direct_serial_log;
+extern volatile int direct_serial_log;
+
+typedef enum logType_e {
+	LOGTYPE_NONE,
+	LOGTYPE_DIRECT,
+	LOGTYPE_THREAD,
+} logType_t;
 
 // set to 1 to use only direct serial logging at startup - eg for boot issues
-#define DEFAULT_DIRECT_SERIAL_LOG 0
-//#define DEFAULT_DIRECT_SERIAL_LOG 1
+#define DEFAULT_DIRECT_SERIAL_LOG LOGTYPE_THREAD
+//#define DEFAULT_DIRECT_SERIAL_LOG LOGTYPE_DIRECT
 
 typedef enum {
     LOG_NONE = 0,
@@ -76,8 +82,9 @@ typedef enum {
 	LOG_FEATURE_RAW				= 18,
     // add in here - but also in names in logging.c
     LOG_FEATURE_HASS            = 19,
-    LOG_FEATURE_IR		        = 20,
-    LOG_FEATURE_MAX             = 21,
+    LOG_FEATURE_IR              = 20,
+    LOG_FEATURE_DHT             = 21,
+    LOG_FEATURE_MAX             = 22,
 } log_features;
 
 #endif

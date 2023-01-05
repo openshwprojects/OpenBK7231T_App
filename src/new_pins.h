@@ -64,8 +64,16 @@ enum IORole {
 	IOR_Button_ScriptOnly,
 	IOR_Button_ScriptOnly_n,
 
+	IOR_DHT11,
+	IOR_DHT12,
+	IOR_DHT21,
+	IOR_DHT22,
+
+
 	IOR_Total_Options,
 };
+
+#define IS_PIN_DHT_ROLE(role) (((role)>=IOR_DHT11) &&((role)<=IOR_DHT22))
 
 enum ChannelType {
 	ChType_Default,
@@ -174,9 +182,11 @@ typedef struct pinsState_s {
 #define OBK_FLAG_IR_PUBLISH_RECEIVED_IN_JSON		22
 #define OBK_FLAG_LED_AUTOENABLE_ON_ANY_ACTION		23
 #define OBK_FLAG_LED_EMULATE_COOL_WITH_RGB			24
+#define OBK_FLAG_POWER_ALLOW_NEGATIVE				25
+#define OBK_FLAG_USE_SECONDARY_UART					26
 
 
-#define OBK_TOTAL_FLAGS 25
+#define OBK_TOTAL_FLAGS 27
 
 
 #define CGF_MQTT_CLIENT_ID_SIZE			64
@@ -270,7 +280,9 @@ typedef struct mainConfig_s {
 	byte unused_fill1;
 
 	unsigned long LFS_Size; // szie of LFS volume.  it's aligned against the end of OTA
-	unsigned long unusedSectorA[53];
+	byte unusedSectorAB[148];
+	// alternate topic name for receiving MQTT commands
+	char mqtt_group[64];
 	// offs 0x00000594
 	byte unused_bytefill[3];
 	byte timeRequiredToMarkBootSuccessfull;
@@ -290,9 +302,12 @@ extern char g_enable_pins;
 #define CHANNEL_SET_FLAG_SKIP_MQTT	2
 #define CHANNEL_SET_FLAG_SILENT		4
 
+void PIN_ticks(void *param);
+
+void PIN_set_wifi_led(int value);
 void PIN_AddCommands(void);
+void PINS_BeginDeepSleep();
 void PIN_SetupPins();
-void PIN_StartButtonScanThread(void);
 void PIN_OnReboot();
 void CFG_ClearPins();
 int PIN_CountPinsWithRole(int role);

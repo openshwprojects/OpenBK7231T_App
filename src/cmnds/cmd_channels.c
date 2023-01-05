@@ -187,63 +187,146 @@ static commandResult_t CMD_GetReadings(const void *context, const char *cmd, con
 #endif
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_ShortName(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_ShortName(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *s;
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 
 	s = CFG_GetShortDeviceName();
-
-	if(cmdFlags & COMMAND_FLAG_SOURCE_TCP) {
-		ADDLOG_INFO(LOG_FEATURE_RAW, s);
-	} else {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ShortName: name is %s", s);
+	if (Tokenizer_GetArgsCount() == 0) {
+		if (cmdFlags & COMMAND_FLAG_SOURCE_TCP) {
+			ADDLOG_INFO(LOG_FEATURE_RAW, s);
+		}
+		else {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ShortName: name is %s", s);
+		}
+	}
+	else {
+		CFG_SetShortDeviceName(Tokenizer_GetArg(0));
 	}
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_FriendlyName(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	const char *s;
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+
+	s = CFG_GetDeviceName();
+	if (Tokenizer_GetArgsCount() == 0) {
+		if (cmdFlags & COMMAND_FLAG_SOURCE_TCP) {
+			ADDLOG_INFO(LOG_FEATURE_RAW, s);
+		}
+		else {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_FriendlyName: name is %s", s);
+		}
+	}
+	else {
+		CFG_SetDeviceName(Tokenizer_GetArg(0));
+	}
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_FullBootTime(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	int v;
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 1) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Requires 1 arg");
+		return CMD_RES_BAD_ARGUMENT;
+	}
+	v = Tokenizer_GetArgInteger(0);
+
+	CFG_SetBootOkSeconds(v);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Boot time to %i",v);
+
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_SetFlag(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	const char *s;
+	int flag;
+	int bOn;
+	Tokenizer_TokenizeString(args, 0);
+
+	s = CFG_GetDeviceName();
+	if (Tokenizer_GetArgsCount() <= 1) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Usage: [flag] [1or0]");
+		return CMD_RES_BAD_ARGUMENT;
+	}
+	flag = Tokenizer_GetArgInteger(0);
+	bOn = Tokenizer_GetArgInteger(1);
+
+	CFG_SetFlag(flag, bOn);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Flag %i set to %i",flag,bOn);
+
+	return CMD_RES_OK;
+}
+extern int g_bWantDeepSleep;
+static commandResult_t CMD_StartDeepSleep(const void *context, const char *cmd, const char *args, int cmdFlags){
+	g_bWantDeepSleep = 1;
+	return CMD_RES_OK;
+}
 void CMD_InitChannelCommands(){
-	//cmddetail:{"name":"SetChannel","args":"",
-	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:{"name":"SetChannel","args":"[ChannelIndex][ChannelValue]",
+	//cmddetail:"descr":"Sets a raw channel to given value. Relay channels are using 1 and 0 values. PWM channels are within [0,100] range. Do not use this for LED control, because there is a better and more advanced LED driver with dimming and configuration memory (remembers setting after on/off), LED driver commands has 'led_' prefix.",
 	//cmddetail:"fn":"CMD_SetChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SetChannel", "", CMD_SetChannel, NULL, NULL);
-	//cmddetail:{"name":"ToggleChannel","args":"",
-	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:{"name":"ToggleChannel","args":"[ChannelIndex]",
+	//cmddetail:"descr":"Toggles given channel value. Non-zero becomes zero, zero becomes 1.",
 	//cmddetail:"fn":"CMD_ToggleChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ToggleChannel", "", CMD_ToggleChannel, NULL, NULL);
-	//cmddetail:{"name":"AddChannel","args":"",
-	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:{"name":"AddChannel","args":"[ChannelIndex][ValueToAdd][ClampMin][ClampMax]",
+	//cmddetail:"descr":"Adds a given value to the channel. Can be used to change PWM brightness. Clamp min and max arguments are optional.",
 	//cmddetail:"fn":"CMD_AddChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("AddChannel", "", CMD_AddChannel, NULL, NULL);
-	//cmddetail:{"name":"ClampChannel","args":"",
-	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:{"name":"ClampChannel","args":"[ChannelIndex][Min][Max]",
+	//cmddetail:"descr":"Clamps given channel value to a range.",
 	//cmddetail:"fn":"CMD_ClampChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ClampChannel", "", CMD_ClampChannel, NULL, NULL);
-	//cmddetail:{"name":"SetPinRole","args":"",
-	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:{"name":"SetPinRole","args":"[PinRole][RoleIndexOrName]",
+	//cmddetail:"descr":"This allows you to set a pin role, for example a Relay role, or Button, etc. Usually it's easier to do this through WWW panel, so you don't have to use this command.",
 	//cmddetail:"fn":"CMD_SetPinRole","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SetPinRole", "", CMD_SetPinRole, NULL, NULL);
-	//cmddetail:{"name":"SetPinChannel","args":"",
-	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:{"name":"SetPinChannel","args":"[PinRole][ChannelIndex]",
+	//cmddetail:"descr":"This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command.",
 	//cmddetail:"fn":"CMD_SetPinChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SetPinChannel", "", CMD_SetPinChannel, NULL, NULL);
-	//cmddetail:{"name":"GetChannel","args":"",
-	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:{"name":"GetChannel","args":"[ChannelIndex]",
+	//cmddetail:"descr":"Prints given channel value to console.",
 	//cmddetail:"fn":"CMD_GetChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("GetChannel", "", CMD_GetChannel, NULL, NULL);
 	//cmddetail:{"name":"GetReadings","args":"",
-	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"descr":"Prints voltage etc readings to console.",
 	//cmddetail:"fn":"CMD_GetReadings","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("GetReadings", "", CMD_GetReadings, NULL, NULL);
-	//cmddetail:{"name":"ShortName","args":"",
-	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:{"name":"ShortName","args":"[Name]",
+	//cmddetail:"descr":"Sets the short name of the device.",
 	//cmddetail:"fn":"CMD_ShortName","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ShortName", "", CMD_ShortName, NULL, NULL);
+	//cmddetail:{"name":"FriendlyName","args":"[Name]",
+	//cmddetail:"descr":"Sets the full name of the device",
+	//cmddetail:"fn":"CMD_FriendlyName","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("FriendlyName", "", CMD_FriendlyName, NULL, NULL);
+	//cmddetail:{"name":"startDeepSleep","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"CMD_StartDeepSleep","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("startDeepSleep", "", CMD_StartDeepSleep, NULL, NULL);
+	//cmddetail:{"name":"SetFlag","args":"[FlagIndex][1or0]",
+	//cmddetail:"descr":"Enables/disables given flag.",
+	//cmddetail:"fn":"CMD_SetFlag","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("SetFlag", "", CMD_SetFlag, NULL, NULL);
+	//cmddetail:{"name":"FullBootTime","args":"[Value]",
+	//cmddetail:"descr":"Sets time in seconds after which boot is marked as valid. This is related to emergency AP mode which is enabled by powering on/off device 5 times quickly.",
+	//cmddetail:"fn":"CMD_FullBootTime","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("FullBootTime", "", CMD_FullBootTime, NULL, NULL);
 
 }

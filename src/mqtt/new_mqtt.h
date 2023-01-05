@@ -20,6 +20,33 @@ void MQTT_init();
 int MQTT_RunQuickTick();
 int MQTT_RunEverySecondUpdate();
 
+
+#define PUBLISHITEM_ALL_INDEX_FIRST   -15
+
+//These 3 values are pretty much static
+#define PUBLISHITEM_SELF_STATIC_RESERVED_2      -15
+#define PUBLISHITEM_SELF_STATIC_RESERVED_1      -14
+#define PUBLISHITEM_SELF_HOSTNAME               -13  //Device name
+#define PUBLISHITEM_SELF_BUILD                  -12  //Build
+#define PUBLISHITEM_SELF_MAC                    -11  //Device mac
+
+#define PUBLISHITEM_DYNAMIC_INDEX_FIRST         -10
+
+#define PUBLISHITEM_QUEUED_VALUES               -10  //Publish queued items
+
+//These values are dynamic
+#define PUBLISHITEM_SELF_DATETIME               -9  //Current unix datetime
+#define PUBLISHITEM_SELF_SOCKETS                -8  //Active sockets
+#define PUBLISHITEM_SELF_RSSI                   -7  //Link strength
+#define PUBLISHITEM_SELF_UPTIME                 -6  //Uptime
+#define PUBLISHITEM_SELF_FREEHEAP               -5  //Free heap
+#define PUBLISHITEM_SELF_IP                     -4  //ip address
+
+#define PUBLISHITEM_SELF_DYNAMIC_LIGHTSTATE     -3
+#define PUBLISHITEM_SELF_DYNAMIC_LIGHTMODE      -2
+#define PUBLISHITEM_SELF_DYNAMIC_DIMMER         -1
+
+
 enum OBK_Publish_Result_e {
 	OBK_PUBLISH_OK,
 	OBK_PUBLISH_MUTEX_FAIL,
@@ -64,10 +91,6 @@ typedef struct MqttPublishItem
 	PostPublishCommands command;
 } MqttPublishItem_t;
 
-#define MQTT_COMMAND_PUBLISH			"publish"
-#define MQTT_COMMAND_PUBLISH_ALL		"publishAll"
-#define MQTT_COMMAND_PUBLISH_CHANNELS	"publishChannels"
-#define MQTT_COMMAND_PUBLISH_BENCHMARK  "publishBenchmark"
 
 // Maximum length to log data parameters
 #define MQTT_MAX_DATA_LOG_LENGTH					12
@@ -107,14 +130,15 @@ int MQTT_Post_Received_Str(const char *topic, const char *data);
 
 void MQTT_GetStats(int* outUsed, int* outMax, int* outFreeMem);
 
+OBK_Publish_Result MQTT_DoItemPublish(int idx);
 OBK_Publish_Result MQTT_PublishMain_StringFloat(const char* sChannel, float f);
 OBK_Publish_Result MQTT_PublishMain_StringInt(const char* sChannel, int val);
 OBK_Publish_Result MQTT_PublishMain_StringString(const char* sChannel, const char* valueStr, int flags);
 OBK_Publish_Result MQTT_ChannelChangeCallback(int channel, int iVal);
 void MQTT_PublishOnlyDeviceChannelsIfPossible();
-void MQTT_QueuePublish(char* topic, char* channel, char* value, int flags);
-void MQTT_QueuePublishWithCommand(char* topic, char* channel, char* value, int flags, PostPublishCommands command);
-OBK_Publish_Result MQTT_Publish(char* sTopic, char* sChannel, char* value, int flags);
+void MQTT_QueuePublish(const char* topic, const char* channel, const char* value, int flags);
+void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const char* value, int flags, PostPublishCommands command);
+OBK_Publish_Result MQTT_Publish(const char* sTopic, const char* sChannel, const char* value, int flags);
 bool MQTT_IsReady();
 
 #endif // __NEW_MQTT_H__

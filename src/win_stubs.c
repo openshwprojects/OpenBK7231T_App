@@ -10,9 +10,6 @@ void CMD_StartTCPCommandLine() {
 void Main_SetupPingWatchDog(const char *target/*, int delayBetweenPings_Seconds*/) {
 
 }
-void Main_PingWatchDogSilent() {
-
-}
 int PingWatchDog_GetTotalLost() {
 	return 0;
 }

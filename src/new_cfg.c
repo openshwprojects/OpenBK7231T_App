@@ -142,6 +142,7 @@ void CFG_SetDefaultConfig() {
 	snprintf(g_cfg.longDeviceName, sizeof(g_cfg.longDeviceName), DEVICENAME_PREFIX_FULL"_%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
 	snprintf(g_cfg.shortDeviceName, sizeof(g_cfg.shortDeviceName), DEVICENAME_PREFIX_SHORT"%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
 	strcpy_safe(g_cfg.mqtt_clientId, g_cfg.shortDeviceName, sizeof(g_cfg.mqtt_clientId));
+	strcpy_safe(g_cfg.mqtt_group, "bekens", sizeof(g_cfg.mqtt_group));
 
 	strcpy(g_cfg.ntpServer, DEFAULT_NTP_SERVER);
 
@@ -152,6 +153,9 @@ void CFG_SetDefaultConfig() {
 	g_cfg.buttonShortPress = CFG_DEFAULT_BTN_SHORT;
 	// default value is 10, which means 1000ms
 	g_cfg.buttonLongPress = CFG_DEFAULT_BTN_LONG;
+
+	// This is helpful for users
+	CFG_SetFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEONCONNECT,true);
 
 	g_cfg_pendingChanges++;
 }
@@ -303,6 +307,9 @@ const char *CFG_GetMQTTHost() {
 const char *CFG_GetMQTTClientId() {
 	return g_cfg.mqtt_clientId;
 }
+const char *CFG_GetMQTTGroupTopic() {
+	return g_cfg.mqtt_group;
+}
 const char *CFG_GetMQTTUserName() {
 	return g_cfg.mqtt_userName;
 }
@@ -319,6 +326,13 @@ void CFG_SetMQTTHost(const char *s) {
 void CFG_SetMQTTClientId(const char *s) {
 	// this will return non-zero if there were any changes
 	if(strcpy_safe_checkForChanges(g_cfg.mqtt_clientId, s,sizeof(g_cfg.mqtt_clientId))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+void CFG_SetMQTTGroupTopic(const char *s) {
+	// this will return non-zero if there were any changes
+	if (strcpy_safe_checkForChanges(g_cfg.mqtt_group, s, sizeof(g_cfg.mqtt_group))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
 	}
@@ -388,15 +402,31 @@ int CFG_DeviceGroups_GetSendFlags() {
 int CFG_DeviceGroups_GetRecvFlags() {
 	return g_cfg.dgr_recvFlags;
 }
+void CFG_SetFlags(int first4bytes, int second4bytes) {
+	if (g_cfg.genericFlags != first4bytes || g_cfg.genericFlags2 != second4bytes) {
+		g_cfg.genericFlags = first4bytes;
+		g_cfg.genericFlags2 = second4bytes;
+		g_cfg_pendingChanges++;
+	}
+}
 void CFG_SetFlag(int flag, bool bValue) {
-	int nf = g_cfg.genericFlags;
+	int *cfgValue;
+	if (flag >= 32) {
+		cfgValue = &g_cfg.genericFlags2;
+		flag -= 32;
+	}
+	else {
+		cfgValue = &g_cfg.genericFlags;
+	}
+
+	int nf = *cfgValue;
 	if(bValue) {
 		BIT_SET(nf,flag);
 	} else {
 		BIT_CLEAR(nf,flag);
 	}
-	if(nf != g_cfg.genericFlags) {
-		g_cfg.genericFlags = nf;
+	if(nf != *cfgValue) {
+		*cfgValue = nf;
 		g_cfg_pendingChanges++;
 		// this will start only if it wasnt running
 		if(bValue && flag == OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER) {
@@ -408,6 +438,10 @@ int CFG_GetFlags() {
 	return g_cfg.genericFlags;
 }
 bool CFG_HasFlag(int flag) {
+	if (flag >= 32) {
+		flag -= 32;
+		return BIT_CHECK(g_cfg.genericFlags2, flag);
+	}
 	return BIT_CHECK(g_cfg.genericFlags,flag);
 }
 

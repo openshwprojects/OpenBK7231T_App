@@ -7,7 +7,7 @@ void Test_LFS() {
 	
 	// reset whole device
 	SIM_ClearOBK();
-	CMD_ExecuteCommand("lfsformat", 0);
+	CMD_ExecuteCommand("lfs_format", 0);
 
 	// send file content as POST to REST interface
 	Test_FakeHTTPClientPacket_POST("api/lfs/unitTestFile.txt", "This is a sample file made by unit test.");
@@ -62,7 +62,55 @@ void Test_LFS() {
 	// should be increased by 30
 	SELFTEST_ASSERT_CHANNEL(10, 82);
 
-	//system("pause");
+	// check file commands
+	CMD_ExecuteCommand("lfs_write command_file_1.txt MY_FILE_CONTENT", 0);
+	// get this file 
+	Test_FakeHTTPClientPacket_GET("api/lfs/command_file_1.txt");
+	SELFTEST_ASSERT_HTML_REPLY("MY_FILE_CONTENT");
+
+	// check file commands
+	CMD_ExecuteCommand("lfs_append command_file_1.txt _ADDON", 0);
+	// get this file 
+	Test_FakeHTTPClientPacket_GET("api/lfs/command_file_1.txt");
+	SELFTEST_ASSERT_HTML_REPLY("MY_FILE_CONTENT_ADDON");
+
+
+	// check file commands
+	CMD_ExecuteCommand("lfs_write command_file_2.txt TEST1", 0);
+	// get this file 
+	Test_FakeHTTPClientPacket_GET("api/lfs/command_file_2.txt");
+	SELFTEST_ASSERT_HTML_REPLY("TEST1");
+
+	// check file commands
+	CMD_ExecuteCommand("lfs_write command_file_2.txt ABBA", 0);
+	// get this file 
+	Test_FakeHTTPClientPacket_GET("api/lfs/command_file_2.txt");
+	SELFTEST_ASSERT_HTML_REPLY("ABBA");
+
+	// check file commands
+	CMD_ExecuteCommand("lfs_write command_file_2.txt XY", 0);
+	// get this file 
+	Test_FakeHTTPClientPacket_GET("api/lfs/command_file_2.txt");
+	SELFTEST_ASSERT_HTML_REPLY("XY");
+
+	// check file commands
+	CMD_ExecuteCommand("lfs_append command_file_2.txt ZW", 0);
+	// get this file 
+	Test_FakeHTTPClientPacket_GET("api/lfs/command_file_2.txt");
+	SELFTEST_ASSERT_HTML_REPLY("XYZW");
+
+	// check file commands
+	CMD_ExecuteCommand("lfs_remove command_file_2.txt", 0);
+	// get this file 
+	Test_FakeHTTPClientPacket_GET("api/lfs/command_file_2.txt");
+	SELFTEST_ASSERT_HTML_REPLY("{\"fname\":\"command_file_2.txt\",\"error\":-2}");
+
+
+	// check file commands
+	CMD_ExecuteCommand("lfs_append command_file_2.txt this string has spaces really", 0);
+	// get this file 
+	Test_FakeHTTPClientPacket_GET("api/lfs/command_file_2.txt");
+	SELFTEST_ASSERT_HTML_REPLY("this string has spaces really");
 }
 
 #endif

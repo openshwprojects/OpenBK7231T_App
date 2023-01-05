@@ -11,9 +11,12 @@
 #include <stdio.h>
 #include "new_common.h"
 #include "driver\drv_public.h"
+#include "cmnds\cmd_public.h"
 #include "httpserver\new_http.h"
 #include "new_pins.h"
 #include <timeapi.h>
+
+#define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
 
 // Need to link with Ws2_32.lib
 #pragma comment (lib, "Ws2_32.lib")
@@ -67,7 +70,7 @@ void Sim_RunFrame(int frameTime) {
 	// this time counter is simulated, I need this for unit tests to work
 	g_simulatedTimeNow += frameTime;
 	accum_time += frameTime;
-	PIN_ticks(0);
+	QuickTick(0);
 	HTTPServer_RunQuickTick();
 	if (accum_time > 1000) {
 		accum_time -= 1000;
@@ -108,6 +111,7 @@ void SIM_ClearOBK() {
 		release_lfs();
 		SIM_Hack_ClearSimulatedPinRoles();
 		CMD_ExecuteCommand("clearAll", 0);
+		CMD_ExecuteCommand("led_expoMode", 0);
 		Main_Init();
 	}
 }
@@ -117,7 +121,12 @@ void SIM_DoFreshOBKBoot() {
 }
 void Win_DoUnitTests() {
 
-
+	Test_Flags();
+	Test_DHT();
+	Test_EnergyMeter();
+	Test_Tasmota();
+	Test_NTP();
+	Test_MQTT();
 	Test_HTTP_Client();
 	Test_ExpandConstant();
 	Test_ChangeHandlers();
@@ -164,30 +173,64 @@ long SIM_GetTime() {
 int rtos_get_time() {
 	return g_simulatedTimeNow;
 }
+int g_bDoingUnitTestsNow = 0;
+
 #include "sim/sim_public.h"
 int __cdecl main(int argc, char **argv)
 {
-	bool bWantsUnitTests = 0;
+	bool bWantsUnitTests = 1;
     WSADATA wsaData;
     int iResult;
 
+	int maxTest = 100;
+	for (int i = 0; i <= maxTest; i++) {
+		float frac = (float)i / (float)(maxTest);
+		float in = frac;
+		float res = LED_BrightnessMapping(255, in);
+		printf("Brightness %f with color %f gives %f\n", in, 255.0f, res);
+	}
     // Initialize Winsock
     iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
     if (iResult != 0) {
         printf("WSAStartup failed with error: %d\n", iResult);
         return 1;
     }
+	printf("sizeof(short) = %d\n", (int)sizeof(short));
+	printf("sizeof(int) = %d\n", (int)sizeof(int));
+	printf("sizeof(long) = %d\n", (int)sizeof(long));
+	printf("sizeof(float) = %d\n", (int)sizeof(float));
+	printf("sizeof(double) = %d\n", (int)sizeof(double));
+	printf("sizeof(long double) = %d\n", (int)sizeof(long double));
+	//printf("Offset MQTT Group: %i", OFFSETOF(mainConfig_t, mqtt_group));
 	if (sizeof(mainConfig_t) != MAGIC_CONFIG_SIZE) {
 		printf("sizeof(mainConfig_t) != MAGIC_CONFIG_SIZE!: %i\n", sizeof(mainConfig_t));
 		system("pause");
 	}
+	if (OFFSETOF(mainConfig_t, ping_host) != 0x000005A0) {
+		printf("OFFSETOF(mainConfig_t, ping_host) != 0x000005A0: %i\n", OFFSETOF(mainConfig_t, ping_host));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, buttonShortPress) != 0x000004B8) {
+		printf("OFFSETOF(mainConfig_t, buttonShortPress) != 0x000004B8: %i\n", OFFSETOF(mainConfig_t, buttonShortPress));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, pins) != 0x0000033E) {
+		printf("OFFSETOF(mainConfig_t, pins) != 0x0000033E: %i\n", OFFSETOF(mainConfig_t, pins));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, version) != 0x00000004) {
+		printf("OFFSETOF(mainConfig_t, version) != 0x00000004: %i\n", OFFSETOF(mainConfig_t, version));
+		system("pause");
+	}
 	if (bWantsUnitTests) {
+		g_bDoingUnitTestsNow = 1;
 		SIM_DoFreshOBKBoot();
 		// let things warm up a little
 		Sim_RunFrames(50, false);
 		// run tests
 		Win_DoUnitTests();
 		Sim_RunFrames(50, false);
+		g_bDoingUnitTestsNow = 0;
 	}
 
 	SIM_CreateWindow(argc, argv);
@@ -232,7 +275,12 @@ void otarequest(const char *urlin) {
 	return;
 }
 
-int ota_progress();
-int ota_total_bytes();
+int ota_progress() {
+	return 0;
+}
+int ota_total_bytes() {
+	return 0;
+}
+
 #endif
 

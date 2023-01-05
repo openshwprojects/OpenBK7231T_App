@@ -25,7 +25,7 @@ addEventHandler OnHold 8 backlog addChannel 4 10 0 255; DGR_SendBrightness roomL
 addEventHandler OnHold 10 backlog addChannel 4 -10 0 255; DGR_SendBrightness roomLEDstrips $CH4
 */
 //
-// addEventHandler OnChannelChanged 5 ???
+// addEventHandler OnChannelChange 5 ???
 // addEventHandler OnWifiLost ????
 //
 //
@@ -64,6 +64,10 @@ addEventHandler OnHold 11 addChannel 1 -10
 // backlog startDriver I2C; addI2CDevice_LCD_PCF8574 I2C1 0x23 0 0 0
 // addChangeHandler Channel1 != 0 backlog lcd_clearAndGoto I2C1 0x23 1 1; lcd_print I2C1 0x23 Enabled
 // addChangeHandler Channel1 == 0 backlog lcd_clearAndGoto I2C1 0x23 1 1; lcd_print I2C1 0x23 Disabled
+
+
+alias doRelayClick backlog setChannel 1 1; addRepeatingEvent 2 1 setChannel 1 0; ClearNoPingTime
+addChangeHandler NoPingTime > 40 doRelayClick 
 
 
 // This will automatically turn off relay after about 2 seconds
@@ -122,6 +126,8 @@ static int EVENT_ParseEventName(const char *s) {
 	if(!wal_strnicmp(s,"channel",7)) {
 		return CMD_EVENT_CHANGE_CHANNEL0 + atoi(s+7);
 	}
+	if (!stricmp(s, "noPingTime"))
+		return CMD_EVENT_CHANGE_NOPINGTIME;
 	if(!stricmp(s,"voltage"))
 		return CMD_EVENT_CHANGE_VOLTAGE;
 	if(!stricmp(s,"current"))
@@ -136,12 +142,18 @@ static int EVENT_ParseEventName(const char *s) {
 		return CMD_EVENT_PIN_ONCLICK;
 	if(!stricmp(s,"OnToggle"))
 		return CMD_EVENT_PIN_ONTOGGLE;
+	if (!stricmp(s, "IPChange"))
+		return CMD_EVENT_IPCHANGE;
 	if(!stricmp(s,"OnHold"))
 		return CMD_EVENT_PIN_ONHOLD;
 	if(!stricmp(s,"OnHoldStart"))
 		return CMD_EVENT_PIN_ONHOLDSTART;
 	if(!stricmp(s,"OnDblClick"))
 		return CMD_EVENT_PIN_ONDBLCLICK;
+	if (!stricmp(s, "On3Click"))
+		return CMD_EVENT_PIN_ON3CLICK;
+	if (!stricmp(s, "On4Click"))
+		return CMD_EVENT_PIN_ON4CLICK;
 	if(!stricmp(s,"OnChannelChange"))
 		return CMD_EVENT_CHANNEL_ONCHANGE;
 	if(!stricmp(s,"OnUART"))
@@ -170,6 +182,9 @@ static int EVENT_ParseEventName(const char *s) {
 		return CMD_EVENT_IR_SHARP;
     if(!stricmp(s,"IR_SONY"))
 		return CMD_EVENT_IR_SONY;
+	// WiFi state has single argument: HALWifiStatus_t
+	if (!stricmp(s, "WiFiState"))
+		return CMD_EVENT_WIFI_STATE;
 	return CMD_EVENT_NONE;
 }
 static bool EVENT_EvaluateCondition(int code, int argument, int next) {
@@ -486,23 +501,23 @@ static commandResult_t CMD_ListEventHandlers(const void *context, const char *cm
 }
 void EventHandlers_Init() {
 
-	//cmddetail:{"name":"AddEventHandler","args":"",
-	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:{"name":"AddEventHandler","args":"[EventName][EventArgument][CommandToRun]",
+	//cmddetail:"descr":"This can be used to trigger an action on a button click, long press, etc",
 	//cmddetail:"fn":"CMD_AddEventHandler","file":"cmnds/cmd_eventHandlers.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("AddEventHandler", "", CMD_AddEventHandler, NULL, NULL);
-	//cmddetail:{"name":"AddChangeHandler","args":"",
-	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:{"name":"AddChangeHandler","args":"[Variable][Relation][Constant][Command]",
+	//cmddetail:"descr":"This can listen to change in channel value (for example channel 0 becoming 100), or for a voltage/current/power change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be 'Power', or 'Current' or 'Voltage'",
 	//cmddetail:"fn":"CMD_AddChangeHandler","file":"cmnds/cmd_eventHandlers.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("AddChangeHandler", "", CMD_AddChangeHandler, NULL, NULL);
-	//cmddetail:{"name":"listEvents","args":"",
-	//cmddetail:"descr":"qqqqq0",
-	//cmddetail:"fn":"CMD_ListEvents","file":"cmnds/cmd_eventHandlers.c","requires":"",
+	//cmddetail:{"name":"listEventHandlers","args":"",
+	//cmddetail:"descr":"Prints full list of added event handlers",
+	//cmddetail:"fn":"CMD_ListEventHandlers","file":"cmnds/cmd_eventHandlers.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("listEventHandlers", "", CMD_ListEventHandlers, NULL, NULL);
 	//cmddetail:{"name":"clearAllHandlers","args":"",
-	//cmddetail:"descr":"qqqqq0",
+	//cmddetail:"descr":"This clears all added event handlers",
 	//cmddetail:"fn":"CMD_ClearAllHandlers","file":"cmnds/cmd_eventHandlers.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("clearAllHandlers", "", CMD_ClearAllHandlers, NULL, NULL);

@@ -14,10 +14,10 @@ typedef enum {
 	/// @brief 2 PWM setup (brightness and temperature)
 	ENTITY_LIGHT_PWMCW,
 
-	/// @brief RGB
+	/// @brief RGB (3 PWM)
 	ENTITY_LIGHT_RGB,
 
-	/// @brief RGB + temperature
+	/// @brief RGB + temperature (5 PWM or LED driver)
 	ENTITY_LIGHT_RGBCW,
 
 	/// @brief Sensor (voltage, current, power)

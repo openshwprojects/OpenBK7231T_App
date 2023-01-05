@@ -219,9 +219,9 @@ void http_setup(http_request_t* request, const char* type) {
 	poststr(request, "Accept-Ranges: none");
 	poststr(request, "\r\n");
 	poststr(request, "Transfer-Encoding: chunked");
+#endif
 	poststr(request, "\r\n");
 	poststr(request, "Connection: close");
-#endif
 	poststr(request, "\r\n"); // end headers with double CRLF
 	poststr(request, "\r\n");
 }
@@ -277,11 +277,14 @@ const char* http_checkArg(const char* p, const char* n) {
 	return p;
 }
 
-void http_copyCarg(const char* atin, char* to, int maxSize) {
+int http_copyCarg(const char* atin, char* to, int maxSize) {
 	int a, b;
+	int realSize;
 	const unsigned char* at = (unsigned char*)atin;
 
-	while (*at != 0 && *at != '&' && *at != ' ' && maxSize > 1) {
+	realSize = 0;
+
+	while (*at != 0 && *at != '&' && *at != ' ') {
 #if 0
 		* to = *at;
 		to++;
@@ -303,20 +306,36 @@ void http_copyCarg(const char* atin, char* to, int maxSize) {
 				b -= ('A' - 10);
 			else
 				b -= '0';
-			*to++ = 16 * a + b;
+			// can we afford to place this char in the target?
+			if (maxSize > 1) {
+				maxSize--;
+				*to++ = 16 * a + b;
+			}
+			realSize++;
 			at += 3;
 		}
 		else if (*at == '+') {
-			*to++ = ' ';
+			// can we afford to place this char in the target?
+			if (maxSize > 1) {
+				maxSize--;
+				*to++ = ' ';
+			}
+			realSize++;
 			at++;
 		}
 		else {
-			*to++ = *at++;
+			// can we afford to place this char in the target?
+			if (maxSize > 1) {
+				maxSize--;
+				*to++ = *at;
+			}
+			realSize++;
+			at++;
 		}
-		maxSize--;
 #endif
 	}
 	*to = 0;
+	return realSize;
 }
 
 int http_getArg(const char* base, const char* name, char* o, int maxSize) {
@@ -331,8 +350,7 @@ int http_getArg(const char* base, const char* name, char* o, int maxSize) {
 		const char* at = http_checkArg(base, name);
 		if (at) {
 			at++;
-			http_copyCarg(at, o, maxSize);
-			return 1;
+			return http_copyCarg(at, o, maxSize);
 		}
 		while (*base != '&') {
 			if (*base == 0) {
@@ -394,6 +412,12 @@ const char* htmlPinRoleNames[] = {
 	"Btn_NextTemperature_n",
 	"Btn_ScriptOnly",
 	"Btn_ScriptOnly_n",
+	"DHT11",
+	"DHT12",
+	"DHT21",
+	"DHT22",
+	"error",
+	"error",
 	"error",
 	"error",
 	"error",
@@ -663,7 +687,6 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	if (http_checkUrlBase(urlStr, "flash_read_tool")) return http_fn_flash_read_tool(request);
 	if (http_checkUrlBase(urlStr, "uart_tool")) return http_fn_uart_tool(request);
 	if (http_checkUrlBase(urlStr, "cmd_tool")) return http_fn_cmd_tool(request);
-	if (http_checkUrlBase(urlStr, "config_dump_table")) return http_fn_config_dump_table(request);
 	if (http_checkUrlBase(urlStr, "startup_command")) return http_fn_startup_command(request);
 	if (http_checkUrlBase(urlStr, "cfg_generic")) return http_fn_cfg_generic(request);
 	if (http_checkUrlBase(urlStr, "cfg_startup")) return http_fn_cfg_startup(request);
@@ -698,7 +721,7 @@ const char htmlHeadStyle[] = "<style>div,fieldset,input,select{padding:5px;font-
 //region_end htmlHeadStyle
 
 //region_start pageScript
-const char pageScript[] = "<script type='text/javascript'>var firstTime,lastTime,onlineFor,req=null,onlineForEl=null,getElement=e=>document.getElementById(e);function showState(){clearTimeout(firstTime),clearTimeout(lastTime),null!=req&&req.abort(),(req=new XMLHttpRequest).onreadystatechange=()=>{var e;4==req.readyState&&200==req.status&&((\"INPUT\"!=document.activeElement.tagName||\"number\"!=document.activeElement.type&&\"color\"!=document.activeElement.type)&&(e=getElement(\"state\"))&&(e.innerHTML=req.responseText),clearTimeout(firstTime),clearTimeout(lastTime),lastTime=setTimeout(showState,3e3))},req.open(\"GET\",\"index?state=1\",!0),req.send(),firstTime=setTimeout(showState,3e3)}function fmtUpTime(e){var t,n,o=Math.floor(e/86400);return e%=86400,t=Math.floor(e/3600),e%=3600,n=Math.floor(e/60),e=e%60,0<o?o+` days, ${t} hours, ${n} minutes and ${e} seconds`:0<t?t+` hours, ${n} minutes and ${e} seconds`:0<n?n+` minutes and ${e} seconds`:`just ${e} seconds`}function updateOnlineFor(){onlineForEl.textContent=fmtUpTime(++onlineFor)}function onLoad(){(onlineForEl=getElement(\"onlineFor\"))&&(onlineFor=parseInt(onlineForEl.dataset.initial,10))&&setInterval(updateOnlineFor,1e3),showState()}function submitTemperature(e){var t=getElement(\"form132\");getElement(\"kelvin132\").value=Math.round(1e6/parseInt(e.value)),t.submit()}window.addEventListener(\"load\",onLoad),history.pushState(null,\"\",\"index\"),setTimeout(()=>{var e=getElement(\"changed\");e&&(e.innerHTML=\"\")},5e3);</script>";
+const char pageScript[] = "<script type='text/javascript'>var firstTime,lastTime,onlineFor,req=null,onlineForEl=null,getElement=e=>document.getElementById(e);function showState(){clearTimeout(firstTime),clearTimeout(lastTime),null!=req&&req.abort(),(req=new XMLHttpRequest).onreadystatechange=()=>{var e; 4==req.readyState&&'OK'==req.statusText&&((\"INPUT\"!=document.activeElement.tagName||\"number\"!=document.activeElement.type&&\"color\"!=document.activeElement.type)&&(e=getElement(\"state\"))&&(e.innerHTML=req.responseText),clearTimeout(firstTime),clearTimeout(lastTime),lastTime=setTimeout(showState,3e3))},req.open(\"GET\",\"index?state=1\",!0),req.send(),firstTime=setTimeout(showState,3e3)}function fmtUpTime(e){var t,n,o=Math.floor(e/86400);return e%=86400,t=Math.floor(e/3600),e%=3600,n=Math.floor(e/60),e=e%60,0<o?o+` days, ${t} hours, ${n} minutes and ${e} seconds`:0<t?t+` hours, ${n} minutes and ${e} seconds`:0<n?n+` minutes and ${e} seconds`:`just ${e} seconds`}function updateOnlineFor(){onlineForEl.textContent=fmtUpTime(++onlineFor)}function onLoad(){(onlineForEl=getElement(\"onlineFor\"))&&(onlineFor=parseInt(onlineForEl.dataset.initial,10))&&setInterval(updateOnlineFor,1e3),showState()}function submitTemperature(e){var t=getElement(\"form132\");getElement(\"kelvin132\").value=Math.round(1e6/parseInt(e.value)),t.submit()}window.addEventListener(\"load\",onLoad),history.pushState(null,\"\",window.location.pathname.slice(1)),setTimeout(()=>{var e=getElement(\"changed\");e&&(e.innerHTML=\"\")},5e3);</script>";
 //region_end pageScript
 
 //region_start ha_discovery_script

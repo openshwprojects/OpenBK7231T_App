@@ -1,14 +1,15 @@
 #define MAC2STR(a) (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5]
 #define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x "
 
-enum HALWifiStatus {
+typedef enum HALWifiStatus {
+	WIFI_UNDEFINED,
 	WIFI_STA_CONNECTING,
 	WIFI_STA_DISCONNECTED,
 	WIFI_STA_AUTH_FAILED,
 	WIFI_STA_CONNECTED,
 	WIFI_AP_CONNECTED,
 	WIFI_AP_FAILED,
-};
+} HALWifiStatus_t;
 
 
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid);

@@ -141,3 +141,7 @@ void HAL_PIN_PWM_Update(int index, int value) {
 	bk_pwm_update_param(pwmIndex, period, duty);
 #endif
 }
+
+unsigned int HAL_GetGPIOPin(int index) {
+	return index;
+}

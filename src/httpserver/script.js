@@ -17,7 +17,8 @@ function showState() {
 	}
 	req = new XMLHttpRequest();
 	req.onreadystatechange = () => {
-		if (req.readyState == 4 && req.status == 200) {
+		// somehow status was 0 on Windows, but "OK" works on both Beken and Windows
+		if (req.readyState == 4 && req.statusText == "OK") {
 			if (
 				!(
 					document.activeElement.tagName == "INPUT" &&
@@ -85,7 +86,8 @@ function submitTemperature(slider) {
 }
 
 window.addEventListener("load", onLoad);
-history.pushState(null, "", "index"); // drop actions like 'toggle' from URL
+// I have modified below to use slice on window.location instead of hardcoded index because it was breaking "back" function of web page
+history.pushState(null, "", window.location.pathname.slice(1)); // drop actions like 'toggle' from URL
 
 setTimeout(() => {
 	var changedEl = getElement("changed");

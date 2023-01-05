@@ -429,6 +429,30 @@
     <ClCompile Include="src\driver\drv_httpButtons.c">
       <Filter>Drv</Filter>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_dht_internal.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_dht.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_ntp.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_mqtt.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_tasmota.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_energyMeter.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_DHT.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_flags.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />
@@ -440,12 +464,6 @@
     <ClInclude Include="src\new_tokenizer.h" />
     <ClInclude Include="src\ntp_time.h" />
     <ClInclude Include="src\obk_config.h" />
-    <ClInclude Include="src\drv_public.h">
-      <Filter>Drv</Filter>
-    </ClInclude>
-    <ClInclude Include="src\drv_uart.h">
-      <Filter>Drv</Filter>
-    </ClInclude>
     <ClInclude Include="src\hal\hal_adc.h">
       <Filter>HAL</Filter>
     </ClInclude>
@@ -563,6 +581,9 @@
     <ClInclude Include="src\sim\Bounds.h">
       <Filter>Simulator</Filter>
     </ClInclude>
+    <ClInclude Include="src\driver\drv_dht_internal.h">
+      <Filter>Drv</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\include\net_param_pub.h" />
@@ -590,9 +611,6 @@
     <CustomBuild Include="src\bitmessage\bitmessage_public.h">
       <Filter>DGR</Filter>
     </CustomBuild>
-    <CustomBuild Include="src\drv_bl0942.h">
-      <Filter>Drv</Filter>
-    </CustomBuild>
     <CustomBuild Include="src\driver\drv_bp1658cj.h">
       <Filter>Drv</Filter>
     </CustomBuild>
@@ -606,9 +624,6 @@
       <Filter>Drv</Filter>
     </CustomBuild>
     <CustomBuild Include="src\i2c\drv_i2c_mcp23017.h">
-      <Filter>Drv</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\drv_i2c_public.h">
       <Filter>Drv</Filter>
     </CustomBuild>
     <CustomBuild Include="src\i2c\drv_i2c_public.h">
@@ -627,9 +642,6 @@
       <Filter>Drv</Filter>
     </CustomBuild>
     <CustomBuild Include="src\driver\drv_tuyaMCU.h">
-      <Filter>Drv</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\drv_tuyaMCU.h">
       <Filter>Drv</Filter>
     </CustomBuild>
     <CustomBuild Include="src\driver\drv_uart.h">

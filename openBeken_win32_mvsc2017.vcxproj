@@ -294,6 +294,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\driver\drv_ddp.c" />
+    <ClCompile Include="src\driver\drv_dht.c" />
+    <ClCompile Include="src\driver\drv_dht_internal.c" />
     <ClCompile Include="src\driver\drv_httpButtons.c" />
     <ClCompile Include="src\driver\drv_ir.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
@@ -510,16 +512,22 @@
     <ClCompile Include="src\selftest\selftest_cmd_alias.c" />
     <ClCompile Include="src\selftest\selftest_cmd_channels.c" />
     <ClCompile Include="src\selftest\selftest_deviceGroups.c" />
+    <ClCompile Include="src\selftest\selftest_DHT.c" />
+    <ClCompile Include="src\selftest\selftest_energyMeter.c" />
     <ClCompile Include="src\selftest\selftest_expandConstant.c" />
     <ClCompile Include="src\selftest\selftest_expressions.c" />
+    <ClCompile Include="src\selftest\selftest_flags.c" />
     <ClCompile Include="src\selftest\selftest_http.c" />
     <ClCompile Include="src\selftest\selftest_http_client.c" />
     <ClCompile Include="src\selftest\selftest_if.c" />
     <ClCompile Include="src\selftest\selftest_led.c" />
     <ClCompile Include="src\selftest\selftest_lfs.c" />
     <ClCompile Include="src\selftest\selftest_main.c" />
+    <ClCompile Include="src\selftest\selftest_mqtt.c" />
+    <ClCompile Include="src\selftest\selftest_ntp.c" />
     <ClCompile Include="src\selftest\selftest_repeatingEvents.c" />
     <ClCompile Include="src\selftest\selftest_script.c" />
+    <ClCompile Include="src\selftest\selftest_tasmota.c" />
     <ClCompile Include="src\selftest\selftest_tokenizer.c" />
     <ClCompile Include="src\selftest\selftest_tuyaMCU.c" />
     <ClCompile Include="src\selftest\selftest_util_mqtt.c" />
@@ -576,6 +584,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\driver\drv_dht_internal.h" />
     <ClInclude Include="src\selftest\selftest_local.h" />
     <ClInclude Include="src\sim\Bounds.h" />
     <ClInclude Include="src\sim\Circle.h" />
@@ -676,18 +685,6 @@
     <CustomBuild Include="src\driver\drv_uart.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </CustomBuild>
-    <CustomBuild Include="src\drv_bl0942.h" />
-    <CustomBuild Include="src\drv_i2c_public.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </CustomBuild>
-    <ClInclude Include="src\drv_public.h" />
-    <CustomBuild Include="src\drv_tuyaMCU.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </CustomBuild>
-    <ClInclude Include="src\drv_uart.h" />
     <ClInclude Include="src\hal\hal_adc.h" />
     <ClInclude Include="src\hal\hal_flashConfig.h" />
     <ClInclude Include="src\hal\hal_flashVars.h" />

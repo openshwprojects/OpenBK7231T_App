@@ -180,8 +180,10 @@ void CSimulation::createDemo() {
 	CShape *strip2 = addObject(sim->getPfbs()->instantiatePrefab("StripCW"));
 	strip2->setPosition(400, 600);
 
-	CShape *bl0942 = addObject(sim->getPfbs()->instantiatePrefab("BL0942"));
-	bl0942->setPosition(800, 600);
+	if (false) {
+		CShape *bl0942 = addObject(sim->getPfbs()->instantiatePrefab("BL0942"));
+		bl0942->setPosition(800, 600);
+	}
 	//CShape *strip3 = addObject(sim->getPfbs()->instantiatePrefab("StripRGB"));
 	//strip3->setPosition(400, 700);
 	if (0) {

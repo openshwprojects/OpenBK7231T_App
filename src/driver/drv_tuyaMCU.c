@@ -17,6 +17,7 @@ https://developer.tuya.com/en/docs/iot/tuyacloudlowpoweruniversalserialaccesspro
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 #include "../logging/logging.h"
+#include "../hal/hal_wifi.h"
 #include "drv_tuyaMCU.h"
 #include "drv_uart.h"
 #include <time.h>
@@ -33,8 +34,8 @@ https://developer.tuya.com/en/docs/iot/tuyacloudlowpoweruniversalserialaccesspro
 #define TUYA_CMD_STATE         0x07
 #define TUYA_CMD_QUERY_STATE   0x08
 #define TUYA_CMD_SET_TIME      0x1C
+#define TUYA_CMD_WEATHERDATA   0x21
 #define TUYA_CMD_SET_RSSI      0x24
-
 void TuyaMCU_RunFrame();
 
 
@@ -97,6 +98,8 @@ const char *TuyaMCU_GetCommandTypeLabel(int t) {
         return "QueryState";
     if(t == TUYA_CMD_SET_TIME)
         return "SetTime";
+	if (t == TUYA_CMD_WEATHERDATA)
+		return "WeatherData";
     return "Unknown";
 }
 typedef struct rtcc_s {
@@ -142,6 +145,7 @@ int g_dimmerRangeMin = 0;
 int g_dimmerRangeMax = 100;
 
 // serial baud rate used to communicate with the TuyaMCU
+// common baud rates are 9600 bit/s and 115200 bit/s
 int g_baudRate = 9600;
 
 static bool heartbeat_valid = false;
@@ -445,10 +449,11 @@ commandResult_t Cmd_TuyaMCU_Send_RSSI(const void *context, const char *cmd, cons
 	Tokenizer_TokenizeString(args, 0);
 
 	if (Tokenizer_GetArgsCount() < 1) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "Requires 1 argument\n");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+		toSend = HAL_GetWifiStrength();
 	}
-	toSend = Tokenizer_GetArgInteger(0);
+	else {
+		toSend = Tokenizer_GetArgInteger(0);
+	}
 	TuyaMCU_Send_RSSI(toSend);
 	return CMD_RES_OK;
 }
@@ -843,6 +848,56 @@ void TuyaMCU_ParseQueryProductInformation(const byte *data, int len) {
 
     addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ParseQueryProductInformation: received %s\n", name);
 }
+// See: https://www.elektroda.com/rtvforum/viewtopic.php?p=20345606#20345606
+void TuyaMCU_ParseWeatherData(const byte *data, int len) {
+	int ofs;
+	byte bValid;
+	//int checkLen;
+	int iValue;
+	byte stringLen;
+	byte varType;
+	char buffer[64];
+	const char *stringData;
+	//const char *stringDataValue;
+	ofs = 0;
+
+	while (ofs + 4 < len) {
+		bValid = data[ofs];
+		stringLen = data[ofs + 1];
+		stringData = (const char*)(data + (ofs + 2));
+		if (stringLen >= (sizeof(buffer) - 1))
+			stringLen = sizeof(buffer) - 2;
+		memcpy(buffer, stringData, stringLen);
+		buffer[stringLen] = 0;
+		varType = data[ofs + 2 + stringLen];
+		// T: 0x00 indicates an integer and 0x01 indicates a string.
+		ofs += (2 + stringLen);
+		ofs++;
+		stringLen = data[ofs];
+		stringData = (const char*)(data + (ofs + 1));
+		if (varType == 0x00) {
+			// integer
+			if (stringLen == 4) {
+				iValue = data[ofs + 1] << 24 | data[ofs + 2] << 16 | data[ofs + 3] << 8 | data[ofs + 4];
+			}
+			else if (stringLen == 2) {
+				iValue = data[ofs + 1] << 8 | data[ofs + 2];
+			}
+			else if (stringLen == 1) {
+				iValue = data[ofs + 1];
+			}
+			else {
+				iValue = 0;
+			}
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU_ParseWeatherData: key %s, val integer %i\n",buffer, iValue);
+		}
+		else {
+			// string
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU_ParseWeatherData: key %s, string not yet handled\n", buffer);
+		}
+		ofs += stringLen;
+	}
+}
 // Protocol version - 0x00 (not 0x03)
 // Used for battery powered devices, eg. door sensor.
 // Packet ID: 0x08
@@ -1130,6 +1185,9 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
 
 			}
 			break;
+		case TUYA_CMD_WEATHERDATA:
+			TuyaMCU_ParseWeatherData(data + 6, len - 6);
+			break;
 		case 0x24:
 			// This is send by TH06
 			// Info:TuyaMCU:TUYAMCU received: 55 AA 03 24 00 00 26     
@@ -1337,22 +1395,22 @@ void TuyaMCU_Init()
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_testSendTime","",TuyaMCU_Send_SetTime_Example, NULL, NULL);
 	//cmddetail:{"name":"tuyaMcu_sendCurTime","args":"",
-	//cmddetail:"descr":"Sends a current date by TuyaMCU to clock/callendar MCU",
+	//cmddetail:"descr":"Sends a current date by TuyaMCU to clock/callendar MCU. Time is taken from NTP driver, so NTP also should be already running.",
 	//cmddetail:"fn":"TuyaMCU_Send_SetTime_Current","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_sendCurTime","",TuyaMCU_Send_SetTime_Current, NULL, NULL);
-	//cmddetail:{"name":"tuyaMcu_fakeHex","args":"",
-	//cmddetail:"descr":"qq",
+	//cmddetail:{"name":"tuyaMcu_fakeHex","args":"[HexString]",
+	//cmddetail:"descr":"Spoofs a fake hex packet so it looks like TuyaMCU send that to us. Used for testing.",
 	//cmddetail:"fn":"TuyaMCU_Fake_Hex","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_fakeHex","",TuyaMCU_Fake_Hex, NULL, NULL);
     ///CMD_RegisterCommand("tuyaMcu_sendSimple","",TuyaMCU_Send_Simple, "Appends a 0x55 0xAA header to a data, append a checksum at end and send");
-	//cmddetail:{"name":"linkTuyaMCUOutputToChannel","args":"",
-	//cmddetail:"descr":"Map value send from TuyaMCU (eg. humidity or temperature) to channel",
+	//cmddetail:{"name":"linkTuyaMCUOutputToChannel","args":"[dpId][varType][channelID]",
+	//cmddetail:"descr":"Used to map between TuyaMCU dpIDs and our internal channels. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap",
 	//cmddetail:"fn":"TuyaMCU_LinkTuyaMCUOutputToChannel","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("linkTuyaMCUOutputToChannel","",TuyaMCU_LinkTuyaMCUOutputToChannel, NULL, NULL);
-	//cmddetail:{"name":"tuyaMcu_setDimmerRange","args":"",
+	//cmddetail:{"name":"tuyaMcu_setDimmerRange","args":"[Min][Max]",
 	//cmddetail:"descr":"Set dimmer range used by TuyaMCU",
 	//cmddetail:"fn":"TuyaMCU_SetDimmerRange","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
@@ -1383,20 +1441,18 @@ void TuyaMCU_Init()
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_sendMCUConf","",TuyaMCU_SendMCUConf, NULL, NULL);
 	//cmddetail:{"name":"fakeTuyaPacket","args":"",
-	//cmddetail:"descr":"qq",
+	//cmddetail:"descr":"",
 	//cmddetail:"fn":"TuyaMCU_FakePacket","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("fakeTuyaPacket","",TuyaMCU_FakePacket, NULL, NULL);
-	//cmddetail:{"name":"tuyaMcu_setBaudRate","args":"",
-	//cmddetail:"descr":"Set the serial baud rate used to communicate with the TuyaMCU",
+	//cmddetail:{"name":"tuyaMcu_setBaudRate","args":"[BaudValue]",
+	//cmddetail:"descr":"Sets the baud rate used by TuyaMCU UART communication. Default value is 9600.",
 	//cmddetail:"fn":"TuyaMCU_SetBaudRate","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_setBaudRate","",TuyaMCU_SetBaudRate, NULL, NULL);
-
-
-	//cmddetail:{"name":"tuyaMcu_setBaudRate","args":"",
-	//cmddetail:"descr":"Set the serial baud rate used to communicate with the TuyaMCU",
-	//cmddetail:"fn":"TuyaMCU_SetBaudRate","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:{"name":"tuyaMcu_sendRSSI","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"Cmd_TuyaMCU_Send_RSSI","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_sendRSSI", "", Cmd_TuyaMCU_Send_RSSI, NULL, NULL);
 	

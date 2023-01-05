@@ -29,10 +29,13 @@ extern const char* sensor_mqtt_device_classes[];
 extern const char* sensor_mqtt_device_units[];
 extern const char* counter_mqttNames[];
 extern const char* counter_devClasses[];
+extern int g_dhtsCount;
 
 void DRV_Generic_Init();
 void DRV_AppendInformationToHTTPIndexPage(http_request_t* request);
 void DRV_OnEverySecond();
+void DHT_OnEverySecond();
+void DHT_OnPinsConfigChanged();
 void DRV_RunQuickTick();
 void DRV_StartDriver(const char* name);
 void DRV_StopDriver(const char* name);

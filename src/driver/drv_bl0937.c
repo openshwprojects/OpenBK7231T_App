@@ -33,6 +33,10 @@ int GPIO_HLW_SEL = 24; // pwm4
 int GPIO_HLW_CF = 7;
 int GPIO_HLW_CF1 = 8;
 
+//The above three actually are pin indices. For W600 the actual gpio_pins are different.
+unsigned int GPIO_HLW_CF_pin;
+unsigned int GPIO_HLW_CF1_pin;
+
 bool g_sel = true;
 uint32_t res_v = 0;
 uint32_t res_c = 0;
@@ -47,13 +51,29 @@ volatile uint32_t g_vc_pulses = 0;
 volatile uint32_t g_p_pulses = 0;
 static portTickType pulseStamp;
 
+#if PLATFORM_W600
+
+static void HlwCf1Interrupt(void* context) {
+	tls_clr_gpio_irq_status(GPIO_HLW_CF1_pin);
+	g_vc_pulses++;
+}
+static void HlwCfInterrupt(void* context) {
+	tls_clr_gpio_irq_status(GPIO_HLW_CF_pin);
+	g_p_pulses++;
+}
+
+#else
+
 void HlwCf1Interrupt(unsigned char pinNum) {  // Service Voltage and Current
 	g_vc_pulses++;
 }
 void HlwCfInterrupt(unsigned char pinNum) {  // Service Power
 	g_p_pulses++;
 }
-commandResult_t BL0937_PowerSet(const void *context, const char *cmd, const char *args, int cmdFlags) {
+
+#endif
+
+commandResult_t BL0937_PowerSet(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	float realPower;
 
 	if(args==0||*args==0) {
@@ -179,24 +199,27 @@ commandResult_t BL0937_CurrentSet(const void *context, const char *cmd, const ch
 
 void BL0937_Shutdown_Pins()
 {
-
-#if PLATFORM_BEKEN
+#if PLATFORM_W600
+	tls_gpio_irq_disable(GPIO_HLW_CF1_pin);
+	tls_gpio_irq_disable(GPIO_HLW_CF_pin);
+#elif PLATFORM_BEKEN
 	gpio_int_disable(GPIO_HLW_CF1);
-#else
-
-#endif
-#if PLATFORM_BEKEN
 	gpio_int_disable(GPIO_HLW_CF);
-#else
-
 #endif
-
 }
+
 void BL0937_Init_Pins() {
 	// if not found, this will return the already set value
 	GPIO_HLW_SEL = PIN_FindPinIndexForRole(IOR_BL0937_SEL, GPIO_HLW_SEL);
 	GPIO_HLW_CF = PIN_FindPinIndexForRole(IOR_BL0937_CF, GPIO_HLW_CF);
 	GPIO_HLW_CF1 = PIN_FindPinIndexForRole(IOR_BL0937_CF1, GPIO_HLW_CF1);
+
+#if PLATFORM_W600
+	GPIO_HLW_CF1_pin = HAL_GetGPIOPin(GPIO_HLW_CF1);
+	GPIO_HLW_CF_pin = HAL_GetGPIOPin(GPIO_HLW_CF);
+	//printf("GPIO_HLW_CF=%d GPIO_HLW_CF1=%d\n", GPIO_HLW_CF, GPIO_HLW_CF1);
+	//printf("GPIO_HLW_CF1_pin=%d GPIO_HLW_CF_pin=%d\n", GPIO_HLW_CF1_pin, GPIO_HLW_CF_pin);
+#endif
 
 	// UPDATE: now they are automatically saved
 	BL0937_VREF = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE, BL0937_VREF);
@@ -209,17 +232,22 @@ void BL0937_Init_Pins() {
 
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF1);
 
-#if PLATFORM_BEKEN
+#if PLATFORM_W600
+	tls_gpio_isr_register(GPIO_HLW_CF1_pin, HlwCf1Interrupt, NULL);
+	tls_gpio_irq_enable(GPIO_HLW_CF1_pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
+#elif PLATFORM_BEKEN
 	gpio_int_enable(GPIO_HLW_CF1, IRQ_TRIGGER_FALLING_EDGE, HlwCf1Interrupt);
-#else
-
 #endif
+
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF);
-#if PLATFORM_BEKEN
-	gpio_int_enable(GPIO_HLW_CF, IRQ_TRIGGER_FALLING_EDGE, HlwCfInterrupt);
-#else
 
+#if PLATFORM_W600
+	tls_gpio_isr_register(GPIO_HLW_CF_pin, HlwCfInterrupt, NULL);
+	tls_gpio_irq_enable(GPIO_HLW_CF_pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
+#elif PLATFORM_BEKEN
+	gpio_int_enable(GPIO_HLW_CF, IRQ_TRIGGER_FALLING_EDGE, HlwCfInterrupt);
 #endif
+
 	g_vc_pulses = 0;
 	g_p_pulses = 0;
 	pulseStamp = xTaskGetTickCount();
@@ -258,7 +286,7 @@ void BL0937_Init()
 	//cmddetail:"fn":"BL0937_CurrentRef","file":"driver/drv_bl0937.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("IREF","",BL0937_CurrentRef, NULL, NULL);
-	//cmddetail:{"name":"PowerMax","args":"",
+	//cmddetail:{"name":"PowerMax","args":"[limit]",
 	//cmddetail:"descr":"Sets Maximum power value measurement limiter",
 	//cmddetail:"fn":"BL0937_PowerMax","file":"driver/drv_bl0937.c","requires":"",
 	//cmddetail:"examples":""}
@@ -267,7 +295,7 @@ void BL0937_Init()
 	BL0937_Init_Pins();
 }
 
-void BL0937_RunFrame() 
+void BL0937_RunFrame()
 {
 	float final_v;
 	float final_c;
@@ -286,11 +314,11 @@ void BL0937_RunFrame()
 		bNeedRestart = true;
 	}
 
-    ticksElapsed = (xTaskGetTickCount() - pulseStamp);
+	ticksElapsed = (xTaskGetTickCount() - pulseStamp);
 
 #if PLATFORM_BEKEN
-    GLOBAL_INT_DECLARATION();
-    GLOBAL_INT_DISABLE();
+	GLOBAL_INT_DECLARATION();
+	GLOBAL_INT_DISABLE();
 #else
 
 #endif
@@ -329,20 +357,20 @@ void BL0937_RunFrame()
 
 #endif
 
-    pulseStamp = xTaskGetTickCount();
+	pulseStamp = xTaskGetTickCount();
 	//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
 
 	final_v = res_v * BL0937_VREF;
-    final_v *= (float)ticksElapsed;
-    final_v /= (1000.0f / (float)portTICK_PERIOD_MS); 
-	
-    final_c = res_c * BL0937_CREF;
-    final_c *= (float)ticksElapsed;
-    final_c /= (1000.0f / (float)portTICK_PERIOD_MS);
-	
-    final_p = res_p * BL0937_PREF;
-    final_p *= (float)ticksElapsed;
-    final_p /= (1000.0f / (float)portTICK_PERIOD_MS);
+	final_v *= (float)ticksElapsed;
+	final_v /= (1000.0f / (float)portTICK_PERIOD_MS);
+
+	final_c = res_c * BL0937_CREF;
+	final_c *= (float)ticksElapsed;
+	final_c /= (1000.0f / (float)portTICK_PERIOD_MS);
+
+	final_p = res_p * BL0937_PREF;
+	final_p *= (float)ticksElapsed;
+	final_p /= (1000.0f / (float)portTICK_PERIOD_MS);
 
     /* patch to limit max power reading, filter random reading errors */
     if (final_p > BL0937_PMAX)

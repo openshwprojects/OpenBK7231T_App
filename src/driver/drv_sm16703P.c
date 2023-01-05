@@ -70,9 +70,9 @@ void gpio_output(UINT32 id, UINT32 val);
 #include "icu_pub.h"
 
 static void SM16703P_Send(byte *data, int dataSize){
-	int i;
-	byte b;
-	UINT32 reg_val;
+	//int i;
+	//byte b;
+	UINT32 reg_val = 0;
 	volatile UINT32 *gpio_cfg_addr;
 	UINT32 id;
 	volatile UINT32 reg_val_HIGH = 0x02;
@@ -215,8 +215,20 @@ void SM16703P_Init() {
 	//cmddetail:"fn":"SM16703P_Test","file":"driver/drv_ucs1912.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SM16703P_Test", "", SM16703P_Test, NULL, NULL);
+	//cmddetail:{"name":"SM16703P_Send","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"SM16703P_Send_Cmd","file":"driver/drv_sm16703P.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SM16703P_Send", "", SM16703P_Send_Cmd, NULL, NULL);
+	//cmddetail:{"name":"SM16703P_Test_3xZero","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"SM16703P_Test_3xZero","file":"driver/drv_sm16703P.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SM16703P_Test_3xZero", "", SM16703P_Test_3xZero, NULL, NULL);
+	//cmddetail:{"name":"SM16703P_Test_3xOne","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"SM16703P_Test_3xOne","file":"driver/drv_sm16703P.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SM16703P_Test_3xOne", "", SM16703P_Test_3xOne, NULL, NULL);
 }
 #endif

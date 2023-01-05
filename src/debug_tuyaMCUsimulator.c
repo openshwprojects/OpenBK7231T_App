@@ -7,7 +7,29 @@ const char *dataToSimulate[] =
 	// dummy entry in order to avoid problems with empty table
 	"",
 #if 1
-
+	""
+#elif 1
+	// 0x21 packet type - Weather Data - for testing
+	"55AA002100400108772E74656D702E300004000000160C772E68756D69646974792E3000040000004608772E706D32352E3000040000002607772E6171692E3000040000006C30",
+#elif 0
+	"55AA030000010003",
+	"55AA0301002A7B2270223A226C696834766A656F79616F346A656B75222C2276223A22322E302E30222C226D223A307D41",
+	"55AA0302000004",
+	"55AA0303000005",
+	"55AA030000010104",
+	"55AA0303000005",
+	"55AA03070014060000080928000000000000010200040000000467",
+	"55AA0307000C03000008160B160B0000000466",
+	"55AA0307000C040000080B1D0B1D0000000071",
+	"55AA030700060B00000201001D",
+	"55AA030700111001000101120300083232343930303638E9",
+	"55AA0324000026",
+	"55AA031C00001E",
+	"55AA031C00001E",
+	"55AA031C00001E",
+	"55AA030000010104",
+	"55AA0324000026",
+	"55AA030000010104",
 #elif 0
 	"55AA00050005010400010110",
 	"55AA0005000501040001000F"
@@ -59,6 +81,9 @@ const char *dataToSimulate[] =
 	"55AA030700130600000F000000BD0000013B01F5000646092DA2",
 #endif
 };
+// TODO: place it better
+extern int g_bDoingUnitTestsNow;
+
 int g_totalStrings = sizeof(dataToSimulate) / sizeof(dataToSimulate[0]);
 
 int delay_between_packets = 20;
@@ -74,6 +99,9 @@ void NewTuyaMCUSimulator_RunQuickTick(int deltaMS) {
 	if (g_totalStrings <= 0) {
 		return;
 	}
+	if (g_bDoingUnitTestsNow) {
+		return;
+	}
 	if (current_delay_to_wait_ms > 0) {
 		current_delay_to_wait_ms -= deltaMS;
 		return;
@@ -83,7 +111,10 @@ void NewTuyaMCUSimulator_RunQuickTick(int deltaMS) {
 	}
 
 #if 1
-
+#elif 1
+	if (DRV_IsRunning("TuyaMCU") == 0) {
+		CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+	}
 #elif 0
 	if (DRV_IsRunning("TuyaMCU") == 0) {
 		CMD_ExecuteCommand("startDriver TuyaMCU", 0);
@@ -113,6 +144,10 @@ void NewTuyaMCUSimulator_RunQuickTick(int deltaMS) {
 		return;
 	}
 	while (*curP != 0) {
+		if (*curP == ' ') {
+			curP++;
+			continue;
+		}
 		c_added++;
 		if (c_added >= max_bytes_per_frame) {
 			break;

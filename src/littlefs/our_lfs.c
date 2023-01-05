@@ -28,7 +28,7 @@
 // variables used by the filesystem
 int lfs_initialised = 0;
 lfs_t lfs;
-//lfs_file_t file;
+lfs_file_t file;
 
 // from flash.c
 extern UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address);
@@ -198,27 +198,116 @@ static commandResult_t CMD_LFS_Format(const void *context, const char *cmd, cons
     return CMD_RES_OK;
 }
 
+static commandResult_t CMD_LFS_Append_Internal(bool bLine, bool bAppend, const char *args) {
+	const char *fileName;
+	const char *str;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 2) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Not enough arguments.");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	fileName = Tokenizer_GetArg(0);
+	str = Tokenizer_GetArgFrom(1);
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Writing %s to %s", str, fileName);
+
+	// read current count
+	lfs_file_open(&lfs, &file, fileName, LFS_O_RDWR | LFS_O_CREAT);
+	if (bAppend) {
+		lfs_file_seek(&lfs, &file, 0, LFS_SEEK_END);
+	}
+	else {
+		lfs_file_truncate(&lfs, &file, 0);
+	}
+	lfs_file_write(&lfs, &file, str, strlen(str));
+	if (bLine) {
+		lfs_file_write(&lfs, &file, "\r\n", 2);
+	}
+	lfs_file_close(&lfs, &file);
+
+
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_LFS_Write(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	return CMD_LFS_Append_Internal(false, false, args);
+}
+static commandResult_t CMD_LFS_WriteLine(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	return CMD_LFS_Append_Internal(true, false, args);
+}
+static commandResult_t CMD_LFS_Append(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	return CMD_LFS_Append_Internal(false, true, args);
+}
+static commandResult_t CMD_LFS_AppendLine(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	return CMD_LFS_Append_Internal(true, true, args);
+}
+static commandResult_t CMD_LFS_Remove(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	const char *fileName;
+	int res;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 1) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Not enough arguments.");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	fileName = Tokenizer_GetArg(0);
+
+	res = lfs_remove(&lfs, fileName);
+
+
+	return CMD_RES_OK;
+}
 void LFSAddCmds(){
-	//cmddetail:{"name":"lfssize","args":"NULL",
+	//cmddetail:{"name":"lfs_size","args":"[MaxSize]",
 	//cmddetail:"descr":"Log or Set LFS size - will apply and re-format next boot, usage setlfssize 0x10000",
 	//cmddetail:"fn":"CMD_LFS_Size","file":"littlefs/our_lfs.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("lfssize", NULL, CMD_LFS_Size, NULL, NULL);	
-	//cmddetail:{"name":"lfsunmount","args":"NULL",
+    CMD_RegisterCommand("lfs_size", NULL, CMD_LFS_Size, NULL, NULL);	
+	//cmddetail:{"name":"lfs_unmount","args":"",
 	//cmddetail:"descr":"Un-mount LFS",
 	//cmddetail:"fn":"CMD_LFS_Unmount","file":"littlefs/our_lfs.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("lfsunmount", NULL, CMD_LFS_Unmount, NULL, NULL);	
-	//cmddetail:{"name":"lfsmount","args":"NULL",
+    CMD_RegisterCommand("lfs_unmount", NULL, CMD_LFS_Unmount, NULL, NULL);	
+	//cmddetail:{"name":"lfs_mount","args":"",
 	//cmddetail:"descr":"Mount LFS",
 	//cmddetail:"fn":"CMD_LFS_Mount","file":"littlefs/our_lfs.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("lfsmount", NULL, CMD_LFS_Mount, NULL, NULL);	
-	//cmddetail:{"name":"lfsformat","args":"NULL",
+    CMD_RegisterCommand("lfs_mount", NULL, CMD_LFS_Mount, NULL, NULL);	
+	//cmddetail:{"name":"lfs_format","args":"",
 	//cmddetail:"descr":"Unmount and format LFS.  Optionally add new size as argument",
 	//cmddetail:"fn":"CMD_LFS_Format","file":"littlefs/our_lfs.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("lfsformat", NULL, CMD_LFS_Format, NULL, NULL);	
+    CMD_RegisterCommand("lfs_format", NULL, CMD_LFS_Format, NULL, NULL);
+	//cmddetail:{"name":"lfs_append","args":"[FileName][String]",
+	//cmddetail:"descr":"Appends a string to LFS file",
+	//cmddetail:"fn":"CMD_LFS_Append","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("lfs_append", "", CMD_LFS_Append, NULL, NULL);
+	//cmddetail:{"name":"lfs_appendLine","args":"[FileName][String]",
+	//cmddetail:"descr":"Appends a string to LFS file with a next line marker",
+	//cmddetail:"fn":"CMD_LFS_AppendLine","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("lfs_appendLine", "", CMD_LFS_AppendLine, NULL, NULL);
+	//cmddetail:{"name":"lfs_remove","args":"[FileName]",
+	//cmddetail:"descr":"Deletes a LittleFS file",
+	//cmddetail:"fn":"CMD_LFS_Remove","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("lfs_remove", "", CMD_LFS_Remove, NULL, NULL);
+	//cmddetail:{"name":"lfs_write","args":"[FileName][String]",
+	//cmddetail:"descr":"Resets a LFS file and writes a new string to it",
+	//cmddetail:"fn":"CMD_LFS_Write","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("lfs_write", "", CMD_LFS_Write, NULL, NULL);
+	//cmddetail:{"name":"lfs_writeLine","args":"[FileName][String]",
+	//cmddetail:"descr":"Resets a LFS file and writes a new string to it with newline",
+	//cmddetail:"fn":"CMD_LFS_WriteLine","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("lfs_writeLine", "", CMD_LFS_WriteLine, NULL, NULL);
+
 }
 
 

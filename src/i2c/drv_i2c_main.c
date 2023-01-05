@@ -291,27 +291,27 @@ commandResult_t DRV_I2C_AddDevice_LCM1602(const void *context, const char *cmd, 
 void DRV_I2C_Init()
 {
 	//cmddetail:{"name":"addI2CDevice_TC74","args":"",
-	//cmddetail:"descr":"Adds a new I2C device",
+	//cmddetail:"descr":"Adds a new I2C device - TC74",
 	//cmddetail:"fn":"DRV_I2C_AddDevice_TC74","file":"i2c/drv_i2c_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("addI2CDevice_TC74","",DRV_I2C_AddDevice_TC74, NULL, NULL);
 	//cmddetail:{"name":"addI2CDevice_MCP23017","args":"",
-	//cmddetail:"descr":"Adds a new I2C device",
+	//cmddetail:"descr":"Adds a new I2C device - MCP23017",
 	//cmddetail:"fn":"DRV_I2C_AddDevice_MCP23017","file":"i2c/drv_i2c_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("addI2CDevice_MCP23017","",DRV_I2C_AddDevice_MCP23017, NULL, NULL);
 	//cmddetail:{"name":"addI2CDevice_LCM1602","args":"",
-	//cmddetail:"descr":"Adds a new I2C device",
+	//cmddetail:"descr":"Adds a new I2C device - LCM1602",
 	//cmddetail:"fn":"DRV_I2C_AddDevice_LCM1602","file":"i2c/drv_i2c_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("addI2CDevice_LCM1602","",DRV_I2C_AddDevice_LCM1602, NULL, NULL);
 	//cmddetail:{"name":"addI2CDevice_LCD_PCF8574","args":"",
-	//cmddetail:"descr":"Adds a new I2C device",
+	//cmddetail:"descr":"Adds a new I2C device - PCF8574",
 	//cmddetail:"fn":"DRV_I2C_AddDevice_PCF8574","file":"i2c/drv_i2c_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("addI2CDevice_LCD_PCF8574","",DRV_I2C_AddDevice_PCF8574, NULL, NULL);
 	//cmddetail:{"name":"MCP23017_MapPinToChannel","args":"",
-	//cmddetail:"descr":"Adds a new I2C device",
+	//cmddetail:"descr":"Maps port expander bit to OBK channel",
 	//cmddetail:"fn":"DRV_I2C_MCP23017_MapPinToChannel","file":"i2c/drv_i2c_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MCP23017_MapPinToChannel","",DRV_I2C_MCP23017_MapPinToChannel, NULL, NULL);

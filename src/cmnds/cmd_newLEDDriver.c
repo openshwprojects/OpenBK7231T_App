@@ -186,6 +186,20 @@ float led_lerpSpeedUnitsPerSecond = 200.f;
 float led_current_value_brightness = 0;
 float led_current_value_cold_or_warm = 0;
 
+void led_Save_finalRGBCW(byte* finalRGBCW) {
+#ifdef ENABLE_DRIVER_LED
+	if (DRV_IsRunning("SM2135")) {
+		SM2135_Write(finalRGBCW);
+	}
+	if (DRV_IsRunning("BP5758D")) {
+		BP5758D_Write(finalRGBCW);
+	}
+	if (DRV_IsRunning("BP1658CJ")) {
+		BP1658CJ_Write(finalRGBCW);
+	}
+#endif
+}
+
 void LED_RunQuickColorLerp(int deltaMS) {
 	int i;
 	int firstChannelIndex;
@@ -193,6 +207,8 @@ void LED_RunQuickColorLerp(int deltaMS) {
 	byte finalRGBCW[5];
 	int maxPossibleIndexToSet;
 	int emulatedCool = -1;
+	int target_value_brightness = 0;
+	int target_value_cold_or_warm = 0;
 
 	if (CFG_HasFlag(OBK_FLAG_LED_FORCE_MODE_RGB)) {
 		// only allow setting pwm 0, 1 and 2, force-skip 3 and 4
@@ -223,19 +239,18 @@ void LED_RunQuickColorLerp(int deltaMS) {
 		led_rawLerpCurrent[i] = Mathf_MoveTowards(led_rawLerpCurrent[i],finalColors[i], deltaSeconds * led_lerpSpeedUnitsPerSecond);
 	}
 
-	if(isCWMode() && CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
-		// OBK_FLAG_LED_ALTERNATE_CW_MODE means we have a driver that takes one PWM for brightness and second for temperature
-		int target_value_brightness = 0;
-		int target_value_cold_or_warm = 0;
-
-		if (g_lightEnableAll) {
-			target_value_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
+	target_value_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
+	if (g_lightEnableAll) {
+		if (g_lightMode == Light_Temperature) {
 			target_value_brightness = g_brightness * 100.0f;
 		}
+	}
 
-		led_current_value_brightness = Mathf_MoveTowards(led_current_value_brightness, target_value_brightness, deltaSeconds * led_lerpSpeedUnitsPerSecond);
-		led_current_value_cold_or_warm = Mathf_MoveTowards(led_current_value_cold_or_warm, target_value_cold_or_warm, deltaSeconds * led_lerpSpeedUnitsPerSecond);
+	led_current_value_brightness = Mathf_MoveTowards(led_current_value_brightness, target_value_brightness, deltaSeconds * led_lerpSpeedUnitsPerSecond);
+	led_current_value_cold_or_warm = Mathf_MoveTowards(led_current_value_cold_or_warm, target_value_cold_or_warm, deltaSeconds * led_lerpSpeedUnitsPerSecond);
 
+	// OBK_FLAG_LED_ALTERNATE_CW_MODE means we have a driver that takes one PWM for brightness and second for temperature
+	if(isCWMode() && CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
 		CHANNEL_Set(firstChannelIndex, led_current_value_cold_or_warm, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 		CHANNEL_Set(firstChannelIndex+1, led_current_value_brightness, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 	} else {
@@ -252,32 +267,68 @@ void LED_RunQuickColorLerp(int deltaMS) {
 				finalRGBCW[i] = led_rawLerpCurrent[i];
 				float chVal = led_rawLerpCurrent[i] * g_cfg_colorScaleToChannel;
 				int channelToUse = firstChannelIndex + i;
+				// emulated cool is -1 by default, so this block will only execute
+				// if the cool emulation was enabled
 				if (channelToUse == emulatedCool && g_lightMode == Light_Temperature) {
 					CHANNEL_Set(firstChannelIndex + 0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 					CHANNEL_Set(firstChannelIndex + 1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 					CHANNEL_Set(firstChannelIndex + 2, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 				}
 				else {
+					if (CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
+						if (i == 3) {
+							chVal = led_current_value_cold_or_warm;
+						}
+						else if (i == 4) {
+							chVal = led_current_value_brightness;
+						}
+					}
 					CHANNEL_Set(channelToUse, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 				}
 			}
 		}
 	}
-#ifndef OBK_DISABLE_ALL_DRIVERS
-	if(DRV_IsRunning("SM2135")) {
-		SM2135_Write(finalRGBCW);
-	}
-	if(DRV_IsRunning("BP5758D")) {
-		BP5758D_Write(finalRGBCW);
-	}
-	if(DRV_IsRunning("BP1658CJ")) {
-		BP1658CJ_Write(finalRGBCW);
-	}
-#endif
+	
+	led_Save_finalRGBCW(finalRGBCW);
 }
-
+#if WINDOWS
+int exponential_mode = 0;
+#else
 int exponential_mode = 2;
+#endif
 
+float LED_BrightnessMapping(float raw, float brig) {
+	float final = 0;
+	// make brightness exponential:
+	if (exponential_mode == 0) {
+		final = raw * brig;
+	}
+	else if (g_brightness == 0.0f) {
+		final = 0.0f;
+	}
+	else {
+		float expo_base;
+		float expo_factor;
+		float expo_offset = 0.0;
+		if ((exponential_mode == 1) || (exponential_mode == 2)) {
+			expo_offset = 0.009f;
+		}
+		if ((exponential_mode == 1) || (exponential_mode == 3)) {
+			expo_base = 1.2f;     // moderate exponential
+			expo_factor = 15.32f;
+			expo_offset -= 0.06609f;
+		}
+		else {
+			expo_base = 1.06f;    // full exponential
+			expo_factor = 74.115f;
+			expo_offset -= 0.013f;
+		}
+		final = raw * (powf(expo_base, brig * expo_factor) / expo_factor + expo_offset);
+	}
+	if (final > 255.0f)
+		final = 255.0f;
+	return final;
+}
 
 void apply_smart_light() {
 	int i;
@@ -286,6 +337,8 @@ void apply_smart_light() {
 	byte finalRGBCW[5];
 	int maxPossibleIndexToSet;
 	int emulatedCool = -1;
+	int value_brightness = 0;
+	int value_cold_or_warm = 0;
 
 	// The color order is RGBCW.
 	// some people set RED to channel 0, and some of them set RED to channel 1
@@ -308,18 +361,21 @@ void apply_smart_light() {
 		maxPossibleIndexToSet = 5;
 	}
 
+	if (CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
+		value_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
+		if (g_lightEnableAll) {
+			if (g_lightMode == Light_Temperature) {
+				value_brightness = g_brightness * 100.0f;
+			}
+		}
+	}
 
 	if(isCWMode() && CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
-		int value_brightness = 0;
-		int value_cold_or_warm = 0;
-
 		for(i = 0; i < 5; i++) {
 			finalColors[i] = 0;
 			finalRGBCW[i] = 0;
 		}
 		if(g_lightEnableAll) {
-			value_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
-			value_brightness = g_brightness * 100.0f;
 			for(i = 3; i < 5; i++) {
 				finalColors[i] = baseColors[i] * g_brightness;
 				finalRGBCW[i] = baseColors[i] * g_brightness;
@@ -337,29 +393,7 @@ void apply_smart_light() {
 			final = 0.0f;
 
 			if(g_lightEnableAll) {
-				// make brightness exponential:
-				if (exponential_mode == 0) {
-					final = raw * g_brightness;
-				} else if (g_brightness == 0.0f) {
-					final = 0.0f;
-				} else {
-					float expo_base;
-					float expo_factor;
-					float expo_offset = 0.0;
-					if ((exponential_mode == 1) || (exponential_mode == 2)) {
-						expo_offset = 0.009f;
-					}
-					if ((exponential_mode == 1) || (exponential_mode == 3)) {
-						expo_base    =  1.2f;     // moderate exponential
-						expo_factor  = 15.32f;
-						expo_offset -=  0.06609f;
-					} else {
-						expo_base    =  1.06f;    // full exponential
-						expo_factor  = 74.115f;
-						expo_offset -=  0.013f;
-					}
-					final = raw * (powf(expo_base, g_brightness * expo_factor) / expo_factor + expo_offset);
-				}
+				final = LED_BrightnessMapping(raw, g_brightness);
 			}
 			if(g_lightMode == Light_Temperature) {
 				// skip channels 0, 1, 2
@@ -391,22 +425,33 @@ void apply_smart_light() {
 			//	channelToUse,raw,g_brightness,final,g_lightEnableAll);
 
 			if(CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == false) {
-				if(isCWMode()) {
+				if (isCWMode()) {
 					// in CW mode, we have only set two channels
 					// We don't have RGB channels
 					// so, do simple mapping
-					if(i == 3) {
-						CHANNEL_Set(firstChannelIndex+0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-					} else if(i == 4) {
-						CHANNEL_Set(firstChannelIndex+1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+					if (i == 3) {
+						CHANNEL_Set(firstChannelIndex + 0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+					}
+					else if (i == 4) {
+						CHANNEL_Set(firstChannelIndex + 1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 					}
 				} else {
+					// emulated cool is -1 by default, so this block will only execute
+					// if the cool emulation was enabled
 					if (channelToUse == emulatedCool && g_lightMode == Light_Temperature) {
 						CHANNEL_Set(firstChannelIndex + 0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 						CHANNEL_Set(firstChannelIndex + 1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 						CHANNEL_Set(firstChannelIndex + 2, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 					}
 					else {
+						if (CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
+							if (i == 3) {
+								chVal = value_cold_or_warm;
+							}
+							else if (i == 4) {
+								chVal = value_brightness;
+							}
+						}
 						CHANNEL_Set(channelToUse, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 					}
 				}
@@ -414,17 +459,7 @@ void apply_smart_light() {
 		}
 	}
 	if(CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == false) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
-		if(DRV_IsRunning("SM2135")) {
-			SM2135_Write(finalRGBCW);
-		}
-		if(DRV_IsRunning("BP5758D")) {
-			BP5758D_Write(finalRGBCW);
-		}
-		if(DRV_IsRunning("BP1658CJ")) {
-			BP1658CJ_Write(finalRGBCW);
-		}
-#endif
+		led_Save_finalRGBCW(finalRGBCW);
 	}
 
 	if(CFG_HasFlag(OBK_FLAG_LED_REMEMBERLASTSTATE)) {
@@ -1230,23 +1265,23 @@ void NewLED_InitCommands(){
 		g_lightMode = Light_Temperature;
 	}
 
-	//cmddetail:{"name":"led_dimmer","args":"",
+	//cmddetail:{"name":"led_dimmer","args":"[Value]",
 	//cmddetail:"descr":"set output dimmer 0..100",
 	//cmddetail:"fn":"dimmer","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_dimmer", "", dimmer, NULL, NULL);
-	//cmddetail:{"name":"add_dimmer","args":"",
-	//cmddetail:"descr":"set output dimmer 0..100",
+	//cmddetail:{"name":"add_dimmer","args":"[Value][bWrapAroundInsteadOfHold]",
+	//cmddetail:"descr":"Adds a given value to current LED dimmer. Function can wrap or clamp if max/min is exceeded.",
 	//cmddetail:"fn":"add_dimmer","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("add_dimmer", "", add_dimmer, NULL, NULL);
-	//cmddetail:{"name":"led_enableAll","args":"",
-	//cmddetail:"descr":"qqqq",
+	//cmddetail:{"name":"led_enableAll","args":"[1or0orToggle]",
+	//cmddetail:"descr":"Power on/off LED but remember the RGB(CW) values",
 	//cmddetail:"fn":"enableAll","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_enableAll", "", enableAll, NULL, NULL);
-	//cmddetail:{"name":"led_basecolor_rgb","args":"",
-	//cmddetail:"descr":"set PWN color using #RRGGBB",
+	//cmddetail:{"name":"led_basecolor_rgb","args":"[HexValue]",
+	//cmddetail:"descr":"Puts the LED driver in RGB mode and sets given color.",
 	//cmddetail:"fn":"basecolor_rgb","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_basecolor_rgb", "", basecolor_rgb, NULL, NULL);
@@ -1255,47 +1290,47 @@ void NewLED_InitCommands(){
 	//cmddetail:"fn":"basecolor_rgbcw","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_basecolor_rgbcw", "", basecolor_rgbcw, NULL, NULL);
-	//cmddetail:{"name":"led_temperature","args":"",
-	//cmddetail:"descr":"set qqqq",
-	//cmddetail:"fn":"temperature","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:{"name":"add_temperature","args":"[DeltaValue][bWrapAroundInsteadOfHold]",
+	//cmddetail:"descr":"Adds a given value to current LED temperature. Function can wrap or clamp if max/min is exceeded.",
+	//cmddetail:"fn":"add_temperature","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("add_temperature", "", add_temperature, NULL, NULL);
-	//cmddetail:{"name":"led_temperature","args":"",
-	//cmddetail:"descr":"set qqqq",
+	//cmddetail:{"name":"led_temperature","args":"[TempValue]",
+	//cmddetail:"descr":"Toggles LED driver into temperature mode and sets given temperature. It using Home Assistant temperature range (in the range from 154-500 defined in homeassistant/util/color.py as HASS_COLOR_MIN and HASS_COLOR_MAX)",
 	//cmddetail:"fn":"temperature","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_temperature", "", temperature, NULL, NULL);
-	//cmddetail:{"name":"led_brightnessMult","args":"",
-	//cmddetail:"descr":"set qqqq",
+	//cmddetail:{"name":"led_brightnessMult","args":"[Value]",
+	//cmddetail:"descr":"Internal usage.",
 	//cmddetail:"fn":"brightnessMult","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_brightnessMult", "", brightnessMult, NULL, NULL);
-	//cmddetail:{"name":"led_colorMult","args":"",
-	//cmddetail:"descr":"set qqqq",
+	//cmddetail:{"name":"led_colorMult","args":"[Value]",
+	//cmddetail:"descr":"Internal usage.",
 	//cmddetail:"fn":"colorMult","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_colorMult", "", colorMult, NULL, NULL);
-	//cmddetail:{"name":"led_saturation","args":"",
-	//cmddetail:"descr":"set qqqq",
+	//cmddetail:{"name":"led_saturation","args":"[Value]",
+	//cmddetail:"descr":"This is an alternate way to set the LED color.",
 	//cmddetail:"fn":"setSaturation","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_saturation", "", setSaturation, NULL, NULL);
-	//cmddetail:{"name":"led_hue","args":"",
-	//cmddetail:"descr":"set qqqq",
+	//cmddetail:{"name":"led_hue","args":"[Value]",
+	//cmddetail:"descr":"This is an alternate way to set the LED color.",
 	//cmddetail:"fn":"setHue","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_hue", "", setHue, NULL, NULL);
 	//cmddetail:{"name":"led_nextColor","args":"",
-	//cmddetail:"descr":"set qqqq",
+	//cmddetail:"descr":"Sets the next color from predefined colours list. Our list is the same as in Tasmota.",
 	//cmddetail:"fn":"nextColor","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_nextColor", "", nextColor, NULL, NULL);
-	//cmddetail:{"name":"led_lerpSpeed","args":"",
-	//cmddetail:"descr":"set qqqq",
+	//cmddetail:{"name":"led_lerpSpeed","args":"[LerpSpeed]",
+	//cmddetail:"descr":"Sets the speed of colour interpolation, where speed is defined as a number of RGB units per second, so 255 will lerp from 0 to 255 in one second",
 	//cmddetail:"fn":"lerpSpeed","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_lerpSpeed", "", lerpSpeed, NULL, NULL);
-	//cmddetail:{"name":"led_expoMode","args":"",
+	//cmddetail:{"name":"led_expoMode","args":"[IntegerMode]",
 	//cmddetail:"descr":"set brightness exponential mode 0..4",
 	//cmddetail:"fn":"exponentialMode","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":"led_expoMode 4"}
@@ -1304,13 +1339,33 @@ void NewLED_InitCommands(){
 	// HSBColor 360,100,100 - red
 	// HSBColor 90,100,100 - green
 	// HSBColor	<hue>,<sat>,<bri> = set color by hue, saturation and brightness
+	//cmddetail:{"name":"HSBColor","args":"[H][S][B]",
+	//cmddetail:"descr":"Tasmota-style colour access. Hue in 0-360 range, saturation in 0-100 and brightness in 0-100 range. ",
+	//cmddetail:"fn":"LED_SetBaseColor_HSB","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HSBColor", "", LED_SetBaseColor_HSB, NULL, NULL);
 	// HSBColor1	0..360 = set hue
+	//cmddetail:{"name":"HSBColor1","args":"[Hue]",
+	//cmddetail:"descr":"Tasmota-style colour access. Sets hue in 0 to 360 range.",
+	//cmddetail:"fn":"setHue","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HSBColor1", "", setHue, NULL, NULL);
 	// HSBColor2	0..100 = set saturation
+	//cmddetail:{"name":"HSBColor2","args":"[Saturation]",
+	//cmddetail:"descr":"Tasmota-style colour access. Set saturation in 0 to 100 range.",
+	//cmddetail:"fn":"setSaturation","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HSBColor2", "", setSaturation, NULL, NULL);
 	// HSBColor3	0..100 = set brightness
+	//cmddetail:{"name":"HSBColor3","args":"[Brightness]",
+	//cmddetail:"descr":"Tasmota-style colour access. Sets brightness in 0 to 100 range.",
+	//cmddetail:"fn":"setBrightness","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HSBColor3", "", setBrightness, NULL, NULL);
+	//cmddetail:{"name":"led_finishFullLerp","args":"",
+	//cmddetail:"descr":"This will force-finish LED color interpolation. You can call it after setting the colour to skip the interpolation/smooth transition time. Of course, it makes only sense if you enabled smooth colour transitions.",
+	//cmddetail:"fn":"led_finishFullLerp","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("led_finishFullLerp", "", led_finishFullLerp, NULL, NULL);
 }
 
