@@ -138,6 +138,10 @@ static commandResult_t CMD_ClearAll(const void *context, const char *cmd, const 
 
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_ClearNoPingTime(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	g_timeSinceLastPingReply = 0;
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_ClearConfig(const void *context, const char *cmd, const char *args, int cmdFlags){
 
 	CFG_SetDefaultConfig();
@@ -207,6 +211,11 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_Flags","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("flags", "", CMD_Flags, NULL, NULL);
+	//cmddetail:{"name":"ClearNoPingTime","args":"",
+	//cmddetail:"descr":"Command for ping watchdog; it sets the 'time since last ping reply' to 0 again",
+	//cmddetail:"fn":"CMD_ClearNoPingTime","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("ClearNoPingTime", "", CMD_ClearNoPingTime, NULL, NULL);
 	
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	CMD_InitScripting();

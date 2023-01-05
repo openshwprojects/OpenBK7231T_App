@@ -59,12 +59,12 @@ static int g_bOpenAccessPointMode = 0;
 static int g_doUnsafeInitIn = 0;
 int g_bootFailures = 0;
 static int g_saveCfgAfter = 0;
-static int g_startPingWatchDogAfter = 0;
+int g_startPingWatchDogAfter = 60;
 // many boots failed? do not run pins or anything risky
 int bSafeMode = 0;
 // not really <time>, but rather a loop count, but it doesn't really matter much
 // start disabled.
-static int g_timeSinceLastPingReply = -1;
+int g_timeSinceLastPingReply = -1;
 // was it ran?
 static int g_bPingWatchDogStarted = 0;
 // current IP string, this is compared with IP returned from HAL
@@ -207,13 +207,10 @@ void Main_OnWiFiStatusChange(int code)
             if (g_bHasWiFiConnected != 0)
             {
                 HAL_DisconnectFromWifi();
-                Main_PingWatchDogSilent();
             }
             g_connectToWiFi = 15;
 			g_bHasWiFiConnected = 0;
             g_timeSinceLastPingReply = -1;
-            g_bPingWatchDogStarted = 0;
-            g_startPingWatchDogAfter = 0;           
 			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_DISCONNECTED - %i\r\n", code);
             break;
         case WIFI_STA_AUTH_FAILED:
@@ -389,8 +386,9 @@ void Main_OnEverySecond()
 	// some users say that despite our simple reconnect mechanism
 	// there are some rare cases when devices stuck outside network
 	// That is why we can also reconnect them by basing on ping
-	if(g_timeSinceLastPingReply != -1 && g_secondsElapsed > 60) 
+	if(g_timeSinceLastPingReply != -1 && g_secondsElapsed > 60)
     {
+		EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_NOPINGTIME, g_timeSinceLastPingReply, g_timeSinceLastPingReply+1);
 		g_timeSinceLastPingReply++;
 		if(g_timeSinceLastPingReply >= CFG_GetPingDisconnectedSecondsToRestart()) 
         {
@@ -401,9 +399,6 @@ void Main_OnEverySecond()
 		    	g_bHasWiFiConnected = 0;
 			    g_connectToWiFi = 10;
                 g_timeSinceLastPingReply = -1;
-                g_bPingWatchDogStarted = 0;
-                g_startPingWatchDogAfter = 0;
-                Main_PingWatchDogSilent();
             }
 		}
 	}
@@ -513,31 +508,35 @@ void Main_OnEverySecond()
 		}
 	}
 
-	if(g_startPingWatchDogAfter) 
-    {
-		g_startPingWatchDogAfter--;
-		if(0==g_startPingWatchDogAfter) 
-        {
-			const char *pingTargetServer;
-			//int pingInterval;
-			int restartAfterNoPingsSeconds;
+	ADDLOGF_INFO("g_startPingWatchDogAfter %i, g_bPingWatchDogStarted %i ", g_startPingWatchDogAfter, g_bPingWatchDogStarted);
+	if(g_bHasWiFiConnected) {
+		if (g_startPingWatchDogAfter) {
+			ADDLOGF_INFO("g_startPingWatchDogAfter %i", g_startPingWatchDogAfter);
+			g_startPingWatchDogAfter--;
+			if (0 == g_startPingWatchDogAfter)
+			{
+				const char *pingTargetServer;
+				//int pingInterval;
+				int restartAfterNoPingsSeconds;
 
-			g_bPingWatchDogStarted = 1;
+				g_bPingWatchDogStarted = 1;
 
-			pingTargetServer = CFG_GetPingHost();
-			//pingInterval = CFG_GetPingIntervalSeconds();
-			restartAfterNoPingsSeconds = CFG_GetPingDisconnectedSecondsToRestart();
+				pingTargetServer = CFG_GetPingHost();
+				//pingInterval = CFG_GetPingIntervalSeconds();
+				restartAfterNoPingsSeconds = CFG_GetPingDisconnectedSecondsToRestart();
 
-			if((pingTargetServer != NULL) && (strlen(pingTargetServer)>0) && 
-               /*(pingInterval > 0) && */ (restartAfterNoPingsSeconds > 0)) 
-            {
-				// mark as enabled
-				g_timeSinceLastPingReply = 0;
-			    //Main_SetupPingWatchDog(pingTargetServer,pingInterval);
-				Main_SetupPingWatchDog(pingTargetServer);
-			} else {
-				// mark as disabled
-				g_timeSinceLastPingReply = -1;
+				if ((pingTargetServer != NULL) && (strlen(pingTargetServer) > 0) &&
+					/*(pingInterval > 0) && */ (restartAfterNoPingsSeconds > 0))
+				{
+					// mark as enabled
+					g_timeSinceLastPingReply = 0;
+					//Main_SetupPingWatchDog(pingTargetServer,pingInterval);
+					Main_SetupPingWatchDog(pingTargetServer);
+				}
+				else {
+					// mark as disabled
+					g_timeSinceLastPingReply = -1;
+				}
 			}
 		}
 	}
@@ -555,11 +554,6 @@ void Main_OnEverySecond()
 			// register function to get callbacks about wifi changes.
 			HAL_WiFi_SetupStatusCallback(Main_OnWiFiStatusChange);
 			ADDLOGF_DEBUG("Registered for wifi changes\r\n");
-
-			// it must be done with a delay
-			if (g_bootFailures < 2 && g_bPingWatchDogStarted == 0){
-				g_startPingWatchDogAfter = 60;
-			}
 		}
 	}
 

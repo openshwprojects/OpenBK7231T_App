@@ -66,6 +66,10 @@ addEventHandler OnHold 11 addChannel 1 -10
 // addChangeHandler Channel1 == 0 backlog lcd_clearAndGoto I2C1 0x23 1 1; lcd_print I2C1 0x23 Disabled
 
 
+alias doRelayClick backlog setChannel 1 1; addRepeatingEvent 2 1 setChannel 1 0; ClearNoPingTime
+addChangeHandler NoPingTime > 40 doRelayClick 
+
+
 // This will automatically turn off relay after about 2 seconds
 // NOTE: addRepeatingEvent [RepeatTime] [RepeatCount]
 // addChangeHandler Channel0 != 0 addRepeatingEvent 2 1 setChannel 0 0
@@ -122,6 +126,8 @@ static int EVENT_ParseEventName(const char *s) {
 	if(!wal_strnicmp(s,"channel",7)) {
 		return CMD_EVENT_CHANGE_CHANNEL0 + atoi(s+7);
 	}
+	if (!stricmp(s, "noPingTime"))
+		return CMD_EVENT_CHANGE_NOPINGTIME;
 	if(!stricmp(s,"voltage"))
 		return CMD_EVENT_CHANGE_VOLTAGE;
 	if(!stricmp(s,"current"))

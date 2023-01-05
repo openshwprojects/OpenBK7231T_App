@@ -120,7 +120,7 @@ static void ping_timeout(void *arg)
 {
   struct raw_pcb *pcb = (struct raw_pcb*)arg;
 
-  if (ping_handler_silent == false)
+ // if (ping_handler_silent == false)
   {
     LWIP_ASSERT("ping_timeout: no pcb given!", pcb != NULL);
 
@@ -172,6 +172,7 @@ int PingWatchDog_GetTotalLost() {
 int PingWatchDog_GetTotalReceived() {
 	return ping_received;
 }
+
 void Main_SetupPingWatchDog(const char *target/*, int delayBetweenPings_Seconds*/) 
 {
 	// none sent yet.
@@ -190,14 +191,8 @@ void Main_SetupPingWatchDog(const char *target/*, int delayBetweenPings_Seconds*
         raw_bind(ping_pcb, IP_ADDR_ANY);
 	    // void 	sys_timeout (u32_t msecs, sys_timeout_handler handler, void *arg)
         sys_timeout(PING_DELAY, ping_timeout, ping_pcb);
+		ping_handler_active = true;
     }
-    ping_handler_active = true;
-    ping_handler_silent = false;
 
-}
-
-void Main_PingWatchDogSilent()
-{
-    ping_handler_silent = true;
 }
 

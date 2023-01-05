@@ -210,6 +210,7 @@ int http_fn_index(http_request_t* request) {
 	float fValue;
 	int iValue;
 	bool bForceShowRGB;
+	const char* inputName;
 
 	bRawPWMs = CFG_HasFlag(OBK_FLAG_LED_RAWCHANNELSMODE);
 	bForceShowRGBCW = CFG_HasFlag(OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER);
@@ -619,7 +620,7 @@ int http_fn_index(http_request_t* request) {
 		else if ((bRawPWMs && h_isChannelPWM(i)) || (channelType == ChType_Dimmer) || (channelType == ChType_Dimmer256) || (channelType == ChType_Dimmer1000)) {
 			int maxValue;
 			// PWM and dimmer both use a slider control
-			const char* inputName = h_isChannelPWM(i) ? "pwm" : "dim";
+			inputName = h_isChannelPWM(i) ? "pwm" : "dim";
 			int pwmValue;
 
 			if (channelType == ChType_Dimmer256) {
@@ -672,7 +673,6 @@ int http_fn_index(http_request_t* request) {
 
 		if (c_pwms > 0) {
 			int pwmValue;
-			const char* inputName;
 
 			inputName = "dim";
 
@@ -688,7 +688,7 @@ int http_fn_index(http_request_t* request) {
 		}
 		if (c_pwms >= 3) {
 			char colorValue[16];
-			const char* inputName = "rgb";
+			inputName = "rgb";
 			const char* activeStr = "";
 			if (lm == Light_RGB) {
 				activeStr = "[ACTIVE]";
@@ -706,7 +706,6 @@ int http_fn_index(http_request_t* request) {
 		if (c_pwms == 2 || c_pwms >= 4) {
 			// TODO: temperature slider
 			int pwmValue;
-			const char* inputName;
 			const char* activeStr = "";
 			if (lm == Light_Temperature) {
 				activeStr = "[ACTIVE]";
@@ -766,8 +765,17 @@ int http_fn_index(http_request_t* request) {
 	hprintf255(request, "<h5>Cfg size: %i, change counter: %i, ota counter: %i, boot incompletes %i (might change to 0 if you wait to 30 sec)!</h5>",
 		sizeof(g_cfg), g_cfg.changeCounter, g_cfg.otaCounter, Main_GetLastRebootBootFailures());
 
-	hprintf255(request, "<h5>Ping watchdog - %i lost, %i ok!</h5>",
-		PingWatchDog_GetTotalLost(), PingWatchDog_GetTotalReceived());
+	inputName = CFG_GetPingHost();
+	if (inputName && *inputName) {
+		hprintf255(request, "<h5>Ping watchdog (%s) - ", inputName);
+		if (g_startPingWatchDogAfter > 0) {
+			hprintf255(request, "will start in %i!</h5>", g_startPingWatchDogAfter);
+		}
+		else {
+			hprintf255(request, "%i lost, %i ok, last reply was %is ago!</h5>",
+				PingWatchDog_GetTotalLost(), PingWatchDog_GetTotalReceived(), g_timeSinceLastPingReply);
+		}
+	}
 	if (Main_HasWiFiConnected())
 	{
 		hprintf255(request, "<h5>Wifi RSSI: %s (%idBm)</h5>", str_rssi[wifi_rssi_scale(HAL_GetWifiStrength())], HAL_GetWifiStrength());
