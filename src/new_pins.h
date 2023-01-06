@@ -317,7 +317,6 @@ const char* PIN_GetPinNameAlias(int index);
 void PIN_SetPinRoleForPinIndex(int index, int role);
 void PIN_SetPinChannelForPinIndex(int index, int ch);
 void PIN_SetPinChannel2ForPinIndex(int index, int ch);
-bool PIN_SetPinChannelTypeForPinIndex(int index, ChannelType type);
 void CHANNEL_Toggle(int ch);
 void CHANNEL_DoSpecialToggleAll();
 bool CHANNEL_Check(int ch);
@@ -332,7 +331,8 @@ int CHANNEL_GetRoleForOutputChannel(int ch);
 bool CHANNEL_HasRoleThatShouldBePublished(int ch);
 bool CHANNEL_IsPowerRelayChannel(int ch);
 // See: enum ChannelType
-ChannelType CHANNEL_GetType(int ch);
+void CHANNEL_SetType(int ch, int type);
+int CHANNEL_GetType(int ch);
 void CHANNEL_SetAllChannelsByType(int requiredType, int newVal);
 // CHANNEL_SET_FLAG_*
 void CHANNEL_SetAll(int iVal, int iFlags);

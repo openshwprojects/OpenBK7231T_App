@@ -420,7 +420,10 @@ void CHANNEL_SetAllChannelsByType(int requiredType, int newVal) {
 		}
 	}
 }
-ChannelType CHANNEL_GetType(int ch) {
+void CHANNEL_SetType(int ch, int type) {
+	g_cfg.pins.channelTypes[ch] = type;
+}
+int CHANNEL_GetType(int ch) {
 	return g_cfg.pins.channelTypes[ch];
 }
 
@@ -1543,8 +1546,7 @@ static commandResult_t CMD_SetChannelType(const void *context, const char *cmd, 
 		return CMD_RES_BAD_ARGUMENT;
 	}
 
-	PIN_SetPinChannelTypeForPinIndex(channel,typeCode);
-	CFG_Save_IfThereArePendingChanges();
+	CHANNEL_SetType(channel,typeCode);
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Channel %i type changed to %s", channel,type);
 	return CMD_RES_OK;
