@@ -89,7 +89,7 @@ static byte g_timesDown[PLATFORM_GPIO_MAX];
 static byte g_timesUp[PLATFORM_GPIO_MAX];
 static byte g_lastValidState[PLATFORM_GPIO_MAX];
 
-inline int chVal_float2int(float f) // convert channel float value to int
+int chVal_float2int(float f) // convert channel float value to int
 {
 	if ((f > 0.0f) && (f < 1.0f))   // set non-zero value to minimum 1.0
 		return 1;
