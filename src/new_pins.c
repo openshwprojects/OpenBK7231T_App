@@ -824,6 +824,19 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 				HAL_PIN_PWM_Update(i,100-iVal);
 				bCallCb = 1;
 			}
+			else if(IS_PIN_DHT_ROLE(g_cfg.pins.roles[i])) {
+				bCallCb = 1;
+			}
+		}
+		else if(g_cfg.pins.channels2[i] == ch) {
+			//DHT setup uses 2 channels
+			if(IS_PIN_DHT_ROLE(g_cfg.pins.roles[i])) {
+				bCallCb = 1;
+			}
+		}
+
+		if (bCallCb) {	//bCallCb never gets reset in this loop so we can break out
+			break;
 		}
 	}
 	if(g_cfg.pins.channelTypes[ch] != ChType_Default) {

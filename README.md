@@ -62,6 +62,8 @@ A: It's like with Tasmota - go to our Options/General-Flags and set flag "6 - [B
 <em>Q: How to enter multiple startup commands? For example, to start both NTP and BL0942 drivers?</em><br>
 A: Use backlog - like in Tasmota. Open Config->Short startup command, and enter, for example: backlog startDriver BL0942; startDriver NTP; ntp_setServer 217.147.223.78
 
+<em>Q: How to configure ping watchdog to do a relay cycle when given IP does not respond for a given amount of time?</em><br>
+A: See the following example there: https://www.elektroda.com/rtvforum/viewtopic.php?p=20368812#20368812
 
 # Building
 

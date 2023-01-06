@@ -1081,7 +1081,7 @@ OBK_Publish_Result MQTT_ChannelChangeCallback(int channel, int iVal)
 	int flags;
 
 	flags = 0;
-	addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Channel has changed! Publishing change %i with %i \n", channel, iVal);
+	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Channel has changed! Publishing %i to channel %i \n", iVal, channel);
 
 	sprintf(channelNameStr, "%i", channel);
 	sprintf(valueStr, "%i", iVal);
@@ -1103,7 +1103,7 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 
 	iValue = CHANNEL_Get(channel);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Forced channel publish! Publishing val %i to %i", iValue, channel);
+	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Forced channel publish! Publishing val %i to %i", iValue, channel);
 
 	sprintf(channelNameStr, "%i", channel);
 	sprintf(valueStr, "%i", iValue);
