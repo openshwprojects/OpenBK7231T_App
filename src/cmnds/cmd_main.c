@@ -158,6 +158,23 @@ static commandResult_t CMD_Echo(const void *context, const char *cmd, const char
 
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_SetStartValue(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	int ch, val;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 2) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Not enough arguments.");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	ch = Tokenizer_GetArgInteger(0);
+	val = Tokenizer_GetArgInteger(1);
+
+	CFG_SetChannelStartupValue(ch, val);
+
+	return CMD_RES_OK;
+}
 
 
 void CMD_Init_Early() {
@@ -216,6 +233,11 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_ClearNoPingTime","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("ClearNoPingTime", "", CMD_ClearNoPingTime, NULL, NULL);
+	//cmddetail:{"name":"SetStartValue","args":"[Channel][Value]",
+	//cmddetail:"descr":"Sets the startup value for a channel. Used for start values for relays. Use 1 for High, 0 for low and -1 for 'remember last state'",
+	//cmddetail:"fn":"CMD_SetStartValue","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("SetStartValue", "", CMD_SetStartValue, NULL, NULL);
 	
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	CMD_InitScripting();
