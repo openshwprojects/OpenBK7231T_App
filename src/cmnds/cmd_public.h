@@ -165,7 +165,7 @@ int taslike_commands_init();
 void NewLED_InitCommands();
 void NewLED_RestoreSavedStateIfNeeded();
 float LED_GetDimmer();
-void LED_AddDimmer(int iVal, bool wrapAroundInsteadOfClamp, int minValue);
+void LED_AddDimmer(int iVal, int addMode, int minValue);
 void LED_AddTemperature(int iVal, bool wrapAroundInsteadOfClamp);
 void LED_NextDimmerHold();
 void LED_NextTemperatureHold();
