@@ -33,8 +33,9 @@ Do not add anything here, as it will overwritten with next rebuild.
 | scheduleHADiscovery | [Seconds] | This will schedule HA discovery, the discovery will happen with given number of seconds, but timer only counts when MQTT is connected. It will not work without MQTT online, so you must set MQTT credentials first. |
 | flags | [IntegerValue] | Sets the device flags |
 | ClearNoPingTime |  | Command for ping watchdog; it sets the 'time since last ping reply' to 0 again |
+| SetStartValue | [Channel][Value] | Sets the startup value for a channel. Used for start values for relays. Use 1 for High, 0 for low and -1 for 'remember last state' |
 | led_dimmer | [Value] | set output dimmer 0..100 |
-| add_dimmer | [Value][bWrapAroundInsteadOfHold] | Adds a given value to current LED dimmer. Function can wrap or clamp if max/min is exceeded. |
+| add_dimmer | [Value][AddMode] | Adds a given value to current LED dimmer. AddMode 0 just adds a value (with a clamp to [0,100]), AddMode 1 will wrap around values (going under 0 goes to 100, going over 100 goes to 0), AddMode 2 will ping-pong value (going to 100 starts going back from 100 to 0, and again, going to 0 starts going up). |
 | led_enableAll | [1or0orToggle] | Power on/off LED but remember the RGB(CW) values |
 | led_basecolor_rgb | [HexValue] | Puts the LED driver in RGB mode and sets given color. |
 | led_basecolor_rgbcw |  | set PWN color using #RRGGBB[cw][ww] |
