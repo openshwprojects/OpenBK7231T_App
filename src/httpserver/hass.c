@@ -244,6 +244,18 @@ HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type) {
 	return info;
 }
 
+/// @brief Initializes HomeAssistant binary sensor device discovery storage.
+/// @param index
+/// @return
+HassDeviceInfo* hass_init_binary_sensor_device_info(int index) {
+	HassDeviceInfo* info = hass_init_device_info(ENTITY_BINARY_SENSOR, index, "1", "0");
+
+	sprintf(g_hassBuffer, "~/%i/get", index);
+	cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);   //state_topic
+
+	return info;
+}
+
 #ifndef OBK_DISABLE_ALL_DRIVERS
 
 /// @brief Initializes HomeAssistant sensor device discovery storage.
@@ -278,18 +290,6 @@ HassDeviceInfo* hass_init_sensor_device_info(int index) {
 		sprintf(g_hassBuffer, "~/%s/get", counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
 		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
 	}
-
-	return info;
-}
-
-/// @brief Initializes HomeAssistant binary sensor device discovery storage.
-/// @param index
-/// @return
-HassDeviceInfo* hass_init_binary_sensor_device_info(int index) {
-	HassDeviceInfo* info = hass_init_device_info(ENTITY_BINARY_SENSOR, index, "1", "0");
-
-	sprintf(g_hassBuffer, "~/%i/get", index);
-	cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);   //state_topic
 
 	return info;
 }
