@@ -71,6 +71,7 @@ void Sim_RunFrame(int frameTime) {
 	g_simulatedTimeNow += frameTime;
 	accum_time += frameTime;
 	QuickTick(0);
+	WIN_RunMQTTFrame();
 	HTTPServer_RunQuickTick();
 	if (accum_time > 1000) {
 		accum_time -= 1000;
@@ -178,7 +179,7 @@ int g_bDoingUnitTestsNow = 0;
 #include "sim/sim_public.h"
 int __cdecl main(int argc, char **argv)
 {
-	bool bWantsUnitTests = 1;
+	bool bWantsUnitTests = 0;
     WSADATA wsaData;
     int iResult;
 
@@ -233,7 +234,14 @@ int __cdecl main(int argc, char **argv)
 		g_bDoingUnitTestsNow = 0;
 	}
 
+
 	SIM_CreateWindow(argc, argv);
+	CMD_ExecuteCommand("MQTTHost 192.168.0.113", 0);
+	CMD_ExecuteCommand("MqttPassword ma1oovoo0pooTie7koa8Eiwae9vohth1vool8ekaej8Voohi7beif5uMuph9Diex", 0);
+	CMD_ExecuteCommand("MqttClient WindowsOBK", 0);
+	CMD_ExecuteCommand("MqttUser homeassistant", 0);
+	CMD_ExecuteCommand("addRepeatingEvent 1 -1 backlog addChannel 1 1; publishInt myTestTopic $CH1", 0);
+	
 	if (false) {
 		while (1) {
 			Sleep(DEFAULT_FRAME_TIME);
