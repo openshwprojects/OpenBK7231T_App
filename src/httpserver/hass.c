@@ -46,6 +46,10 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 	case ENTITY_SENSOR:
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "sensor", index);
 		break;
+
+	case ENTITY_BINARY_SENSOR:
+		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "binary_sensor", index);
+		break;
 	}
 }
 
@@ -80,6 +84,9 @@ void hass_populate_device_config_channel(ENTITY_TYPE type, char* uniq_id, HassDe
 	case ENTITY_SENSOR:
 		sprintf(info->channel, "sensor/%s/config", uniq_id);
 		break;
+
+	case ENTITY_BINARY_SENSOR:
+		sprintf(info->channel, "binary_sensor/%s/config", uniq_id);
 	}
 }
 
@@ -128,6 +135,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload
 	switch (type) {
 	case ENTITY_LIGHT_PWM:
 	case ENTITY_RELAY:
+	case ENTITY_BINARY_SENSOR:
 		sprintf(g_hassBuffer, "%s %i", CFG_GetShortDeviceName(), index);
 		break;
 	case ENTITY_LIGHT_PWMCW:
@@ -232,6 +240,18 @@ HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type) {
 	cJSON_AddStringToObject(info->root, "bri_cmd_t", g_hassBuffer);  //brightness_command_topic
 
 	cJSON_AddNumberToObject(info->root, "bri_scl", brightness_scale);	//brightness_scale
+
+	return info;
+}
+
+/// @brief Initializes HomeAssistant binary sensor device discovery storage.
+/// @param index
+/// @return
+HassDeviceInfo* hass_init_binary_sensor_device_info(int index) {
+	HassDeviceInfo* info = hass_init_device_info(ENTITY_BINARY_SENSOR, index, "1", "0");
+
+	sprintf(g_hassBuffer, "~/%i/get", index);
+	cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);   //state_topic
 
 	return info;
 }

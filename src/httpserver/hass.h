@@ -21,7 +21,10 @@ typedef enum {
 	ENTITY_LIGHT_RGBCW,
 
 	/// @brief Sensor (voltage, current, power)
-	ENTITY_SENSOR
+	ENTITY_SENSOR,
+
+	/// @Brief Binary Sensor
+	ENTITY_BINARY_SENSOR
 } ENTITY_TYPE;
 
 //unique_id is defined in hass_populate_unique_id and is based on CFG_GetDeviceName() whose size is CGF_DEVICE_NAME_SIZE.
@@ -50,5 +53,6 @@ void hass_print_unique_id(http_request_t* request, const char* fmt, ENTITY_TYPE 
 HassDeviceInfo* hass_init_relay_device_info(int index);
 HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type);
 HassDeviceInfo* hass_init_sensor_device_info(int index);
+HassDeviceInfo* hass_init_binary_sensor_device_info(int index);
 char* hass_build_discovery_json(HassDeviceInfo* info);
 void hass_free_device_info(HassDeviceInfo* info);

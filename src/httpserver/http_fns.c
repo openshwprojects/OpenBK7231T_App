@@ -1543,18 +1543,33 @@ int http_fn_cfg_quick(http_request_t* request) {
 /// @brief Computes the Relay and PWM count.
 /// @param relayCount Number of relay and LED channels.
 /// @param pwmCount Number of PWM channels.
-void get_Relay_PWM_Count(int* relayCount, int* pwmCount) {
+void get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount) {
 	int i;
 	(*relayCount) = 0;
 	(*pwmCount) = 0;
+	(*dInputCount) = 0;
 
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		int role = PIN_GetPinRoleForPinIndex(i);
-		if (role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
-			(*relayCount)++;
-		}
-		else if (role == IOR_PWM || role == IOR_PWM_n) {
-			(*pwmCount)++;
+		switch (role) {
+			case IOR_Relay:
+			case IOR_Relay_n:
+			case IOR_LED:
+			case IOR_LED_n:
+				(*relayCount)++;
+				break;
+			case IOR_PWM:
+			case IOR_PWM_n:
+				(*pwmCount)++;
+				break;
+			case IOR_DigitalInput:
+			case IOR_DigitalInput_n:
+			case IOR_DigitalInput_NoPup:
+			case IOR_DigitalInput_NoPup_n:
+				(*dInputCount)++;
+				break;
+			default:
+				break;
 		}
 	}
 }
@@ -1564,6 +1579,7 @@ void doHomeAssistantDiscovery(const char *topic, http_request_t *request) {
 	int i;
 	int relayCount;
 	int pwmCount;
+	int dInputCount;
 	bool ledDriverChipRunning;
 	HassDeviceInfo* dev_info = NULL;
 	bool measuringPower = false;
@@ -1576,14 +1592,14 @@ void doHomeAssistantDiscovery(const char *topic, http_request_t *request) {
 	measuringPower = DRV_IsMeasuringPower();
 #endif
 
-	get_Relay_PWM_Count(&relayCount, &pwmCount);
+	get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
 
 	//Note: PublishChannels should be done for the last MQTT publish except for power measurement which always
 	//sends out MQTT updates.
 	ledDriverChipRunning = LED_IsLedDriverChipRunning();
 
-	if ((relayCount == 0) && (pwmCount == 0) && !measuringPower && !ledDriverChipRunning) {
-		const char *msg = "No relay, PWM or power driver running.";
+	if ((relayCount == 0) && (pwmCount == 0) && (dInputCount == 0) && !measuringPower && !ledDriverChipRunning) {
+		const char *msg = "No relay, PWM, binary sensor or power driver running.";
 		if (request) {
 			poststr(request, msg);
 			poststr(request, NULL);
@@ -1610,6 +1626,30 @@ void doHomeAssistantDiscovery(const char *topic, http_request_t *request) {
 		}
 
 		//Invoke publishChannles after the last topic
+		if (dev_info != NULL) {
+			PostPublishCommands ppCommand = PublishChannels;
+
+			if (ledDriverChipRunning || (pwmCount > 0)) {
+				ppCommand = None;
+			}
+
+			MQTT_QueuePublishWithCommand(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN, ppCommand);
+			hass_free_device_info(dev_info);
+		}
+	}
+
+	if (dInputCount > 0) {
+		for (i = 0; i < CHANNEL_MAX; i++) {
+			if (h_isChannelDigitalInput(i)) {
+				if (dev_info != NULL) {
+					MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+					hass_free_device_info(dev_info);
+				}
+				dev_info = hass_init_binary_sensor_device_info(i);
+			}
+		}
+
+		//Invoke publishChannels after the last topic
 		if (dev_info != NULL) {
 			PostPublishCommands ppCommand = PublishChannels;
 
@@ -1725,6 +1765,7 @@ void http_generate_singleColor_cfg(http_request_t* request, const char* clientId
 int http_fn_ha_cfg(http_request_t* request) {
 	int relayCount;
 	int pwmCount;
+	int dInputCount;
 	const char* shortDeviceName;
 	const char* clientId;
 	int i;
@@ -1747,7 +1788,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 
 	poststr(request, "<textarea rows=\"40\" cols=\"50\">");
 
-	get_Relay_PWM_Count(&relayCount, &pwmCount);
+	get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
 
 	if (relayCount > 0) {
 
@@ -1766,6 +1807,30 @@ int http_fn_ha_cfg(http_request_t* request) {
 				hprintf255(request, "    name: \"%s %i\"\n", shortDeviceName, i);
 				hprintf255(request, "    state_topic: \"%s/%i/get\"\n", clientId, i);
 				hprintf255(request, "    command_topic: \"%s/%i/set\"\n", clientId, i);
+				poststr(request, "    qos: 1\n");
+				poststr(request, "    payload_on: 1\n");
+				poststr(request, "    payload_off: 0\n");
+				poststr(request, "    retain: true\n");
+				hprintf255(request, "    availability:\n");
+				hprintf255(request, "      - topic: \"%s/connected\"\n", clientId);
+			}
+		}
+	}
+	if (dInputCount > 0) {
+		for (i = 0; i < CHANNEL_MAX; i++) {
+			if (h_isChannelDigitalInput(i)) {
+				if (mqttAdded == 0) {
+					poststr(request, "mqtt:\n");
+					mqttAdded = 1;
+				}
+				if (switchAdded == 0) {
+					poststr(request, "  binary_sensor:\n");
+					switchAdded = 1;
+				}
+
+				hass_print_unique_id(request, "  - unique_id: \"%s\"\n", ENTITY_BINARY_SENSOR, i);
+				hprintf255(request, "    name: \"%s %i\"\n", shortDeviceName, i);
+				hprintf255(request, "    state_topic: \"%s/%i/get\"\n", clientId, i);
 				poststr(request, "    qos: 1\n");
 				poststr(request, "    payload_on: 1\n");
 				poststr(request, "    payload_off: 0\n");
@@ -2170,7 +2235,7 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 	const char* friendlyName;
 	const char* clientId;
 	int powerCode;
-	int relayCount, pwmCount, i;
+	int relayCount, pwmCount, dInputCount, i;
 	bool bRelayIndexingStartsWithZero;
 	char buff[20];
 
@@ -2190,7 +2255,7 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 
 	bRelayIndexingStartsWithZero = CHANNEL_HasChannelPinWithRoleOrRole(0, IOR_Relay, IOR_Relay_n);
 
-	get_Relay_PWM_Count(&relayCount, &pwmCount);
+	get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
 
 	if (LED_IsLEDRunning()) {
 		powerCode = LED_GetEnableAll();
