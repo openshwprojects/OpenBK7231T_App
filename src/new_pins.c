@@ -777,7 +777,7 @@ void Channel_SaveInFlashIfNeeded(int ch) {
 	// save, if marked as save value in flash (-1)
 	if(g_cfg.startChannelValues[ch] == -1) {
 		//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Channel_SaveInFlashIfNeeded: Channel %i is being saved to flash, state %i", ch, g_channelValues[ch]);
-		HAL_FlashVars_SaveChannel(ch, chVal_float2int (g_channelValues[ch]));
+		HAL_FlashVars_SaveChannel(ch,g_channelValues[ch]);
 	}
 	else {
 		//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Channel_SaveInFlashIfNeeded: Channel %i is not saved to flash, state %i", ch, g_channelValues[ch]);
