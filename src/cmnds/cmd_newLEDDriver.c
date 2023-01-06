@@ -18,10 +18,6 @@
 	#include "../littlefs/our_lfs.h"
 #endif
 
-// add some prototypes from tuya_hal_storage.h - TODO: include the file instead, or use different functions
-int tuya_hal_flash_erase (const uint32_t addr, const uint32_t size);
-int tuya_hal_flash_write (const uint32_t addr, const uint8_t *src, const uint32_t size);
-
 //  My HA config for system below:
 /*
   - platform: mqtt
@@ -517,18 +513,28 @@ void led_gamma_list (void) { // list RGB gamma settings
 			   led_corr.led_gamma, led_corr.rgb_bright_min, led_corr.cw_bright_min);
 }
 
+#ifdef PLATFORM_BK7231T
+// add some prototypes from tuya_hal_storage.h - TODO: include the file instead, or use different functions
+int tuya_hal_flash_erase (const uint32_t addr, const uint32_t size);
+int tuya_hal_flash_write (const uint32_t addr, const uint8_t *src, const uint32_t size);
+
 # define LED_GAMMA_FLASH_ADDR 0x1df000 // LED gamma config flash address
+#endif
 
 void led_gamma_flash_save (void) { // save RGB gamma correction in Flash
+#ifdef PLATFORM_BK7231T
 	strcpy (led_corr.tag, "LED_Calibration");
 	tuya_hal_flash_erase (LED_GAMMA_FLASH_ADDR, sizeof (led_corr));
 	tuya_hal_flash_write (LED_GAMMA_FLASH_ADDR, (const uint8_t *)&led_corr, sizeof (led_corr));
 	addLogAdv (LOG_INFO, LOG_FEATURE_CFG, "LED calibration saved to flash:\r\n");
 	led_gamma_list ();
+#endif
 }
 
 void led_gamma_flash_load (void) { // load RGB gamma correction from Flash
+#ifdef PLATFORM_BK7231T
 	bekken_hal_flash_read (LED_GAMMA_FLASH_ADDR, (void *)&led_corr, sizeof (led_corr));
+#endif
 	if (strcmp (led_corr.tag, "LED_Calibration") == 0) {
 		addLogAdv (LOG_INFO, LOG_FEATURE_CFG,"RGB calibration read from flash\r\n");
 	} else {
