@@ -49,6 +49,8 @@ typedef enum {
 	BTN_DOUBLE_CLICK,
 	BTN_LONG_RRESS_START,
 	BTN_LONG_PRESS_HOLD,
+	BTN_TRIPLE_CLICK,
+	BTN_QUADRUPLE_CLICK,
 	BTN_number_of_event,
 	BTN_NONE_PRESS
 }BTN_PRESS_EVT;
@@ -359,6 +361,18 @@ void Button_OnDoubleClick(int index)
 	if(g_doubleClickCallback!=0) {
 		g_doubleClickCallback(index);
 	}
+}
+void Button_OnTripleClick(int index)
+{
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i key_triple_press\r\n", index);
+	// fire event - button on pin <index> was 3clicked
+	EventHandlers_FireEvent(CMD_EVENT_PIN_ON3CLICK, index);
+}
+void Button_OnQuadrupleClick(int index)
+{
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i key_quadruple_press\r\n", index);
+	// fire event - button on pin <index> was 4clicked
+	EventHandlers_FireEvent(CMD_EVENT_PIN_ON4CLICK, index);
 }
 void Button_OnLongPressHold(int index) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"%i Button_OnLongPressHold\r\n", index);
@@ -762,7 +776,11 @@ void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex)) {
 void Channel_SaveInFlashIfNeeded(int ch) {
 	// save, if marked as save value in flash (-1)
 	if(g_cfg.startChannelValues[ch] == -1) {
+		//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Channel_SaveInFlashIfNeeded: Channel %i is being saved to flash, state %i", ch, g_channelValues[ch]);
 		HAL_FlashVars_SaveChannel(ch, chVal_float2int (g_channelValues[ch]));
+	}
+	else {
+		//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Channel_SaveInFlashIfNeeded: Channel %i is not saved to flash, state %i", ch, g_channelValues[ch]);
 	}
 }
 static void Channel_OnChanged(int ch, float prevValue, int iFlags) {
@@ -813,6 +831,19 @@ static void Channel_OnChanged(int ch, float prevValue, int iFlags) {
 				HAL_PIN_PWM_Update(i,100-iVal);
 				bCallCb = 1;
 			}
+			else if(IS_PIN_DHT_ROLE(g_cfg.pins.roles[i])) {
+				bCallCb = 1;
+			}
+		}
+		else if(g_cfg.pins.channels2[i] == ch) {
+			//DHT setup uses 2 channels
+			if(IS_PIN_DHT_ROLE(g_cfg.pins.roles[i])) {
+				bCallCb = 1;
+			}
+		}
+
+		if (bCallCb) {	//bCallCb never gets reset in this loop so we can break out
+			break;
 		}
 	}
 	if(g_cfg.pins.channelTypes[ch] != ChType_Default) {
@@ -839,8 +870,10 @@ void CFG_ApplyChannelStartValues() {
 		iValue = g_cfg.startChannelValues[i];
 		if(iValue == -1) {
 			g_channelValues[i] = HAL_FlashVars_GetChannelValue(i);
+			//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CFG_ApplyChannelStartValues: Channel %i is being set to REMEMBERED state %i", i, g_channelValues[i]);
 		} else {
 			g_channelValues[i] = iValue;
+			//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CFG_ApplyChannelStartValues: Channel %i is being set to constant state %i", i, g_channelValues[i]);
 		}
 	}
 }
@@ -1166,10 +1199,10 @@ void PIN_Input_Handler(int pinIndex, uint32_t ms_since_last)
 			handle->event = (uint8_t)BTN_PRESS_DOWN;
 			EVENT_CB(BTN_PRESS_DOWN);
 			handle->repeat++;
-			if(handle->repeat == 2) {
-				EVENT_CB(BTN_DOUBLE_CLICK); // repeat hit
-				Button_OnDoubleClick(pinIndex);
-			}
+			//if(handle->repeat == 2) {
+			//	EVENT_CB(BTN_DOUBLE_CLICK); // repeat hit
+			//	Button_OnDoubleClick(pinIndex);
+			//}
 			EVENT_CB(BTN_PRESS_REPEAT); // repeat hit
 			handle->ticks = 0;
 			handle->state = 3;
@@ -1180,6 +1213,13 @@ void PIN_Input_Handler(int pinIndex, uint32_t ms_since_last)
 				Button_OnShortClick(pinIndex);
 			} else if(handle->repeat == 2) {
 				handle->event = (uint8_t)BTN_DOUBLE_CLICK;
+				Button_OnDoubleClick(pinIndex);
+			} else if (handle->repeat == 3) {
+				handle->event = (uint8_t)BTN_TRIPLE_CLICK;
+				Button_OnTripleClick(pinIndex);
+			} else if (handle->repeat == 4) {
+				handle->event = (uint8_t)BTN_QUADRUPLE_CLICK;
+				Button_OnQuadrupleClick(pinIndex);
 			}
 			handle->state = 0;
 		}
@@ -1302,7 +1342,6 @@ void PIN_ticks(void *param)
 				static int adcFlt = 61425, prevAdcFlt = 0, prevOutVal = -1;
 				adcFlt = adcFlt + adcVal - adcFlt / 25; // adcFlt range = 29-122850 (0-4095 from ADC) 102375
 				outVal = (adcFlt + 511) / 1023;         // adjust output range to 0-100
-
 				if ((outVal != prevOutVal) && (outVal != 0) && (outVal != 100) && (abs (adcFlt - prevAdcFlt) < 511)) {
 					outVal = prevOutVal; // ignore small changes (noise)
 				}
@@ -1318,7 +1357,7 @@ void PIN_ticks(void *param)
 					}
 				}
 			}
-		}  // ADC end
+		}
 #if 1
 		if(g_cfg.pins.roles[i] == IOR_PWM) {
 			HAL_PIN_PWM_Update(i,g_channelValues[g_cfg.pins.channels[i]]);
