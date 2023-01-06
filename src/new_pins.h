@@ -75,7 +75,7 @@ enum IORole {
 
 #define IS_PIN_DHT_ROLE(role) (((role)>=IOR_DHT11) &&((role)<=IOR_DHT22))
 
-enum ChannelType {
+typedef enum {
 	ChType_Default,
 	ChType_Error,
 	ChType_Temperature,
@@ -119,7 +119,7 @@ enum ChannelType {
 	ChType_OpenClosed_Inv,
 	ChType_BatteryLevelPercent,
 
-};
+} ChannelType;
 
 
 #if PLATFORM_BL602
