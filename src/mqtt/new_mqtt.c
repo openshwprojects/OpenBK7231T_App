@@ -1552,7 +1552,7 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 #ifdef ENABLE_DRIVER_TUYAMCU
 	// publish if channel is used by TuyaMCU (no pin role set), for example door sensor state with power saving V0 protocol
 	// Not enabled by default, you have to set OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS flag
-	if (CFG_HasFlag(OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS) && TuyaMCU_IsChannelUsedByTuyaMCU(idx)) {
+	if (!bWantsToPublish && CFG_HasFlag(OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS) && TuyaMCU_IsChannelUsedByTuyaMCU(idx)) {
 		bWantsToPublish = true;
 	}
 #endif
@@ -1831,6 +1831,12 @@ void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const 
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Queued topic=%s/%s, %i items in queue", newItem->topic, newItem->channel, g_MqttPublishItemsQueued);
 }
 
+/// @brief Add the specified command to the last entry in the queue.
+/// @param command 
+bool MQTT_InvokeCommandAtEnd(PostPublishCommands command) {
+	get_queue_tail(g_MqttPublishQueueHead)->command = command;
+}
+
 /// @brief Queue an entry for publish.
 /// @param topic 
 /// @param channel 
@@ -1866,10 +1872,10 @@ OBK_Publish_Result PublishQueuedItems() {
 			case None:
 				break;
 			case PublishAll:
-				CMD_ExecuteCommand("publishAll", COMMAND_FLAG_SOURCE_MQTT);
+				MQTT_PublishAll(NULL, NULL, NULL, COMMAND_FLAG_SOURCE_MQTT);
 				break;
 			case PublishChannels:
-				CMD_ExecuteCommand("publishChannels", COMMAND_FLAG_SOURCE_MQTT);
+				MQTT_PublishChannels(NULL, NULL, NULL, COMMAND_FLAG_SOURCE_MQTT);
 				break;
 			}
 		}
