@@ -1833,7 +1833,7 @@ void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const 
 
 /// @brief Add the specified command to the last entry in the queue.
 /// @param command 
-bool MQTT_InvokeCommandAtEnd(PostPublishCommands command) {
+void MQTT_InvokeCommandAtEnd(PostPublishCommands command) {
 	get_queue_tail(g_MqttPublishQueueHead)->command = command;
 }
 
