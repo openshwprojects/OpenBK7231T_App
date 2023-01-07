@@ -111,6 +111,7 @@ void SIM_ClearOBK() {
 		LOG_DeInit();
 		release_lfs();
 		SIM_Hack_ClearSimulatedPinRoles();
+		WIN_ResetMQTT();
 		CMD_ExecuteCommand("clearAll", 0);
 		CMD_ExecuteCommand("led_expoMode", 0);
 		Main_Init();

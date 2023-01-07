@@ -9,7 +9,8 @@
 #define LWIP_MIN(x, y)   (((x) < (y)) ? (x) : (y))
 #define LWIP_ARRAYSIZE(x)   (sizeof(x)/sizeof((x)[0]))
 
-#define LWIP_ERROR(a,b,c);
+#define LWIP_ERROR(a,b,c) if(!(b)) { c; } 
+
 #define LWIP_DEBUGF(a,b);
 #define LWIP_ASSERT_CORE_LOCKED();
 #define LWIP_ASSERT(a,b);
@@ -278,6 +279,17 @@ int mqtt_ringbuf_free(struct mqtt_ringbuf_t *rb)
 }
 
 /**
+ * Delete request item
+ * @param r Request item to delete
+ */
+static void
+mqtt_delete_request(struct mqtt_request_t *r)
+{
+	if (r != NULL) {
+		r->next = r;
+	}
+}
+/**
  * Append fixed header
  * @param rb Output ring buffer
  * @param msg_type see enum mqtt_message_type
@@ -477,7 +489,7 @@ err_t mqtt_client_connect(mqtt_client_t *client, const ip_addr_t *ip_addr, u16_t
 	client->conn = (altcp_pcb*)malloc(sizeof(altcp_pcb));
 	client->conn->sock = s;
 
-	client->conn_state = TCP_CONNECTING;
+	client->conn_state = MQTT_CONNECTING;
 
 	//if (xSemaphoreTake(client->output.g_mutex, portMAX_DELAY) == pdTRUE)
 	{
@@ -676,7 +688,8 @@ static void mqtt_close(mqtt_client_t *client, mqtt_connection_status_t reason)
 		//	altcp_abort(client->conn);
 		//	LWIP_DEBUGF(MQTT_DEBUG_TRACE, ("mqtt_close: Close err=%s\n", lwip_strerr(res)));
 		//}
-		close(client->conn->sock);
+		closesocket(client->conn->sock);
+		client->conn->sock = 0;
 		free(client->conn);
 		client->conn = NULL;
 	}
@@ -787,17 +800,6 @@ mqtt_append_request(struct mqtt_request_t **tail, struct mqtt_request_t *r)
 }
 
 
-/**
- * Delete request item
- * @param r Request item to delete
- */
-static void
-mqtt_delete_request(struct mqtt_request_t *r)
-{
-	if (r != NULL) {
-		r->next = r;
-	}
-}
 /**
  * Remove a request item with a specific packet identifier from request queue
  * @param tail Pointer to request queue tail pointer
@@ -1360,6 +1362,18 @@ void WIN_RunMQTTClient(mqtt_client_t *cl) {
 	mqtt_output_send(&cl->output, cl->conn);
 
 
+}
+void WIN_ResetMQTT() {
+	for (int i = 0; i < g_numClients; i++) {
+		mqtt_client_t *client = g_clients[i];
+		if (client) {
+			mqtt_disconnect(client);
+			free(client);
+			g_clients[i] = 0;
+		}
+	}
+	memset(g_clients, 0, sizeof(g_clients));
+	g_numClients = 0;
 }
 void WIN_RunMQTTFrame() {
 	for (int i = 0; i < g_numClients; i++) {

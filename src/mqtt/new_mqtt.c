@@ -211,7 +211,7 @@ static obk_mqtt_request_t g_mqtt_request;
 static obk_mqtt_request_t g_mqtt_request_cb;
 
 #ifdef WINDOWS
-#define LOOPS_WITH_DISCONNECTED 2
+#define LOOPS_WITH_DISCONNECTED 5
 #else
 #define LOOPS_WITH_DISCONNECTED 15
 #endif
@@ -1396,6 +1396,7 @@ void MQTT_init()
 	// WINDOWS must support reinit
 #ifdef WINDOWS
 	MQTT_ClearCallbacks();
+	mqtt_client = 0;
 #endif
 
 	clientId = CFG_GetMQTTClientId();
