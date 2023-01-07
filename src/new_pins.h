@@ -348,6 +348,7 @@ int CHANNEL_FindMaxValueForChannel(int ch);
 
 int h_isChannelPWM(int tg_ch);
 int h_isChannelRelay(int tg_ch);
+int h_isChannelDigitalInput(int tg_ch);
 
 
 //int PIN_GetPWMIndexForPinIndex(int pin);
