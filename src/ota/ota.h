@@ -13,12 +13,6 @@
 #define START_ADR_OF_BK_PARTITION_OTA 0x132000
 #endif
 
-#if defined(PLATFORM_W600)
-
-//W600 uses OTA functions from its SDK.
-
-#else
-
 /// @brief Initialise OTA flash starting at startaddr. Only used for Beken SDK.
 /// @param startaddr 
 /// @return 
@@ -36,7 +30,6 @@ void close_ota();
 /// @param urlin 
 void otarequest(const char *urlin);
 
-#endif
 
 /***** SDK independent code from this point. ******/
 
