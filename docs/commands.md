@@ -103,9 +103,9 @@ Do not add anything here, as it will overwritten with next rebuild.
 | SetupEnergyStats | [Enable1or0][SampleTime][SampleCount] | Setup Energy Statistic Parameters: [enable<0|1>] [sample_time<10..900>] [sample_count<10..180>] |
 | ConsumptionThresold | [FloatValue] | Setup value for automatic save of consumption data [1..100] |
 | BP1658CJ_RGBCW | [HexColor] | Don't use it. It's for direct access of BP1658CJ driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
-| BP1658CJ_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP1658CJ channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. |
+| BP1658CJ_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP1658CJ channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: BP1658CJ_Map 0 1 2 3 4 |
 | BP5758D_RGBCW | [HexColor] | Don't use it. It's for direct access of BP5758D driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
-| BP5758D_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP5758D channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. |
+| BP5758D_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP5758D channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: BP5758D_Map 0 1 2 3 4 |
 | BP5758D_Current | [MaxCurrent] | Sets the maximum current limit for BP5758D driver |
 | setButtonColor | [ButtonIndex][Color] | Sets the colour of custom scriptable HTTP page button |
 | setButtonCommand | [ButtonIndex][Command] | Sets the command of custom scriptable HTTP page button |
@@ -127,7 +127,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | SM16703P_Test_3xZero |  | NULL |
 | SM16703P_Test_3xOne |  | NULL |
 | SM2135_RGBCW | [HexColor] | Don't use it. It's for direct access of SM2135 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
-| SM2135_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of SM2135 channels. This is because SM2135 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. |
+| SM2135_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of SM2135 channels. This is because SM2135 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: SM2135_Map 0 1 2 3 4 |
 | SM2135_Current | [Value] | Sets the maximum current for LED driver. |
 | obkDeviceList |  | Generate the SSDP list of OpenBeken devices found on the network. |
 | DGR_SendPower | [GroupName][ChannelValues][ChannelsCount] | Sends a POWER message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
