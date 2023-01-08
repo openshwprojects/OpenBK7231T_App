@@ -1329,10 +1329,6 @@ void PIN_ticks(void *param)
 		if (activepins){
 			activepoll_time = 1000; //20 x 50ms = 1s of polls after button release
 		}
-	}
-
-
-	for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
 
 		// read ADC, filter and publish if pin 23 (only ADC pin on BK7231), output range 0-100:
 		if ((g_cfg.pins.roles[i] == IOR_ADC) && (i == 23)) {
