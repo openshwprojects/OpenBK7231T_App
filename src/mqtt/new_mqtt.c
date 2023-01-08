@@ -1837,6 +1837,7 @@ void MQTT_InvokeCommandAtEnd(PostPublishCommands command) {
 	MqttPublishItem_t* tail = get_queue_tail(g_MqttPublishQueueHead);
 	if (tail == NULL){
 		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "InvokeCommandAtEnd invoked but queue is empty");
+	}
 	else {
 		tail->command = command;
 	}
