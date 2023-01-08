@@ -123,6 +123,7 @@ void SIM_DoFreshOBKBoot() {
 }
 void Win_DoUnitTests() {
 
+	Test_MultiplePinsOnChannel();
 	Test_Flags();
 	Test_DHT();
 	Test_EnergyMeter();
@@ -180,7 +181,7 @@ int g_bDoingUnitTestsNow = 0;
 #include "sim/sim_public.h"
 int __cdecl main(int argc, char **argv)
 {
-	bool bWantsUnitTests = 0;
+	bool bWantsUnitTests = 1;
     WSADATA wsaData;
     int iResult;
 
