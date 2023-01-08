@@ -330,7 +330,7 @@ float led_gamma_correction (int color, float iVal) { // apply LED gamma and RGB 
 
 	if (led_gamma_enable_channel_messages &&
 			(((g_lightMode == Light_RGB) && (color < 3)) || ((g_lightMode != Light_RGB) && (color >= 3)))) {
-		addLogAdv (LOG_INFO, LOG_FEATURE_CMD, "channel %i set to %.2f\%\r\n", color, oVal / 2.55);
+		addLogAdv (LOG_INFO, LOG_FEATURE_CMD, "channel %i set to %.2f%%\r\n", color, oVal / 2.55);
 	}
 	if (oVal > 255.0f) {
 		oVal = 255.0f;
@@ -507,9 +507,9 @@ void apply_smart_light() {
 */
 void led_gamma_list (void) { // list RGB gamma settings
 	led_gamma_enable_channel_messages = 1;
-	addLogAdv (LOG_INFO, LOG_FEATURE_CFG, "RGB correction:  R %f  G %f  B %f\r\n",
+	addLogAdv (LOG_INFO, LOG_FEATURE_CFG, "RGB  cal %f %f %f\r\n",
 			   led_corr.rgb_cal[0], led_corr.rgb_cal[1], led_corr.rgb_cal[2]);
-	addLogAdv (LOG_INFO, LOG_FEATURE_CFG, "LED gamma %.2f  RGB min %.2f\%  CW min %.2f\%\r\n",
+	addLogAdv (LOG_INFO, LOG_FEATURE_CFG, "LED  gamma %.2f  brtMinRGB %.2f%%  brtMinCW %.2f%%\r\n",
 			   led_corr.led_gamma, led_corr.rgb_bright_min, led_corr.cw_bright_min);
 }
 
