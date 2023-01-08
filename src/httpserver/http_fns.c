@@ -823,7 +823,7 @@ int http_fn_index(http_request_t* request) {
 #elif PLATFORM_BK7231N || PLATFORM_BK7231T
 	if (ota_progress() >= 0)
 	{
-		hprintf255(request, "<h5>OTA In Progress. Downloaded: %i B Flashed: %06lXh</h5>", ota_total_bytes(), ota_progress());
+		hprintf255(request, "<h5>OTA In Progress. Downloaded: %i B Flashed: %06lXh</h5>", OTA_GetTotalBytes(), ota_progress());
 	}
 #endif
 	if (bSafeMode) {
