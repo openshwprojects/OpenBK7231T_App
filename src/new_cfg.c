@@ -285,7 +285,11 @@ const char *CFG_GetWiFiSSID(){
 	return g_cfg.wifi_ssid;
 }
 const char *CFG_GetWiFiPass(){
-	return g_cfg.wifi_pass;
+	static char wifi_pass[sizeof(g_cfg.wifi_pass) + 1];
+
+	memcpy(wifi_pass, g_cfg.wifi_pass, sizeof(g_cfg.wifi_pass));
+	wifi_pass[sizeof(g_cfg.wifi_pass)] = 0;
+	return wifi_pass;
 }
 void CFG_SetWiFiSSID(const char *s) {
 	// this will return non-zero if there were any changes
@@ -295,8 +299,13 @@ void CFG_SetWiFiSSID(const char *s) {
 	}
 }
 void CFG_SetWiFiPass(const char *s) {
-	// this will return non-zero if there were any changes
-	if(strcpy_safe_checkForChanges(g_cfg.wifi_pass, s,sizeof(g_cfg.wifi_pass))) {
+	uint32_t len;
+
+	len = strlen(s) + 1;
+	if(len > sizeof(g_cfg.wifi_pass))
+		len = sizeof(g_cfg.wifi_pass);
+	if(memcmp(g_cfg.wifi_pass, s, len)) {
+		memcpy(g_cfg.wifi_pass, s, len);
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
 	}
