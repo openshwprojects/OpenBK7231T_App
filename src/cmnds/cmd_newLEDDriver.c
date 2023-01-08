@@ -1077,6 +1077,14 @@ commandResult_t LED_SetBaseColor(const void *context, const char *cmd, const cha
 			if(c[0] == '#')
 				c++;
 
+
+			if (CFG_HasFlag(OBK_LED_SETTING_WHITE_RGB_ENABLES_CW_MODE)) {
+				if (!stricmp(c, "FFFFFF")) {
+					SET_LightMode(Light_Temperature);
+					return;
+				}
+			}
+
 			if(bAll) {
 				SET_LightMode(Light_All);
 			} else {

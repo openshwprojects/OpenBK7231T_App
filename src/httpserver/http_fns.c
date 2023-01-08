@@ -2738,10 +2738,10 @@ const char* g_obk_flagNames[] = {
 	"[UART] Use alternate UART for BL0942, CSE, TuyaMCU, etc",
 #endif
 	"[HASS] Invoke HomeAssistant discovery on change to ip address, configuration",
+	"[LED] Setting RGB white (FFFFFF) enables temperature mode",
 	"error",
 	"error",
-	"error",
-};
+}; 
 int http_fn_cfg_generic(http_request_t* request) {
 	int i;
 	char tmpA[64];
