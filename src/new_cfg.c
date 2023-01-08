@@ -245,6 +245,13 @@ const char *CFG_GetShortDeviceName(){
 		return "";
 	return g_cfg.shortDeviceName;
 }
+// called from SDK 
+const char *CFG_GetOpenBekenHostName() {
+	if (CFG_HasFlag(OBK_FLAG_USE_SHORT_DEVICE_NAME_AS_HOSTNAME)) {
+		return CFG_GetShortDeviceName();
+	}
+	return CFG_GetDeviceName();
+}
 
 int CFG_GetMQTTPort() {
 	return g_cfg.mqtt_port;

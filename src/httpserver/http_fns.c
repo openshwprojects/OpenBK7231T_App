@@ -2739,6 +2739,18 @@ const char* g_obk_flagNames[] = {
 #endif
 	"[HASS] Invoke HomeAssistant discovery on change to ip address, configuration",
 	"[LED] Setting RGB white (FFFFFF) enables temperature mode",
+	"[NETIF] Use short device name as a hostname instead of a long name",
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
 	"error",
 	"error",
 }; 
