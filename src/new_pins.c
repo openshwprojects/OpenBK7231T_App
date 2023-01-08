@@ -834,10 +834,6 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 				bCallCb = 1;
 			}
 		}
-
-		if (bCallCb) {	//bCallCb never gets reset in this loop so we can break out
-			break;
-		}
 	}
 	if(g_cfg.pins.channelTypes[ch] != ChType_Default) {
 		bCallCb = 1;
