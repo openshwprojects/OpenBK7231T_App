@@ -1834,7 +1834,12 @@ void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const 
 /// @brief Add the specified command to the last entry in the queue.
 /// @param command 
 void MQTT_InvokeCommandAtEnd(PostPublishCommands command) {
-	get_queue_tail(g_MqttPublishQueueHead)->command = command;
+	MqttPublishItem_t* tail = get_queue_tail(g_MqttPublishQueueHead);
+	if (tail == NULL){
+		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "InvokeCommandAtEnd invoked but queue is empty");
+	else {
+		tail->command = command;
+	}
 }
 
 /// @brief Queue an entry for publish.
@@ -1872,10 +1877,10 @@ OBK_Publish_Result PublishQueuedItems() {
 			case None:
 				break;
 			case PublishAll:
-				MQTT_PublishAll(NULL, NULL, NULL, COMMAND_FLAG_SOURCE_MQTT);
+				MQTT_PublishWholeDeviceState_Internal(true);
 				break;
 			case PublishChannels:
-				MQTT_PublishChannels(NULL, NULL, NULL, COMMAND_FLAG_SOURCE_MQTT);
+				MQTT_PublishOnlyDeviceChannelsIfPossible();
 				break;
 			}
 		}
