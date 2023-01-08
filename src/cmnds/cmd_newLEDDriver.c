@@ -1083,7 +1083,7 @@ commandResult_t LED_SetBaseColor(const void *context, const char *cmd, const cha
 					SET_LightMode(Light_Temperature);
 					sendTemperatureChange();
 					apply_smart_light();
-					return;
+					return CMD_RES_OK;
 				}
 			}
 
