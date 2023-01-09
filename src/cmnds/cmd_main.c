@@ -32,12 +32,15 @@ static int generateHashValue(const char *fname) {
 
 command_t *g_commands[HASH_SIZE] = { NULL };
 
-static commandResult_t CMD_PowerSave(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_PowerSave: enable power save");
 #ifdef PLATFORM_BEKEN
 	extern int bk_wlan_power_save_set_level(BK_PS_LEVEL level);
     bk_wlan_power_save_set_level(/*PS_DEEP_SLEEP_BIT */  PS_RF_SLEEP_BIT | PS_MCU_SLEEP_BIT);	
+#elif defined(PLATFORM_W600)
+	tls_wifi_set_psflag(1, 0);	//Enable powersave but don't save to flash
 #endif
+
 	return CMD_RES_OK;
 }
 
@@ -53,6 +56,32 @@ static commandResult_t CMD_ScheduleHADiscovery(const void *context, const char *
 	}
 
 	Main_ScheduleHomeAssistantDiscovery(delay);
+
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_Flags(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	union {
+		long long newValue;
+		struct {
+			int ints[2];
+			int dummy[2]; // just to be safe
+		};
+	} u;
+	// TODO: check on other platforms, on Beken it's 8, 64 bit
+	// On Windows simulator it's 8 as well
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Flags: sizeof(newValue) = %i",sizeof(u.newValue));
+	if (args && *args) {
+		if (1 != sscanf(args, "%lld", &u.newValue)) {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "Argument/sscanf error!");
+			return CMD_RES_BAD_ARGUMENT;
+		}
+	}
+	else {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	CFG_SetFlags(u.ints[0], u.ints[1]);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "New flags set!");
 
 	return CMD_RES_OK;
 }
@@ -112,6 +141,10 @@ static commandResult_t CMD_ClearAll(const void *context, const char *cmd, const 
 
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_ClearNoPingTime(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	g_timeSinceLastPingReply = 0;
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_ClearConfig(const void *context, const char *cmd, const char *args, int cmdFlags){
 
 	CFG_SetDefaultConfig();
@@ -125,6 +158,23 @@ static commandResult_t CMD_Echo(const void *context, const char *cmd, const char
 
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, args);
+
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_SetStartValue(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	int ch, val;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 2) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Not enough arguments.");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	ch = Tokenizer_GetArgInteger(0);
+	val = Tokenizer_GetArgInteger(1);
+
+	CFG_SetChannelStartupValue(ch, val);
 
 	return CMD_RES_OK;
 }
@@ -176,6 +226,21 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_ScheduleHADiscovery","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("scheduleHADiscovery", "", CMD_ScheduleHADiscovery, NULL, NULL);
+	//cmddetail:{"name":"flags","args":"[IntegerValue]",
+	//cmddetail:"descr":"Sets the device flags",
+	//cmddetail:"fn":"CMD_Flags","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("flags", "", CMD_Flags, NULL, NULL);
+	//cmddetail:{"name":"ClearNoPingTime","args":"",
+	//cmddetail:"descr":"Command for ping watchdog; it sets the 'time since last ping reply' to 0 again",
+	//cmddetail:"fn":"CMD_ClearNoPingTime","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("ClearNoPingTime", "", CMD_ClearNoPingTime, NULL, NULL);
+	//cmddetail:{"name":"SetStartValue","args":"[Channel][Value]",
+	//cmddetail:"descr":"Sets the startup value for a channel. Used for start values for relays. Use 1 for High, 0 for low and -1 for 'remember last state'",
+	//cmddetail:"fn":"CMD_SetStartValue","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("SetStartValue", "", CMD_SetStartValue, NULL, NULL);
 	
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	CMD_InitScripting();

@@ -210,6 +210,7 @@ int http_fn_index(http_request_t* request) {
 	float fValue;
 	int iValue;
 	bool bForceShowRGB;
+	const char* inputName;
 
 	bRawPWMs = CFG_HasFlag(OBK_FLAG_LED_RAWCHANNELSMODE);
 	bForceShowRGBCW = CFG_HasFlag(OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER);
@@ -619,7 +620,7 @@ int http_fn_index(http_request_t* request) {
 		else if ((bRawPWMs && h_isChannelPWM(i)) || (channelType == ChType_Dimmer) || (channelType == ChType_Dimmer256) || (channelType == ChType_Dimmer1000)) {
 			int maxValue;
 			// PWM and dimmer both use a slider control
-			const char* inputName = h_isChannelPWM(i) ? "pwm" : "dim";
+			inputName = h_isChannelPWM(i) ? "pwm" : "dim";
 			int pwmValue;
 
 			if (channelType == ChType_Dimmer256) {
@@ -672,7 +673,6 @@ int http_fn_index(http_request_t* request) {
 
 		if (c_pwms > 0) {
 			int pwmValue;
-			const char* inputName;
 
 			inputName = "dim";
 
@@ -688,7 +688,7 @@ int http_fn_index(http_request_t* request) {
 		}
 		if (c_pwms >= 3) {
 			char colorValue[16];
-			const char* inputName = "rgb";
+			inputName = "rgb";
 			const char* activeStr = "";
 			if (lm == Light_RGB) {
 				activeStr = "[ACTIVE]";
@@ -706,7 +706,6 @@ int http_fn_index(http_request_t* request) {
 		if (c_pwms == 2 || c_pwms >= 4) {
 			// TODO: temperature slider
 			int pwmValue;
-			const char* inputName;
 			const char* activeStr = "";
 			if (lm == Light_Temperature) {
 				activeStr = "[ACTIVE]";
@@ -766,8 +765,17 @@ int http_fn_index(http_request_t* request) {
 	hprintf255(request, "<h5>Cfg size: %i, change counter: %i, ota counter: %i, boot incompletes %i (might change to 0 if you wait to 30 sec)!</h5>",
 		sizeof(g_cfg), g_cfg.changeCounter, g_cfg.otaCounter, Main_GetLastRebootBootFailures());
 
-	hprintf255(request, "<h5>Ping watchdog - %i lost, %i ok!</h5>",
-		PingWatchDog_GetTotalLost(), PingWatchDog_GetTotalReceived());
+	inputName = CFG_GetPingHost();
+	if (inputName && *inputName && CFG_GetPingDisconnectedSecondsToRestart()) {
+		hprintf255(request, "<h5>Ping watchdog (%s) - ", inputName);
+		if (g_startPingWatchDogAfter > 0) {
+			hprintf255(request, "will start in %i!</h5>", g_startPingWatchDogAfter);
+		}
+		else {
+			hprintf255(request, "%i lost, %i ok, last reply was %is ago!</h5>",
+				PingWatchDog_GetTotalLost(), PingWatchDog_GetTotalReceived(), g_timeSinceLastPingReply);
+		}
+	}
 	if (Main_HasWiFiConnected())
 	{
 		hprintf255(request, "<h5>Wifi RSSI: %s (%idBm)</h5>", str_rssi[wifi_rssi_scale(HAL_GetWifiStrength())], HAL_GetWifiStrength());
@@ -1535,18 +1543,33 @@ int http_fn_cfg_quick(http_request_t* request) {
 /// @brief Computes the Relay and PWM count.
 /// @param relayCount Number of relay and LED channels.
 /// @param pwmCount Number of PWM channels.
-void get_Relay_PWM_Count(int* relayCount, int* pwmCount) {
+void get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount) {
 	int i;
 	(*relayCount) = 0;
 	(*pwmCount) = 0;
+	(*dInputCount) = 0;
 
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		int role = PIN_GetPinRoleForPinIndex(i);
-		if (role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
-			(*relayCount)++;
-		}
-		else if (role == IOR_PWM || role == IOR_PWM_n) {
-			(*pwmCount)++;
+		switch (role) {
+			case IOR_Relay:
+			case IOR_Relay_n:
+			case IOR_LED:
+			case IOR_LED_n:
+				(*relayCount)++;
+				break;
+			case IOR_PWM:
+			case IOR_PWM_n:
+				(*pwmCount)++;
+				break;
+			case IOR_DigitalInput:
+			case IOR_DigitalInput_n:
+			case IOR_DigitalInput_NoPup:
+			case IOR_DigitalInput_NoPup_n:
+				(*dInputCount)++;
+				break;
+			default:
+				break;
 		}
 	}
 }
@@ -1556,35 +1579,24 @@ void doHomeAssistantDiscovery(const char *topic, http_request_t *request) {
 	int i;
 	int relayCount;
 	int pwmCount;
+	int dInputCount;
 	bool ledDriverChipRunning;
 	HassDeviceInfo* dev_info = NULL;
 	bool measuringPower = false;
 	struct cJSON_Hooks hooks;
+	bool discoveryQueued = false;
 
 	if (topic == 0 || *topic == 0) {
 		topic = "homeassistant";
 	}
+
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	measuringPower = DRV_IsMeasuringPower();
 #endif
 
-	get_Relay_PWM_Count(&relayCount, &pwmCount);
+	get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
 
-	//Note: PublishChannels should be done for the last MQTT publish except for power measurement which always
-	//sends out MQTT updates.
-	ledDriverChipRunning = LED_IsLedDriverChipRunning();
-
-	if ((relayCount == 0) && (pwmCount == 0) && !measuringPower && !ledDriverChipRunning) {
-		const char *msg = "No relay, PWM or power driver running.";
-		if (request) {
-			poststr(request, msg);
-			poststr(request, NULL);
-		}
-		else {
-			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "HA discovery: %s\r\n", msg);
-		}
-		return;
-	}
+	ledDriverChipRunning = LED_IsLedDriverChipRunning();	
 
 	hooks.malloc_fn = os_malloc;
 	hooks.free_fn = os_free;
@@ -1593,32 +1605,30 @@ void doHomeAssistantDiscovery(const char *topic, http_request_t *request) {
 	if (relayCount > 0) {
 		for (i = 0; i < CHANNEL_MAX; i++) {
 			if (h_isChannelRelay(i)) {
-				if (dev_info != NULL) {
-					MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-					hass_free_device_info(dev_info);
-				}
 				dev_info = hass_init_relay_device_info(i);
+				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+				hass_free_device_info(dev_info);
+				discoveryQueued = true;
 			}
 		}
+	}
 
-		//Invoke publishChannles after the last topic
-		if (dev_info != NULL) {
-			PostPublishCommands ppCommand = PublishChannels;
-
-			if (ledDriverChipRunning || (pwmCount > 0)) {
-				ppCommand = None;
+	if (dInputCount > 0) {
+		for (i = 0; i < CHANNEL_MAX; i++) {
+			if (h_isChannelDigitalInput(i)) {
+				dev_info = hass_init_binary_sensor_device_info(i);
+				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+				hass_free_device_info(dev_info);
+				discoveryQueued = true;
 			}
-
-			MQTT_QueuePublishWithCommand(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN, ppCommand);
-			hass_free_device_info(dev_info);
 		}
 	}
 
 	if (pwmCount == 5 || ledDriverChipRunning) {
 		// Enable + RGB control + CW control
-		dev_info = hass_init_light_device_info(ENTITY_LIGHT_RGBCW);
-		MQTT_QueuePublishWithCommand(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN, PublishChannels);
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
+		discoveryQueued = true;
 	}
 	else if (pwmCount > 0) {
 		if (pwmCount == 4) {
@@ -1626,19 +1636,20 @@ void doHomeAssistantDiscovery(const char *topic, http_request_t *request) {
 		}
 		else if (pwmCount == 3) {
 			// Enable + RGB control
-			dev_info = hass_init_light_device_info(ENTITY_LIGHT_RGB);
+			dev_info = hass_init_light_device_info(LIGHT_RGB);
 		}
 		else if (pwmCount == 2) {
 			// PWM + Temperature (https://github.com/openshwprojects/OpenBK7231T_App/issues/279)
-			dev_info = hass_init_light_device_info(ENTITY_LIGHT_PWMCW);
+			dev_info = hass_init_light_device_info(LIGHT_PWMCW);
 		}
 		else {
-			dev_info = hass_init_light_device_info(ENTITY_LIGHT_PWM);
+			dev_info = hass_init_light_device_info(LIGHT_PWM);
 		}
 
 		if (dev_info != NULL) {
-			MQTT_QueuePublishWithCommand(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN, PublishChannels);
+			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 			hass_free_device_info(dev_info);
+			discoveryQueued = true;
 		}
 	}
 
@@ -1646,12 +1657,41 @@ void doHomeAssistantDiscovery(const char *topic, http_request_t *request) {
 	if (measuringPower == true) {
 		for (i = 0; i < OBK_NUM_SENSOR_COUNT; i++)
 		{
-			dev_info = hass_init_sensor_device_info(i);
+			dev_info = hass_init_power_sensor_device_info(i);
 			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 			hass_free_device_info(dev_info);
+			discoveryQueued = true;
 		}
 	}
 #endif
+
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (IS_PIN_DHT_ROLE(g_cfg.pins.roles[i])) {
+			dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, PIN_GetPinChannelForPinIndex(i));
+			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+			hass_free_device_info(dev_info);
+
+			dev_info = hass_init_sensor_device_info(HUMIDITY_SENSOR, PIN_GetPinChannel2ForPinIndex(i));
+			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+			hass_free_device_info(dev_info);
+
+			discoveryQueued = true;
+		}
+	}
+
+	if (discoveryQueued) {
+		MQTT_InvokeCommandAtEnd(PublishChannels);
+	}
+	else {
+		const char *msg = "No relay, PWM, sensor or power driver running.";
+		if (request) {
+			poststr(request, msg);
+			poststr(request, NULL);
+		}
+		else {
+			addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "HA discovery: %s\r\n", msg);
+		}
+	}
 }
 
 /// @brief Sends HomeAssistant discovery MQTT messages.
@@ -1717,6 +1757,7 @@ void http_generate_singleColor_cfg(http_request_t* request, const char* clientId
 int http_fn_ha_cfg(http_request_t* request) {
 	int relayCount;
 	int pwmCount;
+	int dInputCount;
 	const char* shortDeviceName;
 	const char* clientId;
 	int i;
@@ -1739,7 +1780,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 
 	poststr(request, "<textarea rows=\"40\" cols=\"50\">");
 
-	get_Relay_PWM_Count(&relayCount, &pwmCount);
+	get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
 
 	if (relayCount > 0) {
 
@@ -1754,10 +1795,34 @@ int http_fn_ha_cfg(http_request_t* request) {
 					switchAdded = 1;
 				}
 
-				hass_print_unique_id(request, "  - unique_id: \"%s\"\n", ENTITY_RELAY, i);
+				hass_print_unique_id(request, "  - unique_id: \"%s\"\n", RELAY, i);
 				hprintf255(request, "    name: \"%s %i\"\n", shortDeviceName, i);
 				hprintf255(request, "    state_topic: \"%s/%i/get\"\n", clientId, i);
 				hprintf255(request, "    command_topic: \"%s/%i/set\"\n", clientId, i);
+				poststr(request, "    qos: 1\n");
+				poststr(request, "    payload_on: 1\n");
+				poststr(request, "    payload_off: 0\n");
+				poststr(request, "    retain: true\n");
+				hprintf255(request, "    availability:\n");
+				hprintf255(request, "      - topic: \"%s/connected\"\n", clientId);
+			}
+		}
+	}
+	if (dInputCount > 0) {
+		for (i = 0; i < CHANNEL_MAX; i++) {
+			if (h_isChannelDigitalInput(i)) {
+				if (mqttAdded == 0) {
+					poststr(request, "mqtt:\n");
+					mqttAdded = 1;
+				}
+				if (switchAdded == 0) {
+					poststr(request, "  binary_sensor:\n");
+					switchAdded = 1;
+				}
+
+				hass_print_unique_id(request, "  - unique_id: \"%s\"\n", BINARY_SENSOR, i);
+				hprintf255(request, "    name: \"%s %i\"\n", shortDeviceName, i);
+				hprintf255(request, "    state_topic: \"%s/%i/get\"\n", clientId, i);
 				poststr(request, "    qos: 1\n");
 				poststr(request, "    payload_on: 1\n");
 				poststr(request, "    payload_off: 0\n");
@@ -1778,7 +1843,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 			switchAdded = 1;
 		}
 
-		hass_print_unique_id(request, "  - unique_id: \"%s\"\n", ENTITY_LIGHT_RGBCW, i);
+		hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_RGBCW, i);
 		hprintf255(request, "    name: \"%s %i\"\n", shortDeviceName, i);
 		http_generate_rgb_cfg(request, clientId);
 		hprintf255(request, "    #brightness_value_template: \"{{ value }}\"\n");
@@ -1798,7 +1863,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 				switchAdded = 1;
 			}
 
-			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", ENTITY_LIGHT_RGB, i);
+			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_RGB, i);
 			hprintf255(request, "    name: \"%s\"\n", shortDeviceName);
 			http_generate_rgb_cfg(request, clientId);
 		}
@@ -1813,7 +1878,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 				switchAdded = 1;
 			}
 
-			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", ENTITY_LIGHT_PWM, i);
+			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_PWM, i);
 			hprintf255(request, "    name: \"%s\"\n", shortDeviceName);
 			http_generate_singleColor_cfg(request, clientId);
 		}
@@ -1828,7 +1893,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 				switchAdded = 1;
 			}
 
-			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", ENTITY_LIGHT_PWMCW, i);
+			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_PWMCW, i);
 			hprintf255(request, "    name: \"%s\"\n", shortDeviceName);
 			http_generate_cw_cfg(request, clientId);
 		}
@@ -1845,7 +1910,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 						lightAdded = 1;
 					}
 
-					hass_print_unique_id(request, "  - unique_id: \"%s\"\n", ENTITY_LIGHT_PWM, i);
+					hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_PWM, i);
 					hprintf255(request, "    name: \"%s %i\"\n", shortDeviceName, i);
 					hprintf255(request, "    state_topic: \"%s/%i/get\"\n", clientId, i);
 					hprintf255(request, "    command_topic: \"%s/%i/set\"\n", clientId, i);
@@ -2162,7 +2227,7 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 	const char* friendlyName;
 	const char* clientId;
 	int powerCode;
-	int relayCount, pwmCount, i;
+	int relayCount, pwmCount, dInputCount, i;
 	bool bRelayIndexingStartsWithZero;
 	char buff[20];
 
@@ -2182,7 +2247,7 @@ int http_tasmota_json_status_generic(http_request_t* request) {
 
 	bRelayIndexingStartsWithZero = CHANNEL_HasChannelPinWithRoleOrRole(0, IOR_Relay, IOR_Relay_n);
 
-	get_Relay_PWM_Count(&relayCount, &pwmCount);
+	get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
 
 	if (LED_IsLEDRunning()) {
 		powerCode = LED_GetEnableAll();
@@ -2556,6 +2621,12 @@ int http_fn_cfg_pins(http_request_t* request) {
 		// saving the configuration instead of waiting.
 		//CFG_Save_SetupTimer(); 
 		CFG_Save_IfThereArePendingChanges();
+
+		// Invoke Hass discovery if configuration has changed and not in safe mode.
+		if (!bSafeMode && CFG_HasFlag(OBK_FLAG_AUTOMAIC_HASS_DISCOVERY)) {
+			Main_ScheduleHomeAssistantDiscovery(1);
+		}
+
 		hprintf255(request, "Pins update - %i reqs, %i changed!<br><br>", iChangedRequested, iChanged);
 	}
 	//	strcat(outbuf,"<button type=\"button\">Click Me!</button>");
@@ -2607,10 +2678,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 		poststr(request, "</select>");
 		hprintf255(request, "<input class=\"hele\" name=\"r%i\" type=\"text\" value=\"%i\"/>", i, ch);
 
-		if (si == IOR_Button || si == IOR_Button_n
-			|| si == IOR_DHT11 || si == IOR_DHT22
-			|| si == IOR_DHT12 || si == IOR_DHT21
-			)
+		if (si == IOR_Button || si == IOR_Button_n || IS_PIN_DHT_ROLE(si))
 		{
 			// extra param. For button, is relay index to toggle on double click
 			hprintf255(request, "<input class=\"hele\" name=\"e%i\" type=\"text\" value=\"%i\"/>", i, ch2);
@@ -2658,10 +2726,23 @@ const char* g_obk_flagNames[] = {
 #else
 	"[UART] Use alternate UART for BL0942, CSE, TuyaMCU, etc",
 #endif
+	"[HASS] Invoke HomeAssistant discovery on change to ip address, configuration",
+	"[LED] Setting RGB white (FFFFFF) enables temperature mode",
+	"[NETIF] Use short device name as a hostname instead of a long name",
 	"error",
 	"error",
 	"error",
-};
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
+}; 
 int http_fn_cfg_generic(http_request_t* request) {
 	int i;
 	char tmpA[64];

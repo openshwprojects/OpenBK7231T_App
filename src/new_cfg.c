@@ -245,6 +245,13 @@ const char *CFG_GetShortDeviceName(){
 		return "";
 	return g_cfg.shortDeviceName;
 }
+// called from SDK 
+const char *CFG_GetOpenBekenHostName() {
+	if (CFG_HasFlag(OBK_FLAG_USE_SHORT_DEVICE_NAME_AS_HOSTNAME)) {
+		return CFG_GetShortDeviceName();
+	}
+	return CFG_GetDeviceName();
+}
 
 int CFG_GetMQTTPort() {
 	return g_cfg.mqtt_port;
@@ -285,7 +292,11 @@ const char *CFG_GetWiFiSSID(){
 	return g_cfg.wifi_ssid;
 }
 const char *CFG_GetWiFiPass(){
-	return g_cfg.wifi_pass;
+	static char wifi_pass[sizeof(g_cfg.wifi_pass) + 1];
+
+	memcpy(wifi_pass, g_cfg.wifi_pass, sizeof(g_cfg.wifi_pass));
+	wifi_pass[sizeof(g_cfg.wifi_pass)] = 0;
+	return wifi_pass;
 }
 void CFG_SetWiFiSSID(const char *s) {
 	// this will return non-zero if there were any changes
@@ -295,8 +306,13 @@ void CFG_SetWiFiSSID(const char *s) {
 	}
 }
 void CFG_SetWiFiPass(const char *s) {
-	// this will return non-zero if there were any changes
-	if(strcpy_safe_checkForChanges(g_cfg.wifi_pass, s,sizeof(g_cfg.wifi_pass))) {
+	uint32_t len;
+
+	len = strlen(s) + 1;
+	if(len > sizeof(g_cfg.wifi_pass))
+		len = sizeof(g_cfg.wifi_pass);
+	if(memcmp(g_cfg.wifi_pass, s, len)) {
+		memcpy(g_cfg.wifi_pass, s, len);
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
 	}
@@ -402,15 +418,31 @@ int CFG_DeviceGroups_GetSendFlags() {
 int CFG_DeviceGroups_GetRecvFlags() {
 	return g_cfg.dgr_recvFlags;
 }
+void CFG_SetFlags(int first4bytes, int second4bytes) {
+	if (g_cfg.genericFlags != first4bytes || g_cfg.genericFlags2 != second4bytes) {
+		g_cfg.genericFlags = first4bytes;
+		g_cfg.genericFlags2 = second4bytes;
+		g_cfg_pendingChanges++;
+	}
+}
 void CFG_SetFlag(int flag, bool bValue) {
-	int nf = g_cfg.genericFlags;
+	int *cfgValue;
+	if (flag >= 32) {
+		cfgValue = &g_cfg.genericFlags2;
+		flag -= 32;
+	}
+	else {
+		cfgValue = &g_cfg.genericFlags;
+	}
+
+	int nf = *cfgValue;
 	if(bValue) {
 		BIT_SET(nf,flag);
 	} else {
 		BIT_CLEAR(nf,flag);
 	}
-	if(nf != g_cfg.genericFlags) {
-		g_cfg.genericFlags = nf;
+	if(nf != *cfgValue) {
+		*cfgValue = nf;
 		g_cfg_pendingChanges++;
 		// this will start only if it wasnt running
 		if(bValue && flag == OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER) {
@@ -422,6 +454,10 @@ int CFG_GetFlags() {
 	return g_cfg.genericFlags;
 }
 bool CFG_HasFlag(int flag) {
+	if (flag >= 32) {
+		flag -= 32;
+		return BIT_CHECK(g_cfg.genericFlags2, flag);
+	}
 	return BIT_CHECK(g_cfg.genericFlags,flag);
 }
 

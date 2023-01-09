@@ -394,7 +394,6 @@ void Main_OnPingCheckerReply(int ms);
 
 // new_ping.c
 void Main_SetupPingWatchDog(const char *target/*, int delayBetweenPings_Seconds*/);
-void Main_PingWatchDogSilent();
 int PingWatchDog_GetTotalLost();
 int PingWatchDog_GetTotalReceived();
 
@@ -422,6 +421,8 @@ typedef enum
 WIFI_RSSI_LEVEL wifi_rssi_scale(int8_t rssi_value);
 extern const char *str_rssi[];
 extern int bSafeMode;
+extern int g_timeSinceLastPingReply;
+extern int g_startPingWatchDogAfter;
 
 #endif /* __NEW_COMMON_H__ */
 

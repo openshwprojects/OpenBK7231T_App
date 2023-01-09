@@ -890,13 +890,25 @@ void LED_AddTemperature(int iVal, bool wrapAroundInsteadOfClamp) {
 
 	LED_SetTemperature(cur, true);
 }
-void LED_AddDimmer(int iVal, bool wrapAroundInsteadOfClamp, int minValue) {
-	float cur;
+int dimmer_pingPong_direction = 1;
+void LED_AddDimmer(int iVal, int addMode, int minValue) {
+	int cur;
 
 	cur = g_brightness / g_cfg_brightnessMult;
 
-
-	if(wrapAroundInsteadOfClamp == 0) {
+	if (addMode == 2) {
+		// Ping pong mode
+		cur += iVal * dimmer_pingPong_direction;
+		if (cur >= 100) {
+			cur = 100;
+			dimmer_pingPong_direction *= -1;
+		}
+		if (cur <= minValue) {
+			cur = minValue;
+			dimmer_pingPong_direction *= -1;
+		}
+	} else if(addMode == 0) {
+		// Clamp mode
 		cur += iVal;
 		// clamp
 		if(cur < minValue)
@@ -933,7 +945,7 @@ void LED_NextDimmerHold() {
 	// because it's easy to get confused if we set accidentally dimmer to 0
 	// and then are unable to turn on the bulb (because despite of led_enableAll 1
 	// the dimmer is 0 and anyColor * 0 gives 0)
-	LED_AddDimmer(10, true, 2);
+	LED_AddDimmer(10, 1, 2);
 }
 void LED_SetDimmer(int iVal) {
 
@@ -975,14 +987,14 @@ static commandResult_t add_temperature(const void *context, const char *cmd, con
 }
 static commandResult_t add_dimmer(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int iVal = 0;
-	int bWrapAroundInsteadOfHold;
+	int addMode;
 
 	Tokenizer_TokenizeString(args, 0);
 
 	iVal = Tokenizer_GetArgInteger(0);
-	bWrapAroundInsteadOfHold = Tokenizer_GetArgInteger(1);
+	addMode = Tokenizer_GetArgInteger(1);
 
-	LED_AddDimmer(iVal, bWrapAroundInsteadOfHold, 0);
+	LED_AddDimmer(iVal, addMode, 0);
 
 	return CMD_RES_OK;
 }
@@ -1190,6 +1202,16 @@ commandResult_t LED_SetBaseColor(const void *context, const char *cmd, const cha
 			if(c[0] == '#')
 				c++;
 
+
+			if (CFG_HasFlag(OBK_FLAG_LED_SETTING_WHITE_RGB_ENABLES_CW)) {
+				if (!stricmp(c, "FFFFFF")) {
+					SET_LightMode(Light_Temperature);
+					sendTemperatureChange();
+					apply_smart_light();
+					return CMD_RES_OK;
+				}
+			}
+
 			if(bAll) {
 				SET_LightMode(Light_All);
 			} else {
@@ -1395,8 +1417,8 @@ void NewLED_InitCommands(){
 	//cmddetail:"fn":"dimmer","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_dimmer", "", dimmer, NULL, NULL);
-	//cmddetail:{"name":"add_dimmer","args":"[Value][bWrapAroundInsteadOfHold]",
-	//cmddetail:"descr":"Adds a given value to current LED dimmer. Function can wrap or clamp if max/min is exceeded.",
+	//cmddetail:{"name":"add_dimmer","args":"[Value][AddMode]",
+	//cmddetail:"descr":"Adds a given value to current LED dimmer. AddMode 0 just adds a value (with a clamp to [0,100]), AddMode 1 will wrap around values (going under 0 goes to 100, going over 100 goes to 0), AddMode 2 will ping-pong value (going to 100 starts going back from 100 to 0, and again, going to 0 starts going up).",
 	//cmddetail:"fn":"add_dimmer","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("add_dimmer", "", add_dimmer, NULL, NULL);

@@ -75,7 +75,7 @@ enum IORole {
 
 #define IS_PIN_DHT_ROLE(role) (((role)>=IOR_DHT11) &&((role)<=IOR_DHT22))
 
-enum ChannelType {
+typedef enum {
 	ChType_Default,
 	ChType_Error,
 	ChType_Temperature,
@@ -119,7 +119,7 @@ enum ChannelType {
 	ChType_OpenClosed_Inv,
 	ChType_BatteryLevelPercent,
 
-};
+} ChannelType;
 
 
 #if PLATFORM_BL602
@@ -184,9 +184,11 @@ typedef struct pinsState_s {
 #define OBK_FLAG_LED_EMULATE_COOL_WITH_RGB			24
 #define OBK_FLAG_POWER_ALLOW_NEGATIVE				25
 #define OBK_FLAG_USE_SECONDARY_UART					26
+#define OBK_FLAG_AUTOMAIC_HASS_DISCOVERY			27
+#define OBK_FLAG_LED_SETTING_WHITE_RGB_ENABLES_CW	28
+#define OBK_FLAG_USE_SHORT_DEVICE_NAME_AS_HOSTNAME	29
 
-
-#define OBK_TOTAL_FLAGS 27
+#define OBK_TOTAL_FLAGS 30
 
 
 #define CGF_MQTT_CLIENT_ID_SIZE			64
@@ -348,6 +350,7 @@ int CHANNEL_FindMaxValueForChannel(int ch);
 
 int h_isChannelPWM(int tg_ch);
 int h_isChannelRelay(int tg_ch);
+int h_isChannelDigitalInput(int tg_ch);
 
 
 //int PIN_GetPWMIndexForPinIndex(int pin);

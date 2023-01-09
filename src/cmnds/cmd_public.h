@@ -99,6 +99,11 @@ enum EventCode {
 
 	CMD_EVENT_WIFI_STATE, // Argument: [HALWifiStatus_t]
 
+	CMD_EVENT_PIN_ON3CLICK,
+	CMD_EVENT_PIN_ON4CLICK,
+
+	CMD_EVENT_CHANGE_NOPINGTIME,
+
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
 };
@@ -160,7 +165,7 @@ int taslike_commands_init();
 void NewLED_InitCommands();
 void NewLED_RestoreSavedStateIfNeeded();
 float LED_GetDimmer();
-void LED_AddDimmer(int iVal, bool wrapAroundInsteadOfClamp, int minValue);
+void LED_AddDimmer(int iVal, int addMode, int minValue);
 void LED_AddTemperature(int iVal, bool wrapAroundInsteadOfClamp);
 void LED_NextDimmerHold();
 void LED_NextTemperatureHold();

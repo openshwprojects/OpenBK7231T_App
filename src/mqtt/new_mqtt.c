@@ -210,7 +210,11 @@ static int numCallbacks = 0;
 static obk_mqtt_request_t g_mqtt_request;
 static obk_mqtt_request_t g_mqtt_request_cb;
 
+#ifdef WINDOWS
+#define LOOPS_WITH_DISCONNECTED 5
+#else
 #define LOOPS_WITH_DISCONNECTED 15
+#endif
 int loopsWithDisconnected = 0;
 int mqtt_reconnect = 0;
 // set for the device to broadcast self state on start
@@ -1081,7 +1085,7 @@ OBK_Publish_Result MQTT_ChannelChangeCallback(int channel, int iVal)
 	int flags;
 
 	flags = 0;
-	addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Channel has changed! Publishing change %i with %i \n", channel, iVal);
+	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Channel has changed! Publishing %i to channel %i \n", iVal, channel);
 
 	sprintf(channelNameStr, "%i", channel);
 	sprintf(valueStr, "%i", iVal);
@@ -1103,7 +1107,7 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 
 	iValue = CHANNEL_Get(channel);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Forced channel publish! Publishing val %i to %i", iValue, channel);
+	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Forced channel publish! Publishing val %i to %i", iValue, channel);
 
 	sprintf(channelNameStr, "%i", channel);
 	sprintf(valueStr, "%i", iValue);
@@ -1392,6 +1396,7 @@ void MQTT_init()
 	// WINDOWS must support reinit
 #ifdef WINDOWS
 	MQTT_ClearCallbacks();
+	mqtt_client = 0;
 #endif
 
 	clientId = CFG_GetMQTTClientId();
@@ -1548,7 +1553,7 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 #ifdef ENABLE_DRIVER_TUYAMCU
 	// publish if channel is used by TuyaMCU (no pin role set), for example door sensor state with power saving V0 protocol
 	// Not enabled by default, you have to set OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS flag
-	if (CFG_HasFlag(OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS) && TuyaMCU_IsChannelUsedByTuyaMCU(idx)) {
+	if (!bWantsToPublish && CFG_HasFlag(OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS) && TuyaMCU_IsChannelUsedByTuyaMCU(idx)) {
 		bWantsToPublish = true;
 	}
 #endif
@@ -1827,6 +1832,18 @@ void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const 
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Queued topic=%s/%s, %i items in queue", newItem->topic, newItem->channel, g_MqttPublishItemsQueued);
 }
 
+/// @brief Add the specified command to the last entry in the queue.
+/// @param command 
+void MQTT_InvokeCommandAtEnd(PostPublishCommands command) {
+	MqttPublishItem_t* tail = get_queue_tail(g_MqttPublishQueueHead);
+	if (tail == NULL){
+		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "InvokeCommandAtEnd invoked but queue is empty");
+	}
+	else {
+		tail->command = command;
+	}
+}
+
 /// @brief Queue an entry for publish.
 /// @param topic 
 /// @param channel 
@@ -1862,10 +1879,10 @@ OBK_Publish_Result PublishQueuedItems() {
 			case None:
 				break;
 			case PublishAll:
-				CMD_ExecuteCommand("publishAll", COMMAND_FLAG_SOURCE_MQTT);
+				MQTT_PublishWholeDeviceState_Internal(true);
 				break;
 			case PublishChannels:
-				CMD_ExecuteCommand("publishChannels", COMMAND_FLAG_SOURCE_MQTT);
+				MQTT_PublishOnlyDeviceChannelsIfPossible();
 				break;
 			}
 		}

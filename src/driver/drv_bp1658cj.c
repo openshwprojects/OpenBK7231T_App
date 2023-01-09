@@ -215,7 +215,7 @@ void BP1658CJ_Init() {
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("BP1658CJ_RGBCW", "", BP1658CJ_RGBCW, NULL, NULL);
 	//cmddetail:{"name":"BP1658CJ_Map","args":"[Ch0][Ch1][Ch2][Ch3][Ch4]",
-	//cmddetail:"descr":"Maps the RGBCW values to given indices of BP1658CJ channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc.",
+	//cmddetail:"descr":"Maps the RGBCW values to given indices of BP1658CJ channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: BP1658CJ_Map 0 1 2 3 4",
 	//cmddetail:"fn":"BP1658CJ_Map","file":"driver/drv_bp1658cj.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("BP1658CJ_Map", "", BP1658CJ_Map, NULL, NULL);

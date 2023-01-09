@@ -139,6 +139,7 @@ void MQTT_PublishOnlyDeviceChannelsIfPossible();
 void MQTT_QueuePublish(const char* topic, const char* channel, const char* value, int flags);
 void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const char* value, int flags, PostPublishCommands command);
 OBK_Publish_Result MQTT_Publish(const char* sTopic, const char* sChannel, const char* value, int flags);
+void MQTT_InvokeCommandAtEnd(PostPublishCommands command);
 bool MQTT_IsReady();
 
 #endif // __NEW_MQTT_H__

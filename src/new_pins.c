@@ -841,10 +841,6 @@ static void Channel_OnChanged(int ch, float prevValue, int iFlags) {
 				bCallCb = 1;
 			}
 		}
-
-		if (bCallCb) {	//bCallCb never gets reset in this loop so we can break out
-			break;
-		}
 	}
 	if(g_cfg.pins.channelTypes[ch] != ChType_Default) {
 		bCallCb = 1;
@@ -1090,13 +1086,20 @@ bool CHANNEL_IsPowerRelayChannel(int ch) {
 bool CHANNEL_HasRoleThatShouldBePublished(int ch) {
 	int i;
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		int role = g_cfg.pins.roles[i];	
+
 		if (g_cfg.pins.channels[i] == ch) {
-			int role = g_cfg.pins.roles[i];	
 			if (role == IOR_Relay || role == IOR_Relay_n
 				|| role == IOR_LED || role == IOR_LED_n
 				|| role == IOR_ADC
 				|| role == IOR_DigitalInput || role == IOR_DigitalInput_n
+				|| IS_PIN_DHT_ROLE(role)
 				|| role == IOR_DigitalInput_NoPup || role == IOR_DigitalInput_NoPup_n) {
+				return true;
+			}
+		}
+		else if (g_cfg.pins.channels2[i] == ch) {
+			if (IS_PIN_DHT_ROLE(role)) {
 				return true;
 			}
 		}
@@ -1657,6 +1660,21 @@ int h_isChannelRelay(int tg_ch) {
 			continue;
         role = PIN_GetPinRoleForPinIndex(i);
         if(role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
+			return true;
+        }
+    }
+	return false;
+}
+int h_isChannelDigitalInput(int tg_ch) {
+    int i;
+	int role;
+
+    for(i = 0; i < PLATFORM_GPIO_MAX; i++) {
+        int ch = PIN_GetPinChannelForPinIndex(i);
+		if(tg_ch != ch)
+			continue;
+        role = PIN_GetPinRoleForPinIndex(i);
+        if(role == IOR_DigitalInput || role == IOR_DigitalInput_n || role == IOR_DigitalInput_NoPup || role == IOR_DigitalInput_NoPup_n) {
 			return true;
         }
     }

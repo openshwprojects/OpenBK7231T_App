@@ -20,7 +20,7 @@ const char httpMimeTypeText[] = "text/plain";           // TEXT MIME type
 const char httpMimeTypeJson[] = "application/json";           // TEXT MIME type
 const char httpMimeTypeBinary[] = "application/octet-stream";   // binary/file MIME type
 
-const char htmlShortcutIcon[] = "<link rel='shortcut icon' href='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAHESURBVDhPpZPLS1VhFMV/pyuFb1HIHhDcixGU/glpNKg7ihLCMnOUQQ/6K5LmIg0ciQMRFMeZIMmlbFxEFIaYUCGIUQoRer7Wut/B8BVFC9Y5++y9Nuxvffsk7I9asVcM4oi4Jv4TStdaCF2i4tmY+jNaxZfiotjfXEWa3iWYzZWkzmU1a6zdhbmhc6Tvu0lPNRCqKwibdyKrFDvnmjXSvogtcCB7G0faj8HJBpLxi7ChwRe+RW4qnlDONWuEo+WnkMvexuHpJdo7JGhrgjONhOdf4O0q3D4NHcdJXq9A5xOSlR88ln4mtkW3Sz6nxz6UI0wWSfP1hGJfpGPnXLMm86TkXl/jPbk9OHpB9+Wxv8PkB8JMK8mDIVWFgT44/4bQWSDJ10Giru6nMDbPfXvgvt/Y9rE/Mln5VSPOeiy7vXUEuV68tfsI1mRH8G7U2MSf4vD6BgcLdZydvhQNO1FNqF+C/DJcb4ErGv9yAaY+ahnWeKSem1nvFhZ9z0GL86orTjLfI96IsXOuWWNtbNm+B5+ffYJ3XwlXp6BCRuV1PzYtp9g516yxtvzcAa+nN2xB3GuVH2a1OXHPVd6Jv/qZ/vN3hl/Pmb41kmFXMgAAAABJRU5ErkJggg==' />";
+const char htmlShortcutIcon[] = "<link rel='shortcut icon' href='data:image/gif;base64,R0lGODlhEAAQALMAABEHBLT+BJxCBFgmBHx6fKxKBCQiJCIWC/ppBJSWlNTS1Pv9+0xmBDo7Oow6BNlZBCH5BAEAAAsALAAAAAAQABAAAwRzcMm5UqKYtjFalkpjEACCAITRKJrwHOV5PII3GQ/yAM+ePwYKYYYoOBwF3YEwaQCehQODcSg8AZ7EwPRwMAIBhiOHGFi2Oi9YTDYvnFAp1fq0LYY5I1LJvP14PjpBTS4wJgAzNRQhIzEoKiwfGx0fGRYfEQA7' />";
 
 const char htmlDoctype[] =
 "<!DOCTYPE html><html>";
