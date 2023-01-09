@@ -752,11 +752,11 @@ int http_fn_index(http_request_t* request) {
 		hprintf255(request, "<h5>");
 		for (i = 0; i < CHANNEL_MAX; i++) {
 			if (CHANNEL_IsInUse(i)) {
-				int value = CHANNEL_Get(i);
+				float value = CHANNEL_GetFloat(i);
 				if (bFirst == false) {
 					hprintf255(request, ", ");
 				}
-				hprintf255(request, "Channel %i = %i", i, value);
+				hprintf255(request, "Channel %i = %.2f", i, value);
 				bFirst = false;
 			}
 		}

@@ -868,6 +868,13 @@ void CFG_ApplyChannelStartValues() {
 		}
 	}
 }
+float CHANNEL_GetFloat(int ch) {
+	if (ch < 0 || ch >= CHANNEL_MAX) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Get: Channel index %i is out of range <0,%i)\n\r", ch, CHANNEL_MAX);
+		return 0;
+	}
+	return g_channelValuesFloats[ch];
+}
 int CHANNEL_Get(int ch) {
 	if(ch < 0 || ch >= CHANNEL_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_Get: Channel index %i is out of range <0,%i)\n\r",ch,CHANNEL_MAX);
