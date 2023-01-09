@@ -7,7 +7,7 @@ void HAL_PIN_Setup_Output(int index);
 void HAL_PIN_PWM_Stop(int index);
 void HAL_PIN_PWM_Start(int index);
 // Value range is 0 to 100, value is clamped
-void HAL_PIN_PWM_Update(int index, int value);
+void HAL_PIN_PWM_Update(int index, float value);
 int HAL_PIN_CanThisPinBePWM(int index);
 const char* HAL_PIN_GetPinNameAlias(int index);
 

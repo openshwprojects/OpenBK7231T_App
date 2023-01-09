@@ -118,7 +118,7 @@ void HAL_PIN_PWM_Start(int index) {
 #endif
 	bk_pwm_start(pwmIndex);
 }
-void HAL_PIN_PWM_Update(int index, int value) {
+void HAL_PIN_PWM_Update(int index, float value) {
 	int pwmIndex;
 
 	pwmIndex = PIN_GetPWMIndexForPinIndex(index);
