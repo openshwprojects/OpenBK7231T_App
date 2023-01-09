@@ -109,6 +109,16 @@ static byte CFG_CalcChecksum(mainConfig_t *inf) {
 	return crc;
 }
 
+bool isZeroes(const byte *p, int size) {
+	int i;
+
+	for (i = 0; i < size; i++) {
+		if (p[i])
+			return false;
+	}
+	return true;
+}
+
 bool CFG_HasValidLEDCorrectionTable() {
 	if (isZeroes((const byte*)&g_cfg.led_corr, sizeof(g_cfg.led_corr))) {
 		return false;
