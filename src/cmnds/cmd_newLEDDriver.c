@@ -71,6 +71,8 @@ struct led_corr_s { // LED gamma correction and calibration data block
 	float cw_bright_min;  // CW minimum brightness, range 0.0-10.0%
 } led_corr;
 
+float rgb_used_corr[3];   // RGB correction currently used
+
 // NOTE: in this system, enabling/disabling whole led light bulb
 // is not changing the stored channel and brightness values.
 // They are kept intact so you can reenable the bulb and keep your color setting
@@ -244,7 +246,7 @@ void LED_RunQuickColorLerp(int deltaMS) {
 	}
 
 	for(i = 0; i < 5; i++) {
-		float ch_rgb_cal = (i < 3)? led_corr.rgb_cal[i] : 1.0f; // adjust change rate with RGB calibration
+		float ch_rgb_cal = (i < 3)? rgb_used_corr[i] : 1.0f; // adjust change rate with RGB correction in use
 		// This is the most silly and primitive approach, but it works
 		// In future we might implement better lerp algorithms, use HUE, etc
 		led_rawLerpCurrent[i] = Mathf_MoveTowards(led_rawLerpCurrent[i],finalColors[i], deltaSeconds * led_lerpSpeedUnitsPerSecond * ch_rgb_cal);
@@ -319,13 +321,13 @@ float led_gamma_correction (int color, float iVal) { // apply LED gamma and RGB 
 
 	// apply RGB level correction:
 	if (color < 3) {
-		float ch_correction = led_corr.rgb_cal[color];
+		rgb_used_corr[color] = led_corr.rgb_cal[color];
 		// boost gain to get full brightness when one RGB base color is dominant:
 		float sum_other_colors = baseColors[0] + baseColors[1] + baseColors[2] - baseColors[color];
 		if (baseColors[color] > sum_other_colors) {
-			ch_correction += (1.0f - ch_correction) * (1.0f - sum_other_colors / baseColors[color]);
+			rgb_used_corr[color] += (1.0f - rgb_used_corr[color]) * (1.0f - sum_other_colors / baseColors[color]);
 		}
-		oVal *= ch_correction;
+		oVal *= rgb_used_corr[color];
 	}
 
 	if (led_gamma_enable_channel_messages &&
