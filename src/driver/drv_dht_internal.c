@@ -301,7 +301,7 @@ bool DHT_read(dht_t *dht, bool force) {
 	data[0] = data[1] = data[2] = data[3] = data[4] = 0;
 
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_DHT, "DHT start, pin is %i",(int)dht->_pin);
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "DHT start, pin is %i",(int)dht->_pin);
   // Send start signal.  See DHT datasheet for full signal diagram:
   //   http://www.adafruit.com/datasheets/Digital%20humidity%20and%20temperature%20sensor%20AM2302.pdf
 
@@ -347,7 +347,7 @@ bool DHT_read(dht_t *dht, bool force) {
 #ifdef PLATFORM_BEKEN
 			GLOBAL_INT_RESTORE();
 #endif
-			addLogAdv(LOG_INFO, LOG_FEATURE_DHT, "DHT timeout waiting for start signal low pulse.");
+			addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "DHT timeout waiting for start signal low pulse.");
 			dht->_lastresult = false;
 			return dht->_lastresult;
 		}
@@ -355,7 +355,7 @@ bool DHT_read(dht_t *dht, bool force) {
 #ifdef PLATFORM_BEKEN
 			GLOBAL_INT_RESTORE();
 #endif
-			addLogAdv(LOG_INFO, LOG_FEATURE_DHT, "DHT timeout waiting for start signal high pulse.");
+			addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "DHT timeout waiting for start signal high pulse.");
 			dht->_lastresult = false;
 			return dht->_lastresult;
 		}
@@ -383,7 +383,7 @@ bool DHT_read(dht_t *dht, bool force) {
 		uint32_t lowCycles = cycles[2 * i];
 		uint32_t highCycles = cycles[2 * i + 1];
 		if ((lowCycles == TIMEOUT) || (highCycles == TIMEOUT)) {
-			addLogAdv(LOG_INFO, LOG_FEATURE_DHT, "DHT timeout waiting for pulse.");
+			addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "DHT timeout waiting for pulse.");
 			dht->_lastresult = false;
 			return dht->_lastresult;
 		}
@@ -417,7 +417,7 @@ bool DHT_read(dht_t *dht, bool force) {
 		return dht->_lastresult;
 	}
 	else {
-		addLogAdv(LOG_INFO, LOG_FEATURE_DHT, "DHT checksum failure!");
+		addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "DHT checksum failure!");
 		dht->_lastresult = false;
 		return dht->_lastresult;
 	}
