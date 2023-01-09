@@ -132,14 +132,14 @@ static void BP5758D_PreInit() {
 
 
 
-void BP5758D_Write(byte *rgbcw) {
+void BP5758D_Write(float *rgbcw) {
 	int i;
 	unsigned short cur_col_10[5];
 
 	for(i = 0; i < 5; i++){
 		// convert 0-255 to 0-1023
 		//cur_col_10[i] = rgbcw[g_channelOrder[i]] * 4;
-		cur_col_10[i] = MAP(rgbcw[g_channelOrder[i]], 0, 255, 0, 1023);
+		cur_col_10[i] = MAP(rgbcw[g_channelOrder[i]], 0, 255.0f, 0, 1023.0f);
 
 	}
 
@@ -199,7 +199,7 @@ static commandResult_t BP5758D_Current(const void *context, const char *cmd, con
 
 static commandResult_t BP5758D_RGBCW(const void *context, const char *cmd, const char *args, int flags){
 	const char *c = args;
-	byte col[5] = { 0, 0, 0, 0, 0 };
+	float col[5] = { 0, 0, 0, 0, 0 };
 	int ci;
 	int val;
 

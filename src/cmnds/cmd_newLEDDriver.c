@@ -189,7 +189,7 @@ float led_lerpSpeedUnitsPerSecond = 200.f;
 float led_current_value_brightness = 0;
 float led_current_value_cold_or_warm = 0;
 
-void led_Save_finalRGBCW(byte* finalRGBCW) {
+void led_Save_finalRGBCW(float* finalRGBCW) {
 #ifdef ENABLE_DRIVER_LED
 	if (DRV_IsRunning("SM2135")) {
 		SM2135_Write(finalRGBCW);
@@ -293,7 +293,7 @@ void LED_RunQuickColorLerp(int deltaMS) {
 		}
 	}
 	
-	led_Save_finalRGBCW(finalRGBCW);
+	led_Save_finalRGBCW(finalColors);
 }
 
 int led_gamma_enable_channel_messages = 0;
@@ -457,7 +457,7 @@ void apply_smart_light() {
 		}
 	}
 	if(CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == false) {
-		led_Save_finalRGBCW(finalRGBCW);
+		led_Save_finalRGBCW(finalColors);
 	}
 
 	if(CFG_HasFlag(OBK_FLAG_LED_REMEMBERLASTSTATE)) {
@@ -522,7 +522,8 @@ commandResult_t led_gamma_control (const void *context, const char *cmd, const c
 					g_cfg.led_corr.rgb_cal[c] = cal_factor[c];
 				}
 				// make sure save will happen next frame from main loop
-				CFG_MarkAsDirty(); 
+				CFG_MarkAsDirty();
+				led_gamma_list();
 			}
 		}
 
@@ -532,6 +533,7 @@ commandResult_t led_gamma_control (const void *context, const char *cmd, const c
 			g_cfg.led_corr.led_gamma = gamma_par;
 			// make sure save will happen next frame from main loop
 			CFG_MarkAsDirty();
+			led_gamma_list();
 		}
 
 	} else if (strncmp ("brtMin", args, 6) == 0) {
@@ -545,6 +547,7 @@ commandResult_t led_gamma_control (const void *context, const char *cmd, const c
 			}
 			// make sure save will happen next frame from main loop
 			CFG_MarkAsDirty();
+			led_gamma_list();
 		}
 
 	} else if (strcmp ("list", args) == 0) {

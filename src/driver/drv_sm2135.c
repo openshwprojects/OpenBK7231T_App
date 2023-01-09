@@ -87,7 +87,7 @@ static void SM2135_Stop(void) {
 	usleep(SM2135_DELAY);
 }
 
-void SM2135_Write(byte *rgbcw) {
+void SM2135_Write(float *rgbcw) {
 	int i;
 	int bRGB;
 
@@ -135,7 +135,7 @@ void SM2135_Write(byte *rgbcw) {
 
 static commandResult_t SM2135_RGBCW(const void *context, const char *cmd, const char *args, int flags){
 	const char *c = args;
-	byte col[5] = { 0, 0, 0, 0, 0 };
+	float col[5] = { 0, 0, 0, 0, 0 };
 	int ci;
 	int val;
 

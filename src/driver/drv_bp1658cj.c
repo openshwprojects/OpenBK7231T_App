@@ -90,16 +90,16 @@ static void BP1658CJ_PreInit() {
 
 
 
-void BP1658CJ_Write(byte *rgbcw) {
+void BP1658CJ_Write(float *rgbcw) {
   unsigned short cur_col_10[5];
   int i;
 
-  ADDLOG_DEBUG(LOG_FEATURE_CMD, "Writing to Lamp: #%02X%02X%02X%02X%02X", rgbcw[0], rgbcw[1], rgbcw[2], rgbcw[3], rgbcw[4]);
+  //ADDLOG_DEBUG(LOG_FEATURE_CMD, "Writing to Lamp: %f %f %f %f %f", rgbcw[0], rgbcw[1], rgbcw[2], rgbcw[3], rgbcw[4]);
 
 	for(i = 0; i < 5; i++){
 		// convert 0-255 to 0-1023
 		//cur_col_10[i] = rgbcw[g_channelOrder[i]] * 4;
-    cur_col_10[i] = MAP(rgbcw[g_channelOrder[i]], 0, 255, 0, 1023);
+		cur_col_10[i] = MAP(rgbcw[g_channelOrder[i]], 0, 255.0f, 0, 1023.0f);
 	}
   //ADDLOG_DEBUG(LOG_FEATURE_CMD, "Writing to Lamp (hex): #%02X%02X%02X%02X%02X", cur_col_10[0], cur_col_10[1], cur_col_10[2], cur_col_10[3], cur_col_10[4]);
 	// If we receive 0 for all channels, we'll assume that the lightbulb is off, and activate BP1658CJ's sleep mode ([0x80] ).
@@ -136,7 +136,7 @@ void BP1658CJ_Write(byte *rgbcw) {
 
 static commandResult_t BP1658CJ_RGBCW(const void *context, const char *cmd, const char *args, int flags){
 	const char *c = args;
-	byte col[5] = { 0, 0, 0, 0, 0 };
+	float col[5] = { 0, 0, 0, 0, 0 };
 	int ci;
 	int val;
 
