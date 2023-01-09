@@ -737,10 +737,10 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_PWM:
 			{
 				int channelIndex;
-				int channelValue;
+				float channelValue;
 
 				channelIndex = PIN_GetPinChannelForPinIndex(index);
-				channelValue = g_channelValues[channelIndex];
+				channelValue = g_channelValuesFloats[channelIndex];
 				HAL_PIN_PWM_Start(index);
 
 				if(role == IOR_PWM_n) {
@@ -1347,10 +1347,10 @@ void PIN_ticks(void *param)
 
 #if 1
 		if(g_cfg.pins.roles[i] == IOR_PWM) {
-			HAL_PIN_PWM_Update(i,g_channelValues[g_cfg.pins.channels[i]]);
+			HAL_PIN_PWM_Update(i, g_channelValuesFloats[g_cfg.pins.channels[i]]);
 		} else if(g_cfg.pins.roles[i] == IOR_PWM_n) {
 			// invert PWM value
-			HAL_PIN_PWM_Update(i,100-g_channelValues[g_cfg.pins.channels[i]]);
+			HAL_PIN_PWM_Update(i,100- g_channelValuesFloats[g_cfg.pins.channels[i]]);
 		} else
 #endif
 		if(g_cfg.pins.roles[i] == IOR_Button || g_cfg.pins.roles[i] == IOR_Button_n
