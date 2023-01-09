@@ -68,7 +68,7 @@ void HAL_PIN_PWM_Start(int index) {
 	bl_pwm_start(pwm);
 
 }
-void HAL_PIN_PWM_Update(int index, int value) {
+void HAL_PIN_PWM_Update(int index, float value) {
 	int pwm;
 	float duty;
 

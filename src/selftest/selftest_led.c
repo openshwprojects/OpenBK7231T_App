@@ -132,8 +132,10 @@ void Test_LEDDriver_RGBCW() {
 	// set 50%
 	CMD_ExecuteCommand("led_dimmer 50", 0);
 
-	SELFTEST_ASSERT_CHANNEL(1, 50);
-	SELFTEST_ASSERT_CHANNEL(2, 50);
+	printf("Channel R is %i, channel G is %i, channel B is %i, channel C is %i, channel W is %i\n",
+		CHANNEL_Get(1), CHANNEL_Get(2), CHANNEL_Get(3), CHANNEL_Get(4), CHANNEL_Get(5));
+	SELFTEST_ASSERT_CHANNEL(1, 21);
+	SELFTEST_ASSERT_CHANNEL(2, 21);
 	SELFTEST_ASSERT_CHANNEL(3, 0);
 	SELFTEST_ASSERT_CHANNEL(4, 0);
 	SELFTEST_ASSERT_CHANNEL(5, 0);
@@ -197,7 +199,7 @@ void Test_LEDDriver_RGB() {
 	printf("Channel R is %i, channel G is %i, channel B is %i\n", CHANNEL_Get(1), CHANNEL_Get(2), CHANNEL_Get(3));
 	SELFTEST_ASSERT_CHANNEL(1, 0);
 	SELFTEST_ASSERT_CHANNEL(2, 0);
-	SELFTEST_ASSERT_CHANNEL(3, 50);
+	SELFTEST_ASSERT_CHANNEL(3, 21);
 
 	// set 90% brightness
 	CMD_ExecuteCommand("led_dimmer 90", 0);
@@ -206,7 +208,7 @@ void Test_LEDDriver_RGB() {
 	printf("Channel R is %i, channel G is %i, channel B is %i\n", CHANNEL_Get(1), CHANNEL_Get(2), CHANNEL_Get(3));
 	SELFTEST_ASSERT_CHANNEL(1, 0);
 	SELFTEST_ASSERT_CHANNEL(2, 0);
-	SELFTEST_ASSERT_CHANNEL(3, 90);
+	SELFTEST_ASSERT_CHANNEL(3, 79);
 	// disable
 	CMD_ExecuteCommand("led_enableAll 0", 0);
 	printf("Channel R is %i, channel G is %i, channel B is %i\n", CHANNEL_Get(1), CHANNEL_Get(2), CHANNEL_Get(3));
@@ -218,7 +220,7 @@ void Test_LEDDriver_RGB() {
 	printf("Channel R is %i, channel G is %i, channel B is %i\n", CHANNEL_Get(1), CHANNEL_Get(2), CHANNEL_Get(3));
 	SELFTEST_ASSERT_CHANNEL(1, 0);
 	SELFTEST_ASSERT_CHANNEL(2, 0);
-	SELFTEST_ASSERT_CHANNEL(3, 90);
+	SELFTEST_ASSERT_CHANNEL(3, 79);
 
 	// Tasmota style command should disable LED
 	Test_FakeHTTPClientPacket_GET("cm?cmnd=POWER%200");
@@ -229,7 +231,7 @@ void Test_LEDDriver_RGB() {
 	Test_FakeHTTPClientPacket_GET("cm?cmnd=POWER%201");
 	SELFTEST_ASSERT_CHANNEL(1, 0);
 	SELFTEST_ASSERT_CHANNEL(2, 0);
-	SELFTEST_ASSERT_CHANNEL(3, 90);
+	SELFTEST_ASSERT_CHANNEL(3, 79);
 
 	// make error
 	//SELFTEST_ASSERT_CHANNEL(3, 666);

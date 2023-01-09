@@ -748,7 +748,7 @@ void Test_Http_LED_RGB() {
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 50);
 	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
 	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "127,127,0");
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "55,55,0");
 
 
 	CMD_ExecuteCommand("led_basecolor_rgb 0000FF", 0);
@@ -756,7 +756,7 @@ void Test_Http_LED_RGB() {
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 50);
 	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
 	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "0,0,127");
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "0,0,55");
 	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
 	CMD_ExecuteCommand("led_dimmer 100", 0);
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
@@ -785,7 +785,7 @@ void Test_Http_LED_RGB() {
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 50);
 	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
 	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "0,0,127");
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "0,0,55");
 
 	// dimmer back to 100
 	SIM_SendFakeMQTTAndRunSimFrame_CMND("led_dimmer", "100");

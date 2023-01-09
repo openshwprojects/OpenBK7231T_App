@@ -185,6 +185,7 @@ int __cdecl main(int argc, char **argv)
     WSADATA wsaData;
     int iResult;
 
+#if 0
 	int maxTest = 100;
 	for (int i = 0; i <= maxTest; i++) {
 		float frac = (float)i / (float)(maxTest);
@@ -192,6 +193,7 @@ int __cdecl main(int argc, char **argv)
 		float res = LED_BrightnessMapping(255, in);
 		printf("Brightness %f with color %f gives %f\n", in, 255.0f, res);
 	}
+#endif
     // Initialize Winsock
     iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
     if (iResult != 0) {
@@ -201,12 +203,27 @@ int __cdecl main(int argc, char **argv)
 	printf("sizeof(short) = %d\n", (int)sizeof(short));
 	printf("sizeof(int) = %d\n", (int)sizeof(int));
 	printf("sizeof(long) = %d\n", (int)sizeof(long));
+	printf("sizeof(unsigned long) = %d\n", (int)sizeof(unsigned long));
 	printf("sizeof(float) = %d\n", (int)sizeof(float));
 	printf("sizeof(double) = %d\n", (int)sizeof(double));
 	printf("sizeof(long double) = %d\n", (int)sizeof(long double));
+	printf("sizeof(led_corr_t) = %d\n", (int)sizeof(led_corr_t));
+
+	if (sizeof(led_corr_t) != MAGIC_LED_CORR_SIZE) {
+		printf("sizeof(led_corr_t) != MAGIC_LED_CORR_SIZE!: %i\n", sizeof(led_corr_t));
+		system("pause");
+	}
 	//printf("Offset MQTT Group: %i", OFFSETOF(mainConfig_t, mqtt_group));
 	if (sizeof(mainConfig_t) != MAGIC_CONFIG_SIZE) {
 		printf("sizeof(mainConfig_t) != MAGIC_CONFIG_SIZE!: %i\n", sizeof(mainConfig_t));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, mqtt_group) != 0x00000554) {
+		printf("OFFSETOF(mainConfig_t, mqtt_group) != 0x00000554: %i\n", OFFSETOF(mainConfig_t, mqtt_group));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, LFS_Size) != 0x000004BC) {
+		printf("OFFSETOF(mainConfig_t, LFS_Size) != 0x000004BC: %i\n", OFFSETOF(mainConfig_t, LFS_Size));
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, ping_host) != 0x000005A0) {
@@ -225,6 +242,7 @@ int __cdecl main(int argc, char **argv)
 		printf("OFFSETOF(mainConfig_t, version) != 0x00000004: %i\n", OFFSETOF(mainConfig_t, version));
 		system("pause");
 	}
+	
 	if (bWantsUnitTests) {
 		g_bDoingUnitTestsNow = 1;
 		SIM_DoFreshOBKBoot();

@@ -206,7 +206,7 @@ void HAL_PIN_PWM_Stop(int pinIndex) {
 void HAL_PIN_PWM_Start(int index) {
 	g_pinModes[index] = SIM_PIN_PWM;
 }
-void HAL_PIN_PWM_Update(int index, int value) {
+void HAL_PIN_PWM_Update(int index, float value) {
 	if (value < 0)
 		value = 0;
 	if (value > 100)

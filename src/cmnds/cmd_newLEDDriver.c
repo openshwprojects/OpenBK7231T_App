@@ -62,15 +62,6 @@ float g_hsv_v = 1; // 0 to 1
 float g_cfg_colorScaleToChannel = 100.0f/255.0f;
 int g_numBaseColors = 5;
 float g_brightness = 1.0f;
-
-struct led_corr_s { // LED gamma correction and calibration data block
-	char  tag[16];        // LED gamma block tag
-	float rgb_cal[3];     // RGB correction factors, range 0.0-1.0, 1.0 = no correction
-	float led_gamma;      // LED gamma value, range 1.0-3.0
-	float rgb_bright_min; // RGB minimum brightness, range 0.0-10.0%
-	float cw_bright_min;  // CW minimum brightness, range 0.0-10.0%
-} led_corr;
-
 float rgb_used_corr[3];   // RGB correction currently used
 
 // NOTE: in this system, enabling/disabling whole led light bulb
@@ -264,15 +255,15 @@ void LED_RunQuickColorLerp(int deltaMS) {
 
 	// OBK_FLAG_LED_ALTERNATE_CW_MODE means we have a driver that takes one PWM for brightness and second for temperature
 	if(isCWMode() && CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
-		CHANNEL_Set(firstChannelIndex, led_current_value_cold_or_warm, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-		CHANNEL_Set(firstChannelIndex+1, led_current_value_brightness, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+		CHANNEL_Set_FloatPWM(firstChannelIndex, led_current_value_cold_or_warm, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+		CHANNEL_Set_FloatPWM(firstChannelIndex+1, led_current_value_brightness, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 	} else {
 		if(isCWMode()) { 
 			// In CW mode, user sets just two PWMs. So we have: PWM0 and PWM1 (or maybe PWM1 and PWM2)
 			// But we still have RGBCW internally
 			// So, we need to map. Map component 3 of RGBCW to first channel, and component 4 to second.
-			CHANNEL_Set(firstChannelIndex + 0, led_rawLerpCurrent[3] * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-			CHANNEL_Set(firstChannelIndex + 1, led_rawLerpCurrent[4] * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+			CHANNEL_Set_FloatPWM(firstChannelIndex + 0, led_rawLerpCurrent[3] * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+			CHANNEL_Set_FloatPWM(firstChannelIndex + 1, led_rawLerpCurrent[4] * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 		} else {
 			// This should work for both RGB and RGBCW
 			// This also could work for a SINGLE COLOR strips
@@ -283,9 +274,9 @@ void LED_RunQuickColorLerp(int deltaMS) {
 				// emulated cool is -1 by default, so this block will only execute
 				// if the cool emulation was enabled
 				if (channelToUse == emulatedCool && g_lightMode == Light_Temperature) {
-					CHANNEL_Set(firstChannelIndex + 0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-					CHANNEL_Set(firstChannelIndex + 1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-					CHANNEL_Set(firstChannelIndex + 2, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+					CHANNEL_Set_FloatPWM(firstChannelIndex + 0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+					CHANNEL_Set_FloatPWM(firstChannelIndex + 1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+					CHANNEL_Set_FloatPWM(firstChannelIndex + 2, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 				}
 				else {
 					if (CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
@@ -296,7 +287,7 @@ void LED_RunQuickColorLerp(int deltaMS) {
 							chVal = led_current_value_brightness;
 						}
 					}
-					CHANNEL_Set(channelToUse, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+					CHANNEL_Set_FloatPWM(channelToUse, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 				}
 			}
 		}
@@ -313,15 +304,15 @@ float led_gamma_correction (int color, float iVal) { // apply LED gamma and RGB 
 	}
 
 	// apply LED gamma correction:
-	float ch_bright_min = led_corr.rgb_bright_min / 100;
+	float ch_bright_min = g_cfg.led_corr.rgb_bright_min / 100;
 	if (color > 2) {
-		ch_bright_min = led_corr.cw_bright_min / 100;
+		ch_bright_min = g_cfg.led_corr.cw_bright_min / 100;
 	}
-	float oVal = (powf (g_brightness, led_corr.led_gamma) * (1 - ch_bright_min) + ch_bright_min) * iVal;
+	float oVal = (powf (g_brightness, g_cfg.led_corr.led_gamma) * (1 - ch_bright_min) + ch_bright_min) * iVal;
 
 	// apply RGB level correction:
 	if (color < 3) {
-		rgb_used_corr[color] = led_corr.rgb_cal[color];
+		rgb_used_corr[color] = g_cfg.led_corr.rgb_cal[color];
 		// boost gain to get full brightness when one RGB base color is dominant:
 		float sum_other_colors = baseColors[0] + baseColors[1] + baseColors[2] - baseColors[color];
 		if (baseColors[color] > sum_other_colors) {
@@ -392,8 +383,8 @@ void apply_smart_light() {
 			}
 		}
 		if(CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == false) {
-			CHANNEL_Set(firstChannelIndex, value_cold_or_warm, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-			CHANNEL_Set(firstChannelIndex+1, value_brightness, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+			CHANNEL_Set_FloatPWM(firstChannelIndex, value_cold_or_warm, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+			CHANNEL_Set_FloatPWM(firstChannelIndex+1, value_brightness, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 		}
 	} else {
 		for(i = 0; i < maxPossibleIndexToSet; i++) {
@@ -437,18 +428,18 @@ void apply_smart_light() {
 					// We don't have RGB channels
 					// so, do simple mapping
 					if (i == 3) {
-						CHANNEL_Set(firstChannelIndex + 0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+						CHANNEL_Set_FloatPWM(firstChannelIndex + 0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 					}
 					else if (i == 4) {
-						CHANNEL_Set(firstChannelIndex + 1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+						CHANNEL_Set_FloatPWM(firstChannelIndex + 1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 					}
 				} else {
 					// emulated cool is -1 by default, so this block will only execute
 					// if the cool emulation was enabled
 					if (channelToUse == emulatedCool && g_lightMode == Light_Temperature) {
-						CHANNEL_Set(firstChannelIndex + 0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-						CHANNEL_Set(firstChannelIndex + 1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-						CHANNEL_Set(firstChannelIndex + 2, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+						CHANNEL_Set_FloatPWM(firstChannelIndex + 0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+						CHANNEL_Set_FloatPWM(firstChannelIndex + 1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+						CHANNEL_Set_FloatPWM(firstChannelIndex + 2, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 					}
 					else {
 						if (CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
@@ -459,7 +450,7 @@ void apply_smart_light() {
 								chVal = value_brightness;
 							}
 						}
-						CHANNEL_Set(channelToUse, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+						CHANNEL_Set_FloatPWM(channelToUse, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 					}
 				}
 			}
@@ -510,9 +501,9 @@ void apply_smart_light() {
 void led_gamma_list (void) { // list RGB gamma settings
 	led_gamma_enable_channel_messages = 1;
 	addLogAdv (LOG_INFO, LOG_FEATURE_CFG, "RGB  cal %f %f %f\r\n",
-			   led_corr.rgb_cal[0], led_corr.rgb_cal[1], led_corr.rgb_cal[2]);
+		g_cfg.led_corr.rgb_cal[0], g_cfg.led_corr.rgb_cal[1], g_cfg.led_corr.rgb_cal[2]);
 	addLogAdv (LOG_INFO, LOG_FEATURE_CFG, "LED  gamma %.2f  brtMinRGB %.2f%%  brtMinCW %.2f%%\r\n",
-			   led_corr.led_gamma, led_corr.rgb_bright_min, led_corr.cw_bright_min);
+		g_cfg.led_corr.led_gamma, g_cfg.led_corr.rgb_bright_min, g_cfg.led_corr.cw_bright_min);
 }
 
 #ifdef PLATFORM_BK7231T
@@ -523,32 +514,16 @@ int tuya_hal_flash_write (const uint32_t addr, const uint8_t *src, const uint32_
 # define LED_GAMMA_FLASH_ADDR 0x1df000 // LED gamma config flash address
 #endif
 
-void led_gamma_flash_save (void) { // save RGB gamma correction in Flash
-#ifdef PLATFORM_BK7231T
-	strcpy (led_corr.tag, "LED_Calibration");
-	tuya_hal_flash_erase (LED_GAMMA_FLASH_ADDR, sizeof (led_corr));
-	tuya_hal_flash_write (LED_GAMMA_FLASH_ADDR, (const uint8_t *)&led_corr, sizeof (led_corr));
-	addLogAdv (LOG_INFO, LOG_FEATURE_CFG, "LED calibration saved to flash:\r\n");
-	led_gamma_list ();
-#endif
+bool isZeroes(const byte *p, int size) {
+	int i;
+
+	for (i = 0; i < size; i++) {
+		if (p[i])
+			return false;
+	}
+	return true;
 }
 
-void led_gamma_flash_load (void) { // load RGB gamma correction from Flash
-#ifdef PLATFORM_BK7231T
-	bekken_hal_flash_read (LED_GAMMA_FLASH_ADDR, (void *)&led_corr, sizeof (led_corr));
-#endif
-	if (strcmp (led_corr.tag, "LED_Calibration") == 0) {
-		addLogAdv (LOG_INFO, LOG_FEATURE_CFG,"RGB calibration read from flash\r\n");
-	} else {
-		addLogAdv (LOG_INFO, LOG_FEATURE_CFG,"RGB calibration not found in flash, using defaults\r\n");
-		for (int c = 0; c < 3; c++) {
-			led_corr.rgb_cal[c] = 1.0f;
-		}
-		led_corr.led_gamma = 2.2f;
-		led_corr.rgb_bright_min = 0.1f;
-		led_corr.cw_bright_min  = 0.1f;
-	}
-}
 
 commandResult_t led_gamma_control (const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int c;
@@ -589,17 +564,19 @@ commandResult_t led_gamma_control (const void *context, const char *cmd, const c
 			}
 			if (c == 3) {
 				for (c = 0; c < 3; c++) {
-					led_corr.rgb_cal[c] = cal_factor[c];
+					g_cfg.led_corr.rgb_cal[c] = cal_factor[c];
 				}
-				led_gamma_flash_save ();
+				// make sure save will happen next frame from main loop
+				CFG_MarkAsDirty(); 
 			}
 		}
 
 	} else if (strncmp ("gamma", args, 5) == 0) {
 		float gamma_par = atof (args + 6);
 		if ((gamma_par >= 1.0f) && (gamma_par <= 3.0f)) {
-			led_corr.led_gamma = gamma_par;
-			led_gamma_flash_save ();
+			g_cfg.led_corr.led_gamma = gamma_par;
+			// make sure save will happen next frame from main loop
+			CFG_MarkAsDirty();
 		}
 
 	} else if (strncmp ("brtMin", args, 6) == 0) {
@@ -607,11 +584,12 @@ commandResult_t led_gamma_control (const void *context, const char *cmd, const c
 		float bright_min = atof (p);
 		if ((bright_min >= 0.0f) && (bright_min <= 10.0f)) {
 			if (strncmp ("RGB", args + 6, 3) == 0) {
-				led_corr.rgb_bright_min = bright_min;
+				g_cfg.led_corr.rgb_bright_min = bright_min;
 			} else {
-				led_corr.cw_bright_min = bright_min;
+				g_cfg.led_corr.cw_bright_min = bright_min;
 			}
-			led_gamma_flash_save ();
+			// make sure save will happen next frame from main loop
+			CFG_MarkAsDirty();
 		}
 
 	} else if (strcmp ("list", args) == 0) {
@@ -1513,8 +1491,6 @@ void NewLED_InitCommands(){
 	//cmddetail:"fn":"rgb_gamma_control","file":"cmnds/cmd_rgbGamma.c","requires":"",
 	//cmddetail:"examples":"led_gammaCtrl on"}
     CMD_RegisterCommand("led_gammaCtrl", "", led_gamma_control, NULL, NULL);
-
-	led_gamma_flash_load (); // load LED gamma correction and calibration data from Flash
 }
 
 void NewLED_RestoreSavedStateIfNeeded() {

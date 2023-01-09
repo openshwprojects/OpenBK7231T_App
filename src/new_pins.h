@@ -217,6 +217,15 @@ enum {
 	CFG_OBK_POWER_MAX
 };
 
+typedef struct led_corr_s { // LED gamma correction and calibration data block
+	float rgb_cal[3];     // RGB correction factors, range 0.0-1.0, 1.0 = no correction
+	float led_gamma;      // LED gamma value, range 1.0-3.0
+	float rgb_bright_min; // RGB minimum brightness, range 0.0-10.0%
+	float cw_bright_min;  // CW minimum brightness, range 0.0-10.0%
+} led_corr_t;
+
+#define MAGIC_LED_CORR_SIZE		24
+
 //
 // Main config structure (less than 2KB)
 //
@@ -281,9 +290,12 @@ typedef struct mainConfig_s {
 	byte buttonHoldRepeat;
 	byte unused_fill1;
 
+	// offset 0x000004BC
 	unsigned long LFS_Size; // szie of LFS volume.  it's aligned against the end of OTA
-	byte unusedSectorAB[148];
+	byte unusedSectorAB[124];
+	led_corr_t led_corr;
 	// alternate topic name for receiving MQTT commands
+	// offset 0x00000554
 	char mqtt_group[64];
 	// offs 0x00000594
 	byte unused_bytefill[3];
@@ -328,7 +340,8 @@ bool CHANNEL_Check(int ch);
 void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex));
 void CHANNEL_ClearAllChannels();
 // CHANNEL_SET_FLAG_*
-void CHANNEL_Set(int ch, float iVal, int iFlags);
+void CHANNEL_Set(int ch, int iVal, int iFlags);
+void CHANNEL_Set_FloatPWM(int ch, float fVal, int iFlags);
 void CHANNEL_Add(int ch, int iVal);
 void CHANNEL_AddClamped(int ch, int iVal, int min, int max);
 int CHANNEL_Get(int ch);

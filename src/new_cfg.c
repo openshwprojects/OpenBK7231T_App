@@ -108,6 +108,28 @@ static byte CFG_CalcChecksum(mainConfig_t *inf) {
 
 	return crc;
 }
+
+bool CFG_HasValidLEDCorrectionTable() {
+	if (isZeroes((const byte*)&g_cfg.led_corr, sizeof(g_cfg.led_corr))) {
+		return false;
+	}
+	else {
+		return true;
+	}
+}
+void CFG_SetDefaultLEDCorrectionTable() {
+	addLogAdv(LOG_INFO, LOG_FEATURE_CFG, "CFG_SetDefaultLEDCorrectionTable: setting defaults\r\n");
+	for (int c = 0; c < 3; c++) {
+		g_cfg.led_corr.rgb_cal[c] = 1.0f;
+	}
+	g_cfg.led_corr.led_gamma = 2.2f;
+	g_cfg.led_corr.rgb_bright_min = 0.1f;
+	g_cfg.led_corr.cw_bright_min = 0.1f;
+	g_cfg_pendingChanges++;
+}
+void CFG_MarkAsDirty() {
+	g_cfg_pendingChanges++;
+}
 void CFG_SetDefaultConfig() {
 	// must be unsigned, else print below prints negatives as e.g. FFFFFFFe
 	unsigned char mac[6] = { 0 };
@@ -156,6 +178,8 @@ void CFG_SetDefaultConfig() {
 
 	// This is helpful for users
 	CFG_SetFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEONCONNECT,true);
+
+	CFG_SetDefaultLEDCorrectionTable();
 
 	g_cfg_pendingChanges++;
 }
@@ -618,6 +642,10 @@ void CFG_InitAndLoad() {
 	if(g_cfg.buttonLongPress == 0) {
 		// default value is 3, which means 100ms
 		g_cfg.buttonLongPress = CFG_DEFAULT_BTN_LONG;
+	}
+	// convert to new version - add missing table
+	if (CFG_HasValidLEDCorrectionTable() == false) {
+		CFG_SetDefaultLEDCorrectionTable();
 	}
 	g_configInitialized = 1;
 	CFG_Save_IfThereArePendingChanges();

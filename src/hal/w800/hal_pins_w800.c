@@ -174,7 +174,7 @@ void HAL_PIN_PWM_Start(int index) {
 	tls_pwm_start(channel);
 }
 //value is in 0 100 range
-void HAL_PIN_PWM_Update(int index, int value) {
+void HAL_PIN_PWM_Update(int index, float value) {
 	int channel;
 	if (IsPinIndexOk(index) == 0)
 		return;
