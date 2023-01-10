@@ -2676,11 +2676,20 @@ int http_fn_cfg_pins(http_request_t* request) {
 			}
 		}
 		poststr(request, "</select>");
-		hprintf255(request, "<input class=\"hele\" name=\"r%i\" type=\"text\" value=\"%i\"/>", i, ch);
-
-		if (si == IOR_Button || si == IOR_Button_n || IS_PIN_DHT_ROLE(si))
+		// Primary linked channel
+		// Some roles do not need any channels
+		if (si != IOR_CHT8305_CLK && si != IOR_Button_ToggleAll && si != IOR_Button_ToggleAll_n
+			&& si != IOR_BL0937_CF && si != IOR_BL0937_CF1 && si != IOR_BL0937_SEL
+			&& si != IOR_LED_WIFI && si != IOR_LED_WIFI_n && si != IOR_LED_WIFI_n
+			&& !(si >= IOR_IRRecv && si <= IOR_DHT11)
+			&& !(si >= IOR_SM2135_DAT && si <= IOR_BP1658CJ_CLK))
 		{
-			// extra param. For button, is relay index to toggle on double click
+			hprintf255(request, "<input class=\"hele\" name=\"r%i\" type=\"text\" value=\"%i\"/>", i, ch);
+		}
+		// Secondary linked channel
+		// For button, is relay index to toggle on double click
+		if (si == IOR_Button || si == IOR_Button_n || IS_PIN_DHT_ROLE(si) || si == IOR_CHT8305_DAT)
+		{
 			hprintf255(request, "<input class=\"hele\" name=\"e%i\" type=\"text\" value=\"%i\"/>", i, ch2);
 		}
 		poststr(request, "</div>");

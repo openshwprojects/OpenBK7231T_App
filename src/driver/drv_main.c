@@ -109,6 +109,9 @@ static driver_t g_drivers[] = {
 	{ "SM2135",		SM2135_Init,		SM2135_RunFrame,			NULL, NULL, NULL, SM2135_OnChannelChanged, false },
 	{ "BP5758D",	BP5758D_Init,		BP5758D_RunFrame,			NULL, NULL, NULL, BP5758D_OnChannelChanged, false },
 	{ "BP1658CJ",	BP1658CJ_Init,		BP1658CJ_RunFrame,			NULL, NULL, NULL, BP1658CJ_OnChannelChanged, false },
+#endif	
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+	{ "CHT8305",	CHT8305_Init,		CHT8305_OnEverySecond,		CHT8305_AppendInformationToHTTPIndexPage, NULL, NULL, CHT8305_OnChannelChanged, false },
 #endif
 
 };

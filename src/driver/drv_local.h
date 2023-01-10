@@ -47,20 +47,25 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t* request);
 bool DRV_IsRunning(const char* name);
 
 // this is exposed here only for debug tool with automatic testing
-void DGR_ProcessIncomingPacket(char *msgbuf, int nbytes);
-void DGR_SpoofNextDGRPacketSource(const char *ipStrs);
+void DGR_ProcessIncomingPacket(char* msgbuf, int nbytes);
+void DGR_SpoofNextDGRPacketSource(const char* ipStrs);
 
 void TuyaMCU_Sensor_RunFrame();
 void TuyaMCU_Sensor_Init();
 
 
-void DRV_Toggler_ProcessChanges(http_request_t *request);
-void DRV_Toggler_AddToHtmlPage(http_request_t *request);
+void DRV_Toggler_ProcessChanges(http_request_t* request);
+void DRV_Toggler_AddToHtmlPage(http_request_t* request);
 void DRV_Toggler_AppendInformationToHTTPIndexPage(http_request_t* request);
 void DRV_InitPWMToggler();
 
 
-void DRV_HTTPButtons_ProcessChanges(http_request_t *request);
-void DRV_HTTPButtons_AddToHtmlPage(http_request_t *request);
+void DRV_HTTPButtons_ProcessChanges(http_request_t* request);
+void DRV_HTTPButtons_AddToHtmlPage(http_request_t* request);
 void DRV_InitHTTPButtons();
+
+void CHT8305_Init();
+void CHT8305_OnEverySecond();
+void CHT8305_AppendInformationToHTTPIndexPage(http_request_t* request);
+void CHT8305_OnChannelChanged(int ch, int value);
 

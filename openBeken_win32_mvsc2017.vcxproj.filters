@@ -456,6 +456,9 @@
     <ClCompile Include="src\selftest\selftest_multiplePinsOnChannel.c">
       <Filter>SelfTest</Filter>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_cht8305.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />
@@ -585,6 +588,9 @@
       <Filter>Simulator</Filter>
     </ClInclude>
     <ClInclude Include="src\driver\drv_dht_internal.h">
+      <Filter>Drv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\driver\drv_cht8305.h">
       <Filter>Drv</Filter>
     </ClInclude>
   </ItemGroup>

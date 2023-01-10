@@ -69,6 +69,8 @@ enum IORole {
 	IOR_DHT21,
 	IOR_DHT22,
 
+	IOR_CHT8305_DAT,
+	IOR_CHT8305_CLK,
 
 	IOR_Total_Options,
 };
