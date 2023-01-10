@@ -325,7 +325,7 @@ int http_fn_index(http_request_t* request) {
 		poststr(request, "<div id=\"state\">"); // replaceable content follows
 	}
 
-	poststr(request, "<table width=\"100%\">");
+	poststr(request, "<table>");	//Table default to 100% width in stylesheet
 	for (i = 0; i < CHANNEL_MAX; i++) {
 		int channelType;
 
@@ -335,10 +335,10 @@ int http_fn_index(http_request_t* request) {
 				hprintf255(request, "<tr>");
 			}
 			if (CHANNEL_Check(i)) {
-				poststr(request, "<td style=\"text-align:center; font-weight:bold; font-size:54px\">ON</td>");
+				poststr(request, "<td class='on'>ON</td>");
 			}
 			else {
-				poststr(request, "<td style=\"text-align:center; font-size:54px\">OFF</td>");
+				poststr(request, "<td class='off'>OFF</td>");
 			}
 			if (i == CHANNEL_MAX - 1) {
 				poststr(request, "</tr>");
@@ -347,7 +347,7 @@ int http_fn_index(http_request_t* request) {
 	}
 	poststr(request, "</table>");
 
-	poststr(request, "<table width=\"100%\">");
+	poststr(request, "<table>");	//Table default to 100% width in stylesheet
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		int role;
 
@@ -637,7 +637,7 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "<form action=\"index\" id=\"form%i\">", i);
 			hprintf255(request, "<input type=\"range\" min=\"0\" max=\"%i\" name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">", maxValue, inputName, i, pwmValue);
 			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, i);
-			hprintf255(request, "<input type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>", i);
+			hprintf255(request, "<input type=\"submit\" class='disp-none' value=\"Toggle %i\"/></form>", i);
 			poststr(request, "</td></tr>");
 		}
 	}
@@ -683,7 +683,7 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "<form action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_BRIGHTNESS);
 			hprintf255(request, "<input type=\"range\" min=\"0\" max=\"100\" name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">", inputName, SPECIAL_CHANNEL_BRIGHTNESS, pwmValue);
 			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, SPECIAL_CHANNEL_BRIGHTNESS);
-			hprintf255(request, "<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>", SPECIAL_CHANNEL_BRIGHTNESS);
+			hprintf255(request, "<input  type=\"submit\" class='disp-none' value=\"Toggle %i\"/></form>", SPECIAL_CHANNEL_BRIGHTNESS);
 			poststr(request, "</td></tr>");
 		}
 		if (c_pwms >= 3) {
@@ -700,7 +700,7 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "<form action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_BASECOLOR);
 			hprintf255(request, "<input type=\"color\" name=\"%s\" id=\"color%i\" value=\"#%s\" onchange=\"this.form.submit()\">", inputName, SPECIAL_CHANNEL_BASECOLOR, colorValue);
 			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, SPECIAL_CHANNEL_BASECOLOR);
-			hprintf255(request, "<input  type=\"submit\" style=\"display:none;\" value=\"Toggle Light\"/></form>");
+			hprintf255(request, "<input  type=\"submit\" class='disp-none' value=\"Toggle Light\"/></form>");
 			poststr(request, "</td></tr>");
 		}
 		if (c_pwms == 2 || c_pwms >= 4) {
@@ -718,7 +718,7 @@ int http_fn_index(http_request_t* request) {
 
 			poststr(request, "<tr><td>");
 			hprintf255(request, "<h5>LED Temperature Slider %s (%ld K) (Warm <--- ---> Cool)</h5>", activeStr, pwmKelvin);
-			hprintf255(request, "<form class='r' style='background: linear-gradient(to right, rgb(255, 160, 0), rgb(166, 209, 255));' action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_TEMPERATURE);
+			hprintf255(request, "<form class='r' action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_TEMPERATURE);
 
 			//(KELVIN_TEMPERATURE_MAX - KELVIN_TEMPERATURE_MIN) / (HASS_TEMPERATURE_MAX - HASS_TEMPERATURE_MIN) = 13
 			hprintf255(request, "<input type=\"range\" step='13' min=\"%ld\" max=\"%ld\" ", KELVIN_TEMPERATURE_MIN, KELVIN_TEMPERATURE_MAX);
@@ -827,7 +827,7 @@ int http_fn_index(http_request_t* request) {
 	}
 #endif
 	if (bSafeMode) {
-		hprintf255(request, "<h5 style='color:red'>You are in safe mode (AP mode) because full reboot failed %i times. ",
+		hprintf255(request, "<h5 class='safe'>You are in safe mode (AP mode) because full reboot failed %i times. ",
 			Main_GetLastRebootBootFailures());
 		hprintf255(request, "Pins, relays, etc are disabled.</h5>");
 
@@ -1929,7 +1929,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 		}
 
 	poststr(request, "</textarea>");
-	poststr(request, "<br/><div><label for=\"ha_disc_topic\">Discovery topic:</label><input id=\"ha_disc_topic\" value=\"homeassistant\"><button onclick=\"send_ha_disc();\">Start Home Assistant Discovery</button>&nbsp;<form action=\"cfg_mqtt\" style=\"display:inline-block;\"><button type=\"submit\">Configure MQTT</button></form></div><br/>");
+	poststr(request, "<br/><div><label for=\"ha_disc_topic\">Discovery topic:</label><input id=\"ha_disc_topic\" value=\"homeassistant\"><button onclick=\"send_ha_disc();\">Start Home Assistant Discovery</button>&nbsp;<form action=\"cfg_mqtt\" class='disp-inline'><button type=\"submit\">Configure MQTT</button></form></div><br/>");
 	poststr(request, htmlFooterReturnToCfgLink);
 	http_html_end(request);
 	poststr(request, ha_discovery_script);
