@@ -381,7 +381,6 @@ err_t mqtt_client_connect(mqtt_client_t *client, const ip_addr_t *ip_addr, u16_t
 	if (MQTT_IsFakingOnlineMQTT())
 		return 0;
 
-
 	LWIP_ASSERT_CORE_LOCKED();
 	LWIP_ASSERT("mqtt_client_connect: client != NULL", client != NULL);
 	LWIP_ASSERT("mqtt_client_connect: ip_addr != NULL", ip_addr != NULL);
@@ -473,12 +472,6 @@ err_t mqtt_client_connect(mqtt_client_t *client, const ip_addr_t *ip_addr, u16_t
 	server.sin_family = AF_INET;
 	server.sin_port = htons(port);
 
-	//Connect to remote server
-	if (connect(s, (struct sockaddr *)&server, sizeof(server)) < 0)
-	{
-		puts("connect error");
-		return 1;
-	}
 	// Set the socket to non-blocking mode
 	unsigned long nonBlocking = 1;
 	if (ioctlsocket(s, FIONBIO, &nonBlocking) != 0)
@@ -486,10 +479,17 @@ err_t mqtt_client_connect(mqtt_client_t *client, const ip_addr_t *ip_addr, u16_t
 		printf("ioctlsocket failed with error: %d\n", WSAGetLastError());
 		return 1;
 	}
+
+	//Connect to remote server
+	if (connect(s, (struct sockaddr *)&server, sizeof(server)) < 0)
+	{
+		//puts("connect error");
+		//return 1;
+	}
 	client->conn = (altcp_pcb*)malloc(sizeof(altcp_pcb));
 	client->conn->sock = s;
 
-	client->conn_state = MQTT_CONNECTING;
+	client->conn_state = TCP_CONNECTING;
 
 	//if (xSemaphoreTake(client->output.g_mutex, portMAX_DELAY) == pdTRUE)
 	{
@@ -521,7 +521,6 @@ err_t mqtt_client_connect(mqtt_client_t *client, const ip_addr_t *ip_addr, u16_t
 //		xSemaphoreGive(client->output.g_mutex);
 	}
 	return ERR_OK;
-	return 0;
 }
 /*--------------------------------------------------------------------------------------------------------------------- */
 /* Output ring buffer */
@@ -1326,7 +1325,7 @@ mqtt_parse_incoming(mqtt_client_t *client, struct pbuf *p)
 					printf("MQTT WIN32 received connect denial!\n");
 					return res;
 				}
-				printf("MQTT WIN32 received connect accept!\n");
+				printf("MQTT WIN32 received packet!\n");
 				if (msg_rem_len == 0) {
 					/* Reset parser state */
 					client->msg_idx = 0;
@@ -1350,18 +1349,41 @@ void WIN_RunMQTTClient(mqtt_client_t *cl) {
 
 	memset(&buf, 0, sizeof(buf));
 
-
-	//Receive a reply from the server
-	if ((len = recv(cl->conn->sock, data, sizeof(data), 0)) > 0)
-	{
-		buf.payload = data;
-		buf.len = len;
-		buf.tot_len = len;
-		mqtt_parse_incoming(cl, &buf);
+	if (cl->conn_state == TCP_CONNECTING) {    // Check if the connection is complete
+		fd_set fd;
+		struct timeval time;
+		FD_ZERO(&fd);
+		FD_SET(cl->conn->sock, &fd);
+		time.tv_sec = 0;
+		time.tv_usec = 0;
+		if (select(0, NULL, &fd, NULL, &time) == 1) {
+			int error = 0;
+			int len = sizeof(error);
+			getsockopt(cl->conn->sock, SOL_SOCKET, SO_ERROR, (char*)&error, &len);
+			if (error == 0) {
+				printf("MQTT: Connected!\n");
+				cl->conn_state = MQTT_CONNECTING;
+			}
+			else {
+				printf("MQTT: Failed to connect: %d\n", error);
+				mqtt_disconnect(cl);
+			}
+		}
+		else {
+			printf("MQTT: Connection in progress\n");
+		}
 	}
-	mqtt_output_send(&cl->output, cl->conn);
-
-
+	else {
+		//Receive a reply from the server
+		if ((len = recv(cl->conn->sock, data, sizeof(data), 0)) > 0)
+		{
+			buf.payload = data;
+			buf.len = len;
+			buf.tot_len = len;
+			mqtt_parse_incoming(cl, &buf);
+		}
+		mqtt_output_send(&cl->output, cl->conn);
+	}
 }
 void WIN_ResetMQTT() {
 	for (int i = 0; i < g_numClients; i++) {

@@ -210,11 +210,7 @@ static int numCallbacks = 0;
 static obk_mqtt_request_t g_mqtt_request;
 static obk_mqtt_request_t g_mqtt_request_cb;
 
-#ifdef WINDOWS
-#define LOOPS_WITH_DISCONNECTED 5
-#else
 #define LOOPS_WITH_DISCONNECTED 15
-#endif
 int loopsWithDisconnected = 0;
 int mqtt_reconnect = 0;
 // set for the device to broadcast self state on start
