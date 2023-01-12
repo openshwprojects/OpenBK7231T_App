@@ -1198,6 +1198,7 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
             addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: unhandled type %i",cmd);
             break;
     }
+	EventHandlers_FireEvent(CMD_EVENT_TUYAMCU_PARSED, cmd);
 }
 
 commandResult_t TuyaMCU_FakePacket(const void *context, const char *cmd, const char *args, int cmdFlags) {

@@ -104,6 +104,8 @@ enum EventCode {
 
 	CMD_EVENT_CHANGE_NOPINGTIME,
 
+	CMD_EVENT_TUYAMCU_PARSED, // Argument: TuyaMCU packet type
+
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
 };

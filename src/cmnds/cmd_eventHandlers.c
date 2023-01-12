@@ -185,6 +185,8 @@ static int EVENT_ParseEventName(const char *s) {
 	// WiFi state has single argument: HALWifiStatus_t
 	if (!stricmp(s, "WiFiState"))
 		return CMD_EVENT_WIFI_STATE;
+	if (!stricmp(s, "TuyaMCUParsed"))
+		return CMD_EVENT_TUYAMCU_PARSED; 
 	return CMD_EVENT_NONE;
 }
 static bool EVENT_EvaluateCondition(int code, int argument, int next) {
