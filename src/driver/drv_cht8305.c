@@ -140,13 +140,13 @@ static void CHT8305_ReadBytes(uint8_t* buf, int numOfBytes)
 
 
 
-static commandResult_t CHT8305_GETENV(const void* context, const char* cmd, const char* args, int flags){
-	const char* c = args;
-
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "CHT8305_GETENV");
-
-	return CMD_RES_OK;
-	}
+//static commandResult_t CHT8305_GETENV(const void* context, const char* cmd, const char* args, int flags){
+//	const char* c = args;
+//
+//	ADDLOG_DEBUG(LOG_FEATURE_CMD, "CHT8305_GETENV");
+//
+//	return CMD_RES_OK;
+//}
 
 static void CHT8305_ReadEnv(float* temp, float* hum)
 	{
