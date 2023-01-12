@@ -263,6 +263,7 @@ commandResult_t DRV_I2C_LCD_PCF8574_ClearAndGoTo(const void *context, const char
 typedef enum lcdPrintType_e {
 	LCD_PRINT_DEFAULT,
 	LCD_PRINT_FLOAT,
+	LCD_PRINT_INT,
 } lcdPrintType_t;
 
 commandResult_t DRV_I2C_LCD_PCF8574_Print_Internal(lcdPrintType_t type,const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -274,6 +275,8 @@ commandResult_t DRV_I2C_LCD_PCF8574_Print_Internal(lcdPrintType_t type,const voi
 	const char *msg;
 	char tmp[32];
 	float f;
+	int i;
+	int decimalPlacesAllowed;
 
 	Tokenizer_TokenizeString(args,0);
 	i2cModuleStr = Tokenizer_GetArg(0);
@@ -293,10 +296,33 @@ commandResult_t DRV_I2C_LCD_PCF8574_Print_Internal(lcdPrintType_t type,const voi
 	if (type == LCD_PRINT_DEFAULT) {
 		msg = Tokenizer_GetArgFrom(2);
 	}
-	else {
+	else if (type == LCD_PRINT_FLOAT) {
 		f = Tokenizer_GetArgFloat(2);
 		sprintf(tmp, "%f", f);
+		if (Tokenizer_GetArgsCount() > 2) {
+			char *p;
+
+			decimalPlacesAllowed = Tokenizer_GetArgInteger(3);
+			p = strchr(tmp, '.');
+			if (p) {
+				while (*p && decimalPlacesAllowed) {
+					if(*p != '.')
+						decimalPlacesAllowed--;
+					p++;
+				}
+				*p = 0;
+			}
+
+		}
 		msg = tmp;
+	}
+	else if (type == LCD_PRINT_INT) {
+		i = Tokenizer_GetArgInteger(2);
+		sprintf(tmp, "%i", i);
+		msg = tmp;
+	}
+	else {
+		msg = "";
 	}
 
 	PCF8574_LCD_Open(lcd);
@@ -307,6 +333,9 @@ commandResult_t DRV_I2C_LCD_PCF8574_Print_Internal(lcdPrintType_t type,const voi
 }
 commandResult_t DRV_I2C_LCD_PCF8574_PrintFloat(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	return DRV_I2C_LCD_PCF8574_Print_Internal(LCD_PRINT_FLOAT,context, cmd, args, cmdFlags);
+}
+commandResult_t DRV_I2C_LCD_PCF8574_PrintInt(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	return DRV_I2C_LCD_PCF8574_Print_Internal(LCD_PRINT_INT, context, cmd, args, cmdFlags);
 }
 commandResult_t DRV_I2C_LCD_PCF8574_Print(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	return DRV_I2C_LCD_PCF8574_Print_Internal(LCD_PRINT_DEFAULT,context, cmd, args, cmdFlags);
@@ -364,6 +393,11 @@ void DRV_I2C_Commands_Init() {
 	//cmddetail:"fn":"DRV_I2C_LCD_PCF8574_PrintFloat","file":"i2c/drv_i2c_lcd_pcf8574t.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lcd_printFloat", "", DRV_I2C_LCD_PCF8574_PrintFloat, NULL, NULL);
+	//cmddetail:{"name":"lcd_printInt","args":"",
+	//cmddetail:"descr":"Prints an omt on the LCD",
+	//cmddetail:"fn":"DRV_I2C_LCD_PCF8574_PrintInt","file":"i2c/drv_i2c_lcd_pcf8574t.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("lcd_printInt", "", DRV_I2C_LCD_PCF8574_PrintInt, NULL, NULL);
 	//cmddetail:{"name":"lcd_clear","args":"",
 	//cmddetail:"descr":"Clears the LCD",
 	//cmddetail:"fn":"DRV_I2C_LCD_PCF8574_Clear","file":"i2c/drv_i2c_lcd_pcf8574t.c","requires":"",
@@ -379,7 +413,10 @@ void DRV_I2C_Commands_Init() {
 
 /// backlog startDriver I2C; addI2CDevice_LCD_PCF8574 Soft 0x23 0 0 0; lcd_print Soft 0x23 Hello123
 
+//  lcd_goto Soft 0x23 1 1; lcd_printFloat Soft 0x23 34.567 2
+
 // addRepeatingEvent 2 -1 backlog addChannel 12 1; lcd_goto Soft 0x23 1 1; lcd_printFloat Soft 0x23 $CH12
+// addRepeatingEvent 2 -1 backlog addChannel 12 1; lcd_goto Soft 0x23 1 1; lcd_printFloat Soft 0x23 $CH12 2; lcd_print Soft 0x23 " C"
 
 int c = 0;
 void DRV_I2C_LCD_PCF8574_RunDevice(i2cDevice_t *dev)
