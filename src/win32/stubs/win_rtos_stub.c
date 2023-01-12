@@ -1,7 +1,25 @@
 #ifdef WINDOWS
 
 #include "../../new_common.h"
+
+#ifndef LINUX
+
 #include <timeapi.h>
+
+#else
+
+#include <time.h>
+
+#define timeGetTime() time(NULL)
+#define DWORD uint
+
+#define SOCKET_ERROR SO_ERROR
+#define Sleep sleep
+#define ioctlsocket ioctl
+#define closesocket close
+#define GETSOCKETERRNO() (errno)
+
+#endif
 
 DWORD startTime = 0;
 
@@ -57,11 +75,20 @@ int hal_machw_time_past(int tt) {
 		return 0;
 	return 1;
 }
+
+#ifndef LINUX
 int rtos_create_thread(int *out, int prio, const char *name, LPTHREAD_START_ROUTINE function, int stackSize, void *arg) {
 	int handle;
 	handle = CreateThread(NULL, 0, function, arg, 0, NULL);
 	return 0;
 }
+#else
+int rtos_create_thread(int *out, int prio, const char *name, void *function, int stackSize, void *arg) {
+	pthread_t handle;
+	pthread_create(&handle, NULL, function, (arg) != 0);
+	return 0;
+}
+#endif
 void rtos_delete_thread(int i) {
 	
 }
@@ -73,7 +100,7 @@ int lwip_fcntl(int s, int cmd, int val) {
 		FIONBIO,
 		&argp) == SOCKET_ERROR)
 	{
-		printf("ioctlsocket() error %d\n", WSAGetLastError());
+		printf("ioctlsocket() error %d\n", GETSOCKETERRNO());
 		return 1;
 	}
 

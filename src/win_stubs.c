@@ -23,8 +23,14 @@ char myIP[] = "127.0.0.1";
 char *getMyIp() {
 	return myIP;
 }
+
+#ifndef LINUX
 void __asm__(const char *s) {
 
 }
+
+#else 
+
+#endif
 
 #endif

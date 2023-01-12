@@ -116,8 +116,17 @@ This platform is not supported, error!
 #if WINDOWS
 
 #include <time.h>
-#include <stdint.h>
 #include <math.h>
+
+#ifndef LINUX
+
+#include <stdint.h>
+
+#else
+
+#include <stdint.h>
+
+#endif
 
 #define bk_printf printf
 
@@ -344,11 +353,26 @@ typedef unsigned char byte;
 
 #define WIN32_LEAN_AND_MEAN
 
+#ifndef LINUX
+
 #include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+#else
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <errno.h>
+
+#endif
 
 #else
 
@@ -360,6 +384,11 @@ typedef unsigned char byte;
 // stricmp fix
 #if WINDOWS
 
+#if LINUX
+
+#define stricmp strcasecmp
+
+#endif
 
 #else
 
@@ -402,8 +431,10 @@ int PingWatchDog_GetTotalReceived();
 int LWIP_GetMaxSockets();
 int LWIP_GetActiveSockets();
 
+#ifndef LINUX
 //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 void usleep(int r);
+#endif
 
 // linear mapping function --> https://www.arduino.cc/reference/en/language/functions/math/map/
 

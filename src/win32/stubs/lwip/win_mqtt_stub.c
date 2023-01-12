@@ -15,6 +15,16 @@
 #define LWIP_ASSERT_CORE_LOCKED();
 #define LWIP_ASSERT(a,b);
 
+#ifdef LINUX
+
+#define SOCKET int
+#define closesocket close
+#define ISVALIDSOCKET(s) ((s) >= 0)
+#define GETSOCKETERRNO() (errno)
+#define ioctlsocket ioctl
+
+#endif
+
 typedef struct altcp_pcb {
 	SOCKET sock;
 } altcp_pcb;
@@ -460,9 +470,9 @@ err_t mqtt_client_connect(mqtt_client_t *client, const ip_addr_t *ip_addr, u16_t
 
 
 	//Create a socket
-	if ((s = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
+	if (!ISVALIDSOCKET(s = socket(AF_INET, SOCK_STREAM, 0)))
 	{
-		printf("Could not create socket : %d", WSAGetLastError());
+		printf("Could not create socket : %d", GETSOCKETERRNO());
 	}
 
 	printf("Socket created.\n");
@@ -476,7 +486,7 @@ err_t mqtt_client_connect(mqtt_client_t *client, const ip_addr_t *ip_addr, u16_t
 	unsigned long nonBlocking = 1;
 	if (ioctlsocket(s, FIONBIO, &nonBlocking) != 0)
 	{
-		printf("ioctlsocket failed with error: %d\n", WSAGetLastError());
+		printf("ioctlsocket failed with error: %d\n", GETSOCKETERRNO());
 		return 1;
 	}
 
@@ -1358,7 +1368,7 @@ void WIN_RunMQTTClient(mqtt_client_t *cl) {
 		time.tv_usec = 0;
 		if (select(0, NULL, &fd, NULL, &time) == 1) {
 			int error = 0;
-			int len = sizeof(error);
+			uint len = sizeof(error);
 			getsockopt(cl->conn->sock, SOL_SOCKET, SO_ERROR, (char*)&error, &len);
 			if (error == 0) {
 				printf("MQTT: Connected!\n");

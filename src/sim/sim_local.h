@@ -10,8 +10,18 @@
 #include <vector>
 #include <algorithm>
 #include <string>
+
+#ifdef LINUX
+
+#include <SDL2/SDL.h>
+
+#else
+
 #include <SDL.h>
 #include <SDL_opengl.h>
+
+#endif
+
 #include <GL/gl.h>
 #include <GL/glut.h>
 

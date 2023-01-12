@@ -1,20 +1,39 @@
+#ifdef __GNUC__
+#define __cdecl __attribute__((__cdecl__))
+#endif
+
 #ifdef WINDOWS
 
 #undef UNICODE
 
 #define WIN32_LEAN_AND_MEAN
 
+#ifndef LINUX
+
 #include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <timeapi.h>
+
+#else
+
+#define closesocket close
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+
+#define Sleep sleep
+
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include "new_common.h"
-#include "driver\drv_public.h"
-#include "cmnds\cmd_public.h"
-#include "httpserver\new_http.h"
+#include "driver/drv_public.h"
+#include "cmnds/cmd_public.h"
+#include "httpserver/new_http.h"
 #include "new_pins.h"
-#include <timeapi.h>
+
 
 #define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
 
@@ -182,7 +201,9 @@ int g_bDoingUnitTestsNow = 0;
 int __cdecl main(int argc, char **argv)
 {
 	bool bWantsUnitTests = 1;
-    WSADATA wsaData;
+    
+#ifndef LINUX
+	WSADATA wsaData;
     int iResult;
 
 #if 0
@@ -200,6 +221,18 @@ int __cdecl main(int argc, char **argv)
         printf("WSAStartup failed with error: %d\n", iResult);
         return 1;
     }
+#else
+	int Csocket;
+	
+	Csocket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+	if (Csocket < 0) {
+		printf("socket creation failed with error: %d\n", Csocket);
+		closesocket(Csocket);
+		return 1;
+	}
+
+#endif
 	printf("sizeof(short) = %d\n", (int)sizeof(short));
 	printf("sizeof(int) = %d\n", (int)sizeof(int));
 	printf("sizeof(long) = %d\n", (int)sizeof(long));
@@ -255,7 +288,7 @@ int __cdecl main(int argc, char **argv)
 	}
 
 
-	SIM_CreateWindow(argc, argv);
+	//SIM_CreateWindow(argc, argv);
 	CMD_ExecuteCommand("MQTTHost 192.168.0.113", 0);
 	CMD_ExecuteCommand("MqttPassword ma1oovoo0pooTie7koa8Eiwae9vohth1vool8ekaej8Voohi7beif5uMuph9Diex", 0);
 	CMD_ExecuteCommand("MqttClient WindowsOBK", 0);
@@ -266,7 +299,7 @@ int __cdecl main(int argc, char **argv)
 		while (1) {
 			Sleep(DEFAULT_FRAME_TIME);
 			Sim_RunFrame(DEFAULT_FRAME_TIME);
-			SIM_RunWindow();
+			//SIM_RunWindow();
 		}
 	}
 	else {
@@ -277,7 +310,7 @@ int __cdecl main(int argc, char **argv)
 			if (g_delta <= 0)
 				continue;
 			Sim_RunFrame(g_delta);
-			SIM_RunWindow();
+			//SIM_RunWindow();
 			prev_time = cur_time;
 		}
 	}

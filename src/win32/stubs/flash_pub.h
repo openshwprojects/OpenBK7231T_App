@@ -1,10 +1,21 @@
 #ifndef _FLASH_PUB_H
 #define _FLASH_PUB_H
 
+#ifndef LINUX
+
 #include <conio.h>
+#include <BaseTsd.h>
+
+#else
+
+#define UINT8 uint8_t
+#define UINT16 uint16_t
+#define UINT32 uint32_t
+
+#endif
+
 #include <stdio.h>
 #include <stdint.h>
-#include <BaseTsd.h>
 
 #define FLASH_DEV_NAME                ("flash")
 

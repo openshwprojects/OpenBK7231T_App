@@ -1,5 +1,7 @@
 #ifdef WINDOWS
 
+#ifndef LINUX
+
 #include "../new_common.h"
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
@@ -195,6 +197,25 @@ void HTTPServer_RunQuickTick() {
 			//return 1;
 		//}
 }
+
+#else
+
+#include "../new_common.h"
+#include "lwip/sockets.h"
+#include "lwip/ip_addr.h"
+#include "lwip/inet.h"
+#include "../logging/logging.h"
+#include "new_http.h"
+#include <time.h>
+
+int HTTPServer_Start() {
+	return -1;
+}
+
+void HTTPServer_RunQuickTick() {
+}
+
+#endif
 
 #endif
 
