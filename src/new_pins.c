@@ -23,19 +23,11 @@
 #endif
 
 
-//According to your need to modify the constants.
+// According to your need to modify the constants.
 #define PIN_TMR_DURATION      QUICK_TMR_DURATION // Delay (in ms) between button scan iterations
-//#define BTN_DEBOUNCE_TICKS    3	//MAX 8
 #define BTN_DEBOUNCE_MS    		15	//MAX 8*5
 
-//#define BTN_SHORT_TICKS       (300 / PIN_TMR_DURATION)
-//#define BTN_LONG_TICKS        (1000 / PIN_TMR_DURATION)
-//#define BTN_HOLD_REPEAT_TICKS  (500 / PIN_TMR_DURATION)
-// Now they are adjustable in CFG
-//int BTN_SHORT_TICKS;
-//int BTN_LONG_TICKS;
-//int BTN_HOLD_REPEAT_TICKS;
-
+// loaded from config, they are now configurable
 int BTN_SHORT_MS;
 int BTN_LONG_MS;
 int BTN_HOLD_REPEAT_MS;
@@ -55,9 +47,6 @@ typedef enum {
 	BTN_NONE_PRESS
 }BTN_PRESS_EVT;
 
-
-typedef void (*new_btn_callback)(void*);
-
 typedef struct pinButton_ {
 	uint16_t ticks;
 	uint16_t holdRepeatTicks;
@@ -70,7 +59,6 @@ typedef struct pinButton_ {
 	uint8_t  debounce_cnt; // make a full byte, so we can count ms
 	
 	uint8_t  (*hal_button_Level)(void *self);
-	new_btn_callback  cb[BTN_number_of_event];
 }pinButton_s;
 
 // overall pins enable.
@@ -1154,7 +1142,7 @@ int CHANNEL_GetRoleForOutputChannel(int ch){
 }
 
 
-#define EVENT_CB(ev)   if(handle->cb[ev])handle->cb[ev]((pinButton_s*)handle)
+#define EVENT_CB(ev)   
 
 #define PIN_TMR_LOOPS_PER_SECOND (1000/PIN_TMR_DURATION)
 #define ADC_SAMPLING_TICK_COUNT PIN_TMR_LOOPS_PER_SECOND
@@ -1318,11 +1306,6 @@ void PIN_ticks(void *param)
 		t_diff = ((g_time + 0x4000) - (g_last_time + 0x4000));
 	}
 	g_last_time = g_time;
-
-
-//	BTN_SHORT_TICKS = (g_cfg.buttonShortPress * 100 / PIN_TMR_DURATION);
-//	BTN_LONG_TICKS = (g_cfg.buttonLongPress * 100 / PIN_TMR_DURATION);
-//	BTN_HOLD_REPEAT_TICKS = (g_cfg.buttonHoldRepeat * 100 / PIN_TMR_DURATION);
 
 	BTN_SHORT_MS = (g_cfg.buttonShortPress * 100);
 	BTN_LONG_MS = (g_cfg.buttonLongPress * 100);
