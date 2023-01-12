@@ -6,51 +6,207 @@
 #include "drv_i2c_public.h"
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
+#include "../hal/hal_pins.h"
+
+static int g_pin_clk = 20;
+static int g_pin_data = 21;
+
+static const int Soft_I2C_DELAY = 1; //delay*10 --> nops
+static void Soft_I2C_SetLow(uint8_t pin) {
+	HAL_PIN_Setup_Output(pin);
+	HAL_PIN_SetOutputValue(pin, 0);
+}
+
+static void Soft_I2C_SetHigh(uint8_t pin) {
+	HAL_PIN_Setup_Input_Pullup(pin);
+}
+
+static bool Soft_I2C_PreInit(void) {
+
+	g_pin_clk = PIN_FindPinIndexForRole(IOR_SOFT_SCL, g_pin_clk);
+	g_pin_data = PIN_FindPinIndexForRole(IOR_SOFT_SDA, g_pin_data);
+
+	HAL_PIN_SetOutputValue(g_pin_data, 0);
+	HAL_PIN_SetOutputValue(g_pin_clk, 0);
+	Soft_I2C_SetHigh(g_pin_data);
+	Soft_I2C_SetHigh(g_pin_clk);
+	return (!((HAL_PIN_ReadDigitalInput(g_pin_data) == 0 || HAL_PIN_ReadDigitalInput(g_pin_clk) == 0)));
+}
+
+static bool Soft_I2C_WriteByte(uint8_t value) {
+	uint8_t curr;
+	uint8_t ack;
+
+	for (curr = 0x80; curr != 0; curr >>= 1)
+	{
+		if (curr & value)
+		{
+			Soft_I2C_SetHigh(g_pin_data);
+		}
+		else
+		{
+			Soft_I2C_SetLow(g_pin_data);
+		}
+		Soft_I2C_SetHigh(g_pin_clk);
+		usleep(Soft_I2C_DELAY);
+		Soft_I2C_SetLow(g_pin_clk);
+	}
+	// get Ack or Nak
+	Soft_I2C_SetHigh(g_pin_data);
+	Soft_I2C_SetHigh(g_pin_clk);
+	usleep(Soft_I2C_DELAY / 2);
+	ack = HAL_PIN_ReadDigitalInput(g_pin_data);
+	Soft_I2C_SetLow(g_pin_clk);
+	usleep(Soft_I2C_DELAY / 2);
+	Soft_I2C_SetLow(g_pin_data);
+	return (0 == ack);
+}
+
+static bool Soft_I2C_Start(uint8_t addr) {
+	Soft_I2C_SetLow(g_pin_data);
+	usleep(Soft_I2C_DELAY);
+	Soft_I2C_SetLow(g_pin_clk);
+	return Soft_I2C_WriteByte(addr);
+}
+
+static void Soft_I2C_Stop(void) {
+	Soft_I2C_SetLow(g_pin_data);
+	usleep(Soft_I2C_DELAY);
+	Soft_I2C_SetHigh(g_pin_clk);
+	usleep(Soft_I2C_DELAY);
+	Soft_I2C_SetHigh(g_pin_data);
+	usleep(Soft_I2C_DELAY);
+}
+
+static uint8_t Soft_I2C_ReadByte(bool nack)
+{
+	uint8_t val = 0;
+
+	Soft_I2C_SetHigh(g_pin_data);
+	for (int i = 0; i < 8; i++)
+	{
+		usleep(Soft_I2C_DELAY);
+		Soft_I2C_SetHigh(g_pin_clk);
+		val <<= 1;
+		if (HAL_PIN_ReadDigitalInput(g_pin_data))
+		{
+			val |= 1;
+		}
+		Soft_I2C_SetLow(g_pin_clk);
+	}
+	if (nack)
+	{
+		Soft_I2C_SetHigh(g_pin_data);
+	}
+	else
+	{
+		Soft_I2C_SetLow(g_pin_data);
+	}
+	Soft_I2C_SetHigh(g_pin_clk);
+	usleep(Soft_I2C_DELAY);
+	Soft_I2C_SetLow(g_pin_clk);
+	usleep(Soft_I2C_DELAY);
+	Soft_I2C_SetLow(g_pin_data);
+
+	return val;
+}
+
+
+static void Soft_I2C_ReadBytes(uint8_t* buf, int numOfBytes)
+{
+
+	for (int i = 0; i < numOfBytes - 1; i++)
+	{
+
+		buf[i] = Soft_I2C_ReadByte(false);
+
+	}
+
+	buf[numOfBytes - 1] = Soft_I2C_ReadByte(true); //Give NACK on last byte read
+}
+
 
 
 #if PLATFORM_BK7231T
 
 #include "i2c_pub.h"
-I2C_OP_ST i2c_operater;
-DD_HANDLE i2c_hdl;
+static I2C_OP_ST i2c_operater;
+static DD_HANDLE i2c_hdl;
+
+#endif
+
+static int current_bus;
+static int tg_addr;
 
 void DRV_I2C_Write(byte addr, byte data)
 {
-	char buff = (char)data;
-
+	if (current_bus == I2C_BUS_SOFT) {
+		Soft_I2C_Start((tg_addr << 1) + 0);
+		Soft_I2C_WriteByte(addr);
+		Soft_I2C_Stop();
+		Soft_I2C_Start((tg_addr << 1) + 0);
+		Soft_I2C_WriteByte(data);
+		Soft_I2C_Stop();
+		return;
+	}
+#if PLATFORM_BK7231T
     i2c_operater.op_addr = addr;
-    ddev_write(i2c_hdl, &buff, 1, (UINT32)&i2c_operater);
+    ddev_write(i2c_hdl, (char*)&data, 1, (UINT32)&i2c_operater);
+#endif
 }
 void DRV_I2C_WriteBytes(byte addr, byte *data, int len) {
-
-
+	if (current_bus == I2C_BUS_SOFT) {
+		Soft_I2C_Start((tg_addr << 1) +0);
+		Soft_I2C_WriteByte(addr);
+		Soft_I2C_Stop();
+		Soft_I2C_Start((tg_addr << 1) + 0);
+		for (int i = 0; i < len; i++) {
+			Soft_I2C_WriteByte(data[i]);
+		}
+		Soft_I2C_Stop();
+		return;
+	}
+#if PLATFORM_BK7231T
     i2c_operater.op_addr = addr;
     ddev_write(i2c_hdl, (char*)data, len, (UINT32)&i2c_operater);
+#endif
 }
-//void DRV_I2C_WriteSingle(byte addr)
-//{
-//	char data;
-//	char buff = (char)data;
-//
-//    i2c_operater.op_addr = addr;
-//    ddev_write(i2c_hdl, &buff, 0, (UINT32)&i2c_operater);
-//}
-
-
 void DRV_I2C_Read(byte addr, byte *data)
 {
+	if (current_bus == I2C_BUS_SOFT) {
+		Soft_I2C_Start((tg_addr << 1) + 0);
+		Soft_I2C_WriteByte(addr);
+		Soft_I2C_Stop();
+		Soft_I2C_Start((tg_addr << 1) + 1);
+		*data = Soft_I2C_ReadByte(false);
+		Soft_I2C_Stop();
+		return;
+	}
+#if PLATFORM_BK7231T
     i2c_operater.op_addr = addr;
     ddev_read(i2c_hdl, (char*)data, 1, (UINT32)&i2c_operater);
+#endif
 }
 int DRV_I2C_Begin(int dev_adr, int busID) {
 
+#if PLATFORM_BK7231T
     UINT32 status;
 	UINT32 oflag;
     oflag = I2C_DEF_DIV;
+#endif
 
-	if(busID == I2C_BUS_I2C1) {
+	current_bus = busID;
+	tg_addr = dev_adr;
+
+	if (busID == I2C_BUS_SOFT) {
+		Soft_I2C_PreInit();
+		return 0;
+	}
+#if PLATFORM_BK7231T
+	else if(busID == I2C_BUS_I2C1) {
 		i2c_hdl = ddev_open("i2c1", &status, oflag);
-	} else if(busID == I2C_BUS_I2C2) {
+	}
+	else if (busID == I2C_BUS_I2C2) {
 		i2c_hdl = ddev_open("i2c2", &status, oflag);
 	} else {
 		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_Begin bus type %i not supported!\n",busID);
@@ -65,31 +221,38 @@ int DRV_I2C_Begin(int dev_adr, int busID) {
     i2c_operater.salve_id = dev_adr;
 
 	return 0;
-}
-void DRV_I2C_Close() {
-
-	ddev_close(i2c_hdl);
-}
 #else
-
-void DRV_I2C_Write(byte addr, byte data)
-{
-}
-void DRV_I2C_WriteBytes(byte addr, byte *data, int len) {
-
-}
-
-void DRV_I2C_Read(byte addr, byte *data)
-{
-}
-int DRV_I2C_Begin(int dev_adr, int busID) {
-
-	return 1; // error
+	return 1;
+#endif
 }
 void DRV_I2C_Close() {
+	if (current_bus == I2C_BUS_SOFT) {
 
-}
+		return;
+	}
+#if PLATFORM_BK7231T
+	ddev_close(i2c_hdl);
 #endif
+}
+
+//void DRV_I2C_Write(byte addr, byte data)
+//{
+//}
+//void DRV_I2C_WriteBytes(byte addr, byte *data, int len) {
+//
+//}
+//
+//void DRV_I2C_Read(byte addr, byte *data)
+//{
+//}
+//int DRV_I2C_Begin(int dev_adr, int busID) {
+//
+//	return 1; // error
+//}
+//void DRV_I2C_Close() {
+//
+//}
+
 
 
 i2cDevice_t *g_i2c_devices = 0;
@@ -99,6 +262,8 @@ i2cBusType_t DRV_I2C_ParseBusType(const char *s) {
 		return I2C_BUS_I2C1;
 	if(!stricmp(s,"I2C2"))
 		return I2C_BUS_I2C2;
+	if (!stricmp(s, "Soft"))
+		return I2C_BUS_SOFT;
 	return I2C_BUS_ERROR;
 }
 void DRV_I2C_AddNextDevice(i2cDevice_t *t) {
@@ -266,6 +431,12 @@ commandResult_t DRV_I2C_AddDevice_LCM1602(const void *context, const char *cmd, 
 
 	return CMD_RES_OK;
 }
+
+commandResult_t DRV_I2C_Scan(const void *context, const char *cmd, const char *args, int cmdFlags) {
+
+	return CMD_RES_OK;
+}
+
 //
 //	TC74 - I2C temperature sensor - read only single integer value, temperature in C
 //
@@ -315,7 +486,11 @@ void DRV_I2C_Init()
 	//cmddetail:"fn":"DRV_I2C_MCP23017_MapPinToChannel","file":"i2c/drv_i2c_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MCP23017_MapPinToChannel","",DRV_I2C_MCP23017_MapPinToChannel, NULL, NULL);
-
+	//cmddetail:{"name":"scanI2C","args":"",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"DRV_I2C_MCP23017_MapPinToChannel","file":"i2c/drv_i2c_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("scanI2C", "", DRV_I2C_Scan, NULL, NULL);
 }
 void DRC_I2C_RunDevice(i2cDevice_t *dev)
 {

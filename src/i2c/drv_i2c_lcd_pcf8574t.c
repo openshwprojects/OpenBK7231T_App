@@ -375,6 +375,12 @@ void DRV_I2C_Commands_Init() {
 // backlog setChannel 10 314; lcd_goto I2C1 0x23 1 1; lcd_printFloat I2C1 0x23 $CH10*0.01
 // backlog lcd_goto I2C1 0x23 2 2; lcd_print I2C1 0x23 Teste123
 // lcd_clear I2C1 0x23
+// addRepeatingEvent 2 -1 backlog addChannel 12 1; lcd_goto I2C1 0x23 1 1; lcd_printFloat I2C1 0x23 $CH12
+
+/// backlog startDriver I2C; addI2CDevice_LCD_PCF8574 Soft 0x23 0 0 0; lcd_print Soft 0x23 Hello123
+
+// addRepeatingEvent 2 -1 backlog addChannel 12 1; lcd_goto Soft 0x23 1 1; lcd_printFloat Soft 0x23 $CH12
+
 int c = 0;
 void DRV_I2C_LCD_PCF8574_RunDevice(i2cDevice_t *dev)
 {

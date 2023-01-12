@@ -14,7 +14,7 @@ typedef enum i2cBusType_e {
 	I2C_BUS_ERROR,
 	I2C_BUS_I2C1,
 	I2C_BUS_I2C2,
-
+	I2C_BUS_SOFT,
 } i2cBusType_t;
 
 typedef struct i2cDevice_s {

@@ -67,6 +67,7 @@
 #define ENABLE_DRIVER_BL0942    1
 #define ENABLE_DRIVER_CSE7766   1
 #define ENABLE_DRIVER_TUYAMCU   1
+#define ENABLE_I2C			    1
 
 
 #endif
