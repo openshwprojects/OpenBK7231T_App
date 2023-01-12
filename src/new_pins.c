@@ -86,8 +86,7 @@ pinButton_s g_buttons[PLATFORM_GPIO_MAX];
 
 void (*g_doubleClickCallback)(int pinIndex) = 0;
 
-static byte g_timesDown[PLATFORM_GPIO_MAX];
-static byte g_timesUp[PLATFORM_GPIO_MAX];
+static short g_times[PLATFORM_GPIO_MAX];
 static byte g_lastValidState[PLATFORM_GPIO_MAX];
 
 
@@ -1302,7 +1301,6 @@ static uint32_t g_time = 0;
 static uint32_t g_last_time = 0;
 static int activepoll_time = 0; // time to keep polling active until
 
-#define TOGGLE_PIN_DEBOUNCE_CYCLES 50
 //  background ticks, timer repeat invoking interval defined by PIN_TMR_DURATION.
 void PIN_ticks(void *param)
 {
@@ -1329,6 +1327,14 @@ void PIN_ticks(void *param)
 	BTN_SHORT_MS = (g_cfg.buttonShortPress * 100);
 	BTN_LONG_MS = (g_cfg.buttonLongPress * 100);
 	BTN_HOLD_REPEAT_MS = (g_cfg.buttonHoldRepeat * 100);
+
+	int debounceMS;
+	if (CFG_HasFlag(OBK_FLAG_BTN_INSTANTTOUCH)) {
+		debounceMS = 100;
+	}
+	else {
+		debounceMS = 200;
+	}
 
 	int activepins = 0;
 	uint32_t pinvalues = 0;
@@ -1383,62 +1389,38 @@ void PIN_ticks(void *param)
 			CHANNEL_Set(g_cfg.pins.channels[i], value,0);
 #else
 			// debouncing
-			if(value) {
-				if(g_timesUp[i] > TOGGLE_PIN_DEBOUNCE_CYCLES) {
-					if(g_lastValidState[i] != value) {
-						// became up
-						g_lastValidState[i] = value;
-						CHANNEL_Set(g_cfg.pins.channels[i], value,0);
-					}
-				} else {
-					g_timesUp[i]++;
+			if(g_times[i] <= 0) {
+				if (g_lastValidState[i] != value) {
+					// became up
+					g_lastValidState[i] = value;
+					CHANNEL_Set(g_cfg.pins.channels[i], value, 0);
+					// lock for given time
+					g_times[i] = debounceMS;
 				}
-				g_timesDown[i] = 0;
-			} else {
-				if(g_timesDown[i] > TOGGLE_PIN_DEBOUNCE_CYCLES) {
-					if(g_lastValidState[i] != value) {
-						// became down
-						g_lastValidState[i] = value;
-						CHANNEL_Set(g_cfg.pins.channels[i], value,0);
-					}
-				} else {
-					g_timesDown[i]++;
-				}
-				g_timesUp[i] = 0;
+			}
+			else {
+				g_times[i] -= t_diff;
 			}
 
 #endif
 		} else if(g_cfg.pins.roles[i] == IOR_ToggleChannelOnToggle) {
 			// we must detect a toggle, but with debouncing
 			value = PIN_ReadDigitalInputValue_WithInversionIncluded(i);
-			if(value) {
-				if(g_timesUp[i] > TOGGLE_PIN_DEBOUNCE_CYCLES) {
-					if(g_lastValidState[i] != value) {
-						// became up
-						g_lastValidState[i] = value;
-						CHANNEL_Toggle(g_cfg.pins.channels[i]);
-						// fire event - IOR_ToggleChannelOnToggle has been toggle
-						// Argument is a pin number (NOT channel)
-						EventHandlers_FireEvent(CMD_EVENT_PIN_ONTOGGLE,i);
-					}
-				} else {
-					g_timesUp[i]++;
+			// debouncing
+			if (g_times[i] <= 0) {
+				if (g_lastValidState[i] != value) {
+					// became up
+					g_lastValidState[i] = value;
+					CHANNEL_Toggle(g_cfg.pins.channels[i]);
+					// fire event - IOR_ToggleChannelOnToggle has been toggle
+					// Argument is a pin number (NOT channel)
+					EventHandlers_FireEvent(CMD_EVENT_PIN_ONTOGGLE, i);
+					// lock for given time
+					g_times[i] = debounceMS;
 				}
-				g_timesDown[i] = 0;
-			} else {
-				if(g_timesDown[i] > TOGGLE_PIN_DEBOUNCE_CYCLES) {
-					if(g_lastValidState[i] != value) {
-						// became down
-						g_lastValidState[i] = value;
-						CHANNEL_Toggle(g_cfg.pins.channels[i]);
-						// fire event - IOR_ToggleChannelOnToggle has been toggle
-						// Argument is a pin number (NOT channel)
-						EventHandlers_FireEvent(CMD_EVENT_PIN_ONTOGGLE,i);
-					}
-				} else {
-					g_timesDown[i]++;
-				}
-				g_timesUp[i] = 0;
+			}
+			else {
+				g_times[i] -= t_diff;
 			}
 		}
 	}
