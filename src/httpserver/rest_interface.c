@@ -922,12 +922,12 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	int towrite = request->bodylen;
 	char* writebuf = request->bodystart;
 	int writelen = request->bodylen;
-	int nRetCode = 0;
-	char error_message[256];
 
 	ADDLOG_DEBUG(LOG_FEATURE_OTA, "OTA post len %d", request->contentLength);
 
 #ifdef PLATFORM_W600
+	int nRetCode = 0;
+	char error_message[256];
 
 	if (writelen < 0) {
 		ADDLOG_DEBUG(LOG_FEATURE_OTA, "ABORTED: %d bytes to write", writelen);
