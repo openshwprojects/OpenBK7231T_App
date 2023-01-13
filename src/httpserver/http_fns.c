@@ -2877,14 +2877,21 @@ int http_fn_cfg_startup(http_request_t* request) {
 
 int http_fn_cfg_dgr(http_request_t* request) {
 	char tmpA[128];
+	bool bForceSet;
 
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Device groups");
 
 	hprintf255(request, "<h5>Here you can configure Tasmota Device Groups<h5>");
 
+	if (http_getArg(request->url, "bSet", tmpA, sizeof(tmpA))) {
+		bForceSet = true;
+	}
+	else {
+		bForceSet = false;
+	}
 
-	if (http_getArg(request->url, "name", tmpA, sizeof(tmpA))) {
+	if (http_getArg(request->url, "name", tmpA, sizeof(tmpA)) || bForceSet) {
 		int newSendFlags;
 		int newRecvFlags;
 
@@ -2954,6 +2961,8 @@ int http_fn_cfg_dgr(http_request_t* request) {
 			poststr(request, " checked");
 		poststr(request, "></td> ");
 
+		poststr(request, "<input type=\"hidden\" name=\"bSet\" value=\"1\">");
+		
 		poststr(request, "    </tr></table>  <input type=\"submit\" value=\"Submit\"></form>");
 	}
 
