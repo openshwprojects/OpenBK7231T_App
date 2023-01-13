@@ -293,7 +293,7 @@ void LED_RunQuickColorLerp(int deltaMS) {
 		}
 	}
 	
-	led_Save_finalRGBCW(finalColors);
+	led_Save_finalRGBCW(led_rawLerpCurrent);
 }
 
 int led_gamma_enable_channel_messages = 0;
