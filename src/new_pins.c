@@ -75,6 +75,7 @@ pinButton_s g_buttons[PLATFORM_GPIO_MAX];
 void (*g_doubleClickCallback)(int pinIndex) = 0;
 
 static short g_times[PLATFORM_GPIO_MAX];
+static short g_times2[PLATFORM_GPIO_MAX];
 static byte g_lastValidState[PLATFORM_GPIO_MAX];
 
 
@@ -1316,7 +1317,7 @@ void PIN_ticks(void *param)
 		debounceMS = 100;
 	}
 	else {
-		debounceMS = 200;
+		debounceMS = 250;
 	}
 
 	int activepins = 0;
@@ -1368,21 +1369,36 @@ void PIN_ticks(void *param)
 			g_cfg.pins.roles[i] == IOR_DigitalInput_NoPup || g_cfg.pins.roles[i] == IOR_DigitalInput_NoPup_n) {
 			// read pin digital value (and already invert it if needed)
 			value = PIN_ReadDigitalInputValue_WithInversionIncluded(i);
+
 #if 0
-			CHANNEL_Set(g_cfg.pins.channels[i], value,0);
+			CHANNEL_Set(g_cfg.pins.channels[i], value, 0);
 #else
 			// debouncing
-			if(g_times[i] <= 0) {
-				if (g_lastValidState[i] != value) {
-					// became up
-					g_lastValidState[i] = value;
-					CHANNEL_Set(g_cfg.pins.channels[i], value, 0);
-					// lock for given time
-					g_times[i] = debounceMS;
+			if (value) {
+				if (g_times[i] > debounceMS) {
+					if (g_lastValidState[i] != value) {
+						// became up
+						g_lastValidState[i] = value;
+						CHANNEL_Set(g_cfg.pins.channels[i], value, 0);
+					}
 				}
+				else {
+					g_times[i] += t_diff;
+				}
+				g_times2[i] = 0;
 			}
 			else {
-				g_times[i] -= t_diff;
+				if (g_times2[i] > debounceMS) {
+					if (g_lastValidState[i] != value) {
+						// became down
+						g_lastValidState[i] = value;
+						CHANNEL_Set(g_cfg.pins.channels[i], value, 0);
+					}
+				}
+				else {
+					g_times2[i]+= t_diff;
+				}
+				g_times[i] = 0;
 			}
 
 #endif
