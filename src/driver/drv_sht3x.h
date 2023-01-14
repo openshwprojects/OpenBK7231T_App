@@ -1,0 +1,1 @@
+#define SHT3X_DELAY         4

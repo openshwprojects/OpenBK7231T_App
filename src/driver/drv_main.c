@@ -113,7 +113,9 @@ static driver_t g_drivers[] = {
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	{ "CHT8305",	CHT8305_Init,		CHT8305_OnEverySecond,		CHT8305_AppendInformationToHTTPIndexPage, NULL, NULL, CHT8305_OnChannelChanged, false },
 #endif
-
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+	{ "SHT3X",	SHT3X_Init,		SHT3X_OnEverySecond,		SHT3X_AppendInformationToHTTPIndexPage, NULL, NULL, SHT3X_OnChannelChanged, false },
+#endif
 };
 
 static const int g_numDrivers = sizeof(g_drivers) / sizeof(g_drivers[0]);

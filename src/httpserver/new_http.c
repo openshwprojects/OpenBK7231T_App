@@ -418,6 +418,8 @@ const char* htmlPinRoleNames[] = {
 	"DHT22",
 	"CHT8305_SDA",
 	"CHT8305_SCK",
+	"SHT3X_SDA",
+	"SHT3X_SCK",
 	"error",
 	"error",
 	"error",
