@@ -414,7 +414,7 @@ void DRV_DGR_processPower(int relayStates, byte relaysCount) {
 	int i;
 	int ch;
 
-	if(PIN_CountPinsWithRoleOrRole(IOR_PWM,IOR_PWM_n) > 0) {
+	if(PIN_CountPinsWithRoleOrRole(IOR_PWM,IOR_PWM_n) > 0 || LED_IsLedDriverChipRunning()) {
 		LED_SetEnableAll(BIT_CHECK(relayStates,0));
 	} else {
 		// does indexing starts with zero?
