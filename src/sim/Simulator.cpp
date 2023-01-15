@@ -324,9 +324,9 @@ bool CSimulator::saveSimulationAs(const char *s) {
 void CSimulator::showExitSaveMessageBox() {
 	const SDL_MessageBoxButtonData buttons[] =
 	{
+		{SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "Cancel"},
 		{ /* .flags, .buttonid, .text */        0, 0, "No" },
-		{ SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "Yes" },
-		{ SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "Cancel" },
+		{SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "Yes"}
 	};
 	const SDL_MessageBoxColorScheme colorScheme =
 	{
