@@ -336,6 +336,7 @@ void apply_smart_light() {
 	int firstChannelIndex;
 	int channelToUse;
 	byte finalRGBCW[5];
+	byte baseRGBCW[5];
 	int maxPossibleIndexToSet;
 	int emulatedCool = -1;
 	int value_brightness = 0;
@@ -374,12 +375,14 @@ void apply_smart_light() {
 	if(isCWMode() && CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
 		for(i = 0; i < 5; i++) {
 			finalColors[i] = 0;
+			baseRGBCW[i] = 0;
 			finalRGBCW[i] = 0;
 		}
 		if(g_lightEnableAll) {
 			for(i = 3; i < 5; i++) {
 				finalColors[i] = baseColors[i] * g_brightness;
 				finalRGBCW[i] = baseColors[i] * g_brightness;
+				baseRGBCW[i] = baseColors[i];
 			}
 		}
 		if(CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == false) {
@@ -390,6 +393,7 @@ void apply_smart_light() {
 		for(i = 0; i < maxPossibleIndexToSet; i++) {
 			float final = 0.0f;
 
+			baseRGBCW[i] = baseColors[i];
 			if(g_lightEnableAll) {
 				final = led_gamma_correction (i, baseColors[i]);
 			}
@@ -398,12 +402,14 @@ void apply_smart_light() {
 				// (RGB)
 				if(i < 3)
 				{
+					baseRGBCW[i] = 0;
 					final = 0;
 				}
 			} else if(g_lightMode == Light_RGB) {
 				// skip channels 3, 4
 				if(i >= 3)
 				{
+					baseRGBCW[i] = 0;
 					final = 0;
 				}
 			} else {
@@ -411,7 +417,7 @@ void apply_smart_light() {
 			}
 			finalColors[i] = final;
 			finalRGBCW[i] = final;
-
+			
 			float chVal = final * g_cfg_colorScaleToChannel;
 			if (chVal > 100.0f)
 				chVal = 100.0f;
@@ -464,7 +470,7 @@ void apply_smart_light() {
 		HAL_FlashVars_SaveLED(g_lightMode,g_brightness / g_cfg_brightnessMult, led_temperature_current,baseColors[0],baseColors[1],baseColors[2],g_lightEnableAll);
 	}
 #ifndef OBK_DISABLE_ALL_DRIVERS
-	DRV_DGR_OnLedFinalColorsChange(finalRGBCW);
+	DRV_DGR_OnLedFinalColorsChange(baseRGBCW);
 #endif
 
 	// I am not sure if it's the best place to do it
