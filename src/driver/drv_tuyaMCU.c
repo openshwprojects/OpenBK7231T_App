@@ -162,6 +162,10 @@ static bool self_processing_mode = true;
 static bool state_updated = false;
 static int g_sendQueryStatePackets = 0;
 
+// wifistate to send when not online
+// See: https://imgur.com/a/mEfhfiA
+static byte g_defaultTuyaMCUWiFiState = 0x00;
+
 tuyaMCUMapping_t *TuyaMCU_FindDefForID(int fnId) {
     tuyaMCUMapping_t *cur;
 
@@ -442,6 +446,12 @@ void TuyaMCU_Send_RSSI(int rssi) {
 	payload_signedByte = rssi;
 
 	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_RSSI, (byte*)&payload_signedByte, 1);
+}
+commandResult_t Cmd_TuyaMCU_Set_DefaultWiFiState(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	
+	g_defaultTuyaMCUWiFiState = atoi(args);
+	
+	return CMD_RES_OK;
 }
 commandResult_t Cmd_TuyaMCU_Send_RSSI(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int toSend;
@@ -1238,9 +1248,9 @@ void TuyaMCU_RunWiFiUpdateAndPackets() {
 	else {
 		if ((wifi_state == true) || (wifi_state_timer == 0))
 		{
-			addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send SetWiFiState 0.\n");
+			addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send SetWiFiState %i.\n", (int)g_defaultTuyaMCUWiFiState);
 
-			Tuya_SetWifiState(0);
+			Tuya_SetWifiState(g_defaultTuyaMCUWiFiState);
 			wifi_state = false;
 			wifi_state_timer++;
 		}
@@ -1343,7 +1353,7 @@ void TuyaMCU_RunFrame() {
             else if ((wifi_state_valid == false) && (self_processing_mode == false))
             {
                 /* Reset wifi state -> Aquirring network connection */ 
-                Tuya_SetWifiState(0);
+                Tuya_SetWifiState(g_defaultTuyaMCUWiFiState);
 				addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_WIFI_STATE.\n");
                 TuyaMCU_SendCommandWithData(TUYA_CMD_WIFI_STATE, NULL, 0);
             }
@@ -1452,10 +1462,15 @@ void TuyaMCU_Init()
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_setBaudRate","",TuyaMCU_SetBaudRate, NULL, NULL);
 	//cmddetail:{"name":"tuyaMcu_sendRSSI","args":"",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:"descr":"Command sends the specific RSSI value to TuyaMCU (it will send current RSSI if no argument is set)",
 	//cmddetail:"fn":"Cmd_TuyaMCU_Send_RSSI","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_sendRSSI", "", Cmd_TuyaMCU_Send_RSSI, NULL, NULL);
+	//cmddetail:{"name":"tuyaMcu_defWiFiState","args":"",
+	//cmddetail:"descr":"Command sets the default WiFi state for TuyaMCU when device is not online.",
+	//cmddetail:"fn":"Cmd_TuyaMCU_Send_RSSI","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("tuyaMcu_defWiFiState", "", Cmd_TuyaMCU_Set_DefaultWiFiState, NULL, NULL);
 	
 }
 // Door sensor with TuyaMCU version 0 (not 3), so all replies have x00 and not 0x03 byte

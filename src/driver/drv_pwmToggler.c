@@ -264,7 +264,7 @@ void DRV_Toggler_AddToHtmlPage(http_request_t *request) {
 		hprintf255(request, "<input type=\"range\" min=\"0\" max=\"%i\" name=\"togglerValue\" id=\"togglerValue\" value=\"%i\" onchange=\"this.form.submit()\">", 
 			maxValue, g_values[i]);
 		hprintf255(request, "<input type=\"hidden\" name=\"togglerValueID\" value=\"%i\">", i);
-		hprintf255(request, "<input type=\"submit\" style=\"display:none;\" value=\"Set %s\"/></form>", name);
+		hprintf255(request, "<input type=\"submit\" class='disp-none' value=\"Set %s\"/></form>", name);
 		poststr(request, "</td></tr>");
 
 	}

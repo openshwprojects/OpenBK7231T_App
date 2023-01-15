@@ -16,5 +16,6 @@ void MAX72XX_setIntensity(max72XX_t *led,int addr, int intensity) ;
 void MAX72XX_displayArray(max72XX_t* led, byte *p, int devs, int ofs)  ;
 void MAX72XX_shift(max72XX_t *led,int d);
 void MAX72XX_setLed(max72XX_t *led,int addr, int row, int column, bool state) ;
-void MAX72XX_init(max72XX_t *led, int maxD);
-void MAX72XX_setupPins(max72XX_t *led, int csi, int clki, int mosii);
+void MAX72XX_init(max72XX_t *led);
+void MAX72XX_setupPins(max72XX_t *led, int csi, int clki, int mosii, int maxD);
+max72XX_t *MAX72XX_alloc();

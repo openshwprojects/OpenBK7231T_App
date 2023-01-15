@@ -28,6 +28,7 @@ typedef commandResult_t (*commandHandler_t)(const void* context, const char* cmd
 // command was sent by TCP CMD
 #define COMMAND_FLAG_SOURCE_IR			32
 
+extern bool g_powersave;
 
 //
 void CMD_Init_Early();
@@ -180,7 +181,6 @@ void LED_SetDimmer(int iVal);
 commandResult_t LED_SetBaseColor(const void* context, const char* cmd, const char* args, int bAll);
 void LED_SetFinalCW(byte c, byte w);
 void LED_SetFinalRGB(byte r, byte g, byte b);
-float LED_BrightnessMapping(float raw, float brig);
 void LED_SetFinalRGBCW(byte* rgbcw);
 void LED_GetFinalChannels100(byte* rgbcw);
 void LED_GetFinalHSV(int* hsv);
