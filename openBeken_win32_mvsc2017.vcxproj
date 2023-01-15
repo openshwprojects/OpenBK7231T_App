@@ -83,6 +83,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
+	<TargetName>openBeken_win32</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug BL602|Win32'">
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
@@ -91,6 +92,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
+	<TargetName>openBeken_win32</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
