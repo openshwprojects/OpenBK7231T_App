@@ -1,5 +1,11 @@
-
 #include "ota.h"
+
+#if defined(PLATFORM_W600)
+
+//W600 uses OTA functions from its SDK.
+
+#else
+
 #include "../new_common.h"
 #include "../new_cfg.h"
 #include "typedef.h"
@@ -12,7 +18,6 @@
 static unsigned char *sector = (void *)0;
 int sectorlen = 0;
 unsigned int addr = 0xff000;
-int ota_status = -1;
 #define SECTOR_SIZE 0x1000
 static void store_sector(unsigned int addr, unsigned char *data);
 extern void flash_protection_op(UINT8 mode,PROTECT_TYPE type);
@@ -103,12 +108,11 @@ static void store_sector(unsigned int addr, unsigned char *data){
     flash_ctrl(CMD_FLASH_ERASE_SECTOR, &addr);
     flash_ctrl(CMD_FLASH_WRITE_ENABLE, (void *)0);
     flash_write((char *)data , SECTOR_SIZE, addr);
-    ota_status += SECTOR_SIZE;
+    OTA_IncrementProgress(SECTOR_SIZE);
 }
 
 
 httprequest_t httprequest;
-int total_bytes = 0;
 
 int myhttpclientcallback(httprequest_t* request){
 
@@ -116,14 +120,15 @@ int myhttpclientcallback(httprequest_t* request){
   httpclient_data_t *client_data = &request->client_data;
 
   // NOTE: Called from the client thread, beware
-  total_bytes += request->client_data.response_buf_filled;
+  //It is not clear if we can just update total_bytes instead of incrementing. Maintaining previous behavior.
+  OTA_SetTotalBytes(OTA_GetTotalBytes() + request->client_data.response_buf_filled);
 
   switch(request->state){
     case 0: // start
       //init_ota(0xff000);
 
       init_ota(START_ADR_OF_BK_PARTITION_OTA);
-      addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"\r\nmyhttpclientcallback state %d total %d/%d\r\n", request->state, total_bytes, request->client_data.response_content_len);
+      addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"\r\nmyhttpclientcallback state %d total %d/%d\r\n", request->state, OTA_GetTotalBytes(), request->client_data.response_content_len);
       break;
     case 1: // data
       if (request->client_data.response_buf_filled){
@@ -134,8 +139,8 @@ int myhttpclientcallback(httprequest_t* request){
       break;
     case 2: // ended, write any remaining bytes to the sector
       close_ota();
-      ota_status = -1;
-      addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"\r\nmyhttpclientcallback state %d total %d/%d\r\n", request->state, total_bytes, request->client_data.response_content_len);
+      OTA_ResetProgress();
+      addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"\r\nmyhttpclientcallback state %d total %d/%d\r\n", request->state, OTA_GetTotalBytes(), request->client_data.response_content_len);
 
       addLogAdv(LOG_INFO, LOG_FEATURE_OTA,"Rebooting in 1 seconds...");
 
@@ -183,7 +188,7 @@ void otarequest(const char *urlin){
 
   strncpy(url, urlin, sizeof(url));
 
-  total_bytes = 0;
+  OTA_SetTotalBytes(0);
   memset(request, 0, sizeof(*request));
   httpclient_t *client = &request->client;
   httpclient_data_t *client_data = &request->client_data;
@@ -208,16 +213,40 @@ void otarequest(const char *urlin){
   request->method = HTTPCLIENT_GET;
   request->timeout = 10000;
   HTTPClient_Async_SendGeneric(request);
-  ota_status = 0;
+  //+2 Updating ota_status to 0 as before.
+  OTA_ResetProgress();
+  OTA_IncrementProgress(1);
  }
+
+#endif
+
+
+/***** SDK independent code from this point. ******/
+int ota_status = -1;
+int total_bytes = 0;
 
 int ota_progress()
 {
   return ota_status;
 }
 
-int ota_total_bytes()
+extern void OTA_ResetProgress()
+{
+  ota_status = -1;
+}
+
+extern void OTA_IncrementProgress(int value)
+{
+  ota_status += value;
+}
+
+int OTA_GetTotalBytes()
 {
   return total_bytes;
+}
+
+extern void OTA_SetTotalBytes(int value)
+{
+  total_bytes = value;
 }
 
