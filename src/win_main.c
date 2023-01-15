@@ -182,16 +182,30 @@ int g_bDoingUnitTestsNow = 0;
 #include "sim/sim_public.h"
 int __cdecl main(int argc, char **argv)
 {
-	if (argc == 2) {
-		if (strncmp(argv[1], "port=", 5) == 0) {
-			int port;
-			if (sscanf(argv[1] + 5, "%d", &port) == 1) {
-				g_port = port;
+	bool bWantsUnitTests = true;
+
+	if (argc > 1) {
+		int value;
+
+		for (int i = 1; i < argc; i++) {
+			if (argv[i][0] == '-') {
+				if (wal_strnicmp(argv[i] + 1, "port", 4) == 0) {
+					i++;
+
+					if (i < argc && sscanf(argv[i], "%d", &value) == 1) {
+						g_port = value;
+					}
+				} else if (wal_strnicmp(argv[i] + 1, "runUnitTests", 12) == 0) {
+					i++;
+
+					if (i < argc && sscanf(argv[i], "%d", &value) == 1) {
+						bWantsUnitTests = value != 0;
+					}
+				}
 			}
 		}
 	}
 
-	bool bWantsUnitTests = 1;
     WSADATA wsaData;
     int iResult;
 
