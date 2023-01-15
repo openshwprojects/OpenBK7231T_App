@@ -1421,10 +1421,10 @@ int http_fn_startup_command(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Set startup command");
 	poststr(request, "<h4>Set/Change/Clear startup command line</h4>");
-	poststr(request, "<h5>Startup command is a shorter, smaller alternative to LittleFS autoexec.bat."
-		"The startup commands are ran at device startup."
-		"You can use them to init peripherals and drivers, like BL0942 energy sensor."
-		"Use backlog cmd1; cmd2; cmd3; etc to enter multiple commands</h5>");
+	poststr(request, "<p>Startup command is a shorter, smaller alternative to LittleFS autoexec.bat. "
+		"The startup commands are ran at device startup. "
+		"You can use them to init peripherals and drivers, like BL0942 energy sensor. "
+		"Use backlog cmd1; cmd2; cmd3; etc to enter multiple commands</p>");
 
 	if (http_getArg(request->url, "data", tmpA, sizeof(tmpA))) {
 		//  hprintf255(request,"<h3>Set command to  %s!</h3>",tmpA);
@@ -1552,24 +1552,24 @@ void get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount) {
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		int role = PIN_GetPinRoleForPinIndex(i);
 		switch (role) {
-			case IOR_Relay:
-			case IOR_Relay_n:
-			case IOR_LED:
-			case IOR_LED_n:
-				(*relayCount)++;
-				break;
-			case IOR_PWM:
-			case IOR_PWM_n:
-				(*pwmCount)++;
-				break;
-			case IOR_DigitalInput:
-			case IOR_DigitalInput_n:
-			case IOR_DigitalInput_NoPup:
-			case IOR_DigitalInput_NoPup_n:
-				(*dInputCount)++;
-				break;
-			default:
-				break;
+		case IOR_Relay:
+		case IOR_Relay_n:
+		case IOR_LED:
+		case IOR_LED_n:
+			(*relayCount)++;
+			break;
+		case IOR_PWM:
+		case IOR_PWM_n:
+			(*pwmCount)++;
+			break;
+		case IOR_DigitalInput:
+		case IOR_DigitalInput_n:
+		case IOR_DigitalInput_NoPup:
+		case IOR_DigitalInput_NoPup_n:
+			(*dInputCount)++;
+			break;
+		default:
+			break;
 		}
 	}
 }
@@ -1596,7 +1596,7 @@ void doHomeAssistantDiscovery(const char *topic, http_request_t *request) {
 
 	get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
 
-	ledDriverChipRunning = LED_IsLedDriverChipRunning();	
+	ledDriverChipRunning = LED_IsLedDriverChipRunning();
 
 	hooks.malloc_fn = os_malloc;
 	hooks.free_fn = os_free;
@@ -2714,7 +2714,7 @@ const char* g_obk_flagNames[] = {
 	"[SM2135] Use separate RGB/CW modes instead of writing all 5 values as RGB",
 	"[MQTT] Broadcast self state on MQTT connect",
 	"[PWM] BK7231 use 600hz instead of 1khz default",
-	"[LED] remember LED driver state (RGBCW, enable, brightness, temperature) after reboot",
+	"[LED] Remember LED driver state (RGBCW, enable, brightness, temperature) after reboot",
 	"[HTTP] Show actual PIN logic level for unconfigured pins",
 	"[IR] Do MQTT publish (RAW STRING) for incoming IR data",
 	"[IR] Allow 'unknown' protocol",
@@ -2751,7 +2751,7 @@ const char* g_obk_flagNames[] = {
 	"error",
 	"error",
 	"error",
-}; 
+};
 int http_fn_cfg_generic(http_request_t* request) {
 	int i;
 	char tmpA[64];
@@ -2825,14 +2825,15 @@ int http_fn_cfg_startup(http_request_t* request) {
 
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Config startup");
-	hprintf255(request, "<h5>Here you can set pin start values<h5>");
-	hprintf255(request, "<h5>For relays, simply use 1 or 0</h5>");
-	hprintf255(request, "<h5>For 'remember last power state', use -1 as a special value</h5>");
-	hprintf255(request, "<h5>For dimmers, range is 0 to 100</h5>");
-	hprintf255(request, "<h5>For custom values, you can set any number you want to</h5>");
-	hprintf255(request, "<h5>Remember that you can also use short startup command to run commands like led_baseColor #FF0000 and led_enableAll 1 etc</h5>");
-	hprintf255(request, "<h5><color=red>Remembering last state of LED driver also fully you can set it in");
-	hprintf255(request, "Options->General, set Flag 12 - [LED] remember LED driver state (RGBCW, enable, brightness, temperature) after reboot!</color></h5>");
+	poststr(request, "<h4>Here you can set pin start values</h4>");
+	poststr(request, "<ul><li>For relays, simply use 1 or 0</li>");
+	poststr(request, "<li>To 'remember last power state', use -1 as a special value</li>");
+	poststr(request, "<li>For dimmers, range is 0 to 100</li>");
+	poststr(request, "<li>For custom values, you can set any numeric value</li>");
+	poststr(request, "<li>Remember that you can also use short <a href='startup_command'>startup command</a> to run commands like led_baseColor #FF0000 and led_enableAll 1 etc</li>");
+	hprintf255(request, "<li>To remember last state of LED driver, set ");
+	hprintf255(request, "<a href='cfg_generic'>Flag 12 - %s</a>", g_obk_flagNames[12]);
+	poststr(request, "</li></ul>");
 
 	if (http_getArg(request->url, "idx", tmpA, sizeof(tmpA))) {
 		channelIndex = atoi(tmpA);
@@ -2849,23 +2850,19 @@ int http_fn_cfg_startup(http_request_t* request) {
 		}
 	}
 
+	poststr(request, "<h4>New start values</h4>");
+
 	for (i = 0; i < CHANNEL_MAX; i++) {
 		if (CHANNEL_IsInUse(i)) {
-			int startValue;
+			int startValue = CFG_GetChannelStartupValue(i);
 
-			startValue = CFG_GetChannelStartupValue(i);
+			poststr(request, "<form action='/cfg_startup' class='indent'>");
+			hprintf255(request, "<input type=\"hidden\" id=\"idx\" name=\"idx\" value=\"%i\"/>", i);
 
-			poststr(request, "<br><form action=\"/cfg_startup\">\
-					<label for=\"boot_ok_delay\">New start value for channel ");
-			hprintf255(request, "%i", i);
-			poststr(request, ":</label><br>\
-					<input type=\"hidden\" id=\"idx\" name=\"idx\" value=\"");
-			hprintf255(request, "%i", i);
-			poststr(request, "\">");
-			poststr(request, "<input type=\"number\" id=\"value\" name=\"value\" value=\"");
-			hprintf255(request, "%i", startValue);
-			poststr(request, "\"><br>");
-			poststr(request, "<input type=\"submit\" value=\"Save\"/></form>");
+			sprintf(tmpA, "Channel %i", i);
+			add_label_numeric_field(request, tmpA, "value", startValue, "");
+
+			poststr(request, "<input type=\"submit\" value=\"Save\"/></form><br/>");
 		}
 	}
 
@@ -2962,7 +2959,7 @@ int http_fn_cfg_dgr(http_request_t* request) {
 		poststr(request, "></td> ");
 
 		poststr(request, "<input type=\"hidden\" name=\"bSet\" value=\"1\">");
-		
+
 		poststr(request, "    </tr></table>  <input type=\"submit\" value=\"Submit\"></form>");
 	}
 
