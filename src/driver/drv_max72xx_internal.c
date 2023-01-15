@@ -34,12 +34,15 @@ void PORT_shiftOut(int dataPin, int clockPin, int bitOrder, int val)
     int i;
 
     for (i = 0; i < 8; i++)  {
+		usleep(20);
         if (bitOrder == LSBFIRST)
             HAL_PIN_SetOutputValue(dataPin, !!(val & (1 << i)));
         else
             HAL_PIN_SetOutputValue(dataPin, !!(val & (1 << (7 - i))));
 
+		usleep(20);
         HAL_PIN_SetOutputValue(clockPin, HIGH);
+		usleep(20);
         HAL_PIN_SetOutputValue(clockPin, LOW);
     }
 }
@@ -180,9 +183,8 @@ void MAX72XX_setLed(max72XX_t *led,int addr, int row, int column, bool state) {
     }
     MAX72XX_spiTransfer(led,addr, row+1,led->led_status[offset+row]);
 }
-void MAX72XX_init(max72XX_t *led, int maxD) {
+void MAX72XX_init(max72XX_t *led) {
     int i;
-    led->maxDevices = maxD;
 
     HAL_PIN_SetOutputValue(led->port_cs,HIGH);
     for( i=0;i<64;i++)
@@ -206,9 +208,34 @@ void MAX72XX_init(max72XX_t *led, int maxD) {
         MAX72XX_clearDisplay(led,i);
     }
 }
-void MAX72XX_setupPins(max72XX_t *led,  int csi, int clki, int mosii)
+void MAX72XX_setupPins(max72XX_t *led,  int csi, int clki, int mosii, int maxDevices)
 {
+	led->maxDevices = maxDevices;
 	led->port_cs = csi;
 	led->port_clk = clki;
 	led->port_mosi = mosii;
+	HAL_PIN_Setup_Output(csi);
+	HAL_PIN_SetOutputValue(csi, 0);
+	HAL_PIN_Setup_Output(clki);
+	HAL_PIN_SetOutputValue(clki, 0);
+	HAL_PIN_Setup_Output(mosii);
+	HAL_PIN_SetOutputValue(mosii, 0);
 }
+max72XX_t *MAX72XX_alloc() {
+	max72XX_t *ret = (max72XX_t*)malloc(sizeof(max72XX_t));
+	if (ret == 0)
+		return 0;
+	memset(ret, 0, sizeof(max72XX_t));
+	return ret;
+}
+
+
+
+
+
+
+
+
+
+
+
