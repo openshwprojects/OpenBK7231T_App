@@ -43,6 +43,27 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int timeMS;
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_DeepSleep: enable power save");
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 1) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Not enough arguments.");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	timeMS = Tokenizer_GetArgInteger(0);
+#ifdef PLATFORM_BEKEN
+	extern void bk_wlan_ps_wakeup_with_timer(UINT32 sleep_time);
+	bk_wlan_ps_wakeup_with_timer(timeMS);
+#elif defined(PLATFORM_W600)
+	
+#endif
+
+	return CMD_RES_OK;
+}
 
 
 static commandResult_t CMD_ScheduleHADiscovery(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -201,6 +222,11 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_ClearAll","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("clearAll", "", CMD_ClearAll, NULL, NULL);
+	//cmddetail:{"name":"DeepSleep","args":"[Miliseconds]",
+	//cmddetail:"descr":"Enable power save on N & T",
+	//cmddetail:"fn":"CMD_DeepSleep","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("DeepSleep", "", CMD_DeepSleep, NULL, NULL);
 	//cmddetail:{"name":"PowerSave","args":"",
 	//cmddetail:"descr":"Enable power save on N & T",
 	//cmddetail:"fn":"CMD_PowerSave","file":"cmnds/cmd_main.c","requires":"",
