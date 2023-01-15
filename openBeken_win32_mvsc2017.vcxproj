@@ -313,6 +313,7 @@
     <ClCompile Include="src\driver\drv_sm2135.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_sm2235.c" />
     <ClCompile Include="src\driver\drv_ssdp.c" />
     <ClCompile Include="src\driver\drv_tasmotaDeviceGroups.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
@@ -591,6 +592,7 @@
     <ClInclude Include="src\driver\drv_cht8305.h" />
     <ClInclude Include="src\driver\drv_dht_internal.h" />
     <ClInclude Include="src\driver\drv_max72xx_internal.h" />
+    <ClInclude Include="src\driver\drv_sm2235.h" />
     <ClInclude Include="src\selftest\selftest_local.h" />
     <ClInclude Include="src\sim\Bounds.h" />
     <ClInclude Include="src\sim\Circle.h" />

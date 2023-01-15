@@ -78,6 +78,9 @@ enum IORole {
 	IOR_SOFT_SDA,
 	IOR_SOFT_SCL,
 
+	IOR_SM2235_DAT,
+	IOR_SM2235_CLK,
+
 	IOR_Total_Options,
 };
 

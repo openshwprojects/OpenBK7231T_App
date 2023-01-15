@@ -31,6 +31,10 @@ void SM2135_Init();
 void SM2135_RunFrame();
 void SM2135_OnChannelChanged(int ch, int value);
 
+void SM2235_Init();
+void SM2235_RunFrame();
+void SM2235_OnChannelChanged(int ch, int value);
+
 void BP5758D_Init();
 void BP5758D_RunFrame();
 void BP5758D_OnChannelChanged(int ch, int value);

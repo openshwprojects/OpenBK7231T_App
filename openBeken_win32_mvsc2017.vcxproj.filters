@@ -465,6 +465,9 @@
     <ClCompile Include="src\driver\drv_max72xx_single.c">
       <Filter>Drv</Filter>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_sm2235.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />
@@ -600,6 +603,9 @@
       <Filter>Drv</Filter>
     </ClInclude>
     <ClInclude Include="src\driver\drv_max72xx_internal.h">
+      <Filter>Drv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\driver\drv_sm2235.h">
       <Filter>Drv</Filter>
     </ClInclude>
   </ItemGroup>
