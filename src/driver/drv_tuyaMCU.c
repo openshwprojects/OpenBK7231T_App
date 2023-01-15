@@ -1248,7 +1248,7 @@ void TuyaMCU_RunWiFiUpdateAndPackets() {
 	else {
 		if ((wifi_state == true) || (wifi_state_timer == 0))
 		{
-			addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send SetWiFiState 0.\n");
+			addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send SetWiFiState %i.\n", (int)g_defaultTuyaMCUWiFiState);
 
 			Tuya_SetWifiState(g_defaultTuyaMCUWiFiState);
 			wifi_state = false;
