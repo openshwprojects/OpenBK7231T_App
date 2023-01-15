@@ -1552,24 +1552,24 @@ void get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount) {
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		int role = PIN_GetPinRoleForPinIndex(i);
 		switch (role) {
-		case IOR_Relay:
-		case IOR_Relay_n:
-		case IOR_LED:
-		case IOR_LED_n:
-			(*relayCount)++;
-			break;
-		case IOR_PWM:
-		case IOR_PWM_n:
-			(*pwmCount)++;
-			break;
-		case IOR_DigitalInput:
-		case IOR_DigitalInput_n:
-		case IOR_DigitalInput_NoPup:
-		case IOR_DigitalInput_NoPup_n:
-			(*dInputCount)++;
-			break;
-		default:
-			break;
+			case IOR_Relay:
+			case IOR_Relay_n:
+			case IOR_LED:
+			case IOR_LED_n:
+				(*relayCount)++;
+				break;
+			case IOR_PWM:
+			case IOR_PWM_n:
+				(*pwmCount)++;
+				break;
+			case IOR_DigitalInput:
+			case IOR_DigitalInput_n:
+			case IOR_DigitalInput_NoPup:
+			case IOR_DigitalInput_NoPup_n:
+				(*dInputCount)++;
+				break;
+			default:
+				break;
 		}
 	}
 }
@@ -2561,12 +2561,12 @@ int http_fn_cfg_pins(http_request_t* request) {
 
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Pin config");
-	poststr(request, "<h5> First textfield is used to enter channel index (relay index), used to support multiple relays and buttons</h5>");
-	poststr(request, "<h5> (so, first button and first relay should have channel 1, second button and second relay have channel 2, etc)</h5>");
-	poststr(request, "<h5> Second textfield (only for buttons) is used to enter channel to toggle when doing double click</h5>");
-	poststr(request, "<h5> (second textfield shows up when you change role to button and save...)</h5>");
+	poststr(request, "<p>The first textfield is used to enter channel index (relay index), used to support multiple relays and buttons. ");
+	poststr(request, "So, first button and first relay should have channel 1, second button and second relay have channel 2, etc.</p>");
+	poststr(request, "<p>The second textfield (only for buttons) is used to enter channel to toggle when doing double click. ");
+	poststr(request, "It shows up when you change role to button and save.</p>");
 #if PLATFORM_BK7231N || PLATFORM_BK7231T
-	poststr(request, "<h5>BK7231N/BK7231T supports PWM only on pins 6, 7, 8, 9, 24 and 26!</h5>");
+	poststr(request, "<p>BK7231N/BK7231T supports PWM only on pins 6, 7, 8, 9, 24 and 26!</p>");
 #endif
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		sprintf(tmpA, "%i", i);
@@ -2788,7 +2788,7 @@ int http_fn_cfg_generic(http_request_t* request) {
 
 	CFG_Save_IfThereArePendingChanges();
 
-	hprintf255(request, "<h5>Flags (Current value=%i)<h5>", CFG_GetFlags());
+	hprintf255(request, "<h4>Flags (Current value=%i)</h4>", CFG_GetFlags());
 	poststr(request, "<form action=\"/cfg_generic\">");
 
 	for (i = 0; i < OBK_TOTAL_FLAGS; i++) {
