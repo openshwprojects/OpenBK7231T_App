@@ -221,9 +221,11 @@ void SHT3X_OnEverySecond() {
 
 	channel_temp = g_cfg.pins.channels[g_pin_data];
 	channel_humid = g_cfg.pins.channels2[g_pin_data];
-        CHANNEL_SetType(channel_temp, CHANNEL_ParseChannelType("temperature_div10"));
+	// This should be done by user, not in code
+   //     CHANNEL_SetType(channel_temp, CHANNEL_ParseChannelType("temperature_div10"));
 	CHANNEL_Set(channel_temp, (int)(g_temp * 10), 0);
-        CHANNEL_SetType(channel_humid, CHANNEL_ParseChannelType("humidity"));
+	// This should be done by user, not in code
+     //   CHANNEL_SetType(channel_humid, CHANNEL_ParseChannelType("humidity"));
 	CHANNEL_Set(channel_humid, (int)(g_humid), 0);
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "DRV_SHT3X_readEnv: Temperature:%fC Humidity:%f%%\n", g_temp, g_humid);
