@@ -325,7 +325,7 @@ int http_fn_index(http_request_t* request) {
 		poststr(request, "<div id=\"state\">"); // replaceable content follows
 	}
 
-	poststr(request, "<table width=\"100%\">");
+	poststr(request, "<table>");	//Table default to 100% width in stylesheet
 	for (i = 0; i < CHANNEL_MAX; i++) {
 		int channelType;
 
@@ -335,10 +335,10 @@ int http_fn_index(http_request_t* request) {
 				hprintf255(request, "<tr>");
 			}
 			if (CHANNEL_Check(i)) {
-				poststr(request, "<td style=\"text-align:center; font-weight:bold; font-size:54px\">ON</td>");
+				poststr(request, "<td class='on'>ON</td>");
 			}
 			else {
-				poststr(request, "<td style=\"text-align:center; font-size:54px\">OFF</td>");
+				poststr(request, "<td class='off'>OFF</td>");
 			}
 			if (i == CHANNEL_MAX - 1) {
 				poststr(request, "</tr>");
@@ -347,7 +347,7 @@ int http_fn_index(http_request_t* request) {
 	}
 	poststr(request, "</table>");
 
-	poststr(request, "<table width=\"100%\">");
+	poststr(request, "<table>");	//Table default to 100% width in stylesheet
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		int role;
 
@@ -637,7 +637,7 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "<form action=\"index\" id=\"form%i\">", i);
 			hprintf255(request, "<input type=\"range\" min=\"0\" max=\"%i\" name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">", maxValue, inputName, i, pwmValue);
 			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, i);
-			hprintf255(request, "<input type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>", i);
+			hprintf255(request, "<input type=\"submit\" class='disp-none' value=\"Toggle %i\"/></form>", i);
 			poststr(request, "</td></tr>");
 		}
 	}
@@ -683,7 +683,7 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "<form action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_BRIGHTNESS);
 			hprintf255(request, "<input type=\"range\" min=\"0\" max=\"100\" name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">", inputName, SPECIAL_CHANNEL_BRIGHTNESS, pwmValue);
 			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, SPECIAL_CHANNEL_BRIGHTNESS);
-			hprintf255(request, "<input  type=\"submit\" style=\"display:none;\" value=\"Toggle %i\"/></form>", SPECIAL_CHANNEL_BRIGHTNESS);
+			hprintf255(request, "<input  type=\"submit\" class='disp-none' value=\"Toggle %i\"/></form>", SPECIAL_CHANNEL_BRIGHTNESS);
 			poststr(request, "</td></tr>");
 		}
 		if (c_pwms >= 3) {
@@ -700,7 +700,7 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "<form action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_BASECOLOR);
 			hprintf255(request, "<input type=\"color\" name=\"%s\" id=\"color%i\" value=\"#%s\" onchange=\"this.form.submit()\">", inputName, SPECIAL_CHANNEL_BASECOLOR, colorValue);
 			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, SPECIAL_CHANNEL_BASECOLOR);
-			hprintf255(request, "<input  type=\"submit\" style=\"display:none;\" value=\"Toggle Light\"/></form>");
+			hprintf255(request, "<input  type=\"submit\" class='disp-none' value=\"Toggle Light\"/></form>");
 			poststr(request, "</td></tr>");
 		}
 		if (c_pwms == 2 || c_pwms >= 4) {
@@ -718,7 +718,7 @@ int http_fn_index(http_request_t* request) {
 
 			poststr(request, "<tr><td>");
 			hprintf255(request, "<h5>LED Temperature Slider %s (%ld K) (Warm <--- ---> Cool)</h5>", activeStr, pwmKelvin);
-			hprintf255(request, "<form class='r' style='background: linear-gradient(to right, rgb(255, 160, 0), rgb(166, 209, 255));' action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_TEMPERATURE);
+			hprintf255(request, "<form class='r' action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_TEMPERATURE);
 
 			//(KELVIN_TEMPERATURE_MAX - KELVIN_TEMPERATURE_MIN) / (HASS_TEMPERATURE_MAX - HASS_TEMPERATURE_MIN) = 13
 			hprintf255(request, "<input type=\"range\" step='13' min=\"%ld\" max=\"%ld\" ", KELVIN_TEMPERATURE_MIN, KELVIN_TEMPERATURE_MAX);
@@ -827,7 +827,7 @@ int http_fn_index(http_request_t* request) {
 	}
 #endif
 	if (bSafeMode) {
-		hprintf255(request, "<h5 style='color:red'>You are in safe mode (AP mode) because full reboot failed %i times. ",
+		hprintf255(request, "<h5 class='safe'>You are in safe mode (AP mode) because full reboot failed %i times. ",
 			Main_GetLastRebootBootFailures());
 		hprintf255(request, "Pins, relays, etc are disabled.</h5>");
 
@@ -1421,10 +1421,10 @@ int http_fn_startup_command(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Set startup command");
 	poststr(request, "<h4>Set/Change/Clear startup command line</h4>");
-	poststr(request, "<h5>Startup command is a shorter, smaller alternative to LittleFS autoexec.bat."
-		"The startup commands are ran at device startup."
-		"You can use them to init peripherals and drivers, like BL0942 energy sensor."
-		"Use backlog cmd1; cmd2; cmd3; etc to enter multiple commands</h5>");
+	poststr(request, "<p>Startup command is a shorter, smaller alternative to LittleFS autoexec.bat. "
+		"The startup commands are ran at device startup. "
+		"You can use them to init peripherals and drivers, like BL0942 energy sensor. "
+		"Use backlog cmd1; cmd2; cmd3; etc to enter multiple commands</p>");
 
 	if (http_getArg(request->url, "data", tmpA, sizeof(tmpA))) {
 		//  hprintf255(request,"<h3>Set command to  %s!</h3>",tmpA);
@@ -1596,7 +1596,7 @@ void doHomeAssistantDiscovery(const char *topic, http_request_t *request) {
 
 	get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
 
-	ledDriverChipRunning = LED_IsLedDriverChipRunning();	
+	ledDriverChipRunning = LED_IsLedDriverChipRunning();
 
 	hooks.malloc_fn = os_malloc;
 	hooks.free_fn = os_free;
@@ -1929,7 +1929,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 		}
 
 	poststr(request, "</textarea>");
-	poststr(request, "<br/><div><label for=\"ha_disc_topic\">Discovery topic:</label><input id=\"ha_disc_topic\" value=\"homeassistant\"><button onclick=\"send_ha_disc();\">Start Home Assistant Discovery</button>&nbsp;<form action=\"cfg_mqtt\" style=\"display:inline-block;\"><button type=\"submit\">Configure MQTT</button></form></div><br/>");
+	poststr(request, "<br/><div><label for=\"ha_disc_topic\">Discovery topic:</label><input id=\"ha_disc_topic\" value=\"homeassistant\"><button onclick=\"send_ha_disc();\">Start Home Assistant Discovery</button>&nbsp;<form action=\"cfg_mqtt\" class='disp-inline'><button type=\"submit\">Configure MQTT</button></form></div><br/>");
 	poststr(request, htmlFooterReturnToCfgLink);
 	http_html_end(request);
 	poststr(request, ha_discovery_script);
@@ -2561,12 +2561,12 @@ int http_fn_cfg_pins(http_request_t* request) {
 
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Pin config");
-	poststr(request, "<h5> First textfield is used to enter channel index (relay index), used to support multiple relays and buttons</h5>");
-	poststr(request, "<h5> (so, first button and first relay should have channel 1, second button and second relay have channel 2, etc)</h5>");
-	poststr(request, "<h5> Second textfield (only for buttons) is used to enter channel to toggle when doing double click</h5>");
-	poststr(request, "<h5> (second textfield shows up when you change role to button and save...)</h5>");
+	poststr(request, "<p>The first textfield is used to enter channel index (relay index), used to support multiple relays and buttons. ");
+	poststr(request, "So, first button and first relay should have channel 1, second button and second relay have channel 2, etc.</p>");
+	poststr(request, "<p>The second textfield (only for buttons) is used to enter channel to toggle when doing double click. ");
+	poststr(request, "It shows up when you change role to button and save.</p>");
 #if PLATFORM_BK7231N || PLATFORM_BK7231T
-	poststr(request, "<h5>BK7231N/BK7231T supports PWM only on pins 6, 7, 8, 9, 24 and 26!</h5>");
+	poststr(request, "<p>BK7231N/BK7231T supports PWM only on pins 6, 7, 8, 9, 24 and 26!</p>");
 #endif
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		sprintf(tmpA, "%i", i);
@@ -2714,7 +2714,7 @@ const char* g_obk_flagNames[] = {
 	"[SM2135] Use separate RGB/CW modes instead of writing all 5 values as RGB",
 	"[MQTT] Broadcast self state on MQTT connect",
 	"[PWM] BK7231 use 600hz instead of 1khz default",
-	"[LED] remember LED driver state (RGBCW, enable, brightness, temperature) after reboot",
+	"[LED] Remember LED driver state (RGBCW, enable, brightness, temperature) after reboot",
 	"[HTTP] Show actual PIN logic level for unconfigured pins",
 	"[IR] Do MQTT publish (RAW STRING) for incoming IR data",
 	"[IR] Allow 'unknown' protocol",
@@ -2751,7 +2751,7 @@ const char* g_obk_flagNames[] = {
 	"error",
 	"error",
 	"error",
-}; 
+};
 int http_fn_cfg_generic(http_request_t* request) {
 	int i;
 	char tmpA[64];
@@ -2788,7 +2788,7 @@ int http_fn_cfg_generic(http_request_t* request) {
 
 	CFG_Save_IfThereArePendingChanges();
 
-	hprintf255(request, "<h5>Flags (Current value=%i)<h5>", CFG_GetFlags());
+	hprintf255(request, "<h4>Flags (Current value=%i)</h4>", CFG_GetFlags());
 	poststr(request, "<form action=\"/cfg_generic\">");
 
 	for (i = 0; i < OBK_TOTAL_FLAGS; i++) {
@@ -2825,14 +2825,15 @@ int http_fn_cfg_startup(http_request_t* request) {
 
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Config startup");
-	hprintf255(request, "<h5>Here you can set pin start values<h5>");
-	hprintf255(request, "<h5>For relays, simply use 1 or 0</h5>");
-	hprintf255(request, "<h5>For 'remember last power state', use -1 as a special value</h5>");
-	hprintf255(request, "<h5>For dimmers, range is 0 to 100</h5>");
-	hprintf255(request, "<h5>For custom values, you can set any number you want to</h5>");
-	hprintf255(request, "<h5>Remember that you can also use short startup command to run commands like led_baseColor #FF0000 and led_enableAll 1 etc</h5>");
-	hprintf255(request, "<h5><color=red>Remembering last state of LED driver also fully you can set it in");
-	hprintf255(request, "Options->General, set Flag 12 - [LED] remember LED driver state (RGBCW, enable, brightness, temperature) after reboot!</color></h5>");
+	poststr(request, "<h4>Here you can set pin start values</h4>");
+	poststr(request, "<ul><li>For relays, simply use 1 or 0</li>");
+	poststr(request, "<li>To 'remember last power state', use -1 as a special value</li>");
+	poststr(request, "<li>For dimmers, range is 0 to 100</li>");
+	poststr(request, "<li>For custom values, you can set any numeric value</li>");
+	poststr(request, "<li>Remember that you can also use short <a href='startup_command'>startup command</a> to run commands like led_baseColor #FF0000 and led_enableAll 1 etc</li>");
+	hprintf255(request, "<li>To remember last state of LED driver, set ");
+	hprintf255(request, "<a href='cfg_generic'>Flag 12 - %s</a>", g_obk_flagNames[12]);
+	poststr(request, "</li></ul>");
 
 	if (http_getArg(request->url, "idx", tmpA, sizeof(tmpA))) {
 		channelIndex = atoi(tmpA);
@@ -2849,23 +2850,19 @@ int http_fn_cfg_startup(http_request_t* request) {
 		}
 	}
 
+	poststr(request, "<h4>New start values</h4>");
+
 	for (i = 0; i < CHANNEL_MAX; i++) {
 		if (CHANNEL_IsInUse(i)) {
-			int startValue;
+			int startValue = CFG_GetChannelStartupValue(i);
 
-			startValue = CFG_GetChannelStartupValue(i);
+			poststr(request, "<form action='/cfg_startup' class='indent'>");
+			hprintf255(request, "<input type=\"hidden\" id=\"idx\" name=\"idx\" value=\"%i\"/>", i);
 
-			poststr(request, "<br><form action=\"/cfg_startup\">\
-					<label for=\"boot_ok_delay\">New start value for channel ");
-			hprintf255(request, "%i", i);
-			poststr(request, ":</label><br>\
-					<input type=\"hidden\" id=\"idx\" name=\"idx\" value=\"");
-			hprintf255(request, "%i", i);
-			poststr(request, "\">");
-			poststr(request, "<input type=\"number\" id=\"value\" name=\"value\" value=\"");
-			hprintf255(request, "%i", startValue);
-			poststr(request, "\"><br>");
-			poststr(request, "<input type=\"submit\" value=\"Save\"/></form>");
+			sprintf(tmpA, "Channel %i", i);
+			add_label_numeric_field(request, tmpA, "value", startValue, "");
+
+			poststr(request, "<input type=\"submit\" value=\"Save\"/></form><br/>");
 		}
 	}
 
@@ -2962,7 +2959,7 @@ int http_fn_cfg_dgr(http_request_t* request) {
 		poststr(request, "></td> ");
 
 		poststr(request, "<input type=\"hidden\" name=\"bSet\" value=\"1\">");
-		
+
 		poststr(request, "    </tr></table>  <input type=\"submit\" value=\"Submit\"></form>");
 	}
 
