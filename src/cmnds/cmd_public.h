@@ -28,6 +28,7 @@ typedef commandResult_t (*commandHandler_t)(const void* context, const char* cmd
 // command was sent by TCP CMD
 #define COMMAND_FLAG_SOURCE_IR			32
 
+extern bool g_powersave;
 
 //
 void CMD_Init_Early();

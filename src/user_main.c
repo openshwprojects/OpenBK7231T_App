@@ -453,9 +453,10 @@ void Main_OnEverySecond()
 		//int mqtt_max, mqtt_cur, mqtt_mem;
 		//MQTT_GetStats(&mqtt_cur, &mqtt_max, &mqtt_mem);
 	    //ADDLOGF_INFO("mqtt req %i/%i, free mem %i\n", mqtt_cur,mqtt_max,mqtt_mem);
-		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d, MQTT %i(%i), bWifi %i, secondsWithNoPing %i, socks %i/%i\n",
+		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d, MQTT %i(%i), bWifi %i, secondsWithNoPing %i, socks %i/%i %s\n",
 			safe, g_secondsElapsed, idleCount, xPortGetFreeHeapSize(),bMQTTconnected, MQTT_GetConnectEvents(), 
-            g_bHasWiFiConnected, g_timeSinceLastPingReply, LWIP_GetActiveSockets(), LWIP_GetMaxSockets());
+			g_bHasWiFiConnected, g_timeSinceLastPingReply, LWIP_GetActiveSockets(), LWIP_GetMaxSockets(),
+			g_powersave ? "POWERSAVE" : "");
 		// reset so it's a per-second counter.
 		idleCount = 0;
 	}
