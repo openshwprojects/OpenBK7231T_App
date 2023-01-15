@@ -393,6 +393,7 @@ void apply_smart_light() {
 		for(i = 0; i < maxPossibleIndexToSet; i++) {
 			float final = 0.0f;
 
+			baseRGBCW[i] = baseColors[i];
 			if(g_lightEnableAll) {
 				final = led_gamma_correction (i, baseColors[i]);
 			}
@@ -401,12 +402,14 @@ void apply_smart_light() {
 				// (RGB)
 				if(i < 3)
 				{
+					baseRGBCW[i] = 0;
 					final = 0;
 				}
 			} else if(g_lightMode == Light_RGB) {
 				// skip channels 3, 4
 				if(i >= 3)
 				{
+					baseRGBCW[i] = 0;
 					final = 0;
 				}
 			} else {
@@ -414,7 +417,6 @@ void apply_smart_light() {
 			}
 			finalColors[i] = final;
 			finalRGBCW[i] = final;
-			baseRGBCW[i] = baseColors[i];
 			
 			float chVal = final * g_cfg_colorScaleToChannel;
 			if (chVal > 100.0f)
