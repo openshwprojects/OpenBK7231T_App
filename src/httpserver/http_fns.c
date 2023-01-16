@@ -1673,7 +1673,7 @@ void doHomeAssistantDiscovery(const char *topic, http_request_t *request) {
 #endif
 
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
-		if (IS_PIN_DHT_ROLE(g_cfg.pins.roles[i])) {
+		if (IS_PIN_DHT_ROLE(g_cfg.pins.roles[i]) || IS_PIN_TEMP_HUM_SENSOR_ROLE(g_cfg.pins.roles[i])) {
 			dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, PIN_GetPinChannelForPinIndex(i));
 			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 			hass_free_device_info(dev_info);
@@ -2695,7 +2695,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 		}
 		// Secondary linked channel
 		// For button, is relay index to toggle on double click
-		if (si == IOR_Button || si == IOR_Button_n || IS_PIN_DHT_ROLE(si) || si == IOR_CHT8305_DAT ||  si == IOR_SHT3X_DAT )
+		if (si == IOR_Button || si == IOR_Button_n || IS_PIN_DHT_ROLE(si) || IS_PIN_TEMP_HUM_SENSOR_ROLE(si) )
 		{
 			hprintf255(request, "<input class=\"hele\" name=\"e%i\" type=\"text\" value=\"%i\"/>", i, ch2);
 		}
