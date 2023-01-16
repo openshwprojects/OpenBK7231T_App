@@ -84,7 +84,8 @@ enum IORole {
 	IOR_Total_Options,
 };
 
-#define IS_PIN_DHT_ROLE(role) (((role)>=IOR_DHT11) &&((role)<=IOR_DHT22))
+#define IS_PIN_DHT_ROLE(role) (((role)>=IOR_DHT11) && ((role)<=IOR_DHT22))
+#define IS_PIN_TEMP_HUM_SENSOR_ROLE(role) (((role)==IOR_SHT3X_DAT) || ((role)==IOR_CHT8305_DAT))
 
 typedef enum {
 	ChType_Default,
