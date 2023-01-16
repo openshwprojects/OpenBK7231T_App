@@ -1626,6 +1626,7 @@ void doHomeAssistantDiscovery(const char *topic, http_request_t *request) {
 
 	if (pwmCount == 5 || ledDriverChipRunning) {
 		// Enable + RGB control + CW control
+		dev_info = hass_init_light_device_info(LIGHT_RGBCW);
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
 		discoveryQueued = true;
