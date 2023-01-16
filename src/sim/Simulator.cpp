@@ -438,5 +438,11 @@ void CSimulator::onKeyDown(int keyCode) {
 	}
 }
 
+void CSimulator::loadRecentProject() {
+	if (recents->size() > 0) {
+		loadSimulation(recents->get(0));
+	}
+}
+
 
 #endif
