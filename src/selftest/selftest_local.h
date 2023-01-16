@@ -24,17 +24,37 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 #define SELFTEST_ASSERT_JSON_VALUE_INTEGER(obj, varName, res) SELFTEST_ASSERT((Test_GetJSONValue_Integer(varName,obj) == res));
 #define SELFTEST_ASSERT_JSON_VALUE_INTEGER_NESTED2(par1, par2, varName, res) SELFTEST_ASSERT((Test_GetJSONValue_Integer_Nested2(par1, par2,varName) == res));
 #define SELFTEST_ASSERT_JSON_VALUE_FLOAT_NESTED2(par1, par2, varName, res) SELFTEST_ASSERT((Float_Equals(Test_GetJSONValue_Float_Nested2(par1, par2,varName),res)));
+#define SELFTEST_ASSERT_JSON_VALUE_STRING_NESTED2(par1, par2, varName, res) SELFTEST_ASSERT((!strcmp(Test_GetJSONValue_String_Nested2(par1, par2,varName),res)));
 #define SELFTEST_ASSERT_STRING(current,expected) SELFTEST_ASSERT((strcmp(expected,current) == 0));
 #define SELFTEST_ASSERT_INTEGER(current,expected) SELFTEST_ASSERT((expected==current));
 #define SELFTEST_ASSERT_HTML_REPLY(expected) SELFTEST_ASSERT((strcmp(Test_GetLastHTMLReply(),expected) == 0));
 #define SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR(topic, value, bRetain) SELFTEST_ASSERT(SIM_CheckMQTTHistoryForString(topic,value,bRetain));
 #define SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT(topic, value, bRetain) SELFTEST_ASSERT(SIM_CheckMQTTHistoryForFloat(topic,value,bRetain));
 #define SELFTEST_ASSERT_FLAG(flag, value) SELFTEST_ASSERT(CFG_HasFlag(flag)==value);
+#define SELFTEST_ASSERT_HAS_MQTT_JSON_SENT(topic, bPrefixMode) SELFTEST_ASSERT(!SIM_BeginParsingMQTTJSON(topic, bPrefixMode));
 
 //#define FLOAT_EQUALS (a,b) (fabs(a-b)<0.001f)
 inline bool Float_Equals(float a, float b) {
 	float res = fabs(a - b);
 	return res < 0.001f;
+}
+
+#define VA_BUFFER_SIZE 4096
+#define VA_COUNT 4
+
+inline const char *va(const char *fmt, ...) {
+	va_list argList;
+	static int whi = 0;
+	static char buffer[VA_COUNT][VA_BUFFER_SIZE];
+
+	whi++;
+	whi %= VA_COUNT;
+	char *p = buffer[whi];
+
+	va_start(argList, fmt);
+	vsnprintf(p, VA_BUFFER_SIZE, fmt, argList);
+	va_end(argList);
+	return p;
 }
 
 
@@ -58,7 +78,9 @@ void Test_EnergyMeter();
 void Test_DHT();
 void Test_Flags();
 void Test_MultiplePinsOnChannel();
+void Test_HassDiscovery();
 
+void Test_GetJSONValue_Setup(const char *text);
 void Test_FakeHTTPClientPacket_GET(const char *tg);
 void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data);
 void Test_FakeHTTPClientPacket_JSON(const char *tg);
@@ -73,12 +95,16 @@ int Test_GetJSONValue_Integer_Nested2(const char *par1, const char *par2, const 
 float Test_GetJSONValue_Float_Nested2(const char *par1, const char *par2, const char *keyword);
 int Test_GetJSONValue_Integer(const char *keyword, const char *obj);
 const char *Test_GetJSONValue_String(const char *keyword, const char *obj);
+const char *Test_GetJSONValue_String_Nested(const char *par1, const char *keyword);
+const char *Test_GetJSONValue_String_Nested2(const char *par1, const char *par2, const char *keyword);
 
 void SIM_SendFakeMQTTAndRunSimFrame_CMND(const char *command, const char *arguments);
 void SIM_SendFakeMQTTRawChannelSet(int channelIndex, const char *arguments);
 void SIM_ClearMQTTHistory();
 bool SIM_CheckMQTTHistoryForString(const char *topic, const char *value, bool bRetain);
 bool SIM_CheckMQTTHistoryForFloat(const char *topic, float value, bool bRetain);
+const char *SIM_GetMQTTHistoryString(const char *topic, bool bPrefixMode);
+bool SIM_BeginParsingMQTTJSON(const char *topic, bool bPrefixMode);
 
 
 #endif

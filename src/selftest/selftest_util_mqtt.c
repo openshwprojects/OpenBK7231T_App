@@ -47,6 +47,26 @@ bool SIM_CheckMQTTHistoryForString(const char *topic, const char *value, bool bR
 	}
 	return false;
 }
+const char *SIM_GetMQTTHistoryString(const char *topic, bool bPrefixMode) {
+	mqttHistoryEntry_t *ne;
+	int cur = history_tail;
+	while (cur != history_head) {
+		ne = &mqtt_history[cur];
+		if (bPrefixMode) {
+			if (!strncmp(ne->topic, topic,strlen(topic))) {
+				return ne->value;
+			}
+		}
+		else {
+			if (!strcmp(ne->topic, topic)) {
+				return ne->value;
+			}
+		}
+		cur++;
+		cur %= MAX_MQTT_HISTORY;
+	}
+	return 0;
+}
 bool SIM_CheckMQTTHistoryForFloat(const char *topic, float value, bool bRetain) {
 	mqttHistoryEntry_t *ne;
 	int cur = history_tail;
@@ -77,6 +97,24 @@ void SIM_OnMQTTPublish(const char *topic, const char *value, int len, int qos, b
 	strcpy_safe(ne->value, value, sizeof(ne->value));
 	ne->bRetain = bRetain;
 	ne->qos = qos;
+
+#if 1
+	{
+		FILE *f;
+		f = fopen("sim_lastPublish.txt", "wb");
+		if (f != 0) {
+			fprintf(f, value);
+			fclose(f);
+		}
+		if (strlen(value) > 32) {
+			f = fopen("sim_lastPublish_long.txt", "wb");
+			if (f != 0) {
+				fprintf(f, value);
+				fclose(f);
+			}
+		}
+	}
+#endif
 
 
 

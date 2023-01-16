@@ -468,6 +468,15 @@
     <ClCompile Include="src\driver\drv_sm2235.c">
       <Filter>Drv</Filter>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_sht3x.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_hass_discovery.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_util_mqtt_json.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />
@@ -606,6 +615,9 @@
       <Filter>Drv</Filter>
     </ClInclude>
     <ClInclude Include="src\driver\drv_sm2235.h">
+      <Filter>Drv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\driver\drv_sht3x.h">
       <Filter>Drv</Filter>
     </ClInclude>
   </ItemGroup>
