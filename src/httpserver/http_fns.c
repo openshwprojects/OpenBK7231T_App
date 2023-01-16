@@ -1608,6 +1608,7 @@ void doHomeAssistantDiscovery(const char *topic, http_request_t *request) {
 				dev_info = hass_init_relay_device_info(i);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
+				dev_info = NULL;
 				discoveryQueued = true;
 			}
 		}
@@ -1619,6 +1620,7 @@ void doHomeAssistantDiscovery(const char *topic, http_request_t *request) {
 				dev_info = hass_init_binary_sensor_device_info(i);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
+				dev_info = NULL;
 				discoveryQueued = true;
 			}
 		}
@@ -1631,6 +1633,7 @@ void doHomeAssistantDiscovery(const char *topic, http_request_t *request) {
 		// Enable + RGB control + CW control
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
+		dev_info = NULL;
 		discoveryQueued = true;
 	}
 	else if (pwmCount > 0) {
@@ -1652,6 +1655,7 @@ void doHomeAssistantDiscovery(const char *topic, http_request_t *request) {
 		if (dev_info != NULL) {
 			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 			hass_free_device_info(dev_info);
+			dev_info = NULL;
 			discoveryQueued = true;
 		}
 	}

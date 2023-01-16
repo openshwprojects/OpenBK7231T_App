@@ -355,7 +355,11 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel) {
 /// @brief Returns the discovery JSON.
 /// @param info 
 /// @return 
-char* hass_build_discovery_json(HassDeviceInfo* info) {
+const char* hass_build_discovery_json(HassDeviceInfo* info) {
+	if (info == NULL) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HASS, "ERROR: someone passed NULL pointer to hass_build_discovery_json\r\n");
+		return "";
+	}
 	cJSON_PrintPreallocated(info->root, info->json, HASS_JSON_SIZE, 0);
 	return info->json;
 }
