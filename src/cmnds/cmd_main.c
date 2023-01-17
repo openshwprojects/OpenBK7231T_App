@@ -64,7 +64,7 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 	// define there:
 	// #define     PS_SUPPORT_MANUAL_SLEEP     1
 	extern void bk_wlan_ps_wakeup_with_timer(UINT32 sleep_time);
-	//bk_wlan_ps_wakeup_with_timer(timeMS);
+	bk_wlan_ps_wakeup_with_timer(timeMS);
 #elif defined(PLATFORM_W600)
 	
 #endif
