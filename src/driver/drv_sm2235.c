@@ -97,30 +97,33 @@ void SM2235_Write(float *rgbcw) {
 		cur_col_10[i] = MAP(rgbcw[g_channelOrder[i]], 0, 255.0f, 0, 1023.0f);
 	}
 
+#define SM2235_FIRST_BYTE(x) ((x >> 8) & 0xFF)
+#define SM2235_SECOND_BYTE(x) (x & 0xFF)
+
 	// Byte 0
 	SM2235_Start(SM2235_BYTE_0);
 	// Byte 1
 	SM2235_WriteByte(SM2235_BYTE_1);
 	// Byte 2
-	SM2235_WriteByte((uint8_t)(cur_col_10[0] & 0x1F));  //Red
+	SM2235_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[0])));  //Red
 	// Byte 3
-	SM2235_WriteByte((uint8_t)(cur_col_10[0] >> 5));
+	SM2235_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[0])));
 	// Byte 4
-	SM2235_WriteByte((uint8_t)(cur_col_10[1] & 0x1F)); //Green
+	SM2235_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[1]))); //Green
 	// Byte 5
-	SM2235_WriteByte((uint8_t)(cur_col_10[1] >> 5));
+	SM2235_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[1])));
 	// Byte 6
-	SM2235_WriteByte((uint8_t)(cur_col_10[2] & 0x1F)); //Blue
+	SM2235_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[2]))); //Blue
 	// Byte 7
-	SM2235_WriteByte((uint8_t)(cur_col_10[2] >> 5));
+	SM2235_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[2])));
 	// Byte 8
-	SM2235_WriteByte((uint8_t)(cur_col_10[4] & 0x1F)); //Cold
+	SM2235_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[4]))); //Cold
 	// Byte 9
-	SM2235_WriteByte((uint8_t)(cur_col_10[4] >> 5));
+	SM2235_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[4])));
 	// Byte 10
-	SM2235_WriteByte((uint8_t)(cur_col_10[3] & 0x1F)); //Warm
+	SM2235_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[3]))); //Warm
 	// Byte 11
-	SM2235_WriteByte((uint8_t)(cur_col_10[3] >> 5));
+	SM2235_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[3])));
 	SM2235_Stop();
 
 }
