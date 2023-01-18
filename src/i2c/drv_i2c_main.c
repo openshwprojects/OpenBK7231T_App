@@ -349,14 +349,14 @@ commandResult_t DRV_I2C_AddDevice_TC74(const void *context, const char *cmd, con
 
 	if(DRV_I2C_FindDevice(busType,address)) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_AddDevice_TC74: there is already some device on this bus with such addr\n");
-		return 1;
+		return CMD_RES_BAD_ARGUMENT;
 	}
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_AddDevice_TC74: module %s, address %i, target %i\n", i2cModuleStr, address, targetChannel);
 
 	DRV_I2C_AddDevice_TC74_Internal(busType,address,targetChannel);
 
-	return 1;
+	return CMD_RES_OK;
 }
 commandResult_t DRV_I2C_AddDevice_MCP23017(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *i2cModuleStr;

@@ -236,8 +236,8 @@ commandResult_t DRV_I2C_LCD_PCF8574_GoTo_Internal(int bClear, const void *contex
 	dev = DRV_I2C_FindDeviceExt(busType,address,I2CDEV_LCD_PCF8574);
 
 	if(dev == 0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_LCD_PCF8574_GoTo: there is already some device on this bus with such addr\n");
-		return 1;
+		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_LCD_PCF8574_GoTo: there is no device on this bus with such addr\n");
+		return CMD_RES_BAD_ARGUMENT;
 	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_LCD_PCF8574_GoTo: module %s, address %i\n", i2cModuleStr, address);
 
@@ -252,7 +252,7 @@ commandResult_t DRV_I2C_LCD_PCF8574_GoTo_Internal(int bClear, const void *contex
 	}
 	PCF8574_LCD_Goto(lcd,x,y);
 	PCF8574_LCD_Close(lcd);
-	return 1;
+	return CMD_RES_OK;
 }
 commandResult_t DRV_I2C_LCD_PCF8574_GoTo(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	return DRV_I2C_LCD_PCF8574_GoTo_Internal(0,context,cmd,args,cmdFlags);
@@ -288,7 +288,7 @@ commandResult_t DRV_I2C_LCD_PCF8574_Print_Internal(lcdPrintType_t type,const voi
 
 	if(dev == 0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_LCD_PCF8574_Print: there is no device on this bus with such addr\n");
-		return 1;
+		return CMD_RES_BAD_ARGUMENT;
 	}
 	lcd = (i2cDevice_PCF8574_t *)dev;
 
@@ -329,7 +329,7 @@ commandResult_t DRV_I2C_LCD_PCF8574_Print_Internal(lcdPrintType_t type,const voi
 	PCF8574_LCD_Write_String(lcd,msg);
 	PCF8574_LCD_Close(lcd);
 
-	return 1;
+	return CMD_RES_OK;
 }
 commandResult_t DRV_I2C_LCD_PCF8574_PrintFloat(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	return DRV_I2C_LCD_PCF8574_Print_Internal(LCD_PRINT_FLOAT,context, cmd, args, cmdFlags);
@@ -356,8 +356,8 @@ commandResult_t DRV_I2C_LCD_PCF8574_Clear(const void *context, const char *cmd, 
 	dev = DRV_I2C_FindDeviceExt(busType,address,I2CDEV_LCD_PCF8574);
 
 	if(dev == 0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_LCD_PCF8574_Clear: there is already some device on this bus with such addr\n");
-		return 1;
+		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_LCD_PCF8574_Clear: there is no device on this bus with such addr\n");
+		return CMD_RES_BAD_ARGUMENT;
 	}
 	lcd = (i2cDevice_PCF8574_t *)dev;
 
@@ -367,7 +367,7 @@ commandResult_t DRV_I2C_LCD_PCF8574_Clear(const void *context, const char *cmd, 
 	PCF8574_LCD_Clear(lcd);
 	PCF8574_LCD_Close(lcd);
 
-	return 1;
+	return CMD_RES_OK;
 }
 static int g_i2c_cmds_lcd_init = 0;
 
