@@ -366,6 +366,8 @@ int CHANNEL_HasChannelPinWithRoleOrRole(int ch, int iorType, int iorType2);
 bool CHANNEL_IsInUse(int ch);
 void Channel_SaveInFlashIfNeeded(int ch);
 int CHANNEL_FindMaxValueForChannel(int ch);
+// cmd_channels.c
+const char *CHANNEL_GetLabel(int ch);
 
 int h_isChannelPWM(int tg_ch);
 int h_isChannelRelay(int tg_ch);

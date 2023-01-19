@@ -7,6 +7,46 @@
 #include <ctype.h>
 #include "cmd_local.h"
 
+static char *g_channelLabels[CHANNEL_MAX] = { 0 };
+
+void CHANNEL_SetLabel(int ch, const char *s) {
+	if (ch < 0)
+		return;
+	if (ch >= CHANNEL_MAX)
+		return;
+	if (g_channelLabels[ch])
+		free(g_channelLabels[ch]);
+	g_channelLabels[ch] = strdup(s);
+}
+const char *CHANNEL_GetLabel(int ch) {
+	static char tmp[8];
+	if(g_channelLabels[ch])
+		return g_channelLabels[ch];
+	sprintf(tmp, "%i", ch);
+	return tmp;
+}
+
+static commandResult_t CMD_SetChannelLabel(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	int ch;
+	const char *s;
+
+	if (args == 0 || *args == 0) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetChannel: command requires argument");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_GetArgsCount() < 2) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetChannel: command requires 2 arguments");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	ch = Tokenizer_GetArgInteger(0);
+	s = Tokenizer_GetArgFrom(1);
+
+	CHANNEL_SetLabel(ch, s);
+
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_SetChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int ch, val;
 
@@ -328,5 +368,10 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_FullBootTime","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("FullBootTime", "", CMD_FullBootTime, NULL, NULL);
+	//cmddetail:{"name":"SetChannelLabel","args":"[ChannelIndex][Str]",
+	//cmddetail:"descr":"Sets a channel label for UI.",
+	//cmddetail:"fn":"CMD_SetChannelLabel","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("SetChannelLabel", "", CMD_SetChannelLabel, NULL, NULL);
 
 }
