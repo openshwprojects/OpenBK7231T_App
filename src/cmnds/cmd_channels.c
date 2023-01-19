@@ -19,9 +19,11 @@ void CHANNEL_SetLabel(int ch, const char *s) {
 	g_channelLabels[ch] = strdup(s);
 }
 const char *CHANNEL_GetLabel(int ch) {
+	if (ch >= 0 && ch < CHANNEL_MAX) {
+		if (g_channelLabels[ch])
+			return g_channelLabels[ch];
+	}
 	static char tmp[8];
-	if(g_channelLabels[ch])
-		return g_channelLabels[ch];
 	sprintf(tmp, "%i", ch);
 	return tmp;
 }
