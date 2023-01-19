@@ -242,13 +242,13 @@ int http_fn_index(http_request_t* request) {
 				hprintf255(request, "<h3>Toggled LED power!</h3>", j);
 			}
 			else {
-				hprintf255(request, "<h3>Toggled %i!</h3>", j);
+				hprintf255(request, "<h3>Toggled %s!</h3>", CHANNEL_GetLabel(j));
 			}
 			CHANNEL_Toggle(j);
 		}
 		if (http_getArg(request->url, "on", tmpA, sizeof(tmpA))) {
 			j = atoi(tmpA);
-			hprintf255(request, "<h3>Enabled %i!</h3>", j);
+			hprintf255(request, "<h3>Enabled %s!</h3>", CHANNEL_GetLabel(j));
 			CHANNEL_Set(j, 255, 1);
 		}
 		if (http_getArg(request->url, "rgb", tmpA, sizeof(tmpA))) {
@@ -263,7 +263,7 @@ int http_fn_index(http_request_t* request) {
 
 		if (http_getArg(request->url, "off", tmpA, sizeof(tmpA))) {
 			j = atoi(tmpA);
-			hprintf255(request, "<h3>Disabled %i!</h3>", j);
+			hprintf255(request, "<h3>Disabled %s!</h3>", CHANNEL_GetLabel(j));
 			CHANNEL_Set(j, 0, 1);
 		}
 		if (http_getArg(request->url, "pwm", tmpA, sizeof(tmpA))) {
@@ -612,7 +612,7 @@ int http_fn_index(http_request_t* request) {
 			}
 			poststr(request, "<td><form action=\"index\">");
 			hprintf255(request, "<input type=\"hidden\" name=\"tgl\" value=\"%i\">", i);
-			hprintf255(request, "<input class=\"%s\" type=\"submit\" value=\"Toggle %i\"/></form></td>", c, i);
+			hprintf255(request, "<input class=\"%s\" type=\"submit\" value=\"Toggle %s\"/></form></td>", c, CHANNEL_GetLabel(i));
 			if (i == CHANNEL_MAX - 1) {
 				poststr(request, "</tr>");
 			}
@@ -637,7 +637,7 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "<form action=\"index\" id=\"form%i\">", i);
 			hprintf255(request, "<input type=\"range\" min=\"0\" max=\"%i\" name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">", maxValue, inputName, i, pwmValue);
 			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, i);
-			hprintf255(request, "<input type=\"submit\" class='disp-none' value=\"Toggle %i\"/></form>", i);
+			hprintf255(request, "<input type=\"submit\" class='disp-none' value=\"Toggle %s\"/></form>", CHANNEL_GetLabel(i));
 			poststr(request, "</td></tr>");
 		}
 	}
