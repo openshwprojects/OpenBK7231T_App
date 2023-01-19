@@ -102,7 +102,8 @@ void LED_ResetGlobalVariablesToDefaults() {
 bool LED_IsLedDriverChipRunning()
 {
 #ifndef OBK_DISABLE_ALL_DRIVERS
-	return DRV_IsRunning("SM2135") || DRV_IsRunning("BP5758D") || DRV_IsRunning("TESTLED");
+	return DRV_IsRunning("SM2135") || DRV_IsRunning("BP5758D") 
+		|| DRV_IsRunning("TESTLED") || DRV_IsRunning("SM2235") || DRV_IsRunning("BP1658CJ");
 #else
 	return false;
 #endif
@@ -199,6 +200,9 @@ void led_Save_finalRGBCW(float* finalRGBCW) {
 	}
 	if (DRV_IsRunning("BP1658CJ")) {
 		BP1658CJ_Write(finalRGBCW);
+	}
+	if (DRV_IsRunning("SM2235")) {
+		SM2235_Write(finalRGBCW);
 	}
 #endif
 }

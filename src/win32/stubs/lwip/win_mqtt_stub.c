@@ -479,6 +479,11 @@ err_t mqtt_client_connect(mqtt_client_t *client, const ip_addr_t *ip_addr, u16_t
 		printf("ioctlsocket failed with error: %d\n", WSAGetLastError());
 		return 1;
 	}
+	int aliveToggle = 1;
+	int res = setsockopt(s, SOL_SOCKET, SO_KEEPALIVE, (char*)&aliveToggle, sizeof(aliveToggle));
+	if (res != 0) {
+		printf("Sock opt error\n");
+	}
 
 	//Connect to remote server
 	if (connect(s, (struct sockaddr *)&server, sizeof(server)) < 0)
@@ -1342,6 +1347,7 @@ void WIN_RunMQTTClient(mqtt_client_t *cl) {
 	struct pbuf buf;
 	byte data[8192];
 	int len = 0;
+	int err;
 
 	if (cl->conn == 0) {
 		return;
@@ -1375,12 +1381,24 @@ void WIN_RunMQTTClient(mqtt_client_t *cl) {
 	}
 	else {
 		//Receive a reply from the server
-		if ((len = recv(cl->conn->sock, data, sizeof(data), 0)) > 0)
+		len = recv(cl->conn->sock, data, sizeof(data), 0);
+		if (len > 0)
 		{
 			buf.payload = data;
 			buf.len = len;
 			buf.tot_len = len;
 			mqtt_parse_incoming(cl, &buf);
+		}
+		else {
+			err = WSAGetLastError();
+			if (err == WSAEWOULDBLOCK) {
+
+			}
+			else {
+				printf("MQTT socket error %i - will disconnect\n", err);
+				mqtt_disconnect(cl);
+				return;
+			}
 		}
 		mqtt_output_send(&cl->output, cl->conn);
 	}

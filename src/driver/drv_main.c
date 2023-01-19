@@ -109,11 +109,15 @@ static driver_t g_drivers[] = {
 	{ "SM2135",		SM2135_Init,		SM2135_RunFrame,			NULL, NULL, NULL, SM2135_OnChannelChanged, false },
 	{ "BP5758D",	BP5758D_Init,		BP5758D_RunFrame,			NULL, NULL, NULL, BP5758D_OnChannelChanged, false },
 	{ "BP1658CJ",	BP1658CJ_Init,		BP1658CJ_RunFrame,			NULL, NULL, NULL, BP1658CJ_OnChannelChanged, false },
+	{ "SM2235",		SM2235_Init,		SM2235_RunFrame,			NULL, NULL, NULL, NULL, false },
 #endif	
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	{ "CHT8305",	CHT8305_Init,		CHT8305_OnEverySecond,		CHT8305_AppendInformationToHTTPIndexPage, NULL, NULL, CHT8305_OnChannelChanged, false },
+	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, NULL, NULL, false },
 #endif
-
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+	{ "SHT3X",	SHT3X_Init,		SHT3X_OnEverySecond,		SHT3X_AppendInformationToHTTPIndexPage, NULL, NULL, SHT3X_OnChannelChanged, false },
+#endif
 };
 
 static const int g_numDrivers = sizeof(g_drivers) / sizeof(g_drivers[0]);

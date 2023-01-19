@@ -305,13 +305,16 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\driver\drv_max72xx_internal.c" />
+    <ClCompile Include="src\driver\drv_max72xx_single.c" />
     <ClCompile Include="src\driver\drv_ntp.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\driver\drv_pwmToggler.c" />
+    <ClCompile Include="src\driver\drv_sht3x.c" />
     <ClCompile Include="src\driver\drv_sm2135.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_sm2235.c" />
     <ClCompile Include="src\driver\drv_ssdp.c" />
     <ClCompile Include="src\driver\drv_tasmotaDeviceGroups.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
@@ -519,6 +522,7 @@
     <ClCompile Include="src\selftest\selftest_expandConstant.c" />
     <ClCompile Include="src\selftest\selftest_expressions.c" />
     <ClCompile Include="src\selftest\selftest_flags.c" />
+    <ClCompile Include="src\selftest\selftest_hass_discovery.c" />
     <ClCompile Include="src\selftest\selftest_http.c" />
     <ClCompile Include="src\selftest\selftest_http_client.c" />
     <ClCompile Include="src\selftest\selftest_if.c" />
@@ -534,6 +538,7 @@
     <ClCompile Include="src\selftest\selftest_tokenizer.c" />
     <ClCompile Include="src\selftest\selftest_tuyaMCU.c" />
     <ClCompile Include="src\selftest\selftest_util_mqtt.c" />
+    <ClCompile Include="src\selftest\selftest_util_mqtt_json.c" />
     <ClCompile Include="src\sim\Circle.cpp" />
     <ClCompile Include="src\sim\Controller_BL0942.cpp" />
     <ClCompile Include="src\sim\Controller_Bulb.cpp" />
@@ -590,6 +595,8 @@
     <ClInclude Include="src\driver\drv_cht8305.h" />
     <ClInclude Include="src\driver\drv_dht_internal.h" />
     <ClInclude Include="src\driver\drv_max72xx_internal.h" />
+    <ClInclude Include="src\driver\drv_sht3x.h" />
+    <ClInclude Include="src\driver\drv_sm2235.h" />
     <ClInclude Include="src\selftest\selftest_local.h" />
     <ClInclude Include="src\sim\Bounds.h" />
     <ClInclude Include="src\sim\Circle.h" />

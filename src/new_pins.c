@@ -1099,7 +1099,7 @@ bool CHANNEL_HasRoleThatShouldBePublished(int ch) {
 			if (role == IOR_Relay || role == IOR_Relay_n
 				|| role == IOR_LED || role == IOR_LED_n
 				|| role == IOR_ADC
-				|| role == IOR_CHT8305_DAT
+				|| role == IOR_CHT8305_DAT || role == IOR_SHT3X_DAT 
 				|| role == IOR_DigitalInput || role == IOR_DigitalInput_n
 				|| IS_PIN_DHT_ROLE(role)
 				|| role == IOR_DigitalInput_NoPup || role == IOR_DigitalInput_NoPup_n) {
@@ -1110,8 +1110,8 @@ bool CHANNEL_HasRoleThatShouldBePublished(int ch) {
 			if (IS_PIN_DHT_ROLE(role)) {
 				return true;
 			}
-			// CHT8305 uses secondary channel for humidity
-			if (role == IOR_CHT8305_DAT) {
+			// CHT8305 and SHT3X uses secondary channel for humidity
+			if (role == IOR_CHT8305_DAT || role == IOR_SHT3X_DAT) {
 				return true;
 			}
 		}

@@ -43,8 +43,8 @@ const char *http_post_template1 = "POST /%s HTTP/1.1\r\n"
 "%s";
 
 //jsmn_parser parser;
-cJSON *g_json;
-cJSON *g_sec_power;
+static cJSON *g_json;
+static cJSON *g_sec_power;
 
 const char *Helper_GetPastHTTPHeader(const char *s) {
 	while (*s) {
@@ -107,6 +107,14 @@ void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data) {
 	sprintf(buffer, http_post_template1, tg, dataLen, data);
 	Test_FakeHTTPClientPacket_Generic();
 }
+void Test_GetJSONValue_Setup(const char *text) {
+	if (g_json) {
+		cJSON_Delete(g_json);
+	}
+	printf("Received JSON: %s\n", text);
+	g_json = cJSON_Parse(text);
+	g_sec_power = cJSON_GetObjectItemCaseSensitive(g_json, "POWER");
+}
 void Test_FakeHTTPClientPacket_JSON(const char *tg) {
 	/*char bufferTemp[8192];
 	va_list argList;
@@ -120,13 +128,7 @@ void Test_FakeHTTPClientPacket_JSON(const char *tg) {
 
 	//jsmn_init(&parser);
 	//r = jsmn_parse(&parser, replyAt, strlen(replyAt), tokens, 256);
-
-	if (g_json) {
-		cJSON_Delete(g_json);
-	}
-	printf("Received JSON: %s\n", replyAt);
-	g_json = cJSON_Parse(replyAt);
-	g_sec_power = cJSON_GetObjectItemCaseSensitive(g_json, "POWER");
+	Test_GetJSONValue_Setup(replyAt);
 }
 cJSON *Test_GetJSONValue_Generic_Nested2(const char *par1, const char *par2, const char *keyword) {
 	cJSON *tmp;
@@ -166,6 +168,26 @@ int Test_GetJSONValue_Integer_Nested2(const char *par1, const char *par2, const 
 	}
 	printf("Test_GetJSONValue_Integer_Nested2 will return %i for %s\n", tmp->valueint, keyword);
 	return tmp->valueint;
+}
+//const char *Test_GetJSONValue_String_Nested(const char *par1, const char *keyword) {
+//	cJSON *tmp;
+//	tmp = Test_GetJSONValue_Generic_Nested(par1, keyword);
+//	if (tmp == 0) {
+//		return 0;
+//	}
+//	const char *ret = tmp->valuestring;
+//	printf("Test_GetJSONValue_String_Nested will return %s for %s\n", ret, keyword);
+//	return ret;
+//}
+const char *Test_GetJSONValue_String_Nested2(const char *par1, const char *par2, const char *keyword) {
+	cJSON *tmp;
+	tmp = Test_GetJSONValue_Generic_Nested2(par1, par2, keyword);
+	if (tmp == 0) {
+		return 0;
+	}
+	const char *ret = tmp->valuestring;
+	printf("Test_GetJSONValue_String_Nested2 will return %s for %s\n", ret, keyword);
+	return ret;
 }
 float Test_GetJSONValue_Float_Nested2(const char *par1, const char *par2, const char *keyword) {
 	cJSON *tmp;

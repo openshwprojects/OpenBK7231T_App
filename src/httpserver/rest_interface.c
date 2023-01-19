@@ -947,7 +947,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 
 	int recvLen = 0;
 	int totalLen = 0;
-	//bk_printf("\ntowrite %d writelen=%d\n", towrite, writelen);
+	//printf("\ntowrite %d writelen=%d\n", towrite, writelen);
 
 	do
 	{
@@ -962,6 +962,8 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 				if (TRUE == tls_fwup_img_header_check(booter))
 				{
 					totalLen = booter->upd_img_len + sizeof(T_BOOTER);
+					OTA_ResetProgress();
+					OTA_SetTotalBytes(totalLen);
 				}
 				else
 				{
@@ -1005,8 +1007,9 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 				break;
 			}
 			else {
+				OTA_IncrementProgress(writelen);
 				recvLen += writelen;
-				bk_printf("Downloaded %d / %d\n", recvLen, totalLen);
+				printf("Downloaded %d / %d\n", recvLen, totalLen);
 			}
 
 			towrite -= writelen;

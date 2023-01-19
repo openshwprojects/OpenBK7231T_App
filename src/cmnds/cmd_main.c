@@ -31,14 +31,42 @@ static int generateHashValue(const char *fname) {
 }
 
 command_t *g_commands[HASH_SIZE] = { NULL };
+bool g_powersave;
 
 static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_PowerSave: enable power save");
 #ifdef PLATFORM_BEKEN
 	extern int bk_wlan_power_save_set_level(BK_PS_LEVEL level);
     bk_wlan_power_save_set_level(/*PS_DEEP_SLEEP_BIT */  PS_RF_SLEEP_BIT | PS_MCU_SLEEP_BIT);	
+	g_powersave = true;
 #elif defined(PLATFORM_W600)
 	tls_wifi_set_psflag(1, 0);	//Enable powersave but don't save to flash
+	g_powersave = true;
+#endif
+
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int timeMS;
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_DeepSleep: enable power save");
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 1) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Not enough arguments.");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	timeMS = Tokenizer_GetArgInteger(0);
+#ifdef PLATFORM_BEKEN
+	// It requires a define in SDK file:
+	// OpenBK7231T\platforms\bk7231t\bk7231t_os\beken378\func\include\manual_ps_pub.h
+	// define there:
+	// #define     PS_SUPPORT_MANUAL_SLEEP     1
+	extern void bk_wlan_ps_wakeup_with_timer(UINT32 sleep_time);
+	bk_wlan_ps_wakeup_with_timer(timeMS);
+#elif defined(PLATFORM_W600)
+	
 #endif
 
 	return CMD_RES_OK;
@@ -201,6 +229,11 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_ClearAll","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("clearAll", "", CMD_ClearAll, NULL, NULL);
+	//cmddetail:{"name":"DeepSleep","args":"[Miliseconds]",
+	//cmddetail:"descr":"Enable power save on N & T",
+	//cmddetail:"fn":"CMD_DeepSleep","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("DeepSleep", "", CMD_DeepSleep, NULL, NULL);
 	//cmddetail:{"name":"PowerSave","args":"",
 	//cmddetail:"descr":"Enable power save on N & T",
 	//cmddetail:"fn":"CMD_PowerSave","file":"cmnds/cmd_main.c","requires":"",
