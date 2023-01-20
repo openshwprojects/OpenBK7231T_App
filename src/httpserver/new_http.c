@@ -420,6 +420,8 @@ const char* htmlPinRoleNames[] = {
 	"CHT8305_SCK",
 	"SHT3X_SDA",
 	"SHT3X_SCK",
+	"SoftSDA",
+	"SoftSCL",
 	"SM2235DAT",
 	"SM2235CLK",
 	"error",
