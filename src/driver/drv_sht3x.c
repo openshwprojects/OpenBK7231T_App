@@ -228,7 +228,7 @@ void SHT3X_Init() {
 	//cmddetail:{"name":"SetupSHT3X","args":"",
 	//cmddetail:"descr":"NULL",
 	//cmddetail:"fn":"SHT_Calibrate","file":"driver/drv_sht3x.c","requires":"",
-	//cmddetail:"examples":""}
+	//cmddetail:"examples":"SetupSHT3X -4 10"}
 	CMD_RegisterCommand("SetupSHT3X", "", SHT_Calibrate, NULL, NULL);
 
 }

@@ -73,7 +73,7 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 }
 static commandResult_t CMD_BATT_Meas(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	float batt_value, batt_perc, batt_ref, batt_res;
-	int g_pin_adc, channel_adc;
+	int g_pin_adc = 0, channel_adc = 0;
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_BATT_Meas : Measure Battery volt en perc");
 	Tokenizer_TokenizeString(args, 0);
 
@@ -93,7 +93,7 @@ static commandResult_t CMD_BATT_Meas(const void* context, const char* cmd, const
 	batt_res = batt_value - minbatt;
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "CMD_BATT_Meas : Ref battery: %f, rest battery %f", batt_ref, batt_res);
 	batt_perc = (batt_res / batt_ref) * 100;
-
+	extern void MQTT_PublishMain_StringInt();
 	MQTT_PublishMain_StringInt("voltage", (int)batt_value);
 	MQTT_PublishMain_StringInt("battery", (int)batt_perc);
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_BATT_Meas : battery voltage : %f and percentage %f%%", batt_value, batt_perc);
