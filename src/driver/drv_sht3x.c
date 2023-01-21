@@ -41,6 +41,8 @@ commandResult_t SHT_Calibrate(const void* context, const char* cmd, const char* 
 	g_caltemp = Tokenizer_GetArgFloat(0);
 	g_calhum = Tokenizer_GetArgFloat(1);
 
+	ADDLOG_INFO(LOG_FEATURE_ENERGYMETER, "Calibrate SHT: Calibration done temp %f and humidity %f ", g_caltemp, g_calhum);
+
 	return CMD_RES_OK;
 }
 
@@ -238,8 +240,8 @@ void SHT3X_OnEverySecond() {
 
 	SHT3X_ReadEnv(&g_temp, &g_humid);
 
-	g_temp = g_temp - g_caltemp;
-	g_humid = g_humid - g_calhum;
+	g_temp = g_temp + g_caltemp;
+	g_humid = g_humid + g_calhum;
 
 	channel_temp = g_cfg.pins.channels[g_pin_data];
 	channel_humid = g_cfg.pins.channels2[g_pin_data];
