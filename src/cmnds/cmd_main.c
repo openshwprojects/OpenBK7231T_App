@@ -7,37 +7,37 @@
 #include "../driver/drv_ir.h"
 
 #ifdef BK_LITTLEFS
-	#include "../littlefs/our_lfs.h"
+#include "../littlefs/our_lfs.h"
 #endif
 
 #define HASH_SIZE 128
 
-static int generateHashValue(const char *fname) {
+static int generateHashValue(const char* fname) {
 	int		i;
 	int		hash;
 	int		letter;
-	unsigned char *f = (unsigned char *)fname;
+	unsigned char* f = (unsigned char*)fname;
 
 	hash = 0;
 	i = 0;
 	while (f[i]) {
 		letter = tolower(f[i]);
-		hash+=(letter)*(i+119);
+		hash += (letter) * (i + 119);
 		i++;
 	}
 	hash = (hash ^ (hash >> 10) ^ (hash >> 20));
-	hash &= (HASH_SIZE-1);
+	hash &= (HASH_SIZE - 1);
 	return hash;
 }
 
-command_t *g_commands[HASH_SIZE] = { NULL };
+command_t* g_commands[HASH_SIZE] = { NULL };
 bool g_powersave;
 
 static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_PowerSave: enable power save");
 #ifdef PLATFORM_BEKEN
 	extern int bk_wlan_power_save_set_level(BK_PS_LEVEL level);
-    bk_wlan_power_save_set_level(/*PS_DEEP_SLEEP_BIT */  PS_RF_SLEEP_BIT | PS_MCU_SLEEP_BIT);	
+	bk_wlan_power_save_set_level(/*PS_DEEP_SLEEP_BIT */  PS_RF_SLEEP_BIT | PS_MCU_SLEEP_BIT);
 	g_powersave = true;
 #elif defined(PLATFORM_W600)
 	tls_wifi_set_psflag(1, 0);	//Enable powersave but don't save to flash
@@ -66,14 +66,43 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 	extern void bk_wlan_ps_wakeup_with_timer(UINT32 sleep_time);
 	bk_wlan_ps_wakeup_with_timer(timeMS);
 #elif defined(PLATFORM_W600)
-	
+
 #endif
+
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_BATT_Meas(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	float batt_value, batt_perc, batt_ref, batt_res;
+	int g_pin_adc, channel_adc;
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_BATT_Meas : Measure Battery volt en perc");
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 2) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_BATT_Meas : Not enough arguments.(minbatt,maxbatt)");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	int minbatt = Tokenizer_GetArgInteger(0);
+	int maxbatt = Tokenizer_GetArgInteger(1);
+	g_pin_adc = PIN_FindPinIndexForRole(IOR_ADC, g_pin_adc);
+	channel_adc = g_cfg.pins.channels[g_pin_adc];
+	batt_value = CHANNEL_GetFloat(channel_adc);
+	ADDLOG_DEBUG(LOG_FEATURE_CMD, "CMD_BATT_Meas : ADC Measurement : %f and channel %i", batt_value, channel_adc);
+	batt_value = batt_value / 4096.0 * 2400.0;
+	batt_ref = maxbatt - minbatt;
+	batt_res = batt_value - minbatt;
+	ADDLOG_DEBUG(LOG_FEATURE_CMD, "CMD_BATT_Meas : Ref battery: %f, rest battery %f", batt_ref, batt_res);
+	batt_perc = (batt_res / batt_ref) * 100;
+
+	MQTT_PublishMain_StringInt("voltage", (int)batt_value);
+	MQTT_PublishMain_StringInt("battery", (int)batt_perc);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_BATT_Meas : battery voltage : %f and percentage %f%%", batt_value, batt_perc);
 
 	return CMD_RES_OK;
 }
 
 
-static commandResult_t CMD_ScheduleHADiscovery(const void *context, const char *cmd, const char *args, int cmdFlags) {
+static commandResult_t CMD_ScheduleHADiscovery(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int delay;
 
 	if (args && *args) {
@@ -87,7 +116,7 @@ static commandResult_t CMD_ScheduleHADiscovery(const void *context, const char *
 
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_Flags(const void *context, const char *cmd, const char *args, int cmdFlags) {
+static commandResult_t CMD_Flags(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	union {
 		long long newValue;
 		struct {
@@ -97,7 +126,7 @@ static commandResult_t CMD_Flags(const void *context, const char *cmd, const cha
 	} u;
 	// TODO: check on other platforms, on Beken it's 8, 64 bit
 	// On Windows simulator it's 8 as well
-	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Flags: sizeof(newValue) = %i",sizeof(u.newValue));
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Flags: sizeof(newValue) = %i", sizeof(u.newValue));
 	if (args && *args) {
 		if (1 != sscanf(args, "%lld", &u.newValue)) {
 			ADDLOG_INFO(LOG_FEATURE_CMD, "Argument/sscanf error!");
@@ -113,7 +142,7 @@ static commandResult_t CMD_Flags(const void *context, const char *cmd, const cha
 
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_HTTPOTA(const void *context, const char *cmd, const char *args, int cmdFlags) {
+static commandResult_t CMD_HTTPOTA(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	if (args && *args) {
 		OTA_RequestDownloadFromHTTP(args);
@@ -125,7 +154,7 @@ static commandResult_t CMD_HTTPOTA(const void *context, const char *cmd, const c
 
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_SimonTest(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_SimonTest(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SimonTest: ir test routine");
 
 #ifdef PLATFORM_BK7231T
@@ -134,33 +163,34 @@ static commandResult_t CMD_SimonTest(const void *context, const char *cmd, const
 	// anything
 #endif
 
-	
+
 	return CMD_RES_OK;
 }
 
-static commandResult_t CMD_Restart(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_Restart(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int delaySeconds;
 
-	if(args==0||*args==0) {
+	if (args == 0 || *args == 0) {
 		delaySeconds = 3;
-	} else {
+	}
+	else {
 		delaySeconds = atoi(args);
 	}
 
-	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Restart: will reboot in %i",delaySeconds);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Restart: will reboot in %i", delaySeconds);
 
 	RESET_ScheduleModuleReset(delaySeconds);
 
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_ClearAll(const void *context, const char *cmd, const char *args, int cmdFlags) {
+static commandResult_t CMD_ClearAll(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	CFG_SetDefaultConfig();
 	CFG_Save_IfThereArePendingChanges();
 
 	CHANNEL_ClearAllChannels();
 	CMD_ClearAllHandlers(0, 0, 0, 0);
-	RepeatingEvents_Cmd_ClearRepeatingEvents(0, 0, 0, 0); 
+	RepeatingEvents_Cmd_ClearRepeatingEvents(0, 0, 0, 0);
 #if defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_BEKEN)
 	CMD_resetSVM(0, 0, 0, 0);
 #endif
@@ -169,11 +199,11 @@ static commandResult_t CMD_ClearAll(const void *context, const char *cmd, const 
 
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_ClearNoPingTime(const void *context, const char *cmd, const char *args, int cmdFlags) {
+static commandResult_t CMD_ClearNoPingTime(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	g_timeSinceLastPingReply = 0;
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_ClearConfig(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_ClearConfig(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	CFG_SetDefaultConfig();
 	CFG_Save_IfThereArePendingChanges();
@@ -182,14 +212,14 @@ static commandResult_t CMD_ClearConfig(const void *context, const char *cmd, con
 
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_Echo(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_Echo(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, args);
 
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_SetStartValue(const void *context, const char *cmd, const char *args, int cmdFlags) {
+static commandResult_t CMD_SetStartValue(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int ch, val;
 
 	Tokenizer_TokenizeString(args, 0);
@@ -213,17 +243,17 @@ void CMD_Init_Early() {
 	//cmddetail:"descr":"Sends given message back to console.",
 	//cmddetail:"fn":"CMD_Echo","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("echo", "", CMD_Echo, NULL, NULL);
+	CMD_RegisterCommand("echo", "", CMD_Echo, NULL, NULL);
 	//cmddetail:{"name":"restart","args":"",
 	//cmddetail:"descr":"Reboots the module",
 	//cmddetail:"fn":"CMD_Restart","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("restart", "", CMD_Restart, NULL, NULL);
+	CMD_RegisterCommand("restart", "", CMD_Restart, NULL, NULL);
 	//cmddetail:{"name":"clearConfig","args":"",
 	//cmddetail:"descr":"Clears all config, including WiFi data",
 	//cmddetail:"fn":"CMD_ClearConfig","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("clearConfig", "", CMD_ClearConfig, NULL, NULL);
+	CMD_RegisterCommand("clearConfig", "", CMD_ClearConfig, NULL, NULL);
 	//cmddetail:{"name":"clearAll","args":"",
 	//cmddetail:"descr":"Clears config and all remaining features, like runtime scripts, events, etc",
 	//cmddetail:"fn":"CMD_ClearAll","file":"cmnds/cmd_main.c","requires":"",
@@ -238,17 +268,22 @@ void CMD_Init_Early() {
 	//cmddetail:"descr":"Enable power save on N & T",
 	//cmddetail:"fn":"CMD_PowerSave","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("PowerSave", "", CMD_PowerSave, NULL, NULL);	
+	CMD_RegisterCommand("PowerSave", "", CMD_PowerSave, NULL, NULL);
+	//cmddetail:{"name":"Battery_measure","args":"",
+	//cmddetail:"descr":"measure battery based on ADC args minbatt and maxbatt in mv",
+	//cmddetail:"fn":"CMD_BATT_Meas","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":"Battery_measure 1500 3000"}
+	CMD_RegisterCommand("Battery_measure", "", CMD_BATT_Meas, NULL, NULL);
 	//cmddetail:{"name":"simonirtest","args":"",
 	//cmddetail:"descr":"Simons Special Test",
 	//cmddetail:"fn":"CMD_SimonTest","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("simonirtest", "", CMD_SimonTest, NULL, NULL);
+	CMD_RegisterCommand("simonirtest", "", CMD_SimonTest, NULL, NULL);
 	//cmddetail:{"name":"if","args":"[Condition]['then'][CommandA]['else'][CommandB]",
 	//cmddetail:"descr":"Executed a conditional. Condition should be single line. You must always use 'then' after condition. 'else' is optional. Use aliases or quotes for commands with spaces",
 	//cmddetail:"fn":"CMD_If","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("if", NULL, CMD_If, NULL, NULL);
+	CMD_RegisterCommand("if", NULL, CMD_If, NULL, NULL);
 	//cmddetail:{"name":"ota_http","args":"[HTTP_URL]",
 	//cmddetail:"descr":"Starts the firmware update procedure, the argument should be a reachable HTTP server file. You can easily setup HTTP server with Xampp, or Visual Code, or Python, etc. Make sure you are using OTA file for a correct platform (getting N platform RBL on T will brick device, etc etc)",
 	//cmddetail:"fn":"CMD_HTTPOTA","file":"cmnds/cmd_main.c","requires":"",
@@ -274,27 +309,27 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_SetStartValue","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetStartValue", "", CMD_SetStartValue, NULL, NULL);
-	
+
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	CMD_InitScripting();
 #endif
 }
 
 void CMD_Init_Delayed() {
-	if(CFG_HasFlag(OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER)) {
+	if (CFG_HasFlag(OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER)) {
 		CMD_StartTCPCommandLine();
 	}
 }
 
 
-void CMD_ListAllCommands(void *userData, void (*callback)(command_t *cmd, void *userData)) {
+void CMD_ListAllCommands(void* userData, void (*callback)(command_t* cmd, void* userData)) {
 	int i;
-	command_t *newCmd;
+	command_t* newCmd;
 
-	for(i = 0; i < HASH_SIZE; i++) {
+	for (i = 0; i < HASH_SIZE; i++) {
 		newCmd = g_commands[i];
-		while(newCmd) {
-			callback(newCmd,userData);
+		while (newCmd) {
+			callback(newCmd, userData);
 			newCmd = newCmd->next;
 		}
 	}
@@ -302,7 +337,7 @@ void CMD_ListAllCommands(void *userData, void (*callback)(command_t *cmd, void *
 }
 void CMD_FreeAllCommands() {
 	int i;
-	command_t *cmd, *next;
+	command_t* cmd, * next;
 
 	for (i = 0; i < HASH_SIZE; i++) {
 		cmd = g_commands[i];
@@ -315,17 +350,17 @@ void CMD_FreeAllCommands() {
 	}
 
 }
-void CMD_RegisterCommand(const char *name, const char *args, commandHandler_t handler, const char *userDesc, void *context) {
+void CMD_RegisterCommand(const char* name, const char* args, commandHandler_t handler, const char* userDesc, void* context) {
 	int hash;
-	command_t *newCmd;
+	command_t* newCmd;
 
 	// check
 	newCmd = CMD_Find(name);
-	if(newCmd != 0) {
-		ADDLOG_ERROR(LOG_FEATURE_CMD, "command with name %s already exists!",name);
+	if (newCmd != 0) {
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "command with name %s already exists!", name);
 		return;
 	}
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "Adding command %s",name);
+	ADDLOG_DEBUG(LOG_FEATURE_CMD, "Adding command %s", name);
 
 	hash = generateHashValue(name);
 	newCmd = (command_t*)malloc(sizeof(command_t));
@@ -338,35 +373,35 @@ void CMD_RegisterCommand(const char *name, const char *args, commandHandler_t ha
 	g_commands[hash] = newCmd;
 }
 
-command_t *CMD_Find(const char *name) {
+command_t* CMD_Find(const char* name) {
 	int hash;
-	command_t *newCmd;
+	command_t* newCmd;
 
 	hash = generateHashValue(name);
 
 	newCmd = g_commands[hash];
-	while(newCmd != 0) {
-		if(!stricmp(newCmd->name,name)) {
+	while (newCmd != 0) {
+		if (!stricmp(newCmd->name, name)) {
 			return newCmd;
 		}
 		newCmd = newCmd->next;
-}
+	}
 	return 0;
 }
 
 // get a string up to whitespace.
 // if stripnum is set, stop at numbers.
-int get_cmd(const char *s, char *dest, int maxlen, int stripnum){
+int get_cmd(const char* s, char* dest, int maxlen, int stripnum) {
 	int i;
 	int count = 0;
-	for (i = 0; i < maxlen-1; i++){
+	for (i = 0; i < maxlen - 1; i++) {
 		if (isWhiteSpace(*s)) {
 			break;
 		}
-		if(*s == 0) {
+		if (*s == 0) {
 			break;
 		}
-		if (stripnum && *s >= '0' && *s <= '9'){
+		if (stripnum && *s >= '0' && *s <= '9') {
 			break;
 		}
 		*(dest++) = *(s++);
@@ -378,8 +413,8 @@ int get_cmd(const char *s, char *dest, int maxlen, int stripnum){
 
 
 // execute a command from cmd and args - used below and in MQTT
-commandResult_t CMD_ExecuteCommandArgs(const char *cmd, const char *args, int cmdFlags) {
-	command_t *newCmd;
+commandResult_t CMD_ExecuteCommandArgs(const char* cmd, const char* args, int cmdFlags) {
+	command_t* newCmd;
 	//int len;
 
 	// look for complete commmand
@@ -396,10 +431,11 @@ commandResult_t CMD_ExecuteCommandArgs(const char *cmd, const char *args, int cm
 			ADDLOG_ERROR(LOG_FEATURE_CMD, "cmd %s NOT found (args %s)", cmd, args);
 			return CMD_RES_UNKNOWN_COMMAND;
 		}
-	} else {
+	}
+	else {
 	}
 
-	if (newCmd->handler){
+	if (newCmd->handler) {
 		commandResult_t res;
 		res = newCmd->handler(newCmd->context, cmd, args, cmdFlags);
 		return res;
@@ -409,25 +445,25 @@ commandResult_t CMD_ExecuteCommandArgs(const char *cmd, const char *args, int cm
 
 
 // execute a raw command - single string
-commandResult_t CMD_ExecuteCommand(const char *s, int cmdFlags) {
-	const char *p;
-	const char *args;
+commandResult_t CMD_ExecuteCommand(const char* s, int cmdFlags) {
+	const char* p;
+	const char* args;
 
 	char copy[128];
 	int len;
 	//const char *org;
 
-	if(s == 0 || *s == 0) {
+	if (s == 0 || *s == 0) {
 		return CMD_RES_EMPTY_STRING;
 	}
 
-	while(isWhiteSpace(*s)) {
+	while (isWhiteSpace(*s)) {
 		s++;
 	}
-	if(*s == 0) {
+	if (*s == 0) {
 		return CMD_RES_EMPTY_STRING;
 	}
-	if((cmdFlags & COMMAND_FLAG_SOURCE_TCP)==0) {
+	if ((cmdFlags & COMMAND_FLAG_SOURCE_TCP) == 0) {
 		ADDLOG_DEBUG(LOG_FEATURE_CMD, "cmd [%s]", s);
 	}
 	//org = s;
@@ -438,12 +474,12 @@ commandResult_t CMD_ExecuteCommand(const char *s, int cmdFlags) {
 
 	p = s;
 
-	while(*p && isWhiteSpace(*p)) {
+	while (*p && isWhiteSpace(*p)) {
 		p++;
 	}
 	args = p;
 
-	return CMD_ExecuteCommandArgs(copy, args,cmdFlags);
+	return CMD_ExecuteCommandArgs(copy, args, cmdFlags);
 }
 
 

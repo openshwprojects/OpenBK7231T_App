@@ -27,16 +27,31 @@ static int g_pin_data = 1;
 #define SHT3X_I2C_ADDR (0x44 << 1)
 
 static byte channel_temp = 0, channel_humid = 0;
-static float g_temp = 0.0, g_humid = 0.0;
+static float g_temp = 0.0, g_humid = 0.0, g_caltemp = 0.0, g_calhum = 0.0;
+
+
+commandResult_t SHT_Calibrate(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+	if (Tokenizer_GetArgsCount() < 2) {
+		ADDLOG_INFO(LOG_FEATURE_ENERGYMETER, "Calibrate SHT: require Temp and Humidity args");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	g_caltemp = Tokenizer_GetArgFloat(0);
+	g_calhum = Tokenizer_GetArgFloat(1);
+
+	return CMD_RES_OK;
+}
 
 static void SHT3X_SetLow(uint8_t pin) {
 	HAL_PIN_Setup_Output(pin);
 	HAL_PIN_SetOutputValue(pin, 0);
-	}
+}
 
 static void SHT3X_SetHigh(uint8_t pin) {
 	HAL_PIN_Setup_Input_Pullup(pin);
-	}
+}
 
 static bool SHT3X_PreInit(void) {
 	HAL_PIN_SetOutputValue(g_pin_data, 0);
@@ -44,26 +59,26 @@ static bool SHT3X_PreInit(void) {
 	SHT3X_SetHigh(g_pin_data);
 	SHT3X_SetHigh(g_pin_clk);
 	return (!((HAL_PIN_ReadDigitalInput(g_pin_data) == 0 || HAL_PIN_ReadDigitalInput(g_pin_clk) == 0)));
-	}
+}
 
 static bool SHT3X_WriteByte(uint8_t value) {
 	uint8_t curr;
 	uint8_t ack;
 
 	for (curr = 0x80; curr != 0; curr >>= 1)
-		{
+	{
 		if (curr & value)
-			{
+		{
 			SHT3X_SetHigh(g_pin_data);
-			}
+		}
 		else
-			{
+		{
 			SHT3X_SetLow(g_pin_data);
-			}
+		}
 		SHT3X_SetHigh(g_pin_clk);
 		usleep(SHT3X_DELAY);
 		SHT3X_SetLow(g_pin_clk);
-		}
+	}
 	// get Ack or Nak
 	SHT3X_SetHigh(g_pin_data);
 	SHT3X_SetHigh(g_pin_clk);
@@ -73,14 +88,14 @@ static bool SHT3X_WriteByte(uint8_t value) {
 	usleep(SHT3X_DELAY / 2);
 	SHT3X_SetLow(g_pin_data);
 	return (0 == ack);
-	}
+}
 
 static bool SHT3X_Start(uint8_t addr) {
 	SHT3X_SetLow(g_pin_data);
 	usleep(SHT3X_DELAY);
 	SHT3X_SetLow(g_pin_clk);
 	return SHT3X_WriteByte(addr);
-	}
+}
 
 static void SHT3X_Stop(void) {
 	SHT3X_SetLow(g_pin_data);
@@ -89,32 +104,32 @@ static void SHT3X_Stop(void) {
 	usleep(SHT3X_DELAY);
 	SHT3X_SetHigh(g_pin_data);
 	usleep(SHT3X_DELAY);
-	}
+}
 
 static uint8_t SHT3X_ReadByte(bool nack)
-	{
+{
 	uint8_t val = 0;
 
 	SHT3X_SetHigh(g_pin_data);
 	for (int i = 0; i < 8; i++)
-		{
+	{
 		usleep(SHT3X_DELAY);
 		SHT3X_SetHigh(g_pin_clk);
 		val <<= 1;
 		if (HAL_PIN_ReadDigitalInput(g_pin_data))
-			{
+		{
 			val |= 1;
-			}
+		}
 		SHT3X_SetLow(g_pin_clk);
-		}
+	}
 	if (nack)
-		{
+	{
 		SHT3X_SetHigh(g_pin_data);
-		}
+	}
 	else
-		{
+	{
 		SHT3X_SetLow(g_pin_data);
-		}
+	}
 	SHT3X_SetHigh(g_pin_clk);
 	usleep(SHT3X_DELAY);
 	SHT3X_SetLow(g_pin_clk);
@@ -122,21 +137,21 @@ static uint8_t SHT3X_ReadByte(bool nack)
 	SHT3X_SetLow(g_pin_data);
 
 	return val;
-	}
+}
 
 
 static void SHT3X_ReadBytes(uint8_t* buf, int numOfBytes)
-	{
+{
 
 	for (int i = 0; i < numOfBytes - 1; i++)
-		{
+	{
 
 		buf[i] = SHT3X_ReadByte(false);
 
-		}
+	}
 
 	buf[numOfBytes - 1] = SHT3X_ReadByte(true); //Give NACK on last byte read
-	}
+}
 
 
 
@@ -149,14 +164,14 @@ static void SHT3X_ReadBytes(uint8_t* buf, int numOfBytes)
 //}
 
 static void SHT3X_ReadEnv(float* temp, float* hum)
-	{
+{
 	uint8_t buff[6];
 	unsigned int th, tl, hh, hl;
 
 	SHT3X_Start(SHT3X_I2C_ADDR);
 	// no clock stretching
 	SHT3X_WriteByte(0x24);
-        // medium repeteability
+	// medium repeteability
 	SHT3X_WriteByte(0x16);
 	SHT3X_Stop();
 
@@ -177,11 +192,11 @@ static void SHT3X_ReadEnv(float* temp, float* hum)
 	hh = buff[3];
 	hl = buff[4];
 
-	(*temp) = 175 * ( (th * 256 + tl) / 65535.0 ) - 45.0;
+	(*temp) = 175 * ((th * 256 + tl) / 65535.0) - 45.0;
 
 	(*hum) = 100 * ((hh * 256 + hl) / 65535.0);
 
-	}
+}
 
 // startDriver SHT3X
 void SHT3X_Init() {
@@ -208,16 +223,23 @@ void SHT3X_Init() {
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "DRV_SHT3X_init: ID: %02X %02X\n", status[0], status[1]);
 
+	//cmddetail:{"name":"SetupSHT3X","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"SHT_Calibrate","file":"driver/drv_sht3x.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("SetupSHT3X", "", SHT_Calibrate, NULL, NULL);
 
-
-	}
+}
 
 void SHT3X_OnChannelChanged(int ch, int value) {
-	}
+}
 
 void SHT3X_OnEverySecond() {
 
 	SHT3X_ReadEnv(&g_temp, &g_humid);
+
+	g_temp = g_temp - g_caltemp;
+	g_humid = g_humid - g_calhum;
 
 	channel_temp = g_cfg.pins.channels[g_pin_data];
 	channel_humid = g_cfg.pins.channels2[g_pin_data];
