@@ -1137,7 +1137,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 
 #define OTA_PROGRAM_SIZE (512)
 	int ota_header_found, use_xz;
-	ota_header_t *ota_header;
+	ota_header_t *ota_header = 0;
 
 	ret = bl_mtd_open(BL_MTD_PARTITION_NAME_FW_DEFAULT, &handle, BL_MTD_OPEN_FLAG_BACKUP);
 	if (ret) {
@@ -1153,7 +1153,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 
 	activeID = hal_boot2_get_active_partition();
 
-	printf("Starting OTA test. OTA bin addr is %p\r\n", recv_buffer);
+	printf("Starting OTA test. OTA bin addr is %p, incoming len %i\r\n", recv_buffer, writelen);
 
 	printf("[OTA] [TEST] activeID is %u\r\n", activeID);
 
@@ -1184,23 +1184,76 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 		towrite = request->contentLength;
 	}
 
+	// get header
+	// recv_buffer	
+	//buffer_offset = 0;
+	//do {
+	//	int take_len;
+
+	//	take_len = OTA_PROGRAM_SIZE - buffer_offset;
+
+	//	memcpy(recv_buffer + buffer_offset, writebuf, writelen);
+	//	buffer_offset += writelen;
+
+
+	//	if (towrite > 0) {
+	//		writebuf = request->received;
+	//		writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
+	//		if (writelen < 0) {
+	//			ADDLOG_DEBUG(LOG_FEATURE_OTA, "recv returned %d - end of data - remaining %d", writelen, towrite);
+	//		}
+	//	}
+	//} while(true)
 
 	buffer_offset = 0;
 	flash_offset = 0;
-	ota_header_found = 0;
+	ota_header = 0;
 	use_xz = 0;
 
 	utils_sha256_init(&ctx);
 	utils_sha256_starts(&ctx);
 	memset(sha256_result, 0, sizeof(sha256_result));
-
 	do {
-		//ADDLOG_DEBUG(LOG_FEATURE_OTA, "%d bytes to write", writelen);
-		//add_otadata((unsigned char*)writebuf, writelen);
+		char *useBuf = writebuf;
+		int useLen = writelen;
 
-		utils_sha256_update(&ctx, (byte*)writebuf, writelen);
-		bl_mtd_write(handle, flash_offset, writelen, (byte*) writebuf);
-		flash_offset += writelen;
+		if (ota_header == 0) {
+			int take_len;
+
+			// how much left for header?
+			take_len = OTA_PROGRAM_SIZE - buffer_offset;
+			// clamp to available len
+			if (take_len > useLen)
+				take_len = useLen;
+			printf("Header takes %i. ",take_len);
+			memcpy(recv_buffer + buffer_offset, writebuf, take_len);
+			buffer_offset += take_len;
+			useBuf = writebuf + take_len;
+			useLen = writelen - take_len;
+
+			if (buffer_offset >= OTA_PROGRAM_SIZE) {
+				ota_header = (ota_header_t*)recv_buffer;
+				if (strncmp((const char*)ota_header, "BL60X_OTA", 9)) {
+					return http_rest_error(request, -20, "Invalid header ident");
+				}
+			}
+		}
+
+
+		if (ota_header && useLen) {
+
+
+			if (flash_offset + useLen >= part_size) {
+				return http_rest_error(request, -20, "Too large bin");
+			}
+			//ADDLOG_DEBUG(LOG_FEATURE_OTA, "%d bytes to write", writelen);
+			//add_otadata((unsigned char*)writebuf, writelen);
+
+			printf("Flash takes %i. ", useLen);
+			utils_sha256_update(&ctx, (byte*)useBuf, useLen);
+			bl_mtd_write(handle, flash_offset, useLen, (byte*)useBuf);
+			flash_offset += useLen;
+		}
 
 		total += writelen;
 		startaddr += writelen;
@@ -1216,11 +1269,21 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 		}
 	} while ((towrite > 0) && (writelen >= 0));
 
-
+	if (ota_header == 0) {
+		return http_rest_error(request, -20, "No header found");
+	}
 	utils_sha256_finish(&ctx, sha256_result);
 	puts("\r\nCalculated SHA256 Checksum:");
 	for (i = 0; i < sizeof(sha256_result); i++) {
 		printf("%02X", sha256_result[i]);
+	}
+	puts("\r\nHeader SHA256 Checksum:");
+	for (i = 0; i < sizeof(sha256_result); i++) {
+		printf("%02X", ota_header->u.s.sha256[i]);
+	}
+	if (memcmp(ota_header->u.s.sha256, sha256_result, sizeof(sha256_img))) {
+		/*Error found*/
+		return http_rest_error(request, -20, "SHA256 NOT Correct");
 	}
 	printf("[OTA] [TCP] prepare OTA partition info\r\n");
 	ptEntry.len = total;
