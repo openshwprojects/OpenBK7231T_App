@@ -109,6 +109,7 @@ OpenBL602: submodules sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenBL602/customer_app/bl602_sharedApp/build_out/bl602_sharedApp.bin output/$(APP_VERSION)/OpenBL602_$(APP_VERSION).bin
 	cp sdk/OpenBL602/customer_app/bl602_sharedApp/build_out/ota/dts40M_pt2M_boot2release_ef4015/FW_OTA.bin.xz output/$(APP_VERSION)/OpenBL602_$(APP_VERSION).xz
+	cp sdk/OpenBL602/customer_app/bl602_sharedApp/build_out/ota/dts40M_pt2M_boot2release_ef4015/FW_OTA.bin.xz.ota output/$(APP_VERSION)/OpenBL602_$(APP_VERSION).xz.ota
 	
 sdk/OpenW800/tools/w800/csky/bin: submodules
 	mkdir -p sdk/OpenW800/tools/w800/csky

@@ -103,7 +103,8 @@ jobs:
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.fls
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_ota.img
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_gz.img
-            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.xz
+            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.xz            
+            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.xz.ota
           if-no-files-found: warn
 
   release:
