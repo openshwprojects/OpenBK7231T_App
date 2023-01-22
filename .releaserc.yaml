@@ -108,8 +108,7 @@ generateNotes:
         | BK7231N  | UART Flash | [OpenBK7231N_QIO_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231N_QIO_{{version}}.bin) |
         | XR809    |            | [OpenXR809_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenXR809_{{version}}.img)             |
         | BL602    | UART Flash | [OpenBL602_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBL602_{{version}}.bin)             |
-        | BL602    | OTA Unsafe | [OpenBL602_{{version}}_OTA.bin.xz]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBL602_{{version}}_OTA.bin.xz)             |    
-        | BL602    | OTA Header | [OpenBL602_{{version}}_OTA.bin.xz.ota]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBL602_{{version}}_OTA.bin.xz.ota)             |
+        | BL602    | OTA Web App | [OpenBL602_{{version}}_OTA.bin.xz.ota]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBL602_{{version}}_OTA.bin.xz.ota)             |
         | W800     | OTA Update | [OpenW800_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenW800_{{version}}_ota.img)       |
         | W800     | UART Flash | [OpenW800_{{version}}.fls]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenW800_{{version}}.fls)               |
         | W600     | OTA Update | [OpenW600_{{version}}_gz.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenW600_{{version}}_gz.img)         |
