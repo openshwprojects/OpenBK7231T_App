@@ -80,10 +80,10 @@ jobs:
           sudo dpkg --add-architecture i386
           sudo apt-get update
           sudo apt-get -y install libc6-i386 make
-          sudo pip3 install --user pycryptodomex
-          sudo pip3 install --user configobj
-          sudo pip3 install --user toml
-          sudo pip3 install --user fdt
+          pip3 install pycryptodomex
+          pip3 install configobj
+          pip3 install toml
+          pip3 install fdt
       - run: ls -la
       - name: Run make
         run: make APP_VERSION=${{ needs.refs.outputs.version }} APP_NAME=${{ matrix.platform }} ${{ matrix.platform }}
