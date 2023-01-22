@@ -89,7 +89,7 @@ static driver_t g_drivers[] = {
 #ifdef ENABLE_DRIVER_BL0937	
 	{ "BL0937",		BL0937_Init,		BL0937_RunFrame,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
-	
+
 #ifdef ENABLE_DRIVER_CSE7766
 	{ "CSE7766",	CSE7766_Init,		CSE7766_RunFrame,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
@@ -114,9 +114,7 @@ static driver_t g_drivers[] = {
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	{ "CHT8305",	CHT8305_Init,		CHT8305_OnEverySecond,		CHT8305_AppendInformationToHTTPIndexPage, NULL, NULL, CHT8305_OnChannelChanged, false },
 	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, NULL, NULL, false },
-#endif
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
-	{ "SHT3X",	SHT3X_Init,		SHT3X_OnEverySecond,		SHT3X_AppendInformationToHTTPIndexPage, NULL, NULL, SHT3X_OnChannelChanged, false },
+	{ "SHT3X",	SHT3X_Init,		SHT3X_OnEverySecond,		SHT3X_AppendInformationToHTTPIndexPage, NULL, SHT3X_StopDriver, SHT3X_OnChannelChanged, false },
 #endif
 };
 

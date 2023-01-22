@@ -77,6 +77,7 @@ void SHT3X_Init();
 void SHT3X_OnEverySecond();
 void SHT3X_AppendInformationToHTTPIndexPage(http_request_t* request);
 void SHT3X_OnChannelChanged(int ch, int value);
+void SHT3X_StopDriver();
 
 void DRV_MAX72XX_Init();
 
