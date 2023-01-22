@@ -12,3 +12,4 @@ output/**
 .vscode
 node_modules
 Debug*/**
+libs_for_simulator/**

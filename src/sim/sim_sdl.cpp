@@ -179,6 +179,7 @@ extern "C" int SIM_CreateWindow(int argc, char **argv)
 	glutInit(&argc, argv);
 	sim = new CSimulator();
 	sim->createWindow();
+	sim->loadRecentProject();
 	return 0;
 }
 extern "C" void SIM_RunWindow() {

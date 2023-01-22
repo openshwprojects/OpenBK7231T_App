@@ -10,7 +10,7 @@
 
  SOCKET ListenSocket = INVALID_SOCKET;
 
-#define DEFAULT_PORT "80"
+int g_port = 80;
 
 int HTTPServer_Start() {
 
@@ -29,7 +29,10 @@ int HTTPServer_Start() {
 		closesocket(ListenSocket);
 	}
     // Resolve the server address and port
-    iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
+	char service[6];
+	snprintf(service, sizeof(service), "%u", g_port);
+
+	iResult = getaddrinfo(NULL, service, &hints, &result);
     if ( iResult != 0 ) {
         printf("getaddrinfo failed with error: %d\n", iResult);
         WSACleanup();
