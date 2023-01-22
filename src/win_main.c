@@ -27,6 +27,7 @@ int accum_time = 0;
 int win_frameNum = 0;
 // this time counter is simulated, I need this for unit tests to work
 int g_simulatedTimeNow = 0;
+extern int g_port;
 #define DEFAULT_FRAME_TIME 5
 
 
@@ -182,7 +183,30 @@ int g_bDoingUnitTestsNow = 0;
 #include "sim/sim_public.h"
 int __cdecl main(int argc, char **argv)
 {
-	bool bWantsUnitTests = 1;
+	bool bWantsUnitTests = true;
+
+	if (argc > 1) {
+		int value;
+
+		for (int i = 1; i < argc; i++) {
+			if (argv[i][0] == '-') {
+				if (wal_strnicmp(argv[i] + 1, "port", 4) == 0) {
+					i++;
+
+					if (i < argc && sscanf(argv[i], "%d", &value) == 1) {
+						g_port = value;
+					}
+				} else if (wal_strnicmp(argv[i] + 1, "runUnitTests", 12) == 0) {
+					i++;
+
+					if (i < argc && sscanf(argv[i], "%d", &value) == 1) {
+						bWantsUnitTests = value != 0;
+					}
+				}
+			}
+		}
+	}
+
     WSADATA wsaData;
     int iResult;
 

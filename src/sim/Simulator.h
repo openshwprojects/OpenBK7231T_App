@@ -66,6 +66,11 @@ public:
 			return true;
 		return false;
 	}
+
+	/// <summary>
+	/// Load the last project.
+	/// </summary>
+	void loadRecentProject();
 };
 
 #endif
