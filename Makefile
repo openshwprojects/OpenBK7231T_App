@@ -105,6 +105,7 @@ build-BK7231: submodules $(SDK_PATH)/apps/$(APP_NAME)
 
 OpenBL602: submodules sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared
 	$(MAKE) -C sdk/OpenBL602/customer_app/bl602_sharedApp CONFIG_CHIP_NAME=BL602 CONFIG_LINK_ROM=1 -j
+	$(MAKE) -C sdk/OpenBL602/customer_app/bl602_sharedApp CONFIG_CHIP_NAME=BL602 bins
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenBL602/customer_app/bl602_sharedApp/build_out/bl602_sharedApp.bin output/$(APP_VERSION)/OpenBL602_$(APP_VERSION).bin
 
