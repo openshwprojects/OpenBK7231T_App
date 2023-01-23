@@ -81,3 +81,7 @@ void SHT3X_StopDriver();
 
 void DRV_MAX72XX_Init();
 
+void WEMO_Init();
+void WEMO_AppendInformationToHTTPIndexPage(http_request_t* request);
+
+

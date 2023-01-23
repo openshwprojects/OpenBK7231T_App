@@ -7,6 +7,7 @@ extern const char httpMimeTypeHTML[];              // HTML MIME type
 extern const char httpMimeTypeText[];           // TEXT MIME type
 extern const char httpMimeTypeJson[];
 extern const char httpMimeTypeBinary[];
+extern const char httpMimeTypeXML[];
 
 extern const char htmlShortcutIcon[];
 extern const char htmlDoctype[];

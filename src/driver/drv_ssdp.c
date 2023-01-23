@@ -230,15 +230,29 @@ static const char message_template[] =
 /*"DATE: Sat, 22 Oct 2016 14:44:26 GMT\r\n"*/ \
 ;
 
+void DRV_WEMO_Send_Advert_To(struct sockaddr_in *addr);
 
-static void DRV_SSDP_Send_Advert_To(struct sockaddr_in *addr) {
+void DRV_SSDP_SendReply(struct sockaddr_in *addr, const char *message) {
+
 	int nbytes;
+	if (g_ssdp_socket_receive <= 0) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "DRV_SSDP_SendReply: no socket");
+		return;
+	}
+	// set up destination address
+	//
+	nbytes = sendto(
+		g_ssdp_socket_receive,
+		(const char*)advert_message,
+		strlen(advert_message),
+		0,
+		(struct sockaddr*) addr,
+		sizeof(struct sockaddr)
+	);
+}
+static void DRV_SSDP_Send_Advert_To(struct sockaddr_in *addr) {
     const char *myip = HAL_GetMyIPString();
 
-	if (g_ssdp_socket_receive <= 0) {
-    	addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP,"DRV_SSDP_Send_Advert_To: no socket");
-		return ;
-	}
 
     if (!advert_message){
         advert_maxlen = strlen(message_template) +  100;
@@ -250,16 +264,7 @@ static void DRV_SSDP_Send_Advert_To(struct sockaddr_in *addr) {
         g_ssdp_uuid, 
         g_ssdp_uuid);
 
-    // set up destination address
-    //
-    nbytes = sendto(
-        g_ssdp_socket_receive,
-        (const char*) advert_message,
-        strlen(advert_message),
-        0,
-        (struct sockaddr*) addr,
-        sizeof(struct sockaddr)
-    );
+	DRV_SSDP_SendReply(addr,advert_message);
 
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"DRV_SSDP_Send_Advert_To: sent message");
 }
@@ -513,7 +518,12 @@ void DRV_SSDP_RunQuickTick() {
     if (!strncmp(udp_msgbuf, "M-SEARCH", 8)){
         // reply with our advert to the sender
         addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_HTTP,"Is MSEARCH - responding");
-        DRV_SSDP_Send_Advert_To(&addr);
+		if (strstr(udp_msgbuf, "urn:belkin:device:**")) {
+			DRV_WEMO_Send_Advert_To(&addr);
+		}
+		else {
+			DRV_SSDP_Send_Advert_To(&addr);
+		}
     }
 
     // our NOTIFTY like:

@@ -17,6 +17,7 @@
 const char httpHeader[] = "HTTP/1.1 %d OK\nContent-type: %s";  // HTTP header
 const char httpMimeTypeHTML[] = "text/html";              // HTML MIME type
 const char httpMimeTypeText[] = "text/plain";           // TEXT MIME type
+const char httpMimeTypeXML[] = "text/xml";           // TEXT MIME type
 const char httpMimeTypeJson[] = "application/json";           // TEXT MIME type
 const char httpMimeTypeBinary[] = "application/octet-stream";   // binary/file MIME type
 
@@ -81,11 +82,21 @@ static http_callback_t* callbacks[MAX_HTTP_CALLBACKS];
 static int numCallbacks = 0;
 
 int HTTP_RegisterCallback(const char* url, int method, http_callback_fn callback) {
+	int i;
+
 	if (!url || !callback) {
 		return -1;
 	}
 	if (numCallbacks >= MAX_HTTP_CALLBACKS) {
 		return -4;
+	}
+	for (i = 0; i < MAX_HTTP_CALLBACKS; i++) {
+		if (callbacks[i]) {
+			if (callbacks[i]->callback == callback && !strcmp(callbacks[i]->url, url)
+				&& callbacks[i]->method == method) {
+				return i;
+			}
+		}
 	}
 	callbacks[numCallbacks] = (http_callback_t*)os_malloc(sizeof(http_callback_t));
 	if (!callbacks[numCallbacks]) {

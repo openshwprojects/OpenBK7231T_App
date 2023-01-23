@@ -184,7 +184,7 @@ int g_bDoingUnitTestsNow = 0;
 #include "sim/sim_public.h"
 int __cdecl main(int argc, char **argv)
 {
-	bool bWantsUnitTests = true;
+	bool bWantsUnitTests = false;
 
 	if (argc > 1) {
 		int value;
