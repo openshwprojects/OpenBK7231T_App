@@ -124,6 +124,7 @@ void SIM_DoFreshOBKBoot() {
 }
 void Win_DoUnitTests() {
 
+	Test_Demo_ExclusiveRelays();
 	Test_HassDiscovery();
 	Test_MultiplePinsOnChannel();
 	Test_Flags();

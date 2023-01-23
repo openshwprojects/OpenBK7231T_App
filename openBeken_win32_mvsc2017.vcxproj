@@ -537,6 +537,7 @@
     <ClCompile Include="src\selftest\selftest_ntp.c" />
     <ClCompile Include="src\selftest\selftest_repeatingEvents.c" />
     <ClCompile Include="src\selftest\selftest_script.c" />
+    <ClCompile Include="src\selftest\selftest_demo_exclusiveRelays.c" />
     <ClCompile Include="src\selftest\selftest_tasmota.c" />
     <ClCompile Include="src\selftest\selftest_tokenizer.c" />
     <ClCompile Include="src\selftest\selftest_tuyaMCU.c" />
