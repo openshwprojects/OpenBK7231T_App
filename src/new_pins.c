@@ -1615,6 +1615,41 @@ static commandResult_t CMD_SetChannelType(const void *context, const char *cmd, 
 	return CMD_RES_OK;
 }
 
+/// @brief Computes the Relay and PWM count.
+/// @param relayCount Number of relay and LED channels.
+/// @param pwmCount Number of PWM channels.
+void get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount) {
+	int i;
+	(*relayCount) = 0;
+	(*pwmCount) = 0;
+	(*dInputCount) = 0;
+
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		int role = PIN_GetPinRoleForPinIndex(i);
+		switch (role) {
+		case IOR_Relay:
+		case IOR_Relay_n:
+		case IOR_LED:
+		case IOR_LED_n:
+			(*relayCount)++;
+			break;
+		case IOR_PWM:
+		case IOR_PWM_n:
+			(*pwmCount)++;
+			break;
+		case IOR_DigitalInput:
+		case IOR_DigitalInput_n:
+		case IOR_DigitalInput_NoPup:
+		case IOR_DigitalInput_NoPup_n:
+			(*dInputCount)++;
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+
 int h_isChannelPWM(int tg_ch){
     int i;
     int role;
