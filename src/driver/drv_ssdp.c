@@ -230,7 +230,7 @@ static const char message_template[] =
 /*"DATE: Sat, 22 Oct 2016 14:44:26 GMT\r\n"*/ \
 ;
 
-void DRV_WEMO_Send_Advert_To(struct sockaddr_in *addr);
+void DRV_WEMO_Send_Advert_To(int mode, struct sockaddr_in *addr);
 
 void DRV_SSDP_SendReply(struct sockaddr_in *addr, const char *message) {
 
@@ -518,12 +518,19 @@ void DRV_SSDP_RunQuickTick() {
     if (!strncmp(udp_msgbuf, "M-SEARCH", 8)){
         // reply with our advert to the sender
         addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_HTTP,"Is MSEARCH - responding");
-		if (strstr(udp_msgbuf, "urn:belkin:device:**")) {
-			DRV_WEMO_Send_Advert_To(&addr);
+		if (DRV_IsRunning("WEMO")) {
+			if (strcasestr(udp_msgbuf, "urn:belkin:device:**")) {
+				DRV_WEMO_Send_Advert_To(1, &addr);
+				return;
+			}
+			else if (strcasestr(udp_msgbuf, "upnp:rootdevice")
+				|| strcasestr(udp_msgbuf, "ssdpsearch:all")
+				|| strcasestr(udp_msgbuf, "ssdp:all")) {
+				DRV_WEMO_Send_Advert_To(2, &addr);
+				return;
+			}
 		}
-		else {
-			DRV_SSDP_Send_Advert_To(&addr);
-		}
+		DRV_SSDP_Send_Advert_To(&addr);
     }
 
     // our NOTIFTY like:
