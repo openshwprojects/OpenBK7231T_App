@@ -558,7 +558,7 @@ int JSON_ProcessCommandReply(const char *cmd, void *request, jsonCb_t printer, i
 	if (!wal_strnicmp(cmd, "POWER", 5)) {
 
 		printer(request, "{");
-		http_tasmota_json_power(request, printer, flags);
+		http_tasmota_json_power(request, printer);
 		printer(request, "}");
 		if (flags == COMMAND_FLAG_SOURCE_MQTT) {
 			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "RESULT");
