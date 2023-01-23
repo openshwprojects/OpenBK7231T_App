@@ -104,6 +104,68 @@ void Test_Tasmota_MQTT_Switch() {
 
 }
 
+void Test_Tasmota_MQTT_Switch_Double() {
+	SIM_ClearOBK();
+	SIM_ClearAndPrepareForMQTTTesting("twoRelaysDevice");
+
+	const char *my_full_device_name = "TestingDevMQTTSwitch";
+	CFG_SetDeviceName(my_full_device_name);
+
+	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(9, 1);
+
+	PIN_SetPinRoleForPinIndex(10, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(10, 2);
+
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	CMD_ExecuteCommand("setChannel 2 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 1);
+	/*
+	// If single power
+	cmnd/tasmota_switch/Power ?     // an empty message/payload sends a status query
+		? stat/tasmota_switch/RESULT ? {"POWER":"OFF"}
+		? stat/tasmota_switch/POWER ? OFF
+	*/
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Power1", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/twoRelaysDevice/RESULT", false);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER1", "OFF");
+	SIM_ClearMQTTHistory();
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Power2", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/twoRelaysDevice/RESULT", false);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER2", "ON");
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("setChannel 1 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+	SELFTEST_ASSERT_CHANNEL(2, 1);
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Power1", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/twoRelaysDevice/RESULT", false);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER1", "ON");
+	SIM_ClearMQTTHistory();
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Power2", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/twoRelaysDevice/RESULT", false);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER2", "ON");
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	CMD_ExecuteCommand("setChannel 2 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Power1", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/twoRelaysDevice/RESULT", false);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER1", "OFF");
+	SIM_ClearMQTTHistory();
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Power2", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/twoRelaysDevice/RESULT", false);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER2", "OFF");
+	SIM_ClearMQTTHistory();
+}
 void Test_Tasmota_MQTT_RGBCW() {
 	SIM_ClearOBK();
 	SIM_ClearAndPrepareForMQTTTesting("rgbcwBulb");
@@ -264,6 +326,7 @@ void Test_Tasmota_MQTT_RGBCW() {
 }
 void Test_Tasmota() {
 	Test_Tasmota_MQTT_Switch();
+	Test_Tasmota_MQTT_Switch_Double();
 	Test_Tasmota_MQTT_RGBCW();
 }
 #endif
