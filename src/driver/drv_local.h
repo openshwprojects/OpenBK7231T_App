@@ -80,3 +80,7 @@ void SHT3X_OnChannelChanged(int ch, int value);
 
 void DRV_MAX72XX_Init();
 
+void WEMO_Init();
+void WEMO_AppendInformationToHTTPIndexPage(http_request_t* request);
+
+

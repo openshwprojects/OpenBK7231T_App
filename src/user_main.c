@@ -171,7 +171,7 @@ int Time_getUpTimeSeconds() {
 
 static char scheduledDriverName[4][16];
 static int scheduledDelay[4] = {-1, -1, -1, -1};
-static void ScheduleDriverStart(const char *name, int delay) {
+void ScheduleDriverStart(const char *name, int delay) {
 	int i;
 
 	for (i = 0; i < 4; i++){
