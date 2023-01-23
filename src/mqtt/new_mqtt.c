@@ -515,9 +515,7 @@ char* MQTT_RemoveClientFromTopic(char* topic) {
 int channelGet(obk_mqtt_request_t* request) {
 	//int len = request->receivedLen;
 	int channel = 0;
-	int iValue = 0;
 	char* p;
-	const char *argument;
 
 	// we only support here publishes with emtpy value, otherwise we would get into
 	// a loop where we receive a get, and then send get reply with val, and receive our own get
@@ -566,11 +564,11 @@ int channelGet(obk_mqtt_request_t* request) {
 		return 0;
 	}
 
-	MQTT_ChannelPublish(channel, 0);
+MQTT_ChannelPublish(channel, 0);
 
-	// return 1 to stop processing callbacks here.
-	// return 0 to allow later callbacks to process this topic.
-	return 1;
+// return 1 to stop processing callbacks here.
+// return 0 to allow later callbacks to process this topic.
+return 1;
 }
 // this accepts obkXXXXXX/<chan>/set to receive data to set channels
 int channelSet(obk_mqtt_request_t* request) {
@@ -645,7 +643,7 @@ typedef struct obk_mqtt_publishReplyPrinter_s {
 	int curLen;
 } obk_mqtt_publishReplyPrinter_t;
 
-void MQTT_PublishPrinterContentsToStat(struct obk_mqtt_publishReplyPrinter_s *printer, const char *statName) {
+void MQTT_PublishPrinterContentsToStat(obk_mqtt_publishReplyPrinter_t *printer, const char *statName) {
 	const char *toUse;
 	if (printer->allocated)
 		toUse = printer->allocated;
@@ -665,7 +663,11 @@ int mqtt_printf255(obk_mqtt_publishReplyPrinter_t* request, const char* fmt, ...
 
 	myLen = strlen(tmp);
 
-	if (request->curLen + (myLen+2) >= MQTT_STACK_BUFFER_SIZE) {
+	if (request->curLen + (myLen + 2) >= MQTT_STACK_BUFFER_SIZE) {
+		if (request->curLen + (myLen + 2) >= MQTT_TOTAL_BUFFER_SIZE) {
+			// TODO: realloc
+			return 0;
+		}
 		// init alloced if needed
 		if (request->allocated == 0) {
 			request->allocated = malloc(MQTT_TOTAL_BUFFER_SIZE);
@@ -677,11 +679,12 @@ int mqtt_printf255(obk_mqtt_publishReplyPrinter_t* request, const char* fmt, ...
 		strcat(request->stackBuffer, tmp);
 	}
 	request->curLen += myLen;
+	return 0;
 }
 int tasCmnd(obk_mqtt_request_t* request) {
 	const char *p, *args;
-
 	obk_mqtt_publishReplyPrinter_t replyBuilder;
+
 	memset(&replyBuilder, 0, sizeof(obk_mqtt_publishReplyPrinter_t));
 	p = request->topic;
 	// TODO: better
@@ -697,7 +700,7 @@ int tasCmnd(obk_mqtt_request_t* request) {
 	// there is a NULL terminating character after payload of MQTT
 	// So we can feed it directly as command
 	CMD_ExecuteCommandArgs(p, args, COMMAND_FLAG_SOURCE_MQTT);
-	JSON_ProcessCommandReply(p, &replyBuilder, mqtt_printf255, COMMAND_FLAG_SOURCE_MQTT);
+	JSON_ProcessCommandReply(p, &replyBuilder, (jsonCb_t)mqtt_printf255, COMMAND_FLAG_SOURCE_MQTT);
 	if (replyBuilder.allocated != 0) {
 		free(replyBuilder.allocated);
 	}

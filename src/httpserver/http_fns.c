@@ -1960,13 +1960,13 @@ int http_fn_cm(http_request_t* request) {
 			if (long_str_alloced) {
 				http_getArg(request->url, "cmnd", long_str_alloced, commandLen);
 				CMD_ExecuteCommand(long_str_alloced, COMMAND_FLAG_SOURCE_HTTP);
-				JSON_ProcessCommandReply(long_str_alloced, request, hprintf255, COMMAND_FLAG_SOURCE_HTTP);
+				JSON_ProcessCommandReply(long_str_alloced, request, (jsonCb_t)hprintf255, COMMAND_FLAG_SOURCE_HTTP);
 				free(long_str_alloced);
 			}
 		}
 		else {
 			CMD_ExecuteCommand(tmpA, COMMAND_FLAG_SOURCE_HTTP);
-			JSON_ProcessCommandReply(tmpA, request, hprintf255, COMMAND_FLAG_SOURCE_HTTP);
+			JSON_ProcessCommandReply(tmpA, request, (jsonCb_t)hprintf255, COMMAND_FLAG_SOURCE_HTTP);
 		}
 	}
 
