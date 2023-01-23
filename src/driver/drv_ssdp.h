@@ -1,5 +1,5 @@
 
-int DRV_SSDP_Active;
+extern int DRV_SSDP_Active;
 
 void DRV_SSDP_Init();
 void DRV_SSDP_RunEverySecond();
