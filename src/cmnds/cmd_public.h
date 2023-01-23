@@ -201,8 +201,11 @@ float LED_GetGreen255();
 float LED_GetRed255();
 float LED_GetBlue255();
 void LED_RunQuickColorLerp(int deltaMS);
+OBK_Publish_Result sendFinalColor();
+OBK_Publish_Result sendColorChange();
 OBK_Publish_Result LED_SendEnableAllState();
 OBK_Publish_Result LED_SendDimmerChange();
+OBK_Publish_Result sendTemperatureChange();
 OBK_Publish_Result LED_SendCurrentLightMode();
 void LED_ResetGlobalVariablesToDefaults();
 // cmd_test.c

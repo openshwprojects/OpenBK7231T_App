@@ -264,6 +264,7 @@ static struct mqtt_connect_client_info_t mqtt_client_info =
 
 // channel set callback
 int channelSet(obk_mqtt_request_t* request);
+int channelGet(obk_mqtt_request_t* request);
 static void MQTT_do_connect(mqtt_client_t* client);
 static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection_status_t status);
 
@@ -509,6 +510,67 @@ char* MQTT_RemoveClientFromTopic(char* topic) {
 	return hasClient ? topic + 1 : NULL;
 }
 
+// this accepts obkXXXXXX/<chan>/get to request channel publish
+int channelGet(obk_mqtt_request_t* request) {
+	//int len = request->receivedLen;
+	int channel = 0;
+	int iValue = 0;
+	char* p;
+	const char *argument;
+
+	// we only support here publishes with emtpy value, otherwise we would get into
+	// a loop where we receive a get, and then send get reply with val, and receive our own get
+	if (request->receivedLen) {
+		return 1;
+	}
+
+	addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "channelGet topic %i with arg %s", request->topic, request->received);
+
+	p = MQTT_RemoveClientFromTopic(request->topic);
+
+	if (p == NULL) {
+		return 0;
+	}
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelGet part topic %s", p);
+
+	if (!stricmp(p, "led_enableAll")) {
+		LED_SendEnableAllState();
+		return 1;
+	}
+	if (!stricmp(p, "led_dimmer")) {
+		LED_SendDimmerChange();
+		return 1;
+	}
+	if (!stricmp(p, "led_temperature")) {
+		sendTemperatureChange();
+		return 1;
+	}
+	if (!stricmp(p, "led_finalcolor_rgb")) {
+		sendFinalColor();
+		return 1;
+	}
+	if (!stricmp(p, "led_basecolor_rgb")) {
+		sendColorChange();
+		return 1;
+	}
+
+	// atoi won't parse any non-decimal chars, so it should skip over the rest of the topic.
+	channel = atoi(p);
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelGet channel %i", channel);
+
+	// if channel out of range, stop here.
+	if ((channel < 0) || (channel > 32)) {
+		return 0;
+	}
+
+	MQTT_ChannelPublish(channel, 0);
+
+	// return 1 to stop processing callbacks here.
+	// return 0 to allow later callbacks to process this topic.
+	return 1;
+}
 // this accepts obkXXXXXX/<chan>/set to receive data to set channels
 int channelSet(obk_mqtt_request_t* request) {
 	//int len = request->receivedLen;
@@ -1417,9 +1479,15 @@ void MQTT_init()
 	if (*groupId) {
 		snprintf(cbtopicbase, sizeof(cbtopicbase), "cmnd/%s/", groupId);
 		snprintf(cbtopicsub, sizeof(cbtopicsub), "cmnd/%s/+", groupId);
-		// note: this may REPLACE an existing entry with the same ID.  ID 2 !!!
-		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 2, tasCmnd);
+		// note: this may REPLACE an existing entry with the same ID.  ID 3 !!!
+		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 3, tasCmnd);
 	}
+
+	// register the getter callback (send empty message here to get reply)
+	snprintf(cbtopicbase, sizeof(cbtopicbase), "%s/", clientId);
+	snprintf(cbtopicsub, sizeof(cbtopicsub), "%s/+/get", clientId);
+	// note: this may REPLACE an existing entry with the same ID.  ID 4 !!!
+	MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 4, channelGet);
 
 	mqtt_initialised = 1;
 
