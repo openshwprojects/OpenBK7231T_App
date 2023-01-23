@@ -98,6 +98,7 @@ const char *Test_GetJSONValue_String(const char *keyword, const char *obj);
 const char *Test_GetJSONValue_String_Nested(const char *par1, const char *keyword);
 const char *Test_GetJSONValue_String_Nested2(const char *par1, const char *par2, const char *keyword);
 
+void SIM_SendFakeMQTT(const char *text, const char *arguments);
 void SIM_SendFakeMQTTAndRunSimFrame_CMND(const char *command, const char *arguments);
 void SIM_SendFakeMQTTRawChannelSet(int channelIndex, const char *arguments);
 void SIM_ClearMQTTHistory();

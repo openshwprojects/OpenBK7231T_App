@@ -571,7 +571,7 @@ commandResult_t led_gamma_control (const void *context, const char *cmd, const c
 	return CMD_RES_OK;
 } //
 
-static OBK_Publish_Result sendColorChange() {
+OBK_Publish_Result sendColorChange() {
 	char s[16];
 	byte c[3];
 
@@ -596,12 +596,12 @@ void LED_GetBaseColorString(char * s) {
 
 	sprintf(s, "%02X%02X%02X",c[0],c[1],c[2]);
 }
-static void sendFinalColor() {
+OBK_Publish_Result sendFinalColor() {
 	char s[16];
 	byte c[3];
 
 	if(shouldSendRGB()==0) {
-		return;
+		return OBK_PUBLISH_WAS_NOT_REQUIRED;
 	}
 
 	c[0] = (byte)(finalColors[0]);
@@ -610,7 +610,7 @@ static void sendFinalColor() {
 
 	snprintf(s, sizeof(s),"%02X%02X%02X",c[0],c[1],c[2]);
 
-	MQTT_PublishMain_StringString_DeDuped(DEDUP_LED_FINALCOLOR_RGB,DEDUP_EXPIRE_TIME,"led_finalcolor_rgb",s, 0);
+	return MQTT_PublishMain_StringString_DeDuped(DEDUP_LED_FINALCOLOR_RGB,DEDUP_EXPIRE_TIME,"led_finalcolor_rgb",s, 0);
 }
 OBK_Publish_Result LED_SendDimmerChange() {
 	int iValue;
@@ -619,7 +619,7 @@ OBK_Publish_Result LED_SendDimmerChange() {
 
 	return MQTT_PublishMain_StringInt_DeDuped(DEDUP_LED_DIMMER,DEDUP_EXPIRE_TIME,"led_dimmer", iValue, 0);
 }
-static OBK_Publish_Result sendTemperatureChange(){
+OBK_Publish_Result sendTemperatureChange(){
 	return MQTT_PublishMain_StringInt_DeDuped(DEDUP_LED_TEMPERATURE,DEDUP_EXPIRE_TIME,"led_temperature", (int)led_temperature_current,0);
 }
 float LED_GetTemperature() {

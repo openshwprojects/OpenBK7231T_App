@@ -14,6 +14,33 @@ void SIM_ClearAndPrepareForMQTTTesting(const char *clientName) {
 		MQTT_RunEverySecondUpdate();
 	}
 }
+void Test_MQTT_Get_And_Reply() {
+	SIM_ClearOBK();
+	SIM_ClearAndPrepareForMQTTTesting("myTestDevice");
+	char buffer[512];
+	char buffer2[512];
+
+	int maxChannelsToTest = 15;
+
+	for (int i = 0; i < maxChannelsToTest; i++) {
+		sprintf(buffer, "setChannel %i %i", i, (i * 7 + 10));
+		CMD_ExecuteCommand(buffer, 0);
+	}
+
+	SIM_ClearMQTTHistory();
+	for (int i = 0; i < maxChannelsToTest; i++) {
+		// send get
+		sprintf(buffer2, "myTestDevice/%i/get", i);
+		SIM_SendFakeMQTT(buffer2, "");
+
+		// expect get reply
+		int expected = (i * 7 + 10);
+		sprintf(buffer, "%i", expected);
+		sprintf(buffer2, "myTestDevice/%i/get", i);
+		SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR(buffer2, buffer, false);
+		SIM_ClearMQTTHistory();
+	}
+}
 void Test_MQTT_Channels() {
 	SIM_ClearOBK();
 	SIM_ClearAndPrepareForMQTTTesting("myTestDevice");
@@ -253,6 +280,7 @@ void Test_MQTT_Misc() {
 	//SIM_ClearMQTTHistory();
 }
 void Test_MQTT(){
+	Test_MQTT_Get_And_Reply();
 	Test_MQTT_Misc();
 	Test_MQTT_Channels();
 	Test_MQTT_LED_CW();
