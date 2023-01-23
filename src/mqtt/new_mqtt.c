@@ -637,8 +637,53 @@ int channelSet(obk_mqtt_request_t* request) {
 // Payload: echo Test1; power toggle; echo Test2
 // will do echo, toggle power and do ecoh
 //
+#define MQTT_STACK_BUFFER_SIZE 32
+#define MQTT_TOTAL_BUFFER_SIZE 4096
+typedef struct obk_mqtt_publishReplyPrinter_s {
+	char *allocated;
+	char stackBuffer[MQTT_STACK_BUFFER_SIZE];
+	int curLen;
+} obk_mqtt_publishReplyPrinter_t;
+
+void MQTT_PublishPrinterContentsToStat(struct obk_mqtt_publishReplyPrinter_s *printer, const char *statName) {
+	const char *toUse;
+	if (printer->allocated)
+		toUse = printer->allocated;
+	else
+		toUse = printer->stackBuffer;
+	MQTT_PublishStat(statName, toUse);
+}
+int mqtt_printf255(obk_mqtt_publishReplyPrinter_t* request, const char* fmt, ...) {
+	va_list argList;
+	char tmp[256];
+	int myLen;
+
+	memset(tmp, 0, sizeof(tmp));
+	va_start(argList, fmt);
+	vsnprintf(tmp, 255, fmt, argList);
+	va_end(argList);
+
+	myLen = strlen(tmp);
+
+	if (request->curLen + (myLen+2) >= MQTT_STACK_BUFFER_SIZE) {
+		// init alloced if needed
+		if (request->allocated == 0) {
+			request->allocated = malloc(MQTT_TOTAL_BUFFER_SIZE);
+			strcpy(request->allocated, request->stackBuffer);
+		}
+		strcat(request->allocated, tmp);
+	}
+	else {
+		strcat(request->stackBuffer, tmp);
+	}
+	request->curLen += myLen;
+}
 int tasCmnd(obk_mqtt_request_t* request) {
-	const char* p = request->topic;
+	const char *p, *args;
+
+	obk_mqtt_publishReplyPrinter_t replyBuilder;
+	memset(&replyBuilder, 0, sizeof(obk_mqtt_publishReplyPrinter_t));
+	p = request->topic;
 	// TODO: better
 	// skip to after second forward slash
 	while (*p != '/') { if (*p == 0) return 0; p++; }
@@ -647,10 +692,15 @@ int tasCmnd(obk_mqtt_request_t* request) {
 	p++;
 
 #if 1
+	args = (const char *)request->received;
 	// I think that our function get_received always ensured that
 	// there is a NULL terminating character after payload of MQTT
 	// So we can feed it directly as command
-	CMD_ExecuteCommandArgs(p, (const char *)request->received, COMMAND_FLAG_SOURCE_MQTT);
+	CMD_ExecuteCommandArgs(p, args, COMMAND_FLAG_SOURCE_MQTT);
+	JSON_ProcessCommandReply(p, &replyBuilder, mqtt_printf255, COMMAND_FLAG_SOURCE_MQTT);
+	if (replyBuilder.allocated != 0) {
+		free(replyBuilder.allocated);
+	}
 #else
 	int len = request->receivedLen;
 	char copy[64];
@@ -816,7 +866,12 @@ static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t* client, const char* sC
 {
 	return MQTT_PublishTopicToClient(mqtt_client, CFG_GetMQTTClientId(), sChannel, sVal, flags, appendGet);
 }
-
+OBK_Publish_Result MQTT_PublishStat(const char* statName, const char* statValue)
+{
+	char topic[64];
+	snprintf(topic,sizeof(topic),"stat/%s", CFG_GetMQTTClientId());
+	return MQTT_PublishTopicToClient(mqtt_client, topic, statName, statValue, 0, false);
+}
 /// @brief Publish a MQTT message immediately.
 /// @param sTopic 
 /// @param sChannel 

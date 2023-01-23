@@ -6,9 +6,14 @@ void Test_Tasmota_MQTT_Switch() {
 	SIM_ClearOBK();
 	SIM_ClearAndPrepareForMQTTTesting("miscDevice");
 
+	const char *my_full_device_name = "TestingDevMQTTSwitch";
+	CFG_SetDeviceName(my_full_device_name);
+
 	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(9, 1);
 
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
 	/*
 	// If single power
 	cmnd/tasmota_switch/Power ?     // an empty message/payload sends a status query
@@ -16,6 +21,18 @@ void Test_Tasmota_MQTT_Switch() {
 		? stat/tasmota_switch/POWER ? OFF
 	*/
 	SIM_SendFakeMQTTAndRunSimFrame_CMND("Power", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/miscDevice/RESULT", false);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "OFF");
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("setChannel 1 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Power", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/miscDevice/RESULT", false);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "ON");
+	SIM_ClearMQTTHistory();
+
 	/*
 	// If multiple power
 	cmnd/tasmota_switch/Power1 ?     // an empty message/payload sends a status query
@@ -30,8 +47,60 @@ void Test_Tasmota_MQTT_Switch() {
 		? stat/tasmota_switch/RESULT ? {"POWER":"ON"}
 		? stat/tasmota_switch/POWER ? ON
 	*/
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+	SIM_ClearMQTTHistory();
 	SIM_SendFakeMQTTAndRunSimFrame_CMND("Power", "Toggle");
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/miscDevice/RESULT", false);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "OFF");
+	SIM_ClearMQTTHistory();
 
+	/*
+	// When send status, we get full status on stat
+	// cmnd/tasmota_787019/STATUS
+
+	Message 6 received on stat/tasmota_787019/STATUS at 10:36 AM:
+	{
+		"Status": {
+			"Module": 0,
+			"DeviceName": "TasmotaBathroom",
+			"FriendlyName": [
+				"TasmotaBathroom"
+			],
+			"Topic": "tasmota_787019",
+			"ButtonTopic": "0",
+			"Power": 0,
+			"PowerOnState": 3,
+			"LedState": 1,
+			"LedMask": "FFFF",
+			"SaveData": 1,
+			"SaveState": 1,
+			"SwitchTopic": "0",
+			"SwitchMode": [
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0
+			],
+			"ButtonRetain": 0,
+			"SwitchRetain": 0,
+			"SensorRetain": 0,
+			"PowerRetain": 0,
+			"InfoRetain": 0,
+			"StateRetain": 0
+		}
+	}
+	*/
+	SIM_ClearMQTTHistory();
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("STATUS", "");
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/miscDevice/STATUS", false);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("Status", "DeviceName", CFG_GetShortDeviceName());
+	SIM_ClearMQTTHistory();
 
 }
 
@@ -60,12 +129,23 @@ void Test_Tasmota_MQTT_RGBCW() {
 		? stat/tasmota_rgbcw/RESULT ? {"POWER":"OFF"}
 		? stat/tasmota_switch/POWER ? OFF
 	*/
+	CMD_ExecuteCommand("led_enableAll 0", 0);
 
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Power", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/rgbcwBulb/RESULT", false);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "OFF");
+	SIM_ClearMQTTHistory();
 
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Power", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/rgbcwBulb/RESULT", false);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "ON");
+	SIM_ClearMQTTHistory();
 	/*
 	// Powers as for single relay, but also
 	cmnd/tasmota_rgbcw/CT 153    
-	gives
+	gives stat/tasmota_rgbcw/RESULT
 	{
 		"POWER": "ON",
 		"Dimmer": 100,
@@ -86,7 +166,7 @@ void Test_Tasmota_MQTT_RGBCW() {
 	/*
 	// Powers as for single relay, but also
 	cmnd/tasmota_rgbcw/CT
-	gives
+	gives stat/tasmota_rgbcw/RESULT
 	{
 		"CT": 153
 	}
@@ -95,7 +175,7 @@ void Test_Tasmota_MQTT_RGBCW() {
 	/*
 	// Powers as for single relay, but also
 	cmnd/tasmota_rgbcw/HSBColor
-	gives
+	gives stat/tasmota_rgbcw/RESULT
 	{
 		"POWER": "ON",
 		"Dimmer": 100,
@@ -115,7 +195,7 @@ void Test_Tasmota_MQTT_RGBCW() {
 	/*
 	// Powers as for single relay, but also
 	cmnd/tasmota_rgbcw/HSBColor 90,100,0
-	gives
+	gives stat/tasmota_rgbcw/RESULT
 	{
 		"POWER": "ON",
 		"Dimmer": 100,
@@ -135,7 +215,7 @@ void Test_Tasmota_MQTT_RGBCW() {
 	/*
 	// Powers as for single relay, but also
 	cmnd/tasmota_rgbcw/Dimmer
-	gives
+	gives stat/tasmota_rgbcw/RESULT
 	{
 		"Dimmer": 20
 	}
@@ -144,7 +224,7 @@ void Test_Tasmota_MQTT_RGBCW() {
 	/*
 	// Powers as for single relay, but also
 	cmnd/tasmota_rgbcw/Dimmer 20
-	gives
+	gives stat/tasmota_rgbcw/RESULT
 	{
 		"POWER": "ON",
 		"Dimmer": 20,
@@ -164,7 +244,7 @@ void Test_Tasmota_MQTT_RGBCW() {
 	/*
 	// Powers as for single relay, but also
 	cmnd/tasmota_rgbcw/Dimmer 100
-	gives
+	gives stat/tasmota_rgbcw/RESULT
 	{
 		"POWER": "ON",
 		"Dimmer": 100,
