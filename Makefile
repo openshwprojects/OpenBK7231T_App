@@ -104,8 +104,8 @@ build-BK7231: submodules $(SDK_PATH)/apps/$(APP_NAME)
 	rm $(SDK_PATH)/platforms/$(TARGET_PLATFORM)/toolchain/$(APPS_BUILD_PATH)/tools/generate/$(APP_NAME)_*.bin || /bin/true
 
 OpenBL602: submodules sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared
-	$(MAKE) -C sdk/OpenBL602/customer_app/bl602_sharedApp CONFIG_CHIP_NAME=BL602 CONFIG_LINK_ROM=1 -j
-	$(MAKE) -C sdk/OpenBL602/customer_app/bl602_sharedApp CONFIG_CHIP_NAME=BL602 bins
+	$(MAKE) -C sdk/OpenBL602/customer_app/bl602_sharedApp USER_SW_VER=$(APP_VERSION) CONFIG_CHIP_NAME=BL602 CONFIG_LINK_ROM=1 -j
+	$(MAKE) -C sdk/OpenBL602/customer_app/bl602_sharedApp USER_SW_VER=$(APP_VERSION) CONFIG_CHIP_NAME=BL602 bins
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenBL602/customer_app/bl602_sharedApp/build_out/bl602_sharedApp.bin output/$(APP_VERSION)/OpenBL602_$(APP_VERSION).bin
 	cp sdk/OpenBL602/customer_app/bl602_sharedApp/build_out/ota/dts40M_pt2M_boot2release_ef4015/FW_OTA.bin output/$(APP_VERSION)/OpenBL602_$(APP_VERSION)_OTA.bin
