@@ -67,16 +67,84 @@ const char *g_wemo_msearch =
 "USN: uuid:%s::%s\r\n"      // type1 = urn:Belkin:device:**, type2 = upnp:rootdevice
 "X-User-Agent: redsonic\r\n"
 "\r\n";
+
+
+const char *g_wemo_metaService =
+"<scpd xmlns=\"urn:Belkin:service-1-0\">"
+"<specVersion>"
+"<major>1</major>"
+"<minor>0</minor>"
+"</specVersion>"
+"<actionList>"
+"<action>"
+"<name>GetMetaInfo</name>"
+"<argumentList>"
+"<retval />"
+"<name>GetMetaInfo</name>"
+"<relatedStateVariable>MetaInfo</relatedStateVariable>"
+"<direction>in</direction>"
+"</argumentList>"
+"</action>"
+"</actionList>"
+"<serviceStateTable>"
+"<stateVariable sendEvents=\"yes\">"
+"<name>MetaInfo</name>"
+"<dataType>string</dataType>"
+"<defaultValue>0</defaultValue>"
+"</stateVariable>"
+"</serviceStateTable>"
+"</scpd>\r\n\r\n";
+
+const char *g_wemo_eventService =
+"<scpd xmlns=\"urn:Belkin:service-1-0\">"
+"<actionList>"
+"<action>"
+"<name>SetBinaryState</name>"
+"<argumentList>"
+"<argument>"
+"<retval/>"
+"<name>BinaryState</name>"
+"<relatedStateVariable>BinaryState</relatedStateVariable>"
+"<direction>in</direction>"
+"</argument>"
+"</argumentList>"
+"</action>"
+"<action>"
+"<name>GetBinaryState</name>"
+"<argumentList>"
+"<argument>"
+"<retval/>"
+"<name>BinaryState</name>"
+"<relatedStateVariable>BinaryState</relatedStateVariable>"
+"<direction>out</direction>"
+"</argument>"
+"</argumentList>"
+"</action>"
+"</actionList>"
+"<serviceStateTable>"
+"<stateVariable sendEvents=\"yes\">"
+"<name>BinaryState</name>"
+"<dataType>bool</dataType>"
+"<defaultValue>0</defaultValue>"
+"</stateVariable>"
+"<stateVariable sendEvents=\"yes\">"
+"<name>level</name>"
+"<dataType>string</dataType>"
+"<defaultValue>0</defaultValue>"
+"</stateVariable>"
+"</serviceStateTable>"
+"</scpd>\r\n\r\n";
 static char *g_serial = 0;
 static char *g_uid = 0;
 static int outBufferLen = 0;
 static char *buffer_out = 0;
 static int stat_searchesReceived = 0;
 static int stat_setupXMLVisits = 0;
+static int stat_metaServiceXMLVisits = 0;
 static int stat_eventsReceived = 0;
+static int stat_eventServiceXMLVisits = 0;
 
-void DRV_WEMO_Send_Advert_To(struct sockaddr_in *addr) {
-	char message[128];
+void DRV_WEMO_Send_Advert_To(int mode, struct sockaddr_in *addr) {
 	const char *useType;
 
 	if (g_uid == 0) {
@@ -86,7 +154,14 @@ void DRV_WEMO_Send_Advert_To(struct sockaddr_in *addr) {
 
 	stat_searchesReceived++;
 
-	useType = "urn:Belkin:device:**";
+	if (mode == 1) {
+		useType = "urn:Belkin:device:**";
+	}
+	else {
+		useType = "upnp:rootdevice";
+	}
+
+	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_HTTP, "WEMO - sends reply %s",useType);
 
 	if (buffer_out == 0) {
 		outBufferLen = strlen(g_wemo_msearch) + 256;
@@ -94,12 +169,13 @@ void DRV_WEMO_Send_Advert_To(struct sockaddr_in *addr) {
 	}
 	snprintf(buffer_out, outBufferLen, g_wemo_msearch, HAL_GetMyIPString(), useType, g_uid, useType);
 
-	DRV_SSDP_SendReply(addr, message);
+	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_HTTP, "WEMO - Sending %s", buffer_out);
+	DRV_SSDP_SendReply(addr, buffer_out);
 }
 
 void WEMO_AppendInformationToHTTPIndexPage(http_request_t* request) {
-	hprintf255(request, "<h4>WEMO: MSEARCH received %i, setup.xml visits %i, events %i </h4>",
-		stat_searchesReceived, stat_setupXMLVisits, stat_eventsReceived);
+	hprintf255(request, "<h4>WEMO: searches %i, setup %i, events %i, mService %i, event %i </h4>",
+		stat_searchesReceived, stat_setupXMLVisits, stat_eventsReceived, stat_metaServiceXMLVisits, stat_eventServiceXMLVisits);
 
 }
 static int WEMO_BasicEvent1(http_request_t* request) {
@@ -114,9 +190,21 @@ static int WEMO_BasicEvent1(http_request_t* request) {
 }
 static int WEMO_EventService(http_request_t* request) {
 
+	http_setup(request, httpMimeTypeXML);
+	poststr(request, g_wemo_eventService);
+	poststr(request, NULL);
+
+	stat_eventServiceXMLVisits++;
+
 	return 0;
 }
 static int WEMO_MetaInfoService(http_request_t* request) {
+
+	http_setup(request, httpMimeTypeXML);
+	poststr(request, g_wemo_metaService);
+	poststr(request, NULL);
+
+	stat_metaServiceXMLVisits++;
 
 	return 0;
 }
