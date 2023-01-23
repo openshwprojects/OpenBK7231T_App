@@ -177,6 +177,7 @@ int get_received(char **topic, int *topiclen, unsigned char **data, int *datalen
 MqttPublishItem_t* g_MqttPublishQueueHead = NULL;
 int g_MqttPublishItemsQueued = 0;   //Items in the queue waiting to be published. This is not the queue length.
 OBK_Publish_Result PublishQueuedItems();
+OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags);
 
 // from mqtt.c
 extern void mqtt_disconnect(mqtt_client_t* client);
