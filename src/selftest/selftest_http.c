@@ -214,6 +214,10 @@ const char *Test_GetJSONValue_String(const char *keyword, const char *obj) {
 	if (tmp == 0) {
 		return "";
 	}
+	if (tmp->valuestring == 0) {
+		printf("Test_GetJSONValue_String will return empty str for %s because it has NULL string!\n", keyword);
+		return "";
+	}
 	printf("Test_GetJSONValue_String will return %s for %s\n", tmp->valuestring, keyword);
 	return tmp->valuestring;
 }

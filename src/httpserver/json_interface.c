@@ -21,6 +21,20 @@
 
 
 
+static int http_tasmota_json_Dimmer(void* request, jsonCb_t printer) {
+	int dimmer;
+	dimmer = LED_GetDimmer();
+	printer(request, "\"Dimmer\":%i", dimmer);
+	return 0;
+}
+static int http_tasmota_json_CT(void* request, jsonCb_t printer) {
+	int temperature;
+	// 154 to 500 range
+	temperature = LED_GetTemperature();
+	// Temperature 
+	printer(request, "\"CT\":%i", temperature);
+	return 0;
+}
 // https://tasmota.github.io/docs/Commands/#with-mqtt
 /*
 http://<ip>/cm?cmnd=Power%20TOGGLE
@@ -38,8 +52,6 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 	int lastRelayState;
 	bool bRelayIndexingStartsWithZero;
 	int relayIndexingOffset;
-	int temperature;
-	int dimmer;
 
 	bRelayIndexingStartsWithZero = CHANNEL_HasChannelPinWithRoleOrRole(0, IOR_Relay, IOR_Relay_n);
 	if (bRelayIndexingStartsWithZero) {
@@ -55,8 +67,8 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 
 	// LED driver (if has PWMs)
 	if (LED_IsLEDRunning()) {
-		dimmer = LED_GetDimmer();
-		printer(request, "\"Dimmer\":%i,", dimmer);
+		http_tasmota_json_Dimmer(request, printer);
+		printer(request, ",");
 		printer(request, "\"Fade\":\"OFF\",");
 		printer(request, "\"Speed\":1,");
 		printer(request, "\"LedTable\":\"ON\",");
@@ -95,10 +107,8 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 
 		}
 		if (LED_IsLedDriverChipRunning() || numPWMs == 5 || numPWMs == 2) {
-			// 154 to 500 range
-			temperature = LED_GetTemperature();
-			// Temperature 
-			printer(request, "\"CT\":%i,", temperature);
+			http_tasmota_json_CT(request, printer);
+			printer(request, ",");
 		}
 		if (LED_GetEnableAll() == 0) {
 			printer(request, "\"POWER\":\"OFF\"");
@@ -580,6 +590,32 @@ int JSON_ProcessCommandReply(const char *cmd, const char *arg, void *request, js
 
 		printer(request, "{");
 		http_tasmota_json_power(request, printer);
+		printer(request, "}");
+		if (flags == COMMAND_FLAG_SOURCE_MQTT) {
+			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "RESULT");
+		}
+	}
+	else if (!wal_strnicmp(cmd, "CT", 2)) {
+		printer(request, "{");
+		if (*arg == 0) {
+			http_tasmota_json_CT(request, printer);
+		}
+		else {
+			http_tasmota_json_power(request, printer);
+		}
+		printer(request, "}");
+		if (flags == COMMAND_FLAG_SOURCE_MQTT) {
+			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "RESULT");
+		}
+	}
+	else if (!wal_strnicmp(cmd, "Dimmer", 6)) {
+		printer(request, "{");
+		if (*arg == 0) {
+			http_tasmota_json_Dimmer(request, printer);
+		} 
+		else {
+			http_tasmota_json_power(request, printer);
+		}
 		printer(request, "}");
 		if (flags == COMMAND_FLAG_SOURCE_MQTT) {
 			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "RESULT");
