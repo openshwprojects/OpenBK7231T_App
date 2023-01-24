@@ -427,7 +427,7 @@ extern int g_startPingWatchDogAfter;
 
 
 typedef int(*jsonCb_t)(void *userData, const char *fmt, ...);
-int JSON_ProcessCommandReply(const char *cmd, void *request, jsonCb_t printer, int flags);
+int JSON_ProcessCommandReply(const char *cmd, const char *args, void *request, jsonCb_t printer, int flags);
 void ScheduleDriverStart(const char *name, int delay);
 
 

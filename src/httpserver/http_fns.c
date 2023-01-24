@@ -1923,6 +1923,19 @@ int http_fn_ha_cfg(http_request_t* request) {
 	return 0;
 }
 
+const char *skipToNextWord(const char *p) {
+	while (isWhiteSpace(*p) == false) {
+		if (*p == 0)
+			return p;
+		p++;
+	}
+	while (isWhiteSpace(*p)) {
+		if (*p == 0)
+			return p;
+		p++;
+	}
+	return p;
+}
 
 int http_fn_cm(http_request_t* request) {
 	char tmpA[128];
@@ -1939,13 +1952,13 @@ int http_fn_cm(http_request_t* request) {
 			if (long_str_alloced) {
 				http_getArg(request->url, "cmnd", long_str_alloced, commandLen);
 				CMD_ExecuteCommand(long_str_alloced, COMMAND_FLAG_SOURCE_HTTP);
-				JSON_ProcessCommandReply(long_str_alloced, request, (jsonCb_t)hprintf255, COMMAND_FLAG_SOURCE_HTTP);
+				JSON_ProcessCommandReply(long_str_alloced, skipToNextWord(long_str_alloced), request, (jsonCb_t)hprintf255, COMMAND_FLAG_SOURCE_HTTP);
 				free(long_str_alloced);
 			}
 		}
 		else {
 			CMD_ExecuteCommand(tmpA, COMMAND_FLAG_SOURCE_HTTP);
-			JSON_ProcessCommandReply(tmpA, request, (jsonCb_t)hprintf255, COMMAND_FLAG_SOURCE_HTTP);
+			JSON_ProcessCommandReply(tmpA, skipToNextWord(tmpA), request, (jsonCb_t)hprintf255, COMMAND_FLAG_SOURCE_HTTP);
 		}
 	}
 
