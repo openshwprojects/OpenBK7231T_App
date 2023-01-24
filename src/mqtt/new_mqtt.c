@@ -636,13 +636,7 @@ int channelSet(obk_mqtt_request_t* request) {
 // Payload: echo Test1; power toggle; echo Test2
 // will do echo, toggle power and do ecoh
 //
-#define MQTT_STACK_BUFFER_SIZE 32
-#define MQTT_TOTAL_BUFFER_SIZE 4096
-typedef struct obk_mqtt_publishReplyPrinter_s {
-	char *allocated;
-	char stackBuffer[MQTT_STACK_BUFFER_SIZE];
-	int curLen;
-} obk_mqtt_publishReplyPrinter_t;
+
 
 void MQTT_PublishPrinterContentsToStat(obk_mqtt_publishReplyPrinter_t *printer, const char *statName) {
 	const char *toUse;

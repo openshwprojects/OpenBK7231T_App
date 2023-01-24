@@ -147,4 +147,17 @@ bool MQTT_IsReady();
 extern int g_mqtt_bBaseTopicDirty;
 extern int mqtt_reconnect;
 
+// TODO: hide it, internal usage only
+#define MQTT_STACK_BUFFER_SIZE 32
+#define MQTT_TOTAL_BUFFER_SIZE 4096
+typedef struct obk_mqtt_publishReplyPrinter_s {
+	char *allocated;
+	char stackBuffer[MQTT_STACK_BUFFER_SIZE];
+	int curLen;
+} obk_mqtt_publishReplyPrinter_t;
+
+void MQTT_PublishPrinterContentsToStat(obk_mqtt_publishReplyPrinter_t *printer, const char *statName);
+void MQTT_PublishPrinterContentsToTele(obk_mqtt_publishReplyPrinter_t *printer, const char *statName);
+
+
 #endif // __NEW_MQTT_H__
