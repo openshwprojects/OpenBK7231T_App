@@ -19,6 +19,7 @@ extern mqtt_client_t* mqtt_client;
 void MQTT_init();
 int MQTT_RunQuickTick();
 int MQTT_RunEverySecondUpdate();
+void MQTT_BroadcastTasmotaTeleSTATE();
 
 
 #define PUBLISHITEM_ALL_INDEX_FIRST   -15
@@ -140,7 +141,10 @@ void MQTT_QueuePublish(const char* topic, const char* channel, const char* value
 void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const char* value, int flags, PostPublishCommands command);
 OBK_Publish_Result MQTT_Publish(const char* sTopic, const char* sChannel, const char* value, int flags);
 OBK_Publish_Result MQTT_PublishStat(const char* statName, const char* statValue);
+OBK_Publish_Result MQTT_PublishTele(const char* teleName, const char* teleValue);
 void MQTT_InvokeCommandAtEnd(PostPublishCommands command);
 bool MQTT_IsReady();
+extern int g_mqtt_bBaseTopicDirty;
+extern int mqtt_reconnect;
 
 #endif // __NEW_MQTT_H__

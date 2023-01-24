@@ -465,6 +465,10 @@ static commandResult_t cmnd_MqttClient(const void * context, const char *cmd, co
 	}
 	return CMD_RES_OK;
 }
+static commandResult_t cmnd_State(const void * context, const char *cmd, const char *args, int cmdFlags) {
+
+	return CMD_RES_OK;
+}
 static commandResult_t cmnd_MqttPassword(const void * context, const char *cmd, const char *args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 
@@ -552,5 +556,6 @@ int taslike_commands_init(){
 	//cmddetail:"fn":"cmnd_MqttClient","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MqttClient", NULL, cmnd_MqttClient, NULL, NULL);
+	CMD_RegisterCommand("State", NULL, cmnd_State, NULL, NULL);
     return 0;
 }

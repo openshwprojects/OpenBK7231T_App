@@ -786,7 +786,10 @@ int http_fn_index(http_request_t* request) {
 	else {
 		const char *stateStr;
 		const char *colorStr;
-		if (Main_HasMQTTConnected() == 1) {
+		if (mqtt_reconnect > 0) {
+			stateStr = "awaiting reconnect";
+			colorStr = "orange";
+		} else if (Main_HasMQTTConnected() == 1) {
 			stateStr = "connected";
 			colorStr = "green";
 		}
@@ -938,6 +941,8 @@ int http_fn_cfg_mqtt_set(http_request_t* request) {
 	CFG_Save_SetupTimer();
 
 	poststr(request, "Please wait for module to connect... if there is problem, restart it from Index html page...");
+
+	g_mqtt_bBaseTopicDirty = 1;
 
 	poststr(request, "<br>");
 	poststr(request, "<a href=\"cfg_mqtt\">Return to MQTT settings</a>");
@@ -2194,7 +2199,7 @@ const char* g_obk_flagNames[] = {
 	"[HASS] Invoke HomeAssistant discovery on change to ip address, configuration",
 	"[LED] Setting RGB white (FFFFFF) enables temperature mode",
 	"[NETIF] Use short device name as a hostname instead of a long name",
-	"error",
+	"[MQTT] Enable Tasmota TELE etc publishes (for ioBroker etc)",
 	"error",
 	"error",
 	"error",

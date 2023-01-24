@@ -4,6 +4,7 @@
 #include "httpserver/new_http.h"
 #include "new_pins.h"
 #include "new_cfg.h"
+#include "mqtt/new_mqtt.h"
 #include "hal/hal_wifi.h"
 #include "hal/hal_flashConfig.h"
 #include "cmnds/cmd_public.h"
@@ -378,6 +379,7 @@ void CFG_SetMQTTClientId(const char *s) {
 	if(strcpy_safe_checkForChanges(g_cfg.mqtt_clientId, s,sizeof(g_cfg.mqtt_clientId))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
+		g_mqtt_bBaseTopicDirty++;
 	}
 }
 void CFG_SetMQTTGroupTopic(const char *s) {
@@ -385,6 +387,7 @@ void CFG_SetMQTTGroupTopic(const char *s) {
 	if (strcpy_safe_checkForChanges(g_cfg.mqtt_group, s, sizeof(g_cfg.mqtt_group))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
+		g_mqtt_bBaseTopicDirty++;
 	}
 }
 void CFG_SetMQTTUserName(const char *s) {

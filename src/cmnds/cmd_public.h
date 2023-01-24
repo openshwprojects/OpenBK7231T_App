@@ -25,8 +25,10 @@ typedef commandResult_t (*commandHandler_t)(const void* context, const char* cmd
 #define COMMAND_FLAG_SOURCE_HTTP		8
 // command was sent by TCP CMD
 #define COMMAND_FLAG_SOURCE_TCP			16
-// command was sent by TCP CMD
+// command was sent by IR
 #define COMMAND_FLAG_SOURCE_IR			32
+// command was sent by OBK Tele requester
+#define COMMAND_FLAG_SOURCE_TELESENDER	64
 
 extern bool g_powersave;
 

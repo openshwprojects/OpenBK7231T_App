@@ -282,11 +282,13 @@ unsigned int NTP_GetCurrentTimeWithoutOffset() {
 	}
 }
 */
-static int http_tasmota_json_status_STS(void* request, jsonCb_t printer) {
+static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bAppendHeader) {
 	char buff[20];
 	time_t localTime = (time_t)NTP_GetCurrentTime();
 
-	printer(request, "\"StatusSTS\":");
+	if (bAppendHeader) {
+		printer(request, "\"StatusSTS\":");
+	}
 	printer(request, "{");
 	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", localtime(&localTime));
 	printer(request, "\"Time\":\"%s\",", buff);
@@ -573,7 +575,7 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	printer(request, ",");
 
 
-	http_tasmota_json_status_STS(request, printer);
+	http_tasmota_json_status_STS(request, printer, true);
 
 	// end
 	printer(request, "}");
@@ -619,6 +621,15 @@ int JSON_ProcessCommandReply(const char *cmd, const char *arg, void *request, js
 		printer(request, "}");
 		if (flags == COMMAND_FLAG_SOURCE_MQTT) {
 			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "RESULT");
+		}
+	}
+	else if (!wal_strnicmp(cmd, "STATE", 5)) {
+		http_tasmota_json_status_STS(request, printer, false);
+		if (flags == COMMAND_FLAG_SOURCE_MQTT) {
+			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "RESULT");
+		}
+		if (flags == COMMAND_FLAG_SOURCE_TELESENDER) {
+			MQTT_PublishPrinterContentsToTele((struct obk_mqtt_publishReplyPrinter_s *)request, "STATE");
 		}
 	}
 	else if (!wal_strnicmp(cmd, "STATUS", 6)) {
