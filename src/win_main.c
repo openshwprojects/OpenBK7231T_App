@@ -123,7 +123,7 @@ void SIM_DoFreshOBKBoot() {
 	Main_Init();
 }
 void Win_DoUnitTests() {
-
+	Test_Demo_MapFanSpeedToRelays();
 	Test_MapRanges();
 	Test_Demo_ExclusiveRelays();
 	Test_HassDiscovery();
