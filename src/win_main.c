@@ -124,6 +124,7 @@ void SIM_DoFreshOBKBoot() {
 }
 void Win_DoUnitTests() {
 
+	Test_MapRanges();
 	Test_Demo_ExclusiveRelays();
 	Test_HassDiscovery();
 	Test_MultiplePinsOnChannel();
@@ -184,7 +185,7 @@ int g_bDoingUnitTestsNow = 0;
 #include "sim/sim_public.h"
 int __cdecl main(int argc, char **argv)
 {
-	bool bWantsUnitTests = false;
+	bool bWantsUnitTests = 1;
 
 	if (argc > 1) {
 		int value;

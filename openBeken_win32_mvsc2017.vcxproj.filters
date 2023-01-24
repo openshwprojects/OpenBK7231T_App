@@ -486,6 +486,9 @@
     <ClCompile Include="src\driver\drv_wemo.c">
       <Filter>Drv</Filter>
     </ClCompile>
+    <ClCompile Include="src\selftest\selftest_mapRanges.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />
