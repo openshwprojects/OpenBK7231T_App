@@ -322,6 +322,8 @@ void Test_Tasmota_MQTT_RGBCW() {
 	SIM_ClearOBK();
 	SIM_ClearAndPrepareForMQTTTesting("rgbcwBulb");
 
+	CMD_ExecuteCommand("led_dimmer 50", 0);
+
 	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
 	PIN_SetPinChannelForPinIndex(24, 1);
 
@@ -376,7 +378,21 @@ void Test_Tasmota_MQTT_RGBCW() {
 		]
 	}
 	*/
+	SIM_ClearMQTTHistory();
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("CT", "153");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/rgbcwBulb/RESULT", false);
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0, "CT", 153);
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0, "Dimmer", 50);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "ON");
+	SIM_ClearMQTTHistory();
 
+	SIM_ClearMQTTHistory();
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("CT", "500");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/rgbcwBulb/RESULT", false);
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0, "CT", 500);
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0, "Dimmer", 50);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "ON");
+	SIM_ClearMQTTHistory();
 	/*
 	// Powers as for single relay, but also
 	cmnd/tasmota_rgbcw/CT
@@ -385,6 +401,18 @@ void Test_Tasmota_MQTT_RGBCW() {
 		"CT": 153
 	}
 	*/
+	CMD_ExecuteCommand("CT 153", 0);
+	SIM_ClearMQTTHistory();
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("CT", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/rgbcwBulb/RESULT", false);
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0, "CT", 153);
+	SIM_ClearMQTTHistory();
+	CMD_ExecuteCommand("CT 444", 0);
+	SIM_ClearMQTTHistory();
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("CT", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/rgbcwBulb/RESULT", false);
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0, "CT", 444);
+	SIM_ClearMQTTHistory();
 
 	/*
 	// Powers as for single relay, but also
@@ -434,6 +462,18 @@ void Test_Tasmota_MQTT_RGBCW() {
 		"Dimmer": 20
 	}
 	*/
+	CMD_ExecuteCommand("Dimmer 20", 0);
+	SIM_ClearMQTTHistory();
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Dimmer", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/rgbcwBulb/RESULT", false);
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0, "Dimmer", 20);
+	SIM_ClearMQTTHistory();
+	CMD_ExecuteCommand("Dimmer 88", 0);
+	SIM_ClearMQTTHistory();
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Dimmer", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/rgbcwBulb/RESULT", false);
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0, "Dimmer", 88);
+	SIM_ClearMQTTHistory();
 
 	/*
 	// Powers as for single relay, but also
@@ -455,6 +495,13 @@ void Test_Tasmota_MQTT_RGBCW() {
 		]
 	}
 	*/
+	SIM_ClearMQTTHistory();
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Dimmer", "20");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/rgbcwBulb/RESULT", false);
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0, "CT", 444);
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0, "Dimmer", 20);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "ON");
+	SIM_ClearMQTTHistory();
 	/*
 	// Powers as for single relay, but also
 	cmnd/tasmota_rgbcw/Dimmer 100
@@ -475,6 +522,13 @@ void Test_Tasmota_MQTT_RGBCW() {
 		]
 	}
 	*/
+	SIM_ClearMQTTHistory();
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Dimmer", "100");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/rgbcwBulb/RESULT", false);
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0, "CT", 444);
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0, "Dimmer", 100);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "ON");
+	SIM_ClearMQTTHistory();
 }
 void Test_Tasmota() {
 	Test_Tasmota_MQTT_Switch();

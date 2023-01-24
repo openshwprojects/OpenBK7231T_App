@@ -1363,6 +1363,11 @@ void NewLED_InitCommands(){
 	//cmddetail:"fn":"dimmer","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_dimmer", "", dimmer, NULL, NULL);
+	//cmddetail:{"name":"Dimmer","args":"[Value]",
+	//cmddetail:"descr":"Alias for led_dimmer",
+	//cmddetail:"fn":"dimmer","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("Dimmer", "", dimmer, NULL, NULL);
 	//cmddetail:{"name":"add_dimmer","args":"[Value][AddMode]",
 	//cmddetail:"descr":"Adds a given value to current LED dimmer. AddMode 0 just adds a value (with a clamp to [0,100]), AddMode 1 will wrap around values (going under 0 goes to 100, going over 100 goes to 0), AddMode 2 will ping-pong value (going to 100 starts going back from 100 to 0, and again, going to 0 starts going up).",
 	//cmddetail:"fn":"add_dimmer","file":"cmnds/cmd_newLEDDriver.c","requires":"",
@@ -1393,6 +1398,11 @@ void NewLED_InitCommands(){
 	//cmddetail:"fn":"temperature","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_temperature", "", temperature, NULL, NULL);
+	//cmddetail:{"name":"CT","args":"[TempValue]",
+	//cmddetail:"descr":"Same as led_temperature",
+	//cmddetail:"fn":"temperature","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("CT", "", temperature, NULL, NULL);
 	//cmddetail:{"name":"led_brightnessMult","args":"[Value]",
 	//cmddetail:"descr":"Internal usage.",
 	//cmddetail:"fn":"brightnessMult","file":"cmnds/cmd_newLEDDriver.c","requires":"",
