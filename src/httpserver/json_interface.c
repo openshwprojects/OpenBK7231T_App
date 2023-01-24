@@ -276,6 +276,7 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer) {
 	char buff[20];
 	time_t localTime = (time_t)NTP_GetCurrentTime();
 
+	printer(request, "\"StatusSTS\":");
 	printer(request, "{");
 	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", localtime(&localTime));
 	printer(request, "\"Time\":\"%s\",", buff);
@@ -303,6 +304,96 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer) {
 	printer(request, "}");
 	return 0;
 }
+static int http_tasmota_json_status_TIM(void* request, jsonCb_t printer) {
+	char buff[20];
+
+	time_t localTime = (time_t)NTP_GetCurrentTime();
+	time_t localUTC = (time_t)NTP_GetCurrentTimeWithoutOffset();
+	printer(request, "\"StatusTIM\":{");
+	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", localtime(&localUTC));
+	printer(request, "\"UTC\":\"%s\",", buff);
+	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", localtime(&localTime));
+	printer(request, "\"Local\":\"%s\",", buff);
+	printer(request, "\"StartDST\":\"2022-03-27T02:00:00\",");
+	printer(request, "\"EndDST\":\"2022-10-30T03:00:00\",");
+	printer(request, "\"Timezone\":\"+01:00\",");
+	printer(request, "\"Sunrise\":\"07:50\",");
+	printer(request, "\"Sunset\":\"17:17\"");
+	printer(request, "}");
+	return 0;
+}
+static int http_tasmota_json_status_FWR(void* request, jsonCb_t printer) {
+
+	printer(request, "\"StatusFWR\":{");
+	printer(request, "\"Version\":\"%s\",", DEVICENAME_PREFIX_FULL"_"USER_SW_VER);
+	printer(request, "\"BuildDateTime\":\"%s\",", __DATE__ " " __TIME__);
+	printer(request, "\"Boot\":7,");
+	printer(request, "\"Core\":\"%s\",", "0.0");
+	printer(request, "\"SDK\":\"\",", "obk");
+	printer(request, "\"CpuFrequency\":80,");
+	printer(request, "\"Hardware\":\"%s\",", PLATFORM_MCU_NAME);
+	printer(request, "\"CR\":\"465/699\"");
+	printer(request, "}");
+	return 0;
+}
+static int http_tasmota_json_status_MEM(void* request, jsonCb_t printer) {
+	printer(request, "\"StatusMEM\":{");
+	printer(request, "\"ProgramSize\":616,");
+	printer(request, "\"Free\":384,");
+	printer(request, "\"Heap\":25,");
+	printer(request, "\"ProgramFlashSize\":1024,");
+	printer(request, "\"FlashSize\":2048,");
+	printer(request, "\"FlashChipId\":\"1540A1\",");
+	printer(request, "\"FlashFrequency\":40,");
+	printer(request, "\"FlashMode\":3,");
+	printer(request, "\"Features\":[");
+	printer(request, "\"00000809\",");
+	printer(request, "\"8FDAC787\",");
+	printer(request, "\"04368001\",");
+	printer(request, "\"000000CF\",");
+	printer(request, "\"010013C0\",");
+	printer(request, "\"C000F981\",");
+	printer(request, "\"00004004\",");
+	printer(request, "\"00001000\",");
+	printer(request, "\"00000020\"");
+	printer(request, "],");
+	printer(request, "\"Drivers\":\"1,2,3,4,5,6,7,8,9,10,12,16,18,19,20,21,22,24,26,27,29,30,35,37,45\",");
+	printer(request, "\"Sensors\":\"1,2,3,4,5,6\"");
+	printer(request, "}");
+	return 0;
+}
+static int http_tasmota_json_status_NET(void* request, jsonCb_t printer) {
+
+	printer(request, "\"StatusNET\":{");
+	printer(request, "\"Hostname\":\"%s\",", CFG_GetShortDeviceName());
+	printer(request, "\"IPAddress\":\"%s\",", HAL_GetMyIPString());
+	printer(request, "\"Gateway\":\"192.168.0.1\",");
+	printer(request, "\"Subnetmask\":\"255.255.255.0\",");
+	printer(request, "\"DNSServer1\":\"192.168.0.1\",");
+	printer(request, "\"DNSServer2\":\"0.0.0.0\",");
+	printer(request, "\"Mac\":\"10:52:1C:D7:9E:2C\",");
+	printer(request, "\"Webserver\":2,");
+	printer(request, "\"HTTP_API\":1,");
+	printer(request, "\"WifiConfig\":4,");
+	printer(request, "\"WifiPower\":17.0");
+	printer(request, "}");
+	return 0;
+}
+static int http_tasmota_json_status_MQT(void* request, jsonCb_t printer) {
+
+	printer(request, "\"StatusMQT\":{");
+	printer(request, "\"MqttHost\":\"%s\",", CFG_GetMQTTHost());
+	printer(request, "\"MqttPort\":%i,", CFG_GetMQTTPort());
+	printer(request, "\"MqttClientMask\":\"core-mosquitto\",");
+	printer(request, "\"MqttClient\":\"%s\",", CFG_GetMQTTClientId());
+	printer(request, "\"MqttUser\":\"%s\",", CFG_GetMQTTUserName());
+	printer(request, "\"MqttCount\":23,");
+	printer(request, "\"MAX_PACKET_SIZE\":1200,");
+	printer(request, "\"KEEPALIVE\":30,");
+	printer(request, "\"SOCKET_TIMEOUT\":4");
+	printer(request, "}");
+	return 0;
+}
 /*
 {"Status":{"Module":0,"DeviceName":"Tasmota","FriendlyName":["Tasmota"],"Topic":"tasmota_48E7F3","ButtonTopic":"0","Power":1,"PowerOnState":3,"LedState":1,"LedMask":"FFFF","SaveData":1,"SaveState":1,"SwitchTopic":"0","SwitchMode":[0,0,0,0,0,0,0,0],"ButtonRetain":0,"SwitchRetain":0,"SensorRetain":0,"PowerRetain":0,"InfoRetain":0,"StateRetain":0}}
 */
@@ -313,7 +404,6 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	int powerCode;
 	int relayCount, pwmCount, dInputCount, i;
 	bool bRelayIndexingStartsWithZero;
-	char buff[20];
 
 	deviceName = CFG_GetShortDeviceName();
 	friendlyName = CFG_GetDeviceName();
@@ -417,16 +507,7 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 
 	printer(request, ",");
 
-	printer(request, "\"StatusFWR\":{");
-	printer(request, "\"Version\":\"%s\",", DEVICENAME_PREFIX_FULL"_"USER_SW_VER);
-	printer(request, "\"BuildDateTime\":\"%s\",", __DATE__ " " __TIME__);
-	printer(request, "\"Boot\":7,");
-	printer(request, "\"Core\":\"%s\",", "0.0");
-	printer(request, "\"SDK\":\"\",", "obk");
-	printer(request, "\"CpuFrequency\":80,");
-	printer(request, "\"Hardware\":\"%s\",", PLATFORM_MCU_NAME);
-	printer(request, "\"CR\":\"465/699\"");
-	printer(request, "}");
+	http_tasmota_json_status_FWR(request, printer);
 
 	printer(request, ",");
 
@@ -458,80 +539,21 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 
 
 
-	printer(request, "\"StatusMEM\":{");
-	printer(request, "\"ProgramSize\":616,");
-	printer(request, "\"Free\":384,");
-	printer(request, "\"Heap\":25,");
-	printer(request, "\"ProgramFlashSize\":1024,");
-	printer(request, "\"FlashSize\":2048,");
-	printer(request, "\"FlashChipId\":\"1540A1\",");
-	printer(request, "\"FlashFrequency\":40,");
-	printer(request, "\"FlashMode\":3,");
-	printer(request, "\"Features\":[");
-	printer(request, "\"00000809\",");
-	printer(request, "\"8FDAC787\",");
-	printer(request, "\"04368001\",");
-	printer(request, "\"000000CF\",");
-	printer(request, "\"010013C0\",");
-	printer(request, "\"C000F981\",");
-	printer(request, "\"00004004\",");
-	printer(request, "\"00001000\",");
-	printer(request, "\"00000020\"");
-	printer(request, "],");
-	printer(request, "\"Drivers\":\"1,2,3,4,5,6,7,8,9,10,12,16,18,19,20,21,22,24,26,27,29,30,35,37,45\",");
-	printer(request, "\"Sensors\":\"1,2,3,4,5,6\"");
-	printer(request, "}");
+	http_tasmota_json_status_MEM(request, printer);
+
+	printer(request, ",");
+
+	http_tasmota_json_status_NET(request, printer);
 
 	printer(request, ",");
 
 
-	printer(request, "\"StatusNET\":{");
-	printer(request, "\"Hostname\":\"%s\",", CFG_GetShortDeviceName());
-	printer(request, "\"IPAddress\":\"%s\",", HAL_GetMyIPString());
-	printer(request, "\"Gateway\":\"192.168.0.1\",");
-	printer(request, "\"Subnetmask\":\"255.255.255.0\",");
-	printer(request, "\"DNSServer1\":\"192.168.0.1\",");
-	printer(request, "\"DNSServer2\":\"0.0.0.0\",");
-	printer(request, "\"Mac\":\"10:52:1C:D7:9E:2C\",");
-	printer(request, "\"Webserver\":2,");
-	printer(request, "\"HTTP_API\":1,");
-	printer(request, "\"WifiConfig\":4,");
-	printer(request, "\"WifiPower\":17.0");
-	printer(request, "}");
+	http_tasmota_json_status_MQT(request, printer);
+
+
 	printer(request, ",");
 
-
-
-
-	printer(request, "\"StatusMQT\":{");
-	printer(request, "\"MqttHost\":\"%s\",", CFG_GetMQTTHost());
-	printer(request, "\"MqttPort\":%i,", CFG_GetMQTTPort());
-	printer(request, "\"MqttClientMask\":\"core-mosquitto\",");
-	printer(request, "\"MqttClient\":\"%s\",", CFG_GetMQTTClientId());
-	printer(request, "\"MqttUser\":\"%s\",", CFG_GetMQTTUserName());
-	printer(request, "\"MqttCount\":23,");
-	printer(request, "\"MAX_PACKET_SIZE\":1200,");
-	printer(request, "\"KEEPALIVE\":30,");
-	printer(request, "\"SOCKET_TIMEOUT\":4");
-	printer(request, "}");
-
-	printer(request, ",");
-	time_t localTime = (time_t)NTP_GetCurrentTime();
-	{
-		time_t localUTC = (time_t)NTP_GetCurrentTimeWithoutOffset();
-
-		printer(request, "\"StatusTIM\":{");
-		strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", localtime(&localUTC));
-		printer(request, "\"UTC\":\"%s\",", buff);
-		strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", localtime(&localTime));
-		printer(request, "\"Local\":\"%s\",", buff);
-		printer(request, "\"StartDST\":\"2022-03-27T02:00:00\",");
-		printer(request, "\"EndDST\":\"2022-10-30T03:00:00\",");
-		printer(request, "\"Timezone\":\"+01:00\",");
-		printer(request, "\"Sunrise\":\"07:50\",");
-		printer(request, "\"Sunset\":\"17:17\"");
-		printer(request, "}");
-	}
+	http_tasmota_json_status_TIM(request, printer);
 
 	printer(request, ",");
 
@@ -540,7 +562,6 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 
 	printer(request, ",");
 
-	printer(request, "\"StatusSTS\":");
 
 	http_tasmota_json_status_STS(request, printer);
 
@@ -553,7 +574,7 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 }
 // TODO: move it somewhere else?
 void MQTT_PublishPrinterContentsToStat(struct obk_mqtt_publishReplyPrinter_s *printer, const char *statName);
-int JSON_ProcessCommandReply(const char *cmd, void *request, jsonCb_t printer, int flags) {
+int JSON_ProcessCommandReply(const char *cmd, const char *arg, void *request, jsonCb_t printer, int flags) {
 
 	if (!wal_strnicmp(cmd, "POWER", 5)) {
 
@@ -564,18 +585,64 @@ int JSON_ProcessCommandReply(const char *cmd, void *request, jsonCb_t printer, i
 			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "RESULT");
 		}
 	}
-	else if (!wal_strnicmp(cmd, "STATUS 8", 8) || !wal_strnicmp(cmd, "STATUS 10", 10)) {
-		printer(request, "{");
-		http_tasmota_json_status_SNS(request, printer);
-		printer(request, "}");
-		if (flags == COMMAND_FLAG_SOURCE_MQTT) {
-			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "STATUS");
-		}
-	}
 	else if (!wal_strnicmp(cmd, "STATUS", 6)) {
-		http_tasmota_json_status_generic(request, printer);
-		if (flags == COMMAND_FLAG_SOURCE_MQTT) {
-			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "STATUS");
+		if (!stricmp(arg, "8") || !stricmp(arg, "10")) {
+			printer(request, "{");
+			http_tasmota_json_status_SNS(request, printer);
+			printer(request, "}");
+			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
+				if (arg[0] == '8') {
+					MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "STATUS8");
+				}
+				else {
+					MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "STATUS10");
+				}
+			}
+		} else if (!stricmp(arg, "6") ) {
+			printer(request, "{");
+			http_tasmota_json_status_MQT(request, printer);
+			printer(request, "}");
+			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
+				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "STATUS6");
+			}
+		}
+		else if (!stricmp(arg, "7")) {
+			printer(request, "{");
+			http_tasmota_json_status_TIM(request, printer);
+			printer(request, "}");
+			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
+				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "STATUS7");
+			}
+		}
+		else if (!stricmp(arg, "5")) {
+			printer(request, "{");
+			http_tasmota_json_status_NET(request, printer);
+			printer(request, "}");
+			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
+				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "STATUS5");
+			}
+		}
+		else if (!stricmp(arg, "4")) {
+			printer(request, "{");
+			http_tasmota_json_status_MEM(request, printer);
+			printer(request, "}");
+			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
+				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "STATUS4");
+			}
+		}
+		else if (!stricmp(arg, "2")) {
+			printer(request, "{");
+			http_tasmota_json_status_FWR(request, printer);
+			printer(request, "}");
+			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
+				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "STATUS2");
+			}
+		}
+		else {
+			http_tasmota_json_status_generic(request, printer);
+			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
+				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "STATUS");
+			}
 		}
 	}
 

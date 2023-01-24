@@ -700,7 +700,7 @@ int tasCmnd(obk_mqtt_request_t* request) {
 	// there is a NULL terminating character after payload of MQTT
 	// So we can feed it directly as command
 	CMD_ExecuteCommandArgs(p, args, COMMAND_FLAG_SOURCE_MQTT);
-	JSON_ProcessCommandReply(p, &replyBuilder, (jsonCb_t)mqtt_printf255, COMMAND_FLAG_SOURCE_MQTT);
+	JSON_ProcessCommandReply(p, args, &replyBuilder, (jsonCb_t)mqtt_printf255, COMMAND_FLAG_SOURCE_MQTT);
 	if (replyBuilder.allocated != 0) {
 		free(replyBuilder.allocated);
 	}

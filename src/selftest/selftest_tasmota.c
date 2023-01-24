@@ -102,8 +102,160 @@ void Test_Tasmota_MQTT_Switch() {
 	SELFTEST_ASSERT_JSON_VALUE_STRING("Status", "DeviceName", CFG_GetShortDeviceName());
 	SIM_ClearMQTTHistory();
 
-}
+	// Status 6 for MQTT
+	/*
+	Message 53 received on stat/tasmota_01FDF1/STATUS6 at 2:55 AM:
+	{
+		"StatusMQT": {
+			"MqttHost": "192.168.0.113",
+			"MqttPort": 1883,
+			"MqttClientMask": "DVES_%06X",
+			"MqttClient": "DVES_01FDF1",
+			"MqttUser": "homeassistant",
+			"MqttCount": 2,
+			"MAX_PACKET_SIZE": 1200,
+			"KEEPALIVE": 30,
+			"SOCKET_TIMEOUT": 4
+		}
+	}
+	*/
+	SIM_ClearMQTTHistory();
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("STATUS", "6");
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/miscDevice/STATUS6", false);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusMQT", "MqttHost", CFG_GetMQTTHost());
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusMQT", "MqttPort", CFG_GetMQTTPort());
+	SIM_ClearMQTTHistory();
 
+	// Status 7 is TIM
+	/*
+	Message 60 received on stat/tasmota_01FDF1/STATUS7 at 3:07 AM:
+	{
+		"StatusTIM": {
+			"UTC": "2023-01-24T02:07:13",
+			"Local": "2023-01-24T03:07:13",
+			"StartDST": "2023-03-26T02:00:00",
+			"EndDST": "2023-10-29T03:00:00",
+			"Timezone": "+01:00",
+			"Sunrise": "08:30",
+			"Sunset": "17:33"
+		}
+	}
+	*/
+	SIM_ClearMQTTHistory();
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("STATUS", "7");
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/miscDevice/STATUS7", false);
+	SELFTEST_ASSERT_JSON_VALUE_EXISTS("StatusTIM", "UTC");
+	SELFTEST_ASSERT_JSON_VALUE_EXISTS("StatusTIM", "Local");
+	SELFTEST_ASSERT_JSON_VALUE_EXISTS("StatusTIM", "Timezone");
+	// TRIGGER error to debug
+	//SELFTEST_ASSERT_JSON_VALUE_EXISTS("StatusTIM", "QQQ");
+	SIM_ClearMQTTHistory();
+
+	// status 5 is NET
+	/*
+	Message 61 received on stat/tasmota_01FDF1/STATUS5 at 3:12 AM:
+	{
+		"StatusNET": {
+			"Hostname": "Tasmota-BWSHP9",
+			"IPAddress": "192.168.0.157",
+			"Gateway": "192.168.0.1",
+			"Subnetmask": "255.255.255.0",
+			"DNSServer1": "192.168.0.1",
+			"DNSServer2": "0.0.0.0",
+			"Mac": "D8:F1:5B:01:FD:F1",
+			"Webserver": 2,
+			"HTTP_API": 1,
+			"WifiConfig": 4,
+			"WifiPower": 17
+		}
+	}
+	*/
+	SIM_ClearMQTTHistory();
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("STATUS", "5");
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/miscDevice/STATUS5", false);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusNET", "Hostname", CFG_GetShortDeviceName());
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusNET", "IPAddress", HAL_GetMyIPString());
+	// TRIGGER error to debug
+	//SELFTEST_ASSERT_JSON_VALUE_EXISTS("StatusTIM", "QQQ");
+	SIM_ClearMQTTHistory();
+
+
+	// Status 4 is MEM
+	/*
+
+	Listening to
+	stat/#
+
+	Message 62 received on stat/tasmota_01FDF1/STATUS4 at 3:17 AM:
+	{
+		"StatusMEM": {
+			"ProgramSize": 626,
+			"Free": 376,
+			"Heap": 27,
+			"ProgramFlashSize": 1024,
+			"FlashSize": 1024,
+			"FlashChipId": "144068",
+			"FlashFrequency": 40,
+			"FlashMode": 3,
+			"Features": [
+				"00000809",
+				"8FDAC787",
+				"04368001",
+				"000000CF",
+				"010013C0",
+				"C000F981",
+				"00004004",
+				"00001000",
+				"04000020"
+			],
+			"Drivers": "1,2,3,4,5,6,7,8,9,10,12,16,18,19,20,21,22,24,26,27,29,30,35,37,45,56,62",
+			"Sensors": "1,2,3,4,5,6"
+		}
+	}
+	*/
+	SIM_ClearMQTTHistory();
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("STATUS", "4");
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/miscDevice/STATUS4", false);
+	SELFTEST_ASSERT_JSON_VALUE_EXISTS("StatusMEM", "ProgramSize");
+	SELFTEST_ASSERT_JSON_VALUE_EXISTS("StatusMEM", "FlashSize");
+	SELFTEST_ASSERT_JSON_VALUE_EXISTS("StatusMEM", "Heap");
+	// TRIGGER error to debug
+	//SELFTEST_ASSERT_JSON_VALUE_EXISTS("StatusTIM", "QQQ");
+	SIM_ClearMQTTHistory();
+
+	/*
+	Message 64 received on stat/tasmota_01FDF1/STATUS2 at 3:20 AM:
+	{
+		"StatusFWR": {
+			"Version": "11.1.0(tasmota)",
+			"BuildDateTime": "2022-04-13T06:40:42",
+			"Boot": 7,
+			"Core": "2_7_4_9",
+			"SDK": "2.2.2-dev(38a443e)",
+			"CpuFrequency": 80,
+			"Hardware": "ESP8266EX",
+			"CR": "496/699"
+		}
+	}
+
+	*/
+	SIM_ClearMQTTHistory();
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("STATUS", "2");
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/miscDevice/STATUS2", false);
+	SELFTEST_ASSERT_JSON_VALUE_EXISTS("StatusFWR", "Version");
+	SELFTEST_ASSERT_JSON_VALUE_EXISTS("StatusFWR", "BuildDateTime");
+	SELFTEST_ASSERT_JSON_VALUE_EXISTS("StatusFWR", "Hardware");
+	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusFWR", "Hardware", PLATFORM_MCU_NAME);
+	// TRIGGER error to debug
+	//SELFTEST_ASSERT_JSON_VALUE_EXISTS("StatusTIM", "QQQ");
+	SIM_ClearMQTTHistory();
+
+}
 void Test_Tasmota_MQTT_Switch_Double() {
 	SIM_ClearOBK();
 	SIM_ClearAndPrepareForMQTTTesting("twoRelaysDevice");
