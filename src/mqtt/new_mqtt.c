@@ -220,6 +220,7 @@ int g_publishItemIndex = PUBLISHITEM_ALL_INDEX_FIRST;
 static bool g_firstFullBroadcast = true;  //Flag indicating that we need to do a full broadcast
 
 int g_memoryErrorsThisSession = 0;
+int g_mqtt_bBaseTopicDirty = 0;
 
 void MQTT_PublishWholeDeviceState_Internal(bool bAll)
 {
@@ -651,6 +652,14 @@ void MQTT_PublishPrinterContentsToStat(obk_mqtt_publishReplyPrinter_t *printer, 
 		toUse = printer->stackBuffer;
 	MQTT_PublishStat(statName, toUse);
 }
+void MQTT_PublishPrinterContentsToTele(obk_mqtt_publishReplyPrinter_t *printer, const char *statName) {
+	const char *toUse;
+	if (printer->allocated)
+		toUse = printer->allocated;
+	else
+		toUse = printer->stackBuffer;
+	MQTT_PublishTele(statName, toUse);
+}
 int mqtt_printf255(obk_mqtt_publishReplyPrinter_t* request, const char* fmt, ...) {
 	va_list argList;
 	char tmp[256];
@@ -681,11 +690,17 @@ int mqtt_printf255(obk_mqtt_publishReplyPrinter_t* request, const char* fmt, ...
 	request->curLen += myLen;
 	return 0;
 }
+void MQTT_ProcessCommandReplyJSON(const char *cmd, const char *args, int flags) {
+	obk_mqtt_publishReplyPrinter_t replyBuilder;
+	memset(&replyBuilder, 0, sizeof(obk_mqtt_publishReplyPrinter_t));
+	JSON_ProcessCommandReply(cmd, args, &replyBuilder, (jsonCb_t)mqtt_printf255, flags);
+	if (replyBuilder.allocated != 0) {
+		free(replyBuilder.allocated);
+	}
+}
 int tasCmnd(obk_mqtt_request_t* request) {
 	const char *p, *args;
-	obk_mqtt_publishReplyPrinter_t replyBuilder;
 
-	memset(&replyBuilder, 0, sizeof(obk_mqtt_publishReplyPrinter_t));
 	p = request->topic;
 	// TODO: better
 	// skip to after second forward slash
@@ -700,10 +715,7 @@ int tasCmnd(obk_mqtt_request_t* request) {
 	// there is a NULL terminating character after payload of MQTT
 	// So we can feed it directly as command
 	CMD_ExecuteCommandArgs(p, args, COMMAND_FLAG_SOURCE_MQTT);
-	JSON_ProcessCommandReply(p, args, &replyBuilder, (jsonCb_t)mqtt_printf255, COMMAND_FLAG_SOURCE_MQTT);
-	if (replyBuilder.allocated != 0) {
-		free(replyBuilder.allocated);
-	}
+	MQTT_ProcessCommandReplyJSON(p, args, COMMAND_FLAG_SOURCE_MQTT);
 #else
 	int len = request->receivedLen;
 	char copy[64];
@@ -869,6 +881,12 @@ static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t* client, const char* sC
 {
 	return MQTT_PublishTopicToClient(mqtt_client, CFG_GetMQTTClientId(), sChannel, sVal, flags, appendGet);
 }
+OBK_Publish_Result MQTT_PublishTele(const char* teleName, const char* teleValue)
+{
+	char topic[64];
+	snprintf(topic, sizeof(topic), "tele/%s", CFG_GetMQTTClientId());
+	return MQTT_PublishTopicToClient(mqtt_client, topic, teleName, teleValue, 0, false);
+}
 OBK_Publish_Result MQTT_PublishStat(const char* statName, const char* statValue)
 {
 	char topic[64];
@@ -911,6 +929,8 @@ static void mqtt_incoming_data_cb(void* arg, const u8_t* data, u16_t len, u8_t f
 
 		for (i = 0; i < numCallbacks; i++)
 		{
+			if (callbacks[i] == 0)
+				continue;
 			char* cbtopic = callbacks[i]->topic;
 			if (!strncmp(g_mqtt_request.topic, cbtopic, strlen(cbtopic)))
 			{
@@ -925,6 +945,7 @@ static void mqtt_incoming_data_cb(void* arg, const u8_t* data, u16_t len, u8_t f
 				//}
 			}
 		}
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT topic not handled: %s", g_mqtt_request.topic);
 	}
 }
 
@@ -1203,6 +1224,8 @@ OBK_Publish_Result MQTT_ChannelChangeCallback(int channel, int iVal)
 
 	flags = 0;
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Channel has changed! Publishing %i to channel %i \n", iVal, channel);
+
+	MQTT_BroadcastTasmotaTeleSTATE();
 
 	sprintf(channelNameStr, "%i", channel);
 	sprintf(valueStr, "%i", iVal);
@@ -1501,20 +1524,14 @@ commandResult_t MQTT_StartMQTTTestThread(const void* context, const char* cmd, c
  *
  ****************************************************************************************************/
 
- // initialise things MQTT
- // called from user_main
-void MQTT_init()
-{
+void MQTT_InitCallbacks() {
 	char cbtopicbase[CGF_MQTT_CLIENT_ID_SIZE + 16];
 	char cbtopicsub[CGF_MQTT_CLIENT_ID_SIZE + 16];
 	const char* clientId;
 	const char* groupId;
 
-	// WINDOWS must support reinit
-#ifdef WINDOWS
 	MQTT_ClearCallbacks();
-	mqtt_client = 0;
-#endif
+	g_mqtt_bBaseTopicDirty = 0;
 
 	clientId = CFG_GetMQTTClientId();
 	groupId = CFG_GetMQTTGroupTopic();
@@ -1547,6 +1564,31 @@ void MQTT_init()
 	snprintf(cbtopicsub, sizeof(cbtopicsub), "%s/+/get", clientId);
 	// note: this may REPLACE an existing entry with the same ID.  ID 4 !!!
 	MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 4, channelGet);
+
+	if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES)) {
+		// test hack iobroker
+		snprintf(cbtopicbase, sizeof(cbtopicbase), "tele/%s/", clientId);
+		snprintf(cbtopicsub, sizeof(cbtopicsub), "tele/%s/+", clientId);
+		// note: this may REPLACE an existing entry with the same ID.  ID 5 !!!
+		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 5, tasCmnd);
+
+		// test hack iobroker
+		snprintf(cbtopicbase, sizeof(cbtopicbase), "stat/%s/", clientId);
+		snprintf(cbtopicsub, sizeof(cbtopicsub), "stat/%s/+", clientId);
+		// note: this may REPLACE an existing entry with the same ID.  ID 6 !!!
+		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 6, tasCmnd);
+	}
+}
+ // initialise things MQTT
+ // called from user_main
+void MQTT_init()
+{
+	// WINDOWS must support reinit
+#ifdef WINDOWS
+	mqtt_client = 0;
+#endif
+
+	MQTT_InitCallbacks();
 
 	mqtt_initialised = 1;
 
@@ -1698,6 +1740,20 @@ int MQTT_RunQuickTick(){
 	return 0;
 }
 
+int g_timeSinceLastTasmotaTeleSent = 99;
+int g_wantTasmotaTeleSend = 0;
+void MQTT_BroadcastTasmotaTeleSTATE() {
+	if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES) == false) {
+		return;
+	}
+	if (g_timeSinceLastTasmotaTeleSent < 1) {
+		g_wantTasmotaTeleSend = 1;
+		return;
+	}
+	MQTT_ProcessCommandReplyJSON("STATE", "", COMMAND_FLAG_SOURCE_TELESENDER);
+	g_wantTasmotaTeleSend = 0;
+}
+
 // called from user timer.
 int MQTT_RunEverySecondUpdate()
 {
@@ -1714,6 +1770,11 @@ int MQTT_RunEverySecondUpdate()
 	// take mutex for connect and disconnect operations
 	if (MQTT_Mutex_Take(100) == 0)
 	{
+		return 0;
+	}
+	if (g_mqtt_bBaseTopicDirty) {
+		MQTT_InitCallbacks();
+		mqtt_reconnect = 5;
 		return 0;
 	}
 
@@ -1787,6 +1848,8 @@ int MQTT_RunEverySecondUpdate()
 		// things to do in our threads on connection accepted.
 		if (g_just_connected){
 			g_just_connected = 0;
+			// publish TELE
+			MQTT_BroadcastTasmotaTeleSTATE();
 			// publish all values on state
 			if (CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEONCONNECT)) {
 				MQTT_PublishWholeDeviceState();
@@ -1800,6 +1863,10 @@ int MQTT_RunEverySecondUpdate()
 		// below mutex is not required any more
 
 		// it is connected
+		g_timeSinceLastTasmotaTeleSent++;
+		if (g_wantTasmotaTeleSend) {
+			MQTT_BroadcastTasmotaTeleSTATE();
+		}
 		g_timeSinceLastMQTTPublish++;
 #if WINDOWS
 #elif PLATFORM_BL602
@@ -1815,6 +1882,14 @@ int MQTT_RunEverySecondUpdate()
 			return 1;
 		}
 #endif
+
+		static int c = 0;
+		c++;
+		if (c > 120) {
+			c = 0;
+			MQTT_BroadcastTasmotaTeleSTATE();
+		}
+
 		// do we want to broadcast full state?
 		// Do it slowly in order not to overload the buffers
 		// The item indexes start at negative values for special items

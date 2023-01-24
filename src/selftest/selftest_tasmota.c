@@ -317,6 +317,85 @@ void Test_Tasmota_MQTT_Switch_Double() {
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/twoRelaysDevice/RESULT", false);
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER2", "OFF");
 	SIM_ClearMQTTHistory();
+
+
+	// command STATE
+	// check for TELE state
+	/*
+	Message 33 received on stat/tasmota_787019/RESULT at 10:08 AM:
+	{
+		"Time": "2023-01-24T10:08:17",
+		"Uptime": "0T00:10:43",
+		"UptimeSec": 643,
+		"Heap": 27,
+		"SleepMode": "Dynamic",
+		"Sleep": 50,
+		"LoadAvg": 20,
+		"MqttCount": 1,
+		"POWER": "OFF",
+		"Wifi": {
+			"AP": 1,
+			"SSId": "DLINK_FastNet",
+			"BSSId": "28:87:BA:A0:F5:6D",
+			"Channel": 2,
+			"Mode": "11n",
+			"RSSI": 64,
+			"Signal": -68,
+			"LinkCount": 1,
+			"Downtime": "0T00:00:04"
+		}
+	}
+	*/
+	SIM_ClearMQTTHistory();
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("STATE", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/twoRelaysDevice/RESULT", false);
+	SELFTEST_ASSERT_JSON_VALUE_EXISTS(0, "Time");
+	SELFTEST_ASSERT_JSON_VALUE_EXISTS(0, "Uptime");
+	SELFTEST_ASSERT_JSON_VALUE_EXISTS(0, "UptimeSec");
+	SELFTEST_ASSERT_JSON_VALUE_EXISTS(0, "Sleep");
+	SELFTEST_ASSERT_JSON_VALUE_EXISTS("Wifi", "SSId");
+	SELFTEST_ASSERT_JSON_VALUE_EXISTS("Wifi", "RSSI");
+	SIM_ClearMQTTHistory();
+
+	// The same is sent to TELE periodically
+	/*
+	Message 6 received on tele/tasmota_787019/STATE at 9:57 AM:
+	{
+		"Time": "2023-01-24T09:57:44",
+		"Uptime": "0T00:00:10",
+		"UptimeSec": 10,
+		"Heap": 27,
+		"SleepMode": "Dynamic",
+		"Sleep": 50,
+		"LoadAvg": 25,
+		"MqttCount": 1,
+		"POWER": "OFF",
+		"Wifi": {
+			"AP": 1,
+			"SSId": "DLINK_FastNet",
+			"BSSId": "28:87:BA:A0:F5:6D",
+			"Channel": 2,
+			"Mode": "11n",
+			"RSSI": 64,
+			"Signal": -68,
+			"LinkCount": 1,
+			"Downtime": "0T00:00:04"
+		}
+	}
+	*/
+	SIM_ClearMQTTHistory();
+	Sim_RunSeconds(10, false);
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("tele/twoRelaysDevice/STATE", false);
+	SELFTEST_ASSERT_JSON_VALUE_EXISTS(0, "Time");
+	SELFTEST_ASSERT_JSON_VALUE_EXISTS(0, "Uptime");
+	SELFTEST_ASSERT_JSON_VALUE_EXISTS(0, "UptimeSec");
+	SELFTEST_ASSERT_JSON_VALUE_EXISTS(0, "Sleep");
+	SELFTEST_ASSERT_JSON_VALUE_EXISTS("Wifi", "SSId");
+	SELFTEST_ASSERT_JSON_VALUE_EXISTS("Wifi", "RSSI");
+	SIM_ClearMQTTHistory();
+
+
+
 }
 void Test_Tasmota_MQTT_RGBCW() {
 	SIM_ClearOBK();
