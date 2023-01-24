@@ -244,8 +244,8 @@ void DRV_SSDP_SendReply(struct sockaddr_in *addr, const char *message) {
 	//
 	nbytes = sendto(
 		g_ssdp_socket_receive,
-		(const char*)advert_message,
-		strlen(advert_message),
+		(const char*)message,
+		strlen(message),
 		0,
 		(struct sockaddr*) addr,
 		sizeof(struct sockaddr)
