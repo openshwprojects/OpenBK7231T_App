@@ -16,7 +16,6 @@ command_t *CMD_Find(const char *name);
 // for autocompletion?
 void CMD_ListAllCommands(void *userData, void (*callback)(command_t *cmd, void *userData));
 int get_cmd(const char *s, char *dest, int maxlen, int stripnum);
-bool isWhiteSpace(char ch);
 
 
 float CMD_EvaluateExpression(const char *s, const char *stop);
