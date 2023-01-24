@@ -207,6 +207,38 @@ static commandResult_t CMD_GetChannel(const void *context, const char *cmd, cons
 
 	return CMD_RES_OK;
 }
+// See self test for usage
+// MapRanges 10 0.15 0.2 0.4 0.8 1
+static commandResult_t CMD_MapRanges(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	int targetCH;
+	float useVal;
+	int res = 0;
+	int i;
+	if (args == 0 || *args == 0) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_MapRanges: command requires arguments");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_GetArgsCount() < 3) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_MapRanges: command requires at least 3 arguments");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	targetCH = Tokenizer_GetArgInteger(0);
+	useVal = Tokenizer_GetArgFloat(1);
+	for (i = 2; i < Tokenizer_GetArgsCount(); i++) {
+		float argVal = Tokenizer_GetArgFloat(i);
+		if (argVal >= useVal) {
+			break;
+		}
+		res++;
+	}
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_MapRanges: will set %i to %i",targetCH,res);
+	CHANNEL_Set(targetCH, res, 0);
+
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_GetReadings(const void *context, const char *cmd, const char *args, int cmdFlags){
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	char tmp[96];
@@ -375,5 +407,10 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_SetChannelLabel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetChannelLabel", "", CMD_SetChannelLabel, NULL, NULL);
+	//cmddetail:{"name":"MapRanges","args":"[TargetChannel][InputValue][RangeVal0][RangeVal1][RangeValN]",
+	//cmddetail:"descr":"This will set given channel to an index showing where given input value is within given range sections. For example, MapRanges 10 0.5 0.3 0.6 0.9 will set channel 10 to 1 because 0.5 value is between 0.3 and 0.6",
+	//cmddetail:"fn":"CMD_MapRanges","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("MapRanges", "", CMD_MapRanges, NULL, NULL);
 
 }

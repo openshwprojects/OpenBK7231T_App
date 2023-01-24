@@ -535,6 +535,7 @@
     <ClCompile Include="src\selftest\selftest_led.c" />
     <ClCompile Include="src\selftest\selftest_lfs.c" />
     <ClCompile Include="src\selftest\selftest_main.c" />
+    <ClCompile Include="src\selftest\selftest_mapRanges.c" />
     <ClCompile Include="src\selftest\selftest_mqtt.c" />
     <ClCompile Include="src\selftest\selftest_multiplePinsOnChannel.c" />
     <ClCompile Include="src\selftest\selftest_ntp.c" />
