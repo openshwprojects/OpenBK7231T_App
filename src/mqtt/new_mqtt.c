@@ -1747,7 +1747,17 @@ void MQTT_BroadcastTasmotaTeleSTATE() {
 	MQTT_ProcessCommandReplyJSON("STATE", "", COMMAND_FLAG_SOURCE_TELESENDER);
 	g_wantTasmotaTeleSend = 0;
 }
-
+void MQTT_BroadcastTasmotaTeleSENSOR() {
+	bool bHasAnySensor = false;
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	if (DRV_IsMeasuringPower()) {
+		bHasAnySensor = true;
+	}
+#endif
+	if (bHasAnySensor) {
+		MQTT_ProcessCommandReplyJSON("SENSOR", "", COMMAND_FLAG_SOURCE_TELESENDER);
+	}
+}
 // called from user timer.
 int MQTT_RunEverySecondUpdate()
 {
@@ -1769,7 +1779,6 @@ int MQTT_RunEverySecondUpdate()
 	if (g_mqtt_bBaseTopicDirty) {
 		MQTT_InitCallbacks();
 		mqtt_reconnect = 5;
-		return 0;
 	}
 
 	// reconnect if went into MQTT library ERR_MEM forever loop
@@ -1879,6 +1888,9 @@ int MQTT_RunEverySecondUpdate()
 
 		static int c = 0;
 		c++;
+		if (c == 30) {
+			MQTT_BroadcastTasmotaTeleSENSOR();
+		}
 		if (c > 120) {
 			c = 0;
 			MQTT_BroadcastTasmotaTeleSTATE();

@@ -20,6 +20,7 @@ void MQTT_init();
 int MQTT_RunQuickTick();
 int MQTT_RunEverySecondUpdate();
 void MQTT_BroadcastTasmotaTeleSTATE();
+void MQTT_BroadcastTasmotaTeleSENSOR();
 
 
 #define PUBLISHITEM_ALL_INDEX_FIRST   -15
