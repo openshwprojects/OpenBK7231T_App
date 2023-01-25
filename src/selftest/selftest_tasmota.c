@@ -9,6 +9,8 @@ void Test_Tasmota_MQTT_Switch() {
 	const char *my_full_device_name = "TestingDevMQTTSwitch";
 	CFG_SetDeviceName(my_full_device_name);
 
+	CFG_SetFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES, true);
+
 	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(9, 1);
 
@@ -263,6 +265,8 @@ void Test_Tasmota_MQTT_Switch_Double() {
 	const char *my_full_device_name = "TestingDevMQTTSwitch";
 	CFG_SetDeviceName(my_full_device_name);
 
+	CFG_SetFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES, true);
+
 	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(9, 1);
 
@@ -384,7 +388,7 @@ void Test_Tasmota_MQTT_Switch_Double() {
 	}
 	*/
 	SIM_ClearMQTTHistory();
-	Sim_RunSeconds(10, false);
+	Sim_RunSeconds(130, false);
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("tele/twoRelaysDevice/STATE", false);
 	SELFTEST_ASSERT_JSON_VALUE_EXISTS(0, "Time");
 	SELFTEST_ASSERT_JSON_VALUE_EXISTS(0, "Uptime");
@@ -402,6 +406,8 @@ void Test_Tasmota_MQTT_RGBCW() {
 	SIM_ClearAndPrepareForMQTTTesting("rgbcwBulb");
 
 	CMD_ExecuteCommand("led_dimmer 50", 0);
+
+	CFG_SetFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES, true);
 
 	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
 	PIN_SetPinChannelForPinIndex(24, 1);

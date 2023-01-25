@@ -218,10 +218,13 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 	}
 }
 */
-static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer) {
+static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bAppendHeader) {
 	char buff[20];
 
-	printer(request, "\"StatusSNS\":{");
+	if (bAppendHeader) {
+		printer(request, "\"StatusSNS\":");
+	}
+	printer(request, "{");
 
 	time_t localTime = (time_t)NTP_GetCurrentTime();
 	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", localtime(&localTime));
@@ -570,7 +573,7 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	printer(request, ",");
 
 
-	http_tasmota_json_status_SNS(request, printer);
+	http_tasmota_json_status_SNS(request, printer, true);
 
 	printer(request, ",");
 
@@ -584,8 +587,6 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 
 	return 0;
 }
-// TODO: move it somewhere else?
-void MQTT_PublishPrinterContentsToStat(struct obk_mqtt_publishReplyPrinter_s *printer, const char *statName);
 int JSON_ProcessCommandReply(const char *cmd, const char *arg, void *request, jsonCb_t printer, int flags) {
 
 	if (!wal_strnicmp(cmd, "POWER", 5)) {
@@ -632,10 +633,17 @@ int JSON_ProcessCommandReply(const char *cmd, const char *arg, void *request, js
 			MQTT_PublishPrinterContentsToTele((struct obk_mqtt_publishReplyPrinter_s *)request, "STATE");
 		}
 	}
+	else if (!wal_strnicmp(cmd, "SENSOR", 5)) {
+		// not a Tasmota command, but still required for us
+		http_tasmota_json_status_SNS(request, printer, false);
+		if (flags == COMMAND_FLAG_SOURCE_TELESENDER) {
+			MQTT_PublishPrinterContentsToTele((struct obk_mqtt_publishReplyPrinter_s *)request, "SENSOR");
+		}
+	}
 	else if (!wal_strnicmp(cmd, "STATUS", 6)) {
 		if (!stricmp(arg, "8") || !stricmp(arg, "10")) {
 			printer(request, "{");
-			http_tasmota_json_status_SNS(request, printer);
+			http_tasmota_json_status_SNS(request, printer, true);
 			printer(request, "}");
 			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
 				if (arg[0] == '8') {
