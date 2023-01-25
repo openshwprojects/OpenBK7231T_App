@@ -12,6 +12,13 @@
 #include "drv_ssdp.h"
 #include "../httpserver/new_http.h"
 
+// Wemo driver for Alexa, requiring btsimonh's SSDP to work
+// Based on Tasmota approach
+// The procedure is following:
+// 1. first MSEARCH over UDP is done
+// 2. then obk replies to MSEARCH with page details
+// 3. then alexa accesses our XML pages here with GET
+// 4. and can change the binary state (0 or 1) with POST
 
 static const char *g_wemo_setup_1 =
 "<?xml version=\"1.0\"?>"
@@ -134,6 +141,17 @@ const char *g_wemo_eventService =
 "</stateVariable>"
 "</serviceStateTable>"
 "</scpd>\r\n\r\n";
+const char *g_wemo_response_1 =
+"<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
+"<s:Body>";
+
+const char *g_wemo_response_2_fmt =
+"<u:%cetBinaryStateResponse xmlns:u=\"urn:Belkin:service:basicevent:1\">"
+"<BinaryState>%i</BinaryState>"
+"</u:%cetBinaryStateResponse>"
+"</s:Body>"
+"</s:Envelope>\r\n";
+
 static char *g_serial = 0;
 static char *g_uid = 0;
 static int outBufferLen = 0;
@@ -178,11 +196,59 @@ void WEMO_AppendInformationToHTTPIndexPage(http_request_t* request) {
 		stat_searchesReceived, stat_setupXMLVisits, stat_eventsReceived, stat_metaServiceXMLVisits, stat_eventServiceXMLVisits);
 
 }
+
+
+bool Main_GetFirstPowerState() {
+	int i;
+	if (LED_IsLEDRunning()) {
+		return LED_GetEnableAll();
+	}
+	else {
+		// relays driver
+		for (i = 0; i < CHANNEL_MAX; i++) {
+			if (h_isChannelRelay(i) || CHANNEL_GetType(i) == ChType_Toggle) {
+				return CHANNEL_Get(i);
+			}
+		}
+	}
+	return 0;
+}
 static int WEMO_BasicEvent1(http_request_t* request) {
 	const char* cmd = request->bodystart;
 
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "Wemo post event %s", cmd);
+	// Sample event data taken by my user
+	/*
+	<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:GetBinaryState xmlns:u="urn:Belkin:service:basicevent:1"><BinaryState>1</BinaryState></u:GetBinaryState></s:Body></s:Envelope>
+	*/
+	// Set and Get are the same so we can hack just one letter
+	char letter;
+	// is this a Set request?
+	if (strstr(cmd, "SetBinaryState")) {
+		// set
+		letter = 'S';
+		if (strstr(cmd, "State>1</Binary")) {
+			CMD_ExecuteCommand("POWER ON", 0);
+		}
+		if (strstr(cmd, "State>0</Binary")) {
+			CMD_ExecuteCommand("POWER OFF", 0);
+		}
+	}
+	else {
+		// get
+		letter = 'G';
+	}
+	int bMainPower = Main_GetFirstPowerState();
+
+	// We must send a SetBinaryState or GetBinaryState response depending on what 
+	// was sent to us	
+	http_setup(request, httpMimeTypeXML);
+	poststr(request, g_wemo_response_1);
+	// letter is twice because we have two SetBinaryStateResponse tokens (opening and closing tag)
+	hprintf255(request, g_wemo_response_2_fmt, letter, bMainPower, letter);
+	poststr(request, NULL);
+
 
 	stat_eventsReceived++;
 
