@@ -934,6 +934,15 @@ void SIM_OnMQTTPublish(const char *topic, const char *value, int len, int qos, b
 /** Publish data to topic */
 err_t mqtt_publish(mqtt_client_t *client, const char *topic, const void *payload, u16_t payload_length, u8_t qos, u8_t retain,
 				   mqtt_request_cb_t cb, void *arg) {
+#if 1
+	{
+		FILE *f = fopen("lastMQTTPublishSentByOBK.txt", "wb");
+		if (f) {
+			fwrite(payload, 1, payload_length, f);
+			fclose(f);
+		}
+	}
+#endif
 	if (MQTT_IsFakingOnlineMQTT()) {
 		// on Windows simulator, forward MQTT publish for unit testing
 		SIM_OnMQTTPublish(topic, payload, payload_length, qos, retain);
@@ -1143,6 +1152,8 @@ mqtt_message_received(mqtt_client_t *client, u8_t fixed_hdr_len, u16_t length, u
 			}
 
 			topic = var_hdr_payload + 2;
+			printf("WIN MQTT: Topic %s\n", topic);
+
 			after_topic = 2 + topic_len;
 			/* Check buffer length, add one byte even for QoS 0 so that zero termination will fit */
 			if ((after_topic + (qos ? 2U : 1U)) > var_hdr_payload_bufsize) {

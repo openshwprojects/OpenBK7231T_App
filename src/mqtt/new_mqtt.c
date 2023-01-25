@@ -1736,17 +1736,6 @@ int MQTT_RunQuickTick(){
 
 int g_timeSinceLastTasmotaTeleSent = 99;
 int g_wantTasmotaTeleSend = 0;
-void MQTT_BroadcastTasmotaTeleSTATE() {
-	if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES) == false) {
-		return;
-	}
-	if (g_timeSinceLastTasmotaTeleSent < 1) {
-		g_wantTasmotaTeleSend = 1;
-		return;
-	}
-	MQTT_ProcessCommandReplyJSON("STATE", "", COMMAND_FLAG_SOURCE_TELESENDER);
-	g_wantTasmotaTeleSend = 0;
-}
 void MQTT_BroadcastTasmotaTeleSENSOR() {
 	bool bHasAnySensor = false;
 #ifndef OBK_DISABLE_ALL_DRIVERS
@@ -1757,6 +1746,18 @@ void MQTT_BroadcastTasmotaTeleSENSOR() {
 	if (bHasAnySensor) {
 		MQTT_ProcessCommandReplyJSON("SENSOR", "", COMMAND_FLAG_SOURCE_TELESENDER);
 	}
+}
+void MQTT_BroadcastTasmotaTeleSTATE() {
+	if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES) == false) {
+		return;
+	}
+	if (g_timeSinceLastTasmotaTeleSent < 1) {
+		g_wantTasmotaTeleSend = 1;
+		return;
+	}
+	MQTT_ProcessCommandReplyJSON("STATE", "", COMMAND_FLAG_SOURCE_TELESENDER);
+	MQTT_BroadcastTasmotaTeleSENSOR();
+	g_wantTasmotaTeleSend = 0;
 }
 // called from user timer.
 int MQTT_RunEverySecondUpdate()
@@ -1886,14 +1887,16 @@ int MQTT_RunEverySecondUpdate()
 		}
 #endif
 
-		static int c = 0;
-		c++;
-		if (c == 30) {
-			MQTT_BroadcastTasmotaTeleSENSOR();
-		}
-		if (c > 120) {
-			c = 0;
-			MQTT_BroadcastTasmotaTeleSTATE();
+		if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES)) {
+			static int g_mqtt_tasmotaTeleCounter = 0;
+			g_mqtt_tasmotaTeleCounter++;
+			if (g_mqtt_tasmotaTeleCounter % 15 == 0) {
+				MQTT_BroadcastTasmotaTeleSENSOR();
+			}
+			if (g_mqtt_tasmotaTeleCounter > 120) {
+				g_mqtt_tasmotaTeleCounter = 0;
+				MQTT_BroadcastTasmotaTeleSTATE();
+			}
 		}
 
 		// do we want to broadcast full state?
