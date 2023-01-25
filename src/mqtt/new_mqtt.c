@@ -1890,7 +1890,7 @@ int MQTT_RunEverySecondUpdate()
 		if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES)) {
 			static int g_mqtt_tasmotaTeleCounter = 0;
 			g_mqtt_tasmotaTeleCounter++;
-			if (g_mqtt_tasmotaTeleCounter % 15 == 0) {
+			if (g_mqtt_tasmotaTeleCounter % 3 == 0) {
 				MQTT_BroadcastTasmotaTeleSENSOR();
 			}
 			if (g_mqtt_tasmotaTeleCounter > 120) {
