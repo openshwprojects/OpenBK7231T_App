@@ -881,7 +881,7 @@ int http_fn_index(http_request_t* request) {
 			poststr(request, "return confirm('Are you sure to try exiting safe mode? NOTE: This will enable rest interface etc, but still wont run autoexec')\">"
 				"</form>");
 		}
-		poststr(request, "<form action=\"/app\" target=\"_blank\"><input type=\"submit\" value=\"Launch Web Application\"\"></form> ");
+		poststr(request, "<form action=\"/app\" target=\"_blank\"><input type=\"submit\" value=\"Launch Web Application\"></form> ");
 		poststr(request, "<form action=\"about\"><input type=\"submit\" value=\"About\"/></form>");
 
 		poststr(request, htmlFooterRefreshLink);
