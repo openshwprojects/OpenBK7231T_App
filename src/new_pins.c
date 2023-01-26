@@ -245,7 +245,7 @@ void Button_OnPressRelease(int index) {
 }
 void Button_OnInitialPressDown(int index) 
 {
-	//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"%i Button_OnInitialPressDown\r\n", index);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"%i Button_OnInitialPressDown\r\n", index);
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ONPRESS, index);
 	
 	// so-called SetOption13 - instant reaction to touch instead of waiting for release
@@ -937,7 +937,7 @@ void CHANNEL_Set(int ch, int iVal, int iFlags) {
 
 	Channel_OnChanged(ch,prevValue,iFlags);
 }
-void CHANNEL_AddClamped(int ch, int iVal, int min, int max) {
+void CHANNEL_AddClamped(int ch, int iVal, int min, int max, int bWrapInsteadOfClamp) {
 	int prevValue;
 	if(ch < 0 || ch >= CHANNEL_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL,"CHANNEL_AddClamped: Channel index %i is out of range <0,%i)\n\r",ch,CHANNEL_MAX);
@@ -946,10 +946,18 @@ void CHANNEL_AddClamped(int ch, int iVal, int min, int max) {
 	prevValue = g_channelValues[ch];
 	g_channelValues[ch] = g_channelValues[ch] + iVal;
 
-	if(g_channelValues[ch]>max)
-		g_channelValues[ch] = max;
-	if(g_channelValues[ch]<min)
-		g_channelValues[ch] = min;
+	if (bWrapInsteadOfClamp) {
+		if (g_channelValues[ch] > max)
+			g_channelValues[ch] = min;
+		if (g_channelValues[ch] < min)
+			g_channelValues[ch] = max;
+	}
+	else {
+		if (g_channelValues[ch] > max)
+			g_channelValues[ch] = max;
+		if (g_channelValues[ch] < min)
+			g_channelValues[ch] = min;
+	}
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"CHANNEL_AddClamped channel %i has changed to %i\n\r",ch,g_channelValues[ch]);
 

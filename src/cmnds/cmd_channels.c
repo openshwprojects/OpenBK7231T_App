@@ -71,6 +71,7 @@ static commandResult_t CMD_SetChannel(const void *context, const char *cmd, cons
 }
 static commandResult_t CMD_AddChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int ch, val;
+	int bWrapInsteadOfClamp;
 
 	if(args==0||*args==0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_AddChannel: command requires 2 arguments (next 2, min and max, are optionsl)");
@@ -82,15 +83,22 @@ static commandResult_t CMD_AddChannel(const void *context, const char *cmd, cons
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
+
 	ch = Tokenizer_GetArgInteger(0);
 	val = Tokenizer_GetArgInteger(1);
-	if(Tokenizer_GetArgsCount() == 4) {
+	if(Tokenizer_GetArgsCount() >= 4) {
 		int min, max;
 
 		min = Tokenizer_GetArgInteger(2);
 		max = Tokenizer_GetArgInteger(3);
+		if (Tokenizer_GetArgsCount() > 4) {
+			bWrapInsteadOfClamp = Tokenizer_GetArgInteger(4);
+		}
+		else {
+			bWrapInsteadOfClamp = 0;
+		}
 
-		CHANNEL_AddClamped(ch,val,min,max);
+		CHANNEL_AddClamped(ch,val,min,max, bWrapInsteadOfClamp);
 	} else {
 		CHANNEL_Add(ch,val);
 	}
@@ -119,6 +127,7 @@ static commandResult_t CMD_ToggleChannel(const void *context, const char *cmd, c
 }
 static commandResult_t CMD_ClampChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int ch, max, min;
+	int bWrapInsteadOfClamp;
 
 	if(args==0||*args==0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ClampChannel: command requires argument");
@@ -133,8 +142,9 @@ static commandResult_t CMD_ClampChannel(const void *context, const char *cmd, co
 	ch = Tokenizer_GetArgInteger(0);
 	min = Tokenizer_GetArgInteger(1);
 	max = Tokenizer_GetArgInteger(2);
+	bWrapInsteadOfClamp = 0;
 
-	CHANNEL_AddClamped(ch,0, min, max);
+	CHANNEL_AddClamped(ch,0, min, max, bWrapInsteadOfClamp);
 
 	return CMD_RES_OK;
 }
@@ -347,7 +357,7 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_ToggleChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ToggleChannel", "", CMD_ToggleChannel, NULL, NULL);
-	//cmddetail:{"name":"AddChannel","args":"[ChannelIndex][ValueToAdd][ClampMin][ClampMax]",
+	//cmddetail:{"name":"AddChannel","args":"[ChannelIndex][ValueToAdd][ClampMin][ClampMax][bWrapInsteadOfClamp]",
 	//cmddetail:"descr":"Adds a given value to the channel. Can be used to change PWM brightness. Clamp min and max arguments are optional.",
 	//cmddetail:"fn":"CMD_AddChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
