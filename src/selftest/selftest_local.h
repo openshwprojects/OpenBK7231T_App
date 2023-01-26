@@ -83,6 +83,7 @@ void Test_HassDiscovery();
 void Test_Demo_ExclusiveRelays();
 void Test_MapRanges();
 void Test_Demo_MapFanSpeedToRelays();
+void Test_Demo_FanCyclingRelays();
 
 void Test_GetJSONValue_Setup(const char *text);
 void Test_FakeHTTPClientPacket_GET(const char *tg);
