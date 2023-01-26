@@ -30,6 +30,10 @@ httpButton_t *getOrAlloc(int idx) {
 	}
 	if (g_buttons[idx] == 0) {
 		g_buttons[idx] = (httpButton_t*)malloc(sizeof(httpButton_t));
+		if (g_buttons[idx] == 0) {
+			// no memory, allocation failed
+			return 0;
+		}
 		memset(g_buttons[idx], 0, sizeof(httpButton_t));
 	}
 	return g_buttons[idx];
@@ -99,8 +103,8 @@ void DRV_HTTPButtons_ProcessChanges(http_request_t *request) {
 
 	if (http_getArg(request->url, "act", tmpA, sizeof(tmpA))) {
 		j = atoi(tmpA);
-		hprintf255(request, "<h3>Will do action %i!</h3>", j);
 		bt = getSafe(j);
+		hprintf255(request, "<h3>Will do action %s!</h3>", bt->label);
 		if (bt) {
 			CMD_ExecuteCommand(bt->command, 0);
 		}
