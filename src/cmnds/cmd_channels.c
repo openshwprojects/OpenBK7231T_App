@@ -7,6 +7,9 @@
 #include <ctype.h>
 #include "cmd_local.h"
 
+// bit mask telling which channels are hidden from HTTP
+// If given bit is set, then given channel is hidden
+int g_hiddenChannels = 0;
 static char *g_channelLabels[CHANNEL_MAX] = { 0 };
 
 void CHANNEL_SetLabel(int ch, const char *s) {
@@ -249,6 +252,32 @@ static commandResult_t CMD_MapRanges(const void *context, const char *cmd, const
 
 	return CMD_RES_OK;
 }
+// hide/show channel from gui
+static commandResult_t CMD_SetChannelVisible(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	int targetCH;
+	int bOn;
+	if (args == 0 || *args == 0) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetChannelVisible: command requires arguments");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_GetArgsCount() < 2) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetChannelVisible: command requires at least 1 arguments");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	targetCH = Tokenizer_GetArgInteger(0);
+	bOn = Tokenizer_GetArgInteger(1);
+
+	if (bOn) {
+		BIT_CLEAR(g_hiddenChannels, targetCH);
+	}
+	else {
+		BIT_SET(g_hiddenChannels, targetCH);
+	}
+
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_GetReadings(const void *context, const char *cmd, const char *args, int cmdFlags){
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	char tmp[96];
@@ -422,5 +451,6 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_MapRanges","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MapRanges", "", CMD_MapRanges, NULL, NULL);
+	CMD_RegisterCommand("SetChannelVisible", "", CMD_SetChannelVisible, NULL, NULL);
 
 }
