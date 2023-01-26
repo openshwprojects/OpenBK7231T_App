@@ -25,19 +25,19 @@ NOTE: Obviously almost any device with supported chip (BK7231, BL602, W600, etc 
 # Features
 
 OpenBeken features:
-- Tasmota-like setup, configuration and experience on all supported platforms
-- OTA firwmare upgrade system (for Beken chips); to use OTA, drag and drop RBL file (always RBL file) on OTA field on new Web App Javascript Console
-- MQTT compatibility with Home Assistant
+- Tasmota-like setup, configuration and experience on all supported platforms (supports common Tasmota JSON over http and MQTT, etc)
+- OTA firwmare upgrade system (for BK, W*00, BL602); to use OTA, drag and drop RBL file (always RBL file) on OTA field on new Web App Javascript Console
+- MQTT compatibility with Home Assistant (with both Yaml generator and [HA Discovery](https://youtu.be/pkcspey25V4)) 
 - Support for multiple relays, buttons, leds, inputs and PWMs
-- Driver system for custom peripherals, including TuyaMCU, I2C bus and BL0942, BL0937 power metering chips
+- Driver system for custom peripherals, including [TuyaMCU](https://www.elektroda.com/rtvforum/topic3898502.html), I2C bus and [BL0942](https://www.elektroda.com/rtvforum/topic3887748.html), BL0937 power metering chips
 - Supports multiple I2C devices, like TC74 temperature sensor, MCP23017 port expander, PCF8574T LCD 2x16 (or other?), etc
-- NTP time from network (can be used with TH06 and other TuyaMCU devices)
+- NTP time from network (can be used with [TH06](https://www.elektroda.com/rtvforum/topic3942730.html) and other TuyaMCU devices)
 - basic support for TuyaMCU Battery Powered devices protocol (TuyaMCU enables WiFi module only to report the state, eg. for door sensors, water sensors)
 - RGBCW LED lighting control compatible with Home Assistant (both PWM LEDs, SM2135 LEDs and BP5758 LEDs)
 - LittleFS integration for large files (resides in OTA memory, so you have to backup it every time you OTA)
 - Command line system for starting and configuring drivers
 - Short startup command (up to 512 characters) storage in flash config, so you can easily init your drivers (eg. BL0942) without LittleFS
-- Simple scripting and events system (allows you to mirror Tasmota rules, for example catch button click, double click, hold)
+- Advanced scripting and events system (allows you to mirror Tasmota rules, for example catch button click, double click, hold)
 - Automatic reconnect when WiFi network goes out
 - and much more
 
