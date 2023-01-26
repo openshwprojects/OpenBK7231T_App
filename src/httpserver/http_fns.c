@@ -202,6 +202,10 @@ int http_fn_testmsg(http_request_t* request) {
 
 }
 
+// bit mask telling which channels are hidden from HTTP
+// If given bit is set, then given channel is hidden
+extern int g_hiddenChannels;
+
 int http_fn_index(http_request_t* request) {
 	int j, i;
 	char tmpA[128];
@@ -330,6 +334,10 @@ int http_fn_index(http_request_t* request) {
 		int channelType;
 
 		channelType = CHANNEL_GetType(i);
+		// check ability to hide given channel from gui
+		if (BIT_CHECK(g_hiddenChannels, i)) {
+			continue; // hidden
+		}
 		if (h_isChannelRelay(i) || channelType == ChType_Toggle) {
 			if (i <= 1) {
 				hprintf255(request, "<tr>");
@@ -366,6 +374,11 @@ int http_fn_index(http_request_t* request) {
 	for (i = 0; i < CHANNEL_MAX; i++) {
 
 		int channelType;
+
+		// check ability to hide given channel from gui
+		if (BIT_CHECK(g_hiddenChannels, i)) {
+			continue; // hidden
+		}
 
 		channelType = CHANNEL_GetType(i);
 		if (channelType == ChType_Temperature) {
