@@ -305,7 +305,9 @@ static commandResult_t cmnd_lfsexec(const void * context, const char *cmd, const
 
 					if (lfsres >= 0){
 						if (*line && (*line != '#')){
-							CMD_ExecuteCommand(line, cmdFlags);
+							if (!(line[0] == '/' && line[1] == '/')) {
+								CMD_ExecuteCommand(line, cmdFlags);
+							}
 						}
 					}
 				} while (lfsres > 0);
