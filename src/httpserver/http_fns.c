@@ -310,7 +310,7 @@ int http_fn_index(http_request_t* request) {
 			int newSetValue = atoi(tmpA);
 			http_getArg(request->url, "setIndex", tmpA, sizeof(tmpA));
 			j = atoi(tmpA);
-			hprintf255(request, "<h3>Changed channel %i to %i!</h3>", j, newSetValue);
+			hprintf255(request, "<h3>Changed channel %s to %i!</h3>", CHANNEL_GetLabel(j), newSetValue);
 			CHANNEL_Set(j, newSetValue, 1);
 		}
 		if (http_getArg(request->url, "restart", tmpA, sizeof(tmpA))) {
