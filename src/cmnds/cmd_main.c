@@ -64,9 +64,8 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 	// define there:
 	// #define     PS_SUPPORT_MANUAL_SLEEP     1
 	extern void bk_wlan_ps_wakeup_with_timer(UINT32 sleep_time);
-	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_DeepSleep : Deep Sleep cannot be launch at start");
-	return CMD_RES_OK;
 	bk_wlan_ps_wakeup_with_timer(timeMS);
+	return CMD_RES_OK;
 #elif defined(PLATFORM_W600)
 
 #endif
@@ -75,7 +74,7 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 }
 static commandResult_t CMD_BATT_Meas(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	float batt_value, batt_perc, batt_ref, batt_res;
-	int g_pin_adc = 0, channel_adc = 0;
+	int g_pin_adc = 0, channel_adc = 0, channel_rel = 0, g_pin_rel = 0;
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_BATT_Meas : Measure Battery volt en perc");
 	Tokenizer_TokenizeString(args, 0);
 
@@ -87,8 +86,20 @@ static commandResult_t CMD_BATT_Meas(const void* context, const char* cmd, const
 	int minbatt = Tokenizer_GetArgInteger(0);
 	int maxbatt = Tokenizer_GetArgInteger(1);
 	g_pin_adc = PIN_FindPinIndexForRole(IOR_ADC, g_pin_adc);
+	g_pin_rel = PIN_FindPinIndexForRole(IOR_Relay, g_pin_rel);
 	channel_adc = g_cfg.pins.channels[g_pin_adc];
+	channel_rel = g_cfg.pins.channels[g_pin_rel];
 	batt_value = CHANNEL_GetFloat(channel_adc);
+
+	if (batt_value < 2048) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_BATT_Meas : ADC Value low device not on battery");
+		return CMD_RES_ERROR;
+	}
+
+	CHANNEL_Toggle(g_pin_rel);
+	delay_ms(100);
+	batt_value = CHANNEL_GetFloat(channel_adc);
+	CHANNEL_Toggle(g_pin_rel);
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "CMD_BATT_Meas : ADC Measurement : %f and channel %i", batt_value, channel_adc);
 	batt_value = batt_value / 4096.0 * 2400.0;
 	batt_ref = maxbatt - minbatt;
