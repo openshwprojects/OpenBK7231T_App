@@ -97,8 +97,6 @@ static commandResult_t CMD_BATT_Meas(const void* context, const char* cmd, const
 	}
 
 	CHANNEL_Toggle(g_pin_rel);
-	extern void delay_ms();
-	delay_ms(100);
 	batt_value = CHANNEL_GetFloat(channel_adc);
 	CHANNEL_Toggle(g_pin_rel);
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "CMD_BATT_Meas : ADC Measurement : %f and channel %i", batt_value, channel_adc);
