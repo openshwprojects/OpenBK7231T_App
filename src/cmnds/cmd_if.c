@@ -27,15 +27,16 @@ Example usage 2:
 typedef struct sOperator_s {
 	const char *txt;
 	byte len;
+	byte prio;
 } sOperator_t;
 
 typedef enum {
+	OP_GREATER,
+	OP_LESS,
 	OP_EQUAL,
 	OP_EQUAL_OR_GREATER,
 	OP_EQUAL_OR_LESS,
 	OP_NOT_EQUAL,
-	OP_GREATER,
-	OP_LESS,
 	OP_AND,
 	OP_OR,
 	OP_ADD,
@@ -45,22 +46,24 @@ typedef enum {
 } opCode_t;
 
 static sOperator_t g_operators[] = {
-	{ "==", 2 },
-	{ ">=", 2 },
-	{ "<=", 2 },
-	{ "!=", 2 },
-	{ ">", 1 },
-	{ "<", 1 },
-	{ "&&", 2 },
-	{ "||", 2 },
-	{ "+", 1 },
-	{ "-", 1 },
-	{ "*", 1 },
-	{ "/", 1 },
+	{ ">", 1, 10 },
+	{ "<", 1, 10 },
+	{ "==", 2, 10 },
+	{ ">=", 2, 10 },
+	{ "<=", 2, 10 },
+	{ "!=", 2, 10 },
+	{ "&&", 2, 8 },
+	{ "||", 2, 8 },
+	{ "+", 1, 6 },
+	{ "-", 1, 6 },
+	{ "*", 1, 4 },
+	{ "/", 1, 4 },
 };
 static int g_numOperators = sizeof(g_operators)/sizeof(g_operators[0]);
 
 const char *CMD_FindOperator(const char *s, const char *stop, byte *oCode) {
+	byte bestPriority;
+	const char *retVal;
 	int o = 0;
 
 	if (*s == 0)
@@ -71,17 +74,23 @@ const char *CMD_FindOperator(const char *s, const char *stop, byte *oCode) {
 	}
 	if (*s == 0)
 		return 0;
+	
+	retVal = 0;
+	bestPriority = 0;
 
 	while(s[0] && s[1] && (s < stop || stop == 0)) {
 		for(o = 0; o < g_numOperators; o++) {
 			if(!strncmp(s,g_operators[o].txt,g_operators[o].len)) {
-				*oCode = o;
-				return s;
+				if (g_operators[o].prio >= bestPriority) {
+					bestPriority = g_operators[o].prio;
+					retVal = s;
+					*oCode = o;
+				}
 			}
 		}
 		s++;
 	}
-	return 0;
+	return retVal;
 }
 const char *strCompareBound(const char *s, const char *templ, const char *stopper, int bAllowWildCard) {
 	const char *s_start;
