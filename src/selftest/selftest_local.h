@@ -84,6 +84,7 @@ void Test_Demo_ExclusiveRelays();
 void Test_MapRanges();
 void Test_Demo_MapFanSpeedToRelays();
 void Test_Demo_FanCyclingRelays();
+void Test_Role_ToggleAll();
 
 void Test_GetJSONValue_Setup(const char *text);
 void Test_FakeHTTPClientPacket_GET(const char *tg);
@@ -112,5 +113,6 @@ bool SIM_CheckMQTTHistoryForFloat(const char *topic, float value, bool bRetain);
 const char *SIM_GetMQTTHistoryString(const char *topic, bool bPrefixMode);
 bool SIM_BeginParsingMQTTJSON(const char *topic, bool bPrefixMode);
 
+void SIM_SimulateUserClickOnPin(int pin);
 
 #endif
