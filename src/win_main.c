@@ -123,6 +123,7 @@ void SIM_DoFreshOBKBoot() {
 	Main_Init();
 }
 void Win_DoUnitTests() {
+	Test_Role_ToggleAll();
 	Test_Demo_FanCyclingRelays();
 	Test_Demo_MapFanSpeedToRelays();
 	Test_MapRanges();
@@ -186,7 +187,7 @@ int g_bDoingUnitTestsNow = 0;
 #include "sim/sim_public.h"
 int __cdecl main(int argc, char **argv)
 {
-	bool bWantsUnitTests = 0;
+	bool bWantsUnitTests = 1;
 
 	if (argc > 1) {
 		int value;

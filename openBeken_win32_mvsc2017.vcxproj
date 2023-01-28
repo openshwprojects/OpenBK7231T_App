@@ -542,6 +542,7 @@
     <ClCompile Include="src\selftest\selftest_multiplePinsOnChannel.c" />
     <ClCompile Include="src\selftest\selftest_ntp.c" />
     <ClCompile Include="src\selftest\selftest_repeatingEvents.c" />
+    <ClCompile Include="src\selftest\selftest_role_toggleAll.c" />
     <ClCompile Include="src\selftest\selftest_script.c" />
     <ClCompile Include="src\selftest\selftest_demo_exclusiveRelays.c" />
     <ClCompile Include="src\selftest\selftest_tasmota.c" />
