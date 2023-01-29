@@ -3,6 +3,7 @@
 #include "selftest_local.h".
 
 void Test_LEDDriver_CW() {
+	int i;
 	// reset whole device
 	SIM_ClearOBK();
 
@@ -66,6 +67,26 @@ void Test_LEDDriver_CW() {
 	SELFTEST_ASSERT_CHANNEL(1, 100);
 	SELFTEST_ASSERT_CHANNEL(2, 0);
 
+	for (i = 0; i <= 100; i++) {
+		char buffer[64];
+		sprintf(buffer, "Dimmer %i", i);
+		CMD_ExecuteCommand(buffer, 0);
+		//printf("Dimmer loop test: %i\n",i);
+		SELFTEST_ASSERT_EXPRESSION("$led_dimmer", i);
+	}
+	for (i = 154; i <= 500; i++) {
+		char buffer[64];
+		sprintf(buffer, "CT %i", i);
+		CMD_ExecuteCommand(buffer, 0);
+		//printf("Dimmer loop test: %i\n",i);
+		SELFTEST_ASSERT_EXPRESSION("$led_temperature", i);
+	}
+	CMD_ExecuteCommand("Dimmer 0", 0);
+	for (i = 0; i < 100; i++) {
+		SELFTEST_ASSERT_EXPRESSION("$led_dimmer", i);
+		CMD_ExecuteCommand("add_dimmer 1", 0);
+		SELFTEST_ASSERT_EXPRESSION("$led_dimmer", i+1);
+	}
 }
 
 
