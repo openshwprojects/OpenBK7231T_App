@@ -61,15 +61,13 @@ float g_hsv_v = 1; // 0 to 1
 // By default, colors are in 255 to 0 range, while our channels accept 0 to 100 range
 float g_cfg_colorScaleToChannel = 100.0f/255.0f;
 int g_numBaseColors = 5;
-float g_brightness = 1.0f;
+float g_brightness0to100 = 100.0f;
 float rgb_used_corr[3];   // RGB correction currently used
 
 // NOTE: in this system, enabling/disabling whole led light bulb
 // is not changing the stored channel and brightness values.
 // They are kept intact so you can reenable the bulb and keep your color setting
 int g_lightEnableAll = 0;
-// config only stuff
-float g_cfg_brightnessMult = 0.01f;
 
 // the slider control in the UI emits values
 //in the range from 154-500 (defined
@@ -91,9 +89,8 @@ void LED_ResetGlobalVariablesToDefaults() {
 	g_hsv_v = 1; // 0 to 1
 	g_cfg_colorScaleToChannel = 100.0f / 255.0f;
 	g_numBaseColors = 5;
-	g_brightness = 1.0f;
+	g_brightness0to100 = 100.0f;
 	g_lightEnableAll = 0;
-	g_cfg_brightnessMult = 0.01f;
 	led_temperature_min = HASS_TEMPERATURE_MIN;
 	led_temperature_max = HASS_TEMPERATURE_MAX;
 	led_temperature_current = HASS_TEMPERATURE_MIN;
@@ -250,7 +247,7 @@ void LED_RunQuickColorLerp(int deltaMS) {
 	target_value_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
 	if (g_lightEnableAll) {
 		if (g_lightMode == Light_Temperature) {
-			target_value_brightness = g_brightness * 100.0f;
+			target_value_brightness = g_brightness0to100;
 		}
 	}
 
@@ -300,6 +297,7 @@ void LED_RunQuickColorLerp(int deltaMS) {
 	led_Save_finalRGBCW(led_rawLerpCurrent);
 }
 
+
 int led_gamma_enable_channel_messages = 0;
 
 float led_gamma_correction (int color, float iVal) { // apply LED gamma and RGB correction
@@ -312,7 +310,8 @@ float led_gamma_correction (int color, float iVal) { // apply LED gamma and RGB 
 	if (color > 2) {
 		ch_bright_min = g_cfg.led_corr.cw_bright_min / 100;
 	}
-	float oVal = (powf (g_brightness, g_cfg.led_corr.led_gamma) * (1 - ch_bright_min) + ch_bright_min) * iVal;
+	float brightnessNormalized0to1 = g_brightness0to100 * 0.01f;
+	float oVal = (powf (brightnessNormalized0to1, g_cfg.led_corr.led_gamma) * (1 - ch_bright_min) + ch_bright_min) * iVal;
 
 	// apply RGB level correction:
 	if (color < 3) {
@@ -371,7 +370,7 @@ void apply_smart_light() {
 		value_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
 		if (g_lightEnableAll) {
 			if (g_lightMode == Light_Temperature) {
-				value_brightness = g_brightness * 100.0f;
+				value_brightness = g_brightness0to100;
 			}
 		}
 	}
@@ -383,9 +382,10 @@ void apply_smart_light() {
 			finalRGBCW[i] = 0;
 		}
 		if(g_lightEnableAll) {
+			float brightnessNormalized0to1 = g_brightness0to100 * 0.01f;
 			for(i = 3; i < 5; i++) {
-				finalColors[i] = baseColors[i] * g_brightness;
-				finalRGBCW[i] = baseColors[i] * g_brightness;
+				finalColors[i] = baseColors[i] * brightnessNormalized0to1;
+				finalRGBCW[i] = baseColors[i] * brightnessNormalized0to1;
 				baseRGBCW[i] = baseColors[i];
 			}
 		}
@@ -471,7 +471,7 @@ void apply_smart_light() {
 	}
 
 	if(CFG_HasFlag(OBK_FLAG_LED_REMEMBERLASTSTATE)) {
-		HAL_FlashVars_SaveLED(g_lightMode,g_brightness / g_cfg_brightnessMult, led_temperature_current,baseColors[0],baseColors[1],baseColors[2],g_lightEnableAll);
+		HAL_FlashVars_SaveLED(g_lightMode, g_brightness0to100, led_temperature_current,baseColors[0],baseColors[1],baseColors[2],g_lightEnableAll);
 	}
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_DGR_OnLedFinalColorsChange(baseRGBCW);
@@ -615,7 +615,7 @@ OBK_Publish_Result sendFinalColor() {
 OBK_Publish_Result LED_SendDimmerChange() {
 	int iValue;
 
-	iValue = g_brightness / g_cfg_brightnessMult;
+	iValue = g_brightness0to100;
 
 	return MQTT_PublishMain_StringInt_DeDuped(DEDUP_LED_DIMMER,DEDUP_EXPIRE_TIME,"led_dimmer", iValue, 0);
 }
@@ -796,7 +796,7 @@ int LED_IsRunningDriver() {
 	return 0;
 }
 float LED_GetDimmer() {
-	return g_brightness / g_cfg_brightnessMult;
+	return g_brightness0to100;
 }
 void LED_AddTemperature(int iVal, bool wrapAroundInsteadOfClamp) {
 	float cur;
@@ -840,7 +840,7 @@ int dimmer_pingPong_direction = 1;
 void LED_AddDimmer(int iVal, int addMode, int minValue) {
 	int cur;
 
-	cur = g_brightness / g_cfg_brightnessMult;
+	cur = g_brightness0to100;
 
 	if (addMode == 2) {
 		// Ping pong mode
@@ -895,7 +895,7 @@ void LED_NextDimmerHold() {
 }
 void LED_SetDimmer(int iVal) {
 
-	g_brightness = iVal * g_cfg_brightnessMult;
+	g_brightness0to100 = iVal;
 
 	if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_ANY_ACTION)) {
 		LED_SetEnableAll(true);
@@ -1235,16 +1235,7 @@ static commandResult_t colorMult(const void *context, const char *cmd, const cha
 	//}
 	//return 0;
 }
-// CONFIG-ONLY command!
-static commandResult_t brightnessMult(const void *context, const char *cmd, const char *args, int cmdFlags){
-        ADDLOG_DEBUG(LOG_FEATURE_CMD, " brightnessMult (%s) received with args %s",cmd,args);
 
-		g_cfg_brightnessMult = atof(args);
-
-		return CMD_RES_OK;
-	//}
-	//return 0;
-}
 float LED_GetGreen255() {
 	return baseColors[1];
 }
@@ -1403,11 +1394,6 @@ void NewLED_InitCommands(){
 	//cmddetail:"fn":"temperature","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("CT", "", temperature, NULL, NULL);
-	//cmddetail:{"name":"led_brightnessMult","args":"[Value]",
-	//cmddetail:"descr":"Internal usage.",
-	//cmddetail:"fn":"brightnessMult","file":"cmnds/cmd_newLEDDriver.c","requires":"",
-	//cmddetail:"examples":""}
-    CMD_RegisterCommand("led_brightnessMult", "", brightnessMult, NULL, NULL);
 	//cmddetail:{"name":"led_colorMult","args":"[Value]",
 	//cmddetail:"descr":"Internal usage.",
 	//cmddetail:"fn":"colorMult","file":"cmnds/cmd_newLEDDriver.c","requires":"",
@@ -1483,7 +1469,7 @@ void NewLED_RestoreSavedStateIfNeeded() {
 
 		g_lightEnableAll = bEnableAll;
 		SET_LightMode(mod);
-		g_brightness = brig * g_cfg_brightnessMult;
+		g_brightness0to100 = brig;
 		LED_SetTemperature(tmp,0);
 		baseColors[0] = rgb[0];
 		baseColors[1] = rgb[1];
