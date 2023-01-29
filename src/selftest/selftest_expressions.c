@@ -146,6 +146,37 @@ void Test_Expressions_RunTests_Basic() {
 	SELFTEST_ASSERT_EXPRESSION("1 <= 1", 1);
 	SELFTEST_ASSERT_EXPRESSION("1 <= 0", 0);
 	SELFTEST_ASSERT_EXPRESSION("1 <= -1", 0);
+
+
+	SELFTEST_ASSERT_EXPRESSION("1 > -1 && 5 > 4", 1);
+	SELFTEST_ASSERT((1 > -1 && 5 > 4) == 1);
+
+	SELFTEST_ASSERT_EXPRESSION("1 >= -1 && 5 >= 4", 1);
+	SELFTEST_ASSERT((1 >= -1 && 5 >= 4) == 1);
+
+	SELFTEST_ASSERT_EXPRESSION("1 >= -1 && 5 >= 5", 1);
+	SELFTEST_ASSERT((1 >= -1 && 5 >= 5) == 1);
+
+	SELFTEST_ASSERT_EXPRESSION("1 >= -1 && 5 >= 6", 0);
+	SELFTEST_ASSERT((1 >= -1 && 5 >= 6) == 0);
+
+	SELFTEST_ASSERT_EXPRESSION("-1+2 >= -1 && 5 >= 6", 0);
+	SELFTEST_ASSERT((-1+2 >= -1 && 5 >= 6) == 0);
+
+	SELFTEST_ASSERT_EXPRESSION("1 >= -1 && 5 >= 7", 0);
+	SELFTEST_ASSERT((1 >= -1 && 5 >= 7) == 0);
+
+	SELFTEST_ASSERT_EXPRESSION("1 >= 0 && 5 >= 7", 0);
+	SELFTEST_ASSERT((1 >= 0 && 5 >= 7) == 0);
+
+	SELFTEST_ASSERT_EXPRESSION("1 >= 0 || 5 >= 7", 1);
+	SELFTEST_ASSERT((1 >= 0 || 5 >= 7) == 1);
+
+	SELFTEST_ASSERT_EXPRESSION("-1+2 >= 0 || 5 >= 7", 1);
+	SELFTEST_ASSERT((-1 + 2 >= 0 || 5 >= 7) == 1);
+
+	SELFTEST_ASSERT_EXPRESSION("-1+2 >= 0 || 5 >= 3+4", 1);
+	SELFTEST_ASSERT((-1 + 2 >= 0 || 5 >= 3 + 4) == 1);
 	//CHANNEL_Set(18, 15, 0);
 	//SELFTEST_ASSERT_EXPRESSION("15.0+$CH18+1000\n\r", 30.0f + 1000);
 	//SELFTEST_ASSERT_EXPRESSION("15.0/$CH18+1000\n\r", 1.0f + 1000);
