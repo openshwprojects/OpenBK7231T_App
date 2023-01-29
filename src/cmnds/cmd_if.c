@@ -450,6 +450,12 @@ float CMD_EvaluateExpression(const char *s, const char *stop) {
 	while(stop > s && isspace(((int)stop[-1]))) {
 		stop --;
 	}
+	while (isspace(((int)*s))) {
+		s++;
+		if (s >= stop) {
+			return 0;
+		}
+	}
 	if(g_expDebugBuffer==0){
 		g_expDebugBuffer = malloc(EXPRESSION_DEBUG_BUFFER_SIZE);
 	}
