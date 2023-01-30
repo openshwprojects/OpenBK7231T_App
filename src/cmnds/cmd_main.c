@@ -244,11 +244,14 @@ static commandResult_t CMD_SetStartValue(const void* context, const char* cmd, c
 
 int cmd_uartInitIndex = 0;
 void CMD_UART_Init() {
+#if PLATFORM_BEKEN
 	UART_InitUART(115200);
 	cmd_uartInitIndex = g_uart_init_counter;
 	UART_InitReceiveRingBuffer(512);
+#endif
 }
 void CMD_UART_Run() {
+#if PLATFORM_BEKEN
 	char a;
 	int i;
 	int totalSize;
@@ -281,13 +284,16 @@ void CMD_UART_Run() {
 	}
 	UART_ConsumeBytes(i);
 	CMD_ExecuteCommand(tmp, 0);
+#endif
 }
 void CMD_RunUartCmndIfRequired() {
+#if PLATFORM_BEKEN
 	if (CFG_HasFlag(OBK_FLAG_CMD_ACCEPT_UART_COMMANDS)) {
 		if (cmd_uartInitIndex && cmd_uartInitIndex == g_uart_init_counter) {
 			CMD_UART_Run();
 		}
 	}
+#endif
 }
 void CMD_Init_Early() {
 	//cmddetail:{"name":"echo","args":"[Message]",
