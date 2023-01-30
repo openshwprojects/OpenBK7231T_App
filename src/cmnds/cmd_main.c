@@ -278,7 +278,7 @@ void CMD_UART_Init() {
 	UART_InitReceiveRingBuffer(512);
 }
 void CMD_UART_Run() {
-	char a, b;
+	char a;
 	int i;
 	int totalSize;
 	char tmp[128];
@@ -304,7 +304,7 @@ void CMD_UART_Run() {
 			tmp[i] = a;
 			tmp[i + 1] = 0;
 		}
-		if (b == '\n') {
+		if (a == '\n') {
 			break;
 		}
 	}
