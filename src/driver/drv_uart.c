@@ -97,6 +97,8 @@ static byte *g_recvBuf = 0;
 static int g_recvBufSize = 0;
 static int g_recvBufIn = 0;
 static int g_recvBufOut = 0;
+// used to detect uart reinit
+int g_uart_init_counter = 0;
 
 void UART_InitReceiveRingBuffer(int size){
 	if(g_recvBuf!=0)
@@ -256,7 +258,8 @@ void UART_AddCommands() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("uartSendASCII", NULL, CMD_UART_Send_ASCII, NULL, NULL);
 }
-void UART_InitUART(int baud) {
+int UART_InitUART(int baud) {
+	g_uart_init_counter++;
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
 	bk_uart_config_t config;
 
@@ -313,6 +316,7 @@ void UART_InitUART(int baud) {
 		b_uart_commands_added = true;
 		UART_AddCommands();
 	}
+	return g_uart_init_counter;
 }
 
 
