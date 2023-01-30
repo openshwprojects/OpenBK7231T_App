@@ -189,7 +189,11 @@ void CFG_SetDefaultConfig() {
 
 	// This is helpful for users
 	CFG_SetFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEONCONNECT,true);
-
+	// this is helpful for debuging wifi issues
+#if PLATFORM_BEKEN
+	//CFG_SetFlag(OBK_FLAG_CMD_ACCEPT_UART_COMMANDS, true);
+#endif
+	
 	CFG_SetDefaultLEDCorrectionTable();
 
 	g_cfg_pendingChanges++;

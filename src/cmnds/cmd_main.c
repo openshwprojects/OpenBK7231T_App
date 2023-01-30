@@ -5,6 +5,8 @@
 #include <ctype.h>
 #include "cmd_local.h"
 #include "../driver/drv_ir.h"
+#include "../driver/drv_uart.h"
+#include "../driver/drv_public.h"
 
 #ifdef BK_LITTLEFS
 #include "../littlefs/our_lfs.h"
@@ -269,6 +271,53 @@ static commandResult_t CMD_SetStartValue(const void* context, const char* cmd, c
 }
 
 
+int cmd_uartInitIndex = 0;
+void CMD_UART_Init() {
+	UART_InitUART(115200);
+	cmd_uartInitIndex = g_uart_init_counter;
+	UART_InitReceiveRingBuffer(512);
+}
+void CMD_UART_Run() {
+	char a, b;
+	int i;
+	int totalSize;
+	char tmp[128];
+
+	totalSize = UART_GetDataSize();
+	while (totalSize) {
+		a = UART_GetNextByte(0);
+		if (a == '\n' || a == '\r' || a == ' ' || a == '\t') {
+			UART_ConsumeBytes(1);
+			totalSize = UART_GetDataSize();
+		}
+		else {
+			break;
+		}
+	}
+	if (totalSize < 2) {
+		return 0;
+	}
+	// skip garbage data (should not happen)
+	for (i = 0; i < totalSize; i++) {
+		a = UART_GetNextByte(i);
+		if (i+1 < sizeof(tmp)) {
+			tmp[i] = a;
+			tmp[i + 1] = 0;
+		}
+		if (b == '\n') {
+			break;
+		}
+	}
+	UART_ConsumeBytes(i);
+	CMD_ExecuteCommand(tmp, 0);
+}
+void CMD_RunUartCmndIfRequired() {
+	if (CFG_HasFlag(OBK_FLAG_CMD_ACCEPT_UART_COMMANDS)) {
+		if (cmd_uartInitIndex && cmd_uartInitIndex == g_uart_init_counter) {
+			CMD_UART_Run();
+		}
+	}
+}
 void CMD_Init_Early() {
 	//cmddetail:{"name":"echo","args":"[Message]",
 	//cmddetail:"descr":"Sends given message back to console.",
@@ -280,6 +329,11 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_Restart","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("restart", "", CMD_Restart, NULL, NULL);
+	//cmddetail:{"name":"reboot","args":"",
+	//cmddetail:"descr":"Same as restart. Needed for bkWriter 1.60 which sends 'reboot' cmd before trying to get bus",
+	//cmddetail:"fn":"CMD_Restart","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("reboot", "", CMD_Restart, NULL, NULL);
 	//cmddetail:{"name":"clearConfig","args":"",
 	//cmddetail:"descr":"Clears all config, including WiFi data",
 	//cmddetail:"fn":"CMD_ClearConfig","file":"cmnds/cmd_main.c","requires":"",
@@ -344,6 +398,11 @@ void CMD_Init_Early() {
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	CMD_InitScripting();
 #endif
+	if (!bSafeMode) {
+		if (CFG_HasFlag(OBK_FLAG_CMD_ACCEPT_UART_COMMANDS)) {
+			CMD_UART_Init();
+		}
+	}
 }
 
 void CMD_Init_Delayed() {

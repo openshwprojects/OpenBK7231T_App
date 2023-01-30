@@ -664,6 +664,7 @@ void QuickTick(void *param)
 #ifdef WINDOWS
 	NewTuyaMCUSimulator_RunQuickTick(t_diff);
 #endif
+	CMD_RunUartCmndIfRequired();
 
 	// process recieved messages here..
 	MQTT_RunQuickTick();
