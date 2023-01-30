@@ -50,6 +50,8 @@ const char htmlFooterInfo[] =
 "<a target=\"_blank\" "
 "href=\"https://openbekeniot.github.io/webapp/devicesList.html\">Devices List</a> | "
 "<a target=\"_blank\" "
+"href=\"https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/commands.md\">Commands</a> | "
+"<a target=\"_blank\" "
 "href=\"https://paypal.me/openshwprojects\">Support project</a><br>";
 
 const char* g_build_str = "Build on " __DATE__ " " __TIME__ " version " USER_SW_VER; // Show GIT version at Build line;
