@@ -670,6 +670,7 @@ float LED_GetTemperature0to1Range() {
 
 	return f;
 }
+
 void LED_SetTemperature(int tmpInteger, bool bApply) {
 	float f;
 
@@ -1034,7 +1035,7 @@ void LED_SetFinalCW(byte c, byte w) {
 	// TODO: finish the calculation,
 	// the Device Group sent as White and Cool values in byte range,
 	// we need to get back Temperature value
-	tmp = c / 255.0f;
+	tmp = w / 255.0f;
 
 	LED_SetTemperature0to1Range(tmp);
 
