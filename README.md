@@ -13,7 +13,7 @@ This repository is named "OpenBK7231T_App", but now it's a multiplatform app, su
 
 Please use automatically compiled binaries from the Releases tab. To build yourself for a given platform, just checkout first our version of SDK and then checkout this app repository into it, details later.
 
-[https://www.v-elite.ru/t34](See also Russian guide.)
+[See also Russian guide.](https://www.v-elite.ru/t34)
 
 If you want to get some generic information about BK7231 modules, pinout, peripherals, [consult our docs topic](https://www.elektroda.com/rtvforum/topic3951016.html).
 
