@@ -711,7 +711,9 @@ int http_fn_index(http_request_t* request) {
 			poststr(request, "<tr><td>");
 			hprintf255(request, "<h5>LED RGB Color %s</h5>", activeStr);
 			hprintf255(request, "<form action=\"index\" id=\"form%i\">", SPECIAL_CHANNEL_BASECOLOR);
-			hprintf255(request, "<input type=\"color\" name=\"%s\" id=\"color%i\" value=\"#%s\" onchange=\"this.form.submit()\">", inputName, SPECIAL_CHANNEL_BASECOLOR, colorValue);
+			// onchange would fire only if colour was changed
+			// onblur will fire every time
+			hprintf255(request, "<input type=\"color\" name=\"%s\" id=\"color%i\" value=\"#%s\" onblur=\"this.form.submit()\">", inputName, SPECIAL_CHANNEL_BASECOLOR, colorValue);
 			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, SPECIAL_CHANNEL_BASECOLOR);
 			hprintf255(request, "<input  type=\"submit\" class='disp-none' value=\"Toggle Light\"/></form>");
 			poststr(request, "</td></tr>");
