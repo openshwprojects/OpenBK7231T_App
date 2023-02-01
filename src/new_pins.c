@@ -1532,6 +1532,8 @@ int CHANNEL_ParseChannelType(const char *s) {
 		return ChType_OpenClosed_Inv;
 	if (!stricmp(s, "BatteryLevelPercent"))
 		return ChType_BatteryLevelPercent;
+	if (!stricmp(s, "OffDimBright"))
+		return ChType_OffDimBright;
 	return ChType_Error;
 }
 static commandResult_t CMD_setButtonHoldRepeat(const void *context, const char *cmd, const char *args, int cmdFlags){

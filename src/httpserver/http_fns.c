@@ -653,6 +653,25 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "<input type=\"submit\" class='disp-none' value=\"Toggle %s\"/></form>", CHANNEL_GetLabel(i));
 			poststr(request, "</td></tr>");
 		}
+		else if (channelType == ChType_OffDimBright) {
+			const char* types[] = { "Off","Dim","Bright" };
+			iValue = CHANNEL_Get(i);
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "<p>Select level:</p><form action=\"index\">");
+			hprintf255(request, "<input type=\"hidden\" name=\"setIndex\" value=\"%i\">", i);
+			for (j = 0; j < 3; j++) {
+				const char* check;
+				if (j == iValue)
+					check = "checked";
+				else
+					check = "";
+				hprintf255(request, "<input type=\"radio\" name=\"set\" value=\"%i\" onchange=\"this.form.submit()\" %s>%s", j, check, types[j]);
+			}
+			hprintf255(request, "</form>");
+			poststr(request, "</td></tr>");
+
+		}
 	}
 
 	if (bRawPWMs == 0 || bForceShowRGBCW || bForceShowRGB) {
