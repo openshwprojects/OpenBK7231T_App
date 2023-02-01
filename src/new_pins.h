@@ -130,6 +130,7 @@ typedef enum {
 	ChType_OpenClosed,
 	ChType_OpenClosed_Inv,
 	ChType_BatteryLevelPercent,
+	ChType_OffDimBright,
 
 } ChannelType;
 

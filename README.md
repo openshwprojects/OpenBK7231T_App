@@ -453,6 +453,7 @@ Some channels have "_div10" or "_div100" sufixes. This is for TuyaMCU. This is n
 | Voltage_div10 | Divide by 10 and display value as a V voltage. | TODO |
 | Current_div100 | Divide by 100 and display value as a A current. | TODO |
 | Current_div1000 | Divide by 1000 and display value as a A current. | TODO |
+| OffDimBright | 3 options - Off (0), Dim (1), Bright (2). Used for TuyaMCU LED indicator. | TODO |
   
 # Simple TCP command server for scripting
   
