@@ -111,6 +111,22 @@ void Test_LFS() {
 	// get this file 
 	Test_FakeHTTPClientPacket_GET("api/lfs/command_file_2.txt");
 	SELFTEST_ASSERT_HTML_REPLY("this string has spaces really");
+
+	// check file commands
+	CMD_ExecuteCommand("lfs_append numbers.txt value is ", 0);
+	// get this file 
+	Test_FakeHTTPClientPacket_GET("api/lfs/numbers.txt");
+	SELFTEST_ASSERT_HTML_REPLY("value is ");
+	CMD_ExecuteCommand("SetChannel 15 2023", 0);
+	CMD_ExecuteCommand("lfs_appendInt numbers.txt $CH15", 0);
+	Test_FakeHTTPClientPacket_GET("api/lfs/numbers.txt");
+	SELFTEST_ASSERT_HTML_REPLY("value is 2023");
+	CMD_ExecuteCommand("lfs_append numbers.txt , and ", 0);
+	Test_FakeHTTPClientPacket_GET("api/lfs/numbers.txt");
+	SELFTEST_ASSERT_HTML_REPLY("value is 2023, and ");
+	CMD_ExecuteCommand("lfs_appendInt numbers.txt 15+16", 0);
+	Test_FakeHTTPClientPacket_GET("api/lfs/numbers.txt");
+	SELFTEST_ASSERT_HTML_REPLY("value is 2023, and 31");
 }
 
 #endif

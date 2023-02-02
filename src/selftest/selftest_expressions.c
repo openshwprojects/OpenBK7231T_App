@@ -199,6 +199,12 @@ void Test_Expressions_RunTests_Basic() {
 
 	SELFTEST_ASSERT_EXPRESSION("-1+2 >= 10-10 || 5 >= 3+4", 1);
 	SELFTEST_ASSERT((-1 + 2 >= 10-10 || 5 >= 3 + 4) == 1);
+
+	// some incorrect expression to check if we at least don't have a crash
+	SELFTEST_ASSERT_EXPRESSION("+++++", 0);
+	SELFTEST_ASSERT_EXPRESSION("++--++", 0);
+	SELFTEST_ASSERT_EXPRESSION("++fsfs+", 0);
+
 	//CHANNEL_Set(18, 15, 0);
 	//SELFTEST_ASSERT_EXPRESSION("15.0+$CH18+1000\n\r", 30.0f + 1000);
 	//SELFTEST_ASSERT_EXPRESSION("15.0/$CH18+1000\n\r", 1.0f + 1000);
