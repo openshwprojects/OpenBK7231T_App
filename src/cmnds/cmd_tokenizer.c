@@ -29,6 +29,9 @@ bool isWhiteSpace(char ch) {
 		return true;
 	if(ch == '\r')
 		return true;
+	// fix for https://www.elektroda.com/rtvforum/viewtopic.php?p=20420012#20420012
+	if (ch == 0xA0)
+		return true;
 	return false;
 }
 int Tokenizer_GetArgsCount() {
