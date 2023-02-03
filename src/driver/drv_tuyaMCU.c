@@ -148,6 +148,7 @@ int g_dimmerRangeMax = 100;
 // common baud rates are 9600 bit/s and 115200 bit/s
 int g_baudRate = 9600;
 
+
 static bool heartbeat_valid = false;
 static int heartbeat_timer = 0;
 static int heartbeat_counter = 0;
@@ -475,11 +476,13 @@ void TuyaMCU_Send_SetTime(struct tm *pTime) {
 	}
 	else {
 		byte tuya_day_of_week;
-		if (pTime->tm_wday == 1) {
+
+		// convert from [0, 6] days since Sunday range to [1, 7] where 1 indicates monday
+		if (pTime->tm_wday == 0) {
 			tuya_day_of_week = 7;
 		}
 		else {
-			tuya_day_of_week = pTime->tm_wday - 1;
+			tuya_day_of_week = pTime->tm_wday;
 		}
 		// valid flag
 		payload_buffer[0] = 0x01;
@@ -492,6 +495,7 @@ void TuyaMCU_Send_SetTime(struct tm *pTime) {
 		payload_buffer[4] = pTime->tm_hour;
 		payload_buffer[5] = pTime->tm_min;
 		payload_buffer[6] = pTime->tm_sec;
+		// Data[7]: indicates the week, ranging from 1 to 7. 1 indicates Monday.
 		payload_buffer[7] = tuya_day_of_week; //1 for Monday in TUYA Doc
 	}
 
@@ -1471,8 +1475,8 @@ void TuyaMCU_Init()
 	//cmddetail:"fn":"Cmd_TuyaMCU_Send_RSSI","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_defWiFiState", "", Cmd_TuyaMCU_Set_DefaultWiFiState, NULL, NULL);
-	
 }
+
 // Door sensor with TuyaMCU version 0 (not 3), so all replies have x00 and not 0x03 byte
 // fakeTuyaPacket 55AA0008000C00010101010101030400010223
 // fakeTuyaPacket 55AA0008000C00020202020202010100010123
