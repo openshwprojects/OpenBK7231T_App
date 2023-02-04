@@ -558,6 +558,10 @@ static int http_rest_post_lfs_file(http_request_t* request) {
 		do {
 			//ADDLOG_DEBUG(LOG_FEATURE_API, "%d bytes to write", writelen);
 			len = lfs_file_write(&lfs, file, writebuf, writelen);
+			if (len < 0) {
+				ADDLOG_ERROR(LOG_FEATURE_API, "Failed to write to %s with error %i", fpath,len);
+				break;
+			}
 			total += len;
 			if (len > 0) {
 				//ADDLOG_DEBUG(LOG_FEATURE_API, "%d bytes written", len);

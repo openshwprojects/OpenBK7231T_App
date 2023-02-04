@@ -198,9 +198,12 @@ static commandResult_t CMD_LFS_Format(const void *context, const char *cmd, cons
     return CMD_RES_OK;
 }
 
-static commandResult_t CMD_LFS_Append_Internal(bool bLine, bool bAppend, const char *args) {
+static commandResult_t CMD_LFS_Append_Internal(lcdPrintType_t type, bool bLine, bool bAppend, const char *args) {
 	const char *fileName;
 	const char *str;
+	float f;
+	int i;
+	char buffer[8];
 
 	Tokenizer_TokenizeString(args, 0);
 
@@ -210,7 +213,19 @@ static commandResult_t CMD_LFS_Append_Internal(bool bLine, bool bAppend, const c
 	}
 
 	fileName = Tokenizer_GetArg(0);
-	str = Tokenizer_GetArgFrom(1);
+	if (type == LCD_PRINT_FLOAT) {
+		f = Tokenizer_GetArgFloat(1);
+		snprintf(buffer, sizeof(buffer), "%f", f);
+		str = buffer;
+	}
+	else if (type == LCD_PRINT_INT) {
+		i = Tokenizer_GetArgInteger(1);
+		snprintf(buffer, sizeof(buffer), "%i", i);
+		str = buffer;
+	}
+	else {
+		str = Tokenizer_GetArgFrom(1);
+	}
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Writing %s to %s", str, fileName);
 
@@ -232,16 +247,22 @@ static commandResult_t CMD_LFS_Append_Internal(bool bLine, bool bAppend, const c
 	return CMD_RES_OK;
 }
 static commandResult_t CMD_LFS_Write(const void *context, const char *cmd, const char *args, int cmdFlags) {
-	return CMD_LFS_Append_Internal(false, false, args);
+	return CMD_LFS_Append_Internal(LCD_PRINT_DEFAULT, false, false, args);
 }
 static commandResult_t CMD_LFS_WriteLine(const void *context, const char *cmd, const char *args, int cmdFlags) {
-	return CMD_LFS_Append_Internal(true, false, args);
+	return CMD_LFS_Append_Internal(LCD_PRINT_DEFAULT, true, false, args);
+}
+static commandResult_t CMD_LFS_AppendInt(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	return CMD_LFS_Append_Internal(LCD_PRINT_INT, false, true, args);
+}
+static commandResult_t CMD_LFS_AppendFloat(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	return CMD_LFS_Append_Internal(LCD_PRINT_FLOAT, false, true, args);
 }
 static commandResult_t CMD_LFS_Append(const void *context, const char *cmd, const char *args, int cmdFlags) {
-	return CMD_LFS_Append_Internal(false, true, args);
+	return CMD_LFS_Append_Internal(LCD_PRINT_DEFAULT, false, true, args);
 }
 static commandResult_t CMD_LFS_AppendLine(const void *context, const char *cmd, const char *args, int cmdFlags) {
-	return CMD_LFS_Append_Internal(true, true, args);
+	return CMD_LFS_Append_Internal(LCD_PRINT_DEFAULT, true, true, args);
 }
 static commandResult_t CMD_LFS_Remove(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *fileName;
@@ -287,6 +308,16 @@ void LFSAddCmds(){
 	//cmddetail:"fn":"CMD_LFS_Append","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_append", "", CMD_LFS_Append, NULL, NULL);
+	//cmddetail:{"name":"lfs_appendFloat","args":"[FileName][Float]",
+	//cmddetail:"descr":"Appends a float to LFS file",
+	//cmddetail:"fn":"CMD_LFS_AppendFloat","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("lfs_appendFloat", "", CMD_LFS_AppendFloat, NULL, NULL);
+	//cmddetail:{"name":"lfs_appendInt","args":"[FileName][Int]",
+	//cmddetail:"descr":"Appends a Int to LFS file",
+	//cmddetail:"fn":"CMD_LFS_AppendInt","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("lfs_appendInt", "", CMD_LFS_AppendInt, NULL, NULL);
 	//cmddetail:{"name":"lfs_appendLine","args":"[FileName][String]",
 	//cmddetail:"descr":"Appends a string to LFS file with a next line marker",
 	//cmddetail:"fn":"CMD_LFS_AppendLine","file":"cmnds/cmd_main.c","requires":"",

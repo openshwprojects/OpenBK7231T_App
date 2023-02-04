@@ -33,7 +33,7 @@ void Test_Scripting_Loop1() {
 
 	// reset whole device
 	SIM_ClearOBK();
-	CMD_ExecuteCommand("lfsformat", 0);
+	CMD_ExecuteCommand("lfs_format", 0);
 
 	// put file in LittleFS
 	Test_FakeHTTPClientPacket_POST("api/lfs/demo_loop_1.txt", demo_loop_1);
@@ -56,7 +56,7 @@ void Test_Scripting_Loop2() {
 
 	// reset whole device
 	SIM_ClearOBK();
-	CMD_ExecuteCommand("lfsformat", 0);
+	CMD_ExecuteCommand("lfs_format", 0);
 
 	// put file in LittleFS
 	Test_FakeHTTPClientPacket_POST("api/lfs/demo_loop_2.txt", demo_loop_2);
@@ -80,7 +80,7 @@ void Test_Scripting_Loop3() {
 
 	// reset whole device
 	SIM_ClearOBK();
-	CMD_ExecuteCommand("lfsformat", 0);
+	CMD_ExecuteCommand("lfs_format", 0);
 
 	// put file in LittleFS
 	Test_FakeHTTPClientPacket_POST("api/lfs/demo_loop_3.txt", demo_loop_3);

@@ -41,6 +41,7 @@ OpenBeken features:
 - Short startup command (up to 512 characters) storage in flash config, so you can easily init your drivers (eg. BL0942) without LittleFS
 - Advanced scripting and events system (allows you to mirror Tasmota rules, for example catch button click, double click, hold)
 - Easily configurable via commands (see [tutorial](https://www.elektroda.com/rtvforum/topic3947241.html))
+- Thanks to keeping Tasmota standard, OBK has basic compatibility with [ioBroker](https://www.youtube.com/watch?v=x4p3JHXbK1E&ab_channel=Elektrodacom) and similiar systems through TELE/STAT/CMND MQTT packets
 - Automatic reconnect when WiFi network goes out
 - and much more
 
@@ -453,6 +454,7 @@ Some channels have "_div10" or "_div100" sufixes. This is for TuyaMCU. This is n
 | Voltage_div10 | Divide by 10 and display value as a V voltage. | TODO |
 | Current_div100 | Divide by 100 and display value as a A current. | TODO |
 | Current_div1000 | Divide by 1000 and display value as a A current. | TODO |
+| OffDimBright | 3 options - Off (0), Dim (1), Bright (2). Used for TuyaMCU LED indicator. | TODO |
   
 # Simple TCP command server for scripting
   

@@ -260,11 +260,6 @@ commandResult_t DRV_I2C_LCD_PCF8574_GoTo(const void *context, const char *cmd, c
 commandResult_t DRV_I2C_LCD_PCF8574_ClearAndGoTo(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	return DRV_I2C_LCD_PCF8574_GoTo_Internal(1,context,cmd,args,cmdFlags);
 }
-typedef enum lcdPrintType_e {
-	LCD_PRINT_DEFAULT,
-	LCD_PRINT_FLOAT,
-	LCD_PRINT_INT,
-} lcdPrintType_t;
 
 commandResult_t DRV_I2C_LCD_PCF8574_Print_Internal(lcdPrintType_t type,const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *i2cModuleStr;

@@ -410,6 +410,12 @@ void usleep(int r);
 
 #define MAP(x, in_min, in_max, out_min, out_max) (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 
+typedef enum lcdPrintType_e {
+	LCD_PRINT_DEFAULT,
+	LCD_PRINT_FLOAT,
+	LCD_PRINT_INT,
+} lcdPrintType_t;
+
 typedef enum
 {
     NOT_CONNECTED,
