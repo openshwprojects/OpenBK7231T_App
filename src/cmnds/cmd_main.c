@@ -95,13 +95,13 @@ static commandResult_t CMD_BATT_Meas(const void* context, const char* cmd, const
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_BATT_Meas : ADC Value low device not on battery");
 		return CMD_RES_ERROR;
 	}
-	CHANNEL_Toggle(g_pin_rel);
+	CHANNEL_Set(channel_rel, 1, 0);
 #ifdef PLATFORM_BEKEN
 	delay_ms(200);
 #endif
 	batt_value = CHANNEL_GetFloat(channel_adc);
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "CMD_BATT_Meas : ADC Measurement : %f and channel %i", batt_value, channel_adc);
-	CHANNEL_Toggle(g_pin_rel);
+	CHANNEL_Set(channel_rel, 0, 0);
 	// batt_value = batt_value / 4096.0 * 2400.0;
 	batt_value = batt_value + 500.0;
 	batt_ref = maxbatt - minbatt;
