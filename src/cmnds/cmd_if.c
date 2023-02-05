@@ -222,6 +222,12 @@ const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
 		*out = LED_GetTemperature();
 		return ret;
 	}
+	ret = strCompareBound(s, "$activeRepeatingEvents", stop, 0);
+	if (ret) {
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: activeRepeatingEvents");
+		*out = RepeatingEvents_GetActiveCount();
+		return ret;
+	}
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	ret = strCompareBound(s, "$voltage", stop, 0);
 	if (ret) {
