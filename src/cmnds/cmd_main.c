@@ -93,7 +93,7 @@ static commandResult_t CMD_BATT_Meas(const void* context, const char* cmd, const
 	if (Tokenizer_GetArgsCount() > 2) {
 		vref = Tokenizer_GetArgInteger(2);
 	}
-	adcbits = 4096;
+	int adcbits = 4096;
 	if (Tokenizer_GetArgsCount() > 3) {
 		adcbits = Tokenizer_GetArgInteger(3);
 	}
@@ -103,7 +103,6 @@ static commandResult_t CMD_BATT_Meas(const void* context, const char* cmd, const
 	}
 	g_pin_adc = PIN_FindPinIndexForRole(IOR_ADC, g_pin_adc);
 	g_pin_rel = PIN_FindPinIndexForRole(IOR_Relay, g_pin_rel);
-<<<<<<< HEAD
 	channel_rel = g_cfg.pins.channels[g_pin_rel];
 	HAL_ADC_Init(g_pin_adc);
 	batt_value = HAL_ADC_Read(g_pin_adc);
@@ -123,23 +122,6 @@ static commandResult_t CMD_BATT_Meas(const void* context, const char* cmd, const
 	batt_value = batt_value * vref;
 	// multiply by 2 cause ADC is measured after the Voltage Divider
 	batt_value = batt_value * v_divider;
-=======
-	channel_adc = g_cfg.pins.channels[g_pin_adc];
-	channel_rel = g_cfg.pins.channels[g_pin_rel];
-	batt_value = CHANNEL_GetFloat(channel_adc);
-
-	if (batt_value < 2048) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_BATT_Meas : ADC Value low device not on battery");
-		return CMD_RES_ERROR;
-	}
-
-	CHANNEL_Toggle(g_pin_rel);
-	delay_ms(100);
-	batt_value = CHANNEL_GetFloat(channel_adc);
-	CHANNEL_Toggle(g_pin_rel);
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "CMD_BATT_Meas : ADC Measurement : %f and channel %i", batt_value, channel_adc);
-	batt_value = batt_value / 4096.0 * 2400.0;
->>>>>>> 4c978ce (Correct issue with Read battery (to rely on Relay))
 	batt_ref = maxbatt - minbatt;
 	batt_res = batt_value - minbatt;
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "CMD_BATT_Meas : Ref battery: %f, rest battery %f", batt_ref, batt_res);
@@ -321,7 +303,7 @@ void CMD_UART_Run() {
 	// skip garbage data (should not happen)
 	for (i = 0; i < totalSize; i++) {
 		a = UART_GetNextByte(i);
-		if (i+1 < sizeof(tmp)) {
+		if (i + 1 < sizeof(tmp)) {
 			tmp[i] = a;
 			tmp[i + 1] = 0;
 		}
