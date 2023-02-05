@@ -108,6 +108,21 @@ void SIM_GenerateRepeatingEventsDesc(char *o, int outLen) {
 		cur = cur->next;
 	}
 }
+int RepeatingEvents_GetActiveCount() {
+	repeatingEvent_t *cur;
+	int c_active;
+	
+	c_active = 0;
+	cur = g_repeatingEvents;
+	while (cur) {
+		// -1 means 'forever'
+		if (cur->times > 0 || cur->times == -1) {
+			c_active++;
+		}
+		cur = cur->next;
+	}
+	return c_active;
+}
 void RepeatingEvents_OnEverySecond() {
 	repeatingEvent_t *cur;
 	int c_checked = 0;

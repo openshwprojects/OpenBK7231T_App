@@ -162,6 +162,7 @@ void EventHandlers_FireEvent_String(byte eventCode, const char* argument);
 // Then eventCode is a BUTTON_PRESS and argument is a button index.
 void EventHandlers_FireEvent(byte eventCode, int argument);
 void EventHandlers_FireEvent2(byte eventCode, int argument, int argument2);
+void EventHandlers_FireEvent3(byte eventCode, int argument, int argument2, int argument3);
 // This is more advanced event handler. It will only fire handlers when a variable state changes from one to another.
 // For example, you can watch for Voltage from BL0942 to change below 230, and it will fire event only when it becomes below 230.
 void EventHandlers_ProcessVariableChange_Integer(byte eventCode, int oldValue, int newValue);
@@ -229,5 +230,6 @@ byte* LFS_ReadFile(const char* fname);
 commandResult_t CMD_ClearAllHandlers(const void *context, const char *cmd, const char *args, int cmdFlags);
 commandResult_t RepeatingEvents_Cmd_ClearRepeatingEvents(const void *context, const char *cmd, const char *args, int cmdFlags);
 commandResult_t CMD_resetSVM(const void *context, const char *cmd, const char *args, int cmdFlags);
+int RepeatingEvents_GetActiveCount();
 
 #endif // __CMD_PUBLIC_H__

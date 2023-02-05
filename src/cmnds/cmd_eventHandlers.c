@@ -251,6 +251,7 @@ typedef struct eventHandler_s {
 	// and it will only fire for pin 5
 	short requiredArgument;
 	short requiredArgument2;
+	short requiredArgument3;
 	// command to execute when it happens
 	char *command;
 	// for UART event handlers?
@@ -278,7 +279,7 @@ void EventHandlers_ProcessVariableChange_Integer(byte eventCode, int oldValue, i
 	}
 }
 
-void EventHandlers_AddEventHandler_Integer(byte eventCode, int type, int requiredArgument, int requiredArgument2, const char *commandToRun)
+void EventHandlers_AddEventHandler_Integer(byte eventCode, int type, int requiredArgument, int requiredArgument2, int requiredArgument3, const char *commandToRun)
 {
 	eventHandler_t *ev = malloc(sizeof(eventHandler_t));
 	memset(ev,0,sizeof(eventHandler_t));
@@ -292,6 +293,7 @@ void EventHandlers_AddEventHandler_Integer(byte eventCode, int type, int require
 	ev->eventCode = eventCode;
 	ev->requiredArgument = requiredArgument;
 	ev->requiredArgument2 = requiredArgument2;
+	ev->requiredArgument3 = requiredArgument3;
 }
 
 void EventHandlers_AddEventHandler_String(byte eventCode, int type, const char *requiredArgument, const char *commandToRun)
@@ -308,6 +310,21 @@ void EventHandlers_AddEventHandler_String(byte eventCode, int type, const char *
 	ev->eventCode = eventCode;
 	ev->requiredArgument = 0;
 	ev->requiredArgument2 = 0;
+}
+void EventHandlers_FireEvent3(byte eventCode, int argument, int argument2, int argument3) {
+	struct eventHandler_s *ev;
+
+	ev = g_eventHandlers;
+
+	while (ev) {
+		if (eventCode == ev->eventCode) {
+			if (argument == ev->requiredArgument && argument2 == ev->requiredArgument2 && argument3 == ev->requiredArgument3) {
+				ADDLOG_INFO(LOG_FEATURE_EVENT, "EventHandlers_FireEvent3: executing command %s", ev->command);
+				CMD_ExecuteCommand(ev->command, COMMAND_FLAG_SOURCE_SCRIPT);
+			}
+		}
+		ev = ev->next;
+	}
 }
 void EventHandlers_FireEvent2(byte eventCode, int argument, int argument2) {
 	struct eventHandler_s *ev;
@@ -363,10 +380,11 @@ static commandResult_t CMD_AddEventHandler(const void *context, const char *cmd,
 	const char *eventName;
 	int reqArg;
 	int arg2;
+	int arg3;
 	const char *cmdToCall;
 	int eventCode;
 	const char *reqArgStr;
-	int bTwoArgsMode;
+	char argsCnt;
 
 	if(args==0||*args==0) {
 		ADDLOG_ERROR(LOG_FEATURE_EVENT, "CMD_AddEventHandler: command requires argument");
@@ -377,15 +395,15 @@ static commandResult_t CMD_AddEventHandler(const void *context, const char *cmd,
 		ADDLOG_ERROR(LOG_FEATURE_EVENT, "CMD_AddEventHandler: command requires 3 arguments");
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	if(cmd[strlen("addEventHandler2")-1]=='2') {
-		bTwoArgsMode = 1;
-		ADDLOG_DEBUG(LOG_FEATURE_EVENT, "CMD_AddEventHandler: will expect two args.");
-	} else {
-		bTwoArgsMode = 0;
-		ADDLOG_DEBUG(LOG_FEATURE_EVENT, "CMD_AddEventHandler: will expect 1 arg.");
+	argsCnt = cmd[strlen("addEventHandler2") - 1];
+	if (argsCnt == '2' || argsCnt == '3') {
+		argsCnt = argsCnt - '0';
 	}
-
+	else {
+		argsCnt = 1;
+	}
 	arg2 = 0;
+	arg3 = 0;
 
 	eventName = Tokenizer_GetArg(0);
 	if(false==Tokenizer_IsArgInteger(1)) {
@@ -394,17 +412,17 @@ static commandResult_t CMD_AddEventHandler(const void *context, const char *cmd,
 	} else {
 		reqArgStr = 0;
 		reqArg = Tokenizer_GetArgInteger(1);
-		if(bTwoArgsMode) {
+		if(argsCnt>1) {
 			arg2 = Tokenizer_GetArgInteger(2);
 			ADDLOG_DEBUG(LOG_FEATURE_EVENT, "CMD_AddEventHandler: arg2 = %i.",arg2);
+			if (argsCnt > 2) {
+				arg3 = Tokenizer_GetArgInteger(3);
+				ADDLOG_DEBUG(LOG_FEATURE_EVENT, "CMD_AddEventHandler: arg3= %i.", arg3);
+			}
 		}
 		ADDLOG_DEBUG(LOG_FEATURE_EVENT, "CMD_AddEventHandler: arg1 = %i.",reqArg);
 	}
-	if(bTwoArgsMode) {
-		cmdToCall = Tokenizer_GetArgFrom(3);
-	} else {
-		cmdToCall = Tokenizer_GetArgFrom(2);
-	}
+	cmdToCall = Tokenizer_GetArgFrom(1+ argsCnt);
 
 	eventCode = EVENT_ParseEventName(eventName);
 	if(eventCode == CMD_EVENT_NONE) {
@@ -416,7 +434,7 @@ static commandResult_t CMD_AddEventHandler(const void *context, const char *cmd,
 	if(reqArgStr) {
 		EventHandlers_AddEventHandler_String(eventCode,EVENT_DEFAULT,reqArgStr,cmdToCall);
 	} else {
-		EventHandlers_AddEventHandler_Integer(eventCode,EVENT_DEFAULT,reqArg,arg2,cmdToCall);
+		EventHandlers_AddEventHandler_Integer(eventCode,EVENT_DEFAULT,reqArg,arg2, arg3,cmdToCall);
 	}
 
 	return CMD_RES_OK;
@@ -480,7 +498,7 @@ static commandResult_t CMD_AddChangeHandler(const void *context, const char *cmd
 
 
 	ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddChangeHandler: added %s with cmd %s",eventName,cmdToCall);
-	EventHandlers_AddEventHandler_Integer(eventCode,relationCode,reqArg,0,cmdToCall);
+	EventHandlers_AddEventHandler_Integer(eventCode,relationCode,reqArg,0,0,cmdToCall);
 
 	return CMD_RES_OK;
 }
