@@ -73,6 +73,7 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 	return CMD_RES_OK;
 }
 static commandResult_t CMD_BATT_Meas(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	//this command has only been tested on CBU
 	float batt_value, batt_perc, batt_ref, batt_res;
 	int g_pin_adc = 0, channel_adc = 0, channel_rel = 0, g_pin_rel = 0;
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_BATT_Meas : Measure Battery volt en perc");
@@ -85,13 +86,25 @@ static commandResult_t CMD_BATT_Meas(const void* context, const char* cmd, const
 
 	int minbatt = Tokenizer_GetArgInteger(0);
 	int maxbatt = Tokenizer_GetArgInteger(1);
+	// apply default ratio for a vref of 2,403 for BK7231N
+	float vref = 2403;
+	if (Tokenizer_GetArgsCount() > 2) {
+		vref = Tokenizer_GetArgInteger(2);
+	}
+	adcbits = 4096;
+	if (Tokenizer_GetArgsCount() > 3) {
+		adcbits = Tokenizer_GetArgInteger(3);
+	}
+	int v_divider = 2;
+	if (Tokenizer_GetArgsCount() > 4) {
+		v_divider = Tokenizer_GetArgInteger(4);
+	}
 	g_pin_adc = PIN_FindPinIndexForRole(IOR_ADC, g_pin_adc);
 	g_pin_rel = PIN_FindPinIndexForRole(IOR_Relay, g_pin_rel);
-	channel_adc = g_cfg.pins.channels[g_pin_adc];
 	channel_rel = g_cfg.pins.channels[g_pin_rel];
-	batt_value = CHANNEL_GetFloat(channel_adc);
-
-	if (batt_value < 2048) {
+	HAL_ADC_Init(g_pin_adc);
+	batt_value = HAL_ADC_Read(g_pin_adc);
+	if (batt_value < 1024) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_BATT_Meas : ADC Value low device not on battery");
 		return CMD_RES_ERROR;
 	}
@@ -99,11 +112,14 @@ static commandResult_t CMD_BATT_Meas(const void* context, const char* cmd, const
 #ifdef PLATFORM_BEKEN
 	delay_ms(200);
 #endif
-	batt_value = CHANNEL_GetFloat(channel_adc);
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "CMD_BATT_Meas : ADC Measurement : %f and channel %i", batt_value, channel_adc);
+	batt_value = HAL_ADC_Read(g_pin_adc);
+	ADDLOG_DEBUG(LOG_FEATURE_CMD, "CMD_BATT_Meas : ADC binary Measurement : %f and channel %i", batt_value, channel_adc);
 	CHANNEL_Set(channel_rel, 0, 0);
-	// batt_value = batt_value / 4096.0 * 2400.0;
-	batt_value = batt_value + 500.0;
+	// batt_value = batt_value / vref / 12bits value should be 10 un doc ... but on CBU is 12 ....
+	vref = vref / adcbits;
+	batt_value = batt_value * vref;
+	// multiply by 2 cause ADC is measured after the Voltage Divider
+	batt_value = batt_value * v_divider;
 	batt_ref = maxbatt - minbatt;
 	batt_res = batt_value - minbatt;
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "CMD_BATT_Meas : Ref battery: %f, rest battery %f", batt_ref, batt_res);
@@ -284,10 +300,10 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_PowerSave","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PowerSave", "", CMD_PowerSave, NULL, NULL);
-	//cmddetail:{"name":"Battery_measure","args":"",
-	//cmddetail:"descr":"measure battery based on ADC args minbatt and maxbatt in mv",
+	//cmddetail:{"name":"Battery_measure","args":"[int][int][float][int][int]",
+	//cmddetail:"descr":"measure battery based on ADC args minbatt and maxbatt in mv. optional Vref(default 2403), ADC bits(4096) and  V_divider(2) ",
 	//cmddetail:"fn":"CMD_BATT_Meas","file":"cmnds/cmd_main.c","requires":"",
-	//cmddetail:"examples":"Battery_measure 1500 3000"}
+	//cmddetail:"examples":"Battery_measure 1500 3000 2403 4096 2"}
 	CMD_RegisterCommand("Battery_measure", "", CMD_BATT_Meas, NULL, NULL);
 	//cmddetail:{"name":"simonirtest","args":"",
 	//cmddetail:"descr":"Simons Special Test",
