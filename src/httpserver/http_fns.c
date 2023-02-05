@@ -2235,7 +2235,7 @@ const char* g_obk_flagNames[] = {
 	"[NETIF] Use short device name as a hostname instead of a long name",
 	"[MQTT] Enable Tasmota TELE etc publishes (for ioBroker etc)",
 	"[UART] Enable UART command line",
-	"error",
+	"[LED] Use old linear brightness mode, ignore gamma ramp",
 	"error",
 	"error",
 	"error",

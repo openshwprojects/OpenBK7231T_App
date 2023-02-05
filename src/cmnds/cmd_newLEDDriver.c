@@ -304,6 +304,9 @@ float led_gamma_correction (int color, float iVal) { // apply LED gamma and RGB 
 	if ((color < 0) || (color > 4)) {
 		return iVal;
 	}
+	if (CFG_HasFlag(OBK_FLAG_LED_USE_OLD_LINEAR_MODE)) {
+		return iVal;
+	}
 
 	// apply LED gamma correction:
 	float ch_bright_min = g_cfg.led_corr.rgb_bright_min / 100;
