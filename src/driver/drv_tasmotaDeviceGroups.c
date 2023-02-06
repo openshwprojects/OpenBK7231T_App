@@ -649,6 +649,9 @@ void DRV_DGR_Shutdown()
 #endif
 		g_dgr_socket_send = -1;
 	}
+	dgr_retry_time_left = 5;
+	g_inCmdProcessing = 0;
+	g_dgr_send_seq = 0;
 }
 
 // DGR_SendPower testSocket 1 1
