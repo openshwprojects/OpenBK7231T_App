@@ -519,6 +519,19 @@ static commandResult_t CMD_ListEventHandlers(const void *context, const char *cm
 
 	return CMD_RES_OK;
 }
+int EventHandlers_GetActiveCount() {
+	struct eventHandler_s *ev;
+	int c;
+
+	ev = g_eventHandlers;
+	c = 0;
+
+	while (ev) {
+		ev = ev->next;
+		c++;
+	}
+	return c;
+}
 void EventHandlers_Init() {
 
 	//cmddetail:{"name":"AddEventHandler","args":"[EventName][EventArgument][CommandToRun]",
