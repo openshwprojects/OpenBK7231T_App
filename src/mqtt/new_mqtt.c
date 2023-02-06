@@ -1210,9 +1210,9 @@ OBK_Publish_Result MQTT_PublishMain_StringString(const char* sChannel, const cha
 	return MQTT_PublishMain(mqtt_client, sChannel, valueStr, flags, true);
 
 }
-float MQTT_MultiplierConfiguredOnChannel(int channel, int iVal) {
-	// Init float variable
-	float fVal = 0;
+double MQTT_MultiplierConfiguredOnChannel(int channel, int iVal) {
+	// Init double variable
+	double dVal = 0;
 
 	// Checking if flag is set
 	if (CFG_HasFlag(OBK_FLAG_PUBLISH_MULTIPLIED_VALUES)) {
@@ -1221,27 +1221,27 @@ float MQTT_MultiplierConfiguredOnChannel(int channel, int iVal) {
 		case ChType_Humidity_div10:
 		case ChType_Temperature_div10:
 		case ChType_Voltage_div10:
-			fVal = (float)iVal / 10;
+			dVal = (double)iVal / 10;
 			break;
 		case ChType_Frequency_div100:
 		case ChType_Current_div100:
 		case ChType_EnergyTotal_kWh_div100:
-			fVal = (float)iVal / 100;
+			dVal = (double)iVal / 100;
 			break;
 		case ChType_PowerFactor_div1000:
 		case ChType_EnergyTotal_kWh_div1000:
 		case ChType_EnergyExport_kWh_div1000:
 		case ChType_EnergyToday_kWh_div1000:
 		case ChType_Current_div1000:
-			fVal = (float)iVal / 1000;
+			dVal = (double)iVal / 1000;
 			break;
 		default:
 			break;
 		}
 	}
 
-	// Returning float value. If it is zero then we dod nothing, or the value is indeed zero so it doesn't matter if we send a float or int.
-	return fVal;
+	// Returning double value. If it is zero then we dod nothing, or the value is indeed zero so it doesn't matter if we send a double or int.
+	return dVal;
 }
 OBK_Publish_Result MQTT_ChannelChangeCallback(int channel, int iVal)
 {
@@ -1249,17 +1249,17 @@ OBK_Publish_Result MQTT_ChannelChangeCallback(int channel, int iVal)
 	char valueStr[16];
 	int flags;
 
-	// Getting float value if any, and converting if required
-	float fVal = MQTT_MultiplierConfiguredOnChannel(channel, iVal);
-	if (fVal == 0) {
+	// Getting double value if any, and converting if required
+	double dVal = MQTT_MultiplierConfiguredOnChannel(channel, iVal);
+	if (dVal == 0) {
 		// Integer value
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Channel has changed! Publishing %i to channel %i \n", iVal, channel);
 		sprintf(valueStr, "%i", iVal);
 	}
 	else {
 		// Float value
-		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Channel has changed! Publishing %f to channel %i \n", fVal, channel);
-		sprintf(valueStr, "%f", fVal);
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Channel has changed! Publishing %f to channel %i \n", dVal, channel);
+		sprintf(valueStr, "%lf", dVal);
 	}
 
 	flags = 0;
@@ -1285,17 +1285,17 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 
 	iValue = CHANNEL_Get(channel);
 
-	// Getting float value if any, and converting if required
-	float fVal = MQTT_MultiplierConfiguredOnChannel(channel, iValue);
-	if (fVal == 0) {
+	// Getting double value if any, and converting if required
+	double dVal = MQTT_MultiplierConfiguredOnChannel(channel, iValue);
+	if (dVal == 0) {
 		// Integer value
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Forced channel publish! Publishing val %i to %i", iValue, channel);
 		sprintf(valueStr, "%i", iValue);
 	}
 	else {
 		// Float value
-		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Forced channel publish! Publishing val %f to %i", fVal, channel);
-		sprintf(valueStr, "%f", fVal);
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Forced channel publish! Publishing val %f to %i", dVal, channel);
+		sprintf(valueStr, "%lf", dVal);
 	}
 
 	// String from channel number
