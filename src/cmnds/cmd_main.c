@@ -67,7 +67,6 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 }
 static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int timeMS;
-	PS_DEEP_CTRL_PARAM deep_sleep_param;
 
 	Tokenizer_TokenizeString(args, 0);
 
