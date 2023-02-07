@@ -2264,6 +2264,7 @@ const char* g_obk_flagNames[] = {
 	"[MQTT] Enable Tasmota TELE etc publishes (for ioBroker etc)",
 	"[UART] Enable UART command line",
 	"[LED] Use old linear brightness mode, ignore gamma ramp",
+	"[MQTT] Apply channel type multiplier on (if any) on channel value before publishing it",
 	"error",
 	"error",
 	"error",
