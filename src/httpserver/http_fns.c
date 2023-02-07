@@ -811,6 +811,7 @@ int http_fn_index(http_request_t* request) {
 				hprintf255(request, "%i event handlers", i);
 				bFirst = false;
 			}
+#if defined(WINDOWS) || defined(PLATFORM_BEKEN)
 			i = CMD_GetCountActiveScriptThreads();
 			if (i) {
 				if (bFirst == false) {
@@ -819,6 +820,7 @@ int http_fn_index(http_request_t* request) {
 				hprintf255(request, "%i script threads", i);
 				bFirst = false;
 			}
+#endif
 		}
 		hprintf255(request, "</h5>");
 	}
