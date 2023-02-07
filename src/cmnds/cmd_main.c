@@ -50,7 +50,6 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 }
 static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int timeMS;
-	PS_DEEP_CTRL_PARAM deep_sleep_param;
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_DeepSleep: enable power save");
 	Tokenizer_TokenizeString(args, 0);
@@ -330,7 +329,7 @@ void CMD_RunUartCmndIfRequired() {
 		}
 	}
 #endif
-}
+	}
 void CMD_Init_Early() {
 	//cmddetail:{"name":"echo","args":"[Message]",
 	//cmddetail:"descr":"Sends given message back to console.",
