@@ -88,8 +88,8 @@ static commandResult_t CMD_BATT_Meas(const void* context, const char* cmd, const
 
 	int minbatt = Tokenizer_GetArgInteger(0);
 	int maxbatt = Tokenizer_GetArgInteger(1);
-	// apply default ratio for a vref of 2,403 for BK7231N
-	float vref = 2403;
+	// apply default ratio for a vref of 2,400 from BK7231N SDK
+	float vref = 2400;
 	if (Tokenizer_GetArgsCount() > 2) {
 		vref = Tokenizer_GetArgInteger(2);
 	}
@@ -102,21 +102,25 @@ static commandResult_t CMD_BATT_Meas(const void* context, const char* cmd, const
 		v_divider = Tokenizer_GetArgInteger(4);
 	}
 	g_pin_adc = PIN_FindPinIndexForRole(IOR_ADC, g_pin_adc);
-	g_pin_rel = PIN_FindPinIndexForRole(IOR_Relay, g_pin_rel);
-	channel_rel = g_cfg.pins.channels[g_pin_rel];
+	// if divider equal to 1 then no need for relay activation
+	if (v_divider > 1) {
+		g_pin_rel = PIN_FindPinIndexForRole(IOR_Relay, g_pin_rel);
+		channel_rel = g_cfg.pins.channels[g_pin_rel];
+	}
 	HAL_ADC_Init(g_pin_adc);
 	batt_value = HAL_ADC_Read(g_pin_adc);
 	if (batt_value < 1024) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_BATT_Meas : ADC Value low device not on battery");
 		return CMD_RES_ERROR;
 	}
-	CHANNEL_Set(channel_rel, 1, 0);
-#ifdef PLATFORM_BEKEN
-	delay_ms(200);
-#endif
+	if (v_divider > 1) {
+		CHANNEL_Set(channel_rel, 1, 0);
+	}
 	batt_value = HAL_ADC_Read(g_pin_adc);
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "CMD_BATT_Meas : ADC binary Measurement : %f and channel %i", batt_value, channel_adc);
-	CHANNEL_Set(channel_rel, 0, 0);
+	if (v_divider > 1) {
+		CHANNEL_Set(channel_rel, 0, 0);
+	}
 	// batt_value = batt_value / vref / 12bits value should be 10 un doc ... but on CBU is 12 ....
 	vref = vref / adcbits;
 	batt_value = batt_value * vref;
