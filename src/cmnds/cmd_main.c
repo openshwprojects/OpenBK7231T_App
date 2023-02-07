@@ -127,7 +127,7 @@ static commandResult_t CMD_BATT_Meas(const void* context, const char* cmd, const
 		channel_rel = g_cfg.pins.channels[g_pin_rel];
 	}
 	extern void HAL_ADC_Init(int g_pin_adc);
-	extern void HAL_ADC_Read(int g_pin_adc);
+	extern int HAL_ADC_Read(int g_pin_adc);
 	HAL_ADC_Init(g_pin_adc);
 	batt_value = HAL_ADC_Read(g_pin_adc);
 	if (batt_value < 1024) {
