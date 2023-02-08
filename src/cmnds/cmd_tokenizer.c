@@ -34,6 +34,12 @@ bool isWhiteSpace(char ch) {
 		return true;
 	return false;
 }
+bool Tokenizer_CheckArgsCountAndPrintWarning(const char *cmdString, int reqCount) {
+	if (g_numArgs >= reqCount)
+		return false;
+	ADDLOG_ERROR(LOG_FEATURE_CMD, "Cant run '%s', expected at least %i args (given %i)", cmdString, reqCount, g_numArgs);
+	return true;
+}
 int Tokenizer_GetArgsCount() {
 	return g_numArgs;
 }
