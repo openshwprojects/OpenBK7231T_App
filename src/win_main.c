@@ -123,6 +123,7 @@ void SIM_DoFreshOBKBoot() {
 	Main_Init();
 }
 void Win_DoUnitTests() {
+	Test_Commands_Generic();
 	Test_Demo_SimpleShuttersScript();
 	Test_Role_ToggleAll();
 	Test_Demo_FanCyclingRelays();

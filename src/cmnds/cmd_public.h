@@ -142,6 +142,7 @@ enum LightMode {
 
 // cmd_tokenizer.c
 int Tokenizer_GetArgsCount();
+bool Tokenizer_CheckArgsCountAndPrintWarning(const char *cmdStr, int reqCount);
 const char* Tokenizer_GetArg(int i);
 const char* Tokenizer_GetArgFrom(int i);
 int Tokenizer_GetArgInteger(int i);

@@ -523,6 +523,7 @@
     <ClCompile Include="src\selftest\selftest_changeHandlers.c" />
     <ClCompile Include="src\selftest\selftest_cmd_alias.c" />
     <ClCompile Include="src\selftest\selftest_cmd_channels.c" />
+    <ClCompile Include="src\selftest\selftest_cmd_generic.c" />
     <ClCompile Include="src\selftest\selftest_demo_fanCyclingRelays.c" />
     <ClCompile Include="src\selftest\selftest_demo_mapFanSpeedToRelays.c" />
     <ClCompile Include="src\selftest\selftest_demo_scriptForShutters.c" />
