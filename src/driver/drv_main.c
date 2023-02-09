@@ -107,10 +107,10 @@ static driver_t g_drivers[] = {
 #endif
 
 #ifdef ENABLE_DRIVER_LED
-	{ "SM2135",		SM2135_Init,		SM2135_RunFrame,			NULL, NULL, NULL, SM2135_OnChannelChanged, false },
-	{ "BP5758D",	BP5758D_Init,		BP5758D_RunFrame,			NULL, NULL, NULL, BP5758D_OnChannelChanged, false },
-	{ "BP1658CJ",	BP1658CJ_Init,		BP1658CJ_RunFrame,			NULL, NULL, NULL, BP1658CJ_OnChannelChanged, false },
-	{ "SM2235",		SM2235_Init,		SM2235_RunFrame,			NULL, NULL, NULL, NULL, false },
+	{ "SM2135",		SM2135_Init,		NULL,			NULL, NULL, NULL, NULL, false },
+	{ "BP5758D",	BP5758D_Init,		NULL,			NULL, NULL, NULL, NULL, false },
+	{ "BP1658CJ",	BP1658CJ_Init,		NULL,			NULL, NULL, NULL, NULL, false },
+	{ "SM2235",		SM2235_Init,		NULL,			NULL, NULL, NULL, NULL, false },
 #endif	
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	{ "CHT8305",	CHT8305_Init,		CHT8305_OnEverySecond,		CHT8305_AppendInformationToHTTPIndexPage, NULL, NULL, CHT8305_OnChannelChanged, false },
@@ -274,9 +274,10 @@ void DRV_StartDriver(const char* name) {
 // startDriver BL0937
 static commandResult_t DRV_Start(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, 0);
-
-	if (Tokenizer_GetArgsCount() < 1) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Requires driver name\n");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
@@ -286,8 +287,10 @@ static commandResult_t DRV_Start(const void* context, const char* cmd, const cha
 static commandResult_t DRV_Stop(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, 0);
 
-	if (Tokenizer_GetArgsCount() < 1) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Requires driver name\n");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 

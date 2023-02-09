@@ -579,10 +579,12 @@ commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const ch
     Tokenizer_TokenizeString(args,0);
 
 	argsCount = Tokenizer_GetArgsCount();
-    if(argsCount < 2) {
-        addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_LinkTuyaMCUOutputToChannel: requires 3 arguments (dpId, dpType, channelIndex)\n");
-        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-    }
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
     dpId = Tokenizer_GetArgInteger(0);
     dpTypeString = Tokenizer_GetArg(1);
     if(!stricmp(dpTypeString,"bool")) {
@@ -666,11 +668,12 @@ void TuyaMCU_Send(byte *data, int size) {
 
 commandResult_t TuyaMCU_SetDimmerRange(const void *context, const char *cmd, const char *args, int cmdFlags) {
     Tokenizer_TokenizeString(args,0);
-
-    if(Tokenizer_GetArgsCount() < 2) {
-        addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"tuyaMcu_setDimmerRange: requires 2 arguments (dimmerRangeMin, dimmerRangeMax)\n");
-        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-    }
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 
     g_dimmerRangeMin = Tokenizer_GetArgInteger(0);
     g_dimmerRangeMax = Tokenizer_GetArgInteger(1);
@@ -701,11 +704,12 @@ commandResult_t TuyaMCU_SendStateCmd(const void *context, const char *cmd, const
     int value;
 
     Tokenizer_TokenizeString(args,0);
-
-    if(Tokenizer_GetArgsCount() < 3) {
-        addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"tuyaMcu_sendState: requires 3 arguments (dpId, dpType, value)\n");
-        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-    }
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 
     dpId = Tokenizer_GetArgInteger(0);
     dpType = Tokenizer_GetArgInteger(1);
@@ -1387,11 +1391,12 @@ void TuyaMCU_RunFrame() {
 
 commandResult_t TuyaMCU_SetBaudRate(const void *context, const char *cmd, const char *args, int cmdFlags) {
     Tokenizer_TokenizeString(args,0);
-
-    if(Tokenizer_GetArgsCount() < 1) {
-        addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_SetBaudRate: requires 1 arguments (baudRate)\n");
-        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-    }
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 
     g_baudRate = Tokenizer_GetArgInteger(0);
     

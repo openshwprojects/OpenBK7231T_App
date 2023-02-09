@@ -35,13 +35,11 @@ static commandResult_t CMD_SetChannelLabel(const void *context, const char *cmd,
 	int ch;
 	const char *s;
 
-	if (args == 0 || *args == 0) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetChannel: command requires argument");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
 	Tokenizer_TokenizeString(args, 0);
-	if (Tokenizer_GetArgsCount() < 2) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetChannel: command requires 2 arguments");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
@@ -55,13 +53,11 @@ static commandResult_t CMD_SetChannelLabel(const void *context, const char *cmd,
 static commandResult_t CMD_SetChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int ch, val;
 
-	if(args==0||*args==0) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetChannel: command requires argument");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
 	Tokenizer_TokenizeString(args,0);
-	if(Tokenizer_GetArgsCount() < 2) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetChannel: command requires 2 arguments");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
@@ -76,13 +72,11 @@ static commandResult_t CMD_AddChannel(const void *context, const char *cmd, cons
 	int ch, val;
 	int bWrapInsteadOfClamp;
 
-	if(args==0||*args==0) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_AddChannel: command requires 2 arguments (next 2, min and max, are optionsl)");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
 	Tokenizer_TokenizeString(args,0);
-	if(Tokenizer_GetArgsCount() < 2) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_AddChannel: command requires 2 arguments (next 2, min and max, are optionsl)");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
@@ -112,13 +106,11 @@ static commandResult_t CMD_AddChannel(const void *context, const char *cmd, cons
 static commandResult_t CMD_ToggleChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int ch;
 
-	if(args==0||*args==0) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ToggleChannel: command requires 1 argument");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
 	Tokenizer_TokenizeString(args,0);
-	if(Tokenizer_GetArgsCount() < 1) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ToggleChannel: command requires 1 argument");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
@@ -132,13 +124,11 @@ static commandResult_t CMD_ClampChannel(const void *context, const char *cmd, co
 	int ch, max, min;
 	int bWrapInsteadOfClamp;
 
-	if(args==0||*args==0) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ClampChannel: command requires argument");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
 	Tokenizer_TokenizeString(args,0);
-	if(Tokenizer_GetArgsCount() < 2) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ClampChannel: command requires 3 arguments");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
@@ -156,13 +146,11 @@ static commandResult_t CMD_SetPinRole(const void *context, const char *cmd, cons
 	int pin, roleIndex;
 	const char *role;
 
-	if(args==0||*args==0) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetPinRole: command requires argument");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
 	Tokenizer_TokenizeString(args,0);
-	if(Tokenizer_GetArgsCount() < 2) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetPinRole: command requires 2 arguments");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
@@ -171,7 +159,7 @@ static commandResult_t CMD_SetPinRole(const void *context, const char *cmd, cons
 
 	roleIndex = PIN_ParsePinRoleName(role);
 	if(roleIndex == IOR_Total_Options) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetPinRole: This role is not known");
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Unknown role");
 	} else {
 		PIN_SetPinRoleForPinIndex(pin,roleIndex);
 	}
@@ -181,13 +169,11 @@ static commandResult_t CMD_SetPinRole(const void *context, const char *cmd, cons
 static commandResult_t CMD_SetPinChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int pin, ch;
 
-	if(args==0||*args==0) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetPinChannel: command requires argument");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
 	Tokenizer_TokenizeString(args,0);
-	if(Tokenizer_GetArgsCount() < 2) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetPinChannel: command requires 2 arguments");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
@@ -201,11 +187,11 @@ static commandResult_t CMD_SetPinChannel(const void *context, const char *cmd, c
 static commandResult_t CMD_GetChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int ch, val;
 
-	if(args==0||*args==0) {
-		return 1;
-	}
 	Tokenizer_TokenizeString(args,0);
-	if(Tokenizer_GetArgsCount() < 1) {
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
@@ -215,7 +201,7 @@ static commandResult_t CMD_GetChannel(const void *context, const char *cmd, cons
 	if(cmdFlags & COMMAND_FLAG_SOURCE_TCP) {
 		ADDLOG_INFO(LOG_FEATURE_RAW, "%i", val);
 	} else {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_GetChannel: channel %i is %i",ch, val);
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Channel %i is %i",ch, val);
 	}
 
 	return CMD_RES_OK;
@@ -227,13 +213,12 @@ static commandResult_t CMD_MapRanges(const void *context, const char *cmd, const
 	float useVal;
 	int res = 0;
 	int i;
-	if (args == 0 || *args == 0) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_MapRanges: command requires arguments");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
+
 	Tokenizer_TokenizeString(args, 0);
-	if (Tokenizer_GetArgsCount() < 3) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_MapRanges: command requires at least 3 arguments");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
@@ -256,13 +241,12 @@ static commandResult_t CMD_MapRanges(const void *context, const char *cmd, const
 static commandResult_t CMD_SetChannelVisible(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int targetCH;
 	int bOn;
-	if (args == 0 || *args == 0) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetChannelVisible: command requires arguments");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
+
 	Tokenizer_TokenizeString(args, 0);
-	if (Tokenizer_GetArgsCount() < 2) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SetChannelVisible: command requires at least 1 arguments");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
@@ -295,7 +279,7 @@ static commandResult_t CMD_GetReadings(const void *context, const char *cmd, con
 	if(cmdFlags & COMMAND_FLAG_SOURCE_TCP) {
 		ADDLOG_INFO(LOG_FEATURE_RAW, tmp);
 	} else {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_GetReadings: readings are %s",tmp);
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Readings are %s",tmp);
 	}
 #endif
 	return CMD_RES_OK;
@@ -310,7 +294,7 @@ static commandResult_t CMD_ShortName(const void *context, const char *cmd, const
 			ADDLOG_INFO(LOG_FEATURE_RAW, s);
 		}
 		else {
-			ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_ShortName: name is %s", s);
+			ADDLOG_INFO(LOG_FEATURE_CMD, "Name is %s", s);
 		}
 	}
 	else {
@@ -328,7 +312,7 @@ static commandResult_t CMD_FriendlyName(const void *context, const char *cmd, co
 			ADDLOG_INFO(LOG_FEATURE_RAW, s);
 		}
 		else {
-			ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_FriendlyName: name is %s", s);
+			ADDLOG_INFO(LOG_FEATURE_CMD, "FriendlyName is %s", s);
 		}
 	}
 	else {
@@ -340,9 +324,11 @@ static commandResult_t CMD_FullBootTime(const void *context, const char *cmd, co
 	int v;
 	Tokenizer_TokenizeString(args, 0);
 
-	if (Tokenizer_GetArgsCount() < 1) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "Requires 1 arg");
-		return CMD_RES_BAD_ARGUMENT;
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	v = Tokenizer_GetArgInteger(0);
 
@@ -356,12 +342,13 @@ static commandResult_t CMD_SetFlag(const void *context, const char *cmd, const c
 	int flag;
 	int bOn;
 	Tokenizer_TokenizeString(args, 0);
-
-	s = CFG_GetDeviceName();
-	if (Tokenizer_GetArgsCount() <= 1) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "Usage: [flag] [1or0]");
-		return CMD_RES_BAD_ARGUMENT;
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
+	s = CFG_GetDeviceName();
 	flag = Tokenizer_GetArgInteger(0);
 	bOn = Tokenizer_GetArgInteger(1);
 

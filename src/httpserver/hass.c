@@ -367,8 +367,9 @@ const char* hass_build_discovery_json(HassDeviceInfo* info) {
 /// @brief Release allocated memory.
 /// @param info 
 void hass_free_device_info(HassDeviceInfo* info) {
-	if (info == NULL) return;
-	addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "hass_free_device_info \r\n");
+	if (info == NULL)
+		return;
+	//addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "hass_free_device_info \r\n");
 
 	if (info->root != NULL) {
 		cJSON_Delete(info->root);

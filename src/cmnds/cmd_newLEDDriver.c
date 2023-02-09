@@ -304,13 +304,16 @@ float led_gamma_correction (int color, float iVal) { // apply LED gamma and RGB 
 	if ((color < 0) || (color > 4)) {
 		return iVal;
 	}
+	float brightnessNormalized0to1 = g_brightness0to100 * 0.01f;
+	if (CFG_HasFlag(OBK_FLAG_LED_USE_OLD_LINEAR_MODE)) {
+		return iVal * brightnessNormalized0to1;
+	}
 
 	// apply LED gamma correction:
 	float ch_bright_min = g_cfg.led_corr.rgb_bright_min / 100;
 	if (color > 2) {
 		ch_bright_min = g_cfg.led_corr.cw_bright_min / 100;
 	}
-	float brightnessNormalized0to1 = g_brightness0to100 * 0.01f;
 	float oVal = (powf (brightnessNormalized0to1, g_cfg.led_corr.led_gamma) * (1 - ch_bright_min) + ch_bright_min) * iVal;
 
 	// apply RGB level correction:

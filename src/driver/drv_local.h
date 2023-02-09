@@ -28,20 +28,12 @@ void DRV_DDP_RunFrame();
 void DRV_DDP_Shutdown();
 
 void SM2135_Init();
-void SM2135_RunFrame();
-void SM2135_OnChannelChanged(int ch, int value);
 
 void SM2235_Init();
-void SM2235_RunFrame();
-void SM2235_OnChannelChanged(int ch, int value);
 
 void BP5758D_Init();
-void BP5758D_RunFrame();
-void BP5758D_OnChannelChanged(int ch, int value);
 
 void BP1658CJ_Init();
-void BP1658CJ_RunFrame();
-void BP1658CJ_OnChannelChanged(int ch, int value);
 
 void SM16703P_Init();
 
