@@ -186,10 +186,11 @@ void BP5758D_Write(float *rgbcw) {
 static commandResult_t BP5758D_Current(const void *context, const char *cmd, const char *args, int flags){
 	byte val;
 	Tokenizer_TokenizeString(args,0);
-
-	if(Tokenizer_GetArgsCount()==0) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "BP5758D_Current: requires one argument!\n");
-		return 0;
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	val = Tokenizer_GetArgInteger(0);
 	// reinit bulb

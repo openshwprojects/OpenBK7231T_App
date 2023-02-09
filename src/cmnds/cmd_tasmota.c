@@ -415,56 +415,57 @@ static commandResult_t cmnd_lfs_test3(const void * context, const char *cmd, con
 }
 static commandResult_t cmnd_SSID1(const void * context, const char *cmd, const char *args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
-	if (Tokenizer_GetArgsCount()==0) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "This command requires 1 argument");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	else {
-		CFG_SetWiFiSSID(Tokenizer_GetArg(0));
-	}
+	CFG_SetWiFiSSID(Tokenizer_GetArg(0));
 	return CMD_RES_OK;
 }
 static commandResult_t cmnd_Password1(const void * context, const char *cmd, const char *args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
-
-	if (Tokenizer_GetArgsCount() == 0) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "This command requires 1 argument");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	else {
-		CFG_SetWiFiPass(Tokenizer_GetArg(0));
-	}
+	CFG_SetWiFiPass(Tokenizer_GetArg(0));
 	return CMD_RES_OK;
 }
 static commandResult_t cmnd_MqttHost(const void * context, const char *cmd, const char *args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
-
-	if (Tokenizer_GetArgsCount() == 0) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "This command requires 1 argument");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	else {
-		CFG_SetMQTTHost(Tokenizer_GetArg(0));
-	}
+	CFG_SetMQTTHost(Tokenizer_GetArg(0));
 	return CMD_RES_OK;
 }
 static commandResult_t cmnd_MqttUser(const void * context, const char *cmd, const char *args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
-
-	if (Tokenizer_GetArgsCount() == 0) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "This command requires 1 argument");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	else {
-		CFG_SetMQTTUserName(Tokenizer_GetArg(0));
-	}
+	CFG_SetMQTTUserName(Tokenizer_GetArg(0));
 	return CMD_RES_OK;
 }
 static commandResult_t cmnd_MqttClient(const void * context, const char *cmd, const char *args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
-
-	if (Tokenizer_GetArgsCount() == 0) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "This command requires 1 argument");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	else {
-		CFG_SetMQTTClientId(Tokenizer_GetArg(0));
-	}
+	CFG_SetMQTTClientId(Tokenizer_GetArg(0));
 	return CMD_RES_OK;
 }
 static commandResult_t cmnd_State(const void * context, const char *cmd, const char *args, int cmdFlags) {
@@ -473,13 +474,13 @@ static commandResult_t cmnd_State(const void * context, const char *cmd, const c
 }
 static commandResult_t cmnd_MqttPassword(const void * context, const char *cmd, const char *args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
-
-	if (Tokenizer_GetArgsCount() == 0) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "This command requires 1 argument");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	else {
-		CFG_SetMQTTPass(Tokenizer_GetArg(0));
-	}
+	CFG_SetMQTTPass(Tokenizer_GetArg(0));
 	return CMD_RES_OK;
 }
 int taslike_commands_init(){

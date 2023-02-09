@@ -556,13 +556,11 @@ static commandResult_t CMD_GoTo(const void *context, const char *cmd, const char
 	const char *fname;
 	const char *label;
 
-	if(args==0||*args==0) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_GoTo: command requires argument");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
 	Tokenizer_TokenizeString(args,0);
-	if(Tokenizer_GetArgsCount() < 1) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_GoTo: command requires 1 argument");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	if(g_activeThread == 0) {
@@ -592,13 +590,11 @@ static commandResult_t CMD_StartScript(const void *context, const char *cmd, con
 	const char *label;
 	int uniqueID;
 
-	if(args==0||*args==0) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: command requires argument");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
 	Tokenizer_TokenizeString(args,0);
-	if(Tokenizer_GetArgsCount() < 1) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: command requires 1 argument");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
@@ -616,13 +612,11 @@ static commandResult_t CMD_Delay_s(const void *context, const char *cmd, const c
 	float del;
 	int delMS;
 
-	if(args==0||*args==0) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_s: command requires argument");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
 	Tokenizer_TokenizeString(args,0);
-	if(Tokenizer_GetArgsCount() < 1) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_s: command requires 1 argument");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	if(g_activeThread == 0) {
@@ -641,13 +635,11 @@ static commandResult_t CMD_Delay_s(const void *context, const char *cmd, const c
 static commandResult_t CMD_Delay_ms(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int del;
 
-	if(args==0||*args==0) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_ms: command requires argument");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
 	Tokenizer_TokenizeString(args,0);
-	if(Tokenizer_GetArgsCount() < 1) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_ms: command requires 1 argument");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	if(g_activeThread == 0) {
@@ -682,8 +674,10 @@ static commandResult_t CMD_StopScript(const void *context, const char *cmd, cons
 	int idToStop, excludeSelf;
 
 	Tokenizer_TokenizeString(args,0);
-	if(Tokenizer_GetArgsCount() < 1) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StopScript: command requires 1 argument (unique ID)");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 

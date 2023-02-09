@@ -662,9 +662,10 @@ commandResult_t CMD_DGR_SendPower(const void *context, const char *cmd, const ch
 	int channelsCount;
 
 	Tokenizer_TokenizeString(args,0);
-
-	if(Tokenizer_GetArgsCount() < 3) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Command requires 3 arguments - groupname, channelvalues, valuescount\n");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	groupName = Tokenizer_GetArg(0);
@@ -802,9 +803,10 @@ commandResult_t CMD_DGR_SendBrightness(const void *context, const char *cmd, con
 	int brightness;
 
 	Tokenizer_TokenizeString(args,0);
-
-	if(Tokenizer_GetArgsCount() < 2) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Command requires 2 arguments - groupname, brightess\n");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	groupName = Tokenizer_GetArg(0);
@@ -822,9 +824,10 @@ commandResult_t CMD_DGR_SendRGBCW(const void *context, const char *cmd, const ch
 	byte rgbcw[5];
 
 	Tokenizer_TokenizeString(args,0);
-
-	if(Tokenizer_GetArgsCount() < 4) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Command requires at least 4 arguments - groupname, r, g, b\n");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 4)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	groupName = Tokenizer_GetArg(0);
@@ -845,9 +848,10 @@ commandResult_t CMD_DGR_SendFixedColor(const void *context, const char *cmd, con
 	int colorIndex;
 
 	Tokenizer_TokenizeString(args, 0);
-
-	if (Tokenizer_GetArgsCount() < 2) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_DGR, "Command requires at least 2 arguments - groupname, colorIndex\n");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	groupName = Tokenizer_GetArg(0);

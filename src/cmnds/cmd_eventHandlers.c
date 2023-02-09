@@ -386,15 +386,15 @@ static commandResult_t CMD_AddEventHandler(const void *context, const char *cmd,
 	const char *reqArgStr;
 	char argsCnt;
 
-	if(args==0||*args==0) {
-		ADDLOG_ERROR(LOG_FEATURE_EVENT, "CMD_AddEventHandler: command requires argument");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
 	Tokenizer_TokenizeString(args,0);
-	if(Tokenizer_GetArgsCount() < 3) {
-		ADDLOG_ERROR(LOG_FEATURE_EVENT, "CMD_AddEventHandler: command requires 3 arguments");
+	
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
+
 	argsCnt = cmd[strlen("addEventHandler2") - 1];
 	if (argsCnt == '2' || argsCnt == '3') {
 		argsCnt = argsCnt - '0';
@@ -469,13 +469,11 @@ static commandResult_t CMD_AddChangeHandler(const void *context, const char *cmd
 	int relationCode;
 	int eventCode;
 
-	if(args==0||*args==0) {
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddChangeHandler: command requires argument");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
 	Tokenizer_TokenizeString(args,0);
-	if(Tokenizer_GetArgsCount() < 4) {
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddChangeHandler: command requires 4 arguments");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 4)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 

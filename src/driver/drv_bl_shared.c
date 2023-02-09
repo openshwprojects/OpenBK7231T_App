@@ -218,12 +218,12 @@ commandResult_t BL09XX_SetupEnergyStatistic(const void *context, const char *cmd
     int json_enable;
 
     Tokenizer_TokenizeString(args,0);
-
-    if(Tokenizer_GetArgsCount() < 3) 
-    {
-        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "BL09XX_SetupEnergyStatistic: requires 3 arguments (enable, sample_time, sample_count)\n");
-        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-    }
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 
     enable = Tokenizer_GetArgInteger(0);
     sample_time = Tokenizer_GetArgInteger(1);
@@ -303,12 +303,12 @@ commandResult_t BL09XX_SetupConsumptionThreshold(const void *context, const char
 {
     float threshold;
     Tokenizer_TokenizeString(args,0);
-
-    if(Tokenizer_GetArgsCount() < 1)
-    {
-          addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "BL09XX_SetupConsumptionThreshold: requires argument (threshold)\n");
-          return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-    }
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
     
     threshold = atof(Tokenizer_GetArg(0)); 
 

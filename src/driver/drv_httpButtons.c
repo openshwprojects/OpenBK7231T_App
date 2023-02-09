@@ -149,9 +149,10 @@ commandResult_t CMD_setButtonColor(const void *context, const char *cmd, const c
 	const char *cStr;
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
-
-	if (Tokenizer_GetArgsCount() < 2) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "This command needs 2 arguments");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	buttonIndex = Tokenizer_GetArgInteger(0);
@@ -168,9 +169,10 @@ commandResult_t CMD_setButtonCommand(const void *context, const char *cmd, const
 	const char *cmdToSet;
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
-
-	if (Tokenizer_GetArgsCount() < 2) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "This command needs 2 arguments");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	buttonIndex = Tokenizer_GetArgInteger(0);
@@ -185,9 +187,10 @@ commandResult_t CMD_setButtonLabel(const void *context, const char *cmd, const c
 	const char *lab;
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
-
-	if (Tokenizer_GetArgsCount() < 2) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "This command needs 2 arguments");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	buttonIndex = Tokenizer_GetArgInteger(0);
@@ -203,8 +206,10 @@ commandResult_t CMD_setButtonEnabled(const void *context, const char *cmd, const
 
 	Tokenizer_TokenizeString(args,0);
 
-	if (Tokenizer_GetArgsCount() < 2) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "This command needs 2 arguments");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	buttonIndex = Tokenizer_GetArgInteger(0);
