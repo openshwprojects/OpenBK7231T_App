@@ -1771,32 +1771,6 @@ int http_fn_ha_discovery(http_request_t* request) {
 	return 0;
 }
 
-void http_generate_rgb_cfg(http_request_t* request, const char* clientId) {
-	hprintf255(request, "    rgb_command_template: \"{{ '#%%02x%%02x%%02x0000' | format(red, green, blue)}}\"\n");
-	hprintf255(request, "    rgb_value_template: \"{{ value[0:2]|int(base=16) }},{{ value[2:4]|int(base=16) }},{{ value[4:6]|int(base=16) }}\"\n");
-	hprintf255(request, "    rgb_state_topic: \"%s/led_basecolor_rgb/get\"\n", clientId);
-	hprintf255(request, "    rgb_command_topic: \"cmnd/%s/led_basecolor_rgb\"\n", clientId);
-	hprintf255(request, "    command_topic: \"cmnd/%s/led_enableAll\"\n", clientId);
-	hprintf255(request, "    state_topic: \"%s/led_enableAll/get\"\n", clientId);
-	hprintf255(request, "    availability_topic: \"%s/connected\"\n", clientId);
-	hprintf255(request, "    payload_on: 1\n");
-	hprintf255(request, "    payload_off: 0\n");
-	hprintf255(request, "    brightness_command_topic: \"cmnd/%s/led_dimmer\"\n", clientId);
-	hprintf255(request, "    brightness_state_topic: \"%s/led_dimmer/get\"\n", clientId);
-	hprintf255(request, "    brightness_scale: 100\n");
-}
-void http_generate_cw_cfg(http_request_t* request, const char* clientId) {
-	hprintf255(request, "    command_topic: \"cmnd/%s/led_enableAll\"\n", clientId);
-	hprintf255(request, "    state_topic: \"%s/led_enableAll/get\"\n", clientId);
-	hprintf255(request, "    availability_topic: \"%s/connected\"\n", clientId);
-	hprintf255(request, "    payload_on: 1\n");
-	hprintf255(request, "    payload_off: 0\n");
-	hprintf255(request, "    brightness_command_topic: \"cmnd/%s/led_dimmer\"\n", clientId);
-	hprintf255(request, "    brightness_state_topic: \"%s/led_dimmer/get\"\n", clientId);
-	hprintf255(request, "    brightness_scale: 100\n");
-	hprintf255(request, "    color_temp_command_topic: \"cmnd/%s/led_temperature\"\n", clientId);
-	hprintf255(request, "    color_temp_state_topic: \"%s/led_temperature/get\"\n", clientId);
-}
 void http_generate_singleColor_cfg(http_request_t* request, const char* clientId) {
 	hprintf255(request, "    command_topic: \"cmnd/%s/led_enableAll\"\n", clientId);
 	hprintf255(request, "    state_topic: \"%s/led_enableAll/get\"\n", clientId);
@@ -1806,6 +1780,19 @@ void http_generate_singleColor_cfg(http_request_t* request, const char* clientId
 	hprintf255(request, "    brightness_command_topic: \"cmnd/%s/led_dimmer\"\n", clientId);
 	hprintf255(request, "    brightness_state_topic: \"%s/led_dimmer/get\"\n", clientId);
 	hprintf255(request, "    brightness_scale: 100\n");
+}
+void http_generate_rgb_cfg(http_request_t* request, const char* clientId) {
+	hprintf255(request, "    rgb_command_template: \"{{ '#%%02x%%02x%%02x0000' | format(red, green, blue)}}\"\n");
+	hprintf255(request, "    rgb_value_template: \"{{ value[0:2]|int(base=16) }},{{ value[2:4]|int(base=16) }},{{ value[4:6]|int(base=16) }}\"\n");
+	hprintf255(request, "    rgb_state_topic: \"%s/led_basecolor_rgb/get\"\n", clientId);
+	hprintf255(request, "    rgb_command_topic: \"cmnd/%s/led_basecolor_rgb\"\n", clientId);
+
+	http_generate_singleColor_cfg(request, clientId);
+}
+void http_generate_cw_cfg(http_request_t* request, const char* clientId) {
+	hprintf255(request, "    color_temp_command_topic: \"cmnd/%s/led_temperature\"\n", clientId);
+	hprintf255(request, "    color_temp_state_topic: \"%s/led_temperature/get\"\n", clientId);
+	http_generate_singleColor_cfg(request, clientId);
 }
 int http_fn_ha_cfg(http_request_t* request) {
 	int relayCount;
