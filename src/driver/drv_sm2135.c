@@ -17,11 +17,11 @@
 // The pin code would crash BL602 while trying to access pin 26.
 // This is why the default settings here a per-platform.
 #if PLATFORM_BEKEN
-static int g_pin_clk = 26;
-static int g_pin_data = 24;
+static int g_i2c_pin_clk = 26;
+static int g_i2c_pin_data = 24;
 #else
-static int g_pin_clk = 0;
-static int g_pin_data = 1;
+static int g_i2c_pin_clk = 0;
+static int g_i2c_pin_data = 1;
 #endif
 
 static int g_current_setting_cw = SM2135_20MA;
@@ -39,11 +39,11 @@ static void SM2135_SetHigh(uint8_t pin) {
 }
 
 static bool SM2135_PreInit(void) {
-	HAL_PIN_SetOutputValue(g_pin_data, 0);
-	HAL_PIN_SetOutputValue(g_pin_clk, 0);
-	SM2135_SetHigh(g_pin_data);
-	SM2135_SetHigh(g_pin_clk);
-	return (!((HAL_PIN_ReadDigitalInput(g_pin_data) == 0 || HAL_PIN_ReadDigitalInput(g_pin_clk) == 0)));
+	HAL_PIN_SetOutputValue(g_i2c_pin_data, 0);
+	HAL_PIN_SetOutputValue(g_i2c_pin_clk, 0);
+	SM2135_SetHigh(g_i2c_pin_data);
+	SM2135_SetHigh(g_i2c_pin_clk);
+	return (!((HAL_PIN_ReadDigitalInput(g_i2c_pin_data) == 0 || HAL_PIN_ReadDigitalInput(g_i2c_pin_clk) == 0)));
 }
 
 static bool SM2135_WriteByte(uint8_t value) {
@@ -52,38 +52,38 @@ static bool SM2135_WriteByte(uint8_t value) {
 
 	for (curr = 0X80; curr != 0; curr >>= 1) {
 		if (curr & value) {
-			SM2135_SetHigh(g_pin_data);
+			SM2135_SetHigh(g_i2c_pin_data);
 		} else {
-			SM2135_SetLow(g_pin_data);
+			SM2135_SetLow(g_i2c_pin_data);
 		}
-		SM2135_SetHigh(g_pin_clk);
+		SM2135_SetHigh(g_i2c_pin_clk);
 		usleep(SM2135_DELAY);
-		SM2135_SetLow(g_pin_clk);
+		SM2135_SetLow(g_i2c_pin_clk);
 	}
 	// get Ack or Nak
-	SM2135_SetHigh(g_pin_data);
-	SM2135_SetHigh(g_pin_clk);
+	SM2135_SetHigh(g_i2c_pin_data);
+	SM2135_SetHigh(g_i2c_pin_clk);
 	usleep(SM2135_DELAY / 2);
-	ack = HAL_PIN_ReadDigitalInput(g_pin_data);
-	SM2135_SetLow(g_pin_clk);
+	ack = HAL_PIN_ReadDigitalInput(g_i2c_pin_data);
+	SM2135_SetLow(g_i2c_pin_clk);
 	usleep(SM2135_DELAY / 2);
-	SM2135_SetLow(g_pin_data);
+	SM2135_SetLow(g_i2c_pin_data);
 	return (0 == ack);
 }
 
 static bool SM2135_Start(uint8_t addr) {
-	SM2135_SetLow(g_pin_data);
+	SM2135_SetLow(g_i2c_pin_data);
 	usleep(SM2135_DELAY);
-	SM2135_SetLow(g_pin_clk);
+	SM2135_SetLow(g_i2c_pin_clk);
 	return SM2135_WriteByte(addr);
 }
 
 static void SM2135_Stop(void) {
-	SM2135_SetLow(g_pin_data);
+	SM2135_SetLow(g_i2c_pin_data);
 	usleep(SM2135_DELAY);
-	SM2135_SetHigh(g_pin_clk);
+	SM2135_SetHigh(g_i2c_pin_clk);
 	usleep(SM2135_DELAY);
-	SM2135_SetHigh(g_pin_data);
+	SM2135_SetHigh(g_i2c_pin_data);
 	usleep(SM2135_DELAY);
 }
 
@@ -228,8 +228,8 @@ void SM2135_Init() {
 
     SM2135_PreInit();
 
-	g_pin_clk = PIN_FindPinIndexForRole(IOR_SM2135_CLK,g_pin_clk);
-	g_pin_data = PIN_FindPinIndexForRole(IOR_SM2135_DAT,g_pin_data);
+	g_i2c_pin_clk = PIN_FindPinIndexForRole(IOR_SM2135_CLK,g_i2c_pin_clk);
+	g_i2c_pin_data = PIN_FindPinIndexForRole(IOR_SM2135_DAT,g_i2c_pin_data);
 
 	//cmddetail:{"name":"SM2135_RGBCW","args":"[HexColor]",
 	//cmddetail:"descr":"Don't use it. It's for direct access of SM2135 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",
@@ -246,31 +246,6 @@ void SM2135_Init() {
 	//cmddetail:"fn":"SM2135_Current","file":"driver/drv_sm2135.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SM2135_Current", "", SM2135_Current, NULL, NULL);
-}
-
-void SM2135_RunFrame() {
-
-}
-
-
-void SM2135_OnChannelChanged(int ch, int value) {
-#if 0
-	byte col[5];
-	int channel;
-	int c;
-
-	for(channel = 0; channel < CHANNEL_MAX; channel++){
-		if(IOR_PWM == CHANNEL_GetRoleForOutputChannel(channel)){
-			col[c] = CHANNEL_Get(channel);
-			c++;
-		}
-	}
-	for( ; c < 5; c++){
-		col[c] = 0;
-	}
-
-	SM2135_Write(col);
-#endif
 }
 
 

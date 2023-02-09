@@ -17,11 +17,11 @@
 // The pin code would crash BL602 while trying to access pin 26.
 // This is why the default settings here a per-platform.
 #if PLATFORM_BEKEN
-static int g_pin_clk = 26;
-static int g_pin_data = 24;
+static int g_i2c_pin_clk = 26;
+static int g_i2c_pin_data = 24;
 #else
-static int g_pin_clk = 0;
-static int g_pin_data = 1;
+static int g_i2c_pin_clk = 0;
+static int g_i2c_pin_data = 1;
 #endif
 
 // Mapping between RGBCW to current BP5758D channels
@@ -37,9 +37,9 @@ bool bIsSleeping = false; //Save sleep state of Lamp
 
 
 static void BP5758D_Stop() {
-	HAL_PIN_SetOutputValue(g_pin_clk, 1);
+	HAL_PIN_SetOutputValue(g_i2c_pin_clk, 1);
 	usleep(BP5758D_DELAY);
-	HAL_PIN_SetOutputValue(g_pin_data, 1);
+	HAL_PIN_SetOutputValue(g_i2c_pin_data, 1);
 	usleep(BP5758D_DELAY);
 }
 
@@ -50,27 +50,27 @@ static void BP5758D_WriteByte(uint8_t value) {
 
 	for (bit_idx = 7; bit_idx >= 0; bit_idx--) {
 		bit = BIT_CHECK(value, bit_idx);
-		HAL_PIN_SetOutputValue(g_pin_data, bit);
+		HAL_PIN_SetOutputValue(g_i2c_pin_data, bit);
 		usleep(BP5758D_DELAY);
-		HAL_PIN_SetOutputValue(g_pin_clk, 1);
+		HAL_PIN_SetOutputValue(g_i2c_pin_clk, 1);
 		usleep(BP5758D_DELAY);
-		HAL_PIN_SetOutputValue(g_pin_clk, 0);
+		HAL_PIN_SetOutputValue(g_i2c_pin_clk, 0);
 		usleep(BP5758D_DELAY);
 	}
 	// Wait for ACK
 	// TODO: pullup?
-	HAL_PIN_Setup_Input(g_pin_data);
-	HAL_PIN_SetOutputValue(g_pin_clk, 1);
+	HAL_PIN_Setup_Input(g_i2c_pin_data);
+	HAL_PIN_SetOutputValue(g_i2c_pin_clk, 1);
 	usleep(BP5758D_DELAY);
-	HAL_PIN_SetOutputValue(g_pin_clk, 0);
+	HAL_PIN_SetOutputValue(g_i2c_pin_clk, 0);
 	usleep(BP5758D_DELAY);
-	HAL_PIN_Setup_Output(g_pin_data);
+	HAL_PIN_Setup_Output(g_i2c_pin_data);
 }
 
 static void BP5758D_Start(uint8_t addr) {
-	HAL_PIN_SetOutputValue(g_pin_data, 0);
+	HAL_PIN_SetOutputValue(g_i2c_pin_data, 0);
 	usleep(BP5758D_DELAY);
-	HAL_PIN_SetOutputValue(g_pin_clk, 0);
+	HAL_PIN_SetOutputValue(g_i2c_pin_clk, 0);
 	usleep(BP5758D_DELAY);
 	BP5758D_WriteByte(addr);
 }
@@ -99,8 +99,8 @@ static void BP5758D_SetCurrent(byte curVal) {
 	usleep(BP5758D_DELAY);
 }
 static void BP5758D_PreInit() {
-	HAL_PIN_Setup_Output(g_pin_clk);
-	HAL_PIN_Setup_Output(g_pin_data);
+	HAL_PIN_Setup_Output(g_i2c_pin_clk);
+	HAL_PIN_Setup_Output(g_i2c_pin_data);
 
 	BP5758D_Stop();
 
@@ -273,8 +273,8 @@ static commandResult_t BP5758D_Map(const void *context, const char *cmd, const c
 // backlog startDriver BP5758D; BP5758D_Current 14; 
 void BP5758D_Init() {
 
-	g_pin_clk = PIN_FindPinIndexForRole(IOR_BP5758D_CLK,g_pin_clk);
-	g_pin_data = PIN_FindPinIndexForRole(IOR_BP5758D_DAT,g_pin_data);
+	g_i2c_pin_clk = PIN_FindPinIndexForRole(IOR_BP5758D_CLK,g_i2c_pin_clk);
+	g_i2c_pin_data = PIN_FindPinIndexForRole(IOR_BP5758D_DAT,g_i2c_pin_data);
 
     BP5758D_PreInit();
 
@@ -293,29 +293,4 @@ void BP5758D_Init() {
 	//cmddetail:"fn":"BP5758D_Current","file":"driver/drv_bp5758d.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("BP5758D_Current", "", BP5758D_Current, NULL, NULL);
-}
-
-void BP5758D_RunFrame() {
-
-}
-
-
-void BP5758D_OnChannelChanged(int ch, int value) {
-#if 0
-	byte col[5];
-	int channel;
-	int c;
-
-	for(channel = 0; channel < CHANNEL_MAX; channel++){
-		if(IOR_PWM == CHANNEL_GetRoleForOutputChannel(channel)){
-			col[c] = CHANNEL_Get(channel);
-			c++;
-		}
-	}
-	for( ; c < 5; c++){
-		col[c] = 0;
-	}
-
-	BP5758D_Write(col);
-#endif
 }

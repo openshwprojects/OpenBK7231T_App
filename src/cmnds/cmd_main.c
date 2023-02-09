@@ -375,8 +375,8 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_ClearAll","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("clearAll", "", CMD_ClearAll, NULL, NULL);
-	//cmddetail:{"name":"DeepSleep","args":"[Miliseconds]",
-	//cmddetail:"descr":"Enable power save on N & T",
+	//cmddetail:{"name":"DeepSleep","args":"[Seconds]",
+	//cmddetail:"descr":"Starts deep sleep for given amount of seconds.",
 	//cmddetail:"fn":"CMD_DeepSleep","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DeepSleep", "", CMD_DeepSleep, NULL, NULL);

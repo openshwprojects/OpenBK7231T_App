@@ -357,9 +357,9 @@ static commandResult_t CMD_SetFlag(const void *context, const char *cmd, const c
 
 	return CMD_RES_OK;
 }
-extern int g_bWantDeepSleep;
-static commandResult_t CMD_StartDeepSleep(const void *context, const char *cmd, const char *args, int cmdFlags){
-	g_bWantDeepSleep = 1;
+extern int g_bWantPinDeepSleep;
+static commandResult_t CMD_PinDeepSleep(const void *context, const char *cmd, const char *args, int cmdFlags){
+	g_bWantPinDeepSleep = 1;
 	return CMD_RES_OK;
 }
 void CMD_InitChannelCommands(){
@@ -413,11 +413,11 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_FriendlyName","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("FriendlyName", "", CMD_FriendlyName, NULL, NULL);
-	//cmddetail:{"name":"startDeepSleep","args":"",
-	//cmddetail:"descr":"NULL",
-	//cmddetail:"fn":"CMD_StartDeepSleep","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:{"name":"PinDeepSleep","args":"",
+	//cmddetail:"descr":"Starts a pin deep sleep (deep sleep that can be interrupted by external IO events like a button press)",
+	//cmddetail:"fn":"CMD_PinDeepSleep","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("startDeepSleep", "", CMD_StartDeepSleep, NULL, NULL);
+	CMD_RegisterCommand("PinDeepSleep", "", CMD_PinDeepSleep, NULL, NULL);
 	//cmddetail:{"name":"SetFlag","args":"[FlagIndex][1or0]",
 	//cmddetail:"descr":"Enables/disables given flag.",
 	//cmddetail:"fn":"CMD_SetFlag","file":"cmnds/cmd_channels.c","requires":"",
