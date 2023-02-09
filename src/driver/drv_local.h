@@ -63,17 +63,31 @@ void DRV_InitHTTPButtons();
 void CHT8305_Init();
 void CHT8305_OnEverySecond();
 void CHT8305_AppendInformationToHTTPIndexPage(http_request_t* request);
-void CHT8305_OnChannelChanged(int ch, int value);
 
 void SHT3X_Init();
-void SHT3X_OnEverySecond();
 void SHT3X_AppendInformationToHTTPIndexPage(http_request_t* request);
-void SHT3X_OnChannelChanged(int ch, int value);
 void SHT3X_StopDriver();
 
 void DRV_MAX72XX_Init();
 
 void WEMO_Init();
 void WEMO_AppendInformationToHTTPIndexPage(http_request_t* request);
+
+#define SM2135_DELAY         4
+
+extern int g_i2c_pin_clk;
+extern int g_i2c_pin_data;
+extern byte g_channelOrder[5];
+void SM2135_SetLow(uint8_t pin);
+void SM2135_SetHigh(uint8_t pin);
+bool SM2135_PreInit(void);
+bool SM2135_WriteByte(uint8_t value);
+bool SM2135_Start(uint8_t addr);
+void SM2135_Stop(void);
+uint8_t SM2135_ReadByte(bool nack);
+void SM2135_ReadBytes(uint8_t* buf, int numOfBytes);
+
+
+
 
 

@@ -12,79 +12,6 @@
 
 #include "drv_sm2235.h"
 
-// Some platforms have less pins than BK7231T.
-// For example, BL602 doesn't have pin number 26.
-// The pin code would crash BL602 while trying to access pin 26.
-// This is why the default settings here a per-platform.
-#if PLATFORM_BEKEN
-static int g_i2c_pin_clk = 26;
-static int g_i2c_pin_data = 24;
-#else
-static int g_i2c_pin_clk = 0;
-static int g_i2c_pin_data = 1;
-#endif
-
-// Mapping between RGBCW to current SM2235 channels
-static byte g_channelOrder[5] = { 2, 1, 0, 4, 3 };
-
-static void SM2235_SetLow(uint8_t pin) {
-	HAL_PIN_Setup_Output(pin);
-	HAL_PIN_SetOutputValue(pin, 0);
-}
-
-static void SM2235_SetHigh(uint8_t pin) {
-	HAL_PIN_Setup_Input_Pullup(pin);
-}
-
-static bool SM2235_PreInit(void) {
-	HAL_PIN_SetOutputValue(g_i2c_pin_data, 0);
-	HAL_PIN_SetOutputValue(g_i2c_pin_clk, 0);
-	SM2235_SetHigh(g_i2c_pin_data);
-	SM2235_SetHigh(g_i2c_pin_clk);
-	return (!((HAL_PIN_ReadDigitalInput(g_i2c_pin_data) == 0 || HAL_PIN_ReadDigitalInput(g_i2c_pin_clk) == 0)));
-}
-
-static bool SM2235_WriteByte(uint8_t value) {
-	uint8_t curr;
-	uint8_t ack;
-
-	for (curr = 0X80; curr != 0; curr >>= 1) {
-		if (curr & value) {
-			SM2235_SetHigh(g_i2c_pin_data);
-		} else {
-			SM2235_SetLow(g_i2c_pin_data);
-		}
-		SM2235_SetHigh(g_i2c_pin_clk);
-		usleep(SM2235_DELAY);
-		SM2235_SetLow(g_i2c_pin_clk);
-	}
-	// get Ack or Nak
-	SM2235_SetHigh(g_i2c_pin_data);
-	SM2235_SetHigh(g_i2c_pin_clk);
-	usleep(SM2235_DELAY / 2);
-	ack = HAL_PIN_ReadDigitalInput(g_i2c_pin_data);
-	SM2235_SetLow(g_i2c_pin_clk);
-	usleep(SM2235_DELAY / 2);
-	SM2235_SetLow(g_i2c_pin_data);
-	return (0 == ack);
-}
-
-static bool SM2235_Start(uint8_t addr) {
-	SM2235_SetLow(g_i2c_pin_data);
-	usleep(SM2235_DELAY);
-	SM2235_SetLow(g_i2c_pin_clk);
-	return SM2235_WriteByte(addr);
-}
-
-static void SM2235_Stop(void) {
-	SM2235_SetLow(g_i2c_pin_data);
-	usleep(SM2235_DELAY);
-	SM2235_SetHigh(g_i2c_pin_clk);
-	usleep(SM2235_DELAY);
-	SM2235_SetHigh(g_i2c_pin_data);
-	usleep(SM2235_DELAY);
-}
-
 void SM2235_Write(float *rgbcw) {
 	unsigned short cur_col_10[5];
 	int i;
@@ -101,30 +28,30 @@ void SM2235_Write(float *rgbcw) {
 #define SM2235_SECOND_BYTE(x) (x & 0xFF)
 
 	// Byte 0
-	SM2235_Start(SM2235_BYTE_0);
+	SM2135_Start(SM2235_BYTE_0);
 	// Byte 1
-	SM2235_WriteByte(SM2235_BYTE_1);
+	SM2135_WriteByte(SM2235_BYTE_1);
 	// Byte 2
-	SM2235_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[0])));  //Red
+	SM2135_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[0])));  //Red
 	// Byte 3
-	SM2235_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[0])));
+	SM2135_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[0])));
 	// Byte 4
-	SM2235_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[1]))); //Green
+	SM2135_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[1]))); //Green
 	// Byte 5
-	SM2235_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[1])));
+	SM2135_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[1])));
 	// Byte 6
-	SM2235_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[2]))); //Blue
+	SM2135_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[2]))); //Blue
 	// Byte 7
-	SM2235_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[2])));
+	SM2135_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[2])));
 	// Byte 8
-	SM2235_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[4]))); //Cold
+	SM2135_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[4]))); //Cold
 	// Byte 9
-	SM2235_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[4])));
+	SM2135_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[4])));
 	// Byte 10
-	SM2235_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[3]))); //Warm
+	SM2135_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[3]))); //Warm
 	// Byte 11
-	SM2235_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[3])));
-	SM2235_Stop();
+	SM2135_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[3])));
+	SM2135_Stop();
 
 }
 
@@ -220,10 +147,11 @@ static commandResult_t SM2235_Current(const void *context, const char *cmd, cons
 // SM2235_RGBCW FF00000000
 void SM2235_Init() {
 
-    SM2235_PreInit();
-
 	g_i2c_pin_clk = PIN_FindPinIndexForRole(IOR_SM2235_CLK,g_i2c_pin_clk);
 	g_i2c_pin_data = PIN_FindPinIndexForRole(IOR_SM2235_DAT,g_i2c_pin_data);
+
+	SM2135_PreInit();
+
 
 	//cmddetail:{"name":"SM2235_RGBCW","args":"[HexColor]",
 	//cmddetail:"descr":"Don't use it. It's for direct access of SM2235 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",

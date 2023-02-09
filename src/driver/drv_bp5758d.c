@@ -12,22 +12,6 @@
 
 #include "drv_bp5758d.h"
 
-// Some platforms have less pins than BK7231T.
-// For example, BL602 doesn't have pin number 26.
-// The pin code would crash BL602 while trying to access pin 26.
-// This is why the default settings here a per-platform.
-#if PLATFORM_BEKEN
-static int g_i2c_pin_clk = 26;
-static int g_i2c_pin_data = 24;
-#else
-static int g_i2c_pin_clk = 0;
-static int g_i2c_pin_data = 1;
-#endif
-
-// Mapping between RGBCW to current BP5758D channels
-static byte g_channelOrder[5] = { 0, 1, 2, 3, 4 };
-
-const byte BP5758D_DELAY = 2;
 static byte g_chosenCurrent = BP5758D_14MA;
 
 // allow user to select current by index? maybe, not yet
@@ -35,50 +19,10 @@ static byte g_chosenCurrent = BP5758D_14MA;
 
 bool bIsSleeping = false; //Save sleep state of Lamp
 
-
-static void BP5758D_Stop() {
-	HAL_PIN_SetOutputValue(g_i2c_pin_clk, 1);
-	usleep(BP5758D_DELAY);
-	HAL_PIN_SetOutputValue(g_i2c_pin_data, 1);
-	usleep(BP5758D_DELAY);
-}
-
-
-static void BP5758D_WriteByte(uint8_t value) {
-	int bit_idx;
-	bool bit;
-
-	for (bit_idx = 7; bit_idx >= 0; bit_idx--) {
-		bit = BIT_CHECK(value, bit_idx);
-		HAL_PIN_SetOutputValue(g_i2c_pin_data, bit);
-		usleep(BP5758D_DELAY);
-		HAL_PIN_SetOutputValue(g_i2c_pin_clk, 1);
-		usleep(BP5758D_DELAY);
-		HAL_PIN_SetOutputValue(g_i2c_pin_clk, 0);
-		usleep(BP5758D_DELAY);
-	}
-	// Wait for ACK
-	// TODO: pullup?
-	HAL_PIN_Setup_Input(g_i2c_pin_data);
-	HAL_PIN_SetOutputValue(g_i2c_pin_clk, 1);
-	usleep(BP5758D_DELAY);
-	HAL_PIN_SetOutputValue(g_i2c_pin_clk, 0);
-	usleep(BP5758D_DELAY);
-	HAL_PIN_Setup_Output(g_i2c_pin_data);
-}
-
-static void BP5758D_Start(uint8_t addr) {
-	HAL_PIN_SetOutputValue(g_i2c_pin_data, 0);
-	usleep(BP5758D_DELAY);
-	HAL_PIN_SetOutputValue(g_i2c_pin_clk, 0);
-	usleep(BP5758D_DELAY);
-	BP5758D_WriteByte(addr);
-}
-
 static void BP5758D_SetCurrent(byte curVal) {
-	BP5758D_Stop();
+	SM2135_Stop();
 
-	usleep(BP5758D_DELAY);
+	usleep(SM2135_DELAY);
 	
 	// here is a conversion from human-readable format to BP's format
 	g_chosenCurrent = (curVal>63) ? (curVal+34) : curVal;
@@ -86,48 +30,48 @@ static void BP5758D_SetCurrent(byte curVal) {
 	//g_chosenCurrent = curVal;
 
     // For it's init sequence, BP5758D just sets all fields
-    BP5758D_Start(BP5758D_ADDR_SETUP);
+    SM2135_Start(BP5758D_ADDR_SETUP);
     // Output enabled: enable all outputs since we're using a RGBCW light
-    BP5758D_WriteByte(BP5758D_ENABLE_OUTPUTS_ALL);
+    SM2135_WriteByte(BP5758D_ENABLE_OUTPUTS_ALL);
     // Set currents for OUT1-OUT5
-    BP5758D_WriteByte(g_chosenCurrent);
-    BP5758D_WriteByte(g_chosenCurrent);
-    BP5758D_WriteByte(g_chosenCurrent);
-    BP5758D_WriteByte(g_chosenCurrent);
-    BP5758D_WriteByte(g_chosenCurrent);
-    BP5758D_Stop();
-	usleep(BP5758D_DELAY);
+    SM2135_WriteByte(g_chosenCurrent);
+    SM2135_WriteByte(g_chosenCurrent);
+    SM2135_WriteByte(g_chosenCurrent);
+    SM2135_WriteByte(g_chosenCurrent);
+    SM2135_WriteByte(g_chosenCurrent);
+    SM2135_Stop();
+	usleep(SM2135_DELAY);
 }
 static void BP5758D_PreInit() {
 	HAL_PIN_Setup_Output(g_i2c_pin_clk);
 	HAL_PIN_Setup_Output(g_i2c_pin_data);
 
-	BP5758D_Stop();
+	SM2135_Stop();
 
-	usleep(BP5758D_DELAY);
+	usleep(SM2135_DELAY);
 
     // For it's init sequence, BP5758D just sets all fields
-    BP5758D_Start(BP5758D_ADDR_SETUP);
+    SM2135_Start(BP5758D_ADDR_SETUP);
     // Output enabled: enable all outputs since we're using a RGBCW light
-    BP5758D_WriteByte(BP5758D_ENABLE_OUTPUTS_ALL);
+    SM2135_WriteByte(BP5758D_ENABLE_OUTPUTS_ALL);
     // Set currents for OUT1-OUT5
-    BP5758D_WriteByte(g_chosenCurrent); //TODO: Make this configurable from webapp / console
-    BP5758D_WriteByte(g_chosenCurrent);
-    BP5758D_WriteByte(g_chosenCurrent);
-    BP5758D_WriteByte(g_chosenCurrent);
-    BP5758D_WriteByte(g_chosenCurrent);
+    SM2135_WriteByte(g_chosenCurrent); //TODO: Make this configurable from webapp / console
+    SM2135_WriteByte(g_chosenCurrent);
+    SM2135_WriteByte(g_chosenCurrent);
+    SM2135_WriteByte(g_chosenCurrent);
+    SM2135_WriteByte(g_chosenCurrent);
     // Set grayscale levels ouf all outputs to 0
-    BP5758D_WriteByte(0x00);
-    BP5758D_WriteByte(0x00);
-    BP5758D_WriteByte(0x00);
-    BP5758D_WriteByte(0x00);
-    BP5758D_WriteByte(0x00);
-    BP5758D_WriteByte(0x00);
-    BP5758D_WriteByte(0x00);
-    BP5758D_WriteByte(0x00);
-    BP5758D_WriteByte(0x00);
-    BP5758D_WriteByte(0x00);
-    BP5758D_Stop();
+    SM2135_WriteByte(0x00);
+    SM2135_WriteByte(0x00);
+    SM2135_WriteByte(0x00);
+    SM2135_WriteByte(0x00);
+    SM2135_WriteByte(0x00);
+    SM2135_WriteByte(0x00);
+    SM2135_WriteByte(0x00);
+    SM2135_WriteByte(0x00);
+    SM2135_WriteByte(0x00);
+    SM2135_WriteByte(0x00);
+    SM2135_Stop();
 }
 
 
@@ -146,37 +90,37 @@ void BP5758D_Write(float *rgbcw) {
 	// If we receive 0 for all channels, we'll assume that the lightbulb is off, and activate BP5758d's sleep mode.
 	if (cur_col_10[0]==0 && cur_col_10[1]==0 && cur_col_10[2]==0 && cur_col_10[3]==0 && cur_col_10[4]==0) {
 		bIsSleeping = true;
-		BP5758D_Start(BP5758D_ADDR_SETUP); 		//Select B1: Output enable setup
-		BP5758D_WriteByte(BP5758D_DISABLE_OUTPUTS_ALL); //Set all outputs to OFF
-		BP5758D_Stop(); 				//Stop transmission since we have to set Sleep mode (can probably be removed)
-		BP5758D_Start(BP5758D_ADDR_SLEEP); 		//Enable sleep mode
-		BP5758D_Stop();
+		SM2135_Start(BP5758D_ADDR_SETUP); 		//Select B1: Output enable setup
+		SM2135_WriteByte(BP5758D_DISABLE_OUTPUTS_ALL); //Set all outputs to OFF
+		SM2135_Stop(); 				//Stop transmission since we have to set Sleep mode (can probably be removed)
+		SM2135_Start(BP5758D_ADDR_SLEEP); 		//Enable sleep mode
+		SM2135_Stop();
 		return;
 	}
 
 	if(bIsSleeping) {
 		bIsSleeping = false;				//No need to run it every time a val gets changed
-		BP5758D_Start(BP5758D_ADDR_SETUP);		//Sleep mode gets disabled too since bits 5:6 get set to 01
-		BP5758D_WriteByte(BP5758D_ENABLE_OUTPUTS_ALL);	//Set all outputs to ON
-		BP5758D_Stop();
+		SM2135_Start(BP5758D_ADDR_SETUP);		//Sleep mode gets disabled too since bits 5:6 get set to 01
+		SM2135_WriteByte(BP5758D_ENABLE_OUTPUTS_ALL);	//Set all outputs to ON
+		SM2135_Stop();
 	}
 
 	// Even though we could address changing channels only, in practice we observed that the lightbulb always sets all channels.
-	BP5758D_Start(BP5758D_ADDR_OUT1_GL);
+	SM2135_Start(BP5758D_ADDR_OUT1_GL);
 	// Brigtness values are transmitted as two bytes. The light-bulb accepts a 10-bit integer (0-1023) as an input value.
 	// The first 5bits of this input are transmitted in second byte, the second 5bits in the first byte.
-	BP5758D_WriteByte((uint8_t)(cur_col_10[0] & 0x1F));  //Red
-	BP5758D_WriteByte((uint8_t)(cur_col_10[0] >> 5));
-	BP5758D_WriteByte((uint8_t)(cur_col_10[1] & 0x1F)); //Green
-	BP5758D_WriteByte((uint8_t)(cur_col_10[1] >> 5));
-	BP5758D_WriteByte((uint8_t)(cur_col_10[2] & 0x1F)); //Blue
-	BP5758D_WriteByte((uint8_t)(cur_col_10[2] >> 5));
-	BP5758D_WriteByte((uint8_t)(cur_col_10[4] & 0x1F)); //Cold
-	BP5758D_WriteByte((uint8_t)(cur_col_10[4] >> 5));
-	BP5758D_WriteByte((uint8_t)(cur_col_10[3] & 0x1F)); //Warm
-	BP5758D_WriteByte((uint8_t)(cur_col_10[3] >> 5));
+	SM2135_WriteByte((uint8_t)(cur_col_10[0] & 0x1F));  //Red
+	SM2135_WriteByte((uint8_t)(cur_col_10[0] >> 5));
+	SM2135_WriteByte((uint8_t)(cur_col_10[1] & 0x1F)); //Green
+	SM2135_WriteByte((uint8_t)(cur_col_10[1] >> 5));
+	SM2135_WriteByte((uint8_t)(cur_col_10[2] & 0x1F)); //Blue
+	SM2135_WriteByte((uint8_t)(cur_col_10[2] >> 5));
+	SM2135_WriteByte((uint8_t)(cur_col_10[4] & 0x1F)); //Cold
+	SM2135_WriteByte((uint8_t)(cur_col_10[4] >> 5));
+	SM2135_WriteByte((uint8_t)(cur_col_10[3] & 0x1F)); //Warm
+	SM2135_WriteByte((uint8_t)(cur_col_10[3] >> 5));
 
-	BP5758D_Stop();
+	SM2135_Stop();
 }
 
 // see drv_bp5758d.h for sample values
@@ -272,6 +216,11 @@ static commandResult_t BP5758D_Map(const void *context, const char *cmd, const c
 // to init a current value at startup - short startup command
 // backlog startDriver BP5758D; BP5758D_Current 14; 
 void BP5758D_Init() {
+	int i;
+	// default map
+	for (i = 0; i < 5; i++) {
+		g_channelOrder[i] = i;
+	}
 
 	g_i2c_pin_clk = PIN_FindPinIndexForRole(IOR_BP5758D_CLK,g_i2c_pin_clk);
 	g_i2c_pin_data = PIN_FindPinIndexForRole(IOR_BP5758D_DAT,g_i2c_pin_data);

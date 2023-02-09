@@ -12,17 +12,6 @@
 
 #include "drv_sht3x.h"
 
-// Some platforms have less pins than BK7231T.
-// For example, BL602 doesn't have pin number 26.
-// The pin code would crash BL602 while trying to access pin 26.
-// This is why the default settings here a per-platform.
-#if PLATFORM_BEKEN
-static int g_pin_clk = 9;
-static int g_pin_data = 14;
-#else
-static int g_pin_clk = 0;
-static int g_pin_data = 1;
-#endif
 
 #define SHT3X_I2C_ADDR (0x44 << 1)
 
@@ -45,132 +34,27 @@ commandResult_t SHT3X_Calibrate(const void* context, const char* cmd, const char
 	return CMD_RES_OK;
 }
 
-static void SHT3X_SetLow(uint8_t pin) {
-	HAL_PIN_Setup_Output(pin);
-	HAL_PIN_SetOutputValue(pin, 0);
-}
-
-static void SHT3X_SetHigh(uint8_t pin) {
-	HAL_PIN_Setup_Input_Pullup(pin);
-}
-
-static bool SHT3X_PreInit(void) {
-	HAL_PIN_SetOutputValue(g_pin_data, 0);
-	HAL_PIN_SetOutputValue(g_pin_clk, 0);
-	SHT3X_SetHigh(g_pin_data);
-	SHT3X_SetHigh(g_pin_clk);
-	return (!((HAL_PIN_ReadDigitalInput(g_pin_data) == 0 || HAL_PIN_ReadDigitalInput(g_pin_clk) == 0)));
-}
-
-static bool SHT3X_WriteByte(uint8_t value) {
-	uint8_t curr;
-	uint8_t ack;
-
-	for (curr = 0x80; curr != 0; curr >>= 1)
-	{
-		if (curr & value)
-		{
-			SHT3X_SetHigh(g_pin_data);
-		}
-		else
-		{
-			SHT3X_SetLow(g_pin_data);
-		}
-		SHT3X_SetHigh(g_pin_clk);
-		usleep(SHT3X_DELAY);
-		SHT3X_SetLow(g_pin_clk);
-	}
-	// get Ack or Nak
-	SHT3X_SetHigh(g_pin_data);
-	SHT3X_SetHigh(g_pin_clk);
-	usleep(SHT3X_DELAY / 2);
-	ack = HAL_PIN_ReadDigitalInput(g_pin_data);
-	SHT3X_SetLow(g_pin_clk);
-	usleep(SHT3X_DELAY / 2);
-	SHT3X_SetLow(g_pin_data);
-	return (0 == ack);
-}
-
-static bool SHT3X_Start(uint8_t addr) {
-	SHT3X_SetLow(g_pin_data);
-	usleep(SHT3X_DELAY);
-	SHT3X_SetLow(g_pin_clk);
-	return SHT3X_WriteByte(addr);
-}
-
-static void SHT3X_Stop(void) {
-	SHT3X_SetLow(g_pin_data);
-	usleep(SHT3X_DELAY);
-	SHT3X_SetHigh(g_pin_clk);
-	usleep(SHT3X_DELAY);
-	SHT3X_SetHigh(g_pin_data);
-	usleep(SHT3X_DELAY);
-}
-
-static uint8_t SHT3X_ReadByte(bool nack)
-{
-	uint8_t val = 0;
-
-	SHT3X_SetHigh(g_pin_data);
-	for (int i = 0; i < 8; i++)
-	{
-		usleep(SHT3X_DELAY);
-		SHT3X_SetHigh(g_pin_clk);
-		val <<= 1;
-		if (HAL_PIN_ReadDigitalInput(g_pin_data))
-		{
-			val |= 1;
-		}
-		SHT3X_SetLow(g_pin_clk);
-	}
-	if (nack)
-	{
-		SHT3X_SetHigh(g_pin_data);
-	}
-	else
-	{
-		SHT3X_SetLow(g_pin_data);
-	}
-	SHT3X_SetHigh(g_pin_clk);
-	usleep(SHT3X_DELAY);
-	SHT3X_SetLow(g_pin_clk);
-	usleep(SHT3X_DELAY);
-	SHT3X_SetLow(g_pin_data);
-
-	return val;
-}
 
 
-static void SHT3X_ReadBytes(uint8_t* buf, int numOfBytes)
-{
 
-	for (int i = 0; i < numOfBytes - 1; i++)
-	{
-
-		buf[i] = SHT3X_ReadByte(false);
-
-	}
-
-	buf[numOfBytes - 1] = SHT3X_ReadByte(true); //Give NACK on last byte read
-}
 
 void SHT3X_StopPer() {
-	SHT3X_Start(SHT3X_I2C_ADDR);
+	SM2135_Start(SHT3X_I2C_ADDR);
 	// Stop Periodic Data
-	SHT3X_WriteByte(0x30);
+	SM2135_WriteByte(0x30);
 	// medium repeteability
-	SHT3X_WriteByte(0x93);
-	SHT3X_Stop();
+	SM2135_WriteByte(0x93);
+	SM2135_Stop();
 }
 
-void SHT3X_StartPer(uint8_t msb, uint8_t lsb) {
+void SM2135_StartPer(uint8_t msb, uint8_t lsb) {
 	// Start Periodic Data capture
-	SHT3X_Start(SHT3X_I2C_ADDR);
+	SM2135_Start(SHT3X_I2C_ADDR);
 	// Measure per seconds
-	SHT3X_WriteByte(msb);
+	SM2135_WriteByte(msb);
 	// repeteability
-	SHT3X_WriteByte(lsb);
-	SHT3X_Stop();
+	SM2135_WriteByte(lsb);
+	SM2135_Stop();
 }
 
 void SHT3X_ChangePer(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -185,7 +69,7 @@ void SHT3X_ChangePer(const void* context, const char* cmd, const char* args, int
 	SHT3X_StopPer();
 	//give some time for SHT to stop Periodicity
 	rtos_delay_milliseconds(25);
-	SHT3X_StartPer(g_msb, g_lsb);
+	SM2135_StartPer(g_msb, g_lsb);
 
 	ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT Change Per : change done");
 
@@ -201,21 +85,21 @@ void SHT3X_Heater(const void* context, const char* cmd, const char* args, int cm
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	g_state_heat = Tokenizer_GetArgInteger(0);
-	SHT3X_Start(SHT3X_I2C_ADDR);
+	SM2135_Start(SHT3X_I2C_ADDR);
 
 	if (g_state_heat > 0) {
 		// medium repeteability
-		SHT3X_WriteByte(0x30);
-		SHT3X_WriteByte(0x6D);
+		SM2135_WriteByte(0x30);
+		SM2135_WriteByte(0x6D);
 		ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT Heater activated");
 	}
 	else {
 		// medium repeteability
-		SHT3X_WriteByte(0x30);
-		SHT3X_WriteByte(0x66);
+		SM2135_WriteByte(0x30);
+		SM2135_WriteByte(0x66);
 		ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT Heater deactivated");
 	}
-	SHT3X_Stop();
+	SM2135_Stop();
 	return CMD_RES_OK;
 }
 
@@ -224,16 +108,16 @@ void SHT3X_MeasurePer(const void* context, const char* cmd, const char* args, in
 	uint8_t buff[6];
 	unsigned int th, tl, hh, hl;
 
-	SHT3X_Start(SHT3X_I2C_ADDR);
+	SM2135_Start(SHT3X_I2C_ADDR);
 	// Ask for fetching data
-	SHT3X_WriteByte(0xE0);
+	SM2135_WriteByte(0xE0);
 	// medium repeteability
-	SHT3X_WriteByte(0x00);
-	SHT3X_Stop();
+	SM2135_WriteByte(0x00);
+	SM2135_Stop();
 
-	SHT3X_Start(SHT3X_I2C_ADDR | 1);
-	SHT3X_ReadBytes(buff, 6);
-	SHT3X_Stop();
+	SM2135_Start(SHT3X_I2C_ADDR | 1);
+	SM2135_ReadBytes(buff, 6);
+	SM2135_Stop();
 
 	th = buff[0];
 	tl = buff[1];
@@ -247,8 +131,8 @@ void SHT3X_MeasurePer(const void* context, const char* cmd, const char* args, in
 	g_temp = g_temp + g_caltemp;
 	g_humid = g_humid + g_calhum;
 
-	channel_temp = g_cfg.pins.channels[g_pin_data];
-	channel_humid = g_cfg.pins.channels2[g_pin_data];
+	channel_temp = g_cfg.pins.channels[g_i2c_pin_data];
+	channel_humid = g_cfg.pins.channels2[g_i2c_pin_data];
 	CHANNEL_Set(channel_temp, (int)(g_temp * 10), 0);
 	CHANNEL_Set(channel_humid, (int)(g_humid), 0);
 
@@ -261,18 +145,18 @@ void SHT3X_Measure(const void* context, const char* cmd, const char* args, int c
 	uint8_t buff[6];
 	unsigned int th, tl, hh, hl;
 
-	SHT3X_Start(SHT3X_I2C_ADDR);
+	SM2135_Start(SHT3X_I2C_ADDR);
 	// no clock stretching
-	SHT3X_WriteByte(0x24);
+	SM2135_WriteByte(0x24);
 	// medium repeteability
-	SHT3X_WriteByte(0x16);
-	SHT3X_Stop();
+	SM2135_WriteByte(0x16);
+	SM2135_Stop();
 
 	rtos_delay_milliseconds(20);	//give the sensor time to do the conversion
 
-	SHT3X_Start(SHT3X_I2C_ADDR | 1);
-	SHT3X_ReadBytes(buff, 6);
-	SHT3X_Stop();
+	SM2135_Start(SHT3X_I2C_ADDR | 1);
+	SM2135_ReadBytes(buff, 6);
+	SM2135_Stop();
 
 	th = buff[0];
 	tl = buff[1];
@@ -286,8 +170,8 @@ void SHT3X_Measure(const void* context, const char* cmd, const char* args, int c
 	g_temp = g_temp + g_caltemp;
 	g_humid = g_humid + g_calhum;
 
-	channel_temp = g_cfg.pins.channels[g_pin_data];
-	channel_humid = g_cfg.pins.channels2[g_pin_data];
+	channel_temp = g_cfg.pins.channels[g_i2c_pin_data];
+	channel_humid = g_cfg.pins.channels2[g_i2c_pin_data];
 	CHANNEL_Set(channel_temp, (int)(g_temp * 10), 0);
 	CHANNEL_Set(channel_humid, (int)(g_humid), 0);
 
@@ -299,10 +183,10 @@ void SHT3X_StopDriver() {
 	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT3X : Stopping Driver and reset sensor");
 	SHT3X_StopPer();
 	// Reset the sensor
-	SHT3X_Start(SHT3X_I2C_ADDR);
-	SHT3X_WriteByte(0x30);
-	SHT3X_WriteByte(0xA2);
-	SHT3X_Stop();
+	SM2135_Start(SHT3X_I2C_ADDR);
+	SM2135_WriteByte(0x30);
+	SM2135_WriteByte(0xA2);
+	SM2135_Stop();
 }
 
 void SHT3X_StopPerCmd(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -314,13 +198,13 @@ void SHT3X_StopPerCmd(const void* context, const char* cmd, const char* args, in
 void SHT3X_GetStatus()
 {
 	uint8_t status[2];
-	SHT3X_Start(SHT3X_I2C_ADDR);
-	SHT3X_WriteByte(0xf3);			//Get Status should be 00000xxxxx00x0x0
-	SHT3X_WriteByte(0x2d);          //Cheksum/Cmd_status/x/reset/res*5/Talert/RHalert/x/Heater/x/Alert
-	SHT3X_Stop();
-	SHT3X_Start(SHT3X_I2C_ADDR | 1);
-	SHT3X_ReadBytes(status, 2);
-	SHT3X_Stop();
+	SM2135_Start(SHT3X_I2C_ADDR);
+	SM2135_WriteByte(0xf3);			//Get Status should be 00000xxxxx00x0x0
+	SM2135_WriteByte(0x2d);          //Cheksum/Cmd_status/x/reset/res*5/Talert/RHalert/x/Heater/x/Alert
+	SM2135_Stop();
+	SM2135_Start(SHT3X_I2C_ADDR | 1);
+	SM2135_ReadBytes(status, 2);
+	SM2135_Stop();
 	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT : Status : %02X %02X\n", status[0], status[1]);
 }
 void SHT3X_GetStatusCmd(const void* context, const char* cmd, const char* args, int cmdFlags)
@@ -331,10 +215,15 @@ void SHT3X_GetStatusCmd(const void* context, const char* cmd, const char* args, 
 // startDriver SHT3X
 void SHT3X_Init() {
 
-	SHT3X_PreInit();
 
-	g_pin_clk = PIN_FindPinIndexForRole(IOR_SHT3X_CLK, g_pin_clk);
-	g_pin_data = PIN_FindPinIndexForRole(IOR_SHT3X_DAT, g_pin_data);
+
+	g_i2c_pin_clk = 9;
+	g_i2c_pin_data = 14;
+
+	g_i2c_pin_clk = PIN_FindPinIndexForRole(IOR_SHT3X_CLK, g_i2c_pin_clk);
+	g_i2c_pin_data = PIN_FindPinIndexForRole(IOR_SHT3X_DAT, g_i2c_pin_data);
+
+	SM2135_PreInit();
 
 	SHT3X_GetStatus();
 
@@ -375,12 +264,6 @@ void SHT3X_Init() {
 	CMD_RegisterCommand("SHT_GetStatus", "", SHT3X_GetStatusCmd, NULL, NULL);
 }
 
-void SHT3X_OnChannelChanged(int ch, int value) {
-}
-
-void SHT3X_OnEverySecond() {
-
-}
 
 void SHT3X_AppendInformationToHTTPIndexPage(http_request_t* request)
 {

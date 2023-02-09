@@ -17,28 +17,38 @@
 // The pin code would crash BL602 while trying to access pin 26.
 // This is why the default settings here a per-platform.
 #if PLATFORM_BEKEN
-static int g_i2c_pin_clk = 26;
-static int g_i2c_pin_data = 24;
+int g_i2c_pin_clk = 26;
+int g_i2c_pin_data = 24;
 #else
-static int g_i2c_pin_clk = 0;
-static int g_i2c_pin_data = 1;
+int g_i2c_pin_clk = 0;
+int g_i2c_pin_data = 1;
 #endif
 
 static int g_current_setting_cw = SM2135_20MA;
 static int g_current_setting_rgb = SM2135_20MA;
 // Mapping between RGBCW to current SM2135 channels
-static byte g_channelOrder[5] = { 2, 1, 0, 4, 3 };
+byte g_channelOrder[5] = { 2, 1, 0, 4, 3 };
 
-static void SM2135_SetLow(uint8_t pin) {
+void usleep(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
+{
+#ifdef WIN32
+	// not possible on Windows port
+#else
+	for (volatile int i = 0; i < r; i++)
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+#endif
+}
+
+void SM2135_SetLow(uint8_t pin) {
 	HAL_PIN_Setup_Output(pin);
 	HAL_PIN_SetOutputValue(pin, 0);
 }
 
-static void SM2135_SetHigh(uint8_t pin) {
+void SM2135_SetHigh(uint8_t pin) {
 	HAL_PIN_Setup_Input_Pullup(pin);
 }
 
-static bool SM2135_PreInit(void) {
+bool SM2135_PreInit(void) {
 	HAL_PIN_SetOutputValue(g_i2c_pin_data, 0);
 	HAL_PIN_SetOutputValue(g_i2c_pin_clk, 0);
 	SM2135_SetHigh(g_i2c_pin_data);
@@ -46,7 +56,7 @@ static bool SM2135_PreInit(void) {
 	return (!((HAL_PIN_ReadDigitalInput(g_i2c_pin_data) == 0 || HAL_PIN_ReadDigitalInput(g_i2c_pin_clk) == 0)));
 }
 
-static bool SM2135_WriteByte(uint8_t value) {
+bool SM2135_WriteByte(uint8_t value) {
 	uint8_t curr;
 	uint8_t ack;
 
@@ -71,14 +81,14 @@ static bool SM2135_WriteByte(uint8_t value) {
 	return (0 == ack);
 }
 
-static bool SM2135_Start(uint8_t addr) {
+bool SM2135_Start(uint8_t addr) {
 	SM2135_SetLow(g_i2c_pin_data);
 	usleep(SM2135_DELAY);
 	SM2135_SetLow(g_i2c_pin_clk);
 	return SM2135_WriteByte(addr);
 }
 
-static void SM2135_Stop(void) {
+void SM2135_Stop(void) {
 	SM2135_SetLow(g_i2c_pin_data);
 	usleep(SM2135_DELAY);
 	SM2135_SetHigh(g_i2c_pin_clk);
@@ -87,6 +97,51 @@ static void SM2135_Stop(void) {
 	usleep(SM2135_DELAY);
 }
 
+
+void SM2135_ReadBytes(uint8_t* buf, int numOfBytes)
+{
+
+	for (int i = 0; i < numOfBytes - 1; i++)
+	{
+
+		buf[i] = SM2135_ReadByte(false);
+
+	}
+
+	buf[numOfBytes - 1] = SM2135_ReadByte(true); //Give NACK on last byte read
+}
+uint8_t SM2135_ReadByte(bool nack)
+{
+	uint8_t val = 0;
+
+	SM2135_SetHigh(g_i2c_pin_data);
+	for (int i = 0; i < 8; i++)
+	{
+		usleep(SM2135_DELAY);
+		SM2135_SetHigh(g_i2c_pin_clk);
+		val <<= 1;
+		if (HAL_PIN_ReadDigitalInput(g_i2c_pin_data))
+		{
+			val |= 1;
+		}
+		SM2135_SetLow(g_i2c_pin_clk);
+	}
+	if (nack)
+	{
+		SM2135_SetHigh(g_i2c_pin_data);
+	}
+	else
+	{
+		SM2135_SetLow(g_i2c_pin_data);
+	}
+	SM2135_SetHigh(g_i2c_pin_clk);
+	usleep(SM2135_DELAY);
+	SM2135_SetLow(g_i2c_pin_clk);
+	usleep(SM2135_DELAY);
+	SM2135_SetLow(g_i2c_pin_data);
+
+	return val;
+}
 void SM2135_Write(float *rgbcw) {
 	int i;
 	int bRGB;
