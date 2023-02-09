@@ -560,13 +560,11 @@ commandResult_t CMD_If(const void *context, const char *cmd, const char *args, i
 	int value;
 	int argsCount;
 
-	if(args==0||*args==0) {
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: command require at least 3 args");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-	if(Tokenizer_GetArgsCount() < 3) {
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: command require at least 3 args, you gave %i",Tokenizer_GetArgsCount());
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	condition = Tokenizer_GetArg(0);
@@ -587,11 +585,13 @@ commandResult_t CMD_If(const void *context, const char *cmd, const char *args, i
 		cmdB = 0;
 	}
 
+#ifdef WINDOWS
 	ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_If: cmdA is '%s'",cmdA);
 	if(cmdB) {
 		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_If: cmdB is '%s'",cmdB);
 	}
 	ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_If: condition is '%s'",condition);
+#endif
 
 	value = CMD_EvaluateExpression(condition, 0);
 

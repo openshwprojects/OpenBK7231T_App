@@ -67,11 +67,12 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int timeMS;
 
-	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_DeepSleep: enable power save");
 	Tokenizer_TokenizeString(args, 0);
 
-	if (Tokenizer_GetArgsCount() < 1) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "Not enough arguments.");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
@@ -181,10 +182,10 @@ static commandResult_t CMD_Flags(const void* context, const char* cmd, const cha
 	} u;
 	// TODO: check on other platforms, on Beken it's 8, 64 bit
 	// On Windows simulator it's 8 as well
-	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Flags: sizeof(newValue) = %i", sizeof(u.newValue));
+	//ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Flags: sizeof(newValue) = %i", sizeof(u.newValue));
 	if (args && *args) {
 		if (1 != sscanf(args, "%lld", &u.newValue)) {
-			ADDLOG_INFO(LOG_FEATURE_CMD, "Argument/sscanf error!");
+			//ADDLOG_INFO(LOG_FEATURE_CMD, "Argument/sscanf error!");
 			return CMD_RES_BAD_ARGUMENT;
 		}
 	}
@@ -279,8 +280,10 @@ static commandResult_t CMD_SetStartValue(const void* context, const char* cmd, c
 
 	Tokenizer_TokenizeString(args, 0);
 
-	if (Tokenizer_GetArgsCount() < 2) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "Not enough arguments.");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 

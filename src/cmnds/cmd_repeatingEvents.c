@@ -168,11 +168,12 @@ commandResult_t RepeatingEvents_Cmd_AddRepeatingEvent(const void *context, const
 	int userID;
 
 	// linkTuyaMCUOutputToChannel dpID channelID [varType]
-	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"addRepeatingEvent: will tokenize %s\n",args);
 	Tokenizer_TokenizeString(args,0);
 
-	if(Tokenizer_GetArgsCount() < 2) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"addRepeatingEvent: requires 2 arguments\n");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	interval = Tokenizer_GetArgInteger(0);
@@ -212,11 +213,12 @@ commandResult_t RepeatingEvents_Cmd_CancelRepeatingEvent(const void *context, co
 	int userID;
 
 	// linkTuyaMCUOutputToChannel dpID channelID [varType]
-	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"cancelRepeatingEvent: will tokenize %s\n",args);
 	Tokenizer_TokenizeString(args,0);
 
-	if(Tokenizer_GetArgsCount() < 1) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"cancelRepeatingEvent: requires 1 argument\n");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	userID = Tokenizer_GetArgInteger(0);

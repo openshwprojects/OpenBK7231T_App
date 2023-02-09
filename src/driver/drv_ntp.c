@@ -72,10 +72,12 @@ commandResult_t NTP_SetTimeZoneOfs(const void *context, const char *cmd, const c
 	const char *arg;
 
     Tokenizer_TokenizeString(args,0);
-    if(Tokenizer_GetArgsCount() < 1) {
-        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Command requires one argument. Number of hours or HH:MM format.\n");
-        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-    }
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 	arg = Tokenizer_GetArg(0);
 	if (strchr(arg, ':')) {
 		int useSign = 1;
@@ -98,11 +100,12 @@ commandResult_t NTP_SetServer(const void *context, const char *cmd, const char *
     const char *newValue;
 
     Tokenizer_TokenizeString(args,0);
-    if(Tokenizer_GetArgsCount() < 1) {
-        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Argument missing e.g. ntp_setServer ipAddress. Current sv is %s\n",
-			CFG_GetNTPServer());
-        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-    }
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
     newValue = Tokenizer_GetArg(0);
     CFG_SetNTPServer(newValue);
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP server set to %s\n", newValue);

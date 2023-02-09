@@ -274,9 +274,10 @@ void DRV_StartDriver(const char* name) {
 // startDriver BL0937
 static commandResult_t DRV_Start(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, 0);
-
-	if (Tokenizer_GetArgsCount() < 1) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Requires driver name\n");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
@@ -286,8 +287,10 @@ static commandResult_t DRV_Start(const void* context, const char* cmd, const cha
 static commandResult_t DRV_Stop(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, 0);
 
-	if (Tokenizer_GetArgsCount() < 1) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Requires driver name\n");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 

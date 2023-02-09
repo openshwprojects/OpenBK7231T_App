@@ -209,9 +209,10 @@ static commandResult_t SM2135_Current(const void *context, const char *cmd, cons
 	int valRGB;
 	int valCW;
 	Tokenizer_TokenizeString(args,0);
-
-	if(Tokenizer_GetArgsCount()<=1) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2135_Current: requires 2 arguments [RGB,CW]. Current value is: %i %i!\n",g_current_setting_rgb,g_current_setting_cw);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	valRGB = Tokenizer_GetArgInteger(0);
