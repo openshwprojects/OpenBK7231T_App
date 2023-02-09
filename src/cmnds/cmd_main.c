@@ -36,15 +36,31 @@ command_t* g_commands[HASH_SIZE] = { NULL };
 bool g_powersave;
 
 static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_PowerSave: enable power save");
+	int bOn = 1;
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() > 0) {
+		bOn = Tokenizer_GetArgInteger(0);
+	}
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_PowerSave: will set to %i",bOn);
+
 #ifdef PLATFORM_BEKEN
 	extern int bk_wlan_power_save_set_level(BK_PS_LEVEL level);
-	bk_wlan_power_save_set_level(/*PS_DEEP_SLEEP_BIT */  PS_RF_SLEEP_BIT | PS_MCU_SLEEP_BIT);
-	g_powersave = true;
+	if (bOn) {
+		bk_wlan_power_save_set_level(/*PS_DEEP_SLEEP_BIT */  PS_RF_SLEEP_BIT | PS_MCU_SLEEP_BIT);
+	}
+	else {
+		bk_wlan_power_save_set_level(0);
+	}
 #elif defined(PLATFORM_W600)
-	tls_wifi_set_psflag(1, 0);	//Enable powersave but don't save to flash
-	g_powersave = true;
+	if (bOn) {
+		tls_wifi_set_psflag(1, 0);	//Enable powersave but don't save to flash
+	}
+	else {
+		tls_wifi_set_psflag(0, 0);	//Disable powersave but don't save to flash
+	}
 #endif
+	g_powersave = bOn;
 
 	return CMD_RES_OK;
 }
@@ -324,8 +340,8 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_DeepSleep","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DeepSleep", "", CMD_DeepSleep, NULL, NULL);
-	//cmddetail:{"name":"PowerSave","args":"",
-	//cmddetail:"descr":"Enable power save on N & T",
+	//cmddetail:{"name":"PowerSave","args":"[Optional 1 or 0, by default 1 is assumed]",
+	//cmddetail:"descr":"Enables dynamic power saving mode on BK and W600. You can also disable power saving with PowerSave 0.",
 	//cmddetail:"fn":"CMD_PowerSave","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PowerSave", "", CMD_PowerSave, NULL, NULL);
