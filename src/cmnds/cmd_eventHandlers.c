@@ -249,9 +249,9 @@ typedef struct eventHandler_s {
 	// catches event with a certain argument.
 	// For example, you can do "addEventHandler OnClick 5"
 	// and it will only fire for pin 5
-	short requiredArgument;
-	short requiredArgument2;
-	short requiredArgument3;
+	int requiredArgument;
+	int requiredArgument2;
+	int requiredArgument3;
 	// command to execute when it happens
 	char *command;
 	// for UART event handlers?
