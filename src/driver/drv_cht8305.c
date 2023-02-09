@@ -33,15 +33,15 @@ static void CHT8305_ReadEnv(float* temp, float* hum)
 	uint8_t buff[4];
 	unsigned int th, tl, hh, hl;
 
-	SM2135_Start(CHT8305_I2C_ADDR);
-	SM2135_WriteByte(0x00);
-	SM2135_Stop();
+	Soft_I2C_Start(CHT8305_I2C_ADDR);
+	Soft_I2C_WriteByte(0x00);
+	Soft_I2C_Stop();
 
 	rtos_delay_milliseconds(20);	//give the sensor time to do the conversion
 
-	SM2135_Start(CHT8305_I2C_ADDR | 1);
-	SM2135_ReadBytes(buff, 4);
-	SM2135_Stop();
+	Soft_I2C_Start(CHT8305_I2C_ADDR | 1);
+	Soft_I2C_ReadBytes(buff, 4);
+	Soft_I2C_Stop();
 
 	th = buff[0];
 	tl = buff[1];
@@ -65,14 +65,14 @@ void CHT8305_Init() {
 	g_i2c_pin_clk = PIN_FindPinIndexForRole(IOR_CHT8305_CLK, g_i2c_pin_clk);
 	g_i2c_pin_data = PIN_FindPinIndexForRole(IOR_CHT8305_DAT, g_i2c_pin_data);
 
-	SM2135_PreInit();
+	Soft_I2C_PreInit();
 
-	SM2135_Start(CHT8305_I2C_ADDR);
-	SM2135_WriteByte(0xfe);			//manufacturer ID
-	SM2135_Stop();
-	SM2135_Start(CHT8305_I2C_ADDR | 1);
-	SM2135_ReadBytes(buff, 2);
-	SM2135_Stop();
+	Soft_I2C_Start(CHT8305_I2C_ADDR);
+	Soft_I2C_WriteByte(0xfe);			//manufacturer ID
+	Soft_I2C_Stop();
+	Soft_I2C_Start(CHT8305_I2C_ADDR | 1);
+	Soft_I2C_ReadBytes(buff, 2);
+	Soft_I2C_Stop();
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "DRV_CHT8304_init: ID: %02X %02X\n", buff[0], buff[1]);
 

@@ -29,33 +29,33 @@ void BP1658CJ_Write(float *rgbcw) {
   //ADDLOG_DEBUG(LOG_FEATURE_CMD, "Writing to Lamp (hex): #%02X%02X%02X%02X%02X", cur_col_10[0], cur_col_10[1], cur_col_10[2], cur_col_10[3], cur_col_10[4]);
 	// If we receive 0 for all channels, we'll assume that the lightbulb is off, and activate BP1658CJ's sleep mode ([0x80] ).
 	if (cur_col_10[0]==0 && cur_col_10[1]==0 && cur_col_10[2]==0 && cur_col_10[3]==0 && cur_col_10[4]==0) {
-		SM2135_Start(BP1658CJ_ADDR_SLEEP);
-                SM2135_WriteByte(BP1658CJ_SUBADDR);
+		Soft_I2C_Start(BP1658CJ_ADDR_SLEEP);
+                Soft_I2C_WriteByte(BP1658CJ_SUBADDR);
                 for(i = 0; i<10; ++i) //set all 10 channels to 00
-                    SM2135_WriteByte(0x00);
-		SM2135_Stop();
+                    Soft_I2C_WriteByte(0x00);
+		Soft_I2C_Stop();
 		return;
 	}
 
 	// Even though we could address changing channels only, in practice we observed that the lightbulb always sets all channels.
-	SM2135_Start(BP1658CJ_ADDR_OUT);
+	Soft_I2C_Start(BP1658CJ_ADDR_OUT);
 
 	// The First Byte is the Subadress
-	SM2135_WriteByte(BP1658CJ_SUBADDR);
+	Soft_I2C_WriteByte(BP1658CJ_SUBADDR);
 	// Brigtness values are transmitted as two bytes. The light-bulb accepts a 10-bit integer (0-1023) as an input value.
 	// The first 5bits of this input are transmitted in second byte, the second 5bits in the first byte.
-	SM2135_WriteByte((uint8_t)(cur_col_10[0] & 0x1F));  //Red
-	SM2135_WriteByte((uint8_t)(cur_col_10[0] >> 5));
-	SM2135_WriteByte((uint8_t)(cur_col_10[1] & 0x1F)); //Green
-	SM2135_WriteByte((uint8_t)(cur_col_10[1] >> 5));
-	SM2135_WriteByte((uint8_t)(cur_col_10[2] & 0x1F)); //Blue
-	SM2135_WriteByte((uint8_t)(cur_col_10[2] >> 5));
-	SM2135_WriteByte((uint8_t)(cur_col_10[4] & 0x1F)); //Cold
-	SM2135_WriteByte((uint8_t)(cur_col_10[4] >> 5));
-	SM2135_WriteByte((uint8_t)(cur_col_10[3] & 0x1F)); //Warm
-	SM2135_WriteByte((uint8_t)(cur_col_10[3] >> 5));
+	Soft_I2C_WriteByte((uint8_t)(cur_col_10[0] & 0x1F));  //Red
+	Soft_I2C_WriteByte((uint8_t)(cur_col_10[0] >> 5));
+	Soft_I2C_WriteByte((uint8_t)(cur_col_10[1] & 0x1F)); //Green
+	Soft_I2C_WriteByte((uint8_t)(cur_col_10[1] >> 5));
+	Soft_I2C_WriteByte((uint8_t)(cur_col_10[2] & 0x1F)); //Blue
+	Soft_I2C_WriteByte((uint8_t)(cur_col_10[2] >> 5));
+	Soft_I2C_WriteByte((uint8_t)(cur_col_10[4] & 0x1F)); //Cold
+	Soft_I2C_WriteByte((uint8_t)(cur_col_10[4] >> 5));
+	Soft_I2C_WriteByte((uint8_t)(cur_col_10[3] & 0x1F)); //Warm
+	Soft_I2C_WriteByte((uint8_t)(cur_col_10[3] >> 5));
 
-	SM2135_Stop();
+	Soft_I2C_Stop();
 }
 
 
@@ -138,7 +138,7 @@ void BP1658CJ_Init() {
 	g_i2c_pin_clk = PIN_FindPinIndexForRole(IOR_BP1658CJ_CLK,g_i2c_pin_clk);
 	g_i2c_pin_data = PIN_FindPinIndexForRole(IOR_BP1658CJ_DAT,g_i2c_pin_data);
 
-    SM2135_PreInit();
+    Soft_I2C_PreInit();
 
 	//cmddetail:{"name":"BP1658CJ_RGBCW","args":"[HexColor]",
 	//cmddetail:"descr":"Don't use it. It's for direct access of BP1658CJ driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",

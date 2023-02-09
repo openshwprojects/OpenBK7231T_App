@@ -2,128 +2,13 @@
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #include "../logging/logging.h"
+#include "../driver/drv_local.h"
 #include "drv_i2c_local.h"
 #include "drv_i2c_public.h"
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 #include "../hal/hal_pins.h"
 
-static int g_pin_clk = 20;
-static int g_pin_data = 21;
-
-static const int Soft_I2C_DELAY = 1; //delay*10 --> nops
-static void Soft_I2C_SetLow(uint8_t pin) {
-	HAL_PIN_Setup_Output(pin);
-	HAL_PIN_SetOutputValue(pin, 0);
-}
-
-static void Soft_I2C_SetHigh(uint8_t pin) {
-	HAL_PIN_Setup_Input_Pullup(pin);
-}
-
-static bool Soft_I2C_PreInit(void) {
-
-	g_pin_clk = PIN_FindPinIndexForRole(IOR_SOFT_SCL, g_pin_clk);
-	g_pin_data = PIN_FindPinIndexForRole(IOR_SOFT_SDA, g_pin_data);
-
-	HAL_PIN_SetOutputValue(g_pin_data, 0);
-	HAL_PIN_SetOutputValue(g_pin_clk, 0);
-	Soft_I2C_SetHigh(g_pin_data);
-	Soft_I2C_SetHigh(g_pin_clk);
-	return (!((HAL_PIN_ReadDigitalInput(g_pin_data) == 0 || HAL_PIN_ReadDigitalInput(g_pin_clk) == 0)));
-}
-
-static bool Soft_I2C_WriteByte(uint8_t value) {
-	uint8_t curr;
-	uint8_t ack;
-
-	for (curr = 0x80; curr != 0; curr >>= 1)
-	{
-		if (curr & value)
-		{
-			Soft_I2C_SetHigh(g_pin_data);
-		}
-		else
-		{
-			Soft_I2C_SetLow(g_pin_data);
-		}
-		Soft_I2C_SetHigh(g_pin_clk);
-		usleep(Soft_I2C_DELAY);
-		Soft_I2C_SetLow(g_pin_clk);
-	}
-	// get Ack or Nak
-	Soft_I2C_SetHigh(g_pin_data);
-	Soft_I2C_SetHigh(g_pin_clk);
-	usleep(Soft_I2C_DELAY / 2);
-	ack = HAL_PIN_ReadDigitalInput(g_pin_data);
-	Soft_I2C_SetLow(g_pin_clk);
-	usleep(Soft_I2C_DELAY / 2);
-	Soft_I2C_SetLow(g_pin_data);
-	return (0 == ack);
-}
-
-static bool Soft_I2C_Start(uint8_t addr) {
-	Soft_I2C_SetLow(g_pin_data);
-	usleep(Soft_I2C_DELAY);
-	Soft_I2C_SetLow(g_pin_clk);
-	return Soft_I2C_WriteByte(addr);
-}
-
-static void Soft_I2C_Stop(void) {
-	Soft_I2C_SetLow(g_pin_data);
-	usleep(Soft_I2C_DELAY);
-	Soft_I2C_SetHigh(g_pin_clk);
-	usleep(Soft_I2C_DELAY);
-	Soft_I2C_SetHigh(g_pin_data);
-	usleep(Soft_I2C_DELAY);
-}
-
-static uint8_t Soft_I2C_ReadByte(bool nack)
-{
-	uint8_t val = 0;
-
-	Soft_I2C_SetHigh(g_pin_data);
-	for (int i = 0; i < 8; i++)
-	{
-		usleep(Soft_I2C_DELAY);
-		Soft_I2C_SetHigh(g_pin_clk);
-		val <<= 1;
-		if (HAL_PIN_ReadDigitalInput(g_pin_data))
-		{
-			val |= 1;
-		}
-		Soft_I2C_SetLow(g_pin_clk);
-	}
-	if (nack)
-	{
-		Soft_I2C_SetHigh(g_pin_data);
-	}
-	else
-	{
-		Soft_I2C_SetLow(g_pin_data);
-	}
-	Soft_I2C_SetHigh(g_pin_clk);
-	usleep(Soft_I2C_DELAY);
-	Soft_I2C_SetLow(g_pin_clk);
-	usleep(Soft_I2C_DELAY);
-	Soft_I2C_SetLow(g_pin_data);
-
-	return val;
-}
-
-
-static void Soft_I2C_ReadBytes(uint8_t* buf, int numOfBytes)
-{
-
-	for (int i = 0; i < numOfBytes - 1; i++)
-	{
-
-		buf[i] = Soft_I2C_ReadByte(false);
-
-	}
-
-	buf[numOfBytes - 1] = Soft_I2C_ReadByte(true); //Give NACK on last byte read
-}
 
 
 
@@ -199,6 +84,8 @@ int DRV_I2C_Begin(int dev_adr, int busID) {
 	tg_addr = dev_adr;
 
 	if (busID == I2C_BUS_SOFT) {
+		g_i2c_pin_clk = PIN_FindPinIndexForRole(IOR_SOFT_SCL, g_i2c_pin_clk);
+		g_i2c_pin_data = PIN_FindPinIndexForRole(IOR_SOFT_SDA, g_i2c_pin_data);
 		Soft_I2C_PreInit();
 		return 0;
 	}
@@ -234,26 +121,6 @@ void DRV_I2C_Close() {
 	ddev_close(i2c_hdl);
 #endif
 }
-
-//void DRV_I2C_Write(byte addr, byte data)
-//{
-//}
-//void DRV_I2C_WriteBytes(byte addr, byte *data, int len) {
-//
-//}
-//
-//void DRV_I2C_Read(byte addr, byte *data)
-//{
-//}
-//int DRV_I2C_Begin(int dev_adr, int busID) {
-//
-//	return 1; // error
-//}
-//void DRV_I2C_Close() {
-//
-//}
-
-
 
 i2cDevice_t *g_i2c_devices = 0;
 

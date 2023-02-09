@@ -39,22 +39,22 @@ commandResult_t SHT3X_Calibrate(const void* context, const char* cmd, const char
 
 
 void SHT3X_StopPer() {
-	SM2135_Start(SHT3X_I2C_ADDR);
+	Soft_I2C_Start(SHT3X_I2C_ADDR);
 	// Stop Periodic Data
-	SM2135_WriteByte(0x30);
+	Soft_I2C_WriteByte(0x30);
 	// medium repeteability
-	SM2135_WriteByte(0x93);
-	SM2135_Stop();
+	Soft_I2C_WriteByte(0x93);
+	Soft_I2C_Stop();
 }
 
 void SM2135_StartPer(uint8_t msb, uint8_t lsb) {
 	// Start Periodic Data capture
-	SM2135_Start(SHT3X_I2C_ADDR);
+	Soft_I2C_Start(SHT3X_I2C_ADDR);
 	// Measure per seconds
-	SM2135_WriteByte(msb);
+	Soft_I2C_WriteByte(msb);
 	// repeteability
-	SM2135_WriteByte(lsb);
-	SM2135_Stop();
+	Soft_I2C_WriteByte(lsb);
+	Soft_I2C_Stop();
 }
 
 void SHT3X_ChangePer(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -85,21 +85,21 @@ void SHT3X_Heater(const void* context, const char* cmd, const char* args, int cm
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	g_state_heat = Tokenizer_GetArgInteger(0);
-	SM2135_Start(SHT3X_I2C_ADDR);
+	Soft_I2C_Start(SHT3X_I2C_ADDR);
 
 	if (g_state_heat > 0) {
 		// medium repeteability
-		SM2135_WriteByte(0x30);
-		SM2135_WriteByte(0x6D);
+		Soft_I2C_WriteByte(0x30);
+		Soft_I2C_WriteByte(0x6D);
 		ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT Heater activated");
 	}
 	else {
 		// medium repeteability
-		SM2135_WriteByte(0x30);
-		SM2135_WriteByte(0x66);
+		Soft_I2C_WriteByte(0x30);
+		Soft_I2C_WriteByte(0x66);
 		ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT Heater deactivated");
 	}
-	SM2135_Stop();
+	Soft_I2C_Stop();
 	return CMD_RES_OK;
 }
 
@@ -108,16 +108,16 @@ void SHT3X_MeasurePer(const void* context, const char* cmd, const char* args, in
 	uint8_t buff[6];
 	unsigned int th, tl, hh, hl;
 
-	SM2135_Start(SHT3X_I2C_ADDR);
+	Soft_I2C_Start(SHT3X_I2C_ADDR);
 	// Ask for fetching data
-	SM2135_WriteByte(0xE0);
+	Soft_I2C_WriteByte(0xE0);
 	// medium repeteability
-	SM2135_WriteByte(0x00);
-	SM2135_Stop();
+	Soft_I2C_WriteByte(0x00);
+	Soft_I2C_Stop();
 
-	SM2135_Start(SHT3X_I2C_ADDR | 1);
-	SM2135_ReadBytes(buff, 6);
-	SM2135_Stop();
+	Soft_I2C_Start(SHT3X_I2C_ADDR | 1);
+	Soft_I2C_ReadBytes(buff, 6);
+	Soft_I2C_Stop();
 
 	th = buff[0];
 	tl = buff[1];
@@ -145,18 +145,18 @@ void SHT3X_Measure(const void* context, const char* cmd, const char* args, int c
 	uint8_t buff[6];
 	unsigned int th, tl, hh, hl;
 
-	SM2135_Start(SHT3X_I2C_ADDR);
+	Soft_I2C_Start(SHT3X_I2C_ADDR);
 	// no clock stretching
-	SM2135_WriteByte(0x24);
+	Soft_I2C_WriteByte(0x24);
 	// medium repeteability
-	SM2135_WriteByte(0x16);
-	SM2135_Stop();
+	Soft_I2C_WriteByte(0x16);
+	Soft_I2C_Stop();
 
 	rtos_delay_milliseconds(20);	//give the sensor time to do the conversion
 
-	SM2135_Start(SHT3X_I2C_ADDR | 1);
-	SM2135_ReadBytes(buff, 6);
-	SM2135_Stop();
+	Soft_I2C_Start(SHT3X_I2C_ADDR | 1);
+	Soft_I2C_ReadBytes(buff, 6);
+	Soft_I2C_Stop();
 
 	th = buff[0];
 	tl = buff[1];
@@ -183,10 +183,10 @@ void SHT3X_StopDriver() {
 	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT3X : Stopping Driver and reset sensor");
 	SHT3X_StopPer();
 	// Reset the sensor
-	SM2135_Start(SHT3X_I2C_ADDR);
-	SM2135_WriteByte(0x30);
-	SM2135_WriteByte(0xA2);
-	SM2135_Stop();
+	Soft_I2C_Start(SHT3X_I2C_ADDR);
+	Soft_I2C_WriteByte(0x30);
+	Soft_I2C_WriteByte(0xA2);
+	Soft_I2C_Stop();
 }
 
 void SHT3X_StopPerCmd(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -198,13 +198,13 @@ void SHT3X_StopPerCmd(const void* context, const char* cmd, const char* args, in
 void SHT3X_GetStatus()
 {
 	uint8_t status[2];
-	SM2135_Start(SHT3X_I2C_ADDR);
-	SM2135_WriteByte(0xf3);			//Get Status should be 00000xxxxx00x0x0
-	SM2135_WriteByte(0x2d);          //Cheksum/Cmd_status/x/reset/res*5/Talert/RHalert/x/Heater/x/Alert
-	SM2135_Stop();
-	SM2135_Start(SHT3X_I2C_ADDR | 1);
-	SM2135_ReadBytes(status, 2);
-	SM2135_Stop();
+	Soft_I2C_Start(SHT3X_I2C_ADDR);
+	Soft_I2C_WriteByte(0xf3);			//Get Status should be 00000xxxxx00x0x0
+	Soft_I2C_WriteByte(0x2d);          //Cheksum/Cmd_status/x/reset/res*5/Talert/RHalert/x/Heater/x/Alert
+	Soft_I2C_Stop();
+	Soft_I2C_Start(SHT3X_I2C_ADDR | 1);
+	Soft_I2C_ReadBytes(status, 2);
+	Soft_I2C_Stop();
 	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT : Status : %02X %02X\n", status[0], status[1]);
 }
 void SHT3X_GetStatusCmd(const void* context, const char* cmd, const char* args, int cmdFlags)
@@ -223,7 +223,7 @@ void SHT3X_Init() {
 	g_i2c_pin_clk = PIN_FindPinIndexForRole(IOR_SHT3X_CLK, g_i2c_pin_clk);
 	g_i2c_pin_data = PIN_FindPinIndexForRole(IOR_SHT3X_DAT, g_i2c_pin_data);
 
-	SM2135_PreInit();
+	Soft_I2C_PreInit();
 
 	SHT3X_GetStatus();
 

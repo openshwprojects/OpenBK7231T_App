@@ -20,7 +20,7 @@ static byte g_chosenCurrent = BP5758D_14MA;
 bool bIsSleeping = false; //Save sleep state of Lamp
 
 static void BP5758D_SetCurrent(byte curVal) {
-	SM2135_Stop();
+	Soft_I2C_Stop();
 
 	usleep(SM2135_DELAY);
 	
@@ -30,48 +30,48 @@ static void BP5758D_SetCurrent(byte curVal) {
 	//g_chosenCurrent = curVal;
 
     // For it's init sequence, BP5758D just sets all fields
-    SM2135_Start(BP5758D_ADDR_SETUP);
+    Soft_I2C_Start(BP5758D_ADDR_SETUP);
     // Output enabled: enable all outputs since we're using a RGBCW light
-    SM2135_WriteByte(BP5758D_ENABLE_OUTPUTS_ALL);
+    Soft_I2C_WriteByte(BP5758D_ENABLE_OUTPUTS_ALL);
     // Set currents for OUT1-OUT5
-    SM2135_WriteByte(g_chosenCurrent);
-    SM2135_WriteByte(g_chosenCurrent);
-    SM2135_WriteByte(g_chosenCurrent);
-    SM2135_WriteByte(g_chosenCurrent);
-    SM2135_WriteByte(g_chosenCurrent);
-    SM2135_Stop();
+    Soft_I2C_WriteByte(g_chosenCurrent);
+    Soft_I2C_WriteByte(g_chosenCurrent);
+    Soft_I2C_WriteByte(g_chosenCurrent);
+    Soft_I2C_WriteByte(g_chosenCurrent);
+    Soft_I2C_WriteByte(g_chosenCurrent);
+    Soft_I2C_Stop();
 	usleep(SM2135_DELAY);
 }
 static void BP5758D_PreInit() {
 	HAL_PIN_Setup_Output(g_i2c_pin_clk);
 	HAL_PIN_Setup_Output(g_i2c_pin_data);
 
-	SM2135_Stop();
+	Soft_I2C_Stop();
 
 	usleep(SM2135_DELAY);
 
     // For it's init sequence, BP5758D just sets all fields
-    SM2135_Start(BP5758D_ADDR_SETUP);
+    Soft_I2C_Start(BP5758D_ADDR_SETUP);
     // Output enabled: enable all outputs since we're using a RGBCW light
-    SM2135_WriteByte(BP5758D_ENABLE_OUTPUTS_ALL);
+    Soft_I2C_WriteByte(BP5758D_ENABLE_OUTPUTS_ALL);
     // Set currents for OUT1-OUT5
-    SM2135_WriteByte(g_chosenCurrent); //TODO: Make this configurable from webapp / console
-    SM2135_WriteByte(g_chosenCurrent);
-    SM2135_WriteByte(g_chosenCurrent);
-    SM2135_WriteByte(g_chosenCurrent);
-    SM2135_WriteByte(g_chosenCurrent);
+    Soft_I2C_WriteByte(g_chosenCurrent); //TODO: Make this configurable from webapp / console
+    Soft_I2C_WriteByte(g_chosenCurrent);
+    Soft_I2C_WriteByte(g_chosenCurrent);
+    Soft_I2C_WriteByte(g_chosenCurrent);
+    Soft_I2C_WriteByte(g_chosenCurrent);
     // Set grayscale levels ouf all outputs to 0
-    SM2135_WriteByte(0x00);
-    SM2135_WriteByte(0x00);
-    SM2135_WriteByte(0x00);
-    SM2135_WriteByte(0x00);
-    SM2135_WriteByte(0x00);
-    SM2135_WriteByte(0x00);
-    SM2135_WriteByte(0x00);
-    SM2135_WriteByte(0x00);
-    SM2135_WriteByte(0x00);
-    SM2135_WriteByte(0x00);
-    SM2135_Stop();
+    Soft_I2C_WriteByte(0x00);
+    Soft_I2C_WriteByte(0x00);
+    Soft_I2C_WriteByte(0x00);
+    Soft_I2C_WriteByte(0x00);
+    Soft_I2C_WriteByte(0x00);
+    Soft_I2C_WriteByte(0x00);
+    Soft_I2C_WriteByte(0x00);
+    Soft_I2C_WriteByte(0x00);
+    Soft_I2C_WriteByte(0x00);
+    Soft_I2C_WriteByte(0x00);
+    Soft_I2C_Stop();
 }
 
 
@@ -90,37 +90,37 @@ void BP5758D_Write(float *rgbcw) {
 	// If we receive 0 for all channels, we'll assume that the lightbulb is off, and activate BP5758d's sleep mode.
 	if (cur_col_10[0]==0 && cur_col_10[1]==0 && cur_col_10[2]==0 && cur_col_10[3]==0 && cur_col_10[4]==0) {
 		bIsSleeping = true;
-		SM2135_Start(BP5758D_ADDR_SETUP); 		//Select B1: Output enable setup
-		SM2135_WriteByte(BP5758D_DISABLE_OUTPUTS_ALL); //Set all outputs to OFF
-		SM2135_Stop(); 				//Stop transmission since we have to set Sleep mode (can probably be removed)
-		SM2135_Start(BP5758D_ADDR_SLEEP); 		//Enable sleep mode
-		SM2135_Stop();
+		Soft_I2C_Start(BP5758D_ADDR_SETUP); 		//Select B1: Output enable setup
+		Soft_I2C_WriteByte(BP5758D_DISABLE_OUTPUTS_ALL); //Set all outputs to OFF
+		Soft_I2C_Stop(); 				//Stop transmission since we have to set Sleep mode (can probably be removed)
+		Soft_I2C_Start(BP5758D_ADDR_SLEEP); 		//Enable sleep mode
+		Soft_I2C_Stop();
 		return;
 	}
 
 	if(bIsSleeping) {
 		bIsSleeping = false;				//No need to run it every time a val gets changed
-		SM2135_Start(BP5758D_ADDR_SETUP);		//Sleep mode gets disabled too since bits 5:6 get set to 01
-		SM2135_WriteByte(BP5758D_ENABLE_OUTPUTS_ALL);	//Set all outputs to ON
-		SM2135_Stop();
+		Soft_I2C_Start(BP5758D_ADDR_SETUP);		//Sleep mode gets disabled too since bits 5:6 get set to 01
+		Soft_I2C_WriteByte(BP5758D_ENABLE_OUTPUTS_ALL);	//Set all outputs to ON
+		Soft_I2C_Stop();
 	}
 
 	// Even though we could address changing channels only, in practice we observed that the lightbulb always sets all channels.
-	SM2135_Start(BP5758D_ADDR_OUT1_GL);
+	Soft_I2C_Start(BP5758D_ADDR_OUT1_GL);
 	// Brigtness values are transmitted as two bytes. The light-bulb accepts a 10-bit integer (0-1023) as an input value.
 	// The first 5bits of this input are transmitted in second byte, the second 5bits in the first byte.
-	SM2135_WriteByte((uint8_t)(cur_col_10[0] & 0x1F));  //Red
-	SM2135_WriteByte((uint8_t)(cur_col_10[0] >> 5));
-	SM2135_WriteByte((uint8_t)(cur_col_10[1] & 0x1F)); //Green
-	SM2135_WriteByte((uint8_t)(cur_col_10[1] >> 5));
-	SM2135_WriteByte((uint8_t)(cur_col_10[2] & 0x1F)); //Blue
-	SM2135_WriteByte((uint8_t)(cur_col_10[2] >> 5));
-	SM2135_WriteByte((uint8_t)(cur_col_10[4] & 0x1F)); //Cold
-	SM2135_WriteByte((uint8_t)(cur_col_10[4] >> 5));
-	SM2135_WriteByte((uint8_t)(cur_col_10[3] & 0x1F)); //Warm
-	SM2135_WriteByte((uint8_t)(cur_col_10[3] >> 5));
+	Soft_I2C_WriteByte((uint8_t)(cur_col_10[0] & 0x1F));  //Red
+	Soft_I2C_WriteByte((uint8_t)(cur_col_10[0] >> 5));
+	Soft_I2C_WriteByte((uint8_t)(cur_col_10[1] & 0x1F)); //Green
+	Soft_I2C_WriteByte((uint8_t)(cur_col_10[1] >> 5));
+	Soft_I2C_WriteByte((uint8_t)(cur_col_10[2] & 0x1F)); //Blue
+	Soft_I2C_WriteByte((uint8_t)(cur_col_10[2] >> 5));
+	Soft_I2C_WriteByte((uint8_t)(cur_col_10[4] & 0x1F)); //Cold
+	Soft_I2C_WriteByte((uint8_t)(cur_col_10[4] >> 5));
+	Soft_I2C_WriteByte((uint8_t)(cur_col_10[3] & 0x1F)); //Warm
+	Soft_I2C_WriteByte((uint8_t)(cur_col_10[3] >> 5));
 
-	SM2135_Stop();
+	Soft_I2C_Stop();
 }
 
 // see drv_bp5758d.h for sample values

@@ -28,30 +28,30 @@ void SM2235_Write(float *rgbcw) {
 #define SM2235_SECOND_BYTE(x) (x & 0xFF)
 
 	// Byte 0
-	SM2135_Start(SM2235_BYTE_0);
+	Soft_I2C_Start(SM2235_BYTE_0);
 	// Byte 1
-	SM2135_WriteByte(SM2235_BYTE_1);
+	Soft_I2C_WriteByte(SM2235_BYTE_1);
 	// Byte 2
-	SM2135_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[0])));  //Red
+	Soft_I2C_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[0])));  //Red
 	// Byte 3
-	SM2135_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[0])));
+	Soft_I2C_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[0])));
 	// Byte 4
-	SM2135_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[1]))); //Green
+	Soft_I2C_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[1]))); //Green
 	// Byte 5
-	SM2135_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[1])));
+	Soft_I2C_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[1])));
 	// Byte 6
-	SM2135_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[2]))); //Blue
+	Soft_I2C_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[2]))); //Blue
 	// Byte 7
-	SM2135_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[2])));
+	Soft_I2C_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[2])));
 	// Byte 8
-	SM2135_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[4]))); //Cold
+	Soft_I2C_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[4]))); //Cold
 	// Byte 9
-	SM2135_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[4])));
+	Soft_I2C_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[4])));
 	// Byte 10
-	SM2135_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[3]))); //Warm
+	Soft_I2C_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[3]))); //Warm
 	// Byte 11
-	SM2135_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[3])));
-	SM2135_Stop();
+	Soft_I2C_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[3])));
+	Soft_I2C_Stop();
 
 }
 
@@ -150,7 +150,7 @@ void SM2235_Init() {
 	g_i2c_pin_clk = PIN_FindPinIndexForRole(IOR_SM2235_CLK,g_i2c_pin_clk);
 	g_i2c_pin_data = PIN_FindPinIndexForRole(IOR_SM2235_DAT,g_i2c_pin_data);
 
-	SM2135_PreInit();
+	Soft_I2C_PreInit();
 
 
 	//cmddetail:{"name":"SM2235_RGBCW","args":"[HexColor]",

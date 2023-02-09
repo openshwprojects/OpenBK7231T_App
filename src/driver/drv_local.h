@@ -78,14 +78,14 @@ void WEMO_AppendInformationToHTTPIndexPage(http_request_t* request);
 extern int g_i2c_pin_clk;
 extern int g_i2c_pin_data;
 extern byte g_channelOrder[5];
-void SM2135_SetLow(uint8_t pin);
-void SM2135_SetHigh(uint8_t pin);
-bool SM2135_PreInit(void);
-bool SM2135_WriteByte(uint8_t value);
-bool SM2135_Start(uint8_t addr);
-void SM2135_Stop(void);
-uint8_t SM2135_ReadByte(bool nack);
-void SM2135_ReadBytes(uint8_t* buf, int numOfBytes);
+void Soft_I2C_SetLow(uint8_t pin);
+void Soft_I2C_SetHigh(uint8_t pin);
+bool Soft_I2C_PreInit(void);
+bool Soft_I2C_WriteByte(uint8_t value);
+bool Soft_I2C_Start(uint8_t addr);
+void Soft_I2C_Stop(void);
+uint8_t Soft_I2C_ReadByte(bool nack);
+void Soft_I2C_ReadBytes(uint8_t* buf, int numOfBytes);
 
 
 

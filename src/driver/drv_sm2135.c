@@ -39,106 +39,106 @@ void usleep(int r) //delay function do 10*r nops, because rtos_delay_millisecond
 #endif
 }
 
-void SM2135_SetLow(uint8_t pin) {
+void Soft_I2C_SetLow(uint8_t pin) {
 	HAL_PIN_Setup_Output(pin);
 	HAL_PIN_SetOutputValue(pin, 0);
 }
 
-void SM2135_SetHigh(uint8_t pin) {
+void Soft_I2C_SetHigh(uint8_t pin) {
 	HAL_PIN_Setup_Input_Pullup(pin);
 }
 
-bool SM2135_PreInit(void) {
+bool Soft_I2C_PreInit(void) {
 	HAL_PIN_SetOutputValue(g_i2c_pin_data, 0);
 	HAL_PIN_SetOutputValue(g_i2c_pin_clk, 0);
-	SM2135_SetHigh(g_i2c_pin_data);
-	SM2135_SetHigh(g_i2c_pin_clk);
+	Soft_I2C_SetHigh(g_i2c_pin_data);
+	Soft_I2C_SetHigh(g_i2c_pin_clk);
 	return (!((HAL_PIN_ReadDigitalInput(g_i2c_pin_data) == 0 || HAL_PIN_ReadDigitalInput(g_i2c_pin_clk) == 0)));
 }
 
-bool SM2135_WriteByte(uint8_t value) {
+bool Soft_I2C_WriteByte(uint8_t value) {
 	uint8_t curr;
 	uint8_t ack;
 
 	for (curr = 0X80; curr != 0; curr >>= 1) {
 		if (curr & value) {
-			SM2135_SetHigh(g_i2c_pin_data);
+			Soft_I2C_SetHigh(g_i2c_pin_data);
 		} else {
-			SM2135_SetLow(g_i2c_pin_data);
+			Soft_I2C_SetLow(g_i2c_pin_data);
 		}
-		SM2135_SetHigh(g_i2c_pin_clk);
+		Soft_I2C_SetHigh(g_i2c_pin_clk);
 		usleep(SM2135_DELAY);
-		SM2135_SetLow(g_i2c_pin_clk);
+		Soft_I2C_SetLow(g_i2c_pin_clk);
 	}
 	// get Ack or Nak
-	SM2135_SetHigh(g_i2c_pin_data);
-	SM2135_SetHigh(g_i2c_pin_clk);
+	Soft_I2C_SetHigh(g_i2c_pin_data);
+	Soft_I2C_SetHigh(g_i2c_pin_clk);
 	usleep(SM2135_DELAY / 2);
 	ack = HAL_PIN_ReadDigitalInput(g_i2c_pin_data);
-	SM2135_SetLow(g_i2c_pin_clk);
+	Soft_I2C_SetLow(g_i2c_pin_clk);
 	usleep(SM2135_DELAY / 2);
-	SM2135_SetLow(g_i2c_pin_data);
+	Soft_I2C_SetLow(g_i2c_pin_data);
 	return (0 == ack);
 }
 
-bool SM2135_Start(uint8_t addr) {
-	SM2135_SetLow(g_i2c_pin_data);
+bool Soft_I2C_Start(uint8_t addr) {
+	Soft_I2C_SetLow(g_i2c_pin_data);
 	usleep(SM2135_DELAY);
-	SM2135_SetLow(g_i2c_pin_clk);
-	return SM2135_WriteByte(addr);
+	Soft_I2C_SetLow(g_i2c_pin_clk);
+	return Soft_I2C_WriteByte(addr);
 }
 
-void SM2135_Stop(void) {
-	SM2135_SetLow(g_i2c_pin_data);
+void Soft_I2C_Stop(void) {
+	Soft_I2C_SetLow(g_i2c_pin_data);
 	usleep(SM2135_DELAY);
-	SM2135_SetHigh(g_i2c_pin_clk);
+	Soft_I2C_SetHigh(g_i2c_pin_clk);
 	usleep(SM2135_DELAY);
-	SM2135_SetHigh(g_i2c_pin_data);
+	Soft_I2C_SetHigh(g_i2c_pin_data);
 	usleep(SM2135_DELAY);
 }
 
 
-void SM2135_ReadBytes(uint8_t* buf, int numOfBytes)
+void Soft_I2C_ReadBytes(uint8_t* buf, int numOfBytes)
 {
 
 	for (int i = 0; i < numOfBytes - 1; i++)
 	{
 
-		buf[i] = SM2135_ReadByte(false);
+		buf[i] = Soft_I2C_ReadByte(false);
 
 	}
 
-	buf[numOfBytes - 1] = SM2135_ReadByte(true); //Give NACK on last byte read
+	buf[numOfBytes - 1] = Soft_I2C_ReadByte(true); //Give NACK on last byte read
 }
-uint8_t SM2135_ReadByte(bool nack)
+uint8_t Soft_I2C_ReadByte(bool nack)
 {
 	uint8_t val = 0;
 
-	SM2135_SetHigh(g_i2c_pin_data);
+	Soft_I2C_SetHigh(g_i2c_pin_data);
 	for (int i = 0; i < 8; i++)
 	{
 		usleep(SM2135_DELAY);
-		SM2135_SetHigh(g_i2c_pin_clk);
+		Soft_I2C_SetHigh(g_i2c_pin_clk);
 		val <<= 1;
 		if (HAL_PIN_ReadDigitalInput(g_i2c_pin_data))
 		{
 			val |= 1;
 		}
-		SM2135_SetLow(g_i2c_pin_clk);
+		Soft_I2C_SetLow(g_i2c_pin_clk);
 	}
 	if (nack)
 	{
-		SM2135_SetHigh(g_i2c_pin_data);
+		Soft_I2C_SetHigh(g_i2c_pin_data);
 	}
 	else
 	{
-		SM2135_SetLow(g_i2c_pin_data);
+		Soft_I2C_SetLow(g_i2c_pin_data);
 	}
-	SM2135_SetHigh(g_i2c_pin_clk);
+	Soft_I2C_SetHigh(g_i2c_pin_clk);
 	usleep(SM2135_DELAY);
-	SM2135_SetLow(g_i2c_pin_clk);
+	Soft_I2C_SetLow(g_i2c_pin_clk);
 	usleep(SM2135_DELAY);
-	SM2135_SetLow(g_i2c_pin_data);
+	Soft_I2C_SetLow(g_i2c_pin_data);
 
 	return val;
 }
@@ -155,36 +155,36 @@ void SM2135_Write(float *rgbcw) {
 			}
 		}
 		if(bRGB) {
-			SM2135_Start(SM2135_ADDR_MC);
-			SM2135_WriteByte(g_current_setting_rgb);
-			SM2135_WriteByte(SM2135_RGB);
-			SM2135_WriteByte(rgbcw[g_channelOrder[0]]);
-			SM2135_WriteByte(rgbcw[g_channelOrder[1]]);
-			SM2135_WriteByte(rgbcw[g_channelOrder[2]]); 
-			SM2135_Stop();
+			Soft_I2C_Start(SM2135_ADDR_MC);
+			Soft_I2C_WriteByte(g_current_setting_rgb);
+			Soft_I2C_WriteByte(SM2135_RGB);
+			Soft_I2C_WriteByte(rgbcw[g_channelOrder[0]]);
+			Soft_I2C_WriteByte(rgbcw[g_channelOrder[1]]);
+			Soft_I2C_WriteByte(rgbcw[g_channelOrder[2]]); 
+			Soft_I2C_Stop();
 		} else {
-			SM2135_Start(SM2135_ADDR_MC);
-			SM2135_WriteByte(g_current_setting_cw);
-			SM2135_WriteByte(SM2135_CW);
-			SM2135_Stop();
+			Soft_I2C_Start(SM2135_ADDR_MC);
+			Soft_I2C_WriteByte(g_current_setting_cw);
+			Soft_I2C_WriteByte(SM2135_CW);
+			Soft_I2C_Stop();
 			usleep(SM2135_DELAY);
 
-			SM2135_Start(SM2135_ADDR_C);
-			SM2135_WriteByte(rgbcw[g_channelOrder[3]]);
-			SM2135_WriteByte(rgbcw[g_channelOrder[4]]); 
-			SM2135_Stop();
+			Soft_I2C_Start(SM2135_ADDR_C);
+			Soft_I2C_WriteByte(rgbcw[g_channelOrder[3]]);
+			Soft_I2C_WriteByte(rgbcw[g_channelOrder[4]]); 
+			Soft_I2C_Stop();
 
 		}
 	} else {
-		SM2135_Start(SM2135_ADDR_MC);
-		SM2135_WriteByte(g_current_setting_rgb);
-		SM2135_WriteByte(SM2135_RGB);
-		SM2135_WriteByte(rgbcw[g_channelOrder[0]]);
-		SM2135_WriteByte(rgbcw[g_channelOrder[1]]);
-		SM2135_WriteByte(rgbcw[g_channelOrder[2]]); 
-		SM2135_WriteByte(rgbcw[g_channelOrder[3]]); 
-		SM2135_WriteByte(rgbcw[g_channelOrder[4]]); 
-		SM2135_Stop();
+		Soft_I2C_Start(SM2135_ADDR_MC);
+		Soft_I2C_WriteByte(g_current_setting_rgb);
+		Soft_I2C_WriteByte(SM2135_RGB);
+		Soft_I2C_WriteByte(rgbcw[g_channelOrder[0]]);
+		Soft_I2C_WriteByte(rgbcw[g_channelOrder[1]]);
+		Soft_I2C_WriteByte(rgbcw[g_channelOrder[2]]); 
+		Soft_I2C_WriteByte(rgbcw[g_channelOrder[3]]); 
+		Soft_I2C_WriteByte(rgbcw[g_channelOrder[4]]); 
+		Soft_I2C_Stop();
 	}
 }
 
@@ -281,10 +281,11 @@ static commandResult_t SM2135_Current(const void *context, const char *cmd, cons
 // SM2135_RGBCW FF00000000
 void SM2135_Init() {
 
-    SM2135_PreInit();
-
 	g_i2c_pin_clk = PIN_FindPinIndexForRole(IOR_SM2135_CLK,g_i2c_pin_clk);
 	g_i2c_pin_data = PIN_FindPinIndexForRole(IOR_SM2135_DAT,g_i2c_pin_data);
+
+
+	Soft_I2C_PreInit();
 
 	//cmddetail:{"name":"SM2135_RGBCW","args":"[HexColor]",
 	//cmddetail:"descr":"Don't use it. It's for direct access of SM2135 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",
