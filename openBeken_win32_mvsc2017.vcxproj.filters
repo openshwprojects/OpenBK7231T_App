@@ -477,9 +477,6 @@
     <ClCompile Include="src\selftest\selftest_util_mqtt_json.c">
       <Filter>SelfTest</Filter>
     </ClCompile>
-    <ClCompile Include="src\httpserver\json_interface.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
     <ClCompile Include="src\selftest\selftest_demo_exclusiveRelays.c">
       <Filter>SelfTest</Filter>
     </ClCompile>
@@ -506,6 +503,9 @@
     </ClCompile>
     <ClCompile Include="src\selftest\selftest_cmd_generic.c">
       <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\httpserver\json_interface.c">
+      <Filter>HTTP</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

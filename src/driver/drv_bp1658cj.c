@@ -220,28 +220,3 @@ void BP1658CJ_Init() {
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("BP1658CJ_Map", "", BP1658CJ_Map, NULL, NULL);
 }
-
-void BP1658CJ_RunFrame() {
-
-}
-
-
-void BP1658CJ_OnChannelChanged(int ch, int value) {
-#if 0
-	byte col[5];
-	int channel;
-	int c;
-
-	for(channel = 0; channel < CHANNEL_MAX; channel++){
-		if(IOR_PWM == CHANNEL_GetRoleForOutputChannel(channel)){
-			col[c] = CHANNEL_Get(channel);
-			c++;
-		}
-	}
-	for( ; c < 5; c++){
-		col[c] = 0;
-	}
-
-	BP1658CJ_Write(col);
-#endif
-}

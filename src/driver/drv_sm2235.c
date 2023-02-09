@@ -242,29 +242,3 @@ void SM2235_Init() {
     CMD_RegisterCommand("SM2235_Current", "", SM2235_Current, NULL, NULL);
 }
 
-void SM2235_RunFrame() {
-
-}
-
-
-void SM2235_OnChannelChanged(int ch, int value) {
-#if 0
-	byte col[5];
-	int channel;
-	int c;
-
-	for(channel = 0; channel < CHANNEL_MAX; channel++){
-		if(IOR_PWM == CHANNEL_GetRoleForOutputChannel(channel)){
-			col[c] = CHANNEL_Get(channel);
-			c++;
-		}
-	}
-	for( ; c < 5; c++){
-		col[c] = 0;
-	}
-
-	SM2235_Write(col);
-#endif
-}
-
-
