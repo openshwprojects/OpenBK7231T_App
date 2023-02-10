@@ -1645,42 +1645,42 @@ void MQTT_init()
 	//cmddetail:"descr":"Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get. You can use argument expansion here, so $CH11 will change to value of the channel 11",
 	//cmddetail:"fn":"MQTT_PublishCommand","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("publish", "", MQTT_PublishCommand, NULL);
+	CMD_RegisterCommand("publish", MQTT_PublishCommand, NULL);
 	//cmddetail:{"name":"publishInt","args":"[Topic][Value]",
 	//cmddetail:"descr":"Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an integer, so you can also use math expressions like $CH10*10, etc.",
 	//cmddetail:"fn":"MQTT_PublishCommand","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("publishInt", "", MQTT_PublishCommandInteger, NULL);
+	CMD_RegisterCommand("publishInt", MQTT_PublishCommandInteger, NULL);
 	//cmddetail:{"name":"publishFloat","args":"[Topic][Value]",
 	//cmddetail:"descr":"Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an float, so you can also use math expressions like $CH10*0.0, etc.",
 	//cmddetail:"fn":"MQTT_PublishCommand","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("publishFloat", "", MQTT_PublishCommandFloat, NULL);
+	CMD_RegisterCommand("publishFloat", MQTT_PublishCommandFloat, NULL);
 	//cmddetail:{"name":"publishAll","args":"",
 	//cmddetail:"descr":"Starts the step by step publish of all available values",
 	//cmddetail:"fn":"MQTT_PublishAll","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("publishAll", "", MQTT_PublishAll, NULL);
+	CMD_RegisterCommand("publishAll", MQTT_PublishAll, NULL);
 	//cmddetail:{"name":"publishChannels","args":"",
 	//cmddetail:"descr":"Starts the step by step publish of all channel values",
 	//cmddetail:"fn":"MQTT_PublishChannels","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("publishChannels", "", MQTT_PublishChannels, NULL);
+	CMD_RegisterCommand("publishChannels", MQTT_PublishChannels, NULL);
 	//cmddetail:{"name":"publishBenchmark","args":"",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"MQTT_StartMQTTTestThread","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("publishBenchmark", NULL, MQTT_StartMQTTTestThread, NULL);
+	CMD_RegisterCommand("publishBenchmark", MQTT_StartMQTTTestThread, NULL);
 	//cmddetail:{"name":"mqtt_broadcastInterval","args":"[ValueSeconds]",
 	//cmddetail:"descr":"If broadcast self state every 60 seconds/minute is enabled in flags, this value allows you to change the delay, change this 60 seconds to any other value in seconds. This value is not saved, you must use autoexec.bat or short startup command to execute it on every reboot.",
 	//cmddetail:"fn":"MQTT_SetBroadcastInterval","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("mqtt_broadcastInterval", NULL, MQTT_SetBroadcastInterval, NULL);
+	CMD_RegisterCommand("mqtt_broadcastInterval", MQTT_SetBroadcastInterval, NULL);
 	//cmddetail:{"name":"mqtt_broadcastItemsPerSec","args":"[PublishCountPerSecond]",
 	//cmddetail:"descr":"If broadcast self state (this option in flags) is started, then gradually device info is published, with a speed of N publishes per second. Do not set too high value, it may overload LWIP MQTT library. This value is not saved, you must use autoexec.bat or short startup command to execute it on every reboot.",
 	//cmddetail:"fn":"MQTT_SetMaxBroadcastItemsPublishedPerSecond","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("mqtt_broadcastItemsPerSec", NULL, MQTT_SetMaxBroadcastItemsPublishedPerSecond, NULL);
+	CMD_RegisterCommand("mqtt_broadcastItemsPerSec", MQTT_SetMaxBroadcastItemsPublishedPerSecond, NULL);
 }
 
 OBK_Publish_Result MQTT_DoItemPublishString(const char* sChannel, const char* valueStr)

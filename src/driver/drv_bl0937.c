@@ -260,37 +260,37 @@ void BL0937_Init()
 	//cmddetail:"descr":"Sets current power value for calibration",
 	//cmddetail:"fn":"BL0937_PowerSet","file":"driver/drv_bl0937.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("PowerSet","",BL0937_PowerSet, NULL);
+	CMD_RegisterCommand("PowerSet",BL0937_PowerSet, NULL);
 	//cmddetail:{"name":"VoltageSet","args":"",
 	//cmddetail:"descr":"Sets current V value for calibration",
 	//cmddetail:"fn":"BL0937_VoltageSet","file":"driver/drv_bl0937.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("VoltageSet","",BL0937_VoltageSet, NULL);
+	CMD_RegisterCommand("VoltageSet",BL0937_VoltageSet, NULL);
 	//cmddetail:{"name":"CurrentSet","args":"",
 	//cmddetail:"descr":"Sets current I value for calibration",
 	//cmddetail:"fn":"BL0937_CurrentSet","file":"driver/drv_bl0937.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("CurrentSet","",BL0937_CurrentSet, NULL);
+	CMD_RegisterCommand("CurrentSet",BL0937_CurrentSet, NULL);
 	//cmddetail:{"name":"PREF","args":"",
 	//cmddetail:"descr":"Sets the calibration multiplier",
 	//cmddetail:"fn":"BL0937_PowerRef","file":"driver/drv_bl0937.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("PREF","",BL0937_PowerRef, NULL);
+	CMD_RegisterCommand("PREF",BL0937_PowerRef, NULL);
 	//cmddetail:{"name":"VREF","args":"",
 	//cmddetail:"descr":"Sets the calibration multiplier",
 	//cmddetail:"fn":"BL0937_VoltageRef","file":"driver/drv_bl0937.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("VREF","",BL0937_VoltageRef, NULL);
+	CMD_RegisterCommand("VREF",BL0937_VoltageRef, NULL);
 	//cmddetail:{"name":"IREF","args":"",
 	//cmddetail:"descr":"Sets the calibration multiplier",
 	//cmddetail:"fn":"BL0937_CurrentRef","file":"driver/drv_bl0937.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("IREF","",BL0937_CurrentRef, NULL);
+	CMD_RegisterCommand("IREF",BL0937_CurrentRef, NULL);
 	//cmddetail:{"name":"PowerMax","args":"[limit]",
 	//cmddetail:"descr":"Sets Maximum power value measurement limiter",
 	//cmddetail:"fn":"BL0937_PowerMax","file":"driver/drv_bl0937.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("PowerMax","",BL0937_PowerMax, NULL);
+    CMD_RegisterCommand("PowerMax",BL0937_PowerMax, NULL);
 
 	BL0937_Init_Pins();
 }

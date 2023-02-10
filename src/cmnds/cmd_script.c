@@ -746,47 +746,47 @@ void CMD_InitScripting(){
 	//cmddetail:"descr":"Starts a script thread from given file, at given label - can be * for whole file, with given unique ID",
 	//cmddetail:"fn":"CMD_StartScript","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("startScript", "", CMD_StartScript, NULL);
+    CMD_RegisterCommand("startScript", CMD_StartScript, NULL);
 	//cmddetail:{"name":"stopScript","args":"[UniqueID]",
 	//cmddetail:"descr":"Force-stop given script thread by ID",
 	//cmddetail:"fn":"CMD_StopScript","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("stopScript", "", CMD_StopScript, NULL);
+    CMD_RegisterCommand("stopScript", CMD_StopScript, NULL);
 	//cmddetail:{"name":"stopAllScripts","args":"",
 	//cmddetail:"descr":"Stops all running scripts",
 	//cmddetail:"fn":"CMD_StopAllScripts","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("stopAllScripts", "", CMD_StopAllScripts, NULL);
+    CMD_RegisterCommand("stopAllScripts", CMD_StopAllScripts, NULL);
 	//cmddetail:{"name":"listScripts","args":"",
 	//cmddetail:"descr":"Lists all running scripts.",
 	//cmddetail:"fn":"CMD_ListScripts","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("listScripts", "", CMD_ListScripts, NULL);
+    CMD_RegisterCommand("listScripts", CMD_ListScripts, NULL);
 	//cmddetail:{"name":"goto","args":"[LabelStr]",
 	//cmddetail:"descr":"Script-only command. IF single argument is given, then goes to given label from within current script file. If two arguments are given, then jumps to any other script file by label - first argument is file, second label",
 	//cmddetail:"fn":"CMD_GoTo","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("goto", "", CMD_GoTo, NULL);
+    CMD_RegisterCommand("goto", CMD_GoTo, NULL);
 	//cmddetail:{"name":"delay_s","args":"[ValueSeconds]",
 	//cmddetail:"descr":"Script-only command. Pauses current script thread for given amount of seconds.",
 	//cmddetail:"fn":"CMD_Delay_s","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("delay_s", "", CMD_Delay_s, NULL);
+    CMD_RegisterCommand("delay_s", CMD_Delay_s, NULL);
 	//cmddetail:{"name":"delay_ms","args":"[ValueMS]",
 	//cmddetail:"descr":"Script-only command. Pauses current script thread for given amount of ms.",
 	//cmddetail:"fn":"CMD_Delay_ms","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("delay_ms", "", CMD_Delay_ms, NULL);
+    CMD_RegisterCommand("delay_ms", CMD_Delay_ms, NULL);
 	//cmddetail:{"name":"return","args":"",
 	//cmddetail:"descr":"Script-only command. Currently it just stops totally current script thread.",
 	//cmddetail:"fn":"CMD_Return","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("return", "", CMD_Return, NULL);
+    CMD_RegisterCommand("return", CMD_Return, NULL);
 	//cmddetail:{"name":"resetSVM","args":"",
 	//cmddetail:"descr":"Resets all SVM and clears all scripts.",
 	//cmddetail:"fn":"CMD_resetSVM","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("resetSVM", "", CMD_resetSVM, NULL);
+    CMD_RegisterCommand("resetSVM", CMD_resetSVM, NULL);
 
 }
 

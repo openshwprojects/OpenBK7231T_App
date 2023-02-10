@@ -284,52 +284,52 @@ int CMD_InitTestCommands(){
 	//cmddetail:"descr":"Test malloc and free functionality to see if the device crashes",
 	//cmddetail:"fn":"testMallocFree","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("testMallocFree", NULL, testMallocFree, NULL);
+    CMD_RegisterCommand("testMallocFree", testMallocFree, NULL);
 	//cmddetail:{"name":"testRealloc","args":"",
 	//cmddetail:"descr":"Test realloc and free functions to see if the device crashes",
 	//cmddetail:"fn":"testRealloc","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("testRealloc", NULL, testRealloc, NULL);
+    CMD_RegisterCommand("testRealloc", testRealloc, NULL);
 	//cmddetail:{"name":"testJSON","args":"",
 	//cmddetail:"descr":"Test the JSON library",
 	//cmddetail:"fn":"testJSON","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("testJSON", NULL, testJSON, NULL);
+    CMD_RegisterCommand("testJSON", testJSON, NULL);
 	//cmddetail:{"name":"testLog","args":"",
 	//cmddetail:"descr":"Do some test printfs to log with integer and a float",
 	//cmddetail:"fn":"testLog","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("testLog", NULL, testLog, NULL);
+    CMD_RegisterCommand("testLog", testLog, NULL);
 	//cmddetail:{"name":"testFloats","args":"",
 	//cmddetail:"descr":"Do some more test printfs with floating point numbers",
 	//cmddetail:"fn":"testFloats","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("testFloats", NULL, testFloats, NULL);
+    CMD_RegisterCommand("testFloats", testFloats, NULL);
 	//cmddetail:{"name":"testArgs","args":"",
 	//cmddetail:"descr":"Test tokenizer for args and print back all the given args to console",
 	//cmddetail:"fn":"testArgs","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("testArgs", NULL, testArgs, NULL);
+    CMD_RegisterCommand("testArgs", testArgs, NULL);
 	//cmddetail:{"name":"testStrdup","args":"",
 	//cmddetail:"descr":"Test strdup function to see if it allocs news string correctly, also test freeing the string",
 	//cmddetail:"fn":"testStrdup","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("testStrdup", NULL, testStrdup, NULL);
+    CMD_RegisterCommand("testStrdup", testStrdup, NULL);
 	//cmddetail:{"name":"lfs_test1","args":"[FileName]",
 	//cmddetail:"descr":"Tests the LFS file reading feature.",
 	//cmddetail:"fn":"cmnd_lfs_test1","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("lfs_test1", NULL, cmnd_lfs_test1, NULL);
+	CMD_RegisterCommand("lfs_test1", cmnd_lfs_test1, NULL);
 	//cmddetail:{"name":"lfs_test2","args":"[FileName]",
 	//cmddetail:"descr":"Tests the LFS file reading feature.",
 	//cmddetail:"fn":"cmnd_lfs_test2","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("lfs_test2", NULL, cmnd_lfs_test2, NULL);
+	CMD_RegisterCommand("lfs_test2", cmnd_lfs_test2, NULL);
 	//cmddetail:{"name":"lfs_test3","args":"[FileName]",
 	//cmddetail:"descr":"Tests the LFS file reading feature.",
 	//cmddetail:"fn":"cmnd_lfs_test3","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("lfs_test3", NULL, cmnd_lfs_test3, NULL);
+	CMD_RegisterCommand("lfs_test3", cmnd_lfs_test3, NULL);
     return 0;
 }
 

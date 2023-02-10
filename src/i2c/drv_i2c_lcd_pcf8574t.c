@@ -372,32 +372,32 @@ void DRV_I2C_Commands_Init() {
 	//cmddetail:"descr":"Clears LCD and go to pos",
 	//cmddetail:"fn":"DRV_I2C_LCD_PCF8574_ClearAndGoTo","file":"i2c/drv_i2c_lcd_pcf8574t.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("lcd_clearAndGoto","",DRV_I2C_LCD_PCF8574_ClearAndGoTo, NULL);
+	CMD_RegisterCommand("lcd_clearAndGoto", DRV_I2C_LCD_PCF8574_ClearAndGoTo, NULL);
 	//cmddetail:{"name":"lcd_goto","args":"",
 	//cmddetail:"descr":"Go to position on LCD",
 	//cmddetail:"fn":"DRV_I2C_LCD_PCF8574_GoTo","file":"i2c/drv_i2c_lcd_pcf8574t.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("lcd_goto","",DRV_I2C_LCD_PCF8574_GoTo, NULL);
+	CMD_RegisterCommand("lcd_goto", DRV_I2C_LCD_PCF8574_GoTo, NULL);
 	//cmddetail:{"name":"lcd_print","args":"",
 	//cmddetail:"descr":"Prints a string on the LCD",
 	//cmddetail:"fn":"DRV_I2C_LCD_PCF8574_Print","file":"i2c/drv_i2c_lcd_pcf8574t.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("lcd_print","",DRV_I2C_LCD_PCF8574_Print, NULL);
+	CMD_RegisterCommand("lcd_print", DRV_I2C_LCD_PCF8574_Print, NULL);
 	//cmddetail:{"name":"lcd_printFloat","args":"",
 	//cmddetail:"descr":"Prints a float on the LCD",
 	//cmddetail:"fn":"DRV_I2C_LCD_PCF8574_PrintFloat","file":"i2c/drv_i2c_lcd_pcf8574t.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("lcd_printFloat", "", DRV_I2C_LCD_PCF8574_PrintFloat, NULL);
+	CMD_RegisterCommand("lcd_printFloat", DRV_I2C_LCD_PCF8574_PrintFloat, NULL);
 	//cmddetail:{"name":"lcd_printInt","args":"",
 	//cmddetail:"descr":"Prints an omt on the LCD",
 	//cmddetail:"fn":"DRV_I2C_LCD_PCF8574_PrintInt","file":"i2c/drv_i2c_lcd_pcf8574t.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("lcd_printInt", "", DRV_I2C_LCD_PCF8574_PrintInt, NULL);
+	CMD_RegisterCommand("lcd_printInt", DRV_I2C_LCD_PCF8574_PrintInt, NULL);
 	//cmddetail:{"name":"lcd_clear","args":"",
 	//cmddetail:"descr":"Clears the LCD",
 	//cmddetail:"fn":"DRV_I2C_LCD_PCF8574_Clear","file":"i2c/drv_i2c_lcd_pcf8574t.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("lcd_clear","",DRV_I2C_LCD_PCF8574_Clear, NULL);
+	CMD_RegisterCommand("lcd_clear", DRV_I2C_LCD_PCF8574_Clear, NULL);
 }
 /// backlog startDriver I2C; addI2CDevice_LCD_PCF8574 I2C1 0x23 0 0 0; lcd_print I2C1 0x23 Hello123
 // lcd_print I2C1 0x23 Hello123

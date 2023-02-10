@@ -5,7 +5,6 @@
 
 typedef struct command_s {
 	const char *name;
-	const char *argsFormat;
 	commandHandler_t handler;
 	const void *context;
 	struct command_s *next;

@@ -214,22 +214,22 @@ void SM16703P_Init() {
 	//cmddetail:"descr":"qq",
 	//cmddetail:"fn":"SM16703P_Test","file":"driver/drv_ucs1912.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("SM16703P_Test", "", SM16703P_Test, NULL);
+    CMD_RegisterCommand("SM16703P_Test", SM16703P_Test, NULL);
 	//cmddetail:{"name":"SM16703P_Send","args":"",
 	//cmddetail:"descr":"NULL",
 	//cmddetail:"fn":"SM16703P_Send_Cmd","file":"driver/drv_sm16703P.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("SM16703P_Send", "", SM16703P_Send_Cmd, NULL);
+	CMD_RegisterCommand("SM16703P_Send", SM16703P_Send_Cmd, NULL);
 	//cmddetail:{"name":"SM16703P_Test_3xZero","args":"",
 	//cmddetail:"descr":"NULL",
 	//cmddetail:"fn":"SM16703P_Test_3xZero","file":"driver/drv_sm16703P.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("SM16703P_Test_3xZero", "", SM16703P_Test_3xZero, NULL);
+	CMD_RegisterCommand("SM16703P_Test_3xZero", SM16703P_Test_3xZero, NULL);
 	//cmddetail:{"name":"SM16703P_Test_3xOne","args":"",
 	//cmddetail:"descr":"NULL",
 	//cmddetail:"fn":"SM16703P_Test_3xOne","file":"driver/drv_sm16703P.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("SM16703P_Test_3xOne", "", SM16703P_Test_3xOne, NULL);
+	CMD_RegisterCommand("SM16703P_Test_3xOne", SM16703P_Test_3xOne, NULL);
 }
 #endif
 

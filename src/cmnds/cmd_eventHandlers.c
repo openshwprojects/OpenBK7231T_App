@@ -536,22 +536,22 @@ void EventHandlers_Init() {
 	//cmddetail:"descr":"This can be used to trigger an action on a button click, long press, etc",
 	//cmddetail:"fn":"CMD_AddEventHandler","file":"cmnds/cmd_eventHandlers.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("AddEventHandler", "", CMD_AddEventHandler, NULL);
+    CMD_RegisterCommand("AddEventHandler", CMD_AddEventHandler, NULL);
 	//cmddetail:{"name":"AddChangeHandler","args":"[Variable][Relation][Constant][Command]",
 	//cmddetail:"descr":"This can listen to change in channel value (for example channel 0 becoming 100), or for a voltage/current/power change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be 'Power', or 'Current' or 'Voltage'",
 	//cmddetail:"fn":"CMD_AddChangeHandler","file":"cmnds/cmd_eventHandlers.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("AddChangeHandler", "", CMD_AddChangeHandler, NULL);
+    CMD_RegisterCommand("AddChangeHandler", CMD_AddChangeHandler, NULL);
 	//cmddetail:{"name":"listEventHandlers","args":"",
 	//cmddetail:"descr":"Prints full list of added event handlers",
 	//cmddetail:"fn":"CMD_ListEventHandlers","file":"cmnds/cmd_eventHandlers.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("listEventHandlers", "", CMD_ListEventHandlers, NULL);
+    CMD_RegisterCommand("listEventHandlers", CMD_ListEventHandlers, NULL);
 	//cmddetail:{"name":"clearAllHandlers","args":"",
 	//cmddetail:"descr":"This clears all added event handlers",
 	//cmddetail:"fn":"CMD_ClearAllHandlers","file":"cmnds/cmd_eventHandlers.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("clearAllHandlers", "", CMD_ClearAllHandlers, NULL);
+    CMD_RegisterCommand("clearAllHandlers", CMD_ClearAllHandlers, NULL);
 
 }
 

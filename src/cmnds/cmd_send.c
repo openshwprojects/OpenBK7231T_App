@@ -25,7 +25,7 @@ int CMD_InitSendCommands(){
 	//cmddetail:"descr":"Sends a HTTP GET request to target URL. May include GET arguments. Can be used to control devices by Tasmota HTTP protocol. Command supports argument expansion, so $CH11 changes to value of channel 11, etc, etc.",
 	//cmddetail:"fn":"CMD_SendGET","file":"cmnds/cmd_send.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("sendGet", "", CMD_SendGET, NULL);
+    CMD_RegisterCommand("sendGet", CMD_SendGET, NULL);
 
     return 0;
 }

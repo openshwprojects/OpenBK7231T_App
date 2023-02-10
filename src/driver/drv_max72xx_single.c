@@ -79,7 +79,7 @@ void DRV_MAX72XX_Init() {
 	//cmddetail:"descr":"Sets the maximum current for LED driver.",
 	//cmddetail:"fn":"SM2135_Current","file":"driver/drv_sm2135.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("MAX72XX_Setup", "", DRV_MAX72XX_Setup, NULL);
+	CMD_RegisterCommand("MAX72XX_Setup", DRV_MAX72XX_Setup, NULL);
 }
 
 

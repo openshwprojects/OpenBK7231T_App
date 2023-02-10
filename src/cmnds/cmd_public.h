@@ -37,7 +37,7 @@ void CMD_Init_Early();
 void CMD_Init_Delayed();
 void CMD_FreeAllCommands();
 void CMD_RunUartCmndIfRequired();
-void CMD_RegisterCommand(const char* name, const char* args, commandHandler_t handler,  void* context);
+void CMD_RegisterCommand(const char* name, commandHandler_t handler,  void* context);
 commandResult_t CMD_ExecuteCommand(const char* s, int cmdFlags);
 commandResult_t CMD_ExecuteCommandArgs(const char* cmd, const char* args, int cmdFlags);
 // like a strdup, but will expand constants.

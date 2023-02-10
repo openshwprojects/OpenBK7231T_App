@@ -388,61 +388,61 @@ int taslike_commands_init(){
 	//cmddetail:"descr":"Tasmota-style POWER command. Should work for both LEDs and relay-based devices. You can write POWER0, POWER1, etc to access specific relays.",
 	//cmddetail:"fn":"power","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("power", NULL, power, NULL);
+    CMD_RegisterCommand("power", power, NULL);
 	//cmddetail:{"name":"powerAll","args":"",
 	//cmddetail:"descr":"set all outputs",
 	//cmddetail:"fn":"powerAll","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("powerAll", NULL, powerAll, NULL);
+    CMD_RegisterCommand("powerAll", powerAll, NULL);
 	//cmddetail:{"name":"color","args":"[HexString]",
 	//cmddetail:"descr":"set PWN color using #RRGGBB[cw][ww]. Do not use it. Use led_basecolor_rgb",
 	//cmddetail:"fn":"color","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("color", NULL, color, NULL);
+    CMD_RegisterCommand("color", color, NULL);
 	//cmddetail:{"name":"backlog","args":"[string of commands separated with ;]",
 	//cmddetail:"descr":"run a sequence of ; separated commands",
 	//cmddetail:"fn":"cmnd_backlog","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("backlog", NULL, cmnd_backlog, NULL);
+	CMD_RegisterCommand("backlog", cmnd_backlog, NULL);
 	//cmddetail:{"name":"exec","args":"[Filename]",
 	//cmddetail:"descr":"exec <file> - run autoexec.bat or other file from LFS if present",
 	//cmddetail:"fn":"cmnd_lfsexec","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("exec", NULL, cmnd_lfsexec, NULL);
+	CMD_RegisterCommand("exec", cmnd_lfsexec, NULL);
 	//cmddetail:{"name":"SSID1","args":"[ValueString]",
 	//cmddetail:"descr":"Sets the SSID of target WiFi. Command keeps Tasmota syntax.",
 	//cmddetail:"fn":"cmnd_SSID1","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("SSID1", NULL, cmnd_SSID1, NULL);
+	CMD_RegisterCommand("SSID1", cmnd_SSID1, NULL);
 	//cmddetail:{"name":"Password1","args":"[ValueString]",
 	//cmddetail:"descr":"Sets the Pass of target WiFi. Command keeps Tasmota syntax",
 	//cmddetail:"fn":"cmnd_Password1","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("Password1", NULL, cmnd_Password1, NULL);
+	CMD_RegisterCommand("Password1", cmnd_Password1, NULL);
 	//cmddetail:{"name":"MqttHost","args":"[ValueString]",
 	//cmddetail:"descr":"Sets the MQTT host. Command keeps Tasmota syntax",
 	//cmddetail:"fn":"cmnd_MqttHost","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("MqttHost", NULL, cmnd_MqttHost, NULL);
+	CMD_RegisterCommand("MqttHost", cmnd_MqttHost, NULL);
 	//cmddetail:{"name":"MqttUser","args":"[ValueString]",
 	//cmddetail:"descr":"Sets the MQTT user. Command keeps Tasmota syntax",
 	//cmddetail:"fn":"cmnd_MqttUser","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("MqttUser", NULL, cmnd_MqttUser, NULL);
+	CMD_RegisterCommand("MqttUser", cmnd_MqttUser, NULL);
 	//cmddetail:{"name":"MqttPassword","args":"[ValueString]",
 	//cmddetail:"descr":"Sets the MQTT pass. Command keeps Tasmota syntax",
 	//cmddetail:"fn":"cmnd_MqttPassword","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("MqttPassword", NULL, cmnd_MqttPassword, NULL);
+	CMD_RegisterCommand("MqttPassword", cmnd_MqttPassword, NULL);
 	//cmddetail:{"name":"MqttClient","args":"[ValueString]",
 	//cmddetail:"descr":"Sets the MQTT client. Command keeps Tasmota syntax",
 	//cmddetail:"fn":"cmnd_MqttClient","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("MqttClient", NULL, cmnd_MqttClient, NULL);
+	CMD_RegisterCommand("MqttClient", cmnd_MqttClient, NULL);
 	//cmddetail:{"name":"State","args":"NULL",
 	//cmddetail:"descr":"NULL",
 	//cmddetail:"fn":"cmnd_State","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("State", NULL, cmnd_State, NULL);
+	CMD_RegisterCommand("State", cmnd_State, NULL);
     return 0;
 }

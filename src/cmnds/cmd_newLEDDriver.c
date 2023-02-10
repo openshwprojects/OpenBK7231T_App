@@ -1357,72 +1357,72 @@ void NewLED_InitCommands(){
 	//cmddetail:"descr":"set output dimmer 0..100",
 	//cmddetail:"fn":"dimmer","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("led_dimmer", "", dimmer, NULL);
+    CMD_RegisterCommand("led_dimmer", dimmer, NULL);
 	//cmddetail:{"name":"Dimmer","args":"[Value]",
 	//cmddetail:"descr":"Alias for led_dimmer",
 	//cmddetail:"fn":"dimmer","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("Dimmer", "", dimmer, NULL);
+	CMD_RegisterCommand("Dimmer", dimmer, NULL);
 	//cmddetail:{"name":"add_dimmer","args":"[Value][AddMode]",
 	//cmddetail:"descr":"Adds a given value to current LED dimmer. AddMode 0 just adds a value (with a clamp to [0,100]), AddMode 1 will wrap around values (going under 0 goes to 100, going over 100 goes to 0), AddMode 2 will ping-pong value (going to 100 starts going back from 100 to 0, and again, going to 0 starts going up).",
 	//cmddetail:"fn":"add_dimmer","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("add_dimmer", "", add_dimmer, NULL);
+    CMD_RegisterCommand("add_dimmer", add_dimmer, NULL);
 	//cmddetail:{"name":"led_enableAll","args":"[1or0orToggle]",
 	//cmddetail:"descr":"Power on/off LED but remember the RGB(CW) values",
 	//cmddetail:"fn":"enableAll","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("led_enableAll", "", enableAll, NULL);
+    CMD_RegisterCommand("led_enableAll", enableAll, NULL);
 	//cmddetail:{"name":"led_basecolor_rgb","args":"[HexValue]",
 	//cmddetail:"descr":"Puts the LED driver in RGB mode and sets given color.",
 	//cmddetail:"fn":"basecolor_rgb","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("led_basecolor_rgb", "", basecolor_rgb, NULL);
+    CMD_RegisterCommand("led_basecolor_rgb", basecolor_rgb, NULL);
 	//cmddetail:{"name":"led_basecolor_rgbcw","args":"",
 	//cmddetail:"descr":"set PWN color using #RRGGBB[cw][ww]",
 	//cmddetail:"fn":"basecolor_rgbcw","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("led_basecolor_rgbcw", "", basecolor_rgbcw, NULL);
+    CMD_RegisterCommand("led_basecolor_rgbcw", basecolor_rgbcw, NULL);
 	//cmddetail:{"name":"add_temperature","args":"[DeltaValue][bWrapAroundInsteadOfHold]",
 	//cmddetail:"descr":"Adds a given value to current LED temperature. Function can wrap or clamp if max/min is exceeded.",
 	//cmddetail:"fn":"add_temperature","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("add_temperature", "", add_temperature, NULL);
+	CMD_RegisterCommand("add_temperature", add_temperature, NULL);
 	//cmddetail:{"name":"led_temperature","args":"[TempValue]",
 	//cmddetail:"descr":"Toggles LED driver into temperature mode and sets given temperature. It using Home Assistant temperature range (in the range from 154-500 defined in homeassistant/util/color.py as HASS_COLOR_MIN and HASS_COLOR_MAX)",
 	//cmddetail:"fn":"temperature","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("led_temperature", "", temperature, NULL);
+    CMD_RegisterCommand("led_temperature", temperature, NULL);
 	//cmddetail:{"name":"CT","args":"[TempValue]",
 	//cmddetail:"descr":"Same as led_temperature",
 	//cmddetail:"fn":"temperature","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("CT", "", temperature, NULL);
+	CMD_RegisterCommand("CT", temperature, NULL);
 	//cmddetail:{"name":"led_colorMult","args":"[Value]",
 	//cmddetail:"descr":"Internal usage.",
 	//cmddetail:"fn":"colorMult","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("led_colorMult", "", colorMult, NULL);
+    CMD_RegisterCommand("led_colorMult", colorMult, NULL);
 	//cmddetail:{"name":"led_saturation","args":"[Value]",
 	//cmddetail:"descr":"This is an alternate way to set the LED color.",
 	//cmddetail:"fn":"setSaturation","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("led_saturation", "", setSaturation, NULL);
+    CMD_RegisterCommand("led_saturation", setSaturation, NULL);
 	//cmddetail:{"name":"led_hue","args":"[Value]",
 	//cmddetail:"descr":"This is an alternate way to set the LED color.",
 	//cmddetail:"fn":"setHue","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("led_hue", "", setHue, NULL);
+    CMD_RegisterCommand("led_hue", setHue, NULL);
 	//cmddetail:{"name":"led_nextColor","args":"",
 	//cmddetail:"descr":"Sets the next color from predefined colours list. Our list is the same as in Tasmota.",
 	//cmddetail:"fn":"nextColor","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("led_nextColor", "", nextColor, NULL);
+    CMD_RegisterCommand("led_nextColor", nextColor, NULL);
 	//cmddetail:{"name":"led_lerpSpeed","args":"[LerpSpeed]",
 	//cmddetail:"descr":"Sets the speed of colour interpolation, where speed is defined as a number of RGB units per second, so 255 will lerp from 0 to 255 in one second",
 	//cmddetail:"fn":"lerpSpeed","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("led_lerpSpeed", "", lerpSpeed, NULL);
+    CMD_RegisterCommand("led_lerpSpeed", lerpSpeed, NULL);
 	// HSBColor 360,100,100 - red
 	// HSBColor 90,100,100 - green
 	// HSBColor	<hue>,<sat>,<bri> = set color by hue, saturation and brightness
@@ -1430,35 +1430,35 @@ void NewLED_InitCommands(){
 	//cmddetail:"descr":"Tasmota-style colour access. Hue in 0-360 range, saturation in 0-100 and brightness in 0-100 range. ",
 	//cmddetail:"fn":"LED_SetBaseColor_HSB","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("HSBColor", "", LED_SetBaseColor_HSB, NULL);
+	CMD_RegisterCommand("HSBColor", LED_SetBaseColor_HSB, NULL);
 	// HSBColor1	0..360 = set hue
 	//cmddetail:{"name":"HSBColor1","args":"[Hue]",
 	//cmddetail:"descr":"Tasmota-style colour access. Sets hue in 0 to 360 range.",
 	//cmddetail:"fn":"setHue","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("HSBColor1", "", setHue, NULL);
+	CMD_RegisterCommand("HSBColor1", setHue, NULL);
 	// HSBColor2	0..100 = set saturation
 	//cmddetail:{"name":"HSBColor2","args":"[Saturation]",
 	//cmddetail:"descr":"Tasmota-style colour access. Set saturation in 0 to 100 range.",
 	//cmddetail:"fn":"setSaturation","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("HSBColor2", "", setSaturation, NULL);
+	CMD_RegisterCommand("HSBColor2", setSaturation, NULL);
 	// HSBColor3	0..100 = set brightness
 	//cmddetail:{"name":"HSBColor3","args":"[Brightness]",
 	//cmddetail:"descr":"Tasmota-style colour access. Sets brightness in 0 to 100 range.",
 	//cmddetail:"fn":"setBrightness","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("HSBColor3", "", setBrightness, NULL);
+	CMD_RegisterCommand("HSBColor3", setBrightness, NULL);
 	//cmddetail:{"name":"led_finishFullLerp","args":"",
 	//cmddetail:"descr":"This will force-finish LED color interpolation. You can call it after setting the colour to skip the interpolation/smooth transition time. Of course, it makes only sense if you enabled smooth colour transitions.",
 	//cmddetail:"fn":"led_finishFullLerp","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("led_finishFullLerp", "", led_finishFullLerp, NULL);
+	CMD_RegisterCommand("led_finishFullLerp", led_finishFullLerp, NULL);
 	//cmddetail:{"name":"led_gammaCtrl","args":"sub-cmd [par]",
 	//cmddetail:"descr":"control LED Gamma Correction and Calibration",
 	//cmddetail:"fn":"rgb_gamma_control","file":"cmnds/cmd_rgbGamma.c","requires":"",
 	//cmddetail:"examples":"led_gammaCtrl on"}
-    CMD_RegisterCommand("led_gammaCtrl", "", led_gamma_control, NULL);
+    CMD_RegisterCommand("led_gammaCtrl", led_gamma_control, NULL);
 }
 
 void NewLED_RestoreSavedStateIfNeeded() {
