@@ -918,7 +918,6 @@ static int http_rest_post_pins(http_request_t* request) {
 	os_free(p);
 	os_free(t);
 	return http_rest_error(request, 200, "OK");
-	return 0;
 }
 
 static int http_rest_error(http_request_t* request, int code, char* msg) {

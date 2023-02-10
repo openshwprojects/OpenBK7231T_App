@@ -403,11 +403,11 @@ void BL_ProcessUpdate(float voltage, float current, float power)
                 /* 2019-09-07T15:50-04:00 */
                 if (NTP_GetTimesZoneOfsSeconds()>0)
                 {
-                    sprintf(datetime, "%04i-%02i-%02iT%02i:%02i+%02i:%02i",
+                    snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i+%02i:%02i",
                             ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
                             NTP_GetTimesZoneOfsSeconds()/3600, (NTP_GetTimesZoneOfsSeconds()/60) % 60);
                 } else {
-                    sprintf(datetime, "%04i-%02i-%02iT%02i:%02i-%02i:%02i",
+                    snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i-%02i:%02i",
                             ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
                             abs(NTP_GetTimesZoneOfsSeconds()/3600), (abs(NTP_GetTimesZoneOfsSeconds())/60) % 60);
                 }
@@ -441,11 +441,11 @@ void BL_ProcessUpdate(float voltage, float current, float power)
                     ltm = localtime(&ConsumptionResetTime);
                     if (NTP_GetTimesZoneOfsSeconds()>0)
                     {
-                       sprintf(datetime, "%04i-%02i-%02iT%02i:%02i+%02i:%02i",
+                       snprintf(datetime,sizeof(datetime), "%04i-%02i-%02iT%02i:%02i+%02i:%02i",
                                ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
                                NTP_GetTimesZoneOfsSeconds()/3600, (NTP_GetTimesZoneOfsSeconds()/60) % 60);
                     } else {
-                       sprintf(datetime, "%04i-%02i-%02iT%02i:%02i-%02i:%02i",
+                       snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i-%02i:%02i",
                                ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
                                abs(NTP_GetTimesZoneOfsSeconds()/3600), (abs(NTP_GetTimesZoneOfsSeconds())/60) % 60);
                     }
@@ -565,7 +565,7 @@ void BL_ProcessUpdate(float voltage, float current, float power)
                 MQTT_PublishMain_StringFloat(counter_mqttNames[4], dailyStats[0]);
                 stat_updatesSent++;
                 ltm = localtime(&ConsumptionResetTime);
-                sprintf(datetime, "%04i-%02i-%02i %02i:%02i:%02i",
+                snprintf(datetime,sizeof(datetime), "%04i-%02i-%02i %02i:%02i:%02i",
                         ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
                 MQTT_PublishMain_StringString(counter_mqttNames[5], datetime, 0);
                 stat_updatesSent++;

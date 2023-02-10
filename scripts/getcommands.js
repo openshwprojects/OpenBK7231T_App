@@ -77,18 +77,18 @@ function getFolder(name, cb){
                         let cmd = {
                             name: mytrim(parts[0]),
                             args: mytrim(parts[1]),
-                            descr: mytrim(parts[3]),
+                            descr: mytrim(""),
                             fn: mytrim(parts[2]),
                             file: file.slice(6),
                             requires:"",
                             examples: "",
                         };
 
-                        if (cmd.descr !== 'NULL'){
-                            console.log('replace "'+cmd.descr+'" with NULL');
-                            lines[i] = lines[i].replace('"'+cmd.descr+'"', 'NULL');
-                            modified++;
-                        }
+                        //if (cmd.descr !== 'NULL'){
+                        //    console.log('replace "'+cmd.descr+'" with NULL');
+                         //   lines[i] = lines[i].replace(', NULL, NULL);', ', NULL);');
+                         //   modified++;
+                        //}
 
                         if (!cmdindex[cmd.name]){
                             // it did not have a doc line before

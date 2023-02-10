@@ -112,7 +112,7 @@ void LED_SetColorByIndex(int index) {
 
 	c = g_color[g_curColor];
 
-	sprintf(tmp, "%02X%02X%02X", c[0], c[1], c[2]);
+	snprintf(tmp, sizeof(tmp), "%02X%02X%02X", c[0], c[1], c[2]);
 
 	LED_SetBaseColor(0, "led_basecolor_rgb", tmp, 0);
 	if (LED_GetEnableAll() == 0) {
