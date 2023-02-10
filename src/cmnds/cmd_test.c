@@ -11,58 +11,6 @@
 	#include "../littlefs/our_lfs.h"
 #endif
 
-
-// run an aliased command
-static commandResult_t runcmd(const void * context, const char *cmd, const char *args, int cmdFlags){
-    char *c = (char *)context;
- //   char *p = c;
-
- //   while (*p && !isWhiteSpace(*p)) {
- //       p++;
-	//}
- //   if (*p) p++;
-    return CMD_ExecuteCommand(c,cmdFlags);
-}
-
-// run an aliased command
-static commandResult_t alias(const void * context, const char *cmd, const char *args, int cmdFlags){
-	const char *alias;
-	const char *ocmd;
-	char *cmdMem;
-	char *aliasMem;
-	command_t *existing;
-
-	Tokenizer_TokenizeString(args,0);
-	// following check must be done after 'Tokenizer_TokenizeString',
-	// so we know arguments count in Tokenizer. 'cmd' argument is
-	// only for warning display
-	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
-
-	alias = Tokenizer_GetArg(0);
-	ocmd = Tokenizer_GetArgFrom(1);
-
-	existing = CMD_Find(alias);
-
-	if(existing!=0) {
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_Alias: the alias you are trying to use is already in use (as an alias or as a command)");
-		return CMD_RES_BAD_ARGUMENT;
-	}
-
-	cmdMem = strdup(ocmd);
-	aliasMem = strdup(alias);
-
-	ADDLOG_INFO(LOG_FEATURE_CMD, "New alias has been set: %s runs %s", alias, ocmd);
-
-	//cmddetail:{"name":"aliasMem","args":"",
-	//cmddetail:"descr":"Internal usage only. See docs for 'alias' command.",
-	//cmddetail:"fn":"runcmd","file":"cmnds/cmd_test.c","requires":"",
-	//cmddetail:"examples":""}
-    CMD_RegisterCommand(aliasMem, "", runcmd, NULL, cmdMem);
-	return CMD_RES_OK;
-}
-
 // Usage: addRepeatingEvent 1 -1 testMallocFree 100
 static commandResult_t testMallocFree(const void * context, const char *cmd, const char *args, int cmdFlags){
 	int repeats;
@@ -237,12 +185,7 @@ static commandResult_t testJSON(const void * context, const char *cmd, const cha
 
     return CMD_RES_OK;
 }
-int fortest_commands_init(){
-	//cmddetail:{"name":"alias","args":"[Alias][Command with spaces]",
-	//cmddetail:"descr":"add an aliased command, so a command with spaces can be called with a short, nospaced alias",
-	//cmddetail:"fn":"alias","file":"cmnds/cmd_test.c","requires":"",
-	//cmddetail:"examples":""}
-    CMD_RegisterCommand("alias", "", alias, NULL, NULL);
+int CMD_InitTestCommands(){
 	//cmddetail:{"name":"testMallocFree","args":"",
 	//cmddetail:"descr":"Test malloc and free functionality to see if the device crashes",
 	//cmddetail:"fn":"testMallocFree","file":"cmnds/cmd_test.c","requires":"",

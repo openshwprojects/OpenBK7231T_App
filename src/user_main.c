@@ -852,7 +852,7 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 
 	// add some commands...
 	taslike_commands_init();
-	fortest_commands_init();
+	CMD_InitTestCommands();
 	NewLED_InitCommands();
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	CMD_InitSendCommands();

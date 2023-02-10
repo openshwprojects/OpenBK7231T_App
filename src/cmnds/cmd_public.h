@@ -215,7 +215,7 @@ OBK_Publish_Result sendTemperatureChange();
 OBK_Publish_Result LED_SendCurrentLightMode();
 void LED_ResetGlobalVariablesToDefaults();
 // cmd_test.c
-int fortest_commands_init();
+int CMD_InitTestCommands();
 // cmd_channels.c
 void CMD_InitChannelCommands();
 // cmd_send.c
