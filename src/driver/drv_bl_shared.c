@@ -248,7 +248,7 @@ commandResult_t BL09XX_SetupEnergyStatistic(const void *context, const char *cmd
     /* process changes */
     if (enable != 0)
     {
-        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Consumption History enabled\n");
+        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Consumption History enabled");
         /* Enable function */
         energyCounterStatsEnable = true;
         if (energyCounterSampleCount != sample_count)
@@ -259,7 +259,7 @@ commandResult_t BL09XX_SetupEnergyStatistic(const void *context, const char *cmd
             energyCounterMinutes = NULL;
             energyCounterSampleCount = sample_count;
         }
-        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Sample Count:    %d\n", energyCounterSampleCount);
+        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Sample Count:    %d", energyCounterSampleCount);
         if (energyCounterSampleInterval != sample_time)
         {
             /* change sample time */            
@@ -277,13 +277,13 @@ commandResult_t BL09XX_SetupEnergyStatistic(const void *context, const char *cmd
                 memset(energyCounterMinutes, 0, energyCounterSampleCount*sizeof(float));
             }
         }
-        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Sample Interval: %d\n", energyCounterSampleInterval);
+        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Sample Interval: %d", energyCounterSampleInterval);
 
         energyCounterMinutesStamp = xTaskGetTickCount();
         energyCounterMinutesIndex = 0;
     } else {
         /* Disable Consimption Nistory */
-        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Consumption History disabled\n");
+        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Consumption History disabled");
         energyCounterStatsEnable = false;
         if (energyCounterMinutes != NULL)
         {
@@ -317,7 +317,7 @@ commandResult_t BL09XX_SetupConsumptionThreshold(const void *context, const char
     if (threshold>200.0f)
         threshold = 200.0f;
     changeSavedThresholdEnergy = threshold;
-    addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "ConsumptionThreshold: %1.1f\n", changeSavedThresholdEnergy);
+    addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "ConsumptionThreshold: %1.1f", changeSavedThresholdEnergy);
 
     return CMD_RES_OK;
 }
@@ -475,7 +475,7 @@ void BL_ProcessUpdate(float voltage, float current, float power)
                 msg = cJSON_PrintUnformatted(root);
                 cJSON_Delete(root);
 
-                addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "JSON Printed: %d bytes\n", strlen(msg));
+               // addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "JSON Printed: %d bytes", strlen(msg));
 
                 MQTT_PublishMain_StringString(counter_mqttNames[2], msg, 0);
                 stat_updatesSent++;

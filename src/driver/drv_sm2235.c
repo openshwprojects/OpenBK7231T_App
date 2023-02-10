@@ -55,45 +55,6 @@ void SM2235_Write(float *rgbcw) {
 
 }
 
-static commandResult_t SM2235_RGBCW(const void *context, const char *cmd, const char *args, int flags){
-	const char *c = args;
-	float col[5] = { 0, 0, 0, 0, 0 };
-	int ci;
-	int val;
-
-	ci = 0;
-
-	// some people prefix colors with #
-	if(c[0] == '#')
-		c++;
-	while (*c){
-		char tmp[3];
-		int r;
-		tmp[0] = *(c++);
-		if (!*c)
-			break;
-		tmp[1] = *(c++);
-		tmp[2] = '\0';
-		r = sscanf(tmp, "%x", &val);
-		if (!r) {
-			ADDLOG_ERROR(LOG_FEATURE_CMD, "SM2235_RGBCW no sscanf hex result from %s", tmp);
-			break;
-		}
-
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2235_RGBCW found chan %d -> val255 %d (from %s)", ci, val, tmp);
-
-		col[ci] = val;
-
-		// move to next channel.
-		ci ++;
-		if(ci>=5)
-			break;
-	}
-
-	SM2235_Write(col);
-
-	return CMD_RES_OK;
-}
 static void SM2235_SetCurrent(int curValRGB, int curValCW) {
 	//g_current_setting_rgb = curValRGB;
 	//g_current_setting_cw = curValCW;
@@ -129,12 +90,12 @@ void SM2235_Init() {
 	//cmddetail:"descr":"Don't use it. It's for direct access of SM2235 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",
 	//cmddetail:"fn":"SM2235_RGBCW","file":"driver/drv_sm2235.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("SM2235_RGBCW", "", SM2235_RGBCW, NULL, NULL);
+    CMD_RegisterCommand("SM2235_RGBCW", "", CMD_LEDDriver_WriteRGBCW, NULL, NULL);
 	//cmddetail:{"name":"SM2235_Map","args":"[Ch0][Ch1][Ch2][Ch3][Ch4]",
 	//cmddetail:"descr":"Maps the RGBCW values to given indices of SM2235 channels. This is because SM2235 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: SM2235_Map 0 1 2 3 4",
 	//cmddetail:"fn":"SM2235_Map","file":"driver/drv_sm2235.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("SM2235_Map", "", CMD_LEDDriverMap, NULL, NULL);
+    CMD_RegisterCommand("SM2235_Map", "", CMD_LEDDriver_Map, NULL, NULL);
 	//cmddetail:{"name":"SM2235_Current","args":"[Value]",
 	//cmddetail:"descr":"Sets the maximum current for LED driver.",
 	//cmddetail:"fn":"SM2235_Current","file":"driver/drv_sm2235.c","requires":"",

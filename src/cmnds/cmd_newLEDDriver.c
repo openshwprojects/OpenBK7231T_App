@@ -187,7 +187,7 @@ float led_lerpSpeedUnitsPerSecond = 200.f;
 float led_current_value_brightness = 0;
 float led_current_value_cold_or_warm = 0;
 
-void led_Save_finalRGBCW(float* finalRGBCW) {
+void LED_I2CDriver_WriteRGBCW(float* finalRGBCW) {
 #ifdef ENABLE_DRIVER_LED
 	if (DRV_IsRunning("SM2135")) {
 		SM2135_Write(finalRGBCW);
@@ -294,7 +294,7 @@ void LED_RunQuickColorLerp(int deltaMS) {
 		}
 	}
 	
-	led_Save_finalRGBCW(led_rawLerpCurrent);
+	LED_I2CDriver_WriteRGBCW(led_rawLerpCurrent);
 }
 
 
@@ -329,7 +329,7 @@ float led_gamma_correction (int color, float iVal) { // apply LED gamma and RGB 
 
 	if (led_gamma_enable_channel_messages &&
 			(((g_lightMode == Light_RGB) && (color < 3)) || ((g_lightMode != Light_RGB) && (color >= 3)))) {
-		addLogAdv (LOG_INFO, LOG_FEATURE_CMD, "channel %i set to %.2f%%\r\n", color, oVal / 2.55);
+		addLogAdv (LOG_INFO, LOG_FEATURE_CMD, "channel %i set to %.2f%%", color, oVal / 2.55);
 	}
 	if (oVal > 255.0f) {
 		oVal = 255.0f;
@@ -470,7 +470,7 @@ void apply_smart_light() {
 		}
 	}
 	if(CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == false) {
-		led_Save_finalRGBCW(finalColors);
+		LED_I2CDriver_WriteRGBCW(finalColors);
 	}
 
 	if(CFG_HasFlag(OBK_FLAG_LED_REMEMBERLASTSTATE)) {
@@ -487,9 +487,9 @@ void apply_smart_light() {
 
 void led_gamma_list (void) { // list RGB gamma settings
 	led_gamma_enable_channel_messages = 1;
-	addLogAdv (LOG_INFO, LOG_FEATURE_CFG, "RGB  cal %f %f %f\r\n",
+	addLogAdv (LOG_INFO, LOG_FEATURE_CFG, "RGB  cal %f %f %f",
 		g_cfg.led_corr.rgb_cal[0], g_cfg.led_corr.rgb_cal[1], g_cfg.led_corr.rgb_cal[2]);
-	addLogAdv (LOG_INFO, LOG_FEATURE_CFG, "LED  gamma %.2f  brtMinRGB %.2f%%  brtMinCW %.2f%%\r\n",
+	addLogAdv (LOG_INFO, LOG_FEATURE_CFG, "LED  gamma %.2f  brtMinRGB %.2f%%  brtMinCW %.2f%%",
 		g_cfg.led_corr.led_gamma, g_cfg.led_corr.rgb_bright_min, g_cfg.led_corr.cw_bright_min);
 }
 
@@ -568,7 +568,7 @@ commandResult_t led_gamma_control (const void *context, const char *cmd, const c
 
 	} else {
 		addLogAdv (LOG_INFO, LOG_FEATURE_CFG,
-		           "%s sub-command NOT recognized - Use: cal [f f f], gamma <f>, brtMinRGB <f>, brtMinCW <f>, list\r\n", cmd);
+		           "%s sub-command NOT recognized - Use: cal [f f f], gamma <f>, brtMinRGB <f>, brtMinCW <f>, list", cmd);
 	}
 
 	return CMD_RES_OK;

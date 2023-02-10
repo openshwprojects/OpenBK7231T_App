@@ -74,7 +74,7 @@ void CHT8305_Init() {
 	Soft_I2C_ReadBytes(buff, 2);
 	Soft_I2C_Stop();
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "DRV_CHT8304_init: ID: %02X %02X\n", buff[0], buff[1]);
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "DRV_CHT8304_init: ID: %02X %02X", buff[0], buff[1]);
 
 
 
@@ -92,7 +92,7 @@ void CHT8305_OnEverySecond() {
 	CHANNEL_Set(channel_temp, (int)(g_temp * 10), 0);
 	CHANNEL_Set(channel_humid, (int)(g_humid), 0);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "DRV_CHT8304_readEnv: Temperature:%fC Humidity:%f%%\n", g_temp, g_humid);
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "DRV_CHT8304_readEnv: Temperature:%fC Humidity:%f%%", g_temp, g_humid);
 }
 
 void CHT8305_AppendInformationToHTTPIndexPage(http_request_t* request)

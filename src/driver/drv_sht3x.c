@@ -136,7 +136,7 @@ commandResult_t SHT3X_MeasurePer(const void* context, const char* cmd, const cha
 	CHANNEL_Set(channel_temp, (int)(g_temp * 10), 0);
 	CHANNEL_Set(channel_humid, (int)(g_humid), 0);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT3X_Measure: Period Temperature:%fC Humidity:%f%%\n", g_temp, g_humid);
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT3X_Measure: Period Temperature:%fC Humidity:%f%%", g_temp, g_humid);
 	return CMD_RES_OK;
 
 }
@@ -175,7 +175,7 @@ commandResult_t SHT3X_Measure(const void* context, const char* cmd, const char* 
 	CHANNEL_Set(channel_temp, (int)(g_temp * 10), 0);
 	CHANNEL_Set(channel_humid, (int)(g_humid), 0);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT3X_Measure: Temperature:%fC Humidity:%f%%\n", g_temp, g_humid);
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT3X_Measure: Temperature:%fC Humidity:%f%%", g_temp, g_humid);
 	return CMD_RES_OK;
 }
 // StopDriver SHT3X
@@ -205,7 +205,7 @@ void SHT3X_GetStatus()
 	Soft_I2C_Start(SHT3X_I2C_ADDR | 1);
 	Soft_I2C_ReadBytes(status, 2);
 	Soft_I2C_Stop();
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT : Status : %02X %02X\n", status[0], status[1]);
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT : Status : %02X %02X", status[0], status[1]);
 }
 commandResult_t SHT3X_GetStatusCmd(const void* context, const char* cmd, const char* args, int cmdFlags)
 {

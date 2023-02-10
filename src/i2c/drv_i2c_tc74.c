@@ -10,14 +10,14 @@ int DRV_I2C_TC74_readTemperature(int dev_adr, int busID)
 {
 	byte temp;
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_TC74_readTemperature: called for addr %i\n", dev_adr);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_TC74_readTemperature: called for addr %i\n", dev_adr);
 
 	DRV_I2C_Begin(dev_adr,busID);
 	DRV_I2C_Write(0,0x00);
 	DRV_I2C_Read(0x00,&temp);
 	DRV_I2C_Close();
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_TC74_readTemperature: result is %i\n", temp);
+	addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"TC74 reads %i", temp);
 
 	return temp;
 

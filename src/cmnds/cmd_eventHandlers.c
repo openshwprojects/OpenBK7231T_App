@@ -456,7 +456,7 @@ commandResult_t CMD_ClearAllHandlers(const void *context, const char *cmd, const
 		c++;
 	}
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Fried %i handlers\n", c);
+	addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Fried %i handlers", c);
 	g_eventHandlers = 0;
 
 	return CMD_RES_OK;

@@ -41,7 +41,7 @@ void RepeatingEvents_CancelRepeatingEvents(int userID)
 		if(ev->userID == userID) {
 			// mark as finished
 			ev->times = EVENT_CANCELED_TIMES;
-			addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"Event with id %i and cmd %s has been canceled\n",ev->userID,ev->command);
+			addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"Event with id %i and cmd %s has been canceled",ev->userID,ev->command);
 		}
 	}
 
@@ -67,12 +67,12 @@ void RepeatingEvents_AddRepeatingEvent(const char *command, int secondsInterval,
 	// create new
 	ev = malloc(sizeof(repeatingEvent_t));
 	if(ev == 0) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_CMD,"RepeatingEvents_OnEverySecond: failed to malloc new event\n");
+		addLogAdv(LOG_ERROR, LOG_FEATURE_CMD,"RepeatingEvents_OnEverySecond: failed to malloc new event");
 		return;
 	}
 	cmd_copy = strdup(command);
 	if(cmd_copy == 0) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_CMD,"RepeatingEvents_OnEverySecond: failed to malloc command text copy\n");
+		addLogAdv(LOG_ERROR, LOG_FEATURE_CMD,"RepeatingEvents_OnEverySecond: failed to malloc command text copy");
 		free(ev);
 		return;
 	}
@@ -133,7 +133,7 @@ void RepeatingEvents_OnEverySecond() {
 		c_checked++;
 		// debug only check
 		if(cur == cur->next) {
-			addLogAdv(LOG_ERROR, LOG_FEATURE_CMD,"RepeatingEvents_OnEverySecond: single linked list was broken?\n");
+			addLogAdv(LOG_ERROR, LOG_FEATURE_CMD,"RepeatingEvents_OnEverySecond: single linked list was broken?");
 			cur->next = 0;
 			return;
 		}
@@ -186,7 +186,7 @@ commandResult_t RepeatingEvents_Cmd_AddRepeatingEvent(const void *context, const
 		cmdToRepeat = Tokenizer_GetArgFrom(2);
 	}
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"addRepeatingEvent: interval %i, repeats %i, command [%s]\n",interval,times,cmdToRepeat);
+	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"addRepeatingEvent: interval %i, repeats %i, command [%s]",interval,times,cmdToRepeat);
 
 	RepeatingEvents_AddRepeatingEvent(cmdToRepeat,interval, times, userID);
 
@@ -205,7 +205,7 @@ commandResult_t RepeatingEvents_Cmd_ClearRepeatingEvents(const void *context, co
 		free(rem);
 		c++;
 	}
-	addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Fried %i rep. events\n", c);
+	addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Fried %i rep. events", c);
 	g_repeatingEvents = 0;
 	return CMD_RES_OK;
 }
@@ -223,7 +223,7 @@ commandResult_t RepeatingEvents_Cmd_CancelRepeatingEvent(const void *context, co
 	}
 	userID = Tokenizer_GetArgInteger(0);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"cancelRepeatingEvent: will cancel events with id %i\n",userID);
+	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"cancelRepeatingEvent: will cancel events with id %i",userID);
 
 	RepeatingEvents_CancelRepeatingEvents(userID);
 

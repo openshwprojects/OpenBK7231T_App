@@ -58,47 +58,6 @@ void BP1658CJ_Write(float *rgbcw) {
 	Soft_I2C_Stop();
 }
 
-
-static commandResult_t BP1658CJ_RGBCW(const void *context, const char *cmd, const char *args, int flags){
-	const char *c = args;
-	float col[5] = { 0, 0, 0, 0, 0 };
-	int ci;
-	int val;
-
-	ci = 0;
-
-	// some people prefix colors with #
-	if(c[0] == '#')
-		c++;
-	while (*c){
-		char tmp[3];
-		int r;
-		tmp[0] = *(c++);
-		if (!*c)
-			break;
-		tmp[1] = *(c++);
-		tmp[2] = '\0';
-		r = sscanf(tmp, "%x", &val);
-		if (!r) {
-			ADDLOG_ERROR(LOG_FEATURE_CMD, "BP1658CJ_RGBCW no sscanf hex result from %s", tmp);
-			break;
-		}
-
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "BP1658CJ_RGBCW found chan %d -> val255 %d (from %s)", ci, val, tmp);
-
-		col[ci] = val;
-
-		// move to next channel.
-		ci ++;
-		if(ci>=5)
-			break;
-	}
-
-	BP1658CJ_Write(col);
-
-	return CMD_RES_OK;
-}
-
 // startDriver BP1658CJ
 // BP1658CJ_RGBCW FF00000000
 void BP1658CJ_Init() {
@@ -118,10 +77,10 @@ void BP1658CJ_Init() {
 	//cmddetail:"descr":"Don't use it. It's for direct access of BP1658CJ driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",
 	//cmddetail:"fn":"BP1658CJ_RGBCW","file":"driver/drv_bp1658cj.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("BP1658CJ_RGBCW", "", BP1658CJ_RGBCW, NULL, NULL);
+    CMD_RegisterCommand("BP1658CJ_RGBCW", "", CMD_LEDDriver_WriteRGBCW, NULL, NULL);
 	//cmddetail:{"name":"BP1658CJ_Map","args":"[Ch0][Ch1][Ch2][Ch3][Ch4]",
 	//cmddetail:"descr":"Maps the RGBCW values to given indices of BP1658CJ channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: BP1658CJ_Map 0 1 2 3 4",
 	//cmddetail:"fn":"BP1658CJ_Map","file":"driver/drv_bp1658cj.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("BP1658CJ_Map", "", CMD_LEDDriverMap, NULL, NULL);
+    CMD_RegisterCommand("BP1658CJ_Map", "", CMD_LEDDriver_Map, NULL, NULL);
 }

@@ -19,20 +19,20 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr
 	MSG_BeginReading(&msg,data,len);
 
 	if(MSG_CheckAndSkip(&msg,TASMOTA_DEVICEGROUPS_HEADER,strlen(TASMOTA_DEVICEGROUPS_HEADER))==0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_Parse: data chunk with len %i had bad header\n",len);
+		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_Parse: data chunk with len %i had bad header",len);
 		return 1;
 	}
 	if(MSG_ReadString(&msg,groupName,sizeof(groupName)) <= 0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_Parse: data chunk with len %i failed to read group name\n",len);
+		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_Parse: data chunk with len %i failed to read group name",len);
 		return 1;
 	}
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_Parse: grp name %s len %d\n", groupName, strlen(groupName));
+	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_Parse: grp name %s len %d", groupName, strlen(groupName));
 
 	if(dev != 0) {
 		// right now, only single group support
 		if(strcmp(dev->gr.groupName,groupName)) {
-			addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR,"DGR ignoring message from group %s - device is in %s\n",groupName,dev->gr.groupName);
+			addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR,"DGR ignoring message from group %s - device is in %s",groupName,dev->gr.groupName);
 			return -1;
 		}
 	}
@@ -45,22 +45,22 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr
 	}
 
 	if(dev->cbs.checkSequence(sequence)) {
-		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR,"DGR ignoring message from duplicate or older sequence %i\n",sequence);
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR,"DGR ignoring message from duplicate or older sequence %i",sequence);
 		return 1;
 	}
 
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_Parse: [%s] seq 0x%04X, flags 0x%02X\n",inet_ntoa(((struct sockaddr_in *)addr)->sin_addr),sequence, flags);
+	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_Parse: [%s] seq 0x%04X, flags 0x%02X",inet_ntoa(((struct sockaddr_in *)addr)->sin_addr),sequence, flags);
 
 	while(MSG_EOF(&msg)==0) {
 		type = MSG_ReadByte(&msg);
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"Next section - %i\n",type);
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"Next section - %i",type);
 		if(type == DGR_ITEM_EOL) {
 			bGotEOL = 1;
 		} else if(type < DGR_ITEM_MAX_8BIT) {
 			vals = MSG_ReadByte(&msg);
 			if(type == DGR_ITEM_BRI_POWER_ON) {
-				addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"DGR_ITEM_BRI_POWER_ON: %i\n",vals);
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"DGR_ITEM_BRI_POWER_ON: %i",vals);
 				// FORWARD TO PROCESSING BY API
 				if(dev) {
 					if(DGR_IsItemInMask(type, dev->gr.devGroupShare_In)) {
@@ -68,7 +68,7 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr
 					}
 				}
 			} else if(type == DGR_ITEM_LIGHT_BRI) {
-				addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"DGR_ITEM_LIGHT_BRI: %i\n",vals);
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"DGR_ITEM_LIGHT_BRI: %i",vals);
 				// FORWARD TO PROCESSING BY API
 				if(dev) {
 					if(DGR_IsItemInMask(type, dev->gr.devGroupShare_In)) {
@@ -77,7 +77,7 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr
 				}
 			}
 			else if (type == DGR_ITEM_LIGHT_FIXED_COLOR) {
-				addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR, "DGR_ITEM_LIGHT_FIXED_COLOR: %i\n", vals);
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR, "DGR_ITEM_LIGHT_FIXED_COLOR: %i", vals);
 				// FORWARD TO PROCESSING BY API
 				if (dev) {
 					if (DGR_IsItemInMask(type, dev->gr.devGroupShare_In)) {
@@ -120,7 +120,7 @@ int DGR_Parse(const byte *data, int len, dgrDevice_t *dev, struct sockaddr *addr
 			// Gives sLen 4
 			if(type == DGR_ITEM_COMMAND) {
 				const char *cmd = MSG_GetStringPointerAtCurrentPosition(&msg);
-				addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"DGR_ITEM_COMMAND: %s\n",cmd);
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"DGR_ITEM_COMMAND: %s",cmd);
 			}
 			MSG_SkipBytes(&msg,sLen);
 		} else if(type == DGR_ITEM_LIGHT_CHANNELS) {

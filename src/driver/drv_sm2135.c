@@ -188,7 +188,7 @@ void SM2135_Write(float *rgbcw) {
 	}
 }
 
-static commandResult_t SM2135_RGBCW(const void *context, const char *cmd, const char *args, int flags){
+commandResult_t CMD_LEDDriver_WriteRGBCW(const void *context, const char *cmd, const char *args, int flags){
 	const char *c = args;
 	float col[5] = { 0, 0, 0, 0, 0 };
 	int ci;
@@ -209,11 +209,11 @@ static commandResult_t SM2135_RGBCW(const void *context, const char *cmd, const 
 		tmp[2] = '\0';
 		r = sscanf(tmp, "%x", &val);
 		if (!r) {
-			ADDLOG_ERROR(LOG_FEATURE_CMD, "SM2135_RGBCW no sscanf hex result from %s", tmp);
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "No sscanf hex result from %s", tmp);
 			break;
 		}
 
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2135_RGBCW found chan %d -> val255 %d (from %s)", ci, val, tmp);
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "Found chan %d -> val255 %d (from %s)", ci, val, tmp);
 
 		col[ci] = val;
 
@@ -223,7 +223,7 @@ static commandResult_t SM2135_RGBCW(const void *context, const char *cmd, const 
 			break;
 	}
 
-	SM2135_Write(col);
+	LED_I2CDriver_WriteRGBCW(col);
 
 	return CMD_RES_OK;
 }
@@ -233,7 +233,7 @@ static commandResult_t SM2135_RGBCW(const void *context, const char *cmd, const 
 // This is the order used on my polish Spectrum WOJ14415 bulb:
 // SM2135_Map 2 1 0 4 3 
 
-commandResult_t CMD_LEDDriverMap(const void *context, const char *cmd, const char *args, int flags){
+commandResult_t CMD_LEDDriver_Map(const void *context, const char *cmd, const char *args, int flags){
 	
 	Tokenizer_TokenizeString(args,0);
 
@@ -278,7 +278,7 @@ static commandResult_t SM2135_Current(const void *context, const char *cmd, cons
 }
 
 // startDriver SM2135
-// SM2135_RGBCW FF00000000
+// CMD_LEDDriver_WriteRGBCW FF00000000
 void SM2135_Init() {
 
 	g_i2c_pin_clk = PIN_FindPinIndexForRole(IOR_SM2135_CLK,g_i2c_pin_clk);
@@ -291,12 +291,12 @@ void SM2135_Init() {
 	//cmddetail:"descr":"Don't use it. It's for direct access of SM2135 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",
 	//cmddetail:"fn":"SM2135_RGBCW","file":"driver/drv_sm2135.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("SM2135_RGBCW", "", SM2135_RGBCW, NULL, NULL);
+    CMD_RegisterCommand("SM2135_RGBCW", "", CMD_LEDDriver_WriteRGBCW, NULL, NULL);
 	//cmddetail:{"name":"SM2135_Map","args":"[Ch0][Ch1][Ch2][Ch3][Ch4]",
 	//cmddetail:"descr":"Maps the RGBCW values to given indices of SM2135 channels. This is because SM2135 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: SM2135_Map 0 1 2 3 4",
 	//cmddetail:"fn":"SM2135_Map","file":"driver/drv_sm2135.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("SM2135_Map", "", CMD_LEDDriverMap, NULL, NULL);
+    CMD_RegisterCommand("SM2135_Map", "", CMD_LEDDriver_Map, NULL, NULL);
 	//cmddetail:{"name":"SM2135_Current","args":"[Value]",
 	//cmddetail:"descr":"Sets the maximum current for LED driver.",
 	//cmddetail:"fn":"SM2135_Current","file":"driver/drv_sm2135.c","requires":"",

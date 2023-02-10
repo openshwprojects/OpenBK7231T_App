@@ -142,47 +142,6 @@ static commandResult_t BP5758D_Current(const void *context, const char *cmd, con
 	return CMD_RES_OK;
 }
 
-static commandResult_t BP5758D_RGBCW(const void *context, const char *cmd, const char *args, int flags){
-	const char *c = args;
-	float col[5] = { 0, 0, 0, 0, 0 };
-	int ci;
-	int val;
-
-	ci = 0;
-
-	// some people prefix colors with #
-	if(c[0] == '#')
-		c++;
-	while (*c){
-		char tmp[3];
-		int r;
-		tmp[0] = *(c++);
-		if (!*c)
-			break;
-		tmp[1] = *(c++);
-		tmp[2] = '\0';
-		r = sscanf(tmp, "%x", &val);
-		if (!r) {
-			ADDLOG_ERROR(LOG_FEATURE_CMD, "BP5758D_RGBCW no sscanf hex result from %s", tmp);
-			break;
-		}
-
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "BP5758D_RGBCW found chan %d -> val255 %d (from %s)", ci, val, tmp);
-
-		col[ci] = val;
-
-		// move to next channel.
-		ci ++;
-		if(ci>=5)
-			break;
-	}
-
-	BP5758D_Write(col);
-
-	return CMD_RES_OK;
-}
-
-
 // startDriver BP5758D
 // BP5758D_RGBCW FF00000000
 //
@@ -204,12 +163,12 @@ void BP5758D_Init() {
 	//cmddetail:"descr":"Don't use it. It's for direct access of BP5758D driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",
 	//cmddetail:"fn":"BP5758D_RGBCW","file":"driver/drv_bp5758d.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("BP5758D_RGBCW", "", BP5758D_RGBCW, NULL, NULL);
+    CMD_RegisterCommand("BP5758D_RGBCW", "", CMD_LEDDriver_WriteRGBCW, NULL, NULL);
 	//cmddetail:{"name":"BP5758D_Map","args":"[Ch0][Ch1][Ch2][Ch3][Ch4]",
 	//cmddetail:"descr":"Maps the RGBCW values to given indices of BP5758D channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: BP5758D_Map 0 1 2 3 4",
 	//cmddetail:"fn":"BP5758D_Map","file":"driver/drv_bp5758d.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("BP5758D_Map", "", CMD_LEDDriverMap, NULL, NULL);
+    CMD_RegisterCommand("BP5758D_Map", "", CMD_LEDDriver_Map, NULL, NULL);
 	//cmddetail:{"name":"BP5758D_Current","args":"[MaxCurrent]",
 	//cmddetail:"descr":"Sets the maximum current limit for BP5758D driver",
 	//cmddetail:"fn":"BP5758D_Current","file":"driver/drv_bp5758d.c","requires":"",
