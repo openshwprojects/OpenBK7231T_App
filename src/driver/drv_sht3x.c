@@ -57,7 +57,7 @@ void SM2135_StartPer(uint8_t msb, uint8_t lsb) {
 	Soft_I2C_Stop();
 }
 
-void SHT3X_ChangePer(const void* context, const char* cmd, const char* args, int cmdFlags) {
+commandResult_t SHT3X_ChangePer(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	uint8_t g_msb, g_lsb;
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
 	if (Tokenizer_GetArgsCount() < 2) {
@@ -77,7 +77,7 @@ void SHT3X_ChangePer(const void* context, const char* cmd, const char* args, int
 
 }
 
-void SHT3X_Heater(const void* context, const char* cmd, const char* args, int cmdFlags) {
+commandResult_t SHT3X_Heater(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int g_state_heat;
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
 	if (Tokenizer_GetArgsCount() < 1) {
@@ -103,7 +103,7 @@ void SHT3X_Heater(const void* context, const char* cmd, const char* args, int cm
 	return CMD_RES_OK;
 }
 
-void SHT3X_MeasurePer(const void* context, const char* cmd, const char* args, int cmdFlags) {
+commandResult_t SHT3X_MeasurePer(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	uint8_t buff[6];
 	unsigned int th, tl, hh, hl;
@@ -140,7 +140,7 @@ void SHT3X_MeasurePer(const void* context, const char* cmd, const char* args, in
 	return CMD_RES_OK;
 
 }
-void SHT3X_Measure(const void* context, const char* cmd, const char* args, int cmdFlags) {
+commandResult_t SHT3X_Measure(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	uint8_t buff[6];
 	unsigned int th, tl, hh, hl;
@@ -189,7 +189,7 @@ void SHT3X_StopDriver() {
 	Soft_I2C_Stop();
 }
 
-void SHT3X_StopPerCmd(const void* context, const char* cmd, const char* args, int cmdFlags) {
+commandResult_t SHT3X_StopPerCmd(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT3X : Stopping periodical capture");
 	SHT3X_StopPer();
 	return CMD_RES_OK;
@@ -207,7 +207,7 @@ void SHT3X_GetStatus()
 	Soft_I2C_Stop();
 	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT : Status : %02X %02X\n", status[0], status[1]);
 }
-void SHT3X_GetStatusCmd(const void* context, const char* cmd, const char* args, int cmdFlags)
+commandResult_t SHT3X_GetStatusCmd(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
 	SHT3X_GetStatus();
 	return CMD_RES_OK;
