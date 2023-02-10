@@ -94,34 +94,6 @@ static commandResult_t SM2235_RGBCW(const void *context, const char *cmd, const 
 
 	return CMD_RES_OK;
 }
-// SM2235_Map is used to map the RGBCW indices to SM2235 indices
-// This is how you uset RGB CW order:
-// SM2235_Map 0 1 2 3 4
-// This is the order used on my polish Spectrum WOJ14415 bulb:
-// SM2235_Map 2 1 0 4 3 
-
-static commandResult_t SM2235_Map(const void *context, const char *cmd, const char *args, int flags){
-	
-	Tokenizer_TokenizeString(args,0);
-
-	if(Tokenizer_GetArgsCount()==0) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2235_Map current order is %i %i %i    %i %i! ",
-			(int)g_channelOrder[0],(int)g_channelOrder[1],(int)g_channelOrder[2],(int)g_channelOrder[3],(int)g_channelOrder[4]);
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
-
-	g_channelOrder[0] = Tokenizer_GetArgIntegerRange(0, 0, 4);
-	g_channelOrder[1] = Tokenizer_GetArgIntegerRange(1, 0, 4);
-	g_channelOrder[2] = Tokenizer_GetArgIntegerRange(2, 0, 4);
-	g_channelOrder[3] = Tokenizer_GetArgIntegerRange(3, 0, 4);
-	g_channelOrder[4] = Tokenizer_GetArgIntegerRange(4, 0, 4);
-
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2235_Map new order is %i %i %i    %i %i! ",
-		(int)g_channelOrder[0],(int)g_channelOrder[1],(int)g_channelOrder[2],(int)g_channelOrder[3],(int)g_channelOrder[4]);
-
-	return CMD_RES_OK;
-}
-
 static void SM2235_SetCurrent(int curValRGB, int curValCW) {
 	//g_current_setting_rgb = curValRGB;
 	//g_current_setting_cw = curValCW;
@@ -162,7 +134,7 @@ void SM2235_Init() {
 	//cmddetail:"descr":"Maps the RGBCW values to given indices of SM2235 channels. This is because SM2235 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: SM2235_Map 0 1 2 3 4",
 	//cmddetail:"fn":"SM2235_Map","file":"driver/drv_sm2235.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("SM2235_Map", "", SM2235_Map, NULL, NULL);
+    CMD_RegisterCommand("SM2235_Map", "", CMD_LEDDriverMap, NULL, NULL);
 	//cmddetail:{"name":"SM2235_Current","args":"[Value]",
 	//cmddetail:"descr":"Sets the maximum current for LED driver.",
 	//cmddetail:"fn":"SM2235_Current","file":"driver/drv_sm2235.c","requires":"",

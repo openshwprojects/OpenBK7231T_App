@@ -98,32 +98,6 @@ static commandResult_t BP1658CJ_RGBCW(const void *context, const char *cmd, cons
 
 	return CMD_RES_OK;
 }
-// BP1658CJ_Map is used to map the RGBCW indices to BP1658CJ indices
-// This is how you uset RGB CW order:
-// BP1658CJ_Map 0 1 2 3 4
-
-static commandResult_t BP1658CJ_Map(const void *context, const char *cmd, const char *args, int flags){
-
-	Tokenizer_TokenizeString(args,0);
-
-	if(Tokenizer_GetArgsCount()==0) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "BP1658CJ_Map current order is %i %i %i    %i %i! ",
-			(int)g_channelOrder[0],(int)g_channelOrder[1],(int)g_channelOrder[2],(int)g_channelOrder[3],(int)g_channelOrder[4]);
-		return 0;
-	}
-
-	g_channelOrder[0] = Tokenizer_GetArgIntegerRange(0, 0, 4);
-	g_channelOrder[1] = Tokenizer_GetArgIntegerRange(1, 0, 4);
-	g_channelOrder[2] = Tokenizer_GetArgIntegerRange(2, 0, 4);
-	g_channelOrder[3] = Tokenizer_GetArgIntegerRange(3, 0, 4);
-	g_channelOrder[4] = Tokenizer_GetArgIntegerRange(4, 0, 4);
-
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "BP1658CJ_Map new order is %i %i %i    %i %i! ",
-		(int)g_channelOrder[0],(int)g_channelOrder[1],(int)g_channelOrder[2],(int)g_channelOrder[3],(int)g_channelOrder[4]);
-
-	return CMD_RES_OK;
-}
-
 
 // startDriver BP1658CJ
 // BP1658CJ_RGBCW FF00000000
@@ -149,5 +123,5 @@ void BP1658CJ_Init() {
 	//cmddetail:"descr":"Maps the RGBCW values to given indices of BP1658CJ channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: BP1658CJ_Map 0 1 2 3 4",
 	//cmddetail:"fn":"BP1658CJ_Map","file":"driver/drv_bp1658cj.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("BP1658CJ_Map", "", BP1658CJ_Map, NULL, NULL);
+    CMD_RegisterCommand("BP1658CJ_Map", "", CMD_LEDDriverMap, NULL, NULL);
 }

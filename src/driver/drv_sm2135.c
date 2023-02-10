@@ -233,12 +233,12 @@ static commandResult_t SM2135_RGBCW(const void *context, const char *cmd, const 
 // This is the order used on my polish Spectrum WOJ14415 bulb:
 // SM2135_Map 2 1 0 4 3 
 
-static commandResult_t SM2135_Map(const void *context, const char *cmd, const char *args, int flags){
+commandResult_t CMD_LEDDriverMap(const void *context, const char *cmd, const char *args, int flags){
 	
 	Tokenizer_TokenizeString(args,0);
 
 	if(Tokenizer_GetArgsCount()==0) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2135_Map current order is %i %i %i    %i %i! ",
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "Current map is %i %i %i %i %i",
 			(int)g_channelOrder[0],(int)g_channelOrder[1],(int)g_channelOrder[2],(int)g_channelOrder[3],(int)g_channelOrder[4]);
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
@@ -249,7 +249,7 @@ static commandResult_t SM2135_Map(const void *context, const char *cmd, const ch
 	g_channelOrder[3] = Tokenizer_GetArgIntegerRange(3, 0, 4);
 	g_channelOrder[4] = Tokenizer_GetArgIntegerRange(4, 0, 4);
 
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2135_Map new order is %i %i %i    %i %i! ",
+	ADDLOG_DEBUG(LOG_FEATURE_CMD, "New map is %i %i %i %i %i",
 		(int)g_channelOrder[0],(int)g_channelOrder[1],(int)g_channelOrder[2],(int)g_channelOrder[3],(int)g_channelOrder[4]);
 
 	return CMD_RES_OK;
@@ -296,7 +296,7 @@ void SM2135_Init() {
 	//cmddetail:"descr":"Maps the RGBCW values to given indices of SM2135 channels. This is because SM2135 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: SM2135_Map 0 1 2 3 4",
 	//cmddetail:"fn":"SM2135_Map","file":"driver/drv_sm2135.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("SM2135_Map", "", SM2135_Map, NULL, NULL);
+    CMD_RegisterCommand("SM2135_Map", "", CMD_LEDDriverMap, NULL, NULL);
 	//cmddetail:{"name":"SM2135_Current","args":"[Value]",
 	//cmddetail:"descr":"Sets the maximum current for LED driver.",
 	//cmddetail:"fn":"SM2135_Current","file":"driver/drv_sm2135.c","requires":"",

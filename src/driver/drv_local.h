@@ -1,5 +1,6 @@
 
 #include "../httpserver/new_http.h"
+#include "../cmnds/cmd_public.h"
 
 void BL0942_Init();
 void BL0942_RunFrame();
@@ -86,6 +87,9 @@ bool Soft_I2C_Start(uint8_t addr);
 void Soft_I2C_Stop(void);
 uint8_t Soft_I2C_ReadByte(bool nack);
 void Soft_I2C_ReadBytes(uint8_t* buf, int numOfBytes);
+commandResult_t CMD_LEDDriverMap(const void *context, const char *cmd, const char *args, int flags);
+
+
 
 
 
