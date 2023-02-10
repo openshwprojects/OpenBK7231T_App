@@ -124,17 +124,17 @@ void NTP_Init() {
 	//cmddetail:"descr":"Sets the time zone offset in hours. Also supports HH:MM syntax if you want to specify value in minutes. For negative values, use -HH:MM syntax, for example -5:30 will shift time by 5 hours and 30 minutes negative.",
 	//cmddetail:"fn":"NTP_SetTimeZoneOfs","file":"driver/drv_ntp.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("ntp_timeZoneOfs","",NTP_SetTimeZoneOfs, NULL, NULL);
+    CMD_RegisterCommand("ntp_timeZoneOfs","",NTP_SetTimeZoneOfs, NULL);
 	//cmddetail:{"name":"ntp_setServer","args":"[ServerIP]",
 	//cmddetail:"descr":"Sets the NTP server",
 	//cmddetail:"fn":"NTP_SetServer","file":"driver/drv_ntp.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("ntp_setServer", "", NTP_SetServer, NULL, NULL);
+    CMD_RegisterCommand("ntp_setServer", "", NTP_SetServer, NULL);
 	//cmddetail:{"name":"ntp_info","args":"",
 	//cmddetail:"descr":"Display NTP related settings",
 	//cmddetail:"fn":"NTP_Info","file":"driver/drv_ntp.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("ntp_info", "", NTP_Info, NULL, NULL);
+    CMD_RegisterCommand("ntp_info", "", NTP_Info, NULL);
 
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP driver initialized with server=%s, offset=%d", CFG_GetNTPServer(), g_timeOffsetSeconds);
     g_synced = false;

@@ -237,12 +237,12 @@ void BL0942_Init()
 
 	UART_InitUART(BL0942_BAUD_RATE);
 	UART_InitReceiveRingBuffer(256);
-	CMD_RegisterCommand("PowerSet","",BL0942_PowerSet, NULL, NULL);
-	CMD_RegisterCommand("VoltageSet","",BL0942_VoltageSet, NULL, NULL);
-	CMD_RegisterCommand("CurrentSet","",BL0942_CurrentSet, NULL, NULL);
-	CMD_RegisterCommand("PREF","",BL0942_PowerRef, NULL, NULL);
-	CMD_RegisterCommand("VREF","",BL0942_VoltageRef, NULL, NULL);
-	CMD_RegisterCommand("IREF","",BL0942_CurrentRef, NULL, NULL);
+	CMD_RegisterCommand("PowerSet","",BL0942_PowerSet, NULL);
+	CMD_RegisterCommand("VoltageSet","",BL0942_VoltageSet, NULL);
+	CMD_RegisterCommand("CurrentSet","",BL0942_CurrentSet, NULL);
+	CMD_RegisterCommand("PREF","",BL0942_PowerRef, NULL);
+	CMD_RegisterCommand("VREF","",BL0942_VoltageRef, NULL);
+	CMD_RegisterCommand("IREF","",BL0942_CurrentRef, NULL);
 }
 void BL0942_RunFrame() {
 	int len;

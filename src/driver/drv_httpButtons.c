@@ -223,22 +223,22 @@ void DRV_InitHTTPButtons() {
 	//cmddetail:"descr":"Sets the colour of custom scriptable HTTP page button",
 	//cmddetail:"fn":"CMD_setButtonColor","file":"driver/drv_httpButtons.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("setButtonColor", "", CMD_setButtonColor, NULL, NULL);
+	CMD_RegisterCommand("setButtonColor", "", CMD_setButtonColor, NULL);
 	//cmddetail:{"name":"setButtonCommand","args":"[ButtonIndex][Command]",
 	//cmddetail:"descr":"Sets the command of custom scriptable HTTP page button",
 	//cmddetail:"fn":"CMD_setButtonCommand","file":"driver/drv_httpButtons.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("setButtonCommand", "", CMD_setButtonCommand, NULL, NULL);
+	CMD_RegisterCommand("setButtonCommand", "", CMD_setButtonCommand, NULL);
 	//cmddetail:{"name":"setButtonLabel","args":"[ButtonIndex][Label]",
 	//cmddetail:"descr":"Sets the label of custom scriptable HTTP page button",
 	//cmddetail:"fn":"CMD_setButtonLabel","file":"driver/drv_httpButtons.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("setButtonLabel", "", CMD_setButtonLabel, NULL, NULL);
+	CMD_RegisterCommand("setButtonLabel", "", CMD_setButtonLabel, NULL);
 	//cmddetail:{"name":"setButtonEnabled","args":"[ButtonIndex][1or0]",
 	//cmddetail:"descr":"Sets the visibility of custom scriptable HTTP page button",
 	//cmddetail:"fn":"CMD_setButtonEnabled","file":"driver/drv_httpButtons.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("setButtonEnabled", "", CMD_setButtonEnabled, NULL, NULL);
+	CMD_RegisterCommand("setButtonEnabled", "", CMD_setButtonEnabled, NULL);
 }
 
 

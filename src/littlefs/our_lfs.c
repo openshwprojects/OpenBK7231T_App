@@ -288,57 +288,57 @@ void LFSAddCmds(){
 	//cmddetail:"descr":"Log or Set LFS size - will apply and re-format next boot, usage setlfssize 0x10000",
 	//cmddetail:"fn":"CMD_LFS_Size","file":"littlefs/our_lfs.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("lfs_size", NULL, CMD_LFS_Size, NULL, NULL);	
+    CMD_RegisterCommand("lfs_size", NULL, CMD_LFS_Size, NULL);	
 	//cmddetail:{"name":"lfs_unmount","args":"",
 	//cmddetail:"descr":"Un-mount LFS",
 	//cmddetail:"fn":"CMD_LFS_Unmount","file":"littlefs/our_lfs.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("lfs_unmount", NULL, CMD_LFS_Unmount, NULL, NULL);	
+    CMD_RegisterCommand("lfs_unmount", NULL, CMD_LFS_Unmount, NULL);	
 	//cmddetail:{"name":"lfs_mount","args":"",
 	//cmddetail:"descr":"Mount LFS",
 	//cmddetail:"fn":"CMD_LFS_Mount","file":"littlefs/our_lfs.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("lfs_mount", NULL, CMD_LFS_Mount, NULL, NULL);	
+    CMD_RegisterCommand("lfs_mount", NULL, CMD_LFS_Mount, NULL);	
 	//cmddetail:{"name":"lfs_format","args":"",
 	//cmddetail:"descr":"Unmount and format LFS.  Optionally add new size as argument",
 	//cmddetail:"fn":"CMD_LFS_Format","file":"littlefs/our_lfs.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("lfs_format", NULL, CMD_LFS_Format, NULL, NULL);
+    CMD_RegisterCommand("lfs_format", NULL, CMD_LFS_Format, NULL);
 	//cmddetail:{"name":"lfs_append","args":"[FileName][String]",
 	//cmddetail:"descr":"Appends a string to LFS file",
 	//cmddetail:"fn":"CMD_LFS_Append","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("lfs_append", "", CMD_LFS_Append, NULL, NULL);
+	CMD_RegisterCommand("lfs_append", "", CMD_LFS_Append, NULL);
 	//cmddetail:{"name":"lfs_appendFloat","args":"[FileName][Float]",
 	//cmddetail:"descr":"Appends a float to LFS file",
 	//cmddetail:"fn":"CMD_LFS_AppendFloat","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("lfs_appendFloat", "", CMD_LFS_AppendFloat, NULL, NULL);
+	CMD_RegisterCommand("lfs_appendFloat", "", CMD_LFS_AppendFloat, NULL);
 	//cmddetail:{"name":"lfs_appendInt","args":"[FileName][Int]",
 	//cmddetail:"descr":"Appends a Int to LFS file",
 	//cmddetail:"fn":"CMD_LFS_AppendInt","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("lfs_appendInt", "", CMD_LFS_AppendInt, NULL, NULL);
+	CMD_RegisterCommand("lfs_appendInt", "", CMD_LFS_AppendInt, NULL);
 	//cmddetail:{"name":"lfs_appendLine","args":"[FileName][String]",
 	//cmddetail:"descr":"Appends a string to LFS file with a next line marker",
 	//cmddetail:"fn":"CMD_LFS_AppendLine","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("lfs_appendLine", "", CMD_LFS_AppendLine, NULL, NULL);
+	CMD_RegisterCommand("lfs_appendLine", "", CMD_LFS_AppendLine, NULL);
 	//cmddetail:{"name":"lfs_remove","args":"[FileName]",
 	//cmddetail:"descr":"Deletes a LittleFS file",
 	//cmddetail:"fn":"CMD_LFS_Remove","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("lfs_remove", "", CMD_LFS_Remove, NULL, NULL);
+	CMD_RegisterCommand("lfs_remove", "", CMD_LFS_Remove, NULL);
 	//cmddetail:{"name":"lfs_write","args":"[FileName][String]",
 	//cmddetail:"descr":"Resets a LFS file and writes a new string to it",
 	//cmddetail:"fn":"CMD_LFS_Write","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("lfs_write", "", CMD_LFS_Write, NULL, NULL);
+	CMD_RegisterCommand("lfs_write", "", CMD_LFS_Write, NULL);
 	//cmddetail:{"name":"lfs_writeLine","args":"[FileName][String]",
 	//cmddetail:"descr":"Resets a LFS file and writes a new string to it with newline",
 	//cmddetail:"fn":"CMD_LFS_WriteLine","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("lfs_writeLine", "", CMD_LFS_WriteLine, NULL, NULL);
+	CMD_RegisterCommand("lfs_writeLine", "", CMD_LFS_WriteLine, NULL);
 
 }
 

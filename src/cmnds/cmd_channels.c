@@ -367,81 +367,81 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"descr":"Sets a raw channel to given value. Relay channels are using 1 and 0 values. PWM channels are within [0,100] range. Do not use this for LED control, because there is a better and more advanced LED driver with dimming and configuration memory (remembers setting after on/off), LED driver commands has 'led_' prefix.",
 	//cmddetail:"fn":"CMD_SetChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("SetChannel", "", CMD_SetChannel, NULL, NULL);
+    CMD_RegisterCommand("SetChannel", "", CMD_SetChannel, NULL);
 	//cmddetail:{"name":"ToggleChannel","args":"[ChannelIndex]",
 	//cmddetail:"descr":"Toggles given channel value. Non-zero becomes zero, zero becomes 1.",
 	//cmddetail:"fn":"CMD_ToggleChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("ToggleChannel", "", CMD_ToggleChannel, NULL, NULL);
+    CMD_RegisterCommand("ToggleChannel", "", CMD_ToggleChannel, NULL);
 	//cmddetail:{"name":"AddChannel","args":"[ChannelIndex][ValueToAdd][ClampMin][ClampMax][bWrapInsteadOfClamp]",
 	//cmddetail:"descr":"Adds a given value to the channel. Can be used to change PWM brightness. Clamp min and max arguments are optional.",
 	//cmddetail:"fn":"CMD_AddChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("AddChannel", "", CMD_AddChannel, NULL, NULL);
+    CMD_RegisterCommand("AddChannel", "", CMD_AddChannel, NULL);
 	//cmddetail:{"name":"ClampChannel","args":"[ChannelIndex][Min][Max]",
 	//cmddetail:"descr":"Clamps given channel value to a range.",
 	//cmddetail:"fn":"CMD_ClampChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("ClampChannel", "", CMD_ClampChannel, NULL, NULL);
+    CMD_RegisterCommand("ClampChannel", "", CMD_ClampChannel, NULL);
 	//cmddetail:{"name":"SetPinRole","args":"[PinRole][RoleIndexOrName]",
 	//cmddetail:"descr":"This allows you to set a pin role, for example a Relay role, or Button, etc. Usually it's easier to do this through WWW panel, so you don't have to use this command.",
 	//cmddetail:"fn":"CMD_SetPinRole","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("SetPinRole", "", CMD_SetPinRole, NULL, NULL);
+    CMD_RegisterCommand("SetPinRole", "", CMD_SetPinRole, NULL);
 	//cmddetail:{"name":"SetPinChannel","args":"[PinRole][ChannelIndex]",
 	//cmddetail:"descr":"This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command.",
 	//cmddetail:"fn":"CMD_SetPinChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("SetPinChannel", "", CMD_SetPinChannel, NULL, NULL);
+    CMD_RegisterCommand("SetPinChannel", "", CMD_SetPinChannel, NULL);
 	//cmddetail:{"name":"GetChannel","args":"[ChannelIndex]",
 	//cmddetail:"descr":"Prints given channel value to console.",
 	//cmddetail:"fn":"CMD_GetChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("GetChannel", "", CMD_GetChannel, NULL, NULL);
+    CMD_RegisterCommand("GetChannel", "", CMD_GetChannel, NULL);
 	//cmddetail:{"name":"GetReadings","args":"",
 	//cmddetail:"descr":"Prints voltage etc readings to console.",
 	//cmddetail:"fn":"CMD_GetReadings","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("GetReadings", "", CMD_GetReadings, NULL, NULL);
+    CMD_RegisterCommand("GetReadings", "", CMD_GetReadings, NULL);
 	//cmddetail:{"name":"ShortName","args":"[Name]",
 	//cmddetail:"descr":"Sets the short name of the device.",
 	//cmddetail:"fn":"CMD_ShortName","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("ShortName", "", CMD_ShortName, NULL, NULL);
+    CMD_RegisterCommand("ShortName", "", CMD_ShortName, NULL);
 	//cmddetail:{"name":"FriendlyName","args":"[Name]",
 	//cmddetail:"descr":"Sets the full name of the device",
 	//cmddetail:"fn":"CMD_FriendlyName","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("FriendlyName", "", CMD_FriendlyName, NULL, NULL);
+	CMD_RegisterCommand("FriendlyName", "", CMD_FriendlyName, NULL);
 	//cmddetail:{"name":"PinDeepSleep","args":"",
 	//cmddetail:"descr":"Starts a pin deep sleep (deep sleep that can be interrupted by external IO events like a button press)",
 	//cmddetail:"fn":"CMD_PinDeepSleep","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("PinDeepSleep", "", CMD_PinDeepSleep, NULL, NULL);
+	CMD_RegisterCommand("PinDeepSleep", "", CMD_PinDeepSleep, NULL);
 	//cmddetail:{"name":"SetFlag","args":"[FlagIndex][1or0]",
 	//cmddetail:"descr":"Enables/disables given flag.",
 	//cmddetail:"fn":"CMD_SetFlag","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("SetFlag", "", CMD_SetFlag, NULL, NULL);
+	CMD_RegisterCommand("SetFlag", "", CMD_SetFlag, NULL);
 	//cmddetail:{"name":"FullBootTime","args":"[Value]",
 	//cmddetail:"descr":"Sets time in seconds after which boot is marked as valid. This is related to emergency AP mode which is enabled by powering on/off device 5 times quickly.",
 	//cmddetail:"fn":"CMD_FullBootTime","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("FullBootTime", "", CMD_FullBootTime, NULL, NULL);
+	CMD_RegisterCommand("FullBootTime", "", CMD_FullBootTime, NULL);
 	//cmddetail:{"name":"SetChannelLabel","args":"[ChannelIndex][Str]",
 	//cmddetail:"descr":"Sets a channel label for UI.",
 	//cmddetail:"fn":"CMD_SetChannelLabel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("SetChannelLabel", "", CMD_SetChannelLabel, NULL, NULL);
+	CMD_RegisterCommand("SetChannelLabel", "", CMD_SetChannelLabel, NULL);
 	//cmddetail:{"name":"MapRanges","args":"[TargetChannel][InputValue][RangeVal0][RangeVal1][RangeValN]",
 	//cmddetail:"descr":"This will set given channel to an index showing where given input value is within given range sections. For example, MapRanges 10 0.5 0.3 0.6 0.9 will set channel 10 to 1 because 0.5 value is between 0.3 and 0.6",
 	//cmddetail:"fn":"CMD_MapRanges","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("MapRanges", "", CMD_MapRanges, NULL, NULL);
+	CMD_RegisterCommand("MapRanges", "", CMD_MapRanges, NULL);
 	//cmddetail:{"name":"SetChannelVisible","args":"",
 	//cmddetail:"descr":"NULL",
 	//cmddetail:"fn":"CMD_SetChannelVisible","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("SetChannelVisible", "", CMD_SetChannelVisible, NULL, NULL);
+	CMD_RegisterCommand("SetChannelVisible", "", CMD_SetChannelVisible, NULL);
 
 }

@@ -34,7 +34,7 @@ void Test_Power_Init() {
 	//cmddetail:"descr":"NULL",
 	//cmddetail:"fn":"TestPower_Setup","file":"driver/drv_test_drivers.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("SetupTestPower", "", TestPower_Setup, NULL, NULL);
+	CMD_RegisterCommand("SetupTestPower", "", TestPower_Setup, NULL);
 }
 void Test_Power_RunFrame() {
 	float final_v = base_v;

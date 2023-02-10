@@ -439,7 +439,7 @@ void DRV_SSDP_Init()
 	//cmddetail:"descr":"Generate the SSDP list of OpenBeken devices found on the network.",
 	//cmddetail:"fn":"Cmd_obkDeviceList","file":"driver/drv_ssdp.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("obkDeviceList", "", Cmd_obkDeviceList, NULL, NULL);
+    CMD_RegisterCommand("obkDeviceList", "", Cmd_obkDeviceList, NULL);
 
     HTTP_RegisterCallback("/obkdevicelist", HTTP_GET, http_rest_get_devicelist);
 

@@ -153,22 +153,22 @@ static void initLog(void)
 	//cmddetail:"descr":"Correct values are 0 to 7. Default is 3. Higher value includes more logs. Log levels are: ERROR = 1, WARN = 2, INFO = 3, DEBUG = 4, EXTRADEBUG = 5. WARNING: you also must separately select logging level filter on web panel in order for more logs to show up there",
 	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("loglevel", "", log_command, NULL, NULL);
+	CMD_RegisterCommand("loglevel", "", log_command, NULL);
 	//cmddetail:{"name":"logfeature","args":"[Index][1or0]",
 	//cmddetail:"descr":"set log feature filter, as an index and a 1 or 0",
 	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("logfeature", NULL, log_command, NULL, NULL);
+	CMD_RegisterCommand("logfeature", NULL, log_command, NULL);
 	//cmddetail:{"name":"logtype","args":"[TypeStr]",
 	//cmddetail:"descr":"logtype direct|thread|none - type of serial logging - thread (in a thread; default), direct (logged directly to serial), none (no UART logging)",
 	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("logtype", "", log_command, NULL, NULL);
+	CMD_RegisterCommand("logtype", "", log_command, NULL);
 	//cmddetail:{"name":"logdelay","args":"[Value]",
 	//cmddetail:"descr":"Value is a number of ms. This will add an artificial delay in each log call. Useful for debugging. This way you can see step by step what happens.",
 	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("logdelay", "", log_command, NULL, NULL);
+	CMD_RegisterCommand("logdelay", "", log_command, NULL);
 
 	bk_printf("Commands registered!\r\n");
 	bk_printf("initLog() done!\r\n");

@@ -396,7 +396,7 @@ static commandResult_t CMD_CreateAliasForCommand(const void * context, const cha
 	//cmddetail:"descr":"Internal usage only. See docs for 'alias' command.",
 	//cmddetail:"fn":"runcmd","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand(aliasMem, "", runcmd, NULL, cmdMem);
+	CMD_RegisterCommand(aliasMem, "", runcmd, cmdMem);
 	return CMD_RES_OK;
 }
 void CMD_Init_Early() {
@@ -404,82 +404,82 @@ void CMD_Init_Early() {
 	//cmddetail:"descr":"add an aliased command, so a command with spaces can be called with a short, nospaced alias",
 	//cmddetail:"fn":"alias","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("alias", "", CMD_CreateAliasForCommand, NULL, NULL);
+	CMD_RegisterCommand("alias", "", CMD_CreateAliasForCommand, NULL);
 	//cmddetail:{"name":"echo","args":"[Message]",
 	//cmddetail:"descr":"Sends given message back to console.",
 	//cmddetail:"fn":"CMD_Echo","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("echo", "", CMD_Echo, NULL, NULL);
+	CMD_RegisterCommand("echo", "", CMD_Echo, NULL);
 	//cmddetail:{"name":"restart","args":"",
 	//cmddetail:"descr":"Reboots the module",
 	//cmddetail:"fn":"CMD_Restart","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("restart", "", CMD_Restart, NULL, NULL);
+	CMD_RegisterCommand("restart", "", CMD_Restart, NULL);
 	//cmddetail:{"name":"reboot","args":"",
 	//cmddetail:"descr":"Same as restart. Needed for bkWriter 1.60 which sends 'reboot' cmd before trying to get bus",
 	//cmddetail:"fn":"CMD_Restart","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("reboot", "", CMD_Restart, NULL, NULL);
+	CMD_RegisterCommand("reboot", "", CMD_Restart, NULL);
 	//cmddetail:{"name":"clearConfig","args":"",
 	//cmddetail:"descr":"Clears all config, including WiFi data",
 	//cmddetail:"fn":"CMD_ClearConfig","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("clearConfig", "", CMD_ClearConfig, NULL, NULL);
+	CMD_RegisterCommand("clearConfig", "", CMD_ClearConfig, NULL);
 	//cmddetail:{"name":"clearAll","args":"",
 	//cmddetail:"descr":"Clears config and all remaining features, like runtime scripts, events, etc",
 	//cmddetail:"fn":"CMD_ClearAll","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("clearAll", "", CMD_ClearAll, NULL, NULL);
+	CMD_RegisterCommand("clearAll", "", CMD_ClearAll, NULL);
 	//cmddetail:{"name":"DeepSleep","args":"[Seconds]",
 	//cmddetail:"descr":"Starts deep sleep for given amount of seconds.",
 	//cmddetail:"fn":"CMD_DeepSleep","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("DeepSleep", "", CMD_DeepSleep, NULL, NULL);
+	CMD_RegisterCommand("DeepSleep", "", CMD_DeepSleep, NULL);
 	//cmddetail:{"name":"PowerSave","args":"[Optional 1 or 0, by default 1 is assumed]",
 	//cmddetail:"descr":"Enables dynamic power saving mode on BK and W600. You can also disable power saving with PowerSave 0.",
 	//cmddetail:"fn":"CMD_PowerSave","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("PowerSave", "", CMD_PowerSave, NULL, NULL);
+	CMD_RegisterCommand("PowerSave", "", CMD_PowerSave, NULL);
 	//cmddetail:{"name":"Battery_measure","args":"[int][int][float][int][int]",
 	//cmddetail:"descr":"measure battery based on ADC args minbatt and maxbatt in mv. optional Vref(default 2403), ADC bits(4096) and  V_divider(2) ",
 	//cmddetail:"fn":"CMD_BATT_Meas","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":"Battery_measure 1500 3000 2403 4096 2"}
-	CMD_RegisterCommand("Battery_measure", "", CMD_BATT_Meas, NULL, NULL);
+	CMD_RegisterCommand("Battery_measure", "", CMD_BATT_Meas, NULL);
 	//cmddetail:{"name":"simonirtest","args":"",
 	//cmddetail:"descr":"Simons Special Test",
 	//cmddetail:"fn":"CMD_SimonTest","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("simonirtest", "", CMD_SimonTest, NULL, NULL);
+	CMD_RegisterCommand("simonirtest", "", CMD_SimonTest, NULL);
 	//cmddetail:{"name":"if","args":"[Condition]['then'][CommandA]['else'][CommandB]",
 	//cmddetail:"descr":"Executed a conditional. Condition should be single line. You must always use 'then' after condition. 'else' is optional. Use aliases or quotes for commands with spaces",
 	//cmddetail:"fn":"CMD_If","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("if", NULL, CMD_If, NULL, NULL);
+	CMD_RegisterCommand("if", NULL, CMD_If, NULL);
 	//cmddetail:{"name":"ota_http","args":"[HTTP_URL]",
 	//cmddetail:"descr":"Starts the firmware update procedure, the argument should be a reachable HTTP server file. You can easily setup HTTP server with Xampp, or Visual Code, or Python, etc. Make sure you are using OTA file for a correct platform (getting N platform RBL on T will brick device, etc etc)",
 	//cmddetail:"fn":"CMD_HTTPOTA","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("ota_http", "", CMD_HTTPOTA, NULL, NULL);
+	CMD_RegisterCommand("ota_http", "", CMD_HTTPOTA, NULL);
 	//cmddetail:{"name":"scheduleHADiscovery","args":"[Seconds]",
 	//cmddetail:"descr":"This will schedule HA discovery, the discovery will happen with given number of seconds, but timer only counts when MQTT is connected. It will not work without MQTT online, so you must set MQTT credentials first.",
 	//cmddetail:"fn":"CMD_ScheduleHADiscovery","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("scheduleHADiscovery", "", CMD_ScheduleHADiscovery, NULL, NULL);
+	CMD_RegisterCommand("scheduleHADiscovery", "", CMD_ScheduleHADiscovery, NULL);
 	//cmddetail:{"name":"flags","args":"[IntegerValue]",
 	//cmddetail:"descr":"Sets the device flags",
 	//cmddetail:"fn":"CMD_Flags","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("flags", "", CMD_Flags, NULL, NULL);
+	CMD_RegisterCommand("flags", "", CMD_Flags, NULL);
 	//cmddetail:{"name":"ClearNoPingTime","args":"",
 	//cmddetail:"descr":"Command for ping watchdog; it sets the 'time since last ping reply' to 0 again",
 	//cmddetail:"fn":"CMD_ClearNoPingTime","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("ClearNoPingTime", "", CMD_ClearNoPingTime, NULL, NULL);
+	CMD_RegisterCommand("ClearNoPingTime", "", CMD_ClearNoPingTime, NULL);
 	//cmddetail:{"name":"SetStartValue","args":"[Channel][Value]",
 	//cmddetail:"descr":"Sets the startup value for a channel. Used for start values for relays. Use 1 for High, 0 for low and -1 for 'remember last state'",
 	//cmddetail:"fn":"CMD_SetStartValue","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("SetStartValue", "", CMD_SetStartValue, NULL, NULL);
+	CMD_RegisterCommand("SetStartValue", "", CMD_SetStartValue, NULL);
 
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	CMD_InitScripting();
@@ -526,7 +526,7 @@ void CMD_FreeAllCommands() {
 	}
 
 }
-void CMD_RegisterCommand(const char* name, const char* args, commandHandler_t handler, const char* userDesc, void* context) {
+void CMD_RegisterCommand(const char* name, const char* args, commandHandler_t handler, void* context) {
 	int hash;
 	command_t* newCmd;
 
@@ -544,7 +544,6 @@ void CMD_RegisterCommand(const char* name, const char* args, commandHandler_t ha
 	newCmd->handler = handler;
 	newCmd->name = name;
 	newCmd->next = g_commands[hash];
-	newCmd->userDesc = userDesc;
 	newCmd->context = context;
 	g_commands[hash] = newCmd;
 }

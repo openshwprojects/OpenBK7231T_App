@@ -7,7 +7,6 @@ typedef struct command_s {
 	const char *name;
 	const char *argsFormat;
 	commandHandler_t handler;
-	const char *userDesc;
 	const void *context;
 	struct command_s *next;
 } command_t;
