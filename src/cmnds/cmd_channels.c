@@ -438,6 +438,10 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_MapRanges","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MapRanges", "", CMD_MapRanges, NULL, NULL);
+	//cmddetail:{"name":"SetChannelVisible","args":"",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"CMD_SetChannelVisible","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetChannelVisible", "", CMD_SetChannelVisible, NULL, NULL);
 
 }

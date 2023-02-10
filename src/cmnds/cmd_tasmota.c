@@ -439,6 +439,10 @@ int taslike_commands_init(){
 	//cmddetail:"fn":"cmnd_MqttClient","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MqttClient", NULL, cmnd_MqttClient, NULL, NULL);
+	//cmddetail:{"name":"State","args":"NULL",
+	//cmddetail:"descr":"NULL",
+	//cmddetail:"fn":"cmnd_State","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("State", NULL, cmnd_State, NULL, NULL);
     return 0;
 }

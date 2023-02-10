@@ -237,15 +237,15 @@ void SHT3X_Init() {
 	//cmddetail:"fn":"SHT3X_MeasurePer","file":"driver/drv_sht3x.c","requires":"",
 	//cmddetail:"examples":"SHT_Measure"}
 	CMD_RegisterCommand("SHT_MeasurePer", "", SHT3X_MeasurePer, NULL, NULL);
-	//cmddetail:{"name":"SHT_Launch","args":"[msb][lsb]",
+	//cmddetail:{"name":"SHT_LaunchPer","args":"[msb][lsb]",
 	//cmddetail:"descr":"Launch/Change periodical capture for SHT Sensor",
 	//cmddetail:"fn":"SHT3X_ChangePer","file":"driver/drv_sht3x.c","requires":"",
-	//cmddetail:"examples":"SHT_ChangePer 0x21 0x26"}
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SHT_LaunchPer", "", SHT3X_ChangePer, NULL, NULL);
-	//cmddetail:{"name":"SHT_Launch","args":"",
+	//cmddetail:{"name":"SHT_StopPer","args":"",
 	//cmddetail:"descr":"Stop periodical capture for SHT Sensor",
 	//cmddetail:"fn":"SHT3X_StopPerCmd","file":"driver/drv_sht3x.c","requires":"",
-	//cmddetail:"examples":"SHT_StopPer"}
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SHT_StopPer", "", SHT3X_StopPerCmd, NULL, NULL);
 	//cmddetail:{"name":"SHT_Measure","args":"",
 	//cmddetail:"descr":"Retrieve OneShot measurement for SHT",

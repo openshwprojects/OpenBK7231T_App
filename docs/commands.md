@@ -7,7 +7,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 |:------------- |:------------- | -----:|
 | SetChannel | [ChannelIndex][ChannelValue] | Sets a raw channel to given value. Relay channels are using 1 and 0 values. PWM channels are within [0,100] range. Do not use this for LED control, because there is a better and more advanced LED driver with dimming and configuration memory (remembers setting after on/off), LED driver commands has 'led_' prefix. |
 | ToggleChannel | [ChannelIndex] | Toggles given channel value. Non-zero becomes zero, zero becomes 1. |
-| AddChannel | [ChannelIndex][ValueToAdd][ClampMin][ClampMax] | Adds a given value to the channel. Can be used to change PWM brightness. Clamp min and max arguments are optional. |
+| AddChannel | [ChannelIndex][ValueToAdd][ClampMin][ClampMax][bWrapInsteadOfClamp] | Adds a given value to the channel. Can be used to change PWM brightness. Clamp min and max arguments are optional. |
 | ClampChannel | [ChannelIndex][Min][Max] | Clamps given channel value to a range. |
 | SetPinRole | [PinRole][RoleIndexOrName] | This allows you to set a pin role, for example a Relay role, or Button, etc. Usually it's easier to do this through WWW panel, so you don't have to use this command. |
 | SetPinChannel | [PinRole][ChannelIndex] | This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command. |
@@ -15,18 +15,26 @@ Do not add anything here, as it will overwritten with next rebuild.
 | GetReadings |  | Prints voltage etc readings to console. |
 | ShortName | [Name] | Sets the short name of the device. |
 | FriendlyName | [Name] | Sets the full name of the device |
-| startDeepSleep |  | NULL |
+| PinDeepSleep |  | Starts a pin deep sleep (deep sleep that can be interrupted by external IO events like a button press) |
 | SetFlag | [FlagIndex][1or0] | Enables/disables given flag. |
 | FullBootTime | [Value] | Sets time in seconds after which boot is marked as valid. This is related to emergency AP mode which is enabled by powering on/off device 5 times quickly. |
+| SetChannelLabel | [ChannelIndex][Str] | Sets a channel label for UI. |
+| MapRanges | [TargetChannel][InputValue][RangeVal0][RangeVal1][RangeValN] | This will set given channel to an index showing where given input value is within given range sections. For example, MapRanges 10 0.5 0.3 0.6 0.9 will set channel 10 to 1 because 0.5 value is between 0.3 and 0.6 |
+| SetChannelVisible |  | NULL |
 | AddEventHandler | [EventName][EventArgument][CommandToRun] | This can be used to trigger an action on a button click, long press, etc |
 | AddChangeHandler | [Variable][Relation][Constant][Command] | This can listen to change in channel value (for example channel 0 becoming 100), or for a voltage/current/power change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be 'Power', or 'Current' or 'Voltage' |
 | listEventHandlers |  | Prints full list of added event handlers |
 | clearAllHandlers |  | This clears all added event handlers |
+| aliasMem |  | Internal usage only. See docs for 'alias' command. |
+| alias | [Alias][Command with spaces] | add an aliased command, so a command with spaces can be called with a short, nospaced alias |
 | echo | [Message] | Sends given message back to console. |
 | restart |  | Reboots the module |
+| reboot |  | Same as restart. Needed for bkWriter 1.60 which sends 'reboot' cmd before trying to get bus |
 | clearConfig |  | Clears all config, including WiFi data |
 | clearAll |  | Clears config and all remaining features, like runtime scripts, events, etc |
-| PowerSave |  | Enable power save on N & T |
+| DeepSleep | [Seconds] | Starts deep sleep for given amount of seconds. |
+| PowerSave | [Optional 1 or 0, by default 1 is assumed] | Enables dynamic power saving mode on BK and W600. You can also disable power saving with PowerSave 0. |
+| Battery_measure | [int][int][float][int][int] | measure battery based on ADC args minbatt and maxbatt in mv. optional Vref(default 2403), ADC bits(4096) and  V_divider(2) <br/>e.g.:Battery_measure 1500 3000 2403 4096 2 |
 | simonirtest |  | Simons Special Test |
 | if | [Condition]['then'][CommandA]['else'][CommandB] | Executed a conditional. Condition should be single line. You must always use 'then' after condition. 'else' is optional. Use aliases or quotes for commands with spaces |
 | ota_http | [HTTP_URL] | Starts the firmware update procedure, the argument should be a reachable HTTP server file. You can easily setup HTTP server with Xampp, or Visual Code, or Python, etc. Make sure you are using OTA file for a correct platform (getting N platform RBL on T will brick device, etc etc) |
@@ -35,24 +43,25 @@ Do not add anything here, as it will overwritten with next rebuild.
 | ClearNoPingTime |  | Command for ping watchdog; it sets the 'time since last ping reply' to 0 again |
 | SetStartValue | [Channel][Value] | Sets the startup value for a channel. Used for start values for relays. Use 1 for High, 0 for low and -1 for 'remember last state' |
 | led_dimmer | [Value] | set output dimmer 0..100 |
+| Dimmer | [Value] | Alias for led_dimmer |
 | add_dimmer | [Value][AddMode] | Adds a given value to current LED dimmer. AddMode 0 just adds a value (with a clamp to [0,100]), AddMode 1 will wrap around values (going under 0 goes to 100, going over 100 goes to 0), AddMode 2 will ping-pong value (going to 100 starts going back from 100 to 0, and again, going to 0 starts going up). |
 | led_enableAll | [1or0orToggle] | Power on/off LED but remember the RGB(CW) values |
 | led_basecolor_rgb | [HexValue] | Puts the LED driver in RGB mode and sets given color. |
 | led_basecolor_rgbcw |  | set PWN color using #RRGGBB[cw][ww] |
 | add_temperature | [DeltaValue][bWrapAroundInsteadOfHold] | Adds a given value to current LED temperature. Function can wrap or clamp if max/min is exceeded. |
 | led_temperature | [TempValue] | Toggles LED driver into temperature mode and sets given temperature. It using Home Assistant temperature range (in the range from 154-500 defined in homeassistant/util/color.py as HASS_COLOR_MIN and HASS_COLOR_MAX) |
-| led_brightnessMult | [Value] | Internal usage. |
+| CT | [TempValue] | Same as led_temperature |
 | led_colorMult | [Value] | Internal usage. |
 | led_saturation | [Value] | This is an alternate way to set the LED color. |
 | led_hue | [Value] | This is an alternate way to set the LED color. |
 | led_nextColor |  | Sets the next color from predefined colours list. Our list is the same as in Tasmota. |
 | led_lerpSpeed | [LerpSpeed] | Sets the speed of colour interpolation, where speed is defined as a number of RGB units per second, so 255 will lerp from 0 to 255 in one second |
-| led_expoMode | [IntegerMode] | set brightness exponential mode 0..4<br/>e.g.:led_expoMode 4 |
 | HSBColor | [H][S][B] | Tasmota-style colour access. Hue in 0-360 range, saturation in 0-100 and brightness in 0-100 range.  |
 | HSBColor1 | [Hue] | Tasmota-style colour access. Sets hue in 0 to 360 range. |
 | HSBColor2 | [Saturation] | Tasmota-style colour access. Set saturation in 0 to 100 range. |
 | HSBColor3 | [Brightness] | Tasmota-style colour access. Sets brightness in 0 to 100 range. |
 | led_finishFullLerp |  | This will force-finish LED color interpolation. You can call it after setting the colour to skip the interpolation/smooth transition time. Of course, it makes only sense if you enabled smooth colour transitions. |
+| led_gammaCtrl | sub-cmd [par] | control LED Gamma Correction and Calibration<br/>e.g.:led_gammaCtrl on |
 | addRepeatingEvent | [IntervalSeconds][RepeatsOr-1][CommandToRun] | Starts a timer/interval command. Use 'backlog' to fit multiple commands in a single string. |
 | addRepeatingEventID | [IntervalSeconds][RepeatsOr-1][UserID][CommandToRun] | as addRepeatingEvent, but with a given ID. You can later cancel it with cancelRepeatingEvent.<br/>e.g.:addRepeatingEventID 2 -1 123 Power0 Toggle |
 | cancelRepeatingEvent | [UserIDInteger] | Stops a given repeating event with a specified ID |
@@ -69,22 +78,17 @@ Do not add anything here, as it will overwritten with next rebuild.
 | resetSVM |  | Resets all SVM and clears all scripts. |
 | sendGet | [TargetURL] | Sends a HTTP GET request to target URL. May include GET arguments. Can be used to control devices by Tasmota HTTP protocol. Command supports argument expansion, so $CH11 changes to value of channel 11, etc, etc. |
 | power | [OnorOfforToggle] | Tasmota-style POWER command. Should work for both LEDs and relay-based devices. You can write POWER0, POWER1, etc to access specific relays. |
-| powerStateOnly |  | ensures that device is on or off without changing pwm values |
 | powerAll |  | set all outputs |
 | color | [HexString] | set PWN color using #RRGGBB[cw][ww]. Do not use it. Use led_basecolor_rgb |
 | backlog | [string of commands separated with ;] | run a sequence of ; separated commands |
 | exec | [Filename] | exec <file> - run autoexec.bat or other file from LFS if present |
-| lfs_test1 | [FileName] | Tests the LFS file reading feature. |
-| lfs_test2 | [FileName] | Tests the LFS file reading feature. |
-| lfs_test3 | [FileName] | Tests the LFS file reading feature. |
 | SSID1 | [ValueString] | Sets the SSID of target WiFi. Command keeps Tasmota syntax. |
 | Password1 | [ValueString] | Sets the Pass of target WiFi. Command keeps Tasmota syntax |
 | MqttHost | [ValueString] | Sets the MQTT host. Command keeps Tasmota syntax |
 | MqttUser | [ValueString] | Sets the MQTT user. Command keeps Tasmota syntax |
 | MqttPassword | [ValueString] | Sets the MQTT pass. Command keeps Tasmota syntax |
 | MqttClient | [ValueString] | Sets the MQTT client. Command keeps Tasmota syntax |
-| aliasMem |  | Internal usage only. See docs for 'alias' command. |
-| alias | [Alias][Command with spaces] | add an aliased command, so a command with spaces can be called with a short, nospaced alias |
+| State | NULL | NULL |
 | testMallocFree |  | Test malloc and free functionality to see if the device crashes |
 | testRealloc |  | Test realloc and free functions to see if the device crashes |
 | testJSON |  | Test the JSON library |
@@ -92,6 +96,9 @@ Do not add anything here, as it will overwritten with next rebuild.
 | testFloats |  | Do some more test printfs with floating point numbers |
 | testArgs |  | Test tokenizer for args and print back all the given args to console |
 | testStrdup |  | Test strdup function to see if it allocs news string correctly, also test freeing the string |
+| lfs_test1 | [FileName] | Tests the LFS file reading feature. |
+| lfs_test2 | [FileName] | Tests the LFS file reading feature. |
+| lfs_test3 | [FileName] | Tests the LFS file reading feature. |
 | PowerSet |  | Sets current power value for calibration |
 | VoltageSet |  | Sets current V value for calibration |
 | CurrentSet |  | Sets current I value for calibration |
@@ -115,6 +122,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | IREnable | [Str][1or0] | Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol |
 | startDriver | [DriverName] | Starts driver |
 | stopDriver | [DriverName] | Stops driver |
+| MAX72XX_Setup | [Value] | Sets the maximum current for LED driver. |
 | ntp_timeZoneOfs | [Value] | Sets the time zone offset in hours. Also supports HH:MM syntax if you want to specify value in minutes. For negative values, use -HH:MM syntax, for example -5:30 will shift time by 5 hours and 30 minutes negative. |
 | ntp_setServer | [ServerIP] | Sets the NTP server |
 | ntp_info |  | Display NTP related settings |
@@ -122,6 +130,13 @@ Do not add anything here, as it will overwritten with next rebuild.
 | toggler_set | [Value] | Sets the VALUE of given output. Handles toggler_set0, toggler_set1, etc. The last digit after command name is changed to slot index. |
 | toggler_channel | [ChannelIndex] | handles toggler_channel0, toggler_channel1. Sets channel linked to given toggler slot. |
 | toggler_name |  | Handles toggler_name0, toggler_name1, etc. Sets the name of a toggler for GUI. |
+| SHT_Calibrate |  | Calibrate the SHT Sensor as Tolerance is +/-2 degrees C.<br/>e.g.:SHT_Calibrate -4 10 |
+| SHT_MeasurePer |  | Retrieve Periodical measurement for SHT<br/>e.g.:SHT_Measure |
+| SHT_LaunchPer | [msb][lsb] | Launch/Change periodical capture for SHT Sensor |
+| SHT_StopPer |  | Stop periodical capture for SHT Sensor |
+| SHT_Measure |  | Retrieve OneShot measurement for SHT<br/>e.g.:SHT_Measure |
+| SHT_Heater |  | Activate or Deactivate Heater (0 / 1)<br/>e.g.:SHT_Heater 1 |
+| SHT_GetStatus |  | Get Sensor Status<br/>e.g.:SHT_GetStatusCmd |
 | SM16703P_Test |  | qq |
 | SM16703P_Send |  | NULL |
 | SM16703P_Test_3xZero |  | NULL |
@@ -129,6 +144,9 @@ Do not add anything here, as it will overwritten with next rebuild.
 | SM2135_RGBCW | [HexColor] | Don't use it. It's for direct access of SM2135 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
 | SM2135_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of SM2135 channels. This is because SM2135 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: SM2135_Map 0 1 2 3 4 |
 | SM2135_Current | [Value] | Sets the maximum current for LED driver. |
+| SM2235_RGBCW | [HexColor] | Don't use it. It's for direct access of SM2235 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
+| SM2235_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of SM2235 channels. This is because SM2235 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: SM2235_Map 0 1 2 3 4 |
+| SM2235_Current | [Value] | Sets the maximum current for LED driver. |
 | obkDeviceList |  | Generate the SSDP list of OpenBeken devices found on the network. |
 | DGR_SendPower | [GroupName][ChannelValues][ChannelsCount] | Sends a POWER message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
 | DGR_SendBrightness | [GroupName][Brightness] | Sends a Brightness message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
@@ -147,24 +165,30 @@ Do not add anything here, as it will overwritten with next rebuild.
 | tuyaMcu_sendMCUConf |  | Send MCU conf command |
 | fakeTuyaPacket |  |  |
 | tuyaMcu_setBaudRate | [BaudValue] | Sets the baud rate used by TuyaMCU UART communication. Default value is 9600. |
-| tuyaMcu_sendRSSI |  | NULL |
+| tuyaMcu_sendRSSI |  | Command sends the specific RSSI value to TuyaMCU (it will send current RSSI if no argument is set) |
+| tuyaMcu_defWiFiState |  | Command sets the default WiFi state for TuyaMCU when device is not online. |
 | uartSendHex | [HexString] | Sends raw data by UART, can be used to send TuyaMCU data, but you must write whole packet with checksum yourself |
 | uartSendASCII | [AsciiString] | Sends given string by UART. |
 | UCS1912_Test |  |  |
 | lcd_clearAndGoto |  | Clears LCD and go to pos |
 | lcd_goto |  | Go to position on LCD |
 | lcd_print |  | Prints a string on the LCD |
+| lcd_printFloat |  | Prints a float on the LCD |
+| lcd_printInt |  | Prints an omt on the LCD |
 | lcd_clear |  | Clears the LCD |
 | addI2CDevice_TC74 |  | Adds a new I2C device - TC74 |
 | addI2CDevice_MCP23017 |  | Adds a new I2C device - MCP23017 |
 | addI2CDevice_LCM1602 |  | Adds a new I2C device - LCM1602 |
 | addI2CDevice_LCD_PCF8574 |  | Adds a new I2C device - PCF8574 |
 | MCP23017_MapPinToChannel |  | Maps port expander bit to OBK channel |
+| scanI2C |  |  |
 | lfs_size | [MaxSize] | Log or Set LFS size - will apply and re-format next boot, usage setlfssize 0x10000 |
 | lfs_unmount |  | Un-mount LFS |
 | lfs_mount |  | Mount LFS |
 | lfs_format |  | Unmount and format LFS.  Optionally add new size as argument |
 | lfs_append | [FileName][String] | Appends a string to LFS file |
+| lfs_appendFloat | [FileName][Float] | Appends a float to LFS file |
+| lfs_appendInt | [FileName][Int] | Appends a Int to LFS file |
 | lfs_appendLine | [FileName][String] | Appends a string to LFS file with a next line marker |
 | lfs_remove | [FileName] | Deletes a LittleFS file |
 | lfs_write | [FileName][String] | Resets a LFS file and writes a new string to it |
