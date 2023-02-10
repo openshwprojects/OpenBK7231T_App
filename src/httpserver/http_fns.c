@@ -19,6 +19,8 @@
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_local.h"
 
+static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"></form>";
+
 #ifdef WINDOWS
 	// nothing
 #elif PLATFORM_BL602
@@ -130,6 +132,13 @@ int http_fn_empty_url(http_request_t* request) {
 void postFormAction(http_request_t* request, char* action, char* value) {
 	//"<form action=\"cfg_pins\"><input type=\"submit\" value=\"Configure Module\"/></form>"
 	hprintf255(request, "<form action=\"%s\"><input type=\"submit\" value=\"%s\"/></form>", action, value);
+}
+
+void poststr_h2(http_request_t* request, const char *content) {
+	hprintf255(request, "<h2>%s</h2>", content);
+}
+void poststr_h4(http_request_t* request, const char *content) {
+	hprintf255(request, "<h4>%s</h4>", content);
 }
 
 /// @brief Generate a pair of label and field elements for Name type entry. The field is limited to entry of a-zA-Z0-9_- characters.
@@ -944,7 +953,7 @@ int http_fn_index(http_request_t* request) {
 int http_fn_about(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "About");
-	poststr(request, "<h2>Open source firmware for BK7231N, BK7231T, XR809 and BL602 by OpenSHWProjects</h2>");
+	poststr_h2(request, "Open source firmware for BK7231N, BK7231T, XR809 and BL602 by OpenSHWProjects");
 	poststr(request, htmlFooterReturnToMenu);
 	http_html_end(request);
 	poststr(request, NULL);
@@ -954,11 +963,10 @@ int http_fn_about(http_request_t* request) {
 int http_fn_cfg_mqtt(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "MQTT");
-	poststr(request, "<h2>Use this to connect to your MQTT</h2>");
-
-	hprintf255(request, "<h5>Currently, your device command topic is cmnd/%s/[Command]</h5>", CFG_GetMQTTClientId());
-	hprintf255(request, "<h5>Currently, your device publish data topic is %s/[Channel]/get</h5>", CFG_GetMQTTClientId());
-	hprintf255(request, "<h5>Currently, your device receive data topic is %s/[Channel]/set</h5>", CFG_GetMQTTClientId());
+	poststr_h2(request, "Use this to connect to your MQTT");
+	hprintf255(request, "<h4>Command topic: cmnd/%s/[Command]</h4>", CFG_GetMQTTClientId());
+	hprintf255(request, "<h4>Publish data topic: %s/[Channel]/get</h4>", CFG_GetMQTTClientId());
+	hprintf255(request, "<h4>Receive data topic:  %s/[Channel]/set</h4>", CFG_GetMQTTClientId());
 
 	add_label_text_field(request, "Host", "host", CFG_GetMQTTHost(), "<form action=\"/cfg_mqtt_set\">");
 	add_label_numeric_field(request, "Port", "port", CFG_GetMQTTPort(), "<br>");
@@ -967,9 +975,7 @@ int http_fn_cfg_mqtt(http_request_t* request) {
 	add_label_text_field(request, "User", "user", CFG_GetMQTTUserName(), "<br>");
 	add_label_password_field(request, "Password", "password", CFG_GetMQTTPass(), "<br>");
 
-	poststr(request, "<br>\
-            <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MQTT data twice?')\">\
-        </form> ");
+	poststr(request, "<br><input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MQTT data twice?')\"></form> ");
 	poststr(request, htmlFooterReturnToCfgLink);
 	http_html_end(request);
 	poststr(request, NULL);
@@ -1006,9 +1012,7 @@ int http_fn_cfg_mqtt_set(http_request_t* request) {
 
 	g_mqtt_bBaseTopicDirty = 1;
 
-	poststr(request, "<br>");
-	poststr(request, "<a href=\"cfg_mqtt\">Return to MQTT settings</a>");
-	poststr(request, "<br>");
+	poststr(request, "<br><a href=\"cfg_mqtt\">Return to MQTT settings</a><br>");
 	poststr(request, htmlFooterReturnToCfgLink);
 	http_html_end(request);
 	poststr(request, NULL);
@@ -1018,11 +1022,8 @@ int http_fn_cfg_mqtt_set(http_request_t* request) {
 int http_fn_cfg_webapp(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Set Webapp");
-	poststr(request, "<h2> Use this to set the URL of the Webapp</h2>");
-	add_label_text_field(request, "Url", "url", CFG_GetWebappRoot(), "<form action=\"/cfg_webapp_set\">");
-	poststr(request, "<br>\
-            <input type=\"submit\" value=\"Submit\">\
-        </form> ");
+	add_label_text_field(request, "URL of the Webapp", "url", CFG_GetWebappRoot(), "<form action=\"/cfg_webapp_set\">");
+	poststr(request, SUBMIT_AND_END_FORM);
 	poststr(request, htmlFooterReturnToCfgLink);
 	http_html_end(request);
 	poststr(request, NULL);
@@ -1061,16 +1062,16 @@ int http_fn_cfg_ping(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Set Watchdog");
 	bChanged = 0;
-	poststr(request, "<h3> Ping watchdog (backup reconnect mechanism)</h3>");
+	poststr(request, "<h3>Ping watchdog (backup reconnect mechanism)</h3>");
 	poststr(request, "<p> By default, all OpenBeken devices automatically tries to reconnect to WiFi when a connection is lost.");
 	poststr(request, " I have tested the reconnect mechanism many times by restarting my router and it always worked reliably.");
 	poststr(request, " However, according to some reports, there are still some edge cases when a device fails to reconnect to WIFi.");
 	poststr(request, " This is why <b>this mechanism</b> has been added.</p>");
-	poststr(request, "<p> This mechanism keeps pinging certain host and reconnects to WiFi if it doesn't respond at all for a certain amount of seconds.</p>");
-	poststr(request, "<p> USAGE: For a host, choose the main address of your router and make sure it responds to a pings. Interval is 1 second or so, timeout can be set by user, to eg. 60 sec</p>");
+	poststr(request, "<p>This mechanism keeps pinging certain host and reconnects to WiFi if it doesn't respond at all for a certain amount of seconds.</p>");
+	poststr(request, "<p>USAGE: For a host, choose the main address of your router and make sure it responds to a pings. Interval is 1 second or so, timeout can be set by user, to eg. 60 sec</p>");
 	if (http_getArg(request->url, "host", tmpA, sizeof(tmpA))) {
 		CFG_SetPingHost(tmpA);
-		poststr(request, "<h4> New ping host set!</h4>");
+		poststr_h4(request, "New ping host set!");
 		bChanged = 1;
 	}
 	/* if(http_getArg(request->url,"interval",tmpA,sizeof(tmpA))) {
@@ -1080,31 +1081,31 @@ int http_fn_cfg_ping(http_request_t* request) {
 	 }*/
 	if (http_getArg(request->url, "disconnectTime", tmpA, sizeof(tmpA))) {
 		CFG_SetPingDisconnectedSecondsToRestart(atoi(tmpA));
-		poststr(request, "<h4> New ping disconnectTime set!</h4>");
+		poststr_h4(request, "New ping disconnectTime set!");
 		bChanged = 1;
 	}
 	if (http_getArg(request->url, "clear", tmpA, sizeof(tmpA))) {
 		CFG_SetPingDisconnectedSecondsToRestart(0);
 		CFG_SetPingIntervalSeconds(0);
 		CFG_SetPingHost("");
-		poststr(request, "<h4> Ping watchdog disabled!</h4>");
+		poststr_h4(request, "Ping watchdog disabled!");
 		bChanged = 1;
 	}
 	if (bChanged) {
 		CFG_Save_IfThereArePendingChanges();
-		poststr(request, "<h4> Changes will be applied after restarting</h4>");
+		poststr_h4(request, "Changes will be applied after restarting");
 	}
 	poststr(request, "<form action=\"/cfg_ping\">\
-            <input type=\"hidden\" id=\"clear\" name=\"clear\" value=\"1\">\
-            <input type=\"submit\" value=\"Disable ping watchdog!\">\
-        </form> ");
-	poststr(request, "<h2> Use this to enable pinger</h2>");
+<input type=\"hidden\" id=\"clear\" name=\"clear\" value=\"1\">\
+<input type=\"submit\" value=\"Disable ping watchdog!\">\
+</form>");
+	poststr_h2(request, "Use this to enable pinger");
 	add_label_text_field(request, "Host", "host", CFG_GetPingHost(), "<form action=\"/cfg_ping\">");
 	add_label_numeric_field(request, "Take action after this number of seconds with no reply", "disconnectTime",
 		CFG_GetPingDisconnectedSecondsToRestart(), "<br>");
 	poststr(request, "<br><br>\
-            <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure?')\">\
-        </form> ");
+<input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure?')\">\
+</form>");
 	poststr(request, htmlFooterReturnToCfgLink);
 	http_html_end(request);
 	poststr(request, NULL);
@@ -1174,20 +1175,20 @@ int http_fn_cfg_wifi(http_request_t* request) {
 #endif
 	}
 	poststr(request, "<form action=\"/cfg_wifi\">\
-            <input type=\"hidden\" id=\"scan\" name=\"scan\" value=\"1\">\
-            <input type=\"submit\" value=\"Scan local networks!\">\
-        </form> ");
-	poststr(request, "<h2> Use this to disconnect from your WiFi</h2>");
+<input type=\"hidden\" id=\"scan\" name=\"scan\" value=\"1\">\
+<input type=\"submit\" value=\"Scan local networks!\">\
+</form>");
+	poststr_h4(request, "Use this to disconnect from your WiFi");
 	poststr(request, "<form action=\"/cfg_wifi_set\">\
-            <input type=\"hidden\" id=\"open\" name=\"open\" value=\"1\">\
-            <input type=\"submit\" value=\"Convert to open access wifi\" onclick=\"return confirm('Are you sure to convert module to open access wifi?')\">\
-        </form> ");
-	poststr(request, "<h2> Use this to connect to your WiFi</h2>");
+<input type=\"hidden\" id=\"open\" name=\"open\" value=\"1\">\
+<input type=\"submit\" value=\"Convert to open access wifi\" onclick=\"return confirm('Are you sure to convert module to open access wifi?')\">\
+</form>");
+	poststr_h2(request, "Use this to connect to your WiFi");
 	add_label_text_field(request, "SSID", "ssid", CFG_GetWiFiSSID(), "<form action=\"/cfg_wifi_set\">");
 	add_label_password_field(request, "Password", "pass", CFG_GetWiFiPass(), "<br>");
 	poststr(request, "<br><br>\
-            <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check SSID and pass twice?')\">\
-        </form> ");
+<input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check SSID and pass twice?')\">\
+</form>");
 	poststr(request, htmlFooterReturnToCfgLink);
 	http_html_end(request);
 	poststr(request, NULL);
@@ -1201,7 +1202,7 @@ int http_fn_cfg_name(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Set name");
 
-	poststr(request, "<h2> Change device names for display. </h2>");
+	poststr_h2(request, "Change device names for display");
 	if (http_getArg(request->url, "shortName", tmpA, sizeof(tmpA))) {
 		CFG_SetShortDeviceName(tmpA);
 	}
@@ -1210,7 +1211,7 @@ int http_fn_cfg_name(http_request_t* request) {
 	}
 	CFG_Save_IfThereArePendingChanges();
 
-	poststr(request, "<h2> Use this to change device names</h2>");
+	poststr_h2(request, "Use this to change device names");
 	add_label_name_field(request, "ShortName", "shortName", CFG_GetShortDeviceName(), "<form action=\"/cfg_name\">");
 	add_label_name_field(request, "Full Name", "name", CFG_GetDeviceName(), "<br>");
 
@@ -1254,9 +1255,7 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 	poststr(request, "Please wait for module to reset...");
 	RESET_ScheduleModuleReset(3);
 
-	poststr(request, "<br>");
-	poststr(request, "<a href=\"cfg_wifi\">Return to WiFi settings</a>");
-	poststr(request, "<br>");
+	poststr(request, "<br><a href=\"cfg_wifi\">Return to WiFi settings</a><br>");
 	poststr(request, htmlFooterReturnToCfgLink);
 	http_html_end(request);
 	poststr(request, NULL);
@@ -1284,12 +1283,10 @@ int http_fn_cfg_loglevel_set(http_request_t* request) {
 	add_label_numeric_field(request, "Loglevel", "loglevel", loglevel, "<form action=\"/cfg_loglevel_set\">");
 #endif
 	poststr(request, "<br><br>\
-            <input type=\"submit\" value=\"Submit\" >\
-        </form> ");
+<input type=\"submit\" value=\"Submit\" >\
+</form>");
 
-	poststr(request, "<br>");
-	poststr(request, "<a href=\"cfg\">Return to config settings</a>");
-	poststr(request, "<br>");
+	poststr(request, "<br><a href=\"cfg\">Return to config settings</a><br>");
 	poststr(request, htmlFooterReturnToCfgLink);
 	http_html_end(request);
 	poststr(request, NULL);
@@ -1314,23 +1311,23 @@ int http_fn_cfg_mac(http_request_t* request) {
 		}
 		//sscanf(tmpA,"%02X%02X%02X%02X%02X%02X",&mac[0],&mac[1],&mac[2],&mac[3],&mac[4],&mac[5]);
 		if (WiFI_SetMacAddress((char*)mac)) {
-			poststr(request, "<h4> New MAC set!</h4>");
+			poststr_h4(request, "New MAC set!");
 		}
 		else {
-			poststr(request, "<h4> MAC change error?</h4>");
+			poststr_h4(request, "MAC change error?");
 		}
 		CFG_Save_IfThereArePendingChanges();
 	}
 
 	WiFI_GetMacAddress((char*)mac);
 
-	poststr(request, "<h2> Here you can change MAC address.</h2>");
+	poststr_h2(request, "Here you can change MAC address.");
 
 	sprintf(macStr, "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 	add_label_text_field(request, "MAC", "mac", macStr, "<form action=\"/cfg_mac\">");
 	poststr(request, "<br><br>\
-            <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MAC hex string twice?')\">\
-        </form> ");
+<input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MAC hex string twice?')\">\
+</form>");
 	poststr(request, htmlFooterReturnToCfgLink);
 	http_html_end(request);
 	poststr(request, NULL);
@@ -1351,7 +1348,7 @@ int http_fn_flash_read_tool(http_request_t* request) {
 
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Flash read");
-	poststr(request, "<h4>Flash Read Tool</h4>");
+	poststr_h4(request, "Flash Read Tool");
 	if (http_getArg(request->url, "hex", tmpA, sizeof(tmpA))) {
 		hex = atoi(tmpA);
 	}
@@ -1420,9 +1417,7 @@ int http_fn_flash_read_tool(http_request_t* request) {
 
 	add_label_numeric_field(request, "Offset", "offset", ofs, "");
 	add_label_numeric_field(request, "Length", "len", len, "<br>");
-	poststr(request, "<br><br>\
-            <input type=\"submit\" value=\"Submit\">\
-        </form> ");
+	poststr(request, SUBMIT_AND_END_FORM);
 
 	poststr(request, htmlFooterReturnToCfgLink);
 	http_html_end(request);
@@ -1456,7 +1451,7 @@ int http_fn_cmd_tool(http_request_t* request) {
 
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Command tool");
-	poststr(request, "<h4>Command Tool</h4>");
+	poststr_h4(request, "Command Tool");
 	poststr(request, "This is a basic command line. <br>");
 	poststr(request, "Please consider using 'Web Application' console with more options and real time log view. <br>");
 	poststr(request, "Remember that some commands are added after a restart when a driver is activated... <br>");
@@ -1487,9 +1482,7 @@ int http_fn_cmd_tool(http_request_t* request) {
 		poststr(request, "<br>");
 	}
 	add_label_text_field(request, "Command", "cmd", tmpA, "<form action=\"/cmd_tool\">");
-	poststr(request, "<br><br>\
-            <input type=\"submit\" value=\"Submit\">\
-        </form> ");
+	poststr(request, SUBMIT_AND_END_FORM);
 
 	poststr(request, htmlFooterReturnToCfgLink);
 	http_html_end(request);
@@ -1501,7 +1494,7 @@ int http_fn_startup_command(http_request_t* request) {
 	char tmpA[512];
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Set startup command");
-	poststr(request, "<h4>Set/Change/Clear startup command line</h4>");
+	poststr_h4(request, "Set/Change/Clear startup command line");
 	poststr(request, "<p>Startup command is a shorter, smaller alternative to LittleFS autoexec.bat. "
 		"The startup commands are ran at device startup. "
 		"You can use them to init peripherals and drivers, like BL0942 energy sensor. "
@@ -1519,9 +1512,7 @@ int http_fn_startup_command(http_request_t* request) {
 	}
 
 	add_label_text_field(request, "Startup command", "data", CFG_GetShortStartupCommand(), "<form action=\"/startup_command\">");
-	poststr(request, "<br><br>\
-            <input type=\"submit\" value=\"Submit\">\
-        </form> ");
+	poststr(request, SUBMIT_AND_END_FORM);
 
 	poststr(request, htmlFooterReturnToCfgLink);
 	http_html_end(request);
@@ -1533,7 +1524,7 @@ int http_fn_uart_tool(http_request_t* request) {
 	int resultLen = 0;
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "UART tool");
-	poststr(request, "<h4>UART Tool</h4>");
+	poststr_h4(request, "UART Tool");
 
 	if (http_getArg(request->url, "data", tmpA, sizeof(tmpA))) {
 #ifdef ENABLE_DRIVER_TUYAMCU
@@ -1564,9 +1555,7 @@ int http_fn_uart_tool(http_request_t* request) {
 	}
 
 	add_label_text_field(request, "Data", "data", tmpA, "<form action=\"/uart_tool\">");
-	poststr(request, "<br>\
-            <input type=\"submit\" value=\"Submit\">\
-        </form> ");
+	poststr(request, SUBMIT_AND_END_FORM);
 
 	poststr(request, htmlFooterReturnToCfgLink);
 	http_html_end(request);
@@ -1580,7 +1569,7 @@ int http_fn_uart_tool(http_request_t* request) {
 int http_fn_cfg_quick(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Quick Config");
-	poststr(request, "<h4>Quick Config</h4>");
+	poststr_h4(request, "Quick Config");
 
 
 	/*
@@ -1598,8 +1587,7 @@ int http_fn_cfg_quick(http_request_t* request) {
 
 	*/
 
-	poststr(request, "<h3>This is obsolete now - please config through Web App</h3>");
-	poststr(request, "<h3><a href=\"https://openbekeniot.github.io/webapp/devicesList.html\">Also please see here</a></h3>");
+	poststr(request, "<h3>This is now obsolete. Please config through Web App and refer to the Devices List.</h3>");
 
 
 	/*if (http_getArg(request->url, "dev", tmpA, sizeof(tmpA))) {
@@ -1794,6 +1782,15 @@ void http_generate_cw_cfg(http_request_t* request, const char* clientId) {
 	hprintf255(request, "    color_temp_state_topic: \"%s/led_temperature/get\"\n", clientId);
 	http_generate_singleColor_cfg(request, clientId);
 }
+
+void hprintf_qos_payload(http_request_t* request, const char *clientId){
+	poststr(request, "    qos: 1\n");
+	poststr(request, "    payload_on: 1\n");
+	poststr(request, "    payload_off: 0\n");
+	poststr(request, "    retain: true\n");
+	hprintf255(request, "    availability:\n");
+	hprintf255(request, "      - topic: \"%s/connected\"\n", clientId);
+}
 int http_fn_ha_cfg(http_request_t* request) {
 	int relayCount;
 	int pwmCount;
@@ -1812,9 +1809,9 @@ int http_fn_ha_cfg(http_request_t* request) {
 
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Home Assistant Setup");
-	poststr(request, "<h4>Home Assistant Cfg</h4>");
+	poststr_h4(request, "Home Assistant Cfg");
 	hprintf255(request, "<h4>Note that your short device name is: %s</h4>", shortDeviceName);
-	poststr(request, "<h4>Paste this to configuration yaml</h4>");
+	poststr_h4(request, "Paste this to configuration yaml");
 	poststr(request, "<h5>Make sure that you have \"switch:\" keyword only once! Home Assistant doesn't like dup keywords.</h5>");
 	poststr(request, "<h5>You can also use \"switch MyDeviceName:\" to avoid keyword duplication!</h5>");
 
@@ -1839,12 +1836,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 				hprintf255(request, "    name: \"%s %i\"\n", shortDeviceName, i);
 				hprintf255(request, "    state_topic: \"%s/%i/get\"\n", clientId, i);
 				hprintf255(request, "    command_topic: \"%s/%i/set\"\n", clientId, i);
-				poststr(request, "    qos: 1\n");
-				poststr(request, "    payload_on: 1\n");
-				poststr(request, "    payload_off: 0\n");
-				poststr(request, "    retain: true\n");
-				hprintf255(request, "    availability:\n");
-				hprintf255(request, "      - topic: \"%s/connected\"\n", clientId);
+				hprintf_qos_payload(request, clientId);
 			}
 		}
 	}
@@ -1863,12 +1855,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 				hass_print_unique_id(request, "  - unique_id: \"%s\"\n", BINARY_SENSOR, i);
 				hprintf255(request, "    name: \"%s %i\"\n", shortDeviceName, i);
 				hprintf255(request, "    state_topic: \"%s/%i/get\"\n", clientId, i);
-				poststr(request, "    qos: 1\n");
-				poststr(request, "    payload_on: 1\n");
-				poststr(request, "    payload_off: 0\n");
-				poststr(request, "    retain: true\n");
-				hprintf255(request, "    availability:\n");
-				hprintf255(request, "      - topic: \"%s/connected\"\n", clientId);
+				hprintf_qos_payload(request, clientId);
 			}
 		}
 	}
@@ -1886,10 +1873,10 @@ int http_fn_ha_cfg(http_request_t* request) {
 		hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_RGBCW, i);
 		hprintf255(request, "    name: \"%s %i\"\n", shortDeviceName, i);
 		http_generate_rgb_cfg(request, clientId);
-		hprintf255(request, "    #brightness_value_template: \"{{ value }}\"\n");
+		//hprintf255(request, "    #brightness_value_template: \"{{ value }}\"\n");
 		hprintf255(request, "    color_temp_command_topic: \"cmnd/%s/led_temperature\"\n", clientId);
 		hprintf255(request, "    color_temp_state_topic: \"%s/led_temperature/get\"\n", clientId);
-		hprintf255(request, "    #color_temp_value_template: \"{{ value }}\"\n");
+		//hprintf255(request, "    #color_temp_value_template: \"{{ value }}\"\n");
 	}
 	else
 		if (pwmCount == 3) {
@@ -2317,7 +2304,7 @@ int http_fn_cfg_generic(http_request_t* request) {
 		poststr(request, "</label></div>");
 	}
 	poststr(request, "<input type=\"hidden\" id=\"setFlags\" name=\"setFlags\" value=\"1\">");
-	poststr(request, "<input type=\"submit\" value=\"Submit\"></form>");
+	poststr(request, SUBMIT_AND_END_FORM);
 
 	add_label_numeric_field(request, "Uptime seconds required to mark boot as ok", "boot_ok_delay",
 		CFG_GetBootOkSeconds(), "<form action=\"/cfg_generic\">");
@@ -2336,7 +2323,7 @@ int http_fn_cfg_startup(http_request_t* request) {
 
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Config startup");
-	poststr(request, "<h4>Here you can set pin start values</h4>");
+	poststr_h4(request, "Here you can set pin start values");
 	poststr(request, "<ul><li>For relays, simply use 1 or 0</li>");
 	poststr(request, "<li>To 'remember last power state', use -1 as a special value</li>");
 	poststr(request, "<li>For dimmers, range is 0 to 100</li>");
@@ -2361,7 +2348,7 @@ int http_fn_cfg_startup(http_request_t* request) {
 		}
 	}
 
-	poststr(request, "<h4>New start values</h4>");
+	poststr_h4(request, "New start values");
 
 	for (i = 0; i < CHANNEL_MAX; i++) {
 		if (CHANNEL_IsInUse(i)) {
@@ -2442,36 +2429,37 @@ int http_fn_cfg_dgr(http_request_t* request) {
 		add_label_text_field(request, "Group name", "name", groupName, "<form action=\"/cfg_dgr\">");
 		poststr(request, "<br><table><tr><th>Name</th><th>Tasmota Code</th><th>Receive</th><th>Send</th></tr><tr><td>Power</td><td>1</td>");
 
-		poststr(request, "     <td><input type=\"checkbox\" name=\"r_pwr\" value=\"1\"");
+		poststr(request, "<td><input type=\"checkbox\" name=\"r_pwr\" value=\"1\"");
 		if (newRecvFlags & DGR_SHARE_POWER)
 			poststr(request, " checked");
-		poststr(request, "></td>  <td><input type=\"checkbox\" name=\"s_pwr\" value=\"1\"");
+		poststr(request, "></td><td><input type=\"checkbox\" name=\"s_pwr\" value=\"1\"");
 		if (newSendFlags & DGR_SHARE_POWER)
 			poststr(request, " checked");
 		poststr(request, "></td> ");
 
-		poststr(request, "  </tr>  <tr>    <td>Light Brightness</td>    <td>2</td>");
+		poststr(request, "</tr><tr><td>Light Brightness</td><td>2</td>");
 
-		poststr(request, "    <td><input type=\"checkbox\" name=\"r_lbr\" value=\"1\"");
+		poststr(request, "<td><input type=\"checkbox\" name=\"r_lbr\" value=\"1\"");
 		if (newRecvFlags & DGR_SHARE_LIGHT_BRI)
 			poststr(request, " checked");
-		poststr(request, "></td>    <td><input type=\"checkbox\" name=\"s_lbr\" value=\"1\"");
+		poststr(request, "></td><td><input type=\"checkbox\" name=\"s_lbr\" value=\"1\"");
 		if (newSendFlags & DGR_SHARE_LIGHT_BRI)
 			poststr(request, " checked");
 		poststr(request, "></td> ");
 
-		poststr(request, "  </tr>  <tr>    <td>Light Color</td>    <td>16</td>");
-		poststr(request, "     <td><input type=\"checkbox\" name=\"r_lcl\" value=\"1\"");
+		poststr(request, "</tr><tr><td>Light Color</td><td>16</td>");
+		poststr(request, "<td><input type=\"checkbox\" name=\"r_lcl\" value=\"1\"");
 		if (newRecvFlags & DGR_SHARE_LIGHT_COLOR)
 			poststr(request, " checked");
-		poststr(request, "></td> <td><input type=\"checkbox\" name=\"s_lcl\" value=\"1\"");
+		poststr(request, "></td><td><input type=\"checkbox\" name=\"s_lcl\" value=\"1\"");
 		if (newSendFlags & DGR_SHARE_LIGHT_COLOR)
 			poststr(request, " checked");
 		poststr(request, "></td> ");
 
 		poststr(request, "<input type=\"hidden\" name=\"bSet\" value=\"1\">");
 
-		poststr(request, "    </tr></table>  <input type=\"submit\" value=\"Submit\"></form>");
+		poststr(request, "</tr></table>");
+		poststr(request, SUBMIT_AND_END_FORM);
 	}
 
 	poststr(request, htmlFooterReturnToCfgLink);
@@ -2518,8 +2506,8 @@ int http_fn_ota(http_request_t* request) {
 	poststr(request, "<p>Simple OTA system (you should rather use the OTA from App panel where you can drag and drop file easily without setting up server). Use RBL file for OTA. In the OTA below, you should paste link to RBL file (you need HTTP server).</p>");
 	add_label_text_field(request, "URL for new bin file", "host", "", "<form action=\"/ota_exec\">");
 	poststr(request, "<br>\
-            <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure?')\">\
-        </form> ");
+<input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure?')\">\
+</form>");
 	poststr(request, htmlFooterReturnToMenu);
 	http_html_end(request);
 	poststr(request, NULL);
