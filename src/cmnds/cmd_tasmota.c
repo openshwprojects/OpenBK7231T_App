@@ -6,7 +6,7 @@
 #include "cmd_local.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
-#ifdef BK_LITTLEFS
+#ifdef ENABLE_LITTLEFS
 	#include "../littlefs/our_lfs.h"
 #endif
 
@@ -98,20 +98,6 @@ static commandResult_t powerAll(const void *context, const char *cmd, const char
 }
 
 
-static commandResult_t powerStateOnly(const void *context, const char *cmd, const char *args, int cmdFlags){
-	//if (!wal_strnicmp(cmd, "POWERALL", 8)){
-		int iVal = 0;
-
-        ADDLOG_INFO(LOG_FEATURE_CMD, "tasCmnd powerStateOnly (%s) received with args %s",cmd,args);
-
-		iVal = parsePowerArgument(args);
-
-		CHANNEL_SetStateOnly(iVal);
-		return CMD_RES_OK;
-	//}
-	//return 0;
-}
-
 static commandResult_t color(const void *context, const char *cmd, const char *args, int cmdFlags){
    // if (!wal_strnicmp(cmd, "COLOR", 5)){
         if (args[0] != '#'){
@@ -201,7 +187,7 @@ static commandResult_t cmnd_backlog(const void * context, const char *cmd, const
 // Returns a buffer created with malloc.
 // You must free it later.
 byte *LFS_ReadFile(const char *fname) {
-#ifdef BK_LITTLEFS
+#ifdef ENABLE_LITTLEFS
 	if (lfs_present()){
 		lfs_file_t file;
 		int lfsres;
@@ -276,7 +262,7 @@ byte *LFS_ReadFile(const char *fname) {
 }
 
 static commandResult_t cmnd_lfsexec(const void * context, const char *cmd, const char *args, int cmdFlags){
-#ifdef BK_LITTLEFS
+#ifdef ENABLE_LITTLEFS
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "exec %s", args);
 	if (lfs_present()){
 		lfs_file_t *file = os_malloc(sizeof(lfs_file_t));
@@ -327,92 +313,6 @@ static commandResult_t cmnd_lfsexec(const void * context, const char *cmd, const
 	return CMD_RES_OK;
 }
 
-
-// Usage for continous test: addRepeatingEvent 1 -1 lfs_test1 ir.bat
-static commandResult_t cmnd_lfs_test1(const void * context, const char *cmd, const char *args, int cmdFlags){
-#ifdef BK_LITTLEFS
-	if (lfs_present()){
-		lfs_file_t file;
-		int lfsres;
-		char a;
-		int cnt;
-
-		cnt = 0;
-
-		memset(&file, 0, sizeof(lfs_file_t));
-		lfsres = lfs_file_open(&lfs, &file, args, LFS_O_RDONLY);
-
-		ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: sizeof(lfs_file_t) %i", sizeof(lfs_file_t));
-		if (lfsres >= 0) {
-			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: openned file %s", args);
-			do {
-				lfsres = lfs_file_read(&lfs, &file, &a, 1);
-				cnt++;
-			} while (lfsres > 0) ;
-			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: Stopped at char %i\n",cnt);
-
-			lfs_file_close(&lfs, &file);
-			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: closed file %s", args);
-		} else {
-			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: failed to file %s", args);
-		}
-	} else {
-		ADDLOG_ERROR(LOG_FEATURE_CMD, "cmnd_lfs_test1: lfs is absent");
-	}
-#endif
-	return CMD_RES_OK;
-}
-// Usage for continous test: addRepeatingEvent 1 -1 lfs_test2 ir.bat
-static commandResult_t cmnd_lfs_test2(const void * context, const char *cmd, const char *args, int cmdFlags){
-#ifdef BK_LITTLEFS
-	if (lfs_present()){
-		lfs_file_t *file;
-		int lfsres;
-		char a;
-		int cnt;
-
-		cnt = 0;
-
-		file = malloc(sizeof(lfs_file_t));
-		if(file == 0) {
-				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: failed to malloc for %s", args);
-		} else {
-			memset(file, 0, sizeof(lfs_file_t));
-			lfsres = lfs_file_open(&lfs, file, args, LFS_O_RDONLY);
-
-			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: sizeof(lfs_file_t) %i", sizeof(lfs_file_t));
-			if (lfsres >= 0) {
-				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: openned file %s", args);
-				do {
-					lfsres = lfs_file_read(&lfs, file, &a, 1);
-					cnt++;
-				} while (lfsres > 0) ;
-				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: Stopped at char %i\n",cnt);
-
-				lfs_file_close(&lfs, file);
-				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: closed file %s", args);
-			} else {
-				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: failed to file %s", args);
-			}
-			free(file);
-		}
-	} else {
-		ADDLOG_ERROR(LOG_FEATURE_CMD, "cmnd_lfs_test2: lfs is absent");
-	}
-#endif
-	return CMD_RES_OK;
-}
-// Usage for continous test: addRepeatingEvent 1 -1 lfs_test3 ir.bat
-static commandResult_t cmnd_lfs_test3(const void * context, const char *cmd, const char *args, int cmdFlags){
-	byte *res;
-
-	res = LFS_ReadFile(args);
-
-	if(res) {
-		free(res);
-	}
-	return CMD_RES_OK;
-}
 static commandResult_t cmnd_SSID1(const void * context, const char *cmd, const char *args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 	// following check must be done after 'Tokenizer_TokenizeString',
@@ -488,47 +388,27 @@ int taslike_commands_init(){
 	//cmddetail:"descr":"Tasmota-style POWER command. Should work for both LEDs and relay-based devices. You can write POWER0, POWER1, etc to access specific relays.",
 	//cmddetail:"fn":"power","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("power", "", power, NULL, NULL);
-	//cmddetail:{"name":"powerStateOnly","args":"",
-	//cmddetail:"descr":"ensures that device is on or off without changing pwm values",
-	//cmddetail:"fn":"powerStateOnly","file":"cmnds/cmd_tasmota.c","requires":"",
-	//cmddetail:"examples":""}
-    CMD_RegisterCommand("powerStateOnly", "", powerStateOnly, NULL, NULL);
+    CMD_RegisterCommand("power", NULL, power, NULL, NULL);
 	//cmddetail:{"name":"powerAll","args":"",
 	//cmddetail:"descr":"set all outputs",
 	//cmddetail:"fn":"powerAll","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("powerAll", "", powerAll, NULL, NULL);
+    CMD_RegisterCommand("powerAll", NULL, powerAll, NULL, NULL);
 	//cmddetail:{"name":"color","args":"[HexString]",
 	//cmddetail:"descr":"set PWN color using #RRGGBB[cw][ww]. Do not use it. Use led_basecolor_rgb",
 	//cmddetail:"fn":"color","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("color", "", color, NULL, NULL);
+    CMD_RegisterCommand("color", NULL, color, NULL, NULL);
 	//cmddetail:{"name":"backlog","args":"[string of commands separated with ;]",
 	//cmddetail:"descr":"run a sequence of ; separated commands",
 	//cmddetail:"fn":"cmnd_backlog","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("backlog", "", cmnd_backlog, NULL, NULL);
+	CMD_RegisterCommand("backlog", NULL, cmnd_backlog, NULL, NULL);
 	//cmddetail:{"name":"exec","args":"[Filename]",
 	//cmddetail:"descr":"exec <file> - run autoexec.bat or other file from LFS if present",
 	//cmddetail:"fn":"cmnd_lfsexec","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("exec", "", cmnd_lfsexec, NULL, NULL);
-	//cmddetail:{"name":"lfs_test1","args":"[FileName]",
-	//cmddetail:"descr":"Tests the LFS file reading feature.",
-	//cmddetail:"fn":"cmnd_lfs_test1","file":"cmnds/cmd_tasmota.c","requires":"",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("lfs_test1", NULL, cmnd_lfs_test1, NULL, NULL);
-	//cmddetail:{"name":"lfs_test2","args":"[FileName]",
-	//cmddetail:"descr":"Tests the LFS file reading feature.",
-	//cmddetail:"fn":"cmnd_lfs_test2","file":"cmnds/cmd_tasmota.c","requires":"",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("lfs_test2", NULL, cmnd_lfs_test2, NULL, NULL);
-	//cmddetail:{"name":"lfs_test3","args":"[FileName]",
-	//cmddetail:"descr":"Tests the LFS file reading feature.",
-	//cmddetail:"fn":"cmnd_lfs_test3","file":"cmnds/cmd_tasmota.c","requires":"",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("lfs_test3", NULL, cmnd_lfs_test3, NULL, NULL);
+	CMD_RegisterCommand("exec", NULL, cmnd_lfsexec, NULL, NULL);
 	//cmddetail:{"name":"SSID1","args":"[ValueString]",
 	//cmddetail:"descr":"Sets the SSID of target WiFi. Command keeps Tasmota syntax.",
 	//cmddetail:"fn":"cmnd_SSID1","file":"cmnds/cmd_tasmota.c","requires":"",

@@ -8,7 +8,7 @@
 #include "../ota/ota.h"
 #include "../hal/hal_wifi.h"
 #include "../hal/hal_flashVars.h"
-#ifdef BK_LITTLEFS
+#ifdef ENABLE_LITTLEFS
 #include "../littlefs/our_lfs.h"
 #endif
 #include "lwip/sockets.h"
@@ -78,7 +78,7 @@ static int http_rest_get_seriallog(http_request_t* request);
 static int http_rest_post_logconfig(http_request_t* request);
 static int http_rest_get_logconfig(http_request_t* request);
 
-#ifdef BK_LITTLEFS
+#ifdef ENABLE_LITTLEFS
 static int http_rest_get_lfs_delete(http_request_t* request);
 static int http_rest_get_lfs_file(http_request_t* request);
 static int http_rest_post_lfs_file(http_request_t* request);
@@ -146,7 +146,7 @@ static int http_rest_get(http_request_t* request) {
 		return http_rest_get_seriallog(request);
 	}
 
-#ifdef BK_LITTLEFS
+#ifdef ENABLE_LITTLEFS
 	if (!strcmp(request->url, "api/fsblock")) {
 		uint32_t newsize = CFG_GetLFS_Size();
 		uint32_t newstart = (LFS_BLOCKS_END - newsize);
@@ -167,7 +167,7 @@ static int http_rest_get(http_request_t* request) {
 	}
 #endif
 
-#ifdef BK_LITTLEFS
+#ifdef ENABLE_LITTLEFS
 	if (!strncmp(request->url, "api/lfs/", 8)) {
 		return http_rest_get_lfs_file(request);
 	}
@@ -245,7 +245,7 @@ static int http_rest_post(http_request_t* request) {
 	}
 
 
-#ifdef BK_LITTLEFS
+#ifdef ENABLE_LITTLEFS
 	if (!strcmp(request->url, "api/fsblock")) {
 		if (lfs_present()) {
 			release_lfs();
@@ -319,7 +319,7 @@ static int http_rest_app(http_request_t* request) {
 	return 0;
 }
 
-#ifdef BK_LITTLEFS
+#ifdef ENABLE_LITTLEFS
 
 int EndsWith(const char* str, const char* suffix)
 {

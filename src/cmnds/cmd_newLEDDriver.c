@@ -14,7 +14,7 @@
 #include "../cJSON/cJSON.h"
 #include <string.h>
 #include <math.h>
-#ifdef BK_LITTLEFS
+#ifdef ENABLE_LITTLEFS
 	#include "../littlefs/our_lfs.h"
 #endif
 

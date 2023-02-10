@@ -11,7 +11,7 @@
 #include "../obk_config.h"
 #include "lfs.h"
 
-#ifdef BK_LITTLEFS
+#if ENABLE_LITTLEFS
 
 // start 0x1000 after OTA addr
 #define LFS_BLOCKS_START 0x133000
@@ -34,7 +34,7 @@ extern lfs_file_t file;
 extern uint32_t LFS_Start;
 
 void LFSAddCmds();
-void init_lfs();
+void init_lfs(int create);
 void release_lfs();
 int lfs_present();
 #endif

@@ -7,9 +7,11 @@
 #include "../cJSON/cJSON.h"
 #include <ctype.h>
 #include "cmd_local.h"
-#ifdef BK_LITTLEFS
+#ifdef ENABLE_LITTLEFS
 	#include "../littlefs/our_lfs.h"
 #endif
+
+#if ENABLE_TEST_COMMANDS
 
 // Usage: addRepeatingEvent 1 -1 testMallocFree 100
 static commandResult_t testMallocFree(const void * context, const char *cmd, const char *args, int cmdFlags){
@@ -185,6 +187,98 @@ static commandResult_t testJSON(const void * context, const char *cmd, const cha
 
     return CMD_RES_OK;
 }
+
+
+// Usage for continous test: addRepeatingEvent 1 -1 lfs_test1 ir.bat
+static commandResult_t cmnd_lfs_test1(const void * context, const char *cmd, const char *args, int cmdFlags) {
+#ifdef ENABLE_LITTLEFS
+	if (lfs_present()) {
+		lfs_file_t file;
+		int lfsres;
+		char a;
+		int cnt;
+
+		cnt = 0;
+
+		memset(&file, 0, sizeof(lfs_file_t));
+		lfsres = lfs_file_open(&lfs, &file, args, LFS_O_RDONLY);
+
+		ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: sizeof(lfs_file_t) %i", sizeof(lfs_file_t));
+		if (lfsres >= 0) {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: openned file %s", args);
+			do {
+				lfsres = lfs_file_read(&lfs, &file, &a, 1);
+				cnt++;
+			} while (lfsres > 0);
+			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: Stopped at char %i\n", cnt);
+
+			lfs_file_close(&lfs, &file);
+			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: closed file %s", args);
+		}
+		else {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: failed to file %s", args);
+		}
+	}
+	else {
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "cmnd_lfs_test1: lfs is absent");
+	}
+#endif
+	return CMD_RES_OK;
+}
+// Usage for continous test: addRepeatingEvent 1 -1 lfs_test2 ir.bat
+static commandResult_t cmnd_lfs_test2(const void * context, const char *cmd, const char *args, int cmdFlags) {
+#ifdef ENABLE_LITTLEFS
+	if (lfs_present()) {
+		lfs_file_t *file;
+		int lfsres;
+		char a;
+		int cnt;
+
+		cnt = 0;
+
+		file = malloc(sizeof(lfs_file_t));
+		if (file == 0) {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: failed to malloc for %s", args);
+		}
+		else {
+			memset(file, 0, sizeof(lfs_file_t));
+			lfsres = lfs_file_open(&lfs, file, args, LFS_O_RDONLY);
+
+			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: sizeof(lfs_file_t) %i", sizeof(lfs_file_t));
+			if (lfsres >= 0) {
+				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: openned file %s", args);
+				do {
+					lfsres = lfs_file_read(&lfs, file, &a, 1);
+					cnt++;
+				} while (lfsres > 0);
+				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: Stopped at char %i\n", cnt);
+
+				lfs_file_close(&lfs, file);
+				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: closed file %s", args);
+			}
+			else {
+				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: failed to file %s", args);
+			}
+			free(file);
+		}
+	}
+	else {
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "cmnd_lfs_test2: lfs is absent");
+	}
+#endif
+	return CMD_RES_OK;
+}
+// Usage for continous test: addRepeatingEvent 1 -1 lfs_test3 ir.bat
+static commandResult_t cmnd_lfs_test3(const void * context, const char *cmd, const char *args, int cmdFlags) {
+	byte *res;
+
+	res = LFS_ReadFile(args);
+
+	if (res) {
+		free(res);
+	}
+	return CMD_RES_OK;
+}
 int CMD_InitTestCommands(){
 	//cmddetail:{"name":"testMallocFree","args":"",
 	//cmddetail:"descr":"Test malloc and free functionality to see if the device crashes",
@@ -211,7 +305,6 @@ int CMD_InitTestCommands(){
 	//cmddetail:"fn":"testFloats","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("testFloats", NULL, testFloats, NULL, NULL);
-
 	//cmddetail:{"name":"testArgs","args":"",
 	//cmddetail:"descr":"Test tokenizer for args and print back all the given args to console",
 	//cmddetail:"fn":"testArgs","file":"cmnds/cmd_test.c","requires":"",
@@ -222,6 +315,22 @@ int CMD_InitTestCommands(){
 	//cmddetail:"fn":"testStrdup","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("testStrdup", NULL, testStrdup, NULL, NULL);
+	//cmddetail:{"name":"lfs_test1","args":"[FileName]",
+	//cmddetail:"descr":"Tests the LFS file reading feature.",
+	//cmddetail:"fn":"cmnd_lfs_test1","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("lfs_test1", NULL, cmnd_lfs_test1, NULL, NULL);
+	//cmddetail:{"name":"lfs_test2","args":"[FileName]",
+	//cmddetail:"descr":"Tests the LFS file reading feature.",
+	//cmddetail:"fn":"cmnd_lfs_test2","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("lfs_test2", NULL, cmnd_lfs_test2, NULL, NULL);
+	//cmddetail:{"name":"lfs_test3","args":"[FileName]",
+	//cmddetail:"descr":"Tests the LFS file reading feature.",
+	//cmddetail:"fn":"cmnd_lfs_test3","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("lfs_test3", NULL, cmnd_lfs_test3, NULL, NULL);
     return 0;
 }
 
+#endif // ENABLE_TEST_COMMANDS

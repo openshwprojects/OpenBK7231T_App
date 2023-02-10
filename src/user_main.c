@@ -16,7 +16,7 @@
 // Commands register, execution API and cmd tokenizer
 #include "cmnds/cmd_public.h"
 
-// overall config variables for app - like BK_LITTLEFS
+// overall config variables for app - like ENABLE_LITTLEFS
 #include "obk_config.h"
 
 #include "httpserver/new_http.h"
@@ -30,7 +30,7 @@
 #include "mqtt/new_mqtt.h"
 #include "ota/ota.h"
 
-#ifdef BK_LITTLEFS
+#ifdef ENABLE_LITTLEFS
 #include "littlefs/our_lfs.h"
 #endif
 
@@ -832,7 +832,7 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	PIN_AddCommands();
 	ADDLOGF_DEBUG("Initialised pins\r\n");
 
-#ifdef BK_LITTLEFS
+#ifdef ENABLE_LITTLEFS
 	// initialise the filesystem, only if present.
 	// don't create if it does not mount
 	// do this for ST mode only, as it may be something in FS which is killing us,
@@ -840,7 +840,7 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	init_lfs(0);
 #endif
 
-#ifdef BK_LITTLEFS
+#ifdef ENABLE_LITTLEFS
 	LFSAddCmds(); // setlfssize
 #endif
 
@@ -852,7 +852,9 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 
 	// add some commands...
 	taslike_commands_init();
+#if ENABLE_TEST_COMMANDS
 	CMD_InitTestCommands();
+#endif
 	NewLED_InitCommands();
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	CMD_InitSendCommands();

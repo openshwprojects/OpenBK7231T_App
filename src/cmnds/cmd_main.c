@@ -9,7 +9,7 @@
 #include "../driver/drv_public.h"
 #include "../hal/hal_adc.h"
 
-#ifdef BK_LITTLEFS
+#ifdef ENABLE_LITTLEFS
 #include "../littlefs/our_lfs.h"
 #endif
 

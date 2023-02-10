@@ -16,12 +16,12 @@
 
 
 #if PLATFORM_XR809
-	///#define DEBUG_USE_SIMPLE_LOGGER
+
 #define OBK_DISABLE_ALL_DRIVERS       1
 
 #elif PLATFORM_W600
 
-//Some limited drivers are supported on W600, OBK_DISABLE_ALL_DRIVERS is not defined
+// Some limited drivers are supported on W600, OBK_DISABLE_ALL_DRIVERS is not defined
 #define ENABLE_BASIC_DRIVERS    1
 #define ENABLE_DRIVER_BL0937    1
 
@@ -31,15 +31,14 @@
 
 #elif WINDOWS
 
-// comment out to remove littlefs
-#define BK_LITTLEFS
-
+#define ENABLE_LITTLEFS			1
 #define ENABLE_BASIC_DRIVERS    1
 #define ENABLE_DRIVER_LED       1
 #define ENABLE_DRIVER_BL0937    1
 #define ENABLE_DRIVER_BL0942    1
 #define ENABLE_DRIVER_CSE7766   1
 #define ENABLE_DRIVER_TUYAMCU   1
+#define ENABLE_TEST_COMMANDS	1
 
 
 #elif PLATFORM_BL602
@@ -52,15 +51,9 @@
 #define ENABLE_DRIVER_CSE7766   1
 #define ENABLE_DRIVER_TUYAMCU   1
 
-#else
+#elif PLATFORM_BEKEN
 
-	// comment out to remove component
-#undef OBK_DISABLE_ALL_DRIVERS
-// comment out to remove littlefs
-#define BK_LITTLEFS
-
-// add further app wide defined here, and used them to control build inclusion.
-
+#define ENABLE_LITTLEFS			1
 #define ENABLE_BASIC_DRIVERS    1
 #define ENABLE_DRIVER_LED       1
 #define ENABLE_DRIVER_BL0937    1
@@ -68,8 +61,15 @@
 #define ENABLE_DRIVER_CSE7766   1
 #define ENABLE_DRIVER_TUYAMCU   1
 #define ENABLE_I2C			    1
+#define ENABLE_TEST_COMMANDS	1
 
+#else
+
+#error "Platform not defined"
 
 #endif
 
+
+
+// closing OBK_CONFIG_H
 #endif

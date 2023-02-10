@@ -21,7 +21,7 @@
 //https://github.com/littlefs-project/littlefs
 
 
-#ifdef BK_LITTLEFS
+#ifdef ENABLE_LITTLEFS
 // define the feature ADDLOGF_XXX will use
 #define LOG_FEATURE LOG_FEATURE_LFS
 
@@ -269,9 +269,10 @@ static commandResult_t CMD_LFS_Remove(const void *context, const char *cmd, cons
 	int res;
 
 	Tokenizer_TokenizeString(args, 0);
-
-	if (Tokenizer_GetArgsCount() < 1) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "Not enough arguments.");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
