@@ -123,7 +123,6 @@ int BL0942_TryToGetNextBL0942Packet() {
 		BL_ProcessUpdate(valid_voltage, valid_current, valid_power);
 	}
 
-
 #if 0
 	{
 		char res[128];
