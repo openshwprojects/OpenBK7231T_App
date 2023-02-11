@@ -102,6 +102,7 @@ int BL0942_TryToGetNextBL0942Packet() {
 		power = (raw_unscaled_power / BL0942_PREF);
 		voltage = (raw_unscaled_voltage / BL0942_UREF);
 		current = (raw_unscaled_current / BL0942_IREF);
+        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Real current %1.1lf, voltage %1.1lf, power %1.1lf\n", current, voltage, power);
 
 		BL_ProcessUpdate(voltage,current,power);
 	}
