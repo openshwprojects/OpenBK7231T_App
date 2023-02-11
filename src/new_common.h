@@ -273,6 +273,9 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 #include <task.h>
 #include <portable.h>
 #include <semphr.h>
+#include "lwip/sys.h"
+
+#define portTICK_RATE_MS                      ( ( portTickType ) 1000 / configTICK_RATE_HZ )
 
 #define bk_printf printf
 #define os_strcpy strcpy
@@ -281,8 +284,6 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 #define os_memset memset
 
 #define portTICK_PERIOD_MS	portTICK_RATE_MS
-
-#define portTICK_PERIOD_MS portTICK_RATE_MS
 
 #define rtos_delay_milliseconds sys_msleep
 #define delay_ms sys_msleep
