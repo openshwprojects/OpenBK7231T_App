@@ -322,7 +322,7 @@ void CMD_UART_Run() {
 		}
 	}
 	if (totalSize < 2) {
-		return 0;
+		return;
 	}
 	// skip garbage data (should not happen)
 	for (i = 0; i < totalSize; i++) {

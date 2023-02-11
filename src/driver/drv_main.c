@@ -117,6 +117,7 @@ static driver_t g_drivers[] = {
 	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, NULL, NULL, false },
 	{ "SHT3X",	SHT3X_Init,		NULL,		SHT3X_AppendInformationToHTTPIndexPage, NULL, SHT3X_StopDriver, NULL, false },
 #endif
+    { "BridgeDRV",  Bridge_driver_Init, NULL,                       NULL, Bridge_driver_QuickFrame, Bridge_driver_DeInit, Bridge_driver_OnChannelChanged, false }
 };
 
 static const int g_numDrivers = sizeof(g_drivers) / sizeof(g_drivers[0]);

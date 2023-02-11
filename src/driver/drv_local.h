@@ -91,9 +91,11 @@ commandResult_t CMD_LEDDriver_Map(const void *context, const char *cmd, const ch
 commandResult_t CMD_LEDDriver_WriteRGBCW(const void *context, const char *cmd, const char *args, int flags);
 void LED_I2CDriver_WriteRGBCW(float* finalRGBCW);
 
-
-
-
-
-
+/* Bridge driver *********************************************/
+void Bridge_driver_Init();
+void Bridge_driver_DeInit();
+void Bridge_driver_QuickFrame();
+void Bridge_driver_OnChannelChanged(int ch, int value);
+OBK_Publish_Result Bridge_driver_ChannelPublish(int channel);
+/*************************************************************/
 

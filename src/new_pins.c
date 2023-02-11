@@ -466,6 +466,10 @@ void CHANNEL_SetAll(int iVal, int iFlags) {
 		case IOR_PWM_n:
 			CHANNEL_Set(g_cfg.pins.channels[i],iVal,iFlags);
 			break;
+        case IOR_BridgeForward:
+        case IOR_BridgeReverse:
+            CHANNEL_Set(g_cfg.pins.channels[i],iVal,iFlags);
+            break;
 
 		default:
 			break;
@@ -586,6 +590,9 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_ADC:
 			// TODO: disable?
 			break;
+        case IOR_BridgeForward:
+        case IOR_BridgeReverse:
+            break;
 
 		default:
 			break;
@@ -699,6 +706,20 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 				}
 			}
 			break;
+        case IOR_BridgeForward:
+        case IOR_BridgeReverse:
+            {
+                int channelIndex;
+                int channelValue;
+
+                channelIndex = PIN_GetPinChannelForPinIndex(index);
+                channelValue = g_channelValues[channelIndex];
+
+                HAL_PIN_Setup_Output(index);
+                HAL_PIN_SetOutputValue(index,0);
+            }
+            break;
+
 		case IOR_AlwaysHigh:
 			{
 				HAL_PIN_Setup_Output(index);
@@ -1138,8 +1159,10 @@ int CHANNEL_GetRoleForOutputChannel(int ch){
 				case IOR_PWM_n:
 				case IOR_PWM:
 					return g_cfg.pins.roles[i];
-					break;
-				case IOR_Button:
+                case IOR_BridgeForward:
+                case IOR_BridgeReverse:
+                    return g_cfg.pins.roles[i];
+                case IOR_Button:
 				case IOR_Button_n:
 				case IOR_LED_WIFI:
 				case IOR_LED_WIFI_n:
@@ -1687,6 +1710,10 @@ int h_isChannelRelay(int tg_ch) {
         role = PIN_GetPinRoleForPinIndex(i);
         if(role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
 			return true;
+        }
+        if((role == IOR_BridgeForward) || (role == IOR_BridgeReverse))
+        {
+            return true;
         }
     }
 	return false;
