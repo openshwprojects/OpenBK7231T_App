@@ -521,6 +521,7 @@
     </ClCompile>
     <ClCompile Include="src\selftest\selftest_buttonEvents.c" />
     <ClCompile Include="src\selftest\selftest_changeHandlers.c" />
+    <ClCompile Include="src\selftest\selftest_changeHandlers_mqtt.c" />
     <ClCompile Include="src\selftest\selftest_cmd_alias.c" />
     <ClCompile Include="src\selftest\selftest_cmd_channels.c" />
     <ClCompile Include="src\selftest\selftest_cmd_generic.c" />
