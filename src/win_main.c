@@ -140,6 +140,7 @@ void Win_DoUnitTests() {
 	Test_MQTT();
 	Test_HTTP_Client();
 	Test_ExpandConstant();
+	Test_ChangeHandlers_MQTT();
 	Test_ChangeHandlers();
 	Test_RepeatingEvents();
 	Test_ButtonEvents();
