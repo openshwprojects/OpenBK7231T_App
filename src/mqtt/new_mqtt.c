@@ -485,38 +485,52 @@ int MQTT_RemoveCallback(int ID) {
 	return 0;
 }
 
+const char *skipExpected(const char *p, const char *tok) {
+	while (1) {
+		if (*p == 0)
+			return 0;
+		if (*p != *tok)
+			return 0;
+		p++;
+		tok++;
+		if (*tok == 0) {
+			if (*p == '/') {
+				p++;
+				return p;
+			}
+			return 0;
+		}
+	}
+	return p;
+}
 /** From a MQTT topic formatted <client>/<topic>, check if <client> is present
  *  and return <topic>.
  *
  *  @param topic	The topic to parse
  *  @return 		The topic without the client, or NULL if <client>/ wasn't present
  */
-char* MQTT_RemoveClientFromTopic(char* topic) {
-	// Get the current client ID.
-	const char* clientId;
-	clientId = CFG_GetMQTTClientId();
-
-	// TODO: cache the client ID length somewhere so we don't have to keep calculating it.
-	int clientLen = strlen(clientId);
-
-	// check if we have the client in the topic.
-	char* hasClient = strstr(topic, clientId);
-
-	topic = topic + clientLen;
-	// check if we have a '/' after the topic.
-	if (*topic != '/') {
-		hasClient = NULL;
+const char* MQTT_RemoveClientFromTopic(const char* topic, const char *prefix) {
+	const char *p2;
+	const char *p = topic;
+	if (prefix) {
+		p = skipExpected(p, prefix);
+		if (p == 0) {
+			return 0;
+		}
 	}
-
-	// If we have the client/, return the pointer, otherwise, return NULL.
-	return hasClient ? topic + 1 : NULL;
+	// it is either group topic or a device topic
+	p2 = skipExpected(p, CFG_GetMQTTClientId());
+	if (p2 == 0) {
+		p2 = skipExpected(p, CFG_GetMQTTGroupTopic());
+	}
+	return p2;
 }
 
 // this accepts obkXXXXXX/<chan>/get to request channel publish
 int channelGet(obk_mqtt_request_t* request) {
 	//int len = request->receivedLen;
 	int channel = 0;
-	char* p;
+	const char* p;
 
 	// we only support here publishes with emtpy value, otherwise we would get into
 	// a loop where we receive a get, and then send get reply with val, and receive our own get
@@ -526,7 +540,7 @@ int channelGet(obk_mqtt_request_t* request) {
 
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "channelGet topic %i with arg %s", request->topic, request->received);
 
-	p = MQTT_RemoveClientFromTopic(request->topic);
+	p = MQTT_RemoveClientFromTopic(request->topic,0);
 
 	if (p == NULL) {
 		return 0;
@@ -581,7 +595,7 @@ int channelSet(obk_mqtt_request_t* request) {
 
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "channelSet topic %i with arg %s", request->topic, request->received);
 
-	p = MQTT_RemoveClientFromTopic(request->topic);
+	p = MQTT_RemoveClientFromTopic(request->topic,0);
 
 	if (p == NULL) {
 		return 0;
@@ -693,15 +707,21 @@ void MQTT_ProcessCommandReplyJSON(const char *cmd, const char *args, int flags) 
 	}
 }
 int tasCmnd(obk_mqtt_request_t* request) {
-	const char *p, *args;
+	const char *p, *args, *p2;
 
-	p = request->topic;
-	// TODO: better
-	// skip to after second forward slash
-	while (*p != '/') { if (*p == 0) return 0; p++; }
-	p++;
-	while (*p != '/') { if (*p == 0) return 0; p++; }
-	p++;
+
+	p = MQTT_RemoveClientFromTopic(request->topic, "cmnd");
+	if (p == 0) {
+		p = MQTT_RemoveClientFromTopic(request->topic, "tele");
+		if (p == 0) {
+			p = MQTT_RemoveClientFromTopic(request->topic, "stat");
+			if (p == 0) {
+
+			}
+		}
+	}
+	if (p == 0)
+		return 1;
 
 #if 1
 	args = (const char *)request->received;
@@ -1591,12 +1611,23 @@ void MQTT_InitCallbacks() {
 	// note: this may REPLACE an existing entry with the same ID.  ID 1 !!!
 	MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 1, channelSet);
 
+	// so-called "Group topic", a secondary topic that can be set on multiple devices 
+	// to control them together
+	// register the TAS cmnd callback
+	if (*groupId) {
+		// register the main set channel callback
+		snprintf(cbtopicbase, sizeof(cbtopicbase), "%s/", groupId);
+		snprintf(cbtopicsub, sizeof(cbtopicsub), "%s/+/set", groupId);
+		// note: this may REPLACE an existing entry with the same ID.  ID 2 !!!
+		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 2, channelSet);
+	}
+
 	// base topic
 	// register the TAS cmnd callback
 	snprintf(cbtopicbase, sizeof(cbtopicbase), "cmnd/%s/", clientId);
 	snprintf(cbtopicsub, sizeof(cbtopicsub), "cmnd/%s/+", clientId);
-	// note: this may REPLACE an existing entry with the same ID.  ID 2 !!!
-	MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 2, tasCmnd);
+	// note: this may REPLACE an existing entry with the same ID.  ID 3 !!!
+	MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 3, tasCmnd);
 
 	// so-called "Group topic", a secondary topic that can be set on multiple devices 
 	// to control them together
@@ -1604,28 +1635,28 @@ void MQTT_InitCallbacks() {
 	if (*groupId) {
 		snprintf(cbtopicbase, sizeof(cbtopicbase), "cmnd/%s/", groupId);
 		snprintf(cbtopicsub, sizeof(cbtopicsub), "cmnd/%s/+", groupId);
-		// note: this may REPLACE an existing entry with the same ID.  ID 3 !!!
-		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 3, tasCmnd);
+		// note: this may REPLACE an existing entry with the same ID.  ID 4 !!!
+		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 4, tasCmnd);
 	}
 
 	// register the getter callback (send empty message here to get reply)
 	snprintf(cbtopicbase, sizeof(cbtopicbase), "%s/", clientId);
 	snprintf(cbtopicsub, sizeof(cbtopicsub), "%s/+/get", clientId);
-	// note: this may REPLACE an existing entry with the same ID.  ID 4 !!!
-	MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 4, channelGet);
+	// note: this may REPLACE an existing entry with the same ID.  ID 5 !!!
+	MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 5, channelGet);
 
 	if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES)) {
 		// test hack iobroker
 		snprintf(cbtopicbase, sizeof(cbtopicbase), "tele/%s/", clientId);
 		snprintf(cbtopicsub, sizeof(cbtopicsub), "tele/%s/+", clientId);
-		// note: this may REPLACE an existing entry with the same ID.  ID 5 !!!
-		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 5, tasCmnd);
+		// note: this may REPLACE an existing entry with the same ID.  ID 6 !!!
+		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 6, tasCmnd);
 
 		// test hack iobroker
 		snprintf(cbtopicbase, sizeof(cbtopicbase), "stat/%s/", clientId);
 		snprintf(cbtopicsub, sizeof(cbtopicsub), "stat/%s/+", clientId);
-		// note: this may REPLACE an existing entry with the same ID.  ID 6 !!!
-		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 6, tasCmnd);
+		// note: this may REPLACE an existing entry with the same ID.  ID 7 !!!
+		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 7, tasCmnd);
 	}
 }
  // initialise things MQTT

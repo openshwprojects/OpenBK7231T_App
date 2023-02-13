@@ -7,7 +7,7 @@ void Test_HassDiscovery_Relay_1x() {
 	const char *fullName = "Windows Relay Test 1x";
 
 	SIM_ClearOBK(shortName);
-	SIM_ClearAndPrepareForMQTTTesting("testDeviceOneRelay");
+	SIM_ClearAndPrepareForMQTTTesting("testDeviceOneRelay", "bekens");
 
 	CFG_SetShortDeviceName(shortName);
 	CFG_SetDeviceName(fullName);
@@ -42,7 +42,7 @@ void Test_HassDiscovery_LED_CW() {
 	const char *fullName = "Windows Fake CoolWarm";
 	const char *mqttName = "testCoolWarm";
 	SIM_ClearOBK(shortName);
-	SIM_ClearAndPrepareForMQTTTesting(mqttName);
+	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
 
 	CFG_SetShortDeviceName(shortName);
 	CFG_SetDeviceName(fullName);
