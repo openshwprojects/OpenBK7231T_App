@@ -41,6 +41,7 @@ static int g_pwmChannelPins[] = { WM_IO_PB_00, WM_IO_PB_01, WM_IO_PB_02, WM_IO_P
 
 //W600 pinouts is based on W600-User Manual which lists pins for TW-02 and TW-03 modules.
 static wmPin_t g_pins[] = {
+    {"PA0",WM_IO_PA_00, -1},
 	{"PA1",WM_IO_PA_01, -1},
 	{"PA4",WM_IO_PA_04, -1},
 	{"PA5",WM_IO_PA_05, -1},
