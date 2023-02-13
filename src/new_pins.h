@@ -143,9 +143,9 @@ typedef enum {
 #elif PLATFORM_XR809
 #define PLATFORM_GPIO_MAX 13
 #elif PLATFORM_W600
-#define PLATFORM_GPIO_MAX 16
-#elif PLATFORM_W800
 #define PLATFORM_GPIO_MAX 17
+#elif PLATFORM_W800
+#define PLATFORM_GPIO_MAX 44
 #else
 #define PLATFORM_GPIO_MAX 29
 #endif
@@ -160,12 +160,12 @@ typedef enum {
 typedef struct pinsState_s {
 	// All above values are indexed by physical pin index
 	// (so we assume we have maximum of 32 pins)
-	byte roles[32];
-	byte channels[32];
+	byte roles[CHANNEL_MAX];
+	byte channels[CHANNEL_MAX];
 	// extra channels array - this is needed for
 	// buttons, so button can toggle one relay on single click
 	// and other relay on double click
-	byte channels2[32];
+	byte channels2[CHANNEL_MAX];
 	// This single field above, is indexed by CHANNEL INDEX
 	// (not by pin index)
 	byte channelTypes[CHANNEL_MAX];
