@@ -69,7 +69,7 @@ const char *CMD_FindOperator(const char *s, const char *stop, byte *oCode) {
 	if (*s == 0)
 		return 0;
 	// special case for number like -12 at the start of the string
-	if (s[0] == '-' && isdigit(s[1])) {
+	if ((s[0] == '-') && (isdigit((int)s[1]))) {
 		s++;// "-" is a part of the digit, not an operator
 	}
 	if (*s == 0)
@@ -122,7 +122,7 @@ const char *strCompareBound(const char *s, const char *templ, const char *stoppe
 		}
 		// are the chars the same?
 		if(bAllowWildCard && *templ == '*') {
-			if (isdigit(*s)) {
+			if (isdigit((int)(*s))) {
 
 			}
 			else {

@@ -9,6 +9,7 @@
 #include "drv_local.h"
 #include "drv_uart.h"
 #include "../httpserver/new_http.h"
+#include <math.h>
 
 static float BL0942_PREF = 598;
 static float BL0942_UREF = 15188;
@@ -19,7 +20,9 @@ static int raw_unscaled_current;
 static int raw_unscaled_power;
 static int raw_unscaled_freq;
 
-
+static float valid_voltage = 0.0f;
+static float valid_current = 0.0f;
+static float valid_power = 0.0f;
 
 #define BL0942_BAUD_RATE 4800
 
@@ -95,6 +98,8 @@ int BL0942_TryToGetNextBL0942Packet() {
 
 	// those are not values like 230V, but unscaled
 	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Unscaled current %d, voltage %d, power %d, freq %d\n", raw_unscaled_current, raw_unscaled_voltage,raw_unscaled_power,raw_unscaled_freq);
+    addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"HEX Current: %08lX; Voltage: %08lX; Power: %08lX;\n", (unsigned long)raw_unscaled_current, 
+              (unsigned long)raw_unscaled_voltage, (unsigned long)raw_unscaled_power);
 
 	// those are final values, like 230V
 	{
@@ -102,8 +107,20 @@ int BL0942_TryToGetNextBL0942Packet() {
 		power = (raw_unscaled_power / BL0942_PREF);
 		voltage = (raw_unscaled_voltage / BL0942_UREF);
 		current = (raw_unscaled_current / BL0942_IREF);
+        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Real current %1.3lf, voltage %1.1lf, power %1.1lf\n", current, voltage, power);
 
-		BL_ProcessUpdate(voltage,current,power);
+        /* Logical check of values */
+        if (abs(power) <= (voltage * current * 1.1f))
+        {
+            valid_voltage = voltage;
+            valid_current = current;
+            valid_power = power;
+            addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Valid current %1.3lf, voltage %1.1lf, power %1.1lf\n", valid_current, valid_voltage, valid_power);
+        } else {
+            addLogAdv(LOG_WARN, LOG_FEATURE_ENERGYMETER,"Invalid Power value: %1.3lf Expected: %1.3lf\n", abs(power), (voltage * current));
+        }
+
+		BL_ProcessUpdate(valid_voltage, valid_current, valid_power);
 	}
 
 

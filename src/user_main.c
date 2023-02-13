@@ -904,7 +904,13 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 			DRV_StartDriver("BL0937");
 #endif
 		}
-	}
+        if((PIN_FindPinIndexForRole(IOR_BridgeForward, -1) != -1) && (PIN_FindPinIndexForRole(IOR_BridgeReverse, -1) != -1))
+        {
+#ifndef OBK_DISABLE_ALL_DRIVERS
+            DRV_StartDriver("BridgeDRV");
+#endif
+        }
+    }
 
 	g_enable_pins = 1;
 	// this actually sets the pins, moved out so we could avoid if necessary

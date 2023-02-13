@@ -75,12 +75,13 @@ char* logfeaturenames[] = {
 	"HASS:", // = 19
 	"IR:", // = 20
 	"SENSOR:", // = 21
-	"ERROR",// = 22,
+    "DRV:" // = 22
 	"ERROR",// = 23,
 	"ERROR",// = 24,
 	"ERROR",// = 25,
 	"ERROR",// = 26,
 	"ERROR",// = 27,
+    "ERROR",// = 28,
 };
 
 #define LOGGING_BUFFER_SIZE		1024
@@ -98,7 +99,6 @@ void LOG_SetRawSocketCallback(int newFD)
 {
 	g_extraSocketToSendLOG = newFD;
 }
-
 
 static int http_getlog(http_request_t* request);
 static int http_getlograw(http_request_t* request);
@@ -357,14 +357,18 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 #ifdef PLATFORM_BEKEN
 	trigger_log_send();
 #endif	
-	if (log_delay) {
+	if (log_delay != 0) 
+    {
 		int timems = log_delay;
 		// is log_delay set -ve, then calculate delay
 		// required for the number of characters to TX
 		// plus 2ms to be sure.
-		if (log_delay < 0) {
+		if (log_delay < 0) 
+        {
 			int cps = (115200 / 8);
-			timems = ((1000 * len) / cps) + 2;
+			timems = (((1000 / portTICK_RATE_MS) * len) / cps) + 2;
+            if (timems < 2)
+                timems = 2;
 		}
 		rtos_delay_milliseconds(timems);
 	}
