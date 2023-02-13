@@ -4,7 +4,7 @@
 
 void Test_EnergyMeter_Basic() {
 	SIM_ClearOBK();
-	SIM_ClearAndPrepareForMQTTTesting("miscDevice");
+	SIM_ClearAndPrepareForMQTTTesting("miscDevice", "bekens");
 
 	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(9, 1);
@@ -43,7 +43,7 @@ void Test_EnergyMeter_Basic() {
 }
 void Test_EnergyMeter_Tasmota() {
 	SIM_ClearOBK();
-	SIM_ClearAndPrepareForMQTTTesting("miscDevice");
+	SIM_ClearAndPrepareForMQTTTesting("miscDevice", "bekens");
 
 	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(9, 1);

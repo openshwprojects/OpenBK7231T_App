@@ -4,7 +4,7 @@
 
 void Test_Tasmota_MQTT_Switch() {
 	SIM_ClearOBK();
-	SIM_ClearAndPrepareForMQTTTesting("miscDevice");
+	SIM_ClearAndPrepareForMQTTTesting("miscDevice", "bekens");
 
 	const char *my_full_device_name = "TestingDevMQTTSwitch";
 	CFG_SetDeviceName(my_full_device_name);
@@ -260,7 +260,7 @@ void Test_Tasmota_MQTT_Switch() {
 }
 void Test_Tasmota_MQTT_Switch_Double() {
 	SIM_ClearOBK();
-	SIM_ClearAndPrepareForMQTTTesting("twoRelaysDevice");
+	SIM_ClearAndPrepareForMQTTTesting("twoRelaysDevice", "bekens");
 
 	const char *my_full_device_name = "TestingDevMQTTSwitch";
 	CFG_SetDeviceName(my_full_device_name);
@@ -403,7 +403,7 @@ void Test_Tasmota_MQTT_Switch_Double() {
 }
 void Test_Tasmota_MQTT_RGBCW() {
 	SIM_ClearOBK();
-	SIM_ClearAndPrepareForMQTTTesting("rgbcwBulb");
+	SIM_ClearAndPrepareForMQTTTesting("rgbcwBulb", "bekens");
 
 	CMD_ExecuteCommand("led_dimmer 50", 0);
 

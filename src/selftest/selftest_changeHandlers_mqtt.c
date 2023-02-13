@@ -5,7 +5,7 @@
 void Test_ChangeHandlers_MQTT() {
 	// reset whole device
 	SIM_ClearOBK();
-	SIM_ClearAndPrepareForMQTTTesting("handlerTester");
+	SIM_ClearAndPrepareForMQTTTesting("handlerTester","bekens");
 
 	// change handlers and MQTT
 	// this will only happens when Channel12 value changes from not equal to 0 to the one equal to 0

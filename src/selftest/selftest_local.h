@@ -109,7 +109,9 @@ const char *Test_GetJSONValue_String_Nested2(const char *par1, const char *par2,
 
 void SIM_SendFakeMQTT(const char *text, const char *arguments);
 void SIM_SendFakeMQTTAndRunSimFrame_CMND(const char *command, const char *arguments);
+void SIM_SendFakeMQTTAndRunSimFrame_CMND_ViaGroupTopic(const char *command, const char *arguments);
 void SIM_SendFakeMQTTRawChannelSet(int channelIndex, const char *arguments);
+void SIM_SendFakeMQTTRawChannelSet_ViaGroupTopic(int channelIndex, const char *arguments);
 void SIM_ClearMQTTHistory();
 bool SIM_CheckMQTTHistoryForString(const char *topic, const char *value, bool bRetain);
 bool SIM_CheckMQTTHistoryForFloat(const char *topic, float value, bool bRetain);

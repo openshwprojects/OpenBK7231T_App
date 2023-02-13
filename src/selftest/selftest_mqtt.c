@@ -3,11 +3,12 @@
 #include "selftest_local.h"
 #include "../hal/hal_wifi.h"
 
-void SIM_ClearAndPrepareForMQTTTesting(const char *clientName) {
+void SIM_ClearAndPrepareForMQTTTesting(const char *clientName, const char *groupName) {
 	SIM_ClearOBK();
 	SIM_ClearMQTTHistory();
 	Main_OnWiFiStatusChange(WIFI_STA_CONNECTED);
 	CFG_SetMQTTClientId(clientName);
+	CFG_SetMQTTGroupTopic(groupName);
 	MQTT_init();
 
 	for (int i = 0; i < 20; i++) {
@@ -16,7 +17,7 @@ void SIM_ClearAndPrepareForMQTTTesting(const char *clientName) {
 }
 void Test_MQTT_Get_And_Reply() {
 	SIM_ClearOBK();
-	SIM_ClearAndPrepareForMQTTTesting("myTestDevice");
+	SIM_ClearAndPrepareForMQTTTesting("myTestDevice", "bekens");
 	char buffer[512];
 	char buffer2[512];
 
@@ -43,7 +44,7 @@ void Test_MQTT_Get_And_Reply() {
 }
 void Test_MQTT_Channels() {
 	SIM_ClearOBK();
-	SIM_ClearAndPrepareForMQTTTesting("myTestDevice");
+	SIM_ClearAndPrepareForMQTTTesting("myTestDevice", "bekens");
 
 	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(9, 1);
@@ -138,7 +139,7 @@ void Test_MQTT_Channels() {
 }
 void Test_MQTT_LED_CW() {
 	SIM_ClearOBK();
-	SIM_ClearAndPrepareForMQTTTesting("myTestDevice");
+	SIM_ClearAndPrepareForMQTTTesting("myTestDevice", "bekens");
 
 	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
 	PIN_SetPinChannelForPinIndex(24, 1);
@@ -203,7 +204,7 @@ void Test_MQTT_LED_CW() {
 }
 void Test_MQTT_LED_RGB() {
 	SIM_ClearOBK();
-	SIM_ClearAndPrepareForMQTTTesting("fakeRGBbulb");
+	SIM_ClearAndPrepareForMQTTTesting("fakeRGBbulb", "bekens");
 
 	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
 	PIN_SetPinChannelForPinIndex(24, 1);
@@ -258,7 +259,7 @@ void Test_MQTT_LED_RGB() {
 }
 void Test_MQTT_Misc() {
 	SIM_ClearOBK();
-	SIM_ClearAndPrepareForMQTTTesting("miscDevice");
+	SIM_ClearAndPrepareForMQTTTesting("miscDevice", "bekens");
 
 	CMD_ExecuteCommand("addEventHandler OnChannelChange 5 publish myMagicResult $CH5", 0);
 	// set channel 5 to 50 and see what we get
@@ -279,12 +280,137 @@ void Test_MQTT_Misc() {
 	//SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/thirdTest/get", (314*0.01f+100), false);
 	//SIM_ClearMQTTHistory();
 }
+void Test_MQTT_Topic_With_Slashes() {
+	SIM_ClearOBK();
+	SIM_ClearAndPrepareForMQTTTesting("obk/kitchen/mySwitch1", "bekens");
+
+	PIN_SetPinRoleForPinIndex(24, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(24, 1);
+
+	// This should trigger MQTT publish
+	CMD_ExecuteCommand("setChannel 1 1", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/kitchen/mySwitch1/1/get", "1", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	// This should trigger MQTT publish
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/kitchen/mySwitch1/1/get", "0", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("POWER", "1");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/kitchen/mySwitch1/1/get", "1", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("POWER", "0");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/kitchen/mySwitch1/1/get", "0", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("POWER", "TOGGLE");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/kitchen/mySwitch1/1/get", "1", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND_ViaGroupTopic("POWER", "TOGGLE");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/kitchen/mySwitch1/1/get", "0", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND_ViaGroupTopic("POWER", "TOGGLE");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/kitchen/mySwitch1/1/get", "1", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+
+	SIM_SendFakeMQTTRawChannelSet(1, "10");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/kitchen/mySwitch1/1/get", "10", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SIM_SendFakeMQTTRawChannelSet_ViaGroupTopic(1, "20");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/kitchen/mySwitch1/1/get", "20", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SIM_SendFakeMQTTRawChannelSet_ViaGroupTopic(1, "1");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/kitchen/mySwitch1/1/get", "1", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SIM_SendFakeMQTTRawChannelSet_ViaGroupTopic(1, "TOGGLE");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/kitchen/mySwitch1/1/get", "0", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+}
+
+void Test_MQTT_Topic_With_Slash() {
+	SIM_ClearOBK();
+	SIM_ClearAndPrepareForMQTTTesting("obk/08C65DE9", "bekens");
+
+	PIN_SetPinRoleForPinIndex(24, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(24, 1);
+
+	// This should trigger MQTT publish
+	CMD_ExecuteCommand("setChannel 1 1", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/08C65DE9/1/get", "1", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	// This should trigger MQTT publish
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/08C65DE9/1/get", "0", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("POWER", "1");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/08C65DE9/1/get", "1", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("POWER", "0");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/08C65DE9/1/get", "0", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("POWER", "TOGGLE");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/08C65DE9/1/get", "1", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND_ViaGroupTopic("POWER", "TOGGLE");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/08C65DE9/1/get", "0", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND_ViaGroupTopic("POWER", "TOGGLE");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/08C65DE9/1/get", "1", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+
+	SIM_SendFakeMQTTRawChannelSet(1, "10");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/08C65DE9/1/get", "10", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SIM_SendFakeMQTTRawChannelSet_ViaGroupTopic(1, "20");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/08C65DE9/1/get", "20", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+}
+
+
 void Test_MQTT(){
 	Test_MQTT_Get_And_Reply();
 	Test_MQTT_Misc();
 	Test_MQTT_Channels();
 	Test_MQTT_LED_CW();
 	Test_MQTT_LED_RGB();
+	Test_MQTT_Topic_With_Slash();
+	Test_MQTT_Topic_With_Slashes();
 }
 
 #endif

@@ -6,20 +6,34 @@ void SIM_SendFakeMQTT(const char *text, const char *arguments) {
 	MQTT_Post_Received_Str(text, arguments);
 	Sim_RunFrames(1, false);
 }
-void SIM_SendFakeMQTTAndRunSimFrame_CMND(const char *command, const char *arguments) {
+void SIM_SendFakeMQTTAndRunSimFrame_CMND_Generic(const char *myName , const char *command, const char *arguments) {
 
-	const char *myName = CFG_GetMQTTClientId();
 	char buffer[4096];
 	sprintf(buffer, "cmnd/%s/%s", myName, command);
 
 	SIM_SendFakeMQTT(buffer, arguments);
 
 }
-void SIM_SendFakeMQTTRawChannelSet(int channelIndex, const char *arguments) {
+void SIM_SendFakeMQTTAndRunSimFrame_CMND_ViaGroupTopic(const char *command, const char *arguments) {
+	const char *myName = CFG_GetMQTTGroupTopic();
+	SIM_SendFakeMQTTAndRunSimFrame_CMND_Generic(myName, command, arguments);
+}
+void SIM_SendFakeMQTTAndRunSimFrame_CMND(const char *command, const char *arguments) {
 	const char *myName = CFG_GetMQTTClientId();
+	SIM_SendFakeMQTTAndRunSimFrame_CMND_Generic(myName, command, arguments);
+}
+void SIM_SendFakeMQTTRawChannelSet_Generic(const char *myName, int channelIndex, const char *arguments) {
 	char buffer[4096];
 	sprintf(buffer, "%s/%i/set", myName, channelIndex);
 	SIM_SendFakeMQTT(buffer, arguments);
+}
+void SIM_SendFakeMQTTRawChannelSet(int channelIndex, const char *arguments) {
+	const char *myName = CFG_GetMQTTClientId();
+	SIM_SendFakeMQTTRawChannelSet_Generic(myName, channelIndex, arguments);
+}
+void SIM_SendFakeMQTTRawChannelSet_ViaGroupTopic(int channelIndex, const char *arguments) {
+	const char *myName = CFG_GetMQTTGroupTopic();
+	SIM_SendFakeMQTTRawChannelSet_Generic(myName, channelIndex, arguments);
 }
 
 #define MAX_MQTT_HISTORY 64
