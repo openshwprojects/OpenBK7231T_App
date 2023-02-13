@@ -119,6 +119,7 @@ This platform is not supported, error!
 #include <stdint.h>
 #include <math.h>
 
+#define portTICK_RATE_MS 1000
 #define bk_printf printf
 
 // generic

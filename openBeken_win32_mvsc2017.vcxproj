@@ -292,6 +292,7 @@
     <ClCompile Include="src\driver\drv_bp5758d.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_bridge_driver.c" />
     <ClCompile Include="src\driver\drv_cht8305.c" />
     <ClCompile Include="src\driver\drv_cse7766.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>

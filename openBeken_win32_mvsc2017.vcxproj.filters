@@ -510,6 +510,9 @@
     <ClCompile Include="src\selftest\selftest_changeHandlers_mqtt.c">
       <Filter>SelfTest</Filter>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_bridge_driver.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />
