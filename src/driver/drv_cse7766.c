@@ -1,3 +1,4 @@
+// NOTE: this is the same as HLW8032
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
