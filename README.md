@@ -32,7 +32,7 @@ OpenBeken features:
 - OTA firwmare upgrade system (for BK, W*00, BL602); to use OTA, drag and drop RBL file (always RBL file) on OTA field on new Web App Javascript Console
 - MQTT compatibility with Home Assistant (with both Yaml generator and [HA Discovery](https://youtu.be/pkcspey25V4)) 
 - Support for multiple relays, buttons, leds, inputs and PWMs, everything fully scriptable
-- Driver system for custom peripherals, including [TuyaMCU](https://www.elektroda.com/rtvforum/topic3898502.html), I2C bus and [BL0942](https://www.elektroda.com/rtvforum/topic3887748.html), BL0937 power metering chips
+- Driver system for custom peripherals, including [TuyaMCU](https://www.elektroda.com/rtvforum/topic3898502.html), I2C bus and [BL0942](https://www.elektroda.com/rtvforum/topic3887748.html), BL0937 power metering chips, Motor Driver Bridge.
 - Supports multiple I2C devices, like TC74 temperature sensor, MCP23017 port expander, PCF8574T LCD 2x16 (or other?), etc
 - NTP time from network (can be used with [TH06](https://www.elektroda.com/rtvforum/topic3942730.html) and other TuyaMCU devices)
 - basic support for [TuyaMCU Battery Powered devices protocol](https://www.elektroda.com/rtvforum/topic3914412.html) (TuyaMCU enables WiFi module only to report the state, eg. for door sensors, water sensors)
@@ -204,6 +204,8 @@ Currently available pin roles:
 - IRRecv - IR receiver
 - IRSend - IR sender 
 - PWM_n - as PWM, but inversed value
+- BridgeFWD - Motor/Relay bridge driver control signal. FORWARD direction.
+- BridgeREV - Motor/Relay bridge driver control signal. REVERSE direction.
   
 # Safe mode
   
