@@ -246,6 +246,27 @@ typedef struct led_corr_s { // LED gamma correction and calibration data block
 
 #define MAGIC_LED_CORR_SIZE		24
 
+typedef struct ledRemap_s {
+	//unsigned short r : 3;
+	//unsigned short g : 3;
+	//unsigned short b : 3;
+	//unsigned short c : 3;
+	//unsigned short w : 3;
+	// I want to be able to easily access indices with []
+	union {
+		struct {
+			byte r;
+			byte g;
+			byte b;
+			byte c;
+			byte w;
+		};
+		byte ar[5];
+	};
+} ledRemap_t;
+
+#define MAGIC_LED_REMAP_SIZE 5
+
 //
 // Main config structure (less than 2KB)
 //
@@ -262,7 +283,6 @@ typedef struct mainConfig_s {
 	// 0x4
 	int version;
 	int genericFlags;
-	// unused
 	int genericFlags2;
 	unsigned short changeCounter;
 	unsigned short otaCounter;
@@ -312,7 +332,8 @@ typedef struct mainConfig_s {
 
 	// offset 0x000004BC
 	unsigned long LFS_Size; // szie of LFS volume.  it's aligned against the end of OTA
-	byte unusedSectorAB[124];
+	byte unusedSectorAB[119];
+	ledRemap_t ledRemap;
 	led_corr_t led_corr;
 	// alternate topic name for receiving MQTT commands
 	// offset 0x00000554
@@ -383,6 +404,7 @@ void Channel_SaveInFlashIfNeeded(int ch);
 int CHANNEL_FindMaxValueForChannel(int ch);
 // cmd_channels.c
 const char *CHANNEL_GetLabel(int ch);
+//ledRemap_t *CFG_GetLEDRemap();
 
 void get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount);
 int h_isChannelPWM(int tg_ch);

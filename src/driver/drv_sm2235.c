@@ -20,8 +20,8 @@ void SM2235_Write(float *rgbcw) {
 
 	for (i = 0; i < 5; i++) {
 		// convert 0-255 to 0-1023
-		//cur_col_10[i] = rgbcw[g_channelOrder[i]] * 4;
-		cur_col_10[i] = MAP(rgbcw[g_channelOrder[i]], 0, 255.0f, 0, 1023.0f);
+		//cur_col_10[i] = rgbcw[g_cfg.ledRemap.ar[i]] * 4;
+		cur_col_10[i] = MAP(rgbcw[g_cfg.ledRemap.ar[i]], 0, 255.0f, 0, 1023.0f);
 	}
 
 #define SM2235_FIRST_BYTE(x) ((x >> 8) & 0xFF)
@@ -79,6 +79,9 @@ static commandResult_t SM2235_Current(const void *context, const char *cmd, cons
 // startDriver SM2235
 // SM2235_RGBCW FF00000000
 void SM2235_Init() {
+
+	// default setting (applied only if none was applied earlier)
+	CFG_SetDefaultLEDRemap(2, 1, 0, 4, 3);
 
 	g_i2c_pin_clk = PIN_FindPinIndexForRole(IOR_SM2235_CLK,g_i2c_pin_clk);
 	g_i2c_pin_data = PIN_FindPinIndexForRole(IOR_SM2235_DAT,g_i2c_pin_data);

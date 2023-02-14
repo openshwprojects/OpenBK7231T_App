@@ -131,6 +131,21 @@ void CFG_SetDefaultConfig() {
 	g_cfg_pendingChanges++;
 }
 
+void CFG_SetLEDRemap(int r, int g, int b, int c, int w) {
+	if (g_cfg.ledRemap.r != r || g_cfg.ledRemap.g != g || g_cfg.ledRemap.b != b || g_cfg.ledRemap.c != c || g_cfg.ledRemap.w != w) {
+		g_cfg.ledRemap.r = r;
+		g_cfg.ledRemap.g = g;
+		g_cfg.ledRemap.b = b;
+		g_cfg.ledRemap.c = c;
+		g_cfg.ledRemap.w = w;
+		CFG_MarkAsDirty();
+	}
+}
+void CFG_SetDefaultLEDRemap(int r, int g, int b, int c, int w) {
+	if (g_cfg.ledRemap.r == 0 && g_cfg.ledRemap.g == 0 && g_cfg.ledRemap.b == 0 && g_cfg.ledRemap.c == 0 && g_cfg.ledRemap.w == 0) {
+		CFG_SetLEDRemap(r, g, b, c, w);
+	}
+}
 const char *CFG_GetWebappRoot(){
 	return g_cfg.webappRoot;
 }

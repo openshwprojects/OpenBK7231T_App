@@ -32,6 +32,8 @@ void CFG_SetMQTTUserName(const char *s);
 void CFG_SetMQTTGroupTopic(const char *s);
 void CFG_SetMQTTPass(const char *s);
 const char *CFG_GetWebappRoot();
+void CFG_SetLEDRemap(int r, int g, int b, int c, int w);
+void CFG_SetDefaultLEDRemap(int r, int g, int b, int c, int w);
 int CFG_SetWebappRoot(const char *s);
 void CFG_InitAndLoad();
 //void CFG_ApplyStartChannelValues();

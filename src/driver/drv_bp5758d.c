@@ -82,8 +82,8 @@ void BP5758D_Write(float *rgbcw) {
 
 	for(i = 0; i < 5; i++){
 		// convert 0-255 to 0-1023
-		//cur_col_10[i] = rgbcw[g_channelOrder[i]] * 4;
-		cur_col_10[i] = MAP(rgbcw[g_channelOrder[i]], 0, 255.0f, 0, 1023.0f);
+		//cur_col_10[i] = rgbcw[g_cfg.ledRemap.ar[i]] * 4;
+		cur_col_10[i] = MAP(rgbcw[g_cfg.ledRemap.ar[i]], 0, 255.0f, 0, 1023.0f);
 
 	}
 
@@ -149,10 +149,8 @@ static commandResult_t BP5758D_Current(const void *context, const char *cmd, con
 // backlog startDriver BP5758D; BP5758D_Current 14; 
 void BP5758D_Init() {
 	int i;
-	// default map
-	for (i = 0; i < 5; i++) {
-		g_channelOrder[i] = i;
-	}
+	// default setting (applied only if none was applied earlier)
+	CFG_SetDefaultLEDRemap(0, 1, 2, 3, 4);
 
 	g_i2c_pin_clk = PIN_FindPinIndexForRole(IOR_BP5758D_CLK,g_i2c_pin_clk);
 	g_i2c_pin_data = PIN_FindPinIndexForRole(IOR_BP5758D_DAT,g_i2c_pin_data);

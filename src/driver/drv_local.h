@@ -78,7 +78,6 @@ void WEMO_AppendInformationToHTTPIndexPage(http_request_t* request);
 
 extern int g_i2c_pin_clk;
 extern int g_i2c_pin_data;
-extern byte g_channelOrder[5];
 void Soft_I2C_SetLow(uint8_t pin);
 void Soft_I2C_SetHigh(uint8_t pin);
 bool Soft_I2C_PreInit(void);

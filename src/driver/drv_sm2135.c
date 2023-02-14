@@ -26,8 +26,7 @@ int g_i2c_pin_data = 1;
 
 static int g_current_setting_cw = SM2135_20MA;
 static int g_current_setting_rgb = SM2135_20MA;
-// Mapping between RGBCW to current SM2135 channels
-byte g_channelOrder[5] = { 2, 1, 0, 4, 3 };
+
 
 void usleep(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 {
@@ -149,7 +148,7 @@ void SM2135_Write(float *rgbcw) {
 	if(CFG_HasFlag(OBK_FLAG_SM2135_SEPARATE_MODES)) {
 		bRGB = 0;
 		for(i = 0; i < 3; i++){
-			if(rgbcw[g_channelOrder[i]]!=0) {
+			if(rgbcw[g_cfg.ledRemap.ar[i]]!=0) {
 				bRGB = 1;
 				break;
 			}
@@ -158,9 +157,9 @@ void SM2135_Write(float *rgbcw) {
 			Soft_I2C_Start(SM2135_ADDR_MC);
 			Soft_I2C_WriteByte(g_current_setting_rgb);
 			Soft_I2C_WriteByte(SM2135_RGB);
-			Soft_I2C_WriteByte(rgbcw[g_channelOrder[0]]);
-			Soft_I2C_WriteByte(rgbcw[g_channelOrder[1]]);
-			Soft_I2C_WriteByte(rgbcw[g_channelOrder[2]]); 
+			Soft_I2C_WriteByte(rgbcw[g_cfg.ledRemap.r]);
+			Soft_I2C_WriteByte(rgbcw[g_cfg.ledRemap.g]);
+			Soft_I2C_WriteByte(rgbcw[g_cfg.ledRemap.b]); 
 			Soft_I2C_Stop();
 		} else {
 			Soft_I2C_Start(SM2135_ADDR_MC);
@@ -170,8 +169,8 @@ void SM2135_Write(float *rgbcw) {
 			usleep(SM2135_DELAY);
 
 			Soft_I2C_Start(SM2135_ADDR_C);
-			Soft_I2C_WriteByte(rgbcw[g_channelOrder[3]]);
-			Soft_I2C_WriteByte(rgbcw[g_channelOrder[4]]); 
+			Soft_I2C_WriteByte(rgbcw[g_cfg.ledRemap.c]);
+			Soft_I2C_WriteByte(rgbcw[g_cfg.ledRemap.w]); 
 			Soft_I2C_Stop();
 
 		}
@@ -179,11 +178,11 @@ void SM2135_Write(float *rgbcw) {
 		Soft_I2C_Start(SM2135_ADDR_MC);
 		Soft_I2C_WriteByte(g_current_setting_rgb);
 		Soft_I2C_WriteByte(SM2135_RGB);
-		Soft_I2C_WriteByte(rgbcw[g_channelOrder[0]]);
-		Soft_I2C_WriteByte(rgbcw[g_channelOrder[1]]);
-		Soft_I2C_WriteByte(rgbcw[g_channelOrder[2]]); 
-		Soft_I2C_WriteByte(rgbcw[g_channelOrder[3]]); 
-		Soft_I2C_WriteByte(rgbcw[g_channelOrder[4]]); 
+		Soft_I2C_WriteByte(rgbcw[g_cfg.ledRemap.r]);
+		Soft_I2C_WriteByte(rgbcw[g_cfg.ledRemap.g]);
+		Soft_I2C_WriteByte(rgbcw[g_cfg.ledRemap.b]); 
+		Soft_I2C_WriteByte(rgbcw[g_cfg.ledRemap.c]); 
+		Soft_I2C_WriteByte(rgbcw[g_cfg.ledRemap.w]); 
 		Soft_I2C_Stop();
 	}
 }
@@ -234,23 +233,25 @@ commandResult_t CMD_LEDDriver_WriteRGBCW(const void *context, const char *cmd, c
 // SM2135_Map 2 1 0 4 3 
 
 commandResult_t CMD_LEDDriver_Map(const void *context, const char *cmd, const char *args, int flags){
-	
+	int r, g, b, c, w;
 	Tokenizer_TokenizeString(args,0);
 
 	if(Tokenizer_GetArgsCount()==0) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "Current map is %i %i %i %i %i",
-			(int)g_channelOrder[0],(int)g_channelOrder[1],(int)g_channelOrder[2],(int)g_channelOrder[3],(int)g_channelOrder[4]);
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Current map is %i %i %i %i %i",
+			(int)g_cfg.ledRemap.r,(int)g_cfg.ledRemap.g,(int)g_cfg.ledRemap.b,(int)g_cfg.ledRemap.c,(int)g_cfg.ledRemap.w);
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
-	g_channelOrder[0] = Tokenizer_GetArgIntegerRange(0, 0, 4);
-	g_channelOrder[1] = Tokenizer_GetArgIntegerRange(1, 0, 4);
-	g_channelOrder[2] = Tokenizer_GetArgIntegerRange(2, 0, 4);
-	g_channelOrder[3] = Tokenizer_GetArgIntegerRange(3, 0, 4);
-	g_channelOrder[4] = Tokenizer_GetArgIntegerRange(4, 0, 4);
+	r = Tokenizer_GetArgIntegerRange(0, 0, 4);
+	g = Tokenizer_GetArgIntegerRange(1, 0, 4);
+	b = Tokenizer_GetArgIntegerRange(2, 0, 4);
+	c = Tokenizer_GetArgIntegerRange(3, 0, 4);
+	w = Tokenizer_GetArgIntegerRange(4, 0, 4);
 
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "New map is %i %i %i %i %i",
-		(int)g_channelOrder[0],(int)g_channelOrder[1],(int)g_channelOrder[2],(int)g_channelOrder[3],(int)g_channelOrder[4]);
+	CFG_SetLEDRemap(r, g, b, c, w);
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "New map is %i %i %i %i %i",
+		(int)g_cfg.ledRemap.r,(int)g_cfg.ledRemap.g,(int)g_cfg.ledRemap.b,(int)g_cfg.ledRemap.c,(int)g_cfg.ledRemap.w);
 
 	return CMD_RES_OK;
 }
@@ -281,9 +282,11 @@ static commandResult_t SM2135_Current(const void *context, const char *cmd, cons
 // CMD_LEDDriver_WriteRGBCW FF00000000
 void SM2135_Init() {
 
+	// default setting (applied only if none was applied earlier)
+	CFG_SetDefaultLEDRemap(2, 1, 0, 4, 3);
+
 	g_i2c_pin_clk = PIN_FindPinIndexForRole(IOR_SM2135_CLK,g_i2c_pin_clk);
 	g_i2c_pin_data = PIN_FindPinIndexForRole(IOR_SM2135_DAT,g_i2c_pin_data);
-
 
 	Soft_I2C_PreInit();
 

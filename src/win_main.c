@@ -240,7 +240,11 @@ int __cdecl main(int argc, char **argv)
 	printf("sizeof(double) = %d\n", (int)sizeof(double));
 	printf("sizeof(long double) = %d\n", (int)sizeof(long double));
 	printf("sizeof(led_corr_t) = %d\n", (int)sizeof(led_corr_t));
-
+	
+	if (sizeof(ledRemap_t) != MAGIC_LED_REMAP_SIZE) {
+		printf("sizeof(ledRemap_t) != MAGIC_LED_REMAP_SIZE!: %i\n", sizeof(ledRemap_t));
+		system("pause");
+	}
 	if (sizeof(led_corr_t) != MAGIC_LED_CORR_SIZE) {
 		printf("sizeof(led_corr_t) != MAGIC_LED_CORR_SIZE!: %i\n", sizeof(led_corr_t));
 		system("pause");
