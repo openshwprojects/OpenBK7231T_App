@@ -162,12 +162,12 @@ typedef enum {
 typedef struct pinsState_s {
     // All above values are indexed by physical pin index
     // (so we assume we have maximum of 32 pins)
-    byte roles[CHANNEL_MAX];
-    byte channels[CHANNEL_MAX];
+    byte roles[48];
+    byte channels[48];
     // extra channels array - this is needed for
     // buttons, so button can toggle one relay on single click
     // and other relay on double click
-    byte channels2[CHANNEL_MAX];
+    byte channels2[48];
     // This single field above, is indexed by CHANNEL INDEX
     // (not by pin index)
     byte channelTypes[CHANNEL_MAX];
@@ -352,7 +352,7 @@ typedef struct mainConfig_s {
 	// offset 0x000004BC
 	unsigned long LFS_Size; // szie of LFS volume.  it's aligned against the end of OTA
 #if PLATFORM_W800
-    byte unusedSectorAB[23];
+    byte unusedSectorAB[71];
 #else    
 	byte unusedSectorAB[119];
 #endif    
