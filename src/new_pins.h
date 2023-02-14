@@ -354,7 +354,7 @@ typedef struct mainConfig_s {
 #if PLATFORM_W800
     byte unusedSectorAB[23];
 #else    
-	byte unusedSectorAB[124];
+	byte unusedSectorAB[119];
 #endif    
     ledRemap_t ledRemap;
 	led_corr_t led_corr;
