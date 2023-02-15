@@ -22,6 +22,36 @@ typedef struct BRIDGE_CONTROL {
 /* Local variables */
 static BRIDGE_CONTROL *br_ctrl = NULL;
 static int ch_count = 0;
+static int bridge_pulse_len = 50;
+
+/**************************************************************************************/
+commandResult_t Bridge_Pulse_length(const void *context, const char *cmd, const char *args, int cmdFlags)
+{
+    int pulse_len;
+    Tokenizer_TokenizeString(args,0);
+    // following check must be done after 'Tokenizer_TokenizeString',
+    // so we know arguments count in Tokenizer. 'cmd' argument is
+    // only for warning display
+    if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) 
+    {
+        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+    }
+
+    pulse_len = atoi(Tokenizer_GetArg(0));
+    if (pulse_len < 50)
+    {
+        pulse_len = 50;   
+    } 
+    else if (pulse_len > 10000) 
+    {
+        pulse_len = 10000;
+    }
+
+    bridge_pulse_len = pulse_len;
+    addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Bridge Pulse Length: %i\n", bridge_pulse_len);
+
+    return CMD_RES_OK;
+}
 
 /**************************************************************************************/
 // MosFet Bridge driver
@@ -55,7 +85,7 @@ void Bridge_driver_Init()
             br_ctrl[ch].current_state = 0;
             br_ctrl[ch].new_state = -1;
             br_ctrl[ch].pulseCnt = 0;
-            br_ctrl[ch].pulseLen = 50;
+            br_ctrl[ch].pulseLen = bridge_pulse_len;
         }
         /* Read PIN Roles */
         ch = 0;
@@ -98,6 +128,12 @@ void Bridge_driver_Init()
     }
 
     /* register commands */
+    //cmddetail:{"name":"ConsumptionThresold","args":"[FloatValue]",
+    //cmddetail:"descr":"Setup value for automatic save of consumption data [1..100]",
+    //cmddetail:"fn":"BL09XX_SetupConsumptionThreshold","file":"driver/drv_bl_shared.c","requires":"",
+    //cmddetail:"examples":""}
+    CMD_RegisterCommand("BridgePulseLength", Bridge_Pulse_length, NULL);
+
 }
 
 /***************************************************************************************/
@@ -132,6 +168,7 @@ void Bridge_driver_QuickFrame()
             {
                 /* Detected change in state - Forward Move */
                 addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Bridge Driver: %lu : FORWARD PULSE\n", (unsigned long)xTaskGetTickCount());
+                br_ctrl[ch].pulseLen = bridge_pulse_len;
                 br_ctrl[ch].pulseCnt = br_ctrl[ch].pulseLen;
                 HAL_PIN_SetOutputValue(br_ctrl[ch].GPIO_HLW_FWD, 1);
                 br_ctrl[ch].current_state = br_ctrl[ch].new_state;
@@ -142,6 +179,7 @@ void Bridge_driver_QuickFrame()
                 /* Detected change in state - Reverse Move */
                 addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Bridge Driver: %lu : REVERSE PULSE\n", (unsigned long)xTaskGetTickCount());
                 br_ctrl[ch].current_state = br_ctrl[ch].new_state;
+                br_ctrl[ch].pulseLen = bridge_pulse_len;
                 br_ctrl[ch].pulseCnt = br_ctrl[ch].pulseLen;
                 HAL_PIN_SetOutputValue(br_ctrl[ch].GPIO_HLW_REV, 1);
                 br_ctrl[ch].current_state = br_ctrl[ch].new_state;
