@@ -514,34 +514,6 @@ struct tm * TuyaMCU_Get_NTP_Time() {
 	}
     return ptm;
 }
-// 
-commandResult_t TuyaMCU_Fake_Hex(const void *context, const char *cmd, const char *args, int cmdFlags) {
-    //const char *args = CMD_GetArg(1);
-    //byte rawData[128];
-    //int curCnt;
-
-    //curCnt = 0;
-    if(!(*args)) {
-        addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_Fake_Hex: requires 1 argument (hex string, like FFAABB00CCDD\n");
-        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-    }
-    while(*args) {
-        byte b;
-        b = hexbyte(args);
-
-        //rawData[curCnt] = b;
-        //curCnt++;
-        //if(curCnt>=sizeof(rawData)) {
-        //  addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_Fake_Hex: sorry, given string is too long\n");
-        //  return -1;
-        //}
-
-        UART_AppendByteToCircularBuffer(b);
-
-        args += 2;
-    }
-    return 1;
-}
 void TuyaMCU_Send_RawBuffer(byte *data, int len) {
     int i;
 
@@ -1176,7 +1148,7 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
             TuyaMCU_Send_SetTime(TuyaMCU_Get_NTP_Time());
             break;
             // 55 AA 00 01 00 ${"p":"e7dny8zvmiyhqerw","v":"1.0.0"}$
-            // tuyaMcu_fakeHex 55AA000100247B2270223A226537646E79387A766D69796871657277222C2276223A22312E302E30227D24
+            // uartFakeHex 55AA000100247B2270223A226537646E79387A766D69796871657277222C2276223A22312E302E30227D24
         case TUYA_CMD_QUERY_PRODUCT:
             TuyaMCU_ParseQueryProductInformation(data+6,len-6);
             product_information_valid = true;
@@ -1419,11 +1391,6 @@ void TuyaMCU_Init()
 	//cmddetail:"fn":"TuyaMCU_Send_SetTime_Current","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_sendCurTime", TuyaMCU_Send_SetTime_Current, NULL);
-	//cmddetail:{"name":"tuyaMcu_fakeHex","args":"[HexString]",
-	//cmddetail:"descr":"Spoofs a fake hex packet so it looks like TuyaMCU send that to us. Used for testing.",
-	//cmddetail:"fn":"TuyaMCU_Fake_Hex","file":"driver/drv_tuyaMCU.c","requires":"",
-	//cmddetail:"examples":""}
-    CMD_RegisterCommand("tuyaMcu_fakeHex", TuyaMCU_Fake_Hex, NULL);
     ///CMD_RegisterCommand("tuyaMcu_sendSimple","",TuyaMCU_Send_Simple, "Appends a 0x55 0xAA header to a data, append a checksum at end and send");
 	//cmddetail:{"name":"linkTuyaMCUOutputToChannel","args":"[dpId][varType][channelID]",
 	//cmddetail:"descr":"Used to map between TuyaMCU dpIDs and our internal channels. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap",
