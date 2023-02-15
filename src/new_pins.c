@@ -255,7 +255,7 @@ void Button_OnPressRelease(int index) {
     // fire event - button on pin <index> was released
     EventHandlers_FireEvent(CMD_EVENT_PIN_ONRELEASE,index);
 }
-void Button_OnInitialPressDown(int index) 
+void Button_OnInitialPressDown(int index)
 {
     addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"%i Button_OnInitialPressDown\r\n", index);
     EventHandlers_FireEvent(CMD_EVENT_PIN_ONPRESS, index);
@@ -408,7 +408,7 @@ static uint8_t PIN_ReadDigitalInputValue_WithInversionIncluded(int index) {
     }
     return iVal;
 }
-static uint8_t button_generic_get_gpio_value(void *param)
+static uint8_t button_generic_get_gpio_value(void* param)
 {
     int index;
     index = ((pinButton_s*)param) - g_buttons;
@@ -420,7 +420,7 @@ static uint8_t button_generic_get_gpio_value(void *param)
 #define PIN_UART2_RXD 1
 #define PIN_UART2_TXD 0
 
-void NEW_button_init(pinButton_s* handle, uint8_t(*pin_level)(void *self), uint8_t active_level)
+void NEW_button_init(pinButton_s* handle, uint8_t(*pin_level)(void* self), uint8_t active_level)
 {
     memset(handle, sizeof(pinButton_s), 0);
 
@@ -724,13 +724,13 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
                 int channelIndex;
                 int channelValue;
 
-                channelIndex = PIN_GetPinChannelForPinIndex(index);
-                channelValue = g_channelValues[channelIndex];
+			channelIndex = PIN_GetPinChannelForPinIndex(index);
+			channelValue = g_channelValues[channelIndex];
 
-                HAL_PIN_Setup_Output(index);
-                HAL_PIN_SetOutputValue(index,0);
-            }
-            break;
+			HAL_PIN_Setup_Output(index);
+			HAL_PIN_SetOutputValue(index, 0);
+		}
+		break;
 
         case IOR_AlwaysHigh:
             {
@@ -1334,7 +1334,7 @@ static uint32_t g_last_time = 0;
 static int activepoll_time = 0; // time to keep polling active until
 
 //  background ticks, timer repeat invoking interval defined by PIN_TMR_DURATION.
-void PIN_ticks(void *param)
+void PIN_ticks(void* param)
 {
     int i;
     int value;
@@ -1596,7 +1596,7 @@ int CHANNEL_ParseChannelType(const char *s) {
         return ChType_OffDimBright;
     return ChType_Error;
 }
-static commandResult_t CMD_setButtonHoldRepeat(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_setButtonHoldRepeat(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 
     Tokenizer_TokenizeString(args,0);
@@ -1621,7 +1621,7 @@ static commandResult_t CMD_setButtonHoldRepeat(const void *context, const char *
 }
 // SetButtonTimes [ValLongPress] [ValShortPress] [ValRepeat]
 // Each value is times 100ms, so: SetButtonTimes 2 1 1 means 200ms long press, 100ms short and 100ms repeat
-static commandResult_t CMD_SetButtonTimes(const void *context, const char *cmd, const char *args, int cmdFlags){
+static commandResult_t CMD_SetButtonTimes(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 
     Tokenizer_TokenizeString(args,0);
