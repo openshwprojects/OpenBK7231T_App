@@ -595,7 +595,7 @@ int channelSet(obk_mqtt_request_t* request) {
 
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "channelSet topic %i with arg %s", request->topic, request->received);
 
-	p = MQTT_RemoveClientFromTopic(request->topic,0);
+	p = (char*)MQTT_RemoveClientFromTopic(request->topic,0);
 
 	if (p == NULL) {
 		return 0;
@@ -707,8 +707,8 @@ void MQTT_ProcessCommandReplyJSON(const char *cmd, const char *args, int flags) 
 	}
 }
 int tasCmnd(obk_mqtt_request_t* request) {
-	const char *p, *args, *p2;
-
+	const char *p, *args;
+    //const char *p2;
 
 	p = MQTT_RemoveClientFromTopic(request->topic, "cmnd");
 	if (p == 0) {
