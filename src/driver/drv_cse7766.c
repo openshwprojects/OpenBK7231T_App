@@ -11,13 +11,13 @@
 #include "drv_uart.h"
 #include "../httpserver/new_http.h"
 
-static float CSE7766_PREF = 3150.261719;
-static float CSE7766_UREF = 6.300000;
+static float CSE7766_PREF = 1.88214409;
+static float CSE7766_UREF = 1.94034719;
 static float CSE7766_IREF = 251210;
 
-static int raw_unscaled_voltage;
-static int raw_unscaled_current;
-static int raw_unscaled_power;
+static float raw_unscaled_voltage;
+static float raw_unscaled_current;
+static float raw_unscaled_power;
 //static int raw_unscaled_freq;
 
 
@@ -128,11 +128,25 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 		55 5A 02 D5 00 00 05 A6 00 3C 05 00 FD AB 4D B2 A0 02 96 5F 71 48 4B 05 
 		*/
 		//
-			
+		// 70W 240V sample from Elektroda user
+		/*
+		H  Id VCal---- Voltage- ICal---- Current- PCal---- Power--- Ad CF--- Ck
+		55 5A 02 FC D8 00 06 28 00 41 32 00 C9 FE 53 7B 18 02 3B D4 71 71 E3 FA
+		55 5A 02 FC D8 00 06 28 00 41 32 00 C9 FE 53 7B 18 02 3B D4 71 71 E3 FA
+		55 5A 02 FC D8 00 06 28 00 41 32 00 C9 FE 53 7B 18 02 3C 28 71 71 EA 56
+		55 5A 02 FC D8 00 06 28 00 41 32 00 D7 F2 53 7B 18 02 3B 71 71 71 F1 A7
+		55 5A 02 FC D8 00 06 2F 00 41 32 00 D7 F2 53 7B 18 02 3D AF 71 71 F8 F5
+		55 5A 02 FC D8 00 06 2F 00 41 32 00 D7 F2 53 7B 18 02 3E 9F 71 71 FE EC
+
+		backlog startDriver CSE7766; uartFakeHex 555A02FCD800062F00413200D7F2537B18023E9F7171FEEC
+		*/
 		
 		
 
 		adjustement = UART_GetNextByte(20);
+		int vol_par = UART_GetNextByte(2) << 16 | UART_GetNextByte(3) << 8 | UART_GetNextByte(4);
+		int cur_par = UART_GetNextByte(8) << 16 | UART_GetNextByte(9) << 8 | UART_GetNextByte(10);
+		int pow_par = UART_GetNextByte(14) << 16 | UART_GetNextByte(15) << 8 | UART_GetNextByte(16);
 		raw_unscaled_voltage = UART_GetNextByte(5) << 16 | UART_GetNextByte(6) << 8 | UART_GetNextByte(7);
 		raw_unscaled_current = UART_GetNextByte(11) << 16 | UART_GetNextByte(12) << 8 | UART_GetNextByte(13);
 		raw_unscaled_power = UART_GetNextByte(17) << 16 | UART_GetNextByte(18) << 8 | UART_GetNextByte(19);
@@ -159,25 +173,24 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 			raw_unscaled_current = 0;
 		}
 
+		if (raw_unscaled_voltage) {
+			raw_unscaled_voltage = vol_par / raw_unscaled_voltage;
+		}
+		if (raw_unscaled_current) {
+			raw_unscaled_current = cur_par / raw_unscaled_current;
+		}
+		if (raw_unscaled_power) {
+			raw_unscaled_power = pow_par / raw_unscaled_power;
+		}
+
+
+
 		// those are final values, like 230V
 		{
 			float power, voltage, current;
-			if (raw_unscaled_power == 0) {
-				power = 0;
-			} else {
-				power = CSE7766_PREF / raw_unscaled_power;
-			}
-			if (raw_unscaled_voltage == 0) {
-				voltage = 0;
-			} else {
-				voltage = CSE7766_UREF / raw_unscaled_voltage;
-			}
-			if (raw_unscaled_current == 0) {
-				current = 0;
-			} else {
-				current = CSE7766_IREF / raw_unscaled_current;
-			}
-
+			power = raw_unscaled_power * CSE7766_PREF;
+			voltage = raw_unscaled_voltage * CSE7766_UREF;
+			current = raw_unscaled_current * CSE7766_IREF;
 			BL_ProcessUpdate(voltage,current,power);
 		}
 	}
@@ -207,7 +220,7 @@ commandResult_t CSE7766_PowerSet(const void *context, const char *cmd, const cha
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	realPower = atof(args);
-	CSE7766_PREF = realPower * raw_unscaled_power;
+	CSE7766_PREF = realPower / raw_unscaled_power;
 
 	// UPDATE: now they are automatically saved
 	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_POWER,CSE7766_PREF);
@@ -266,7 +279,7 @@ commandResult_t CSE7766_VoltageSet(const void *context, const char *cmd, const c
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	realV = atof(args);
-	CSE7766_UREF = realV * raw_unscaled_voltage;
+	CSE7766_UREF = realV / raw_unscaled_voltage;
 
 	// UPDATE: now they are automatically saved
 	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE,CSE7766_UREF);
@@ -287,7 +300,7 @@ commandResult_t CSE7766_CurrentSet(const void *context, const char *cmd, const c
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	realI = atof(args);
-	CSE7766_IREF = realI * raw_unscaled_current;
+	CSE7766_IREF = realI / raw_unscaled_current;
 	
 	// UPDATE: now they are automatically saved
 	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT,CSE7766_IREF);

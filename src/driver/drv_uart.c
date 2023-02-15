@@ -230,6 +230,34 @@ commandResult_t CMD_UART_Send_Hex(const void *context, const char *cmd, const ch
 }
 
 
+// 
+commandResult_t CMD_UART_FakeHex(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	//const char *args = CMD_GetArg(1);
+	//byte rawData[128];
+	//int curCnt;
+
+	//curCnt = 0;
+	if (!(*args)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "CMD_UART_FakeHex: requires 1 argument (hex string, like FFAABB00CCDD\n");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	while (*args) {
+		byte b;
+		b = hexbyte(args);
+
+		//rawData[curCnt] = b;
+		//curCnt++;
+		//if(curCnt>=sizeof(rawData)) {
+		//  addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"CMD_UART_FakeHex: sorry, given string is too long\n");
+		//  return -1;
+		//}
+
+		UART_AppendByteToCircularBuffer(b);
+
+		args += 2;
+	}
+	return 1;
+}
 // uartSendASCII test123
 commandResult_t CMD_UART_Send_ASCII(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	//const char *args = CMD_GetArg(1);
@@ -257,6 +285,11 @@ void UART_AddCommands() {
 	//cmddetail:"fn":"CMD_UART_Send_ASCII","file":"driver/drv_uart.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("uartSendASCII", CMD_UART_Send_ASCII, NULL);
+	//cmddetail:{"name":"uartFakeHex","args":"[HexString]",
+	//cmddetail:"descr":"Spoofs a fake hex packet so it looks like TuyaMCU send that to us. Used for testing.",
+	//cmddetail:"fn":"CMD_UART_FakeHex","file":"driver/drv_uart.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("uartFakeHex", CMD_UART_FakeHex, NULL);
 }
 int UART_InitUART(int baud) {
 	g_uart_init_counter++;
