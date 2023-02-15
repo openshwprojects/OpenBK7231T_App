@@ -1500,18 +1500,17 @@ int http_fn_startup_command(http_request_t* request) {
 		"You can use them to init peripherals and drivers, like BL0942 energy sensor. "
 		"Use backlog cmd1; cmd2; cmd3; etc to enter multiple commands</p>");
 
-	if (http_getArg(request->url, "data", tmpA, sizeof(tmpA))) {
+	if (http_getArg(request->url, "startup_cmd", tmpA, sizeof(tmpA))) {
+		http_getArg(request->url, "data", tmpA, sizeof(tmpA));
 		//  hprintf255(request,"<h3>Set command to  %s!</h3>",tmpA);
-		  // tmpA can be longer than 128 bytes and this would crash
+		// tmpA can be longer than 128 bytes and this would crash
 		hprintf255(request, "<h3>Command changed!</h3>");
 		CFG_SetShortStartupCommand(tmpA);
-
 		CFG_Save_IfThereArePendingChanges();
-	}
-	else {
 	}
 
 	add_label_text_field(request, "Startup command", "data", CFG_GetShortStartupCommand(), "<form action=\"/startup_command\">");
+	poststr(request, "<input type='hidden' name='startup_cmd' value='1'>");
 	poststr(request, SUBMIT_AND_END_FORM);
 
 	poststr(request, htmlFooterReturnToCfgLink);
