@@ -210,4 +210,4 @@ Do not add anything here, as it will overwritten with next rebuild.
 | showChannelValues |  | log channel values |
 | setButtonTimes | [ValLongPress][ValShortPress][ValRepeat] | Each value is times 100ms, so: SetButtonTimes 2 1 1 means 200ms long press, 100ms short and 100ms repeat |
 | setButtonHoldRepeat | [Value] | Sets just the hold button repeat time, given value is times 100ms, so write 1 for 100ms, 2 for 200ms, etc |
-
+| BridgePulseLength | [Pulse length] | Sets pulse length for BiStable relay switch operation. Value is define in 5 ms ticks |

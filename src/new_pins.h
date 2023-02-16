@@ -143,9 +143,9 @@ typedef enum {
 #elif PLATFORM_XR809
 #define PLATFORM_GPIO_MAX 13
 #elif PLATFORM_W600
-#define PLATFORM_GPIO_MAX 16
-#elif PLATFORM_W800
 #define PLATFORM_GPIO_MAX 17
+#elif PLATFORM_W800
+#define PLATFORM_GPIO_MAX 44
 #else
 #define PLATFORM_GPIO_MAX 29
 #endif
@@ -157,20 +157,39 @@ typedef enum {
 #define SPECIAL_CHANNEL_BASECOLOR 131
 #define SPECIAL_CHANNEL_TEMPERATURE 132
 
+#if PLATFORM_W800
+
 typedef struct pinsState_s {
-	// All above values are indexed by physical pin index
-	// (so we assume we have maximum of 32 pins)
-	byte roles[32];
-	byte channels[32];
-	// extra channels array - this is needed for
-	// buttons, so button can toggle one relay on single click
-	// and other relay on double click
-	byte channels2[32];
-	// This single field above, is indexed by CHANNEL INDEX
-	// (not by pin index)
-	byte channelTypes[CHANNEL_MAX];
+    // All above values are indexed by physical pin index
+    // (so we assume we have maximum of 32 pins)
+    byte roles[48];
+    byte channels[48];
+    // extra channels array - this is needed for
+    // buttons, so button can toggle one relay on single click
+    // and other relay on double click
+    byte channels2[48];
+    // This single field above, is indexed by CHANNEL INDEX
+    // (not by pin index)
+    byte channelTypes[CHANNEL_MAX];
 } pinsState_t;
 
+#else
+
+typedef struct pinsState_s {
+    // All above values are indexed by physical pin index
+    // (so we assume we have maximum of 32 pins)
+    byte roles[32];
+    byte channels[32];
+    // extra channels array - this is needed for
+    // buttons, so button can toggle one relay on single click
+    // and other relay on double click
+    byte channels2[32];
+    // This single field above, is indexed by CHANNEL INDEX
+    // (not by pin index)
+    byte channelTypes[CHANNEL_MAX];
+} pinsState_t;
+
+#endif
 
 // bit indexes (not values), so 0 1 2 3 4
 #define OBK_FLAG_MQTT_BROADCASTLEDPARAMSTOGETHER	0
@@ -332,8 +351,12 @@ typedef struct mainConfig_s {
 
 	// offset 0x000004BC
 	unsigned long LFS_Size; // szie of LFS volume.  it's aligned against the end of OTA
+#if PLATFORM_W800
+    byte unusedSectorAB[71];
+#else    
 	byte unusedSectorAB[119];
-	ledRemap_t ledRemap;
+#endif    
+    ledRemap_t ledRemap;
 	led_corr_t led_corr;
 	// alternate topic name for receiving MQTT commands
 	// offset 0x00000554
@@ -349,6 +372,7 @@ typedef struct mainConfig_s {
 	char initCommandLine[512];
 } mainConfig_t; // size 0x000007E0 (2016 decimal)
 #define MAGIC_CONFIG_SIZE		2016
+
 extern mainConfig_t g_cfg;
 
 extern char g_enable_pins;

@@ -148,7 +148,6 @@ static commandResult_t BP5758D_Current(const void *context, const char *cmd, con
 // to init a current value at startup - short startup command
 // backlog startDriver BP5758D; BP5758D_Current 14; 
 void BP5758D_Init() {
-	int i;
 	// default setting (applied only if none was applied earlier)
 	CFG_SetDefaultLEDRemap(0, 1, 2, 3, 4);
 

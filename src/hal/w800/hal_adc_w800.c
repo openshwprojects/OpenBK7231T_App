@@ -8,6 +8,8 @@
 //OpenW800\platform\drivers\gpio\wm_gpio_afsel.c
 static int adcToGpio[] = {
 	WM_IO_PA_01,
+    WM_IO_PA_02,
+    WM_IO_PA_03,
 	WM_IO_PA_04
 };
 #else

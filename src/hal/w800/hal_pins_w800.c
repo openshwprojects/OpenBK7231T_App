@@ -16,13 +16,28 @@ typedef struct wmPin_s {
 #if PLATFORM_W800
 
 static wmPin_t g_pins[] = {
+    {"PA0",WM_IO_PA_00, -1},
 	{"PA1",WM_IO_PA_01, -1},
+    {"PA2",WM_IO_PA_02, -1},
+    {"PA3",WM_IO_PA_03, -1},
 	{"PA4",WM_IO_PA_04, -1},
+    {"PA5",WM_IO_PA_05, -1},
+    {"PA6",WM_IO_PA_06, -1},
 	{"PA7",WM_IO_PA_07, 4},
+    {"PA8",WM_IO_PA_08, -1},
+    {"PA9",WM_IO_PA_09, -1},
+
+    {"PA10",WM_IO_PA_10, -1},
+    {"PA11",WM_IO_PA_11, -1},
+    {"PA12",WM_IO_PA_12, -1},
+    {"PA13",WM_IO_PA_13, -1},
+    {"PA14",WM_IO_PA_14, -1},
+    {"PA15",WM_IO_PA_15, -1},    
 	{"PB0",WM_IO_PB_00, 0},
 	{"PB1",WM_IO_PB_01, 1},
 	{"PB2",WM_IO_PB_02, 2},
 	{"PB3",WM_IO_PB_03, 3},
+
 	{"PB4",WM_IO_PB_04, -1},
 	{"PB5",WM_IO_PB_05, -1},
 	{"PB6",WM_IO_PB_06, -1},
@@ -31,8 +46,24 @@ static wmPin_t g_pins[] = {
 	{"PB9",WM_IO_PB_09, -1},
 	{"PB10",WM_IO_PB_10, -1},
 	{"PB11",WM_IO_PB_11, -1},
+    {"PB12",WM_IO_PB_12, -1},
+    {"PB13",WM_IO_PB_13, -1},
+
+    {"PB14",WM_IO_PB_14, -1},
+    {"PB15",WM_IO_PB_15, -1},
+    {"PB16",WM_IO_PB_16, -1},
+    {"PB17",WM_IO_PB_17, -1},
+    {"PB18",WM_IO_PB_18, -1},
 	{"PB19",WM_IO_PB_19, -1},
-	{"PB20",WM_IO_PB_20, -1}
+	{"PB20",WM_IO_PB_20, -1},
+    {"PB21",WM_IO_PB_21, -1},
+    {"PB22",WM_IO_PB_22, -1},
+    {"PB23",WM_IO_PB_23, -1},
+
+    {"PB24",WM_IO_PB_24, -1},
+    {"PB25",WM_IO_PB_25, -1},
+    {"PB26",WM_IO_PB_26, -1},
+    {"PB27",WM_IO_PB_27, -1}
 };
 
 static int g_pwmChannelPins[] = { WM_IO_PB_00, WM_IO_PB_01, WM_IO_PB_02, WM_IO_PB_03, WM_IO_PA_07 };
@@ -41,6 +72,7 @@ static int g_pwmChannelPins[] = { WM_IO_PB_00, WM_IO_PB_01, WM_IO_PB_02, WM_IO_P
 
 //W600 pinouts is based on W600-User Manual which lists pins for TW-02 and TW-03 modules.
 static wmPin_t g_pins[] = {
+    {"PA0",WM_IO_PA_00, -1},
 	{"PA1",WM_IO_PA_01, -1},
 	{"PA4",WM_IO_PA_04, -1},
 	{"PA5",WM_IO_PA_05, -1},
@@ -50,6 +82,7 @@ static wmPin_t g_pins[] = {
 	{"PB9",WM_IO_PB_09, -1},
 	{"PB10",WM_IO_PB_10, -1},
 	{"PB11",WM_IO_PB_11, -1},
+    
 	{"PB12",WM_IO_PB_12, -1},
 	{"PB13",WM_IO_PB_13, -1},
 	{"PB14",WM_IO_PB_14, 4},

@@ -58,7 +58,7 @@ static unsigned int ping_lost = 0;
 static unsigned int ping_received = 0;
 static int bReceivedLastOneSend = -1;
 static bool ping_handler_active = false;
-static bool ping_handler_silent = false;
+//static bool ping_handler_silent = false;
 
 //static int g_delayBetweenPings_MS = 1000 / portTICK_PERIOD_MS;
 
