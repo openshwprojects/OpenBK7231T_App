@@ -20,4 +20,5 @@ Finally, at the Docker image's shell prompt, execute the following to build:
 cd ~/OpenBK7231T/
 ./b.sh
 ```
+
 Again, change the `OpenBK7231T` directory name to `OpenBK7231N` if you are building for that platform. Also, the last command may be changed to the advanced build's `build_app.sh` command as described in [the build instructions](https://github.com/michaelkamprath/OpenBK7231T_App/blob/main/BUILDING.md#building-for-bk7231t). The build results will be placed into the host computer's file system as described in the build instructions. To exit the Docker image's shell prompt when the build is done, use the `exit` command.
