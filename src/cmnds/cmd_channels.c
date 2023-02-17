@@ -35,7 +35,7 @@ static commandResult_t CMD_SetChannelLabel(const void *context, const char *cmd,
 	int ch;
 	const char *s;
 
-	Tokenizer_TokenizeString(args, 0);
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 	// following check must be done after 'Tokenizer_TokenizeString',
 	// so we know arguments count in Tokenizer. 'cmd' argument is
 	// only for warning display
@@ -44,7 +44,7 @@ static commandResult_t CMD_SetChannelLabel(const void *context, const char *cmd,
 	}
 
 	ch = Tokenizer_GetArgInteger(0);
-	s = Tokenizer_GetArgFrom(1);
+	s = Tokenizer_GetArg(1);
 
 	CHANNEL_SetLabel(ch, s);
 
