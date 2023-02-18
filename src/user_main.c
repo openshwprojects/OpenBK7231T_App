@@ -840,10 +840,6 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	init_lfs(0);
 #endif
 
-#ifdef ENABLE_LITTLEFS
-	LFSAddCmds(); // setlfssize
-#endif
-
 	PIN_SetGenericDoubleClickCallback(app_on_generic_dbl_click);
 	ADDLOGF_DEBUG("Initialised other callbacks\r\n");
 
@@ -952,6 +948,10 @@ void Main_Init_Before_Delay()
 		ADDLOGF_INFO("###### safe mode activated - boot failures %d", g_bootFailures);
 	}
 	CFG_InitAndLoad();
+
+#ifdef ENABLE_LITTLEFS
+	LFSAddCmds();
+#endif
 
 	// only initialise certain things if we are not in AP mode
 	if (!bSafeMode)
