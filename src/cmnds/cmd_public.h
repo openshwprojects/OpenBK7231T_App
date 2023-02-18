@@ -225,6 +225,8 @@ void CMD_StartTCPCommandLine();
 // cmd_script.c
 int CMD_GetCountActiveScriptThreads();
 
+const char *CMD_GetResultString(commandResult_t r);
+
 void SVM_RunThreads(int deltaMS);
 void CMD_InitScripting();
 byte* LFS_ReadFile(const char* fname);

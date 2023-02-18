@@ -1563,8 +1563,12 @@ static int http_rest_post_channels(http_request_t* request) {
 
 
 static int http_rest_post_cmd(http_request_t* request) {
-	char* cmd = request->bodystart;
-	CMD_ExecuteCommand(cmd, COMMAND_FLAG_SOURCE_CONSOLE);
+	commandResult_t res;
+	const char* cmd = request->bodystart;
+	res = CMD_ExecuteCommand(cmd, COMMAND_FLAG_SOURCE_CONSOLE);
+	if (1) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "[WebApp Cmd '%s' Result] %s", cmd, CMD_GetResultString(res));
+	}
 	return http_rest_error(request, 200, "OK");
 }
 
