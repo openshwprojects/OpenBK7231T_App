@@ -128,6 +128,8 @@ void NTP_RemoveClockEvent(int id) {
 // addClockEvent 15:30:00 0xff 123 POWER0 ON
 // Example: do event on 8:00 every sunday
 // addClockEvent 8:00:00 0x01 234 backlog led_temperature 500; led_dimmer 100; led_enableAll 1;
+// Example
+// addClockEvent 15:06:00 0xff 123 POWER TOGGLE
 commandResult_t CMD_NTP_AddClockEvent(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int hour, minute, second;
 	const char *s;
@@ -173,10 +175,67 @@ commandResult_t CMD_NTP_RemoveClockEvent(const void* context, const char* cmd, c
 
 	return CMD_RES_OK;
 }
+commandResult_t CMD_NTP_ListEvents(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	ntpEvent_t* e;
+	int t;
+	
+	e = ntp_events;
+	t = 0;
 
+	while (e) {
+		// Print the command
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Ev %i - %i:%i:%i, days %i, cmd %s\n", (int)e->id, (int)e->hour, (int)e->minute, (int)e->second, (int)e->weekDayFlags, e->command);
+
+		t++;
+		e = e->next;
+	}
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Total %i events", t);
+
+	return CMD_RES_OK;
+}
+
+commandResult_t CMD_NTP_ClearEvents(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	ntpEvent_t* e;
+	int t;
+
+	e = ntp_events;
+	t = 0;
+
+	while (e) {
+		ntpEvent_t *p = e;
+		
+		t++;
+		e = e->next;
+
+		free(p->command);
+		free(p);
+	}
+	addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Removed %i events", t);
+
+	return CMD_RES_OK;
+}
 void NTP_Init_Events() {
 
+	//cmddetail:{"name":"addClockEvent","args":"CMD_NTP_AddClockEvent",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_ntp_events.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("addClockEvent",CMD_NTP_AddClockEvent, NULL);
+	//cmddetail:{"name":"removeClockEvent","args":"CMD_NTP_RemoveClockEvent",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_ntp_events.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("removeClockEvent", CMD_NTP_RemoveClockEvent, NULL);
+	//cmddetail:{"name":"listClockEvents","args":"CMD_NTP_ListEvents",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_ntp_events.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("listClockEvents", CMD_NTP_ListEvents, NULL);
+	//cmddetail:{"name":"clearClockEvents","args":"CMD_NTP_ClearEvents",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_ntp_events.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("clearClockEvents", CMD_NTP_ClearEvents, NULL);
 }
 
