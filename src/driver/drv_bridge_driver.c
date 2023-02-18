@@ -128,9 +128,9 @@ void Bridge_driver_Init()
     }
 
     /* register commands */
-    //cmddetail:{"name":"ConsumptionThresold","args":"[FloatValue]",
-    //cmddetail:"descr":"Setup value for automatic save of consumption data [1..100]",
-    //cmddetail:"fn":"BL09XX_SetupConsumptionThreshold","file":"driver/drv_bl_shared.c","requires":"",
+    //cmddetail:{"name":"BridgePulseLength","args":"[FloatValue]",
+    //cmddetail:"descr":"Setup value for bridge pulse len",
+    //cmddetail:"fn":"Bridge_Pulse_length","file":"driver/drv_bridge_driver.c","requires":"",
     //cmddetail:"examples":""}
     CMD_RegisterCommand("BridgePulseLength", Bridge_Pulse_length, NULL);
 

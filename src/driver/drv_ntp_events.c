@@ -217,24 +217,24 @@ commandResult_t CMD_NTP_ClearEvents(const void* context, const char* cmd, const 
 }
 void NTP_Init_Events() {
 
-	//cmddetail:{"name":"addClockEvent","args":"CMD_NTP_AddClockEvent",
-	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_ntp_events.c","requires":"",
+	//cmddetail:{"name":"addClockEvent","args":"[Time] [WeekDayFlags] [UniqueIDForRemoval][Command]",
+	//cmddetail:"descr":"Schedule command to run on given time in given day of week. NTP must be running. Time is a time like HH:mm or HH:mm:ss, WeekDayFlag is a bitflag on which day to run, 0xff mean all days, 0x01 means sunday, 0x02 monday, 0x03 sunday and monday, etc, id is an unique id so event can be removede later",
+	//cmddetail:"fn":"CMD_NTP_AddClockEvent","file":"driver/drv_ntp_events.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("addClockEvent",CMD_NTP_AddClockEvent, NULL);
-	//cmddetail:{"name":"removeClockEvent","args":"CMD_NTP_RemoveClockEvent",
-	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_ntp_events.c","requires":"",
+	//cmddetail:{"name":"removeClockEvent","args":"[ID]",
+	//cmddetail:"descr":"Removes clock event wtih given ID",
+	//cmddetail:"fn":"CMD_NTP_RemoveClockEvent","file":"driver/drv_ntp_events.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("removeClockEvent", CMD_NTP_RemoveClockEvent, NULL);
-	//cmddetail:{"name":"listClockEvents","args":"CMD_NTP_ListEvents",
-	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_ntp_events.c","requires":"",
+	//cmddetail:{"name":"listClockEvents","args":"",
+	//cmddetail:"descr":"Print the complete set clock events list",
+	//cmddetail:"fn":"CMD_NTP_ListEvents","file":"driver/drv_ntp_events.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("listClockEvents", CMD_NTP_ListEvents, NULL);
-	//cmddetail:{"name":"clearClockEvents","args":"CMD_NTP_ClearEvents",
-	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_ntp_events.c","requires":"",
+	//cmddetail:{"name":"clearClockEvents","args":"",
+	//cmddetail:"descr":"Removes all set clock events",
+	//cmddetail:"fn":"CMD_NTP_ClearEvents","file":"driver/drv_ntp_events.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("clearClockEvents", CMD_NTP_ClearEvents, NULL);
 }
