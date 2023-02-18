@@ -149,7 +149,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.\libs_for_simulator\SDL2-2.24.2\include;.\src\win32\stubs\;.\libs_for_simulator\DevIL-Windows-SDK-1.8.0\include;.\libs_for_simulator\freeglut-MSVC-3.0.0-2.mp\include;.\libs_for_simulator\nativefiledialog\src\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WINDOWS;%(PreprocessorDefinitions);_USE_32BIT_TIME_T </PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -525,6 +525,7 @@
     <ClCompile Include="src\selftest\selftest_changeHandlers.c" />
     <ClCompile Include="src\selftest\selftest_changeHandlers_mqtt.c" />
     <ClCompile Include="src\selftest\selftest_cmd_alias.c" />
+    <ClCompile Include="src\selftest\selftest_cmd_calendar.c" />
     <ClCompile Include="src\selftest\selftest_cmd_channels.c" />
     <ClCompile Include="src\selftest\selftest_cmd_generic.c" />
     <ClCompile Include="src\selftest\selftest_demo_fanCyclingRelays.c" />

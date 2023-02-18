@@ -516,6 +516,9 @@
     <ClCompile Include="src\driver\drv_ntp_events.c">
       <Filter>Drv</Filter>
     </ClCompile>
+    <ClCompile Include="src\selftest\selftest_cmd_calendar.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />

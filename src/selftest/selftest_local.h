@@ -88,6 +88,7 @@ void Test_Role_ToggleAll();
 void Test_Demo_SimpleShuttersScript();
 void Test_Commands_Generic();
 void Test_ChangeHandlers_MQTT();
+void Test_Commands_Calendar();
 
 void Test_GetJSONValue_Setup(const char *text);
 void Test_FakeHTTPClientPacket_GET(const char *tg);
