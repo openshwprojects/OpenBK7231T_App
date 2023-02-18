@@ -43,7 +43,7 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	if (Tokenizer_GetArgsCount() > 0) {
 		bOn = Tokenizer_GetArgInteger(0);
 	}
-	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_PowerSave: will set to %i",bOn);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_PowerSave: will set to %i", bOn);
 
 #ifdef PLATFORM_BEKEN
 	extern int bk_wlan_power_save_set_level(BK_PS_LEVEL level);
@@ -103,7 +103,6 @@ static commandResult_t CMD_BATT_Meas(const void* context, const char* cmd, const
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_BATT_Meas : Not enough arguments.(minbatt,maxbatt)");
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-
 	int minbatt = Tokenizer_GetArgInteger(0);
 	int maxbatt = Tokenizer_GetArgInteger(1);
 	// apply default ratio for a vref of 2,400 from BK7231N SDK
@@ -125,6 +124,7 @@ static commandResult_t CMD_BATT_Meas(const void* context, const char* cmd, const
 		g_pin_rel = PIN_FindPinIndexForRole(IOR_Relay, g_pin_rel);
 		channel_rel = g_cfg.pins.channels[g_pin_rel];
 	}
+
 	HAL_ADC_Init(g_pin_adc);
 	batt_value = HAL_ADC_Read(g_pin_adc);
 	if (batt_value < 1024) {
@@ -347,11 +347,11 @@ void CMD_RunUartCmndIfRequired() {
 		}
 	}
 #endif
-}
+	}
 
 // run an aliased command
-static commandResult_t runcmd(const void * context, const char *cmd, const char *args, int cmdFlags) {
-	char *c = (char *)context;
+static commandResult_t runcmd(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	char* c = (char*)context;
 	//   char *p = c;
 
 	//   while (*p && !isWhiteSpace(*p)) {
@@ -362,12 +362,12 @@ static commandResult_t runcmd(const void * context, const char *cmd, const char 
 }
 
 // run an aliased command
-static commandResult_t CMD_CreateAliasForCommand(const void * context, const char *cmd, const char *args, int cmdFlags) {
-	const char *alias;
-	const char *ocmd;
-	char *cmdMem;
-	char *aliasMem;
-	command_t *existing;
+static commandResult_t CMD_CreateAliasForCommand(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	const char* alias;
+	const char* ocmd;
+	char* cmdMem;
+	char* aliasMem;
+	command_t* existing;
 
 	Tokenizer_TokenizeString(args, 0);
 	// following check must be done after 'Tokenizer_TokenizeString',
