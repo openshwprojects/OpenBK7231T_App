@@ -513,6 +513,9 @@
     <ClCompile Include="src\driver\drv_bridge_driver.c">
       <Filter>Drv</Filter>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_ntp_events.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />
