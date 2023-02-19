@@ -1638,7 +1638,12 @@ void doHomeAssistantDiscovery(const char *topic, http_request_t *request) {
 	if (relayCount > 0) {
 		for (i = 0; i < CHANNEL_MAX; i++) {
 			if (h_isChannelRelay(i)) {
-				dev_info = hass_init_relay_device_info(i);
+				if (CFG_HasFlag(OBK_FLAG_MQTT_HASS_ADD_RELAYS_AS_LIGHTS)) {
+					dev_info = hass_init_relay_device_info(i, LIGHT_ON_OFF);
+				}
+				else {
+					dev_info = hass_init_relay_device_info(i, RELAY);
+				}
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 				dev_info = NULL;
@@ -2238,7 +2243,7 @@ const char* g_obk_flagNames[] = {
 	"[UART] Enable UART command line",
 	"[LED] Use old linear brightness mode, ignore gamma ramp",
 	"[MQTT] Apply channel type multiplier on (if any) on channel value before publishing it",
-	"error",
+	"[MQTT] In HA discovery, add relays as lights",
 	"error",
 	"error",
 	"error",

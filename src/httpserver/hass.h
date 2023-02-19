@@ -8,6 +8,9 @@ typedef enum {
 	/// @brief Switch
 	RELAY = 0,
 
+	/// @brief 
+	LIGHT_ON_OFF,
+
 	/// @brief Single PWM
 	LIGHT_PWM,
 
@@ -55,7 +58,7 @@ typedef struct HassDeviceInfo_s {
 } HassDeviceInfo;
 
 void hass_print_unique_id(http_request_t* request, const char* fmt, ENTITY_TYPE type, int index);
-HassDeviceInfo* hass_init_relay_device_info(int index);
+HassDeviceInfo* hass_init_relay_device_info(int index, ENTITY_TYPE type);
 HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type);
 HassDeviceInfo* hass_init_power_sensor_device_info(int index);
 HassDeviceInfo* hass_init_binary_sensor_device_info(int index);
