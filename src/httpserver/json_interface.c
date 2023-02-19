@@ -617,6 +617,19 @@ int JSON_ProcessCommandReply(const char *cmd, const char *arg, void *request, js
 			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "RESULT");
 		}
 	}
+	else if (!wal_strnicmp(cmd, "Color", 5)) {
+		printer(request, "{");
+		//if (*arg == 0) {
+		//	http_tasmota_json_Colo(request, printer);
+		//}
+		//else {
+			http_tasmota_json_power(request, printer);
+		//}
+		printer(request, "}");
+		if (flags == COMMAND_FLAG_SOURCE_MQTT) {
+			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "RESULT");
+		}
+	}
 	else if (!wal_strnicmp(cmd, "STATE", 5)) {
 		http_tasmota_json_status_STS(request, printer, false);
 		if (flags == COMMAND_FLAG_SOURCE_MQTT) {
