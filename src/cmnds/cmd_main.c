@@ -70,6 +70,8 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	else {
 		wifi_mgmr_sta_powersaving(0);
 	}
+#else
+	ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave is not implemented on this platform");
 #endif    
 	g_powersave = bOn;
 	return CMD_RES_OK;
