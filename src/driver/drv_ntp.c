@@ -118,8 +118,20 @@ commandResult_t NTP_Info(const void *context, const char *cmd, const char *args,
     return CMD_RES_OK;
 }
 
+#if WINDOWS
+bool b_ntp_simulatedTime = false;
+void NTP_SetSimulatedTime(unsigned int timeNow) {
+	g_time = timeNow;
+	g_time += g_timeOffsetSeconds;
+	g_synced = true;
+	b_ntp_simulatedTime = true;
+}
+#endif
 void NTP_Init() {
 
+#if WINDOWS
+	b_ntp_simulatedTime = false;
+#endif
 	//cmddetail:{"name":"ntp_timeZoneOfs","args":"[Value]",
 	//cmddetail:"descr":"Sets the time zone offset in hours. Also supports HH:MM syntax if you want to specify value in minutes. For negative values, use -HH:MM syntax, for example -5:30 will shift time by 5 hours and 30 minutes negative.",
 	//cmddetail:"fn":"NTP_SetTimeZoneOfs","file":"driver/drv_ntp.c","requires":"",
@@ -135,6 +147,11 @@ void NTP_Init() {
 	//cmddetail:"fn":"NTP_Info","file":"driver/drv_ntp.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ntp_info", NTP_Info, NULL);
+
+#if ENABLE_CALENDAR_EVENTS
+	NTP_Init_Events();
+#endif
+
 
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP driver initialized with server=%s, offset=%d", CFG_GetNTPServer(), g_timeOffsetSeconds);
     g_synced = false;
@@ -289,16 +306,21 @@ void NTP_SendRequest_BlockingMode() {
 
 }
 
-
 void NTP_OnEverySecond()
 {
     g_time++;
 
+#if ENABLE_CALENDAR_EVENTS
+	NTP_RunEvents(g_time, g_synced);
+#endif
     if(Main_IsConnectedToWiFi()==0)
     {
         return;
     }
 #if WINDOWS
+	if (b_ntp_simulatedTime) {
+		return;
+	}
 #elif PLATFORM_BL602
 #elif PLATFORM_W600 || PLATFORM_W800
 #elif PLATFORM_XR809

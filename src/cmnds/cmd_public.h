@@ -200,6 +200,7 @@ bool LED_IsLEDRunning();
 void LED_SetEnableAll(int bEnable);
 int LED_GetEnableAll();
 void LED_GetBaseColorString(char* s);
+void LED_SetBaseColorByIndex(int i, float f, bool bApply);
 int LED_GetMode();
 float LED_GetHue();
 float LED_GetSaturation();
@@ -224,6 +225,8 @@ int CMD_InitSendCommands();
 void CMD_StartTCPCommandLine();
 // cmd_script.c
 int CMD_GetCountActiveScriptThreads();
+
+const char *CMD_GetResultString(commandResult_t r);
 
 void SVM_RunThreads(int deltaMS);
 void CMD_InitScripting();

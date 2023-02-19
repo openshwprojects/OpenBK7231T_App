@@ -152,10 +152,23 @@ typedef enum {
 
 #define CHANNEL_MAX 64
 
-#define SPECIAL_CHANNEL_BRIGHTNESS 129
-#define SPECIAL_CHANNEL_LEDPOWER 130
-#define SPECIAL_CHANNEL_BASECOLOR 131
-#define SPECIAL_CHANNEL_TEMPERATURE 132
+// Special channel indexes
+// They were created so we can have easy and seamless
+// access to special variables internally.
+// Futhermore, they can be very useful for scripting,
+// because they can be plugged into "setChannel" command
+#define SPECIAL_CHANNEL_BRIGHTNESS		129
+#define SPECIAL_CHANNEL_LEDPOWER		130
+#define SPECIAL_CHANNEL_BASECOLOR		131
+#define SPECIAL_CHANNEL_TEMPERATURE		132
+// RGBCW access (well, in reality, we just use RGB access and CW is derived from temp)
+#define SPECIAL_CHANNEL_BASECOLOR_FIRST 133
+#define SPECIAL_CHANNEL_BASECOLOR_RED	133
+#define SPECIAL_CHANNEL_BASECOLOR_GREEN	134
+#define SPECIAL_CHANNEL_BASECOLOR_BLUE	135
+#define SPECIAL_CHANNEL_BASECOLOR_COOL	136
+#define SPECIAL_CHANNEL_BASECOLOR_WARM	137
+#define SPECIAL_CHANNEL_BASECOLOR_LAST	137
 
 #if PLATFORM_W800
 

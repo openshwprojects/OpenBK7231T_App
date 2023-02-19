@@ -109,13 +109,14 @@ void SIM_Hack_ClearSimulatedPinRoles();
 void SIM_ClearOBK() {
 	if (bObkStarted) {
 		DRV_ShutdownAllDrivers();
-		LOG_DeInit();
 		release_lfs();
 		SIM_Hack_ClearSimulatedPinRoles();
 		WIN_ResetMQTT();
 		CMD_ExecuteCommand("clearAll", 0);
 		CMD_ExecuteCommand("led_expoMode", 0);
 		Main_Init();
+		// LOG deinit after main init so commands will be re-added
+		LOG_DeInit();
 	}
 }
 void SIM_DoFreshOBKBoot() {
@@ -123,6 +124,7 @@ void SIM_DoFreshOBKBoot() {
 	Main_Init();
 }
 void Win_DoUnitTests() {
+	Test_Commands_Calendar();
 	Test_Commands_Generic();
 	Test_Demo_SimpleShuttersScript();
 	Test_Role_ToggleAll();

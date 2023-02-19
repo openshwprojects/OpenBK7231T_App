@@ -34,10 +34,6 @@ commandResult_t SHT3X_Calibrate(const void* context, const char* cmd, const char
 	return CMD_RES_OK;
 }
 
-
-
-
-
 void SHT3X_StopPer() {
 	Soft_I2C_Start(SHT3X_I2C_ADDR);
 	// Stop Periodic Data
@@ -61,11 +57,14 @@ commandResult_t SHT3X_ChangePer(const void* context, const char* cmd, const char
 	uint8_t g_msb, g_lsb;
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
 	if (Tokenizer_GetArgsCount() < 2) {
-		ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT Change Per: require MSB and LSB");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+		ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT Change Per: no arg using default0x23 0x22");
+		g_msb = 0x23;
+		g_lsb = 0x22;
 	}
-	g_msb = Tokenizer_GetArgInteger(0);
-	g_lsb = Tokenizer_GetArgInteger(1);
+	else {
+		g_msb = Tokenizer_GetArgInteger(0);
+		g_lsb = Tokenizer_GetArgInteger(1);
+	}
 	SHT3X_StopPer();
 	//give some time for SHT to stop Periodicity
 	rtos_delay_milliseconds(25);
@@ -212,6 +211,181 @@ commandResult_t SHT3X_GetStatusCmd(const void* context, const char* cmd, const c
 	SHT3X_GetStatus();
 	return CMD_RES_OK;
 }
+void SHT3X_ClearStatus()
+{
+	Soft_I2C_Start(SHT3X_I2C_ADDR);
+	Soft_I2C_WriteByte(0x30);			//Clear status
+	Soft_I2C_WriteByte(0x41);          //clear status
+	Soft_I2C_Stop();
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT : Clear status");
+}
+commandResult_t SHT3X_ClearStatusCmd(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+	SHT3X_ClearStatus();
+	return CMD_RES_OK;
+}
+// Alert management for SHT3X
+static void SHT3X_ReadAlertLimitData(float* humidity, float* temperature)
+{
+	uint8_t data[2];
+	uint16_t finaldata;
+	Soft_I2C_Start(SHT3X_I2C_ADDR | 1);
+	Soft_I2C_ReadBytes(data, 2);
+	Soft_I2C_Stop();
+	ADDLOG_DEBUG(LOG_FEATURE_SENSOR, "SHT Get alert: Reading below value %02X %02X", data[0], data[1]);
+	finaldata = (data[0] << 8) | data[1];
+	(*humidity) = 100.0f * (finaldata & 0xFE00) / 65535.0f;
+	finaldata = finaldata << 7;
+	ADDLOG_DEBUG(LOG_FEATURE_SENSOR, "SHT Get alert: Reading below final value %04X", finaldata);
+	(*temperature) = (175.0f * finaldata / 65535.0f) - 45.0f;
+}
+
+static uint8_t SHT3X_CalcCrc(uint8_t* data)
+{
+	uint8_t bit;        // bit mask
+	uint8_t crc = 0xFF; // calculated checksum
+
+	// calculates 8-Bit checksum with given polynomial
+	crc ^= (data[0]);
+	for (bit = 8; bit > 0; --bit)
+	{
+		if ((crc & 0x80))
+		{
+			crc = (crc << 1) ^ 0x131;
+		}
+		else
+		{
+			crc = (crc << 1);
+		}
+	}
+
+	crc ^= (data[1]);
+	for (bit = 8; bit > 0; --bit)
+	{
+		if ((crc & 0x80))
+		{
+			crc = (crc << 1) ^ 0x131;
+		}
+		else
+		{
+			crc = (crc << 1);
+		}
+	}
+
+	return crc;
+}
+
+void SHT3X_WriteAlertLimitData(float humidity, float temperature)
+{
+	uint8_t data[2], checksum;
+	uint16_t finaldata;
+	uint16_t rawHumidity, rawTemperature;
+	if ((humidity < 0.0f) || (humidity > 100.0f)
+		|| (temperature < -45.0f) || (temperature > 130.0f))
+	{
+		ADDLOG_INFO(LOG_FEATURE_CMD, "SHT Set Alert: Value out of limit");
+	}
+	else
+	{
+		rawHumidity = humidity / 100.0f * 65535.0f;
+		rawTemperature = (temperature + 45.0f) / 175.0f * 65535.0f;
+		ADDLOG_DEBUG(LOG_FEATURE_SENSOR, "SHT Set alert: Raw Value temp/hum %02X %02X ", rawTemperature, rawHumidity);
+		finaldata = (rawHumidity & 0xFE00) | ((rawTemperature >> 7) & 0x001FF);
+		data[0] = finaldata >> 8;
+		data[1] = finaldata & 0xFF;
+		checksum = SHT3X_CalcCrc(data);
+		Soft_I2C_WriteByte(data[0]);
+		Soft_I2C_WriteByte(data[1]);
+		Soft_I2C_WriteByte(checksum);
+		ADDLOG_DEBUG(LOG_FEATURE_SENSOR, "SHT Set alert: writing below value %02X %02X %02X", data[0], data[1], checksum);
+	}
+}
+
+void SHT3X_GetAlertLimits()
+{
+	float temperatureLowSet, temperatureLowClear, temperatureHighClear, temperatureHighSet;
+	float humidityLowSet, humidityLowClear, humidityHighClear, humidityHighSet;
+	// read humidity & temperature alter limits, high set
+	Soft_I2C_Start(SHT3X_I2C_ADDR);
+	Soft_I2C_WriteByte(0xe1);
+	Soft_I2C_WriteByte(0x1f);
+	Soft_I2C_Stop();
+	SHT3X_ReadAlertLimitData(&humidityHighSet, &temperatureHighSet);
+
+	Soft_I2C_Start(SHT3X_I2C_ADDR);
+	Soft_I2C_WriteByte(0xe1);
+	Soft_I2C_WriteByte(0x14);
+	Soft_I2C_Stop();
+	SHT3X_ReadAlertLimitData(&humidityHighClear, &temperatureHighClear);
+
+	Soft_I2C_Start(SHT3X_I2C_ADDR);
+	Soft_I2C_WriteByte(0xe1);
+	Soft_I2C_WriteByte(0x09);
+	Soft_I2C_Stop();
+	SHT3X_ReadAlertLimitData(&humidityLowClear, &temperatureLowClear);
+
+	Soft_I2C_Start(SHT3X_I2C_ADDR);
+	Soft_I2C_WriteByte(0xe1);
+	Soft_I2C_WriteByte(0x02);
+	Soft_I2C_Stop();
+	SHT3X_ReadAlertLimitData(&humidityLowSet, &temperatureLowSet);
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT : Read Alert conf _ Temp : %f / %f / %f / %f ", temperatureLowSet, temperatureLowClear, temperatureHighClear, temperatureHighSet);
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT : Read Alert conf _ Hum : %f / %f / %f / %f ", humidityLowSet, humidityLowClear, humidityHighClear, humidityHighSet);
+}
+commandResult_t SHT3X_ReadAlertCmd(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+	SHT3X_GetAlertLimits();
+	return CMD_RES_OK;
+}
+
+commandResult_t SHT3X_SetAlertCmd(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+	float temperatureLowSet, temperatureLowClear, temperatureHighClear, temperatureHighSet;
+	float humidityLowSet, humidityLowClear, humidityHighClear, humidityHighSet;
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+	if (Tokenizer_GetArgsCount() < 4) {
+		ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT Set alert: require Temp low/high and Humidity low/high arg");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	temperatureHighSet = Tokenizer_GetArgFloat(0);
+	temperatureLowSet = Tokenizer_GetArgFloat(1);
+	temperatureLowClear = Tokenizer_GetArgFloat(1) + 0.5;
+	temperatureHighClear = Tokenizer_GetArgFloat(0) - 0.5;
+
+	humidityHighSet = Tokenizer_GetArgFloat(2);
+	humidityLowSet = Tokenizer_GetArgFloat(3);
+	humidityLowClear = Tokenizer_GetArgFloat(3) + 2.0f;
+	humidityHighClear = Tokenizer_GetArgFloat(2) - 2.0f;
+
+	Soft_I2C_Start(SHT3X_I2C_ADDR);
+	Soft_I2C_WriteByte(0x61);
+	Soft_I2C_WriteByte(0x1d);
+	SHT3X_WriteAlertLimitData(humidityHighSet, temperatureHighSet);
+	Soft_I2C_Stop();
+
+	Soft_I2C_Start(SHT3X_I2C_ADDR);
+	Soft_I2C_WriteByte(0x61);
+	Soft_I2C_WriteByte(0x16);
+	SHT3X_WriteAlertLimitData(humidityHighClear, temperatureHighClear);
+	Soft_I2C_Stop();
+
+	Soft_I2C_Start(SHT3X_I2C_ADDR);
+	Soft_I2C_WriteByte(0x61);
+	Soft_I2C_WriteByte(0x0B);
+	SHT3X_WriteAlertLimitData(humidityLowClear, temperatureLowClear);
+	Soft_I2C_Stop();
+
+	Soft_I2C_Start(SHT3X_I2C_ADDR);
+	Soft_I2C_WriteByte(0x61);
+	Soft_I2C_WriteByte(0x00);
+	SHT3X_WriteAlertLimitData(humidityLowSet, temperatureLowSet);
+	Soft_I2C_Stop();
+
+	ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT: set alert for temp %f / %f and humidity %f / %f ", temperatureLowSet, temperatureHighSet, humidityLowSet, humidityHighSet);
+
+	return CMD_RES_OK;
+}
 // startDriver SHT3X
 void SHT3X_Init() {
 
@@ -240,7 +414,7 @@ void SHT3X_Init() {
 	//cmddetail:{"name":"SHT_LaunchPer","args":"[msb][lsb]",
 	//cmddetail:"descr":"Launch/Change periodical capture for SHT Sensor",
 	//cmddetail:"fn":"SHT3X_ChangePer","file":"driver/drv_sht3x.c","requires":"",
-	//cmddetail:"examples":""}
+	//cmddetail:"examples":"SHT_LaunchPer 0x23 0x22"}
 	CMD_RegisterCommand("SHT_LaunchPer", SHT3X_ChangePer, NULL);
 	//cmddetail:{"name":"SHT_StopPer","args":"",
 	//cmddetail:"descr":"Stop periodical capture for SHT Sensor",
@@ -262,6 +436,21 @@ void SHT3X_Init() {
 	//cmddetail:"fn":"SHT3X_GetStatus","file":"driver/drv_sht3x.c","requires":"",
 	//cmddetail:"examples":"SHT_GetStatusCmd"}
 	CMD_RegisterCommand("SHT_GetStatus", SHT3X_GetStatusCmd, NULL);
+	//cmddetail:{"name":"SHT_ClearStatus","args":"",
+	//cmddetail:"descr":"Clear Sensor Status",
+	//cmddetail:"fn":"SHT3X_ClearStatus","file":"driver/drv_sht3x.c","requires":"",
+	//cmddetail:"examples":"SHT_ClearStatusCmd"}
+	CMD_RegisterCommand("SHT_ClearStatus", SHT3X_ClearStatusCmd, NULL);
+	//cmddetail:{"name":"SHT_ReadAlert","args":"",
+	//cmddetail:"descr":"Get Sensor alert configuration",
+	//cmddetail:"fn":"SHT3X_ReadAlertcmd","file":"driver/drv_sht3x.c","requires":"",
+	//cmddetail:"examples":"SHT_ReadAlertCmd"}
+	CMD_RegisterCommand("SHT_ReadAlert", SHT3X_ReadAlertCmd, NULL);
+	//cmddetail:{"name":"SHT_SetAlert","args":"[temp_high, temp_low, hum_high, hum_low]",
+	//cmddetail:"descr":"Set Sensor alert configuration",
+	//cmddetail:"fn":"SHT3X_SetAlertcmd","file":"driver/drv_sht3x.c","requires":"all",
+	//cmddetail:"examples":"SHT_SetAlertCmd"}
+	CMD_RegisterCommand("SHT_SetAlert", SHT3X_SetAlertCmd, NULL);
 }
 
 
@@ -272,4 +461,3 @@ void SHT3X_AppendInformationToHTTPIndexPage(http_request_t* request)
 		hprintf255(request, "WARNING: You don't have configured target channels for temp and humid results, set the first and second channel index in Pins!");
 	}
 }
-

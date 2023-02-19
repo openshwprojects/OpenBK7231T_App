@@ -114,6 +114,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | BP5758D_RGBCW | [HexColor] | Don't use it. It's for direct access of BP5758D driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb | File: driver/drv_bp5758d.c<br/>Function: BP5758D_RGBCW |
 | BP5758D_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP5758D channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: BP5758D_Map 0 1 2 3 4 | File: driver/drv_bp5758d.c<br/>Function: BP5758D_Map |
 | BP5758D_Current | [MaxCurrent] | Sets the maximum current limit for BP5758D driver | File: driver/drv_bp5758d.c<br/>Function: BP5758D_Current |
+| BridgePulseLength | [FloatValue] | Setup value for bridge pulse len | File: driver/drv_bridge_driver.c<br/>Function: Bridge_Pulse_length |
 | setButtonColor | [ButtonIndex][Color] | Sets the colour of custom scriptable HTTP page button | File: driver/drv_httpButtons.c<br/>Function: CMD_setButtonColor |
 | setButtonCommand | [ButtonIndex][Command] | Sets the command of custom scriptable HTTP page button | File: driver/drv_httpButtons.c<br/>Function: CMD_setButtonCommand |
 | setButtonLabel | [ButtonIndex][Label] | Sets the label of custom scriptable HTTP page button | File: driver/drv_httpButtons.c<br/>Function: CMD_setButtonLabel |
@@ -126,17 +127,24 @@ Do not add anything here, as it will overwritten with next rebuild.
 | ntp_timeZoneOfs | [Value] | Sets the time zone offset in hours. Also supports HH:MM syntax if you want to specify value in minutes. For negative values, use -HH:MM syntax, for example -5:30 will shift time by 5 hours and 30 minutes negative. | File: driver/drv_ntp.c<br/>Function: NTP_SetTimeZoneOfs |
 | ntp_setServer | [ServerIP] | Sets the NTP server | File: driver/drv_ntp.c<br/>Function: NTP_SetServer |
 | ntp_info |  | Display NTP related settings | File: driver/drv_ntp.c<br/>Function: NTP_Info |
+| addClockEvent | [Time] [WeekDayFlags] [UniqueIDForRemoval][Command] | Schedule command to run on given time in given day of week. NTP must be running. Time is a time like HH:mm or HH:mm:ss, WeekDayFlag is a bitflag on which day to run, 0xff mean all days, 0x01 means sunday, 0x02 monday, 0x03 sunday and monday, etc, id is an unique id so event can be removede later | File: driver/drv_ntp_events.c<br/>Function: CMD_NTP_AddClockEvent |
+| removeClockEvent | [ID] | Removes clock event wtih given ID | File: driver/drv_ntp_events.c<br/>Function: CMD_NTP_RemoveClockEvent |
+| listClockEvents |  | Print the complete set clock events list | File: driver/drv_ntp_events.c<br/>Function: CMD_NTP_ListEvents |
+| clearClockEvents |  | Removes all set clock events | File: driver/drv_ntp_events.c<br/>Function: CMD_NTP_ClearEvents |
 | toggler_enable | [1or0] | Sets the given output ON or OFF.  handles toggler_enable0, toggler_enable1, etc | File: driver/drv_pwmToggler.c<br/>Function: Toggler_EnableX |
 | toggler_set | [Value] | Sets the VALUE of given output. Handles toggler_set0, toggler_set1, etc. The last digit after command name is changed to slot index. | File: driver/drv_pwmToggler.c<br/>Function: Toggler_SetX |
 | toggler_channel | [ChannelIndex] | handles toggler_channel0, toggler_channel1. Sets channel linked to given toggler slot. | File: driver/drv_pwmToggler.c<br/>Function: Toggler_ChannelX |
 | toggler_name |  | Handles toggler_name0, toggler_name1, etc. Sets the name of a toggler for GUI. | File: driver/drv_pwmToggler.c<br/>Function: Toggler_NameX |
 | SHT_Calibrate |  | Calibrate the SHT Sensor as Tolerance is +/-2 degrees C.<br/>e.g.:SHT_Calibrate -4 10 | File: driver/drv_sht3x.c<br/>Function: SHT3X_Calibrate |
 | SHT_MeasurePer |  | Retrieve Periodical measurement for SHT<br/>e.g.:SHT_Measure | File: driver/drv_sht3x.c<br/>Function: SHT3X_MeasurePer |
-| SHT_LaunchPer | [msb][lsb] | Launch/Change periodical capture for SHT Sensor | File: driver/drv_sht3x.c<br/>Function: SHT3X_ChangePer |
+| SHT_LaunchPer | [msb][lsb] | Launch/Change periodical capture for SHT Sensor<br/>e.g.:SHT_LaunchPer 0x23 0x22 | File: driver/drv_sht3x.c<br/>Function: SHT3X_ChangePer |
 | SHT_StopPer |  | Stop periodical capture for SHT Sensor | File: driver/drv_sht3x.c<br/>Function: SHT3X_StopPerCmd |
 | SHT_Measure |  | Retrieve OneShot measurement for SHT<br/>e.g.:SHT_Measure | File: driver/drv_sht3x.c<br/>Function: SHT3X_Measure |
 | SHT_Heater |  | Activate or Deactivate Heater (0 / 1)<br/>e.g.:SHT_Heater 1 | File: driver/drv_sht3x.c<br/>Function: SHT3X_Heater |
 | SHT_GetStatus |  | Get Sensor Status<br/>e.g.:SHT_GetStatusCmd | File: driver/drv_sht3x.c<br/>Function: SHT3X_GetStatus |
+| SHT_ClearStatus |  | Clear Sensor Status<br/>e.g.:SHT_ClearStatusCmd | File: driver/drv_sht3x.c<br/>Function: SHT3X_ClearStatus |
+| SHT_ReadAlert |  | Get Sensor alert configuration<br/>e.g.:SHT_ReadAlertCmd | File: driver/drv_sht3x.c<br/>Function: SHT3X_ReadAlertcmd |
+| SHT_SetAlert | [temp_high, temp_low, hum_high, hum_low]<br/>Req:all | Set Sensor alert configuration<br/>e.g.:SHT_SetAlertCmd | File: driver/drv_sht3x.c<br/>Function: SHT3X_SetAlertcmd |
 | SM16703P_Test |  | qq | File: driver/drv_ucs1912.c<br/>Function: SM16703P_Test |
 | SM16703P_Send |  | NULL | File: driver/drv_sm16703P.c<br/>Function: SM16703P_Send_Cmd |
 | SM16703P_Test_3xZero |  | NULL | File: driver/drv_sm16703P.c<br/>Function: SM16703P_Test_3xZero |
@@ -155,7 +163,6 @@ Do not add anything here, as it will overwritten with next rebuild.
 | SetupTestPower |  | NULL | File: driver/drv_test_drivers.c<br/>Function: TestPower_Setup |
 | tuyaMcu_testSendTime |  | Sends a example date by TuyaMCU to clock/callendar MCU | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_Send_SetTime_Example |
 | tuyaMcu_sendCurTime |  | Sends a current date by TuyaMCU to clock/callendar MCU. Time is taken from NTP driver, so NTP also should be already running. | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_Send_SetTime_Current |
-| tuyaMcu_fakeHex | [HexString] | Spoofs a fake hex packet so it looks like TuyaMCU send that to us. Used for testing. | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_Fake_Hex |
 | linkTuyaMCUOutputToChannel | [dpId][varType][channelID] | Used to map between TuyaMCU dpIDs and our internal channels. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_LinkTuyaMCUOutputToChannel |
 | tuyaMcu_setDimmerRange | [Min][Max] | Set dimmer range used by TuyaMCU | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_SetDimmerRange |
 | tuyaMcu_sendHeartbeat |  | Send heartbeat to TuyaMCU | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_SendHeartbeat |
@@ -169,6 +176,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | tuyaMcu_defWiFiState |  | Command sets the default WiFi state for TuyaMCU when device is not online. | File: driver/drv_tuyaMCU.c<br/>Function: Cmd_TuyaMCU_Send_RSSI |
 | uartSendHex | [HexString] | Sends raw data by UART, can be used to send TuyaMCU data, but you must write whole packet with checksum yourself | File: driver/drv_tuyaMCU.c<br/>Function: CMD_UART_Send_Hex |
 | uartSendASCII | [AsciiString] | Sends given string by UART. | File: driver/drv_uart.c<br/>Function: CMD_UART_Send_ASCII |
+| uartFakeHex | [HexString] | Spoofs a fake hex packet so it looks like TuyaMCU send that to us. Used for testing. | File: driver/drv_uart.c<br/>Function: CMD_UART_FakeHex |
 | UCS1912_Test |  |  | File: driver/drv_ucs1912.c<br/>Function: UCS1912_Test |
 | lcd_clearAndGoto |  | Clears LCD and go to pos | File: i2c/drv_i2c_lcd_pcf8574t.c<br/>Function: DRV_I2C_LCD_PCF8574_ClearAndGoTo |
 | lcd_goto |  | Go to position on LCD | File: i2c/drv_i2c_lcd_pcf8574t.c<br/>Function: DRV_I2C_LCD_PCF8574_GoTo |

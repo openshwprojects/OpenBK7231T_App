@@ -649,6 +649,21 @@ void SET_LightMode(int newMode) {
 		g_lightMode = newMode;
 	}
 }
+void LED_SetBaseColorByIndex(int i, float f, bool bApply) {
+	if (i < 0 || i >= 5)
+		return;
+	baseColors[i] = f;
+	if (bApply) {
+		if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_ANY_ACTION)) {
+			LED_SetEnableAll(true);
+		}
+
+		// set g_lightMode
+		SET_LightMode(Light_RGB);
+		sendColorChange();
+		apply_smart_light();
+	}
+}
 OBK_Publish_Result LED_SendCurrentLightMode() {
 
 	if(g_lightMode == Light_Temperature) {
