@@ -9,6 +9,7 @@
 #include "drv_uart.h"
 #include "../httpserver/new_http.h"
 #include "../hal/hal_pins.h"
+#include "../hal/hal_adc.h"
 
 #include "drv_battery.h"
 
