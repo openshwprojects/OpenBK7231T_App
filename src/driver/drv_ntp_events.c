@@ -155,6 +155,41 @@ commandResult_t CMD_NTP_AddClockEvent(const void *context, const char *cmd, cons
 
     return CMD_RES_OK;
 }
+// addPeriodValue [ChannelIndex] [Start_DayOfWeek] [Start_HH:MM:SS] [End_DayOfWeek] [End_HH:MM:SS] [Value] [UniqueID] [Flags]
+//commandResult_t CMD_NTP_AddPeriodValue(const void *context, const char *cmd, const char *args, int cmdFlags) {
+//	int start_hour, start_minute, start_second, start_day;
+//	int end_hour, end_minute, end_second, end_day;
+//	const char *s;
+//	int flags;
+//	int id;
+//	int channel;
+//	int value;
+//
+//	Tokenizer_TokenizeString(args, 0);
+//	// following check must be done after 'Tokenizer_TokenizeString',
+//	// so we know arguments count in Tokenizer. 'cmd' argument is
+//	// only for warning display
+//	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 4)) {
+//		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+//	}
+//	channel = Tokenizer_GetArgInteger(0);
+//	start_day = Tokenizer_GetArgInteger(1);
+//	s = Tokenizer_GetArg(2);
+//	if (sscanf(s, "%i:%i:%i", &start_hour, &start_minute, &start_second) <= 1) {
+//		return CMD_RES_BAD_ARGUMENT;
+//	}
+//	end_day = Tokenizer_GetArgInteger(3);
+//	s = Tokenizer_GetArg(4);
+//	if (sscanf(s, "%i:%i:%i", &end_hour, &end_minute, &end_second) <= 1) {
+//		return CMD_RES_BAD_ARGUMENT;
+//	}
+//	value = Tokenizer_GetArgInteger(5);
+//	id = Tokenizer_GetArgInteger(6);
+//	flags = Tokenizer_GetArgInteger(7);
+//
+//
+//	return CMD_RES_OK;
+//}
 
 commandResult_t CMD_NTP_RemoveClockEvent(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int id;
@@ -237,5 +272,6 @@ void NTP_Init_Events() {
 	//cmddetail:"fn":"CMD_NTP_ClearEvents","file":"driver/drv_ntp_events.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("clearClockEvents", CMD_NTP_ClearEvents, NULL);
+	//CMD_RegisterCommand("addPeriodValue", CMD_NTP_AddPeriodValue, NULL);
 }
 
