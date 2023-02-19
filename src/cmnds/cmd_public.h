@@ -200,6 +200,7 @@ bool LED_IsLEDRunning();
 void LED_SetEnableAll(int bEnable);
 int LED_GetEnableAll();
 void LED_GetBaseColorString(char* s);
+void LED_SetBaseColorByIndex(int i, float f, bool bApply);
 int LED_GetMode();
 float LED_GetHue();
 float LED_GetSaturation();

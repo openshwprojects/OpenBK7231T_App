@@ -590,6 +590,21 @@ OBK_Publish_Result sendColorChange() {
 
 	return MQTT_PublishMain_StringString_DeDuped(DEDUP_LED_BASECOLOR_RGB,DEDUP_EXPIRE_TIME,"led_basecolor_rgb",s, 0);
 }
+void LED_SetBaseColorByIndex(int i, float f, bool bApply) {
+	if (i < 0 || i >= 5)
+		return;
+	baseColors[i] = f;
+	if (bApply) {
+		if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_ANY_ACTION)) {
+			LED_SetEnableAll(true);
+		}
+
+		// set g_lightMode
+		SET_LightMode(Light_RGB);
+		sendColorChange();
+		apply_smart_light();
+	}
+}
 void LED_GetBaseColorString(char * s) {
 	byte c[3];
 

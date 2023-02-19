@@ -958,6 +958,10 @@ void CHANNEL_Set(int ch, int iVal, int iFlags) {
 		LED_SetTemperature(iVal, 1);
 		return;
 	}
+	if (ch >= SPECIAL_CHANNEL_BASECOLOR_FIRST && ch <= SPECIAL_CHANNEL_BASECOLOR_LAST) {
+		LED_SetBaseColorByIndex(ch - SPECIAL_CHANNEL_BASECOLOR_FIRST, iVal, 1);
+		return;
+	}
 	if (ch < 0 || ch >= CHANNEL_MAX) {
 		//if(bMustBeSilent==0) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Set: Channel index %i is out of range <0,%i)\n\r", ch, CHANNEL_MAX);
