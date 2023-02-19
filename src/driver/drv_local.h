@@ -69,6 +69,12 @@ void SHT3X_Init();
 void SHT3X_AppendInformationToHTTPIndexPage(http_request_t* request);
 void SHT3X_StopDriver();
 
+void Batt_Init();
+void Batt_OnEverySecond();
+void Batt_AppendInformationToHTTPIndexPage(http_request_t* request);
+void Batt_StopDriver();
+
+
 void DRV_MAX72XX_Init();
 
 void WEMO_Init();
