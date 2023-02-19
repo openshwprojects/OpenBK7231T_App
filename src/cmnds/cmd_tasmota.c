@@ -98,55 +98,6 @@ static commandResult_t powerAll(const void *context, const char *cmd, const char
 }
 
 
-static commandResult_t color(const void *context, const char *cmd, const char *args, int cmdFlags){
-   // if (!wal_strnicmp(cmd, "COLOR", 5)){
-        if (args[0] != '#'){
-            ADDLOG_ERROR(LOG_FEATURE_CMD, "tasCmnd COLOR expected a # prefixed color, you sent %s",args);
-            return 0;
-        } else {
-            const char *c = args;
-            int val = 0;
-            int channel = 0;
-            ADDLOG_DEBUG(LOG_FEATURE_CMD, "tasCmnd COLOR got %s", args);
-            c++;
-            while (*c){
-                char tmp[3];
-                int r;
-                int val100;
-                tmp[0] = *(c++);
-                if (!*c) break;
-                tmp[1] = *(c++);
-                tmp[2] = '\0';
-                r = sscanf(tmp, "%x", &val);
-                if (!r) {
-                    ADDLOG_ERROR(LOG_FEATURE_CMD, "COLOR no sscanf hex result from %s", tmp);
-                    break;
-                }
-                // if this channel is not PWM, find a PWM channel;
-                while ((channel < 32) && (IOR_PWM != CHANNEL_GetRoleForOutputChannel(channel) && IOR_PWM_n != CHANNEL_GetRoleForOutputChannel(channel))) {
-                    channel ++;
-                }
-
-                if (channel >= 32) {
-                    ADDLOG_ERROR(LOG_FEATURE_CMD, "COLOR channel >= 32");
-                    break;
-                }
-
-                val100 = (val * 100)/255;
-            //    ADDLOG_DEBUG(LOG_FEATURE_CMD, "COLOR found chan %d -> val255 %d -> val100 %d (from %s)", channel, val, val100, tmp);
-                CHANNEL_Set(channel, val100, 0);
-                // move to next channel.
-                channel ++;
-            }
-            if (!(*c)){
-              //  ADDLOG_DEBUG(LOG_FEATURE_CMD, "COLOR arg ended");
-            }
-        }
-        return CMD_RES_OK;
-  //  }
-   // return 0;
-}
-
 
 static commandResult_t cmnd_backlog(const void * context, const char *cmd, const char *args, int cmdFlags){
 	const char *subcmd;
@@ -394,11 +345,6 @@ int taslike_commands_init(){
 	//cmddetail:"fn":"powerAll","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("powerAll", powerAll, NULL);
-	//cmddetail:{"name":"color","args":"[HexString]",
-	//cmddetail:"descr":"set PWN color using #RRGGBB[cw][ww]. Do not use it. Use led_basecolor_rgb",
-	//cmddetail:"fn":"color","file":"cmnds/cmd_tasmota.c","requires":"",
-	//cmddetail:"examples":""}
-    CMD_RegisterCommand("color", color, NULL);
 	//cmddetail:{"name":"backlog","args":"[string of commands separated with ;]",
 	//cmddetail:"descr":"run a sequence of ; separated commands",
 	//cmddetail:"fn":"cmnd_backlog","file":"cmnds/cmd_tasmota.c","requires":"",
