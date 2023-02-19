@@ -713,8 +713,14 @@ int JSON_ProcessCommandReply(const char *cmd, const char *arg, void *request, js
 
 		printer(request, "%i",i);
 	}
-	
-
+	else if (!wal_strnicmp(cmd, "led_basecolor_rgb", 17)) {
+		// OBK-specific
+		char tmp[16];
+		LED_GetBaseColorString(tmp);
+		printer(request, "{");
+		printer(request, "\"led_basecolor_rgb\":\"%s\"",tmp);
+		printer(request, "}");
+	}
 	return 0;
 }
 
