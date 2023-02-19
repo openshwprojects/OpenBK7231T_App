@@ -12,6 +12,9 @@
 #ifdef ENABLE_LITTLEFS
 #include "../littlefs/our_lfs.h"
 #endif
+#ifdef PLATFORM_BL602
+#include <wifi_mgmr_ext.h>
+#endif
 
 #define HASH_SIZE 128
 
@@ -60,9 +63,15 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	else {
 		tls_wifi_set_psflag(0, 0);	//Disable powersave but don't save to flash
 	}
-#endif
+#elif defined(PLATFORM_BL602)
+	if (bOn) {
+		wifi_mgmr_sta_powersaving(2);
+	}
+	else {
+		wifi_mgmr_sta_powersaving(0);
+	}
+#endif    
 	g_powersave = bOn;
-
 	return CMD_RES_OK;
 }
 static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const char* args, int cmdFlags) {
