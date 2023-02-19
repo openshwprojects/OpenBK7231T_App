@@ -29,7 +29,13 @@ typedef enum {
 	/// @brief Temperature sensor
 	TEMPERATURE_SENSOR,
 	/// @brief Humidity sensor
-	HUMIDITY_SENSOR
+	HUMIDITY_SENSOR,
+
+	/// @brief Battery level sensor in perc
+	BATTERY_SENSOR,
+	/// @brief Battery votage sensor in mV
+	BATTERY_VOLTAGE_SENSOR
+
 } ENTITY_TYPE;
 
 //unique_id is defined in hass_populate_unique_id and is based on CFG_GetDeviceName() whose size is CGF_DEVICE_NAME_SIZE.

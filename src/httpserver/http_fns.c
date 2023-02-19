@@ -22,7 +22,7 @@
 static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"></form>";
 
 #ifdef WINDOWS
-	// nothing
+// nothing
 #elif PLATFORM_BL602
 
 #elif PLATFORM_W600 || PLATFORM_W800
@@ -30,12 +30,12 @@ static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"
 #elif PLATFORM_XR809
 #include <image/flash.h>
 #elif defined(PLATFORM_BK7231N)
-	// tuya-iotos-embeded-sdk-wifi-ble-bk7231n/sdk/include/tuya_hal_storage.h
+// tuya-iotos-embeded-sdk-wifi-ble-bk7231n/sdk/include/tuya_hal_storage.h
 #include "tuya_hal_storage.h"
 #include "BkDriverFlash.h"
 #else
-	// REALLY? A typo in Tuya SDK? Storge?
-	// tuya-iotos-embeded-sdk-wifi-ble-bk7231t/platforms/bk7231t/tuya_os_adapter/include/driver/tuya_hal_storge.h
+// REALLY? A typo in Tuya SDK? Storge?
+// tuya-iotos-embeded-sdk-wifi-ble-bk7231t/platforms/bk7231t/tuya_os_adapter/include/driver/tuya_hal_storge.h
 #include "tuya_hal_storge.h"
 #include "BkDriverFlash.h"
 #endif
@@ -134,10 +134,10 @@ void postFormAction(http_request_t* request, char* action, char* value) {
 	hprintf255(request, "<form action=\"%s\"><input type=\"submit\" value=\"%s\"/></form>", action, value);
 }
 
-void poststr_h2(http_request_t* request, const char *content) {
+void poststr_h2(http_request_t* request, const char* content) {
 	hprintf255(request, "<h2>%s</h2>", content);
 }
-void poststr_h4(http_request_t* request, const char *content) {
+void poststr_h4(http_request_t* request, const char* content) {
 	hprintf255(request, "<h4>%s</h4>", content);
 }
 
@@ -374,7 +374,7 @@ int http_fn_index(http_request_t* request) {
 			// DHT pin has two channels - temperature and humidity
 			poststr(request, "<tr><td>");
 			iValue = CHANNEL_Get(PIN_GetPinChannelForPinIndex(i));
-			hprintf255(request, "Sensor %s on pin %i temperature %.2fC", PIN_RoleToString(role), i, (float)(iValue*0.1f));
+			hprintf255(request, "Sensor %s on pin %i temperature %.2fC", PIN_RoleToString(role), i, (float)(iValue * 0.1f));
 			iValue = CHANNEL_Get(PIN_GetPinChannel2ForPinIndex(i));
 			hprintf255(request, ", humidity %.1f%%<br>", (float)iValue);
 			poststr(request, "</td></tr>");
@@ -855,12 +855,13 @@ int http_fn_index(http_request_t* request) {
 		hprintf255(request, "<h5>MQTT State: not configured<br>");
 	}
 	else {
-		const char *stateStr;
-		const char *colorStr;
+		const char* stateStr;
+		const char* colorStr;
 		if (mqtt_reconnect > 0) {
 			stateStr = "awaiting reconnect";
 			colorStr = "orange";
-		} else if (Main_HasMQTTConnected() == 1) {
+		}
+		else if (Main_HasMQTTConnected() == 1) {
 			stateStr = "connected";
 			colorStr = "green";
 		}
@@ -869,7 +870,7 @@ int http_fn_index(http_request_t* request) {
 			colorStr = "yellow";
 		}
 		hprintf255(request, "<h5>MQTT State: <span style=\"color:%s\">%s</span> RES: %d(%s)<br>", colorStr,
-			stateStr,MQTT_GetConnectResult(), get_error_name(MQTT_GetConnectResult()));
+			stateStr, MQTT_GetConnectResult(), get_error_name(MQTT_GetConnectResult()));
 		hprintf255(request, "MQTT ErrMsg: %s <br>", (MQTT_GetStatusMessage() != NULL) ? MQTT_GetStatusMessage() : "");
 		hprintf255(request, "MQTT Stats:CONN: %d PUB: %d RECV: %d ERR: %d </h5>", MQTT_GetConnectEvents(),
 			MQTT_GetPublishEventCounter(), MQTT_GetReceivedEventCounter(), MQTT_GetPublishErrorCounter());
@@ -1424,7 +1425,7 @@ int http_fn_flash_read_tool(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
-const char *CMD_GetResultString(commandResult_t r) {
+const char* CMD_GetResultString(commandResult_t r) {
 	if (r == CMD_RES_OK)
 		return "OK";
 	if (r == CMD_RES_EMPTY_STRING)
@@ -1444,9 +1445,9 @@ void LOG_SetCommandHTTPRedirectReply(http_request_t* request);
 
 int http_fn_cmd_tool(http_request_t* request) {
 	commandResult_t res;
-	const char *resStr;
+	const char* resStr;
 	char tmpA[128];
-	char *long_str_alloced = 0;
+	char* long_str_alloced = 0;
 	int commandLen;
 
 	http_setup(request, httpMimeTypeHTML);
@@ -1608,7 +1609,7 @@ int http_fn_cfg_quick(http_request_t* request) {
 	return 0;
 }
 
-void doHomeAssistantDiscovery(const char *topic, http_request_t *request) {
+void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	int i;
 	int relayCount;
 	int pwmCount;
@@ -1616,6 +1617,7 @@ void doHomeAssistantDiscovery(const char *topic, http_request_t *request) {
 	bool ledDriverChipRunning;
 	HassDeviceInfo* dev_info = NULL;
 	bool measuringPower = false;
+	bool measuringBattery = false;
 	struct cJSON_Hooks hooks;
 	bool discoveryQueued = false;
 
@@ -1626,6 +1628,7 @@ void doHomeAssistantDiscovery(const char *topic, http_request_t *request) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	measuringPower = DRV_IsMeasuringPower();
 #endif
+	measuringBattery = DRV_IsRunning("BATTERY");
 
 	get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
 
@@ -1705,6 +1708,18 @@ void doHomeAssistantDiscovery(const char *topic, http_request_t *request) {
 	}
 #endif
 
+	if (measuringBattery == true) {
+		dev_info = hass_init_sensor_device_info(BATTERY_SENSOR, 0);
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+
+		dev_info = hass_init_sensor_device_info(BATTERY_VOLTAGE_SENSOR, 0);
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+
+		discoveryQueued = true;
+	}
+
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if (IS_PIN_DHT_ROLE(g_cfg.pins.roles[i]) || IS_PIN_TEMP_HUM_SENSOR_ROLE(g_cfg.pins.roles[i])) {
 			dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, PIN_GetPinChannelForPinIndex(i));
@@ -1723,7 +1738,7 @@ void doHomeAssistantDiscovery(const char *topic, http_request_t *request) {
 		MQTT_InvokeCommandAtEnd(PublishChannels);
 	}
 	else {
-		const char *msg = "No relay, PWM, sensor or power driver running.";
+		const char* msg = "No relay, PWM, sensor or power driver running.";
 		if (request) {
 			poststr(request, msg);
 			poststr(request, NULL);
@@ -1782,7 +1797,7 @@ void http_generate_cw_cfg(http_request_t* request, const char* clientId) {
 	http_generate_singleColor_cfg(request, clientId);
 }
 
-void hprintf_qos_payload(http_request_t* request, const char *clientId){
+void hprintf_qos_payload(http_request_t* request, const char* clientId) {
 	poststr(request, "    qos: 1\n");
 	poststr(request, "    payload_on: 1\n");
 	poststr(request, "    payload_off: 0\n");
@@ -1963,7 +1978,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 	return 0;
 }
 
-const char *skipToNextWord(const char *p) {
+const char* skipToNextWord(const char* p) {
 	while (isWhiteSpace(*p) == false) {
 		if (*p == 0)
 			return p;
@@ -1979,7 +1994,7 @@ const char *skipToNextWord(const char *p) {
 
 int http_fn_cm(http_request_t* request) {
 	char tmpA[128];
-	char *long_str_alloced = 0;
+	char* long_str_alloced = 0;
 	int commandLen;
 
 	http_setup(request, httpMimeTypeJson);
@@ -2184,7 +2199,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 		}
 		// Secondary linked channel
 		// For button, is relay index to toggle on double click
-		if (si == IOR_Button || si == IOR_Button_n || IS_PIN_DHT_ROLE(si) || IS_PIN_TEMP_HUM_SENSOR_ROLE(si) )
+		if (si == IOR_Button || si == IOR_Button_n || IS_PIN_DHT_ROLE(si) || IS_PIN_TEMP_HUM_SENSOR_ROLE(si))
 		{
 			hprintf255(request, "<input class=\"hele\" name=\"e%i\" type=\"text\" value=\"%i\"/>", i, ch2);
 		}
@@ -2238,7 +2253,7 @@ const char* g_obk_flagNames[] = {
 	"[UART] Enable UART command line",
 	"[LED] Use old linear brightness mode, ignore gamma ramp",
 	"[MQTT] Apply channel type multiplier on (if any) on channel value before publishing it",
-	"error",
+	"[HASS] Does not push avaibility for sensor to keep value (update time still work)",
 	"error",
 	"error",
 	"error",
@@ -2469,7 +2484,7 @@ int http_fn_cfg_dgr(http_request_t* request) {
 
 void XR809_RequestOTAHTTP(const char* s);
 
-void OTA_RequestDownloadFromHTTP(const char *s) {
+void OTA_RequestDownloadFromHTTP(const char* s) {
 #if WINDOWS
 
 #elif PLATFORM_BL602

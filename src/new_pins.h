@@ -81,8 +81,8 @@ enum IORole {
 	IOR_SM2235_DAT,
 	IOR_SM2235_CLK,
 
-    IOR_BridgeForward,
-    IOR_BridgeReverse,
+	IOR_BridgeForward,
+	IOR_BridgeReverse,
 
 	IOR_Total_Options,
 };
@@ -173,33 +173,33 @@ typedef enum {
 #if PLATFORM_W800
 
 typedef struct pinsState_s {
-    // All above values are indexed by physical pin index
-    // (so we assume we have maximum of 32 pins)
-    byte roles[48];
-    byte channels[48];
-    // extra channels array - this is needed for
-    // buttons, so button can toggle one relay on single click
-    // and other relay on double click
-    byte channels2[48];
-    // This single field above, is indexed by CHANNEL INDEX
-    // (not by pin index)
-    byte channelTypes[CHANNEL_MAX];
+	// All above values are indexed by physical pin index
+	// (so we assume we have maximum of 32 pins)
+	byte roles[48];
+	byte channels[48];
+	// extra channels array - this is needed for
+	// buttons, so button can toggle one relay on single click
+	// and other relay on double click
+	byte channels2[48];
+	// This single field above, is indexed by CHANNEL INDEX
+	// (not by pin index)
+	byte channelTypes[CHANNEL_MAX];
 } pinsState_t;
 
 #else
 
 typedef struct pinsState_s {
-    // All above values are indexed by physical pin index
-    // (so we assume we have maximum of 32 pins)
-    byte roles[32];
-    byte channels[32];
-    // extra channels array - this is needed for
-    // buttons, so button can toggle one relay on single click
-    // and other relay on double click
-    byte channels2[32];
-    // This single field above, is indexed by CHANNEL INDEX
-    // (not by pin index)
-    byte channelTypes[CHANNEL_MAX];
+	// All above values are indexed by physical pin index
+	// (so we assume we have maximum of 32 pins)
+	byte roles[32];
+	byte channels[32];
+	// extra channels array - this is needed for
+	// buttons, so button can toggle one relay on single click
+	// and other relay on double click
+	byte channels2[32];
+	// This single field above, is indexed by CHANNEL INDEX
+	// (not by pin index)
+	byte channelTypes[CHANNEL_MAX];
 } pinsState_t;
 
 #endif
@@ -239,8 +239,9 @@ typedef struct pinsState_s {
 #define OBK_FLAG_CMD_ACCEPT_UART_COMMANDS			31
 #define OBK_FLAG_LED_USE_OLD_LINEAR_MODE			32
 #define OBK_FLAG_PUBLISH_MULTIPLIED_VALUES			33
+#define OBK_FLAG_NOT_PUBLISH_AVAIBILITY_SENSOR		34
 
-#define OBK_TOTAL_FLAGS 34
+#define OBK_TOTAL_FLAGS 35
 
 
 #define CGF_MQTT_CLIENT_ID_SIZE			64
@@ -365,11 +366,11 @@ typedef struct mainConfig_s {
 	// offset 0x000004BC
 	unsigned long LFS_Size; // szie of LFS volume.  it's aligned against the end of OTA
 #if PLATFORM_W800
-    byte unusedSectorAB[71];
+	byte unusedSectorAB[71];
 #else    
 	byte unusedSectorAB[119];
 #endif    
-    ledRemap_t ledRemap;
+	ledRemap_t ledRemap;
 	led_corr_t led_corr;
 	// alternate topic name for receiving MQTT commands
 	// offset 0x00000554
@@ -394,7 +395,7 @@ extern char g_enable_pins;
 #define CHANNEL_SET_FLAG_SKIP_MQTT	2
 #define CHANNEL_SET_FLAG_SILENT		4
 
-void PIN_ticks(void *param);
+void PIN_ticks(void* param);
 
 void PIN_set_wifi_led(int value);
 void PIN_AddCommands(void);
@@ -440,7 +441,7 @@ bool CHANNEL_IsInUse(int ch);
 void Channel_SaveInFlashIfNeeded(int ch);
 int CHANNEL_FindMaxValueForChannel(int ch);
 // cmd_channels.c
-const char *CHANNEL_GetLabel(int ch);
+const char* CHANNEL_GetLabel(int ch);
 //ledRemap_t *CFG_GetLEDRemap();
 
 void get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount);
@@ -452,7 +453,7 @@ int h_isChannelDigitalInput(int tg_ch);
 //int PIN_GetPWMIndexForPinIndex(int pin);
 
 int PIN_ParsePinRoleName(const char* name);
-const char *PIN_RoleToString(int role);
+const char* PIN_RoleToString(int role);
 
 // from new_builtin.c
 /*
