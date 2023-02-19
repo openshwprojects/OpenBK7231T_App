@@ -69,6 +69,11 @@ void SHT3X_Init();
 void SHT3X_AppendInformationToHTTPIndexPage(http_request_t* request);
 void SHT3X_StopDriver();
 
+void Batt_Init();
+void Batt_AppendInformationToHTTPIndexPage(http_request_t* request);
+void Batt_OnEverySecond();
+void Batt_StopDriver();
+
 void DRV_MAX72XX_Init();
 
 void WEMO_Init();
@@ -86,8 +91,8 @@ bool Soft_I2C_Start(uint8_t addr);
 void Soft_I2C_Stop(void);
 uint8_t Soft_I2C_ReadByte(bool nack);
 void Soft_I2C_ReadBytes(uint8_t* buf, int numOfBytes);
-commandResult_t CMD_LEDDriver_Map(const void *context, const char *cmd, const char *args, int flags);
-commandResult_t CMD_LEDDriver_WriteRGBCW(const void *context, const char *cmd, const char *args, int flags);
+commandResult_t CMD_LEDDriver_Map(const void* context, const char* cmd, const char* args, int flags);
+commandResult_t CMD_LEDDriver_WriteRGBCW(const void* context, const char* cmd, const char* args, int flags);
 void LED_I2CDriver_WriteRGBCW(float* finalRGBCW);
 
 /* Bridge driver *********************************************/
