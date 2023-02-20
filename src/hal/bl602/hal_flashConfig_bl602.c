@@ -14,18 +14,6 @@ void BL602_InitEasyFlashIfNeeded(){
 	}
 }
 
-// BL_Err_Type EF_Ctrl_Write_MAC_Address_Opt(uint8_t slot,uint8_t mac[6],uint8_t program)
-// is called by 
-// int8_t mfg_efuse_write_macaddr_pre(uint8_t mac[6],uint8_t program)
-// is called by 
-// int8_t mfg_media_write_macaddr_pre_need_lock(uint8_t mac[6],uint8_t program)
-// is called by 
-// int8_t mfg_media_write_macaddr_pre_with_lock(uint8_t mac[6], uint8_t program);
-// from: OpenBL602\components\bl602\bl602_std\bl602_std\StdDriver\Inc\bl602_mfg_media.h
-int WiFI_SetMacAddress(char *mac) {
-	return 0;
-
-}
 #define EASYFLASH_MY_OBK_CONF     "mY0bcFg"
 
 int HAL_Configuration_ReadConfigMemory(void *target, int dataLen){
