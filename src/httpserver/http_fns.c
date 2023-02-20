@@ -1628,7 +1628,9 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	measuringPower = DRV_IsMeasuringPower();
 #endif
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	measuringBattery = DRV_IsRunning("BATTERY");
+#endif
 
 	get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
 
