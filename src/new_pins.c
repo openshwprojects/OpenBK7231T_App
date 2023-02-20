@@ -1561,70 +1561,67 @@ void PIN_ticks(void* param)
 	}
 
 }
+const char *g_channelTypeNames[] = {
+	"Default",
+	"Error",
+	"Temperature",
+	"Humidity",
+	// most likely will not be used
+	// but it's humidity value times 10
+	// TuyaMCU sends 225 instead of 22.5%
+	"Humidity_div10",
+	"Temperature_div10",
+	"Toggle",
+	// 0-100 range
+	"Dimmer",
+	"LowMidHigh",
+	"TextField",
+	"ReadOnly",
+	// off (0) and 3 speeds
+	"OffLowMidHigh",
+	// off (0) and 5 speeds
+	"OffLowestLowMidHighHighest",
+	// only 5 speeds
+	"LowestLowMidHighHighest",
+	// like dimmer, but 0-255
+	"Dimmer256",
+	// like dimmer, but 0-1000
+	"Dimmer1000",
+	// for TuyaMCU power metering
+	//NOTE: not used for BL0937 etc
+	"Frequency_div100",
+	"Voltage_div10",
+	"Power",
+	"Current_div100",
+	"ActivePower",
+	"PowerFactor_div1000",
+	"ReactivePower",
+	"EnergyTotal_kWh_div1000",
+	"EnergyExport_kWh_div1000",
+	"EnergyToday_kWh_div1000",
+	"Current_div1000",
+	"EnergyTotal_kWh_div100",
+	"OpenClosed",
+	"OpenClosed_Inv",
+	"BatteryLevelPercent",
+	"OffDimBright",
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
+};
 // setChannelType 3 LowMidHigh
 int CHANNEL_ParseChannelType(const char* s) {
-	if (!stricmp(s, "temperature"))
-		return ChType_Temperature;
-	if (!stricmp(s, "humidity"))
-		return ChType_Humidity;
-	if (!stricmp(s, "humidity_div10"))
-		return ChType_Humidity_div10;
-	if (!stricmp(s, "temperature_div10"))
-		return ChType_Temperature_div10;
-	if (!stricmp(s, "toggle"))
-		return ChType_Toggle;
-	if (!stricmp(s, "dimmer"))
-		return ChType_Dimmer;
-	if (!stricmp(s, "dimmer256"))
-		return ChType_Dimmer256;
-	if (!stricmp(s, "dimmer1000"))
-		return ChType_Dimmer1000;
-	if (!stricmp(s, "LowMidHigh"))
-		return ChType_LowMidHigh;
-	if (!stricmp(s, "OffLowMidHigh"))
-		return ChType_OffLowMidHigh;
-	if (!stricmp(s, "OffLowestLowMidHighHighest"))
-		return ChType_OffLowestLowMidHighHighest;
-	if (!stricmp(s, "LowestLowMidHighHighest"))
-		return ChType_LowestLowMidHighHighest;
-	if (!stricmp(s, "default"))
-		return ChType_Default;
-	if (!stricmp(s, "TextField"))
-		return ChType_TextField;
-	if (!stricmp(s, "ReadOnly"))
-		return ChType_ReadOnly;
-	if (!stricmp(s, "Frequency_div100"))
-		return ChType_Frequency_div100;
-	if (!stricmp(s, "Voltage_div10"))
-		return ChType_Voltage_div10;
-	if (!stricmp(s, "Power"))
-		return ChType_Power;
-	if (!stricmp(s, "Current_div100"))
-		return ChType_Current_div100;
-	if (!stricmp(s, "ActivePower"))
-		return ChType_ActivePower;
-	if (!stricmp(s, "PowerFactor_div1000"))
-		return ChType_PowerFactor_div1000;
-	if (!stricmp(s, "ReactivePower"))
-		return ChType_ReactivePower;
-	if (!stricmp(s, "EnergyTotal_kWh_div1000"))
-		return ChType_EnergyTotal_kWh_div1000;
-	if (!stricmp(s, "EnergyTotal_kWh_div100"))
-		return ChType_EnergyTotal_kWh_div100;
-	if (!stricmp(s, "EnergyExport_kWh_div1000"))
-		return ChType_EnergyExport_kWh_div1000;
-	if (!stricmp(s, "EnergyToday_kWh_div1000"))
-		return ChType_EnergyToday_kWh_div1000;
-	if (!stricmp(s, "Current_div1000"))
-		return ChType_Current_div1000;
-	if (!stricmp(s, "OpenClosed"))
-		return ChType_OpenClosed;
-	if (!stricmp(s, "OpenClosed_inv"))
-		return ChType_OpenClosed_Inv;
-	if (!stricmp(s, "BatteryLevelPercent"))
-		return ChType_BatteryLevelPercent;
-	if (!stricmp(s, "OffDimBright"))
-		return ChType_OffDimBright;
+	int i;
+	for (i = 0; i < ChType_Max; i++) {
+		if (!stricmp(g_channelTypeNames[i], s)) {
+			return i;
+		}
+	}
 	return ChType_Error;
 }
 static commandResult_t CMD_setButtonHoldRepeat(const void* context, const char* cmd, const char* args, int cmdFlags) {

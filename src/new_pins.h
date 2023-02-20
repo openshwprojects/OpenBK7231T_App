@@ -135,6 +135,7 @@ typedef enum {
 	ChType_BatteryLevelPercent,
 	ChType_OffDimBright,
 
+	ChType_Max,
 } ChannelType;
 
 

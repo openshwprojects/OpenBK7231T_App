@@ -137,6 +137,22 @@ void Test_Commands_Channels() {
 	SELFTEST_ASSERT_CHANNEL(19, 1191);
 	SELFTEST_ASSERT_CHANNEL(20, 4);
 
+	CMD_ExecuteCommand("setChannelType 0 temperature", 0);
+	SELFTEST_ASSERT_CHANNELTYPE(0, ChType_Temperature);
+	CMD_ExecuteCommand("setChannelType 1 humidity", 0);
+	SELFTEST_ASSERT_CHANNELTYPE(1, ChType_Humidity);
+	CMD_ExecuteCommand("setChannelType 2 Dimmer1000", 0);
+	SELFTEST_ASSERT_CHANNELTYPE(2, ChType_Dimmer1000);
+	CMD_ExecuteCommand("setChannelType 3 BatteryLevelPercent", 0);
+	SELFTEST_ASSERT_CHANNELTYPE(3, ChType_BatteryLevelPercent);
+	CMD_ExecuteCommand("setChannelType 4 Current_div1000", 0);
+	SELFTEST_ASSERT_CHANNELTYPE(4, ChType_Current_div1000);
+	CMD_ExecuteCommand("setChannelType 5 OpenClosed", 0);
+	SELFTEST_ASSERT_CHANNELTYPE(5, ChType_OpenClosed);
+	CMD_ExecuteCommand("setChannelType 6 EnergyTotal_kWh_div100", 0);
+	SELFTEST_ASSERT_CHANNELTYPE(6, ChType_EnergyTotal_kWh_div100);
+	CMD_ExecuteCommand("setChannelType 7 OpenClosed_Inv", 0);
+	SELFTEST_ASSERT_CHANNELTYPE(7, ChType_OpenClosed_Inv);
 }
 
 
