@@ -32,7 +32,7 @@ typedef enum {
 	/// @brief Temperature sensor
 	TEMPERATURE_SENSOR,
 	/// @brief Humidity sensor
-	HUMIDITY_SENSOR
+	HUMIDITY_SENSOR,
 
 	/// @brief Battery level sensor in perc
 	BATTERY_SENSOR,
