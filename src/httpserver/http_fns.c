@@ -1629,7 +1629,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	measuringPower = DRV_IsMeasuringPower();
 #endif
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
-	measuringBattery = DRV_IsRunning("BATTERY");
+	measuringBattery = DRV_IsRunning("Battery");
 #endif
 
 	get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
