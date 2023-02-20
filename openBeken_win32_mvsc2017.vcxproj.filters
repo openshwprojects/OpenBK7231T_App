@@ -519,6 +519,9 @@
     <ClCompile Include="src\selftest\selftest_cmd_calendar.c">
       <Filter>SelfTest</Filter>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_battery.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />

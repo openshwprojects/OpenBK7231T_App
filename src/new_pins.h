@@ -456,6 +456,8 @@ int h_isChannelDigitalInput(int tg_ch);
 int PIN_ParsePinRoleName(const char* name);
 const char *PIN_RoleToString(int role);
 
+extern const char *g_channelTypeNames[];
+
 // from new_builtin.c
 /*
 

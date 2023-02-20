@@ -706,6 +706,13 @@ int JSON_ProcessCommandReply(const char *cmd, const char *arg, void *request, js
 			}
 		}
 	}
+	else if (!wal_strnicmp(cmd, "SetChannelType", 14)) {
+		// OBK-specific
+		int i = atoi(arg);
+		i = CHANNEL_GetType(i);
+
+		printer(request, "%i", i);
+	}
 	else if (!wal_strnicmp(cmd, "GetChannel", 10) || !wal_strnicmp(cmd, "SetChannel", 10) || !wal_strnicmp(cmd, "AddChannel", 10)) {
 		// OBK-specific
 		int i = atoi(arg);
