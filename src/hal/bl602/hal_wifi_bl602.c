@@ -2,6 +2,7 @@
 
 #include "../hal_wifi.h"
 #include "../../new_common.h"
+#include "../../new_cfg.h"
 
 #include <string.h>
 #include <cli.h>
@@ -42,7 +43,8 @@ void HAL_ConnectToWiFi(const char *ssid, const char *psk)
 // from: OpenBL602\components\bl602\bl602_std\bl602_std\StdDriver\Inc\bl602_mfg_media.h
 int WiFI_SetMacAddress(char *mac) {
 	wifi_mgmr_sta_mac_set((uint8_t *)mac);
-	return 0;
+	CFG_SetMac(mac);
+	return 1;
 
 }
 void HAL_DisconnectFromWifi()
