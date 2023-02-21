@@ -583,9 +583,9 @@ void CFG_InitAndLoad() {
 	} else {
 #if defined(PLATFORM_XR809) || defined(PLATFORM_BL602)
 		if (g_cfg.mac[0] == 0 && g_cfg.mac[1] == 0 && g_cfg.mac[2] == 0 && g_cfg.mac[3] == 0 && g_cfg.mac[4] == 0 && g_cfg.mac[5] == 0) {
-			WiFI_GetMacAddress(g_cfg.mac);
+			WiFI_GetMacAddress((char*)g_cfg.mac);
 		}
-		WiFI_SetMacAddress(g_cfg.mac);
+		WiFI_SetMacAddress((char*)g_cfg.mac);
 #endif
 		addLogAdv(LOG_WARN, LOG_FEATURE_CFG, "CFG_InitAndLoad: Correct config has been loaded with %i changes count.",g_cfg.changeCounter);
 	}
