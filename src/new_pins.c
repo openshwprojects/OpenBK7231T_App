@@ -357,7 +357,9 @@ void Button_OnDoubleClick(int index)
 		// double click toggles SECOND CHANNEL linked to this button
 		CHANNEL_Toggle(g_cfg.pins.channels2[index]);
 	}
-
+	if (g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs || g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs_n) {
+		LED_NextColor();
+	}
 	if (g_doubleClickCallback != 0) {
 		g_doubleClickCallback(index);
 	}
@@ -367,6 +369,9 @@ void Button_OnTripleClick(int index)
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i key_triple_press\r\n", index);
 	// fire event - button on pin <index> was 3clicked
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ON3CLICK, index);
+	if (g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs || g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs_n) {
+		LED_NextTemperature();
+	}
 }
 void Button_OnQuadrupleClick(int index)
 {
@@ -385,6 +390,9 @@ void Button_OnLongPressHold(int index) {
 	if (g_cfg.pins.roles[index] == IOR_Button_NextTemperature || g_cfg.pins.roles[index] == IOR_Button_NextTemperature_n) {
 		LED_NextTemperatureHold();
 	}
+	if (g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs || g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs_n) {
+		LED_NextDimmerHold();
+	}
 }
 void Button_OnLongPressHoldStart(int index) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i Button_OnLongPressHoldStart\r\n", index);
@@ -400,7 +408,8 @@ bool BTN_ShouldInvert(int index) {
 	if (g_cfg.pins.roles[index] == IOR_Button_n || g_cfg.pins.roles[index] == IOR_Button_ToggleAll_n ||
 		g_cfg.pins.roles[index] == IOR_DigitalInput_n || g_cfg.pins.roles[index] == IOR_DigitalInput_NoPup_n
 		|| g_cfg.pins.roles[index] == IOR_Button_NextColor_n || g_cfg.pins.roles[index] == IOR_Button_NextDimmer_n
-		|| g_cfg.pins.roles[index] == IOR_Button_NextTemperature_n || g_cfg.pins.roles[index] == IOR_Button_ScriptOnly_n) {
+		|| g_cfg.pins.roles[index] == IOR_Button_NextTemperature_n || g_cfg.pins.roles[index] == IOR_Button_ScriptOnly_n
+		|| g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs_n) {
 		return true;
 	}
 	return false;
@@ -470,10 +479,12 @@ void CHANNEL_SetAll(int iVal, int iFlags) {
 		case IOR_Button_NextTemperature_n:
 		case IOR_Button_ScriptOnly:
 		case IOR_Button_ScriptOnly_n:
+		case IOR_SmartButtonForLEDs:
+		case IOR_SmartButtonForLEDs_n:
 		{
 
 		}
-		break;
+		break; 
 		case IOR_LED:
 		case IOR_LED_n:
 		case IOR_Relay:
@@ -586,6 +597,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_Button_NextTemperature_n:
 		case IOR_Button_ScriptOnly:
 		case IOR_Button_ScriptOnly_n:
+		case IOR_SmartButtonForLEDs:
+		case IOR_SmartButtonForLEDs_n:
 		{
 			//pinButton_s *bt = &g_buttons[index];
 			// TODO: disable button
@@ -645,14 +658,15 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_Button_NextDimmer:
 		case IOR_Button_NextTemperature:
 		case IOR_Button_ScriptOnly:
+		case IOR_SmartButtonForLEDs:
 			falling = 1;
-
 		case IOR_Button_n:
 		case IOR_Button_ToggleAll_n:
 		case IOR_Button_NextColor_n:
 		case IOR_Button_NextDimmer_n:
 		case IOR_Button_NextTemperature_n:
 		case IOR_Button_ScriptOnly_n:
+		case IOR_SmartButtonForLEDs_n:
 		{
 			pinButton_s* bt = &g_buttons[index];
 
@@ -1456,7 +1470,8 @@ void PIN_ticks(void* param)
 				|| g_cfg.pins.roles[i] == IOR_Button_NextColor || g_cfg.pins.roles[i] == IOR_Button_NextColor_n
 				|| g_cfg.pins.roles[i] == IOR_Button_NextDimmer || g_cfg.pins.roles[i] == IOR_Button_NextDimmer_n
 				|| g_cfg.pins.roles[i] == IOR_Button_NextTemperature || g_cfg.pins.roles[i] == IOR_Button_NextTemperature_n
-				|| g_cfg.pins.roles[i] == IOR_Button_ScriptOnly || g_cfg.pins.roles[i] == IOR_Button_ScriptOnly_n) {
+				|| g_cfg.pins.roles[i] == IOR_Button_ScriptOnly || g_cfg.pins.roles[i] == IOR_Button_ScriptOnly_n
+				|| g_cfg.pins.roles[i] == IOR_SmartButtonForLEDs || g_cfg.pins.roles[i] == IOR_SmartButtonForLEDs_n) {
 				//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Test hold %i\r\n",i);
 				PIN_Input_Handler(i, t_diff);
 			}

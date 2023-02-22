@@ -905,6 +905,20 @@ void LED_AddDimmer(int iVal, int addMode, int minValue) {
 void LED_NextTemperatureHold() {
 	LED_AddTemperature(25, true);
 }
+void LED_NextTemperature() {
+	if (g_lightMode != Light_Temperature) {
+		LED_SetTemperature(HASS_TEMPERATURE_MIN, true);
+		return;
+	}
+	if (led_temperature_current == HASS_TEMPERATURE_MIN) {
+		LED_SetTemperature(HASS_TEMPERATURE_CENTER, true);
+	} else if (led_temperature_current == HASS_TEMPERATURE_CENTER) {
+		LED_SetTemperature(HASS_TEMPERATURE_MAX, true);
+	}
+	else {
+		LED_SetTemperature(HASS_TEMPERATURE_MIN, true);
+	}
+}
 void LED_NextDimmerHold() {
 	// dimmer hold will use some kind of min value,
 	// because it's easy to get confused if we set accidentally dimmer to 0

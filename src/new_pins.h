@@ -84,6 +84,13 @@ enum IORole {
     IOR_BridgeForward,
     IOR_BridgeReverse,
 
+	// Smart LED button
+	// Click = toggle power
+	// Hold = control temperature
+	// Double click = next color
+	IOR_SmartButtonForLEDs,
+	IOR_SmartButtonForLEDs_n,
+
 	IOR_Total_Options,
 };
 

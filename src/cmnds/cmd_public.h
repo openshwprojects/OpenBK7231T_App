@@ -121,6 +121,7 @@ enum EventCode {
 
 #define HASS_TEMPERATURE_MIN 154
 #define HASS_TEMPERATURE_MAX 500
+#define HASS_TEMPERATURE_CENTER ((HASS_TEMPERATURE_MAX+HASS_TEMPERATURE_MIN)/2);
 #define KELVIN_TEMPERATURE_MIN 2000
 #define KELVIN_TEMPERATURE_MAX 6500
 
@@ -194,6 +195,7 @@ void LED_GetFinalRGBCW(byte* rgbcw);
 // color indices are as in Tasmota
 void LED_SetColorByIndex(int index);
 void LED_NextColor();
+void LED_NextColorTemperature();
 void LED_ToggleEnabled();
 bool LED_IsLedDriverChipRunning();
 bool LED_IsLEDRunning();
