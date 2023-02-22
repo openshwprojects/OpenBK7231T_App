@@ -179,6 +179,7 @@ void LED_AddDimmer(int iVal, int addMode, int minValue);
 void LED_AddTemperature(int iVal, bool wrapAroundInsteadOfClamp);
 void LED_NextDimmerHold();
 void LED_NextTemperatureHold();
+void LED_NextTemperature();
 int LED_IsRunningDriver();
 float LED_GetTemperature();
 void LED_SetTemperature(int tmpInteger, bool bApply);
