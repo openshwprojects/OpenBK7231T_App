@@ -1,4 +1,3 @@
-
 #if PLATFORM_BEKEN
 
 extern "C" {
@@ -28,7 +27,6 @@ extern "C" {
     #include "../../beken378/driver/i2c/i2c1.h"
     #include "../../beken378/driver/gpio/gpio.h"
 
-    #include <ctype.h>
 
     unsigned long ir_counter = 0;
     uint8_t gEnableIRSendWhilstReceive = 0;
@@ -39,15 +37,17 @@ extern "C" {
     extern int my_strnicmp(const char* a, const char* b, int len);
 }
 
+
 #include "drv_ir.h"
 
 //#define USE_IRREMOTE_HPP_AS_PLAIN_INCLUDE 1
 #undef read
 #undef write
-#define PROGMEM
+#undef send
+//#define PROGMEM
 
 
-#define NO_LED_FEEDBACK_CODE 1
+//#define NO_LED_FEEDBACK_CODE 1
 
 //typedef unsigned char uint_fast8_t;
 typedef unsigned short uint16_t;
@@ -122,10 +122,10 @@ void pinModeFast(unsigned char P, unsigned char V) {
 #define TIMER_RESET_INTR_PENDING
 
 
-#  if defined(ISR)
-#undef ISR
-#  endif
-#define ISR void IR_ISR
+// #  if defined(ISR)
+// #undef ISR
+// #  endif
+// #define ISR void IR_ISR
 extern "C" void DRV_IR_ISR(UINT8 t);
 
 static UINT32 ir_chan = BKTIMER0;
@@ -204,39 +204,13 @@ class SpoofIrReceiver {
 
 SpoofIrReceiver IrReceiver;
 
-#include "../libraries/Arduino-IRremote-mod/src/IRProtocol.h"
+#include "../libraries/IRremoteESP8266/src/IRremoteESP8266.h"
+#include "../libraries/IRremoteESP8266/src/IRsend.h"
+#include "../libraries/IRremoteESP8266/src/IRrecv.h"
+#include "../libraries/IRremoteESP8266/src/IRutils.h"
+#include "../libraries/IRremoteESP8266/src/IRac.h"
+#include "../libraries/IRremoteESP8266/src/IRproto.h"
 
-// this is to replicate places where the library uses the static class.
-// will need to update to call our dynamic class
-class SpoofIrSender {
-    public:
-        void enableIROut(uint_fast8_t freq){
-
-        }
-        void mark(unsigned int  aMarkMicros){
-
-        }
-        void space(unsigned int  aMarkMicros){
-
-        }
-        void sendPulseDistanceWidthFromArray(uint_fast8_t aFrequencyKHz, unsigned int aHeaderMarkMicros,
-            unsigned int aHeaderSpaceMicros, unsigned int aOneMarkMicros, unsigned int aOneSpaceMicros, unsigned int aZeroMarkMicros,
-            unsigned int aZeroSpaceMicros, uint32_t *aDecodedRawDataArray, unsigned int aNumberOfBits, bool aMSBFirst,
-            bool aSendStopBit, unsigned int aRepeatPeriodMillis, int_fast8_t aNumberOfRepeats) {
-
-        }
-        void sendPulseDistanceWidthFromArray(PulsePauseWidthProtocolConstants *aProtocolConstants, uint32_t *aDecodedRawDataArray,
-            unsigned int aNumberOfBits, int_fast8_t aNumberOfRepeats) {
-            
-        }
-
-};
-
-SpoofIrSender IrSender;
-
-// this is the actual IR library include.
-// it's all in .h and .hpp files, no .c or .cpp
-#include "../libraries/Arduino-IRremote-mod/src/IRremote.hpp"
 
 extern "C" int PIN_GetPWMIndexForPinIndex(int pin) ;
 
@@ -246,36 +220,28 @@ extern "C" int PIN_GetPWMIndexForPinIndex(int pin) ;
 // and then every 50us service the rolling buffer, changing the PWM from 0 duty to 50% duty
 // appropriately.
 #define SEND_MAXBITS 128
+
 class myIRsend : public IRsend {
     public:
-        myIRsend(uint_fast8_t aSendPin){
-            //IRsend::IRsend(aSendPin); - has been called already?
+        myIRsend(uint_fast8_t aSendPin):IRsend(aSendPin){
             our_us = 0;
             our_ms = 0;
             resetsendqueue();
         }
         ~myIRsend() { }
 
-        void enableIROut(uint_fast8_t aFrequencyKHz){
-            // just setup variables for use in ISR
-            pwmfrequency = ((uint32_t)aFrequencyKHz) * 1000;
-        	pwmperiod = (26000000 / pwmfrequency);
-            pwmduty = pwmperiod/2;
-        }
 
         uint32_t millis(){
             return our_ms;
         }
+
         void delay(long int ms){
             // add a pure delay to our queue
         	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"Delay %dms", ms);
             space(ms*1000);
         }
 
-
-        using IRsend::write;
-
-        void mark(unsigned int aMarkMicros){
+        uint16_t mark(uint16_t aMarkMicros){
             // sends a high for aMarkMicros
             uint32_t newtimein = (timein + 1)%(SEND_MAXBITS * 2);
             if (newtimein != timeout){
@@ -287,8 +253,10 @@ class myIRsend : public IRsend {
             } else {
                 overflows++;
             }
+            return 1;
         }
-        void space(unsigned int aMarkMicros){
+
+        void space(uint32_t aMarkMicros){
             // sends a low for aMarkMicros
             uint32_t newtimein = (timein + 1)%(SEND_MAXBITS * 2);
             if (newtimein != timeout){
@@ -299,6 +267,17 @@ class myIRsend : public IRsend {
             } else {
                 overflows++;
             }
+        }
+
+        void enableIROut(uint32_t freq, uint8_t duty){ 
+            //uint_fast8_t aFrequencyKHz
+            if (freq < 1000)  // Were we given kHz? Supports the old call usage.
+                freq *= 1000;
+
+            // just setup variables for use in ISR
+            //pwmfrequency = ((uint32_t)aFrequencyKHz) * 1000;
+        	pwmperiod = (26000000 / freq);
+            pwmduty = pwmperiod/2;
         }
 
         void resetsendqueue(){
@@ -322,7 +301,7 @@ class myIRsend : public IRsend {
             if (timein != timeout){
                 val = times[timeout];
                 timeout = (timeout + 1)%(SEND_MAXBITS * 2);
-                timecount--;
+                timecount --;
             }
             return val;
         }
@@ -343,7 +322,7 @@ class myIRsend : public IRsend {
 
 // our send/receive instances
 myIRsend *pIRsend = NULL;
-IRrecv *ourReceiver = NULL;
+//IRrecv *ourReceiver = NULL;
 
 // this is our ISR.
 // it is called every 50us, so we need to work on making it as efficient as possible.
@@ -352,7 +331,7 @@ extern "C" void DRV_IR_ISR(UINT8 t){
     if (pIRsend && (pIRsend->pwmIndex >= 0)){
         pIRsend->our_us += 50;
         if (pIRsend->our_us > 1000){
-            pIRsend->our_ms++;
+            pIRsend->our_ms ++;
             pIRsend->our_us -= 1000;
         }
 
@@ -412,18 +391,34 @@ extern "C" void DRV_IR_ISR(UINT8 t){
     }
 
     // don't receive if we are currently sending
-    if (ourReceiver && !sending){
-        IR_ISR();
-    }
+    //if (ourReceiver && !sending){
+        //IR_ISR();
+        //TODO: implement reading from the recieve pin here 
+    //}
     ir_counter++;
 }
 
+decode_type_t find_protocol_by_name(const char* args,int ournamelen)
+{
+    decode_type_t protocol = decode_type_t::UNKNOWN; // UNKNOW?
+
+    for (int i = 0; i < numProtocols; i++) {
+        const char *name = ProtocolNames[i];
+        int namelen = strlen(name);
+        if (!my_strnicmp(name, args, namelen) && (ournamelen == namelen)){
+            protocol = (decode_type_t)i;
+            break;
+        }
+    }
+    return protocol;
+}
+
+
 extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, const char *args_in, int cmdFlags) {
-    int numProtocols = sizeof(ProtocolNames)/sizeof(*ProtocolNames);
     if (!args_in) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-    char args[20];
-    strncpy(args, args_in, 19);
-    args[19] = 0;
+    char args[64];
+    strncpy(args, args_in, sizeof(args)-1);
+    args[sizeof(args)-1] = 0;
 
     // split arg at hyphen;
     char *p = args;
@@ -437,15 +432,7 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
     }
 
     int ournamelen = (p - args);
-    int protocol = 0;
-    for (int i = 0; i < numProtocols; i++){
-        const char *name = ProtocolNames[i];
-        int namelen = strlen(name);
-        if (!my_strnicmp(name, args, namelen) && (ournamelen == namelen)){
-            protocol = i;
-            break;
-        }
-    }
+    decode_type_t protocol = find_protocol_by_name(args,ournamelen);
 
     p++;
     int addr = strtol(p, &p, 16);
@@ -456,8 +443,6 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
     p++;
     int command = strtol(p, &p, 16);
 
-    IRData data;
-    memset(&data, 0, sizeof(data));
     int repeats = 0;
 
     if ((*p == '-') || (*p == ' ')) {
@@ -465,20 +450,18 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
         repeats = strtol(p, &p, 16);
     }
 
-    data.protocol = (decode_type_t)protocol;
-    data.address = addr;
-    data.command = command;
-    data.flags = 0;
-
     if (pIRsend){
-        pIRsend->write(&data, (int_fast8_t) repeats);
+        bool success = true;  // Assume success.
+
+        success = pIRsend->send(protocol, addr, command, repeats);
         // add a 100ms delay after command
         // NOTE: this is NOT a delay here.  it adds 100ms 'space' in the TX queue
         pIRsend->delay(100);
-        ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send %s protocol %d addr 0x%X cmd 0x%X repeats %d", args, (int)data.protocol, (int)data.address, (int)data.command, (int)repeats);
+
+        ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send %s protocol %d addr 0x%X cmd 0x%X repeats %d", args, (int)protocol, (int)addr, (int)command, (int)repeats);
         return CMD_RES_OK;
     } else {
-        ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR NOT send (no IRsend running) %s protocol %d addr 0x%X cmd 0x%X repeats %d", args, (int)data.protocol, (int)data.address, (int)data.command, (int)repeats);
+        ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR NOT send (no IRsend running) %s protocol %d addr 0x%X cmd 0x%X repeats %d", args, (int)protocol, (int)addr, (int)command, (int)repeats);
     }
     return CMD_RES_ERROR;
 }
@@ -528,11 +511,12 @@ extern "C" commandResult_t IR_Enable(const void *context, const char *cmd, const
         p++;
     }
 
-    int numProtocols = sizeof(ProtocolNames)/sizeof(*ProtocolNames);
+    //int numProtocols = sizeof(ProtocolNames)/sizeof(*ProtocolNames);
+    int numProtocols=0;
     int ournamelen = (p - args);
     int protocol = -1;
     for (int i = 0; i < numProtocols; i++){
-        const char *name = ProtocolNames[i];
+        const char *name = "Unknown" ; //= ProtocolNames[i];
         int namelen = strlen(name);
         if (!my_strnicmp(name, args, namelen) && (ournamelen == namelen)){
             protocol = i;
@@ -551,7 +535,7 @@ extern "C" commandResult_t IR_Enable(const void *context, const char *cmd, const
         ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IREnable invalid protocol %s", args);
         return CMD_RES_BAD_ARGUMENT;
     } else {
-        ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IREnable found protocol %s(%d), enable %d from %s, bitmask 0x%08X", ProtocolNames[protocol], protocol, enable, p, thisbit);
+        //ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IREnable found protocol %s(%d), enable %d from %s, bitmask 0x%08X", ProtocolNames[protocol], protocol, enable, p, thisbit);
     }
     if (enable) {
         gIRProtocolEnable = gIRProtocolEnable | thisbit;
@@ -563,6 +547,32 @@ extern "C" commandResult_t IR_Enable(const void *context, const char *cmd, const
     
 }
 
+
+
+extern "C" commandResult_t IR_AC_Cmd(const void *context, const char *cmd, const char *args_in, int cmdFlags) {
+    if (!args_in) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+
+    char args[64];
+    strncpy(args, args_in, sizeof(args)-1);
+    args[sizeof(args)-1] = 0;
+
+    // split arg at hyphen;
+    char *p = args;
+    while (*p && (*p != '-') && (*p != ' ')){
+        p++;
+    }
+    int ournamelen = (p - args);
+    if ((*p != '-') && (*p != ' ')) {
+        ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRSend cmnd not valid [%s] not like [NEC-0-1A] or [NEC 0 1A 1].", args);
+        return CMD_RES_BAD_ARGUMENT;
+    }
+
+    decode_type_t protocol = find_protocol_by_name(args,ournamelen);
+
+    ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRAC cmnd not implemented yet", args);
+
+    return CMD_RES_OK;
+}
 
 // test routine to start IR RX and TX
 // currently fixed pins for testing.
@@ -576,11 +586,11 @@ extern "C" void DRV_IR_Init(){
 	pin = PIN_FindPinIndexForRole(IOR_IRRecv,pin);
 	txpin = PIN_FindPinIndexForRole(IOR_IRSend,txpin);
 
-    if (ourReceiver){
-        IRrecv *temp = ourReceiver;
-        ourReceiver = NULL;
-        delete temp;
-    }
+    // if (ourReceiver){
+    //     IRrecv *temp = ourReceiver;
+    //     ourReceiver = NULL;
+    //     delete temp;
+    // }
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"DRV_IR_Init: recv pin %i",pin);
     if ((pin > 0) || (txpin > 0)){
     } else {
@@ -592,8 +602,8 @@ extern "C" void DRV_IR_Init(){
         // setup IRrecv pin as input
         bk_gpio_config_input_pup((GPIO_INDEX)pin);
 
-        ourReceiver = new IRrecv(pin);
-        ourReceiver->start();
+        // ourReceiver = new IRrecv(pin);
+        // ourReceiver->enableIRIn();
     }
 
     if (pIRsend){
@@ -630,12 +640,13 @@ extern "C" void DRV_IR_Init(){
 	//cmddetail:"descr":"Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0",
 	//cmddetail:"fn":"IR_Send_Cmd","file":"driver/drv_ir.cpp","requires":"",
 	//cmddetail:"examples":""}
-            CMD_RegisterCommand("IRSend",IR_Send_Cmd, NULL);
+            CMD_RegisterCommand("IRSend",NULL,IR_Send_Cmd, NULL, NULL);
+            CMD_RegisterCommand("IRAC",NULL,IR_AC_Cmd, NULL, NULL);
 	//cmddetail:{"name":"IREnable","args":"[Str][1or0]",
 	//cmddetail:"descr":"Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol",
 	//cmddetail:"fn":"IR_Enable","file":"driver/drv_ir.cpp","requires":"",
 	//cmddetail:"examples":""}
-            CMD_RegisterCommand("IREnable", IR_Enable, NULL);
+            CMD_RegisterCommand("IREnable", "", IR_Enable, NULL, NULL);
         }
     }
     if ((pin > 0) || (txpin > 0)){
@@ -647,13 +658,15 @@ extern "C" void DRV_IR_Init(){
 
 
 // log the received IR
-void PrintIRData(IRData *aIRDataPtr){
-    ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)"IR decode returned true, protocol %d", (int)aIRDataPtr->protocol);
-    if (aIRDataPtr->protocol == UNKNOWN) {
+void PrintIRData(decode_results *aIRDataPtr){
+    ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)"IR decode returned true, protocol %d", (int)aIRDataPtr->decode_type);
+
+#if 0  // TODO: disabled for now, using routines from IRremoteESP8266
+    if (aIRDataPtr->decode_type == UNKNOWN) {
 #if defined(DECODE_HASH)
         ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)" Hash=0x%X", (int)aIRDataPtr->decodedRawData);
 #endif
-        ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)"%d bits (incl. gap and start) received", (int)((aIRDataPtr->rawDataPtr->rawlen + 1) / 2));
+        ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)"%d bits (incl. gap and start) received", (int)((aIRDataPtr->rawlen) / 2));
     } else {
 #if defined(DECODE_DISTANCE)
         if(aIRDataPtr->protocol != PULSE_DISTANCE) {
@@ -709,11 +722,17 @@ void PrintIRData(IRData *aIRDataPtr){
             }
         }
     }
+    #endif //0
+    // TODO: reimplement ?
+    //ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)resultToHumanReadableBasic(aIRDataPtr).c_str());
+    String description = IRAcUtils::resultAcToString(aIRDataPtr);
+    if (description.length()) ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)description.c_str());
+
 }
 
 
 ////////////////////////////////////////////////////
-// this polls the IR receive to see off there was any IR received
+// this polls the IR receive to see if there was any IR received
 extern "C" void DRV_IR_RunFrame(){
 	// Debug-only check to see if the timer interrupt is running
     if (ir_counter){
@@ -728,26 +747,31 @@ extern "C" void DRV_IR_RunFrame(){
         }
     }
 
+    #if 0
     if (ourReceiver){
-        if (ourReceiver->decode()) {
-			const char *name = ProtocolNames[ourReceiver->decodedIRData.protocol];
-            if (!(gIRProtocolEnable & (1 << (int)ourReceiver->decodedIRData.protocol))){
-				ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR decode ignore masked protocol %s (%d) - mask 0x%08X", name, (int)ourReceiver->decodedIRData.protocol, gIRProtocolEnable);
+        decode_results results;
+        if (ourReceiver->decode(&results)) {
+			//const char *name = ProtocolNames[ourReceiver->decodedIRData.protocol];
+            const char *name ="TODO";
+            if (!(gIRProtocolEnable & (1 << (int)results.decode_type))){
+				ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR decode ignore masked protocol %s (%d) - mask 0x%08X", name, (int)results.decode_type, gIRProtocolEnable);
             }
 
 			// 'UNKNOWN' protocol is by default disabled in flags
 			// This is because I am getting a lot of 'UNKNOWN' spam with no IR signals in room
-			if (((ourReceiver->decodedIRData.protocol != UNKNOWN) || 
-                 (ourReceiver->decodedIRData.protocol == UNKNOWN && CFG_HasFlag(OBK_FLAG_IR_ALLOW_UNKNOWN))) &&
+			if (((results.decode_type != UNKNOWN) || 
+                 (results.decode_type == UNKNOWN && CFG_HasFlag(OBK_FLAG_IR_ALLOW_UNKNOWN))) &&
                  // only process if this protocol is enabled.  all by default.
-                 (gIRProtocolEnable & (1 << (int)ourReceiver->decodedIRData.protocol))
+                 (gIRProtocolEnable & (1 << (int)results.decode_type))
                ) {
 
 
+                #if 0 //TODO
 				char out[128];
-				PrintIRData(&ourReceiver->decodedIRData);
-				ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)"IR decode returned true, protocol %s (%d)", name, (int)ourReceiver->decodedIRData.protocol);
+				PrintIRData(&results);
+				ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)"IR decode returned true, protocol %s (%d)", name, (int)results.decode_type);
                 int repeat = 0;
+
                 if (ourReceiver->decodedIRData.flags & (IRDATA_FLAGS_IS_AUTO_REPEAT | IRDATA_FLAGS_IS_REPEAT)) {
                     if (ourReceiver->decodedIRData.flags & IRDATA_FLAGS_IS_AUTO_REPEAT) {
                         repeat = 2;
@@ -761,9 +785,15 @@ extern "C" void DRV_IR_RunFrame(){
                 } else {
                     snprintf(out, sizeof(out), "IR_%s 0x%X 0x%X %d", name, ourReceiver->decodedIRData.address, ourReceiver->decodedIRData.command, repeat);
                 }
+                #endif
+
+                String lastIrReceived = String(capture.decode_type) + "," + resultToHexidecimal(&results);
+                if (!hasACState(capture.decode_type))
+                        lastIrReceived += "," + String(results.bits);
+
 				// if user wants us to publish every received IR data, do it now
 				if(CFG_HasFlag(OBK_FLAG_IR_PUBLISH_RECEIVED)) {
-
+                    
                     // another flag required?
                     int publishrepeats = 1;
 
@@ -771,24 +801,28 @@ extern "C" void DRV_IR_RunFrame(){
         				//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR MQTT publish %s", out);
 
                         uint32_t counter_in = ir_counter;
-                        MQTT_PublishMain_StringString("ir",out, 0);
+                        MQTT_PublishMain_StringString("ir",lastIrReceived.c_str(), 0);
                         uint32_t counter_dur = ((ir_counter - counter_in)*50)/1000;
         				ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR MQTT publish %s took %dms", out, counter_dur);
                     } else {
                         ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR %s", out);
                     }
 				} else {
-            		ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR %s", out);
+            		ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR %s", lastIrReceived.c_str());
                 }
 
 				if (CFG_HasFlag(OBK_FLAG_IR_PUBLISH_RECEIVED_IN_JSON)) {
 					// {"IrReceived":{"Protocol":"RC_5","Bits":0x1,"Data":"0xC"}}
-					// 
+					//
+                    
+                    #if 0 // TODO:
 					snprintf(out, sizeof(out), "{\"IrReceived\":{\"Protocol\":\"%s\",\"Bits\":%i,\"Data\":\"0x%lX\"}}",
 						name, (int)ourReceiver->decodedIRData.numberOfBits, (unsigned long)ourReceiver->decodedIRData.decodedRawData);
 					MQTT_PublishMain_StringString("RESULT", out, OBK_PUBLISH_FLAG_FORCE_REMOVE_GET);
+                    #endif //TODO
 				}
 
+                #if 0
 				if(ourReceiver->decodedIRData.protocol != UNKNOWN) {
 					snprintf(out, sizeof(out), "%X", ourReceiver->decodedIRData.command);
 					int tgType = 0;
@@ -823,6 +857,7 @@ extern "C" void DRV_IR_RunFrame(){
                     uint32_t counter_dur = ((ir_counter - counter_in)*50)/1000;
       				ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)"IR fire event took %dms", counter_dur);
 				}
+                #endif //0 TODO
 			}
 			/*
 			* !!!Important!!! Enable receiving of the next value,
@@ -831,6 +866,7 @@ extern "C" void DRV_IR_RunFrame(){
 			ourReceiver->resume(); // Enable receiving of the next value
         }
     }
+    #endif // TODO
 }
 
 
