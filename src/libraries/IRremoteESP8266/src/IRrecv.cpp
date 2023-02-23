@@ -3,7 +3,7 @@
 // Copyright 2015 Sebastien Warin
 // Copyright 2017, 2019 David Conran
 
-#if !PLATFORM_BEKEN
+#define USE_IRAM_ATTR 
 
 #include "IRrecv.h"
 #include <stddef.h>
@@ -28,6 +28,18 @@ extern "C" {
 #define ICACHE_RAM_ATTR
 #endif
 
+#include "digitalWriteFast.h"
+
+
+// To change this value, you simply can add a line #define "RECORD_GAP_MICROS <My_new_value>" in your ino file before the line "#include <IRremote.hpp>"
+#define RECORD_GAP_MICROS   5000 // FREDRICH28AC / LG2 header space is 9700, NEC header space is 4500
+#define MICROS_PER_TICK		50
+
+/** Minimum gap between IR transmissions, in MICROS_PER_TICK */
+#define RECORD_GAP_TICKS    (RECORD_GAP_MICROS / MICROS_PER_TICK) // 221 for 1100
+
+
+
 #ifndef USE_IRAM_ATTR
 #if defined(ESP8266)
 #if defined(IRAM_ATTR)
@@ -49,6 +61,7 @@ extern "C" {
 // on ESP8266
 // Updated by markszabo (https://github.com/crankyoldgit/IRremoteESP8266) for
 // sending IR code on ESP8266
+
 
 // Globals
 #ifndef UNIT_TEST
@@ -139,7 +152,7 @@ namespace _IRrecv {
 static hw_timer_t * timer = NULL;
 }  // namespace _IRrecv
 #endif  // ESP32
-using _IRrecv::timer;
+//using _IRrecv::timer;
 #endif  // UNIT_TEST
 
 namespace _IRrecv {  // Namespace extension
@@ -157,98 +170,91 @@ using _IRrecv::params;
 using _IRrecv::params_save;
 
 #ifndef UNIT_TEST
-#if defined(ESP8266)
-/// Interrupt handler for when the timer runs out.
-/// It signals to the library that capturing of IR data has stopped.
-/// @param[in] arg Unused. (ESP8266 Only)
-static void USE_IRAM_ATTR read_timeout(void *arg __attribute__((unused))) {
-  os_intr_lock();
-#endif  // ESP8266
-/// @cond IGNORE
-#if defined(ESP32)
+
 /// Interrupt handler for when the timer runs out.
 /// It signals to the library that capturing of IR data has stopped.
 /// @note ESP32 version
 static void USE_IRAM_ATTR read_timeout(void) {
 /// @endcond
-  portENTER_CRITICAL(&mux);
-#endif  // ESP32
-  if (params.rawlen) params.rcvstate = kStopState;
+ // portENTER_CRITICAL(&mux);
+
+  if (params.rawlen) 
+	  params.rcvstate = kStopState;
 #if defined(ESP8266)
   os_intr_unlock();
 #endif  // ESP8266
 #if defined(ESP32)
-  portEXIT_CRITICAL(&mux);
+  //portEXIT_CRITICAL(&mux);
 #endif  // ESP32
 }
 
 /// Interrupt handler for changes on the GPIO pin handling incoming IR messages.
-static void USE_IRAM_ATTR gpio_intr() {
-  uint32_t now = micros();
-  static uint32_t start = 0;
-
-#if defined(ESP8266)
-  uint32_t gpio_status = GPIO_REG_READ(GPIO_STATUS_ADDRESS);
-  os_timer_disarm(&timer);
-  GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, gpio_status);
-#endif  // ESP8266
-
-  // Grab a local copy of rawlen to reduce instructions used in IRAM.
-  // This is an ugly premature optimisation code-wise, but we do everything we
-  // can to save IRAM.
-  // It seems referencing the value via the structure uses more instructions.
-  // Less instructions means faster and less IRAM used.
-  // N.B. It saves about 13 bytes of IRAM.
-  uint16_t rawlen = params.rawlen;
-
-  if (rawlen >= params.bufsize) {
-    params.overflow = true;
-    params.rcvstate = kStopState;
-  }
-
-  if (params.rcvstate == kStopState) return;
-
-  if (params.rcvstate == kIdleState) {
-    params.rcvstate = kMarkState;
-    params.rawbuf[rawlen] = 1;
-  } else {
-    if (now < start)
-      params.rawbuf[rawlen] = (UINT32_MAX - start + now) / kRawTick;
-    else
-      params.rawbuf[rawlen] = (now - start) / kRawTick;
-  }
-  params.rawlen++;
-
-  start = now;
-
-#if defined(ESP8266)
-  os_timer_arm(&timer, params.timeout, ONCE);
-#endif  // ESP8266
-#if defined(ESP32)
-  // Reset the timeout.
-  //
-#if _ESP32_IRRECV_TIMER_HACK
-  // The following three lines of code are the equiv of:
-  //   `timerWrite(timer, 0);`
-  // We can't call that routine safely from inside an ISR as that procedure
-  // is not stored in IRAM. Hence, we do it manually so that it's covered by
-  // USE_IRAM_ATTR in this ISR.
-  // @see https://github.com/crankyoldgit/IRremoteESP8266/issues/1350
-  // @see https://github.com/espressif/arduino-esp32/blob/6b0114366baf986c155e8173ab7c22bc0c5fcedc/cores/esp32/esp32-hal-timer.c#L106-L110
-  timer->dev->load_high = (uint32_t) 0;
-  timer->dev->load_low = (uint32_t) 0;
-  timer->dev->reload = 1;
-  // The next line is the same, but instead replaces:
-  //   `timerAlarmEnable(timer);`
-  // @see https://github.com/crankyoldgit/IRremoteESP8266/issues/1350
-  // @see https://github.com/espressif/arduino-esp32/blob/6b0114366baf986c155e8173ab7c22bc0c5fcedc/cores/esp32/esp32-hal-timer.c#L176-L178
-  timer->dev->config.alarm_en = 1;
-#else  // _ESP32_IRRECV_TIMER_HACK
-  timerWrite(timer, 0);
-  timerAlarmEnable(timer);
-#endif  // _ESP32_IRRECV_TIMER_HACK
-#endif  // ESP32
-}
+//static void USE_IRAM_ATTR gpio_intr() {
+//  uint32_t now = micros();
+//  static uint32_t start = 0;
+//
+//#if defined(ESP8266)
+//  uint32_t gpio_status = GPIO_REG_READ(GPIO_STATUS_ADDRESS);
+//  os_timer_disarm(&timer);
+//  GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, gpio_status);
+//#endif  // ESP8266
+//
+//  // Grab a local copy of rawlen to reduce instructions used in IRAM.
+//  // This is an ugly premature optimisation code-wise, but we do everything we
+//  // can to save IRAM.
+//  // It seems referencing the value via the structure uses more instructions.
+//  // Less instructions means faster and less IRAM used.
+//  // N.B. It saves about 13 bytes of IRAM.
+//  uint16_t rawlen = params.rawlen;
+//
+//  if (rawlen >= params.bufsize) {
+//    params.overflow = true;
+//    params.rcvstate = kStopState;
+//  }
+//
+//  if (params.rcvstate == kStopState) return;
+//
+//  if (params.rcvstate == kIdleState) {
+//    params.rcvstate = kMarkState;
+//    params.rawbuf[rawlen] = 1;
+//  } else {
+//    if (now < start)
+//      params.rawbuf[rawlen] = (UINT32_MAX - start + now) / kRawTick;
+//    else
+//      params.rawbuf[rawlen] = (now - start) / kRawTick;
+//  }
+//  params.rawlen++;
+//
+//  start = now;
+//
+//#if defined(ESP8266)
+//  os_timer_arm(&timer, params.timeout, ONCE);
+//#endif  // ESP8266
+//#if defined(ESP32)
+//  // Reset the timeout.
+//  //
+//#if _ESP32_IRRECV_TIMER_HACK
+//  // The following three lines of code are the equiv of:
+//  //   `timerWrite(timer, 0);`
+//  // We can't call that routine safely from inside an ISR as that procedure
+//  // is not stored in IRAM. Hence, we do it manually so that it's covered by
+//  // USE_IRAM_ATTR in this ISR.
+//  // @see https://github.com/crankyoldgit/IRremoteESP8266/issues/1350
+//  // @see https://github.com/espressif/arduino-esp32/blob/6b0114366baf986c155e8173ab7c22bc0c5fcedc/cores/esp32/esp32-hal-timer.c#L106-L110
+//  timer->dev->load_high = (uint32_t) 0;
+//  timer->dev->load_low = (uint32_t) 0;
+//  timer->dev->reload = 1;
+//  // The next line is the same, but instead replaces:
+//  //   `timerAlarmEnable(timer);`
+//  // @see https://github.com/crankyoldgit/IRremoteESP8266/issues/1350
+//  // @see https://github.com/espressif/arduino-esp32/blob/6b0114366baf986c155e8173ab7c22bc0c5fcedc/cores/esp32/esp32-hal-timer.c#L176-L178
+//  timer->dev->config.alarm_en = 1;
+//#else  // _ESP32_IRRECV_TIMER_HACK
+//  timerWrite(timer, 0);
+//  timerAlarmEnable(timer);
+//#endif  // _ESP32_IRRECV_TIMER_HACK
+//#endif  // ESP32
+//}
 #endif  // UNIT_TEST
 
 // Start of IRrecv class -------------------
@@ -297,14 +303,17 @@ IRrecv::IRrecv(const uint16_t recvpin, const uint16_t bufsize,
   params.bufsize = bufsize;
   // Ensure we are going to be able to store all possible values in the
   // capture buffer.
-  params.timeout = ::min(timeout, (uint8_t)kMaxTimeoutMs);
+  params.timeout = timeout;
+  if (kMaxTimeoutMs < params.timeout)
+	  params.timeout = kMaxTimeoutMs;
   params.rawbuf = new uint16_t[bufsize];
   if (params.rawbuf == NULL) {
     DPRINTLN(
         "Could not allocate memory for the primary IR buffer.\n"
         "Try a smaller size for CAPTURE_BUFFER_SIZE.\nRebooting!");
 #ifndef UNIT_TEST
-    ESP.restart();  // Mem alloc failure. Reboot.
+   // ESP.restart();  // Mem alloc failure. Reboot.
+	return;
 #endif
   }
   // If we have been asked to use a save buffer (for decoding), then create one.
@@ -317,7 +326,8 @@ IRrecv::IRrecv(const uint16_t recvpin, const uint16_t bufsize,
           "Could not allocate memory for the second IR buffer.\n"
           "Try a smaller size for CAPTURE_BUFFER_SIZE.\nRebooting!");
 #ifndef UNIT_TEST
-      ESP.restart();  // Mem alloc failure. Reboot.
+   //   ESP.restart();  // Mem alloc failure. Reboot.
+	  return;
 #endif
     }
   } else {
@@ -353,9 +363,9 @@ void IRrecv::enableIRIn(const bool pullup) {
   // This wasn't required on the ESP8266s, but it shouldn't hurt to make sure.
   if (pullup) {
 #ifndef UNIT_TEST
-    pinMode(params.recvpin, INPUT_PULLUP);
+    pinModeFast(params.recvpin, INPUT_PULLUP);
   } else {
-    pinMode(params.recvpin, INPUT);
+    pinModeFast(params.recvpin, INPUT);
 #endif  // UNIT_TEST
   }
 #if defined(ESP32)
@@ -388,7 +398,7 @@ void IRrecv::enableIRIn(const bool pullup) {
                  NULL);
 #endif  // ESP8266
   // Attach Interrupt
-  attachInterrupt(params.recvpin, gpio_intr, CHANGE);
+  //attachInterrupt(params.recvpin, gpio_intr, CHANGE);
 #endif  // UNIT_TEST
 }
 
@@ -403,7 +413,7 @@ void IRrecv::disableIRIn(void) {
   timerAlarmDisable(timer);
   timerEnd(timer);
 #endif  // ESP32
-  detachInterrupt(params.recvpin);
+  //detachInterrupt(params.recvpin);
 #endif  // UNIT_TEST
 }
 
@@ -476,7 +486,9 @@ void IRrecv::setUnknownThreshold(const uint16_t length) {
 /// Set the base tolerance percentage for matching incoming IR messages.
 /// @param[in] percent An integer percentage. (0-100)
 void IRrecv::setTolerance(const uint8_t percent) {
-  _tolerance = ::min(percent, (uint8_t)100);
+	_tolerance = percent;
+	if (_tolerance > 100)
+		_tolerance = 100;
 }
 
 /// Get the base tolerance percentage for matching incoming IR messages.
@@ -1209,9 +1221,11 @@ uint8_t IRrecv::_validTolerance(const uint8_t percentage) {
 uint32_t IRrecv::ticksLow(const uint32_t usecs, const uint8_t tolerance,
                           const uint16_t delta) {
   // max() used to ensure the result can't drop below 0 before the cast.
-  return ((uint32_t)::max(
-      (int32_t)(usecs * (1.0 - _validTolerance(tolerance) / 100.0) - delta),
-      (int32_t)0));
+	float res;
+	res = usecs * (1.0 - _validTolerance(tolerance) / 100.0) - delta;
+	if (res < 0)
+		res = 0;
+  return res;
 }
 
 /// Calculate the upper bound of the nr. of ticks.
@@ -1294,8 +1308,10 @@ bool IRrecv::matchAtLeast(uint32_t measured, uint32_t desired,
   // We really should never get a value of 0, except as the last value
   // in the buffer. If that is the case, then assume infinity and return true.
   if (measured == 0) return true;
-  return measured >= ticksLow(::min(desired,
-                                       (uint32_t)MS_TO_USEC(params.timeout)),
+  uint32_t mins = MS_TO_USEC(params.timeout);
+  if (mins > desired)
+	  mins = desired;
+  return measured >= ticksLow(mins,
                               tolerance, delta);
 }
 
@@ -2064,6 +2080,196 @@ uint16_t IRrecv::matchManchesterData(volatile const uint16_t *data_ptr,
   return offset;
 }
 
+
+/**********************************************************************************************************************
+ * Interrupt Service Routine - Called every 50 us
+ *
+ * Duration in ticks of 50 us of alternating SPACE, MARK are recorded in irparams.rawbuf array.
+ * 'rawlen' counts the number of entries recorded so far.
+ * First entry is the SPACE between transmissions.
+ *
+ * As soon as one SPACE entry gets longer than RECORD_GAP_TICKS, state switches to STOP (frame received). Timing of SPACE continues.
+ * A call of resume() switches from STOP to IDLE.
+ * As soon as first MARK arrives in IDLE, gap width is recorded and new logging starts.
+ *
+ * With digitalRead and Feedback LED
+ * 15 pushs, 1 in, 1 eor before start of code = 2 us @16MHz + * 7.2 us computation time (6us idle time) + * pop + reti = 2.25 us @16MHz => 10.3 to 11.5 us @16MHz
+ * With portInputRegister and mask and Feedback LED code commented
+ * 9 pushs, 1 in, 1 eor before start of code = 1.25 us @16MHz + * 2.25 us computation time + * pop + reti = 1.5 us @16MHz => 5 us @16MHz
+ * => Minimal CPU frequency is 4 MHz
+ *
+ **********************************************************************************************************************/
+ /*
+ * Activate this line if your receiver has an external output driver transistor / "inverted" output
+ */
+ //#define IR_INPUT_IS_ACTIVE_HIGH
+#if defined(IR_INPUT_IS_ACTIVE_HIGH)
+// IR detector output is active high
+#define INPUT_MARK   1 ///< Sensor output for a mark ("flash")
+#else
+// IR detector output is active low
+#define INPUT_MARK   0 ///< Sensor output for a mark ("flash")
+#endif
+
+
+uint32_t now = 0;
+uint_fast8_t old;
+static uint32_t start = 0;
+
+ void IR_ISR() {
+	 now += 50;
+	uint_fast8_t tIRInputLevel = (uint_fast8_t)digitalReadFast(params.recvpin);
+	if (tIRInputLevel == old)
+		return;
+	old = tIRInputLevel;
+	// Grab a local copy of rawlen to reduce instructions used in IRAM.
+	// This is an ugly premature optimisation code-wise, but we do everything we
+	// can to save IRAM.
+	// It seems referencing the value via the structure uses more instructions.
+	// Less instructions means faster and less IRAM used.
+	// N.B. It saves about 13 bytes of IRAM.
+	uint16_t rawlen = params.rawlen;
+
+	if (rawlen >= params.bufsize) {
+		params.overflow = true;
+		params.rcvstate = kStopState;
+	}
+
+	if (params.rcvstate == kStopState) return;
+
+	if (params.rcvstate == kIdleState) {
+		params.rcvstate = kMarkState;
+		params.rawbuf[rawlen] = 1;
+	}
+	else {
+		if (now < start)
+			params.rawbuf[rawlen] = (UINT32_MAX - start + now) / kRawTick;
+		else
+			params.rawbuf[rawlen] = (now - start) / kRawTick;
+	}
+	params.rawlen++;
+
+	start = now;
+
+}
+ //#define _IR_MEASURE_TIMING
+ //#define _IR_TIMING_TEST_PIN 7 // do not forget to execute: "pinModeFast(_IR_TIMING_TEST_PIN, OUTPUT);" if activated by line above
+#if defined(TIMER_INTR_NAME)
+ISR(TIMER_INTR_NAME) // for ISR definitions
+#else
+void IR_ISRqq() // for functions definitions which are called by separate (board specific) ISR
+#endif
+{
+#if defined(_IR_MEASURE_TIMING) && defined(_IR_TIMING_TEST_PIN)
+	digitalWriteFast(_IR_TIMING_TEST_PIN, HIGH); // 2 clock cycles
+#endif
+// 7 - 8.5 us for ISR body (without pushes and pops) for ATmega328 @16MHz
+
+	//TIMER_RESET_INTR_PENDING;// reset timer interrupt flag if required (currently only for Teensy and ATmega4809)
+
+// Read if IR Receiver -> SPACE [xmt LED off] or a MARK [xmt LED on]
+#if defined(__AVR__)
+	uint8_t tIRInputLevel = *params.IRReceivePinPortInputRegister & params.IRReceivePinMask;
+#else
+	uint_fast8_t tIRInputLevel = (uint_fast8_t)digitalReadFast(params.recvpin);
+#endif
+
+	/*
+	 * Increase TickCounter and clip it at maximum 0xFFFF / 3.2 seconds at 50 us ticks
+	 */
+	if (params.timer < UINT16_MAX) {
+		params.timer++;  // One more 50uS tick
+	}
+#define MY_TIMER_MULT_FOR_BUFF 25
+	/*
+	 * Due to a ESP32 compiler bug https://github.com/espressif/esp-idf/issues/1552 no switch statements are possible for ESP32
+	 * So we change the code to if / else if
+	 */
+	 //    switch (params.rcvstate) {
+	 //......................................................................
+	if (params.rcvstate == kIdleState) { // In the middle of a gap or just resumed (and maybe in the middle of a transmission
+		if (tIRInputLevel == INPUT_MARK) {
+			// check if we did not start in the middle of a transmission by checking the minimum length of leading space
+			if (params.timer > RECORD_GAP_TICKS) {
+				// Gap just ended; Record gap duration + start recording transmission
+				// Initialize all state machine variables
+#if defined(_IR_MEASURE_TIMING) && defined(_IR_TIMING_TEST_PIN)
+//                digitalWriteFast(_IR_TIMING_TEST_PIN, HIGH); // 2 clock cycles
+#endif
+				params.overflow = false;
+				params.rawbuf[0] = params.timer*MY_TIMER_MULT_FOR_BUFF;
+				params.rawlen = 1;
+				params.rcvstate = kMarkState;
+			} // otherwise stay in idle state
+			params.timer = 0;// reset counter in both cases
+		}
+
+	}
+	else if (params.rcvstate == kMarkState) {  // Timing mark
+		if (tIRInputLevel != INPUT_MARK) {   // Mark ended; Record time
+#if defined(_IR_MEASURE_TIMING) && defined(_IR_TIMING_TEST_PIN)
+//            digitalWriteFast(_IR_TIMING_TEST_PIN, HIGH); // 2 clock cycles
+#endif
+			params.rawbuf[params.rawlen++] = params.timer*MY_TIMER_MULT_FOR_BUFF;
+			params.rcvstate = kSpaceState;
+			params.timer = 0;
+		}
+
+	}
+	else if (params.rcvstate == kSpaceState) {  // Timing space
+		if (tIRInputLevel == INPUT_MARK) {  // Space just ended; Record time
+			if (params.rawlen >=params.bufsize) // RAW_BUFFER_LENGTH) 
+			{
+				// Flag up a read overflow; Stop the state machine
+				params.overflow = true;
+				params.rcvstate = kStopState;
+			}
+			else {
+#if defined(_IR_MEASURE_TIMING) && defined(_IR_TIMING_TEST_PIN)
+				//                digitalWriteFast(_IR_TIMING_TEST_PIN, HIGH); // 2 clock cycles
+#endif
+				params.rawbuf[params.rawlen++] = params.timer*MY_TIMER_MULT_FOR_BUFF;
+				params.rcvstate = kMarkState;
+			}
+			params.timer = 0;
+
+		}
+		else if (params.timer > RECORD_GAP_TICKS) {
+			/*
+			 * Current code is ready for processing!
+			 * We received a long space, which indicates gap between codes.
+			 * Switch to kStopState
+			 * Don't reset timer; keep counting width of next leading space
+			 */
+			params.rcvstate = kStopState;
+		}
+	}
+	else if (params.rcvstate == kStopState) {
+		/*
+		 * Complete command received
+		 * stay here until resume() is called, which switches state to kIdleState
+		 */
+#if defined(_IR_MEASURE_TIMING) && defined(_IR_TIMING_TEST_PIN)
+		 //        digitalWriteFast(_IR_TIMING_TEST_PIN, HIGH); // 2 clock cycles
+#endif
+		if (tIRInputLevel == INPUT_MARK) {
+			// Reset gap timer, to prepare for detection if we are in the middle of a transmission after call of resume()
+			params.timer = 0;
+		}
+	}
+
+#if !defined(NO_LED_FEEDBACK_CODE)
+///	if (FeedbackLEDControl.LedFeedbackEnabled == LED_FEEDBACK_ENABLED_FOR_RECEIVE) {
+///		setFeedbackLED(tIRInputLevel == INPUT_MARK);
+//	}
+#endif
+
+#ifdef _IR_MEASURE_TIMING
+	digitalWriteFast(_IR_TIMING_TEST_PIN, LOW); // 2 clock cycles
+#endif
+}
+
+
 #if UNIT_TEST
 /// Unit test helper to get access to the params structure.
 volatile irparams_t *IRrecv::_getParamsPtr(void) {
@@ -2072,4 +2278,3 @@ volatile irparams_t *IRrecv::_getParamsPtr(void) {
 #endif  // UNIT_TEST
 // End of IRrecv class -------------------
 
-#endif
