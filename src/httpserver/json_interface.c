@@ -728,6 +728,32 @@ int JSON_ProcessCommandReply(const char *cmd, const char *arg, void *request, js
 		printer(request, "\"led_basecolor_rgb\":\"%s\"",tmp);
 		printer(request, "}");
 	}
+	else if (!wal_strnicmp(cmd, "MQTTClient", 8)) {
+		printer(request, "{");
+		printer(request, "\"MQTTClient\":\"%s\"",CFG_GetMQTTClientId());
+		printer(request, "}");
+	}
+	else if (!wal_strnicmp(cmd, "MQTTHost", 8)) {
+		printer(request, "{");
+		printer(request, "\"MQTTHost\":\"%s\"", CFG_GetMQTTHost());
+		printer(request, "}");
+	}
+	else if (!wal_strnicmp(cmd, "MQTTUser", 8)) {
+		printer(request, "{");
+		printer(request, "\"MQTTUser\":\"%s\"", CFG_GetMQTTUserName());
+		printer(request, "}");
+	}
+	else if (!wal_strnicmp(cmd, "MqttPassword", 12)) {
+		printer(request, "{");
+		printer(request, "\"MqttPassword\":\"%s\"", "****");
+		printer(request, "}");
+	}
+	else if (!wal_strnicmp(cmd, "SSID1", 5)) {
+		printer(request, "{");
+		printer(request, "\"SSID1\":\"%s\"", CFG_GetWiFiSSID());
+		printer(request, "}");
+	}
+	
 	return 0;
 }
 

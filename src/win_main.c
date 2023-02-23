@@ -124,6 +124,7 @@ void SIM_DoFreshOBKBoot() {
 	Main_Init();
 }
 void Win_DoUnitTests() {
+	Test_CFG_Via_HTTP();
 	Test_Commands_Calendar();
 	Test_Commands_Generic();
 	Test_Demo_SimpleShuttersScript();
@@ -294,7 +295,7 @@ int __cdecl main(int argc, char **argv)
 
 
 	SIM_CreateWindow(argc, argv);
-#if 0
+#if 1
 	CMD_ExecuteCommand("MQTTHost 192.168.0.113", 0);
 	CMD_ExecuteCommand("MqttPassword ma1oovoo0pooTie7koa8Eiwae9vohth1vool8ekaej8Voohi7beif5uMuph9Diex", 0);
 	CMD_ExecuteCommand("MqttClient WindowsOBK", 0);
