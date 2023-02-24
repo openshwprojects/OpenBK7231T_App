@@ -17,6 +17,7 @@
 
 static byte channel_temp = 0, channel_humid = 0;
 static float g_temp = 0.0, g_humid = 0.0, g_caltemp = 0.0, g_calhum = 0.0;
+static bool g_shtper = false;
 
 
 commandResult_t SHT3X_Calibrate(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -41,9 +42,10 @@ void SHT3X_StopPer() {
 	// medium repeteability
 	Soft_I2C_WriteByte(0x93);
 	Soft_I2C_Stop();
+	g_shtper = false;
 }
 
-void SM2135_StartPer(uint8_t msb, uint8_t lsb) {
+void SHT3X_StartPer(uint8_t msb, uint8_t lsb) {
 	// Start Periodic Data capture
 	Soft_I2C_Start(SHT3X_I2C_ADDR);
 	// Measure per seconds
@@ -51,6 +53,7 @@ void SM2135_StartPer(uint8_t msb, uint8_t lsb) {
 	// repeteability
 	Soft_I2C_WriteByte(lsb);
 	Soft_I2C_Stop();
+	g_shtper = true;
 }
 
 commandResult_t SHT3X_ChangePer(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -68,7 +71,7 @@ commandResult_t SHT3X_ChangePer(const void* context, const char* cmd, const char
 	SHT3X_StopPer();
 	//give some time for SHT to stop Periodicity
 	rtos_delay_milliseconds(25);
-	SM2135_StartPer(g_msb, g_lsb);
+	SHT3X_StartPer(g_msb, g_lsb);
 
 	ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT Change Per : change done");
 
@@ -102,7 +105,7 @@ commandResult_t SHT3X_Heater(const void* context, const char* cmd, const char* a
 	return CMD_RES_OK;
 }
 
-commandResult_t SHT3X_MeasurePer(const void* context, const char* cmd, const char* args, int cmdFlags) {
+void SHT3X_MeasurePercmd() {
 
 	uint8_t buff[6];
 	unsigned int th, tl, hh, hl;
@@ -136,10 +139,13 @@ commandResult_t SHT3X_MeasurePer(const void* context, const char* cmd, const cha
 	CHANNEL_Set(channel_humid, (int)(g_humid), 0);
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT3X_Measure: Period Temperature:%fC Humidity:%f%%", g_temp, g_humid);
-	return CMD_RES_OK;
-
 }
-commandResult_t SHT3X_Measure(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+commandResult_t SHT3X_MeasurePer(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	SHT3X_MeasurePercmd();
+	return CMD_RES_OK;
+}
+void SHT3X_Measurecmd() {
 
 	uint8_t buff[6];
 	unsigned int th, tl, hh, hl;
@@ -175,6 +181,12 @@ commandResult_t SHT3X_Measure(const void* context, const char* cmd, const char* 
 	CHANNEL_Set(channel_humid, (int)(g_humid), 0);
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT3X_Measure: Temperature:%fC Humidity:%f%%", g_temp, g_humid);
+
+}
+
+commandResult_t SHT3X_Measure(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+	SHT3X_Measurecmd();
 	return CMD_RES_OK;
 }
 // StopDriver SHT3X
@@ -452,7 +464,18 @@ void SHT3X_Init() {
 	//cmddetail:"examples":"SHT_SetAlertCmd"}
 	CMD_RegisterCommand("SHT_SetAlert", SHT3X_SetAlertCmd, NULL);
 }
+void SHT3X_OnEverySecond()
+{
+	if (g_shtper)
+	{
+		SHT3X_MeasurePercmd();
+	}
+	else
+	{
+		SHT3X_Measurecmd();
+	}
 
+}
 
 void SHT3X_AppendInformationToHTTPIndexPage(http_request_t* request)
 {
