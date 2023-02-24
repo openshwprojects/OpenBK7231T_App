@@ -44,6 +44,7 @@ OpenBeken features:
 - Advanced scripting and events system (allows you to mirror Tasmota rules, for example catch button click, double click, hold)
 - Easily configurable via commands (see [tutorial](https://www.elektroda.com/rtvforum/topic3947241.html))
 - Thanks to keeping Tasmota standard, OBK has basic compatibility with [ioBroker](https://www.youtube.com/watch?v=x4p3JHXbK1E&ab_channel=Elektrodacom) and similiar systems through TELE/STAT/CMND MQTT packets
+- DDP lighting protocol support ("startDriver DDP" in autoexec.bat/short startup command), works with xLights
 - Automatic reconnect when WiFi network goes out
 - and much more
 
