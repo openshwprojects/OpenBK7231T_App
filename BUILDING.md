@@ -14,6 +14,7 @@ You would need `nodejs` if you plan on making JavaScript/styling changes. This i
 Gulp tasks should automatically appear in Explore pane in Visual Code. They can also be invoked from console by running `gulp`.
 
 # Building
+A Docker-ized build environment can be used to perform these builds. Instructions for doing so are [available here](./docker/README.md).
 
 ## Building for BK7231T
 
