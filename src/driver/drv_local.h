@@ -27,6 +27,7 @@ void DRV_DGR_OnChannelChanged(int ch, int value);
 void DRV_DDP_Init();
 void DRV_DDP_RunFrame();
 void DRV_DDP_Shutdown();
+void DRV_DDP_AppendInformationToHTTPIndexPage(http_request_t* request);
 
 void DoorDeepSleep_Init();
 void DoorDeepSleep_OnEverySecond();

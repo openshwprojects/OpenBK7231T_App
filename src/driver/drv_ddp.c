@@ -9,11 +9,14 @@
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
+#include "../httpserver/new_http.h"
 
 static const char* group = "239.255.250.250";
 static int port = 4048;
 static int g_ddp_socket_receive = -1;
 static int g_retry_delay = 5;
+static int stat_packetsReceived = 0;
+static int stat_bytesReceived = 0;
 
 void DRV_DDP_CreateSocket_Receive() {
 
@@ -122,6 +125,7 @@ void DDP_Parse(byte *data, int len) {
 void DRV_DDP_RunFrame() {
     char msgbuf[64];
 	struct sockaddr_in addr;
+	int nbytes;
 
 	if(g_ddp_socket_receive<0) {
 		g_retry_delay--;
@@ -134,25 +138,32 @@ void DRV_DDP_RunFrame() {
         }
     // now just enter a read-print loop
     //
-        socklen_t addrlen = sizeof(addr);
-        int nbytes = recvfrom(
-            g_ddp_socket_receive,
-            msgbuf,
-            sizeof(msgbuf),
-            0,
-            (struct sockaddr *) &addr,
-            &addrlen
-        );
-        if (nbytes <= 0) {
+	while (1) {
+		socklen_t addrlen = sizeof(addr);
+		nbytes = recvfrom(
+			g_ddp_socket_receive,
+			msgbuf,
+			sizeof(msgbuf),
+			0,
+			(struct sockaddr *) &addr,
+			&addrlen
+		);
+		if (nbytes <= 0) {
 			//addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"nothing\n");
-            return ;
-        }
+			return;
+		}
 		//addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"Received %i bytes from %s\n",nbytes,inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr));
-        msgbuf[nbytes] = '\0';
+		msgbuf[nbytes] = '\0';
 
+		stat_packetsReceived++;
+		stat_bytesReceived += nbytes;
 
 		DDP_Parse((byte*)msgbuf, nbytes);
 
+		if (stat_packetsReceived % 10 == 0) {
+			rtos_delay_milliseconds(5);
+		}
+	}
 }
 void DRV_DDP_Shutdown()
 {
@@ -161,7 +172,10 @@ void DRV_DDP_Shutdown()
 		g_ddp_socket_receive = -1;
 	}
 }
-
+void DRV_DDP_AppendInformationToHTTPIndexPage(http_request_t* request)
+{
+	hprintf255(request, "<h2>DDP received: %i packets, %i bytes</h2>", stat_packetsReceived, stat_bytesReceived);
+}
 void DRV_DDP_Init()
 {
 	DRV_DDP_CreateSocket_Receive();
