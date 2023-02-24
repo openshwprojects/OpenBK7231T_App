@@ -127,7 +127,7 @@ void DRV_DDP_RunFrame() {
 		g_retry_delay--;
 		if (g_retry_delay <= 0) {
 			g_retry_delay = 15;
-			DRV_DDP_Init();
+			DRV_DDP_CreateSocket_Receive();
 		}
 		addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"no sock\n");
             return ;
