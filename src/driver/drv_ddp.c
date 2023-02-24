@@ -13,6 +13,7 @@
 static const char* group = "239.255.250.250";
 static int port = 4048;
 static int g_ddp_socket_receive = -1;
+static int g_retry_delay = 5;
 
 void DRV_DDP_CreateSocket_Receive() {
 
@@ -123,6 +124,11 @@ void DRV_DDP_RunFrame() {
 	struct sockaddr_in addr;
 
 	if(g_ddp_socket_receive<0) {
+		g_retry_delay--;
+		if (g_retry_delay <= 0) {
+			g_retry_delay = 15;
+			DRV_DDP_Init();
+		}
 		addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"no sock\n");
             return ;
         }
