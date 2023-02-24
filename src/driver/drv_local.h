@@ -28,6 +28,12 @@ void DRV_DDP_Init();
 void DRV_DDP_RunFrame();
 void DRV_DDP_Shutdown();
 
+void DoorDeepSleep_Init();
+void DoorDeepSleep_OnEverySecond();
+void DoorDeepSleep_StopDriver();
+void DoorDeepSleep_AppendInformationToHTTPIndexPage(http_request_t* request);
+void DoorDeepSleep_OnChannelChanged(int ch, int value);
+
 void SM2135_Init();
 
 void SM2235_Init();

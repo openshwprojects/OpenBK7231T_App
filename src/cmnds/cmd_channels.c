@@ -357,7 +357,6 @@ static commandResult_t CMD_SetFlag(const void *context, const char *cmd, const c
 
 	return CMD_RES_OK;
 }
-extern int g_bWantPinDeepSleep;
 static commandResult_t CMD_PinDeepSleep(const void *context, const char *cmd, const char *args, int cmdFlags){
 	g_bWantPinDeepSleep = 1;
 	return CMD_RES_OK;

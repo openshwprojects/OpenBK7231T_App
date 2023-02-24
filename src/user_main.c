@@ -631,8 +631,8 @@ int g_bWantPinDeepSleep;
 void QuickTick(void *param)
 {
 	if (g_bWantPinDeepSleep) {
-		PINS_BeginDeepSleepWithPinWakeUp();
 		g_bWantPinDeepSleep = 0;
+		PINS_BeginDeepSleepWithPinWakeUp();
 		return;
 	}
 
@@ -906,8 +906,15 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
             DRV_StartDriver("Bridge");
 #endif
         }
+		if ((PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep, -1) != -1) ||
+			(PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep_NoPup, -1) != -1))
+		{
+#ifndef OBK_DISABLE_ALL_DRIVERS
+			DRV_StartDriver("DoorSensor");
+#endif
+		}
     }
-
+	
 	g_enable_pins = 1;
 	// this actually sets the pins, moved out so we could avoid if necessary
 	PIN_SetupPins();

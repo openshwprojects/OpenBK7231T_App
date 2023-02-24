@@ -91,6 +91,9 @@ enum IORole {
 	IOR_SmartButtonForLEDs,
 	IOR_SmartButtonForLEDs_n,
 
+	IOR_DoorSensorWithDeepSleep,
+	IOR_DoorSensorWithDeepSleep_NoPup,
+
 	IOR_Total_Options,
 };
 
