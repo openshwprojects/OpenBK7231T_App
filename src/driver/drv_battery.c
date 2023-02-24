@@ -15,7 +15,7 @@
 
 static int g_pin_adc = 0, channel_adc = 0, channel_rel = 0, g_pin_rel = 0, g_battcycle = 1, g_battcycleref = 10;
 static float g_battvoltage = 0.0, g_battlevel = 0.0;
-static float g_vref = 2400, g_vdivider = 2, g_maxbatt = 3000, g_minbatt = 2000, g_adcbits = 4096;
+static float g_vref = 2400, g_vdivider = 2.00, g_maxbatt = 3000, g_minbatt = 2000, g_adcbits = 4096;
 
 static void Batt_Measure() {
 	//this command has only been tested on CBU
@@ -67,13 +67,13 @@ commandResult_t Battery_Setup(const void* context, const char* cmd, const char* 
 
 	g_minbatt = Tokenizer_GetArgFloat(0);
 	g_maxbatt = Tokenizer_GetArgFloat(1);
-	if (Tokenizer_GetArgsCount() > 3) {
+	if (Tokenizer_GetArgsCount() > 2) {
 		g_vref = Tokenizer_GetArgFloat(2);
 	}
-	if (Tokenizer_GetArgsCount() > 4) {
+	if (Tokenizer_GetArgsCount() > 3) {
 		g_adcbits = Tokenizer_GetArgFloat(3);
 	}
-	if (Tokenizer_GetArgsCount() > 5) {
+	if (Tokenizer_GetArgsCount() > 4) {
 		g_vdivider = Tokenizer_GetArgFloat(4);
 	}
 
@@ -133,6 +133,6 @@ void Batt_StopDriver() {
 }
 void Batt_AppendInformationToHTTPIndexPage(http_request_t* request)
 {
-	hprintf255(request, "<h2>Battery level=%f, voltage=%f</h2>", g_battvoltage, g_battlevel);
+	hprintf255(request, "<h2>Battery level=%f, voltage=%f</h2>", g_battlevel, g_battvoltage);
 }
 
