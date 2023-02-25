@@ -1057,6 +1057,7 @@ void CHANNEL_Set(int ch, int iVal, int iFlags) {
 	Channel_OnChanged(ch, prevValue, iFlags);
 }
 void CHANNEL_AddClamped(int ch, int iVal, int min, int max, int bWrapInsteadOfClamp) {
+#if 0
 	int prevValue;
 	if (ch < 0 || ch >= CHANNEL_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_AddClamped: Channel index %i is out of range <0,%i)\n\r", ch, CHANNEL_MAX);
@@ -1070,7 +1071,7 @@ void CHANNEL_AddClamped(int ch, int iVal, int min, int max, int bWrapInsteadOfCl
 			g_channelValues[ch] = min;
 		if (g_channelValues[ch] < min)
 			g_channelValues[ch] = max;
-	}
+}
 	else {
 		if (g_channelValues[ch] > max)
 			g_channelValues[ch] = max;
@@ -1081,8 +1082,31 @@ void CHANNEL_AddClamped(int ch, int iVal, int min, int max, int bWrapInsteadOfCl
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_AddClamped channel %i has changed to %i\n\r", ch, g_channelValues[ch]);
 
 	Channel_OnChanged(ch, prevValue, 0);
+#else
+	// we want to support special channel indexes, so it's better to use GET/SET interface
+	// Special channel indexes are used to access things like dimmer, led colors, etc
+	iVal = CHANNEL_Get(ch) + iVal;
+
+	if (bWrapInsteadOfClamp) {
+		if (iVal > max)
+			iVal = min;
+		if (iVal < min)
+			iVal = max;
+	}
+	else {
+		if (iVal > max)
+			iVal = max;
+		if (iVal < min)
+			iVal = min;
+	}
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_AddClamped channel %i has changed to %i\n\r", ch, iVal);
+
+	CHANNEL_Set(ch, iVal, 0);
+#endif
 }
 void CHANNEL_Add(int ch, int iVal) {
+#if 0
 	int prevValue;
 	if (ch < 0 || ch >= CHANNEL_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Add: Channel index %i is out of range <0,%i)\n\r", ch, CHANNEL_MAX);
@@ -1094,6 +1118,13 @@ void CHANNEL_Add(int ch, int iVal) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_Add channel %i has changed to %i\n\r", ch, g_channelValues[ch]);
 
 	Channel_OnChanged(ch, prevValue, 0);
+#else
+	// we want to support special channel indexes, so it's better to use GET/SET interface
+	// Special channel indexes are used to access things like dimmer, led colors, etc
+	iVal = iVal+CHANNEL_Get(ch);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_Add channel %i has changed to %i\n\r", ch, iVal);
+	CHANNEL_Set(ch, iVal, 0);
+#endif
 }
 
 int CHANNEL_FindMaxValueForChannel(int ch) {
