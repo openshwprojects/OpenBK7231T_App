@@ -117,11 +117,13 @@ void Batt_Init() {
 
 void Batt_OnEverySecond() {
 
-	if (g_battcycle < 1) {
+	if (g_battcycle == 0) {
 		Batt_Measure();
 		g_battcycle = g_battcycleref;
 	}
-	--g_battcycle;
+	if (g_battcycle > 0) {
+		--g_battcycle;
+	}
 	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY : Measurement will run in  %i cycle", g_battcycle);
 
 

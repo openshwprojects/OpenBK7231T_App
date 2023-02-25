@@ -15,7 +15,7 @@
 
 #define SHT3X_I2C_ADDR (0x44 << 1)
 
-static byte channel_temp = 0, channel_humid = 0;
+static byte channel_temp = 0, channel_humid = 0, g_shtcycle = 1, g_shtcycleref = 10;
 static float g_temp = 0.0, g_humid = 0.0, g_caltemp = 0.0, g_calhum = 0.0;
 static bool g_shtper = false;
 
@@ -398,6 +398,19 @@ commandResult_t SHT3X_SetAlertCmd(const void* context, const char* cmd, const ch
 
 	return CMD_RES_OK;
 }
+commandResult_t SHT_cycle(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+	if (Tokenizer_GetArgsCount() < 1) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "SHT Cycle : Need integer args for seconds cycle");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	g_shtcycleref = Tokenizer_GetArgFloat(0);
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "SHT Cycle : Measurement will run every %i seconds", g_shtcycleref);
+
+	return CMD_RES_OK;
+}
 // startDriver SHT3X
 void SHT3X_Init() {
 
@@ -413,6 +426,12 @@ void SHT3X_Init() {
 
 	SHT3X_GetStatus();
 
+
+	//cmddetail:{"name":"SHT_cycle","args":"[int]",
+	//cmddetail:"descr":"change cycle of measurement by default every 10 seconds 0 to deactivate",
+	//cmddetail:"fn":"SHT_cycle","file":"drv/drv_sht3x.c","requires":"",
+	//cmddetail:"examples":"SHT_Cycle 60"}
+	CMD_RegisterCommand("SHT_cycle", SHT_cycle, NULL);
 	//cmddetail:{"name":"SHT_Calibrate","args":"",
 	//cmddetail:"descr":"Calibrate the SHT Sensor as Tolerance is +/-2 degrees C.",
 	//cmddetail:"fn":"SHT3X_Calibrate","file":"driver/drv_sht3x.c","requires":"",
@@ -466,14 +485,22 @@ void SHT3X_Init() {
 }
 void SHT3X_OnEverySecond()
 {
-	if (g_shtper)
-	{
-		SHT3X_MeasurePercmd();
+
+	if (g_shtcycle == 1) {
+		if (g_shtper)
+		{
+			SHT3X_MeasurePercmd();
+		}
+		else
+		{
+			SHT3X_Measurecmd();
+		}
+		g_shtcycle = g_shtcycleref;
 	}
-	else
-	{
-		SHT3X_Measurecmd();
+	if (g_shtcycle > 0) {
+		--g_shtcycle;
 	}
+	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_SHT : Measurement will run in  %i cycle", g_shtcycle);
 
 }
 
