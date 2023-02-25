@@ -214,10 +214,18 @@ static commandResult_t CMD_ClearConfig(const void* context, const char* cmd, con
 
 	return CMD_RES_OK;
 }
+// setChannel 1 123
+// echo First channel is $CH1 and this is the test
+// will print echo First channel is 123 and this is the test
 static commandResult_t CMD_Echo(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
-
+#if 0
 	ADDLOG_INFO(LOG_FEATURE_CMD, args);
+#else
+	// we want $CH40 etc expanded
+	Tokenizer_TokenizeString(args, TOKENIZER_ALTERNATE_EXPAND_AT_START | TOKENIZER_FORCE_SINGLE_ARGUMENT_MODE);
+	ADDLOG_INFO(LOG_FEATURE_CMD, Tokenizer_GetArgFrom(0));
+#endif
 
 	return CMD_RES_OK;
 }
@@ -353,7 +361,7 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("alias", CMD_CreateAliasForCommand, NULL);
 	//cmddetail:{"name":"echo","args":"[Message]",
-	//cmddetail:"descr":"Sends given message back to console.",
+	//cmddetail:"descr":"Sends given message back to console. This command expands variables, so writing $CH12 will print value of channel 12, etc. Remember that you can also use special channel indices to access persistant flash variables and to access LED variables like dimmer, etc.",
 	//cmddetail:"fn":"CMD_Echo","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("echo", CMD_Echo, NULL);

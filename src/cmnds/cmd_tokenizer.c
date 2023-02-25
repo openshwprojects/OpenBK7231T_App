@@ -171,6 +171,12 @@ void Tokenizer_TokenizeString(const char *s, int flags) {
 	} else {
 		strcpy_safe(g_buffer, s, sizeof(g_buffer));
 	}
+	if (flags & TOKENIZER_FORCE_SINGLE_ARGUMENT_MODE) {
+		g_args[g_numArgs] = g_buffer;
+		g_argsFrom[g_numArgs] = g_buffer;
+		g_numArgs = 1;
+		return;
+	}
 	p = g_buffer;
 	// we need to rewrite this function and check it well with unit tests
 	if (*p == '"') {

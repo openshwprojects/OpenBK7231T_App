@@ -140,6 +140,8 @@ enum LightMode {
 #define TOKENIZER_DONT_EXPAND					2
 // expand constants within whole command and not per-argumenet
 #define TOKENIZER_ALTERNATE_EXPAND_AT_START		4
+// force single argument mode
+#define TOKENIZER_FORCE_SINGLE_ARGUMENT_MODE	8
 
 // cmd_tokenizer.c
 int Tokenizer_GetArgsCount();
