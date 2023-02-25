@@ -68,13 +68,13 @@ commandResult_t Battery_Setup(const void* context, const char* cmd, const char* 
 	g_minbatt = Tokenizer_GetArgFloat(0);
 	g_maxbatt = Tokenizer_GetArgFloat(1);
 	if (Tokenizer_GetArgsCount() > 2) {
-		g_vref = Tokenizer_GetArgFloat(2);
+		g_vdivider = Tokenizer_GetArgFloat(2);
 	}
 	if (Tokenizer_GetArgsCount() > 3) {
-		g_adcbits = Tokenizer_GetArgFloat(3);
+		g_vref = Tokenizer_GetArgFloat(3);
 	}
 	if (Tokenizer_GetArgsCount() > 4) {
-		g_vdivider = Tokenizer_GetArgFloat(4);
+		g_adcbits = Tokenizer_GetArgFloat(4);
 	}
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Battery Setup : Min %i Max %i Vref %i adcbits %i vdivider %i", g_minbatt, g_maxbatt, g_vref, g_adcbits, g_vdivider);
@@ -102,9 +102,9 @@ commandResult_t Battery_cycle(const void* context, const char* cmd, const char* 
 void Batt_Init() {
 
 	//cmddetail:{"name":"Battery_Setup","args":"[int][int][float][int][int]",
-	//cmddetail:"descr":"measure battery based on ADC args minbatt and maxbatt in mv. optional Vref(default 2400), ADC bits(4096) and  V_divider(2) ",
+	//cmddetail:"descr":"measure battery based on ADC args minbatt and maxbatt in mv. optional V_divider(2), Vref(default 2400) and ADC bits(4096) and   ",
 	//cmddetail:"fn":"Battery_Setup","file":"drv/drv_battery.c","requires":"",
-	//cmddetail:"examples":"Battery_Setup 1500 3000 2400 4096 2"}
+	//cmddetail:"examples":"Battery_Setup 1500 3000 2 2400 4096"}
 	CMD_RegisterCommand("Battery_Setup", Battery_Setup, NULL);
 
 	//cmddetail:{"name":"Battery_cycle","args":"[int]",
