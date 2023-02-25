@@ -27,14 +27,13 @@ Do not add anything here, as it will overwritten with next rebuild.
 | clearAllHandlers |  | This clears all added event handlers | File: cmnds/cmd_eventHandlers.c<br/>Function: CMD_ClearAllHandlers |
 | aliasMem |  | Internal usage only. See docs for 'alias' command. | File: cmnds/cmd_test.c<br/>Function: runcmd |
 | alias | [Alias][Command with spaces] | add an aliased command, so a command with spaces can be called with a short, nospaced alias | File: cmnds/cmd_test.c<br/>Function: alias |
-| echo | [Message] | Sends given message back to console. | File: cmnds/cmd_main.c<br/>Function: CMD_Echo |
+| echo | [Message] | Sends given message back to console. This command expands variables, so writing $CH12 will print value of channel 12, etc. Remember that you can also use special channel indices to access persistant flash variables and to access LED variables like dimmer, etc. | File: cmnds/cmd_main.c<br/>Function: CMD_Echo |
 | restart |  | Reboots the module | File: cmnds/cmd_main.c<br/>Function: CMD_Restart |
 | reboot |  | Same as restart. Needed for bkWriter 1.60 which sends 'reboot' cmd before trying to get bus | File: cmnds/cmd_main.c<br/>Function: CMD_Restart |
 | clearConfig |  | Clears all config, including WiFi data | File: cmnds/cmd_main.c<br/>Function: CMD_ClearConfig |
 | clearAll |  | Clears config and all remaining features, like runtime scripts, events, etc | File: cmnds/cmd_main.c<br/>Function: CMD_ClearAll |
 | DeepSleep | [Seconds] | Starts deep sleep for given amount of seconds. | File: cmnds/cmd_main.c<br/>Function: CMD_DeepSleep |
 | PowerSave | [Optional 1 or 0, by default 1 is assumed] | Enables dynamic power saving mode on BK and W600. You can also disable power saving with PowerSave 0. | File: cmnds/cmd_main.c<br/>Function: CMD_PowerSave |
-| Battery_measure | [int][int][float][int][int] | measure battery based on ADC args minbatt and maxbatt in mv. optional Vref(default 2403), ADC bits(4096) and  V_divider(2) <br/>e.g.:Battery_measure 1500 3000 2403 4096 2 | File: cmnds/cmd_main.c<br/>Function: CMD_BATT_Meas |
 | simonirtest |  | Simons Special Test | File: cmnds/cmd_main.c<br/>Function: CMD_SimonTest |
 | if | [Condition]['then'][CommandA]['else'][CommandB] | Executed a conditional. Condition should be single line. You must always use 'then' after condition. 'else' is optional. Use aliases or quotes for commands with spaces | File: cmnds/cmd_main.c<br/>Function: CMD_If |
 | ota_http | [HTTP_URL] | Starts the firmware update procedure, the argument should be a reachable HTTP server file. You can easily setup HTTP server with Xampp, or Visual Code, or Python, etc. Make sure you are using OTA file for a correct platform (getting N platform RBL on T will brick device, etc etc) | File: cmnds/cmd_main.c<br/>Function: CMD_HTTPOTA |
@@ -47,6 +46,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | add_dimmer | [Value][AddMode] | Adds a given value to current LED dimmer. AddMode 0 just adds a value (with a clamp to [0,100]), AddMode 1 will wrap around values (going under 0 goes to 100, going over 100 goes to 0), AddMode 2 will ping-pong value (going to 100 starts going back from 100 to 0, and again, going to 0 starts going up). | File: cmnds/cmd_newLEDDriver.c<br/>Function: add_dimmer |
 | led_enableAll | [1or0orToggle] | Power on/off LED but remember the RGB(CW) values | File: cmnds/cmd_newLEDDriver.c<br/>Function: enableAll |
 | led_basecolor_rgb | [HexValue] | Puts the LED driver in RGB mode and sets given color. | File: cmnds/cmd_newLEDDriver.c<br/>Function: basecolor_rgb |
+| Color | [HexValue] | Puts the LED driver in RGB mode and sets given color. | File: cmnds/cmd_newLEDDriver.c<br/>Function: basecolor_rgb |
 | led_basecolor_rgbcw |  | set PWN color using #RRGGBB[cw][ww] | File: cmnds/cmd_newLEDDriver.c<br/>Function: basecolor_rgbcw |
 | add_temperature | [DeltaValue][bWrapAroundInsteadOfHold] | Adds a given value to current LED temperature. Function can wrap or clamp if max/min is exceeded. | File: cmnds/cmd_newLEDDriver.c<br/>Function: add_temperature |
 | led_temperature | [TempValue] | Toggles LED driver into temperature mode and sets given temperature. It using Home Assistant temperature range (in the range from 154-500 defined in homeassistant/util/color.py as HASS_COLOR_MIN and HASS_COLOR_MAX) | File: cmnds/cmd_newLEDDriver.c<br/>Function: temperature |
@@ -79,7 +79,6 @@ Do not add anything here, as it will overwritten with next rebuild.
 | sendGet | [TargetURL] | Sends a HTTP GET request to target URL. May include GET arguments. Can be used to control devices by Tasmota HTTP protocol. Command supports argument expansion, so $CH11 changes to value of channel 11, etc, etc. | File: cmnds/cmd_send.c<br/>Function: CMD_SendGET |
 | power | [OnorOfforToggle] | Tasmota-style POWER command. Should work for both LEDs and relay-based devices. You can write POWER0, POWER1, etc to access specific relays. | File: cmnds/cmd_tasmota.c<br/>Function: power |
 | powerAll |  | set all outputs | File: cmnds/cmd_tasmota.c<br/>Function: powerAll |
-| color | [HexString] | set PWN color using #RRGGBB[cw][ww]. Do not use it. Use led_basecolor_rgb | File: cmnds/cmd_tasmota.c<br/>Function: color |
 | backlog | [string of commands separated with ;] | run a sequence of ; separated commands | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_backlog |
 | exec | [Filename] | exec <file> - run autoexec.bat or other file from LFS if present | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_lfsexec |
 | SSID1 | [ValueString] | Sets the SSID of target WiFi. Command keeps Tasmota syntax. | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_SSID1 |
@@ -99,6 +98,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | lfs_test1 | [FileName] | Tests the LFS file reading feature. | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_lfs_test1 |
 | lfs_test2 | [FileName] | Tests the LFS file reading feature. | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_lfs_test2 |
 | lfs_test3 | [FileName] | Tests the LFS file reading feature. | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_lfs_test3 |
+| Battery_Setup | [int][int][float][int][int] | measure battery based on ADC args minbatt and maxbatt in mv. optional Vref(default 2400), ADC bits(4096) and  V_divider(2) <br/>e.g.:Battery_Setup 1500 3000 2400 4096 2 | File: drv/drv_battery.c<br/>Function: Battery_Setup |
+| Battery_cycle | [int] | change cycle of measurement by default every 10 seconds<br/>e.g.:Battery_Setup 60 | File: drv/drv_battery.c<br/>Function: Battery_cycle |
 | PowerSet |  | Sets current power value for calibration | File: driver/drv_bl0937.c<br/>Function: BL0937_PowerSet |
 | VoltageSet |  | Sets current V value for calibration | File: driver/drv_bl0937.c<br/>Function: BL0937_VoltageSet |
 | CurrentSet |  | Sets current I value for calibration | File: driver/drv_bl0937.c<br/>Function: BL0937_CurrentSet |
