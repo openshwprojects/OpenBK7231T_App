@@ -201,7 +201,10 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload
 	bool flagavty = false;
 	flagavty = CFG_HasFlag(OBK_FLAG_NOT_PUBLISH_AVAILABILITY_SENSOR);
 	// if door sensor is running, then deep sleep will be invoked mostly, then we dont want availability
-	if (DRV_IsRunning("DoorSensor") == false) {
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	if (DRV_IsRunning("DoorSensor") == false)
+#endif
+	{
 		if (!isSensor || !flagavty) {
 			cJSON_AddStringToObject(info->root, "avty_t", "~/connected");   //availability_topic, `online` value is broadcasted
 		}

@@ -959,6 +959,22 @@ float CHANNEL_GetFloat(int ch) {
 	return g_channelValuesFloats[ch];
 }
 int CHANNEL_Get(int ch) {
+	// special channels
+	if (ch == SPECIAL_CHANNEL_LEDPOWER) {
+		return LED_GetEnableAll();
+	}
+	if (ch == SPECIAL_CHANNEL_BRIGHTNESS) {
+		return LED_GetDimmer();
+	}
+	if (ch == SPECIAL_CHANNEL_TEMPERATURE) {
+		return LED_GetTemperature();
+	}
+	if (ch >= SPECIAL_CHANNEL_BASECOLOR_FIRST && ch <= SPECIAL_CHANNEL_BASECOLOR_LAST) {
+		return 0; // TODO
+	}
+	if (ch >= SPECIAL_CHANNEL_FLASHVARS_FIRST && ch <= SPECIAL_CHANNEL_FLASHVARS_LAST) {
+		return HAL_FlashVars_GetChannelValue(ch - SPECIAL_CHANNEL_FLASHVARS_FIRST);
+	}
 	if (ch < 0 || ch >= CHANNEL_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Get: Channel index %i is out of range <0,%i)\n\r", ch, CHANNEL_MAX);
 		return 0;
@@ -1012,6 +1028,10 @@ void CHANNEL_Set(int ch, int iVal, int iFlags) {
 	}
 	if (ch >= SPECIAL_CHANNEL_BASECOLOR_FIRST && ch <= SPECIAL_CHANNEL_BASECOLOR_LAST) {
 		LED_SetBaseColorByIndex(ch - SPECIAL_CHANNEL_BASECOLOR_FIRST, iVal, 1);
+		return;
+	}
+	if (ch >= SPECIAL_CHANNEL_FLASHVARS_FIRST && ch <= SPECIAL_CHANNEL_FLASHVARS_LAST) {
+		HAL_FlashVars_SaveChannel(ch - SPECIAL_CHANNEL_FLASHVARS_FIRST, iVal);
 		return;
 	}
 	if (ch < 0 || ch >= CHANNEL_MAX) {
