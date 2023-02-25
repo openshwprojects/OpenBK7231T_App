@@ -34,6 +34,7 @@ typedef struct flash_vars_structure
 	// size   64
 } FLASH_VARS_STRUCTURE;
 
+#define MAGIC_FLASHVARS_SIZE 64
 
 // call at startup
 void HAL_FlashVars_IncreaseBootCount();

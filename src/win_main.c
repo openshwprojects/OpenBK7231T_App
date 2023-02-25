@@ -13,6 +13,7 @@
 #include "driver\drv_public.h"
 #include "cmnds\cmd_public.h"
 #include "httpserver\new_http.h"
+#include "hal\hal_flashVars.h"
 #include "new_pins.h"
 #include <timeapi.h>
 
@@ -193,7 +194,7 @@ int g_bDoingUnitTestsNow = 0;
 #include "sim/sim_public.h"
 int __cdecl main(int argc, char **argv)
 {
-	bool bWantsUnitTests = 1;
+	bool bWantsUnitTests = 0;
 
 	if (argc > 1) {
 		int value;
@@ -244,6 +245,10 @@ int __cdecl main(int argc, char **argv)
 	printf("sizeof(long double) = %d\n", (int)sizeof(long double));
 	printf("sizeof(led_corr_t) = %d\n", (int)sizeof(led_corr_t));
 	
+	if (sizeof(FLASH_VARS_STRUCTURE) != MAGIC_FLASHVARS_SIZE) {
+		printf("sizeof(FLASH_VARS_STRUCTURE) != MAGIC_FLASHVARS_SIZE!: %i\n", sizeof(FLASH_VARS_STRUCTURE));
+		system("pause");
+	}
 	if (sizeof(ledRemap_t) != MAGIC_LED_REMAP_SIZE) {
 		printf("sizeof(ledRemap_t) != MAGIC_LED_REMAP_SIZE!: %i\n", sizeof(ledRemap_t));
 		system("pause");
