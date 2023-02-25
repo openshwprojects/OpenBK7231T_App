@@ -200,8 +200,11 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload
 	// remove availability information for sensor to keep last value visible on Home Assistant
 	bool flagavty = false;
 	flagavty = CFG_HasFlag(OBK_FLAG_NOT_PUBLISH_AVAILABILITY_SENSOR);
-	if (!isSensor || !flagavty) {
-		cJSON_AddStringToObject(info->root, "avty_t", "~/connected");   //availability_topic, `online` value is broadcasted
+	// if door sensor is running, then deep sleep will be invoked mostly, then we dont want availability
+	if (DRV_IsRunning("DoorSensor") == false) {
+		if (!isSensor || !flagavty) {
+			cJSON_AddStringToObject(info->root, "avty_t", "~/connected");   //availability_topic, `online` value is broadcasted
+		}
 	}
 
 	if (!isSensor) {	//Sensors (except binary_sensor) don't use payload 
