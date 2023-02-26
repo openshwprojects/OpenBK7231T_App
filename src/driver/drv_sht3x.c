@@ -15,8 +15,9 @@
 
 #define SHT3X_I2C_ADDR (0x44 << 1)
 
-static byte channel_temp = 0, channel_humid = 0;
+static byte channel_temp = 0, channel_humid = 0, g_shtcycle = 1, g_shtcycleref = 10;
 static float g_temp = 0.0, g_humid = 0.0, g_caltemp = 0.0, g_calhum = 0.0;
+static bool g_shtper = false;
 
 
 commandResult_t SHT3X_Calibrate(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -41,9 +42,10 @@ void SHT3X_StopPer() {
 	// medium repeteability
 	Soft_I2C_WriteByte(0x93);
 	Soft_I2C_Stop();
+	g_shtper = false;
 }
 
-void SM2135_StartPer(uint8_t msb, uint8_t lsb) {
+void SHT3X_StartPer(uint8_t msb, uint8_t lsb) {
 	// Start Periodic Data capture
 	Soft_I2C_Start(SHT3X_I2C_ADDR);
 	// Measure per seconds
@@ -51,6 +53,7 @@ void SM2135_StartPer(uint8_t msb, uint8_t lsb) {
 	// repeteability
 	Soft_I2C_WriteByte(lsb);
 	Soft_I2C_Stop();
+	g_shtper = true;
 }
 
 commandResult_t SHT3X_ChangePer(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -68,7 +71,7 @@ commandResult_t SHT3X_ChangePer(const void* context, const char* cmd, const char
 	SHT3X_StopPer();
 	//give some time for SHT to stop Periodicity
 	rtos_delay_milliseconds(25);
-	SM2135_StartPer(g_msb, g_lsb);
+	SHT3X_StartPer(g_msb, g_lsb);
 
 	ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT Change Per : change done");
 
@@ -102,7 +105,7 @@ commandResult_t SHT3X_Heater(const void* context, const char* cmd, const char* a
 	return CMD_RES_OK;
 }
 
-commandResult_t SHT3X_MeasurePer(const void* context, const char* cmd, const char* args, int cmdFlags) {
+void SHT3X_MeasurePercmd() {
 
 	uint8_t buff[6];
 	unsigned int th, tl, hh, hl;
@@ -136,10 +139,13 @@ commandResult_t SHT3X_MeasurePer(const void* context, const char* cmd, const cha
 	CHANNEL_Set(channel_humid, (int)(g_humid), 0);
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT3X_Measure: Period Temperature:%fC Humidity:%f%%", g_temp, g_humid);
-	return CMD_RES_OK;
-
 }
-commandResult_t SHT3X_Measure(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+commandResult_t SHT3X_MeasurePer(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	SHT3X_MeasurePercmd();
+	return CMD_RES_OK;
+}
+void SHT3X_Measurecmd() {
 
 	uint8_t buff[6];
 	unsigned int th, tl, hh, hl;
@@ -175,6 +181,12 @@ commandResult_t SHT3X_Measure(const void* context, const char* cmd, const char* 
 	CHANNEL_Set(channel_humid, (int)(g_humid), 0);
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT3X_Measure: Temperature:%fC Humidity:%f%%", g_temp, g_humid);
+
+}
+
+commandResult_t SHT3X_Measure(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+	SHT3X_Measurecmd();
 	return CMD_RES_OK;
 }
 // StopDriver SHT3X
@@ -386,6 +398,19 @@ commandResult_t SHT3X_SetAlertCmd(const void* context, const char* cmd, const ch
 
 	return CMD_RES_OK;
 }
+commandResult_t SHT_cycle(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+	if (Tokenizer_GetArgsCount() < 1) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "SHT Cycle : Need integer args for seconds cycle");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	g_shtcycleref = Tokenizer_GetArgFloat(0);
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "SHT Cycle : Measurement will run every %i seconds", g_shtcycleref);
+
+	return CMD_RES_OK;
+}
 // startDriver SHT3X
 void SHT3X_Init() {
 
@@ -401,6 +426,12 @@ void SHT3X_Init() {
 
 	SHT3X_GetStatus();
 
+
+	//cmddetail:{"name":"SHT_cycle","args":"[int]",
+	//cmddetail:"descr":"change cycle of measurement by default every 10 seconds 0 to deactivate",
+	//cmddetail:"fn":"SHT_cycle","file":"drv/drv_sht3x.c","requires":"",
+	//cmddetail:"examples":"SHT_Cycle 60"}
+	CMD_RegisterCommand("SHT_cycle", SHT_cycle, NULL);
 	//cmddetail:{"name":"SHT_Calibrate","args":"",
 	//cmddetail:"descr":"Calibrate the SHT Sensor as Tolerance is +/-2 degrees C.",
 	//cmddetail:"fn":"SHT3X_Calibrate","file":"driver/drv_sht3x.c","requires":"",
@@ -452,7 +483,26 @@ void SHT3X_Init() {
 	//cmddetail:"examples":"SHT_SetAlertCmd"}
 	CMD_RegisterCommand("SHT_SetAlert", SHT3X_SetAlertCmd, NULL);
 }
+void SHT3X_OnEverySecond()
+{
 
+	if (g_shtcycle == 1) {
+		if (g_shtper)
+		{
+			SHT3X_MeasurePercmd();
+		}
+		else
+		{
+			SHT3X_Measurecmd();
+		}
+		g_shtcycle = g_shtcycleref;
+	}
+	if (g_shtcycle > 0) {
+		--g_shtcycle;
+	}
+	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_SHT : Measurement will run in  %i cycle", g_shtcycle);
+
+}
 
 void SHT3X_AppendInformationToHTTPIndexPage(http_request_t* request)
 {

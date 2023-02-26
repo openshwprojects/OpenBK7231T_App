@@ -15,7 +15,7 @@
 
 static int g_pin_adc = 0, channel_adc = 0, channel_rel = 0, g_pin_rel = 0, g_battcycle = 1, g_battcycleref = 10;
 static float g_battvoltage = 0.0, g_battlevel = 0.0;
-static float g_vref = 2400, g_vdivider = 2, g_maxbatt = 3000, g_minbatt = 2000, g_adcbits = 4096;
+static float g_vref = 2400, g_vdivider = 2.00, g_maxbatt = 3000, g_minbatt = 2000, g_adcbits = 4096;
 
 static void Batt_Measure() {
 	//this command has only been tested on CBU
@@ -67,14 +67,14 @@ commandResult_t Battery_Setup(const void* context, const char* cmd, const char* 
 
 	g_minbatt = Tokenizer_GetArgFloat(0);
 	g_maxbatt = Tokenizer_GetArgFloat(1);
+	if (Tokenizer_GetArgsCount() > 2) {
+		g_vdivider = Tokenizer_GetArgFloat(2);
+	}
 	if (Tokenizer_GetArgsCount() > 3) {
-		g_vref = Tokenizer_GetArgFloat(2);
+		g_vref = Tokenizer_GetArgFloat(3);
 	}
 	if (Tokenizer_GetArgsCount() > 4) {
-		g_adcbits = Tokenizer_GetArgFloat(3);
-	}
-	if (Tokenizer_GetArgsCount() > 5) {
-		g_vdivider = Tokenizer_GetArgFloat(4);
+		g_adcbits = Tokenizer_GetArgFloat(4);
 	}
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Battery Setup : Min %i Max %i Vref %i adcbits %i vdivider %i", g_minbatt, g_maxbatt, g_vref, g_adcbits, g_vdivider);
@@ -102,9 +102,9 @@ commandResult_t Battery_cycle(const void* context, const char* cmd, const char* 
 void Batt_Init() {
 
 	//cmddetail:{"name":"Battery_Setup","args":"[int][int][float][int][int]",
-	//cmddetail:"descr":"measure battery based on ADC args minbatt and maxbatt in mv. optional Vref(default 2400), ADC bits(4096) and  V_divider(2) ",
+	//cmddetail:"descr":"measure battery based on ADC args minbatt and maxbatt in mv. optional V_divider(2), Vref(default 2400) and ADC bits(4096) and   ",
 	//cmddetail:"fn":"Battery_Setup","file":"drv/drv_battery.c","requires":"",
-	//cmddetail:"examples":"Battery_Setup 1500 3000 2400 4096 2"}
+	//cmddetail:"examples":"Battery_Setup 1500 3000 2 2400 4096"}
 	CMD_RegisterCommand("Battery_Setup", Battery_Setup, NULL);
 
 	//cmddetail:{"name":"Battery_cycle","args":"[int]",
@@ -117,11 +117,13 @@ void Batt_Init() {
 
 void Batt_OnEverySecond() {
 
-	if (g_battcycle < 1) {
+	if (g_battcycle == 0) {
 		Batt_Measure();
 		g_battcycle = g_battcycleref;
 	}
-	--g_battcycle;
+	if (g_battcycle > 0) {
+		--g_battcycle;
+	}
 	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY : Measurement will run in  %i cycle", g_battcycle);
 
 
@@ -133,6 +135,6 @@ void Batt_StopDriver() {
 }
 void Batt_AppendInformationToHTTPIndexPage(http_request_t* request)
 {
-	hprintf255(request, "<h2>Battery level=%f, voltage=%f</h2>", g_battvoltage, g_battlevel);
+	hprintf255(request, "<h2>Battery level=%f, voltage=%f</h2>", g_battlevel, g_battvoltage);
 }
 
