@@ -2262,7 +2262,7 @@ const char* g_obk_flagNames[] = {
 	"[MQTT] Apply channel type multiplier on (if any) on channel value before publishing it",
 	"[MQTT] In HA discovery, add relays as lights",
 	"[HASS] Deactivate avty_t flag for sensor when publishing to HASS (permit to keep value)",
-	"error",
+	"[DRV] Deactivate Autostart of all drivers",
 	"error",
 	"error",
 	"error",
