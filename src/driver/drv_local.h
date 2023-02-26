@@ -90,6 +90,7 @@ void WEMO_AppendInformationToHTTPIndexPage(http_request_t* request);
 
 #define SM2135_DELAY         4
 
+// Software I2C 
 extern int g_i2c_pin_clk;
 extern int g_i2c_pin_data;
 void Soft_I2C_SetLow(uint8_t pin);
@@ -100,6 +101,8 @@ bool Soft_I2C_Start(uint8_t addr);
 void Soft_I2C_Stop(void);
 uint8_t Soft_I2C_ReadByte(bool nack);
 void Soft_I2C_ReadBytes(uint8_t* buf, int numOfBytes);
+
+// Shared LED driver
 commandResult_t CMD_LEDDriver_Map(const void* context, const char* cmd, const char* args, int flags);
 commandResult_t CMD_LEDDriver_WriteRGBCW(const void* context, const char* cmd, const char* args, int flags);
 void LED_I2CDriver_WriteRGBCW(float* finalRGBCW);
