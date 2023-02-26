@@ -14,7 +14,6 @@
 #include "drv_battery.h"
 
 static int g_pin_adc = 0, channel_adc = 0, channel_rel = 0, g_pin_rel = 0, g_battcycle = 1, g_battcycleref = 10;
-static float g_battvoltage = 0.0, g_battlevel = 0.0;
 static float g_vref = 2400, g_vdivider = 2.29, g_maxbatt = 3000, g_minbatt = 2000, g_adcbits = 4096;
 
 static void Batt_Measure() {
