@@ -22,6 +22,9 @@ static void Batt_Measure() {
 	float batt_ref, batt_res, vref;
 	ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : Measure Battery volt en perc");
 	g_pin_adc = PIN_FindPinIndexForRole(IOR_BAT_ADC, g_pin_adc);
+	if (PIN_FindPinIndexForRole(IOR_BAT_Relay, -1) == -1) {
+		g_vdivider = 1;
+	}
 	// if divider equal to 1 then no need for relay activation
 	if (g_vdivider > 1) {
 		g_pin_rel = PIN_FindPinIndexForRole(IOR_BAT_Relay, g_pin_rel);
