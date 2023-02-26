@@ -22,16 +22,17 @@ static DD_HANDLE i2c_hdl;
 
 static int current_bus;
 static int tg_addr;
+static softI2C_t g_softI2C;
 
 void DRV_I2C_Write(byte addr, byte data)
 {
 	if (current_bus == I2C_BUS_SOFT) {
-		Soft_I2C_Start((tg_addr << 1) + 0);
-		Soft_I2C_WriteByte(addr);
-		Soft_I2C_Stop();
-		Soft_I2C_Start((tg_addr << 1) + 0);
-		Soft_I2C_WriteByte(data);
-		Soft_I2C_Stop();
+		Soft_I2C_Start(&g_softI2C, (tg_addr << 1) + 0);
+		Soft_I2C_WriteByte(&g_softI2C, addr);
+		Soft_I2C_Stop(&g_softI2C);
+		Soft_I2C_Start(&g_softI2C, (tg_addr << 1) + 0);
+		Soft_I2C_WriteByte(&g_softI2C, data);
+		Soft_I2C_Stop(&g_softI2C);
 		return;
 	}
 #if PLATFORM_BK7231T
@@ -41,14 +42,14 @@ void DRV_I2C_Write(byte addr, byte data)
 }
 void DRV_I2C_WriteBytes(byte addr, byte *data, int len) {
 	if (current_bus == I2C_BUS_SOFT) {
-		Soft_I2C_Start((tg_addr << 1) +0);
-		Soft_I2C_WriteByte(addr);
-		Soft_I2C_Stop();
-		Soft_I2C_Start((tg_addr << 1) + 0);
+		Soft_I2C_Start(&g_softI2C, (tg_addr << 1) +0);
+		Soft_I2C_WriteByte(&g_softI2C, addr);
+		Soft_I2C_Stop(&g_softI2C);
+		Soft_I2C_Start(&g_softI2C, (tg_addr << 1) + 0);
 		for (int i = 0; i < len; i++) {
-			Soft_I2C_WriteByte(data[i]);
+			Soft_I2C_WriteByte(&g_softI2C, data[i]);
 		}
-		Soft_I2C_Stop();
+		Soft_I2C_Stop(&g_softI2C);
 		return;
 	}
 #if PLATFORM_BK7231T
@@ -59,12 +60,12 @@ void DRV_I2C_WriteBytes(byte addr, byte *data, int len) {
 void DRV_I2C_Read(byte addr, byte *data)
 {
 	if (current_bus == I2C_BUS_SOFT) {
-		Soft_I2C_Start((tg_addr << 1) + 0);
-		Soft_I2C_WriteByte(addr);
-		Soft_I2C_Stop();
-		Soft_I2C_Start((tg_addr << 1) + 1);
-		*data = Soft_I2C_ReadByte(false);
-		Soft_I2C_Stop();
+		Soft_I2C_Start(&g_softI2C, (tg_addr << 1) + 0);
+		Soft_I2C_WriteByte(&g_softI2C, addr);
+		Soft_I2C_Stop(&g_softI2C);
+		Soft_I2C_Start(&g_softI2C, (tg_addr << 1) + 1);
+		*data = Soft_I2C_ReadByte(&g_softI2C, false);
+		Soft_I2C_Stop(&g_softI2C);
 		return;
 	}
 #if PLATFORM_BK7231T
@@ -84,9 +85,9 @@ int DRV_I2C_Begin(int dev_adr, int busID) {
 	tg_addr = dev_adr;
 
 	if (busID == I2C_BUS_SOFT) {
-		g_i2c_pin_clk = PIN_FindPinIndexForRole(IOR_SOFT_SCL, g_i2c_pin_clk);
-		g_i2c_pin_data = PIN_FindPinIndexForRole(IOR_SOFT_SDA, g_i2c_pin_data);
-		Soft_I2C_PreInit();
+		g_softI2C.pin_clk = PIN_FindPinIndexForRole(IOR_SOFT_SCL, g_softI2C.pin_clk);
+		g_softI2C.pin_data = PIN_FindPinIndexForRole(IOR_SOFT_SDA, g_softI2C.pin_data);
+		Soft_I2C_PreInit(&g_softI2C);
 		return 0;
 	}
 #if PLATFORM_BK7231T

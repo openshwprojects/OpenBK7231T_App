@@ -12,6 +12,8 @@
 
 #include "drv_sm2235.h"
 
+static softI2C_t g_softI2C;
+
 void SM2235_Write(float *rgbcw) {
 	unsigned short cur_col_10[5];
 	int i;
@@ -28,30 +30,30 @@ void SM2235_Write(float *rgbcw) {
 #define SM2235_SECOND_BYTE(x) (x & 0xFF)
 
 	// Byte 0
-	Soft_I2C_Start(SM2235_BYTE_0);
+	Soft_I2C_Start(&g_softI2C,SM2235_BYTE_0);
 	// Byte 1
-	Soft_I2C_WriteByte(SM2235_BYTE_1);
+	Soft_I2C_WriteByte(&g_softI2C, SM2235_BYTE_1);
 	// Byte 2
-	Soft_I2C_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[0])));  //Red
+	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_FIRST_BYTE(cur_col_10[0])));  //Red
 	// Byte 3
-	Soft_I2C_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[0])));
+	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_SECOND_BYTE(cur_col_10[0])));
 	// Byte 4
-	Soft_I2C_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[1]))); //Green
+	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_FIRST_BYTE(cur_col_10[1]))); //Green
 	// Byte 5
-	Soft_I2C_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[1])));
+	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_SECOND_BYTE(cur_col_10[1])));
 	// Byte 6
-	Soft_I2C_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[2]))); //Blue
+	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_FIRST_BYTE(cur_col_10[2]))); //Blue
 	// Byte 7
-	Soft_I2C_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[2])));
+	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_SECOND_BYTE(cur_col_10[2])));
 	// Byte 8
-	Soft_I2C_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[4]))); //Cold
+	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_FIRST_BYTE(cur_col_10[4]))); //Cold
 	// Byte 9
-	Soft_I2C_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[4])));
+	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_SECOND_BYTE(cur_col_10[4])));
 	// Byte 10
-	Soft_I2C_WriteByte((uint8_t)(SM2235_FIRST_BYTE(cur_col_10[3]))); //Warm
+	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_FIRST_BYTE(cur_col_10[3]))); //Warm
 	// Byte 11
-	Soft_I2C_WriteByte((uint8_t)(SM2235_SECOND_BYTE(cur_col_10[3])));
-	Soft_I2C_Stop();
+	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_SECOND_BYTE(cur_col_10[3])));
+	Soft_I2C_Stop(&g_softI2C);
 
 }
 
@@ -83,10 +85,10 @@ void SM2235_Init() {
 	// default setting (applied only if none was applied earlier)
 	CFG_SetDefaultLEDRemap(2, 1, 0, 4, 3);
 
-	g_i2c_pin_clk = PIN_FindPinIndexForRole(IOR_SM2235_CLK,g_i2c_pin_clk);
-	g_i2c_pin_data = PIN_FindPinIndexForRole(IOR_SM2235_DAT,g_i2c_pin_data);
+	g_softI2C.pin_clk = PIN_FindPinIndexForRole(IOR_SM2235_CLK,g_softI2C.pin_clk);
+	g_softI2C.pin_data = PIN_FindPinIndexForRole(IOR_SM2235_DAT,g_softI2C.pin_data);
 
-	Soft_I2C_PreInit();
+	Soft_I2C_PreInit(&g_softI2C);
 
 
 	//cmddetail:{"name":"SM2235_RGBCW","args":"[HexColor]",

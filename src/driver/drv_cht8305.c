@@ -17,6 +17,7 @@
 
 static byte channel_temp = 0, channel_humid = 0;
 static float g_temp = 0.0, g_humid = 0.0;
+static softI2C_t g_softI2C;
 
 
 
@@ -33,15 +34,15 @@ static void CHT8305_ReadEnv(float* temp, float* hum)
 	uint8_t buff[4];
 	unsigned int th, tl, hh, hl;
 
-	Soft_I2C_Start(CHT8305_I2C_ADDR);
-	Soft_I2C_WriteByte(0x00);
-	Soft_I2C_Stop();
+	Soft_I2C_Start(&g_softI2C, CHT8305_I2C_ADDR);
+	Soft_I2C_WriteByte(&g_softI2C, 0x00);
+	Soft_I2C_Stop(&g_softI2C);
 
 	rtos_delay_milliseconds(20);	//give the sensor time to do the conversion
 
-	Soft_I2C_Start(CHT8305_I2C_ADDR | 1);
-	Soft_I2C_ReadBytes(buff, 4);
-	Soft_I2C_Stop();
+	Soft_I2C_Start(&g_softI2C, CHT8305_I2C_ADDR | 1);
+	Soft_I2C_ReadBytes(&g_softI2C, buff, 4);
+	Soft_I2C_Stop(&g_softI2C);
 
 	th = buff[0];
 	tl = buff[1];
@@ -60,19 +61,19 @@ void CHT8305_Init() {
 	uint8_t buff[4];
 
 
-	g_i2c_pin_clk = 9;
-	g_i2c_pin_data = 14;
-	g_i2c_pin_clk = PIN_FindPinIndexForRole(IOR_CHT8305_CLK, g_i2c_pin_clk);
-	g_i2c_pin_data = PIN_FindPinIndexForRole(IOR_CHT8305_DAT, g_i2c_pin_data);
+	g_softI2C.pin_clk = 9;
+	g_softI2C.pin_data = 14;
+	g_softI2C.pin_clk = PIN_FindPinIndexForRole(IOR_CHT8305_CLK, g_softI2C.pin_clk);
+	g_softI2C.pin_data = PIN_FindPinIndexForRole(IOR_CHT8305_DAT, g_softI2C.pin_data);
 
-	Soft_I2C_PreInit();
+	Soft_I2C_PreInit(&g_softI2C);
 
-	Soft_I2C_Start(CHT8305_I2C_ADDR);
-	Soft_I2C_WriteByte(0xfe);			//manufacturer ID
-	Soft_I2C_Stop();
-	Soft_I2C_Start(CHT8305_I2C_ADDR | 1);
-	Soft_I2C_ReadBytes(buff, 2);
-	Soft_I2C_Stop();
+	Soft_I2C_Start(&g_softI2C, CHT8305_I2C_ADDR);
+	Soft_I2C_WriteByte(&g_softI2C, 0xfe);			//manufacturer ID
+	Soft_I2C_Stop(&g_softI2C);
+	Soft_I2C_Start(&g_softI2C, CHT8305_I2C_ADDR | 1);
+	Soft_I2C_ReadBytes(&g_softI2C, buff, 2);
+	Soft_I2C_Stop(&g_softI2C);
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "DRV_CHT8304_init: ID: %02X %02X", buff[0], buff[1]);
 
@@ -85,8 +86,8 @@ void CHT8305_OnEverySecond() {
 
 	CHT8305_ReadEnv(&g_temp, &g_humid);
 
-	channel_temp = g_cfg.pins.channels[g_i2c_pin_data];
-	channel_humid = g_cfg.pins.channels2[g_i2c_pin_data];
+	channel_temp = g_cfg.pins.channels[g_softI2C.pin_data];
+	channel_humid = g_cfg.pins.channels2[g_softI2C.pin_data];
 	// don't want to loose accuracy, so multiply by 10
 	// We have a channel types to handle that
 	CHANNEL_Set(channel_temp, (int)(g_temp * 10), 0);

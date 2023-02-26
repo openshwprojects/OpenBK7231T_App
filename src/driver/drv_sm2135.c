@@ -12,6 +12,7 @@
 
 #include "drv_sm2135.h"
 
+static softI2C_t g_softI2C;
 static int g_current_setting_cw = SM2135_20MA;
 static int g_current_setting_rgb = SM2135_20MA;
 
@@ -28,36 +29,36 @@ void SM2135_Write(float *rgbcw) {
 			}
 		}
 		if(bRGB) {
-			Soft_I2C_Start(SM2135_ADDR_MC);
-			Soft_I2C_WriteByte(g_current_setting_rgb);
-			Soft_I2C_WriteByte(SM2135_RGB);
-			Soft_I2C_WriteByte(rgbcw[g_cfg.ledRemap.r]);
-			Soft_I2C_WriteByte(rgbcw[g_cfg.ledRemap.g]);
-			Soft_I2C_WriteByte(rgbcw[g_cfg.ledRemap.b]); 
-			Soft_I2C_Stop();
+			Soft_I2C_Start(&g_softI2C, SM2135_ADDR_MC);
+			Soft_I2C_WriteByte(&g_softI2C, g_current_setting_rgb);
+			Soft_I2C_WriteByte(&g_softI2C, SM2135_RGB);
+			Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.r]);
+			Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.g]);
+			Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.b]);
+			Soft_I2C_Stop(&g_softI2C);
 		} else {
-			Soft_I2C_Start(SM2135_ADDR_MC);
-			Soft_I2C_WriteByte(g_current_setting_cw);
-			Soft_I2C_WriteByte(SM2135_CW);
-			Soft_I2C_Stop();
+			Soft_I2C_Start(&g_softI2C, SM2135_ADDR_MC);
+			Soft_I2C_WriteByte(&g_softI2C, g_current_setting_cw);
+			Soft_I2C_WriteByte(&g_softI2C, SM2135_CW);
+			Soft_I2C_Stop(&g_softI2C);
 			usleep(SM2135_DELAY);
 
-			Soft_I2C_Start(SM2135_ADDR_C);
-			Soft_I2C_WriteByte(rgbcw[g_cfg.ledRemap.c]);
-			Soft_I2C_WriteByte(rgbcw[g_cfg.ledRemap.w]); 
-			Soft_I2C_Stop();
+			Soft_I2C_Start(&g_softI2C, SM2135_ADDR_C);
+			Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.c]);
+			Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.w]);
+			Soft_I2C_Stop(&g_softI2C);
 
 		}
 	} else {
-		Soft_I2C_Start(SM2135_ADDR_MC);
-		Soft_I2C_WriteByte(g_current_setting_rgb);
-		Soft_I2C_WriteByte(SM2135_RGB);
-		Soft_I2C_WriteByte(rgbcw[g_cfg.ledRemap.r]);
-		Soft_I2C_WriteByte(rgbcw[g_cfg.ledRemap.g]);
-		Soft_I2C_WriteByte(rgbcw[g_cfg.ledRemap.b]); 
-		Soft_I2C_WriteByte(rgbcw[g_cfg.ledRemap.c]); 
-		Soft_I2C_WriteByte(rgbcw[g_cfg.ledRemap.w]); 
-		Soft_I2C_Stop();
+		Soft_I2C_Start(&g_softI2C, SM2135_ADDR_MC);
+		Soft_I2C_WriteByte(&g_softI2C, g_current_setting_rgb);
+		Soft_I2C_WriteByte(&g_softI2C, SM2135_RGB);
+		Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.r]);
+		Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.g]);
+		Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.b]);
+		Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.c]);
+		Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.w]);
+		Soft_I2C_Stop(&g_softI2C);
 	}
 }
 
@@ -159,10 +160,10 @@ void SM2135_Init() {
 	// default setting (applied only if none was applied earlier)
 	CFG_SetDefaultLEDRemap(2, 1, 0, 4, 3);
 
-	g_i2c_pin_clk = PIN_FindPinIndexForRole(IOR_SM2135_CLK,g_i2c_pin_clk);
-	g_i2c_pin_data = PIN_FindPinIndexForRole(IOR_SM2135_DAT,g_i2c_pin_data);
+	g_softI2C.pin_clk = PIN_FindPinIndexForRole(IOR_SM2135_CLK,g_softI2C.pin_clk);
+	g_softI2C.pin_data = PIN_FindPinIndexForRole(IOR_SM2135_DAT,g_softI2C.pin_data);
 
-	Soft_I2C_PreInit();
+	Soft_I2C_PreInit(&g_softI2C);
 
 	//cmddetail:{"name":"SM2135_RGBCW","args":"[HexColor]",
 	//cmddetail:"descr":"Don't use it. It's for direct access of SM2135 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",

@@ -18,6 +18,7 @@
 static byte channel_temp = 0, channel_humid = 0, g_shtcycle = 1, g_shtcycleref = 10;
 static float g_temp = 0.0, g_humid = 0.0, g_caltemp = 0.0, g_calhum = 0.0;
 static bool g_shtper = false;
+static softI2C_t g_softI2C;
 
 
 commandResult_t SHT3X_Calibrate(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -36,23 +37,23 @@ commandResult_t SHT3X_Calibrate(const void* context, const char* cmd, const char
 }
 
 void SHT3X_StopPer() {
-	Soft_I2C_Start(SHT3X_I2C_ADDR);
+	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR);
 	// Stop Periodic Data
-	Soft_I2C_WriteByte(0x30);
+	Soft_I2C_WriteByte(&g_softI2C, 0x30);
 	// medium repeteability
-	Soft_I2C_WriteByte(0x93);
-	Soft_I2C_Stop();
+	Soft_I2C_WriteByte(&g_softI2C, 0x93);
+	Soft_I2C_Stop(&g_softI2C);
 	g_shtper = false;
 }
 
 void SHT3X_StartPer(uint8_t msb, uint8_t lsb) {
 	// Start Periodic Data capture
-	Soft_I2C_Start(SHT3X_I2C_ADDR);
+	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR);
 	// Measure per seconds
-	Soft_I2C_WriteByte(msb);
+	Soft_I2C_WriteByte(&g_softI2C, msb);
 	// repeteability
-	Soft_I2C_WriteByte(lsb);
-	Soft_I2C_Stop();
+	Soft_I2C_WriteByte(&g_softI2C, lsb);
+	Soft_I2C_Stop(&g_softI2C);
 	g_shtper = true;
 }
 
@@ -87,21 +88,21 @@ commandResult_t SHT3X_Heater(const void* context, const char* cmd, const char* a
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	g_state_heat = Tokenizer_GetArgInteger(0);
-	Soft_I2C_Start(SHT3X_I2C_ADDR);
+	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR);
 
 	if (g_state_heat > 0) {
 		// medium repeteability
-		Soft_I2C_WriteByte(0x30);
-		Soft_I2C_WriteByte(0x6D);
+		Soft_I2C_WriteByte(&g_softI2C, 0x30);
+		Soft_I2C_WriteByte(&g_softI2C, 0x6D);
 		ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT Heater activated");
 	}
 	else {
 		// medium repeteability
-		Soft_I2C_WriteByte(0x30);
-		Soft_I2C_WriteByte(0x66);
+		Soft_I2C_WriteByte(&g_softI2C, 0x30);
+		Soft_I2C_WriteByte(&g_softI2C, 0x66);
 		ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT Heater deactivated");
 	}
-	Soft_I2C_Stop();
+	Soft_I2C_Stop(&g_softI2C);
 	return CMD_RES_OK;
 }
 
@@ -116,16 +117,16 @@ void SHT3X_MeasurePercmd() {
 	uint8_t buff[6];
 	unsigned int th, tl, hh, hl;
 
-	Soft_I2C_Start(SHT3X_I2C_ADDR);
+	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR);
 	// Ask for fetching data
-	Soft_I2C_WriteByte(0xE0);
+	Soft_I2C_WriteByte(&g_softI2C, 0xE0);
 	// medium repeteability
-	Soft_I2C_WriteByte(0x00);
-	Soft_I2C_Stop();
+	Soft_I2C_WriteByte(&g_softI2C, 0x00);
+	Soft_I2C_Stop(&g_softI2C);
 
-	Soft_I2C_Start(SHT3X_I2C_ADDR | 1);
-	Soft_I2C_ReadBytes(buff, 6);
-	Soft_I2C_Stop();
+	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR | 1);
+	Soft_I2C_ReadBytes(&g_softI2C, buff, 6);
+	Soft_I2C_Stop(&g_softI2C);
 
 	th = buff[0];
 	tl = buff[1];
@@ -138,8 +139,8 @@ void SHT3X_MeasurePercmd() {
 	g_temp = g_temp + g_caltemp;
 	g_humid = g_humid + g_calhum;
 
-	channel_temp = g_cfg.pins.channels[g_i2c_pin_data];
-	channel_humid = g_cfg.pins.channels2[g_i2c_pin_data];
+	channel_temp = g_cfg.pins.channels[g_softI2C.pin_data];
+	channel_humid = g_cfg.pins.channels2[g_softI2C.pin_data];
 	CHANNEL_Set(channel_temp, (int)(g_temp * 10), 0);
 	CHANNEL_Set(channel_humid, (int)(g_humid), 0);
 
@@ -160,18 +161,18 @@ void SHT3X_Measurecmd() {
 	uint8_t buff[6];
 	unsigned int th, tl, hh, hl;
 
-	Soft_I2C_Start(SHT3X_I2C_ADDR);
+	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR);
 	// no clock stretching
-	Soft_I2C_WriteByte(0x24);
+	Soft_I2C_WriteByte(&g_softI2C, 0x24);
 	// medium repeteability
-	Soft_I2C_WriteByte(0x16);
-	Soft_I2C_Stop();
+	Soft_I2C_WriteByte(&g_softI2C, 0x16);
+	Soft_I2C_Stop(&g_softI2C);
 
 	rtos_delay_milliseconds(20);	//give the sensor time to do the conversion
 
-	Soft_I2C_Start(SHT3X_I2C_ADDR | 1);
-	Soft_I2C_ReadBytes(buff, 6);
-	Soft_I2C_Stop();
+	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR | 1);
+	Soft_I2C_ReadBytes(&g_softI2C, buff, 6);
+	Soft_I2C_Stop(&g_softI2C);
 
 	th = buff[0];
 	tl = buff[1];
@@ -185,8 +186,8 @@ void SHT3X_Measurecmd() {
 	g_temp = g_temp + g_caltemp;
 	g_humid = g_humid + g_calhum;
 
-	channel_temp = g_cfg.pins.channels[g_i2c_pin_data];
-	channel_humid = g_cfg.pins.channels2[g_i2c_pin_data];
+	channel_temp = g_cfg.pins.channels[g_softI2C.pin_data];
+	channel_humid = g_cfg.pins.channels2[g_softI2C.pin_data];
 	CHANNEL_Set(channel_temp, (int)(g_temp * 10), 0);
 	CHANNEL_Set(channel_humid, (int)(g_humid), 0);
 
@@ -204,10 +205,10 @@ void SHT3X_StopDriver() {
 	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT3X : Stopping Driver and reset sensor");
 	SHT3X_StopPer();
 	// Reset the sensor
-	Soft_I2C_Start(SHT3X_I2C_ADDR);
-	Soft_I2C_WriteByte(0x30);
-	Soft_I2C_WriteByte(0xA2);
-	Soft_I2C_Stop();
+	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR);
+	Soft_I2C_WriteByte(&g_softI2C, 0x30);
+	Soft_I2C_WriteByte(&g_softI2C, 0xA2);
+	Soft_I2C_Stop(&g_softI2C);
 }
 
 commandResult_t SHT3X_StopPerCmd(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -219,13 +220,13 @@ commandResult_t SHT3X_StopPerCmd(const void* context, const char* cmd, const cha
 void SHT3X_GetStatus()
 {
 	uint8_t status[2];
-	Soft_I2C_Start(SHT3X_I2C_ADDR);
-	Soft_I2C_WriteByte(0xf3);			//Get Status should be 00000xxxxx00x0x0
-	Soft_I2C_WriteByte(0x2d);          //Cheksum/Cmd_status/x/reset/res*5/Talert/RHalert/x/Heater/x/Alert
-	Soft_I2C_Stop();
-	Soft_I2C_Start(SHT3X_I2C_ADDR | 1);
-	Soft_I2C_ReadBytes(status, 2);
-	Soft_I2C_Stop();
+	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR);
+	Soft_I2C_WriteByte(&g_softI2C, 0xf3);			//Get Status should be 00000xxxxx00x0x0
+	Soft_I2C_WriteByte(&g_softI2C, 0x2d);          //Cheksum/Cmd_status/x/reset/res*5/Talert/RHalert/x/Heater/x/Alert
+	Soft_I2C_Stop(&g_softI2C);
+	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR | 1);
+	Soft_I2C_ReadBytes(&g_softI2C, status, 2);
+	Soft_I2C_Stop(&g_softI2C);
 	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT : Status : %02X %02X", status[0], status[1]);
 }
 commandResult_t SHT3X_GetStatusCmd(const void* context, const char* cmd, const char* args, int cmdFlags)
@@ -235,10 +236,10 @@ commandResult_t SHT3X_GetStatusCmd(const void* context, const char* cmd, const c
 }
 void SHT3X_ClearStatus()
 {
-	Soft_I2C_Start(SHT3X_I2C_ADDR);
-	Soft_I2C_WriteByte(0x30);			//Clear status
-	Soft_I2C_WriteByte(0x41);          //clear status
-	Soft_I2C_Stop();
+	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR);
+	Soft_I2C_WriteByte(&g_softI2C, 0x30);			//Clear status
+	Soft_I2C_WriteByte(&g_softI2C, 0x41);          //clear status
+	Soft_I2C_Stop(&g_softI2C);
 	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT : Clear status");
 }
 commandResult_t SHT3X_ClearStatusCmd(const void* context, const char* cmd, const char* args, int cmdFlags)
@@ -251,9 +252,9 @@ static void SHT3X_ReadAlertLimitData(float* humidity, float* temperature)
 {
 	uint8_t data[2];
 	uint16_t finaldata;
-	Soft_I2C_Start(SHT3X_I2C_ADDR | 1);
-	Soft_I2C_ReadBytes(data, 2);
-	Soft_I2C_Stop();
+	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR | 1);
+	Soft_I2C_ReadBytes(&g_softI2C, data, 2);
+	Soft_I2C_Stop(&g_softI2C);
 	ADDLOG_DEBUG(LOG_FEATURE_SENSOR, "SHT Get alert: Reading below value %02X %02X", data[0], data[1]);
 	finaldata = (data[0] << 8) | data[1];
 	(*humidity) = 100.0f * (finaldata & 0xFE00) / 65535.0f;
@@ -316,9 +317,9 @@ void SHT3X_WriteAlertLimitData(float humidity, float temperature)
 		data[0] = finaldata >> 8;
 		data[1] = finaldata & 0xFF;
 		checksum = SHT3X_CalcCrc(data);
-		Soft_I2C_WriteByte(data[0]);
-		Soft_I2C_WriteByte(data[1]);
-		Soft_I2C_WriteByte(checksum);
+		Soft_I2C_WriteByte(&g_softI2C, data[0]);
+		Soft_I2C_WriteByte(&g_softI2C, data[1]);
+		Soft_I2C_WriteByte(&g_softI2C, checksum);
 		ADDLOG_DEBUG(LOG_FEATURE_SENSOR, "SHT Set alert: writing below value %02X %02X %02X", data[0], data[1], checksum);
 	}
 }
@@ -328,28 +329,28 @@ void SHT3X_GetAlertLimits()
 	float temperatureLowSet, temperatureLowClear, temperatureHighClear, temperatureHighSet;
 	float humidityLowSet, humidityLowClear, humidityHighClear, humidityHighSet;
 	// read humidity & temperature alter limits, high set
-	Soft_I2C_Start(SHT3X_I2C_ADDR);
-	Soft_I2C_WriteByte(0xe1);
-	Soft_I2C_WriteByte(0x1f);
-	Soft_I2C_Stop();
+	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR);
+	Soft_I2C_WriteByte(&g_softI2C, 0xe1);
+	Soft_I2C_WriteByte(&g_softI2C, 0x1f);
+	Soft_I2C_Stop(&g_softI2C);
 	SHT3X_ReadAlertLimitData(&humidityHighSet, &temperatureHighSet);
 
-	Soft_I2C_Start(SHT3X_I2C_ADDR);
-	Soft_I2C_WriteByte(0xe1);
-	Soft_I2C_WriteByte(0x14);
-	Soft_I2C_Stop();
+	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR);
+	Soft_I2C_WriteByte(&g_softI2C, 0xe1);
+	Soft_I2C_WriteByte(&g_softI2C, 0x14);
+	Soft_I2C_Stop(&g_softI2C);
 	SHT3X_ReadAlertLimitData(&humidityHighClear, &temperatureHighClear);
 
-	Soft_I2C_Start(SHT3X_I2C_ADDR);
-	Soft_I2C_WriteByte(0xe1);
-	Soft_I2C_WriteByte(0x09);
-	Soft_I2C_Stop();
+	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR);
+	Soft_I2C_WriteByte(&g_softI2C, 0xe1);
+	Soft_I2C_WriteByte(&g_softI2C, 0x09);
+	Soft_I2C_Stop(&g_softI2C);
 	SHT3X_ReadAlertLimitData(&humidityLowClear, &temperatureLowClear);
 
-	Soft_I2C_Start(SHT3X_I2C_ADDR);
-	Soft_I2C_WriteByte(0xe1);
-	Soft_I2C_WriteByte(0x02);
-	Soft_I2C_Stop();
+	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR);
+	Soft_I2C_WriteByte(&g_softI2C, 0xe1);
+	Soft_I2C_WriteByte(&g_softI2C, 0x02);
+	Soft_I2C_Stop(&g_softI2C);
 	SHT3X_ReadAlertLimitData(&humidityLowSet, &temperatureLowSet);
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT : Read Alert conf _ Temp : %f / %f / %f / %f ", temperatureLowSet, temperatureLowClear, temperatureHighClear, temperatureHighSet);
@@ -380,29 +381,29 @@ commandResult_t SHT3X_SetAlertCmd(const void* context, const char* cmd, const ch
 	humidityLowClear = Tokenizer_GetArgFloat(3) + 2.0f;
 	humidityHighClear = Tokenizer_GetArgFloat(2) - 2.0f;
 
-	Soft_I2C_Start(SHT3X_I2C_ADDR);
-	Soft_I2C_WriteByte(0x61);
-	Soft_I2C_WriteByte(0x1d);
+	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR);
+	Soft_I2C_WriteByte(&g_softI2C, 0x61);
+	Soft_I2C_WriteByte(&g_softI2C, 0x1d);
 	SHT3X_WriteAlertLimitData(humidityHighSet, temperatureHighSet);
-	Soft_I2C_Stop();
+	Soft_I2C_Stop(&g_softI2C);
 
-	Soft_I2C_Start(SHT3X_I2C_ADDR);
-	Soft_I2C_WriteByte(0x61);
-	Soft_I2C_WriteByte(0x16);
+	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR);
+	Soft_I2C_WriteByte(&g_softI2C, 0x61);
+	Soft_I2C_WriteByte(&g_softI2C, 0x16);
 	SHT3X_WriteAlertLimitData(humidityHighClear, temperatureHighClear);
-	Soft_I2C_Stop();
+	Soft_I2C_Stop(&g_softI2C);
 
-	Soft_I2C_Start(SHT3X_I2C_ADDR);
-	Soft_I2C_WriteByte(0x61);
-	Soft_I2C_WriteByte(0x0B);
+	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR);
+	Soft_I2C_WriteByte(&g_softI2C, 0x61);
+	Soft_I2C_WriteByte(&g_softI2C, 0x0B);
 	SHT3X_WriteAlertLimitData(humidityLowClear, temperatureLowClear);
-	Soft_I2C_Stop();
+	Soft_I2C_Stop(&g_softI2C);
 
-	Soft_I2C_Start(SHT3X_I2C_ADDR);
-	Soft_I2C_WriteByte(0x61);
-	Soft_I2C_WriteByte(0x00);
+	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR);
+	Soft_I2C_WriteByte(&g_softI2C, 0x61);
+	Soft_I2C_WriteByte(&g_softI2C, 0x00);
 	SHT3X_WriteAlertLimitData(humidityLowSet, temperatureLowSet);
-	Soft_I2C_Stop();
+	Soft_I2C_Stop(&g_softI2C);
 
 	ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT: set alert for temp %f / %f and humidity %f / %f ", temperatureLowSet, temperatureHighSet, humidityLowSet, humidityHighSet);
 
@@ -426,13 +427,13 @@ void SHT3X_Init() {
 
 
 
-	g_i2c_pin_clk = 9;
-	g_i2c_pin_data = 14;
+	g_softI2C.pin_clk = 9;
+	g_softI2C.pin_data = 14;
 
-	g_i2c_pin_clk = PIN_FindPinIndexForRole(IOR_SHT3X_CLK, g_i2c_pin_clk);
-	g_i2c_pin_data = PIN_FindPinIndexForRole(IOR_SHT3X_DAT, g_i2c_pin_data);
+	g_softI2C.pin_clk = PIN_FindPinIndexForRole(IOR_SHT3X_CLK, g_softI2C.pin_clk);
+	g_softI2C.pin_data = PIN_FindPinIndexForRole(IOR_SHT3X_DAT, g_softI2C.pin_data);
 
-	Soft_I2C_PreInit();
+	Soft_I2C_PreInit(&g_softI2C);
 
 	SHT3X_GetStatus();
 
