@@ -378,7 +378,6 @@ extern "C" void DRV_IR_ISR(UINT8 t) {
 	// don't receive if we are currently sending
 	if (ourReceiver && !sending){
 		IR_ISR();
-		//TODO: implement reading from the recieve pin here 
 	}
 	ir_counter++;
 }
@@ -703,51 +702,11 @@ extern "C" void DRV_IR_Init() {
 void dump(decode_results *results) {
 	// Dumps out the decode_results structure.
 	// Call this after IRrecv::decode()
-	#if 0
-	uint16_t count = results->rawlen;
-	if (results->decode_type == UNKNOWN) {
-		ADDLOG_INFO(LOG_FEATURE_IR,"Unknown encoding: ");
+	ADDLOG_INFO(LOG_FEATURE_IR, resultToHumanReadableBasic(results).c_str());
+	if (hasACState(results->decode_type))
+	{
+		ADDLOG_INFO(LOG_FEATURE_IR, IRAcUtils::resultAcToString(results).c_str());
 	}
-	else if (results->decode_type == NEC) {
-		ADDLOG_INFO(LOG_FEATURE_IR,"Decoded NEC: ");
-	}
-	else if (results->decode_type == SONY) {
-		ADDLOG_INFO(LOG_FEATURE_IR,"Decoded SONY: ");
-	}
-	else if (results->decode_type == RC5) {
-		ADDLOG_INFO(LOG_FEATURE_IR,"Decoded RC5: ");
-	}
-	else if (results->decode_type == RC5X) {
-		ADDLOG_INFO(LOG_FEATURE_IR,"Decoded RC5X: ");
-	}
-	else if (results->decode_type == RC6) {
-		ADDLOG_INFO(LOG_FEATURE_IR,"Decoded RC6: ");
-	}
-	else if (results->decode_type == RCMM) {
-		ADDLOG_INFO(LOG_FEATURE_IR,"Decoded RCMM: ");
-	}
-	else if (results->decode_type == PANASONIC) {
-		ADDLOG_INFO(LOG_FEATURE_IR,"Decoded PANASONIC: ");
-	}
-	else if (results->decode_type == LG) {
-		ADDLOG_INFO(LOG_FEATURE_IR,"Decoded LG: ");
-	}
-	else if (results->decode_type == JVC) {
-		ADDLOG_INFO(LOG_FEATURE_IR,"Decoded JVC: ");
-	}
-	else if (results->decode_type == AIWA_RC_T501) {
-		ADDLOG_INFO(LOG_FEATURE_IR,"Decoded AIWA RC T501: ");
-	}
-	else if (results->decode_type == WHYNTER) {
-		ADDLOG_INFO(LOG_FEATURE_IR,"Decoded Whynter: ");
-	}
-	else if (results->decode_type == NIKAI) {
-		ADDLOG_INFO(LOG_FEATURE_IR,"Decoded Nikai: ");
-	}
-	//serialPrintUint64(results->value, 16);
-	ADDLOG_INFO(LOG_FEATURE_IR,"Address: %i Value: %i (%i bits) Raw (%i)",(int)results->address, (int)results->value, results->bits, count);
-	#endif
-	ADDLOG_INFO(LOG_FEATURE_IR,resultToHumanReadableBasic(results).c_str());
 }
 
 // log the received IR

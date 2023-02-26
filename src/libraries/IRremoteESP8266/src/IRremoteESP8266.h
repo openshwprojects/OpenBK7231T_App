@@ -1496,17 +1496,16 @@ const uint16_t kClimaButlerBits = 52;
 #endif  // ARDUINO
 #else  // DEBUG
 
-#if PLATFORM_BEKEN 
-
+#if 0 // PLATFORM_BEKEN 
 // ADD Logging macro
 // For debug messages only
 extern "C" {
 #include "../../../logging/logging.h"
 }
-
 #define DPRINT(x) ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)x);
 #define DPRINTLN(x) ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)x);
-#else 
+
+#else // PLATFORM_BEKEN 
 #define DPRINT(x)
 #define DPRINTLN(x)
 #endif
