@@ -7,6 +7,7 @@
 #include "../cmnds/cmd_public.h"
 #include "../driver/drv_tuyaMCU.h"
 #include "../driver/drv_public.h"
+#include "../driver/drv_battery.h"
 #include "../hal/hal_wifi.h"
 #include "../hal/hal_pins.h"
 #include "../hal/hal_flashConfig.h"
@@ -18,7 +19,6 @@
 #include <time.h>
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_local.h"
-
 
 
 static int http_tasmota_json_Dimmer(void* request, jsonCb_t printer) {
@@ -218,6 +218,50 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 	}
 }
 */
+static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
+	float temperature, humidity;
+	int channel_1, channel_2, g_pin_1;
+	printer(request, ",");
+	if (DRV_IsRunning("SHT3X")) {
+		PIN_FindPinIndexForRole(IOR_SHT3X_DAT, g_pin_1);
+		channel_1 = g_cfg.pins.channels[g_pin_1];
+		channel_2 = g_cfg.pins.channels2[g_pin_1];
+
+		temperature = CHANNEL_GetFloat(channel_1) / 10.0f;
+		humidity = CHANNEL_GetFloat(channel_2);
+
+		// writer header
+		printer(request, "\"SHT3X\":");
+		// following check will clear NaN values
+		printer(request, "{");
+		printer(request, "\"Temperature\": %.1f,", temperature);
+		printer(request, "\"Humidity\": %.0f", humidity);
+		// close ENERGY block
+		printer(request, "},");
+	}
+	if (DRV_IsRunning("CHT8305")) {
+		PIN_FindPinIndexForRole(IOR_CHT8305_DAT, g_pin_1);
+		channel_1 = g_cfg.pins.channels[g_pin_1];
+		channel_2 = g_cfg.pins.channels2[g_pin_1];
+
+		temperature = CHANNEL_GetFloat(channel_1) / 10.0f;
+		humidity = CHANNEL_GetFloat(channel_2);
+
+		// writer header
+		printer(request, "\"SHT3X\":");
+		// following check will clear NaN values
+		printer(request, "{");
+		printer(request, "\"Temperature\": %.1f,", temperature);
+		printer(request, "\"Humidity\": %.0f", humidity);
+		// close ENERGY block
+		printer(request, "},");
+	}
+	if (DRV_IsRunning("Battery")) {
+		//TO DO
+	}
+	return 0;
+}
+
 static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bAppendHeader) {
 	char buff[20];
 
@@ -237,6 +281,10 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 		printer(request, ",");
 		printer(request, "\"ENERGY\":");
 		http_tasmota_json_ENERGY(request, printer);
+	}
+	if (DRV_IsSensor()) {
+		http_tasmota_json_SENSOR(request, printer);
+		printer(request, "\"TempUnit\": \"C\"");
 	}
 #endif
 
@@ -496,7 +544,6 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 
 	printer(request, ",");
 
-
 	printer(request, "\"StatusPRM\":{");
 	printer(request, "\"Baudrate\":115200,");
 	printer(request, "\"SerialConfig\":\"8N1\",");
@@ -580,7 +627,7 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 
 	return 0;
 }
-int JSON_ProcessCommandReply(const char *cmd, const char *arg, void *request, jsonCb_t printer, int flags) {
+int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, jsonCb_t printer, int flags) {
 
 	if (!wal_strnicmp(cmd, "POWER", 5)) {
 
@@ -588,7 +635,7 @@ int JSON_ProcessCommandReply(const char *cmd, const char *arg, void *request, js
 		http_tasmota_json_power(request, printer);
 		printer(request, "}");
 		if (flags == COMMAND_FLAG_SOURCE_MQTT) {
-			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "RESULT");
+			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "RESULT");
 		}
 	}
 	else if (!wal_strnicmp(cmd, "CT", 2)) {
@@ -601,20 +648,20 @@ int JSON_ProcessCommandReply(const char *cmd, const char *arg, void *request, js
 		}
 		printer(request, "}");
 		if (flags == COMMAND_FLAG_SOURCE_MQTT) {
-			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "RESULT");
+			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "RESULT");
 		}
 	}
 	else if (!wal_strnicmp(cmd, "Dimmer", 6)) {
 		printer(request, "{");
 		if (*arg == 0) {
 			http_tasmota_json_Dimmer(request, printer);
-		} 
+		}
 		else {
 			http_tasmota_json_power(request, printer);
 		}
 		printer(request, "}");
 		if (flags == COMMAND_FLAG_SOURCE_MQTT) {
-			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "RESULT");
+			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "RESULT");
 		}
 	}
 	else if (!wal_strnicmp(cmd, "Color", 5)) {
@@ -623,27 +670,27 @@ int JSON_ProcessCommandReply(const char *cmd, const char *arg, void *request, js
 		//	http_tasmota_json_Colo(request, printer);
 		//}
 		//else {
-			http_tasmota_json_power(request, printer);
+		http_tasmota_json_power(request, printer);
 		//}
 		printer(request, "}");
 		if (flags == COMMAND_FLAG_SOURCE_MQTT) {
-			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "RESULT");
+			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "RESULT");
 		}
 	}
 	else if (!wal_strnicmp(cmd, "STATE", 5)) {
 		http_tasmota_json_status_STS(request, printer, false);
 		if (flags == COMMAND_FLAG_SOURCE_MQTT) {
-			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "RESULT");
+			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "RESULT");
 		}
 		if (flags == COMMAND_FLAG_SOURCE_TELESENDER) {
-			MQTT_PublishPrinterContentsToTele((struct obk_mqtt_publishReplyPrinter_s *)request, "STATE");
+			MQTT_PublishPrinterContentsToTele((struct obk_mqtt_publishReplyPrinter_s*)request, "STATE");
 		}
 	}
 	else if (!wal_strnicmp(cmd, "SENSOR", 5)) {
 		// not a Tasmota command, but still required for us
 		http_tasmota_json_status_SNS(request, printer, false);
 		if (flags == COMMAND_FLAG_SOURCE_TELESENDER) {
-			MQTT_PublishPrinterContentsToTele((struct obk_mqtt_publishReplyPrinter_s *)request, "SENSOR");
+			MQTT_PublishPrinterContentsToTele((struct obk_mqtt_publishReplyPrinter_s*)request, "SENSOR");
 		}
 	}
 	else if (!wal_strnicmp(cmd, "STATUS", 6)) {
@@ -653,18 +700,19 @@ int JSON_ProcessCommandReply(const char *cmd, const char *arg, void *request, js
 			printer(request, "}");
 			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
 				if (arg[0] == '8') {
-					MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "STATUS8");
+					MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "STATUS8");
 				}
 				else {
-					MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "STATUS10");
+					MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "STATUS10");
 				}
 			}
-		} else if (!stricmp(arg, "6") ) {
+		}
+		else if (!stricmp(arg, "6")) {
 			printer(request, "{");
 			http_tasmota_json_status_MQT(request, printer);
 			printer(request, "}");
 			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
-				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "STATUS6");
+				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "STATUS6");
 			}
 		}
 		else if (!stricmp(arg, "7")) {
@@ -672,7 +720,7 @@ int JSON_ProcessCommandReply(const char *cmd, const char *arg, void *request, js
 			http_tasmota_json_status_TIM(request, printer);
 			printer(request, "}");
 			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
-				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "STATUS7");
+				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "STATUS7");
 			}
 		}
 		else if (!stricmp(arg, "5")) {
@@ -680,7 +728,7 @@ int JSON_ProcessCommandReply(const char *cmd, const char *arg, void *request, js
 			http_tasmota_json_status_NET(request, printer);
 			printer(request, "}");
 			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
-				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "STATUS5");
+				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "STATUS5");
 			}
 		}
 		else if (!stricmp(arg, "4")) {
@@ -688,7 +736,7 @@ int JSON_ProcessCommandReply(const char *cmd, const char *arg, void *request, js
 			http_tasmota_json_status_MEM(request, printer);
 			printer(request, "}");
 			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
-				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "STATUS4");
+				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "STATUS4");
 			}
 		}
 		else if (!stricmp(arg, "2")) {
@@ -696,13 +744,13 @@ int JSON_ProcessCommandReply(const char *cmd, const char *arg, void *request, js
 			http_tasmota_json_status_FWR(request, printer);
 			printer(request, "}");
 			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
-				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "STATUS2");
+				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "STATUS2");
 			}
 		}
 		else {
 			http_tasmota_json_status_generic(request, printer);
 			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
-				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s *)request, "STATUS");
+				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "STATUS");
 			}
 		}
 	}
@@ -718,19 +766,19 @@ int JSON_ProcessCommandReply(const char *cmd, const char *arg, void *request, js
 		int i = atoi(arg);
 		i = CHANNEL_Get(i);
 
-		printer(request, "%i",i);
+		printer(request, "%i", i);
 	}
 	else if (!wal_strnicmp(cmd, "led_basecolor_rgb", 17)) {
 		// OBK-specific
 		char tmp[16];
 		LED_GetBaseColorString(tmp);
 		printer(request, "{");
-		printer(request, "\"led_basecolor_rgb\":\"%s\"",tmp);
+		printer(request, "\"led_basecolor_rgb\":\"%s\"", tmp);
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "MQTTClient", 8)) {
 		printer(request, "{");
-		printer(request, "\"MQTTClient\":\"%s\"",CFG_GetMQTTClientId());
+		printer(request, "\"MQTTClient\":\"%s\"", CFG_GetMQTTClientId());
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "MQTTHost", 8)) {
@@ -753,7 +801,7 @@ int JSON_ProcessCommandReply(const char *cmd, const char *arg, void *request, js
 		printer(request, "\"SSID1\":\"%s\"", CFG_GetWiFiSSID());
 		printer(request, "}");
 	}
-	
+
 	return 0;
 }
 
