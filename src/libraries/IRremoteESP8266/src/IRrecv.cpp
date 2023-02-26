@@ -2120,44 +2120,58 @@ uint16_t IRrecv::matchManchesterData(volatile const uint16_t *data_ptr,
 
 
 uint32_t now = 0;
-uint_fast8_t old;
+uint_fast8_t old = 0;
 static uint32_t start = 0;
 
 void IR_ISR() {
-	 now += 50;
-	uint_fast8_t tIRInputLevel = (uint_fast8_t)digitalReadFast(params.recvpin);
-	if (tIRInputLevel == old)
-		return;
-	old = tIRInputLevel;
-	// Grab a local copy of rawlen to reduce instructions used in IRAM.
-	// This is an ugly premature optimisation code-wise, but we do everything we
-	// can to save IRAM.
-	// It seems referencing the value via the structure uses more instructions.
-	// Less instructions means faster and less IRAM used.
-	// N.B. It saves about 13 bytes of IRAM.
-	uint16_t rawlen = params.rawlen;
+  // TODO: is there a lock or a mutex to prevent race condition ???
 
-	if (rawlen >= params.bufsize) {
-		params.overflow = true;
-		params.rcvstate = kStopState;
-	}
+  now += 50; // timer is supposed to be running at 50us ?
+  if (params.rcvstate == kStopState) return;
+  uint_fast8_t tIRInputLevel = (uint_fast8_t)digitalReadFast(params.recvpin);
+  uint16_t time_since_last_change;
+  // check if timeout is reached and stop recieving 
+  if (now < start)
+      time_since_last_change = (UINT32_MAX - start + now);
+    else
+      time_since_last_change = (now - start);
 
-	if (params.rcvstate == kStopState) return;
+  // Timeout is in mS 
+  if((time_since_last_change/1000) >= params.timeout && params.rawlen) // timed out
+  {
+	    params.rcvstate = kStopState;
+      return;
+  }
 
-	if (params.rcvstate == kIdleState) {
-		params.rcvstate = kMarkState;
-		params.rawbuf[rawlen] = 1;
-	}
-	else {
-		if (now < start)
-			params.rawbuf[rawlen] = (UINT32_MAX - start + now) / kRawTick;
-		else
-			params.rawbuf[rawlen] = (now - start) / kRawTick;
-	}
-	params.rawlen++;
+  if (tIRInputLevel == old)
+    return;
 
-	start = now;
+  old = tIRInputLevel;
+  // Grab a local copy of rawlen to reduce instructions used in IRAM.
+  // This is an ugly premature optimisation code-wise, but we do everything we
+  // can to save IRAM.
+  // It seems referencing the value via the structure uses more instructions.
+  // Less instructions means faster and less IRAM used.
+  // N.B. It saves about 13 bytes of IRAM.
+  uint16_t rawlen = params.rawlen;
 
+  if (rawlen >= params.bufsize) {
+    params.overflow = true;
+    params.rcvstate = kStopState;
+    return;
+  }
+
+  if (params.rcvstate == kIdleState) {
+    params.rcvstate = kMarkState;
+    params.rawbuf[rawlen] = 1;
+  }
+  else {
+    // buffer stores in units of 2uS for some reason?
+    params.rawbuf[rawlen] = time_since_last_change/ kRawTick;
+  }
+  params.rawlen++;
+
+  start = now;
 }
  //#define _IR_MEASURE_TIMING
  //#define _IR_TIMING_TEST_PIN 7 // do not forget to execute: "pinModeFast(_IR_TIMING_TEST_PIN, OUTPUT);" if activated by line above

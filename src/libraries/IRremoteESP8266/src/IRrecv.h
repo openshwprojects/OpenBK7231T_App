@@ -22,7 +22,7 @@ const uint16_t kStartOffset = 1;   // Usual rawbuf entry to start from.
 // Marks tend to be 100us too long, and spaces 100us too short
 // when received due to sensor lag.
 const uint16_t kMarkExcess = 50;
-const uint16_t kRawBuf = 100;  // Default length of raw capture buffer
+const uint16_t kRawBuf = 1024;  // Default length of raw capture buffer
 const uint64_t kRepeat = UINT64_MAX;
 // Default min size of reported UNKNOWN messages.
 const uint16_t kUnknownThreshold = 6;
