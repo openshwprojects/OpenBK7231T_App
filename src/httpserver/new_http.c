@@ -408,7 +408,7 @@ const char* htmlPinRoleNames[] = {
 	"SM2135CLK",
 	"BP5758D_DAT",
 	"BP5758D_CLK",
-    "BP1658CJ_DAT",
+	"BP1658CJ_DAT",
 	"BP1658CJ_CLK",
 	"PWM_n",
 	"IRRecv",
@@ -437,18 +437,18 @@ const char* htmlPinRoleNames[] = {
 	"SoftSCL",
 	"SM2235DAT",
 	"SM2235CLK",
-    "BridgeFWD",
-    "BridgeREV",
-    "Btn_SmartLED",
+	"BridgeFWD",
+	"BridgeREV",
+	"Btn_SmartLED",
 	"Btn_SmartLED_n",
 	"DoorSnsrWSleep",
 	"DoorSnsrWSleep_nPup",
-	"error",
-	"error",
+	"BAT_ADC",
+	"BAT_Relay",
 	"error",
 };
 
-const char *PIN_RoleToString(int role) {
+const char* PIN_RoleToString(int role) {
 	return htmlPinRoleNames[role];
 }
 int PIN_ParsePinRoleName(const char* name) {

@@ -15,16 +15,16 @@
 
 static int g_pin_adc = 0, channel_adc = 0, channel_rel = 0, g_pin_rel = 0, g_battcycle = 1, g_battcycleref = 10;
 static float g_battvoltage = 0.0, g_battlevel = 0.0;
-static float g_vref = 2400, g_vdivider = 2.00, g_maxbatt = 3000, g_minbatt = 2000, g_adcbits = 4096;
+static float g_vref = 2400, g_vdivider = 2.29, g_maxbatt = 3000, g_minbatt = 2000, g_adcbits = 4096;
 
 static void Batt_Measure() {
 	//this command has only been tested on CBU
 	float batt_ref, batt_res, vref;
 	ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : Measure Battery volt en perc");
-	g_pin_adc = PIN_FindPinIndexForRole(IOR_ADC, g_pin_adc);
+	g_pin_adc = PIN_FindPinIndexForRole(IOR_BAT_ADC, g_pin_adc);
 	// if divider equal to 1 then no need for relay activation
 	if (g_vdivider > 1) {
-		g_pin_rel = PIN_FindPinIndexForRole(IOR_Relay, g_pin_rel);
+		g_pin_rel = PIN_FindPinIndexForRole(IOR_BAT_Relay, g_pin_rel);
 		channel_rel = g_cfg.pins.channels[g_pin_rel];
 	}
 	HAL_ADC_Init(g_pin_adc);

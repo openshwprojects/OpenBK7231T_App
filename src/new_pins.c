@@ -519,9 +519,10 @@ void CHANNEL_SetAll(int iVal, int iFlags) {
 		{
 
 		}
-		break; 
+		break;
 		case IOR_LED:
 		case IOR_LED_n:
+		case IOR_BAT_Relay:
 		case IOR_Relay:
 		case IOR_Relay_n:
 			CHANNEL_Set(g_cfg.pins.channels[i], iVal, iFlags);
@@ -641,6 +642,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		break;
 		case IOR_LED:
 		case IOR_LED_n:
+		case IOR_BAT_Relay:
 		case IOR_Relay:
 		case IOR_Relay_n:
 		case IOR_LED_WIFI:
@@ -654,6 +656,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			HAL_PIN_PWM_Stop(index);
 		}
 		break;
+		case IOR_BAT_ADC:
 		case IOR_ADC:
 			// TODO: disable?
 			break;
@@ -744,7 +747,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			// digital input
 			HAL_PIN_Setup_Input_Pullup(index);
 		}
-		break; 
+		break;
 		case IOR_DigitalInput_NoPup_n:
 			falling = 1;
 		case IOR_DoorSensorWithDeepSleep_NoPup:
@@ -759,6 +762,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		break;
 		case IOR_LED:
 		case IOR_LED_n:
+		case IOR_BAT_Relay:
 		case IOR_Relay:
 		case IOR_Relay_n:
 		{
@@ -809,6 +813,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			HAL_PIN_Setup_Output(index);
 		}
 		break;
+		case IOR_BAT_ADC:
 		case IOR_ADC:
 			// init ADC for given pin
 			HAL_ADC_Init(index);
@@ -884,7 +889,7 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if (g_cfg.pins.channels[i] == ch) {
-			if (g_cfg.pins.roles[i] == IOR_Relay || g_cfg.pins.roles[i] == IOR_LED) {
+			if (g_cfg.pins.roles[i] == IOR_Relay || g_cfg.pins.roles[i] == IOR_BAT_Relay || g_cfg.pins.roles[i] == IOR_LED) {
 				RAW_SetPinValue(i, bOn);
 				bCallCb = 1;
 			}
@@ -1071,7 +1076,7 @@ void CHANNEL_AddClamped(int ch, int iVal, int min, int max, int bWrapInsteadOfCl
 			g_channelValues[ch] = min;
 		if (g_channelValues[ch] < min)
 			g_channelValues[ch] = max;
-}
+	}
 	else {
 		if (g_channelValues[ch] > max)
 			g_channelValues[ch] = max;
@@ -1121,7 +1126,7 @@ void CHANNEL_Add(int ch, int iVal) {
 #else
 	// we want to support special channel indexes, so it's better to use GET/SET interface
 	// Special channel indexes are used to access things like dimmer, led colors, etc
-	iVal = iVal+CHANNEL_Get(ch);
+	iVal = iVal + CHANNEL_Get(ch);
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_Add channel %i has changed to %i\n\r", ch, iVal);
 	CHANNEL_Set(ch, iVal, 0);
 #endif
@@ -1241,7 +1246,7 @@ bool CHANNEL_IsPowerRelayChannel(int ch) {
 	int i;
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if (g_cfg.pins.channels[i] == ch) {
-			int role = g_cfg.pins.roles[i]; if (role == IOR_Relay || role == IOR_Relay_n) {
+			int role = g_cfg.pins.roles[i]; if (role == IOR_Relay || role == IOR_BAT_Relay || role == IOR_Relay_n) {
 				return true;
 			}
 		}
@@ -1256,7 +1261,7 @@ bool CHANNEL_HasRoleThatShouldBePublished(int ch) {
 		if (g_cfg.pins.channels[i] == ch) {
 			if (role == IOR_Relay || role == IOR_Relay_n
 				|| role == IOR_LED || role == IOR_LED_n
-				|| role == IOR_ADC
+				|| role == IOR_ADC || role == IOR_BAT_ADC | role == IOR_BAT_Relay
 				|| role == IOR_CHT8305_DAT || role == IOR_SHT3X_DAT
 				|| role == IOR_DigitalInput || role == IOR_DigitalInput_n
 				|| role == IOR_DoorSensorWithDeepSleep || role == IOR_DoorSensorWithDeepSleep_NoPup
@@ -1282,6 +1287,7 @@ int CHANNEL_GetRoleForOutputChannel(int ch) {
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if (g_cfg.pins.channels[i] == ch) {
 			switch (g_cfg.pins.roles[i]) {
+			case IOR_BAT_Relay:
 			case IOR_Relay:
 			case IOR_Relay_n:
 			case IOR_LED:
@@ -1667,7 +1673,7 @@ void PIN_ticks(void* param)
 	}
 
 }
-const char *g_channelTypeNames[] = {
+const char* g_channelTypeNames[] = {
 	"Default",
 	"Error",
 	"Temperature",
@@ -1831,6 +1837,7 @@ void get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount) {
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		int role = PIN_GetPinRoleForPinIndex(i);
 		switch (role) {
+		case IOR_BAT_Relay:
 		case IOR_Relay:
 		case IOR_Relay_n:
 		case IOR_LED:
@@ -1881,7 +1888,7 @@ int h_isChannelRelay(int tg_ch) {
 		if (tg_ch != ch)
 			continue;
 		role = PIN_GetPinRoleForPinIndex(i);
-		if (role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
+		if (role == IOR_BAT_Relay || role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
 			return true;
 		}
 		if ((role == IOR_BridgeForward) || (role == IOR_BridgeReverse))

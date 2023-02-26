@@ -925,6 +925,11 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 				DRV_StartDriver("SHT3X");
 #endif
 			}
+			if (PIN_FindPinIndexForRole(IOR_BAT_ADC, -1) != -1 && PIN_FindPinIndexForRole(IOR_BAT_Relay, -1) != -1) {
+#ifndef OBK_DISABLE_ALL_DRIVERS
+				DRV_StartDriver("Battery");
+#endif
+			}
 		}
 	}
 
