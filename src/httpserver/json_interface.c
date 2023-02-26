@@ -220,7 +220,7 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 */
 static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 	float temperature, humidity;
-	int channel_1, channel_2, g_pin_1;
+	int channel_1, channel_2, g_pin_1 = 0;
 	printer(request, ",");
 	if (DRV_IsRunning("SHT3X")) {
 		PIN_FindPinIndexForRole(IOR_SHT3X_DAT, g_pin_1);
