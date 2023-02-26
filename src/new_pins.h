@@ -94,6 +94,9 @@ enum IORole {
 	IOR_DoorSensorWithDeepSleep,
 	IOR_DoorSensorWithDeepSleep_NoPup,
 
+	IOR_BAT_ADC,
+	IOR_BAT_Relay,
+
 	IOR_Total_Options,
 };
 
