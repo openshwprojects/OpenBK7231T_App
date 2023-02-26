@@ -651,7 +651,7 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 
 		printer(request, "}");
 	}
-	else if (!wal_strnicmp(cmd, "Prefix", 6)) {
+	else if (!wal_strnicmp(cmd, "Prefix1", 7)) {
 		//TODO 
 		// Prefix1 	1 = reset MQTT command subscription prefix to firmware default (SUB_PREFIX) and restart
 		// <value> = set MQTT command subscription prefix and restart
@@ -660,10 +660,20 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		// Prefix3 	1 = Reset MQTT telemetry prefix to firmware default (PUB_PREFIX2) and restart
 		// <value> = set MQTT telemetry prefix and restart
 		printer(request, "{");
-		printer(request, "\"Prefix\":\"0\"");
+		printer(request, "\"Prefix1\":\"Set\"");
 		printer(request, "}");
 	}
-	else if (!wal_strnicmp(cmd, "StateText", 9)) {
+	else if (!wal_strnicmp(cmd, "Prefix2", 7)) {
+		printer(request, "{");
+		printer(request, "\"Prefix2\":\"avty_t\"");
+		printer(request, "}");
+	}
+	else if (!wal_strnicmp(cmd, "Prefix3", 7)) {
+		printer(request, "{");
+		printer(request, "\"Prefix3\":\"Get\"");
+		printer(request, "}");
+	}
+	else if (!wal_strnicmp(cmd, "StateText1", 10)) {
 		//TODO 
 		//StateText<x> 	<value> = set state text (<x> = 1..4)
 		//  1 = OFF state text
@@ -671,7 +681,22 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		//	3 = TOGGLE state text
 		//	4 = HOLD state text
 		printer(request, "{");
-		printer(request, "\"StateText\":\"OFF\"");
+		printer(request, "\"StateText1\":\"OFF\"");
+		printer(request, "}");
+	}
+	else if (!wal_strnicmp(cmd, "StateText2", 10)) {
+		printer(request, "{");
+		printer(request, "\"StateText2\":\"ON\"");
+		printer(request, "}");
+	}
+	else if (!wal_strnicmp(cmd, "StateText3", 10)) {
+		printer(request, "{");
+		printer(request, "\"StateText3\":\"TOGGLE\"");
+		printer(request, "}");
+	}
+	else if (!wal_strnicmp(cmd, "StateText4", 10)) {
+		printer(request, "{");
+		printer(request, "\"StateText4\":\"HOLD\"");
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "CT", 2)) {
