@@ -106,6 +106,12 @@ commandResult_t SHT3X_Heater(const void* context, const char* cmd, const char* a
 }
 
 void SHT3X_MeasurePercmd() {
+#if WINDOWS
+	// TODO: values for simulator so I can test SHT30 
+	// on my Windows machine
+	g_temp = 23.4f;
+	g_humid = 56.7f;
+#else
 
 	uint8_t buff[6];
 	unsigned int th, tl, hh, hl;
@@ -127,9 +133,8 @@ void SHT3X_MeasurePercmd() {
 	hl = buff[4];
 
 	g_temp = 175 * ((th * 256 + tl) / 65535.0) - 45.0;
-
 	g_humid = 100 * ((hh * 256 + hl) / 65535.0);
-
+#endif
 	g_temp = g_temp + g_caltemp;
 	g_humid = g_humid + g_calhum;
 
@@ -146,7 +151,12 @@ commandResult_t SHT3X_MeasurePer(const void* context, const char* cmd, const cha
 	return CMD_RES_OK;
 }
 void SHT3X_Measurecmd() {
-
+#if WINDOWS
+	// TODO: values for simulator so I can test SHT30 
+	// on my Windows machine
+	g_temp = 23.4f;
+	g_humid = 56.7f;
+#else
 	uint8_t buff[6];
 	unsigned int th, tl, hh, hl;
 
@@ -169,8 +179,8 @@ void SHT3X_Measurecmd() {
 	hl = buff[4];
 
 	g_temp = 175 * ((th * 256 + tl) / 65535.0) - 45.0;
-
 	g_humid = 100 * ((hh * 256 + hl) / 65535.0);
+#endif
 
 	g_temp = g_temp + g_caltemp;
 	g_humid = g_humid + g_calhum;
