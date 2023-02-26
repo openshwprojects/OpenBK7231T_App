@@ -135,8 +135,9 @@ void SHT3X_MeasurePercmd() {
 	g_temp = 175 * ((th * 256 + tl) / 65535.0) - 45.0;
 	g_humid = 100 * ((hh * 256 + hl) / 65535.0);
 #endif
-	g_temp = g_temp + g_caltemp;
-	g_humid = g_humid + g_calhum;
+
+	g_temp = floor((g_temp + g_caltemp) * 10.0) / 10.0;
+	g_humid = floor((g_humid + g_calhum));
 
 	channel_temp = g_cfg.pins.channels[g_i2c_pin_data];
 	channel_humid = g_cfg.pins.channels2[g_i2c_pin_data];
@@ -182,15 +183,15 @@ void SHT3X_Measurecmd() {
 	g_humid = 100 * ((hh * 256 + hl) / 65535.0);
 #endif
 
-	g_temp = g_temp + g_caltemp;
-	g_humid = g_humid + g_calhum;
+	g_temp = floor((g_temp + g_caltemp) * 10.0) / 10.0;
+	g_humid = floor((g_humid + g_calhum));
 
 	channel_temp = g_cfg.pins.channels[g_i2c_pin_data];
 	channel_humid = g_cfg.pins.channels2[g_i2c_pin_data];
 	CHANNEL_Set(channel_temp, (int)(g_temp * 10), 0);
 	CHANNEL_Set(channel_humid, (int)(g_humid), 0);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT3X_Measure: Temperature:%fC Humidity:%f%%", g_temp, g_humid);
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT3X_Measure: Temperature:%.1fC Humidity:%i%%", g_temp, g_humid);
 
 }
 
@@ -516,7 +517,7 @@ void SHT3X_OnEverySecond()
 
 void SHT3X_AppendInformationToHTTPIndexPage(http_request_t* request)
 {
-	hprintf255(request, "<h2>SHT3X Temperature=%f, Humidity=%f</h2>", g_temp, g_humid);
+	hprintf255(request, "<h2>SHT3X Temperature=%.1f°c, Humidity=%i%</h2>", g_temp, g_humid);
 	if (channel_humid == channel_temp) {
 		hprintf255(request, "WARNING: You don't have configured target channels for temp and humid results, set the first and second channel index in Pins!");
 	}
