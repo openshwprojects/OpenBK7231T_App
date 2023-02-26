@@ -223,7 +223,7 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 	int channel_1, channel_2, g_pin_1 = 0;
 	printer(request, ",");
 	if (DRV_IsRunning("SHT3X")) {
-		PIN_FindPinIndexForRole(IOR_SHT3X_DAT, g_pin_1);
+		g_pin_1 = PIN_FindPinIndexForRole(IOR_SHT3X_DAT, g_pin_1);
 		channel_1 = g_cfg.pins.channels[g_pin_1];
 		channel_2 = g_cfg.pins.channels2[g_pin_1];
 
@@ -240,7 +240,7 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 		printer(request, "},");
 	}
 	if (DRV_IsRunning("CHT8305")) {
-		PIN_FindPinIndexForRole(IOR_CHT8305_DAT, g_pin_1);
+		g_pin_1 = PIN_FindPinIndexForRole(IOR_CHT8305_DAT, g_pin_1);
 		channel_1 = g_cfg.pins.channels[g_pin_1];
 		channel_2 = g_cfg.pins.channels2[g_pin_1];
 
@@ -637,6 +637,42 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		if (flags == COMMAND_FLAG_SOURCE_MQTT) {
 			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "RESULT");
 		}
+	}
+	else if (!wal_strnicmp(cmd, "SensorRetain", 12)) {
+		printer(request, "{");
+		if (CFG_HasFlag(OBK_PUBLISH_FLAG_RETAIN))
+		{
+			printer(request, "\"SensorRetain\":\"ON\"");
+		}
+		else
+		{
+			printer(request, "\"SensorRetain\":\"OFF\"");
+		}
+
+		printer(request, "}");
+	}
+	else if (!wal_strnicmp(cmd, "Prefix", 6)) {
+		//TODO 
+		// Prefix1 	1 = reset MQTT command subscription prefix to firmware default (SUB_PREFIX) and restart
+		// <value> = set MQTT command subscription prefix and restart
+		// Prefix2 	1 = reset MQTT status prefix to firmware default (PUB_PREFIX) and restart
+		// <value> = set MQTT status prefix and restart
+		// Prefix3 	1 = Reset MQTT telemetry prefix to firmware default (PUB_PREFIX2) and restart
+		// <value> = set MQTT telemetry prefix and restart
+		printer(request, "{");
+		printer(request, "\"Prefix\":\"0\"");
+		printer(request, "}");
+	}
+	else if (!wal_strnicmp(cmd, "StateText", 9)) {
+		//TODO 
+		//StateText<x> 	<value> = set state text (<x> = 1..4)
+		//  1 = OFF state text
+		//	2 = ON state text
+		//	3 = TOGGLE state text
+		//	4 = HOLD state text
+		printer(request, "{");
+		printer(request, "\"StateText\":\"OFF\"");
+		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "CT", 2)) {
 		printer(request, "{");
