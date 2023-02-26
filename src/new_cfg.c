@@ -318,6 +318,16 @@ const char *CFG_GetMQTTUserName() {
 const char *CFG_GetMQTTPass() {
 	return g_cfg.mqtt_pass;
 }
+
+void CHANNEL_SetType(int ch, int type) {
+	if (g_cfg.pins.channelTypes[ch] != type) {
+		g_cfg.pins.channelTypes[ch] = type;
+		g_cfg_pendingChanges++;
+	}
+}
+int CHANNEL_GetType(int ch) {
+	return g_cfg.pins.channelTypes[ch];
+}
 void CFG_SetMQTTHost(const char *s) {
 	// this will return non-zero if there were any changes
 	if(strcpy_safe_checkForChanges(g_cfg.mqtt_host, s,sizeof(g_cfg.mqtt_host))) {

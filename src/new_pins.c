@@ -488,12 +488,6 @@ void CHANNEL_SetAllChannelsByType(int requiredType, int newVal) {
 		}
 	}
 }
-void CHANNEL_SetType(int ch, int type) {
-	g_cfg.pins.channelTypes[ch] = type;
-}
-int CHANNEL_GetType(int ch) {
-	return g_cfg.pins.channelTypes[ch];
-}
 
 void CHANNEL_SetAll(int iVal, int iFlags) {
 	int i;
