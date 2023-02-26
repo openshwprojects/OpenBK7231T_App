@@ -29,7 +29,7 @@ extern "C" {
 #endif
 
 #include "digitalWriteFast.h"
-
+#include "minmax.h"
 
 // To change this value, you simply can add a line #define "RECORD_GAP_MICROS <My_new_value>" in your ino file before the line "#include <IRremote.hpp>"
 #define RECORD_GAP_MICROS   5000 // FREDRICH28AC / LG2 header space is 9700, NEC header space is 4500
@@ -1248,13 +1248,14 @@ uint32_t IRrecv::ticksHigh(const uint32_t usecs, const uint8_t tolerance,
 /// @return A Boolean. true if it matches, false if it doesn't.
 bool IRrecv::match(uint32_t measured, uint32_t desired, uint8_t tolerance,
                    uint16_t delta) {
+  char tmp[24];
   measured *= kRawTick;  // Convert to uSecs.
   DPRINT("Matching: ");
-  DPRINT(ticksLow(desired, tolerance, delta));
+  DPRINT(itoa(ticksLow(desired, tolerance, delta),tmp,10));
   DPRINT(" <= ");
-  DPRINT(measured);
+  DPRINT(itoa(measured,tmp,10));
   DPRINT(" <= ");
-  DPRINTLN(ticksHigh(desired, tolerance, delta));
+  DPRINTLN(itoa(ticksHigh(desired, tolerance, delta),tmp,10));
 #ifdef UNIT_TEST
   // Sanity checks that we don't have values that cause integer over/underflow.
   // Only performed during testing so there is no performance hit in normal
@@ -1279,20 +1280,21 @@ bool IRrecv::match(uint32_t measured, uint32_t desired, uint8_t tolerance,
 /// @return A Boolean. true if it matches, false if it doesn't.
 bool IRrecv::matchAtLeast(uint32_t measured, uint32_t desired,
                           uint8_t tolerance, uint16_t delta) {
+  char tmp[24];
   measured *= kRawTick;  // Convert to uSecs.
   DPRINT("Matching ATLEAST ");
-  DPRINT(measured);
+  DPRINT(itoa(measured,tmp,10));
   DPRINT(" vs ");
-  DPRINT(desired);
+  DPRINT(itoa(desired,tmp,10));
   DPRINT(". Matching: ");
-  DPRINT(measured);
+  DPRINT(itoa(measured,tmp,10));
   DPRINT(" >= ");
-  DPRINT(ticksLow(::min(desired, (uint32_t)MS_TO_USEC(params.timeout)),
-                  tolerance, delta));
+  DPRINT(itoa(ticksLow(::min(desired, (uint32_t)MS_TO_USEC(params.timeout)),
+                  tolerance, delta),tmp,10));
   DPRINT(" [min(");
-  DPRINT(ticksLow(desired, tolerance, delta));
+  DPRINT(itoa(ticksLow(desired, tolerance, delta),tmp,10));
   DPRINT(", ");
-  DPRINT(ticksLow(MS_TO_USEC(params.timeout), tolerance, delta));
+  DPRINT(itoa(ticksLow(MS_TO_USEC(params.timeout), tolerance, delta),tmp,10));
   DPRINTLN(")]");
 #ifdef UNIT_TEST
   // Sanity checks that we don't have values that cause integer over/underflow.
@@ -1324,12 +1326,13 @@ bool IRrecv::matchAtLeast(uint32_t measured, uint32_t desired,
 /// @return A Boolean. true if it matches, false if it doesn't.
 bool IRrecv::matchMark(uint32_t measured, uint32_t desired, uint8_t tolerance,
                        int16_t excess) {
+  char tmp[24];
   DPRINT("Matching MARK ");
-  DPRINT(measured * kRawTick);
+  DPRINT(itoa(measured * kRawTick,tmp,10));
   DPRINT(" vs ");
-  DPRINT(desired);
+  DPRINT(itoa(desired,tmp,10));
   DPRINT(" + ");
-  DPRINT(excess);
+  DPRINT(itoa(excess,tmp,10));
   DPRINT(". ");
   return match(measured, desired + excess, tolerance);
 }
@@ -1344,12 +1347,13 @@ bool IRrecv::matchMark(uint32_t measured, uint32_t desired, uint8_t tolerance,
 /// @return A Boolean. true if it matches, false if it doesn't.
 bool IRrecv::matchMarkRange(const uint32_t measured, const uint32_t desired,
                             const uint16_t range, const int16_t excess) {
+  char tmp[24];
   DPRINT("Matching MARK ");
-  DPRINT(measured * kRawTick);
+  DPRINT(itoa(measured * kRawTick,tmp,10));
   DPRINT(" vs ");
-  DPRINT(desired);
+  DPRINT(itoa(desired,tmp,10));
   DPRINT(" + ");
-  DPRINT(excess);
+  DPRINT(itoa(excess,tmp,10));
   DPRINT(". ");
   return match(measured, desired + excess, 0, range);
 }
@@ -1363,12 +1367,13 @@ bool IRrecv::matchMarkRange(const uint32_t measured, const uint32_t desired,
 /// @return A Boolean. true if it matches, false if it doesn't.
 bool IRrecv::matchSpace(uint32_t measured, uint32_t desired, uint8_t tolerance,
                         int16_t excess) {
+  char tmp[24];
   DPRINT("Matching SPACE ");
-  DPRINT(measured * kRawTick);
+  DPRINT(itoa(measured * kRawTick,tmp,10));
   DPRINT(" vs ");
-  DPRINT(desired);
+  DPRINT(itoa(desired,tmp,10));
   DPRINT(" - ");
-  DPRINT(excess);
+  DPRINT(itoa(excess,tmp,10));
   DPRINT(". ");
   return match(measured, desired - excess, tolerance);
 }
@@ -1383,12 +1388,13 @@ bool IRrecv::matchSpace(uint32_t measured, uint32_t desired, uint8_t tolerance,
 /// @return A Boolean. true if it matches, false if it doesn't.
 bool IRrecv::matchSpaceRange(const uint32_t measured, const uint32_t desired,
                              const uint16_t range, const int16_t excess) {
+  char tmp[24];
   DPRINT("Matching SPACE ");
-  DPRINT(measured * kRawTick);
+  DPRINT(itoa(measured * kRawTick,tmp,10));
   DPRINT(" vs ");
-  DPRINT(desired);
+  DPRINT(itoa(desired,tmp,10));
   DPRINT(" - ");
-  DPRINT(excess);
+  DPRINT(itoa(excess,tmp,10));
   DPRINT(". ");
   return match(measured, desired - excess, 0, range);
 }
@@ -1972,6 +1978,7 @@ uint16_t IRrecv::matchManchesterData(volatile const uint16_t *data_ptr,
                                      const bool MSBfirst,
                                      const bool GEThomas) {
   DPRINTLN("DEBUG: Entered matchManchesterData");
+  char tmp[24];
   uint16_t offset = 0;
   uint64_t data = 0;
   uint16_t nr_half_periods = 0;
@@ -2012,10 +2019,10 @@ uint16_t IRrecv::matchManchesterData(volatile const uint16_t *data_ptr,
          nr_half_periods < expected_half_periods) {
     // Get the next entry if we haven't anything existing to process.
     DPRINT("DEBUG: Offset = ");
-    DPRINTLN(offset);
+    DPRINTLN(itoa(offset,tmp,10));
     if (!bank) bank = *(data_ptr + offset++);
     DPRINT("DEBUG: Bank = ");
-    DPRINTLN(bank * kRawTick);
+    DPRINTLN(itoa(bank * kRawTick,tmp,10));
     // Check if we don't have a short interval.
     DPRINTLN("DEBUG: Checking for short interval");
     if (!match(bank, half_period, tolerance, excess)) {
@@ -2025,13 +2032,13 @@ uint16_t IRrecv::matchManchesterData(volatile const uint16_t *data_ptr,
     // We've succeeded in matching half a period, so count it.
     nr_half_periods++;
     DPRINT("DEBUG: Half Periods = ");
-    DPRINTLN(nr_half_periods);
+    DPRINTLN(itoa(nr_half_periods,tmp,10));
     // We've now used up our bank, so refill it with the next item, unless we
     // are at the end of the capture buffer.
     // If we are assume a single half period of "space".
     if (offset < remaining) {
       DPRINT("DEBUG: Offset = ");
-      DPRINTLN(offset);
+      DPRINTLN(itoa(offset,tmp,10));
       bank = *(data_ptr + offset++);
     } else if (offset == remaining) {
       bank = raw_half_period;
@@ -2039,7 +2046,7 @@ uint16_t IRrecv::matchManchesterData(volatile const uint16_t *data_ptr,
       return 0;  // We are out of buffer, so abort!
     }
     DPRINT("DEBUG: Bank = ");
-    DPRINTLN(bank * kRawTick);
+    DPRINTLN(itoa(bank * kRawTick,tmp,10));
 
     // Shift the data along and add our new bit.
     DPRINT("DEBUG: Adding bit: ");
@@ -2116,7 +2123,7 @@ uint32_t now = 0;
 uint_fast8_t old;
 static uint32_t start = 0;
 
- void IR_ISR() {
+void IR_ISR() {
 	 now += 50;
 	uint_fast8_t tIRInputLevel = (uint_fast8_t)digitalReadFast(params.recvpin);
 	if (tIRInputLevel == old)

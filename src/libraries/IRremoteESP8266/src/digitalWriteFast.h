@@ -8,11 +8,35 @@
  * License: BSD 3-Clause License (https://opensource.org/licenses/BSD-3-Clause)
  */
 
+/**
+ * 
+ * Emulation layer for the OpenBK7231T 
+ * 
+*/
+
+
 #ifndef __digitalWriteFast_h_
 #define __digitalWriteFast_h_ 1
 
-#define INPUT_PULLUP 1
-#define INPUT 1
+
+#if PLATFORM_BEKEN
+//TODO: check these?
+typedef enum {
+  LOW     = 0,
+  HIGH    = 1,
+  CHANGE  = 2,
+  FALLING = 3,
+  RISING  = 4,
+} PinStatus;
+
+typedef enum {
+  INPUT           = 0x0,
+  OUTPUT          = 0x1,
+  INPUT_PULLUP    = 0x2,
+  INPUT_PULLDOWN  = 0x3,
+} PinMode;
+#endif
+
 
 void digitalToggleFast(unsigned char P);
 unsigned char digitalReadFast(unsigned char P);

@@ -16,23 +16,7 @@
 #endif
 #include "IRtimer.h"
 
-#if PLATFORM_BEKEN
-//TODO: check these?
-typedef enum {
-  LOW     = 0,
-  HIGH    = 1,
-  CHANGE  = 2,
-  FALLING = 3,
-  RISING  = 4,
-} PinStatus;
-
-typedef enum {
-  INPUT           = 0x0,
-  OUTPUT          = 0x1,
-  INPUT_PULLUP    = 0x2,
-  INPUT_PULLDOWN  = 0x3,
-} PinMode;
-#endif
+#include "digitalWriteFast.h"
 
 
 /// Constructor for an IRsend object.

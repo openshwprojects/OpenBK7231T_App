@@ -87,31 +87,6 @@ public:
 Print Serial;
 
 
-#define INPUT 0
-#define OUTPUT 1
-#define HIGH 1
-#define LOW 1
-
-
-void digitalToggleFast(unsigned char P) {
-	bk_gpio_output((GPIO_INDEX)P, !bk_gpio_input((GPIO_INDEX)P));
-}
-
-unsigned char digitalReadFast(unsigned char P) {
-	return bk_gpio_input((GPIO_INDEX)P);
-}
-
-void digitalWriteFast(unsigned char P, unsigned char V) {
-	//RAW_SetPinValue(P, V);
-	//HAL_PIN_SetOutputValue(index, iVal);
-	bk_gpio_output((GPIO_INDEX)P, V);
-}
-
-void pinModeFast(unsigned char P, unsigned char V) {
-	if (V == INPUT) {
-		bk_gpio_config_input_pup((GPIO_INDEX)P);
-	}
-}
 
 
 #define EXTERNAL_IR_TIMER_ISR
@@ -126,6 +101,8 @@ void pinModeFast(unsigned char P, unsigned char V) {
 // #undef ISR
 // #  endif
 // #define ISR void IR_ISR
+
+// THIS function is defined in src/libraries/IRremoteESP8266/src/IRrecv.cpp
 extern "C" void DRV_IR_ISR(UINT8 t);
 extern void IR_ISR();
 
@@ -212,7 +189,7 @@ SpoofIrReceiver IrReceiver;
 #include "../libraries/IRremoteESP8266/src/IRutils.h"
 #include "../libraries/IRremoteESP8266/src/IRac.h"
 #include "../libraries/IRremoteESP8266/src/IRproto.h"
-
+#include "../libraries/IRremoteESP8266/src/digitalWriteFast.h"
 
 extern "C" int PIN_GetPWMIndexForPinIndex(int pin);
 
@@ -559,6 +536,51 @@ extern "C" commandResult_t IR_Enable(const void *context, const char *cmd, const
 }
 
 
+extern "C" commandResult_t IR_Param(const void *context, const char *cmd, const char *args_in, int cmdFlags) {
+	if (!args_in || !args_in[0]) {
+		ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRParam expects two arguments");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	if(!ourReceiver)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRParam: IR reciever disabled");
+		return CMD_RES_BAD_ARGUMENT;
+	}
+
+	// Set higher if you get lots of random short UNKNOWN messages when nothing
+	// should be sending a message.
+	// Set lower if you are sure your setup is working, but it doesn't see messages
+	// from your device. (e.g. Other IR remotes work.)
+	// NOTE: Set this value very high to effectively turn off UNKNOWN detection.	
+	int kMinUnknownSize = 12;
+
+	// How much percentage lee way do we give to incoming signals in order to match
+	// it?
+	// e.g. +/- 25% (default) to an expected value of 500 would mean matching a
+	//      value between 375 & 625 inclusive.
+	// Note: Default is 25(%). Going to a value >= 50(%) will cause some protocols
+	//       to no longer match correctly. In normal situations you probably do not
+	//       need to adjust this value. Typically that's when the library detects
+	//       your remote's message some of the time, but not all of the time.
+	int kTolerancePercentage = 25;  // kTolerance is normally 25%
+
+	int res = sscanf(args_in, "%d %d", &kMinUnknownSize, &kTolerancePercentage);
+
+	if(res!=2)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRParam invalid parameters %s", args_in);
+		return CMD_RES_BAD_ARGUMENT;
+	}
+	ourReceiver->setUnknownThreshold(kMinUnknownSize);
+	ourReceiver->setTolerance(kTolerancePercentage);
+
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IRParam MinUnknownSize: %d  Noice tolerance: %d%%", kMinUnknownSize,kTolerancePercentage);
+	return CMD_RES_OK;
+}
+
+
+
 
 extern "C" commandResult_t IR_AC_Cmd(const void *context, const char *cmd, const char *args_in, int cmdFlags) {
 	if (!args_in) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
@@ -612,10 +634,10 @@ extern "C" void DRV_IR_Init() {
 
 	if (pin > 0) {
 		// setup IRrecv pin as input
-		bk_gpio_config_input_pup((GPIO_INDEX)pin);
+		//bk_gpio_config_input_pup((GPIO_INDEX)pin); // enabled by enableIRIn
 
 		 ourReceiver = new IRrecv(pin);
-		 ourReceiver->enableIRIn();
+		 ourReceiver->enableIRIn(true);// try with pullup
 	}
 
 	if (pIRsend) {
@@ -648,17 +670,26 @@ extern "C" void DRV_IR_Init() {
 			pIRsend = pIRsendTemp;
 			//bk_pwm_stop((bk_pwm_t)pIRsend->pwmIndex);
 
-	//cmddetail:{"name":"IRSend","args":"[PROT-ADDR-CMD-REP]",
-	//cmddetail:"descr":"Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0",
-	//cmddetail:"fn":"IR_Send_Cmd","file":"driver/drv_ir.cpp","requires":"",
-	//cmddetail:"examples":""}
+			//cmddetail:{"name":"IRSend","args":"[PROT-ADDR-CMD-REP]",
+			//cmddetail:"descr":"Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0",
+			//cmddetail:"fn":"IR_Send_Cmd","file":"driver/drv_ir.cpp","requires":"",
+			//cmddetail:"examples":""}
 			CMD_RegisterCommand("IRSend", IR_Send_Cmd, NULL);
+			//cmddetail:{"name":"IRAC","args":"[TODO]",
+			//cmddetail:"descr":"Sends IR commands for HVAC control (TODO)",
+			//cmddetail:"fn":"IR_AC_Cmd","file":"driver/drv_ir.cpp","requires":"",
+			//cmddetail:"examples":""}
 			CMD_RegisterCommand("IRAC", IR_AC_Cmd, NULL);
 			//cmddetail:{"name":"IREnable","args":"[Str][1or0]",
 			//cmddetail:"descr":"Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol",
 			//cmddetail:"fn":"IR_Enable","file":"driver/drv_ir.cpp","requires":"",
 			//cmddetail:"examples":""}
 			CMD_RegisterCommand("IREnable",IR_Enable, NULL);
+			//cmddetail:{"name":"IRParam","args":"[MinSize] [Noise Threshold]",
+			//cmddetail:"descr":"Set minimal size of the message and noise threshold",
+			//cmddetail:"fn":"IR_Enable","file":"driver/drv_ir.cpp","requires":"",
+			//cmddetail:"examples":""}
+			CMD_RegisterCommand("IRParam",IR_Param, NULL);
 		}
 	}
 	if ((pin > 0) || (txpin > 0)) {
@@ -672,6 +703,7 @@ extern "C" void DRV_IR_Init() {
 void dump(decode_results *results) {
 	// Dumps out the decode_results structure.
 	// Call this after IRrecv::decode()
+	#if 0
 	uint16_t count = results->rawlen;
 	if (results->decode_type == UNKNOWN) {
 		ADDLOG_INFO(LOG_FEATURE_IR,"Unknown encoding: ");
@@ -695,7 +727,7 @@ void dump(decode_results *results) {
 		ADDLOG_INFO(LOG_FEATURE_IR,"Decoded RCMM: ");
 	}
 	else if (results->decode_type == PANASONIC) {
-		ADDLOG_INFO(LOG_FEATURE_IR,"Decoded PANASONIC - Address: %i Value: ", results->address);
+		ADDLOG_INFO(LOG_FEATURE_IR,"Decoded PANASONIC: ");
 	}
 	else if (results->decode_type == LG) {
 		ADDLOG_INFO(LOG_FEATURE_IR,"Decoded LG: ");
@@ -713,8 +745,9 @@ void dump(decode_results *results) {
 		ADDLOG_INFO(LOG_FEATURE_IR,"Decoded Nikai: ");
 	}
 	//serialPrintUint64(results->value, 16);
-	ADDLOG_INFO(LOG_FEATURE_IR,"%i (%i bits) Raw (%i)",(int)results->value, results->bits, count);
-
+	ADDLOG_INFO(LOG_FEATURE_IR,"Address: %i Value: %i (%i bits) Raw (%i)",(int)results->address, (int)results->value, results->bits, count);
+	#endif
+	ADDLOG_INFO(LOG_FEATURE_IR,resultToHumanReadableBasic(results).c_str());
 }
 
 // log the received IR
@@ -817,10 +850,12 @@ extern "C" void DRV_IR_RunFrame() {
 		decode_results results;
 		if (ourReceiver->decode(&results)) {
 			//const char *name = ProtocolNames[ourReceiver->decodedIRData.protocol];
+			#if 0
 			const char *name = "TODO";
 			if (!(gIRProtocolEnable & (1 << (int)results.decode_type))) {
 				ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR decode ignore masked protocol %s (%d) - mask 0x%08X", name, (int)results.decode_type, gIRProtocolEnable);
 			}
+			#endif
 
 			dump(&results);
 			// 'UNKNOWN' protocol is by default disabled in flags
@@ -830,7 +865,6 @@ extern "C" void DRV_IR_RunFrame() {
 				// only process if this protocol is enabled.  all by default.
 				(gIRProtocolEnable & (1 << (int)results.decode_type))
 				) {
-
 
 #if 0 //TODO
 				char out[128];

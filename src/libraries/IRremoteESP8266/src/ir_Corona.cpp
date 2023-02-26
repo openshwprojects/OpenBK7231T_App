@@ -106,7 +106,7 @@ bool IRrecv::decodeCoronaAc(decode_results *results, uint16_t offset,
   // #2  *(results->state + pos) = {0x28, 0x61, 0x6D, 0xFF, 0x00, 0xFF, 0x00};
   // #3  *(results->state + pos) = {0x28, 0x61, 0xCD, 0xFF, 0x00, 0xFF, 0x00};
   for (uint8_t section = 0; section < kCoronaAcSections; section++) {
-    DPRINT(uint64ToString(section));
+    DPRINT(uint64ToString(section).c_str());
     used = matchGeneric(results->rawbuf + offset, results->state + pos,
                         results->rawlen - offset, kCoronaAcBitsShort,
                         kCoronaAcHdrMark, kCoronaAcHdrSpace,
@@ -190,29 +190,30 @@ bool IRCoronaAc::validSection(const uint8_t state[], const uint16_t pos,
   // sanity check, pos must match section, section 4 is at pos 0
   if ((section % kCoronaAcSections) * kCoronaAcSectionBytes != pos)
     return false;
+  char tmp[24];
   // all individual sections has the same prefix
   const CoronaSection *p = reinterpret_cast<const CoronaSection*>(state + pos);
   if (p->Header0 != kCoronaAcSectionHeader0) {
     DPRINT("State ");
-    DPRINT(&(p->Header0) - state);
+    DPRINT(itoa(&(p->Header0) - state,tmp,10));
     DPRINT(" expected 0x28 was ");
-    DPRINTLN(uint64ToString(p->Header0, 16));
+    DPRINTLN(uint64ToString(p->Header0, 16).c_str());
     return false;
   }
   if (p->Header1 != kCoronaAcSectionHeader1) {
     DPRINT("State ");
-    DPRINT(&(p->Header1) - state);
+    DPRINT(itoa(&(p->Header1) - state,tmp,10));
     DPRINT(" expected 0x61 was ");
-    DPRINTLN(uint64ToString(p->Header1, 16));
+    DPRINTLN(uint64ToString(p->Header1, 16).c_str());
     return false;
   }
 
   // checking section byte
   if (p->Label != getSectionByte(section)) {
     DPRINT("check 2 not matching, got ");
-    DPRINT(uint64ToString(p->Label, 16));
+    DPRINT(uint64ToString(p->Label, 16).c_str());
     DPRINT(" expected ");
-    DPRINTLN(uint64ToString(getSectionByte(section), 16));
+    DPRINTLN(uint64ToString(getSectionByte(section), 16).c_str());
     return false;
   }
 
@@ -220,17 +221,17 @@ bool IRCoronaAc::validSection(const uint8_t state[], const uint16_t pos,
   uint8_t d0invinv = ~p->Data0Inv;
   if (p->Data0 != d0invinv) {
     DPRINT("inverted 3 - 4 not matching, got ");
-    DPRINT(uint64ToString(p->Data0, 16));
+    DPRINT(uint64ToString(p->Data0, 16).c_str());
     DPRINT(" vs ");
-    DPRINTLN(uint64ToString(p->Data0Inv, 16));
+    DPRINTLN(uint64ToString(p->Data0Inv, 16).c_str());
     return false;
   }
   uint8_t d1invinv = ~p->Data1Inv;
   if (p->Data1 != d1invinv) {
     DPRINT("inverted 5 - 6 not matching, got ");
-    DPRINT(uint64ToString(p->Data1, 16));
+    DPRINT(uint64ToString(p->Data1, 16).c_str());
     DPRINT(" vs ");
-    DPRINTLN(uint64ToString(p->Data1Inv, 16));
+    DPRINTLN(uint64ToString(p->Data1Inv, 16).c_str());
     return false;
   }
   return true;

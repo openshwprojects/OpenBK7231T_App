@@ -70,12 +70,13 @@ bool IRrecv::decodeMagiQuest(decode_results *results, uint16_t offset,
                              const uint16_t nbits, const bool strict) {
   uint16_t bits = 0;
   uint64_t data = 0;
+  char tmp[24];
 
   if (results->rawlen < (2 * kMagiquestBits) + offset - 1) {
     DPRINT("Not enough bits to be Magiquest - Rawlen: ");
-    DPRINT(results->rawlen);
+    DPRINT(itoa(results->rawlen,tmp,10));
     DPRINT(" Expected: ");
-    DPRINTLN(2 * kMagiquestBits + offset - 1);
+    DPRINTLN(itoa(2 * kMagiquestBits + offset - 1,tmp,10));
     return false;
   }
 
@@ -93,13 +94,13 @@ bool IRrecv::decodeMagiQuest(decode_results *results, uint16_t offset,
     uint16_t space = results->rawbuf[offset + 1];
     if (!matchMark(mark + space, kMagiQuestTotalUsec)) {
       DPRINT("Not enough time to be Magiquest - Mark: ");
-      DPRINT(mark);
+      DPRINT(itoa(mark,tmp,10));
       DPRINT(" Space: ");
-      DPRINT(space);
+      DPRINT(itoa(space,tmp,10));
       DPRINT(" Total: ");
-      DPRINT(mark + space);
+      DPRINT(itoa(mark + space,tmp,10));
       DPRINT("Expected: ");
-      DPRINTLN(kMagiQuestTotalUsec);
+      DPRINTLN(itoa(kMagiQuestTotalUsec,tmp,10));
       return false;
     }
 

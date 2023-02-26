@@ -104,11 +104,11 @@ bool IRrecv::decodeDoshisha(decode_results *results, uint16_t offset,
   // RCZ01 remote commands starts with a lead bit set
   if ((data & kRcz01SignatureMask) != kRcz01Signature) {
     DPRINT(" decodeDoshisha data ");
-    DPRINT(uint64ToString(data, 16));
+    DPRINT(uint64ToString(data, 16).c_str());
     DPRINT(" masked ");
-    DPRINT(uint64ToString(data & kRcz01SignatureMask, 16));
+    DPRINT(uint64ToString(data & kRcz01SignatureMask, 16).c_str());
     DPRINT(" not matching ");
-    DPRINT(uint64ToString(kRcz01Signature, 16));
+    DPRINT(uint64ToString(kRcz01Signature, 16).c_str());
     DPRINTLN(" .");
     return false;  // expected lead bits not matching
   }

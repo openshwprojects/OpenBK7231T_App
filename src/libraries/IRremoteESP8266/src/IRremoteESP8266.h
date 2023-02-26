@@ -52,6 +52,7 @@
 //#include <string>
 #endif  // UNIT_TEST
 
+
 // Library Version Information
 // Major version number (X.x.x)
 #define _IRREMOTEESP8266_VERSION_MAJOR 2
@@ -1494,8 +1495,21 @@ const uint16_t kClimaButlerBits = 52;
 #define DPRINTLN(x) do { Serial.println(x); } while (0)
 #endif  // ARDUINO
 #else  // DEBUG
+
+#if PLATFORM_BEKEN 
+
+// ADD Logging macro
+// For debug messages only
+extern "C" {
+#include "../../../logging/logging.h"
+}
+
+#define DPRINT(x) ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)x);
+#define DPRINTLN(x) ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)x);
+#else 
 #define DPRINT(x)
 #define DPRINTLN(x)
+#endif
 #endif  // DEBUG
 
 #ifdef UNIT_TEST

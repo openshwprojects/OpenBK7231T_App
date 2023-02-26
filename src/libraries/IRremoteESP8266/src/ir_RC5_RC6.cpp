@@ -245,9 +245,9 @@ int16_t IRrecv::getRClevel(decode_results *results, uint16_t *offset,
                            const uint8_t tolerance, const int16_t excess,
                            const uint16_t delta, const uint8_t maxwidth) {
   DPRINT("DEBUG: getRClevel: offset = ");
-  DPRINTLN(uint64ToString(*offset));
+  DPRINTLN(uint64ToString(*offset).c_str());
   DPRINT("DEBUG: getRClevel: rawlen = ");
-  DPRINTLN(uint64ToString(results->rawlen));
+  DPRINTLN(uint64ToString(results->rawlen).c_str());
   if (*offset >= results->rawlen) {
     DPRINTLN("DEBUG: getRClevel: SPACE, past end of rawbuf");
     return kSpace;  // After end of recorded buffer, assume SPACE.

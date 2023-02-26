@@ -444,8 +444,9 @@ bool IRrecv::decodeGoodweather(decode_results* results, uint16_t offset,
   // Data
   for (; offset <= results->rawlen - 32 && dataBitsSoFar < nbits;
        dataBitsSoFar += 8) {
+    char tmp[24];
     DPRINT("DEBUG: Attempting Byte #");
-    DPRINTLN(dataBitsSoFar / 8);
+    DPRINTLN(itoa(dataBitsSoFar / 8,tmp,10));
     // Read in a byte at a time.
     // Normal first.
     data_result = matchData(&(results->rawbuf[offset]), 8,
@@ -468,9 +469,9 @@ bool IRrecv::decodeGoodweather(decode_results* results, uint16_t offset,
     offset += data_result.used;
     uint8_t inverted = (uint8_t)data_result.data;
     DPRINT("DEBUG: data = ");
-    DPRINTLN((uint16_t)data);
+    DPRINTLN(itoa(data,tmp,10));
     DPRINT("DEBUG: inverted = ");
-    DPRINTLN((uint16_t)inverted);
+    DPRINTLN(itoa(inverted,tmp,10));
     if (data != (inverted ^ 0xFF)) return false;  // Data integrity failed.
     dataSoFar |= (uint64_t)data << dataBitsSoFar;
   }

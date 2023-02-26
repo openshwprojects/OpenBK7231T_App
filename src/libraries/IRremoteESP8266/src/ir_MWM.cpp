@@ -92,15 +92,16 @@ bool IRrecv::decodeMWM(decode_results *results, uint16_t offset,
   uint64_t data = 0;
   uint16_t frame_bits = 0;
   uint16_t data_bits = 0;
-
+  char tmp[24]; //DEBUG
   // No Header
 
   // Data
   uint8_t bits_per_frame = 10;
   for (; offset < results->rawlen && results->bits < 8 * kStateSizeMax;
        frame_bits++) {
+    
     DPRINT("DEBUG: decodeMWM: offset = ");
-    DPRINTLN(offset);
+    DPRINTLN(itoa(offset,tmp,10));
     int16_t level = getRClevel(results, &offset, &used, kMWMTick, kMWMTolerance,
                                kMWMExcess, kMWMDelta, kMWMMaxWidth);
     if (level < 0) {
@@ -122,9 +123,9 @@ bool IRrecv::decodeMWM(decode_results *results, uint16_t offset,
           return false;
         } else {
           DPRINT("DEBUG: decodeMWM: data_bits = ");
-          DPRINTLN(data_bits);
+          DPRINTLN(itoa(data_bits,tmp,10));
           DPRINT("DEBUG: decodeMWM: Finished byte: ");
-          DPRINTLN(uint64ToString(data));
+          DPRINTLN(uint64ToString(data).c_str());
           results->state[data_bits / 8 - 1] = data & 0xFF;
           results->bits = data_bits;
           data = 0;
@@ -133,7 +134,7 @@ bool IRrecv::decodeMWM(decode_results *results, uint16_t offset,
       default:
         // Data bits
         DPRINT("DEBUG: decodeMWM: Storing bit: ");
-        DPRINTLN((level == kSpace));
+        DPRINTLN(itoa((level == kSpace),tmp,10));
         // Transmission is LSB-first, space=1
         data |= ((level == kSpace)) << 8;
         data >>= 1;
@@ -147,12 +148,12 @@ done:
 
   // Compliance
   DPRINT("DEBUG: decodeMWM: frame_bits = ");
-  DPRINTLN(frame_bits);
+  DPRINTLN(itoa(frame_bits,tmp,10));
   DPRINT("DEBUG: decodeMWM: data_bits = ");
-  DPRINTLN(data_bits);
+  DPRINTLN(itoa(data_bits,tmp,10));
   if (data_bits < nbits) {
     DPRINT("DEBUG: decodeMWM: too few bits; expected ");
-    DPRINTLN(nbits);
+    DPRINTLN(itoa(nbits,tmp,10));
     return false;  // Less data than we expected.
   }
 
@@ -163,7 +164,7 @@ done:
       // Normal commands
       payload_length = results->state[0] & 0x0f;
       DPRINT("DEBUG: decodeMWM: payload_length = ");
-      DPRINTLN(payload_length);
+      DPRINTLN(itoa(payload_length,tmp,10));
       break;
     default:
       if (strict) {
@@ -176,13 +177,13 @@ done:
   }
   if (data_bits < (payload_length + 3) * 8) {
     DPRINT("DEBUG: decodeMWM: too few bytes; expected ");
-    DPRINTLN((payload_length + 3));
+    DPRINTLN(itoa(payload_length + 3,tmp,10));
     return false;
   }
   if (strict) {
     if (payload_length && (data_bits > (payload_length + 3) * 8)) {
       DPRINT("DEBUG: decodeMWM: too many bytes; expected ");
-      DPRINTLN((payload_length + 3));
+      DPRINTLN(itoa(payload_length + 3,tmp,10));
       return false;
     }
   }
