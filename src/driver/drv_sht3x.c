@@ -191,7 +191,7 @@ void SHT3X_Measurecmd() {
 	CHANNEL_Set(channel_temp, (int)(g_temp * 10), 0);
 	CHANNEL_Set(channel_humid, (int)(g_humid), 0);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT3X_Measure: Temperature:%.1fC Humidity:%f.1f%%", g_temp, g_humid);
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "SHT3X_Measure: Temperature:%.1fC Humidity:%.0f%%", g_temp, g_humid);
 
 }
 
