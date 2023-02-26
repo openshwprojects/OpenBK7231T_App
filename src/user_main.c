@@ -46,7 +46,7 @@ void bg_register_irda_check_func(FUNCPTR func);
 
 static int g_secondsElapsed = 0;
 // open access point after this number of seconds
-static int g_openAP = 0;
+int g_openAP = 0;
 // connect to wifi after this number of seconds
 static int g_connectToWiFi = 0;
 // reset after this number of seconds
@@ -511,6 +511,11 @@ void Main_OnEverySecond()
 	}
 	if (g_openAP)
 	{
+		if (g_bHasWiFiConnected)
+		{
+			HAL_DisconnectFromWifi();
+			g_bHasWiFiConnected = 0;
+		}
 		g_openAP--;
 		if (0 == g_openAP)
 		{
@@ -790,9 +795,6 @@ int Main_GetLastRebootBootFailures()
 {
 	return g_bootFailures;
 }
-
-#define RESTARTS_REQUIRED_FOR_SAFE_MODE 4
-
 
 // called from idle thread each loop.
 // - just so we know it is running.

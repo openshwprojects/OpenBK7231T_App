@@ -248,6 +248,24 @@ static commandResult_t CMD_SetStartValue(const void* context, const char* cmd, c
 
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_OpenAP(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	g_openAP = 5;
+
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_SafeMode(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int i;
+
+	// simulate enough boots so the reboot will go into safe mode
+	for (i = 0; i <= RESTARTS_REQUIRED_FOR_SAFE_MODE; i++) {
+		HAL_FlashVars_IncreaseBootCount();
+	}
+	RESET_ScheduleModuleReset(3);
+
+	return CMD_RES_OK;
+}
+
 
 
 int cmd_uartInitIndex = 0;
@@ -430,6 +448,16 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_SetStartValue","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetStartValue", CMD_SetStartValue, NULL);
+	//cmddetail:{"name":"OpenAP","args":"",
+	//cmddetail:"descr":"Temporarily disconnects from programmed WiFi network and opens Access Point",
+	//cmddetail:"fn":"CMD_OpenAP","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("OpenAP", CMD_OpenAP, NULL);
+	//cmddetail:{"name":"SafeMode","args":"",
+	//cmddetail:"descr":"Forces device reboot into safe mode (open ap with disabled drivers)",
+	//cmddetail:"fn":"CMD_SafeMode","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("SafeMode", CMD_SafeMode, NULL);
 
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	CMD_InitScripting();
