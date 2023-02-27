@@ -369,7 +369,7 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bA
 	printer(request, "\"BSSId\":\"30:B5:C2:5D:70:72\",");
 	printer(request, "\"Channel\":11,");
 	printer(request, "\"Mode\":\"11n\",");
-	printer(request, "\"RSSI\":%i,", wifi_rssi_scale(HAL_GetWifiStrength()) * 25);
+	printer(request, "\"RSSI\":%i,", (HAL_GetWifiStrength() + 100) * 2);
 	printer(request, "\"Signal\":%i,", HAL_GetWifiStrength());
 	printer(request, "\"LinkCount\":21,");
 	printer(request, "\"Downtime\":\"0T06:13:34\"");
