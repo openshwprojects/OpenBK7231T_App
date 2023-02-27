@@ -169,7 +169,7 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 
 
 static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
-	float power, factor, voltage, current;
+	float power, factor, voltage, current, batterypercentage;
 	float energy, energy_hour;
 
 	factor = 0; // TODO
@@ -178,23 +178,34 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 	power = DRV_GetReading(OBK_POWER);
 	energy = DRV_GetReading(OBK_CONSUMPTION_TOTAL);
 	energy_hour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
+	if (DRV_IsRunning("Battery")) {
+		voltage = Battery_lastreading(OBK_BATT_VOLTAGE) / 1000.00;
+		batterypercentage = Battery_lastreading(OBK_BATT_LEVEL);
 
-	// following check will clear NaN values
-	if (OBK_IS_NAN(energy)) {
-		energy = 0;
+		printer(request, "{");
+		printer(request, "\"Voltage\":%.4f,", voltage);
+		printer(request, "\"Batterypercentage\":%.0f", batterypercentage);
+		// close ENERGY block
+		printer(request, "}");
 	}
-	if (OBK_IS_NAN(energy_hour)) {
-		energy_hour = 0;
+	else {
+		// following check will clear NaN values
+		if (OBK_IS_NAN(energy)) {
+			energy = 0;
+		}
+		if (OBK_IS_NAN(energy_hour)) {
+			energy_hour = 0;
+		}
+		printer(request, "{");
+		printer(request, "\"Power\": %f,", power);
+		printer(request, "\"ApparentPower\": 0,\"ReactivePower\": 0,\"Factor\":%f,", factor);
+		printer(request, "\"Voltage\":%f,", voltage);
+		printer(request, "\"Current\":%f,", current);
+		printer(request, "\"ConsumptionTotal\":%f,", energy);
+		printer(request, "\"ConsumptionLastHour\":%f", energy_hour);
+		// close ENERGY block
+		printer(request, "}");
 	}
-	printer(request, "{");
-	printer(request, "\"Power\": %f,", power);
-	printer(request, "\"ApparentPower\": 0,\"ReactivePower\": 0,\"Factor\":%f,", factor);
-	printer(request, "\"Voltage\":%f,", voltage);
-	printer(request, "\"Current\":%f,", current);
-	printer(request, "\"ConsumptionTotal\":%f,", energy);
-	printer(request, "\"ConsumptionLastHour\":%f", energy_hour);
-	// close ENERGY block
-	printer(request, "}");
 	return 0;
 }
 
@@ -255,9 +266,6 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 		printer(request, "\"Humidity\": %.0f", humidity);
 		// close ENERGY block
 		printer(request, "},");
-	}
-	if (DRV_IsRunning("Battery")) {
-		//TO DO
 	}
 	return 0;
 }
@@ -350,7 +358,9 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bA
 	printer(request, "\"Sleep\":10,");
 	printer(request, "\"LoadAvg\":99,");
 	printer(request, "\"MqttCount\":23,");
-
+	if (DRV_IsRunning("Battery")) {
+		printer(request, "\"Vcc\":%.4f,", Battery_lastreading(OBK_BATT_VOLTAGE) / 1000.00);
+	}
 	http_tasmota_json_power(request, printer);
 	printer(request, ",");
 	printer(request, "\"Wifi\":{"); // open WiFi
@@ -359,7 +369,7 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bA
 	printer(request, "\"BSSId\":\"30:B5:C2:5D:70:72\",");
 	printer(request, "\"Channel\":11,");
 	printer(request, "\"Mode\":\"11n\",");
-	printer(request, "\"RSSI\":78,");
+	printer(request, "\"RSSI\":%i,", wifi_rssi_scale(HAL_GetWifiStrength()) * 25);
 	printer(request, "\"Signal\":%i,", HAL_GetWifiStrength());
 	printer(request, "\"LinkCount\":21,");
 	printer(request, "\"Downtime\":\"0T06:13:34\"");
@@ -547,11 +557,15 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	printer(request, "\"StatusPRM\":{");
 	printer(request, "\"Baudrate\":115200,");
 	printer(request, "\"SerialConfig\":\"8N1\",");
-	printer(request, "\"GroupTopic\":\"tasmotas\",");
-	printer(request, "\"OtaUrl\":\"http://ota.tasmota.com/tasmota/release/tasmota.bin.gz\",");
+	printer(request, "\"GroupTopic\":\"%s\",", CFG_DeviceGroups_GetName());
+	printer(request, "\"OtaUrl\":\"https://github.com/openshwprojects/OpenBK7231T_App/releases/latest\",");
 	printer(request, "\"RestartReason\":\"HardwareWatchdog\",");
-	printer(request, "\"Uptime\":\"30T02:59:30\",");
-	printer(request, "\"StartupUTC\":\"2022-10-10T16:09:41\",");
+	printer(request, "\"Uptime\":\"%i\",", Time_getUpTimeSeconds());
+	struct tm* ltm;
+	int g_time = NTP_GetCurrentTime() - Time_getUpTimeSeconds();
+	ltm = localtime((time_t*)&g_time);
+
+	printer(request, "\"StartupUTC\":\"%04d-%02d-%02dT%02d:%02d:%02d\",", ltm->tm_year + 1900, ltm->tm_mon + 1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
 	printer(request, "\"Sleep\":50,");
 	printer(request, "\"CfgHolder\":4617,");
 	printer(request, "\"BootCount\":22,");
@@ -575,10 +589,8 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	printer(request, "\"SysLog\":0,");
 	printer(request, "\"LogHost\":\"\",");
 	printer(request, "\"LogPort\":514,");
-	printer(request, "\"SSId\":[");
-	printer(request, "\"%s\",", CFG_GetWiFiSSID());
-	printer(request, "\"\"");
-	printer(request, "],");
+	printer(request, "\"SSId1\":\"%s\",", CFG_GetWiFiSSID());
+	printer(request, "\"SSId2\":\"\",");
 	printer(request, "\"TelePeriod\":300,");
 	printer(request, "\"Resolution\":\"558180C0\",");
 	printer(request, "\"SetOption\":[");
@@ -660,17 +672,17 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		// Prefix3 	1 = Reset MQTT telemetry prefix to firmware default (PUB_PREFIX2) and restart
 		// <value> = set MQTT telemetry prefix and restart
 		printer(request, "{");
-		printer(request, "\"Prefix1\":\"Set\"");
+		printer(request, "\"Prefix1\":\"%s/[Channel]/set\"", CFG_GetMQTTClientId());
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "Prefix2", 7)) {
 		printer(request, "{");
-		printer(request, "\"Prefix2\":\"avty_t\"");
+		printer(request, "\"Prefix2\":\"%s/[Channel]/get\"", CFG_GetMQTTClientId());
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "Prefix3", 7)) {
 		printer(request, "{");
-		printer(request, "\"Prefix3\":\"Get\"");
+		printer(request, "\"Prefix3\":\"Null\"");
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "StateText1", 10)) {
