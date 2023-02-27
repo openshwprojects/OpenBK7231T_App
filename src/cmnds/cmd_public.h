@@ -110,6 +110,8 @@ enum EventCode {
 
 	CMD_EVENT_TUYAMCU_PARSED, // Argument: TuyaMCU packet type
 
+	CMD_EVENT_LED_MODE, // Argument: new light mode as integer
+
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
 };
