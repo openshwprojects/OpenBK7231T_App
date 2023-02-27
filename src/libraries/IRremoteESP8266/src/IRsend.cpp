@@ -94,7 +94,6 @@ uint32_t IRsend::calcUSecPeriod(uint32_t hz, bool use_offset) {
 ///  microseconds timing. Thus minor changes to the freq & duty values may have
 ///  limited effect. You've been warned.
 void IRsend::enableIROut(uint32_t freq, uint8_t duty) {
-  #if 0
   // Set the duty cycle to use if we want freq. modulation.
   if (modulation) {
     _dutycycle = ::min(duty, kDutyMax);
@@ -111,7 +110,6 @@ void IRsend::enableIROut(uint32_t freq, uint8_t duty) {
   onTimePeriod = (period * _dutycycle) / kDutyMax;
   // Nr. of uSeconds the LED will be off per pulse.
   offTimePeriod = period - onTimePeriod;
-  #endif //0
 }
 
 #if ALLOW_DELAY_CALLS

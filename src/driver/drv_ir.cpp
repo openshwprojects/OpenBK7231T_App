@@ -216,7 +216,6 @@ public:
 
 	void delay(long int ms) {
 		// add a pure delay to our queue
-		ADDLOG_INFO(LOG_FEATURE_IR, (char *)"Delay %dms", ms);
 		space(ms * 1000);
 	}
 
@@ -250,15 +249,19 @@ public:
 		}
 	}
 
-	void enableIROut(uint32_t freq, uint8_t duty) {
+	void enableIROut(uint32_t freq, uint8_t duty=50) {
 		//uint_fast8_t aFrequencyKHz
 		if (freq < 1000)  // Were we given kHz? Supports the old call usage.
 			freq *= 1000;
-
+		ADDLOG_INFO(LOG_FEATURE_IR, (char *)"enableIROut %d freq %d duty",(int)freq, (int)duty);
+		if(duty<1)
+			duty=1;
+		if(duty>100)
+			duty=100;
 		// just setup variables for use in ISR
 		//pwmfrequency = ((uint32_t)aFrequencyKHz) * 1000;
 		pwmperiod = (26000000 / freq);
-		pwmduty = pwmperiod / 2;
+		pwmduty = pwmperiod / (100/duty);
 	}
 
 	void resetsendqueue() {
@@ -382,21 +385,6 @@ extern "C" void DRV_IR_ISR(UINT8 t) {
 	ir_counter++;
 }
 
-decode_type_t find_protocol_by_name(const char* args, int ournamelen)
-{
-	decode_type_t protocol = decode_type_t::UNKNOWN; // UNKNOW?
-
-	for (int i = 0; i < numProtocols; i++) {
-		const char *name = ProtocolNames[i];
-		int namelen = strlen(name);
-		if (!my_strnicmp(name, args, namelen) && (ournamelen == namelen)) {
-			protocol = (decode_type_t)i;
-			break;
-		}
-	}
-	return protocol;
-}
-
 
 extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, const char *args_in, int cmdFlags) {
 	if (!args_in) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
@@ -415,9 +403,13 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 		return CMD_RES_BAD_ARGUMENT;
 	}
 
-	int ournamelen = (p - args);
-	decode_type_t protocol = find_protocol_by_name(args, ournamelen);
-
+	*p='\0';
+	decode_type_t protocol = strToDecodeType(args);
+	if(hasACState(protocol))
+	{
+		ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRSend can't send AC commands", args);
+		return CMD_RES_BAD_ARGUMENT;
+	}
 	p++;
 	int addr = strtol(p, &p, 16);
 	if ((*p != '-') && (*p != ' ')) {
@@ -437,7 +429,35 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 	if (pIRsend) {
 		bool success = true;  // Assume success.
 
-		success = pIRsend->send(protocol, addr, command, repeats);
+		switch(protocol)
+		{
+			case decode_type_t::RC5:
+				pIRsend->sendRC5((uint64_t)pIRsend->encodeRC5(addr,command));
+				break;
+			case decode_type_t::RC6:
+				pIRsend->sendRC6((uint64_t)pIRsend->encodeRC6(addr,command));
+				break;
+			case decode_type_t::NEC:
+				pIRsend->sendNEC((uint64_t)pIRsend->encodeNEC(addr,command));
+				break;
+			case decode_type_t::PANASONIC:
+				pIRsend->sendPanasonic((uint16_t)addr,(uint32_t)command);
+				break;
+			case decode_type_t::JVC:
+				pIRsend->sendJVC((uint64_t)pIRsend->encodeJVC(addr,command));
+				break;
+			case decode_type_t::SAMSUNG:
+				pIRsend->sendSAMSUNG((uint64_t)pIRsend->encodeSAMSUNG(addr,command));
+				break;
+			case decode_type_t::LG:
+				pIRsend->sendLG((uint64_t)pIRsend->encodeLG(addr,command));
+				break;
+			default:
+				ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IR send %s protocol not supported", args);
+				return CMD_RES_ERROR;
+				break;
+		};
+
 		// add a 100ms delay after command
 		// NOTE: this is NOT a delay here.  it adds 100ms 'space' in the TX queue
 		pIRsend->delay(100);
@@ -497,6 +517,8 @@ extern "C" commandResult_t IR_Enable(const void *context, const char *cmd, const
 	}
 
 	//int numProtocols = sizeof(ProtocolNames)/sizeof(*ProtocolNames);
+	#if 0 // number of protocols now is 125 
+	// TODO: reimpleemnt this using bigger mask
 	int numProtocols = 0;
 	int ournamelen = (p - args);
 	int protocol = -1;
@@ -530,8 +552,8 @@ extern "C" commandResult_t IR_Enable(const void *context, const char *cmd, const
 		gIRProtocolEnable = gIRProtocolEnable & (~thisbit);
 	}
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IREnable Protocol mask now 0x%08X", gIRProtocolEnable);
+	#endif //TODO
 	return CMD_RES_OK;
-
 }
 
 
@@ -595,11 +617,10 @@ extern "C" commandResult_t IR_AC_Cmd(const void *context, const char *cmd, const
 	}
 	int ournamelen = (p - args);
 	if ((*p != '-') && (*p != ' ')) {
-		ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRSend cmnd not valid [%s] not like [NEC-0-1A] or [NEC 0 1A 1].", args);
+		ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRAC cmnd not valid [%s] ", args);
 		return CMD_RES_BAD_ARGUMENT;
 	}
-
-	decode_type_t protocol = find_protocol_by_name(args, ournamelen);
+	//	decode_type_t protocol = strToDecodeType(args);
 
 	ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRAC cmnd not implemented yet", args);
 
@@ -629,7 +650,6 @@ extern "C" void DRV_IR_Init() {
 	else {
 		_timer_disable();
 	}
-
 
 	if (pin > 0) {
 		// setup IRrecv pin as input
@@ -661,10 +681,8 @@ extern "C" void DRV_IR_Init() {
 			bk_pwm_start((bk_pwm_t)pwmIndex);
 			myIRsend *pIRsendTemp = new myIRsend((uint_fast8_t)txpin);
 			pIRsendTemp->resetsendqueue();
+			pIRsendTemp->enableIROut(pwmfrequency,50);
 			pIRsendTemp->pwmIndex = pwmIndex;
-			pIRsendTemp->pwmfrequency = pwmfrequency;
-			pIRsendTemp->pwmperiod = period;
-			pIRsendTemp->pwmduty = duty;
 
 			pIRsend = pIRsendTemp;
 			//bk_pwm_stop((bk_pwm_t)pIRsend->pwmIndex);
@@ -709,82 +727,6 @@ void dump(decode_results *results) {
 	}
 }
 
-// log the received IR
-void PrintIRData(decode_results *aIRDataPtr) {
-	ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)"IR decode returned true, protocol %d", (int)aIRDataPtr->decode_type);
-
-#if 0  // TODO: disabled for now, using routines from IRremoteESP8266
-	if (aIRDataPtr->decode_type == UNKNOWN) {
-#if defined(DECODE_HASH)
-		ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)" Hash=0x%X", (int)aIRDataPtr->decodedRawData);
-#endif
-		ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)"%d bits (incl. gap and start) received", (int)((aIRDataPtr->rawlen) / 2));
-	}
-	else {
-#if defined(DECODE_DISTANCE)
-		if (aIRDataPtr->protocol != PULSE_DISTANCE) {
-#endif
-			/*
-			 * New decoders have address and command
-			 */
-			ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)"Address=0x%X Command=0x%X", (int)aIRDataPtr->address, (int)aIRDataPtr->command);
-
-			if (aIRDataPtr->flags & IRDATA_FLAGS_EXTRA_INFO) {
-				ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)" Extra=0x%X", (int)aIRDataPtr->extra);
-			}
-
-			if (aIRDataPtr->flags & IRDATA_FLAGS_PARITY_FAILED) {
-				ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)" Parity fail");
-			}
-
-			if (aIRDataPtr->flags & IRDATA_TOGGLE_BIT_MASK) {
-				if (aIRDataPtr->protocol == NEC) {
-					ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)" Special repeat");
-				}
-				else {
-					ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)" Toggle=1");
-				}
-			}
-#if defined(DECODE_DISTANCE)
-		}
-#endif
-		if (aIRDataPtr->flags & (IRDATA_FLAGS_IS_AUTO_REPEAT | IRDATA_FLAGS_IS_REPEAT)) {
-			if (aIRDataPtr->flags & IRDATA_FLAGS_IS_AUTO_REPEAT) {
-				ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)"Auto-Repeat");
-			}
-			else {
-				ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)"Repeat");
-			}
-			if (1) {
-				ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)" Gap %uus", (uint32_t)aIRDataPtr->rawDataPtr->rawbuf[0] * MICROS_PER_TICK);
-			}
-		}
-
-		/*
-		 * Print raw data
-		 */
-		if (!(aIRDataPtr->flags & IRDATA_FLAGS_IS_REPEAT) || aIRDataPtr->decodedRawData != 0) {
-			ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)" Raw-Data=0x%X", aIRDataPtr->decodedRawData);
-			/*
-			 * Print number of bits processed
-			 */
-			ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)" %d bits", aIRDataPtr->numberOfBits);
-
-			if (aIRDataPtr->flags & IRDATA_FLAGS_IS_MSB_FIRST) {
-				ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)" MSB first", aIRDataPtr->numberOfBits);
-			}
-			else {
-				ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)" LSB first", aIRDataPtr->numberOfBits);
-			}
-		}
-	}
-#endif //0
-	// TODO: reimplement ?
-	//ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)resultToHumanReadableBasic(aIRDataPtr).c_str());
-	String description = IRAcUtils::resultAcToString(aIRDataPtr);
-	if (description.length()) ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)description.c_str());
-
-}
 
 
 ////////////////////////////////////////////////////
@@ -808,48 +750,46 @@ extern "C" void DRV_IR_RunFrame() {
 	if (ourReceiver) {
 		decode_results results;
 		if (ourReceiver->decode(&results)) {
-			//const char *name = ProtocolNames[ourReceiver->decodedIRData.protocol];
-			#if 0
-			const char *name = "TODO";
+			// TODO: find a better way?
+			const char *proto_name = typeToString(results.decode_type, results.repeat).c_str();
+
+			#if 0 // TODO: implement different masking
 			if (!(gIRProtocolEnable & (1 << (int)results.decode_type))) {
-				ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR decode ignore masked protocol %s (%d) - mask 0x%08X", name, (int)results.decode_type, gIRProtocolEnable);
+				ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR decode ignore masked protocol %s (%d) - mask 0x%08X", proto_name, (int)results.decode_type, gIRProtocolEnable);
 			}
 			#endif
 
-			dump(&results);
+			//dump(&results);
 			// 'UNKNOWN' protocol is by default disabled in flags
 			// This is because I am getting a lot of 'UNKNOWN' spam with no IR signals in room
-			if (((results.decode_type != UNKNOWN) ||
-				(results.decode_type == UNKNOWN && CFG_HasFlag(OBK_FLAG_IR_ALLOW_UNKNOWN))) &&
+			if (((results.decode_type != decode_type_t::UNKNOWN) ||
+				(results.decode_type == decode_type_t::UNKNOWN && CFG_HasFlag(OBK_FLAG_IR_ALLOW_UNKNOWN))) &&
 				// only process if this protocol is enabled.  all by default.
 				(gIRProtocolEnable & (1 << (int)results.decode_type))
 				) {
+				String lastIrReceived = String((int)results.decode_type,16) + "," + resultToHexidecimal(&results);
 
-#if 0 //TODO
 				char out[128];
-				PrintIRData(&results);
-				ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)"IR decode returned true, protocol %s (%d)", name, (int)results.decode_type);
 				int repeat = 0;
 
-				if (ourReceiver->decodedIRData.flags & (IRDATA_FLAGS_IS_AUTO_REPEAT | IRDATA_FLAGS_IS_REPEAT)) {
-					if (ourReceiver->decodedIRData.flags & IRDATA_FLAGS_IS_AUTO_REPEAT) {
-						repeat = 2;
-					}
-					else {
-						repeat = 1;
-					}
-				}
-
-				if (ourReceiver->decodedIRData.protocol == UNKNOWN) {
-					snprintf(out, sizeof(out), "IR_%s 0x%lX %d", name, (unsigned long)ourReceiver->decodedIRData.decodedRawData, repeat);
+				if (results.repeat) { //?
+					repeat = 2;
 				}
 				else {
-					snprintf(out, sizeof(out), "IR_%s 0x%X 0x%X %d", name, ourReceiver->decodedIRData.address, ourReceiver->decodedIRData.command, repeat);
+					repeat = 1;
 				}
 
-				String lastIrReceived = String(capture.decode_type) + "," + resultToHexidecimal(&results);
-				if (!hasACState(capture.decode_type))
-					lastIrReceived += "," + String(results.bits);
+				if (results.decode_type == decode_type_t::UNKNOWN) {
+					//snprintf(out, sizeof(out), "IR_RAW 0x%lX %d", (unsigned long)results.decodedRawData, repeat);
+					// TODO: print RAW hexedecimal value 
+				}
+				else {
+					snprintf(out, sizeof(out), "IR %s %X %X %d", proto_name, results.address, results.command, repeat);
+					ADDLOG_INFO(LOG_FEATURE_IR, (char *)out);
+				}
+
+				if (!hasACState(results.decode_type))
+					lastIrReceived += "," + String((int)results.bits);
 
 				// if user wants us to publish every received IR data, do it now
 				if (CFG_HasFlag(OBK_FLAG_IR_PUBLISH_RECEIVED)) {
@@ -866,47 +806,43 @@ extern "C" void DRV_IR_RunFrame() {
 						ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR MQTT publish %s took %dms", out, counter_dur);
 					}
 					else {
-						ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR %s", out);
+						ADDLOG_INFO(LOG_FEATURE_IR, (char *)out);
 					}
 				}
 				else {
 					ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR %s", lastIrReceived.c_str());
 				}
-#endif
 
 				if (CFG_HasFlag(OBK_FLAG_IR_PUBLISH_RECEIVED_IN_JSON)) {
 					// {"IrReceived":{"Protocol":"RC_5","Bits":0x1,"Data":"0xC"}}
 					//
-
-#if 0 // TODO:
-					snprintf(out, sizeof(out), "{\"IrReceived\":{\"Protocol\":\"%s\",\"Bits\":%i,\"Data\":\"0x%lX\"}}",
-						name, (int)ourReceiver->decodedIRData.numberOfBits, (unsigned long)ourReceiver->decodedIRData.decodedRawData);
+					String _data=resultToHexidecimal(&results);
+					snprintf(out, sizeof(out), "{\"IrReceived\":{\"Protocol\":\"%s\",\"Bits\":%i,\"Data\":\"%s\"}}",
+						proto_name, (int)results.bits, _data.c_str());
 					MQTT_PublishMain_StringString("RESULT", out, OBK_PUBLISH_FLAG_FORCE_REMOVE_GET);
-#endif //TODO
 				}
 
-#if 0
-				if (ourReceiver->decodedIRData.protocol != UNKNOWN) {
-					snprintf(out, sizeof(out), "%X", ourReceiver->decodedIRData.command);
+				if (results.decode_type != decode_type_t::UNKNOWN) {
+					snprintf(out, sizeof(out), "%X", results.command);
 					int tgType = 0;
-					switch (ourReceiver->decodedIRData.protocol)
+					switch (results.decode_type)
 					{
-					case NEC:
+					case decode_type_t::NEC:
 						tgType = CMD_EVENT_IR_NEC;
 						break;
-					case SAMSUNG:
+					case decode_type_t::SAMSUNG:
 						tgType = CMD_EVENT_IR_SAMSUNG;
 						break;
-					case SHARP:
+					case decode_type_t::SHARP:
 						tgType = CMD_EVENT_IR_SHARP;
 						break;
-					case RC5:
+					case decode_type_t::RC5:
 						tgType = CMD_EVENT_IR_RC5;
 						break;
-					case RC6:
+					case decode_type_t::RC6:
 						tgType = CMD_EVENT_IR_RC6;
 						break;
-					case SONY:
+					case decode_type_t::SONY:
 						tgType = CMD_EVENT_IR_SONY;
 						break;
 					default:
@@ -916,11 +852,10 @@ extern "C" void DRV_IR_RunFrame() {
 					// we should include repeat here?
 					// e.g. on/off button should not toggle on repeats, but up/down probably should eat them.
 					uint32_t counter_in = ir_counter;
-					EventHandlers_FireEvent2(tgType, ourReceiver->decodedIRData.address, ourReceiver->decodedIRData.command);
+					EventHandlers_FireEvent2(tgType, results.address, results.command);
 					uint32_t counter_dur = ((ir_counter - counter_in) * 50) / 1000;
 					ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)"IR fire event took %dms", counter_dur);
 				}
-#endif //0 TODO
 			}
 			/*
 			* !!!Important!!! Enable receiving of the next value,
@@ -930,9 +865,6 @@ extern "C" void DRV_IR_RunFrame() {
 		}
 	}
 }
-
-
-
 
 
 #ifdef TEST_CPP

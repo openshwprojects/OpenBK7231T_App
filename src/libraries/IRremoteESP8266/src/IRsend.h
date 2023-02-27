@@ -238,7 +238,7 @@ class IRsend {
   explicit IRsend(uint16_t IRsendPin, bool inverted = false,
                   bool use_modulation = true);
   void begin();
-  void enableIROut(uint32_t freq, uint8_t duty = kDutyDefault);
+  virtual void enableIROut(uint32_t freq, uint8_t duty = kDutyDefault);
 
   virtual void _delayMicroseconds(uint32_t usec);
   virtual uint16_t mark(uint16_t usec);
