@@ -126,15 +126,14 @@ const char *strCompareBound(const char *s, const char *templ, const char *stoppe
 
 			}
 			else {
-			return 0;
+				return 0;
 			}
-		}
- else {
- char c1 = tolower((unsigned char)*s);
- char c2 = tolower((unsigned char)*templ);
- if (c1 != c2) {
-	 return 0;
- }
+		}  else {
+			char c1 = tolower((unsigned char)*s);
+			char c2 = tolower((unsigned char)*templ);
+			if (c1 != c2) {
+				return 0;
+			}
 		}
 		s++;
 		templ++;
@@ -158,6 +157,13 @@ const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
 	if (ret) {
 		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: MQTTOn");
 		*out = Main_HasMQTTConnected();
+		return ret;
+	}
+	ret = strCompareBound(s, "$CH***", stop, 1);
+	if (ret) {
+		idx = atoi(s + 3);
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: channel value of idx %i", idx);
+		*out = CHANNEL_Get(idx);
 		return ret;
 	}
 	ret = strCompareBound(s, "$CH**", stop, 1);
