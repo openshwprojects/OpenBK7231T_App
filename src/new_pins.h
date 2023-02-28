@@ -261,8 +261,9 @@ typedef struct pinsState_s {
 #define OBK_FLAG_MQTT_HASS_ADD_RELAYS_AS_LIGHTS		34
 #define OBK_FLAG_NOT_PUBLISH_AVAILABILITY_SENSOR    35
 #define OBK_FLAG_DRV_DISABLE_AUTOSTART              36
+#define OBK_FLAG_WIFI_FAST_CONNECT		            37
 
-#define OBK_TOTAL_FLAGS 37
+#define OBK_TOTAL_FLAGS 38
 
 
 #define CGF_MQTT_CLIENT_ID_SIZE			64

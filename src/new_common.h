@@ -389,6 +389,7 @@ void Main_ScheduleHomeAssistantDiscovery(int seconds);
 int Main_IsConnectedToWiFi();
 int Main_IsOpenAccessPointMode();
 void Main_Init();
+bool Main_HasFastConnect();
 void Main_OnEverySecond();
 int Main_HasMQTTConnected();
 int Main_HasWiFiConnected();

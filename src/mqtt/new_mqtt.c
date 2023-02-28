@@ -212,7 +212,7 @@ static obk_mqtt_request_t g_mqtt_request;
 static obk_mqtt_request_t g_mqtt_request_cb;
 
 #define LOOPS_WITH_DISCONNECTED 15
-int loopsWithDisconnected = 0;
+int mqtt_loopsWithDisconnected = 0;
 int mqtt_reconnect = 0;
 // set for the device to broadcast self state on start
 int g_bPublishAllStatesNow = 0;
@@ -1854,7 +1854,12 @@ int MQTT_RunEverySecondUpdate()
 	if (Main_HasWiFiConnected() == 0)
 	{
 		mqtt_reconnect = 0;
-		loopsWithDisconnected = LOOPS_WITH_DISCONNECTED - 2;
+		if (Main_HasFastConnect()) {
+			mqtt_loopsWithDisconnected = LOOPS_WITH_DISCONNECTED + 1;
+		}
+		else {
+			mqtt_loopsWithDisconnected = LOOPS_WITH_DISCONNECTED - 2;
+		}
 		return 0;
 	}
 
@@ -1892,14 +1897,14 @@ int MQTT_RunEverySecondUpdate()
 			if (mqtt_client && res)
 			{
 				MQTT_disconnect(mqtt_client);
-				loopsWithDisconnected = LOOPS_WITH_DISCONNECTED - 2;
+				mqtt_loopsWithDisconnected = LOOPS_WITH_DISCONNECTED - 2;
 			}
 		}
 	}
 
 	if (mqtt_client == 0 || res == 0)
 	{
-		//addLogAdv(LOG_INFO,LOG_FEATURE_MAIN, "Timer discovers disconnected mqtt %i\n",loopsWithDisconnected);
+		//addLogAdv(LOG_INFO,LOG_FEATURE_MAIN, "Timer discovers disconnected mqtt %i\n",mqtt_loopsWithDisconnected);
 #if WINDOWS
 #elif PLATFORM_BL602
 #elif PLATFORM_W600 || PLATFORM_W800
@@ -1908,8 +1913,8 @@ int MQTT_RunEverySecondUpdate()
 		if (ota_progress() == -1)
 #endif
 		{
-			loopsWithDisconnected++;
-			if (loopsWithDisconnected > LOOPS_WITH_DISCONNECTED)
+			mqtt_loopsWithDisconnected++;
+			if (mqtt_loopsWithDisconnected > LOOPS_WITH_DISCONNECTED)
 			{
 				if (mqtt_client == 0)
 				{
@@ -1928,7 +1933,7 @@ int MQTT_RunEverySecondUpdate()
 				}
 				MQTT_do_connect(mqtt_client);
 				mqtt_connect_events++;
-				loopsWithDisconnected = 0;
+				mqtt_loopsWithDisconnected = 0;
 			}
 		}
 		MQTT_Mutex_Free();

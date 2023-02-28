@@ -147,6 +147,7 @@ void MQTT_InvokeCommandAtEnd(PostPublishCommands command);
 bool MQTT_IsReady();
 extern int g_mqtt_bBaseTopicDirty;
 extern int mqtt_reconnect;
+extern int mqtt_loopsWithDisconnected;
 
 // TODO: hide it, internal usage only
 #define MQTT_STACK_BUFFER_SIZE 32
