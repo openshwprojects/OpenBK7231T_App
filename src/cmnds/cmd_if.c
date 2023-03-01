@@ -24,6 +24,10 @@ Example usage 2:
 	if $CH6<5 then "backlog led_dimmer 100; led_enableAll" else "backlog led_dimmer 10; led_enableAll"
 */
 
+#define ADDLOG_IF_MATHEXP_DBG(x, ...)
+
+
+
 typedef struct sOperator_s {
 	const char *txt;
 	byte len;
@@ -155,101 +159,101 @@ const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
 
 	ret = strCompareBound(s, "MQTTOn", stop, false);
 	if (ret) {
-		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: MQTTOn");
+		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: MQTTOn");
 		*out = Main_HasMQTTConnected();
 		return ret;
 	}
 	ret = strCompareBound(s, "$CH***", stop, 1);
 	if (ret) {
 		idx = atoi(s + 3);
-		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: channel value of idx %i", idx);
+		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: channel value of idx %i", idx);
 		*out = CHANNEL_Get(idx);
 		return ret;
 	}
 	ret = strCompareBound(s, "$CH**", stop, 1);
 	if (ret) {
 		idx = atoi(s + 3);
-		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: channel value of idx %i", idx);
+		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: channel value of idx %i", idx);
 		*out = CHANNEL_Get(idx);
 		return ret;
 	}
 	ret = strCompareBound(s, "$CH*", stop, 1);
 	if (ret) {
 		idx = atoi(s + 3);
-		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: channel value of idx %i", idx);
+		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: channel value of idx %i", idx);
 		*out = CHANNEL_Get(idx);
 		return ret;
 	}
 	ret = strCompareBound(s, "$led_dimmer", stop, 0);
 	if (ret) {
-		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_dimmer");
+		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_dimmer");
 		*out = LED_GetDimmer();
 		return ret;
 	}
 	ret = strCompareBound(s, "$led_enableAll", stop, 0);
 	if (ret) {
-		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_enableAll");
+		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_enableAll");
 		*out = LED_GetEnableAll();
 		return ret;
 	}
 	ret = strCompareBound(s, "$led_hue", stop, 0);
 	if (ret) {
-		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_hue");
+		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_hue");
 		*out = LED_GetHue();
 		return ret;
 	}
 	ret = strCompareBound(s, "$led_red", stop, 0);
 	if (ret) {
-		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_red");
+		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_red");
 		*out = LED_GetRed255();
 		return ret;
 	}
 	ret = strCompareBound(s, "$led_green", stop, 0);
 	if (ret) {
-		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: $led_green");
+		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: $led_green");
 		*out = LED_GetGreen255();
 		return ret;
 	}
 	ret = strCompareBound(s, "$led_blue", stop, 0);
 	if (ret) {
-		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: $led_blue");
+		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: $led_blue");
 		*out = LED_GetBlue255();
 		return ret;
 	}
 	ret = strCompareBound(s, "$led_saturation", stop, 0);
 	if (ret) {
-		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_saturation");
+		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_saturation");
 		*out = LED_GetSaturation();
 		return ret;
 	}
 	ret = strCompareBound(s, "$led_temperature", stop, 0);
 	if (ret) {
-		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_temperature");
+		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_temperature");
 		*out = LED_GetTemperature();
 		return ret;
 	}
 	ret = strCompareBound(s, "$activeRepeatingEvents", stop, 0);
 	if (ret) {
-		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: activeRepeatingEvents");
+		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: activeRepeatingEvents");
 		*out = RepeatingEvents_GetActiveCount();
 		return ret;
 	}
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	ret = strCompareBound(s, "$voltage", stop, 0);
 	if (ret) {
-		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: voltage");
+		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: voltage");
 		*out = DRV_GetReading(OBK_VOLTAGE);
 		return ret;
 	}
 	ret = strCompareBound(s, "$current", stop, 0);
 	if (ret) {
-		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: $current");
+		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: $current");
 		*out = DRV_GetReading(OBK_CURRENT);
 		return ret;
 	}
 	ret = strCompareBound(s, "$power", stop, 0);
 	if (ret) {
-		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: $power");
+		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: $power");
 		*out = DRV_GetReading(OBK_POWER);
 		return ret;
 	}
@@ -475,14 +479,14 @@ float CMD_EvaluateExpression(const char *s, const char *stop) {
 		idx = stop - s;
 		memcpy(g_expDebugBuffer,s,idx);
 		g_expDebugBuffer[idx] = 0;
-		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: will run '%s'",g_expDebugBuffer);
+		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: will run '%s'",g_expDebugBuffer);
 	}
 
 	op = CMD_FindOperator(s, stop, &opCode);
 	if(op) {
 		const char *p2;
-	
-		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: operator %i",opCode);
+
+		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: operator %i",opCode);
 
 		// first token block begins at 's' and ends at 'op'
 		// second token block begins at 'p2' and ends at NULL
@@ -553,7 +557,7 @@ float CMD_EvaluateExpression(const char *s, const char *stop) {
 		memcpy(g_expDebugBuffer,s,idx);
 		g_expDebugBuffer[idx] = 0;
 	}
-	ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: will call atof for %s",g_expDebugBuffer);
+	ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: will call atof for %s",g_expDebugBuffer);
 	return atof(g_expDebugBuffer);
 }
 
@@ -592,11 +596,11 @@ commandResult_t CMD_If(const void *context, const char *cmd, const char *args, i
 	}
 
 #ifdef WINDOWS
-	ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_If: cmdA is '%s'",cmdA);
+	ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_If: cmdA is '%s'",cmdA);
 	if(cmdB) {
-		ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_If: cmdB is '%s'",cmdB);
+		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_If: cmdB is '%s'",cmdB);
 	}
-	ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "CMD_If: condition is '%s'",condition);
+	ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_If: condition is '%s'",condition);
 #endif
 
 	value = CMD_EvaluateExpression(condition, 0);
