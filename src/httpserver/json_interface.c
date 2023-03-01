@@ -180,9 +180,10 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 	energy_hour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
 
 	if (DRV_IsRunning("Battery")) {
+#ifndef OBK_DISABLE_ALL_DRIVERS
 		voltage = Battery_lastreading(OBK_BATT_VOLTAGE) / 1000.00;
 		batterypercentage = Battery_lastreading(OBK_BATT_LEVEL);
-
+#endif
 		printer(request, "{");
 		printer(request, "\"Voltage\":%.4f,", voltage);
 		printer(request, "\"Batterypercentage\":%.0f", batterypercentage);
