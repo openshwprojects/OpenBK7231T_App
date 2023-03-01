@@ -206,6 +206,33 @@ static commandResult_t CMD_GetChannel(const void *context, const char *cmd, cons
 
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_Map(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	int targetChannel;
+
+	float input, in_min, in_max, out_min, out_max, result;
+
+	Tokenizer_TokenizeString(args, 0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 6)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	//cmddetail:{"name":"Map","args":"[TargetChannel][InputValue][InMin][InMax][OutMin][OutMax]"
+	targetChannel = Tokenizer_GetArgInteger(0);
+	input = Tokenizer_GetArgFloat(1);
+	in_min = Tokenizer_GetArgFloat(2);
+	in_max = Tokenizer_GetArgFloat(3);
+	out_min = Tokenizer_GetArgFloat(4);
+	out_max = Tokenizer_GetArgFloat(5);
+
+	// #define MAP(x, in_min, in_max, out_min, out_max)
+	result = MAP(input, in_min, in_max, out_min, out_max);
+
+	CHANNEL_Set(targetChannel, result, 0);
+
+	return CMD_RES_OK;
+}
 // See self test for usage
 // MapRanges 10 0.15 0.2 0.4 0.8 1
 static commandResult_t CMD_MapRanges(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -437,6 +464,11 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_MapRanges","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MapRanges", CMD_MapRanges, NULL);
+	//cmddetail:{"name":"Map","args":"[TargetChannel][InputValue][InMin][InMax][OutMin][OutMax]",
+	//cmddetail:"descr":"qqq",
+	//cmddetail:"fn":"CMD_Map","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("Map", CMD_Map, NULL);
 	//cmddetail:{"name":"SetChannelVisible","args":"",
 	//cmddetail:"descr":"NULL",
 	//cmddetail:"fn":"CMD_SetChannelVisible","file":"cmnds/cmd_channels.c","requires":"",
