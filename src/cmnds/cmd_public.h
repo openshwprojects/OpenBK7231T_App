@@ -13,7 +13,7 @@ typedef enum commandResult_e {
 
 } commandResult_t;
 
-typedef commandResult_t (*commandHandler_t)(const void* context, const char* cmd, const char* args, int flags);
+typedef commandResult_t(*commandHandler_t)(const void* context, const char* cmd, const char* args, int flags);
 
 // command was entered in console (web app etc)
 #define COMMAND_FLAG_SOURCE_CONSOLE		1
@@ -37,12 +37,12 @@ void CMD_Init_Early();
 void CMD_Init_Delayed();
 void CMD_FreeAllCommands();
 void CMD_RunUartCmndIfRequired();
-void CMD_RegisterCommand(const char* name, commandHandler_t handler,  void* context);
+void CMD_RegisterCommand(const char* name, commandHandler_t handler, void* context);
 commandResult_t CMD_ExecuteCommand(const char* s, int cmdFlags);
 commandResult_t CMD_ExecuteCommandArgs(const char* cmd, const char* args, int cmdFlags);
 // like a strdup, but will expand constants.
 // Please remember to free the returned string
-char *CMD_ExpandingStrdup(const char *in);
+char* CMD_ExpandingStrdup(const char* in);
 
 enum EventCode {
 	CMD_EVENT_NONE,
@@ -145,7 +145,7 @@ enum LightMode {
 
 // cmd_tokenizer.c
 int Tokenizer_GetArgsCount();
-bool Tokenizer_CheckArgsCountAndPrintWarning(const char *cmdStr, int reqCount);
+bool Tokenizer_CheckArgsCountAndPrintWarning(const char* cmdStr, int reqCount);
 const char* Tokenizer_GetArg(int i);
 const char* Tokenizer_GetArgFrom(int i);
 int Tokenizer_GetArgInteger(int i);
@@ -156,7 +156,7 @@ void Tokenizer_TokenizeString(const char* s, int flags);
 // cmd_repeatingEvents.c
 void RepeatingEvents_Init();
 void RepeatingEvents_OnEverySecond();
-void SIM_GenerateRepeatingEventsDesc(char *o, int outLen);
+void SIM_GenerateRepeatingEventsDesc(char* o, int outLen);
 // cmd_eventHandlers.c
 void EventHandlers_Init();
 // This is useful to fire an event when a certain UART string command is received.
@@ -231,15 +231,17 @@ void CMD_StartTCPCommandLine();
 // cmd_script.c
 int CMD_GetCountActiveScriptThreads();
 
-const char *CMD_GetResultString(commandResult_t r);
+const char* CMD_GetResultString(commandResult_t r);
 
 void SVM_RunThreads(int deltaMS);
 void CMD_InitScripting();
 byte* LFS_ReadFile(const char* fname);
 
-commandResult_t CMD_ClearAllHandlers(const void *context, const char *cmd, const char *args, int cmdFlags);
-commandResult_t RepeatingEvents_Cmd_ClearRepeatingEvents(const void *context, const char *cmd, const char *args, int cmdFlags);
-commandResult_t CMD_resetSVM(const void *context, const char *cmd, const char *args, int cmdFlags);
+commandResult_t CMD_ClearAllHandlers(const void* context, const char* cmd, const char* args, int cmdFlags);
+commandResult_t RepeatingEvents_Cmd_ClearRepeatingEvents(const void* context, const char* cmd, const char* args, int cmdFlags);
+commandResult_t CMD_resetSVM(const void* context, const char* cmd, const char* args, int cmdFlags);
 int RepeatingEvents_GetActiveCount();
 
+// battery public void 
+int Battery_lastreading();
 #endif // __CMD_PUBLIC_H__
