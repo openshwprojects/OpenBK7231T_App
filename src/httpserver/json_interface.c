@@ -169,7 +169,7 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 
 
 static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
-	float power, factor, voltage, current, batterypercentage;
+	float power, factor, voltage, current, batterypercentage = 0;
 	float energy, energy_hour;
 
 	factor = 0; // TODO
