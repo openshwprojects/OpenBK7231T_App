@@ -296,6 +296,11 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 		http_tasmota_json_SENSOR(request, printer);
 		printer(request, "\"TempUnit\": \"C\"");
 	}
+#else
+	int Battery_lastreading(int type)
+	{
+		return 0;
+	}
 #endif
 
 	printer(request, "}");

@@ -242,6 +242,4 @@ commandResult_t RepeatingEvents_Cmd_ClearRepeatingEvents(const void* context, co
 commandResult_t CMD_resetSVM(const void* context, const char* cmd, const char* args, int cmdFlags);
 int RepeatingEvents_GetActiveCount();
 
-// battery public void 
-int Battery_lastreading();
 #endif // __CMD_PUBLIC_H__
