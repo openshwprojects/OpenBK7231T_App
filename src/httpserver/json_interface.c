@@ -180,7 +180,7 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 	energy_hour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
 
 	if (DRV_IsRunning("Battery")) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#if defined(PLATFORM_BEKEN)
 		voltage = Battery_lastreading(OBK_BATT_VOLTAGE) / 1000.00;
 		batterypercentage = Battery_lastreading(OBK_BATT_LEVEL);
 #endif
@@ -285,6 +285,7 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 	printer(request, "\"Time\":\"%s\"", buff);
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
+
 	if (DRV_IsMeasuringPower()) {
 
 		// begin ENERGY block
@@ -295,11 +296,6 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 	if (DRV_IsSensor()) {
 		http_tasmota_json_SENSOR(request, printer);
 		printer(request, "\"TempUnit\": \"C\"");
-	}
-#else
-	int Battery_lastreading(int type)
-	{
-		return 0;
 	}
 #endif
 
@@ -365,7 +361,7 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bA
 	printer(request, "\"Sleep\":10,");
 	printer(request, "\"LoadAvg\":99,");
 	printer(request, "\"MqttCount\":23,");
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#if defined(PLATFORM_BEKEN)
 	if (DRV_IsRunning("Battery")) {
 		printer(request, "\"Vcc\":%.4f,", Battery_lastreading(OBK_BATT_VOLTAGE) / 1000.00);
 	}

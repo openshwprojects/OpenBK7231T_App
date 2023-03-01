@@ -119,6 +119,8 @@ static driver_t g_drivers[] = {
 	{ "CHT8305",	CHT8305_Init,		CHT8305_OnEverySecond,		CHT8305_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, NULL, NULL, false },
 	{ "SHT3X",	    SHT3X_Init,		SHT3X_OnEverySecond,		SHT3X_AppendInformationToHTTPIndexPage, NULL, SHT3X_StopDriver, NULL, false },
+#endif
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	{ "Battery",	Batt_Init,		Batt_OnEverySecond,		Batt_AppendInformationToHTTPIndexPage, NULL, Batt_StopDriver, NULL, false },
 #endif
 	{ "Bridge",     Bridge_driver_Init, NULL,                       NULL, Bridge_driver_QuickFrame, Bridge_driver_DeInit, Bridge_driver_OnChannelChanged, false }
@@ -354,6 +356,13 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t* request) {
 }
 
 bool DRV_IsMeasuringPower() {
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	return DRV_IsRunning("BL0937") || DRV_IsRunning("BL0942") || DRV_IsRunning("CSE7766") || DRV_IsRunning("TESTPOWER") || DRV_IsRunning("Battery");
+#else
+	return false;
+#endif
+}
+bool DRV_IsMeasuring() {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	return DRV_IsRunning("BL0937") || DRV_IsRunning("BL0942") || DRV_IsRunning("CSE7766") || DRV_IsRunning("TESTPOWER") || DRV_IsRunning("Battery");
 #else
