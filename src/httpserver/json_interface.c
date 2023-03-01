@@ -178,6 +178,7 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 	power = DRV_GetReading(OBK_POWER);
 	energy = DRV_GetReading(OBK_CONSUMPTION_TOTAL);
 	energy_hour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
+
 	if (DRV_IsRunning("Battery")) {
 		voltage = Battery_lastreading(OBK_BATT_VOLTAGE) / 1000.00;
 		batterypercentage = Battery_lastreading(OBK_BATT_LEVEL);
@@ -358,9 +359,11 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bA
 	printer(request, "\"Sleep\":10,");
 	printer(request, "\"LoadAvg\":99,");
 	printer(request, "\"MqttCount\":23,");
+#ifndef OBK_DISABLE_ALL_DRIVERS
 	if (DRV_IsRunning("Battery")) {
 		printer(request, "\"Vcc\":%.4f,", Battery_lastreading(OBK_BATT_VOLTAGE) / 1000.00);
 	}
+#endif
 	http_tasmota_json_power(request, printer);
 	printer(request, ",");
 	printer(request, "\"Wifi\":{"); // open WiFi
