@@ -29,6 +29,8 @@ void DoorDeepSleep_Init() {
 }
 
 void DoorDeepSleep_OnEverySecond() {
+	int i;
+
 #if PLATFORM_BK7231N || PLATFORM_BK7231T
 	if (ota_progress() >= 0) {
 #else
@@ -38,8 +40,16 @@ void DoorDeepSleep_OnEverySecond() {
 		g_noChangeTimePassed = 0;
 		g_emergencyTimeWithNoConnection = 0;
 	} else if (Main_HasMQTTConnected() && Main_HasWiFiConnected()) {
+		//if (g_noChangeTimePassed < 4) {
+			for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+				if (g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep ||
+					g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_NoPup) {
+					MQTT_ChannelPublish(g_cfg.pins.channels[i], 0);
+				}
+			}
+		//}
 		g_noChangeTimePassed++;
-		if (g_noChangeTimePassed == setting_timeRequiredUntilDeepSleep) {
+		if (g_noChangeTimePassed >= setting_timeRequiredUntilDeepSleep) {
 			// start deep sleep in the next loop
 			// The deep sleep start will check for role: IOR_DoorSensorWithDeepSleep
 			// and for those pins, it will wake up on the pin change to opposite state

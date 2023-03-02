@@ -166,7 +166,7 @@ void wl_status(void* ctxt)
 {
 
 	rw_evt_type stat = *((rw_evt_type*)ctxt);
-	ADDLOGF_INFO("wl_status %d\r\n", stat);
+	//ADDLOGF_INFO("wl_status %d\r\n", stat);
 
 	switch (stat) {
 	case RW_EVT_STA_IDLE:

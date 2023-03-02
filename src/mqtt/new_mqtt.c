@@ -176,8 +176,6 @@ int get_received(char **topic, int *topiclen, unsigned char **data, int *datalen
 
 MqttPublishItem_t* g_MqttPublishQueueHead = NULL;
 int g_MqttPublishItemsQueued = 0;   //Items in the queue waiting to be published. This is not the queue length.
-OBK_Publish_Result PublishQueuedItems();
-OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags);
 
 // from mqtt.c
 extern void mqtt_disconnect(mqtt_client_t* client);
@@ -455,7 +453,9 @@ int MQTT_RegisterCallback(const char* basetopic, const char* subscriptiontopic, 
 	}
 
 	if (subscribechange) {
-		mqtt_reconnect = 8;
+		if (mqtt_client) {
+			mqtt_reconnect = 8;
+		}
 	}
 	// success
 	return 0;
@@ -477,7 +477,9 @@ int MQTT_RemoveCallback(int ID) {
 				}
 				os_free(callbacks[index]);
 				callbacks[index] = NULL;
-				mqtt_reconnect = 8;
+				if (mqtt_client) {
+					mqtt_reconnect = 8;
+				}
 				return 1;
 			}
 		}
@@ -579,11 +581,11 @@ int channelGet(obk_mqtt_request_t* request) {
 		return 0;
 	}
 
-MQTT_ChannelPublish(channel, 0);
+	MQTT_ChannelPublish(channel, 0);
 
-// return 1 to stop processing callbacks here.
-// return 0 to allow later callbacks to process this topic.
-return 1;
+	// return 1 to stop processing callbacks here.
+	// return 0 to allow later callbacks to process this topic.
+	return 1;
 }
 // this accepts obkXXXXXX/<chan>/set to receive data to set channels
 int channelSet(obk_mqtt_request_t* request) {
@@ -601,12 +603,12 @@ int channelSet(obk_mqtt_request_t* request) {
 		return 0;
 	}
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelSet part topic %s", p);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelSet part topic %s", p);
 
 	// atoi won't parse any non-decimal chars, so it should skip over the rest of the topic.
 	channel = atoi(p);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelSet channel %i", channel);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelSet channel %i", channel);
 
 	// if channel out of range, stop here.
 	if ((channel < 0) || (channel > 32)) {
@@ -1027,8 +1029,9 @@ static void mqtt_incoming_publish_cb(void* arg, const char* topic, u32_t tot_len
 static void mqtt_request_cb(void* arg, err_t err)
 {
 	const struct mqtt_connect_client_info_t* client_info = (const struct mqtt_connect_client_info_t*)arg;
-
-	addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "MQTT client \"%s\" request cb: err %d\n", client_info->client_id, (int)err);
+	if (err != 0) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "MQTT client \"%s\" request cb: err %d\n", client_info->client_id, (int)err);
+	}
 }
 
 /////////////////////////////////////////////
@@ -1869,6 +1872,7 @@ int MQTT_RunEverySecondUpdate()
 		return 0;
 	}
 	if (g_mqtt_bBaseTopicDirty) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT base topic is dirty, will reinit callbacks and reconnect\n");
 		MQTT_InitCallbacks();
 		mqtt_reconnect = 5;
 	}
@@ -1891,11 +1895,13 @@ int MQTT_RunEverySecondUpdate()
 	if (mqtt_reconnect > 0)
 	{
 		mqtt_reconnect--;
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT has pending reconnect in %i\n", mqtt_reconnect);
 		if (mqtt_reconnect == 0)
 		{
 			// then if connected, disconnect, and then it will reconnect automatically in 2s
 			if (mqtt_client && res)
 			{
+				addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT will now do a forced reconnect\n");
 				MQTT_disconnect(mqtt_client);
 				mqtt_loopsWithDisconnected = LOOPS_WITH_DISCONNECTED - 2;
 			}
@@ -2013,7 +2019,9 @@ int MQTT_RunEverySecondUpdate()
 					publishRes = MQTT_DoItemPublish(g_publishItemIndex);
 					if (publishRes != OBK_PUBLISH_WAS_NOT_REQUIRED)
 					{
-						addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "[g_bPublishAllStatesNow] item %i result %i\n", g_publishItemIndex, publishRes);
+						if (false) {
+							addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "[g_bPublishAllStatesNow] item %i result %i\n", g_publishItemIndex, publishRes);
+						}
 					}
 					// There are several things that can happen now
 					// OBK_PUBLISH_OK - it was required and was published

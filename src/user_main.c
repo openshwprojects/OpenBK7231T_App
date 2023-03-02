@@ -491,7 +491,9 @@ void Main_OnEverySecond()
 	}
 
 #ifdef OBK_MCU_SLEEP_METRICS_ENABLE
-	Main_LogPowerSave();
+	if (g_powersave && CFG_HasLoggerFlag(LOGGER_FLAG_POWER_SAVE)) {
+		Main_LogPowerSave();
+	}
 #endif
 
 

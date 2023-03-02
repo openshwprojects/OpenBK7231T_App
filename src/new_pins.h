@@ -265,6 +265,13 @@ typedef struct pinsState_s {
 
 #define OBK_TOTAL_FLAGS 38
 
+#define LOGGER_FLAG_MQTT_DEDUPER					1
+#define LOGGER_FLAG_POWER_SAVE						2
+#define LOGGER_FLAG_POWER_QQQ					3
+
+#define LOGGER_TOTAL_FLAGS 8
+
+
 
 #define CGF_MQTT_CLIENT_ID_SIZE			64
 #define CGF_SHORT_DEVICE_NAME_SIZE		32
@@ -387,10 +394,11 @@ typedef struct mainConfig_s {
 
 	// offset 0x000004BC
 	unsigned long LFS_Size; // szie of LFS volume.  it's aligned against the end of OTA
+	int loggerFlags;
 #if PLATFORM_W800
-	byte unusedSectorAB[71];
+	byte unusedSectorAB[67];
 #else    
-	byte unusedSectorAB[119];
+	byte unusedSectorAB[115];
 #endif    
 	ledRemap_t ledRemap;
 	led_corr_t led_corr;

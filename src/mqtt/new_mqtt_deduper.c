@@ -79,9 +79,10 @@ void MQTT_Dedup_Tick() {
 		}
 	}
 //	DD_Mutex_Free();
-	
-    ADDLOG_DEBUG(LOG_FEATURE_MQTT, "MQTT deduper sent %i, culled duplicates %i, culled too fast %i",
-		stat_deduper_send,stat_deduper_culled_duplicates,stat_deduper_culled_tooFast);
+	if (CFG_HasLoggerFlag(LOGGER_FLAG_MQTT_DEDUPER)) {
+		ADDLOG_DEBUG(LOG_FEATURE_MQTT, "MQTT deduper sent %i, culled duplicates %i, culled too fast %i",
+			stat_deduper_send, stat_deduper_culled_duplicates, stat_deduper_culled_tooFast);
+	}
 
 }
 OBK_Publish_Result MQTT_PublishMain_StringInt_DeDuped(int slotCode, int expireTime, const char* sChannel, int val, int flags) {
