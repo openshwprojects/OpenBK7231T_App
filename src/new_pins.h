@@ -267,7 +267,8 @@ typedef struct pinsState_s {
 
 #define LOGGER_FLAG_MQTT_DEDUPER					1
 #define LOGGER_FLAG_POWER_SAVE						2
-#define LOGGER_FLAG_POWER_QQQ					3
+#define LOGGER_FLAG_EVERY_SECOND_PRINT				3
+#define LOGGER_FLAG_PERIODIC_WIFI_INFO				4
 
 #define LOGGER_TOTAL_FLAGS 8
 
