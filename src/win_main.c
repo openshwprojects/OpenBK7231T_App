@@ -125,6 +125,7 @@ void SIM_DoFreshOBKBoot() {
 	Main_Init();
 }
 void Win_DoUnitTests() {
+	Test_Demo_ButtonScrollingChannelValues();
 	Test_CFG_Via_HTTP();
 	Test_Commands_Calendar();
 	Test_Commands_Generic();
@@ -194,7 +195,7 @@ int g_bDoingUnitTestsNow = 0;
 #include "sim/sim_public.h"
 int __cdecl main(int argc, char **argv)
 {
-	bool bWantsUnitTests = 0;
+	bool bWantsUnitTests = 1;
 
 	if (argc > 1) {
 		int value;
