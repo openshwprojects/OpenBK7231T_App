@@ -97,6 +97,9 @@ enum IORole {
 	IOR_BAT_ADC,
 	IOR_BAT_Relay,
 
+	IOR_TM1637_DIO,
+	IOR_TM1637_CLK,
+
 	IOR_Total_Options,
 };
 

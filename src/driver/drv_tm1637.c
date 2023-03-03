@@ -14,6 +14,7 @@
 #include "drv_tm1637.h"
 
 #define TM1637_DELAY 120
+#define TM1637_DOT 0x80
 
 static byte g_brightness;
 static byte g_digits[] = {
@@ -74,8 +75,9 @@ static void TM1637_SendSegments(const byte *segments, byte length, byte pos) {
 	int i;
 	softI2C_t i2c;
 
-	i2c.pin_clk = 24;
-	i2c.pin_data = 26;
+	i2c.pin_clk = PIN_FindPinIndexForRole(IOR_TM1637_CLK, 0);
+	i2c.pin_data = PIN_FindPinIndexForRole(IOR_TM1637_DIO, 0);
+
 	// set COM1
 	TM1637_Start(&i2c);
 	TM1637_WriteByte(&i2c, TM1637_I2C_COM1);
@@ -108,26 +110,41 @@ static int TM1637_MapCharacter(int ch) {
 		ret = 16;
 	return ret;
 }
-static void TM1637_PrintStringAt(const char *str, byte pos) {
+static void TM1637_PrintStringAt(const char *str, int pos, int maxLen) {
 	int i, len, idx;
-	if (tm1638_buffer == 0) {
-		tm1638_buffer = (byte*)malloc(TM1637_MAX_CHARS);
-	}
+	int tgIndex;
 	len = strlen(str);
+	if (len > maxLen)
+		len = maxLen;
 	if (len > TM1637_MAX_CHARS)
 		len = TM1637_MAX_CHARS;
+	tgIndex = pos;
 	for (i = 0; i < len; i++) {
+		if (str[i] == '.') {
+			if (tgIndex - 1 >= 0) {
+				tm1638_buffer[g_remap[tgIndex - 1]] |= TM1637_DOT;
+			}
+			continue;
+		}
 		idx = TM1637_MapCharacter(str[i]);
 		if (idx >= g_numDigits) {
 			idx = g_numDigits - 1;
 		} else if (idx < 0) {
 			idx = 0;
 		}
-		tm1638_buffer[g_remap[i]] = g_digits[idx];
+		tm1638_buffer[g_remap[tgIndex]] = g_digits[idx];
+		tgIndex++;
 	}
-	TM1637_SendSegments(tm1638_buffer, len, pos);
+	TM1637_SendSegments(tm1638_buffer, TM1637_MAX_CHARS, 0);
 }
 
+static commandResult_t CMD_TM1637_Clear(const void *context, const char *cmd, const char *args, int flags) {
+	memset(tm1638_buffer, 0x00, TM1637_MAX_CHARS);
+
+	TM1637_SendSegments(tm1638_buffer, TM1637_MAX_CHARS, 0);
+
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_TM1637_Test(const void *context, const char *cmd, const char *args, int flags) {
 	byte segments[8];
 	int i;
@@ -142,18 +159,35 @@ static commandResult_t CMD_TM1637_Test(const void *context, const char *cmd, con
 
 static commandResult_t CMD_TM1637_Print(const void *context, const char *cmd, const char *args, int flags) {
 	int ofs;
+	int maxLen;
 	const char *s;
 
 	Tokenizer_TokenizeString(args, 0);
 
-	if (Tokenizer_GetArgsCount() <= 1) {
+	if (Tokenizer_GetArgsCount() <= 2) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
 	ofs = Tokenizer_GetArgInteger(0);
-	s = Tokenizer_GetArg(1);
+	maxLen = Tokenizer_GetArgInteger(1);
+	s = Tokenizer_GetArg(2);
 
-	TM1637_PrintStringAt(s, ofs);
+	if (maxLen <= 0) {
+		maxLen = 999;
+	}
+	TM1637_PrintStringAt(s, ofs, maxLen);
+
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_TM1637_Map(const void *context, const char *cmd, const char *args, int flags) {
+	int i;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	for (i = 0; i < Tokenizer_GetArgsCount(); i++) {
+		g_remap[i] = Tokenizer_GetArgInteger(i);
+
+	}
 
 	return CMD_RES_OK;
 }
@@ -177,13 +211,26 @@ static commandResult_t CMD_TM1637_Brightness(const void *context, const char *cm
 	return CMD_RES_OK;
 }
 // backlog startDriver TM1637; TM1637_Test
-// backlog startDriver TM1637; TM1637_Print 0 123456
+// backlog startDriver TM1637; TM1637_Print 0 0 123456
 // backlog TM1637_Brightness 5; TM1637_Test
+// test print offset
+// backlog TM1637_Clear; TM1637_Print 0 0 1
+// backlog TM1637_Clear; TM1637_Print 1 0 2
+// backlog TM1637_Clear; TM1637_Print 2 0 3
+// backlog TM1637_Clear; TM1637_Print 3 0 4
+// backlog TM1637_Clear; TM1637_Print 4 0 5
+// backlog TM1637_Clear; TM1637_Print 5 0 6
 void TM1637_Init() {
+	if (tm1638_buffer == 0) {
+		tm1638_buffer = (byte*)malloc(TM1637_MAX_CHARS);
+		memset(tm1638_buffer, 0, TM1637_MAX_CHARS);
+	}
 
 	TM1637_SetBrightness(0x0f, true);
 
+	CMD_RegisterCommand("TM1637_Clear", CMD_TM1637_Clear, NULL);
 	CMD_RegisterCommand("TM1637_Print", CMD_TM1637_Print, NULL);
 	CMD_RegisterCommand("TM1637_Test", CMD_TM1637_Test, NULL);
 	CMD_RegisterCommand("TM1637_Brightness", CMD_TM1637_Brightness, NULL);
+	CMD_RegisterCommand("TM1637_Map", CMD_TM1637_Map, NULL);
 }

@@ -445,6 +445,12 @@ const char* htmlPinRoleNames[] = {
 	"DoorSnsrWSleep_nPup",
 	"BAT_ADC",
 	"BAT_Relay",
+	"TM1637_DIO",
+	"TM1637_CLK",
+	"error",
+	"error",
+	"error",
+	"error",
 	"error",
 };
 
