@@ -13,8 +13,6 @@
 
 #include "drv_tm1637.h"
 
-#define TM1637_DELAY 120
-#define TM1637_DOT 0x80
 
 static byte g_brightness;
 static byte g_digits[] = {
@@ -116,10 +114,10 @@ static void TM1637_PrintStringAt(const char *str, int pos, int maxLen) {
 	len = strlen(str);
 	if (len > maxLen)
 		len = maxLen;
-	if (len > TM1637_MAX_CHARS)
-		len = TM1637_MAX_CHARS;
 	tgIndex = pos;
 	for (i = 0; i < len; i++) {
+		if (tgIndex >= TM1637_MAX_CHARS)
+			break;
 		if (str[i] == '.') {
 			if (tgIndex - 1 >= 0) {
 				tm1638_buffer[g_remap[tgIndex - 1]] |= TM1637_DOT;
