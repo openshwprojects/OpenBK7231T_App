@@ -47,7 +47,6 @@ void BP1658CJ_Write(float *rgbcw) {
 		Soft_I2C_WriteByte(&g_softI2C, BP1658CJ_SUBADDR);
 	}
 	else {
-		Soft_I2C_WriteByte(&g_softI2C, BP1658CJ_SUBADDR-1);
 		Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(g_currentRGB << 4 | g_currentCW));
 	}
 	// Brigtness values are transmitted as two bytes. The light-bulb accepts a 10-bit integer (0-1023) as an input value.
