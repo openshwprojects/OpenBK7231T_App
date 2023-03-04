@@ -28,7 +28,7 @@ static byte *tm1638_buffer = 0;
 static void TM1637_Start(softI2C_t *i2c) {
 	HAL_PIN_Setup_Output(i2c->pin_data);
 	HAL_PIN_Setup_Output(i2c->pin_clk);
-	HAL_PIN_SetOutputValue(i2c->pin_clk, true);//send start signal to TM1637
+	HAL_PIN_SetOutputValue(i2c->pin_clk, true);
 	HAL_PIN_SetOutputValue(i2c->pin_data, true);
 	HAL_PIN_SetOutputValue(i2c->pin_data, 0);
 	HAL_PIN_SetOutputValue(i2c->pin_clk, 0);
@@ -206,6 +206,8 @@ static commandResult_t CMD_TM1637_Brightness(const void *context, const char *cm
 
 	TM1637_SetBrightness(br, bOn);
 
+	TM1637_SendSegments(tm1638_buffer, TM1637_MAX_CHARS, 0);
+
 	return CMD_RES_OK;
 }
 // backlog startDriver TM1637; TM1637_Test
@@ -218,6 +220,47 @@ static commandResult_t CMD_TM1637_Brightness(const void *context, const char *cm
 // backlog TM1637_Clear; TM1637_Print 3 0 4
 // backlog TM1637_Clear; TM1637_Print 4 0 5
 // backlog TM1637_Clear; TM1637_Print 5 0 6
+/*
+
+startDriver TM1637
+TM1637_Print 0 0 123456
+
+again:
+addChannel 10 1 0 15 1
+TM1637_Brightness $CH10
+delay_s 0.1
+goto again
+
+*/
+/*
+
+startDriver TM1637
+TM1637_Print 0 0 123456
+
+setChannel 10 100000
+again:
+addChannel 10 1
+TM1637_Print 0 0 $CH10
+delay_s 0.25
+goto again
+
+
+*/
+/*
+
+startDriver TM1637
+TM1637_Clear
+
+setChannel 10 12
+setChannel 11 123
+again:
+addChannel 10 1
+addChannel 11 3
+TM1637_Print 0 2 $CH10
+TM1637_Print 3 3 $CH11
+delay_s 0.5
+goto again
+*/
 void TM1637_Init() {
 	if (tm1638_buffer == 0) {
 		tm1638_buffer = (byte*)malloc(TM1637_MAX_CHARS);
