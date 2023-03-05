@@ -232,8 +232,9 @@ const constant_t g_constants[] = {
 	{"$current", &getCurrent},
 	{"$power", &getPower},
 #endif
-	{NULL, NULL}
 };
+static int g_totalConstants = sizeof(g_constants) / sizeof(g_constants[0]);
+
 // tries to expand a given string into a constant
 // So, for $CH1 it will set out to given channel value
 // For $led_dimmer it will set out to current led_dimmer value
@@ -242,7 +243,9 @@ const constant_t g_constants[] = {
 // Returns false if no constants found
 const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
 	const constant_t *var;
-	for (var = g_constants; var->constantName; ++var) {
+	int i;
+	var = g_constants;
+	for (i = 0; i < g_totalConstants; i++, var++) {
 		bool bAllowWildCard = strstr(var->constantName, "*");
 		const char *ret = strCompareBound(s, var->constantName, stop, bAllowWildCard);
 		if (ret) {
