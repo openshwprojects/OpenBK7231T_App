@@ -3,7 +3,7 @@
 #include "new_common.h"
 
 
-enum IORole {
+typedef enum ioRole_e {
 	IOR_None,
 	IOR_Relay,
 	IOR_Relay_n,
@@ -101,7 +101,7 @@ enum IORole {
 	IOR_TM1637_CLK,
 
 	IOR_Total_Options,
-};
+} ioRole_t;
 
 #define IS_PIN_DHT_ROLE(role) (((role)>=IOR_DHT11) && ((role)<=IOR_DHT22))
 #define IS_PIN_TEMP_HUM_SENSOR_ROLE(role) (((role)==IOR_SHT3X_DAT) || ((role)==IOR_CHT8305_DAT))
