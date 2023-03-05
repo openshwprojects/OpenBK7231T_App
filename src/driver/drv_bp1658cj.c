@@ -43,6 +43,9 @@ void BP1658CJ_Write(float *rgbcw) {
 	Soft_I2C_Start(&g_softI2C, BP1658CJ_ADDR_OUT);
 
 	// The First Byte is the Subadress
+	// OSHW update: no, it seems those are current values
+	// 4 bits for CW and 4 bits for RGB
+	// Our contributor was wrong
 	if (g_currentRGB == 00 && g_currentCW == 0) {
 		Soft_I2C_WriteByte(&g_softI2C, BP1658CJ_SUBADDR);
 	}
