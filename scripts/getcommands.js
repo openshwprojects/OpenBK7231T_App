@@ -6,6 +6,8 @@ let channels = [];
 let chanindex = {};
 let ios = [];
 let ioindex = {};
+let drvs = [];
+let drvindex = {};
 
 let inFile = 0;
 
@@ -89,6 +91,7 @@ function getFolder(name, cb){
 
                                 let chan = {
                                     name: chanName,
+                                    title: chanName,
                                     descr: mytrim("TODO"),
                                     enum: "ChType_"+chanName,
                                     file: file.slice(6),
@@ -101,6 +104,8 @@ function getFolder(name, cb){
                                     // it did not have a doc line before
                                     let json = JSON.stringify(chan);
                                     // insert CR at "fn":
+                                    json = json.split('"title":');
+                                    json = json.join('\n"title":');
                                     json = json.split('"descr":');
                                     json = json.join('\n"descr":');
                                     json = json.split('"enum":');
@@ -173,6 +178,7 @@ function getFolder(name, cb){
 
                                 let io = {
                                     name: ioName,
+                                    title: ioName,
                                     descr: mytrim("TODO"),
                                     enum: "IOR_" + ioName,
                                     file: file.slice(6),
@@ -184,6 +190,8 @@ function getFolder(name, cb){
                                     // it did not have a doc line before
                                     let json = JSON.stringify(io);
                                     // insert CR at "fn":
+                                    json = json.split('"title":');
+                                    json = json.join('\n"title":');
                                     json = json.split('"descr":');
                                     json = json.join('\n"descr":');
                                     json = json.split('"enum":');
@@ -210,7 +218,97 @@ function getFolder(name, cb){
                         }
                         i = j;
                     }
-                    if (line.startsWith('//cmddetail:')){
+                    if (sourceFile && line.startsWith('static driver_t g_drivers[] = {')) {
+                        newlines.push(lines[i]);
+                        let j;
+                        for (j = i; j < lines.length; j++) {
+                            let line2raw = lines[j];
+                            let line2 = line2raw.trim();
+                            if (line2.startsWith('//drvdetail:')) {
+                                let commentlines = [];
+                                let j2;
+                                for (j2 = j; j2 < lines.length; j2++) {
+                                    let l = lines[j2].trim();
+                                    if (l.startsWith('//drvdetail:')) {
+                                        l = l.slice('//drvdetail:'.length);
+                                        commentlines.push(l);
+                                        newlines.push(lines[j2]);
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                // move our parsing forward to skip all found
+                                j = j2;
+                                let json = commentlines.join('\n');
+                                try {
+                                    let drv = JSON.parse(json);
+                                    if (drvindex[drv.name]) {
+                                        console.error('duplicate command docs at file: ' + file + ' line: ' + line);
+                                        console.error(line);
+                                    } else {
+                                        drvs.push(drv);
+                                        drvindex[drv.name] = drv;
+                                    }
+                                } catch (e) {
+                                    console.error('error in json at file: ' + file + ' line: ' + line + ' er ' + e);
+                                    console.error(json);
+                                }
+                            } else if (line2.startsWith('//')) {
+                                newlines.push(line2);
+                                continue;
+                            } else if (line2.startsWith('#')) {
+                                newlines.push(line2);
+                                continue;
+                            } else {
+                              //  console.log("line2 name: " + line2);
+                                const regex = /"([^"]+)"/; // This regular expression matches anything between quotes, but excludes the quotes themselves
+                                const startQuote = line2.indexOf('"') + 1; // Find the index of the first double-quote and add 1 to skip over it
+                                const endQuote = line2.indexOf('"', startQuote); // Find the index of the second double-quote starting from the first double-quote index
+                                let drvName = line2.substring(startQuote, endQuote); // Extract the substring between the first and second double-quotes
+
+                                if (endQuote != -1) {
+                                    // drvName = drvName.replace(/,$/, "");
+
+                                    console.log("drv type name: " + drvName);
+
+                                    let drv = {
+                                        name: drvName,
+                                        title: drvName,
+                                        descr: mytrim("TODO"),
+                                        requires: mytrim(""),
+                                    };
+
+
+                                    if (!drvindex[drv.name]) {
+                                        // it did not have a doc line before
+                                        let json = JSON.stringify(drv);
+                                        // insert CR at "fn":
+                                        json = json.split('"title":');
+                                        json = json.join('\n"title":');
+                                        json = json.split('"descr":');
+                                        json = json.join('\n"descr":');
+                                        json = json.split('"requires":');
+                                        json = json.join('\n"requires":');
+                                        let jsonlines = json.split('\n');
+                                        for (let j = 0; j < jsonlines.length; j++) {
+                                            jsonlines[j] = '\t//drvdetail:' + jsonlines[j];
+                                        }
+                                        newlines.push(...jsonlines);
+                                        modified++;
+                                        drvs.push(drv);
+                                        drvindex[drv.name] = drv;
+                                    }
+                                    newlines.push(lines[j]);
+                                }
+                            }
+                            if (line2.endsWith('};')) {
+                                //newlines.push(line2raw);
+                                break;
+                            }
+                        }
+                        i = j;
+                    }
+                    if (sourceFile && line.startsWith('//cmddetail:')){
                         let commentlines = [];
                         let j;
                         for (j = i; j < lines.length; j++){
@@ -244,7 +342,7 @@ function getFolder(name, cb){
                     // i may have changed...
                     line = lines[i].trim();
 
-                    if (line.startsWith('CMD_RegisterCommand(')){
+                    if (sourceFile && line.startsWith('CMD_RegisterCommand(')){
                         line = line.slice('CMD_RegisterCommand('.length);
                         parts = line.split(',');
                         //cmddetail:{"name":"SetChannel", "args":"TODO", "fn":"CMD_SetChannel", "descr":"qqqqq0", "example":"", "file":"");
