@@ -2,6 +2,8 @@ let fs = require('fs');
 
 let commands = [];
 let cmdindex = {};
+let channels = [];
+let chanindex = {};
 
 let inFile = 0;
 
@@ -23,8 +25,9 @@ function getFolder(name, cb){
         if (s.isDirectory()){
             getFolder(file, cb);
         } else {
-            if (file.toLowerCase().endsWith('.c') || 
-                file.toLowerCase().endsWith('.cpp')){
+            let sourceFile = file.toLowerCase().endsWith('.c') || file.toLowerCase().endsWith('.cpp');
+            let headerFile = file.toLowerCase().endsWith('.h');
+            if (sourceFile || headerFile) {
                 inFile++;
                 //console.log('file:'+file);
                 let data = fs.readFileSync(file);
@@ -35,6 +38,85 @@ function getFolder(name, cb){
                 for (let i = 0; i < lines.length; i++){
                     let line = lines[i].trim();
                     // like CMD_RegisterCommand("SetChannel", "", CMD_SetChannel, "qqqqq0", NULL);
+
+                    //parse enum starting with "typedef enum channelType_e {"
+                    if (headerFile && line.startsWith('typedef enum channelType_e {')) {
+                        let j;
+                        for (j = i; j < lines.length; j++) {
+                            let line2 = lines[j].trim();
+                            if (line2.startsWith('//')) {
+                                continue;
+                            }
+                            if (line2.startsWith('//chandetail:')) {
+                             /*   let commentlines = [];
+                                let j;
+                                for (j = i; j < lines.length; j++) {
+                                    let l = lines[j].trim();
+                                    if (l.startsWith('//chandetail:')) {
+                                        l = l.slice(12);
+                                        commentlines.push(l);
+                                        newlines.push(lines[j]);
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                // move our parsing forward to skip all found
+                                i = j;
+                                let json = commentlines.join('\n');
+                                try {
+                                    let cmd = JSON.parse(json);
+                                    if (cmdindex[cmd.name]) {
+                                        console.error('duplicate command docs at file: ' + file + ' line: ' + line);
+                                        console.error(line);
+                                    } else {
+                                        commands.push(cmd);
+                                        cmdindex[cmd.name] = cmd;
+                                    }
+                                } catch (e) {
+                                    console.error('error in json at file: ' + file + ' line: ' + line);
+                                    console.error(json);
+                                }
+                            */
+                            } else if (line2.startsWith("ChType_")) {
+                                let chanName = line2.substr("ChType_".length);
+                                chanName = chanName.replace(/,$/, "");
+
+                                console.log("Channel type name: " + chanName);
+
+                                let chan = {
+                                    name: chanName,
+                                    descr: mytrim("TODO"),
+                                    enum: "ChType_"+chanName,
+                                    file: file.slice(6),
+                                };
+
+
+                                if (!chanindex[chan.name]) {
+                                    // it did not have a doc line before
+                                    let json = JSON.stringify(chan);
+                                    // insert CR at "fn":
+                                  /*  json = json.split('"descr":');
+                                    json = json.join('\n"descr":');
+                                    json = json.split('"fn":');
+                                    json = json.join('\n"fn":');
+                                    json = json.split('"examples":');
+                                    json = json.join('\n"examples":');
+                                    let jsonlines = json.split('\n');
+                                    for (let j = 0; j < jsonlines.length; j++) {
+                                        jsonlines[j] = '\t//cmddetail:' + jsonlines[j];
+                                    }
+                                    newlines.push(...jsonlines);
+                                    modified++;
+                                    commands.push(cmd);
+                                    cmdindex[cmd.name] = cmd;*/
+                                }
+                            }
+                            if (line2.endsWith('};')) {
+                                break;
+                            }
+                        }
+                        i = j;
+                    }
                     if (line.startsWith('//cmddetail:')){
                         let commentlines = [];
                         let j;
@@ -185,6 +267,8 @@ for (let i = 0; i < commands.length; i++){
 mdshort += '\n';
 mdlong += '\n';
 
+fs.writeFileSync('docs/json/commands.json', JSON.stringify(commands, null, 2));
+console.log('wrote json/commands.json');
 fs.writeFileSync('docs/commands.md', mdshort);
 console.log('wrote commands.md');
 fs.writeFileSync('docs/commands-extended.md', mdlong);

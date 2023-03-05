@@ -106,7 +106,7 @@ enum IORole {
 #define IS_PIN_DHT_ROLE(role) (((role)>=IOR_DHT11) && ((role)<=IOR_DHT22))
 #define IS_PIN_TEMP_HUM_SENSOR_ROLE(role) (((role)==IOR_SHT3X_DAT) || ((role)==IOR_CHT8305_DAT))
 
-typedef enum {
+typedef enum channelType_e {
 	ChType_Default,
 	ChType_Error,
 	ChType_Temperature,
@@ -152,7 +152,7 @@ typedef enum {
 	ChType_OffDimBright,
 
 	ChType_Max,
-} ChannelType;
+} channelType_t;
 
 
 #if PLATFORM_BL602
@@ -462,7 +462,7 @@ float CHANNEL_GetFloat(int ch);
 int CHANNEL_GetRoleForOutputChannel(int ch);
 bool CHANNEL_HasRoleThatShouldBePublished(int ch);
 bool CHANNEL_IsPowerRelayChannel(int ch);
-// See: enum ChannelType
+// See: enum channelType_t
 void CHANNEL_SetType(int ch, int type);
 int CHANNEL_GetType(int ch);
 void CHANNEL_SetAllChannelsByType(int requiredType, int newVal);
