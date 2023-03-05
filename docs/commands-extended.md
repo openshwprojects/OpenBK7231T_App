@@ -10,7 +10,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | AddChannel | [ChannelIndex][ValueToAdd][ClampMin][ClampMax][bWrapInsteadOfClamp] | Adds a given value to the channel. Can be used to change PWM brightness. Clamp min and max arguments are optional. | File: cmnds/cmd_channels.c<br/>Function: CMD_AddChannel |
 | ClampChannel | [ChannelIndex][Min][Max] | Clamps given channel value to a range. | File: cmnds/cmd_channels.c<br/>Function: CMD_ClampChannel |
 | SetPinRole | [PinRole][RoleIndexOrName] | This allows you to set a pin role, for example a Relay role, or Button, etc. Usually it's easier to do this through WWW panel, so you don't have to use this command. | File: cmnds/cmd_channels.c<br/>Function: CMD_SetPinRole |
-| SetPinChannel | [PinRole][ChannelIndex] | This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command. | File: cmnds/cmd_channels.c<br/>Function: CMD_SetPinChannel |
+| SetPinChannel | [PinIndex][ChannelIndex] | This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command. | File: cmnds/cmd_channels.c<br/>Function: CMD_SetPinChannel |
 | GetChannel | [ChannelIndex] | Prints given channel value to console. | File: cmnds/cmd_channels.c<br/>Function: CMD_GetChannel |
 | GetReadings |  | Prints voltage etc readings to console. | File: cmnds/cmd_channels.c<br/>Function: CMD_GetReadings |
 | ShortName | [Name] | Sets the short name of the device. | File: cmnds/cmd_channels.c<br/>Function: CMD_ShortName |
@@ -20,6 +20,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | FullBootTime | [Value] | Sets time in seconds after which boot is marked as valid. This is related to emergency AP mode which is enabled by powering on/off device 5 times quickly. | File: cmnds/cmd_channels.c<br/>Function: CMD_FullBootTime |
 | SetChannelLabel | [ChannelIndex][Str] | Sets a channel label for UI. | File: cmnds/cmd_channels.c<br/>Function: CMD_SetChannelLabel |
 | MapRanges | [TargetChannel][InputValue][RangeVal0][RangeVal1][RangeValN] | This will set given channel to an index showing where given input value is within given range sections. For example, MapRanges 10 0.5 0.3 0.6 0.9 will set channel 10 to 1 because 0.5 value is between 0.3 and 0.6 | File: cmnds/cmd_channels.c<br/>Function: CMD_MapRanges |
+| Map | [TargetChannel][InputValue][InMin][InMax][OutMin][OutMax] | qqq | File: cmnds/cmd_channels.c<br/>Function: CMD_Map |
 | SetChannelVisible |  | NULL | File: cmnds/cmd_channels.c<br/>Function: CMD_SetChannelVisible |
 | AddEventHandler | [EventName][EventArgument][CommandToRun] | This can be used to trigger an action on a button click, long press, etc | File: cmnds/cmd_eventHandlers.c<br/>Function: CMD_AddEventHandler |
 | AddChangeHandler | [Variable][Relation][Constant][Command] | This can listen to change in channel value (for example channel 0 becoming 100), or for a voltage/current/power change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be 'Power', or 'Current' or 'Voltage' | File: cmnds/cmd_eventHandlers.c<br/>Function: CMD_AddChangeHandler |
@@ -41,6 +42,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | flags | [IntegerValue] | Sets the device flags | File: cmnds/cmd_main.c<br/>Function: CMD_Flags |
 | ClearNoPingTime |  | Command for ping watchdog; it sets the 'time since last ping reply' to 0 again | File: cmnds/cmd_main.c<br/>Function: CMD_ClearNoPingTime |
 | SetStartValue | [Channel][Value] | Sets the startup value for a channel. Used for start values for relays. Use 1 for High, 0 for low and -1 for 'remember last state' | File: cmnds/cmd_main.c<br/>Function: CMD_SetStartValue |
+| OpenAP |  | Temporarily disconnects from programmed WiFi network and opens Access Point | File: cmnds/cmd_main.c<br/>Function: CMD_OpenAP |
+| SafeMode |  | Forces device reboot into safe mode (open ap with disabled drivers) | File: cmnds/cmd_main.c<br/>Function: CMD_SafeMode |
 | led_dimmer | [Value] | set output dimmer 0..100 | File: cmnds/cmd_newLEDDriver.c<br/>Function: dimmer |
 | Dimmer | [Value] | Alias for led_dimmer | File: cmnds/cmd_newLEDDriver.c<br/>Function: dimmer |
 | add_dimmer | [Value][AddMode] | Adds a given value to current LED dimmer. AddMode 0 just adds a value (with a clamp to [0,100]), AddMode 1 will wrap around values (going under 0 goes to 100, going over 100 goes to 0), AddMode 2 will ping-pong value (going to 100 starts going back from 100 to 0, and again, going to 0 starts going up). | File: cmnds/cmd_newLEDDriver.c<br/>Function: add_dimmer |
@@ -98,7 +101,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | lfs_test1 | [FileName] | Tests the LFS file reading feature. | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_lfs_test1 |
 | lfs_test2 | [FileName] | Tests the LFS file reading feature. | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_lfs_test2 |
 | lfs_test3 | [FileName] | Tests the LFS file reading feature. | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_lfs_test3 |
-| Battery_Setup | [int][int][float][int][int] | measure battery based on ADC args minbatt and maxbatt in mv. optional Vref(default 2400), ADC bits(4096) and  V_divider(2) <br/>e.g.:Battery_Setup 1500 3000 2400 4096 2 | File: drv/drv_battery.c<br/>Function: Battery_Setup |
+| Battery_Setup | [int][int][float][int][int] | measure battery based on ADC args minbatt and maxbatt in mv. optional V_divider(2), Vref(default 2400) and ADC bits(4096) and   <br/>e.g.:Battery_Setup 1500 3000 2 2400 4096 | File: drv/drv_battery.c<br/>Function: Battery_Setup |
 | Battery_cycle | [int] | change cycle of measurement by default every 10 seconds<br/>e.g.:Battery_Setup 60 | File: drv/drv_battery.c<br/>Function: Battery_cycle |
 | PowerSet |  | Sets current power value for calibration | File: driver/drv_bl0937.c<br/>Function: BL0937_PowerSet |
 | VoltageSet |  | Sets current V value for calibration | File: driver/drv_bl0937.c<br/>Function: BL0937_VoltageSet |
@@ -112,6 +115,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | ConsumptionThresold | [FloatValue] | Setup value for automatic save of consumption data [1..100] | File: driver/drv_bl_shared.c<br/>Function: BL09XX_SetupConsumptionThreshold |
 | BP1658CJ_RGBCW | [HexColor] | Don't use it. It's for direct access of BP1658CJ driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb | File: driver/drv_bp1658cj.c<br/>Function: BP1658CJ_RGBCW |
 | BP1658CJ_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP1658CJ channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: BP1658CJ_Map 0 1 2 3 4 | File: driver/drv_bp1658cj.c<br/>Function: BP1658CJ_Map |
+| BP1658CJ_Current | [MaxCurrentRGB][MaxCurrentCW] | Sets the maximum current limit for BP1658CJ driver | File: driver/drv_bp1658cj.c<br/>Function: BP1658CJ_Current |
 | BP5758D_RGBCW | [HexColor] | Don't use it. It's for direct access of BP5758D driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb | File: driver/drv_bp5758d.c<br/>Function: BP5758D_RGBCW |
 | BP5758D_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP5758D channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: BP5758D_Map 0 1 2 3 4 | File: driver/drv_bp5758d.c<br/>Function: BP5758D_Map |
 | BP5758D_Current | [MaxCurrent] | Sets the maximum current limit for BP5758D driver | File: driver/drv_bp5758d.c<br/>Function: BP5758D_Current |
@@ -121,6 +125,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | setButtonLabel | [ButtonIndex][Label] | Sets the label of custom scriptable HTTP page button | File: driver/drv_httpButtons.c<br/>Function: CMD_setButtonLabel |
 | setButtonEnabled | [ButtonIndex][1or0] | Sets the visibility of custom scriptable HTTP page button | File: driver/drv_httpButtons.c<br/>Function: CMD_setButtonEnabled |
 | IRSend | [PROT-ADDR-CMD-REP] | Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0 | File: driver/drv_ir.cpp<br/>Function: IR_Send_Cmd |
+| IRAC | IR_AC_Cmd |  | File: driver/drv_ir.cpp<br/>Function: NULL); |
 | IREnable | [Str][1or0] | Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol | File: driver/drv_ir.cpp<br/>Function: IR_Enable |
 | startDriver | [DriverName] | Starts driver | File: driver/drv_main.c<br/>Function: DRV_Start |
 | stopDriver | [DriverName] | Stops driver | File: driver/drv_main.c<br/>Function: DRV_Stop |
@@ -136,6 +141,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | toggler_set | [Value] | Sets the VALUE of given output. Handles toggler_set0, toggler_set1, etc. The last digit after command name is changed to slot index. | File: driver/drv_pwmToggler.c<br/>Function: Toggler_SetX |
 | toggler_channel | [ChannelIndex] | handles toggler_channel0, toggler_channel1. Sets channel linked to given toggler slot. | File: driver/drv_pwmToggler.c<br/>Function: Toggler_ChannelX |
 | toggler_name |  | Handles toggler_name0, toggler_name1, etc. Sets the name of a toggler for GUI. | File: driver/drv_pwmToggler.c<br/>Function: Toggler_NameX |
+| SHT_cycle | [int] | change cycle of measurement by default every 10 seconds 0 to deactivate<br/>e.g.:SHT_Cycle 60 | File: drv/drv_sht3x.c<br/>Function: SHT_cycle |
 | SHT_Calibrate |  | Calibrate the SHT Sensor as Tolerance is +/-2 degrees C.<br/>e.g.:SHT_Calibrate -4 10 | File: driver/drv_sht3x.c<br/>Function: SHT3X_Calibrate |
 | SHT_MeasurePer |  | Retrieve Periodical measurement for SHT<br/>e.g.:SHT_Measure | File: driver/drv_sht3x.c<br/>Function: SHT3X_MeasurePer |
 | SHT_LaunchPer | [msb][lsb] | Launch/Change periodical capture for SHT Sensor<br/>e.g.:SHT_LaunchPer 0x23 0x22 | File: driver/drv_sht3x.c<br/>Function: SHT3X_ChangePer |
@@ -162,6 +168,11 @@ Do not add anything here, as it will overwritten with next rebuild.
 | DGR_SendRGBCW | [GroupName][HexRGBCW] | Sends a RGBCW message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. | File: driver/drv_tasmotaDeviceGroups.c<br/>Function: CMD_DGR_SendRGBCW |
 | DGR_SendFixedColor | [GroupName][TasColorIndex] | Sends a FixedColor message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. | File: driver/drv_tasmotaDeviceGroups.c<br/>Function: CMD_DGR_SendFixedColor |
 | SetupTestPower |  | NULL | File: driver/drv_test_drivers.c<br/>Function: TestPower_Setup |
+| TM1637_Clear | CMD_TM1637_Clear |  | File: driver/drv_tm1637.c<br/>Function: NULL); |
+| TM1637_Print | CMD_TM1637_Print |  | File: driver/drv_tm1637.c<br/>Function: NULL); |
+| TM1637_Test | CMD_TM1637_Test |  | File: driver/drv_tm1637.c<br/>Function: NULL); |
+| TM1637_Brightness | CMD_TM1637_Brightness |  | File: driver/drv_tm1637.c<br/>Function: NULL); |
+| TM1637_Map | CMD_TM1637_Map |  | File: driver/drv_tm1637.c<br/>Function: NULL); |
 | tuyaMcu_testSendTime |  | Sends a example date by TuyaMCU to clock/callendar MCU | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_Send_SetTime_Example |
 | tuyaMcu_sendCurTime |  | Sends a current date by TuyaMCU to clock/callendar MCU. Time is taken from NTP driver, so NTP also should be already running. | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_Send_SetTime_Current |
 | linkTuyaMCUOutputToChannel | [dpId][varType][channelID] | Used to map between TuyaMCU dpIDs and our internal channels. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_LinkTuyaMCUOutputToChannel |

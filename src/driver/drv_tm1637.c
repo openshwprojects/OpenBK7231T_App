@@ -269,9 +269,29 @@ void TM1637_Init() {
 
 	TM1637_SetBrightness(0x0f, true);
 
+	//cmddetail:{"name":"TM1637_Clear","args":"CMD_TM1637_Clear",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TM1637_Clear", CMD_TM1637_Clear, NULL);
+	//cmddetail:{"name":"TM1637_Print","args":"CMD_TM1637_Print",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TM1637_Print", CMD_TM1637_Print, NULL);
+	//cmddetail:{"name":"TM1637_Test","args":"CMD_TM1637_Test",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TM1637_Test", CMD_TM1637_Test, NULL);
+	//cmddetail:{"name":"TM1637_Brightness","args":"CMD_TM1637_Brightness",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TM1637_Brightness", CMD_TM1637_Brightness, NULL);
+	//cmddetail:{"name":"TM1637_Map","args":"CMD_TM1637_Map",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TM1637_Map", CMD_TM1637_Map, NULL);
 }
