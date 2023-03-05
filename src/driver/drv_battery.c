@@ -66,7 +66,6 @@ commandResult_t Battery_Setup(const void* context, const char* cmd, const char* 
 		ADDLOG_INFO(LOG_FEATURE_DRV, "Battery Setup : need at least min and max battery args");
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	//cmddetail:"descr":"measure battery based on ADC args minbatt and maxbatt in mv. optional Vref(default 2400), ADC bits(4096) and  V_divider(2) ",
 
 	g_minbatt = Tokenizer_GetArgFloat(0);
 	g_maxbatt = Tokenizer_GetArgFloat(1);
