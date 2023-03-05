@@ -4,6 +4,8 @@ let commands = [];
 let cmdindex = {};
 let channels = [];
 let chanindex = {};
+let ios = [];
+let ioindex = {};
 
 let inFile = 0;
 
@@ -46,17 +48,13 @@ function getFolder(name, cb){
                         for (j = i; j < lines.length; j++) {
                             let line2raw = lines[j];
                             let line2 = line2raw.trim();
-                            if (line2.startsWith('//')) {
-                                newlines.push(line2);
-                                continue;
-                            }
                             if (line2.startsWith('//chandetail:')) {
                                 let commentlines = [];
                                 let j2;
                                 for (j2 = j; j2 < lines.length; j2++) {
                                     let l = lines[j2].trim();
                                     if (l.startsWith('//chandetail:')) {
-                                        l = l.slice(12);
+                                        l = l.slice('//chandetail:'.length);
                                         commentlines.push(l);
                                         newlines.push(lines[j2]);
                                     } else {
@@ -68,17 +66,21 @@ function getFolder(name, cb){
                                 let json = commentlines.join('\n');
                                 try {
                                     let chan = JSON.parse(json);
-                                    if (chanindex[cmd.name]) {
+                                    if (chanindex[chan.name]) {
                                         console.error('duplicate command docs at file: ' + file + ' line: ' + line);
                                         console.error(line);
                                     } else {
                                         channels.push(chan);
-                                        chanindex[cmd.name] = chan;
+                                        console.log("Loading existing doc for " + chan.name);
+                                        chanindex[chan.name] = chan;
                                     }
                                 } catch (e) {
-                                    console.error('error in json at file: ' + file + ' line: ' + line);
+                                    console.error('error in json at file: ' + file + ' line: ' + line + ' er ' + e);
                                     console.error(json);
                                 }
+                            } else if (line2.startsWith('//')) {
+                                newlines.push(line2);
+                                continue;
                             } else if (line2.startsWith("ChType_")) {
                                 let chanName = line2.substr("ChType_".length);
                                 chanName = chanName.replace(/,$/, "");
@@ -95,6 +97,7 @@ function getFolder(name, cb){
 
 
                                 if (!chanindex[chan.name]) {
+                                    console.log("Creating doc for " + chan.name);
                                     // it did not have a doc line before
                                     let json = JSON.stringify(chan);
                                     // insert CR at "fn":
@@ -124,13 +127,96 @@ function getFolder(name, cb){
                         }
                         i = j;
                     }
+                    if (headerFile && line.startsWith('typedef enum ioRole_e {')) {
+                        newlines.push(lines[i]);
+                        let j;
+                        for (j = i; j < lines.length; j++) {
+                            let line2raw = lines[j];
+                            let line2 = line2raw.trim();
+                            if (line2.startsWith('//iodetail:')) {
+                                let commentlines = [];
+                                let j2;
+                                for (j2 = j; j2 < lines.length; j2++) {
+                                    let l = lines[j2].trim();
+                                    if (l.startsWith('//iodetail:')) {
+                                        l = l.slice('//iodetail:'.length);
+                                        commentlines.push(l);
+                                        newlines.push(lines[j2]);
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                // move our parsing forward to skip all found
+                                j = j2;
+                                let json = commentlines.join('\n');
+                                try {
+                                    let io = JSON.parse(json);
+                                    if (ioindex[io.name]) {
+                                        console.error('duplicate command docs at file: ' + file + ' line: ' + line);
+                                        console.error(line);
+                                    } else {
+                                        ios.push(io);
+                                        ioindex[io.name] = io;
+                                    }
+                                } catch (e) {
+                                    console.error('error in json at file: ' + file + ' line: ' + line + ' er ' + e);
+                                    console.error(json);
+                                }
+                            } else if (line2.startsWith('//')) {
+                                newlines.push(line2);
+                                continue;
+                            } else if (line2.startsWith("IOR_")) {
+                                let ioName = line2.substr("IOR_".length);
+                                ioName = ioName.replace(/,$/, "");
+
+                                console.log("ionel type name: " + ioName);
+
+                                let io = {
+                                    name: ioName,
+                                    descr: mytrim("TODO"),
+                                    enum: "IOR_" + ioName,
+                                    file: file.slice(6),
+                                    driver: mytrim(""),
+                                };
+
+
+                                if (!ioindex[io.name]) {
+                                    // it did not have a doc line before
+                                    let json = JSON.stringify(io);
+                                    // insert CR at "fn":
+                                    json = json.split('"descr":');
+                                    json = json.join('\n"descr":');
+                                    json = json.split('"enum":');
+                                    json = json.join('\n"enum":');
+                                    json = json.split('"file":');
+                                    json = json.join('\n"file":');
+                                    json = json.split('"driver":');
+                                    json = json.join('\n"driver":');
+                                    let jsonlines = json.split('\n');
+                                    for (let j = 0; j < jsonlines.length; j++) {
+                                        jsonlines[j] = '\t//iodetail:' + jsonlines[j];
+                                    }
+                                    newlines.push(...jsonlines);
+                                    modified++;
+                                    ios.push(io);
+                                    ioindex[io.name] = io;
+                                }
+                                newlines.push(lines[j]);
+                            }
+                            if (line2.endsWith('} ioRole_t;')) {
+                                //newlines.push(line2raw);
+                                break;
+                            }
+                        }
+                        i = j;
+                    }
                     if (line.startsWith('//cmddetail:')){
                         let commentlines = [];
                         let j;
                         for (j = i; j < lines.length; j++){
                             let l = lines[j].trim();
-                            if (l.startsWith('//cmddetail:')){
-                                l = l.slice(12);
+                            if (l.startsWith('//cmddetail:')) {
+                                l = l.slice('//cmddetail:'.length);
                                 commentlines.push(l);
                                 newlines.push(lines[j]);
                             } else {
@@ -149,8 +235,8 @@ function getFolder(name, cb){
                                 commands.push(cmd);
                                 cmdindex[cmd.name] = cmd;
                             }
-                        } catch(e) {
-                            console.error('error in json at file: '+file+' line: '+line);
+                        } catch (e) {
+                            console.error('error in json at file: ' + file + ' line: ' + line + ' er ' + e);
                             console.error(json);
                         }
                     }
@@ -227,6 +313,25 @@ console.log('starting');
 
 getFolder('./src');
 
+let channelsmdshort =
+    `# Channel Types
+Here is the latest, up to date Channel Types.
+This file was autogenerated by running 'node scripts/getcommands.js' in the repository.
+All descriptions were taken from code.
+Do not add anything here, as it will overwritten with next rebuild.
+| ChannelType     |  Description  |
+|:------------- | -------:|
+`;
+
+let iosmdshort =
+    `# IO Pin Roles
+Here is the latest, up to date IO Roles.
+This file was autogenerated by running 'node scripts/getcommands.js' in the repository.
+All descriptions were taken from code.
+Do not add anything here, as it will overwritten with next rebuild.
+| RoleName     |  Description  |
+|:------------- | -------:|
+`;
 
 let mdshort = 
 `# Commands
@@ -274,6 +379,36 @@ for (let i = 0; i < commands.length; i++){
 mdshort += '\n';
 mdlong += '\n';
 
+
+
+for (let i = 0; i < channels.length; i++) {
+
+
+    let chan = channels[i];
+
+    let textshort = `| ${chan.name} |  ${chan.descr} |`;
+
+    // allow multi-row entries in table entries.
+    textshort = textshort.replace(/\n/g, '<br/>');
+
+    channelsmdshort += textshort;
+    channelsmdshort += '\n';
+}
+
+for (let i = 0; i < ios.length; i++) {
+
+
+    let io = ios[i];
+
+    let textshort = `| ${io.name} |  ${io.descr} |`;
+
+    // allow multi-row entries in table entries.
+    textshort = textshort.replace(/\n/g, '<br/>');
+
+    iosmdshort += textshort;
+    iosmdshort += '\n';
+}
+
 const dirPath = 'docs/json';
 if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath, { recursive: true });
@@ -281,6 +416,15 @@ if (!fs.existsSync(dirPath)) {
 
 fs.writeFileSync(`${dirPath}/commands.json`, JSON.stringify(commands, null, 2));
 console.log('wrote json/commands.json');
+fs.writeFileSync(`${dirPath}/channelTypes.json`, JSON.stringify(channels, null, 2));
+console.log('wrote json/channelTypes.json');
+fs.writeFileSync(`${dirPath}/ioRoles.json`, JSON.stringify(ios, null, 2));
+console.log('wrote json/ioRoles.json');
+
+fs.writeFileSync('docs/channelTypes.md', channelsmdshort);
+console.log('wrote channelTypes.md');
+fs.writeFileSync('docs/ioRoles.md', iosmdshort);
+console.log('wrote ioRoles.md');
 fs.writeFileSync('docs/commands.md', mdshort);
 console.log('wrote commands.md');
 fs.writeFileSync('docs/commands-extended.md', mdlong);
