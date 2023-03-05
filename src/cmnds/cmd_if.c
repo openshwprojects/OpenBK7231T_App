@@ -146,7 +146,94 @@ const char *strCompareBound(const char *s, const char *templ, const char *stoppe
 }
 char *g_expDebugBuffer = 0;
 #define EXPRESSION_DEBUG_BUFFER_SIZE 128
+typedef struct {
+	const char *constantName;
+	float(*getValue)(const char *s);
+} constant_t;
 
+float getMQTTOn(const char *s) {
+	return Main_HasMQTTConnected();
+}
+
+float getChannelValue(const char *s) {
+	int idx = atoi(s + 3);
+	return CHANNEL_Get(idx);
+}
+
+float getLedDimmer(const char *s) {
+	return LED_GetDimmer();
+}
+
+float getLedEnableAll(const char *s) {
+	return LED_GetEnableAll();
+}
+
+float getLedHue(const char *s) {
+	return LED_GetHue();
+}
+
+float getLedRed(const char *s) {
+	return LED_GetRed255();
+}
+
+float getLedGreen(const char *s) {
+	return LED_GetGreen255();
+}
+
+float getLedBlue(const char *s) {
+	return LED_GetBlue255();
+}
+
+float getLedSaturation(const char *s) {
+	return LED_GetSaturation();
+}
+
+float getLedTemperature(const char *s) {
+	return LED_GetTemperature();
+}
+
+float getActiveRepeatingEvents(const char *s) {
+	return RepeatingEvents_GetActiveCount();
+}
+
+#ifndef OBK_DISABLE_ALL_DRIVERS
+
+float getVoltage(const char *s) {
+	return DRV_GetReading(OBK_VOLTAGE);
+}
+
+float getCurrent(const char *s) {
+	return DRV_GetReading(OBK_CURRENT);
+}
+
+float getPower(const char *s) {
+	return DRV_GetReading(OBK_POWER);
+}
+
+#endif
+
+const constant_t g_constants[] = {
+	{"MQTTOn", &getMQTTOn},
+	{"$MQTTOn", &getMQTTOn},
+	{"$CH***", &getChannelValue},
+	{"$CH**", &getChannelValue},
+	{"$CH*", &getChannelValue},
+	{"$led_dimmer", &getLedDimmer},
+	{"$led_enableAll", &getLedEnableAll},
+	{"$led_hue", &getLedHue},
+	{"$led_red", &getLedRed},
+	{"$led_green", &getLedGreen},
+	{"$led_blue", &getLedBlue},
+	{"$led_saturation", &getLedSaturation},
+	{"$led_temperature", &getLedTemperature},
+	{"$activeRepeatingEvents", &getActiveRepeatingEvents},
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	{"$voltage", &getVoltage},
+	{"$current", &getCurrent},
+	{"$power", &getPower},
+#endif
+	{NULL, NULL}
+};
 // tries to expand a given string into a constant
 // So, for $CH1 it will set out to given channel value
 // For $led_dimmer it will set out to current led_dimmer value
@@ -154,112 +241,16 @@ char *g_expDebugBuffer = 0;
 // Returns true if constant matches
 // Returns false if no constants found
 const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
-	int idx;
-	const char *ret;
-
-	ret = strCompareBound(s, "MQTTOn", stop, false);
-	if (ret) {
-		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: MQTTOn");
-		*out = Main_HasMQTTConnected();
-		return ret;
+	const constant_t *var;
+	for (var = g_constants; var->constantName; ++var) {
+		bool bAllowWildCard = strstr(var->constantName, "*");
+		const char *ret = strCompareBound(s, var->constantName, stop, bAllowWildCard);
+		if (ret) {
+			*out = var->getValue(s);
+			ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: %s", var->name);
+			return ret;
+		}
 	}
-	ret = strCompareBound(s, "$CH***", stop, 1);
-	if (ret) {
-		idx = atoi(s + 3);
-		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: channel value of idx %i", idx);
-		*out = CHANNEL_Get(idx);
-		return ret;
-	}
-	ret = strCompareBound(s, "$CH**", stop, 1);
-	if (ret) {
-		idx = atoi(s + 3);
-		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: channel value of idx %i", idx);
-		*out = CHANNEL_Get(idx);
-		return ret;
-	}
-	ret = strCompareBound(s, "$CH*", stop, 1);
-	if (ret) {
-		idx = atoi(s + 3);
-		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: channel value of idx %i", idx);
-		*out = CHANNEL_Get(idx);
-		return ret;
-	}
-	ret = strCompareBound(s, "$led_dimmer", stop, 0);
-	if (ret) {
-		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_dimmer");
-		*out = LED_GetDimmer();
-		return ret;
-	}
-	ret = strCompareBound(s, "$led_enableAll", stop, 0);
-	if (ret) {
-		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_enableAll");
-		*out = LED_GetEnableAll();
-		return ret;
-	}
-	ret = strCompareBound(s, "$led_hue", stop, 0);
-	if (ret) {
-		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_hue");
-		*out = LED_GetHue();
-		return ret;
-	}
-	ret = strCompareBound(s, "$led_red", stop, 0);
-	if (ret) {
-		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_red");
-		*out = LED_GetRed255();
-		return ret;
-	}
-	ret = strCompareBound(s, "$led_green", stop, 0);
-	if (ret) {
-		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: $led_green");
-		*out = LED_GetGreen255();
-		return ret;
-	}
-	ret = strCompareBound(s, "$led_blue", stop, 0);
-	if (ret) {
-		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: $led_blue");
-		*out = LED_GetBlue255();
-		return ret;
-	}
-	ret = strCompareBound(s, "$led_saturation", stop, 0);
-	if (ret) {
-		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_saturation");
-		*out = LED_GetSaturation();
-		return ret;
-	}
-	ret = strCompareBound(s, "$led_temperature", stop, 0);
-	if (ret) {
-		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: led_temperature");
-		*out = LED_GetTemperature();
-		return ret;
-	}
-	ret = strCompareBound(s, "$activeRepeatingEvents", stop, 0);
-	if (ret) {
-		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: activeRepeatingEvents");
-		*out = RepeatingEvents_GetActiveCount();
-		return ret;
-	}
-#ifndef OBK_DISABLE_ALL_DRIVERS
-	ret = strCompareBound(s, "$voltage", stop, 0);
-	if (ret) {
-		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: voltage");
-		*out = DRV_GetReading(OBK_VOLTAGE);
-		return ret;
-	}
-	ret = strCompareBound(s, "$current", stop, 0);
-	if (ret) {
-		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: $current");
-		*out = DRV_GetReading(OBK_CURRENT);
-		return ret;
-	}
-	ret = strCompareBound(s, "$power", stop, 0);
-	if (ret) {
-		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: $power");
-		*out = DRV_GetReading(OBK_POWER);
-		return ret;
-	}
-#endif
-
-	
 	return false;
 }
 #if WINDOWS
