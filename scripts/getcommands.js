@@ -41,42 +41,44 @@ function getFolder(name, cb){
 
                     //parse enum starting with "typedef enum channelType_e {"
                     if (headerFile && line.startsWith('typedef enum channelType_e {')) {
+                        newlines.push(lines[i]);
                         let j;
                         for (j = i; j < lines.length; j++) {
-                            let line2 = lines[j].trim();
+                            let line2raw = lines[j];
+                            let line2 = line2raw.trim();
                             if (line2.startsWith('//')) {
+                                newlines.push(line2);
                                 continue;
                             }
                             if (line2.startsWith('//chandetail:')) {
-                             /*   let commentlines = [];
-                                let j;
-                                for (j = i; j < lines.length; j++) {
-                                    let l = lines[j].trim();
+                                let commentlines = [];
+                                let j2;
+                                for (j2 = j; j2 < lines.length; j2++) {
+                                    let l = lines[j2].trim();
                                     if (l.startsWith('//chandetail:')) {
                                         l = l.slice(12);
                                         commentlines.push(l);
-                                        newlines.push(lines[j]);
+                                        newlines.push(lines[j2]);
                                     } else {
                                         break;
                                     }
                                 }
                                 // move our parsing forward to skip all found
-                                i = j;
+                                j = j2;
                                 let json = commentlines.join('\n');
                                 try {
-                                    let cmd = JSON.parse(json);
-                                    if (cmdindex[cmd.name]) {
+                                    let chan = JSON.parse(json);
+                                    if (chanindex[cmd.name]) {
                                         console.error('duplicate command docs at file: ' + file + ' line: ' + line);
                                         console.error(line);
                                     } else {
-                                        commands.push(cmd);
-                                        cmdindex[cmd.name] = cmd;
+                                        channels.push(chan);
+                                        chanindex[cmd.name] = chan;
                                     }
                                 } catch (e) {
                                     console.error('error in json at file: ' + file + ' line: ' + line);
                                     console.error(json);
                                 }
-                            */
                             } else if (line2.startsWith("ChType_")) {
                                 let chanName = line2.substr("ChType_".length);
                                 chanName = chanName.replace(/,$/, "");
@@ -88,6 +90,7 @@ function getFolder(name, cb){
                                     descr: mytrim("TODO"),
                                     enum: "ChType_"+chanName,
                                     file: file.slice(6),
+                                    driver: mytrim(""),
                                 };
 
 
@@ -95,23 +98,27 @@ function getFolder(name, cb){
                                     // it did not have a doc line before
                                     let json = JSON.stringify(chan);
                                     // insert CR at "fn":
-                                  /*  json = json.split('"descr":');
+                                    json = json.split('"descr":');
                                     json = json.join('\n"descr":');
-                                    json = json.split('"fn":');
-                                    json = json.join('\n"fn":');
-                                    json = json.split('"examples":');
-                                    json = json.join('\n"examples":');
+                                    json = json.split('"enum":');
+                                    json = json.join('\n"enum":');
+                                    json = json.split('"file":');
+                                    json = json.join('\n"file":');
+                                    json = json.split('"driver":');
+                                    json = json.join('\n"driver":');
                                     let jsonlines = json.split('\n');
                                     for (let j = 0; j < jsonlines.length; j++) {
-                                        jsonlines[j] = '\t//cmddetail:' + jsonlines[j];
+                                        jsonlines[j] = '\t//chandetail:' + jsonlines[j];
                                     }
                                     newlines.push(...jsonlines);
                                     modified++;
-                                    commands.push(cmd);
-                                    cmdindex[cmd.name] = cmd;*/
+                                    channels.push(chan);
+                                    chanindex[chan.name] = chan;
                                 }
+                                newlines.push(lines[j]);
                             }
-                            if (line2.endsWith('};')) {
+                            if (line2.endsWith('} channelType_t;')) {
+                                //newlines.push(line2raw);
                                 break;
                             }
                         }
@@ -267,7 +274,12 @@ for (let i = 0; i < commands.length; i++){
 mdshort += '\n';
 mdlong += '\n';
 
-fs.writeFileSync('docs/json/commands.json', JSON.stringify(commands, null, 2));
+const dirPath = 'docs/json';
+if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+}
+
+fs.writeFileSync(`${dirPath}/commands.json`, JSON.stringify(commands, null, 2));
 console.log('wrote json/commands.json');
 fs.writeFileSync('docs/commands.md', mdshort);
 console.log('wrote commands.md');
