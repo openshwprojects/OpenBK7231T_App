@@ -260,14 +260,6 @@ looper:
 	goto looper
 ```  
 
-# Channel Types
-
-Channel types are often not required and don't have to be configured, but in some cases they are required for better device control from OpenBeken web panel. Channel types describes the kind of value stored in channel, for example, if you have a Tuya Fan Controller with 3 speeds control,  you can set the channel type to LowMidHigh and it will display the correct UI radiobutton on OpenBeken panel.
-
-Some channels have "_div10" or "_div100" sufixes. This is for TuyaMCU. This is needed because TuyaMCU sends values as integers, so it sends, for example, 215 for 21.5C temperature, and we store it internally as 215 and only convert to float for display.
-
-[See full list here](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/channelTypes.md)
-  
 # Simple TCP command server for scripting
   
   You can enable a simple TCP server in device Generic/Flags option, which will listen by default on port 100. Server can accept single connection at time from Putty in RAW mode (raw TCP connection) and accepts text commands for OpenBeken console. In future, we may add support for multiple connections at time. Server will close connection if client does nothing for some time.
