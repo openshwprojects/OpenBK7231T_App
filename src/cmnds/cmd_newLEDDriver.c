@@ -647,6 +647,7 @@ void SET_LightMode(int newMode) {
 			GetLightModeStr(g_lightMode),
 			GetLightModeStr(newMode));
 		g_lightMode = newMode;
+		EventHandlers_FireEvent(CMD_EVENT_LED_MODE, newMode);
 	}
 }
 void LED_SetBaseColorByIndex(int i, float f, bool bApply) {

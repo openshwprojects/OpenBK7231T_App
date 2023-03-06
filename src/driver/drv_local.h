@@ -45,6 +45,8 @@ void BP1658CJ_Init();
 
 void SM16703P_Init();
 
+void TM1637_Init();
+
 void BL_Shared_Init();
 void BL_ProcessUpdate(float voltage, float current, float power);
 void BL09XX_AppendInformationToHTTPIndexPage(http_request_t* request);

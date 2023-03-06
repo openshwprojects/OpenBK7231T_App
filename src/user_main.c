@@ -333,6 +333,31 @@ void Main_ScheduleHomeAssistantDiscovery(int seconds) {
 	g_doHomeAssistantDiscoveryIn = seconds;
 }
 
+void Main_ConnectToWiFiNow() {
+	const char* wifi_ssid, *wifi_pass;
+
+	g_bOpenAccessPointMode = 0;
+	wifi_ssid = CFG_GetWiFiSSID();
+	wifi_pass = CFG_GetWiFiPass();
+	HAL_ConnectToWiFi(wifi_ssid, wifi_pass);
+	// register function to get callbacks about wifi changes.
+	HAL_WiFi_SetupStatusCallback(Main_OnWiFiStatusChange);
+	ADDLOGF_DEBUG("Registered for wifi changes\r\n");
+	g_connectToWiFi = 0;
+}
+bool Main_HasFastConnect() {
+	if (g_bootFailures > 2)
+		return false;
+	if (CFG_HasFlag(OBK_FLAG_WIFI_FAST_CONNECT)) {
+		return true;
+	}
+	if ((PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep, -1) != -1) ||
+		(PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep_NoPup, -1) != -1))
+	{
+		return true;
+	}
+	return false;
+}
 void Main_OnEverySecond()
 {
 	int newMQTTState;
@@ -466,7 +491,9 @@ void Main_OnEverySecond()
 	}
 
 #ifdef OBK_MCU_SLEEP_METRICS_ENABLE
-	Main_LogPowerSave();
+	if (g_powersave && CFG_HasLoggerFlag(LOGGER_FLAG_POWER_SAVE)) {
+		Main_LogPowerSave();
+	}
 #endif
 
 
@@ -561,15 +588,7 @@ void Main_OnEverySecond()
 		g_connectToWiFi--;
 		if (0 == g_connectToWiFi && g_bHasWiFiConnected == 0)
 		{
-			const char* wifi_ssid, * wifi_pass;
-
-			g_bOpenAccessPointMode = 0;
-			wifi_ssid = CFG_GetWiFiSSID();
-			wifi_pass = CFG_GetWiFiPass();
-			HAL_ConnectToWiFi(wifi_ssid, wifi_pass);
-			// register function to get callbacks about wifi changes.
-			HAL_WiFi_SetupStatusCallback(Main_OnWiFiStatusChange);
-			ADDLOGF_DEBUG("Registered for wifi changes\r\n");
+			Main_ConnectToWiFiNow();
 		}
 	}
 
@@ -932,6 +951,11 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 				DRV_StartDriver("Battery");
 #endif
 			}
+			if (PIN_FindPinIndexForRole(IOR_TM1637_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_TM1637_DIO, -1) != -1) {
+#ifndef OBK_DISABLE_ALL_DRIVERS
+				DRV_StartDriver("TM1637");
+#endif
+			}
 		}
 	}
 
@@ -1049,7 +1073,13 @@ void Main_Init_After_Delay()
 			g_openAP = 5;
 		}
 		else {
-			g_connectToWiFi = 5;
+			if (Main_HasFastConnect()) {
+				mqtt_loopsWithDisconnected = 9999;
+				Main_ConnectToWiFiNow();
+			}
+			else {
+				g_connectToWiFi = 5;
+			}
 		}
 	}
 

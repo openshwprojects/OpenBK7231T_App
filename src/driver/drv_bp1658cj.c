@@ -14,6 +14,8 @@
 
 
 static softI2C_t g_softI2C;
+static int g_currentRGB = 0;
+static int g_currentCW = 0;
 
 void BP1658CJ_Write(float *rgbcw) {
   unsigned short cur_col_10[5];
@@ -41,7 +43,15 @@ void BP1658CJ_Write(float *rgbcw) {
 	Soft_I2C_Start(&g_softI2C, BP1658CJ_ADDR_OUT);
 
 	// The First Byte is the Subadress
-	Soft_I2C_WriteByte(&g_softI2C, BP1658CJ_SUBADDR);
+	// OSHW update: no, it seems those are current values
+	// 4 bits for CW and 4 bits for RGB
+	// Our contributor was wrong
+	if (g_currentRGB == 00 && g_currentCW == 0) {
+		Soft_I2C_WriteByte(&g_softI2C, BP1658CJ_SUBADDR);
+	}
+	else {
+		Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(g_currentRGB << 4 | g_currentCW));
+	}
 	// Brigtness values are transmitted as two bytes. The light-bulb accepts a 10-bit integer (0-1023) as an input value.
 	// The first 5bits of this input are transmitted in second byte, the second 5bits in the first byte.
 	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(cur_col_10[0] & 0x1F));  //Red
@@ -57,7 +67,18 @@ void BP1658CJ_Write(float *rgbcw) {
 
 	Soft_I2C_Stop(&g_softI2C);
 }
+commandResult_t BP1658CJ_Current(const void *context, const char *cmd, const char *args, int flags) {
+	Tokenizer_TokenizeString(args, 0);
 
+	if (Tokenizer_GetArgsCount() <= 1) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	g_currentRGB = Tokenizer_GetArgInteger(0);
+	g_currentCW = Tokenizer_GetArgInteger(1);
+
+	return CMD_RES_OK;
+}
 // startDriver BP1658CJ
 // BP1658CJ_RGBCW FF00000000
 void BP1658CJ_Init() {
@@ -79,4 +100,9 @@ void BP1658CJ_Init() {
 	//cmddetail:"fn":"BP1658CJ_Map","file":"driver/drv_bp1658cj.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("BP1658CJ_Map", CMD_LEDDriver_Map, NULL);
+	//cmddetail:{"name":"BP1658CJ_Current","args":"[MaxCurrentRGB][MaxCurrentCW]",
+	//cmddetail:"descr":"Sets the maximum current limit for BP1658CJ driver",
+	//cmddetail:"fn":"BP1658CJ_Current","file":"driver/drv_bp1658cj.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("BP1658CJ_Current", BP1658CJ_Current, NULL);
 }

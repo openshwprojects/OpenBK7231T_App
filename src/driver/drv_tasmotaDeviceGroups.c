@@ -407,12 +407,16 @@ void DRV_DGR_CreateSocket_Receive() {
 }
 
 void DRV_DGR_processRGBCW(byte *rgbcw) {
+	addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR, "DRV_DGR_setFinalRGBCW: %i,%i,%i,%i,%i\n", (int)rgbcw[0], (int)rgbcw[1], (int)rgbcw[2], (int)rgbcw[3], (int)rgbcw[4]);
+
 	LED_SetFinalRGBCW(rgbcw);
 }
 void DRV_DGR_processPower(int relayStates, byte relaysCount) {
 	int startIndex;
 	int i;
 	int ch;
+
+	addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR, "DRV_DGR_processPower: cnt %i, val %i\n", (int)relaysCount, relayStates);
 
 	if(PIN_CountPinsWithRoleOrRole(IOR_PWM,IOR_PWM_n) > 0 || LED_IsLedDriverChipRunning()) {
 		LED_SetEnableAll(BIT_CHECK(relayStates,0));
@@ -440,7 +444,7 @@ void DRV_DGR_processPower(int relayStates, byte relaysCount) {
 	}
 }
 void DRV_DGR_processBrightnessPowerOn(byte brightness) {
-	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_processBrightnessPowerOn: %i\n",(int)brightness);
+	addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"DRV_DGR_processBrightnessPowerOn: %i\n",(int)brightness);
 
 	LED_SetDimmer(Val255ToVal100(brightness));
 
@@ -452,13 +456,13 @@ void DRV_DGR_processBrightnessPowerOn(byte brightness) {
 	
 }
 void DRV_DGR_processLightFixedColor(byte fixedColor) {
-	addLogAdv(LOG_INFO, LOG_FEATURE_DGR, "DRV_DGR_processLightFixedColor: %i\n", (int)fixedColor);
+	addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR, "DRV_DGR_processLightFixedColor: %i\n", (int)fixedColor);
 
 	LED_SetColorByIndex(fixedColor);
 
 }
 void DRV_DGR_processLightBrightness(byte brightness) {
-	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_processLightBrightness: %i\n",(int)brightness);
+	addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"DRV_DGR_processLightBrightness: %i\n",(int)brightness);
 
 	LED_SetDimmer(Val255ToVal100(brightness));
 	
@@ -564,6 +568,7 @@ void DRV_DGR_RunQuickTick() {
 	const char *myip;
 	socklen_t addrlen;
 	int nbytes;
+	int i;
 
 	if(g_dgr_socket_receive<=0 || g_dgr_socket_send <= 0) {
 		return ;
@@ -580,31 +585,33 @@ void DRV_DGR_RunQuickTick() {
 	//}
 
 	// NOTE: 'addr' is global, and used in callbacks to determine the member.
-        addrlen = sizeof(addr);
-        nbytes = recvfrom(
-            g_dgr_socket_receive,
-            msgbuf,
-            sizeof(msgbuf),
-            0,
-            (struct sockaddr *) &addr,
-            &addrlen
-        );
-        if (nbytes <= 0) {
+	for (i = 0; i < 10; i++) {
+		addrlen = sizeof(addr);
+		nbytes = recvfrom(
+			g_dgr_socket_receive,
+			msgbuf,
+			sizeof(msgbuf),
+			0,
+			(struct sockaddr *) &addr,
+			&addrlen
+		);
+		if (nbytes <= 0) {
 			//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"nothing\n");
-            return ;
-        }
+			return;
+		}
 
 		myip = HAL_GetMyIPString();
 		me.sin_addr.s_addr = inet_addr(myip);
 
-		if (me.sin_addr.s_addr == addr.sin_addr.s_addr){
-			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Ignoring message from self");
+		if (me.sin_addr.s_addr == addr.sin_addr.s_addr) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_DGR, "Ignoring message from self");
 			return;
 		}
 
-		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR,"Received %i bytes from %s\n",nbytes,inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr));
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "Received %i bytes from %s\n", nbytes, inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr));
 
 		DGR_ProcessIncomingPacket(msgbuf, nbytes);
+	}
 }
 //static void DRV_DGR_Thread(beken_thread_arg_t arg) {
 //

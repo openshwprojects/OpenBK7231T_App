@@ -8,6 +8,13 @@ void Test_Demo_MapFanSpeedToRelays() {
 	// reset whole device
 	SIM_ClearOBK();
 
+	// not belongs here, but some quick expression tests
+	CMD_ExecuteCommand("setChannel 0 123", 0);
+	SELFTEST_ASSERT_EXPRESSION("$CH0", 123);
+	CMD_ExecuteCommand("setChannel 0 234", 0);
+	SELFTEST_ASSERT_EXPRESSION("$CH0", 234);
+	CMD_ExecuteCommand("setChannel 0 0", 0);
+	SELFTEST_ASSERT_EXPRESSION("$CH0", 0);
 
 	// This demo uses following channels:
 	// channel 0 - input value, 0 to 100 speed

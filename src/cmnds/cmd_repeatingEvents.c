@@ -167,7 +167,6 @@ commandResult_t RepeatingEvents_Cmd_AddRepeatingEvent(const void *context, const
 	const char *cmdToRepeat;
 	int userID;
 
-	// linkTuyaMCUOutputToChannel dpID channelID [varType]
 	Tokenizer_TokenizeString(args,0);
 
 	// following check must be done after 'Tokenizer_TokenizeString',
@@ -212,7 +211,6 @@ commandResult_t RepeatingEvents_Cmd_ClearRepeatingEvents(const void *context, co
 commandResult_t RepeatingEvents_Cmd_CancelRepeatingEvent(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int userID;
 
-	// linkTuyaMCUOutputToChannel dpID channelID [varType]
 	Tokenizer_TokenizeString(args,0);
 
 	// following check must be done after 'Tokenizer_TokenizeString',

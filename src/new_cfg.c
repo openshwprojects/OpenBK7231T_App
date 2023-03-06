@@ -448,6 +448,25 @@ void CFG_SetFlag(int flag, bool bValue) {
 		}
 	}
 }
+void CFG_SetLoggerFlag(int flag, bool bValue) {
+	int *cfgValue;
+	cfgValue = &g_cfg.loggerFlags;
+
+	int nf = *cfgValue;
+	if (bValue) {
+		BIT_SET(nf, flag);
+	}
+	else {
+		BIT_CLEAR(nf, flag);
+	}
+	if (nf != *cfgValue) {
+		*cfgValue = nf;
+		g_cfg_pendingChanges++;
+	}
+}
+bool CFG_HasLoggerFlag(int flag) {
+	return BIT_CHECK(g_cfg.loggerFlags, flag);
+}
 int CFG_GetFlags() {
 	return g_cfg.genericFlags;
 }

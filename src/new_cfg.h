@@ -67,6 +67,8 @@ int CFG_DeviceGroups_GetRecvFlags();
 void CFG_SetFlags(int first4bytes, int second4bytes);
 void CFG_SetFlag(int flag, bool bValue);
 bool CFG_HasFlag(int flag);
+void CFG_SetLoggerFlag(int flag, bool bValue);
+bool CFG_HasLoggerFlag(int flag);
 void CFG_SetMac(char *mac);
 int CFG_GetFlags();
 const char* CFG_GetNTPServer();
