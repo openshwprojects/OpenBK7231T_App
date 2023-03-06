@@ -215,16 +215,10 @@ if MQTTOn then "backlog led_dimmer 100; led_enableAll" else "backlog led_dimmer 
 # Console Command argument expansion 
 
   Every console command that takes an integer argument supports following constant expansion:
-- $CH[CHANNEL_NUMBER] - so, $CH0 is a channel 0 value, etc, so SetChannel 1 $CH2 will get current value of Channel2 and set it to Channel 1
-- $led_enableAll - this is the state of led driver, returns 1 or 0
-- $led_hue
-- $led_saturation
-- $led_dimmer
-      
   
+  [See full list here](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/constants.md)
+        
 # Example configurations (example autoexec.bat files for LittleFS system)
-
-
 
 
 [Configuration for EDM-01AA-EU dimmer with TuyaMCU](https://www.elektroda.com/rtvforum/topic3929151.html)
