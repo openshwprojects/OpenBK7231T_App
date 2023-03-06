@@ -1,0 +1,26 @@
+[
+{
+"command": "addRepeatingEvent 15 -1 SendGet http://192.168.0.112/cm?cmnd=Power0%20Toggle",
+"description": "This will send a Tasmota HTTP Toggle command every 15 seconds to given device. Repeats value here is '-1' because we want this event to stay forever."
+},
+{
+"command": "addEventHandler OnClick 8 SendGet http://192.168.0.112/cm?cmnd=Power0%20Toggle",
+"description": "This will send a Tasmota HTTP Toggle command to given device when a button on pin 8 is clicked (pin 8, NOT channel 8)"
+},
+{
+"command": "addChangeHandler Channel1 != 0 SendGet http://192.168.0.112/cm?cmnd=Power0%20On",
+"description": "This will set a Tasmota HTTP Power0 ON command when a channel 1 value become non-zero"
+},
+{
+"command": "addChangeHandler Channel1 == 0 SendGet http://192.168.0.112/cm?cmnd=Power0%20Off",
+"description": "This will set a Tasmota HTTP Power0 OFF command when a channel 1 value become zero"
+},
+{
+"command": "addChangeHandler Channel1 == 1 addRepeatingEvent 60 1 setChannel 1 0",
+"description": "This will create a new repeating events with 1 repeat count and 60 seconds delay everytime Channel1 becomes 1. Basically, it will automatically turn off the light 60 seconds after you turn it on. TODO: clear previous event instance?"
+},
+{
+"command": "addRepeatingEvent 5 -1 led_enableAll !$led_enableAll",
+"description": "This simple timer will toggle LED state every 5 seconds. -1 hear means infinite repeats. The ! stands for negation and $led_enableAll is a constant that you can read to get 0 or 1. It works like $CH11, $CH4 etc (any number) for accessing channel value"
+}
+]

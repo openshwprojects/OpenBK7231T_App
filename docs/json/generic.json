@@ -5,5 +5,6 @@
    "constants": "Every console command that takes an integer argument supports certain constant expansion. ",
    "flags": "Flags are global and allows you to alter behaviour of the device.",
    "drivers": "Drivers allows you to control certain peripherals or enable certain features that are off by default.",
-   "faq": "Here is a detailed list of questions you may ask. Some information from docs is repeated here."
+   "faq": "Here is a detailed list of questions you may ask. Some information from docs is repeated here.",
+   "commandExamples":"Here you can find some examples of console commands usage"
 }
