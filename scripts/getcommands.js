@@ -808,7 +808,7 @@ for (let i = 0; i < autoexecExamples.length; i++) {
 
     let exe = autoexecExamples[i];
 
-    autoexecsmdshort += "" + exe.title + "*";
+    autoexecsmdshort += "" + exe.title + "";
     autoexecsmdshort += '\n';
     autoexecsmdshort += '<br>';
     autoexecsmdshort += '\n';

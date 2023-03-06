@@ -6,5 +6,13 @@
 {
 "title": "[Configuration for QIACHIP Universal WIFI Ceiling Fan Light Remote Control Kit - BK7231N - CB2S with TuyaMCU](https://www.elektroda.com/rtvforum/topic3895301.html)",
 "file": "autoexecs/QIACHIP-WiFi-Ceiling-Fan-Light.bat"
+},
+{
+"title": "[Configuration for BK7231T LCD calendar/thermometer/hygrometer TH06 WiFi for TuyaMCU](https://www.elektroda.com/rtvforum/viewtopic.php?p=20342890#20342890)",
+"file": "autoexecs/TH06-thermometer-hygrometer.bat"
+},
+{
+"title": "[Configuration for Tuya ATORCH AT4P(WP/BW) Smartlife Energy monitor (BK7231N/C3BS/CH573F/BL0924)](https://www.elektroda.com/rtvforum/topic3941692.html)",
+"file": "autoexecs/ATORCH-AT4P-Smartlife-Energy-Monitor.bat"
 }
 ]
