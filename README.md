@@ -412,7 +412,7 @@ Channel types are often not required and don't have to be configured, but in som
 
 Some channels have "_div10" or "_div100" sufixes. This is for TuyaMCU. This is needed because TuyaMCU sends values as integers, so it sends, for example, 215 for 21.5C temperature, and we store it internally as 215 and only convert to float for display.
 
-[See full list here](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/channels.md)
+[See full list here](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/channelTypes.md)
   
 # Simple TCP command server for scripting
   
