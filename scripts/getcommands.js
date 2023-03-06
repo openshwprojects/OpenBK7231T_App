@@ -811,10 +811,9 @@ for (let i = 0; i < autoexecExamples.length; i++) {
     autoexecsmdshort += "" + exe.title + "*";
     autoexecsmdshort += '\n';
     autoexecsmdshort += '<br>';
+    autoexecsmdshort += '\n';
     autoexecsmdshort += "```";
-    autoexecsmdshort += '\n';
     autoexecsmdshort += exe.fileText;
-    autoexecsmdshort += '\n';
     autoexecsmdshort += "```";
     autoexecsmdshort += '\n';
 
