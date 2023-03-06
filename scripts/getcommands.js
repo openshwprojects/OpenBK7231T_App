@@ -787,10 +787,11 @@ for (let i = 0; i < faq.length; i++) {
     let q = faq[i];
 
     faqmdshort += "**Question:** *"+q.question+"*";
-    faqmdshort += '\n';
+    faqmdshort += '<br>';
     faqmdshort += "**A:** "+q.answer;
     faqmdshort += '\n';
 
+    faqmdshort += '\n';
     faqmdshort += '\n';
 }
 
