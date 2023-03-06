@@ -241,41 +241,6 @@ Publishes send by OBK device:
 | OBK_DEV_NAME/INDEX/set | "1" | Sets the channel of INDEX to given value. This can set relays and also provide DIRECT PWM access. If channel is mapped to TuyaMCU, TuyaMCU will also be updated |
 | todo |"100" | tooodo |
 
-# RGBCW Tuya 5 PWMs LED bulb control compatible with Home Assistant
-  
-  RGBCW light bulbs are now supported and they are compatible with HA by rgb_command_template, brightness_value_template, color_temp_value_template commands. Please follow the guide below showing how to flash, setup and pair them with HA by MQTT:
-  
-  https://www.elektroda.com/rtvforum/topic3880540.html#19938487
-  
-# TuyaMCU example with QIACHIP Universal WIFI Ceiling Fan Light Remote Control Kit - BK7231N - CB2S
-  
-  Home Assistant and Node Red. Please refer to this example:
-  
-  https://www.elektroda.com/rtvforum/viewtopic.php?p=20031489#20031489
-  
-# TuyaMCU example with Tuya 5 Speed Fan Controller by TEQOOZ - BK7231T - WB3S
-  
-  Home Assistant Yaml examples. Please refer to this example:
-  
-  https://www.elektroda.com/rtvforum/topic3908093.html
-  
-# TuyaMCU WB2S "Moes House" Dimmer configuration example with Home Assistant, see here:
-  
-https://www.elektroda.com/rtvforum/topic3898502.html
-  
-# I2C drivers system with support for MCP23017 bus expander, TC74 temperature sensor and more
-  
-  Detailed description and step by step tutorial on Elektroda.com is coming soon.
-  
-# BL0942 power metering plug (UART communication mode) support and calibration process
-    
-Please refer to this step by step guide:
-  https://www.elektroda.com/rtvforum/topic3887748.html
-  
-# ZN268131 example, a smart switch that allows you to connect a bistable button
-    
-https://www.elektroda.com/rtvforum/topic3895572.html
-    
 # HomeAssistant Integration
 MQTT based integration with Home Assistant is possible in 2 ways from the Home Assistant configuration page (`Config > Generate Home Assistant cfg`).
 
