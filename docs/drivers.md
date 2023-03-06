@@ -7,14 +7,14 @@ but we can enable them for you per request. Some drivers might also be WIP.
 Do not add anything here, as it will overwritten with next rebuild.
 | Driver        | Description  |
 |:------------- | -----:|
-| TuyaMCU |  TuyaMCU is a protocol used for communication between WiFI module and external MCU. This protocol is using usually RX1/TX1 port of BK chips. |
-| tmSensor |  tmSensor must be used only when TuyaMCU is already started. tmSensor is a TuyaMcu Sensor, it's used for Low Power TuyaMCU communication on devices like TuyaMCU door sensor, or TuyaMCU humidity sensor. After device reboots, tmSensor uses TuyaMCU to request data update from the sensor and reports it on MQTT. Then MCU turns off WiFi module again and goes back to sleep. See an example [here](https://www.elektroda.com/rtvforum/topic3914412.html). |
+| TuyaMCU |  TuyaMCU is a protocol used for communication between WiFI module and external MCU. This protocol is using usually RX1/TX1 port of BK chips. See [TuyaMCU dimmer example](https://www.elektroda.com/rtvforum/topic3929151.html), [TH06 LCD humidity/temperature sensor example](https://www.elektroda.com/rtvforum/topic3942730.html), [fan controller example](https://www.elektroda.com/rtvforum/topic3908093.html), [simple switch example](https://www.elektroda.com/rtvforum/topic3906443.html) |
+| tmSensor |  tmSensor must be used only when TuyaMCU is already started. tmSensor is a TuyaMcu Sensor, it's used for Low Power TuyaMCU communication on devices like TuyaMCU door sensor, or TuyaMCU humidity sensor. After device reboots, tmSensor uses TuyaMCU to request data update from the sensor and reports it on MQTT. Then MCU turns off WiFi module again and goes back to sleep. See an [example here](https://www.elektroda.com/rtvforum/topic3914412.html). |
 | NTP |  NTP driver is required to get current time and date from web. Without it, there is no correct datetime. |
 | TESTPOWER |  This is a fake POWER measuring socket driver, only for testing |
 | TESTLED |  This is a fake I2C LED driver, only for testing |
 | HTTPButtons |  This driver allows you to create custom, scriptable buttons on main WWW page. You can create those buttons in autoexec.bat and assign commands to them |
 | I2C |  Generic I2C, not used for LED drivers, but may be useful for displays or port expanders. Supports both hardware and software I2C. |
-| BL0942 |  BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK |
+| BL0942 |  BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [LSPA9 teardown example](https://www.elektroda.com/rtvforum/topic3887748.html).  |
 | BL0937 |  BL0937 is a power-metering chip which uses custom protocol to report data. It requires setting 3 pins in pin config: CF, CF1 and SEL |
 | CSE7766 |  BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK |
 | SM16703P |  WIP driver |
@@ -33,5 +33,5 @@ Do not add anything here, as it will overwritten with next rebuild.
 | MAX72XX |  TODO |
 | TM1637 |  Driver for 7-segment LED display with DIO/CLK interface |
 | SHT3X |  TODO |
-| Battery |  Custom mechanism to measure battery level with ADC and an optional relay. See example [here](https://www.elektroda.com/rtvforum/topic3959103.html). |
+| Battery |  Custom mechanism to measure battery level with ADC and an optional relay. See [example here](https://www.elektroda.com/rtvforum/topic3959103.html). |
 | Bridge |  TODO |
