@@ -8,7 +8,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | Driver        | Description  |
 |:------------- | -----:|
 | TuyaMCU |  TuyaMCU is a protocol used for communication between WiFI module and external MCU. This protocol is using usually RX1/TX1 port of BK chips. |
-| tmSensor |  tmSensor must be used only when TuyaMCU is already started. tmSensor is a TuyaMcu Sensor, it's used for Low Power TuyaMCU communication on devices like TuyaMCU door sensor, or TuyaMCU humidity sensor. After device reboots, tmSensor uses TuyaMCU to request data update from the sensor and reports it on MQTT. Then MCU turns off WiFi module again and goes back to sleep. Read more [https://www.elektroda.com/rtvforum/topic3914412.html](here). |
+| tmSensor |  tmSensor must be used only when TuyaMCU is already started. tmSensor is a TuyaMcu Sensor, it's used for Low Power TuyaMCU communication on devices like TuyaMCU door sensor, or TuyaMCU humidity sensor. After device reboots, tmSensor uses TuyaMCU to request data update from the sensor and reports it on MQTT. Then MCU turns off WiFi module again and goes back to sleep. See an example [here](https://www.elektroda.com/rtvforum/topic3914412.html). |
 | NTP |  NTP driver is required to get current time and date from web. Without it, there is no correct datetime. |
 | TESTPOWER |  This is a fake POWER measuring socket driver, only for testing |
 | TESTLED |  This is a fake I2C LED driver, only for testing |
@@ -22,16 +22,16 @@ Do not add anything here, as it will overwritten with next rebuild.
 | DDP |  DDP is a LED control protocol that is using UDP. You can use xLights or any other app to control OBK LEDs that way. |
 | SSDP |  SSDP is a discovery protocol, so BK devices can show up in, for example, Windows network section |
 | Wemo |  Wemo emulation for Alexa. You must also start SSDP so it can run, because it depends on SSDP discovery. |
-| DGR |  Tasmota Device groups driver. |
-| PWMToggler |  PWMToggler is a custom abstraction layer that can run on top of raw PWM channels. It provides ability to turn off/on the PWM while keeping it's value, which is not possible by direct channel operations. It can be used for some custom devices with extra lights/lasers. |
-| DoorSensor |  DoorSensor is using deep sleep to preserve battery. This is used for devices without TuyaMCU, where BK deep sleep and wakeup on GPIO is used. This drives requires you to set a DoorSensor pin. Change on door sensor pin wakes up the device. If there are no changes for some time, device goes to sleep. |
+| DGR |  Tasmota Device groups driver. See [forum example](https://www.elektroda.com/rtvforum/topic3925472.html) and TODO-video tutorial (will post on YT soon) |
+| PWMToggler |  PWMToggler is a custom abstraction layer that can run on top of raw PWM channels. It provides ability to turn off/on the PWM while keeping it's value, which is not possible by direct channel operations. It can be used for some custom devices with extra lights/lasers. See example [here](https://www.elektroda.com/rtvforum/topic3939064.html). |
+| DoorSensor |  DoorSensor is using deep sleep to preserve battery. This is used for devices without TuyaMCU, where BK deep sleep and wakeup on GPIO is used. This drives requires you to set a DoorSensor pin. Change on door sensor pin wakes up the device. If there are no changes for some time, device goes to sleep. See example [here](https://www.elektroda.com/rtvforum/topic3960149.html). |
 | SM2135 |  SM2135 custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both SM2135 pin roles. This may need you to remap the RGBCW indexes with SM2135_Map command |
-| BP5758D |  BP5758D custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both BP5758D pin roles. This may need you to remap the RGBCW indexes with BP5758D_Map command |
+| BP5758D |  BP5758D custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both BP5758D pin roles. This may need you to remap the RGBCW indexes with BP5758D_Map command. This driver is used in some of BL602/Sonoff bulbs, see [video flashing tutorial here](https://www.youtube.com/watch?v=L6d42IMGhHw) |
 | BP1658CJ |  BP1658CJ custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both BP1658CJ pin roles. This may need you to remap the RGBCW indexes with BP1658CJ_Map command |
 | SM2235 |  SM2335 andd SM2235 custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both SM2235 pin roles. This may need you to remap the RGBCW indexes with SM2235_Map command |
 | CHT8305 |  TODO |
 | MAX72XX |  TODO |
 | TM1637 |  Driver for 7-segment LED display with DIO/CLK interface |
 | SHT3X |  TODO |
-| Battery |  TODO |
+| Battery |  Custom mechanism to measure battery level with ADC and an optional relay. See example [here](https://www.elektroda.com/rtvforum/topic3959103.html). |
 | Bridge |  TODO |
