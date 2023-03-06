@@ -65,64 +65,167 @@ typedef struct driver_s {
 
 // startDriver BL0937
 static driver_t g_drivers[] = {
-
 #ifdef ENABLE_DRIVER_TUYAMCU
+	//drvdetail:{"name":"TuyaMCU",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
 	{ "TuyaMCU",	TuyaMCU_Init,		TuyaMCU_RunFrame,			NULL, NULL, NULL, NULL, false },
+	//drvdetail:{"name":"tmSensor",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
 	{ "tmSensor",	TuyaMCU_Sensor_Init, TuyaMCU_Sensor_RunFrame,	NULL, NULL, NULL, NULL, false },
 #endif
-
 #ifdef ENABLE_BASIC_DRIVERS
+	//drvdetail:{"name":"NTP",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
 	{ "NTP",		NTP_Init,			NTP_OnEverySecond,			NTP_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	//drvdetail:{"name":"TESTPOWER",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
 	{ "TESTPOWER",	Test_Power_Init,	 Test_Power_RunFrame,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	//drvdetail:{"name":"TESTLED",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
 	{ "TESTLED",	Test_LED_Driver_Init, Test_LED_Driver_RunFrame, NULL, NULL, NULL, Test_LED_Driver_OnChannelChanged, false },
+	//drvdetail:{"name":"HTTPButtons",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
 	{ "HTTPButtons",	DRV_InitHTTPButtons, NULL, NULL, NULL, NULL, NULL, false },
 #endif
-
 #if ENABLE_I2C
+	//drvdetail:{"name":"I2C",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
 	{ "I2C",		DRV_I2C_Init,		DRV_I2C_EverySecond,		NULL, NULL, NULL, NULL, false },
 #endif
-
 #ifdef ENABLE_DRIVER_BL0942
+	//drvdetail:{"name":"BL0942",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
 	{ "BL0942",		BL0942_Init,		BL0942_RunFrame,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
-
-#ifdef ENABLE_DRIVER_BL0937	
+#ifdef ENABLE_DRIVER_BL0937
+	//drvdetail:{"name":"BL0937",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
 	{ "BL0937",		BL0937_Init,		BL0937_RunFrame,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
-
 #ifdef ENABLE_DRIVER_CSE7766
+	//drvdetail:{"name":"CSE7766",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
 	{ "CSE7766",	CSE7766_Init,		CSE7766_RunFrame,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
-
-#if PLATFORM_BEKEN	
+#if PLATFORM_BEKEN
+	//drvdetail:{"name":"SM16703P",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
 	{ "SM16703P",	SM16703P_Init,		NULL,						NULL, NULL, NULL, NULL, false },
+	//drvdetail:{"name":"IR",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
 	{ "IR",			DRV_IR_Init,		 NULL,						NULL, DRV_IR_RunFrame, NULL, NULL, false },
 #endif
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)	|| defined(PLATFORM_BL602)
+	//drvdetail:{"name":"DDP",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
 	{ "DDP",		DRV_DDP_Init,		NULL,						DRV_DDP_AppendInformationToHTTPIndexPage, DRV_DDP_RunFrame, DRV_DDP_Shutdown, NULL, false },
+	//drvdetail:{"name":"SSDP",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
 	{ "SSDP",		DRV_SSDP_Init,		DRV_SSDP_RunEverySecond,	NULL, DRV_SSDP_RunQuickTick, DRV_SSDP_Shutdown, NULL, false },
+	//drvdetail:{"name":"Wemo",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
 	{ "Wemo",		WEMO_Init,		NULL,		WEMO_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	//drvdetail:{"name":"DGR",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
 	{ "DGR",		DRV_DGR_Init,		DRV_DGR_RunEverySecond,		NULL, DRV_DGR_RunQuickTick, DRV_DGR_Shutdown, DRV_DGR_OnChannelChanged, false },
 #endif
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)	
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+	//drvdetail:{"name":"PWMToggler",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
 	{ "PWMToggler",	DRV_InitPWMToggler, NULL, DRV_Toggler_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	//drvdetail:{"name":"DoorSensor",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
 	{ "DoorSensor",		DoorDeepSleep_Init,		DoorDeepSleep_OnEverySecond,	DoorDeepSleep_AppendInformationToHTTPIndexPage, NULL, NULL, DoorDeepSleep_OnChannelChanged, false },
 #endif
-
 #ifdef ENABLE_DRIVER_LED
+	//drvdetail:{"name":"SM2135",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
 	{ "SM2135",		SM2135_Init,		NULL,			NULL, NULL, NULL, NULL, false },
+	//drvdetail:{"name":"BP5758D",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
 	{ "BP5758D",	BP5758D_Init,		NULL,			NULL, NULL, NULL, NULL, false },
+	//drvdetail:{"name":"BP1658CJ",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
 	{ "BP1658CJ",	BP1658CJ_Init,		NULL,			NULL, NULL, NULL, NULL, false },
+	//drvdetail:{"name":"SM2235",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
 	{ "SM2235",		SM2235_Init,		NULL,			NULL, NULL, NULL, NULL, false },
-#endif	
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
-	{ "CHT8305",	CHT8305_Init,		CHT8305_OnEverySecond,		CHT8305_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
-	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, NULL, NULL, false },
-	{ "TM1637",	TM1637_Init,		NULL,		NULL, NULL, NULL, NULL, false },
-	{ "SHT3X",	    SHT3X_Init,		SHT3X_OnEverySecond,		SHT3X_AppendInformationToHTTPIndexPage, NULL, SHT3X_StopDriver, NULL, false },
-	{ "Battery",	Batt_Init,		Batt_OnEverySecond,		Batt_AppendInformationToHTTPIndexPage, NULL, Batt_StopDriver, NULL, false },
-
 #endif
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+	//drvdetail:{"name":"CHT8305",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
+	{ "CHT8305",	CHT8305_Init,		CHT8305_OnEverySecond,		CHT8305_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	//drvdetail:{"name":"MAX72XX",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
+	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, NULL, NULL, false },
+	//drvdetail:{"name":"TM1637",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
+	{ "TM1637",	TM1637_Init,		NULL,		NULL, NULL, NULL, NULL, false },
+	//drvdetail:{"name":"SHT3X",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
+	{ "SHT3X",	    SHT3X_Init,		SHT3X_OnEverySecond,		SHT3X_AppendInformationToHTTPIndexPage, NULL, SHT3X_StopDriver, NULL, false },
+	//drvdetail:{"name":"Battery",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
+	{ "Battery",	Batt_Init,		Batt_OnEverySecond,		Batt_AppendInformationToHTTPIndexPage, NULL, Batt_StopDriver, NULL, false },
+#endif
+	//drvdetail:{"name":"Bridge",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
 	{ "Bridge",     Bridge_driver_Init, NULL,                       NULL, Bridge_driver_QuickFrame, Bridge_driver_DeInit, Bridge_driver_OnChannelChanged, false }
 };
 

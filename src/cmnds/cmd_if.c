@@ -212,6 +212,10 @@ float getPower(const char *s) {
 
 #endif
 
+float getUpTime(const char *s) {
+	return Time_getUpTimeSeconds();
+}
+
 const constant_t g_constants[] = {
 	//cnstdetail:{"name":"MQTTOn",
 	//cnstdetail:"title":"MQTTOn",
@@ -300,6 +304,11 @@ const constant_t g_constants[] = {
 	//cnstdetail:"requires":""}
 	{"$power", &getPower},
 #endif
+	//cnstdetail:{"name":"$uptime",
+	//cnstdetail:"title":"$uptime",
+	//cnstdetail:"descr":"Time since reboot in seconds",
+	//cnstdetail:"requires":""}
+	{"$uptime", &getUpTime},
 };
 static int g_totalConstants = sizeof(g_constants) / sizeof(g_constants[0]);
 
