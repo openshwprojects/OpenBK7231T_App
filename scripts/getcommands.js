@@ -809,8 +809,13 @@ for (let i = 0; i < autoexecExamples.length; i++) {
     let exe = autoexecExamples[i];
 
     autoexecsmdshort += "" + exe.title + "*";
+    autoexecsmdshort += '\n';
     autoexecsmdshort += '<br>';
-    autoexecsmdshort += "```" + exe.fileText + "```";
+    autoexecsmdshort += "```";
+    autoexecsmdshort += '\n';
+    autoexecsmdshort += exe.fileText;
+    autoexecsmdshort += '\n';
+    autoexecsmdshort += "```";
     autoexecsmdshort += '\n';
 
     autoexecsmdshort += '\n';
@@ -961,7 +966,7 @@ writeDocMD('channelTypes', channelsmdshort, channels, "Channel Types", true, gen
 writeDocMD('faq', faqmdshort, faq, "FAQ", false, generic.faq);
 writeDocMD('commands', mdshort, commands, "Console/Script commands", true, generic.commands);
 writeDocMD('commandExamples', commandExamplesmdshort, commandExamples, "Command Examples", false, generic.commandExamples);
-writeDocMD('autoexecExamples', autoexecsmdshort, autoexecExamples, "Autoexec.bat examples (configs)", false, generic.autoexecs);
+writeDocMD('autoexecExamples', autoexecsmdshort, autoexecExamples, "Autoexec.bat examples (configs)", false, generic.autoexecExamples);
 writeDocMD('commands-extended', mdlong, commands, "Console/Script commands [Extended Edition]", false, "More details on commands.")
 
 let links_md =
