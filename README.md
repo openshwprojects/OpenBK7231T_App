@@ -366,28 +366,7 @@ Please refer to this step by step guide:
 # ZN268131 example, a smart switch that allows you to connect a bistable button
     
 https://www.elektroda.com/rtvforum/topic3895572.html
-  
-# How to set relay state on device boot? (PowerOnState)
-  
-  There are two ways.
-  
-  1. Go to Config -> Startup state and set it from GUI here.
-  
-  2. Use use short startup command from Options or create "autoexec.bat" in LittleFS file system in web panel and execute commands from there.
-  
-  For example, for RGBCW LED, you can do startup command:
-   
-  > backlog led_dimmer 100; led_basecolor_rgb #FF00FF; led_enableAll 1
-  
-  For simple relay, in this example on channel number 5, you can do:
-  
-  > backlog SetChannel 5 1
-  
-  For direct PWM access (for single-color strips etc) you can do:
-  
-  > backlog SetChannel 5 90
-  
-  
+    
 # HomeAssistant Integration
 MQTT based integration with Home Assistant is possible in 2 ways from the Home Assistant configuration page (`Config > Generate Home Assistant cfg`).
 
