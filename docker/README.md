@@ -1,24 +1,31 @@
 # Docker Files for OpenBK7231T_App
 
-## Build Environment for BK7231T and BK7231N
-The `Dockerfile.BK7231x_build_env` file can be used to create a consistent Linux-based environment for building OpenBK7231T_App for the `BK7231T` and `BK7231N` platforms. This allows you to build OpenBK7231T_App on any flavor of Linux and MacOS. This should also work on Windows, but is untested.
-
-To build the image, run from within this directory:
-```sh
-docker build -t openbk7231x_build --build-arg USERNAME=$USER -f Dockerfile.BK7231x_build_env .
-```
-
-The `cd` to the root of the `OpenBK7231T` or `OpenBK7231N` SDK repo that has been set up [as described in the build instructions](https://github.com/michaelkamprath/OpenBK7231T_App/blob/main/BUILDING.md), and then start a shell prompt in the built Docker image, that binds the SDK repo as a volume in the Docker image:
+This docker will build all or some of the platforms that OpenBeken supports. To use, first build the docker image:
 
 ```sh
-docker run -it -v "$(pwd)/":/home/$USER/OpenBK7231T --user $USER  openbk7231x_build /bin/bash
+docker build -t openbk_build --build-arg USERNAME=$USER .
 ```
-Change the `OpenBK7231T` directory name in the volume mount to `OpenBK7231N` if you are building for the `OpenBK7231N` platform.
 
-Finally, at the Docker image's shell prompt, execute the following to build:
+Note that the current user name is passed through to the docker image build. This is to preserve local file permissions when OpenBeken is built.
+
+Once the docker image is build, you can use it to build the SDKs as follows (assumed you are in the current `docker` directory):
+
 ```sh
-cd ~/OpenBK7231T/
-./b.sh
+docker run -it -v "$(pwd)/..":/OpenBK7231T_App  openbk_build
 ```
 
-Again, change the `OpenBK7231T` directory name to `OpenBK7231N` if you are building for that platform. Also, the last command may be changed to the advanced build's `build_app.sh` command as described in [the build instructions](https://github.com/michaelkamprath/OpenBK7231T_App/blob/main/BUILDING.md#building-for-bk7231t). The build results will be placed into the host computer's file system as described in the build instructions. To exit the Docker image's shell prompt when the build is done, use the `exit` command.
+When complete, all target platform builds with be present in the repository's `output` directory.
+
+When running the docker image, you may pass the following environment variables with the `--env` option:
+
+* `APP_VERSION` - The version identifier for the build. If not provided, a default version will be used based on the time of the build.
+* `TARGET_SDKS` - A comma-separated list of platforms (with no spaces) that should be built. If not present, all platforms will be built. The supported platform identifiers are:
+  * `OpenBK7231T`
+  * `OpenBK7231N`
+  * `OpenXR809`
+  * `OpenBL602`
+  * `OpenW800`
+  * `OpenW600`
+
+  For example, to build `OpenBK7231T` and `OpenXR809`, the options should be `-env TARGET_SDKS="OpenBK7231T,OpenXR809"`
+* `MAKEFLAGS` - This is the standard `make` environment variable for setting default `make` flags. It is recommended to use this to configure `make` to use multiple cores. for exmaple, to use 8 cores: `--env MAKEFLAGS="-j 8"`
