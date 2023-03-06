@@ -18,10 +18,8 @@ RUN useradd -m -s /bin/bash ${USERNAME}
 COPY build_target_platforms.sh /build_target_platforms.sh
 RUN chmod 775 /build_target_platforms.sh
 
-ENV BUILD_DIRPATH="/build"
 ENV OPENBK7231T_APP_NAME="OpenBK7231T_App"
 
-RUN mkdir -p ${BUILD_DIRPATH} && chown ${USERNAME} ${BUILD_DIRPATH}
 RUN mkdir -p /${OpenBK7231T_App} && chown ${USERNAME} /${OpenBK7231T_App}
 
 USER ${USERNAME}
