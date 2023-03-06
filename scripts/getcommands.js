@@ -170,7 +170,7 @@ function getFolder(name, cb){
                                         console.error(line);
                                     } else {
                                         channels.push(chan);
-                                        console.log("Loading existing doc for " + chan.name);
+                                        //console.log("Loading existing doc for " + chan.name);
                                         chanindex[chan.name] = chan;
                                     }
                                 } catch (e) {

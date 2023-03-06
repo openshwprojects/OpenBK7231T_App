@@ -10,6 +10,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | Relay_n | (as Relay but pin logical value is inversed) |
 | Button | a typical button of Tuya device with active-low state (a button that connects IO pin to ground when pressed and also has a 10k or so pull up resistor) |
 | Button_n | as Button but pin logical value is inversed |
+| LED | an active-high LED. The internals of 'LED' are the same as of 'Relay'. Names are just separate to make it easier for users. |
 | LED_n | (as Led but pin logical value is inversed) |
 | PWM | Pulse width modulation output for LED dimmers (with MQTT dimming support from Home Assistant). Remember to set related channel to correct color index, in the RGBCW order. For CW only lights, set only CW indices. |
 | LED_WIFI | special LED to indicate WLan connection state. LED states are following: LED on = client mode successfully connected to your Router. Half a second blink - connecting to your router, please wait (or connection problem). Fast blink (200ms) - open access point mode. In safe mode (after failed boots), LED might not work. |
@@ -20,6 +21,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | DigitalInput_n | As DigitalInput as above, but inverted |
 | ToggleChannelOnToggle | this pin will toggle target channel when a value on this pin changes (with debouncing). you can connect simple two position switch here and swapping the switch will toggle target channel relay on or off |
 | DigitalInput_NoPup | As DigitalInput, but without internal programmable pullup resistor. This is used for, for example, XR809 water sensor and door sensor. |
+| DigitalInput_NoPup_n | As DigitalInput_n, but without internal programmable pullup resistor |
 | BL0937_SEL | SEL pin for BL0937 energy measuring devices. Set all BL0937 pins to autostart BL0937 driver. Don't forget to calibrate it later. |
 | BL0937_CF | CF pin for BL0937 energy measuring devices. Set all BL0937 pins to autostart BL0937 driver. Don't forget to calibrate it later. |
 | BL0937_CF1 | CF1 pin for BL0937 energy measuring devices. Set all BL0937 pins to autostart BL0937 driver. Don't forget to calibrate it later. |
@@ -39,8 +41,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | Button_NextDimmer_n | As NextDimmer, but inversed button logic |
 | AlwaysHigh | always outputs 1 |
 | AlwaysLow | always outputs 0 |
-| UCS1912_DIN | TODO |
-| SM16703P_DIN | TODO |
+| UCS1912_DIN | WIP driver, write a post on Elektroda if you need it working |
+| SM16703P_DIN | WIP driver, write a post on Elektroda if you need it working |
 | Button_NextTemperature | Button that automatically allows you to control temperature of your LED device |
 | Button_NextTemperature_n | Like Button_NextTemperature, but inversed button logic |
 | Button_ScriptOnly | This button does nothing automatically, even the linked channel is not changed. Useful for scripts, but you can still also use any buttons for scripting. |
@@ -53,10 +55,10 @@ Do not add anything here, as it will overwritten with next rebuild.
 | CHT8305_CLK | TODO |
 | SHT3X_DAT | TODO |
 | SHT3X_CLK | TODO |
-| SOFT_SDA | TODO |
-| SOFT_SCL | TODO |
-| SM2235_DAT | TODO |
-| SM2235_CLK | TODO |
+| SOFT_SDA | Generic software SDA pin for our more advanced, scriptable I2C driver. This allows you to even connect a I2C display to OBK. |
+| SOFT_SCL | Generic software SCL pin for our more advanced, scriptable I2C driver. |
+| SM2235_DAT | It works for both SM2235 and SM2335. SM2235 DAT pin for SM2235 modified-I2C twowire LED driver, used in RGBCW lights. Set both required SM2235 pins to autostart the related driver. Don't forget to Map the colors order later, so colors are not mixed. |
+| SM2235_CLK | It works for both SM2235 and SM2335. SM2235 CLK pin for SM2235 modified-I2C twowire LED driver, used in RGBCW lights. Set both required SM2235 pins to autostart the related driver. Don't forget to Map the colors order later, so colors are not mixed. |
 | BridgeForward | Motor/Relay bridge driver control signal. FORWARD direction. |
 | BridgeReverse | Motor/Relay bridge driver control signal. REVERSE direction. |
 | SmartButtonForLEDs | A single button that does all control for LED. Click it toggle power, hold to adjust brightness, double click for next color, triple click for next temperature |
