@@ -860,6 +860,8 @@ fs.writeFileSync('docs/flags.md', flagsmdshort);
 console.log('wrote flags.md');
 fs.writeFileSync('docs/constants.md', constantsmdshort);
 console.log('wrote constants.md');
+fs.writeFileSync('docs/drivers.md', driversmdshort);
+console.log('wrote drivers.md');
 fs.writeFileSync('docs/commands-extended.md', mdlong);
 console.log('wrote commands-extended.md');
 
