@@ -4,102 +4,461 @@
 
 
 typedef enum ioRole_e {
+	//iodetail:{"name":"None",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"Default pin role; this pin does nothing.",
+	//iodetail:"enum":"IOR_None",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_None,
+	//iodetail:{"name":"Relay",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"an active-high relay. This relay is closed when a logical 1 value is on linked channel",
+	//iodetail:"enum":"IOR_Relay",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_Relay,
+	//iodetail:{"name":"Relay_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"(as Relay but pin logical value is inversed)",
+	//iodetail:"enum":"IOR_Relay_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_Relay_n,
+	//iodetail:{"name":"Button",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"a typical button of Tuya device with active-low state (a button that connects IO pin to ground when pressed and also has a 10k or so pull up resistor)",
+	//iodetail:"enum":"IOR_Button",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_Button,
+	//iodetail:{"name":"Button_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"as Button but pin logical value is inversed",
+	//iodetail:"enum":"IOR_Button_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_Button_n,
+	//iodetail:{"name":"LED",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"an active-high LED. The internals of "LED" are the same as of "Relay". Names are just separate to make it easier for users.",
+	//iodetail:"enum":"IOR_LED",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_LED,
+	//iodetail:{"name":"LED_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"(as Led but pin logical value is inversed)",
+	//iodetail:"enum":"IOR_LED_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_LED_n,
+	//iodetail:{"name":"PWM",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"Pulse width modulation output for LED dimmers (with MQTT dimming support from Home Assistant). Remember to set related channel to correct color index, in the RGBCW order. For CW only lights, set only CW indices.",
+	//iodetail:"enum":"IOR_PWM",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_PWM,
+	//iodetail:{"name":"LED_WIFI",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"special LED to indicate WLan connection state. LED states are following: LED on = client mode successfully connected to your Router. Half a second blink - connecting to your router, please wait (or connection problem). Fast blink (200ms) - open access point mode. In safe mode (after failed boots), LED might not work.",
+	//iodetail:"enum":"IOR_LED_WIFI",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_LED_WIFI,
+	//iodetail:{"name":"LED_WIFI_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"As LED_WIFI, but with inversed logic.",
+	//iodetail:"enum":"IOR_LED_WIFI_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_LED_WIFI_n,
+	//iodetail:{"name":"Button_ToggleAll",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"this button toggles all channels at once",
+	//iodetail:"enum":"IOR_Button_ToggleAll",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_Button_ToggleAll,
+	//iodetail:{"name":"Button_ToggleAll_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"Button_ToggleAll as, but inversed logic of button",
+	//iodetail:"enum":"IOR_Button_ToggleAll_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_Button_ToggleAll_n,
-	// this copies directly value on pin (0 or 1) to channel
+	//iodetail:{"name":"DigitalInput",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"this is a simple digital input pin, it sets the linked channel to current logical value on it, just like digitalRead( ) from Arduino. This input has a internal pull up resistor.",
+	//iodetail:"enum":"IOR_DigitalInput",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_DigitalInput,
-	// as above, but inverted
+	//iodetail:{"name":"DigitalInput_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"As DigitalInput as above, but inverted",
+	//iodetail:"enum":"IOR_DigitalInput_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_DigitalInput_n,
+	//iodetail:{"name":"ToggleChannelOnToggle",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"this pin will toggle target channel when a value on this pin changes (with debouncing). you can connect simple two position switch here and swapping the switch will toggle target channel relay on or off",
+	//iodetail:"enum":"IOR_ToggleChannelOnToggle",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_ToggleChannelOnToggle,
-	// this copies directly value on pin (0 or 1) to channel
+	//iodetail:{"name":"DigitalInput_NoPup",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"As DigitalInput, but without internal programmable pullup resistor. This is used for, for example, XR809 water sensor and door sensor.",
+	//iodetail:"enum":"IOR_DigitalInput_NoPup",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_DigitalInput_NoPup,
-	// as above, but inverted
+	//iodetail:{"name":"DigitalInput_NoPup_n",F
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"As DigitalInput_n, but without internal programmable pullup resistor",
+	//iodetail:"enum":"IOR_DigitalInput_NoPup_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_DigitalInput_NoPup_n,
-	// energy sensor
+// energy sensor
+	//iodetail:{"name":"BL0937_SEL",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"SEL pin for BL0937 energy measuring devices. Set all BL0937 pins to autostart BL0937 driver. Don't forget to calibrate it later.",
+	//iodetail:"enum":"IOR_BL0937_SEL",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_BL0937_SEL,
+	//iodetail:{"name":"BL0937_CF",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"CF pin for BL0937 energy measuring devices. Set all BL0937 pins to autostart BL0937 driver. Don't forget to calibrate it later.",
+	//iodetail:"enum":"IOR_BL0937_CF",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_BL0937_CF,
+	//iodetail:{"name":"BL0937_CF1",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"CF1 pin for BL0937 energy measuring devices. Set all BL0937 pins to autostart BL0937 driver. Don't forget to calibrate it later.",
+	//iodetail:"enum":"IOR_BL0937_CF1",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_BL0937_CF1,
+	//iodetail:{"name":"ADC",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"Analog to Digital converter converts voltage to channel value which is later published by MQTT and also can be used to trigger scriptable events",
+	//iodetail:"enum":"IOR_ADC",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_ADC,
+	//iodetail:{"name":"SM2135_DAT",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"SM2135 DAT pin for SM2135 modified-I2C twowire LED driver, used in RGBCW lights. Set both required SM2135 pins to autostart the related driver. Don't forget to Map the colors order later, so colors are not mixed.",
+	//iodetail:"enum":"IOR_SM2135_DAT",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_SM2135_DAT,
+	//iodetail:{"name":"SM2135_CLK",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"SM2135 CLK pin for SM2135 modified-I2C twowire LED driver, used in RGBCW lights. Set both required SM2135 pins to autostart the related driver. Don't forget to Map the colors order later, so colors are not mixed.",
+	//iodetail:"enum":"IOR_SM2135_CLK",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_SM2135_CLK,
-
+	//iodetail:{"name":"BP5758D_DAT",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"BP5758D DAT pin for BP5758D modified-I2C twowire LED driver, used in RGBCW lights. Set both required BP5758D pins to autostart the related driver. Don't forget to Map the colors order later, so colors are not mixed.",
+	//iodetail:"enum":"IOR_BP5758D_DAT",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_BP5758D_DAT,
+	//iodetail:{"name":"BP5758D_CLK",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"BP5758D CLK pin for BP5758D modified-I2C twowire LED driver, used in RGBCW lights. Set both required BP5758D pins to autostart the related driver. Don't forget to Map the colors order later, so colors are not mixed.",
+	//iodetail:"enum":"IOR_BP5758D_CLK",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_BP5758D_CLK,
-
+	//iodetail:{"name":"BP1658CJ_DAT",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"BP1658CJ DAT pin for BP5758D modified-I2C twowire LED driver, used in RGBCW lights. Set both required BP1658CJ pins to autostart the related driver. Don't forget to Map the colors order later, so colors are not mixed.",
+	//iodetail:"enum":"IOR_BP1658CJ_DAT",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_BP1658CJ_DAT,
+	//iodetail:{"name":"BP1658CJ_CLK",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"BP1658CJ CLK pin for BP5758D modified-I2C twowire LED driver, used in RGBCW lights. Set both required BP1658CJ pins to autostart the related driver. Don't forget to Map the colors order later, so colors are not mixed.",
+	//iodetail:"enum":"IOR_BP1658CJ_CLK",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_BP1658CJ_CLK,
-
+	//iodetail:{"name":"PWM_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"as above, but percentage of duty is inversed. This might be useful for some special LED drivers that are using single PWM to choose between Cool white and Warm white (it also needs setting a special flag in General options)",
+	//iodetail:"enum":"IOR_PWM_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_PWM_n,
-
+	//iodetail:{"name":"IRRecv",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"IR receiver for our IRLibrary port",
+	//iodetail:"enum":"IOR_IRRecv",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_IRRecv,
+	//iodetail:{"name":"IRSend",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"IR sender for our IRLibrary port",
+	//iodetail:"enum":"IOR_IRSend",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_IRSend,
-
-	// I have a LED strip that has separate power button and a 'next mode' button
-	// It's a RGB strip
+	//iodetail:{"name":"Button_NextColor",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"for RGB strip with buttons; sets next predefined color. For a LED strip that has separate POWER and COLOR buttons.",
+	//iodetail:"enum":"IOR_Button_NextColor",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_Button_NextColor,
+	//iodetail:{"name":"Button_NextColor_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"As NextColor, but inversed button logic",
+	//iodetail:"enum":"IOR_Button_NextColor_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_Button_NextColor_n,
-
+	//iodetail:{"name":"Button_NextDimmer",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"for RGB strip with buttons; when hold, adjusts the brightness",
+	//iodetail:"enum":"IOR_Button_NextDimmer",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_Button_NextDimmer,
+	//iodetail:{"name":"Button_NextDimmer_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"As NextDimmer, but inversed button logic",
+	//iodetail:"enum":"IOR_Button_NextDimmer_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_Button_NextDimmer_n,
-
+	//iodetail:{"name":"AlwaysHigh",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"always outputs 1",
+	//iodetail:"enum":"IOR_AlwaysHigh",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_AlwaysHigh,
+	//iodetail:{"name":"AlwaysLow",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"always outputs 0",
+	//iodetail:"enum":"IOR_AlwaysLow",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_AlwaysLow,
-
+	//iodetail:{"name":"UCS1912_DIN",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"TODO",
+	//iodetail:"enum":"IOR_UCS1912_DIN",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_UCS1912_DIN,
+	//iodetail:{"name":"SM16703P_DIN",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"TODO",
+	//iodetail:"enum":"IOR_SM16703P_DIN",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_SM16703P_DIN,
-
+	//iodetail:{"name":"Button_NextTemperature",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"Button that automatically allows you to control temperature of your LED device",
+	//iodetail:"enum":"IOR_Button_NextTemperature",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_Button_NextTemperature,
+	//iodetail:{"name":"Button_NextTemperature_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"Like Button_NextTemperature, but inversed button logic",
+	//iodetail:"enum":"IOR_Button_NextTemperature_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_Button_NextTemperature_n,
-
+	//iodetail:{"name":"Button_ScriptOnly",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"This button does nothing automatically, even the linked channel is not changed. Useful for scripts, but you can still also use any buttons for scripting.",
+	//iodetail:"enum":"IOR_Button_ScriptOnly",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_Button_ScriptOnly,
+	//iodetail:{"name":"Button_ScriptOnly_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"Like Button_ScriptOnly, but inversed logic",
+	//iodetail:"enum":"IOR_Button_ScriptOnly_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_Button_ScriptOnly_n,
-
+	//iodetail:{"name":"DHT11",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"DHT11 data line. You can have multiple DHT sensors on your device. Related driver is automatically started. Results are saved in related channels to pin with that role (when editing pins, you get two textboxes to set channel indexes)",
+	//iodetail:"enum":"IOR_DHT11",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_DHT11,
+	//iodetail:{"name":"DHT12",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"DHT12 data line. You can have multiple DHT sensors on your device. Related driver is automatically started. Results are saved in related channels to pin with that role (when editing pins, you get two textboxes to set channel indexes)",
+	//iodetail:"enum":"IOR_DHT12",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_DHT12,
+	//iodetail:{"name":"DHT21",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"DHT21 data line. You can have multiple DHT sensors on your device. Related driver is automatically started. Results are saved in related channels to pin with that role (when editing pins, you get two textboxes to set channel indexes)",
+	//iodetail:"enum":"IOR_DHT21",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_DHT21,
+	//iodetail:{"name":"DHT22",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"DHT22 data line. You can have multiple DHT sensors on your device. Related driver is automatically started. Results are saved in related channels to pin with that role (when editing pins, you get two textboxes to set channel indexes)",
+	//iodetail:"enum":"IOR_DHT22",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_DHT22,
-
+	//iodetail:{"name":"CHT8305_DAT",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"TODO",
+	//iodetail:"enum":"IOR_CHT8305_DAT",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_CHT8305_DAT,
+	//iodetail:{"name":"CHT8305_CLK",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"TODO",
+	//iodetail:"enum":"IOR_CHT8305_CLK",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_CHT8305_CLK,
-
+	//iodetail:{"name":"SHT3X_DAT",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"TODO",
+	//iodetail:"enum":"IOR_SHT3X_DAT",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_SHT3X_DAT,
+	//iodetail:{"name":"SHT3X_CLK",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"TODO",
+	//iodetail:"enum":"IOR_SHT3X_CLK",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_SHT3X_CLK,
-
+	//iodetail:{"name":"SOFT_SDA",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"TODO",
+	//iodetail:"enum":"IOR_SOFT_SDA",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_SOFT_SDA,
+	//iodetail:{"name":"SOFT_SCL",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"TODO",
+	//iodetail:"enum":"IOR_SOFT_SCL",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_SOFT_SCL,
-
+	//iodetail:{"name":"SM2235_DAT",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"TODO",
+	//iodetail:"enum":"IOR_SM2235_DAT",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_SM2235_DAT,
+	//iodetail:{"name":"SM2235_CLK",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"TODO",
+	//iodetail:"enum":"IOR_SM2235_CLK",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_SM2235_CLK,
-
+	//iodetail:{"name":"BridgeForward",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"Motor/Relay bridge driver control signal. FORWARD direction.",
+	//iodetail:"enum":"IOR_BridgeForward",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_BridgeForward,
+	//iodetail:{"name":"BridgeReverse",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"Motor/Relay bridge driver control signal. REVERSE direction.",
+	//iodetail:"enum":"IOR_BridgeReverse",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_BridgeReverse,
-
-	// Smart LED button
-	// Click = toggle power
-	// Hold = control temperature
-	// Double click = next color
+	//iodetail:{"name":"SmartButtonForLEDs",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"A single button that does all control for LED. Click it toggle power, hold to adjust brightness, double click for next color, triple click for next temperature",
+	//iodetail:"enum":"IOR_SmartButtonForLEDs",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_SmartButtonForLEDs,
+	//iodetail:{"name":"SmartButtonForLEDs_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"As SmartButtonForLEDs, but inverted",
+	//iodetail:"enum":"IOR_SmartButtonForLEDs_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_SmartButtonForLEDs_n,
-
+	//iodetail:{"name":"DoorSensorWithDeepSleep",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"Setting this role will make DoorSensor driver autostart. DoorSensor will work like digital input, sending only its value on change. When there are no changes for some times, device will go into deep sleep to save battery. When a change occurs, device will wake up and report change.",
+	//iodetail:"enum":"IOR_DoorSensorWithDeepSleep",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_DoorSensorWithDeepSleep,
+	//iodetail:{"name":"DoorSensorWithDeepSleep_NoPup",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"As DoorSensorWithDeepSleep, but no pullup resistor",
+	//iodetail:"enum":"IOR_DoorSensorWithDeepSleep_NoPup",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_DoorSensorWithDeepSleep_NoPup,
-
+	//iodetail:{"name":"BAT_ADC",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"Like ADC, but for a Battery driver that does Battery measurement.",
+	//iodetail:"enum":"IOR_BAT_ADC",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_BAT_ADC,
+	//iodetail:{"name":"BAT_Relay",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"Like Relay, but for a Battery driver that does Battery measurement.",
+	//iodetail:"enum":"IOR_BAT_Relay",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_BAT_Relay,
-
+	//iodetail:{"name":"TM1637_DIO",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"TM1637 LED display driver DIO pin. Setting all required TM1637 pins will autostart related driver",
+	//iodetail:"enum":"IOR_TM1637_DIO",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_TM1637_DIO,
+	//iodetail:{"name":"TM1637_CLK",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"TM1637 LED display driver CLK pin. Setting all required TM1637 pins will autostart related driver",
+	//iodetail:"enum":"IOR_TM1637_CLK",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_TM1637_CLK,
-
+	//iodetail:{"name":"Total_Options",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"Current total number of available IOR roles",
+	//iodetail:"enum":"IOR_Total_Options",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
 	IOR_Total_Options,
 } ioRole_t;
 
@@ -107,50 +466,247 @@ typedef enum ioRole_e {
 #define IS_PIN_TEMP_HUM_SENSOR_ROLE(role) (((role)==IOR_SHT3X_DAT) || ((role)==IOR_CHT8305_DAT))
 
 typedef enum channelType_e {
+	//chandetail:{"name":"Default",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_Default",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_Default,
+	//chandetail:{"name":"Error",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_Error",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_Error,
+	//chandetail:{"name":"Temperature",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_Temperature",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_Temperature,
+	//chandetail:{"name":"Humidity",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_Humidity",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_Humidity,
-	// most likely will not be used
-	// but it's humidity value times 10
-	// TuyaMCU sends 225 instead of 22.5%
+// most likely will not be used
+// but it's humidity value times 10
+// TuyaMCU sends 225 instead of 22.5%
+	//chandetail:{"name":"Humidity_div10",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_Humidity_div10",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_Humidity_div10,
+	//chandetail:{"name":"Temperature_div10",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_Temperature_div10",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_Temperature_div10,
+	//chandetail:{"name":"Toggle",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_Toggle",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_Toggle,
-	// 0-100 range
+// 0-100 range
+	//chandetail:{"name":"Dimmer",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_Dimmer",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_Dimmer,
+	//chandetail:{"name":"LowMidHigh",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_LowMidHigh",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_LowMidHigh,
+	//chandetail:{"name":"TextField",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_TextField",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_TextField,
+	//chandetail:{"name":"ReadOnly",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_ReadOnly",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_ReadOnly,
-	// off (0) and 3 speeds
+// off (0) and 3 speeds
+	//chandetail:{"name":"OffLowMidHigh",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_OffLowMidHigh",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_OffLowMidHigh,
-	// off (0) and 5 speeds
+// off (0) and 5 speeds
+	//chandetail:{"name":"OffLowestLowMidHighHighest",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_OffLowestLowMidHighHighest",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_OffLowestLowMidHighHighest,
-	// only 5 speeds
+// only 5 speeds
+	//chandetail:{"name":"LowestLowMidHighHighest",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_LowestLowMidHighHighest",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_LowestLowMidHighHighest,
-	// like dimmer, but 0-255
+// like dimmer, but 0-255
+	//chandetail:{"name":"Dimmer256",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_Dimmer256",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_Dimmer256,
-	// like dimmer, but 0-1000
+// like dimmer, but 0-1000
+	//chandetail:{"name":"Dimmer1000",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_Dimmer1000",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_Dimmer1000,
-	// for TuyaMCU power metering
-	//NOTE: not used for BL0937 etc
+// for TuyaMCU power metering
+//NOTE: not used for BL0937 etc
+	//chandetail:{"name":"Frequency_div100",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_Frequency_div100",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_Frequency_div100,
+	//chandetail:{"name":"Voltage_div10",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_Voltage_div10",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_Voltage_div10,
+	//chandetail:{"name":"Power",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_Power",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_Power,
+	//chandetail:{"name":"Current_div100",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_Current_div100",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_Current_div100,
+	//chandetail:{"name":"ActivePower",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_ActivePower",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_ActivePower,
+	//chandetail:{"name":"PowerFactor_div1000",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_PowerFactor_div1000",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_PowerFactor_div1000,
+	//chandetail:{"name":"ReactivePower",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_ReactivePower",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_ReactivePower,
+	//chandetail:{"name":"EnergyTotal_kWh_div1000",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_EnergyTotal_kWh_div1000",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_EnergyTotal_kWh_div1000,
+	//chandetail:{"name":"EnergyExport_kWh_div1000",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_EnergyExport_kWh_div1000",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_EnergyExport_kWh_div1000,
+	//chandetail:{"name":"EnergyToday_kWh_div1000",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_EnergyToday_kWh_div1000",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_EnergyToday_kWh_div1000,
+	//chandetail:{"name":"Current_div1000",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_Current_div1000",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_Current_div1000,
+	//chandetail:{"name":"EnergyTotal_kWh_div100",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_EnergyTotal_kWh_div100",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_EnergyTotal_kWh_div100,
+	//chandetail:{"name":"OpenClosed",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_OpenClosed",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_OpenClosed,
+	//chandetail:{"name":"OpenClosed_Inv",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_OpenClosed_Inv",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_OpenClosed_Inv,
+	//chandetail:{"name":"BatteryLevelPercent",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_BatteryLevelPercent",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_BatteryLevelPercent,
+	//chandetail:{"name":"OffDimBright",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_OffDimBright",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_OffDimBright,
-
+	//chandetail:{"name":"Max",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_Max",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_Max,
 } channelType_t;
 
