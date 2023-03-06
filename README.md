@@ -52,29 +52,6 @@ OpenBeken features:
 
 For more Information refer to the [WIKI](https://github.com/openshwprojects/OpenBK7231T_App/wiki/Wiki-Home)
 
-# FAQ (Frequently Asked Questions)
-
-<em>Q: How do I enable more logging? How to make more logs visible?</em><br>
-A: First type "loglevel x" in console, where x is 0 to 7, default value is 3 (log all up to info), value 4 will also log debug logs, and value 5 will include "extradebug". Then, on online panel, also switch filter to "All" (both steps must be done for logs to show up)
-
-<em>Q: I entered wrong SSID and my device is not accessible. How to recover?</em><br>
-A: Do five short power on/power off cycles (but not too short, because device might have capacitors and they need to discharge every time). Device will go back to AP mode (aka Safe Mode)
-
-<em>Q: I somehow lost my MAC address and I am unable to change it in Options! My MAC ends with 000000, how to fix?</em><br>
-A: You have most likely overwrote the TLV header of RF partition of BK7231. For BK7231T, we have a way to restore it - open Web App, go to Flash tab, and press "Restore RF Config"
-
-<em>Q: How do I setup single button to control two relays (first on click, second on double click)?</em><br>
-A: If you set a pin role to "Button", you will get a second textbox after saving pins. First checkbox is a channel to toggle on single click, and second textbox is a channel to toggle on double click.
-
-<em>Q: My wall touch switch reacts slowly! It's laggy, how to make it react instantly?</em><br>
-A: It's like with Tasmota - go to our Options/General-Flags and set flag "6 - [BTN] Instant touch reaction instead of waiting for release (aka SetOption 13)"
-
-<em>Q: How to enter multiple startup commands? For example, to start both NTP and BL0942 drivers?</em><br>
-A: Use backlog - like in Tasmota. Open Config->Short startup command, and enter, for example: backlog startDriver BL0942; startDriver NTP; ntp_setServer 217.147.223.78
-
-<em>Q: How to configure ping watchdog to do a relay cycle when given IP does not respond for a given amount of time?</em><br>
-A: See the following example there: https://www.elektroda.com/rtvforum/viewtopic.php?p=20368812#20368812
-
 # Building
 
 OpenBeken supports online builds for all platforms (BK7231T, BK7231N, XR809, BL602, W800), but if you want to compile it yourself, see  [BUILDING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md)
