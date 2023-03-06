@@ -1,0 +1,10 @@
+[
+{
+"title": "[Configuration for EDM-01AA-EU dimmer with TuyaMCU](https://www.elektroda.com/rtvforum/topic3929151.html)",
+"file": "autoexecs/EDM-01AA-EU.bat"
+},
+{
+"title": "[Configuration for QIACHIP Universal WIFI Ceiling Fan Light Remote Control Kit - BK7231N - CB2S with TuyaMCU](https://www.elektroda.com/rtvforum/topic3895301.html)",
+"file": "autoexecs/QIACHIP-WiFi-Ceiling-Fan-Light.bat"
+}
+]
