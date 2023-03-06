@@ -662,6 +662,7 @@ function readJSONFile(path) {
 }
 
 let faq = readJSONFile("docs/json/faq.json");
+let generic = readJSONFile("docs/json/generic.json");
 
 let faqmdshort =
     `# FAQ (Frequently Asked Questions)
@@ -872,7 +873,7 @@ if (!fs.existsSync(dirPath)) {
 
 let links = [];
 
-function writeDocMD(name, content, json, label, bWriteJSON) {
+function writeDocMD(name, content, json, label, bWriteJSON, desc) {
 
     let fullName = "docs/" + name + ".md";
     fs.writeFileSync(fullName, content);
@@ -892,19 +893,20 @@ function writeDocMD(name, content, json, label, bWriteJSON) {
         content: content,
         json: json,
         fullName: fullName,
-        label: label
+        label: label,
+        desc: desc
     };
     links.push(link);
 }
 
-writeDocMD('channelTypes', channelsmdshort, channels, "Channel Types", true);
-writeDocMD('ioRoles', iosmdshort, ios, "IO/Pin Roles", true);
-writeDocMD('flags', flagsmdshort, flags, "Flags", true);
-writeDocMD('constants', constantsmdshort, cnsts, "Script constants", true);
-writeDocMD('drivers', driversmdshort, drvs, "Drivers", true);
-writeDocMD('faq', faqmdshort, faq, "FAQ", false);
-writeDocMD('commands', mdshort, commands, "Console/Script commands", true);
-writeDocMD('commands-extended', mdlong, commands, "Console/Script commands [Extended Edition]", false);
+writeDocMD('ioRoles', iosmdshort, ios, "IO/Pin Roles", true, generic.pins);
+writeDocMD('flags', flagsmdshort, flags, "Flags", true, generic.flags);
+writeDocMD('drivers', driversmdshort, drvs, "Drivers", true, generic.drivers);
+writeDocMD('constants', constantsmdshort, cnsts, "Script constants", true, generic.constants);
+writeDocMD('channelTypes', channelsmdshort, channels, "Channel Types", true, generic.channels);
+writeDocMD('faq', faqmdshort, faq, "FAQ", false, generic.faq);
+writeDocMD('commands', mdshort, commands, "Console/Script commands", true, generic.commands);
+writeDocMD('commands-extended', mdlong, commands, "Console/Script commands [Extended Edition]", false, "More details on commands.")
 
 let links_md =
     `# Documentation
@@ -924,7 +926,7 @@ for (let i = 0; i < links.length; i++) {
     let base = "https://github.com/openshwprojects/OpenBK7231T_App/blob/main/";
     let url = base + link.fullName;
     let total = link.json.length;
-    let desc = "todo";
+    let desc = link.desc;
     let textshort = `| [${link.label}](${url}) (${total} total) | ${desc} |`;
 
     // allow multi-row entries in table entries.

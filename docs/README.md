@@ -5,11 +5,11 @@ All descriptions were taken from code.
 Do not add anything here, as it will overwritten with next rebuild.
 | Section        | Comment        |
 |:------------- |------:|
-| [Channel Types](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/channelTypes.md) (35 total) | todo |
-| [IO/Pin Roles](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/ioRoles.md) (65 total) | todo |
-| [Flags](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/flags.md) (38 total) | todo |
-| [Script constants](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/constants.md) (18 total) | todo |
-| [Drivers](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/drivers.md) (28 total) | todo |
-| [FAQ](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/faq.md) (8 total) | todo |
-| [Console/Script commands](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/commands.md) (225 total) | todo |
-| [Console/Script commands [Extended Edition]](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/commands-extended.md) (225 total) | todo |
+| [IO/Pin Roles](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/ioRoles.md) (65 total) | You can set pin roles in 'Configure Module' section or use one of predefined templates in Web App. For each pin, you also set coresponding channel value. This is needed for modules with multiple relays. If you have 3 relays and 3 buttons, you need to use channel values like 1, 2, and 3. Just enter '1' in the text field, etc. |
+| [Flags](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/flags.md) (38 total) | Flags are global and allows you to alter behaviour of the device. |
+| [Drivers](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/drivers.md) (28 total) | Drivers allows you to control certain peripherals or enable certain features that are off by default. |
+| [Script constants](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/constants.md) (18 total) | Every console command that takes an integer argument supports certain constant expansion.  |
+| [Channel Types](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/channelTypes.md) (35 total) | Changing channel types is usually not required. They are needed for TuyaMCU devices. Channel type determines how the value from channel is displayed on WWW page. |
+| [FAQ](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/faq.md) (15 total) | Here is a detailed list of questions you may ask. Some information from docs is repeated here. |
+| [Console/Script commands](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/commands.md) (225 total) | There are multiple console commands that allow you to automate your devices. Commands can be entered manually in command line, can be send by HTTP (just like in Tasmota), can be send by MQTT and also can be scripted. |
+| [Console/Script commands [Extended Edition]](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/commands-extended.md) (225 total) | More details on commands. |
