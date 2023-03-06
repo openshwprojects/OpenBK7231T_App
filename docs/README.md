@@ -7,8 +7,9 @@ Do not add anything here, as it will overwritten with next rebuild.
 |:------------- |------:|
 | [Channel Types](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/channelTypes.md) (35 total) | todo |
 | [IO/Pin Roles](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/ioRoles.md) (65 total) | todo |
-| [Console/Script commands](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/commands.md) (225 total) | todo |
 | [Flags](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/flags.md) (38 total) | todo |
 | [Script constants](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/constants.md) (18 total) | todo |
 | [Drivers](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/drivers.md) (28 total) | todo |
+| [FAQ](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/faq.md) (7 total) | todo |
+| [Console/Script commands](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/commands.md) (225 total) | todo |
 | [Console/Script commands [Extended Edition]](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/commands-extended.md) (225 total) | todo |
