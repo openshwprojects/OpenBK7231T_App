@@ -1,30 +1,34 @@
 [
-{
-"question": "How do I enable more logging? How to make more logs visible?",
-"answer": "First type 'loglevel x' in console, where x is 0 to 7, default value is 3 (log all up to info), value 4 will also log debug logs, and value 5 will include 'extradebug'. Then, on online panel, also switch filter to 'All' (both steps must be done for logs to show up)"
-},
-{
-"question": "I entered wrong SSID and my device is not accessible. How to recover?",
-"answer": "Do five short power on/power off cycles (but not too short, because device might have capacitors and they need to discharge every time). Device will go back to AP mode (aka Safe Mode)"
-},
-{
-"question": "I somehow lost my MAC address and I am unable to change it in Options! My MAC ends with 000000, how to fix?",
-"answer": "You have most likely overwrote the TLV header of RF partition of BK7231. For BK7231T, we have a way to restore it - open Web App, go to Flash tab, and press 'Restore RF Config'"
-},
-{
-"question": "How do I setup single button to control two relays (first on click, second on double click)?",
-"answer": "If you set a pin role to 'Button', you will get a second textbox after saving pins. First checkbox is a channel to toggle on single click, and second textbox is a channel to toggle on double click."
-},
-{
-"question": "My wall touch switch reacts slowly! It's laggy, how to make it react instantly?",
-"answer": "It's like with Tasmota - go to our Options/General-Flags and set flag '6 - [BTN] Instant touch reaction instead of waiting for release (aka SetOption 13)'"
-},
-{
-"question": "How to enter multiple startup commands? For example, to start both NTP and BL0942 drivers?",
-"answer": "Use backlog - like in Tasmota. Open Config->Short startup command, and enter, for example: backlog startDriver BL0942; startDriver NTP; ntp_setServer 217.147.223.78"
-},
-{
-"question": "How to configure ping watchdog to do a relay cycle when given IP does not respond for a given amount of time?",
-"answer": "See the following example there: https://www.elektroda.com/rtvforum/viewtopic.php?p=20368812#20368812"
-}
+    {
+        "question": "How do I enable more logging? How to make more logs visible?",
+        "answer": "First type 'loglevel x' in console, where x is 0 to 7, default value is 3 (log all up to info), value 4 will also log debug logs, and value 5 will include 'extradebug'. Then, on online panel, also switch filter to 'All' (both steps must be done for logs to show up)"
+    },
+    {
+        "question": "I entered wrong SSID and my device is not accessible. How to recover?",
+        "answer": "Do five short power on/power off cycles (but not too short, because device might have capacitors and they need to discharge every time). Device will go back to AP mode (aka Safe Mode)"
+    },
+    {
+        "question": "I somehow lost my MAC address and I am unable to change it in Options! My MAC ends with 000000, how to fix?",
+        "answer": "You have most likely overwrote the TLV header of RF partition of BK7231. For BK7231T, we have a way to restore it - open Web App, go to Flash tab, and press 'Restore RF Config'"
+    },
+    {
+        "question": "How do I setup single button to control two relays (first on click, second on double click)?",
+        "answer": "If you set a pin role to 'Button', you will get a second textbox after saving pins. First checkbox is a channel to toggle on single click, and second textbox is a channel to toggle on double click."
+    },
+    {
+        "question": "My wall touch switch reacts slowly! It's laggy, how to make it react instantly?",
+        "answer": "It's like with Tasmota - go to our Options/General-Flags and set flag '6 - [BTN] Instant touch reaction instead of waiting for release (aka SetOption 13)'"
+    },
+    {
+        "question": "How to enter multiple startup commands? For example, to start both NTP and BL0942 drivers?",
+        "answer": "Use backlog - like in Tasmota. Open Config->Short startup command, and enter, for example: backlog startDriver BL0942; startDriver NTP; ntp_setServer 217.147.223.78"
+    },
+    {
+        "question": "How to configure ping watchdog to do a relay cycle when given IP does not respond for a given amount of time?",
+        "answer": "See the following example there: https://www.elektroda.com/rtvforum/viewtopic.php?p=20368812#20368812"
+    },
+    {
+        "question": "How to set relay state on device boot? (PowerOnState)?",
+        "answer": "There are two ways. <br> First way is to use Config -> Startup state and set it from GUI here. <br> Second way is to use short startup command from Options or create 'autoexec.bat' in LittleFS file system in web panel and execute commands from there.<br>For example, for RGBCW LED, to set 100% dimmer and red color on start, you can do startup command:<br> >backlog led_dimmer 100; led_basecolor_rgb #FF0000; led_enableAll 1<br>For simple relay, in this example on channel number 5, you can do:<br>>backlog SetChannel 5 1<br>"
+    }
 ]
