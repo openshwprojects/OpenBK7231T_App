@@ -809,6 +809,7 @@ for (let i = 0; i < commandExamples.length; i++) {
 
     commandExamplesmdshort += "" + ex.description;
     commandExamplesmdshort += '\n';
+    commandExamplesmdshort += '<br>';
     commandExamplesmdshort += "```" + ex.command + "```";
     commandExamplesmdshort += '<br>';
     commandExamplesmdshort += '\n';
