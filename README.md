@@ -181,6 +181,7 @@ LittleFS works in Windows build, it operates on 2MB memory saved in file, so you
  
 You can set pin roles in "Configure Module" section or use one of predefined templates from "Quick config" subpage.
 For each pin, you also set coresponding channel value. This is needed for modules with multiple relays. If you have 3 relays and 3 buttons, you need to use channel values like 1, 2, and 3. Just enter '1' in the text field, etc.
+
 [See full list here](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/ioRoles.md)
   
 # Safe mode
@@ -411,29 +412,7 @@ Channel types are often not required and don't have to be configured, but in som
 
 Some channels have "_div10" or "_div100" sufixes. This is for TuyaMCU. This is needed because TuyaMCU sends values as integers, so it sends, for example, 215 for 21.5C temperature, and we store it internally as 215 and only convert to float for display.
 
-| CodeName        | Description  | Screenshot  |
-| ------------- |:-------------:| -----:|
-| Toggle | Simple on/off Toggle | TODO |
-| LowMidHigh | 3 options - Low (0), Mid (1), High (2). Used for TuyaMCU Fan Controller. | TODO |
-| OffLowMidHigh | 4 options - Off(0), Low (1), Mid (2), High (3). Used for TuyaMCU Fan Controller. | TODO |
-| OffLowestLowMidHighHighest | 6 options. Used for TuyaMCU Fan Controller. | TODO |
-| LowestLowMidHighHighest | 5 options. Used for TuyaMCU Fan Controller. | TODO |
-| Dimmer | Display slider for TuyaMCU dimmer. | TODO |
-| TextField | Display textfield so you can enter any number. Used for testing, can be also used for time countdown on TuyaMCU devices. | TODO |
-| ReadOnly | Display a read only value on web panel. | TODO |
-| Temperature | Display a text value with 'C suffix, I am using it with I2C TC74 temperature sensor | TODO |
-| temperature_div10 | First divide given value by 10, then display result value with 'C suffix. This is for TuyaMCU LCD/Clock/Calendar/Temperature Sensor/Humidity meter | TODO |
-| OpenClosed | Read only value, displays "Open" if 0 and "Closed" if 1. | TODO |
-| OpenClosed_Inv | Read only value, displays "Open" if 1 and "Closed" if 0. | TODO |
-| humidity | Display value as a % humidity. | TODO |
-| humidity_div10 | Divide by 10 and display value as a % humidity. | TODO |
-| Frequency_div100 | Divide by 100 and display value as a Hz frequency. | TODO |
-| Voltage_div100 | Divide by 100 and display value as a V voltage. | TODO |
-| Power | Power in W. | TODO |
-| Voltage_div10 | Divide by 10 and display value as a V voltage. | TODO |
-| Current_div100 | Divide by 100 and display value as a A current. | TODO |
-| Current_div1000 | Divide by 1000 and display value as a A current. | TODO |
-| OffDimBright | 3 options - Off (0), Dim (1), Bright (2). Used for TuyaMCU LED indicator. | TODO |
+[See full list here](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/channels.md)
   
 # Simple TCP command server for scripting
   
