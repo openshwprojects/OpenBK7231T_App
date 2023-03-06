@@ -10,7 +10,8 @@ tuyaMcu_setBaudRate 115200
 tuyaMcu_setDimmerRange 1 1000
 // linkTuyaMCUOutputToChannel dpId verType tgChannel
 linkTuyaMCUOutputToChannel 1 bool 1
-linkTuyaMCUOutputToChannel 2 val 2```
+linkTuyaMCUOutputToChannel 2 val 2
+```
 
 
 [Configuration for QIACHIP Universal WIFI Ceiling Fan Light Remote Control Kit - BK7231N - CB2S with TuyaMCU](https://www.elektroda.com/rtvforum/topic3895301.html)*
@@ -41,6 +42,7 @@ linkTuyaMCUOutputToChannel 6 4 5
 //
 //dpId 7, dataType 2-DP_TYPE_VALUE = timer remaining
 setChannelType 6 ReadOnly
-linkTuyaMCUOutputToChannel 7 2 6```
+linkTuyaMCUOutputToChannel 7 2 6
+```
 
 

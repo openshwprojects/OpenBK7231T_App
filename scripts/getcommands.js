@@ -814,6 +814,7 @@ for (let i = 0; i < autoexecExamples.length; i++) {
     autoexecsmdshort += '\n';
     autoexecsmdshort += "```";
     autoexecsmdshort += exe.fileText;
+    autoexecsmdshort += '\n';
     autoexecsmdshort += "```";
     autoexecsmdshort += '\n';
 
