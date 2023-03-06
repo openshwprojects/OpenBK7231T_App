@@ -90,3 +90,9 @@ wm_tool.exe will then wait for device reset. Repower it or connect RESET to grou
 # OTA for W800/W801
   
   Create a HTTP server (maybe with Node-Red), then use the update mechanism by HTTP link. Give link to w800_ota.img file from the build. The second OTA mechanism (on javascript panel, by drag and drop) is not ready yet for W800/W801. Wait for device to restart, do not repower it manually.
+  
+ 
+# Troubles programming by UART?
+  
+I had some reports from users saying that they are unable to flash BK7231T with CP2102 but CH340 works. So, maybe try different USB to UART dongle. Some of them might not be reliable enough for flashing.
+  Also make sure to use a reliable 3.3V power supply. 
