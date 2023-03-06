@@ -218,7 +218,7 @@ static commandResult_t CMD_Map(const void *context, const char *cmd, const char 
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 6)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	//cmddetail:{"name":"Map","args":"[TargetChannel][InputValue][InMin][InMax][OutMin][OutMax]"
+	// [TargetChannel][InputValue][InMin][InMax][OutMin][OutMax]
 	targetChannel = Tokenizer_GetArgInteger(0);
 	input = Tokenizer_GetArgFloat(1);
 	in_min = Tokenizer_GetArgFloat(2);
