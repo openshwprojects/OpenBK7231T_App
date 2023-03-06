@@ -10,6 +10,8 @@ let drvs = [];
 let drvindex = {};
 let flags = [];
 let flagindex = {};
+let cnsts = [];
+let cnstindex = {};
 
 let inFile = 0;
 
@@ -49,6 +51,94 @@ function getFolder(name, cb){
                     // like CMD_RegisterCommand("SetChannel", "", CMD_SetChannel, "qqqqq0", NULL);
 
                     //parse enum starting with "typedef enum channelType_e {"
+                    if (headerFile && line.startsWith('typedef enum channelType_e {')) {
+                        newlines.push(lines[i]);
+                        let j;
+                        for (j = i; j < lines.length; j++) {
+                            let line2raw = lines[j];
+                            let line2 = line2raw.trim();
+                            if (line2.startsWith('//chandetail:')) {
+                                let commentlines = [];
+                                let j2;
+                                for (j2 = j; j2 < lines.length; j2++) {
+                                    let l = lines[j2].trim();
+                                    if (l.startsWith('//chandetail:')) {
+                                        l = l.slice('//chandetail:'.length);
+                                        commentlines.push(l);
+                                        newlines.push(lines[j2]);
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                // move our parsing forward to skip all found
+                                j = j2;
+                                let json = commentlines.join('\n');
+                                try {
+                                    let chan = JSON.parse(json);
+                                    if (chanindex[chan.name]) {
+                                        console.error('duplicate command docs at file: ' + file + ' line: ' + line);
+                                        console.error(line);
+                                    } else {
+                                        channels.push(chan);
+                                        console.log("Loading existing doc for " + chan.name);
+                                        chanindex[chan.name] = chan;
+                                    }
+                                } catch (e) {
+                                    console.error('error in json at file: ' + file + ' line: ' + line + ' er ' + e);
+                                    console.error(json);
+                                }
+                            } else if (line2.startsWith('//')) {
+                                newlines.push(line2);
+                                continue;
+                            } else if (line2.startsWith("ChType_")) {
+                                let chanName = line2.substr("ChType_".length);
+                                chanName = chanName.replace(/,$/, "");
+
+                                console.log("Channel type name: " + chanName);
+
+                                let chan = {
+                                    name: chanName,
+                                    title: chanName,
+                                    descr: mytrim("TODO"),
+                                    enum: "ChType_"+chanName,
+                                    file: file.slice(6),
+                                    driver: mytrim(""),
+                                };
+
+
+                                if (!chanindex[chan.name]) {
+                                    console.log("Creating doc for " + chan.name);
+                                    // it did not have a doc line before
+                                    let json = JSON.stringify(chan);
+                                    // insert CR at "fn":
+                                    json = json.split('"title":');
+                                    json = json.join('\n"title":');
+                                    json = json.split('"descr":');
+                                    json = json.join('\n"descr":');
+                                    json = json.split('"enum":');
+                                    json = json.join('\n"enum":');
+                                    json = json.split('"file":');
+                                    json = json.join('\n"file":');
+                                    json = json.split('"driver":');
+                                    json = json.join('\n"driver":');
+                                    let jsonlines = json.split('\n');
+                                    for (let j = 0; j < jsonlines.length; j++) {
+                                        jsonlines[j] = '\t//chandetail:' + jsonlines[j];
+                                    }
+                                    newlines.push(...jsonlines);
+                                    modified++;
+                                    channels.push(chan);
+                                    chanindex[chan.name] = chan;
+                                }
+                                newlines.push(lines[j]);
+                            }
+                            if (line2.endsWith('} channelType_t;')) {
+                                //newlines.push(line2raw);
+                                break;
+                            }
+                        }
+                        i = j;
+                    }
                     if (headerFile && line.startsWith('typedef enum channelType_e {')) {
                         newlines.push(lines[i]);
                         let j;
@@ -179,7 +269,7 @@ function getFolder(name, cb){
                                     file: file.slice(6),
                                 };
                                 if (!flagindex[flag.index]) {
-                                    console.log("Creating flag " + flag.enum + " with index " + flag.index);
+                                   // console.log("Creating flag " + flag.enum + " with index " + flag.index);
                                     flags.push(flag);
                                     flagindex[flag.index] = flag;
                                 }
@@ -362,6 +452,97 @@ function getFolder(name, cb){
                         }
                         i = j;
                     }
+
+                    if (sourceFile && line.startsWith('const constant_t g_constants[] = {')) {
+                        newlines.push(lines[i]);
+                        let j;
+                        for (j = i; j < lines.length; j++) {
+                            let line2raw = lines[j];
+                            let line2 = line2raw.trim();
+                            if (line2.startsWith('//cnstdetail:')) {
+                                let commentlines = [];
+                                let j2;
+                                for (j2 = j; j2 < lines.length; j2++) {
+                                    let l = lines[j2].trim();
+                                    if (l.startsWith('//cnstdetail:')) {
+                                        l = l.slice('//cnstdetail:'.length);
+                                        commentlines.push(l);
+                                        newlines.push(lines[j2]);
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                // move our parsing forward to skip all found
+                                j = j2;
+                                let json = commentlines.join('\n');
+                                try {
+                                    let cnst = JSON.parse(json);
+                                    if (cnstindex[cnst.name]) {
+                                        console.error('duplicate constant docs at file: ' + file + ' line: ' + line);
+                                        console.error(line);
+                                    } else {
+                                        cnsts.push(cnst);
+                                        cnstindex[cnst.name] = cnst;
+                                    }
+                                } catch (e) {
+                                    console.error('error in json at file: ' + file + ' line: ' + line + ' er ' + e);
+                                    console.error(json);
+                                }
+                            } else if (line2.startsWith('//')) {
+                                newlines.push(line2);
+                                continue;
+                            } else if (line2.startsWith('#')) {
+                                newlines.push(line2);
+                                continue;
+                            } else {
+                                //  console.log("line2 name: " + line2);
+                                const regex = /"([^"]+)"/; // This regular expression matches anything between quotes, but excludes the quotes themselves
+                                const startQuote = line2.indexOf('"') + 1; // Find the index of the first double-quote and add 1 to skip over it
+                                const endQuote = line2.indexOf('"', startQuote); // Find the index of the second double-quote starting from the first double-quote index
+                                let cnstName = line2.substring(startQuote, endQuote); // Extract the substring between the first and second double-quotes
+
+                                if (endQuote != -1) {
+                                    // cnstName = cnstName.replace(/,$/, "");
+
+                                    console.log("cnst type name: " + cnstName);
+
+                                    let cnst = {
+                                        name: cnstName,
+                                        title: cnstName,
+                                        descr: mytrim("TODO"),
+                                        requires: mytrim(""),
+                                    };
+
+
+                                    if (!cnstindex[cnst.name]) {
+                                        // it did not have a doc line before
+                                        let json = JSON.stringify(cnst);
+                                        // insert CR at "fn":
+                                        json = json.split('"title":');
+                                        json = json.join('\n"title":');
+                                        json = json.split('"descr":');
+                                        json = json.join('\n"descr":');
+                                        json = json.split('"requires":');
+                                        json = json.join('\n"requires":');
+                                        let jsonlines = json.split('\n');
+                                        for (let j = 0; j < jsonlines.length; j++) {
+                                            jsonlines[j] = '\t//cnstdetail:' + jsonlines[j];
+                                        }
+                                        newlines.push(...jsonlines);
+                                        modified++;
+                                        cnsts.push(cnst);
+                                        cnstindex[cnst.name] = cnst;
+                                    }
+                                    newlines.push(lines[j]);
+                                }
+                            }
+                            if (line2.endsWith('};')) {
+                                //newlines.push(line2raw);
+                                break;
+                            }
+                        }
+                        i = j;
+                    }
                     if (sourceFile && line.startsWith('//cmddetail:')){
                         let commentlines = [];
                         let j;
@@ -499,6 +680,18 @@ Do not add anything here, as it will overwritten with next rebuild.
 | ID |   Description  |
 |:--| -------:|
 `;
+let driversmdshort =
+    `# Drivers
+Here is the latest, up to date drivers list.
+This file was autogenerated by running 'node scripts/getcommands.js' in the repository.
+All descriptions were taken from code.
+Remember that some drivers might not be yet enabled on certain platforms,
+but we can enable them for you per request. Some drivers might also be WIP.
+Do not add anything here, as it will overwritten with next rebuild.
+| Driver        | Description  |
+|:------------- | -----:|
+`;
+
 let mdshort = 
 `# Commands
 Here is the latest, up to date command list.
@@ -558,6 +751,19 @@ mdlong += '\n';
 
 
 
+for (let i = 0; i < drvs.length; i++) {
+
+
+    let drv = drvs[i];
+
+    let textshort = `| ${drv.name} |  ${drv.descr} |`;
+
+    // allow multi-row entries in table entries.
+    textshort = textshort.replace(/\n/g, '<br/>');
+
+    driversmdshort += textshort;
+    driversmdshort += '\n';
+}
 for (let i = 0; i < channels.length; i++) {
 
 
@@ -614,6 +820,10 @@ fs.writeFileSync(`${dirPath}/ioRoles.json`, JSON.stringify(ios, null, 2));
 console.log('wrote json/ioRoles.json');
 fs.writeFileSync(`${dirPath}/flags.json`, JSON.stringify(flags, null, 2));
 console.log('wrote json/flags.json');
+fs.writeFileSync(`${dirPath}/drivers.json`, JSON.stringify(drvs, null, 2));
+console.log('wrote json/drivers.json');
+fs.writeFileSync(`${dirPath}/constants.json`, JSON.stringify(drvs, null, 2));
+console.log('wrote json/constants.json');
 
 fs.writeFileSync('docs/channelTypes.md', channelsmdshort);
 console.log('wrote channelTypes.md');
