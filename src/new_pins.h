@@ -342,15 +342,15 @@ typedef enum ioRole_e {
 	//iodetail:"driver":""}
 	IOR_CHT8305_CLK,
 	//iodetail:{"name":"SHT3X_DAT",
-	//iodetail:"title":"TODO",
-	//iodetail:"descr":"TODO",
+	//iodetail:"title":"TODO",	
+	//iodetail:"descr":"Humidity/temperature sensor DATA pin. Driver will autostart if both required pins are set. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html)",
 	//iodetail:"enum":"IOR_SHT3X_DAT",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_SHT3X_DAT,
 	//iodetail:{"name":"SHT3X_CLK",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"TODO",
+	//iodetail:"descr":"Humidity/temperature sensor CLOCK pin. Driver will autostart if both required pins are set. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html)",
 	//iodetail:"enum":"IOR_SHT3X_CLK",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
@@ -413,7 +413,7 @@ typedef enum ioRole_e {
 	IOR_SmartButtonForLEDs_n,
 	//iodetail:{"name":"DoorSensorWithDeepSleep",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"Setting this role will make DoorSensor driver autostart. DoorSensor will work like digital input, sending only its value on change. When there are no changes for some times, device will go into deep sleep to save battery. When a change occurs, device will wake up and report change.",
+	//iodetail:"descr":"Setting this role will make DoorSensor driver autostart. DoorSensor will work like digital input, sending only its value on change. When there are no changes for some times, device will go into deep sleep to save battery. When a change occurs, device will wake up and report change. See [a door sensor example here](https://www.elektroda.com/rtvforum/topic3960149.html)",
 	//iodetail:"enum":"IOR_DoorSensorWithDeepSleep",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
@@ -427,14 +427,14 @@ typedef enum ioRole_e {
 	IOR_DoorSensorWithDeepSleep_NoPup,
 	//iodetail:{"name":"BAT_ADC",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"Like ADC, but for a Battery driver that does Battery measurement.",
+	//iodetail:"descr":"Like ADC, but for a Battery driver that does Battery measurement. See [battery driver topic here](https://www.elektroda.com/rtvforum/topic3959103.html)",
 	//iodetail:"enum":"IOR_BAT_ADC",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_BAT_ADC,
 	//iodetail:{"name":"BAT_Relay",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"Like Relay, but for a Battery driver that does Battery measurement.",
+	//iodetail:"descr":"Like Relay, but for a Battery driver that does Battery measurement. See [battery driver topic here](https://www.elektroda.com/rtvforum/topic3959103.html)",
 	//iodetail:"enum":"IOR_BAT_Relay",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}

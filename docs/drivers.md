@@ -7,8 +7,8 @@ but we can enable them for you per request. Some drivers might also be WIP.
 Do not add anything here, as it will overwritten with next rebuild.
 | Driver        | Description  |
 |:------------- | -----:|
-| TuyaMCU |  TuyaMCU is a protocol used for communication between WiFI module and external MCU. This protocol is using usually RX1/TX1 port of BK chips. See [TuyaMCU dimmer example](https://www.elektroda.com/rtvforum/topic3929151.html), [TH06 LCD humidity/temperature sensor example](https://www.elektroda.com/rtvforum/topic3942730.html), [fan controller example](https://www.elektroda.com/rtvforum/topic3908093.html), [simple switch example](https://www.elektroda.com/rtvforum/topic3906443.html) |
-| tmSensor |  tmSensor must be used only when TuyaMCU is already started. tmSensor is a TuyaMcu Sensor, it's used for Low Power TuyaMCU communication on devices like TuyaMCU door sensor, or TuyaMCU humidity sensor. After device reboots, tmSensor uses TuyaMCU to request data update from the sensor and reports it on MQTT. Then MCU turns off WiFi module again and goes back to sleep. See an [example here](https://www.elektroda.com/rtvforum/topic3914412.html). |
+| TuyaMCU |  TuyaMCU is a protocol used for communication between WiFI module and external MCU. This protocol is using usually RX1/TX1 port of BK chips. See [TuyaMCU dimmer example](https://www.elektroda.com/rtvforum/topic3929151.html), see [TH06 LCD humidity/temperature sensor example](https://www.elektroda.com/rtvforum/topic3942730.html), see [fan controller example](https://www.elektroda.com/rtvforum/topic3908093.html), see [simple switch example](https://www.elektroda.com/rtvforum/topic3906443.html) |
+| tmSensor |  tmSensor must be used only when TuyaMCU is already started. tmSensor is a TuyaMcu Sensor, it's used for Low Power TuyaMCU communication on devices like TuyaMCU door sensor, or TuyaMCU humidity sensor. After device reboots, tmSensor uses TuyaMCU to request data update from the sensor and reports it on MQTT. Then MCU turns off WiFi module again and goes back to sleep. See an [example door sensor here](https://www.elektroda.com/rtvforum/topic3914412.html). |
 | NTP |  NTP driver is required to get current time and date from web. Without it, there is no correct datetime. |
 | TESTPOWER |  This is a fake POWER measuring socket driver, only for testing |
 | TESTLED |  This is a fake I2C LED driver, only for testing |
@@ -18,7 +18,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | BL0937 |  BL0937 is a power-metering chip which uses custom protocol to report data. It requires setting 3 pins in pin config: CF, CF1 and SEL |
 | CSE7766 |  BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK |
 | SM16703P |  WIP driver |
-| IR |  IRLibrary wrapper, so you can receive remote signals and send them. |
+| IR |  IRLibrary wrapper, so you can receive remote signals and send them. See [forum discussion here](https://www.elektroda.com/rtvforum/topic3920360.html), also see [LED strip and IR YT video](https://www.youtube.com/watch?v=KU0tDwtjfjw) |
 | DDP |  DDP is a LED control protocol that is using UDP. You can use xLights or any other app to control OBK LEDs that way. |
 | SSDP |  SSDP is a discovery protocol, so BK devices can show up in, for example, Windows network section |
 | Wemo |  Wemo emulation for Alexa. You must also start SSDP so it can run, because it depends on SSDP discovery. |
@@ -30,8 +30,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | BP1658CJ |  BP1658CJ custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both BP1658CJ pin roles. This may need you to remap the RGBCW indexes with BP1658CJ_Map command |
 | SM2235 |  SM2335 andd SM2235 custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both SM2235 pin roles. This may need you to remap the RGBCW indexes with SM2235_Map command |
 | CHT8305 |  TODO |
-| MAX72XX |  TODO |
+| MAX72XX |  WIP driver |
 | TM1637 |  Driver for 7-segment LED display with DIO/CLK interface |
-| SHT3X |  TODO |
+| SHT3X |  Humidity/temperature sensor. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html) |
 | Battery |  Custom mechanism to measure battery level with ADC and an optional relay. See [example here](https://www.elektroda.com/rtvforum/topic3959103.html). |
 | Bridge |  TODO |

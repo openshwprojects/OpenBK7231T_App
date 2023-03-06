@@ -68,12 +68,12 @@ static driver_t g_drivers[] = {
 #ifdef ENABLE_DRIVER_TUYAMCU
 	//drvdetail:{"name":"TuyaMCU",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"TuyaMCU is a protocol used for communication between WiFI module and external MCU. This protocol is using usually RX1/TX1 port of BK chips. See [TuyaMCU dimmer example](https://www.elektroda.com/rtvforum/topic3929151.html), [TH06 LCD humidity/temperature sensor example](https://www.elektroda.com/rtvforum/topic3942730.html), [fan controller example](https://www.elektroda.com/rtvforum/topic3908093.html), [simple switch example](https://www.elektroda.com/rtvforum/topic3906443.html)",
+	//drvdetail:"descr":"TuyaMCU is a protocol used for communication between WiFI module and external MCU. This protocol is using usually RX1/TX1 port of BK chips. See [TuyaMCU dimmer example](https://www.elektroda.com/rtvforum/topic3929151.html), see [TH06 LCD humidity/temperature sensor example](https://www.elektroda.com/rtvforum/topic3942730.html), see [fan controller example](https://www.elektroda.com/rtvforum/topic3908093.html), see [simple switch example](https://www.elektroda.com/rtvforum/topic3906443.html)",
 	//drvdetail:"requires":""}
 	{ "TuyaMCU",	TuyaMCU_Init,		TuyaMCU_RunFrame,			NULL, NULL, NULL, NULL, false },
 	//drvdetail:{"name":"tmSensor",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"tmSensor must be used only when TuyaMCU is already started. tmSensor is a TuyaMcu Sensor, it's used for Low Power TuyaMCU communication on devices like TuyaMCU door sensor, or TuyaMCU humidity sensor. After device reboots, tmSensor uses TuyaMCU to request data update from the sensor and reports it on MQTT. Then MCU turns off WiFi module again and goes back to sleep. See an [example here](https://www.elektroda.com/rtvforum/topic3914412.html).",
+	//drvdetail:"descr":"tmSensor must be used only when TuyaMCU is already started. tmSensor is a TuyaMcu Sensor, it's used for Low Power TuyaMCU communication on devices like TuyaMCU door sensor, or TuyaMCU humidity sensor. After device reboots, tmSensor uses TuyaMCU to request data update from the sensor and reports it on MQTT. Then MCU turns off WiFi module again and goes back to sleep. See an [example door sensor here](https://www.elektroda.com/rtvforum/topic3914412.html).",
 	//drvdetail:"requires":""}
 	{ "tmSensor",	TuyaMCU_Sensor_Init, TuyaMCU_Sensor_RunFrame,	NULL, NULL, NULL, NULL, false },
 #endif
@@ -135,7 +135,7 @@ static driver_t g_drivers[] = {
 	{ "SM16703P",	SM16703P_Init,		NULL,						NULL, NULL, NULL, NULL, false },
 	//drvdetail:{"name":"IR",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"IRLibrary wrapper, so you can receive remote signals and send them.",
+	//drvdetail:"descr":"IRLibrary wrapper, so you can receive remote signals and send them. See [forum discussion here](https://www.elektroda.com/rtvforum/topic3920360.html), also see [LED strip and IR YT video](https://www.youtube.com/watch?v=KU0tDwtjfjw)",
 	//drvdetail:"requires":""}
 	{ "IR",			DRV_IR_Init,		 NULL,						NULL, DRV_IR_RunFrame, NULL, NULL, false },
 #endif
@@ -203,7 +203,7 @@ static driver_t g_drivers[] = {
 	{ "CHT8305",	CHT8305_Init,		CHT8305_OnEverySecond,		CHT8305_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 	//drvdetail:{"name":"MAX72XX",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"TODO",
+	//drvdetail:"descr":"WIP driver",
 	//drvdetail:"requires":""}
 	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, NULL, NULL, false },
 	//drvdetail:{"name":"TM1637",
@@ -213,7 +213,7 @@ static driver_t g_drivers[] = {
 	{ "TM1637",	TM1637_Init,		NULL,		NULL, NULL, NULL, NULL, false },
 	//drvdetail:{"name":"SHT3X",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"TODO",
+	//drvdetail:"descr":"Humidity/temperature sensor. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html)",
 	//drvdetail:"requires":""}
 	{ "SHT3X",	    SHT3X_Init,		SHT3X_OnEverySecond,		SHT3X_AppendInformationToHTTPIndexPage, NULL, SHT3X_StopDriver, NULL, false },
 	//drvdetail:{"name":"Battery",

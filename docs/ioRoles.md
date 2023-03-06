@@ -53,8 +53,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | DHT22 | DHT22 data line. You can have multiple DHT sensors on your device. Related driver is automatically started. Results are saved in related channels to pin with that role (when editing pins, you get two textboxes to set channel indexes) |
 | CHT8305_DAT | TODO |
 | CHT8305_CLK | TODO |
-| SHT3X_DAT | TODO |
-| SHT3X_CLK | TODO |
+| SHT3X_DAT | Humidity/temperature sensor DATA pin. Driver will autostart if both required pins are set. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html) |
+| SHT3X_CLK | Humidity/temperature sensor CLOCK pin. Driver will autostart if both required pins are set. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html) |
 | SOFT_SDA | Generic software SDA pin for our more advanced, scriptable I2C driver. This allows you to even connect a I2C display to OBK. |
 | SOFT_SCL | Generic software SCL pin for our more advanced, scriptable I2C driver. |
 | SM2235_DAT | It works for both SM2235 and SM2335. SM2235 DAT pin for SM2235 modified-I2C twowire LED driver, used in RGBCW lights. Set both required SM2235 pins to autostart the related driver. Don't forget to Map the colors order later, so colors are not mixed. |
@@ -63,10 +63,10 @@ Do not add anything here, as it will overwritten with next rebuild.
 | BridgeReverse | Motor/Relay bridge driver control signal. REVERSE direction. |
 | SmartButtonForLEDs | A single button that does all control for LED. Click it toggle power, hold to adjust brightness, double click for next color, triple click for next temperature |
 | SmartButtonForLEDs_n | As SmartButtonForLEDs, but inverted |
-| DoorSensorWithDeepSleep | Setting this role will make DoorSensor driver autostart. DoorSensor will work like digital input, sending only its value on change. When there are no changes for some times, device will go into deep sleep to save battery. When a change occurs, device will wake up and report change. |
+| DoorSensorWithDeepSleep | Setting this role will make DoorSensor driver autostart. DoorSensor will work like digital input, sending only its value on change. When there are no changes for some times, device will go into deep sleep to save battery. When a change occurs, device will wake up and report change. See [a door sensor example here](https://www.elektroda.com/rtvforum/topic3960149.html) |
 | DoorSensorWithDeepSleep_NoPup | As DoorSensorWithDeepSleep, but no pullup resistor |
-| BAT_ADC | Like ADC, but for a Battery driver that does Battery measurement. |
-| BAT_Relay | Like Relay, but for a Battery driver that does Battery measurement. |
+| BAT_ADC | Like ADC, but for a Battery driver that does Battery measurement. See [battery driver topic here](https://www.elektroda.com/rtvforum/topic3959103.html) |
+| BAT_Relay | Like Relay, but for a Battery driver that does Battery measurement. See [battery driver topic here](https://www.elektroda.com/rtvforum/topic3959103.html) |
 | TM1637_DIO | TM1637 LED display driver DIO pin. Setting all required TM1637 pins will autostart related driver |
 | TM1637_CLK | TM1637 LED display driver CLK pin. Setting all required TM1637 pins will autostart related driver |
 | Total_Options | Current total number of available IOR roles |

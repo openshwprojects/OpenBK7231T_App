@@ -386,7 +386,7 @@
   {
     "name": "SHT3X_DAT",
     "title": "TODO",
-    "descr": "TODO",
+    "descr": "Humidity/temperature sensor DATA pin. Driver will autostart if both required pins are set. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html)",
     "enum": "IOR_SHT3X_DAT",
     "file": "new_pins.h",
     "driver": ""
@@ -394,7 +394,7 @@
   {
     "name": "SHT3X_CLK",
     "title": "TODO",
-    "descr": "TODO",
+    "descr": "Humidity/temperature sensor CLOCK pin. Driver will autostart if both required pins are set. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html)",
     "enum": "IOR_SHT3X_CLK",
     "file": "new_pins.h",
     "driver": ""
@@ -466,7 +466,7 @@
   {
     "name": "DoorSensorWithDeepSleep",
     "title": "TODO",
-    "descr": "Setting this role will make DoorSensor driver autostart. DoorSensor will work like digital input, sending only its value on change. When there are no changes for some times, device will go into deep sleep to save battery. When a change occurs, device will wake up and report change.",
+    "descr": "Setting this role will make DoorSensor driver autostart. DoorSensor will work like digital input, sending only its value on change. When there are no changes for some times, device will go into deep sleep to save battery. When a change occurs, device will wake up and report change. See [a door sensor example here](https://www.elektroda.com/rtvforum/topic3960149.html)",
     "enum": "IOR_DoorSensorWithDeepSleep",
     "file": "new_pins.h",
     "driver": ""
@@ -482,7 +482,7 @@
   {
     "name": "BAT_ADC",
     "title": "TODO",
-    "descr": "Like ADC, but for a Battery driver that does Battery measurement.",
+    "descr": "Like ADC, but for a Battery driver that does Battery measurement. See [battery driver topic here](https://www.elektroda.com/rtvforum/topic3959103.html)",
     "enum": "IOR_BAT_ADC",
     "file": "new_pins.h",
     "driver": ""
@@ -490,7 +490,7 @@
   {
     "name": "BAT_Relay",
     "title": "TODO",
-    "descr": "Like Relay, but for a Battery driver that does Battery measurement.",
+    "descr": "Like Relay, but for a Battery driver that does Battery measurement. See [battery driver topic here](https://www.elektroda.com/rtvforum/topic3959103.html)",
     "enum": "IOR_BAT_Relay",
     "file": "new_pins.h",
     "driver": ""
