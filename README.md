@@ -181,33 +181,8 @@ LittleFS works in Windows build, it operates on 2MB memory saved in file, so you
  
 You can set pin roles in "Configure Module" section or use one of predefined templates from "Quick config" subpage.
 For each pin, you also set coresponding channel value. This is needed for modules with multiple relays. If you have 3 relays and 3 buttons, you need to use channel values like 1, 2, and 3. Just enter '1' in the text field, etc.
-Currently available pin roles:
-- Button - a typical button of Tuya device with active-low state (a button that connects IO pin to ground when pressed and also has a 10k or so pull up resistor)
-- Button_n (as Button but pin logical value is inversed)
-- Relay - an active-high relay. This relay is closed when a logical 1 value is on linked channel
-- Relay_n (as Relay but pin logical value is inversed)
-- LED - an active-high LED. The internals of "LED" are the same as of "Relay". Names are just separate to make it easier for users.
-- LED_n (as Led but pin logical value is inversed)
-- Button Toggle All - this button toggles all channels at once
-- Button Toggle All_n (as above but pin logical value is inversed)
-- PWM - pulse width modulation output for LED dimmers (with MQTT dimming support from Home Assistant)
-- PWM_n - as above, but percentage of duty is inversed. This might be useful for some special LED drivers that are using single PWM to choose between Cool white and Warm white (it also needs setting a special flag in General options)
-- WiFi LED - special LED to indicate WLan connection state. LED states are following: LED on = client mode successfully connected to your Router. Half a second blink - connecting to your router, please wait (or connection problem). Fast blink (200ms) - open access point mode. In safe mode (after failed boots), LED might not work.
-- DigitalInput - this is a simple digital input pin, it sets the linked channel to current logical value on it, just like digitalRead( ) from Arduino. This input has a internal pull up resistor.
-- DigitalInput_n (as above but inversed)
-- ToggleChannelOnToggle - this pin will toggle target channel when a value on this pin changes (with debouncing). you can connect simple two position switch here and swapping the switch will toggle target channel relay on or off
-- DigitalInput_NoPullUp - same as DigitalInput but with no programmable pull up resistor. This is used for, for example, XR809 water sensor and door sensor.
-- DigitalInput_NoPullUp_n (as above but inversed)
-- ADC (Analog to Digital converter) - converts voltage to channel value which is later published by MQTT and also can be used to trigger scriptable events
-- AlwaysHigh - always outputs 1
-- AlwaysLow - always outputs 0
-- Btn_NextColor (and _n) - for RGB strip with buttons; sets next predefined color
-- Btn_NextDimmer (and _n) - for RGB strip with buttons; when hold, adjusts the brightness
-- IRRecv - IR receiver
-- IRSend - IR sender 
-- PWM_n - as PWM, but inversed value
-- BridgeFWD - Motor/Relay bridge driver control signal. FORWARD direction.
-- BridgeREV - Motor/Relay bridge driver control signal. REVERSE direction.
+
+[See full list here](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/ioRoles.md)
   
 # Safe mode
   
@@ -437,29 +412,7 @@ Channel types are often not required and don't have to be configured, but in som
 
 Some channels have "_div10" or "_div100" sufixes. This is for TuyaMCU. This is needed because TuyaMCU sends values as integers, so it sends, for example, 215 for 21.5C temperature, and we store it internally as 215 and only convert to float for display.
 
-| CodeName        | Description  | Screenshot  |
-| ------------- |:-------------:| -----:|
-| Toggle | Simple on/off Toggle | TODO |
-| LowMidHigh | 3 options - Low (0), Mid (1), High (2). Used for TuyaMCU Fan Controller. | TODO |
-| OffLowMidHigh | 4 options - Off(0), Low (1), Mid (2), High (3). Used for TuyaMCU Fan Controller. | TODO |
-| OffLowestLowMidHighHighest | 6 options. Used for TuyaMCU Fan Controller. | TODO |
-| LowestLowMidHighHighest | 5 options. Used for TuyaMCU Fan Controller. | TODO |
-| Dimmer | Display slider for TuyaMCU dimmer. | TODO |
-| TextField | Display textfield so you can enter any number. Used for testing, can be also used for time countdown on TuyaMCU devices. | TODO |
-| ReadOnly | Display a read only value on web panel. | TODO |
-| Temperature | Display a text value with 'C suffix, I am using it with I2C TC74 temperature sensor | TODO |
-| temperature_div10 | First divide given value by 10, then display result value with 'C suffix. This is for TuyaMCU LCD/Clock/Calendar/Temperature Sensor/Humidity meter | TODO |
-| OpenClosed | Read only value, displays "Open" if 0 and "Closed" if 1. | TODO |
-| OpenClosed_Inv | Read only value, displays "Open" if 1 and "Closed" if 0. | TODO |
-| humidity | Display value as a % humidity. | TODO |
-| humidity_div10 | Divide by 10 and display value as a % humidity. | TODO |
-| Frequency_div100 | Divide by 100 and display value as a Hz frequency. | TODO |
-| Voltage_div100 | Divide by 100 and display value as a V voltage. | TODO |
-| Power | Power in W. | TODO |
-| Voltage_div10 | Divide by 10 and display value as a V voltage. | TODO |
-| Current_div100 | Divide by 100 and display value as a A current. | TODO |
-| Current_div1000 | Divide by 1000 and display value as a A current. | TODO |
-| OffDimBright | 3 options - Off (0), Dim (1), Bright (2). Used for TuyaMCU LED indicator. | TODO |
+[See full list here](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/channelTypes.md)
   
 # Simple TCP command server for scripting
   
