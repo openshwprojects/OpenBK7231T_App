@@ -256,6 +256,22 @@
     "driver": ""
   },
   {
+    "name": "LowMidHighHighest",
+    "title": "TODO",
+    "descr": "Like LowMidHigh, but with 4 options. Some of TuyaMCU fans might require that.",
+    "enum": "ChType_LowMidHighHighest",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "OffLowMidHighHighest",
+    "title": "TODO",
+    "descr": "Like LowMidHigh, but with 5 options. Some of TuyaMCU fans might require that.",
+    "enum": "ChType_OffLowMidHighHighest",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
     "name": "Max",
     "title": "TODO",
     "descr": "This is the current total number of available channel types.",

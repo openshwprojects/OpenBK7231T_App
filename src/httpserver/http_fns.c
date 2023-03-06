@@ -446,16 +446,28 @@ int http_fn_index(http_request_t* request) {
 			poststr(request, "</td></tr>");
 
 		}
-		else if (channelType == ChType_OffLowMidHigh || channelType == ChType_OffLowestLowMidHighHighest || channelType == ChType_LowestLowMidHighHighest) {
+		else if (channelType == ChType_OffLowMidHigh || channelType == ChType_OffLowestLowMidHighHighest 
+			|| channelType == ChType_LowestLowMidHighHighest || channelType == ChType_LowMidHighHighest
+			|| channelType == ChType_OffLowMidHighHighest) {
 			const char** types;
 			const char* types4[] = { "Off","Low","Mid","High" };
+			const char* typesLowMidHighHighest[] = { "Low","Mid","High","Highest" };
+			const char* typesOffLowMidHighHighest[] = { "Off", "Low","Mid","High","Highest" };
 			const char* types6[] = { "Off", "Lowest", "Low", "Mid", "High", "Highest" };
 			const char* types5NoOff[] = { "Lowest", "Low", "Mid", "High", "Highest" };
 			int numTypes;
-
+			
 			if (channelType == ChType_OffLowMidHigh) {
 				types = types4;
 				numTypes = 4;
+			}
+			else if (channelType == ChType_LowMidHighHighest) {
+				types = typesLowMidHighHighest;
+				numTypes = 4;
+			}
+			else if (channelType == ChType_OffLowMidHighHighest) {
+				types = typesOffLowMidHighHighest;
+				numTypes = 5;
 			}
 			else if (channelType == ChType_LowestLowMidHighHighest) {
 				types = types5NoOff;

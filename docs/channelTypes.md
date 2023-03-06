@@ -37,4 +37,6 @@ Do not add anything here, as it will overwritten with next rebuild.
 | OpenClosed_Inv |  Like OpenClosed, but values are inversed. |
 | BatteryLevelPercent |  This will show current value as a battery level percent on the main WWW panel. |
 | OffDimBright |  A 3 options radio button for lighting control. |
+| LowMidHighHighest |  Like LowMidHigh, but with 4 options. Some of TuyaMCU fans might require that. |
+| OffLowMidHighHighest |  Like LowMidHigh, but with 5 options. Some of TuyaMCU fans might require that. |
 | Max |  This is the current total number of available channel types. |

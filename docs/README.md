@@ -5,7 +5,7 @@ All descriptions were taken from code.
 Do not add anything here, as it will overwritten with next rebuild.
 | Section        | Comment        |
 |:------------- |------:|
-| [Channel Types](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/channelTypes.md) (33 total) | todo |
+| [Channel Types](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/channelTypes.md) (35 total) | todo |
 | [IO/Pin Roles](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/ioRoles.md) (65 total) | todo |
 | [Console/Script commands](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/commands.md) (225 total) | todo |
 | [Flags](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/flags.md) (38 total) | todo |

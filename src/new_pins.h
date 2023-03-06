@@ -690,6 +690,20 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_OffDimBright,
+	//chandetail:{"name":"LowMidHighHighest",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Like LowMidHigh, but with 4 options. Some of TuyaMCU fans might require that.",
+	//chandetail:"enum":"ChType_LowMidHighHighest",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_LowMidHighHighest,
+	//chandetail:{"name":"OffLowMidHighHighest",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Like LowMidHigh, but with 5 options. Some of TuyaMCU fans might require that.",
+	//chandetail:"enum":"ChType_OffLowMidHighHighest",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_OffLowMidHighHighest,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
