@@ -458,10 +458,6 @@ Note: Currently, discovery is only implemented for light and relay entities.
   https://www.elektroda.pl/rtvforum/viewtopic.php?t=3906898
   
   
-# Troubles programming by UART?
-  
-I had some reports from users saying that they are unable to flash BK7231T with CP2102 but CH340 works. So, maybe try different USB to UART dongle. Some of them might not be reliable enough for flashing.
-  
 # Futher reading
   
 For technical insights and generic SDK information related to Bekken and XRadio modules, please refer:
