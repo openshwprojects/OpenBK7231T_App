@@ -12,6 +12,10 @@
 "file": "autoexecs/TH06-thermometer-hygrometer.bat"
 },
 {
+"title": "[Configuration for controlling LED strip with IR receiver by TV Remote](https://www.elektroda.com/rtvforum/topic3944210.html)",
+"file": "autoexecs/LED-strip-with-IR-receiver.bat"
+},
+{
 "title": "[Configuration for Tuya ATORCH AT4P(WP/BW) Smartlife Energy monitor (BK7231N/C3BS/CH573F/BL0924)](https://www.elektroda.com/rtvforum/topic3941692.html)",
 "file": "autoexecs/ATORCH-AT4P-Smartlife-Energy-Monitor.bat"
 }
