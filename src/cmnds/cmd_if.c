@@ -213,23 +213,91 @@ float getPower(const char *s) {
 #endif
 
 const constant_t g_constants[] = {
+	//cnstdetail:{"name":"MQTTOn",
+	//cnstdetail:"title":"MQTTOn",
+	//cnstdetail:"descr":"Legacy variable, without $ prefix. Returns 1 if MQTT is connected, otherwise 0.",
+	//cnstdetail:"requires":""}
 	{"MQTTOn", &getMQTTOn},
+	//cnstdetail:{"name":"$MQTTOn",
+	//cnstdetail:"title":"$MQTTOn",
+	//cnstdetail:"descr":"Returns 1 if MQTT is connected, otherwise 0.",
+	//cnstdetail:"requires":""}
 	{"$MQTTOn", &getMQTTOn},
+	//cnstdetail:{"name":"$CH***",
+	//cnstdetail:"title":"$CH***",
+	//cnstdetail:"descr":"Provides channel access, so you can do math expressions on channel values. $CH1 is channel 1, $CH20 is channel 20, $CH140 is channel 140, etc",
+	//cnstdetail:"requires":""}
 	{"$CH***", &getChannelValue},
+	//cnstdetail:{"name":"$CH**",
+	//cnstdetail:"title":"$CH**",
+	//cnstdetail:"descr":"Provides channel access, as above.",
+	//cnstdetail:"requires":""}
 	{"$CH**", &getChannelValue},
+	//cnstdetail:{"name":"$CH*",
+	//cnstdetail:"title":"$CH*",
+	//cnstdetail:"descr":"Provides channel access, as above.",
+	//cnstdetail:"requires":""}
 	{"$CH*", &getChannelValue},
+	//cnstdetail:{"name":"$led_dimmer",
+	//cnstdetail:"title":"$led_dimmer",
+	//cnstdetail:"descr":"Current value of LED dimmer, 0-100 range",
+	//cnstdetail:"requires":""}
 	{"$led_dimmer", &getLedDimmer},
+	//cnstdetail:{"name":"$led_enableAll",
+	//cnstdetail:"title":"$led_enableAll",
+	//cnstdetail:"descr":"Returns 1 if LED is enabled, otherwise 0.",
+	//cnstdetail:"requires":""}
 	{"$led_enableAll", &getLedEnableAll},
+	//cnstdetail:{"name":"$led_hue",
+	//cnstdetail:"title":"$led_hue",
+	//cnstdetail:"descr":"Current LED Hue value",
+	//cnstdetail:"requires":""}
 	{"$led_hue", &getLedHue},
+	//cnstdetail:{"name":"$led_red",
+	//cnstdetail:"title":"$led_red",
+	//cnstdetail:"descr":"Current LED red value",
+	//cnstdetail:"requires":""}
 	{"$led_red", &getLedRed},
+	//cnstdetail:{"name":"$led_green",
+	//cnstdetail:"title":"$led_green",
+	//cnstdetail:"descr":"Current LED green value",
+	//cnstdetail:"requires":""}
 	{"$led_green", &getLedGreen},
+	//cnstdetail:{"name":"$led_blue",
+	//cnstdetail:"title":"$led_blue",
+	//cnstdetail:"descr":"Current LED blue value",
+	//cnstdetail:"requires":""}
 	{"$led_blue", &getLedBlue},
+	//cnstdetail:{"name":"$led_saturation",
+	//cnstdetail:"title":"$led_saturation",
+	//cnstdetail:"descr":"Current LED saturation value",
+	//cnstdetail:"requires":""}
 	{"$led_saturation", &getLedSaturation},
+	//cnstdetail:{"name":"$led_temperature",
+	//cnstdetail:"title":"$led_temperature",
+	//cnstdetail:"descr":"Current LED temperature value",
+	//cnstdetail:"requires":""}
 	{"$led_temperature", &getLedTemperature},
+	//cnstdetail:{"name":"$activeRepeatingEvents",
+	//cnstdetail:"title":"$activeRepeatingEvents",
+	//cnstdetail:"descr":"Current number of active repeating events",
+	//cnstdetail:"requires":""}
 	{"$activeRepeatingEvents", &getActiveRepeatingEvents},
 #ifndef OBK_DISABLE_ALL_DRIVERS
+	//cnstdetail:{"name":"$voltage",
+	//cnstdetail:"title":"$voltage",
+	//cnstdetail:"descr":"Current value of voltage from energy metering chip. You can use those variables to make, for example, a change handler that fires when voltage is above 245, etc.",
+	//cnstdetail:"requires":""}
 	{"$voltage", &getVoltage},
+	//cnstdetail:{"name":"$current",
+	//cnstdetail:"title":"$current",
+	//cnstdetail:"descr":"Current value of current from energy metering chip",
+	//cnstdetail:"requires":""}
 	{"$current", &getCurrent},
+	//cnstdetail:{"name":"$power",
+	//cnstdetail:"title":"$power",
+	//cnstdetail:"descr":"Current value of power from energy metering chip",
+	//cnstdetail:"requires":""}
 	{"$power", &getPower},
 #endif
 };
