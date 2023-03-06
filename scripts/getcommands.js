@@ -888,7 +888,7 @@ for (let i = 0; i < links.length; i++) {
     let url = base + link.fullName;
     let total = link.json.length;
     let desc = "todo";
-    let textshort = `| (${link.label})[${url}] (${total} total) | ${desc} |`;
+    let textshort = `| [${link.label}](${url}) (${total} total) | ${desc} |`;
 
     // allow multi-row entries in table entries.
     textshort = textshort.replace(/\n/g, '<br/>');
