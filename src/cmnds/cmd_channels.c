@@ -414,7 +414,7 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_SetPinRole","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SetPinRole", CMD_SetPinRole, NULL);
-	//cmddetail:{"name":"SetPinChannel","args":"[PinRole][ChannelIndex]",
+	//cmddetail:{"name":"SetPinChannel","args":"[PinIndex][ChannelIndex]",
 	//cmddetail:"descr":"This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command.",
 	//cmddetail:"fn":"CMD_SetPinChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}

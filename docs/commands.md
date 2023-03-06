@@ -10,7 +10,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | AddChannel | [ChannelIndex][ValueToAdd][ClampMin][ClampMax][bWrapInsteadOfClamp] | Adds a given value to the channel. Can be used to change PWM brightness. Clamp min and max arguments are optional. |
 | ClampChannel | [ChannelIndex][Min][Max] | Clamps given channel value to a range. |
 | SetPinRole | [PinRole][RoleIndexOrName] | This allows you to set a pin role, for example a Relay role, or Button, etc. Usually it's easier to do this through WWW panel, so you don't have to use this command. |
-| SetPinChannel | [PinRole][ChannelIndex] | This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command. |
+| SetPinChannel | [PinIndex][ChannelIndex] | This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command. |
 | GetChannel | [ChannelIndex] | Prints given channel value to console. |
 | GetReadings |  | Prints voltage etc readings to console. |
 | ShortName | [Name] | Sets the short name of the device. |
@@ -20,6 +20,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | FullBootTime | [Value] | Sets time in seconds after which boot is marked as valid. This is related to emergency AP mode which is enabled by powering on/off device 5 times quickly. |
 | SetChannelLabel | [ChannelIndex][Str] | Sets a channel label for UI. |
 | MapRanges | [TargetChannel][InputValue][RangeVal0][RangeVal1][RangeValN] | This will set given channel to an index showing where given input value is within given range sections. For example, MapRanges 10 0.5 0.3 0.6 0.9 will set channel 10 to 1 because 0.5 value is between 0.3 and 0.6 |
+| Map | [TargetChannel][InputValue][InMin][InMax][OutMin][OutMax] | qqq |
 | SetChannelVisible |  | NULL |
 | AddEventHandler | [EventName][EventArgument][CommandToRun] | This can be used to trigger an action on a button click, long press, etc |
 | AddChangeHandler | [Variable][Relation][Constant][Command] | This can listen to change in channel value (for example channel 0 becoming 100), or for a voltage/current/power change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be 'Power', or 'Current' or 'Voltage' |
@@ -41,6 +42,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | flags | [IntegerValue] | Sets the device flags |
 | ClearNoPingTime |  | Command for ping watchdog; it sets the 'time since last ping reply' to 0 again |
 | SetStartValue | [Channel][Value] | Sets the startup value for a channel. Used for start values for relays. Use 1 for High, 0 for low and -1 for 'remember last state' |
+| OpenAP |  | Temporarily disconnects from programmed WiFi network and opens Access Point |
+| SafeMode |  | Forces device reboot into safe mode (open ap with disabled drivers) |
 | led_dimmer | [Value] | set output dimmer 0..100 |
 | Dimmer | [Value] | Alias for led_dimmer |
 | add_dimmer | [Value][AddMode] | Adds a given value to current LED dimmer. AddMode 0 just adds a value (with a clamp to [0,100]), AddMode 1 will wrap around values (going under 0 goes to 100, going over 100 goes to 0), AddMode 2 will ping-pong value (going to 100 starts going back from 100 to 0, and again, going to 0 starts going up). |
@@ -98,7 +101,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | lfs_test1 | [FileName] | Tests the LFS file reading feature. |
 | lfs_test2 | [FileName] | Tests the LFS file reading feature. |
 | lfs_test3 | [FileName] | Tests the LFS file reading feature. |
-| Battery_Setup | [int][int][float][int][int] | measure battery based on ADC args minbatt and maxbatt in mv. optional Vref(default 2400), ADC bits(4096) and  V_divider(2) <br/>e.g.:Battery_Setup 1500 3000 2400 4096 2 |
+| Battery_Setup | [int][int][float][int][int] | measure battery based on ADC args minbatt and maxbatt in mv. optional V_divider(2), Vref(default 2400) and ADC bits(4096) and   <br/>e.g.:Battery_Setup 1500 3000 2 2400 4096 |
 | Battery_cycle | [int] | change cycle of measurement by default every 10 seconds<br/>e.g.:Battery_Setup 60 |
 | PowerSet |  | Sets current power value for calibration |
 | VoltageSet |  | Sets current V value for calibration |
@@ -112,6 +115,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | ConsumptionThresold | [FloatValue] | Setup value for automatic save of consumption data [1..100] |
 | BP1658CJ_RGBCW | [HexColor] | Don't use it. It's for direct access of BP1658CJ driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
 | BP1658CJ_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP1658CJ channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: BP1658CJ_Map 0 1 2 3 4 |
+| BP1658CJ_Current | [MaxCurrentRGB][MaxCurrentCW] | Sets the maximum current limit for BP1658CJ driver |
 | BP5758D_RGBCW | [HexColor] | Don't use it. It's for direct access of BP5758D driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
 | BP5758D_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP5758D channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: BP5758D_Map 0 1 2 3 4 |
 | BP5758D_Current | [MaxCurrent] | Sets the maximum current limit for BP5758D driver |
@@ -121,6 +125,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | setButtonLabel | [ButtonIndex][Label] | Sets the label of custom scriptable HTTP page button |
 | setButtonEnabled | [ButtonIndex][1or0] | Sets the visibility of custom scriptable HTTP page button |
 | IRSend | [PROT-ADDR-CMD-REP] | Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0 |
+| IRAC | IR_AC_Cmd |  |
 | IREnable | [Str][1or0] | Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol |
 | startDriver | [DriverName] | Starts driver |
 | stopDriver | [DriverName] | Stops driver |
@@ -136,6 +141,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | toggler_set | [Value] | Sets the VALUE of given output. Handles toggler_set0, toggler_set1, etc. The last digit after command name is changed to slot index. |
 | toggler_channel | [ChannelIndex] | handles toggler_channel0, toggler_channel1. Sets channel linked to given toggler slot. |
 | toggler_name |  | Handles toggler_name0, toggler_name1, etc. Sets the name of a toggler for GUI. |
+| SHT_cycle | [int] | change cycle of measurement by default every 10 seconds 0 to deactivate<br/>e.g.:SHT_Cycle 60 |
 | SHT_Calibrate |  | Calibrate the SHT Sensor as Tolerance is +/-2 degrees C.<br/>e.g.:SHT_Calibrate -4 10 |
 | SHT_MeasurePer |  | Retrieve Periodical measurement for SHT<br/>e.g.:SHT_Measure |
 | SHT_LaunchPer | [msb][lsb] | Launch/Change periodical capture for SHT Sensor<br/>e.g.:SHT_LaunchPer 0x23 0x22 |
@@ -162,6 +168,11 @@ Do not add anything here, as it will overwritten with next rebuild.
 | DGR_SendRGBCW | [GroupName][HexRGBCW] | Sends a RGBCW message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
 | DGR_SendFixedColor | [GroupName][TasColorIndex] | Sends a FixedColor message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
 | SetupTestPower |  | NULL |
+| TM1637_Clear | CMD_TM1637_Clear |  |
+| TM1637_Print | CMD_TM1637_Print |  |
+| TM1637_Test | CMD_TM1637_Test |  |
+| TM1637_Brightness | CMD_TM1637_Brightness |  |
+| TM1637_Map | CMD_TM1637_Map |  |
 | tuyaMcu_testSendTime |  | Sends a example date by TuyaMCU to clock/callendar MCU |
 | tuyaMcu_sendCurTime |  | Sends a current date by TuyaMCU to clock/callendar MCU. Time is taken from NTP driver, so NTP also should be already running. |
 | linkTuyaMCUOutputToChannel | [dpId][varType][channelID] | Used to map between TuyaMCU dpIDs and our internal channels. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap |
