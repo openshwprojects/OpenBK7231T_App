@@ -2,6 +2,9 @@
 
 Use our new BK7231 GUI Flash tool:
 https://github.com/openshwprojects/BK7231GUIFlashTool
+For step by step process, you can see those guides:
+- https://www.elektroda.com/rtvforum/topic3875654.html
+- https://www.elektroda.com/rtvforum/topic3874289.html
 
 # Flashing for BK7231T (alternate method)
 
