@@ -385,7 +385,6 @@ void Main_OnEverySecond()
 		EventHandlers_FireEvent(CMD_EVENT_WIFI_STATE, g_newWiFiStatus);
 	}
 	MQTT_Dedup_Tick();
-	RepeatingEvents_OnEverySecond();
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();
 #endif
@@ -687,6 +686,7 @@ void QuickTick(void* param)
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	SVM_RunThreads(t_diff);
 #endif
+	RepeatingEvents_RunUpdate(t_diff*0.001f);
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_RunQuickTick();
 #endif
