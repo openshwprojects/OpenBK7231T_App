@@ -665,9 +665,15 @@ let faq = readJSONFile("docs/json/faq.json");
 let generic = readJSONFile("docs/json/generic.json");
 let commandExamples = readJSONFile("docs/json/commandExamples.json");
 let autoexecExamples = readJSONFile("docs/json/autoexecExamples.json");
+let scriptExamples = readJSONFile("docs/json/scriptExamples.json");
 
-for (let i = 0; i < autoexecExamples.length; i++)
+for (let i = 0; i < scriptExamples.length; i++)
 {
+    let path = "docs/" + scriptExamples[i].file;
+    const data = fs.readFileSync(path, 'utf8');
+    scriptExamples[i].fileText = data;
+}
+for (let i = 0; i < autoexecExamples.length; i++) {
     let path = "docs/" + autoexecExamples[i].file;
     const data = fs.readFileSync(path, 'utf8');
     autoexecExamples[i].fileText = data;
@@ -688,6 +694,11 @@ All questions/answers were taken from json file.
 `;
 let autoexecsmdshort =
     `# Example 'autoexec.bat' files
+
+
+`;
+let scriptsmdshort =
+    `# Example script files
 
 
 `;
@@ -804,6 +815,30 @@ mdlong += '\n';
 
 
 
+for (let i = 0; i < scriptExamples.length; i++) {
+
+    let scr = scriptExamples[i];
+
+    scriptsmdshort += "" + scr.title + "";
+    scriptsmdshort += '\n';
+    scriptsmdshort += '<br>';
+    scriptsmdshort += "" + scr.description + "";
+    scriptsmdshort += '\n';
+    scriptsmdshort += '<br>';
+    scriptsmdshort += 'Requirements:<br>';
+    for (let j = 0; j < scr.requirements.length; j++) {
+        scriptsmdshort += '-' + scr.requirements[j]+'<br>';
+    }
+    scriptsmdshort += '\n';
+    scriptsmdshort += "```";
+    scriptsmdshort += scr.fileText;
+    scriptsmdshort += '\n';
+    scriptsmdshort += "```";
+    scriptsmdshort += '\n';
+
+    scriptsmdshort += '\n';
+    scriptsmdshort += '\n';
+}
 for (let i = 0; i < autoexecExamples.length; i++) {
 
     let exe = autoexecExamples[i];
@@ -967,6 +1002,7 @@ writeDocMD('faq', faqmdshort, faq, "FAQ", false, generic.faq);
 writeDocMD('commands', mdshort, commands, "Console/Script commands", true, generic.commands);
 writeDocMD('commandExamples', commandExamplesmdshort, commandExamples, "Command Examples", false, generic.commandExamples);
 writeDocMD('autoexecExamples', autoexecsmdshort, autoexecExamples, "Autoexec.bat examples (configs)", false, generic.autoexecExamples);
+writeDocMD('scriptExamples', scriptsmdshort, scriptExamples, "Script examples", false, generic.scriptExamples);
 writeDocMD('commands-extended', mdlong, commands, "Console/Script commands [Extended Edition]", false, "More details on commands.")
 
 let links_md =

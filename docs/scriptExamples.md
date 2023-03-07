@@ -1,0 +1,114 @@
+# Example script files
+
+
+Loop demo
+<br>Features a 'goto' script command (for use within script) and, obviously, a label.
+<br>Requirements:<br>-channel 1 - output relay<br>
+```again:
+	echo "Step 1"
+	setChannel 1 0
+	echo "Step 2"
+	delay_s 2
+	echo "Step 3"
+	setChannel 1 1
+	echo "Step 4"
+	delay_s 2
+	goto again
+```
+
+
+Loop & if demo
+<br>This example shows how you can use a dummy channel as a variable to create a loop
+<br>Requirements:<br>-channel 1 - output relay<br>-channel 11 - loop variable counter<br>
+```restart:
+	// Channel 11 is a counter variable and starts at 0
+	setChannel 11 0
+again:
+
+	// If channel 11 value reached 10, go to done
+	if $CH11>=10 then goto done
+	// otherwise toggle channel 1, wait and loop
+	toggleChannel 1
+	addChannel 11 1
+	delay_ms 250
+	goto again
+done:
+	toggleChannel 1
+	delay_s 1
+	toggleChannel 1
+	delay_s 1
+	toggleChannel 1
+	delay_s 1
+	toggleChannel 1
+	delay_s 1
+	goto restart
+```
+
+
+Thread cancelation demo and exclude self demo
+<br>This example shows how you can create a script thread with an unique ID and use this ID to cancel the thread later
+<br>Requirements:<br>-channel 1 - output relay<br>-pin 8 - button<br>-pin 9 - button<br>
+```// 'this' is a special keyword - it mean search for script/label in this file
+// 123 and 456 are unique script thread names
+addEventHandler OnClick 8 startScript this label1 123
+addEventHandler OnClick 9 startScript this label2 456
+
+label1:
+	// stopScript ID bExcludeSelf
+	// this will stop all other instances
+	stopScript 456 1
+	stopScript 123 1
+	setChannel 1 0
+	delay_s 1
+	setChannel 1 1
+	delay_s 1
+	setChannel 1 0
+	delay_s 1
+	setChannel 1 1
+	delay_s 1
+	setChannel 1 0
+	delay_s 1
+	setChannel 1 1
+	delay_s 1
+	exit;
+label2:
+	// stopScript ID bExcludeSelf
+	// this will stop all other instances
+	stopScript 456 1
+	stopScript 123 1
+	setChannel 1 0
+	delay_s 0.25
+	setChannel 1 1
+	delay_s 0.25
+	setChannel 1 0
+	delay_s 0.25
+	setChannel 1 1
+	delay_s 0.25
+	setChannel 1 0
+	delay_s 0.25
+	setChannel 1 1
+	delay_s 0.25
+	setChannel 1 0
+	delay_s 0.25
+	exit;
+```
+
+
+Using channel value as a variable demo
+<br>
+<br>Requirements:<br>-channel 1 - output relay<br>-channel 11 - you may use it as ADC, or just use setChannel 11 100 or setChannel 11 500 in console to change delay<br>
+```
+// set default value
+setChannel 11 500
+// if you don't have ADC, use this to force-display 11 as a slider on GUI
+setChannelType 11 dimmer1000
+
+looper:
+	setChannel 1 0
+	delay_ms $CH11
+	setChannel 1 1
+	delay_ms $CH11
+	goto looper
+```
+
+

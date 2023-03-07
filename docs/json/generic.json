@@ -7,5 +7,6 @@
    "drivers": "Drivers allows you to control certain peripherals or enable certain features that are off by default.",
    "faq": "Here is a detailed list of questions you may ask. Some information from docs is repeated here.",
    "commandExamples":"Here you can find some examples of console commands usage",
-   "autoexecExamples":"Here you can find examples of autoexec.bat configs. The autoexec.bat file can be created in Web Application, under LittleFS tab, and is run every time device reboots (unless device enters safe mode/AP mode). The autoexec.bat file allows you to create more advanced configs, setup TuyaMCU mappings, etc"
+   "autoexecExamples":"Here you can find examples of autoexec.bat configs. The autoexec.bat file can be created in Web Application, under LittleFS tab, and is run every time device reboots (unless device enters safe mode/AP mode). The autoexec.bat file allows you to create more advanced configs, setup TuyaMCU mappings, etc",
+   "scriptExamples":"Scripts can be put in autoexec.bat and then they will start automatically on reboot, you can also put script in other file and use startScript command to run them."
 }
