@@ -72,7 +72,9 @@ You can see an example of detailed teardown and BK7231N flashing here: https://w
   
 # Flashing for XR809
   
-Get USB to UART converter, start phoenixMC.exe from OpenXR809 repository and follow this guide: https://www.elektroda.com/rtvforum/topic3806769.html
+Get USB to UART converter, start phoenixMC.exe from OpenXR809 repository and follow those guides:
+- https://www.elektroda.com/rtvforum/topic3806769.html
+- https://www.elektroda.com/rtvforum/topic3890640.html
   
 # Building and flashing for BL602
 
