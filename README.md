@@ -250,47 +250,11 @@ Or add the devices automatically via discovery. To do click the `Start Home Assi
 * The discovery topic should match the `discovery_prefix` defined in Home Assistant, the default value is `homeassistant`.
 * More details about Home Assistant discovery can be found [here](https://www.home-assistant.io/docs/mqtt/discovery/).
 
-
-Note: Currently, discovery is only implemented for light and relay entities.
-
-
-# Detailed flashing guides along with device teardowns
-  
- I have prepared several detailed teardowns and flashing guides for multiple supported devices. Each comes in two languages - English and Polish.
-  
-  Outdoor two relays smart switch CCWFIO232PK (BK7231T): 
-  https://www.elektroda.com/rtvforum/topic3875654.html
-  https://www.elektroda.pl/rtvforum/viewtopic.php?p=19906670#19906670
-  
-  Australian Double Power Point DETA 6922HA-Series 2 (BK7231T) (English only) 
-  https://community.home-assistant.io/t/detailed-guide-on-how-to-flash-the-new-tuya-beken-chips-with-openbk7231t/437276
-
-  Qiachip Smart Switch module (BK7231N/CB2S): 
-  https://www.elektroda.com/rtvforum/topic3874289.html
-  https://www.elektroda.pl/rtvforum/viewtopic.php?t=3874289&highlight=
-  
-  Tuya RGBCW 12W light bulb (raw PWMs, no I2C, BK7231N)
-  https://www.elektroda.com/rtvforum/topic3880540.html#19938487
-  https://www.elektroda.pl/rtvforum/viewtopic.php?t=3880540&highlight=
-  
-  LSPA9 CB2S + BL0942 power metering plug:
-  https://www.elektroda.com/rtvforum/topic3887748.html
-  https://www.elektroda.pl/rtvforum/viewtopic.php?t=3887748&highlight=
-  
-  XR3/XR809 water sensor guide:
-  https://www.elektroda.com/rtvforum/topic3890640.html
-  
-  https://www.elektroda.pl/rtvforum/viewtopic.php?t=3890640&highlight=
-  
-  SM2135 LED configuration
-  https://www.elektroda.com/rtvforum/topic3906898.html
-  
-  https://www.elektroda.pl/rtvforum/viewtopic.php?t=3906898
-  
+Note: Currently, discovery is only implemented for light and relay entities.  
   
 # Futher reading
   
-For technical insights and generic SDK information related to Bekken and XRadio modules, please refer:
+For technical insights and generic SDK information related to Beken, WinnerMicro, Bouffallo Lab and XRadio modules, please refer:
   
 https://www.elektroda.com/rtvforum/topic3850712.html
   
