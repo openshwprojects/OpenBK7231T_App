@@ -1,0 +1,30 @@
+[
+{
+"title": "[Configuration for EDM-01AA-EU dimmer with TuyaMCU](https://www.elektroda.com/rtvforum/topic3929151.html)",
+"file": "autoexecs/EDM-01AA-EU.bat"
+},
+{
+"title": "[Configuration for QIACHIP Universal WIFI Ceiling Fan Light Remote Control Kit - BK7231N - CB2S with TuyaMCU](https://www.elektroda.com/rtvforum/topic3895301.html)",
+"file": "autoexecs/QIACHIP-WiFi-Ceiling-Fan-Light.bat"
+},
+{
+"title": "[Configuration for BK7231T LCD calendar/thermometer/hygrometer TH06 WiFi for TuyaMCU](https://www.elektroda.com/rtvforum/viewtopic.php?p=20342890#20342890)",
+"file": "autoexecs/TH06-thermometer-hygrometer.bat"
+},
+{
+"title": "[Configuration for controlling LED strip with IR receiver by TV Remote](https://www.elektroda.com/rtvforum/topic3944210.html)",
+"file": "autoexecs/LED-strip-with-IR-receiver.bat"
+},
+{
+"title": "[Configuration for controlling Tuya 5 Speed Fan Controller by TEQOOZ - Home Assistant](https://www.elektroda.com/rtvforum/topic3908093.html)",
+"file": "autoexecs/TEQOOZ-SmartFanRegulatorWi-Fi.bat"
+},
+{
+"title": "[Configuration for controlling BlitzWolf BW-AF1 air fryer](https://www.elektroda.com/rtvforum/viewtopic.php?p=20448156#20448156)",
+"file": "autoexecs/BW-AF1-air-fryer.bat"
+},
+{
+"title": "[Configuration for Tuya ATORCH AT4P(WP/BW) Smartlife Energy monitor (BK7231N/C3BS/CH573F/BL0924)](https://www.elektroda.com/rtvforum/topic3941692.html)",
+"file": "autoexecs/ATORCH-AT4P-Smartlife-Energy-Monitor.bat"
+}
+]

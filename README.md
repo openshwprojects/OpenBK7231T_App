@@ -13,9 +13,7 @@ This repository is named "OpenBK7231T_App", but now it's a multiplatform app, su
 
 Please use automatically compiled binaries from the Releases tab. To build yourself for a given platform, just checkout first our version of SDK and then checkout this app repository into it, details later.
 
-[Russian guide for BK7231N/T34](https://www.v-elite.ru/t34)<br>
-[Russian guide for BL602](https://www.v-elite.ru/bl602rgb)<br>
-[Russian Youtube guide for BK7231/T34](https://www.youtube.com/watch?v=BnmSWZchK-E)<br>
+See our guides in Russian: [BK7231N/T34](https://www.v-elite.ru/t34), and [BL602 RGB](https://www.v-elite.ru/bl602rgb), and [Youtube guide for BK7231/T34](https://www.youtube.com/watch?v=BnmSWZchK-E)
 
 If you want to get some generic information about BK7231 modules, pinout, peripherals, [consult our docs topic](https://www.elektroda.com/rtvforum/topic3951016.html).
 
@@ -30,27 +28,26 @@ NOTE: Obviously almost any device with supported chip (BK7231, BL602, W600, etc 
 
 OpenBeken features:
 - Tasmota-like setup, configuration and experience on all supported platforms (supports common Tasmota JSON over http and MQTT, etc)
-- OTA firwmare upgrade system (for BK, W*00, BL602); to use OTA, drag and drop RBL file (always RBL file) on OTA field on new Web App Javascript Console
+- OTA firmware upgrade system (for BK, W*00, BL602); to use OTA, drag and drop proper OTA file on OTA field on new Web App Javascript Console
+- Online [builds for all platforms](https://github.com/openshwprojects/OpenBK7231T_App/releases) via Github, also supports [Docker builds](https://github.com/openshwprojects/OpenBK7231T_App/tree/main/docker)
 - MQTT compatibility with Home Assistant (with both Yaml generator and [HA Discovery](https://youtu.be/pkcspey25V4)) 
 - Support for multiple relays, buttons, leds, inputs and PWMs, everything fully scriptable
-- Driver system for custom peripherals, including [TuyaMCU](https://www.elektroda.com/rtvforum/topic3898502.html), I2C bus and [BL0942](https://www.elektroda.com/rtvforum/topic3887748.html), BL0937 power metering chips, Motor Driver Bridge.
+- [Driver system](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/drivers.md) for custom peripherals, including [TuyaMCU](https://www.elektroda.com/rtvforum/topic3898502.html), I2C bus and [BL0942](https://www.elektroda.com/rtvforum/topic3887748.html), BL0937 power metering chips, Motor Driver Bridge.
 - Supports multiple I2C devices, like TC74 temperature sensor, MCP23017 port expander, PCF8574T LCD 2x16 (or other?), etc
 - NTP time from network (can be used with [TH06](https://www.elektroda.com/rtvforum/topic3942730.html) and other TuyaMCU devices), can run any script on selected weekday hour:minute:second
 - basic support for [TuyaMCU Battery Powered devices protocol](https://www.elektroda.com/rtvforum/topic3914412.html) (TuyaMCU enables WiFi module only to report the state, eg. for door sensors, water sensors)
-- RGBCW LED lighting control compatible with Home Assistant (both PWM LEDs, SM2135 LEDs and BP5758 LEDs)
-- LittleFS integration for large files (resides in OTA memory, so you have to backup it every time you OTA)
-- Command line system for starting and configuring drivers
+- [RGBCW LED lighting control](https://www.youtube.com/watch?v=YQdR7r6lXRY) compatible with Home Assistant (both PWM LEDs, SM2135 LEDs and BP5758 LEDs)
+- LittleFS integration for large files (you can write scripts there, you can host a page there with REST interface control of device)
+- Command line system for starting and configuring drivers, for controlling channels, etc
 - Short startup command (up to 512 characters) storage in flash config, so you can easily init your drivers (eg. BL0942) without LittleFS
 - Advanced scripting and events system (allows you to mirror Tasmota rules, for example catch button click, double click, hold)
 - Easily configurable via commands (see [tutorial](https://www.elektroda.com/rtvforum/topic3947241.html))
-- Thanks to keeping Tasmota standard, OBK has basic compatibility with [ioBroker](https://www.youtube.com/watch?v=x4p3JHXbK1E&ab_channel=Elektrodacom) and similiar systems through TELE/STAT/CMND MQTT packets
+- Thanks to keeping Tasmota standard, OBK has basic compatibility with [ioBroker](https://www.youtube.com/watch?v=x4p3JHXbK1E&ab_channel=Elektrodacom) and similiar systems through TELE/STAT/CMND MQTT packets, Tasmota Control app is also supported
 - DDP lighting protocol support ("startDriver DDP" in autoexec.bat/short startup command), works with xLights
 - Automatic reconnect when WiFi network goes out
 - and much more
 
-# Wiki 
-
-For more Information refer to the [WIKI](https://github.com/openshwprojects/OpenBK7231T_App/wiki/Wiki-Home)
+There is also a bit more outdated [WIKI](https://github.com/openshwprojects/OpenBK7231T_App/wiki/Wiki-Home)
 
 # Building
 
@@ -64,190 +61,8 @@ See  [FLASHING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/
   
   Device is counting full boots (full boot is a boot after which device worked for 30 seconds). If you power off and on device multiple times, it will enter open access point mode and safe mode (safe mode means even pin systems are not initialized). Those modes are used to recover devices from bad configs and errors.
     
-# [Docs - Console Commands, Flags, Constants, Pin Roles, Channel Types, FAQ](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs)
-
-# Example configurations (example autoexec.bat files for LittleFS system)
-
-
-[Configuration for EDM-01AA-EU dimmer with TuyaMCU](https://www.elektroda.com/rtvforum/topic3929151.html)
-
-```
-startDriver TuyaMCU
-setChannelType 1 toggle
-setChannelType 2 dimmer
-tuyaMcu_setBaudRate 115200
-tuyaMcu_setDimmerRange 1 1000
-// linkTuyaMCUOutputToChannel dpId verType tgChannel
-linkTuyaMCUOutputToChannel 1 bool 1
-linkTuyaMCUOutputToChannel 2 val 2
-```
-
-[Configuration for QIACHIP Universal WIFI Ceiling Fan Light Remote Control Kit - BK7231N - CB2S with TuyaMCU](https://www.elektroda.com/rtvforum/topic3895301.html)
-
-```
-// start MCU driver
-startDriver TuyaMCU
-// let's say that channel 1 is dpid1 - fan on/off
-setChannelType 1 toggle
-// map dpid1 to channel1, var type 1 (boolean)
-linkTuyaMCUOutputToChannel 1 1 1
-// let's say that channel 2 is dpid9 - light on/off
-setChannelType 2 toggle
-// map dpid9 to channel2, var type 1 (boolean)
-linkTuyaMCUOutputToChannel 9 1 2
-//channel 3 is dpid3 - fan speed
-setChannelType 3 LowMidHigh
-// map dpid3 to channel3, var type 4 (enum)
-linkTuyaMCUOutputToChannel 3 4 3
-//dpId 17 = beep on/off
-setChannelType 4 toggle
-linkTuyaMCUOutputToChannel 17 1 4
-//
-//
-//dpId 6, dataType 4-DP_TYPE_ENUM = set timer
-setChannelType 5 TextField
-linkTuyaMCUOutputToChannel 6 4 5
-//
-//
-//dpId 7, dataType 2-DP_TYPE_VALUE = timer remaining
-setChannelType 6 ReadOnly
-linkTuyaMCUOutputToChannel 7 2 6
-```
-      
-# Scripting engine
-  
-  Our scripting engine is able to process script files from LittleFS file system. Each script execution acts like a separate thread (but that's not a real RTOS thread, of course) and can process console commands, conditionals and delays.
-  
-  To create script, go to secondary web panel (JavaScript App), go to LittleFS tab, click "create file" and enter some content. Use buttons to stop all scripts or to save and run the one you are writing. From a console, you can also use 'startScript fileName label' syntax.
-  
-<br><b>Script example 1:</b><br>
-Loop demo. Features a 'goto' script command (for use within script)
-and, obviously, a label.<br>
-Requirements: <br>
-- channel 1 - output relay<br>
-
-```
-again:
-	echo "Step 1"
-	setChannel 1 0
-	echo "Step 2"
-	delay_s 2
-	echo "Step 3"
-	setChannel 1 1
-	echo "Step 4"
-	delay_s 2
-	goto again
-```
-
- <br><b>Script example 2:</b> <br>
-Loop & if demo<br>
-This example shows how you can use a dummy channel as a variable to create a loop<br>
-Requirements: <br>
- - channel 1 - output relay<br>
- - channel 11 - loop variable counter<br>
-
-```
-restart:
-	// Channel 11 is a counter variable and starts at 0
-	setChannel 11 0
-again:
-
-	// If channel 11 value reached 10, go to done
-	if $CH11>=10 then goto done
-	// otherwise toggle channel 1, wait and loop
-	toggleChannel 1
-	addChannel 11 1
-	delay_ms 250
-	goto again
-done:
-	toggleChannel 1
-	delay_s 1
-	toggleChannel 1
-	delay_s 1
-	toggleChannel 1
-	delay_s 1
-	toggleChannel 1
-	delay_s 1
-	goto restart
-``` 
-  
- 
- <br><b>Script example 3:</b> <br>
-Thread cancelation demo and exclude self demo<br>
-  This example shows how you can create a script thread with an unique ID and use this ID to cancel the thread later<br>
- Requirements: <br>
- - channel 1 - output relay<br>
- - pin 8 - button<br>
- - pin 9 - button<br>
-
-```
-// 'this' is a special keyword - it mean search for script/label in this file
-// 123 and 456 are unique script thread names
-addEventHandler OnClick 8 startScript this label1 123
-addEventHandler OnClick 9 startScript this label2 456
-
-label1:
-	// stopScript ID bExcludeSelf
-	// this will stop all other instances
-	stopScript 456 1
-	stopScript 123 1
-	setChannel 1 0
-	delay_s 1
-	setChannel 1 1
-	delay_s 1
-	setChannel 1 0
-	delay_s 1
-	setChannel 1 1
-	delay_s 1
-	setChannel 1 0
-	delay_s 1
-	setChannel 1 1
-	delay_s 1
-	exit;
-label2:
-	// stopScript ID bExcludeSelf
-	// this will stop all other instances
-	stopScript 456 1
-	stopScript 123 1
-	setChannel 1 0
-	delay_s 0.25
-	setChannel 1 1
-	delay_s 0.25
-	setChannel 1 0
-	delay_s 0.25
-	setChannel 1 1
-	delay_s 0.25
-	setChannel 1 0
-	delay_s 0.25
-	setChannel 1 1
-	delay_s 0.25
-	setChannel 1 0
-	delay_s 0.25
-	exit;
-```  
-
- 
- <br><b>Script example 4:</b> <br>
-Using channel value as a variable demo<br>
-Requirements: <br>
-- channel 1 - output relay<br>
-- channel 11 - you may use it as ADC, or just use setChannel 11 100 or setChannel 11 500 in console to change delay<br>
-
-```
-
-// set default value
-setChannel 11 500
-// if you don't have ADC, use this to force-display 11 as a slider on GUI
-setChannelType 11 dimmer1000
-
-looper:
-	setChannel 1 0
-	delay_ms $CH11
-	setChannel 1 1
-	delay_ms $CH11
-	goto looper
-```  
-
+# [Docs - Console Commands, Flags, Constants, Pin Roles, Channel Types, FAQ, autoexec.bat examples](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs)
+   
 # Simple TCP command server for scripting
   
   You can enable a simple TCP server in device Generic/Flags option, which will listen by default on port 100. Server can accept single connection at time from Putty in RAW mode (raw TCP connection) and accepts text commands for OpenBeken console. In future, we may add support for multiple connections at time. Server will close connection if client does nothing for some time.
@@ -289,41 +104,6 @@ Publishes send by OBK device:
 | OBK_DEV_NAME/INDEX/set | "1" | Sets the channel of INDEX to given value. This can set relays and also provide DIRECT PWM access. If channel is mapped to TuyaMCU, TuyaMCU will also be updated |
 | todo |"100" | tooodo |
 
-# RGBCW Tuya 5 PWMs LED bulb control compatible with Home Assistant
-  
-  RGBCW light bulbs are now supported and they are compatible with HA by rgb_command_template, brightness_value_template, color_temp_value_template commands. Please follow the guide below showing how to flash, setup and pair them with HA by MQTT:
-  
-  https://www.elektroda.com/rtvforum/topic3880540.html#19938487
-  
-# TuyaMCU example with QIACHIP Universal WIFI Ceiling Fan Light Remote Control Kit - BK7231N - CB2S
-  
-  Home Assistant and Node Red. Please refer to this example:
-  
-  https://www.elektroda.com/rtvforum/viewtopic.php?p=20031489#20031489
-  
-# TuyaMCU example with Tuya 5 Speed Fan Controller by TEQOOZ - BK7231T - WB3S
-  
-  Home Assistant Yaml examples. Please refer to this example:
-  
-  https://www.elektroda.com/rtvforum/topic3908093.html
-  
-# TuyaMCU WB2S "Moes House" Dimmer configuration example with Home Assistant, see here:
-  
-https://www.elektroda.com/rtvforum/topic3898502.html
-  
-# I2C drivers system with support for MCP23017 bus expander, TC74 temperature sensor and more
-  
-  Detailed description and step by step tutorial on Elektroda.com is coming soon.
-  
-# BL0942 power metering plug (UART communication mode) support and calibration process
-    
-Please refer to this step by step guide:
-  https://www.elektroda.com/rtvforum/topic3887748.html
-  
-# ZN268131 example, a smart switch that allows you to connect a bistable button
-    
-https://www.elektroda.com/rtvforum/topic3895572.html
-    
 # HomeAssistant Integration
 MQTT based integration with Home Assistant is possible in 2 ways from the Home Assistant configuration page (`Config > Generate Home Assistant cfg`).
 
@@ -333,47 +113,11 @@ Or add the devices automatically via discovery. To do click the `Start Home Assi
 * The discovery topic should match the `discovery_prefix` defined in Home Assistant, the default value is `homeassistant`.
 * More details about Home Assistant discovery can be found [here](https://www.home-assistant.io/docs/mqtt/discovery/).
 
-
-Note: Currently, discovery is only implemented for light and relay entities.
-
-
-# Detailed flashing guides along with device teardowns
-  
- I have prepared several detailed teardowns and flashing guides for multiple supported devices. Each comes in two languages - English and Polish.
-  
-  Outdoor two relays smart switch CCWFIO232PK (BK7231T): 
-  https://www.elektroda.com/rtvforum/topic3875654.html
-  https://www.elektroda.pl/rtvforum/viewtopic.php?p=19906670#19906670
-  
-  Australian Double Power Point DETA 6922HA-Series 2 (BK7231T) (English only) 
-  https://community.home-assistant.io/t/detailed-guide-on-how-to-flash-the-new-tuya-beken-chips-with-openbk7231t/437276
-
-  Qiachip Smart Switch module (BK7231N/CB2S): 
-  https://www.elektroda.com/rtvforum/topic3874289.html
-  https://www.elektroda.pl/rtvforum/viewtopic.php?t=3874289&highlight=
-  
-  Tuya RGBCW 12W light bulb (raw PWMs, no I2C, BK7231N)
-  https://www.elektroda.com/rtvforum/topic3880540.html#19938487
-  https://www.elektroda.pl/rtvforum/viewtopic.php?t=3880540&highlight=
-  
-  LSPA9 CB2S + BL0942 power metering plug:
-  https://www.elektroda.com/rtvforum/topic3887748.html
-  https://www.elektroda.pl/rtvforum/viewtopic.php?t=3887748&highlight=
-  
-  XR3/XR809 water sensor guide:
-  https://www.elektroda.com/rtvforum/topic3890640.html
-  
-  https://www.elektroda.pl/rtvforum/viewtopic.php?t=3890640&highlight=
-  
-  SM2135 LED configuration
-  https://www.elektroda.com/rtvforum/topic3906898.html
-  
-  https://www.elektroda.pl/rtvforum/viewtopic.php?t=3906898
-  
+Note: Currently, discovery is only implemented for light and relay entities.  
   
 # Futher reading
   
-For technical insights and generic SDK information related to Bekken and XRadio modules, please refer:
+For technical insights and generic SDK information related to Beken, WinnerMicro, Bouffallo Lab and XRadio modules, please refer:
   
 https://www.elektroda.com/rtvforum/topic3850712.html
   

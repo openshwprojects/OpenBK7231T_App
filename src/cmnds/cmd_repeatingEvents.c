@@ -16,9 +16,9 @@ typedef struct repeatingEvent_s {
 	char *command;
 	//char *condition;
 	// how often event repeats
-	int intervalSeconds;
+	float intervalSeconds;
 	// current value until next repeat (decremented every second)
-	int currentInterval;
+	float currentInterval;
 	// number of times to repeat.
 	// If set to -1, then it's infinite repeater
 	// If set to EVENT_CANCELED_TIMES, then event structure is ready to be reused
@@ -46,7 +46,7 @@ void RepeatingEvents_CancelRepeatingEvents(int userID)
 	}
 
 }
-void RepeatingEvents_AddRepeatingEvent(const char *command, int secondsInterval, int times, int userID)
+void RepeatingEvents_AddRepeatingEvent(const char *command, float secondsInterval, int times, int userID)
 {
 	repeatingEvent_t *ev;
 	char *cmd_copy;
@@ -123,7 +123,7 @@ int RepeatingEvents_GetActiveCount() {
 	}
 	return c_active;
 }
-void RepeatingEvents_OnEverySecond() {
+void RepeatingEvents_RunUpdate(float deltaTimeSeconds) {
 	repeatingEvent_t *cur;
 	int c_checked = 0;
 	int c_ran = 0;
@@ -139,7 +139,7 @@ void RepeatingEvents_OnEverySecond() {
 		}
 		// -1 means 'forever'
 		if(cur->times > 0 || cur->times == -1) {
-			cur->currentInterval--;
+			cur->currentInterval-= deltaTimeSeconds;
 			if(cur->currentInterval<=0){
 				c_ran++;
 				// -1 means 'forever'
@@ -161,8 +161,9 @@ void RepeatingEvents_OnEverySecond() {
 }
 // addRepeatingEventID 1234 5 -1 DGR_SendPower "testgr" 1 1 
 // cancelRepeatingEvent 1234
+#define MIN_REPEATING_INTERVAL 0.001f
 commandResult_t RepeatingEvents_Cmd_AddRepeatingEvent(const void *context, const char *cmd, const char *args, int cmdFlags) {
-	int interval;
+	float interval;
 	int times;
 	const char *cmdToRepeat;
 	int userID;
@@ -175,7 +176,7 @@ commandResult_t RepeatingEvents_Cmd_AddRepeatingEvent(const void *context, const
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	interval = Tokenizer_GetArgInteger(0);
+	interval = Tokenizer_GetArgFloat(0);
 	times = Tokenizer_GetArgInteger(1);
 	if(!stricmp(cmd,"addRepeatingEventID")) {
 		userID = Tokenizer_GetArgInteger(2);
@@ -183,6 +184,10 @@ commandResult_t RepeatingEvents_Cmd_AddRepeatingEvent(const void *context, const
 	} else { 
 		userID = 255;
 		cmdToRepeat = Tokenizer_GetArgFrom(2);
+	}
+	if (interval <= MIN_REPEATING_INTERVAL) {
+		interval = MIN_REPEATING_INTERVAL;
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Interval was too small!");
 	}
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"addRepeatingEvent: interval %i, repeats %i, command [%s]",interval,times,cmdToRepeat);
