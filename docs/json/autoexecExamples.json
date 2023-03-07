@@ -20,6 +20,10 @@
 "file": "autoexecs/TEQOOZ-SmartFanRegulatorWi-Fi.bat"
 },
 {
+"title": "[Configuration for controlling BlitzWolf BW-AF1 air fryer](https://www.elektroda.com/rtvforum/viewtopic.php?p=20448156#20448156)",
+"file": "autoexecs/BW-AF1-air-fryer.bat"
+},
+{
 "title": "[Configuration for Tuya ATORCH AT4P(WP/BW) Smartlife Energy monitor (BK7231N/C3BS/CH573F/BL0924)](https://www.elektroda.com/rtvforum/topic3941692.html)",
 "file": "autoexecs/ATORCH-AT4P-Smartlife-Energy-Monitor.bat"
 }
