@@ -13,9 +13,7 @@ This repository is named "OpenBK7231T_App", but now it's a multiplatform app, su
 
 Please use automatically compiled binaries from the Releases tab. To build yourself for a given platform, just checkout first our version of SDK and then checkout this app repository into it, details later.
 
-[Russian guide for BK7231N/T34](https://www.v-elite.ru/t34)<br>
-[Russian guide for BL602](https://www.v-elite.ru/bl602rgb)<br>
-[Russian Youtube guide for BK7231/T34](https://www.youtube.com/watch?v=BnmSWZchK-E)<br>
+See our guides in Russian: [BK7231N/T34](https://www.v-elite.ru/t34), and [BL602 RGB](https://www.v-elite.ru/bl602rgb), and [Youtube guide for BK7231/T34](https://www.youtube.com/watch?v=BnmSWZchK-E)
 
 If you want to get some generic information about BK7231 modules, pinout, peripherals, [consult our docs topic](https://www.elektroda.com/rtvforum/topic3951016.html).
 
