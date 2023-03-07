@@ -819,15 +819,17 @@ for (let i = 0; i < scriptExamples.length; i++) {
 
     let scr = scriptExamples[i];
 
-    scriptsmdshort += "" + scr.title + "";
+    scriptsmdshort += "<b>" + scr.title + "</b>";
     scriptsmdshort += '\n';
     scriptsmdshort += '<br>';
     scriptsmdshort += "" + scr.description + "";
     scriptsmdshort += '\n';
     scriptsmdshort += '<br>';
     scriptsmdshort += 'Requirements:<br>';
+    scriptsmdshort += '\n';
     for (let j = 0; j < scr.requirements.length; j++) {
-        scriptsmdshort += '-' + scr.requirements[j]+'<br>';
+        scriptsmdshort += '- ' + scr.requirements[j] + '<br>';
+        scriptsmdshort += '\n';
     }
     scriptsmdshort += '\n';
     scriptsmdshort += "```";

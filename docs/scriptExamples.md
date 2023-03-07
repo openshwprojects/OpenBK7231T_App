@@ -1,9 +1,11 @@
 # Example script files
 
 
-Loop demo
+<b>Loop demo</b>
 <br>Features a 'goto' script command (for use within script) and, obviously, a label.
-<br>Requirements:<br>-channel 1 - output relay<br>
+<br>Requirements:<br>
+- channel 1 - output relay<br>
+
 ```again:
 	echo "Step 1"
 	setChannel 1 0
@@ -17,9 +19,12 @@ Loop demo
 ```
 
 
-Loop & if demo
+<b>Loop & if demo</b>
 <br>This example shows how you can use a dummy channel as a variable to create a loop
-<br>Requirements:<br>-channel 1 - output relay<br>-channel 11 - loop variable counter<br>
+<br>Requirements:<br>
+- channel 1 - output relay<br>
+- channel 11 - loop variable counter<br>
+
 ```restart:
 	// Channel 11 is a counter variable and starts at 0
 	setChannel 11 0
@@ -45,9 +50,13 @@ done:
 ```
 
 
-Thread cancelation demo and exclude self demo
+<b>Thread cancelation demo and exclude self demo</b>
 <br>This example shows how you can create a script thread with an unique ID and use this ID to cancel the thread later
-<br>Requirements:<br>-channel 1 - output relay<br>-pin 8 - button<br>-pin 9 - button<br>
+<br>Requirements:<br>
+- channel 1 - output relay<br>
+- pin 8 - button<br>
+- pin 9 - button<br>
+
 ```// 'this' is a special keyword - it mean search for script/label in this file
 // 123 and 456 are unique script thread names
 addEventHandler OnClick 8 startScript this label1 123
@@ -94,9 +103,12 @@ label2:
 ```
 
 
-Using channel value as a variable demo
+<b>Using channel value as a variable demo</b>
 <br>
-<br>Requirements:<br>-channel 1 - output relay<br>-channel 11 - you may use it as ADC, or just use setChannel 11 100 or setChannel 11 500 in console to change delay<br>
+<br>Requirements:<br>
+- channel 1 - output relay<br>
+- channel 11 - you may use it as ADC, or just use setChannel 11 100 or setChannel 11 500 in console to change delay<br>
+
 ```
 // set default value
 setChannel 11 500
