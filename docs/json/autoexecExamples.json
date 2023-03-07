@@ -16,6 +16,10 @@
 "file": "autoexecs/LED-strip-with-IR-receiver.bat"
 },
 {
+"title": "[Configuration for controlling Tuya 5 Speed Fan Controller by TEQOOZ - Home Assistant](https://www.elektroda.com/rtvforum/topic3908093.html)",
+"file": "autoexecs/TEQOOZ-SmartFanRegulatorWi-Fi.bat"
+},
+{
 "title": "[Configuration for Tuya ATORCH AT4P(WP/BW) Smartlife Energy monitor (BK7231N/C3BS/CH573F/BL0924)](https://www.elektroda.com/rtvforum/topic3941692.html)",
 "file": "autoexecs/ATORCH-AT4P-Smartlife-Energy-Monitor.bat"
 }

@@ -36,13 +36,34 @@ All questions/answers were taken from json file.
 **Question:** *How to setup RGB LED?*<br>**A:** Determine whether this LED is using 'I2C' LED driver like SM2135, or is it using PWMs. If it's using PWMs, just check which 3 GPIO pins are used for colours, and set PWM roles for them, keep channels in RGB order - Red is 1, Green is 2, Blue is 3 (altough firmware will also support indexing started from 0)
 
 
-**Question:** *How to setup RGB LED which is using 'I2C' LED driver like SM2135?*<br>**A:** In case of SM2135 and similiar LED drivers, you need to figure out two pins - SDA and SCL lines of that driver. Set their roles for pins, then reboot. Then the LED driver will start, but you may also need to remap the order of colours with appropriate Map function, for example with SM2135_Map 0 2 1 3 4
+**Question:** *How to use bistable button? A button that toggles relay when it's changed?*<br>**A:** Just use a 'ToggleChannelOnToggle' role. The target channel value will be inversed when you toggle the switch. You can also [see this detailed description](https://www.elektroda.com/rtvforum/topic3895572.html)
+
+
+**Question:** *How to just copy value from digital input to channel? Make relay follow the switch?*<br>**A:** In this case you want to use dInput role. A digital input. You can also choose 'noPullUp' version or inversed version.
+
+
+**Question:** *My device does not publish channels, what's wrong?*<br>**A:** First make sure that MQTT status on main page is connected. Then check your flags - maybe you need to enable 'publish MQTT values on connect' or 'publish every N seconds' or 'publish all TuyaMCU channels'? Not all values are published by default.
+
+
+**Question:** *How to setup RGB LED which is using 'I2C' LED driver like SM2135?*<br>**A:** In case of SM2135 and similiar LED drivers, you need to figure out two pins - SDA and SCL lines of that driver. Set their roles for pins, then reboot. Then the LED driver will start, but you may also need to remap the order of colours with appropriate Map function, for example with SM2135_Map 0 2 1 3 4.<br>You can also [see this topic](https://www.elektroda.com/rtvforum/topic3906898.html)
 
 
 **Question:** *How to enter multiple startup commands? For example, to start both NTP and BL0942 drivers?*<br>**A:** Use backlog - like in Tasmota. Open Config->Short startup command, and enter, for example: backlog startDriver BL0942; startDriver NTP; ntp_setServer 217.147.223.78.<br> Second option would to be open the Web Application, go to LittleFS tab, and just create autoexec.bat and enter commands there, each in new line.
 
 
-**Question:** *How to configure ping watchdog to do a relay cycle when given IP does not respond for a given amount of time?*<br>**A:** See the following example there: https://www.elektroda.com/rtvforum/viewtopic.php?p=20368812#20368812
+**Question:** *How to do OTA in OpenBeken? How to update firmware?*<br>**A:** There are two methods. <br>First is to use Web Application, in OTA tab, drag and drop proper platform OTA file (for BK it is RBL, for BL602 it's bin.xz.ota, etc, see Releases tab), and click start.<br>Second method is to use HTTP ota, just paste a HTTP server link to Config->OTA and submit. Remember that it will work only for HTTP right now, not HTTPS.
+
+
+**Question:** *How to control device via MQTT?*<br>**A:** There are many ways to do that. <br>The Tasmota-friendly method is to use cmnd/OBK_DEVICE/POWER publish with 1 or 0 payload. Of course, for second relay, you can use cmnd/OBK_DEVICE/POWER1 publish, you can also use 'ON' and 'OFF' payload, or 'TOGGLE' to toggle. <br> The direct channels way to control is to use OBK_DEVICE/5/set topic with payload 1 or 0 (or any custom integer), where 5 is a channel number, change it to whatever you like.<br>Remember that LEDs are not controlled directly by channels. For LEDs, you can use for example cmnd/OBK_DEVICE/Color to set base color, cmnd/OBK_DEVICE/Dimmer to set dimmer, etc. 
+
+
+**Question:** *How to control device via HTTP?*<br>**A:** Our HTTP interface is like in Tasmota. <br>You can do **http://192.168.0.210/cm?cmnd=POWER%20TOGGLE** to run a power toggle command on your device and it will return appropriate JSON status. The same goes for any other command, we have support for most of Tasmota commands, see our commands docs for more info.
+
+
+**Question:** *I flashed OpenBeken, configured my SSID and pass in AP mode, but now it does not connect to my WiFi, what's wrong?*<br>**A:** Multiple things may have gone wrong. <br>First of all, make sure you power your wifi module from reliable 3.3V power supply. This problem happens frequently on BL602 if you power module outside circuit from cheap 3.3V USB to UART converter.<br>Second issue might be just incorrect SSID/WiFi data - do 5 power off/on cycles to go to Safe Mode and correct the credentials.<br>Third issue happens on some BK modules. They might have RF partition broken. To fix that, use either our BK7231 flash tool, click button 'Restore RF partition', or in our Web Application, in Flash Tab, click 'Restore RF partition' button. This will also assign new MAC.
+
+
+**Question:** *How to configure ping watchdog to do a relay cycle when given IP does not respond for a given amount of time?*<br>**A:** See the following [example here](https://www.elektroda.com/rtvforum/viewtopic.php?p=20368812#20368812)
 
 
 **Question:** *How to set relay state on device boot? (PowerOnState)?*<br>**A:** There are two ways. <br> First way is to use Config -> Startup state and set it from GUI here. <br> Second way is to use short startup command from Options or create 'autoexec.bat' in LittleFS file system in web panel and execute commands from there.<br>For example, for RGBCW LED, to set 100% dimmer and red color on start, you can do startup command:<br> ```backlog led_dimmer 100; led_basecolor_rgb #FF0000; led_enableAll 1```<br>For simple relay, in this example on channel number 5, you can do:<br>```backlog SetChannel 5 1```<br>
