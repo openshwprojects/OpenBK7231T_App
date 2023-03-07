@@ -28,7 +28,7 @@ NOTE: Obviously almost any device with supported chip (BK7231, BL602, W600, etc 
 
 OpenBeken features:
 - Tasmota-like setup, configuration and experience on all supported platforms (supports common Tasmota JSON over http and MQTT, etc)
-- OTA firwmare upgrade system (for BK, W*00, BL602); to use OTA, drag and drop proper OTA file on OTA field on new Web App Javascript Console
+- OTA firmware upgrade system (for BK, W*00, BL602); to use OTA, drag and drop proper OTA file on OTA field on new Web App Javascript Console
 - Online [builds for all platforms](https://github.com/openshwprojects/OpenBK7231T_App/releases) via Github, also supports [Docker builds](https://github.com/openshwprojects/OpenBK7231T_App/tree/main/docker)
 - MQTT compatibility with Home Assistant (with both Yaml generator and [HA Discovery](https://youtu.be/pkcspey25V4)) 
 - Support for multiple relays, buttons, leds, inputs and PWMs, everything fully scriptable
