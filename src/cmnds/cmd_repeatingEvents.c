@@ -190,7 +190,7 @@ commandResult_t RepeatingEvents_Cmd_AddRepeatingEvent(const void *context, const
 		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Interval was too small!");
 	}
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"addRepeatingEvent: interval %i, repeats %i, command [%s]",interval,times,cmdToRepeat);
+	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"addRepeatingEvent: interval %f, repeats %i, command [%s]",interval,times,cmdToRepeat);
 
 	RepeatingEvents_AddRepeatingEvent(cmdToRepeat,interval, times, userID);
 
