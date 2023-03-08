@@ -1681,7 +1681,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		}
 	}
 
-	if (pwmCount == 5 || ledDriverChipRunning) {
+	if (pwmCount == 5 || ledDriverChipRunning || (pwmCount == 4 && CFG_HasFlag(OBK_FLAG_LED_EMULATE_COOL_WITH_RGB))) {
 		if (dev_info == NULL) {
 			dev_info = hass_init_light_device_info(LIGHT_RGBCW);
 		}
