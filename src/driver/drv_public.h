@@ -14,10 +14,10 @@ enum {
 	OBK_CONSUMPTION_TOTAL = OBK_NUM_MEASUREMENTS,
 	OBK_CONSUMPTION_LAST_HOUR,
 	OBK_CONSUMPTION_STATS,
-    OBK_CONSUMPTION_YESTERDAY,
-    OBK_CONSUMPTION_TODAY,
-    OBK_CONSUMPTION_CLEAR_DATE,
-    OBK_NUM_EMUNS_MAX
+	OBK_CONSUMPTION_YESTERDAY,
+	OBK_CONSUMPTION_TODAY,
+	OBK_CONSUMPTION_CLEAR_DATE,
+	OBK_NUM_EMUNS_MAX
 };
 
 #define OBK_NUM_COUNTERS            (OBK_NUM_EMUNS_MAX-OBK_NUM_MEASUREMENTS)
@@ -46,7 +46,7 @@ void DRV_OnChannelChanged(int channel, int iVal);
 void SM2135_Write(float* rgbcw);
 void BP5758D_Write(float* rgbcw);
 void BP1658CJ_Write(float* rgbcw);
-void SM2235_Write(float *rgbcw);
+void SM2235_Write(float* rgbcw);
 void DRV_DGR_OnLedDimmerChange(int iVal);
 void DRV_DGR_OnLedEnableAllChange(int iVal);
 void DRV_DGR_OnLedFinalColorsChange(byte rgbcw[5]);
@@ -54,6 +54,7 @@ void DRV_DGR_OnLedFinalColorsChange(byte rgbcw[5]);
 // OBK_POWER etc
 float DRV_GetReading(int type);
 bool DRV_IsMeasuringPower();
+bool DRV_IsSensor();
 void BL09XX_SaveEmeteringStatistics();
 
 #endif /* __DRV_PUBLIC_H__ */

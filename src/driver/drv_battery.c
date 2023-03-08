@@ -10,11 +10,11 @@
 #include "../httpserver/new_http.h"
 #include "../hal/hal_pins.h"
 #include "../hal/hal_adc.h"
-
 #include "drv_battery.h"
 
 static int g_pin_adc = 0, channel_adc = 0, channel_rel = 0, g_pin_rel = 0, g_battcycle = 1, g_battcycleref = 10;
 static float g_battvoltage = 0.0, g_battlevel = 0.0;
+static int g_lastbattvoltage = 0, g_lastbattlevel = 0;
 static float g_vref = 2400, g_vdivider = 2.29, g_maxbatt = 3000, g_minbatt = 2000, g_adcbits = 4096;
 
 static void Batt_Measure() {
@@ -56,9 +56,23 @@ static void Batt_Measure() {
 
 	MQTT_PublishMain_StringInt("voltage", (int)g_battvoltage);
 	MQTT_PublishMain_StringInt("battery", (int)g_battlevel);
+	g_lastbattlevel = (int)g_battlevel;
+	g_lastbattvoltage = (int)g_battvoltage;
 	ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : battery voltage : %f and percentage %f%%", g_battvoltage, g_battlevel);
 }
 
+int Battery_lastreading(int type)
+{
+	if (type == OBK_BATT_VOLTAGE)
+	{
+		return g_lastbattvoltage;
+	}
+	else if (type == OBK_BATT_LEVEL)
+	{
+		return g_lastbattlevel;
+	}
+	return 0;
+}
 commandResult_t Battery_Setup(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
