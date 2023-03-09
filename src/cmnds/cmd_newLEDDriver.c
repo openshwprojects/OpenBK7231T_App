@@ -1311,7 +1311,7 @@ static commandResult_t lerpSpeed(const void *context, const char *cmd, const cha
 
 	return CMD_RES_OK;
 }
-static commandResult_t ledRange(const void *context, const char *cmd, const char *args, int cmdFlags) {
+static commandResult_t ctRange(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
 	Tokenizer_TokenizeString(args, 0);
 
@@ -1503,7 +1503,7 @@ void NewLED_InitCommands(){
 	//cmddetail:"fn":"rgb_gamma_control","file":"cmnds/cmd_rgbGamma.c","requires":"",
 	//cmddetail:"examples":"led_gammaCtrl on"}
     CMD_RegisterCommand("led_gammaCtrl", led_gamma_control, NULL);
-	CMD_RegisterCommand("LEDRange", ledRange, NULL);
+	CMD_RegisterCommand("CTRange", ctRange, NULL);
 }
 
 void NewLED_RestoreSavedStateIfNeeded() {
