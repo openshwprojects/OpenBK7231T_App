@@ -125,6 +125,7 @@ void SIM_DoFreshOBKBoot() {
 	Main_Init();
 }
 void Win_DoUnitTests() {
+	Test_Demo_ButtonToggleGroup();
 	Test_Demo_ButtonScrollingChannelValues();
 	Test_CFG_Via_HTTP();
 	Test_Commands_Calendar();
