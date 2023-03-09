@@ -70,8 +70,8 @@ float rgb_used_corr[3];   // RGB correction currently used
 int g_lightEnableAll = 0;
 
 // the slider control in the UI emits values
-//in the range from 154-500 (defined
-//in homeassistant/util/color.py as HASS_COLOR_MIN and HASS_COLOR_MAX).
+// in the range from 154-500 (defined
+// in homeassistant/util/color.py as HASS_COLOR_MIN and HASS_COLOR_MAX).
 float led_temperature_min = HASS_TEMPERATURE_MIN;
 float led_temperature_max = HASS_TEMPERATURE_MAX;
 float led_temperature_current = HASS_TEMPERATURE_MIN;
@@ -1311,6 +1311,15 @@ static commandResult_t lerpSpeed(const void *context, const char *cmd, const cha
 
 	return CMD_RES_OK;
 }
+static commandResult_t ledRange(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
+	Tokenizer_TokenizeString(args, 0);
+
+	led_temperature_min = Tokenizer_GetArgFloat(0);
+	led_temperature_max = Tokenizer_GetArgFloat(1);
+
+	return CMD_RES_OK;
+}
 static commandResult_t setBrightness(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	float f;
 
@@ -1494,6 +1503,7 @@ void NewLED_InitCommands(){
 	//cmddetail:"fn":"rgb_gamma_control","file":"cmnds/cmd_rgbGamma.c","requires":"",
 	//cmddetail:"examples":"led_gammaCtrl on"}
     CMD_RegisterCommand("led_gammaCtrl", led_gamma_control, NULL);
+	CMD_RegisterCommand("LEDRange", ledRange, NULL);
 }
 
 void NewLED_RestoreSavedStateIfNeeded() {

@@ -124,8 +124,7 @@ enum EventCode {
 #define HASS_TEMPERATURE_MIN 154
 #define HASS_TEMPERATURE_MAX 500
 #define HASS_TEMPERATURE_CENTER ((HASS_TEMPERATURE_MAX+HASS_TEMPERATURE_MIN)/2)
-#define KELVIN_TEMPERATURE_MIN 2000
-#define KELVIN_TEMPERATURE_MAX 6500
+#define HASS_TO_KELVIN(x) (1000000 / (x))
 
 // In general, LED can be in two modes:
 // - Temperature (Cool and Warm LEDs are on)
@@ -222,6 +221,8 @@ OBK_Publish_Result LED_SendDimmerChange();
 OBK_Publish_Result sendTemperatureChange();
 OBK_Publish_Result LED_SendCurrentLightMode();
 void LED_ResetGlobalVariablesToDefaults();
+extern float led_temperature_min;
+extern float led_temperature_max;
 // cmd_test.c
 int CMD_InitTestCommands();
 // cmd_channels.c
