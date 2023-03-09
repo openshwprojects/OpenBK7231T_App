@@ -698,9 +698,11 @@ void QuickTick(void* param)
 	// process recieved messages here..
 	MQTT_RunQuickTick();
 
+#if WINDOWS || PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_XR809
 	if (CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == true) {
 		LED_RunQuickColorLerp(t_diff);
 	}
+#endif
 
 	// WiFi LED
 	// In Open Access point mode, fast blink
@@ -754,6 +756,35 @@ void quick_timer_thread(void* param)
 OS_Timer_t g_quick_timer;
 #else
 beken_timer_t g_quick_timer;
+
+// new QuickTick function as separate thread --> better control of priority and timing
+// most of original QuickTick function can be moved here
+extern uint32_t  ms_to_tick_ratio;
+void QuickTick_thread (beken_thread_arg_t arg)
+{
+	TickType_t lastTickCount = 0;
+	while (1) {
+		TickType_t currentTickCount = xTaskGetTickCount ();
+
+		uint32_t t_diff = currentTickCount - lastTickCount;
+		// cope with wrap
+		if (t_diff > 0x4000){
+			t_diff = ((currentTickCount + 0x4000) - (lastTickCount + 0x4000));
+		}
+		lastTickCount = currentTickCount;
+		t_diff *= ms_to_tick_ratio;
+
+		// the lerp function is moved here since it requires precise timing:
+		if (CFG_HasFlag (OBK_FLAG_LED_SMOOTH_TRANSITIONS) == true) {
+			LED_RunQuickColorLerp (t_diff); // this function needs precise timing
+		}
+
+		// add more QuickTick tasks here
+
+		vTaskDelayUntil (&currentTickCount, QUICK_TMR_DURATION / ms_to_tick_ratio);
+	}
+}
+
 #endif
 void QuickTick_StartThread(void)
 {
@@ -776,6 +807,11 @@ void QuickTick_StartThread(void)
 
 	OS_TimerStart(&g_quick_timer); /* start OS timer to feed watchdog */
 #else
+	// start QuickTick task - using xTaskCreate() since rtos_create_thread() inverts the priority:
+	if (xTaskCreate (QuickTick_thread, "quickTick_thd", 0x800, NULL, BEKEN_APPLICATION_PRIORITY, NULL) != pdPASS) {
+		bk_printf ("create \"QuickTick_Trd\" failed!\r\n");
+	}
+
 	OSStatus result;
 
 	result = rtos_init_timer(&g_quick_timer,
