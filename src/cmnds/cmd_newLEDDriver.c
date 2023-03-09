@@ -62,7 +62,6 @@ float g_hsv_v = 1; // 0 to 1
 float g_cfg_colorScaleToChannel = 100.0f/255.0f;
 int g_numBaseColors = 5;
 float g_brightness0to100 = 100.0f;
-float rgb_used_corr[3];   // RGB correction currently used
 
 // NOTE: in this system, enabling/disabling whole led light bulb
 // is not changing the stored channel and brightness values.
@@ -167,10 +166,9 @@ static void sendFullRGBCW_IfEnabled() {
 	MQTT_PublishMain_StringString_DeDuped(DEDUP_LED_FINALCOLOR_RGBCW,DEDUP_EXPIRE_TIME,"led_finalcolor_rgbcw",s, 0);
 }
 
-float led_rawLerpCurrent[5] = { 0 };
 float Mathf_MoveTowards(float cur, float tg, float dt) {
 	float rem = tg - cur;
-	if(abs(rem) < dt) {
+	if(fabsf(rem) <= dt) {
 		return tg;
 	}
 	if(rem < 0) {
@@ -183,9 +181,6 @@ float Mathf_MoveTowards(float cur, float tg, float dt) {
 // 100 means that in one second color will go from 0 to 100
 // 200 means that in one second color will go from 0 to 200
 float led_lerpSpeedUnitsPerSecond = 200.f;
-
-float led_current_value_brightness = 0;
-float led_current_value_cold_or_warm = 0;
 
 void LED_I2CDriver_WriteRGBCW(float* finalRGBCW) {
 #ifdef ENABLE_DRIVER_LED
@@ -204,109 +199,19 @@ void LED_I2CDriver_WriteRGBCW(float* finalRGBCW) {
 #endif
 }
 
-void LED_RunQuickColorLerp(int deltaMS) {
-	int i;
-	int firstChannelIndex;
-	float deltaSeconds;
-	byte finalRGBCW[5];
-	int maxPossibleIndexToSet;
-	int emulatedCool = -1;
-	int target_value_brightness = 0;
-	int target_value_cold_or_warm = 0;
-
-	if (CFG_HasFlag(OBK_FLAG_LED_FORCE_MODE_RGB)) {
-		// only allow setting pwm 0, 1 and 2, force-skip 3 and 4
-		maxPossibleIndexToSet = 3;
-	}
-	else {
-		maxPossibleIndexToSet = 5;
-	}
-
-
-	deltaSeconds = deltaMS * 0.001f;
-
-	// The color order is RGBCW.
-	// some people set RED to channel 0, and some of them set RED to channel 1
-	// Let's detect if there is a PWM on channel 0
-	if(CHANNEL_HasChannelPinWithRoleOrRole(0, IOR_PWM, IOR_PWM_n)) {
-		firstChannelIndex = 0;
-	} else {
-		firstChannelIndex = 1;
-	}
-	if (CFG_HasFlag(OBK_FLAG_LED_EMULATE_COOL_WITH_RGB)) {
-		emulatedCool = firstChannelIndex + 3;
-	}
-
-	for(i = 0; i < 5; i++) {
-		float ch_rgb_cal = (i < 3)? rgb_used_corr[i] : 1.0f; // adjust change rate with RGB correction in use
-		// This is the most silly and primitive approach, but it works
-		// In future we might implement better lerp algorithms, use HUE, etc
-		led_rawLerpCurrent[i] = Mathf_MoveTowards(led_rawLerpCurrent[i],finalColors[i], deltaSeconds * led_lerpSpeedUnitsPerSecond * ch_rgb_cal);
-	}
-
-	target_value_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
-	if (g_lightEnableAll) {
-		if (g_lightMode == Light_Temperature) {
-			target_value_brightness = g_brightness0to100;
-		}
-	}
-
-	led_current_value_brightness = Mathf_MoveTowards(led_current_value_brightness, target_value_brightness, deltaSeconds * led_lerpSpeedUnitsPerSecond);
-	led_current_value_cold_or_warm = Mathf_MoveTowards(led_current_value_cold_or_warm, target_value_cold_or_warm, deltaSeconds * led_lerpSpeedUnitsPerSecond );
-
-	// OBK_FLAG_LED_ALTERNATE_CW_MODE means we have a driver that takes one PWM for brightness and second for temperature
-	if(isCWMode() && CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
-		CHANNEL_Set_FloatPWM(firstChannelIndex, led_current_value_cold_or_warm, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-		CHANNEL_Set_FloatPWM(firstChannelIndex+1, led_current_value_brightness, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-	} else {
-		if(isCWMode()) { 
-			// In CW mode, user sets just two PWMs. So we have: PWM0 and PWM1 (or maybe PWM1 and PWM2)
-			// But we still have RGBCW internally
-			// So, we need to map. Map component 3 of RGBCW to first channel, and component 4 to second.
-			CHANNEL_Set_FloatPWM(firstChannelIndex + 0, led_rawLerpCurrent[3] * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-			CHANNEL_Set_FloatPWM(firstChannelIndex + 1, led_rawLerpCurrent[4] * g_cfg_colorScaleToChannel, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-		} else {
-			// This should work for both RGB and RGBCW
-			// This also could work for a SINGLE COLOR strips
-			for(i = 0; i < maxPossibleIndexToSet; i++) {
-				finalRGBCW[i] = led_rawLerpCurrent[i];
-				float chVal = led_rawLerpCurrent[i] * g_cfg_colorScaleToChannel;
-				int channelToUse = firstChannelIndex + i;
-				// emulated cool is -1 by default, so this block will only execute
-				// if the cool emulation was enabled
-				if (channelToUse == emulatedCool && g_lightMode == Light_Temperature) {
-					CHANNEL_Set_FloatPWM(firstChannelIndex + 0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-					CHANNEL_Set_FloatPWM(firstChannelIndex + 1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-					CHANNEL_Set_FloatPWM(firstChannelIndex + 2, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-				}
-				else {
-					if (CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
-						if (i == 3) {
-							chVal = led_current_value_cold_or_warm;
-						}
-						else if (i == 4) {
-							chVal = led_current_value_brightness;
-						}
-					}
-					CHANNEL_Set_FloatPWM(channelToUse, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-				}
-			}
-		}
-	}
-	
-	LED_I2CDriver_WriteRGBCW(led_rawLerpCurrent);
-}
-
-
+float currentColors[5] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
+float targetColors[5] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
+float currentColdOrWarm = 0.0f;
+float currentBrightness0to100 = 0.0f;
+float targetBrightness0to100 = 0.0f;
+float lerp_brightness_ramp = 0.0f;
+int lerp_in_progress = 0;
 int led_gamma_enable_channel_messages = 0;
 
-float led_gamma_correction (int color, float iVal) { // apply LED gamma and RGB correction
-	if ((color < 0) || (color > 4)) {
-		return iVal;
-	}
-	float brightnessNormalized0to1 = g_brightness0to100 * 0.01f;
+float led_gamma_corrected_channel_value (int color, float *iColors, float iBrightness0to100) { // get gamma corrected RGBCW values
+	float brightnessNormalized0to1 = iBrightness0to100 * 0.01f;
 	if (CFG_HasFlag(OBK_FLAG_LED_USE_OLD_LINEAR_MODE)) {
-		return iVal * brightnessNormalized0to1;
+		return iColors[color] * brightnessNormalized0to1;
 	}
 
 	// apply LED gamma correction:
@@ -314,17 +219,20 @@ float led_gamma_correction (int color, float iVal) { // apply LED gamma and RGB 
 	if (color > 2) {
 		ch_bright_min = g_cfg.led_corr.cw_bright_min / 100;
 	}
-	float oVal = (powf (brightnessNormalized0to1, g_cfg.led_corr.led_gamma) * (1 - ch_bright_min) + ch_bright_min) * iVal;
+	float oVal = (powf (brightnessNormalized0to1, g_cfg.led_corr.led_gamma) * (1 - ch_bright_min) + ch_bright_min) * iColors[color];
+	if (iBrightness0to100 == 0.0f) {
+		oVal = 0.0f;
+	}
 
 	// apply RGB level correction:
 	if (color < 3) {
-		rgb_used_corr[color] = g_cfg.led_corr.rgb_cal[color];
+		float ch_correction = g_cfg.led_corr.rgb_cal[color];
 		// boost gain to get full brightness when one RGB base color is dominant:
-		float sum_other_colors = baseColors[0] + baseColors[1] + baseColors[2] - baseColors[color];
-		if (baseColors[color] > sum_other_colors) {
-			rgb_used_corr[color] += (1.0f - rgb_used_corr[color]) * (1.0f - sum_other_colors / baseColors[color]);
+		float sum_other_colors = iColors[0] + iColors[1] + iColors[2] - iColors[color];
+		if (iColors[color] > sum_other_colors) {
+			ch_correction += (1.0f - ch_correction) * (1.0f - sum_other_colors / iColors[color]);
 		}
-		oVal *= rgb_used_corr[color];
+		oVal *= ch_correction;
 	}
 
 	if (led_gamma_enable_channel_messages &&
@@ -335,18 +243,22 @@ float led_gamma_correction (int color, float iVal) { // apply LED gamma and RGB 
 		oVal = 255.0f;
 	}
 	return oVal;
-} //
+}
 
-void apply_smart_light() {
+// apply_smart_light_main() is controlled by the lerp_sequence parameter, defined as:
+#define LERP_NONE  0 // non-lerp mode
+#define LERP_START 1 // applied once at lerp start
+#define LERP_RUN   2 // lerp in progress
+#define LERP_END   3 // applied once at lerp end
+
+void apply_smart_light_main (int lerp_sequence, float *iColors, float iBrightness0to100) {
 	int i;
 	int firstChannelIndex;
 	int channelToUse;
-	byte finalRGBCW[5];
+	float finalRGBCW[5];
 	byte baseRGBCW[5];
 	int maxPossibleIndexToSet;
 	int emulatedCool = -1;
-	int value_brightness = 0;
-	int value_cold_or_warm = 0;
 
 	// The color order is RGBCW.
 	// some people set RED to channel 0, and some of them set RED to channel 1
@@ -369,62 +281,61 @@ void apply_smart_light() {
 		maxPossibleIndexToSet = 5;
 	}
 
-	if (CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
-		value_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
-		if (g_lightEnableAll) {
-			if (g_lightMode == Light_Temperature) {
-				value_brightness = g_brightness0to100;
-			}
+	float ch_bright_min = g_cfg.led_corr.cw_bright_min / 100;
+	float brightness_gamma0to100 = iBrightness0to100;
+	if (CFG_HasFlag(OBK_FLAG_LED_USE_OLD_LINEAR_MODE) == false) {
+		brightness_gamma0to100 = (powf (iBrightness0to100 * 0.01f, g_cfg.led_corr.led_gamma) * (1 - ch_bright_min) + ch_bright_min) * 100.0f;
+		if (iBrightness0to100 == 0.0f) {
+			brightness_gamma0to100 = 0.0f;
 		}
+	}
+	if (lerp_sequence == LERP_NONE) {
+		currentColdOrWarm = LED_GetTemperature0to1Range() * 100.0f;
 	}
 
 	if(isCWMode() && CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
 		for(i = 0; i < 5; i++) {
-			finalColors[i] = 0;
+			if ((lerp_sequence == LERP_NONE) || (lerp_sequence == LERP_START)) {
+				finalColors[i] = 0;
+			}
 			baseRGBCW[i] = 0;
 			finalRGBCW[i] = 0;
 		}
-		if(g_lightEnableAll) {
-			float brightnessNormalized0to1 = g_brightness0to100 * 0.01f;
-			for(i = 3; i < 5; i++) {
-				finalColors[i] = baseColors[i] * brightnessNormalized0to1;
-				finalRGBCW[i] = baseColors[i] * brightnessNormalized0to1;
-				baseRGBCW[i] = baseColors[i];
+		for(i = 3; i < 5; i++) {
+			if ((lerp_sequence == LERP_NONE) || (lerp_sequence == LERP_START)) {
+				finalColors[i] = iColors[i] * brightness_gamma0to100 * 0.01f;
 			}
+			finalRGBCW[i] = iColors[i] * brightness_gamma0to100 * 0.01f;
 		}
-		if(CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == false) {
-			CHANNEL_Set_FloatPWM(firstChannelIndex, value_cold_or_warm, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-			CHANNEL_Set_FloatPWM(firstChannelIndex+1, value_brightness, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+		if (lerp_sequence != LERP_START) {
+			CHANNEL_Set_FloatPWM(firstChannelIndex, currentColdOrWarm, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+			CHANNEL_Set_FloatPWM(firstChannelIndex+1, brightness_gamma0to100, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 		}
 	} else {
 		for(i = 0; i < maxPossibleIndexToSet; i++) {
-			float final = 0.0f;
-
-			baseRGBCW[i] = baseColors[i];
-			if(g_lightEnableAll) {
-				final = led_gamma_correction (i, baseColors[i]);
-			}
-			if(g_lightMode == Light_Temperature) {
-				// skip channels 0, 1, 2
-				// (RGB)
-				if(i < 3)
-				{
-					baseRGBCW[i] = 0;
-					final = 0;
+			float final = led_gamma_corrected_channel_value (i, iColors, iBrightness0to100);
+			baseRGBCW[i] = iColors[i];
+			if ((lerp_sequence == LERP_NONE) || (lerp_sequence == LERP_START)) {
+				if(g_lightMode == Light_Temperature) {
+					// skip channels 0, 1, 2
+					// (RGB)
+					if(i < 3)
+					{
+						baseRGBCW[i] = 0;
+						final = 0;
+					}
+				} else if(g_lightMode == Light_RGB) {
+					// skip channels 3, 4
+					if(i >= 3)
+					{
+						baseRGBCW[i] = 0;
+						final = 0;
+					}
 				}
-			} else if(g_lightMode == Light_RGB) {
-				// skip channels 3, 4
-				if(i >= 3)
-				{
-					baseRGBCW[i] = 0;
-					final = 0;
-				}
-			} else {
-
+				finalColors[i] = final;
 			}
-			finalColors[i] = final;
 			finalRGBCW[i] = final;
-			
+
 			float chVal = final * g_cfg_colorScaleToChannel;
 			if (chVal > 100.0f)
 				chVal = 100.0f;
@@ -435,7 +346,7 @@ void apply_smart_light() {
 			//ADDLOG_INFO(LOG_FEATURE_CMD, "apply_smart_light: ch %i raw is %f, bright %f, final %f, enableAll is %i",
 			//	channelToUse,raw,g_brightness,final,g_lightEnableAll);
 
-			if(CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == false) {
+			if (lerp_sequence != LERP_START) {
 				if (isCWMode()) {
 					// in CW mode, we have only set two channels
 					// We don't have RGB channels
@@ -457,10 +368,10 @@ void apply_smart_light() {
 					else {
 						if (CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
 							if (i == 3) {
-								chVal = value_cold_or_warm;
+								chVal = currentColdOrWarm;
 							}
 							else if (i == 4) {
-								chVal = value_brightness;
+								chVal = brightness_gamma0to100;
 							}
 						}
 						CHANNEL_Set_FloatPWM(channelToUse, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
@@ -469,20 +380,106 @@ void apply_smart_light() {
 			}
 		}
 	}
-	if(CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == false) {
-		LED_I2CDriver_WriteRGBCW(finalColors);
+	if (lerp_sequence != LERP_START) {
+		LED_I2CDriver_WriteRGBCW(finalRGBCW);
 	}
 
 	if(CFG_HasFlag(OBK_FLAG_LED_REMEMBERLASTSTATE)) {
-		HAL_FlashVars_SaveLED(g_lightMode, g_brightness0to100, led_temperature_current,baseColors[0],baseColors[1],baseColors[2],g_lightEnableAll);
+		if ((lerp_sequence == LERP_NONE) || (lerp_sequence == LERP_END)) {
+			HAL_FlashVars_SaveLED(g_lightMode, iBrightness0to100, led_temperature_current,baseColors[0],baseColors[1],baseColors[2],g_lightEnableAll);
+		}
 	}
+
+	if ((lerp_sequence == LERP_NONE) || (lerp_sequence == LERP_START)) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
-	DRV_DGR_OnLedFinalColorsChange(baseRGBCW);
+		DRV_DGR_OnLedFinalColorsChange(baseRGBCW);
 #endif
 
-	// I am not sure if it's the best place to do it
-	// NOTE: this will broadcast MQTT only if a flag is set
-	sendFullRGBCW_IfEnabled();
+		// I am not sure if it's the best place to do it
+		// NOTE: this will broadcast MQTT only if a flag is set
+		sendFullRGBCW_IfEnabled();
+	}
+}
+
+void apply_smart_light() {
+	if (g_lightEnableAll) {
+		targetBrightness0to100 = g_brightness0to100;
+	} else {
+		targetBrightness0to100 = 0.0f;
+	}
+	if (CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == false) {
+		apply_smart_light_main (LERP_NONE, baseColors, targetBrightness0to100);
+
+	} else {
+		apply_smart_light_main (LERP_START, baseColors, targetBrightness0to100);
+		for (int i = 0; i < 5; i++)
+		{
+			if (((i < 3) && (g_lightMode == Light_Temperature)) || (((i >= 3) && (g_lightMode == Light_RGB)))) {
+				targetColors[i] = 0.0f;
+			} else {
+				targetColors[i] = baseColors[i];
+			}
+		}
+		if (!lerp_in_progress) {
+			if (currentBrightness0to100 == 0.0f) {
+				lerp_brightness_ramp = 1.0f;
+			} else {
+				lerp_brightness_ramp = 0.01f;
+			}
+			lerp_in_progress = 1;
+		}
+	}
+}
+
+void LED_RunQuickColorLerp (int deltaMS) {
+	if (lerp_in_progress) {
+		int lerp_complete = 1;
+		float lerp_step = (float)deltaMS * 0.001f * led_lerpSpeedUnitsPerSecond;
+
+		// update LED channels:
+		for(int i = 0; i < 5; i++) {
+			if (currentColors[i] != targetColors[i]) {
+				currentColors[i] = Mathf_MoveTowards (currentColors[i], targetColors[i], lerp_step);
+				if (currentColors[i] != targetColors[i]) {
+					lerp_complete = 0;
+				}
+			}
+		}
+
+		// update cold or warm:
+		float target_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
+		if (currentColdOrWarm != target_cold_or_warm) {
+			currentColdOrWarm = Mathf_MoveTowards (currentColdOrWarm, target_cold_or_warm, lerp_step / 2.55f);
+			if (currentColdOrWarm != target_cold_or_warm) {
+				lerp_complete = 0;
+			}
+		}
+
+		// update brightness, including smooth start and stop:
+		if (currentBrightness0to100 != targetBrightness0to100) {
+			if (fabsf (currentBrightness0to100 - targetBrightness0to100) > 8.7f * (lerp_step / 2.55f) * lerp_brightness_ramp) {
+				lerp_brightness_ramp = lerp_brightness_ramp * 1.3f + 0.01f;
+			} else if (targetBrightness0to100 > 0.0f) {
+				lerp_brightness_ramp = lerp_brightness_ramp / 1.15f - 0.005f;
+			}
+			if (lerp_brightness_ramp > 1.0f) {
+				lerp_brightness_ramp = 1.0f;
+			} else if (lerp_brightness_ramp < 0.01f) {
+				lerp_brightness_ramp = 0.01;
+			}
+			currentBrightness0to100 = Mathf_MoveTowards (currentBrightness0to100, targetBrightness0to100, (lerp_step / 2.55f) * lerp_brightness_ramp);
+			if (currentBrightness0to100 != targetBrightness0to100) {
+				lerp_complete = 0;
+			}
+		}
+
+		if (lerp_complete) {
+			lerp_in_progress = 0;
+			apply_smart_light_main (LERP_END, currentColors, currentBrightness0to100);
+		} else {
+			apply_smart_light_main (LERP_RUN, currentColors, currentBrightness0to100);
+		}
+	}
 }
 
 void led_gamma_list (void) { // list RGB gamma settings
@@ -572,7 +569,7 @@ commandResult_t led_gamma_control (const void *context, const char *cmd, const c
 	}
 
 	return CMD_RES_OK;
-} //
+}
 
 OBK_Publish_Result sendColorChange() {
 	char s[16];
@@ -1339,8 +1336,14 @@ static commandResult_t setBrightness(const void *context, const char *cmd, const
 }
 static commandResult_t led_finishFullLerp(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
-	if (CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == true) {
-		LED_RunQuickColorLerp(9999.0f);
+	if (lerp_in_progress) {
+		lerp_in_progress = 0;
+		currentBrightness0to100 = targetBrightness0to100;
+		currentColdOrWarm = LED_GetTemperature0to1Range() * 100.0f;
+		for(int i = 0; i < 5; i++) {
+			currentColors[i] = baseColors[i];
+		}
+		apply_smart_light_main (LERP_END, baseColors, targetBrightness0to100);
 	}
 
 	return CMD_RES_OK;
@@ -1502,7 +1505,7 @@ void NewLED_InitCommands(){
 	//cmddetail:"descr":"control LED Gamma Correction and Calibration",
 	//cmddetail:"fn":"rgb_gamma_control","file":"cmnds/cmd_rgbGamma.c","requires":"",
 	//cmddetail:"examples":"led_gammaCtrl on"}
-    CMD_RegisterCommand("led_gammaCtrl", led_gamma_control, NULL);
+	CMD_RegisterCommand("led_gammaCtrl", led_gamma_control, NULL);
 	CMD_RegisterCommand("CTRange", ctRange, NULL);
 }
 
