@@ -189,6 +189,16 @@ float led_current_value_cold_or_warm = 0;
 
 void LED_I2CDriver_WriteRGBCW(float* finalRGBCW) {
 #ifdef ENABLE_DRIVER_LED
+	if (CFG_HasFlag(OBK_FLAG_LED_EMULATE_COOL_WITH_RGB)) {
+		if (g_lightMode == Light_Temperature) {
+			// the format is RGBCW
+			// Emulate C with RGB
+			finalRGBCW[0] = finalRGBCW[1] = finalRGBCW[2] = finalRGBCW[3];
+			// C is unused
+			finalRGBCW[3] = 0;
+			// keep W unchanged
+		}
+	}
 	if (DRV_IsRunning("SM2135")) {
 		SM2135_Write(finalRGBCW);
 	}
