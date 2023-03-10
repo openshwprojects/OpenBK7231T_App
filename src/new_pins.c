@@ -561,27 +561,19 @@ void CHANNEL_DoSpecialToggleAll() {
 	anyEnabled = 0;
 
 	for (i = 0; i < CHANNEL_MAX; i++) {
-		if (CHANNEL_IsInUse(i) == false)
+		if (CHANNEL_IsPowerRelayChannel(i) == false)
 			continue;
 		if (g_channelValues[i] > 0) {
-			anyEnabled++;
+			anyEnabled = true;
 		}
 	}
-	if (anyEnabled) {
-		CHANNEL_SetAll(0, true);
-	}
-	else {
-		for (i = 0; i < CHANNEL_MAX; i++) {
-			if (CHANNEL_IsInUse(i)) {
-				int valToSet;
+	for (i = 0; i < CHANNEL_MAX; i++) {
+		if (CHANNEL_IsPowerRelayChannel(i)) {
+			int valToSet;
 
-				valToSet = CHANNEL_FindMaxValueForChannel(i);
-
-				CHANNEL_Set(i, valToSet, 0);
-			}
+			CHANNEL_Set(i, !anyEnabled, 0);
 		}
 	}
-
 }
 void PIN_SetPinRoleForPinIndex(int index, int role) {
 	bool bDHTChange = false;
@@ -1240,7 +1232,9 @@ bool CHANNEL_IsPowerRelayChannel(int ch) {
 	int i;
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if (g_cfg.pins.channels[i] == ch) {
-			int role = g_cfg.pins.roles[i]; if (role == IOR_Relay || role == IOR_BAT_Relay || role == IOR_Relay_n) {
+			int role = g_cfg.pins.roles[i]; 
+			// NOTE: do not include Battery relay
+			if (role == IOR_Relay || role == IOR_Relay_n) {
 				return true;
 			}
 		}

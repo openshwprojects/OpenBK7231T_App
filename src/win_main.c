@@ -125,6 +125,7 @@ void SIM_DoFreshOBKBoot() {
 	Main_Init();
 }
 void Win_DoUnitTests() {
+	Test_Role_ToggleAll_2();
 	Test_Demo_ButtonToggleGroup();
 	Test_Demo_ButtonScrollingChannelValues();
 	Test_CFG_Via_HTTP();

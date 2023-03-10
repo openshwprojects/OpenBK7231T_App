@@ -93,6 +93,7 @@ void Test_Commands_Calendar();
 void Test_CFG_Via_HTTP();
 void Test_Demo_ButtonScrollingChannelValues();
 void Test_Demo_ButtonToggleGroup();
+void Test_Role_ToggleAll_2();
 
 void Test_GetJSONValue_Setup(const char *text);
 void Test_FakeHTTPClientPacket_GET(const char *tg);
