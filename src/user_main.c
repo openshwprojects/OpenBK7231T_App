@@ -278,6 +278,7 @@ int Main_HasWiFiConnected()
 	return g_bHasWiFiConnected;
 }
 
+
 #ifdef OBK_MCU_SLEEP_METRICS_ENABLE
 extern OBK_MCU_SLEEP_METRICS OBK_Mcu_metrics;
 void Main_LogPowerSave() {
@@ -380,7 +381,7 @@ void Main_OnEverySecond()
 		}
 	}
 	if (g_newWiFiStatus != g_prevWiFiStatus) {
-		g_newWiFiStatus = g_prevWiFiStatus;
+		g_prevWiFiStatus = g_newWiFiStatus;
 		// Argument type here is HALWifiStatus_t enumeration
 		EventHandlers_FireEvent(CMD_EVENT_WIFI_STATE, g_newWiFiStatus);
 	}

@@ -36,6 +36,14 @@ https://developer.tuya.com/en/docs/iot/tuyacloudlowpoweruniversalserialaccesspro
 #define TUYA_CMD_SET_TIME      0x1C
 #define TUYA_CMD_WEATHERDATA   0x21
 #define TUYA_CMD_SET_RSSI      0x24
+#define TUYA_CMD_NETWORK_STATUS 0x2B
+
+#define TUYA_NETWORK_STATUS_AP_MODE             0x01
+#define TUYA_NETWORK_STATUS_NOT_CONNECTED       0x02
+#define TUYA_NETWORK_STATUS_CONNECTED_TO_ROUTER 0x03
+#define TUYA_NETWORK_STATUS_CONNECTED_TO_CLOUD  0x04
+#define TUYA_NETWORK_STATUS_LOW_POWER_MODE      0x05
+
 void TuyaMCU_RunFrame();
 
 
@@ -100,7 +108,12 @@ const char *TuyaMCU_GetCommandTypeLabel(int t) {
         return "SetTime";
 	if (t == TUYA_CMD_WEATHERDATA)
 		return "WeatherData";
+    if (t == TUYA_CMD_NETWORK_STATUS)
+        return "NetworkStatus";
+    if (t == TUYA_CMD_SET_RSSI)
+        return "SetRSSI";
     return "Unknown";
+
 }
 typedef struct rtcc_s {
     uint8_t       second;
@@ -167,6 +180,8 @@ static int g_sendQueryStatePackets = 0;
 // See: https://imgur.com/a/mEfhfiA
 static byte g_defaultTuyaMCUWiFiState = 0x00;
 static byte last_wifi_state = 0x00;
+
+
 
 tuyaMCUMapping_t *TuyaMCU_FindDefForID(int fnId) {
     tuyaMCUMapping_t *cur;
@@ -540,6 +555,7 @@ Info:TuyaMCU:TuyaMCU_V0_ParseRealTimeWithRecordStorage: raw data 1 byte:
 Info:GEN:No change in channel 1 (still set to 0) - ignoring
 */
 
+
 commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void *context, const char *cmd, const char *args, int cmdFlags) {
     int dpId;
     const char *dpTypeString;
@@ -671,6 +687,7 @@ commandResult_t TuyaMCU_SendQueryState(const void *context, const char *cmd, con
     return CMD_RES_OK;
 }
 
+
 commandResult_t TuyaMCU_SendStateCmd(const void *context, const char *cmd, const char *args, int cmdFlags) {
     int dpId;
     int dpType;
@@ -703,6 +720,18 @@ void Tuya_SetWifiState(uint8_t state)
 {
     last_wifi_state = state;
     TuyaMCU_SendCommandWithData(TUYA_CMD_WIFI_STATE, &state, 1);
+}
+
+void TuyaMCU_SendNetworkStatus()
+{
+    uint8_t state = TUYA_NETWORK_STATUS_NOT_CONNECTED;
+    if (Main_IsOpenAccessPointMode() != 0 ) {
+        state = TUYA_NETWORK_STATUS_AP_MODE;
+    } else if (Main_HasWiFiConnected() != 0 ){
+        state = Main_HasMQTTConnected() != 0? TUYA_NETWORK_STATUS_CONNECTED_TO_CLOUD : TUYA_NETWORK_STATUS_CONNECTED_TO_ROUTER;
+    }
+    addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU,"TuyaMCU_SendNetworkStatus: sending status 0x%X to MCU \n", state);
+    TuyaMCU_SendCommandWithData(0x2B, &state, 1);
 }
 
 // ntp_timeZoneOfs 2
@@ -1143,7 +1172,7 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
         case TUYA_CMD_STATE:
             TuyaMCU_ParseStateMessage(data+6,len-6);
             state_updated = true;
-			g_sendQueryStatePackets = 0;
+            g_sendQueryStatePackets = 0;
             break;
         case TUYA_CMD_SET_TIME:
             addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: received TUYA_CMD_SET_TIME, so sending back time");
@@ -1159,49 +1188,51 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
         case TUYA_CMD_QUERY_STATE:
             if(version == 0) {
                 // 0x08 packet for version 0 (not 0x03) of TuyaMCU
-				// This packet includes first a DateTime, then RealTimeDataStorage
+                // This packet includes first a DateTime, then RealTimeDataStorage
                 TuyaMCU_V0_ParseRealTimeWithRecordStorage(data+6,len-6, true);
             } else {
     
             }
             break;
-		case 0x05:
-			// This was added for this user:
-			// https://www.elektroda.com/rtvforum/topic3937723.html
-			if (version == 0) {
-				// 0x08 packet for version 0 (not 0x03) of TuyaMCU
-				// This packet includes first a DateTime, then RealTimeDataStorage
-				TuyaMCU_V0_ParseRealTimeWithRecordStorage(data + 6, len - 6, false);
-			}
-			else {
+        case 0x05:
+            // This was added for this user:
+            // https://www.elektroda.com/rtvforum/topic3937723.html
+            if (version == 0) {
+                // 0x08 packet for version 0 (not 0x03) of TuyaMCU
+                // This packet includes first a DateTime, then RealTimeDataStorage
+                TuyaMCU_V0_ParseRealTimeWithRecordStorage(data + 6, len - 6, false);
+            }
+            else {
+            }
+            break;
+        case TUYA_CMD_WEATHERDATA:
+            TuyaMCU_ParseWeatherData(data + 6, len - 6);
+            break;
 
-			}
-			break;
-		case TUYA_CMD_WEATHERDATA:
-			TuyaMCU_ParseWeatherData(data + 6, len - 6);
-			break;
-		case 0x24:
-			// This is send by TH06
-			// Info:TuyaMCU:TUYAMCU received: 55 AA 03 24 00 00 26     
-			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: (test for TH06 calendar) received 0x24, so sending back time");
-			TuyaMCU_Send_SetTime(TuyaMCU_Get_NTP_Time());
-			break;
+        case TUYA_CMD_SET_RSSI:
+            // This is send by TH06, S09
+            // Info:TuyaMCU:TUYAMCU received: 55 AA 03 24 00 00 26
+            if (version == 3) {
+                addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: received TUYA_CMD_SET_RSSI, so sending back signal strength");
+                TuyaMCU_Send_RSSI(HAL_GetWifiStrength());
+            }
+            break;
 
-		case 0x2B:	
-			//This is sent by S09 
-			//Info:TuyaMCU:TUYAMCU received: 55 AA 03 2B 00 00 2D 
-			//
-			if (version == 0x03 ){ 
-				addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: (test for S09 calendar/IR device) received 0x2B, so sending back status of network status");
-    				TuyaMCU_SendCommandWithData(0x2B, &last_wifi_state, 1);
-			}
-			//
-			
+        case TUYA_CMD_NETWORK_STATUS:
+            //This is sent by S09
+            //Info:TuyaMCU:TUYAMCU received: 55 AA 03 2B 00 00 2D
+            //
+            if (version == 3 ){
+                addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: (test for S09 calendar/IR device) received TUYA_CMD_NETWORK_STATUS 0x2B ");
+                TuyaMCU_SendNetworkStatus();
+            }
+
+            break;
         default:
             addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: unhandled type %i",cmd);
             break;
     }
-	EventHandlers_FireEvent(CMD_EVENT_TUYAMCU_PARSED, cmd);
+    EventHandlers_FireEvent(CMD_EVENT_TUYAMCU_PARSED, cmd);
 }
 
 commandResult_t TuyaMCU_FakePacket(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -1258,6 +1289,8 @@ void TuyaMCU_RunWiFiUpdateAndPackets() {
 		//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_Wifi_State timer");
 	}
 }
+
+
 void TuyaMCU_RunFrame() {
     byte data[128];
     char buffer_for_log[256];
