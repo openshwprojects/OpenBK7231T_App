@@ -467,6 +467,13 @@ bool DRV_IsMeasuringPower() {
 	return false;
 #endif
 }
+bool DRV_IsMeasuringBattery() {
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	return DRV_IsRunning("Battery");
+#else
+	return false;
+#endif
+}
 
 bool DRV_IsSensor() {
 #ifndef OBK_DISABLE_ALL_DRIVERS
