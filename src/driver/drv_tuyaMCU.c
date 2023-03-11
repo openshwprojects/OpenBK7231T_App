@@ -166,6 +166,7 @@ static int g_sendQueryStatePackets = 0;
 // wifistate to send when not online
 // See: https://imgur.com/a/mEfhfiA
 static byte g_defaultTuyaMCUWiFiState = 0x00;
+static byte last_wifi_state = 0x00;
 
 tuyaMCUMapping_t *TuyaMCU_FindDefForID(int fnId) {
     tuyaMCUMapping_t *cur;
@@ -700,6 +701,7 @@ commandResult_t TuyaMCU_SendMCUConf(const void *context, const char *cmd, const 
 
 void Tuya_SetWifiState(uint8_t state)
 {
+    last_wifi_state = state;
     TuyaMCU_SendCommandWithData(TUYA_CMD_WIFI_STATE, &state, 1);
 }
 
@@ -1184,6 +1186,17 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: (test for TH06 calendar) received 0x24, so sending back time");
 			TuyaMCU_Send_SetTime(TuyaMCU_Get_NTP_Time());
 			break;
+
+		case 0x2B:	
+			//This is sent by S09 
+			//Info:TuyaMCU:TUYAMCU received: 55 AA 03 2B 00 00 2D 
+			//
+			if (version == 0x03 ){ 
+				addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: (test for S09 calendar/IR device) received 0x2B, so sending back status of network status");
+    				TuyaMCU_SendCommandWithData(0x2B, &last_wifi_state, 1);
+			}
+			//
+			
         default:
             addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: unhandled type %i",cmd);
             break;
