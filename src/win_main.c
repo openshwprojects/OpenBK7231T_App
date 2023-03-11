@@ -113,6 +113,7 @@ void SIM_ClearOBK() {
 		release_lfs();
 		SIM_Hack_ClearSimulatedPinRoles();
 		WIN_ResetMQTT();
+		UART_ResetForSimulator();
 		CMD_ExecuteCommand("clearAll", 0);
 		CMD_ExecuteCommand("led_expoMode", 0);
 		Main_Init();
@@ -125,6 +126,7 @@ void SIM_DoFreshOBKBoot() {
 	Main_Init();
 }
 void Win_DoUnitTests() {
+	Test_HassDiscovery();
 	Test_Role_ToggleAll_2();
 	Test_Demo_ButtonToggleGroup();
 	Test_Demo_ButtonScrollingChannelValues();
@@ -137,7 +139,6 @@ void Win_DoUnitTests() {
 	Test_Demo_MapFanSpeedToRelays();
 	Test_MapRanges();
 	Test_Demo_ExclusiveRelays();
-	Test_HassDiscovery();
 	Test_MultiplePinsOnChannel();
 	Test_Flags();
 	Test_DHT();
@@ -199,6 +200,14 @@ int __cdecl main(int argc, char **argv)
 {
 	bool bWantsUnitTests = 1;
 
+	// clear debug data
+	if (1) {
+		FILE *f = fopen("sim_lastPublishes.txt", "wb");
+		if (f != 0) {
+			fprintf(f, "\n\n");
+			fclose(f);
+		}
+	}
 	if (argc > 1) {
 		int value;
 

@@ -274,6 +274,10 @@ commandResult_t CMD_UART_Send_ASCII(const void *context, const char *cmd, const 
 	return CMD_RES_OK;
 }
 bool b_uart_commands_added = false;
+void UART_ResetForSimulator() {
+	b_uart_commands_added = false;
+	g_uart_init_counter = 0;
+}
 void UART_AddCommands() {
 	//cmddetail:{"name":"uartSendHex","args":"[HexString]",
 	//cmddetail:"descr":"Sends raw data by UART, can be used to send TuyaMCU data, but you must write whole packet with checksum yourself",
