@@ -69,6 +69,38 @@ static bool TM1637_WriteByte(softI2C_t *i2c, byte b) {
 static void TM1637_SetBrightness(byte brightness, bool on) {
 	g_brightness = (brightness & 0x7) | (on ? 0x08 : 0x00);
 }
+
+// backlog startDriver TM1637; TM1650_Test
+#define TM1650_I2C_DATA_COMMAND 0x48
+#define TM1650_I2C_DIGITS 0x68
+static void TM1650_SendSegments(const byte *segments, byte length, byte pos) {
+	int i;
+	softI2C_t i2c;
+	byte brightness_and_type_byte;
+
+	i2c.pin_clk = PIN_FindPinIndexForRole(IOR_TM1637_CLK, 16);
+	i2c.pin_data = PIN_FindPinIndexForRole(IOR_TM1637_DIO, 14);
+
+	brightness_and_type_byte = 0xff;
+
+	TM1637_Start(&i2c);
+	TM1637_WriteByte(&i2c, TM1650_I2C_DATA_COMMAND);
+	TM1637_WriteByte(&i2c, brightness_and_type_byte);
+	TM1637_Stop(&i2c);
+
+
+	// send the data bytes
+	for (i = 0; i < length; i++) {
+		// set COM2 + first digit address
+		TM1637_Start(&i2c);
+		TM1637_WriteByte(&i2c, TM1650_I2C_DIGITS + (pos & 0x03));
+		TM1637_WriteByte(&i2c, segments[i]);
+		TM1637_Stop(&i2c);
+	}
+
+
+
+}
 static void TM1637_SendSegments(const byte *segments, byte length, byte pos) {
 	int i;
 	softI2C_t i2c;
@@ -140,6 +172,17 @@ static commandResult_t CMD_TM1637_Clear(const void *context, const char *cmd, co
 	memset(tm1638_buffer, 0x00, TM1637_MAX_CHARS);
 
 	TM1637_SendSegments(tm1638_buffer, TM1637_MAX_CHARS, 0);
+
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_TM1650_Test(const void *context, const char *cmd, const char *args, int flags) {
+	byte segments[8];
+	int i;
+	for (i = 0; i < 8; i++) {
+		segments[i] = g_digits[(Time_getUpTimeSeconds() + i) % 10];
+	}
+
+	TM1650_SendSegments(segments, 6, 0);
 
 	return CMD_RES_OK;
 }
@@ -294,4 +337,5 @@ void TM1637_Init() {
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TM1637_Map", CMD_TM1637_Map, NULL);
+	CMD_RegisterCommand("TM1650_Test", CMD_TM1650_Test, NULL);
 }
