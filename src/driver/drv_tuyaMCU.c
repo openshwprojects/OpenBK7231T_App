@@ -113,7 +113,6 @@ const char *TuyaMCU_GetCommandTypeLabel(int t) {
     if (t == TUYA_CMD_SET_RSSI)
         return "SetRSSI";
     return "Unknown";
-
 }
 typedef struct rtcc_s {
     uint8_t       second;
@@ -179,9 +178,6 @@ static int g_sendQueryStatePackets = 0;
 // wifistate to send when not online
 // See: https://imgur.com/a/mEfhfiA
 static byte g_defaultTuyaMCUWiFiState = 0x00;
-static byte last_wifi_state = 0x00;
-
-
 
 tuyaMCUMapping_t *TuyaMCU_FindDefForID(int fnId) {
     tuyaMCUMapping_t *cur;
@@ -718,7 +714,6 @@ commandResult_t TuyaMCU_SendMCUConf(const void *context, const char *cmd, const 
 
 void Tuya_SetWifiState(uint8_t state)
 {
-    last_wifi_state = state;
     TuyaMCU_SendCommandWithData(TUYA_CMD_WIFI_STATE, &state, 1);
 }
 
@@ -1226,7 +1221,6 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
                 addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: (test for S09 calendar/IR device) received TUYA_CMD_NETWORK_STATUS 0x2B ");
                 TuyaMCU_SendNetworkStatus();
             }
-
             break;
         default:
             addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_ProcessIncoming: unhandled type %i",cmd);
@@ -1289,8 +1283,6 @@ void TuyaMCU_RunWiFiUpdateAndPackets() {
 		//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"TuyaMCU_Wifi_State timer");
 	}
 }
-
-
 void TuyaMCU_RunFrame() {
     byte data[128];
     char buffer_for_log[256];

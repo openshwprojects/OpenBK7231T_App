@@ -278,7 +278,6 @@ int Main_HasWiFiConnected()
 	return g_bHasWiFiConnected;
 }
 
-
 #ifdef OBK_MCU_SLEEP_METRICS_ENABLE
 extern OBK_MCU_SLEEP_METRICS OBK_Mcu_metrics;
 void Main_LogPowerSave() {
