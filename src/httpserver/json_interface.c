@@ -179,7 +179,7 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 	energy = DRV_GetReading(OBK_CONSUMPTION_TOTAL);
 	energy_hour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
 
-	if (DRV_IsRunning("Battery")) {
+	if (DRV_IsMeasuringBattery()) {
 #if defined(PLATFORM_BEKEN)
 		voltage = Battery_lastreading(OBK_BATT_VOLTAGE) / 1000.00;
 		batterypercentage = Battery_lastreading(OBK_BATT_LEVEL);
@@ -261,7 +261,7 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 		humidity = CHANNEL_GetFloat(channel_2);
 
 		// writer header
-		printer(request, "\"SHT3X\":");
+		printer(request, "\"CHT8305\":");
 		// following check will clear NaN values
 		printer(request, "{");
 		printer(request, "\"Temperature\": %.1f,", temperature);
@@ -286,7 +286,7 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
 
-	if (DRV_IsMeasuringPower()) {
+	if (DRV_IsMeasuringPower() || DRV_IsMeasuringBattery()) {
 
 		// begin ENERGY block
 		printer(request, ",");

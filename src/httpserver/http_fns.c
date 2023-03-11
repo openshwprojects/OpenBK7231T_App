@@ -446,7 +446,7 @@ int http_fn_index(http_request_t* request) {
 			poststr(request, "</td></tr>");
 
 		}
-		else if (channelType == ChType_OffLowMidHigh || channelType == ChType_OffLowestLowMidHighHighest 
+		else if (channelType == ChType_OffLowMidHigh || channelType == ChType_OffLowestLowMidHighHighest
 			|| channelType == ChType_LowestLowMidHighHighest || channelType == ChType_LowMidHighHighest
 			|| channelType == ChType_OffLowMidHighHighest) {
 			const char** types;
@@ -456,7 +456,7 @@ int http_fn_index(http_request_t* request) {
 			const char* types6[] = { "Off", "Lowest", "Low", "Mid", "High", "Highest" };
 			const char* types5NoOff[] = { "Lowest", "Low", "Mid", "High", "Highest" };
 			int numTypes;
-			
+
 			if (channelType == ChType_OffLowMidHigh) {
 				types = types4;
 				numTypes = 4;
@@ -1641,9 +1641,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	measuringPower = DRV_IsMeasuringPower();
-#endif
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
-	measuringBattery = DRV_IsRunning("Battery");
+	measuringBattery = DRV_IsMeasuringBattery();
 #endif
 
 	get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
