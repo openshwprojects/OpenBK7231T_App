@@ -1513,6 +1513,10 @@ void NewLED_InitCommands(){
 	//cmddetail:"fn":"rgb_gamma_control","file":"cmnds/cmd_rgbGamma.c","requires":"",
 	//cmddetail:"examples":"led_gammaCtrl on"}
     CMD_RegisterCommand("led_gammaCtrl", led_gamma_control, NULL);
+	//cmddetail:{"name":"CTRange","args":"ctRange",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("CTRange", ctRange, NULL);
 }
 

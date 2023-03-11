@@ -78,7 +78,7 @@ void Test_Role_ToggleAll_2() {
 	}
 
 	// this check will fail obviously!
-	SELFTEST_ASSERT_CHANNEL(5, 666);
+	//SELFTEST_ASSERT_CHANNEL(5, 666);
 }
 
 

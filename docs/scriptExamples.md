@@ -3,7 +3,7 @@
 
 <b>Loop demo</b>
 <br>Features a 'goto' script command (for use within script) and, obviously, a label.
-<br>Requirements:<br>
+<br>Requirements:
 - channel 1 - output relay<br>
 
 ```again:
@@ -21,7 +21,7 @@
 
 <b>Loop & if demo</b>
 <br>This example shows how you can use a dummy channel as a variable to create a loop
-<br>Requirements:<br>
+<br>Requirements:
 - channel 1 - output relay<br>
 - channel 11 - loop variable counter<br>
 
@@ -52,7 +52,7 @@ done:
 
 <b>Thread cancelation demo and exclude self demo</b>
 <br>This example shows how you can create a script thread with an unique ID and use this ID to cancel the thread later
-<br>Requirements:<br>
+<br>Requirements:
 - channel 1 - output relay<br>
 - pin 8 - button<br>
 - pin 9 - button<br>
@@ -105,7 +105,7 @@ label2:
 
 <b>Using channel value as a variable demo</b>
 <br>
-<br>Requirements:<br>
+<br>Requirements:
 - channel 1 - output relay<br>
 - channel 11 - you may use it as ADC, or just use setChannel 11 100 or setChannel 11 500 in console to change delay<br>
 

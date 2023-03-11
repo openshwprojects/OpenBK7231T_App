@@ -65,6 +65,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | HSBColor3 | [Brightness] | Tasmota-style colour access. Sets brightness in 0 to 100 range. | File: cmnds/cmd_newLEDDriver.c<br/>Function: setBrightness |
 | led_finishFullLerp |  | This will force-finish LED color interpolation. You can call it after setting the colour to skip the interpolation/smooth transition time. Of course, it makes only sense if you enabled smooth colour transitions. | File: cmnds/cmd_newLEDDriver.c<br/>Function: led_finishFullLerp |
 | led_gammaCtrl | sub-cmd [par] | control LED Gamma Correction and Calibration<br/>e.g.:led_gammaCtrl on | File: cmnds/cmd_rgbGamma.c<br/>Function: rgb_gamma_control |
+| CTRange | ctRange |  | File: cmnds/cmd_newLEDDriver.c<br/>Function: NULL); |
 | addRepeatingEvent | [IntervalSeconds][RepeatsOr-1][CommandToRun] | Starts a timer/interval command. Use 'backlog' to fit multiple commands in a single string. | File: cmnds/cmd_repeatingEvents.c<br/>Function: RepeatingEvents_Cmd_AddRepeatingEvent |
 | addRepeatingEventID | [IntervalSeconds][RepeatsOr-1][UserID][CommandToRun] | as addRepeatingEvent, but with a given ID. You can later cancel it with cancelRepeatingEvent.<br/>e.g.:addRepeatingEventID 2 -1 123 Power0 Toggle | File: cmnds/cmd_repeatingEvents.c<br/>Function: RepeatingEvents_Cmd_AddRepeatingEvent |
 | cancelRepeatingEvent | [UserIDInteger] | Stops a given repeating event with a specified ID | File: cmnds/cmd_repeatingEvents.c<br/>Function: RepeatingEvents_Cmd_CancelRepeatingEvent |

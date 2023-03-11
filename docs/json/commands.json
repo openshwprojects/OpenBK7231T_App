@@ -540,6 +540,15 @@
     "examples": "led_gammaCtrl on"
   },
   {
+    "name": "CTRange",
+    "args": "ctRange",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_newLEDDriver.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "addRepeatingEvent",
     "args": "[IntervalSeconds][RepeatsOr-1][CommandToRun]",
     "descr": "Starts a timer/interval command. Use 'backlog' to fit multiple commands in a single string.",
