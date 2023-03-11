@@ -91,7 +91,41 @@ void Test_HassDiscovery_LED_SingleColor() {
 void Test_HassDiscovery_DHT11() {
 	// TODO
 }
+void Test_HassDiscovery_Battery() {
+	const char *shortName = "BatteryTest";
+	const char *fullName = "Windows Fake Battery";
+	const char *mqttName = "testBattery";
+
+	SIM_ClearOBK(shortName);
+	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
+
+	CFG_SetShortDeviceName(shortName);
+	CFG_SetDeviceName(fullName);
+
+	PIN_SetPinRoleForPinIndex(24, IOR_BAT_ADC);
+	PIN_SetPinChannelForPinIndex(24, 1);
+	PIN_SetPinRoleForPinIndex(26, IOR_BAT_Relay);
+	PIN_SetPinChannelForPinIndex(26, 2);
+
+	CMD_ExecuteCommand("startDriver Battery", 0);
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
+	Sim_RunSeconds(10, false);
+
+
+	// OBK device should publish JSON on MQTT topic "homeassistant"
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, "dev", 0, "name", shortName);
+	// first dev - as battery
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "dev_cla", "battery");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "%");
+	// second dev - as voltage
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "dev_cla", "voltage");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "mV");
+}
 void Test_HassDiscovery() {
+	Test_HassDiscovery_Battery();
 	Test_HassDiscovery_Relay_1x();
 	Test_HassDiscovery_Relay_2x();
 	Test_HassDiscovery_LED_CW();

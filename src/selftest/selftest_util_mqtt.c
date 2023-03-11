@@ -1,6 +1,7 @@
 #ifdef WINDOWS
 
-#include "selftest_local.h".
+#include "selftest_local.h"
+#include "../cJSON/cJSON.h"
 
 void SIM_SendFakeMQTT(const char *text, const char *arguments) {
 	MQTT_Post_Received_Str(text, arguments);
@@ -64,6 +65,54 @@ bool SIM_CheckMQTTHistoryForString(const char *topic, const char *value, bool bR
 	}
 	return false;
 }
+bool SIM_HasMQTTHistoryStringWithJSONPayload(const char *topic, bool bPrefixMode, const char *object1, const char *object2, const char *key, const char *value) {
+	mqttHistoryEntry_t *ne;
+	int cur = history_tail;
+	while (cur != history_head) {
+		bool bMatch = false;
+		ne = &mqtt_history[cur];
+		if (bPrefixMode) {
+			if (!strncmp(ne->topic, topic, strlen(topic))) {
+				bMatch = true;
+			}
+		}
+		else {
+			if (!strcmp(ne->topic, topic)) {
+				bMatch = true;
+			}
+		}
+		if (bMatch) {
+			cJSON *json = cJSON_Parse(ne->value);
+			if (json) {
+				cJSON *tmp;
+				tmp = json;
+				if (object1) {
+					tmp = cJSON_GetObjectItemCaseSensitive(tmp, object1);
+				}
+				if (tmp) {
+					if (object2) {
+						tmp = cJSON_GetObjectItemCaseSensitive(tmp, object2);
+					}
+					if (tmp) {
+						tmp = cJSON_GetObjectItemCaseSensitive(tmp, key);
+						if (tmp) {
+							const char *ret = tmp->valuestring;
+							if (!strcmp(ret, value)) {
+								return true;
+							}
+						}
+					}
+
+				}
+				cJSON_Delete(json);
+			}
+		}
+		cur++;
+		cur %= MAX_MQTT_HISTORY;
+	}
+
+	return false;
+}
 const char *SIM_GetMQTTHistoryString(const char *topic, bool bPrefixMode) {
 	mqttHistoryEntry_t *ne;
 	int cur = history_tail;
@@ -120,15 +169,24 @@ void SIM_OnMQTTPublish(const char *topic, const char *value, int len, int qos, b
 		FILE *f;
 		f = fopen("sim_lastPublish.txt", "wb");
 		if (f != 0) {
-			fprintf(f, value);
+			fprintf(f, "Topic: %s", topic);
+			fprintf(f, "Payload: %s", value);
 			fclose(f);
 		}
 		if (strlen(value) > 32) {
 			f = fopen("sim_lastPublish_long.txt", "wb");
 			if (f != 0) {
-				fprintf(f, value);
+				fprintf(f, "Topic: %s", topic);
+				fprintf(f, "Payload: %s", value);
 				fclose(f);
 			}
+		}
+		f = fopen("sim_lastPublishes.txt", "a");
+		if (f != 0) {
+			fprintf(f, "\n");
+			fprintf(f, "Topic: %s", topic);
+			fprintf(f, "Payload: %s", value);
+			fclose(f);
 		}
 	}
 #endif
