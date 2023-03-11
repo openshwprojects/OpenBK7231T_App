@@ -474,6 +474,7 @@ bool DRV_IsMeasuringBattery() {
 	return false;
 #endif
 }
+
 bool DRV_IsSensor() {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	return DRV_IsRunning("SHT3X") || DRV_IsRunning("CHT8305");

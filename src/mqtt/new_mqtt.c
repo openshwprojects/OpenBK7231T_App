@@ -1343,6 +1343,20 @@ commandResult_t MQTT_PublishChannels(const void* context, const char* cmd, const
 	MQTT_PublishOnlyDeviceChannelsIfPossible();
 	return CMD_RES_OK;// TODO make return values consistent for all console commands
 }
+commandResult_t MQTT_PublishChannel(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int channelIndex;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 1) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	channelIndex = Tokenizer_GetArgInteger(0);
+
+	MQTT_ChannelChangeCallback(channelIndex, CHANNEL_Get(channelIndex));
+
+	return CMD_RES_OK;
+}
 commandResult_t MQTT_PublishCommand(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	const char* topic, * value;
 	OBK_Publish_Result ret;
@@ -1695,6 +1709,11 @@ void MQTT_init()
 	//cmddetail:"fn":"MQTT_PublishAll","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("publishAll", MQTT_PublishAll, NULL);
+	//cmddetail:{"name":"publishChannel","args":"[ChannelIndex]",
+	//cmddetail:"descr":"Forces publish of given channel",
+	//cmddetail:"fn":"MQTT_PublishChannel","file":"mqtt/new_mqtt.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("publishChannel", MQTT_PublishChannel, NULL);
 	//cmddetail:{"name":"publishChannels","args":"",
 	//cmddetail:"descr":"Starts the step by step publish of all channel values",
 	//cmddetail:"fn":"MQTT_PublishChannels","file":"mqtt/new_mqtt.c","requires":"",

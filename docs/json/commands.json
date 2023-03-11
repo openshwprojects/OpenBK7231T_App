@@ -1521,6 +1521,15 @@
     "examples": ""
   },
   {
+    "name": "TM1650_Test",
+    "args": "CMD_TM1650_Test",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_tm1637.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "tuyaMcu_testSendTime",
     "args": "",
     "descr": "Sends a example date by TuyaMCU to clock/callendar MCU",
@@ -1948,6 +1957,15 @@
     "args": "",
     "descr": "Starts the step by step publish of all available values",
     "fn": "MQTT_PublishAll",
+    "file": "mqtt/new_mqtt.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "publishChannel",
+    "args": "[ChannelIndex]",
+    "descr": "Forces publish of given channel",
+    "fn": "MQTT_PublishChannel",
     "file": "mqtt/new_mqtt.c",
     "requires": "",
     "examples": ""

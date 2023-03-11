@@ -174,6 +174,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | TM1637_Test | CMD_TM1637_Test |  |
 | TM1637_Brightness | CMD_TM1637_Brightness |  |
 | TM1637_Map | CMD_TM1637_Map |  |
+| TM1650_Test | CMD_TM1650_Test |  |
 | tuyaMcu_testSendTime |  | Sends a example date by TuyaMCU to clock/callendar MCU |
 | tuyaMcu_sendCurTime |  | Sends a current date by TuyaMCU to clock/callendar MCU. Time is taken from NTP driver, so NTP also should be already running. |
 | linkTuyaMCUOutputToChannel | [dpId][varType][channelID] | Used to map between TuyaMCU dpIDs and our internal channels. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap |
@@ -222,6 +223,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | publishInt | [Topic][Value] | Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an integer, so you can also use math expressions like $CH10*10, etc. |
 | publishFloat | [Topic][Value] | Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an float, so you can also use math expressions like $CH10*0.0, etc. |
 | publishAll |  | Starts the step by step publish of all available values |
+| publishChannel | [ChannelIndex] | Forces publish of given channel |
 | publishChannels |  | Starts the step by step publish of all channel values |
 | publishBenchmark |  |  |
 | mqtt_broadcastInterval | [ValueSeconds] | If broadcast self state every 60 seconds/minute is enabled in flags, this value allows you to change the delay, change this 60 seconds to any other value in seconds. This value is not saved, you must use autoexec.bat or short startup command to execute it on every reboot. |
