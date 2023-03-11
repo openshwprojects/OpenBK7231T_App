@@ -452,6 +452,9 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 			case decode_type_t::LG:
 				pIRsend->sendLG((uint64_t)pIRsend->encodeLG(addr,command));
 				break;
+			case decode_type_t::DENON:
+				pIRsend->sendDenon((uint64_t)pIRsend->encodeDenon(addr,command));
+				break;
 			default:
 				ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IR send %s protocol not supported", args);
 				return CMD_RES_ERROR;
