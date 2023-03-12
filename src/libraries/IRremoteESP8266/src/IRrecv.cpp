@@ -2118,23 +2118,25 @@ uint16_t IRrecv::matchManchesterData(volatile const uint16_t *data_ptr,
 #define INPUT_MARK   0 ///< Sensor output for a mark ("flash")
 #endif
 
-
-uint32_t now = 0;
-uint_fast8_t old = 0;
-static uint32_t start = 0;
+// current time in us
+static uint32_t        ir_now = 0;
+// last value of the IR detector
+static uint_fast8_t    ir_old = 0;
+// start time of the condition
+static uint32_t        ir_start = 0;
 
 void IR_ISR() {
   // TODO: is there a lock or a mutex to prevent race condition ???
 
-  now += 50; // timer is supposed to be running at 50us ?
+  ir_now += 50; // timer is supposed to be running at 50us ?
   if (params.rcvstate == kStopState) return;
   uint_fast8_t tIRInputLevel = (uint_fast8_t)digitalReadFast(params.recvpin);
-  uint16_t time_since_last_change;
+  uint32_t time_since_last_change;
   // check if timeout is reached and stop recieving 
-  if (now < start)
-      time_since_last_change = (UINT32_MAX - start + now);
+  if (ir_now < ir_start)
+      time_since_last_change = (UINT32_MAX - ir_start + ir_now);
     else
-      time_since_last_change = (now - start);
+      time_since_last_change = (ir_now - ir_start);
 
   // Timeout is in mS 
   if((time_since_last_change/1000) >= params.timeout && params.rawlen) // timed out
@@ -2143,10 +2145,10 @@ void IR_ISR() {
       return;
   }
 
-  if (tIRInputLevel == old)
+  if (tIRInputLevel == ir_old)
     return;
 
-  old = tIRInputLevel;
+  ir_old = tIRInputLevel;
   // Grab a local copy of rawlen to reduce instructions used in IRAM.
   // This is an ugly premature optimisation code-wise, but we do everything we
   // can to save IRAM.
@@ -2171,7 +2173,7 @@ void IR_ISR() {
   }
   params.rawlen++;
 
-  start = now;
+  ir_start = ir_now;
 }
  //#define _IR_MEASURE_TIMING
  //#define _IR_TIMING_TEST_PIN 7 // do not forget to execute: "pinModeFast(_IR_TIMING_TEST_PIN, OUTPUT);" if activated by line above

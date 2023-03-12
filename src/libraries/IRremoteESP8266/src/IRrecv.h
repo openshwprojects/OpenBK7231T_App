@@ -44,7 +44,7 @@ const uint16_t kRawTick = 2;     // Capture tick to uSec factor.
 // before we need to start capturing a possible new message.
 // Typically 15ms suits most applications. However, some protocols demand a
 // higher value. e.g. 90ms for XMP-1 and some aircon units.
-const uint8_t kTimeoutMs = 15;  // In MilliSeconds.
+const uint8_t kTimeoutMs = 90;  // In MilliSeconds.
 #define TIMEOUT_MS kTimeoutMs   // For legacy documentation.
 const uint16_t kMaxTimeoutMs = kRawTick * (UINT16_MAX / MS_TO_USEC(1));
 

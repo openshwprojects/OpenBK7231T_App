@@ -388,7 +388,7 @@ extern "C" void DRV_IR_ISR(UINT8 t) {
 
 extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, const char *args_in, int cmdFlags) {
 	if (!args_in) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	char args[64];
+	char args[128];
 	strncpy(args, args_in, sizeof(args) - 1);
 	args[sizeof(args) - 1] = 0;
 
@@ -399,8 +399,55 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 	}
 
 	if ((*p != '-') && (*p != ' ')) {
-		ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRSend cmnd not valid [%s] not like [NEC-0-1A] or [NEC 0 1A 1].", args);
-		return CMD_RES_BAD_ARGUMENT;
+		// try to decode "new" format, separated by comma
+		// the format is bits,0xDATA[,repeat]
+		char *p = args;
+		while (*p && (*p != ',')) {
+			p++;
+		}
+		if(*p==',')
+		{
+			*p='\0';
+			decode_type_t protocol = strToDecodeType(args);
+			p++;
+			char *_bits=p;
+			while (*p && (*p != ',')) {
+				p++;
+			}
+			if(*p==',')
+			{
+				*p='\0';
+				uint16_t bits = (uint16_t)strtol(_bits,NULL,10);
+				p++;
+				if(bits<=64)
+				{
+					char *_data=p;
+					uint64_t data =  strtoll(_data,&p,16);
+					if(protocol!=decode_type_t::UNKNOWN)
+					{
+						int repeats=1;
+						if(*p==',')
+							repeats=strtol(p+1,NULL,10);
+						
+						if( pIRsend->send(protocol,data,bits,repeats) )
+						{
+							pIRsend->delay(100);
+							ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send %s: protocol %d bits %d data 0x%llX repeats %d", args, (int)protocol, (int)bits, (long long int)data, (int)repeats);
+							return CMD_RES_OK;
+						} else {
+							ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IR can't send %s: protocol %d bits data 0x%llX repeats %d", args, (int)protocol, (long long int)data, (int)repeats);
+							return CMD_RES_BAD_ARGUMENT;
+						}
+					}
+				} else {
+					// TODO: implement longer protocols
+					ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRSend currently only protocol with up to 64bits are supported", args);
+					return CMD_RES_BAD_ARGUMENT;
+				}
+			} 
+		}
+		ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRSend cmnd not valid [%s] not like [NEC-0-1A] or [NEC 0 1A 1] or [NEC,bits,0xDATA,[repeat]]", args);
+ 		return CMD_RES_BAD_ARGUMENT;
 	}
 
 	*p='\0';
@@ -451,9 +498,6 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 				break;
 			case decode_type_t::LG:
 				pIRsend->sendLG((uint64_t)pIRsend->encodeLG(addr,command));
-				break;
-			case decode_type_t::DENON:
-				pIRsend->sendDenon((uint64_t)pIRsend->encodeDenon(addr,command));
 				break;
 			default:
 				ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IR send %s protocol not supported", args);
@@ -658,6 +702,7 @@ extern "C" void DRV_IR_Init() {
 		// setup IRrecv pin as input
 		//bk_gpio_config_input_pup((GPIO_INDEX)pin); // enabled by enableIRIn
 
+		//TODO: we should specify buffer size (now set to 1024), timeout (now 90ms) and tolerance 
 		 ourReceiver = new IRrecv(pin);
 		 ourReceiver->enableIRIn(true);// try with pullup
 	}
@@ -754,11 +799,11 @@ extern "C" void DRV_IR_RunFrame() {
 		decode_results results;
 		if (ourReceiver->decode(&results)) {
 			// TODO: find a better way?
-			const char *proto_name = typeToString(results.decode_type, results.repeat).c_str();
+			String proto_name = typeToString(results.decode_type, results.repeat).c_str();
 
 			#if 0 // TODO: implement different masking
 			if (!(gIRProtocolEnable & (1 << (int)results.decode_type))) {
-				ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR decode ignore masked protocol %s (%d) - mask 0x%08X", proto_name, (int)results.decode_type, gIRProtocolEnable);
+				ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR decode ignore masked protocol %s (%d) - mask 0x%08X", proto_name.c_str(), (int)results.decode_type, gIRProtocolEnable);
 			}
 			#endif
 
@@ -766,34 +811,36 @@ extern "C" void DRV_IR_RunFrame() {
 			// 'UNKNOWN' protocol is by default disabled in flags
 			// This is because I am getting a lot of 'UNKNOWN' spam with no IR signals in room
 			if (((results.decode_type != decode_type_t::UNKNOWN) ||
-				(results.decode_type == decode_type_t::UNKNOWN && CFG_HasFlag(OBK_FLAG_IR_ALLOW_UNKNOWN))) &&
+				(results.decode_type == decode_type_t::UNKNOWN && CFG_HasFlag(OBK_FLAG_IR_ALLOW_UNKNOWN))) //&&
 				// only process if this protocol is enabled.  all by default.
-				(gIRProtocolEnable & (1 << (int)results.decode_type))
+				//(gIRProtocolEnable & (1 << (int)results.decode_type)
 				) {
-				String lastIrReceived = String((int)results.decode_type,16) + "," + resultToHexidecimal(&results);
-
-				char out[128];
-				int repeat = 0;
-
-				if (results.repeat) { //?
-					repeat = 2;
-				}
-				else {
-					repeat = 1;
-				}
-
-				if (results.decode_type == decode_type_t::UNKNOWN) {
-					//snprintf(out, sizeof(out), "IR_RAW 0x%lX %d", (unsigned long)results.decodedRawData, repeat);
-					// TODO: print RAW hexedecimal value 
-				}
-				else {
-					snprintf(out, sizeof(out), "IR %s %X %X %d", proto_name, results.address, results.command, repeat);
-					ADDLOG_INFO(LOG_FEATURE_IR, (char *)out);
-				}
+				String lastIrReceived = String((int)results.decode_type, 16) + "," + resultToHexidecimal(&results);
 
 				if (!hasACState(results.decode_type))
 					lastIrReceived += "," + String((int)results.bits);
+				else
+					ADDLOG_INFO(LOG_FEATURE_IR, "Recieved AC code:%s",proto_name.c_str());
 
+				char out[128];
+
+				int repeat = results.repeat?0:1; // not sure how to deal with this
+
+				if (results.decode_type == decode_type_t::UNKNOWN) {
+					//snprintf(out, sizeof(out), "IR_RAW 0x%lX %d", (unsigned long)results.decodedRawData, repeat);
+					snprintf(out, sizeof(out), "IR %s %s", "Unknown", lastIrReceived.c_str());
+					ADDLOG_INFO(LOG_FEATURE_IR, (char *)out);
+				}
+				else if (!hasACState(results.decode_type)) {
+					snprintf(out, sizeof(out), "IR %s %lX %lX %d", proto_name.c_str(), (long int)results.address, (long int)results.command, repeat);
+					ADDLOG_INFO(LOG_FEATURE_IR, (char *)out);
+					// show new format too
+					snprintf(out, sizeof(out), "IR %s,%d,%s", proto_name.c_str(), (int)results.bits, resultToHexidecimal(&results).c_str());
+					ADDLOG_INFO(LOG_FEATURE_IR, (char *)out);
+				} else {
+					String description = IRAcUtils::resultAcToString(&results);
+					ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IRAC %s", description.c_str());
+				}
 				// if user wants us to publish every received IR data, do it now
 				if (CFG_HasFlag(OBK_FLAG_IR_PUBLISH_RECEIVED)) {
 
@@ -812,16 +859,13 @@ extern "C" void DRV_IR_RunFrame() {
 						ADDLOG_INFO(LOG_FEATURE_IR, (char *)out);
 					}
 				}
-				else {
-					ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR %s", lastIrReceived.c_str());
-				}
 
 				if (CFG_HasFlag(OBK_FLAG_IR_PUBLISH_RECEIVED_IN_JSON)) {
 					// {"IrReceived":{"Protocol":"RC_5","Bits":0x1,"Data":"0xC"}}
 					//
 					String _data=resultToHexidecimal(&results);
 					snprintf(out, sizeof(out), "{\"IrReceived\":{\"Protocol\":\"%s\",\"Bits\":%i,\"Data\":\"%s\"}}",
-						proto_name, (int)results.bits, _data.c_str());
+						proto_name.c_str(), (int)results.bits, _data.c_str());
 					MQTT_PublishMain_StringString("RESULT", out, OBK_PUBLISH_FLAG_FORCE_REMOVE_GET);
 				}
 
@@ -859,6 +903,8 @@ extern "C" void DRV_IR_RunFrame() {
 					uint32_t counter_dur = ((ir_counter - counter_in) * 50) / 1000;
 					ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)"IR fire event took %dms", counter_dur);
 				}
+			} else {
+				ADDLOG_INFO(LOG_FEATURE_IR, "Recieved Unknown IR ");
 			}
 			/*
 			* !!!Important!!! Enable receiving of the next value,
