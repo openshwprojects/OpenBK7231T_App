@@ -15,6 +15,9 @@ All questions/answers were taken from json file.
 **Question:** *How do I enable more logging? How to make more logs visible?*<br>**A:** First type 'loglevel x' in console, where x is 0 to 7, default value is 3 (log all up to info), value 4 will also log debug logs, and value 5 will include 'extradebug'. Then, on online panel, also switch filter to 'All' (both steps must be done for logs to show up)
 
 
+**Question:** *How to change baud rate for TuyaMCU?*<br>**A:** Just search for 'baud' in our commands list. The command is tuyaMcu_setBaudRate. Remember that it must be run after you do startDriver TuyaMCU. The baud setting is not kept after reboot, so put that command in autoexec.bat
+
+
 **Question:** *How to make device discoverable by Windows?*<br>**A:** OpenBeken devices will show up in Windows Network if you run SSDP driver. This driver must be run at each startup. You could just do 'startDriver SSDP' in console but that will not run again after reboot, so either use Short Startup Command or autoexec.bat to run that command with each reboot
 
 
