@@ -313,12 +313,6 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Current value of power from energy metering chip",
 	//cnstdetail:"requires":""}
 	{"$power", &getPower},
-#endif
-	//cnstdetail:{"name":"$uptime",
-	//cnstdetail:"title":"$uptime",
-	//cnstdetail:"descr":"Time since reboot in seconds",
-	//cnstdetail:"requires":""}
-	{"$uptime", &getUpTime},
 	//cnstdetail:{"name":"$day",
 	//cnstdetail:"title":"$day",
 	//cnstdetail:"descr":"Current weekday from NTP",
@@ -334,6 +328,12 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Current minute from NTP",
 	//cnstdetail:"requires":""}
 	{ "$minute", &getMinute },
+#endif
+	//cnstdetail:{"name":"$uptime",
+	//cnstdetail:"title":"$uptime",
+	//cnstdetail:"descr":"Time since reboot in seconds",
+	//cnstdetail:"requires":""}
+	{ "$uptime", &getUpTime },
 };
 static int g_totalConstants = sizeof(g_constants) / sizeof(g_constants[0]);
 
