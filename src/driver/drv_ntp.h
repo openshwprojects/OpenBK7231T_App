@@ -13,6 +13,7 @@ bool NTP_IsTimeSynced();
 int NTP_GetTimesZoneOfsSeconds();
 int NTP_GetWeekDay();
 int NTP_GetHour();
+int NTP_GetMinute();
 // for Simulator only, on Windows, for unit testing
 void NTP_SetSimulatedTime(unsigned int timeNow);
 
