@@ -24,3 +24,6 @@ Do not add anything here, as it will overwritten with next rebuild.
 | $current |  Current value of current from energy metering chip |
 | $power |  Current value of power from energy metering chip |
 | $uptime |  Time since reboot in seconds |
+| $day |  Current weekday from NTP |
+| $hour |  Current hour from NTP |
+| $minute |  Current minute from NTP |

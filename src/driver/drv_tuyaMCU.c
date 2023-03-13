@@ -448,6 +448,8 @@ void TuyaMCU_Send_RSSI(int rssi) {
 
 	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_RSSI, (byte*)&payload_signedByte, 1);
 }
+// See this post to find about about arguments of WiFi state
+// https://www.elektroda.com/rtvforum/viewtopic.php?p=20483899#20483899
 commandResult_t Cmd_TuyaMCU_Set_DefaultWiFiState(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	
 	g_defaultTuyaMCUWiFiState = atoi(args);
@@ -1408,17 +1410,17 @@ void TuyaMCU_Init()
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_sendHeartbeat", TuyaMCU_SendHeartbeat, NULL);
 	//cmddetail:{"name":"tuyaMcu_sendQueryState","args":"",
-	//cmddetail:"descr":"Send query state command",
+	//cmddetail:"descr":"Send query state command. No arguments needed.",
 	//cmddetail:"fn":"TuyaMCU_SendQueryState","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_sendQueryState", TuyaMCU_SendQueryState, NULL);
 	//cmddetail:{"name":"tuyaMcu_sendProductInformation","args":"",
-	//cmddetail:"descr":"Send qqq",
+	//cmddetail:"descr":"Send query packet (0x01). No arguments needed.",
 	//cmddetail:"fn":"TuyaMCU_SendQueryProductInformation","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_sendProductInformation", TuyaMCU_SendQueryProductInformation, NULL);
-	//cmddetail:{"name":"tuyaMcu_sendState","args":"",
-	//cmddetail:"descr":"Send set state command",
+	//cmddetail:{"name":"tuyaMcu_sendState","args":"[dpID][dpType][dpValue]",
+	//cmddetail:"descr":"Manually send set state command. Do not use it. Use mapping, so communication is bidirectional and automatic.",
 	//cmddetail:"fn":"TuyaMCU_SendStateCmd","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_sendState", TuyaMCU_SendStateCmd, NULL);
@@ -1427,13 +1429,13 @@ void TuyaMCU_Init()
 	//cmddetail:"fn":"TuyaMCU_SendMCUConf","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_sendMCUConf", TuyaMCU_SendMCUConf, NULL);
-	//cmddetail:{"name":"fakeTuyaPacket","args":"",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"fakeTuyaPacket","args":"[HexString]",
+	//cmddetail:"descr":"This simulates packet being sent from TuyaMCU to our OBK device.",
 	//cmddetail:"fn":"TuyaMCU_FakePacket","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("fakeTuyaPacket",TuyaMCU_FakePacket, NULL);
 	//cmddetail:{"name":"tuyaMcu_setBaudRate","args":"[BaudValue]",
-	//cmddetail:"descr":"Sets the baud rate used by TuyaMCU UART communication. Default value is 9600.",
+	//cmddetail:"descr":"Sets the baud rate used by TuyaMCU UART communication. Default value is 9600. Some other devices require 115200.",
 	//cmddetail:"fn":"TuyaMCU_SetBaudRate","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("tuyaMcu_setBaudRate",TuyaMCU_SetBaudRate, NULL);
@@ -1443,7 +1445,7 @@ void TuyaMCU_Init()
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_sendRSSI", Cmd_TuyaMCU_Send_RSSI, NULL);
 	//cmddetail:{"name":"tuyaMcu_defWiFiState","args":"",
-	//cmddetail:"descr":"Command sets the default WiFi state for TuyaMCU when device is not online.",
+	//cmddetail:"descr":"Command sets the default WiFi state for TuyaMCU when device is not online. It may be required for some devices to work, because Tuya designs them to ignore touch buttons or beep when not paired. Please see [values table and description here](https://www.elektroda.com/rtvforum/viewtopic.php?p=20483899#20483899).",
 	//cmddetail:"fn":"Cmd_TuyaMCU_Send_RSSI","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_defWiFiState", Cmd_TuyaMCU_Set_DefaultWiFiState, NULL);

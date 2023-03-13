@@ -1577,7 +1577,7 @@
   {
     "name": "tuyaMcu_sendQueryState",
     "args": "",
-    "descr": "Send query state command",
+    "descr": "Send query state command. No arguments needed.",
     "fn": "TuyaMCU_SendQueryState",
     "file": "driver/drv_tuyaMCU.c",
     "requires": "",
@@ -1586,7 +1586,7 @@
   {
     "name": "tuyaMcu_sendProductInformation",
     "args": "",
-    "descr": "Send qqq",
+    "descr": "Send query packet (0x01). No arguments needed.",
     "fn": "TuyaMCU_SendQueryProductInformation",
     "file": "driver/drv_tuyaMCU.c",
     "requires": "",
@@ -1594,8 +1594,8 @@
   },
   {
     "name": "tuyaMcu_sendState",
-    "args": "",
-    "descr": "Send set state command",
+    "args": "[dpID][dpType][dpValue]",
+    "descr": "Manually send set state command. Do not use it. Use mapping, so communication is bidirectional and automatic.",
     "fn": "TuyaMCU_SendStateCmd",
     "file": "driver/drv_tuyaMCU.c",
     "requires": "",
@@ -1612,8 +1612,8 @@
   },
   {
     "name": "fakeTuyaPacket",
-    "args": "",
-    "descr": "",
+    "args": "[HexString]",
+    "descr": "This simulates packet being sent from TuyaMCU to our OBK device.",
     "fn": "TuyaMCU_FakePacket",
     "file": "driver/drv_tuyaMCU.c",
     "requires": "",
@@ -1622,7 +1622,7 @@
   {
     "name": "tuyaMcu_setBaudRate",
     "args": "[BaudValue]",
-    "descr": "Sets the baud rate used by TuyaMCU UART communication. Default value is 9600.",
+    "descr": "Sets the baud rate used by TuyaMCU UART communication. Default value is 9600. Some other devices require 115200.",
     "fn": "TuyaMCU_SetBaudRate",
     "file": "driver/drv_tuyaMCU.c",
     "requires": "",
@@ -1640,7 +1640,7 @@
   {
     "name": "tuyaMcu_defWiFiState",
     "args": "",
-    "descr": "Command sets the default WiFi state for TuyaMCU when device is not online.",
+    "descr": "Command sets the default WiFi state for TuyaMCU when device is not online. It may be required for some devices to work, because Tuya designs them to ignore touch buttons or beep when not paired. Please see [values table and description here](https://www.elektroda.com/rtvforum/viewtopic.php?p=20483899#20483899).",
     "fn": "Cmd_TuyaMCU_Send_RSSI",
     "file": "driver/drv_tuyaMCU.c",
     "requires": "",

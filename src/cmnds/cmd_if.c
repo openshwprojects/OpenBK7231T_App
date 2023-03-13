@@ -5,6 +5,7 @@
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #include "../driver/drv_public.h"
+#include "../driver/drv_ntp.h"
 #include <ctype.h> // isspace
 
 /*
@@ -215,6 +216,15 @@ float getPower(const char *s) {
 float getUpTime(const char *s) {
 	return Time_getUpTimeSeconds();
 }
+float getWeekDay(const char *s) {
+	return NTP_GetWeekDay();
+}
+float getMinute(const char *s) {
+	return NTP_GetMinute();
+}
+float getHour(const char *s) {
+	return NTP_GetHour();
+}
 
 const constant_t g_constants[] = {
 	//cnstdetail:{"name":"MQTTOn",
@@ -309,6 +319,21 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Time since reboot in seconds",
 	//cnstdetail:"requires":""}
 	{"$uptime", &getUpTime},
+	//cnstdetail:{"name":"$day",
+	//cnstdetail:"title":"$day",
+	//cnstdetail:"descr":"Current weekday from NTP",
+	//cnstdetail:"requires":""}
+	{"$day", &getWeekDay},
+	//cnstdetail:{"name":"$hour",
+	//cnstdetail:"title":"$hour",
+	//cnstdetail:"descr":"Current hour from NTP",
+	//cnstdetail:"requires":""}
+	{"$hour", &getHour},
+	//cnstdetail:{"name":"$minute",
+	//cnstdetail:"title":"$minute",
+	//cnstdetail:"descr":"Current minute from NTP",
+	//cnstdetail:"requires":""}
+	{ "$minute", &getMinute },
 };
 static int g_totalConstants = sizeof(g_constants) / sizeof(g_constants[0]);
 

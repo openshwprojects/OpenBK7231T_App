@@ -117,7 +117,42 @@ commandResult_t NTP_Info(const void *context, const char *cmd, const char *args,
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "Server=%s, Time offset=%d", CFG_GetNTPServer(), g_timeOffsetSeconds);
     return CMD_RES_OK;
 }
+int NTP_GetWeekDay() {
+	struct tm *ltm;
 
+	// NOTE: on windows, you need _USE_32BIT_TIME_T 
+	ltm = localtime((time_t*)&g_time);
+
+	if (ltm == 0) {
+		return 0;
+	}
+
+	return ltm->tm_wday;
+}
+int NTP_GetHour() {
+	struct tm *ltm;
+
+	// NOTE: on windows, you need _USE_32BIT_TIME_T 
+	ltm = localtime((time_t*)&g_time);
+
+	if (ltm == 0) {
+		return 0;
+	}
+
+	return ltm->tm_hour;
+}
+int NTP_GetMinute() {
+	struct tm *ltm;
+
+	// NOTE: on windows, you need _USE_32BIT_TIME_T 
+	ltm = localtime((time_t*)&g_time);
+
+	if (ltm == 0) {
+		return 0;
+	}
+
+	return ltm->tm_min;
+}
 #if WINDOWS
 bool b_ntp_simulatedTime = false;
 void NTP_SetSimulatedTime(unsigned int timeNow) {

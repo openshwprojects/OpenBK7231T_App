@@ -180,14 +180,14 @@ Do not add anything here, as it will overwritten with next rebuild.
 | linkTuyaMCUOutputToChannel | [dpId][varType][channelID] | Used to map between TuyaMCU dpIDs and our internal channels. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_LinkTuyaMCUOutputToChannel |
 | tuyaMcu_setDimmerRange | [Min][Max] | Set dimmer range used by TuyaMCU | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_SetDimmerRange |
 | tuyaMcu_sendHeartbeat |  | Send heartbeat to TuyaMCU | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_SendHeartbeat |
-| tuyaMcu_sendQueryState |  | Send query state command | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_SendQueryState |
-| tuyaMcu_sendProductInformation |  | Send qqq | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_SendQueryProductInformation |
-| tuyaMcu_sendState |  | Send set state command | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_SendStateCmd |
+| tuyaMcu_sendQueryState |  | Send query state command. No arguments needed. | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_SendQueryState |
+| tuyaMcu_sendProductInformation |  | Send query packet (0x01). No arguments needed. | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_SendQueryProductInformation |
+| tuyaMcu_sendState | [dpID][dpType][dpValue] | Manually send set state command. Do not use it. Use mapping, so communication is bidirectional and automatic. | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_SendStateCmd |
 | tuyaMcu_sendMCUConf |  | Send MCU conf command | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_SendMCUConf |
-| fakeTuyaPacket |  |  | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_FakePacket |
-| tuyaMcu_setBaudRate | [BaudValue] | Sets the baud rate used by TuyaMCU UART communication. Default value is 9600. | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_SetBaudRate |
+| fakeTuyaPacket | [HexString] | This simulates packet being sent from TuyaMCU to our OBK device. | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_FakePacket |
+| tuyaMcu_setBaudRate | [BaudValue] | Sets the baud rate used by TuyaMCU UART communication. Default value is 9600. Some other devices require 115200. | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_SetBaudRate |
 | tuyaMcu_sendRSSI |  | Command sends the specific RSSI value to TuyaMCU (it will send current RSSI if no argument is set) | File: driver/drv_tuyaMCU.c<br/>Function: Cmd_TuyaMCU_Send_RSSI |
-| tuyaMcu_defWiFiState |  | Command sets the default WiFi state for TuyaMCU when device is not online. | File: driver/drv_tuyaMCU.c<br/>Function: Cmd_TuyaMCU_Send_RSSI |
+| tuyaMcu_defWiFiState |  | Command sets the default WiFi state for TuyaMCU when device is not online. It may be required for some devices to work, because Tuya designs them to ignore touch buttons or beep when not paired. Please see [values table and description here](https://www.elektroda.com/rtvforum/viewtopic.php?p=20483899#20483899). | File: driver/drv_tuyaMCU.c<br/>Function: Cmd_TuyaMCU_Send_RSSI |
 | uartSendHex | [HexString] | Sends raw data by UART, can be used to send TuyaMCU data, but you must write whole packet with checksum yourself | File: driver/drv_tuyaMCU.c<br/>Function: CMD_UART_Send_Hex |
 | uartSendASCII | [AsciiString] | Sends given string by UART. | File: driver/drv_uart.c<br/>Function: CMD_UART_Send_ASCII |
 | uartFakeHex | [HexString] | Spoofs a fake hex packet so it looks like TuyaMCU send that to us. Used for testing. | File: driver/drv_uart.c<br/>Function: CMD_UART_FakeHex |

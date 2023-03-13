@@ -15,7 +15,10 @@ All questions/answers were taken from json file.
 **Question:** *How do I enable more logging? How to make more logs visible?*<br>**A:** First type 'loglevel x' in console, where x is 0 to 7, default value is 3 (log all up to info), value 4 will also log debug logs, and value 5 will include 'extradebug'. Then, on online panel, also switch filter to 'All' (both steps must be done for logs to show up)
 
 
-**Question:** *How to change baud rate for TuyaMCU?*<br>**A:** Just search for 'baud' in our commands list. The command is tuyaMcu_setBaudRate. Remember that it must be run after you do startDriver TuyaMCU. The baud setting is not kept after reboot, so put that command in autoexec.bat
+**Question:** *How to change baud rate for TuyaMCU?*<br>**A:** Just search for 'baud' in our commands list. The command is tuyaMcu_setBaudRate. Remember that it must be run after you do startDriver TuyaMCU. The baud setting is not kept after reboot, so put that command in autoexec.bat. Common bauds are 9600 and 115200
+
+
+**Question:** *Why my TuyaMCU ignores buttons and/or beeps?*<br>**A:** Some TuyaMCU devices might require WiFi state packet to say it is fully connected and online, while OBK sends it only if it has MQTT and WiFi connections. Use tuyaMcu_defWiFiState to set default WiFi state to 4, so it always thinks it's fully online. See [this topic](https://www.elektroda.com/rtvforum/topic3963972.html)
 
 
 **Question:** *How to make device discoverable by Windows?*<br>**A:** OpenBeken devices will show up in Windows Network if you run SSDP driver. This driver must be run at each startup. You could just do 'startDriver SSDP' in console but that will not run again after reboot, so either use Short Startup Command or autoexec.bat to run that command with each reboot

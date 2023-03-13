@@ -337,5 +337,9 @@ void TM1637_Init() {
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TM1637_Map", CMD_TM1637_Map, NULL);
+	//cmddetail:{"name":"TM1650_Test","args":"CMD_TM1650_Test",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TM1650_Test", CMD_TM1650_Test, NULL);
 }

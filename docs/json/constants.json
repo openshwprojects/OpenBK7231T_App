@@ -106,5 +106,23 @@
     "title": "$uptime",
     "descr": "Time since reboot in seconds",
     "requires": ""
+  },
+  {
+    "name": "$day",
+    "title": "$day",
+    "descr": "Current weekday from NTP",
+    "requires": ""
+  },
+  {
+    "name": "$hour",
+    "title": "$hour",
+    "descr": "Current hour from NTP",
+    "requires": ""
+  },
+  {
+    "name": "$minute",
+    "title": "$minute",
+    "descr": "Current minute from NTP",
+    "requires": ""
   }
 ]

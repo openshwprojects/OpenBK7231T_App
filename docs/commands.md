@@ -180,14 +180,14 @@ Do not add anything here, as it will overwritten with next rebuild.
 | linkTuyaMCUOutputToChannel | [dpId][varType][channelID] | Used to map between TuyaMCU dpIDs and our internal channels. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap |
 | tuyaMcu_setDimmerRange | [Min][Max] | Set dimmer range used by TuyaMCU |
 | tuyaMcu_sendHeartbeat |  | Send heartbeat to TuyaMCU |
-| tuyaMcu_sendQueryState |  | Send query state command |
-| tuyaMcu_sendProductInformation |  | Send qqq |
-| tuyaMcu_sendState |  | Send set state command |
+| tuyaMcu_sendQueryState |  | Send query state command. No arguments needed. |
+| tuyaMcu_sendProductInformation |  | Send query packet (0x01). No arguments needed. |
+| tuyaMcu_sendState | [dpID][dpType][dpValue] | Manually send set state command. Do not use it. Use mapping, so communication is bidirectional and automatic. |
 | tuyaMcu_sendMCUConf |  | Send MCU conf command |
-| fakeTuyaPacket |  |  |
-| tuyaMcu_setBaudRate | [BaudValue] | Sets the baud rate used by TuyaMCU UART communication. Default value is 9600. |
+| fakeTuyaPacket | [HexString] | This simulates packet being sent from TuyaMCU to our OBK device. |
+| tuyaMcu_setBaudRate | [BaudValue] | Sets the baud rate used by TuyaMCU UART communication. Default value is 9600. Some other devices require 115200. |
 | tuyaMcu_sendRSSI |  | Command sends the specific RSSI value to TuyaMCU (it will send current RSSI if no argument is set) |
-| tuyaMcu_defWiFiState |  | Command sets the default WiFi state for TuyaMCU when device is not online. |
+| tuyaMcu_defWiFiState |  | Command sets the default WiFi state for TuyaMCU when device is not online. It may be required for some devices to work, because Tuya designs them to ignore touch buttons or beep when not paired. Please see [values table and description here](https://www.elektroda.com/rtvforum/viewtopic.php?p=20483899#20483899). |
 | uartSendHex | [HexString] | Sends raw data by UART, can be used to send TuyaMCU data, but you must write whole packet with checksum yourself |
 | uartSendASCII | [AsciiString] | Sends given string by UART. |
 | uartFakeHex | [HexString] | Spoofs a fake hex packet so it looks like TuyaMCU send that to us. Used for testing. |

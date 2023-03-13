@@ -17,7 +17,11 @@
     },
     {
         "question": "How to change baud rate for TuyaMCU?",
-        "answer": "Just search for 'baud' in our commands list. The command is tuyaMcu_setBaudRate. Remember that it must be run after you do startDriver TuyaMCU. The baud setting is not kept after reboot, so put that command in autoexec.bat"
+        "answer": "Just search for 'baud' in our commands list. The command is tuyaMcu_setBaudRate. Remember that it must be run after you do startDriver TuyaMCU. The baud setting is not kept after reboot, so put that command in autoexec.bat. Common bauds are 9600 and 115200"
+    },
+    {
+        "question": "Why my TuyaMCU ignores buttons and/or beeps?",
+        "answer": "Some TuyaMCU devices might require WiFi state packet to say it is fully connected and online, while OBK sends it only if it has MQTT and WiFi connections. Use tuyaMcu_defWiFiState to set default WiFi state to 4, so it always thinks it's fully online. See [this topic](https://www.elektroda.com/rtvforum/topic3963972.html)"
     },
     {
         "question": "How to make device discoverable by Windows?",
