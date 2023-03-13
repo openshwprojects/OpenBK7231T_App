@@ -102,12 +102,6 @@
     "requires": ""
   },
   {
-    "name": "$uptime",
-    "title": "$uptime",
-    "descr": "Time since reboot in seconds",
-    "requires": ""
-  },
-  {
     "name": "$day",
     "title": "$day",
     "descr": "Current weekday from NTP",
@@ -123,6 +117,12 @@
     "name": "$minute",
     "title": "$minute",
     "descr": "Current minute from NTP",
+    "requires": ""
+  },
+  {
+    "name": "$uptime",
+    "title": "$uptime",
+    "descr": "Time since reboot in seconds",
     "requires": ""
   }
 ]

@@ -270,6 +270,24 @@
     "examples": ""
   },
   {
+    "name": "stackOverflow",
+    "args": "",
+    "descr": "Causes a stack overflow",
+    "fn": "CMD_StackOverflow",
+    "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "crashNull",
+    "args": "",
+    "descr": "Causes a crash",
+    "fn": "CMD_CrashNull",
+    "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "simonirtest",
     "args": "",
     "descr": "Simons Special Test",

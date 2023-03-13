@@ -35,6 +35,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | clearAll |  | Clears config and all remaining features, like runtime scripts, events, etc |
 | DeepSleep | [Seconds] | Starts deep sleep for given amount of seconds. |
 | PowerSave | [Optional 1 or 0, by default 1 is assumed] | Enables dynamic power saving mode on BK and W600. You can also disable power saving with PowerSave 0. |
+| stackOverflow |  | Causes a stack overflow |
+| crashNull |  | Causes a crash |
 | simonirtest |  | Simons Special Test |
 | if | [Condition]['then'][CommandA]['else'][CommandB] | Executed a conditional. Condition should be single line. You must always use 'then' after condition. 'else' is optional. Use aliases or quotes for commands with spaces |
 | ota_http | [HTTP_URL] | Starts the firmware update procedure, the argument should be a reachable HTTP server file. You can easily setup HTTP server with Xampp, or Visual Code, or Python, etc. Make sure you are using OTA file for a correct platform (getting N platform RBL on T will brick device, etc etc) |

@@ -329,14 +329,14 @@ typedef enum ioRole_e {
 	IOR_DHT22,
 	//iodetail:{"name":"CHT8305_DAT",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"TODO",
+	//iodetail:"descr":"DAT pin of CHT8305. Setting this pin role and saving will reveal two fields next to it. Set first field to 1 and second to 2. Those are related channel numbers to store temperature and humidity.",
 	//iodetail:"enum":"IOR_CHT8305_DAT",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_CHT8305_DAT,
 	//iodetail:{"name":"CHT8305_CLK",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"TODO",
+	//iodetail:"descr":"CLK pin of CHT8305 sensor",
 	//iodetail:"enum":"IOR_CHT8305_CLK",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}

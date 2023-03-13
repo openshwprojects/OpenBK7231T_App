@@ -15,6 +15,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | HTTPButtons |  This driver allows you to create custom, scriptable buttons on main WWW page. You can create those buttons in autoexec.bat and assign commands to them |
 | I2C |  Generic I2C, not used for LED drivers, but may be useful for displays or port expanders. Supports both hardware and software I2C. |
 | BL0942 |  BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [LSPA9 teardown example](https://www.elektroda.com/rtvforum/topic3887748.html).  |
+| BL0942SPI |  BL0942 is a power-metering chip which uses SPI protocol for communication. It's usually connected to SPI1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [PZIOT-E01 teardown example](https://www.elektroda.com/rtvforum/topic3945667.html).  |
 | BL0937 |  BL0937 is a power-metering chip which uses custom protocol to report data. It requires setting 3 pins in pin config: CF, CF1 and SEL |
 | CSE7766 |  BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK |
 | SM16703P |  WIP driver |
