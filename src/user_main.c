@@ -632,7 +632,9 @@ void Main_OnEverySecond()
 		}
 	}
 #endif
-
+#ifdef PLATFORM_BEKEN
+	bk_wdg_reload();
+#endif
 	// force it to sleep...  we MUST have some idle task processing
 	// else task memory doesn't get freed
 	rtos_delay_milliseconds(1);
@@ -846,6 +848,9 @@ void Main_Init_AfterDelay_Unsafe(bool bStartAutoRunScripts) {
 		CMD_ExecuteCommand(CFG_GetShortStartupCommand(), COMMAND_FLAG_SOURCE_SCRIPT);
 		CMD_ExecuteCommand("startScript autoexec.bat", COMMAND_FLAG_SOURCE_SCRIPT);
 	}
+#ifdef PLATFORM_BEKEN
+	bk_wdg_initialize(10000);
+#endif
 }
 void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	g_unsafeInitDone = true;
