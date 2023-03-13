@@ -2,8 +2,10 @@
 #include "../httpserver/new_http.h"
 #include "../cmnds/cmd_public.h"
 
-void BL0942_Init();
-void BL0942_RunFrame();
+void BL0942_UART_Init(void);
+void BL0942_UART_RunFrame(void);
+void BL0942_SPI_Init(void);
+void BL0942_SPI_RunFrame(void);
 
 void BL0937_Init();
 void BL0937_RunFrame();

@@ -111,7 +111,14 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [LSPA9 teardown example](https://www.elektroda.com/rtvforum/topic3887748.html). ",
 	//drvdetail:"requires":""}
-	{ "BL0942",		BL0942_Init,		BL0942_RunFrame,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	{ "BL0942",		BL0942_UART_Init,	BL0942_UART_RunFrame,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+#endif
+#ifdef ENABLE_DRIVER_BL0942
+	//drvdetail:{"name":"BL0942SPI",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"BL0942 is a power-metering chip which uses SPI protocol for communication. It's usually connected to SPI1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [PZIOT-E01 teardown example](https://www.elektroda.com/rtvforum/topic3945667.html). ",
+	//drvdetail:"requires":""}
+	{ "BL0942SPI",	BL0942_SPI_Init,	BL0942_SPI_RunFrame,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
 #ifdef ENABLE_DRIVER_BL0937
 	//drvdetail:{"name":"BL0937",
