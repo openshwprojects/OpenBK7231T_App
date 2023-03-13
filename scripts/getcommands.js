@@ -242,7 +242,12 @@ function getFolder(name, cb){
                             } else if (line2.startsWith("\"[")) {
                                 let flagTitle = line2.trim().replace(/^"|"$/g, '');
                              //   console.log("Old style flag title: " + flagTitle);
-
+                                if (flagTitle.endsWith('",')) {
+                                    flagTitle = flagTitle.slice(0, -2);
+                                }
+                                if (flagTitle.endsWith(',')) {
+                                    flagTitle = flagTitle.slice(0, -1);
+                                }
                                 oldStyleFlagTitles.push(flagTitle);
 
                                 newlines.push(lines[j]);
