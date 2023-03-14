@@ -157,6 +157,36 @@ static commandResult_t CMD_HTTPOTA(const void* context, const char* cmd, const c
 
 	return CMD_RES_OK;
 }
+static void stackOverflow(int a) {
+	char lala[64];
+	int i;
+
+	for (i = 0; i < sizeof(lala); i++) {
+		lala[i] = a;
+	}
+	stackOverflow(a + 1);
+}
+static commandResult_t CMD_StackOverflow(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StackOverflow: Will overflow soon");
+
+	stackOverflow(0);
+
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_CrashNull(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int *p = (int*)0;
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_CrashNull: Will crash soon");
+
+	while (1) {
+		*p = 0;
+		p++;
+	}
+
+	
+
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_SimonTest(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SimonTest: ir test routine");
 
@@ -414,6 +444,16 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_PowerSave","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PowerSave", CMD_PowerSave, NULL);
+	//cmddetail:{"name":"stackOverflow","args":"",
+	//cmddetail:"descr":"Causes a stack overflow",
+	//cmddetail:"fn":"CMD_StackOverflow","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("stackOverflow", CMD_StackOverflow, NULL);
+	//cmddetail:{"name":"crashNull","args":"",
+	//cmddetail:"descr":"Causes a crash",
+	//cmddetail:"fn":"CMD_CrashNull","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("crashNull", CMD_CrashNull, NULL);
 	//cmddetail:{"name":"simonirtest","args":"",
 	//cmddetail:"descr":"Simons Special Test",
 	//cmddetail:"fn":"CMD_SimonTest","file":"cmnds/cmd_main.c","requires":"",

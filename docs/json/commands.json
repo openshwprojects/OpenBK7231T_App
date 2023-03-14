@@ -990,10 +990,19 @@
     "examples": ""
   },
   {
-    "name": "ConsumptionThresold",
+    "name": "ConsumptionThreshold",
     "args": "[FloatValue]",
     "descr": "Setup value for automatic save of consumption data [1..100]",
     "fn": "BL09XX_SetupConsumptionThreshold",
+    "file": "driver/drv_bl_shared.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "VCPPublishThreshold",
+    "args": "[VoltageDeltaVolts][CurrentDeltaAmpers][PowerDeltaWats]",
+    "descr": "Sets the minimal change between previous reported value over MQTT and next reported value over MQTT. Very useful for BL0942, BL0937, etc. So, if you set, VCPPublishThreshold 0.5 0.001 0.5, it will only report voltage again if the delta from previous reported value is largen than 0.5V. Remember, that the device will also ALWAYS force-report values every N seconds (default 60)",
+    "fn": "BL09XX_VCPPublishThreshold",
     "file": "driver/drv_bl_shared.c",
     "requires": "",
     "examples": ""

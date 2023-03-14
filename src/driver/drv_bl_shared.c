@@ -299,6 +299,22 @@ commandResult_t BL09XX_SetupEnergyStatistic(const void *context, const char *cmd
     return CMD_RES_OK;
 }
 
+commandResult_t BL09XX_VCPPublishThreshold(const void *context, const char *cmd, const char *args, int cmdFlags)
+{
+	Tokenizer_TokenizeString(args, 0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	changeSendThresholds[OBK_VOLTAGE] = Tokenizer_GetArgFloat(0);
+	changeSendThresholds[OBK_CURRENT] = Tokenizer_GetArgFloat(1);
+	changeSendThresholds[OBK_POWER] = Tokenizer_GetArgFloat(2);
+
+	return CMD_RES_OK;
+}
 commandResult_t BL09XX_SetupConsumptionThreshold(const void *context, const char *cmd, const char *args, int cmdFlags)
 {
     float threshold;
@@ -517,7 +533,11 @@ void BL_ProcessUpdate(float voltage, float current, float power)
     {
         // send update only if there was a big change or if certain time has passed
         // Do not send message with every measurement. 
-		float diff = fabs(lastSentValues[i] - lastReadings[i]);
+		float diff = lastSentValues[i] - lastReadings[i];
+		// get absolute value
+		if (diff < 0)
+			diff = -diff;
+		// check for change
         if ( ((diff > changeSendThresholds[i]) &&
                (noChangeFrames[i] >= changeDoNotSendMinFrames)) ||
              (noChangeFrames[i] >= changeSendAlwaysFrames) )
@@ -656,11 +676,16 @@ void BL_Shared_Init()
 	//cmddetail:"fn":"BL09XX_SetupEnergyStatistic","file":"driver/drv_bl_shared.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SetupEnergyStats", BL09XX_SetupEnergyStatistic, NULL);
-	//cmddetail:{"name":"ConsumptionThresold","args":"[FloatValue]",
+	//cmddetail:{"name":"ConsumptionThreshold","args":"[FloatValue]",
 	//cmddetail:"descr":"Setup value for automatic save of consumption data [1..100]",
 	//cmddetail:"fn":"BL09XX_SetupConsumptionThreshold","file":"driver/drv_bl_shared.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("ConsumptionThresold", BL09XX_SetupConsumptionThreshold, NULL);
+    CMD_RegisterCommand("ConsumptionThreshold", BL09XX_SetupConsumptionThreshold, NULL);
+	//cmddetail:{"name":"VCPPublishThreshold","args":"[VoltageDeltaVolts][CurrentDeltaAmpers][PowerDeltaWats]",
+	//cmddetail:"descr":"Sets the minimal change between previous reported value over MQTT and next reported value over MQTT. Very useful for BL0942, BL0937, etc. So, if you set, VCPPublishThreshold 0.5 0.001 0.5, it will only report voltage again if the delta from previous reported value is largen than 0.5V. Remember, that the device will also ALWAYS force-report values every N seconds (default 60)",
+	//cmddetail:"fn":"BL09XX_VCPPublishThreshold","file":"driver/drv_bl_shared.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("VCPPublishThreshold", BL09XX_VCPPublishThreshold, NULL);
 }
 
 // OBK_POWER etc
