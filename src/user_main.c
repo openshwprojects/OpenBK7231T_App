@@ -380,7 +380,7 @@ void Main_OnEverySecond()
 		}
 	}
 	if (g_newWiFiStatus != g_prevWiFiStatus) {
-		g_newWiFiStatus = g_prevWiFiStatus;
+		g_prevWiFiStatus = g_newWiFiStatus;
 		// Argument type here is HALWifiStatus_t enumeration
 		EventHandlers_FireEvent(CMD_EVENT_WIFI_STATE, g_newWiFiStatus);
 	}
