@@ -11,8 +11,9 @@
 // If given bit is set, then given channel is hidden
 int g_hiddenChannels = 0;
 static char *g_channelLabels[CHANNEL_MAX] = { 0 };
+static int g_bHideTogglePrefix = 0;
 
-void CHANNEL_SetLabel(int ch, const char *s) {
+void CHANNEL_SetLabel(int ch, const char *s, int bHideTogglePrefix) {
 	if (ch < 0)
 		return;
 	if (ch >= CHANNEL_MAX)
@@ -20,6 +21,18 @@ void CHANNEL_SetLabel(int ch, const char *s) {
 	if (g_channelLabels[ch])
 		free(g_channelLabels[ch]);
 	g_channelLabels[ch] = strdup(s);
+	if (ch >= 0 && ch <= 32) {
+		BIT_SET_TO(g_bHideTogglePrefix, ch, bHideTogglePrefix);
+	}
+}
+bool CHANNEL_ShouldAddTogglePrefixToUI(int ch) {
+	if (ch < 0)
+		return true;
+	if (ch >= 32)
+		return true;
+	if (BIT_CHECK(g_bHideTogglePrefix, ch))
+		return false;
+	return true;
 }
 const char *CHANNEL_GetLabel(int ch) {
 	if (ch >= 0 && ch < CHANNEL_MAX) {
@@ -34,6 +47,7 @@ const char *CHANNEL_GetLabel(int ch) {
 static commandResult_t CMD_SetChannelLabel(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int ch;
 	const char *s;
+	int bHideTogglePrefix = 0;
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 	// following check must be done after 'Tokenizer_TokenizeString',
@@ -45,8 +59,11 @@ static commandResult_t CMD_SetChannelLabel(const void *context, const char *cmd,
 
 	ch = Tokenizer_GetArgInteger(0);
 	s = Tokenizer_GetArg(1);
+	if (Tokenizer_GetArgsCount() > 2) {
+		bHideTogglePrefix = Tokenizer_GetArg(2);
+	}
 
-	CHANNEL_SetLabel(ch, s);
+	CHANNEL_SetLabel(ch, s, bHideTogglePrefix);
 
 	return CMD_RES_OK;
 }
@@ -454,8 +471,8 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_FullBootTime","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("FullBootTime", CMD_FullBootTime, NULL);
-	//cmddetail:{"name":"SetChannelLabel","args":"[ChannelIndex][Str]",
-	//cmddetail:"descr":"Sets a channel label for UI.",
+	//cmddetail:{"name":"SetChannelLabel","args":"[ChannelIndex][Str][bHideTogglePrefix]",
+	//cmddetail:"descr":"Sets a channel label for UI. If you use 1 for bHideTogglePrefix, then the 'Toggle ' prefix from button will be omitted",
 	//cmddetail:"fn":"CMD_SetChannelLabel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetChannelLabel", CMD_SetChannelLabel, NULL);

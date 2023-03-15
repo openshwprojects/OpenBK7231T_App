@@ -1035,6 +1035,7 @@ void Channel_SaveInFlashIfNeeded(int ch);
 int CHANNEL_FindMaxValueForChannel(int ch);
 // cmd_channels.c
 const char* CHANNEL_GetLabel(int ch);
+bool CHANNEL_ShouldAddTogglePrefixToUI(int ch);
 //ledRemap_t *CFG_GetLEDRemap();
 
 void get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount);

@@ -635,6 +635,7 @@ int http_fn_index(http_request_t* request) {
 		}
 		else if (h_isChannelRelay(i) || channelType == ChType_Toggle) {
 			const char* c;
+			const char *prefix;
 			if (i <= 1) {
 				hprintf255(request, "<tr>");
 			}
@@ -646,7 +647,15 @@ int http_fn_index(http_request_t* request) {
 			}
 			poststr(request, "<td><form action=\"index\">");
 			hprintf255(request, "<input type=\"hidden\" name=\"tgl\" value=\"%i\">", i);
-			hprintf255(request, "<input class=\"%s\" type=\"submit\" value=\"Toggle %s\"/></form></td>", c, CHANNEL_GetLabel(i));
+
+			if (CHANNEL_ShouldAddTogglePrefixToUI(i)) {
+				prefix = "Toggle ";
+			}
+			else {
+				prefix = "";
+			}
+
+			hprintf255(request, "<input class=\"%s\" type=\"submit\" value=\"%s%s\"/></form></td>", c, prefix, CHANNEL_GetLabel(i));
 			if (i == CHANNEL_MAX - 1) {
 				poststr(request, "</tr>");
 			}

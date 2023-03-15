@@ -151,7 +151,7 @@ void Test_HassDiscovery_SHTSensor() {
 	//SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "°C");
 	// second dev - 
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "dev_cla", "humidity");
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "%s");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "%");
 	
 }
 void Test_HassDiscovery_BL0942() {

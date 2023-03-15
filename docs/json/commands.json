@@ -118,8 +118,8 @@
   },
   {
     "name": "SetChannelLabel",
-    "args": "[ChannelIndex][Str]",
-    "descr": "Sets a channel label for UI.",
+    "args": "[ChannelIndex][Str][bHideTogglePrefix]",
+    "descr": "Sets a channel label for UI. If you use 1 for bHideTogglePrefix, then the 'Toggle ' prefix from button will be omitted",
     "fn": "CMD_SetChannelLabel",
     "file": "cmnds/cmd_channels.c",
     "requires": "",

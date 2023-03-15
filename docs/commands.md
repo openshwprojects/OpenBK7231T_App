@@ -18,7 +18,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | PinDeepSleep |  | Starts a pin deep sleep (deep sleep that can be interrupted by external IO events like a button press) |
 | SetFlag | [FlagIndex][1or0] | Enables/disables given flag. |
 | FullBootTime | [Value] | Sets time in seconds after which boot is marked as valid. This is related to emergency AP mode which is enabled by powering on/off device 5 times quickly. |
-| SetChannelLabel | [ChannelIndex][Str] | Sets a channel label for UI. |
+| SetChannelLabel | [ChannelIndex][Str][bHideTogglePrefix] | Sets a channel label for UI. If you use 1 for bHideTogglePrefix, then the 'Toggle ' prefix from button will be omitted |
 | MapRanges | [TargetChannel][InputValue][RangeVal0][RangeVal1][RangeValN] | This will set given channel to an index showing where given input value is within given range sections. For example, MapRanges 10 0.5 0.3 0.6 0.9 will set channel 10 to 1 because 0.5 value is between 0.3 and 0.6 |
 | Map | [TargetChannel][InputValue][InMin][InMax][OutMin][OutMax] | qqq |
 | SetChannelVisible |  | NULL |
