@@ -71,10 +71,8 @@ static void TM1637_SetBrightness(byte brightness, bool on) {
 }
 
 // backlog startDriver TM1637; TM1650_Test
-//#define TM1650_I2C_DATA_COMMAND 0x48
-//#define TM1650_I2C_DIGITS 0x68
-#define TM1650_I2C_DATA_COMMAND 0x24
-#define TM1650_I2C_DIGITS 0x34
+#define TM1650_I2C_DATA_COMMAND 0x48
+#define TM1650_I2C_DIGITS 0x68
 static void TM1650_SendSegments(const byte *segments, byte length, byte pos) {
 	int i;
 	softI2C_t i2c;
