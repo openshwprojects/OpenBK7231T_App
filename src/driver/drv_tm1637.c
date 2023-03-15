@@ -93,7 +93,7 @@ static void TM1650_SendSegments(const byte *segments, byte length, byte pos) {
 	for (i = 0; i < length; i++) {
 		// set COM2 + first digit address
 		TM1637_Start(&i2c);
-		TM1637_WriteByte(&i2c, TM1650_I2C_DIGITS + (pos & 0x03));
+		TM1637_WriteByte(&i2c, TM1650_I2C_DIGITS + pos*2);
 		TM1637_WriteByte(&i2c, segments[i]);
 		TM1637_Stop(&i2c);
 	}
@@ -182,7 +182,7 @@ static commandResult_t CMD_TM1650_Test(const void *context, const char *cmd, con
 		segments[i] = g_digits[(Time_getUpTimeSeconds() + i) % 10];
 	}
 
-	TM1650_SendSegments(segments, 6, 0);
+	TM1650_SendSegments(segments, 4, 0);
 
 	return CMD_RES_OK;
 }
