@@ -19,6 +19,7 @@ static int g_current_setting_rgb = SM2135_20MA;
 void SM2135_Write(float *rgbcw) {
 	int i;
 	int bRGB;
+	int combinedCurrent = (g_current_setting_cw << 4) | g_current_setting_rgb;
 
 	if(CFG_HasFlag(OBK_FLAG_SM2135_SEPARATE_MODES)) {
 		bRGB = 0;
@@ -30,7 +31,7 @@ void SM2135_Write(float *rgbcw) {
 		}
 		if(bRGB) {
 			Soft_I2C_Start(&g_softI2C, SM2135_ADDR_MC);
-			Soft_I2C_WriteByte(&g_softI2C, g_current_setting_rgb);
+			Soft_I2C_WriteByte(&g_softI2C, combinedCurrent);
 			Soft_I2C_WriteByte(&g_softI2C, SM2135_RGB);
 			Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.r]);
 			Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.g]);
@@ -38,7 +39,7 @@ void SM2135_Write(float *rgbcw) {
 			Soft_I2C_Stop(&g_softI2C);
 		} else {
 			Soft_I2C_Start(&g_softI2C, SM2135_ADDR_MC);
-			Soft_I2C_WriteByte(&g_softI2C, g_current_setting_cw);
+			Soft_I2C_WriteByte(&g_softI2C, combinedCurrent);
 			Soft_I2C_WriteByte(&g_softI2C, SM2135_CW);
 			Soft_I2C_Stop(&g_softI2C);
 			usleep(SM2135_DELAY);
@@ -51,7 +52,7 @@ void SM2135_Write(float *rgbcw) {
 		}
 	} else {
 		Soft_I2C_Start(&g_softI2C, SM2135_ADDR_MC);
-		Soft_I2C_WriteByte(&g_softI2C, g_current_setting_rgb);
+		Soft_I2C_WriteByte(&g_softI2C, combinedCurrent);
 		Soft_I2C_WriteByte(&g_softI2C, SM2135_RGB);
 		Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.r]);
 		Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.g]);
