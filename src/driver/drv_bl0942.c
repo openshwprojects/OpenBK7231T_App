@@ -12,22 +12,22 @@
 #include "../httpserver/new_http.h"
 #include <math.h>
 
-#define UART_BAUD_RATE 4800
-#define UART_RECEIVE_BUFFER_SIZE 256
-#define UART_ADDR 0 // 0 - 3
-#define UART_CMD_READ 0x58
-#define UART_REG_PACKET 0xAA
-#define UART_PACKET_HEAD 0x55
-#define UART_PACKET_LEN 23
+#define BL0942_UART_BAUD_RATE 4800
+#define BL0942_UART_RECEIVE_BUFFER_SIZE 256
+#define BL0942_UART_ADDR 0 // 0 - 3
+#define BL0942_UART_CMD_READ 0x58
+#define BL0942_UART_REG_PACKET 0xAA
+#define BL0942_UART_PACKET_HEAD 0x55
+#define BL0942_UART_PACKET_LEN 23
 
 // Datasheet says 900 kHz is supported, but it produced ~50% check sum errors  
-#define SPI_BAUD_RATE 800000 // 900000
-#define SPI_CMD_READ 0x58
+#define BL0942_SPI_BAUD_RATE 800000 // 900000
+#define BL0942_SPI_CMD_READ 0x58
 
-#define REG_I_RMS 0x03
-#define REG_V_RMS 0x04
-#define REG_WATT 0x06
-#define REG_FREQ 0x08
+#define BL0942_REG_I_RMS 0x03
+#define BL0942_REG_V_RMS 0x04
+#define BL0942_REG_WATT 0x06
+#define BL0942_REG_FREQ 0x08
 
 static float BL0942_PREF = 598;
 static float BL0942_UREF = 15188;
@@ -90,13 +90,13 @@ static int UART_TryToGetNextPacket(void) {
 
 	cs = UART_GetDataSize();
 
-	if(cs < UART_PACKET_LEN) {
+	if(cs < BL0942_UART_PACKET_LEN) {
 		return 0;
 	}
 	// skip garbage data (should not happen)
 	while(cs > 0) {
 		a = UART_GetNextByte(0);
-		if(a != UART_PACKET_HEAD) {
+		if(a != BL0942_UART_PACKET_HEAD) {
 			UART_ConsumeBytes(1);
 			c_garbage_consumed++;
 			cs--;
@@ -107,16 +107,16 @@ static int UART_TryToGetNextPacket(void) {
 	if(c_garbage_consumed > 0){
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Consumed %i unwanted non-header byte in BL0942 buffer\n", c_garbage_consumed);
 	}
-	if(cs < UART_PACKET_LEN) {
+	if(cs < BL0942_UART_PACKET_LEN) {
 		return 0;
 	}
 	a = UART_GetNextByte(0);
 	if(a != 0x55) {
 		return 0;
 	}
-	checksum = UART_CMD_READ;
+	checksum = BL0942_UART_CMD_READ;
 
-	for(i = 0; i < UART_PACKET_LEN-1; i++) {
+	for(i = 0; i < BL0942_UART_PACKET_LEN-1; i++) {
 		checksum += UART_GetNextByte(i);
 	}
 	checksum ^= 0xFF;
@@ -126,16 +126,16 @@ static int UART_TryToGetNextPacket(void) {
 		char buffer_for_log[128];
 		char buffer2[32];
 		buffer_for_log[0] = 0;
-		for(i = 0; i < UART_PACKET_LEN; i++) {
+		for(i = 0; i < BL0942_UART_PACKET_LEN; i++) {
 			snprintf(buffer2, sizeof(buffer2), "%02X ",UART_GetNextByte(i));
 			strcat_safe(buffer_for_log,buffer2,sizeof(buffer_for_log));
 		}
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"BL0942 received: %s\n", buffer_for_log);
 	}
 #endif
-	if(checksum != UART_GetNextByte(UART_PACKET_LEN-1)) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Skipping packet with bad checksum %02X wanted %02X\n",checksum,UART_GetNextByte(UART_PACKET_LEN-1));
-		UART_ConsumeBytes(UART_PACKET_LEN);
+	if(checksum != UART_GetNextByte(BL0942_UART_PACKET_LEN-1)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Skipping packet with bad checksum %02X wanted %02X\n",checksum,UART_GetNextByte(BL0942_UART_PACKET_LEN-1));
+		UART_ConsumeBytes(BL0942_UART_PACKET_LEN);
 		return 1;
 	}
 	//startDriver BL0942
@@ -157,20 +157,20 @@ static int UART_TryToGetNextPacket(void) {
 	}
 #endif
 
-	UART_ConsumeBytes(UART_PACKET_LEN);
-	return UART_PACKET_LEN;
+	UART_ConsumeBytes(BL0942_UART_PACKET_LEN);
+	return BL0942_UART_PACKET_LEN;
 }
 
 static void UART_SendRequest(void) {
-	UART_InitUART(UART_BAUD_RATE);
-	UART_SendByte(UART_CMD_READ);
-	UART_SendByte(UART_REG_PACKET);
+	UART_InitUART(BL0942_UART_BAUD_RATE);
+	UART_SendByte(BL0942_UART_CMD_READ);
+	UART_SendByte(BL0942_UART_REG_PACKET);
 }
 
 static int SPI_ReadReg(uint8_t reg, uint32_t *val, uint8_t signed24) {
 	uint8_t send[2];
 	uint8_t recv[4];
-	send[0] = SPI_CMD_READ;
+	send[0] = BL0942_SPI_CMD_READ;
 	send[1] = reg;
 	SPI_Transmit(send, sizeof(send), recv, sizeof(recv));
 
@@ -310,8 +310,8 @@ static void Init(void) {
 void BL0942_UART_Init(void) {
 	Init();
 
-	UART_InitUART(UART_BAUD_RATE);
-	UART_InitReceiveRingBuffer(UART_RECEIVE_BUFFER_SIZE);
+	UART_InitUART(BL0942_UART_BAUD_RATE);
+	UART_InitReceiveRingBuffer(BL0942_UART_RECEIVE_BUFFER_SIZE);
 }
 
 void BL0942_UART_RunFrame(void) {
@@ -339,16 +339,16 @@ void BL0942_SPI_Init(void) {
 	cfg.polarity = SPI_POLARITY_LOW;
 	cfg.phase = SPI_PHASE_2ND_EDGE;
 	cfg.wire_mode = SPI_3WIRE_MODE;
-	cfg.baud_rate = SPI_BAUD_RATE;
+	cfg.baud_rate = BL0942_SPI_BAUD_RATE;
 	cfg.bit_order = SPI_MSB_FIRST;
 	SPI_Init(&cfg);
 }
 
 void BL0942_SPI_RunFrame(void) {
-	SPI_ReadReg(REG_I_RMS, (uint32_t *)&raw_unscaled_current, 0);
-	SPI_ReadReg(REG_V_RMS, (uint32_t *)&raw_unscaled_voltage, 0);
-	SPI_ReadReg(REG_WATT, (uint32_t *)&raw_unscaled_power, 1);
-	SPI_ReadReg(REG_FREQ, (uint32_t *)&raw_unscaled_freq, 0);
+	SPI_ReadReg(BL0942_REG_I_RMS, (uint32_t *)&raw_unscaled_current, 0);
+	SPI_ReadReg(BL0942_REG_V_RMS, (uint32_t *)&raw_unscaled_voltage, 0);
+	SPI_ReadReg(BL0942_REG_WATT, (uint32_t *)&raw_unscaled_power, 1);
+	SPI_ReadReg(BL0942_REG_FREQ, (uint32_t *)&raw_unscaled_freq, 0);
 
 	ScaleAndUpdate();
 }
