@@ -299,6 +299,21 @@ commandResult_t BL09XX_SetupEnergyStatistic(const void *context, const char *cmd
     return CMD_RES_OK;
 }
 
+commandResult_t BL09XX_VCPPublishIntervals(const void *context, const char *cmd, const char *args, int cmdFlags)
+{
+	Tokenizer_TokenizeString(args, 0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	changeDoNotSendMinFrames = Tokenizer_GetArgInteger(0);
+	changeSendAlwaysFrames = Tokenizer_GetArgInteger(1);
+
+	return CMD_RES_OK;
+}
 commandResult_t BL09XX_VCPPublishThreshold(const void *context, const char *cmd, const char *args, int cmdFlags)
 {
 	Tokenizer_TokenizeString(args, 0);
@@ -312,6 +327,8 @@ commandResult_t BL09XX_VCPPublishThreshold(const void *context, const char *cmd,
 	changeSendThresholds[OBK_VOLTAGE] = Tokenizer_GetArgFloat(0);
 	changeSendThresholds[OBK_CURRENT] = Tokenizer_GetArgFloat(1);
 	changeSendThresholds[OBK_POWER] = Tokenizer_GetArgFloat(2);
+	if (Tokenizer_GetArgsCount() >= 4)
+		changeSendThresholdEnergy = Tokenizer_GetArgFloat(3);
 
 	return CMD_RES_OK;
 }
@@ -350,6 +367,7 @@ void BL_ProcessUpdate(float voltage, float current, float power)
     time_t g_time;
     struct tm *ltm;
     char datetime[64];
+	float diff;
 
 	// I had reports that BL0942 sometimes gives 
 	// a large, negative peak of current/power
@@ -533,7 +551,7 @@ void BL_ProcessUpdate(float voltage, float current, float power)
     {
         // send update only if there was a big change or if certain time has passed
         // Do not send message with every measurement. 
-		float diff = lastSentValues[i] - lastReadings[i];
+		diff = lastSentValues[i] - lastReadings[i];
 		// get absolute value
 		if (diff < 0)
 			diff = -diff;
@@ -565,7 +583,14 @@ void BL_ProcessUpdate(float voltage, float current, float power)
         }
     }
 
-    if ( (((energyCounter - lastSentEnergyCounterValue) >= changeSendThresholdEnergy) &&
+	// send update only if there was a big change or if certain time has passed
+	// Do not send message with every measurement. 
+	diff = energyCounter - lastSentEnergyCounterValue;
+	// get absolute value
+	if (diff < 0)
+		diff = -diff;
+	// check for change
+    if ( (((diff) >= changeSendThresholdEnergy) &&
           (noChangeFrameEnergyCounter >= changeDoNotSendMinFrames)) || 
          (noChangeFrameEnergyCounter >= changeSendAlwaysFrames) )
     {
@@ -681,11 +706,16 @@ void BL_Shared_Init()
 	//cmddetail:"fn":"BL09XX_SetupConsumptionThreshold","file":"driver/drv_bl_shared.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ConsumptionThreshold", BL09XX_SetupConsumptionThreshold, NULL);
-	//cmddetail:{"name":"VCPPublishThreshold","args":"[VoltageDeltaVolts][CurrentDeltaAmpers][PowerDeltaWats]",
+	//cmddetail:{"name":"VCPPublishThreshold","args":"[VoltageDeltaVolts][CurrentDeltaAmpers][PowerDeltaWats][EnergyDeltaWh]",
 	//cmddetail:"descr":"Sets the minimal change between previous reported value over MQTT and next reported value over MQTT. Very useful for BL0942, BL0937, etc. So, if you set, VCPPublishThreshold 0.5 0.001 0.5, it will only report voltage again if the delta from previous reported value is largen than 0.5V. Remember, that the device will also ALWAYS force-report values every N seconds (default 60)",
 	//cmddetail:"fn":"BL09XX_VCPPublishThreshold","file":"driver/drv_bl_shared.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("VCPPublishThreshold", BL09XX_VCPPublishThreshold, NULL);
+	//cmddetail:{"name":"VCPPublishIntervals","args":"[MinDelayBetweenPublishes][ForcedPublishInterval]",
+	//cmddetail:"descr":"First argument is minimal allowed interval in second between Voltage/Current/Power/Energy publishes (even if there is a large change), second value is an interval in which V/C/P/E is always published, even if there is no change",
+	//cmddetail:"fn":"BL09XX_VCPPublishIntervals","file":"driver/drv_bl_shared.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("VCPPublishIntervals", BL09XX_VCPPublishIntervals, NULL);
 }
 
 // OBK_POWER etc

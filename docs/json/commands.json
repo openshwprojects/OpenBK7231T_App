@@ -1000,9 +1000,18 @@
   },
   {
     "name": "VCPPublishThreshold",
-    "args": "[VoltageDeltaVolts][CurrentDeltaAmpers][PowerDeltaWats]",
+    "args": "[VoltageDeltaVolts][CurrentDeltaAmpers][PowerDeltaWats][EnergyDeltaWh]",
     "descr": "Sets the minimal change between previous reported value over MQTT and next reported value over MQTT. Very useful for BL0942, BL0937, etc. So, if you set, VCPPublishThreshold 0.5 0.001 0.5, it will only report voltage again if the delta from previous reported value is largen than 0.5V. Remember, that the device will also ALWAYS force-report values every N seconds (default 60)",
     "fn": "BL09XX_VCPPublishThreshold",
+    "file": "driver/drv_bl_shared.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "VCPPublishIntervals",
+    "args": "[MinDelayBetweenPublishes][ForcedPublishInterval]",
+    "descr": "First argument is minimal allowed interval in second between Voltage/Current/Power/Energy publishes (even if there is a large change), second value is an interval in which V/C/P/E is always published, even if there is no change",
+    "fn": "BL09XX_VCPPublishIntervals",
     "file": "driver/drv_bl_shared.c",
     "requires": "",
     "examples": ""
