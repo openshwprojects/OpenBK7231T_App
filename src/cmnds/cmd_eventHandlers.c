@@ -154,6 +154,8 @@ static int EVENT_ParseEventName(const char *s) {
 		return CMD_EVENT_PIN_ON3CLICK;
 	if (!stricmp(s, "On4Click"))
 		return CMD_EVENT_PIN_ON4CLICK;
+	if (!stricmp(s, "On5Click"))
+		return CMD_EVENT_PIN_ON5CLICK;
 	if(!stricmp(s,"OnChannelChange"))
 		return CMD_EVENT_CHANNEL_ONCHANGE;
 	if(!stricmp(s,"OnUART"))
