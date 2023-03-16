@@ -62,6 +62,7 @@ inline const char *va(const char *fmt, ...) {
 }
 
 
+void Test_ClockEvents();
 void Test_Commands_Channels();
 void Test_LEDDriver();
 void Test_TuyaMCU_Basic();

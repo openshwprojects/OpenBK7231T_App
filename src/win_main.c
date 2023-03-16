@@ -126,6 +126,7 @@ void SIM_DoFreshOBKBoot() {
 	Main_Init();
 }
 void Win_DoUnitTests() {
+	Test_ClockEvents();
 	Test_HassDiscovery();
 	Test_Role_ToggleAll_2();
 	Test_Demo_ButtonToggleGroup();

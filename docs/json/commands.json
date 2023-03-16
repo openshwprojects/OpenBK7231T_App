@@ -145,8 +145,8 @@
   },
   {
     "name": "SetChannelVisible",
-    "args": "",
-    "descr": "NULL",
+    "args": "[ChannelIndex][bVisible]",
+    "descr": "This allows you to force-hide a certain channel from HTTP gui. The channel will still work, but will not show up as a button, or a toggle, etc...",
     "fn": "CMD_SetChannelVisible",
     "file": "cmnds/cmd_channels.c",
     "requires": "",

@@ -486,8 +486,8 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_Map","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Map", CMD_Map, NULL);
-	//cmddetail:{"name":"SetChannelVisible","args":"",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:{"name":"SetChannelVisible","args":"[ChannelIndex][bVisible]",
+	//cmddetail:"descr":"This allows you to force-hide a certain channel from HTTP gui. The channel will still work, but will not show up as a button, or a toggle, etc...",
 	//cmddetail:"fn":"CMD_SetChannelVisible","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetChannelVisible", CMD_SetChannelVisible, NULL);

@@ -102,7 +102,8 @@ void NTP_AddClockEvent(int hour, int minute, int second, int weekDayFlags, int i
 
 	ntp_events = newEvent;
 }
-void NTP_RemoveClockEvent(int id) {
+int NTP_RemoveClockEvent(int id) {
+	int ret = 0;
 	ntpEvent_t* curr = ntp_events;
 	ntpEvent_t* prev = NULL;
 
@@ -116,11 +117,20 @@ void NTP_RemoveClockEvent(int id) {
 			}
 			free(curr->command);
 			free(curr);
-			return;
+			ret++;
+			if (prev == NULL) {
+				curr = ntp_events;
+			}
+			else {
+				curr = prev->next;
+			}
 		}
-		prev = curr;
-		curr = curr->next;
+		else {
+			prev = curr;
+			curr = curr->next;
+		}
 	}
+	return ret;
 }
 // addClockEvent [Time] [WeekDayFlags] [UniqueIDForRemoval]
 // Bit flag 0 - sunday, bit flag 1 - monday, etc...
@@ -210,10 +220,10 @@ commandResult_t CMD_NTP_RemoveClockEvent(const void* context, const char* cmd, c
 
 	return CMD_RES_OK;
 }
-commandResult_t CMD_NTP_ListEvents(const void* context, const char* cmd, const char* args, int cmdFlags) {
+int NTP_PrintEventList() {
 	ntpEvent_t* e;
 	int t;
-	
+
 	e = ntp_events;
 	t = 0;
 
@@ -226,11 +236,15 @@ commandResult_t CMD_NTP_ListEvents(const void* context, const char* cmd, const c
 	}
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Total %i events", t);
+	return t;
+}
+commandResult_t CMD_NTP_ListEvents(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
+	NTP_PrintEventList();
 	return CMD_RES_OK;
 }
 
-commandResult_t CMD_NTP_ClearEvents(const void* context, const char* cmd, const char* args, int cmdFlags) {
+int NTP_ClearEvents() {
 	ntpEvent_t* e;
 	int t;
 
@@ -239,14 +253,20 @@ commandResult_t CMD_NTP_ClearEvents(const void* context, const char* cmd, const 
 
 	while (e) {
 		ntpEvent_t *p = e;
-		
+
 		t++;
 		e = e->next;
 
 		free(p->command);
 		free(p);
 	}
+	ntp_events = 0;
 	addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Removed %i events", t);
+	return t;
+}
+commandResult_t CMD_NTP_ClearEvents(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	NTP_ClearEvents();
 
 	return CMD_RES_OK;
 }

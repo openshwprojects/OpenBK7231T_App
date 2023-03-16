@@ -16,6 +16,10 @@ int NTP_GetHour();
 int NTP_GetMinute();
 // for Simulator only, on Windows, for unit testing
 void NTP_SetSimulatedTime(unsigned int timeNow);
+// drv_ntp_events.c
+int NTP_PrintEventList();
+int NTP_RemoveClockEvent(int id);
+int NTP_ClearEvents();
 
 #endif /* __DRV_NTP_H__ */
 
