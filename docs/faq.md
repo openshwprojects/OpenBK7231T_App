@@ -51,6 +51,9 @@ All questions/answers were taken from json file.
 **Question:** *How to just copy value from digital input to channel? Make relay follow the switch?*<br>**A:** In this case you want to use dInput role. A digital input. You can also choose 'noPullUp' version or inversed version.
 
 
+**Question:** *How to preserve battery life?*<br>**A:** There are two types of battery devices - first type is using TuyaMCU, and the MCU controls power of WiFi module and enables it only to report state to the server, there is not much you can save in this case, maybe just add a 'PowerSave 1' command for dynamic power save in autoexec.bat. The second type is using WiFi module only and in this case you can either manually script DeepSleep [Time] command to sleep device for a given amount of time, or PinDeepSleep command to sleep device until next IO event, or you can also use a dedicated Pin role with driver, search for 'Door sensor' in IO docs.
+
+
 **Question:** *My device does not publish channels, what's wrong?*<br>**A:** First make sure that MQTT status on main page is connected. Then check your flags - maybe you need to enable 'publish MQTT values on connect' or 'publish every N seconds' or 'publish all TuyaMCU channels'? Not all values are published by default.
 
 

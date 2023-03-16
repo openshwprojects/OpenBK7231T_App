@@ -254,7 +254,7 @@
   {
     "name": "DeepSleep",
     "args": "[Seconds]",
-    "descr": "Starts deep sleep for given amount of seconds.",
+    "descr": "Starts deep sleep for given amount of seconds. Please remember that there is also a separate command, called PinDeepSleep, which is not using a timer, but a GPIO to wake up device.",
     "fn": "CMD_DeepSleep",
     "file": "cmnds/cmd_main.c",
     "requires": "",

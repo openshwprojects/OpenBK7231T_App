@@ -435,7 +435,7 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("clearAll", CMD_ClearAll, NULL);
 	//cmddetail:{"name":"DeepSleep","args":"[Seconds]",
-	//cmddetail:"descr":"Starts deep sleep for given amount of seconds.",
+	//cmddetail:"descr":"Starts deep sleep for given amount of seconds. Please remember that there is also a separate command, called PinDeepSleep, which is not using a timer, but a GPIO to wake up device.",
 	//cmddetail:"fn":"CMD_DeepSleep","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DeepSleep", CMD_DeepSleep, NULL);
