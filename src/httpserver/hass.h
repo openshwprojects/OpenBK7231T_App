@@ -3,6 +3,7 @@
 #include "../cJSON/cJSON.h"
 #include "../new_pins.h"
 #include "../mqtt/new_mqtt.h"
+#include "../cmnds/cmd_public.h"
 
 typedef enum {
 	/// @brief Switch
