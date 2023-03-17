@@ -176,8 +176,8 @@ void SM2135_Init() {
 	//cmddetail:"fn":"SM2135_Map","file":"driver/drv_sm2135.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SM2135_Map", CMD_LEDDriver_Map, NULL);
-	//cmddetail:{"name":"SM2135_Current","args":"[Value]",
-	//cmddetail:"descr":"Sets the maximum current for LED driver.",
+	//cmddetail:{"name":"SM2135_Current","args":"[RGBLimit][CWLimit]",
+	//cmddetail:"descr":"Sets the maximum current for LED driver. Please note that arguments are using SM2135 codes, see [full list of codes here](https://www.elektroda.com/rtvforum/viewtopic.php?p=20493415#20493415)",
 	//cmddetail:"fn":"SM2135_Current","file":"driver/drv_sm2135.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SM2135_Current", SM2135_Current, NULL);

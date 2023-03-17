@@ -101,7 +101,7 @@ void BP1658CJ_Init() {
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("BP1658CJ_Map", CMD_LEDDriver_Map, NULL);
 	//cmddetail:{"name":"BP1658CJ_Current","args":"[MaxCurrentRGB][MaxCurrentCW]",
-	//cmddetail:"descr":"Sets the maximum current limit for BP1658CJ driver",
+	//cmddetail:"descr":"Sets the maximum current limit for BP1658CJ driver.",
 	//cmddetail:"fn":"BP1658CJ_Current","file":"driver/drv_bp1658cj.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("BP1658CJ_Current", BP1658CJ_Current, NULL);
