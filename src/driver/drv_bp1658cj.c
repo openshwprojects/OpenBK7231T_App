@@ -105,4 +105,7 @@ void BP1658CJ_Init() {
 	//cmddetail:"fn":"BP1658CJ_Current","file":"driver/drv_bp1658cj.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("BP1658CJ_Current", BP1658CJ_Current, NULL);
+
+	// alias for LED_Map. In future we may want to migrate totally to shared LED_Map command.... 
+	CMD_CreateAliasHelper("LED_Map", "BP1658CJ_Map");
 }

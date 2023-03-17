@@ -172,4 +172,7 @@ void BP5758D_Init() {
 	//cmddetail:"fn":"BP5758D_Current","file":"driver/drv_bp5758d.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("BP5758D_Current", BP5758D_Current, NULL);
+
+	// alias for LED_Map. In future we may want to migrate totally to shared LED_Map command.... 
+	CMD_CreateAliasHelper("LED_Map", "BP5758D_Map");
 }

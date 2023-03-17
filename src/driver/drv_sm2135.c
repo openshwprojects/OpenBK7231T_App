@@ -181,6 +181,9 @@ void SM2135_Init() {
 	//cmddetail:"fn":"SM2135_Current","file":"driver/drv_sm2135.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SM2135_Current", SM2135_Current, NULL);
+
+	// alias for LED_Map. In future we may want to migrate totally to shared LED_Map command.... 
+	CMD_CreateAliasHelper("LED_Map", "SM2135_Map");
 }
 
 
