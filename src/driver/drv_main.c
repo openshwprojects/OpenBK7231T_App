@@ -338,7 +338,7 @@ void DRV_StopDriver(const char* name) {
 					g_drivers[i].stopFunc();
 				}
 				g_drivers[i].bLoaded = false;
-				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Drv %s stopped.", name);
+				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Drv %s stopped.", g_drivers[i].name);
 			}
 			else {
 				if (*name != '*') {
