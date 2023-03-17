@@ -721,7 +721,7 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 	}
 	else if (!wal_strnicmp(cmd, "FullTopic", 9)) {
 		printer(request, "{");
-		printer(request, "\"FullTopic\":\"\%prefix%/\%topic%/\"");
+		printer(request, "\"FullTopic\":\"%%prefix%%/%%topic%%/\"");
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "SwitchTopic", 11)) {
