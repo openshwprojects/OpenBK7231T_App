@@ -372,6 +372,7 @@ int wal_stricmp(const char *a, const char *b) ;
 
 #endif
 
+const char* skipToNextWord(const char* p);
 char *strdup(const char *s);
 int wal_stricmp(const char *a, const char *b);
 int wal_strnicmp(const char *a, const char *b, int count);

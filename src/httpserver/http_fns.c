@@ -2006,20 +2006,6 @@ int http_fn_ha_cfg(http_request_t* request) {
 	return 0;
 }
 
-const char* skipToNextWord(const char* p) {
-	while (isWhiteSpace(*p) == false) {
-		if (*p == 0)
-			return p;
-		p++;
-	}
-	while (isWhiteSpace(*p)) {
-		if (*p == 0)
-			return p;
-		p++;
-	}
-	return p;
-}
-
 int http_fn_cm(http_request_t* request) {
 	char tmpA[128];
 	char* long_str_alloced = 0;

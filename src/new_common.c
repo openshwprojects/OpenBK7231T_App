@@ -278,6 +278,21 @@ int wal_strnicmp(const char* a, const char* b, int count) {
 	return ca - cb;
 }
 
+const char* skipToNextWord(const char* p) {
+	while (isWhiteSpace(*p) == false) {
+		if (*p == 0)
+			return p;
+		p++;
+	}
+	while (isWhiteSpace(*p)) {
+		if (*p == 0)
+			return p;
+		p++;
+	}
+	return p;
+}
+
+
 WIFI_RSSI_LEVEL wifi_rssi_scale(int8_t rssi_value)
 {
     #define LEVEL_WEAK      -70     //-70
