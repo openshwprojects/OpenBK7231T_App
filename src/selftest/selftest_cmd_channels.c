@@ -197,6 +197,27 @@ void Test_Commands_Channels() {
 	CMD_ExecuteCommand("setChannel 6 4", 0);
 	CMD_ExecuteCommand("Map 0 $CH6 $CH2 $CH3 $CH4 $CH5", 0);
 	SELFTEST_ASSERT_CHANNEL(0, 1400);
+
+
+	CMD_ExecuteCommand("setChannel 10 0", 0);
+	SELFTEST_ASSERT_CHANNEL(10, 0);
+	CMD_ExecuteCommand("ToggleChannel 10", 0);
+	SELFTEST_ASSERT_CHANNEL(10, 1);
+	CMD_ExecuteCommand("ToggleChannel 10", 0);
+	SELFTEST_ASSERT_CHANNEL(10, 0);
+	CMD_ExecuteCommand("ToggleChannel 10", 0);
+	SELFTEST_ASSERT_CHANNEL(10, 1);
+	CMD_ExecuteCommand("setChannel 10 567", 0);
+	SELFTEST_ASSERT_CHANNEL(10, 567);
+	CMD_ExecuteCommand("ToggleChannel 10", 0);
+	SELFTEST_ASSERT_CHANNEL(10, 0);
+	for (int i = 0; i < 100; i++) {
+		CMD_ExecuteCommand("ToggleChannel 10", 0);
+		SELFTEST_ASSERT_CHANNEL(10, 1);
+		CMD_ExecuteCommand("ToggleChannel 10", 0);
+		SELFTEST_ASSERT_CHANNEL(10, 0);
+
+	}
 }
 
 
