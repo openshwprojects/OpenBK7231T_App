@@ -1037,7 +1037,7 @@
   {
     "name": "BP1658CJ_Current",
     "args": "[MaxCurrentRGB][MaxCurrentCW]",
-    "descr": "Sets the maximum current limit for BP1658CJ driver",
+    "descr": "Sets the maximum current limit for BP1658CJ driver.",
     "fn": "BP1658CJ_Current",
     "file": "driver/drv_bp1658cj.c",
     "requires": "",
@@ -1423,8 +1423,8 @@
   },
   {
     "name": "SM2135_Current",
-    "args": "[Value]",
-    "descr": "Sets the maximum current for LED driver.",
+    "args": "[RGBLimit][CWLimit]",
+    "descr": "Sets the maximum current for LED driver. Please note that arguments are using SM2135 codes, see [full list of codes here](https://www.elektroda.com/rtvforum/viewtopic.php?p=20493415#20493415)",
     "fn": "SM2135_Current",
     "file": "driver/drv_sm2135.c",
     "requires": "",

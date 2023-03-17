@@ -120,7 +120,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | VCPPublishIntervals | [MinDelayBetweenPublishes][ForcedPublishInterval] | First argument is minimal allowed interval in second between Voltage/Current/Power/Energy publishes (even if there is a large change), second value is an interval in which V/C/P/E is always published, even if there is no change |
 | BP1658CJ_RGBCW | [HexColor] | Don't use it. It's for direct access of BP1658CJ driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
 | BP1658CJ_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP1658CJ channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: BP1658CJ_Map 0 1 2 3 4 |
-| BP1658CJ_Current | [MaxCurrentRGB][MaxCurrentCW] | Sets the maximum current limit for BP1658CJ driver |
+| BP1658CJ_Current | [MaxCurrentRGB][MaxCurrentCW] | Sets the maximum current limit for BP1658CJ driver. |
 | BP5758D_RGBCW | [HexColor] | Don't use it. It's for direct access of BP5758D driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
 | BP5758D_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP5758D channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: BP5758D_Map 0 1 2 3 4 |
 | BP5758D_Current | [MaxCurrent] | Sets the maximum current limit for BP5758D driver |
@@ -163,7 +163,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | SM16703P_Test_3xOne |  | NULL |
 | SM2135_RGBCW | [HexColor] | Don't use it. It's for direct access of SM2135 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
 | SM2135_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of SM2135 channels. This is because SM2135 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: SM2135_Map 0 1 2 3 4 |
-| SM2135_Current | [Value] | Sets the maximum current for LED driver. |
+| SM2135_Current | [RGBLimit][CWLimit] | Sets the maximum current for LED driver. Please note that arguments are using SM2135 codes, see [full list of codes here](https://www.elektroda.com/rtvforum/viewtopic.php?p=20493415#20493415) |
 | SM2235_RGBCW | [HexColor] | Don't use it. It's for direct access of SM2235 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
 | SM2235_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of SM2235 channels. This is because SM2235 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: SM2235_Map 0 1 2 3 4 |
 | SM2235_Current | [Value] | Sets the maximum current for LED driver. |

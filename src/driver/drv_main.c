@@ -332,18 +332,18 @@ void DRV_StopDriver(const char* name) {
 		return;
 	}
 	for (i = 0; i < g_numDrivers; i++) {
-		if (!stricmp(g_drivers[i].name, name)) {
+		if (*name == '*' || !stricmp(g_drivers[i].name, name)) {
 			if (g_drivers[i].bLoaded) {
 				if (g_drivers[i].stopFunc != 0) {
 					g_drivers[i].stopFunc();
 				}
 				g_drivers[i].bLoaded = false;
-				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Drv %s stopped.", name);
-				break;
+				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Drv %s stopped.", g_drivers[i].name);
 			}
 			else {
-				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Drv %s not running.", name);
-				break;
+				if (*name != '*') {
+					addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Drv %s not running.", name);
+				}
 			}
 		}
 	}
