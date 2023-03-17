@@ -283,13 +283,13 @@ HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type) {
 
 		cJSON_AddStringToObject(info->root, "clr_temp_stat_t", "~/led_temperature/get");    //color_temp_state_topic
 		
-		sprintf(g_hassBuffer, "%.2f", led_temperature_min);
-		cJSON_AddStringToObject(info->root, "min_mireds", g_hassBuffer);    //min_mireds
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "min_mireds=%s", g_hassBuffer);
+		sprintf(g_hassBuffer, "%.0f", led_temperature_min);
+		cJSON_AddStringToObject(info->root, "min_mirs", g_hassBuffer);    //min_mireds
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "min_mirs=%s", g_hassBuffer);
 		
-		sprintf(g_hassBuffer, "%.2f", led_temperature_max);
-		cJSON_AddStringToObject(info->root, "max_mireds", g_hassBuffer);    //max_mireds
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "max_mireds=%s", g_hassBuffer);
+		sprintf(g_hassBuffer, "%.0f", led_temperature_max);
+		cJSON_AddStringToObject(info->root, "max_mirs", g_hassBuffer);    //max_mireds
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "max_mirs=%s", g_hassBuffer);
 	}
 
 	cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, "~/led_enableAll/get");  //state_topic
