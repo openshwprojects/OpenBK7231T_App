@@ -828,14 +828,28 @@ int LED_IsRunningDriver() {
 float LED_GetDimmer() {
 	return g_brightness0to100;
 }
-void LED_AddTemperature(int iVal, bool wrapAroundInsteadOfClamp) {
+int dimmer_pingPong_direction = 1;
+int temperature_pingPong_direction = 1;
+void LED_AddTemperature(int iVal, int wrapAroundInsteadOfClamp) {
 	float cur;
 
 	cur = led_temperature_current;
 
 	cur += iVal;
 
-	if (wrapAroundInsteadOfClamp == 0) {
+	if (wrapAroundInsteadOfClamp == 2) {
+		// Ping pong mode
+		cur += iVal * temperature_pingPong_direction;
+		if (cur >= led_temperature_max) {
+			cur = led_temperature_max;
+			temperature_pingPong_direction *= -1;
+		}
+		if (cur <= led_temperature_min) {
+			cur = led_temperature_min;
+			temperature_pingPong_direction *= -1;
+		}
+	}
+	else if (wrapAroundInsteadOfClamp == 0) {
 		cur += iVal;
 		// clamp
 		if (cur < led_temperature_min)
@@ -866,7 +880,6 @@ void LED_AddTemperature(int iVal, bool wrapAroundInsteadOfClamp) {
 
 	LED_SetTemperature(cur, true);
 }
-int dimmer_pingPong_direction = 1;
 void LED_AddDimmer(int iVal, int addMode, int minValue) {
 	int cur;
 
@@ -914,7 +927,7 @@ void LED_AddDimmer(int iVal, int addMode, int minValue) {
 	LED_SetDimmer(cur);
 }
 void LED_NextTemperatureHold() {
-	LED_AddTemperature(25, true);
+	LED_AddTemperature(25, 1);
 }
 void LED_NextTemperature() {
 	if (g_lightMode != Light_Temperature) {

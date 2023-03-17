@@ -43,6 +43,7 @@ commandResult_t CMD_ExecuteCommandArgs(const char* cmd, const char* args, int cm
 // like a strdup, but will expand constants.
 // Please remember to free the returned string
 char* CMD_ExpandingStrdup(const char* in);
+commandResult_t CMD_CreateAliasHelper(const char *alias, const char *ocmd);
 
 enum EventCode {
 	CMD_EVENT_NONE,
@@ -180,7 +181,7 @@ void NewLED_InitCommands();
 void NewLED_RestoreSavedStateIfNeeded();
 float LED_GetDimmer();
 void LED_AddDimmer(int iVal, int addMode, int minValue);
-void LED_AddTemperature(int iVal, bool wrapAroundInsteadOfClamp);
+void LED_AddTemperature(int iVal, int wrapAroundInsteadOfClamp);
 void LED_NextDimmerHold();
 void LED_NextTemperatureHold();
 void LED_NextTemperature();
