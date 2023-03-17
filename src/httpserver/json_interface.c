@@ -125,7 +125,10 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 				lastRelayState = CHANNEL_Get(i);
 			}
 		}
-		if (numRelays == 1) {
+		if (numRelays == 0) {
+			printer(request, "\"POWER\":\"ON\"");
+		}
+		else if (numRelays == 1) {
 			if (lastRelayState) {
 				printer(request, "\"POWER\":\"ON\"");
 			}
@@ -716,6 +719,31 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		printer(request, "\"StateText4\":\"HOLD\"");
 		printer(request, "}");
 	}
+	else if (!wal_strnicmp(cmd, "FullTopic", 9)) {
+		printer(request, "{");
+		printer(request, "\"FullTopic\":\"\%prefix\%/\%topic\%/\"");
+		printer(request, "}");
+	}
+	else if (!wal_strnicmp(cmd, "SwitchTopic", 11)) {
+		printer(request, "{");
+		printer(request, "\"SwitchTopic\":\"0\"");
+		printer(request, "}");
+	}
+	else if (!wal_strnicmp(cmd, "ButtonTopic", 11)) {
+		printer(request, "{");
+		printer(request, "\"ButtonTopic\":\"0\"");
+		printer(request, "}");
+	}
+	else if (!wal_strnicmp(cmd, "MqttRetry", 9)) {
+		printer(request, "{");
+		printer(request, "\"MqttRetry\":\"1\"");
+		printer(request, "}");
+	}
+	else if (!wal_strnicmp(cmd, "TelePeriod", 10)) {
+		printer(request, "{");
+		printer(request, "\"TelePeriod\":\"300\"");
+		printer(request, "}");
+	}
 	else if (!wal_strnicmp(cmd, "CT", 2)) {
 		printer(request, "{");
 		if (*arg == 0) {
@@ -889,7 +917,7 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		printer(request, "{");
 		printer(request, "}");
 	}
-	
+
 	return 0;
 }
 
