@@ -404,7 +404,7 @@ static commandResult_t CMD_CreateAliasForCommand(const void* context, const char
 	alias = Tokenizer_GetArg(0);
 	ocmd = Tokenizer_GetArgFrom(1);
 
-	CMD_CreateAliasHelper(alias, ocmd);
+	return CMD_CreateAliasHelper(alias, ocmd);
 }
 void CMD_Init_Early() {
 	//cmddetail:{"name":"alias","args":"[Alias][Command with spaces]",
