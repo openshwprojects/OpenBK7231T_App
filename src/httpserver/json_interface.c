@@ -879,7 +879,17 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		printer(request, "\"SSID1\":\"%s\"", CFG_GetWiFiSSID());
 		printer(request, "}");
 	}
-
+	else if (!wal_strnicmp(cmd, "LED_Map", 7)) {
+		printer(request, "{");
+		printer(request, "\"Map\":[%i,%i,%i,%i,%i]",
+			(int)g_cfg.ledRemap.r, (int)g_cfg.ledRemap.g, (int)g_cfg.ledRemap.b, (int)g_cfg.ledRemap.c, (int)g_cfg.ledRemap.w);
+		printer(request, "}");
+	}
+	else {
+		printer(request, "{");
+		printer(request, "}");
+	}
+	
 	return 0;
 }
 

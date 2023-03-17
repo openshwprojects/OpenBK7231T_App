@@ -1681,13 +1681,38 @@ static int http_rest_post_channels(http_request_t* request) {
 }
 
 
+
 static int http_rest_post_cmd(http_request_t* request) {
 	commandResult_t res;
+	int code;
+	const char *reply;
+	const char *type;
 	const char* cmd = request->bodystart;
 	res = CMD_ExecuteCommand(cmd, COMMAND_FLAG_SOURCE_CONSOLE);
+	reply = CMD_GetResultString(res);
 	if (1) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "[WebApp Cmd '%s' Result] %s", cmd, CMD_GetResultString(res));
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "[WebApp Cmd '%s' Result] %s", cmd, reply);
 	}
-	return http_rest_error(request, 200, "OK");
+	if (res != CMD_RES_OK) {
+		type = "error";
+		if (res == CMD_RES_UNKNOWN_COMMAND) {
+			code = 501;
+		}
+		else {
+			code = 400;
+		}
+	}
+	else {
+		type = "success";
+		code = 200;
+	}
+
+	request->responseCode = code;
+	http_setup(request, httpMimeTypeJson);
+	hprintf255(request, "{\"%s\":%d, \"msg\":\"%s\", \"res\":", type, code, reply);
+	JSON_ProcessCommandReply(cmd, skipToNextWord(cmd), request, (jsonCb_t)hprintf255, COMMAND_FLAG_SOURCE_HTTP);
+	hprintf255(request, "}", code, reply);
+	poststr(request, NULL);
+	return 0;
 }
 
