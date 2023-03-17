@@ -680,17 +680,17 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		// Prefix3 	1 = Reset MQTT telemetry prefix to firmware default (PUB_PREFIX2) and restart
 		// <value> = set MQTT telemetry prefix and restart
 		printer(request, "{");
-		printer(request, "\"Prefix1\":\"%s/[Channel]/set\"", CFG_GetMQTTClientId());
+		printer(request, "\"Prefix1\":\"cmnd\"");
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "Prefix2", 7)) {
 		printer(request, "{");
-		printer(request, "\"Prefix2\":\"%s/[Channel]/get\"", CFG_GetMQTTClientId());
+		printer(request, "\"Prefix2\":\"stat\"");
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "Prefix3", 7)) {
 		printer(request, "{");
-		printer(request, "\"Prefix3\":\"Null\"");
+		printer(request, "\"Prefix3\":\"tele\"");
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "StateText1", 10)) {
@@ -721,7 +721,7 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 	}
 	else if (!wal_strnicmp(cmd, "FullTopic", 9)) {
 		printer(request, "{");
-		printer(request, "\"FullTopic\":\"\%prefix\%/\%topic\%/\"");
+		printer(request, "\"FullTopic\":\"\%prefix%/\%topic%/\"");
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "SwitchTopic", 11)) {
