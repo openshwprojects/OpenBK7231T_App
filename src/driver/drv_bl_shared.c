@@ -79,15 +79,37 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
         mode = "BL0937";
     } else if(DRV_IsRunning("BL0942")) {
         mode = "BL0942";
+    } else if (DRV_IsRunning("BL0942SPI")) {
+        mode = "BL0942SPI";
     } else if(DRV_IsRunning("CSE7766")) {
         mode = "CSE7766";
     } else {
         mode = "PWR";
     }
 	
-    hprintf255(request,"<h2>%s Voltage=%f, Current=%f, Power=%f",mode, lastReadings[OBK_VOLTAGE],lastReadings[OBK_CURRENT], lastReadings[OBK_POWER]);
-    hprintf255(request,", Total Consumption=%1.1f Wh (changes sent %i, skipped %i, saved %li)</h2>",energyCounter, stat_updatesSent, stat_updatesSkipped, 
-               ConsumptionSaveCounter);
+    poststr(request, "<hr><table style='width:100%'>");
+
+    poststr(request,
+            "<tr><td><b>Voltage</b></td><td style='text-align: right;'>");
+    hprintf255(request, "%.1f</td><td>V</td>", lastReadings[OBK_VOLTAGE]);
+
+    poststr(request,
+            "<tr><td><b>Current</b></td><td style='text-align: right;'>");
+    hprintf255(request, "%.3f</td><td>A</td>", lastReadings[OBK_CURRENT]);
+
+    poststr(request,
+            "<tr><td><b>Power</b></td><td style='text-align: right;'>");
+    hprintf255(request, "%.1f</td><td>W</td>", lastReadings[OBK_POWER]);
+
+    poststr(request,
+            "<tr><td><b>Energy Total</b></td><td style='text-align: right;'>");
+    hprintf255(request, "%.3f</td><td>kWh</td>", energyCounter / 1000.0f);
+
+    poststr(request, "</table>");
+
+    hprintf255(request, "(changes sent %i, skipped %i, saved %li) - %s<hr>",
+               stat_updatesSent, stat_updatesSkipped, ConsumptionSaveCounter,
+               mode);
 
     if (energyCounterStatsEnable == true)
     {
