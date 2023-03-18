@@ -191,7 +191,7 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 			power = raw_unscaled_power * CSE7766_PREF;
 			voltage = raw_unscaled_voltage * CSE7766_UREF;
 			current = raw_unscaled_current * CSE7766_IREF;
-			BL_ProcessUpdate(voltage,current,power);
+			BL_ProcessUpdate(voltage, current, power, 0.0f);
 		}
 	}
 
