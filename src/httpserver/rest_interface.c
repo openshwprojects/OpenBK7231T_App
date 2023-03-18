@@ -823,11 +823,13 @@ static int http_rest_get_info(http_request_t* request) {
 	hprintf255(request, "\"build\":\"%s\",", g_build_str);
 	hprintf255(request, "\"ip\":\"%s\",", HAL_GetMyIPString());
 	hprintf255(request, "\"mac\":\"%s\",", HAL_GetMACStr(macstr));
+	hprintf255(request, "\"flags\":\"%ld\",", *((long int*)&g_cfg.genericFlags));
 	hprintf255(request, "\"mqtthost\":\"%s:%d\",", CFG_GetMQTTHost(), CFG_GetMQTTPort());
 	hprintf255(request, "\"mqtttopic\":\"%s\",", CFG_GetMQTTClientId());
 	hprintf255(request, "\"chipset\":\"%s\",", PLATFORM_MCU_NAME);
 	hprintf255(request, "\"webapp\":\"%s\",", CFG_GetWebappRoot());
-
+	
+	hprintf255(request, "\"startcmd\":\"%s\",", CFG_GetShortStartupCommand());
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	hprintf255(request, "\"supportsSSDP\":%d,", DRV_IsRunning("SSDP") ? 1 : 0);
 #else

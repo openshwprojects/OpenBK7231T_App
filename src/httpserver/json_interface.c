@@ -885,6 +885,11 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 			(int)g_cfg.ledRemap.r, (int)g_cfg.ledRemap.g, (int)g_cfg.ledRemap.b, (int)g_cfg.ledRemap.c, (int)g_cfg.ledRemap.w);
 		printer(request, "}");
 	}
+	else if (!wal_strnicmp(cmd, "Flags", 5)) {
+		printer(request, "{");
+		printer(request, "\"Flags\":\"%ld\"", *((long int*)&g_cfg.genericFlags));
+		printer(request, "}");
+	}
 	else {
 		printer(request, "{");
 		printer(request, "}");
