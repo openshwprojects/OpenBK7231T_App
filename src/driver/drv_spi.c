@@ -150,10 +150,10 @@ int SPI_WriteBytes(const void *data, uint32_t size) {
 	spi_trans.trans_done = 0;
 
 	uint32_t not_used = 0;
-	int err = sddev_control(ICU_DEV_NAME, CMD_SPI_TXFIFO_CLR, &not_used);
+	int err = sddev_control(SPI_DEV_NAME, CMD_SPI_TXFIFO_CLR, &not_used);
 
 	not_used = 0;
-	err |= sddev_control(ICU_DEV_NAME, CMD_SPI_START_TRANS, &not_used);
+	err |= sddev_control(SPI_DEV_NAME, CMD_SPI_START_TRANS, &not_used);
 
     GLOBAL_INT_RESTORE();
 
@@ -181,10 +181,10 @@ int SPI_ReadBytes(void *data, uint32_t size) {
 	spi_trans.trans_done = 0;
 
 	uint32_t not_used = 0;
-	int err = sddev_control(ICU_DEV_NAME, CMD_SPI_RXFIFO_CLR, &not_used);
+	int err = sddev_control(SPI_DEV_NAME, CMD_SPI_RXFIFO_CLR, &not_used);
 
 	not_used = 0;
-	err |= sddev_control(ICU_DEV_NAME, CMD_SPI_START_TRANS, &not_used);
+	err |= sddev_control(SPI_DEV_NAME, CMD_SPI_START_TRANS, &not_used);
 
     GLOBAL_INT_RESTORE();
 
