@@ -125,7 +125,10 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 				lastRelayState = CHANNEL_Get(i);
 			}
 		}
-		if (numRelays == 1) {
+		if (numRelays == 0) {
+			printer(request, "\"POWER\":\"ON\"");
+		}
+		else if (numRelays == 1) {
 			if (lastRelayState) {
 				printer(request, "\"POWER\":\"ON\"");
 			}
@@ -677,17 +680,17 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		// Prefix3 	1 = Reset MQTT telemetry prefix to firmware default (PUB_PREFIX2) and restart
 		// <value> = set MQTT telemetry prefix and restart
 		printer(request, "{");
-		printer(request, "\"Prefix1\":\"%s/[Channel]/set\"", CFG_GetMQTTClientId());
+		printer(request, "\"Prefix1\":\"cmnd\"");
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "Prefix2", 7)) {
 		printer(request, "{");
-		printer(request, "\"Prefix2\":\"%s/[Channel]/get\"", CFG_GetMQTTClientId());
+		printer(request, "\"Prefix2\":\"stat\"");
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "Prefix3", 7)) {
 		printer(request, "{");
-		printer(request, "\"Prefix3\":\"Null\"");
+		printer(request, "\"Prefix3\":\"tele\"");
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "StateText1", 10)) {
@@ -714,6 +717,31 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 	else if (!wal_strnicmp(cmd, "StateText4", 10)) {
 		printer(request, "{");
 		printer(request, "\"StateText4\":\"HOLD\"");
+		printer(request, "}");
+	}
+	else if (!wal_strnicmp(cmd, "FullTopic", 9)) {
+		printer(request, "{");
+		printer(request, "\"FullTopic\":\"%%prefix%%/%%topic%%/\"");
+		printer(request, "}");
+	}
+	else if (!wal_strnicmp(cmd, "SwitchTopic", 11)) {
+		printer(request, "{");
+		printer(request, "\"SwitchTopic\":\"0\"");
+		printer(request, "}");
+	}
+	else if (!wal_strnicmp(cmd, "ButtonTopic", 11)) {
+		printer(request, "{");
+		printer(request, "\"ButtonTopic\":\"0\"");
+		printer(request, "}");
+	}
+	else if (!wal_strnicmp(cmd, "MqttRetry", 9)) {
+		printer(request, "{");
+		printer(request, "\"MqttRetry\":\"1\"");
+		printer(request, "}");
+	}
+	else if (!wal_strnicmp(cmd, "TelePeriod", 10)) {
+		printer(request, "{");
+		printer(request, "\"TelePeriod\":\"300\"");
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "CT", 2)) {
@@ -889,7 +917,7 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		printer(request, "{");
 		printer(request, "}");
 	}
-	
+
 	return 0;
 }
 
