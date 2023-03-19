@@ -60,15 +60,23 @@ static commandResult_t DRV_MAX72XX_Setup(const void *context, const char *cmd, c
 	int cs;
 	int clk;
 
-	clk = 26;
-	cs = 24;
-	din = 7;
+	clk = 9;
+	cs = 14;
+	din = 8;
 
 	g_max = MAX72XX_alloc();
 
 	MAX72XX_setupPins(g_max, cs, clk, din, 4);    
 	MAX72XX_init(g_max);
 	MAX72XX_displayArray(g_max, &testhello[0][0], 4, 0);
+
+	return CMD_RES_OK;
+}
+static commandResult_t DRV_MAX72XX_Scroll(const void *context, const char *cmd, const char *args, int flags) {
+	if (g_max == 0)
+		return CMD_RES_ERROR;
+	MAX72XX_shift(g_max,1);
+	MAX72XX_refresh(g_max);
 
 	return CMD_RES_OK;
 }
@@ -80,6 +88,7 @@ void DRV_MAX72XX_Init() {
 	//cmddetail:"fn":"SM2135_Current","file":"driver/drv_sm2135.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MAX72XX_Setup", DRV_MAX72XX_Setup, NULL);
+	CMD_RegisterCommand("MAX72XX_Scroll", DRV_MAX72XX_Scroll, NULL);
 }
 
 

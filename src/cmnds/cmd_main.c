@@ -9,30 +9,8 @@
 #include "../driver/drv_public.h"
 #include "../hal/hal_adc.h"
 #include "../hal/hal_flashVars.h"
-#if PLATFORM_BEKEN
-
-#include "BkDriverTimer.h"
-#include "BkDriverGpio.h"
-#include "sys_timer.h"
-#include "gw_intf.h"
-
-// HLW8012 aka BL0937
-
-#define ELE_HW_TIME 1
-#define HW_TIMER_ID 0
-#else
-
-#endif
 
 
-//#include "../../new_pins.h"
-#include <gpio_pub.h>
-
-#include "../../beken378/func/include/net_param_pub.h"
-#include "../../beken378/func/user_driver/BkDriverPwm.h"
-#include "../../beken378/func/user_driver/BkDriverI2c.h"
-#include "../../beken378/driver/i2c/i2c1.h"
-#include "../../beken378/driver/gpio/gpio.h"
 
 #ifdef ENABLE_LITTLEFS
 #include "../littlefs/our_lfs.h"
@@ -211,98 +189,164 @@ static commandResult_t CMD_CrashNull(const void* context, const char* cmd, const
 
 	return CMD_RES_OK;
 }
-#define SCK_PIN 26   // SCK pin - D5
-#define MISO_PIN 24  // MISO pin - D6
-#define MOSI_PIN 6  // MOSI pin - D7
-#define SS_PIN 7    // chip select pin for the SPI flash - D8
+
 
 #define MY_SPI_DELAY usleep(500);
 
-void SPI_Send(byte dataToSend) {
+// PLEASE REMEMBER ABOUT THE CAPACITOR ON SCK!
+// I had to add it for some FLASH memories, see:
+// https://www.elektroda.com/rtvforum/viewtopic.php?p=20497046#20497046
+typedef struct softSPI_s {
+	byte sck;
+	byte miso;
+	byte mosi;
+	byte ss;
+} softSPI_t;
+
+void SPI_Send(softSPI_t *spi, byte dataToSend) {
 	for (int i = 0; i < 8; i++) {
 		MY_SPI_DELAY;
-		bk_gpio_output(MOSI_PIN, (dataToSend >> (7 - i)) & 0x01);
+		HAL_PIN_SetOutputValue(spi->mosi, (dataToSend >> (7 - i)) & 0x01);
 		MY_SPI_DELAY;
-		bk_gpio_output(SCK_PIN, 1);
+		HAL_PIN_SetOutputValue(spi->sck, 1);
 		MY_SPI_DELAY;
-		bk_gpio_output(SCK_PIN, 0);
+		HAL_PIN_SetOutputValue(spi->sck, 0);
   }
 }
 
-byte SPI_Read() {
+byte SPI_Read(softSPI_t *spi) {
 	byte receivedData = 0;
 	for (int i = 0; i < 8; i++) {
 		MY_SPI_DELAY;
-		bk_gpio_output(SCK_PIN, 1);
+		HAL_PIN_SetOutputValue(spi->sck, 1);
 		MY_SPI_DELAY;
-		receivedData |= (bk_gpio_input(MISO_PIN) << (7 - i));
+		receivedData |= (HAL_PIN_ReadDigitalInput(spi->miso) << (7 - i));
 		MY_SPI_DELAY;
-		bk_gpio_output(SCK_PIN, 0);
+		HAL_PIN_SetOutputValue(spi->sck, 0);
 	}
 	return receivedData;
 }
 
 int spi_Ready = 0;
-void SPI_Setup() {
+void SPI_Begin(softSPI_t *spi) {
+	HAL_PIN_SetOutputValue(spi->ss, 0); // enable SPI communication with the flash
+}
+void SPI_End(softSPI_t *spi) {
+	HAL_PIN_SetOutputValue(spi->ss, 1); // disable SPI communication with the flash
+}
+void SPI_Setup(softSPI_t *spi) {
 	if (spi_Ready)
 		return;
 	spi_Ready = 1;
-	bk_gpio_config_output(SCK_PIN);
-	bk_gpio_config_input(MISO_PIN);
-	bk_gpio_config_output(MOSI_PIN);
-	bk_gpio_config_output(SS_PIN);
-	bk_gpio_output(SS_PIN, 1); // set SS_PIN to inactive
+	HAL_PIN_Setup_Output(spi->sck);
+	HAL_PIN_Setup_Input(spi->miso);
+	HAL_PIN_Setup_Output(spi->mosi);
+	HAL_PIN_Setup_Output(spi->ss);
+	HAL_PIN_SetOutputValue(spi->ss, 1); // set SS_PIN to inactive
 }
-
+#define SCK_PIN 26   // SCK pin - D5
+#define MISO_PIN 24  // MISO pin - D6
+#define MOSI_PIN 6  // MOSI pin - D7
+#define SS_PIN 7    // chip select pin for the SPI flash - D8
 void spi_test() {
+	softSPI_t spi;
 
+
+	spi.miso = MISO_PIN;
+	spi.mosi = MOSI_PIN;
+	spi.ss = SS_PIN;
+	spi.sck = SCK_PIN;
 	byte jedec_id[3];
 
 	GLOBAL_INT_DECLARATION();
 	GLOBAL_INT_DISABLE();
 
-	SPI_Setup();
+	SPI_Setup(&spi);
 	usleep(500);
 	usleep(500);
 	usleep(500);
 
-	bk_gpio_output(SS_PIN, 0); // enable SPI communication with the flash
-	SPI_Send(0x9F); // send the JEDEC ID command
-	jedec_id[0] = SPI_Read(); // read manufacturer ID
-	jedec_id[1] = SPI_Read(); // read memory type
-	jedec_id[2] = SPI_Read(); // read capacity
-	bk_gpio_output(SS_PIN, 1); // disable SPI communication with the flash
+	SPI_Begin(&spi); // enable SPI communication with the flash
+	SPI_Send(&spi,0x9F); // send the JEDEC ID command
+	jedec_id[0] = SPI_Read(&spi); // read manufacturer ID
+	jedec_id[1] = SPI_Read(&spi); // read memory type
+	jedec_id[2] = SPI_Read(&spi); // read capacity
+	SPI_End(&spi); // disable SPI communication with the flash
 
 	GLOBAL_INT_RESTORE();
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "ID %02X %02X %02X",jedec_id[0],jedec_id[1],jedec_id[2]);
 
 }
+void spi_testMAX7219() {
+	softSPI_t spi;
+
+	spi.miso = MISO_PIN;
+	spi.mosi = MOSI_PIN;
+	spi.ss = SS_PIN;
+	spi.sck = SCK_PIN;
+
+	GLOBAL_INT_DECLARATION();
+	GLOBAL_INT_DISABLE();
+
+	SPI_Setup(&spi);
+	usleep(500);
+	usleep(500);
+	usleep(500);
+
+	SPI_Begin(&spi); // enable SPI communication with the MAX7219
+	SPI_Send(&spi, 0x0F); // send the test mode command
+	SPI_Send(&spi, 0x00); // set test mode off
+	usleep(500);
+	SPI_End(&spi);  // disable SPI communication with the MAX7219
+
+	usleep(500);
+	// display random LEDs
+	SPI_Begin(&spi); // enable SPI communication with the MAX7219
+	for (int i = 0; i < 4*8; i++) {
+		// generate a random 8-bit value
+		uint8_t rand_val = rand() % 256;
+		// send the LED data to the MAX7219
+		SPI_Send(&spi, i + 1); // send the address of the digit to update
+		SPI_Send(&spi, rand_val); // send the LED data
+	}
+	usleep(500);
+	SPI_End(&spi); // disable SPI communication with the MAX7219
+
+
+	GLOBAL_INT_RESTORE();
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "MAX7219 Test Mode Set");
+}
 #define READ_FLASH_CMD 0x03 // Read Flash command opcode
 void spi_test_read(int adr, int cnt) {
 	byte *data;
-	byte jedec_id[3];
 	int i;
+	softSPI_t spi;
 
+	spi.miso = MISO_PIN;
+	spi.mosi = MOSI_PIN;
+	spi.ss = SS_PIN;
+	spi.sck = SCK_PIN;
 
 	GLOBAL_INT_DECLARATION();
 	GLOBAL_INT_DISABLE();
 
 	data = malloc(cnt);
-	SPI_Setup();
+	SPI_Setup(&spi);
 	usleep(500);
 	usleep(500);
 	usleep(500);
 
-	bk_gpio_output(SS_PIN, 0); // enable SPI communication with the flash
-	SPI_Send(READ_FLASH_CMD); // send the Read Flash command
-	SPI_Send((adr >> 16) & 0xFF); // send the address MSB
-	SPI_Send((adr >> 8) & 0xFF); // send the address middle byte
-	SPI_Send(adr & 0xFF); // send the address LSB
+	SPI_Begin(&spi); // enable SPI communication with the flash
+	SPI_Send(&spi,READ_FLASH_CMD); // send the Read Flash command
+	SPI_Send(&spi, (adr >> 16) & 0xFF); // send the address MSB
+	SPI_Send(&spi, (adr >> 8) & 0xFF); // send the address middle byte
+	SPI_Send(&spi, adr & 0xFF); // send the address LSB
 	for (i = 0; i < cnt; i++) {
-		data[i] = SPI_Read();
+		data[i] = SPI_Read(&spi);
 	}
-	bk_gpio_output(SS_PIN, 1); // disable SPI communication with the flash
+	SPI_End(&spi); // disable SPI communication with the flash
 
 	for (i = 0; i < cnt; i++) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "I %i val %02X", i, data[i]);
@@ -328,6 +372,14 @@ static commandResult_t CMD_SPITestFlash_ReadData(const void* context, const char
 	}
 
 	spi_test_read(addr, len);
+
+	return CMD_RES_OK;
+}
+// SPITestMAX7219
+static commandResult_t CMD_SPITestMAX7219(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SPIMAX7219");
+
+	spi_testMAX7219();
 
 	return CMD_RES_OK;
 }
@@ -655,10 +707,23 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SafeMode", CMD_SafeMode, NULL);
 
-
+	
+	//cmddetail:{"name":"SPITestMAX7219","args":"CMD_SPITestMAX7219",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("SPITestMAX7219", CMD_SPITestMAX7219, NULL);
+	//cmddetail:{"name":"SPITestFlash_ReadID","args":"CMD_SPITestFlash_ReadID",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SPITestFlash_ReadID", CMD_SPITestFlash_ReadID, NULL);
 
 
+	//cmddetail:{"name":"SPITestFlash_ReadData","args":"CMD_SPITestFlash_ReadData",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SPITestFlash_ReadData", CMD_SPITestFlash_ReadData, NULL);
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	CMD_InitScripting();
