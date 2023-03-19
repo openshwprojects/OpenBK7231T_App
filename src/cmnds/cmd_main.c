@@ -9,6 +9,30 @@
 #include "../driver/drv_public.h"
 #include "../hal/hal_adc.h"
 #include "../hal/hal_flashVars.h"
+#if PLATFORM_BEKEN
+
+#include "BkDriverTimer.h"
+#include "BkDriverGpio.h"
+#include "sys_timer.h"
+#include "gw_intf.h"
+
+// HLW8012 aka BL0937
+
+#define ELE_HW_TIME 1
+#define HW_TIMER_ID 0
+#else
+
+#endif
+
+
+//#include "../../new_pins.h"
+#include <gpio_pub.h>
+
+#include "../../beken378/func/include/net_param_pub.h"
+#include "../../beken378/func/user_driver/BkDriverPwm.h"
+#include "../../beken378/func/user_driver/BkDriverI2c.h"
+#include "../../beken378/driver/i2c/i2c1.h"
+#include "../../beken378/driver/gpio/gpio.h"
 
 #ifdef ENABLE_LITTLEFS
 #include "../littlefs/our_lfs.h"
@@ -187,6 +211,120 @@ static commandResult_t CMD_CrashNull(const void* context, const char* cmd, const
 
 	return CMD_RES_OK;
 }
+#define SCK_PIN 26   // SCK pin - D5
+#define MISO_PIN 24  // MISO pin - D6
+#define MOSI_PIN 6  // MOSI pin - D7
+#define SS_PIN 7    // chip select pin for the SPI flash - D8
+
+void SPI_Send(byte dataToSend) {
+	for (int i = 0; i < 8; i++) {
+		usleep(50);
+		bk_gpio_output(MOSI_PIN, (dataToSend >> (7 - i)) & 0x01);
+		usleep(50);
+		bk_gpio_output(SCK_PIN, 1);
+		usleep(50);
+		bk_gpio_output(SCK_PIN, 0);
+  }
+}
+
+byte SPI_Read() {
+	byte receivedData = 0;
+	for (int i = 0; i < 8; i++) {
+		usleep(50);
+		bk_gpio_output(SCK_PIN, 1);
+		usleep(50);
+		receivedData |= (bk_gpio_input(MISO_PIN) << (7 - i));
+		usleep(50);
+		bk_gpio_output(SCK_PIN, 0);
+	}
+	return receivedData;
+}
+
+int spi_Ready = 0;
+void SPI_Setup() {
+	if (spi_Ready)
+		return;
+	spi_Ready = 1;
+	bk_gpio_config_output(SCK_PIN);
+	bk_gpio_config_input(MISO_PIN);
+	bk_gpio_config_output(MOSI_PIN);
+	bk_gpio_config_output(SS_PIN);
+	bk_gpio_output(SS_PIN, 1); // set SS_PIN to inactive
+}
+
+void spi_test() {
+
+	byte jedec_id[3];
+
+	GLOBAL_INT_DECLARATION();
+	GLOBAL_INT_DISABLE();
+
+	SPI_Setup();
+	usleep(500);
+	usleep(500);
+	usleep(500);
+
+	bk_gpio_output(SS_PIN, 0); // enable SPI communication with the flash
+	SPI_Send(0x9F); // send the JEDEC ID command
+	jedec_id[0] = SPI_Read(); // read manufacturer ID
+	jedec_id[1] = SPI_Read(); // read memory type
+	jedec_id[2] = SPI_Read(); // read capacity
+	bk_gpio_output(SS_PIN, 1); // disable SPI communication with the flash
+
+	GLOBAL_INT_RESTORE();
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "ID %02X %02X %02X",jedec_id[0],jedec_id[1],jedec_id[2]);
+
+}
+#define READ_FLASH_CMD 0x03 // Read Flash command opcode
+void spi_test_read(int adr, int cnt) {
+	byte *data;
+	byte jedec_id[3];
+	int i;
+
+
+	GLOBAL_INT_DECLARATION();
+	GLOBAL_INT_DISABLE();
+
+	data = malloc(cnt);
+	SPI_Setup();
+	usleep(500);
+	usleep(500);
+	usleep(500);
+
+	bk_gpio_output(SS_PIN, 0); // enable SPI communication with the flash
+	SPI_Send(READ_FLASH_CMD); // send the Read Flash command
+	SPI_Send((adr >> 16) & 0xFF); // send the address MSB
+	SPI_Send((adr >> 8) & 0xFF); // send the address middle byte
+	SPI_Send(adr & 0xFF); // send the address LSB
+	for (i = 0; i < cnt; i++) {
+		data[i] = SPI_Read();
+	}
+	bk_gpio_output(SS_PIN, 1); // disable SPI communication with the flash
+
+	for (i = 0; i < cnt; i++) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "I %i val %02X", i, data[i]);
+	}
+	GLOBAL_INT_RESTORE();
+	free(data);
+
+}
+// SPITestFlash_ReadData
+static commandResult_t CMD_SPITestFlash_ReadData(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SPITestFlash_ReadData");
+
+	spi_test_read(0,16);
+
+	return CMD_RES_OK;
+}
+// SPITestFlash_ReadID
+static commandResult_t CMD_SPITestFlash_ReadID(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SPITestFlash_ReadID");
+
+	spi_test();
+
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_SimonTest(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SimonTest: ir test routine");
 
@@ -195,7 +333,7 @@ static commandResult_t CMD_SimonTest(const void* context, const char* cmd, const
 	//CrashMalloc();
 	// anything
 #endif
-
+	spi_test();
 
 	return CMD_RES_OK;
 }
@@ -503,6 +641,11 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SafeMode", CMD_SafeMode, NULL);
 
+
+	CMD_RegisterCommand("SPITestFlash_ReadID", CMD_SPITestFlash_ReadID, NULL);
+
+
+	CMD_RegisterCommand("SPITestFlash_ReadData", CMD_SPITestFlash_ReadData, NULL);
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	CMD_InitScripting();
 #endif
