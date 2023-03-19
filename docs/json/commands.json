@@ -369,6 +369,33 @@
     "examples": ""
   },
   {
+    "name": "SPITestMAX7219",
+    "args": "CMD_SPITestMAX7219",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "SPITestFlash_ReadID",
+    "args": "CMD_SPITestFlash_ReadID",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "SPITestFlash_ReadData",
+    "args": "CMD_SPITestFlash_ReadData",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "led_dimmer",
     "args": "[Value]",
     "descr": "set output dimmer 0..100",
@@ -974,7 +1001,7 @@
   {
     "name": "EnergyCntReset",
     "args": "",
-    "descr": "Reset Energy Counter",
+    "descr": "Resets the total Energy Counter, the one that is usually kept after device reboots. After this commands, the counter will start again from 0.",
     "fn": "BL09XX_ResetEnergyCounter",
     "file": "driver/drv_bl_shared.c",
     "requires": "",

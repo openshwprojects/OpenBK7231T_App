@@ -26,5 +26,9 @@
 {
 "title": "[Configuration for Tuya ATORCH AT4P(WP/BW) Smartlife Energy monitor (BK7231N/C3BS/CH573F/BL0924)](https://www.elektroda.com/rtvforum/topic3941692.html)",
 "file": "autoexecs/ATORCH-AT4P-Smartlife-Energy-Monitor.bat"
+},
+{
+"title": "[Configuration for 4x socket + 1x USB power strip with a single button (double click, triple, etc)](https://www.elektroda.com/rtvforum/topic3941692.html)",
+"file": "autoexecs/single_button_for_five_relays.bat"
 }
 ]

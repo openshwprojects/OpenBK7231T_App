@@ -46,6 +46,9 @@ Do not add anything here, as it will overwritten with next rebuild.
 | SetStartValue | [Channel][Value] | Sets the startup value for a channel. Used for start values for relays. Use 1 for High, 0 for low and -1 for 'remember last state' | File: cmnds/cmd_main.c<br/>Function: CMD_SetStartValue |
 | OpenAP |  | Temporarily disconnects from programmed WiFi network and opens Access Point | File: cmnds/cmd_main.c<br/>Function: CMD_OpenAP |
 | SafeMode |  | Forces device reboot into safe mode (open ap with disabled drivers) | File: cmnds/cmd_main.c<br/>Function: CMD_SafeMode |
+| SPITestMAX7219 | CMD_SPITestMAX7219 |  | File: cmnds/cmd_main.c<br/>Function: NULL); |
+| SPITestFlash_ReadID | CMD_SPITestFlash_ReadID |  | File: cmnds/cmd_main.c<br/>Function: NULL); |
+| SPITestFlash_ReadData | CMD_SPITestFlash_ReadData |  | File: cmnds/cmd_main.c<br/>Function: NULL); |
 | led_dimmer | [Value] | set output dimmer 0..100 | File: cmnds/cmd_newLEDDriver.c<br/>Function: dimmer |
 | Dimmer | [Value] | Alias for led_dimmer | File: cmnds/cmd_newLEDDriver.c<br/>Function: dimmer |
 | add_dimmer | [Value][AddMode] | Adds a given value to current LED dimmer. AddMode 0 just adds a value (with a clamp to [0,100]), AddMode 1 will wrap around values (going under 0 goes to 100, going over 100 goes to 0), AddMode 2 will ping-pong value (going to 100 starts going back from 100 to 0, and again, going to 0 starts going up). | File: cmnds/cmd_newLEDDriver.c<br/>Function: add_dimmer |
@@ -113,7 +116,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | VREF |  | Sets the calibration multiplier | File: driver/drv_bl0937.c<br/>Function: BL0937_VoltageRef |
 | IREF |  | Sets the calibration multiplier | File: driver/drv_bl0937.c<br/>Function: BL0937_CurrentRef |
 | PowerMax | [limit] | Sets Maximum power value measurement limiter | File: driver/drv_bl0937.c<br/>Function: BL0937_PowerMax |
-| EnergyCntReset |  | Reset Energy Counter | File: driver/drv_bl_shared.c<br/>Function: BL09XX_ResetEnergyCounter |
+| EnergyCntReset |  | Resets the total Energy Counter, the one that is usually kept after device reboots. After this commands, the counter will start again from 0. | File: driver/drv_bl_shared.c<br/>Function: BL09XX_ResetEnergyCounter |
 | SetupEnergyStats | [Enable1or0][SampleTime][SampleCount] | Setup Energy Statistic Parameters: [enable<0|1>] [sample_time<10..900>] [sample_count<10..180>] | File: driver/drv_bl_shared.c<br/>Function: BL09XX_SetupEnergyStatistic |
 | ConsumptionThreshold | [FloatValue] | Setup value for automatic save of consumption data [1..100] | File: driver/drv_bl_shared.c<br/>Function: BL09XX_SetupConsumptionThreshold |
 | VCPPublishThreshold | [VoltageDeltaVolts][CurrentDeltaAmpers][PowerDeltaWats][EnergyDeltaWh] | Sets the minimal change between previous reported value over MQTT and next reported value over MQTT. Very useful for BL0942, BL0937, etc. So, if you set, VCPPublishThreshold 0.5 0.001 0.5, it will only report voltage again if the delta from previous reported value is largen than 0.5V. Remember, that the device will also ALWAYS force-report values every N seconds (default 60) | File: driver/drv_bl_shared.c<br/>Function: BL09XX_VCPPublishThreshold |
