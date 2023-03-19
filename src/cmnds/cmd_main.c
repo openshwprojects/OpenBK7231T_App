@@ -216,13 +216,15 @@ static commandResult_t CMD_CrashNull(const void* context, const char* cmd, const
 #define MOSI_PIN 6  // MOSI pin - D7
 #define SS_PIN 7    // chip select pin for the SPI flash - D8
 
+#define MY_SPI_DELAY usleep(500);
+
 void SPI_Send(byte dataToSend) {
 	for (int i = 0; i < 8; i++) {
-		usleep(50);
+		MY_SPI_DELAY;
 		bk_gpio_output(MOSI_PIN, (dataToSend >> (7 - i)) & 0x01);
-		usleep(50);
+		MY_SPI_DELAY;
 		bk_gpio_output(SCK_PIN, 1);
-		usleep(50);
+		MY_SPI_DELAY;
 		bk_gpio_output(SCK_PIN, 0);
   }
 }
@@ -230,11 +232,11 @@ void SPI_Send(byte dataToSend) {
 byte SPI_Read() {
 	byte receivedData = 0;
 	for (int i = 0; i < 8; i++) {
-		usleep(50);
+		MY_SPI_DELAY;
 		bk_gpio_output(SCK_PIN, 1);
-		usleep(50);
+		MY_SPI_DELAY;
 		receivedData |= (bk_gpio_input(MISO_PIN) << (7 - i));
-		usleep(50);
+		MY_SPI_DELAY;
 		bk_gpio_output(SCK_PIN, 0);
 	}
 	return receivedData;
@@ -309,11 +311,23 @@ void spi_test_read(int adr, int cnt) {
 	free(data);
 
 }
-// SPITestFlash_ReadData
+// SPITestFlash_ReadData 0 16
 static commandResult_t CMD_SPITestFlash_ReadData(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int addr = 0;
+	int len = 16;
+
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SPITestFlash_ReadData");
 
-	spi_test_read(0,16);
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() > 0) {
+		addr = Tokenizer_GetArgInteger(0);
+		if (Tokenizer_GetArgsCount() > 0) {
+			len = Tokenizer_GetArgInteger(1);
+		}
+	}
+
+	spi_test_read(addr, len);
 
 	return CMD_RES_OK;
 }
