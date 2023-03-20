@@ -404,7 +404,6 @@ static commandResult_t CMD_SimonTest(const void* context, const char* cmd, const
 	//CrashMalloc();
 	// anything
 #endif
-	spi_test();
 
 	return CMD_RES_OK;
 }

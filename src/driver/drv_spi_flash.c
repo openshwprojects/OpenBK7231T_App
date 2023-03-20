@@ -6,13 +6,18 @@
 #include "../logging/logging.h"
 #include "drv_local.h"
 #include "drv_soft_spi.h"
-
-
 #include "../driver/drv_soft_spi.h"
+
 #define SCK_PIN 26   // SCK pin - D5
 #define MISO_PIN 24  // MISO pin - D6
 #define MOSI_PIN 6  // MOSI pin - D7
 #define SS_PIN 7    // chip select pin for the SPI flash - D8
+
+#define READ_FLASH_CMD 0x03 // Read Flash command opcode
+#define WRITEENABLE_FLASH_CMD 0x06
+#define ERASE_FLASH_CMD 0xC7
+#define WRITE_FLASH_CMD 0x02
+
 void spi_test() {
 	softSPI_t spi;
 
@@ -43,7 +48,6 @@ void spi_test() {
 	ADDLOG_INFO(LOG_FEATURE_CMD, "ID %02X %02X %02X", jedec_id[0], jedec_id[1], jedec_id[2]);
 
 }
-#define READ_FLASH_CMD 0x03 // Read Flash command opcode
 void spi_test_read(int adr, int cnt) {
 	byte *data;
 	int i;
@@ -89,8 +93,6 @@ void spi_test_read(int adr, int cnt) {
 	free(data);
 
 }
-#define WRITEENABLE_FLASH_CMD 0x06
-#define ERASE_FLASH_CMD 0xC7
 void spi_test_erase() {
 	softSPI_t spi;
 
@@ -118,7 +120,6 @@ void spi_test_erase() {
 	// THIS WILL TAKE TIME! YOU will have to wait (and check status register to see if it's ready)
 
 }
-#define WRITE_FLASH_CMD 0x02
 void spi_test_write(int adr, byte *data, int cnt) {
 	int i;
 	softSPI_t spi;

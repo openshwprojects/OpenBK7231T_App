@@ -216,7 +216,7 @@ int http_fn_testmsg(http_request_t* request) {
 extern int g_hiddenChannels;
 
 int http_fn_index(http_request_t* request) {
-	int j, i;
+	int j, i, ch1, ch2;
 	char tmpA[128];
 	int bRawPWMs;
 	bool bForceShowRGBCW;
@@ -373,10 +373,15 @@ int http_fn_index(http_request_t* request) {
 		if (IS_PIN_DHT_ROLE(role)) {
 			// DHT pin has two channels - temperature and humidity
 			poststr(request, "<tr><td>");
-			iValue = CHANNEL_Get(PIN_GetPinChannelForPinIndex(i));
+			ch1 = PIN_GetPinChannelForPinIndex(i);
+			ch2 = PIN_GetPinChannel2ForPinIndex(i);
+			iValue = CHANNEL_Get(ch1);
 			hprintf255(request, "Sensor %s on pin %i temperature %.2fC", PIN_RoleToString(role), i, (float)(iValue * 0.1f));
-			iValue = CHANNEL_Get(PIN_GetPinChannel2ForPinIndex(i));
+			iValue = CHANNEL_Get(ch2);
 			hprintf255(request, ", humidity %.1f%%<br>", (float)iValue);
+			if (ch1 == ch2) {
+				hprintf255(request, "WARNING: you have the same channel set twice for DHT, please fix in pins config, set two different channels");
+			}
 			poststr(request, "</td></tr>");
 		}
 	}
@@ -2203,11 +2208,12 @@ int http_fn_cfg_pins(http_request_t* request) {
 		poststr(request, "</select>");
 		// Primary linked channel
 		// Some roles do not need any channels
-		if (si != IOR_SHT3X_CLK && si != IOR_CHT8305_CLK && si != IOR_Button_ToggleAll && si != IOR_Button_ToggleAll_n
+		if ((si != IOR_SHT3X_CLK && si != IOR_CHT8305_CLK && si != IOR_Button_ToggleAll && si != IOR_Button_ToggleAll_n
 			&& si != IOR_BL0937_CF && si != IOR_BL0937_CF1 && si != IOR_BL0937_SEL
 			&& si != IOR_LED_WIFI && si != IOR_LED_WIFI_n && si != IOR_LED_WIFI_n
 			&& !(si >= IOR_IRRecv && si <= IOR_DHT11)
 			&& !(si >= IOR_SM2135_DAT && si <= IOR_BP1658CJ_CLK))
+			|| IS_PIN_DHT_ROLE(si))
 		{
 			hprintf255(request, "<input class=\"hele\" name=\"r%i\" type=\"text\" value=\"%i\"/>", i, ch);
 		}
