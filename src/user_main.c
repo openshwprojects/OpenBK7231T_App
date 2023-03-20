@@ -946,6 +946,11 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 				DRV_StartDriver("DoorSensor");
 #endif
 			}
+			if (PIN_FindPinIndexForRole(IOR_CHT8305_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_CHT8305_DAT, -1) != -1) {
+#ifndef OBK_DISABLE_ALL_DRIVERS
+				DRV_StartDriver("CHT8305");
+#endif
+			}
 			if (PIN_FindPinIndexForRole(IOR_SHT3X_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_SHT3X_DAT, -1) != -1) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("SHT3X");
