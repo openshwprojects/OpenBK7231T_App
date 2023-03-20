@@ -18,6 +18,16 @@
 #define ERASE_FLASH_CMD 0xC7
 #define WRITE_FLASH_CMD 0x02
 
+#ifdef PLATFORM_BEKEN
+#define OBK_DISABLE_INTERRUPTS \
+	GLOBAL_INT_DECLARATION(); \
+	GLOBAL_INT_DISABLE();
+#define OBK_ENABLE_INTERRUPTS \
+	GLOBAL_INT_RESTORE();
+#else
+#define OBK_ENABLE_INTERRUPTS 
+#define OBK_DISABLE_INTERRUPTS
+#endif
 void spi_test() {
 	softSPI_t spi;
 
@@ -28,8 +38,7 @@ void spi_test() {
 	spi.sck = SCK_PIN;
 	byte jedec_id[3];
 
-	GLOBAL_INT_DECLARATION();
-	GLOBAL_INT_DISABLE();
+	OBK_DISABLE_INTERRUPTS;
 
 	SPI_Setup(&spi);
 	usleep(500);
@@ -43,7 +52,7 @@ void spi_test() {
 	jedec_id[2] = SPI_Read(&spi); // read capacity
 	SPI_End(&spi); // disable SPI communication with the flash
 
-	GLOBAL_INT_RESTORE();
+	OBK_ENABLE_INTERRUPTS;
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "ID %02X %02X %02X", jedec_id[0], jedec_id[1], jedec_id[2]);
 
@@ -58,8 +67,7 @@ void spi_test_read(int adr, int cnt) {
 	spi.ss = SS_PIN;
 	spi.sck = SCK_PIN;
 
-	GLOBAL_INT_DECLARATION();
-	GLOBAL_INT_DISABLE();
+	OBK_DISABLE_INTERRUPTS;
 
 	data = malloc(cnt);
 	SPI_Setup(&spi);
@@ -89,7 +97,7 @@ void spi_test_read(int adr, int cnt) {
 		}
 		ADDLOG_INFO(LOG_FEATURE_CMD, "Ofs %i - %s", i, tmp);
 	}
-	GLOBAL_INT_RESTORE();
+	OBK_ENABLE_INTERRUPTS;
 	free(data);
 
 }
@@ -101,8 +109,7 @@ void spi_test_erase() {
 	spi.ss = SS_PIN;
 	spi.sck = SCK_PIN;
 
-	GLOBAL_INT_DECLARATION();
-	GLOBAL_INT_DISABLE();
+	OBK_DISABLE_INTERRUPTS;
 
 	SPI_Setup(&spi);
 	usleep(500);
@@ -129,8 +136,7 @@ void spi_test_write(int adr, byte *data, int cnt) {
 	spi.ss = SS_PIN;
 	spi.sck = SCK_PIN;
 
-	GLOBAL_INT_DECLARATION();
-	GLOBAL_INT_DISABLE();
+	OBK_DISABLE_INTERRUPTS;
 
 	SPI_Setup(&spi);
 	usleep(500);
@@ -151,7 +157,7 @@ void spi_test_write(int adr, byte *data, int cnt) {
 	}
 	SPI_End(&spi); // disable SPI communication with the flash
 
-	GLOBAL_INT_RESTORE();
+	OBK_ENABLE_INTERRUPTS;
 	free(data);
 
 }
