@@ -9,6 +9,7 @@ typedef struct max72XX_s {
 	byte led_status[8*8];
 } max72XX_t;
 
+void MAX72XX_refresh(max72XX_t *led);
 void MAX72XX_shutdown(max72XX_t *led, int addr, bool b);
 void MAX72XX_setScanLimit(max72XX_t *led, int addr, int limit);
 void MAX72XX_clearDisplay(max72XX_t *led,int addr) ;
