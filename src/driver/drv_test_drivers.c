@@ -46,7 +46,7 @@ void Test_Power_RunFrame() {
 		final_v += (rand() % 100) * 0.1f;
 		final_p += (rand() % 100) * 0.1f;
 	}
-	BL_ProcessUpdate(final_v, final_c, final_p);
+	BL_ProcessUpdate(final_v, final_c, final_p, 0.0f);
 }
 
 //Test LED driver

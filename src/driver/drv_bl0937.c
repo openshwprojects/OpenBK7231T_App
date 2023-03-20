@@ -393,6 +393,6 @@ void BL0937_RunFrame()
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 #endif
-	BL_ProcessUpdate(final_v,final_c,final_p);
+	BL_ProcessUpdate(final_v, final_c, final_p, 0.0f);
 }
 

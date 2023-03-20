@@ -78,7 +78,7 @@ static void ScaleAndUpdate(void) {
 			(voltage * current));
 	}
 
-	BL_ProcessUpdate(valid_voltage, valid_current, valid_power);
+	BL_ProcessUpdate(valid_voltage, valid_current, valid_power, frequency);
 }
 
 static int UART_TryToGetNextPacket(void) {
