@@ -115,6 +115,10 @@ void PwrCal_Init(pwr_cal_type_t type, float default_voltage_cal,
 
 void PwrCal_Scale(int raw_voltage, int raw_current, int raw_power,
                   float *real_voltage, float *real_current, float *real_power) {
+    latest_raw_voltage = raw_voltage;
+    latest_raw_current = raw_current;
+    latest_raw_power = raw_power;
+
     *real_voltage = Scale(raw_voltage, voltage_cal);
     *real_current = Scale(raw_current, current_cal);
     *real_power = Scale(raw_power, power_cal);
