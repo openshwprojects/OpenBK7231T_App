@@ -826,23 +826,48 @@ commandResult_t CMD_DGR_SendBrightness(const void *context, const char *cmd, con
 }
 // DGR_SendRGBCW roomLEDstrips 255 0 0
 // DGR_SendRGBCW stringGroupName r g b
+// Alternate usage:
+// DGR_SendRGBCW roomLEDstrips FF00BB
 commandResult_t CMD_DGR_SendRGBCW(const void *context, const char *cmd, const char *args, int flags) {
 	const char *groupName;
 	byte rgbcw[5];
+	const char *c;
+	int i;
+	char tmp[3];
+	int val = 0;
 
 	Tokenizer_TokenizeString(args,0);
 	// following check must be done after 'Tokenizer_TokenizeString',
 	// so we know arguments count in Tokenizer. 'cmd' argument is
 	// only for warning display
-	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 4)) {
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	groupName = Tokenizer_GetArg(0);
-	rgbcw[0] = Tokenizer_GetArgInteger(1);
-	rgbcw[1] = Tokenizer_GetArgInteger(2);
-	rgbcw[2] = Tokenizer_GetArgInteger(3);
-	rgbcw[3] = Tokenizer_GetArgInteger(4);
-	rgbcw[4] = Tokenizer_GetArgInteger(5);
+	if (Tokenizer_GetArgsCount() == 2) {
+		c = Tokenizer_GetArg(1);
+		if (*c == '#')
+			c++;
+		i = 0;
+		while (*c && i < 5) {
+			int r;
+			tmp[0] = *(c++);
+			if (!*c)
+				break;
+			tmp[1] = *(c++);
+			tmp[2] = '\0';
+			r = sscanf(tmp, "%x", &val);
+			rgbcw[i] = val;
+			i++;
+		}
+	}
+	else {
+		rgbcw[0] = Tokenizer_GetArgInteger(1);
+		rgbcw[1] = Tokenizer_GetArgInteger(2);
+		rgbcw[2] = Tokenizer_GetArgInteger(3);
+		rgbcw[3] = Tokenizer_GetArgInteger(4);
+		rgbcw[4] = Tokenizer_GetArgInteger(5);
+	}
 
 	DRV_DGR_Send_RGBCW(groupName,rgbcw);
 	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_SendRGBCW: sent message to group %s\n",groupName);
@@ -890,7 +915,7 @@ void DRV_DGR_Init()
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("DGR_SendBrightness", CMD_DGR_SendBrightness, NULL);
 	//cmddetail:{"name":"DGR_SendRGBCW","args":"[GroupName][HexRGBCW]",
-	//cmddetail:"descr":"Sends a RGBCW message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit.",
+	//cmddetail:"descr":"Sends a RGBCW message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. You can use this command in two ways, first is like DGR_SendRGBCW GroupName 255 255 0, etc, second is DGR_SendRGBCW GroupName FF00FF00 etc etc.",
 	//cmddetail:"fn":"CMD_DGR_SendRGBCW","file":"driver/drv_tasmotaDeviceGroups.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("DGR_SendRGBCW", CMD_DGR_SendRGBCW, NULL);
