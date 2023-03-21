@@ -1,16 +1,11 @@
 // NOTE: this is the same as HLW8032
-#include "../new_common.h"
-#include "../new_pins.h"
-#include "../new_cfg.h"
-// Commands register, execution API and cmd tokenizer
-#include "../cmnds/cmd_public.h"
-#include "../mqtt/new_mqtt.h"
+#include "drv_cse7766.h"
+
 #include "../logging/logging.h"
-#include "drv_local.h"
-#include "drv_public.h"
+#include "../new_pins.h"
+#include "drv_bl_shared.h"
 #include "drv_pwrCal.h"
 #include "drv_uart.h"
-#include "../httpserver/new_http.h"
 
 #define DEFAULT_VOLTAGE_CAL 1.94034719
 #define DEFAULT_CURRENT_CAL 251210
@@ -203,8 +198,7 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 	return CSE7766_PACKET_LEN;
 }
 
-void CSE7766_Init() 
-{
+void CSE7766_Init(void) {
     BL_Shared_Init();
 
     PwrCal_Init(PWR_CAL_MULTIPLY, DEFAULT_VOLTAGE_CAL, DEFAULT_CURRENT_CAL,
@@ -214,10 +208,8 @@ void CSE7766_Init()
 	UART_InitReceiveRingBuffer(512);
 }
 
-void CSE7766_RunFrame() {
-
-	//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"UART buffer size %i\n", UART_GetDataSize());
+void CSE7766_RunFrame(void) {
+    //addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"UART buffer size %i\n", UART_GetDataSize());
 
 	CSE7766_TryToGetNextCSE7766Packet();
 }
-

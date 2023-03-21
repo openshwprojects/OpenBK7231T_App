@@ -1,20 +1,19 @@
-#include "../new_common.h"
-#include "../new_pins.h"
+#include "drv_bl_shared.h"
+
 #include "../new_cfg.h"
-// Commands register, execution API and cmd tokenizer
-#include "../cmnds/cmd_public.h"
-#include "../mqtt/new_mqtt.h"
-#include "../logging/logging.h"
-#include "drv_public.h"
-#include "drv_local.h"
-#include "drv_uart.h"
-#include "../httpserver/new_http.h"
+#include "../new_pins.h"
 #include "../cJSON/cJSON.h"
-#include <time.h>
-#include "drv_ntp.h"
 #include "../hal/hal_flashVars.h"
+#include "../logging/logging.h"
+#include "../mqtt/new_mqtt.h"
 #include "../ota/ota.h"
+#include "drv_local.h"
+#include "drv_ntp.h"
+#include "drv_public.h"
+#include "drv_uart.h"
+
 #include <math.h>
+#include <time.h>
 
 #define DAILY_STATS_LENGTH 4
 
@@ -671,7 +670,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     }
 }
 
-void BL_Shared_Init()
+void BL_Shared_Init(void)
 {
     int i;
     ENERGY_METERING_DATA data;

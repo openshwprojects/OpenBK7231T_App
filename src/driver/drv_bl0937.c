@@ -1,16 +1,13 @@
-#include "../new_common.h"
-#include "../new_pins.h"
-#include "../new_cfg.h"
-// Commands register, execution API and cmd tokenizer
+#include "drv_bl0937.h"
+
 #include "../cmnds/cmd_public.h"
-#include "../mqtt/new_mqtt.h"
-#include "../logging/logging.h"
 #include "../hal/hal_pins.h"
-#include "drv_public.h"
+#include "../logging/logging.h"
+#include "../new_cfg.h"
+#include "../new_pins.h"
+#include "drv_bl_shared.h"
 #include "drv_pwrCal.h"
-#include "drv_local.h"
 #include "drv_uart.h"
-#include "../httpserver/new_http.h"
 
 #if PLATFORM_BEKEN
 
@@ -148,8 +145,7 @@ void BL0937_Init_Pins() {
 	pulseStamp = xTaskGetTickCount();
 }
 
-void BL0937_Init() 
-{
+void BL0937_Init(void) {
     BL_Shared_Init();
 
     PwrCal_Init(PWR_CAL_MULTIPLY, DEFAULT_VOLTAGE_CAL, DEFAULT_CURRENT_CAL,
@@ -160,9 +156,8 @@ void BL0937_Init()
 	BL0937_Init_Pins();
 }
 
-void BL0937_RunFrame()
-{
-	float final_v;
+void BL0937_RunFrame(void) {
+    float final_v;
 	float final_c;
 	float final_p;
 	bool bNeedRestart;
@@ -259,4 +254,3 @@ void BL0937_RunFrame()
 #endif
 	BL_ProcessUpdate(final_v, final_c, final_p, 0.0f);
 }
-

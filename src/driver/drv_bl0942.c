@@ -1,17 +1,11 @@
-#include "../new_common.h"
-#include "../new_pins.h"
-#include "../new_cfg.h"
-// Commands register, execution API and cmd tokenizer
-#include "../cmnds/cmd_public.h"
-#include "../mqtt/new_mqtt.h"
+#include "drv_bl0942.h"
+
 #include "../logging/logging.h"
-#include "drv_public.h"
-#include "drv_local.h"
+#include "../new_pins.h"
+#include "drv_bl_shared.h"
 #include "drv_pwrCal.h"
 #include "drv_spi.h"
 #include "drv_uart.h"
-#include "../httpserver/new_http.h"
-#include <math.h>
 
 #define BL0942_UART_BAUD_RATE 4800
 #define BL0942_UART_RECEIVE_BUFFER_SIZE 256

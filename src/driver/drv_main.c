@@ -1,18 +1,17 @@
-#include "../new_common.h"
-#include "../new_pins.h"
-#include "../new_cfg.h"
-// Commands register, execution API and cmd tokenizer
-#include "../cmnds/cmd_public.h"
-#include "../logging/logging.h"
-#include "drv_local.h"
-#include "drv_uart.h"
-#include "drv_tuyaMCU.h"
-#include "drv_ir.h"
 #include "../i2c/drv_i2c_public.h"
+#include "../logging/logging.h"
+#include "drv_bl0937.h"
+#include "drv_bl0942.h"
+#include "drv_bl_shared.h"
+#include "drv_cse7766.h"
+#include "drv_ir.h"
+#include "drv_local.h"
 #include "drv_ntp.h"
-#include "../httpserver/new_http.h"
 #include "drv_public.h"
 #include "drv_ssdp.h"
+#include "drv_test_drivers.h"
+#include "drv_tuyaMCU.h"
+#include "drv_uart.h"
 
 const char* sensor_mqttNames[OBK_NUM_MEASUREMENTS] = {
 	"voltage",

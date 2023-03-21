@@ -1,24 +1,7 @@
+#pragma once
 
 #include "../httpserver/new_http.h"
 #include "../cmnds/cmd_public.h"
-
-void BL0942_UART_Init(void);
-void BL0942_UART_RunFrame(void);
-void BL0942_SPI_Init(void);
-void BL0942_SPI_RunFrame(void);
-
-void BL0937_Init();
-void BL0937_RunFrame();
-
-void CSE7766_Init();
-void CSE7766_RunFrame();
-
-void Test_Power_Init();
-void Test_Power_RunFrame();
-
-void Test_LED_Driver_Init();
-void Test_LED_Driver_RunFrame();
-void Test_LED_Driver_OnChannelChanged(int ch, int value);
 
 void DRV_DGR_Init();
 void DRV_DGR_RunQuickTick();
@@ -49,10 +32,6 @@ void SM16703P_Init();
 
 void TM1637_Init();
 
-void BL_Shared_Init();
-void BL_ProcessUpdate(float voltage, float current, float power,
-                      float frequency);
-void BL09XX_AppendInformationToHTTPIndexPage(http_request_t* request);
 bool DRV_IsRunning(const char* name);
 
 // this is exposed here only for debug tool with automatic testing
