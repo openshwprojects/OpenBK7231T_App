@@ -83,6 +83,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"NTP driver is required to get current time and date from web. Without it, there is no correct datetime.",
 	//drvdetail:"requires":""}
 	{ "NTP",		NTP_Init,			NTP_OnEverySecond,			NTP_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	//drvdetail:{"name":"HTTPButtons",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"This driver allows you to create custom, scriptable buttons on main WWW page. You can create those buttons in autoexec.bat and assign commands to them",
+	//drvdetail:"requires":""}
+	{ "HTTPButtons",	DRV_InitHTTPButtons, NULL, NULL, NULL, NULL, NULL, false },
+#endif
+#ifdef ENABLE_TEST_DRIVERS
 	//drvdetail:{"name":"TESTPOWER",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"This is a fake POWER measuring socket driver, only for testing",
@@ -93,11 +100,6 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"This is a fake I2C LED driver, only for testing",
 	//drvdetail:"requires":""}
 	{ "TESTLED",	Test_LED_Driver_Init, Test_LED_Driver_RunFrame, NULL, NULL, NULL, Test_LED_Driver_OnChannelChanged, false },
-	//drvdetail:{"name":"HTTPButtons",
-	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"This driver allows you to create custom, scriptable buttons on main WWW page. You can create those buttons in autoexec.bat and assign commands to them",
-	//drvdetail:"requires":""}
-	{ "HTTPButtons",	DRV_InitHTTPButtons, NULL, NULL, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_I2C
 	//drvdetail:{"name":"I2C",
@@ -231,11 +233,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "Battery",	Batt_Init,		Batt_OnEverySecond,		Batt_AppendInformationToHTTPIndexPage, NULL, Batt_StopDriver, NULL, false },
 #endif
+#ifdef ENABLE_DRIVER_BRIDGE
 	//drvdetail:{"name":"Bridge",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"TODO",
 	//drvdetail:"requires":""}
 	{ "Bridge",     Bridge_driver_Init, NULL,                       NULL, Bridge_driver_QuickFrame, Bridge_driver_DeInit, Bridge_driver_OnChannelChanged, false }
+#endif
 };
 
 static const int g_numDrivers = sizeof(g_drivers) / sizeof(g_drivers[0]);
