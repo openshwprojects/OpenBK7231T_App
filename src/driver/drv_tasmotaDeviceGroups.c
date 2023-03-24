@@ -116,8 +116,8 @@ void DGR_FlushSendQueue() {
 				(struct sockaddr*) &addr,
 				sizeof(addr)
 			);
-#if 0
-			rtos_delay_milliseconds(1);
+#if 1
+			rtos_delay_milliseconds(5);
 			nbytes = sendto(
 				g_dgr_socket_send,
 			   (const char*) p->buffer,
