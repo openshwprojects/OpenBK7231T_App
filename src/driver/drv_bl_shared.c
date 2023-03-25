@@ -444,7 +444,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
         }
         if (actual_mday != ltm->tm_mday)
         {
-            for (i = DAILY_STATS_LENGTH; i > 0; i--)
+            for (i = DAILY_STATS_LENGTH - 1; i > 0; i--)
                 dailyStats[i] = dailyStats[i - 1];
 
             dailyStats[0] = 0.0;
