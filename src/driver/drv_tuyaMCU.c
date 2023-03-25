@@ -730,7 +730,16 @@ void TuyaMCU_SendNetworkStatus()
     addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU,"TuyaMCU_SendNetworkStatus: sending status 0x%X to MCU \n", state);
     TuyaMCU_SendCommandWithData(0x2B, &state, 1);
 }
+void TuyaMCU_ForcePublishChannelValues() {
+	tuyaMCUMapping_t *cur;
 
+	cur = g_tuyaMappings;
+	while (cur) {
+		MQTT_ChannelPublish(cur->channel,0);
+		cur = cur->next;
+	}
+	return 0;
+}
 // ntp_timeZoneOfs 2
 // addRepeatingEvent 10 -1 uartSendHex 55AA0008000007
 // setChannelType 1 temperature_div10

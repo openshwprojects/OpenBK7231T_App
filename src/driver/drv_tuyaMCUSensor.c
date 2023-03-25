@@ -14,7 +14,7 @@
 static int g_elapsedTime = 0;
 static int g_hadMQTT = 0;
 static int g_delay_between_publishes = 10;
-static int g_cur_delay_publish = 0;
+//static int g_cur_delay_publish = 0;
 
 static byte g_hello[] =  { 0x55, 0xAA, 0x00, 0x01, 0x00, 0x00, 0x00 };
 static byte g_request_state[] =  { 0x55, 0xAA, 0x00, 0x02, 0x00, 0x01, 0x04, 0x06 };
@@ -23,6 +23,7 @@ void TuyaMCU_Sensor_Init() {
 	g_elapsedTime = 0;
 }
 void TuyaMCU_Sensor_RunFrame() {
+	int i;
 
 	g_elapsedTime++;
 
@@ -35,14 +36,16 @@ void TuyaMCU_Sensor_RunFrame() {
 		if(Main_HasMQTTConnected()) {
 			g_hadMQTT++;
 			if(g_hadMQTT > 2){
-				// count down to 0
-				g_cur_delay_publish--;
-				// has reached 0?
-				if (g_cur_delay_publish <= 0) {
-					MQTT_PublishOnlyDeviceChannelsIfPossible();
-					// start counting down, again from 10 (or given value)
-					g_cur_delay_publish = g_delay_between_publishes;
-				}
+				TuyaMCU_ForcePublishChannelValues();
+				MQTT_PublishOnlyDeviceChannelsIfPossible();
+				//// count down to 0
+				//g_cur_delay_publish--;
+				//// has reached 0?
+				//if (g_cur_delay_publish <= 0) {
+				//	MQTT_PublishOnlyDeviceChannelsIfPossible();
+				//	// start counting down, again from 10 (or given value)
+				//	g_cur_delay_publish = g_delay_between_publishes;
+				//}
 			}
 		} else {
 			g_hadMQTT = 0;
