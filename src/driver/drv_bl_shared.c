@@ -126,6 +126,15 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
     hprintf255(request, "%.2f</td><td></td>",
                lastReadings[OBK_POWER] / apparent_power);
 
+    if (NTP_IsTimeSynced()) {
+        poststr(request, "<tr><td><b>Energy Today</b></td><td "
+                         "style='text-align: right;'>");
+        hprintf255(request, "%.1f</td><td>Wh</td>", dailyStats[0]);
+
+        poststr(request, "<tr><td><b>Energy Yesterday</b></td><td "
+                         "style='text-align: right;'>");
+        hprintf255(request, "%.1f</td><td>Wh</td>", dailyStats[1]);
+    }
     poststr(request,
             "<tr><td><b>Energy Total</b></td><td style='text-align: right;'>");
     hprintf255(request, "%.3f</td><td>kWh</td>", energyCounter / 1000.0f);
