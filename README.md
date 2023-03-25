@@ -15,7 +15,7 @@ Please use automatically compiled binaries from the Releases tab. To build yours
 
 See our guides in Russian: [BK7231N/T34](https://www.v-elite.ru/t34), and [BL602 RGB](https://www.v-elite.ru/bl602rgb), and [Youtube guide for BK7231/T34](https://www.youtube.com/watch?v=BnmSWZchK-E)
 
-If you want to get some generic information about BK7231 modules, pinout, peripherals, [consult our docs topic](https://www.elektroda.com/rtvforum/topic3951016.html).
+If you want to get some generic information about BK7231 modules, available datasheets, pinout, peripherals, [consult our docs topic](https://www.elektroda.com/rtvforum/topic3951016.html).
 
 # [Supported Devices/Templates List](https://openbekeniot.github.io/webapp/devicesList.html) (Get 🏆[free SD Card](https://www.elektroda.com/rtvforum/topic3950844.html)🏆 for submitting new one!)
 We have our own interactive devices database that is maintained by users.
