@@ -18,11 +18,18 @@
 // Datasheet says 900 kHz is supported, but it produced ~50% check sum errors  
 #define BL0942_SPI_BAUD_RATE 800000 // 900000
 #define BL0942_SPI_CMD_READ 0x58
+#define BL0942_SPI_CMD_WRITE 0xA8
 
+// Electric parameter register (read only)
 #define BL0942_REG_I_RMS 0x03
 #define BL0942_REG_V_RMS 0x04
 #define BL0942_REG_WATT 0x06
 #define BL0942_REG_FREQ 0x08
+#define BL0942_REG_USR_WRPROT 0x1D
+#define BL0942_USR_WRPROT_DISABLE 0x55
+
+// User operation register (read and write)
+#define BL0942_REG_MODE 0x19
 
 #define DEFAULT_VOLTAGE_CAL 15188
 #define DEFAULT_CURRENT_CAL 251210
@@ -156,8 +163,8 @@ static int SPI_ReadReg(uint8_t reg, uint32_t *val, uint8_t signed24) {
 	checksum ^= 0xFF;
 	if (recv[3] != checksum) {
 		ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
-			"Failed to read reg 0x%X: Bad checksum %02X wanted %02X", reg,
-			recv[3], checksum);
+                    "Failed to read reg %02X: Bad checksum %02X wanted %02X",
+                    reg, recv[3], checksum);
 		return -1;
 	}
 
@@ -166,6 +173,34 @@ static int SPI_ReadReg(uint8_t reg, uint32_t *val, uint8_t signed24) {
 		*val |= (0xFF << 24);
 
 	return 0;
+}
+
+static int SPI_WriteReg(uint8_t reg, uint32_t val) {
+    uint8_t send[6];
+    send[0] = BL0942_SPI_CMD_WRITE;
+    send[1] = reg;
+    send[2] = ((val >> 16) & 0xFF);
+    send[3] = ((val >> 8) & 0xFF);
+    send[4] = (val & 0xFF);
+
+    // checksum
+    send[5] = send[0] + send[1] + send[2] + send[3] + send[4];
+    send[5] ^= 0xFF;
+
+    SPI_WriteBytes(send, sizeof(send));
+
+    uint32_t read;
+    SPI_ReadReg(reg, &read, 0);
+    if (read == val ||
+        // REG_USR_WRPROT is read back as 0x1
+        (reg == BL0942_REG_USR_WRPROT && val == BL0942_USR_WRPROT_DISABLE &&
+         read == 0x1)) {
+        return 0;
+    }
+
+    ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
+                "Failed to write reg %02X val %02X: Read %02X", reg, val, read);
+    return 0;
 }
 
 static void Init(void) {
@@ -210,6 +245,16 @@ void BL0942_SPI_Init(void) {
 	cfg.baud_rate = BL0942_SPI_BAUD_RATE;
 	cfg.bit_order = SPI_MSB_FIRST;
 	SPI_Init(&cfg);
+
+    // Enable write access
+    SPI_WriteReg(BL0942_REG_USR_WRPROT, BL0942_USR_WRPROT_DISABLE);
+
+    uint32_t mode;
+    int err = SPI_ReadReg(BL0942_REG_MODE, &mode, 0);
+    if (!err) {
+        mode |= (1 << 3); // RMS_UPDATE_SEL = 800 ms instead of 400 ms
+        SPI_WriteReg(BL0942_REG_MODE, mode);
+    }
 }
 
 void BL0942_SPI_RunFrame(void) {
