@@ -444,10 +444,9 @@ void BL_ProcessUpdate(float voltage, float current, float power,
         }
         if (actual_mday != ltm->tm_mday)
         {
-            for(i = 7; i > 0; i--)
-            {
+            for (i = DAILY_STATS_LENGTH; i > 0; i--)
                 dailyStats[i] = dailyStats[i - 1];
-            } 
+
             dailyStats[0] = 0.0;
             actual_mday = ltm->tm_mday;
             MQTT_PublishMain_StringFloat(counter_mqttNames[3], dailyStats[1]);
