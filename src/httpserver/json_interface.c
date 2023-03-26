@@ -20,11 +20,29 @@
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_local.h"
 
+void JSON_PrintKeyValue_String(void* request, jsonCb_t printer, const char *key, const char *value, bool bComma) {
+	printer(request, "\"%s\":\"%s\"", key, value);
+	if (bComma) {
+		printer(request, ",");
+	}
+}
+void JSON_PrintKeyValue_Int(void* request, jsonCb_t printer, const char *key, int value, bool bComma) {
+	printer(request, "\"%s\":%i", key, value);
+	if (bComma) {
+		printer(request, ",");
+	}
+}
+void JSON_PrintKeyValue_Float(void* request, jsonCb_t printer, const char *key, float value, bool bComma) {
+	printer(request, "\"%s\":%f", key, value);
+	if (bComma) {
+		printer(request, ",");
+	}
+}
 
 static int http_tasmota_json_Dimmer(void* request, jsonCb_t printer) {
 	int dimmer;
 	dimmer = LED_GetDimmer();
-	printer(request, "\"Dimmer\":%i", dimmer);
+	JSON_PrintKeyValue_Int(request, printer, "Dimmer", dimmer, false);
 	return 0;
 }
 static int http_tasmota_json_CT(void* request, jsonCb_t printer) {
@@ -32,7 +50,7 @@ static int http_tasmota_json_CT(void* request, jsonCb_t printer) {
 	// 154 to 500 range
 	temperature = LED_GetTemperature();
 	// Temperature 
-	printer(request, "\"CT\":%i", temperature);
+	JSON_PrintKeyValue_Int(request, printer, "CT", temperature, false);
 	return 0;
 }
 // https://tasmota.github.io/docs/Commands/#with-mqtt
@@ -52,6 +70,7 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 	int lastRelayState;
 	bool bRelayIndexingStartsWithZero;
 	int relayIndexingOffset;
+	char buff32[32];
 
 	bRelayIndexingStartsWithZero = CHANNEL_HasChannelPinWithRoleOrRole(0, IOR_Relay, IOR_Relay_n);
 	if (bRelayIndexingStartsWithZero) {
@@ -69,9 +88,10 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 	if (LED_IsLEDRunning()) {
 		http_tasmota_json_Dimmer(request, printer);
 		printer(request, ",");
-		printer(request, "\"Fade\":\"OFF\",");
-		printer(request, "\"Speed\":1,");
-		printer(request, "\"LedTable\":\"ON\",");
+		// Temperature 
+		JSON_PrintKeyValue_String(request, printer, "Fade", "OFF", true);
+		JSON_PrintKeyValue_Int(request, printer, "Speed", 1, true);
+		JSON_PrintKeyValue_String(request, printer, "LedTable", "ON", true);
 		if (LED_IsLedDriverChipRunning() || numPWMs >= 3) {
 			/*
 			{
@@ -96,13 +116,14 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 
 			// it looks like they include C and W in color
 			if (LED_IsLedDriverChipRunning() || numPWMs == 5) {
-				printer(request, "\"Color\":\"%i,%i,%i,%i,%i\",",
-					(int)rgbcw[0], (int)rgbcw[1], (int)rgbcw[2], (int)rgbcw[3], (int)rgbcw[4]);
+				sprintf(buff32, "%i,%i,%i,%i,%i",(int)rgbcw[0], (int)rgbcw[1], (int)rgbcw[2], (int)rgbcw[3], (int)rgbcw[4]);
 			}
 			else {
-				printer(request, "\"Color\":\"%i,%i,%i\",", (int)rgbcw[0], (int)rgbcw[1], (int)rgbcw[2]);
+				sprintf(buff32,"%i,%i,%i", (int)rgbcw[0], (int)rgbcw[1], (int)rgbcw[2]);
 			}
-			printer(request, "\"HSBColor\":\"%i,%i,%i\",", hsv[0], hsv[1], hsv[2]);
+			JSON_PrintKeyValue_String(request, printer, "Color", buff32, true);
+			sprintf(buff32, "%i,%i,%i", (int)hsv[0], (int)hsv[1], (int)hsv[2]);
+			JSON_PrintKeyValue_String(request, printer, "HSBColor", buff32, true);
 			printer(request, "\"Channel\":[%i,%i,%i],", (int)channels[0], (int)channels[1], (int)channels[2]);
 
 		}
@@ -111,10 +132,10 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 			printer(request, ",");
 		}
 		if (LED_GetEnableAll() == 0) {
-			printer(request, "\"POWER\":\"OFF\"");
+			JSON_PrintKeyValue_String(request, printer, "POWER", "OFF", false);
 		}
 		else {
-			printer(request, "\"POWER\":\"ON\"");
+			JSON_PrintKeyValue_String(request, printer, "POWER", "ON", false);
 		}
 	}
 	else {
@@ -126,14 +147,14 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 			}
 		}
 		if (numRelays == 0) {
-			printer(request, "\"POWER\":\"ON\"");
+			JSON_PrintKeyValue_String(request, printer, "POWER", "ON", false);
 		}
 		else if (numRelays == 1) {
 			if (lastRelayState) {
-				printer(request, "\"POWER\":\"ON\"");
+				JSON_PrintKeyValue_String(request, printer, "POWER", "ON", false);
 			}
 			else {
-				printer(request, "\"POWER\":\"OFF\"");
+				JSON_PrintKeyValue_String(request, printer, "POWER", "OFF", false);
 			}
 		}
 		else {
@@ -152,11 +173,12 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 					if (c_posted) {
 						printer(request, ",");
 					}
+					sprintf(buff32, "POWER%i", indexStartingFrom1);
 					if (lastRelayState) {
-						printer(request, "\"POWER%i\":\"ON\"", indexStartingFrom1);
+						JSON_PrintKeyValue_String(request, printer, buff32, "ON", false);
 					}
 					else {
-						printer(request, "\"POWER%i\":\"OFF\"", indexStartingFrom1);
+						JSON_PrintKeyValue_String(request, printer, buff32, "OFF", false);
 					}
 					c_posted++;
 				}
@@ -203,7 +225,9 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 		}
 		printer(request, "{");
 		printer(request, "\"Power\": %f,", power);
-		printer(request, "\"ApparentPower\": 0,\"ReactivePower\": 0,\"Factor\":%f,", factor);
+		printer(request, "\"ApparentPower\": 0,");
+		printer(request, "\"ReactivePower\": 0,");
+		printer(request, "\"Factor\":%f,", factor);
 		printer(request, "\"Voltage\":%f,", voltage);
 		printer(request, "\"Current\":%f,", current);
 		printer(request, "\"ConsumptionTotal\":%f,", energy);
@@ -285,7 +309,7 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 
 	time_t localTime = (time_t)NTP_GetCurrentTime();
 	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", localtime(&localTime));
-	printer(request, "\"Time\":\"%s\"", buff);
+	JSON_PrintKeyValue_String(request, printer, "Time", buff, false);
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
 
@@ -298,7 +322,7 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 	}
 	if (DRV_IsSensor()) {
 		http_tasmota_json_SENSOR(request, printer);
-		printer(request, "\"TempUnit\": \"C\"");
+		JSON_PrintKeyValue_String(request, printer, "TempUnit", "C", false);
 	}
 #endif
 
@@ -356,14 +380,14 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bA
 	}
 	printer(request, "{");
 	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", localtime(&localTime));
-	printer(request, "\"Time\":\"%s\",", buff);
-	printer(request, "\"Uptime\":\"30T02:59:30\",");
-	printer(request, "\"UptimeSec\":%i,", Time_getUpTimeSeconds());
-	printer(request, "\"Heap\":25,");
-	printer(request, "\"SleepMode\":\"Dynamic\",");
-	printer(request, "\"Sleep\":10,");
-	printer(request, "\"LoadAvg\":99,");
-	printer(request, "\"MqttCount\":23,");
+	JSON_PrintKeyValue_String(request, printer, "Time", buff, true);
+	JSON_PrintKeyValue_String(request, printer, "Uptime", "30T02:59:30", true);
+	JSON_PrintKeyValue_Int(request, printer, "UptimeSec", Time_getUpTimeSeconds(), true);
+	JSON_PrintKeyValue_Int(request, printer, "Heap", 25, true);
+	JSON_PrintKeyValue_String(request, printer, "SleepMode", "Dynamic", true);
+	JSON_PrintKeyValue_Int(request, printer, "Sleep", 10, true);
+	JSON_PrintKeyValue_Int(request, printer, "LoadAvg", 99, true);
+	JSON_PrintKeyValue_Int(request, printer, "MqttCount", 23, true);
 #if defined(PLATFORM_BEKEN)
 	if (DRV_IsRunning("Battery")) {
 		printer(request, "\"Vcc\":%.4f,", Battery_lastreading(OBK_BATT_VOLTAGE) / 1000.00);
@@ -372,15 +396,15 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bA
 	http_tasmota_json_power(request, printer);
 	printer(request, ",");
 	printer(request, "\"Wifi\":{"); // open WiFi
-	printer(request, "\"AP\":1,");
-	printer(request, "\"SSId\":\"%s\",", CFG_GetWiFiSSID());
-	printer(request, "\"BSSId\":\"30:B5:C2:5D:70:72\",");
-	printer(request, "\"Channel\":11,");
-	printer(request, "\"Mode\":\"11n\",");
-	printer(request, "\"RSSI\":%i,", (HAL_GetWifiStrength() + 100) * 2);
-	printer(request, "\"Signal\":%i,", HAL_GetWifiStrength());
-	printer(request, "\"LinkCount\":21,");
-	printer(request, "\"Downtime\":\"0T06:13:34\"");
+	JSON_PrintKeyValue_Int(request, printer, "AP", 1, true);
+	JSON_PrintKeyValue_String(request, printer, "SSId", CFG_GetWiFiSSID(), true);
+	JSON_PrintKeyValue_String(request, printer, "BSSId", "30:B5:C2:5D:70:72", true);
+	JSON_PrintKeyValue_Int(request, printer, "Channel", 11, true);
+	JSON_PrintKeyValue_String(request, printer, "Mode", "11n", true);
+	JSON_PrintKeyValue_Int(request, printer, "RSSI", (HAL_GetWifiStrength() + 100) * 2, true);
+	JSON_PrintKeyValue_Int(request, printer, "Signal", HAL_GetWifiStrength(), true);
+	JSON_PrintKeyValue_Int(request, printer, "LinkCount", 21, true);
+	JSON_PrintKeyValue_String(request, printer, "Downtime", "0T06:13:34", false);
 	printer(request, "}"); // close WiFi
 	printer(request, "}");
 	return 0;
@@ -392,41 +416,41 @@ static int http_tasmota_json_status_TIM(void* request, jsonCb_t printer) {
 	time_t localUTC = (time_t)NTP_GetCurrentTimeWithoutOffset();
 	printer(request, "\"StatusTIM\":{");
 	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", localtime(&localUTC));
-	printer(request, "\"UTC\":\"%s\",", buff);
+	JSON_PrintKeyValue_String(request, printer, "UTC", buff, true);
 	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", localtime(&localTime));
-	printer(request, "\"Local\":\"%s\",", buff);
-	printer(request, "\"StartDST\":\"2022-03-27T02:00:00\",");
-	printer(request, "\"EndDST\":\"2022-10-30T03:00:00\",");
-	printer(request, "\"Timezone\":\"+01:00\",");
-	printer(request, "\"Sunrise\":\"07:50\",");
-	printer(request, "\"Sunset\":\"17:17\"");
+	JSON_PrintKeyValue_String(request, printer, "Local", buff, true);
+	JSON_PrintKeyValue_String(request, printer, "StartDST", "2022-03-27T02:00:00", true);
+	JSON_PrintKeyValue_String(request, printer, "EndDST", "2022-10-30T03:00:00", true);
+	JSON_PrintKeyValue_String(request, printer, "Timezone", "+01:00", true);
+	JSON_PrintKeyValue_String(request, printer, "Sunrise", "07:50", true);
+	JSON_PrintKeyValue_String(request, printer, "Sunset", "17:17", false);
 	printer(request, "}");
 	return 0;
 }
 static int http_tasmota_json_status_FWR(void* request, jsonCb_t printer) {
 
 	printer(request, "\"StatusFWR\":{");
-	printer(request, "\"Version\":\"%s\",", DEVICENAME_PREFIX_FULL"_"USER_SW_VER);
-	printer(request, "\"BuildDateTime\":\"%s\",", __DATE__ " " __TIME__);
-	printer(request, "\"Boot\":7,");
-	printer(request, "\"Core\":\"%s\",", "0.0");
-	printer(request, "\"SDK\":\"\",", "obk");
-	printer(request, "\"CpuFrequency\":80,");
-	printer(request, "\"Hardware\":\"%s\",", PLATFORM_MCU_NAME);
-	printer(request, "\"CR\":\"465/699\"");
+	JSON_PrintKeyValue_String(request, printer, "Version", DEVICENAME_PREFIX_FULL"_"USER_SW_VER, true);
+	JSON_PrintKeyValue_String(request, printer, "BuildDateTime", __DATE__" "__TIME__, true);
+	JSON_PrintKeyValue_Int(request, printer, "Boot", 7, true);
+	JSON_PrintKeyValue_String(request, printer, "Core", "0.0", true);
+	JSON_PrintKeyValue_String(request, printer, "SDK", "obk", true);
+	JSON_PrintKeyValue_Int(request, printer, "CpuFrequency", 80, true);
+	JSON_PrintKeyValue_String(request, printer, "Hardware", PLATFORM_MCU_NAME, true);
+	JSON_PrintKeyValue_String(request, printer, "CR", "465/699", false);
 	printer(request, "}");
 	return 0;
 }
 static int http_tasmota_json_status_MEM(void* request, jsonCb_t printer) {
 	printer(request, "\"StatusMEM\":{");
-	printer(request, "\"ProgramSize\":616,");
-	printer(request, "\"Free\":384,");
-	printer(request, "\"Heap\":25,");
-	printer(request, "\"ProgramFlashSize\":1024,");
-	printer(request, "\"FlashSize\":2048,");
-	printer(request, "\"FlashChipId\":\"1540A1\",");
-	printer(request, "\"FlashFrequency\":40,");
-	printer(request, "\"FlashMode\":3,");
+	JSON_PrintKeyValue_Int(request, printer, "ProgramSize", 616, true);
+	JSON_PrintKeyValue_Int(request, printer, "Free", 384, true);
+	JSON_PrintKeyValue_Int(request, printer, "Heap", 25, true);
+	JSON_PrintKeyValue_Int(request, printer, "ProgramFlashSize", 1024, true);
+	JSON_PrintKeyValue_Int(request, printer, "FlashSize", 2048, true);
+	JSON_PrintKeyValue_String(request, printer, "FlashChipId", "1540A1", true);
+	JSON_PrintKeyValue_Int(request, printer, "FlashFrequency", 40, true);
+	JSON_PrintKeyValue_Int(request, printer, "FlashMode", 3, true);
 	printer(request, "\"Features\":[");
 	printer(request, "\"00000809\",");
 	printer(request, "\"8FDAC787\",");
@@ -438,24 +462,24 @@ static int http_tasmota_json_status_MEM(void* request, jsonCb_t printer) {
 	printer(request, "\"00001000\",");
 	printer(request, "\"00000020\"");
 	printer(request, "],");
-	printer(request, "\"Drivers\":\"1,2,3,4,5,6,7,8,9,10,12,16,18,19,20,21,22,24,26,27,29,30,35,37,45\",");
-	printer(request, "\"Sensors\":\"1,2,3,4,5,6\"");
+	JSON_PrintKeyValue_String(request, printer, "Drivers", "1,2,3,4,5,6,7,8,9,10,12,16,18,19,20,21,22,24,26,27,29,30,35,37,45", true);
+	JSON_PrintKeyValue_String(request, printer, "Sensors", "1,2,3,4,5,6", false);
 	printer(request, "}");
 	return 0;
 }
 static int http_tasmota_json_status_NET(void* request, jsonCb_t printer) {
 
 	printer(request, "\"StatusNET\":{");
-	printer(request, "\"Hostname\":\"%s\",", CFG_GetShortDeviceName());
-	printer(request, "\"IPAddress\":\"%s\",", HAL_GetMyIPString());
-	printer(request, "\"Gateway\":\"192.168.0.1\",");
-	printer(request, "\"Subnetmask\":\"255.255.255.0\",");
-	printer(request, "\"DNSServer1\":\"192.168.0.1\",");
-	printer(request, "\"DNSServer2\":\"0.0.0.0\",");
-	printer(request, "\"Mac\":\"10:52:1C:D7:9E:2C\",");
-	printer(request, "\"Webserver\":2,");
-	printer(request, "\"HTTP_API\":1,");
-	printer(request, "\"WifiConfig\":4,");
+	JSON_PrintKeyValue_String(request, printer, "Hostname", CFG_GetShortDeviceName(), true);
+	JSON_PrintKeyValue_String(request, printer, "IPAddress", HAL_GetMyIPString(), true);
+	JSON_PrintKeyValue_String(request, printer, "Gateway", "192.168.0.1", true);
+	JSON_PrintKeyValue_String(request, printer, "Subnetmask", "255.255.255.0", true);
+	JSON_PrintKeyValue_String(request, printer, "DNSServer1", "192.168.0.1", true);
+	JSON_PrintKeyValue_String(request, printer, "DNSServer2", "0.0.0.0", true);
+	JSON_PrintKeyValue_String(request, printer, "Mac", "10:52:1C:D7:9E:2C", true);
+	JSON_PrintKeyValue_Int(request, printer, "Webserver", 2, true);
+	JSON_PrintKeyValue_Int(request, printer, "HTTP_API", 1, true);
+	JSON_PrintKeyValue_Int(request, printer, "WifiConfig", 4, true);
 	printer(request, "\"WifiPower\":17.0");
 	printer(request, "}");
 	return 0;
@@ -463,15 +487,15 @@ static int http_tasmota_json_status_NET(void* request, jsonCb_t printer) {
 static int http_tasmota_json_status_MQT(void* request, jsonCb_t printer) {
 
 	printer(request, "\"StatusMQT\":{");
-	printer(request, "\"MqttHost\":\"%s\",", CFG_GetMQTTHost());
-	printer(request, "\"MqttPort\":%i,", CFG_GetMQTTPort());
-	printer(request, "\"MqttClientMask\":\"core-mosquitto\",");
-	printer(request, "\"MqttClient\":\"%s\",", CFG_GetMQTTClientId());
-	printer(request, "\"MqttUser\":\"%s\",", CFG_GetMQTTUserName());
-	printer(request, "\"MqttCount\":23,");
-	printer(request, "\"MAX_PACKET_SIZE\":1200,");
-	printer(request, "\"KEEPALIVE\":30,");
-	printer(request, "\"SOCKET_TIMEOUT\":4");
+	JSON_PrintKeyValue_String(request, printer, "MqttHost", CFG_GetMQTTHost(), true);
+	JSON_PrintKeyValue_Int(request, printer, "MqttPort", CFG_GetMQTTPort(), true);
+	JSON_PrintKeyValue_String(request, printer, "MqttClientMask", "core", true);
+	JSON_PrintKeyValue_String(request, printer, "MqttClient", CFG_GetMQTTClientId(), true);
+	JSON_PrintKeyValue_String(request, printer, "MqttUser", CFG_GetMQTTUserName(), true);
+	JSON_PrintKeyValue_Int(request, printer, "MqttCount", 23, true);
+	JSON_PrintKeyValue_Int(request, printer, "MAX_PACKET_SIZE", 1200, true);
+	JSON_PrintKeyValue_Int(request, printer, "KEEPALIVE", 30, true);
+	JSON_PrintKeyValue_Int(request, printer, "SOCKET_TIMEOUT", 4, false);
 	printer(request, "}");
 	return 0;
 }
@@ -525,8 +549,9 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 
 	printer(request, "{");
 	// Status section
-	printer(request, "\"Status\":{\"Module\":0,\"DeviceName\":\"%s\"", deviceName);
-	printer(request, ",\"FriendlyName\":[");
+	printer(request, "\"Status\":{\"Module\":0,");
+	JSON_PrintKeyValue_String(request, printer, "DeviceName", deviceName, true);
+	printer(request, "\"FriendlyName\":[");
 	if (relayCount == 0) {
 		printer(request, "\"%s\"", deviceName);
 	}
@@ -563,23 +588,24 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	printer(request, ",");
 
 	printer(request, "\"StatusPRM\":{");
-	printer(request, "\"Baudrate\":115200,");
-	printer(request, "\"SerialConfig\":\"8N1\",");
-	printer(request, "\"GroupTopic\":\"%s\",", CFG_DeviceGroups_GetName());
-	printer(request, "\"OtaUrl\":\"https://github.com/openshwprojects/OpenBK7231T_App/releases/latest\",");
-	printer(request, "\"RestartReason\":\"HardwareWatchdog\",");
-	printer(request, "\"Uptime\":\"%i\",", Time_getUpTimeSeconds());
+	JSON_PrintKeyValue_Int(request, printer, "Baudrate", 115200, true);
+	JSON_PrintKeyValue_String(request, printer, "SerialConfig", "8N1", true);
+	JSON_PrintKeyValue_String(request, printer, "GroupTopic", CFG_DeviceGroups_GetName(), true);
+	JSON_PrintKeyValue_String(request, printer, "OtaUrl", "https://github.com/openshwprojects/OpenBK7231T_App/releases/latest", true);
+	JSON_PrintKeyValue_String(request, printer, "RestartReason", "HardwareWatchdog", true);
+	JSON_PrintKeyValue_Int(request, printer, "Uptime", Time_getUpTimeSeconds(), true);
 	struct tm* ltm;
 	int g_time = NTP_GetCurrentTime() - Time_getUpTimeSeconds();
 	ltm = localtime((time_t*)&g_time);
 
 	printer(request, "\"StartupUTC\":\"%04d-%02d-%02dT%02d:%02d:%02d\",", ltm->tm_year + 1900, ltm->tm_mon + 1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
-	printer(request, "\"Sleep\":50,");
-	printer(request, "\"CfgHolder\":4617,");
-	printer(request, "\"BootCount\":22,");
-	printer(request, "\"BCResetTime\":\"2022-01-27T16:10:56\",");
-	printer(request, "\"SaveCount\":1235,");
-	printer(request, "\"SaveAddress\":\"F9000\"");
+
+	JSON_PrintKeyValue_Int(request, printer, "Sleep", 50, true);
+	JSON_PrintKeyValue_Int(request, printer, "CfgHolder", 4617, true);
+	JSON_PrintKeyValue_Int(request, printer, "BootCount", 22, true);
+	JSON_PrintKeyValue_String(request, printer, "BCResetTime", "2022-01-27T16:10:56", true);
+	JSON_PrintKeyValue_Int(request, printer, "SaveCount", 1235, true);
+	JSON_PrintKeyValue_String(request, printer, "SaveAddress", "F9000", false);
 	printer(request, "}");
 
 	printer(request, ",");
@@ -662,11 +688,11 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		printer(request, "{");
 		if (CFG_HasFlag(OBK_PUBLISH_FLAG_RETAIN))
 		{
-			printer(request, "\"SensorRetain\":\"ON\"");
+			JSON_PrintKeyValue_String(request, printer, "SensorRetain", "ON", false);
 		}
 		else
 		{
-			printer(request, "\"SensorRetain\":\"OFF\"");
+			JSON_PrintKeyValue_String(request, printer, "SensorRetain", "OFF", false);
 		}
 
 		printer(request, "}");
@@ -680,17 +706,17 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		// Prefix3 	1 = Reset MQTT telemetry prefix to firmware default (PUB_PREFIX2) and restart
 		// <value> = set MQTT telemetry prefix and restart
 		printer(request, "{");
-		printer(request, "\"Prefix1\":\"cmnd\"");
+		JSON_PrintKeyValue_String(request, printer, "Prefix1", "cmnd", false);
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "Prefix2", 7)) {
 		printer(request, "{");
-		printer(request, "\"Prefix2\":\"stat\"");
+		JSON_PrintKeyValue_String(request, printer, "Prefix2", "stat", false);
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "Prefix3", 7)) {
 		printer(request, "{");
-		printer(request, "\"Prefix3\":\"tele\"");
+		JSON_PrintKeyValue_String(request, printer, "Prefix3", "tele", false);
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "StateText1", 10)) {
@@ -701,47 +727,47 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		//	3 = TOGGLE state text
 		//	4 = HOLD state text
 		printer(request, "{");
-		printer(request, "\"StateText1\":\"OFF\"");
+		JSON_PrintKeyValue_String(request, printer, "StateText1", "OFF", false);
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "StateText2", 10)) {
 		printer(request, "{");
-		printer(request, "\"StateText2\":\"ON\"");
+		JSON_PrintKeyValue_String(request, printer, "StateText2", "ON", false);
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "StateText3", 10)) {
 		printer(request, "{");
-		printer(request, "\"StateText3\":\"TOGGLE\"");
+		JSON_PrintKeyValue_String(request, printer, "StateText3", "TOGGLE", false);
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "StateText4", 10)) {
 		printer(request, "{");
-		printer(request, "\"StateText4\":\"HOLD\"");
+		JSON_PrintKeyValue_String(request, printer, "StateText4", "HOLD", false);
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "FullTopic", 9)) {
 		printer(request, "{");
-		printer(request, "\"FullTopic\":\"%%prefix%%/%%topic%%/\"");
+		JSON_PrintKeyValue_String(request, printer, "FullTopic", "%%prefix%%/%%topic%%", false);
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "SwitchTopic", 11)) {
 		printer(request, "{");
-		printer(request, "\"SwitchTopic\":\"0\"");
+		JSON_PrintKeyValue_String(request, printer, "SwitchTopic", "0", false);
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "ButtonTopic", 11)) {
 		printer(request, "{");
-		printer(request, "\"ButtonTopic\":\"0\"");
+		JSON_PrintKeyValue_String(request, printer, "ButtonTopic", "0", false);
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "MqttRetry", 9)) {
 		printer(request, "{");
-		printer(request, "\"MqttRetry\":\"1\"");
+		JSON_PrintKeyValue_String(request, printer, "MqttRetry", "1", false);
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "TelePeriod", 10)) {
 		printer(request, "{");
-		printer(request, "\"TelePeriod\":\"300\"");
+		JSON_PrintKeyValue_String(request, printer, "TelePeriod", "300", false);
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "CT", 2)) {
@@ -879,32 +905,32 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		char tmp[16];
 		LED_GetBaseColorString(tmp);
 		printer(request, "{");
-		printer(request, "\"led_basecolor_rgb\":\"%s\"", tmp);
+		JSON_PrintKeyValue_String(request, printer, "led_basecolor_rgb", tmp, false);
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "MQTTClient", 8)) {
 		printer(request, "{");
-		printer(request, "\"MQTTClient\":\"%s\"", CFG_GetMQTTClientId());
+		JSON_PrintKeyValue_String(request, printer, "MQTTClient", CFG_GetMQTTClientId(), false);
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "MQTTHost", 8)) {
 		printer(request, "{");
-		printer(request, "\"MQTTHost\":\"%s\"", CFG_GetMQTTHost());
+		JSON_PrintKeyValue_String(request, printer, "MQTTHost", CFG_GetMQTTHost(), false);
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "MQTTUser", 8)) {
 		printer(request, "{");
-		printer(request, "\"MQTTUser\":\"%s\"", CFG_GetMQTTUserName());
+		JSON_PrintKeyValue_String(request, printer, "MQTTUser", CFG_GetMQTTUserName(), false);
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "MqttPassword", 12)) {
 		printer(request, "{");
-		printer(request, "\"MqttPassword\":\"%s\"", "****");
+		JSON_PrintKeyValue_String(request, printer, "MqttPassword", "****", false);
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "SSID1", 5)) {
 		printer(request, "{");
-		printer(request, "\"SSID1\":\"%s\"", CFG_GetWiFiSSID());
+		JSON_PrintKeyValue_String(request,printer,"SSID1", CFG_GetWiFiSSID(),false);
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "LED_Map", 7)) {
