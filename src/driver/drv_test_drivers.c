@@ -1,7 +1,7 @@
-#include "../new_common.h"
+#include "drv_test_drivers.h"
+
 #include "../cmnds/cmd_public.h"
-#include "../logging/logging.h"
-#include "drv_local.h"
+#include "drv_bl_shared.h"
 
 static float base_v = 120;
 static float base_c = 1;
@@ -27,8 +27,8 @@ commandResult_t TestPower_Setup(const void* context, const char* cmd, const char
 	return CMD_RES_OK;
 }
 //Test Power driver
-void Test_Power_Init() {
-	BL_Shared_Init();
+void Test_Power_Init(void) {
+    BL_Shared_Init();
 
 	//cmddetail:{"name":"SetupTestPower","args":"",
 	//cmddetail:"descr":"NULL",
@@ -36,8 +36,8 @@ void Test_Power_Init() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetupTestPower", TestPower_Setup, NULL);
 }
-void Test_Power_RunFrame() {
-	float final_v = base_v;
+void Test_Power_RunFrame(void) {
+    float final_v = base_v;
 	float final_c = base_c;
 	float final_p = base_p;
 
@@ -50,9 +50,7 @@ void Test_Power_RunFrame() {
 }
 
 //Test LED driver
-void Test_LED_Driver_Init() {
-}
-void Test_LED_Driver_RunFrame() {
-}
+void Test_LED_Driver_Init(void) {}
+void Test_LED_Driver_RunFrame(void) {}
 void Test_LED_Driver_OnChannelChanged(int ch, int value) {
 }

@@ -1,20 +1,19 @@
-#include "../new_common.h"
-#include "../new_pins.h"
+#include "drv_bl_shared.h"
+
 #include "../new_cfg.h"
-// Commands register, execution API and cmd tokenizer
-#include "../cmnds/cmd_public.h"
-#include "../mqtt/new_mqtt.h"
-#include "../logging/logging.h"
-#include "drv_public.h"
-#include "drv_local.h"
-#include "drv_uart.h"
-#include "../httpserver/new_http.h"
+#include "../new_pins.h"
 #include "../cJSON/cJSON.h"
-#include <time.h>
-#include "drv_ntp.h"
 #include "../hal/hal_flashVars.h"
+#include "../logging/logging.h"
+#include "../mqtt/new_mqtt.h"
 #include "../ota/ota.h"
+#include "drv_local.h"
+#include "drv_ntp.h"
+#include "drv_public.h"
+#include "drv_uart.h"
+
 #include <math.h>
+#include <time.h>
 
 #define DAILY_STATS_LENGTH 4
 
@@ -445,10 +444,9 @@ void BL_ProcessUpdate(float voltage, float current, float power,
         }
         if (actual_mday != ltm->tm_mday)
         {
-            for(i = 7; i > 0; i--)
-            {
+            for (i = DAILY_STATS_LENGTH - 1; i > 0; i--)
                 dailyStats[i] = dailyStats[i - 1];
-            } 
+
             dailyStats[0] = 0.0;
             actual_mday = ltm->tm_mday;
             MQTT_PublishMain_StringFloat(counter_mqttNames[3], dailyStats[1]);
@@ -671,7 +669,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     }
 }
 
-void BL_Shared_Init()
+void BL_Shared_Init(void)
 {
     int i;
     ENERGY_METERING_DATA data;
