@@ -1522,52 +1522,6 @@ int http_fn_uart_tool(http_request_t* request) {
 	return 0;
 }
 
-
-
-
-int http_fn_cfg_quick(http_request_t* request) {
-	http_setup(request, httpMimeTypeHTML);
-	http_html_start(request, "Quick Config");
-	poststr_h4(request, "Quick Config");
-
-
-	/*
-
-	WARNING! THIS IS OBSOLETE NOW!
-
-	WE ARE USING THIS DATABASE:
-	https://github.com/OpenBekenIOT/webapp/blob/gh-pages/devices.json
-	Submit pull requests to the list above! Post teardowns on Elektroda.com!
-
-
-	HERE IS FRONTEND:
-	https://openbekeniot.github.io/webapp/devicesList.html
-	See above link for more info!
-
-	*/
-
-	poststr(request, "<h3>This is now obsolete. Please config through Web App and refer to the Devices List.</h3>");
-
-
-	/*if (http_getArg(request->url, "dev", tmpA, sizeof(tmpA))) {
-		j = atoi(tmpA);
-		hprintf255(request, "<h3>Set dev %i!</h3>", j);
-		g_templates[j].setter();
-	}
-	poststr(request, "<form action=\"cfg_quick\">");
-	poststr(request, "<select name=\"dev\">");
-	for (j = 0; j < g_total_templates; j++) {
-		hprintf255(request, "<option value=\"%i\">%s</option>", j, g_templates[j].name);
-	}
-	poststr(request, "</select>");
-	poststr(request, "<input type=\"submit\" value=\"Set\"/></form>");*/
-
-	poststr(request, htmlFooterReturnToCfgLink);
-	http_html_end(request);
-	poststr(request, NULL);
-	return 0;
-}
-
 void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	int i;
 	int relayCount;
@@ -1980,7 +1934,6 @@ int http_fn_cfg(http_request_t* request) {
 	postFormAction(request, "cfg_generic", "Configure General/Flags");
 	postFormAction(request, "cfg_startup", "Configure Startup");
 	postFormAction(request, "cfg_dgr", "Configure Device Groups");
-	postFormAction(request, "cfg_quick", "Quick Config");
 	postFormAction(request, "cfg_wifi", "Configure WiFi");
 	postFormAction(request, "cfg_mqtt", "Configure MQTT");
 	postFormAction(request, "cfg_name", "Configure Names");

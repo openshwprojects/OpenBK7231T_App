@@ -723,7 +723,6 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	if (http_checkUrlBase(urlStr, "cfg_startup")) return http_fn_cfg_startup(request);
 	if (http_checkUrlBase(urlStr, "cfg_dgr")) return http_fn_cfg_dgr(request);
 
-	if (http_checkUrlBase(urlStr, "cfg_quick")) return http_fn_cfg_quick(request);
 	if (http_checkUrlBase(urlStr, "ha_cfg")) return http_fn_ha_cfg(request);
 	if (http_checkUrlBase(urlStr, "ha_discovery")) return http_fn_ha_discovery(request);
 	if (http_checkUrlBase(urlStr, "cfg")) return http_fn_cfg(request);
