@@ -31,14 +31,14 @@ When running the docker image, you may pass the following environment variables 
 * `MAKEFLAGS` - This is the standard `make` environment variable for setting default `make` flags. It is recommended to use this to configure `make` to use multiple cores. for exmaple, to use 8 cores: `--env MAKEFLAGS="-j 8"`
 
 ## Building on a Apple Silicon Macs
-The software that the build process uses to compile the binaries is for the `x86` platform and can only be run by `x86` CPUs. Fortunately, this does not mean you cannot build OpenBeken on Apple Silicon (ARM) Macintosh computers. Docker is able to run `x86` docker images on Apple Silicon Macs through the Rosetta emulator. To do this, you need to enable running `x86` images in docker by following [t]he instructions outlined in this article](https://blog.jaimyn.dev/how-to-build-multi-architecture-docker-images-on-an-m1-mac/) (or [this article](https://levelup.gitconnected.com/docker-on-apple-silicon-mac-how-to-run-x86-containers-with-rosetta-2-4a679913a0d5).
+The software that the build process uses to compile the binaries is for the `x86` platform and can only be run by `x86` CPUs. Fortunately, this does not mean you cannot build OpenBeken on Apple Silicon (ARM) Macintosh computers. Docker is able to run `x86` docker images on Apple Silicon Macs through the Rosetta emulator. To do this, you need to enable running `x86` images in docker by following [the instructions outlined in this article](https://blog.jaimyn.dev/how-to-build-multi-architecture-docker-images-on-an-m1-mac/) (or [this article](https://levelup.gitconnected.com/docker-on-apple-silicon-mac-how-to-run-x86-containers-with-rosetta-2-4a679913a0d5)).
 
 Once you have set up your Apple Silicon Mac to run `x86` docker images, build the OpenBeken build environment docker image with this command from within the `docker` directory of this repository:
 ```sh
 docker buildx build --platform linux/amd64 --load -t openbk_build --build-arg USERNAME=$USER .
 ```
 
-Once the docker image is built, you can run the OpenBejen build with this instruction:
+Once the docker image is built, you can run the OpenBeken build with this instruction:
 ```sh
 docker run --platform linux/amd64 -it -v "$(pwd)/..":/OpenBK7231T_App  openbk_build
 ```
