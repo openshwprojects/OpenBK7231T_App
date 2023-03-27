@@ -113,10 +113,46 @@ void MAX72XX_refresh(max72XX_t *led) {
 		}
 	}
 }
+byte Byte_ReverseBits(byte num)
+{
+	int i;
+	byte reversed = 0;
+	for (i = 0; i < 8; i++) {
+		byte bit = (num >> i) & 1;
+		reversed |= bit << (8 - 1 - i);
+	}
+	return reversed;
+}
 void MAX72XX_displayArray(max72XX_t* led, byte *p, int devs, int ofs)
 {
-	memcpy(led->led_status + ofs * 8, p, devs * 8);
-	MAX72XX_refresh(led);
+	byte *tg;
+	int i, mx;
+	int targetIndex;
+
+	if (ofs >= led->maxDevices*8) {
+		return;
+	}
+	if (ofs < 0) {
+		return;
+	}
+
+	mx = led->maxDevices * 8 - ofs;
+
+
+	tg = led->led_status + ofs;
+	if (1) {
+		if (devs > mx)
+			devs = mx;
+		memcpy(tg, p, devs);
+	}
+	else {
+		for (i = 0; i < devs; i++) {
+			targetIndex = devs - 1 - i;
+			if (targetIndex < mx) {
+				tg[targetIndex] = Byte_ReverseBits(p[i]);
+			}
+		}
+	}
 }
 
 void MAX72XX_shift(max72XX_t *led, int d) {
@@ -185,6 +221,21 @@ void MAX72XX_setLed(max72XX_t *led, int addr, int row, int column, bool state) {
 	}
 	MAX72XX_spiTransfer(led, addr, row + 1, led->led_status[offset + row]);
 }
+void MAX72XX_rotate90CW(max72XX_t *led) {
+	int i;
+
+	byte buff[8];
+	for (i = 0; i < led->maxDevices; i++) {
+		memset(buff, 0, sizeof(buff));
+		for (byte r = 0; r < 8; r++)
+			for (byte b = 0; b < 8; b++)
+				if (BIT_CHECK(led->led_status[8 * i + b], r))
+					BIT_SET(buff[7 - r], b);
+		for (byte r = 0; r < 8; r++)
+			led->led_status[8 * i + r] = buff[r];
+	}
+}
+
 void MAX72XX_init(max72XX_t *led) {
 	int i;
 

@@ -13,6 +13,7 @@ void MAX72XX_refresh(max72XX_t *led);
 void MAX72XX_shutdown(max72XX_t *led, int addr, bool b);
 void MAX72XX_setScanLimit(max72XX_t *led, int addr, int limit);
 void MAX72XX_clearDisplay(max72XX_t *led,int addr) ;
+void MAX72XX_rotate90CW(max72XX_t *led);
 void MAX72XX_setIntensity(max72XX_t *led,int addr, int intensity) ;
 void MAX72XX_displayArray(max72XX_t* led, byte *p, int devs, int ofs)  ;
 void MAX72XX_shift(max72XX_t *led,int d);
