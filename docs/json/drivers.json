@@ -18,6 +18,12 @@
     "requires": ""
   },
   {
+    "name": "HTTPButtons",
+    "title": "TODO",
+    "descr": "This driver allows you to create custom, scriptable buttons on main WWW page. You can create those buttons in autoexec.bat and assign commands to them",
+    "requires": ""
+  },
+  {
     "name": "TESTPOWER",
     "title": "TODO",
     "descr": "This is a fake POWER measuring socket driver, only for testing",
@@ -27,12 +33,6 @@
     "name": "TESTLED",
     "title": "TODO",
     "descr": "This is a fake I2C LED driver, only for testing",
-    "requires": ""
-  },
-  {
-    "name": "HTTPButtons",
-    "title": "TODO",
-    "descr": "This driver allows you to create custom, scriptable buttons on main WWW page. You can create those buttons in autoexec.bat and assign commands to them",
     "requires": ""
   },
   {
@@ -111,6 +111,12 @@
     "name": "DoorSensor",
     "title": "TODO",
     "descr": "DoorSensor is using deep sleep to preserve battery. This is used for devices without TuyaMCU, where BK deep sleep and wakeup on GPIO is used. This drives requires you to set a DoorSensor pin. Change on door sensor pin wakes up the device. If there are no changes for some time, device goes to sleep. See example [here](https://www.elektroda.com/rtvforum/topic3960149.html).",
+    "requires": ""
+  },
+  {
+    "name": "MAX72XX_Clock",
+    "title": "TODO",
+    "descr": "MAX72XX_Clock.",
     "requires": ""
   },
   {

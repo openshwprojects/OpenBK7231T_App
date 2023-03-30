@@ -7,6 +7,8 @@
 - channel 1 - output relay<br>
 
 ```again:
+	
+	again:
 	echo "Step 1"
 	setChannel 1 0
 	echo "Step 2"
@@ -121,6 +123,27 @@ looper:
 	setChannel 1 1
 	delay_ms $CH11
 	goto looper
+```
+
+
+<b>Sending UART from script - WXDM2 dimmer support</b>
+<br>
+<br>Requirements:
+- a WXDM2 dimmer with custom UART protocol<br>
+
+```
+// WXDM2 dimmer demo
+// WXDM2 is using custom UART protocol with no checksum
+
+
+again:
+addChannel 10 1 0 255 1
+delay_ms 100
+uartSendHex 0A FF 55 02 00 $CH10$ 00 00 0A
+goto again
+
+
+
 ```
 
 

@@ -46,9 +46,6 @@ Do not add anything here, as it will overwritten with next rebuild.
 | SetStartValue | [Channel][Value] | Sets the startup value for a channel. Used for start values for relays. Use 1 for High, 0 for low and -1 for 'remember last state' |
 | OpenAP |  | Temporarily disconnects from programmed WiFi network and opens Access Point |
 | SafeMode |  | Forces device reboot into safe mode (open ap with disabled drivers) |
-| SPITestMAX7219 | CMD_SPITestMAX7219 |  |
-| SPITestFlash_ReadID | CMD_SPITestFlash_ReadID |  |
-| SPITestFlash_ReadData | CMD_SPITestFlash_ReadData |  |
 | led_dimmer | [Value] | set output dimmer 0..100 |
 | Dimmer | [Value] | Alias for led_dimmer |
 | add_dimmer | [Value][AddMode] | Adds a given value to current LED dimmer. AddMode 0 just adds a value (with a clamp to [0,100]), AddMode 1 will wrap around values (going under 0 goes to 100, going over 100 goes to 0), AddMode 2 will ping-pong value (going to 100 starts going back from 100 to 0, and again, going to 0 starts going up). |
@@ -109,13 +106,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | lfs_test3 | [FileName] | Tests the LFS file reading feature. |
 | Battery_Setup | [int][int][float][int][int] | measure battery based on ADC args minbatt and maxbatt in mv. optional V_divider(2), Vref(default 2400) and ADC bits(4096) and   <br/>e.g.:Battery_Setup 1500 3000 2 2400 4096 |
 | Battery_cycle | [int] | change cycle of measurement by default every 10 seconds<br/>e.g.:Battery_Setup 60 |
-| PowerSet |  | Sets current power value for calibration |
-| VoltageSet |  | Sets current V value for calibration |
-| CurrentSet |  | Sets current I value for calibration |
-| PREF |  | Sets the calibration multiplier |
-| VREF |  | Sets the calibration multiplier |
-| IREF |  | Sets the calibration multiplier |
-| PowerMax | [limit] | Sets Maximum power value measurement limiter |
+| PowerMax | BL0937_PowerMax |  |
 | EnergyCntReset |  | Resets the total Energy Counter, the one that is usually kept after device reboots. After this commands, the counter will start again from 0. |
 | SetupEnergyStats | [Enable1or0][SampleTime][SampleCount] | Setup Energy Statistic Parameters: [enable<0|1>] [sample_time<10..900>] [sample_count<10..180>] |
 | ConsumptionThreshold | [FloatValue] | Setup value for automatic save of consumption data [1..100] |
@@ -133,11 +124,12 @@ Do not add anything here, as it will overwritten with next rebuild.
 | setButtonLabel | [ButtonIndex][Label] | Sets the label of custom scriptable HTTP page button |
 | setButtonEnabled | [ButtonIndex][1or0] | Sets the visibility of custom scriptable HTTP page button |
 | IRSend | [PROT-ADDR-CMD-REP] | Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0 |
-| IRAC | IR_AC_Cmd |  |
 | IREnable | [Str][1or0] | Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol |
 | startDriver | [DriverName] | Starts driver |
 | stopDriver | [DriverName] | Stops driver |
 | MAX72XX_Setup | [Value] | Sets the maximum current for LED driver. |
+| MAX72XX_Scroll | DRV_MAX72XX_Scroll |  |
+| MAX72XX_Print | DRV_MAX72XX_Print |  |
 | ntp_timeZoneOfs | [Value] | Sets the time zone offset in hours. Also supports HH:MM syntax if you want to specify value in minutes. For negative values, use -HH:MM syntax, for example -5:30 will shift time by 5 hours and 30 minutes negative. |
 | ntp_setServer | [ServerIP] | Sets the NTP server |
 | ntp_info |  | Display NTP related settings |
@@ -149,6 +141,12 @@ Do not add anything here, as it will overwritten with next rebuild.
 | toggler_set | [Value] | Sets the VALUE of given output. Handles toggler_set0, toggler_set1, etc. The last digit after command name is changed to slot index. |
 | toggler_channel | [ChannelIndex] | handles toggler_channel0, toggler_channel1. Sets channel linked to given toggler slot. |
 | toggler_name |  | Handles toggler_name0, toggler_name1, etc. Sets the name of a toggler for GUI. |
+| VoltageSet | CalibrateVoltage |  |
+| CurrentSet | CalibrateCurrent |  |
+| PowerSet | CalibratePower |  |
+| VREF | SetVoltageCal |  |
+| IREF | SetCurrentCal |  |
+| PREF | SetPowerCal |  |
 | SHT_cycle | [int] | change cycle of measurement by default every 10 seconds 0 to deactivate<br/>e.g.:SHT_Cycle 60 |
 | SHT_Calibrate |  | Calibrate the SHT Sensor as Tolerance is +/-2 degrees C.<br/>e.g.:SHT_Calibrate -4 10 |
 | SHT_MeasurePer |  | Retrieve Periodical measurement for SHT<br/>e.g.:SHT_Measure |
@@ -170,10 +168,14 @@ Do not add anything here, as it will overwritten with next rebuild.
 | SM2235_RGBCW | [HexColor] | Don't use it. It's for direct access of SM2235 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
 | SM2235_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of SM2235 channels. This is because SM2235 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: SM2235_Map 0 1 2 3 4 |
 | SM2235_Current | [Value] | Sets the maximum current for LED driver. |
+| SPITestFlash_ReadID | CMD_SPITestFlash_ReadID |  |
+| SPITestFlash_WriteStr | CMD_SPITestFlash_WriteStr |  |
+| SPITestFlash_Erase | CMD_SPITestFlash_Erase |  |
+| SPITestFlash_ReadData | CMD_SPITestFlash_ReadData |  |
 | obkDeviceList |  | Generate the SSDP list of OpenBeken devices found on the network. |
 | DGR_SendPower | [GroupName][ChannelValues][ChannelsCount] | Sends a POWER message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
 | DGR_SendBrightness | [GroupName][Brightness] | Sends a Brightness message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
-| DGR_SendRGBCW | [GroupName][HexRGBCW] | Sends a RGBCW message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
+| DGR_SendRGBCW | [GroupName][HexRGBCW] | Sends a RGBCW message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. You can use this command in two ways, first is like DGR_SendRGBCW GroupName 255 255 0, etc, second is DGR_SendRGBCW GroupName FF00FF00 etc etc. |
 | DGR_SendFixedColor | [GroupName][TasColorIndex] | Sends a FixedColor message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
 | SetupTestPower |  | NULL |
 | TM1637_Clear | CMD_TM1637_Clear |  |

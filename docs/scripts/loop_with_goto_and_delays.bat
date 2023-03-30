@@ -1,4 +1,6 @@
 again:
+	
+	again:
 	echo "Step 1"
 	setChannel 1 0
 	echo "Step 2"

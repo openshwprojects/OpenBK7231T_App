@@ -34,5 +34,13 @@
 			"channel 11 - you may use it as ADC, or just use setChannel 11 100 or setChannel 11 500 in console to change delay"
 		],
 		"file": "scripts/using_channel_as_variable.bat"
+	},
+	{
+		"title": "Sending UART from script - WXDM2 dimmer support",
+		"description": "",
+		"requirements": [
+			"a WXDM2 dimmer with custom UART protocol"
+		],
+		"file": "scripts/sending_uart_from_script.bat"
 	}
 ]

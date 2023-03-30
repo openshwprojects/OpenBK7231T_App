@@ -46,9 +46,6 @@ Do not add anything here, as it will overwritten with next rebuild.
 | SetStartValue | [Channel][Value] | Sets the startup value for a channel. Used for start values for relays. Use 1 for High, 0 for low and -1 for 'remember last state' | File: cmnds/cmd_main.c<br/>Function: CMD_SetStartValue |
 | OpenAP |  | Temporarily disconnects from programmed WiFi network and opens Access Point | File: cmnds/cmd_main.c<br/>Function: CMD_OpenAP |
 | SafeMode |  | Forces device reboot into safe mode (open ap with disabled drivers) | File: cmnds/cmd_main.c<br/>Function: CMD_SafeMode |
-| SPITestMAX7219 | CMD_SPITestMAX7219 |  | File: cmnds/cmd_main.c<br/>Function: NULL); |
-| SPITestFlash_ReadID | CMD_SPITestFlash_ReadID |  | File: cmnds/cmd_main.c<br/>Function: NULL); |
-| SPITestFlash_ReadData | CMD_SPITestFlash_ReadData |  | File: cmnds/cmd_main.c<br/>Function: NULL); |
 | led_dimmer | [Value] | set output dimmer 0..100 | File: cmnds/cmd_newLEDDriver.c<br/>Function: dimmer |
 | Dimmer | [Value] | Alias for led_dimmer | File: cmnds/cmd_newLEDDriver.c<br/>Function: dimmer |
 | add_dimmer | [Value][AddMode] | Adds a given value to current LED dimmer. AddMode 0 just adds a value (with a clamp to [0,100]), AddMode 1 will wrap around values (going under 0 goes to 100, going over 100 goes to 0), AddMode 2 will ping-pong value (going to 100 starts going back from 100 to 0, and again, going to 0 starts going up). | File: cmnds/cmd_newLEDDriver.c<br/>Function: add_dimmer |
@@ -109,13 +106,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | lfs_test3 | [FileName] | Tests the LFS file reading feature. | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_lfs_test3 |
 | Battery_Setup | [int][int][float][int][int] | measure battery based on ADC args minbatt and maxbatt in mv. optional V_divider(2), Vref(default 2400) and ADC bits(4096) and   <br/>e.g.:Battery_Setup 1500 3000 2 2400 4096 | File: drv/drv_battery.c<br/>Function: Battery_Setup |
 | Battery_cycle | [int] | change cycle of measurement by default every 10 seconds<br/>e.g.:Battery_Setup 60 | File: drv/drv_battery.c<br/>Function: Battery_cycle |
-| PowerSet |  | Sets current power value for calibration | File: driver/drv_bl0937.c<br/>Function: BL0937_PowerSet |
-| VoltageSet |  | Sets current V value for calibration | File: driver/drv_bl0937.c<br/>Function: BL0937_VoltageSet |
-| CurrentSet |  | Sets current I value for calibration | File: driver/drv_bl0937.c<br/>Function: BL0937_CurrentSet |
-| PREF |  | Sets the calibration multiplier | File: driver/drv_bl0937.c<br/>Function: BL0937_PowerRef |
-| VREF |  | Sets the calibration multiplier | File: driver/drv_bl0937.c<br/>Function: BL0937_VoltageRef |
-| IREF |  | Sets the calibration multiplier | File: driver/drv_bl0937.c<br/>Function: BL0937_CurrentRef |
-| PowerMax | [limit] | Sets Maximum power value measurement limiter | File: driver/drv_bl0937.c<br/>Function: BL0937_PowerMax |
+| PowerMax | BL0937_PowerMax |  | File: driver/drv_bl0937.c<br/>Function: NULL); |
 | EnergyCntReset |  | Resets the total Energy Counter, the one that is usually kept after device reboots. After this commands, the counter will start again from 0. | File: driver/drv_bl_shared.c<br/>Function: BL09XX_ResetEnergyCounter |
 | SetupEnergyStats | [Enable1or0][SampleTime][SampleCount] | Setup Energy Statistic Parameters: [enable<0|1>] [sample_time<10..900>] [sample_count<10..180>] | File: driver/drv_bl_shared.c<br/>Function: BL09XX_SetupEnergyStatistic |
 | ConsumptionThreshold | [FloatValue] | Setup value for automatic save of consumption data [1..100] | File: driver/drv_bl_shared.c<br/>Function: BL09XX_SetupConsumptionThreshold |
@@ -133,11 +124,12 @@ Do not add anything here, as it will overwritten with next rebuild.
 | setButtonLabel | [ButtonIndex][Label] | Sets the label of custom scriptable HTTP page button | File: driver/drv_httpButtons.c<br/>Function: CMD_setButtonLabel |
 | setButtonEnabled | [ButtonIndex][1or0] | Sets the visibility of custom scriptable HTTP page button | File: driver/drv_httpButtons.c<br/>Function: CMD_setButtonEnabled |
 | IRSend | [PROT-ADDR-CMD-REP] | Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0 | File: driver/drv_ir.cpp<br/>Function: IR_Send_Cmd |
-| IRAC | IR_AC_Cmd |  | File: driver/drv_ir.cpp<br/>Function: NULL); |
 | IREnable | [Str][1or0] | Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol | File: driver/drv_ir.cpp<br/>Function: IR_Enable |
 | startDriver | [DriverName] | Starts driver | File: driver/drv_main.c<br/>Function: DRV_Start |
 | stopDriver | [DriverName] | Stops driver | File: driver/drv_main.c<br/>Function: DRV_Stop |
 | MAX72XX_Setup | [Value] | Sets the maximum current for LED driver. | File: driver/drv_sm2135.c<br/>Function: SM2135_Current |
+| MAX72XX_Scroll | DRV_MAX72XX_Scroll |  | File: driver/drv_max72xx_single.c<br/>Function: NULL); |
+| MAX72XX_Print | DRV_MAX72XX_Print |  | File: driver/drv_max72xx_single.c<br/>Function: NULL); |
 | ntp_timeZoneOfs | [Value] | Sets the time zone offset in hours. Also supports HH:MM syntax if you want to specify value in minutes. For negative values, use -HH:MM syntax, for example -5:30 will shift time by 5 hours and 30 minutes negative. | File: driver/drv_ntp.c<br/>Function: NTP_SetTimeZoneOfs |
 | ntp_setServer | [ServerIP] | Sets the NTP server | File: driver/drv_ntp.c<br/>Function: NTP_SetServer |
 | ntp_info |  | Display NTP related settings | File: driver/drv_ntp.c<br/>Function: NTP_Info |
@@ -149,6 +141,12 @@ Do not add anything here, as it will overwritten with next rebuild.
 | toggler_set | [Value] | Sets the VALUE of given output. Handles toggler_set0, toggler_set1, etc. The last digit after command name is changed to slot index. | File: driver/drv_pwmToggler.c<br/>Function: Toggler_SetX |
 | toggler_channel | [ChannelIndex] | handles toggler_channel0, toggler_channel1. Sets channel linked to given toggler slot. | File: driver/drv_pwmToggler.c<br/>Function: Toggler_ChannelX |
 | toggler_name |  | Handles toggler_name0, toggler_name1, etc. Sets the name of a toggler for GUI. | File: driver/drv_pwmToggler.c<br/>Function: Toggler_NameX |
+| VoltageSet | CalibrateVoltage |  | File: driver/drv_pwrCal.c<br/>Function: NULL); |
+| CurrentSet | CalibrateCurrent |  | File: driver/drv_pwrCal.c<br/>Function: NULL); |
+| PowerSet | CalibratePower |  | File: driver/drv_pwrCal.c<br/>Function: NULL); |
+| VREF | SetVoltageCal |  | File: driver/drv_pwrCal.c<br/>Function: NULL); |
+| IREF | SetCurrentCal |  | File: driver/drv_pwrCal.c<br/>Function: NULL); |
+| PREF | SetPowerCal |  | File: driver/drv_pwrCal.c<br/>Function: NULL); |
 | SHT_cycle | [int] | change cycle of measurement by default every 10 seconds 0 to deactivate<br/>e.g.:SHT_Cycle 60 | File: drv/drv_sht3x.c<br/>Function: SHT_cycle |
 | SHT_Calibrate |  | Calibrate the SHT Sensor as Tolerance is +/-2 degrees C.<br/>e.g.:SHT_Calibrate -4 10 | File: driver/drv_sht3x.c<br/>Function: SHT3X_Calibrate |
 | SHT_MeasurePer |  | Retrieve Periodical measurement for SHT<br/>e.g.:SHT_Measure | File: driver/drv_sht3x.c<br/>Function: SHT3X_MeasurePer |
@@ -170,10 +168,14 @@ Do not add anything here, as it will overwritten with next rebuild.
 | SM2235_RGBCW | [HexColor] | Don't use it. It's for direct access of SM2235 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb | File: driver/drv_sm2235.c<br/>Function: SM2235_RGBCW |
 | SM2235_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of SM2235 channels. This is because SM2235 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: SM2235_Map 0 1 2 3 4 | File: driver/drv_sm2235.c<br/>Function: SM2235_Map |
 | SM2235_Current | [Value] | Sets the maximum current for LED driver. | File: driver/drv_sm2235.c<br/>Function: SM2235_Current |
+| SPITestFlash_ReadID | CMD_SPITestFlash_ReadID |  | File: cmnds/cmd_main.c<br/>Function: NULL); |
+| SPITestFlash_WriteStr | CMD_SPITestFlash_WriteStr |  | File: driver/drv_spi_flash.c<br/>Function: NULL); |
+| SPITestFlash_Erase | CMD_SPITestFlash_Erase |  | File: driver/drv_spi_flash.c<br/>Function: NULL); |
+| SPITestFlash_ReadData | CMD_SPITestFlash_ReadData |  | File: cmnds/cmd_main.c<br/>Function: NULL); |
 | obkDeviceList |  | Generate the SSDP list of OpenBeken devices found on the network. | File: driver/drv_ssdp.c<br/>Function: Cmd_obkDeviceList |
 | DGR_SendPower | [GroupName][ChannelValues][ChannelsCount] | Sends a POWER message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. | File: driver/drv_tasmotaDeviceGroups.c<br/>Function: CMD_DGR_SendPower |
 | DGR_SendBrightness | [GroupName][Brightness] | Sends a Brightness message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. | File: driver/drv_tasmotaDeviceGroups.c<br/>Function: CMD_DGR_SendBrightness |
-| DGR_SendRGBCW | [GroupName][HexRGBCW] | Sends a RGBCW message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. | File: driver/drv_tasmotaDeviceGroups.c<br/>Function: CMD_DGR_SendRGBCW |
+| DGR_SendRGBCW | [GroupName][HexRGBCW] | Sends a RGBCW message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. You can use this command in two ways, first is like DGR_SendRGBCW GroupName 255 255 0, etc, second is DGR_SendRGBCW GroupName FF00FF00 etc etc. | File: driver/drv_tasmotaDeviceGroups.c<br/>Function: CMD_DGR_SendRGBCW |
 | DGR_SendFixedColor | [GroupName][TasColorIndex] | Sends a FixedColor message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. | File: driver/drv_tasmotaDeviceGroups.c<br/>Function: CMD_DGR_SendFixedColor |
 | SetupTestPower |  | NULL | File: driver/drv_test_drivers.c<br/>Function: TestPower_Setup |
 | TM1637_Clear | CMD_TM1637_Clear |  | File: driver/drv_tm1637.c<br/>Function: NULL); |

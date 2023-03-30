@@ -369,33 +369,6 @@
     "examples": ""
   },
   {
-    "name": "SPITestMAX7219",
-    "args": "CMD_SPITestMAX7219",
-    "descr": "",
-    "fn": "NULL);",
-    "file": "cmnds/cmd_main.c",
-    "requires": "",
-    "examples": ""
-  },
-  {
-    "name": "SPITestFlash_ReadID",
-    "args": "CMD_SPITestFlash_ReadID",
-    "descr": "",
-    "fn": "NULL);",
-    "file": "cmnds/cmd_main.c",
-    "requires": "",
-    "examples": ""
-  },
-  {
-    "name": "SPITestFlash_ReadData",
-    "args": "CMD_SPITestFlash_ReadData",
-    "descr": "",
-    "fn": "NULL);",
-    "file": "cmnds/cmd_main.c",
-    "requires": "",
-    "examples": ""
-  },
-  {
     "name": "led_dimmer",
     "args": "[Value]",
     "descr": "set output dimmer 0..100",
@@ -936,64 +909,10 @@
     "examples": "Battery_Setup 60"
   },
   {
-    "name": "PowerSet",
-    "args": "",
-    "descr": "Sets current power value for calibration",
-    "fn": "BL0937_PowerSet",
-    "file": "driver/drv_bl0937.c",
-    "requires": "",
-    "examples": ""
-  },
-  {
-    "name": "VoltageSet",
-    "args": "",
-    "descr": "Sets current V value for calibration",
-    "fn": "BL0937_VoltageSet",
-    "file": "driver/drv_bl0937.c",
-    "requires": "",
-    "examples": ""
-  },
-  {
-    "name": "CurrentSet",
-    "args": "",
-    "descr": "Sets current I value for calibration",
-    "fn": "BL0937_CurrentSet",
-    "file": "driver/drv_bl0937.c",
-    "requires": "",
-    "examples": ""
-  },
-  {
-    "name": "PREF",
-    "args": "",
-    "descr": "Sets the calibration multiplier",
-    "fn": "BL0937_PowerRef",
-    "file": "driver/drv_bl0937.c",
-    "requires": "",
-    "examples": ""
-  },
-  {
-    "name": "VREF",
-    "args": "",
-    "descr": "Sets the calibration multiplier",
-    "fn": "BL0937_VoltageRef",
-    "file": "driver/drv_bl0937.c",
-    "requires": "",
-    "examples": ""
-  },
-  {
-    "name": "IREF",
-    "args": "",
-    "descr": "Sets the calibration multiplier",
-    "fn": "BL0937_CurrentRef",
-    "file": "driver/drv_bl0937.c",
-    "requires": "",
-    "examples": ""
-  },
-  {
     "name": "PowerMax",
-    "args": "[limit]",
-    "descr": "Sets Maximum power value measurement limiter",
-    "fn": "BL0937_PowerMax",
+    "args": "BL0937_PowerMax",
+    "descr": "",
+    "fn": "NULL);",
     "file": "driver/drv_bl0937.c",
     "requires": "",
     "examples": ""
@@ -1152,15 +1071,6 @@
     "examples": ""
   },
   {
-    "name": "IRAC",
-    "args": "IR_AC_Cmd",
-    "descr": "",
-    "fn": "NULL);",
-    "file": "driver/drv_ir.cpp",
-    "requires": "",
-    "examples": ""
-  },
-  {
     "name": "IREnable",
     "args": "[Str][1or0]",
     "descr": "Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol",
@@ -1193,6 +1103,24 @@
     "descr": "Sets the maximum current for LED driver.",
     "fn": "SM2135_Current",
     "file": "driver/drv_sm2135.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "MAX72XX_Scroll",
+    "args": "DRV_MAX72XX_Scroll",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_max72xx_single.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "MAX72XX_Print",
+    "args": "DRV_MAX72XX_Print",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_max72xx_single.c",
     "requires": "",
     "examples": ""
   },
@@ -1292,6 +1220,60 @@
     "descr": "Handles toggler_name0, toggler_name1, etc. Sets the name of a toggler for GUI.",
     "fn": "Toggler_NameX",
     "file": "driver/drv_pwmToggler.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "VoltageSet",
+    "args": "CalibrateVoltage",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_pwrCal.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "CurrentSet",
+    "args": "CalibrateCurrent",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_pwrCal.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "PowerSet",
+    "args": "CalibratePower",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_pwrCal.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "VREF",
+    "args": "SetVoltageCal",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_pwrCal.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "IREF",
+    "args": "SetCurrentCal",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_pwrCal.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "PREF",
+    "args": "SetPowerCal",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_pwrCal.c",
     "requires": "",
     "examples": ""
   },
@@ -1485,6 +1467,42 @@
     "examples": ""
   },
   {
+    "name": "SPITestFlash_ReadID",
+    "args": "CMD_SPITestFlash_ReadID",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "SPITestFlash_WriteStr",
+    "args": "CMD_SPITestFlash_WriteStr",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_spi_flash.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "SPITestFlash_Erase",
+    "args": "CMD_SPITestFlash_Erase",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_spi_flash.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "SPITestFlash_ReadData",
+    "args": "CMD_SPITestFlash_ReadData",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "obkDeviceList",
     "args": "",
     "descr": "Generate the SSDP list of OpenBeken devices found on the network.",
@@ -1514,7 +1532,7 @@
   {
     "name": "DGR_SendRGBCW",
     "args": "[GroupName][HexRGBCW]",
-    "descr": "Sends a RGBCW message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit.",
+    "descr": "Sends a RGBCW message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. You can use this command in two ways, first is like DGR_SendRGBCW GroupName 255 255 0, etc, second is DGR_SendRGBCW GroupName FF00FF00 etc etc.",
     "fn": "CMD_DGR_SendRGBCW",
     "file": "driver/drv_tasmotaDeviceGroups.c",
     "requires": "",
