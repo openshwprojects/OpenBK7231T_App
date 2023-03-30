@@ -25,7 +25,9 @@
 
 // According to your need to modify the constants.
 #define PIN_TMR_DURATION      QUICK_TMR_DURATION // Delay (in ms) between button scan iterations
-#define BTN_DEBOUNCE_MS         15  //MAX 8*5
+#define BTN_DEBOUNCE_MS         75  
+// NOTE: Original settings was PIN_TIMER_DURATION 5 and BTN_DEBOUNCE_MS 15
+// Now that QUICK_TIMER_DURATION is 25, we can increase debounce to 75 or so...
 
 // loaded from config, they are now configurable
 int BTN_SHORT_MS;
