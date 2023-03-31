@@ -104,9 +104,37 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
     hprintf255(request, "%.3f</td><td>A</td>", lastReadings[OBK_CURRENT]);
 
     poststr(request,
-            "<tr><td><b>Power</b></td><td style='text-align: right;'>");
+            "<tr><td><b>Active Power</b></td><td style='text-align: right;'>");
     hprintf255(request, "%.1f</td><td>W</td>", lastReadings[OBK_POWER]);
 
+    float apparent_power =
+        lastReadings[OBK_VOLTAGE] * lastReadings[OBK_CURRENT];
+    poststr(
+        request,
+        "<tr><td><b>Apparent Power</b></td><td style='text-align: right;'>");
+    hprintf255(request, "%.1f</td><td>VA</td>", apparent_power);
+
+    float reactive_power =
+        sqrtf(powf(apparent_power, 2) - powf(lastReadings[OBK_POWER], 2));
+    poststr(
+        request,
+        "<tr><td><b>Reactive Power</b></td><td style='text-align: right;'>");
+    hprintf255(request, "%.1f</td><td>var</td>", reactive_power);
+
+    poststr(request,
+            "<tr><td><b>Power Factor</b></td><td style='text-align: right;'>");
+    hprintf255(request, "%.2f</td><td></td>",
+               lastReadings[OBK_POWER] / apparent_power);
+
+    if (NTP_IsTimeSynced()) {
+        poststr(request, "<tr><td><b>Energy Today</b></td><td "
+                         "style='text-align: right;'>");
+        hprintf255(request, "%.1f</td><td>Wh</td>", dailyStats[0]);
+
+        poststr(request, "<tr><td><b>Energy Yesterday</b></td><td "
+                         "style='text-align: right;'>");
+        hprintf255(request, "%.1f</td><td>Wh</td>", dailyStats[1]);
+    }
     poststr(request,
             "<tr><td><b>Energy Total</b></td><td style='text-align: right;'>");
     hprintf255(request, "%.3f</td><td>kWh</td>", energyCounter / 1000.0f);
