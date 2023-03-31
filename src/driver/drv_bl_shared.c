@@ -393,7 +393,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     cJSON* stats;
     char *msg;
     portTickType interval;
-    time_t g_time;
+    time_t ntpTime;
     struct tm *ltm;
     char datetime[64];
 	float diff;
@@ -433,10 +433,10 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     
     if(NTP_IsTimeSynced() == true) 
     {
-        g_time = (time_t)NTP_GetCurrentTime();
-        ltm = localtime(&g_time);
+        ntpTime = (time_t)NTP_GetCurrentTime();
+        ltm = localtime(&ntpTime);
         if (ConsumptionResetTime == 0)
-            ConsumptionResetTime = (time_t)g_time;
+            ConsumptionResetTime = (time_t)ntpTime;
 
         if (actual_mday == -1)
         {
