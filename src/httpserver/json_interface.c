@@ -371,6 +371,16 @@ unsigned int NTP_GetCurrentTimeWithoutOffset() {
 	}
 }
 */
+
+void format_time(int total_seconds, char* output, int outLen) {
+	int days = total_seconds / 86400;
+	int hours = (total_seconds / 3600) % 24;
+	int minutes = (total_seconds / 60) % 60;
+	int seconds = total_seconds % 60;
+
+	snprintf(output, outLen, "%dT%02d:%02d:%02d", days, hours, minutes, seconds);
+}
+
 static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bAppendHeader) {
 	char buff[20];
 	time_t localTime = (time_t)NTP_GetCurrentTime();
@@ -381,7 +391,9 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bA
 	printer(request, "{");
 	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", localtime(&localTime));
 	JSON_PrintKeyValue_String(request, printer, "Time", buff, true);
-	JSON_PrintKeyValue_String(request, printer, "Uptime", "30T02:59:30", true);
+	format_time(Time_getUpTimeSeconds(), buff, sizeof(buff));
+	JSON_PrintKeyValue_String(request, printer, "Uptime", buff, true);
+	//JSON_PrintKeyValue_String(request, printer, "Uptime", "30T02:59:30", true);
 	JSON_PrintKeyValue_Int(request, printer, "UptimeSec", Time_getUpTimeSeconds(), true);
 	JSON_PrintKeyValue_Int(request, printer, "Heap", 25, true);
 	JSON_PrintKeyValue_String(request, printer, "SleepMode", "Dynamic", true);
@@ -598,8 +610,12 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	int ntpTime = NTP_GetCurrentTime() - Time_getUpTimeSeconds();
 	ltm = localtime((time_t*)&ntpTime);
 
-	printer(request, "\"StartupUTC\":\"%04d-%02d-%02dT%02d:%02d:%02d\",", ltm->tm_year + 1900, ltm->tm_mon + 1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+	if (ltm != 0) {
+		printer(request, "\"StartupUTC\":\"%04d-%02d-%02dT%02d:%02d:%02d\",", ltm->tm_year + 1900, ltm->tm_mon + 1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+	}
+	else {
 
+	}
 	JSON_PrintKeyValue_Int(request, printer, "Sleep", 50, true);
 	JSON_PrintKeyValue_Int(request, printer, "CfgHolder", 4617, true);
 	JSON_PrintKeyValue_Int(request, printer, "BootCount", 22, true);
