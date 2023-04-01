@@ -595,8 +595,8 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	JSON_PrintKeyValue_String(request, printer, "RestartReason", "HardwareWatchdog", true);
 	JSON_PrintKeyValue_Int(request, printer, "Uptime", Time_getUpTimeSeconds(), true);
 	struct tm* ltm;
-	int g_time = NTP_GetCurrentTime() - Time_getUpTimeSeconds();
-	ltm = localtime((time_t*)&g_time);
+	int ntpTime = NTP_GetCurrentTime() - Time_getUpTimeSeconds();
+	ltm = localtime((time_t*)&ntpTime);
 
 	printer(request, "\"StartupUTC\":\"%04d-%02d-%02dT%02d:%02d:%02d\",", ltm->tm_year + 1900, ltm->tm_mon + 1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
 

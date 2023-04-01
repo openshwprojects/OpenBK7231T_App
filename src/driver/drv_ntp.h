@@ -21,5 +21,7 @@ int NTP_PrintEventList();
 int NTP_RemoveClockEvent(int id);
 int NTP_ClearEvents();
 
+extern unsigned int g_ntpTime;
+
 #endif /* __DRV_NTP_H__ */
 

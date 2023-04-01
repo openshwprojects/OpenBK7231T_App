@@ -57,11 +57,11 @@ static struct sockaddr_in g_address;
 static int adrLen;
 // in seconds, before next retry
 static int g_ntp_delay = 5;
-// current time
-static unsigned int g_time;
 static bool g_synced;
 // time offset (time zone?) in seconds
 static int g_timeOffsetSeconds;
+// current time
+unsigned int g_ntpTime;
 
 int NTP_GetTimesZoneOfsSeconds()
 {
@@ -121,7 +121,7 @@ int NTP_GetWeekDay() {
 	struct tm *ltm;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = localtime((time_t*)&g_time);
+	ltm = localtime((time_t*)&g_ntpTime);
 
 	if (ltm == 0) {
 		return 0;
@@ -133,7 +133,7 @@ int NTP_GetHour() {
 	struct tm *ltm;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = localtime((time_t*)&g_time);
+	ltm = localtime((time_t*)&g_ntpTime);
 
 	if (ltm == 0) {
 		return 0;
@@ -145,7 +145,7 @@ int NTP_GetMinute() {
 	struct tm *ltm;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = localtime((time_t*)&g_time);
+	ltm = localtime((time_t*)&g_ntpTime);
 
 	if (ltm == 0) {
 		return 0;
@@ -156,8 +156,8 @@ int NTP_GetMinute() {
 #if WINDOWS
 bool b_ntp_simulatedTime = false;
 void NTP_SetSimulatedTime(unsigned int timeNow) {
-	g_time = timeNow;
-	g_time += g_timeOffsetSeconds;
+	g_ntpTime = timeNow;
+	g_ntpTime += g_timeOffsetSeconds;
 	g_synced = true;
 	b_ntp_simulatedTime = true;
 }
@@ -193,10 +193,10 @@ void NTP_Init() {
 }
 
 unsigned int NTP_GetCurrentTime() {
-    return g_time;
+    return g_ntpTime;
 }
 unsigned int NTP_GetCurrentTimeWithoutOffset() {
-	return g_time - g_timeOffsetSeconds;
+	return g_ntpTime - g_timeOffsetSeconds;
 }
 
 
@@ -311,16 +311,16 @@ void NTP_CheckForReceive() {
     secsSince1900 = highWord << 16 | lowWord;
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Seconds since Jan 1 1900 = %u",secsSince1900);
 
-    g_time = secsSince1900 - NTP_OFFSET;
-    g_time += g_timeOffsetSeconds;
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time  : %u",g_time);
-    ltm = localtime((time_t*)&g_time);
+    g_ntpTime = secsSince1900 - NTP_OFFSET;
+    g_ntpTime += g_timeOffsetSeconds;
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time  : %u",g_ntpTime);
+    ltm = localtime((time_t*)&g_ntpTime);
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Local Time : %04d/%02d/%02d %02d:%02d:%02d",
             ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
     g_synced = true;
 #if 0
-    //ptm = localtime (&g_time);
-    ptm = gmtime(&g_time);
+    //ptm = localtime (&g_ntpTime);
+    ptm = gmtime(&g_ntpTime);
     if(ptm == 0) {
         addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime somehow returned 0\n");
     } else {
@@ -343,10 +343,10 @@ void NTP_SendRequest_BlockingMode() {
 
 void NTP_OnEverySecond()
 {
-    g_time++;
+    g_ntpTime++;
 
 #if ENABLE_CALENDAR_EVENTS
-	NTP_RunEvents(g_time, g_synced);
+	NTP_RunEvents(g_ntpTime, g_synced);
 #endif
     if(Main_IsConnectedToWiFi()==0)
     {
@@ -389,7 +389,7 @@ void NTP_AppendInformationToHTTPIndexPage(http_request_t* request)
 {
     struct tm *ltm;
 
-    ltm = localtime((time_t*)&g_time);
+    ltm = localtime((time_t*)&g_ntpTime);
 
     if (g_synced == true)
         hprintf255(request, "<h5>NTP (%s): Local Time: %04d/%02d/%02d %02d:%02d:%02d </h5>",
