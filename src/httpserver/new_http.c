@@ -447,6 +447,7 @@ const char* htmlPinRoleNames[] = {
 	"BAT_Relay",
 	"TM1637_DIO",
 	"TM1637_CLK",
+	"BL0937SEL_n",
 	"error",
 	"error",
 	"error",

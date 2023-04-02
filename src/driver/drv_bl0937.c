@@ -31,6 +31,7 @@
 // Those can be set by Web page pins configurator
 // The below are default values for Mycket smart socket
 int GPIO_HLW_SEL = 24; // pwm4
+bool g_invertSEL = false;
 int GPIO_HLW_CF = 7;
 int GPIO_HLW_CF1 = 8;
 
@@ -105,8 +106,18 @@ void BL0937_Shutdown_Pins()
 }
 
 void BL0937_Init_Pins() {
+	int tmp;
+
 	// if not found, this will return the already set value
-	GPIO_HLW_SEL = PIN_FindPinIndexForRole(IOR_BL0937_SEL, GPIO_HLW_SEL);
+	tmp = PIN_FindPinIndexForRole(IOR_BL0937_SEL_n, -1);
+	if (tmp != -1) {
+		g_invertSEL = true;
+		GPIO_HLW_SEL = tmp;
+	}
+	else {
+		g_invertSEL = false;
+		GPIO_HLW_SEL = PIN_FindPinIndexForRole(IOR_BL0937_SEL, GPIO_HLW_SEL);
+	}
 	GPIO_HLW_CF = PIN_FindPinIndexForRole(IOR_BL0937_CF, GPIO_HLW_CF);
 	GPIO_HLW_CF1 = PIN_FindPinIndexForRole(IOR_BL0937_CF1, GPIO_HLW_CF1);
 
@@ -168,8 +179,15 @@ void BL0937_RunFrame(void) {
 	portTickType ticksElapsed;
 
 	bNeedRestart = false;
-	if (GPIO_HLW_SEL != PIN_FindPinIndexForRole(IOR_BL0937_SEL, GPIO_HLW_SEL)) {
-		bNeedRestart = true;
+	if (g_invertSEL) {
+		if (GPIO_HLW_SEL != PIN_FindPinIndexForRole(IOR_BL0937_SEL_n, GPIO_HLW_SEL)) {
+			bNeedRestart = true;
+		}
+	}
+	else {
+		if (GPIO_HLW_SEL != PIN_FindPinIndexForRole(IOR_BL0937_SEL, GPIO_HLW_SEL)) {
+			bNeedRestart = true;
+		}
 	}
 	if (GPIO_HLW_CF != PIN_FindPinIndexForRole(IOR_BL0937_CF, GPIO_HLW_CF)) {
 		bNeedRestart = true;
@@ -204,10 +222,20 @@ void BL0937_RunFrame(void) {
 
 #endif
 	if(g_sel) {
-		res_v = g_vc_pulses;
+		if (g_invertSEL) {
+			res_c = g_vc_pulses;
+		}
+		else {
+			res_v = g_vc_pulses;
+		}
 		g_sel = false;
 	} else {
-		res_c = g_vc_pulses;
+		if (g_invertSEL) {
+			res_v = g_vc_pulses;
+		}
+		else {
+			res_c = g_vc_pulses;
+		}
 		g_sel = true;
 	}
     HAL_PIN_SetOutputValue(GPIO_HLW_SEL, g_sel);

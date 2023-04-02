@@ -453,6 +453,13 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_TM1637_CLK,
+	//iodetail:{"name":"BL0937_SEL_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"Inverted SEL alternative for BL0937. Choose only one, either SEL or SEL_n. SEL_n may be needed in rare cases.",
+	//iodetail:"enum":"IOR_BL0937_SEL_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_BL0937_SEL_n,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
