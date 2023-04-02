@@ -1689,11 +1689,26 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 		return PublishQueuedItems();
 
 	case PUBLISHITEM_SELF_DYNAMIC_LIGHTSTATE:
-		return LED_IsRunningDriver() ? LED_SendEnableAllState() : OBK_PUBLISH_WAS_NOT_REQUIRED;
+	{
+		if (LED_IsLEDRunning()) {
+			return LED_SendEnableAllState();
+		}
+		return OBK_PUBLISH_WAS_NOT_REQUIRED;
+	}
 	case PUBLISHITEM_SELF_DYNAMIC_LIGHTMODE:
-		return LED_IsRunningDriver() ? LED_SendCurrentLightMode() : OBK_PUBLISH_WAS_NOT_REQUIRED;
+	{
+		if (LED_IsLEDRunning()) {
+			return LED_SendCurrentLightModeParam_TempOrColor();
+		}
+		return OBK_PUBLISH_WAS_NOT_REQUIRED;
+	}
 	case PUBLISHITEM_SELF_DYNAMIC_DIMMER:
-		return LED_IsRunningDriver() ? LED_SendDimmerChange() : OBK_PUBLISH_WAS_NOT_REQUIRED;
+	{
+		if (LED_IsLEDRunning()) {
+			return LED_SendDimmerChange();
+		}
+		return OBK_PUBLISH_WAS_NOT_REQUIRED;
+	}
 
 	case PUBLISHITEM_SELF_HOSTNAME:
 		return MQTT_DoItemPublishString("host", CFG_GetShortDeviceName());

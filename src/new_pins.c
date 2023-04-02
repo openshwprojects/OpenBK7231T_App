@@ -330,7 +330,7 @@ void Button_OnInitialPressDown(int index)
 			return;
 		}
 		// is it a device with RGB/CW/single color/etc LED driver?
-		if (LED_IsRunningDriver()) {
+		if (LED_IsLEDRunning()) {
 			LED_ToggleEnabled();
 		}
 		else {
@@ -370,7 +370,7 @@ void Button_OnShortClick(int index)
 			return;
 		}
 		// is it a device with RGB/CW/single color/etc LED driver?
-		if (LED_IsRunningDriver()) {
+		if (LED_IsLEDRunning()) {
 			LED_ToggleEnabled();
 		}
 		else {

@@ -114,6 +114,8 @@ bool LED_IsLEDRunning()
 
 	pwmCount = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
 	if (pwmCount > 0)
+		return true;	
+	if (CFG_HasFlag(OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER))
 		return true;
 	return false;
 }
@@ -675,7 +677,7 @@ void LED_SetBaseColorByIndex(int i, float f, bool bApply) {
 		apply_smart_light();
 	}
 }
-OBK_Publish_Result LED_SendCurrentLightMode() {
+OBK_Publish_Result LED_SendCurrentLightModeParam_TempOrColor() {
 
 	if(g_lightMode == Light_Temperature) {
 		return sendTemperatureChange();
@@ -818,13 +820,7 @@ static commandResult_t enableAll(const void *context, const char *cmd, const cha
 	//}
 	//return 0;
 }
-int LED_IsRunningDriver() {
-	if(PIN_CountPinsWithRoleOrRole(IOR_PWM,IOR_PWM_n))
-		return 1;
-	if(CFG_HasFlag(OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER))
-		return 1;
-	return 0;
-}
+
 float LED_GetDimmer() {
 	return g_brightness0to100;
 }
