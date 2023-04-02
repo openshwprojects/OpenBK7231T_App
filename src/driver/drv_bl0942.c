@@ -9,8 +9,8 @@
 
 #define BL0942_UART_BAUD_RATE 4800
 #define BL0942_UART_RECEIVE_BUFFER_SIZE 256
-#define BL0942_UART_ADDR 0 // 0 - 3
 #define BL0942_UART_CMD_READ 0x58
+#define BL0942_UART_CMD_WRITE(addr) (0xA8 | addr) // addr = 0 - 3
 #define BL0942_UART_REG_PACKET 0xAA
 #define BL0942_UART_PACKET_HEAD 0x55
 #define BL0942_UART_PACKET_LEN 23
@@ -30,6 +30,8 @@
 
 // User operation register (read and write)
 #define BL0942_REG_MODE 0x19
+#define BL0942_MODE_DEFAULT 0x84
+#define BL0942_MODE_RMS_UPDATE_SEL_800_MS (1 << 3)
 
 #define DEFAULT_VOLTAGE_CAL 15188
 #define DEFAULT_CURRENT_CAL 251210
@@ -147,9 +149,25 @@ static int UART_TryToGetNextPacket(void) {
 }
 
 static void UART_SendRequest(void) {
-	UART_InitUART(BL0942_UART_BAUD_RATE);
 	UART_SendByte(BL0942_UART_CMD_READ);
 	UART_SendByte(BL0942_UART_REG_PACKET);
+}
+
+static void UART_WriteReg(uint8_t reg, uint32_t val) {
+    uint8_t send[5];
+    send[0] = BL0942_UART_CMD_WRITE(0);
+    send[1] = reg;
+    send[2] = (val & 0xFF);
+    send[3] = ((val >> 8) & 0xFF);
+    send[4] = ((val >> 16) & 0xFF);
+    uint8_t crc = 0;
+
+    for (int i = 0; i < sizeof(send); i++) {
+        UART_SendByte(send[i]);
+        crc += send[i];
+    }
+
+    UART_SendByte(crc ^ 0xFF);
 }
 
 static int SPI_ReadReg(uint8_t reg, uint32_t *val, uint8_t signed24) {
@@ -215,6 +233,12 @@ void BL0942_UART_Init(void) {
 
 	UART_InitUART(BL0942_UART_BAUD_RATE);
 	UART_InitReceiveRingBuffer(BL0942_UART_RECEIVE_BUFFER_SIZE);
+
+    // Enable write access
+    UART_WriteReg(BL0942_REG_USR_WRPROT, BL0942_USR_WRPROT_DISABLE);
+
+    UART_WriteReg(BL0942_REG_MODE,
+                  BL0942_MODE_DEFAULT | BL0942_MODE_RMS_UPDATE_SEL_800_MS);
 }
 
 void BL0942_UART_RunFrame(void) {
@@ -228,8 +252,9 @@ void BL0942_UART_RunFrame(void) {
 	if(len > 0) {
 
 	} else {
-		UART_SendRequest();
-	}
+        UART_InitUART(BL0942_UART_BAUD_RATE);
+        UART_SendRequest();
+    }
 }
 
 void BL0942_SPI_Init(void) {
@@ -252,7 +277,7 @@ void BL0942_SPI_Init(void) {
     uint32_t mode;
     int err = SPI_ReadReg(BL0942_REG_MODE, &mode, 0);
     if (!err) {
-        mode |= (1 << 3); // RMS_UPDATE_SEL = 800 ms instead of 400 ms
+        mode |= BL0942_MODE_RMS_UPDATE_SEL_800_MS;
         SPI_WriteReg(BL0942_REG_MODE, mode);
     }
 }
