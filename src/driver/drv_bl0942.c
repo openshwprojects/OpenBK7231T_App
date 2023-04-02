@@ -242,19 +242,10 @@ void BL0942_UART_Init(void) {
 }
 
 void BL0942_UART_RunFrame(void) {
-	int len;
+    UART_TryToGetNextPacket();
 
-	//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"UART buffer size %i\n", UART_GetDataSize());
-
-	len = UART_TryToGetNextPacket();
-	// FIXME: BL0942_UART_RunFrame is called every second. With this logic
-	// only every second second a package is requested. Is this on purpose?
-	if(len > 0) {
-
-	} else {
-        UART_InitUART(BL0942_UART_BAUD_RATE);
-        UART_SendRequest();
-    }
+    UART_InitUART(BL0942_UART_BAUD_RATE);
+    UART_SendRequest();
 }
 
 void BL0942_SPI_Init(void) {
