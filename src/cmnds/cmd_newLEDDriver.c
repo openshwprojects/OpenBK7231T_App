@@ -138,6 +138,9 @@ int shouldSendRGB() {
 	// This flag also could be used for dummy Device Groups driver-module
 	if(CFG_HasFlag(OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER))
 		return 1;
+	// assume that LED driver = RGB (at least), usually RGBCW
+	if (LED_IsLedDriverChipRunning())
+		return true;
 
 	pwmCount = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
 
