@@ -924,7 +924,7 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 	}
 	if ((iFlags & CHANNEL_SET_FLAG_SKIP_MQTT) == 0) {
 		if (bCallCb) {
-			MQTT_ChannelChangeCallback(ch, iVal);
+			MQTT_ChannelPublish(ch,0);
 		}
 	}
 	// Simple event - it just says that there was a change
@@ -950,6 +950,36 @@ void CFG_ApplyChannelStartValues() {
 			//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CFG_ApplyChannelStartValues: Channel %i is being set to constant state %i", i, g_channelValues[i]);
 		}
 	}
+}
+float CHANNEL_GetFinalValue(int channel) {
+	int iVal;
+	float dVal;
+	iVal = CHANNEL_Get(channel);
+
+	switch (CHANNEL_GetType(channel))
+	{
+	case ChType_Humidity_div10:
+	case ChType_Temperature_div10:
+	case ChType_Voltage_div10:
+		dVal = (float)iVal / 10;
+		break;
+	case ChType_Frequency_div100:
+	case ChType_Current_div100:
+	case ChType_EnergyTotal_kWh_div100:
+		dVal = (float)iVal / 100;
+		break;
+	case ChType_PowerFactor_div1000:
+	case ChType_EnergyTotal_kWh_div1000:
+	case ChType_EnergyExport_kWh_div1000:
+	case ChType_EnergyToday_kWh_div1000:
+	case ChType_Current_div1000:
+		dVal = (float)iVal / 1000;
+		break;
+	default:
+		dVal = (float)iVal;
+		break;
+	}
+	return dVal;
 }
 float CHANNEL_GetFloat(int ch) {
 	if (ch < 0 || ch >= CHANNEL_MAX) {

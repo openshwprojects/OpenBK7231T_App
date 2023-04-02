@@ -1024,6 +1024,7 @@ void CHANNEL_Set_FloatPWM(int ch, float fVal, int iFlags);
 void CHANNEL_Add(int ch, int iVal);
 void CHANNEL_AddClamped(int ch, int iVal, int min, int max, int bWrapInsteadOfClamp);
 int CHANNEL_Get(int ch);
+float CHANNEL_GetFinalValue(int channel);
 float CHANNEL_GetFloat(int ch);
 int CHANNEL_GetRoleForOutputChannel(int ch);
 bool CHANNEL_HasRoleThatShouldBePublished(int ch);

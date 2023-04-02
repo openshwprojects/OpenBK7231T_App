@@ -103,6 +103,5 @@ void Bridge_driver_Init();
 void Bridge_driver_DeInit();
 void Bridge_driver_QuickFrame();
 void Bridge_driver_OnChannelChanged(int ch, int value);
-OBK_Publish_Result Bridge_driver_ChannelPublish(int channel);
 /*************************************************************/
 

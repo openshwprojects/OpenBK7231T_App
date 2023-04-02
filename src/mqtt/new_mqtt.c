@@ -1233,93 +1233,26 @@ OBK_Publish_Result MQTT_PublishMain_StringString(const char* sChannel, const cha
 	return MQTT_PublishMain(mqtt_client, sChannel, valueStr, flags, true);
 
 }
-double MQTT_MultiplierConfiguredOnChannel(int channel, int iVal) {
-	// Init double variable
-	double dVal = 0;
 
-	// Checking if flag is set
-	if (CFG_HasFlag(OBK_FLAG_PUBLISH_MULTIPLIED_VALUES)) {
-		switch (CHANNEL_GetType(channel))
-		{
-		case ChType_Humidity_div10:
-		case ChType_Temperature_div10:
-		case ChType_Voltage_div10:
-			dVal = (double)iVal / 10;
-			break;
-		case ChType_Frequency_div100:
-		case ChType_Current_div100:
-		case ChType_EnergyTotal_kWh_div100:
-			dVal = (double)iVal / 100;
-			break;
-		case ChType_PowerFactor_div1000:
-		case ChType_EnergyTotal_kWh_div1000:
-		case ChType_EnergyExport_kWh_div1000:
-		case ChType_EnergyToday_kWh_div1000:
-		case ChType_Current_div1000:
-			dVal = (double)iVal / 1000;
-			break;
-		default:
-			break;
-		}
-	}
-
-	// Returning double value. If it is zero then we dod nothing, or the value is indeed zero so it doesn't matter if we send a double or int.
-	return dVal;
-}
-OBK_Publish_Result MQTT_ChannelChangeCallback(int channel, int iVal)
-{
-	char channelNameStr[8];
-	char valueStr[16];
-	int flags;
-
-	// Getting double value if any, and converting if required
-	double dVal = MQTT_MultiplierConfiguredOnChannel(channel, iVal);
-	if (dVal == 0) {
-		// Integer value
-		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Channel has changed! Publishing %i to channel %i \n", iVal, channel);
-		sprintf(valueStr, "%i", iVal);
-	}
-	else {
-		// Float value
-		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Channel has changed! Publishing %f to channel %i \n", dVal, channel);
-		sprintf(valueStr, "%lf", dVal);
-	}
-
-	flags = 0;
-	MQTT_BroadcastTasmotaTeleSTATE();
-
-	// String from channel number
-	sprintf(channelNameStr, "%i", channel);
-
-	// This will set RETAIN flag for all channels that are used for RELAY
-	if (CFG_HasFlag(OBK_FLAG_MQTT_RETAIN_POWER_CHANNELS)) {
-		if (CHANNEL_IsPowerRelayChannel(channel)) {
-			flags |= OBK_PUBLISH_FLAG_RETAIN;
-		}
-	}
-
-	return MQTT_PublishMain(mqtt_client, channelNameStr, valueStr, flags, true);
-}
 OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 {
 	char channelNameStr[8];
 	char valueStr[16];
-	int iValue;
 
-	iValue = CHANNEL_Get(channel);
-
-	// Getting double value if any, and converting if required
-	double dVal = MQTT_MultiplierConfiguredOnChannel(channel, iValue);
-	if (dVal == 0) {
-		// Integer value
-		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Forced channel publish! Publishing val %i to %i", iValue, channel);
-		sprintf(valueStr, "%i", iValue);
+	if (CFG_HasFlag(OBK_FLAG_PUBLISH_MULTIPLIED_VALUES)) {
+		float dVal = CHANNEL_GetFinalValue(channel);
+		// Float value
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Channel has changed! Publishing %f to channel %i \n", dVal, channel);
+		sprintf(valueStr, "%f", dVal);
 	}
 	else {
-		// Float value
-		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Forced channel publish! Publishing val %f to %i", dVal, channel);
-		sprintf(valueStr, "%lf", dVal);
+		int iVal = CHANNEL_Get(channel);
+		// Integer value
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Channel has changed! Publishing %i to channel %i \n", iVal, channel);
+		sprintf(valueStr, "%i", iVal);
 	}
+
+	MQTT_BroadcastTasmotaTeleSTATE();
 
 	// String from channel number
 	sprintf(channelNameStr, "%i", channel);
@@ -1353,7 +1286,7 @@ commandResult_t MQTT_PublishChannel(const void* context, const char* cmd, const 
 	}
 	channelIndex = Tokenizer_GetArgInteger(0);
 
-	MQTT_ChannelChangeCallback(channelIndex, CHANNEL_Get(channelIndex));
+	MQTT_ChannelPublish(channelIndex,0);
 
 	return CMD_RES_OK;
 }
