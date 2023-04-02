@@ -39,15 +39,16 @@ void Clock_Send(int type) {
 		return;
 	}
 	time[0] = 0;
+	p = time;
 	if (type == CLOCK_TIME) {
-		p = my_strcat(time, " ");
+		p = my_strcat(p, " ");
 		p = add_padded(p, ltm->tm_hour);
 		p = my_strcat(p, ":");
 		p = add_padded(p, ltm->tm_min);
 		strcat(p, "   ");
 	}
 	else {
-		p = my_strcat(time, " ");
+		p = my_strcat(p, " ");
 		p = add_padded(p, ltm->tm_mday);
 		p = my_strcat(p, ".");
 		p = add_padded(p, ltm->tm_mon+1);
@@ -89,6 +90,7 @@ void Run_Animated() {
 	//scroll_cycle = 0;
 	if (ltm->tm_sec == 0) {
 		time[0] = 0;
+		p = time;
 
 		p = add_padded(p, ltm->tm_hour);
 		p = my_strcat(p, ":");
