@@ -4,9 +4,9 @@
 
 void SIM_SimulateUserClickOnPin(int pin) {
 	SIM_SetSimulatedPinValue(pin, false);
-	Sim_RunMiliseconds(50, false);
+	Sim_RunMiliseconds(150, false);
 	SIM_SetSimulatedPinValue(pin, true);
-	Sim_RunMiliseconds(350, false);
+	Sim_RunMiliseconds(450, false);
 }
 // Another script demo for user
 /*
