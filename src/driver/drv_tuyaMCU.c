@@ -517,12 +517,10 @@ void TuyaMCU_Send_SetTime(struct tm *pTime) {
     TuyaMCU_SendCommandWithData(TUYA_CMD_SET_TIME, payload_buffer, 8);
 }
 struct tm * TuyaMCU_Get_NTP_Time() {
-    int g_time;
     struct tm * ptm;
 
-    g_time = NTP_GetCurrentTime();
-    addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"MCU time to set: %i\n", g_time);
-    ptm = gmtime((time_t*)&g_time);
+    addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"MCU time to set: %i\n", g_ntpTime);
+    ptm = gmtime((time_t*)&g_ntpTime);
 	if (ptm != 0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ptime ->gmtime => tm_hour: %i\n", ptm->tm_hour);
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ptime ->gmtime => tm_min: %i\n", ptm->tm_min);

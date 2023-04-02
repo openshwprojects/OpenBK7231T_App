@@ -335,7 +335,7 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 //XR809 does not support drivers but its build script compiles many drivers including ntp.
 
 #else
-#ifndef ENABLE_BASIC_DRIVERS
+#ifndef ENABLE_NTP
 unsigned int NTP_GetCurrentTime() {
 	return 0;
 }

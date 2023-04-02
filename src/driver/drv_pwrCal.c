@@ -105,11 +105,35 @@ void PwrCal_Init(pwr_cal_type_t type, float default_voltage_cal,
     power_cal = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER,
                                                         default_power_cal);
 
+	//cmddetail:{"name":"VoltageSet","args":"CalibrateVoltage",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("VoltageSet", CalibrateVoltage, NULL);
+	//cmddetail:{"name":"CurrentSet","args":"CalibrateCurrent",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("CurrentSet", CalibrateCurrent, NULL);
+	//cmddetail:{"name":"PowerSet","args":"CalibratePower",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("PowerSet", CalibratePower, NULL);
+	//cmddetail:{"name":"VREF","args":"SetVoltageCal",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("VREF", SetVoltageCal, NULL);
+	//cmddetail:{"name":"IREF","args":"SetCurrentCal",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("IREF", SetCurrentCal, NULL);
+	//cmddetail:{"name":"PREF","args":"SetPowerCal",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("PREF", SetPowerCal, NULL);
 }
 

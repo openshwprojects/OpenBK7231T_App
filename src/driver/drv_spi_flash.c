@@ -229,15 +229,15 @@ void DRV_InitFlashMemoryTestFunctions() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SPITestFlash_ReadID", CMD_SPITestFlash_ReadID, NULL);
 
-	//cmddetail:{"name":"SPITestFlash_ReadID","args":"CMD_SPITestFlash_ReadID",
+	//cmddetail:{"name":"SPITestFlash_WriteStr","args":"CMD_SPITestFlash_WriteStr",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_spi_flash.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SPITestFlash_WriteStr", CMD_SPITestFlash_WriteStr, NULL);
 
-	//cmddetail:{"name":"SPITestFlash_ReadID","args":"CMD_SPITestFlash_ReadID",
+	//cmddetail:{"name":"SPITestFlash_Erase","args":"CMD_SPITestFlash_Erase",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_spi_flash.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SPITestFlash_Erase", CMD_SPITestFlash_Erase, NULL);
 

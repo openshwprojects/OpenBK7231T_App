@@ -29,6 +29,9 @@
 #define OP_SHUTDOWN    12
 #define OP_DISPLAYTEST 15
 
+#define MAX72XX_DELAY
+// #define MAX72XX_DELAY usleep(123);
+
 void PORT_shiftOut(int dataPin, int clockPin, int bitOrder, int val)
 {
 	int i;
@@ -39,9 +42,9 @@ void PORT_shiftOut(int dataPin, int clockPin, int bitOrder, int val)
 		else
 			HAL_PIN_SetOutputValue(dataPin, !!(val & (1 << (7 - i))));
 
-		usleep(123);
+		MAX72XX_DELAY
 		HAL_PIN_SetOutputValue(clockPin, HIGH);
-		usleep(123);
+		MAX72XX_DELAY
 		HAL_PIN_SetOutputValue(clockPin, LOW);
 	}
 }
@@ -57,12 +60,12 @@ void MAX72XX_spiTransfer(max72XX_t *led, int adddr, unsigned char opcode, byte d
 		led->spidata[i] = (byte)0;
 	led->spidata[offset + 1] = opcode;
 	led->spidata[offset] = datta;
-	usleep(123);
+	MAX72XX_DELAY
 	HAL_PIN_SetOutputValue(led->port_cs, LOW);
-	usleep(123);
+	MAX72XX_DELAY
 	for (i = maxbytes; i > 0; i--)
 		PORT_shiftOut(led->port_mosi, led->port_clk, MSBFIRST, led->spidata[i - 1]);
-	usleep(123);
+	MAX72XX_DELAY
 	HAL_PIN_SetOutputValue(led->port_cs, HIGH);
 }
 void MAX72XX_shutdown(max72XX_t *led, int addr, bool b) {

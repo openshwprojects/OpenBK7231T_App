@@ -20,6 +20,10 @@ void DoorDeepSleep_StopDriver();
 void DoorDeepSleep_AppendInformationToHTTPIndexPage(http_request_t* request);
 void DoorDeepSleep_OnChannelChanged(int ch, int value);
 
+void DRV_MAX72XX_Clock_OnEverySecond();
+void DRV_MAX72XX_Clock_RunFrame();
+void DRV_MAX72XX_Clock_Init();
+
 void SM2135_Init();
 
 void SM2235_Init();

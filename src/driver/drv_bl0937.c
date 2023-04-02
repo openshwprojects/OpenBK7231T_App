@@ -151,6 +151,10 @@ void BL0937_Init(void) {
     PwrCal_Init(PWR_CAL_MULTIPLY, DEFAULT_VOLTAGE_CAL, DEFAULT_CURRENT_CAL,
                 DEFAULT_POWER_CAL);
 
+	//cmddetail:{"name":"PowerMax","args":"BL0937_PowerMax",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_bl0937.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("PowerMax",BL0937_PowerMax, NULL);
 
 	BL0937_Init_Pins();
