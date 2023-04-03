@@ -411,6 +411,19 @@ static commandResult_t Cmd_obkDeviceList(const void *context, const char *cmd, c
 ///////////////////////////////////////////////
 // public functions, only used in drv_main
 
+#define SSDP_TEST_SOCKETS_THREAD
+#ifdef SSDP_TEST_SOCKETS_THREAD
+
+    int sockets_InitThread(void);
+    void sockets_StartThread(void);
+    typedef void (*SOCKETS_SERVER_CALLBACK)(void *context, int sock);
+    int sockets_server_AddSocket(int s, SOCKETS_SERVER_CALLBACK c, void *context);
+    int sockets_server_RemoveSocket(int s);
+
+    void DRV_SSDP_SocketCallback(void *context, int sock);
+
+#endif
+
 
 void DRV_SSDP_Init()
 {
@@ -443,6 +456,14 @@ void DRV_SSDP_Init()
 
     HTTP_RegisterCallback("/obkdevicelist", HTTP_GET, http_rest_get_devicelist);
 
+
+#ifdef SSDP_TEST_SOCKETS_THREAD
+    if (sockets_InitThread()){
+        sockets_StartThread();
+    }
+    sockets_server_AddSocket(g_ssdp_socket_receive, DRV_SSDP_SocketCallback, NULL);
+#endif
+
     DRV_SSDP_Active = 1;
 }
 
@@ -469,8 +490,17 @@ void DRV_SSDP_RunEverySecond() {
     }
 }
 
+#ifdef SSDP_TEST_SOCKETS_THREAD
 void DRV_SSDP_RunQuickTick() {
+    // do nothing
+}
 
+// callback from udp thread instead...
+void DRV_SSDP_SocketCallback(void *context, int sock) {
+
+#else
+void DRV_SSDP_RunQuickTick() {
+#endif
 	if (g_ssdp_socket_receive <= 0) {
 		return ;
 	}
@@ -559,7 +589,12 @@ void DRV_SSDP_Shutdown(){
     addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"DRV_SSDP_Shutdown");
     DRV_SSDP_Active = 0;
 
-	if(g_ssdp_socket_receive>=0) {
+#ifdef SSDP_TEST_SOCKETS_THREAD
+    sockets_server_RemoveSocket(g_ssdp_socket_receive);
+#endif
+
+
+	if(g_ssdp_socket_receive >= 0) {
 		close(g_ssdp_socket_receive);
 		g_ssdp_socket_receive = -1;
 	}

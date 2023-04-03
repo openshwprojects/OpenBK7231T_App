@@ -562,7 +562,25 @@ void DGR_ProcessIncomingPacket(char *msgbuf, int nbytes) {
 	g_inCmdProcessing = 0;
 
 }
+
+#define DGR_TEST_SOCKETS_THREAD
+#ifdef DGR_TEST_SOCKETS_THREAD
+
+    int sockets_InitThread(void);
+    void sockets_StartThread(void);
+    typedef void (*SOCKETS_SERVER_CALLBACK)(void *context, int sock);
+    int sockets_server_AddSocket(int s, SOCKETS_SERVER_CALLBACK c, void *context);
+    int sockets_server_RemoveSocket(int s);
+
+
 void DRV_DGR_RunQuickTick() {
+	// do nothhing
+}
+
+void DRV_DGR_ServiceSocket(void *context, int sock){
+#else
+void DRV_DGR_RunQuickTick() {
+#endif
     char msgbuf[64];
 	struct sockaddr_in me;
 	const char *myip;
@@ -640,6 +658,10 @@ void DRV_DGR_RunQuickTick() {
 //}
 void DRV_DGR_Shutdown()
 {
+#ifdef DGR_TEST_SOCKETS_THREAD
+	sockets_server_RemoveSocket(g_dgr_socket_receive);
+#endif
+
 	if(g_dgr_socket_receive>=0) {
 #if WINDOWS
 		closesocket(g_dgr_socket_receive);
@@ -902,6 +924,13 @@ void DRV_DGR_Init()
 #else
 	DRV_DGR_CreateSocket_Receive();
 	DRV_DGR_CreateSocket_Send();
+
+#ifdef DGR_TEST_SOCKETS_THREAD
+    if (sockets_InitThread()){
+	    sockets_StartThread();
+    }
+    sockets_server_AddSocket(g_dgr_socket_receive, DRV_DGR_ServiceSocket, NULL);
+#endif
 
 #endif
 	//cmddetail:{"name":"DGR_SendPower","args":"[GroupName][ChannelValues][ChannelsCount]",

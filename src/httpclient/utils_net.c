@@ -365,3 +365,187 @@ int iotx_net_init(utils_network_pt pNetwork, const char *host, uint16_t port, co
 
     return 0;
 }
+
+
+
+/////////////////////////////////////////////////////////////////////////
+// Sockets receive thread...  could be used by DGR and SSDP..
+// or even by http server to accept sockets
+
+#define MAX_SERVED_SOCKETS 10
+
+typedef void (*SOCKET_SERVER_CALLBACK)(void *context, int sock);
+typedef struct {
+    int sock;
+    SOCKET_SERVER_CALLBACK cb;
+    void * context;    
+} SOCKET_SERVER_CALLBACKS;
+
+int sockets_server_initialised = 0;
+// note: uninitialised - pls use sockets_InitThread(void)
+SOCKET_SERVER_CALLBACKS sockets_callbacks[MAX_SERVED_SOCKETS];
+
+volatile char sockets_stop = 0;
+
+int sockets_server_AddSocket(int s, SOCKET_SERVER_CALLBACK c, void *context) {
+    int found = 0;
+    for (int i = 0; i < MAX_SERVED_SOCKETS; i++){
+        if (sockets_callbacks[i].sock == s){
+            sockets_callbacks[i].cb = c;
+            sockets_callbacks[i].context = context;
+            found = 1;
+            addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"Sockets Server replace socket at %d", i);
+
+            return i;
+        }
+    }
+
+    for (int i = 0; i < MAX_SERVED_SOCKETS; i++){
+        if (sockets_callbacks[i].sock < 0){
+            sockets_callbacks[i].sock = s;
+            sockets_callbacks[i].cb = c;
+            sockets_callbacks[i].context = context;
+            addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"Sockets Server add socket at %d", i);
+            return i;
+        }
+    }
+    return -1;
+}
+
+int sockets_server_RemoveSocket(int s) {
+    for (int i = 0; i < MAX_SERVED_SOCKETS; i++){
+        if (sockets_callbacks[i].sock == s){
+            sockets_callbacks[i].cb = NULL;
+            sockets_callbacks[i].context = NULL;
+            sockets_callbacks[i].sock = -1;
+            addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"Sockets Server remove socket at %d", i);
+            return i;
+        }
+    }
+    return -1;
+}
+
+
+#ifdef PLATFORM_BEKEN
+xTaskHandle g_sockets_thread = NULL;
+static void sockets_server_thread(beken_thread_arg_t arg) {
+#else
+static void sockets_server_thread(void *param){
+#endif
+
+	fd_set readfds;
+    struct timeval tv;
+    tv.tv_sec = 1; 
+    tv.tv_usec = 0;   
+
+    addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"Sockets Server in thread");
+
+
+    while (!sockets_stop){
+		FD_ZERO(&readfds);
+        int minsock = 0;
+        int socket_count = 0;
+        for (int i = 0; i < MAX_SERVED_SOCKETS; i++){
+            if (sockets_callbacks[i].sock >= 0){
+                socket_count++;
+                if (minsock < sockets_callbacks[i].sock){
+                    minsock = sockets_callbacks[i].sock;
+                }
+        		FD_SET(sockets_callbacks[i].sock, &readfds);
+            }
+        }
+
+        if (socket_count == 0){
+            // if no sockets to wait for, just wait
+#ifdef PLATFORM_BEKEN            
+			rtos_delay_milliseconds(1000);
+#else
+            vTaskDelay(1000);
+#endif
+            addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"Sockets Server no sockets");
+        } else {
+            // wait for any of the sockets to signal
+            int selres = select(FD_SETSIZE, &readfds, NULL, NULL, &tv);
+            addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"Sockets Server selres %d", selres);
+
+            switch(selres){
+                case -1:
+                    // error
+                    break;
+                case 0:
+                    // timeout - 1s
+                    break;
+                default:{
+                    // signaled
+                    for (int i = 0; i < MAX_SERVED_SOCKETS; i++){
+                        if (sockets_callbacks[i].sock >= 0){
+                            // if this socket signalled...
+                            if (FD_ISSET(sockets_callbacks[i].sock, &readfds)){
+                                // let callback read the socket..
+                                sockets_callbacks[i].cb(
+                                    sockets_callbacks[i].context, 
+                                    sockets_callbacks[i].sock
+                                );
+                                addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"Sockets Server done cb for %d", i);
+
+                            }
+                        }
+                    }
+                } break;
+            }
+        }
+    }
+
+    addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"Sockets Server leaving thread....");
+
+}
+
+int sockets_InitThread(void){
+    if (!sockets_server_initialised){
+        for (int i = 0; i < MAX_SERVED_SOCKETS; i++){
+            sockets_callbacks[i].sock = -1;
+        }
+        sockets_server_initialised = 1;
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+void sockets_StopThread(void){
+    sockets_stop = 1;
+}
+
+void sockets_StartThread(void)
+{
+    sockets_stop = 0;
+    if (!sockets_server_initialised){
+        sockets_InitThread();
+    }
+
+    addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"Sockets Server start thread");
+
+#if WINDOWS
+
+#elif PLATFORM_BL602
+    xTaskCreate(sockets_server_thread, "sockets_server", 1024, NULL, 15, NULL);
+#elif PLATFORM_XR809
+#else
+    // BEKEN
+	OSStatus err = kNoErr;
+	err = rtos_create_thread(&g_sockets_thread, BEKEN_APPLICATION_PRIORITY,
+		"sockets_server",
+		(beken_thread_function_t)sockets_server_thread,
+		0x800,
+		(beken_thread_arg_t)0);
+	if (err != kNoErr)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "create \"sockets_server\" thread failed with %i!\r\n", err);
+	}
+#endif
+}
+///////////////////////////////////////////////////////
+
+
+
+
