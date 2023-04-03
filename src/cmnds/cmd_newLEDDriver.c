@@ -219,6 +219,11 @@ void LED_I2CDriver_WriteRGBCW(float* finalRGBCW) {
 #endif
 }
 
+void LED_ApplyEmulatedCool(int firstChannelIndex, float chVal) {
+	CHANNEL_Set_FloatPWM(firstChannelIndex + 0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+	CHANNEL_Set_FloatPWM(firstChannelIndex + 1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+	CHANNEL_Set_FloatPWM(firstChannelIndex + 2, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+}
 void LED_RunQuickColorLerp(int deltaMS) {
 	int i;
 	int firstChannelIndex;
@@ -290,9 +295,7 @@ void LED_RunQuickColorLerp(int deltaMS) {
 				// emulated cool is -1 by default, so this block will only execute
 				// if the cool emulation was enabled
 				if (channelToUse == emulatedCool && g_lightMode == Light_Temperature) {
-					CHANNEL_Set_FloatPWM(firstChannelIndex + 0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-					CHANNEL_Set_FloatPWM(firstChannelIndex + 1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-					CHANNEL_Set_FloatPWM(firstChannelIndex + 2, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+					LED_ApplyEmulatedCool(firstChannelIndex, chVal);
 				}
 				else {
 					if (CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
@@ -465,9 +468,7 @@ void apply_smart_light() {
 					// emulated cool is -1 by default, so this block will only execute
 					// if the cool emulation was enabled
 					if (channelToUse == emulatedCool && g_lightMode == Light_Temperature) {
-						CHANNEL_Set_FloatPWM(firstChannelIndex + 0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-						CHANNEL_Set_FloatPWM(firstChannelIndex + 1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-						CHANNEL_Set_FloatPWM(firstChannelIndex + 2, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+						LED_ApplyEmulatedCool(firstChannelIndex, chVal);
 					}
 					else {
 						if (CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
