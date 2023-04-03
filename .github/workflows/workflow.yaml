@@ -2,10 +2,10 @@ name: Build App
 on:
   push:
     branches:
-      - '**'
+      - "**"
   pull_request:
-    branches: 
-      - '**'
+    branches:
+      - "**"
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -24,7 +24,7 @@ jobs:
       - name: Source checkout
         uses: actions/checkout@v2
         with:
-          submodules: recursive        
+          submodules: recursive
       - name: Update SDKs if required
         run: make update-submodules
       - name: Semantic Release
@@ -65,16 +65,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [OpenBK7231T, OpenBK7231N, OpenXR809, OpenBL602, OpenW800, OpenW600]
+        platform: [OpenBK7231T, OpenBK7231N, OpenXR809, OpenW800, OpenW600]
     steps:
       - name: Source checkout
         uses: actions/checkout@v2
         with:
-          submodules: recursive        
+          submodules: recursive
       - uses: actions/setup-python@v2
         with:
-          python-version: '3.8'
-          architecture: 'x64'
+          python-version: "3.8"
+          architecture: "x64"
       - name: Install dependencies
         run: |
           sudo dpkg --add-architecture i386
@@ -111,7 +111,7 @@ jobs:
   release:
     name: Semantic Release Images and Artifacts
     runs-on: ubuntu-latest
-    needs: [ refs, build ]
+    needs: [refs, build]
     if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
     steps:
       - name: Source checkout
