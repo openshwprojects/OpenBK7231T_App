@@ -192,13 +192,28 @@ float led_lerpSpeedUnitsPerSecond = 200.f;
 float led_current_value_brightness = 0;
 float led_current_value_cold_or_warm = 0;
 
+
+void LED_CalculateEmulatedCool(float inCool, float *outRGB) {
+	outRGB[0] = inCool;
+	outRGB[1] = inCool;
+	outRGB[2] = inCool;
+}
+
+void LED_ApplyEmulatedCool(int firstChannelIndex, float chVal) {
+	float rgb[3];
+	LED_CalculateEmulatedCool(chVal, rgb);
+	CHANNEL_Set_FloatPWM(firstChannelIndex + 0, rgb[0], CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+	CHANNEL_Set_FloatPWM(firstChannelIndex + 1, rgb[1], CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+	CHANNEL_Set_FloatPWM(firstChannelIndex + 2, rgb[2], CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+}
+
 void LED_I2CDriver_WriteRGBCW(float* finalRGBCW) {
 #ifdef ENABLE_DRIVER_LED
 	if (CFG_HasFlag(OBK_FLAG_LED_EMULATE_COOL_WITH_RGB)) {
 		if (g_lightMode == Light_Temperature) {
 			// the format is RGBCW
 			// Emulate C with RGB
-			finalRGBCW[0] = finalRGBCW[1] = finalRGBCW[2] = finalRGBCW[3];
+			LED_CalculateEmulatedCool(finalRGBCW[3], finalRGBCW);
 			// C is unused
 			finalRGBCW[3] = 0;
 			// keep W unchanged
@@ -219,11 +234,6 @@ void LED_I2CDriver_WriteRGBCW(float* finalRGBCW) {
 #endif
 }
 
-void LED_ApplyEmulatedCool(int firstChannelIndex, float chVal) {
-	CHANNEL_Set_FloatPWM(firstChannelIndex + 0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-	CHANNEL_Set_FloatPWM(firstChannelIndex + 1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-	CHANNEL_Set_FloatPWM(firstChannelIndex + 2, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-}
 void LED_RunQuickColorLerp(int deltaMS) {
 	int i;
 	int firstChannelIndex;
