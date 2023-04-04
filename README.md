@@ -112,6 +112,7 @@ Publishes send by OBK device:
 | OBK_DEV_NAME/INDEX/set | "1" | Sets the channel of INDEX to given value. This can set relays and also provide DIRECT PWM access. If channel is mapped to TuyaMCU, TuyaMCU will also be updated |
 | cmnd/OBK_DEV_NAME/COMMAND_TEXT | COMMAND_ARGUMENTS | That way you can execute any command supported by OpenBeken, just like in Tasmota |
 | OBK_DEV_NAME/INDEX/get | no payload | You can send an empty 'get' publish to OBK device to request update on the state of given channel. OBK will reply back with the same topic but with payload representing given channel value. |
+| OBK_DEV_NAME/VARIABLE/get | no payload | You can send an empty publish with VARIABLE="led_dimmer"/"led_enableAll", etc etc, to query publish of given variable manually. OBK device will reply with publishing given variable. |
 
 # HomeAssistant Integration
 MQTT based integration with Home Assistant is possible in 2 ways from the Home Assistant configuration page (`Config > Generate Home Assistant cfg`).
