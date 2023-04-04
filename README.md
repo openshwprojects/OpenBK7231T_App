@@ -83,6 +83,7 @@ Hint: in HA, you can use MQTT wildcard to listen to publishes. OBK_DEV_NAME/#
 Publishes send by OBK device:
 | Topic        | Sample Value  | Description  |
 | ------------- |:-------------:| -------------:|
+| OBK_DEV_NAME/INDEX/get | 1 | send when a given channel is changed. INDEX is a number representing channel index. Some channels are not published by default, see flags. You can have any variable in channel, even a custom, fully scriptable counter |
 | OBK_DEV_NAME/connected | "online" | Send on connect. |
 | OBK_DEV_NAME/sockets |"5" | Send on connect and every minute (if enabled) |
 | OBK_DEV_NAME/rssi |"-70" | Send on connect and every minute (if enabled) |
@@ -93,17 +94,21 @@ Publishes send by OBK device:
 | OBK_DEV_NAME/mac | "84:e3:42:65:d1:87 " |Send on connect and every minute (if enabled) |
 | OBK_DEV_NAME/build | "Build on Nov 12 2022 12:39:44 version 1.0.0" |Send on connect and every minute (if enabled) | 
 | OBK_DEV_NAME/host |"obk_t_fourRelays" | Send on connect and every minute (if enabled) |
-| OBK_DEV_NAME/voltage/get |"221" | voltage from BL0942/BL0937 etc |
+| OBK_DEV_NAME/voltage/get |"221" | voltage from BL0942/BL0937 etc, just like current and power |
 | OBK_DEV_NAME/led_enableAll/get | "1" |send when LED On/Off changes or when periodic broadcast is enabled |
 | OBK_DEV_NAME/led_basecolor_rgb/get |"FFAABB" | send when LED color changes or when periodic broadcast is enabled.  |
 | OBK_DEV_NAME/led_dimmer/get |"100" | send when LED dimmer changes or when periodic broadcast is enabled |
-  
+| OBK_DEV_NAME/YOUR_TOPIC/get | YOUR_VALUE | You can publish anything with 'publish [YOUR_TOPIC] [YOUR_VALUE]' command |
+| tele/OBK_DEV_NAME/STATE | Tasmota JSON | OBK can publish Tasmota STATE style message if you enable TELE/etc publishes in options. This is used for compatibility with ioBroker, etc |
+| stat/OBK_DEV_NAME/RESULT | Tasmota JSON | See above. You can also see [related self test code for details](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/selftest/selftest_tasmota.c) |
+| [similiar tasmota messages] | Tasmota JSON | See above. See [related self test code for details](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/selftest/selftest_tasmota.c) |
   
  Publishes received by OBK device:
  | Topic        | Sample Value  | Description  |
 | ------------- |:-------------:| -------------:|
 | OBK_DEV_NAME/INDEX/set | "1" | Sets the channel of INDEX to given value. This can set relays and also provide DIRECT PWM access. If channel is mapped to TuyaMCU, TuyaMCU will also be updated |
-| todo |"100" | tooodo |
+| cmnd/OBK_DEV_NAME/COMMAND_TEXT | COMMAND_ARGUMENTS | That way you can execute any command supported by OpenBeken, just like in Tasmota |
+| OBK_DEV_NAME/INDEX/get | no payload | You can send an empty 'get' publish to OBK device to request update on the state of given channel. OBK will reply back with the same topic but with payload representing given channel value. |
 
 # HomeAssistant Integration
 MQTT based integration with Home Assistant is possible in 2 ways from the Home Assistant configuration page (`Config > Generate Home Assistant cfg`).
