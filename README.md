@@ -102,13 +102,7 @@ Publishes send by OBK device:
 | tele/OBK_DEV_NAME/STATE | Tasmota JSON | OBK can publish Tasmota STATE style message if you enable TELE/etc publishes in options. This is used for compatibility with ioBroker, etc |
 | stat/OBK_DEV_NAME/RESULT | Tasmota JSON | See above. You can also see [related self test code for details](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/selftest/selftest_tasmota.c) |
 | [similiar tasmota messages] | Tasmota JSON | See above. See [related self test code for details](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/selftest/selftest_tasmota.c) |
-| OBK_DEV_NAME/RESULT | {
-    "IrReceived": {
-        "Protocol": "Samsung",
-        "Bits": 32,
-        "Data": "0xEE110707"
-    }
-} | Sent if Tasmota syntax IR publish is enabled in flags. NOTE: we may fix it and add tele prefix soon? |
+| OBK_DEV_NAME/RESULT | { "IrReceived": { "Protocol": "Samsung", "Bits": 32, "Data": "0xEE110707" } } | Sent if Tasmota syntax IR publish is enabled in flags. NOTE: we may fix it and add tele prefix soon? |
 
   
  Publishes received by OBK device:
