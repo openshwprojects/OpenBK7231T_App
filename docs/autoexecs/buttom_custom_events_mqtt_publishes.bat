@@ -6,10 +6,10 @@
 // click toggles power
 addEventHandler OnClick 26 POWER TOGGLE
 // remaining events do MQTT publishes
-addEventHandler OnDblClick 26 publish doubleClick
-addEventHandler On3Click 26 publish tripleClick
-addEventHandler On4Click 26 publish quadraClick
-addEventHandler On5Click 26 publish pentaClick
+addEventHandler OnDblClick 26 publish myClickIs doubleClick
+addEventHandler On3Click 26 publish myClickIs tripleClick
+addEventHandler On4Click 26 publish myClickIs quadraClick
+addEventHandler On5Click 26 publish myClickIs pentaClick
 
 // NOTE: if you want also to have button hold, and this device
 // is a LED device, you can use:
