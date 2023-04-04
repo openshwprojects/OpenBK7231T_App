@@ -76,9 +76,9 @@ the commands above return a single ASCII string as a reply so it's easy to parse
   
 # MQTT topics of published variables
 
-Some MQTT variables are being published only at the startup, some are published periodically (if you enable "broadcast every minute" flag), some are published only when a given value is changed. Below is the table of used publish topics (TODO: add full descriptions)
+Some MQTT variables are being published only at the startup, some are published periodically (if you enable "broadcast every N seconds" flag, default time is one minute, customizable with command mqtt_broadcastInterval), some are published only when a given value is changed. Below is the table of used publish topics (TODO: add full descriptions)
 
-Hint: in HA, you can use MQTT wildcard to listen to publishes. OBK_DEV_NAME/#
+Hint: in HA, you can use MQTT wildcard to listen to multiple publishes. OBK_DEV_NAME/#
 
 Publishes send by OBK device:
 | Topic        | Sample Value  | Description  |
@@ -101,6 +101,7 @@ Publishes send by OBK device:
 | OBK_DEV_NAME/YOUR_TOPIC/get | YOUR_VALUE | You can publish anything with 'publish [YOUR_TOPIC] [YOUR_VALUE]' command |
 | tele/OBK_DEV_NAME/STATE | Tasmota JSON | OBK can publish Tasmota STATE style message if you enable TELE/etc publishes in options. This is used for compatibility with ioBroker, etc |
 | stat/OBK_DEV_NAME/RESULT | Tasmota JSON | See above. You can also see [related self test code for details](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/selftest/selftest_tasmota.c) |
+| tele/OBK_DEV_NAME/SENSOR | { "Time": "1970-01-01T00:00:00", "ENERGY": { "Power": 0, "ApparentPower": 0, "ReactivePower": 0, "Factor": 0,  "Voltage": 249.932449,   "Current": 0,"ConsumptionTotal": 255.346664,"ConsumptionLastHour": 0 }} | See above. Published by power metering devices, BL0937, BL0942, etc). Make sure NTP is running to get time. |
 | [similiar tasmota messages] | Tasmota JSON | See above. See [related self test code for details](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/selftest/selftest_tasmota.c) |
 | OBK_DEV_NAME/RESULT | { "IrReceived": { "Protocol": "Samsung", "Bits": 32, "Data": "0xEE110707" } } | Sent if Tasmota syntax IR publish is enabled in flags. NOTE: we may fix it and add tele prefix soon? |
 
