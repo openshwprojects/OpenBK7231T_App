@@ -671,6 +671,7 @@ let generic = readJSONFile("docs/json/generic.json");
 let commandExamples = readJSONFile("docs/json/commandExamples.json");
 let autoexecExamples = readJSONFile("docs/json/autoexecExamples.json");
 let scriptExamples = readJSONFile("docs/json/scriptExamples.json");
+let mqttTopics = readJSONFile("docs/json/mqttTopics.json");
 
 for (let i = 0; i < scriptExamples.length; i++)
 {
@@ -779,6 +780,55 @@ Do not add anything here, as it will overwritten with next rebuild.
 | Command        | Arguments          | Description  | Location |
 |:------------- |:-------------:|:----- | ------:|
 `;
+
+let mqttText = 
+`# MQTT topics of published variables
+Some MQTT variables are being published only at the startup, some are published periodically (if you enable "broadcast every N seconds" flag, default time is one minute, customizable with command mqtt_broadcastInterval), some are published only when a given value is changed. Below is the table of used publish topics (TODO: add full descriptions)
+
+Hint: in HA, you can use MQTT wildcard to listen to multiple publishes. OBK_DEV_NAME/#
+
+Publishes send by OBK device:
+| Topic        | Sample Value          | Description  |
+|:------------- |:------------- | -----:|
+`;
+
+for (let i = 0; i < mqttTopics.publishes.length; i++){
+
+
+    let pub =  mqttTopics.publishes[i];
+
+    let textshort = `| ${pub.topic} | ${pub.example} | ${pub.description} |`;
+
+    // allow multi-row entries in table entries.
+    textshort = textshort.replace(/\n/g, '<br/>');
+
+    mqttText += textshort;
+    mqttText += '\n';
+}
+
+mqttText += 
+`
+
+Publishes received by OBK device:
+| Topic        | Sample Value          | Description  |
+|:------------- |:------------- | -----:|
+`;
+let publishes_and_listens = mqttTopics.listens.concat(mqttTopics.publishes);
+for (let i = 0; i < mqttTopics.listens.length; i++){
+
+
+    let pub =  mqttTopics.listens[i];
+
+    let textshort = `| ${pub.topic} | ${pub.example} | ${pub.description} |`;
+
+    // allow multi-row entries in table entries.
+    textshort = textshort.replace(/\n/g, '<br/>');
+
+    mqttText += textshort;
+    mqttText += '\n';
+}
+
+
 
 for (let i = 0; i < flags.length; i++) {
 
@@ -1009,6 +1059,7 @@ writeDocMD('faq', faqmdshort, faq, "FAQ", false, generic.faq);
 writeDocMD('commands', mdshort, commands, "Console/Script commands", true, generic.commands);
 writeDocMD('commandExamples', commandExamplesmdshort, commandExamples, "Command Examples", false, generic.commandExamples);
 writeDocMD('autoexecExamples', autoexecsmdshort, autoexecExamples, "Autoexec.bat examples (configs)", false, generic.autoexecExamples);
+writeDocMD('mqttTopics', mqttText, publishes_and_listens, "MQTT Topics", false, generic.mqttTopics);
 writeDocMD('scriptExamples', scriptsmdshort, scriptExamples, "Script examples", false, generic.scriptExamples);
 writeDocMD('commands-extended', mdlong, commands, "Console/Script commands [Extended Edition]", false, "More details on commands.")
 
