@@ -25,8 +25,8 @@ NOTE: Obviously almost any device with supported chip (BK7231, BL602, W600, etc 
 
 # [Our Youtube Channel](https://www.youtube.com/@elektrodacom) (See step by step guides for flashing and setup)
 We have our own Youtube channel with OBK-related  guides. Please see our playlists:
-- [flashing guides playlist] (https://www.youtube.com/playlist?list=PLzbXEc2ebpH0CZDbczAXT94BuSGrd_GoM)
-- [generic setup hints, tricks, tips] (https://www.youtube.com/playlist?list=PLzbXEc2ebpH0I8m_Cfbqv1MTlQuBKYvlx)
+- [flashing guides playlist](https://www.youtube.com/playlist?list=PLzbXEc2ebpH0CZDbczAXT94BuSGrd_GoM)
+- [generic setup hints, tricks, tips](https://www.youtube.com/playlist?list=PLzbXEc2ebpH0I8m_Cfbqv1MTlQuBKYvlx)
 You can help us by giving like, a comment and subscribe!
 
 # Features
