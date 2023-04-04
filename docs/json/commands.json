@@ -928,8 +928,8 @@
   },
   {
     "name": "SetupEnergyStats",
-    "args": "[Enable1or0][SampleTime][SampleCount]",
-    "descr": "Setup Energy Statistic Parameters: [enable<0|1>] [sample_time<10..900>] [sample_count<10..180>]",
+    "args": "[Enable1or0][SampleTime][SampleCount][JSonEnable]",
+    "descr": "Setup Energy Statistic Parameters: [enable<0|1>] [sample_time<10..900>] [sample_count<10..180>] [JsonEnable<0|1>]. JSONEnable is optional.",
     "fn": "BL09XX_SetupEnergyStatistic",
     "file": "driver/drv_bl_shared.c",
     "requires": "",

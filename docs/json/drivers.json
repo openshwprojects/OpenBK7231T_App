@@ -116,7 +116,7 @@
   {
     "name": "MAX72XX_Clock",
     "title": "TODO",
-    "descr": "MAX72XX_Clock.",
+    "descr": "Simple hardcoded driver for MAX72XX clock. Requirex manual start of MAX72XX driver with MAX72XX setup and NTP start.",
     "requires": ""
   },
   {
