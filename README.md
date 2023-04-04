@@ -85,15 +85,15 @@ Publishes send by OBK device:
 | ------------- |:-------------:| -------------:|
 | OBK_DEV_NAME/INDEX/get | 1 | send when a given channel is changed. INDEX is a number representing channel index. Some channels are not published by default, see flags. You can have any variable in channel, even a custom, fully scriptable counter |
 | OBK_DEV_NAME/connected | "online" | Send on connect. |
-| OBK_DEV_NAME/sockets |"5" | Send on connect and every minute (if enabled) |
-| OBK_DEV_NAME/rssi |"-70" | Send on connect and every minute (if enabled) |
-| OBK_DEV_NAME/uptime | "653" |Send on connect and every minute (if enabled) |
-| OBK_DEV_NAME/freeheap |"95168" | Send on connect and every minute (if enabled) | 
-| OBK_DEV_NAME/ip | "192.168.0.123" |Send on connect and every minute (if enabled) | 
-| OBK_DEV_NAME/datetime | "" |Send on connect and every minute (if enabled) |
-| OBK_DEV_NAME/mac | "84:e3:42:65:d1:87 " |Send on connect and every minute (if enabled) |
-| OBK_DEV_NAME/build | "Build on Nov 12 2022 12:39:44 version 1.0.0" |Send on connect and every minute (if enabled) | 
-| OBK_DEV_NAME/host |"obk_t_fourRelays" | Send on connect and every minute (if enabled) |
+| OBK_DEV_NAME/sockets |"5" | Send on connect and every N seconds (default: 60, if enabled) |
+| OBK_DEV_NAME/rssi |"-70" | Send on connect and every N seconds (default: 60, if enabled) |
+| OBK_DEV_NAME/uptime | "653" |Send on connect and every N seconds (default: 60, if enabled) |
+| OBK_DEV_NAME/freeheap |"95168" | Send on connect and every N seconds (default: 60, if enabled) | 
+| OBK_DEV_NAME/ip | "192.168.0.123" |Send on connect and every N seconds (default: 60, if enabled) | 
+| OBK_DEV_NAME/datetime | "" |Send on connect and every N seconds (default: 60, if enabled) |
+| OBK_DEV_NAME/mac | "84:e3:42:65:d1:87 " |Send on connect and every N seconds (default: 60, if enabled) |
+| OBK_DEV_NAME/build | "Build on Nov 12 2022 12:39:44 version 1.0.0" |Send on connect and every N seconds (default: 60, if enabled) | 
+| OBK_DEV_NAME/host |"obk_t_fourRelays" | Send on connect and every N seconds (default: 60, if enabled) |
 | OBK_DEV_NAME/voltage/get |"221" | voltage from BL0942/BL0937 etc, just like current and power |
 | OBK_DEV_NAME/led_enableAll/get | "1" |send when LED On/Off changes or when periodic broadcast is enabled |
 | OBK_DEV_NAME/led_basecolor_rgb/get |"FFAABB" | send when LED color changes or when periodic broadcast is enabled.  |
