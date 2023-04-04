@@ -243,6 +243,7 @@ Simple example showing how to do MQTT publish on button event (double click, etc
 // click toggles power
 addEventHandler OnClick 26 POWER TOGGLE
 // remaining events do MQTT publishes
+// NOTE: publish [topicName] [payload]. Final topic will be like obk0696FB33/[Topic]/get
 addEventHandler OnDblClick 26 publish myClickIs doubleClick
 addEventHandler On3Click 26 publish myClickIs tripleClick
 addEventHandler On4Click 26 publish myClickIs quadraClick
