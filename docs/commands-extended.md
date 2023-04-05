@@ -141,12 +141,12 @@ Do not add anything here, as it will overwritten with next rebuild.
 | toggler_set | [Value] | Sets the VALUE of given output. Handles toggler_set0, toggler_set1, etc. The last digit after command name is changed to slot index. | File: driver/drv_pwmToggler.c<br/>Function: Toggler_SetX |
 | toggler_channel | [ChannelIndex] | handles toggler_channel0, toggler_channel1. Sets channel linked to given toggler slot. | File: driver/drv_pwmToggler.c<br/>Function: Toggler_ChannelX |
 | toggler_name |  | Handles toggler_name0, toggler_name1, etc. Sets the name of a toggler for GUI. | File: driver/drv_pwmToggler.c<br/>Function: Toggler_NameX |
-| VoltageSet | CalibrateVoltage |  | File: driver/drv_pwrCal.c<br/>Function: NULL); |
-| CurrentSet | CalibrateCurrent |  | File: driver/drv_pwrCal.c<br/>Function: NULL); |
-| PowerSet | CalibratePower |  | File: driver/drv_pwrCal.c<br/>Function: NULL); |
-| VREF | SetVoltageCal |  | File: driver/drv_pwrCal.c<br/>Function: NULL); |
-| IREF | SetCurrentCal |  | File: driver/drv_pwrCal.c<br/>Function: NULL); |
-| PREF | SetPowerCal |  | File: driver/drv_pwrCal.c<br/>Function: NULL); |
+| VoltageSet | Voltage | Measure the real voltage with an external, reliable power meter and enter this voltage via this command to calibrate. The calibration is automatically saved in the flash memory. | File: driver/drv_pwrCal.c<br/>Function: NULL); |
+| CurrentSet | Current | Measure the real Current with an external, reliable power meter and enter this Current via this command to calibrate. The calibration is automatically saved in the flash memory. | File: driver/drv_pwrCal.c<br/>Function: NULL); |
+| PowerSet | Power | Measure the real Power with an external, reliable power meter and enter this Power via this command to calibrate. The calibration is automatically saved in the flash memory. | File: driver/drv_pwrCal.c<br/>Function: NULL); |
+| VREF | Value |  | File: driver/drv_pwrCal.c<br/>Function: NULL); |
+| IREF | Value |  | File: driver/drv_pwrCal.c<br/>Function: NULL); |
+| PREF | Value |  | File: driver/drv_pwrCal.c<br/>Function: NULL); |
 | SHT_cycle | [int] | change cycle of measurement by default every 10 seconds 0 to deactivate<br/>e.g.:SHT_Cycle 60 | File: drv/drv_sht3x.c<br/>Function: SHT_cycle |
 | SHT_Calibrate |  | Calibrate the SHT Sensor as Tolerance is +/-2 degrees C.<br/>e.g.:SHT_Calibrate -4 10 | File: driver/drv_sht3x.c<br/>Function: SHT3X_Calibrate |
 | SHT_MeasurePer |  | Retrieve Periodical measurement for SHT<br/>e.g.:SHT_Measure | File: driver/drv_sht3x.c<br/>Function: SHT3X_MeasurePer |

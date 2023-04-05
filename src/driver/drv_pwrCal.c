@@ -105,32 +105,32 @@ void PwrCal_Init(pwr_cal_type_t type, float default_voltage_cal,
     power_cal = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER,
                                                         default_power_cal);
 
-	//cmddetail:{"name":"VoltageSet","args":"CalibrateVoltage",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"VoltageSet","args":"Voltage",
+	//cmddetail:"descr":"Measure the real voltage with an external, reliable power meter and enter this voltage via this command to calibrate. The calibration is automatically saved in the flash memory.",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("VoltageSet", CalibrateVoltage, NULL);
-	//cmddetail:{"name":"CurrentSet","args":"CalibrateCurrent",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"CurrentSet","args":"Current",
+	//cmddetail:"descr":"Measure the real Current with an external, reliable power meter and enter this Current via this command to calibrate. The calibration is automatically saved in the flash memory.",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("CurrentSet", CalibrateCurrent, NULL);
-	//cmddetail:{"name":"PowerSet","args":"CalibratePower",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"PowerSet","args":"Power",
+	//cmddetail:"descr":"Measure the real Power with an external, reliable power meter and enter this Power via this command to calibrate. The calibration is automatically saved in the flash memory.",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("PowerSet", CalibratePower, NULL);
-	//cmddetail:{"name":"VREF","args":"SetVoltageCal",
+	//cmddetail:{"name":"VREF","args":"Value",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("VREF", SetVoltageCal, NULL);
-	//cmddetail:{"name":"IREF","args":"SetCurrentCal",
+	//cmddetail:{"name":"IREF","args":"Value",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("IREF", SetCurrentCal, NULL);
-	//cmddetail:{"name":"PREF","args":"SetPowerCal",
+	//cmddetail:{"name":"PREF","args":"Value",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
 	//cmddetail:"examples":""}
