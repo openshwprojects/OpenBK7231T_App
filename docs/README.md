@@ -5,6 +5,7 @@ The descriptions were taken from code and from the JSON files, and then converte
 Do not add anything here, as it will overwritten with next rebuild.
 
 # Basic doc pages 
+- [Initial setup](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/initialSetup.md) - a first steps with OBK
 - [Safe mode](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/safeMode.md) - a method to recover device from wrong SSID/pass or crashing config
 - [Simple TCP command server for scripting](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/tcpServer.md) - a simple TCP interface for scripting
 - [HomeAssistant Integration](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/homeAssistant.md) - an easy HA pairing method with [Discovery](https://www.youtube.com/watch?v=pkcspey25V4) or Yaml gen
