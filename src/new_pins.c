@@ -924,7 +924,7 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 	}
 	if ((iFlags & CHANNEL_SET_FLAG_SKIP_MQTT) == 0) {
 		if (bCallCb) {
-			MQTT_ChannelPublish(ch,0);
+			MQTT_ChannelPublish(ch, 0);
 		}
 	}
 	// Simple event - it just says that there was a change
@@ -1271,7 +1271,7 @@ bool CHANNEL_IsPowerRelayChannel(int ch) {
 	int i;
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if (g_cfg.pins.channels[i] == ch) {
-			int role = g_cfg.pins.roles[i]; 
+			int role = g_cfg.pins.roles[i];
 			// NOTE: do not include Battery relay
 			if (role == IOR_Relay || role == IOR_Relay_n) {
 				return true;
@@ -1289,7 +1289,7 @@ bool CHANNEL_HasRoleThatShouldBePublished(int ch) {
 			if (role == IOR_Relay || role == IOR_Relay_n
 				|| role == IOR_LED || role == IOR_LED_n
 				|| role == IOR_ADC || role == IOR_BAT_ADC || role == IOR_BAT_Relay
-				|| role == IOR_CHT8305_DAT || role == IOR_SHT3X_DAT
+				|| role == IOR_CHT8305_DAT || role == IOR_SHT3X_DAT || role == IOR_SGP_DAT
 				|| role == IOR_DigitalInput || role == IOR_DigitalInput_n
 				|| role == IOR_DoorSensorWithDeepSleep || role == IOR_DoorSensorWithDeepSleep_NoPup
 				|| IS_PIN_DHT_ROLE(role)
@@ -1301,8 +1301,8 @@ bool CHANNEL_HasRoleThatShouldBePublished(int ch) {
 			if (IS_PIN_DHT_ROLE(role)) {
 				return true;
 			}
-			// CHT8305 and SHT3X uses secondary channel for humidity
-			if (role == IOR_CHT8305_DAT || role == IOR_SHT3X_DAT) {
+			// SGP, CHT8305 and SHT3X uses secondary channel for humidity
+			if (role == IOR_CHT8305_DAT || role == IOR_SHT3X_DAT || role == IOR_SGP_DAT) {
 				return true;
 			}
 		}
