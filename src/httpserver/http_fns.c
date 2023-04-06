@@ -571,7 +571,7 @@ int http_fn_index(http_request_t* request) {
 		}
 		else if (h_isChannelRelay(i) || channelType == ChType_Toggle) {
 			const char* c;
-			const char *prefix;
+			const char* prefix;
 			if (i <= 1) {
 				hprintf255(request, "<tr>");
 			}
@@ -1650,6 +1650,17 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 
 			discoveryQueued = true;
 		}
+		else if (IS_PIN_AIR_SENSOR_ROLE(g_cfg.pins.roles[i])) {
+			dev_info = hass_init_sensor_device_info(CO2_SENSOR, PIN_GetPinChannelForPinIndex(i));
+			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+			hass_free_device_info(dev_info);
+
+			dev_info = hass_init_sensor_device_info(TVOC_SENSOR, PIN_GetPinChannel2ForPinIndex(i));
+			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+			hass_free_device_info(dev_info);
+
+			discoveryQueued = true;
+		}
 	}
 
 	if (discoveryQueued) {
@@ -2092,7 +2103,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 		poststr(request, "</select>");
 		// Primary linked channel
 		// Some roles do not need any channels
-		if ((si != IOR_SHT3X_CLK && si != IOR_CHT8305_CLK && si != IOR_Button_ToggleAll && si != IOR_Button_ToggleAll_n
+		if ((si != IOR_SGP_CLK && si != IOR_SHT3X_CLK && si != IOR_CHT8305_CLK && si != IOR_Button_ToggleAll && si != IOR_Button_ToggleAll_n
 			&& si != IOR_BL0937_CF && si != IOR_BL0937_CF1 && si != IOR_BL0937_SEL
 			&& si != IOR_LED_WIFI && si != IOR_LED_WIFI_n && si != IOR_LED_WIFI_n
 			&& !(si >= IOR_IRRecv && si <= IOR_DHT11)
@@ -2103,7 +2114,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 		}
 		// Secondary linked channel
 		// For button, is relay index to toggle on double click
-		if (si == IOR_Button || si == IOR_Button_n || IS_PIN_DHT_ROLE(si) || IS_PIN_TEMP_HUM_SENSOR_ROLE(si))
+		if (si == IOR_Button || si == IOR_Button_n || IS_PIN_DHT_ROLE(si) || IS_PIN_TEMP_HUM_SENSOR_ROLE(si) || IS_PIN_AIR_SENSOR_ROLE(si))
 		{
 			hprintf255(request, "<input class=\"hele\" name=\"e%i\" type=\"text\" value=\"%i\"/>", i, ch2);
 		}

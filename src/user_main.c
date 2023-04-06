@@ -334,7 +334,7 @@ void Main_ScheduleHomeAssistantDiscovery(int seconds) {
 }
 
 void Main_ConnectToWiFiNow() {
-	const char* wifi_ssid, *wifi_pass;
+	const char* wifi_ssid, * wifi_pass;
 
 	g_bOpenAccessPointMode = 0;
 	wifi_ssid = CFG_GetWiFiSSID();
@@ -688,7 +688,7 @@ void QuickTick(void* param)
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	SVM_RunThreads(t_diff);
 #endif
-	RepeatingEvents_RunUpdate(t_diff*0.001f);
+	RepeatingEvents_RunUpdate(t_diff * 0.001f);
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_RunQuickTick();
 #endif
@@ -928,8 +928,8 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 				DRV_StartDriver("BP1658CJ");
 #endif
 			}
-			if (PIN_FindPinIndexForRole(IOR_BL0937_CF, -1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_CF1, -1) != -1 
-				&& (PIN_FindPinIndexForRole(IOR_BL0937_SEL, -1) != -1|| PIN_FindPinIndexForRole(IOR_BL0937_SEL_n, -1) != -1)) {
+			if (PIN_FindPinIndexForRole(IOR_BL0937_CF, -1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_CF1, -1) != -1
+				&& (PIN_FindPinIndexForRole(IOR_BL0937_SEL, -1) != -1 || PIN_FindPinIndexForRole(IOR_BL0937_SEL_n, -1) != -1)) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("BL0937");
 #endif
@@ -955,6 +955,11 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 			if (PIN_FindPinIndexForRole(IOR_SHT3X_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_SHT3X_DAT, -1) != -1) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("SHT3X");
+#endif
+			}
+			if (PIN_FindPinIndexForRole(IOR_SGP_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_SGP_DAT, -1) != -1) {
+#ifndef OBK_DISABLE_ALL_DRIVERS
+				DRV_StartDriver("SGP");
 #endif
 			}
 			if (PIN_FindPinIndexForRole(IOR_BAT_ADC, -1) != -1) {
