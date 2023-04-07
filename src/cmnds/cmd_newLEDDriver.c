@@ -1430,12 +1430,20 @@ float LED_GetHue() {
 	return g_hsv_h;
 }
 void NewLED_InitCommands(){
+	int pwmCount;
+
 	// set, but do not apply (force a refresh)
 	LED_SetTemperature(led_temperature_current,0);
+
+	PIN_get_Relay_PWM_Count(0, &pwmCount, 0);
 
 	// if this is CW, switch from default RGB to CW
 	if (isCWMode()) {
 		g_lightMode = Light_Temperature;
+	}
+	else if (pwmCount == 1 || pwmCount == 3) {
+		// if single color or RGB, force RGB
+		g_lightMode = Light_RGB;
 	}
 
 	//cmddetail:{"name":"led_dimmer","args":"[Value]",
