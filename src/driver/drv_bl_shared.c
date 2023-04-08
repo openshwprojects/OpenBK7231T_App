@@ -114,17 +114,20 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
         "<tr><td><b>Apparent Power</b></td><td style='text-align: right;'>");
     hprintf255(request, "%.1f</td><td>VA</td>", apparent_power);
 
-    float reactive_power =
-        sqrtf(powf(apparent_power, 2) - powf(lastReadings[OBK_POWER], 2));
+    float reactive_power = (apparent_power <= lastReadings[OBK_POWER]
+                                ? 0
+                                : sqrtf(powf(apparent_power, 2) -
+                                        powf(lastReadings[OBK_POWER], 2)));
     poststr(
         request,
         "<tr><td><b>Reactive Power</b></td><td style='text-align: right;'>");
     hprintf255(request, "%.1f</td><td>var</td>", reactive_power);
 
+    float power_factor =
+        (apparent_power == 0 ? 0 : lastReadings[OBK_POWER] / apparent_power);
     poststr(request,
             "<tr><td><b>Power Factor</b></td><td style='text-align: right;'>");
-    hprintf255(request, "%.2f</td><td></td>",
-               lastReadings[OBK_POWER] / apparent_power);
+    hprintf255(request, "%.2f</td><td></td>", power_factor);
 
     if (NTP_IsTimeSynced()) {
         poststr(request, "<tr><td><b>Energy Today</b></td><td "
