@@ -85,6 +85,16 @@ int Tokenizer_GetArgIntegerRange(int i, int rangeMin, int rangeMax) {
 	}
 	return ret;
 }
+int Tokenizer_GetArgIntegerDefault(int i, int def) {
+	int r;
+
+	if (g_numArgs <= i) {
+		return def;
+	}
+	r = Tokenizer_GetArgInteger(i);
+
+	return r;
+}
 int Tokenizer_GetArgInteger(int i) {
 	const char *s;
 	int ret;
