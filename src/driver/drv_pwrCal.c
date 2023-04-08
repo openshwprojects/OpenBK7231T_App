@@ -63,33 +63,6 @@ static commandResult_t CalibratePower(const void *context, const char *cmd,
     return Calibrate(cmd, args, latest_raw_power, &power_cal, CFG_OBK_POWER);
 }
 
-static commandResult_t SetVoltageCal(const void *context, const char *cmd,
-                                     const char *args, int cmdFlags) {
-    if (!GetValidFloatArg(args, &voltage_cal))
-        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-
-    CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE, voltage_cal);
-    return CMD_RES_OK;
-}
-
-static commandResult_t SetCurrentCal(const void *context, const char *cmd,
-                                     const char *args, int cmdFlags) {
-    if (!GetValidFloatArg(args, &current_cal))
-        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-
-    CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, current_cal);
-    return CMD_RES_OK;
-}
-
-static commandResult_t SetPowerCal(const void *context, const char *cmd,
-                                   const char *args, int cmdFlags) {
-    if (!GetValidFloatArg(args, &power_cal))
-        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-
-    CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_POWER, power_cal);
-    return CMD_RES_OK;
-}
-
 static float Scale(int raw, float cal) {
     return (cal_type == PWR_CAL_MULTIPLY ? raw * cal : raw / cal);
 }
@@ -120,21 +93,6 @@ void PwrCal_Init(pwr_cal_type_t type, float default_voltage_cal,
 	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("PowerSet", CalibratePower, NULL);
-	//cmddetail:{"name":"VREF","args":"Value",
-	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
-	//cmddetail:"examples":""}
-    CMD_RegisterCommand("VREF", SetVoltageCal, NULL);
-	//cmddetail:{"name":"IREF","args":"Value",
-	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
-	//cmddetail:"examples":""}
-    CMD_RegisterCommand("IREF", SetCurrentCal, NULL);
-	//cmddetail:{"name":"PREF","args":"Value",
-	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
-	//cmddetail:"examples":""}
-    CMD_RegisterCommand("PREF", SetPowerCal, NULL);
 }
 
 void PwrCal_Scale(int raw_voltage, int raw_current, int raw_power,
