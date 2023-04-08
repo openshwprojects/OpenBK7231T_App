@@ -15,34 +15,29 @@ static int latest_raw_voltage;
 static int latest_raw_current;
 static int latest_raw_power;
 
-static uint8_t GetValidFloatArg(const char *args, float *farg) {
-    if (args == 0 || *args == 0) {
-        ADDLOG_INFO(LOG_FEATURE_ENERGYMETER, "This command needs one argument");
-        return 0;
-    }
-
-    float val = atof(args);
-    if (val == 0.0f) {
-        ADDLOG_INFO(LOG_FEATURE_ENERGYMETER, "Argument must not be 0.0");
-        return 0;
-    }
-
-    *farg = val;
-    return 1;
-}
+//#define PWRCAL_DEBUG
 
 static commandResult_t Calibrate(const char *cmd, const char *args, int raw,
                                  float *cal, int cfg_index) {
-    float real;
-    if (!GetValidFloatArg(args, &real))
+    Tokenizer_TokenizeString(args, 0);
+    if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
         return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+    }
+
+    float real = Tokenizer_GetArgFloat(0);
+	if (real == 0.0f) {
+        ADDLOG_ERROR(LOG_FEATURE_ENERGYMETER, "%s",
+                     CMD_GetResultString(CMD_RES_BAD_ARGUMENT));
+        return CMD_RES_BAD_ARGUMENT;
+    }
 
     *cal = (cal_type == PWR_CAL_MULTIPLY ? real / raw : raw / real);
-
     CFG_SetPowerMeasurementCalibrationFloat(cfg_index, *cal);
 
+#ifdef PWRCAL_DEBUG
     ADDLOG_INFO(LOG_FEATURE_ENERGYMETER, "%s: you gave %f, set ref to %f\n",
                 cmd, real, *cal);
+#endif
     return CMD_RES_OK;
 }
 
