@@ -237,6 +237,14 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"Air Quality sensor.",
 	//drvdetail:"requires":""}
 	{ "SGP",	    SGP_Init,		SGP_OnEverySecond,		SGP_AppendInformationToHTTPIndexPage, NULL, SGP_StopDriver, NULL, false },
+
+	//drvdetail:{"name":"ShiftRegister",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"ShiftRegisterShiftRegisterShiftRegisterShiftRegister",
+	//drvdetail:"requires":""}
+	{ "ShiftRegister",	    Shift_Init,		Shift_OnEverySecond,		NULL, NULL, NULL, Shift_OnChannelChanged, false },
+#endif
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	//drvdetail:{"name":"Battery",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Custom mechanism to measure battery level with ADC and an optional relay. See [example here](https://www.elektroda.com/rtvforum/topic3959103.html).",
@@ -251,6 +259,7 @@ static driver_t g_drivers[] = {
 	{ "Bridge",     Bridge_driver_Init, NULL,                       NULL, Bridge_driver_QuickFrame, Bridge_driver_DeInit, Bridge_driver_OnChannelChanged, false }
 #endif
 };
+
 
 static const int g_numDrivers = sizeof(g_drivers) / sizeof(g_drivers[0]);
 

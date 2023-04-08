@@ -75,6 +75,9 @@ void Batt_OnEverySecond();
 void Batt_AppendInformationToHTTPIndexPage(http_request_t* request);
 void Batt_StopDriver();
 
+void Shift_Init();
+void Shift_OnEverySecond();
+void Shift_OnChannelChanged(int ch, int value);
 
 void DRV_MAX72XX_Init();
 
