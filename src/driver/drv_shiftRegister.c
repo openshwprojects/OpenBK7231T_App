@@ -58,11 +58,11 @@ void Shift_Init() {
 	HAL_PIN_Setup_Output(g_clk);
 }
 
-void PORT_shiftOut(int dataPin, int clockPin, int bitOrder, int val);
+void PORT_shiftOut(int dataPin, int clockPin, int bitOrder, int val, int totalRegisters);
 
-void PORT_shiftOutLatch(int dataPin, int clockPin, int latchPin, int bitOrder, int val) {
+void PORT_shiftOutLatch(int dataPin, int clockPin, int latchPin, int bitOrder, int val, int totalRegisters) {
 	HAL_PIN_SetOutputValue(latchPin, 0);
-	PORT_shiftOut(dataPin, clockPin, bitOrder, val);
+	PORT_shiftOut(dataPin, clockPin, bitOrder, val, totalRegisters);
 	HAL_PIN_SetOutputValue(latchPin, 1);
 }
 
@@ -90,7 +90,7 @@ void Shift_OnChannelChanged(int ch, int value) {
 		BIT_CLEAR(g_currentValue, ch);
 	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Will send value %i", g_currentValue);
-	PORT_shiftOutLatch(g_data, g_clk, g_latch, g_order, g_currentValue);
+	PORT_shiftOutLatch(g_data, g_clk, g_latch, g_order, g_currentValue, g_totalRegisters);
 }
 
 
