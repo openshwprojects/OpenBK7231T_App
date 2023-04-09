@@ -17,22 +17,25 @@ static byte g_clk;
 // First index of channel that is mapped to shift register.
 static byte g_firstChannel;
 // Current value on shift register
+// This is a 32-bit integer, so up to 4 shift registers (32 bits) are supported 
 static int g_currentValue;
 // MSBFirst or LSBFirst
 static byte g_order;
 // how many 8 bit registers you have chained together
 static byte g_totalRegisters;
+// invert or not
+static byte g_invert;
 
 /*
 
-// startDriver ShiftRegister [DataPin] [LatchPin] [ClkPin] [FirstChannel] [Order] [TotalRegisters]
-startDriver ShiftRegister 24 6 7 10 1 1
+// startDriver ShiftRegister [DataPin] [LatchPin] [ClkPin] [FirstChannel] [Order] [TotalRegisters] [Invert]
+startDriver ShiftRegister 24 6 7 10 1 1 0
 // If given argument is not present, default value is used
 // First channel is a first channel that is mapped to first output of shift register.
 // The total number of channels mapped is equal to TotalRegisters * 8, because every register has 8 pins.
 // Order can be 0 or 1, MSBFirst or LSBFirst
 
-// To make channel appear with Toggle, please also set the type:
+// To make channel appear with Toggle on HTTP panel, please also set the type:
 setChannelType 10 Toggle
 setChannelType 11 Toggle
 setChannelType 12 Toggle
@@ -45,13 +48,16 @@ setChannelType 17 Toggle
 
 */
 void Shift_Init() {
-
+	// NOTE: this is called by "startDriver ShiftRegister" command,
+	// which means that Tokenizer has already tokenized the command,
+	// and that argument 0 is "ShiftRegister" driver name
 	g_data = Tokenizer_GetArgIntegerDefault(1, 24);
 	g_latch = Tokenizer_GetArgIntegerDefault(2, 6);
 	g_clk = Tokenizer_GetArgIntegerDefault(3, 7);
 	g_firstChannel = Tokenizer_GetArgIntegerDefault(4, 10);
 	g_order = Tokenizer_GetArgIntegerDefault(5, 1);
 	g_totalRegisters = Tokenizer_GetArgIntegerDefault(6, 1);
+	g_invert = Tokenizer_GetArgIntegerDefault(7, 0);
 
 	HAL_PIN_Setup_Output(g_latch);
 	HAL_PIN_Setup_Output(g_data);
@@ -75,13 +81,21 @@ void Shift_OnEverySecond() {
 	else {
 		testVal = 0xff;
 	}
-	PORT_shiftOutLatch(g_data, g_clk, g_latch, 0, testVal);
+	PORT_shiftOutLatch(g_data, g_clk, g_latch, 0, testVal, 1);
 #endif
 }
 void Shift_OnChannelChanged(int ch, int value) {
+	int totalChannelsMapped = g_totalRegisters * 8;
+
 	ch -= g_firstChannel;
 	if (ch < 0) {
 		return;
+	}
+	if (ch >= g_totalRegisters) {
+		return;
+	}
+	if (g_invert) {
+		value = !value;
 	}
 	if (value) {
 		BIT_SET(g_currentValue, ch);
