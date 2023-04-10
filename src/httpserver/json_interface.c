@@ -227,7 +227,7 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 
 		printer(request, "{");
 		printer(request, "\"Power\": %f,", power);
-		printer(request, "\"ApparentPower\": $f,", g_apparentPower);
+		printer(request, "\"ApparentPower\": %f,", g_apparentPower);
 		printer(request, "\"ReactivePower\": %f,", g_reactivePower);
 		printer(request, "\"Factor\":%f,", factor);
 		printer(request, "\"Voltage\":%f,", voltage);
