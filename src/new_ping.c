@@ -33,7 +33,6 @@
 #define PING_DEBUG     LWIP_DBG_ON
 #endif
 
-#define PING_DELAY 1000
 
 /** ping identifier - must fit on a u16_t */
 #ifndef PING_ID
@@ -127,7 +126,7 @@ static void ping_timeout(void *arg)
     ping_send(pcb, &ping_target);
   }
   // void 	sys_timeout (u32_t msecs, sys_timeout_handler handler, void *arg)
-  sys_timeout(PING_DELAY, ping_timeout, pcb);
+  sys_timeout(g_pingWatchDog_intervalMs, ping_timeout, pcb);
 }
 
 static u8_t ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_addr_t *addr)
@@ -190,7 +189,7 @@ void Main_SetupPingWatchDog(const char *target/*, int delayBetweenPings_Seconds*
         raw_recv(ping_pcb, ping_recv, NULL);
         raw_bind(ping_pcb, IP_ADDR_ANY);
 	    // void 	sys_timeout (u32_t msecs, sys_timeout_handler handler, void *arg)
-        sys_timeout(PING_DELAY, ping_timeout, ping_pcb);
+        sys_timeout(g_pingWatchDog_intervalMs, ping_timeout, ping_pcb);
 		ping_handler_active = true;
     }
 
