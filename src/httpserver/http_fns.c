@@ -646,7 +646,11 @@ int http_fn_index(http_request_t* request) {
 
 		lm = LED_GetMode();
 
-		c_pwms = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
+		//c_pwms = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
+		// This will treat multiple PWMs on a single channel as one.
+		// Thanks to this users can turn for example RGB LED controller
+		// into high power 3-outputs single colors LED controller
+		PIN_get_Relay_PWM_Count(0, &c_pwms, 0);
 		if (bForceShowRGBCW) {
 			c_pwms = 5;
 		}
@@ -1543,7 +1547,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	measuringBattery = DRV_IsMeasuringBattery();
 #endif
 
-	get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
+	PIN_get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
 
 	ledDriverChipRunning = LED_IsLedDriverChipRunning();
 
@@ -1749,7 +1753,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 
 	poststr(request, "<textarea rows=\"40\" cols=\"50\">");
 
-	get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
+	PIN_get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
 
 	if (relayCount > 0) {
 

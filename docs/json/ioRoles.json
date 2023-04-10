@@ -512,6 +512,14 @@
     "driver": ""
   },
   {
+    "name": "BL0937_SEL_n",
+    "title": "TODO",
+    "descr": "Inverted SEL alternative for BL0937. Choose only one, either SEL or SEL_n. SEL_n may be needed in rare cases.",
+    "enum": "IOR_BL0937_SEL_n",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
     "name": "Total_Options",
     "title": "TODO",
     "descr": "Current total number of available IOR roles",

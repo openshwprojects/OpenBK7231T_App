@@ -18,7 +18,6 @@
     <ClCompile Include="src\logging\logging.c" />
     <ClCompile Include="src\mqtt\new_mqtt.c" />
     <ClCompile Include="src\mqtt\new_mqtt_deduper.c" />
-    <ClCompile Include="src\new_builtin_devices.c" />
     <ClCompile Include="src\new_cfg.c" />
     <ClCompile Include="src\new_common.c" />
     <ClCompile Include="src\new_ping.c" />
@@ -522,6 +521,303 @@
     <ClCompile Include="src\driver\drv_battery.c">
       <Filter>Drv</Filter>
     </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Airton.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Airwell.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Aiwa.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Amcor.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Argo.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Arris.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Bosch.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Bose.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Carrier.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_ClimaButler.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Coolix.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Corona.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Daikin.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Delonghi.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Denon.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Dish.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Doshisha.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Ecoclim.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Electra.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_EliteScreens.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Epson.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Fujitsu.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_GICable.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_GlobalCache.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Goodweather.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Gorenje.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Gree.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Haier.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Hitachi.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Inax.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_JVC.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Kelon.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Kelvinator.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Lasertag.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Lego.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_LG.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Lutron.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Magiquest.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Metz.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Midea.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_MilesTag2.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Mirage.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Mitsubishi.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_MitsubishiHeavy.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Multibrackets.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_MWM.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_NEC.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Neoclima.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Nikai.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Panasonic.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Pioneer.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Pronto.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_RC5_RC6.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_RCMM.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Rhoss.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Samsung.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Sanyo.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Sharp.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Sherwood.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Sony.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Symphony.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Tcl.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Technibel.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Teco.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Teknopoint.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Toshiba.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Toto.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Transcold.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Trotec.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Truma.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Vestel.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Voltas.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Whirlpool.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Whynter.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Wowwee.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Xmp.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Zepeal.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRac.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRproto.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRrecv.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRsend.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRtext.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRtimer.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRutils.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\itoa.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\String.cpp">
+      <Filter>IRRemote-ESP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_cfg_via_http.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_doorSensorWithDeepSleep.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_soft_i2c.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_demo_buttonScrollingChannelValue.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_tm1637.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_demo_buttonToggleGroup.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_role_toggleAll_2.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_spi.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_clockEvents.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_pwrCal.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_max72xx_clock.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_twoPWMsOneChannel.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_shiftRegister.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />
@@ -665,6 +961,261 @@
     <ClInclude Include="src\driver\drv_sht3x.h">
       <Filter>Drv</Filter>
     </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ac_LG.h">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ac_LG.hpp">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\digitalWriteFast.h">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_BangOlufsen.hpp">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_BoseWave.hpp">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Denon.hpp">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_DistanceProtocol.hpp">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_JVC.hpp">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Kaseikyo.hpp">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Lego.hpp">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_LG.hpp">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_MagiQuest.hpp">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_NEC.hpp">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Others.hpp">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Pronto.hpp">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_RC5_RC6.hpp">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Samsung.hpp">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Sony.hpp">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Template.hpp">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRFeedbackLED.hpp">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRProtocol.h">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRReceive.hpp">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRremote.h">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRremote.hpp">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRremoteInt.h">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRSend.hpp">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\LongUnion.h">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\TinyIRReceiver.h">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\TinyIRReceiver.hpp">
+      <Filter>IRRemote-old</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\i18n.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Airton.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Airwell.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Amcor.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Argo.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Bosch.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Carrier.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Coolix.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Corona.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Daikin.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Delonghi.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Ecoclim.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Electra.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Fujitsu.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Goodweather.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Gree.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Haier.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Hitachi.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Kelon.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Kelvinator.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_LG.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Magiquest.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Midea.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Mirage.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Mitsubishi.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_MitsubishiHeavy.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_NEC.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Neoclima.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Panasonic.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Rhoss.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Samsung.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Sanyo.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Sharp.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Tcl.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Technibel.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Teco.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Toshiba.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Transcold.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Trotec.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Truma.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Vestel.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Voltas.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Whirlpool.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRac.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRmacros.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRproto.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRrecv.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRremoteESP8266.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRsend.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRtext.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRtimer.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRutils.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\itoa.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\minmax.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\String.h">
+      <Filter>IRRemote-ESP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\driver\drv_tm1637.h">
+      <Filter>Drv</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\include\net_param_pub.h" />
@@ -766,6 +1317,12 @@
     </Filter>
     <Filter Include="SelfTest">
       <UniqueIdentifier>{0d71deec-4234-4353-b50a-d55394522055}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="IRRemote-old">
+      <UniqueIdentifier>{b5fe6300-6717-4382-acc5-5d4736e28b25}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="IRRemote-ESP">
+      <UniqueIdentifier>{553d6b46-d893-4259-b8b1-77e58da2a2ed}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

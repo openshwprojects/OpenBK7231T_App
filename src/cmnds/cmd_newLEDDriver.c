@@ -112,7 +112,12 @@ bool LED_IsLEDRunning()
 	if (LED_IsLedDriverChipRunning())
 		return true;
 
-	pwmCount = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
+	//pwmCount = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
+	// This will treat multiple PWMs on a single channel as one.
+	// Thanks to this users can turn for example RGB LED controller
+	// into high power 3-outputs single colors LED controller
+	PIN_get_Relay_PWM_Count(0, &pwmCount, 0);
+
 	if (pwmCount > 0)
 		return true;	
 	if (CFG_HasFlag(OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER))
@@ -123,7 +128,11 @@ bool LED_IsLEDRunning()
 int isCWMode() {
 	int pwmCount;
 
-	pwmCount = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
+	//pwmCount = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
+	// This will treat multiple PWMs on a single channel as one.
+	// Thanks to this users can turn for example RGB LED controller
+	// into high power 3-outputs single colors LED controller
+	PIN_get_Relay_PWM_Count(0, &pwmCount, 0);
 
 	if(pwmCount == 2)
 		return 1;
@@ -142,7 +151,11 @@ int shouldSendRGB() {
 	if (LED_IsLedDriverChipRunning())
 		return true;
 
-	pwmCount = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
+	//pwmCount = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
+	// This will treat multiple PWMs on a single channel as one.
+	// Thanks to this users can turn for example RGB LED controller
+	// into high power 3-outputs single colors LED controller
+	PIN_get_Relay_PWM_Count(0, &pwmCount, 0);
 
 	// single colors and CW don't send rgb
 	if(pwmCount <= 2)
@@ -1417,12 +1430,20 @@ float LED_GetHue() {
 	return g_hsv_h;
 }
 void NewLED_InitCommands(){
+	int pwmCount;
+
 	// set, but do not apply (force a refresh)
 	LED_SetTemperature(led_temperature_current,0);
+
+	PIN_get_Relay_PWM_Count(0, &pwmCount, 0);
 
 	// if this is CW, switch from default RGB to CW
 	if (isCWMode()) {
 		g_lightMode = Light_Temperature;
+	}
+	else if (pwmCount == 1 || pwmCount == 3) {
+		// if single color or RGB, force RGB
+		g_lightMode = Light_RGB;
 	}
 
 	//cmddetail:{"name":"led_dimmer","args":"[Value]",

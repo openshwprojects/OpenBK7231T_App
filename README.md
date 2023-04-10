@@ -23,6 +23,12 @@ The database is also accessible from inside our firmware (but requires internet 
 Have a not listed device? HELP US, submit a teardown [here](https://www.elektroda.com/rtvforum/posting.php?mode=newtopic&f=51) and 🏆**get free SD card and gadgets set**🏆 ! Thanks to cooperation with [Elektroda.com](https://www.elektroda.com/), if you submit a detailed teardown/article/review, we can send you [this set of gadgets](https://obrazki.elektroda.pl/1470574200_1670833596.jpg) for free (🚚shipping with normal letter🚚).
 NOTE: Obviously almost any device with supported chip (BK7231, BL602, W600, etc is potentially supported and it's not possible to list all available devices in the market, so feel free to try even if your device is not listed - *we are [here](https://www.elektroda.com/rtvforum/forum390.html) to help and guide you step by step*!)
 
+# [Our Youtube Channel](https://www.youtube.com/@elektrodacom) (See step by step guides for flashing and setup)
+We have our own Youtube channel with OBK-related  guides. Please see our playlists:
+- [flashing guides playlist](https://www.youtube.com/playlist?list=PLzbXEc2ebpH0CZDbczAXT94BuSGrd_GoM)
+- [generic setup hints, tricks, tips](https://www.youtube.com/playlist?list=PLzbXEc2ebpH0I8m_Cfbqv1MTlQuBKYvlx)
+
+You can help us by giving like, a comment and subscribe!
 
 # Features
 
@@ -57,65 +63,9 @@ OpenBeken supports online builds for all platforms (BK7231T, BK7231N, XR809, BL6
 # Flashing
 
 See  [FLASHING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/FLASHING.md)
-  
-# Safe mode
-  
-  Device is counting full boots (full boot is a boot after which device worked for 30 seconds). If you power off and on device multiple times, it will enter open access point mode and safe mode (safe mode means even pin systems are not initialized). Those modes are used to recover devices from bad configs and errors.
-    
-# [Docs - Console Commands, Flags, Constants, Pin Roles, Channel Types, FAQ, autoexec.bat examples](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs)
+ 
+# [Docs - MQTT topics, Console Commands, Flags, Constants, Pin Roles, Channel Types, FAQ, autoexec.bat examples](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs)
    
-# Simple TCP command server for scripting
-  
-  You can enable a simple TCP server in device Generic/Flags option, which will listen by default on port 100. Server can accept single connection at time from Putty in RAW mode (raw TCP connection) and accepts text commands for OpenBeken console. In future, we may add support for multiple connections at time. Server will close connection if client does nothing for some time.
-  
-  There are some extra short commands for TCP console:
-- GetChannel [index] 
-- GetReadings - returns voltage, current and power
-- ShortName
-the commands above return a single ASCII string as a reply so it's easy to parse.
-  
-# MQTT topics of published variables
-
-Some MQTT variables are being published only at the startup, some are published periodically (if you enable "broadcast every minute" flag), some are published only when a given value is changed. Below is the table of used publish topics (TODO: add full descriptions)
-
-Hint: in HA, you can use MQTT wildcard to listen to publishes. OBK_DEV_NAME/#
-
-Publishes send by OBK device:
-| Topic        | Sample Value  | Description  |
-| ------------- |:-------------:| -------------:|
-| OBK_DEV_NAME/connected | "online" | Send on connect. |
-| OBK_DEV_NAME/sockets |"5" | Send on connect and every minute (if enabled) |
-| OBK_DEV_NAME/rssi |"-70" | Send on connect and every minute (if enabled) |
-| OBK_DEV_NAME/uptime | "653" |Send on connect and every minute (if enabled) |
-| OBK_DEV_NAME/freeheap |"95168" | Send on connect and every minute (if enabled) | 
-| OBK_DEV_NAME/ip | "192.168.0.123" |Send on connect and every minute (if enabled) | 
-| OBK_DEV_NAME/datetime | "" |Send on connect and every minute (if enabled) |
-| OBK_DEV_NAME/mac | "84:e3:42:65:d1:87 " |Send on connect and every minute (if enabled) |
-| OBK_DEV_NAME/build | "Build on Nov 12 2022 12:39:44 version 1.0.0" |Send on connect and every minute (if enabled) | 
-| OBK_DEV_NAME/host |"obk_t_fourRelays" | Send on connect and every minute (if enabled) |
-| OBK_DEV_NAME/voltage/get |"221" | voltage from BL0942/BL0937 etc |
-| OBK_DEV_NAME/led_enableAll/get | "1" |send when LED On/Off changes or when periodic broadcast is enabled |
-| OBK_DEV_NAME/led_basecolor_rgb/get |"FFAABB" | send when LED color changes or when periodic broadcast is enabled.  |
-| OBK_DEV_NAME/led_dimmer/get |"100" | send when LED dimmer changes or when periodic broadcast is enabled |
-  
-  
- Publishes received by OBK device:
- | Topic        | Sample Value  | Description  |
-| ------------- |:-------------:| -------------:|
-| OBK_DEV_NAME/INDEX/set | "1" | Sets the channel of INDEX to given value. This can set relays and also provide DIRECT PWM access. If channel is mapped to TuyaMCU, TuyaMCU will also be updated |
-| todo |"100" | tooodo |
-
-# HomeAssistant Integration
-MQTT based integration with Home Assistant is possible in 2 ways from the Home Assistant configuration page (`Config > Generate Home Assistant cfg`).
-
-One can paste the generated [yaml](https://www.home-assistant.io/docs/configuration/yaml/) configuration into Home Assistant configuration manually.
-
-Or add the devices automatically via discovery. To do click the `Start Home Assistant Discovery` button which sends outs [MQTT discovery](https://www.home-assistant.io/docs/mqtt/discovery/) messages, one for each entity (switch, light).
-* The discovery topic should match the `discovery_prefix` defined in Home Assistant, the default value is `homeassistant`.
-* More details about Home Assistant discovery can be found [here](https://www.home-assistant.io/docs/mqtt/discovery/).
-
-Note: Currently, discovery is only implemented for light and relay entities.  
-  
 # Futher reading
   
 For technical insights and generic SDK information related to Beken, WinnerMicro, Bouffallo Lab and XRadio modules, please refer:

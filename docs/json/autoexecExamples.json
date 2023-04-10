@@ -30,5 +30,9 @@
 {
 "title": "[Configuration for 4x socket + 1x USB power strip with a single button (double click, triple, etc)](https://www.elektroda.com/rtvforum/topic3941692.html)",
 "file": "autoexecs/single_button_for_five_relays.bat"
+},
+{
+"title": "Simple example showing how to do MQTT publish on button event (double click, etc). It also includes button hold event to adjust dimmer.",
+"file": "autoexecs/buttom_custom_events_mqtt_publishes.bat"
 }
 ]

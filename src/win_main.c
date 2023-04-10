@@ -126,6 +126,7 @@ void SIM_DoFreshOBKBoot() {
 	Main_Init();
 }
 void Win_DoUnitTests() {
+	Test_TwoPWMsOneChannel();
 	Test_ClockEvents();
 	Test_HassDiscovery();
 	Test_Role_ToggleAll_2();
@@ -299,7 +300,9 @@ int __cdecl main(int argc, char **argv)
 		printf("OFFSETOF(mainConfig_t, version) != 0x00000004: %i\n", OFFSETOF(mainConfig_t, version));
 		system("pause");
 	}
-	
+	// Test expansion
+	//CMD_UART_Send_Hex(0,0,"FFAA$CH1$BB",0);
+
 	if (bWantsUnitTests) {
 		g_bDoingUnitTestsNow = 1;
 		SIM_DoFreshOBKBoot();

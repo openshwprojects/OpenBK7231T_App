@@ -1859,11 +1859,21 @@ static commandResult_t CMD_SetChannelType(const void* context, const char* cmd, 
 /// @brief Computes the Relay and PWM count.
 /// @param relayCount Number of relay and LED channels.
 /// @param pwmCount Number of PWM channels.
-void get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount) {
+void PIN_get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount) {
 	int i;
-	(*relayCount) = 0;
-	(*pwmCount) = 0;
-	(*dInputCount) = 0;
+	int pwmBits;
+	if (relayCount) {
+		(*relayCount) = 0;
+	}
+	if (pwmCount) {
+		(*pwmCount) = 0;
+	}
+	if (dInputCount) {
+		(*dInputCount) = 0;
+	}
+
+	// if we have two PWMs on single channel, count it once
+	pwmBits = 0;
 
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		int role = PIN_GetPinRoleForPinIndex(i);
@@ -1873,11 +1883,15 @@ void get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount) {
 		case IOR_Relay_n:
 		case IOR_LED:
 		case IOR_LED_n:
-			(*relayCount)++;
+			if (relayCount) {
+				(*relayCount)++;
+			}
 			break;
 		case IOR_PWM:
 		case IOR_PWM_n:
-			(*pwmCount)++;
+			// if we have two PWMs on single channel, count it once
+			BIT_SET(pwmBits, g_cfg.pins.channels[i]);
+			//(*pwmCount)++;
 			break;
 		case IOR_DigitalInput:
 		case IOR_DigitalInput_n:
@@ -1885,10 +1899,20 @@ void get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount) {
 		case IOR_DigitalInput_NoPup_n:
 		case IOR_DoorSensorWithDeepSleep:
 		case IOR_DoorSensorWithDeepSleep_NoPup:
-			(*dInputCount)++;
+			if (dInputCount) {
+				(*dInputCount)++;
+			}
 			break;
 		default:
 			break;
+		}
+	}
+	if (pwmCount) {
+		// if we have two PWMs on single channel, count it once
+		for (i = 0; i < 32; i++) {
+			if (BIT_CHECK(pwmBits, i)) {
+				(*pwmCount)++;
+			}
 		}
 	}
 }

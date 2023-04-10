@@ -21,6 +21,7 @@ https://developer.tuya.com/en/docs/iot/tuyacloudlowpoweruniversalserialaccesspro
 #include "../mqtt/new_mqtt.h"
 #include "drv_tuyaMCU.h"
 #include "drv_uart.h"
+#include "drv_public.h"
 #include <time.h>
 #include "drv_ntp.h"
 
@@ -1203,8 +1204,8 @@ void TuyaMCU_ProcessIncoming(const byte *data, int len) {
             // This was added for this user:
             // https://www.elektroda.com/rtvforum/topic3937723.html
             if (version == 0) {
-                // 0x08 packet for version 0 (not 0x03) of TuyaMCU
-                // This packet includes first a DateTime, then RealTimeDataStorage
+                // 0x05 packet for version 0 (not 0x03) of TuyaMCU
+                // This packet has no datetime stamp
                 TuyaMCU_V0_ParseRealTimeWithRecordStorage(data + 6, len - 6, false);
             }
             else {
@@ -1363,7 +1364,7 @@ void TuyaMCU_RunFrame() {
         } else {
             heartbeat_timer = 0;
         }
-        if (heartbeat_valid == true)
+        if (heartbeat_valid == true && DRV_IsRunning("tmSensor")==false)
         {
             /* Connection Active */
             if (product_information_valid == false)

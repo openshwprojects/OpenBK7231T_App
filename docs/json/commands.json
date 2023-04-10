@@ -928,8 +928,8 @@
   },
   {
     "name": "SetupEnergyStats",
-    "args": "[Enable1or0][SampleTime][SampleCount]",
-    "descr": "Setup Energy Statistic Parameters: [enable<0|1>] [sample_time<10..900>] [sample_count<10..180>]",
+    "args": "[Enable1or0][SampleTime][SampleCount][JSonEnable]",
+    "descr": "Setup Energy Statistic Parameters: [enable<0|1>] [sample_time<10..900>] [sample_count<10..180>] [JsonEnable<0|1>]. JSONEnable is optional.",
     "fn": "BL09XX_SetupEnergyStatistic",
     "file": "driver/drv_bl_shared.c",
     "requires": "",
@@ -1225,8 +1225,8 @@
   },
   {
     "name": "VoltageSet",
-    "args": "CalibrateVoltage",
-    "descr": "",
+    "args": "Voltage",
+    "descr": "Measure the real voltage with an external, reliable power meter and enter this voltage via this command to calibrate. The calibration is automatically saved in the flash memory.",
     "fn": "NULL);",
     "file": "driver/drv_pwrCal.c",
     "requires": "",
@@ -1234,8 +1234,8 @@
   },
   {
     "name": "CurrentSet",
-    "args": "CalibrateCurrent",
-    "descr": "",
+    "args": "Current",
+    "descr": "Measure the real Current with an external, reliable power meter and enter this Current via this command to calibrate. The calibration is automatically saved in the flash memory.",
     "fn": "NULL);",
     "file": "driver/drv_pwrCal.c",
     "requires": "",
@@ -1243,8 +1243,8 @@
   },
   {
     "name": "PowerSet",
-    "args": "CalibratePower",
-    "descr": "",
+    "args": "Power",
+    "descr": "Measure the real Power with an external, reliable power meter and enter this Power via this command to calibrate. The calibration is automatically saved in the flash memory.",
     "fn": "NULL);",
     "file": "driver/drv_pwrCal.c",
     "requires": "",
@@ -1252,7 +1252,7 @@
   },
   {
     "name": "VREF",
-    "args": "SetVoltageCal",
+    "args": "Value",
     "descr": "",
     "fn": "NULL);",
     "file": "driver/drv_pwrCal.c",
@@ -1261,7 +1261,7 @@
   },
   {
     "name": "IREF",
-    "args": "SetCurrentCal",
+    "args": "Value",
     "descr": "",
     "fn": "NULL);",
     "file": "driver/drv_pwrCal.c",
@@ -1270,7 +1270,7 @@
   },
   {
     "name": "PREF",
-    "args": "SetPowerCal",
+    "args": "Value",
     "descr": "",
     "fn": "NULL);",
     "file": "driver/drv_pwrCal.c",

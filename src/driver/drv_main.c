@@ -232,6 +232,11 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"Humidity/temperature sensor. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html)",
 	//drvdetail:"requires":""}
 	{ "SHT3X",	    SHT3X_Init,		SHT3X_OnEverySecond,		SHT3X_AppendInformationToHTTPIndexPage, NULL, SHT3X_StopDriver, NULL, false },
+	//drvdetail:{"name":"ShiftRegister",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"ShiftRegisterShiftRegisterShiftRegisterShiftRegister",
+	//drvdetail:"requires":""}
+	{ "ShiftRegister",	    Shift_Init,		Shift_OnEverySecond,		NULL, NULL, NULL, Shift_OnChannelChanged, false },
 #endif
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	//drvdetail:{"name":"Battery",
@@ -248,6 +253,7 @@ static driver_t g_drivers[] = {
 	{ "Bridge",     Bridge_driver_Init, NULL,                       NULL, Bridge_driver_QuickFrame, Bridge_driver_DeInit, Bridge_driver_OnChannelChanged, false }
 #endif
 };
+
 
 static const int g_numDrivers = sizeof(g_drivers) / sizeof(g_drivers[0]);
 
