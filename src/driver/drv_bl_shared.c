@@ -68,6 +68,9 @@ float changeSendThresholds[OBK_NUM_MEASUREMENTS] = {
 
 int changeSendAlwaysFrames = 60;
 int changeDoNotSendMinFrames = 5;
+float g_apparentPower;
+float g_powerFactor;
+float g_reactivePower;
 
 void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 {
@@ -107,27 +110,27 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
             "<tr><td><b>Active Power</b></td><td style='text-align: right;'>");
     hprintf255(request, "%.1f</td><td>W</td>", lastReadings[OBK_POWER]);
 
-    float apparent_power =
+    g_apparentPower =
         lastReadings[OBK_VOLTAGE] * lastReadings[OBK_CURRENT];
     poststr(
         request,
         "<tr><td><b>Apparent Power</b></td><td style='text-align: right;'>");
-    hprintf255(request, "%.1f</td><td>VA</td>", apparent_power);
+    hprintf255(request, "%.1f</td><td>VA</td>", g_apparentPower);
 
-    float reactive_power = (apparent_power <= fabsf(lastReadings[OBK_POWER])
+    g_reactivePower = (g_apparentPower <= fabsf(lastReadings[OBK_POWER])
                                 ? 0
-                                : sqrtf(powf(apparent_power, 2) -
+                                : sqrtf(powf(g_apparentPower, 2) -
                                         powf(lastReadings[OBK_POWER], 2)));
     poststr(
         request,
         "<tr><td><b>Reactive Power</b></td><td style='text-align: right;'>");
-    hprintf255(request, "%.1f</td><td>var</td>", reactive_power);
+    hprintf255(request, "%.1f</td><td>var</td>", g_reactivePower);
 
-    float power_factor =
-        (apparent_power == 0 ? 1 : lastReadings[OBK_POWER] / apparent_power);
+    g_powerFactor =
+        (g_apparentPower == 0 ? 1 : lastReadings[OBK_POWER] / g_apparentPower);
     poststr(request,
             "<tr><td><b>Power Factor</b></td><td style='text-align: right;'>");
-    hprintf255(request, "%.2f</td><td></td>", power_factor);
+    hprintf255(request, "%.2f</td><td></td>", g_powerFactor);
 
     if (NTP_IsTimeSynced()) {
         poststr(request, "<tr><td><b>Energy Today</b></td><td "
