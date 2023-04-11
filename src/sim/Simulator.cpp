@@ -29,7 +29,7 @@ CSimulator::CSimulator() {
 	activeTool = 0;
 	Window = 0;
 	Context = 0;
-	WindowFlags = SDL_WINDOW_OPENGL;
+	WindowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
 	Running = 1;
 	FullScreen = 0;
 	//setTool(new Tool_Wire());
