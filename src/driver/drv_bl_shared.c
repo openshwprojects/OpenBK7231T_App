@@ -68,9 +68,9 @@ float changeSendThresholds[OBK_NUM_MEASUREMENTS] = {
 
 int changeSendAlwaysFrames = 60;
 int changeDoNotSendMinFrames = 5;
-float g_apparentPower;
-float g_powerFactor;
-float g_reactivePower;
+float g_apparentPower = 0;
+float g_powerFactor = 0;
+float g_reactivePower = 0;
 
 void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 {
@@ -110,24 +110,16 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
             "<tr><td><b>Active Power</b></td><td style='text-align: right;'>");
     hprintf255(request, "%.1f</td><td>W</td>", lastReadings[OBK_POWER]);
 
-    g_apparentPower =
-        lastReadings[OBK_VOLTAGE] * lastReadings[OBK_CURRENT];
     poststr(
         request,
         "<tr><td><b>Apparent Power</b></td><td style='text-align: right;'>");
     hprintf255(request, "%.1f</td><td>VA</td>", g_apparentPower);
 
-    g_reactivePower = (g_apparentPower <= fabsf(lastReadings[OBK_POWER])
-                                ? 0
-                                : sqrtf(powf(g_apparentPower, 2) -
-                                        powf(lastReadings[OBK_POWER], 2)));
     poststr(
         request,
         "<tr><td><b>Reactive Power</b></td><td style='text-align: right;'>");
     hprintf255(request, "%.1f</td><td>var</td>", g_reactivePower);
 
-    g_powerFactor =
-        (g_apparentPower == 0 ? 1 : lastReadings[OBK_POWER] / g_apparentPower);
     poststr(request,
             "<tr><td><b>Power Factor</b></td><td style='text-align: right;'>");
     hprintf255(request, "%.2f</td><td></td>", g_powerFactor);
@@ -449,6 +441,17 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     lastReadings[OBK_VOLTAGE] = voltage;
     lastReadings[OBK_CURRENT] = current;
     lastReadingFrequency = frequency;
+
+	g_apparentPower =
+		lastReadings[OBK_VOLTAGE] * lastReadings[OBK_CURRENT];
+
+	g_reactivePower = (g_apparentPower <= fabsf(lastReadings[OBK_POWER])
+		? 0
+		: sqrtf(powf(g_apparentPower, 2) -
+			powf(lastReadings[OBK_POWER], 2)));
+
+	g_powerFactor =
+		(g_apparentPower == 0 ? 1 : lastReadings[OBK_POWER] / g_apparentPower);
 
     xPassedTicks = (int)(xTaskGetTickCount() - energyCounterStamp);
     if (xPassedTicks <= 0)
