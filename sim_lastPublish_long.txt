@@ -1,0 +1,1 @@
+Topic: stat/rgbcwBulb/RESULTPayload: {"Dimmer":100,"Fade":"OFF","Speed":1,"LedTable":"ON","Color":"0,0,0,41,213","HSBColor":"0,0,1","Channel":[0,0,0],"CT":444,"POWER":"ON"}

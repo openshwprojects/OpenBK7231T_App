@@ -13,6 +13,13 @@ output/**
 node_modules
 Debug*/**
 libs_for_simulator/**
+DevIL.dll
+freeglut.dll
+ILU.dll
+ILUT.dll
+nfd.lib
+nfd_d.lib
+SDL2.dll
 
 # MacOS ignores
 .DS_Store
