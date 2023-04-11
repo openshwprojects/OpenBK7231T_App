@@ -195,10 +195,9 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 
 
 static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
-	float power, factor, voltage, current, batterypercentage = 0;
+	float power, voltage, current, batterypercentage = 0;
 	float energy, energy_hour;
 
-	factor = 0; // TODO
 	voltage = DRV_GetReading(OBK_VOLTAGE);
 	current = DRV_GetReading(OBK_CURRENT);
 	power = DRV_GetReading(OBK_POWER);
@@ -229,7 +228,7 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 		printer(request, "\"Power\": %f,", power);
 		printer(request, "\"ApparentPower\": %f,", g_apparentPower);
 		printer(request, "\"ReactivePower\": %f,", g_reactivePower);
-		printer(request, "\"Factor\":%f,", factor);
+		printer(request, "\"Factor\":%f,", g_powerFactor);
 		printer(request, "\"Voltage\":%f,", voltage);
 		printer(request, "\"Current\":%f,", current);
 		printer(request, "\"ConsumptionTotal\":%f,", energy);
