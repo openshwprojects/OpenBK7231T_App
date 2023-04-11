@@ -128,6 +128,10 @@ void CSimulator::drawWindow() {
 		}
 		else if (Event.type == SDL_WINDOWEVENT) {
 			switch (Event.window.event) {
+					
+			case SDL_WINDOWEVENT_RESIZED:   // exit game
+				SDL_GetWindowSize(Window, &WinWidth, &WinHeight );
+				break;
 
 			case SDL_WINDOWEVENT_CLOSE:   // exit game
 				onUserClose();
