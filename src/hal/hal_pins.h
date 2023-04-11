@@ -1,6 +1,7 @@
 
 void HAL_PIN_SetOutputValue(int index, int iVal);
 int HAL_PIN_ReadDigitalInput(int index);
+void HAL_PIN_Setup_Input_Pulldown(int index);
 void HAL_PIN_Setup_Input_Pullup(int index);
 void HAL_PIN_Setup_Input(int index);
 void HAL_PIN_Setup_Output(int index);

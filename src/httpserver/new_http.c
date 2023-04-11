@@ -448,7 +448,7 @@ const char* htmlPinRoleNames[] = {
 	"TM1637_DIO",
 	"TM1637_CLK",
 	"BL0937SEL_n",
-	"error",
+	"DoorSnsrWSleep_pd",
 	"error",
 	"error",
 	"error",

@@ -137,6 +137,9 @@ int HAL_PIN_ReadDigitalInput(int index) {
 
 	return tls_gpio_read(realCode);
 }
+void HAL_PIN_Setup_Input_Pulldown(int index) {
+
+}
 void HAL_PIN_Setup_Input_Pullup(int index) {
 	int realCode;
 	if (IsPinIndexOk(index) == 0)

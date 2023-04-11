@@ -191,6 +191,8 @@ int HAL_PIN_ReadDigitalInput(int index) {
 void HAL_PIN_Setup_Input_Pullup(int index) {
 	g_pinModes[index] = SIM_PIN_INPUT_PULLUP;
 }
+void HAL_PIN_Setup_Input_Pulldown(int index) {
+}
 void HAL_PIN_Setup_Input(int index) {
 	g_pinModes[index] = SIM_PIN_INPUT;
 }
