@@ -948,7 +948,8 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 #endif
 			}
 			if ((PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep, -1) != -1) ||
-				(PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep_NoPup, -1) != -1))
+				(PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep_NoPup, -1) != -1) ||
+				(PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep_pd, -1) != -1))
 			{
 #ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("DoorSensor");
