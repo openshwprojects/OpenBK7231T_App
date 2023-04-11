@@ -24,8 +24,8 @@
 #pragma comment (lib, "Opengl32.lib")
 #pragma comment (lib, "freeglut.lib")
 
-int WinWidth = 1680;
-int WinHeight = 940;
+int WinWidth = 800;
+int WinHeight = 600;
 #undef main
 
 CStyle g_style_shapes(CColor(165, 75, 75), 3.0f);
