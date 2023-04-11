@@ -72,6 +72,7 @@ static int g_bPingWatchDogStarted = 0;
 static char g_currentIPString[32] = { 0 };
 static HALWifiStatus_t g_newWiFiStatus = WIFI_UNDEFINED;
 static HALWifiStatus_t g_prevWiFiStatus = WIFI_UNDEFINED;
+static int g_noMQTTTime = 0;
 
 uint8_t g_StartupDelayOver = 0;
 
@@ -384,6 +385,17 @@ void Main_OnEverySecond()
 		// Argument type here is HALWifiStatus_t enumeration
 		EventHandlers_FireEvent(CMD_EVENT_WIFI_STATE, g_newWiFiStatus);
 	}
+	// Update time with no MQTT
+	if (bMQTTconnected) {
+		i = 0;
+	} else {
+		i = g_noMQTTTime + 1;
+	}
+	// 'i' is a new value
+	EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_NOMQTTTIME, g_noMQTTTime, i);
+	// save new value
+	g_noMQTTTime = i;
+
 	MQTT_Dedup_Tick();
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();
@@ -423,7 +435,7 @@ void Main_OnEverySecond()
 	{
 		EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_NOPINGTIME, g_timeSinceLastPingReply, g_timeSinceLastPingReply + 1);
 		g_timeSinceLastPingReply++;
-		if (g_timeSinceLastPingReply >= CFG_GetPingDisconnectedSecondsToRestart())
+		if (CFG_GetPingDisconnectedSecondsToRestart() > 0 && g_timeSinceLastPingReply >= CFG_GetPingDisconnectedSecondsToRestart())
 		{
 			if (g_bHasWiFiConnected != 0)
 			{
@@ -558,17 +570,12 @@ void Main_OnEverySecond()
 			if (0 == g_startPingWatchDogAfter)
 			{
 				const char* pingTargetServer;
-				//int pingInterval;
-				int restartAfterNoPingsSeconds;
 
 				g_bPingWatchDogStarted = 1;
 
 				pingTargetServer = CFG_GetPingHost();
-				//pingInterval = CFG_GetPingIntervalSeconds();
-				restartAfterNoPingsSeconds = CFG_GetPingDisconnectedSecondsToRestart();
 
-				if ((pingTargetServer != NULL) && (strlen(pingTargetServer) > 0) &&
-					/*(pingInterval > 0) && */ (restartAfterNoPingsSeconds > 0))
+				if ((pingTargetServer != NULL) && (strlen(pingTargetServer) > 0))
 				{
 					// mark as enabled
 					g_timeSinceLastPingReply = 0;

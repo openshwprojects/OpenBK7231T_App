@@ -114,6 +114,8 @@ enum EventCode {
 
 	CMD_EVENT_LED_MODE, // Argument: new light mode as integer
 
+	CMD_EVENT_CHANGE_NOMQTTTIME,
+
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
 };
