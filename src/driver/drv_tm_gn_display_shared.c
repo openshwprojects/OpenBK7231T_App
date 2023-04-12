@@ -15,6 +15,7 @@
 
 #define GN6932_DELAY usleep(1);
 
+static softI2C_t g_i2c;
 static byte g_brightness;
 static byte g_digits[] = {
 	0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f,0x77,0x7c,0x39,0x5e,0x79,0x71,0xff
@@ -71,16 +72,10 @@ static bool TM_GN_WriteByte(softI2C_t *i2c, byte b) {
 }
 static void TM_GN_Start(softI2C_t *i2c) {
 	if (i2c->pin_stb != -1) {
-		HAL_PIN_Setup_Output(i2c->pin_clk);
-		HAL_PIN_Setup_Output(i2c->pin_stb);
-		HAL_PIN_Setup_Output(i2c->pin_data);
-
 		HAL_PIN_SetOutputValue(i2c->pin_clk, true);
 		HAL_PIN_SetOutputValue(i2c->pin_stb, false);
 	}
 	else {
-		HAL_PIN_Setup_Output(i2c->pin_data);
-		HAL_PIN_Setup_Output(i2c->pin_clk);
 		HAL_PIN_SetOutputValue(i2c->pin_clk, true);
 		HAL_PIN_SetOutputValue(i2c->pin_data, true);
 		HAL_PIN_SetOutputValue(i2c->pin_data, 0);
@@ -150,29 +145,15 @@ static void TM_GN_WriteCommand(softI2C_t *i2c, byte command, const byte *data, i
 }
 static void TM1637_SendSegments(const byte *segments, byte length, byte pos) {
 	int i;
-	softI2C_t i2c;
-
-	if (PIN_FindPinIndexForRole(IOR_TM1637_CLK, -1) != -1) {
-		i2c.pin_clk = PIN_FindPinIndexForRole(IOR_TM1637_CLK, 16);
-		i2c.pin_data = PIN_FindPinIndexForRole(IOR_TM1637_DIO, 14);
-		i2c.pin_stb = -1;
-		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using I2C mode");
-	}
-	else {
-		i2c.pin_clk = 17;// PIN_FindPinIndexForRole(IOR_TM1637_CLK, 16);
-		i2c.pin_data = 15;// PIN_FindPinIndexForRole(IOR_TM1637_DIO, 14);
-		i2c.pin_stb = 28;// PIN_FindPinIndexForRole(IOR_TM1637_DIO, 14);
-		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using SPI mode");
-	}
 
 	// set COM1 (no data, just command)
-	TM_GN_WriteCommand(&i2c, TM1637_I2C_COM1, 0, 0);
+	TM_GN_WriteCommand(&g_i2c, TM1637_I2C_COM1, 0, 0);
 
 	// set COM2 + first digit address
-	TM_GN_WriteCommand(&i2c, TM1637_I2C_COM2 + (pos & 0x03), segments, length);
+	TM_GN_WriteCommand(&g_i2c, TM1637_I2C_COM2 + (pos & 0x03), segments, length);
 
 	// set COM3 + brightness (no data, just command)
-	TM_GN_WriteCommand(&i2c, TM1637_I2C_COM3 + (g_brightness & 0x0f), 0, 0);
+	TM_GN_WriteCommand(&g_i2c, TM1637_I2C_COM3 + (g_brightness & 0x0f), 0, 0);
 }
 static int TM1637_MapCharacter(int ch) {
 	int ret;
@@ -373,7 +354,35 @@ TMGN_Print 3 3 $CH11
 delay_s 0.5
 goto again
 */
+
 void TM_GN_Display_SharedInit() {
+	if (PIN_FindPinIndexForRole(IOR_TM1637_CLK, -1) != -1) {
+		g_i2c.pin_clk = PIN_FindPinIndexForRole(IOR_TM1637_CLK, 16);
+		g_i2c.pin_data = PIN_FindPinIndexForRole(IOR_TM1637_DIO, 14);
+		g_i2c.pin_stb = -1;
+		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using I2C mode");
+
+		HAL_PIN_Setup_Output(g_i2c.pin_clk);
+		HAL_PIN_Setup_Output(g_i2c.pin_data);
+		HAL_PIN_SetOutputValue(g_i2c.pin_clk, true);
+		HAL_PIN_SetOutputValue(g_i2c.pin_data, true);
+	}
+	else {
+		g_i2c.pin_clk = 17;// PIN_FindPinIndexForRole(IOR_TM1637_CLK, 16);
+		g_i2c.pin_data = 15;// PIN_FindPinIndexForRole(IOR_TM1637_DIO, 14);
+		g_i2c.pin_stb = 28;// PIN_FindPinIndexForRole(IOR_TM1637_DIO, 14);
+		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using SPI mode");
+
+		HAL_PIN_Setup_Output(g_i2c.pin_clk);
+		HAL_PIN_Setup_Output(g_i2c.pin_stb);
+		HAL_PIN_Setup_Output(g_i2c.pin_data);
+		HAL_PIN_SetOutputValue(g_i2c.pin_clk, true);
+		HAL_PIN_SetOutputValue(g_i2c.pin_stb, true);
+		HAL_PIN_SetOutputValue(g_i2c.pin_data, true);
+	}
+	
+	usleep(100);
+
 	if (tmgn_buffer == 0) {
 		tmgn_buffer = (byte*)malloc(TM1637_MAX_CHARS);
 		memset(tmgn_buffer, 0, TM1637_MAX_CHARS);
