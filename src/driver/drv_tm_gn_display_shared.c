@@ -26,6 +26,7 @@ static byte g_remap[16] = {
 };
 static byte g_numDigits = sizeof(g_digits) / sizeof(g_digits[0]);
 static byte *tmgn_buffer = 0;
+static int g_totalDigits = 6;
 
 static void TM1637_SetBrightness(byte brightness, bool on) {
 	g_brightness = (brightness & 0x7) | (on ? 0x08 : 0x00);
@@ -174,7 +175,7 @@ static void TM1637_PrintStringAt(const char *str, int pos, int maxLen) {
 		len = maxLen;
 	tgIndex = pos;
 	for (i = 0; i < len; i++) {
-		if (tgIndex >= TM1637_MAX_CHARS)
+		if (tgIndex >= g_totalDigits)
 			break;
 		if (str[i] == '.') {
 			if (tgIndex - 1 >= 0) {
@@ -191,13 +192,13 @@ static void TM1637_PrintStringAt(const char *str, int pos, int maxLen) {
 		tmgn_buffer[g_remap[tgIndex]] = g_digits[idx];
 		tgIndex++;
 	}
-	TM1637_SendSegments(tmgn_buffer, TM1637_MAX_CHARS, 0);
+	TM1637_SendSegments(tmgn_buffer, g_totalDigits, 0);
 }
 
 static commandResult_t CMD_TM1637_Clear(const void *context, const char *cmd, const char *args, int flags) {
-	memset(tmgn_buffer, 0x00, TM1637_MAX_CHARS);
+	memset(tmgn_buffer, 0x00, g_totalDigits);
 
-	TM1637_SendSegments(tmgn_buffer, TM1637_MAX_CHARS, 0);
+	TM1637_SendSegments(tmgn_buffer, g_totalDigits, 0);
 
 	return CMD_RES_OK;
 }
@@ -271,7 +272,6 @@ static commandResult_t CMD_TM1637_Map(const void *context, const char *cmd, cons
 
 	for (i = 0; i < Tokenizer_GetArgsCount(); i++) {
 		g_remap[i] = Tokenizer_GetArgInteger(i);
-
 	}
 
 	return CMD_RES_OK;
@@ -293,7 +293,7 @@ static commandResult_t CMD_TM1637_Brightness(const void *context, const char *cm
 
 	TM1637_SetBrightness(br, bOn);
 
-	TM1637_SendSegments(tmgn_buffer, TM1637_MAX_CHARS, 0);
+	TM1637_SendSegments(tmgn_buffer, g_totalDigits, 0);
 
 	return CMD_RES_OK;
 }
@@ -356,22 +356,31 @@ goto again
 */
 
 void TM_GN_Display_SharedInit() {
+	int i;
+
 	if (PIN_FindPinIndexForRole(IOR_TM1637_CLK, -1) != -1) {
 		g_i2c.pin_clk = PIN_FindPinIndexForRole(IOR_TM1637_CLK, 16);
 		g_i2c.pin_data = PIN_FindPinIndexForRole(IOR_TM1637_DIO, 14);
 		g_i2c.pin_stb = -1;
-		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using I2C mode");
+		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using I2C mode (TM1637)");
 
 		HAL_PIN_Setup_Output(g_i2c.pin_clk);
 		HAL_PIN_Setup_Output(g_i2c.pin_data);
 		HAL_PIN_SetOutputValue(g_i2c.pin_clk, true);
 		HAL_PIN_SetOutputValue(g_i2c.pin_data, true);
+
+		g_totalDigits = 6; 
 	}
 	else {
 		g_i2c.pin_clk = 17;// PIN_FindPinIndexForRole(IOR_TM1637_CLK, 16);
 		g_i2c.pin_data = 15;// PIN_FindPinIndexForRole(IOR_TM1637_DIO, 14);
 		g_i2c.pin_stb = 28;// PIN_FindPinIndexForRole(IOR_TM1637_DIO, 14);
-		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using SPI mode");
+		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using SPI mode (GN6932)");
+
+		// GN6932 has no remap
+		for (i = 0; i < sizeof(g_remap); i++) {
+			g_remap[i] = i;
+		}
 
 		HAL_PIN_Setup_Output(g_i2c.pin_clk);
 		HAL_PIN_Setup_Output(g_i2c.pin_stb);
@@ -379,13 +388,15 @@ void TM_GN_Display_SharedInit() {
 		HAL_PIN_SetOutputValue(g_i2c.pin_clk, true);
 		HAL_PIN_SetOutputValue(g_i2c.pin_stb, true);
 		HAL_PIN_SetOutputValue(g_i2c.pin_data, true);
+
+		g_totalDigits = 16;
 	}
 	
 	usleep(100);
 
 	if (tmgn_buffer == 0) {
-		tmgn_buffer = (byte*)malloc(TM1637_MAX_CHARS);
-		memset(tmgn_buffer, 0, TM1637_MAX_CHARS);
+		tmgn_buffer = (byte*)malloc(g_totalDigits);
+		memset(tmgn_buffer, 0, g_totalDigits);
 	}
 
 	TM1637_SetBrightness(0x0f, true);
