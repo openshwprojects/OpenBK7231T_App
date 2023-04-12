@@ -156,11 +156,13 @@ static void TM1637_SendSegments(const byte *segments, byte length, byte pos) {
 		i2c.pin_clk = PIN_FindPinIndexForRole(IOR_TM1637_CLK, 16);
 		i2c.pin_data = PIN_FindPinIndexForRole(IOR_TM1637_DIO, 14);
 		i2c.pin_stb = -1;
+		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using I2C mode");
 	}
 	else {
 		i2c.pin_clk = 17;// PIN_FindPinIndexForRole(IOR_TM1637_CLK, 16);
 		i2c.pin_data = 15;// PIN_FindPinIndexForRole(IOR_TM1637_DIO, 14);
 		i2c.pin_stb = 28;// PIN_FindPinIndexForRole(IOR_TM1637_DIO, 14);
+		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using SPI mode");
 	}
 
 	// set COM1 (no data, just command)
