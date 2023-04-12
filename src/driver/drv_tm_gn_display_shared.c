@@ -192,7 +192,6 @@ static void TM1637_PrintStringAt(const char *str, int pos, int maxLen) {
 		tmgn_buffer[g_remap[tgIndex]] = g_digits[idx];
 		tgIndex++;
 	}
-	TM1637_SendSegments(tmgn_buffer, g_totalDigits, 0);
 }
 
 static commandResult_t CMD_TM1637_Clear(const void *context, const char *cmd, const char *args, int flags) {
@@ -247,6 +246,8 @@ static commandResult_t CMD_TM1637_Print(const void *context, const char *cmd, co
 	int ofs;
 	int maxLen;
 	const char *s;
+	int sLen;
+	int iPadZeroes;
 
 	Tokenizer_TokenizeString(args, 0);
 
@@ -258,10 +259,21 @@ static commandResult_t CMD_TM1637_Print(const void *context, const char *cmd, co
 	maxLen = Tokenizer_GetArgInteger(1);
 	s = Tokenizer_GetArg(2);
 
+
 	if (maxLen <= 0) {
 		maxLen = 999;
 	}
+	if (Tokenizer_GetArgInteger(3)) {
+		sLen = strlen(s);
+		if (sLen < maxLen) {
+			iPadZeroes = maxLen - sLen;
+			TM1637_PrintStringAt("00000", ofs, iPadZeroes);
+			ofs += iPadZeroes;
+			maxLen -= iPadZeroes;
+		}
+	} 
 	TM1637_PrintStringAt(s, ofs, maxLen);
+	TM1637_SendSegments(tmgn_buffer, g_totalDigits, 0);
 
 	return CMD_RES_OK;
 }
@@ -341,6 +353,21 @@ goto again
 */
 /*
 
+//startDriver GN6932
+startDriver TM1637
+TMGN_Clear
+
+setChannel 10 10
+again:
+addChannel 10 1 10 99 1
+TMGN_Print 0 2 $CH10
+delay_s 0.25
+goto again
+
+
+*/
+/*
+
 startDriver TM1637
 TMGN_Clear
 
@@ -355,6 +382,32 @@ delay_s 0.5
 goto again
 */
 
+/*
+
+startDriver TM1637
+startDriver NTP
+TMGN_Clear
+
+again:
+TMGN_Print 0 2 $minute 1
+TMGN_Print 2 2 $second 1
+delay_s 1
+goto again
+*/
+/*
+//startDriver GN6932
+startDriver TM1637
+startDriver NTP
+TMGN_Clear
+
+again:
+TMGN_Print 4 2 $second 1
+TMGN_Print 2 2 $minute 1
+TMGN_Print 0 2 $hour 1
+delay_s 0.1
+goto again
+
+*/
 void TM_GN_Display_SharedInit() {
 	int i;
 
