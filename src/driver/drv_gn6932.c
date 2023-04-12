@@ -50,9 +50,9 @@ static commandResult_t CMD_GN6932_TestAddressIncreaseMode(const void *context, c
 	for (i = 0; i < sizeof(tmp); i++) {
 		tmp[i] = rand();
 	}
-	HAL_PIN_Setup_Input(g_stb);
-	HAL_PIN_Setup_Input(g_clk);
-	HAL_PIN_Setup_Input(g_din);
+	HAL_PIN_Setup_Output(g_stb);
+	HAL_PIN_Setup_Output(g_clk);
+	HAL_PIN_Setup_Output(g_din);
 	HAL_PIN_SetOutputValue(g_clk, true);
 	HAL_PIN_SetOutputValue(g_stb, true);
 	HAL_PIN_SetOutputValue(g_din, true);
