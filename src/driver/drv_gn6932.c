@@ -42,7 +42,10 @@ static void GN6932_WriteBytes(byte *bytes, int cnt) {
 static void GN6932_WriteByte(byte b) {
 	GN6932_WriteBytes(&b, 1);
 }
-
+byte g_brightness = 0x0F;
+static void GN6932_SetBrightness(byte brightness, bool on) {
+	g_brightness = (brightness & 0x7) | (on ? 0x08 : 0x00);
+}
 static commandResult_t CMD_GN6932_TestAddressIncreaseMode(const void *context, const char *cmd, const char *args, int flags) {
 	byte tmp[17];
 	int i;
@@ -71,35 +74,29 @@ static commandResult_t CMD_GN6932_TestAddressIncreaseMode(const void *context, c
 	// first byte is offset, then 16 bytes of data
 	GN6932_WriteBytes(tmp,sizeof(tmp));
 	// Command 3
-	GN6932_WriteByte(0x8F);
+	GN6932_WriteByte(0x80+g_brightness);
 
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_GN6932_Power(const void *context, const char *cmd, const char *args, int flags) {
-	int bOn;
+
+// GN6932_Dimmer [bOn] [brightness0to8]
+static commandResult_t CMD_GN6932_Dimmer(const void *context, const char *cmd, const char *args, int flags) {
+	int iDimmer, bOn;
 	Tokenizer_TokenizeString(args, 0);
 
-	if (Tokenizer_GetArgsCount() < 1) {
+	if (Tokenizer_GetArgsCount() < 2) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
 	bOn = Tokenizer_GetArgInteger(0);
-	return CMD_RES_OK;
-}
-static commandResult_t CMD_GN6932_Dimmer(const void *context, const char *cmd, const char *args, int flags) {
-	int iDimmer;
-	Tokenizer_TokenizeString(args, 0);
+	iDimmer = Tokenizer_GetArgInteger(1);
 
-	if (Tokenizer_GetArgsCount() < 1) {
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
-
-	iDimmer = Tokenizer_GetArgInteger(0);
+	GN6932_SetBrightness(iDimmer, bOn);
+	
 	return CMD_RES_OK;
 }
 void GN6932_Init() {
 
 	CMD_RegisterCommand("GN6932_TestAddressIncreaseMode", CMD_GN6932_TestAddressIncreaseMode, NULL);
-	CMD_RegisterCommand("GN6932_Power", CMD_GN6932_Power, NULL);
 	CMD_RegisterCommand("GN6932_Dimmer", CMD_GN6932_Dimmer, NULL);
 }
