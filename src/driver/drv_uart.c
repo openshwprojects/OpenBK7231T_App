@@ -252,7 +252,19 @@ commandResult_t CMD_UART_Send_Hex(const void *context, const char *cmd, const ch
 }
 
 
-// 
+// This is a tool for debugging.
+// It simulates OpenBeken receiving packet from UART.
+// For example, you can do: 
+/*
+1. You can simulate TuyaMCU battery powered device packet:
+
+uartFakeHex 55 AA 00 05 00 05 01 04 00 01 01 10 55
+55 AA	00	05		00 05	0104000101	10
+HEADER	VER=00	Unk		LEN	fnId=1 Enum V=1	CHK
+
+backlog startDriver TuyaMCU; uartFakeHex 55 AA 00 05 00 05 01 04 00 01 01 10 55
+
+*/
 commandResult_t CMD_UART_FakeHex(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	//const char *args = CMD_GetArg(1);
 	//byte rawData[128];
@@ -265,6 +277,10 @@ commandResult_t CMD_UART_FakeHex(const void *context, const char *cmd, const cha
 	}
 	while (*args) {
 		byte b;
+		if (*args == ' ') {
+			args++;
+			continue;
+		}
 		b = hexbyte(args);
 
 		//rawData[curCnt] = b;

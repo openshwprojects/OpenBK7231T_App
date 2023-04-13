@@ -477,6 +477,7 @@ static int http_obk_json_channels(void* request, jsonCb_t printer) {
 		}
 	}
 	printer(request, "}");
+	return 0;
 }
 // Test command: http://192.168.0.159/cm?cmnd=STATUS%204
 static int http_tasmota_json_status_MEM(void* request, jsonCb_t printer) {
