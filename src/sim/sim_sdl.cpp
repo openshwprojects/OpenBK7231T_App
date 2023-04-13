@@ -85,8 +85,9 @@ Coord GetMousePos() {
 	int mx, my;
 	//SDL_GetGlobalMouseState(&mx, &my);
 	SDL_GetMouseState(&mx, &my);
+	// No longer needed after resize event was introduced
 	// BUGFIX FOR MENUBAR OFFSET
-	my += WINDOWS_MOUSE_MENUBAR_OFFSET;
+	//my += WINDOWS_MOUSE_MENUBAR_OFFSET;
 	r.set(mx, my);
 	return r;
 }
