@@ -818,6 +818,12 @@
     <ClCompile Include="src\driver\drv_shiftRegister.c">
       <Filter>Drv</Filter>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_gn6932.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_tm_gn_display_shared.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />
@@ -1214,6 +1220,9 @@
       <Filter>IRRemote-ESP</Filter>
     </ClInclude>
     <ClInclude Include="src\driver\drv_tm1637.h">
+      <Filter>Drv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\driver\drv_tm_gn_display_shared.h">
       <Filter>Drv</Filter>
     </ClInclude>
   </ItemGroup>

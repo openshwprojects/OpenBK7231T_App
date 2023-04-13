@@ -303,6 +303,7 @@
     <ClCompile Include="src\driver\drv_dht.c" />
     <ClCompile Include="src\driver\drv_dht_internal.c" />
     <ClCompile Include="src\driver\drv_doorSensorWithDeepSleep.c" />
+    <ClCompile Include="src\driver\drv_gn6932.c" />
     <ClCompile Include="src\driver\drv_httpButtons.c" />
     <ClCompile Include="src\driver\drv_ir.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
@@ -335,6 +336,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\driver\drv_tm1637.c" />
+    <ClCompile Include="src\driver\drv_tm_gn_display_shared.c" />
     <ClCompile Include="src\driver\drv_tuyaMCU.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -885,6 +887,7 @@
     <ClInclude Include="src\driver\drv_sht3x.h" />
     <ClInclude Include="src\driver\drv_sm2235.h" />
     <ClInclude Include="src\driver\drv_tm1637.h" />
+    <ClInclude Include="src\driver\drv_tm_gn_display_shared.h" />
     <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ac_LG.h" />
     <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ac_LG.hpp" />
     <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\digitalWriteFast.h" />
