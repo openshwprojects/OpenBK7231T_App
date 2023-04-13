@@ -153,6 +153,15 @@
     "examples": ""
   },
   {
+    "name": "Ch",
+    "args": "[InputValue]",
+    "descr": "An alternate command to access channels. It returns all used channels in JSON format. The syntax is ChINDEX value, there is no space between Ch and channel index. It can be sent without value to poll channel values.",
+    "fn": "CMD_Ch",
+    "file": "cmnds/cmd_channels.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "AddEventHandler",
     "args": "[EventName][EventArgument][CommandToRun]",
     "descr": "This can be used to trigger an action on a button click, long press, etc",
@@ -364,6 +373,24 @@
     "args": "",
     "descr": "Forces device reboot into safe mode (open ap with disabled drivers)",
     "fn": "CMD_SafeMode",
+    "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "PingInterval",
+    "args": "[IntegerSeconds]",
+    "descr": "Sets the interval between ping attempts for ping watchdog mechanism",
+    "fn": "CMD_PingInterval",
+    "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "PingHost",
+    "args": "[IPStr]",
+    "descr": "Sets the host to ping by IP watchdog",
+    "fn": "CMD_PingHost",
     "file": "cmnds/cmd_main.c",
     "requires": "",
     "examples": ""
@@ -1251,33 +1278,6 @@
     "examples": ""
   },
   {
-    "name": "VREF",
-    "args": "Value",
-    "descr": "",
-    "fn": "NULL);",
-    "file": "driver/drv_pwrCal.c",
-    "requires": "",
-    "examples": ""
-  },
-  {
-    "name": "IREF",
-    "args": "Value",
-    "descr": "",
-    "fn": "NULL);",
-    "file": "driver/drv_pwrCal.c",
-    "requires": "",
-    "examples": ""
-  },
-  {
-    "name": "PREF",
-    "args": "Value",
-    "descr": "",
-    "fn": "NULL);",
-    "file": "driver/drv_pwrCal.c",
-    "requires": "",
-    "examples": ""
-  },
-  {
     "name": "SHT_cycle",
     "args": "[int]",
     "descr": "change cycle of measurement by default every 10 seconds 0 to deactivate",
@@ -1557,47 +1557,56 @@
     "examples": ""
   },
   {
-    "name": "TM1637_Clear",
-    "args": "CMD_TM1637_Clear",
-    "descr": "",
+    "name": "TMGN_Clear",
+    "args": "",
+    "descr": "This clears the TM1637/GN932/etc display",
+    "fn": "NULL);",
+    "file": "driver/drv_tm_gn_display_shared.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "TMGN_Char",
+    "args": "[CharIndex] [CharCode]",
+    "descr": "This allows you to set binary code for given char, valid chars range is 0 to 15, because this is 7-seg display",
     "fn": "NULL);",
     "file": "driver/drv_tm1637.c",
     "requires": "",
     "examples": ""
   },
   {
-    "name": "TM1637_Print",
-    "args": "CMD_TM1637_Print",
-    "descr": "",
+    "name": "TMGN_Print",
+    "args": "[StartOfs] [MaxLenOr0] [StringText] [optionalBClampWithZeroesForClock]",
+    "descr": "This allows you to print string on TM1637/GN932/etc display, it supports variables expansion",
     "fn": "NULL);",
-    "file": "driver/drv_tm1637.c",
+    "file": "driver/drv_tm_gn_display_shared.c",
     "requires": "",
     "examples": ""
   },
   {
-    "name": "TM1637_Test",
+    "name": "TMGN_Test",
     "args": "CMD_TM1637_Test",
     "descr": "",
     "fn": "NULL);",
-    "file": "driver/drv_tm1637.c",
+    "file": "driver/drv_tm_gn_display_shared.c",
     "requires": "",
     "examples": ""
   },
   {
-    "name": "TM1637_Brightness",
-    "args": "CMD_TM1637_Brightness",
-    "descr": "",
+    "name": "TMGN_Brightness",
+    "args": "[Brigthness0to7][bOn]",
+    "descr": "This allows you to change brightness and state of  TM1637/GN932/etc display",
     "fn": "NULL);",
-    "file": "driver/drv_tm1637.c",
+    "file": "driver/drv_tm_gn_display_shared.c",
     "requires": "",
     "examples": ""
   },
   {
-    "name": "TM1637_Map",
-    "args": "CMD_TM1637_Map",
-    "descr": "",
+    "name": "TMGN_Map",
+    "args": "[Map0][Map1, etc]",
+    "descr": "This allows you to remap characters order for TM1637/GN932/etc. My TM1637 module from Aliexpress has a strange characters order.",
     "fn": "NULL);",
-    "file": "driver/drv_tm1637.c",
+    "file": "driver/drv_tm_gn_display_shared.c",
     "requires": "",
     "examples": ""
   },

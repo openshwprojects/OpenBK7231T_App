@@ -10,7 +10,6 @@
 #include "../hal/hal_adc.h"
 #include "../hal/hal_flashVars.h"
 
-int g_pingWatchDog_intervalMs = 1000;
 int cmd_uartInitIndex = 0;
 
 
@@ -276,8 +275,7 @@ static commandResult_t CMD_PingInterval(const void* context, const char* cmd, co
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
-	// convert seconds to ms
-	g_pingWatchDog_intervalMs = Tokenizer_GetArgInteger(0) * 1000;
+	CFG_SetPingIntervalSeconds(Tokenizer_GetArgInteger(0));
 
 	return CMD_RES_OK;
 }

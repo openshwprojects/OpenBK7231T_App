@@ -398,6 +398,8 @@ void Button_OnDoubleClick(int index)
 	}
 	if (g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs || g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs_n) {
 		LED_NextColor();
+		// make it easier for users, enable LED by default
+		LED_SetEnableAll(true);
 	}
 	if (g_doubleClickCallback != 0) {
 		g_doubleClickCallback(index);
@@ -410,6 +412,8 @@ void Button_OnTripleClick(int index)
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ON3CLICK, index);
 	if (g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs || g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs_n) {
 		LED_NextTemperature();
+		// make it easier for users, enable LED by default
+		LED_SetEnableAll(true);
 	}
 }
 void Button_OnQuadrupleClick(int index)
@@ -437,6 +441,8 @@ void Button_OnLongPressHold(int index) {
 	}
 	if (g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs || g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs_n) {
 		LED_NextDimmerHold();
+		// make it easier for users, enable LED by default
+		LED_SetEnableAll(true);
 	}
 }
 void Button_OnLongPressHoldStart(int index) {

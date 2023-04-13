@@ -70,4 +70,5 @@ Do not add anything here, as it will overwritten with next rebuild.
 | TM1637_DIO | TM1637 LED display driver DIO pin. Setting all required TM1637 pins will autostart related driver |
 | TM1637_CLK | TM1637 LED display driver CLK pin. Setting all required TM1637 pins will autostart related driver |
 | BL0937_SEL_n | Inverted SEL alternative for BL0937. Choose only one, either SEL or SEL_n. SEL_n may be needed in rare cases. |
+| DoorSensorWithDeepSleep_pd | As DoorSensorWithDeepSleep, but with pulldown resistor |
 | Total_Options | Current total number of available IOR roles |

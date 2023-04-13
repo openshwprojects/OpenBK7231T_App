@@ -5,7 +5,7 @@
 
 void Test_CFG_Via_HTTP() {
 	const char *mqtt_userName = "MyMQTTUser";
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(9, 1);
 	CFG_SetMQTTUserName(mqtt_userName);

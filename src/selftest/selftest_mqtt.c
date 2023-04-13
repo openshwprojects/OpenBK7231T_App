@@ -4,7 +4,7 @@
 #include "../hal/hal_wifi.h"
 
 void SIM_ClearAndPrepareForMQTTTesting(const char *clientName, const char *groupName) {
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	SIM_ClearMQTTHistory();
 	Main_OnWiFiStatusChange(WIFI_STA_CONNECTED);
 	CFG_SetMQTTClientId(clientName);
@@ -16,7 +16,7 @@ void SIM_ClearAndPrepareForMQTTTesting(const char *clientName, const char *group
 	}
 }
 void Test_MQTT_Get_And_Reply() {
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	SIM_ClearAndPrepareForMQTTTesting("myTestDevice", "bekens");
 	char buffer[512];
 	char buffer2[512];
@@ -43,7 +43,7 @@ void Test_MQTT_Get_And_Reply() {
 	}
 }
 void Test_MQTT_Channels() {
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	SIM_ClearAndPrepareForMQTTTesting("myTestDevice", "bekens");
 
 	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
@@ -138,7 +138,7 @@ void Test_MQTT_Channels() {
 	SIM_ClearMQTTHistory();
 }
 void Test_MQTT_LED_CW() {
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	SIM_ClearAndPrepareForMQTTTesting("myTestDevice", "bekens");
 
 	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
@@ -203,7 +203,7 @@ void Test_MQTT_LED_CW() {
 	SELFTEST_ASSERT_CHANNEL(2, 100);
 }
 void Test_MQTT_LED_RGB() {
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	SIM_ClearAndPrepareForMQTTTesting("fakeRGBbulb", "bekens");
 
 	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
@@ -258,7 +258,7 @@ void Test_MQTT_LED_RGB() {
 	SIM_ClearMQTTHistory();
 }
 void Test_MQTT_Misc() {
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	SIM_ClearAndPrepareForMQTTTesting("miscDevice", "bekens");
 
 	CMD_ExecuteCommand("addEventHandler OnChannelChange 5 publish myMagicResult $CH5", 0);
@@ -281,7 +281,7 @@ void Test_MQTT_Misc() {
 	//SIM_ClearMQTTHistory();
 }
 void Test_MQTT_Topic_With_Slashes() {
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	SIM_ClearAndPrepareForMQTTTesting("obk/kitchen/mySwitch1", "bekens");
 
 	PIN_SetPinRoleForPinIndex(24, IOR_Relay);
@@ -347,7 +347,7 @@ void Test_MQTT_Topic_With_Slashes() {
 }
 
 void Test_MQTT_Topic_With_Slash() {
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	SIM_ClearAndPrepareForMQTTTesting("obk/08C65DE9", "bekens");
 
 	PIN_SetPinRoleForPinIndex(24, IOR_Relay);

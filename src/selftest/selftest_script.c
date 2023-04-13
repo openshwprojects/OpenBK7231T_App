@@ -32,7 +32,7 @@ void Test_Scripting_Loop1() {
 	char buffer[64];
 
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	CMD_ExecuteCommand("lfs_format", 0);
 
 	// put file in LittleFS
@@ -55,7 +55,7 @@ void Test_Scripting_Loop2() {
 	char buffer[64];
 
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	CMD_ExecuteCommand("lfs_format", 0);
 
 	// put file in LittleFS
@@ -79,7 +79,7 @@ void Test_Scripting_Loop3() {
 	char buffer[64];
 
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	CMD_ExecuteCommand("lfs_format", 0);
 
 	// put file in LittleFS

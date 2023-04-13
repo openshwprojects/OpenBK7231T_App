@@ -249,7 +249,7 @@ bool CSimulator::createSimulation(bool bDemo) {
 		sim->createDemoOnlyWB3S();
 	}
 	SIM_SetupEmptyFlashModeNoFile();
-	SIM_DoFreshOBKBoot();
+	SIM_ClearOBK(0);
 
 	return false;
 }
@@ -283,9 +283,7 @@ bool CSimulator::loadSimulation(const char *s) {
 	project = saveLoad->loadProjectFile(s);
 	sim = saveLoad->loadSimulationFromFile(simPath.c_str());
 	recents->registerAndSave(projectPath.c_str());
-	SIM_ClearOBK();
-	SIM_SetupFlashFileReading(memPath.c_str());
-	SIM_DoFreshOBKBoot();
+	SIM_ClearOBK(memPath.c_str());
 	sim->recalcBounds();
 	bSchematicModified = false;
 

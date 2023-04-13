@@ -120,6 +120,12 @@
     "requires": ""
   },
   {
+    "name": "$second",
+    "title": "$second",
+    "descr": "Current second from NTP",
+    "requires": ""
+  },
+  {
     "name": "$uptime",
     "title": "$uptime",
     "descr": "Time since reboot in seconds",

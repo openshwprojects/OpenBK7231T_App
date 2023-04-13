@@ -460,6 +460,25 @@ static int http_tasmota_json_status_FWR(void* request, jsonCb_t printer) {
 	printer(request, "}");
 	return 0;
 }
+static int http_obk_json_channels(void* request, jsonCb_t printer) {
+	int i;
+	int iCnt = 0;
+	char tmp[8];
+
+	printer(request, "{");
+	for (i = 0; i < CHANNEL_MAX; i++) {
+		if (CHANNEL_IsInUse(i)) {
+			if (iCnt) {
+				printer(request, ",");
+			}
+			iCnt++;
+			sprintf(tmp, "Ch%i", i);
+			JSON_PrintKeyValue_Int(request, printer, tmp, CHANNEL_Get(i), false);
+		}
+	}
+	printer(request, "}");
+	return 0;
+}
 // Test command: http://192.168.0.159/cm?cmnd=STATUS%204
 static int http_tasmota_json_status_MEM(void* request, jsonCb_t printer) {
 	printer(request, "\"StatusMEM\":{");
@@ -702,6 +721,7 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	return 0;
 }
 int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, jsonCb_t printer, int flags) {
+	int i;
 
 	if (!wal_strnicmp(cmd, "POWER", 5)) {
 
@@ -916,14 +936,14 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 	}
 	else if (!wal_strnicmp(cmd, "SetChannelType", 14)) {
 		// OBK-specific
-		int i = atoi(arg);
+		i = atoi(arg);
 		i = CHANNEL_GetType(i);
 
 		printer(request, "%i", i);
 	}
 	else if (!wal_strnicmp(cmd, "GetChannel", 10) || !wal_strnicmp(cmd, "SetChannel", 10) || !wal_strnicmp(cmd, "AddChannel", 10)) {
 		// OBK-specific
-		int i = atoi(arg);
+		i = atoi(arg);
 		i = CHANNEL_Get(i);
 
 		printer(request, "%i", i);
@@ -971,6 +991,9 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		printer(request, "{");
 		printer(request, "\"Flags\":\"%ld\"", *((long int*)&g_cfg.genericFlags));
 		printer(request, "}");
+	}
+	else if (!wal_strnicmp(cmd, "Ch", 2)) {
+		http_obk_json_channels(request, printer);
 	}
 	else {
 		printer(request, "{");
