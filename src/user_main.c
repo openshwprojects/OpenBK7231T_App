@@ -433,8 +433,11 @@ void Main_OnEverySecond()
 	// That is why we can also reconnect them by basing on ping
 	if (g_timeSinceLastPingReply != -1 && g_secondsElapsed > 60)
 	{
+		// cast event so users can script anything easily, run custom commands
+		// Usage: addChangeHandler noPingTime > 600 reboot
 		EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_NOPINGTIME, g_timeSinceLastPingReply, g_timeSinceLastPingReply + 1);
 		g_timeSinceLastPingReply++;
+		// this is an old mechanism that just tries to reconnect (but without reboot)
 		if (CFG_GetPingDisconnectedSecondsToRestart() > 0 && g_timeSinceLastPingReply >= CFG_GetPingDisconnectedSecondsToRestart())
 		{
 			if (g_bHasWiFiConnected != 0)
