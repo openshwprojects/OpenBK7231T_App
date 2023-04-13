@@ -6,7 +6,7 @@ void Test_MapRanges() {
 	char buffer[64];
 
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 
 	CMD_ExecuteCommand("MapRanges 0 3.14 1 2 3 4 5 6", 0);
 	// 3.14 is between 3 and 4, so we will get 3

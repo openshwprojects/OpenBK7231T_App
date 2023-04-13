@@ -227,6 +227,11 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK interface",
 	//drvdetail:"requires":""}
 	{ "TM1637",	TM1637_Init,		NULL,		NULL, NULL, NULL, NULL, false },
+	//drvdetail:{"name":"GN6932",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK/STB interface",
+	//drvdetail:"requires":""}
+	{ "GN6932",	GN6932_Init,		NULL,		NULL, NULL, NULL, NULL, false },
 	//drvdetail:{"name":"SHT3X",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Humidity/temperature sensor. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html)",

@@ -43,7 +43,8 @@ void DoorDeepSleep_OnEverySecond() {
 		//if (g_noChangeTimePassed < 4) {
 			for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 				if (g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep ||
-					g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_NoPup) {
+					g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_NoPup ||
+					g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_pd) {
 					MQTT_ChannelPublish(g_cfg.pins.channels[i], 0);
 				}
 			}
@@ -87,7 +88,8 @@ void DoorDeepSleep_AppendInformationToHTTPIndexPage(http_request_t* request)
 void DoorDeepSleep_OnChannelChanged(int ch, int value) {
 	// detect door state change
 	// (only sleep when there are no changes for certain time)
-	if (CHANNEL_HasChannelPinWithRoleOrRole(ch, IOR_DoorSensorWithDeepSleep, IOR_DoorSensorWithDeepSleep_NoPup)) {
+	if (CHANNEL_HasChannelPinWithRoleOrRole(ch, IOR_DoorSensorWithDeepSleep, IOR_DoorSensorWithDeepSleep_NoPup)
+		|| CHANNEL_HasChannelPinWithRoleOrRole(ch, IOR_DoorSensorWithDeepSleep, IOR_DoorSensorWithDeepSleep_pd)) {
 		// 0 seconds since last change
 		g_noChangeTimePassed = 0;
 		g_emergencyTimeWithNoConnection = 0;

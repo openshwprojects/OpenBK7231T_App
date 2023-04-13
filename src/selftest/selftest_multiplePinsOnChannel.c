@@ -25,7 +25,7 @@ static void Test_MultiplePins_SimulateButtonClick() {
 }
 void Test_MultiplePinsOnChannel() {
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 
 
 	PIN_SetPinRoleForPinIndex(PIN_LED_n, IOR_LED_n);

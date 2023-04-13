@@ -302,6 +302,8 @@
     <ClCompile Include="src\driver\drv_debouncer.c" />
     <ClCompile Include="src\driver\drv_dht.c" />
     <ClCompile Include="src\driver\drv_dht_internal.c" />
+    <ClCompile Include="src\driver\drv_doorSensorWithDeepSleep.c" />
+    <ClCompile Include="src\driver\drv_gn6932.c" />
     <ClCompile Include="src\driver\drv_httpButtons.c" />
     <ClCompile Include="src\driver\drv_ir.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
@@ -309,6 +311,7 @@
     <ClCompile Include="src\driver\drv_main.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_max72xx_clock.c" />
     <ClCompile Include="src\driver\drv_max72xx_internal.c" />
     <ClCompile Include="src\driver\drv_max72xx_single.c" />
     <ClCompile Include="src\driver\drv_ntp.c">
@@ -316,11 +319,15 @@
     </ClCompile>
     <ClCompile Include="src\driver\drv_ntp_events.c" />
     <ClCompile Include="src\driver\drv_pwmToggler.c" />
+    <ClCompile Include="src\driver\drv_pwrCal.c" />
+    <ClCompile Include="src\driver\drv_shiftRegister.c" />
     <ClCompile Include="src\driver\drv_sht3x.c" />
     <ClCompile Include="src\driver\drv_sm2135.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\driver\drv_sm2235.c" />
+    <ClCompile Include="src\driver\drv_soft_i2c.c" />
+    <ClCompile Include="src\driver\drv_spi.c" />
     <ClCompile Include="src\driver\drv_ssdp.c" />
     <ClCompile Include="src\driver\drv_tasmotaDeviceGroups.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
@@ -328,6 +335,8 @@
     <ClCompile Include="src\driver\drv_test_drivers.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_tm1637.c" />
+    <ClCompile Include="src\driver\drv_tm_gn_display_shared.c" />
     <ClCompile Include="src\driver\drv_tuyaMCU.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -483,6 +492,264 @@
     <ClCompile Include="src\jsmn\jsmn.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRac.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRproto.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRrecv.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRsend.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRtext.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRtimer.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRutils.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Airton.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Airwell.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Aiwa.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Amcor.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Argo.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Arris.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Bosch.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Bose.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Carrier.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_ClimaButler.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Coolix.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Corona.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Daikin.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Delonghi.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Denon.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Dish.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Doshisha.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Ecoclim.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Electra.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_EliteScreens.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Epson.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Fujitsu.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_GICable.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_GlobalCache.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Goodweather.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Gorenje.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Gree.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Haier.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Hitachi.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Inax.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_JVC.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Kelon.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Kelvinator.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Lasertag.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Lego.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_LG.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Lutron.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Magiquest.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Metz.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Midea.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_MilesTag2.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Mirage.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Mitsubishi.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_MitsubishiHeavy.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Multibrackets.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_MWM.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_NEC.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Neoclima.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Nikai.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Panasonic.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Pioneer.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Pronto.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_RC5_RC6.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_RCMM.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Rhoss.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Samsung.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Sanyo.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Sharp.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Sherwood.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Sony.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Symphony.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Tcl.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Technibel.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Teco.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Teknopoint.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Toshiba.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Toto.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Transcold.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Trotec.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Truma.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Vestel.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Voltas.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Whirlpool.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Whynter.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Wowwee.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Xmp.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Zepeal.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\itoa.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\String.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\littlefs\lfs.c" />
     <ClCompile Include="src\littlefs\lfs_util.c" />
     <ClCompile Include="src\littlefs\our_lfs.c">
@@ -496,9 +763,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\mqtt\new_mqtt_deduper.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="src\new_builtin_devices.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\new_cfg.c">
@@ -523,12 +787,17 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\selftest\selftest_buttonEvents.c" />
+    <ClCompile Include="src\selftest\selftest_clockEvents.c" />
+    <ClCompile Include="src\selftest\selftest_role_toggleAll_2.c" />
+    <ClCompile Include="src\selftest\selftest_cfg_via_http.c" />
     <ClCompile Include="src\selftest\selftest_changeHandlers.c" />
     <ClCompile Include="src\selftest\selftest_changeHandlers_mqtt.c" />
     <ClCompile Include="src\selftest\selftest_cmd_alias.c" />
     <ClCompile Include="src\selftest\selftest_cmd_calendar.c" />
     <ClCompile Include="src\selftest\selftest_cmd_channels.c" />
     <ClCompile Include="src\selftest\selftest_cmd_generic.c" />
+    <ClCompile Include="src\selftest\selftest_demo_buttonScrollingChannelValue.c" />
+    <ClCompile Include="src\selftest\selftest_demo_buttonToggleGroup.c" />
     <ClCompile Include="src\selftest\selftest_demo_fanCyclingRelays.c" />
     <ClCompile Include="src\selftest\selftest_demo_mapFanSpeedToRelays.c" />
     <ClCompile Include="src\selftest\selftest_demo_scriptForShutters.c" />
@@ -556,6 +825,7 @@
     <ClCompile Include="src\selftest\selftest_tasmota.c" />
     <ClCompile Include="src\selftest\selftest_tokenizer.c" />
     <ClCompile Include="src\selftest\selftest_tuyaMCU.c" />
+    <ClCompile Include="src\selftest\selftest_twoPWMsOneChannel.c" />
     <ClCompile Include="src\selftest\selftest_util_mqtt.c" />
     <ClCompile Include="src\selftest\selftest_util_mqtt_json.c" />
     <ClCompile Include="src\sim\Circle.cpp" />
@@ -616,6 +886,202 @@
     <ClInclude Include="src\driver\drv_max72xx_internal.h" />
     <ClInclude Include="src\driver\drv_sht3x.h" />
     <ClInclude Include="src\driver\drv_sm2235.h" />
+    <ClInclude Include="src\driver\drv_tm1637.h" />
+    <ClInclude Include="src\driver\drv_tm_gn_display_shared.h" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ac_LG.h" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ac_LG.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\digitalWriteFast.h" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRFeedbackLED.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRProtocol.h" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRReceive.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRremote.h" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRremote.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRremoteInt.h" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRSend.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_BangOlufsen.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_BoseWave.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Denon.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_DistanceProtocol.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_JVC.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Kaseikyo.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Lego.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_LG.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_MagiQuest.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_NEC.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Others.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Pronto.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_RC5_RC6.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Samsung.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Sony.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Template.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\LongUnion.h" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\TinyIRReceiver.h" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\TinyIRReceiver.hpp" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\i18n.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRac.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRmacros.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRproto.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRrecv.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRremoteESP8266.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRsend.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRtext.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRtimer.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRutils.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Airton.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Airwell.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Amcor.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Argo.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Bosch.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Carrier.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Coolix.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Corona.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Daikin.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Delonghi.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Ecoclim.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Electra.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Fujitsu.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Goodweather.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Gree.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Haier.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Hitachi.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Kelon.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Kelvinator.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_LG.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Magiquest.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Midea.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Mirage.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Mitsubishi.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_MitsubishiHeavy.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_NEC.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Neoclima.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Panasonic.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Rhoss.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Samsung.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Sanyo.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Sharp.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Tcl.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Technibel.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Teco.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Toshiba.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Transcold.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Trotec.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Truma.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Vestel.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Voltas.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Whirlpool.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\itoa.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\minmax.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\String.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="src\selftest\selftest_local.h" />
     <ClInclude Include="src\sim\Bounds.h" />
     <ClInclude Include="src\sim\Circle.h" />

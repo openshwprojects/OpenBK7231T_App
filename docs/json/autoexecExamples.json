@@ -34,5 +34,9 @@
 {
 "title": "Simple example showing how to do MQTT publish on button event (double click, etc). It also includes button hold event to adjust dimmer.",
 "file": "autoexecs/buttom_custom_events_mqtt_publishes.bat"
+},
+{
+"title": "Basic Ping Watchdog usage. Ping given IP with given interval and run script if there was no ping reply within given time.",
+"file": "autoexecs/ping_watchdog.bat"
 }
 ]

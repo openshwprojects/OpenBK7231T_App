@@ -72,6 +72,9 @@ int HAL_PIN_ReadDigitalInput(int index) {
 		return 0;
 	return 1;
 }
+void HAL_PIN_Setup_Input_Pulldown(int index) {
+
+}
 void HAL_PIN_Setup_Input_Pullup(int index) {
 	int xr_port; // eg GPIO_PORT_A
 	int xr_pin; // eg. GPIO_PIN_20

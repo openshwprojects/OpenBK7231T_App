@@ -15,34 +15,29 @@ static int latest_raw_voltage;
 static int latest_raw_current;
 static int latest_raw_power;
 
-static uint8_t GetValidFloatArg(const char *args, float *farg) {
-    if (args == 0 || *args == 0) {
-        ADDLOG_INFO(LOG_FEATURE_ENERGYMETER, "This command needs one argument");
-        return 0;
-    }
-
-    float val = atof(args);
-    if (val == 0.0f) {
-        ADDLOG_INFO(LOG_FEATURE_ENERGYMETER, "Argument must not be 0.0");
-        return 0;
-    }
-
-    *farg = val;
-    return 1;
-}
+//#define PWRCAL_DEBUG
 
 static commandResult_t Calibrate(const char *cmd, const char *args, int raw,
                                  float *cal, int cfg_index) {
-    float real;
-    if (!GetValidFloatArg(args, &real))
+    Tokenizer_TokenizeString(args, 0);
+    if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
         return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+    }
+
+    float real = Tokenizer_GetArgFloat(0);
+	if (real == 0.0f) {
+        ADDLOG_ERROR(LOG_FEATURE_ENERGYMETER, "%s",
+                     CMD_GetResultString(CMD_RES_BAD_ARGUMENT));
+        return CMD_RES_BAD_ARGUMENT;
+    }
 
     *cal = (cal_type == PWR_CAL_MULTIPLY ? real / raw : raw / real);
-
     CFG_SetPowerMeasurementCalibrationFloat(cfg_index, *cal);
 
+#ifdef PWRCAL_DEBUG
     ADDLOG_INFO(LOG_FEATURE_ENERGYMETER, "%s: you gave %f, set ref to %f\n",
                 cmd, real, *cal);
+#endif
     return CMD_RES_OK;
 }
 
@@ -61,33 +56,6 @@ static commandResult_t CalibrateCurrent(const void *context, const char *cmd,
 static commandResult_t CalibratePower(const void *context, const char *cmd,
                                       const char *args, int cmdFlags) {
     return Calibrate(cmd, args, latest_raw_power, &power_cal, CFG_OBK_POWER);
-}
-
-static commandResult_t SetVoltageCal(const void *context, const char *cmd,
-                                     const char *args, int cmdFlags) {
-    if (!GetValidFloatArg(args, &voltage_cal))
-        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-
-    CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE, voltage_cal);
-    return CMD_RES_OK;
-}
-
-static commandResult_t SetCurrentCal(const void *context, const char *cmd,
-                                     const char *args, int cmdFlags) {
-    if (!GetValidFloatArg(args, &current_cal))
-        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-
-    CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, current_cal);
-    return CMD_RES_OK;
-}
-
-static commandResult_t SetPowerCal(const void *context, const char *cmd,
-                                   const char *args, int cmdFlags) {
-    if (!GetValidFloatArg(args, &power_cal))
-        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-
-    CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_POWER, power_cal);
-    return CMD_RES_OK;
 }
 
 static float Scale(int raw, float cal) {
@@ -120,21 +88,6 @@ void PwrCal_Init(pwr_cal_type_t type, float default_voltage_cal,
 	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("PowerSet", CalibratePower, NULL);
-	//cmddetail:{"name":"VREF","args":"Value",
-	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
-	//cmddetail:"examples":""}
-    CMD_RegisterCommand("VREF", SetVoltageCal, NULL);
-	//cmddetail:{"name":"IREF","args":"Value",
-	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
-	//cmddetail:"examples":""}
-    CMD_RegisterCommand("IREF", SetCurrentCal, NULL);
-	//cmddetail:{"name":"PREF","args":"Value",
-	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
-	//cmddetail:"examples":""}
-    CMD_RegisterCommand("PREF", SetPowerCal, NULL);
 }
 
 void PwrCal_Scale(int raw_voltage, int raw_current, int raw_power,

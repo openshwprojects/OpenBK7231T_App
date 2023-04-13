@@ -153,6 +153,18 @@ int NTP_GetMinute() {
 
 	return ltm->tm_min;
 }
+int NTP_GetSecond() {
+	struct tm *ltm;
+
+	// NOTE: on windows, you need _USE_32BIT_TIME_T 
+	ltm = localtime((time_t*)&g_ntpTime);
+
+	if (ltm == 0) {
+		return 0;
+	}
+
+	return ltm->tm_sec;
+}
 #if WINDOWS
 bool b_ntp_simulatedTime = false;
 void NTP_SetSimulatedTime(unsigned int timeNow) {

@@ -10,6 +10,7 @@
 #include "../hal/hal_adc.h"
 #include "../hal/hal_flashVars.h"
 
+int cmd_uartInitIndex = 0;
 
 
 #ifdef ENABLE_LITTLEFS
@@ -250,6 +251,34 @@ static commandResult_t CMD_Echo(const void* context, const char* cmd, const char
 
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_PingHost(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	CFG_SetPingHost(Tokenizer_GetArg(0));
+
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_PingInterval(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	CFG_SetPingIntervalSeconds(Tokenizer_GetArgInteger(0));
+
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_SetStartValue(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int ch, val;
 
@@ -289,7 +318,6 @@ static commandResult_t CMD_SafeMode(const void* context, const char* cmd, const 
 
 
 
-int cmd_uartInitIndex = 0;
 void CMD_UART_Init() {
 #if PLATFORM_BEKEN
 	UART_InitUART(115200);
@@ -503,7 +531,17 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_SafeMode","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SafeMode", CMD_SafeMode, NULL);
-
+	//cmddetail:{"name":"PingInterval","args":"[IntegerSeconds]",
+	//cmddetail:"descr":"Sets the interval between ping attempts for ping watchdog mechanism",
+	//cmddetail:"fn":"CMD_PingInterval","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("PingInterval", CMD_PingInterval, NULL);
+	//cmddetail:{"name":"PingHost","args":"[IPStr]",
+	//cmddetail:"descr":"Sets the host to ping by IP watchdog",
+	//cmddetail:"fn":"CMD_PingHost","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("PingHost", CMD_PingHost, NULL);
+	
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	CMD_InitScripting();
 #endif

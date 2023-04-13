@@ -4,7 +4,7 @@
 
 void Test_TuyaMCU_Basic() {
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 
 	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
 

@@ -56,6 +56,7 @@ const char *Tokenizer_GetArg(int i) {
 
 	s = g_args[i];
 
+#if 0
 	if(g_bAllowExpand && s[0] == '$' && s[1] == 'C' && s[2] == 'H') {
 		int channelIndex;
 		int value;
@@ -67,6 +68,17 @@ const char *Tokenizer_GetArg(int i) {
 
 		return g_argsExpanded[i];
 	}
+#else
+	if (g_bAllowExpand && s[0] == '$') {
+		float f;
+		int iValue;
+		CMD_ExpandConstant(s, 0, &f);
+		iValue = f;
+		sprintf(g_argsExpanded[i], "%i", iValue);
+		return g_argsExpanded[i];
+	}
+
+#endif
 
 	return g_args[i];
 }

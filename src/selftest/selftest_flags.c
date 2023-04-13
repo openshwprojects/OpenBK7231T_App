@@ -4,7 +4,7 @@
 
 void Test_Flags() {
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	// test flags
 	// 2^6 = 64
 	CMD_ExecuteCommand("flags 64", 0);

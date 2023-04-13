@@ -3,7 +3,7 @@
 #include "selftest_local.h".
 
 void Test_Tasmota_MQTT_Switch() {
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	SIM_ClearAndPrepareForMQTTTesting("miscDevice", "bekens");
 
 	const char *my_full_device_name = "TestingDevMQTTSwitch";
@@ -259,7 +259,7 @@ void Test_Tasmota_MQTT_Switch() {
 
 }
 void Test_Tasmota_MQTT_Switch_Double() {
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	SIM_ClearAndPrepareForMQTTTesting("twoRelaysDevice", "bekens");
 
 	const char *my_full_device_name = "TestingDevMQTTSwitch";
@@ -402,7 +402,7 @@ void Test_Tasmota_MQTT_Switch_Double() {
 
 }
 void Test_Tasmota_MQTT_RGBCW() {
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	SIM_ClearAndPrepareForMQTTTesting("rgbcwBulb", "bekens");
 
 	CMD_ExecuteCommand("led_dimmer 50", 0);

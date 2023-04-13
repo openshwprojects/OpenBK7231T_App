@@ -12,7 +12,7 @@
 #include "../hal/hal_pins.h"
 #include "drv_tm_gn_display_shared.h"
 
-
-void TM1637_Init() {
+void GN6932_Init() {
 	TM_GN_Display_SharedInit();
 }
+

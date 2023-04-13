@@ -8,7 +8,7 @@ void Test_ExpandConstant() {
 	char smallBuffer[8];
 
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 
 	CMD_ExpandConstantsWithinString("Hello", buffer, sizeof(buffer), 0);
 	SELFTEST_ASSERT_STRING(buffer, "Hello");

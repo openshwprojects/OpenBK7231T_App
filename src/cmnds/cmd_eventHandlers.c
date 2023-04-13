@@ -58,7 +58,8 @@ addEventHandler OnHold 11 addChannel 1 -10
 // addChangeHandler Channel0 < 50 echo value is low
 // addChangeHandler Current > 100 setChannel 0 0
 // addChangeHandler Power > 40 setChannel 1 0
-//
+// addChangeHandler noPingTime > 600 reboot
+// addChangeHandler noMQTTTime > 600 reboot
 //
 // LCD demo:
 // backlog startDriver I2C; addI2CDevice_LCD_PCF8574 I2C1 0x23 0 0 0
@@ -128,6 +129,8 @@ static int EVENT_ParseEventName(const char *s) {
 	}
 	if (!stricmp(s, "noPingTime"))
 		return CMD_EVENT_CHANGE_NOPINGTIME;
+	if (!stricmp(s, "NoMQTTTime"))
+		return CMD_EVENT_CHANGE_NOMQTTTIME;
 	if(!stricmp(s,"voltage"))
 		return CMD_EVENT_CHANGE_VOLTAGE;
 	if(!stricmp(s,"current"))

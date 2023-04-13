@@ -24,8 +24,8 @@
 #pragma comment (lib, "Opengl32.lib")
 #pragma comment (lib, "freeglut.lib")
 
-int WinWidth = 1680;
-int WinHeight = 940;
+int WinWidth = 800;
+int WinHeight = 600;
 #undef main
 
 CStyle g_style_shapes(CColor(165, 75, 75), 3.0f);
@@ -85,8 +85,9 @@ Coord GetMousePos() {
 	int mx, my;
 	//SDL_GetGlobalMouseState(&mx, &my);
 	SDL_GetMouseState(&mx, &my);
+	// No longer needed after resize event was introduced
 	// BUGFIX FOR MENUBAR OFFSET
-	my += WINDOWS_MOUSE_MENUBAR_OFFSET;
+	//my += WINDOWS_MOUSE_MENUBAR_OFFSET;
 	r.set(mx, my);
 	return r;
 }

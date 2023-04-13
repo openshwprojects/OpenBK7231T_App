@@ -9,7 +9,7 @@ void Test_TwoPWMsOneChannel_Test1() {
 	int pwmCount;
 
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 
 	PIN_GetPinChannelForPinIndex(9, 0);
 	PIN_SetPinRoleForPinIndex(9, IOR_PWM);

@@ -19,6 +19,7 @@
 #include <time.h>
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_local.h"
+#include "../driver/drv_bl_shared.h"
 
 void JSON_PrintKeyValue_String(void* request, jsonCb_t printer, const char* key, const char* value, bool bComma) {
 	printer(request, "\"%s\":\"%s\"", key, value);
@@ -194,10 +195,9 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 
 
 static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
-	float power, factor, voltage, current, batterypercentage = 0;
+	float power, voltage, current, batterypercentage = 0;
 	float energy, energy_hour;
 
-	factor = 0; // TODO
 	voltage = DRV_GetReading(OBK_VOLTAGE);
 	current = DRV_GetReading(OBK_CURRENT);
 	power = DRV_GetReading(OBK_POWER);
@@ -223,11 +223,12 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 		if (OBK_IS_NAN(energy_hour)) {
 			energy_hour = 0;
 		}
+
 		printer(request, "{");
 		printer(request, "\"Power\": %f,", power);
-		printer(request, "\"ApparentPower\": 0,");
-		printer(request, "\"ReactivePower\": 0,");
-		printer(request, "\"Factor\":%f,", factor);
+		printer(request, "\"ApparentPower\": %f,", g_apparentPower);
+		printer(request, "\"ReactivePower\": %f,", g_reactivePower);
+		printer(request, "\"Factor\":%f,", g_powerFactor);
 		printer(request, "\"Voltage\":%f,", voltage);
 		printer(request, "\"Current\":%f,", current);
 		printer(request, "\"ConsumptionTotal\":%f,", energy);
@@ -315,7 +316,11 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 	}
 	return 0;
 }
-
+// Test command: http://192.168.0.159/cm?cmnd=STATUS%208
+// For a device without sensors, it returns (on Tasmota):
+/*
+{"StatusSNS":{"Time":"2023-04-10T10:19:55"}}
+*/
 static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bAppendHeader) {
 	char buff[20];
 
@@ -456,11 +461,13 @@ static int http_tasmota_json_status_TIM(void* request, jsonCb_t printer) {
 	printer(request, "}");
 	return 0;
 }
+// Test command: http://192.168.0.159/cm?cmnd=STATUS%202
 static int http_tasmota_json_status_FWR(void* request, jsonCb_t printer) {
 
 	printer(request, "\"StatusFWR\":{");
 	JSON_PrintKeyValue_String(request, printer, "Version", DEVICENAME_PREFIX_FULL"_"USER_SW_VER, true);
 	JSON_PrintKeyValue_String(request, printer, "BuildDateTime", __DATE__" "__TIME__, true);
+	// NOTE: what is this value? It's not a reboot count
 	JSON_PrintKeyValue_Int(request, printer, "Boot", 7, true);
 	JSON_PrintKeyValue_String(request, printer, "Core", "0.0", true);
 	JSON_PrintKeyValue_String(request, printer, "SDK", "obk", true);
@@ -470,6 +477,26 @@ static int http_tasmota_json_status_FWR(void* request, jsonCb_t printer) {
 	printer(request, "}");
 	return 0;
 }
+static int http_obk_json_channels(void* request, jsonCb_t printer) {
+	int i;
+	int iCnt = 0;
+	char tmp[8];
+
+	printer(request, "{");
+	for (i = 0; i < CHANNEL_MAX; i++) {
+		if (CHANNEL_IsInUse(i)) {
+			if (iCnt) {
+				printer(request, ",");
+			}
+			iCnt++;
+			sprintf(tmp, "Ch%i", i);
+			JSON_PrintKeyValue_Int(request, printer, tmp, CHANNEL_Get(i), false);
+		}
+	}
+	printer(request, "}");
+	return 0;
+}
+// Test command: http://192.168.0.159/cm?cmnd=STATUS%204
 static int http_tasmota_json_status_MEM(void* request, jsonCb_t printer) {
 	printer(request, "\"StatusMEM\":{");
 	JSON_PrintKeyValue_Int(request, printer, "ProgramSize", 616, true);
@@ -496,7 +523,10 @@ static int http_tasmota_json_status_MEM(void* request, jsonCb_t printer) {
 	printer(request, "}");
 	return 0;
 }
+// Test command: http://192.168.0.159/cm?cmnd=STATUS%205
 static int http_tasmota_json_status_NET(void* request, jsonCb_t printer) {
+	char tmpMac[16];
+	HAL_GetMACStr(tmpMac);
 
 	printer(request, "\"StatusNET\":{");
 	JSON_PrintKeyValue_String(request, printer, "Hostname", CFG_GetShortDeviceName(), true);
@@ -505,7 +535,7 @@ static int http_tasmota_json_status_NET(void* request, jsonCb_t printer) {
 	JSON_PrintKeyValue_String(request, printer, "Subnetmask", "255.255.255.0", true);
 	JSON_PrintKeyValue_String(request, printer, "DNSServer1", "192.168.0.1", true);
 	JSON_PrintKeyValue_String(request, printer, "DNSServer2", "0.0.0.0", true);
-	JSON_PrintKeyValue_String(request, printer, "Mac", "10:52:1C:D7:9E:2C", true);
+	JSON_PrintKeyValue_String(request, printer, "Mac", tmpMac, true);
 	JSON_PrintKeyValue_Int(request, printer, "Webserver", 2, true);
 	JSON_PrintKeyValue_Int(request, printer, "HTTP_API", 1, true);
 	JSON_PrintKeyValue_Int(request, printer, "WifiConfig", 4, true);
@@ -513,6 +543,7 @@ static int http_tasmota_json_status_NET(void* request, jsonCb_t printer) {
 	printer(request, "}");
 	return 0;
 }
+// Test command: http://192.168.0.159/cm?cmnd=STATUS%206
 static int http_tasmota_json_status_MQT(void* request, jsonCb_t printer) {
 
 	printer(request, "\"StatusMQT\":{");
@@ -648,7 +679,7 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	printer(request, ",");
 
 
-
+	// Test command: http://192.168.0.159/cm?cmnd=STATUS%203
 	printer(request, "\"StatusLOG\":{");
 	printer(request, "\"SerialLog\":2,");
 	printer(request, "\"WebLog\":2,");
@@ -707,6 +738,7 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	return 0;
 }
 int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, jsonCb_t printer, int flags) {
+	int i;
 
 	if (!wal_strnicmp(cmd, "POWER", 5)) {
 
@@ -921,14 +953,14 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 	}
 	else if (!wal_strnicmp(cmd, "SetChannelType", 14)) {
 		// OBK-specific
-		int i = atoi(arg);
+		i = atoi(arg);
 		i = CHANNEL_GetType(i);
 
 		printer(request, "%i", i);
 	}
 	else if (!wal_strnicmp(cmd, "GetChannel", 10) || !wal_strnicmp(cmd, "SetChannel", 10) || !wal_strnicmp(cmd, "AddChannel", 10)) {
 		// OBK-specific
-		int i = atoi(arg);
+		i = atoi(arg);
 		i = CHANNEL_Get(i);
 
 		printer(request, "%i", i);
@@ -976,6 +1008,9 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		printer(request, "{");
 		printer(request, "\"Flags\":\"%ld\"", *((long int*)&g_cfg.genericFlags));
 		printer(request, "}");
+	}
+	else if (!wal_strnicmp(cmd, "Ch", 2)) {
+		http_obk_json_channels(request, printer);
 	}
 	else {
 		printer(request, "{");

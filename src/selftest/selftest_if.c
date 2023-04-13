@@ -4,7 +4,7 @@
 
 void Test_Command_If() {
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 
 	CMD_ExecuteCommand("if 1 then \"setChannel 1 1521\"", 0);
 	SELFTEST_ASSERT_CHANNEL(1, 1521);
@@ -36,7 +36,7 @@ void Test_Command_If() {
 
 void Test_Command_If_Else() {
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 
 	CMD_ExecuteCommand("if 1 then \"setChannel 1 1111\" else \"setChannel 2 2222\"", 0);
 	SELFTEST_ASSERT_CHANNEL(1, 1111);
