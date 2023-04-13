@@ -521,8 +521,8 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_SetChannelVisible","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetChannelVisible", CMD_SetChannelVisible, NULL);
-	//cmddetail:{"name":"Ch","args":"[TargetChannel][InputValue]",
-	//cmddetail:"descr":"qqq",
+	//cmddetail:{"name":"Ch","args":"[InputValue]",
+	//cmddetail:"descr":"An alternate command to access channels. It returns all used channels in JSON format. The syntax is ChINDEX value, there is no space between Ch and channel index. It can be sent without value to poll channel values.",
 	//cmddetail:"fn":"CMD_Ch","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Ch", CMD_Ch, NULL);

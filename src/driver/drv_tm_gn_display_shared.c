@@ -242,6 +242,7 @@ static commandResult_t CMD_TM1637_Char(const void *context, const char *cmd, con
 
 	return CMD_RES_OK;
 }
+// [StartOfs] [MaxLenOr0] [StringText] [optionalBClampWithZeroesForClock]
 static commandResult_t CMD_TM1637_Print(const void *context, const char *cmd, const char *args, int flags) {
 	int ofs;
 	int maxLen;
@@ -454,34 +455,34 @@ void TM_GN_Display_SharedInit() {
 
 	TM1637_SetBrightness(0x0f, true);
 
-	//cmddetail:{"name":"TM1637_Clear","args":"CMD_TM1637_Clear",
-	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
+	//cmddetail:{"name":"TMGN_Clear","args":"",
+	//cmddetail:"descr":"This clears the TM1637/GN932/etc display",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tm_gn_display_shared.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TMGN_Clear", CMD_TM1637_Clear, NULL);
-	//cmddetail:{"name":"TMGN_Char","args":"CMD_TMGN_Char",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"TMGN_Char","args":"[CharIndex] [CharCode]",
+	//cmddetail:"descr":"This allows you to set binary code for given char, valid chars range is 0 to 15, because this is 7-seg display",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TMGN_Char", CMD_TM1637_Char, NULL);
-	//cmddetail:{"name":"TM1637_Print","args":"CMD_TM1637_Print",
-	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
+	//cmddetail:{"name":"TMGN_Print","args":"[StartOfs] [MaxLenOr0] [StringText] [optionalBClampWithZeroesForClock]",
+	//cmddetail:"descr":"This allows you to print string on TM1637/GN932/etc display, it supports variables expansion",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tm_gn_display_shared.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TMGN_Print", CMD_TM1637_Print, NULL);
-	//cmddetail:{"name":"TM1637_Test","args":"CMD_TM1637_Test",
+	//cmddetail:{"name":"TMGN_Test","args":"CMD_TM1637_Test",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tm_gn_display_shared.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TMGN_Test", CMD_TM1637_Test, NULL);
-	//cmddetail:{"name":"TM1637_Brightness","args":"CMD_TM1637_Brightness",
-	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
+	//cmddetail:{"name":"TMGN_Brightness","args":"[Brigthness0to7][bOn]",
+	//cmddetail:"descr":"This allows you to change brightness and state of  TM1637/GN932/etc display",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tm_gn_display_shared.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TMGN_Brightness", CMD_TM1637_Brightness, NULL);
-	//cmddetail:{"name":"TM1637_Map","args":"CMD_TM1637_Map",
-	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
+	//cmddetail:{"name":"TMGN_Map","args":"[Map0][Map1, etc]",
+	//cmddetail:"descr":"This allows you to remap characters order for TM1637/GN932/etc. My TM1637 module from Aliexpress has a strange characters order.",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tm_gn_display_shared.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TMGN_Map", CMD_TM1637_Map, NULL);
 	//cmddetail:{"name":"TM1650_Test","args":"CMD_TM1650_Test",
