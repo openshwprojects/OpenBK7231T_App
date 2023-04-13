@@ -18,7 +18,24 @@
 static softI2C_t g_i2c;
 static byte g_brightness;
 static byte g_digits[] = {
-	0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f,0x77,0x7c,0x39,0x5e,0x79,0x71,0xff
+	0x3f, // 0
+	0x06, // 1
+	0x5b, // 2
+	0x4f, // 3
+	0x66, // 4
+	0x6d, // 5
+	0x7d, // 6
+	0x07, // 7
+	0x7f, // 8
+	0x6f, // 9
+	0x77, // A
+	0x7c, // B
+	0x39, // C
+	0x5e, // D
+	0x79, // E
+	0x71, // F
+	0xff, // all on
+	0x00, // all off
 };
 // I don't know why, my display has incorrect order of displayed characters
 static byte g_remap[16] = {
@@ -167,6 +184,14 @@ static int TM1637_MapCharacter(int ch) {
 		ret = 16;
 	return ret;
 }
+static void TM1637_SetBit(int pos, int bit, int state) {
+	if (state) {
+		BIT_SET(tmgn_buffer[g_remap[pos]], bit);
+	}
+	else {
+		BIT_CLEAR(tmgn_buffer[g_remap[pos]], bit);
+	}
+}
 static void TM1637_PrintStringAt(const char *str, int pos, int maxLen) {
 	int i, len, idx;
 	int tgIndex;
@@ -224,6 +249,29 @@ static commandResult_t CMD_TM1637_Test(const void *context, const char *cmd, con
 	return CMD_RES_OK;
 }
 
+// TMGN_SetBit [DigitIndex] [BitIndex] [1or0]
+// TMGN_SetBit 1 0 0
+// TMGN_SetBit 1 0 1
+static commandResult_t CMD_TM1637_SetBit(const void *context, const char *cmd, const char *args, int flags) {
+	int digitIndex;
+	int bitIndex;
+	int newValue;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() <= 1) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	digitIndex = Tokenizer_GetArgInteger(0);
+	bitIndex = Tokenizer_GetArgInteger(1);
+	newValue = Tokenizer_GetArgInteger(2);
+
+	TM1637_SetBit(digitIndex, bitIndex, newValue);
+	TM1637_SendSegments(tmgn_buffer, g_totalDigits, 0);
+
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_TM1637_Char(const void *context, const char *cmd, const char *args, int flags) {
 	int index;
 	int code;
@@ -455,6 +503,11 @@ void TM_GN_Display_SharedInit() {
 
 	TM1637_SetBrightness(0x0f, true);
 
+	//cmddetail:{"name":"TMGN_SetBit","args":"[CharIndex] [BitIndex] [BitValue]",
+	//cmddetail:"descr":"Set given bit of given digit to 1 or 0.",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("TMGN_SetBit", CMD_TM1637_SetBit, NULL);
 	//cmddetail:{"name":"TMGN_Clear","args":"",
 	//cmddetail:"descr":"This clears the TM1637/GN932/etc display",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm_gn_display_shared.c","requires":"",
