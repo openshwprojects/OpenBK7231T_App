@@ -6,7 +6,7 @@
 
 void Test_Demo_MapFanSpeedToRelays() {
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 
 	// not belongs here, but some quick expression tests
 	CMD_ExecuteCommand("setChannel 0 123", 0);

@@ -34,6 +34,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | CHT8305 |  TODO |
 | MAX72XX |  WIP driver |
 | TM1637 |  Driver for 7-segment LED display with DIO/CLK interface |
+| GN6932 |  Driver for 7-segment LED display with DIO/CLK/STB interface |
 | SHT3X |  Humidity/temperature sensor. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html) |
+| ShiftRegister |  ShiftRegisterShiftRegisterShiftRegisterShiftRegister |
 | Battery |  Custom mechanism to measure battery level with ADC and an optional relay. See [example here](https://www.elektroda.com/rtvforum/topic3959103.html). |
 | Bridge |  TODO |

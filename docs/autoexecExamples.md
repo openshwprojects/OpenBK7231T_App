@@ -258,3 +258,18 @@ addEventHandler OnHold 26 led_addDimmer 10 1
 ```
 
 
+Basic Ping Watchdog usage. Ping given IP with given interval and run script if there was no ping reply within given time.
+<br>
+```
+// this is autoexec.bat, it runs at startup, you should restart after making changes
+// target to ping
+PingHost 192.168.0.1
+// interval in seconds
+PingInterval 10
+// events to run when no ping happens
+addChangeHandler noPingTime > 600 reboot
+
+
+```
+
+

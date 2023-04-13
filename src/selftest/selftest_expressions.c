@@ -4,7 +4,7 @@
 
 void Test_Expressions_RunTests_Basic() {
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 
 	// parser must be able to both handle '-' as an operation and '-' as a negative sign before number
 	SELFTEST_ASSERT(Float_Equals(CMD_EvaluateExpression("-1",0), -1.0f));

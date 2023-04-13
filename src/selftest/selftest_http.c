@@ -226,7 +226,7 @@ const char *Test_GetLastHTMLReply() {
 }
 void Test_Http_SingleRelayOnChannel1() {
 
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(9, 1);
 
@@ -338,7 +338,7 @@ void Test_Http_SingleRelayOnChannel1() {
 }
 void Test_Http_TwoRelays() {
 
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(9, 1);
 
@@ -409,7 +409,7 @@ void Test_Http_TwoRelays() {
 }
 void Test_Http_FourRelays() {
 
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(9, 1);
 
@@ -635,7 +635,7 @@ StatusSTS sample from Tasmota RGBCW (5 PWMs set):
 */
 void Test_Http_LED_SingleChannel() {
 
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
 	PIN_SetPinChannelForPinIndex(24, 1);
 
@@ -671,7 +671,7 @@ void Test_Http_LED_SingleChannel() {
 }
 void Test_Http_LED_CW() {
 
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
 	PIN_SetPinChannelForPinIndex(24, 1);
 
@@ -730,7 +730,7 @@ void Test_Http_LED_CW() {
 }
 void Test_Http_LED_RGB() {
 
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
 	PIN_SetPinChannelForPinIndex(24, 1);
 

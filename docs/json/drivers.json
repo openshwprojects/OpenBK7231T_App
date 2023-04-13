@@ -162,9 +162,21 @@
     "requires": ""
   },
   {
+    "name": "GN6932",
+    "title": "TODO",
+    "descr": "Driver for 7-segment LED display with DIO/CLK/STB interface",
+    "requires": ""
+  },
+  {
     "name": "SHT3X",
     "title": "TODO",
     "descr": "Humidity/temperature sensor. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html)",
+    "requires": ""
+  },
+  {
+    "name": "ShiftRegister",
+    "title": "TODO",
+    "descr": "ShiftRegisterShiftRegisterShiftRegisterShiftRegister",
     "requires": ""
   },
   {

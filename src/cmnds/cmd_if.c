@@ -225,6 +225,9 @@ float getMinute(const char *s) {
 float getHour(const char *s) {
 	return NTP_GetHour();
 }
+float getSecond(const char *s) {
+	return NTP_GetSecond();
+}
 
 const constant_t g_constants[] = {
 	//cnstdetail:{"name":"MQTTOn",
@@ -328,6 +331,11 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Current minute from NTP",
 	//cnstdetail:"requires":""}
 	{ "$minute", &getMinute },
+	//cnstdetail:{"name":"$second",
+	//cnstdetail:"title":"$second",
+	//cnstdetail:"descr":"Current second from NTP",
+	//cnstdetail:"requires":""}
+	{ "$second", &getSecond },
 #endif
 	//cnstdetail:{"name":"$uptime",
 	//cnstdetail:"title":"$uptime",

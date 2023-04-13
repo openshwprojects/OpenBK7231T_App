@@ -460,6 +460,13 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_BL0937_SEL_n,
+	//iodetail:{"name":"DoorSensorWithDeepSleep_pd",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"As DoorSensorWithDeepSleep, but with pulldown resistor",
+	//iodetail:"enum":"IOR_DoorSensorWithDeepSleep_pd",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_DoorSensorWithDeepSleep_pd,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
