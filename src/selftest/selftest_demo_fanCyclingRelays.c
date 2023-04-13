@@ -59,7 +59,7 @@ alias Do_Cycle_Press addChannel 10 1 1 3 1
 */
 void Test_Demo_FanCyclingRelays() {
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 
 	// Pins 3 and 4 are buttons
 	PIN_SetPinRoleForPinIndex(3, IOR_Button_ScriptOnly);

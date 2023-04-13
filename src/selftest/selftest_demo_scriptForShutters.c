@@ -4,7 +4,7 @@
 
 void Test_Demo_SimpleShuttersScript() {
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 
 	// Pins 3 and 4 are buttons
 	PIN_SetPinRoleForPinIndex(3, IOR_Relay);

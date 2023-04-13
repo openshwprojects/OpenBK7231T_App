@@ -3,7 +3,7 @@
 #include "selftest_local.h"
 
 void Test_EnergyMeter_Basic() {
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	SIM_ClearAndPrepareForMQTTTesting("miscDevice", "bekens");
 
 	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
@@ -42,7 +42,7 @@ void Test_EnergyMeter_Basic() {
 	SIM_ClearMQTTHistory();
 }
 void Test_EnergyMeter_Tasmota() {
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	SIM_ClearAndPrepareForMQTTTesting("miscDevice", "bekens");
 
 	PIN_SetPinRoleForPinIndex(9, IOR_Relay);

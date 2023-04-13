@@ -4,7 +4,7 @@
 
 void Test_Demo_ButtonScrollingChannelValues() {
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 
 	// Pins 3 is button
 	PIN_SetPinRoleForPinIndex(3, IOR_Button_ScriptOnly);

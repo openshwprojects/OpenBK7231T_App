@@ -6,7 +6,7 @@ void Test_LFS() {
 	char buffer[64];
 	
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	CMD_ExecuteCommand("lfs_format", 0);
 
 	// send file content as POST to REST interface

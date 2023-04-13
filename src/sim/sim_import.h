@@ -15,8 +15,7 @@ extern "C" {
 	void SIM_SaveFlashData(const char *flashPath);
 	void SIM_SetupNewFlashFile(const char *flashPath);
 	void SIM_SetupEmptyFlashModeNoFile();
-	void SIM_DoFreshOBKBoot();
-	void SIM_ClearOBK();
+	void SIM_ClearOBK(const char *flashPath);
 	bool SIM_IsFlashModified();
 	float SIM_GetDeltaTimeSeconds();
 #ifdef __cplusplus
