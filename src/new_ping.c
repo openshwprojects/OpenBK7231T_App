@@ -27,6 +27,7 @@
 #include "lwip/inet.h"
 #include "logging/logging.h"
 #include "new_common.h"
+#include "new_cfg.h"
 #include <string.h>
 
 #ifndef PING_DEBUG

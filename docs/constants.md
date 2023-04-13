@@ -26,4 +26,5 @@ Do not add anything here, as it will overwritten with next rebuild.
 | $day |  Current weekday from NTP |
 | $hour |  Current hour from NTP |
 | $minute |  Current minute from NTP |
+| $second |  Current second from NTP |
 | $uptime |  Time since reboot in seconds |
