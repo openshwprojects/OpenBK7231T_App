@@ -824,6 +824,12 @@
     <ClCompile Include="src\driver\drv_tm_gn_display_shared.c">
       <Filter>Drv</Filter>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_kp18068.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_sgp.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />
@@ -1223,6 +1229,9 @@
       <Filter>Drv</Filter>
     </ClInclude>
     <ClInclude Include="src\driver\drv_tm_gn_display_shared.h">
+      <Filter>Drv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\driver\drv_sgp.h">
       <Filter>Drv</Filter>
     </ClInclude>
   </ItemGroup>

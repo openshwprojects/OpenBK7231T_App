@@ -308,6 +308,7 @@
     <ClCompile Include="src\driver\drv_ir.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_kp18068.c" />
     <ClCompile Include="src\driver\drv_main.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -320,6 +321,7 @@
     <ClCompile Include="src\driver\drv_ntp_events.c" />
     <ClCompile Include="src\driver\drv_pwmToggler.c" />
     <ClCompile Include="src\driver\drv_pwrCal.c" />
+    <ClCompile Include="src\driver\drv_sgp.c" />
     <ClCompile Include="src\driver\drv_shiftRegister.c" />
     <ClCompile Include="src\driver\drv_sht3x.c" />
     <ClCompile Include="src\driver\drv_sm2135.c">
@@ -884,6 +886,7 @@
     <ClInclude Include="src\driver\drv_cht8305.h" />
     <ClInclude Include="src\driver\drv_dht_internal.h" />
     <ClInclude Include="src\driver\drv_max72xx_internal.h" />
+    <ClInclude Include="src\driver\drv_sgp.h" />
     <ClInclude Include="src\driver\drv_sht3x.h" />
     <ClInclude Include="src\driver\drv_sm2235.h" />
     <ClInclude Include="src\driver\drv_tm1637.h" />
