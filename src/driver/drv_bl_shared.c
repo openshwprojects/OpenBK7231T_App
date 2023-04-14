@@ -426,6 +426,12 @@ bool Channel_AreAllRelaysOpen() {
 				return false;
 			}
 		}
+		if (role == IOR_BridgeForward) {
+			// this channel is high = relay is set
+			if (CHANNEL_Get(ch)) {
+				return false;
+			}
+		}
 	}
 	return true;
 }
