@@ -76,8 +76,11 @@ int Battery_lastreading(int type)
 commandResult_t Battery_Setup(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-	if (Tokenizer_GetArgsCount() < 2) {
-		ADDLOG_INFO(LOG_FEATURE_DRV, "Battery Setup : need at least min and max battery args");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2))
+	{
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
@@ -102,8 +105,11 @@ commandResult_t Battery_Setup(const void* context, const char* cmd, const char* 
 commandResult_t Battery_cycle(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-	if (Tokenizer_GetArgsCount() < 1) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "Battery Cycle : Need integer args for seconds cycle");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1))
+	{
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	g_battcycleref = Tokenizer_GetArgFloat(0);
