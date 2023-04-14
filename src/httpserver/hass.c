@@ -58,6 +58,12 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 	case HUMIDITY_SENSOR:
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "humidity", index);
 		break;
+	case CO2_SENSOR:
+		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "co2", index);
+		break;
+	case TVOC_SENSOR:
+		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "tvoc", index);
+		break;
 	case BATTERY_SENSOR:
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "battery", index);
 		break;
@@ -96,6 +102,8 @@ void hass_populate_device_config_channel(ENTITY_TYPE type, char* uniq_id, HassDe
 		sprintf(info->channel, "switch/%s/config", uniq_id);
 		break;
 
+	case CO2_SENSOR:
+	case TVOC_SENSOR:
 	case POWER_SENSOR:
 	case BATTERY_SENSOR:
 	case BATTERY_VOLTAGE_SENSOR:
@@ -185,6 +193,14 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload
 	case HUMIDITY_SENSOR:
 		isSensor = true;
 		sprintf(g_hassBuffer, "%s Humidity", CFG_GetShortDeviceName());
+		break;
+	case CO2_SENSOR:
+		isSensor = true;
+		sprintf(g_hassBuffer, "%s CO2", CFG_GetShortDeviceName());
+		break;
+	case TVOC_SENSOR:
+		isSensor = true;
+		sprintf(g_hassBuffer, "%s Tvoc", CFG_GetShortDeviceName());
 		break;
 	case BATTERY_SENSOR:
 		isSensor = true;
@@ -282,10 +298,10 @@ HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type) {
 		cJSON_AddStringToObject(info->root, "clr_temp_cmd_t", g_hassBuffer);    //color_temp_command_topic
 
 		cJSON_AddStringToObject(info->root, "clr_temp_stat_t", "~/led_temperature/get");    //color_temp_state_topic
-		
+
 		sprintf(g_hassBuffer, "%.0f", led_temperature_min);
 		cJSON_AddStringToObject(info->root, "min_mirs", g_hassBuffer);    //min_mireds
-		
+
 		sprintf(g_hassBuffer, "%.0f", led_temperature_max);
 		cJSON_AddStringToObject(info->root, "max_mirs", g_hassBuffer);    //max_mireds
 	}
@@ -378,6 +394,18 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel) {
 	case HUMIDITY_SENSOR:
 		cJSON_AddStringToObject(info->root, "dev_cla", "humidity");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "%");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
+		break;
+	case CO2_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "carbon_dioxide");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "ppm");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
+		break;
+	case TVOC_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "volatile_organic_compounds");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "ppb");
 		sprintf(g_hassBuffer, "~/%d/get", channel);
 		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
 		break;

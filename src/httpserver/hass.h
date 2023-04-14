@@ -38,7 +38,12 @@ typedef enum {
 	/// @brief Battery level sensor in perc
 	BATTERY_SENSOR,
 	/// @brief Battery votage sensor in mV
-	BATTERY_VOLTAGE_SENSOR
+	BATTERY_VOLTAGE_SENSOR,
+
+	/// @brief CO2 sensor in ppm
+	CO2_SENSOR,
+	/// @brief TVOC sensor in ppb
+	TVOC_SENSOR
 
 } ENTITY_TYPE;
 
