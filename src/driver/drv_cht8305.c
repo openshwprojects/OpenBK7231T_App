@@ -49,14 +49,17 @@ static void CHT8305_ReadEnv(float* temp, float* hum) {
 commandResult_t CHT_Calibrate(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-	if (Tokenizer_GetArgsCount() < 2) {
-		ADDLOG_INFO(LOG_FEATURE_SENSOR, "Calibrate SHT: require Temp and Humidity args");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2))
+	{
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	g_calTemp = Tokenizer_GetArgFloat(0);
 	g_calHum = Tokenizer_GetArgFloat(1);
 
-	ADDLOG_INFO(LOG_FEATURE_SENSOR, "Calibrate SHT: Calibration done temp %f and humidity %f ", g_calTemp, g_calHum);
+	ADDLOG_INFO(LOG_FEATURE_SENSOR, "Calibrate CHT: Calibration done temp %f and humidity %f ", g_calTemp, g_calHum);
 
 	return CMD_RES_OK;
 }
