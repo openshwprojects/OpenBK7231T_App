@@ -830,6 +830,9 @@
     <ClCompile Include="src\driver\drv_sgp.c">
       <Filter>Drv</Filter>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_adcButton.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />

@@ -187,7 +187,11 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"Simple hardcoded driver for MAX72XX clock. Requirex manual start of MAX72XX driver with MAX72XX setup and NTP start.",
 	//drvdetail:"requires":""}
 	{ "MAX72XX_Clock",		DRV_MAX72XX_Clock_Init,		DRV_MAX72XX_Clock_OnEverySecond,	NULL, DRV_MAX72XX_Clock_RunFrame, NULL, NULL, false },
-
+	//drvdetail:{"name":"ADCButton",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":".",
+	//drvdetail:"requires":""}
+	{ "ADCButton",		DRV_ADCButton_Init,		NULL,	NULL, DRV_ADCButton_RunFrame, NULL, NULL, false },
 #endif
 #ifdef ENABLE_DRIVER_LED
 	//drvdetail:{"name":"SM2135",

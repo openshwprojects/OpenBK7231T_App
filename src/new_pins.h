@@ -481,6 +481,13 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_SGP_DAT,
+	//iodetail:{"name":"ADC_Button",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"Single ADC with multiple buttons connected.d",
+	//iodetail:"enum":"ADC_Button",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_ADC_Button,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",

@@ -116,6 +116,8 @@ enum EventCode {
 
 	CMD_EVENT_CHANGE_NOMQTTTIME,
 
+	CMD_EVENT_ADC_BUTTON,
+
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
 };

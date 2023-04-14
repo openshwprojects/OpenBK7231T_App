@@ -193,7 +193,9 @@ static int EVENT_ParseEventName(const char *s) {
 	if (!stricmp(s, "WiFiState"))
 		return CMD_EVENT_WIFI_STATE;
 	if (!stricmp(s, "TuyaMCUParsed"))
-		return CMD_EVENT_TUYAMCU_PARSED; 
+		return CMD_EVENT_TUYAMCU_PARSED;
+	if (!stricmp(s, "OnADCButton"))
+		return CMD_EVENT_ADC_BUTTON;
 	return CMD_EVENT_NONE;
 }
 static bool EVENT_EvaluateCondition(int code, int argument, int next) {

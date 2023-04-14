@@ -24,6 +24,9 @@ void DRV_MAX72XX_Clock_OnEverySecond();
 void DRV_MAX72XX_Clock_RunFrame();
 void DRV_MAX72XX_Clock_Init();
 
+void DRV_ADCButton_Init();
+void DRV_ADCButton_RunFrame();
+
 void SM2135_Init();
 
 void SM2235_Init();

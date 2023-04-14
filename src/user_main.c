@@ -665,6 +665,7 @@ static int g_wifi_ledState = 0;
 static uint32_t g_time = 0;
 static uint32_t g_last_time = 0;
 int g_bWantPinDeepSleep;
+unsigned int g_deltaTimeMS;
 
 /////////////////////////////////////////////////////
 // this is what we do in a qucik tick
@@ -687,23 +688,23 @@ void QuickTick(void* param)
 #else
 	g_time += QUICK_TMR_DURATION;
 #endif
-	uint32_t t_diff = g_time - g_last_time;
+	g_deltaTimeMS = g_time - g_last_time;
 	// cope with wrap
-	if (t_diff > 0x4000) {
-		t_diff = ((g_time + 0x4000) - (g_last_time + 0x4000));
+	if (g_deltaTimeMS > 0x4000) {
+		g_deltaTimeMS = ((g_time + 0x4000) - (g_last_time + 0x4000));
 	}
 	g_last_time = g_time;
 
 
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
-	SVM_RunThreads(t_diff);
+	SVM_RunThreads(g_deltaTimeMS);
 #endif
-	RepeatingEvents_RunUpdate(t_diff * 0.001f);
+	RepeatingEvents_RunUpdate(g_deltaTimeMS * 0.001f);
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_RunQuickTick();
 #endif
 #ifdef WINDOWS
-	NewTuyaMCUSimulator_RunQuickTick(t_diff);
+	NewTuyaMCUSimulator_RunQuickTick(g_deltaTimeMS);
 #endif
 	CMD_RunUartCmndIfRequired();
 
@@ -711,13 +712,13 @@ void QuickTick(void* param)
 	MQTT_RunQuickTick();
 
 	if (CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == true) {
-		LED_RunQuickColorLerp(t_diff);
+		LED_RunQuickColorLerp(g_deltaTimeMS);
 	}
 
 	// WiFi LED
 	// In Open Access point mode, fast blink
 	if (Main_IsOpenAccessPointMode()) {
-		g_wifiLedToggleTime += t_diff;
+		g_wifiLedToggleTime += g_deltaTimeMS;
 		if (g_wifiLedToggleTime > WIFI_LED_FAST_BLINK_DURATION) {
 			g_wifi_ledState = !g_wifi_ledState;
 			g_wifiLedToggleTime = 0;
@@ -730,7 +731,7 @@ void QuickTick(void* param)
 	}
 	else {
 		// in connecting mode, slow blink
-		g_wifiLedToggleTime += t_diff;
+		g_wifiLedToggleTime += g_deltaTimeMS;
 		if (g_wifiLedToggleTime > WIFI_LED_SLOW_BLINK_DURATION) {
 			g_wifi_ledState = !g_wifi_ledState;
 			g_wifiLedToggleTime = 0;
