@@ -67,6 +67,11 @@ void SHT3X_AppendInformationToHTTPIndexPage(http_request_t* request);
 void SHT3X_OnEverySecond();
 void SHT3X_StopDriver();
 
+void SGP_Init();
+void SGP_AppendInformationToHTTPIndexPage(http_request_t* request);
+void SGP_OnEverySecond();
+void SGP_StopDriver();
+
 void Batt_Init();
 void Batt_OnEverySecond();
 void Batt_AppendInformationToHTTPIndexPage(http_request_t* request);
@@ -93,12 +98,12 @@ typedef struct softI2C_s {
 
 void Soft_I2C_SetLow(uint8_t pin);
 void Soft_I2C_SetHigh(uint8_t pin);
-bool Soft_I2C_PreInit(softI2C_t *i2c);
-bool Soft_I2C_WriteByte(softI2C_t *i2c, uint8_t value);
-bool Soft_I2C_Start(softI2C_t *i2c, uint8_t addr);
-void Soft_I2C_Stop(softI2C_t *i2c);
-uint8_t Soft_I2C_ReadByte(softI2C_t *i2c, bool nack);
-void Soft_I2C_ReadBytes(softI2C_t *i2c, uint8_t* buf, int numOfBytes);
+bool Soft_I2C_PreInit(softI2C_t* i2c);
+bool Soft_I2C_WriteByte(softI2C_t* i2c, uint8_t value);
+bool Soft_I2C_Start(softI2C_t* i2c, uint8_t addr);
+void Soft_I2C_Stop(softI2C_t* i2c);
+uint8_t Soft_I2C_ReadByte(softI2C_t* i2c, bool nack);
+void Soft_I2C_ReadBytes(softI2C_t* i2c, uint8_t* buf, int numOfBytes);
 
 // Shared LED driver
 commandResult_t CMD_LEDDriver_Map(const void* context, const char* cmd, const char* args, int flags);

@@ -123,13 +123,13 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_DigitalInput_NoPup_n,
-// energy sensor
-	//iodetail:{"name":"BL0937_SEL",
-	//iodetail:"title":"TODO",
-	//iodetail:"descr":"SEL pin for BL0937 energy measuring devices. Set all BL0937 pins to autostart BL0937 driver. Don't forget to calibrate it later.",
-	//iodetail:"enum":"IOR_BL0937_SEL",
-	//iodetail:"file":"new_pins.h",
-	//iodetail:"driver":""}
+	// energy sensor
+		//iodetail:{"name":"BL0937_SEL",
+		//iodetail:"title":"TODO",
+		//iodetail:"descr":"SEL pin for BL0937 energy measuring devices. Set all BL0937 pins to autostart BL0937 driver. Don't forget to calibrate it later.",
+		//iodetail:"enum":"IOR_BL0937_SEL",
+		//iodetail:"file":"new_pins.h",
+		//iodetail:"driver":""}
 	IOR_BL0937_SEL,
 	//iodetail:{"name":"BL0937_CF",
 	//iodetail:"title":"TODO",
@@ -467,6 +467,20 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_DoorSensorWithDeepSleep_pd,
+	//iodetail:{"name":"SGP_CLK",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"SGP Quality Sensor Clock line. will autostart related driver",
+	//iodetail:"enum":"IOR_SGP_CLK",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_SGP_CLK,
+	//iodetail:{"name":"SGP_DAT",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"SGP Quality Sensor Data line. will autostart related driver",
+	//iodetail:"enum":"IOR_SGP_DAT",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_SGP_DAT,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
@@ -478,6 +492,7 @@ typedef enum ioRole_e {
 
 #define IS_PIN_DHT_ROLE(role) (((role)>=IOR_DHT11) && ((role)<=IOR_DHT22))
 #define IS_PIN_TEMP_HUM_SENSOR_ROLE(role) (((role)==IOR_SHT3X_DAT) || ((role)==IOR_CHT8305_DAT))
+#define IS_PIN_AIR_SENSOR_ROLE(role) (((role)==IOR_SGP_DAT))
 
 typedef enum channelType_e {
 	//chandetail:{"name":"Default",

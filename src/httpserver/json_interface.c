@@ -21,19 +21,19 @@
 #include "../driver/drv_local.h"
 #include "../driver/drv_bl_shared.h"
 
-void JSON_PrintKeyValue_String(void* request, jsonCb_t printer, const char *key, const char *value, bool bComma) {
+void JSON_PrintKeyValue_String(void* request, jsonCb_t printer, const char* key, const char* value, bool bComma) {
 	printer(request, "\"%s\":\"%s\"", key, value);
 	if (bComma) {
 		printer(request, ",");
 	}
 }
-void JSON_PrintKeyValue_Int(void* request, jsonCb_t printer, const char *key, int value, bool bComma) {
+void JSON_PrintKeyValue_Int(void* request, jsonCb_t printer, const char* key, int value, bool bComma) {
 	printer(request, "\"%s\":%i", key, value);
 	if (bComma) {
 		printer(request, ",");
 	}
 }
-void JSON_PrintKeyValue_Float(void* request, jsonCb_t printer, const char *key, float value, bool bComma) {
+void JSON_PrintKeyValue_Float(void* request, jsonCb_t printer, const char* key, float value, bool bComma) {
 	printer(request, "\"%s\":%f", key, value);
 	if (bComma) {
 		printer(request, ",");
@@ -117,10 +117,10 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 
 			// it looks like they include C and W in color
 			if (LED_IsLedDriverChipRunning() || numPWMs == 5) {
-				sprintf(buff32, "%i,%i,%i,%i,%i",(int)rgbcw[0], (int)rgbcw[1], (int)rgbcw[2], (int)rgbcw[3], (int)rgbcw[4]);
+				sprintf(buff32, "%i,%i,%i,%i,%i", (int)rgbcw[0], (int)rgbcw[1], (int)rgbcw[2], (int)rgbcw[3], (int)rgbcw[4]);
 			}
 			else {
-				sprintf(buff32,"%i,%i,%i", (int)rgbcw[0], (int)rgbcw[1], (int)rgbcw[2]);
+				sprintf(buff32, "%i,%i,%i", (int)rgbcw[0], (int)rgbcw[1], (int)rgbcw[2]);
 			}
 			JSON_PrintKeyValue_String(request, printer, "Color", buff32, true);
 			sprintf(buff32, "%i,%i,%i", (int)hsv[0], (int)hsv[1], (int)hsv[2]);
@@ -260,7 +260,7 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 }
 */
 static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
-	float temperature, humidity;
+	float chan_val1, chan_val2;
 	int channel_1, channel_2, g_pin_1 = 0;
 	printer(request, ",");
 	if (DRV_IsRunning("SHT3X")) {
@@ -268,15 +268,15 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 		channel_1 = g_cfg.pins.channels[g_pin_1];
 		channel_2 = g_cfg.pins.channels2[g_pin_1];
 
-		temperature = CHANNEL_GetFloat(channel_1) / 10.0f;
-		humidity = CHANNEL_GetFloat(channel_2);
+		chan_val1 = CHANNEL_GetFloat(channel_1) / 10.0f;
+		chan_val2 = CHANNEL_GetFloat(channel_2);
 
 		// writer header
 		printer(request, "\"SHT3X\":");
 		// following check will clear NaN values
 		printer(request, "{");
-		printer(request, "\"Temperature\": %.1f,", temperature);
-		printer(request, "\"Humidity\": %.0f", humidity);
+		printer(request, "\"Temperature\": %.1f,", chan_val1);
+		printer(request, "\"Humidity\": %.0f", chan_val2);
 		// close ENERGY block
 		printer(request, "},");
 	}
@@ -285,15 +285,32 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 		channel_1 = g_cfg.pins.channels[g_pin_1];
 		channel_2 = g_cfg.pins.channels2[g_pin_1];
 
-		temperature = CHANNEL_GetFloat(channel_1) / 10.0f;
-		humidity = CHANNEL_GetFloat(channel_2);
+		chan_val1 = CHANNEL_GetFloat(channel_1) / 10.0f;
+		chan_val2 = CHANNEL_GetFloat(channel_2);
 
 		// writer header
 		printer(request, "\"CHT8305\":");
 		// following check will clear NaN values
 		printer(request, "{");
-		printer(request, "\"Temperature\": %.1f,", temperature);
-		printer(request, "\"Humidity\": %.0f", humidity);
+		printer(request, "\"Temperature\": %.1f,", chan_val1);
+		printer(request, "\"Humidity\": %.0f", chan_val2);
+		// close ENERGY block
+		printer(request, "},");
+	}
+	if (DRV_IsRunning("SGP")) {
+		g_pin_1 = PIN_FindPinIndexForRole(IOR_SGP_DAT, g_pin_1);
+		channel_1 = g_cfg.pins.channels[g_pin_1];
+		channel_2 = g_cfg.pins.channels2[g_pin_1];
+
+		chan_val1 = CHANNEL_GetFloat(channel_1);
+		chan_val2 = CHANNEL_GetFloat(channel_2);
+
+		// writer header
+		printer(request, "\"SGP\":");
+		// following check will clear NaN values
+		printer(request, "{");
+		printer(request, "\"CO2\": %.0f,", chan_val1);
+		printer(request, "\"Tvoc\": %.0f", chan_val2);
 		// close ENERGY block
 		printer(request, "},");
 	}
@@ -978,7 +995,7 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 	}
 	else if (!wal_strnicmp(cmd, "SSID1", 5)) {
 		printer(request, "{");
-		JSON_PrintKeyValue_String(request,printer,"SSID1", CFG_GetWiFiSSID(),false);
+		JSON_PrintKeyValue_String(request, printer, "SSID1", CFG_GetWiFiSSID(), false);
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "LED_Map", 7)) {
