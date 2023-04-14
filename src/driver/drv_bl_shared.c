@@ -408,7 +408,27 @@ commandResult_t BL09XX_SetupConsumptionThreshold(const void *context, const char
 
     return CMD_RES_OK;
 }
+bool Channel_AreAllRelaysOpen() {
+	int i, role, ch;
 
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		role = g_cfg.pins.roles[i];
+		ch = g_cfg.pins.channels[i];
+		if (role == IOR_Relay) {
+			// this channel is high = relay is set
+			if (CHANNEL_Get(ch)) {
+				return false;
+			}
+		}
+		if (role == IOR_Relay_n) {
+			// this channel is low = relay_n is set
+			if (CHANNEL_Get(ch)==false) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
 void BL_ProcessUpdate(float voltage, float current, float power,
 					  float frequency) 
 {
@@ -434,6 +454,13 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			voltage = 0.0f;
 		if (current < 0.0f)
 			current = 0.0f;
+	}
+	if (CFG_HasFlag(OBK_FLAG_POWER_FORCE_ZERO_IF_RELAYS_OPEN))
+	{
+		if (Channel_AreAllRelaysOpen()) {
+			power = 0;
+			current = 0;
+		}
 	}
 
     // those are final values, like 230V
