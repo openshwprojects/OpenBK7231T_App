@@ -32,11 +32,14 @@ void BP5758D_Init();
 
 void BP1658CJ_Init();
 
+void KP18068_Init();
+
 void SM16703P_Init();
 
 void TM1637_Init();
 
 void GN6932_Init();
+
 
 bool DRV_IsRunning(const char* name);
 

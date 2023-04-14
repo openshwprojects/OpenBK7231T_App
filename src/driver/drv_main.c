@@ -217,6 +217,11 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"TODO",
 	//drvdetail:"requires":""}
 	{ "CHT8305",	CHT8305_Init,		CHT8305_OnEverySecond,		CHT8305_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	//drvdetail:{"name":"KP18068",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"KP18068 I2C LED driver",
+	//drvdetail:"requires":""}
+	{ "KP18068",		KP18068_Init,		NULL,			NULL, NULL, NULL, NULL, false },
 	//drvdetail:{"name":"MAX72XX",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"WIP driver",
