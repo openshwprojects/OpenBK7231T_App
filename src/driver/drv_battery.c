@@ -96,7 +96,7 @@ commandResult_t Battery_Setup(const void* context, const char* cmd, const char* 
 		g_adcbits = Tokenizer_GetArgFloat(4);
 	}
 
-	ADDLOG_INFO(LOG_FEATURE_CMD, "Battery Setup : Min %i Max %i Vref %i adcbits %i vdivider %i", g_minbatt, g_maxbatt, g_vref, g_adcbits, g_vdivider);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Battery Setup : Min %f Max %f Vref %f adcbits %f vdivider %f", g_minbatt, g_maxbatt, g_vref, g_adcbits, g_vdivider);
 
 	return CMD_RES_OK;
 }
