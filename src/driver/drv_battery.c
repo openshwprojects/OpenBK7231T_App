@@ -37,6 +37,7 @@ static void Batt_Measure() {
 	}
 	if (g_vdivider > 1) {
 		CHANNEL_Set(channel_rel, 1, 0);
+		rtos_delay_milliseconds(10);
 	}
 	g_battvoltage = HAL_ADC_Read(g_pin_adc);
 	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY : ADC binary Measurement : %f and channel %i", g_battvoltage, channel_adc);
