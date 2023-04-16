@@ -189,7 +189,7 @@ static driver_t g_drivers[] = {
 	{ "MAX72XX_Clock",		DRV_MAX72XX_Clock_Init,		DRV_MAX72XX_Clock_OnEverySecond,	NULL, DRV_MAX72XX_Clock_RunFrame, NULL, NULL, false },
 	//drvdetail:{"name":"ADCButton",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":".",
+	//drvdetail:"descr":"This allows you to connect multiple buttons on single ADC pin. Each button must have a different resistor value, this works by probing the voltage on ADC from a resistor divider. You need to select AB_Map first. See forum post for [details](https://www.elektroda.com/rtvforum/viewtopic.php?p=20541973#20541973).",
 	//drvdetail:"requires":""}
 	{ "ADCButton",		DRV_ADCButton_Init,		NULL,	NULL, DRV_ADCButton_RunFrame, NULL, NULL, false },
 #endif
@@ -218,7 +218,7 @@ static driver_t g_drivers[] = {
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	//drvdetail:{"name":"CHT8305",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"TODO",
+	//drvdetail:"descr":"CHT8305 is a Temperature and Humidity sensor with I2C interface.",
 	//drvdetail:"requires":""}
 	{ "CHT8305",	CHT8305_Init,		CHT8305_OnEverySecond,		CHT8305_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 	//drvdetail:{"name":"KP18068",
@@ -228,7 +228,7 @@ static driver_t g_drivers[] = {
 	{ "KP18068",		KP18068_Init,		NULL,			NULL, NULL, NULL, NULL, false },
 	//drvdetail:{"name":"MAX72XX",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"WIP driver",
+	//drvdetail:"descr":"MAX72XX LED matrix display driver with font and simple script interface.",
 	//drvdetail:"requires":""}
 	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, NULL, NULL, false },
 	//drvdetail:{"name":"TM1637",
@@ -238,7 +238,7 @@ static driver_t g_drivers[] = {
 	{ "TM1637",	TM1637_Init,		NULL,		NULL, NULL, NULL, NULL, false },
 	//drvdetail:{"name":"GN6932",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK/STB interface",
+	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK/STB interface. See [this topic](https://www.elektroda.com/rtvforum/topic3971252.html) for details.",
 	//drvdetail:"requires":""}
 	{ "GN6932",	GN6932_Init,		NULL,		NULL, NULL, NULL, NULL, false },
 	//drvdetail:{"name":"SHT3X",
@@ -248,7 +248,7 @@ static driver_t g_drivers[] = {
 	{ "SHT3X",	    SHT3X_Init,		SHT3X_OnEverySecond,		SHT3X_AppendInformationToHTTPIndexPage, NULL, SHT3X_StopDriver, NULL, false },
 	//drvdetail:{"name":"SGP",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"Air Quality sensor.",
+	//drvdetail:"descr":"SGP Air Quality sensor with I2C interface.",
 	//drvdetail:"requires":""}
 	{ "SGP",	    SGP_Init,		SGP_OnEverySecond,		SGP_AppendInformationToHTTPIndexPage, NULL, SGP_StopDriver, NULL, false },
 

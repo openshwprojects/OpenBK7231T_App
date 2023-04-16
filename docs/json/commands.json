@@ -918,8 +918,17 @@
     "examples": ""
   },
   {
+    "name": "AB_Map",
+    "args": "[int]",
+    "descr": "Sets margines for ADC button codes. For given N margins, there are N+1 possible ADC button values (one should be reserved for 'no button')",
+    "fn": "Cmd_ADCButtonMap",
+    "file": "drv/drv_adcButton.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "Battery_Setup",
-    "args": "[int][int][float][int][int]",
+    "args": "[float][float][float][float][float]",
     "descr": "measure battery based on ADC args minbatt and maxbatt in mv. optional V_divider(2), Vref(default 2400) and ADC bits(4096) and   ",
     "fn": "Battery_Setup",
     "file": "drv/drv_battery.c",
@@ -1051,6 +1060,15 @@
     "file": "driver/drv_bridge_driver.c",
     "requires": "",
     "examples": ""
+  },
+  {
+    "name": "CHT_Calibrate",
+    "args": "",
+    "descr": "Calibrate the CHT Sensor as Tolerance is +/-2 degrees C.",
+    "fn": "CHT_Calibrate",
+    "file": "driver/drv_cht8305.c",
+    "requires": "",
+    "examples": "SHT_Calibrate -4 10"
   },
   {
     "name": "setButtonColor",
@@ -1276,6 +1294,42 @@
     "file": "driver/drv_pwrCal.c",
     "requires": "",
     "examples": ""
+  },
+  {
+    "name": "SGP_cycle",
+    "args": "[int]",
+    "descr": "change cycle of measurement by default every 10 seconds 0 to deactivate",
+    "fn": "SGP_cycle",
+    "file": "drv/drv_sgp.c",
+    "requires": "",
+    "examples": "SGP_Cycle 60"
+  },
+  {
+    "name": "SGP_GetVersion",
+    "args": "",
+    "descr": "SGP : get version",
+    "fn": "SGP_GetVersion",
+    "file": "drv/drv_sgp.c",
+    "requires": "",
+    "examples": "SGP_GetVersion"
+  },
+  {
+    "name": "SGP_GetBaseline",
+    "args": "",
+    "descr": "SGP Get baseline",
+    "fn": "SGP_GetBaseline",
+    "file": "drv/drv_sgp.c",
+    "requires": "",
+    "examples": "SGP_GetBaseline"
+  },
+  {
+    "name": "SGP_SoftReset",
+    "args": "",
+    "descr": "SGP i2C soft reset",
+    "fn": "SGP_SoftReset",
+    "file": "drv/drv_sgp.c",
+    "requires": "",
+    "examples": "SGP_SoftReset"
   },
   {
     "name": "SHT_cycle",
@@ -1553,6 +1607,15 @@
     "descr": "NULL",
     "fn": "TestPower_Setup",
     "file": "driver/drv_test_drivers.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "TMGN_SetBit",
+    "args": "[CharIndex] [BitIndex] [BitValue]",
+    "descr": "Set given bit of given digit to 1 or 0.",
+    "fn": "NULL);",
+    "file": "driver/drv_tm1637.c",
     "requires": "",
     "examples": ""
   },

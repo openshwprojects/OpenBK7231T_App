@@ -52,7 +52,7 @@ void DRV_ADCButton_Init() {
 
 
 	//cmddetail:{"name":"AB_Map","args":"[int]",
-	//cmddetail:"descr":"cqqqqs",
+	//cmddetail:"descr":"Sets margines for ADC button codes. For given N margins, there are N+1 possible ADC button values (one should be reserved for 'no button')",
 	//cmddetail:"fn":"Cmd_ADCButtonMap","file":"drv/drv_adcButton.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("AB_Map", Cmd_ADCButtonMap, NULL);

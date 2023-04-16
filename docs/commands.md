@@ -107,7 +107,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | lfs_test1 | [FileName] | Tests the LFS file reading feature. |
 | lfs_test2 | [FileName] | Tests the LFS file reading feature. |
 | lfs_test3 | [FileName] | Tests the LFS file reading feature. |
-| Battery_Setup | [int][int][float][int][int] | measure battery based on ADC args minbatt and maxbatt in mv. optional V_divider(2), Vref(default 2400) and ADC bits(4096) and   <br/>e.g.:Battery_Setup 1500 3000 2 2400 4096 |
+| AB_Map | [int] | Sets margines for ADC button codes. For given N margins, there are N+1 possible ADC button values (one should be reserved for 'no button') |
+| Battery_Setup | [float][float][float][float][float] | measure battery based on ADC args minbatt and maxbatt in mv. optional V_divider(2), Vref(default 2400) and ADC bits(4096) and   <br/>e.g.:Battery_Setup 1500 3000 2 2400 4096 |
 | Battery_cycle | [int] | change cycle of measurement by default every 10 seconds<br/>e.g.:Battery_Setup 60 |
 | PowerMax | BL0937_PowerMax |  |
 | EnergyCntReset |  | Resets the total Energy Counter, the one that is usually kept after device reboots. After this commands, the counter will start again from 0. |
@@ -122,6 +123,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | BP5758D_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP5758D channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: BP5758D_Map 0 1 2 3 4 |
 | BP5758D_Current | [MaxCurrent] | Sets the maximum current limit for BP5758D driver |
 | BridgePulseLength | [FloatValue] | Setup value for bridge pulse len |
+| CHT_Calibrate |  | Calibrate the CHT Sensor as Tolerance is +/-2 degrees C.<br/>e.g.:SHT_Calibrate -4 10 |
 | setButtonColor | [ButtonIndex][Color] | Sets the colour of custom scriptable HTTP page button |
 | setButtonCommand | [ButtonIndex][Command] | Sets the command of custom scriptable HTTP page button |
 | setButtonLabel | [ButtonIndex][Label] | Sets the label of custom scriptable HTTP page button |
@@ -147,6 +149,10 @@ Do not add anything here, as it will overwritten with next rebuild.
 | VoltageSet | Voltage | Measure the real voltage with an external, reliable power meter and enter this voltage via this command to calibrate. The calibration is automatically saved in the flash memory. |
 | CurrentSet | Current | Measure the real Current with an external, reliable power meter and enter this Current via this command to calibrate. The calibration is automatically saved in the flash memory. |
 | PowerSet | Power | Measure the real Power with an external, reliable power meter and enter this Power via this command to calibrate. The calibration is automatically saved in the flash memory. |
+| SGP_cycle | [int] | change cycle of measurement by default every 10 seconds 0 to deactivate<br/>e.g.:SGP_Cycle 60 |
+| SGP_GetVersion |  | SGP : get version<br/>e.g.:SGP_GetVersion |
+| SGP_GetBaseline |  | SGP Get baseline<br/>e.g.:SGP_GetBaseline |
+| SGP_SoftReset |  | SGP i2C soft reset<br/>e.g.:SGP_SoftReset |
 | SHT_cycle | [int] | change cycle of measurement by default every 10 seconds 0 to deactivate<br/>e.g.:SHT_Cycle 60 |
 | SHT_Calibrate |  | Calibrate the SHT Sensor as Tolerance is +/-2 degrees C.<br/>e.g.:SHT_Calibrate -4 10 |
 | SHT_MeasurePer |  | Retrieve Periodical measurement for SHT<br/>e.g.:SHT_Measure |
@@ -178,6 +184,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | DGR_SendRGBCW | [GroupName][HexRGBCW] | Sends a RGBCW message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. You can use this command in two ways, first is like DGR_SendRGBCW GroupName 255 255 0, etc, second is DGR_SendRGBCW GroupName FF00FF00 etc etc. |
 | DGR_SendFixedColor | [GroupName][TasColorIndex] | Sends a FixedColor message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
 | SetupTestPower |  | NULL |
+| TMGN_SetBit | [CharIndex] [BitIndex] [BitValue] | Set given bit of given digit to 1 or 0. |
 | TMGN_Clear |  | This clears the TM1637/GN932/etc display |
 | TMGN_Char | [CharIndex] [CharCode] | This allows you to set binary code for given char, valid chars range is 0 to 15, because this is 7-seg display |
 | TMGN_Print | [StartOfs] [MaxLenOr0] [StringText] [optionalBClampWithZeroesForClock] | This allows you to print string on TM1637/GN932/etc display, it supports variables expansion |

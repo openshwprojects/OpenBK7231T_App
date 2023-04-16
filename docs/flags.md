@@ -43,3 +43,4 @@ Do not add anything here, as it will overwritten with next rebuild.
 | 35 | [HASS] Deactivate avty_t flag for sensor when publishing to HASS (permit to keep value) |
 | 36 | [DRV] Deactivate Autostart of all drivers |
 | 37 | [WiFi] Quick connect to WiFi on reboot (TODO: check if it works for you and report on github) |
+| 38 | [Power] Set power and current to zero if all relays are open |

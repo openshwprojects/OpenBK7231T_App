@@ -120,6 +120,12 @@
     "requires": ""
   },
   {
+    "name": "ADCButton",
+    "title": "TODO",
+    "descr": "This allows you to connect multiple buttons on single ADC pin. Each button must have a different resistor value, this works by probing the voltage on ADC from a resistor divider. You need to select AB_Map first. See forum post for [details](https://www.elektroda.com/rtvforum/viewtopic.php?p=20541973#20541973).",
+    "requires": ""
+  },
+  {
     "name": "SM2135",
     "title": "TODO",
     "descr": "SM2135 custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both SM2135 pin roles. This may need you to remap the RGBCW indexes with SM2135_Map command",
@@ -146,13 +152,19 @@
   {
     "name": "CHT8305",
     "title": "TODO",
-    "descr": "TODO",
+    "descr": "CHT8305 is a Temperature and Humidity sensor with I2C interface.",
+    "requires": ""
+  },
+  {
+    "name": "KP18068",
+    "title": "TODO",
+    "descr": "KP18068 I2C LED driver",
     "requires": ""
   },
   {
     "name": "MAX72XX",
     "title": "TODO",
-    "descr": "WIP driver",
+    "descr": "MAX72XX LED matrix display driver with font and simple script interface.",
     "requires": ""
   },
   {
@@ -164,13 +176,19 @@
   {
     "name": "GN6932",
     "title": "TODO",
-    "descr": "Driver for 7-segment LED display with DIO/CLK/STB interface",
+    "descr": "Driver for 7-segment LED display with DIO/CLK/STB interface. See [this topic](https://www.elektroda.com/rtvforum/topic3971252.html) for details.",
     "requires": ""
   },
   {
     "name": "SHT3X",
     "title": "TODO",
     "descr": "Humidity/temperature sensor. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html)",
+    "requires": ""
+  },
+  {
+    "name": "SGP",
+    "title": "TODO",
+    "descr": "SGP Air Quality sensor with I2C interface.",
     "requires": ""
   },
   {

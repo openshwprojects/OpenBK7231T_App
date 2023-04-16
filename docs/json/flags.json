@@ -264,5 +264,12 @@
     "title": "todo",
     "file": "new_pins.h",
     "descr": "[WiFi] Quick connect to WiFi on reboot (TODO: check if it works for you and report on github)"
+  },
+  {
+    "index": "38",
+    "enum": "OBK_FLAG_POWER_FORCE_ZERO_IF_RELAYS_OPEN",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[Power] Set power and current to zero if all relays are open"
   }
 ]

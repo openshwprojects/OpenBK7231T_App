@@ -27,15 +27,18 @@ Do not add anything here, as it will overwritten with next rebuild.
 | PWMToggler |  PWMToggler is a custom abstraction layer that can run on top of raw PWM channels. It provides ability to turn off/on the PWM while keeping it's value, which is not possible by direct channel operations. It can be used for some custom devices with extra lights/lasers. See example [here](https://www.elektroda.com/rtvforum/topic3939064.html). |
 | DoorSensor |  DoorSensor is using deep sleep to preserve battery. This is used for devices without TuyaMCU, where BK deep sleep and wakeup on GPIO is used. This drives requires you to set a DoorSensor pin. Change on door sensor pin wakes up the device. If there are no changes for some time, device goes to sleep. See example [here](https://www.elektroda.com/rtvforum/topic3960149.html). |
 | MAX72XX_Clock |  Simple hardcoded driver for MAX72XX clock. Requirex manual start of MAX72XX driver with MAX72XX setup and NTP start. |
+| ADCButton |  This allows you to connect multiple buttons on single ADC pin. Each button must have a different resistor value, this works by probing the voltage on ADC from a resistor divider. You need to select AB_Map first. See forum post for [details](https://www.elektroda.com/rtvforum/viewtopic.php?p=20541973#20541973). |
 | SM2135 |  SM2135 custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both SM2135 pin roles. This may need you to remap the RGBCW indexes with SM2135_Map command |
 | BP5758D |  BP5758D custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both BP5758D pin roles. This may need you to remap the RGBCW indexes with BP5758D_Map command. This driver is used in some of BL602/Sonoff bulbs, see [video flashing tutorial here](https://www.youtube.com/watch?v=L6d42IMGhHw) |
 | BP1658CJ |  BP1658CJ custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both BP1658CJ pin roles. This may need you to remap the RGBCW indexes with BP1658CJ_Map command |
 | SM2235 |  SM2335 andd SM2235 custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both SM2235 pin roles. This may need you to remap the RGBCW indexes with SM2235_Map command |
-| CHT8305 |  TODO |
-| MAX72XX |  WIP driver |
+| CHT8305 |  CHT8305 is a Temperature and Humidity sensor with I2C interface. |
+| KP18068 |  KP18068 I2C LED driver |
+| MAX72XX |  MAX72XX LED matrix display driver with font and simple script interface. |
 | TM1637 |  Driver for 7-segment LED display with DIO/CLK interface |
-| GN6932 |  Driver for 7-segment LED display with DIO/CLK/STB interface |
+| GN6932 |  Driver for 7-segment LED display with DIO/CLK/STB interface. See [this topic](https://www.elektroda.com/rtvforum/topic3971252.html) for details. |
 | SHT3X |  Humidity/temperature sensor. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html) |
+| SGP |  SGP Air Quality sensor with I2C interface. |
 | ShiftRegister |  ShiftRegisterShiftRegisterShiftRegisterShiftRegister |
 | Battery |  Custom mechanism to measure battery level with ADC and an optional relay. See [example here](https://www.elektroda.com/rtvforum/topic3959103.html). |
 | Bridge |  TODO |

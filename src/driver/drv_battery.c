@@ -123,7 +123,7 @@ commandResult_t Battery_cycle(const void* context, const char* cmd, const char* 
 // startDriver Battery
 void Batt_Init() {
 
-	//cmddetail:{"name":"Battery_Setup","args":"[int][int][float][int][int]",
+	//cmddetail:{"name":"Battery_Setup","args":"[float][float][float][float][float]",
 	//cmddetail:"descr":"measure battery based on ADC args minbatt and maxbatt in mv. optional V_divider(2), Vref(default 2400) and ADC bits(4096) and   ",
 	//cmddetail:"fn":"Battery_Setup","file":"drv/drv_battery.c","requires":"",
 	//cmddetail:"examples":"Battery_Setup 1500 3000 2 2400 4096"}
