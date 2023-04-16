@@ -2188,6 +2188,7 @@ const char* g_obk_flagNames[] = {
 	"[DRV] Deactivate Autostart of all drivers",
 	"[WiFi] Quick connect to WiFi on reboot (TODO: check if it works for you and report on github)",
 	"[Power] Set power and current to zero if all relays are open",
+	"[DoorSensor] Alternate wake up mode (always on falling edge)",
 	"error",
 	"error",
 	"error",

@@ -136,14 +136,19 @@ void PINS_BeginDeepSleepWithPinWakeUp() {
 			|| g_cfg.pins.roles[i] == IOR_DigitalInput_NoPup
 			|| g_cfg.pins.roles[i] == IOR_DigitalInput_NoPup_n) {
 			//value = CHANNEL_Get(g_cfg.pins.channels[i]);
-			value = HAL_PIN_ReadDigitalInput(i);
-			if (value) {
-				// on falling edge wake up
+			if (CFG_HasFlag(OBK_FLAG_DOORSENSOR_ALWAYSWAKEONFALLING)) {
 				falling = 1;
 			}
 			else {
-				// on rising edge wake up
-				falling = 0;
+				value = HAL_PIN_ReadDigitalInput(i);
+				if (value) {
+					// on falling edge wake up
+					falling = 1;
+				}
+				else {
+					// on rising edge wake up
+					falling = 0;
+				}
 			}
 			setGPIActive(i, 1, falling);
 		}
