@@ -824,6 +824,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		}
 		break;
 		case IOR_BAT_ADC:
+		case IOR_ADC_Button:
 		case IOR_ADC:
 			// init ADC for given pin
 			HAL_ADC_Init(index);
