@@ -1318,6 +1318,9 @@ bool CHANNEL_ShouldBePublished(int ch) {
 		return true;
 	}
 #endif
+	if (CFG_HasFlag(OBK_FLAG_MQTT_PUBLISH_ALL_CHANNELS)) {
+		return true;
+	}
 	return false;
 }
 int CHANNEL_GetRoleForOutputChannel(int ch) {
