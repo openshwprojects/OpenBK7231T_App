@@ -958,6 +958,53 @@ int http_fn_cfg_mqtt(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
+int str_to_ip(const char *s, byte *ip) {
+	return sscanf(s, "%d.%d.%d.%d", &ip[0], &ip[1], &ip[2], &ip[3]);
+}
+int http_fn_cfg_ip(http_request_t* request) {
+	char tmp[64];
+	int g_changes = 0;
+	byte ip[4];
+	http_setup(request, httpMimeTypeHTML);
+	http_html_start(request, "IP");
+	poststr_h2(request, "Here you can set static IP or DHCP");
+	hprintf255(request, "<h4>Currently, DHCP is enabled by default and works when you set IP to 0.0.0.0.</h4>");
+
+	if (http_getArg(request->url, "IP", tmp, sizeof(tmp))) {
+		str_to_ip(tmp, g_cfg.staticIP.localIPAddr);
+		g_changes++;
+	}
+	if (http_getArg(request->url, "mask", tmp, sizeof(tmp))) {
+		str_to_ip(tmp, g_cfg.staticIP.netMask);
+		g_changes++;
+	}
+	if (http_getArg(request->url, "dns", tmp, sizeof(tmp))) {
+		str_to_ip(tmp, g_cfg.staticIP.dnsServerIpAddr);
+		g_changes++;
+	}
+	if (http_getArg(request->url, "gate", tmp, sizeof(tmp))) {
+		str_to_ip(tmp, g_cfg.staticIP.gatewayIPAddr);
+		g_changes++;
+	}
+	if (g_changes) {
+		CFG_MarkAsDirty();
+		hprintf255(request, "<h4>Saved.</h4>");
+	}
+	convert_IP_to_string(tmp, g_cfg.staticIP.localIPAddr);
+	add_label_text_field(request, "IP", "IP", tmp, "<form action=\"/cfg_ip\">");
+	convert_IP_to_string(tmp, g_cfg.staticIP.netMask);
+	add_label_text_field(request, "Mask", "mask", tmp, "<br><br>");
+	convert_IP_to_string(tmp, g_cfg.staticIP.dnsServerIpAddr);
+	add_label_text_field(request, "DNS", "dns", tmp, "<br>");
+	convert_IP_to_string(tmp, g_cfg.staticIP.gatewayIPAddr);
+	add_label_text_field(request, "Gate", "gate", tmp, "<br>");
+
+	poststr(request, "<br><input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MQTT data twice?')\"></form> ");
+	poststr(request, htmlFooterReturnToCfgLink);
+	http_html_end(request);
+	poststr(request, NULL);
+	return 0;
+}
 
 int http_fn_cfg_mqtt_set(http_request_t* request) {
 	char tmpA[128];
@@ -1963,6 +2010,7 @@ int http_fn_cfg(http_request_t* request) {
 	postFormAction(request, "cfg_startup", "Configure Startup");
 	postFormAction(request, "cfg_dgr", "Configure Device Groups");
 	postFormAction(request, "cfg_wifi", "Configure WiFi");
+	postFormAction(request, "cfg_ip", "Configure IP");
 	postFormAction(request, "cfg_mqtt", "Configure MQTT");
 	postFormAction(request, "cfg_name", "Configure Names");
 	postFormAction(request, "cfg_mac", "Change MAC");

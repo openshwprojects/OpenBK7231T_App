@@ -20,6 +20,9 @@ static int tok_flags = 0;
 #define g_bAllowQuotes (tok_flags&TOKENIZER_ALLOW_QUOTES)
 #define g_bAllowExpand (!(tok_flags&TOKENIZER_DONT_EXPAND))
 
+void convert_IP_to_string(char *o, unsigned char *ip) {
+	sprintf(o, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+}
 bool isWhiteSpace(char ch) {
 	if(ch == ' ')
 		return true;

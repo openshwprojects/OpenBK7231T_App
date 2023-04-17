@@ -340,7 +340,7 @@ void Main_ConnectToWiFiNow() {
 	g_bOpenAccessPointMode = 0;
 	wifi_ssid = CFG_GetWiFiSSID();
 	wifi_pass = CFG_GetWiFiPass();
-	HAL_ConnectToWiFi(wifi_ssid, wifi_pass);
+	HAL_ConnectToWiFi(wifi_ssid, wifi_pass,&g_cfg.staticIP);
 	// register function to get callbacks about wifi changes.
 	HAL_WiFi_SetupStatusCallback(Main_OnWiFiStatusChange);
 	ADDLOGF_DEBUG("Registered for wifi changes\r\n");

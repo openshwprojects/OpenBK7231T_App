@@ -6,6 +6,7 @@ void doHomeAssistantDiscovery(const char *topic, http_request_t *request);
 
 int http_fn_about(http_request_t* request);
 int http_fn_cfg_mqtt(http_request_t* request);
+int http_fn_cfg_ip(http_request_t* request);
 int http_fn_cfg_mqtt_set(http_request_t* request);
 int http_fn_cfg_webapp(http_request_t* request);
 int http_fn_cfg_webapp_set(http_request_t* request);

@@ -1,7 +1,7 @@
 #ifndef __NEW_PINS_H__
 #define __NEW_PINS_H__
 #include "new_common.h"
-
+#include "hal/hal_wifi.h"
 
 typedef enum ioRole_e {
 	//iodetail:{"name":"None",
@@ -930,6 +930,7 @@ typedef struct ledRemap_s {
 
 #define MAGIC_LED_REMAP_SIZE 5
 
+
 //
 // Main config structure (less than 2KB)
 //
@@ -997,10 +998,11 @@ typedef struct mainConfig_s {
 	unsigned long LFS_Size; // szie of LFS volume.  it's aligned against the end of OTA
 	int loggerFlags;
 #if PLATFORM_W800
-	byte unusedSectorAB[67];
+	byte unusedSectorAB[51];
 #else    
-	byte unusedSectorAB[115];
+	byte unusedSectorAB[99];
 #endif    
+	obkStaticIP_t staticIP;
 	ledRemap_t ledRemap;
 	led_corr_t led_corr;
 	// alternate topic name for receiving MQTT commands

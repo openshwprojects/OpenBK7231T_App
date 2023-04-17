@@ -186,7 +186,7 @@ static int connect_wifi_demo(char* ssid, char* pwd)
 
 	return ret;
 }
-void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key)
+void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip)
 {
 	g_bOpenAccessPointMode = 0;
 	connect_wifi_demo(oob_ssid, connect_key);

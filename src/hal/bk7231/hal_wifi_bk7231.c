@@ -1,7 +1,7 @@
 #include "../hal_wifi.h"
 
 #define LOG_FEATURE LOG_FEATURE_MAIN
-
+#include "../../new_common.h"
 #include "wlan_ui_pub.h"
 #include "ethernet_intf.h"
 #include "../../new_common.h"
@@ -227,8 +227,7 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 
 	bk_wlan_status_register_cb(wl_status);
 }
-
-void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key)
+void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip)
 {
 	g_bOpenAccessPointMode = 0;
 
@@ -240,12 +239,21 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key)
 	os_strcpy((char*)network_cfg.wifi_key, connect_key);
 
 	network_cfg.wifi_mode = STATION;
-	network_cfg.dhcp_mode = DHCP_CLIENT;
+	if (ip->localIPAddr[0] == 0) {
+		network_cfg.dhcp_mode = DHCP_CLIENT;
+	}
+	else {
+		network_cfg.dhcp_mode = DHCP_DISABLE;
+		convert_IP(network_cfg.local_ip_addr, ip->localIPAddr);
+		convert_IP(network_cfg.net_mask, ip->netMask);
+		convert_IP(network_cfg.gateway_ip_addr, ip->gatewayIPAddr);
+		convert_IP(network_cfg.dns_server_ip_addr, ip->dnsServerIpAddr);
+	}
 	network_cfg.wifi_retry_interval = 100;
 
 	ADDLOGF_INFO("ssid:%s key:%s\r\n", network_cfg.wifi_ssid, network_cfg.wifi_key);
 
-	bk_wlan_start(&network_cfg);
+	bk_wlan_start_sta(&network_cfg);
 }
 
 void HAL_DisconnectFromWifi()
