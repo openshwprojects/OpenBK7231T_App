@@ -265,7 +265,7 @@ static struct mqtt_connect_client_info_t mqtt_client_info =
 // channel set callback
 int channelSet(obk_mqtt_request_t* request);
 int channelGet(obk_mqtt_request_t* request);
-static void MQTT_do_connect(mqtt_client_t* client);
+static int MQTT_do_connect(mqtt_client_t* client);
 static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection_status_t status);
 
 int MQTT_GetConnectEvents(void)
@@ -940,7 +940,7 @@ static void mqtt_incoming_data_cb(void* arg, const u8_t* data, u16_t len, u8_t f
 		g_mqtt_request.received = data;
 		g_mqtt_request.receivedLen = len;
 
-		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT in topic %s", g_mqtt_request.topic);
+		//addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT in topic %s", g_mqtt_request.topic);
 		mqtt_received_events++;
 
 		for (i = 0; i < numCallbacks; i++)
@@ -1108,7 +1108,7 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 	}
 }
 
-static void MQTT_do_connect(mqtt_client_t* client)
+static int MQTT_do_connect(mqtt_client_t* client)
 {
 	const char* mqtt_userName, * mqtt_host, * mqtt_pass, * mqtt_clientID;
 	int mqtt_port;
@@ -1121,7 +1121,7 @@ static void MQTT_do_connect(mqtt_client_t* client)
 	if (!mqtt_host[0]) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host empty, not starting mqtt\r\n");
 		snprintf(mqtt_status_message, sizeof(mqtt_status_message), "mqtt_host empty, not starting mqtt");
-		return;
+		return 0;
 	}
 
 	mqtt_userName = CFG_GetMQTTUserName();
@@ -1172,7 +1172,7 @@ static void MQTT_do_connect(mqtt_client_t* client)
 		else {
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host resolves no addresses?\r\n");
 			snprintf(mqtt_status_message, sizeof(mqtt_status_message), "mqtt_host resolves no addresses?");
-			return;
+			return 0;
 		}
 
 		// host name/ip
@@ -1202,11 +1202,13 @@ static void MQTT_do_connect(mqtt_client_t* client)
 		else {
 			mqtt_status_message[0] = '\0';
 		}
+		return res;
 	}
 	else {
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host %s not found by gethostbyname\r\n", mqtt_host);
 		snprintf(mqtt_status_message, sizeof(mqtt_status_message), "mqtt_host %s not found by gethostbyname", mqtt_host);
 	}
+	return 0;
 }
 
 OBK_Publish_Result MQTT_PublishMain_StringInt(const char* sChannel, int iv)
@@ -1897,9 +1899,13 @@ int MQTT_RunEverySecondUpdate()
 #endif
 					UNLOCK_TCPIP_CORE();
 				}
-				MQTT_do_connect(mqtt_client);
+				if (MQTT_do_connect(mqtt_client) == ERR_RTE) {
+					// silently allow retry next frame
+				}
+				else {
+					mqtt_loopsWithDisconnected = 0;
+				}
 				mqtt_connect_events++;
-				mqtt_loopsWithDisconnected = 0;
 			}
 		}
 		MQTT_Mutex_Free();
