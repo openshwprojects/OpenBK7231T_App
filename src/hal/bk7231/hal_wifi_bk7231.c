@@ -244,10 +244,10 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 	}
 	else {
 		network_cfg.dhcp_mode = DHCP_DISABLE;
-		convert_IP(network_cfg.local_ip_addr, ip->localIPAddr);
-		convert_IP(network_cfg.net_mask, ip->netMask);
-		convert_IP(network_cfg.gateway_ip_addr, ip->gatewayIPAddr);
-		convert_IP(network_cfg.dns_server_ip_addr, ip->dnsServerIpAddr);
+		convert_IP_to_string(network_cfg.local_ip_addr, ip->localIPAddr);
+		convert_IP_to_string(network_cfg.net_mask, ip->netMask);
+		convert_IP_to_string(network_cfg.gateway_ip_addr, ip->gatewayIPAddr);
+		convert_IP_to_string(network_cfg.dns_server_ip_addr, ip->dnsServerIpAddr);
 	}
 	network_cfg.wifi_retry_interval = 100;
 
