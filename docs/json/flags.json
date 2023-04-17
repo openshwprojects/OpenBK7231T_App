@@ -274,7 +274,7 @@
   },
   {
     "index": "39",
-    "enum": "OBK_FLAG_DOORSENSOR_ALWAYSWAKEONFALLING",
+    "enum": "OBK_FLAG_UNUSED_TODO",
     "title": "todo",
     "file": "new_pins.h"
   }

@@ -59,12 +59,12 @@ void DoorDeepSleep_Init() {
 	g_noChangeTimePassed = 0;
 
 	//cmddetail:{"name":"DSEdge","args":"[edgeCode]",
-	//cmddetail:"descr":"0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2",
+	//cmddetail:"descr":"DoorSensor driver configuration command. 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2",
 	//cmddetail:"fn":"DoorDeepSleep_SetEdge","file":"drv/drv_doorSensorWithDeepSleep.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DSEdge", DoorDeepSleep_SetEdge, NULL);
 	//cmddetail:{"name":"DSTime","args":"[timeSeconds]",
-	//cmddetail:"descr":"Time to keep device running before next sleep after last door sensor change. In future we may add also an option to automatically sleep after MQTT confirms door state receival",
+	//cmddetail:"descr":"DoorSensor driver configuration command. Time to keep device running before next sleep after last door sensor change. In future we may add also an option to automatically sleep after MQTT confirms door state receival",
 	//cmddetail:"fn":"DoorDeepSleep_SetTime","file":"drv/drv_doorSensorWithDeepSleep.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DSTime", DoorDeepSleep_SetTime, NULL);
