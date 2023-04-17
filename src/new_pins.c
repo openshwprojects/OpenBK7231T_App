@@ -888,8 +888,6 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 	int i;
 	int iVal;
 	int bOn;
-	int bCallCb = 0;
-
 
 	//bOn = BIT_CHECK(g_channelStates,ch);
 	iVal = g_channelValues[ch];
@@ -912,45 +910,20 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 		if (g_cfg.pins.channels[i] == ch) {
 			if (g_cfg.pins.roles[i] == IOR_Relay || g_cfg.pins.roles[i] == IOR_BAT_Relay || g_cfg.pins.roles[i] == IOR_LED) {
 				RAW_SetPinValue(i, bOn);
-				bCallCb = 1;
 			}
 			else if (g_cfg.pins.roles[i] == IOR_Relay_n || g_cfg.pins.roles[i] == IOR_LED_n) {
 				RAW_SetPinValue(i, !bOn);
-				bCallCb = 1;
-			}
-			else if (g_cfg.pins.roles[i] == IOR_DigitalInput || g_cfg.pins.roles[i] == IOR_DigitalInput_n
-				|| g_cfg.pins.roles[i] == IOR_DigitalInput_NoPup || g_cfg.pins.roles[i] == IOR_DigitalInput_NoPup_n
-				|| g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep || g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_NoPup
-				|| g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_pd) {
-				bCallCb = 1;
-			}
-			else if (g_cfg.pins.roles[i] == IOR_ToggleChannelOnToggle) {
-				bCallCb = 1;
 			}
 			else if (g_cfg.pins.roles[i] == IOR_PWM) {
 				HAL_PIN_PWM_Update(i, iVal);
-				bCallCb = 1;
 			}
 			else if (g_cfg.pins.roles[i] == IOR_PWM_n) {
 				HAL_PIN_PWM_Update(i, 100 - iVal);
-				bCallCb = 1;
-			}
-			else if (IS_PIN_DHT_ROLE(g_cfg.pins.roles[i])) {
-				bCallCb = 1;
 			}
 		}
-		else if (g_cfg.pins.channels2[i] == ch) {
-			//DHT setup uses 2 channels
-			if (IS_PIN_DHT_ROLE(g_cfg.pins.roles[i])) {
-				bCallCb = 1;
-			}
-		}
-	}
-	if (g_cfg.pins.channelTypes[ch] != ChType_Default) {
-		bCallCb = 1;
 	}
 	if ((iFlags & CHANNEL_SET_FLAG_SKIP_MQTT) == 0) {
-		if (bCallCb) {
+		if (CHANNEL_ShouldBePublished(ch)) {
 			MQTT_ChannelPublish(ch, 0);
 		}
 	}
@@ -1307,7 +1280,7 @@ bool CHANNEL_IsPowerRelayChannel(int ch) {
 	}
 	return false;
 }
-bool CHANNEL_HasRoleThatShouldBePublished(int ch) {
+bool CHANNEL_ShouldBePublished(int ch) {
 	int i;
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		int role = g_cfg.pins.roles[i];
@@ -1335,6 +1308,16 @@ bool CHANNEL_HasRoleThatShouldBePublished(int ch) {
 			}
 		}
 	}
+	if (g_cfg.pins.channelTypes[ch] != ChType_Default) {
+		return true;
+	}
+#ifdef ENABLE_DRIVER_TUYAMCU
+	// publish if channel is used by TuyaMCU (no pin role set), for example door sensor state with power saving V0 protocol
+	// Not enabled by default, you have to set OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS flag
+	if (CFG_HasFlag(OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS) && TuyaMCU_IsChannelUsedByTuyaMCU(ch)) {
+		return true;
+	}
+#endif
 	return false;
 }
 int CHANNEL_GetRoleForOutputChannel(int ch) {

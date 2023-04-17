@@ -620,7 +620,7 @@ int channelSet(obk_mqtt_request_t* request) {
 
 	// if not /set, then stop here
 	if (strcmp(p, "/set")) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelSet NOT 'set'");
+		//addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelSet NOT 'set'");
 		return 0;
 	}
 
@@ -961,7 +961,7 @@ static void mqtt_incoming_data_cb(void* arg, const u8_t* data, u16_t len, u8_t f
 				//}
 			}
 		}
-		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT topic not handled: %s", g_mqtt_request.topic);
+		//addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT topic not handled: %s", g_mqtt_request.topic);
 	}
 }
 
@@ -1762,16 +1762,9 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 	// because we are using led_basecolor_rgb, led_dimmer, led_enableAll, etc
 	// NOTE: negative indexes are not channels - they are special values
 	bWantsToPublish = false;
-	if (CHANNEL_HasRoleThatShouldBePublished(idx)) {
+	if (CHANNEL_ShouldBePublished(idx)) {
 		bWantsToPublish = true;
 	}
-#ifdef ENABLE_DRIVER_TUYAMCU
-	// publish if channel is used by TuyaMCU (no pin role set), for example door sensor state with power saving V0 protocol
-	// Not enabled by default, you have to set OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS flag
-	if (!bWantsToPublish && CFG_HasFlag(OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS) && TuyaMCU_IsChannelUsedByTuyaMCU(idx)) {
-		bWantsToPublish = true;
-	}
-#endif
 	// TODO
 	//type = CHANNEL_GetType(idx);
 	if (bWantsToPublish) {

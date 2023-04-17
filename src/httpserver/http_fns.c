@@ -2188,7 +2188,7 @@ const char* g_obk_flagNames[] = {
 	"[DRV] Deactivate Autostart of all drivers",
 	"[WiFi] Quick connect to WiFi on reboot (TODO: check if it works for you and report on github)",
 	"[Power] Set power and current to zero if all relays are open",
-	"TODO - UNUSED",
+	"[MQTT] [Debug] Publish all channels (don't enable it, it will be publish all 64 possible channels on connect)",
 	"error",
 	"error",
 	"error",
