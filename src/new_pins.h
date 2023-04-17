@@ -861,7 +861,7 @@ typedef struct pinsState_s {
 #define OBK_FLAG_DRV_DISABLE_AUTOSTART              36
 #define OBK_FLAG_WIFI_FAST_CONNECT		            37
 #define OBK_FLAG_POWER_FORCE_ZERO_IF_RELAYS_OPEN    38
-#define OBK_FLAG_DOORSENSOR_ALWAYSWAKEONFALLING		39
+#define OBK_FLAG_UNUSED_TODO						39
 
 #define OBK_TOTAL_FLAGS 40
 

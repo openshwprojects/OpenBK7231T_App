@@ -44,3 +44,4 @@ Do not add anything here, as it will overwritten with next rebuild.
 | 36 | [DRV] Deactivate Autostart of all drivers |
 | 37 | [WiFi] Quick connect to WiFi on reboot (TODO: check if it works for you and report on github) |
 | 38 | [Power] Set power and current to zero if all relays are open |
+| 39 | undefined |

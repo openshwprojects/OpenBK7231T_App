@@ -124,6 +124,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | BP5758D_Current | [MaxCurrent] | Sets the maximum current limit for BP5758D driver |
 | BridgePulseLength | [FloatValue] | Setup value for bridge pulse len |
 | CHT_Calibrate |  | Calibrate the CHT Sensor as Tolerance is +/-2 degrees C.<br/>e.g.:SHT_Calibrate -4 10 |
+| DSEdge | [edgeCode] | 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2 |
+| DSTime | [timeSeconds] | Time to keep device running before next sleep after last door sensor change. In future we may add also an option to automatically sleep after MQTT confirms door state receival |
 | setButtonColor | [ButtonIndex][Color] | Sets the colour of custom scriptable HTTP page button |
 | setButtonCommand | [ButtonIndex][Command] | Sets the command of custom scriptable HTTP page button |
 | setButtonLabel | [ButtonIndex][Label] | Sets the label of custom scriptable HTTP page button |

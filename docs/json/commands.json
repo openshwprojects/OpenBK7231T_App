@@ -1071,6 +1071,24 @@
     "examples": "SHT_Calibrate -4 10"
   },
   {
+    "name": "DSEdge",
+    "args": "[edgeCode]",
+    "descr": "0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2",
+    "fn": "DoorDeepSleep_SetEdge",
+    "file": "drv/drv_doorSensorWithDeepSleep.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "DSTime",
+    "args": "[timeSeconds]",
+    "descr": "Time to keep device running before next sleep after last door sensor change. In future we may add also an option to automatically sleep after MQTT confirms door state receival",
+    "fn": "DoorDeepSleep_SetTime",
+    "file": "drv/drv_doorSensorWithDeepSleep.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "setButtonColor",
     "args": "[ButtonIndex][Color]",
     "descr": "Sets the colour of custom scriptable HTTP page button",

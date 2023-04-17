@@ -271,5 +271,11 @@
     "title": "todo",
     "file": "new_pins.h",
     "descr": "[Power] Set power and current to zero if all relays are open"
+  },
+  {
+    "index": "39",
+    "enum": "OBK_FLAG_DOORSENSOR_ALWAYSWAKEONFALLING",
+    "title": "todo",
+    "file": "new_pins.h"
   }
 ]
