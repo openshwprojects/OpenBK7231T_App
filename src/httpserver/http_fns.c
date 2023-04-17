@@ -958,9 +958,7 @@ int http_fn_cfg_mqtt(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
-int str_to_ip(const char *s, byte *ip) {
-	return sscanf(s, "%d.%d.%d.%d", &ip[0], &ip[1], &ip[2], &ip[3]);
-}
+
 int http_fn_cfg_ip(http_request_t* request) {
 	char tmp[64];
 	int g_changes = 0;

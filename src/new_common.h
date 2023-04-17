@@ -433,6 +433,8 @@ typedef enum
     EXCELLENT,
 } WIFI_RSSI_LEVEL;
 
+#define IP_STRING_FORMAT	"%hhu.%hhu.%hhu.%hhu"
+
 WIFI_RSSI_LEVEL wifi_rssi_scale(int8_t rssi_value);
 extern const char *str_rssi[];
 extern int bSafeMode;
@@ -446,6 +448,7 @@ int JSON_ProcessCommandReply(const char *cmd, const char *args, void *request, j
 void ScheduleDriverStart(const char *name, int delay);
 bool isWhiteSpace(char ch);
 void convert_IP_to_string(char *o, unsigned char *ip);
+int str_to_ip(const char *s, byte *ip);
 
 #endif /* __NEW_COMMON_H__ */
 
