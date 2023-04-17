@@ -364,8 +364,10 @@ void EventHandlers_FireEvent(byte eventCode, int argument) {
 		}
 		ev = ev->next;
 	}
-	
+
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	CMD_Script_ProcessWaitersForEvent(eventCode, argument);
+#endif
 }
 void EventHandlers_FireEvent_String(byte eventCode, const char *argument) {
 	struct eventHandler_s *ev;
