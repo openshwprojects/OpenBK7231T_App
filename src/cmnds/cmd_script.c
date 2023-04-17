@@ -238,6 +238,9 @@ typedef struct scriptInstance_s {
 	const char *curLine;
 	int currentDelayMS;
 
+	int waitingForEvent;
+	int waitingForArgument;
+
 	struct scriptInstance_s *next;
 } scriptInstance_t;
 
@@ -361,6 +364,10 @@ void SVM_RunThread(scriptInstance_t *t) {
 
 	while(1) {
 		loop++;
+		// check if "waitFor" was executed last frame
+		if (t->waitingForEvent) {
+			return;
+		}
 		if(t->curLine == 0) {
 			t->curLine = 0;
 			t->curFile = 0;
@@ -423,21 +430,44 @@ void SVM_RunThreads(int deltaMS) {
 
 	g_activeThread = g_scriptThreads;
 	while(g_activeThread) {
-		if(g_activeThread->currentDelayMS > 0) {
-			g_activeThread->currentDelayMS -= deltaMS;
-			// the following block is needed to handle with long freezes on simulator
-			if (g_activeThread->currentDelayMS < 0) {
-				g_activeThread->currentDelayMS = 0;
-			}
+		if (g_activeThread->waitingForEvent) {
+			// do nothing
 			c_sleep++;
-		} else {
-			SVM_RunThread(g_activeThread);
-			c_run++;
+		}
+		else {
+			if (g_activeThread->currentDelayMS > 0) {
+				g_activeThread->currentDelayMS -= deltaMS;
+				// the following block is needed to handle with long freezes on simulator
+				if (g_activeThread->currentDelayMS < 0) {
+					g_activeThread->currentDelayMS = 0;
+				}
+				c_sleep++;
+			}
+			else {
+				SVM_RunThread(g_activeThread);
+				c_run++;
+			}
 		}
 		g_activeThread = g_activeThread->next;
 	}
 
 	//ADDLOG_INFO(LOG_FEATURE_CMD, "SCR sleep %i, ran %i",c_sleep,c_run);
+}
+void CMD_Script_ProcessWaitersForEvent(byte eventCode, int argument) {
+	scriptInstance_t *t;
+
+	t = g_scriptThreads;
+
+	while (t) {
+		if (t->waitingForEvent == eventCode) {
+			if (t->waitingForArgument == argument) {
+				// unlock!
+				t->waitingForArgument = 0;
+				t->waitingForEvent = 0;
+			}
+		}
+		t = t->next;
+	}
 }
 void SVM_GoTo(scriptInstance_t *th, const char *fname, const char *label) {
 	scriptFile_t *f;
@@ -741,6 +771,37 @@ commandResult_t CMD_resetSVM(const void *context, const char *cmd, const char *a
 
 	return CMD_RES_OK;
 }
+commandResult_t CMD_waitFor(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	const char *eventName;
+	int reqArg, eventCode;
+
+	if (g_activeThread == 0) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_waitFor: this can be only used from a script");
+		return CMD_RES_ERROR;
+	}
+
+	Tokenizer_TokenizeString(args, 0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	eventName = Tokenizer_GetArg(0);
+
+	eventCode = EVENT_ParseEventName(eventName);
+	if (eventCode == CMD_EVENT_NONE) {
+		ADDLOG_ERROR(LOG_FEATURE_EVENT, "%s is not a valid event", eventName);
+		return CMD_RES_BAD_ARGUMENT;
+	}
+
+	reqArg = Tokenizer_GetArgInteger(1);
+
+	g_activeThread->waitingForEvent = eventCode;
+	g_activeThread->waitingForArgument = reqArg;
+
+	return CMD_RES_OK;
+}
 void CMD_InitScripting(){
 	//cmddetail:{"name":"startScript","args":"[FileName][Label][UniqueID]",
 	//cmddetail:"descr":"Starts a script thread from given file, at given label - can be * for whole file, with given unique ID",
@@ -787,6 +848,11 @@ void CMD_InitScripting(){
 	//cmddetail:"fn":"CMD_resetSVM","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("resetSVM", CMD_resetSVM, NULL);
+	//cmddetail:{"name":"waitFor","args":"[EventName] [Argument]",
+	//cmddetail:"descr":"Wait forever for event.",
+	//cmddetail:"fn":"CMD_waitFor","file":"cmnds/cmd_script.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("waitFor", CMD_waitFor, NULL);
 
 }
 

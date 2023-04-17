@@ -123,7 +123,7 @@ static int EVENT_ParseRelation(const char *s) {
 	return EVENT_DEFAULT;
 }
 
-static int EVENT_ParseEventName(const char *s) {
+int EVENT_ParseEventName(const char *s) {
 	if(!wal_strnicmp(s,"channel",7)) {
 		return CMD_EVENT_CHANGE_CHANNEL0 + atoi(s+7);
 	}
@@ -364,6 +364,8 @@ void EventHandlers_FireEvent(byte eventCode, int argument) {
 		}
 		ev = ev->next;
 	}
+	
+	CMD_Script_ProcessWaitersForEvent(eventCode, argument);
 }
 void EventHandlers_FireEvent_String(byte eventCode, const char *argument) {
 	struct eventHandler_s *ev;
@@ -435,7 +437,7 @@ static commandResult_t CMD_AddEventHandler(const void *context, const char *cmd,
 
 	eventCode = EVENT_ParseEventName(eventName);
 	if(eventCode == CMD_EVENT_NONE) {
-		ADDLOG_ERROR(LOG_FEATURE_EVENT, "CMD_AddEventHandler: %s is not a valid event",eventName);
+		ADDLOG_ERROR(LOG_FEATURE_EVENT, "%s is not a valid event",eventName);
 		return CMD_RES_BAD_ARGUMENT;
 	}
 

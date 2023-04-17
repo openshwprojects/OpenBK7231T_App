@@ -2184,7 +2184,7 @@ const char* g_obk_flagNames[] = {
 	"[LED] Use old linear brightness mode, ignore gamma ramp",
 	"[MQTT] Apply channel type multiplier on (if any) on channel value before publishing it",
 	"[MQTT] In HA discovery, add relays as lights",
-	"[HASS] Deactivate avty_t flag for sensor when publishing to HASS (permit to keep value)",
+	"[HASS] Deactivate avty_t flag for sensor when publishing to HASS (permit to keep value). You must restart HASS discovery for change to take effect.",
 	"[DRV] Deactivate Autostart of all drivers",
 	"[WiFi] Quick connect to WiFi on reboot (TODO: check if it works for you and report on github)",
 	"[Power] Set power and current to zero if all relays are open",

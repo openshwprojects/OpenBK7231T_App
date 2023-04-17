@@ -127,6 +127,7 @@ void SIM_ClearOBK(const char *flashPath) {
 	Main_Init();
 }
 void Win_DoUnitTests() {
+	Test_WaitFor();
 	Test_TwoPWMsOneChannel();
 	Test_ClockEvents();
 	Test_HassDiscovery();

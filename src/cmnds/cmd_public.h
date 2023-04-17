@@ -122,6 +122,7 @@ enum EventCode {
 	CMD_EVENT_MAX_TYPES
 };
 
+int EVENT_ParseEventName(const char *s);
 
 // the slider control in the UI emits values
 //in the range from 154-500 (defined

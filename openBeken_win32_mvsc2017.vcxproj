@@ -831,6 +831,7 @@
     <ClCompile Include="src\selftest\selftest_twoPWMsOneChannel.c" />
     <ClCompile Include="src\selftest\selftest_util_mqtt.c" />
     <ClCompile Include="src\selftest\selftest_util_mqtt_json.c" />
+    <ClCompile Include="src\selftest\selftest_waitFor.c" />
     <ClCompile Include="src\sim\Circle.cpp" />
     <ClCompile Include="src\sim\Controller_BL0942.cpp" />
     <ClCompile Include="src\sim\Controller_Bulb.cpp" />
