@@ -33,7 +33,7 @@
 int BTN_SHORT_MS;
 int BTN_LONG_MS;
 int BTN_HOLD_REPEAT_MS;
-
+byte g_defaultDoorWakeEdge = 2;
 
 typedef enum {
 	BTN_PRESS_DOWN = 0,
@@ -136,10 +136,12 @@ void PINS_BeginDeepSleepWithPinWakeUp() {
 			|| g_cfg.pins.roles[i] == IOR_DigitalInput_NoPup
 			|| g_cfg.pins.roles[i] == IOR_DigitalInput_NoPup_n) {
 			//value = CHANNEL_Get(g_cfg.pins.channels[i]);
-			if (CFG_HasFlag(OBK_FLAG_DOORSENSOR_ALWAYSWAKEONFALLING)) {
-				falling = 1;
-			}
-			else {
+
+			// added per request
+			// https://www.elektroda.pl/rtvforum/viewtopic.php?p=20543190#20543190
+			// forcing a certain edge for both states helps on some door sensors, somehow
+			// 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising
+			if (g_defaultDoorWakeEdge == 2) {
 				value = HAL_PIN_ReadDigitalInput(i);
 				if (value) {
 					// on falling edge wake up
@@ -149,6 +151,9 @@ void PINS_BeginDeepSleepWithPinWakeUp() {
 					// on rising edge wake up
 					falling = 0;
 				}
+			}
+			else {
+				falling = g_defaultDoorWakeEdge;
 			}
 			setGPIActive(i, 1, falling);
 		}
