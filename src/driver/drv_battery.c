@@ -158,6 +158,6 @@ void Batt_StopDriver() {
 }
 void Batt_AppendInformationToHTTPIndexPage(http_request_t* request)
 {
-	hprintf255(request, "<h2>Battery level=%f, voltage=%f</h2>", g_battlevel, g_battvoltage);
+	hprintf255(request, "<h2>Battery level=%.2f, voltage=%.2f</h2>", g_battlevel, g_battvoltage);
 }
 
