@@ -35,7 +35,7 @@ commandResult_t DoorDeepSleep_SetEdge(const void* context, const char* cmd, cons
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
-	setting_timeRequiredUntilDeepSleep = Tokenizer_GetArgInteger(0);
+	g_defaultDoorWakeEdge = Tokenizer_GetArgInteger(0);
 
 	return CMD_RES_OK;
 }
@@ -50,7 +50,7 @@ commandResult_t DoorDeepSleep_SetTime(const void* context, const char* cmd, cons
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
-	g_defaultDoorWakeEdge = Tokenizer_GetArgInteger(0);
+	setting_timeRequiredUntilDeepSleep = Tokenizer_GetArgInteger(0);
 
 	return CMD_RES_OK;
 }
