@@ -8,6 +8,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 |:------------- | -----:|
 | MQTTOn |  Legacy variable, without $ prefix. Returns 1 if MQTT is connected, otherwise 0. |
 | $MQTTOn |  Returns 1 if MQTT is connected, otherwise 0. |
+| $NTPOn |  Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0. |
 | $CH*** |  Provides channel access, so you can do math expressions on channel values. $CH1 is channel 1, $CH20 is channel 20, $CH140 is channel 140, etc |
 | $CH** |  Provides channel access, as above. |
 | $CH* |  Provides channel access, as above. |
@@ -28,3 +29,4 @@ Do not add anything here, as it will overwritten with next rebuild.
 | $minute |  Current minute from NTP |
 | $second |  Current second from NTP |
 | $uptime |  Time since reboot in seconds |
+| $failedBoots |  Get number of failed boots (too quick reboots). Remember that you can change the uptime required to mark boot as 'okay' in general/flags menu |

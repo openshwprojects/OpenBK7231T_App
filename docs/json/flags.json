@@ -249,7 +249,7 @@
     "enum": "OBK_FLAG_NOT_PUBLISH_AVAILABILITY_SENSOR",
     "title": "todo",
     "file": "new_pins.h",
-    "descr": "[HASS] Deactivate avty_t flag for sensor when publishing to HASS (permit to keep value)"
+    "descr": "[HASS] Deactivate avty_t flag for sensor when publishing to HASS (permit to keep value). You must restart HASS discovery for change to take effect."
   },
   {
     "index": "36",
@@ -274,8 +274,9 @@
   },
   {
     "index": "39",
-    "enum": "OBK_FLAG_UNUSED_TODO",
+    "enum": "OBK_FLAG_MQTT_PUBLISH_ALL_CHANNELS",
     "title": "todo",
-    "file": "new_pins.h"
+    "file": "new_pins.h",
+    "descr": "[MQTT] [Debug] Publish all channels (don't enable it, it will be publish all 64 possible channels on connect)"
   }
 ]

@@ -38,5 +38,13 @@
 {
 "title": "Basic Ping Watchdog usage. Ping given IP with given interval and run script if there was no ping reply within given time.",
 "file": "autoexecs/ping_watchdog.bat"
+},
+{
+"title": "NTP and 'waitFor' command example. You can use 'waitFor NTPState 1' in autoexec.bat to wait for NTP sync. After that, you can be sure that correct time is set. 'waitFor' will block execution until given event.",
+"file": "autoexecs/waiting_for_NTP_sync.bat"
+},
+{
+"title": "MQTT and 'waitFor' command example. You can use 'waitFor MQTTState 1' in autoexec.bat to wait for MQTT connection. After that, you can be sure that MATT is online. 'waitFor' will block execution until given event.",
+"file": "autoexecs/waiting_for_MQTT_connect.bat"
 }
 ]

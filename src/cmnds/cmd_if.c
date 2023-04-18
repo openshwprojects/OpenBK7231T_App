@@ -155,10 +155,6 @@ typedef struct {
 float getMQTTOn(const char *s) {
 	return Main_HasMQTTConnected();
 }
-float getNTPOn(const char *s) {
-	return NTP_IsTimeSynced();
-}
-
 
 float getChannelValue(const char *s) {
 	int idx = atoi(s + 3);
@@ -215,6 +211,10 @@ float getPower(const char *s) {
 	return DRV_GetReading(OBK_POWER);
 }
 
+float getNTPOn(const char *s) {
+	return NTP_IsTimeSynced();
+}
+
 #endif
 
 float getFailedBoots(const char *s) {
@@ -247,11 +247,6 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Returns 1 if MQTT is connected, otherwise 0.",
 	//cnstdetail:"requires":""}
 	{"$MQTTOn", &getMQTTOn},
-	//cnstdetail:{"name":"$NTPOn",
-	//cnstdetail:"title":"$NTPOn",
-	//cnstdetail:"descr":"Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0.",
-	//cnstdetail:"requires":""}
-	{"$NTPOn", &getNTPOn},
 	//cnstdetail:{"name":"$CH***",
 	//cnstdetail:"title":"$CH***",
 	//cnstdetail:"descr":"Provides channel access, so you can do math expressions on channel values. $CH1 is channel 1, $CH20 is channel 20, $CH140 is channel 140, etc",
@@ -348,6 +343,11 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Current second from NTP",
 	//cnstdetail:"requires":""}
 	{ "$second", &getSecond },
+	//cnstdetail:{"name":"$NTPOn",
+	//cnstdetail:"title":"$NTPOn",
+	//cnstdetail:"descr":"Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0.",
+	//cnstdetail:"requires":""}
+	{ "$NTPOn", &getNTPOn },
 #endif
 	//cnstdetail:{"name":"$uptime",
 	//cnstdetail:"title":"$uptime",

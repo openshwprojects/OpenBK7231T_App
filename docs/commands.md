@@ -9,6 +9,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | Command        | Arguments          | Description  |
 |:------------- |:------------- | -----:|
 | SetChannel | [ChannelIndex][ChannelValue] | Sets a raw channel to given value. Relay channels are using 1 and 0 values. PWM channels are within [0,100] range. Do not use this for LED control, because there is a better and more advanced LED driver with dimming and configuration memory (remembers setting after on/off), LED driver commands has 'led_' prefix. |
+| SetChannelFloat | [ChannelIndex][ChannelValue] | Sets a raw channel to given float value. Currently only used for LED PWM channels. |
 | ToggleChannel | [ChannelIndex] | Toggles given channel value. Non-zero becomes zero, zero becomes 1. |
 | AddChannel | [ChannelIndex][ValueToAdd][ClampMin][ClampMax][bWrapInsteadOfClamp] | Adds a given value to the channel. Can be used to change PWM brightness. Clamp min and max arguments are optional. |
 | ClampChannel | [ChannelIndex][Min][Max] | Clamps given channel value to a range. |
@@ -88,6 +89,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | delay_ms | [ValueMS] | Script-only command. Pauses current script thread for given amount of ms. |
 | return |  | Script-only command. Currently it just stops totally current script thread. |
 | resetSVM |  | Resets all SVM and clears all scripts. |
+| waitFor | [EventName] [Argument] | Wait forever for event. Can be used within script. For example, you can do: waitFor MQTTState 1 or waitFor NTPState 1. You can also do waitFor NoPingTime 600 to wait for 600 seconds without ping watchdog getting successful reply |
 | sendGet | [TargetURL] | Sends a HTTP GET request to target URL. May include GET arguments. Can be used to control devices by Tasmota HTTP protocol. Command supports argument expansion, so $CH11 changes to value of channel 11, etc, etc. |
 | power | [OnorOfforToggle] | Tasmota-style POWER command. Should work for both LEDs and relay-based devices. You can write POWER0, POWER1, etc to access specific relays. |
 | powerAll |  | set all outputs |

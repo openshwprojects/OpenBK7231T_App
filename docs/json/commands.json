@@ -9,6 +9,15 @@
     "examples": ""
   },
   {
+    "name": "SetChannelFloat",
+    "args": "[ChannelIndex][ChannelValue]",
+    "descr": "Sets a raw channel to given float value. Currently only used for LED PWM channels.",
+    "fn": "CMD_SetChannelFloat",
+    "file": "cmnds/cmd_channels.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "ToggleChannel",
     "args": "[ChannelIndex]",
     "descr": "Toggles given channel value. Non-zero becomes zero, zero becomes 1.",
@@ -715,6 +724,15 @@
     "args": "",
     "descr": "Resets all SVM and clears all scripts.",
     "fn": "CMD_resetSVM",
+    "file": "cmnds/cmd_script.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "waitFor",
+    "args": "[EventName] [Argument]",
+    "descr": "Wait forever for event. Can be used within script. For example, you can do: waitFor MQTTState 1 or waitFor NTPState 1. You can also do waitFor NoPingTime 600 to wait for 600 seconds without ping watchdog getting successful reply",
+    "fn": "CMD_waitFor",
     "file": "cmnds/cmd_script.c",
     "requires": "",
     "examples": ""

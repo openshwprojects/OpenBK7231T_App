@@ -273,3 +273,51 @@ addChangeHandler noPingTime > 600 reboot
 ```
 
 
+NTP and 'waitFor' command example. You can use 'waitFor NTPState 1' in autoexec.bat to wait for NTP sync. After that, you can be sure that correct time is set. 'waitFor' will block execution until given event.
+<br>
+```// do anything on startup
+startDriver NTP
+startDriver SSDP
+
+
+// now you can wait for NTP to sync
+// This will block execution until NTP get correct time
+// NOTE: you can also do 'waitFor MQTTState 1' as well, if you want MQTT state 1
+waitFor NTPState 1
+
+// default setting
+Dimmer 5
+Power ON
+
+// now you can do something basing on time
+// idk, it's just a simple example, note that 
+// next Dimmer setting will overwite previos setting
+if $hour<8 then Dimmer 50
+if $hour>=20 then Dimmer 50
+if $hour>=23 then Dimmer 90
+
+```
+
+
+MQTT and 'waitFor' command example. You can use 'waitFor MQTTState 1' in autoexec.bat to wait for MQTT connection. After that, you can be sure that MATT is online. 'waitFor' will block execution until given event.
+<br>
+```// do anything on startup
+startDriver NTP
+startDriver SSDP
+
+// now wait for MQTT
+waitFor MQTTState 1
+// extra delay, to be sure
+delay_s 1
+publish myVariable 2022
+// you can publish again just to be sure
+// delay_s 1
+// publish myVariable 2022
+
+// if you have a battery powered device, you can now uncomment this line:
+// Deep sleep (shut down everything) and reboot automatically after 600 seconds
+//DeepSleep 600
+
+```
+
+

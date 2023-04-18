@@ -12,6 +12,12 @@
     "requires": ""
   },
   {
+    "name": "$NTPOn",
+    "title": "$NTPOn",
+    "descr": "Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0.",
+    "requires": ""
+  },
+  {
     "name": "$CH***",
     "title": "$CH***",
     "descr": "Provides channel access, so you can do math expressions on channel values. $CH1 is channel 1, $CH20 is channel 20, $CH140 is channel 140, etc",
@@ -129,6 +135,12 @@
     "name": "$uptime",
     "title": "$uptime",
     "descr": "Time since reboot in seconds",
+    "requires": ""
+  },
+  {
+    "name": "$failedBoots",
+    "title": "$failedBoots",
+    "descr": "Get number of failed boots (too quick reboots). Remember that you can change the uptime required to mark boot as 'okay' in general/flags menu",
     "requires": ""
   }
 ]
