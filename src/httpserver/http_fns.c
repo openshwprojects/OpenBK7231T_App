@@ -966,6 +966,8 @@ int http_fn_cfg_ip(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "IP");
 	poststr_h2(request, "Here you can set static IP or DHCP");
+	hprintf255(request, "<h4>This setting applies only to WiFi client mode.</h4>");
+	hprintf255(request, "<h4>You must restart manually for changes to take place.</h4>");
 	hprintf255(request, "<h4>Currently, DHCP is enabled by default and works when you set IP to 0.0.0.0.</h4>");
 
 	if (http_getArg(request->url, "IP", tmp, sizeof(tmp))) {
@@ -997,7 +999,7 @@ int http_fn_cfg_ip(http_request_t* request) {
 	convert_IP_to_string(tmp, g_cfg.staticIP.gatewayIPAddr);
 	add_label_text_field(request, "Gate", "gate", tmp, "<br>");
 
-	poststr(request, "<br><input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check MQTT data twice?')\"></form> ");
+	poststr(request, "<br><input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Remember that you need to reboot manually to apply changes')\"></form> ");
 	poststr(request, htmlFooterReturnToCfgLink);
 	http_html_end(request);
 	poststr(request, NULL);
