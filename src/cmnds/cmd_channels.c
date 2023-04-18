@@ -115,6 +115,25 @@ static commandResult_t CMD_SetChannel(const void *context, const char *cmd, cons
 
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_SetChannelFloat(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int ch;
+	float val;
+
+	Tokenizer_TokenizeString(args, 0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	ch = Tokenizer_GetArgInteger(0);
+	val = Tokenizer_GetArgFloat(1);
+
+	CHANNEL_Set_FloatPWM(ch, val, false);
+
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_AddChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int ch, val;
 	int bWrapInsteadOfClamp;
@@ -441,6 +460,11 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_SetChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SetChannel", CMD_SetChannel, NULL);
+	//cmddetail:{"name":"SetChannelFloat","args":"[ChannelIndex][ChannelValue]",
+	//cmddetail:"descr":"Sets a raw channel to given float value. Currently only used for LED PWM channels.",
+	//cmddetail:"fn":"CMD_SetChannelFloat","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("SetChannelFloat", CMD_SetChannelFloat, NULL);
 	//cmddetail:{"name":"ToggleChannel","args":"[ChannelIndex]",
 	//cmddetail:"descr":"Toggles given channel value. Non-zero becomes zero, zero becomes 1.",
 	//cmddetail:"fn":"CMD_ToggleChannel","file":"cmnds/cmd_channels.c","requires":"",
