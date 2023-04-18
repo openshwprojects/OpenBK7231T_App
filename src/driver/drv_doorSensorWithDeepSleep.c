@@ -30,7 +30,7 @@ commandResult_t DoorDeepSleep_SetEdge(const void* context, const char* cmd, cons
 	// following check must be done after 'Tokenizer_TokenizeString',
 	// so we know arguments count in Tokenizer. 'cmd' argument is
 	// only for warning display
-	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2))
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1))
 	{
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
@@ -45,7 +45,7 @@ commandResult_t DoorDeepSleep_SetTime(const void* context, const char* cmd, cons
 	// following check must be done after 'Tokenizer_TokenizeString',
 	// so we know arguments count in Tokenizer. 'cmd' argument is
 	// only for warning display
-	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2))
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1))
 	{
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
