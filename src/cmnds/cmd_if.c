@@ -213,6 +213,9 @@ float getPower(const char *s) {
 
 #endif
 
+float getFailedBoots(const char *s) {
+	return g_bootFailures;
+}
 float getUpTime(const char *s) {
 	return Time_getUpTimeSeconds();
 }
@@ -342,6 +345,11 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Time since reboot in seconds",
 	//cnstdetail:"requires":""}
 	{ "$uptime", &getUpTime },
+	//cnstdetail:{"name":"$failedBoots",
+	//cnstdetail:"title":"$failedBoots",
+	//cnstdetail:"descr":"Get number of failed boots (too quick reboots)",
+	//cnstdetail:"requires":""}
+	{ "$failedBoots", &getFailedBoots },
 };
 static int g_totalConstants = sizeof(g_constants) / sizeof(g_constants[0]);
 

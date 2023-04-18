@@ -823,10 +823,6 @@ int Main_IsConnectedToWiFi()
 	return g_bHasWiFiConnected;
 }
 
-int Main_GetLastRebootBootFailures()
-{
-	return g_bootFailures;
-}
 
 // called from idle thread each loop.
 // - just so we know it is running.
