@@ -19,6 +19,7 @@
 
 static int setting_timeRequiredUntilDeepSleep = 60;
 static int g_noChangeTimePassed = 0;
+static int g_initialStateSent = 0;
 static int g_emergencyTimeWithNoConnection = 0;
 
 #define EMERGENCY_TIME_TO_SLEEP_WITHOUT_MQTT 60 * 5
@@ -71,7 +72,8 @@ void DoorDeepSleep_Init() {
 }
 
 void DoorDeepSleep_OnEverySecond() {
-	int i;
+	int i, bValue;
+	char tmp[8];
 
 #if PLATFORM_BK7231N || PLATFORM_BK7231T
 	if (ota_progress() >= 0) {
@@ -82,7 +84,18 @@ void DoorDeepSleep_OnEverySecond() {
 		g_noChangeTimePassed = 0;
 		g_emergencyTimeWithNoConnection = 0;
 	} else if (Main_HasMQTTConnected() && Main_HasWiFiConnected()) {
-		//if (g_noChangeTimePassed < 4) {
+		if (g_initialStateSent < 3) {
+			for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+				if (g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep ||
+					g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_NoPup ||
+					g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_pd) {
+					sprintf(tmp, "%i", g_cfg.pins.channels[i]);
+					bValue = BIT_CHECK(g_initialPinStates, i);
+					MQTT_PublishMain_StringInt(tmp,bValue);
+				}
+			}
+			g_initialStateSent++;
+		} else {
 			for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 				if (g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep ||
 					g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_NoPup ||
@@ -90,7 +103,7 @@ void DoorDeepSleep_OnEverySecond() {
 					MQTT_ChannelPublish(g_cfg.pins.channels[i], 0);
 				}
 			}
-		//}
+		}
 		g_noChangeTimePassed++;
 		if (g_noChangeTimePassed >= setting_timeRequiredUntilDeepSleep) {
 			// start deep sleep in the next loop

@@ -34,6 +34,7 @@ int BTN_SHORT_MS;
 int BTN_LONG_MS;
 int BTN_HOLD_REPEAT_MS;
 byte g_defaultDoorWakeEdge = 2;
+int g_initialPinStates = 0;
 
 typedef enum {
 	BTN_PRESS_DOWN = 0,
@@ -725,6 +726,13 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 
 			// digital input
 			HAL_PIN_Setup_Input_Pullup(index);
+
+			if (PIN_ReadDigitalInputValue_WithInversionIncluded(index)) {
+				BIT_SET(g_initialPinStates, index);
+			}
+			else {
+				BIT_CLEAR(g_initialPinStates, index);
+			}
 
 			// init button after initializing pin role
 			NEW_button_init(bt, button_generic_get_gpio_value, 0);

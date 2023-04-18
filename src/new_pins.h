@@ -1023,6 +1023,7 @@ typedef struct mainConfig_s {
 extern mainConfig_t g_cfg;
 
 extern char g_enable_pins;
+extern int g_initialPinStates;
 extern byte g_defaultDoorWakeEdge;
 
 #define CHANNEL_SET_FLAG_FORCE		1
