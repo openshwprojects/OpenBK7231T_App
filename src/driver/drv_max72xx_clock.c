@@ -93,7 +93,7 @@ void Clock_Send(int type) {
 	}
 	else if (type == CLOCK_HUMIDITY) {
 		CHANNEL_GetGenericHumidity(&val);
-		sprintf(time, "G: %i%%   ", (int)val);
+		sprintf(time, "H: %i%%   ", (int)val);
 	} 
 	else if (type == CLOCK_TEMPERATURE) {
 		CHANNEL_GetGenericTemperature(&val);
