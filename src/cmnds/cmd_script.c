@@ -849,7 +849,7 @@ void CMD_InitScripting(){
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("resetSVM", CMD_resetSVM, NULL);
 	//cmddetail:{"name":"waitFor","args":"[EventName] [Argument]",
-	//cmddetail:"descr":"Wait forever for event.",
+	//cmddetail:"descr":"Wait forever for event. Can be used within script. For example, you can do: waitFor MQTTState 1 or waitFor NTPState 1. You can also do waitFor NoPingTime 600 to wait for 600 seconds without ping watchdog getting successful reply",
 	//cmddetail:"fn":"CMD_waitFor","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("waitFor", CMD_waitFor, NULL);

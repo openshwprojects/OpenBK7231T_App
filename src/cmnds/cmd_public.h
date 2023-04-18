@@ -118,6 +118,8 @@ enum EventCode {
 
 	CMD_EVENT_ADC_BUTTON,
 
+	CMD_EVENT_NTP_STATE,
+
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
 };

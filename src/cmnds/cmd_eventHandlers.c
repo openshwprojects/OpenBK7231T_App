@@ -165,6 +165,8 @@ int EVENT_ParseEventName(const char *s) {
 		return CMD_EVENT_ON_UART;
 	if(!stricmp(s,"MQTTState"))
 		return CMD_EVENT_MQTT_STATE;
+	if (!stricmp(s, "NTPState"))
+		return CMD_EVENT_NTP_STATE;
 	if (!stricmp(s, "LEDState"))
 		return CMD_EVENT_LED_STATE;
 	if (!stricmp(s, "LEDMode"))

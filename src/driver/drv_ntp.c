@@ -329,6 +329,10 @@ void NTP_CheckForReceive() {
     ltm = localtime((time_t*)&g_ntpTime);
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Local Time : %04d/%02d/%02d %02d:%02d:%02d",
             ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+
+	if (g_synced == false) {
+		EventHandlers_FireEvent(CMD_EVENT_NTP_STATE, 1);
+	}
     g_synced = true;
 #if 0
     //ptm = localtime (&g_ntpTime);
