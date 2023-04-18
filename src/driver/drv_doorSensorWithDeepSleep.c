@@ -132,11 +132,11 @@ void DoorDeepSleep_AppendInformationToHTTPIndexPage(http_request_t* request)
 
 	if (Main_HasMQTTConnected()) {
 		untilSleep = setting_timeRequiredUntilDeepSleep - g_noChangeTimePassed;
-		hprintf255(request, "<h2>Door: time until deep sleep: %i</h2>", untilSleep);
+		hprintf255(request, "<h2>Door (initial: %i): time until deep sleep: %i</h2>", g_initialPinStates, untilSleep);
 	}
 	else {
 		untilSleep = EMERGENCY_TIME_TO_SLEEP_WITHOUT_MQTT - g_emergencyTimeWithNoConnection;
-		hprintf255(request, "<h2>Door: waiting for MQTT connection (but will emergency sleep in %i)</h2>", untilSleep);
+		hprintf255(request, "<h2>Door (initial: %i): waiting for MQTT connection (but will emergency sleep in %i)</h2>", g_initialPinStates, untilSleep);
 	}
 }
 
