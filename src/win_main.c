@@ -223,7 +223,21 @@ int __cdecl main(int argc, char **argv)
 					if (i < argc && sscanf(argv[i], "%d", &value) == 1) {
 						g_port = value;
 					}
-				} else if (wal_strnicmp(argv[i] + 1, "runUnitTests", 12) == 0) {
+				} else if (wal_strnicmp(argv[i] + 1, "w", 1) == 0) {
+					i++;
+
+					if (i < argc && sscanf(argv[i], "%d", &value) == 1) {
+						SIM_SetWindowW(value);
+					}
+				}
+				else if (wal_strnicmp(argv[i] + 1, "h", 1) == 0) {
+					i++;
+
+					if (i < argc && sscanf(argv[i], "%d", &value) == 1) {
+						SIM_SetWindowH(value);
+					}
+				}
+				else if (wal_strnicmp(argv[i] + 1, "runUnitTests", 12) == 0) {
 					i++;
 
 					if (i < argc && sscanf(argv[i], "%d", &value) == 1) {

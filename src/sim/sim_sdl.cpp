@@ -33,6 +33,14 @@ CStyle g_style_wires(CColor(75, 165, 75), 3.0f);
 CStyle g_style_text(CColor(131, 131, 131), 3.0f);
 CStyle g_style_text_red(CColor(255, 131, 131), 3.0f);
 
+extern "C" {
+	void SIM_SetWindowW(int val) {
+		WinWidth = val;
+	}
+	void SIM_SetWindowH(int val) {
+		WinHeight = val;
+	}
+}
 int drawTextInternal(float x, float y, const char *buffer) {
 	glRasterPos2f(x, y);
 	const char *p = buffer;
