@@ -604,6 +604,7 @@ void CHANNEL_DoSpecialToggleAll() {
 }
 void PIN_SetPinRoleForPinIndex(int index, int role) {
 	bool bDHTChange = false;
+	bool bSampleInitialState = false;
 
 	if (index < 0 || index >= PLATFORM_GPIO_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "PIN_SetPinRoleForPinIndex: Pin index %i out of range <0,%i).", index, PLATFORM_GPIO_MAX);
@@ -727,15 +728,10 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			// digital input
 			HAL_PIN_Setup_Input_Pullup(index);
 
-			if (PIN_ReadDigitalInputValue_WithInversionIncluded(index)) {
-				BIT_SET(g_initialPinStates, index);
-			}
-			else {
-				BIT_CLEAR(g_initialPinStates, index);
-			}
-
 			// init button after initializing pin role
 			NEW_button_init(bt, button_generic_get_gpio_value, 0);
+			// this is input - sample initial state down below
+			bSampleInitialState = true;
 		}
 		break;
 
@@ -755,6 +751,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			HAL_PIN_Setup_Input_Pullup(index);
 			// otherwise we get a toggle on start
 			g_lastValidState[index] = PIN_ReadDigitalInputValue_WithInversionIncluded(index);
+			// this is input - sample initial state down below
+			bSampleInitialState = true;
 		}
 		break;
 		case IOR_DigitalInput_n:
@@ -766,6 +764,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			setGPIActive(index, 1, falling);
 			// digital input
 			HAL_PIN_Setup_Input_Pullup(index);
+			// this is input - sample initial state down below
+			bSampleInitialState = true;
 		}
 		break;
 		case IOR_DoorSensorWithDeepSleep_pd:
@@ -774,6 +774,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			setGPIActive(index, 1, falling);
 			// digital input
 			HAL_PIN_Setup_Input_Pulldown(index);
+			// this is input - sample initial state down below
+			bSampleInitialState = true;
 		}
 		break;
 		case IOR_DigitalInput_NoPup_n:
@@ -786,6 +788,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			//setGPIActive(index, 1, falling);
 			// digital input
 			HAL_PIN_Setup_Input(index);
+			// this is input - sample initial state down below
+			bSampleInitialState = true;
 		}
 		break;
 		case IOR_LED:
@@ -871,6 +875,15 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			break;
 		}
 	}
+	if (bSampleInitialState) {
+		if (PIN_ReadDigitalInputValue_WithInversionIncluded(index)) {
+			BIT_SET(g_initialPinStates, index);
+		}
+		else {
+			BIT_CLEAR(g_initialPinStates, index);
+		}
+	}
+
 	if (bDHTChange) {
 #if defined(PLATFORM_BEKEN) || defined(PLATFORM_BL602) || defined(PLATFORM_W600) || defined(WINDOWS)
 		// TODO: better place to call?
