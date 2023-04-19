@@ -530,7 +530,7 @@ void Main_OnEverySecond()
 		{
 			ADDLOGF_INFO("Boot complete time reached (%i seconds)\n", bootCompleteSeconds);
 			HAL_FlashVars_SaveBootComplete();
-			g_bootFailures = HAL_FlashVars_GetBootFailures();
+			//g_bootFailures = HAL_FlashVars_GetBootFailures();
 			g_bBootMarkedOK = true;
 		}
 	}
