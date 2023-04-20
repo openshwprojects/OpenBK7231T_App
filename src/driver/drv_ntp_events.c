@@ -141,7 +141,7 @@ int NTP_RemoveClockEvent(int id) {
 // Example
 // addClockEvent 15:06:00 0xff 123 POWER TOGGLE
 commandResult_t CMD_NTP_AddClockEvent(const void *context, const char *cmd, const char *args, int cmdFlags) {
-	int hour, minute, second;
+	int hour, minute = 0, second = 0;
 	const char *s;
 	int flags;
 	int id;

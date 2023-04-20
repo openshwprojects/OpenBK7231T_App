@@ -70,7 +70,29 @@ void Test_ClockEvents() {
 	SELFTEST_ASSERT(NTP_PrintEventList() == 0);
 
 
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	CMD_ExecuteCommand("setChannel 2 0", 0);
+	CMD_ExecuteCommand("setChannel 3 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+
+	CMD_ExecuteCommand("addClockEvent 15:54:59 0xff 4 backlog setChannel 1 10; echo test event for 4", 0);
+	CMD_ExecuteCommand("addClockEvent 15:55 0xff 5 backlog setChannel 2 20; echo test event for 5", 0);
+	CMD_ExecuteCommand("addClockEvent 15:55:01 0xff 6 backlog setChannel 3 30; echo test event for 6", 0);
+
+	unsigned int simTime = 1681998870;
+	for (int i = 0; i < 100; i++) {
+		NTP_RunEvents(simTime + i, true);
+	}
+	SELFTEST_ASSERT_CHANNEL(1, 10);
+	SELFTEST_ASSERT_CHANNEL(2, 20);
+	SELFTEST_ASSERT_CHANNEL(3, 30);
 }
+
+
+
+
 
 
 #endif
