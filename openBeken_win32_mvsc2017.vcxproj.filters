@@ -836,6 +836,9 @@
     <ClCompile Include="src\selftest\selftest_waitFor.c">
       <Filter>SelfTest</Filter>
     </ClCompile>
+    <ClCompile Include="src\selftest\selftest_if_inside_backlog.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />
