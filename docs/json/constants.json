@@ -12,12 +12,6 @@
     "requires": ""
   },
   {
-    "name": "$NTPOn",
-    "title": "$NTPOn",
-    "descr": "Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0.",
-    "requires": ""
-  },
-  {
     "name": "$CH***",
     "title": "$CH***",
     "descr": "Provides channel access, so you can do math expressions on channel values. $CH1 is channel 1, $CH20 is channel 20, $CH140 is channel 140, etc",
@@ -129,6 +123,12 @@
     "name": "$second",
     "title": "$second",
     "descr": "Current second from NTP",
+    "requires": ""
+  },
+  {
+    "name": "$NTPOn",
+    "title": "$NTPOn",
+    "descr": "Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0.",
     "requires": ""
   },
   {

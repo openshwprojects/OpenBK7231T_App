@@ -81,3 +81,6 @@ All questions/answers were taken from json file.
 **Question:** *How to set relay state on device boot? (PowerOnState)?*<br>**A:** There are two ways. <br> First way is to use Config -> Startup state and set it from GUI here. <br> Second way is to use short startup command from Options or create 'autoexec.bat' in LittleFS file system in web panel and execute commands from there.<br>For example, for RGBCW LED, to set 100% dimmer and red color on start, you can do startup command:<br> ```backlog led_dimmer 100; led_basecolor_rgb #FF0000; led_enableAll 1```<br>For simple relay, in this example on channel number 5, you can do:<br>```backlog SetChannel 5 1```<br>
 
 
+**Question:** *How to setup shutters via scripting?*<br>**A:** It's possible to script shutters behaviour entirely in OBK. Please see [forum example here](https://www.elektroda.com/rtvforum/viewtopic.php?t=3972935).
+
+

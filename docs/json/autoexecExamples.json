@@ -46,5 +46,13 @@
 {
 "title": "MQTT and 'waitFor' command example. You can use 'waitFor MQTTState 1' in autoexec.bat to wait for MQTT connection. After that, you can be sure that MATT is online. 'waitFor' will block execution until given event.",
 "file": "autoexecs/waiting_for_MQTT_connect.bat"
+},
+{
+"title": "This script will use NTP and 'addClockEvent' to change light styles in the morning and in the evening. Here you can see how  'waitFor NTPState 1' and 'addClockEvent' and $hour script functions/variables are used.",
+"file": "autoexecs/automatic_day_and_night_lights.bat"
+},
+{
+"title": "Alternate 'addClockEvent' demo - just like previous one, but written by using AddEventHandler instead of waitFor",
+"file": "autoexecs/automatic_day_and_night_lights_v2.bat"
 }
 ]

@@ -321,3 +321,46 @@ publish myVariable 2022
 ```
 
 
+This script will use NTP and 'addClockEvent' to change light styles in the morning and in the evening. Here you can see how  'waitFor NTPState 1' and 'addClockEvent' and $hour script functions/variables are used.
+<br>
+```// setup NTP driver
+startDriver ntp
+// set your time zone
+ntp_timeZoneOfs 10:00
+
+// create command aliases for later usage
+alias day_lights backlog led_temperature 200; led_dimmer 100; echo lights_day
+alias night_lights backlog led_temperature 500; led_dimmer 50; echo lights_night
+
+// at given hour, change lights state
+addClockEvent 06:01 0xff 1 day_lights 
+addClockEvent 20:01 0xff 1 night_lights 
+
+// wait for NTP sync
+waitFor NTPState 1
+// after NTP is synced, just after reboot, adjust light states correctly
+if $hour>=06&&$hour<21 then day_lights
+if $hour>=21||$hour<06  then night_lights
+
+
+```
+
+
+Alternate 'addClockEvent' demo - just like previous one, but written by using AddEventHandler instead of waitFor
+<br>
+```startDriver ntp
+ntp_timeZoneOfs 10:00
+
+alias day_lights backlog led_temperature 200; led_dimmer 100; echo lights_day
+alias night_lights backlog led_temperature 500; led_dimmer 50; echo lights_night
+alias set_now_colour backlog if $hour>=06&&$hour<21 then day_lights; if $hour>=21||$hour<06 then night_lights
+
+addClockEvent 06:01 0xff 1 day_lights 
+addClockEvent 20:01 0xff 1 night_lights 
+
+AddEventHandler NTPState 1 set_now_colour
+
+
+```
+
+
