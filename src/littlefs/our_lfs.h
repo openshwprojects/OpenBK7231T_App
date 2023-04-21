@@ -24,7 +24,7 @@
 #define LFS_BLOCKS_START 0x12B000
 #define LFS_BLOCKS_START_MIN 0x12B000
 // end of OTA flash
-#define LFS_BLOCKS_END 0x1AB000
+#define LFS_BLOCKS_END 0x1D0000
 #else
 // TODO
 // start 0x1000 after OTA addr
