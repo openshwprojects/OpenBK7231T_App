@@ -123,7 +123,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | BP1658CJ_Current | [MaxCurrentRGB][MaxCurrentCW] | Sets the maximum current limit for BP1658CJ driver. | File: driver/drv_bp1658cj.c<br/>Function: BP1658CJ_Current |
 | BP5758D_RGBCW | [HexColor] | Don't use it. It's for direct access of BP5758D driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb | File: driver/drv_bp5758d.c<br/>Function: BP5758D_RGBCW |
 | BP5758D_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP5758D channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: BP5758D_Map 0 1 2 3 4 | File: driver/drv_bp5758d.c<br/>Function: BP5758D_Map |
-| BP5758D_Current | [MaxCurrent] | Sets the maximum current limit for BP5758D driver | File: driver/drv_bp5758d.c<br/>Function: BP5758D_Current |
+| BP5758D_Current | [MaxCurrentRGB][MaxCurrentCW] | Sets the maximum current limit for BP5758D driver, first value is for rgb and second for cw | File: driver/drv_bp5758d.c<br/>Function: BP5758D_Current |
 | BridgePulseLength | [FloatValue] | Setup value for bridge pulse len | File: driver/drv_bridge_driver.c<br/>Function: Bridge_Pulse_length |
 | CHT_Calibrate |  | Calibrate the CHT Sensor as Tolerance is +/-2 degrees C.<br/>e.g.:SHT_Calibrate -4 10 | File: driver/drv_cht8305.c<br/>Function: CHT_Calibrate |
 | DSEdge | [edgeCode] | DoorSensor driver configuration command. 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2 | File: drv/drv_doorSensorWithDeepSleep.c<br/>Function: DoorDeepSleep_SetEdge |

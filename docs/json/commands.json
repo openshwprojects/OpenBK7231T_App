@@ -1063,8 +1063,8 @@
   },
   {
     "name": "BP5758D_Current",
-    "args": "[MaxCurrent]",
-    "descr": "Sets the maximum current limit for BP5758D driver",
+    "args": "[MaxCurrentRGB][MaxCurrentCW]",
+    "descr": "Sets the maximum current limit for BP5758D driver, first value is for rgb and second for cw",
     "fn": "BP5758D_Current",
     "file": "driver/drv_bp5758d.c",
     "requires": "",

@@ -126,7 +126,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | BP1658CJ_Current | [MaxCurrentRGB][MaxCurrentCW] | Sets the maximum current limit for BP1658CJ driver. |
 | BP5758D_RGBCW | [HexColor] | Don't use it. It's for direct access of BP5758D driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
 | BP5758D_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP5758D channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: BP5758D_Map 0 1 2 3 4 |
-| BP5758D_Current | [MaxCurrent] | Sets the maximum current limit for BP5758D driver |
+| BP5758D_Current | [MaxCurrentRGB][MaxCurrentCW] | Sets the maximum current limit for BP5758D driver, first value is for rgb and second for cw |
 | BridgePulseLength | [FloatValue] | Setup value for bridge pulse len |
 | CHT_Calibrate |  | Calibrate the CHT Sensor as Tolerance is +/-2 degrees C.<br/>e.g.:SHT_Calibrate -4 10 |
 | DSEdge | [edgeCode] | DoorSensor driver configuration command. 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2 |

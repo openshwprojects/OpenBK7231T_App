@@ -182,7 +182,7 @@ void BP5758D_Init() {
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("BP5758D_Map", CMD_LEDDriver_Map, NULL);
 	//cmddetail:{"name":"BP5758D_Current","args":"[MaxCurrentRGB][MaxCurrentCW]",
-	//cmddetail:"descr":"Sets the maximum current limit for BP5758D driver",
+	//cmddetail:"descr":"Sets the maximum current limit for BP5758D driver, first value is for rgb and second for cw",
 	//cmddetail:"fn":"BP5758D_Current","file":"driver/drv_bp5758d.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("BP5758D_Current", BP5758D_Current, NULL);
