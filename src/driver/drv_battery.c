@@ -54,6 +54,10 @@ static void Batt_Measure() {
 	batt_res = g_battvoltage - g_minbatt;
 	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY : Ref battery: %f, rest battery %f", batt_ref, batt_res);
 	g_battlevel = (batt_res / batt_ref) * 100;
+	if (g_battlevel < 0)
+		g_battlevel = 0;
+	if (g_battlevel > 100)
+		g_battlevel = 100;
 
 	MQTT_PublishMain_StringInt("voltage", (int)g_battvoltage);
 	MQTT_PublishMain_StringInt("battery", (int)g_battlevel);
