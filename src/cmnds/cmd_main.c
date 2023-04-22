@@ -409,6 +409,9 @@ static commandResult_t runcmd(const void* context, const char* cmd, const char* 
 	//       p++;
 	   //}
 	//   if (*p) p++;
+	if (*args) {
+		return CMD_ExecuteCommandArgs(c, args, cmdFlags);
+	}
 	return CMD_ExecuteCommand(c, cmdFlags);
 }
 

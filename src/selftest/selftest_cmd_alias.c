@@ -43,6 +43,11 @@ void Test_Commands_Alias() {
 	SELFTEST_ASSERT_CHANNEL(3, 60);
 	SELFTEST_ASSERT_CHANNEL(2, 50);
 
+	CMD_ExecuteCommand("alias test4 backlog setChannel 4 11; addChannel 4 9; setChannel 5 50", 0);
+	CMD_ExecuteCommand("test4", 0);
+	SELFTEST_ASSERT_CHANNEL(4, (11+9));
+	SELFTEST_ASSERT_CHANNEL(5, 50);
+
 	// this check will fail obviously!
 	//SELFTEST_ASSERT_CHANNEL(5, 666);
 }
