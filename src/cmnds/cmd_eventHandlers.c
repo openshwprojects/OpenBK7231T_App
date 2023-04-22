@@ -67,13 +67,11 @@ addEventHandler OnHold 11 addChannel 1 -10
 // addChangeHandler Channel1 == 0 backlog lcd_clearAndGoto I2C1 0x23 1 1; lcd_print I2C1 0x23 Disabled
 
 
-/*
 // when channel 1 becomes 0, send OFF
 addChangeHandler Channel1 == 0 SendGet http://192.168.0.112/cm?cmnd=Power0%20OFF
 // when channel 1 becomes 1, send ON
 addChangeHandler Channel1 == 1 SendGet http://192.168.0.112/cm?cmnd=Power0%20ON
 
-*/
 
 alias doRelayClick backlog setChannel 1 1; addRepeatingEvent 2 1 setChannel 1 0; ClearNoPingTime
 addChangeHandler NoPingTime > 40 doRelayClick 
