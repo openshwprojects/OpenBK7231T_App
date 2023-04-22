@@ -236,6 +236,13 @@ static commandResult_t CMD_ClearConfig(const void* context, const char* cmd, con
 
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_ClearIO(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	CFG_ClearIO();
+	CFG_Save_IfThereArePendingChanges();
+
+	return CMD_RES_OK;
+}
 // setChannel 1 123
 // echo First channel is $CH1 and this is the test
 // will print echo First channel is 123 and this is the test
@@ -483,6 +490,11 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_ClearConfig","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("clearConfig", CMD_ClearConfig, NULL);
+	//cmddetail:{"name":"clearIO","args":"",
+	//cmddetail:"descr":"Clears all pins setting, channels settings",
+	//cmddetail:"fn":"CMD_ClearIO","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("clearIO", CMD_ClearIO, NULL);
 	//cmddetail:{"name":"clearAll","args":"",
 	//cmddetail:"descr":"Clears config and all remaining features, like runtime scripts, events, etc",
 	//cmddetail:"fn":"CMD_ClearAll","file":"cmnds/cmd_main.c","requires":"",
