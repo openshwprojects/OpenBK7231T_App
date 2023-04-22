@@ -405,6 +405,15 @@
     "examples": ""
   },
   {
+    "name": "StartupCommand",
+    "args": "[Command in quotation marks][bRunAfter]",
+    "descr": "Sets the new startup command (short startup command, the one stored in config) to given string. Second argument is optional, if set to 1, command will be also executed after setting",
+    "fn": "CMD_StartupCommand",
+    "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "led_dimmer",
     "args": "[Value]",
     "descr": "set output dimmer 0..100",

@@ -251,6 +251,28 @@ static commandResult_t CMD_Echo(const void* context, const char* cmd, const char
 
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_StartupCommand(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	const char *cmdToSet;
+
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	cmdToSet = Tokenizer_GetArg(0);
+	if (Tokenizer_GetArgIntegerDefault(1, 0) == 1) {
+		CFG_SetShortStartupCommand_AndExecuteNow(cmdToSet);
+	}
+	else {
+		CFG_SetShortStartupCommand(cmdToSet);
+	}
+
+
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_PingHost(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, 0);
 
@@ -541,6 +563,11 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_PingHost","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PingHost", CMD_PingHost, NULL);
+	//cmddetail:{"name":"StartupCommand","args":"[Command in quotation marks][bRunAfter]",
+	//cmddetail:"descr":"Sets the new startup command (short startup command, the one stored in config) to given string. Second argument is optional, if set to 1, command will be also executed after setting",
+	//cmddetail:"fn":"CMD_StartupCommand","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("StartupCommand", CMD_StartupCommand, NULL);
 	
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	CMD_InitScripting();

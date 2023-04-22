@@ -53,6 +53,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | SafeMode |  | Forces device reboot into safe mode (open ap with disabled drivers) |
 | PingInterval | [IntegerSeconds] | Sets the interval between ping attempts for ping watchdog mechanism |
 | PingHost | [IPStr] | Sets the host to ping by IP watchdog |
+| StartupCommand | [Command in quotation marks][bRunAfter] | Sets the new startup command (short startup command, the one stored in config) to given string. Second argument is optional, if set to 1, command will be also executed after setting |
 | led_dimmer | [Value] | set output dimmer 0..100 |
 | Dimmer | [Value] | Alias for led_dimmer |
 | add_dimmer | [Value][AddMode] | Adds a given value to current LED dimmer. AddMode 0 just adds a value (with a clamp to [0,100]), AddMode 1 will wrap around values (going under 0 goes to 100, going over 100 goes to 0), AddMode 2 will ping-pong value (going to 100 starts going back from 100 to 0, and again, going to 0 starts going up). |
