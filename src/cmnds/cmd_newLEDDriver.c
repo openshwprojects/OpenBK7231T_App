@@ -63,6 +63,8 @@ float g_cfg_colorScaleToChannel = 100.0f/255.0f;
 int g_numBaseColors = 5;
 float g_brightness0to100 = 100.0f;
 float rgb_used_corr[3];   // RGB correction currently used
+// for smart dimmer, etc
+int led_defaultDimmerDeltaForHold = 10;
 
 // NOTE: in this system, enabling/disabling whole led light bulb
 // is not changing the stored channel and brightness values.
@@ -969,7 +971,7 @@ void LED_NextDimmerHold() {
 	// because it's easy to get confused if we set accidentally dimmer to 0
 	// and then are unable to turn on the bulb (because despite of led_enableAll 1
 	// the dimmer is 0 and anyColor * 0 gives 0)
-	LED_AddDimmer(10, 1, 2);
+	LED_AddDimmer(led_defaultDimmerDeltaForHold, 1, 2);
 }
 void LED_SetDimmer(int iVal) {
 
@@ -1355,6 +1357,14 @@ static commandResult_t lerpSpeed(const void *context, const char *cmd, const cha
 
 	return CMD_RES_OK;
 }
+static commandResult_t dimmerDelta(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
+	Tokenizer_TokenizeString(args, 0);
+
+	led_defaultDimmerDeltaForHold = Tokenizer_GetArgInteger(0);
+
+	return CMD_RES_OK;
+}
 static commandResult_t ctRange(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
 	Tokenizer_TokenizeString(args, 0);
@@ -1555,11 +1565,16 @@ void NewLED_InitCommands(){
 	//cmddetail:"fn":"rgb_gamma_control","file":"cmnds/cmd_rgbGamma.c","requires":"",
 	//cmddetail:"examples":"led_gammaCtrl on"}
     CMD_RegisterCommand("led_gammaCtrl", led_gamma_control, NULL);
-	//cmddetail:{"name":"CTRange","args":"ctRange",
-	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:{"name":"CTRange","args":"[MinRange][MaxRange]",
+	//cmddetail:"descr":"This sets the temperature range for display. Default is 154-500.",
+	//cmddetail:"fn":"ctRange","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("CTRange", ctRange, NULL);
+	//cmddetail:{"name":"DimmerDelta","args":"[DeltaValue]",
+	//cmddetail:"descr":"This sets the delta value for SmartDimmer/SmartButtonForLEDs hold event. This determines the amount of change of dimmer per hold event.",
+	//cmddetail:"fn":"dimmerDelta","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("DimmerDelta", dimmerDelta, NULL);
 }
 
 void NewLED_RestoreSavedStateIfNeeded() {

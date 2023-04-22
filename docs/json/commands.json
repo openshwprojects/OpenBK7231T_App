@@ -604,9 +604,18 @@
   },
   {
     "name": "CTRange",
-    "args": "ctRange",
-    "descr": "",
-    "fn": "NULL);",
+    "args": "[MinRange][MaxRange]",
+    "descr": "This sets the temperature range for display. Default is 154-500.",
+    "fn": "ctRange",
+    "file": "cmnds/cmd_newLEDDriver.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "DimmerDelta",
+    "args": "[DeltaValue]",
+    "descr": "This sets the delta value for SmartDimmer/SmartButtonForLEDs hold event. This determines the amount of change of dimmer per hold event.",
+    "fn": "dimmerDelta",
     "file": "cmnds/cmd_newLEDDriver.c",
     "requires": "",
     "examples": ""
