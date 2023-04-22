@@ -858,8 +858,6 @@ void LED_AddTemperature(int iVal, int wrapAroundInsteadOfClamp) {
 
 	cur = led_temperature_current;
 
-	cur += iVal;
-
 	if (wrapAroundInsteadOfClamp == 2) {
 		// Ping pong mode
 		cur += iVal * temperature_pingPong_direction;
