@@ -226,6 +226,7 @@ static commandResult_t CMD_SetPinRole(const void *context, const char *cmd, cons
 	roleIndex = PIN_ParsePinRoleName(role);
 	if(roleIndex == IOR_Total_Options) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "Unknown role");
+		return CMD_RES_BAD_ARGUMENT;
 	} else {
 		PIN_SetPinRoleForPinIndex(pin,roleIndex);
 	}
