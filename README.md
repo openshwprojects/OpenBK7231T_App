@@ -52,6 +52,7 @@ OpenBeken features:
 - Easily configurable via commands (see [tutorial](https://www.elektroda.com/rtvforum/topic3947241.html))
 - Thanks to keeping Tasmota standard, OBK has basic compatibility with [ioBroker](https://www.youtube.com/watch?v=x4p3JHXbK1E&ab_channel=Elektrodacom) and similiar systems through TELE/STAT/CMND MQTT packets, Tasmota Control app is also supported
 - DDP lighting protocol support ("startDriver DDP" in autoexec.bat/short startup command), works with xLights
+- Can be scripted to even [work with shutters](https://www.elektroda.com/rtvforum/topic3972935.html)
 - Automatic reconnect when WiFi network goes out
 - and much more
 
