@@ -38,9 +38,9 @@ commandResult_t Bridge_Pulse_length(const void *context, const char *cmd, const 
     }
 
     pulse_len = atoi(Tokenizer_GetArg(0));
-    if (pulse_len < 10)
+    if (pulse_len < 5)
     {
-        pulse_len = 10;   
+        pulse_len = 5;   
     } 
     else if (pulse_len > 10000) 
     {
