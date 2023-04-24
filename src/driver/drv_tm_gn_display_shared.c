@@ -186,6 +186,9 @@ static void TM_GN_ReadCommand(softI2C_t *i2c, byte command, byte *data, int data
 
 int g_previousButtons = 0;
 
+// Usage:
+// addEventHandler OnCustomDown 1 echo Button 1 is going down
+// addEventHandler OnCustomUp 1 echo Button 1 has been released
 void TMGN_ReadButtons() {
 	int tmp;
 	int i;
@@ -194,6 +197,10 @@ void TMGN_ReadButtons() {
 	for (i = 0; i < 32; i++) {
 		if (!BIT_CHECK(g_previousButtons, i) && BIT_CHECK(tmp, i)) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Button %i went down", i);
+			EventHandlers_FireEvent(CMD_EVENT_CUSTOM_DOWN, i);
+		} else if (BIT_CHECK(g_previousButtons, i) && !BIT_CHECK(tmp, i)) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Button %i went up", i);
+			EventHandlers_FireEvent(CMD_EVENT_CUSTOM_UP, i);
 		}
 	}
 	g_previousButtons = tmp;

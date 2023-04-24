@@ -120,6 +120,10 @@ enum EventCode {
 
 	CMD_EVENT_NTP_STATE,
 
+	// custom buttons
+	CMD_EVENT_CUSTOM_DOWN,
+	CMD_EVENT_CUSTOM_UP,
+
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
 };

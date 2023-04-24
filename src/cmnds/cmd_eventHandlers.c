@@ -204,6 +204,10 @@ int EVENT_ParseEventName(const char *s) {
 		return CMD_EVENT_TUYAMCU_PARSED;
 	if (!stricmp(s, "OnADCButton"))
 		return CMD_EVENT_ADC_BUTTON;
+	if (!stricmp(s, "OnCustomDown"))
+		return CMD_EVENT_CUSTOM_DOWN;
+	if (!stricmp(s, "OnCustomUP"))
+		return CMD_EVENT_CUSTOM_UP;
 	return CMD_EVENT_NONE;
 }
 static bool EVENT_EvaluateCondition(int code, int argument, int next) {
