@@ -474,9 +474,9 @@ void TM_GN_Display_SharedInit() {
 		g_totalDigits = 6; 
 	}
 	else {
-		g_i2c.pin_clk = 17;// PIN_FindPinIndexForRole(IOR_TM1637_CLK, 16);
-		g_i2c.pin_data = 15;// PIN_FindPinIndexForRole(IOR_TM1637_DIO, 14);
-		g_i2c.pin_stb = 28;// PIN_FindPinIndexForRole(IOR_TM1637_DIO, 14);
+		g_i2c.pin_clk = PIN_FindPinIndexForRole(IOR_GN6932_CLK, 17);
+		g_i2c.pin_data = PIN_FindPinIndexForRole(IOR_GN6932_DAT, 15);
+		g_i2c.pin_stb = PIN_FindPinIndexForRole(IOR_GN6932_STB, 28);
 		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using SPI mode (GN6932)");
 
 		// GN6932 has no remap

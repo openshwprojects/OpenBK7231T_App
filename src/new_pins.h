@@ -488,6 +488,27 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_ADC_Button,
+	//iodetail:{"name":"GN6932_CLK",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"QQQ",
+	//iodetail:"enum":"GN6932_CLK",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_GN6932_CLK,
+	//iodetail:{"name":"GN6932_DAT",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"QQQ",
+	//iodetail:"enum":"GN6932_DAT",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_GN6932_DAT,
+	//iodetail:{"name":"GN6932_STB",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"QQQ",
+	//iodetail:"enum":"GN6932_STB",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_GN6932_STB,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
