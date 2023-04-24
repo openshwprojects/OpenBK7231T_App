@@ -539,8 +539,8 @@ void TM_GN_Display_SharedInit() {
 			addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using SPI mode (TM1638)");
 			g_doTM1638RowsToColumnsSwap = 1;
 			
-			for (i = 0; i < sizeof(g_remap); i++) {
-				g_remap[i] = sizeof(g_remap)-i-1;
+			for (i = 0; i < 8; i++) {
+				g_remap[i] = 7-i;
 			}
 		}
 		else {
