@@ -88,6 +88,8 @@ void Shift_Init();
 void Shift_OnEverySecond();
 void Shift_OnChannelChanged(int ch, int value);
 
+void TMGN_RunQuickTick();
+
 void DRV_MAX72XX_Init();
 
 void WEMO_Init();
