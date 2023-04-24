@@ -1786,7 +1786,7 @@ const char* g_channelTypeNames[] = {
 	"OffDimBright",
 	"LowMidHighHighest",
 	"OffLowMidHighHighest",
-	"error",
+	"Custom",
 	"error",
 	"error",
 	"error",

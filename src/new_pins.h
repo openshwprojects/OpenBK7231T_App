@@ -740,6 +740,13 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_OffLowMidHighHighest,
+	//chandetail:{"name":"Custom",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"A custom channel type that is still send to HA.",
+	//chandetail:"enum":"ChType_Custom",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Custom,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
