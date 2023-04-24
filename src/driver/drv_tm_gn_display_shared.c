@@ -538,18 +538,21 @@ void TM_GN_Display_SharedInit() {
 			g_i2c.pin_stb = PIN_FindPinIndexForRole(IOR_TM1638_STB, 28);
 			addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using SPI mode (TM1638)");
 			g_doTM1638RowsToColumnsSwap = 1;
+			
+			for (i = 0; i < sizeof(g_remap); i++) {
+				g_remap[i] = sizeof(g_remap)-i-1;
+			}
 		}
 		else {
 			g_i2c.pin_clk = PIN_FindPinIndexForRole(IOR_GN6932_CLK, 17);
 			g_i2c.pin_data = PIN_FindPinIndexForRole(IOR_GN6932_DAT, 15);
 			g_i2c.pin_stb = PIN_FindPinIndexForRole(IOR_GN6932_STB, 28);
 			addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using SPI mode (GN6932)");
+			// GN6932 has no remap
+			for (i = 0; i < sizeof(g_remap); i++) {
+				g_remap[i] = i;
+			}
 		}
-		// GN6932 has no remap
-		for (i = 0; i < sizeof(g_remap); i++) {
-			g_remap[i] = i;
-		}
-
 		HAL_PIN_Setup_Output(g_i2c.pin_clk);
 		HAL_PIN_Setup_Output(g_i2c.pin_stb);
 		HAL_PIN_Setup_Output(g_i2c.pin_data);
