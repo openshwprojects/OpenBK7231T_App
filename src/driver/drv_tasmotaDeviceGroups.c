@@ -498,22 +498,28 @@ int DGR_CheckSequence(uint16_t seq) {
 	
 	m = findMember();
 	
-	if(m == 0)
+	if (m == 0) {
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "DGR_CheckSequence: no member found");
 		return 1;
+	}
+	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "DGR_CheckSequence: argument %i, last %i",(int)seq, (int)m->lastSeq);
 	
 	// make it work past wrap at
 	if((seq > m->lastSeq) || (seq+10 > m->lastSeq+10)) {
 		if(seq != (m->lastSeq+1)){
 			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Seq for %s skip %i->%i\n",inet_ntoa(m->addr.sin_addr), m->lastSeq, seq);
 		}
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "Seq ok");
 		m->lastSeq = seq;
 		return 0;
 	}
 	if(seq + 16 < m->lastSeq) {
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "Seq Hard reset");
 		// hard reset
 		m->lastSeq = seq;
 		return 0;
 	}
+	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "Seq failed");
 	return 1;
 }
 
