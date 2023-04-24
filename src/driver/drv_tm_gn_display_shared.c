@@ -148,15 +148,30 @@ static void TM1650_SendSegments(const byte *segments, byte length, byte pos) {
 
 
 static void TM_GN_WriteCommand(softI2C_t *i2c, byte command, const byte *data, int dataSize) {
-	int i;
+	int i, j;
+	byte tmp;
 
 	TM_GN_Start(i2c);
 	// write command
 	TM_GN_WriteByte(i2c, command);
 	// write data, if available
 	if (data && dataSize) {
-		for (i = 0; i < dataSize; i++) {
-			TM_GN_WriteByte(i2c, data[i]);
+		if (true) {
+			for (i = 0; i < 8; i++) {
+				tmp = 0;
+				for (j = 0; j < 8; j++) {
+					if (BIT_CHECK(data[j], i)) {
+						BIT_SET(tmp, i);
+					}
+				}
+				TM_GN_WriteByte(i2c, tmp);
+				TM_GN_WriteByte(i2c, 0);
+			}
+		}
+		else {
+			for (i = 0; i < dataSize; i++) {
+				TM_GN_WriteByte(i2c, data[i]);
+			}
 		}
 	}
 	TM_GN_Stop(i2c);
