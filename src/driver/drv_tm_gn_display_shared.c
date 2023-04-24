@@ -209,6 +209,7 @@ static commandResult_t CMD_TMGN_SetupButtons(const void *context, const char *cm
 	}
 
 	g_buttonReadIntervalMS = Tokenizer_GetArgInteger(0);
+	return CMD_RES_OK;
 }
 static commandResult_t CMD_TMGN_Read(const void *context, const char *cmd, const char *args, int flags) {
 	TMGN_ReadButtons();
