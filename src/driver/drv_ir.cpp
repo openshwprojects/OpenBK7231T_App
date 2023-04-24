@@ -187,7 +187,9 @@ SpoofIrReceiver IrReceiver;
 #include "../libraries/IRremoteESP8266/src/IRsend.h"
 #include "../libraries/IRremoteESP8266/src/IRrecv.h"
 #include "../libraries/IRremoteESP8266/src/IRutils.h"
+#ifdef ENABLE_IRAC
 #include "../libraries/IRremoteESP8266/src/IRac.h"
+#endif
 #include "../libraries/IRremoteESP8266/src/IRproto.h"
 #include "../libraries/IRremoteESP8266/src/digitalWriteFast.h"
 
@@ -649,7 +651,7 @@ extern "C" commandResult_t IR_Param(const void *context, const char *cmd, const 
 
 
 
-
+#ifdef ENABLE_IRAC
 extern "C" commandResult_t IR_AC_Cmd(const void *context, const char *cmd, const char *args_in, int cmdFlags) {
 	if (!args_in) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 
@@ -673,6 +675,8 @@ extern "C" commandResult_t IR_AC_Cmd(const void *context, const char *cmd, const
 
 	return CMD_RES_OK;
 }
+#endif //ENABLE_IRAC
+
 
 // test routine to start IR RX and TX
 // currently fixed pins for testing.
@@ -744,7 +748,9 @@ extern "C" void DRV_IR_Init() {
 			//cmddetail:"descr":"Sends IR commands for HVAC control (TODO)",
 			//cmddetail:"fn":"IR_AC_Cmd","file":"driver/drv_ir.cpp","requires":"",
 			//cmddetail:"examples":""}
+			#ifdef ENABLE_IRAC
 			CMD_RegisterCommand("IRAC", IR_AC_Cmd, NULL);
+			#endif //ENABLE_IRAC
 			//cmddetail:{"name":"IREnable","args":"[Str][1or0]",
 			//cmddetail:"descr":"Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol",
 			//cmddetail:"fn":"IR_Enable","file":"driver/drv_ir.cpp","requires":"",
@@ -769,10 +775,13 @@ void dump(decode_results *results) {
 	// Dumps out the decode_results structure.
 	// Call this after IRrecv::decode()
 	ADDLOG_INFO(LOG_FEATURE_IR, resultToHumanReadableBasic(results).c_str());
+
+	#ifdef ENABLE_IRAC
 	if (hasACState(results->decode_type))
 	{
 		ADDLOG_INFO(LOG_FEATURE_IR, IRAcUtils::resultAcToString(results).c_str());
 	}
+	#endif
 }
 
 
@@ -838,8 +847,10 @@ extern "C" void DRV_IR_RunFrame() {
 					snprintf(out, sizeof(out), "IR %s,%d,%s", proto_name.c_str(), (int)results.bits, resultToHexidecimal(&results).c_str());
 					ADDLOG_INFO(LOG_FEATURE_IR, (char *)out);
 				} else {
+					#ifdef ENABLE_IRAC
 					String description = IRAcUtils::resultAcToString(&results);
 					ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IRAC %s", description.c_str());
+					#endif //ENABLE_IRAC
 				}
 				// if user wants us to publish every received IR data, do it now
 				if (CFG_HasFlag(OBK_FLAG_IR_PUBLISH_RECEIVED)) {
