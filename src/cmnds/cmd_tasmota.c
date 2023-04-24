@@ -105,9 +105,8 @@ static commandResult_t cmnd_backlog(const void * context, const char *cmd, const
 	int count = 0;
     char copy[128];
     char *c;
-	if (stricmp(cmd, "backlog")){
-		return -1;
-	}
+	int localRes;
+	int res = CMD_RES_OK;
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "backlog [%s]", args);
 
 	subcmd = args;
@@ -126,12 +125,15 @@ static commandResult_t cmnd_backlog(const void * context, const char *cmd, const
 		}
 		*c = 0;
 		count++;
-		CMD_ExecuteCommand(copy, cmdFlags);
+		localRes = CMD_ExecuteCommand(copy, cmdFlags);
+		if (localRes != CMD_RES_OK) {
+			res = localRes;
+		}
 		subcmd = p;
 	}
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "backlog executed %d", count);
 
-	return CMD_RES_OK;
+	return res;
 }
 
 // Our wrapper for LFS.
