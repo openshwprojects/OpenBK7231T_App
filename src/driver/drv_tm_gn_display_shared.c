@@ -2,6 +2,7 @@
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
+#include "../quicktick.h"
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 #include "../mqtt/new_mqtt.h"
@@ -17,6 +18,7 @@
 
 static softI2C_t g_i2c;
 static byte g_brightness;
+static int g_buttonReadIntervalMS;
 static byte g_digits[] = {
 	0x3f, // 0
 	0x06, // 1
@@ -182,10 +184,34 @@ static void TM_GN_ReadCommand(softI2C_t *i2c, byte command, byte *data, int data
 	TM_GN_Stop(i2c);
 }
 
+int g_previousButtons = 0;
+
+void TMGN_ReadButtons() {
+	int tmp;
+	int i;
+	TM_GN_ReadCommand(&g_i2c, TM1638_I2C_COM1_READ, (byte*)&tmp, 4);
+	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_MAIN, "CMD_TMGN_Read: %i", tmp);
+	for (i = 0; i < 32; i++) {
+		if (!BIT_CHECK(g_previousButtons, i) && BIT_CHECK(tmp, i)) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Button %i went down", i);
+		}
+	}
+	g_previousButtons = tmp;
+}
+// TMGN_SetupButtons [ScanIntervalMS]
+// For example: TMGN_SetupButtons 100 , this will scan every 100ms
+static commandResult_t CMD_TMGN_SetupButtons(const void *context, const char *cmd, const char *args, int flags) {
+
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 1) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	g_buttonReadIntervalMS = Tokenizer_GetArgInteger(0);
+}
 static commandResult_t CMD_TMGN_Read(const void *context, const char *cmd, const char *args, int flags) {
-	byte tmp[4];
-	TM_GN_ReadCommand(&g_i2c, TM1638_I2C_COM1_READ, tmp, 4);
-	addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "CMD_TMGN_Read: %i %i %i %i",((int)tmp[0]), ((int)tmp[1]), ((int)tmp[2]), ((int)tmp[3]));
+	TMGN_ReadButtons();
 	return CMD_RES_OK;
 }
 static void TM_GN_WriteCommand(softI2C_t *i2c, byte command, const byte *data, int dataSize) {
@@ -513,6 +539,17 @@ delay_s 0.1
 goto again
 
 */
+
+static int g_curButtonIntervalMS;
+void TMGN_RunQuickTick() {
+	if (g_buttonReadIntervalMS) {
+		g_curButtonIntervalMS -= g_deltaTimeMS;
+		if (g_curButtonIntervalMS <= 0) {
+			g_curButtonIntervalMS = g_buttonReadIntervalMS;
+			TMGN_ReadButtons();
+		}
+	}
+}
 void TM_GN_Display_SharedInit() {
 	int i;
 
@@ -617,4 +654,9 @@ void TM_GN_Display_SharedInit() {
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TMGN_Read", CMD_TMGN_Read, NULL);
+	//cmddetail:{"name":"TMGN_SetupButtons","args":"CMD_TMGN_SetupButtons",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("TMGN_SetupButtons", CMD_TMGN_SetupButtons, NULL);
 }
