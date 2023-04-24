@@ -173,11 +173,11 @@ static void TM_GN_ReadCommand(softI2C_t *i2c, byte command, byte *data, int data
 	TM_GN_WriteByte(i2c, command);
 	// write data, if available
 	if (data && dataSize) {
-		HAL_PIN_Setup_Output(i2c->pin_data);
+		HAL_PIN_Setup_Input(i2c->pin_data);
 		for (i = 0; i < dataSize; i++) {
 			data[i] = TM_GN_ReadByte(i2c);
 		}
-		HAL_PIN_Setup_Input(i2c->pin_data);
+		HAL_PIN_Setup_Output(i2c->pin_data);
 	}
 	TM_GN_Stop(i2c);
 }
