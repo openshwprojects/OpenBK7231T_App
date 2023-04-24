@@ -89,6 +89,24 @@ static bool TM_GN_WriteByte(softI2C_t *i2c, byte b) {
 	}
 	return ack;
 }
+static byte TM_GN_ReadByte(softI2C_t *i2c) {
+	int i;
+	byte ret;
+	ret = 0;
+	if (i2c->pin_stb != -1) {
+		for (i = 0; i < 8; i++) {
+			HAL_PIN_SetOutputValue(i2c->pin_clk, false);
+			GN6932_DELAY;
+			ret |= HAL_PIN_ReadDigitalInput(i2c->pin_data) << i;
+			GN6932_DELAY;
+			HAL_PIN_SetOutputValue(i2c->pin_clk, true);
+		}
+	}
+	else {
+		// TODO?
+	}
+	return ret;
+}
 static void TM_GN_Start(softI2C_t *i2c) {
 	if (i2c->pin_stb != -1) {
 		HAL_PIN_SetOutputValue(i2c->pin_clk, true);
@@ -146,8 +164,30 @@ static void TM1650_SendSegments(const byte *segments, byte length, byte pos) {
 }
 
 
+static void TM_GN_ReadCommand(softI2C_t *i2c, byte command, byte *data, int dataSize) {
+	int i, j;
+	byte tmp;
 
+	TM_GN_Start(i2c);
+	// write command
+	TM_GN_WriteByte(i2c, command);
+	// write data, if available
+	if (data && dataSize) {
+		HAL_PIN_Setup_Output(i2c->pin_data);
+		for (i = 0; i < dataSize; i++) {
+			data[i] = TM_GN_ReadByte(i2c);
+		}
+		HAL_PIN_Setup_Input(i2c->pin_data);
+	}
+	TM_GN_Stop(i2c);
+}
 
+static commandResult_t CMD_TMGN_Read(const void *context, const char *cmd, const char *args, int flags) {
+	byte tmp[4];
+	TM_GN_ReadCommand(&g_i2c, TM1638_I2C_COM1_READ, tmp, 4);
+	addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "CMD_TMGN_Read: %i %i %i %i",((int)tmp[0]), ((int)tmp[1]), ((int)tmp[2]), ((int)tmp[3]));
+	return CMD_RES_OK;
+}
 static void TM_GN_WriteCommand(softI2C_t *i2c, byte command, const byte *data, int dataSize) {
 	int i, j;
 	byte tmp;
@@ -569,4 +609,9 @@ void TM_GN_Display_SharedInit() {
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TM1650_Test", CMD_TM1650_Test, NULL);
+	//cmddetail:{"name":"TMGN_Read","args":"CMD_TMGN_Read",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("TMGN_Read", CMD_TMGN_Read, NULL);
 }
