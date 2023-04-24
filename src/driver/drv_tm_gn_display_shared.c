@@ -194,6 +194,10 @@ void TMGN_ReadButtons() {
 	for (i = 0; i < 32; i++) {
 		if (!BIT_CHECK(g_previousButtons, i) && BIT_CHECK(tmp, i)) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Button %i went down", i);
+			EventHandlers_FireEvent(CMD_EVENT_CUSTOM_DOWN, i);
+		} else if (BIT_CHECK(g_previousButtons, i) && !BIT_CHECK(tmp, i)) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Button %i went up", i);
+			EventHandlers_FireEvent(CMD_EVENT_CUSTOM_UP, i);
 		}
 	}
 	g_previousButtons = tmp;
