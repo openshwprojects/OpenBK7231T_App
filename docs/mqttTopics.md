@@ -6,7 +6,7 @@ Hint: in HA, you can use MQTT wildcard to listen to multiple publishes. OBK_DEV_
 Publishes send by OBK device:
 | Topic        | Sample Value          | Description  |
 |:------------- |:------------- | -----:|
-| OBK_DEV_NAME/INDEX/get | 1 | send when a given channel is changed. INDEX is a number representing channel index. Some channels are not published by default, see flags. You can have any variable in channel, even a custom, fully scriptable counter |
+| OBK_DEV_NAME/INDEX/get | 1 | send when a given channel is changed. INDEX is a number representing channel index. Most of channels are not published by default. See flags to change it. If you want given channel to be published, you can also change its channel type in the Web App, just select one that fits your needs or just a generic 'Custom' type. You can have any variable in channel, even a custom, fully scriptable counter. |
 | OBK_DEV_NAME/connected | online | Sent on connect. |
 | OBK_DEV_NAME/sockets | 5 | Send on connect and every N seconds (default: 60, if enabled) |
 | OBK_DEV_NAME/rssi | -70 | Send on connect and every N seconds (default: 60, if enabled) |

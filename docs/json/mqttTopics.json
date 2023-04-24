@@ -3,7 +3,7 @@
 		{
 			"topic": "OBK_DEV_NAME/INDEX/get",
 			"example": "1",
-			"description": "send when a given channel is changed. INDEX is a number representing channel index. Some channels are not published by default, see flags. You can have any variable in channel, even a custom, fully scriptable counter"
+			"description": "send when a given channel is changed. INDEX is a number representing channel index. Most of channels are not published by default. See flags to change it. If you want given channel to be published, you can also change its channel type in the Web App, just select one that fits your needs or just a generic 'Custom' type. You can have any variable in channel, even a custom, fully scriptable counter."
 		},
 		{
 		"topic": "OBK_DEV_NAME/connected",

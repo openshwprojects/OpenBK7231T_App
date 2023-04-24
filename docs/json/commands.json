@@ -261,6 +261,15 @@
     "examples": ""
   },
   {
+    "name": "clearIO",
+    "args": "",
+    "descr": "Clears all pins setting, channels settings",
+    "fn": "CMD_ClearIO",
+    "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "clearAll",
     "args": "",
     "descr": "Clears config and all remaining features, like runtime scripts, events, etc",

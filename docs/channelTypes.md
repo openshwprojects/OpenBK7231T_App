@@ -39,4 +39,5 @@ Do not add anything here, as it will overwritten with next rebuild.
 | OffDimBright |  A 3 options radio button for lighting control. |
 | LowMidHighHighest |  Like LowMidHigh, but with 4 options. Some of TuyaMCU fans might require that. |
 | OffLowMidHighHighest |  Like LowMidHigh, but with 5 options. Some of TuyaMCU fans might require that. |
+| Custom |  A custom channel type that is still send to HA. |
 | Max |  This is the current total number of available channel types. |

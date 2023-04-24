@@ -272,6 +272,14 @@
     "driver": ""
   },
   {
+    "name": "Custom",
+    "title": "TODO",
+    "descr": "A custom channel type that is still send to HA.",
+    "enum": "ChType_Custom",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
     "name": "Max",
     "title": "TODO",
     "descr": "This is the current total number of available channel types.",

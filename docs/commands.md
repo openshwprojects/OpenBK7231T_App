@@ -37,6 +37,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | restart |  | Reboots the module |
 | reboot |  | Same as restart. Needed for bkWriter 1.60 which sends 'reboot' cmd before trying to get bus |
 | clearConfig |  | Clears all config, including WiFi data |
+| clearIO |  | Clears all pins setting, channels settings |
 | clearAll |  | Clears config and all remaining features, like runtime scripts, events, etc |
 | DeepSleep | [Seconds] | Starts deep sleep for given amount of seconds. Please remember that there is also a separate command, called PinDeepSleep, which is not using a timer, but a GPIO to wake up device. |
 | PowerSave | [Optional 1 or 0, by default 1 is assumed] | Enables dynamic power saving mode on BK and W600. You can also disable power saving with PowerSave 0. |
