@@ -43,6 +43,7 @@ void TM1637_Init();
 
 void GN6932_Init();
 
+void TM1638_Init();
 
 bool DRV_IsRunning(const char* name);
 
@@ -100,6 +101,8 @@ typedef struct softI2C_s {
 	short pin_data;
 	// I really have to place it here for a GN6932 driver, which is an SPI version of TM1637
 	short pin_stb;
+	// I must somehow be able to tell which proto we have?
+	//short protocolType;
 } softI2C_t;
 
 void Soft_I2C_SetLow(uint8_t pin);

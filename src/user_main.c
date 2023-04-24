@@ -988,6 +988,14 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 				DRV_StartDriver("GN6932");
 #endif
 			}
+			if ((PIN_FindPinIndexForRole(IOR_TM1638_CLK, -1) != -1) &&
+				(PIN_FindPinIndexForRole(IOR_TM1638_DAT, -1) != -1) &&
+				(PIN_FindPinIndexForRole(IOR_TM1638_STB, -1) != -1))
+			{
+#ifndef OBK_DISABLE_ALL_DRIVERS
+				DRV_StartDriver("TM1638");
+#endif
+			}
 		}
 	}
 

@@ -41,6 +41,7 @@ static byte g_digits[] = {
 static byte g_remap[16] = {
 	2,1,0,5,4,3,8,7,6
 };
+static byte g_doTM1638RowsToColumnsSwap = 0;
 static byte g_numDigits = sizeof(g_digits) / sizeof(g_digits[0]);
 static byte *tmgn_buffer = 0;
 static int g_totalDigits = 6;
@@ -156,7 +157,7 @@ static void TM_GN_WriteCommand(softI2C_t *i2c, byte command, const byte *data, i
 	TM_GN_WriteByte(i2c, command);
 	// write data, if available
 	if (data && dataSize) {
-		if (true) {
+		if (g_doTM1638RowsToColumnsSwap && dataSize == 16) {
 			for (j = 0; j < 8; j++) {
 				tmp = 0;
 				for (i = 0; i < 8; i++) {
@@ -475,6 +476,8 @@ goto again
 void TM_GN_Display_SharedInit() {
 	int i;
 
+	g_doTM1638RowsToColumnsSwap = 0;
+
 	if (PIN_FindPinIndexForRole(IOR_TM1637_CLK, -1) != -1) {
 		g_i2c.pin_clk = PIN_FindPinIndexForRole(IOR_TM1637_CLK, 16);
 		g_i2c.pin_data = PIN_FindPinIndexForRole(IOR_TM1637_DIO, 14);
@@ -486,14 +489,22 @@ void TM_GN_Display_SharedInit() {
 		HAL_PIN_SetOutputValue(g_i2c.pin_clk, true);
 		HAL_PIN_SetOutputValue(g_i2c.pin_data, true);
 
-		g_totalDigits = 6; 
+		g_totalDigits = 6;
 	}
 	else {
-		g_i2c.pin_clk = PIN_FindPinIndexForRole(IOR_GN6932_CLK, 17);
-		g_i2c.pin_data = PIN_FindPinIndexForRole(IOR_GN6932_DAT, 15);
-		g_i2c.pin_stb = PIN_FindPinIndexForRole(IOR_GN6932_STB, 28);
-		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using SPI mode (GN6932)");
-
+		if (PIN_FindPinIndexForRole(IOR_TM1638_CLK, -1) != -1) {
+			g_i2c.pin_clk = PIN_FindPinIndexForRole(IOR_TM1638_CLK, 17);
+			g_i2c.pin_data = PIN_FindPinIndexForRole(IOR_TM1638_DAT, 15);
+			g_i2c.pin_stb = PIN_FindPinIndexForRole(IOR_TM1638_STB, 28);
+			addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using SPI mode (TM1638)");
+			g_doTM1638RowsToColumnsSwap = 1;
+		}
+		else {
+			g_i2c.pin_clk = PIN_FindPinIndexForRole(IOR_GN6932_CLK, 17);
+			g_i2c.pin_data = PIN_FindPinIndexForRole(IOR_GN6932_DAT, 15);
+			g_i2c.pin_stb = PIN_FindPinIndexForRole(IOR_GN6932_STB, 28);
+			addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using SPI mode (GN6932)");
+		}
 		// GN6932 has no remap
 		for (i = 0; i < sizeof(g_remap); i++) {
 			g_remap[i] = i;
