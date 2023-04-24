@@ -157,10 +157,10 @@ static void TM_GN_WriteCommand(softI2C_t *i2c, byte command, const byte *data, i
 	// write data, if available
 	if (data && dataSize) {
 		if (true) {
-			for (i = 0; i < 8; i++) {
+			for (j = 0; j < 8; j++) {
 				tmp = 0;
-				for (j = 0; j < 8; j++) {
-					if (BIT_CHECK(data[j], i)) {
+				for (i = 0; i < 8; i++) {
+					if (BIT_CHECK(data[i], j)) {
 						BIT_SET(tmp, i);
 					}
 				}
