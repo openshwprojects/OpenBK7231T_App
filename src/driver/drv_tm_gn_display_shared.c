@@ -189,7 +189,7 @@ int g_previousButtons = 0;
 void TMGN_ReadButtons() {
 	int tmp;
 	int i;
-	TM_GN_ReadCommand(&g_i2c, TM1638_I2C_COM1_READ, (byte*)tmp, 4);
+	TM_GN_ReadCommand(&g_i2c, TM1638_I2C_COM1_READ, (byte*)&tmp, 4);
 	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_MAIN, "CMD_TMGN_Read: %i", tmp);
 	for (i = 0; i < 32; i++) {
 		if (!BIT_CHECK(g_previousButtons, i) && BIT_CHECK(tmp, i)) {
