@@ -122,6 +122,23 @@ static commandResult_t CMD_ScheduleHADiscovery(const void* context, const char* 
 
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_SetFlag(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int flag, val;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	flag = Tokenizer_GetArgInteger(0);
+	val = Tokenizer_GetArgInteger(1);
+	CFG_SetFlag(flag, val);
+
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_Flags(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	union {
 		long long newValue;
@@ -347,14 +364,14 @@ static commandResult_t CMD_SafeMode(const void* context, const char* cmd, const 
 
 
 
-void CMD_UART_Init() {
+void CMD_UARTConsole_Init() {
 #if PLATFORM_BEKEN
 	UART_InitUART(115200);
 	cmd_uartInitIndex = g_uart_init_counter;
 	UART_InitReceiveRingBuffer(512);
 #endif
 }
-void CMD_UART_Run() {
+void CMD_UARTConsole_Run() {
 #if PLATFORM_BEKEN
 	char a;
 	int i;
@@ -394,11 +411,11 @@ void CMD_RunUartCmndIfRequired() {
 #if PLATFORM_BEKEN
 	if (CFG_HasFlag(OBK_FLAG_CMD_ACCEPT_UART_COMMANDS)) {
 		if (cmd_uartInitIndex && cmd_uartInitIndex == g_uart_init_counter) {
-			CMD_UART_Run();
+			CMD_UARTConsole_Run();
 		}
 	}
 #endif
-	}
+}
 
 // run an aliased command
 static commandResult_t runcmd(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -548,6 +565,11 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_Flags","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("flags", CMD_Flags, NULL);
+	//cmddetail:{"name":"SetFlag","args":"[FlagIndex][0or1]",
+	//cmddetail:"descr":"Sets given flag",
+	//cmddetail:"fn":"CMD_SetFlag","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("SetFlag", CMD_SetFlag, NULL);
 	//cmddetail:{"name":"ClearNoPingTime","args":"",
 	//cmddetail:"descr":"Command for ping watchdog; it sets the 'time since last ping reply' to 0 again",
 	//cmddetail:"fn":"CMD_ClearNoPingTime","file":"cmnds/cmd_main.c","requires":"",
@@ -589,16 +611,24 @@ void CMD_Init_Early() {
 #endif
 	if (!bSafeMode) {
 		if (CFG_HasFlag(OBK_FLAG_CMD_ACCEPT_UART_COMMANDS)) {
-			CMD_UART_Init();
+			CMD_UARTConsole_Init();
 		}
 	}
 	//DRV_InitFlashMemoryTestFunctions();
 }
 
+// Enable "[UART] Enable UART command line"
+// this also can be done in flags, enable command line on UART1 at 115200 baud
+//SetFlag 31 1
+// UART1 is RXD1/TXD1 which is used for programming and for TuyaMCU/BL0942,
+// but now we will set that UART1 is used for log
+//logPort 1 
+
 void CMD_Init_Delayed() {
 	if (CFG_HasFlag(OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER)) {
 		CMD_StartTCPCommandLine();
 	}
+	UART_AddCommands();
 }
 
 

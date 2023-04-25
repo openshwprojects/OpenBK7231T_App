@@ -100,6 +100,8 @@ static int g_recvBufIn = 0;
 static int g_recvBufOut = 0;
 // used to detect uart reinit
 int g_uart_init_counter = 0;
+// used to detect uart manual mode
+int g_uart_manualInitCounter = -1;
 
 void UART_InitReceiveRingBuffer(int size){
 	if(g_recvBuf!=0)
@@ -311,27 +313,8 @@ commandResult_t CMD_UART_Send_ASCII(const void *context, const char *cmd, const 
 	}
 	return CMD_RES_OK;
 }
-bool b_uart_commands_added = false;
 void UART_ResetForSimulator() {
-	b_uart_commands_added = false;
 	g_uart_init_counter = 0;
-}
-void UART_AddCommands() {
-	//cmddetail:{"name":"uartSendHex","args":"[HexString]",
-	//cmddetail:"descr":"Sends raw data by UART, can be used to send TuyaMCU data, but you must write whole packet with checksum yourself",
-	//cmddetail:"fn":"CMD_UART_Send_Hex","file":"driver/drv_tuyaMCU.c","requires":"",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("uartSendHex", CMD_UART_Send_Hex, NULL);
-	//cmddetail:{"name":"uartSendASCII","args":"[AsciiString]",
-	//cmddetail:"descr":"Sends given string by UART.",
-	//cmddetail:"fn":"CMD_UART_Send_ASCII","file":"driver/drv_uart.c","requires":"",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("uartSendASCII", CMD_UART_Send_ASCII, NULL);
-	//cmddetail:{"name":"uartFakeHex","args":"[HexString]",
-	//cmddetail:"descr":"Spoofs a fake hex packet so it looks like TuyaMCU send that to us. Used for testing.",
-	//cmddetail:"fn":"CMD_UART_FakeHex","file":"driver/drv_uart.c","requires":"",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("uartFakeHex", CMD_UART_FakeHex, NULL);
 }
 int UART_InitUART(int baud) {
 	g_uart_init_counter++;
@@ -386,14 +369,77 @@ int UART_InitUART(int baud) {
 
 
 #endif
-
-	if (b_uart_commands_added == false) {
-		b_uart_commands_added = true;
-		UART_AddCommands();
-	}
 	return g_uart_init_counter;
 }
+void UART_DebugTool_Run() {
+	int totalSize;
+	byte b;
+	char tmp[128];
+	char *p = tmp;
+	int i;
 
+	for (i = 0; i < sizeof(tmp) - 4; i++) {
+		if (UART_GetDataSize()==0) {
+			break;
+		}
+		b = UART_GetNextByte(0);
+		if (i) {
+			*p = ' ';
+			p++;
+		}
+		sprintf(p, "%02X", b);
+		p += 2;
+		UART_ConsumeBytes(1);
+	}
+	*p = 0;
+	addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "UART received: %s\n", tmp);
+}
+void UART_RunEverySecond() {
+	if (g_uart_manualInitCounter == g_uart_init_counter) {
+		UART_DebugTool_Run();
+	}
+}
+commandResult_t CMD_UART_Init(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	int baud;
+
+	Tokenizer_TokenizeString(args, 0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	baud = Tokenizer_GetArgInteger(0);
+
+	UART_InitUART(baud);
+	g_uart_manualInitCounter = g_uart_init_counter;
+	UART_InitReceiveRingBuffer(512);
+
+	return CMD_RES_OK;
+}
+void UART_AddCommands() {
+	//cmddetail:{"name":"uartSendHex","args":"[HexString]",
+	//cmddetail:"descr":"Sends raw data by UART, can be used to send TuyaMCU data, but you must write whole packet with checksum yourself",
+	//cmddetail:"fn":"CMD_UART_Send_Hex","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("uartSendHex", CMD_UART_Send_Hex, NULL);
+	//cmddetail:{"name":"uartSendASCII","args":"[AsciiString]",
+	//cmddetail:"descr":"Sends given string by UART.",
+	//cmddetail:"fn":"CMD_UART_Send_ASCII","file":"driver/drv_uart.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("uartSendASCII", CMD_UART_Send_ASCII, NULL);
+	//cmddetail:{"name":"uartFakeHex","args":"[HexString]",
+	//cmddetail:"descr":"Spoofs a fake hex packet so it looks like TuyaMCU send that to us. Used for testing.",
+	//cmddetail:"fn":"CMD_UART_FakeHex","file":"driver/drv_uart.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("uartFakeHex", CMD_UART_FakeHex, NULL);
+	//cmddetail:{"name":"uartInit","args":"[BaudRate]",
+	//cmddetail:"descr":"Manually starts UART1 port. Keep in mind that you don't need to do it for TuyaMCU and BL0942, those drivers do it automatically.",
+	//cmddetail:"fn":"CMD_UART_Init","file":"driver/drv_uart.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("uartInit", CMD_UART_Init, NULL);
+}
 
 
 
