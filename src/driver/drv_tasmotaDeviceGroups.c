@@ -906,6 +906,7 @@ commandResult_t CMD_DGR_SendFixedColor(const void *context, const char *cmd, con
 void DRV_DGR_Init()
 {
 	memset(&g_dgrMembers[0],0,sizeof(g_dgrMembers));
+	g_curDGRMembers = 0;
 #if 0
 	DRV_DGR_StartThread();
 #else
