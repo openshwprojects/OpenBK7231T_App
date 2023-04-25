@@ -1746,6 +1746,24 @@
     "examples": ""
   },
   {
+    "name": "TMGN_Read",
+    "args": "CMD_TMGN_Read",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_tm1637.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "TMGN_SetupButtons",
+    "args": "CMD_TMGN_SetupButtons",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_tm1637.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "tuyaMcu_testSendTime",
     "args": "",
     "descr": "Sends a example date by TuyaMCU to clock/callendar MCU",
@@ -1885,6 +1903,15 @@
     "args": "[HexString]",
     "descr": "Spoofs a fake hex packet so it looks like TuyaMCU send that to us. Used for testing.",
     "fn": "CMD_UART_FakeHex",
+    "file": "driver/drv_uart.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "uartInit",
+    "args": "[BaudRate]",
+    "descr": "Manually starts UART1 port. Keep in mind that you don't need to do it for TuyaMCU and BL0942, those drivers do it automatically.",
+    "fn": "CMD_UART_Init",
     "file": "driver/drv_uart.c",
     "requires": "",
     "examples": ""
@@ -2137,6 +2164,15 @@
     "args": "[Value]",
     "descr": "Value is a number of ms. This will add an artificial delay in each log call. Useful for debugging. This way you can see step by step what happens.",
     "fn": "log_command",
+    "file": "logging/logging.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "logport",
+    "args": "[Index]",
+    "descr": "Allows you to change log output port. On Beken, the UART1 is used for flashing and for TuyaMCU/BL0942, while UART2 is for log. Sometimes it might be easier for you to have log on UART1, so now you can just use this command like backlog uartInit 115200; logport 1 to enable logging on UART1..",
+    "fn": "log_port",
     "file": "logging/logging.c",
     "requires": "",
     "examples": ""

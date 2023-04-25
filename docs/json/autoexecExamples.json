@@ -54,5 +54,9 @@
 {
 "title": "Alternate 'addClockEvent' demo - just like previous one, but written by using AddEventHandler instead of waitFor",
 "file": "autoexecs/automatic_day_and_night_lights_v2.bat"
+},
+{
+"title": "Simple UART log redirection to UART1 instead of UART2 on Beken with UART command line support",
+"file": "autoexecs/logging_for_uart1.bat"
 }
 ]

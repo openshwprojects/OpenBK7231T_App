@@ -552,6 +552,54 @@
     "driver": ""
   },
   {
+    "name": "GN6932_CLK",
+    "title": "TODO",
+    "descr": "QQQ",
+    "enum": "GN6932_CLK",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "GN6932_DAT",
+    "title": "TODO",
+    "descr": "QQQ",
+    "enum": "GN6932_DAT",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "GN6932_STB",
+    "title": "TODO",
+    "descr": "QQQ",
+    "enum": "GN6932_STB",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "TM1638_CLK",
+    "title": "TODO",
+    "descr": "QQQ",
+    "enum": "TM1638_CLK",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "TM1638_DAT",
+    "title": "TODO",
+    "descr": "QQQ",
+    "enum": "TM1638_DAT",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "TM1638_STB",
+    "title": "TODO",
+    "descr": "QQQ",
+    "enum": "TM1638_STB",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
     "name": "Total_Options",
     "title": "TODO",
     "descr": "Current total number of available IOR roles",

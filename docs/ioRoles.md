@@ -74,4 +74,10 @@ Do not add anything here, as it will overwritten with next rebuild.
 | SGP_CLK | SGP Quality Sensor Clock line. will autostart related driver |
 | SGP_DAT | SGP Quality Sensor Data line. will autostart related driver |
 | ADC_Button | Single ADC with multiple buttons connected.d |
+| GN6932_CLK | QQQ |
+| GN6932_DAT | QQQ |
+| GN6932_STB | QQQ |
+| TM1638_CLK | QQQ |
+| TM1638_DAT | QQQ |
+| TM1638_STB | QQQ |
 | Total_Options | Current total number of available IOR roles |

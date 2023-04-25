@@ -165,6 +165,17 @@ commandResult_t log_port(const void* context, const char* cmd, const char* args,
 	return CMD_RES_OK;
 }
 #endif
+
+// Here is how you can get log print on UART1:
+/*
+// Enable "[UART] Enable UART command line"
+// this also can be done in flags, enable command line on UART1 at 115200 baud
+SetFlag 31 1
+// UART1 is RXD1/TXD1 which is used for programming and for TuyaMCU/BL0942,
+// but now we will set that UART1 is used for log
+logPort 1 
+*/
+
 static void initLog(void)
 {
 	bk_printf("Entering initLog()...\r\n");
@@ -197,7 +208,7 @@ static void initLog(void)
 	CMD_RegisterCommand("logdelay", log_command, NULL);
 #if PLATFORM_BEKEN
 	//cmddetail:{"name":"logport","args":"[Index]",
-	//cmddetail:"descr":"Allows you to change log output port. On Beken, the UART1 is used for flashing and for TuyaMCU/BL0942, while UART2 is for log. Sometimes it might be easier for you to have log on UART1, so now you can just use this command like logport 1 to enable logging on UART1..",
+	//cmddetail:"descr":"Allows you to change log output port. On Beken, the UART1 is used for flashing and for TuyaMCU/BL0942, while UART2 is for log. Sometimes it might be easier for you to have log on UART1, so now you can just use this command like backlog uartInit 115200; logport 1 to enable logging on UART1..",
 	//cmddetail:"fn":"log_port","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("logport", log_port, NULL);

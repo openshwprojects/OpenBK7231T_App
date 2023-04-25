@@ -37,6 +37,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | MAX72XX |  MAX72XX LED matrix display driver with font and simple script interface. |
 | TM1637 |  Driver for 7-segment LED display with DIO/CLK interface |
 | GN6932 |  Driver for 7-segment LED display with DIO/CLK/STB interface. See [this topic](https://www.elektroda.com/rtvforum/topic3971252.html) for details. |
+| TM1638 |  Driver for 7-segment LED display with DIO/CLK/STB interface. TM1638 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20553628#20553628) for details. |
 | SHT3X |  Humidity/temperature sensor. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html) |
 | SGP |  SGP Air Quality sensor with I2C interface. |
 | ShiftRegister |  ShiftRegisterShiftRegisterShiftRegisterShiftRegister |
