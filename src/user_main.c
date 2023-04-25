@@ -37,6 +37,7 @@
 
 #include "driver/drv_ntp.h"
 #include "driver/drv_ssdp.h"
+#include "driver/drv_uart.h"
 
 #ifdef PLATFORM_BEKEN
 #include <mcu_ps.h>
