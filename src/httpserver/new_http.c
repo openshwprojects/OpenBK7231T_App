@@ -71,7 +71,6 @@ const char* methodNames[] = {
 #endif
 
 void misc_formatUpTimeString(int totalSeconds, char* o);
-int Time_getUpTimeSeconds();
 
 typedef struct http_callback_tag {
 	char* url;
@@ -265,7 +264,7 @@ void http_html_end(http_request_t* request) {
 	poststr(request, "<br>");
 	poststr(request, g_build_str);
 
-	hprintf255(request, "<br>Online for&nbsp;<span id=\"onlineFor\" data-initial=\"%i\">-</span>", Time_getUpTimeSeconds());
+	hprintf255(request, "<br>Online for&nbsp;<span id=\"onlineFor\" data-initial=\"%i\">-</span>", g_secondsElapsed);
 
 	WiFI_GetMacAddress((char*)mac);
 

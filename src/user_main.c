@@ -44,7 +44,7 @@
 void bg_register_irda_check_func(FUNCPTR func);
 #endif
 
-static int g_secondsElapsed = 0;
+int g_secondsElapsed = 0;
 // open access point after this number of seconds
 int g_openAP = 0;
 // connect to wifi after this number of seconds
@@ -165,10 +165,6 @@ void MAIN_ScheduleUnsafeInit(int delSeconds) {
 }
 void RESET_ScheduleModuleReset(int delSeconds) {
 	g_reset = delSeconds;
-}
-
-int Time_getUpTimeSeconds() {
-	return g_secondsElapsed;
 }
 
 

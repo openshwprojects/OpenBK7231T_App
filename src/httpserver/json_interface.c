@@ -413,10 +413,10 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bA
 	printer(request, "{");
 	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", localtime(&localTime));
 	JSON_PrintKeyValue_String(request, printer, "Time", buff, true);
-	format_time(Time_getUpTimeSeconds(), buff, sizeof(buff));
+	format_time(g_secondsElapsed, buff, sizeof(buff));
 	JSON_PrintKeyValue_String(request, printer, "Uptime", buff, true);
 	//JSON_PrintKeyValue_String(request, printer, "Uptime", "30T02:59:30", true);
-	JSON_PrintKeyValue_Int(request, printer, "UptimeSec", Time_getUpTimeSeconds(), true);
+	JSON_PrintKeyValue_Int(request, printer, "UptimeSec", g_secondsElapsed, true);
 	JSON_PrintKeyValue_Int(request, printer, "Heap", 25, true);
 	JSON_PrintKeyValue_String(request, printer, "SleepMode", "Dynamic", true);
 	JSON_PrintKeyValue_Int(request, printer, "Sleep", 10, true);
@@ -653,9 +653,9 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	JSON_PrintKeyValue_String(request, printer, "GroupTopic", CFG_DeviceGroups_GetName(), true);
 	JSON_PrintKeyValue_String(request, printer, "OtaUrl", "https://github.com/openshwprojects/OpenBK7231T_App/releases/latest", true);
 	JSON_PrintKeyValue_String(request, printer, "RestartReason", "HardwareWatchdog", true);
-	JSON_PrintKeyValue_Int(request, printer, "Uptime", Time_getUpTimeSeconds(), true);
+	JSON_PrintKeyValue_Int(request, printer, "Uptime", g_secondsElapsed, true);
 	struct tm* ltm;
-	int ntpTime = NTP_GetCurrentTime() - Time_getUpTimeSeconds();
+	int ntpTime = NTP_GetCurrentTime() - g_secondsElapsed;
 	ltm = localtime((time_t*)&ntpTime);
 
 	if (ltm != 0) {

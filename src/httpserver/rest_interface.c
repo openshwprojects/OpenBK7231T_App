@@ -819,7 +819,7 @@ static int http_rest_post_logconfig(http_request_t* request) {
 static int http_rest_get_info(http_request_t* request) {
 	char macstr[3 * 6 + 1];
 	http_setup(request, httpMimeTypeJson);
-	hprintf255(request, "{\"uptime_s\":%d,", Time_getUpTimeSeconds());
+	hprintf255(request, "{\"uptime_s\":%d,", g_secondsElapsed);
 	hprintf255(request, "\"build\":\"%s\",", g_build_str);
 	hprintf255(request, "\"ip\":\"%s\",", HAL_GetMyIPString());
 	hprintf255(request, "\"mac\":\"%s\",", HAL_GetMACStr(macstr));

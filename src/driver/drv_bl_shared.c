@@ -563,7 +563,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
             if ((energyCounterStatsJSONEnable == true) && (MQTT_IsReady() == true))
             {
                 root = cJSON_CreateObject();
-                cJSON_AddNumberToObject(root, "uptime", Time_getUpTimeSeconds());
+                cJSON_AddNumberToObject(root, "uptime", g_secondsElapsed);
                 cJSON_AddNumberToObject(root, "consumption_total", energyCounter );
                 cJSON_AddNumberToObject(root, "consumption_last_hour",  DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
                 cJSON_AddNumberToObject(root, "consumption_stat_index", energyCounterMinutesIndex);

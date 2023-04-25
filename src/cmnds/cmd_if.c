@@ -221,7 +221,7 @@ float getFailedBoots(const char *s) {
 	return g_bootFailures;
 }
 float getUpTime(const char *s) {
-	return Time_getUpTimeSeconds();
+	return g_secondsElapsed;
 }
 float getWeekDay(const char *s) {
 	return NTP_GetWeekDay();

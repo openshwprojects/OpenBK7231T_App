@@ -275,6 +275,10 @@ void NTP_SendRequest(bool bBlocking) {
          (struct sockaddr*)&g_address, adrLen) < 0) {
         addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP_SendRequest: Unable to send message");
         NTP_Shutdown();
+		// quick next frame attempt
+		if (g_secondsElapsed < 60) {
+			g_ntp_delay = 0;
+		}
         return;
     }
 

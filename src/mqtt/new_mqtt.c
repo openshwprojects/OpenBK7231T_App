@@ -1744,7 +1744,7 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 		return MQTT_DoItemPublishString("rssi", dataStr);
 
 	case PUBLISHITEM_SELF_UPTIME:
-		sprintf(dataStr, "%d", Time_getUpTimeSeconds());
+		sprintf(dataStr, "%d", g_secondsElapsed);
 		return MQTT_DoItemPublishString("uptime", dataStr);
 
 	case PUBLISHITEM_SELF_FREEHEAP:

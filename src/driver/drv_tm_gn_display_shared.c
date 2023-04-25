@@ -320,7 +320,7 @@ static commandResult_t CMD_TM1650_Test(const void *context, const char *cmd, con
 	byte segments[8];
 	int i;
 	for (i = 0; i < 8; i++) {
-		segments[i] = g_digits[(Time_getUpTimeSeconds() + i) % 10];
+		segments[i] = g_digits[(g_secondsElapsed + i) % 10];
 	}
 
 	TM1650_SendSegments(segments, 4, 0);
@@ -331,7 +331,7 @@ static commandResult_t CMD_TM1637_Test(const void *context, const char *cmd, con
 	byte segments[8];
 	int i;
 	for (i = 0; i < 8; i++) {
-		segments[i] = g_digits[(Time_getUpTimeSeconds() + i) % 10];
+		segments[i] = g_digits[(g_secondsElapsed + i) % 10];
 	}
 
 	TM1637_SendSegments(segments, 6, 0);
