@@ -133,12 +133,28 @@ static int tcpLogStarted = 0;
 #include "command_line.h"
 
 #define UART_PORT UART2_PORT 
-#define UART_DEV_NAME UART2_DEV_NAME
 #define UART_PORT_INDEX 1 
 #endif
 
 commandResult_t log_command(const void* context, const char* cmd, const char* args, int cmdFlags);
 
+commandResult_t log_port(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int idx;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	idx = Tokenizer_GetArgInteger(0);
+
+
+	return CMD_RES_OK;
+}
 static void initLog(void)
 {
 	bk_printf("Entering initLog()...\r\n");
@@ -169,6 +185,11 @@ static void initLog(void)
 	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("logdelay", log_command, NULL);
+	//cmddetail:{"name":"logport","args":"[Index]",
+	//cmddetail:"descr":"qqqq.",
+	//cmddetail:"fn":"log_port","file":"logging/logging.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("logport", log_port, NULL);
 
 	bk_printf("Commands registered!\r\n");
 	bk_printf("initLog() done!\r\n");
