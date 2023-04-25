@@ -56,7 +56,7 @@ static int g_ntp_socket = 0;
 static struct sockaddr_in g_address;
 static int adrLen;
 // in seconds, before next retry
-static int g_ntp_delay = 5;
+static int g_ntp_delay = 0;
 static bool g_synced;
 // time offset (time zone?) in seconds
 static int g_timeOffsetSeconds;
