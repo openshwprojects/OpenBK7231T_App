@@ -45,12 +45,13 @@ const char htmlFooterReturnToCfgLink[] = "<a href=\"cfg\">Return to cfg</a>";
 
 const char htmlFooterInfo[] =
 "<a target=\"_blank\" "
-"href=\"https://www.elektroda.com/rtvforum/"
-"viewtopic.php?p=19841301#19841301\">Read more</a> | "
+"href=\"https://www.elektroda.com/rtvforum/forum390.html\">Forum</a> | "
+"<a target=\"_blank\" "
+"href=\"https://www.youtube.com/@elektrodacom/videos\">YT</a> | "
 "<a target=\"_blank\" "
 "href=\"https://openbekeniot.github.io/webapp/devicesList.html\">Devices List</a> | "
 "<a target=\"_blank\" "
-"href=\"https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/commands.md\">Commands</a> | "
+"href=\"https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/README.md\">Docs</a> | "
 "<a target=\"_blank\" "
 "href=\"https://paypal.me/openshwprojects\">Support project</a><br>";
 
@@ -724,7 +725,7 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	if (http_checkUrlBase(urlStr, "cfg_loglevel_set")) return http_fn_cfg_loglevel_set(request);
 	if (http_checkUrlBase(urlStr, "cfg_mac")) return http_fn_cfg_mac(request);
 
-	if (http_checkUrlBase(urlStr, "flash_read_tool")) return http_fn_flash_read_tool(request);
+//	if (http_checkUrlBase(urlStr, "flash_read_tool")) return http_fn_flash_read_tool(request);
 	if (http_checkUrlBase(urlStr, "cmd_tool")) return http_fn_cmd_tool(request);
 	if (http_checkUrlBase(urlStr, "startup_command")) return http_fn_startup_command(request);
 	if (http_checkUrlBase(urlStr, "cfg_generic")) return http_fn_cfg_generic(request);

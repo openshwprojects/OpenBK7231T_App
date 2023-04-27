@@ -1357,97 +1357,97 @@ int http_fn_cfg_mac(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
-
-int http_fn_flash_read_tool(http_request_t* request) {
-	int len = 16;
-	int ofs = 1970176;
-	int res;
-	int rem;
-	int now;
-	int nowOfs;
-	int hex;
-	int i;
-	char tmpA[128];
-	char tmpB[64];
-
-	http_setup(request, httpMimeTypeHTML);
-	http_html_start(request, "Flash read");
-	poststr_h4(request, "Flash Read Tool");
-	if (http_getArg(request->url, "hex", tmpA, sizeof(tmpA))) {
-		hex = atoi(tmpA);
-	}
-	else {
-		hex = 0;
-	}
-
-	if (http_getArg(request->url, "offset", tmpA, sizeof(tmpA)) &&
-		http_getArg(request->url, "len", tmpB, sizeof(tmpB))) {
-		unsigned char buffer[128];
-		len = atoi(tmpB);
-		ofs = atoi(tmpA);
-		hprintf255(request, "Memory at %i with len %i reads: ", ofs, len);
-		poststr(request, "<br>");
-
-		///res = bekken_hal_flash_read (ofs, buffer,len);
-		//sprintf(tmpA,"Result %i",res);
-	//	strcat(outbuf,tmpA);
-	///	strcat(outbuf,"<br>");
-
-		nowOfs = ofs;
-		rem = len;
-		while (1) {
-			if (rem > sizeof(buffer)) {
-				now = sizeof(buffer);
-			}
-			else {
-				now = rem;
-			}
-#if PLATFORM_XR809
-			//uint32_t flash_read(uint32_t flash, uint32_t addr,void *buf, uint32_t size)
-#define FLASH_INDEX_XR809 0
-			res = flash_read(FLASH_INDEX_XR809, nowOfs, buffer, now);
-#elif PLATFORM_BL602
-
-#elif PLATFORM_W600 || PLATFORM_W800
-
-#else
-			res = bekken_hal_flash_read(nowOfs, buffer, now);
-#endif
-			for (i = 0; i < now; i++) {
-				unsigned char val = buffer[i];
-				if (!hex && isprint(val)) {
-					hprintf255(request, "'%c' ", val);
-				}
-				else {
-					hprintf255(request, "%02X ", val);
-				}
-			}
-			rem -= now;
-			nowOfs += now;
-			if (rem <= 0) {
-				break;
-			}
-		}
-
-		poststr(request, "<br>");
-	}
-	poststr(request, "<form action=\"/flash_read_tool\">");
-
-	poststr(request, "<input type=\"checkbox\" id=\"hex\" name=\"hex\" value=\"1\"");
-	if (hex) {
-		poststr(request, " checked");
-	}
-	poststr(request, "><label for=\"hex\">Show all hex?</label><br>");
-
-	add_label_numeric_field(request, "Offset", "offset", ofs, "");
-	add_label_numeric_field(request, "Length", "len", len, "<br>");
-	poststr(request, SUBMIT_AND_END_FORM);
-
-	poststr(request, htmlFooterReturnToCfgLink);
-	http_html_end(request);
-	poststr(request, NULL);
-	return 0;
-}
+//
+//int http_fn_flash_read_tool(http_request_t* request) {
+//	int len = 16;
+//	int ofs = 1970176;
+//	int res;
+//	int rem;
+//	int now;
+//	int nowOfs;
+//	int hex;
+//	int i;
+//	char tmpA[128];
+//	char tmpB[64];
+//
+//	http_setup(request, httpMimeTypeHTML);
+//	http_html_start(request, "Flash read");
+//	poststr_h4(request, "Flash Read Tool");
+//	if (http_getArg(request->url, "hex", tmpA, sizeof(tmpA))) {
+//		hex = atoi(tmpA);
+//	}
+//	else {
+//		hex = 0;
+//	}
+//
+//	if (http_getArg(request->url, "offset", tmpA, sizeof(tmpA)) &&
+//		http_getArg(request->url, "len", tmpB, sizeof(tmpB))) {
+//		unsigned char buffer[128];
+//		len = atoi(tmpB);
+//		ofs = atoi(tmpA);
+//		hprintf255(request, "Memory at %i with len %i reads: ", ofs, len);
+//		poststr(request, "<br>");
+//
+//		///res = bekken_hal_flash_read (ofs, buffer,len);
+//		//sprintf(tmpA,"Result %i",res);
+//	//	strcat(outbuf,tmpA);
+//	///	strcat(outbuf,"<br>");
+//
+//		nowOfs = ofs;
+//		rem = len;
+//		while (1) {
+//			if (rem > sizeof(buffer)) {
+//				now = sizeof(buffer);
+//			}
+//			else {
+//				now = rem;
+//			}
+//#if PLATFORM_XR809
+//			//uint32_t flash_read(uint32_t flash, uint32_t addr,void *buf, uint32_t size)
+//#define FLASH_INDEX_XR809 0
+//			res = flash_read(FLASH_INDEX_XR809, nowOfs, buffer, now);
+//#elif PLATFORM_BL602
+//
+//#elif PLATFORM_W600 || PLATFORM_W800
+//
+//#else
+//			res = bekken_hal_flash_read(nowOfs, buffer, now);
+//#endif
+//			for (i = 0; i < now; i++) {
+//				unsigned char val = buffer[i];
+//				if (!hex && isprint(val)) {
+//					hprintf255(request, "'%c' ", val);
+//				}
+//				else {
+//					hprintf255(request, "%02X ", val);
+//				}
+//			}
+//			rem -= now;
+//			nowOfs += now;
+//			if (rem <= 0) {
+//				break;
+//			}
+//		}
+//
+//		poststr(request, "<br>");
+//	}
+//	poststr(request, "<form action=\"/flash_read_tool\">");
+//
+//	poststr(request, "<input type=\"checkbox\" id=\"hex\" name=\"hex\" value=\"1\"");
+//	if (hex) {
+//		poststr(request, " checked");
+//	}
+//	poststr(request, "><label for=\"hex\">Show all hex?</label><br>");
+//
+//	add_label_numeric_field(request, "Offset", "offset", ofs, "");
+//	add_label_numeric_field(request, "Length", "len", len, "<br>");
+//	poststr(request, SUBMIT_AND_END_FORM);
+//
+//	poststr(request, htmlFooterReturnToCfgLink);
+//	http_html_end(request);
+//	poststr(request, NULL);
+//	return 0;
+//}
 const char* CMD_GetResultString(commandResult_t r) {
 	if (r == CMD_RES_OK)
 		return "OK";
@@ -1976,7 +1976,7 @@ int http_fn_cfg(http_request_t* request) {
 	postFormAction(request, "ha_cfg", "Home Assistant Configuration");
 	postFormAction(request, "ota", "OTA (update software by WiFi)");
 	postFormAction(request, "cmd_tool", "Execute custom command");
-	postFormAction(request, "flash_read_tool", "Flash Read Tool");
+	//postFormAction(request, "flash_read_tool", "Flash Read Tool");
 	postFormAction(request, "startup_command", "Change startup command text");
 
 #if 0
