@@ -12,7 +12,8 @@
 
 #include "drv_bp5758d.h"
 
-static byte g_chosenCurrent = BP5758D_14MA;
+static byte g_chosenCurrent_rgb = BP5758D_14MA;
+static byte g_chosenCurrent_cw = BP5758D_14MA;
 
 static softI2C_t g_softI2C;
 // allow user to select current by index? maybe, not yet
@@ -20,13 +21,34 @@ static softI2C_t g_softI2C;
 
 bool bIsSleeping = false; //Save sleep state of Lamp
 
-static void BP5758D_SetCurrent(byte curVal) {
+#define CONVERT_CURRENT_BP5758D(curVal) (curVal>63) ? (curVal+34) : curVal;
+
+static void BP5758D_WriteCurrents() {
+	int i;
+	int srcIndex;
+	byte c;
+
+	// Set currents for OUT1-OUT5
+	for (i = 0; i < 5; i++) {
+		srcIndex = g_cfg.ledRemap.ar[i];
+		if (srcIndex < 3) {
+			c = g_chosenCurrent_rgb;
+		}
+		else {
+			c = g_chosenCurrent_cw;
+		}
+		Soft_I2C_WriteByte(&g_softI2C, c);
+	}
+}
+static void BP5758D_SetCurrent(byte curValRGB, byte curValCW) {
+
 	Soft_I2C_Stop(&g_softI2C);
 
 	usleep(SM2135_DELAY);
 	
 	// here is a conversion from human-readable format to BP's format
-	g_chosenCurrent = (curVal>63) ? (curVal+34) : curVal;
+	g_chosenCurrent_rgb = CONVERT_CURRENT_BP5758D(curValRGB);
+	g_chosenCurrent_cw = CONVERT_CURRENT_BP5758D(curValCW);
 	// That assumed that user knows the strange BP notation
 	//g_chosenCurrent = curVal;
 
@@ -34,12 +56,7 @@ static void BP5758D_SetCurrent(byte curVal) {
     Soft_I2C_Start(&g_softI2C, BP5758D_ADDR_SETUP);
     // Output enabled: enable all outputs since we're using a RGBCW light
     Soft_I2C_WriteByte(&g_softI2C, BP5758D_ENABLE_OUTPUTS_ALL);
-    // Set currents for OUT1-OUT5
-    Soft_I2C_WriteByte(&g_softI2C,g_chosenCurrent);
-    Soft_I2C_WriteByte(&g_softI2C,g_chosenCurrent);
-    Soft_I2C_WriteByte(&g_softI2C,g_chosenCurrent);
-    Soft_I2C_WriteByte(&g_softI2C,g_chosenCurrent);
-    Soft_I2C_WriteByte(&g_softI2C,g_chosenCurrent);
+	BP5758D_WriteCurrents();
     Soft_I2C_Stop(&g_softI2C);
 	usleep(SM2135_DELAY);
 }
@@ -56,11 +73,7 @@ static void BP5758D_PreInit() {
     // Output enabled: enable all outputs since we're using a RGBCW light
     Soft_I2C_WriteByte(&g_softI2C, BP5758D_ENABLE_OUTPUTS_ALL);
     // Set currents for OUT1-OUT5
-    Soft_I2C_WriteByte(&g_softI2C,g_chosenCurrent); //TODO: Make this configurable from webapp / console
-    Soft_I2C_WriteByte(&g_softI2C,g_chosenCurrent);
-    Soft_I2C_WriteByte(&g_softI2C,g_chosenCurrent);
-    Soft_I2C_WriteByte(&g_softI2C,g_chosenCurrent);
-    Soft_I2C_WriteByte(&g_softI2C,g_chosenCurrent);
+	BP5758D_WriteCurrents();
     // Set grayscale levels ouf all outputs to 0
     Soft_I2C_WriteByte(&g_softI2C,0x00);
     Soft_I2C_WriteByte(&g_softI2C,0x00);
@@ -129,17 +142,18 @@ void BP5758D_Write(float *rgbcw) {
 // https://user-images.githubusercontent.com/19175445/193464004-d5e8072b-d7a8-4950-8f06-118c01796616.png
 // https://imgur.com/a/VKM6jOb
 static commandResult_t BP5758D_Current(const void *context, const char *cmd, const char *args, int flags){
-	byte val;
+	byte valRGB, valCW;
 	Tokenizer_TokenizeString(args,0);
 	// following check must be done after 'Tokenizer_TokenizeString',
 	// so we know arguments count in Tokenizer. 'cmd' argument is
 	// only for warning display
-	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	val = Tokenizer_GetArgInteger(0);
+	valRGB = Tokenizer_GetArgInteger(0);
+	valCW = Tokenizer_GetArgInteger(1);
 	// reinit bulb
-	BP5758D_SetCurrent(val);
+	BP5758D_SetCurrent(valRGB,valCW);
 	return CMD_RES_OK;
 }
 
@@ -147,7 +161,7 @@ static commandResult_t BP5758D_Current(const void *context, const char *cmd, con
 // BP5758D_RGBCW FF00000000
 //
 // to init a current value at startup - short startup command
-// backlog startDriver BP5758D; BP5758D_Current 14; 
+// backlog startDriver BP5758D; BP5758D_Current 14 14; 
 void BP5758D_Init() {
 	// default setting (applied only if none was applied earlier)
 	CFG_SetDefaultLEDRemap(0, 1, 2, 3, 4);
@@ -167,8 +181,8 @@ void BP5758D_Init() {
 	//cmddetail:"fn":"BP5758D_Map","file":"driver/drv_bp5758d.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("BP5758D_Map", CMD_LEDDriver_Map, NULL);
-	//cmddetail:{"name":"BP5758D_Current","args":"[MaxCurrent]",
-	//cmddetail:"descr":"Sets the maximum current limit for BP5758D driver",
+	//cmddetail:{"name":"BP5758D_Current","args":"[MaxCurrentRGB][MaxCurrentCW]",
+	//cmddetail:"descr":"Sets the maximum current limit for BP5758D driver, first value is for rgb and second for cw",
 	//cmddetail:"fn":"BP5758D_Current","file":"driver/drv_bp5758d.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("BP5758D_Current", BP5758D_Current, NULL);

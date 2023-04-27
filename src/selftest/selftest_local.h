@@ -62,6 +62,8 @@ inline const char *va(const char *fmt, ...) {
 }
 
 
+void Test_Commands_Startup();
+void Test_TwoPWMsOneChannel();
 void Test_ClockEvents();
 void Test_Commands_Channels();
 void Test_LEDDriver();
@@ -97,6 +99,8 @@ void Test_CFG_Via_HTTP();
 void Test_Demo_ButtonScrollingChannelValues();
 void Test_Demo_ButtonToggleGroup();
 void Test_Role_ToggleAll_2();
+void Test_WaitFor();
+void Test_IF_Inside_Backlog();
 
 void Test_GetJSONValue_Setup(const char *text);
 void Test_FakeHTTPClientPacket_GET(const char *tg);

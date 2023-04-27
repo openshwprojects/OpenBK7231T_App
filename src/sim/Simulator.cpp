@@ -29,7 +29,7 @@ CSimulator::CSimulator() {
 	activeTool = 0;
 	Window = 0;
 	Context = 0;
-	WindowFlags = SDL_WINDOW_OPENGL;
+	WindowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
 	Running = 1;
 	FullScreen = 0;
 	//setTool(new Tool_Wire());
@@ -129,6 +129,9 @@ void CSimulator::drawWindow() {
 		else if (Event.type == SDL_WINDOWEVENT) {
 			switch (Event.window.event) {
 
+			case SDL_WINDOWEVENT_RESIZED:   // exit game
+				SDL_GetWindowSize(Window, &WinWidth, &WinHeight);
+				break;
 			case SDL_WINDOWEVENT_CLOSE:   // exit game
 				onUserClose();
 				break;
@@ -246,7 +249,7 @@ bool CSimulator::createSimulation(bool bDemo) {
 		sim->createDemoOnlyWB3S();
 	}
 	SIM_SetupEmptyFlashModeNoFile();
-	SIM_DoFreshOBKBoot();
+	SIM_ClearOBK(0);
 
 	return false;
 }
@@ -280,9 +283,7 @@ bool CSimulator::loadSimulation(const char *s) {
 	project = saveLoad->loadProjectFile(s);
 	sim = saveLoad->loadSimulationFromFile(simPath.c_str());
 	recents->registerAndSave(projectPath.c_str());
-	SIM_ClearOBK();
-	SIM_SetupFlashFileReading(memPath.c_str());
-	SIM_DoFreshOBKBoot();
+	SIM_ClearOBK(memPath.c_str());
 	sim->recalcBounds();
 	bSchematicModified = false;
 

@@ -4,7 +4,7 @@
 
 void Test_Demo_ButtonToggleGroup() {
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 
 	PIN_SetPinRoleForPinIndex(1, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(1, 1);

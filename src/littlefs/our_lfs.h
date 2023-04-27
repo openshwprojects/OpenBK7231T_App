@@ -13,12 +13,28 @@
 
 #if ENABLE_LITTLEFS
 
+#if PLATFORM_BK7231T
 // start 0x1000 after OTA addr
 #define LFS_BLOCKS_START 0x133000
 #define LFS_BLOCKS_START_MIN 0x133000
-
 // end of OTA flash
 #define LFS_BLOCKS_END 0x1B3000
+#elif PLATFORM_BK7231N
+// start 0x1000 after OTA addr
+#define LFS_BLOCKS_START 0x12B000
+#define LFS_BLOCKS_START_MIN 0x12B000
+// end of OTA flash
+#define LFS_BLOCKS_END 0x1D0000
+#else
+// TODO
+// start 0x1000 after OTA addr
+#define LFS_BLOCKS_START 0x12B000
+#define LFS_BLOCKS_START_MIN 0x12B000
+// end of OTA flash
+#define LFS_BLOCKS_END 0x1AB000
+#endif
+
+
 // 512k MAX - i.e. no more that 0x80000
 // 0x8000 = 32k
 #define LFS_BLOCKS_MIN_LEN 0x4000

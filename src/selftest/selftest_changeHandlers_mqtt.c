@@ -4,7 +4,7 @@
 
 void Test_ChangeHandlers_MQTT() {
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	SIM_ClearAndPrepareForMQTTTesting("handlerTester","bekens");
 
 	// change handlers and MQTT

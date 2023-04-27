@@ -4,9 +4,9 @@
 
 void SIM_SimulateUserClickOnPin(int pin) {
 	SIM_SetSimulatedPinValue(pin, false);
-	Sim_RunMiliseconds(50, false);
+	Sim_RunMiliseconds(150, false);
 	SIM_SetSimulatedPinValue(pin, true);
-	Sim_RunMiliseconds(350, false);
+	Sim_RunMiliseconds(450, false);
 }
 // Another script demo for user
 /*
@@ -59,7 +59,7 @@ alias Do_Cycle_Press addChannel 10 1 1 3 1
 */
 void Test_Demo_FanCyclingRelays() {
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 
 	// Pins 3 and 4 are buttons
 	PIN_SetPinRoleForPinIndex(3, IOR_Button_ScriptOnly);

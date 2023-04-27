@@ -8,6 +8,8 @@ void UART_ConsumeBytes(int idx);
 void UART_AppendByteToCircularBuffer(int rc);
 void UART_SendByte(byte b);
 void UART_InitUART(int baud);
+void UART_AddCommands();
+void UART_RunEverySecond();
 
 // used to detect uart reinit/takeover by driver
 extern int g_uart_init_counter;

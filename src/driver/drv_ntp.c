@@ -56,7 +56,7 @@ static int g_ntp_socket = 0;
 static struct sockaddr_in g_address;
 static int adrLen;
 // in seconds, before next retry
-static int g_ntp_delay = 5;
+static int g_ntp_delay = 0;
 static bool g_synced;
 // time offset (time zone?) in seconds
 static int g_timeOffsetSeconds;
@@ -152,6 +152,18 @@ int NTP_GetMinute() {
 	}
 
 	return ltm->tm_min;
+}
+int NTP_GetSecond() {
+	struct tm *ltm;
+
+	// NOTE: on windows, you need _USE_32BIT_TIME_T 
+	ltm = localtime((time_t*)&g_ntpTime);
+
+	if (ltm == 0) {
+		return 0;
+	}
+
+	return ltm->tm_sec;
 }
 #if WINDOWS
 bool b_ntp_simulatedTime = false;
@@ -263,6 +275,10 @@ void NTP_SendRequest(bool bBlocking) {
          (struct sockaddr*)&g_address, adrLen) < 0) {
         addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP_SendRequest: Unable to send message");
         NTP_Shutdown();
+		// quick next frame attempt
+		if (g_secondsElapsed < 60) {
+			g_ntp_delay = 0;
+		}
         return;
     }
 
@@ -317,6 +333,10 @@ void NTP_CheckForReceive() {
     ltm = localtime((time_t*)&g_ntpTime);
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Local Time : %04d/%02d/%02d %02d:%02d:%02d",
             ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+
+	if (g_synced == false) {
+		EventHandlers_FireEvent(CMD_EVENT_NTP_STATE, 1);
+	}
     g_synced = true;
 #if 0
     //ptm = localtime (&g_ntpTime);

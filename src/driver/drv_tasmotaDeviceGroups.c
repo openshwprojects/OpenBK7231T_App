@@ -468,7 +468,7 @@ void DRV_DGR_processLightBrightness(byte brightness) {
 	
 }
 typedef struct dgrMmember_s {
-    struct sockaddr_in addr;
+	int ip;
 	uint16_t lastSeq;
 } dgrMember_t;
 
@@ -478,9 +478,12 @@ static int g_curDGRMembers = 0;
 static struct sockaddr_in addr;
 
 dgrMember_t *findMember() {
-	int i;
+	int i, ip;
+
+	ip = addr.sin_addr.s_addr;;
+
 	for(i = 0; i < g_curDGRMembers; i++) {
-		if(!memcmp(&g_dgrMembers[i].addr, &addr,sizeof(addr))) {
+		if(g_dgrMembers[i].ip == ip) {
 			return &g_dgrMembers[i];
 		}
 	}
@@ -488,7 +491,7 @@ dgrMember_t *findMember() {
 	if(i>=MAX_DGR_MEMBERS)
 		return 0;
 	g_curDGRMembers ++;
-	memcpy(&g_dgrMembers[i].addr,&addr,sizeof(addr));
+	g_dgrMembers[i].ip = ip;
 	g_dgrMembers[i].lastSeq = 0;
 	return &g_dgrMembers[i];
 }
@@ -498,22 +501,28 @@ int DGR_CheckSequence(uint16_t seq) {
 	
 	m = findMember();
 	
-	if(m == 0)
+	if (m == 0) {
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "DGR_CheckSequence: no member found");
 		return 1;
+	}
+	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "DGR_CheckSequence: argument %i, last %i",(int)seq, (int)m->lastSeq);
 	
 	// make it work past wrap at
 	if((seq > m->lastSeq) || (seq+10 > m->lastSeq+10)) {
 		if(seq != (m->lastSeq+1)){
-			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Seq for %s skip %i->%i\n",inet_ntoa(m->addr.sin_addr), m->lastSeq, seq);
+			//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Seq for %s skip %i->%i\n",inet_ntoa(m->ip), m->lastSeq, seq);
 		}
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "Seq ok");
 		m->lastSeq = seq;
 		return 0;
 	}
 	if(seq + 16 < m->lastSeq) {
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "Seq Hard reset");
 		// hard reset
 		m->lastSeq = seq;
 		return 0;
 	}
+	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "Seq failed");
 	return 1;
 }
 
@@ -897,6 +906,7 @@ commandResult_t CMD_DGR_SendFixedColor(const void *context, const char *cmd, con
 void DRV_DGR_Init()
 {
 	memset(&g_dgrMembers[0],0,sizeof(g_dgrMembers));
+	g_curDGRMembers = 0;
 #if 0
 	DRV_DGR_StartThread();
 #else

@@ -164,7 +164,7 @@ static commandResult_t testJSON(const void * context, const char *cmd, const cha
 
 
 		root = cJSON_CreateObject();
-		cJSON_AddNumberToObject(root, "uptime", Time_getUpTimeSeconds());
+		cJSON_AddNumberToObject(root, "uptime", g_secondsElapsed);
 		cJSON_AddNumberToObject(root, "consumption_total", ra1 );
 		cJSON_AddNumberToObject(root, "consumption_last_hour",  ra2);
 		cJSON_AddNumberToObject(root, "consumption_stat_index", ra3);

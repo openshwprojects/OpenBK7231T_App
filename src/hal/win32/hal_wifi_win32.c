@@ -16,7 +16,7 @@ static void (*g_wifiStatusCallback)(int code);
 
 static char g_ipStr[32];
 
-void HAL_ConnectToWiFi(const char *ssid, const char *psk)
+void HAL_ConnectToWiFi(const char *ssid, const char *psk, obkStaticIP_t *ip)
 {
 	g_wifiStatusCallback(WIFI_STA_CONNECTED);
 }

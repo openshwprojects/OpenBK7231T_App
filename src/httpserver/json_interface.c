@@ -19,20 +19,21 @@
 #include <time.h>
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_local.h"
+#include "../driver/drv_bl_shared.h"
 
-void JSON_PrintKeyValue_String(void* request, jsonCb_t printer, const char *key, const char *value, bool bComma) {
+void JSON_PrintKeyValue_String(void* request, jsonCb_t printer, const char* key, const char* value, bool bComma) {
 	printer(request, "\"%s\":\"%s\"", key, value);
 	if (bComma) {
 		printer(request, ",");
 	}
 }
-void JSON_PrintKeyValue_Int(void* request, jsonCb_t printer, const char *key, int value, bool bComma) {
+void JSON_PrintKeyValue_Int(void* request, jsonCb_t printer, const char* key, int value, bool bComma) {
 	printer(request, "\"%s\":%i", key, value);
 	if (bComma) {
 		printer(request, ",");
 	}
 }
-void JSON_PrintKeyValue_Float(void* request, jsonCb_t printer, const char *key, float value, bool bComma) {
+void JSON_PrintKeyValue_Float(void* request, jsonCb_t printer, const char* key, float value, bool bComma) {
 	printer(request, "\"%s\":%f", key, value);
 	if (bComma) {
 		printer(request, ",");
@@ -116,10 +117,10 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 
 			// it looks like they include C and W in color
 			if (LED_IsLedDriverChipRunning() || numPWMs == 5) {
-				sprintf(buff32, "%i,%i,%i,%i,%i",(int)rgbcw[0], (int)rgbcw[1], (int)rgbcw[2], (int)rgbcw[3], (int)rgbcw[4]);
+				sprintf(buff32, "%i,%i,%i,%i,%i", (int)rgbcw[0], (int)rgbcw[1], (int)rgbcw[2], (int)rgbcw[3], (int)rgbcw[4]);
 			}
 			else {
-				sprintf(buff32,"%i,%i,%i", (int)rgbcw[0], (int)rgbcw[1], (int)rgbcw[2]);
+				sprintf(buff32, "%i,%i,%i", (int)rgbcw[0], (int)rgbcw[1], (int)rgbcw[2]);
 			}
 			JSON_PrintKeyValue_String(request, printer, "Color", buff32, true);
 			sprintf(buff32, "%i,%i,%i", (int)hsv[0], (int)hsv[1], (int)hsv[2]);
@@ -194,10 +195,9 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 
 
 static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
-	float power, factor, voltage, current, batterypercentage = 0;
+	float power, voltage, current, batterypercentage = 0;
 	float energy, energy_hour;
 
-	factor = 0; // TODO
 	voltage = DRV_GetReading(OBK_VOLTAGE);
 	current = DRV_GetReading(OBK_CURRENT);
 	power = DRV_GetReading(OBK_POWER);
@@ -223,11 +223,12 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 		if (OBK_IS_NAN(energy_hour)) {
 			energy_hour = 0;
 		}
+
 		printer(request, "{");
 		printer(request, "\"Power\": %f,", power);
-		printer(request, "\"ApparentPower\": 0,");
-		printer(request, "\"ReactivePower\": 0,");
-		printer(request, "\"Factor\":%f,", factor);
+		printer(request, "\"ApparentPower\": %f,", g_apparentPower);
+		printer(request, "\"ReactivePower\": %f,", g_reactivePower);
+		printer(request, "\"Factor\":%f,", g_powerFactor);
 		printer(request, "\"Voltage\":%f,", voltage);
 		printer(request, "\"Current\":%f,", current);
 		printer(request, "\"ConsumptionTotal\":%f,", energy);
@@ -259,7 +260,7 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 }
 */
 static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
-	float temperature, humidity;
+	float chan_val1, chan_val2;
 	int channel_1, channel_2, g_pin_1 = 0;
 	printer(request, ",");
 	if (DRV_IsRunning("SHT3X")) {
@@ -267,15 +268,15 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 		channel_1 = g_cfg.pins.channels[g_pin_1];
 		channel_2 = g_cfg.pins.channels2[g_pin_1];
 
-		temperature = CHANNEL_GetFloat(channel_1) / 10.0f;
-		humidity = CHANNEL_GetFloat(channel_2);
+		chan_val1 = CHANNEL_GetFloat(channel_1) / 10.0f;
+		chan_val2 = CHANNEL_GetFloat(channel_2);
 
 		// writer header
 		printer(request, "\"SHT3X\":");
 		// following check will clear NaN values
 		printer(request, "{");
-		printer(request, "\"Temperature\": %.1f,", temperature);
-		printer(request, "\"Humidity\": %.0f", humidity);
+		printer(request, "\"Temperature\": %.1f,", chan_val1);
+		printer(request, "\"Humidity\": %.0f", chan_val2);
 		// close ENERGY block
 		printer(request, "},");
 	}
@@ -284,21 +285,42 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 		channel_1 = g_cfg.pins.channels[g_pin_1];
 		channel_2 = g_cfg.pins.channels2[g_pin_1];
 
-		temperature = CHANNEL_GetFloat(channel_1) / 10.0f;
-		humidity = CHANNEL_GetFloat(channel_2);
+		chan_val1 = CHANNEL_GetFloat(channel_1) / 10.0f;
+		chan_val2 = CHANNEL_GetFloat(channel_2);
 
 		// writer header
 		printer(request, "\"CHT8305\":");
 		// following check will clear NaN values
 		printer(request, "{");
-		printer(request, "\"Temperature\": %.1f,", temperature);
-		printer(request, "\"Humidity\": %.0f", humidity);
+		printer(request, "\"Temperature\": %.1f,", chan_val1);
+		printer(request, "\"Humidity\": %.0f", chan_val2);
+		// close ENERGY block
+		printer(request, "},");
+	}
+	if (DRV_IsRunning("SGP")) {
+		g_pin_1 = PIN_FindPinIndexForRole(IOR_SGP_DAT, g_pin_1);
+		channel_1 = g_cfg.pins.channels[g_pin_1];
+		channel_2 = g_cfg.pins.channels2[g_pin_1];
+
+		chan_val1 = CHANNEL_GetFloat(channel_1);
+		chan_val2 = CHANNEL_GetFloat(channel_2);
+
+		// writer header
+		printer(request, "\"SGP\":");
+		// following check will clear NaN values
+		printer(request, "{");
+		printer(request, "\"CO2\": %.0f,", chan_val1);
+		printer(request, "\"Tvoc\": %.0f", chan_val2);
 		// close ENERGY block
 		printer(request, "},");
 	}
 	return 0;
 }
-
+// Test command: http://192.168.0.159/cm?cmnd=STATUS%208
+// For a device without sensors, it returns (on Tasmota):
+/*
+{"StatusSNS":{"Time":"2023-04-10T10:19:55"}}
+*/
 static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bAppendHeader) {
 	char buff[20];
 
@@ -391,10 +413,10 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bA
 	printer(request, "{");
 	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", localtime(&localTime));
 	JSON_PrintKeyValue_String(request, printer, "Time", buff, true);
-	format_time(Time_getUpTimeSeconds(), buff, sizeof(buff));
+	format_time(g_secondsElapsed, buff, sizeof(buff));
 	JSON_PrintKeyValue_String(request, printer, "Uptime", buff, true);
 	//JSON_PrintKeyValue_String(request, printer, "Uptime", "30T02:59:30", true);
-	JSON_PrintKeyValue_Int(request, printer, "UptimeSec", Time_getUpTimeSeconds(), true);
+	JSON_PrintKeyValue_Int(request, printer, "UptimeSec", g_secondsElapsed, true);
 	JSON_PrintKeyValue_Int(request, printer, "Heap", 25, true);
 	JSON_PrintKeyValue_String(request, printer, "SleepMode", "Dynamic", true);
 	JSON_PrintKeyValue_Int(request, printer, "Sleep", 10, true);
@@ -439,11 +461,13 @@ static int http_tasmota_json_status_TIM(void* request, jsonCb_t printer) {
 	printer(request, "}");
 	return 0;
 }
+// Test command: http://192.168.0.159/cm?cmnd=STATUS%202
 static int http_tasmota_json_status_FWR(void* request, jsonCb_t printer) {
 
 	printer(request, "\"StatusFWR\":{");
 	JSON_PrintKeyValue_String(request, printer, "Version", DEVICENAME_PREFIX_FULL"_"USER_SW_VER, true);
 	JSON_PrintKeyValue_String(request, printer, "BuildDateTime", __DATE__" "__TIME__, true);
+	// NOTE: what is this value? It's not a reboot count
 	JSON_PrintKeyValue_Int(request, printer, "Boot", 7, true);
 	JSON_PrintKeyValue_String(request, printer, "Core", "0.0", true);
 	JSON_PrintKeyValue_String(request, printer, "SDK", "obk", true);
@@ -453,6 +477,26 @@ static int http_tasmota_json_status_FWR(void* request, jsonCb_t printer) {
 	printer(request, "}");
 	return 0;
 }
+static int http_obk_json_channels(void* request, jsonCb_t printer) {
+	int i;
+	int iCnt = 0;
+	char tmp[8];
+
+	printer(request, "{");
+	for (i = 0; i < CHANNEL_MAX; i++) {
+		if (CHANNEL_IsInUse(i)) {
+			if (iCnt) {
+				printer(request, ",");
+			}
+			iCnt++;
+			sprintf(tmp, "Ch%i", i);
+			JSON_PrintKeyValue_Int(request, printer, tmp, CHANNEL_Get(i), false);
+		}
+	}
+	printer(request, "}");
+	return 0;
+}
+// Test command: http://192.168.0.159/cm?cmnd=STATUS%204
 static int http_tasmota_json_status_MEM(void* request, jsonCb_t printer) {
 	printer(request, "\"StatusMEM\":{");
 	JSON_PrintKeyValue_Int(request, printer, "ProgramSize", 616, true);
@@ -479,7 +523,10 @@ static int http_tasmota_json_status_MEM(void* request, jsonCb_t printer) {
 	printer(request, "}");
 	return 0;
 }
+// Test command: http://192.168.0.159/cm?cmnd=STATUS%205
 static int http_tasmota_json_status_NET(void* request, jsonCb_t printer) {
+	char tmpMac[16];
+	HAL_GetMACStr(tmpMac);
 
 	printer(request, "\"StatusNET\":{");
 	JSON_PrintKeyValue_String(request, printer, "Hostname", CFG_GetShortDeviceName(), true);
@@ -488,7 +535,7 @@ static int http_tasmota_json_status_NET(void* request, jsonCb_t printer) {
 	JSON_PrintKeyValue_String(request, printer, "Subnetmask", "255.255.255.0", true);
 	JSON_PrintKeyValue_String(request, printer, "DNSServer1", "192.168.0.1", true);
 	JSON_PrintKeyValue_String(request, printer, "DNSServer2", "0.0.0.0", true);
-	JSON_PrintKeyValue_String(request, printer, "Mac", "10:52:1C:D7:9E:2C", true);
+	JSON_PrintKeyValue_String(request, printer, "Mac", tmpMac, true);
 	JSON_PrintKeyValue_Int(request, printer, "Webserver", 2, true);
 	JSON_PrintKeyValue_Int(request, printer, "HTTP_API", 1, true);
 	JSON_PrintKeyValue_Int(request, printer, "WifiConfig", 4, true);
@@ -496,6 +543,7 @@ static int http_tasmota_json_status_NET(void* request, jsonCb_t printer) {
 	printer(request, "}");
 	return 0;
 }
+// Test command: http://192.168.0.159/cm?cmnd=STATUS%206
 static int http_tasmota_json_status_MQT(void* request, jsonCb_t printer) {
 
 	printer(request, "\"StatusMQT\":{");
@@ -531,7 +579,7 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 
 	bRelayIndexingStartsWithZero = CHANNEL_HasChannelPinWithRoleOrRole(0, IOR_Relay, IOR_Relay_n);
 
-	get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
+	PIN_get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
 
 	if (LED_IsLEDRunning()) {
 		powerCode = LED_GetEnableAll();
@@ -605,9 +653,9 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	JSON_PrintKeyValue_String(request, printer, "GroupTopic", CFG_DeviceGroups_GetName(), true);
 	JSON_PrintKeyValue_String(request, printer, "OtaUrl", "https://github.com/openshwprojects/OpenBK7231T_App/releases/latest", true);
 	JSON_PrintKeyValue_String(request, printer, "RestartReason", "HardwareWatchdog", true);
-	JSON_PrintKeyValue_Int(request, printer, "Uptime", Time_getUpTimeSeconds(), true);
+	JSON_PrintKeyValue_Int(request, printer, "Uptime", g_secondsElapsed, true);
 	struct tm* ltm;
-	int ntpTime = NTP_GetCurrentTime() - Time_getUpTimeSeconds();
+	int ntpTime = NTP_GetCurrentTime() - g_secondsElapsed;
 	ltm = localtime((time_t*)&ntpTime);
 
 	if (ltm != 0) {
@@ -631,7 +679,7 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	printer(request, ",");
 
 
-
+	// Test command: http://192.168.0.159/cm?cmnd=STATUS%203
 	printer(request, "\"StatusLOG\":{");
 	printer(request, "\"SerialLog\":2,");
 	printer(request, "\"WebLog\":2,");
@@ -690,6 +738,7 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	return 0;
 }
 int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, jsonCb_t printer, int flags) {
+	int i;
 
 	if (!wal_strnicmp(cmd, "POWER", 5)) {
 
@@ -904,14 +953,14 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 	}
 	else if (!wal_strnicmp(cmd, "SetChannelType", 14)) {
 		// OBK-specific
-		int i = atoi(arg);
+		i = atoi(arg);
 		i = CHANNEL_GetType(i);
 
 		printer(request, "%i", i);
 	}
 	else if (!wal_strnicmp(cmd, "GetChannel", 10) || !wal_strnicmp(cmd, "SetChannel", 10) || !wal_strnicmp(cmd, "AddChannel", 10)) {
 		// OBK-specific
-		int i = atoi(arg);
+		i = atoi(arg);
 		i = CHANNEL_Get(i);
 
 		printer(request, "%i", i);
@@ -946,7 +995,7 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 	}
 	else if (!wal_strnicmp(cmd, "SSID1", 5)) {
 		printer(request, "{");
-		JSON_PrintKeyValue_String(request,printer,"SSID1", CFG_GetWiFiSSID(),false);
+		JSON_PrintKeyValue_String(request, printer, "SSID1", CFG_GetWiFiSSID(), false);
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "LED_Map", 7)) {
@@ -959,6 +1008,9 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		printer(request, "{");
 		printer(request, "\"Flags\":\"%ld\"", *((long int*)&g_cfg.genericFlags));
 		printer(request, "}");
+	}
+	else if (!wal_strnicmp(cmd, "Ch", 2)) {
+		http_obk_json_channels(request, printer);
 	}
 	else {
 		printer(request, "{");

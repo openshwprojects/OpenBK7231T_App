@@ -69,4 +69,15 @@ Do not add anything here, as it will overwritten with next rebuild.
 | BAT_Relay | Like Relay, but for a Battery driver that does Battery measurement. See [battery driver topic here](https://www.elektroda.com/rtvforum/topic3959103.html) |
 | TM1637_DIO | TM1637 LED display driver DIO pin. Setting all required TM1637 pins will autostart related driver |
 | TM1637_CLK | TM1637 LED display driver CLK pin. Setting all required TM1637 pins will autostart related driver |
+| BL0937_SEL_n | Inverted SEL alternative for BL0937. Choose only one, either SEL or SEL_n. SEL_n may be needed in rare cases. |
+| DoorSensorWithDeepSleep_pd | As DoorSensorWithDeepSleep, but with pulldown resistor |
+| SGP_CLK | SGP Quality Sensor Clock line. will autostart related driver |
+| SGP_DAT | SGP Quality Sensor Data line. will autostart related driver |
+| ADC_Button | Single ADC with multiple buttons connected.d |
+| GN6932_CLK | QQQ |
+| GN6932_DAT | QQQ |
+| GN6932_STB | QQQ |
+| TM1638_CLK | QQQ |
+| TM1638_DAT | QQQ |
+| TM1638_STB | QQQ |
 | Total_Options | Current total number of available IOR roles |

@@ -4,7 +4,7 @@
 
 void Test_Commands_Generic() {
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 
 	CMD_ExecuteCommand("MqttUser Tester", 0);
 	SELFTEST_ASSERT_STRING(CFG_GetMQTTUserName(), "Tester");

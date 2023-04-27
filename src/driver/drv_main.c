@@ -179,7 +179,7 @@ static driver_t g_drivers[] = {
 	{ "PWMToggler",	DRV_InitPWMToggler, NULL, DRV_Toggler_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 	//drvdetail:{"name":"DoorSensor",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"DoorSensor is using deep sleep to preserve battery. This is used for devices without TuyaMCU, where BK deep sleep and wakeup on GPIO is used. This drives requires you to set a DoorSensor pin. Change on door sensor pin wakes up the device. If there are no changes for some time, device goes to sleep. See example [here](https://www.elektroda.com/rtvforum/topic3960149.html).",
+	//drvdetail:"descr":"DoorSensor is using deep sleep to preserve battery. This is used for devices without TuyaMCU, where BK deep sleep and wakeup on GPIO is used. This drives requires you to set a DoorSensor pin. Change on door sensor pin wakes up the device. If there are no changes for some time, device goes to sleep. See example [here](https://www.elektroda.com/rtvforum/topic3960149.html). If your door sensor does not wake up in certain pos, please use DSEdge command (try all 3 options, default is 2). ",
 	//drvdetail:"requires":""}
 	{ "DoorSensor",		DoorDeepSleep_Init,		DoorDeepSleep_OnEverySecond,	DoorDeepSleep_AppendInformationToHTTPIndexPage, NULL, NULL, DoorDeepSleep_OnChannelChanged, false },
 	//drvdetail:{"name":"MAX72XX_Clock",
@@ -187,7 +187,11 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"Simple hardcoded driver for MAX72XX clock. Requirex manual start of MAX72XX driver with MAX72XX setup and NTP start.",
 	//drvdetail:"requires":""}
 	{ "MAX72XX_Clock",		DRV_MAX72XX_Clock_Init,		DRV_MAX72XX_Clock_OnEverySecond,	NULL, DRV_MAX72XX_Clock_RunFrame, NULL, NULL, false },
-
+	//drvdetail:{"name":"ADCButton",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"This allows you to connect multiple buttons on single ADC pin. Each button must have a different resistor value, this works by probing the voltage on ADC from a resistor divider. You need to select AB_Map first. See forum post for [details](https://www.elektroda.com/rtvforum/viewtopic.php?p=20541973#20541973).",
+	//drvdetail:"requires":""}
+	{ "ADCButton",		DRV_ADCButton_Init,		NULL,	NULL, DRV_ADCButton_RunFrame, NULL, NULL, false },
 #endif
 #ifdef ENABLE_DRIVER_LED
 	//drvdetail:{"name":"SM2135",
@@ -214,24 +218,50 @@ static driver_t g_drivers[] = {
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	//drvdetail:{"name":"CHT8305",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"TODO",
+	//drvdetail:"descr":"CHT8305 is a Temperature and Humidity sensor with I2C interface.",
 	//drvdetail:"requires":""}
 	{ "CHT8305",	CHT8305_Init,		CHT8305_OnEverySecond,		CHT8305_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	//drvdetail:{"name":"KP18068",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"KP18068 I2C LED driver",
+	//drvdetail:"requires":""}
+	{ "KP18068",		KP18068_Init,		NULL,			NULL, NULL, NULL, NULL, false },
 	//drvdetail:{"name":"MAX72XX",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"WIP driver",
+	//drvdetail:"descr":"MAX72XX LED matrix display driver with font and simple script interface.",
 	//drvdetail:"requires":""}
 	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, NULL, NULL, false },
 	//drvdetail:{"name":"TM1637",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK interface",
 	//drvdetail:"requires":""}
-	{ "TM1637",	TM1637_Init,		NULL,		NULL, NULL, NULL, NULL, false },
+	{ "TM1637",	TM1637_Init,		NULL,		NULL,  TMGN_RunQuickTick,NULL, NULL, false },
+	//drvdetail:{"name":"GN6932",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK/STB interface. See [this topic](https://www.elektroda.com/rtvforum/topic3971252.html) for details.",
+	//drvdetail:"requires":""}
+	{ "GN6932",	GN6932_Init,		NULL,		NULL, TMGN_RunQuickTick, NULL, NULL, false },
+	//drvdetail:{"name":"TM1638",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK/STB interface. TM1638 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20553628#20553628) for details.",
+	//drvdetail:"requires":""}
+	{ "TM1638",	TM1638_Init,		NULL,		NULL, TMGN_RunQuickTick,NULL,  NULL, false },
 	//drvdetail:{"name":"SHT3X",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Humidity/temperature sensor. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html)",
 	//drvdetail:"requires":""}
 	{ "SHT3X",	    SHT3X_Init,		SHT3X_OnEverySecond,		SHT3X_AppendInformationToHTTPIndexPage, NULL, SHT3X_StopDriver, NULL, false },
+	//drvdetail:{"name":"SGP",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"SGP Air Quality sensor with I2C interface.",
+	//drvdetail:"requires":""}
+	{ "SGP",	    SGP_Init,		SGP_OnEverySecond,		SGP_AppendInformationToHTTPIndexPage, NULL, SGP_StopDriver, NULL, false },
+
+	//drvdetail:{"name":"ShiftRegister",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"ShiftRegisterShiftRegisterShiftRegisterShiftRegister",
+	//drvdetail:"requires":""}
+	{ "ShiftRegister",	    Shift_Init,		Shift_OnEverySecond,		NULL, NULL, NULL, Shift_OnChannelChanged, false },
 #endif
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	//drvdetail:{"name":"Battery",
@@ -248,6 +278,7 @@ static driver_t g_drivers[] = {
 	{ "Bridge",     Bridge_driver_Init, NULL,                       NULL, Bridge_driver_QuickFrame, Bridge_driver_DeInit, Bridge_driver_OnChannelChanged, false }
 #endif
 };
+
 
 static const int g_numDrivers = sizeof(g_drivers) / sizeof(g_drivers[0]);
 
@@ -495,7 +526,7 @@ bool DRV_IsMeasuringBattery() {
 
 bool DRV_IsSensor() {
 #ifndef OBK_DISABLE_ALL_DRIVERS
-	return DRV_IsRunning("SHT3X") || DRV_IsRunning("CHT8305");
+	return DRV_IsRunning("SHT3X") || DRV_IsRunning("CHT8305") || DRV_IsRunning("SGP");
 #else
 	return false;
 #endif

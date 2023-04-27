@@ -63,6 +63,8 @@ float g_cfg_colorScaleToChannel = 100.0f/255.0f;
 int g_numBaseColors = 5;
 float g_brightness0to100 = 100.0f;
 float rgb_used_corr[3];   // RGB correction currently used
+// for smart dimmer, etc
+int led_defaultDimmerDeltaForHold = 10;
 
 // NOTE: in this system, enabling/disabling whole led light bulb
 // is not changing the stored channel and brightness values.
@@ -112,8 +114,15 @@ bool LED_IsLEDRunning()
 	if (LED_IsLedDriverChipRunning())
 		return true;
 
-	pwmCount = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
+	//pwmCount = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
+	// This will treat multiple PWMs on a single channel as one.
+	// Thanks to this users can turn for example RGB LED controller
+	// into high power 3-outputs single colors LED controller
+	PIN_get_Relay_PWM_Count(0, &pwmCount, 0);
+
 	if (pwmCount > 0)
+		return true;	
+	if (CFG_HasFlag(OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER))
 		return true;
 	return false;
 }
@@ -121,7 +130,11 @@ bool LED_IsLEDRunning()
 int isCWMode() {
 	int pwmCount;
 
-	pwmCount = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
+	//pwmCount = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
+	// This will treat multiple PWMs on a single channel as one.
+	// Thanks to this users can turn for example RGB LED controller
+	// into high power 3-outputs single colors LED controller
+	PIN_get_Relay_PWM_Count(0, &pwmCount, 0);
 
 	if(pwmCount == 2)
 		return 1;
@@ -136,8 +149,15 @@ int shouldSendRGB() {
 	// This flag also could be used for dummy Device Groups driver-module
 	if(CFG_HasFlag(OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER))
 		return 1;
+	// assume that LED driver = RGB (at least), usually RGBCW
+	if (LED_IsLedDriverChipRunning())
+		return true;
 
-	pwmCount = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
+	//pwmCount = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
+	// This will treat multiple PWMs on a single channel as one.
+	// Thanks to this users can turn for example RGB LED controller
+	// into high power 3-outputs single colors LED controller
+	PIN_get_Relay_PWM_Count(0, &pwmCount, 0);
 
 	// single colors and CW don't send rgb
 	if(pwmCount <= 2)
@@ -187,13 +207,28 @@ float led_lerpSpeedUnitsPerSecond = 200.f;
 float led_current_value_brightness = 0;
 float led_current_value_cold_or_warm = 0;
 
+
+void LED_CalculateEmulatedCool(float inCool, float *outRGB) {
+	outRGB[0] = inCool;
+	outRGB[1] = inCool;
+	outRGB[2] = inCool;
+}
+
+void LED_ApplyEmulatedCool(int firstChannelIndex, float chVal) {
+	float rgb[3];
+	LED_CalculateEmulatedCool(chVal, rgb);
+	CHANNEL_Set_FloatPWM(firstChannelIndex + 0, rgb[0], CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+	CHANNEL_Set_FloatPWM(firstChannelIndex + 1, rgb[1], CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+	CHANNEL_Set_FloatPWM(firstChannelIndex + 2, rgb[2], CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+}
+
 void LED_I2CDriver_WriteRGBCW(float* finalRGBCW) {
 #ifdef ENABLE_DRIVER_LED
 	if (CFG_HasFlag(OBK_FLAG_LED_EMULATE_COOL_WITH_RGB)) {
 		if (g_lightMode == Light_Temperature) {
 			// the format is RGBCW
 			// Emulate C with RGB
-			finalRGBCW[0] = finalRGBCW[1] = finalRGBCW[2] = finalRGBCW[3];
+			LED_CalculateEmulatedCool(finalRGBCW[3], finalRGBCW);
 			// C is unused
 			finalRGBCW[3] = 0;
 			// keep W unchanged
@@ -285,9 +320,7 @@ void LED_RunQuickColorLerp(int deltaMS) {
 				// emulated cool is -1 by default, so this block will only execute
 				// if the cool emulation was enabled
 				if (channelToUse == emulatedCool && g_lightMode == Light_Temperature) {
-					CHANNEL_Set_FloatPWM(firstChannelIndex + 0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-					CHANNEL_Set_FloatPWM(firstChannelIndex + 1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-					CHANNEL_Set_FloatPWM(firstChannelIndex + 2, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+					LED_ApplyEmulatedCool(firstChannelIndex, chVal);
 				}
 				else {
 					if (CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
@@ -460,9 +493,7 @@ void apply_smart_light() {
 					// emulated cool is -1 by default, so this block will only execute
 					// if the cool emulation was enabled
 					if (channelToUse == emulatedCool && g_lightMode == Light_Temperature) {
-						CHANNEL_Set_FloatPWM(firstChannelIndex + 0, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-						CHANNEL_Set_FloatPWM(firstChannelIndex + 1, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
-						CHANNEL_Set_FloatPWM(firstChannelIndex + 2, chVal, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
+						LED_ApplyEmulatedCool(firstChannelIndex, chVal);
 					}
 					else {
 						if (CFG_HasFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE)) {
@@ -675,7 +706,7 @@ void LED_SetBaseColorByIndex(int i, float f, bool bApply) {
 		apply_smart_light();
 	}
 }
-OBK_Publish_Result LED_SendCurrentLightMode() {
+OBK_Publish_Result LED_SendCurrentLightModeParam_TempOrColor() {
 
 	if(g_lightMode == Light_Temperature) {
 		return sendTemperatureChange();
@@ -818,13 +849,7 @@ static commandResult_t enableAll(const void *context, const char *cmd, const cha
 	//}
 	//return 0;
 }
-int LED_IsRunningDriver() {
-	if(PIN_CountPinsWithRoleOrRole(IOR_PWM,IOR_PWM_n))
-		return 1;
-	if(CFG_HasFlag(OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER))
-		return 1;
-	return 0;
-}
+
 float LED_GetDimmer() {
 	return g_brightness0to100;
 }
@@ -834,8 +859,6 @@ void LED_AddTemperature(int iVal, int wrapAroundInsteadOfClamp) {
 	float cur;
 
 	cur = led_temperature_current;
-
-	cur += iVal;
 
 	if (wrapAroundInsteadOfClamp == 2) {
 		// Ping pong mode
@@ -948,7 +971,7 @@ void LED_NextDimmerHold() {
 	// because it's easy to get confused if we set accidentally dimmer to 0
 	// and then are unable to turn on the bulb (because despite of led_enableAll 1
 	// the dimmer is 0 and anyColor * 0 gives 0)
-	LED_AddDimmer(10, 1, 2);
+	LED_AddDimmer(led_defaultDimmerDeltaForHold, 1, 2);
 }
 void LED_SetDimmer(int iVal) {
 
@@ -1334,6 +1357,14 @@ static commandResult_t lerpSpeed(const void *context, const char *cmd, const cha
 
 	return CMD_RES_OK;
 }
+static commandResult_t dimmerDelta(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
+	Tokenizer_TokenizeString(args, 0);
+
+	led_defaultDimmerDeltaForHold = Tokenizer_GetArgInteger(0);
+
+	return CMD_RES_OK;
+}
 static commandResult_t ctRange(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
 	Tokenizer_TokenizeString(args, 0);
@@ -1407,12 +1438,20 @@ float LED_GetHue() {
 	return g_hsv_h;
 }
 void NewLED_InitCommands(){
+	int pwmCount;
+
 	// set, but do not apply (force a refresh)
 	LED_SetTemperature(led_temperature_current,0);
+
+	PIN_get_Relay_PWM_Count(0, &pwmCount, 0);
 
 	// if this is CW, switch from default RGB to CW
 	if (isCWMode()) {
 		g_lightMode = Light_Temperature;
+	}
+	else if (pwmCount == 1 || pwmCount == 3) {
+		// if single color or RGB, force RGB
+		g_lightMode = Light_RGB;
 	}
 
 	//cmddetail:{"name":"led_dimmer","args":"[Value]",
@@ -1526,11 +1565,16 @@ void NewLED_InitCommands(){
 	//cmddetail:"fn":"rgb_gamma_control","file":"cmnds/cmd_rgbGamma.c","requires":"",
 	//cmddetail:"examples":"led_gammaCtrl on"}
     CMD_RegisterCommand("led_gammaCtrl", led_gamma_control, NULL);
-	//cmddetail:{"name":"CTRange","args":"ctRange",
-	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:{"name":"CTRange","args":"[MinRange][MaxRange]",
+	//cmddetail:"descr":"This sets the temperature range for display. Default is 154-500.",
+	//cmddetail:"fn":"ctRange","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("CTRange", ctRange, NULL);
+	//cmddetail:{"name":"DimmerDelta","args":"[DeltaValue]",
+	//cmddetail:"descr":"This sets the delta value for SmartDimmer/SmartButtonForLEDs hold event. This determines the amount of change of dimmer per hold event.",
+	//cmddetail:"fn":"dimmerDelta","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("DimmerDelta", dimmerDelta, NULL);
 }
 
 void NewLED_RestoreSavedStateIfNeeded() {

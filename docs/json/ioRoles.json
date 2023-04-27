@@ -512,6 +512,94 @@
     "driver": ""
   },
   {
+    "name": "BL0937_SEL_n",
+    "title": "TODO",
+    "descr": "Inverted SEL alternative for BL0937. Choose only one, either SEL or SEL_n. SEL_n may be needed in rare cases.",
+    "enum": "IOR_BL0937_SEL_n",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "DoorSensorWithDeepSleep_pd",
+    "title": "TODO",
+    "descr": "As DoorSensorWithDeepSleep, but with pulldown resistor",
+    "enum": "IOR_DoorSensorWithDeepSleep_pd",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "SGP_CLK",
+    "title": "TODO",
+    "descr": "SGP Quality Sensor Clock line. will autostart related driver",
+    "enum": "IOR_SGP_CLK",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "SGP_DAT",
+    "title": "TODO",
+    "descr": "SGP Quality Sensor Data line. will autostart related driver",
+    "enum": "IOR_SGP_DAT",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "ADC_Button",
+    "title": "TODO",
+    "descr": "Single ADC with multiple buttons connected.d",
+    "enum": "ADC_Button",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "GN6932_CLK",
+    "title": "TODO",
+    "descr": "QQQ",
+    "enum": "GN6932_CLK",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "GN6932_DAT",
+    "title": "TODO",
+    "descr": "QQQ",
+    "enum": "GN6932_DAT",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "GN6932_STB",
+    "title": "TODO",
+    "descr": "QQQ",
+    "enum": "GN6932_STB",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "TM1638_CLK",
+    "title": "TODO",
+    "descr": "QQQ",
+    "enum": "TM1638_CLK",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "TM1638_DAT",
+    "title": "TODO",
+    "descr": "QQQ",
+    "enum": "TM1638_DAT",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "TM1638_STB",
+    "title": "TODO",
+    "descr": "QQQ",
+    "enum": "TM1638_STB",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
     "name": "Total_Options",
     "title": "TODO",
     "descr": "Current total number of available IOR roles",

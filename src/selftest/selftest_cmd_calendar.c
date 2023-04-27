@@ -4,7 +4,7 @@
 
 void Test_Commands_Calendar() {
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 
 	CMD_ExecuteCommand("startDriver NTP", 0);
 	// set 2022, 06, 10, 11:27:34, Friday

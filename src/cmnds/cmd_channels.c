@@ -67,6 +67,36 @@ static commandResult_t CMD_SetChannelLabel(const void *context, const char *cmd,
 
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_Ch(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	int ch, val;
+	const char *p;
+	char type;
+
+	Tokenizer_TokenizeString(args, 0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	p = cmd + 2;
+	type = *p;
+	if (p == '+') {
+		p++;
+	}
+	ch = atoi(p);
+	val = Tokenizer_GetArgInteger(0);
+
+	if (type == '+') {
+		CHANNEL_Add(ch, val);
+	}
+	else {
+		CHANNEL_Set(ch, val, false);
+	}
+
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_SetChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int ch, val;
 
@@ -82,6 +112,25 @@ static commandResult_t CMD_SetChannel(const void *context, const char *cmd, cons
 	val = Tokenizer_GetArgInteger(1);
 
 	CHANNEL_Set(ch,val, false);
+
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_SetChannelFloat(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int ch;
+	float val;
+
+	Tokenizer_TokenizeString(args, 0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	ch = Tokenizer_GetArgInteger(0);
+	val = Tokenizer_GetArgFloat(1);
+
+	CHANNEL_Set_FloatPWM(ch, val, false);
 
 	return CMD_RES_OK;
 }
@@ -177,6 +226,7 @@ static commandResult_t CMD_SetPinRole(const void *context, const char *cmd, cons
 	roleIndex = PIN_ParsePinRoleName(role);
 	if(roleIndex == IOR_Total_Options) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "Unknown role");
+		return CMD_RES_BAD_ARGUMENT;
 	} else {
 		PIN_SetPinRoleForPinIndex(pin,roleIndex);
 	}
@@ -411,6 +461,11 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_SetChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SetChannel", CMD_SetChannel, NULL);
+	//cmddetail:{"name":"SetChannelFloat","args":"[ChannelIndex][ChannelValue]",
+	//cmddetail:"descr":"Sets a raw channel to given float value. Currently only used for LED PWM channels.",
+	//cmddetail:"fn":"CMD_SetChannelFloat","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("SetChannelFloat", CMD_SetChannelFloat, NULL);
 	//cmddetail:{"name":"ToggleChannel","args":"[ChannelIndex]",
 	//cmddetail:"descr":"Toggles given channel value. Non-zero becomes zero, zero becomes 1.",
 	//cmddetail:"fn":"CMD_ToggleChannel","file":"cmnds/cmd_channels.c","requires":"",
@@ -491,5 +546,10 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_SetChannelVisible","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetChannelVisible", CMD_SetChannelVisible, NULL);
+	//cmddetail:{"name":"Ch","args":"[InputValue]",
+	//cmddetail:"descr":"An alternate command to access channels. It returns all used channels in JSON format. The syntax is ChINDEX value, there is no space between Ch and channel index. It can be sent without value to poll channel values.",
+	//cmddetail:"fn":"CMD_Ch","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("Ch", CMD_Ch, NULL);
 
 }

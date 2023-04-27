@@ -24,8 +24,11 @@ static softI2C_t g_softI2C;
 commandResult_t SHT3X_Calibrate(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-	if (Tokenizer_GetArgsCount() < 2) {
-		ADDLOG_INFO(LOG_FEATURE_SENSOR, "Calibrate SHT: require Temp and Humidity args");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2))
+	{
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	g_caltemp = Tokenizer_GetArgFloat(0);

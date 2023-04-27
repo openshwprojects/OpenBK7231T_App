@@ -68,6 +68,9 @@ float changeSendThresholds[OBK_NUM_MEASUREMENTS] = {
 
 int changeSendAlwaysFrames = 60;
 int changeDoNotSendMinFrames = 5;
+float g_apparentPower = 0;
+float g_powerFactor = 0;
+float g_reactivePower = 0;
 
 void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 {
@@ -107,24 +110,19 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
             "<tr><td><b>Active Power</b></td><td style='text-align: right;'>");
     hprintf255(request, "%.1f</td><td>W</td>", lastReadings[OBK_POWER]);
 
-    float apparent_power =
-        lastReadings[OBK_VOLTAGE] * lastReadings[OBK_CURRENT];
     poststr(
         request,
         "<tr><td><b>Apparent Power</b></td><td style='text-align: right;'>");
-    hprintf255(request, "%.1f</td><td>VA</td>", apparent_power);
+    hprintf255(request, "%.1f</td><td>VA</td>", g_apparentPower);
 
-    float reactive_power =
-        sqrtf(powf(apparent_power, 2) - powf(lastReadings[OBK_POWER], 2));
     poststr(
         request,
         "<tr><td><b>Reactive Power</b></td><td style='text-align: right;'>");
-    hprintf255(request, "%.1f</td><td>var</td>", reactive_power);
+    hprintf255(request, "%.1f</td><td>var</td>", g_reactivePower);
 
     poststr(request,
             "<tr><td><b>Power Factor</b></td><td style='text-align: right;'>");
-    hprintf255(request, "%.2f</td><td></td>",
-               lastReadings[OBK_POWER] / apparent_power);
+    hprintf255(request, "%.2f</td><td></td>", g_powerFactor);
 
     if (NTP_IsTimeSynced()) {
         poststr(request, "<tr><td><b>Energy Today</b></td><td "
@@ -410,7 +408,33 @@ commandResult_t BL09XX_SetupConsumptionThreshold(const void *context, const char
 
     return CMD_RES_OK;
 }
+bool Channel_AreAllRelaysOpen() {
+	int i, role, ch;
 
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		role = g_cfg.pins.roles[i];
+		ch = g_cfg.pins.channels[i];
+		if (role == IOR_Relay) {
+			// this channel is high = relay is set
+			if (CHANNEL_Get(ch)) {
+				return false;
+			}
+		}
+		if (role == IOR_Relay_n) {
+			// this channel is low = relay_n is set
+			if (CHANNEL_Get(ch)==false) {
+				return false;
+			}
+		}
+		if (role == IOR_BridgeForward) {
+			// this channel is high = relay is set
+			if (CHANNEL_Get(ch)) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
 void BL_ProcessUpdate(float voltage, float current, float power,
 					  float frequency) 
 {
@@ -437,12 +461,30 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 		if (current < 0.0f)
 			current = 0.0f;
 	}
+	if (CFG_HasFlag(OBK_FLAG_POWER_FORCE_ZERO_IF_RELAYS_OPEN))
+	{
+		if (Channel_AreAllRelaysOpen()) {
+			power = 0;
+			current = 0;
+		}
+	}
 
     // those are final values, like 230V
     lastReadings[OBK_POWER] = power;
     lastReadings[OBK_VOLTAGE] = voltage;
     lastReadings[OBK_CURRENT] = current;
     lastReadingFrequency = frequency;
+
+	g_apparentPower =
+		lastReadings[OBK_VOLTAGE] * lastReadings[OBK_CURRENT];
+
+	g_reactivePower = (g_apparentPower <= fabsf(lastReadings[OBK_POWER])
+		? 0
+		: sqrtf(powf(g_apparentPower, 2) -
+			powf(lastReadings[OBK_POWER], 2)));
+
+	g_powerFactor =
+		(g_apparentPower == 0 ? 1 : lastReadings[OBK_POWER] / g_apparentPower);
 
     xPassedTicks = (int)(xTaskGetTickCount() - energyCounterStamp);
     if (xPassedTicks <= 0)
@@ -521,7 +563,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
             if ((energyCounterStatsJSONEnable == true) && (MQTT_IsReady() == true))
             {
                 root = cJSON_CreateObject();
-                cJSON_AddNumberToObject(root, "uptime", Time_getUpTimeSeconds());
+                cJSON_AddNumberToObject(root, "uptime", g_secondsElapsed);
                 cJSON_AddNumberToObject(root, "consumption_total", energyCounter );
                 cJSON_AddNumberToObject(root, "consumption_last_hour",  DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
                 cJSON_AddNumberToObject(root, "consumption_stat_index", energyCounterMinutesIndex);

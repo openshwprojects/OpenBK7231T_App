@@ -4,7 +4,7 @@
 
 void Test_NTP() {
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 
 	CMD_ExecuteCommand("startDriver NTP", 0);
 

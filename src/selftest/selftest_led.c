@@ -5,7 +5,7 @@
 void Test_LEDDriver_CW() {
 	int i;
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 
 	// CW bulb requires two PWMs - first on channel 1, second on channel 2
 	// NOTE: we also support case where first PWM is on channel 0, and second on 1
@@ -92,7 +92,7 @@ void Test_LEDDriver_CW() {
 
 void Test_LEDDriver_RGBCW() {
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 
 	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
 	PIN_SetPinChannelForPinIndex(24, 1);
@@ -163,7 +163,7 @@ void Test_LEDDriver_RGBCW() {
 }
 void Test_LEDDriver_RGB() {
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 
 	// RGB bulb requires three PWMs - first on channel 1, second on channel 2, third on channel 3
 	// NOTE: we also support case where first PWM is on channel 0, and second on 1

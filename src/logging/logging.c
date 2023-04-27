@@ -128,16 +128,53 @@ static struct tag_logMemory {
 static int initialised = 0;
 static int tcpLogStarted = 0;
 
+commandResult_t log_command(const void* context, const char* cmd, const char* args, int cmdFlags);
+
 #if PLATFORM_BEKEN
 // to get uart.h
 #include "command_line.h"
 
-#define UART_PORT UART2_PORT 
-#define UART_DEV_NAME UART2_DEV_NAME
-#define UART_PORT_INDEX 1 
+int UART_PORT = UART2_PORT;
+int UART_PORT_INDEX = 1;
+
+
+commandResult_t log_port(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int idx;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	idx = Tokenizer_GetArgInteger(0);
+	switch (idx) {
+	case 1:
+		UART_PORT = UART1_PORT;
+		UART_PORT_INDEX = 0;
+		break;
+	case 2:
+		UART_PORT = UART2_PORT;
+		UART_PORT_INDEX = 1;
+		break;
+	}
+
+	return CMD_RES_OK;
+}
 #endif
 
-commandResult_t log_command(const void* context, const char* cmd, const char* args, int cmdFlags);
+// Here is how you can get log print on UART1:
+/*
+// Enable "[UART] Enable UART command line"
+// this also can be done in flags, enable command line on UART1 at 115200 baud
+SetFlag 31 1
+// UART1 is RXD1/TXD1 which is used for programming and for TuyaMCU/BL0942,
+// but now we will set that UART1 is used for log
+logPort 1 
+*/
 
 static void initLog(void)
 {
@@ -169,6 +206,13 @@ static void initLog(void)
 	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("logdelay", log_command, NULL);
+#if PLATFORM_BEKEN
+	//cmddetail:{"name":"logport","args":"[Index]",
+	//cmddetail:"descr":"Allows you to change log output port. On Beken, the UART1 is used for flashing and for TuyaMCU/BL0942, while UART2 is for log. Sometimes it might be easier for you to have log on UART1, so now you can just use this command like backlog uartInit 115200; logport 1 to enable logging on UART1..",
+	//cmddetail:"fn":"log_port","file":"logging/logging.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("logport", log_port, NULL);
+#endif
 
 	bk_printf("Commands registered!\r\n");
 	bk_printf("initLog() done!\r\n");

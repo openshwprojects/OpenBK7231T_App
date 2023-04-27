@@ -4,7 +4,7 @@
 
 void Test_Command_If() {
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 
 	CMD_ExecuteCommand("if 1 then \"setChannel 1 1521\"", 0);
 	SELFTEST_ASSERT_CHANNEL(1, 1521);
@@ -29,6 +29,27 @@ void Test_Command_If() {
 	CMD_ExecuteCommand("if $CH11>$CH10 then \"setChannel 1 6000\"", 0);
 	SELFTEST_ASSERT_CHANNEL(1, 6000);
 
+	// test OR and AND
+	CMD_ExecuteCommand("setChannel 20 0", 0);
+	CMD_ExecuteCommand("setChannel 21 0", 0);
+	CMD_ExecuteCommand("setChannel 23 0", 0);
+	SELFTEST_ASSERT_CHANNEL(23, 0);
+	CMD_ExecuteCommand("if $CH20&&$CH21 then \"setChannel 23 123\"", 0);
+	SELFTEST_ASSERT_CHANNEL(23, 0);
+	CMD_ExecuteCommand("if $CH20||$CH21 then \"setChannel 23 123\"", 0);
+	SELFTEST_ASSERT_CHANNEL(23, 0);
+	CMD_ExecuteCommand("setChannel 20 1", 0);
+	CMD_ExecuteCommand("if $CH20||$CH21 then \"setChannel 23 123\"", 0);
+	SELFTEST_ASSERT_CHANNEL(23, 123);
+	CMD_ExecuteCommand("if $CH20&&$CH21 then \"setChannel 23 234\"", 0);
+	SELFTEST_ASSERT_CHANNEL(23, 123);
+	CMD_ExecuteCommand("if $CH20&&$CH21 then \"setChannel 23 234\"", 0);
+	SELFTEST_ASSERT_CHANNEL(23, 123);
+	CMD_ExecuteCommand("setChannel 21 1", 0);
+	CMD_ExecuteCommand("if $CH20&&$CH21 then \"setChannel 23 234\"", 0);
+	SELFTEST_ASSERT_CHANNEL(23, 234);
+
+
 	// cause error
 	//SELFTEST_ASSERT_CHANNEL(1, 666);
 
@@ -36,7 +57,7 @@ void Test_Command_If() {
 
 void Test_Command_If_Else() {
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 
 	CMD_ExecuteCommand("if 1 then \"setChannel 1 1111\" else \"setChannel 2 2222\"", 0);
 	SELFTEST_ASSERT_CHANNEL(1, 1111);

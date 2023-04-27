@@ -43,7 +43,7 @@ void SIM_SendFakeDGRPowerPacketToSelf_Next(const char *groupName, int powerBits,
 void Test_DeviceGroups_TwoRelays() {
 	const char *testName = "win_dblR3l4yTst";
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(9, 1);
 
@@ -91,7 +91,7 @@ void Test_DeviceGroups_TwoRelays() {
 
 void Test_DeviceGroups_RGB() {
 	const char *testName = "win_RGByTst";
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
 	PIN_SetPinChannelForPinIndex(24, 1);
 

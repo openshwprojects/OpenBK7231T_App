@@ -10,6 +10,7 @@
 #include "../hal/hal_adc.h"
 #include "../hal/hal_flashVars.h"
 
+int cmd_uartInitIndex = 0;
 
 
 #ifdef ENABLE_LITTLEFS
@@ -118,6 +119,23 @@ static commandResult_t CMD_ScheduleHADiscovery(const void* context, const char* 
 	}
 
 	Main_ScheduleHomeAssistantDiscovery(delay);
+
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_SetFlag(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int flag, val;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	flag = Tokenizer_GetArgInteger(0);
+	val = Tokenizer_GetArgInteger(1);
+	CFG_SetFlag(flag, val);
 
 	return CMD_RES_OK;
 }
@@ -235,6 +253,13 @@ static commandResult_t CMD_ClearConfig(const void* context, const char* cmd, con
 
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_ClearIO(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	CFG_ClearIO();
+	CFG_Save_IfThereArePendingChanges();
+
+	return CMD_RES_OK;
+}
 // setChannel 1 123
 // echo First channel is $CH1 and this is the test
 // will print echo First channel is 123 and this is the test
@@ -247,6 +272,56 @@ static commandResult_t CMD_Echo(const void* context, const char* cmd, const char
 	Tokenizer_TokenizeString(args, TOKENIZER_ALTERNATE_EXPAND_AT_START | TOKENIZER_FORCE_SINGLE_ARGUMENT_MODE);
 	ADDLOG_INFO(LOG_FEATURE_CMD, Tokenizer_GetArgFrom(0));
 #endif
+
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_StartupCommand(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	const char *cmdToSet;
+
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	cmdToSet = Tokenizer_GetArg(0);
+	if (Tokenizer_GetArgIntegerDefault(1, 0) == 1) {
+		CFG_SetShortStartupCommand_AndExecuteNow(cmdToSet);
+	}
+	else {
+		CFG_SetShortStartupCommand(cmdToSet);
+	}
+
+
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_PingHost(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	CFG_SetPingHost(Tokenizer_GetArg(0));
+
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_PingInterval(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	CFG_SetPingIntervalSeconds(Tokenizer_GetArgInteger(0));
 
 	return CMD_RES_OK;
 }
@@ -289,15 +364,14 @@ static commandResult_t CMD_SafeMode(const void* context, const char* cmd, const 
 
 
 
-int cmd_uartInitIndex = 0;
-void CMD_UART_Init() {
+void CMD_UARTConsole_Init() {
 #if PLATFORM_BEKEN
 	UART_InitUART(115200);
 	cmd_uartInitIndex = g_uart_init_counter;
 	UART_InitReceiveRingBuffer(512);
 #endif
 }
-void CMD_UART_Run() {
+void CMD_UARTConsole_Run() {
 #if PLATFORM_BEKEN
 	char a;
 	int i;
@@ -337,11 +411,11 @@ void CMD_RunUartCmndIfRequired() {
 #if PLATFORM_BEKEN
 	if (CFG_HasFlag(OBK_FLAG_CMD_ACCEPT_UART_COMMANDS)) {
 		if (cmd_uartInitIndex && cmd_uartInitIndex == g_uart_init_counter) {
-			CMD_UART_Run();
+			CMD_UARTConsole_Run();
 		}
 	}
 #endif
-	}
+}
 
 // run an aliased command
 static commandResult_t runcmd(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -352,6 +426,9 @@ static commandResult_t runcmd(const void* context, const char* cmd, const char* 
 	//       p++;
 	   //}
 	//   if (*p) p++;
+	if (*args) {
+		return CMD_ExecuteCommandArgs(c, args, cmdFlags);
+	}
 	return CMD_ExecuteCommand(c, cmdFlags);
 }
 
@@ -433,6 +510,11 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_ClearConfig","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("clearConfig", CMD_ClearConfig, NULL);
+	//cmddetail:{"name":"clearIO","args":"",
+	//cmddetail:"descr":"Clears all pins setting, channels settings",
+	//cmddetail:"fn":"CMD_ClearIO","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("clearIO", CMD_ClearIO, NULL);
 	//cmddetail:{"name":"clearAll","args":"",
 	//cmddetail:"descr":"Clears config and all remaining features, like runtime scripts, events, etc",
 	//cmddetail:"fn":"CMD_ClearAll","file":"cmnds/cmd_main.c","requires":"",
@@ -483,6 +565,11 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_Flags","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("flags", CMD_Flags, NULL);
+	//cmddetail:{"name":"SetFlag","args":"[FlagIndex][0or1]",
+	//cmddetail:"descr":"Sets given flag",
+	//cmddetail:"fn":"CMD_SetFlag","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("SetFlag", CMD_SetFlag, NULL);
 	//cmddetail:{"name":"ClearNoPingTime","args":"",
 	//cmddetail:"descr":"Command for ping watchdog; it sets the 'time since last ping reply' to 0 again",
 	//cmddetail:"fn":"CMD_ClearNoPingTime","file":"cmnds/cmd_main.c","requires":"",
@@ -503,22 +590,42 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_SafeMode","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SafeMode", CMD_SafeMode, NULL);
-
+	//cmddetail:{"name":"PingInterval","args":"[IntegerSeconds]",
+	//cmddetail:"descr":"Sets the interval between ping attempts for ping watchdog mechanism",
+	//cmddetail:"fn":"CMD_PingInterval","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("PingInterval", CMD_PingInterval, NULL);
+	//cmddetail:{"name":"PingHost","args":"[IPStr]",
+	//cmddetail:"descr":"Sets the host to ping by IP watchdog",
+	//cmddetail:"fn":"CMD_PingHost","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("PingHost", CMD_PingHost, NULL);
+	//cmddetail:{"name":"StartupCommand","args":"[Command in quotation marks][bRunAfter]",
+	//cmddetail:"descr":"Sets the new startup command (short startup command, the one stored in config) to given string. Second argument is optional, if set to 1, command will be also executed after setting",
+	//cmddetail:"fn":"CMD_StartupCommand","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("StartupCommand", CMD_StartupCommand, NULL);
+	
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	CMD_InitScripting();
 #endif
 	if (!bSafeMode) {
 		if (CFG_HasFlag(OBK_FLAG_CMD_ACCEPT_UART_COMMANDS)) {
-			CMD_UART_Init();
+			CMD_UARTConsole_Init();
 		}
 	}
 	//DRV_InitFlashMemoryTestFunctions();
 }
 
+
+
 void CMD_Init_Delayed() {
 	if (CFG_HasFlag(OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER)) {
 		CMD_StartTCPCommandLine();
 	}
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602)
+	UART_AddCommands();
+#endif
 }
 
 

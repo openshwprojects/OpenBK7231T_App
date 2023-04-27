@@ -1,7 +1,7 @@
 #ifndef __NEW_PINS_H__
 #define __NEW_PINS_H__
 #include "new_common.h"
-
+#include "hal/hal_wifi.h"
 
 typedef enum ioRole_e {
 	//iodetail:{"name":"None",
@@ -123,13 +123,13 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_DigitalInput_NoPup_n,
-// energy sensor
-	//iodetail:{"name":"BL0937_SEL",
-	//iodetail:"title":"TODO",
-	//iodetail:"descr":"SEL pin for BL0937 energy measuring devices. Set all BL0937 pins to autostart BL0937 driver. Don't forget to calibrate it later.",
-	//iodetail:"enum":"IOR_BL0937_SEL",
-	//iodetail:"file":"new_pins.h",
-	//iodetail:"driver":""}
+	// energy sensor
+		//iodetail:{"name":"BL0937_SEL",
+		//iodetail:"title":"TODO",
+		//iodetail:"descr":"SEL pin for BL0937 energy measuring devices. Set all BL0937 pins to autostart BL0937 driver. Don't forget to calibrate it later.",
+		//iodetail:"enum":"IOR_BL0937_SEL",
+		//iodetail:"file":"new_pins.h",
+		//iodetail:"driver":""}
 	IOR_BL0937_SEL,
 	//iodetail:{"name":"BL0937_CF",
 	//iodetail:"title":"TODO",
@@ -460,6 +460,76 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_BL0937_SEL_n,
+	//iodetail:{"name":"DoorSensorWithDeepSleep_pd",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"As DoorSensorWithDeepSleep, but with pulldown resistor",
+	//iodetail:"enum":"IOR_DoorSensorWithDeepSleep_pd",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_DoorSensorWithDeepSleep_pd,
+	//iodetail:{"name":"SGP_CLK",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"SGP Quality Sensor Clock line. will autostart related driver",
+	//iodetail:"enum":"IOR_SGP_CLK",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_SGP_CLK,
+	//iodetail:{"name":"SGP_DAT",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"SGP Quality Sensor Data line. will autostart related driver",
+	//iodetail:"enum":"IOR_SGP_DAT",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_SGP_DAT,
+	//iodetail:{"name":"ADC_Button",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"Single ADC with multiple buttons connected.d",
+	//iodetail:"enum":"ADC_Button",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_ADC_Button,
+	//iodetail:{"name":"GN6932_CLK",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"QQQ",
+	//iodetail:"enum":"GN6932_CLK",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_GN6932_CLK,
+	//iodetail:{"name":"GN6932_DAT",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"QQQ",
+	//iodetail:"enum":"GN6932_DAT",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_GN6932_DAT,
+	//iodetail:{"name":"GN6932_STB",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"QQQ",
+	//iodetail:"enum":"GN6932_STB",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_GN6932_STB,
+	//iodetail:{"name":"TM1638_CLK",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"QQQ",
+	//iodetail:"enum":"TM1638_CLK",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_TM1638_CLK,
+	//iodetail:{"name":"TM1638_DAT",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"QQQ",
+	//iodetail:"enum":"TM1638_DAT",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_TM1638_DAT,
+	//iodetail:{"name":"TM1638_STB",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"QQQ",
+	//iodetail:"enum":"TM1638_STB",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_TM1638_STB,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
@@ -471,6 +541,7 @@ typedef enum ioRole_e {
 
 #define IS_PIN_DHT_ROLE(role) (((role)>=IOR_DHT11) && ((role)<=IOR_DHT22))
 #define IS_PIN_TEMP_HUM_SENSOR_ROLE(role) (((role)==IOR_SHT3X_DAT) || ((role)==IOR_CHT8305_DAT))
+#define IS_PIN_AIR_SENSOR_ROLE(role) (((role)==IOR_SGP_DAT))
 
 typedef enum channelType_e {
 	//chandetail:{"name":"Default",
@@ -711,6 +782,13 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_OffLowMidHighHighest,
+	//chandetail:{"name":"Custom",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"A custom channel type that is still send to HA.",
+	//chandetail:"enum":"ChType_Custom",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Custom,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
@@ -831,8 +909,10 @@ typedef struct pinsState_s {
 #define OBK_FLAG_NOT_PUBLISH_AVAILABILITY_SENSOR    35
 #define OBK_FLAG_DRV_DISABLE_AUTOSTART              36
 #define OBK_FLAG_WIFI_FAST_CONNECT		            37
+#define OBK_FLAG_POWER_FORCE_ZERO_IF_RELAYS_OPEN    38
+#define OBK_FLAG_MQTT_PUBLISH_ALL_CHANNELS			39
 
-#define OBK_TOTAL_FLAGS 38
+#define OBK_TOTAL_FLAGS 40
 
 #define LOGGER_FLAG_MQTT_DEDUPER					1
 #define LOGGER_FLAG_POWER_SAVE						2
@@ -898,6 +978,7 @@ typedef struct ledRemap_s {
 } ledRemap_t;
 
 #define MAGIC_LED_REMAP_SIZE 5
+
 
 //
 // Main config structure (less than 2KB)
@@ -966,10 +1047,11 @@ typedef struct mainConfig_s {
 	unsigned long LFS_Size; // szie of LFS volume.  it's aligned against the end of OTA
 	int loggerFlags;
 #if PLATFORM_W800
-	byte unusedSectorAB[67];
+	byte unusedSectorAB[51];
 #else    
-	byte unusedSectorAB[115];
+	byte unusedSectorAB[99];
 #endif    
+	obkStaticIP_t staticIP;
 	ledRemap_t ledRemap;
 	led_corr_t led_corr;
 	// alternate topic name for receiving MQTT commands
@@ -990,6 +1072,8 @@ typedef struct mainConfig_s {
 extern mainConfig_t g_cfg;
 
 extern char g_enable_pins;
+extern int g_initialPinStates;
+extern byte g_defaultDoorWakeEdge;
 
 #define CHANNEL_SET_FLAG_FORCE		1
 #define CHANNEL_SET_FLAG_SKIP_MQTT	2
@@ -1024,9 +1108,10 @@ void CHANNEL_Set_FloatPWM(int ch, float fVal, int iFlags);
 void CHANNEL_Add(int ch, int iVal);
 void CHANNEL_AddClamped(int ch, int iVal, int min, int max, int bWrapInsteadOfClamp);
 int CHANNEL_Get(int ch);
+float CHANNEL_GetFinalValue(int channel);
 float CHANNEL_GetFloat(int ch);
 int CHANNEL_GetRoleForOutputChannel(int ch);
-bool CHANNEL_HasRoleThatShouldBePublished(int ch);
+bool CHANNEL_ShouldBePublished(int ch);
 bool CHANNEL_IsPowerRelayChannel(int ch);
 // See: enum channelType_t
 void CHANNEL_SetType(int ch, int type);
@@ -1045,7 +1130,7 @@ const char* CHANNEL_GetLabel(int ch);
 bool CHANNEL_ShouldAddTogglePrefixToUI(int ch);
 //ledRemap_t *CFG_GetLEDRemap();
 
-void get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount);
+void PIN_get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount);
 int h_isChannelPWM(int tg_ch);
 int h_isChannelRelay(int tg_ch);
 int h_isChannelDigitalInput(int tg_ch);
@@ -1057,62 +1142,5 @@ int PIN_ParsePinRoleName(const char* name);
 const char* PIN_RoleToString(int role);
 
 extern const char* g_channelTypeNames[];
-
-// from new_builtin.c
-/*
-
-WARNING! THIS IS OBSOLETE NOW!
-
-WE ARE USING THIS DATABASE:
-https://github.com/OpenBekenIOT/webapp/blob/gh-pages/devices.json
-Submit pull requests to the list above! Post teardowns on Elektroda.com!
-
-
-HERE IS FRONTEND:
-https://openbekeniot.github.io/webapp/devicesList.html
-See above link for more info!
-
-*/
-//void Setup_Device_Empty();
-//void Setup_Device_TuyaWL_SW01_16A();
-//void Setup_Device_TuyaSmartLife4CH10A();
-//void Setup_Device_BK7231N_TuyaLightBulb_RGBCW_5PWMs();
-//void Setup_Device_IntelligentLife_NF101A();
-//void Setup_Device_TuyaLEDDimmerSingleChannel();
-//void Setup_Device_CalexLEDDimmerFiveChannel();
-//void Setup_Device_CalexPowerStrip_900018_1v1_0UK();
-//void Setup_Device_ArlecCCTDownlight();
-//void Setup_Device_ArlecRGBCCTDownlight();
-//void Setup_Device_CasaLifeCCTDownlight();
-//void Setup_Device_NedisWIFIPO120FWT_16A();
-//void Setup_Device_NedisWIFIP130FWT_10A();
-//void Setup_Device_EmaxHome_EDU8774();
-//void Setup_Device_TuyaSmartPFW02G();
-//void Setup_Device_BK7231N_CB2S_QiachipSmartSwitch();
-//void Setup_Device_BK7231T_WB2S_QiachipSmartSwitch();
-//void Setup_Device_BK7231T_Raw_PrimeWiFiSmartOutletsOutdoor_CCWFIO232PK();
-//void Setup_Device_AvatarASL04();
-//void Setup_Device_TuyaSmartWIFISwith_4Gang_CB3S();
-//void Setup_Device_BL602_MagicHome_IR_RGB_LedStrip();
-//void Setup_Device_BL602_MagicHome_CCT_LedStrip();
-//void Setup_Device_Sonoff_MiniR3();
-//void Setup_Device_WiFi_DIY_Switch_WB2S_ZN268131();
-//void Setup_Device_BK7231N_CB2S_LSPA9_BL0942();
-//void Setup_Device_LSC_Smart_Connect_Plug_CB2S();
-//void Setup_Device_DS_102_1Gang_WB3S();
-//void Setup_Device_DS_102_2Gang_WB3S();
-//void Setup_Device_DS_102_3Gang_WB3S();
-//void Setup_Device_BK7231T_Gosund_Switch_SW5_A_V2_1();
-//void Setup_Device_13A_Socket_CB2S();
-//void Setup_Device_Deta_Smart_Double_Power_Point_6922HA_Series2();
-//void Setup_Device_BK7231N_KS_602_TOUCH();
-//void Setup_Device_Enbrighten_WFD4103();
-//void Setup_Device_Aubess_Mini_Smart_Switch_16A();
-//void Setup_Device_Zemismart_Light_Switch_KS_811_3();
-//void Setup_Device_TeslaSmartPlus_TSL_SPL_1();
-//void Setup_Device_Calex_900011_1_WB2S();
-//void Setup_Device_Immax_NEO_LITE_NAS_WR07W();
-//void Setup_Device_MOES_TouchSwitch_WS_EU1_RFW_N();
-
 
 #endif

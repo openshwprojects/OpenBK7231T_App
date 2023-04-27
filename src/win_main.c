@@ -107,7 +107,8 @@ void Sim_RunFrames(int n, bool bApplyRealtimeWait) {
 bool bObkStarted = false;
 void SIM_Hack_ClearSimulatedPinRoles();
 
-void SIM_ClearOBK() {
+
+void SIM_ClearOBK(const char *flashPath) {
 	if (bObkStarted) {
 		DRV_ShutdownAllDrivers();
 		release_lfs();
@@ -116,16 +117,20 @@ void SIM_ClearOBK() {
 		UART_ResetForSimulator();
 		CMD_ExecuteCommand("clearAll", 0);
 		CMD_ExecuteCommand("led_expoMode", 0);
-		Main_Init();
 		// LOG deinit after main init so commands will be re-added
 		LOG_DeInit();
 	}
-}
-void SIM_DoFreshOBKBoot() {
+	if (flashPath) {
+		SIM_SetupFlashFileReading(flashPath);
+	}
 	bObkStarted = true;
 	Main_Init();
 }
 void Win_DoUnitTests() {
+	Test_Commands_Startup();
+	Test_IF_Inside_Backlog();
+	Test_WaitFor();
+	Test_TwoPWMsOneChannel();
 	Test_ClockEvents();
 	Test_HassDiscovery();
 	Test_Role_ToggleAll_2();
@@ -174,7 +179,7 @@ void Win_DoUnitTests() {
 	// Just to be sure
 	// Must be last step
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 }
 long g_delta;
 float SIM_GetDeltaTimeSeconds() {
@@ -220,7 +225,21 @@ int __cdecl main(int argc, char **argv)
 					if (i < argc && sscanf(argv[i], "%d", &value) == 1) {
 						g_port = value;
 					}
-				} else if (wal_strnicmp(argv[i] + 1, "runUnitTests", 12) == 0) {
+				} else if (wal_strnicmp(argv[i] + 1, "w", 1) == 0) {
+					i++;
+
+					if (i < argc && sscanf(argv[i], "%d", &value) == 1) {
+						SIM_SetWindowW(value);
+					}
+				}
+				else if (wal_strnicmp(argv[i] + 1, "h", 1) == 0) {
+					i++;
+
+					if (i < argc && sscanf(argv[i], "%d", &value) == 1) {
+						SIM_SetWindowH(value);
+					}
+				}
+				else if (wal_strnicmp(argv[i] + 1, "runUnitTests", 12) == 0) {
 					i++;
 
 					if (i < argc && sscanf(argv[i], "%d", &value) == 1) {
@@ -299,10 +318,12 @@ int __cdecl main(int argc, char **argv)
 		printf("OFFSETOF(mainConfig_t, version) != 0x00000004: %i\n", OFFSETOF(mainConfig_t, version));
 		system("pause");
 	}
-	
+	// Test expansion
+	//CMD_UART_Send_Hex(0,0,"FFAA$CH1$BB",0);
+
 	if (bWantsUnitTests) {
 		g_bDoingUnitTestsNow = 1;
-		SIM_DoFreshOBKBoot();
+		SIM_ClearOBK(0);
 		// let things warm up a little
 		Sim_RunFrames(50, false);
 		// run tests

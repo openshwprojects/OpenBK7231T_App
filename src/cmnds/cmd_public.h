@@ -114,10 +114,21 @@ enum EventCode {
 
 	CMD_EVENT_LED_MODE, // Argument: new light mode as integer
 
+	CMD_EVENT_CHANGE_NOMQTTTIME,
+
+	CMD_EVENT_ADC_BUTTON,
+
+	CMD_EVENT_NTP_STATE,
+
+	// custom buttons
+	CMD_EVENT_CUSTOM_DOWN,
+	CMD_EVENT_CUSTOM_UP,
+
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
 };
 
+int EVENT_ParseEventName(const char *s);
 
 // the slider control in the UI emits values
 //in the range from 154-500 (defined
@@ -152,6 +163,7 @@ bool Tokenizer_CheckArgsCountAndPrintWarning(const char* cmdStr, int reqCount);
 const char* Tokenizer_GetArg(int i);
 const char* Tokenizer_GetArgFrom(int i);
 int Tokenizer_GetArgInteger(int i);
+int Tokenizer_GetArgIntegerDefault(int i, int def);
 bool Tokenizer_IsArgInteger(int i);
 float Tokenizer_GetArgFloat(int i);
 int Tokenizer_GetArgIntegerRange(int i, int rangeMax, int rangeMin);
@@ -185,7 +197,6 @@ void LED_AddTemperature(int iVal, int wrapAroundInsteadOfClamp);
 void LED_NextDimmerHold();
 void LED_NextTemperatureHold();
 void LED_NextTemperature();
-int LED_IsRunningDriver();
 float LED_GetTemperature();
 void LED_SetTemperature(int tmpInteger, bool bApply);
 float LED_GetTemperature0to1Range();
@@ -221,7 +232,7 @@ OBK_Publish_Result sendColorChange();
 OBK_Publish_Result LED_SendEnableAllState();
 OBK_Publish_Result LED_SendDimmerChange();
 OBK_Publish_Result sendTemperatureChange();
-OBK_Publish_Result LED_SendCurrentLightMode();
+OBK_Publish_Result LED_SendCurrentLightModeParam_TempOrColor();
 void LED_ResetGlobalVariablesToDefaults();
 extern float led_temperature_min;
 extern float led_temperature_max;

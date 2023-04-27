@@ -30,5 +30,33 @@
 {
 "title": "[Configuration for 4x socket + 1x USB power strip with a single button (double click, triple, etc)](https://www.elektroda.com/rtvforum/topic3941692.html)",
 "file": "autoexecs/single_button_for_five_relays.bat"
+},
+{
+"title": "Simple example showing how to do MQTT publish on button event (double click, etc). It also includes button hold event to adjust dimmer.",
+"file": "autoexecs/buttom_custom_events_mqtt_publishes.bat"
+},
+{
+"title": "Basic Ping Watchdog usage. Ping given IP with given interval and run script if there was no ping reply within given time.",
+"file": "autoexecs/ping_watchdog.bat"
+},
+{
+"title": "NTP and 'waitFor' command example. You can use 'waitFor NTPState 1' in autoexec.bat to wait for NTP sync. After that, you can be sure that correct time is set. 'waitFor' will block execution until given event.",
+"file": "autoexecs/waiting_for_NTP_sync.bat"
+},
+{
+"title": "MQTT and 'waitFor' command example. You can use 'waitFor MQTTState 1' in autoexec.bat to wait for MQTT connection. After that, you can be sure that MATT is online. 'waitFor' will block execution until given event.",
+"file": "autoexecs/waiting_for_MQTT_connect.bat"
+},
+{
+"title": "This script will use NTP and 'addClockEvent' to change light styles in the morning and in the evening. Here you can see how  'waitFor NTPState 1' and 'addClockEvent' and $hour script functions/variables are used.",
+"file": "autoexecs/automatic_day_and_night_lights.bat"
+},
+{
+"title": "Alternate 'addClockEvent' demo - just like previous one, but written by using AddEventHandler instead of waitFor",
+"file": "autoexecs/automatic_day_and_night_lights_v2.bat"
+},
+{
+"title": "Simple UART log redirection to UART1 instead of UART2 on Beken with UART command line support",
+"file": "autoexecs/logging_for_uart1.bat"
 }
 ]

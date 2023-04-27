@@ -211,10 +211,17 @@ float getPower(const char *s) {
 	return DRV_GetReading(OBK_POWER);
 }
 
+float getNTPOn(const char *s) {
+	return NTP_IsTimeSynced();
+}
+
 #endif
 
+float getFailedBoots(const char *s) {
+	return g_bootFailures;
+}
 float getUpTime(const char *s) {
-	return Time_getUpTimeSeconds();
+	return g_secondsElapsed;
 }
 float getWeekDay(const char *s) {
 	return NTP_GetWeekDay();
@@ -224,6 +231,9 @@ float getMinute(const char *s) {
 }
 float getHour(const char *s) {
 	return NTP_GetHour();
+}
+float getSecond(const char *s) {
+	return NTP_GetSecond();
 }
 
 const constant_t g_constants[] = {
@@ -328,12 +338,27 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Current minute from NTP",
 	//cnstdetail:"requires":""}
 	{ "$minute", &getMinute },
+	//cnstdetail:{"name":"$second",
+	//cnstdetail:"title":"$second",
+	//cnstdetail:"descr":"Current second from NTP",
+	//cnstdetail:"requires":""}
+	{ "$second", &getSecond },
+	//cnstdetail:{"name":"$NTPOn",
+	//cnstdetail:"title":"$NTPOn",
+	//cnstdetail:"descr":"Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0.",
+	//cnstdetail:"requires":""}
+	{ "$NTPOn", &getNTPOn },
 #endif
 	//cnstdetail:{"name":"$uptime",
 	//cnstdetail:"title":"$uptime",
 	//cnstdetail:"descr":"Time since reboot in seconds",
 	//cnstdetail:"requires":""}
 	{ "$uptime", &getUpTime },
+	//cnstdetail:{"name":"$failedBoots",
+	//cnstdetail:"title":"$failedBoots",
+	//cnstdetail:"descr":"Get number of failed boots (too quick reboots). Remember that you can change the uptime required to mark boot as 'okay' in general/flags menu",
+	//cnstdetail:"requires":""}
+	{ "$failedBoots", &getFailedBoots },
 };
 static int g_totalConstants = sizeof(g_constants) / sizeof(g_constants[0]);
 

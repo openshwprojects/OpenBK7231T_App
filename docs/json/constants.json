@@ -120,9 +120,27 @@
     "requires": ""
   },
   {
+    "name": "$second",
+    "title": "$second",
+    "descr": "Current second from NTP",
+    "requires": ""
+  },
+  {
+    "name": "$NTPOn",
+    "title": "$NTPOn",
+    "descr": "Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0.",
+    "requires": ""
+  },
+  {
     "name": "$uptime",
     "title": "$uptime",
     "descr": "Time since reboot in seconds",
+    "requires": ""
+  },
+  {
+    "name": "$failedBoots",
+    "title": "$failedBoots",
+    "descr": "Get number of failed boots (too quick reboots). Remember that you can change the uptime required to mark boot as 'okay' in general/flags menu",
     "requires": ""
   }
 ]

@@ -58,12 +58,19 @@ addEventHandler OnHold 11 addChannel 1 -10
 // addChangeHandler Channel0 < 50 echo value is low
 // addChangeHandler Current > 100 setChannel 0 0
 // addChangeHandler Power > 40 setChannel 1 0
-//
+// addChangeHandler noPingTime > 600 reboot
+// addChangeHandler noMQTTTime > 600 reboot
 //
 // LCD demo:
 // backlog startDriver I2C; addI2CDevice_LCD_PCF8574 I2C1 0x23 0 0 0
 // addChangeHandler Channel1 != 0 backlog lcd_clearAndGoto I2C1 0x23 1 1; lcd_print I2C1 0x23 Enabled
 // addChangeHandler Channel1 == 0 backlog lcd_clearAndGoto I2C1 0x23 1 1; lcd_print I2C1 0x23 Disabled
+
+
+// when channel 1 becomes 0, send OFF
+addChangeHandler Channel1 == 0 SendGet http://192.168.0.112/cm?cmnd=Power0%20OFF
+// when channel 1 becomes 1, send ON
+addChangeHandler Channel1 == 1 SendGet http://192.168.0.112/cm?cmnd=Power0%20ON
 
 
 alias doRelayClick backlog setChannel 1 1; addRepeatingEvent 2 1 setChannel 1 0; ClearNoPingTime
@@ -122,12 +129,14 @@ static int EVENT_ParseRelation(const char *s) {
 	return EVENT_DEFAULT;
 }
 
-static int EVENT_ParseEventName(const char *s) {
+int EVENT_ParseEventName(const char *s) {
 	if(!wal_strnicmp(s,"channel",7)) {
 		return CMD_EVENT_CHANGE_CHANNEL0 + atoi(s+7);
 	}
 	if (!stricmp(s, "noPingTime"))
 		return CMD_EVENT_CHANGE_NOPINGTIME;
+	if (!stricmp(s, "NoMQTTTime"))
+		return CMD_EVENT_CHANGE_NOMQTTTIME;
 	if(!stricmp(s,"voltage"))
 		return CMD_EVENT_CHANGE_VOLTAGE;
 	if(!stricmp(s,"current"))
@@ -162,6 +171,8 @@ static int EVENT_ParseEventName(const char *s) {
 		return CMD_EVENT_ON_UART;
 	if(!stricmp(s,"MQTTState"))
 		return CMD_EVENT_MQTT_STATE;
+	if (!stricmp(s, "NTPState"))
+		return CMD_EVENT_NTP_STATE;
 	if (!stricmp(s, "LEDState"))
 		return CMD_EVENT_LED_STATE;
 	if (!stricmp(s, "LEDMode"))
@@ -190,7 +201,13 @@ static int EVENT_ParseEventName(const char *s) {
 	if (!stricmp(s, "WiFiState"))
 		return CMD_EVENT_WIFI_STATE;
 	if (!stricmp(s, "TuyaMCUParsed"))
-		return CMD_EVENT_TUYAMCU_PARSED; 
+		return CMD_EVENT_TUYAMCU_PARSED;
+	if (!stricmp(s, "OnADCButton"))
+		return CMD_EVENT_ADC_BUTTON;
+	if (!stricmp(s, "OnCustomDown"))
+		return CMD_EVENT_CUSTOM_DOWN;
+	if (!stricmp(s, "OnCustomUP"))
+		return CMD_EVENT_CUSTOM_UP;
 	return CMD_EVENT_NONE;
 }
 static bool EVENT_EvaluateCondition(int code, int argument, int next) {
@@ -359,6 +376,10 @@ void EventHandlers_FireEvent(byte eventCode, int argument) {
 		}
 		ev = ev->next;
 	}
+
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+	CMD_Script_ProcessWaitersForEvent(eventCode, argument);
+#endif
 }
 void EventHandlers_FireEvent_String(byte eventCode, const char *argument) {
 	struct eventHandler_s *ev;
@@ -430,7 +451,7 @@ static commandResult_t CMD_AddEventHandler(const void *context, const char *cmd,
 
 	eventCode = EVENT_ParseEventName(eventName);
 	if(eventCode == CMD_EVENT_NONE) {
-		ADDLOG_ERROR(LOG_FEATURE_EVENT, "CMD_AddEventHandler: %s is not a valid event",eventName);
+		ADDLOG_ERROR(LOG_FEATURE_EVENT, "%s is not a valid event",eventName);
 		return CMD_RES_BAD_ARGUMENT;
 	}
 

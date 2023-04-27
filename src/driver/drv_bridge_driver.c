@@ -38,9 +38,9 @@ commandResult_t Bridge_Pulse_length(const void *context, const char *cmd, const 
     }
 
     pulse_len = atoi(Tokenizer_GetArg(0));
-    if (pulse_len < 50)
+    if (pulse_len < 5)
     {
-        pulse_len = 50;   
+        pulse_len = 5;   
     } 
     else if (pulse_len > 10000) 
     {
@@ -70,7 +70,7 @@ void Bridge_driver_Init()
 
     if (ch_count>0)
     {
-        /* Brignde channel detected */
+        /* Bridge channel detected */
         addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Detected %i bridge channels\n", ch_count);
         if (br_ctrl != NULL)
             os_free(br_ctrl);
@@ -110,7 +110,7 @@ void Bridge_driver_Init()
                     break;                
             }
         }
-        /* Detect assigned channes */
+        /* Detect assigned channels */
         for(ch=0;ch<ch_count;ch++)
         {
             br_ctrl[ch].channel = PIN_GetPinChannelForPinIndex(br_ctrl[ch].GPIO_HLW_FWD);
@@ -121,7 +121,7 @@ void Bridge_driver_Init()
             addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "BR%i New State    = %i\n", ch, br_ctrl[ch].new_state);
         }
     } else {
-        /* No Bridge drivers sefined */
+        /* No Bridge drivers defined */
         if (br_ctrl != NULL)
             os_free(br_ctrl);
         br_ctrl = NULL;
@@ -172,7 +172,7 @@ void Bridge_driver_QuickFrame()
                 br_ctrl[ch].pulseCnt = br_ctrl[ch].pulseLen;
                 HAL_PIN_SetOutputValue(br_ctrl[ch].GPIO_HLW_FWD, 1);
                 br_ctrl[ch].current_state = br_ctrl[ch].new_state;
-                MQTT_ChannelChangeCallback(br_ctrl[ch].channel, br_ctrl[ch].new_state);
+                CHANNEL_Set(br_ctrl[ch].channel, br_ctrl[ch].new_state,0);
             }
             else if (br_ctrl[ch].current_state > br_ctrl[ch].new_state)
             {
@@ -183,7 +183,7 @@ void Bridge_driver_QuickFrame()
                 br_ctrl[ch].pulseCnt = br_ctrl[ch].pulseLen;
                 HAL_PIN_SetOutputValue(br_ctrl[ch].GPIO_HLW_REV, 1);
                 br_ctrl[ch].current_state = br_ctrl[ch].new_state;
-                MQTT_ChannelChangeCallback(br_ctrl[ch].channel, br_ctrl[ch].new_state);
+				CHANNEL_Set(br_ctrl[ch].channel, br_ctrl[ch].new_state, 0);
             }
         }
     }
@@ -205,24 +205,6 @@ void Bridge_driver_OnChannelChanged(int ch, int value)
             }
         }
     }
-}
-
-/***************************************************************************************/
-OBK_Publish_Result Bridge_driver_ChannelPublish(int channel)
-{
-    int i;
-
-    if (br_ctrl != NULL)
-    {
-        for (i=0;i<ch_count;i++)
-        {
-            if (br_ctrl[i].channel == channel)
-            {
-                return MQTT_ChannelChangeCallback(br_ctrl[i].channel, br_ctrl[i].current_state);
-            }
-        }
-    }
-    return OBK_PUBLISH_WAS_NOT_REQUIRED;
 }
 
 /***************************************************************************************/

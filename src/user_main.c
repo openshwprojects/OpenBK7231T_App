@@ -37,6 +37,7 @@
 
 #include "driver/drv_ntp.h"
 #include "driver/drv_ssdp.h"
+#include "driver/drv_uart.h"
 
 #ifdef PLATFORM_BEKEN
 #include <mcu_ps.h>
@@ -44,7 +45,7 @@
 void bg_register_irda_check_func(FUNCPTR func);
 #endif
 
-static int g_secondsElapsed = 0;
+int g_secondsElapsed = 0;
 // open access point after this number of seconds
 int g_openAP = 0;
 // connect to wifi after this number of seconds
@@ -72,6 +73,7 @@ static int g_bPingWatchDogStarted = 0;
 static char g_currentIPString[32] = { 0 };
 static HALWifiStatus_t g_newWiFiStatus = WIFI_UNDEFINED;
 static HALWifiStatus_t g_prevWiFiStatus = WIFI_UNDEFINED;
+static int g_noMQTTTime = 0;
 
 uint8_t g_StartupDelayOver = 0;
 
@@ -164,10 +166,6 @@ void MAIN_ScheduleUnsafeInit(int delSeconds) {
 }
 void RESET_ScheduleModuleReset(int delSeconds) {
 	g_reset = delSeconds;
-}
-
-int Time_getUpTimeSeconds() {
-	return g_secondsElapsed;
 }
 
 
@@ -334,12 +332,12 @@ void Main_ScheduleHomeAssistantDiscovery(int seconds) {
 }
 
 void Main_ConnectToWiFiNow() {
-	const char* wifi_ssid, *wifi_pass;
+	const char* wifi_ssid, * wifi_pass;
 
 	g_bOpenAccessPointMode = 0;
 	wifi_ssid = CFG_GetWiFiSSID();
 	wifi_pass = CFG_GetWiFiPass();
-	HAL_ConnectToWiFi(wifi_ssid, wifi_pass);
+	HAL_ConnectToWiFi(wifi_ssid, wifi_pass,&g_cfg.staticIP);
 	// register function to get callbacks about wifi changes.
 	HAL_WiFi_SetupStatusCallback(Main_OnWiFiStatusChange);
 	ADDLOGF_DEBUG("Registered for wifi changes\r\n");
@@ -384,9 +382,23 @@ void Main_OnEverySecond()
 		// Argument type here is HALWifiStatus_t enumeration
 		EventHandlers_FireEvent(CMD_EVENT_WIFI_STATE, g_newWiFiStatus);
 	}
+	// Update time with no MQTT
+	if (bMQTTconnected) {
+		i = 0;
+	} else {
+		i = g_noMQTTTime + 1;
+	}
+	// 'i' is a new value
+	EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_NOMQTTTIME, g_noMQTTTime, i);
+	// save new value
+	g_noMQTTTime = i;
+
 	MQTT_Dedup_Tick();
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602)
+	UART_RunEverySecond();
+#endif
 #endif
 
 #if WINDOWS
@@ -421,9 +433,12 @@ void Main_OnEverySecond()
 	// That is why we can also reconnect them by basing on ping
 	if (g_timeSinceLastPingReply != -1 && g_secondsElapsed > 60)
 	{
+		// cast event so users can script anything easily, run custom commands
+		// Usage: addChangeHandler noPingTime > 600 reboot
 		EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_NOPINGTIME, g_timeSinceLastPingReply, g_timeSinceLastPingReply + 1);
 		g_timeSinceLastPingReply++;
-		if (g_timeSinceLastPingReply >= CFG_GetPingDisconnectedSecondsToRestart())
+		// this is an old mechanism that just tries to reconnect (but without reboot)
+		if (CFG_GetPingDisconnectedSecondsToRestart() > 0 && g_timeSinceLastPingReply >= CFG_GetPingDisconnectedSecondsToRestart())
 		{
 			if (g_bHasWiFiConnected != 0)
 			{
@@ -515,7 +530,7 @@ void Main_OnEverySecond()
 		{
 			ADDLOGF_INFO("Boot complete time reached (%i seconds)\n", bootCompleteSeconds);
 			HAL_FlashVars_SaveBootComplete();
-			g_bootFailures = HAL_FlashVars_GetBootFailures();
+			//g_bootFailures = HAL_FlashVars_GetBootFailures();
 			g_bBootMarkedOK = true;
 		}
 	}
@@ -558,17 +573,12 @@ void Main_OnEverySecond()
 			if (0 == g_startPingWatchDogAfter)
 			{
 				const char* pingTargetServer;
-				//int pingInterval;
-				int restartAfterNoPingsSeconds;
 
 				g_bPingWatchDogStarted = 1;
 
 				pingTargetServer = CFG_GetPingHost();
-				//pingInterval = CFG_GetPingIntervalSeconds();
-				restartAfterNoPingsSeconds = CFG_GetPingDisconnectedSecondsToRestart();
 
-				if ((pingTargetServer != NULL) && (strlen(pingTargetServer) > 0) &&
-					/*(pingInterval > 0) && */ (restartAfterNoPingsSeconds > 0))
+				if ((pingTargetServer != NULL) && (strlen(pingTargetServer) > 0))
 				{
 					// mark as enabled
 					g_timeSinceLastPingReply = 0;
@@ -655,6 +665,7 @@ static int g_wifi_ledState = 0;
 static uint32_t g_time = 0;
 static uint32_t g_last_time = 0;
 int g_bWantPinDeepSleep;
+unsigned int g_deltaTimeMS;
 
 /////////////////////////////////////////////////////
 // this is what we do in a qucik tick
@@ -677,23 +688,23 @@ void QuickTick(void* param)
 #else
 	g_time += QUICK_TMR_DURATION;
 #endif
-	uint32_t t_diff = g_time - g_last_time;
+	g_deltaTimeMS = g_time - g_last_time;
 	// cope with wrap
-	if (t_diff > 0x4000) {
-		t_diff = ((g_time + 0x4000) - (g_last_time + 0x4000));
+	if (g_deltaTimeMS > 0x4000) {
+		g_deltaTimeMS = ((g_time + 0x4000) - (g_last_time + 0x4000));
 	}
 	g_last_time = g_time;
 
 
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
-	SVM_RunThreads(t_diff);
+	SVM_RunThreads(g_deltaTimeMS);
 #endif
-	RepeatingEvents_RunUpdate(t_diff*0.001f);
+	RepeatingEvents_RunUpdate(g_deltaTimeMS * 0.001f);
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_RunQuickTick();
 #endif
 #ifdef WINDOWS
-	NewTuyaMCUSimulator_RunQuickTick(t_diff);
+	NewTuyaMCUSimulator_RunQuickTick(g_deltaTimeMS);
 #endif
 	CMD_RunUartCmndIfRequired();
 
@@ -701,13 +712,13 @@ void QuickTick(void* param)
 	MQTT_RunQuickTick();
 
 	if (CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == true) {
-		LED_RunQuickColorLerp(t_diff);
+		LED_RunQuickColorLerp(g_deltaTimeMS);
 	}
 
 	// WiFi LED
 	// In Open Access point mode, fast blink
 	if (Main_IsOpenAccessPointMode()) {
-		g_wifiLedToggleTime += t_diff;
+		g_wifiLedToggleTime += g_deltaTimeMS;
 		if (g_wifiLedToggleTime > WIFI_LED_FAST_BLINK_DURATION) {
 			g_wifi_ledState = !g_wifi_ledState;
 			g_wifiLedToggleTime = 0;
@@ -720,7 +731,7 @@ void QuickTick(void* param)
 	}
 	else {
 		// in connecting mode, slow blink
-		g_wifiLedToggleTime += t_diff;
+		g_wifiLedToggleTime += g_deltaTimeMS;
 		if (g_wifiLedToggleTime > WIFI_LED_SLOW_BLINK_DURATION) {
 			g_wifi_ledState = !g_wifi_ledState;
 			g_wifiLedToggleTime = 0;
@@ -812,10 +823,6 @@ int Main_IsConnectedToWiFi()
 	return g_bHasWiFiConnected;
 }
 
-int Main_GetLastRebootBootFailures()
-{
-	return g_bootFailures;
-}
 
 // called from idle thread each loop.
 // - just so we know it is running.
@@ -928,8 +935,8 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 				DRV_StartDriver("BP1658CJ");
 #endif
 			}
-			if (PIN_FindPinIndexForRole(IOR_BL0937_CF, -1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_CF1, -1) != -1 
-				&& (PIN_FindPinIndexForRole(IOR_BL0937_SEL, -1) != -1|| PIN_FindPinIndexForRole(IOR_BL0937_SEL_n, -1) != -1)) {
+			if (PIN_FindPinIndexForRole(IOR_BL0937_CF, -1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_CF1, -1) != -1
+				&& (PIN_FindPinIndexForRole(IOR_BL0937_SEL, -1) != -1 || PIN_FindPinIndexForRole(IOR_BL0937_SEL_n, -1) != -1)) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("BL0937");
 #endif
@@ -941,7 +948,8 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 #endif
 			}
 			if ((PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep, -1) != -1) ||
-				(PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep_NoPup, -1) != -1))
+				(PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep_NoPup, -1) != -1) ||
+				(PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep_pd, -1) != -1))
 			{
 #ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("DoorSensor");
@@ -957,6 +965,11 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 				DRV_StartDriver("SHT3X");
 #endif
 			}
+			if (PIN_FindPinIndexForRole(IOR_SGP_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_SGP_DAT, -1) != -1) {
+#ifndef OBK_DISABLE_ALL_DRIVERS
+				DRV_StartDriver("SGP");
+#endif
+			}
 			if (PIN_FindPinIndexForRole(IOR_BAT_ADC, -1) != -1) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("Battery");
@@ -965,6 +978,22 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 			if (PIN_FindPinIndexForRole(IOR_TM1637_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_TM1637_DIO, -1) != -1) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("TM1637");
+#endif
+			}
+			if ((PIN_FindPinIndexForRole(IOR_GN6932_CLK, -1) != -1) &&
+				(PIN_FindPinIndexForRole(IOR_GN6932_DAT, -1) != -1) &&
+				(PIN_FindPinIndexForRole(IOR_GN6932_STB, -1) != -1))
+			{
+#ifndef OBK_DISABLE_ALL_DRIVERS
+				DRV_StartDriver("GN6932");
+#endif
+			}
+			if ((PIN_FindPinIndexForRole(IOR_TM1638_CLK, -1) != -1) &&
+				(PIN_FindPinIndexForRole(IOR_TM1638_DAT, -1) != -1) &&
+				(PIN_FindPinIndexForRole(IOR_TM1638_STB, -1) != -1))
+			{
+#ifndef OBK_DISABLE_ALL_DRIVERS
+				DRV_StartDriver("TM1638");
 #endif
 			}
 		}

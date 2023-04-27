@@ -73,6 +73,10 @@ void CFG_SetDefaultLEDCorrectionTable() {
 void CFG_MarkAsDirty() {
 	g_cfg_pendingChanges++;
 }
+void CFG_ClearIO() {
+	memset(&g_cfg.pins, 0, sizeof(g_cfg.pins));
+	g_cfg_pendingChanges++;
+}
 void CFG_SetDefaultConfig() {
 	// must be unsigned, else print below prints negatives as e.g. FFFFFFFe
 	unsigned char mac[6] = { 0 };

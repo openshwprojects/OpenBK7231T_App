@@ -45,12 +45,13 @@ const char htmlFooterReturnToCfgLink[] = "<a href=\"cfg\">Return to cfg</a>";
 
 const char htmlFooterInfo[] =
 "<a target=\"_blank\" "
-"href=\"https://www.elektroda.com/rtvforum/"
-"viewtopic.php?p=19841301#19841301\">Read more</a> | "
+"href=\"https://www.elektroda.com/rtvforum/forum390.html\">Forum</a> | "
+"<a target=\"_blank\" "
+"href=\"https://www.youtube.com/@elektrodacom/videos\">YT</a> | "
 "<a target=\"_blank\" "
 "href=\"https://openbekeniot.github.io/webapp/devicesList.html\">Devices List</a> | "
 "<a target=\"_blank\" "
-"href=\"https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/commands.md\">Commands</a> | "
+"href=\"https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/README.md\">Docs</a> | "
 "<a target=\"_blank\" "
 "href=\"https://paypal.me/openshwprojects\">Support project</a><br>";
 
@@ -71,7 +72,6 @@ const char* methodNames[] = {
 #endif
 
 void misc_formatUpTimeString(int totalSeconds, char* o);
-int Time_getUpTimeSeconds();
 
 typedef struct http_callback_tag {
 	char* url;
@@ -265,7 +265,7 @@ void http_html_end(http_request_t* request) {
 	poststr(request, "<br>");
 	poststr(request, g_build_str);
 
-	hprintf255(request, "<br>Online for&nbsp;<span id=\"onlineFor\" data-initial=\"%i\">-</span>", Time_getUpTimeSeconds());
+	hprintf255(request, "<br>Online for&nbsp;<span id=\"onlineFor\" data-initial=\"%i\">-</span>", g_secondsElapsed);
 
 	WiFI_GetMacAddress((char*)mac);
 
@@ -448,8 +448,16 @@ const char* htmlPinRoleNames[] = {
 	"TM1637_DIO",
 	"TM1637_CLK",
 	"BL0937SEL_n",
-	"error",
-	"error",
+	"DoorSnsrWSleep_pd",
+	"SGP_CLK",
+	"SGP_DAT",
+	"ADC_Button",
+	"GN6932_CLK",
+	"GN6932_DAT",
+	"GN6932_STB",
+	"TM1638_CLK",
+	"TM1638_DAT",
+	"TM1638_STB",
 	"error",
 	"error",
 	"error",
@@ -704,6 +712,7 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	if (http_checkUrlBase(urlStr, "about")) return http_fn_about(request);
 
 	if (http_checkUrlBase(urlStr, "cfg_mqtt")) return http_fn_cfg_mqtt(request);
+	if (http_checkUrlBase(urlStr, "cfg_ip")) return http_fn_cfg_ip(request);
 	if (http_checkUrlBase(urlStr, "cfg_mqtt_set")) return http_fn_cfg_mqtt_set(request);
 
 	if (http_checkUrlBase(urlStr, "cfg_webapp")) return http_fn_cfg_webapp(request);
@@ -716,8 +725,7 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	if (http_checkUrlBase(urlStr, "cfg_loglevel_set")) return http_fn_cfg_loglevel_set(request);
 	if (http_checkUrlBase(urlStr, "cfg_mac")) return http_fn_cfg_mac(request);
 
-	if (http_checkUrlBase(urlStr, "flash_read_tool")) return http_fn_flash_read_tool(request);
-	if (http_checkUrlBase(urlStr, "uart_tool")) return http_fn_uart_tool(request);
+//	if (http_checkUrlBase(urlStr, "flash_read_tool")) return http_fn_flash_read_tool(request);
 	if (http_checkUrlBase(urlStr, "cmd_tool")) return http_fn_cmd_tool(request);
 	if (http_checkUrlBase(urlStr, "startup_command")) return http_fn_startup_command(request);
 	if (http_checkUrlBase(urlStr, "cfg_generic")) return http_fn_cfg_generic(request);

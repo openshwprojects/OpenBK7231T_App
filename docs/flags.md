@@ -40,6 +40,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | 32 | [LED] Use old linear brightness mode, ignore gamma ramp |
 | 33 | [MQTT] Apply channel type multiplier on (if any) on channel value before publishing it |
 | 34 | [MQTT] In HA discovery, add relays as lights |
-| 35 | [HASS] Deactivate avty_t flag for sensor when publishing to HASS (permit to keep value) |
+| 35 | [HASS] Deactivate avty_t flag for sensor when publishing to HASS (permit to keep value). You must restart HASS discovery for change to take effect. |
 | 36 | [DRV] Deactivate Autostart of all drivers |
 | 37 | [WiFi] Quick connect to WiFi on reboot (TODO: check if it works for you and report on github) |
+| 38 | [Power] Set power and current to zero if all relays are open |
+| 39 | [MQTT] [Debug] Publish all channels (don't enable it, it will be publish all 64 possible channels on connect) |

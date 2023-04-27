@@ -20,6 +20,12 @@ static int tok_flags = 0;
 #define g_bAllowQuotes (tok_flags&TOKENIZER_ALLOW_QUOTES)
 #define g_bAllowExpand (!(tok_flags&TOKENIZER_DONT_EXPAND))
 
+int str_to_ip(const char *s, byte *ip) {
+	return sscanf(s, IP_STRING_FORMAT, &ip[0], &ip[1], &ip[2], &ip[3]);
+}
+void convert_IP_to_string(char *o, unsigned char *ip) {
+	sprintf(o, IP_STRING_FORMAT, ip[0], ip[1], ip[2], ip[3]);
+}
 bool isWhiteSpace(char ch) {
 	if(ch == ' ')
 		return true;
@@ -56,6 +62,7 @@ const char *Tokenizer_GetArg(int i) {
 
 	s = g_args[i];
 
+#if 0
 	if(g_bAllowExpand && s[0] == '$' && s[1] == 'C' && s[2] == 'H') {
 		int channelIndex;
 		int value;
@@ -67,6 +74,17 @@ const char *Tokenizer_GetArg(int i) {
 
 		return g_argsExpanded[i];
 	}
+#else
+	if (g_bAllowExpand && s[0] == '$') {
+		float f;
+		int iValue;
+		CMD_ExpandConstant(s, 0, &f);
+		iValue = f;
+		sprintf(g_argsExpanded[i], "%i", iValue);
+		return g_argsExpanded[i];
+	}
+
+#endif
 
 	return g_args[i];
 }
@@ -84,6 +102,16 @@ int Tokenizer_GetArgIntegerRange(int i, int rangeMin, int rangeMax) {
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "Argument %i (val=%i) was out of range [%i,%i], clamped",i,ret,rangeMax,rangeMin);
 	}
 	return ret;
+}
+int Tokenizer_GetArgIntegerDefault(int i, int def) {
+	int r;
+
+	if (g_numArgs <= i) {
+		return def;
+	}
+	r = Tokenizer_GetArgInteger(i);
+
+	return r;
 }
 int Tokenizer_GetArgInteger(int i) {
 	const char *s;

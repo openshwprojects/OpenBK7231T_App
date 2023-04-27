@@ -27,7 +27,7 @@ static void (*g_wifiStatusCallback)(int code);
 // lenght of "192.168.103.103" is 15 but we also need a NULL terminating character
 static char g_ipStr[32] = "unknown";
 
-void HAL_ConnectToWiFi(const char *ssid, const char *psk)
+void HAL_ConnectToWiFi(const char *ssid, const char *psk, obkStaticIP_t *ip)
 {
 	wlan_ap_disable();
 	net_switch_mode(WLAN_MODE_STA);

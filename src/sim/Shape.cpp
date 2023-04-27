@@ -67,7 +67,7 @@ float CShape::drawInformation2D(float x, float h) {
 	if (shapes.size()) {
 		h = drawText(NULL, x, h, "SubShapes: %i", shapes.size());
 		for (int i = 0; i < shapes.size(); i++) {
-			h = drawText(NULL, x + 20, h, "SubShape: %i/%i", i, shapes.size());
+			h = drawText(NULL, x + 20, h, "SubShape: %i/%i", i+1, shapes.size());
 			h = shapes[i]->drawInformation2D(x + 40, h);
 		}
 	}

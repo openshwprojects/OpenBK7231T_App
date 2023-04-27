@@ -25,11 +25,46 @@ char *add_padded(char *o, int i) {
 }
 enum {
 	CLOCK_DATE,
-	CLOCK_TIME
+	CLOCK_TIME,
+	CLOCK_HUMIDITY,
+	CLOCK_TEMPERATURE,
 };
+bool CHANNEL_IsHumidity(int type) {
+	if (type == ChType_Humidity)
+		return true;
+	if (type == ChType_Humidity_div10)
+		return true;
+	return false;
+}
+bool CHANNEL_IsTemperature(int type) {
+	if (type == ChType_Temperature)
+		return true;
+	if (type == ChType_Temperature_div10)
+		return true;
+	return false;
+}
+bool CHANNEL_GetGenericOfType(float *out, bool (*checker)(int type)) {
+	int i, t;
+
+	for (i = 0; i < CHANNEL_MAX; i++) {
+		t = g_cfg.pins.channelTypes[i];
+		if (checker(t)) {
+			*out = CHANNEL_GetFinalValue(i);
+			return true;
+		}
+	}
+	return false;
+}
+bool CHANNEL_GetGenericHumidity(float *out) {
+	return CHANNEL_GetGenericOfType(out, CHANNEL_IsHumidity);
+}
+bool CHANNEL_GetGenericTemperature(float *out) {
+	return CHANNEL_GetGenericOfType(out, CHANNEL_IsTemperature);
+}
 void Clock_Send(int type) {
 	char time[64];
 	struct tm *ltm;
+	float val;
 	char *p;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
@@ -47,14 +82,22 @@ void Clock_Send(int type) {
 		p = add_padded(p, ltm->tm_min);
 		strcat(p, "   ");
 	}
-	else {
+	else if (type == CLOCK_DATE) {
 		p = my_strcat(p, " ");
 		p = add_padded(p, ltm->tm_mday);
 		p = my_strcat(p, ".");
-		p = add_padded(p, ltm->tm_mon+1);
+		p = add_padded(p, ltm->tm_mon + 1);
 		//p = my_strcat(p, ".");
 		//p = add_padded(p, ltm->tm_year);
 		strcat(p, "   ");
+	}
+	else if (type == CLOCK_HUMIDITY) {
+		CHANNEL_GetGenericHumidity(&val);
+		sprintf(time, "H: %i%%   ", (int)val);
+	} 
+	else if (type == CLOCK_TEMPERATURE) {
+		CHANNEL_GetGenericTemperature(&val);
+		sprintf(time, "T: %iC    ", (int)val);
 	}
 
 	CMD_ExecuteCommandArgs("MAX72XX_Print", time, 0);
@@ -65,16 +108,32 @@ void Clock_SendTime() {
 void Clock_SendDate() {
 	Clock_Send(CLOCK_DATE);
 }
+void Clock_SendHumidity() {
+	Clock_Send(CLOCK_HUMIDITY);
+}
+void Clock_SendTemperature() {
+	Clock_Send(CLOCK_TEMPERATURE);
+}
 static int cycle = 0;
+
 void Run_NoAnimation() {
-	cycle++;
+	int max_cycle;
+	bool bHasDHT;
+
+	cycle+=4;
 	if (cycle < 10) {
 		Clock_SendDate();
 	}
-	else {
+	else if(cycle < 20) {
 		Clock_SendTime();
 	}
-	cycle %= 20;
+	else if (cycle < 30) {
+		Clock_SendHumidity();
+	}
+	else {
+		Clock_SendTemperature();
+	}
+	cycle %= 40;
 }
 void Run_Animated() {
 	char time[64];

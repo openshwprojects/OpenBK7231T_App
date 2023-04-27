@@ -37,6 +37,7 @@ static void Batt_Measure() {
 	}
 	if (g_vdivider > 1) {
 		CHANNEL_Set(channel_rel, 1, 0);
+		rtos_delay_milliseconds(10);
 	}
 	g_battvoltage = HAL_ADC_Read(g_pin_adc);
 	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY : ADC binary Measurement : %f and channel %i", g_battvoltage, channel_adc);
@@ -53,6 +54,10 @@ static void Batt_Measure() {
 	batt_res = g_battvoltage - g_minbatt;
 	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY : Ref battery: %f, rest battery %f", batt_ref, batt_res);
 	g_battlevel = (batt_res / batt_ref) * 100;
+	if (g_battlevel < 0)
+		g_battlevel = 0;
+	if (g_battlevel > 100)
+		g_battlevel = 100;
 
 	MQTT_PublishMain_StringInt("voltage", (int)g_battvoltage);
 	MQTT_PublishMain_StringInt("battery", (int)g_battlevel);
@@ -76,8 +81,11 @@ int Battery_lastreading(int type)
 commandResult_t Battery_Setup(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-	if (Tokenizer_GetArgsCount() < 2) {
-		ADDLOG_INFO(LOG_FEATURE_DRV, "Battery Setup : need at least min and max battery args");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2))
+	{
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
@@ -93,7 +101,7 @@ commandResult_t Battery_Setup(const void* context, const char* cmd, const char* 
 		g_adcbits = Tokenizer_GetArgFloat(4);
 	}
 
-	ADDLOG_INFO(LOG_FEATURE_CMD, "Battery Setup : Min %i Max %i Vref %i adcbits %i vdivider %i", g_minbatt, g_maxbatt, g_vref, g_adcbits, g_vdivider);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Battery Setup : Min %f Max %f Vref %f adcbits %f vdivider %f", g_minbatt, g_maxbatt, g_vref, g_adcbits, g_vdivider);
 
 	return CMD_RES_OK;
 }
@@ -102,8 +110,11 @@ commandResult_t Battery_Setup(const void* context, const char* cmd, const char* 
 commandResult_t Battery_cycle(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-	if (Tokenizer_GetArgsCount() < 1) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "Battery Cycle : Need integer args for seconds cycle");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1))
+	{
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	g_battcycleref = Tokenizer_GetArgFloat(0);
@@ -117,7 +128,7 @@ commandResult_t Battery_cycle(const void* context, const char* cmd, const char* 
 // startDriver Battery
 void Batt_Init() {
 
-	//cmddetail:{"name":"Battery_Setup","args":"[int][int][float][int][int]",
+	//cmddetail:{"name":"Battery_Setup","args":"[float][float][float][float][float]",
 	//cmddetail:"descr":"measure battery based on ADC args minbatt and maxbatt in mv. optional V_divider(2), Vref(default 2400) and ADC bits(4096) and   ",
 	//cmddetail:"fn":"Battery_Setup","file":"drv/drv_battery.c","requires":"",
 	//cmddetail:"examples":"Battery_Setup 1500 3000 2 2400 4096"}
@@ -151,6 +162,6 @@ void Batt_StopDriver() {
 }
 void Batt_AppendInformationToHTTPIndexPage(http_request_t* request)
 {
-	hprintf255(request, "<h2>Battery level=%f, voltage=%f</h2>", g_battlevel, g_battvoltage);
+	hprintf255(request, "<h2>Battery level=%.2f, voltage=%.2f</h2>", g_battlevel, g_battvoltage);
 }
 
