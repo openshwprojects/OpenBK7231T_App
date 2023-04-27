@@ -1542,49 +1542,6 @@ int http_fn_startup_command(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
-int http_fn_uart_tool(http_request_t* request) {
-	char tmpA[256];
-	int resultLen = 0;
-	http_setup(request, httpMimeTypeHTML);
-	http_html_start(request, "UART tool");
-	poststr_h4(request, "UART Tool");
-
-	if (http_getArg(request->url, "data", tmpA, sizeof(tmpA))) {
-#ifdef ENABLE_DRIVER_TUYAMCU
-		byte results[128];
-
-		hprintf255(request, "<h3>Sent %s!</h3>", tmpA);
-		if (0) {
-			TuyaMCU_Send((byte*)tmpA, strlen(tmpA));
-			//	bk_send_string(0,tmpA);
-		}
-		else {
-			byte b;
-			const char* p;
-
-			p = tmpA;
-			while (*p) {
-				b = hexbyte(p);
-				results[resultLen] = b;
-				resultLen++;
-				p += 2;
-			}
-			TuyaMCU_Send(results, resultLen);
-		}
-#endif
-	}
-	else {
-		strcpy(tmpA, "Hello UART world");
-	}
-
-	add_label_text_field(request, "Data", "data", tmpA, "<form action=\"/uart_tool\">");
-	poststr(request, SUBMIT_AND_END_FORM);
-
-	poststr(request, htmlFooterReturnToCfgLink);
-	http_html_end(request);
-	poststr(request, NULL);
-	return 0;
-}
 
 void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	int i;
@@ -2020,7 +1977,6 @@ int http_fn_cfg(http_request_t* request) {
 	postFormAction(request, "ota", "OTA (update software by WiFi)");
 	postFormAction(request, "cmd_tool", "Execute custom command");
 	postFormAction(request, "flash_read_tool", "Flash Read Tool");
-	postFormAction(request, "uart_tool", "UART Tool");
 	postFormAction(request, "startup_command", "Change startup command text");
 
 #if 0
