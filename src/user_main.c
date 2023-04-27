@@ -396,7 +396,9 @@ void Main_OnEverySecond()
 	MQTT_Dedup_Tick();
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602)
 	UART_RunEverySecond();
+#endif
 #endif
 
 #if WINDOWS
