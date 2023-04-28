@@ -1260,6 +1260,9 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 		sprintf(valueStr, "%i", iVal);
 	}
 
+	MQTT_BroadcastTasmotaTeleSTATE();
+	MQTT_BroadcastTasmotaTeleSENSOR();
+
 	// String from channel number
 	sprintf(channelNameStr, "%i", channel);
 
