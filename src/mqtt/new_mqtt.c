@@ -1811,7 +1811,6 @@ int MQTT_RunQuickTick(){
 	return 0;
 }
 
-int g_timeSinceLastTasmotaTeleSent = 99;
 int g_wantTasmotaTeleSend = 0;
 void MQTT_BroadcastTasmotaTeleSENSOR() {
 	if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES) == false) {
@@ -1831,12 +1830,7 @@ void MQTT_BroadcastTasmotaTeleSTATE() {
 	if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES) == false) {
 		return;
 	}
-	if (g_timeSinceLastTasmotaTeleSent < 1) {
-		g_wantTasmotaTeleSend = 1;
-		return;
-	}
 	MQTT_ProcessCommandReplyJSON("STATE", "", COMMAND_FLAG_SOURCE_TELESENDER);
-	g_wantTasmotaTeleSend = 0;
 }
 // called from user timer.
 int MQTT_RunEverySecondUpdate()
@@ -1943,11 +1937,9 @@ int MQTT_RunEverySecondUpdate()
 		// things to do in our threads on connection accepted.
 		if (g_just_connected){
 			g_just_connected = 0;
-			// publish TELE
-			MQTT_BroadcastTasmotaTeleSTATE();
-			MQTT_BroadcastTasmotaTeleSENSOR();
 			// publish all values on state
 			if (CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEONCONNECT)) {
+				g_wantTasmotaTeleSend = 1;
 				MQTT_PublishWholeDeviceState();
 			}
 			else {
@@ -1958,11 +1950,11 @@ int MQTT_RunEverySecondUpdate()
 		MQTT_Mutex_Free();
 		// below mutex is not required any more
 
-		// it is connected
-		g_timeSinceLastTasmotaTeleSent++;
+		// it is connected publish TELE
 		if (g_wantTasmotaTeleSend) {
 			MQTT_BroadcastTasmotaTeleSTATE();
 			MQTT_BroadcastTasmotaTeleSENSOR();
+			g_wantTasmotaTeleSend = 0;
 		}
 		g_timeSinceLastMQTTPublish++;
 #if WINDOWS
