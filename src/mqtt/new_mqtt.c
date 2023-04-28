@@ -1975,13 +1975,13 @@ int MQTT_RunEverySecondUpdate()
 		if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES)) {
 			static int g_mqtt_tasmotaTeleCounter_sensor = 0;
 			g_mqtt_tasmotaTeleCounter_sensor++;
-			if (g_mqtt_tasmotaTeleCounter_sensor > g_teleSensor_interval) {
+			if (g_mqtt_tasmotaTeleCounter_sensor >= g_teleSensor_interval) {
 				g_mqtt_tasmotaTeleCounter_sensor = 0;
 				MQTT_BroadcastTasmotaTeleSENSOR();
 			}
 			static int g_mqtt_tasmotaTeleCounter_state = 0;
 			g_mqtt_tasmotaTeleCounter_state++;
-			if (g_mqtt_tasmotaTeleCounter_state > g_teleState_interval) {
+			if (g_mqtt_tasmotaTeleCounter_state >= g_teleState_interval) {
 				g_mqtt_tasmotaTeleCounter_state = 0;
 				MQTT_BroadcastTasmotaTeleSTATE();
 			}
