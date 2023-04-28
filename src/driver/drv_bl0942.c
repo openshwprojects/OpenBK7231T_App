@@ -9,8 +9,9 @@
 
 #define BL0942_UART_BAUD_RATE 4800
 #define BL0942_UART_RECEIVE_BUFFER_SIZE 256
-#define BL0942_UART_CMD_READ 0x58
-#define BL0942_UART_CMD_WRITE(addr) (0xA8 | addr) // addr = 0 - 3
+#define BL0942_UART_ADDR 0 // 0 - 3
+#define BL0942_UART_CMD_READ(addr) (0x58 | addr)
+#define BL0942_UART_CMD_WRITE(addr) (0xA8 | addr)
 #define BL0942_UART_REG_PACKET 0xAA
 #define BL0942_UART_PACKET_HEAD 0x55
 #define BL0942_UART_PACKET_LEN 23
@@ -30,7 +31,7 @@
 
 // User operation register (read and write)
 #define BL0942_REG_MODE 0x19
-#define BL0942_MODE_DEFAULT 0x84
+#define BL0942_MODE_DEFAULT 0x87
 #define BL0942_MODE_RMS_UPDATE_SEL_800_MS (1 << 3)
 
 #define DEFAULT_VOLTAGE_CAL 15188
@@ -96,9 +97,9 @@ static int UART_TryToGetNextPacket(void) {
 	if(a != 0x55) {
 		return 0;
 	}
-	checksum = BL0942_UART_CMD_READ;
+    checksum = BL0942_UART_CMD_READ(BL0942_UART_ADDR);
 
-	for(i = 0; i < BL0942_UART_PACKET_LEN-1; i++) {
+    for(i = 0; i < BL0942_UART_PACKET_LEN-1; i++) {
 		checksum += UART_GetNextByte(i);
 	}
 	checksum ^= 0xFF;
@@ -117,8 +118,10 @@ static int UART_TryToGetNextPacket(void) {
 #endif
 
 	if(checksum != UART_GetNextByte(BL0942_UART_PACKET_LEN-1)) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Skipping packet with bad checksum %02X wanted %02X\n",checksum,UART_GetNextByte(BL0942_UART_PACKET_LEN-1));
-		UART_ConsumeBytes(BL0942_UART_PACKET_LEN);
+        ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
+                    "Skipping packet with bad checksum %02X wanted %02X\n",
+                    UART_GetNextByte(BL0942_UART_PACKET_LEN - 1), checksum);
+        UART_ConsumeBytes(BL0942_UART_PACKET_LEN);
 		return 1;
 	}
 
@@ -148,14 +151,9 @@ static int UART_TryToGetNextPacket(void) {
 	return BL0942_UART_PACKET_LEN;
 }
 
-static void UART_SendRequest(void) {
-	UART_SendByte(BL0942_UART_CMD_READ);
-	UART_SendByte(BL0942_UART_REG_PACKET);
-}
-
 static void UART_WriteReg(uint8_t reg, uint32_t val) {
     uint8_t send[5];
-    send[0] = BL0942_UART_CMD_WRITE(0);
+    send[0] = BL0942_UART_CMD_WRITE(BL0942_UART_ADDR);
     send[1] = reg;
     send[2] = (val & 0xFF);
     send[3] = ((val >> 8) & 0xFF);
@@ -245,7 +243,9 @@ void BL0942_UART_RunFrame(void) {
     UART_TryToGetNextPacket();
 
     UART_InitUART(BL0942_UART_BAUD_RATE);
-    UART_SendRequest();
+
+    UART_SendByte(BL0942_UART_CMD_READ(BL0942_UART_ADDR));
+    UART_SendByte(BL0942_UART_REG_PACKET);
 }
 
 void BL0942_SPI_Init(void) {
