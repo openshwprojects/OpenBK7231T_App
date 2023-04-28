@@ -1261,6 +1261,7 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 	}
 
 	MQTT_BroadcastTasmotaTeleSTATE();
+	MQTT_BroadcastTasmotaTeleSENSOR();
 
 	// String from channel number
 	sprintf(channelNameStr, "%i", channel);
@@ -1816,6 +1817,9 @@ int MQTT_RunQuickTick(){
 int g_timeSinceLastTasmotaTeleSent = 99;
 int g_wantTasmotaTeleSend = 0;
 void MQTT_BroadcastTasmotaTeleSENSOR() {
+	if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES) == false) {
+		return;
+	}
 	bool bHasAnySensor = false;
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	if (DRV_IsMeasuringPower()) {
@@ -1835,7 +1839,6 @@ void MQTT_BroadcastTasmotaTeleSTATE() {
 		return;
 	}
 	MQTT_ProcessCommandReplyJSON("STATE", "", COMMAND_FLAG_SOURCE_TELESENDER);
-	MQTT_BroadcastTasmotaTeleSENSOR();
 	g_wantTasmotaTeleSend = 0;
 }
 // called from user timer.
@@ -1945,6 +1948,7 @@ int MQTT_RunEverySecondUpdate()
 			g_just_connected = 0;
 			// publish TELE
 			MQTT_BroadcastTasmotaTeleSTATE();
+			MQTT_BroadcastTasmotaTeleSENSOR();
 			// publish all values on state
 			if (CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEONCONNECT)) {
 				MQTT_PublishWholeDeviceState();
@@ -1961,6 +1965,7 @@ int MQTT_RunEverySecondUpdate()
 		g_timeSinceLastTasmotaTeleSent++;
 		if (g_wantTasmotaTeleSend) {
 			MQTT_BroadcastTasmotaTeleSTATE();
+			MQTT_BroadcastTasmotaTeleSENSOR();
 		}
 		g_timeSinceLastMQTTPublish++;
 #if WINDOWS
