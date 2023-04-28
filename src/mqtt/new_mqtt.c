@@ -530,7 +530,10 @@ const char* MQTT_RemoveClientFromTopic(const char* topic, const char *prefix) {
 	}
 	return p2;
 }
-
+bool stribegins(const char *str, const char *needle) {
+	int l = strlen(needle);
+	return !wal_strnicmp(str, needle, l);
+}
 // this accepts obkXXXXXX/<chan>/get to request channel publish
 int channelGet(obk_mqtt_request_t* request) {
 	//int len = request->receivedLen;
@@ -553,23 +556,23 @@ int channelGet(obk_mqtt_request_t* request) {
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelGet part topic %s", p);
 
-	if (!stricmp(p, "led_enableAll")) {
+	if (stribegins(p, "led_enableAll")) {
 		LED_SendEnableAllState();
 		return 1;
 	}
-	if (!stricmp(p, "led_dimmer")) {
+	if (stribegins(p, "led_dimmer")) {
 		LED_SendDimmerChange();
 		return 1;
 	}
-	if (!stricmp(p, "led_temperature")) {
+	if (stribegins(p, "led_temperature")) {
 		sendTemperatureChange();
 		return 1;
 	}
-	if (!stricmp(p, "led_finalcolor_rgb")) {
+	if (stribegins(p, "led_finalcolor_rgb")) {
 		sendFinalColor();
 		return 1;
 	}
-	if (!stricmp(p, "led_basecolor_rgb")) {
+	if (stribegins(p, "led_basecolor_rgb")) {
 		sendColorChange();
 		return 1;
 	}

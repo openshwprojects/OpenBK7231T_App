@@ -845,6 +845,9 @@
     <ClCompile Include="src\driver\drv_tm1638.c">
       <Filter>Drv</Filter>
     </ClCompile>
+    <ClCompile Include="src\selftest\selftest_mqtt_get.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />
