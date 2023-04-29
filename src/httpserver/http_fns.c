@@ -542,6 +542,13 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "ReactivePower %iVAr (ch %s)", iValue, CHANNEL_GetLabel(i));
 			poststr(request, "</td></tr>");
 		}
+		else if (channelType == ChType_Power_div10) {
+			iValue = CHANNEL_Get(i);
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "Power %.2fW (ch %s)", (iValue*0.1f), CHANNEL_GetLabel(i));
+			poststr(request, "</td></tr>");
+		}
 		else if (channelType == ChType_Power) {
 			iValue = CHANNEL_Get(i);
 

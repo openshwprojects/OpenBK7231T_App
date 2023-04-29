@@ -789,6 +789,13 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Custom,
+	//chandetail:{"name":"Power_div10",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Just like power, but with one decimal place (but stored as integer, for TuyaMCU support)",
+	//chandetail:"enum":"ChType_Power_div10",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Power_div10,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
