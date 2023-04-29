@@ -578,6 +578,7 @@ static cJSON_bool print_number(const cJSON * const item, printbuffer * const out
     else
     {
         /* Try 15 decimal places of precision to avoid nonsignificant nonzero digits */
+#if 0
         length = snprintf((char*)number_buffer, sizeof(number_buffer), "%1.15g", d);
 
         /* Check whether the original double can be recovered */
@@ -586,6 +587,10 @@ static cJSON_bool print_number(const cJSON * const item, printbuffer * const out
             /* If not, print with 17 decimal places of precision */
             length = snprintf((char*)number_buffer, sizeof(number_buffer), "%1.17g", d);
         }
+#else
+		// OpenBeken: our new snpritnf library is limited
+		length = snprintf((char*)number_buffer, sizeof(number_buffer), "%.5f", d);
+#endif
     }
 
     /* sprintf failed or buffer overrun occurred */
