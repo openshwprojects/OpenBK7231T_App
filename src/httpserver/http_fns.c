@@ -561,7 +561,7 @@ int http_fn_index(http_request_t* request) {
 			fValue = iValue * 0.001f;
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "PowerFactor %.2f (ch %i)", fValue, i);
+			hprintf255(request, "PowerFactor %.4f (ch %i)", fValue, i);
 			poststr(request, "</td></tr>");
 		}
 		else if (channelType == ChType_Current_div100) {
