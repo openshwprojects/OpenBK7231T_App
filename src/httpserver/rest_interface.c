@@ -828,6 +828,7 @@ static int http_rest_get_info(http_request_t* request) {
 	hprintf255(request, "\"mqtttopic\":\"%s\",", CFG_GetMQTTClientId());
 	hprintf255(request, "\"chipset\":\"%s\",", PLATFORM_MCU_NAME);
 	hprintf255(request, "\"webapp\":\"%s\",", CFG_GetWebappRoot());
+	hprintf255(request, "\"shortName\":\"%s\",", CFG_GetShortDeviceName());
 	
 	hprintf255(request, "\"startcmd\":\"%s\",", CFG_GetShortStartupCommand());
 #ifndef OBK_DISABLE_ALL_DRIVERS
