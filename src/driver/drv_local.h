@@ -8,6 +8,7 @@ void DRV_DGR_RunQuickTick();
 void DRV_DGR_RunEverySecond();
 void DRV_DGR_Shutdown();
 void DRV_DGR_OnChannelChanged(int ch, int value);
+void DRV_DGR_AppendInformationToHTTPIndexPage(http_request_t* request);
 
 void DRV_DDP_Init();
 void DRV_DDP_RunFrame();

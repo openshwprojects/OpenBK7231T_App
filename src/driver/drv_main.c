@@ -169,7 +169,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Tasmota Device groups driver. See [forum example](https://www.elektroda.com/rtvforum/topic3925472.html) and TODO-video tutorial (will post on YT soon)",
 	//drvdetail:"requires":""}
-	{ "DGR",		DRV_DGR_Init,		DRV_DGR_RunEverySecond,		NULL, DRV_DGR_RunQuickTick, DRV_DGR_Shutdown, DRV_DGR_OnChannelChanged, false },
+	{ "DGR",		DRV_DGR_Init,		DRV_DGR_RunEverySecond,		DRV_DGR_AppendInformationToHTTPIndexPage, DRV_DGR_RunQuickTick, DRV_DGR_Shutdown, DRV_DGR_OnChannelChanged, false },
 #endif
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	//drvdetail:{"name":"PWMToggler",

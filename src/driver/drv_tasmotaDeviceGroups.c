@@ -10,6 +10,7 @@
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
+#include "../httpserver/new_http.h"
 
 static const char* dgr_group = "239.255.250.250";
 static int dgr_port = 4447;
@@ -17,6 +18,10 @@ static int dgr_retry_time_left = 5;
 static int g_inCmdProcessing = 0;
 static int g_dgr_socket_receive = -1;
 static int g_dgr_socket_send = -1;
+// statistics
+static int g_dgr_stat_sent = 0;
+static int g_dgr_stat_received = 0;
+
 static uint16_t g_dgr_send_seq = 0;
 
 const char *HAL_GetMyIPString();
@@ -108,6 +113,7 @@ void DGR_FlushSendQueue() {
 	p = dgr_pending;
 	while(p) {
 		if(p->length != 0) {
+			g_dgr_stat_sent++;
 			nbytes = sendto(
 				g_dgr_socket_send,
 			   (const char*) p->buffer,
@@ -209,6 +215,7 @@ void DRV_DGR_Send_Generic(byte *message, int len) {
 	// This is here only because sending UDP from MQTT callback crashes BK for me
 	// So instead, we are making a queue which is sent in quick tick
 	DGR_AddToSendQueue(message, len);
+	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "DGR adds to queue %i",len);
 #else
 
     // set up destination address
@@ -617,6 +624,7 @@ void DRV_DGR_RunQuickTick() {
 			return;
 		}
 
+		g_dgr_stat_received++;
 		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "Received %i bytes from %s\n", nbytes, inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr));
 
 		DGR_ProcessIncomingPacket(msgbuf, nbytes);
@@ -670,6 +678,9 @@ void DRV_DGR_Shutdown()
 	g_dgr_send_seq = 0;
 }
 
+void DRV_DGR_AppendInformationToHTTPIndexPage(http_request_t* request) {
+	hprintf255(request, "<h2>DGR r: %i, s: %i</h2>", g_dgr_stat_received, g_dgr_stat_sent);
+}
 // DGR_SendPower testSocket 1 1
 // DGR_SendPower stringGroupName integerChannelValues integerChannelsCount
 commandResult_t CMD_DGR_SendPower(const void *context, const char *cmd, const char *args, int flags) {
