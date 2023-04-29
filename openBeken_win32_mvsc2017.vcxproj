@@ -952,6 +952,7 @@
     <ClCompile Include="src\selftest\selftest_clockEvents.c" />
     <ClCompile Include="src\selftest\selftest_cmd_startup.c" />
     <ClCompile Include="src\selftest\selftest_if_inside_backlog.c" />
+    <ClCompile Include="src\selftest\selftest_json_lib.c" />
     <ClCompile Include="src\selftest\selftest_mqtt_get.c" />
     <ClCompile Include="src\selftest\selftest_role_toggleAll_2.c" />
     <ClCompile Include="src\selftest\selftest_cfg_via_http.c" />

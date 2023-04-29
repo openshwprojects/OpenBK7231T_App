@@ -62,6 +62,7 @@ inline const char *va(const char *fmt, ...) {
 }
 
 
+void Test_JSON_Lib();
 void Test_Commands_Startup();
 void Test_TwoPWMsOneChannel();
 void Test_ClockEvents();

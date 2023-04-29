@@ -268,6 +268,30 @@ static commandResult_t cmnd_lfs_test2(const void * context, const char *cmd, con
 #endif
 	return CMD_RES_OK;
 }
+
+static commandResult_t cmnd_json_test(const void * context, const char *cmd, const char *args, int cmdFlags) {
+	int i;
+	cJSON* root;
+	cJSON* stats;
+	char *msg;
+	float dailyStats[4] = { 00000095.44071197,00000171.84954833,00000181.58737182,00000331.35061645 };
+
+	root = cJSON_CreateObject();
+	{
+		stats = cJSON_CreateArray();
+		for (i = 0; i < 4; i++)
+		{
+			cJSON_AddItemToArray(stats, cJSON_CreateNumber(dailyStats[i]));
+		}
+		cJSON_AddItemToObject(root, "consumption_daily", stats);
+	}
+
+	msg = cJSON_PrintUnformatted(root);
+	cJSON_Delete(root);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Test JSON reads: %s", msg);
+	free(msg);
+	return CMD_RES_OK;
+}
 // Usage for continous test: addRepeatingEvent 1 -1 lfs_test3 ir.bat
 static commandResult_t cmnd_lfs_test3(const void * context, const char *cmd, const char *args, int cmdFlags) {
 	byte *res;
@@ -330,6 +354,9 @@ int CMD_InitTestCommands(){
 	//cmddetail:"fn":"cmnd_lfs_test3","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_test3", cmnd_lfs_test3, NULL);
+	CMD_RegisterCommand("json_test", cmnd_json_test, NULL);
+
+	
     return 0;
 }
 
