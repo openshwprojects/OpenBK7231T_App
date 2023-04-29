@@ -50,7 +50,6 @@
 int parsePowerArgument(const char *s);
 
 
-int g_lightMode = Light_RGB;
 // Those are base colors, normalized, without brightness applied
 float baseColors[5] = { 255, 255, 255, 255, 255 };
 // Those have brightness included
@@ -60,16 +59,24 @@ float g_hsv_s = 0; // 0 to 1
 float g_hsv_v = 1; // 0 to 1
 // By default, colors are in 255 to 0 range, while our channels accept 0 to 100 range
 float g_cfg_colorScaleToChannel = 100.0f/255.0f;
-int g_numBaseColors = 5;
 float g_brightness0to100 = 100.0f;
 float rgb_used_corr[3];   // RGB correction currently used
 // for smart dimmer, etc
 int led_defaultDimmerDeltaForHold = 10;
+// how often is LED state saved (if modified)? 
+// Saving LED often wears out flash memory, so it makes sense to save only from time to time
+// But setting a large interval and powering off led may cause the state to not be saved.
+// So it's adjustable
+short led_saveStateIfModifiedInterval = 30;
+short led_timeUntilNextSavePossible = 0;
+byte g_ledStateSavePending = 0;
+byte g_numBaseColors = 5;
+byte g_lightMode = Light_RGB;
 
 // NOTE: in this system, enabling/disabling whole led light bulb
 // is not changing the stored channel and brightness values.
 // They are kept intact so you can reenable the bulb and keep your color setting
-int g_lightEnableAll = 0;
+byte g_lightEnableAll = 0;
 
 // the slider control in the UI emits values
 // in the range from 154-500 (defined
@@ -248,7 +255,28 @@ void LED_I2CDriver_WriteRGBCW(float* finalRGBCW) {
 	}
 #endif
 }
-
+void LED_RunOnEverySecond() {
+	// can save?
+	if (led_timeUntilNextSavePossible > led_saveStateIfModifiedInterval) {
+		// can already save, do it if requested
+		if (g_ledStateSavePending) {
+			// do not save if user has turned off during the wait period
+			if (CFG_HasFlag(OBK_FLAG_LED_REMEMBERLASTSTATE)) {
+				LED_SaveStateToFlashVarsNow();
+				// saved
+			}
+			g_ledStateSavePending = 0;
+			led_timeUntilNextSavePossible = 0;
+		}
+		else {
+			// otherwise don't do anything, we will save as soon as it's required
+		}
+	}
+	else {
+		// cannot save yet, bump counter up
+		led_timeUntilNextSavePossible++;
+	}
+}
 void LED_RunQuickColorLerp(int deltaMS) {
 	int i;
 	int firstChannelIndex;
@@ -518,7 +546,8 @@ void apply_smart_light() {
 	}
 
 	if(CFG_HasFlag(OBK_FLAG_LED_REMEMBERLASTSTATE)) {
-		LED_SaveStateToFlashVarsNow();
+		// something was changed, mark as dirty
+		g_ledStateSavePending = 1;
 	}
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_DGR_OnLedFinalColorsChange(baseRGBCW);
@@ -1356,13 +1385,43 @@ static commandResult_t lerpSpeed(const void *context, const char *cmd, const cha
 	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
 	Tokenizer_TokenizeString(args, 0);
 
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+
 	led_lerpSpeedUnitsPerSecond = Tokenizer_GetArgFloat(0);
+
+	return CMD_RES_OK;
+}
+static commandResult_t cmdSaveStateIfModifiedInterval(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
+	Tokenizer_TokenizeString(args, 0);
+
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	led_saveStateIfModifiedInterval = Tokenizer_GetArgInteger(0);
 
 	return CMD_RES_OK;
 }
 static commandResult_t dimmerDelta(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
 	Tokenizer_TokenizeString(args, 0);
+
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 
 	led_defaultDimmerDeltaForHold = Tokenizer_GetArgInteger(0);
 
@@ -1371,6 +1430,13 @@ static commandResult_t dimmerDelta(const void *context, const char *cmd, const c
 static commandResult_t ctRange(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
 	Tokenizer_TokenizeString(args, 0);
+
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 
 	led_temperature_min = Tokenizer_GetArgFloat(0);
 	led_temperature_max = Tokenizer_GetArgFloat(1);
@@ -1382,6 +1448,13 @@ static commandResult_t setBrightness(const void *context, const char *cmd, const
 
 	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
 	Tokenizer_TokenizeString(args, 0);
+
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 
 	f = Tokenizer_GetArgFloat(0);
 
@@ -1578,6 +1651,13 @@ void NewLED_InitCommands(){
 	//cmddetail:"fn":"dimmerDelta","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DimmerDelta", dimmerDelta, NULL);
+	//cmddetail:{"name":"led_saveStateIfModifiedInterval","args":"[IntervalSeconds]",
+	//cmddetail:"descr":"This determines how often LED state can be saved to flash memory. The state is saved only if it was modified and if the flag for LED state save is enabled. Set this to higher value if you are changing LED states very often, for example from xLights. Saving too often could wear out flash memory too fast.",
+	//cmddetail:"fn":"led_saveInterval","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("led_saveInterval", cmdSaveStateIfModifiedInterval, NULL);
+
+	
 }
 
 void NewLED_RestoreSavedStateIfNeeded() {

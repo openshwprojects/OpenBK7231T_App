@@ -228,6 +228,7 @@ float LED_GetGreen255();
 float LED_GetRed255();
 float LED_GetBlue255();
 void LED_RunQuickColorLerp(int deltaMS);
+void LED_RunOnEverySecond();
 OBK_Publish_Result sendFinalColor();
 OBK_Publish_Result sendColorChange();
 OBK_Publish_Result LED_SendEnableAllState();

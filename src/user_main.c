@@ -394,6 +394,7 @@ void Main_OnEverySecond()
 	g_noMQTTTime = i;
 
 	MQTT_Dedup_Tick();
+	LED_RunOnEverySecond();
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602)
