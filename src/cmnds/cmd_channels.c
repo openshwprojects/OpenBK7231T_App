@@ -431,26 +431,6 @@ static commandResult_t CMD_FullBootTime(const void *context, const char *cmd, co
 
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_SetFlag(const void *context, const char *cmd, const char *args, int cmdFlags) {
-	const char *s;
-	int flag;
-	int bOn;
-	Tokenizer_TokenizeString(args, 0);
-	// following check must be done after 'Tokenizer_TokenizeString',
-	// so we know arguments count in Tokenizer. 'cmd' argument is
-	// only for warning display
-	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
-	s = CFG_GetDeviceName();
-	flag = Tokenizer_GetArgInteger(0);
-	bOn = Tokenizer_GetArgInteger(1);
-
-	CFG_SetFlag(flag, bOn);
-	ADDLOG_INFO(LOG_FEATURE_CMD, "Flag %i set to %i",flag,bOn);
-
-	return CMD_RES_OK;
-}
 static commandResult_t CMD_PinDeepSleep(const void *context, const char *cmd, const char *args, int cmdFlags){
 	g_bWantPinDeepSleep = 1;
 	return CMD_RES_OK;
@@ -516,11 +496,6 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_PinDeepSleep","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PinDeepSleep", CMD_PinDeepSleep, NULL);
-	//cmddetail:{"name":"SetFlag","args":"[FlagIndex][1or0]",
-	//cmddetail:"descr":"Enables/disables given flag.",
-	//cmddetail:"fn":"CMD_SetFlag","file":"cmnds/cmd_channels.c","requires":"",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("SetFlag", CMD_SetFlag, NULL);
 	//cmddetail:{"name":"FullBootTime","args":"[Value]",
 	//cmddetail:"descr":"Sets time in seconds after which boot is marked as valid. This is related to emergency AP mode which is enabled by powering on/off device 5 times quickly.",
 	//cmddetail:"fn":"CMD_FullBootTime","file":"cmnds/cmd_channels.c","requires":"",

@@ -108,15 +108,6 @@
     "examples": ""
   },
   {
-    "name": "SetFlag",
-    "args": "[FlagIndex][1or0]",
-    "descr": "Enables/disables given flag.",
-    "fn": "CMD_SetFlag",
-    "file": "cmnds/cmd_channels.c",
-    "requires": "",
-    "examples": ""
-  },
-  {
     "name": "FullBootTime",
     "args": "[Value]",
     "descr": "Sets time in seconds after which boot is marked as valid. This is related to emergency AP mode which is enabled by powering on/off device 5 times quickly.",
@@ -355,6 +346,15 @@
     "args": "[IntegerValue]",
     "descr": "Sets the device flags",
     "fn": "CMD_Flags",
+    "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "SetFlag",
+    "args": "[FlagIndex][0or1]",
+    "descr": "Sets given flag",
+    "fn": "CMD_SetFlag",
     "file": "cmnds/cmd_main.c",
     "requires": "",
     "examples": ""
@@ -625,6 +625,15 @@
     "args": "[DeltaValue]",
     "descr": "This sets the delta value for SmartDimmer/SmartButtonForLEDs hold event. This determines the amount of change of dimmer per hold event.",
     "fn": "dimmerDelta",
+    "file": "cmnds/cmd_newLEDDriver.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "led_saveInterval",
+    "args": "[IntervalSeconds]",
+    "descr": "This determines how often LED state can be saved to flash memory. The state is saved only if it was modified and if the flag for LED state save is enabled. Set this to higher value if you are changing LED states very often, for example from xLights. Saving too often could wear out flash memory too fast.",
+    "fn": "cmdSaveStateIfModifiedInterval",
     "file": "cmnds/cmd_newLEDDriver.c",
     "requires": "",
     "examples": ""
@@ -2254,6 +2263,15 @@
     "args": "[PublishCountPerSecond]",
     "descr": "If broadcast self state (this option in flags) is started, then gradually device info is published, with a speed of N publishes per second. Do not set too high value, it may overload LWIP MQTT library. This value is not saved, you must use autoexec.bat or short startup command to execute it on every reboot.",
     "fn": "MQTT_SetMaxBroadcastItemsPublishedPerSecond",
+    "file": "mqtt/new_mqtt.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "TasTeleInterval",
+    "args": "[SensorInterval][StateInterval]",
+    "descr": "This allows you to configure Tasmota TELE publish intervals, only if you have TELE flag enabled. First argument is interval for sensor publish (energy metering, etc), second is interval for State tele publish.",
+    "fn": "MQTT_SetTasTeleIntervals",
     "file": "mqtt/new_mqtt.c",
     "requires": "",
     "examples": ""

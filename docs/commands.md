@@ -20,7 +20,6 @@ Do not add anything here, as it will overwritten with next rebuild.
 | ShortName | [Name] | Sets the short name of the device. |
 | FriendlyName | [Name] | Sets the full name of the device |
 | PinDeepSleep |  | Starts a pin deep sleep (deep sleep that can be interrupted by external IO events like a button press) |
-| SetFlag | [FlagIndex][1or0] | Enables/disables given flag. |
 | FullBootTime | [Value] | Sets time in seconds after which boot is marked as valid. This is related to emergency AP mode which is enabled by powering on/off device 5 times quickly. |
 | SetChannelLabel | [ChannelIndex][Str][bHideTogglePrefix] | Sets a channel label for UI. If you use 1 for bHideTogglePrefix, then the 'Toggle ' prefix from button will be omitted |
 | MapRanges | [TargetChannel][InputValue][RangeVal0][RangeVal1][RangeValN] | This will set given channel to an index showing where given input value is within given range sections. For example, MapRanges 10 0.5 0.3 0.6 0.9 will set channel 10 to 1 because 0.5 value is between 0.3 and 0.6 |
@@ -48,6 +47,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | ota_http | [HTTP_URL] | Starts the firmware update procedure, the argument should be a reachable HTTP server file. You can easily setup HTTP server with Xampp, or Visual Code, or Python, etc. Make sure you are using OTA file for a correct platform (getting N platform RBL on T will brick device, etc etc) |
 | scheduleHADiscovery | [Seconds] | This will schedule HA discovery, the discovery will happen with given number of seconds, but timer only counts when MQTT is connected. It will not work without MQTT online, so you must set MQTT credentials first. |
 | flags | [IntegerValue] | Sets the device flags |
+| SetFlag | [FlagIndex][0or1] | Sets given flag |
 | ClearNoPingTime |  | Command for ping watchdog; it sets the 'time since last ping reply' to 0 again |
 | SetStartValue | [Channel][Value] | Sets the startup value for a channel. Used for start values for relays. Use 1 for High, 0 for low and -1 for 'remember last state' |
 | OpenAP |  | Temporarily disconnects from programmed WiFi network and opens Access Point |
@@ -78,6 +78,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | led_gammaCtrl | sub-cmd [par] | control LED Gamma Correction and Calibration<br/>e.g.:led_gammaCtrl on |
 | CTRange | [MinRange][MaxRange] | This sets the temperature range for display. Default is 154-500. |
 | DimmerDelta | [DeltaValue] | This sets the delta value for SmartDimmer/SmartButtonForLEDs hold event. This determines the amount of change of dimmer per hold event. |
+| led_saveInterval | [IntervalSeconds] | This determines how often LED state can be saved to flash memory. The state is saved only if it was modified and if the flag for LED state save is enabled. Set this to higher value if you are changing LED states very often, for example from xLights. Saving too often could wear out flash memory too fast. |
 | addRepeatingEvent | [IntervalSeconds][RepeatsOr-1][CommandToRun] | Starts a timer/interval command. Use 'backlog' to fit multiple commands in a single string. |
 | addRepeatingEventID | [IntervalSeconds][RepeatsOr-1][UserID][CommandToRun] | as addRepeatingEvent, but with a given ID. You can later cancel it with cancelRepeatingEvent.<br/>e.g.:addRepeatingEventID 2 -1 123 Power0 Toggle |
 | cancelRepeatingEvent | [UserIDInteger] | Stops a given repeating event with a specified ID |
@@ -259,6 +260,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | publishBenchmark |  |  |
 | mqtt_broadcastInterval | [ValueSeconds] | If broadcast self state every 60 seconds/minute is enabled in flags, this value allows you to change the delay, change this 60 seconds to any other value in seconds. This value is not saved, you must use autoexec.bat or short startup command to execute it on every reboot. |
 | mqtt_broadcastItemsPerSec | [PublishCountPerSecond] | If broadcast self state (this option in flags) is started, then gradually device info is published, with a speed of N publishes per second. Do not set too high value, it may overload LWIP MQTT library. This value is not saved, you must use autoexec.bat or short startup command to execute it on every reboot. |
+| TasTeleInterval | [SensorInterval][StateInterval] | This allows you to configure Tasmota TELE publish intervals, only if you have TELE flag enabled. First argument is interval for sensor publish (energy metering, etc), second is interval for State tele publish. |
 | showgpi | NULL | log stat of all GPIs |
 | setChannelType | [ChannelIndex][TypeString] | Sets a custom type for channel. Types are mostly used to determine how to display channel value on GUI |
 | showChannelValues |  | log channel values |

@@ -1651,9 +1651,9 @@ void NewLED_InitCommands(){
 	//cmddetail:"fn":"dimmerDelta","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DimmerDelta", dimmerDelta, NULL);
-	//cmddetail:{"name":"led_saveStateIfModifiedInterval","args":"[IntervalSeconds]",
+	//cmddetail:{"name":"led_saveInterval","args":"[IntervalSeconds]",
 	//cmddetail:"descr":"This determines how often LED state can be saved to flash memory. The state is saved only if it was modified and if the flag for LED state save is enabled. Set this to higher value if you are changing LED states very often, for example from xLights. Saving too often could wear out flash memory too fast.",
-	//cmddetail:"fn":"led_saveInterval","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:"fn":"cmdSaveStateIfModifiedInterval","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("led_saveInterval", cmdSaveStateIfModifiedInterval, NULL);
 
