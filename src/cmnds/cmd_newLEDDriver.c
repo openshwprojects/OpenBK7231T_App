@@ -380,6 +380,9 @@ float led_gamma_correction (int color, float iVal) { // apply LED gamma and RGB 
 	return oVal;
 } //
 
+void LED_SaveStateToFlashVarsNow() {
+	HAL_FlashVars_SaveLED(g_lightMode, g_brightness0to100, led_temperature_current, baseColors[0], baseColors[1], baseColors[2], g_lightEnableAll);
+}
 void apply_smart_light() {
 	int i;
 	int firstChannelIndex;
@@ -515,7 +518,7 @@ void apply_smart_light() {
 	}
 
 	if(CFG_HasFlag(OBK_FLAG_LED_REMEMBERLASTSTATE)) {
-		HAL_FlashVars_SaveLED(g_lightMode, g_brightness0to100, led_temperature_current,baseColors[0],baseColors[1],baseColors[2],g_lightEnableAll);
+		LED_SaveStateToFlashVarsNow();
 	}
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_DGR_OnLedFinalColorsChange(baseRGBCW);

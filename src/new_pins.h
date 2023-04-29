@@ -1065,9 +1065,20 @@ typedef struct mainConfig_s {
 	int ping_seconds;
 	// 0x000005A0
 	char ping_host[64];
-	char initCommandLine[512];
-} mainConfig_t; // size 0x000007E0 (2016 decimal)
-#define MAGIC_CONFIG_SIZE		2016
+	// ofs 0x000005E0 (dec 1504)
+	//char initCommandLine[512];
+	char initCommandLine[1568];
+	// offset 0x00000C00 (3072 decimal)
+	char wifi_ssid2[64];
+	// offset 0x00000C40 (3136 decimal)
+	char wifi_pass2[68];
+	// offset 0x00000C84 (3204 decimal)
+	char unused[380];
+} mainConfig_t; 
+
+// one sector is 4096 so it we still have some expand possibility
+#define MAGIC_CONFIG_SIZE_V3		2016
+#define MAGIC_CONFIG_SIZE_V4		3584
 
 extern mainConfig_t g_cfg;
 

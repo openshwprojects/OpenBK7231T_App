@@ -23,18 +23,32 @@ int g_cfg_pendingChanges = 0;
 #define CFG_IDENT_1 'F'
 #define CFG_IDENT_2 'G'
 
-#define MAIN_CFG_VERSION 3
+#define MAIN_CFG_VERSION_V3 3
+// version 4 - bumped size by 1024,
+// added alternate ssid fields
+#define MAIN_CFG_VERSION 4
 
 static byte CFG_CalcChecksum(mainConfig_t *inf) {
 	int header_size;
 	int remaining_size;
 	byte crc;
+	int configSize;
 
 	header_size = ((byte*)&inf->version)-((byte*)inf);
-	remaining_size = sizeof(mainConfig_t) - header_size;
+
+	if (inf->version == MAIN_CFG_VERSION_V3) {
+		configSize = MAGIC_CONFIG_SIZE_V3;
+		// quick fix for converting
+		inf->wifi_pass2[0] = 0;
+		inf->wifi_ssid2[0] = 0;
+	}
+	else {
+		configSize = sizeof(mainConfig_t);
+	}
+	remaining_size = configSize - header_size;
 
 	ADDLOG_DEBUG(LOG_FEATURE_CFG, "CFG_CalcChecksum: header size %i, total size %i, rem size %i\n",
-		header_size, sizeof(mainConfig_t), remaining_size);
+		header_size, configSize, remaining_size);
 
 	// This is more flexible method and won't be affected by field offsets
 	crc = Tiny_CRC8((const char*)&inf->version,remaining_size);
@@ -288,14 +302,22 @@ const char *CFG_GetWiFiPass(){
 	wifi_pass[sizeof(g_cfg.wifi_pass)] = 0;
 	return wifi_pass;
 }
-void CFG_SetWiFiSSID(const char *s) {
+const char *CFG_GetWiFiSSID2() {
+	return g_cfg.wifi_ssid2;
+}
+const char *CFG_GetWiFiPass2() {
+	return g_cfg.wifi_pass2;
+}
+int CFG_SetWiFiSSID(const char *s) {
 	// this will return non-zero if there were any changes
 	if(strcpy_safe_checkForChanges(g_cfg.wifi_ssid, s,sizeof(g_cfg.wifi_ssid))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
+		return 1;
 	}
+	return 0;
 }
-void CFG_SetWiFiPass(const char *s) {
+int CFG_SetWiFiPass(const char *s) {
 	uint32_t len;
 
 	len = strlen(s) + 1;
@@ -305,7 +327,26 @@ void CFG_SetWiFiPass(const char *s) {
 		memcpy(g_cfg.wifi_pass, s, len);
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
+		return 1;
 	}
+	return 0;
+}
+int CFG_SetWiFiSSID2(const char *s) {
+	// this will return non-zero if there were any changes
+	if (strcpy_safe_checkForChanges(g_cfg.wifi_ssid2, s, sizeof(g_cfg.wifi_ssid2))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+		return 1;
+	}
+	return 0;
+}
+int CFG_SetWiFiPass2(const char *s) {
+	if (strcpy_safe_checkForChanges(g_cfg.wifi_pass2, s, sizeof(g_cfg.wifi_pass2))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+		return 1;
+	}
+	return 0;
 }
 const char *CFG_GetMQTTHost() {
 	return g_cfg.mqtt_host;
@@ -449,6 +490,9 @@ void CFG_SetFlag(int flag, bool bValue) {
 		// this will start only if it wasnt running
 		if(bValue && flag == OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER) {
 			CMD_StartTCPCommandLine();
+		}
+		if (bValue && flag == OBK_FLAG_LED_REMEMBERLASTSTATE) {
+			LED_SaveStateToFlashVarsNow();
 		}
 	}
 }
@@ -627,9 +671,9 @@ void CFG_InitAndLoad() {
 	if (g_cfg.version<3) {
 		addLogAdv(LOG_WARN, LOG_FEATURE_CFG, "CFG_InitAndLoad: Old config version found, updating to v3.");
 		strcpy_safe(g_cfg.mqtt_clientId, g_cfg.shortDeviceName, sizeof(g_cfg.mqtt_clientId));
-		g_cfg.version = 3;
 		g_cfg_pendingChanges++;
 	}
+	g_cfg.version = MAIN_CFG_VERSION;
 
 	if(g_cfg.buttonHoldRepeat == 0) {
 		// default value is 5, which means 500ms

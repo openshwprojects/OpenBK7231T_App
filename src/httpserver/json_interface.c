@@ -688,7 +688,7 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	printer(request, "\"LogHost\":\"\",");
 	printer(request, "\"LogPort\":514,");
 	printer(request, "\"SSId1\":\"%s\",", CFG_GetWiFiSSID());
-	printer(request, "\"SSId2\":\"\",");
+	printer(request, "\"SSId2\":\"%s\",", CFG_GetWiFiSSID2());
 	printer(request, "\"TelePeriod\":300,");
 	printer(request, "\"Resolution\":\"558180C0\",");
 	printer(request, "\"SetOption\":[");

@@ -291,7 +291,7 @@ int __cdecl main(int argc, char **argv)
 		system("pause");
 	}
 	//printf("Offset MQTT Group: %i", OFFSETOF(mainConfig_t, mqtt_group));
-	if (sizeof(mainConfig_t) != MAGIC_CONFIG_SIZE) {
+	if (sizeof(mainConfig_t) != MAGIC_CONFIG_SIZE_V4) {
 		printf("sizeof(mainConfig_t) != MAGIC_CONFIG_SIZE!: %i\n", sizeof(mainConfig_t));
 		system("pause");
 	}
@@ -317,6 +317,22 @@ int __cdecl main(int argc, char **argv)
 	}
 	if (OFFSETOF(mainConfig_t, version) != 0x00000004) {
 		printf("OFFSETOF(mainConfig_t, version) != 0x00000004: %i\n", OFFSETOF(mainConfig_t, version));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, initCommandLine) != 0x000005E0) {
+		printf("OFFSETOF(mainConfig_t, initCommandLine) != 0x000005E0: %i\n", OFFSETOF(mainConfig_t, initCommandLine));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, wifi_ssid2) != 0x00000C00) {
+		printf("OFFSETOF(mainConfig_t, wifi_ssid2) != 0x00000C00: %i\n", OFFSETOF(mainConfig_t, wifi_ssid2));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, wifi_pass2) != 0x00000C40) {
+		printf("OFFSETOF(mainConfig_t, wifi_pass2) != 0x00000C40: %i\n", OFFSETOF(mainConfig_t, wifi_pass2));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, unused) != 0x00000C84) {
+		printf("OFFSETOF(mainConfig_t, unused) != 0x00000C84: %i\n", OFFSETOF(mainConfig_t, unused));
 		system("pause");
 	}
 	// Test expansion

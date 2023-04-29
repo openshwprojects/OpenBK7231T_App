@@ -1210,6 +1210,9 @@ int http_fn_cfg_wifi(http_request_t* request) {
 	poststr_h2(request, "Use this to connect to your WiFi");
 	add_label_text_field(request, "SSID", "ssid", CFG_GetWiFiSSID(), "<form action=\"/cfg_wifi_set\">");
 	add_label_password_field(request, "Password", "pass", CFG_GetWiFiPass(), "<br>");
+	poststr_h2(request, "Alternate WiFi (used when first one is not responding)");
+	add_label_text_field(request, "SSID2", "ssid2", CFG_GetWiFiSSID2(), "");
+	add_label_password_field(request, "Password2", "pass2", CFG_GetWiFiPass2(), "<br>");
 	poststr(request, "<br><br>\
 <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check SSID and pass twice?')\">\
 </form>");
@@ -1256,29 +1259,41 @@ int http_fn_cfg_name(http_request_t* request) {
 
 int http_fn_cfg_wifi_set(http_request_t* request) {
 	char tmpA[128];
+	int bChanged;
+
 	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HTTP_ProcessPacket: generating cfg_wifi_set \r\n");
+	bChanged = 0;
 
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Saving Wifi");
 	if (http_getArg(request->url, "open", tmpA, sizeof(tmpA))) {
-		CFG_SetWiFiSSID("");
-		CFG_SetWiFiPass("");
+		bChanged |= CFG_SetWiFiSSID("");
+		bChanged |= CFG_SetWiFiPass("");
 		poststr(request, "WiFi mode set: open access point.");
 	}
 	else {
 		if (http_getArg(request->url, "ssid", tmpA, sizeof(tmpA))) {
-			CFG_SetWiFiSSID(tmpA);
+			bChanged |= CFG_SetWiFiSSID(tmpA);
 		}
 		if (http_getArg(request->url, "pass", tmpA, sizeof(tmpA))) {
-			CFG_SetWiFiPass(tmpA);
+			bChanged |= CFG_SetWiFiPass(tmpA);
 		}
 		poststr(request, "WiFi mode set: connect to WLAN.");
 	}
+	if (http_getArg(request->url, "ssid2", tmpA, sizeof(tmpA))) {
+		bChanged |= CFG_SetWiFiSSID2(tmpA);
+	}
+	if (http_getArg(request->url, "pass2", tmpA, sizeof(tmpA))) {
+		bChanged |= CFG_SetWiFiPass2(tmpA);
+	}
 	CFG_Save_SetupTimer();
-
-	poststr(request, "Please wait for module to reset...");
-	RESET_ScheduleModuleReset(3);
-
+	if (bChanged==0) {
+		poststr(request, "No changes detected.");
+	}
+	else {
+		poststr(request, "Please wait for module to reset...");
+		RESET_ScheduleModuleReset(3);
+	}
 	poststr(request, "<br><a href=\"cfg_wifi\">Return to WiFi settings</a><br>");
 	poststr(request, htmlFooterReturnToCfgLink);
 	http_html_end(request);
