@@ -1261,6 +1261,7 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 	}
 
 	MQTT_BroadcastTasmotaTeleSTATE();
+	MQTT_BroadcastTasmotaTeleSENSOR();
 
 	// String from channel number
 	sprintf(channelNameStr, "%i", channel);
@@ -1813,9 +1814,11 @@ int MQTT_RunQuickTick(){
 	return 0;
 }
 
-int g_timeSinceLastTasmotaTeleSent = 99;
 int g_wantTasmotaTeleSend = 0;
 void MQTT_BroadcastTasmotaTeleSENSOR() {
+	if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES) == false) {
+		return;
+	}
 	bool bHasAnySensor = false;
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	if (DRV_IsMeasuringPower()) {
@@ -1830,13 +1833,7 @@ void MQTT_BroadcastTasmotaTeleSTATE() {
 	if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES) == false) {
 		return;
 	}
-	if (g_timeSinceLastTasmotaTeleSent < 1) {
-		g_wantTasmotaTeleSend = 1;
-		return;
-	}
 	MQTT_ProcessCommandReplyJSON("STATE", "", COMMAND_FLAG_SOURCE_TELESENDER);
-	MQTT_BroadcastTasmotaTeleSENSOR();
-	g_wantTasmotaTeleSend = 0;
 }
 // called from user timer.
 int MQTT_RunEverySecondUpdate()
@@ -1943,10 +1940,9 @@ int MQTT_RunEverySecondUpdate()
 		// things to do in our threads on connection accepted.
 		if (g_just_connected){
 			g_just_connected = 0;
-			// publish TELE
-			MQTT_BroadcastTasmotaTeleSTATE();
 			// publish all values on state
 			if (CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEONCONNECT)) {
+				g_wantTasmotaTeleSend = 1;
 				MQTT_PublishWholeDeviceState();
 			}
 			else {
@@ -1957,10 +1953,11 @@ int MQTT_RunEverySecondUpdate()
 		MQTT_Mutex_Free();
 		// below mutex is not required any more
 
-		// it is connected
-		g_timeSinceLastTasmotaTeleSent++;
+		// it is connected publish TELE
 		if (g_wantTasmotaTeleSend) {
 			MQTT_BroadcastTasmotaTeleSTATE();
+			MQTT_BroadcastTasmotaTeleSENSOR();
+			g_wantTasmotaTeleSend = 0;
 		}
 		g_timeSinceLastMQTTPublish++;
 #if WINDOWS
@@ -1981,13 +1978,13 @@ int MQTT_RunEverySecondUpdate()
 		if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES)) {
 			static int g_mqtt_tasmotaTeleCounter_sensor = 0;
 			g_mqtt_tasmotaTeleCounter_sensor++;
-			if (g_mqtt_tasmotaTeleCounter_sensor > g_teleSensor_interval) {
+			if (g_mqtt_tasmotaTeleCounter_sensor >= g_teleSensor_interval) {
 				g_mqtt_tasmotaTeleCounter_sensor = 0;
 				MQTT_BroadcastTasmotaTeleSENSOR();
 			}
 			static int g_mqtt_tasmotaTeleCounter_state = 0;
 			g_mqtt_tasmotaTeleCounter_state++;
-			if (g_mqtt_tasmotaTeleCounter_state > g_teleState_interval) {
+			if (g_mqtt_tasmotaTeleCounter_state >= g_teleState_interval) {
 				g_mqtt_tasmotaTeleCounter_state = 0;
 				MQTT_BroadcastTasmotaTeleSTATE();
 			}
