@@ -68,7 +68,7 @@ int led_defaultDimmerDeltaForHold = 10;
 // But setting a large interval and powering off led may cause the state to not be saved.
 // So it's adjustable
 short led_saveStateIfModifiedInterval = 30;
-short led_timeUntilNextSavePossible = 0;
+short led_timeUntilNextSavePossible = 30;
 byte g_ledStateSavePending = 0;
 byte g_numBaseColors = 5;
 byte g_lightMode = Light_RGB;
