@@ -679,7 +679,7 @@ void DRV_DGR_Shutdown()
 }
 
 void DRV_DGR_AppendInformationToHTTPIndexPage(http_request_t* request) {
-	hprintf255(request, "<h2>DGR r: %i, s: %i</h2>", g_dgr_stat_received, g_dgr_stat_sent);
+	hprintf255(request, "<h4>DGR received: %i, send: %i</h4>", g_dgr_stat_received, g_dgr_stat_sent);
 }
 // DGR_SendPower testSocket 1 1
 // DGR_SendPower stringGroupName integerChannelValues integerChannelsCount
