@@ -569,7 +569,7 @@ int http_fn_index(http_request_t* request) {
 			fValue = iValue * 0.01f;
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "Current %.2fA (ch %s)", fValue, CHANNEL_GetLabel(i));
+			hprintf255(request, "Current %.3fA (ch %s)", fValue, CHANNEL_GetLabel(i));
 			poststr(request, "</td></tr>");
 		}
 		else if (channelType == ChType_Current_div1000) {
@@ -577,7 +577,7 @@ int http_fn_index(http_request_t* request) {
 			fValue = iValue * 0.001f;
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "Current %.2fA (ch %s)", fValue, CHANNEL_GetLabel(i));
+			hprintf255(request, "Current %.4fA (ch %s)", fValue, CHANNEL_GetLabel(i));
 			poststr(request, "</td></tr>");
 		}
 		else if (channelType == ChType_BatteryLevelPercent) {
