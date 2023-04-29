@@ -24,6 +24,8 @@ const char *CFG_GetWiFiSSID2();
 const char *CFG_GetWiFiPass2();
 int CFG_SetWiFiSSID(const char *s);
 int CFG_SetWiFiPass(const char *s);
+int CFG_SetWiFiSSID2(const char *s);
+int CFG_SetWiFiPass2(const char *s);
 const char *CFG_GetMQTTHost();
 const char *CFG_GetMQTTClientId();
 const char *CFG_GetMQTTGroupTopic();
