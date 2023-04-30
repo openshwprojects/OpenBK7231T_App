@@ -166,7 +166,7 @@ function getFolder(name, cb){
                                 try {
                                     let chan = JSON.parse(json);
                                     if (chanindex[chan.name]) {
-                                        console.error('duplicate command docs at file: ' + file + ' line: ' + line);
+                                        console.error('duplicate channel docs at file: ' + file + ' line: ' + line);
                                         console.error(line);
                                     } else {
                                         channels.push(chan);
@@ -308,7 +308,7 @@ function getFolder(name, cb){
                                 try {
                                     let io = JSON.parse(json);
                                     if (ioindex[io.name]) {
-                                        console.error('duplicate command docs at file: ' + file + ' line: ' + line);
+                                        console.error('duplicate io docs at file: ' + file + ' line: ' + line);
                                         console.error(line);
                                     } else {
                                         ios.push(io);
@@ -394,7 +394,7 @@ function getFolder(name, cb){
                                 try {
                                     let drv = JSON.parse(json);
                                     if (drvindex[drv.name]) {
-                                        console.error('duplicate command docs at file: ' + file + ' line: ' + line);
+                                        console.error('duplicate driver docs at file: ' + file + ' line: ' + line);
                                         console.error(line);
                                     } else {
                                         drvs.push(drv);
@@ -569,9 +569,10 @@ function getFolder(name, cb){
                         try{
                             let cmd = JSON.parse(json);
                             if (cmdindex[cmd.name]){
-                                console.error('duplicate command docs at file: '+file+' line: '+line);
+                                console.error('duplicate command "' + cmd.name + '" docs at file: '+file+' line: '+line);
                                 console.error(line);
                             } else {
+                              // console.error('new command "' + cmd.name + '" docs at file: ' + file + ' line: ' + line);
                                 commands.push(cmd);
                                 cmdindex[cmd.name] = cmd;
                             }
