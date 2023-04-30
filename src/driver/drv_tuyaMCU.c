@@ -1561,6 +1561,7 @@ commandResult_t TuyaMCU_SetBaudRate(const void* context, const char* cmd, const 
 	}
 
 	g_baudRate = Tokenizer_GetArgInteger(0);
+	UART_InitUART(g_baudRate);
 
 	return CMD_RES_OK;
 }
