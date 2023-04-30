@@ -972,6 +972,15 @@
     "examples": ""
   },
   {
+    "name": "json_test",
+    "args": "cmnd_json_test",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_test.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "AB_Map",
     "args": "[int]",
     "descr": "Sets margines for ADC button codes. For given N margins, there are N+1 possible ADC button values (one should be reserved for 'no button')",

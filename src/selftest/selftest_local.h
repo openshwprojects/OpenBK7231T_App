@@ -35,7 +35,8 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 #define SELFTEST_ASSERT_FLAG(flag, value) SELFTEST_ASSERT(CFG_HasFlag(flag)==value);
 #define SELFTEST_ASSERT_HAS_MQTT_JSON_SENT(topic, bPrefixMode) SELFTEST_ASSERT(!SIM_BeginParsingMQTTJSON(topic, bPrefixMode));
 #define SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY(topic, bPrefixMode, object1, object2, key, value) SELFTEST_ASSERT(SIM_HasMQTTHistoryStringWithJSONPayload(topic, bPrefixMode, object1, object2, key, value));
-
+#define SELFTEST_ASSERT_HAS_SENT_UART_STRING(str) SELFTEST_ASSERT(SIM_UART_ExpectAndConsumeHexStr(str));
+#define SELFTEST_ASSERT_HAS_UART_EMPTY() SELFTEST_ASSERT(SIM_UART_GetDataSize()==0);
 
 //#define FLOAT_EQUALS (a,b) (fabs(a-b)<0.001f)
 inline bool Float_Equals(float a, float b) {
@@ -103,6 +104,7 @@ void Test_Role_ToggleAll_2();
 void Test_WaitFor();
 void Test_IF_Inside_Backlog();
 void Test_MQTT_Get_LED_EnableAll();
+void Test_TuyaMCU_BatteryPowered();
 
 void Test_GetJSONValue_Setup(const char *text);
 void Test_FakeHTTPClientPacket_GET(const char *tg);
@@ -135,5 +137,14 @@ const char *SIM_GetMQTTHistoryString(const char *topic, bool bPrefixMode);
 bool SIM_BeginParsingMQTTJSON(const char *topic, bool bPrefixMode);
 
 void SIM_SimulateUserClickOnPin(int pin);
+
+// simulated UART
+void SIM_UART_InitReceiveRingBuffer(int size);
+int SIM_UART_GetDataSize();
+byte SIM_UART_GetNextByte(int index);
+void SIM_UART_ConsumeBytes(int idx);
+void SIM_AppendUARTByte(byte rc);
+bool SIM_UART_ExpectAndConsumeHByte(byte b);
+bool SIM_UART_ExpectAndConsumeHexStr(const char *hexString);
 
 #endif

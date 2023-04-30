@@ -354,6 +354,10 @@ int CMD_InitTestCommands(){
 	//cmddetail:"fn":"cmnd_lfs_test3","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_test3", cmnd_lfs_test3, NULL);
+	//cmddetail:{"name":"json_test","args":"cmnd_json_test",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("json_test", cmnd_json_test, NULL);
 
 	

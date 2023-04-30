@@ -991,6 +991,7 @@
     <ClCompile Include="src\selftest\selftest_tasmota.c" />
     <ClCompile Include="src\selftest\selftest_tokenizer.c" />
     <ClCompile Include="src\selftest\selftest_tuyaMCU.c" />
+    <ClCompile Include="src\selftest\selftest_tuyaMCU_batteryPowered.c" />
     <ClCompile Include="src\selftest\selftest_twoPWMsOneChannel.c" />
     <ClCompile Include="src\selftest\selftest_util_mqtt.c" />
     <ClCompile Include="src\selftest\selftest_util_mqtt_json.c" />
@@ -1012,6 +1013,7 @@
     <ClCompile Include="src\sim\Simulation.cpp" />
     <ClCompile Include="src\sim\Simulator.cpp" />
     <ClCompile Include="src\sim\sim_sdl.cpp" />
+    <ClCompile Include="src\sim\sim_uart.c" />
     <ClCompile Include="src\sim\Solver.cpp" />
     <ClCompile Include="src\sim\Text.cpp" />
     <ClCompile Include="src\sim\Texture.cpp" />

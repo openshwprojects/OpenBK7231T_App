@@ -110,6 +110,7 @@ void UART_InitReceiveRingBuffer(int size){
 	memset(g_recvBuf,0,size);
 	g_recvBufSize = size;
 	g_recvBufIn = 0;
+	g_recvBufOut = 0;
 }
 int UART_GetDataSize()
 {
@@ -204,8 +205,10 @@ void UART_SendByte(byte b) {
 	// BK_UART_1 is defined to 0
 	bk_send_byte(g_chosenUART, b);
 #elif WINDOWS
+void SIM_AppendUARTByte(byte b);
 	// STUB - for testing
-    addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"%02X", b);
+	SIM_AppendUARTByte(b);
+    //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"%02X", b);
 #elif PLATFORM_BL602
 	aos_write(fd_console, &b, 1);
 	//bl_uart_data_send(g_id, b);

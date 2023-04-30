@@ -280,6 +280,14 @@
     "driver": ""
   },
   {
+    "name": "Power_div10",
+    "title": "TODO",
+    "descr": "Just like power, but with one decimal place (but stored as integer, for TuyaMCU support)",
+    "enum": "ChType_Power_div10",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
     "name": "Max",
     "title": "TODO",
     "descr": "This is the current total number of available channel types.",

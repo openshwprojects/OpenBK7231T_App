@@ -851,6 +851,12 @@
     <ClCompile Include="src\selftest\selftest_json_lib.c">
       <Filter>SelfTest</Filter>
     </ClCompile>
+    <ClCompile Include="src\selftest\selftest_tuyaMCU_batteryPowered.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\sim_uart.c">
+      <Filter>Simulator</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />
