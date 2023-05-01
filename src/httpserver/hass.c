@@ -208,6 +208,9 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload
 		isSensor = true;
 		sprintf(g_hassBuffer, "%s Voltage", CFG_GetShortDeviceName());
 		break;
+	case VOLTAGE_SENSOR:
+		sprintf(g_hassBuffer, "%s Voltage", CFG_GetShortDeviceName());
+		break;
 	}
 	cJSON_AddStringToObject(info->root, "name", g_hassBuffer);
 	cJSON_AddStringToObject(info->root, "~", CFG_GetMQTTClientId());      //base topic
