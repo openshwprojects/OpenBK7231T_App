@@ -43,7 +43,18 @@ typedef enum {
 	/// @brief CO2 sensor in ppm
 	CO2_SENSOR,
 	/// @brief TVOC sensor in ppb
-	TVOC_SENSOR
+	TVOC_SENSOR,
+
+	/// @brief 
+	VOLTAGE_SENSOR,
+	/// @brief 
+	CURRENT_SENSOR,
+	/// @brief 
+	//POWER_SINGLE_SENSOR,
+	/// @brief 
+	POWERFACTOR_SENSOR,
+	/// @brief 
+	FREQUENCY_SENSOR,
 
 } ENTITY_TYPE;
 
@@ -74,7 +85,7 @@ HassDeviceInfo* hass_init_relay_device_info(int index, ENTITY_TYPE type);
 HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type);
 HassDeviceInfo* hass_init_power_sensor_device_info(int index);
 HassDeviceInfo* hass_init_binary_sensor_device_info(int index);
-HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel);
+HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int decPlaces, int decOffset);
 const char* hass_build_discovery_json(HassDeviceInfo* info);
 void hass_free_device_info(HassDeviceInfo* info); 
 char *hass_generate_multiplyAndRound_template(int decimalPlacesForRounding, int decimalPointOffset);

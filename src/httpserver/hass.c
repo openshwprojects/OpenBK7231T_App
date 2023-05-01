@@ -393,7 +393,7 @@ char *hass_generate_multiplyAndRound_template(int decimalPlacesForRounding, int 
 /// @param type
 /// @param channel
 /// @return 
-HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel) {
+HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int decPlaces, int decOffset) {
 	int i;
 
 	//Assuming that there is only one DHT setup per device which keeps uniqueid/names simpler
@@ -404,9 +404,6 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel) {
 	case TEMPERATURE_SENSOR:
 		cJSON_AddStringToObject(info->root, "dev_cla", "temperature");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "°C");
-
-		//https://www.home-assistant.io/integrations/sensor.mqtt/ refers to value_template (val_tpl)
-		cJSON_AddStringToObject(info->root, "val_tpl", hass_generate_multiplyAndRound_template(2,1));
 
 		sprintf(g_hassBuffer, "~/%d/get", channel);
 		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
@@ -439,7 +436,36 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel) {
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "mV");
 		cJSON_AddStringToObject(info->root, "stat_t", "~/voltage/get");
 		break;
-
+	case VOLTAGE_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "voltage");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "V");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case CURRENT_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "current");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "A");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case POWER_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "power");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "W");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case POWERFACTOR_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "power_factor");
+		//cJSON_AddStringToObject(info->root, "unit_of_meas", "W");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case FREQUENCY_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "frequency");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "Hz");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
 	default:
 		sprintf(g_hassBuffer, "~/%d/get", channel);
 		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
@@ -447,6 +473,13 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel) {
 	}
 
 	cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
+
+
+	if (decPlaces != -1 && decOffset != -1) {
+		//https://www.home-assistant.io/integrations/sensor.mqtt/ refers to value_template (val_tpl)
+		cJSON_AddStringToObject(info->root, "val_tpl", hass_generate_multiplyAndRound_template(decPlaces, decOffset));
+	}
+
 	return info;
 }
 
