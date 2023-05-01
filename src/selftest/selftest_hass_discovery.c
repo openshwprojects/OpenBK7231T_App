@@ -120,7 +120,48 @@ void Test_HassDiscovery_LED_RGB() {
 }
 
 void Test_HassDiscovery_LED_RGBCW() {
-	// TODO
+	const char *shortName = "RGBCWtest";
+	const char *fullName = "Windows Fake RGBCW";
+	const char *mqttName = "testRGBCW";
+
+	SIM_ClearOBK(shortName);
+	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
+
+	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(24, 1);
+
+	PIN_SetPinRoleForPinIndex(26, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(26, 2);
+
+	PIN_SetPinRoleForPinIndex(9, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(9, 3);
+
+	PIN_SetPinRoleForPinIndex(6, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(6, 4);
+
+	PIN_SetPinRoleForPinIndex(7, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(7, 5);
+
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
+	Sim_RunSeconds(10, false);
+
+
+	// OBK device should publish JSON on MQTT topic "homeassistant"
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
+	//SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, "dev", 0, "name", shortName);
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "bri_cmd_t", "cmnd/testRGBCW/led_dimmer");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "bri_stat_t", "~/led_dimmer/get");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "bri_scl", "100");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "~", mqttName);
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "rgb_stat_t", "~/led_basecolor_rgb/get");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "rgb_cmd_t", "cmnd/testRGBCW/led_basecolor_rgb");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "clr_temp_cmd_t", "cmnd/testRGBCW/led_temperature");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "clr_temp_stat_t", "~/led_temperature/get");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "cmd_t", "cmnd/testRGBCW/led_enableAll");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/led_enableAll/get");
+
 }
 void Test_HassDiscovery_LED_SingleColor() {
 	// TODO
