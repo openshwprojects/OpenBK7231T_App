@@ -1601,9 +1601,9 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	hooks.free_fn = os_free;
 	cJSON_InitHooks(&hooks);
 
-	if (relayCount > 0) {
+	//if (relayCount > 0) {
 		for (i = 0; i < CHANNEL_MAX; i++) {
-			if (h_isChannelRelay(i)) {
+			if (h_isChannelRelay(i) || g_cfg.pins.channelTypes[i] == ChType_Toggle) {
 				// TODO: flags are 32 bit and there are 64 max channels
 				BIT_SET(flagsChannelPublished, i);
 				if (CFG_HasFlag(OBK_FLAG_MQTT_HASS_ADD_RELAYS_AS_LIGHTS)) {
@@ -1618,14 +1618,14 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				discoveryQueued = true;
 			}
 		}
-	}
+	//}
 
 	if (dInputCount > 0) {
 		for (i = 0; i < CHANNEL_MAX; i++) {
 			if (h_isChannelDigitalInput(i)) {
 				// TODO: flags are 32 bit and there are 64 max channels
 				BIT_SET(flagsChannelPublished, i);
-				dev_info = hass_init_binary_sensor_device_info(i);
+				dev_info = hass_init_binary_sensor_device_info(i, false);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 				dev_info = NULL;
@@ -1739,7 +1739,16 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		{
 			case ChType_OpenClosed:
 			{
-				dev_info = hass_init_binary_sensor_device_info(i);
+				dev_info = hass_init_binary_sensor_device_info(i, false);
+				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+				hass_free_device_info(dev_info);
+
+				discoveryQueued = true;
+			}
+			break;
+			case ChType_OpenClosed_Inv:
+			{
+				dev_info = hass_init_binary_sensor_device_info(i, true);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 
@@ -1794,6 +1803,15 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			case ChType_Current_div100:
 			{
 				dev_info = hass_init_sensor_device_info(CURRENT_SENSOR, i, 3, 2);
+				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+				hass_free_device_info(dev_info);
+
+				discoveryQueued = true;
+			}
+			break;
+			case ChType_Current_div1000:
+			{
+				dev_info = hass_init_sensor_device_info(CURRENT_SENSOR, i, 3, 3);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 

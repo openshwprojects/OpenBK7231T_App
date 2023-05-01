@@ -84,7 +84,7 @@ void hass_print_unique_id(http_request_t* request, const char* fmt, ENTITY_TYPE 
 HassDeviceInfo* hass_init_relay_device_info(int index, ENTITY_TYPE type);
 HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type);
 HassDeviceInfo* hass_init_power_sensor_device_info(int index);
-HassDeviceInfo* hass_init_binary_sensor_device_info(int index);
+HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse);
 HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int decPlaces, int decOffset);
 const char* hass_build_discovery_json(HassDeviceInfo* info);
 void hass_free_device_info(HassDeviceInfo* info); 

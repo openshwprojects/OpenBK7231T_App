@@ -65,8 +65,15 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 	case BATTERY_SENSOR:
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "battery", index);
 		break;
+	case VOLTAGE_SENSOR:
 	case BATTERY_VOLTAGE_SENSOR:
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "voltage", index);
+		break;
+	case CURRENT_SENSOR:
+		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "current", index);
+		break;
+	default:
+		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "sensor", index);
 		break;
 	}
 }
@@ -95,11 +102,12 @@ void hass_populate_device_config_channel(ENTITY_TYPE type, char* uniq_id, HassDe
 	case LIGHT_RGBCW:
 		sprintf(info->channel, "light/%s/config", uniq_id);
 		break;
-
 	case RELAY:
 		sprintf(info->channel, "switch/%s/config", uniq_id);
 		break;
-
+	case BINARY_SENSOR:
+		sprintf(info->channel, "binary_sensor/%s/config", uniq_id);
+		break;
 	case CO2_SENSOR:
 	case TVOC_SENSOR:
 	case POWER_SENSOR:
@@ -109,9 +117,9 @@ void hass_populate_device_config_channel(ENTITY_TYPE type, char* uniq_id, HassDe
 	case HUMIDITY_SENSOR:
 		sprintf(info->channel, "sensor/%s/config", uniq_id);
 		break;
-
-	case BINARY_SENSOR:
-		sprintf(info->channel, "binary_sensor/%s/config", uniq_id);
+	default:
+		sprintf(info->channel, "sensor/%s/config", uniq_id);
+		break;
 	}
 }
 
@@ -323,8 +331,17 @@ HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type) {
 /// @brief Initializes HomeAssistant binary sensor device discovery storage.
 /// @param index
 /// @return
-HassDeviceInfo* hass_init_binary_sensor_device_info(int index) {
-	HassDeviceInfo* info = hass_init_device_info(BINARY_SENSOR, index, "1", "0");
+HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse) {
+	const char *payload_on;
+	const char *payload_off;
+	if (bInverse) {
+		payload_on = "1";
+		payload_off = "0";
+	} else {
+		payload_off = "1";
+		payload_on = "0";
+	}
+	HassDeviceInfo* info = hass_init_device_info(BINARY_SENSOR, index, payload_on, payload_off);
 
 	sprintf(g_hassBuffer, "~/%i/get", index);
 	cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);   //state_topic

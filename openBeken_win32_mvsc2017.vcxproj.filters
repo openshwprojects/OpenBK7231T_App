@@ -857,6 +857,12 @@
     <ClCompile Include="src\sim\sim_uart.c">
       <Filter>Simulator</Filter>
     </ClCompile>
+    <ClCompile Include="src\selftest\selftest_hass_discovery_base.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_hass_discovery_ext.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />
