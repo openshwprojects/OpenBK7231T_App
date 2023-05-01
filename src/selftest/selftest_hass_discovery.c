@@ -254,9 +254,46 @@ void Test_HassDiscovery_BL0942() {
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/voltage/get");
 
 }
+void Test_HassDiscovery_BL0937() {
+	const char *shortName = "PowerMeteringFake";
+	const char *fullName = "Windows Fake BL0937";
+	const char *mqttName = "fakeBL0937";
+
+	SIM_ClearOBK(shortName);
+	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
+
+	CFG_SetShortDeviceName(shortName);
+	CFG_SetDeviceName(fullName);
+
+	PIN_SetPinRoleForPinIndex(24, IOR_BL0937_CF);
+	PIN_SetPinRoleForPinIndex(25, IOR_BL0937_SEL);
+	PIN_SetPinRoleForPinIndex(26, IOR_BL0937_CF1);
+
+	CMD_ExecuteCommand("startDriver BL0937", 0);
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
+	Sim_RunSeconds(10, false);
+
+	// generic tests to see if something power-related was published
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "V");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "W");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "Wh");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "A");
+
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "dev_cla", "voltage");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "dev_cla", "power");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "dev_cla", "current");
+
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/power/get");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/current/get");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/voltage/get");
+
+}
 void Test_HassDiscovery() {
 	Test_HassDiscovery_SHTSensor();
 	Test_HassDiscovery_BL0942();
+	Test_HassDiscovery_BL0937();
 	Test_HassDiscovery_Battery();
 	Test_HassDiscovery_Relay_1x();
 	Test_HassDiscovery_Relay_2x();
