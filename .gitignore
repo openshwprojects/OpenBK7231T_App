@@ -6,6 +6,7 @@ output/**
 *.pdb
 *.ncb
 *.bak
+*.tlog
 **/*.d
 /custom.mk
 /.vs
