@@ -1576,6 +1576,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	bool measuringBattery = false;
 	struct cJSON_Hooks hooks;
 	bool discoveryQueued = false;
+	int type;
 
 	if (topic == 0 || *topic == 0) {
 		topic = "homeassistant";
@@ -1705,7 +1706,41 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			discoveryQueued = true;
 		}
 	}
+#if WINDOWS
+	for (i = 0; i < CHANNEL_MAX; i++) {
+		type = g_cfg.pins.channelTypes[i];
+		switch (type)
+		{
+			case ChType_OpenClosed:
+			{
+				dev_info = hass_init_binary_sensor_device_info(i);
+				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+				hass_free_device_info(dev_info);
 
+				discoveryQueued = true;
+			}
+			break;
+			case ChType_Temperature:
+			{
+				dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, i);
+				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+				hass_free_device_info(dev_info);
+
+				discoveryQueued = true;
+			}
+			break;
+			case ChType_Humidity:
+			{
+				dev_info = hass_init_sensor_device_info(HUMIDITY_SENSOR, i);
+				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+				hass_free_device_info(dev_info);
+
+				discoveryQueued = true;
+			}
+			break;
+		}
+	}
+#endif
 	if (discoveryQueued) {
 		MQTT_InvokeCommandAtEnd(PublishChannels);
 	}

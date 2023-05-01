@@ -17,8 +17,6 @@ Sensor - https://www.home-assistant.io/integrations/sensor.mqtt/
 //CFG_GetShortDeviceName and clientId so it needs to be bigger than them. +64 for light/switch/etc.
 static char g_hassBuffer[CGF_MQTT_CLIENT_ID_SIZE + 64];
 
-static char* STATE_TOPIC_KEY = "stat_t";
-static char* COMMAND_TOPIC_KEY = "cmd_t";
 
 /// @brief Populates HomeAssistant unique id for the entity.
 /// @param type Entity type
@@ -245,9 +243,9 @@ HassDeviceInfo* hass_init_relay_device_info(int index, ENTITY_TYPE type) {
 	HassDeviceInfo* info = hass_init_device_info(type, index, "1", "0");
 
 	sprintf(g_hassBuffer, "~/%i/get", index);
-	cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);   //state_topic
+	cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);   //state_topic
 	sprintf(g_hassBuffer, "~/%i/set", index);
-	cJSON_AddStringToObject(info->root, COMMAND_TOPIC_KEY, g_hassBuffer);    //command_topic
+	cJSON_AddStringToObject(info->root, "cmd_t", g_hassBuffer);    //command_topic
 
 	return info;
 }
@@ -306,9 +304,9 @@ HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type) {
 		cJSON_AddStringToObject(info->root, "max_mirs", g_hassBuffer);    //max_mireds
 	}
 
-	cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, "~/led_enableAll/get");  //state_topic
+	cJSON_AddStringToObject(info->root, "stat_t", "~/led_enableAll/get");  //state_topic
 	sprintf(g_hassBuffer, "cmnd/%s/led_enableAll", clientId);
-	cJSON_AddStringToObject(info->root, COMMAND_TOPIC_KEY, g_hassBuffer);  //command_topic
+	cJSON_AddStringToObject(info->root, "cmd_t", g_hassBuffer);  //command_topic
 
 	cJSON_AddStringToObject(info->root, "bri_stat_t", "~/led_dimmer/get");  //brightness_state_topic
 	sprintf(g_hassBuffer, "cmnd/%s/led_dimmer", clientId);
@@ -326,7 +324,7 @@ HassDeviceInfo* hass_init_binary_sensor_device_info(int index) {
 	HassDeviceInfo* info = hass_init_device_info(BINARY_SENSOR, index, "1", "0");
 
 	sprintf(g_hassBuffer, "~/%i/get", index);
-	cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);   //state_topic
+	cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);   //state_topic
 
 	return info;
 }
@@ -347,7 +345,7 @@ HassDeviceInfo* hass_init_power_sensor_device_info(int index) {
 		cJSON_AddStringToObject(info->root, "unit_of_meas", sensor_mqtt_device_units[index]);   //unit_of_measurement
 
 		sprintf(g_hassBuffer, "~/%s/get", sensor_mqttNames[index]);
-		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 
 		cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
 	}
@@ -363,7 +361,7 @@ HassDeviceInfo* hass_init_power_sensor_device_info(int index) {
 		}
 
 		sprintf(g_hassBuffer, "~/%s/get", counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
-		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 	}
 
 	return info;
@@ -371,11 +369,33 @@ HassDeviceInfo* hass_init_power_sensor_device_info(int index) {
 
 #endif
 
+// generate string like "{{ float(value)*0.1|round(2) }}"
+// {{ float(value)*0.1 }} for value=12 give 1.2000000000000002, using round() to limit the decimal places
+char *hass_generate_multiplyAndRound_template(int decimalPlacesForRounding, int decimalPointOffset) {
+	char tmp[8];
+	int i;
+
+	strcpy(g_hassBuffer, "{{ float(value)*");
+	if (decimalPointOffset != 0) {
+		strcat(g_hassBuffer, "0.");
+		for (i = 1; i < decimalPointOffset; i++) {
+			strcat(g_hassBuffer, "0");
+		}
+	}
+	strcat(g_hassBuffer, "1|round(");
+	sprintf(tmp, "%i", decimalPlacesForRounding);
+	strcat(g_hassBuffer, tmp);
+	strcat(g_hassBuffer, ") }}");
+
+	return g_hassBuffer;
+}
 /// @brief Initializes HomeAssistant sensor device discovery storage.
 /// @param type
 /// @param channel
 /// @return 
 HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel) {
+	int i;
+
 	//Assuming that there is only one DHT setup per device which keeps uniqueid/names simpler
 	HassDeviceInfo* info = hass_init_device_info(type, channel, NULL, NULL);	//using channel as index to generate uniqueId
 
@@ -386,43 +406,43 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel) {
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "°C");
 
 		//https://www.home-assistant.io/integrations/sensor.mqtt/ refers to value_template (val_tpl)
-		//{{ float(value)*0.1 }} for value=12 give 1.2000000000000002, using round() to limit the decimal places
-		cJSON_AddStringToObject(info->root, "val_tpl", "{{ float(value)*0.1|round(2) }}");
+		cJSON_AddStringToObject(info->root, "val_tpl", hass_generate_multiplyAndRound_template(2,1));
+
 		sprintf(g_hassBuffer, "~/%d/get", channel);
-		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		break;
 	case HUMIDITY_SENSOR:
 		cJSON_AddStringToObject(info->root, "dev_cla", "humidity");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "%");
 		sprintf(g_hassBuffer, "~/%d/get", channel);
-		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		break;
 	case CO2_SENSOR:
 		cJSON_AddStringToObject(info->root, "dev_cla", "carbon_dioxide");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "ppm");
 		sprintf(g_hassBuffer, "~/%d/get", channel);
-		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		break;
 	case TVOC_SENSOR:
 		cJSON_AddStringToObject(info->root, "dev_cla", "volatile_organic_compounds");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "ppb");
 		sprintf(g_hassBuffer, "~/%d/get", channel);
-		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		break;
 	case BATTERY_SENSOR:
 		cJSON_AddStringToObject(info->root, "dev_cla", "battery");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "%");
-		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, "~/battery/get");
+		cJSON_AddStringToObject(info->root, "stat_t", "~/battery/get");
 		break;
 	case BATTERY_VOLTAGE_SENSOR:
 		cJSON_AddStringToObject(info->root, "dev_cla", "voltage");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "mV");
-		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, "~/voltage/get");
+		cJSON_AddStringToObject(info->root, "stat_t", "~/voltage/get");
 		break;
 
 	default:
 		sprintf(g_hassBuffer, "~/%d/get", channel);
-		cJSON_AddStringToObject(info->root, STATE_TOPIC_KEY, g_hassBuffer);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		return NULL;
 	}
 

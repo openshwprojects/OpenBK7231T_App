@@ -88,6 +88,8 @@ void Test_DHT();
 void Test_Flags();
 void Test_MultiplePinsOnChannel();
 void Test_HassDiscovery();
+void Test_HassDiscovery_Base();
+void Test_HassDiscovery_Ext();
 void Test_Demo_ExclusiveRelays();
 void Test_MapRanges();
 void Test_Demo_MapFanSpeedToRelays();
