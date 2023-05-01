@@ -33,7 +33,44 @@ void Test_HassDiscovery_Relay_1x() {
 	SELFTEST_ASSERT_JSON_VALUE_STRING(NULL, "cmd_t", "~/1/set");
 }
 void Test_HassDiscovery_Relay_2x() {
-	// TODO
+
+	const char *shortName = "WinRelTest2x";
+	const char *fullName = "Windows Relay Test 2x";
+
+	SIM_ClearOBK(shortName);
+	SIM_ClearAndPrepareForMQTTTesting("testDeviceOneRelay", "bekens");
+
+	CFG_SetShortDeviceName(shortName);
+	CFG_SetDeviceName(fullName);
+
+	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(9, 1);
+
+	PIN_SetPinRoleForPinIndex(10, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(10, 4);
+
+	SIM_ClearMQTTHistory();
+	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
+	Sim_RunSeconds(5, false);
+
+	// OBK device should publish JSON on MQTT topic "homeassistant"
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "name", shortName);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "sw", USER_SW_VER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mf", MANUFACTURER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mdl", PLATFORM_MCU_NAME);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(NULL, "avty_t", "~/connected");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(NULL, "pl_on", "1");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(NULL, "pl_off", "0");
+	// we have used channel index 1
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/1/get");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "cmd_t", "~/1/set");
+	// AND we have used channel index 4
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/4/get");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "cmd_t", "~/4/set");
+
+	// this must cause an assert
+	//SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "cmd_t", "~/5/set");
 }
 
 
