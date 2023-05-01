@@ -1728,7 +1728,6 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			discoveryQueued = true;
 		}
 	}
-#if WINDOWS
 	for (i = 0; i < CHANNEL_MAX; i++) {
 		type = g_cfg.pins.channelTypes[i];
 		// TODO: flags are 32 bit and there are 64 max channels
@@ -1856,7 +1855,6 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			break;
 		}
 	}
-#endif
 	if (discoveryQueued) {
 		MQTT_InvokeCommandAtEnd(PublishChannels);
 	}
