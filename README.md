@@ -54,6 +54,7 @@ OpenBeken features:
 - Thanks to keeping Tasmota standard, OBK has basic compatibility with [ioBroker](https://www.youtube.com/watch?v=x4p3JHXbK1E&ab_channel=Elektrodacom) and similiar systems through TELE/STAT/CMND MQTT packets, Tasmota Control app is also supported
 - DDP lighting protocol support ("startDriver DDP" in autoexec.bat/short startup command), works with xLights
 - Can be scripted to even [work with shutters](https://www.elektroda.com/rtvforum/topic3972935.html)
+- Advanced deep sleep with GPIO/timer wakeup and hybrid power save systems, fully scriptable, can be configured to last longer than Tuya
 - Supports automatic GPIO setup with [cloudcutter templates](https://www.elektroda.com/rtvforum/topic3973669.html), can also import/export [OpenBeken templates](https://openbekeniot.github.io/webapp/devicesList.html)
 - and much more
 
