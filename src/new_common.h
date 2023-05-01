@@ -375,6 +375,7 @@ int wal_stricmp(const char *a, const char *b) ;
 
 const char* skipToNextWord(const char* p);
 char *strdup(const char *s);
+void stripDecimalPlaces(char *p, int maxDecimalPlaces);
 int wal_stricmp(const char *a, const char *b);
 int wal_strnicmp(const char *a, const char *b, int count);
 int strcat_safe(char *tg, const char *src, int tgMaxLen);

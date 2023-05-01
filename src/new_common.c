@@ -256,6 +256,27 @@ void urldecode2_safe(char *dst, const char *srcin, int maxDstLen)
         *dst++ = '\0';
 }
 
+void stripDecimalPlaces(char *p, int maxDecimalPlaces) {
+	while (1) {
+		if (*p == '.')
+			break;
+		if (*p == 0)
+			return;
+		p++;
+	}
+	if (maxDecimalPlaces == 0) {
+		*p = 0;
+		return;
+	}
+	p++;
+	while (maxDecimalPlaces > 0) {
+		if (*p == 0)
+			return;
+		maxDecimalPlaces--;
+		p++;
+	}
+	*p = 0;
+}
 int wal_stricmp(const char* a, const char* b) {
 	int ca, cb;
 	do {

@@ -1229,8 +1229,11 @@ OBK_Publish_Result MQTT_PublishMain_StringInt(const char* sChannel, int iv)
 OBK_Publish_Result MQTT_PublishMain_StringFloat(const char* sChannel, float f)
 {
 	char valueStr[16];
+	//int maxDecimalPlaces = 3;
 
 	sprintf(valueStr, "%f", f);
+	// fix decimal places
+	//stripDecimalPlaces(valueStr, maxDecimalPlaces);
 
 	return MQTT_PublishMain(mqtt_client, sChannel, valueStr, 0, true);
 
