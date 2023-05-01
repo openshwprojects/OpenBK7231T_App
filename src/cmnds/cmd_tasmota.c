@@ -208,7 +208,11 @@ byte *LFS_ReadFile(const char *fname) {
 			ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: failed to file %s", fname);
 		}
 	} else {
+#if WINDOWS
+		// sstop sim spam
+#else
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "LFS_ReadFile: lfs is absent");
+#endif
 	}
 #endif
 	return 0;
