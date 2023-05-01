@@ -89,7 +89,38 @@ void Test_HassDiscovery_LED_SingleColor() {
 	// TODO
 }
 void Test_HassDiscovery_DHT11() {
-	// TODO
+	const char *shortName = "DHTtest";
+	const char *fullName = "Windows Fake DHT11";
+	const char *mqttName = "testDHT";
+	
+	SIM_ClearOBK(shortName);
+	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
+
+	PIN_SetPinRoleForPinIndex(24, IOR_DHT11);
+	// for testing purposes, set channels 15 and 25
+	PIN_SetPinChannelForPinIndex(24, 15);
+	PIN_SetPinChannel2ForPinIndex(24, 25);
+
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
+	Sim_RunSeconds(10, false);
+
+
+	// OBK device should publish JSON on MQTT topic "homeassistant"
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
+	//SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, "dev", 0, "name", shortName);
+	// first dev - as temperature
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "dev_cla", "temperature");
+	//SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "°C");
+	// second dev - humidity
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "dev_cla", "humidity");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "%");
+	// few lines above I have assigned channels 15 and 25 to humidity and temperature,
+	// let's see if their setting made to HA discovery correctly
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/25/get");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/15/get");
+
 }
 void Test_HassDiscovery_Battery() {
 	const char *shortName = "BatteryTest";
