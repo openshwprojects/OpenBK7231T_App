@@ -133,7 +133,7 @@ void HTTPServer_RunQuickTick() {
 				outbuf[0] = '\0';
 				request.reply = outbuf;
 				request.replylen = 0;
-
+				request.responseCode = HTTP_RESPONSE_OK;
 				request.replymaxlen = DEFAULT_BUFLEN;
 
 				//printf("HTTP Server for Windows: Bytes received: %d \n", iResult);
