@@ -148,5 +148,6 @@ void SIM_UART_ConsumeBytes(int idx);
 void SIM_AppendUARTByte(byte rc);
 bool SIM_UART_ExpectAndConsumeHByte(byte b);
 bool SIM_UART_ExpectAndConsumeHexStr(const char *hexString);
+void SIM_ClearUART();
 
 #endif

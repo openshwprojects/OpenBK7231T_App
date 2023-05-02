@@ -16,6 +16,10 @@ void SIM_UART_InitReceiveRingBuffer(int size) {
 	g_recvBufIn = 0;
 	g_recvBufOut = 0;
 }
+void SIM_ClearUART() {
+	g_recvBufIn = 0;
+	g_recvBufOut = 0;
+}
 int SIM_UART_GetDataSize()
 {
 	int remain_buf_size = 0;
@@ -69,10 +73,13 @@ bool SIM_UART_ExpectAndConsumeHByte(byte b) {
 bool SIM_UART_ExpectAndConsumeHexStr(const char *hexString) {
 	const char *p;
 	byte b;
+	int correctBytes;
 
+
+	correctBytes = 0;
 	p = hexString;
 	while (*p) {
-		if (*p == ' ') {
+		if (*p == ' ' || *p == '\t') {
 			p++;
 			continue;
 		}
@@ -81,6 +88,7 @@ bool SIM_UART_ExpectAndConsumeHexStr(const char *hexString) {
 		if (SIM_UART_ExpectAndConsumeHByte(b) == false) {
 			return false;
 		}
+		correctBytes++;
 	}
 	return true;
 }

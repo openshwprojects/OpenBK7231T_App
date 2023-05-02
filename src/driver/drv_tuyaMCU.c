@@ -135,11 +135,13 @@ typedef struct rtcc_s {
 
 typedef struct tuyaMCUMapping_s {
 	// internal Tuya variable index
-	int fnId;
+	byte fnId;
 	// target channel
-	int channel;
+	byte channel;
 	// data point type (one of the DP_TYPE_xxx defines)
-	int dpType;
+	byte dpType;
+	// true if it's supposed to be sent in dp cache
+	byte bDPCache;
 	// store last channel value to avoid sending it again
 	int prevValue;
 	// TODO
@@ -223,7 +225,7 @@ tuyaMCUMapping_t* TuyaMCU_FindDefForChannel(int channel) {
 	return 0;
 }
 
-void TuyaMCU_MapIDToChannel(int fnId, int dpType, int channel) {
+void TuyaMCU_MapIDToChannel(int fnId, int dpType, int channel, int bDPCache) {
 	tuyaMCUMapping_t* cur;
 
 	cur = TuyaMCU_FindDefForID(fnId);
@@ -232,6 +234,7 @@ void TuyaMCU_MapIDToChannel(int fnId, int dpType, int channel) {
 		cur = (tuyaMCUMapping_t*)malloc(sizeof(tuyaMCUMapping_t));
 		cur->fnId = fnId;
 		cur->dpType = dpType;
+		cur->bDPCache = bDPCache;
 		cur->prevValue = 0;
 		cur->next = g_tuyaMappings;
 		g_tuyaMappings = cur;
@@ -576,11 +579,12 @@ Info:GEN:No change in channel 1 (still set to 0) - ignoring
 
 
 commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	int dpId;
 	const char* dpTypeString;
-	int dpType;
-	int channelID;
-	int argsCount;
+	byte dpId;
+	byte dpType;
+	byte channelID;
+	byte argsCount;
+	byte bDPCache;
 
 	// linkTuyaMCUOutputToChannel dpId varType channelID
 	// linkTuyaMCUOutputToChannel 1 val 1
@@ -639,8 +643,9 @@ commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void* context, const ch
 	else {
 		channelID = Tokenizer_GetArgInteger(2);
 	}
+	bDPCache = Tokenizer_GetArgInteger(3);
 
-	TuyaMCU_MapIDToChannel(dpId, dpType, channelID);
+	TuyaMCU_MapIDToChannel(dpId, dpType, channelID, bDPCache);
 
 	return CMD_RES_OK;
 }
@@ -849,6 +854,11 @@ void TuyaMCU_OnChannelChanged(int channel, int iVal) {
 	// this might be a callback from CHANNEL_Set in TuyaMCU_ApplyMapping. If we should set exactly the
 	// same value, skip it
 	if (mapping->prevValue == iVal) {
+		return;
+	}
+
+	// dpCaches are sent when requested - TODO - is it correct?
+	if (mapping->bDPCache) {
 		return;
 	}
 
@@ -1168,6 +1178,88 @@ void TuyaMCU_ResetWiFi() {
 #define TUYA_V0_CMD_RECORDSTATUS            0x08
 #define TUYA_V0_CMD_OBTAINDPCACHE           0x10
 
+void TuyaMCU_V0_SendDPCacheReply() {
+#if 0
+	// send empty?
+	byte dat = 0x00;
+	TuyaMCU_SendCommandWithData(0x10, &dat, 1);
+#else
+	int i;
+	int dataLen;
+	int value;
+	int writtenCount;
+	byte *p;
+	byte buffer[64];
+	tuyaMCUMapping_t *map;
+
+	buffer[0] = 0x01; // OK
+	buffer[1] = 0x00; // number of variables, will update later
+
+	writtenCount = 0;
+	dataLen = 2;
+	p = buffer + dataLen;
+
+	map = g_tuyaMappings;
+	// packet is the following:
+	// 01 02 
+	// result 1 (OK), numVars 2
+	// 11 02 0004 00000001  		
+	// fnId = 17 Len = 0004 Val V = 1
+	// 12 02 0004 00000001
+	// fnId = 18 Len = 0004 Val V = 1	
+	// 
+	while(map) {
+		if (map->bDPCache) {
+			writtenCount++;
+			// dpID
+			*p = map->fnId;
+			p++;
+			// type
+			*p = map->dpType;
+			p++;
+			// lenght
+			*p = 0;
+			p++;
+			value = CHANNEL_Get(map->channel);
+			switch (map->dpType) {
+			case DP_TYPE_ENUM:
+				// set len
+				*p = 1;
+				p++;
+				// set data 
+				*p = value;
+				p++;
+				break;
+			case DP_TYPE_VALUE:
+				// set len
+				*p = 4;
+				p++;
+				// set data 
+				p[3] = (value >> 0) & 0xFF; // first byte (lowest bits)
+				p[2] = (value >> 8) & 0xFF; // first byte (lowest bits)
+				p[1] = (value >> 16) & 0xFF; // first byte (lowest bits)
+				p[0] = (value >> 24) & 0xFF; // first byte (lowest bits)
+				p += 4;
+				break;
+			default:
+			case DP_TYPE_BOOL:
+				// set len
+				*p = 1;
+				p++;
+				// set data 
+				*p = value;
+				p++;
+				break;
+			}
+		}
+		map = map->next;
+	}
+	dataLen = p - buffer;
+	buffer[1] = writtenCount;
+
+	TuyaMCU_SendCommandWithData(0x10, buffer, dataLen);
+#endif
+}
 void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 	int checkLen;
 	int i;
@@ -1280,8 +1372,7 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		// This is sent by TH01
 		// Info:TuyaMCU:TUYAMCU received: 55 AA 00 10 00 02 01 09 1B
 		{
-			byte dat = 0x00;
-			TuyaMCU_SendCommandWithData(0x10, &dat, 1);
+			TuyaMCU_V0_SendDPCacheReply();
 		}
 		break;
 	case 0x05:
@@ -1578,6 +1669,16 @@ commandResult_t TuyaMCU_SetBaudRate(const void* context, const char* cmd, const 
 
 void TuyaMCU_Init()
 {
+	// this is only for simulator, where multiple sessions can happen...
+	tuyaMCUMapping_t *tmp, *nxt;
+	tmp = g_tuyaMappings;
+	while (tmp) {
+		nxt = tmp->next;
+		free(tmp);
+		tmp = nxt;
+	}
+	g_tuyaMappings = 0;
+
 	g_resetWiFiEvents = 0;
 	g_tuyaNextRequestDelay = 1;
 	g_tuyaBatteryPoweredState = 0; 

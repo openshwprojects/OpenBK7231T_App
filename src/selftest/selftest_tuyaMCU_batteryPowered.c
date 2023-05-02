@@ -198,11 +198,142 @@ void Test_TuyaMCU_BatteryPowered_Style2() {
 	// cause error
 	//SELFTEST_ASSERT_CHANNEL(15, 666);
 }
+/*
+//
+// setup dpCache - temperature interval
+//
+// Show textfield for that
+setChannel 5 TextField
+// setup display name
+setChannelLabel 5 Temperature Interval
+// Make value persistant (stored between reboots), 
+// start value -1 means "remember last"
+SetStartValue 5 -1
+// set default value if not set
+if $CH5==0 then setChannel 5 1
+// link dpID 17 to channel 5, the type is val, extra '1' means that its dpCache variable
+linkTuyaMCUOutputToChannel 17 val 5 1
+
+setChannel 6 TextField
+setChannelLabel 6 Humidity Interval
+SetStartValue 6 -1
+if $CH6==0 then setChannel 6 1
+linkTuyaMCUOutputToChannel 18 val 5 1
+
+*/
+void Test_TuyaMCU_BatteryPowered_DPcacheFeature() {
+	/*
+		Received by WiFi module:
+		55 AA	00	10		00 01	00	10
+		HEADER	VER=00	ObtainDPcache		LEN		CHK
+		Sent by WiFi module:
+		55 AA	00	10		00 12	010211020004000000011202000400000001	55
+		HEADER	VER=00	ObtainDPcache		LEN	fnId=17 Val V=1,fnId=18 Val V=1	CHK
+	*/
+	// reset whole device
+	SIM_ClearOBK(0);
+	SIM_UART_InitReceiveRingBuffer(1024);
+
+	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	// packet is the following:
+	// 01 02 
+	// result 1 (OK), numVars 2
+	// 11 02 0004 00000001  		
+	// fnId = 17 Len = 0004 Val V = 1
+	// 12 02 0004 00000001
+	// fnId = 18 Len = 0004 Val V = 1	
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 18 val 2 1", 0);
+	CMD_ExecuteCommand("setChannel 2 1", 0);
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 17 val 1 1", 0);
+	CMD_ExecuteCommand("setChannel 1 1", 0);
+
+	SIM_ClearUART();
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	TuyaMCU_V0_SendDPCacheReply();
+
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55AA0010001201021102000400000001120200040000000155");
+}
+void Test_TuyaMCU_BatteryPowered_DPcacheFeature3() {
+	/*
+	55 AA	00	10		00 07	01010904000101	27
+	HEADER	VER=00	ObtainDPcache		LEN	fnId=9 Enum V=1	CHK
+	*/
+	// reset whole device
+	SIM_ClearOBK(0);
+	SIM_UART_InitReceiveRingBuffer(1024);
+
+	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+
+	// just for fun, use channel 33, it doesn't matter, dpID is still 9
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 9 enum 33 1", 0);
+	CMD_ExecuteCommand("setChannel 33 1", 0);
+
+	SIM_ClearUART();
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	TuyaMCU_V0_SendDPCacheReply();
+
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	10		00 07	01010904000101	27");
+}
+void Test_TuyaMCU_BatteryPowered_DPcacheFeature4() {
+	/*
+	55 AA	00	10		00 07	01010904000100	26
+	HEADER	VER=00	ObtainDPcache		LEN	fnId=9 Enum V=0	CHK
+	*/
+	// reset whole device
+	SIM_ClearOBK(0);
+	SIM_UART_InitReceiveRingBuffer(1024);
+
+	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+
+	// just for fun, use channel 33, it doesn't matter, dpID is still 9
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 9 enum 33 1", 0);
+	CMD_ExecuteCommand("setChannel 33 0", 0);
+
+	SIM_ClearUART();
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	TuyaMCU_V0_SendDPCacheReply();
+
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55AA001000070101090400010026");
+}
+void Test_TuyaMCU_BatteryPowered_DPcacheFeature2() {
+	/*
+	Received by WiFi module:
+	55 AA	00	10		00 01	00	10
+	HEADER	VER=00	ObtainDPcache		LEN		CHK
+
+	Sent by WiFi module:
+	55 AA	00	10		00 02	0100	12
+	HEADER	VER=00	ObtainDPcache		LEN		CHK
+	*/
+	// reset whole device
+	SIM_ClearOBK(0);
+	SIM_UART_InitReceiveRingBuffer(1024);
+
+	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+
+	SIM_ClearUART();
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	TuyaMCU_V0_SendDPCacheReply();
+
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	10		00 02	0100	12");
+}
 void Test_TuyaMCU_BatteryPowered() {
 	Test_TuyaMCU_BatteryPowered_Style2();
 	Test_TuyaMCU_BatteryPowered_Style1();
 	Test_TuyaMCU_BatteryPowered_Style2();
 	Test_TuyaMCU_BatteryPowered_Style1();
+	Test_TuyaMCU_BatteryPowered_DPcacheFeature();
+	Test_TuyaMCU_BatteryPowered_DPcacheFeature2();
+	Test_TuyaMCU_BatteryPowered_DPcacheFeature3();
+	Test_TuyaMCU_BatteryPowered_DPcacheFeature4();
 }
 
 #endif

@@ -208,6 +208,9 @@ void UART_SendByte(byte b) {
 void SIM_AppendUARTByte(byte b);
 	// STUB - for testing
 	SIM_AppendUARTByte(b);
+#if 1
+	printf("%02X", b);
+#endif
     //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"%02X", b);
 #elif PLATFORM_BL602
 	aos_write(fd_console, &b, 1);
