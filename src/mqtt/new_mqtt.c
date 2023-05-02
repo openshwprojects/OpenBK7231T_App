@@ -1226,14 +1226,15 @@ OBK_Publish_Result MQTT_PublishMain_StringInt(const char* sChannel, int iv)
 	return MQTT_PublishMain(mqtt_client, sChannel, valueStr, 0, true);
 
 }
-OBK_Publish_Result MQTT_PublishMain_StringFloat(const char* sChannel, float f)
+OBK_Publish_Result MQTT_PublishMain_StringFloat(const char* sChannel, float f, int maxDecimalPlaces)
 {
 	char valueStr[16];
-	//int maxDecimalPlaces = 3;
 
 	sprintf(valueStr, "%f", f);
 	// fix decimal places
-	//stripDecimalPlaces(valueStr, maxDecimalPlaces);
+	if (maxDecimalPlaces >= 0) {
+		stripDecimalPlaces(valueStr, maxDecimalPlaces);
+	}
 
 	return MQTT_PublishMain(mqtt_client, sChannel, valueStr, 0, true);
 
@@ -1356,7 +1357,7 @@ commandResult_t MQTT_PublishCommandFloat(const void* context, const char* cmd, c
 	topic = Tokenizer_GetArg(0);
 	value = Tokenizer_GetArgFloat(1);
 
-	ret = MQTT_PublishMain_StringFloat(topic, value);
+	ret = MQTT_PublishMain_StringFloat(topic, value, -1);
 
 	return CMD_RES_OK;
 }

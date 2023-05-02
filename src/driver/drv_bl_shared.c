@@ -23,6 +23,15 @@ int stat_updatesSent = 0;
 // Current values
 float lastReadings[OBK_NUM_MEASUREMENTS];
 float lastReadingFrequency = 0.0f;
+// precisions:
+byte roundingPrecision[4] = {
+	1, // OBK_VOLTAGE, // must match order in cmd_public.h
+	3, // OBK_CURRENT,
+	2, // OBK_POWER,
+	3, // PRECISION_ENERGY
+};
+#define PRECISION_ENERGY 3
+
 //
 // Variables below are for optimization
 // We can't send a full MQTT update every second.
@@ -33,6 +42,7 @@ float lastReadingFrequency = 0.0f;
 //
 // what are the last values we sent over the MQTT?
 float lastSentValues[OBK_NUM_MEASUREMENTS];
+// energyCounter in Wh
 float energyCounter = 0.0f;
 portTickType energyCounterStamp;
 
@@ -135,6 +145,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
     }
     poststr(request,
             "<tr><td><b>Energy Total</b></td><td style='text-align: right;'>");
+	// convert from Wh to kWh (thus / 1000.0f)
     hprintf255(request, "%.3f</td><td>kWh</td>", energyCounter / 1000.0f);
 
     poststr(request, "</table>");
@@ -368,6 +379,23 @@ commandResult_t BL09XX_VCPPublishIntervals(const void *context, const char *cmd,
 
 	return CMD_RES_OK;
 }
+commandResult_t BL09XX_VCPPrecision(const void *context, const char *cmd, const char *args, int cmdFlags)
+{
+	int i;
+	Tokenizer_TokenizeString(args, 0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	for (i = 0; i < Tokenizer_GetArgsCount(); i++) {
+		roundingPrecision[i] = Tokenizer_GetArgInteger(i);
+	}
+
+	return CMD_RES_OK;
+}
 commandResult_t BL09XX_VCPPublishThreshold(const void *context, const char *cmd, const char *args, int cmdFlags)
 {
 	Tokenizer_TokenizeString(args, 0);
@@ -519,7 +547,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
             dailyStats[0] = 0.0;
             actual_mday = ltm->tm_mday;
-            MQTT_PublishMain_StringFloat(counter_mqttNames[3], dailyStats[1]);
+            MQTT_PublishMain_StringFloat(counter_mqttNames[3], dailyStats[1], roundingPrecision[PRECISION_ENERGY]);
             stat_updatesSent++;
 #if WINDOWS
 #elif PLATFORM_BL602
@@ -635,7 +663,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
             if (MQTT_IsReady() == true)
             {
-                MQTT_PublishMain_StringFloat(counter_mqttNames[1], DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+                MQTT_PublishMain_StringFloat(counter_mqttNames[1], DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR), roundingPrecision[PRECISION_ENERGY]);
                 EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR, lastSentEnergyCounterLastHour, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
                 lastSentEnergyCounterLastHour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
                 stat_updatesSent++;
@@ -672,7 +700,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
             if (MQTT_IsReady() == true)
             {
                 lastSentValues[i] = lastReadings[i];
-                MQTT_PublishMain_StringFloat(sensor_mqttNames[i],lastReadings[i]);
+                MQTT_PublishMain_StringFloat(sensor_mqttNames[i],lastReadings[i], roundingPrecision[i]);
                 stat_updatesSent++;
             }
         } else {
@@ -695,25 +723,25 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     {
         if (MQTT_IsReady() == true)
         {
-            MQTT_PublishMain_StringFloat(counter_mqttNames[0], energyCounter);
+            MQTT_PublishMain_StringFloat(counter_mqttNames[0], energyCounter, roundingPrecision[PRECISION_ENERGY]);
             EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CONSUMPTION_TOTAL, lastSentEnergyCounterValue, energyCounter);
             lastSentEnergyCounterValue = energyCounter;
             noChangeFrameEnergyCounter = 0;
             stat_updatesSent++;
-            MQTT_PublishMain_StringFloat(counter_mqttNames[1], DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+            MQTT_PublishMain_StringFloat(counter_mqttNames[1], DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR), roundingPrecision[PRECISION_ENERGY]);
             EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR, lastSentEnergyCounterLastHour, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
             lastSentEnergyCounterLastHour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
             stat_updatesSent++;
             if(NTP_IsTimeSynced() == true)
             {
-                MQTT_PublishMain_StringFloat(counter_mqttNames[3], dailyStats[1]);
+                MQTT_PublishMain_StringFloat(counter_mqttNames[3], dailyStats[1], roundingPrecision[PRECISION_ENERGY]);
                 stat_updatesSent++;
-                MQTT_PublishMain_StringFloat(counter_mqttNames[4], dailyStats[0]);
+                MQTT_PublishMain_StringFloat(counter_mqttNames[4], dailyStats[0], roundingPrecision[PRECISION_ENERGY]);
                 stat_updatesSent++;
                 ltm = localtime(&ConsumptionResetTime);
                 snprintf(datetime,sizeof(datetime), "%04i-%02i-%02i %02i:%02i:%02i",
                         ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
-                MQTT_PublishMain_StringString(counter_mqttNames[5], datetime, 0);
+                MQTT_PublishMain_StringString(counter_mqttNames[5], datetime, 0, -1);
                 stat_updatesSent++;
             }
         }
@@ -810,13 +838,17 @@ void BL_Shared_Init(void)
 	//cmddetail:"fn":"BL09XX_VCPPublishThreshold","file":"driver/drv_bl_shared.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("VCPPublishThreshold", BL09XX_VCPPublishThreshold, NULL);
+	//cmddetail:{"name":"VCPPrecision","args":"[VoltageDigits][CurrentDigitsAmpers][PowerDigitsWats][PowerDigitsWh]",
+	//cmddetail:"descr":"Sets the number of digits after decimal point for power metering publishes. Default is BL09XX_VCPPrecision 1 3 2 3.",
+	//cmddetail:"fn":"BL09XX_VCPPrecision","file":"driver/drv_bl_shared.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("VCPPrecision", BL09XX_VCPPrecision, NULL);
 	//cmddetail:{"name":"VCPPublishIntervals","args":"[MinDelayBetweenPublishes][ForcedPublishInterval]",
 	//cmddetail:"descr":"First argument is minimal allowed interval in second between Voltage/Current/Power/Energy publishes (even if there is a large change), second value is an interval in which V/C/P/E is always published, even if there is no change",
 	//cmddetail:"fn":"BL09XX_VCPPublishIntervals","file":"driver/drv_bl_shared.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("VCPPublishIntervals", BL09XX_VCPPublishIntervals, NULL);
 }
-
 // OBK_POWER etc
 float DRV_GetReading(int type) 
 {
