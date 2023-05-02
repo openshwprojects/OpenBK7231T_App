@@ -203,22 +203,24 @@ void Test_TuyaMCU_BatteryPowered_Style2() {
 // setup dpCache - temperature interval
 //
 // Show textfield for that
-setChannel 5 TextField
+setChannelType 5 TextField
 // setup display name
 setChannelLabel 5 Temperature Interval
 // Make value persistant (stored between reboots), 
 // start value -1 means "remember last"
 SetStartValue 5 -1
 // set default value if not set
-if $CH5==0 then setChannel 5 1
+alias set_default_5 setChannel 5 1
+if $CH5==0 then set_default_5
 // link dpID 17 to channel 5, the type is val, extra '1' means that its dpCache variable
 linkTuyaMCUOutputToChannel 17 val 5 1
 
-setChannel 6 TextField
+setChannelType 6 TextField
 setChannelLabel 6 Humidity Interval
 SetStartValue 6 -1
-if $CH6==0 then setChannel 6 1
-linkTuyaMCUOutputToChannel 18 val 5 1
+alias set_default_6 setChannel 6 1
+if $CH6==0 then set_default_6
+linkTuyaMCUOutputToChannel 18 val 6 1
 
 */
 void Test_TuyaMCU_BatteryPowered_DPcacheFeature() {
