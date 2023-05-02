@@ -16,7 +16,15 @@ Sensor - https://www.home-assistant.io/integrations/sensor.mqtt/
 //Buffer used to populate values in cJSON_Add* calls. The values are based on
 //CFG_GetShortDeviceName and clientId so it needs to be bigger than them. +64 for light/switch/etc.
 static char g_hassBuffer[CGF_MQTT_CLIENT_ID_SIZE + 64];
-
+const char *g_template_lowMidHigh = "{% if value == '0' %}\n"
+			"	Low\n"
+			"{% elif value == '1' %}\n"
+			"	Medium\n"
+			"{% elif value == '2' %}\n"
+			"	High\n"
+			"{% else %}\n"
+			"	Unknown\n"
+			"{% endif %}";
 
 /// @brief Populates HomeAssistant unique id for the entity.
 /// @param type Entity type
@@ -173,7 +181,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload
 	case LIGHT_PWM:
 	case RELAY:
 	case BINARY_SENSOR:
-		sprintf(g_hassBuffer, "%s %i", CFG_GetShortDeviceName(), index);
+		sprintf(g_hassBuffer, "%s %s", CFG_GetShortDeviceName(), CHANNEL_GetLabel(index));
 		break;
 	case LIGHT_PWMCW:
 	case LIGHT_RGB:
@@ -220,7 +228,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload
 		sprintf(g_hassBuffer, "%s Voltage", CFG_GetShortDeviceName());
 		break;
 	default:
-		sprintf(g_hassBuffer, "%s %i", CFG_GetShortDeviceName(), index);
+		sprintf(g_hassBuffer, "%s %s", CFG_GetShortDeviceName(), CHANNEL_GetLabel(index));
 		break;
 	}
 	cJSON_AddStringToObject(info->root, "name", g_hassBuffer);
@@ -493,13 +501,21 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 		sprintf(g_hassBuffer, "~/%d/get", channel);
 		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		break;
+	case READONLYLOWMIDHIGH_SENSOR:
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		cJSON_AddStringToObject(info->root, "val_tpl", g_template_lowMidHigh);
+
+		break;
 	default:
 		sprintf(g_hassBuffer, "~/%d/get", channel);
 		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		return NULL;
 	}
 
-	cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
+	if (type != READONLYLOWMIDHIGH_SENSOR) {
+		cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
+	}
 
 
 	if (decPlaces != -1 && decOffset != -1) {

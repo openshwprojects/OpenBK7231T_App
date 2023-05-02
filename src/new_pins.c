@@ -1789,6 +1789,8 @@ const char* g_channelTypeNames[] = {
 	"OffLowMidHighHighest",
 	"Custom",
 	"Power_div10",
+	"ReadOnlyLowMidHigh",
+	"error",
 	"error",
 	"error",
 	"error",

@@ -57,7 +57,8 @@ typedef enum {
 	FREQUENCY_SENSOR,
 	/// @brief 
 	CUSTOM_SENSOR,
-
+	/// @brief 
+	READONLYLOWMIDHIGH_SENSOR,
 } ENTITY_TYPE;
 
 //unique_id is defined in hass_populate_unique_id and is based on CFG_GetDeviceName() whose size is CGF_DEVICE_NAME_SIZE.

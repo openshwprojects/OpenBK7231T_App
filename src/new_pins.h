@@ -796,6 +796,13 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Power_div10,
+	//chandetail:{"name":"ChType_ReadOnlyLowMidHigh",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Like LowMidHigh, but just read only",
+	//chandetail:"enum":"ChType_ReadOnlyLowMidHigh",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_ReadOnlyLowMidHigh,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
