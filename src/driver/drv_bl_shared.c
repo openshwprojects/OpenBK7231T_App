@@ -741,7 +741,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
                 ltm = localtime(&ConsumptionResetTime);
                 snprintf(datetime,sizeof(datetime), "%04i-%02i-%02i %02i:%02i:%02i",
                         ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
-                MQTT_PublishMain_StringString(counter_mqttNames[5], datetime, 0, -1);
+                MQTT_PublishMain_StringString(counter_mqttNames[5], datetime, 0);
                 stat_updatesSent++;
             }
         }
