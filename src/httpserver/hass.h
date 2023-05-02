@@ -55,6 +55,8 @@ typedef enum {
 	POWERFACTOR_SENSOR,
 	/// @brief 
 	FREQUENCY_SENSOR,
+	/// @brief 
+	CUSTOM_SENSOR,
 
 } ENTITY_TYPE;
 

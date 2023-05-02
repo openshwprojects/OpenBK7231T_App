@@ -489,6 +489,10 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 		sprintf(g_hassBuffer, "~/%d/get", channel);
 		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		break;
+	case CUSTOM_SENSOR:
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
 	default:
 		sprintf(g_hassBuffer, "~/%d/get", channel);
 		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
