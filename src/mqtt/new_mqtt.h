@@ -135,7 +135,7 @@ int MQTT_Post_Received_Str(const char *topic, const char *data);
 void MQTT_GetStats(int* outUsed, int* outMax, int* outFreeMem);
 
 OBK_Publish_Result MQTT_DoItemPublish(int idx);
-OBK_Publish_Result MQTT_PublishMain_StringFloat(const char* sChannel, float f);
+OBK_Publish_Result MQTT_PublishMain_StringFloat(const char* sChannel, float f, int maxDecimalPlaces);
 OBK_Publish_Result MQTT_PublishMain_StringInt(const char* sChannel, int val);
 OBK_Publish_Result MQTT_PublishMain_StringString(const char* sChannel, const char* valueStr, int flags);
 void MQTT_PublishOnlyDeviceChannelsIfPossible();
