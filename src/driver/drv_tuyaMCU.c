@@ -1166,6 +1166,7 @@ void TuyaMCU_ResetWiFi() {
 #define TUYA_V0_CMD_RESETWIFI_AND_SEL_CONF  0x04
 #define TUYA_V0_CMD_REALTIMESTATUS          0x05
 #define TUYA_V0_CMD_RECORDSTATUS            0x08
+#define TUYA_V0_CMD_OBTAINDPCACHE           0x10
 
 void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 	int checkLen;
@@ -1273,6 +1274,14 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		}
 		else {
 
+		}
+		break;
+	case TUYA_V0_CMD_OBTAINDPCACHE:
+		// This is sent by TH01
+		// Info:TuyaMCU:TUYAMCU received: 55 AA 00 10 00 02 01 09 1B
+		{
+			byte dat = 0x00;
+			TuyaMCU_SendCommandWithData(0x10, &dat, 1);
 		}
 		break;
 	case 0x05:
