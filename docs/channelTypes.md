@@ -41,4 +41,5 @@ Do not add anything here, as it will overwritten with next rebuild.
 | OffLowMidHighHighest |  Like LowMidHigh, but with 5 options. Some of TuyaMCU fans might require that. |
 | Custom |  A custom channel type that is still send to HA. |
 | Power_div10 |  Just like power, but with one decimal place (but stored as integer, for TuyaMCU support) |
+| ChType_ReadOnlyLowMidHigh |  Like LowMidHigh, but just read only |
 | Max |  This is the current total number of available channel types. |

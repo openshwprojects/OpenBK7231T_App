@@ -288,6 +288,14 @@
     "driver": ""
   },
   {
+    "name": "ChType_ReadOnlyLowMidHigh",
+    "title": "TODO",
+    "descr": "Like LowMidHigh, but just read only",
+    "enum": "ChType_ReadOnlyLowMidHigh",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
     "name": "Max",
     "title": "TODO",
     "descr": "This is the current total number of available channel types.",
