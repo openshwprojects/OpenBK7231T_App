@@ -245,6 +245,36 @@ void Test_HassDiscovery_Channel_Toggle() {
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "pl_on", "1");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "pl_off", "0");
 }
+void Test_HassDiscovery_Channel_DimmerLightDetection() {
+	const char *shortName = "WinDimmerTest";
+	const char *fullName = "Windows Fake Dimmer";
+	const char *mqttName = "testDimmer";
+	SIM_ClearOBK(shortName);
+	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
+
+	CFG_SetShortDeviceName(shortName);
+	CFG_SetDeviceName(fullName);
+
+	CHANNEL_SetType(4, ChType_Toggle);
+	CHANNEL_SetType(5, ChType_Dimmer);
+
+	SIM_ClearMQTTHistory();
+	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
+	Sim_RunSeconds(5, false);
+
+	// OBK device should publish JSON on MQTT topic "homeassistant"
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "name", shortName);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "sw", USER_SW_VER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mf", MANUFACTURER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mdl", PLATFORM_MCU_NAME);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "~", mqttName);
+	//SELFTEST_ASSERT_JSON_VALUE_STRING(0, "unit_of_meas", "C");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "stat_t", "~/4/get");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "cmd_t", "~/4/set");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "pl_on", "1");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "pl_off", "0");
+}
 void Test_HassDiscovery_Channel_Toggle_2x() {
 	const char *shortName = "WinToggleTest";
 	const char *fullName = "Windows Fake Toggle";
@@ -289,6 +319,7 @@ void Test_HassDiscovery_Ext() {
 	Test_HassDiscovery_Channel_Current_div1000();
 	Test_HassDiscovery_Channel_Toggle();
 	Test_HassDiscovery_Channel_Toggle_2x();
+	Test_HassDiscovery_Channel_DimmerLightDetection();
 }
 
 

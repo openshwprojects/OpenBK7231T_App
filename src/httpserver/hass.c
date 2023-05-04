@@ -420,6 +420,26 @@ char *hass_generate_multiplyAndRound_template(int decimalPlacesForRounding, int 
 
 	return g_hassBuffer;
 }
+
+HassDeviceInfo* hass_init_light_singleColor_onChannels(int toggle, int dimmer, int brightness_scale) {
+	HassDeviceInfo*dev_info;
+	const char* clientId;
+	
+	clientId = CFG_GetMQTTClientId();
+	dev_info = hass_init_device_info(LIGHT_PWM, toggle, "1", "0");
+
+	cJSON_AddStringToObject(dev_info->root, "stat_t", "~/led_enableAll/get");  //state_topic
+	sprintf(g_hassBuffer, "cmnd/%s/led_enableAll", clientId);
+	cJSON_AddStringToObject(dev_info->root, "cmd_t", g_hassBuffer);  //command_topic
+
+	cJSON_AddStringToObject(dev_info->root, "bri_stat_t", "~/led_dimmer/get");  //brightness_state_topic
+	sprintf(g_hassBuffer, "cmnd/%s/led_dimmer", clientId);
+	cJSON_AddStringToObject(dev_info->root, "bri_cmd_t", g_hassBuffer);  //brightness_command_topic
+
+	cJSON_AddNumberToObject(dev_info->root, "bri_scl", brightness_scale);	//brightness_scale
+
+	return dev_info;
+}
 /// @brief Initializes HomeAssistant sensor device discovery storage.
 /// @param type
 /// @param channel
