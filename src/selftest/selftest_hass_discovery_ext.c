@@ -270,8 +270,17 @@ void Test_HassDiscovery_Channel_DimmerLightDetection() {
 	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mdl", PLATFORM_MCU_NAME);
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "~", mqttName);
 	//SELFTEST_ASSERT_JSON_VALUE_STRING(0, "unit_of_meas", "C");
+	// state topic (toggle)
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "stat_t", "~/4/get");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "cmd_t", "~/4/set");
+	// brightness topic (dimmer)
+#if 0
+	// cause error
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "bri_stat_t", "~/4/get");
+#else
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "bri_stat_t", "~/5/get");
+#endif
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "bri_cmd_t", "~/5/set");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "pl_on", "1");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "pl_off", "0");
 }

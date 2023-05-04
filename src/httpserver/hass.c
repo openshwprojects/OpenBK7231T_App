@@ -428,12 +428,14 @@ HassDeviceInfo* hass_init_light_singleColor_onChannels(int toggle, int dimmer, i
 	clientId = CFG_GetMQTTClientId();
 	dev_info = hass_init_device_info(LIGHT_PWM, toggle, "1", "0");
 
-	cJSON_AddStringToObject(dev_info->root, "stat_t", "~/led_enableAll/get");  //state_topic
-	sprintf(g_hassBuffer, "cmnd/%s/led_enableAll", clientId);
+	sprintf(g_hassBuffer, "~/%i/get", toggle);
+	cJSON_AddStringToObject(dev_info->root, "stat_t", g_hassBuffer);  //state_topic
+	sprintf(g_hassBuffer, "~/%i/set", toggle);
 	cJSON_AddStringToObject(dev_info->root, "cmd_t", g_hassBuffer);  //command_topic
 
-	cJSON_AddStringToObject(dev_info->root, "bri_stat_t", "~/led_dimmer/get");  //brightness_state_topic
-	sprintf(g_hassBuffer, "cmnd/%s/led_dimmer", clientId);
+	sprintf(g_hassBuffer, "~/%i/get", dimmer);
+	cJSON_AddStringToObject(dev_info->root, "bri_stat_t", g_hassBuffer);  //brightness_state_topic
+	sprintf(g_hassBuffer, "~/%i/set", dimmer);
 	cJSON_AddStringToObject(dev_info->root, "bri_cmd_t", g_hassBuffer);  //brightness_command_topic
 
 	cJSON_AddNumberToObject(dev_info->root, "bri_scl", brightness_scale);	//brightness_scale
