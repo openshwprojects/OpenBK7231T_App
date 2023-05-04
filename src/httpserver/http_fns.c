@@ -1603,7 +1603,9 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	cJSON_InitHooks(&hooks);
 
 
-	// try to pair toggles with dimmers
+	// try to pair toggles with dimmers. This is needed only for TuyaMCU, 
+	// where custom channel types are used. This is NOT used for simple
+	// CW/RGB/RGBCW/etc lights.
 	while (true) {
 		// find first dimmer
 		dimmer = -1;

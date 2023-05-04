@@ -88,6 +88,7 @@ HassDeviceInfo* hass_init_relay_device_info(int index, ENTITY_TYPE type);
 HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload_on, char* payload_off);
 HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type);
 HassDeviceInfo* hass_init_power_sensor_device_info(int index);
+HassDeviceInfo* hass_init_light_singleColor_onChannels(int toggle, int dimmer, int brightness_scale);
 HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse);
 HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int decPlaces, int decOffset);
 const char* hass_build_discovery_json(HassDeviceInfo* info);
