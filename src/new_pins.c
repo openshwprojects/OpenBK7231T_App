@@ -963,11 +963,11 @@ void CFG_ApplyChannelStartValues() {
 
 		iValue = g_cfg.startChannelValues[i];
 		if (iValue == -1) {
-			g_channelValues[i] = HAL_FlashVars_GetChannelValue(i);
+			g_channelValuesFloats[i] = g_channelValues[i] = HAL_FlashVars_GetChannelValue(i);
 			//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CFG_ApplyChannelStartValues: Channel %i is being set to REMEMBERED state %i", i, g_channelValues[i]);
 		}
 		else {
-			g_channelValues[i] = iValue;
+			g_channelValuesFloats[i] = g_channelValues[i] = iValue;
 			//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CFG_ApplyChannelStartValues: Channel %i is being set to constant state %i", i, g_channelValues[i]);
 		}
 	}
