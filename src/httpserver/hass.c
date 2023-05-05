@@ -385,7 +385,12 @@ HassDeviceInfo* hass_init_power_sensor_device_info(int index) {
 		const char* device_class_value = counter_devClasses[index - OBK_CONSUMPTION_TOTAL];
 		if (strlen(device_class_value) > 0) {
 			cJSON_AddStringToObject(info->root, "dev_cla", device_class_value);  //device_class=energy
-			cJSON_AddStringToObject(info->root, "unit_of_meas", "Wh");   //unit_of_measurement
+			if (CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH)) {
+				cJSON_AddStringToObject(info->root, "unit_of_meas", "kWh");   //unit_of_measurement
+			}
+			else {
+				cJSON_AddStringToObject(info->root, "unit_of_meas", "Wh");   //unit_of_measurement
+			}
 
 			//state_class can be measurement, total or total_increasing. Energy values should be total_increasing.
 			cJSON_AddStringToObject(info->root, "stat_cla", "total_increasing");

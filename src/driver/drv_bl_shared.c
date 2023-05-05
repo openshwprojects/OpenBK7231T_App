@@ -463,6 +463,12 @@ bool Channel_AreAllRelaysOpen() {
 	}
 	return true;
 }
+float BL_ChangeEnergyUnitIfNeeded(float Wh) {
+	if (CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH)) {
+		return Wh * 0.001f;
+	}
+	return Wh;
+}
 void BL_ProcessUpdate(float voltage, float current, float power,
 					  float frequency) 
 {
@@ -547,7 +553,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
             dailyStats[0] = 0.0;
             actual_mday = ltm->tm_mday;
-            MQTT_PublishMain_StringFloat(counter_mqttNames[3], dailyStats[1], roundingPrecision[PRECISION_ENERGY]);
+            MQTT_PublishMain_StringFloat(counter_mqttNames[3], BL_ChangeEnergyUnitIfNeeded(dailyStats[1]), roundingPrecision[PRECISION_ENERGY]);
             stat_updatesSent++;
 #if WINDOWS
 #elif PLATFORM_BL602
@@ -592,15 +598,15 @@ void BL_ProcessUpdate(float voltage, float current, float power,
             {
                 root = cJSON_CreateObject();
                 cJSON_AddNumberToObject(root, "uptime", g_secondsElapsed);
-                cJSON_AddNumberToObject(root, "consumption_total", energyCounter );
+                cJSON_AddNumberToObject(root, "consumption_total", BL_ChangeEnergyUnitIfNeeded(energyCounter) );
                 cJSON_AddNumberToObject(root, "consumption_last_hour",  DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
-                cJSON_AddNumberToObject(root, "consumption_stat_index", energyCounterMinutesIndex);
+                cJSON_AddNumberToObject(root, "consumption_stat_index", BL_ChangeEnergyUnitIfNeeded(energyCounterMinutesIndex));
                 cJSON_AddNumberToObject(root, "consumption_sample_count", energyCounterSampleCount);
                 cJSON_AddNumberToObject(root, "consumption_sampling_period", energyCounterSampleInterval);
                 if(NTP_IsTimeSynced() == true)
                 {
-                    cJSON_AddNumberToObject(root, "consumption_today", dailyStats[0]);
-                    cJSON_AddNumberToObject(root, "consumption_yesterday", dailyStats[1]);
+                    cJSON_AddNumberToObject(root, "consumption_today", BL_ChangeEnergyUnitIfNeeded(dailyStats[0]));
+                    cJSON_AddNumberToObject(root, "consumption_yesterday", BL_ChangeEnergyUnitIfNeeded(dailyStats[1]));
                     ltm = localtime(&ConsumptionResetTime);
                     if (NTP_GetTimesZoneOfsSeconds()>0)
                     {
@@ -663,7 +669,8 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
             if (MQTT_IsReady() == true)
             {
-                MQTT_PublishMain_StringFloat(counter_mqttNames[1], DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR), roundingPrecision[PRECISION_ENERGY]);
+                MQTT_PublishMain_StringFloat(counter_mqttNames[1],
+					BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR)), roundingPrecision[PRECISION_ENERGY]);
                 EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR, lastSentEnergyCounterLastHour, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
                 lastSentEnergyCounterLastHour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
                 stat_updatesSent++;
@@ -723,20 +730,27 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     {
         if (MQTT_IsReady() == true)
         {
-            MQTT_PublishMain_StringFloat(counter_mqttNames[0], energyCounter, roundingPrecision[PRECISION_ENERGY]);
+            MQTT_PublishMain_StringFloat(counter_mqttNames[0],
+				BL_ChangeEnergyUnitIfNeeded(energyCounter), roundingPrecision[PRECISION_ENERGY]);
+
             EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CONSUMPTION_TOTAL, lastSentEnergyCounterValue, energyCounter);
             lastSentEnergyCounterValue = energyCounter;
             noChangeFrameEnergyCounter = 0;
             stat_updatesSent++;
-            MQTT_PublishMain_StringFloat(counter_mqttNames[1], DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR), roundingPrecision[PRECISION_ENERGY]);
+
+            MQTT_PublishMain_StringFloat(counter_mqttNames[1], 
+				BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR)), roundingPrecision[PRECISION_ENERGY]);
+
             EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR, lastSentEnergyCounterLastHour, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
             lastSentEnergyCounterLastHour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
             stat_updatesSent++;
             if(NTP_IsTimeSynced() == true)
             {
-                MQTT_PublishMain_StringFloat(counter_mqttNames[3], dailyStats[1], roundingPrecision[PRECISION_ENERGY]);
+                MQTT_PublishMain_StringFloat(counter_mqttNames[3], 
+					BL_ChangeEnergyUnitIfNeeded(dailyStats[1]), roundingPrecision[PRECISION_ENERGY]);
                 stat_updatesSent++;
-                MQTT_PublishMain_StringFloat(counter_mqttNames[4], dailyStats[0], roundingPrecision[PRECISION_ENERGY]);
+                MQTT_PublishMain_StringFloat(counter_mqttNames[4], 
+					BL_ChangeEnergyUnitIfNeeded(dailyStats[0]), roundingPrecision[PRECISION_ENERGY]);
                 stat_updatesSent++;
                 ltm = localtime(&ConsumptionResetTime);
                 snprintf(datetime,sizeof(datetime), "%04i-%02i-%02i %02i:%02i:%02i",
