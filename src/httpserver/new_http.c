@@ -469,6 +469,10 @@ const char* PIN_RoleToString(int role) {
 int PIN_ParsePinRoleName(const char* name) {
 	int i;
 
+	if (!stricmp(name, "None")) {
+		return IOR_None;
+	}
+
 	for (i = 0; i < IOR_Total_Options; i++) {
 		if (!stricmp(name, htmlPinRoleNames[i]))
 			return i;
