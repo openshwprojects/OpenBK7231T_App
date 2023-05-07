@@ -299,6 +299,46 @@ int __cdecl main(int argc, char **argv)
 		printf("sizeof(mainConfig_t) != MAGIC_CONFIG_SIZE!: %i\n", sizeof(mainConfig_t));
 		system("pause");
 	}
+	if (OFFSETOF(mainConfig_t, wifi_ssid) != 0x00000014) {
+		printf("OFFSETOF(mainConfig_t, wifi_ssid) != 0x00000014: %i\n", OFFSETOF(mainConfig_t, wifi_ssid));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, wifi_pass) != 0x00000054) {
+		printf("OFFSETOF(mainConfig_t, wifi_pass) != 0x00000054: %i\n", OFFSETOF(mainConfig_t, wifi_pass));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, unused_fill) != 0x0000045E) {
+		printf("OFFSETOF(mainConfig_t, unused_fill) != 0x0000045E: %i\n", OFFSETOF(mainConfig_t, unused_fill));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, buttonHoldRepeat) != 0x000004BA) {
+		printf("OFFSETOF(mainConfig_t, buttonHoldRepeat) != 0x000004BA: %i\n", OFFSETOF(mainConfig_t, buttonHoldRepeat));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, shortDeviceName) != 0x2DE) {
+		printf("OFFSETOF(mainConfig_t, shortDeviceName) != 0x2DE: %i\n", OFFSETOF(mainConfig_t, shortDeviceName));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, timeRequiredToMarkBootSuccessfull) != 0x00000597) {
+		printf("OFFSETOF(mainConfig_t, timeRequiredToMarkBootSuccessfull) != 0x00000597: %i\n", OFFSETOF(mainConfig_t, timeRequiredToMarkBootSuccessfull));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, dgr_sendFlags) != 0x00000460) {
+		printf("OFFSETOF(mainConfig_t, dgr_sendFlags) != 0x00000460: %i\n", OFFSETOF(mainConfig_t, dgr_sendFlags));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, mqtt_host) != 0x00000094) {
+		printf("OFFSETOF(mainConfig_t, mqtt_host) != 0x00000094: %i\n", OFFSETOF(mainConfig_t, mqtt_host));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, mqtt_userName) != 0x1D4) {
+		printf("OFFSETOF(mainConfig_t, mqtt_userName) != 0x1D4: %i\n", OFFSETOF(mainConfig_t, mqtt_userName));
+		system("pause");
+}
+	if (OFFSETOF(mainConfig_t, mqtt_port) != 0x294) {
+		printf("OFFSETOF(mainConfig_t, mqtt_port) != 0x294: %i\n", OFFSETOF(mainConfig_t, mqtt_port));
+		system("pause");
+	}
 	if (OFFSETOF(mainConfig_t, mqtt_group) != 0x00000554) {
 		printf("OFFSETOF(mainConfig_t, mqtt_group) != 0x00000554: %i\n", OFFSETOF(mainConfig_t, mqtt_group));
 		system("pause");

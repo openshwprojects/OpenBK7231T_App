@@ -1010,30 +1010,42 @@ typedef struct mainConfig_s {
 	byte crc;
 	// 0x4
 	int version;
+	// 0x08
 	int genericFlags;
+	// 0x0C
 	int genericFlags2;
+	// 0x10
 	unsigned short changeCounter;
 	unsigned short otaCounter;
+	// 0x14
 	// target wifi credentials
 	char wifi_ssid[64];
+	// 0x54
 	char wifi_pass[64];
+	// 0x94
 	// MQTT information for Home Assistant
 	char mqtt_host[256];
+	// ofs 0x194
 	// note: #define CGF_MQTT_CLIENT_ID_SIZE			64
 	char mqtt_clientId[CGF_MQTT_CLIENT_ID_SIZE];
+	// ofs 0x1D4
 	char mqtt_userName[64];
+	// ofs 0x214
 	char mqtt_pass[128];
 	//mqtt_port at offs 0x00000294 
 	int mqtt_port;
 	// addon JavaScript panel is hosted on external server
+	// at offs 0x298 
 	char webappRoot[64];
 	// TODO?
 	byte mac[6];
+	// at ofs: 0x2DE
 	// NOTE: NO LONGER 4 byte aligned!!!
 	// TODO?
 	// #define CGF_SHORT_DEVICE_NAME_SIZE		32
 	char shortDeviceName[CGF_SHORT_DEVICE_NAME_SIZE];
 	// #define CGF_DEVICE_NAME_SIZE			64
+	// at ofs: 0x2FE
 	char longDeviceName[CGF_DEVICE_NAME_SIZE];
 
 	//pins at offs 0x0000033E
@@ -1042,11 +1054,15 @@ typedef struct mainConfig_s {
 	// startChannelValues at offs 0x000003DE
 	// 64 * 2
 	short startChannelValues[CHANNEL_MAX];
-	// dgr_sendFlags at offs 0x0000045E 
+	// unused_fill at offs 0x0000045E 
 	short unused_fill; // correct alignment
+	// dgr_sendFlags at offs 0x00000460 
 	int dgr_sendFlags;
+	// dgr_recvFlags at offs 0x00000464 
 	int dgr_recvFlags;
+	// dgr_name at offs 0x00000468
 	char dgr_name[16];
+	// at offs 0x478
 	char ntpServer[32];
 	// 8 * 4 = 32 bytes
 	cfgPowerMeasurementCalibration_t cal;
@@ -1054,8 +1070,11 @@ typedef struct mainConfig_s {
 	// short press 1 means 100 ms short press time
 	// So basically unit is 0.1 second
 	byte buttonShortPress;
+	// offs 0x000004B9
 	byte buttonLongPress;
+	// offs 0x000004BA
 	byte buttonHoldRepeat;
+	// offs 0x000004BB
 	byte unused_fill1;
 
 	// offset 0x000004BC
@@ -1074,6 +1093,7 @@ typedef struct mainConfig_s {
 	char mqtt_group[64];
 	// offs 0x00000594
 	byte unused_bytefill[3];
+	// offs 0x00000597
 	byte timeRequiredToMarkBootSuccessfull;
 	//offs 0x00000598
 	int ping_interval;
