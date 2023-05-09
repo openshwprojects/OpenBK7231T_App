@@ -125,7 +125,26 @@ void CFG_SetDefaultConfig() {
 	snprintf(g_cfg.longDeviceName, sizeof(g_cfg.longDeviceName), DEVICENAME_PREFIX_FULL"_%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
 	snprintf(g_cfg.shortDeviceName, sizeof(g_cfg.shortDeviceName), DEVICENAME_PREFIX_SHORT"%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
 	strcpy_safe(g_cfg.mqtt_clientId, g_cfg.shortDeviceName, sizeof(g_cfg.mqtt_clientId));
+
+	// group topic will be unique for each platform, so it's easy
+	// to do group OTA without worrying about feeding wrong RBL for wrong platform
+#if PLATFORM_BK7231T
+	strcpy_safe(g_cfg.mqtt_group, "bekens_t", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_BK7231N
+	strcpy_safe(g_cfg.mqtt_group, "bekens_n", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_W600
+	strcpy_safe(g_cfg.mqtt_group, "w600s", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_W800
+	strcpy_safe(g_cfg.mqtt_group, "w800s", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_XR809
+	strcpy_safe(g_cfg.mqtt_group, "xr809s", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_BL602
+	strcpy_safe(g_cfg.mqtt_group, "bl602s", sizeof(g_cfg.mqtt_group));
+#elif WINDOWS
 	strcpy_safe(g_cfg.mqtt_group, "bekens", sizeof(g_cfg.mqtt_group));
+#else
+	strcpy_safe(g_cfg.mqtt_group, "obks", sizeof(g_cfg.mqtt_group));
+#endif
 
 	strcpy(g_cfg.ntpServer, DEFAULT_NTP_SERVER);
 
