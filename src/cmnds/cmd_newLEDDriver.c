@@ -1104,9 +1104,7 @@ static commandResult_t dimmer(const void *context, const char *cmd, const char *
 			LED_SetDimmer(iVal);
 		}
 
-		return 1;
-	//}
-	//return 0;
+		return CMD_RES_OK;
 }
 void LED_SetFinalRGBCW(byte *rgbcw) {
 	if(rgbcw[0] == 0 && rgbcw[1] == 0 && rgbcw[2] == 0 && rgbcw[3] == 0 && rgbcw[4] == 0) {
