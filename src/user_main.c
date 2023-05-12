@@ -356,6 +356,7 @@ bool Main_HasFastConnect() {
 	}
 	return false;
 }
+static byte g_secondsSpentInLowMemoryWarning = 0;
 void Main_OnEverySecond()
 {
 	int newMQTTState;
@@ -413,6 +414,19 @@ void Main_OnEverySecond()
 		CFG_Save_IfThereArePendingChanges();
 	}
 
+	// On Beken, do reboot if we ran into heap size problem
+#if PLATFORM_BEKEN
+	if (xPortGetFreeHeapSize() < 25 * 1000) {
+		g_secondsSpentInLowMemoryWarning++;
+		ADDLOGF_ERROR("Low heap warning!\n");
+		if (g_secondsSpentInLowMemoryWarning > 5) {
+			HAL_RebootModule();
+		}
+	}
+	else {
+		g_secondsSpentInLowMemoryWarning = 0;
+	}
+#endif
 	if (bSafeMode == 0) {
 		const char* ip = HAL_GetMyIPString();
 		// this will return non-zero if there were any changes
