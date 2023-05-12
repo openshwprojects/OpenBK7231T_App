@@ -1754,6 +1754,11 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 	case PUBLISHITEM_SELF_MAC:
 		return MQTT_DoItemPublishString("mac", HAL_GetMACStr(dataStr));
 
+	case PUBLISHITEM_SELF_SSID:
+		// TODO: correct SSID
+		return MQTT_DoItemPublishString("ssid", CFG_GetWiFiSSID());
+
+
 	case PUBLISHITEM_SELF_DATETIME:
 		//Drivers are only built on BK7231 chips
 #ifndef OBK_DISABLE_ALL_DRIVERS
