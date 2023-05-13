@@ -484,7 +484,7 @@ static commandResult_t CMD_SimonTest(const void* context, const char* cmd, const
 
 	return CMD_RES_OK;
 }
-
+/*
 int Flash_FindPattern(byte *data, int dataSize, int startOfs, int endOfs) {
 	int i;
 	float val;
@@ -530,6 +530,7 @@ int Flash_FindPattern(byte *data, int dataSize, int startOfs, int endOfs) {
 	free(buffer);
 	return -1;
 }
+*/
 // FindPattern 0x0 0x200000 46DCED0E672F3B70AE1276A3F8712E03
 /*
 commandResult_t CMD_FindPattern(const void *context, const char *cmd, const char *args, int cmdFlags) {
