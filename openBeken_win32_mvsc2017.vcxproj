@@ -951,6 +951,7 @@
     <ClCompile Include="src\selftest\selftest_buttonEvents.c" />
     <ClCompile Include="src\selftest\selftest_clockEvents.c" />
     <ClCompile Include="src\selftest\selftest_cmd_startup.c" />
+    <ClCompile Include="src\selftest\selftest_flashSearch.c" />
     <ClCompile Include="src\selftest\selftest_hass_discovery_base.c" />
     <ClCompile Include="src\selftest\selftest_hass_discovery_ext.c" />
     <ClCompile Include="src\selftest\selftest_if_inside_backlog.c" />

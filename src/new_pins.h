@@ -1119,7 +1119,7 @@ extern mainConfig_t g_cfg;
 
 extern char g_enable_pins;
 extern int g_initialPinStates;
-extern byte g_defaultDoorWakeEdge;
+extern byte g_defaultWakeEdge;
 
 #define CHANNEL_SET_FLAG_FORCE		1
 #define CHANNEL_SET_FLAG_SKIP_MQTT	2

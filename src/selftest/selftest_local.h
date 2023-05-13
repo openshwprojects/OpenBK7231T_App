@@ -63,6 +63,7 @@ inline const char *va(const char *fmt, ...) {
 }
 
 
+void Test_Flash_Search();
 void Test_JSON_Lib();
 void Test_Commands_Startup();
 void Test_TwoPWMsOneChannel();

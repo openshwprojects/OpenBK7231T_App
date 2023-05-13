@@ -863,6 +863,9 @@
     <ClCompile Include="src\selftest\selftest_hass_discovery_ext.c">
       <Filter>SelfTest</Filter>
     </ClCompile>
+    <ClCompile Include="src\selftest\selftest_flashSearch.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />
@@ -1360,9 +1363,6 @@
     <Filter Include="HAL">
       <UniqueIdentifier>{e385d68c-eb29-44e3-bbb3-560d53712634}</UniqueIdentifier>
     </Filter>
-    <Filter Include="HTTP">
-      <UniqueIdentifier>{e980596d-3f72-423b-9b22-afc2901a273f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="LFS">
       <UniqueIdentifier>{ea59e797-47c5-4aa4-b0df-13a40b08dd3c}</UniqueIdentifier>
     </Filter>
@@ -1374,6 +1374,9 @@
     </Filter>
     <Filter Include="IRRemote-ESP">
       <UniqueIdentifier>{553d6b46-d893-4259-b8b1-77e58da2a2ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HTTP">
+      <UniqueIdentifier>{e980596d-3f72-423b-9b22-afc2901a273f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

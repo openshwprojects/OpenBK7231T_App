@@ -25,21 +25,6 @@ static int g_emergencyTimeWithNoConnection = 0;
 #define EMERGENCY_TIME_TO_SLEEP_WITHOUT_MQTT 60 * 5
 
 
-commandResult_t DoorDeepSleep_SetEdge(const void* context, const char* cmd, const char* args, int cmdFlags) {
-
-	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-	// following check must be done after 'Tokenizer_TokenizeString',
-	// so we know arguments count in Tokenizer. 'cmd' argument is
-	// only for warning display
-	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1))
-	{
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
-
-	g_defaultDoorWakeEdge = Tokenizer_GetArgInteger(0);
-
-	return CMD_RES_OK;
-}
 commandResult_t DoorDeepSleep_SetTime(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
@@ -59,11 +44,6 @@ void DoorDeepSleep_Init() {
 	// 0 seconds since last change
 	g_noChangeTimePassed = 0;
 
-	//cmddetail:{"name":"DSEdge","args":"[edgeCode]",
-	//cmddetail:"descr":"DoorSensor driver configuration command. 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2",
-	//cmddetail:"fn":"DoorDeepSleep_SetEdge","file":"drv/drv_doorSensorWithDeepSleep.c","requires":"",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("DSEdge", DoorDeepSleep_SetEdge, NULL);
 	//cmddetail:{"name":"DSTime","args":"[timeSeconds]",
 	//cmddetail:"descr":"DoorSensor driver configuration command. Time to keep device running before next sleep after last door sensor change. In future we may add also an option to automatically sleep after MQTT confirms door state receival",
 	//cmddetail:"fn":"DoorDeepSleep_SetTime","file":"drv/drv_doorSensorWithDeepSleep.c","requires":"",

@@ -33,7 +33,7 @@
 int BTN_SHORT_MS;
 int BTN_LONG_MS;
 int BTN_HOLD_REPEAT_MS;
-byte g_defaultDoorWakeEdge = 2;
+byte g_defaultWakeEdge = 2;
 int g_initialPinStates = 0;
 
 typedef enum {
@@ -142,7 +142,7 @@ void PINS_BeginDeepSleepWithPinWakeUp() {
 			// https://www.elektroda.pl/rtvforum/viewtopic.php?p=20543190#20543190
 			// forcing a certain edge for both states helps on some door sensors, somehow
 			// 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising
-			if (g_defaultDoorWakeEdge == 2) {
+			if (g_defaultWakeEdge == 2) {
 				value = HAL_PIN_ReadDigitalInput(i);
 				if (value) {
 					// on falling edge wake up
@@ -154,7 +154,7 @@ void PINS_BeginDeepSleepWithPinWakeUp() {
 				}
 			}
 			else {
-				falling = g_defaultDoorWakeEdge;
+				falling = g_defaultWakeEdge;
 			}
 			setGPIActive(i, 1, falling);
 		}
