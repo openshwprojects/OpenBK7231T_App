@@ -100,3 +100,7 @@ void PwrCal_Scale(int raw_voltage, int raw_current, int raw_power,
     *real_current = Scale(raw_current, current_cal);
     *real_power = Scale(raw_power, power_cal);
 }
+
+float PwrCal_ScalePowerOnly(int raw_power) {
+    return Scale(raw_power, power_cal);
+}

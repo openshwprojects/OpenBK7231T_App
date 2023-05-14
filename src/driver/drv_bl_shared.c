@@ -22,7 +22,7 @@ int stat_updatesSent = 0;
 
 // Current values
 float lastReadings[OBK_NUM_MEASUREMENTS];
-float lastReadingFrequency = 0.0f;
+float lastReadingFrequency = NAN;
 // precisions:
 byte roundingPrecision[4] = {
 	1, // OBK_VOLTAGE, // must match order in cmd_public.h
@@ -102,11 +102,11 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
     poststr(request, "<hr><table style='width:100%'>");
 
-    if (lastReadingFrequency > 0) {
+    if (!isnan(lastReadingFrequency)) {
         poststr(request,
                 "<tr><td><b>Frequency</b></td><td style='text-align: right;'>");
-		hprintf255(request, "%.2f</td><td>Hz</td>", lastReadingFrequency);
-	}
+        hprintf255(request, "%.2f</td><td>Hz</td>", lastReadingFrequency);
+    }
 
     poststr(request,
             "<tr><td><b>Voltage</b></td><td style='text-align: right;'>");
@@ -143,6 +143,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
                          "style='text-align: right;'>");
         hprintf255(request, "%.1f</td><td>Wh</td>", dailyStats[1]);
     }
+
     poststr(request,
             "<tr><td><b>Energy Total</b></td><td style='text-align: right;'>");
 	// convert from Wh to kWh (thus / 1000.0f)
@@ -414,6 +415,7 @@ commandResult_t BL09XX_VCPPublishThreshold(const void *context, const char *cmd,
 
 	return CMD_RES_OK;
 }
+
 commandResult_t BL09XX_SetupConsumptionThreshold(const void *context, const char *cmd, const char *args, int cmdFlags)
 {
     float threshold;
@@ -436,6 +438,7 @@ commandResult_t BL09XX_SetupConsumptionThreshold(const void *context, const char
 
     return CMD_RES_OK;
 }
+
 bool Channel_AreAllRelaysOpen() {
 	int i, role, ch;
 
@@ -463,17 +466,17 @@ bool Channel_AreAllRelaysOpen() {
 	}
 	return true;
 }
+
 float BL_ChangeEnergyUnitIfNeeded(float Wh) {
 	if (CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH)) {
 		return Wh * 0.001f;
 	}
 	return Wh;
 }
+
 void BL_ProcessUpdate(float voltage, float current, float power,
-					  float frequency) 
-{
+                      float frequency, float energyWh) {
     int i;
-    float energy;    
     int xPassedTicks;
     cJSON* root;
     cJSON* stats;
@@ -486,7 +489,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
 	// I had reports that BL0942 sometimes gives 
 	// a large, negative peak of current/power
-	if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)==false) 
+	if (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)) 
     {
 		if (power < 0.0f)
 			power = 0.0f;
@@ -503,40 +506,37 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 		}
 	}
 
-    // those are final values, like 230V
     lastReadings[OBK_POWER] = power;
     lastReadings[OBK_VOLTAGE] = voltage;
     lastReadings[OBK_CURRENT] = current;
     lastReadingFrequency = frequency;
 
-	g_apparentPower =
-		lastReadings[OBK_VOLTAGE] * lastReadings[OBK_CURRENT];
+    g_apparentPower = lastReadings[OBK_VOLTAGE] * lastReadings[OBK_CURRENT];
+    g_reactivePower = (g_apparentPower <= fabsf(lastReadings[OBK_POWER])
+                           ? 0
+                           : sqrtf(powf(g_apparentPower, 2) -
+                                   powf(lastReadings[OBK_POWER], 2)));
+    g_powerFactor =
+        (g_apparentPower == 0 ? 1 : lastReadings[OBK_POWER] / g_apparentPower);
 
-	g_reactivePower = (g_apparentPower <= fabsf(lastReadings[OBK_POWER])
-		? 0
-		: sqrtf(powf(g_apparentPower, 2) -
-			powf(lastReadings[OBK_POWER], 2)));
+    float energy = 0;
+    if (isnan(energyWh)) {
+        xPassedTicks = (int)(xTaskGetTickCount() - energyCounterStamp);
+        // FIXME: Wrong calculation if tick count overflows
+        if (xPassedTicks <= 0)
+            xPassedTicks = 1;
+        energy = xPassedTicks * power / (3600000.0f / portTICK_PERIOD_MS);
+    } else
+        energy = energyWh;
 
-	g_powerFactor =
-		(g_apparentPower == 0 ? 1 : lastReadings[OBK_POWER] / g_apparentPower);
-
-    xPassedTicks = (int)(xTaskGetTickCount() - energyCounterStamp);
-    if (xPassedTicks <= 0)
-        xPassedTicks = 1;
-    energy = (float)xPassedTicks;
-    energy *= power;
-    energy /= (3600000.0f / (float)portTICK_PERIOD_MS);
     if (energy < 0)
-    {
         energy = 0.0;
-    }
 
     energyCounter += energy;
     energyCounterStamp = xTaskGetTickCount();
     HAL_FlashVars_SaveTotalConsumption(energyCounter);
-    
-    if(NTP_IsTimeSynced() == true) 
-    {
+
+    if (NTP_IsTimeSynced()) {
         ntpTime = (time_t)NTP_GetCurrentTime();
         ltm = localtime(&ntpTime);
         if (ConsumptionResetTime == 0)
@@ -863,6 +863,7 @@ void BL_Shared_Init(void)
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("VCPPublishIntervals", BL09XX_VCPPublishIntervals, NULL);
 }
+
 // OBK_POWER etc
 float DRV_GetReading(int type) 
 {
