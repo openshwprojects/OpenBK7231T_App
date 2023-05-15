@@ -51,6 +51,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | ClearNoPingTime |  | Command for ping watchdog; it sets the 'time since last ping reply' to 0 again |
 | SetStartValue | [Channel][Value] | Sets the startup value for a channel. Used for start values for relays. Use 1 for High, 0 for low and -1 for 'remember last state' |
 | OpenAP |  | Temporarily disconnects from programmed WiFi network and opens Access Point |
+| DSEdge | [edgeCode] | DoorSensor driver configuration command. 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2 |
 | SafeMode |  | Forces device reboot into safe mode (open ap with disabled drivers) |
 | PingInterval | [IntegerSeconds] | Sets the interval between ping attempts for ping watchdog mechanism |
 | PingHost | [IPStr] | Sets the host to ping by IP watchdog |
@@ -135,7 +136,6 @@ Do not add anything here, as it will overwritten with next rebuild.
 | BP5758D_Current | [MaxCurrentRGB][MaxCurrentCW] | Sets the maximum current limit for BP5758D driver, first value is for rgb and second for cw |
 | BridgePulseLength | [FloatValue] | Setup value for bridge pulse len |
 | CHT_Calibrate |  | Calibrate the CHT Sensor as Tolerance is +/-2 degrees C.<br/>e.g.:SHT_Calibrate -4 10 |
-| DSEdge | [edgeCode] | DoorSensor driver configuration command. 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2 |
 | DSTime | [timeSeconds] | DoorSensor driver configuration command. Time to keep device running before next sleep after last door sensor change. In future we may add also an option to automatically sleep after MQTT confirms door state receival |
 | setButtonColor | [ButtonIndex][Color] | Sets the colour of custom scriptable HTTP page button |
 | setButtonCommand | [ButtonIndex][Command] | Sets the command of custom scriptable HTTP page button |

@@ -278,5 +278,12 @@
     "title": "todo",
     "file": "new_pins.h",
     "descr": "[MQTT] [Debug] Publish all channels (don't enable it, it will be publish all 64 possible channels on connect)"
+  },
+  {
+    "index": "40",
+    "enum": "OBK_FLAG_MQTT_ENERGY_IN_KWH",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[MQTT] Use kWh unit for energy consumption (total, last hour, today) instead of Wh"
   }
 ]

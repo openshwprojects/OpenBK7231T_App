@@ -288,7 +288,7 @@
     "driver": ""
   },
   {
-    "name": "ChType_ReadOnlyLowMidHigh",
+    "name": "ReadOnlyLowMidHigh",
     "title": "TODO",
     "descr": "Like LowMidHigh, but just read only",
     "enum": "ChType_ReadOnlyLowMidHigh",
