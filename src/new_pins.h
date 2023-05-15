@@ -796,7 +796,7 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Power_div10,
-	//chandetail:{"name":"ChType_ReadOnlyLowMidHigh",
+	//chandetail:{"name":"ReadOnlyLowMidHigh",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"Like LowMidHigh, but just read only",
 	//chandetail:"enum":"ChType_ReadOnlyLowMidHigh",
