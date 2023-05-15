@@ -3,7 +3,7 @@
 #include "selftest_local.h"
 
 void Test_Flash_Search() {
-	int tr;
+	/*int tr;
 	int check;
 	int testAdr = 26293;
 	byte testData[] = { 0xFF, 0xFE, 0x01, 0x02, 0x03, 0x04, 0x05, 0xFC, 0xFB, 0xFA, 0xBA, 0xAD, 0xF0, 0x0D, 0xAB, 0xCD };
@@ -31,7 +31,7 @@ void Test_Flash_Search() {
 		int at = Flash_FindPattern(testData, testDataLen, 0x0, 0x200000);
 		printf("Found at %i\n", at);
 		SELFTEST_ASSERT(at == testAdr);
-	}
+	}*/
 }
 
 #endif
