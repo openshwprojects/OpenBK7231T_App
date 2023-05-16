@@ -153,7 +153,7 @@ void NewTuyaMCUSimulator_RunQuickTick(int deltaMS) {
 			break;
 		}
 		b = hexbyte(curP);
-		UART_AppendByteToCircularBuffer(b);
+		UART_AppendByteToReceiveRingBuffer(b);
 		curP += 2;
 	}
 	if (*curP == 0) {
