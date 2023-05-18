@@ -1,6 +1,8 @@
 // NOTE: this is the same as HLW8032
 #include "drv_cse7766.h"
 
+#include <math.h>
+
 #include "../logging/logging.h"
 #include "../new_pins.h"
 #include "drv_bl_shared.h"
@@ -181,7 +183,7 @@ int CSE7766_TryToGetNextCSE7766Packet() {
         float voltage, current, power;
         PwrCal_Scale(raw_unscaled_voltage, raw_unscaled_current,
                      raw_unscaled_power, &voltage, &current, &power);
-        BL_ProcessUpdate(voltage, current, power, 0.0f);
+        BL_ProcessUpdate(voltage, current, power, NAN, NAN);
     }
 
 #if 0
