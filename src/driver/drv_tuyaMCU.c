@@ -265,8 +265,8 @@ int UART_TryToGetNextTuyaPacket(byte* out, int maxSize) {
 	}
 	// skip garbage data (should not happen)
 	while (cs > 0) {
-		a = UART_GetNextByte(0);
-		b = UART_GetNextByte(1);
+		a = UART_GetByte(0);
+		b = UART_GetByte(1);
 		if (a != 0x55 || b != 0xAA) {
 			UART_ConsumeBytes(1);
 			if (c_garbage_consumed + 2 < sizeof(printfSkipDebug)) {
@@ -287,15 +287,15 @@ int UART_TryToGetNextTuyaPacket(byte* out, int maxSize) {
 	if (cs < MIN_TUYAMCU_PACKET_SIZE) {
 		return 0;
 	}
-	a = UART_GetNextByte(0);
-	b = UART_GetNextByte(1);
+	a = UART_GetByte(0);
+	b = UART_GetByte(1);
 	if (a != 0x55 || b != 0xAA) {
 		return 0;
 	}
-	version = UART_GetNextByte(2);
-	command = UART_GetNextByte(3);
-	lena = UART_GetNextByte(4); // hi
-	lenb = UART_GetNextByte(5); // lo
+	version = UART_GetByte(2);
+	command = UART_GetByte(3);
+	lena = UART_GetByte(4); // hi
+	lenb = UART_GetByte(5); // lo
 	len = lenb | lena >> 8;
 	// now check if we have received whole packet
 	len += 2 + 1 + 1 + 2 + 1; // header 2 bytes, version, command, lenght, chekcusm
@@ -304,7 +304,7 @@ int UART_TryToGetNextTuyaPacket(byte* out, int maxSize) {
 		// can packet fit into the buffer?
 		if (len <= maxSize) {
 			for (i = 0; i < len; i++) {
-				out[i] = UART_GetNextByte(i);
+				out[i] = UART_GetByte(i);
 			}
 			ret = len;
 		}

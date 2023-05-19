@@ -82,7 +82,6 @@ static int UART_TryToGetNextPacket(void) {
 	int cs;
 	int i;
 	int c_garbage_consumed = 0;
-	byte a;
 	byte checksum;
 
 	cs = UART_GetDataSize();
@@ -92,8 +91,7 @@ static int UART_TryToGetNextPacket(void) {
 	}
 	// skip garbage data (should not happen)
 	while(cs > 0) {
-		a = UART_GetNextByte(0);
-		if(a != BL0942_UART_PACKET_HEAD) {
+        if (UART_GetByte(0) != BL0942_UART_PACKET_HEAD) {
 			UART_ConsumeBytes(1);
 			c_garbage_consumed++;
 			cs--;
@@ -109,50 +107,33 @@ static int UART_TryToGetNextPacket(void) {
 	if(cs < BL0942_UART_PACKET_LEN) {
 		return 0;
 	}
-	a = UART_GetNextByte(0);
-	if(a != 0x55) {
+    if (UART_GetByte(0) != 0x55)
 		return 0;
-	}
     checksum = BL0942_UART_CMD_READ(BL0942_UART_ADDR);
 
     for(i = 0; i < BL0942_UART_PACKET_LEN-1; i++) {
-		checksum += UART_GetNextByte(i);
+        checksum += UART_GetByte(i);
 	}
 	checksum ^= 0xFF;
 
-#if 0
-    {
-		char buffer_for_log[128];
-		char buffer2[32];
-		buffer_for_log[0] = 0;
-		for(i = 0; i < BL0942_UART_PACKET_LEN; i++) {
-			snprintf(buffer2, sizeof(buffer2), "%02X ",UART_GetNextByte(i));
-			strcat_safe(buffer_for_log,buffer2,sizeof(buffer_for_log));
-		}
-        ADDLOG_INFO(LOG_FEATURE_ENERGYMETER, "BL0942 received: %s\n",
-                    buffer_for_log);
-	}
-#endif
-
-	if(checksum != UART_GetNextByte(BL0942_UART_PACKET_LEN-1)) {
+    if (checksum != UART_GetByte(BL0942_UART_PACKET_LEN - 1)) {
         ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
                     "Skipping packet with bad checksum %02X wanted %02X\n",
-                    UART_GetNextByte(BL0942_UART_PACKET_LEN - 1), checksum);
+                    UART_GetByte(BL0942_UART_PACKET_LEN - 1), checksum);
         UART_ConsumeBytes(BL0942_UART_PACKET_LEN);
 		return 1;
 	}
 
     bl0942_data_t data;
-    data.i_rms = (UART_GetNextByte(3) << 16) | (UART_GetNextByte(2) << 8) |
-                 UART_GetNextByte(1);
-    data.v_rms = (UART_GetNextByte(6) << 16) | (UART_GetNextByte(5) << 8) |
-                 UART_GetNextByte(4);
-    data.watt =
-        Int24ToInt32((UART_GetNextByte(12) << 16) |
-                     (UART_GetNextByte(11) << 8) | UART_GetNextByte(10));
-    data.cf_cnt = (UART_GetNextByte(15) << 16) | (UART_GetNextByte(14) << 8) |
-                  UART_GetNextByte(13);
-    data.freq = (UART_GetNextByte(17) << 8) | UART_GetNextByte(16);
+    data.i_rms =
+        (UART_GetByte(3) << 16) | (UART_GetByte(2) << 8) | UART_GetByte(1);
+    data.v_rms =
+        (UART_GetByte(6) << 16) | (UART_GetByte(5) << 8) | UART_GetByte(4);
+    data.watt = Int24ToInt32((UART_GetByte(12) << 16) |
+                             (UART_GetByte(11) << 8) | UART_GetByte(10));
+    data.cf_cnt =
+        (UART_GetByte(15) << 16) | (UART_GetByte(14) << 8) | UART_GetByte(13);
+    data.freq = (UART_GetByte(17) << 8) | UART_GetByte(16);
     ScaleAndUpdate(&data);
 
     UART_ConsumeBytes(BL0942_UART_PACKET_LEN);
