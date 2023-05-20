@@ -332,6 +332,41 @@ void Test_HassDiscovery_BL0937() {
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/voltage/get");
 
 }
+void Test_HassDiscovery_digitalInput() {
+	const char *shortName = "DigitalInputTest";
+	const char *fullName = "Windows Fake DINput";
+	const char *mqttName = "fakeDin";
+
+	SIM_ClearOBK(shortName);
+	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
+
+	CFG_SetShortDeviceName(shortName);
+	CFG_SetDeviceName(fullName);
+
+	PIN_SetPinRoleForPinIndex(24, IOR_DigitalInput);
+	PIN_SetPinChannelForPinIndex(24, 5);
+
+	// this label will be sent via HASS Discovery to Home Assistant
+	CMD_ExecuteCommand("setChannelLabel 5 myDigitalValue", 0);
+	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
+	Sim_RunSeconds(10, false);
+
+	// generic tests to see if something power-related was published
+	// OBK device should publish JSON on MQTT topic "homeassistant"
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "name", shortName);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "sw", USER_SW_VER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mf", MANUFACTURER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mdl", PLATFORM_MCU_NAME);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(NULL, "avty_t", "~/connected");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(NULL, "pl_on", "0");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(NULL, "pl_off", "1");
+	// we have used channel index 1
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/5/get");
+	// this label will be sent via HASS Discovery to Home Assistant
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "name", "DigitalInputTest myDigitalValue");
+
+}
 void Test_HassDiscovery() {
 	Test_HassDiscovery_SHTSensor();
 	Test_HassDiscovery_BL0942();
@@ -344,6 +379,7 @@ void Test_HassDiscovery() {
 	Test_HassDiscovery_LED_RGBCW();
 	Test_HassDiscovery_LED_SingleColor();
 	Test_HassDiscovery_DHT11();
+	Test_HassDiscovery_digitalInput();
 }
 
 
