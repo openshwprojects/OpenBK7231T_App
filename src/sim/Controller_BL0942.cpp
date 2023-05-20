@@ -55,7 +55,7 @@ void CControllerBL0942::onDrawn() {
 	checksum ^= 0xFF;
 	data[BL0942_PACKET_LEN - 1] = checksum;
 	for (i = 0; i < BL0942_PACKET_LEN; i++) {
-		UART_AppendByteToCircularBuffer(data[i]);
+		UART_AppendByteToReceiveRingBuffer(data[i]);
 	}
 }
 class CControllerBase *CControllerBL0942::cloneController(class CShape *origOwner, class CShape *newOwner) {
