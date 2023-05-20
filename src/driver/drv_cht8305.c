@@ -53,8 +53,7 @@ commandResult_t CHT_Calibrate(const void* context, const char* cmd, const char* 
 	// following check must be done after 'Tokenizer_TokenizeString',
 	// so we know arguments count in Tokenizer. 'cmd' argument is
 	// only for warning display
-	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2))
-	{
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	g_calTemp = Tokenizer_GetArgFloat(0);
@@ -68,7 +67,7 @@ commandResult_t CHT_Calibrate(const void* context, const char* cmd, const char* 
 commandResult_t CHT_cycle(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-	if (Tokenizer_GetArgsCount() < 1) {
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	g_cht_secondsBetweenMeasurements = Tokenizer_GetArgInteger(0);
@@ -105,7 +104,7 @@ void CHT8305_Init() {
 	//cmddetail:"examples":"SHT_Calibrate -4 10"}
 	CMD_RegisterCommand("CHT_Calibrate", CHT_Calibrate, NULL);
 	//cmddetail:{"name":"CHT_Cycle","args":"[int]",
-	//cmddetail:"descr":"This is the interval between measurements in seconds, by default 10. Max is 255.",
+	//cmddetail:"descr":"This is the interval between measurements in seconds, by default 1. Max is 255.",
 	//cmddetail:"fn":"CHT_cycle","file":"drv/drv_cht8305.c","requires":"",
 	//cmddetail:"examples":"CHT_Cycle 60"}
 	CMD_RegisterCommand("CHT_Cycle", CHT_cycle, NULL);

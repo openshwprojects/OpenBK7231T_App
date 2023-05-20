@@ -86,10 +86,11 @@ commandResult_t SHT3X_ChangePer(const void* context, const char* cmd, const char
 commandResult_t SHT3X_Heater(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int g_state_heat;
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-	if (Tokenizer_GetArgsCount() < 1) {
-		ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT Heater: 1 or 0 to activate");
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		//ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT Heater: 1 or 0 to activate");
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
+
 	g_state_heat = Tokenizer_GetArgInteger(0);
 	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR);
 
@@ -371,10 +372,10 @@ commandResult_t SHT3X_SetAlertCmd(const void* context, const char* cmd, const ch
 	float temperatureLowSet, temperatureLowClear, temperatureHighClear, temperatureHighSet;
 	float humidityLowSet, humidityLowClear, humidityHighClear, humidityHighSet;
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-	if (Tokenizer_GetArgsCount() < 4) {
-		ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT Set alert: require Temp low/high and Humidity low/high arg");
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 4)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
+	//ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT Set alert: require Temp low/high and Humidity low/high arg");
 	temperatureHighSet = Tokenizer_GetArgFloat(0);
 	temperatureLowSet = Tokenizer_GetArgFloat(1);
 	temperatureLowClear = Tokenizer_GetArgFloat(1) + 0.5;
@@ -416,7 +417,7 @@ commandResult_t SHT3X_SetAlertCmd(const void* context, const char* cmd, const ch
 commandResult_t SHT_cycle(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-	if (Tokenizer_GetArgsCount() < 1) {
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	g_sht_secondsBetweenMeasurements = Tokenizer_GetArgInteger(0);
