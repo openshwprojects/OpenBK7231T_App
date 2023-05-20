@@ -1,5 +1,7 @@
 #include "drv_test_drivers.h"
 
+#include <math.h>
+
 #include "../cmnds/cmd_public.h"
 #include "drv_bl_shared.h"
 
@@ -46,7 +48,7 @@ void Test_Power_RunFrame(void) {
 		final_v += (rand() % 100) * 0.1f;
 		final_p += (rand() % 100) * 0.1f;
 	}
-	BL_ProcessUpdate(final_v, final_c, final_p, 0.0f);
+	BL_ProcessUpdate(final_v, final_c, final_p, NAN, NAN);
 }
 
 //Test LED driver

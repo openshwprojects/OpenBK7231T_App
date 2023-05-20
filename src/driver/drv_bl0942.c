@@ -1,5 +1,8 @@
 #include "drv_bl0942.h"
 
+#include <math.h>
+#include <stdint.h>
+
 #include "../logging/logging.h"
 #include "../new_pins.h"
 #include "drv_bl_shared.h"
@@ -25,6 +28,7 @@
 #define BL0942_REG_I_RMS 0x03
 #define BL0942_REG_V_RMS 0x04
 #define BL0942_REG_WATT 0x06
+#define BL0942_REG_CF_CNT 0x7
 #define BL0942_REG_FREQ 0x08
 #define BL0942_REG_USR_WRPROT 0x1D
 #define BL0942_USR_WRPROT_DISABLE 0x55
@@ -38,37 +42,46 @@
 #define DEFAULT_CURRENT_CAL 251210
 #define DEFAULT_POWER_CAL 598
 
-static void ScaleAndUpdate(int raw_voltage, int raw_current, int raw_power,
-                           int raw_frequency) {
-    // those are not values like 230V, but unscaled
-    ADDLOG_EXTRADEBUG(LOG_FEATURE_ENERGYMETER,
-                      "Unscaled current %d, voltage %d, power %d, freq %d\n",
-                      raw_current, raw_voltage, raw_power, raw_frequency);
-    ADDLOG_EXTRADEBUG(LOG_FEATURE_ENERGYMETER,
-                      "HEX Current: %08lX; "
-                      "Voltage: %08lX; Power: %08lX;\n",
-                      (unsigned long)raw_current, (unsigned long)raw_voltage,
-                      (unsigned long)raw_power);
+#define CF_CNT_INVALID (1 << 31)
 
-    // those are final values, like 230V
+typedef struct {
+    uint32_t i_rms;
+    uint32_t v_rms;
+    int32_t watt;
+    uint32_t cf_cnt;
+    uint32_t freq;
+} bl0942_data_t;
+
+static uint32_t PrevCfCnt = CF_CNT_INVALID;
+
+static int32_t Int24ToInt32(int32_t val) {
+    return (val & (1 << 23) ? val | (0xFF << 24) : val);
+}
+
+static void ScaleAndUpdate(bl0942_data_t *data) {
     float voltage, current, power;
-    PwrCal_Scale(raw_voltage, raw_current, raw_power, &voltage, &current,
+    PwrCal_Scale(data->v_rms, data->i_rms, data->watt, &voltage, &current,
                  &power);
-    float frequency = 2 * 500000.0 / raw_frequency;
-	
-    ADDLOG_DEBUG(LOG_FEATURE_ENERGYMETER,
-                 "Real current %1.3lf, voltage %1.1lf, power %1.1lf, "
-                 "frequency %1.2lf\n",
-                 current, voltage, power, frequency);
 
-    BL_ProcessUpdate(voltage, current, power, frequency);
+    float frequency = 2 * 500000.0f / data->freq;
+
+    float energyWh = 0;
+    if (PrevCfCnt != CF_CNT_INVALID) {
+        int diff = (data->cf_cnt < PrevCfCnt
+                        ? data->cf_cnt + (0xFFFFFF - PrevCfCnt) + 1
+                        : data->cf_cnt - PrevCfCnt);
+        energyWh =
+            fabsf(PwrCal_ScalePowerOnly(diff)) * 1638.4f * 256.0f / 3600.0f;
+    }
+    PrevCfCnt = data->cf_cnt;
+
+    BL_ProcessUpdate(voltage, current, power, frequency, energyWh);
 }
 
 static int UART_TryToGetNextPacket(void) {
 	int cs;
 	int i;
 	int c_garbage_consumed = 0;
-	byte a;
 	byte checksum;
 
 	cs = UART_GetDataSize();
@@ -78,8 +91,7 @@ static int UART_TryToGetNextPacket(void) {
 	}
 	// skip garbage data (should not happen)
 	while(cs > 0) {
-		a = UART_GetNextByte(0);
-		if(a != BL0942_UART_PACKET_HEAD) {
+        if (UART_GetByte(0) != BL0942_UART_PACKET_HEAD) {
 			UART_ConsumeBytes(1);
 			c_garbage_consumed++;
 			cs--;
@@ -88,66 +100,43 @@ static int UART_TryToGetNextPacket(void) {
 		}
 	}
 	if(c_garbage_consumed > 0){
-		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Consumed %i unwanted non-header byte in BL0942 buffer\n", c_garbage_consumed);
+        ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
+                    "Consumed %i unwanted non-header byte in BL0942 buffer\n",
+                    c_garbage_consumed);
 	}
 	if(cs < BL0942_UART_PACKET_LEN) {
 		return 0;
 	}
-	a = UART_GetNextByte(0);
-	if(a != 0x55) {
+    if (UART_GetByte(0) != 0x55)
 		return 0;
-	}
     checksum = BL0942_UART_CMD_READ(BL0942_UART_ADDR);
 
     for(i = 0; i < BL0942_UART_PACKET_LEN-1; i++) {
-		checksum += UART_GetNextByte(i);
+        checksum += UART_GetByte(i);
 	}
 	checksum ^= 0xFF;
 
-#if 1
-    {
-		char buffer_for_log[128];
-		char buffer2[32];
-		buffer_for_log[0] = 0;
-		for(i = 0; i < BL0942_UART_PACKET_LEN; i++) {
-			snprintf(buffer2, sizeof(buffer2), "%02X ",UART_GetNextByte(i));
-			strcat_safe(buffer_for_log,buffer2,sizeof(buffer_for_log));
-		}
-		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"BL0942 received: %s\n", buffer_for_log);
-	}
-#endif
-
-	if(checksum != UART_GetNextByte(BL0942_UART_PACKET_LEN-1)) {
+    if (checksum != UART_GetByte(BL0942_UART_PACKET_LEN - 1)) {
         ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
                     "Skipping packet with bad checksum %02X wanted %02X\n",
-                    UART_GetNextByte(BL0942_UART_PACKET_LEN - 1), checksum);
+                    UART_GetByte(BL0942_UART_PACKET_LEN - 1), checksum);
         UART_ConsumeBytes(BL0942_UART_PACKET_LEN);
 		return 1;
 	}
 
-    int voltage, current, power, frequency;
-    current = (UART_GetNextByte(3) << 16) | (UART_GetNextByte(2) << 8) |
-              UART_GetNextByte(1);
-    voltage = (UART_GetNextByte(6) << 16) | (UART_GetNextByte(5) << 8) |
-              UART_GetNextByte(4);
-    power = (UART_GetNextByte(12) << 24) | (UART_GetNextByte(11) << 16) |
-            (UART_GetNextByte(10) << 8);
-    power = (power >> 8);
+    bl0942_data_t data;
+    data.i_rms =
+        (UART_GetByte(3) << 16) | (UART_GetByte(2) << 8) | UART_GetByte(1);
+    data.v_rms =
+        (UART_GetByte(6) << 16) | (UART_GetByte(5) << 8) | UART_GetByte(4);
+    data.watt = Int24ToInt32((UART_GetByte(12) << 16) |
+                             (UART_GetByte(11) << 8) | UART_GetByte(10));
+    data.cf_cnt =
+        (UART_GetByte(15) << 16) | (UART_GetByte(14) << 8) | UART_GetByte(13);
+    data.freq = (UART_GetByte(17) << 8) | UART_GetByte(16);
+    ScaleAndUpdate(&data);
 
-    frequency = (UART_GetNextByte(17) << 8) | UART_GetNextByte(16);
-
-    ScaleAndUpdate(voltage, current, power, frequency);
-
-#if 0
-	{
-		char res[128];
-		// V=245.107925,I=109.921143,P=0.035618
-		snprintf(res, sizeof(res),"V=%f,I=%f,P=%f\n",lastReadings[OBK_VOLTAGE],lastReadings[OBK_CURRENT],lastReadings[OBK_POWER]);
-		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,res );
-	}
-#endif
-
-	UART_ConsumeBytes(BL0942_UART_PACKET_LEN);
+    UART_ConsumeBytes(BL0942_UART_PACKET_LEN);
 	return BL0942_UART_PACKET_LEN;
 }
 
@@ -168,7 +157,7 @@ static void UART_WriteReg(uint8_t reg, uint32_t val) {
     UART_SendByte(crc ^ 0xFF);
 }
 
-static int SPI_ReadReg(uint8_t reg, uint32_t *val, uint8_t signed24) {
+static int SPI_ReadReg(uint8_t reg, uint32_t *val) {
 	uint8_t send[2];
 	uint8_t recv[4];
 	send[0] = BL0942_SPI_CMD_READ;
@@ -179,15 +168,12 @@ static int SPI_ReadReg(uint8_t reg, uint32_t *val, uint8_t signed24) {
 	checksum ^= 0xFF;
 	if (recv[3] != checksum) {
 		ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
-                    "Failed to read reg %02X: Bad checksum %02X wanted %02X",
+                    "Failed to read reg %02X: bad checksum %02X wanted %02X",
                     reg, recv[3], checksum);
 		return -1;
 	}
 
 	*val = (recv[0] << 16) | (recv[1] << 8) | recv[2];
-	if (signed24 && (recv[0] & 0x80))
-		*val |= (0xFF << 24);
-
 	return 0;
 }
 
@@ -206,7 +192,7 @@ static int SPI_WriteReg(uint8_t reg, uint32_t val) {
     SPI_WriteBytes(send, sizeof(send));
 
     uint32_t read;
-    SPI_ReadReg(reg, &read, 0);
+    SPI_ReadReg(reg, &read);
     if (read == val ||
         // REG_USR_WRPROT is read back as 0x1
         (reg == BL0942_REG_USR_WRPROT && val == BL0942_USR_WRPROT_DISABLE &&
@@ -214,12 +200,15 @@ static int SPI_WriteReg(uint8_t reg, uint32_t val) {
         return 0;
     }
 
-    ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
-                "Failed to write reg %02X val %02X: Read %02X", reg, val, read);
-    return 0;
+    ADDLOG_ERROR(LOG_FEATURE_ENERGYMETER,
+                 "Failed to write reg %02X val %02X: read %02X", reg, val,
+                 read);
+    return -1;
 }
 
 static void Init(void) {
+    PrevCfCnt = CF_CNT_INVALID;
+
     BL_Shared_Init();
 
     PwrCal_Init(PWR_CAL_DIVIDE, DEFAULT_VOLTAGE_CAL, DEFAULT_CURRENT_CAL,
@@ -232,9 +221,7 @@ void BL0942_UART_Init(void) {
 	UART_InitUART(BL0942_UART_BAUD_RATE);
 	UART_InitReceiveRingBuffer(BL0942_UART_RECEIVE_BUFFER_SIZE);
 
-    // Enable write access
     UART_WriteReg(BL0942_REG_USR_WRPROT, BL0942_USR_WRPROT_DISABLE);
-
     UART_WriteReg(BL0942_REG_MODE,
                   BL0942_MODE_DEFAULT | BL0942_MODE_RMS_UPDATE_SEL_800_MS);
 }
@@ -262,23 +249,18 @@ void BL0942_SPI_Init(void) {
 	cfg.bit_order = SPI_MSB_FIRST;
 	SPI_Init(&cfg);
 
-    // Enable write access
     SPI_WriteReg(BL0942_REG_USR_WRPROT, BL0942_USR_WRPROT_DISABLE);
-
-    uint32_t mode;
-    int err = SPI_ReadReg(BL0942_REG_MODE, &mode, 0);
-    if (!err) {
-        mode |= BL0942_MODE_RMS_UPDATE_SEL_800_MS;
-        SPI_WriteReg(BL0942_REG_MODE, mode);
-    }
+    SPI_WriteReg(BL0942_REG_MODE,
+                 BL0942_MODE_DEFAULT | BL0942_MODE_RMS_UPDATE_SEL_800_MS);
 }
 
 void BL0942_SPI_RunFrame(void) {
-    int voltage, current, power, frequency;
-    SPI_ReadReg(BL0942_REG_I_RMS, (uint32_t *)&current, 0);
-    SPI_ReadReg(BL0942_REG_V_RMS, (uint32_t *)&voltage, 0);
-    SPI_ReadReg(BL0942_REG_WATT, (uint32_t *)&power, 1);
-    SPI_ReadReg(BL0942_REG_FREQ, (uint32_t *)&frequency, 0);
-
-    ScaleAndUpdate(voltage, current, power, frequency);
+    bl0942_data_t data;
+    SPI_ReadReg(BL0942_REG_I_RMS, &data.i_rms);
+    SPI_ReadReg(BL0942_REG_V_RMS, &data.v_rms);
+    SPI_ReadReg(BL0942_REG_WATT, (uint32_t *)&data.watt);
+    data.watt = Int24ToInt32(data.watt);
+    SPI_ReadReg(BL0942_REG_CF_CNT, &data.cf_cnt);
+    SPI_ReadReg(BL0942_REG_FREQ, &data.freq);
+    ScaleAndUpdate(&data);
 }

@@ -1,6 +1,8 @@
 // NOTE: this is the same as HLW8032
 #include "drv_cse7766.h"
 
+#include <math.h>
+
 #include "../logging/logging.h"
 #include "../new_pins.h"
 #include "drv_bl_shared.h"
@@ -28,11 +30,11 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 	if(cs < CSE7766_PACKET_LEN) {
 		return 0;
 	}
-	header = UART_GetNextByte(0);
-	// skip garbage data (should not happen)
+    header = UART_GetByte(0);
+    // skip garbage data (should not happen)
 	while(cs > 0) {
-		a = UART_GetNextByte(1);
-		if(a != 0x5A) {
+        a = UART_GetByte(1);
+        if(a != 0x5A) {
 			UART_ConsumeBytes(1);
 			c_garbage_consumed++;
 			cs--;
@@ -46,15 +48,15 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 	if(cs < CSE7766_PACKET_LEN) {
 		return 0;
 	}
-	a = UART_GetNextByte(1);
-	if(a != 0x5A) {
+    a = UART_GetByte(1);
+    if(a != 0x5A) {
 		return 0;
 	}
 	checksum = 0;
 
 	for(i = 2; i < CSE7766_PACKET_LEN-1; i++) {
-		checksum += UART_GetNextByte(i);
-	}
+        checksum += UART_GetByte(i);
+    }
 
 #if 1
 	{
@@ -62,15 +64,17 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 		char buffer2[32];
 		buffer_for_log[0] = 0;
 		for(i = 0; i < CSE7766_PACKET_LEN; i++) {
-			snprintf(buffer2, sizeof(buffer2), "%02X ",UART_GetNextByte(i));
-			strcat_safe(buffer_for_log,buffer2,sizeof(buffer_for_log));
+            snprintf(buffer2, sizeof(buffer2), "%02X ", UART_GetByte(i));
+            strcat_safe(buffer_for_log,buffer2,sizeof(buffer_for_log));
 		}
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"CSE7766 received: %s\n", buffer_for_log);
 	}
 #endif
-	if(checksum != UART_GetNextByte(CSE7766_PACKET_LEN-1)) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Skipping packet with bad checksum %02X wanted %02X\n",checksum,UART_GetNextByte(CSE7766_PACKET_LEN-1));
-		UART_ConsumeBytes(CSE7766_PACKET_LEN);
+	if(checksum != UART_GetByte(CSE7766_PACKET_LEN-1)) {
+        ADDLOG_INFO(LOG_FEATURE_ENERGYMETER,
+                    "Skipping packet with bad checksum %02X wanted %02X\n",
+                    checksum, UART_GetByte(CSE7766_PACKET_LEN - 1));
+        UART_ConsumeBytes(CSE7766_PACKET_LEN);
 		return 1;
 	}
 	//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"CSE checksum ok");
@@ -128,25 +132,23 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 
 		backlog startDriver CSE7766; uartFakeHex 555A02FCD800062F00413200D7F2537B18023E9F7171FEEC
 		*/
-		
-		
 
-		adjustement = UART_GetNextByte(20);
-		int vol_par = UART_GetNextByte(2) << 16 | UART_GetNextByte(3) << 8 | UART_GetNextByte(4);
-		int cur_par = UART_GetNextByte(8) << 16 | UART_GetNextByte(9) << 8 | UART_GetNextByte(10);
-		int pow_par = UART_GetNextByte(14) << 16 | UART_GetNextByte(15) << 8 | UART_GetNextByte(16);
-        float raw_unscaled_voltage = UART_GetNextByte(5) << 16 |
-                                     UART_GetNextByte(6) << 8 |
-                                     UART_GetNextByte(7);
-        float raw_unscaled_current = UART_GetNextByte(11) << 16 |
-                                     UART_GetNextByte(12) << 8 |
-                                     UART_GetNextByte(13);
-        float raw_unscaled_power = UART_GetNextByte(17) << 16 |
-                                   UART_GetNextByte(18) << 8 |
-                                   UART_GetNextByte(19);
-        cf_pulses = UART_GetNextByte(21) << 8 | UART_GetNextByte(22);
+        adjustement = UART_GetByte(20);
+        int vol_par =
+            UART_GetByte(2) << 16 | UART_GetByte(3) << 8 | UART_GetByte(4);
+        int cur_par =
+            UART_GetByte(8) << 16 | UART_GetByte(9) << 8 | UART_GetByte(10);
+        int pow_par =
+            UART_GetByte(14) << 16 | UART_GetByte(15) << 8 | UART_GetByte(16);
+        float raw_unscaled_voltage =
+            UART_GetByte(5) << 16 | UART_GetByte(6) << 8 | UART_GetByte(7);
+        float raw_unscaled_current =
+            UART_GetByte(11) << 16 | UART_GetByte(12) << 8 | UART_GetByte(13);
+        float raw_unscaled_power =
+            UART_GetByte(17) << 16 | UART_GetByte(18) << 8 | UART_GetByte(19);
+        cf_pulses = UART_GetByte(21) << 8 | UART_GetByte(22);
 
-		// i am not sure about these flags
+        // i am not sure about these flags
 		if (adjustement & 0x40) {  // Voltage valid
 		
 		} else {
@@ -181,7 +183,7 @@ int CSE7766_TryToGetNextCSE7766Packet() {
         float voltage, current, power;
         PwrCal_Scale(raw_unscaled_voltage, raw_unscaled_current,
                      raw_unscaled_power, &voltage, &current, &power);
-        BL_ProcessUpdate(voltage, current, power, 0.0f);
+        BL_ProcessUpdate(voltage, current, power, NAN, NAN);
     }
 
 #if 0

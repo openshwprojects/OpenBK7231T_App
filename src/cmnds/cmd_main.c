@@ -380,7 +380,7 @@ void CMD_UARTConsole_Run() {
 
 	totalSize = UART_GetDataSize();
 	while (totalSize) {
-		a = UART_GetNextByte(0);
+		a = UART_GetByte(0);
 		if (a == '\n' || a == '\r' || a == ' ' || a == '\t') {
 			UART_ConsumeBytes(1);
 			totalSize = UART_GetDataSize();
@@ -394,7 +394,7 @@ void CMD_UARTConsole_Run() {
 	}
 	// skip garbage data (should not happen)
 	for (i = 0; i < totalSize; i++) {
-		a = UART_GetNextByte(i);
+		a = UART_GetByte(i);
 		if (i + 1 < sizeof(tmp)) {
 			tmp[i] = a;
 			tmp[i + 1] = 0;

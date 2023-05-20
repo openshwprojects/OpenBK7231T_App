@@ -144,7 +144,7 @@ void SIM_SimulateUserClickOnPin(int pin);
 // simulated UART
 void SIM_UART_InitReceiveRingBuffer(int size);
 int SIM_UART_GetDataSize();
-byte SIM_UART_GetNextByte(int index);
+byte SIM_UART_GetByte(int index);
 void SIM_UART_ConsumeBytes(int idx);
 void SIM_AppendUARTByte(byte rc);
 bool SIM_UART_ExpectAndConsumeHByte(byte b);
