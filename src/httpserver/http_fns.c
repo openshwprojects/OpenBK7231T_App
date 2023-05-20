@@ -834,6 +834,33 @@ int http_fn_index(http_request_t* request) {
 	{
 		hprintf255(request, "<h5>Wifi RSSI: %s (%idBm)</h5>", str_rssi[wifi_rssi_scale(HAL_GetWifiStrength())], HAL_GetWifiStrength());
 	}
+#if PLATFORM_BEKEN
+	/*
+typedef enum { 
+	RESET_SOURCE_POWERON = 0,
+	RESET_SOURCE_REBOOT = 1,
+	RESET_SOURCE_WATCHDOG = 2,
+
+	RESET_SOURCE_CRASH_XAT0 = 5,
+	RESET_SOURCE_CRASH_UNDEFINED = 6,
+	RESET_SOURCE_CRASH_PREFETCH_ABORT = 7,
+	RESET_SOURCE_CRASH_DATA_ABORT = 8,
+	RESET_SOURCE_CRASH_UNUSED = 9,
+
+} RESET_SOURCE_STATUS;
+*/
+	{
+		const char *s = "Unk";
+		i = bk_misc_get_start_type();
+		if (i == 0)
+			s = "Pwr";
+		else if (i == 1)
+			s = "Rbt";
+		else if (i == 2)
+			s = "Wdt";
+		hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", i, s);
+	}
+#endif
 	if (CFG_GetMQTTHost()[0] == 0) {
 		hprintf255(request, "<h5>MQTT State: not configured<br>");
 	}
