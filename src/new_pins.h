@@ -530,12 +530,20 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_TM1638_STB,
+	//iodetail:{"name":"BAT_Relay_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"Like BAT_Relay, but inversed. See [battery driver topic here](https://www.elektroda.com/rtvforum/topic3959103.html)",
+	//iodetail:"enum":"IOR_BAT_Relay_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_BAT_Relay_n,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
 	//iodetail:"enum":"IOR_Total_Options",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
+
 	IOR_Total_Options,
 } ioRole_t;
 
@@ -803,6 +811,14 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_ReadOnlyLowMidHigh,
+	//chandetail:{"name":"SmokePercent",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Smoke percentage",
+	//chandetail:"enum":"ChType_SmokePercent",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_SmokePercent,
+		
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",

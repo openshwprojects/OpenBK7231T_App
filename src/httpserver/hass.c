@@ -67,6 +67,9 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 	case CO2_SENSOR:
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "co2", index);
 		break;
+	case SMOKE_SENSOR:
+		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "smoke", index);
+		break;
 	case TVOC_SENSOR:
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "tvoc", index);
 		break;
@@ -116,6 +119,7 @@ void hass_populate_device_config_channel(ENTITY_TYPE type, char* uniq_id, HassDe
 	case BINARY_SENSOR:
 		sprintf(info->channel, "binary_sensor/%s/config", uniq_id);
 		break;
+	case SMOKE_SENSOR:
 	case CO2_SENSOR:
 	case TVOC_SENSOR:
 	case POWER_SENSOR:
@@ -211,6 +215,10 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload
 	case CO2_SENSOR:
 		isSensor = true;
 		sprintf(g_hassBuffer, "%s CO2", CFG_GetShortDeviceName());
+		break;
+	case SMOKE_SENSOR:
+		isSensor = true;
+		sprintf(g_hassBuffer, "%s Smoke", CFG_GetShortDeviceName());
 		break;
 	case TVOC_SENSOR:
 		isSensor = true;
@@ -468,6 +476,13 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 		break;
 	case HUMIDITY_SENSOR:
 		cJSON_AddStringToObject(info->root, "dev_cla", "humidity");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "%");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case SMOKE_SENSOR:
+		// there is no "smoke" class!
+		//cJSON_AddStringToObject(info->root, "dev_cla", "smoke");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "%");
 		sprintf(g_hassBuffer, "~/%d/get", channel);
 		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);

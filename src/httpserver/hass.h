@@ -58,6 +58,8 @@ typedef enum {
 	/// @brief 
 	CUSTOM_SENSOR,
 	/// @brief 
+	SMOKE_SENSOR,
+	/// @brief 
 	READONLYLOWMIDHIGH_SENSOR,
 } ENTITY_TYPE;
 

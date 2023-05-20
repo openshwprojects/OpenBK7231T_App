@@ -14,6 +14,7 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 	SelfTest_Failed(__FILE__, __FUNCTION__, __LINE__, #expr)
 
 #define SELFTEST_ASSERT_FLOATCOMPARE(exp, res) SELFTEST_ASSERT(Float_Equals(exp, res));
+#define SELFTEST_ASSERT_FLOATCOMPAREEPSILON(exp, res, eps) SELFTEST_ASSERT(Float_EqualsEpsilon(exp, res, eps));
 #define SELFTEST_ASSERT_EXPRESSION(exp, res) SELFTEST_ASSERT(Float_Equals(CMD_EvaluateExpression(exp,0), res));
 #define SELFTEST_ASSERT_CHANNEL(channelIndex, res) SELFTEST_ASSERT(Float_Equals(CHANNEL_Get(channelIndex), res));
 #define SELFTEST_ASSERT_CHANNELTYPE(channelIndex, res) SELFTEST_ASSERT(CHANNEL_GetType(channelIndex)==res);
@@ -43,6 +44,10 @@ inline bool Float_Equals(float a, float b) {
 	float res = fabs(a - b);
 	return res < 0.001f;
 }
+inline bool Float_EqualsEpsilon(float a, float b, float epsilon) {
+	float res = fabs(a - b);
+	return res < epsilon;
+}
 
 #define VA_BUFFER_SIZE 4096
 #define VA_COUNT 4
@@ -62,7 +67,7 @@ inline const char *va(const char *fmt, ...) {
 	return p;
 }
 
-
+void Test_Battery();
 void Test_Flash_Search();
 void Test_JSON_Lib();
 void Test_Commands_Startup();

@@ -22,12 +22,15 @@ static void Batt_Measure() {
 	float batt_ref, batt_res, vref;
 	ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : Measure Battery volt en perc");
 	g_pin_adc = PIN_FindPinIndexForRole(IOR_BAT_ADC, g_pin_adc);
-	if (PIN_FindPinIndexForRole(IOR_BAT_Relay, -1) == -1) {
+	if (PIN_FindPinIndexForRole(IOR_BAT_Relay, -1) == -1 && PIN_FindPinIndexForRole(IOR_BAT_Relay_n, -1) == -1) {
 		g_vdivider = 1;
 	}
 	// if divider equal to 1 then no need for relay activation
 	if (g_vdivider > 1) {
-		g_pin_rel = PIN_FindPinIndexForRole(IOR_BAT_Relay, g_pin_rel);
+		g_pin_rel = PIN_FindPinIndexForRole(IOR_BAT_Relay, -1);
+		if (g_pin_rel == -1) {
+			g_pin_rel = PIN_FindPinIndexForRole(IOR_BAT_Relay_n, -1);
+		}
 		channel_rel = g_cfg.pins.channels[g_pin_rel];
 	}
 	HAL_ADC_Init(g_pin_adc);
@@ -64,6 +67,9 @@ static void Batt_Measure() {
 	g_lastbattlevel = (int)g_battlevel;
 	g_lastbattvoltage = (int)g_battvoltage;
 	ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : battery voltage : %f and percentage %f%%", g_battvoltage, g_battlevel);
+}
+void Simulator_Force_Batt_Measure() {
+	Batt_Measure();
 }
 
 int Battery_lastreading(int type)

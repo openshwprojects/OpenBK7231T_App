@@ -866,6 +866,9 @@
     <ClCompile Include="src\selftest\selftest_flashSearch.c">
       <Filter>SelfTest</Filter>
     </ClCompile>
+    <ClCompile Include="src\selftest\selftest_batteryDriver.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />
