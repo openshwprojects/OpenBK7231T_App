@@ -15,6 +15,7 @@
 
 #define CHT8305_I2C_ADDR (0x40 << 1)
 
+static byte g_cht_secondsUntilNextMeasurement = 1, g_cht_secondsBetweenMeasurements = 1;
 static byte channel_temp = 0, channel_humid = 0;
 static float g_temp = 0.0, g_humid = 0.0;
 static softI2C_t g_softI2C;
@@ -64,6 +65,18 @@ commandResult_t CHT_Calibrate(const void* context, const char* cmd, const char* 
 	return CMD_RES_OK;
 }
 
+commandResult_t CHT_cycle(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+	if (Tokenizer_GetArgsCount() < 1) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	g_cht_secondsBetweenMeasurements = Tokenizer_GetArgInteger(0);
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Measurement will run every %i seconds", g_cht_secondsBetweenMeasurements);
+
+	return CMD_RES_OK;
+}
 // startDriver CHT8305
 void CHT8305_Init() {
 
@@ -91,13 +104,16 @@ void CHT8305_Init() {
 	//cmddetail:"fn":"CHT_Calibrate","file":"driver/drv_cht8305.c","requires":"",
 	//cmddetail:"examples":"SHT_Calibrate -4 10"}
 	CMD_RegisterCommand("CHT_Calibrate", CHT_Calibrate, NULL);
-
+	//cmddetail:{"name":"CHT_Cycle","args":"[int]",
+	//cmddetail:"descr":"This is the interval between measurements in seconds, by default 10. Max is 255.",
+	//cmddetail:"fn":"CHT_cycle","file":"drv/drv_cht8305.c","requires":"",
+	//cmddetail:"examples":"CHT_Cycle 60"}
+	CMD_RegisterCommand("CHT_Cycle", CHT_cycle, NULL);
 
 }
 
 
-void CHT8305_OnEverySecond() {
-
+void CHT8305_Measure() {
 	CHT8305_ReadEnv(&g_temp, &g_humid);
 
 	channel_temp = g_cfg.pins.channels[g_softI2C.pin_data];
@@ -108,6 +124,16 @@ void CHT8305_OnEverySecond() {
 	CHANNEL_Set(channel_humid, (int)(g_humid), 0);
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "DRV_CHT8304_readEnv: Temperature:%fC Humidity:%f%%", g_temp, g_humid);
+}
+void CHT8305_OnEverySecond() {
+
+	if (g_cht_secondsUntilNextMeasurement <= 0) {
+		CHT8305_Measure();
+		g_cht_secondsUntilNextMeasurement = g_cht_secondsBetweenMeasurements;
+	}
+	if (g_cht_secondsUntilNextMeasurement > 0) {
+		g_cht_secondsUntilNextMeasurement--;
+	}
 }
 
 void CHT8305_AppendInformationToHTTPIndexPage(http_request_t* request)
