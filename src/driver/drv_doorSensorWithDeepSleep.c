@@ -25,6 +25,7 @@ static int g_emergencyTimeWithNoConnection = 0;
 #define EMERGENCY_TIME_TO_SLEEP_WITHOUT_MQTT 60 * 5
 
 
+// addEventHandler OnClick 8 DSTime + 100
 commandResult_t DoorDeepSleep_SetTime(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
@@ -35,8 +36,13 @@ commandResult_t DoorDeepSleep_SetTime(const void* context, const char* cmd, cons
 	{
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
+	if (Tokenizer_GetArg(0)[0] == '+') {
+		g_noChangeTimePassed -= Tokenizer_GetArgInteger(0);
+	}
+	else {
+		setting_timeRequiredUntilDeepSleep = Tokenizer_GetArgInteger(0);
+	}
 
-	setting_timeRequiredUntilDeepSleep = Tokenizer_GetArgInteger(0);
 
 	return CMD_RES_OK;
 }
