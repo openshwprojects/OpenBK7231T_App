@@ -1633,6 +1633,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	cJSON_InitHooks(&hooks);
 
 
+#if ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY
 	// try to pair toggles with dimmers. This is needed only for TuyaMCU, 
 	// where custom channel types are used. This is NOT used for simple
 	// CW/RGB/RGBCW/etc lights.
@@ -1683,6 +1684,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
 	}
+#endif
 	//if (relayCount > 0) {
 		for (i = 0; i < CHANNEL_MAX; i++) {
 			if (h_isChannelRelay(i) || g_cfg.pins.channelTypes[i] == ChType_Toggle) {
@@ -1810,7 +1812,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			discoveryQueued = true;
 		}
 	}
-
+#if ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY
 	for (i = 0; i < CHANNEL_MAX; i++) {
 		type = g_cfg.pins.channelTypes[i];
 		// TODO: flags are 32 bit and there are 64 max channels
@@ -1965,6 +1967,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			break;
 		}
 	}
+#endif
 	if (discoveryQueued) {
 		MQTT_InvokeCommandAtEnd(PublishChannels);
 	}
