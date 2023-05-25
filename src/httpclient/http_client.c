@@ -910,6 +910,15 @@ void httpclient_close(httpclient_t *client)
 
 void httpclient_freeMemory(httprequest_t *request)
 {
+	if (request->flags & HTTPREQUEST_FLAG_FREE_HEADER) {
+		free((void*)request->header);
+	}
+	if (request->flags & HTTPREQUEST_FLAG_FREE_POST_CONTENT_TYPE) {
+		free((void*)request->client_data.post_content_type);
+	}
+	if (request->flags & HTTPREQUEST_FLAG_FREE_POST_BUF) {
+		free((void*)request->client_data.post_buf);
+	}
 	if(request->flags & HTTPREQUEST_FLAG_FREE_URLONDONE) {
 		free((void*)request->url);
 	}
@@ -1221,7 +1230,59 @@ int HTTPClient_Async_SendGet(const char *url_in){
 
     return 0;
 }
+int HTTPClient_Async_SendPost(const char *url_in, int http_port, const char *content_type, const char *post_content, const char *post_header) {
+	httprequest_t *request;
+	httpclient_t *client;
+	httpclient_data_t *client_data;
+	char *url;
 
+	// OBK UPDATE: use our own strdup which expands constants
+	// So $CH5 gets changed to channel value integer, etc...
+	url = CMD_ExpandingStrdup(url_in);
+	if (url == 0) {
+		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendPost for %s, failed to alloc URL memory\r\n");
+		return 1;
+	}
+
+	request = (httprequest_t *)malloc(sizeof(httprequest_t));
+	if (url == 0) {
+		ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendPost for %s, failed to alloc request memory\r\n");
+		return 1;
+	}
+
+	ADDLOG_INFO(LOG_FEATURE_HTTP_CLIENT, "HTTPClient_Async_SendPost for %s, sizeof(httprequest_t) == %i!\r\n",
+		url_in, sizeof(httprequest_t));
+
+	memset(request, 0, sizeof(*request));
+	request->flags |= HTTPREQUEST_FLAG_FREE_SELFONDONE;
+	request->flags |= HTTPREQUEST_FLAG_FREE_URLONDONE;
+	client = &request->client;
+	client_data = &request->client_data;
+
+	client_data->response_buf = 0;  //Sets a buffer to store the result.
+	client_data->response_buf_len = 0;  //Sets the buffer size.
+	if (post_header && *post_header) {
+		HTTPClient_SetCustomHeader(client, strdup(post_header));  //Sets the custom header if needed.
+		// NOTE: remember to free it!
+		request->flags |= HTTPREQUEST_FLAG_FREE_HEADER;
+	}
+	client_data->post_buf = CMD_ExpandingStrdup(post_content);  //Sets the user data to be posted.
+	client_data->post_buf_len = strlen(client_data->post_buf);  //Sets the post data length.
+	// NOTE: remember to free it!
+	request->flags |= HTTPREQUEST_FLAG_FREE_POST_BUF;
+	client_data->post_content_type = strdup(content_type);  //Sets the content type.
+	// NOTE: remember to free it!
+	request->flags |= HTTPREQUEST_FLAG_FREE_POST_CONTENT_TYPE;
+	request->data_callback = 0;
+	request->port = http_port;
+	request->url = url;
+	request->method = HTTPCLIENT_POST;
+	request->timeout = 10000;
+	HTTPClient_Async_SendGeneric(request);
+
+
+	return 0;
+}
 
 
 

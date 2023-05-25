@@ -18,6 +18,38 @@ static commandResult_t CMD_SendGET(const void *context, const char *cmd, const c
 #endif
 	return CMD_RES_OK;
 }
+// SendPOST http://localhost:3000/ 3000 "application/json" "{ \"a\":123, \"b\":77 }"
+static commandResult_t CMD_SendPOST(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	ADDLOG_INFO(LOG_FEATURE_CMD, " CMD_SendPOST received with args %s", args);
+
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS);
+
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+	HTTPClient_Async_SendPost(Tokenizer_GetArg(0),
+		Tokenizer_GetArgIntegerDefault(1,80),
+		Tokenizer_GetArg(2),
+		Tokenizer_GetArg(3),
+		Tokenizer_GetArg(4));
+#else
+	ADDLOG_INFO(LOG_FEATURE_CMD, " CMD_SendPOST not supported!");
+
+#endif
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_TestPOST(const void *context, const char *cmd, const char *args, int cmdFlags) {
+
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+	HTTPClient_Async_SendPost("http://localhost:3000/",
+		3000,
+		"application/json",
+		"{ \"a\":123, \"b\":77 }",
+		0);
+#else
+	ADDLOG_INFO(LOG_FEATURE_CMD, " CMD_SendPOST not supported!");
+
+#endif
+	return CMD_RES_OK;
+}
 
 
 int CMD_InitSendCommands(){
@@ -27,5 +59,13 @@ int CMD_InitSendCommands(){
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("sendGet", CMD_SendGET, NULL);
 
+	//cmddetail:{"name":"sendPost","args":"[TargetURL]",
+	//cmddetail:"descr":"Sends a HTTP POST request to target URL. TODO",
+	//cmddetail:"fn":"CMD_SendPOST","file":"cmnds/cmd_send.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("sendPOST", CMD_SendPOST, NULL);
+
+
+	//CMD_RegisterCommand("testPost", CMD_TestPOST, NULL);
     return 0;
 }

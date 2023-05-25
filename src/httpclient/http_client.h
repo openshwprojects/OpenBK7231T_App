@@ -64,7 +64,7 @@ typedef struct {
     int remote_port; /**< HTTP or HTTPS port. */
     utils_network_t net;
     int response_code; /**< Response code. */
-    const char *header; /**< Custom header. */
+    char *header; /**< Custom header. */
     char *auth_user; /**< Username for basic authentication. */
     char *auth_password; /**< Password for basic authentication. */
 } httpclient_t;
@@ -84,9 +84,13 @@ typedef struct {
 } httpclient_data_t;
 
 // should the library call free( ) on request struct when done?
-#define HTTPREQUEST_FLAG_FREE_SELFONDONE 1
+#define HTTPREQUEST_FLAG_FREE_SELFONDONE	1
 // should the library call free( ) on url when done?
-#define HTTPREQUEST_FLAG_FREE_URLONDONE 2
+#define HTTPREQUEST_FLAG_FREE_URLONDONE			2
+
+#define HTTPREQUEST_FLAG_FREE_POST_BUF			4
+#define HTTPREQUEST_FLAG_FREE_HEADER		8
+#define HTTPREQUEST_FLAG_FREE_POST_CONTENT_TYPE	16
 
 typedef struct httprequest_t_tag{
     int state;
@@ -150,6 +154,7 @@ typedef struct httprequest_t_tag{
  */
 int HTTPClient_Async_SendGeneric(httprequest_t *request);
 int HTTPClient_Async_SendGet(const char *url_in);
+int HTTPClient_Async_SendPost(const char *url_in, int http_port, const char *content_type, const char *post_content, const char *post_header);
 void HTTPClient_SetCustomHeader(httpclient_t *client, const char *header);
 
 #ifdef __cplusplus
