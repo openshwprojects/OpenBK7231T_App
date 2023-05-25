@@ -15,7 +15,6 @@ void Test_Tokenizer() {
 	SELFTEST_ASSERT_ARGUMENT(0, "Hello");
 	SELFTEST_ASSERT_ARGUMENT(1, "you");
 	SELFTEST_ASSERT_ARGUMENT(2, "too!");
-
 	Tokenizer_TokenizeString("1 2 3 4 5", 0);
 	SELFTEST_ASSERT_ARGUMENTS_COUNT(5);
 	SELFTEST_ASSERT_ARGUMENT(0, "1");
@@ -108,6 +107,17 @@ void Test_Tokenizer() {
 	SELFTEST_ASSERT_ARGUMENT_INTEGER(4, 77);// $CH3
 
 
+	Tokenizer_TokenizeString("SendPOST http://localhost:3000/ 3000 \"application/json\" \"{ \\\"a\\\":123, \\\"b\\\":77 }\" 0",
+		TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS);
+
+	SELFTEST_ASSERT_ARGUMENTS_COUNT(6);
+	SELFTEST_ASSERT_ARGUMENT(0, "SendPOST");
+	SELFTEST_ASSERT_ARGUMENT(1, "http://localhost:3000/");
+	SELFTEST_ASSERT_ARGUMENT_INTEGER(2, 3000);
+	SELFTEST_ASSERT_ARGUMENT(3, "application/json");
+	SELFTEST_ASSERT_ARGUMENT(4, "{ \"a\":123, \"b\":77 }");
+	SELFTEST_ASSERT_ARGUMENT_INTEGER(5, 0);
+	
 	//system("pause");
 }
 

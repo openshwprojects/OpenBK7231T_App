@@ -172,6 +172,25 @@ float Tokenizer_GetArgFloat(int i) {
 #endif
 	return atof(s);
 }
+void expandQuotes(char* str) {
+	size_t len = strlen(str);
+	size_t readIndex = 0;
+	size_t writeIndex = 0;
+
+	while (readIndex < len) {
+		if (str[readIndex] == '\\' && str[readIndex + 1] == '\"') {
+			str[writeIndex++] = '\"';
+			readIndex++;
+		}
+		else {
+			str[writeIndex++] = str[readIndex];
+		}
+
+		readIndex++;
+	}
+
+	str[writeIndex] = 0;
+}
 void Tokenizer_TokenizeString(const char *s, int flags) {
 	char *p;
 
@@ -241,11 +260,22 @@ quote:
 			g_args[g_numArgs] = p;
 			g_numArgs++;
 			while(*p != 0) {
-				if(*p == '"') {
-					*p = 0;
-					break;
+				if (flags & TOKENIZER_ALLOW_ESCAPING_QUOTATIONS) {
+					if (*p == '"' && p[-1] != '\\') {
+						*p = 0;
+						break;
+					}
+				}
+				else {
+					if (*p == '"') {
+						*p = 0;
+						break;
+					}
 				}
 				p++;
+			}
+			if (flags & TOKENIZER_ALLOW_ESCAPING_QUOTATIONS) {
+				expandQuotes(g_args[g_numArgs - 1]);
 			}
 		}
 		if(g_numArgs>=MAX_ARGS) {
