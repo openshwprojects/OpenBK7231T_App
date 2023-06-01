@@ -296,6 +296,14 @@
     "driver": ""
   },
   {
+    "name": "SmokePercent",
+    "title": "TODO",
+    "descr": "Smoke percentage",
+    "enum": "ChType_SmokePercent",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
     "name": "Max",
     "title": "TODO",
     "descr": "This is the current total number of available channel types.",

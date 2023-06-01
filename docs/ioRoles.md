@@ -80,4 +80,5 @@ Do not add anything here, as it will overwritten with next rebuild.
 | TM1638_CLK | QQQ |
 | TM1638_DAT | QQQ |
 | TM1638_STB | QQQ |
+| BAT_Relay_n | Like BAT_Relay, but inversed. See [battery driver topic here](https://www.elektroda.com/rtvforum/topic3959103.html) |
 | Total_Options | Current total number of available IOR roles |

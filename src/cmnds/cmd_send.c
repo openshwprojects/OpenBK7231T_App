@@ -63,6 +63,18 @@ int CMD_InitSendCommands(){
 	//cmddetail:"descr":"Sends a HTTP POST request to target URL. TODO",
 	//cmddetail:"fn":"CMD_SendPOST","file":"cmnds/cmd_send.c","requires":"",
 	//cmddetail:"examples":""}
+	//cmddetail:{"name":"sendPOST","args":"CMD_SendPOST",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_send.c","requires":"",
+	//cmddetail:"examples":""}
+	//cmddetail:{"name":"sendPOST","args":"CMD_SendPOST",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_send.c","requires":"",
+	//cmddetail:"examples":""}
+	//cmddetail:{"name":"sendPOST","args":"CMD_SendPOST",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_send.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("sendPOST", CMD_SendPOST, NULL);
 
 
