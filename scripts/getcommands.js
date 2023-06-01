@@ -848,9 +848,9 @@ for (let i = 0; i < flags.length; i++) {
 
 // Sort commands by Name alphabetically 
 commands.sort((a, b) => {
-	if (a.name < b.name)
+	if (a.name.toUpperCase() < b.name.toUpperCase())
 		return -1;
-	if (a.name > b.name)
+	if (a.name.toUpperCase() > b.name.toUpperCase())
 		return 1;
 	return 0;
 });

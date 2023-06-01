@@ -11,126 +11,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | AB_Map | [int] | Sets margines for ADC button codes. For given N margins, there are N+1 possible ADC button values (one should be reserved for 'no button') |
 | AddChangeHandler | [Variable][Relation][Constant][Command] | This can listen to change in channel value (for example channel 0 becoming 100), or for a voltage/current/power change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be 'Power', or 'Current' or 'Voltage' |
 | AddChannel | [ChannelIndex][ValueToAdd][ClampMin][ClampMax][bWrapInsteadOfClamp] | Adds a given value to the channel. Can be used to change PWM brightness. Clamp min and max arguments are optional. |
-| AddEventHandler | [EventName][EventArgument][CommandToRun] | This can be used to trigger an action on a button click, long press, etc |
-| BP1658CJ_Current | [MaxCurrentRGB][MaxCurrentCW] | Sets the maximum current limit for BP1658CJ driver. |
-| BP1658CJ_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP1658CJ channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: BP1658CJ_Map 0 1 2 3 4 |
-| BP1658CJ_RGBCW | [HexColor] | Don't use it. It's for direct access of BP1658CJ driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
-| BP5758D_Current | [MaxCurrentRGB][MaxCurrentCW] | Sets the maximum current limit for BP5758D driver, first value is for rgb and second for cw |
-| BP5758D_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP5758D channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: BP5758D_Map 0 1 2 3 4 |
-| BP5758D_RGBCW | [HexColor] | Don't use it. It's for direct access of BP5758D driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
-| Battery_Setup | [minbatt][maxbatt][V_divider][Vref][AD Bits] | measure battery based on ADC. <br />req. args: minbatt in mv, maxbatt in mv. <br />optional: V_divider(2), Vref(default 2400), ADC bits(4096)<br/>e.g.:Battery_Setup 1500 3000 2 2400 4096 |
-| Battery_cycle | [int] | change cycle of measurement by default every 10 seconds<br/>e.g.:Battery_cycle 60 |
-| BridgePulseLength | [FloatValue] | Setup value for bridge pulse len |
-| CHT_Calibrate |  | Calibrate the CHT Sensor as Tolerance is +/-2 degrees C.<br/>e.g.:SHT_Calibrate -4 10 |
-| CHT_Cycle | [int] | This is the interval between measurements in seconds, by default 1. Max is 255.<br/>e.g.:CHT_Cycle 60 |
-| CT | [TempValue] | Same as led_temperature |
-| CTRange | [MinRange][MaxRange] | This sets the temperature range for display. Default is 154-500. |
-| Ch | [InputValue] | An alternate command to access channels. It returns all used channels in JSON format. The syntax is ChINDEX value, there is no space between Ch and channel index. It can be sent without value to poll channel values. |
-| ClampChannel | [ChannelIndex][Min][Max] | Clamps given channel value to a range. |
-| ClearNoPingTime |  | Command for ping watchdog; it sets the 'time since last ping reply' to 0 again |
-| Color | [HexValue] | Puts the LED driver in RGB mode and sets given color. |
-| ConsumptionThreshold | [FloatValue] | Setup value for automatic save of consumption data [1..100] |
-| CurrentSet | Current | Measure the real Current with an external, reliable power meter and enter this Current via this command to calibrate. The calibration is automatically saved in the flash memory. |
-| DGR_SendBrightness | [GroupName][Brightness] | Sends a Brightness message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
-| DGR_SendFixedColor | [GroupName][TasColorIndex] | Sends a FixedColor message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
-| DGR_SendPower | [GroupName][ChannelValues][ChannelsCount] | Sends a POWER message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
-| DGR_SendRGBCW | [GroupName][HexRGBCW] | Sends a RGBCW message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. You can use this command in two ways, first is like DGR_SendRGBCW GroupName 255 255 0, etc, second is DGR_SendRGBCW GroupName FF00FF00 etc etc. |
-| DSEdge | [edgeCode] | DeepSleep (PinDeepSleep) wake configuration command. 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2 |
-| DSTime | [timeSeconds] | DoorSensor driver configuration command. Time to keep device running before next sleep after last door sensor change. In future we may add also an option to automatically sleep after MQTT confirms door state receival |
-| DeepSleep | [Seconds] | Starts deep sleep for given amount of seconds. Please remember that there is also a separate command, called PinDeepSleep, which is not using a timer, but a GPIO to wake up device. |
-| Dimmer | [Value] | Alias for led_dimmer |
-| DimmerDelta | [DeltaValue] | This sets the delta value for SmartDimmer/SmartButtonForLEDs hold event. This determines the amount of change of dimmer per hold event. |
-| EnergyCntReset |  | Resets the total Energy Counter, the one that is usually kept after device reboots. After this commands, the counter will start again from 0. |
-| FriendlyName | [Name] | Sets the full name of the device |
-| FullBootTime | [Value] | Sets time in seconds after which boot is marked as valid. This is related to emergency AP mode which is enabled by powering on/off device 5 times quickly. |
-| GetChannel | [ChannelIndex] | Prints given channel value to console. |
-| GetReadings |  | Prints voltage etc readings to console. |
-| HSBColor | [H][S][B] | Tasmota-style colour access. Hue in 0-360 range, saturation in 0-100 and brightness in 0-100 range.  |
-| HSBColor1 | [Hue] | Tasmota-style colour access. Sets hue in 0 to 360 range. |
-| HSBColor2 | [Saturation] | Tasmota-style colour access. Set saturation in 0 to 100 range. |
-| HSBColor3 | [Brightness] | Tasmota-style colour access. Sets brightness in 0 to 100 range. |
-| IREnable | [Str][1or0] | Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol |
-| IRSend | [PROT-ADDR-CMD-REP] | Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0 |
-| MAX72XX_Print | DRV_MAX72XX_Print |  |
-| MAX72XX_Scroll | DRV_MAX72XX_Scroll |  |
-| MAX72XX_Setup | [Value] | Sets the maximum current for LED driver. |
-| MCP23017_MapPinToChannel |  | Maps port expander bit to OBK channel |
-| Map | [TargetChannel][InputValue][InMin][InMax][OutMin][OutMax] | Used to convert a value from one range into a proportional value of another range. |
-| MapRanges | [TargetChannel][InputValue][RangeVal0][RangeVal1][RangeValN] | This will set given channel to an index showing where given input value is within given range sections. For example, MapRanges 10 0.5 0.3 0.6 0.9 will set channel 10 to 1 because 0.5 value is between 0.3 and 0.6 |
-| MqttClient | [ValueString] | Sets the MQTT client. Command keeps Tasmota syntax |
-| MqttHost | [ValueString] | Sets the MQTT host. Command keeps Tasmota syntax |
-| MqttPassword | [ValueString] | Sets the MQTT pass. Command keeps Tasmota syntax |
-| MqttUser | [ValueString] | Sets the MQTT user. Command keeps Tasmota syntax |
-| OpenAP |  | Temporarily disconnects from programmed WiFi network and opens Access Point |
-| Password1 | [ValueString] | Sets the Pass of target WiFi. Command keeps Tasmota syntax |
-| PinDeepSleep |  | Starts a pin deep sleep (deep sleep that can be interrupted by external IO events like a button press) |
-| PingHost | [IPStr] | Sets the host to ping by IP watchdog |
-| PingInterval | [IntegerSeconds] | Sets the interval between ping attempts for ping watchdog mechanism |
-| PowerMax | BL0937_PowerMax |  |
-| PowerSave | [Optional 1 or 0, by default 1 is assumed] | Enables dynamic power saving mode on BK and W600. You can also disable power saving with PowerSave 0. |
-| PowerSet | Power | Measure the real Power with an external, reliable power meter and enter this Power via this command to calibrate. The calibration is automatically saved in the flash memory. |
-| SGP_GetBaseline |  | SGP Get baseline<br/>e.g.:SGP_GetBaseline |
-| SGP_GetVersion |  | SGP : get version<br/>e.g.:SGP_GetVersion |
-| SGP_SoftReset |  | SGP i2C soft reset<br/>e.g.:SGP_SoftReset |
-| SGP_cycle | [int] | change cycle of measurement by default every 10 seconds 0 to deactivate<br/>e.g.:SGP_Cycle 60 |
-| SHT_Calibrate |  | Calibrate the SHT Sensor as Tolerance is +/-2 degrees C.<br/>e.g.:SHT_Calibrate -4 10 |
-| SHT_ClearStatus |  | Clear Sensor Status<br/>e.g.:SHT_ClearStatusCmd |
-| SHT_GetStatus |  | Get Sensor Status<br/>e.g.:SHT_GetStatusCmd |
-| SHT_Heater |  | Activate or Deactivate Heater (0 / 1)<br/>e.g.:SHT_Heater 1 |
-| SHT_LaunchPer | [msb][lsb] | Launch/Change periodical capture for SHT Sensor<br/>e.g.:SHT_LaunchPer 0x23 0x22 |
-| SHT_Measure |  | Retrieve OneShot measurement for SHT<br/>e.g.:SHT_Measure |
-| SHT_MeasurePer |  | Retrieve Periodical measurement for SHT<br/>e.g.:SHT_Measure |
-| SHT_ReadAlert |  | Get Sensor alert configuration<br/>e.g.:SHT_ReadAlertCmd |
-| SHT_SetAlert | [temp_high, temp_low, hum_high, hum_low]<br/>Req:all | Set Sensor alert configuration<br/>e.g.:SHT_SetAlertCmd |
-| SHT_StopPer |  | Stop periodical capture for SHT Sensor |
-| SHT_cycle | [int] | This is the interval between measurements in seconds, by default 10. Max is 255.<br/>e.g.:SHT_Cycle 60 |
-| SM16703P_Send |  | NULL |
-| SM16703P_Test |  | qq |
-| SM16703P_Test_3xOne |  | NULL |
-| SM16703P_Test_3xZero |  | NULL |
-| SM2135_Current | [RGBLimit][CWLimit] | Sets the maximum current for LED driver. Please note that arguments are using SM2135 codes, see [full list of codes here](https://www.elektroda.com/rtvforum/viewtopic.php?p=20493415#20493415) |
-| SM2135_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of SM2135 channels. This is because SM2135 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: SM2135_Map 0 1 2 3 4 |
-| SM2135_RGBCW | [HexColor] | Don't use it. It's for direct access of SM2135 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
-| SM2235_Current | [Value] | Sets the maximum current for LED driver. |
-| SM2235_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of SM2235 channels. This is because SM2235 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: SM2235_Map 0 1 2 3 4 |
-| SM2235_RGBCW | [HexColor] | Don't use it. It's for direct access of SM2235 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
-| SPITestFlash_Erase | CMD_SPITestFlash_Erase |  |
-| SPITestFlash_ReadData | CMD_SPITestFlash_ReadData |  |
-| SPITestFlash_ReadID | CMD_SPITestFlash_ReadID |  |
-| SPITestFlash_WriteStr | CMD_SPITestFlash_WriteStr |  |
-| SSID1 | [ValueString] | Sets the SSID of target WiFi. Command keeps Tasmota syntax. |
-| SafeMode |  | Forces device reboot into safe mode (open ap with disabled drivers) |
-| SetChannel | [ChannelIndex][ChannelValue] | Sets a raw channel to given value. Relay channels are using 1 and 0 values. PWM channels are within [0,100] range. Do not use this for LED control, because there is a better and more advanced LED driver with dimming and configuration memory (remembers setting after on/off), LED driver commands has 'led_' prefix. |
-| SetChannelFloat | [ChannelIndex][ChannelValue] | Sets a raw channel to given float value. Currently only used for LED PWM channels. |
-| SetChannelLabel | [ChannelIndex][Str][bHideTogglePrefix] | Sets a channel label for UI. If you use 1 for bHideTogglePrefix, then the 'Toggle ' prefix from button will be omitted |
-| SetChannelVisible | [ChannelIndex][bVisible] | This allows you to force-hide a certain channel from HTTP gui. The channel will still work, but will not show up as a button, or a toggle, etc... |
-| SetFlag | [FlagIndex][0or1] | Sets given flag |
-| SetPinChannel | [PinIndex][ChannelIndex] | This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command. |
-| SetPinRole | [PinRole][RoleIndexOrName] | This allows you to set a pin role, for example a Relay role, or Button, etc. Usually it's easier to do this through WWW panel, so you don't have to use this command. |
-| SetStartValue | [Channel][Value] | Sets the startup value for a channel. Used for start values for relays. Use 1 for High, 0 for low and -1 for 'remember last state' |
-| SetupEnergyStats | [Enable1or0][SampleTime][SampleCount][JSonEnable] | Setup Energy Statistic Parameters: [enable<0|1>] [sample_time<10..900>] [sample_count<10..180>] [JsonEnable<0|1>]. JSONEnable is optional. |
-| SetupTestPower |  | NULL |
-| ShortName | [Name] | Sets the short name of the device. |
-| StartupCommand | [Command in quotation marks][bRunAfter] | Sets the new startup command (short startup command, the one stored in config) to given string. Second argument is optional, if set to 1, command will be also executed after setting |
-| State | NULL | NULL |
-| TM1650_Test | CMD_TM1650_Test |  |
-| TMGN_Brightness | [Brigthness0to7][bOn] | This allows you to change brightness and state of  TM1637/GN932/etc display |
-| TMGN_Char | [CharIndex] [CharCode] | This allows you to set binary code for given char, valid chars range is 0 to 15, because this is 7-seg display |
-| TMGN_Clear |  | This clears the TM1637/GN932/etc display |
-| TMGN_Map | [Map0][Map1, etc] | This allows you to remap characters order for TM1637/GN932/etc. My TM1637 module from Aliexpress has a strange characters order. |
-| TMGN_Print | [StartOfs] [MaxLenOr0] [StringText] [optionalBClampWithZeroesForClock] | This allows you to print string on TM1637/GN932/etc display, it supports variables expansion |
-| TMGN_Read | CMD_TMGN_Read |  |
-| TMGN_SetBit | [CharIndex] [BitIndex] [BitValue] | Set given bit of given digit to 1 or 0. |
-| TMGN_SetupButtons | CMD_TMGN_SetupButtons |  |
-| TMGN_Test | CMD_TM1637_Test |  |
-| TasTeleInterval | [SensorInterval][StateInterval] | This allows you to configure Tasmota TELE publish intervals, only if you have TELE flag enabled. First argument is interval for sensor publish (energy metering, etc), second is interval for State tele publish. |
-| ToggleChannel | [ChannelIndex] | Toggles given channel value. Non-zero becomes zero, zero becomes 1. |
-| UCS1912_Test |  |  |
-| VCPPrecision | [VoltageDigits][CurrentDigitsAmpers][PowerDigitsWats][EnergyDigitsWh] | Sets the number of digits after decimal point for power metering publishes. Default is BL09XX_VCPPrecision 1 3 2 3. This works for OBK-style publishes. |
-| VCPPublishIntervals | [MinDelayBetweenPublishes][ForcedPublishInterval] | First argument is minimal allowed interval in second between Voltage/Current/Power/Energy publishes (even if there is a large change), second value is an interval in which V/C/P/E is always published, even if there is no change |
-| VCPPublishThreshold | [VoltageDeltaVolts][CurrentDeltaAmpers][PowerDeltaWats][EnergyDeltaWh] | Sets the minimal change between previous reported value over MQTT and next reported value over MQTT. Very useful for BL0942, BL0937, etc. So, if you set, VCPPublishThreshold 0.5 0.001 0.5, it will only report voltage again if the delta from previous reported value is largen than 0.5V. Remember, that the device will also ALWAYS force-report values every N seconds (default 60) |
-| VoltageSet | Voltage | Measure the real voltage with an external, reliable power meter and enter this voltage via this command to calibrate. The calibration is automatically saved in the flash memory. |
 | addClockEvent | [Time] [WeekDayFlags] [UniqueIDForRemoval][Command] | Schedule command to run on given time in given day of week. NTP must be running. Time is a time like HH:mm or HH:mm:ss, WeekDayFlag is a bitflag on which day to run, 0xff mean all days, 0x01 means sunday, 0x02 monday, 0x03 sunday and monday, etc, id is an unique id so event can be removede later |
+| AddEventHandler | [EventName][EventArgument][CommandToRun] | This can be used to trigger an action on a button click, long press, etc |
 | addI2CDevice_LCD_PCF8574 |  | Adds a new I2C device - PCF8574 |
 | addI2CDevice_LCM1602 |  | Adds a new I2C device - LCM1602 |
 | addI2CDevice_MCP23017 |  | Adds a new I2C device - MCP23017 |
@@ -142,22 +24,61 @@ Do not add anything here, as it will overwritten with next rebuild.
 | alias | [Alias][Command with spaces] | add an aliased command, so a command with spaces can be called with a short, nospaced alias |
 | aliasMem |  | Internal usage only. See docs for 'alias' command. |
 | backlog | [string of commands separated with ;] | run a sequence of ; separated commands |
+| Battery_cycle | [int] | change cycle of measurement by default every 10 seconds<br/>e.g.:Battery_cycle 60 |
+| Battery_Setup | [minbatt][maxbatt][V_divider][Vref][AD Bits] | measure battery based on ADC. <br />req. args: minbatt in mv, maxbatt in mv. <br />optional: V_divider(2), Vref(default 2400), ADC bits(4096)<br/>e.g.:Battery_Setup 1500 3000 2 2400 4096 |
+| BP1658CJ_Current | [MaxCurrentRGB][MaxCurrentCW] | Sets the maximum current limit for BP1658CJ driver. |
+| BP1658CJ_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP1658CJ channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: BP1658CJ_Map 0 1 2 3 4 |
+| BP1658CJ_RGBCW | [HexColor] | Don't use it. It's for direct access of BP1658CJ driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
+| BP5758D_Current | [MaxCurrentRGB][MaxCurrentCW] | Sets the maximum current limit for BP5758D driver, first value is for rgb and second for cw |
+| BP5758D_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of BP5758D channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: BP5758D_Map 0 1 2 3 4 |
+| BP5758D_RGBCW | [HexColor] | Don't use it. It's for direct access of BP5758D driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
+| BridgePulseLength | [FloatValue] | Setup value for bridge pulse len |
 | cancelRepeatingEvent | [UserIDInteger] | Stops a given repeating event with a specified ID |
+| Ch | [InputValue] | An alternate command to access channels. It returns all used channels in JSON format. The syntax is ChINDEX value, there is no space between Ch and channel index. It can be sent without value to poll channel values. |
+| CHT_Calibrate |  | Calibrate the CHT Sensor as Tolerance is +/-2 degrees C.<br/>e.g.:SHT_Calibrate -4 10 |
+| CHT_Cycle | [int] | This is the interval between measurements in seconds, by default 1. Max is 255.<br/>e.g.:CHT_Cycle 60 |
+| ClampChannel | [ChannelIndex][Min][Max] | Clamps given channel value to a range. |
 | clearAll |  | Clears config and all remaining features, like runtime scripts, events, etc |
 | clearAllHandlers |  | This clears all added event handlers |
 | clearClockEvents |  | Removes all set clock events |
 | clearConfig |  | Clears all config, including WiFi data |
 | clearIO |  | Clears all pins setting, channels settings |
+| ClearNoPingTime |  | Command for ping watchdog; it sets the 'time since last ping reply' to 0 again |
 | clearRepeatingEvents |  | Clears all repeating events. |
+| Color | [HexValue] | Puts the LED driver in RGB mode and sets given color. |
+| ConsumptionThreshold | [FloatValue] | Setup value for automatic save of consumption data [1..100] |
 | crashNull |  | Causes a crash |
+| CT | [TempValue] | Same as led_temperature |
+| CTRange | [MinRange][MaxRange] | This sets the temperature range for display. Default is 154-500. |
+| CurrentSet | Current | Measure the real Current with an external, reliable power meter and enter this Current via this command to calibrate. The calibration is automatically saved in the flash memory. |
+| DeepSleep | [Seconds] | Starts deep sleep for given amount of seconds. Please remember that there is also a separate command, called PinDeepSleep, which is not using a timer, but a GPIO to wake up device. |
 | delay_ms | [ValueMS] | Script-only command. Pauses current script thread for given amount of ms. |
 | delay_s | [ValueSeconds] | Script-only command. Pauses current script thread for given amount of seconds. |
+| DGR_SendBrightness | [GroupName][Brightness] | Sends a Brightness message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
+| DGR_SendFixedColor | [GroupName][TasColorIndex] | Sends a FixedColor message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
+| DGR_SendPower | [GroupName][ChannelValues][ChannelsCount] | Sends a POWER message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. |
+| DGR_SendRGBCW | [GroupName][HexRGBCW] | Sends a RGBCW message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. You can use this command in two ways, first is like DGR_SendRGBCW GroupName 255 255 0, etc, second is DGR_SendRGBCW GroupName FF00FF00 etc etc. |
+| Dimmer | [Value] | Alias for led_dimmer |
+| DimmerDelta | [DeltaValue] | This sets the delta value for SmartDimmer/SmartButtonForLEDs hold event. This determines the amount of change of dimmer per hold event. |
+| DSEdge | [edgeCode] | DeepSleep (PinDeepSleep) wake configuration command. 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2 |
+| DSTime | [timeSeconds] | DoorSensor driver configuration command. Time to keep device running before next sleep after last door sensor change. In future we may add also an option to automatically sleep after MQTT confirms door state receival |
 | echo | [Message] | Sends given message back to console. This command expands variables, so writing $CH12 will print value of channel 12, etc. Remember that you can also use special channel indices to access persistant flash variables and to access LED variables like dimmer, etc. |
+| EnergyCntReset |  | Resets the total Energy Counter, the one that is usually kept after device reboots. After this commands, the counter will start again from 0. |
 | exec | [Filename] | exec <file> - run autoexec.bat or other file from LFS if present |
 | fakeTuyaPacket | [HexString] | This simulates packet being sent from TuyaMCU to our OBK device. |
 | flags | [IntegerValue] | Sets the device flags |
+| FriendlyName | [Name] | Sets the full name of the device |
+| FullBootTime | [Value] | Sets time in seconds after which boot is marked as valid. This is related to emergency AP mode which is enabled by powering on/off device 5 times quickly. |
+| GetChannel | [ChannelIndex] | Prints given channel value to console. |
+| GetReadings |  | Prints voltage etc readings to console. |
 | goto | [LabelStr] | Script-only command. IF single argument is given, then goes to given label from within current script file. If two arguments are given, then jumps to any other script file by label - first argument is file, second label |
+| HSBColor | [H][S][B] | Tasmota-style colour access. Hue in 0-360 range, saturation in 0-100 and brightness in 0-100 range.  |
+| HSBColor1 | [Hue] | Tasmota-style colour access. Sets hue in 0 to 360 range. |
+| HSBColor2 | [Saturation] | Tasmota-style colour access. Set saturation in 0 to 100 range. |
+| HSBColor3 | [Brightness] | Tasmota-style colour access. Sets brightness in 0 to 100 range. |
 | if | [Condition]['then'][CommandA]['else'][CommandB] | Executed a conditional. Condition should be single line. You must always use 'then' after condition. 'else' is optional. Use aliases or quotes for commands with spaces |
+| IREnable | [Str][1or0] | Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol |
+| IRSend | [PROT-ADDR-CMD-REP] | Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0 |
 | json_test | cmnd_json_test |  |
 | lcd_clear |  | Clears the LCD |
 | lcd_clearAndGoto |  | Clears LCD and go to pos |
@@ -202,15 +123,33 @@ Do not add anything here, as it will overwritten with next rebuild.
 | loglevel | [Value] | Correct values are 0 to 7. Default is 3. Higher value includes more logs. Log levels are: ERROR = 1, WARN = 2, INFO = 3, DEBUG = 4, EXTRADEBUG = 5. WARNING: you also must separately select logging level filter on web panel in order for more logs to show up there |
 | logport | [Index] | Allows you to change log output port. On Beken, the UART1 is used for flashing and for TuyaMCU/BL0942, while UART2 is for log. Sometimes it might be easier for you to have log on UART1, so now you can just use this command like backlog uartInit 115200; logport 1 to enable logging on UART1.. |
 | logtype | [TypeStr] | logtype direct|thread|none - type of serial logging - thread (in a thread; default), direct (logged directly to serial), none (no UART logging) |
+| Map | [TargetChannel][InputValue][InMin][InMax][OutMin][OutMax] | Used to convert a value from one range into a proportional value of another range. |
+| MapRanges | [TargetChannel][InputValue][RangeVal0][RangeVal1][RangeValN] | This will set given channel to an index showing where given input value is within given range sections. For example, MapRanges 10 0.5 0.3 0.6 0.9 will set channel 10 to 1 because 0.5 value is between 0.3 and 0.6 |
+| MAX72XX_Print | DRV_MAX72XX_Print |  |
+| MAX72XX_Scroll | DRV_MAX72XX_Scroll |  |
+| MAX72XX_Setup | [Value] | Sets the maximum current for LED driver. |
+| MCP23017_MapPinToChannel |  | Maps port expander bit to OBK channel |
+| MqttClient | [ValueString] | Sets the MQTT client. Command keeps Tasmota syntax |
+| MqttHost | [ValueString] | Sets the MQTT host. Command keeps Tasmota syntax |
+| MqttPassword | [ValueString] | Sets the MQTT pass. Command keeps Tasmota syntax |
+| MqttUser | [ValueString] | Sets the MQTT user. Command keeps Tasmota syntax |
 | mqtt_broadcastInterval | [ValueSeconds] | If broadcast self state every 60 seconds/minute is enabled in flags, this value allows you to change the delay, change this 60 seconds to any other value in seconds. This value is not saved, you must use autoexec.bat or short startup command to execute it on every reboot. |
 | mqtt_broadcastItemsPerSec | [PublishCountPerSecond] | If broadcast self state (this option in flags) is started, then gradually device info is published, with a speed of N publishes per second. Do not set too high value, it may overload LWIP MQTT library. This value is not saved, you must use autoexec.bat or short startup command to execute it on every reboot. |
 | ntp_info |  | Display NTP related settings |
 | ntp_setServer | [ServerIP] | Sets the NTP server |
 | ntp_timeZoneOfs | [Value] | Sets the time zone offset in hours. Also supports HH:MM syntax if you want to specify value in minutes. For negative values, use -HH:MM syntax, for example -5:30 will shift time by 5 hours and 30 minutes negative. |
 | obkDeviceList |  | Generate the SSDP list of OpenBeken devices found on the network. |
+| OpenAP |  | Temporarily disconnects from programmed WiFi network and opens Access Point |
 | ota_http | [HTTP_URL] | Starts the firmware update procedure, the argument should be a reachable HTTP server file. You can easily setup HTTP server with Xampp, or Visual Code, or Python, etc. Make sure you are using OTA file for a correct platform (getting N platform RBL on T will brick device, etc etc) |
+| Password1 | [ValueString] | Sets the Pass of target WiFi. Command keeps Tasmota syntax |
+| PinDeepSleep |  | Starts a pin deep sleep (deep sleep that can be interrupted by external IO events like a button press) |
+| PingHost | [IPStr] | Sets the host to ping by IP watchdog |
+| PingInterval | [IntegerSeconds] | Sets the interval between ping attempts for ping watchdog mechanism |
 | power | [OnorOfforToggle] | Tasmota-style POWER command. Should work for both LEDs and relay-based devices. You can write POWER0, POWER1, etc to access specific relays. |
 | powerAll |  | set all outputs |
+| PowerMax | BL0937_PowerMax |  |
+| PowerSave | [Optional 1 or 0, by default 1 is assumed] | Enables dynamic power saving mode on BK and W600. You can also disable power saving with PowerSave 0. |
+| PowerSet | Power | Measure the real Power with an external, reliable power meter and enter this Power via this command to calibrate. The calibration is automatically saved in the flash memory. |
 | publish | [Topic][Value] | Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get. You can use argument expansion here, so $CH11 will change to value of the channel 11 |
 | publishAll |  | Starts the step by step publish of all available values |
 | publishBenchmark |  |  |
@@ -223,6 +162,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | resetSVM |  | Resets all SVM and clears all scripts. |
 | restart |  | Reboots the module |
 | return |  | Script-only command. Currently it just stops totally current script thread. |
+| SafeMode |  | Forces device reboot into safe mode (open ap with disabled drivers) |
 | scanI2C |  |  |
 | scheduleHADiscovery | [Seconds] | This will schedule HA discovery, the discovery will happen with given number of seconds, but timer only counts when MQTT is connected. It will not work without MQTT online, so you must set MQTT credentials first. |
 | sendGet | [TargetURL] | Sends a HTTP GET request to target URL. May include GET arguments. Can be used to control devices by Tasmota HTTP protocol. Command supports argument expansion, so $CH11 changes to value of channel 11, etc, etc. |
@@ -233,16 +173,60 @@ Do not add anything here, as it will overwritten with next rebuild.
 | setButtonHoldRepeat | [Value] | Sets just the hold button repeat time, given value is times 100ms, so write 1 for 100ms, 2 for 200ms, etc |
 | setButtonLabel | [ButtonIndex][Label] | Sets the label of custom scriptable HTTP page button |
 | setButtonTimes | [ValLongPress][ValShortPress][ValRepeat] | Each value is times 100ms, so: SetButtonTimes 2 1 1 means 200ms long press, 100ms short and 100ms repeat |
+| SetChannel | [ChannelIndex][ChannelValue] | Sets a raw channel to given value. Relay channels are using 1 and 0 values. PWM channels are within [0,100] range. Do not use this for LED control, because there is a better and more advanced LED driver with dimming and configuration memory (remembers setting after on/off), LED driver commands has 'led_' prefix. |
+| SetChannelFloat | [ChannelIndex][ChannelValue] | Sets a raw channel to given float value. Currently only used for LED PWM channels. |
+| SetChannelLabel | [ChannelIndex][Str][bHideTogglePrefix] | Sets a channel label for UI. If you use 1 for bHideTogglePrefix, then the 'Toggle ' prefix from button will be omitted |
 | setChannelType | [ChannelIndex][TypeString] | Sets a custom type for channel. Types are mostly used to determine how to display channel value on GUI |
+| SetChannelVisible | [ChannelIndex][bVisible] | This allows you to force-hide a certain channel from HTTP gui. The channel will still work, but will not show up as a button, or a toggle, etc... |
+| SetFlag | [FlagIndex][0or1] | Sets given flag |
+| SetPinChannel | [PinIndex][ChannelIndex] | This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command. |
+| SetPinRole | [PinRole][RoleIndexOrName] | This allows you to set a pin role, for example a Relay role, or Button, etc. Usually it's easier to do this through WWW panel, so you don't have to use this command. |
+| SetStartValue | [Channel][Value] | Sets the startup value for a channel. Used for start values for relays. Use 1 for High, 0 for low and -1 for 'remember last state' |
+| SetupEnergyStats | [Enable1or0][SampleTime][SampleCount][JSonEnable] | Setup Energy Statistic Parameters: [enable<0|1>] [sample_time<10..900>] [sample_count<10..180>] [JsonEnable<0|1>]. JSONEnable is optional. |
+| SetupTestPower |  | NULL |
+| SGP_cycle | [int] | change cycle of measurement by default every 10 seconds 0 to deactivate<br/>e.g.:SGP_Cycle 60 |
+| SGP_GetBaseline |  | SGP Get baseline<br/>e.g.:SGP_GetBaseline |
+| SGP_GetVersion |  | SGP : get version<br/>e.g.:SGP_GetVersion |
+| SGP_SoftReset |  | SGP i2C soft reset<br/>e.g.:SGP_SoftReset |
+| ShortName | [Name] | Sets the short name of the device. |
 | showChannelValues |  | log channel values |
 | showgpi | NULL | log stat of all GPIs |
+| SHT_Calibrate |  | Calibrate the SHT Sensor as Tolerance is +/-2 degrees C.<br/>e.g.:SHT_Calibrate -4 10 |
+| SHT_ClearStatus |  | Clear Sensor Status<br/>e.g.:SHT_ClearStatusCmd |
+| SHT_cycle | [int] | This is the interval between measurements in seconds, by default 10. Max is 255.<br/>e.g.:SHT_Cycle 60 |
+| SHT_GetStatus |  | Get Sensor Status<br/>e.g.:SHT_GetStatusCmd |
+| SHT_Heater |  | Activate or Deactivate Heater (0 / 1)<br/>e.g.:SHT_Heater 1 |
+| SHT_LaunchPer | [msb][lsb] | Launch/Change periodical capture for SHT Sensor<br/>e.g.:SHT_LaunchPer 0x23 0x22 |
+| SHT_Measure |  | Retrieve OneShot measurement for SHT<br/>e.g.:SHT_Measure |
+| SHT_MeasurePer |  | Retrieve Periodical measurement for SHT<br/>e.g.:SHT_Measure |
+| SHT_ReadAlert |  | Get Sensor alert configuration<br/>e.g.:SHT_ReadAlertCmd |
+| SHT_SetAlert | [temp_high, temp_low, hum_high, hum_low]<br/>Req:all | Set Sensor alert configuration<br/>e.g.:SHT_SetAlertCmd |
+| SHT_StopPer |  | Stop periodical capture for SHT Sensor |
 | simonirtest |  | Simons Special Test |
+| SM16703P_Send |  | NULL |
+| SM16703P_Test |  | qq |
+| SM16703P_Test_3xOne |  | NULL |
+| SM16703P_Test_3xZero |  | NULL |
+| SM2135_Current | [RGBLimit][CWLimit] | Sets the maximum current for LED driver. Please note that arguments are using SM2135 codes, see [full list of codes here](https://www.elektroda.com/rtvforum/viewtopic.php?p=20493415#20493415) |
+| SM2135_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of SM2135 channels. This is because SM2135 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: SM2135_Map 0 1 2 3 4 |
+| SM2135_RGBCW | [HexColor] | Don't use it. It's for direct access of SM2135 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
+| SM2235_Current | [Value] | Sets the maximum current for LED driver. |
+| SM2235_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of SM2235 channels. This is because SM2235 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: SM2235_Map 0 1 2 3 4 |
+| SM2235_RGBCW | [HexColor] | Don't use it. It's for direct access of SM2235 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
+| SPITestFlash_Erase | CMD_SPITestFlash_Erase |  |
+| SPITestFlash_ReadData | CMD_SPITestFlash_ReadData |  |
+| SPITestFlash_ReadID | CMD_SPITestFlash_ReadID |  |
+| SPITestFlash_WriteStr | CMD_SPITestFlash_WriteStr |  |
+| SSID1 | [ValueString] | Sets the SSID of target WiFi. Command keeps Tasmota syntax. |
 | stackOverflow |  | Causes a stack overflow |
 | startDriver | [DriverName] | Starts driver |
 | startScript | [FileName][Label][UniqueID] | Starts a script thread from given file, at given label - can be * for whole file, with given unique ID |
+| StartupCommand | [Command in quotation marks][bRunAfter] | Sets the new startup command (short startup command, the one stored in config) to given string. Second argument is optional, if set to 1, command will be also executed after setting |
+| State | NULL | NULL |
 | stopAllScripts |  | Stops all running scripts |
 | stopDriver | [DriverName] | Stops driver |
 | stopScript | [UniqueID] | Force-stop given script thread by ID |
+| TasTeleInterval | [SensorInterval][StateInterval] | This allows you to configure Tasmota TELE publish intervals, only if you have TELE flag enabled. First argument is interval for sensor publish (energy metering, etc), second is interval for State tele publish. |
 | testArgs |  | Test tokenizer for args and print back all the given args to console |
 | testFloats |  | Do some more test printfs with floating point numbers |
 | testJSON |  | Test the JSON library |
@@ -250,6 +234,17 @@ Do not add anything here, as it will overwritten with next rebuild.
 | testMallocFree |  | Test malloc and free functionality to see if the device crashes |
 | testRealloc |  | Test realloc and free functions to see if the device crashes |
 | testStrdup |  | Test strdup function to see if it allocs news string correctly, also test freeing the string |
+| TM1650_Test | CMD_TM1650_Test |  |
+| TMGN_Brightness | [Brigthness0to7][bOn] | This allows you to change brightness and state of  TM1637/GN932/etc display |
+| TMGN_Char | [CharIndex] [CharCode] | This allows you to set binary code for given char, valid chars range is 0 to 15, because this is 7-seg display |
+| TMGN_Clear |  | This clears the TM1637/GN932/etc display |
+| TMGN_Map | [Map0][Map1, etc] | This allows you to remap characters order for TM1637/GN932/etc. My TM1637 module from Aliexpress has a strange characters order. |
+| TMGN_Print | [StartOfs] [MaxLenOr0] [StringText] [optionalBClampWithZeroesForClock] | This allows you to print string on TM1637/GN932/etc display, it supports variables expansion |
+| TMGN_Read | CMD_TMGN_Read |  |
+| TMGN_SetBit | [CharIndex] [BitIndex] [BitValue] | Set given bit of given digit to 1 or 0. |
+| TMGN_SetupButtons | CMD_TMGN_SetupButtons |  |
+| TMGN_Test | CMD_TM1637_Test |  |
+| ToggleChannel | [ChannelIndex] | Toggles given channel value. Non-zero becomes zero, zero becomes 1. |
 | toggler_channel | [ChannelIndex] | handles toggler_channel0, toggler_channel1. Sets channel linked to given toggler slot. |
 | toggler_enable | [1or0] | Sets the given output ON or OFF.  handles toggler_enable0, toggler_enable1, etc |
 | toggler_name |  | Handles toggler_name0, toggler_name1, etc. Sets the name of a toggler for GUI. |
@@ -269,5 +264,10 @@ Do not add anything here, as it will overwritten with next rebuild.
 | uartInit | [BaudRate] | Manually starts UART1 port. Keep in mind that you don't need to do it for TuyaMCU and BL0942, those drivers do it automatically. |
 | uartSendASCII | [AsciiString] | Sends given string by UART. |
 | uartSendHex | [HexString] | Sends raw data by UART, can be used to send TuyaMCU data, but you must write whole packet with checksum yourself |
+| UCS1912_Test |  |  |
+| VCPPrecision | [VoltageDigits][CurrentDigitsAmpers][PowerDigitsWats][EnergyDigitsWh] | Sets the number of digits after decimal point for power metering publishes. Default is BL09XX_VCPPrecision 1 3 2 3. This works for OBK-style publishes. |
+| VCPPublishIntervals | [MinDelayBetweenPublishes][ForcedPublishInterval] | First argument is minimal allowed interval in second between Voltage/Current/Power/Energy publishes (even if there is a large change), second value is an interval in which V/C/P/E is always published, even if there is no change |
+| VCPPublishThreshold | [VoltageDeltaVolts][CurrentDeltaAmpers][PowerDeltaWats][EnergyDeltaWh] | Sets the minimal change between previous reported value over MQTT and next reported value over MQTT. Very useful for BL0942, BL0937, etc. So, if you set, VCPPublishThreshold 0.5 0.001 0.5, it will only report voltage again if the delta from previous reported value is largen than 0.5V. Remember, that the device will also ALWAYS force-report values every N seconds (default 60) |
+| VoltageSet | Voltage | Measure the real voltage with an external, reliable power meter and enter this voltage via this command to calibrate. The calibration is automatically saved in the flash memory. |
 | waitFor | [EventName] [Argument] | Wait forever for event. Can be used within script. For example, you can do: waitFor MQTTState 1 or waitFor NTPState 1. You can also do waitFor NoPingTime 600 to wait for 600 seconds without ping watchdog getting successful reply |
 
