@@ -20,7 +20,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | FullBootTime | [Value] | Sets time in seconds after which boot is marked as valid. This is related to emergency AP mode which is enabled by powering on/off device 5 times quickly. | File: cmnds/cmd_channels.c<br/>Function: CMD_FullBootTime |
 | SetChannelLabel | [ChannelIndex][Str][bHideTogglePrefix] | Sets a channel label for UI. If you use 1 for bHideTogglePrefix, then the 'Toggle ' prefix from button will be omitted | File: cmnds/cmd_channels.c<br/>Function: CMD_SetChannelLabel |
 | MapRanges | [TargetChannel][InputValue][RangeVal0][RangeVal1][RangeValN] | This will set given channel to an index showing where given input value is within given range sections. For example, MapRanges 10 0.5 0.3 0.6 0.9 will set channel 10 to 1 because 0.5 value is between 0.3 and 0.6 | File: cmnds/cmd_channels.c<br/>Function: CMD_MapRanges |
-| Map | [TargetChannel][InputValue][InMin][InMax][OutMin][OutMax] | qqq | File: cmnds/cmd_channels.c<br/>Function: CMD_Map |
+| Map | [TargetChannel][InputValue][InMin][InMax][OutMin][OutMax] | Used to convert a value from one range into a proportional value of another range. | File: cmnds/cmd_channels.c<br/>Function: CMD_Map |
 | SetChannelVisible | [ChannelIndex][bVisible] | This allows you to force-hide a certain channel from HTTP gui. The channel will still work, but will not show up as a button, or a toggle, etc... | File: cmnds/cmd_channels.c<br/>Function: CMD_SetChannelVisible |
 | Ch | [InputValue] | An alternate command to access channels. It returns all used channels in JSON format. The syntax is ChINDEX value, there is no space between Ch and channel index. It can be sent without value to poll channel values. | File: cmnds/cmd_channels.c<br/>Function: CMD_Ch |
 | AddEventHandler | [EventName][EventArgument][CommandToRun] | This can be used to trigger an action on a button click, long press, etc | File: cmnds/cmd_eventHandlers.c<br/>Function: CMD_AddEventHandler |
@@ -48,7 +48,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | ClearNoPingTime |  | Command for ping watchdog; it sets the 'time since last ping reply' to 0 again | File: cmnds/cmd_main.c<br/>Function: CMD_ClearNoPingTime |
 | SetStartValue | [Channel][Value] | Sets the startup value for a channel. Used for start values for relays. Use 1 for High, 0 for low and -1 for 'remember last state' | File: cmnds/cmd_main.c<br/>Function: CMD_SetStartValue |
 | OpenAP |  | Temporarily disconnects from programmed WiFi network and opens Access Point | File: cmnds/cmd_main.c<br/>Function: CMD_OpenAP |
-| DSEdge | [edgeCode] | DoorSensor driver configuration command. 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2 | File: drv/drv_doorSensorWithDeepSleep.c<br/>Function: CMD_DeepSleep_SetEdge |
+| DSEdge | [edgeCode] | DeepSleep (PinDeepSleep) wake configuration command. 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2 | File: drv/drv_doorSensorWithDeepSleep.c<br/>Function: CMD_DeepSleep_SetEdge |
 | SafeMode |  | Forces device reboot into safe mode (open ap with disabled drivers) | File: cmnds/cmd_main.c<br/>Function: CMD_SafeMode |
 | PingInterval | [IntegerSeconds] | Sets the interval between ping attempts for ping watchdog mechanism | File: cmnds/cmd_main.c<br/>Function: CMD_PingInterval |
 | PingHost | [IPStr] | Sets the host to ping by IP watchdog | File: cmnds/cmd_main.c<br/>Function: CMD_PingHost |
@@ -93,6 +93,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | resetSVM |  | Resets all SVM and clears all scripts. | File: cmnds/cmd_script.c<br/>Function: CMD_resetSVM |
 | waitFor | [EventName] [Argument] | Wait forever for event. Can be used within script. For example, you can do: waitFor MQTTState 1 or waitFor NTPState 1. You can also do waitFor NoPingTime 600 to wait for 600 seconds without ping watchdog getting successful reply | File: cmnds/cmd_script.c<br/>Function: CMD_waitFor |
 | sendGet | [TargetURL] | Sends a HTTP GET request to target URL. May include GET arguments. Can be used to control devices by Tasmota HTTP protocol. Command supports argument expansion, so $CH11 changes to value of channel 11, etc, etc. | File: cmnds/cmd_send.c<br/>Function: CMD_SendGET |
+| sendPost | [TargetURL] | Sends a HTTP POST request to target URL. TODO | File: cmnds/cmd_send.c<br/>Function: CMD_SendPOST |
+| sendPOST | CMD_SendPOST |  | File: cmnds/cmd_send.c<br/>Function: NULL); |
 | power | [OnorOfforToggle] | Tasmota-style POWER command. Should work for both LEDs and relay-based devices. You can write POWER0, POWER1, etc to access specific relays. | File: cmnds/cmd_tasmota.c<br/>Function: power |
 | powerAll |  | set all outputs | File: cmnds/cmd_tasmota.c<br/>Function: powerAll |
 | backlog | [string of commands separated with ;] | run a sequence of ; separated commands | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_backlog |
@@ -116,8 +118,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | lfs_test3 | [FileName] | Tests the LFS file reading feature. | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_lfs_test3 |
 | json_test | cmnd_json_test |  | File: cmnds/cmd_test.c<br/>Function: NULL); |
 | AB_Map | [int] | Sets margines for ADC button codes. For given N margins, there are N+1 possible ADC button values (one should be reserved for 'no button') | File: drv/drv_adcButton.c<br/>Function: Cmd_ADCButtonMap |
-| Battery_Setup | [float][float][float][float][float] | measure battery based on ADC args minbatt and maxbatt in mv. optional V_divider(2), Vref(default 2400) and ADC bits(4096) and   <br/>e.g.:Battery_Setup 1500 3000 2 2400 4096 | File: drv/drv_battery.c<br/>Function: Battery_Setup |
-| Battery_cycle | [int] | change cycle of measurement by default every 10 seconds<br/>e.g.:Battery_Setup 60 | File: drv/drv_battery.c<br/>Function: Battery_cycle |
+| Battery_Setup | [float][float][float][float][float] | measure battery based on ADC. <br />req. args: minbatt in mv, maxbatt in mv. <br />optional: V_divider(2), Vref(default 2400), ADC bits(4096)<br/>e.g.:Battery_Setup 1500 3000 2 2400 4096 | File: drv/drv_battery.c<br/>Function: Battery_Setup |
+| Battery_cycle | [int] | change cycle of measurement by default every 10 seconds<br/>e.g.:Battery_cycle 60 | File: drv/drv_battery.c<br/>Function: Battery_cycle |
 | PowerMax | BL0937_PowerMax |  | File: driver/drv_bl0937.c<br/>Function: NULL); |
 | EnergyCntReset |  | Resets the total Energy Counter, the one that is usually kept after device reboots. After this commands, the counter will start again from 0. | File: driver/drv_bl_shared.c<br/>Function: BL09XX_ResetEnergyCounter |
 | SetupEnergyStats | [Enable1or0][SampleTime][SampleCount][JSonEnable] | Setup Energy Statistic Parameters: [enable<0|1>] [sample_time<10..900>] [sample_count<10..180>] [JsonEnable<0|1>]. JSONEnable is optional. | File: driver/drv_bl_shared.c<br/>Function: BL09XX_SetupEnergyStatistic |
@@ -133,6 +135,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | BP5758D_Current | [MaxCurrentRGB][MaxCurrentCW] | Sets the maximum current limit for BP5758D driver, first value is for rgb and second for cw | File: driver/drv_bp5758d.c<br/>Function: BP5758D_Current |
 | BridgePulseLength | [FloatValue] | Setup value for bridge pulse len | File: driver/drv_bridge_driver.c<br/>Function: Bridge_Pulse_length |
 | CHT_Calibrate |  | Calibrate the CHT Sensor as Tolerance is +/-2 degrees C.<br/>e.g.:SHT_Calibrate -4 10 | File: driver/drv_cht8305.c<br/>Function: CHT_Calibrate |
+| CHT_Cycle | [int] | This is the interval between measurements in seconds, by default 1. Max is 255.<br/>e.g.:CHT_Cycle 60 | File: drv/drv_cht8305.c<br/>Function: CHT_cycle |
 | DSTime | [timeSeconds] | DoorSensor driver configuration command. Time to keep device running before next sleep after last door sensor change. In future we may add also an option to automatically sleep after MQTT confirms door state receival | File: drv/drv_doorSensorWithDeepSleep.c<br/>Function: DoorDeepSleep_SetTime |
 | setButtonColor | [ButtonIndex][Color] | Sets the colour of custom scriptable HTTP page button | File: driver/drv_httpButtons.c<br/>Function: CMD_setButtonColor |
 | setButtonCommand | [ButtonIndex][Command] | Sets the command of custom scriptable HTTP page button | File: driver/drv_httpButtons.c<br/>Function: CMD_setButtonCommand |
@@ -163,7 +166,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | SGP_GetVersion |  | SGP : get version<br/>e.g.:SGP_GetVersion | File: drv/drv_sgp.c<br/>Function: SGP_GetVersion |
 | SGP_GetBaseline |  | SGP Get baseline<br/>e.g.:SGP_GetBaseline | File: drv/drv_sgp.c<br/>Function: SGP_GetBaseline |
 | SGP_SoftReset |  | SGP i2C soft reset<br/>e.g.:SGP_SoftReset | File: drv/drv_sgp.c<br/>Function: SGP_SoftReset |
-| SHT_cycle | [int] | change cycle of measurement by default every 10 seconds 0 to deactivate<br/>e.g.:SHT_Cycle 60 | File: drv/drv_sht3x.c<br/>Function: SHT_cycle |
+| SHT_cycle | [int] | This is the interval between measurements in seconds, by default 10. Max is 255.<br/>e.g.:SHT_Cycle 60 | File: drv/drv_sht3x.c<br/>Function: SHT_cycle |
 | SHT_Calibrate |  | Calibrate the SHT Sensor as Tolerance is +/-2 degrees C.<br/>e.g.:SHT_Calibrate -4 10 | File: driver/drv_sht3x.c<br/>Function: SHT3X_Calibrate |
 | SHT_MeasurePer |  | Retrieve Periodical measurement for SHT<br/>e.g.:SHT_Measure | File: driver/drv_sht3x.c<br/>Function: SHT3X_MeasurePer |
 | SHT_LaunchPer | [msb][lsb] | Launch/Change periodical capture for SHT Sensor<br/>e.g.:SHT_LaunchPer 0x23 0x22 | File: driver/drv_sht3x.c<br/>Function: SHT3X_ChangePer |

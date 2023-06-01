@@ -137,7 +137,7 @@
   {
     "name": "Map",
     "args": "[TargetChannel][InputValue][InMin][InMax][OutMin][OutMax]",
-    "descr": "qqq",
+    "descr": "Used to convert a value from one range into a proportional value of another range.",
     "fn": "CMD_Map",
     "file": "cmnds/cmd_channels.c",
     "requires": "",
@@ -389,7 +389,7 @@
   {
     "name": "DSEdge",
     "args": "[edgeCode]",
-    "descr": "DoorSensor driver configuration command. 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2",
+    "descr": "DeepSleep (PinDeepSleep) wake configuration command. 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2",
     "fn": "CMD_DeepSleep_SetEdge",
     "file": "drv/drv_doorSensorWithDeepSleep.c",
     "requires": "",
@@ -792,6 +792,24 @@
     "examples": ""
   },
   {
+    "name": "sendPost",
+    "args": "[TargetURL]",
+    "descr": "Sends a HTTP POST request to target URL. TODO",
+    "fn": "CMD_SendPOST",
+    "file": "cmnds/cmd_send.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "sendPOST",
+    "args": "CMD_SendPOST",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_send.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "power",
     "args": "[OnorOfforToggle]",
     "descr": "Tasmota-style POWER command. Should work for both LEDs and relay-based devices. You can write POWER0, POWER1, etc to access specific relays.",
@@ -1001,7 +1019,7 @@
   {
     "name": "Battery_Setup",
     "args": "[float][float][float][float][float]",
-    "descr": "measure battery based on ADC args minbatt and maxbatt in mv. optional V_divider(2), Vref(default 2400) and ADC bits(4096) and   ",
+    "descr": "measure battery based on ADC. <br />req. args: minbatt in mv, maxbatt in mv. <br />optional: V_divider(2), Vref(default 2400), ADC bits(4096)",
     "fn": "Battery_Setup",
     "file": "drv/drv_battery.c",
     "requires": "",
@@ -1014,7 +1032,7 @@
     "fn": "Battery_cycle",
     "file": "drv/drv_battery.c",
     "requires": "",
-    "examples": "Battery_Setup 60"
+    "examples": "Battery_cycle 60"
   },
   {
     "name": "PowerMax",
@@ -1150,6 +1168,15 @@
     "file": "driver/drv_cht8305.c",
     "requires": "",
     "examples": "SHT_Calibrate -4 10"
+  },
+  {
+    "name": "CHT_Cycle",
+    "args": "[int]",
+    "descr": "This is the interval between measurements in seconds, by default 1. Max is 255.",
+    "fn": "CHT_cycle",
+    "file": "drv/drv_cht8305.c",
+    "requires": "",
+    "examples": "CHT_Cycle 60"
   },
   {
     "name": "DSTime",
@@ -1424,7 +1451,7 @@
   {
     "name": "SHT_cycle",
     "args": "[int]",
-    "descr": "change cycle of measurement by default every 10 seconds 0 to deactivate",
+    "descr": "This is the interval between measurements in seconds, by default 10. Max is 255.",
     "fn": "SHT_cycle",
     "file": "drv/drv_sht3x.c",
     "requires": "",

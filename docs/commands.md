@@ -23,7 +23,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | FullBootTime | [Value] | Sets time in seconds after which boot is marked as valid. This is related to emergency AP mode which is enabled by powering on/off device 5 times quickly. |
 | SetChannelLabel | [ChannelIndex][Str][bHideTogglePrefix] | Sets a channel label for UI. If you use 1 for bHideTogglePrefix, then the 'Toggle ' prefix from button will be omitted |
 | MapRanges | [TargetChannel][InputValue][RangeVal0][RangeVal1][RangeValN] | This will set given channel to an index showing where given input value is within given range sections. For example, MapRanges 10 0.5 0.3 0.6 0.9 will set channel 10 to 1 because 0.5 value is between 0.3 and 0.6 |
-| Map | [TargetChannel][InputValue][InMin][InMax][OutMin][OutMax] | qqq |
+| Map | [TargetChannel][InputValue][InMin][InMax][OutMin][OutMax] | Used to convert a value from one range into a proportional value of another range. |
 | SetChannelVisible | [ChannelIndex][bVisible] | This allows you to force-hide a certain channel from HTTP gui. The channel will still work, but will not show up as a button, or a toggle, etc... |
 | Ch | [InputValue] | An alternate command to access channels. It returns all used channels in JSON format. The syntax is ChINDEX value, there is no space between Ch and channel index. It can be sent without value to poll channel values. |
 | AddEventHandler | [EventName][EventArgument][CommandToRun] | This can be used to trigger an action on a button click, long press, etc |
@@ -51,7 +51,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | ClearNoPingTime |  | Command for ping watchdog; it sets the 'time since last ping reply' to 0 again |
 | SetStartValue | [Channel][Value] | Sets the startup value for a channel. Used for start values for relays. Use 1 for High, 0 for low and -1 for 'remember last state' |
 | OpenAP |  | Temporarily disconnects from programmed WiFi network and opens Access Point |
-| DSEdge | [edgeCode] | DoorSensor driver configuration command. 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2 |
+| DSEdge | [edgeCode] | DeepSleep (PinDeepSleep) wake configuration command. 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2 |
 | SafeMode |  | Forces device reboot into safe mode (open ap with disabled drivers) |
 | PingInterval | [IntegerSeconds] | Sets the interval between ping attempts for ping watchdog mechanism |
 | PingHost | [IPStr] | Sets the host to ping by IP watchdog |
@@ -96,6 +96,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | resetSVM |  | Resets all SVM and clears all scripts. |
 | waitFor | [EventName] [Argument] | Wait forever for event. Can be used within script. For example, you can do: waitFor MQTTState 1 or waitFor NTPState 1. You can also do waitFor NoPingTime 600 to wait for 600 seconds without ping watchdog getting successful reply |
 | sendGet | [TargetURL] | Sends a HTTP GET request to target URL. May include GET arguments. Can be used to control devices by Tasmota HTTP protocol. Command supports argument expansion, so $CH11 changes to value of channel 11, etc, etc. |
+| sendPost | [TargetURL] | Sends a HTTP POST request to target URL. TODO |
+| sendPOST | CMD_SendPOST |  |
 | power | [OnorOfforToggle] | Tasmota-style POWER command. Should work for both LEDs and relay-based devices. You can write POWER0, POWER1, etc to access specific relays. |
 | powerAll |  | set all outputs |
 | backlog | [string of commands separated with ;] | run a sequence of ; separated commands |
@@ -119,8 +121,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | lfs_test3 | [FileName] | Tests the LFS file reading feature. |
 | json_test | cmnd_json_test |  |
 | AB_Map | [int] | Sets margines for ADC button codes. For given N margins, there are N+1 possible ADC button values (one should be reserved for 'no button') |
-| Battery_Setup | [float][float][float][float][float] | measure battery based on ADC args minbatt and maxbatt in mv. optional V_divider(2), Vref(default 2400) and ADC bits(4096) and   <br/>e.g.:Battery_Setup 1500 3000 2 2400 4096 |
-| Battery_cycle | [int] | change cycle of measurement by default every 10 seconds<br/>e.g.:Battery_Setup 60 |
+| Battery_Setup | [float][float][float][float][float] | measure battery based on ADC. <br />req. args: minbatt in mv, maxbatt in mv. <br />optional: V_divider(2), Vref(default 2400), ADC bits(4096)<br/>e.g.:Battery_Setup 1500 3000 2 2400 4096 |
+| Battery_cycle | [int] | change cycle of measurement by default every 10 seconds<br/>e.g.:Battery_cycle 60 |
 | PowerMax | BL0937_PowerMax |  |
 | EnergyCntReset |  | Resets the total Energy Counter, the one that is usually kept after device reboots. After this commands, the counter will start again from 0. |
 | SetupEnergyStats | [Enable1or0][SampleTime][SampleCount][JSonEnable] | Setup Energy Statistic Parameters: [enable<0|1>] [sample_time<10..900>] [sample_count<10..180>] [JsonEnable<0|1>]. JSONEnable is optional. |
@@ -136,6 +138,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | BP5758D_Current | [MaxCurrentRGB][MaxCurrentCW] | Sets the maximum current limit for BP5758D driver, first value is for rgb and second for cw |
 | BridgePulseLength | [FloatValue] | Setup value for bridge pulse len |
 | CHT_Calibrate |  | Calibrate the CHT Sensor as Tolerance is +/-2 degrees C.<br/>e.g.:SHT_Calibrate -4 10 |
+| CHT_Cycle | [int] | This is the interval between measurements in seconds, by default 1. Max is 255.<br/>e.g.:CHT_Cycle 60 |
 | DSTime | [timeSeconds] | DoorSensor driver configuration command. Time to keep device running before next sleep after last door sensor change. In future we may add also an option to automatically sleep after MQTT confirms door state receival |
 | setButtonColor | [ButtonIndex][Color] | Sets the colour of custom scriptable HTTP page button |
 | setButtonCommand | [ButtonIndex][Command] | Sets the command of custom scriptable HTTP page button |
@@ -166,7 +169,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | SGP_GetVersion |  | SGP : get version<br/>e.g.:SGP_GetVersion |
 | SGP_GetBaseline |  | SGP Get baseline<br/>e.g.:SGP_GetBaseline |
 | SGP_SoftReset |  | SGP i2C soft reset<br/>e.g.:SGP_SoftReset |
-| SHT_cycle | [int] | change cycle of measurement by default every 10 seconds 0 to deactivate<br/>e.g.:SHT_Cycle 60 |
+| SHT_cycle | [int] | This is the interval between measurements in seconds, by default 10. Max is 255.<br/>e.g.:SHT_Cycle 60 |
 | SHT_Calibrate |  | Calibrate the SHT Sensor as Tolerance is +/-2 degrees C.<br/>e.g.:SHT_Calibrate -4 10 |
 | SHT_MeasurePer |  | Retrieve Periodical measurement for SHT<br/>e.g.:SHT_Measure |
 | SHT_LaunchPer | [msb][lsb] | Launch/Change periodical capture for SHT Sensor<br/>e.g.:SHT_LaunchPer 0x23 0x22 |
