@@ -846,6 +846,15 @@ for (let i = 0; i < flags.length; i++) {
     }
 }
 
+// Sort commands by Name alphabetically 
+commands.sort((a, b) => {
+	if (a.name.toUpperCase() < b.name.toUpperCase())
+		return -1;
+	if (a.name.toUpperCase() > b.name.toUpperCase())
+		return 1;
+	return 0;
+});
+
 for (let i = 0; i < commands.length; i++){
 
     /* like:
@@ -1064,6 +1073,7 @@ function writeDocMD_Page(page) {
 
     page.fullMDPath = fullName;
 }
+
 writeDocMD_Array('ioRoles', iosmdshort, ios, "IO/Pin Roles", true, generic.pins);
 writeDocMD_Array('flags', flagsmdshort, flags, "Flags", true, generic.flags);
 writeDocMD_Array('drivers', driversmdshort, drvs, "Drivers", true, generic.drivers);

@@ -512,7 +512,7 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MapRanges", CMD_MapRanges, NULL);
 	//cmddetail:{"name":"Map","args":"[TargetChannel][InputValue][InMin][InMax][OutMin][OutMax]",
-	//cmddetail:"descr":"qqq",
+	//cmddetail:"descr":"Used to convert a value from one range into a proportional value of another range.",
 	//cmddetail:"fn":"CMD_Map","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Map", CMD_Map, NULL);

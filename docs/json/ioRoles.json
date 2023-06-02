@@ -600,6 +600,14 @@
     "driver": ""
   },
   {
+    "name": "BAT_Relay_n",
+    "title": "TODO",
+    "descr": "Like BAT_Relay, but inversed. See [battery driver topic here](https://www.elektroda.com/rtvforum/topic3959103.html)",
+    "enum": "IOR_BAT_Relay_n",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
     "name": "Total_Options",
     "title": "TODO",
     "descr": "Current total number of available IOR roles",
