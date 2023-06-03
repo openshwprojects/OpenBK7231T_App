@@ -1135,13 +1135,15 @@ extern mainConfig_t g_cfg;
 
 extern char g_enable_pins;
 extern int g_initialPinStates;
-extern byte g_defaultWakeEdge;
 
 #define CHANNEL_SET_FLAG_FORCE		1
 #define CHANNEL_SET_FLAG_SKIP_MQTT	2
 #define CHANNEL_SET_FLAG_SILENT		4
 
 void PIN_ticks(void* param);
+
+void PIN_DeepSleep_SetWakeUpEdge(int pin, byte edgeCode);
+void PIN_DeepSleep_SetAllWakeUpEdges(byte edgeCode);
 
 void PIN_set_wifi_led(int value);
 void PIN_AddCommands(void);

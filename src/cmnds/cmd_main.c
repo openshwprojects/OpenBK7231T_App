@@ -578,8 +578,13 @@ commandResult_t CMD_DeepSleep_SetEdge(const void* context, const char* cmd, cons
 	{
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-
-	g_defaultWakeEdge = Tokenizer_GetArgInteger(0);
+	// strlen("DSEdge") == 6
+	if (Tokenizer_GetArgsCount() > 1) {
+		PIN_DeepSleep_SetWakeUpEdge(Tokenizer_GetArgInteger(1),Tokenizer_GetArgInteger(0));
+	}
+	else {
+		PIN_DeepSleep_SetAllWakeUpEdges(Tokenizer_GetArgInteger(0));
+	}
 
 	return CMD_RES_OK;
 }
