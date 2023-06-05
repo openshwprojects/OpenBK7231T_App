@@ -936,6 +936,14 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "STATUS4");
 			}
 		}
+		else if (!stricmp(arg, "11")) {
+			printer(request, "{");
+			http_tasmota_json_status_STS(request, printer, true);
+			printer(request, "}");
+			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
+				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "STATUS11");
+			}
+		}
 		else if (!stricmp(arg, "2")) {
 			printer(request, "{");
 			http_tasmota_json_status_FWR(request, printer);
