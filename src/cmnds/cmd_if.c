@@ -210,6 +210,10 @@ float getCurrent(const char *s) {
 float getPower(const char *s) {
 	return DRV_GetReading(OBK_POWER);
 }
+float getEnergy(const char *s) {
+	return DRV_GetReading(OBK_CONSUMPTION_TOTAL);
+}
+
 
 float getNTPOn(const char *s) {
 	return NTP_IsTimeSynced();
@@ -323,6 +327,11 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Current value of power from energy metering chip",
 	//cnstdetail:"requires":""}
 	{"$power", &getPower},
+	//cnstdetail:{"name":"$energy",
+	//cnstdetail:"title":"$energy",
+	//cnstdetail:"descr":"Current value of energy counter from energy metering chip",
+	//cnstdetail:"requires":""}
+	{"$energy", &getEnergy},
 	//cnstdetail:{"name":"$day",
 	//cnstdetail:"title":"$day",
 	//cnstdetail:"descr":"Current weekday from NTP",
