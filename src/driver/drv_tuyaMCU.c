@@ -345,7 +345,7 @@ void TuyaMCU_SendCommandWithData(byte cmdType, byte* data, int payload_len) {
 void TuyaMCU_SendState(uint8_t id, uint8_t type, uint8_t* value)
 {
 	uint16_t payload_len = 4;
-	uint8_t payload_buffer[8];
+	uint8_t payload_buffer[32];
 	payload_buffer[0] = id;
 	payload_buffer[1] = type;
 	switch (type) {
@@ -365,7 +365,17 @@ void TuyaMCU_SendState(uint8_t id, uint8_t type, uint8_t* value)
 		payload_buffer[6] = value[1];
 		payload_buffer[7] = value[0];
 		break;
-
+	case DP_TYPE_STRING:
+		while (*value) {
+			payload_buffer[payload_len] = *value;
+			value++;
+			payload_len++;
+			if (payload_len >= sizeof(payload_buffer)) {
+				addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU, "Tuya str buff overflow");
+				break;
+			}
+		}
+		break;
 	}
 
 	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, payload_buffer, payload_len);
@@ -718,11 +728,18 @@ commandResult_t TuyaMCU_SendQueryState(const void* context, const char* cmd, con
 	return CMD_RES_OK;
 }
 
-
+// tuyaMcu_sendState id type value
+// send boolean true
+// tuyaMcu_sendState 25 1 1
+// send boolean false
+// tuyaMcu_sendState 25 1 0
+// send string 
+// tuyaMcu_sendState 25 3 ff0000646464ff 
 commandResult_t TuyaMCU_SendStateCmd(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int dpId;
 	int dpType;
 	int value;
+	const char *valStr;
 
 	Tokenizer_TokenizeString(args, 0);
 	// following check must be done after 'Tokenizer_TokenizeString',
@@ -734,9 +751,14 @@ commandResult_t TuyaMCU_SendStateCmd(const void* context, const char* cmd, const
 
 	dpId = Tokenizer_GetArgInteger(0);
 	dpType = Tokenizer_GetArgInteger(1);
-	value = Tokenizer_GetArgInteger(2);
-
-	TuyaMCU_SendState(dpId, dpType, (uint8_t*)&value);
+	if (dpType == DP_TYPE_STRING) {
+		valStr = Tokenizer_GetArg(2);
+		TuyaMCU_SendState(dpId, DP_TYPE_STRING, (uint8_t*)valStr);
+	}
+	else {
+		value = Tokenizer_GetArgInteger(2);
+		TuyaMCU_SendState(dpId, dpType, (uint8_t*)&value);
+	}
 
 	return CMD_RES_OK;
 }
