@@ -52,6 +52,9 @@ int Tokenizer_GetArgsCount() {
 bool Tokenizer_IsArgInteger(int i) {
 	if(i >= g_numArgs)
 		return false;
+	if (*g_args[i] == '$') {
+		return true;
+	}
 	return strIsInteger(g_args[i]);
 }
 const char *Tokenizer_GetArg(int i) {
