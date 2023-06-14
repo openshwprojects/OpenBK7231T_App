@@ -170,9 +170,17 @@ static int pwm_demo_multiplex_config(u8 channel)
 	switch (channel)
 	{
 	case 0:
+		wm_pwm1_config(g_pwmChannelPins[channel]);
+		break;
 	case 1:
+		wm_pwm2_config(g_pwmChannelPins[channel]);
+		break;
 	case 2:
+		wm_pwm3_config(g_pwmChannelPins[channel]);
+		break;
 	case 3:
+		wm_pwm4_config(g_pwmChannelPins[channel]);
+		break;
 	case 4:
 		wm_pwm5_config(g_pwmChannelPins[channel]);
 		break;
