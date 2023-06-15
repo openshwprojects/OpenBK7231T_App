@@ -147,7 +147,7 @@ void BL0937_Init_Pins() {
 	gpio_int_enable(GPIO_HLW_CF1, IRQ_TRIGGER_FALLING_EDGE, HlwCf1Interrupt);
 #elif PLATFORM_BL602
 	gpio_dev_t dev_cf;
-	// init dev_cf somehow
+	// init dev_cf somehow => assume the value is the same as for the BEKEN part for now
 	dev_cf.port = GPIO_HLW_CF1;
 	dev_cf.config = GPIO_CONFIG_PULL_UP;
 	hal_gpio_enable_irq(&dev_cf, IRQ_TRIGGER_FALLING_EDGE, HlwCf1Interrupt, 0);
