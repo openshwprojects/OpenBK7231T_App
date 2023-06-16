@@ -14,7 +14,7 @@ int DRV_I2C_TC74_readTemperature(int dev_adr, int busID)
 
 	DRV_I2C_Begin(dev_adr,busID);
 	DRV_I2C_Write(0,0x00);
-	DRV_I2C_ReadByte(0x00,&temp);
+	DRV_I2C_Read(0x00,&temp);
 	DRV_I2C_Close();
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"TC74 reads %i", temp);
