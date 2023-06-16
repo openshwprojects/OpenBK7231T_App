@@ -202,6 +202,44 @@ void DRV_I2C_AddDevice_TC74_Internal(int busType,int address, int targetChannel)
 
 	DRV_I2C_AddNextDevice((i2cDevice_t*)dev);
 }
+
+void DRV_I2C_AddDevice_Generic_Internal(int busType,int address, int targetChannel) {
+	i2cDevice_TC74_t *dev;
+
+	dev = malloc(sizeof(i2cDevice_TC74_t));
+
+	dev->base.addr = address;
+	dev->base.busType = busType;
+	dev->base.type = I2CDEV_GENERIC;
+	dev->base.next = 0;
+	dev->targetChannel = targetChannel;
+
+	DRV_I2C_AddNextDevice((i2cDevice_t*)dev);
+}
+commandResult_t DRV_I2C_AddDevice_Generic(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	const char *i2cModuleStr;
+	int address;
+	int targetChannel;
+	i2cBusType_t busType;
+
+	Tokenizer_TokenizeString(args,0);
+	i2cModuleStr = Tokenizer_GetArg(0);
+	address = Tokenizer_GetArgInteger(1);
+	targetChannel = Tokenizer_GetArgInteger(2);
+
+	busType = DRV_I2C_ParseBusType(i2cModuleStr);
+
+	if(DRV_I2C_FindDevice(busType,address)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_AddDevice_Generic: there is already some device on this bus with such addr\n");
+		return CMD_RES_BAD_ARGUMENT;
+	}
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_AddDevice_Generic: module %s, address %i, target %i\n", i2cModuleStr, address, targetChannel);
+
+	DRV_I2C_AddDevice_Generic_Internal(busType,address,targetChannel);
+
+	return CMD_RES_OK;
+}
 commandResult_t DRV_I2C_AddDevice_TC74(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *i2cModuleStr;
 	int address;
@@ -329,6 +367,7 @@ commandResult_t DRV_I2C_Scan(const void *context, const char *cmd, const char *a
 
 void DRV_I2C_Init()
 {
+	CMD_RegisterCommand("addI2CDevice_Generic", DRV_I2C_AddDevice_Generic, NULL);
 	//cmddetail:{"name":"addI2CDevice_TC74","args":"",
 	//cmddetail:"descr":"Adds a new I2C device - TC74",
 	//cmddetail:"fn":"DRV_I2C_AddDevice_TC74","file":"i2c/drv_i2c_main.c","requires":"",
@@ -364,6 +403,9 @@ void DRC_I2C_RunDevice(i2cDevice_t *dev)
 {
 	switch(dev->type)
 	{
+	case I2CDEV_GENERIC:
+		DRV_I2C_GENERIC_RunDevice(dev);
+		break;
 	case I2CDEV_TC74:
 		DRV_I2C_TC74_RunDevice(dev);
 		break;
@@ -395,6 +437,9 @@ void I2C_OnChannelChanged_Device(i2cDevice_t *dev, int channel, int iVal)
 {
 	switch(dev->type)
 	{
+		case I2CDEV_GENERIC:
+		//not needed
+		break;
 	case I2CDEV_TC74:
 		// not needed
 		break;
