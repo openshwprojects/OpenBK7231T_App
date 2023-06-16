@@ -8,6 +8,7 @@ enum i2cDeviceType_e {
 	I2CDEV_TC74,
 	I2CDEV_MCP23017,
 	I2CDEV_LCD_PCF8574,
+	I2CDEV_GENERIC
 };
 
 typedef enum i2cBusType_e {
