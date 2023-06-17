@@ -12,7 +12,7 @@
 #include "../hal/hal_pins.h"
 
 static softI2C_t g_softI2C;
-static byte g_addr = 0x70;
+static byte g_addr = 0xE0;
 
 
 //  Characters
