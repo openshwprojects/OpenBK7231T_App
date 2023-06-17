@@ -189,6 +189,7 @@ void HT16K33_display(const char *txt, uint8_t point)
 
 		HT16K33_writePos(i,code);
 		txt++;
+		i++;
 	}
 }
 void HT16K33_displayOff()
