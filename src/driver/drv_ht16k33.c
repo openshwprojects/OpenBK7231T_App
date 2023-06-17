@@ -117,6 +117,7 @@ void HT16K33_writePos(uint8_t pos, uint8_t mask)
 	Soft_I2C_Start(&g_softI2C, g_addr);
 	Soft_I2C_WriteByte(&g_softI2C, pos*2);
 	Soft_I2C_WriteByte(&g_softI2C, mask);
+	Soft_I2C_WriteByte(&g_softI2C, 0);
 	Soft_I2C_Stop(&g_softI2C);
 }
 void HT16K33_display(uint8_t *array, uint8_t point)
