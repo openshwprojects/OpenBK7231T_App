@@ -218,6 +218,17 @@ void Test_Commands_Channels() {
 		SELFTEST_ASSERT_CHANNEL(10, 0);
 
 	}
+
+	// test backlog
+	CMD_ExecuteCommand("backlog setChannel 1 11; setChannel 2 22; setChannel 3 33;", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 11);
+	SELFTEST_ASSERT_CHANNEL(2, 22);
+	SELFTEST_ASSERT_CHANNEL(3, 33);
+	CMD_ExecuteCommand("backlog setChannel 1 101 ; setChannel 2 202 ; setChannel 3 303 ;", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 101);
+	SELFTEST_ASSERT_CHANNEL(2, 202);
+	SELFTEST_ASSERT_CHANNEL(3, 303);
+
 }
 
 
