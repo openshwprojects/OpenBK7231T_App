@@ -246,6 +246,11 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK/STB interface. TM1638 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20553628#20553628) for details.",
 	//drvdetail:"requires":""}
 	{ "TM1638",	TM1638_Init,		NULL,		NULL, TMGN_RunQuickTick,NULL,  NULL, false },
+	//drvdetail:{"name":"HT16K33",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Driver for 16-segment LED display with I2C.",
+	//drvdetail:"requires":""}
+	{ "HT16K33",	HT16K33_Init,		NULL,		NULL, NULL,NULL,  NULL, false },
 	//drvdetail:{"name":"SHT3X",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Humidity/temperature sensor. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html)",

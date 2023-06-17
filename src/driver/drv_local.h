@@ -46,6 +46,8 @@ void GN6932_Init();
 
 void TM1638_Init();
 
+void HT16K33_Init();
+
 bool DRV_IsRunning(const char* name);
 
 // this is exposed here only for debug tool with automatic testing
