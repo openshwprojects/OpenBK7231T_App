@@ -125,10 +125,10 @@ void HT16K33_display(uint8_t *array, uint8_t point)
 	//  dumpSerial(array, point);
 	//  dumpSerial();
 
-	HT16K33_writePos(0, charmap[array[0]], point == 0);
-	HT16K33_writePos(1, charmap[array[1]], point == 1);
-	HT16K33_writePos(3, charmap[array[2]], point == 2);
-	HT16K33_writePos(4, charmap[array[3]], point == 3);
+	HT16K33_writePos(0, charmap[array[0]]);
+	HT16K33_writePos(1, charmap[array[1]]);
+	HT16K33_writePos(3, charmap[array[2]]);
+	HT16K33_writePos(4, charmap[array[3]]);
 }
 void HT16K33_displayOff()
 {
