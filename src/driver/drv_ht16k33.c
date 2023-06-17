@@ -127,8 +127,8 @@ void HT16K33_display(uint8_t *array, uint8_t point)
 
 	HT16K33_writePos(0, charmap[array[0]]);
 	HT16K33_writePos(1, charmap[array[1]]);
-	HT16K33_writePos(3, charmap[array[2]]);
-	HT16K33_writePos(4, charmap[array[3]]);
+	HT16K33_writePos(2, charmap[array[2]]);
+	HT16K33_writePos(3, charmap[array[3]]);
 }
 void HT16K33_displayOff()
 {
@@ -156,7 +156,7 @@ commandResult_t HT16K33_Test(const void* context, const char* cmd, const char* a
 	HT16K33_displayOn();
 	rtos_delay_milliseconds(25);
 	//HT16K33_displayClear();
-	uint8_t x[4] = { HT16K33_0, HT16K33_1, HT16K33_2, HT16K33_SPACE };
+	uint8_t x[4] = { HT16K33_0, HT16K33_1, HT16K33_2, HT16K33_3 };
 	rtos_delay_milliseconds(25);
 	HT16K33_display(x, 4);
 	rtos_delay_milliseconds(25);
@@ -164,10 +164,43 @@ commandResult_t HT16K33_Test(const void* context, const char* cmd, const char* a
 
 	return CMD_RES_OK;
 }
+commandResult_t HT16K33_Char(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int pos, val;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 2) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	pos = Tokenizer_GetArgInteger(0);
+	val = Tokenizer_GetArgInteger(1);
+
+	HT16K33_writePos(pos, charmap[val]);
+
+	return CMD_RES_OK;
+}
+commandResult_t HT16K33_Raw(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int pos, val;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 2) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	pos = Tokenizer_GetArgInteger(0);
+	val = Tokenizer_GetArgInteger(1);
+
+	HT16K33_writePos(pos, val);
+
+	return CMD_RES_OK;
+}
+
 // backlog startDriver HT16K33; HT16K33_Test
 void HT16K33_Init() {
 
 	CMD_RegisterCommand("HT16K33_Test", HT16K33_Test, NULL);
+	CMD_RegisterCommand("HT16K33_Char", HT16K33_Char, NULL);
+	CMD_RegisterCommand("HT16K33_Raw", HT16K33_Raw, NULL);
 }
 
 
