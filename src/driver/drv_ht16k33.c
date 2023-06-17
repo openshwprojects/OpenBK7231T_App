@@ -88,7 +88,7 @@ void HT16K33_displayOn()
 //  10      04
 //      08
 //
-static const uint8_t charmap[] = {  //  TODO PROGMEM = slower?
+static const uint8_t charMap7seg[] = {  //  TODO PROGMEM = slower?
 
   0x3F,   //  0
   0x06,   //  1
@@ -112,24 +112,84 @@ static const uint8_t charmap[] = {  //  TODO PROGMEM = slower?
   0x63,   //  degree °
 };
 
-void HT16K33_writePos(uint8_t pos, uint8_t mask)
+unsigned short convert16seg(char c)
+{
+	unsigned short c2;
+	switch (c)
+	{
+	case ' ': c2 = 0x0000; break;
+	case '.': c2 = 0x4000; break;
+	case '+': c2 = 0x12C0; break;
+	case '-': c2 = 0x00C0; break;
+	case '*': c2 = 0x3FC0; break;
+	case '/': c2 = 0x0C00; break;
+	case '=': c2 = 0x00C8; break;
+	case '>': c2 = 0x0900; break;
+	case '<': c2 = 0x2400; break;
+	case '[': c2 = 0x0039; break;
+	case ']': c2 = 0x000F; break;
+		//---------------------------
+	case '0': c2 = 0x0C3F; break;
+	case '1': c2 = 0x0406; break;
+	case '2': c2 = 0x00DB; break;
+	case '3': c2 = 0x008F; break;
+	case '4': c2 = 0x00E6; break;
+	case '5': c2 = 0x00ED; break;
+	case '6': c2 = 0x00FD; break;
+	case '7': c2 = 0x0007; break;
+	case '8': c2 = 0x00FF; break;
+	case '9': c2 = 0x00EF; break;
+		//---------------------------
+	case 'A': c2 = 0x00F7; break;
+	case 'B': c2 = 0x128F; break;
+	case 'C': c2 = 0x0039; break;
+	case 'D': c2 = 0x120F; break;
+	case 'E': c2 = 0x00F9; break;
+	case 'F': c2 = 0x00F1; break;
+	case 'G': c2 = 0x00BD; break;
+	case 'H': c2 = 0x00F6; break;
+	case 'I': c2 = 0x1209; break;
+	case 'J': c2 = 0x001E; break;
+	case 'K': c2 = 0x2470; break;
+	case 'L': c2 = 0x0038; break;
+	case 'M': c2 = 0x0536; break;
+	case 'N': c2 = 0x2136; break;
+	case 'O': c2 = 0x003F; break;
+	case 'P': c2 = 0x00F3; break;
+	case 'Q': c2 = 0x203F; break;
+	case 'R': c2 = 0x20F3; break;
+	case 'S': c2 = 0x018D; break;
+	case 'T': c2 = 0x1201; break;
+	case 'U': c2 = 0x003E; break;
+	case 'V': c2 = 0x0C30; break;
+	case 'W': c2 = 0x2836; break;
+	case 'X': c2 = 0x2D00; break;
+	case 'Y': c2 = 0x1500; break;
+	case 'Z': c2 = 0x0C09;
+	}
+	return c2;
+}
+
+
+void HT16K33_writePos(uint8_t pos, unsigned short mask)
 {
 	Soft_I2C_Start(&g_softI2C, g_addr);
 	Soft_I2C_WriteByte(&g_softI2C, pos*2);
-	Soft_I2C_WriteByte(&g_softI2C, mask);
-	Soft_I2C_WriteByte(&g_softI2C, 0);
+	Soft_I2C_WriteByte(&g_softI2C, mask & 0x00FF);
+	Soft_I2C_WriteByte(&g_softI2C, (mask & 0xFF00) >> 8);
 	Soft_I2C_Stop(&g_softI2C);
 }
-void HT16K33_display(uint8_t *array, uint8_t point)
+void HT16K33_display(const char *txt, uint8_t point)
 {
-	//  debug to Serial
-	//  dumpSerial(array, point);
-	//  dumpSerial();
+	int i = 0;
+	unsigned short code;
 
-	HT16K33_writePos(0, charmap[array[0]]);
-	HT16K33_writePos(1, charmap[array[1]]);
-	HT16K33_writePos(2, charmap[array[2]]);
-	HT16K33_writePos(3, charmap[array[3]]);
+	while (*txt) {
+		code = convert16seg(*txt);
+
+		HT16K33_writePos(i,code);
+		txt++;
+	}
 }
 void HT16K33_displayOff()
 {
@@ -139,8 +199,7 @@ void HT16K33_displayOff()
 
 void HT16K33_displayClear()
 {
-	uint8_t x[4] = { HT16K33_SPACE, HT16K33_SPACE, HT16K33_SPACE, HT16K33_SPACE };
-	HT16K33_display(x,4);
+	HT16K33_display("    ",4);
 	//HT16K33_displayColon(false);
 }
 commandResult_t HT16K33_Test(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -157,14 +216,27 @@ commandResult_t HT16K33_Test(const void* context, const char* cmd, const char* a
 	HT16K33_displayOn();
 	rtos_delay_milliseconds(25);
 	//HT16K33_displayClear();
-	uint8_t x[4] = { HT16K33_0, HT16K33_1, HT16K33_2, HT16K33_3 };
 	rtos_delay_milliseconds(25);
-	HT16K33_display(x, 4);
+	HT16K33_display("1234", 4);
 	rtos_delay_milliseconds(25);
 	HT16K33_brightness(8);
 
 	return CMD_RES_OK;
 }
+commandResult_t HT16K33_Print(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 1) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	const char *s = Tokenizer_GetArg(0);
+
+	HT16K33_display(s, 4);
+
+	return CMD_RES_OK;
+}
+
 commandResult_t HT16K33_Char(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int pos, val;
 
@@ -176,7 +248,7 @@ commandResult_t HT16K33_Char(const void* context, const char* cmd, const char* a
 	pos = Tokenizer_GetArgInteger(0);
 	val = Tokenizer_GetArgInteger(1);
 
-	HT16K33_writePos(pos, charmap[val]);
+	HT16K33_writePos(pos, charMap7seg[val]);
 
 	return CMD_RES_OK;
 }
@@ -202,6 +274,7 @@ void HT16K33_Init() {
 	CMD_RegisterCommand("HT16K33_Test", HT16K33_Test, NULL);
 	CMD_RegisterCommand("HT16K33_Char", HT16K33_Char, NULL);
 	CMD_RegisterCommand("HT16K33_Raw", HT16K33_Raw, NULL);
+	CMD_RegisterCommand("HT16K33_Print", HT16K33_Print, NULL);
 }
 
 
