@@ -268,7 +268,45 @@ commandResult_t HT16K33_Raw(const void* context, const char* cmd, const char* ar
 
 	return CMD_RES_OK;
 }
+commandResult_t HT16K33_Brightness(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int val;
 
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 1) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	val = Tokenizer_GetArgInteger(0);
+
+	HT16K33_brightness(val);
+
+	return CMD_RES_OK;
+}
+commandResult_t HT16K33_Blink(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int type;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 1) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	type = Tokenizer_GetArgInteger(0);
+
+	if (type == 0) {
+		HT16K33_WriteCmd(HT16K33_BLINKOFF);
+	}
+	else if (type == 1) {
+		HT16K33_WriteCmd(HT16K33_BLINKON0_5HZ);
+	}
+	else if (type == 2) {
+		HT16K33_WriteCmd(HT16K33_BLINKON1HZ);
+	}
+	else {
+		HT16K33_WriteCmd(HT16K33_BLINKON2HZ);
+	}
+
+	return CMD_RES_OK;
+}
 // backlog startDriver HT16K33; HT16K33_Test
 void HT16K33_Init() {
 
@@ -276,6 +314,12 @@ void HT16K33_Init() {
 	CMD_RegisterCommand("HT16K33_Char", HT16K33_Char, NULL);
 	CMD_RegisterCommand("HT16K33_Raw", HT16K33_Raw, NULL);
 	CMD_RegisterCommand("HT16K33_Print", HT16K33_Print, NULL);
+	CMD_RegisterCommand("HT16K33_Brightness", HT16K33_Brightness, NULL);
+	CMD_RegisterCommand("HT16K33_Blink", HT16K33_Blink, NULL);
 }
 
 
+#define HT16K33_BLINKON0_5HZ    0x87
+#define HT16K33_BLINKON1HZ      0x85
+#define HT16K33_BLINKON2HZ      0x83
+#define HT16K33_BLINKOFF        0x81
