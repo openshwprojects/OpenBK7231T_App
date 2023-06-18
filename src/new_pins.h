@@ -818,6 +818,13 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_SmokePercent,
+	//chandetail:{"name":"Illuminance",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Illuminance in Lux",
+	//chandetail:"enum":"ChType_Illuminance",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Illuminance,
 		
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",

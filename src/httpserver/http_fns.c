@@ -480,6 +480,13 @@ int http_fn_index(http_request_t* request) {
 			poststr(request, "</td></tr>");
 
 		}
+		else if (channelType == ChType_Illuminance) {
+			iValue = CHANNEL_Get(i);
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "Illuminance (%s) = %i Lux", CHANNEL_GetLabel(i), iValue);
+			poststr(request, "</td></tr>");
+		}
 		else if (channelType == ChType_ReadOnly) {
 			iValue = CHANNEL_Get(i);
 
@@ -1860,6 +1867,15 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			case ChType_SmokePercent:
 			{
 				dev_info = hass_init_sensor_device_info(SMOKE_SENSOR, i, -1, -1);
+				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+				hass_free_device_info(dev_info);
+
+				discoveryQueued = true;
+			}
+			break;
+			case ChType_Illuminance:
+			{
+				dev_info = hass_init_sensor_device_info(ILLUMINANCE_SENSOR, i, -1, -1);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 
