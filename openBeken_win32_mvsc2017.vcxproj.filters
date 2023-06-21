@@ -1276,6 +1276,9 @@
     <ClInclude Include="src\driver\drv_sgp.h">
       <Filter>Drv</Filter>
     </ClInclude>
+    <ClInclude Include="src\driver\drv_ht16k33.h">
+      <Filter>Drv</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\include\net_param_pub.h" />

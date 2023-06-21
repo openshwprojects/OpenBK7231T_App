@@ -24,8 +24,12 @@ nfd_d.lib
 /sim_lastPublish_long.txt
 /sim_lastPublishes.txt
 /sim_lastPublish.txt
+/lastHTTPPacket.txt
 /lastMQTTPublishSentByOBK.txt
 *.sln
 
 # MacOS ignores
 .DS_Store
+
+# MSVC
+enc_temp_folder/**

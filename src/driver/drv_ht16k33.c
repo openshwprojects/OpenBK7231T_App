@@ -46,6 +46,7 @@ void HT16K33_displayOn()
 //  10      04
 //      08
 //
+#if 0
 static const uint8_t charMap7seg[] = {
 
   0x3F,   //  0
@@ -69,7 +70,7 @@ static const uint8_t charMap7seg[] = {
   0x61,   //  TOP_C
   0x63,   //  degree °
 };
-
+#endif
 unsigned short convert16seg(char c)
 {
 	unsigned short c2;
