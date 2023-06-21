@@ -59,7 +59,9 @@ addEventHandler LEDState 0 backlog toggler_enable0 0; toggler_enable1 0;
 // Comment out if you don't want it!
 addEventHandler LEDState 1 backlog toggler_enable0 1; toggler_enable1 1; 
 
-
+To set startup value, use:
+toggler_set0 50
+toggler_enable0 1
 
 */
 

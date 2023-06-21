@@ -7,55 +7,12 @@
 #include "../mqtt/new_mqtt.h"
 #include "../logging/logging.h"
 #include "drv_local.h"
-#include "drv_uart.h"
-#include "../httpserver/new_http.h"
+#include "drv_ht16k33.h"
 #include "../hal/hal_pins.h"
 
 static softI2C_t g_softI2C;
 static byte g_addr = 0xE0;
 
-
-//  Characters
-#define HT16K33_0                0
-#define HT16K33_1                1
-#define HT16K33_2                2
-#define HT16K33_3                3
-#define HT16K33_4                4
-#define HT16K33_5                5
-#define HT16K33_6                6
-#define HT16K33_7                7
-#define HT16K33_8                8
-#define HT16K33_9                9
-#define HT16K33_A                10
-#define HT16K33_B                11
-#define HT16K33_C                12
-#define HT16K33_D                13
-#define HT16K33_E                14
-#define HT16K33_F                15
-#define HT16K33_SPACE            16
-#define HT16K33_MINUS            17
-#define HT16K33_TOP_C            18     //  c
-#define HT16K33_DEGREE           19     //  °
-#define HT16K33_NONE             99
-
-
-//  Commands
-#define HT16K33_ON              0x21  //  0 = off   1 = on
-#define HT16K33_STANDBY         0x20  //  bit xxxxxxx0
-
-//  bit pattern 1000 0xxy
-//  y    =  display on / off
-//  xx   =  00=off     01=2Hz     10 = 1Hz     11 = 0.5Hz
-#define HT16K33_DISPLAYON       0x81
-#define HT16K33_DISPLAYOFF      0x80
-#define HT16K33_BLINKON0_5HZ    0x87
-#define HT16K33_BLINKON1HZ      0x85
-#define HT16K33_BLINKON2HZ      0x83
-#define HT16K33_BLINKOFF        0x81
-
-//  bit pattern 1110 xxxx
-//  xxxx    =  0000 .. 1111 (0 - F)
-#define HT16K33_BRIGHTNESS      0xE0
 
 uint8_t _bright = 0x0F;
 
@@ -81,6 +38,7 @@ void HT16K33_displayOn()
 
 //
 //  HEX codes 7 segment
+//	Currently unused!
 //
 //      01
 //  20      02
@@ -88,7 +46,7 @@ void HT16K33_displayOn()
 //  10      04
 //      08
 //
-static const uint8_t charMap7seg[] = {  //  TODO PROGMEM = slower?
+static const uint8_t charMap7seg[] = {
 
   0x3F,   //  0
   0x06,   //  1
@@ -249,7 +207,7 @@ commandResult_t HT16K33_Char(const void* context, const char* cmd, const char* a
 	pos = Tokenizer_GetArgInteger(0);
 	val = Tokenizer_GetArgInteger(1);
 
-	HT16K33_writePos(pos, charMap7seg[val]);
+	HT16K33_writePos(pos, convert16seg(val));
 
 	return CMD_RES_OK;
 }
@@ -308,6 +266,7 @@ commandResult_t HT16K33_Blink(const void* context, const char* cmd, const char* 
 	return CMD_RES_OK;
 }
 // backlog startDriver HT16K33; HT16K33_Test
+// backlog startDriver HT16K33; HT16K33_Print Help
 void HT16K33_Init() {
 
 	CMD_RegisterCommand("HT16K33_Test", HT16K33_Test, NULL);
@@ -317,9 +276,3 @@ void HT16K33_Init() {
 	CMD_RegisterCommand("HT16K33_Brightness", HT16K33_Brightness, NULL);
 	CMD_RegisterCommand("HT16K33_Blink", HT16K33_Blink, NULL);
 }
-
-
-#define HT16K33_BLINKON0_5HZ    0x87
-#define HT16K33_BLINKON1HZ      0x85
-#define HT16K33_BLINKON2HZ      0x83
-#define HT16K33_BLINKOFF        0x81
