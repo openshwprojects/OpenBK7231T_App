@@ -348,6 +348,7 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 	int lfsres;
 	int total = 0;
 	lfs_file_t* file;
+	char *args;
 
 	// don't start LFS just because we're trying to read a file -
 	// it won't exist anyway
@@ -365,6 +366,12 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 	memset(file, 0, sizeof(lfs_file_t));
 
 	strcpy(fpath, request->url + strlen("api/lfs/"));
+
+	// strip HTTP args with ?
+	args = strchr(fpath, '?');
+	if (args) {
+		*args = 0;
+	}
 
 	ADDLOG_DEBUG(LOG_FEATURE_API, "LFS read of %s", fpath);
 	lfsres = lfs_file_open(&lfs, file, fpath, LFS_O_RDONLY);
