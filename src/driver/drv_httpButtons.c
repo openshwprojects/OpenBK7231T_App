@@ -87,11 +87,17 @@ setButtonLabel 1 "Set Red 50% brightness"
 setButtonCommand 1 "backlog led_basecolor_rgb FF0000; led_dimmer 50; led_enableAll 1"
 //setButtonColor 1 "blue"
 
-
-
-
-
 */
+// Usage for making LFS page link :
+//startDriver httpButtons
+//setButtonEnabled 0 1
+//setButtonLabel 0 "Open Config"
+//setButtonCommand 0 "*/api/lfs/cfg.html"
+//setButtonColor 0 "#FF0000"
+
+
+
+
 
 
 
@@ -114,6 +120,7 @@ void DRV_HTTPButtons_ProcessChanges(http_request_t *request) {
 void DRV_HTTPButtons_AddToHtmlPage(http_request_t *request) {
 	int i;
 	const char *c;
+	const char *action;
 
 	for (i = 0; i < g_buttonCount; i++) {
 		httpButton_t *bt = g_buttons[i];
@@ -126,13 +133,22 @@ void DRV_HTTPButtons_AddToHtmlPage(http_request_t *request) {
 
 		hprintf255(request, "<tr>");
 
-		c = "";		
+		c = "";
 		if (!bt->color[0]) {
 			c = "bgrn";
 		}
+
+		action = bt->command;
+		poststr(request, "<td><form action=\"");
+		if (action[0] == '*') {
+			poststr(request, action+1);
+			poststr(request, "\">");
+		} else {
+			poststr(request, "index");
+			poststr(request, "\">");
+			hprintf255(request, "<input type=\"hidden\" name=\"act\" value=\"%i\">", i);
+		}
 		
-		poststr(request, "<td><form action=\"index\">");
-		hprintf255(request, "<input type=\"hidden\" name=\"act\" value=\"%i\">", i);
 		hprintf255(request, "<input class=\"%s\" ", c);
 		if (bt->color[0]) {
 			hprintf255(request, "style = \"background-color:%s;\" ",bt->color);
