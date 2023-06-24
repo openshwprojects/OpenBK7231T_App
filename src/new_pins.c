@@ -526,12 +526,13 @@ void NEW_button_init(pinButton_s* handle, uint8_t(*pin_level)(void* self), uint8
 	handle->button_level = handle->hal_button_Level(handle);
 	handle->active_level = active_level;
 }
-void CHANNEL_SetAllChannelsByType(int requiredType, int newVal) {
+void CHANNEL_SetFirstChannelByType(int requiredType, int newVal) {
 	int i;
 
 	for (i = 0; i < CHANNEL_MAX; i++) {
 		if (CHANNEL_GetType(i) == requiredType) {
 			CHANNEL_Set(i, newVal, 0);
+			return;
 		}
 	}
 }

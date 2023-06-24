@@ -1145,13 +1145,13 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 					if (sectorLen == 8 || sectorLen == 10) {
 						// voltage
 						iVal = data[ofs + 0 + 4] << 8 | data[ofs + 1 + 4];
-						CHANNEL_SetAllChannelsByType(ChType_Voltage_div10, iVal);
+						CHANNEL_SetFirstChannelByType(ChType_Voltage_div10, iVal);
 						// current
 						iVal = data[ofs + 3 + 4] << 8 | data[ofs + 4 + 4];
-						CHANNEL_SetAllChannelsByType(ChType_Current_div1000, iVal);
+						CHANNEL_SetFirstChannelByType(ChType_Current_div1000, iVal);
 						// power
 						iVal = data[ofs + 6 + 4] << 8 | data[ofs + 7 + 4];
-						CHANNEL_SetAllChannelsByType(ChType_Power, iVal);
+						CHANNEL_SetFirstChannelByType(ChType_Power, iVal);
 					}
 					else {
 
@@ -1166,13 +1166,13 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 					else {
 						// FREQ??
 						iVal = data[ofs + 8 + 4] << 8 | data[ofs + 9 + 4];
-						//CHANNEL_SetAllChannelsByType(QQQQQQ, iVal);
+						//CHANNEL_SetFirstChannelByType(QQQQQQ, iVal);
 						// 06 46 = 1606 => A x 100? ?
 						iVal = data[ofs + 11 + 4] << 8 | data[ofs + 12 + 4];
-						CHANNEL_SetAllChannelsByType(ChType_Current_div1000, iVal);
+						CHANNEL_SetFirstChannelByType(ChType_Current_div1000, iVal);
 						// Voltage?
 						iVal = data[ofs + 13 + 4] << 8 | data[ofs + 14 + 4];
-						CHANNEL_SetAllChannelsByType(ChType_Voltage_div10, iVal);
+						CHANNEL_SetFirstChannelByType(ChType_Voltage_div10, iVal);
 					}
 				}
 				break;

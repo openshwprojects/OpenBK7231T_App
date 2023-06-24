@@ -1193,7 +1193,7 @@ bool CHANNEL_IsPowerRelayChannel(int ch);
 // See: enum channelType_t
 void CHANNEL_SetType(int ch, int type);
 int CHANNEL_GetType(int ch);
-void CHANNEL_SetAllChannelsByType(int requiredType, int newVal);
+void CHANNEL_SetFirstChannelByType(int requiredType, int newVal);
 // CHANNEL_SET_FLAG_*
 void CHANNEL_SetAll(int iVal, int iFlags);
 void CHANNEL_SetStateOnly(int iVal);
