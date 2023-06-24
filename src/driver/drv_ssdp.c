@@ -232,6 +232,7 @@ static const char message_template[] =
 ;
 
 void DRV_WEMO_Send_Advert_To(int mode, struct sockaddr_in *addr);
+void DRV_HUE_Send_Advert_To(struct sockaddr_in *addr);
 
 void DRV_SSDP_SendReply(struct sockaddr_in *addr, const char *message) {
 
@@ -528,6 +529,17 @@ void DRV_SSDP_RunQuickTick() {
 				|| strcasestr(udp_msgbuf, "ssdpsearch:all")
 				|| strcasestr(udp_msgbuf, "ssdp:all")) {
 				DRV_WEMO_Send_Advert_To(2, &addr);
+				return;
+			}
+		}
+		if (DRV_IsRunning("HUE")) {
+			if (strcasestr(udp_msgbuf, ":device:basic:1")
+				|| strcasestr(udp_msgbuf, "upnp:rootdevice")
+				|| strcasestr(udp_msgbuf, "ssdpsearch:all")
+				|| strcasestr(udp_msgbuf, "ssdp:all")) {
+				addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "SSDP has received HUE PACKET");
+				addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, udp_msgbuf);
+				DRV_HUE_Send_Advert_To(&addr);
 				return;
 			}
 		}
