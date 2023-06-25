@@ -539,6 +539,13 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 		sprintf(g_hassBuffer, "~/%d/get", channel);
 		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		break;
+	case ENERGY_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "energy");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "kWh");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_cla", "total_increasing");
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
 	case POWERFACTOR_SENSOR:
 		cJSON_AddStringToObject(info->root, "dev_cla", "power_factor");
 		//cJSON_AddStringToObject(info->root, "unit_of_meas", "W");
