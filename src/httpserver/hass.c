@@ -574,7 +574,7 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 		return NULL;
 	}
 
-	if (type != READONLYLOWMIDHIGH_SENSOR) {
+	if (type != READONLYLOWMIDHIGH_SENSOR && type != ENERGY_SENSOR) {
 		cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
 	}
 
