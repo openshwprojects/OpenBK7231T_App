@@ -66,6 +66,16 @@ static void HlwCfInterrupt(void* context) {
 	g_p_pulses++;
 }
 
+#elif PLATFORM_BL602
+static void HlwCf1Interrupt(void* context) {
+	// not sure whether something should be done to "reset" a trigger as seems necessary with W600
+	g_vc_pulses++;
+}
+static void HlwCfInterrupt(void* context) {
+	// not sure whether something should be done to "reset" a trigger as seems necessary with W600
+	g_p_pulses++;
+}
+
 #else
 
 void HlwCf1Interrupt(unsigned char pinNum) {  // Service Voltage and Current
