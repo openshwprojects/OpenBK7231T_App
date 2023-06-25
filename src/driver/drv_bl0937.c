@@ -22,6 +22,9 @@
 
 #define ELE_HW_TIME 1
 #define HW_TIMER_ID 0
+
+#elif PLATFORM_BL602
+#include "../../../../../../components/fs/vfs/include/hal/soc/gpio.h"
 #else
 
 #endif
@@ -105,8 +108,13 @@ void BL0937_Shutdown_Pins()
 	gpio_int_disable(GPIO_HLW_CF1);
 	gpio_int_disable(GPIO_HLW_CF);
 #elif PLATFORM_BL602
-	gpio_int_disable(GPIO_HLW_CF1);
-	gpio_int_disable(GPIO_HLW_CF);
+	gpio_dev_t dev_cf;
+	// init dev_cf somehow => assume the value is the same as for the BEKEN part for now
+	dev_cf.port = GPIO_HLW_CF;
+	dev_cf.config = GPIO_CONFIG_PULL_UP;
+	hal_gpio_disable_irq(&dev_cf);
+	dev_cf.port = GPIO_HLW_CF1;
+	hal_gpio_disable_irq(&dev_cf);
 #endif
 }
 
@@ -146,11 +154,11 @@ void BL0937_Init_Pins() {
 #elif PLATFORM_BEKEN
 	gpio_int_enable(GPIO_HLW_CF1, IRQ_TRIGGER_FALLING_EDGE, HlwCf1Interrupt);
 #elif PLATFORM_BL602
-	gpio_dev_t dev_cf;
+	gpio_dev_t dev_cf1;
 	// init dev_cf somehow => assume the value is the same as for the BEKEN part for now
 	dev_cf.port = GPIO_HLW_CF1;
 	dev_cf.config = GPIO_CONFIG_PULL_UP;
-	hal_gpio_enable_irq(&dev_cf, IRQ_TRIGGER_FALLING_EDGE, HlwCf1Interrupt, 0);
+	hal_gpio_enable_irq(&dev_cf1, IRQ_TRIGGER_FALLING_EDGE, HlwCf1Interrupt, 0);
 #endif
 
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF);
