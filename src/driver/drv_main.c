@@ -160,21 +160,25 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"SSDP is a discovery protocol, so BK devices can show up in, for example, Windows network section",
 	//drvdetail:"requires":""}
 	{ "SSDP",		DRV_SSDP_Init,		DRV_SSDP_RunEverySecond,	NULL, DRV_SSDP_RunQuickTick, DRV_SSDP_Shutdown, NULL, false },
-	//drvdetail:{"name":"Wemo",
-	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"Wemo emulation for Alexa. You must also start SSDP so it can run, because it depends on SSDP discovery.",
-	//drvdetail:"requires":""}
-	{ "Wemo",		WEMO_Init,		NULL,		WEMO_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
-	//drvdetail:{"name":"Hue",
-	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"Hue emulation for Alexa. You must also start SSDP so it can run, because it depends on SSDP discovery.",
-	//drvdetail:"requires":""}
-	{ "Hue",		HUE_Init,		NULL,		HUE_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 	//drvdetail:{"name":"DGR",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Tasmota Device groups driver. See [forum example](https://www.elektroda.com/rtvforum/topic3925472.html) and TODO-video tutorial (will post on YT soon)",
 	//drvdetail:"requires":""}
 	{ "DGR",		DRV_DGR_Init,		DRV_DGR_RunEverySecond,		DRV_DGR_AppendInformationToHTTPIndexPage, DRV_DGR_RunQuickTick, DRV_DGR_Shutdown, DRV_DGR_OnChannelChanged, false },
+#endif
+#if ENABLE_DRIVER_WEMO
+	//drvdetail:{"name":"Wemo",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Wemo emulation for Alexa. You must also start SSDP so it can run, because it depends on SSDP discovery.",
+	//drvdetail:"requires":""}
+	{ "Wemo",		WEMO_Init,		NULL,		WEMO_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_HUE
+	//drvdetail:{"name":"Hue",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Hue emulation for Alexa. You must also start SSDP so it can run, because it depends on SSDP discovery.",
+	//drvdetail:"requires":""}
+	{ "Hue",		HUE_Init,		NULL,		HUE_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	//drvdetail:{"name":"PWMToggler",
