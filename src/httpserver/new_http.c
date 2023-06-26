@@ -573,6 +573,7 @@ int hprintf255(http_request_t* request, const char* fmt, ...) {
 	return postany(request, tmp, strlen(tmp));
 }
 
+int HUE_APICall(http_request_t* request);
 
 int HTTP_ProcessPacket(http_request_t* request) {
 	int i;
@@ -696,6 +697,12 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	return 0;
 #elif 0
 	return http_fn_empty_url(request);
+#endif
+
+#if ENABLE_DRIVER_HUE
+	if (HUE_APICall(request)) {
+		return 0;
+	}
 #endif
 
 	// look for a callback with this URL and method, or HTTP_ANY

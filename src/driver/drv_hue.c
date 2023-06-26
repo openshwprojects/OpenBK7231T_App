@@ -22,6 +22,7 @@
 
 static char *buffer_out = 0;
 static char *g_serial = 0;
+static char *g_userID = 0;
 static char *g_uid = 0;
 static char *g_bridgeID = 0;
 static int outBufferLen = 0;
@@ -154,11 +155,86 @@ static int HUE_Setup(http_request_t* request) {
 
 	return 0;
 }
+static int HUE_NotImplemented(http_request_t* request) {
+
+	http_setup(request, httpMimeTypeJson);
+	poststr(request, "{}");
+	poststr(request, NULL);
+
+	return 0;
+}
+static int HUE_Authentication(http_request_t* request) {
+
+	http_setup(request, httpMimeTypeJson);
+	hprintf255(request, "[{\"success\":{\"username\":\"%s\"}}]",g_userID);
+	poststr(request, NULL);
+
+	return 0;
+}
+static int HUE_Config_Internal(http_request_t* request) {
+
+	poststr(request, "{\"name\":\"Philips hue\",\"mac\":\"");
+	// TODO: mac
+	poststr(request, "\",\"dhcp\":true,\"ipaddress\":\"");
+	// TODO: ip
+	poststr(request, "\",\"netmask\":\"");
+	// TODO: mask
+	poststr(request, "\",\"gateway\":\"");
+	// TODO: gw
+	poststr(request, "\",\"proxyaddress\":\"none\",\"proxyport\":0,\"bridgeid\":\"");
+	// TODO: bridgeid
+	poststr(request, "\",\"UTC\":\"{dt\",\"whitelist\":{\"");
+	// TODO: id
+	poststr(request, "\":{\"last use date\":\"");
+	// TODO: date
+	poststr(request, "\",\"create date\":\"");
+	// TODO: date
+	poststr(request, "\",\"name\":\"Remote\"}},\"swversion\":\"01041302\",\"apiversion\":\"1.17.0\",\"swupdate\":{\"updatestate\":0,\"url\":\"\",\"text\":\"\",\"notify\": false},\"linkbutton\":false,\"portalservices\":false}");
+	poststr(request, NULL);
+
+	return 0;
+}
+
+
+
+
+static int HUE_GlobalConfig(http_request_t* request) {
+
+	http_setup(request, httpMimeTypeJson);
+	poststr(request, "{\"lights\":{");
+	// TODO: lights
+	poststr(request, "},\"groups\":{},\"schedules\":{},\"config\":");
+	HUE_Config_Internal(request);
+	poststr(request, "}");
+	poststr(request, NULL);
+
+	return 0;
+}
+
+
+// http://192.168.0.213/api/username/lights/1/state
+// http://192.168.0.213/description.xml
+int HUE_APICall(http_request_t* request) {
+	if (g_uid == 0) {
+		// not running
+		return 0;
+	}
+	// skip "api/"
+	const char *api = request->url + 4;
+	int urlLen = strlen(request->url);
+
+	return 0;
+}
+// backlog startDriver SSDP; startDriver HUE
+// 
 void HUE_Init() {
 	char tmp[64];
 	unsigned char mac[8];
 
 	WiFI_GetMacAddress((char*)mac);
+	// username - 
+	snprintf(tmp, sizeof(tmp), "%02X%02X%02X",  mac[3], mac[4], mac[5]);
+	g_userID = strdup(tmp);
 	// SERIAL - as in Tas, full 12 chars of MAC, so 5c cf 7f 13 9f 3d
 	snprintf(tmp, sizeof(tmp), "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 	g_serial = strdup(tmp);
@@ -170,6 +246,7 @@ void HUE_Init() {
 	g_uid = strdup(tmp);
 
 
+	//HTTP_RegisterCallback("/api", HTTP_ANY, HUE_APICall);
 	HTTP_RegisterCallback("/description.xml", HTTP_GET, HUE_Setup);
 }
 
