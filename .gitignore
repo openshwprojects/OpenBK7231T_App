@@ -11,6 +11,7 @@ output/**
 /custom.mk
 /.vs
 .vscode
+recents.json
 node_modules
 Debug*/**
 libs_for_simulator/**
