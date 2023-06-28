@@ -25,6 +25,7 @@ https://developer.tuya.com/en/docs/iot/tuyacloudlowpoweruniversalserialaccesspro
 #include "drv_public.h"
 #include <time.h>
 #include "drv_ntp.h"
+#include "../rgb2hsv.h"
 
 
 #define TUYA_CMD_HEARTBEAT     0x00
@@ -501,6 +502,51 @@ void TuyaMCU_Send_RSSI(int rssi) {
 commandResult_t Cmd_TuyaMCU_Set_DefaultWiFiState(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	g_defaultTuyaMCUWiFiState = atoi(args);
+
+	return CMD_RES_OK;
+}
+// tuyaMCU_sendColor dpID red01 green01 blue01 tuyaRGB
+// tuyaMCU_sendColor 24 1 0 0 1
+// tuyaMCU_sendColor 24 1 0 0 1
+commandResult_t Cmd_TuyaMCU_SendColor(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int toSend;
+	float fR, fG, fB;
+	float hue, sat, val;
+	int dpID, tuyaRGB;
+	char str[16];
+
+	Tokenizer_TokenizeString(args, 0);
+
+	dpID = Tokenizer_GetArgInteger(0);
+	fR = Tokenizer_GetArgFloat(1);
+	fG = Tokenizer_GetArgFloat(2);
+	fB = Tokenizer_GetArgFloat(3);
+	tuyaRGB = Tokenizer_GetArgIntegerDefault(4, 1);
+
+	RGBtoHSV(fR, fG, fB, &hue, &sat, &val);
+	int iHue, iSat, iVal;
+	iHue = (int)hue; //0,359
+	iSat = sat * 100; // 0-100
+	iVal = val * 100; // 0-100
+
+	// this is based on formats figured out in Tasmota
+	switch (tuyaRGB) {
+	case 0: // Uppercase Type 1 payload
+		sprintf(str,  "%04X%04X%04X", iHue, iSat * 10, iVal * 10);
+		break;
+	case 1: // Lowercase Type 1 payload
+		sprintf(str, "%04x%04x%04x", iHue, iSat * 10, iVal * 10);
+		break;
+	case 2: // Uppercase Type 2 payload
+		//snprintf(str, sizeof(str), ("%sFFFF6464"), scolor);
+		break;
+	case 3: // Lowercase Type 2 payload
+		//snprintf(str, sizeof(str), ("%sffff6464"), tolower(scolor, scolor));
+		break;
+	}
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "Color is sent as %s\n", str);
+	TuyaMCU_SendString(dpID, str);
+
 
 	return CMD_RES_OK;
 }
@@ -1776,7 +1822,11 @@ void TuyaMCU_Init()
 	//cmddetail:"fn":"Cmd_TuyaMCU_Send_RSSI","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_defWiFiState", Cmd_TuyaMCU_Set_DefaultWiFiState, NULL);
+
+	CMD_RegisterCommand("tuyaMcu_sendColor", Cmd_TuyaMCU_SendColor, NULL);
 }
+
+
 
 // Door sensor with TuyaMCU version 0 (not 3), so all replies have x00 and not 0x03 byte
 // fakeTuyaPacket 55AA0008000C00010101010101030400010223
