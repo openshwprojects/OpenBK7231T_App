@@ -40,7 +40,6 @@ static byte CFG_CalcChecksum(mainConfig_t *inf) {
 
 	header_size = ((byte*)&inf->version)-((byte*)inf);
 
-#if PLATFORM_W600
 	if (inf->version == MAIN_CFG_VERSION_V3) {
 		configSize = MAGIC_CONFIG_SIZE_V3;
 #if ALLOW_SSID2
@@ -50,7 +49,6 @@ static byte CFG_CalcChecksum(mainConfig_t *inf) {
 #endif
 	}
 	else
-#endif
 	{
 		configSize = sizeof(mainConfig_t);
 	}
