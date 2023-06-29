@@ -343,43 +343,41 @@ void TuyaMCU_SendCommandWithData(byte cmdType, byte* data, int payload_len) {
 	UART_SendByte(check_sum);
 }
 
-void TuyaMCU_SendState(uint8_t id, uint8_t type, uint8_t* value)
+void TuyaMCU_SendStateInternal(uint8_t id, uint8_t type, void* value, int dataLen)
 {
 	uint16_t payload_len = 4;
 	uint8_t payload_buffer[32];
 	payload_buffer[0] = id;
 	payload_buffer[1] = type;
+	payload_buffer[2] = 0x00;
+	payload_buffer[3] = dataLen;
+
+	payload_len += dataLen;
+
+	if (payload_len >= sizeof(payload_buffer)) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU, "Tuya buff overflow");
+		return;
+	}
+	memcpy(payload_buffer + 4, value, dataLen);
+
+	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, payload_buffer, payload_len);
+}
+void TuyaMCU_SendState(uint8_t id, uint8_t type, uint8_t* value)
+{
 	switch (type) {
 	case DP_TYPE_BOOL:
 	case DP_TYPE_ENUM:
-		payload_len += 1;
-		payload_buffer[2] = 0x00;
-		payload_buffer[3] = 0x01;
-		payload_buffer[4] = value[0];
+		TuyaMCU_SendStateInternal(id, type, value, 1);
 		break;
 	case DP_TYPE_VALUE:
-		payload_len += 4;
-		payload_buffer[2] = 0x00;
-		payload_buffer[3] = 0x04;
-		payload_buffer[4] = value[3];
-		payload_buffer[5] = value[2];
-		payload_buffer[6] = value[1];
-		payload_buffer[7] = value[0];
+		TuyaMCU_SendStateInternal(id, type, value, 4);
 		break;
 	case DP_TYPE_STRING:
-		while (*value) {
-			payload_buffer[payload_len] = *value;
-			value++;
-			payload_len++;
-			if (payload_len >= sizeof(payload_buffer)) {
-				addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU, "Tuya str buff overflow");
-				break;
-			}
-		}
+		TuyaMCU_SendStateInternal(id, type, value, strlen((const char*)value));
+		break;
+	case DP_TYPE_RAW:
 		break;
 	}
-
-	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, payload_buffer, payload_len);
 }
 
 void TuyaMCU_SendBool(uint8_t id, bool value)
@@ -532,7 +530,7 @@ commandResult_t Cmd_TuyaMCU_SendColor(const void* context, const char* cmd, cons
 	// this is based on formats figured out in Tasmota
 	switch (tuyaRGB) {
 	case 0: // Uppercase Type 1 payload
-		sprintf(str,  "%04X%04X%04X", iHue, iSat * 10, iVal * 10);
+		sprintf(str, "%04X%04X%04X", iHue, iSat * 10, iVal * 10);
 		break;
 	case 1: // Lowercase Type 1 payload
 		sprintf(str, "%04x%04x%04x", iHue, iSat * 10, iVal * 10);
@@ -774,13 +772,74 @@ commandResult_t TuyaMCU_SendQueryState(const void* context, const char* cmd, con
 	return CMD_RES_OK;
 }
 
+void TuyaMCU_SendStateRawFromString(int dpId, const char *args) {
+	const char *stop;
+	float val;
+	int cur = 0;
+	byte buffer[64];
+
+	while (*args) {
+		if (cur >= sizeof(buffer)) {
+			addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU, "Tuya raw buff overflow");
+			return;
+		}
+		if (*args == ' ') {
+			args++;
+			continue;
+		}
+		if (*args == '$') {
+			stop = args + 1;
+			while (*stop && *stop != '$') {
+				stop++;
+			}
+			CMD_ExpandConstant(args, stop, &val);
+			buffer[cur] = (int)val;
+			cur++;
+
+			if (*stop == 0)
+				break;
+			args = stop + 1;
+			continue;
+		}
+
+		buffer[cur] = hexbyte(args);
+		cur++;
+
+		args += 2;
+	}
+	TuyaMCU_SendStateInternal(dpId, DP_TYPE_RAW, buffer, cur);
+}
+const char *STR_FindArg(const char *s, int arg) {
+	while (1) {
+		while (iswspace(*s)) {
+			if (*s == 0)
+				return "";
+			s++;
+		}
+		arg--;
+		if (arg < 0) {
+			return s;
+		}
+		while (iswspace(*s) == false) {
+			if (*s == 0)
+				return "";
+			s++;
+		}
+	}
+	return 0;
+}
 // tuyaMcu_sendState id type value
 // send boolean true
 // tuyaMcu_sendState 25 1 1
 // send boolean false
 // tuyaMcu_sendState 25 1 0
+// send value 87
+// tuyaMcu_sendState 25 2 87
 // send string 
 // tuyaMcu_sendState 25 3 ff0000646464ff 
+// send raw 
+// tuyaMcu_sendState 25 4 ff$CH300646464ff 
+// tuyaMcu_sendState 2 1 0404010C$CH9$CH10$CH11FF04FEFF0031
 commandResult_t TuyaMCU_SendStateCmd(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int dpId;
 	int dpType;
@@ -800,6 +859,11 @@ commandResult_t TuyaMCU_SendStateCmd(const void* context, const char* cmd, const
 	if (dpType == DP_TYPE_STRING) {
 		valStr = Tokenizer_GetArg(2);
 		TuyaMCU_SendState(dpId, DP_TYPE_STRING, (uint8_t*)valStr);
+	}
+	else if (dpType == DP_TYPE_RAW) {
+		//valStr = Tokenizer_GetArg(2);
+		valStr = STR_FindArg(args, 2);
+		TuyaMCU_SendStateRawFromString(dpId, valStr);
 	}
 	else {
 		value = Tokenizer_GetArgInteger(2);
@@ -1276,7 +1340,7 @@ void TuyaMCU_V0_SendDPCacheReply() {
 	// 12 02 0004 00000001
 	// fnId = 18 Len = 0004 Val V = 1	
 	// 
-	while(map) {
+	while (map) {
 		if (map->bDPCache) {
 			writtenCount++;
 			// dpID
@@ -1394,7 +1458,8 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		if (g_sensorMode) {
 			if (g_tuyaBatteryPoweredState == TM0_STATE_AWAITING_WIFI) {
 				g_tuyaBatteryPoweredState = TM0_STATE_AWAITING_MQTT;
-			} else if (g_tuyaBatteryPoweredState == TM0_STATE_AWAITING_MQTT) {
+			}
+			else if (g_tuyaBatteryPoweredState == TM0_STATE_AWAITING_MQTT) {
 				g_tuyaBatteryPoweredState = TM0_STATE_AWAITING_STATES;
 				g_tuyaNextRequestDelay = 0;
 			}
@@ -1439,10 +1504,10 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 	case TUYA_V0_CMD_OBTAINDPCACHE:
 		// This is sent by TH01
 		// Info:TuyaMCU:TUYAMCU received: 55 AA 00 10 00 02 01 09 1B
-		{
-			TuyaMCU_V0_SendDPCacheReply();
-		}
-		break;
+	{
+		TuyaMCU_V0_SendDPCacheReply();
+	}
+	break;
 	case 0x05:
 		// This was added for this user:
 		// https://www.elektroda.com/rtvforum/topic3937723.html
@@ -1749,7 +1814,7 @@ void TuyaMCU_Init()
 
 	g_resetWiFiEvents = 0;
 	g_tuyaNextRequestDelay = 1;
-	g_tuyaBatteryPoweredState = 0; 
+	g_tuyaBatteryPoweredState = 0;
 	g_tuyaMCUConfirmationsToSend_0x05 = 0;
 	g_tuyaMCUConfirmationsToSend_0x08 = 0;
 
