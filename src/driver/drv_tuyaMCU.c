@@ -811,7 +811,7 @@ void TuyaMCU_SendStateRawFromString(int dpId, const char *args) {
 }
 const char *STR_FindArg(const char *s, int arg) {
 	while (1) {
-		while (iswspace(*s)) {
+		while (isspace(*s)) {
 			if (*s == 0)
 				return "";
 			s++;
@@ -820,7 +820,7 @@ const char *STR_FindArg(const char *s, int arg) {
 		if (arg < 0) {
 			return s;
 		}
-		while (iswspace(*s) == false) {
+		while (isspace(*s) == false) {
 			if (*s == 0)
 				return "";
 			s++;
@@ -838,8 +838,8 @@ const char *STR_FindArg(const char *s, int arg) {
 // send string 
 // tuyaMcu_sendState 25 3 ff0000646464ff 
 // send raw 
-// tuyaMcu_sendState 25 4 ff$CH300646464ff 
-// tuyaMcu_sendState 2 1 0404010C$CH9$CH10$CH11FF04FEFF0031
+// tuyaMcu_sendState 25 4 ff$CH3$00646464ff 
+// tuyaMcu_sendState 2 1 0404010C$CH9$$CH10$$CH11$FF04FEFF0031
 commandResult_t TuyaMCU_SendStateCmd(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int dpId;
 	int dpType;
