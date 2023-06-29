@@ -7,6 +7,8 @@ void Test_TuyaMCU_Basic() {
 	// reset whole device
 	SIM_ClearOBK(0);
 
+	SIM_UART_InitReceiveRingBuffer(2048);
+
 	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
 
 	// This will map TuyaMCU fnID 2 of type Value to channel 15
@@ -97,10 +99,28 @@ void Test_TuyaMCU_Basic() {
 	// OBK sends: 
 	// 55 AA	00	06		00 14	1100001001010050030100F5040100A008000032	64
 	//HEADER	VER = 00	Unk		LEN	fnId = 17 Raw V = 01 01 00 50 03 01 00 F5 04 01 00 A0 08 00 00 32	CHK
-	//CMD_ExecuteCommand("tuyaMcu_sendState 17 0 01010050030100F5040100A008000032", 0);
-	//SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	06		00 14	1100001001010050030100F5040100A008000032	64");
-	//// nothing is sent by OBK at that point
-	//SELFTEST_ASSERT_HAS_UART_EMPTY();
+	CMD_ExecuteCommand("tuyaMcu_sendState 17 0 01010050030100F5040100A008000032", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	06		00 14	1100001001010050030100F5040100A008000032	64");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+
+	// check channel as argument in raw
+	CMD_ExecuteCommand("setChannel 10 1",0);
+	CMD_ExecuteCommand("tuyaMcu_sendState 17 0 $CH10$$CH10$0050030100F5040100A008000032", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	06		00 14	1100001001010050030100F5040100A008000032	64");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+
+	// check channel as argument in raw
+	CMD_ExecuteCommand("setChannel 10 1", 0);
+	CMD_ExecuteCommand("setChannel 11 0", 0);
+	CMD_ExecuteCommand("setChannel 2 0x50", 0);
+	CMD_ExecuteCommand("setChannel 3 0x03", 0);
+	CMD_ExecuteCommand("setChannel 4 0xF5", 0);
+	CMD_ExecuteCommand("tuyaMcu_sendState 17 0 $CH10$$CH10$$CH11$$CH2$$CH3$0100$CH4$040100A008000032", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	06		00 14	1100001001010050030100F5040100A008000032	64");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
 
 	// cause error
 	//SELFTEST_ASSERT_CHANNEL(15, 666);
