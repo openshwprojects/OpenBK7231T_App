@@ -122,6 +122,17 @@ void Test_TuyaMCU_Basic() {
 	// nothing is sent by OBK at that point
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 
+	// check channel as argument in raw
+	CMD_ExecuteCommand("setChannel 10 1", 0);
+	CMD_ExecuteCommand("setChannel 11 0", 0);
+	CMD_ExecuteCommand("setChannel 2 0x50", 0);
+	CMD_ExecuteCommand("setChannel 3 0x03", 0);
+	CMD_ExecuteCommand("setChannel 4 0xF5", 0);
+	CMD_ExecuteCommand("tuyaMcu_sendState 17 0 $CH10$ $CH10$ $CH11$ $CH2$ $CH3$ 01 00 $CH4$ 04 01 00 A0 08 00 00 32", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	06		00 14	1100001001010050030100F5040100A008000032	64");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+
 	// cause error
 	//SELFTEST_ASSERT_CHANNEL(15, 666);
 }
