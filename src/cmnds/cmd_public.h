@@ -44,6 +44,7 @@ commandResult_t CMD_ExecuteCommandArgs(const char* cmd, const char* args, int cm
 // Please remember to free the returned string
 char* CMD_ExpandingStrdup(const char* in);
 commandResult_t CMD_CreateAliasHelper(const char *alias, const char *ocmd);
+const char *CMD_ExpandConstant(const char *s, const char *stop, float *out);
 
 enum EventCode {
 	CMD_EVENT_NONE,
