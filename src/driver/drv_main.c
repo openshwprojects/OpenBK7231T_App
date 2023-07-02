@@ -233,6 +233,11 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"CHT8305 is a Temperature and Humidity sensor with I2C interface.",
 	//drvdetail:"requires":""}
 	{ "CHT8305",	CHT8305_Init,		CHT8305_OnEverySecond,		CHT8305_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	//drvdetail:{"name":"CHT8305",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"CHT8305 is a Temperature and Humidity sensor with I2C interface.",
+	//drvdetail:"requires":""}
+	{ "MCP9808",	MCP9808_Init,		MCP9808_OnEverySecond,		MCP9808_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 	//drvdetail:{"name":"KP18068",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"KP18068 I2C LED driver",

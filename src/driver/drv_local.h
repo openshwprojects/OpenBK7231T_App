@@ -101,6 +101,10 @@ void WEMO_AppendInformationToHTTPIndexPage(http_request_t* request);
 void HUE_Init();
 void HUE_AppendInformationToHTTPIndexPage(http_request_t* request);
 
+void MCP9808_Init();
+void MCP9808_OnEverySecond();
+void MCP9808_AppendInformationToHTTPIndexPage(http_request_t* request);
+
 #define SM2135_DELAY         4
 
 // Software I2C 
