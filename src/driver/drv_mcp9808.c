@@ -37,7 +37,7 @@ uint16_t MCP9808_ReadReg16(uint8_t reg)
 
 	rtos_delay_milliseconds(20);	//give the sensor time to do the conversion
 
-	Soft_I2C_Start(&g_softI2C, reg | 1);
+	Soft_I2C_Start(&g_softI2C, g_addr | 1);
 	Soft_I2C_ReadBytes(&g_softI2C, reply, 2);
 	Soft_I2C_Stop(&g_softI2C);
 
