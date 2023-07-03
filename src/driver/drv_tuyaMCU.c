@@ -364,13 +364,19 @@ void TuyaMCU_SendStateInternal(uint8_t id, uint8_t type, void* value, int dataLe
 }
 void TuyaMCU_SendState(uint8_t id, uint8_t type, uint8_t* value)
 {
+	byte swap[4];
+
 	switch (type) {
 	case DP_TYPE_BOOL:
 	case DP_TYPE_ENUM:
 		TuyaMCU_SendStateInternal(id, type, value, 1);
 		break;
 	case DP_TYPE_VALUE:
-		TuyaMCU_SendStateInternal(id, type, value, 4);
+		swap[0] = value[3];
+		swap[1] = value[2];
+		swap[2] = value[1];
+		swap[3] = value[0];
+		TuyaMCU_SendStateInternal(id, type, swap, 4);
 		break;
 	case DP_TYPE_STRING:
 		TuyaMCU_SendStateInternal(id, type, value, strlen((const char*)value));
