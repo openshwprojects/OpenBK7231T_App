@@ -131,6 +131,17 @@ commandResult_t MCP9808_Adr(const void* context, const char* cmd, const char* ar
 
 	return CMD_RES_OK;
 }
+commandResult_t MCP9808_cycle(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	g_mcp_secondsBetweenMeasurements = Tokenizer_GetArgInteger(0);
+
+
+	return CMD_RES_OK;
+}
 // MCP9808_AlertRange [MinT] [MaxT] [OptionalBActiveHigh]
 // MCP9808_AlertRange 20 26 1
 commandResult_t MCP9808_AlertRange(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -187,7 +198,7 @@ void MCP9808_Init() {
 	//cmddetail:"descr":"This is the interval between measurements in seconds, by default 1. Max is 255.",
 	//cmddetail:"fn":"MCP9808_cycle","file":"drv/drv_MCP98088305.c","requires":"",
 	//cmddetail:"examples":"MCP9808_Cycle 60"}
-	//CMD_RegisterCommand("MCP9808_Cycle", MCP9808_cycle, NULL);
+	CMD_RegisterCommand("MCP9808_Cycle", MCP9808_cycle, NULL);
 
 }
 void MCP9808_OnEverySecond() {
