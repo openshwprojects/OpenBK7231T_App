@@ -1,3 +1,4 @@
+// based on MCP9808_RT by RobTillaart
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
@@ -21,12 +22,22 @@
 #define MCP9808_RES     0x08
 
 static softI2C_t g_softI2C;
-static byte g_addr = 0x48;
+static byte g_addr = 30;
 static float g_temp = 0.0f;
 static int g_mcp_secondsBetweenMeasurements = 10;
 static int g_mcp_secondsUntilNextMeasurement = 0;
 
 
+void MCP9808_WriteReg16(uint8_t reg, uint16_t value)
+{
+	if (reg > MCP9808_RES)
+		return;      //  see p.16
+	Soft_I2C_Start(&g_softI2C, g_addr);
+	Soft_I2C_WriteByte(&g_softI2C, reg);
+	Soft_I2C_WriteByte(&g_softI2C, value >> 8);
+	Soft_I2C_WriteByte(&g_softI2C, value & 0xFF);
+	Soft_I2C_Stop(&g_softI2C);
+}
 uint16_t MCP9808_ReadReg16(uint8_t reg)
 {
 	byte reply[2];
@@ -53,6 +64,57 @@ float MCP9808_ReadFloat(uint8_t reg)
 		return ((val & 0x0FFF) * 0.0625) - 256.0;
 	}
 	return (val & 0x0FFF) * 0.0625;
+}
+float MCP9808_WriteFloat(uint8_t reg, float f)
+{
+	bool neg = (f < 0.0);
+	if (neg)
+		f = -f;
+	uint16_t val = ((uint16_t)(f * 4 + 0.5)) * 4;
+	if (neg)
+		val |= 0x1000;
+	MCP9808_WriteReg16(reg, val);
+}
+
+void MCP9808_SetConfigRegister(uint16_t configuration)
+{
+	MCP9808_WriteReg16(MCP9808_CONFIG, configuration);
+}
+
+uint16_t MCP9808_GetConfigRegister()
+{
+	return MCP9808_ReadReg16(MCP9808_CONFIG);
+}
+
+void  MCP9808_SetTupper(float temperature)
+{
+	MCP9808_WriteFloat(MCP9808_TUPPER, temperature);
+}
+
+float MCP9808_GetTupper()
+{
+	return MCP9808_ReadFloat(MCP9808_TUPPER);
+}
+
+void  MCP9808_SetTlower(float temperature)
+{
+	MCP9808_WriteFloat(MCP9808_TLOWER, temperature);
+}
+
+
+float MCP9808_GetTlower()
+{
+	return MCP9808_ReadFloat(MCP9808_TLOWER);
+}
+void  MCP9808_SetTcritical(float temperature)
+{
+	MCP9808_WriteFloat(MCP9808_TCRIT, temperature);
+}
+
+
+float MCP9808_GetTcritical()
+{
+	return MCP9808_ReadFloat(MCP9808_TCRIT);
 }
 
 void MCP9808_Measure() {
