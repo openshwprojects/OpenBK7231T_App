@@ -131,8 +131,11 @@ commandResult_t MCP9808_Adr(const void* context, const char* cmd, const char* ar
 
 	return CMD_RES_OK;
 }
+// MCP9808_AlertRange [MinT] [MaxT] [OptionalBActiveHigh]
+// MCP9808_AlertRange 20 26 1
 commandResult_t MCP9808_AlertRange(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	float min, max;
+	int bActiveHigh;
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
@@ -140,6 +143,7 @@ commandResult_t MCP9808_AlertRange(const void* context, const char* cmd, const c
 	}
 	min = Tokenizer_GetArgFloat(0);
 	max = Tokenizer_GetArgFloat(1);
+	bActiveHigh = Tokenizer_GetArgIntegerDefault(2, 0);
 	MCP9808_SetTlower(min);
 	MCP9808_SetTupper(max);
 	MCP9808_SetTcritical(max);
@@ -147,8 +151,12 @@ commandResult_t MCP9808_AlertRange(const void* context, const char* cmd, const c
 	// SET ALERT PARAMETERS
 	uint16_t cfg = MCP9808_GetConfigRegister();
 	cfg &= ~0x0001;      // set comparator mode
-	// cfg &= ~0x0002;      // set polarity HIGH
-	cfg |= 0x0002;       // set polarity LOW
+	if (bActiveHigh) {
+		cfg &= ~0x0002;      // set polarity HIGH
+	}
+	else {
+		cfg |= 0x0002;       // set polarity LOW
+	}
 	cfg &= ~0x0004;      // use upper lower and critical
 	cfg |= 0x0008;       // enable alert
 	MCP9808_SetConfigRegister(cfg);
