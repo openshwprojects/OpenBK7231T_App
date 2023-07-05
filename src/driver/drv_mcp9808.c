@@ -174,6 +174,36 @@ commandResult_t MCP9808_AlertRange(const void* context, const char* cmd, const c
 
 	return CMD_RES_OK;
 }
+// MCP9808_AlertMin [MinT] [OptionalBActiveHigh]
+// MCP9808_AlertMin 20 1
+commandResult_t MCP9808_AlertMin(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	float min;
+	int bActiveHigh;
+
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	min = Tokenizer_GetArgFloat(0);
+	bActiveHigh = Tokenizer_GetArgIntegerDefault(1, 0);
+	MCP9808_SetTcritical(min);
+
+	// SET ALERT PARAMETERS
+	uint16_t cfg = MCP9808_GetConfigRegister();
+	cfg &= ~0x0001;      // set comparator mode
+	if (bActiveHigh) {
+		cfg &= ~0x0002;      // set polarity HIGH
+	}
+	else {
+		cfg |= 0x0002;       // set polarity LOW
+	}
+	// TA > TCRIT only
+	cfg |= 0x0004;      // use only critical
+	cfg |= 0x0008;       // enable alert
+	MCP9808_SetConfigRegister(cfg);
+
+	return CMD_RES_OK;
+}
 // startDriver MCP9808
 void MCP9808_Init() {
 
@@ -186,8 +216,9 @@ void MCP9808_Init() {
 	Soft_I2C_PreInit(&g_softI2C);
 
 	CMD_RegisterCommand("MCP9808_Adr", MCP9808_Adr, NULL);
-
+	
 	CMD_RegisterCommand("MCP9808_AlertRange", MCP9808_AlertRange, NULL);
+	CMD_RegisterCommand("MCP9808_AlertMin", MCP9808_AlertMin, NULL);
 
 	//cmddetail:{"name":"MCP9808_Calibrate","args":"",
 	//cmddetail:"descr":"Calibrate the MCP9808 Sensor as Tolerance is +/-2 degrees C.",
