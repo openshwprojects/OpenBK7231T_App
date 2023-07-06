@@ -21,6 +21,7 @@
 #define MCP9808_DID     0x07
 #define MCP9808_RES     0x08
 
+static int g_targetChannel = -1;
 static softI2C_t g_softI2C;
 static byte g_addr = 30;
 static float g_temp = 0.0f;
@@ -119,7 +120,15 @@ float MCP9808_GetTcritical()
 
 void MCP9808_Measure() {
 	g_temp = MCP9808_ReadFloat(MCP9808_TA);
-
+	if (g_targetChannel >= 0) {
+		int type = CHANNEL_GetType(g_targetChannel);
+		if (type == ChType_Temperature_div10) {
+			CHANNEL_Set(g_targetChannel, g_temp * 10, 0);
+		}
+		else {
+			CHANNEL_Set(g_targetChannel, g_temp, 0);
+		}
+	}
 }
 commandResult_t MCP9808_Adr(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
@@ -204,14 +213,17 @@ commandResult_t MCP9808_AlertMin(const void* context, const char* cmd, const cha
 
 	return CMD_RES_OK;
 }
-// startDriver MCP9808
+// startDriver MCP9808 [ClkPin] [DatPin] [OptionalTargetChannel]
+// startDriver MCP9808 26 24
+// startDriver MCP9808 26 24 1
+// startDriver MCP9808 12 13 1
 void MCP9808_Init() {
 
 	uint8_t buff[4];
 
-
-	g_softI2C.pin_clk = 26;
-	g_softI2C.pin_data = 24;
+	g_softI2C.pin_clk = Tokenizer_GetArgIntegerDefault(1, 26);
+	g_softI2C.pin_data = Tokenizer_GetArgIntegerDefault(2, 24);
+	g_targetChannel = Tokenizer_GetArgIntegerDefault(3,-1);
 
 	Soft_I2C_PreInit(&g_softI2C);
 
@@ -219,6 +231,7 @@ void MCP9808_Init() {
 	
 	CMD_RegisterCommand("MCP9808_AlertRange", MCP9808_AlertRange, NULL);
 	CMD_RegisterCommand("MCP9808_AlertMin", MCP9808_AlertMin, NULL);
+
 
 	//cmddetail:{"name":"MCP9808_Calibrate","args":"",
 	//cmddetail:"descr":"Calibrate the MCP9808 Sensor as Tolerance is +/-2 degrees C.",
