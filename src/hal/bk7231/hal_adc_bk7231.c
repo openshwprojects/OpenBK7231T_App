@@ -17,12 +17,12 @@ void turnon_PA_in_temp_dect(void);
 
 static int adcToGpio[] = {
 	-1,		// ADC0 - VBAT
-	4, //GPIO4,	// ADC1
-	5, //GPIO5,	// ADC2
+	26, //GPIO26,	// ADC1
+	24, //GPIO24,	// ADC2
 	23,//GPIO23, // ADC3
-	2,//GPIO2,	// ADC4
-	3,//GPIO3,	// ADC5
-	12,//GPIO12, // ADC6
+	28,//GPIO28,	// ADC4
+	22,//GPIO22,	// ADC5
+	21,//GPIO21, // ADC6
 	13,//GPIO13, // ADC7
 };
 static int c_adcToGpio = sizeof(adcToGpio)/sizeof(adcToGpio[0]);
