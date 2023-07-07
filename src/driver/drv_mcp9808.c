@@ -27,7 +27,7 @@ static byte g_addr = 30;
 static float g_temp = 0.0f;
 static int g_mcp_secondsBetweenMeasurements = 10;
 static int g_mcp_secondsUntilNextMeasurement = 0;
-
+static float g_mcp_userCalibrationDelta = 0.0f;
 
 void MCP9808_WriteReg16(uint8_t reg, uint16_t value)
 {
@@ -119,7 +119,7 @@ float MCP9808_GetTcritical()
 }
 
 void MCP9808_Measure() {
-	g_temp = MCP9808_ReadFloat(MCP9808_TA);
+	g_temp = MCP9808_ReadFloat(MCP9808_TA) + g_mcp_userCalibrationDelta;
 	if (g_targetChannel >= 0) {
 		int type = CHANNEL_GetType(g_targetChannel);
 		if (type == ChType_Temperature_div10) {
@@ -137,6 +137,17 @@ commandResult_t MCP9808_Adr(const void* context, const char* cmd, const char* ar
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	g_addr = Tokenizer_GetArgInteger(0);
+
+	return CMD_RES_OK;
+}
+commandResult_t MCP9808_Calibrate(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	g_mcp_userCalibrationDelta = Tokenizer_GetArgFloat(0);
+
 
 	return CMD_RES_OK;
 }
@@ -213,6 +224,7 @@ commandResult_t MCP9808_AlertMin(const void* context, const char* cmd, const cha
 
 	return CMD_RES_OK;
 }
+// driver initialization
 // startDriver MCP9808 [ClkPin] [DatPin] [OptionalTargetChannel]
 // startDriver MCP9808 26 24
 // startDriver MCP9808 26 24 1
@@ -233,15 +245,7 @@ void MCP9808_Init() {
 	CMD_RegisterCommand("MCP9808_AlertMin", MCP9808_AlertMin, NULL);
 
 
-	//cmddetail:{"name":"MCP9808_Calibrate","args":"",
-	//cmddetail:"descr":"Calibrate the MCP9808 Sensor as Tolerance is +/-2 degrees C.",
-	//cmddetail:"fn":"MCP9808_Calibrate","file":"driver/drv_MCP98088305.c","requires":"",
-	//cmddetail:"examples":"SHT_Calibrate -4 10"}
-	//CMD_RegisterCommand("MCP9808_Calibrate", MCP9808_Calibrate, NULL);
-	//cmddetail:{"name":"MCP9808_Cycle","args":"[int]",
-	//cmddetail:"descr":"This is the interval between measurements in seconds, by default 1. Max is 255.",
-	//cmddetail:"fn":"MCP9808_cycle","file":"drv/drv_MCP98088305.c","requires":"",
-	//cmddetail:"examples":"MCP9808_Cycle 60"}
+	CMD_RegisterCommand("MCP9808_Calibrate", MCP9808_Calibrate, NULL);
 	CMD_RegisterCommand("MCP9808_Cycle", MCP9808_cycle, NULL);
 
 }
