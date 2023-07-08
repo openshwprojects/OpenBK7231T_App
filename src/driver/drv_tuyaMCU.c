@@ -190,6 +190,10 @@ static int g_sendQueryStatePackets = 0;
 // See: https://imgur.com/a/mEfhfiA
 static byte g_defaultTuyaMCUWiFiState = 0x00;
 
+// LED lighitng 
+// See: https://www.elektroda.com/rtvforum/viewtopic.php?p=20646359#20646359
+static short g_tuyaMCUled_dpID = -1;
+static short g_tuyaMCUled_format = -1;
 
 // battery powered device state
 enum TuyaMCUV0State {
@@ -509,23 +513,9 @@ commandResult_t Cmd_TuyaMCU_Set_DefaultWiFiState(const void* context, const char
 
 	return CMD_RES_OK;
 }
-// tuyaMCU_sendColor dpID red01 green01 blue01 tuyaRGB
-// tuyaMCU_sendColor 24 1 0 0 1
-// tuyaMCU_sendColor 24 1 0 0 1
-commandResult_t Cmd_TuyaMCU_SendColor(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	int toSend;
-	float fR, fG, fB;
-	float hue, sat, val;
-	int dpID, tuyaRGB;
+void TuyaMCU_SendColor(int dpID, float fR, float fG, float fB, int tuyaRGB) {
 	char str[16];
-
-	Tokenizer_TokenizeString(args, 0);
-
-	dpID = Tokenizer_GetArgInteger(0);
-	fR = Tokenizer_GetArgFloat(1);
-	fG = Tokenizer_GetArgFloat(2);
-	fB = Tokenizer_GetArgFloat(3);
-	tuyaRGB = Tokenizer_GetArgIntegerDefault(4, 1);
+	float hue, sat, val;
 
 	RGBtoHSV(fR, fG, fB, &hue, &sat, &val);
 	int iHue, iSat, iVal;
@@ -550,7 +540,37 @@ commandResult_t Cmd_TuyaMCU_SendColor(const void* context, const char* cmd, cons
 	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "Color is sent as %s\n", str);
 	TuyaMCU_SendString(dpID, str);
+}
+// tuyaMCU_sendColor dpID red01 green01 blue01 tuyaRGB
+// tuyaMCU_sendColor 24 1 0 0 1
+// tuyaMCU_sendColor 24 1 0 0 1
+commandResult_t Cmd_TuyaMCU_SendColor(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int toSend;
+	float fR, fG, fB;
+	int dpID, tuyaRGB;
 
+	Tokenizer_TokenizeString(args, 0);
+
+	dpID = Tokenizer_GetArgInteger(0);
+	fR = Tokenizer_GetArgFloat(1);
+	fG = Tokenizer_GetArgFloat(2);
+	fB = Tokenizer_GetArgFloat(3);
+	tuyaRGB = Tokenizer_GetArgIntegerDefault(4, 1);
+
+	TuyaMCU_SendColor(dpID, fR, fG, fB, tuyaRGB);
+
+	return CMD_RES_OK;
+}
+// tuyaMCU_setupLED dpID TasFormat
+commandResult_t Cmd_TuyaMCU_SetupLED(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	g_tuyaMCUled_dpID = Tokenizer_GetArgInteger(0);
+	g_tuyaMCUled_format = Tokenizer_GetArgInteger(1);
 
 	return CMD_RES_OK;
 }
@@ -1804,7 +1824,17 @@ commandResult_t TuyaMCU_SetBaudRate(const void* context, const char* cmd, const 
 
 	return CMD_RES_OK;
 }
-
+void TuyaMCU_OnRGBCWChange(const float *rgbcw) {
+	if (g_tuyaMCUled_dpID == -1) {
+		return;
+	}
+	TuyaMCU_SendColor(g_tuyaMCUled_dpID, rgbcw[0], rgbcw[1], rgbcw[2], g_tuyaMCUled_format);
+}
+bool TuyaMCU_IsLEDRunning() {
+	if (g_tuyaMCUled_dpID == -1)
+		return false;
+	return true;
+}
 
 void TuyaMCU_Init()
 {
@@ -1895,6 +1925,8 @@ void TuyaMCU_Init()
 	CMD_RegisterCommand("tuyaMcu_defWiFiState", Cmd_TuyaMCU_Set_DefaultWiFiState, NULL);
 
 	CMD_RegisterCommand("tuyaMcu_sendColor", Cmd_TuyaMCU_SendColor, NULL);
+
+	CMD_RegisterCommand("tuyaMcu_setupLED", Cmd_TuyaMCU_SetupLED, NULL);
 }
 
 

@@ -58,5 +58,9 @@ bool DRV_IsMeasuringBattery();
 bool DRV_IsSensor();
 void BL09XX_SaveEmeteringStatistics();
 
+// TuyaMCU exports for LED
+void TuyaMCU_OnRGBCWChange(const float *rgbcw);
+bool TuyaMCU_IsLEDRunning();
+
 #endif /* __DRV_PUBLIC_H__ */
 
