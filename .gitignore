@@ -22,6 +22,7 @@ ILU.dll
 ILUT.dll
 SDL2.dll
 nfd_d.lib
+configMemory.bin
 /sim_lastPublish_long.txt
 /sim_lastPublishes.txt
 /sim_lastPublish.txt
