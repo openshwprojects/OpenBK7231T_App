@@ -1828,7 +1828,7 @@ void TuyaMCU_OnRGBCWChange(const float *rgbcw) {
 	if (g_tuyaMCUled_dpID == -1) {
 		return;
 	}
-	TuyaMCU_SendColor(g_tuyaMCUled_dpID, rgbcw[0], rgbcw[1], rgbcw[2], g_tuyaMCUled_format);
+	TuyaMCU_SendColor(g_tuyaMCUled_dpID, rgbcw[0]/255.0f, rgbcw[1] / 255.0f, rgbcw[2] / 255.0f, g_tuyaMCUled_format);
 }
 bool TuyaMCU_IsLEDRunning() {
 	if (g_tuyaMCUled_dpID == -1)
