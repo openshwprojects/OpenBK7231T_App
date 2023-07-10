@@ -107,10 +107,12 @@ void LED_ResetGlobalVariablesToDefaults() {
 
 bool LED_IsLedDriverChipRunning()
 {
+#ifndef PLATFORM_W600
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	if (TuyaMCU_IsLEDRunning()) {
 		return true;
 	}
+#endif
 #endif
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	return DRV_IsRunning("SM2135") || DRV_IsRunning("BP5758D") 
