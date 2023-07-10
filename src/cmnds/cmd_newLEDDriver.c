@@ -557,8 +557,10 @@ void apply_smart_light() {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_DGR_OnLedFinalColorsChange(baseRGBCW);
 #endif
+#ifndef PLATFORM_W600
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	TuyaMCU_OnRGBCWChange(finalColors);
+#endif
 #endif
 	
 	// I am not sure if it's the best place to do it
