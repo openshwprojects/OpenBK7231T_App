@@ -59,10 +59,13 @@ int CMD_InitSendCommands() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("sendGet", CMD_SendGET, NULL);
 
-	//cmddetail:{"name":"sendPost","args":"[TargetURL] [HTTP Port] [Content Type] [Post Content]",
+	// TODO example
+	// SendPost "http://192.168.0.1/write?db=energy" 8086 "application/octet-stream" "current,clientid=A0:92:08:CB:41:E1 value=$current""
+
+	//cmddetail:{"name":"sendPOST","args":"[TargetURL] [HTTP Port] [Content Type] [Post Content]",
 	//cmddetail:"descr":"Sends a HTTP POST request to target URL. Arguments can contain variable expansion.",
 	//cmddetail:"fn":"CMD_SendPOST","file":"cmnds/cmd_send.c","requires":"",
-	//cmddetail:"examples":"SendPost ""http://192.168.0.1/write?db=energy"" 8086 ""application/octet-stream"" ""current,clientid=A0:92:08:CB:41:E1 value=$current"""}
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("sendPOST", CMD_SendPOST, NULL);
 
 	//CMD_RegisterCommand("testPost", CMD_TestPOST, NULL);

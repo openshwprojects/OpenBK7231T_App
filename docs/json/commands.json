@@ -612,6 +612,60 @@
     "examples": ""
   },
   {
+    "name": "HT16K33_Blink",
+    "args": "HT16K33_Blink",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_ht16k33.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "HT16K33_Brightness",
+    "args": "HT16K33_Brightness",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_ht16k33.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "HT16K33_Char",
+    "args": "HT16K33_Char",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_ht16k33.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "HT16K33_Print",
+    "args": "HT16K33_Print",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_ht16k33.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "HT16K33_Raw",
+    "args": "HT16K33_Raw",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_ht16k33.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "HT16K33_Test",
+    "args": "HT16K33_Test",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_ht16k33.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "if",
     "args": "[Condition]['then'][CommandA]['else'][CommandB]",
     "descr": "Executed a conditional. Condition should be single line. You must always use 'then' after condition. 'else' is optional. Use aliases or quotes for commands with spaces",
@@ -1089,6 +1143,51 @@
     "examples": ""
   },
   {
+    "name": "MCP9808_Adr",
+    "args": "MCP9808_Adr",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_mcp9808.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "MCP9808_AlertMin",
+    "args": "MCP9808_AlertMin",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_mcp9808.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "MCP9808_AlertRange",
+    "args": "MCP9808_AlertRange",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_mcp9808.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "MCP9808_Calibrate",
+    "args": "MCP9808_Calibrate",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_mcp9808.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "MCP9808_Cycle",
+    "args": "MCP9808_cycle",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_mcp9808.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "MqttClient",
     "args": "[ValueString]",
     "descr": "Sets the MQTT client. Command keeps Tasmota syntax",
@@ -1423,9 +1522,9 @@
   },
   {
     "name": "sendPOST",
-    "args": "CMD_SendPOST",
-    "descr": "",
-    "fn": "NULL);",
+    "args": "[TargetURL] [HTTP Port] [Content Type] [Post Content]",
+    "descr": "Sends a HTTP POST request to target URL. Arguments can contain variable expansion.",
+    "fn": "CMD_SendPOST",
     "file": "cmnds/cmd_send.c",
     "requires": "",
     "examples": ""
@@ -2178,6 +2277,15 @@
     "examples": ""
   },
   {
+    "name": "tuyaMcu_sendColor",
+    "args": "Cmd_TuyaMCU_SendColor",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_tuyaMCU.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "tuyaMcu_sendCurTime",
     "args": "",
     "descr": "Sends a current date by TuyaMCU to clock/callendar MCU. Time is taken from NTP driver, so NTP also should be already running.",
@@ -2254,6 +2362,15 @@
     "args": "[Min][Max]",
     "descr": "Set dimmer range used by TuyaMCU",
     "fn": "TuyaMCU_SetDimmerRange",
+    "file": "driver/drv_tuyaMCU.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "tuyaMcu_setupLED",
+    "args": "Cmd_TuyaMCU_SetupLED",
+    "descr": "",
+    "fn": "NULL);",
     "file": "driver/drv_tuyaMCU.c",
     "requires": "",
     "examples": ""

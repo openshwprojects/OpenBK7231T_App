@@ -90,15 +90,21 @@
     "requires": ""
   },
   {
+    "name": "DGR",
+    "title": "TODO",
+    "descr": "Tasmota Device groups driver. See [forum example](https://www.elektroda.com/rtvforum/topic3925472.html) and TODO-video tutorial (will post on YT soon)",
+    "requires": ""
+  },
+  {
     "name": "Wemo",
     "title": "TODO",
     "descr": "Wemo emulation for Alexa. You must also start SSDP so it can run, because it depends on SSDP discovery.",
     "requires": ""
   },
   {
-    "name": "DGR",
+    "name": "Hue",
     "title": "TODO",
-    "descr": "Tasmota Device groups driver. See [forum example](https://www.elektroda.com/rtvforum/topic3925472.html) and TODO-video tutorial (will post on YT soon)",
+    "descr": "Hue emulation for Alexa. You must also start SSDP so it can run, because it depends on SSDP discovery.",
     "requires": ""
   },
   {
@@ -183,6 +189,12 @@
     "name": "TM1638",
     "title": "TODO",
     "descr": "Driver for 7-segment LED display with DIO/CLK/STB interface. TM1638 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20553628#20553628) for details.",
+    "requires": ""
+  },
+  {
+    "name": "HT16K33",
+    "title": "TODO",
+    "descr": "Driver for 16-segment LED display with I2C.",
     "requires": ""
   },
   {

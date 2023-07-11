@@ -76,6 +76,12 @@ Do not add anything here, as it will overwritten with next rebuild.
 | HSBColor1 | [Hue] | Tasmota-style colour access. Sets hue in 0 to 360 range. |
 | HSBColor2 | [Saturation] | Tasmota-style colour access. Set saturation in 0 to 100 range. |
 | HSBColor3 | [Brightness] | Tasmota-style colour access. Sets brightness in 0 to 100 range. |
+| HT16K33_Blink | HT16K33_Blink |  |
+| HT16K33_Brightness | HT16K33_Brightness |  |
+| HT16K33_Char | HT16K33_Char |  |
+| HT16K33_Print | HT16K33_Print |  |
+| HT16K33_Raw | HT16K33_Raw |  |
+| HT16K33_Test | HT16K33_Test |  |
 | if | [Condition]['then'][CommandA]['else'][CommandB] | Executed a conditional. Condition should be single line. You must always use 'then' after condition. 'else' is optional. Use aliases or quotes for commands with spaces |
 | IREnable | [Str][1or0] | Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol |
 | IRSend | [PROT-ADDR-CMD-REP] | Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0 |
@@ -129,6 +135,11 @@ Do not add anything here, as it will overwritten with next rebuild.
 | MAX72XX_Scroll | DRV_MAX72XX_Scroll |  |
 | MAX72XX_Setup | [Value] | Sets the maximum current for LED driver. |
 | MCP23017_MapPinToChannel |  | Maps port expander bit to OBK channel |
+| MCP9808_Adr | MCP9808_Adr |  |
+| MCP9808_AlertMin | MCP9808_AlertMin |  |
+| MCP9808_AlertRange | MCP9808_AlertRange |  |
+| MCP9808_Calibrate | MCP9808_Calibrate |  |
+| MCP9808_Cycle | MCP9808_cycle |  |
 | MqttClient | [ValueString] | Sets the MQTT client. Command keeps Tasmota syntax |
 | MqttHost | [ValueString] | Sets the MQTT host. Command keeps Tasmota syntax |
 | MqttPassword | [ValueString] | Sets the MQTT pass. Command keeps Tasmota syntax |
@@ -166,7 +177,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | scanI2C |  |  |
 | scheduleHADiscovery | [Seconds] | This will schedule HA discovery, the discovery will happen with given number of seconds, but timer only counts when MQTT is connected. It will not work without MQTT online, so you must set MQTT credentials first. |
 | sendGet | [TargetURL] | Sends a HTTP GET request to target URL. May include GET arguments. Can be used to control devices by Tasmota HTTP protocol. Command supports argument expansion, so $CH11 changes to value of channel 11, etc, etc. |
-| sendPOST | CMD_SendPOST |  |
+| sendPOST | [TargetURL] [HTTP Port] [Content Type] [Post Content] | Sends a HTTP POST request to target URL. Arguments can contain variable expansion. |
 | setButtonColor | [ButtonIndex][Color] | Sets the colour of custom scriptable HTTP page button |
 | setButtonCommand | [ButtonIndex][Command] | Sets the command of custom scriptable HTTP page button |
 | setButtonEnabled | [ButtonIndex][1or0] | Sets the visibility of custom scriptable HTTP page button |
@@ -250,6 +261,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | toggler_name |  | Handles toggler_name0, toggler_name1, etc. Sets the name of a toggler for GUI. |
 | toggler_set | [Value] | Sets the VALUE of given output. Handles toggler_set0, toggler_set1, etc. The last digit after command name is changed to slot index. |
 | tuyaMcu_defWiFiState |  | Command sets the default WiFi state for TuyaMCU when device is not online. It may be required for some devices to work, because Tuya designs them to ignore touch buttons or beep when not paired. Please see [values table and description here](https://www.elektroda.com/rtvforum/viewtopic.php?p=20483899#20483899). |
+| tuyaMcu_sendColor | Cmd_TuyaMCU_SendColor |  |
 | tuyaMcu_sendCurTime |  | Sends a current date by TuyaMCU to clock/callendar MCU. Time is taken from NTP driver, so NTP also should be already running. |
 | tuyaMcu_sendHeartbeat |  | Send heartbeat to TuyaMCU |
 | tuyaMcu_sendMCUConf |  | Send MCU conf command |
@@ -259,6 +271,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | tuyaMcu_sendState | [dpID][dpType][dpValue] | Manually send set state command. Do not use it. Use mapping, so communication is bidirectional and automatic. |
 | tuyaMcu_setBaudRate | [BaudValue] | Sets the baud rate used by TuyaMCU UART communication. Default value is 9600. Some other devices require 115200. |
 | tuyaMcu_setDimmerRange | [Min][Max] | Set dimmer range used by TuyaMCU |
+| tuyaMcu_setupLED | Cmd_TuyaMCU_SetupLED |  |
 | tuyaMcu_testSendTime |  | Sends a example date by TuyaMCU to clock/callendar MCU |
 | uartFakeHex | [HexString] | Spoofs a fake hex packet so it looks like TuyaMCU send that to us. Used for testing. |
 | uartInit | [BaudRate] | Manually starts UART1 port. Keep in mind that you don't need to do it for TuyaMCU and BL0942, those drivers do it automatically. |

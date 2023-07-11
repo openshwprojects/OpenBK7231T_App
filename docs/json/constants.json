@@ -102,6 +102,12 @@
     "requires": ""
   },
   {
+    "name": "$energy",
+    "title": "$energy",
+    "descr": "Current value of energy counter from energy metering chip",
+    "requires": ""
+  },
+  {
     "name": "$day",
     "title": "$day",
     "descr": "Current weekday from NTP",

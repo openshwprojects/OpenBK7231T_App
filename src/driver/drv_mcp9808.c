@@ -239,13 +239,33 @@ void MCP9808_Init() {
 
 	Soft_I2C_PreInit(&g_softI2C);
 
+	//cmddetail:{"name":"MCP9808_Adr","args":"MCP9808_Adr",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_mcp9808.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MCP9808_Adr", MCP9808_Adr, NULL);
 	
+	//cmddetail:{"name":"MCP9808_AlertRange","args":"MCP9808_AlertRange",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_mcp9808.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MCP9808_AlertRange", MCP9808_AlertRange, NULL);
+	//cmddetail:{"name":"MCP9808_AlertMin","args":"MCP9808_AlertMin",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_mcp9808.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MCP9808_AlertMin", MCP9808_AlertMin, NULL);
 
 
+	//cmddetail:{"name":"MCP9808_Calibrate","args":"MCP9808_Calibrate",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_mcp9808.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MCP9808_Calibrate", MCP9808_Calibrate, NULL);
+	//cmddetail:{"name":"MCP9808_Cycle","args":"MCP9808_cycle",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_mcp9808.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MCP9808_Cycle", MCP9808_cycle, NULL);
 
 }

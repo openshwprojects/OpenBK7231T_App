@@ -23,6 +23,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | $voltage |  Current value of voltage from energy metering chip. You can use those variables to make, for example, a change handler that fires when voltage is above 245, etc. |
 | $current |  Current value of current from energy metering chip |
 | $power |  Current value of power from energy metering chip |
+| $energy |  Current value of energy counter from energy metering chip |
 | $day |  Current weekday from NTP |
 | $hour |  Current hour from NTP |
 | $minute |  Current minute from NTP |

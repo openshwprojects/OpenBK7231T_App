@@ -68,7 +68,7 @@ static const uint8_t charMap7seg[] = {
   0x00,   //  space
   0x40,   //  minus
   0x61,   //  TOP_C
-  0x63,   //  degree °
+  0x63,   //  degree ï¿½
 };
 #endif
 unsigned short convert16seg(char c)
@@ -270,10 +270,34 @@ commandResult_t HT16K33_Blink(const void* context, const char* cmd, const char* 
 // backlog startDriver HT16K33; HT16K33_Print Help
 void HT16K33_Init() {
 
+	//cmddetail:{"name":"HT16K33_Test","args":"HT16K33_Test",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_ht16k33.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HT16K33_Test", HT16K33_Test, NULL);
+	//cmddetail:{"name":"HT16K33_Char","args":"HT16K33_Char",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_ht16k33.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HT16K33_Char", HT16K33_Char, NULL);
+	//cmddetail:{"name":"HT16K33_Raw","args":"HT16K33_Raw",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_ht16k33.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HT16K33_Raw", HT16K33_Raw, NULL);
+	//cmddetail:{"name":"HT16K33_Print","args":"HT16K33_Print",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_ht16k33.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HT16K33_Print", HT16K33_Print, NULL);
+	//cmddetail:{"name":"HT16K33_Brightness","args":"HT16K33_Brightness",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_ht16k33.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HT16K33_Brightness", HT16K33_Brightness, NULL);
+	//cmddetail:{"name":"HT16K33_Blink","args":"HT16K33_Blink",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_ht16k33.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HT16K33_Blink", HT16K33_Blink, NULL);
 }

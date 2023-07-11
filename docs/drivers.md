@@ -22,8 +22,9 @@ Do not add anything here, as it will overwritten with next rebuild.
 | IR |  IRLibrary wrapper, so you can receive remote signals and send them. See [forum discussion here](https://www.elektroda.com/rtvforum/topic3920360.html), also see [LED strip and IR YT video](https://www.youtube.com/watch?v=KU0tDwtjfjw) |
 | DDP |  DDP is a LED control protocol that is using UDP. You can use xLights or any other app to control OBK LEDs that way. |
 | SSDP |  SSDP is a discovery protocol, so BK devices can show up in, for example, Windows network section |
-| Wemo |  Wemo emulation for Alexa. You must also start SSDP so it can run, because it depends on SSDP discovery. |
 | DGR |  Tasmota Device groups driver. See [forum example](https://www.elektroda.com/rtvforum/topic3925472.html) and TODO-video tutorial (will post on YT soon) |
+| Wemo |  Wemo emulation for Alexa. You must also start SSDP so it can run, because it depends on SSDP discovery. |
+| Hue |  Hue emulation for Alexa. You must also start SSDP so it can run, because it depends on SSDP discovery. |
 | PWMToggler |  PWMToggler is a custom abstraction layer that can run on top of raw PWM channels. It provides ability to turn off/on the PWM while keeping it's value, which is not possible by direct channel operations. It can be used for some custom devices with extra lights/lasers. See example [here](https://www.elektroda.com/rtvforum/topic3939064.html). |
 | DoorSensor |  DoorSensor is using deep sleep to preserve battery. This is used for devices without TuyaMCU, where BK deep sleep and wakeup on GPIO is used. This drives requires you to set a DoorSensor pin. Change on door sensor pin wakes up the device. If there are no changes for some time, device goes to sleep. See example [here](https://www.elektroda.com/rtvforum/topic3960149.html). If your door sensor does not wake up in certain pos, please use DSEdge command (try all 3 options, default is 2).  |
 | MAX72XX_Clock |  Simple hardcoded driver for MAX72XX clock. Requirex manual start of MAX72XX driver with MAX72XX setup and NTP start. |
@@ -38,6 +39,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | TM1637 |  Driver for 7-segment LED display with DIO/CLK interface |
 | GN6932 |  Driver for 7-segment LED display with DIO/CLK/STB interface. See [this topic](https://www.elektroda.com/rtvforum/topic3971252.html) for details. |
 | TM1638 |  Driver for 7-segment LED display with DIO/CLK/STB interface. TM1638 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20553628#20553628) for details. |
+| HT16K33 |  Driver for 16-segment LED display with I2C. |
 | SHT3X |  Humidity/temperature sensor. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html) |
 | SGP |  SGP Air Quality sensor with I2C interface. |
 | ShiftRegister |  ShiftRegisterShiftRegisterShiftRegisterShiftRegister |
