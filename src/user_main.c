@@ -917,6 +917,9 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	// so ALL commands expected in autoexec.bat should have been registered by now...
 	// but DON't run autoexec if we have had 2+ boot failures
 	CMD_Init_Early();
+#if WINDOWS
+	CMD_InitSimulatorOnlyCommands();
+#endif
 
 	/* Automatic disable of PIN MONITOR after reboot */
 	if (CFG_HasFlag(OBK_FLAG_HTTP_PINMONITOR)) {

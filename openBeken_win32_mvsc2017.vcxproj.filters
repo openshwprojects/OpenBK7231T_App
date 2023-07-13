@@ -875,6 +875,10 @@
     <ClCompile Include="src\driver\drv_hue.c">
       <Filter>Drv</Filter>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_mcp9808.c" />
+    <ClCompile Include="src\cmnds\cmd_simulatorOnly.c">
+      <Filter>Cmd</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />

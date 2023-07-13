@@ -298,6 +298,7 @@
     <ClCompile Include="src\cmnds\cmd_send.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_simulatorOnly.c" />
     <ClCompile Include="src\cmnds\cmd_tasmota.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
