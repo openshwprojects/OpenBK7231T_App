@@ -561,7 +561,7 @@ void apply_smart_light() {
 #endif
 #ifndef PLATFORM_W600
 #ifndef OBK_DISABLE_ALL_DRIVERS
-	TuyaMCU_OnRGBCWChange(finalColors, g_lightEnableAll, g_lightMode, LED_GetTemperature0to1Range());
+	TuyaMCU_OnRGBCWChange(finalColors, g_lightEnableAll, g_lightMode, g_brightness0to100*0.01f, LED_GetTemperature0to1Range());
 #endif
 #endif
 	

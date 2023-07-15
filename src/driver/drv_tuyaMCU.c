@@ -1824,11 +1824,29 @@ commandResult_t TuyaMCU_SetBaudRate(const void* context, const char* cmd, const 
 
 	return CMD_RES_OK;
 }
-void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMode, float temperatureRange01) {
+void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMode, float brightnessRange01, float temperatureRange01) {
 	if (g_tuyaMCUled_dpID == -1) {
 		return;
 	}
-	TuyaMCU_SendColor(g_tuyaMCUled_dpID, rgbcw[0]/255.0f, rgbcw[1] / 255.0f, rgbcw[2] / 255.0f, g_tuyaMCUled_format);
+	if (iLightMode == Light_RGB) {
+		// dpID 21: switch between RGB and white mode : 0->white, 1->RGB
+		TuyaMCU_SendBool(21, 1);
+		// dpID 24: color(and indirectly brightness) in RGB mode, handled by your code already fine
+		TuyaMCU_SendColor(g_tuyaMCUled_dpID, rgbcw[0] / 255.0f, rgbcw[1] / 255.0f, rgbcw[2] / 255.0f, g_tuyaMCUled_format);
+	}
+	else {
+		// dpID 21: switch between RGB and white mode : 0->white, 1->RGB
+		//TuyaMCU_SendBool(21, 0);
+		// dpID 22: brightness only in white mode: The range is from 50 (dark) to 1000 (light), 
+		// NOTE: when changing this value, dpID 21 is set to 0 -> white automatically
+		TuyaMCU_SendValue(22, brightnessRange01*1000.0f);
+		// dpID 23: Kelvin value of white : The range is from 10 (ww)to 990 (cw), 
+		// NOTE : when changing this value, dpID 21 is set to 0->white automatically
+		TuyaMCU_SendValue(23, 10+ temperatureRange01*980.0f);
+
+	}
+
+
 }
 bool TuyaMCU_IsLEDRunning() {
 	if (g_tuyaMCUled_dpID == -1)

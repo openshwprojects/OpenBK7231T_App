@@ -59,7 +59,7 @@ bool DRV_IsSensor();
 void BL09XX_SaveEmeteringStatistics();
 
 // TuyaMCU exports for LED
-void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMode, float temperatureRange01);
+void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMode, float brightnessRange01, float temperatureRange01);
 bool TuyaMCU_IsLEDRunning();
 
 
