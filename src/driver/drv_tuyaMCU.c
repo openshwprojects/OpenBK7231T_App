@@ -1824,7 +1824,7 @@ commandResult_t TuyaMCU_SetBaudRate(const void* context, const char* cmd, const 
 
 	return CMD_RES_OK;
 }
-void TuyaMCU_OnRGBCWChange(const float *rgbcw) {
+void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMode, float temperatureRange01) {
 	if (g_tuyaMCUled_dpID == -1) {
 		return;
 	}
