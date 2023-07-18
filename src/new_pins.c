@@ -326,12 +326,22 @@ void RAW_SetPinValue(int index, int iVal) {
 	}
 }
 void Button_OnPressRelease(int index) {
+	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
+		return;
+	}
 	// fire event - button on pin <index> was released
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ONRELEASE, index);
 }
 void Button_OnInitialPressDown(int index)
 {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i Button_OnInitialPressDown\r\n", index);
+
+	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
+		return;
+	}
+
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ONPRESS, index);
 
 	// so-called SetOption13 - instant reaction to touch instead of waiting for release
@@ -374,6 +384,10 @@ void Button_OnInitialPressDown(int index)
 void Button_OnShortClick(int index)
 {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i key_short_press\r\n", index);
+	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
+		return;
+	}
 	// fire event - button on pin <index> was clicked
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ONCLICK, index);
 	// so-called SetOption13 - instant reaction to touch instead of waiting for release
@@ -414,6 +428,10 @@ void Button_OnShortClick(int index)
 void Button_OnDoubleClick(int index)
 {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i key_double_press\r\n", index);
+	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
+		return;
+	}
 	if (g_cfg.pins.roles[index] == IOR_Button_ToggleAll || g_cfg.pins.roles[index] == IOR_Button_ToggleAll_n)
 	{
 		CHANNEL_DoSpecialToggleAll();
@@ -439,6 +457,10 @@ void Button_OnDoubleClick(int index)
 void Button_OnTripleClick(int index)
 {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i key_triple_press\r\n", index);
+	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
+		return;
+	}
 	// fire event - button on pin <index> was 3clicked
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ON3CLICK, index);
 	if (g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs || g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs_n) {
@@ -450,17 +472,29 @@ void Button_OnTripleClick(int index)
 void Button_OnQuadrupleClick(int index)
 {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i key_quadruple_press\r\n", index);
+	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
+		return;
+	}
 	// fire event - button on pin <index> was 4clicked
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ON4CLICK, index);
 }
 void Button_On5xClick(int index)
 {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i key_5x_press\r\n", index);
+	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
+		return;
+	}
 	// fire event - button on pin <index> was 4clicked
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ON5CLICK, index);
 }
 void Button_OnLongPressHold(int index) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i Button_OnLongPressHold\r\n", index);
+	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
+		return;
+	}
 	// fire event - button on pin <index> was held
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ONHOLD, index);
 
@@ -478,6 +512,10 @@ void Button_OnLongPressHold(int index) {
 }
 void Button_OnLongPressHoldStart(int index) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i Button_OnLongPressHoldStart\r\n", index);
+	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
+		return;
+	}
 	// fire event - button on pin <index> was held
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ONHOLDSTART, index);
 }
@@ -1711,10 +1749,17 @@ void PIN_ticks(void* param)
 					if (g_lastValidState[i] != value) {
 						// became up
 						g_lastValidState[i] = value;
-						CHANNEL_Toggle(g_cfg.pins.channels[i]);
-						// fire event - IOR_ToggleChannelOnToggle has been toggle
-						// Argument is a pin number (NOT channel)
-						EventHandlers_FireEvent(CMD_EVENT_PIN_ONTOGGLE, i);
+
+
+						if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
+							addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
+						}
+						else {
+							CHANNEL_Toggle(g_cfg.pins.channels[i]);
+							// fire event - IOR_ToggleChannelOnToggle has been toggle
+							// Argument is a pin number (NOT channel)
+							EventHandlers_FireEvent(CMD_EVENT_PIN_ONTOGGLE, i);
+						}
 						// lock for given time
 						g_times[i] = debounceMS;
 					}

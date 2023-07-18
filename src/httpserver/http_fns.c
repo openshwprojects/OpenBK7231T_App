@@ -2512,7 +2512,7 @@ const char* g_obk_flagNames[] = {
 	"[Power] Set power and current to zero if all relays are open",
 	"[MQTT] [Debug] Publish all channels (don't enable it, it will be publish all 64 possible channels on connect)",
 	"[MQTT] Use kWh unit for energy consumption (total, last hour, today) instead of Wh",
-	"error",
+	"[BTN] Ignore all button events (aka child lock)",
 	"error",
 	"error",
 	"error",
