@@ -346,23 +346,46 @@ void TuyaMCU_SendCommandWithData(byte cmdType, byte* data, int payload_len) {
 	}
 	UART_SendByte(check_sum);
 }
-
+int TuyaMCU_AppendStateInternal(byte *buffer, int bufferMax, int currentLen, uint8_t id, int8_t type, void* value, int dataLen) {
+	if (currentLen + 4 + dataLen >= bufferMax) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU, "Tuya buff overflow");
+		return 0;
+	}
+	buffer[currentLen + 0] = id;
+	buffer[currentLen + 1] = type;
+	buffer[currentLen + 2] = 0x00;
+	buffer[currentLen + 3] = dataLen;
+	memcpy(buffer + (currentLen + 4), value, dataLen);
+	return currentLen + 4 + dataLen;
+}
 void TuyaMCU_SendStateInternal(uint8_t id, uint8_t type, void* value, int dataLen)
 {
-	uint16_t payload_len = 4;
+	uint16_t payload_len = 0;
 	uint8_t payload_buffer[32];
-	payload_buffer[0] = id;
-	payload_buffer[1] = type;
-	payload_buffer[2] = 0x00;
-	payload_buffer[3] = dataLen;
+	
+	payload_len = TuyaMCU_AppendStateInternal(payload_buffer, sizeof(payload_buffer),
+		payload_len, id, type, value, dataLen);
 
-	payload_len += dataLen;
+	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, payload_buffer, payload_len);
+}
+void TuyaMCU_SendTwoVals(byte idA, int valA, byte idB, int valB)
+{
+	byte swap[4];
+	uint16_t payload_len = 0;
+	uint8_t payload_buffer[32];
 
-	if (payload_len >= sizeof(payload_buffer)) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU, "Tuya buff overflow");
-		return;
-	}
-	memcpy(payload_buffer + 4, value, dataLen);
+	swap[0] = ((byte*)&valA)[3];
+	swap[1] = ((byte*)&valA)[2];
+	swap[2] = ((byte*)&valA)[1];
+	swap[3] = ((byte*)&valA)[0];
+	payload_len = TuyaMCU_AppendStateInternal(payload_buffer, sizeof(payload_buffer),
+		payload_len, idA, DP_TYPE_VALUE, swap, 4);
+	swap[0] = ((byte*)&valB)[3];
+	swap[1] = ((byte*)&valB)[2];
+	swap[2] = ((byte*)&valB)[1];
+	swap[3] = ((byte*)&valB)[0];
+	payload_len = TuyaMCU_AppendStateInternal(payload_buffer, sizeof(payload_buffer),
+		payload_len, idB, DP_TYPE_VALUE, swap, 4);
 
 	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, payload_buffer, payload_len);
 }
@@ -1839,11 +1862,13 @@ void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMo
 		//TuyaMCU_SendBool(21, 0);
 		// dpID 22: brightness only in white mode: The range is from 50 (dark) to 1000 (light), 
 		// NOTE: when changing this value, dpID 21 is set to 0 -> white automatically
-		TuyaMCU_SendValue(22, brightnessRange01*1000.0f);
+		int mcu_brightness = brightnessRange01 * 1000.0f;
+		//TuyaMCU_SendValue(22, mcu_brightness);
 		// dpID 23: Kelvin value of white : The range is from 10 (ww)to 990 (cw), 
 		// NOTE : when changing this value, dpID 21 is set to 0->white automatically
-		TuyaMCU_SendValue(23, 10+ temperatureRange01*980.0f);
-
+		int mcu_temperature = 10 + temperatureRange01 * 980.0f;
+		//TuyaMCU_SendValue(23, mcu_temperature);
+		TuyaMCU_SendTwoVals(22, mcu_brightness, 23, mcu_temperature);
 	}
 
 
