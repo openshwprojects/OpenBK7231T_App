@@ -28,7 +28,7 @@ int accum_time = 0;
 int win_frameNum = 0;
 // this time counter is simulated, I need this for unit tests to work
 int g_simulatedTimeNow = 0;
-extern int g_port;
+extern int g_httpPort;
 #define DEFAULT_FRAME_TIME 5
 
 
@@ -128,6 +128,8 @@ void SIM_ClearOBK(const char *flashPath) {
 }
 void Win_DoUnitTests() {
 
+	// this is slowest
+	Test_TuyaMCU_Basic();
 	Test_Battery();
 	Test_TuyaMCU_BatteryPowered();
 	Test_JSON_Lib();
@@ -177,8 +179,6 @@ void Win_DoUnitTests() {
 	Test_Http();
 	Test_DeviceGroups();
 
-	// this is slowest
-	Test_TuyaMCU_Basic();
 
 
 
@@ -230,7 +230,7 @@ int __cdecl main(int argc, char **argv)
 					i++;
 
 					if (i < argc && sscanf(argv[i], "%d", &value) == 1) {
-						g_port = value;
+						g_httpPort = value;
 					}
 				} else if (wal_strnicmp(argv[i] + 1, "w", 1) == 0) {
 					i++;
