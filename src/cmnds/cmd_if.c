@@ -160,6 +160,10 @@ float getChannelValue(const char *s) {
 	int idx = atoi(s + 3);
 	return CHANNEL_Get(idx);
 }
+float getFlagValue(const char *s) {
+	int idx = atoi(s + 5);
+	return CFG_HasFlag(idx);
+}
 
 float getLedDimmer(const char *s) {
 	return LED_GetDimmer();
@@ -266,6 +270,16 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Provides channel access, as above.",
 	//cnstdetail:"requires":""}
 	{"$CH*", &getChannelValue},
+	//cnstdetail:{"name":"$FLAG**",
+	//cnstdetail:"title":"$FLAG**",
+	//cnstdetail:"descr":"Provides flag access, as above.",
+	//cnstdetail:"requires":""}
+	{"$FLAG**", &getFlagValue},
+	//cnstdetail:{"name":"$FLAG*",
+	//cnstdetail:"title":"$FLAG*",
+	//cnstdetail:"descr":"Provides flag access, as above.",
+	//cnstdetail:"requires":""}
+	{"$FLAG*", &getFlagValue},
 	//cnstdetail:{"name":"$led_dimmer",
 	//cnstdetail:"title":"$led_dimmer",
 	//cnstdetail:"descr":"Current value of LED dimmer, 0-100 range",

@@ -114,6 +114,29 @@ void Test_ExpandConstant() {
 	SELFTEST_ASSERT_STRING(ptr, "456+2022");
 	free(ptr);
 	//system("pause");
+
+
+	CFG_SetFlag(OBK_FLAG_HTTP_PINMONITOR, 0);
+	ptr = CMD_ExpandingStrdup("$FLAG13");
+	SELFTEST_ASSERT_STRING(ptr, "0");
+	free(ptr);
+
+	CFG_SetFlag(OBK_FLAG_HTTP_PINMONITOR, 1);
+	ptr = CMD_ExpandingStrdup("$FLAG13");
+	SELFTEST_ASSERT_STRING(ptr, "1");
+	free(ptr);
+
+	CFG_SetFlag(OBK_FLAG_HTTP_PINMONITOR, 0);
+	ptr = CMD_ExpandingStrdup("$FLAG13");
+	SELFTEST_ASSERT_STRING(ptr, "0");
+	free(ptr);
+
+	CFG_SetFlag(OBK_FLAG_HTTP_PINMONITOR, 1);
+	ptr = CMD_ExpandingStrdup("$FLAG13");
+	SELFTEST_ASSERT_STRING(ptr, "1");
+	free(ptr);
+
+	CFG_SetFlag(OBK_FLAG_HTTP_PINMONITOR, 0);
 }
 
 #endif
