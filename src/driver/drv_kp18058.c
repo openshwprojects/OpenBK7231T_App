@@ -50,4 +50,9 @@ void KP18058_Init() {
 	//cmddetail:"fn":"BP5758D_RGBCW","file":"driver/drv_bp5758d.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("KP18058_RGBCW", CMD_LEDDriver_WriteRGBCW, NULL);
+	//cmddetail:{"name":"SM2235_Map","args":"[Ch0][Ch1][Ch2][Ch3][Ch4]",
+	//cmddetail:"descr":"Maps the RGBCW values to given indices of SM2235 channels. This is because SM2235 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: SM2235_Map 0 1 2 3 4",
+	//cmddetail:"fn":"SM2235_Map","file":"driver/drv_sm2235.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("KP18058_Map", CMD_LEDDriver_Map, NULL);
 }
