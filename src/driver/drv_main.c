@@ -243,6 +243,11 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"KP18068 I2C LED driver",
 	//drvdetail:"requires":""}
 	{ "KP18068",		KP18068_Init,		NULL,			NULL, NULL, NULL, NULL, false },
+	//drvdetail:{"name":"KP18058",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"KP18058 I2C LED driver",
+	//drvdetail:"requires":""}
+	{ "KP18058",		KP18058_Init,		NULL,			NULL, NULL, NULL, NULL, false },
 #ifdef ENABLE_DRIVER_MAX72XX
 	//drvdetail:{"name":"MAX72XX",
 	//drvdetail:"title":"TODO",

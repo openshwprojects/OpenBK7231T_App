@@ -260,6 +260,9 @@ void LED_I2CDriver_WriteRGBCW(float* finalRGBCW) {
 	if (DRV_IsRunning("SM2235")) {
 		SM2235_Write(finalRGBCW);
 	}
+	if (DRV_IsRunning("KP18058")) {
+		KP18058_Write(finalRGBCW);
+	}
 #endif
 }
 void LED_RunOnEverySecond() {

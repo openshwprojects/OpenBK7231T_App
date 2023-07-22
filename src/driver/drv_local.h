@@ -37,6 +37,8 @@ void BP5758D_Init();
 void BP1658CJ_Init();
 
 void KP18068_Init();
+void KP18058_Init();
+
 
 void SM16703P_Init();
 
