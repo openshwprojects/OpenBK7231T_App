@@ -25,13 +25,14 @@ void KP18058_Write(float *rgbcw) {
 		}
 	}
 
-	Soft_I2C_Start(&g_softI2C, 0xE1);
 	if (bAllZero) {
+		Soft_I2C_Start(&g_softI2C, 0x00);
 		for (int i = 0; i < 13; i++) {
 			Soft_I2C_WriteByte(&g_softI2C, 0x00);
 		}
 	}
 	else {
+		Soft_I2C_Start(&g_softI2C, 0xE1);
 		Soft_I2C_WriteByte(&g_softI2C, 0x00);
 		Soft_I2C_WriteByte(&g_softI2C, 0x03);
 		Soft_I2C_WriteByte(&g_softI2C, 0x7D);
