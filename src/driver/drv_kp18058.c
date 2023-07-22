@@ -38,8 +38,8 @@ void KP18058_Write(float *rgbcw) {
 // KP18058_RGBCW FF00000000
 void KP18058_Init() {
 
-	g_softI2C.pin_clk = 26;
-	g_softI2C.pin_data = 24;
+	g_softI2C.pin_clk = 7;
+	g_softI2C.pin_data = 8;
 	//g_softI2C.pin_clk = PIN_FindPinIndexForRole(IOR_KP18058_CLK, g_softI2C.pin_clk);
 	//g_softI2C.pin_data = PIN_FindPinIndexForRole(IOR_KP18058_DAT, g_softI2C.pin_data);
 
