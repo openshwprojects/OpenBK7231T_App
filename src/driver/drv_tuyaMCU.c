@@ -1853,6 +1853,10 @@ void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMo
 	}
 	// dpID 20: switch light on and off
 	TuyaMCU_SendBool(20, bLightEnableAll);
+	if (bLightEnableAll == false) {
+		// nothing else to do!
+		return;
+	}
 	rtos_delay_milliseconds(50);
 	if (iLightMode == Light_RGB) {
 		// dpID 21: switch between RGB and white mode : 0->white, 1->RGB
