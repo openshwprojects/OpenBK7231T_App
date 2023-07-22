@@ -15,7 +15,7 @@ static softI2C_t g_softI2C;
 
 
 void KP18058_Write(float *rgbcw) {
-	bool bAllZero = false;
+	bool bAllZero = true;
 	int i;
 
 
