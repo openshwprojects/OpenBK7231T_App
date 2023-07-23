@@ -13,6 +13,21 @@
 
 static softI2C_t g_softI2C;
 
+byte CountBytes(byte b) {
+	byte sum;
+	int i;
+
+	sum = 0;
+	for (i = 1; i < 8; i++) {
+		if (BIT_CHECK(b, i)) {
+			sum++;
+		}
+	}
+	if (sum % 2 == 0) {
+		return 0;
+	}
+	return 1;
+}
 
 void KP18058_Write(float *rgbcw) {
 	bool bAllZero = true;
@@ -35,26 +50,28 @@ void KP18058_Write(float *rgbcw) {
 		}
 	}
 	else {
-		//FILE *f = fopen("dimmerTest.txt", "a");
+		FILE *f = fopen("dimmerTest.txt", "a");
 		Soft_I2C_Start(&g_softI2C, 0xE1);
 		Soft_I2C_WriteByte(&g_softI2C, 0x00);
 		Soft_I2C_WriteByte(&g_softI2C, 0x03);
 		Soft_I2C_WriteByte(&g_softI2C, 0x7D);
 		for (int i = 0; i < 5; i++) {
 			float useVal = rgbcw[g_cfg.ledRemap.ar[i]];
-			unsigned short cur_col_12 = MAP(useVal, 0, 255.0f, 0, 4095.0f);
-			if (cur_col_12 >= 4096)
-				cur_col_12 = 4095;
+			unsigned short cur_col_12 = MAP(useVal, 0, 255.0f, 0, 1023.0f);
 			byte a, b;
-			a = cur_col_12 & 0x3F;
-			b = (cur_col_12 >> 6) & 0x3F;
+			a = cur_col_12 & 0x1F;
+			b = (cur_col_12 >> 5) & 0x1F;
+			a = a << 1;
+			b = b << 1;
+			a |= CountBytes(a);
+			b |= CountBytes(b);
 			Soft_I2C_WriteByte(&g_softI2C, b);
 			Soft_I2C_WriteByte(&g_softI2C, a);
 
-			//fprintf(f, "0x%02X 0x%02X ", b, a);
+			fprintf(f, "0x%02X 0x%02X ", b, a);
 		}
-		//fprintf(f, "\n");
-		//fclose(f);
+		fprintf(f, "\n");
+		fclose(f);
 	}
 	Soft_I2C_Stop(&g_softI2C);
 }
@@ -72,7 +89,7 @@ void KP18058_Init() {
 	//g_softI2C.pin_data = PIN_FindPinIndexForRole(IOR_KP18058_DAT, g_softI2C.pin_data);
 
 	Soft_I2C_PreInit(&g_softI2C);
-#if 0
+#if 1
 	for (float f = 0; f < 255; f += 0.25f) {
 		float rgbcw[5] = { 0 };
 		rgbcw[1] = f;
