@@ -35,18 +35,26 @@ void KP18058_Write(float *rgbcw) {
 		}
 	}
 	else {
+		//FILE *f = fopen("dimmerTest.txt", "a");
 		Soft_I2C_Start(&g_softI2C, 0xE1);
 		Soft_I2C_WriteByte(&g_softI2C, 0x00);
 		Soft_I2C_WriteByte(&g_softI2C, 0x03);
 		Soft_I2C_WriteByte(&g_softI2C, 0x7D);
 		for (int i = 0; i < 5; i++) {
-			unsigned short cur_col_12 = MAP(rgbcw[g_cfg.ledRemap.ar[i]], 0, 255.0f, 0, 4095.0f);
+			float useVal = rgbcw[g_cfg.ledRemap.ar[i]];
+			unsigned short cur_col_12 = MAP(useVal, 0, 255.0f, 0, 4095.0f);
+			if (cur_col_12 >= 4096)
+				cur_col_12 = 4095;
 			byte a, b;
 			a = cur_col_12 & 0x3F;
 			b = (cur_col_12 >> 6) & 0x3F;
 			Soft_I2C_WriteByte(&g_softI2C, b);
 			Soft_I2C_WriteByte(&g_softI2C, a);
+
+			//fprintf(f, "0x%02X 0x%02X ", b, a);
 		}
+		//fprintf(f, "\n");
+		//fclose(f);
 	}
 	Soft_I2C_Stop(&g_softI2C);
 }
@@ -55,6 +63,8 @@ void KP18058_Write(float *rgbcw) {
 // KP18058_Map 0 1 2 3 4
 // KP18058_RGBCW FF00000000
 void KP18058_Init() {
+	// default map
+	CFG_SetDefaultLEDRemap(1, 0, 2, 3, 4);
 
 	g_softI2C.pin_clk = 7;
 	g_softI2C.pin_data = 8;
@@ -62,6 +72,13 @@ void KP18058_Init() {
 	//g_softI2C.pin_data = PIN_FindPinIndexForRole(IOR_KP18058_DAT, g_softI2C.pin_data);
 
 	Soft_I2C_PreInit(&g_softI2C);
+#if 0
+	for (float f = 0; f < 255; f += 0.25f) {
+		float rgbcw[5] = { 0 };
+		rgbcw[1] = f;
+		KP18058_Write(rgbcw);
+	}
+#endif
 
 	//cmddetail:{"name":"BP5758D_RGBCW","args":"[HexColor]",
 	//cmddetail:"descr":"Don't use it. It's for direct access of BP5758D driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",
