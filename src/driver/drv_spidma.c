@@ -289,7 +289,7 @@ int spidma_dma_master_tx_init(struct spi_message *spi_msg) {
 	init_cfg.dst_start_addr = (void *)SPI_DAT;
 
 	init_cfg.channel = SPI_TX_DMA_CHANNEL;
-	init_cfg.prio = 2;
+	init_cfg.prio = 10;
 	init_cfg.u.type4.src_loop_start_addr = spi_msg->send_buf;
 	init_cfg.u.type4.src_loop_end_addr = spi_msg->send_buf + spi_msg->send_len;
 
