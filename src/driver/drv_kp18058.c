@@ -50,7 +50,7 @@ void KP18058_Write(float *rgbcw) {
 		}
 	}
 	else {
-		FILE *f = fopen("dimmerTest.txt", "a");
+		//FILE *f = fopen("dimmerTest.txt", "a");
 		Soft_I2C_Start(&g_softI2C, 0xE1);
 		Soft_I2C_WriteByte(&g_softI2C, 0x00);
 		Soft_I2C_WriteByte(&g_softI2C, 0x03);
@@ -68,10 +68,10 @@ void KP18058_Write(float *rgbcw) {
 			Soft_I2C_WriteByte(&g_softI2C, b);
 			Soft_I2C_WriteByte(&g_softI2C, a);
 
-			fprintf(f, "0x%02X 0x%02X ", b, a);
+			//fprintf(f, "0x%02X 0x%02X ", b, a);
 		}
-		fprintf(f, "\n");
-		fclose(f);
+		//fprintf(f, "\n");
+		//fclose(f);
 	}
 	Soft_I2C_Stop(&g_softI2C);
 }
@@ -89,7 +89,7 @@ void KP18058_Init() {
 	//g_softI2C.pin_data = PIN_FindPinIndexForRole(IOR_KP18058_DAT, g_softI2C.pin_data);
 
 	Soft_I2C_PreInit(&g_softI2C);
-#if 1
+#if 0
 	for (float f = 0; f < 255; f += 0.25f) {
 		float rgbcw[5] = { 0 };
 		rgbcw[1] = f;
