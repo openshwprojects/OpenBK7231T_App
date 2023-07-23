@@ -47,6 +47,7 @@ void SM2135_Write(float* rgbcw);
 void BP5758D_Write(float* rgbcw);
 void BP1658CJ_Write(float* rgbcw);
 void SM2235_Write(float* rgbcw);
+void KP18058_Write(float *rgbcw);
 void DRV_DGR_OnLedDimmerChange(int iVal);
 void DRV_DGR_OnLedEnableAllChange(int iVal);
 void DRV_DGR_OnLedFinalColorsChange(byte rgbcw[5]);
