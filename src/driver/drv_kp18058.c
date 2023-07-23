@@ -44,8 +44,8 @@ void KP18058_Write(float *rgbcw) {
 			byte a, b;
 			a = cur_col_12 & 0x3F;
 			b = (cur_col_12 >> 6) & 0x3F;
-			Soft_I2C_WriteByte(&g_softI2C, a);
 			Soft_I2C_WriteByte(&g_softI2C, b);
+			Soft_I2C_WriteByte(&g_softI2C, a);
 		}
 	}
 	Soft_I2C_Stop(&g_softI2C);
