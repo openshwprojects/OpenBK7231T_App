@@ -81,7 +81,7 @@ void KP18058_Write(float *rgbcw) {
 // KP18058_RGBCW FF00000000
 void KP18058_Init() {
 	// default map
-	CFG_SetDefaultLEDRemap(1, 0, 2, 3, 4);
+	CFG_SetDefaultLEDRemap(2, 0, 1, 3, 4);
 
 	g_softI2C.pin_clk = 7;
 	g_softI2C.pin_data = 8;
