@@ -459,6 +459,10 @@ const char* htmlPinRoleNames[] = {
 	"TM1638_DAT",
 	"TM1638_STB",
 	"BAT_Relay_n",
+	"KP18058_CLK",
+	"KP18058_DAT",
+	"error",
+	"error",
 	"error",
 	"error",
 };

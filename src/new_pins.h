@@ -537,13 +537,26 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_BAT_Relay_n,
+	//iodetail:{"name":"KP18058_CLK",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"QQQ",
+	//iodetail:"enum":"KP18058_CLK",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_KP18058_CLK,
+	//iodetail:{"name":"KP18058_DAT",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"QQQ",
+	//iodetail:"enum":"KP18058_DAT",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_KP18058_DAT,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
 	//iodetail:"enum":"IOR_Total_Options",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
-
 	IOR_Total_Options,
 } ioRole_t;
 

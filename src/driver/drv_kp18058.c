@@ -85,8 +85,8 @@ void KP18058_Init() {
 
 	g_softI2C.pin_clk = 7;
 	g_softI2C.pin_data = 8;
-	//g_softI2C.pin_clk = PIN_FindPinIndexForRole(IOR_KP18058_CLK, g_softI2C.pin_clk);
-	//g_softI2C.pin_data = PIN_FindPinIndexForRole(IOR_KP18058_DAT, g_softI2C.pin_data);
+	g_softI2C.pin_clk = PIN_FindPinIndexForRole(IOR_KP18058_CLK, g_softI2C.pin_clk);
+	g_softI2C.pin_data = PIN_FindPinIndexForRole(IOR_KP18058_DAT, g_softI2C.pin_data);
 
 	Soft_I2C_PreInit(&g_softI2C);
 #if 0
