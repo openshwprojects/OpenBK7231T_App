@@ -166,7 +166,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.\libs_for_simulator\SDL2-2.24.2\include;.\src\win32\stubs\;.\libs_for_simulator\DevIL-Windows-SDK-1.8.0\include;.\libs_for_simulator\freeglut-MSVC-3.0.0-2.mp\include;.\libs_for_simulator\nativefiledialog\src\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WINDOWS;%(PreprocessorDefinitions);_USE_32BIT_TIME_T </PreprocessorDefinitions>
+      <PreprocessorDefinitions>WINDOWS;%(PreprocessorDefinitions);_USE_32BIT_TIME_T;DEBUG</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -183,17 +183,17 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.\libs_for_simulator\SDL2-2.24.2\include;.\src\win32\stubs\;.\libs_for_simulator\DevIL-Windows-SDK-1.8.0\include;.\libs_for_simulator\freeglut-MSVC-3.0.0-2.mp\include;.\libs_for_simulator\nativefiledialog\src\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WINDOWS;%(PreprocessorDefinitions);_USE_32BIT_TIME_T;WIN32_LEAN_AND_MEAN;WIN32;_CRT_NON_CONFORMING_SWPRINTFS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_DEBUG;_CONSOLE;%(PreprocessorDefinitions) </PreprocessorDefinitions>
+      <PreprocessorDefinitions>WINDOWS;%(PreprocessorDefinitions);_USE_32BIT_TIME_T;WIN32_LEAN_AND_MEAN;WIN32;_CRT_NON_CONFORMING_SWPRINTFS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CONSOLE</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>.\libs_for_simulator\SDL2-2.24.2\lib\x86;.\libs_for_simulator\DevIL-Windows-SDK-1.8.0\lib\x86\Release;.\libs_for_simulator\freeglut-MSVC-3.0.0-2.mp\lib;.\libs_for_simulator\nativefiledialog\build\lib\Debug\x86</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>.\libs_for_simulator\SDL2-2.24.2\lib\x86;.\libs_for_simulator\DevIL-Windows-SDK-1.8.0\lib\x86\Release;.\libs_for_simulator\freeglut-MSVC-3.0.0-2.mp\lib;.\libs_for_simulator\nativefiledialog\build\lib\Release\x86</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">
@@ -355,6 +355,7 @@
     <ClCompile Include="src\driver\drv_ir.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_kp18058.c" />
     <ClCompile Include="src\driver\drv_kp18068.c" />
     <ClCompile Include="src\driver\drv_main.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>

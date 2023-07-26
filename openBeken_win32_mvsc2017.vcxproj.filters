@@ -879,6 +879,9 @@
     <ClCompile Include="src\cmnds\cmd_simulatorOnly.c">
       <Filter>Cmd</Filter>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_kp18058.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />
