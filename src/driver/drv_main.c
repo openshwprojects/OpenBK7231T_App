@@ -138,11 +138,13 @@ static driver_t g_drivers[] = {
 	{ "CSE7766",	CSE7766_Init,		CSE7766_RunFrame,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
 #if PLATFORM_BEKEN
+#if PLATFORM_BK7231N
 	//drvdetail:{"name":"SM16703P",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"WIP driver",
 	//drvdetail:"requires":""}
 	{ "SM16703P",	SM16703P_Init,		NULL,						NULL, NULL, NULL, NULL, false },
+#endif
 	//drvdetail:{"name":"IR",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"IRLibrary wrapper, so you can receive remote signals and send them. See [forum discussion here](https://www.elektroda.com/rtvforum/topic3920360.html), also see [LED strip and IR YT video](https://www.youtube.com/watch?v=KU0tDwtjfjw)",

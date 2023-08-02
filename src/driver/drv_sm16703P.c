@@ -1,4 +1,4 @@
-#if PLATFORM_BEKEN
+#if PLATFORM_BK7231N
 
 #include "arm_arch.h"
 #include "drv_model_pub.h"
