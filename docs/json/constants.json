@@ -30,6 +30,18 @@
     "requires": ""
   },
   {
+    "name": "$FLAG**",
+    "title": "$FLAG**",
+    "descr": "Provides flag access, as above.",
+    "requires": ""
+  },
+  {
+    "name": "$FLAG*",
+    "title": "$FLAG*",
+    "descr": "Provides flag access, as above.",
+    "requires": ""
+  },
+  {
     "name": "$led_dimmer",
     "title": "$led_dimmer",
     "descr": "Current value of LED dimmer, 0-100 range",

@@ -62,6 +62,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | echo | [Message] | Sends given message back to console. This command expands variables, so writing $CH12 will print value of channel 12, etc. Remember that you can also use special channel indices to access persistant flash variables and to access LED variables like dimmer, etc. | File: cmnds/cmd_main.c<br/>Function: CMD_Echo |
 | EnergyCntReset |  | Resets the total Energy Counter, the one that is usually kept after device reboots. After this commands, the counter will start again from 0. | File: driver/drv_bl_shared.c<br/>Function: BL09XX_ResetEnergyCounter |
 | exec | [Filename] | exec <file> - run autoexec.bat or other file from LFS if present | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_lfsexec |
+| ExitSimulator |  | [SIMULATOR ONLY] Exits the application instance | File: cmnds/cmd_simulatorOnly.c<br/>Function: CMD_ExitSimulator |
 | fakeTuyaPacket | [HexString] | This simulates packet being sent from TuyaMCU to our OBK device. | File: driver/drv_tuyaMCU.c<br/>Function: TuyaMCU_FakePacket |
 | flags | [IntegerValue] | Sets the device flags | File: cmnds/cmd_main.c<br/>Function: CMD_Flags |
 | FriendlyName | [Name] | Sets the full name of the device | File: cmnds/cmd_channels.c<br/>Function: CMD_FriendlyName |
@@ -83,6 +84,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | IREnable | [Str][1or0] | Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol | File: driver/drv_ir.cpp<br/>Function: IR_Enable |
 | IRSend | [PROT-ADDR-CMD-REP] | Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0 | File: driver/drv_ir.cpp<br/>Function: IR_Send_Cmd |
 | json_test | cmnd_json_test |  | File: cmnds/cmd_test.c<br/>Function: NULL); |
+| KP18058_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps KP18058_Map RGBCW values to given indices of KP18058 channels. This is because KP18058 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: KP18058_Map 0 1 2 3 4 | File: driver/drv_sm2235.c<br/>Function: KP18058_Map |
+| KP18058_RGBCW | [HexColor] | Don't use it. It's for direct access of KP18058 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb | File: driver/drv_bp5758d.c<br/>Function: KP18058_RGBCW |
 | lcd_clear |  | Clears the LCD | File: i2c/drv_i2c_lcd_pcf8574t.c<br/>Function: DRV_I2C_LCD_PCF8574_Clear |
 | lcd_clearAndGoto |  | Clears LCD and go to pos | File: i2c/drv_i2c_lcd_pcf8574t.c<br/>Function: DRV_I2C_LCD_PCF8574_ClearAndGoTo |
 | lcd_goto |  | Go to position on LCD | File: i2c/drv_i2c_lcd_pcf8574t.c<br/>Function: DRV_I2C_LCD_PCF8574_GoTo |
@@ -211,10 +214,9 @@ Do not add anything here, as it will overwritten with next rebuild.
 | SHT_SetAlert | [temp_high, temp_low, hum_high, hum_low]<br/>Req:all | Set Sensor alert configuration<br/>e.g.:SHT_SetAlertCmd | File: driver/drv_sht3x.c<br/>Function: SHT3X_SetAlertcmd |
 | SHT_StopPer |  | Stop periodical capture for SHT Sensor | File: driver/drv_sht3x.c<br/>Function: SHT3X_StopPerCmd |
 | simonirtest |  | Simons Special Test | File: cmnds/cmd_main.c<br/>Function: CMD_SimonTest |
-| SM16703P_Send |  | NULL | File: driver/drv_sm16703P.c<br/>Function: SM16703P_Send_Cmd |
-| SM16703P_Test |  | qq | File: driver/drv_ucs1912.c<br/>Function: SM16703P_Test |
-| SM16703P_Test_3xOne |  | NULL | File: driver/drv_sm16703P.c<br/>Function: SM16703P_Test_3xOne |
-| SM16703P_Test_3xZero |  | NULL | File: driver/drv_sm16703P.c<br/>Function: SM16703P_Test_3xZero |
+| SM16703P_Init | SM16703P_Start |  | File: driver/drv_sm16703P.c<br/>Function: NULL); |
+| SM16703P_SetPixel | SM16703P_CMD_setPixel |  | File: driver/drv_sm16703P.c<br/>Function: NULL); |
+| SM16703P_Start | SM16703P_StartTX |  | File: driver/drv_sm16703P.c<br/>Function: NULL); |
 | SM2135_Current | [RGBLimit][CWLimit] | Sets the maximum current for LED driver. Please note that arguments are using SM2135 codes, see [full list of codes here](https://www.elektroda.com/rtvforum/viewtopic.php?p=20493415#20493415) | File: driver/drv_sm2135.c<br/>Function: SM2135_Current |
 | SM2135_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of SM2135 channels. This is because SM2135 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: SM2135_Map 0 1 2 3 4 | File: driver/drv_sm2135.c<br/>Function: SM2135_Map |
 | SM2135_RGBCW | [HexColor] | Don't use it. It's for direct access of SM2135 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb | File: driver/drv_sm2135.c<br/>Function: SM2135_RGBCW |

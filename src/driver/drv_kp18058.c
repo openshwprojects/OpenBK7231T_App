@@ -97,14 +97,14 @@ void KP18058_Init() {
 	}
 #endif
 
-	//cmddetail:{"name":"BP5758D_RGBCW","args":"[HexColor]",
-	//cmddetail:"descr":"Don't use it. It's for direct access of BP5758D driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",
-	//cmddetail:"fn":"BP5758D_RGBCW","file":"driver/drv_bp5758d.c","requires":"",
+	//cmddetail:{"name":"KP18058_RGBCW","args":"[HexColor]",
+	//cmddetail:"descr":"Don't use it. It's for direct access of KP18058 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",
+	//cmddetail:"fn":"KP18058_RGBCW","file":"driver/drv_bp5758d.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("KP18058_RGBCW", CMD_LEDDriver_WriteRGBCW, NULL);
-	//cmddetail:{"name":"SM2235_Map","args":"[Ch0][Ch1][Ch2][Ch3][Ch4]",
-	//cmddetail:"descr":"Maps the RGBCW values to given indices of SM2235 channels. This is because SM2235 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: SM2235_Map 0 1 2 3 4",
-	//cmddetail:"fn":"SM2235_Map","file":"driver/drv_sm2235.c","requires":"",
+	//cmddetail:{"name":"KP18058_Map","args":"[Ch0][Ch1][Ch2][Ch3][Ch4]",
+	//cmddetail:"descr":"Maps KP18058_Map RGBCW values to given indices of KP18058 channels. This is because KP18058 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: KP18058_Map 0 1 2 3 4",
+	//cmddetail:"fn":"KP18058_Map","file":"driver/drv_sm2235.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("KP18058_Map", CMD_LEDDriver_Map, NULL);
 }

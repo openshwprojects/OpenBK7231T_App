@@ -65,6 +65,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | echo | [Message] | Sends given message back to console. This command expands variables, so writing $CH12 will print value of channel 12, etc. Remember that you can also use special channel indices to access persistant flash variables and to access LED variables like dimmer, etc. |
 | EnergyCntReset |  | Resets the total Energy Counter, the one that is usually kept after device reboots. After this commands, the counter will start again from 0. |
 | exec | [Filename] | exec <file> - run autoexec.bat or other file from LFS if present |
+| ExitSimulator |  | [SIMULATOR ONLY] Exits the application instance |
 | fakeTuyaPacket | [HexString] | This simulates packet being sent from TuyaMCU to our OBK device. |
 | flags | [IntegerValue] | Sets the device flags |
 | FriendlyName | [Name] | Sets the full name of the device |
@@ -86,6 +87,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | IREnable | [Str][1or0] | Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol |
 | IRSend | [PROT-ADDR-CMD-REP] | Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0 |
 | json_test | cmnd_json_test |  |
+| KP18058_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps KP18058_Map RGBCW values to given indices of KP18058 channels. This is because KP18058 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: KP18058_Map 0 1 2 3 4 |
+| KP18058_RGBCW | [HexColor] | Don't use it. It's for direct access of KP18058 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |
 | lcd_clear |  | Clears the LCD |
 | lcd_clearAndGoto |  | Clears LCD and go to pos |
 | lcd_goto |  | Go to position on LCD |
@@ -214,10 +217,9 @@ Do not add anything here, as it will overwritten with next rebuild.
 | SHT_SetAlert | [temp_high, temp_low, hum_high, hum_low]<br/>Req:all | Set Sensor alert configuration<br/>e.g.:SHT_SetAlertCmd |
 | SHT_StopPer |  | Stop periodical capture for SHT Sensor |
 | simonirtest |  | Simons Special Test |
-| SM16703P_Send |  | NULL |
-| SM16703P_Test |  | qq |
-| SM16703P_Test_3xOne |  | NULL |
-| SM16703P_Test_3xZero |  | NULL |
+| SM16703P_Init | SM16703P_Start |  |
+| SM16703P_SetPixel | SM16703P_CMD_setPixel |  |
+| SM16703P_Start | SM16703P_StartTX |  |
 | SM2135_Current | [RGBLimit][CWLimit] | Sets the maximum current for LED driver. Please note that arguments are using SM2135 codes, see [full list of codes here](https://www.elektroda.com/rtvforum/viewtopic.php?p=20493415#20493415) |
 | SM2135_Map | [Ch0][Ch1][Ch2][Ch3][Ch4] | Maps the RGBCW values to given indices of SM2135 channels. This is because SM2135 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: SM2135_Map 0 1 2 3 4 |
 | SM2135_RGBCW | [HexColor] | Don't use it. It's for direct access of SM2135 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb |

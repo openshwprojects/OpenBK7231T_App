@@ -513,6 +513,15 @@
     "examples": ""
   },
   {
+    "name": "ExitSimulator",
+    "args": "",
+    "descr": "[SIMULATOR ONLY] Exits the application instance",
+    "fn": "CMD_ExitSimulator",
+    "file": "cmnds/cmd_simulatorOnly.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "fakeTuyaPacket",
     "args": "[HexString]",
     "descr": "This simulates packet being sent from TuyaMCU to our OBK device.",
@@ -698,6 +707,24 @@
     "descr": "",
     "fn": "NULL);",
     "file": "cmnds/cmd_test.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "KP18058_Map",
+    "args": "[Ch0][Ch1][Ch2][Ch3][Ch4]",
+    "descr": "Maps KP18058_Map RGBCW values to given indices of KP18058 channels. This is because KP18058 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: KP18058_Map 0 1 2 3 4",
+    "fn": "KP18058_Map",
+    "file": "driver/drv_sm2235.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "KP18058_RGBCW",
+    "args": "[HexColor]",
+    "descr": "Don't use it. It's for direct access of KP18058 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",
+    "fn": "KP18058_RGBCW",
+    "file": "driver/drv_bp5758d.c",
     "requires": "",
     "examples": ""
   },
@@ -1854,37 +1881,28 @@
     "examples": ""
   },
   {
-    "name": "SM16703P_Send",
-    "args": "",
-    "descr": "NULL",
-    "fn": "SM16703P_Send_Cmd",
+    "name": "SM16703P_Init",
+    "args": "SM16703P_Start",
+    "descr": "",
+    "fn": "NULL);",
     "file": "driver/drv_sm16703P.c",
     "requires": "",
     "examples": ""
   },
   {
-    "name": "SM16703P_Test",
-    "args": "",
-    "descr": "qq",
-    "fn": "SM16703P_Test",
-    "file": "driver/drv_ucs1912.c",
-    "requires": "",
-    "examples": ""
-  },
-  {
-    "name": "SM16703P_Test_3xOne",
-    "args": "",
-    "descr": "NULL",
-    "fn": "SM16703P_Test_3xOne",
+    "name": "SM16703P_SetPixel",
+    "args": "SM16703P_CMD_setPixel",
+    "descr": "",
+    "fn": "NULL);",
     "file": "driver/drv_sm16703P.c",
     "requires": "",
     "examples": ""
   },
   {
-    "name": "SM16703P_Test_3xZero",
-    "args": "",
-    "descr": "NULL",
-    "fn": "SM16703P_Test_3xZero",
+    "name": "SM16703P_Start",
+    "args": "SM16703P_StartTX",
+    "descr": "",
+    "fn": "NULL);",
     "file": "driver/drv_sm16703P.c",
     "requires": "",
     "examples": ""

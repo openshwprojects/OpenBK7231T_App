@@ -242,18 +242,18 @@ static driver_t g_drivers[] = {
 	{ "MCP9808",	MCP9808_Init,		MCP9808_OnEverySecond,		MCP9808_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 	//drvdetail:{"name":"KP18068",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"KP18068 I2C LED driver",
+	//drvdetail:"descr":"KP18068 I2C LED driver. Unfinished due to the lack of the information.",
 	//drvdetail:"requires":""}
 	{ "KP18068",		KP18068_Init,		NULL,			NULL, NULL, NULL, NULL, false },
 	//drvdetail:{"name":"KP18058",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"KP18058 I2C LED driver",
+	//drvdetail:"descr":"KP18058 I2C LED driver. Working, see reverse-engineering [topic](https://www.elektroda.pl/rtvforum/topic3991620.html)",
 	//drvdetail:"requires":""}
 	{ "KP18058",		KP18058_Init,		NULL,			NULL, NULL, NULL, NULL, false },
 #ifdef ENABLE_DRIVER_MAX72XX
 	//drvdetail:{"name":"MAX72XX",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"MAX72XX LED matrix display driver with font and simple script interface.",
+	//drvdetail:"descr":"MAX72XX LED matrix display driver with font and simple script interface. See [protocol explanation](https://www.elektroda.pl/rtvforum/viewtopic.php?p=18040628#18040628)",
 	//drvdetail:"requires":""}
 	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, NULL, NULL, false },
 #endif
@@ -275,7 +275,7 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_HT16K33
 	//drvdetail:{"name":"HT16K33",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"Driver for 16-segment LED display with I2C.",
+	//drvdetail:"descr":"Driver for 16-segment LED display with I2C. See [protocol explanation](https://www.elektroda.pl/rtvforum/topic3984616.html)",
 	//drvdetail:"requires":""}
 	{ "HT16K33",	HT16K33_Init,		NULL,		NULL, NULL,NULL,  NULL, false },
 #endif

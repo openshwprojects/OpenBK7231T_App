@@ -164,13 +164,19 @@
   {
     "name": "KP18068",
     "title": "TODO",
-    "descr": "KP18068 I2C LED driver",
+    "descr": "KP18068 I2C LED driver. Unfinished due to the lack of the information.",
+    "requires": ""
+  },
+  {
+    "name": "KP18058",
+    "title": "TODO",
+    "descr": "KP18058 I2C LED driver. Working, see reverse-engineering [topic](https://www.elektroda.pl/rtvforum/topic3991620.html)",
     "requires": ""
   },
   {
     "name": "MAX72XX",
     "title": "TODO",
-    "descr": "MAX72XX LED matrix display driver with font and simple script interface.",
+    "descr": "MAX72XX LED matrix display driver with font and simple script interface. See [protocol explanation](https://www.elektroda.pl/rtvforum/viewtopic.php?p=18040628#18040628)",
     "requires": ""
   },
   {
@@ -194,7 +200,7 @@
   {
     "name": "HT16K33",
     "title": "TODO",
-    "descr": "Driver for 16-segment LED display with I2C.",
+    "descr": "Driver for 16-segment LED display with I2C. See [protocol explanation](https://www.elektroda.pl/rtvforum/topic3984616.html)",
     "requires": ""
   },
   {

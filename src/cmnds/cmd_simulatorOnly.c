@@ -19,9 +19,9 @@ static commandResult_t CMD_ExitSimulator(const void* context, const char* cmd, c
 
 
 void CMD_InitSimulatorOnlyCommands() {
-	//cmddetail:{"name":"exit","args":"",
+	//cmddetail:{"name":"ExitSimulator","args":"",
 	//cmddetail:"descr":"[SIMULATOR ONLY] Exits the application instance",
-	//cmddetail:"fn":"CMD_Exit","file":"cmnds/cmd_simulatorOnly.c","requires":"",
+	//cmddetail:"fn":"CMD_ExitSimulator","file":"cmnds/cmd_simulatorOnly.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("ExitSimulator", CMD_ExitSimulator, NULL);
 }

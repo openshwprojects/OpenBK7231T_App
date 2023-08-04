@@ -11,6 +11,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | $CH*** |  Provides channel access, so you can do math expressions on channel values. $CH1 is channel 1, $CH20 is channel 20, $CH140 is channel 140, etc |
 | $CH** |  Provides channel access, as above. |
 | $CH* |  Provides channel access, as above. |
+| $FLAG** |  Provides flag access, as above. |
+| $FLAG* |  Provides flag access, as above. |
 | $led_dimmer |  Current value of LED dimmer, 0-100 range |
 | $led_enableAll |  Returns 1 if LED is enabled, otherwise 0. |
 | $led_hue |  Current LED Hue value |

@@ -285,5 +285,12 @@
     "title": "todo",
     "file": "new_pins.h",
     "descr": "[MQTT] Use kWh unit for energy consumption (total, last hour, today) instead of Wh"
+  },
+  {
+    "index": "41",
+    "enum": "OBK_FLAG_BUTTON_DISABLE_ALL",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[BTN] Ignore all button events (aka child lock)"
   }
 ]
