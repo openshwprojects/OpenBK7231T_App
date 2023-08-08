@@ -885,6 +885,9 @@
     <ClCompile Include="src\driver\drv_chargingLimit.c">
       <Filter>Drv</Filter>
     </ClCompile>
+    <ClCompile Include="src\selftest\selftest_chargingDriver.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />

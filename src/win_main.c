@@ -128,6 +128,7 @@ void SIM_ClearOBK(const char *flashPath) {
 }
 void Win_DoUnitTests() {
 
+	Test_ChargeLimitDriver();
 	// this is slowest
 	Test_TuyaMCU_Basic();
 	Test_Battery();

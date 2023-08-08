@@ -956,6 +956,7 @@
     </ClCompile>
     <ClCompile Include="src\selftest\selftest_batteryDriver.c" />
     <ClCompile Include="src\selftest\selftest_buttonEvents.c" />
+    <ClCompile Include="src\selftest\selftest_chargingDriver.c" />
     <ClCompile Include="src\selftest\selftest_clockEvents.c" />
     <ClCompile Include="src\selftest\selftest_cmd_startup.c" />
     <ClCompile Include="src\selftest\selftest_flashSearch.c" />
