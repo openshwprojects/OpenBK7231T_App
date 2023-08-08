@@ -107,6 +107,11 @@ void MCP9808_Init();
 void MCP9808_OnEverySecond();
 void MCP9808_AppendInformationToHTTPIndexPage(http_request_t* request);
 
+void ChargingLimit_Init();
+void ChargingLimit_OnEverySecond();
+void ChargingLimit_AppendInformationToHTTPIndexPage(http_request_t *request);
+
+
 #define SM2135_DELAY         4
 
 // Software I2C 

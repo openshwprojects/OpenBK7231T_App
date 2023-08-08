@@ -123,6 +123,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "BL0942SPI",	BL0942_SPI_Init,	BL0942_SPI_RunFrame,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
+#ifdef ENABLE_DRIVER_CHARGINGLIMIT
+	//drvdetail:{"name":"ChargingLimit",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"ChargingLimit",
+	//drvdetail:"requires":""}
+	{ "ChargingLimit", ChargingLimit_Init, ChargingLimit_OnEverySecond, ChargingLimit_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+#endif
 #ifdef ENABLE_DRIVER_BL0937
 	//drvdetail:{"name":"BL0937",
 	//drvdetail:"title":"TODO",
@@ -235,9 +242,9 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"CHT8305 is a Temperature and Humidity sensor with I2C interface.",
 	//drvdetail:"requires":""}
 	{ "CHT8305",	CHT8305_Init,		CHT8305_OnEverySecond,		CHT8305_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
-	//drvdetail:{"name":"CHT8305",
+	//drvdetail:{"name":"MCP9808",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"CHT8305 is a Temperature and Humidity sensor with I2C interface.",
+	//drvdetail:"descr":"MCP9808 is a Temperature sensor with I2C interface and an external wakeup pin, see [docs](https://www.elektroda.pl/rtvforum/topic3988466.html).",
 	//drvdetail:"requires":""}
 	{ "MCP9808",	MCP9808_Init,		MCP9808_OnEverySecond,		MCP9808_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 	//drvdetail:{"name":"KP18068",
