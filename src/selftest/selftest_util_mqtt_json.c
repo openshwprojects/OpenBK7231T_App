@@ -1,6 +1,6 @@
 #ifdef WINDOWS
 
-#include "selftest_local.h".
+#include "selftest_local.h"
 
 bool SIM_BeginParsingMQTTJSON(const char *topic, bool bPrefixMode) {
 	const char *data;

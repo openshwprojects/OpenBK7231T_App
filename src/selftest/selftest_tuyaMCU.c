@@ -1,7 +1,7 @@
 
 #ifdef WINDOWS
 
-#include "selftest_local.h".
+#include "selftest_local.h"
 
 void Test_TuyaMCU_Basic() {
 	// reset whole device

@@ -1,6 +1,6 @@
 #ifdef WINDOWS
 
-#include "selftest_local.h".
+#include "selftest_local.h"
 
 const char *demo_loop_1 =
 "setChannel 10 0\r\n"

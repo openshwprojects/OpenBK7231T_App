@@ -1,6 +1,6 @@
 #ifdef WINDOWS
 
-#include "selftest_local.h".
+#include "selftest_local.h"
 
 // This will allow us to treat multiple PWMs on a single channel as one PWM channel.
 // Thanks to this users can turn for example RGB LED controller

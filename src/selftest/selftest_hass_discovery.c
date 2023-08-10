@@ -1,6 +1,6 @@
 #ifdef WINDOWS
 
-#include "selftest_local.h".
+#include "selftest_local.h"
 
 void Test_HassDiscovery_Relay_1x() {
 	const char *shortName = "WinRelTest1x";

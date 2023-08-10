@@ -1,6 +1,6 @@
 #ifdef WINDOWS
 
-#include "selftest_local.h".
+#include "selftest_local.h"
 
 void Test_Tasmota_MQTT_Switch() {
 	SIM_ClearOBK(0);
