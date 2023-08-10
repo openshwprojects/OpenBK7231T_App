@@ -13,6 +13,7 @@ static int chl_targetChannelStartValue = -1;
 static int chl_targetChannelMaxDelta = -1;
 static int chl_timeLeftSeconds = -1;
 static char *chl_commandToRun = 0;
+static int chl_lastDelteForDisplay = -1;
 
 // startDriver ChargingLimit
 // chSetupLimit [limitChannelIndex] [maxAllowedLimitChannelDelta] [timeoutOr-1] [commandToRun]
@@ -62,7 +63,7 @@ void ChargingLimit_OnLimitReached(bool bTimedOut) {
 	// do not reset command because we may want to reuse the strdup allocation
 }
 void ChargingLimit_OnEverySecond() {
-	int newValue, delta;
+	int newValue;
 
 	// if off
 	if (chl_targetChannel == -1)
@@ -77,12 +78,12 @@ void ChargingLimit_OnEverySecond() {
 	}
 	// check channel
 	newValue = CHANNEL_Get(chl_targetChannel);
-	delta = newValue - chl_targetChannelStartValue;
+	chl_lastDelteForDisplay = newValue - chl_targetChannelStartValue;
 	// absolute
-	if (delta < 0)
-		delta = -delta;
+	if (chl_lastDelteForDisplay < 0)
+		chl_lastDelteForDisplay = -chl_lastDelteForDisplay;
 	// has exceed?
-	if (delta > chl_targetChannelMaxDelta) {
+	if (chl_lastDelteForDisplay > chl_targetChannelMaxDelta) {
 		ChargingLimit_OnLimitReached(false);
 	}
 }
@@ -93,8 +94,9 @@ void ChargingLimit_AppendInformationToHTTPIndexPage(http_request_t* request)
 		hprintf255(request, "<h2>Charging limit reached</h2>");
 	}
 	else {
-		hprintf255(request, "<h2>Charging limit on for channel %i, limit %i, time left %i</h2>",
-			chl_targetChannel, chl_targetChannelMaxDelta, chl_timeLeftSeconds);
+		hprintf255(request, "<h2>Charging limit on for channel %i - %i/%i, time left %i s</h2>",
+			chl_targetChannel, 
+			chl_lastDelteForDisplay, chl_targetChannelMaxDelta, chl_timeLeftSeconds);
 	}
 }
 
