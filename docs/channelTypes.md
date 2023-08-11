@@ -43,4 +43,5 @@ Do not add anything here, as it will overwritten with next rebuild.
 | Power_div10 |  Just like power, but with one decimal place (but stored as integer, for TuyaMCU support) |
 | ReadOnlyLowMidHigh |  Like LowMidHigh, but just read only |
 | SmokePercent |  Smoke percentage |
+| Illuminance |  Illuminance in Lux |
 | Max |  This is the current total number of available channel types. |

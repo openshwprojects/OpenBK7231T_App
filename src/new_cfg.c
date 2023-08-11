@@ -26,7 +26,11 @@ int g_cfg_pendingChanges = 0;
 #define MAIN_CFG_VERSION_V3 3
 // version 4 - bumped size by 1024,
 // added alternate ssid fields
+#if PLATFORM_W600
+#define MAIN_CFG_VERSION 3
+#else
 #define MAIN_CFG_VERSION 4
+#endif
 
 static byte CFG_CalcChecksum(mainConfig_t *inf) {
 	int header_size;
@@ -38,11 +42,14 @@ static byte CFG_CalcChecksum(mainConfig_t *inf) {
 
 	if (inf->version == MAIN_CFG_VERSION_V3) {
 		configSize = MAGIC_CONFIG_SIZE_V3;
+#if ALLOW_SSID2
 		// quick fix for converting
 		inf->wifi_pass2[0] = 0;
 		inf->wifi_ssid2[0] = 0;
+#endif
 	}
-	else {
+	else
+	{
 		configSize = sizeof(mainConfig_t);
 	}
 	remaining_size = configSize - header_size;
@@ -322,10 +329,18 @@ const char *CFG_GetWiFiPass(){
 	return wifi_pass;
 }
 const char *CFG_GetWiFiSSID2() {
+#if ALLOW_SSID2
 	return g_cfg.wifi_ssid2;
+#else
+	return "";
+#endif
 }
 const char *CFG_GetWiFiPass2() {
+#if ALLOW_SSID2
 	return g_cfg.wifi_pass2;
+#else
+	return "";
+#endif
 }
 int CFG_SetWiFiSSID(const char *s) {
 	// this will return non-zero if there were any changes
@@ -351,20 +366,24 @@ int CFG_SetWiFiPass(const char *s) {
 	return 0;
 }
 int CFG_SetWiFiSSID2(const char *s) {
+#if ALLOW_SSID2
 	// this will return non-zero if there were any changes
 	if (strcpy_safe_checkForChanges(g_cfg.wifi_ssid2, s, sizeof(g_cfg.wifi_ssid2))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
 		return 1;
 	}
+#endif
 	return 0;
 }
 int CFG_SetWiFiPass2(const char *s) {
+#if ALLOW_SSID2
 	if (strcpy_safe_checkForChanges(g_cfg.wifi_pass2, s, sizeof(g_cfg.wifi_pass2))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
 		return 1;
 	}
+#endif
 	return 0;
 }
 const char *CFG_GetMQTTHost() {

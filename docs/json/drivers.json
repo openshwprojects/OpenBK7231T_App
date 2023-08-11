@@ -90,15 +90,21 @@
     "requires": ""
   },
   {
+    "name": "DGR",
+    "title": "TODO",
+    "descr": "Tasmota Device groups driver. See [forum example](https://www.elektroda.com/rtvforum/topic3925472.html) and TODO-video tutorial (will post on YT soon)",
+    "requires": ""
+  },
+  {
     "name": "Wemo",
     "title": "TODO",
     "descr": "Wemo emulation for Alexa. You must also start SSDP so it can run, because it depends on SSDP discovery.",
     "requires": ""
   },
   {
-    "name": "DGR",
+    "name": "Hue",
     "title": "TODO",
-    "descr": "Tasmota Device groups driver. See [forum example](https://www.elektroda.com/rtvforum/topic3925472.html) and TODO-video tutorial (will post on YT soon)",
+    "descr": "Hue emulation for Alexa. You must also start SSDP so it can run, because it depends on SSDP discovery.",
     "requires": ""
   },
   {
@@ -158,13 +164,19 @@
   {
     "name": "KP18068",
     "title": "TODO",
-    "descr": "KP18068 I2C LED driver",
+    "descr": "KP18068 I2C LED driver. Unfinished due to the lack of the information.",
+    "requires": ""
+  },
+  {
+    "name": "KP18058",
+    "title": "TODO",
+    "descr": "KP18058 I2C LED driver. Working, see reverse-engineering [topic](https://www.elektroda.pl/rtvforum/topic3991620.html)",
     "requires": ""
   },
   {
     "name": "MAX72XX",
     "title": "TODO",
-    "descr": "MAX72XX LED matrix display driver with font and simple script interface.",
+    "descr": "MAX72XX LED matrix display driver with font and simple script interface. See [protocol explanation](https://www.elektroda.pl/rtvforum/viewtopic.php?p=18040628#18040628)",
     "requires": ""
   },
   {
@@ -183,6 +195,12 @@
     "name": "TM1638",
     "title": "TODO",
     "descr": "Driver for 7-segment LED display with DIO/CLK/STB interface. TM1638 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20553628#20553628) for details.",
+    "requires": ""
+  },
+  {
+    "name": "HT16K33",
+    "title": "TODO",
+    "descr": "Driver for 16-segment LED display with I2C. See [protocol explanation](https://www.elektroda.pl/rtvforum/topic3984616.html)",
     "requires": ""
   },
   {

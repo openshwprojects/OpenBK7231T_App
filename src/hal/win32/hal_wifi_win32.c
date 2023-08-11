@@ -18,7 +18,12 @@ static char g_ipStr[32];
 
 void HAL_ConnectToWiFi(const char *ssid, const char *psk, obkStaticIP_t *ip)
 {
-	g_wifiStatusCallback(WIFI_STA_CONNECTED);
+	if (g_wifiStatusCallback) {
+		g_wifiStatusCallback(WIFI_STA_CONNECTED);
+	}
+	else {
+		printf("Win32 simulator - not calling g_wifiStatusCallback because it's null\n");
+	}
 }
 
 void HAL_DisconnectFromWifi()

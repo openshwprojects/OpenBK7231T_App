@@ -79,7 +79,7 @@ addChangeHandler NoPingTime > 40 doRelayClick
 
 // This will automatically turn off relay after about 2 seconds
 // NOTE: addRepeatingEvent [RepeatTime] [RepeatCount]
-// addChangeHandler Channel0 != 0 addRepeatingEvent 2 1 setChannel 0 0
+addChangeHandler Channel0 != 0 addRepeatingEvent 2 1 setChannel 0 0
 
 AddEventHandler OnClick 0 addChannel 1 -10 0 100 AddEventHandler OnClick 1 addChannel 1 10 0 100
 
@@ -177,7 +177,7 @@ int EVENT_ParseEventName(const char *s) {
 		return CMD_EVENT_LED_STATE;
 	if (!stricmp(s, "LEDMode"))
 		return CMD_EVENT_LED_MODE;
-    if(!stricmp(s,"energycounter"))
+    if(!stricmp(s,"energycounter") || !stricmp(s, "energy"))
         return CMD_EVENT_CHANGE_CONSUMPTION_TOTAL;
     if(!stricmp(s,"energycounter_last_hour"))
         return CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR;

@@ -45,7 +45,8 @@ void SIM_AppendUARTByte(byte rc) {
 
 bool SIM_UART_ExpectAndConsumeHByte(byte b) {
 	byte nextB;
-	if (SIM_UART_GetDataSize() == 0)
+	int dataSize = SIM_UART_GetDataSize();
+	if (dataSize == 0)
 		return false;
 	nextB = SIM_UART_GetByte(0);
 	if (nextB == b) {

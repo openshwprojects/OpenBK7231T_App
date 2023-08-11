@@ -537,13 +537,26 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_BAT_Relay_n,
+	//iodetail:{"name":"KP18058_CLK",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"QQQ",
+	//iodetail:"enum":"KP18058_CLK",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_KP18058_CLK,
+	//iodetail:{"name":"KP18058_DAT",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"QQQ",
+	//iodetail:"enum":"KP18058_DAT",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_KP18058_DAT,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
 	//iodetail:"enum":"IOR_Total_Options",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
-
 	IOR_Total_Options,
 } ioRole_t;
 
@@ -818,6 +831,13 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_SmokePercent,
+	//chandetail:{"name":"Illuminance",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Illuminance in Lux",
+	//chandetail:"enum":"ChType_Illuminance",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Illuminance,
 		
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
@@ -942,8 +962,9 @@ typedef struct pinsState_s {
 #define OBK_FLAG_POWER_FORCE_ZERO_IF_RELAYS_OPEN    38
 #define OBK_FLAG_MQTT_PUBLISH_ALL_CHANNELS			39
 #define OBK_FLAG_MQTT_ENERGY_IN_KWH					40
+#define OBK_FLAG_BUTTON_DISABLE_ALL					41
 
-#define OBK_TOTAL_FLAGS 41
+#define OBK_TOTAL_FLAGS 42
 
 #define LOGGER_FLAG_MQTT_DEDUPER					1
 #define LOGGER_FLAG_POWER_SAVE						2
@@ -1118,6 +1139,11 @@ typedef struct mainConfig_s {
 	char ping_host[64];
 	// ofs 0x000005E0 (dec 1504)
 	//char initCommandLine[512];
+#if PLATFORM_W600
+#define ALLOW_SSID2 0
+	char initCommandLine[512];
+#else
+#define ALLOW_SSID2 1
 	char initCommandLine[1568];
 	// offset 0x00000C00 (3072 decimal)
 	char wifi_ssid2[64];
@@ -1125,6 +1151,7 @@ typedef struct mainConfig_s {
 	char wifi_pass2[68];
 	// offset 0x00000C84 (3204 decimal)
 	char unused[380];
+#endif
 } mainConfig_t; 
 
 // one sector is 4096 so it we still have some expand possibility

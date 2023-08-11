@@ -107,9 +107,18 @@ void LED_ResetGlobalVariablesToDefaults() {
 
 bool LED_IsLedDriverChipRunning()
 {
+#ifndef PLATFORM_W600
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	if (TuyaMCU_IsLEDRunning()) {
+		return true;
+	}
+#endif
+#endif
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	return DRV_IsRunning("SM2135") || DRV_IsRunning("BP5758D") 
-		|| DRV_IsRunning("TESTLED") || DRV_IsRunning("SM2235") || DRV_IsRunning("BP1658CJ");
+		|| DRV_IsRunning("TESTLED") || DRV_IsRunning("SM2235") || DRV_IsRunning("BP1658CJ")
+		|| DRV_IsRunning("KP18058")
+		;
 #else
 	return false;
 #endif
@@ -252,6 +261,9 @@ void LED_I2CDriver_WriteRGBCW(float* finalRGBCW) {
 	}
 	if (DRV_IsRunning("SM2235")) {
 		SM2235_Write(finalRGBCW);
+	}
+	if (DRV_IsRunning("KP18058")) {
+		KP18058_Write(finalRGBCW);
 	}
 #endif
 }
@@ -552,7 +564,12 @@ void apply_smart_light() {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_DGR_OnLedFinalColorsChange(baseRGBCW);
 #endif
-
+#ifndef PLATFORM_W600
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	TuyaMCU_OnRGBCWChange(finalColors, g_lightEnableAll, g_lightMode, g_brightness0to100*0.01f, LED_GetTemperature0to1Range());
+#endif
+#endif
+	
 	// I am not sure if it's the best place to do it
 	// NOTE: this will broadcast MQTT only if a flag is set
 	sendFullRGBCW_IfEnabled();

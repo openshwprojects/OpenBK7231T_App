@@ -25,6 +25,7 @@ https://developer.tuya.com/en/docs/iot/tuyacloudlowpoweruniversalserialaccesspro
 #include "drv_public.h"
 #include <time.h>
 #include "drv_ntp.h"
+#include "../rgb2hsv.h"
 
 
 #define TUYA_CMD_HEARTBEAT     0x00
@@ -189,6 +190,10 @@ static int g_sendQueryStatePackets = 0;
 // See: https://imgur.com/a/mEfhfiA
 static byte g_defaultTuyaMCUWiFiState = 0x00;
 
+// LED lighitng 
+// See: https://www.elektroda.com/rtvforum/viewtopic.php?p=20646359#20646359
+static short g_tuyaMCUled_dpID = -1;
+static short g_tuyaMCUled_format = -1;
 
 // battery powered device state
 enum TuyaMCUV0State {
@@ -341,34 +346,71 @@ void TuyaMCU_SendCommandWithData(byte cmdType, byte* data, int payload_len) {
 	}
 	UART_SendByte(check_sum);
 }
+int TuyaMCU_AppendStateInternal(byte *buffer, int bufferMax, int currentLen, uint8_t id, int8_t type, void* value, int dataLen) {
+	if (currentLen + 4 + dataLen >= bufferMax) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU, "Tuya buff overflow");
+		return 0;
+	}
+	buffer[currentLen + 0] = id;
+	buffer[currentLen + 1] = type;
+	buffer[currentLen + 2] = 0x00;
+	buffer[currentLen + 3] = dataLen;
+	memcpy(buffer + (currentLen + 4), value, dataLen);
+	return currentLen + 4 + dataLen;
+}
+void TuyaMCU_SendStateInternal(uint8_t id, uint8_t type, void* value, int dataLen)
+{
+	uint16_t payload_len = 0;
+	uint8_t payload_buffer[32];
+	
+	payload_len = TuyaMCU_AppendStateInternal(payload_buffer, sizeof(payload_buffer),
+		payload_len, id, type, value, dataLen);
 
+	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, payload_buffer, payload_len);
+}
+void TuyaMCU_SendTwoVals(byte idA, int valA, byte idB, int valB)
+{
+	byte swap[4];
+	uint16_t payload_len = 0;
+	uint8_t payload_buffer[32];
+
+	swap[0] = ((byte*)&valA)[3];
+	swap[1] = ((byte*)&valA)[2];
+	swap[2] = ((byte*)&valA)[1];
+	swap[3] = ((byte*)&valA)[0];
+	payload_len = TuyaMCU_AppendStateInternal(payload_buffer, sizeof(payload_buffer),
+		payload_len, idA, DP_TYPE_VALUE, swap, 4);
+	swap[0] = ((byte*)&valB)[3];
+	swap[1] = ((byte*)&valB)[2];
+	swap[2] = ((byte*)&valB)[1];
+	swap[3] = ((byte*)&valB)[0];
+	payload_len = TuyaMCU_AppendStateInternal(payload_buffer, sizeof(payload_buffer),
+		payload_len, idB, DP_TYPE_VALUE, swap, 4);
+
+	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, payload_buffer, payload_len);
+}
 void TuyaMCU_SendState(uint8_t id, uint8_t type, uint8_t* value)
 {
-	uint16_t payload_len = 4;
-	uint8_t payload_buffer[8];
-	payload_buffer[0] = id;
-	payload_buffer[1] = type;
+	byte swap[4];
+
 	switch (type) {
 	case DP_TYPE_BOOL:
 	case DP_TYPE_ENUM:
-		payload_len += 1;
-		payload_buffer[2] = 0x00;
-		payload_buffer[3] = 0x01;
-		payload_buffer[4] = value[0];
+		TuyaMCU_SendStateInternal(id, type, value, 1);
 		break;
 	case DP_TYPE_VALUE:
-		payload_len += 4;
-		payload_buffer[2] = 0x00;
-		payload_buffer[3] = 0x04;
-		payload_buffer[4] = value[3];
-		payload_buffer[5] = value[2];
-		payload_buffer[6] = value[1];
-		payload_buffer[7] = value[0];
+		swap[0] = value[3];
+		swap[1] = value[2];
+		swap[2] = value[1];
+		swap[3] = value[0];
+		TuyaMCU_SendStateInternal(id, type, swap, 4);
 		break;
-
+	case DP_TYPE_STRING:
+		TuyaMCU_SendStateInternal(id, type, value, strlen((const char*)value));
+		break;
+	case DP_TYPE_RAW:
+		break;
 	}
-
-	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, payload_buffer, payload_len);
 }
 
 void TuyaMCU_SendBool(uint8_t id, bool value)
@@ -491,6 +533,67 @@ void TuyaMCU_Send_RSSI(int rssi) {
 commandResult_t Cmd_TuyaMCU_Set_DefaultWiFiState(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	g_defaultTuyaMCUWiFiState = atoi(args);
+
+	return CMD_RES_OK;
+}
+void TuyaMCU_SendColor(int dpID, float fR, float fG, float fB, int tuyaRGB) {
+	char str[16];
+	float hue, sat, val;
+
+	RGBtoHSV(fR, fG, fB, &hue, &sat, &val);
+	int iHue, iSat, iVal;
+	iHue = (int)hue; //0,359
+	iSat = sat * 100; // 0-100
+	iVal = val * 100; // 0-100
+
+	// this is based on formats figured out in Tasmota
+	switch (tuyaRGB) {
+	case 0: // Uppercase Type 1 payload
+		sprintf(str, "%04X%04X%04X", iHue, iSat * 10, iVal * 10);
+		break;
+	case 1: // Lowercase Type 1 payload
+		sprintf(str, "%04x%04x%04x", iHue, iSat * 10, iVal * 10);
+		break;
+	case 2: // Uppercase Type 2 payload
+		//snprintf(str, sizeof(str), ("%sFFFF6464"), scolor);
+		break;
+	case 3: // Lowercase Type 2 payload
+		//snprintf(str, sizeof(str), ("%sffff6464"), tolower(scolor, scolor));
+		break;
+	}
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "Color is sent as %s\n", str);
+	TuyaMCU_SendString(dpID, str);
+}
+// tuyaMCU_sendColor dpID red01 green01 blue01 tuyaRGB
+// tuyaMCU_sendColor 24 1 0 0 1
+// tuyaMCU_sendColor 24 1 0 0 1
+commandResult_t Cmd_TuyaMCU_SendColor(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int toSend;
+	float fR, fG, fB;
+	int dpID, tuyaRGB;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	dpID = Tokenizer_GetArgInteger(0);
+	fR = Tokenizer_GetArgFloat(1);
+	fG = Tokenizer_GetArgFloat(2);
+	fB = Tokenizer_GetArgFloat(3);
+	tuyaRGB = Tokenizer_GetArgIntegerDefault(4, 1);
+
+	TuyaMCU_SendColor(dpID, fR, fG, fB, tuyaRGB);
+
+	return CMD_RES_OK;
+}
+// tuyaMCU_setupLED dpID TasFormat
+commandResult_t Cmd_TuyaMCU_SetupLED(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	g_tuyaMCUled_dpID = Tokenizer_GetArgInteger(0);
+	g_tuyaMCUled_format = Tokenizer_GetArgInteger(1);
 
 	return CMD_RES_OK;
 }
@@ -718,11 +821,79 @@ commandResult_t TuyaMCU_SendQueryState(const void* context, const char* cmd, con
 	return CMD_RES_OK;
 }
 
+void TuyaMCU_SendStateRawFromString(int dpId, const char *args) {
+	const char *stop;
+	float val;
+	int cur = 0;
+	byte buffer[64];
 
+	while (*args) {
+		if (cur >= sizeof(buffer)) {
+			addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU, "Tuya raw buff overflow");
+			return;
+		}
+		if (*args == ' ') {
+			args++;
+			continue;
+		}
+		if (*args == '$') {
+			stop = args + 1;
+			while (*stop && *stop != '$') {
+				stop++;
+			}
+			CMD_ExpandConstant(args, stop, &val);
+			buffer[cur] = (int)val;
+			cur++;
+
+			if (*stop == 0)
+				break;
+			args = stop + 1;
+			continue;
+		}
+
+		buffer[cur] = hexbyte(args);
+		cur++;
+
+		args += 2;
+	}
+	TuyaMCU_SendStateInternal(dpId, DP_TYPE_RAW, buffer, cur);
+}
+const char *STR_FindArg(const char *s, int arg) {
+	while (1) {
+		while (isspace(*s)) {
+			if (*s == 0)
+				return "";
+			s++;
+		}
+		arg--;
+		if (arg < 0) {
+			return s;
+		}
+		while (isspace(*s) == false) {
+			if (*s == 0)
+				return "";
+			s++;
+		}
+	}
+	return 0;
+}
+// tuyaMcu_sendState id type value
+// send boolean true
+// tuyaMcu_sendState 25 1 1
+// send boolean false
+// tuyaMcu_sendState 25 1 0
+// send value 87
+// tuyaMcu_sendState 25 2 87
+// send string 
+// tuyaMcu_sendState 25 3 ff0000646464ff 
+// send raw 
+// tuyaMcu_sendState 25 4 ff$CH3$00646464ff 
+// tuyaMcu_sendState 2 1 0404010C$CH9$$CH10$$CH11$FF04FEFF0031
 commandResult_t TuyaMCU_SendStateCmd(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int dpId;
 	int dpType;
 	int value;
+	const char *valStr;
 
 	Tokenizer_TokenizeString(args, 0);
 	// following check must be done after 'Tokenizer_TokenizeString',
@@ -734,9 +905,19 @@ commandResult_t TuyaMCU_SendStateCmd(const void* context, const char* cmd, const
 
 	dpId = Tokenizer_GetArgInteger(0);
 	dpType = Tokenizer_GetArgInteger(1);
-	value = Tokenizer_GetArgInteger(2);
-
-	TuyaMCU_SendState(dpId, dpType, (uint8_t*)&value);
+	if (dpType == DP_TYPE_STRING) {
+		valStr = Tokenizer_GetArg(2);
+		TuyaMCU_SendState(dpId, DP_TYPE_STRING, (uint8_t*)valStr);
+	}
+	else if (dpType == DP_TYPE_RAW) {
+		//valStr = Tokenizer_GetArg(2);
+		valStr = STR_FindArg(args, 2);
+		TuyaMCU_SendStateRawFromString(dpId, valStr);
+	}
+	else {
+		value = Tokenizer_GetArgInteger(2);
+		TuyaMCU_SendState(dpId, dpType, (uint8_t*)&value);
+	}
 
 	return CMD_RES_OK;
 }
@@ -1208,7 +1389,7 @@ void TuyaMCU_V0_SendDPCacheReply() {
 	// 12 02 0004 00000001
 	// fnId = 18 Len = 0004 Val V = 1	
 	// 
-	while(map) {
+	while (map) {
 		if (map->bDPCache) {
 			writtenCount++;
 			// dpID
@@ -1326,7 +1507,8 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		if (g_sensorMode) {
 			if (g_tuyaBatteryPoweredState == TM0_STATE_AWAITING_WIFI) {
 				g_tuyaBatteryPoweredState = TM0_STATE_AWAITING_MQTT;
-			} else if (g_tuyaBatteryPoweredState == TM0_STATE_AWAITING_MQTT) {
+			}
+			else if (g_tuyaBatteryPoweredState == TM0_STATE_AWAITING_MQTT) {
 				g_tuyaBatteryPoweredState = TM0_STATE_AWAITING_STATES;
 				g_tuyaNextRequestDelay = 0;
 			}
@@ -1371,10 +1553,10 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 	case TUYA_V0_CMD_OBTAINDPCACHE:
 		// This is sent by TH01
 		// Info:TuyaMCU:TUYAMCU received: 55 AA 00 10 00 02 01 09 1B
-		{
-			TuyaMCU_V0_SendDPCacheReply();
-		}
-		break;
+	{
+		TuyaMCU_V0_SendDPCacheReply();
+	}
+	break;
 	case 0x05:
 		// This was added for this user:
 		// https://www.elektroda.com/rtvforum/topic3937723.html
@@ -1665,7 +1847,47 @@ commandResult_t TuyaMCU_SetBaudRate(const void* context, const char* cmd, const 
 
 	return CMD_RES_OK;
 }
+void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMode, float brightnessRange01, float temperatureRange01) {
+	if (g_tuyaMCUled_dpID == -1) {
+		return;
+	}
+	// dpID 20: switch light on and off
+	TuyaMCU_SendBool(20, bLightEnableAll);
+	if (bLightEnableAll == false) {
+		// nothing else to do!
+		return;
+	}
+	rtos_delay_milliseconds(50);
+	if (iLightMode == Light_RGB) {
+		// dpID 21: switch between RGB and white mode : 0->white, 1->RGB
+		TuyaMCU_SendBool(21, 1);
+		rtos_delay_milliseconds(50);
 
+		// dpID 24: color(and indirectly brightness) in RGB mode, handled by your code already fine
+		TuyaMCU_SendColor(g_tuyaMCUled_dpID, rgbcw[0] / 255.0f, rgbcw[1] / 255.0f, rgbcw[2] / 255.0f, g_tuyaMCUled_format);
+	}
+	else {
+		// dpID 21: switch between RGB and white mode : 0->white, 1->RGB
+		//TuyaMCU_SendBool(21, 0);
+		// dpID 22: brightness only in white mode: The range is from 50 (dark) to 1000 (light), 
+		// NOTE: when changing this value, dpID 21 is set to 0 -> white automatically
+		int mcu_brightness = brightnessRange01 * 1000.0f;
+		TuyaMCU_SendValue(22, mcu_brightness);
+		rtos_delay_milliseconds(50);
+		// dpID 23: Kelvin value of white : The range is from 10 (ww)to 990 (cw), 
+		// NOTE : when changing this value, dpID 21 is set to 0->white automatically
+		int mcu_temperature = 10 + temperatureRange01 * 980.0f;
+		TuyaMCU_SendValue(23, mcu_temperature);
+		//TuyaMCU_SendTwoVals(22, mcu_brightness, 23, mcu_temperature);
+	}
+
+
+}
+bool TuyaMCU_IsLEDRunning() {
+	if (g_tuyaMCUled_dpID == -1)
+		return false;
+	return true;
+}
 
 void TuyaMCU_Init()
 {
@@ -1681,7 +1903,7 @@ void TuyaMCU_Init()
 
 	g_resetWiFiEvents = 0;
 	g_tuyaNextRequestDelay = 1;
-	g_tuyaBatteryPoweredState = 0; 
+	g_tuyaBatteryPoweredState = 0;
 	g_tuyaMCUConfirmationsToSend_0x05 = 0;
 	g_tuyaMCUConfirmationsToSend_0x08 = 0;
 
@@ -1754,7 +1976,21 @@ void TuyaMCU_Init()
 	//cmddetail:"fn":"Cmd_TuyaMCU_Send_RSSI","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_defWiFiState", Cmd_TuyaMCU_Set_DefaultWiFiState, NULL);
+
+	//cmddetail:{"name":"tuyaMcu_sendColor","args":"Cmd_TuyaMCU_SendColor",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("tuyaMcu_sendColor", Cmd_TuyaMCU_SendColor, NULL);
+
+	//cmddetail:{"name":"tuyaMcu_setupLED","args":"Cmd_TuyaMCU_SetupLED",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("tuyaMcu_setupLED", Cmd_TuyaMCU_SetupLED, NULL);
 }
+
+
 
 // Door sensor with TuyaMCU version 0 (not 3), so all replies have x00 and not 0x03 byte
 // fakeTuyaPacket 55AA0008000C00010101010101030400010223

@@ -10,7 +10,7 @@
 
  SOCKET ListenSocket = INVALID_SOCKET;
 
-int g_port = 80;
+int g_httpPort = 80;
 
 int HTTPServer_Start() {
 
@@ -30,7 +30,7 @@ int HTTPServer_Start() {
 	}
     // Resolve the server address and port
 	char service[6];
-	snprintf(service, sizeof(service), "%u", g_port);
+	snprintf(service, sizeof(service), "%u", g_httpPort);
 
 	iResult = getaddrinfo(NULL, service, &hints, &result);
     if ( iResult != 0 ) {

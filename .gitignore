@@ -11,6 +11,7 @@ output/**
 /custom.mk
 /.vs
 .vscode
+recents.json
 node_modules
 Debug*/**
 libs_for_simulator/**
@@ -21,11 +22,16 @@ ILU.dll
 ILUT.dll
 SDL2.dll
 nfd_d.lib
+configMemory.bin
 /sim_lastPublish_long.txt
 /sim_lastPublishes.txt
 /sim_lastPublish.txt
+/lastHTTPPacket.txt
 /lastMQTTPublishSentByOBK.txt
 *.sln
 
 # MacOS ignores
 .DS_Store
+
+# MSVC
+enc_temp_folder/**

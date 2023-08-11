@@ -917,6 +917,9 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	// so ALL commands expected in autoexec.bat should have been registered by now...
 	// but DON't run autoexec if we have had 2+ boot failures
 	CMD_Init_Early();
+#if WINDOWS
+	CMD_InitSimulatorOnlyCommands();
+#endif
 
 	/* Automatic disable of PIN MONITOR after reboot */
 	if (CFG_HasFlag(OBK_FLAG_HTTP_PINMONITOR)) {
@@ -948,6 +951,11 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 			if (PIN_FindPinIndexForRole(IOR_BP1658CJ_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_BP1658CJ_DAT, -1) != -1) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("BP1658CJ");
+#endif
+			}
+			if (PIN_FindPinIndexForRole(IOR_KP18058_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_KP18058_DAT, -1) != -1) {
+#ifndef OBK_DISABLE_ALL_DRIVERS
+				DRV_StartDriver("KP18058");
 #endif
 			}
 			if (PIN_FindPinIndexForRole(IOR_BL0937_CF, -1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_CF1, -1) != -1

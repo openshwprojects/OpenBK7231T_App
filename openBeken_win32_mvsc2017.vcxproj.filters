@@ -869,6 +869,25 @@
     <ClCompile Include="src\selftest\selftest_batteryDriver.c">
       <Filter>SelfTest</Filter>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_ht16k33.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_hue.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_mcp9808.c" />
+    <ClCompile Include="src\cmnds\cmd_simulatorOnly.c">
+      <Filter>Cmd</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_kp18058.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_chargingLimit.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_chargingDriver.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />
@@ -1271,6 +1290,9 @@
       <Filter>Drv</Filter>
     </ClInclude>
     <ClInclude Include="src\driver\drv_sgp.h">
+      <Filter>Drv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\driver\drv_ht16k33.h">
       <Filter>Drv</Filter>
     </ClInclude>
   </ItemGroup>

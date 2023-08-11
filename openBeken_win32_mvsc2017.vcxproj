@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug BL602|Win32">
@@ -166,7 +166,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.\libs_for_simulator\SDL2-2.24.2\include;.\src\win32\stubs\;.\libs_for_simulator\DevIL-Windows-SDK-1.8.0\include;.\libs_for_simulator\freeglut-MSVC-3.0.0-2.mp\include;.\libs_for_simulator\nativefiledialog\src\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WINDOWS;%(PreprocessorDefinitions);_USE_32BIT_TIME_T </PreprocessorDefinitions>
+      <PreprocessorDefinitions>WINDOWS;%(PreprocessorDefinitions);_USE_32BIT_TIME_T;DEBUG</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -183,17 +183,17 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.\libs_for_simulator\SDL2-2.24.2\include;.\src\win32\stubs\;.\libs_for_simulator\DevIL-Windows-SDK-1.8.0\include;.\libs_for_simulator\freeglut-MSVC-3.0.0-2.mp\include;.\libs_for_simulator\nativefiledialog\src\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WINDOWS;%(PreprocessorDefinitions);_USE_32BIT_TIME_T;WIN32_LEAN_AND_MEAN;WIN32;_CRT_NON_CONFORMING_SWPRINTFS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_DEBUG;_CONSOLE;%(PreprocessorDefinitions) </PreprocessorDefinitions>
+      <PreprocessorDefinitions>WINDOWS;%(PreprocessorDefinitions);_USE_32BIT_TIME_T;WIN32_LEAN_AND_MEAN;WIN32;_CRT_NON_CONFORMING_SWPRINTFS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CONSOLE</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>.\libs_for_simulator\SDL2-2.24.2\lib\x86;.\libs_for_simulator\DevIL-Windows-SDK-1.8.0\lib\x86\Release;.\libs_for_simulator\freeglut-MSVC-3.0.0-2.mp\lib;.\libs_for_simulator\nativefiledialog\build\lib\Debug\x86</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>.\libs_for_simulator\SDL2-2.24.2\lib\x86;.\libs_for_simulator\DevIL-Windows-SDK-1.8.0\lib\x86\Release;.\libs_for_simulator\freeglut-MSVC-3.0.0-2.mp\lib;.\libs_for_simulator\nativefiledialog\build\lib\Release\x86</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">
@@ -298,6 +298,7 @@
     <ClCompile Include="src\cmnds\cmd_send.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_simulatorOnly.c" />
     <ClCompile Include="src\cmnds\cmd_tasmota.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -338,6 +339,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\driver\drv_bridge_driver.c" />
+    <ClCompile Include="src\driver\drv_chargingLimit.c" />
     <ClCompile Include="src\driver\drv_cht8305.c" />
     <ClCompile Include="src\driver\drv_cse7766.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
@@ -348,10 +350,13 @@
     <ClCompile Include="src\driver\drv_dht_internal.c" />
     <ClCompile Include="src\driver\drv_doorSensorWithDeepSleep.c" />
     <ClCompile Include="src\driver\drv_gn6932.c" />
+    <ClCompile Include="src\driver\drv_ht16k33.c" />
     <ClCompile Include="src\driver\drv_httpButtons.c" />
+    <ClCompile Include="src\driver\drv_hue.c" />
     <ClCompile Include="src\driver\drv_ir.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_kp18058.c" />
     <ClCompile Include="src\driver\drv_kp18068.c" />
     <ClCompile Include="src\driver\drv_main.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
@@ -359,6 +364,7 @@
     <ClCompile Include="src\driver\drv_max72xx_clock.c" />
     <ClCompile Include="src\driver\drv_max72xx_internal.c" />
     <ClCompile Include="src\driver\drv_max72xx_single.c" />
+    <ClCompile Include="src\driver\drv_mcp9808.c" />
     <ClCompile Include="src\driver\drv_ntp.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -950,6 +956,7 @@
     </ClCompile>
     <ClCompile Include="src\selftest\selftest_batteryDriver.c" />
     <ClCompile Include="src\selftest\selftest_buttonEvents.c" />
+    <ClCompile Include="src\selftest\selftest_chargingDriver.c" />
     <ClCompile Include="src\selftest\selftest_clockEvents.c" />
     <ClCompile Include="src\selftest\selftest_cmd_startup.c" />
     <ClCompile Include="src\selftest\selftest_flashSearch.c" />
@@ -1057,6 +1064,7 @@
   <ItemGroup>
     <ClInclude Include="src\driver\drv_cht8305.h" />
     <ClInclude Include="src\driver\drv_dht_internal.h" />
+    <ClInclude Include="src\driver\drv_ht16k33.h" />
     <ClInclude Include="src\driver\drv_max72xx_internal.h" />
     <ClInclude Include="src\driver\drv_sgp.h" />
     <ClInclude Include="src\driver\drv_sht3x.h" />

@@ -37,6 +37,8 @@ void BP5758D_Init();
 void BP1658CJ_Init();
 
 void KP18068_Init();
+void KP18058_Init();
+
 
 void SM16703P_Init();
 
@@ -45,6 +47,8 @@ void TM1637_Init();
 void GN6932_Init();
 
 void TM1638_Init();
+
+void HT16K33_Init();
 
 bool DRV_IsRunning(const char* name);
 
@@ -95,6 +99,18 @@ void DRV_MAX72XX_Init();
 
 void WEMO_Init();
 void WEMO_AppendInformationToHTTPIndexPage(http_request_t* request);
+
+void HUE_Init();
+void HUE_AppendInformationToHTTPIndexPage(http_request_t* request);
+
+void MCP9808_Init();
+void MCP9808_OnEverySecond();
+void MCP9808_AppendInformationToHTTPIndexPage(http_request_t* request);
+
+void ChargingLimit_Init();
+void ChargingLimit_OnEverySecond();
+void ChargingLimit_AppendInformationToHTTPIndexPage(http_request_t *request);
+
 
 #define SM2135_DELAY         4
 

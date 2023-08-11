@@ -304,6 +304,14 @@
     "driver": ""
   },
   {
+    "name": "Illuminance",
+    "title": "TODO",
+    "descr": "Illuminance in Lux",
+    "enum": "ChType_Illuminance",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
     "name": "Max",
     "title": "TODO",
     "descr": "This is the current total number of available channel types.",

@@ -61,6 +61,10 @@ typedef enum {
 	SMOKE_SENSOR,
 	/// @brief 
 	READONLYLOWMIDHIGH_SENSOR,
+	// lx unit
+	ILLUMINANCE_SENSOR,
+
+	ENERGY_SENSOR,
 } ENTITY_TYPE;
 
 //unique_id is defined in hass_populate_unique_id and is based on CFG_GetDeviceName() whose size is CGF_DEVICE_NAME_SIZE.

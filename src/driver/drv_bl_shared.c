@@ -624,6 +624,10 @@ void BL_ProcessUpdate(float voltage, float current, float power,
                 if (energyCounterMinutes != NULL)
                 {
                     stats = cJSON_CreateArray();
+					// WARNING - it causes HA problems?
+					// See: https://github.com/openshwprojects/OpenBK7231T_App/issues/870
+					// Basically HA has 256 chars state limit?
+					// Wait, no, it's over 256 even without samples?
                     for(i = 0; i < energyCounterSampleCount; i++)
                     {
                         cJSON_AddItemToArray(stats, cJSON_CreateNumber(energyCounterMinutes[i]));

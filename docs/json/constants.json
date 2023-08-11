@@ -30,6 +30,18 @@
     "requires": ""
   },
   {
+    "name": "$FLAG**",
+    "title": "$FLAG**",
+    "descr": "Provides flag access, as above.",
+    "requires": ""
+  },
+  {
+    "name": "$FLAG*",
+    "title": "$FLAG*",
+    "descr": "Provides flag access, as above.",
+    "requires": ""
+  },
+  {
     "name": "$led_dimmer",
     "title": "$led_dimmer",
     "descr": "Current value of LED dimmer, 0-100 range",
@@ -99,6 +111,12 @@
     "name": "$power",
     "title": "$power",
     "descr": "Current value of power from energy metering chip",
+    "requires": ""
+  },
+  {
+    "name": "$energy",
+    "title": "$energy",
+    "descr": "Current value of energy counter from energy metering chip",
     "requires": ""
   },
   {

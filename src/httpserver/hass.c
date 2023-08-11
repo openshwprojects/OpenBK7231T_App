@@ -67,6 +67,9 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 	case CO2_SENSOR:
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "co2", index);
 		break;
+	case ILLUMINANCE_SENSOR:
+		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "illuminance", index);
+		break;
 	case SMOKE_SENSOR:
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "smoke", index);
 		break;
@@ -234,6 +237,9 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload
 		break;
 	case VOLTAGE_SENSOR:
 		sprintf(g_hassBuffer, "%s Voltage", CFG_GetShortDeviceName());
+		break;
+	case ILLUMINANCE_SENSOR:
+		sprintf(g_hassBuffer, "%s Illuminance", CFG_GetShortDeviceName());
 		break;
 	default:
 		sprintf(g_hassBuffer, "%s %s", CFG_GetShortDeviceName(), CHANNEL_GetLabel(index));
@@ -499,6 +505,12 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 		sprintf(g_hassBuffer, "~/%d/get", channel);
 		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		break;
+	case ILLUMINANCE_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "illuminance");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "lx");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
 	case BATTERY_SENSOR:
 		cJSON_AddStringToObject(info->root, "dev_cla", "battery");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "%");
@@ -525,6 +537,13 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 		cJSON_AddStringToObject(info->root, "dev_cla", "power");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "W");
 		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case ENERGY_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "energy");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "kWh");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_cla", "total_increasing");
 		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		break;
 	case POWERFACTOR_SENSOR:
@@ -555,7 +574,7 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 		return NULL;
 	}
 
-	if (type != READONLYLOWMIDHIGH_SENSOR) {
+	if (type != READONLYLOWMIDHIGH_SENSOR && type != ENERGY_SENSOR) {
 		cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
 	}
 
