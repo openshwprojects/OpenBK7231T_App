@@ -2513,7 +2513,7 @@ const char* g_obk_flagNames[] = {
 	"[MQTT] [Debug] Publish all channels (don't enable it, it will be publish all 64 possible channels on connect)",
 	"[MQTT] Use kWh unit for energy consumption (total, last hour, today) instead of Wh",
 	"[BTN] Ignore all button events (aka child lock)",
-	"error",
+	"[DoorSensor] Invert state",
 	"error",
 	"error",
 }; 

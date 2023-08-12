@@ -521,16 +521,23 @@ void Button_OnLongPressHoldStart(int index) {
 }
 
 bool BTN_ShouldInvert(int index) {
+	int role;
 	if (index < 0 || index >= PLATFORM_GPIO_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "BTN_ShouldInvert: Pin index %i out of range <0,%i).", index, PLATFORM_GPIO_MAX);
 		return false;
 	}
-	if (g_cfg.pins.roles[index] == IOR_Button_n || g_cfg.pins.roles[index] == IOR_Button_ToggleAll_n ||
-		g_cfg.pins.roles[index] == IOR_DigitalInput_n || g_cfg.pins.roles[index] == IOR_DigitalInput_NoPup_n
-		|| g_cfg.pins.roles[index] == IOR_Button_NextColor_n || g_cfg.pins.roles[index] == IOR_Button_NextDimmer_n
-		|| g_cfg.pins.roles[index] == IOR_Button_NextTemperature_n || g_cfg.pins.roles[index] == IOR_Button_ScriptOnly_n
-		|| g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs_n) {
+	role = g_cfg.pins.roles[index];
+	if (role == IOR_Button_n || role == IOR_Button_ToggleAll_n ||
+		role == IOR_DigitalInput_n || role == IOR_DigitalInput_NoPup_n
+		|| role == IOR_Button_NextColor_n || role == IOR_Button_NextDimmer_n
+		|| role == IOR_Button_NextTemperature_n || role == IOR_Button_ScriptOnly_n
+		|| role == IOR_SmartButtonForLEDs_n) {
 		return true;
+	}
+	if (CFG_HasFlag(OBK_FLAG_DOORSENSOR_INVERT_STATE)) {
+		if (role == IOR_DoorSensorWithDeepSleep || role == IOR_DoorSensorWithDeepSleep_NoPup || role == IOR_DoorSensorWithDeepSleep_pd) {
+			return true;
+		}
 	}
 	return false;
 }
