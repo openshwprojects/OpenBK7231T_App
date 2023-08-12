@@ -470,6 +470,7 @@ static int http_tasmota_json_status_FWR(void* request, jsonCb_t printer) {
 	// NOTE: what is this value? It's not a reboot count
 	JSON_PrintKeyValue_Int(request, printer, "Boot", 7, true);
 	JSON_PrintKeyValue_String(request, printer, "Core", "0.0", true);
+	// do not change it - Flasher scanner is using it, it should be obk on all platforms!
 	JSON_PrintKeyValue_String(request, printer, "SDK", "obk", true);
 	JSON_PrintKeyValue_Int(request, printer, "CpuFrequency", 80, true);
 	JSON_PrintKeyValue_String(request, printer, "Hardware", PLATFORM_MCU_NAME, true);
