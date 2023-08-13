@@ -103,20 +103,20 @@ void ChargingLimit_AppendInformationToHTTPIndexPage(http_request_t* request)
 
 	type = CHANNEL_GetType(chl_targetChannel);
 
-	hprintf255(request, "<h2>Charging limit on channel %i: Status %s, Time: - %i of %i seconds",
+	hprintf255(request, "<h2>Charging limit on channel %i: Status: %s, Time: %i of %i seconds",
 			chl_targetChannel, rStr,
 		chl_timeLeftSeconds, chl_timeMax);
 
 	if (type == ChType_EnergyTotal_kWh_div100) {
-		hprintf255(request, ", Power %.2f of %.2f kWh</h2>",
+		hprintf255(request, ", Power: %.2f of %.2f kWh</h2>",
 			chl_lastDelteForDisplay*0.01f, chl_targetChannelMaxDelta*0.01f);
 	}
 	else if (type == ChType_EnergyTotal_kWh_div1000) {
-		hprintf255(request, ", Power %.2f of %.2f kWh</h2>",
+		hprintf255(request, ", Power: %.2f of %.2f kWh</h2>",
 			chl_lastDelteForDisplay*0.001f, chl_targetChannelMaxDelta*0.001f);
 	}
 	else {
-		hprintf255(request, ", Power %i of %i </h2>",
+		hprintf255(request, ", Power: %i of %i </h2>",
 			chl_lastDelteForDisplay, chl_targetChannelMaxDelta);
 	}
 
