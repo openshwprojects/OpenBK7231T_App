@@ -352,12 +352,20 @@ static commandResult_t CMD_OpenAP(const void* context, const char* cmd, const ch
 }
 static commandResult_t CMD_SafeMode(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int i;
+	int startSaveModeIn;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	startSaveModeIn = Tokenizer_GetArgIntegerDefault(0, 1);
 
 	// simulate enough boots so the reboot will go into safe mode
 	for (i = 0; i <= RESTARTS_REQUIRED_FOR_SAFE_MODE; i++) {
 		HAL_FlashVars_IncreaseBootCount();
 	}
-	RESET_ScheduleModuleReset(3);
+	if (startSaveModeIn <= 0) {
+		startSaveModeIn = 1;
+	}
+	RESET_ScheduleModuleReset(startSaveModeIn);
 
 	return CMD_RES_OK;
 }
@@ -695,8 +703,8 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_DeepSleep_SetEdge","file":"drv/drv_doorSensorWithDeepSleep.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DSEdge", CMD_DeepSleep_SetEdge, NULL);
-	//cmddetail:{"name":"SafeMode","args":"",
-	//cmddetail:"descr":"Forces device reboot into safe mode (open ap with disabled drivers)",
+	//cmddetail:{"name":"SafeMode","args":"[OptionalDelayBeforeRestart]",
+	//cmddetail:"descr":"Forces device reboot into safe mode (open ap with disabled drivers). Argument is a delay to restart in seconds, optional, minimal delay is 1",
 	//cmddetail:"fn":"CMD_SafeMode","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SafeMode", CMD_SafeMode, NULL);
