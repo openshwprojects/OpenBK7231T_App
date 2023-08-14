@@ -5,6 +5,7 @@
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #include "../driver/drv_public.h"
+#include "../driver/drv_battery.h"
 #include "../driver/drv_ntp.h"
 #include <ctype.h> // isspace
 
@@ -206,6 +207,12 @@ float getActiveRepeatingEvents(const char *s) {
 float getVoltage(const char *s) {
 	return DRV_GetReading(OBK_VOLTAGE);
 }
+float getBatteryVoltage(const char *s) {
+	return Battery_lastreading(OBK_BATT_VOLTAGE);
+}
+float getBatteryLevel(const char *s) {
+	return Battery_lastreading(OBK_BATT_LEVEL);
+}
 
 float getCurrent(const char *s) {
 	return DRV_GetReading(OBK_CURRENT);
@@ -371,6 +378,16 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0.",
 	//cnstdetail:"requires":""}
 	{ "$NTPOn", &getNTPOn },
+	//cnstdetail:{"name":"$batteryVoltage",
+	//cnstdetail:"title":"$batteryVoltage",
+	//cnstdetail:"descr":"Battery driver voltage",
+	//cnstdetail:"requires":""}
+	{ "$batteryVoltage", &getBatteryVoltage },
+	//cnstdetail:{"name":"$batteryLevel",
+	//cnstdetail:"title":"$batteryLevel",
+	//cnstdetail:"descr":"Battery driver level",
+	//cnstdetail:"requires":""}
+	{ "$batteryLevel", &getBatteryLevel },
 #endif
 	//cnstdetail:{"name":"$uptime",
 	//cnstdetail:"title":"$uptime",
