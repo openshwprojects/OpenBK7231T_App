@@ -207,12 +207,14 @@ float getActiveRepeatingEvents(const char *s) {
 float getVoltage(const char *s) {
 	return DRV_GetReading(OBK_VOLTAGE);
 }
+#ifdef ENABLE_DRIVER_BATTERY
 float getBatteryVoltage(const char *s) {
 	return Battery_lastreading(OBK_BATT_VOLTAGE);
 }
 float getBatteryLevel(const char *s) {
 	return Battery_lastreading(OBK_BATT_LEVEL);
 }
+#endif
 
 float getCurrent(const char *s) {
 	return DRV_GetReading(OBK_CURRENT);
@@ -378,6 +380,7 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0.",
 	//cnstdetail:"requires":""}
 	{ "$NTPOn", &getNTPOn },
+#ifdef ENABLE_DRIVER_BATTERY
 	//cnstdetail:{"name":"$batteryVoltage",
 	//cnstdetail:"title":"$batteryVoltage",
 	//cnstdetail:"descr":"Battery driver voltage",
@@ -388,6 +391,7 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Battery driver level",
 	//cnstdetail:"requires":""}
 	{ "$batteryLevel", &getBatteryLevel },
+#endif
 #endif
 	//cnstdetail:{"name":"$uptime",
 	//cnstdetail:"title":"$uptime",

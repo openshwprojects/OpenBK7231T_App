@@ -303,7 +303,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "ShiftRegister",	    Shift_Init,		Shift_OnEverySecond,		NULL, NULL, NULL, Shift_OnChannelChanged, false },
 #endif
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+#ifdef ENABLE_DRIVER_BATTERY
 	//drvdetail:{"name":"Battery",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Custom mechanism to measure battery level with ADC and an optional relay. See [example here](https://www.elektroda.com/rtvforum/topic3959103.html).",
