@@ -46,3 +46,5 @@ Do not add anything here, as it will overwritten with next rebuild.
 | ShiftRegister |  ShiftRegisterShiftRegisterShiftRegisterShiftRegister |
 | Battery |  Custom mechanism to measure battery level with ADC and an optional relay. See [example here](https://www.elektroda.com/rtvforum/topic3959103.html). |
 | Bridge |  TODO |
+| ChargingLimit  |  Mechanism to perform an action based on a max. delta value and max time. Used to control Electric Vehicle chargers. See [discussion](https://github.com/openshwprojects/OpenBK7231T_App/issues/892). |
+
