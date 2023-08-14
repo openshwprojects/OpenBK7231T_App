@@ -67,6 +67,7 @@ int postany(http_request_t* request, const char* str, int len);
 void misc_formatUpTimeString(int totalSeconds, char* o);
 // void HTTP_AddBuildFooter(http_request_t *request);
 // void HTTP_AddHeader(http_request_t *request);
+int http_getRawArg(const char* base, const char* name, char* o, int maxSize);
 int http_getArg(const char* base, const char* name, char* o, int maxSize);
 int http_getArgInteger(const char* base, const char* name);
 

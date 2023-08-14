@@ -351,14 +351,9 @@ int http_copyCarg(const char* atin, char* to, int maxSize) {
 	return realSize;
 }
 
-int http_getArg(const char* base, const char* name, char* o, int maxSize) {
+int http_getRawArg(const char* base, const char* name, char* o, int maxSize) {
 	*o = '\0';
-	while (*base != '?') {
-		if (*base == 0)
-			return 0;
-		base++;
-	}
-	base++;
+
 	while (*base) {
 		const char* at = http_checkArg(base, name);
 		if (at) {
@@ -374,6 +369,17 @@ int http_getArg(const char* base, const char* name, char* o, int maxSize) {
 		base++;
 	}
 	return 0;
+}
+int http_getArg(const char* base, const char* name, char* o, int maxSize) {
+	*o = '\0';
+	while (*base != '?') {
+		if (*base == '\0')
+			return 0;
+		base++;
+	}
+	base++;
+
+	return http_getRawArg(base, name, o, maxSize);
 }
 int http_getArgInteger(const char* base, const char* name) {
 	char tmp[16];
