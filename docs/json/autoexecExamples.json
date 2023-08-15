@@ -58,5 +58,9 @@
 {
 "title": "Simple UART log redirection to UART1 instead of UART2 on Beken with UART command line support",
 "file": "autoexecs/logging_for_uart1.bat"
+},
+{
+"title": "Simple single LED blink on device boot",
+"file": "autoexecs/blink_led_on_device_boot.bat"
 }
 ]

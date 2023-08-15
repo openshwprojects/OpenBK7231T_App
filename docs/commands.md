@@ -197,7 +197,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | SetPinChannel | [PinIndex][ChannelIndex] | This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command. |
 | SetPinRole | [PinRole][RoleIndexOrName] | This allows you to set a pin role, for example a Relay role, or Button, etc. Usually it's easier to do this through WWW panel, so you don't have to use this command. |
 | SetStartValue | [Channel][Value] | Sets the startup value for a channel. Used for start values for relays. Use 1 for High, 0 for low and -1 for 'remember last state' |
-| SetupEnergyStats | [Enable1or0][SampleTime][SampleCount][JSonEnable] | Setup Energy Statistic Parameters: [enable 0 or 1] [sample_time[10..90]>] [sample_count[10..180]] [JsonEnable 0 or 1]. JSONEnable is optional. |
+| SetupEnergyStats | [Enable1or0][SampleTime][SampleCount][JSonEnable] | Setup Energy Statistic Parameters: [enable 0 or 1] [sample_time[10..90]] [sample_count[10..180]] [JsonEnable 0 or 1]. JSONEnable is optional. |
 | SetupTestPower |  | NULL |
 | SGP_cycle | [int] | change cycle of measurement by default every 10 seconds 0 to deactivate<br/>e.g.:SGP_Cycle 60 |
 | SGP_GetBaseline |  | SGP Get baseline<br/>e.g.:SGP_GetBaseline |
