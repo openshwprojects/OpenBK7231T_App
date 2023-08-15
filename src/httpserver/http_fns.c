@@ -2249,7 +2249,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 int http_fn_cm(http_request_t* request) {
 	char tmpA[128];
 	char* long_str_alloced = 0;
-	int commandLen;
+	int commandLen = 0;
 
 	http_setup(request, httpMimeTypeJson);
 	// exec command
