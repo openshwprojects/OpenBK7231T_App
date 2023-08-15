@@ -31,5 +31,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | $minute |  Current minute from NTP |
 | $second |  Current second from NTP |
 | $NTPOn |  Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0. |
+| $batteryVoltage |  Battery driver voltage |
+| $batteryLevel |  Battery driver level |
 | $uptime |  Time since reboot in seconds |
 | $failedBoots |  Get number of failed boots (too quick reboots). Remember that you can change the uptime required to mark boot as 'okay' in general/flags menu |

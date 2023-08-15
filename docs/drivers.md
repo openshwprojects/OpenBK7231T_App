@@ -16,6 +16,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | I2C |  Generic I2C, not used for LED drivers, but may be useful for displays or port expanders. Supports both hardware and software I2C. |
 | BL0942 |  BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [LSPA9 teardown example](https://www.elektroda.com/rtvforum/topic3887748.html).  |
 | BL0942SPI |  BL0942 is a power-metering chip which uses SPI protocol for communication. It's usually connected to SPI1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [PZIOT-E01 teardown example](https://www.elektroda.com/rtvforum/topic3945667.html).  |
+| ChargingLimit |  Mechanism to perform an action based on a max. delta value and max time. Used to control Electric Vehicle chargers. See [discussion](https://github.com/openshwprojects/OpenBK7231T_App/issues/892). |
 | BL0937 |  BL0937 is a power-metering chip which uses custom protocol to report data. It requires setting 3 pins in pin config: CF, CF1 and SEL |
 | CSE7766 |  BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK |
 | SM16703P |  WIP driver |
@@ -34,6 +35,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | BP1658CJ |  BP1658CJ custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both BP1658CJ pin roles. This may need you to remap the RGBCW indexes with BP1658CJ_Map command |
 | SM2235 |  SM2335 andd SM2235 custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both SM2235 pin roles. This may need you to remap the RGBCW indexes with SM2235_Map command |
 | CHT8305 |  CHT8305 is a Temperature and Humidity sensor with I2C interface. |
+| MCP9808 |  MCP9808 is a Temperature sensor with I2C interface and an external wakeup pin, see [docs](https://www.elektroda.pl/rtvforum/topic3988466.html). |
 | KP18068 |  KP18068 I2C LED driver. Unfinished due to the lack of the information. |
 | KP18058 |  KP18058 I2C LED driver. Working, see reverse-engineering [topic](https://www.elektroda.pl/rtvforum/topic3991620.html) |
 | MAX72XX |  MAX72XX LED matrix display driver with font and simple script interface. See [protocol explanation](https://www.elektroda.pl/rtvforum/viewtopic.php?p=18040628#18040628) |

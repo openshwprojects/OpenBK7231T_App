@@ -292,5 +292,12 @@
     "title": "todo",
     "file": "new_pins.h",
     "descr": "[BTN] Ignore all button events (aka child lock)"
+  },
+  {
+    "index": "42",
+    "enum": "OBK_FLAG_DOORSENSOR_INVERT_STATE",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[DoorSensor] Invert state"
   }
 ]

@@ -54,6 +54,12 @@
     "requires": ""
   },
   {
+    "name": "ChargingLimit",
+    "title": "TODO",
+    "descr": "Mechanism to perform an action based on a max. delta value and max time. Used to control Electric Vehicle chargers. See [discussion](https://github.com/openshwprojects/OpenBK7231T_App/issues/892).",
+    "requires": ""
+  },
+  {
     "name": "BL0937",
     "title": "TODO",
     "descr": "BL0937 is a power-metering chip which uses custom protocol to report data. It requires setting 3 pins in pin config: CF, CF1 and SEL",
@@ -159,6 +165,12 @@
     "name": "CHT8305",
     "title": "TODO",
     "descr": "CHT8305 is a Temperature and Humidity sensor with I2C interface.",
+    "requires": ""
+  },
+  {
+    "name": "MCP9808",
+    "title": "TODO",
+    "descr": "MCP9808 is a Temperature sensor with I2C interface and an external wakeup pin, see [docs](https://www.elektroda.pl/rtvforum/topic3988466.html).",
     "requires": ""
   },
   {

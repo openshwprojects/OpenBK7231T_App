@@ -150,6 +150,18 @@
     "requires": ""
   },
   {
+    "name": "$batteryVoltage",
+    "title": "$batteryVoltage",
+    "descr": "Battery driver voltage",
+    "requires": ""
+  },
+  {
+    "name": "$batteryLevel",
+    "title": "$batteryLevel",
+    "descr": "Battery driver level",
+    "requires": ""
+  },
+  {
     "name": "$uptime",
     "title": "$uptime",
     "descr": "Time since reboot in seconds",
