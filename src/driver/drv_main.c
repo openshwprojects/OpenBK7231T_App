@@ -126,7 +126,7 @@ static driver_t g_drivers[] = {
 #ifdef ENABLE_DRIVER_CHARGINGLIMIT
 	//drvdetail:{"name":"ChargingLimit",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"ChargingLimit",
+	//drvdetail:"descr":"Mechanism to perform an action based on a max. delta value and max time. Used to control Electric Vehicle chargers. See [discussion](https://github.com/openshwprojects/OpenBK7231T_App/issues/892).",
 	//drvdetail:"requires":""}
 	{ "ChargingLimit", ChargingLimit_Init, ChargingLimit_OnEverySecond, ChargingLimit_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
