@@ -258,7 +258,7 @@
     "fn": "CHT_Calibrate",
     "file": "driver/drv_cht8305.c",
     "requires": "",
-    "examples": "SHT_Calibrate -4 10"
+    "examples": "SHT_Calibrate -4 10 <br /> meaning -4 on current temp reading and +10 on current humidity reading"
   },
   {
     "name": "CHT_Cycle",
@@ -267,7 +267,7 @@
     "fn": "CHT_cycle",
     "file": "drv/drv_cht8305.c",
     "requires": "",
-    "examples": "CHT_Cycle 60"
+    "examples": "CHT_Cycle 60 <br /> measurement is taken every 60 seconds"
   },
   {
     "name": "ClampChannel",
