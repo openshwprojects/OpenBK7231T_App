@@ -567,6 +567,8 @@ void TuyaMCU_SendColor(int dpID, float fR, float fG, float fB, int tuyaRGB) {
 // tuyaMCU_sendColor dpID red01 green01 blue01 tuyaRGB
 // tuyaMCU_sendColor 24 1 0 0 1
 // tuyaMCU_sendColor 24 1 0 0 1
+// green:
+// tuyaMCU_sendColor 24 0 1 0 1
 commandResult_t Cmd_TuyaMCU_SendColor(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int toSend;
 	float fR, fG, fB;

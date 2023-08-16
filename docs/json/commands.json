@@ -253,7 +253,7 @@
   },
   {
     "name": "CHT_Calibrate",
-    "args": "",
+    "args": "[DeltaTemp][DeltaHumidity]",
     "descr": "Calibrate the CHT Sensor as Tolerance is +/-2 degrees C.",
     "fn": "CHT_Calibrate",
     "file": "driver/drv_cht8305.c",
@@ -262,7 +262,7 @@
   },
   {
     "name": "CHT_Cycle",
-    "args": "[int]",
+    "args": "[IntervalSeconds]",
     "descr": "This is the interval between measurements in seconds, by default 1. Max is 255.",
     "fn": "CHT_cycle",
     "file": "drv/drv_cht8305.c",
@@ -1207,7 +1207,7 @@
   },
   {
     "name": "MCP9808_Calibrate",
-    "args": "MCP9808_Calibrate",
+    "args": "[DeltaTemperature]",
     "descr": "",
     "fn": "NULL);",
     "file": "driver/drv_mcp9808.c",
@@ -1216,7 +1216,7 @@
   },
   {
     "name": "MCP9808_Cycle",
-    "args": "MCP9808_cycle",
+    "args": "[DelayInSeconds]",
     "descr": "",
     "fn": "NULL);",
     "file": "driver/drv_mcp9808.c",

@@ -98,12 +98,12 @@ void CHT8305_Init() {
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "DRV_CHT8304_init: ID: %02X %02X", buff[0], buff[1]);
 
-	//cmddetail:{"name":"CHT_Calibrate","args":"",
+	//cmddetail:{"name":"CHT_Calibrate","args":"[DeltaTemp][DeltaHumidity]",
 	//cmddetail:"descr":"Calibrate the CHT Sensor as Tolerance is +/-2 degrees C.",
 	//cmddetail:"fn":"CHT_Calibrate","file":"driver/drv_cht8305.c","requires":"",
 	//cmddetail:"examples":"SHT_Calibrate -4 10"}
 	CMD_RegisterCommand("CHT_Calibrate", CHT_Calibrate, NULL);
-	//cmddetail:{"name":"CHT_Cycle","args":"[int]",
+	//cmddetail:{"name":"CHT_Cycle","args":"[IntervalSeconds]",
 	//cmddetail:"descr":"This is the interval between measurements in seconds, by default 1. Max is 255.",
 	//cmddetail:"fn":"CHT_cycle","file":"drv/drv_cht8305.c","requires":"",
 	//cmddetail:"examples":"CHT_Cycle 60"}

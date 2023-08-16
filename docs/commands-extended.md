@@ -33,8 +33,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | cancelRepeatingEvent | [UserIDInteger] | Stops a given repeating event with a specified ID | File: cmnds/cmd_repeatingEvents.c<br/>Function: RepeatingEvents_Cmd_CancelRepeatingEvent |
 | Ch | [InputValue] | An alternate command to access channels. It returns all used channels in JSON format. The syntax is ChINDEX value, there is no space between Ch and channel index. It can be sent without value to poll channel values. | File: cmnds/cmd_channels.c<br/>Function: CMD_Ch |
 | chSetupLimit | [limitChannelIndex] [maxAllowedLimitChannelDelta] [timeoutOr-1] [commandToRun] | After executing this command, chargingLimit driver will watch channel for changes and count down timer. When a timer runs our or channel change (from the initial state) is larger than given margin, given command is run | File: driver/drv_chargingLimit.c<br/>Function: ChargingLimit_SetupCommand); |
-| CHT_Calibrate |  | Calibrate the CHT Sensor as Tolerance is +/-2 degrees C.<br/>e.g.:SHT_Calibrate -4 10 | File: driver/drv_cht8305.c<br/>Function: CHT_Calibrate |
-| CHT_Cycle | [int] | This is the interval between measurements in seconds, by default 1. Max is 255.<br/>e.g.:CHT_Cycle 60 | File: drv/drv_cht8305.c<br/>Function: CHT_cycle |
+| CHT_Calibrate | [DeltaTemp][DeltaHumidity] | Calibrate the CHT Sensor as Tolerance is +/-2 degrees C.<br/>e.g.:SHT_Calibrate -4 10 | File: driver/drv_cht8305.c<br/>Function: CHT_Calibrate |
+| CHT_Cycle | [IntervalSeconds] | This is the interval between measurements in seconds, by default 1. Max is 255.<br/>e.g.:CHT_Cycle 60 | File: drv/drv_cht8305.c<br/>Function: CHT_cycle |
 | ClampChannel | [ChannelIndex][Min][Max] | Clamps given channel value to a range. | File: cmnds/cmd_channels.c<br/>Function: CMD_ClampChannel |
 | clearAll |  | Clears config and all remaining features, like runtime scripts, events, etc | File: cmnds/cmd_main.c<br/>Function: CMD_ClearAll |
 | clearAllHandlers |  | This clears all added event handlers | File: cmnds/cmd_eventHandlers.c<br/>Function: CMD_ClearAllHandlers |
@@ -139,8 +139,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | MCP9808_Adr | MCP9808_Adr |  | File: driver/drv_mcp9808.c<br/>Function: NULL); |
 | MCP9808_AlertMin | MCP9808_AlertMin |  | File: driver/drv_mcp9808.c<br/>Function: NULL); |
 | MCP9808_AlertRange | MCP9808_AlertRange |  | File: driver/drv_mcp9808.c<br/>Function: NULL); |
-| MCP9808_Calibrate | MCP9808_Calibrate |  | File: driver/drv_mcp9808.c<br/>Function: NULL); |
-| MCP9808_Cycle | MCP9808_cycle |  | File: driver/drv_mcp9808.c<br/>Function: NULL); |
+| MCP9808_Calibrate | [DeltaTemperature] |  | File: driver/drv_mcp9808.c<br/>Function: NULL); |
+| MCP9808_Cycle | [DelayInSeconds] |  | File: driver/drv_mcp9808.c<br/>Function: NULL); |
 | MqttClient | [ValueString] | Sets the MQTT client. Command keeps Tasmota syntax | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_MqttClient |
 | MqttHost | [ValueString] | Sets the MQTT host. Command keeps Tasmota syntax | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_MqttHost |
 | MqttPassword | [ValueString] | Sets the MQTT pass. Command keeps Tasmota syntax | File: cmnds/cmd_tasmota.c<br/>Function: cmnd_MqttPassword |

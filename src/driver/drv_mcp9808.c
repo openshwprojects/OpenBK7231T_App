@@ -257,12 +257,12 @@ void MCP9808_Init() {
 	CMD_RegisterCommand("MCP9808_AlertMin", MCP9808_AlertMin, NULL);
 
 
-	//cmddetail:{"name":"MCP9808_Calibrate","args":"MCP9808_Calibrate",
+	//cmddetail:{"name":"MCP9808_Calibrate","args":"[DeltaTemperature]",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_mcp9808.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MCP9808_Calibrate", MCP9808_Calibrate, NULL);
-	//cmddetail:{"name":"MCP9808_Cycle","args":"MCP9808_cycle",
+	//cmddetail:{"name":"MCP9808_Cycle","args":"[DelayInSeconds]",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_mcp9808.c","requires":"",
 	//cmddetail:"examples":""}

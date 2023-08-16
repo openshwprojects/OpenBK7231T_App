@@ -36,8 +36,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | cancelRepeatingEvent | [UserIDInteger] | Stops a given repeating event with a specified ID |
 | Ch | [InputValue] | An alternate command to access channels. It returns all used channels in JSON format. The syntax is ChINDEX value, there is no space between Ch and channel index. It can be sent without value to poll channel values. |
 | chSetupLimit | [limitChannelIndex] [maxAllowedLimitChannelDelta] [timeoutOr-1] [commandToRun] | After executing this command, chargingLimit driver will watch channel for changes and count down timer. When a timer runs our or channel change (from the initial state) is larger than given margin, given command is run |
-| CHT_Calibrate |  | Calibrate the CHT Sensor as Tolerance is +/-2 degrees C.<br/>e.g.:SHT_Calibrate -4 10 |
-| CHT_Cycle | [int] | This is the interval between measurements in seconds, by default 1. Max is 255.<br/>e.g.:CHT_Cycle 60 |
+| CHT_Calibrate | [DeltaTemp][DeltaHumidity] | Calibrate the CHT Sensor as Tolerance is +/-2 degrees C.<br/>e.g.:SHT_Calibrate -4 10 |
+| CHT_Cycle | [IntervalSeconds] | This is the interval between measurements in seconds, by default 1. Max is 255.<br/>e.g.:CHT_Cycle 60 |
 | ClampChannel | [ChannelIndex][Min][Max] | Clamps given channel value to a range. |
 | clearAll |  | Clears config and all remaining features, like runtime scripts, events, etc |
 | clearAllHandlers |  | This clears all added event handlers |
@@ -142,8 +142,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | MCP9808_Adr | MCP9808_Adr |  |
 | MCP9808_AlertMin | MCP9808_AlertMin |  |
 | MCP9808_AlertRange | MCP9808_AlertRange |  |
-| MCP9808_Calibrate | MCP9808_Calibrate |  |
-| MCP9808_Cycle | MCP9808_cycle |  |
+| MCP9808_Calibrate | [DeltaTemperature] |  |
+| MCP9808_Cycle | [DelayInSeconds] |  |
 | MqttClient | [ValueString] | Sets the MQTT client. Command keeps Tasmota syntax |
 | MqttHost | [ValueString] | Sets the MQTT host. Command keeps Tasmota syntax |
 | MqttPassword | [ValueString] | Sets the MQTT pass. Command keeps Tasmota syntax |
