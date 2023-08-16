@@ -188,61 +188,59 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload
 	case LIGHT_PWM:
 	case RELAY:
 	case BINARY_SENSOR:
-		sprintf(g_hassBuffer, "%s %s", CFG_GetShortDeviceName(), CHANNEL_GetLabel(index));
+		sprintf(g_hassBuffer, "%s", CHANNEL_GetLabel(index));
 		break;
 	case LIGHT_PWMCW:
 	case LIGHT_RGB:
 	case LIGHT_RGBCW:
 		//There can only be one RGB so we can skip including index in the name. Do the same
 		//for 2 PWM case.
-		sprintf(g_hassBuffer, "%s", CFG_GetShortDeviceName());
+		sprintf(g_hassBuffer, "Light");
 		break;
 	case POWER_SENSOR:
 		isSensor = true;
 #ifndef OBK_DISABLE_ALL_DRIVERS
 		if ((index >= OBK_VOLTAGE) && (index <= OBK_POWER))
-			sprintf(g_hassBuffer, "%s %s", CFG_GetShortDeviceName(), sensor_mqttNames[index]);
+			sprintf(g_hassBuffer, "%s", sensor_mqttNames[index]);
 		else if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_CONSUMPTION_STATS))
-			sprintf(g_hassBuffer, "%s %s", CFG_GetShortDeviceName(), counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
+			sprintf(g_hassBuffer, "%s", counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
 #endif
 		break;
 
 	case TEMPERATURE_SENSOR:
 		isSensor = true;
-		sprintf(g_hassBuffer, "%s Temperature", CFG_GetShortDeviceName());
+		sprintf(g_hassBuffer, "Temperature");
 		break;
 	case HUMIDITY_SENSOR:
 		isSensor = true;
-		sprintf(g_hassBuffer, "%s Humidity", CFG_GetShortDeviceName());
+		sprintf(g_hassBuffer, "Humidity");
 		break;
 	case CO2_SENSOR:
 		isSensor = true;
-		sprintf(g_hassBuffer, "%s CO2", CFG_GetShortDeviceName());
+		sprintf(g_hassBuffer, "CO2");
 		break;
 	case SMOKE_SENSOR:
 		isSensor = true;
-		sprintf(g_hassBuffer, "%s Smoke", CFG_GetShortDeviceName());
+		sprintf(g_hassBuffer, "Smoke");
 		break;
 	case TVOC_SENSOR:
 		isSensor = true;
-		sprintf(g_hassBuffer, "%s Tvoc", CFG_GetShortDeviceName());
+		sprintf(g_hassBuffer, "Tvoc");
 		break;
 	case BATTERY_SENSOR:
 		isSensor = true;
-		sprintf(g_hassBuffer, "%s Battery", CFG_GetShortDeviceName());
+		sprintf(g_hassBuffer, "Battery");
 		break;
 	case BATTERY_VOLTAGE_SENSOR:
-		isSensor = true;
-		sprintf(g_hassBuffer, "%s Voltage", CFG_GetShortDeviceName());
-		break;
 	case VOLTAGE_SENSOR:
-		sprintf(g_hassBuffer, "%s Voltage", CFG_GetShortDeviceName());
+		isSensor = (type == BATTERY_VOLTAGE_SENSOR);
+		sprintf(g_hassBuffer, "Voltage");
 		break;
 	case ILLUMINANCE_SENSOR:
-		sprintf(g_hassBuffer, "%s Illuminance", CFG_GetShortDeviceName());
+		sprintf(g_hassBuffer, "Illuminance");
 		break;
 	default:
-		sprintf(g_hassBuffer, "%s %s", CFG_GetShortDeviceName(), CHANNEL_GetLabel(index));
+		sprintf(g_hassBuffer, "%s", CHANNEL_GetLabel(index));
 		break;
 	}
 	cJSON_AddStringToObject(info->root, "name", g_hassBuffer);

@@ -306,7 +306,7 @@ int http_fn_index(http_request_t* request) {
 		channelType = CHANNEL_GetType(i);
 		if (h_isChannelRelay(i) || channelType == ChType_Toggle) {
 			const char* c;
-			const char *prefix;
+			const char* prefix;
 			if (i <= 1) {
 				hprintf255(request, "<tr>");
 			}
@@ -553,7 +553,7 @@ int http_fn_index(http_request_t* request) {
 			iValue = CHANNEL_Get(i);
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "Power %.2fW (ch %s)", (iValue*0.1f), CHANNEL_GetLabel(i));
+			hprintf255(request, "Power %.2fW (ch %s)", (iValue * 0.1f), CHANNEL_GetLabel(i));
 			poststr(request, "</td></tr>");
 		}
 		else if (channelType == ChType_Power) {
@@ -843,7 +843,7 @@ int http_fn_index(http_request_t* request) {
 	}
 #if PLATFORM_BEKEN
 	/*
-typedef enum { 
+typedef enum {
 	RESET_SOURCE_POWERON = 0,
 	RESET_SOURCE_REBOOT = 1,
 	RESET_SOURCE_WATCHDOG = 2,
@@ -860,7 +860,7 @@ typedef enum {
 } RESET_SOURCE_STATUS;
 */
 	{
-		const char *s = "Unk";
+		const char* s = "Unk";
 		i = bk_misc_get_start_type();
 		if (i == 0)
 			s = "Pwr";
@@ -1331,7 +1331,7 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 		bChanged |= CFG_SetWiFiPass2(tmpA);
 	}
 	CFG_Save_SetupTimer();
-	if (bChanged==0) {
+	if (bChanged == 0) {
 		poststr(request, "No changes detected.");
 	}
 	else {
@@ -1854,7 +1854,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 
 				discoveryQueued = true;
 			}
-			break; 
+			break;
 			case ChType_ReadOnlyLowMidHigh:
 			{
 				dev_info = hass_init_sensor_device_info(READONLYLOWMIDHIGH_SENSOR, i, -1, -1);
@@ -2115,7 +2115,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 				}
 
 				hass_print_unique_id(request, "  - unique_id: \"%s\"\n", RELAY, i);
-				hprintf255(request, "    name: \"%s %i\"\n", shortDeviceName, i);
+				hprintf255(request, "    name: %i\n", i);
 				hprintf255(request, "    state_topic: \"%s/%i/get\"\n", clientId, i);
 				hprintf255(request, "    command_topic: \"%s/%i/set\"\n", clientId, i);
 				hprintf_qos_payload(request, clientId);
@@ -2135,7 +2135,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 				}
 
 				hass_print_unique_id(request, "  - unique_id: \"%s\"\n", BINARY_SENSOR, i);
-				hprintf255(request, "    name: \"%s %i\"\n", shortDeviceName, i);
+				hprintf255(request, "    name: %i\n", i);
 				hprintf255(request, "    state_topic: \"%s/%i/get\"\n", clientId, i);
 				hprintf_qos_payload(request, clientId);
 			}
@@ -2153,7 +2153,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 		}
 
 		hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_RGBCW, i);
-		hprintf255(request, "    name: \"%s %i\"\n", shortDeviceName, i);
+		hprintf255(request, "    name: %i\n", i);
 		http_generate_rgb_cfg(request, clientId);
 		//hprintf255(request, "    #brightness_value_template: \"{{ value }}\"\n");
 		hprintf255(request, "    color_temp_command_topic: \"cmnd/%s/led_temperature\"\n", clientId);
@@ -2173,7 +2173,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 			}
 
 			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_RGB, i);
-			hprintf255(request, "    name: \"%s\"\n", shortDeviceName);
+			hprintf255(request, "    name: Light\n");
 			http_generate_rgb_cfg(request, clientId);
 		}
 		else if (pwmCount == 1) {
@@ -2188,7 +2188,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 			}
 
 			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_PWM, i);
-			hprintf255(request, "    name: \"%s\"\n", shortDeviceName);
+			hprintf255(request, "    name: Light\n");
 			http_generate_singleColor_cfg(request, clientId);
 		}
 		else if (pwmCount == 2) {
@@ -2203,7 +2203,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 			}
 
 			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_PWMCW, i);
-			hprintf255(request, "    name: \"%s\"\n", shortDeviceName);
+			hprintf255(request, "    name: Light\n");
 			http_generate_cw_cfg(request, clientId);
 		}
 		else if (pwmCount > 0) {
@@ -2220,7 +2220,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 					}
 
 					hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_PWM, i);
-					hprintf255(request, "    name: \"%s %i\"\n", shortDeviceName, i);
+					hprintf255(request, "    name: %i\n", i);
 					hprintf255(request, "    state_topic: \"%s/%i/get\"\n", clientId, i);
 					hprintf255(request, "    command_topic: \"%s/%i/set\"\n", clientId, i);
 					hprintf255(request, "    brightness_command_topic: \"%s/%i/set\"\n", clientId, i);
@@ -2526,7 +2526,7 @@ const char* g_obk_flagNames[] = {
 	"[DoorSensor] Invert state",
 	"error",
 	"error",
-}; 
+};
 int http_fn_cfg_generic(http_request_t* request) {
 	int i;
 	char tmpA[64];
