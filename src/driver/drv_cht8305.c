@@ -101,12 +101,12 @@ void CHT8305_Init() {
 	//cmddetail:{"name":"CHT_Calibrate","args":"[DeltaTemp][DeltaHumidity]",
 	//cmddetail:"descr":"Calibrate the CHT Sensor as Tolerance is +/-2 degrees C.",
 	//cmddetail:"fn":"CHT_Calibrate","file":"driver/drv_cht8305.c","requires":"",
-	//cmddetail:"examples":"SHT_Calibrate -4 10"}
+	//cmddetail:"examples":"SHT_Calibrate -4 10 <br /> meaning -4 on current temp reading and +10 on current humidity reading"}
 	CMD_RegisterCommand("CHT_Calibrate", CHT_Calibrate, NULL);
 	//cmddetail:{"name":"CHT_Cycle","args":"[IntervalSeconds]",
 	//cmddetail:"descr":"This is the interval between measurements in seconds, by default 1. Max is 255.",
 	//cmddetail:"fn":"CHT_cycle","file":"drv/drv_cht8305.c","requires":"",
-	//cmddetail:"examples":"CHT_Cycle 60"}
+	//cmddetail:"examples":"CHT_Cycle 60 <br /> measurement is taken every 60 seconds"}
 	CMD_RegisterCommand("CHT_Cycle", CHT_cycle, NULL);
 
 }
