@@ -797,11 +797,14 @@ Publishes send by OBK device:
 |:------------- |:------------- | -----:|
 `;
 
+function genReadMore(name) {
+    let textmore = `See also [${name} on forum](https://www.elektroda.com/rtvforum/find.php?q=${name}).`;
+   return textmore;
+}
 for (let i = 0; i < mqttTopics.publishes.length; i++){
 
 
     let pub =  mqttTopics.publishes[i];
-
     let textshort = `| ${pub.topic} | ${pub.example} | ${pub.description} |`;
 
     // allow multi-row entries in table entries.
@@ -865,8 +868,10 @@ for (let i = 0; i < commands.length; i++){
     */
     let cmd = commands[i];
 
-    let textshort = `| ${cmd.name} | ${cmd.args}${cmd.requires?'\nReq:'+cmd.requires:''} | ${cmd.descr}${cmd.examples?'\ne.g.:'+cmd.examples:''} |`;
-    let textlong = `| ${cmd.name} | ${cmd.args}${cmd.requires?'\nReq:'+cmd.requires:''} | ${cmd.descr}${cmd.examples?'\ne.g.:'+cmd.examples:''} | File: ${cmd.file}\nFunction: ${cmd.fn} |`;
+
+    let descMore =" " + genReadMore(cmd.name);
+    let textshort = `| ${cmd.name} | ${cmd.args}${cmd.requires ? '\nReq:' + cmd.requires : ''} | ${cmd.descr}${cmd.examples ? '\ne.g.:' + cmd.examples : ''}${descMore} |`;
+    let textlong = `| ${cmd.name} | ${cmd.args}${cmd.requires ? '\nReq:' + cmd.requires : ''} | ${cmd.descr}${cmd.examples ? '\ne.g.:' + cmd.examples : ''}${descMore} | File: ${cmd.file}\nFunction: ${cmd.fn} |`;
 
     // allow multi-row entries in table entries.
     textshort = textshort.replace(/\n/g, '<br/>');
