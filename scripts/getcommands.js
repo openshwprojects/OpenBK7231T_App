@@ -870,8 +870,8 @@ for (let i = 0; i < commands.length; i++){
 
 
     let descMore = "<br/>" + genReadMore(cmd.name);
-    let textshort = `| ${cmd.name} | ${cmd.args}${cmd.requires ? '\nReq:' + cmd.requires : ''} | ${cmd.descr}${cmd.examples ? '\ne.g.:' + cmd.examples : ''}${descMore} |`;
-    let textlong = `| ${cmd.name} | ${cmd.args}${cmd.requires ? '\nReq:' + cmd.requires : ''} | ${cmd.descr}${cmd.examples ? '\ne.g.:' + cmd.examples : ''}${descMore} | File: ${cmd.file}\nFunction: ${cmd.fn} |`;
+    let textshort = `| ${cmd.name} | ${cmd.args}${cmd.requires ? '\nReq:' + cmd.requires : ''} | ${cmd.descr}${cmd.examples ? '<br>Example: ' + cmd.examples : ''}${descMore} |`;
+    let textlong = `| ${cmd.name} | ${cmd.args}${cmd.requires ? '\nReq:' + cmd.requires : ''} | ${cmd.descr}${cmd.examples ? '<br>Example: ' + cmd.examples : ''}${descMore} | File: ${cmd.file}\nFunction: ${cmd.fn} |`;
 
     // allow multi-row entries in table entries.
     textshort = textshort.replace(/\n/g, '<br/>');
