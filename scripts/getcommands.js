@@ -869,7 +869,7 @@ for (let i = 0; i < commands.length; i++){
     let cmd = commands[i];
 
 
-    let descMore =" " + genReadMore(cmd.name);
+    let descMore ="<br/>" + genReadMore(cmd.name);
     let textshort = `| ${cmd.name} | ${cmd.args}${cmd.requires ? '\nReq:' + cmd.requires : ''} | ${cmd.descr}${cmd.examples ? '\ne.g.:' + cmd.examples : ''}${descMore} |`;
     let textlong = `| ${cmd.name} | ${cmd.args}${cmd.requires ? '\nReq:' + cmd.requires : ''} | ${cmd.descr}${cmd.examples ? '\ne.g.:' + cmd.examples : ''}${descMore} | File: ${cmd.file}\nFunction: ${cmd.fn} |`;
 
