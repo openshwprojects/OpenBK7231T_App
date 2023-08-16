@@ -2249,17 +2249,27 @@ int http_fn_ha_cfg(http_request_t* request) {
 int http_fn_cm(http_request_t* request) {
 	char tmpA[128];
 	char* long_str_alloced = 0;
-	int commandLen;
+	int commandLen = 0;
 
 	http_setup(request, httpMimeTypeJson);
 	// exec command
-	commandLen = http_getArg(request->url, "cmnd", tmpA, sizeof(tmpA));
+	if (request->method == HTTP_GET) {
+		commandLen = http_getArg(request->url, "cmnd", tmpA, sizeof(tmpA));
+		//ADDLOG_INFO(LOG_FEATURE_HTTP, "Got here (GET) %s;%s;%d\n", request->url, tmpA, commandLen);
+        } else if (request->method == HTTP_POST || request->method == HTTP_PUT) {
+		commandLen = http_getRawArg(request->bodystart, "cmnd", tmpA, sizeof(tmpA));
+		//ADDLOG_INFO(LOG_FEATURE_HTTP, "Got here (POST) %s;%s;%d\n", request->bodystart, tmpA, commandLen);
+        }
 	if (commandLen) {
 		if (commandLen > (sizeof(tmpA) - 5)) {
 			commandLen += 8;
 			long_str_alloced = (char*)malloc(commandLen);
 			if (long_str_alloced) {
-				http_getArg(request->url, "cmnd", long_str_alloced, commandLen);
+				if (request->method == HTTP_GET) {
+					http_getArg(request->url, "cmnd", long_str_alloced, commandLen);
+				} else if (request->method == HTTP_POST || request->method == HTTP_PUT) {
+					http_getRawArg(request->bodystart, "cmnd", long_str_alloced, commandLen);
+				}
 				CMD_ExecuteCommand(long_str_alloced, COMMAND_FLAG_SOURCE_HTTP);
 				JSON_ProcessCommandReply(long_str_alloced, skipToNextWord(long_str_alloced), request, (jsonCb_t)hprintf255, COMMAND_FLAG_SOURCE_HTTP);
 				free(long_str_alloced);
