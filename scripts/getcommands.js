@@ -869,7 +869,7 @@ for (let i = 0; i < commands.length; i++){
     let cmd = commands[i];
 
 
-    let descMore ="<br/>" + genReadMore(cmd.name);
+    let descMore = "<br/>" + genReadMore(cmd.name);
     let textshort = `| ${cmd.name} | ${cmd.args}${cmd.requires ? '\nReq:' + cmd.requires : ''} | ${cmd.descr}${cmd.examples ? '\ne.g.:' + cmd.examples : ''}${descMore} |`;
     let textlong = `| ${cmd.name} | ${cmd.args}${cmd.requires ? '\nReq:' + cmd.requires : ''} | ${cmd.descr}${cmd.examples ? '\ne.g.:' + cmd.examples : ''}${descMore} | File: ${cmd.file}\nFunction: ${cmd.fn} |`;
 
@@ -984,7 +984,12 @@ for (let i = 0; i < drvs.length; i++) {
 
     let drv = drvs[i];
 
-    let textshort = `| ${drv.name} |  ${drv.descr} |`;
+    let descMore = "<br/>" + genReadMore(drv.name);
+    let descBasic = drv.descr;
+    if (!descBasic.endsWith('.')) {
+        descBasic += '.';
+    }
+    let textshort = `| ${drv.name} |  ${descBasic}${descMore} |`;
 
     // allow multi-row entries in table entries.
     textshort = textshort.replace(/\n/g, '<br/>');
