@@ -857,7 +857,16 @@ commands.sort((a, b) => {
 		return 1;
 	return 0;
 });
+function formatDesc(descBasic) {
 
+    if (!descBasic.endsWith('.')) {
+        descBasic += '.';
+    }
+    if (descBasic.length > 0) {
+        descBasic = descBasic.charAt(0).toUpperCase() + descBasic.slice(1);
+    }
+    return descBasic;
+}
 for (let i = 0; i < commands.length; i++){
 
     /* like:
@@ -870,10 +879,7 @@ for (let i = 0; i < commands.length; i++){
 
 
     let descMore = "<br/><br/>" + genReadMore(cmd.name);
-    let descBasic = cmd.descr;
-    if (!descBasic.endsWith('.')) {
-        descBasic += '.';
-    }
+    let descBasic = formatDesc(cmd.descr);
     let textshort = `| ${cmd.name} | ${cmd.args}${cmd.requires ? '\nReq:' + cmd.requires : ''} | ${descBasic}${cmd.examples ? '<br/><br/>Example: ' + cmd.examples : ''}${descMore} |`;
     let textlong = `| ${cmd.name} | ${cmd.args}${cmd.requires ? '\nReq:' + cmd.requires : ''} | ${descBasic}${cmd.examples ? '<br/><br/>Example: ' + cmd.examples : ''}${descMore} | File: ${cmd.file}\nFunction: ${cmd.fn} |`;
 
@@ -983,16 +989,14 @@ for (let i = 0; i < cnsts.length; i++) {
     constantsmdshort += textshort;
     constantsmdshort += '\n';
 }
+
 for (let i = 0; i < drvs.length; i++) {
 
 
     let drv = drvs[i];
 
     let descMore = "<br/>" + genReadMore(drv.name);
-    let descBasic = drv.descr;
-    if (!descBasic.endsWith('.')) {
-        descBasic += '.';
-    }
+    let descBasic = formatDesc(drv.descr);
     let textshort = `| ${drv.name} |  ${descBasic}${descMore} |`;
 
     // allow multi-row entries in table entries.
