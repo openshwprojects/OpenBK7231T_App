@@ -61,6 +61,9 @@ enum OBK_Publish_Result_e {
 #define OBK_PUBLISH_FLAG_MUTEX_SILENT			1
 #define OBK_PUBLISH_FLAG_RETAIN					2
 #define OBK_PUBLISH_FLAG_FORCE_REMOVE_GET		4
+// do not add anything to given topic
+#define OBK_PUBLISH_FLAG_RAW_TOPIC_NAME			8
+
 
 #include "new_mqtt_deduper.h"
 
@@ -136,8 +139,9 @@ int MQTT_Post_Received_Str(const char *topic, const char *data);
 void MQTT_GetStats(int* outUsed, int* outMax, int* outFreeMem);
 
 OBK_Publish_Result MQTT_DoItemPublish(int idx);
-OBK_Publish_Result MQTT_PublishMain_StringFloat(const char* sChannel, float f, int maxDecimalPlaces);
-OBK_Publish_Result MQTT_PublishMain_StringInt(const char* sChannel, int val);
+OBK_Publish_Result MQTT_PublishMain_StringFloat(const char* sChannel, float f, 
+	int maxDecimalPlaces, int flags);
+OBK_Publish_Result MQTT_PublishMain_StringInt(const char* sChannel, int val, int flags);
 OBK_Publish_Result MQTT_PublishMain_StringString(const char* sChannel, const char* valueStr, int flags);
 void MQTT_PublishOnlyDeviceChannelsIfPossible();
 void MQTT_QueuePublish(const char* topic, const char* channel, const char* value, int flags);

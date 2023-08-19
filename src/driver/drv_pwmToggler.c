@@ -78,13 +78,13 @@ void publish_enableState(int index) {
 	char topic[32];
 	snprintf(topic, sizeof(topic), "toggler_enable%i", index);
 
-	MQTT_PublishMain_StringInt(topic, g_enabled[index]);
+	MQTT_PublishMain_StringInt(topic, g_enabled[index], 0);
 }
 void publish_value(int index) {
 	char topic[32];
 	snprintf(topic, sizeof(topic), "toggler_set%i", index);
 
-	MQTT_PublishMain_StringInt(topic, g_values[index]);
+	MQTT_PublishMain_StringInt(topic, g_values[index], 0);
 }
 void apply(int index) {
 	if (index < 0)
