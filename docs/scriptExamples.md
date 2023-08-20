@@ -1,6 +1,25 @@
 # Example script files
 
 
+<b>Repeating event demos</b>
+<br>Repeating events can be used to create a simple timer.
+<br>Requirements:
+- channel 1 - output relay<br>
+
+```// This will automatically turn off relay after about 2 seconds
+// NOTE: addRepeatingEvent [RepeatTime] [RepeatCount]
+addChangeHandler Channel1 != 0 addRepeatingEvent 2 1 setChannel 1 0
+
+
+// here is alternative sample script, but commented out
+// code above will forever toggle relay every 15 seconds
+// addRepeatingEvent 15 -1 POWER TOGGLE
+
+
+
+```
+
+
 <b>Loop demo</b>
 <br>Features a 'goto' script command (for use within script) and, obviously, a label.
 <br>Requirements:

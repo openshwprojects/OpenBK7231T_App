@@ -1,5 +1,13 @@
 [
 	{
+		"title": "Repeating event demos",
+		"description": "Repeating events can be used to create a simple timer.",
+		"requirements": [
+			"channel 1 - output relay"
+		],
+		"file": "scripts/repeatingEventDemo.bat"
+	},
+	{
 		"title": "Loop demo",
 		"description": "Features a 'goto' script command (for use within script) and, obviously, a label.",
 		"requirements": [
