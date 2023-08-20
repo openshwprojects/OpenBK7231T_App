@@ -62,5 +62,9 @@
 {
 "title": "Simple single LED blink on device boot",
 "file": "autoexecs/blink_led_on_device_boot.bat"
+},
+{
+"title": "Advanced config for TuyaMCU power meter and electric car charging limit driver",
+"file": "autoexecs/TAC2121C_tuyaMCU_and_car_chargerLimit.bat"
 }
 ]
