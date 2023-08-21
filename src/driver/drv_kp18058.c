@@ -12,8 +12,10 @@
 
 
 static softI2C_t g_softI2C;
+static int g_current_RGB = 14;
+static int g_current_CW = 30;
 
-byte CountBytes(byte b) {
+byte GetParityBit(byte b) {
 	byte sum;
 	int i;
 
@@ -31,8 +33,6 @@ byte CountBytes(byte b) {
 
 void KP18058_Write(float *rgbcw) {
 	bool bAllZero = true;
-	int i;
-
 
 	for (int i = 0; i < 5; i++) {
 		if (rgbcw[i] > 0.01f) {
@@ -40,40 +40,57 @@ void KP18058_Write(float *rgbcw) {
 		}
 	}
 
+	// RGB current
+	byte byte2 = (rgbcw[0] || rgbcw[1] || rgbcw[2]) ? g_current_RGB : 1;
+	byte2 = byte2 << 1;
+	byte2 |= GetParityBit(byte2);
+
+	// Bit 7: RGB PWM, Bit 6: Unknown, Bit 5-1: CW current
+	byte byte3 = (1 << 7) | (1 << 6) | (g_current_CW << 1);
+	byte3 |= GetParityBit(byte3);
+
 	if (bAllZero) {
 		Soft_I2C_Start(&g_softI2C, 0x81);
 		Soft_I2C_WriteByte(&g_softI2C, 0x00);
 		Soft_I2C_WriteByte(&g_softI2C, 0x03);
-		Soft_I2C_WriteByte(&g_softI2C, 0x7D);
+		Soft_I2C_WriteByte(&g_softI2C, byte3);
 		for (int i = 0; i < 10; i++) {
 			Soft_I2C_WriteByte(&g_softI2C, 0x00);
 		}
 	}
 	else {
-		//FILE *f = fopen("dimmerTest.txt", "a");
 		Soft_I2C_Start(&g_softI2C, 0xE1);
 		Soft_I2C_WriteByte(&g_softI2C, 0x00);
-		Soft_I2C_WriteByte(&g_softI2C, 0x03);
-		Soft_I2C_WriteByte(&g_softI2C, 0x7D);
+		Soft_I2C_WriteByte(&g_softI2C, byte2);
+		Soft_I2C_WriteByte(&g_softI2C, byte3);
 		for (int i = 0; i < 5; i++) {
 			float useVal = rgbcw[g_cfg.ledRemap.ar[i]];
-			unsigned short cur_col_12 = MAP(useVal, 0, 255.0f, 0, 1023.0f);
+			unsigned short cur_col_10 = MAP(useVal, 0, 255.0f, 0, 1023.0f);
 			byte a, b;
-			a = cur_col_12 & 0x1F;
-			b = (cur_col_12 >> 5) & 0x1F;
+			a = cur_col_10 & 0x1F;
+			b = (cur_col_10 >> 5) & 0x1F;
 			a = a << 1;
 			b = b << 1;
-			a |= CountBytes(a);
-			b |= CountBytes(b);
+			a |= GetParityBit(a);
+			b |= GetParityBit(b);
 			Soft_I2C_WriteByte(&g_softI2C, b);
 			Soft_I2C_WriteByte(&g_softI2C, a);
-
-			//fprintf(f, "0x%02X 0x%02X ", b, a);
 		}
-		//fprintf(f, "\n");
-		//fclose(f);
 	}
 	Soft_I2C_Stop(&g_softI2C);
+}
+
+commandResult_t KP18058_Current(const void *context, const char *cmd, const char *args, int flags) {
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	g_current_RGB = Tokenizer_GetArgIntegerRange(0, 0, 31);
+	g_current_CW = Tokenizer_GetArgIntegerRange(1, 0, 31);
+
+	return CMD_RES_OK;
 }
 
 // startDriver KP18058
@@ -89,22 +106,20 @@ void KP18058_Init() {
 	g_softI2C.pin_data = PIN_FindPinIndexForRole(IOR_KP18058_DAT, g_softI2C.pin_data);
 
 	Soft_I2C_PreInit(&g_softI2C);
-#if 0
-	for (float f = 0; f < 255; f += 0.25f) {
-		float rgbcw[5] = { 0 };
-		rgbcw[1] = f;
-		KP18058_Write(rgbcw);
-	}
-#endif
 
 	//cmddetail:{"name":"KP18058_RGBCW","args":"[HexColor]",
 	//cmddetail:"descr":"Don't use it. It's for direct access of KP18058 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",
-	//cmddetail:"fn":"KP18058_RGBCW","file":"driver/drv_bp5758d.c","requires":"",
+	//cmddetail:"fn":"KP18058_RGBCW","file":"driver/drv_kp18058.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("KP18058_RGBCW", CMD_LEDDriver_WriteRGBCW, NULL);
 	//cmddetail:{"name":"KP18058_Map","args":"[Ch0][Ch1][Ch2][Ch3][Ch4]",
 	//cmddetail:"descr":"Maps KP18058_Map RGBCW values to given indices of KP18058 channels. This is because KP18058 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: KP18058_Map 0 1 2 3 4",
-	//cmddetail:"fn":"KP18058_Map","file":"driver/drv_sm2235.c","requires":"",
+	//cmddetail:"fn":"KP18058_Map","file":"driver/drv_kp18058.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("KP18058_Map", CMD_LEDDriver_Map, NULL);
+	//cmddetail:{"name":"KP18058_Current","args":"[RGBLimit][CWLimit]",
+	//cmddetail:"descr":"Sets the maximum current for LED driver. Values 0-31. Example usage: KP18058_Current 14 30",
+	//cmddetail:"fn":"KP18058_Current","file":"driver/drv_kp18058.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("KP18058_Current", KP18058_Current, NULL);
 }
