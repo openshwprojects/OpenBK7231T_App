@@ -720,11 +720,20 @@
     "examples": ""
   },
   {
+    "name": "KP18058_Current",
+    "args": "[RGBLimit][CWLimit]",
+    "descr": "Sets the maximum current for LED driver. Values 0-31. Example usage: KP18058_Current 14 30",
+    "fn": "KP18058_Current",
+    "file": "driver/drv_kp18058.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "KP18058_Map",
     "args": "[Ch0][Ch1][Ch2][Ch3][Ch4]",
     "descr": "Maps KP18058_Map RGBCW values to given indices of KP18058 channels. This is because KP18058 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: KP18058_Map 0 1 2 3 4",
     "fn": "KP18058_Map",
-    "file": "driver/drv_sm2235.c",
+    "file": "driver/drv_kp18058.c",
     "requires": "",
     "examples": ""
   },
@@ -733,7 +742,7 @@
     "args": "[HexColor]",
     "descr": "Don't use it. It's for direct access of KP18058 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",
     "fn": "KP18058_RGBCW",
-    "file": "driver/drv_bp5758d.c",
+    "file": "driver/drv_kp18058.c",
     "requires": "",
     "examples": ""
   },
