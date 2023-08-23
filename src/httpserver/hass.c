@@ -273,8 +273,14 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload
 /// @brief Initializes HomeAssistant relay device discovery storage.
 /// @param index
 /// @return 
-HassDeviceInfo* hass_init_relay_device_info(int index, ENTITY_TYPE type) {
-	HassDeviceInfo* info = hass_init_device_info(type, index, "1", "0");
+HassDeviceInfo* hass_init_relay_device_info(int index, ENTITY_TYPE type, bool bToggleInv) {
+	HassDeviceInfo* info;
+	if (bToggleInv) {
+		info = hass_init_device_info(type, index, "0", "1");
+	}
+	else {
+		info = hass_init_device_info(type, index, "1", "0");
+	}
 
 	sprintf(g_hassBuffer, "~/%i/get", index);
 	cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);   //state_topic

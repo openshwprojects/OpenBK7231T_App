@@ -838,6 +838,13 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Illuminance,
+		//chandetail:{"name":"Toggle_Inv",
+		//chandetail:"title":"TODO",
+		//chandetail:"descr":"Toggle_Inv",
+		//chandetail:"enum":"ChType_Toggle_Inv",
+		//chandetail:"file":"new_pins.h",
+		//chandetail:"driver":""}
+		ChType_Toggle_Inv,
 		
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",

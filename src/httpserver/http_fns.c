@@ -278,11 +278,12 @@ int http_fn_index(http_request_t* request) {
 		if (BIT_CHECK(g_hiddenChannels, i)) {
 			continue; // hidden
 		}
+		bool bToggleInv = channelType == ChType_Toggle_Inv;
 		if (h_isChannelRelay(i) || channelType == ChType_Toggle) {
 			if (i <= 1) {
 				hprintf255(request, "<tr>");
 			}
-			if (CHANNEL_Check(i)) {
+			if (CHANNEL_Check(i) != bToggleInv) {
 				poststr(request, "<td class='on'>ON</td>");
 			}
 			else {
@@ -304,13 +305,14 @@ int http_fn_index(http_request_t* request) {
 		}
 
 		channelType = CHANNEL_GetType(i);
-		if (h_isChannelRelay(i) || channelType == ChType_Toggle) {
+		bool bToggleInv = channelType == ChType_Toggle_Inv;
+		if (h_isChannelRelay(i) || channelType == ChType_Toggle || bToggleInv) {
 			const char* c;
 			const char* prefix;
 			if (i <= 1) {
 				hprintf255(request, "<tr>");
 			}
-			if (CHANNEL_Check(i)) {
+			if (CHANNEL_Check(i) != bToggleInv) {
 				c = "bgrn";
 			}
 			else {
@@ -620,7 +622,7 @@ int http_fn_index(http_request_t* request) {
 			}
 			poststr(request, "</td></tr>");
 		}
-		else if (h_isChannelRelay(i) || channelType == ChType_Toggle) {
+		else if (h_isChannelRelay(i) || channelType == ChType_Toggle || channelType == ChType_Toggle_Inv) {
 			// HANDLED ABOVE in previous loop
 		}
 		else if ((bRawPWMs && h_isChannelPWM(i)) || (channelType == ChType_Dimmer) || (channelType == ChType_Dimmer256) || (channelType == ChType_Dimmer1000)) {
@@ -1694,14 +1696,15 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 #endif
 	//if (relayCount > 0) {
 		for (i = 0; i < CHANNEL_MAX; i++) {
-			if (h_isChannelRelay(i) || g_cfg.pins.channelTypes[i] == ChType_Toggle) {
+			bool bToggleInv = g_cfg.pins.channelTypes[i] == ChType_Toggle_Inv;
+			if (h_isChannelRelay(i) || g_cfg.pins.channelTypes[i] == ChType_Toggle || bToggleInv) {
 				// TODO: flags are 32 bit and there are 64 max channels
 				BIT_SET(flagsChannelPublished, i);
 				if (CFG_HasFlag(OBK_FLAG_MQTT_HASS_ADD_RELAYS_AS_LIGHTS)) {
-					dev_info = hass_init_relay_device_info(i, LIGHT_ON_OFF);
+					dev_info = hass_init_relay_device_info(i, LIGHT_ON_OFF, bToggleInv);
 				}
 				else {
-					dev_info = hass_init_relay_device_info(i, RELAY);
+					dev_info = hass_init_relay_device_info(i, RELAY, bToggleInv);
 				}
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
