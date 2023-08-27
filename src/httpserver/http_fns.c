@@ -1059,8 +1059,9 @@ int http_fn_cfg_mqtt_set(http_request_t* request) {
 	http_html_start(request, "Saving MQTT");
 
 	if (http_getArg(request->url, "host", tmpA, sizeof(tmpA))) {
-		CFG_SetMQTTHost(tmpA);
 	}
+	// FIX: always set, so people can clear field
+	CFG_SetMQTTHost(tmpA);
 	if (http_getArg(request->url, "port", tmpA, sizeof(tmpA))) {
 		CFG_SetMQTTPort(atoi(tmpA));
 	}
