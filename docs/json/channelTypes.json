@@ -312,6 +312,14 @@
     "driver": ""
   },
   {
+    "name": "Toggle_Inv",
+    "title": "TODO",
+    "descr": "Toggle_Inv",
+    "enum": "ChType_Toggle_Inv",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
     "name": "Max",
     "title": "TODO",
     "descr": "This is the current total number of available channel types.",

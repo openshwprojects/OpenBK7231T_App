@@ -44,4 +44,5 @@ Do not add anything here, as it will overwritten with next rebuild.
 | ReadOnlyLowMidHigh |  Like LowMidHigh, but just read only |
 | SmokePercent |  Smoke percentage |
 | Illuminance |  Illuminance in Lux |
+| Toggle_Inv |  Toggle_Inv |
 | Max |  This is the current total number of available channel types. |

@@ -12,6 +12,10 @@
         "answer": "Do five short power on/power off cycles (but not too short, because device might have capacitors and they need to discharge every time). Device will go back to AP mode (aka Safe Mode). Remember that in Safe Mode, pins are disabled, drivers are also not run, so don't worry if you see your device seemingly not responding to buttons, etc, etc."
     },
     {
+        "question": "My BL0937 power metering socket shows visible measurement spikes, what's wrong?",
+        "answer": "Enabled PowerSave may cause it. Remove PowerSave 1 command from startup and reboot"
+    },
+    {
         "question": "How do I enable more logging? How to make more logs visible?",
         "answer": "First type 'loglevel x' in console, where x is 0 to 7, default value is 3 (log all up to info), value 4 will also log debug logs, and value 5 will include 'extradebug'. Then, on online panel, also switch filter to 'All' (both steps must be done for logs to show up)"
     },
@@ -94,6 +98,10 @@
     {
         "question": "I flashed OpenBeken, configured my SSID and pass in AP mode, but now it does not connect to my WiFi, what's wrong?",
         "answer": "Multiple things may have gone wrong. <br>First of all, make sure you power your wifi module from reliable 3.3V power supply. This problem happens frequently on BL602 if you power module outside circuit from cheap 3.3V USB to UART converter.<br>Second issue might be just incorrect SSID/WiFi data - do 5 power off/on cycles to go to Safe Mode and correct the credentials.<br>Third issue happens on some BK modules. They might have RF partition broken. To fix that, use either our BK7231 flash tool, click button 'Restore RF partition', or in our Web Application, in Flash Tab, click 'Restore RF partition' button. This will also assign new MAC."
+    },
+    {
+        "question": "How to disable MQTT?",
+        "answer": "On MQTT configure page, just enter empty host name. Alternatively, use MqttHost \"\"  command"
     },
     {
         "question": "How to configure ping watchdog to do a relay cycle when given IP does not respond for a given amount of time?",
