@@ -247,14 +247,9 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"MCP9808 is a Temperature sensor with I2C interface and an external wakeup pin, see [docs](https://www.elektroda.pl/rtvforum/topic3988466.html).",
 	//drvdetail:"requires":""}
 	{ "MCP9808",	MCP9808_Init,		MCP9808_OnEverySecond,		MCP9808_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
-	//drvdetail:{"name":"KP18068",
-	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"KP18068 I2C LED driver. Unfinished due to the lack of the information.",
-	//drvdetail:"requires":""}
-	{ "KP18068",		KP18068_Init,		NULL,			NULL, NULL, NULL, NULL, false },
 	//drvdetail:{"name":"KP18058",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"KP18058 I2C LED driver. Working, see reverse-engineering [topic](https://www.elektroda.pl/rtvforum/topic3991620.html)",
+	//drvdetail:"descr":"KP18058 I2C LED driver. Supports also KP18068. Working, see reverse-engineering [topic](https://www.elektroda.pl/rtvforum/topic3991620.html)",
 	//drvdetail:"requires":""}
 	{ "KP18058",		KP18058_Init,		NULL,			NULL, NULL, NULL, NULL, false },
 #ifdef ENABLE_DRIVER_MAX72XX
