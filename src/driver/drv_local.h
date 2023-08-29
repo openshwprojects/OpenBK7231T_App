@@ -49,6 +49,9 @@ void TM1638_Init();
 
 void HT16K33_Init();
 
+void DRV_ADCSmoother_Init();
+void DRV_ADCSmoother_RunFrame();
+
 bool DRV_IsRunning(const char* name);
 
 // this is exposed here only for debug tool with automatic testing
