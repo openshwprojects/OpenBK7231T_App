@@ -195,6 +195,10 @@ static byte g_defaultTuyaMCUWiFiState = 0x00;
 static short g_tuyaMCUled_dpID = -1;
 static short g_tuyaMCUled_format = -1;
 
+#define TUYAMCU_BUFFER_SIZE		256
+
+static byte *g_tuyaMCUpayloadBuffer = 0;
+
 // battery powered device state
 enum TuyaMCUV0State {
 	TM0_STATE_AWAITING_INFO,
@@ -361,33 +365,31 @@ int TuyaMCU_AppendStateInternal(byte *buffer, int bufferMax, int currentLen, uin
 void TuyaMCU_SendStateInternal(uint8_t id, uint8_t type, void* value, int dataLen)
 {
 	uint16_t payload_len = 0;
-	uint8_t payload_buffer[32];
 	
-	payload_len = TuyaMCU_AppendStateInternal(payload_buffer, sizeof(payload_buffer),
+	payload_len = TuyaMCU_AppendStateInternal(g_tuyaMCUpayloadBuffer, TUYAMCU_BUFFER_SIZE,
 		payload_len, id, type, value, dataLen);
 
-	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, payload_buffer, payload_len);
+	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, g_tuyaMCUpayloadBuffer, payload_len);
 }
 void TuyaMCU_SendTwoVals(byte idA, int valA, byte idB, int valB)
 {
 	byte swap[4];
 	uint16_t payload_len = 0;
-	uint8_t payload_buffer[32];
 
 	swap[0] = ((byte*)&valA)[3];
 	swap[1] = ((byte*)&valA)[2];
 	swap[2] = ((byte*)&valA)[1];
 	swap[3] = ((byte*)&valA)[0];
-	payload_len = TuyaMCU_AppendStateInternal(payload_buffer, sizeof(payload_buffer),
+	payload_len = TuyaMCU_AppendStateInternal(g_tuyaMCUpayloadBuffer, TUYAMCU_BUFFER_SIZE,
 		payload_len, idA, DP_TYPE_VALUE, swap, 4);
 	swap[0] = ((byte*)&valB)[3];
 	swap[1] = ((byte*)&valB)[2];
 	swap[2] = ((byte*)&valB)[1];
 	swap[3] = ((byte*)&valB)[0];
-	payload_len = TuyaMCU_AppendStateInternal(payload_buffer, sizeof(payload_buffer),
+	payload_len = TuyaMCU_AppendStateInternal(g_tuyaMCUpayloadBuffer, TUYAMCU_BUFFER_SIZE,
 		payload_len, idB, DP_TYPE_VALUE, swap, 4);
 
-	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, payload_buffer, payload_len);
+	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, g_tuyaMCUpayloadBuffer, payload_len);
 }
 void TuyaMCU_SendState(uint8_t id, uint8_t type, uint8_t* value)
 {
@@ -448,48 +450,34 @@ static uint16_t convertHexStringtoBytes(uint8_t* dest, char src[], uint16_t src_
 }
 
 void TuyaMCU_SendHexString(uint8_t id, char data[]) {
-#ifdef WIN32
-
-#else
-
 	uint16_t len = strlen(data) / 2;
 	uint16_t payload_len = 4 + len;
-	uint8_t payload_buffer[payload_len];
-	payload_buffer[0] = id;
-	payload_buffer[1] = DP_TYPE_STRING;
-	payload_buffer[2] = len >> 8;
-	payload_buffer[3] = len & 0xFF;
+	g_tuyaMCUpayloadBuffer[0] = id;
+	g_tuyaMCUpayloadBuffer[1] = DP_TYPE_STRING;
+	g_tuyaMCUpayloadBuffer[2] = len >> 8;
+	g_tuyaMCUpayloadBuffer[3] = len & 0xFF;
 
-	convertHexStringtoBytes(&payload_buffer[4], data, len);
+	convertHexStringtoBytes(&g_tuyaMCUpayloadBuffer[4], data, len);
 
-	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, payload_buffer, payload_len);
-#endif
+	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, g_tuyaMCUpayloadBuffer, payload_len);
 }
 
 void TuyaMCU_SendString(uint8_t id, char data[]) {
-#ifdef WIN32
-
-#else
 	uint16_t len = strlen(data);
 	uint16_t payload_len = 4 + len;
-	uint8_t payload_buffer[payload_len];
-	payload_buffer[0] = id;
-	payload_buffer[1] = DP_TYPE_STRING;
-	payload_buffer[2] = len >> 8;
-	payload_buffer[3] = len & 0xFF;
+	g_tuyaMCUpayloadBuffer[0] = id;
+	g_tuyaMCUpayloadBuffer[1] = DP_TYPE_STRING;
+	g_tuyaMCUpayloadBuffer[2] = len >> 8;
+	g_tuyaMCUpayloadBuffer[3] = len & 0xFF;
 
 	for (uint16_t i = 0; i < len; i++) {
-		payload_buffer[4 + i] = data[i];
+		g_tuyaMCUpayloadBuffer[4 + i] = data[i];
 	}
 
-	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, payload_buffer, payload_len);
-#endif
+	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, g_tuyaMCUpayloadBuffer, payload_len);
 }
 
 void TuyaMCU_SendRaw(uint8_t id, char data[]) {
-#ifdef WIN32
-
-#else
 	char* beginPos = strchr(data, 'x');
 	if (!beginPos) {
 		beginPos = strchr(data, 'X');
@@ -503,16 +491,14 @@ void TuyaMCU_SendRaw(uint8_t id, char data[]) {
 	uint16_t strSize = strlen(beginPos);
 	uint16_t len = strSize / 2;
 	uint16_t payload_len = 4 + len;
-	uint8_t payload_buffer[payload_len];
-	payload_buffer[0] = id;
-	payload_buffer[1] = DP_TYPE_RAW;
-	payload_buffer[2] = len >> 8;
-	payload_buffer[3] = len & 0xFF;
+	g_tuyaMCUpayloadBuffer[0] = id;
+	g_tuyaMCUpayloadBuffer[1] = DP_TYPE_RAW;
+	g_tuyaMCUpayloadBuffer[2] = len >> 8;
+	g_tuyaMCUpayloadBuffer[3] = len & 0xFF;
 
-	convertHexStringtoBytes(&payload_buffer[4], beginPos, len);
+	convertHexStringtoBytes(&g_tuyaMCUpayloadBuffer[4], beginPos, len);
 
-	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, payload_buffer, payload_len);
-#endif
+	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, g_tuyaMCUpayloadBuffer, payload_len);
 }
 
 /*
@@ -1908,6 +1894,9 @@ void TuyaMCU_Init()
 	g_tuyaBatteryPoweredState = 0;
 	g_tuyaMCUConfirmationsToSend_0x05 = 0;
 	g_tuyaMCUConfirmationsToSend_0x08 = 0;
+	if (g_tuyaMCUpayloadBuffer == 0) {
+		g_tuyaMCUpayloadBuffer = (byte*)malloc(TUYAMCU_BUFFER_SIZE);
+	}
 
 	UART_InitUART(g_baudRate);
 	UART_InitReceiveRingBuffer(256);
