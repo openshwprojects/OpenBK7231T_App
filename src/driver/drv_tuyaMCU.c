@@ -1864,7 +1864,7 @@ void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMo
 		rtos_delay_milliseconds(50);
 		// dpID 23: Kelvin value of white : The range is from 10 (ww)to 990 (cw), 
 		// NOTE : when changing this value, dpID 21 is set to 0->white automatically
-		int mcu_temperature = 10 + temperatureRange01 * 980.0f;
+		int mcu_temperature = 10 + (1.0f - temperatureRange01) * 980.0f;
 		TuyaMCU_SendValue(23, mcu_temperature);
 		//TuyaMCU_SendTwoVals(22, mcu_brightness, 23, mcu_temperature);
 	}
