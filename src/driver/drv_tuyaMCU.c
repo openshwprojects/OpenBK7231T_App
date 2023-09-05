@@ -1851,6 +1851,7 @@ void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMo
 	if (taken == false) {
 		return;
 	}
+	rtos_delay_milliseconds(50);
 	// dpID 20: switch light on and off
 	TuyaMCU_SendBool(20, bLightEnableAll);
 	if (bLightEnableAll == false) {
