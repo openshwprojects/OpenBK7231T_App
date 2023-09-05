@@ -1835,13 +1835,26 @@ commandResult_t TuyaMCU_SetBaudRate(const void* context, const char* cmd, const 
 
 	return CMD_RES_OK;
 }
+
+static SemaphoreHandle_t g_mutex = 0;
+
 void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMode, float brightnessRange01, float temperatureRange01) {
 	if (g_tuyaMCUled_dpID == -1) {
+		return;
+	}
+	if (g_mutex == 0)
+	{
+		g_mutex = xSemaphoreCreateMutex();
+	}
+	// temporary fix?
+	bool taken = xSemaphoreTake(g_mutex, 1000);
+	if (taken == false) {
 		return;
 	}
 	// dpID 20: switch light on and off
 	TuyaMCU_SendBool(20, bLightEnableAll);
 	if (bLightEnableAll == false) {
+		xSemaphoreGive(g_mutex);
 		// nothing else to do!
 		return;
 	}
@@ -1868,6 +1881,7 @@ void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMo
 		TuyaMCU_SendValue(23, mcu_temperature);
 		//TuyaMCU_SendTwoVals(22, mcu_brightness, 23, mcu_temperature);
 	}
+	xSemaphoreGive(g_mutex);
 
 
 }
