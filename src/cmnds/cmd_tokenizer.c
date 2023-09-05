@@ -12,7 +12,7 @@
 
 static char g_buffer[MAX_CMD_LEN];
 static const char *g_args[MAX_ARGS];
-static char g_argsExpanded[MAX_ARGS][8];
+static char g_argsExpanded[MAX_ARGS][20];
 static const char *g_argsFrom[MAX_ARGS];
 static int g_numArgs = 0;
 static int tok_flags = 0;
@@ -79,11 +79,21 @@ const char *Tokenizer_GetArg(int i) {
 	}
 #else
 	if (g_bAllowExpand && s[0] == '$') {
-		float f;
-		int iValue;
-		CMD_ExpandConstant(s, 0, &f);
-		iValue = f;
-		sprintf(g_argsExpanded[i], "%i", iValue);
+		// quick hack for str expansion here, may do it in a better way later
+		if (!strcmp(s+1, "IP")) {
+			strcpy_safe(g_argsExpanded[i], HAL_GetMyIPString(), sizeof(g_argsExpanded[i]));
+		} else if (!strcmp(s + 1, "ShortName")) {
+			strcpy_safe(g_argsExpanded[i], CFG_GetShortDeviceName(), sizeof(g_argsExpanded[i]));
+		} else if (!strcmp(s + 1, "Name")) {
+			strcpy_safe(g_argsExpanded[i], CFG_GetDeviceName(), sizeof(g_argsExpanded[i]));
+		}
+		else {
+			float f;
+			int iValue;
+			CMD_ExpandConstant(s, 0, &f);
+			iValue = f;
+			sprintf(g_argsExpanded[i], "%i", iValue);
+		}
 		return g_argsExpanded[i];
 	}
 
