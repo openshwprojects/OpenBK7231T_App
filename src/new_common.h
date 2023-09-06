@@ -450,6 +450,7 @@ void ScheduleDriverStart(const char *name, int delay);
 bool isWhiteSpace(char ch);
 void convert_IP_to_string(char *o, unsigned char *ip);
 int str_to_ip(const char *s, byte *ip);
+int STR_ReplaceWhiteSpacesWithUnderscore(char *p);
 
 #endif /* __NEW_COMMON_H__ */
 
