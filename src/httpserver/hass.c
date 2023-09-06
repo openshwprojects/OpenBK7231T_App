@@ -90,6 +90,9 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "sensor", index);
 		break;
 	}
+	// There can be no spaces in this name!
+	// See: https://www.elektroda.com/rtvforum/topic4000620.html
+	STR_ReplaceWhiteSpacesWithUnderscore(uniq_id);
 }
 
 /// @brief Prints HomeAssistant unique id for the entity.
@@ -136,6 +139,9 @@ void hass_populate_device_config_channel(ENTITY_TYPE type, char* uniq_id, HassDe
 		sprintf(info->channel, "sensor/%s/config", uniq_id);
 		break;
 	}
+	// There can be no spaces in this name!
+	// See: https://www.elektroda.com/rtvforum/topic4000620.html
+	STR_ReplaceWhiteSpacesWithUnderscore(uniq_id);
 }
 
 /// @brief Builds HomeAssistant device discovery info. The caller needs to free the returned pointer.

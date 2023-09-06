@@ -313,6 +313,18 @@ const char* skipToNextWord(const char* p) {
 	return p;
 }
 
+int STR_ReplaceWhiteSpacesWithUnderscore(char *p) {
+	int r = 0;
+	while (*p) {
+		if (*p == ' ' || *p == '\t') {
+			r++;
+			*p = '_';
+		}
+		p++;
+	}
+	return r;
+}
+
 
 WIFI_RSSI_LEVEL wifi_rssi_scale(int8_t rssi_value)
 {

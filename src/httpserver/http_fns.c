@@ -1269,7 +1269,6 @@ int http_fn_cfg_wifi(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
-
 int http_fn_cfg_name(http_request_t* request) {
 	// for a test, show password as well...
 	char tmpA[128];
@@ -1279,6 +1278,9 @@ int http_fn_cfg_name(http_request_t* request) {
 
 	poststr_h2(request, "Change device names for display");
 	if (http_getArg(request->url, "shortName", tmpA, sizeof(tmpA))) {
+		if (STR_ReplaceWhiteSpacesWithUnderscore(tmpA)) {
+			poststr_h2(request, "You cannot have whitespaces in short name!");
+		}
 		CFG_SetShortDeviceName(tmpA);
 	}
 	if (http_getArg(request->url, "name", tmpA, sizeof(tmpA))) {
