@@ -121,7 +121,6 @@ const char *Tokenizer_GetArg(int i) {
 				float f;
 				int iValue;
 				CMD_ExpandConstant(tconst, 0, &f);
-				printf("float %.6f\n",f);
 				iValue = f;
 				sprintf(convert, "%i", iValue);
 				strcat_safe(Templine, convert, sizeof(Templine));
