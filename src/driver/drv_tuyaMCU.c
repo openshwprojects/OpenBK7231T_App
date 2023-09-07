@@ -538,6 +538,8 @@ void TuyaMCU_SendColor(int dpID, float fR, float fG, float fB, int tuyaRGB) {
 		sprintf(str, "%04X%04X%04X", iHue, iSat * 10, iVal * 10);
 		break;
 	case 1: // Lowercase Type 1 payload
+		// SAMPLE: 00e403c0000a 
+		// which is 00e4 03c0 000a
 		sprintf(str, "%04x%04x%04x", iHue, iSat * 10, iVal * 10);
 		break;
 	case 2: // Uppercase Type 2 payload
@@ -599,7 +601,7 @@ commandResult_t Cmd_TuyaMCU_Send_RSSI(const void* context, const char* cmd, cons
 	TuyaMCU_Send_RSSI(toSend);
 	return CMD_RES_OK;
 }
-void TuyaMCU_Send_SetTime(struct tm* pTime) {
+void TuyaMCU_Send_SetTime(struct tm* pTime, bool bSensorMode) {
 	byte payload_buffer[8];
 
 	if (pTime == 0) {
@@ -629,8 +631,13 @@ void TuyaMCU_Send_SetTime(struct tm* pTime) {
 		// Data[7]: indicates the week, ranging from 1 to 7. 1 indicates Monday.
 		payload_buffer[7] = tuya_day_of_week; //1 for Monday in TUYA Doc
 	}
-
-	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_TIME, payload_buffer, 8);
+	if (bSensorMode) {
+		// https://developer.tuya.com/en/docs/iot/tuyacloudlowpoweruniversalserialaccessprotocol?id=K95afs9h4tjjh
+		TuyaMCU_SendCommandWithData(0x06, payload_buffer, 8);
+	}
+	else {
+		TuyaMCU_SendCommandWithData(TUYA_CMD_SET_TIME, payload_buffer, 8);
+	}
 }
 struct tm* TuyaMCU_Get_NTP_Time() {
 	struct tm* ptm;
@@ -743,7 +750,7 @@ commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void* context, const ch
 
 commandResult_t TuyaMCU_Send_SetTime_Current(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
-	TuyaMCU_Send_SetTime(TuyaMCU_Get_NTP_Time());
+	TuyaMCU_Send_SetTime(TuyaMCU_Get_NTP_Time(),g_sensorMode);
 
 	return CMD_RES_OK;
 }
@@ -758,7 +765,7 @@ commandResult_t TuyaMCU_Send_SetTime_Example(const void* context, const char* cm
 	testTime.tm_min = 54;
 	testTime.tm_sec = 32;
 
-	TuyaMCU_Send_SetTime(&testTime);
+	TuyaMCU_Send_SetTime(&testTime,g_sensorMode);
 	return CMD_RES_OK;
 }
 
@@ -1344,6 +1351,7 @@ void TuyaMCU_ResetWiFi() {
 #define TUYA_V0_CMD_RESETWIFI               0x03
 #define TUYA_V0_CMD_RESETWIFI_AND_SEL_CONF  0x04
 #define TUYA_V0_CMD_REALTIMESTATUS          0x05
+#define TUYA_V0_CMD_OBTAINLOCALTIME         0x06
 #define TUYA_V0_CMD_RECORDSTATUS            0x08
 #define TUYA_V0_CMD_OBTAINDPCACHE           0x10
 
@@ -1519,7 +1527,7 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		break;
 	case TUYA_CMD_SET_TIME:
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU_ProcessIncoming: received TUYA_CMD_SET_TIME, so sending back time");
-		TuyaMCU_Send_SetTime(TuyaMCU_Get_NTP_Time());
+		TuyaMCU_Send_SetTime(TuyaMCU_Get_NTP_Time(), false);
 		break;
 		// 55 AA 00 01 00 ${"p":"e7dny8zvmiyhqerw","v":"1.0.0"}$
 		// uartFakeHex 55AA000100247B2270223A226537646E79387A766D69796871657277222C2276223A22312E302E30227D24
@@ -1533,6 +1541,15 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 			// 0x08 packet for version 0 (not 0x03) of TuyaMCU
 			// This packet includes first a DateTime, then RealTimeDataStorage
 			TuyaMCU_V0_ParseRealTimeWithRecordStorage(data + 6, len - 6, true);
+		}
+		else {
+
+		}
+		break;
+	case TUYA_V0_CMD_OBTAINLOCALTIME:
+		if (version == 0) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU_ProcessIncoming: received TUYA_V0_CMD_OBTAINLOCALTIME, so sending back time");
+			TuyaMCU_Send_SetTime(TuyaMCU_Get_NTP_Time(),true);
 		}
 		else {
 
