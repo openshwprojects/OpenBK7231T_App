@@ -788,6 +788,11 @@ int httpclient_response_parse(httpclient_t *client, char *data, int len, uint32_
             os_memmove(data, &data[crlf_pos + 2], len - (crlf_pos + 2) + 1); /* Be sure to move NULL-terminating char as well */
             len -= (crlf_pos + 2);
 
+        } else if ((n == 1) && (key)) {
+            ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "Read header : %s: <no value>\r\n", key);
+            os_memmove(data, &data[crlf_pos + 2], len - (crlf_pos + 2) + 1); /* Be sure to move NULL-terminating char as well */
+            len -= (crlf_pos + 2);
+
         } else {
             ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "Could not parse header\r\n");
             return ERROR_HTTP;
@@ -1283,9 +1288,3 @@ int HTTPClient_Async_SendPost(const char *url_in, int http_port, const char *con
 
 	return 0;
 }
-
-
-
-
-
-
