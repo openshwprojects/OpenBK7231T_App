@@ -364,7 +364,7 @@ void Test_HassDiscovery_digitalInput() {
 	// we have used channel index 1
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/5/get");
 	// this label will be sent via HASS Discovery to Home Assistant
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "name", "DigitalInputTest myDigitalValue");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "name", "myDigitalValue");
 
 }
 void Test_HassDiscovery() {
