@@ -21,6 +21,7 @@ void Test_ChargeLimitDriver() {
 		Main_OnEverySecond();
 		int val10 = CHANNEL_Get(10);
 		int nowDelta = val10 - start10;
+		printf("CH 12 is %i\n", CHANNEL_Get(12));
 		if (nowDelta >= 5) {
 			SELFTEST_ASSERT_CHANNEL(12,1);
 		}

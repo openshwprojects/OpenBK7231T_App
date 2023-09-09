@@ -138,7 +138,7 @@ const char *Tokenizer_GetArg(int i) {
 
 	s = g_args[i];
 
-	if(g_bAllowExpand) {
+	if(g_bAllowExpand && s[0] == '$') {
 #if 1
 		int channelIndex;
 		int value;
