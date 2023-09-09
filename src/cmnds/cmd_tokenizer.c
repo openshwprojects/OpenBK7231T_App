@@ -57,64 +57,53 @@ bool Tokenizer_IsArgInteger(int i) {
 	}
 	return strIsInteger(g_args[i]);
 }
-const char *Tokenizer_GetArg(int i) {
+const char *Tokenizer_GetArgExpanding(int i) {
 	const char *s;
 	char tokLine[sizeof(g_argsExpanded[i])];
 	char Templine[sizeof(g_argsExpanded[i])];
 	char convert[10];
 
-	if(i >= g_numArgs)
+	if (i >= g_numArgs)
 		return 0;
 
 	s = g_args[i];
 
-#if 0
-	if(g_bAllowExpand && s[0] == '$' && s[1] == 'C' && s[2] == 'H') {
-		int channelIndex;
-		int value;
-
-		channelIndex = atoi(s+3);
-		value = CHANNEL_Get(channelIndex);
-		
-		sprintf(g_argsExpanded[i],"%i",value);
-
-		return g_argsExpanded[i];
-	}
-#else
 	//séparators for strtok to detect constants
 	const char * separators = "${}";
 	//pointer for strstr function
 	char *ptrConst;
 
 	//copy input string before manipulations
-	strcpy_safe(g_argsExpanded[i],s,sizeof(g_argsExpanded[i]));
-	strcpy_safe(tokLine,s,sizeof(tokLine));
+	strcpy_safe(g_argsExpanded[i], s, sizeof(g_argsExpanded[i]));
+	strcpy_safe(tokLine, s, sizeof(tokLine));
 
 	//start strtok
-	char *strToken = strtok(tokLine,separators);
-	while ( strToken != NULL ) {
+	char *strToken = strtok(tokLine, separators);
+	while (strToken != NULL) {
 		//build tconst with ${<token>} and try find it
 		char tconst[20] = "${";
-		strcat(tconst,strToken);
-		strcat(tconst,"}");
-		ptrConst=strstr(g_argsExpanded[i],tconst);
-		if (ptrConst==NULL){
+		strcat(tconst, strToken);
+		strcat(tconst, "}");
+		ptrConst = strstr(g_argsExpanded[i], tconst);
+		if (ptrConst == NULL) {
 			// we didn't find ${<token>} so we try with $<token>
-			strcpy(tconst,"$");
-			strcat(tconst,strToken);
-			ptrConst=strstr(g_argsExpanded[i],tconst);
+			strcpy(tconst, "$");
+			strcat(tconst, strToken);
+			ptrConst = strstr(g_argsExpanded[i], tconst);
 		}
 		// if we found ${<token>} or $<token> it means we found a constant
-		if (ptrConst!=NULL){
+		if (ptrConst != NULL) {
 			//put 0 on the start of the constant to copy the left part of the input string
-			ptrConst[0]=0;
-			strcpy_safe(Templine,g_argsExpanded[i],sizeof(Templine));
+			ptrConst[0] = 0;
+			strcpy_safe(Templine, g_argsExpanded[i], sizeof(Templine));
 			//analyse the constant found to replace it with it's value/string and concat it with the left part of the input string
 			if (!strcmp(tconst, "${IP}") || !strcmp(tconst, "$IP")) {
 				strcat_safe(Templine, HAL_GetMyIPString(), sizeof(Templine));
-			} else if (!strcmp(tconst, "${ShortName}") || !strcmp(tconst, "$ShortName")) {
+			}
+			else if (!strcmp(tconst, "${ShortName}") || !strcmp(tconst, "$ShortName")) {
 				strcat_safe(Templine, CFG_GetShortDeviceName(), sizeof(Templine));
-			} else if (!strcmp(tconst, "${Name}") || !strcmp(tconst, "$Name")) {
+			}
+			else if (!strcmp(tconst, "${Name}") || !strcmp(tconst, "$Name")) {
 				strcat_safe(Templine, CFG_GetDeviceName(), sizeof(Templine));
 			}
 			else {
@@ -126,20 +115,45 @@ const char *Tokenizer_GetArg(int i) {
 				strcat_safe(Templine, convert, sizeof(Templine));
 			}
 			//concat with the right part, after the constant
-			strcat_safe(Templine,ptrConst+strlen(tconst),sizeof(Templine));
+			strcat_safe(Templine, ptrConst + strlen(tconst), sizeof(Templine));
 			//update the input string with the replaced constant
-			strcpy_safe(g_argsExpanded[i],Templine,sizeof(g_argsExpanded[i]));
+			strcpy_safe(g_argsExpanded[i], Templine, sizeof(g_argsExpanded[i]));
 		}
 		//look for next token
-		strToken = strtok ( NULL, separators);
-		
+		strToken = strtok(NULL, separators);
+
 	}
 
 	return g_argsExpanded[i];
 
-#endif
+}
+const char *Tokenizer_GetArg(int i) {
+	const char *s;
+	char tokLine[sizeof(g_argsExpanded[i])];
+	char Templine[sizeof(g_argsExpanded[i])];
+	char convert[10];
 
-	//return g_args[i];
+	if(i >= g_numArgs)
+		return 0;
+
+	s = g_args[i];
+
+	if(g_bAllowExpand) {
+#if 1
+		int channelIndex;
+		int value;
+
+		channelIndex = atoi(s+3);
+		value = CHANNEL_Get(channelIndex);
+		
+		sprintf(g_argsExpanded[i],"%i",value);
+
+		return g_argsExpanded[i];
+#else
+		return Tokenizer_GetArgExpanding(i);
+#endif
+	}
+	return g_args[i];
 }
 const char *Tokenizer_GetArgFrom(int i) {
 	return g_argsFrom[i];
