@@ -84,6 +84,7 @@ const char *Tokenizer_GetArgExpanding(int i) {
 	char *strToken = strtok(tokLine, separators);
 	while (strToken != NULL) {
 		//build tconst with ${<token>} and try find it
+		int len_tconst=0;
 		char tconst[20] = "${";
 		strcat(tconst, strToken);
 		strcat(tconst, "}");
@@ -99,14 +100,20 @@ const char *Tokenizer_GetArgExpanding(int i) {
 			//put 0 on the start of the constant to copy the left part of the input string
 			ptrConst[0] = 0;
 			strcpy_safe(Templine, g_argsExpanded[i], sizeof(Templine));
+			len_tconst=strlen(tconst);
+			//remove the brackets around the constant name "{}"
+			if (tconst[1]=='{'){
+				tconst[len_tconst-1]=0;
+				memmove(&tconst[1], &tconst[2], strlen(tconst) - 1);
+			}
 			//analyse the constant found to replace it with it's value/string and concat it with the left part of the input string
-			if (!strcmp(tconst, "${IP}") || !strcmp(tconst, "$IP")) {
+			if (!strcmp(tconst, "$IP")) {
 				strcat_safe(Templine, HAL_GetMyIPString(), sizeof(Templine));
 			}
-			else if (!strcmp(tconst, "${ShortName}") || !strcmp(tconst, "$ShortName")) {
+			else if (!strcmp(tconst, "$ShortName")) {
 				strcat_safe(Templine, CFG_GetShortDeviceName(), sizeof(Templine));
 			}
-			else if (!strcmp(tconst, "${Name}") || !strcmp(tconst, "$Name")) {
+			else if (!strcmp(tconst, "$Name")) {
 				strcat_safe(Templine, CFG_GetDeviceName(), sizeof(Templine));
 			}
 			else {
@@ -118,7 +125,7 @@ const char *Tokenizer_GetArgExpanding(int i) {
 				strcat_safe(Templine, convert, sizeof(Templine));
 			}
 			//concat with the right part, after the constant
-			strcat_safe(Templine, ptrConst + strlen(tconst), sizeof(Templine));
+			strcat_safe(Templine, ptrConst + len_tconst, sizeof(Templine));
 			//update the input string with the replaced constant
 			strcpy_safe(g_argsExpanded[i], Templine, sizeof(g_argsExpanded[i]));
 		}
