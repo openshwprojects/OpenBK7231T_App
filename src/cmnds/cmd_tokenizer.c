@@ -68,6 +68,9 @@ const char *Tokenizer_GetArgExpanding(int i) {
 
 	s = g_args[i];
 
+	//return original string if no '$' found
+	if (strchr(s, '$') == NULL) { return g_args[i]; }
+
 	//séparators for strtok to detect constants
 	const char * separators = "${}";
 	//pointer for strstr function
@@ -123,7 +126,6 @@ const char *Tokenizer_GetArgExpanding(int i) {
 		strToken = strtok(NULL, separators);
 
 	}
-
 	return g_argsExpanded[i];
 
 }
@@ -138,17 +140,19 @@ const char *Tokenizer_GetArg(int i) {
 
 	s = g_args[i];
 
-	if(g_bAllowExpand && s[0] == '$') {
-#if 1
-		int channelIndex;
-		int value;
+	if(g_bAllowExpand) {
+#if 0
+		if (s[0] == '$'){
+			int channelIndex;
+			int value;
 
-		channelIndex = atoi(s+3);
-		value = CHANNEL_Get(channelIndex);
-		
-		sprintf(g_argsExpanded[i],"%i",value);
+			channelIndex = atoi(s+3);
+			value = CHANNEL_Get(channelIndex);
 
-		return g_argsExpanded[i];
+			sprintf(g_argsExpanded[i],"%i",value);
+
+			return g_argsExpanded[i];
+		}
 #else
 		return Tokenizer_GetArgExpanding(i);
 #endif
@@ -304,7 +308,7 @@ void Tokenizer_TokenizeString(const char *s, int flags) {
 			*p = 0;
 			if(p[1] != 0 && isWhiteSpace(p[1])==false) {
 				// we need to rewrite this function and check it well with unit tests
-				if(g_bAllowQuotes && p[1] == '"') { 
+				if(g_bAllowQuotes && p[1] == '"') {
 					p++;
 					goto quote;
 				}
