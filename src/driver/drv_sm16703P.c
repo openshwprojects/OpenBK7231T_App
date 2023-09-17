@@ -66,9 +66,14 @@ static void SM16703P_setMultiplePixel(uint32_t pixel, UINT8 *data) {
 		*dst++ = translate_2bit(input);
 	}
 }
+void SM16703P_setPixel(int pixel, int r, int g, int b) {
+	translate_byte(r, spi_msg->send_buf + (2 + 0 + (pixel * 3 * 4)));
+	translate_byte(g, spi_msg->send_buf + (2 + 4 + (pixel * 3 * 4)));
+	translate_byte(b, spi_msg->send_buf + (2 + 8 + (pixel * 3 * 4)));
+}
 
 commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, const char *args, int flags) {
-	int pixel, r, g, b;
+	int pixel, i, r, g, b;
 	Tokenizer_TokenizeString(args, 0);
 
 	if (Tokenizer_GetArgsCount() != 4) {
@@ -83,23 +88,29 @@ commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, cons
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Set Pixel %i to R %i G %i B %i", pixel, r, g, b);
 
-	translate_byte(r, spi_msg->send_buf + (2 + 0 + (pixel * 3 * 4)));
-	translate_byte(g, spi_msg->send_buf + (2 + 4 + (pixel * 3 * 4)));
-	translate_byte(b, spi_msg->send_buf + (2 + 8 + (pixel * 3 * 4)));
+	if (pixel < 0) {
+		for (i = 0; i < pixel_count; i++) {
+			SM16703P_setPixel(i, r, g, b);
+		}
+	}
+	else {
+		SM16703P_setPixel(pixel, r, g, b);
 
-	ADDLOG_INFO(LOG_FEATURE_CMD, "Raw Data 0x%02x 0x%02x 0x%02x 0x%02x - 0x%02x 0x%02x 0x%02x 0x%02x - 0x%02x 0x%02x 0x%02x 0x%02x",
-				spi_msg->send_buf[2 + 0 + (pixel * 3 * 4)],
-				spi_msg->send_buf[2 + 1 + (pixel * 3 * 4)],
-				spi_msg->send_buf[2 + 2 + (pixel * 3 * 4)],
-				spi_msg->send_buf[2 + 3 + (pixel * 3 * 4)],
-				spi_msg->send_buf[2 + 4 + (pixel * 3 * 4)],
-				spi_msg->send_buf[2 + 5 + (pixel * 3 * 4)],
-				spi_msg->send_buf[2 + 6 + (pixel * 3 * 4)],
-				spi_msg->send_buf[2 + 7 + (pixel * 3 * 4)],
-				spi_msg->send_buf[2 + 8 + (pixel * 3 * 4)],
-				spi_msg->send_buf[2 + 9 + (pixel * 3 * 4)],
-				spi_msg->send_buf[2 + 10 + (pixel * 3 * 4)],
-				spi_msg->send_buf[2 + 11 + (pixel * 3 * 4)]);
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Raw Data 0x%02x 0x%02x 0x%02x 0x%02x - 0x%02x 0x%02x 0x%02x 0x%02x - 0x%02x 0x%02x 0x%02x 0x%02x",
+			spi_msg->send_buf[2 + 0 + (pixel * 3 * 4)],
+			spi_msg->send_buf[2 + 1 + (pixel * 3 * 4)],
+			spi_msg->send_buf[2 + 2 + (pixel * 3 * 4)],
+			spi_msg->send_buf[2 + 3 + (pixel * 3 * 4)],
+			spi_msg->send_buf[2 + 4 + (pixel * 3 * 4)],
+			spi_msg->send_buf[2 + 5 + (pixel * 3 * 4)],
+			spi_msg->send_buf[2 + 6 + (pixel * 3 * 4)],
+			spi_msg->send_buf[2 + 7 + (pixel * 3 * 4)],
+			spi_msg->send_buf[2 + 8 + (pixel * 3 * 4)],
+			spi_msg->send_buf[2 + 9 + (pixel * 3 * 4)],
+			spi_msg->send_buf[2 + 10 + (pixel * 3 * 4)],
+			spi_msg->send_buf[2 + 11 + (pixel * 3 * 4)]);
+	}
+
 
 	return CMD_RES_OK;
 }
