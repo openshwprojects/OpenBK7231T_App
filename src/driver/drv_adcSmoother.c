@@ -50,6 +50,7 @@ float ADCSmoother_Sample() {
 // MarginValue is a value that used to tell which smoothed adc values are considered high and which are low
 // TargetChannel0or1 will be set depending on MarginValue to either 0 or 1
 // something like:
+// StartDriver ADCSmoother
 // ADCSmoother 27 10 50 10 2048 11
 // 
 commandResult_t Cmd_SetupADCSmoother(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -77,6 +78,10 @@ commandResult_t Cmd_SetupADCSmoother(const void* context, const char* cmd, const
 
 void DRV_ADCSmoother_Init() {
 
+	//cmddetail:{"name":"ADCSmoother","args":"Cmd_SetupADCSmoother",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_adcSmoother.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("ADCSmoother", Cmd_SetupADCSmoother, NULL);
 }
 void DRV_ADCSmootherDoSmooth() {

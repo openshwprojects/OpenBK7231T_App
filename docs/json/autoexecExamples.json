@@ -66,5 +66,9 @@
 {
 "title": "Advanced config for TuyaMCU power meter and electric car charging limit driver",
 "file": "autoexecs/TAC2121C_tuyaMCU_and_car_chargerLimit.bat"
+},
+{
+"title": "Advanced I2C driver for multiple devices on single bus - TC74 example",
+"file": "autoexecs/soft_i2c_tc74.bat"
 }
 ]

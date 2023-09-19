@@ -302,6 +302,10 @@ int __cdecl main(int argc, char **argv)
 		printf("sizeof(mainConfig_t) != MAGIC_CONFIG_SIZE!: %i\n", sizeof(mainConfig_t));
 		system("pause");
 	}
+	if (OFFSETOF(mainConfig_t, staticIP) != 0x00000527) {
+		printf("OFFSETOF(mainConfig_t, staticIP) != 0x00000527z: %i\n", OFFSETOF(mainConfig_t, staticIP));
+		system("pause");
+	}
 	if (OFFSETOF(mainConfig_t, wifi_ssid) != 0x00000014) {
 		printf("OFFSETOF(mainConfig_t, wifi_ssid) != 0x00000014: %i\n", OFFSETOF(mainConfig_t, wifi_ssid));
 		system("pause");

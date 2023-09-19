@@ -41,6 +41,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | TM1637 |  Driver for 7-segment LED display with DIO/CLK interface.<br/>See also [TM1637 on forum](https://www.elektroda.com/rtvforum/find.php?q=TM1637). |
 | GN6932 |  Driver for 7-segment LED display with DIO/CLK/STB interface. See [this topic](https://www.elektroda.com/rtvforum/topic3971252.html) for details.<br/>See also [GN6932 on forum](https://www.elektroda.com/rtvforum/find.php?q=GN6932). |
 | TM1638 |  Driver for 7-segment LED display with DIO/CLK/STB interface. TM1638 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20553628#20553628) for details.<br/>See also [TM1638 on forum](https://www.elektroda.com/rtvforum/find.php?q=TM1638). |
+| ADCSmoother |  Qq.<br/>See also [ADCSmoother on forum](https://www.elektroda.com/rtvforum/find.php?q=ADCSmoother). |
 | HT16K33 |  Driver for 16-segment LED display with I2C. See [protocol explanation](https://www.elektroda.pl/rtvforum/topic3984616.html).<br/>See also [HT16K33 on forum](https://www.elektroda.com/rtvforum/find.php?q=HT16K33). |
 | SHT3X |  Humidity/temperature sensor. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html).<br/>See also [SHT3X on forum](https://www.elektroda.com/rtvforum/find.php?q=SHT3X). |
 | SGP |  SGP Air Quality sensor with I2C interface.<br/>See also [SGP on forum](https://www.elektroda.com/rtvforum/find.php?q=SGP). |

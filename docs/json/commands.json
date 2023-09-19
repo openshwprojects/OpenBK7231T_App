@@ -9,6 +9,15 @@
     "examples": ""
   },
   {
+    "name": "ADCSmoother",
+    "args": "Cmd_SetupADCSmoother",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_adcSmoother.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "AddChangeHandler",
     "args": "[Variable][Relation][Constant][Command]",
     "descr": "This can listen to change in channel value (for example channel 0 becoming 100), or for a voltage/current/power change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be 'Power', or 'Current' or 'Voltage'",
