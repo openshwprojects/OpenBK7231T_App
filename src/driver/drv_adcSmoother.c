@@ -78,8 +78,8 @@ commandResult_t Cmd_SetupADCSmoother(const void* context, const char* cmd, const
 
 void DRV_ADCSmoother_Init() {
 
-	//cmddetail:{"name":"ADCSmoother","args":"Cmd_SetupADCSmoother",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"ADCSmoother","args":"[Pindex] [TotalSamples] [SampleIntervalMS] [TargetChannelADCValue] [MarginValue] [TargetChannel0or1]",
+	//cmddetail:"descr":"Starts the ADC smoother with given configuration",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_adcSmoother.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("ADCSmoother", Cmd_SetupADCSmoother, NULL);

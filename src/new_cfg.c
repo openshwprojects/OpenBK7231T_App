@@ -287,6 +287,7 @@ int CFG_GetMQTTPort() {
 	return g_cfg.mqtt_port;
 }
 void CFG_SetShortDeviceName(const char *s) {
+
 	// this will return non-zero if there were any changes
 	if(strcpy_safe_checkForChanges(g_cfg.shortDeviceName, s,sizeof(g_cfg.shortDeviceName))) {
 		// mark as dirty (value has changed)
