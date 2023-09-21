@@ -1869,6 +1869,9 @@ const char* g_channelTypeNames[] = {
 	"SmokePercent",
 	"Illuminance",
 	"Toggle_Inv",
+	"OffOnRemember",
+	"error",
+	"error",
 	"error",
 	"error",
 };

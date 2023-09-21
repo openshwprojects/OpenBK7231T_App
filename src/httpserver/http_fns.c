@@ -423,15 +423,23 @@ int http_fn_index(http_request_t* request) {
 		}
 		else if (channelType == ChType_OffLowMidHigh || channelType == ChType_OffLowestLowMidHighHighest
 			|| channelType == ChType_LowestLowMidHighHighest || channelType == ChType_LowMidHighHighest
-			|| channelType == ChType_OffLowMidHighHighest) {
+			|| channelType == ChType_OffLowMidHighHighest || channelType == ChType_OffOnRemember) {
 			const char** types;
 			const char* types4[] = { "Off","Low","Mid","High" };
 			const char* typesLowMidHighHighest[] = { "Low","Mid","High","Highest" };
 			const char* typesOffLowMidHighHighest[] = { "Off", "Low","Mid","High","Highest" };
 			const char* types6[] = { "Off", "Lowest", "Low", "Mid", "High", "Highest" };
 			const char* types5NoOff[] = { "Lowest", "Low", "Mid", "High", "Highest" };
+			const char* typesOffOnRemember[] = { "Off", "On", "Remember" };
 			int numTypes;
+			const char *what;
 
+			if (channelType == ChType_OffOnRemember) {
+				what = "memory";
+			}
+			else {
+				what = "speed";
+			}
 			if (channelType == ChType_OffLowMidHigh) {
 				types = types4;
 				numTypes = 4;
@@ -448,15 +456,19 @@ int http_fn_index(http_request_t* request) {
 				types = types5NoOff;
 				numTypes = 5;
 			}
+			else if (channelType == ChType_OffOnRemember) {
+				types = typesOffOnRemember;
+				numTypes = 3;
+			}
 			else {
 				types = types6;
 				numTypes = 6;
 			}
-
+			
 			iValue = CHANNEL_Get(i);
 
 			poststr(request, "<tr><td>");
-			hprintf255(request, "<p>Select speed:</p><form action=\"index\">");
+			hprintf255(request, "<p>Select %s:</p><form action=\"index\">", what);
 			hprintf255(request, "<input type=\"hidden\" name=\"setIndex\" value=\"%i\">", i);
 			for (j = 0; j < numTypes; j++) {
 				const char* check;
