@@ -840,14 +840,14 @@ typedef enum channelType_e {
 	ChType_Illuminance,
 	//chandetail:{"name":"Toggle_Inv",
 	//chandetail:"title":"TODO",
-	//chandetail:"descr":"Toggle_Inv",
+	//chandetail:"descr":"Like a Toggle, but inverted states.",
 	//chandetail:"enum":"ChType_Toggle_Inv",
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Toggle_Inv,
 	//chandetail:{"name":"OffOnRemember",
 	//chandetail:"title":"TODO",
-	//chandetail:"descr":"OffOnRemember",
+	//chandetail:"descr":"Radio buttons with 3 options: off, on and 'remember'. This is used for TuyaMCU memory state",
 	//chandetail:"enum":"ChType_OffOnRemember",
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}

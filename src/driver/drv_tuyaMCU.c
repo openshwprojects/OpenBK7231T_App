@@ -882,8 +882,10 @@ const char *STR_FindArg(const char *s, int arg) {
 // send string 
 // tuyaMcu_sendState 25 3 ff0000646464ff 
 // send raw 
-// tuyaMcu_sendState 25 4 ff$CH3$00646464ff 
-// tuyaMcu_sendState 2 1 0404010C$CH9$$CH10$$CH11$FF04FEFF0031
+// tuyaMcu_sendState 25 0 ff$CH3$00646464ff 
+// tuyaMcu_sendState 2 0 0404010C$CH9$$CH10$$CH11$FF04FEFF0031
+// send enum (type 4)
+// tuyaMcu_sendState 14 4 2
 commandResult_t TuyaMCU_SendStateCmd(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int dpId;
 	int dpType;

@@ -314,8 +314,16 @@
   {
     "name": "Toggle_Inv",
     "title": "TODO",
-    "descr": "Toggle_Inv",
+    "descr": "Like a Toggle, but inverted states.",
     "enum": "ChType_Toggle_Inv",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "OffOnRemember",
+    "title": "TODO",
+    "descr": "Radio buttons with 3 options: off, on and 'remember'. This is used for TuyaMCU memory state",
+    "enum": "ChType_OffOnRemember",
     "file": "new_pins.h",
     "driver": ""
   },

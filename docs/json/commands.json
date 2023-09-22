@@ -425,7 +425,7 @@
   {
     "name": "delay_s",
     "args": "[ValueSeconds]",
-    "descr": "Script-only command. Pauses current script thread for given amount of seconds.",
+    "descr": "Script-only command. Pauses current script thread for given amount of seconds. Argument can be a floating point, so 0.1 etc will work",
     "fn": "CMD_Delay_s",
     "file": "cmnds/cmd_script.c",
     "requires": "",
