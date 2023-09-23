@@ -852,6 +852,13 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_OffOnRemember,
+	//chandetail:{"name":"Voltage_div100",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI",
+	//chandetail:"enum":"ChType_Voltage_div100",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Voltage_div100,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
