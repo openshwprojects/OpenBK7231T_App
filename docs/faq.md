@@ -27,6 +27,9 @@ All questions/answers were taken from json file.
 **Question:** *How to make device discoverable by Windows?*<br>**A:** OpenBeken devices will show up in Windows Network if you run SSDP driver. This driver must be run at each startup. You could just do 'startDriver SSDP' in console but that will not run again after reboot, so either use Short Startup Command or autoexec.bat to run that command with each reboot
 
 
+**Question:** *How to remove autoexec.bat breaking the device in safe mode?*<br>**A:** You can use lfs_format command to clear LittleFS even in SafeMode. This can be useful if you've written a script that immediatelly shuts down or crashes OBK and prevents you from accessing the page.
+
+
 **Question:** *How to make device discoverable by Alexa?*<br>**A:** Just like with SSDP, but in this case you MUST run both SSDP and Wemo drivers. So, use that command for startup: backlog startDriver SSDP; startDriver Wemo
 
 
