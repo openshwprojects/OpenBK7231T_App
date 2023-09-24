@@ -3,8 +3,8 @@
 
 // start driver
 startDriver SHT3X
-//hold button for 3 seconds to get into safe mode
-addEventHandler OnHold 20 SafeMode 3
+//hold button to get into safe mode
+addEventHandler OnHold 20 SafeMode
 // wait for wifi to become WIFI_STA_CONNECTED
 waitFor WiFiState 4
 Battery_Setup 2500 4200 2.29 2400 4096
