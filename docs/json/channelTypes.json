@@ -328,6 +328,14 @@
     "driver": ""
   },
   {
+    "name": "Voltage_div100",
+    "title": "TODO",
+    "descr": "For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI",
+    "enum": "ChType_Voltage_div100",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
     "name": "Max",
     "title": "TODO",
     "descr": "This is the current total number of available channel types.",
