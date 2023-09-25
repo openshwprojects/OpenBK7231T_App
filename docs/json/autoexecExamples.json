@@ -74,5 +74,9 @@
 {
 "title": "Deep sleep usage with SHT30 sensor and data reporting via HTTP GET",
 "file": "autoexecs/deep_sleep_temp_sensor_http.bat"
+},
+{
+"title": "Manual flash save example for TuyaMCU - using special Channels 200, 201, etc",
+"file": "autoexecs/manual_tuyamcu_flash_save.bat"
 }
 ]
