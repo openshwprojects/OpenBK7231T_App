@@ -1658,6 +1658,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 #endif
 
 	PIN_get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
+	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HASS counts: %i rels, %i pwms, %i inps", relayCount, pwmCount, dInputCount);
 
 	ledDriverChipRunning = LED_IsLedDriverChipRunning();
 
