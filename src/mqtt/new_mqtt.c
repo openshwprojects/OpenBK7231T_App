@@ -12,6 +12,10 @@
 #include "../driver/drv_tuyaMCU.h"
 #include "../ota/ota.h"
 
+#ifdef MQTT_USE_TLS
+#include "lwip/altcp_tls.h"
+#endif
+
 #ifndef LWIP_MQTT_EXAMPLE_IPADDR_INIT
 #if LWIP_IPV4
 #define LWIP_MQTT_EXAMPLE_IPADDR_INIT = IPADDR4_INIT(PP_HTONL(IPADDR_LOOPBACK))
@@ -1187,6 +1191,14 @@ static int MQTT_do_connect(mqtt_client_t* client)
 			snprintf(mqtt_status_message, sizeof(mqtt_status_message), "mqtt_host resolves no addresses?");
 			return 0;
 		}
+
+		/* Includes for MQTT over TLS */
+#ifdef MQTT_USE_TLS
+		if (mqtt_port == 8883) {
+			mqtt_client_info.tls_config = altcp_tls_create_config_client(NULL, 0);
+		}
+#endif
+
 
 		// host name/ip
 		//ipaddr_aton(mqtt_host,&mqtt_ip);
