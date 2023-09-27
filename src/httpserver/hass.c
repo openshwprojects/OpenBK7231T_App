@@ -390,12 +390,13 @@ HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse) {
 /// @param index Index corresponding to sensor_mqttNames.
 /// @return 
 HassDeviceInfo* hass_init_power_sensor_device_info(int index) {
-	HassDeviceInfo* info = hass_init_device_info(POWER_SENSOR, index, NULL, NULL);
+	HassDeviceInfo* info = 0;
 
 	//https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes
 	//device_class automatically assigns unit,icon
 	if ((index >= OBK_VOLTAGE) && (index <= OBK_POWER))
 	{
+		info = hass_init_device_info(POWER_SENSOR, index, NULL, NULL);
 		cJSON_AddStringToObject(info->root, "dev_cla", sensor_mqtt_device_classes[index]);   //device_class=voltage,current,power
 		cJSON_AddStringToObject(info->root, "unit_of_meas", sensor_mqtt_device_units[index]);   //unit_of_measurement
 
@@ -406,6 +407,7 @@ HassDeviceInfo* hass_init_power_sensor_device_info(int index) {
 	}
 	else if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_CONSUMPTION_STATS))
 	{
+		info = hass_init_device_info(POWER_SENSOR, index, NULL, NULL);
 		const char* device_class_value = counter_devClasses[index - OBK_CONSUMPTION_TOTAL];
 		if (strlen(device_class_value) > 0) {
 			cJSON_AddStringToObject(info->root, "dev_cla", device_class_value);  //device_class=energy
