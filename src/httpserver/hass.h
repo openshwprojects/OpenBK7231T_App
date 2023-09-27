@@ -99,5 +99,5 @@ HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse);
 HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int decPlaces, int decOffset, int divider);
 const char* hass_build_discovery_json(HassDeviceInfo* info);
 void hass_free_device_info(HassDeviceInfo* info); 
-char *hass_generate_multiplyAndRound_template(int decimalPlacesForRounding, int decimalPointOffset);
+char *hass_generate_multiplyAndRound_template(int decimalPlacesForRounding, int decimalPointOffset, int divider);
 
