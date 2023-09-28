@@ -1,6 +1,5 @@
 
 #if PLATFORM_BEKEN
-
 extern "C" {
     // these cause error: conflicting declaration of 'int bk_wlan_mcu_suppress_and_sleep(unsigned int)' with 'C' linkage
     #include "../new_common.h"
@@ -30,6 +29,18 @@ extern "C" {
 
     #include <ctype.h>
 
+/*Drive IR and MQTT TLS are too big for OTA. IF MQTT_USE_TLS enabled IR disabled*/
+#ifdef MQTT_USE_TLS
+	extern "C" void DRV_IR_Init() {
+		//ADDLOG_INFO(LOG_FEATURE_IR, (char*)"Not supported");
+	}
+	// this polls the IR receive to see off there was any IR received
+	extern "C" void DRV_IR_RunFrame() {
+		//ADDLOG_INFO(LOG_FEATURE_IR, (char*)"Not supported");
+	}
+}
+#endif // MQTT_USE_TLS
+#ifndef MQTT_USE_TLS
     unsigned long ir_counter = 0;
     uint8_t gEnableIRSendWhilstReceive = 0;
     uint32_t gIRProtocolEnable = 0xFFFFFFFF;
@@ -869,5 +880,5 @@ void cpptest(){
 }
 #endif
 
-#endif
-
+#endif //MQTT_USE_TLS
+#endif //PLATFORM_BEKEN
