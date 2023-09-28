@@ -9,6 +9,7 @@
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "obk_config.h"
 #include "new_common.h"
 #include "driver\drv_public.h"
 #include "cmnds\cmd_public.h"
@@ -111,7 +112,9 @@ void SIM_Hack_ClearSimulatedPinRoles();
 void SIM_ClearOBK(const char *flashPath) {
 	if (bObkStarted) {
 		DRV_ShutdownAllDrivers();
+#if ENABLE_LITTLEFS
 		release_lfs();
+#endif
 		SIM_Hack_ClearSimulatedPinRoles();
 		WIN_ResetMQTT();
 		UART_ResetForSimulator();

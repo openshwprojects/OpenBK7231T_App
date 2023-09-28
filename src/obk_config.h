@@ -52,6 +52,7 @@
 #define ENABLE_DRIVER_CHARGINGLIMIT		1
 #define ENABLE_DRIVER_BATTERY	1
 
+
 #elif PLATFORM_BL602
 
 // I have enabled drivers on BL602

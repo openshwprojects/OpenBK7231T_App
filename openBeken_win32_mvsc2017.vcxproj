@@ -1321,6 +1321,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Win322|Win32'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="src\littlefs\our_lfs.h" />
     <ClInclude Include="src\selftest\selftest_local.h" />
     <ClInclude Include="src\sim\Bounds.h" />
     <ClInclude Include="src\sim\Circle.h" />

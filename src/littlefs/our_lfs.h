@@ -11,7 +11,7 @@
 #include "../obk_config.h"
 #include "lfs.h"
 
-#if ENABLE_LITTLEFS
+// we need that even if LFS is disabled
 
 #if PLATFORM_BK7231T
 // start 0x1000 after OTA addr
@@ -34,6 +34,7 @@
 #define LFS_BLOCKS_END 0x1AB000
 #endif
 
+#if ENABLE_LITTLEFS
 
 // 512k MAX - i.e. no more that 0x80000
 // 0x8000 = 32k
