@@ -35,3 +35,9 @@ configMemory.bin
 
 # MSVC
 enc_temp_folder/**
+/sdk/OpenBK7231N
+/sdk/OpenBK7231T
+/sdk/OpenBL602
+/sdk/OpenW600
+/sdk/OpenW800
+/sdk/OpenXR809
