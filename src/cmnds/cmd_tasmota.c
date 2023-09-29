@@ -6,7 +6,7 @@
 #include "cmd_local.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 	#include "../littlefs/our_lfs.h"
 #endif
 
@@ -140,7 +140,7 @@ static commandResult_t cmnd_backlog(const void * context, const char *cmd, const
 // Returns a buffer created with malloc.
 // You must free it later.
 byte *LFS_ReadFile(const char *fname) {
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 	if (lfs_present()){
 		lfs_file_t file;
 		int lfsres;
@@ -219,7 +219,7 @@ byte *LFS_ReadFile(const char *fname) {
 }
 
 static commandResult_t cmnd_lfsexec(const void * context, const char *cmd, const char *args, int cmdFlags){
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "exec %s", args);
 	if (lfs_present()){
 		lfs_file_t *file = os_malloc(sizeof(lfs_file_t));

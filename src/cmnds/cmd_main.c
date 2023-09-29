@@ -13,7 +13,7 @@
 int cmd_uartInitIndex = 0;
 
 
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 #include "../littlefs/our_lfs.h"
 #endif
 #ifdef PLATFORM_BL602

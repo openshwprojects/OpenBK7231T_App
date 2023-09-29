@@ -89,11 +89,10 @@ void CFG_SetButtonLongPressTime(int value);
 void CFG_SetButtonShortPressTime(int value);
 void CFG_SetButtonRepeatPressTime(int value);
 
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
     void CFG_SetLFS_Size(uint32_t value);
     uint32_t CFG_GetLFS_Size();
-#endif
-
 #endif 
 
+#endif
 

@@ -7,7 +7,7 @@
 #include "../cJSON/cJSON.h"
 #include <ctype.h>
 #include "cmd_local.h"
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 	#include "../littlefs/our_lfs.h"
 #endif
 
@@ -191,7 +191,7 @@ static commandResult_t testJSON(const void * context, const char *cmd, const cha
 
 // Usage for continous test: addRepeatingEvent 1 -1 lfs_test1 ir.bat
 static commandResult_t cmnd_lfs_test1(const void * context, const char *cmd, const char *args, int cmdFlags) {
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 	if (lfs_present()) {
 		lfs_file_t file;
 		int lfsres;
@@ -227,7 +227,7 @@ static commandResult_t cmnd_lfs_test1(const void * context, const char *cmd, con
 }
 // Usage for continous test: addRepeatingEvent 1 -1 lfs_test2 ir.bat
 static commandResult_t cmnd_lfs_test2(const void * context, const char *cmd, const char *args, int cmdFlags) {
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 	if (lfs_present()) {
 		lfs_file_t *file;
 		int lfsres;

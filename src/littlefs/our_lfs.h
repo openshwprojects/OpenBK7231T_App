@@ -9,7 +9,6 @@
 *****************************************************************************/
 
 #include "../obk_config.h"
-#include "lfs.h"
 
 // we need that even if LFS is disabled
 
@@ -35,6 +34,8 @@
 #endif
 
 #if ENABLE_LITTLEFS
+
+#include "lfs.h"
 
 // 512k MAX - i.e. no more that 0x80000
 // 0x8000 = 32k
