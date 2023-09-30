@@ -73,7 +73,7 @@
 #define ENABLE_DRIVER_BL0942    1
 #define ENABLE_DRIVER_BL0942SPI 1
 #define ENABLE_DRIVER_CSE7766   1
-//TLS use 120k rom e 44k ram. If enabled IR e MCU disabled to fit 
+//TLS use 100k rom e 44k ram. If enabled IR e MCU disabled to fit 
 #ifndef MQTT_USE_TLS
 #define ENABLE_DRIVER_TUYAMCU   1
 #define ENABLE_DRIVER_IR        1 

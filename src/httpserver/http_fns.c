@@ -1014,6 +1014,18 @@ int http_fn_cfg_mqtt(http_request_t* request) {
 
 	add_label_text_field(request, "Host", "host", CFG_GetMQTTHost(), "<form action=\"/cfg_mqtt_set\">");
 	add_label_numeric_field(request, "Port", "port", CFG_GetMQTTPort(), "<br>");
+
+//	poststr(request, "<label for=\"hex\">Show all hex?</label><br>");
+//	poststr(request, "<input type=\"checkbox\" id=\"hex\" name=\"hex\" value=\"1\"");
+//	if (hex) {
+//		poststr(request, " checked");
+//	}
+	hprintf255(request, "<input type=\"checkbox\" id=\"mqtt_use_tls\" name=\"mqtt_use_tls\" value=\"1\"");
+	if (CFG_GetMQTTUseTls()) {
+		hprintf255(request, " checked>");
+	}
+	hprintf255(request, "<label for=\"mqtt_use_tls\">Use TLS?</label>");
+
 	add_label_text_field(request, "Client Topic (Base Topic)", "client", CFG_GetMQTTClientId(), "<br><br>");
 	add_label_text_field(request, "Group Topic (Secondary Topic to only receive cmnds)", "group", CFG_GetMQTTGroupTopic(), "<br>");
 	add_label_text_field(request, "User", "user", CFG_GetMQTTUserName(), "<br>");
@@ -1084,6 +1096,11 @@ int http_fn_cfg_mqtt_set(http_request_t* request) {
 	CFG_SetMQTTHost(tmpA);
 	if (http_getArg(request->url, "port", tmpA, sizeof(tmpA))) {
 		CFG_SetMQTTPort(atoi(tmpA));
+	}
+	if (http_getArg(request->url, "mqtt_use_tls", tmpA, sizeof(tmpA))) {
+		CFG_SetMQTTUseTls(true);
+	} else {
+		CFG_SetMQTTUseTls(false);
 	}
 	if (http_getArg(request->url, "user", tmpA, sizeof(tmpA))) {
 		CFG_SetMQTTUserName(tmpA);
