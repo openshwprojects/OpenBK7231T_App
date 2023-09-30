@@ -8,7 +8,7 @@
 #include "hal/hal_wifi.h"
 #include "hal/hal_flashConfig.h"
 #include "cmnds/cmd_public.h"
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 #include "littlefs/our_lfs.h"
 #endif
 
@@ -287,6 +287,7 @@ int CFG_GetMQTTPort() {
 	return g_cfg.mqtt_port;
 }
 void CFG_SetShortDeviceName(const char *s) {
+
 	// this will return non-zero if there were any changes
 	if(strcpy_safe_checkForChanges(g_cfg.shortDeviceName, s,sizeof(g_cfg.shortDeviceName))) {
 		// mark as dirty (value has changed)
@@ -667,7 +668,7 @@ void CFG_SetButtonRepeatPressTime(int value) {
 	}
 }
 
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 void CFG_SetLFS_Size(uint32_t value) {
 	if(g_cfg.LFS_Size != value) {
 		g_cfg.LFS_Size = value;

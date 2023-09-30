@@ -838,14 +838,34 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Illuminance,
-		//chandetail:{"name":"Toggle_Inv",
-		//chandetail:"title":"TODO",
-		//chandetail:"descr":"Toggle_Inv",
-		//chandetail:"enum":"ChType_Toggle_Inv",
-		//chandetail:"file":"new_pins.h",
-		//chandetail:"driver":""}
-		ChType_Toggle_Inv,
-		
+	//chandetail:{"name":"Toggle_Inv",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Like a Toggle, but inverted states.",
+	//chandetail:"enum":"ChType_Toggle_Inv",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Toggle_Inv,
+	//chandetail:{"name":"OffOnRemember",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Radio buttons with 3 options: off, on and 'remember'. This is used for TuyaMCU memory state",
+	//chandetail:"enum":"ChType_OffOnRemember",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_OffOnRemember,
+	//chandetail:{"name":"Voltage_div100",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI",
+	//chandetail:"enum":"ChType_Voltage_div100",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Voltage_div100,
+	//chandetail:{"name":"Temperature_div2",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Just like ChType_Temperature_div10, but for multiplied by 0.5.",
+	//chandetail:"enum":"ChType_Temperature_div2",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Temperature_div2,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",

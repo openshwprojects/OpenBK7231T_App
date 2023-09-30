@@ -66,5 +66,17 @@
 {
 "title": "Advanced config for TuyaMCU power meter and electric car charging limit driver",
 "file": "autoexecs/TAC2121C_tuyaMCU_and_car_chargerLimit.bat"
+},
+{
+"title": "Advanced I2C driver for multiple devices on single bus - TC74 example",
+"file": "autoexecs/soft_i2c_tc74.bat"
+},
+{
+"title": "Deep sleep usage with SHT30 sensor and data reporting via HTTP GET",
+"file": "autoexecs/deep_sleep_temp_sensor_http.bat"
+},
+{
+"title": "Manual flash save example for TuyaMCU - using special Channels 200, 201, etc",
+"file": "autoexecs/manual_tuyamcu_flash_save.bat"
 }
 ]

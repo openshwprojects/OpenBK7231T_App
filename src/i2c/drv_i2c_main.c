@@ -299,8 +299,28 @@ commandResult_t DRV_I2C_AddDevice_LCM1602(const void *context, const char *cmd, 
 
 	return CMD_RES_OK;
 }
-
+// set SoftSDA and SoftSCL pins
+// startDriver I2C
+// scanI2C Soft
 commandResult_t DRV_I2C_Scan(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	const char *i2cModuleStr;
+	i2cBusType_t busType;
+
+	Tokenizer_TokenizeString(args, 0);
+	i2cModuleStr = Tokenizer_GetArg(0);
+
+	busType = DRV_I2C_ParseBusType(i2cModuleStr);
+
+	for (int a = 1; a < 128; a ++) {
+		DRV_I2C_Begin(a, busType);
+		bool bOk = Soft_I2C_Start(&g_softI2C, (a << 1) + 0);
+		Soft_I2C_Stop(&g_softI2C);
+		if (bOk) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "Address 0x%x (dec %i)\n", a, a);
+		}
+		rtos_delay_milliseconds(5);
+	}
+
 
 	return CMD_RES_OK;
 }
@@ -308,13 +328,17 @@ commandResult_t DRV_I2C_Scan(const void *context, const char *cmd, const char *a
 //
 //	TC74 - I2C temperature sensor - read only single integer value, temperature in C
 //
+/*
 // TC74 A0 (address type 0)
 // setChannelType 5 temperature
 // addI2CDevice_TC74 I2C1 0x48 5
 // TC74 A2 (address type 2)
 // setChannelType 6 temperature
 // addI2CDevice_TC74 I2C1 0x4A 6
-
+// TC74 A5 (address type 5)
+setChannelType 6 temperature
+addI2CDevice_TC74 Soft 0x4D 6
+*/
 //
 //	MCP23017 - I2C 16 bit port expander - both inputs and outputs, right now we use it only as outputs
 //
@@ -354,8 +378,8 @@ void DRV_I2C_Init()
 	//cmddetail:"fn":"DRV_I2C_MCP23017_MapPinToChannel","file":"i2c/drv_i2c_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MCP23017_MapPinToChannel", DRV_I2C_MCP23017_MapPinToChannel, NULL);
-	//cmddetail:{"name":"scanI2C","args":"",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"scanI2C","args":"[Soft/I2C1/I2C2]",
+	//cmddetail:"descr":"Scans given I2C line for addresses. I2C driver must be started first.",
 	//cmddetail:"fn":"DRV_I2C_MCP23017_MapPinToChannel","file":"i2c/drv_i2c_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("scanI2C", DRV_I2C_Scan, NULL);

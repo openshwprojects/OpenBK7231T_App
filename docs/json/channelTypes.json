@@ -314,8 +314,24 @@
   {
     "name": "Toggle_Inv",
     "title": "TODO",
-    "descr": "Toggle_Inv",
+    "descr": "Like a Toggle, but inverted states.",
     "enum": "ChType_Toggle_Inv",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "OffOnRemember",
+    "title": "TODO",
+    "descr": "Radio buttons with 3 options: off, on and 'remember'. This is used for TuyaMCU memory state",
+    "enum": "ChType_OffOnRemember",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Voltage_div100",
+    "title": "TODO",
+    "descr": "For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI",
+    "enum": "ChType_Voltage_div100",
     "file": "new_pins.h",
     "driver": ""
   },

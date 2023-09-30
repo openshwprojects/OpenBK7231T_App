@@ -1056,6 +1056,7 @@ float CHANNEL_GetFinalValue(int channel) {
 	case ChType_Frequency_div100:
 	case ChType_Current_div100:
 	case ChType_EnergyTotal_kWh_div100:
+	case ChType_Voltage_div100:
 		dVal = (float)iVal / 100;
 		break;
 	case ChType_PowerFactor_div1000:
@@ -1869,6 +1870,15 @@ const char* g_channelTypeNames[] = {
 	"SmokePercent",
 	"Illuminance",
 	"Toggle_Inv",
+	"OffOnRemember",
+	"Voltage_div100",
+	"Temperature_div2",
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
+	"error",
 	"error",
 	"error",
 };

@@ -9,6 +9,7 @@
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "obk_config.h"
 #include "new_common.h"
 #include "driver\drv_public.h"
 #include "cmnds\cmd_public.h"
@@ -111,7 +112,9 @@ void SIM_Hack_ClearSimulatedPinRoles();
 void SIM_ClearOBK(const char *flashPath) {
 	if (bObkStarted) {
 		DRV_ShutdownAllDrivers();
+#if ENABLE_LITTLEFS
 		release_lfs();
+#endif
 		SIM_Hack_ClearSimulatedPinRoles();
 		WIN_ResetMQTT();
 		UART_ResetForSimulator();
@@ -300,6 +303,10 @@ int __cdecl main(int argc, char **argv)
 	//printf("Offset MQTT Group: %i", OFFSETOF(mainConfig_t, mqtt_group));
 	if (sizeof(mainConfig_t) != MAGIC_CONFIG_SIZE_V4) {
 		printf("sizeof(mainConfig_t) != MAGIC_CONFIG_SIZE!: %i\n", sizeof(mainConfig_t));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, staticIP) != 0x00000527) {
+		printf("OFFSETOF(mainConfig_t, staticIP) != 0x00000527z: %i\n", OFFSETOF(mainConfig_t, staticIP));
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, wifi_ssid) != 0x00000014) {

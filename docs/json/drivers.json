@@ -204,6 +204,12 @@
     "requires": ""
   },
   {
+    "name": "ADCSmoother",
+    "title": "TODO",
+    "descr": "qq",
+    "requires": ""
+  },
+  {
     "name": "HT16K33",
     "title": "TODO",
     "descr": "Driver for 16-segment LED display with I2C. See [protocol explanation](https://www.elektroda.pl/rtvforum/topic3984616.html)",

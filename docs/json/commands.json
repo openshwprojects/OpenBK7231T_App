@@ -9,6 +9,15 @@
     "examples": ""
   },
   {
+    "name": "ADCSmoother",
+    "args": "[Pindex] [TotalSamples] [SampleIntervalMS] [TargetChannelADCValue] [MarginValue] [TargetChannel0or1]",
+    "descr": "Starts the ADC smoother with given configuration",
+    "fn": "NULL);",
+    "file": "driver/drv_adcSmoother.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "AddChangeHandler",
     "args": "[Variable][Relation][Constant][Command]",
     "descr": "This can listen to change in channel value (for example channel 0 becoming 100), or for a voltage/current/power change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be 'Power', or 'Current' or 'Voltage'",
@@ -416,7 +425,7 @@
   {
     "name": "delay_s",
     "args": "[ValueSeconds]",
-    "descr": "Script-only command. Pauses current script thread for given amount of seconds.",
+    "descr": "Script-only command. Pauses current script thread for given amount of seconds. Argument can be a floating point, so 0.1 etc will work",
     "fn": "CMD_Delay_s",
     "file": "cmnds/cmd_script.c",
     "requires": "",
@@ -1540,8 +1549,8 @@
   },
   {
     "name": "scanI2C",
-    "args": "",
-    "descr": "",
+    "args": "[Soft/I2C1/I2C2]",
+    "descr": "Scans given I2C line for addresses. I2C driver must be started first.",
     "fn": "DRV_I2C_MCP23017_MapPinToChannel",
     "file": "i2c/drv_i2c_main.c",
     "requires": "",

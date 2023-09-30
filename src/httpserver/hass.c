@@ -390,12 +390,13 @@ HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse) {
 /// @param index Index corresponding to sensor_mqttNames.
 /// @return 
 HassDeviceInfo* hass_init_power_sensor_device_info(int index) {
-	HassDeviceInfo* info = hass_init_device_info(POWER_SENSOR, index, NULL, NULL);
+	HassDeviceInfo* info = 0;
 
 	//https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes
 	//device_class automatically assigns unit,icon
 	if ((index >= OBK_VOLTAGE) && (index <= OBK_POWER))
 	{
+		info = hass_init_device_info(POWER_SENSOR, index, NULL, NULL);
 		cJSON_AddStringToObject(info->root, "dev_cla", sensor_mqtt_device_classes[index]);   //device_class=voltage,current,power
 		cJSON_AddStringToObject(info->root, "unit_of_meas", sensor_mqtt_device_units[index]);   //unit_of_measurement
 
@@ -406,6 +407,7 @@ HassDeviceInfo* hass_init_power_sensor_device_info(int index) {
 	}
 	else if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_CONSUMPTION_STATS))
 	{
+		info = hass_init_device_info(POWER_SENSOR, index, NULL, NULL);
 		const char* device_class_value = counter_devClasses[index - OBK_CONSUMPTION_TOTAL];
 		if (strlen(device_class_value) > 0) {
 			cJSON_AddStringToObject(info->root, "dev_cla", device_class_value);  //device_class=energy
@@ -431,7 +433,7 @@ HassDeviceInfo* hass_init_power_sensor_device_info(int index) {
 
 // generate string like "{{ float(value)*0.1|round(2) }}"
 // {{ float(value)*0.1 }} for value=12 give 1.2000000000000002, using round() to limit the decimal places
-char *hass_generate_multiplyAndRound_template(int decimalPlacesForRounding, int decimalPointOffset) {
+char *hass_generate_multiplyAndRound_template(int decimalPlacesForRounding, int decimalPointOffset, int divider) {
 	char tmp[8];
 	int i;
 
@@ -442,7 +444,10 @@ char *hass_generate_multiplyAndRound_template(int decimalPlacesForRounding, int 
 			strcat(g_hassBuffer, "0");
 		}
 	}
-	strcat(g_hassBuffer, "1|round(");
+	// usually it's 1
+	sprintf(tmp, "%i", divider);
+	strcat(g_hassBuffer, tmp);
+	strcat(g_hassBuffer, "|round(");
 	sprintf(tmp, "%i", decimalPlacesForRounding);
 	strcat(g_hassBuffer, tmp);
 	strcat(g_hassBuffer, ") }}");
@@ -475,7 +480,7 @@ HassDeviceInfo* hass_init_light_singleColor_onChannels(int toggle, int dimmer, i
 /// @param type
 /// @param channel
 /// @return 
-HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int decPlaces, int decOffset) {
+HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int decPlaces, int decOffset, int divider) {
 	int i;
 
 	//Assuming that there is only one DHT setup per device which keeps uniqueid/names simpler
@@ -589,9 +594,9 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 	}
 
 
-	if (decPlaces != -1 && decOffset != -1) {
+	if (decPlaces != -1 && decOffset != -1 && divider != -1) {
 		//https://www.home-assistant.io/integrations/sensor.mqtt/ refers to value_template (val_tpl)
-		cJSON_AddStringToObject(info->root, "val_tpl", hass_generate_multiplyAndRound_template(decPlaces, decOffset));
+		cJSON_AddStringToObject(info->root, "val_tpl", hass_generate_multiplyAndRound_template(decPlaces, decOffset, divider));
 	}
 
 	return info;
