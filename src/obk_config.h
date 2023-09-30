@@ -13,7 +13,9 @@
 //ENABLE_DRIVER_BL0942 - Enable support for BL0942
 //ENABLE_DRIVER_CSE7766 - Enable support for CSE7766
 //ENABLE_DRIVER_TUYAMCU - Enable support for TuyaMCU and tmSensor
+//ENABLE_DRIVER_IR - Enable suporte for IR 
 
+#define MQTT_USE_TLS          
 
 #if PLATFORM_XR809
 
@@ -71,7 +73,11 @@
 #define ENABLE_DRIVER_BL0942    1
 #define ENABLE_DRIVER_BL0942SPI 1
 #define ENABLE_DRIVER_CSE7766   1
+//TLS use 120k rom e 44k ram. If enabled IR e MCU disabled to fit 
+#ifndef MQTT_USE_TLS
 #define ENABLE_DRIVER_TUYAMCU   1
+#define ENABLE_DRIVER_IR        1 
+#endif
 //#define ENABLE_DRIVER_HT16K33   1
 //#define ENABLE_DRIVER_MAX72XX	  1
 #define ENABLE_I2C			    1
