@@ -1132,6 +1132,7 @@ static int MQTT_do_connect(mqtt_client_t* client)
 	int res;
 	struct hostent* hostEntry;
 	char will_topic[CGF_MQTT_CLIENT_ID_SIZE + 16];
+	bool mqtt_use_tls;
 
 	mqtt_host = CFG_GetMQTTHost();
 
@@ -1145,6 +1146,7 @@ static int MQTT_do_connect(mqtt_client_t* client)
 	mqtt_pass = CFG_GetMQTTPass();
 	mqtt_clientID = CFG_GetMQTTClientId();
 	mqtt_port = CFG_GetMQTTPort();
+	mqtt_use_tls = CFG_GetMQTTUseTls();
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_userName %s\r\nmqtt_pass %s\r\nmqtt_clientID %s\r\nmqtt_host %s:%d\r\n",
 		mqtt_userName,
@@ -1194,7 +1196,7 @@ static int MQTT_do_connect(mqtt_client_t* client)
 
 		/* Includes for MQTT over TLS */
 #ifdef MQTT_USE_TLS
-		if (mqtt_port == 8883) {
+		if (mqtt_use_tls) {
 			LOCK_TCPIP_CORE();
 			mqtt_client_info.tls_config = altcp_tls_create_config_client(NULL, 0);
 			UNLOCK_TCPIP_CORE();

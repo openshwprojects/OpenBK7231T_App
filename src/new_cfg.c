@@ -286,6 +286,9 @@ const char *CFG_GetOpenBekenHostName() {
 int CFG_GetMQTTPort() {
 	return g_cfg.mqtt_port;
 }
+bool CFG_GetMQTTUseTls() {
+	return g_cfg.mqtt_use_tls;
+}
 void CFG_SetShortDeviceName(const char *s) {
 
 	// this will return non-zero if there were any changes
@@ -305,6 +308,14 @@ void CFG_SetMQTTPort(int p) {
 	// is there a change?
 	if(g_cfg.mqtt_port != p) {
 		g_cfg.mqtt_port = p;
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+void CFG_SetMQTTUseTls(bool value) {
+	// is there a change?
+	if(g_cfg.mqtt_use_tls != value) {
+		g_cfg.mqtt_use_tls = value;
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
 	}
