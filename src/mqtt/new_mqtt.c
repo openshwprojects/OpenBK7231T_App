@@ -1192,14 +1192,19 @@ static int MQTT_do_connect(mqtt_client_t* client)
 			return 0;
 		}
 
-		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "==============VERSAO COM SUPORTE TLS %s\r", mqtt_userName);
-		
 		/* Includes for MQTT over TLS */
 #ifdef MQTT_USE_TLS
-		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "==============MQTT_USE_TLS ATIVO %s\r", mqtt_userName);
 		if (mqtt_port == 8883) {
-			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "==============tls_config set on client_info %s\r", mqtt_userName);
+			LOCK_TCPIP_CORE();
 			mqtt_client_info.tls_config = altcp_tls_create_config_client(NULL, 0);
+			UNLOCK_TCPIP_CORE();
+			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "tls_config created");
+		}
+		else {
+			if (mqtt_client_info.tls_config) {
+				altcp_tls_free_entropy();
+				mqtt_client_info.tls_config = NULL;
+			}
 		}
 #endif
 
