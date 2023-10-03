@@ -403,6 +403,33 @@ void Test_MQTT_Topic_With_Slash() {
 }
 
 
+void Test_MQTT_Average() {
+	SIM_ClearOBK(0);
+	SIM_ClearAndPrepareForMQTTTesting("obk/08C65DE9", "bekens");
+
+	// start value
+	CMD_ExecuteCommand("setChannel 10 0", 0);
+	int numbers[] = { 12, 91, 64, 12, 64 };
+	int cnt = sizeof(numbers) / sizeof(numbers[0]);
+	int checkSum = 0;
+	for (int i = 0; i < cnt; i++) {
+		char cmd[128];
+		SELFTEST_ASSERT_CHANNEL(10, checkSum);
+		sprintf(cmd,"setChannel 1 %i", numbers[i]);
+		CMD_ExecuteCommand(cmd, 0);
+		CMD_ExecuteCommand("addChannel 10 $CH1", 0);
+		checkSum += numbers[i];
+		SELFTEST_ASSERT_CHANNEL(10, checkSum);
+	}
+	// 243 / 5 = 48.6
+	float average = (float)checkSum / (float)cnt;
+	SIM_ClearMQTTHistory();
+	CMD_ExecuteCommand("publishFloat myAverageResult $CH10/5", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("obk/08C65DE9/myAverageResult/get", average, false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+}
+
 void Test_MQTT(){
 	Test_MQTT_Get_And_Reply();
 	Test_MQTT_Misc();
@@ -411,6 +438,7 @@ void Test_MQTT(){
 	Test_MQTT_LED_RGB();
 	Test_MQTT_Topic_With_Slash();
 	Test_MQTT_Topic_With_Slashes();
+	Test_MQTT_Average();
 }
 
 #endif
