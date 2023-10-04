@@ -336,6 +336,14 @@
     "driver": ""
   },
   {
+    "name": "Temperature_div2",
+    "title": "TODO",
+    "descr": "Just like ChType_Temperature_div10, but for multiplied by 0.5.",
+    "enum": "ChType_Temperature_div2",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
     "name": "Max",
     "title": "TODO",
     "descr": "This is the current total number of available channel types.",

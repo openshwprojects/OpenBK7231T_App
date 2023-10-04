@@ -313,7 +313,7 @@ static driver_t g_drivers[] = {
 #ifdef ENABLE_DRIVER_BRIDGE
 	//drvdetail:{"name":"Bridge",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"TODO",
+	//drvdetail:"descr":"A bridge relay driver, added for [TONGOU TO-Q-SY1-JWT Din Rail Switch](https://www.elektroda.com/rtvforum/topic3934580.html). See linked topic for info.",
 	//drvdetail:"requires":""}
 	{ "Bridge",     Bridge_driver_Init, NULL,                       NULL, Bridge_driver_QuickFrame, Bridge_driver_DeInit, Bridge_driver_OnChannelChanged, false }
 #endif

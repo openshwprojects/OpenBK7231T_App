@@ -242,7 +242,7 @@
   {
     "name": "Bridge",
     "title": "TODO",
-    "descr": "TODO",
+    "descr": "A bridge relay driver, added for [TONGOU TO-Q-SY1-JWT Din Rail Switch](https://www.elektroda.com/rtvforum/topic3934580.html). See linked topic for info.",
     "requires": ""
   }
 ]

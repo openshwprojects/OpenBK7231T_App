@@ -47,4 +47,4 @@ Do not add anything here, as it will overwritten with next rebuild.
 | SGP |  SGP Air Quality sensor with I2C interface.<br/>See also [SGP on forum](https://www.elektroda.com/rtvforum/find.php?q=SGP). |
 | ShiftRegister |  ShiftRegisterShiftRegisterShiftRegisterShiftRegister.<br/>See also [ShiftRegister on forum](https://www.elektroda.com/rtvforum/find.php?q=ShiftRegister). |
 | Battery |  Custom mechanism to measure battery level with ADC and an optional relay. See [example here](https://www.elektroda.com/rtvforum/topic3959103.html).<br/>See also [Battery on forum](https://www.elektroda.com/rtvforum/find.php?q=Battery). |
-| Bridge |  TODO.<br/>See also [Bridge on forum](https://www.elektroda.com/rtvforum/find.php?q=Bridge). |
+| Bridge |  A bridge relay driver, added for [TONGOU TO-Q-SY1-JWT Din Rail Switch](https://www.elektroda.com/rtvforum/topic3934580.html). See linked topic for info.<br/>See also [Bridge on forum](https://www.elektroda.com/rtvforum/find.php?q=Bridge). |
