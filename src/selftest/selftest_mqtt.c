@@ -279,6 +279,16 @@ void Test_MQTT_Misc() {
 	//SIM_SendFakeMQTTAndRunSimFrame_CMND("setChannel", "7 314");
 	//SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/thirdTest/get", (314*0.01f+100), false);
 	//SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("publish myMagicResult \"{\\\"state\\\": \\\"TOGGLE\\\"}\"", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("miscDevice/myMagicResult/get", "{\"state\": \"TOGGLE\"}", false);
+	SIM_ClearMQTTHistory();
+
+	//SIM_SendFakeMQTTAndRunSimFrame_CMND("setChannel", "3 100");
+	//CMD_ExecuteCommand("publish myMagicResult \"{\\\"state\\\": \\\"$CH1\\\"}\"", 0);
+	//SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("miscDevice/myMagicResult/get", "{\"state\": \"100\"}", false);
+	//SIM_ClearMQTTHistory();
+	
 }
 void Test_MQTT_Topic_With_Slashes() {
 	SIM_ClearOBK(0);
@@ -431,8 +441,8 @@ void Test_MQTT_Average() {
 }
 
 void Test_MQTT(){
-	Test_MQTT_Get_And_Reply();
 	Test_MQTT_Misc();
+	Test_MQTT_Get_And_Reply();
 	Test_MQTT_Channels();
 	Test_MQTT_LED_CW();
 	Test_MQTT_LED_RGB();

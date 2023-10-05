@@ -131,6 +131,7 @@ void SIM_ClearOBK(const char *flashPath) {
 }
 void Win_DoUnitTests() {
 
+	Test_MQTT();
 	Test_ChargeLimitDriver();
 	// this is slowest
 	Test_TuyaMCU_Basic();
@@ -164,7 +165,6 @@ void Win_DoUnitTests() {
 	Test_EnergyMeter();
 	Test_Tasmota();
 	Test_NTP();
-	Test_MQTT();
 	Test_HTTP_Client();
 	Test_ExpandConstant();
 	Test_ChangeHandlers_MQTT();

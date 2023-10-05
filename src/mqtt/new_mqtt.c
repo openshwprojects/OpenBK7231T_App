@@ -1315,7 +1315,7 @@ commandResult_t MQTT_PublishCommand(const void* context, const char* cmd, const 
 	OBK_Publish_Result ret;
 	int flags = 0;
 
-	Tokenizer_TokenizeString(args, 0);
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS);
 
 	if (Tokenizer_GetArgsCount() < 2) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish command requires two arguments (topic and value)");
