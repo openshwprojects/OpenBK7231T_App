@@ -299,7 +299,7 @@ static driver_t g_drivers[] = {
 
 	//drvdetail:{"name":"ShiftRegister",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"ShiftRegisterShiftRegisterShiftRegisterShiftRegister",
+	//drvdetail:"descr":"Simple Shift Register driver that allows you to map channels to shift register output. See [related topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20533505#20533505)",
 	//drvdetail:"requires":""}
 	{ "ShiftRegister",	    Shift_Init,		Shift_OnEverySecond,		NULL, NULL, NULL, Shift_OnChannelChanged, false },
 #endif

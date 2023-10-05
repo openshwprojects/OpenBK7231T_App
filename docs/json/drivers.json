@@ -230,7 +230,7 @@
   {
     "name": "ShiftRegister",
     "title": "TODO",
-    "descr": "ShiftRegisterShiftRegisterShiftRegisterShiftRegister",
+    "descr": "Simple Shift Register driver that allows you to map channels to shift register output. See [related topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20533505#20533505)",
     "requires": ""
   },
   {
