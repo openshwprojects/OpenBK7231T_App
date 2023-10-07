@@ -131,6 +131,7 @@ void SIM_ClearOBK(const char *flashPath) {
 }
 void Win_DoUnitTests() {
 
+	Test_Command_If_Else();
 	Test_MQTT();
 	Test_ChargeLimitDriver();
 	// this is slowest
@@ -178,7 +179,6 @@ void Win_DoUnitTests() {
 	Test_Scripting();
 	Test_Commands_Channels();
 	Test_Command_If();
-	Test_Command_If_Else(); 
 	Test_Tokenizer();
 	Test_Http();
 	Test_DeviceGroups();

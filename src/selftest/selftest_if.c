@@ -108,6 +108,41 @@ void Test_Command_If_Else() {
 	SELFTEST_ASSERT_CHANNEL(12, 1111);//keeps old val
 	SELFTEST_ASSERT_CHANNEL(13, 4444);
 
+	CMD_ExecuteCommand("setChannel 5 0", 0);
+	CMD_ExecuteCommand("addEventHandler OnChannelChange 5 if $CH11 then \"setChannel 12 2024\" else \"setChannel 12 5000\"", 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+	SELFTEST_ASSERT_CHANNEL(11, 0);
+	SELFTEST_ASSERT_CHANNEL(12, 1111);//keeps old val
+	SELFTEST_ASSERT_CHANNEL(13, 4444);
+
+	CMD_ExecuteCommand("setChannel 11 1", 0);
+	CMD_ExecuteCommand("setChannel 5 1", 0);
+	// change will fire if and since CH11 is 1 it will set 12 to 2024
+	SELFTEST_ASSERT_CHANNEL(5, 1);
+	SELFTEST_ASSERT_CHANNEL(11, 1);
+	SELFTEST_ASSERT_CHANNEL(12, 2024);
+	SELFTEST_ASSERT_CHANNEL(13, 4444);
+
+	// clear 12 for test
+	CMD_ExecuteCommand("setChannel 12 0", 0);
+	SELFTEST_ASSERT_CHANNEL(12, 0);
+
+	// change will fire if and since CH11 is 1 it will set 12 to 2024
+	CMD_ExecuteCommand("addChannel 5 1", 0);
+	SELFTEST_ASSERT_CHANNEL(12, 2024);
+
+	// clear 12 for test
+	CMD_ExecuteCommand("setChannel 12 0", 0);
+	SELFTEST_ASSERT_CHANNEL(12, 0);
+	// set 11 so IF will behave differently
+	CMD_ExecuteCommand("setChannel 11 0", 0);
+	SELFTEST_ASSERT_CHANNEL(11, 0);
+	// 'if' didnt fire yet, so it should still have prev val:
+	SELFTEST_ASSERT_CHANNEL(12, 0);
+	// change will fire if and since CH11 is 1 it will set 12 to 5000
+	CMD_ExecuteCommand("addChannel 5 1", 0);
+	SELFTEST_ASSERT_CHANNEL(12, 5000);
+
 	// cause error
 	//SELFTEST_ASSERT_CHANNEL(1, 666);
 
