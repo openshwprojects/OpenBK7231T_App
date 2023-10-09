@@ -1258,6 +1258,11 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 	char channelNameStr[8];
 	char valueStr[16];
 
+	// allow users to force-hide some channels (those channels are NEVER published)
+	if (CHANNEL_HasNeverPublishFlag(channel)) {
+		return OBK_PUBLISH_OK;
+	}
+
 	if (CFG_HasFlag(OBK_FLAG_PUBLISH_MULTIPLIED_VALUES)) {
 		float dVal = CHANNEL_GetFinalValue(channel);
 		// Float value

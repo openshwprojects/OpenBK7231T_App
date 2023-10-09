@@ -1247,6 +1247,7 @@ int CHANNEL_FindMaxValueForChannel(int ch);
 // cmd_channels.c
 const char* CHANNEL_GetLabel(int ch);
 bool CHANNEL_ShouldAddTogglePrefixToUI(int ch);
+bool CHANNEL_HasNeverPublishFlag(int ch);
 //ledRemap_t *CFG_GetLEDRemap();
 
 void PIN_get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount);
