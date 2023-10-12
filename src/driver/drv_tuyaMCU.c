@@ -14,6 +14,7 @@ https://developer.tuya.com/en/docs/iot/tuyacloudlowpoweruniversalserialaccesspro
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
+#include "../quicktick.h"
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 #include "../logging/logging.h"
@@ -210,6 +211,68 @@ static byte g_tuyaBatteryPoweredState = 0;
 static byte g_hello[] = { 0x55, 0xAA, 0x00, 0x01, 0x00, 0x00, 0x00 };
 static byte g_request_state[] = { 0x55, 0xAA, 0x00, 0x02, 0x00, 0x01, 0x04, 0x06 };
 
+typedef struct tuyaMCUPacket_s {
+	byte *data;
+	int size;
+	int allocated;
+	struct tuyaMCUPacket_s *next;
+} tuyaMCUPacket_t;
+
+tuyaMCUPacket_t *tm_emptyPackets = 0;
+tuyaMCUPacket_t *tm_sendPackets = 0;
+
+tuyaMCUPacket_t *TUYAMCU_AddToQueue(int len) {
+	tuyaMCUPacket_t *toUse;
+	if (tm_emptyPackets) {
+		toUse = tm_emptyPackets;
+		tm_emptyPackets = toUse->next;
+
+		if (len > toUse->allocated) {
+			toUse->data = realloc(toUse->data, len);
+			toUse->allocated = len;
+		}
+	}
+	else {
+		toUse = malloc(sizeof(tuyaMCUPacket_t));
+		int toAlloc = 128;
+		if (len > toAlloc)
+			toAlloc = len;
+		toUse->allocated = toAlloc;
+		toUse->data = malloc(toUse->allocated);
+	}
+	toUse->size = len;
+	if (tm_sendPackets == 0) {
+		tm_sendPackets = toUse;
+	}
+	else {
+		tuyaMCUPacket_t *p = tm_sendPackets;
+		while (p->next) {
+			p = p->next;
+		}
+		p->next = toUse;
+	}
+	toUse->next = 0;
+	return toUse;
+}
+bool TUYAMCU_SendFromQueue() {
+	tuyaMCUPacket_t *toUse;
+	if (tm_sendPackets == 0)
+		return false;
+	toUse = tm_sendPackets;
+	tm_sendPackets = toUse->next;
+
+	UART_SendByte(0x55);
+	UART_SendByte(0xAA);
+	UART_SendByte(0x00);
+	for (int i = 0; i < toUse->size; i++) {
+		UART_SendByte(toUse->data[i]);
+	}
+
+	toUse->next = tm_emptyPackets;
+	tm_emptyPackets = toUse;
+	return true;
+}
+
 tuyaMCUMapping_t* TuyaMCU_FindDefForID(int fnId) {
 	tuyaMCUMapping_t* cur;
 
@@ -330,25 +393,39 @@ int UART_TryToGetNextTuyaPacket(byte* out, int maxSize) {
 
 
 
-
 // append header, len, everything, checksum
 void TuyaMCU_SendCommandWithData(byte cmdType, byte* data, int payload_len) {
 	int i;
-
+	
 	byte check_sum = (0xFF + cmdType + (payload_len >> 8) + (payload_len & 0xFF));
+
 	UART_InitUART(g_baudRate);
-	UART_SendByte(0x55);
-	UART_SendByte(0xAA);
-	UART_SendByte(0x00);         // version 00
-	UART_SendByte(cmdType);         // version 00
-	UART_SendByte(payload_len >> 8);      // following data length (Hi)
-	UART_SendByte(payload_len & 0xFF);    // following data length (Lo)
-	for (i = 0; i < payload_len; i++) {
-		byte b = data[i];
-		check_sum += b;
-		UART_SendByte(b);
+	if (CFG_HasFlag(OBK_FLAG_TUYAMCU_USE_QUEUE)) {
+		tuyaMCUPacket_t *p = TUYAMCU_AddToQueue(payload_len + 4);
+		p->data[0] = cmdType;
+		p->data[1] = payload_len >> 8;
+		p->data[2] = payload_len & 0xFF;
+		memcpy(p->data + 3, data, payload_len);
+		for (i = 0; i < payload_len; i++) {
+			byte b = data[i];
+			check_sum += b;
+		}
+		p->data[3+payload_len] = check_sum;
 	}
-	UART_SendByte(check_sum);
+	else {
+		UART_SendByte(0x55);
+		UART_SendByte(0xAA);
+		UART_SendByte(0x00);         // version 00
+		UART_SendByte(cmdType);         // version 00
+		UART_SendByte(payload_len >> 8);      // following data length (Hi)
+		UART_SendByte(payload_len & 0xFF);    // following data length (Lo)
+		for (i = 0; i < payload_len; i++) {
+			byte b = data[i];
+			check_sum += b;
+			UART_SendByte(b);
+		}
+		UART_SendByte(check_sum);
+	}
 }
 int TuyaMCU_AppendStateInternal(byte *buffer, int bufferMax, int currentLen, uint8_t id, int8_t type, void* value, int dataLen) {
 	if (currentLen + 4 + dataLen >= bufferMax) {
@@ -1827,9 +1904,21 @@ void TuyaMCU_RunStateMachine_BatteryPowered() {
 		}
 	}
 }
+int timer_send = 0;
 void TuyaMCU_RunFrame() {
 	TuyaMCU_RunReceive();
 
+
+	if (timer_send > 0) {
+		timer_send -= g_deltaTimeMS;
+	}
+	else {
+		if (TUYAMCU_SendFromQueue()) {
+			timer_send = 100;
+		}
+	}
+}
+void TuyaMCU_RunSecond() {
 	g_sensorMode = DRV_IsRunning("tmSensor");
 	if (g_sensorMode) {
 		TuyaMCU_RunStateMachine_BatteryPowered();
@@ -1838,6 +1927,8 @@ void TuyaMCU_RunFrame() {
 		TuyaMCU_RunStateMachine_V3();
 	}
 }
+
+
 
 
 commandResult_t TuyaMCU_SetBaudRate(const void* context, const char* cmd, const char* args, int cmdFlags) {
