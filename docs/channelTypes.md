@@ -47,4 +47,5 @@ Do not add anything here, as it will overwritten with next rebuild.
 | Toggle_Inv |  Like a Toggle, but inverted states. |
 | OffOnRemember |  Radio buttons with 3 options: off, on and 'remember'. This is used for TuyaMCU memory state |
 | Voltage_div100 |  For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI |
+| Temperature_div2 |  Just like ChType_Temperature_div10, but for multiplied by 0.5. |
 | Max |  This is the current total number of available channel types. |

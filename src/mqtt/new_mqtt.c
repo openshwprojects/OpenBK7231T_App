@@ -1258,6 +1258,11 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 	char channelNameStr[8];
 	char valueStr[16];
 
+	// allow users to force-hide some channels (those channels are NEVER published)
+	if (CHANNEL_HasNeverPublishFlag(channel)) {
+		return OBK_PUBLISH_OK;
+	}
+
 	if (CFG_HasFlag(OBK_FLAG_PUBLISH_MULTIPLIED_VALUES)) {
 		float dVal = CHANNEL_GetFinalValue(channel);
 		// Float value
@@ -1315,7 +1320,7 @@ commandResult_t MQTT_PublishCommand(const void* context, const char* cmd, const 
 	OBK_Publish_Result ret;
 	int flags = 0;
 
-	Tokenizer_TokenizeString(args, 0);
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS);
 
 	if (Tokenizer_GetArgsCount() < 2) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish command requires two arguments (topic and value)");

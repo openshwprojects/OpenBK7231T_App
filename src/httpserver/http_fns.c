@@ -2582,6 +2582,7 @@ const char* g_obk_flagNames[] = {
 	"[MQTT] Use kWh unit for energy consumption (total, last hour, today) instead of Wh",
 	"[BTN] Ignore all button events (aka child lock)",
 	"[DoorSensor] Invert state",
+	"[TuyaMCU] Use queue",
 	"error",
 	"error",
 };

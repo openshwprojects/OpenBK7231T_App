@@ -12,6 +12,8 @@
 int g_hiddenChannels = 0;
 static char *g_channelLabels[CHANNEL_MAX] = { 0 };
 static int g_bHideTogglePrefix = 0;
+// same, for hiding from MQTT
+int g_doNotPublishChannels = 0;
 
 void CHANNEL_SetLabel(int ch, const char *s, int bHideTogglePrefix) {
 	if (ch < 0)
@@ -34,6 +36,16 @@ bool CHANNEL_ShouldAddTogglePrefixToUI(int ch) {
 		return false;
 	return true;
 }
+bool CHANNEL_HasNeverPublishFlag(int ch) {
+	if (ch < 0)
+		return false;
+	if (ch >= 32)
+		return false;
+	if (BIT_CHECK(g_doNotPublishChannels, ch))
+		return true;
+	return false;
+}
+
 const char *CHANNEL_GetLabel(int ch) {
 	if (ch >= 0 && ch < CHANNEL_MAX) {
 		if (g_channelLabels[ch])
@@ -356,6 +368,32 @@ static commandResult_t CMD_SetChannelVisible(const void *context, const char *cm
 
 	return CMD_RES_OK;
 }
+// hide/show channel from MQTT
+static commandResult_t CMD_SetChannelPrivate(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	int targetCH;
+	int bOn;
+
+	Tokenizer_TokenizeString(args, 0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	targetCH = Tokenizer_GetArgInteger(0);
+	bOn = Tokenizer_GetArgInteger(1);
+
+	if (bOn) {
+		// private means "do not publish"
+		BIT_SET(g_doNotPublishChannels, targetCH);
+	}
+	else {
+		BIT_CLEAR(g_doNotPublishChannels, targetCH);
+	}
+
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_GetReadings(const void *context, const char *cmd, const char *args, int cmdFlags){
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	char tmp[96];
@@ -521,6 +559,11 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_SetChannelVisible","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetChannelVisible", CMD_SetChannelVisible, NULL);
+	//cmddetail:{"name":"SetChannelPrivate","args":"[ChannelIndex][bPrivate]",
+	//cmddetail:"descr":"Channels marked as private are NEVER published via MQTT.",
+	//cmddetail:"fn":"CMD_SetChannelPrivate","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("CMD_SetChannelPrivate", CMD_SetChannelPrivate, NULL);
 	//cmddetail:{"name":"Ch","args":"[InputValue]",
 	//cmddetail:"descr":"An alternate command to access channels. It returns all used channels in JSON format. The syntax is ChINDEX value, there is no space between Ch and channel index. It can be sent without value to poll channel values.",
 	//cmddetail:"fn":"CMD_Ch","file":"cmnds/cmd_channels.c","requires":"",

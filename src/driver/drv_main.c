@@ -62,6 +62,8 @@ typedef struct driver_s {
 } driver_t;
 
 
+void TuyaMCU_RunSecond();
+
 // startDriver BL0937
 static driver_t g_drivers[] = {
 #ifdef ENABLE_DRIVER_TUYAMCU
@@ -69,7 +71,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"TuyaMCU is a protocol used for communication between WiFI module and external MCU. This protocol is using usually RX1/TX1 port of BK chips. See [TuyaMCU dimmer example](https://www.elektroda.com/rtvforum/topic3929151.html), see [TH06 LCD humidity/temperature sensor example](https://www.elektroda.com/rtvforum/topic3942730.html), see [fan controller example](https://www.elektroda.com/rtvforum/topic3908093.html), see [simple switch example](https://www.elektroda.com/rtvforum/topic3906443.html)",
 	//drvdetail:"requires":""}
-	{ "TuyaMCU",	TuyaMCU_Init,		TuyaMCU_RunFrame,			NULL, NULL, NULL, NULL, false },
+	{ "TuyaMCU",	TuyaMCU_Init,		TuyaMCU_RunSecond,			NULL, TuyaMCU_RunFrame, NULL, NULL, false },
 	//drvdetail:{"name":"tmSensor",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"The tmSensor must be used only when TuyaMCU is already started. tmSensor is a TuyaMcu Sensor, it's used for Low Power TuyaMCU communication on devices like TuyaMCU door sensor, or TuyaMCU humidity sensor. After device reboots, tmSensor uses TuyaMCU to request data update from the sensor and reports it on MQTT. Then MCU turns off WiFi module again and goes back to sleep. See an [example door sensor here](https://www.elektroda.com/rtvforum/topic3914412.html).",
@@ -79,7 +81,7 @@ static driver_t g_drivers[] = {
 #ifdef ENABLE_NTP
 	//drvdetail:{"name":"NTP",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"NTP driver is required to get current time and date from web. Without it, there is no correct datetime.",
+	//drvdetail:"descr":"NTP driver is required to get current time and date from web. Without it, there is no correct datetime. Put 'startDriver NTP' in short startup line or autoexec.bat to run it on start.",
 	//drvdetail:"requires":""}
 	{ "NTP",		NTP_Init,			NTP_OnEverySecond,			NTP_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
@@ -148,7 +150,7 @@ static driver_t g_drivers[] = {
 #if PLATFORM_BK7231N
 	//drvdetail:{"name":"SM16703P",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"WIP driver",
+	//drvdetail:"descr":"SM16703P is an individually addressable LEDs controller like WS2812B. Currently SM16703P LEDs are supported through hardware SPI, LEDs data should be connected to P16 (MOSI), [here you can read](https://www.elektroda.com/rtvforum/topic4005865.html) how to break it out on CB2S.",
 	//drvdetail:"requires":""}
 	{ "SM16703P",	SM16703P_Init,		NULL,						NULL, NULL, NULL, NULL, false },
 #endif
@@ -171,7 +173,7 @@ static driver_t g_drivers[] = {
 	{ "SSDP",		DRV_SSDP_Init,		DRV_SSDP_RunEverySecond,	NULL, DRV_SSDP_RunQuickTick, DRV_SSDP_Shutdown, NULL, false },
 	//drvdetail:{"name":"DGR",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"Tasmota Device groups driver. See [forum example](https://www.elektroda.com/rtvforum/topic3925472.html) and TODO-video tutorial (will post on YT soon)",
+	//drvdetail:"descr":"Tasmota Device groups driver. See [forum example](https://www.elektroda.com/rtvforum/topic3925472.html) and [video tutorial](https://www.youtube.com/watch?v=e1xcq3OUR5M&ab_channel=Elektrodacom)",
 	//drvdetail:"requires":""}
 	{ "DGR",		DRV_DGR_Init,		DRV_DGR_RunEverySecond,		DRV_DGR_AppendInformationToHTTPIndexPage, DRV_DGR_RunQuickTick, DRV_DGR_Shutdown, DRV_DGR_OnChannelChanged, false },
 #endif
@@ -204,7 +206,7 @@ static driver_t g_drivers[] = {
 #ifdef ENABLE_DRIVER_MAX72XX
 	//drvdetail:{"name":"MAX72XX_Clock",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"Simple hardcoded driver for MAX72XX clock. Requirex manual start of MAX72XX driver with MAX72XX setup and NTP start.",
+	//drvdetail:"descr":"Simple hardcoded driver for MAX72XX clock. Requires manual start of MAX72XX driver with MAX72XX setup and NTP start.",
 	//drvdetail:"requires":""}
 	{ "MAX72XX_Clock",		DRV_MAX72XX_Clock_Init,		DRV_MAX72XX_Clock_OnEverySecond,	NULL, DRV_MAX72XX_Clock_RunFrame, NULL, NULL, false },
 #endif
@@ -261,7 +263,7 @@ static driver_t g_drivers[] = {
 #endif
 	//drvdetail:{"name":"TM1637",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK interface",
+	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK interface.",
 	//drvdetail:"requires":""}
 	{ "TM1637",	TM1637_Init,		NULL,		NULL,  TMGN_RunQuickTick,NULL, NULL, false },
 	//drvdetail:{"name":"GN6932",
@@ -293,13 +295,13 @@ static driver_t g_drivers[] = {
 	{ "SHT3X",	    SHT3X_Init,		SHT3X_OnEverySecond,		SHT3X_AppendInformationToHTTPIndexPage, NULL, SHT3X_StopDriver, NULL, false },
 	//drvdetail:{"name":"SGP",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"SGP Air Quality sensor with I2C interface.",
+	//drvdetail:"descr":"SGP Air Quality sensor with I2C interface. See [this DIY sensor](https://www.elektroda.com/rtvforum/topic3967174.html) for setup information.",
 	//drvdetail:"requires":""}
 	{ "SGP",	    SGP_Init,		SGP_OnEverySecond,		SGP_AppendInformationToHTTPIndexPage, NULL, SGP_StopDriver, NULL, false },
 
 	//drvdetail:{"name":"ShiftRegister",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"ShiftRegisterShiftRegisterShiftRegisterShiftRegister",
+	//drvdetail:"descr":"Simple Shift Register driver that allows you to map channels to shift register output. See [related topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20533505#20533505)",
 	//drvdetail:"requires":""}
 	{ "ShiftRegister",	    Shift_Init,		Shift_OnEverySecond,		NULL, NULL, NULL, Shift_OnChannelChanged, false },
 #endif
@@ -313,7 +315,7 @@ static driver_t g_drivers[] = {
 #ifdef ENABLE_DRIVER_BRIDGE
 	//drvdetail:{"name":"Bridge",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"TODO",
+	//drvdetail:"descr":"A bridge relay driver, added for [TONGOU TO-Q-SY1-JWT Din Rail Switch](https://www.elektroda.com/rtvforum/topic3934580.html). See linked topic for info.",
 	//drvdetail:"requires":""}
 	{ "Bridge",     Bridge_driver_Init, NULL,                       NULL, Bridge_driver_QuickFrame, Bridge_driver_DeInit, Bridge_driver_OnChannelChanged, false }
 #endif

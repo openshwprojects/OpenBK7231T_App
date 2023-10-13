@@ -78,5 +78,9 @@
 {
 "title": "Manual flash save example for TuyaMCU - using special Channels 200, 201, etc",
 "file": "autoexecs/manual_tuyamcu_flash_save.bat"
+},
+{
+"title": "Shift register setup, usage and control with channels",
+"file": "autoexecs/shiftRegister.bat"
 }
 ]

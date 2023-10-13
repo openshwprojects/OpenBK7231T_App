@@ -74,7 +74,7 @@
   {
     "name": "SM16703P",
     "title": "TODO",
-    "descr": "WIP driver",
+    "descr": "SM16703P is an individually addressable LEDs controller like WS2812B. Currently SM16703P LEDs are supported through hardware SPI, LEDs data should be connected to P16 (MOSI), [here you can read](https://www.elektroda.com/rtvforum/topic4005865.html) how to break it out on CB2S.",
     "requires": ""
   },
   {
@@ -98,7 +98,7 @@
   {
     "name": "DGR",
     "title": "TODO",
-    "descr": "Tasmota Device groups driver. See [forum example](https://www.elektroda.com/rtvforum/topic3925472.html) and TODO-video tutorial (will post on YT soon)",
+    "descr": "Tasmota Device groups driver. See [forum example](https://www.elektroda.com/rtvforum/topic3925472.html) and [video tutorial](https://www.youtube.com/watch?v=e1xcq3OUR5M&ab_channel=Elektrodacom)",
     "requires": ""
   },
   {
@@ -230,7 +230,7 @@
   {
     "name": "ShiftRegister",
     "title": "TODO",
-    "descr": "ShiftRegisterShiftRegisterShiftRegisterShiftRegister",
+    "descr": "Simple Shift Register driver that allows you to map channels to shift register output. See [related topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20533505#20533505)",
     "requires": ""
   },
   {
@@ -242,7 +242,7 @@
   {
     "name": "Bridge",
     "title": "TODO",
-    "descr": "TODO",
+    "descr": "A bridge relay driver, added for [TONGOU TO-Q-SY1-JWT Din Rail Switch](https://www.elektroda.com/rtvforum/topic3934580.html). See linked topic for info.",
     "requires": ""
   }
 ]
