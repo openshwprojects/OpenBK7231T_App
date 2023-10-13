@@ -1277,7 +1277,7 @@ void TuyaMCU_V0_ParseRealTimeWithRecordStorage(const byte* data, int len, bool b
 
 		if (sectorLen == 1) {
 			int iVal = (int)data[ofs + 4];
-			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU_V0_ParseRealTimeWithRecordStorage: raw data 1 byte: %c\n", iVal);
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU_V0_ParseRealTimeWithRecordStorage: raw data 1 byte: %i\n", iVal);
 			// apply to channels
 			TuyaMCU_ApplyMapping(fnId, iVal);
 		}
@@ -1324,7 +1324,7 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 
 		if (sectorLen == 1) {
 			iVal = (int)data[ofs + 4];
-			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU_ParseStateMessage: raw data 1 byte: %c\n", iVal);
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU_ParseStateMessage: raw data 1 byte: %i\n", iVal);
 			// apply to channels
 			TuyaMCU_ApplyMapping(fnId, iVal);
 		}
