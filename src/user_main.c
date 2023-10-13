@@ -30,7 +30,7 @@
 #include "mqtt/new_mqtt.h"
 #include "ota/ota.h"
 
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 #include "littlefs/our_lfs.h"
 #endif
 
@@ -887,7 +887,7 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	PIN_AddCommands();
 	ADDLOGF_DEBUG("Initialised pins\r\n");
 
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 	// initialise the filesystem, only if present.
 	// don't create if it does not mount
 	// do this for ST mode only, as it may be something in FS which is killing us,
@@ -1063,7 +1063,7 @@ void Main_Init_Before_Delay()
 	}
 	CFG_InitAndLoad();
 
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 	LFSAddCmds();
 #endif
 

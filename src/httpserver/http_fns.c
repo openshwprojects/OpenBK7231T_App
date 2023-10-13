@@ -373,6 +373,16 @@ int http_fn_index(http_request_t* request) {
 			poststr(request, "</td></tr>");
 
 		}
+		else if (channelType == ChType_Temperature_div2) {
+
+			iValue = CHANNEL_Get(i);
+			fValue = iValue * 0.5f;
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "Temperature Channel %s value %.2f C<br>", CHANNEL_GetLabel(i), fValue);
+			poststr(request, "</td></tr>");
+
+		}
 		else if (channelType == ChType_Temperature_div10) {
 
 			iValue = CHANNEL_Get(i);
@@ -1675,6 +1685,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 #endif
 
 	PIN_get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
+	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HASS counts: %i rels, %i pwms, %i inps", relayCount, pwmCount, dInputCount);
 
 	ledDriverChipRunning = LED_IsLedDriverChipRunning();
 
@@ -1808,19 +1819,21 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		for (i = 0; i < OBK_NUM_SENSOR_COUNT; i++)
 		{
 			dev_info = hass_init_power_sensor_device_info(i);
-			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-			hass_free_device_info(dev_info);
-			discoveryQueued = true;
+			if (dev_info) {
+				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+				hass_free_device_info(dev_info);
+				discoveryQueued = true;
+			}
 		}
 	}
 #endif
 
 	if (measuringBattery == true) {
-		dev_info = hass_init_sensor_device_info(BATTERY_SENSOR, 0, -1, -1);
+		dev_info = hass_init_sensor_device_info(BATTERY_SENSOR, 0, -1, -1, 1);
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
 
-		dev_info = hass_init_sensor_device_info(BATTERY_VOLTAGE_SENSOR, 0, -1, -1);
+		dev_info = hass_init_sensor_device_info(BATTERY_VOLTAGE_SENSOR, 0, -1, -1, 1);
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
 
@@ -1832,14 +1845,14 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			ch = PIN_GetPinChannelForPinIndex(i);
 			// TODO: flags are 32 bit and there are 64 max channels
 			BIT_SET(flagsChannelPublished, ch);
-			dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, ch, 2, 1);
+			dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, ch, 2, 1, 1);
 			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 			hass_free_device_info(dev_info);
 
 			ch = PIN_GetPinChannel2ForPinIndex(i);
 			// TODO: flags are 32 bit and there are 64 max channels
 			BIT_SET(flagsChannelPublished, ch);
-			dev_info = hass_init_sensor_device_info(HUMIDITY_SENSOR, ch, -1, -1);
+			dev_info = hass_init_sensor_device_info(HUMIDITY_SENSOR, ch, -1, -1, 1);
 			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 			hass_free_device_info(dev_info);
 
@@ -1849,14 +1862,14 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			ch = PIN_GetPinChannelForPinIndex(i);
 			// TODO: flags are 32 bit and there are 64 max channels
 			BIT_SET(flagsChannelPublished, ch);
-			dev_info = hass_init_sensor_device_info(CO2_SENSOR, ch, -1, -1);
+			dev_info = hass_init_sensor_device_info(CO2_SENSOR, ch, -1, -1, 1);
 			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 			hass_free_device_info(dev_info);
 
 			ch = PIN_GetPinChannel2ForPinIndex(i);
 			// TODO: flags are 32 bit and there are 64 max channels
 			BIT_SET(flagsChannelPublished, ch);
-			dev_info = hass_init_sensor_device_info(TVOC_SENSOR, ch, -1, -1);
+			dev_info = hass_init_sensor_device_info(TVOC_SENSOR, ch, -1, -1, 1);
 			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 			hass_free_device_info(dev_info);
 
@@ -1892,7 +1905,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			break;
 			case ChType_Voltage_div10:
 			{
-				dev_info = hass_init_sensor_device_info(VOLTAGE_SENSOR, i, 2, 1);
+				dev_info = hass_init_sensor_device_info(VOLTAGE_SENSOR, i, 2, 1, 1);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 
@@ -1901,7 +1914,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			break;
 			case ChType_Voltage_div100:
 			{
-				dev_info = hass_init_sensor_device_info(VOLTAGE_SENSOR, i, 2, 2);
+				dev_info = hass_init_sensor_device_info(VOLTAGE_SENSOR, i, 2, 2, 1);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 
@@ -1910,7 +1923,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			break;
 			case ChType_ReadOnlyLowMidHigh:
 			{
-				dev_info = hass_init_sensor_device_info(READONLYLOWMIDHIGH_SENSOR, i, -1, -1);
+				dev_info = hass_init_sensor_device_info(READONLYLOWMIDHIGH_SENSOR, i, -1, -1, 1);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 
@@ -1919,7 +1932,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			break;
 			case ChType_SmokePercent:
 			{
-				dev_info = hass_init_sensor_device_info(SMOKE_SENSOR, i, -1, -1);
+				dev_info = hass_init_sensor_device_info(SMOKE_SENSOR, i, -1, -1, 1);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 
@@ -1928,7 +1941,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			break;
 			case ChType_Illuminance:
 			{
-				dev_info = hass_init_sensor_device_info(ILLUMINANCE_SENSOR, i, -1, -1);
+				dev_info = hass_init_sensor_device_info(ILLUMINANCE_SENSOR, i, -1, -1, 1);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 
@@ -1937,7 +1950,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			break;
 			case ChType_ReadOnly:
 			{
-				dev_info = hass_init_sensor_device_info(CUSTOM_SENSOR, i, -1, -1);
+				dev_info = hass_init_sensor_device_info(CUSTOM_SENSOR, i, -1, -1, 1);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 
@@ -1946,7 +1959,16 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			break;
 			case ChType_Temperature:
 			{
-				dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, i, -1, -1);
+				dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, i, -1, -1, 1);
+				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+				hass_free_device_info(dev_info);
+
+				discoveryQueued = true;
+			}
+			break;
+			case ChType_Temperature_div2:
+			{
+				dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, i, 2, 1, 5);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 
@@ -1955,7 +1977,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			break;
 			case ChType_Temperature_div10:
 			{
-				dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, i, 2, 1);
+				dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, i, 2, 1, 1);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 
@@ -1964,7 +1986,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			break;
 			case ChType_Humidity:
 			{
-				dev_info = hass_init_sensor_device_info(HUMIDITY_SENSOR, i, -1, -1);
+				dev_info = hass_init_sensor_device_info(HUMIDITY_SENSOR, i, -1, -1, 1);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 
@@ -1973,7 +1995,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			break;
 			case ChType_Humidity_div10:
 			{
-				dev_info = hass_init_sensor_device_info(HUMIDITY_SENSOR, i, 2, 1);
+				dev_info = hass_init_sensor_device_info(HUMIDITY_SENSOR, i, 2, 1, 1);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 
@@ -1982,7 +2004,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			break;
 			case ChType_Current_div100:
 			{
-				dev_info = hass_init_sensor_device_info(CURRENT_SENSOR, i, 3, 2);
+				dev_info = hass_init_sensor_device_info(CURRENT_SENSOR, i, 3, 2, 1);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 
@@ -1991,7 +2013,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			break;
 			case ChType_Current_div1000:
 			{
-				dev_info = hass_init_sensor_device_info(CURRENT_SENSOR, i, 3, 3);
+				dev_info = hass_init_sensor_device_info(CURRENT_SENSOR, i, 3, 3, 1);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 
@@ -2000,7 +2022,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			break;
 			case ChType_Power:
 			{
-				dev_info = hass_init_sensor_device_info(POWER_SENSOR, i, -1, -1);
+				dev_info = hass_init_sensor_device_info(POWER_SENSOR, i, -1, -1, 1);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 
@@ -2009,7 +2031,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			break;
 			case ChType_Power_div10:
 			{
-				dev_info = hass_init_sensor_device_info(POWER_SENSOR, i, 2, 1);
+				dev_info = hass_init_sensor_device_info(POWER_SENSOR, i, 2, 1, 1);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 
@@ -2018,7 +2040,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			break;
 			case ChType_PowerFactor_div1000:
 			{
-				dev_info = hass_init_sensor_device_info(POWERFACTOR_SENSOR, i, 4, 3);
+				dev_info = hass_init_sensor_device_info(POWERFACTOR_SENSOR, i, 4, 3, 1);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 
@@ -2027,7 +2049,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			break;
 			case ChType_Frequency_div100:
 			{
-				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, i, 3, 2);
+				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, i, 3, 2, 1);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 
@@ -2036,7 +2058,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			break;
 			case ChType_EnergyTotal_kWh_div100:
 			{
-				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 2);
+				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 2, 1);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 
@@ -2045,7 +2067,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			break;
 			case ChType_EnergyTotal_kWh_div1000:
 			{
-				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 3);
+				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 3, 1);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 
@@ -2577,6 +2599,7 @@ const char* g_obk_flagNames[] = {
 	"[MQTT] Use kWh unit for energy consumption (total, last hour, today) instead of Wh",
 	"[BTN] Ignore all button events (aka child lock)",
 	"[DoorSensor] Invert state",
+	"[TuyaMCU] Use queue",
 	"error",
 	"error",
 };

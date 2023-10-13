@@ -54,6 +54,7 @@
 #define ENABLE_DRIVER_CHARGINGLIMIT		1
 #define ENABLE_DRIVER_BATTERY	1
 
+
 #elif PLATFORM_BL602
 
 // I have enabled drivers on BL602
@@ -66,6 +67,7 @@
 
 #elif PLATFORM_BEKEN
 
+// set to 0 to disable
 #define ENABLE_LITTLEFS			1
 #define ENABLE_NTP    1
 #define ENABLE_DRIVER_LED       1

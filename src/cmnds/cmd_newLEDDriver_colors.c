@@ -11,7 +11,7 @@
 #include "cmd_local.h"
 #include "../mqtt/new_mqtt.h"
 #include "../cJSON/cJSON.h"
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 	#include "../littlefs/our_lfs.h"
 #endif
 

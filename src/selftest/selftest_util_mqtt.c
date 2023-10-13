@@ -194,6 +194,7 @@ void SIM_OnMQTTPublish(const char *topic, const char *value, int len, int qos, b
 		f = fopen("sim_lastPublish.txt", "wb");
 		if (f != 0) {
 			fprintf(f, "Topic: %s", topic);
+			fprintf(f, "\n");
 			fprintf(f, "Payload: %s", value);
 			fclose(f);
 		}
@@ -201,6 +202,7 @@ void SIM_OnMQTTPublish(const char *topic, const char *value, int len, int qos, b
 			f = fopen("sim_lastPublish_long.txt", "wb");
 			if (f != 0) {
 				fprintf(f, "Topic: %s", topic);
+				fprintf(f, "\n");
 				fprintf(f, "Payload: %s", value);
 				fclose(f);
 			}
@@ -209,6 +211,7 @@ void SIM_OnMQTTPublish(const char *topic, const char *value, int len, int qos, b
 		if (f != 0) {
 			fprintf(f, "\n");
 			fprintf(f, "Topic: %s", topic);
+			fprintf(f, "\n");
 			fprintf(f, "Payload: %s", value);
 			fclose(f);
 		}

@@ -859,6 +859,13 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Voltage_div100,
+	//chandetail:{"name":"Temperature_div2",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Just like ChType_Temperature_div10, but for multiplied by 0.5.",
+	//chandetail:"enum":"ChType_Temperature_div2",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Temperature_div2,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
@@ -984,8 +991,9 @@ typedef struct pinsState_s {
 #define OBK_FLAG_MQTT_ENERGY_IN_KWH					40
 #define OBK_FLAG_BUTTON_DISABLE_ALL					41
 #define OBK_FLAG_DOORSENSOR_INVERT_STATE			42
+#define OBK_FLAG_TUYAMCU_USE_QUEUE					43
 
-#define OBK_TOTAL_FLAGS 43
+#define OBK_TOTAL_FLAGS 44
 
 #define LOGGER_FLAG_MQTT_DEDUPER					1
 #define LOGGER_FLAG_POWER_SAVE						2
@@ -1242,6 +1250,7 @@ int CHANNEL_FindMaxValueForChannel(int ch);
 // cmd_channels.c
 const char* CHANNEL_GetLabel(int ch);
 bool CHANNEL_ShouldAddTogglePrefixToUI(int ch);
+bool CHANNEL_HasNeverPublishFlag(int ch);
 //ledRemap_t *CFG_GetLEDRemap();
 
 void PIN_get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount);
