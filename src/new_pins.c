@@ -1873,7 +1873,7 @@ const char* g_channelTypeNames[] = {
 	"OffOnRemember",
 	"Voltage_div100",
 	"Temperature_div2",
-	"error",
+	"TimerSeconds",
 	"error",
 	"error",
 	"error",
