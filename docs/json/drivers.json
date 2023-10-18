@@ -14,7 +14,7 @@
   {
     "name": "NTP",
     "title": "TODO",
-    "descr": "NTP driver is required to get current time and date from web. Without it, there is no correct datetime.",
+    "descr": "NTP driver is required to get current time and date from web. Without it, there is no correct datetime. Put 'startDriver NTP' in short startup line or autoexec.bat to run it on start.",
     "requires": ""
   },
   {
@@ -128,7 +128,7 @@
   {
     "name": "MAX72XX_Clock",
     "title": "TODO",
-    "descr": "Simple hardcoded driver for MAX72XX clock. Requirex manual start of MAX72XX driver with MAX72XX setup and NTP start.",
+    "descr": "Simple hardcoded driver for MAX72XX clock. Requires manual start of MAX72XX driver with MAX72XX setup and NTP start.",
     "requires": ""
   },
   {
@@ -188,7 +188,7 @@
   {
     "name": "TM1637",
     "title": "TODO",
-    "descr": "Driver for 7-segment LED display with DIO/CLK interface",
+    "descr": "Driver for 7-segment LED display with DIO/CLK interface.",
     "requires": ""
   },
   {
@@ -224,7 +224,7 @@
   {
     "name": "SGP",
     "title": "TODO",
-    "descr": "SGP Air Quality sensor with I2C interface.",
+    "descr": "SGP Air Quality sensor with I2C interface. See [this DIY sensor](https://www.elektroda.com/rtvforum/topic3967174.html) for setup information.",
     "requires": ""
   },
   {

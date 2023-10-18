@@ -299,5 +299,12 @@
     "title": "todo",
     "file": "new_pins.h",
     "descr": "[DoorSensor] Invert state"
+  },
+  {
+    "index": "43",
+    "enum": "OBK_FLAG_TUYAMCU_USE_QUEUE",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[TuyaMCU] Use queue"
   }
 ]

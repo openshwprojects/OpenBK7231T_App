@@ -351,6 +351,15 @@
     "examples": ""
   },
   {
+    "name": "CMD_SetChannelPrivate",
+    "args": "[ChannelIndex][bPrivate]",
+    "descr": "Channels marked as private are NEVER published via MQTT.",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_channels.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "Color",
     "args": "[HexValue]",
     "descr": "Puts the LED driver in RGB mode and sets given color.",
