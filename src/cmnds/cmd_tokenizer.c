@@ -68,6 +68,9 @@ const char *Tokenizer_GetArgExpanding(int i) {
 
 	s = g_args[i];
 
+	//return original string if no '$' found
+	if (strchr(s, '$') == NULL) { return g_args[i]; }
+
 	//séparators for strtok to detect constants
 	const char * separators = "${}";
 	//pointer for strstr function
@@ -81,6 +84,7 @@ const char *Tokenizer_GetArgExpanding(int i) {
 	char *strToken = strtok(tokLine, separators);
 	while (strToken != NULL) {
 		//build tconst with ${<token>} and try find it
+		int len_tconst=0;
 		char tconst[20] = "${";
 		strcat(tconst, strToken);
 		strcat(tconst, "}");
@@ -96,14 +100,20 @@ const char *Tokenizer_GetArgExpanding(int i) {
 			//put 0 on the start of the constant to copy the left part of the input string
 			ptrConst[0] = 0;
 			strcpy_safe(Templine, g_argsExpanded[i], sizeof(Templine));
+			len_tconst=strlen(tconst);
+			//remove the brackets around the constant name "{}"
+			if (tconst[1]=='{'){
+				tconst[len_tconst-1]=0;
+				memmove(&tconst[1], &tconst[2], strlen(tconst) - 1);
+			}
 			//analyse the constant found to replace it with it's value/string and concat it with the left part of the input string
-			if (!strcmp(tconst, "${IP}") || !strcmp(tconst, "$IP")) {
+			if (!strcmp(tconst, "$IP")) {
 				strcat_safe(Templine, HAL_GetMyIPString(), sizeof(Templine));
 			}
-			else if (!strcmp(tconst, "${ShortName}") || !strcmp(tconst, "$ShortName")) {
+			else if (!strcmp(tconst, "$ShortName")) {
 				strcat_safe(Templine, CFG_GetShortDeviceName(), sizeof(Templine));
 			}
-			else if (!strcmp(tconst, "${Name}") || !strcmp(tconst, "$Name")) {
+			else if (!strcmp(tconst, "$Name")) {
 				strcat_safe(Templine, CFG_GetDeviceName(), sizeof(Templine));
 			}
 			else {
@@ -115,7 +125,7 @@ const char *Tokenizer_GetArgExpanding(int i) {
 				strcat_safe(Templine, convert, sizeof(Templine));
 			}
 			//concat with the right part, after the constant
-			strcat_safe(Templine, ptrConst + strlen(tconst), sizeof(Templine));
+			strcat_safe(Templine, ptrConst + len_tconst, sizeof(Templine));
 			//update the input string with the replaced constant
 			strcpy_safe(g_argsExpanded[i], Templine, sizeof(g_argsExpanded[i]));
 		}
@@ -123,7 +133,6 @@ const char *Tokenizer_GetArgExpanding(int i) {
 		strToken = strtok(NULL, separators);
 
 	}
-
 	return g_argsExpanded[i];
 
 }
@@ -138,17 +147,19 @@ const char *Tokenizer_GetArg(int i) {
 
 	s = g_args[i];
 
-	if(g_bAllowExpand && s[0] == '$') {
-#if 1
-		int channelIndex;
-		int value;
+	if(g_bAllowExpand) {
+#if 0
+		if (s[0] == '$'){
+			int channelIndex;
+			int value;
 
-		channelIndex = atoi(s+3);
-		value = CHANNEL_Get(channelIndex);
-		
-		sprintf(g_argsExpanded[i],"%i",value);
+			channelIndex = atoi(s+3);
+			value = CHANNEL_Get(channelIndex);
 
-		return g_argsExpanded[i];
+			sprintf(g_argsExpanded[i],"%i",value);
+
+			return g_argsExpanded[i];
+		}
 #else
 		return Tokenizer_GetArgExpanding(i);
 #endif
@@ -304,7 +315,7 @@ void Tokenizer_TokenizeString(const char *s, int flags) {
 			*p = 0;
 			if(p[1] != 0 && isWhiteSpace(p[1])==false) {
 				// we need to rewrite this function and check it well with unit tests
-				if(g_bAllowQuotes && p[1] == '"') { 
+				if(g_bAllowQuotes && p[1] == '"') {
 					p++;
 					goto quote;
 				}
