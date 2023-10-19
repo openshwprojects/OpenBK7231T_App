@@ -254,6 +254,14 @@ void Test_MQTT_LED_RGB() {
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBbulb/led_dimmer/get", "50", false);
 	// half of FF is 7F
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBbulb/led_finalcolor_rgb/get", "003700", false);
+
+
+
+	//SIM_SendFakeMQTTAndRunSimFrame_CMND("{\"color\":{\"b\":255,\"c\":0,\"g\":255,\"r\":255},\"state\":\"1\"}", "");
+	//SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBbulb/led_dimmer/get", "52", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
 	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
 	SIM_ClearMQTTHistory();
 }
