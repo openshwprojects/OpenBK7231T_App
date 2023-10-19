@@ -245,6 +245,9 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload
 	case ILLUMINANCE_SENSOR:
 		sprintf(g_hassBuffer, "Illuminance");
 		break;
+	case HASS_RSSI:
+		sprintf(g_hassBuffer, "RSSI");
+		break;
 	default:
 		sprintf(g_hassBuffer, "%s", CHANNEL_GetLabel(index));
 		break;
@@ -583,13 +586,20 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 		cJSON_AddStringToObject(info->root, "val_tpl", g_template_lowMidHigh);
 
 		break;
+	case HASS_RSSI:
+		cJSON_AddStringToObject(info->root, "dev_cla", "signal_strength");
+		cJSON_AddStringToObject(info->root, "stat_t", "~/rssi");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "dBm");
+		//cJSON_AddStringToObject(info->root, "icon_template", "mdi:access-point");
+
+		break;
 	default:
 		sprintf(g_hassBuffer, "~/%d/get", channel);
 		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		return NULL;
 	}
 
-	if (type != READONLYLOWMIDHIGH_SENSOR && type != ENERGY_SENSOR) {
+	if (type != READONLYLOWMIDHIGH_SENSOR && type != ENERGY_SENSOR && type != HASS_RSSI) {
 		cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
 	}
 
