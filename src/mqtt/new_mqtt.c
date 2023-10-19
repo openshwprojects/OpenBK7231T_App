@@ -68,14 +68,14 @@ int mqtt_rx_buffer_count;
 unsigned char temp_topic[128];
 unsigned char temp_data[2048];
 
-int addLenData(int len, const unsigned char *data){
+int addLenData(int len, const unsigned char* data) {
 	mqtt_rx_buffer[mqtt_rx_buffer_head] = (len >> 8) & 0xff;
 	mqtt_rx_buffer_head = (mqtt_rx_buffer_head + 1) % MQTT_RX_BUFFER_MAX;
 	mqtt_rx_buffer_count++;
 	mqtt_rx_buffer[mqtt_rx_buffer_head] = (len) & 0xff;
 	mqtt_rx_buffer_head = (mqtt_rx_buffer_head + 1) % MQTT_RX_BUFFER_MAX;
 	mqtt_rx_buffer_count++;
-	for (int i = 0; i < len; i++){
+	for (int i = 0; i < len; i++) {
 		mqtt_rx_buffer[mqtt_rx_buffer_head] = data[i];
 		mqtt_rx_buffer_head = (mqtt_rx_buffer_head + 1) % MQTT_RX_BUFFER_MAX;
 		mqtt_rx_buffer_count++;
@@ -83,32 +83,33 @@ int addLenData(int len, const unsigned char *data){
 	return len + 2;
 }
 
-int getLenData(int *len, unsigned char *data, int maxlen){
+int getLenData(int* len, unsigned char* data, int maxlen) {
 	int l;
 	l = mqtt_rx_buffer[mqtt_rx_buffer_tail];
 	mqtt_rx_buffer_tail = (mqtt_rx_buffer_tail + 1) % MQTT_RX_BUFFER_MAX;
 	mqtt_rx_buffer_count--;
-	l = l<<8;
+	l = l << 8;
 	l |= mqtt_rx_buffer[mqtt_rx_buffer_tail];
 	mqtt_rx_buffer_tail = (mqtt_rx_buffer_tail + 1) % MQTT_RX_BUFFER_MAX;
 	mqtt_rx_buffer_count--;
 
-	for (int i = 0; i < l; i++){
-		if (i < maxlen){
+	for (int i = 0; i < l; i++) {
+		if (i < maxlen) {
 			data[i] = mqtt_rx_buffer[mqtt_rx_buffer_tail];
 		}
 		mqtt_rx_buffer_tail = (mqtt_rx_buffer_tail + 1) % MQTT_RX_BUFFER_MAX;
 		mqtt_rx_buffer_count--;
 	}
-	if (mqtt_rx_buffer_count < 0){
+	if (mqtt_rx_buffer_count < 0) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "MQTT_rx buffer underflow!!!");
 		mqtt_rx_buffer_count = 0;
 		mqtt_rx_buffer_tail = mqtt_rx_buffer_head = 0;
 	}
 
-	if (l > maxlen){
+	if (l > maxlen) {
 		*len = maxlen;
-	} else {
+	}
+	else {
 		*len = l;
 	}
 	return l + 2;
@@ -141,12 +142,13 @@ static void MQTT_Mutex_Free()
 // NOTE: this function is now public, but only because my unit tests
 // system can use it to spoof MQTT packets to check if MQTT commands
 // are working...
-int MQTT_Post_Received(const char *topic, int topiclen, const unsigned char *data, int datalen){
+int MQTT_Post_Received(const char* topic, int topiclen, const unsigned char* data, int datalen) {
 	MQTT_Mutex_Take(100);
-	if ((MQTT_RX_BUFFER_MAX - 1 - mqtt_rx_buffer_count) < topiclen + datalen + 2 + 2){
+	if ((MQTT_RX_BUFFER_MAX - 1 - mqtt_rx_buffer_count) < topiclen + datalen + 2 + 2) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "MQTT_rx buffer overflow for topic %s", topic);
-	} else {
-		addLenData(topiclen, (unsigned char *)topic);
+	}
+	else {
+		addLenData(topiclen, (unsigned char*)topic);
 		addLenData(datalen, data);
 	}
 	MQTT_Mutex_Free();
@@ -157,18 +159,18 @@ int MQTT_Post_Received(const char *topic, int topiclen, const unsigned char *dat
 #endif
 	return 1;
 }
-int MQTT_Post_Received_Str(const char *topic, const char *data) {
+int MQTT_Post_Received_Str(const char* topic, const char* data) {
 	return MQTT_Post_Received(topic, strlen(topic), (const unsigned char*)data, strlen(data));
 }
-int get_received(char **topic, int *topiclen, unsigned char **data, int *datalen){
+int get_received(char** topic, int* topiclen, unsigned char** data, int* datalen) {
 	int res = 0;
 	MQTT_Mutex_Take(100);
-	if (mqtt_rx_buffer_tail != mqtt_rx_buffer_head){
-		getLenData(topiclen, temp_topic, sizeof(temp_topic)-1);
+	if (mqtt_rx_buffer_tail != mqtt_rx_buffer_head) {
+		getLenData(topiclen, temp_topic, sizeof(temp_topic) - 1);
 		temp_topic[*topiclen] = 0;
-		getLenData(datalen, temp_data, sizeof(temp_data)-1);
+		getLenData(datalen, temp_data, sizeof(temp_data) - 1);
 		temp_data[*datalen] = 0;
-		*topic = (char *)temp_topic;
+		*topic = (char*)temp_topic;
 		*data = temp_data;
 		res = 1;
 	}
@@ -494,7 +496,7 @@ int MQTT_RemoveCallback(int ID) {
 	return 0;
 }
 
-const char *skipExpected(const char *p, const char *tok) {
+const char* skipExpected(const char* p, const char* tok) {
 	while (1) {
 		if (*p == 0)
 			return 0;
@@ -518,9 +520,9 @@ const char *skipExpected(const char *p, const char *tok) {
  *  @param topic	The topic to parse
  *  @return 		The topic without the client, or NULL if <client>/ wasn't present
  */
-const char* MQTT_RemoveClientFromTopic(const char* topic, const char *prefix) {
-	const char *p2;
-	const char *p = topic;
+const char* MQTT_RemoveClientFromTopic(const char* topic, const char* prefix) {
+	const char* p2;
+	const char* p = topic;
 	if (prefix) {
 		p = skipExpected(p, prefix);
 		if (p == 0) {
@@ -534,7 +536,7 @@ const char* MQTT_RemoveClientFromTopic(const char* topic, const char *prefix) {
 	}
 	return p2;
 }
-bool stribegins(const char *str, const char *needle) {
+bool stribegins(const char* str, const char* needle) {
 	int l = strlen(needle);
 	return !wal_strnicmp(str, needle, l);
 }
@@ -552,7 +554,7 @@ int channelGet(obk_mqtt_request_t* request) {
 
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "channelGet topic %i with arg %s", request->topic, request->received);
 
-	p = MQTT_RemoveClientFromTopic(request->topic,0);
+	p = MQTT_RemoveClientFromTopic(request->topic, 0);
 
 	if (p == NULL) {
 		return 0;
@@ -603,11 +605,11 @@ int channelSet(obk_mqtt_request_t* request) {
 	int channel = 0;
 	int iValue = 0;
 	const char* p;
-	const char *argument;
+	const char* argument;
 
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "channelSet topic %i with arg %s", request->topic, request->received);
 
-	p = MQTT_RemoveClientFromTopic(request->topic,0);
+	p = MQTT_RemoveClientFromTopic(request->topic, 0);
 
 	if (p == NULL) {
 		return 0;
@@ -664,16 +666,16 @@ int channelSet(obk_mqtt_request_t* request) {
 //
 
 
-void MQTT_PublishPrinterContentsToStat(obk_mqtt_publishReplyPrinter_t *printer, const char *statName) {
-	const char *toUse;
+void MQTT_PublishPrinterContentsToStat(obk_mqtt_publishReplyPrinter_t* printer, const char* statName) {
+	const char* toUse;
 	if (printer->allocated)
 		toUse = printer->allocated;
 	else
 		toUse = printer->stackBuffer;
 	MQTT_PublishStat(statName, toUse);
 }
-void MQTT_PublishPrinterContentsToTele(obk_mqtt_publishReplyPrinter_t *printer, const char *statName) {
-	const char *toUse;
+void MQTT_PublishPrinterContentsToTele(obk_mqtt_publishReplyPrinter_t* printer, const char* statName) {
+	const char* toUse;
 	if (printer->allocated)
 		toUse = printer->allocated;
 	else
@@ -710,7 +712,7 @@ int mqtt_printf255(obk_mqtt_publishReplyPrinter_t* request, const char* fmt, ...
 	request->curLen += myLen;
 	return 0;
 }
-void MQTT_ProcessCommandReplyJSON(const char *cmd, const char *args, int flags) {
+void MQTT_ProcessCommandReplyJSON(const char* cmd, const char* args, int flags) {
 	obk_mqtt_publishReplyPrinter_t replyBuilder;
 	memset(&replyBuilder, 0, sizeof(obk_mqtt_publishReplyPrinter_t));
 	JSON_ProcessCommandReply(cmd, args, &replyBuilder, (jsonCb_t)mqtt_printf255, flags);
@@ -719,8 +721,8 @@ void MQTT_ProcessCommandReplyJSON(const char *cmd, const char *args, int flags) 
 	}
 }
 int tasCmnd(obk_mqtt_request_t* request) {
-	const char *p, *args;
-    //const char *p2;
+	const char* p, * args;
+	//const char *p2;
 
 	p = MQTT_RemoveClientFromTopic(request->topic, "cmnd");
 	if (p == 0) {
@@ -736,7 +738,7 @@ int tasCmnd(obk_mqtt_request_t* request) {
 		return 1;
 
 #if 1
-	args = (const char *)request->received;
+	args = (const char*)request->received;
 	// I think that our function get_received always ensured that
 	// there is a NULL terminating character after payload of MQTT
 	// So we can feed it directly as command
@@ -745,7 +747,7 @@ int tasCmnd(obk_mqtt_request_t* request) {
 #else
 	int len = request->receivedLen;
 	char copy[64];
-	char *allocated;
+	char* allocated;
 	// assume a string input here, copy and terminate
 	// Try to avoid free/malloc
 	if (len > sizeof(copy) - 2) {
@@ -862,7 +864,7 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 		{
 			strcpy(pub_topic, sChannel);
 		}
-		else 
+		else
 		{
 			sprintf(pub_topic, "%s/%s%s", sTopic, sChannel, (appendGet == true ? "/get" : ""));
 		}
@@ -923,7 +925,7 @@ OBK_Publish_Result MQTT_PublishTele(const char* teleName, const char* teleValue)
 OBK_Publish_Result MQTT_PublishStat(const char* statName, const char* statValue)
 {
 	char topic[64];
-	snprintf(topic,sizeof(topic),"stat/%s", CFG_GetMQTTClientId());
+	snprintf(topic, sizeof(topic), "stat/%s", CFG_GetMQTTClientId());
 	return MQTT_PublishTopicToClient(mqtt_client, topic, statName, statValue, 0, false);
 }
 /// @brief Publish a MQTT message immediately.
@@ -984,16 +986,16 @@ static void mqtt_incoming_data_cb(void* arg, const u8_t* data, u16_t len, u8_t f
 
 
 // run from userland (quicktick or wakeable thread)
-int MQTT_process_received(){
-	char *topic;
+int MQTT_process_received() {
+	char* topic;
 	int topiclen;
-	unsigned char *data;
+	unsigned char* data;
 	int datalen;
 	int found = 0;
 	int count = 0;
-	do{
+	do {
 		found = get_received(&topic, &topiclen, &data, &datalen);
-		if (found){
+		if (found) {
 			count++;
 			strncpy(g_mqtt_request_cb.topic, topic, sizeof(g_mqtt_request_cb.topic));
 			g_mqtt_request_cb.received = data;
@@ -1160,14 +1162,16 @@ static int MQTT_do_connect(mqtt_client_t* client)
 	// empty field for us means "no password", etc,
 	// but LWIP (without mods) expects a NULL pointer in that case...
 	mqtt_client_info.client_id = mqtt_clientID;
-	if(mqtt_pass[0] != 0) {
+	if (mqtt_pass[0] != 0) {
 		mqtt_client_info.client_pass = mqtt_pass;
-	} else {
+	}
+	else {
 		mqtt_client_info.client_pass = 0;
 	}
-	if(mqtt_userName[0] != 0) {
+	if (mqtt_userName[0] != 0) {
 		mqtt_client_info.client_user = mqtt_userName;
-	} else {
+	}
+	else {
 		mqtt_client_info.client_user = 0;
 	}
 
@@ -1198,6 +1202,10 @@ static int MQTT_do_connect(mqtt_client_t* client)
 #ifdef MQTT_USE_TLS
 		if (mqtt_use_tls) {
 			LOCK_TCPIP_CORE();
+			if (mqtt_client_info.tls_config) {
+				altcp_tls_free_entropy();
+				mqtt_client_info.tls_config = NULL;
+			}
 			mqtt_client_info.tls_config = altcp_tls_create_config_client(NULL, 0);
 			UNLOCK_TCPIP_CORE();
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "tls_config created");
@@ -1209,7 +1217,6 @@ static int MQTT_do_connect(mqtt_client_t* client)
 			}
 		}
 #endif
-
 
 		// host name/ip
 		//ipaddr_aton(mqtt_host,&mqtt_ip);
@@ -1334,7 +1341,7 @@ commandResult_t MQTT_PublishChannel(const void* context, const char* cmd, const 
 	}
 	channelIndex = Tokenizer_GetArgInteger(0);
 
-	MQTT_ChannelPublish(channelIndex,0);
+	MQTT_ChannelPublish(channelIndex, 0);
 
 	return CMD_RES_OK;
 }
@@ -1687,8 +1694,8 @@ void MQTT_InitCallbacks() {
 		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 7, tasCmnd);
 	}
 }
- // initialise things MQTT
- // called from user_main
+// initialise things MQTT
+// called from user_main
 void MQTT_init()
 {
 	// WINDOWS must support reinit
@@ -1863,7 +1870,7 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 }
 
 // from 5ms quicktick
-int MQTT_RunQuickTick(){
+int MQTT_RunQuickTick() {
 #ifndef PLATFORM_BEKEN
 	// on Beken, we use a one-shot timer for this.
 	MQTT_process_received();
@@ -1930,7 +1937,7 @@ int MQTT_RunEverySecondUpdate()
 	}
 
 	int res = 0;
-	if (mqtt_client){
+	if (mqtt_client) {
 		LOCK_TCPIP_CORE();
 		res = mqtt_client_is_connected(mqtt_client);
 		UNLOCK_TCPIP_CORE();
@@ -1995,7 +2002,7 @@ int MQTT_RunEverySecondUpdate()
 	}
 	else {
 		// things to do in our threads on connection accepted.
-		if (g_just_connected){
+		if (g_just_connected) {
 			g_just_connected = 0;
 			// publish all values on state
 			if (CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEONCONNECT)) {
@@ -2193,7 +2200,7 @@ void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const 
 /// @param command 
 void MQTT_InvokeCommandAtEnd(PostPublishCommands command) {
 	MqttPublishItem_t* tail = get_queue_tail(g_MqttPublishQueueHead);
-	if (tail == NULL){
+	if (tail == NULL) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "InvokeCommandAtEnd invoked but queue is empty");
 	}
 	else {
@@ -2258,7 +2265,7 @@ OBK_Publish_Result PublishQueuedItems() {
 /// @return 
 bool MQTT_IsReady() {
 	int res = 0;
-	if (mqtt_client){
+	if (mqtt_client) {
 		LOCK_TCPIP_CORE();
 		res = mqtt_client_is_connected(mqtt_client);
 		UNLOCK_TCPIP_CORE();
@@ -2266,3 +2273,16 @@ bool MQTT_IsReady() {
 	return mqtt_client && res;
 }
 
+#ifdef MQTT_USE_TLS
+#include "fake_clock_pub.h"
+int mbedtls_hardware_poll(void* data, unsigned char* output, size_t len, size_t* olen) {
+	((void)data);
+	*olen = len;
+	addLogAdv(LOG_WARN, LOG_FEATURE_MQTT, "->wolfssl_custom_random len(%u)", len);
+	srand(fclk_get_second());
+	while (len--) {
+		*output++ = rand() % 255;
+	}
+	addLogAdv(LOG_WARN, LOG_FEATURE_MQTT, " <-wolfssl_custom_random ret(%u)", 0);
+}
+#endif
