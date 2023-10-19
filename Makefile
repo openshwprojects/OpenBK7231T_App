@@ -31,7 +31,7 @@ submodules:
 ifdef GITHUB_ACTIONS
 	@echo Submodules already checked out during setup
 else
-	git submodule update --init --recursive --remote
+#	git submodule update --init --recursive --remote
 endif
 
 update-submodules: submodules

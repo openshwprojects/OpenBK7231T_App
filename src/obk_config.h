@@ -15,8 +15,6 @@
 //ENABLE_DRIVER_TUYAMCU - Enable support for TuyaMCU and tmSensor
 //ENABLE_DRIVER_IR - Enable suporte for IR 
 
-#define MQTT_USE_TLS          
-
 #if PLATFORM_XR809
 
 #define OBK_DISABLE_ALL_DRIVERS       1
@@ -68,6 +66,7 @@
 #elif PLATFORM_BEKEN
 
 // set to 0 to disable
+#define MQTT_USE_TLS            1          
 #define ENABLE_LITTLEFS			1
 #define ENABLE_NTP    1
 #define ENABLE_DRIVER_LED       1
