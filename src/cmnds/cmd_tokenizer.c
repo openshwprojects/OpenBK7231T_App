@@ -129,30 +129,48 @@ const char *Tokenizer_GetArgExpanding(int i) {
 }
 const char *Tokenizer_GetArg(int i) {
 	const char *s;
-	char tokLine[sizeof(g_argsExpanded[i])];
-	char Templine[sizeof(g_argsExpanded[i])];
-	char convert[10];
 
-	if(i >= g_numArgs)
+	if (i >= g_numArgs)
 		return 0;
 
 	s = g_args[i];
 
-	if(g_bAllowExpand && s[0] == '$') {
-#if 1
+#if 0
+	if (g_bAllowExpand && s[0] == '$' && s[1] == 'C' && s[2] == 'H') {
 		int channelIndex;
 		int value;
 
-		channelIndex = atoi(s+3);
+		channelIndex = atoi(s + 3);
 		value = CHANNEL_Get(channelIndex);
-		
-		sprintf(g_argsExpanded[i],"%i",value);
+
+		sprintf(g_argsExpanded[i], "%i", value);
 
 		return g_argsExpanded[i];
-#else
-		return Tokenizer_GetArgExpanding(i);
-#endif
 	}
+#else
+	if (g_bAllowExpand && s[0] == '$') {
+		// quick hack for str expansion here, may do it in a better way later
+		if (!strcmp(s + 1, "IP")) {
+			strcpy_safe(g_argsExpanded[i], HAL_GetMyIPString(), sizeof(g_argsExpanded[i]));
+	}
+		else if (!strcmp(s + 1, "ShortName")) {
+			strcpy_safe(g_argsExpanded[i], CFG_GetShortDeviceName(), sizeof(g_argsExpanded[i]));
+		}
+		else if (!strcmp(s + 1, "Name")) {
+			strcpy_safe(g_argsExpanded[i], CFG_GetDeviceName(), sizeof(g_argsExpanded[i]));
+		}
+		else {
+			float f;
+			int iValue;
+			CMD_ExpandConstant(s, 0, &f);
+			iValue = f;
+			sprintf(g_argsExpanded[i], "%i", iValue);
+		}
+		return g_argsExpanded[i];
+}
+
+#endif
+
 	return g_args[i];
 }
 const char *Tokenizer_GetArgFrom(int i) {
