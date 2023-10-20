@@ -14,6 +14,26 @@
 
 #ifdef MQTT_USE_TLS
 #include "lwip/altcp_tls.h"
+#include "lwip/apps/mqtt_priv.h"
+#include "apps/altcp_tls/altcp_tls_mbedtls_structs.h"
+#include "mbedtls/ssl.h"
+struct altcp_tls_config {
+	mbedtls_ssl_config conf;
+	mbedtls_x509_crt* cert;
+	mbedtls_pk_context* pkey;
+	u8_t cert_count;
+	u8_t cert_max;
+	u8_t pkey_count;
+	u8_t pkey_max;
+	mbedtls_x509_crt* ca;
+#if defined(MBEDTLS_SSL_CACHE_C) && ALTCP_MBEDTLS_USE_SESSION_CACHE
+	// Inter-connection cache for fast connection startup
+	struct mbedtls_ssl_cache_context cache;
+#endif
+#if defined(MBEDTLS_SSL_SESSION_TICKETS) && ALTCP_MBEDTLS_USE_SESSION_TICKETS
+	mbedtls_ssl_ticket_context ticket_ctx;
+#endif
+};
 #endif
 
 #ifndef LWIP_MQTT_EXAMPLE_IPADDR_INIT
@@ -1071,6 +1091,16 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 	{
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_connection_cb: Successfully connected\n");
 
+#ifdef LWIP_ALTCP_TLS_MBEDTLS
+		if (client && client->conn && client->conn->state) {
+			altcp_mbedtls_state_t* state = client->conn->state;
+			mbedtls_ssl_context* ssl = &state->ssl_context;
+			LWIP_PLATFORM_DIAG(("MQTT TSL VERSION: %s\n", mbedtls_ssl_get_version(ssl)));
+			LWIP_PLATFORM_DIAG(("MQTT TSL CIPHER : %s\n", mbedtls_ssl_get_ciphersuite(ssl)));
+
+		}
+#endif
+
 		//LOCK_TCPIP_CORE();
 		mqtt_set_inpub_callback(mqtt_client,
 			mqtt_incoming_publish_cb,
@@ -1134,7 +1164,7 @@ static int MQTT_do_connect(mqtt_client_t* client)
 	int res;
 	struct hostent* hostEntry;
 	char will_topic[CGF_MQTT_CLIENT_ID_SIZE + 16];
-	bool mqtt_use_tls;
+	bool mqtt_use_tls, mqtt_verify_tls_cert;
 
 	mqtt_host = CFG_GetMQTTHost();
 
@@ -1149,6 +1179,7 @@ static int MQTT_do_connect(mqtt_client_t* client)
 	mqtt_clientID = CFG_GetMQTTClientId();
 	mqtt_port = CFG_GetMQTTPort();
 	mqtt_use_tls = CFG_GetMQTTUseTls();
+	mqtt_verify_tls_cert = CFG_GetMQTTVerifyTlsCert();
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_userName %s\r\nmqtt_pass %s\r\nmqtt_clientID %s\r\nmqtt_host %s:%d\r\n",
 		mqtt_userName,
@@ -1200,20 +1231,45 @@ static int MQTT_do_connect(mqtt_client_t* client)
 
 		/* Includes for MQTT over TLS */
 #ifdef MQTT_USE_TLS
-		if (mqtt_use_tls) {
-			LOCK_TCPIP_CORE();
-			if (mqtt_client_info.tls_config) {
-				altcp_tls_free_entropy();
-				mqtt_client_info.tls_config = NULL;
-			}
-			mqtt_client_info.tls_config = altcp_tls_create_config_client(NULL, 0);
-			UNLOCK_TCPIP_CORE();
-			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "tls_config created");
+		/* Free old configuration */
+		if (mqtt_client_info.tls_config) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Free old configuration ");
+			altcp_tls_free_entropy();
+			mqtt_client_info.tls_config = NULL;
 		}
-		else {
+		if (mqtt_use_tls) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Secure TLS connection enabled");
+			size_t ca_len = 0;
+			u8_t* ca = NULL;
+			if (mqtt_verify_tls_cert) {
+				addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Load certificate %s", CFG_GetMQTTCertFile());
+				ca = LFS_ReadFile(CFG_GetMQTTCertFile());
+				if (ca) {
+					ca_len = strlen((char*)ca);
+				}
+				addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "ca_len=%d", ca_len);
+				addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "%s=%s", CFG_GetMQTTCertFile(), ca);
+			}
+			else {
+				addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Verify certificate disabled");
+			}
+			LOCK_TCPIP_CORE();
+			mqtt_client_info.tls_config = altcp_tls_create_config_client(ca, ca_len);
+			UNLOCK_TCPIP_CORE();
+			if (ca) {
+				mem_free(ca);
+				ca = NULL;
+			}
 			if (mqtt_client_info.tls_config) {
-				altcp_tls_free_entropy();
-				mqtt_client_info.tls_config = NULL;
+				if (mqtt_verify_tls_cert) {
+					mbedtls_ssl_conf_authmode(&mqtt_client_info.tls_config->conf, MBEDTLS_SSL_VERIFY_REQUIRED);
+				}
+				else {
+					mbedtls_ssl_conf_authmode(&mqtt_client_info.tls_config->conf, MBEDTLS_SSL_VERIFY_OPTIONAL);
+				}
+			}
+			else {
+				addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Secure TLS config fail. Try connect anyway.");
 			}
 		}
 #endif
@@ -2278,11 +2334,10 @@ bool MQTT_IsReady() {
 int mbedtls_hardware_poll(void* data, unsigned char* output, size_t len, size_t* olen) {
 	((void)data);
 	*olen = len;
-	addLogAdv(LOG_WARN, LOG_FEATURE_MQTT, "->wolfssl_custom_random len(%u)", len);
 	srand(fclk_get_second());
 	while (len--) {
 		*output++ = rand() % 255;
 	}
-	addLogAdv(LOG_WARN, LOG_FEATURE_MQTT, " <-wolfssl_custom_random ret(%u)", 0);
+	return 0;
 }
 #endif

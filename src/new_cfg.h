@@ -32,12 +32,16 @@ const char *CFG_GetMQTTGroupTopic();
 const char *CFG_GetMQTTUserName();
 const char *CFG_GetMQTTPass();
 bool CFG_GetMQTTUseTls();
+bool CFG_GetMQTTVerifyTlsCert();
+const char* CFG_GetMQTTCertFile();
 void CFG_SetMQTTHost(const char *s);
 void CFG_SetMQTTClientId(const char *s);
 void CFG_SetMQTTUserName(const char *s);
 void CFG_SetMQTTGroupTopic(const char *s);
 void CFG_SetMQTTPass(const char *s);
 void CFG_SetMQTTUseTls(bool value);
+void CFG_SetMQTTVerifyTlsCert(bool value);
+void CFG_SetMQTTCertFile(const char* s);
 const char *CFG_GetWebappRoot();
 void CFG_SetLEDRemap(int r, int g, int b, int c, int w);
 void CFG_SetDefaultLEDRemap(int r, int g, int b, int c, int w);
@@ -92,8 +96,8 @@ void CFG_SetButtonShortPressTime(int value);
 void CFG_SetButtonRepeatPressTime(int value);
 
 #if ENABLE_LITTLEFS
-    void CFG_SetLFS_Size(uint32_t value);
-    uint32_t CFG_GetLFS_Size();
+void CFG_SetLFS_Size(uint32_t value);
+uint32_t CFG_GetLFS_Size();
 #endif 
 
 #endif
