@@ -289,6 +289,13 @@ int CFG_GetMQTTPort() {
 bool CFG_GetMQTTUseTls() {
 	return g_cfg.mqtt_use_tls;
 }
+bool CFG_GetMQTTVerifyTlsCert() {
+	return g_cfg.mqtt_verify_tls_cert;
+}
+const char* CFG_GetMQTTCertFile() {
+	return g_cfg.mqtt_cert_file;
+}
+
 void CFG_SetShortDeviceName(const char *s) {
 
 	// this will return non-zero if there were any changes
@@ -316,6 +323,21 @@ void CFG_SetMQTTUseTls(bool value) {
 	// is there a change?
 	if(g_cfg.mqtt_use_tls != value) {
 		g_cfg.mqtt_use_tls = value;
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+void CFG_SetMQTTVerifyTlsCert(bool value) {
+	// is there a change?
+	if (g_cfg.mqtt_verify_tls_cert != value) {
+		g_cfg.mqtt_verify_tls_cert = value;
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+void CFG_SetMQTTCertFile(const char* s) {
+	// this will return non-zero if there were any changes
+	if (strcpy_safe_checkForChanges(g_cfg.mqtt_cert_file, s, sizeof(g_cfg.mqtt_cert_file))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
 	}
