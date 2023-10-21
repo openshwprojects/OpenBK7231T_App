@@ -17,6 +17,24 @@ void Test_Commands_Generic() {
 
 	CMD_ExecuteCommand("SSID1 TPLink123", 0);
 	SELFTEST_ASSERT_STRING(CFG_GetWiFiSSID(), "TPLink123");
+
+
+	// chooses a command from a list by 0-based index
+	CMD_ExecuteCommand("SetChannel 10 2",0);
+	CMD_ExecuteCommand("Choice $CH10 \"SetChannel 12 222\" \"SetChannel 12 333\" \"SetChannel 12 444\" \"SetChannel 12 555\" \"SetChannel 12 666\"", 0);
+	SELFTEST_ASSERT_CHANNEL(12, 444);
+	CMD_ExecuteCommand("SetChannel 10 1", 0);
+	CMD_ExecuteCommand("Choice $CH10 \"SetChannel 12 222\" \"SetChannel 12 333\" \"SetChannel 12 444\" \"SetChannel 12 555\" \"SetChannel 12 666\"", 0);
+	SELFTEST_ASSERT_CHANNEL(12, 333);
+	CMD_ExecuteCommand("SetChannel 10 0", 0);
+	CMD_ExecuteCommand("Choice $CH10 \"SetChannel 12 222\" \"SetChannel 12 333\" \"SetChannel 12 444\" \"SetChannel 12 555\" \"SetChannel 12 666\"", 0);
+	SELFTEST_ASSERT_CHANNEL(12, 222);
+	CMD_ExecuteCommand("SetChannel 10 3", 0);
+	CMD_ExecuteCommand("Choice $CH10 \"SetChannel 12 222\" \"SetChannel 12 333\" \"SetChannel 12 444\" \"SetChannel 12 555\" \"SetChannel 12 666\"", 0);
+	SELFTEST_ASSERT_CHANNEL(12, 555);
+	CMD_ExecuteCommand("SetChannel 10 2", 0);
+	CMD_ExecuteCommand("Choice $CH10+1 \"SetChannel 12 222\" \"SetChannel 12 333\" \"SetChannel 12 444\" \"SetChannel 12 555\" \"SetChannel 12 666\"", 0);
+	SELFTEST_ASSERT_CHANNEL(12, 555);
 }
 
 
