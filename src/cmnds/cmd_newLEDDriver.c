@@ -1141,10 +1141,10 @@ void LED_GetFinalChannels100(byte *rgbcw) {
 	rgbcw[3] = finalColors[3] * (100.0f / 255.0f);
 	rgbcw[4] = finalColors[4] * (100.0f / 255.0f);
 }
-void LED_GetFinalHSV(int *hsv) {
+void LED_GetTasmotaHSV(int *hsv) {
 	hsv[0] = g_hsv_h;
-	hsv[1] = g_hsv_s;
-	hsv[2] = g_hsv_v;
+	hsv[1] = g_hsv_s * 100;
+	hsv[2] = g_hsv_v * 100;
 }
 void LED_GetFinalRGBCW(byte *rgbcw) {
 	rgbcw[0] = finalColors[0];

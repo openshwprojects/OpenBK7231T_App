@@ -112,7 +112,7 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 			byte channels[5];
 
 			LED_GetFinalRGBCW(rgbcw);
-			LED_GetFinalHSV(hsv);
+			LED_GetTasmotaHSV(hsv);
 			LED_GetFinalChannels100(channels);
 
 			// it looks like they include C and W in color
@@ -862,7 +862,7 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "RESULT");
 		}
 	}
-	else if (!wal_strnicmp(cmd, "Color", 5)) {
+	else if (!wal_strnicmp(cmd, "Color", 5) || !wal_strnicmp(cmd, "HsbColor", 8)) {
 		printer(request, "{");
 		//if (*arg == 0) {
 		//	http_tasmota_json_Colo(request, printer);

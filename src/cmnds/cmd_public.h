@@ -209,7 +209,7 @@ void LED_SetFinalCW(byte c, byte w);
 void LED_SetFinalRGB(byte r, byte g, byte b);
 void LED_SetFinalRGBCW(byte* rgbcw);
 void LED_GetFinalChannels100(byte* rgbcw);
-void LED_GetFinalHSV(int* hsv);
+void LED_GetTasmotaHSV(int* hsv);
 void LED_GetFinalRGBCW(byte* rgbcw);
 // color indices are as in Tasmota
 void LED_SetColorByIndex(int index);
