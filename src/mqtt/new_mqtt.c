@@ -17,6 +17,7 @@
 #include "lwip/apps/mqtt_priv.h"
 #include "apps/altcp_tls/altcp_tls_mbedtls_structs.h"
 #include "mbedtls/ssl.h"
+#include "mbedtls/debug.h"
 struct altcp_tls_config {
 	mbedtls_ssl_config conf;
 	mbedtls_x509_crt* cert;
@@ -1091,7 +1092,7 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 	{
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_connection_cb: Successfully connected\n");
 
-#ifdef LWIP_ALTCP_TLS_MBEDTLS
+#if LWIP_ALTCP_TLS_MBEDTLS
 		if (client && client->conn && client->conn->state) {
 			altcp_mbedtls_state_t* state = client->conn->state;
 			mbedtls_ssl_context* ssl = &state->ssl_context;
@@ -1156,6 +1157,26 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_connection_cb: Disconnected, reason: %d(%s)\n", status, get_callback_error(status));
 	}
 }
+
+static void my_debug(void* ctx, int level, const char* file, int line, const char* str);
+static void my_debug(void* ctx, int level, const char* file, int line, const char* str)
+{
+	const char* p, * basename;
+	(void)ctx;
+
+	if (level == 2)
+		return;
+
+	/* Extract basename from file */
+	for (p = basename = file; *p != '\0'; p++) {
+		if (*p == '/' || *p == '\\') {
+			basename = p + 1;
+		}
+	}
+
+	addLogAdv(LOG_WARN, LOG_FEATURE_MQTT, "%s:%04d: |%d| %s", basename, line, level, str);
+}
+
 
 static int MQTT_do_connect(mqtt_client_t* client)
 {
@@ -1230,10 +1251,10 @@ static int MQTT_do_connect(mqtt_client_t* client)
 		}
 
 		/* Includes for MQTT over TLS */
-#ifdef MQTT_USE_TLS
+#if MQTT_USE_TLS
 		/* Free old configuration */
 		if (mqtt_client_info.tls_config) {
-			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Free old configuration ");
+			altcp_tls_free_config(mqtt_client_info.tls_config);
 			altcp_tls_free_entropy();
 			mqtt_client_info.tls_config = NULL;
 		}
@@ -1245,22 +1266,29 @@ static int MQTT_do_connect(mqtt_client_t* client)
 				addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Load certificate %s", CFG_GetMQTTCertFile());
 				ca = LFS_ReadFile(CFG_GetMQTTCertFile());
 				if (ca) {
-					ca_len = strlen((char*)ca);
+					ca_len = strlen((char*)ca)+1;
 				}
-				addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "ca_len=%d", ca_len);
-				addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "%s=%s", CFG_GetMQTTCertFile(), ca);
 			}
 			else {
 				addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Verify certificate disabled");
 			}
-			LOCK_TCPIP_CORE();
 			mqtt_client_info.tls_config = altcp_tls_create_config_client(ca, ca_len);
-			UNLOCK_TCPIP_CORE();
 			if (ca) {
-				mem_free(ca);
+				free(ca);
 				ca = NULL;
 			}
-			if (mqtt_client_info.tls_config) {
+			if (mqtt_client_info.tls_config) {				
+				mbedtls_ssl_conf_dbg(&mqtt_client_info.tls_config->conf, my_debug, NULL);
+				mbedtls_debug_set_threshold(1);
+
+				if (mqtt_client_info.tls_config->ca){
+					char* buf = malloc(1025 + 1);
+					memset(buf, 0 , 1025);
+					mbedtls_x509_crt_info(buf, 1024, "", mqtt_client_info.tls_config->ca);
+					addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "=============== CERTIFICATE INFO ===============\n%s", buf);
+					free(buf);
+				}
+
 				if (mqtt_verify_tls_cert) {
 					mbedtls_ssl_conf_authmode(&mqtt_client_info.tls_config->conf, MBEDTLS_SSL_VERIFY_REQUIRED);
 				}
@@ -1309,6 +1337,7 @@ static int MQTT_do_connect(mqtt_client_t* client)
 	}
 	return 0;
 }
+
 
 OBK_Publish_Result MQTT_PublishMain_StringInt(const char* sChannel, int iv, int flags)
 {
@@ -2335,7 +2364,7 @@ int mbedtls_hardware_poll(void* data, unsigned char* output, size_t len, size_t*
 	((void)data);
 	*olen = len;
 	srand(fclk_get_second());
-	while (len--) {
+	for (int i=0; i<len; i++) {
 		*output++ = rand() % 255;
 	}
 	return 0;

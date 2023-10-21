@@ -38,7 +38,6 @@
 #define LWIP_ALTCP                 1
 #define LWIP_ALTCP_TLS             1
 #define LWIP_ALTCP_TLS_MBEDTLS     1
-#define MQTT_DEBUG                 LWIP_DBG_ON
 #endif
 
  /**

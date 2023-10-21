@@ -18,6 +18,7 @@
 #include <time.h>
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_local.h"
+#include "start_type_pub.h"
 
 static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"></form>";
 
@@ -1059,7 +1060,7 @@ int http_fn_cfg_mqtt(http_request_t* request) {
 int http_fn_cfg_ip(http_request_t* request) {
 	char tmp[64];
 	int g_changes = 0;
-	byte ip[4];
+	//byte ip[4];
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "IP");
 	poststr_h2(request, "Here you can set static IP or DHCP");
