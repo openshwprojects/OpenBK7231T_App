@@ -375,6 +375,11 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Current second from NTP",
 	//cnstdetail:"requires":""}
 	{ "$second", &getSecond },
+	////cnstdetail:{"name":"$month",
+	////cnstdetail:"title":"$month",
+	////cnstdetail:"descr":"Current month from NTP",
+	////cnstdetail:"requires":""}
+	//{ "$month", &getMonth },
 	//cnstdetail:{"name":"$NTPOn",
 	//cnstdetail:"title":"$NTPOn",
 	//cnstdetail:"descr":"Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0.",
