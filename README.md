@@ -70,7 +70,7 @@ See [our GUI easy flash tool](https://github.com/openshwprojects/BK7231GUIFlashT
  
 # [Docs - MQTT topics, Console Commands, Flags, Constants, Pin Roles, Channel Types, FAQ, autoexec.bat examples](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs)
    
-# Futher reading
+# Further reading
   
 For technical insights and generic SDK information related to Beken, WinnerMicro, Bouffallo Lab and XRadio modules, please refer:
   
