@@ -610,7 +610,7 @@ setChannelType 17 Toggle
 ```
 
 
-Custom countdown/timer system with HTTP GUI for TuyaMCU relay [see tutorial](https://www.elektroda.com/rtvforum/topic4009196.html)
+[Custom countdown/timer system with HTTP GUI for TuyaMCU relay](https://www.elektroda.com/rtvforum/topic4009196.html)
 <br>
 ```// See tutorial: https://www.elektroda.com/rtvforum/topic4009196.html
 

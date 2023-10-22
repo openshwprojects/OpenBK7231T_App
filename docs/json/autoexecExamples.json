@@ -84,7 +84,7 @@
 "file": "autoexecs/shiftRegister.bat"
 },
 {
-"title": "Custom countdown/timer system with HTTP GUI for TuyaMCU relay [see tutorial](https://www.elektroda.com/rtvforum/topic4009196.html)",
+"title": "[Custom countdown/timer system with HTTP GUI for TuyaMCU relay](https://www.elektroda.com/rtvforum/topic4009196.html)",
 "file": "autoexecs/custom_timer_for_relay.bat"
 }
 ]
