@@ -35,9 +35,10 @@
 #include "obk_config.h"
 
 #if MQTT_USE_TLS
-#define LWIP_ALTCP                 1
-#define LWIP_ALTCP_TLS             1
-#define LWIP_ALTCP_TLS_MBEDTLS     1
+#define LWIP_ALTCP                 	1
+#define LWIP_ALTCP_TLS             	1
+#define LWIP_ALTCP_TLS_MBEDTLS     	1
+#define ALTCP_MBEDTLS_DEBUG			LWIP_DBG_ON
 #endif
 
  /**
@@ -61,7 +62,6 @@
 #define LWIP_DEBUG                      LWIP_DBG_ON
 #define LWIP_DEBUG_TRACE                0
 #define SOCKETS_DEBUG                   LWIP_DBG_OFF // | LWIP_DBG_MASK_LEVEL
-
 #define IP_DEBUG                        LWIP_DBG_OFF
 #define ETHARP_DEBUG                    LWIP_DBG_OFF
 #define NETIF_DEBUG                     LWIP_DBG_OFF
