@@ -6,13 +6,11 @@
 // Plataform specific
 #undef  MBEDTLS_FS_IO
 #undef  MBEDTLS_NET_C
-
 #define MBEDTLS_TIMING_C
 #define MBEDTLS_HAVE_TIME_DATE
 #define MBEDTLS_PLATFORM_GMTIME_R_ALT
-
-#define MBEDTLS_ENTROPY_HARDWARE_ALT
 #define MBEDTLS_NO_PLATFORM_ENTROPY
+#define MBEDTLS_ENTROPY_HARDWARE_ALT
 #define MBEDTLS_MPI_WINDOW_SIZE            1
 #define MBEDTLS_MPI_MAX_SIZE             512
 #define MBEDTLS_ECP_WINDOW_SIZE            2
@@ -29,6 +27,7 @@
 #define MBEDTLS_SSL_PROTO_TLS1_2  // Only TLS1.2 enabled
 #undef  MBEDTLS_SSL_PROTO_TLS1_3_EXPERIMENTAL
 #undef  MBEDTLS_SSL_PROTO_DTLS
+#undef  MBEDTLS_SSL_DTLS_ANTI_REPLAY
 
 // Enabled Ciphers
 #define MBEDTLS_RSA_C
@@ -102,7 +101,7 @@
 #undef  MBEDTLS_KEY_EXCHANGE_ECJPAKE_ENABLED
 
 // Define only on development //
-#if 1
+#if 0
 #define MBEDTLS_DEBUG_C
 #define MBEDTLS_SELF_TEST
 #define MBEDTLS_SSL_ALL_ALERT_MESSAGES
@@ -126,21 +125,10 @@
 #undef  MBEDTLS_MEMORY_BACKTRACE
 #endif
 
-/*
-Avaliar efeito
-
-#undef MBEDTLS_GENPRIME
-
-#undef  MBEDTLS_PKCS1_V15
+//Disabled functions
+#undef  MBEDTLS_SSL_KEEP_PEER_CERTIFICATE
 #undef  MBEDTLS_PKCS1_V21
-
+#undef  MBEDTLS_GENPRIME
 #undef  MBEDTLS_X509_RSASSA_PSS_SUPPORT
-
-#undef MBEDTLS_PEM_PARSE_C
-#undef MBEDTLS_PEM_WRITE_C
-
-APN
-
-*/
 
 #endif
