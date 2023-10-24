@@ -23,6 +23,7 @@
 		"opt.h": "c",
 		"altcp_tls_mbedtls_opts.h": "c",
 		"fake_clock_pub.h": "c",
-		"check_config.h": "c"
+		"check_config.h": "c",
+		"cmd_public.h": "c"
 	}
 }

@@ -1143,9 +1143,8 @@ int http_fn_cfg_mqtt_set(http_request_t* request) {
 
 	CFG_SetMQTTUseTls(http_getArg(request->url, "mqtt_use_tls", tmpA, sizeof(tmpA)));
 	CFG_SetMQTTVerifyTlsCert(http_getArg(request->url, "mqtt_verify_tls_cert", tmpA, sizeof(tmpA)));
-	if (http_getArg(request->url, "mqtt_cert_file", tmpA, sizeof(tmpA))) {
-		CFG_SetMQTTCertFile(tmpA);
-	}
+	http_getArg(request->url, "mqtt_cert_file", tmpA, sizeof(tmpA));
+	CFG_SetMQTTCertFile(tmpA);
 
 	if (http_getArg(request->url, "user", tmpA, sizeof(tmpA))) {
 		CFG_SetMQTTUserName(tmpA);
@@ -1177,6 +1176,13 @@ int http_fn_cfg_webapp(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Set Webapp");
 	add_label_text_field(request, "URL of the Webapp", "url", CFG_GetWebappRoot(), "<form action=\"/cfg_webapp_set\">");
+
+	hprintf255(request, "<input type=\"checkbox\" id=\"enable_web_server\" name=\"enable_web_server\" value=\"1\"");
+	if (CFG_GetEnableWebServer()) {
+		hprintf255(request, " checked>");
+	}
+	hprintf255(request, "<label for=\"enable_web_server\">Web Server Enabled</label><br>");
+
 	poststr(request, SUBMIT_AND_END_FORM);
 	poststr(request, htmlFooterReturnToCfgLink);
 	http_html_end(request);
@@ -1190,12 +1196,18 @@ int http_fn_cfg_webapp_set(http_request_t* request) {
 	http_html_start(request, "Saving Webapp");
 
 	if (http_getArg(request->url, "url", tmpA, sizeof(tmpA))) {
-		CFG_SetWebappRoot(tmpA);
+		CFG_SetWebappRoot(tmpA);		
 		CFG_Save_IfThereArePendingChanges();
 		hprintf255(request, "Webapp url set to %s", tmpA);
 	}
 	else {
 		poststr(request, "Webapp url not set because you didn't specify the argument.");
+	}
+
+	CFG_SetEnableWebServer(http_getArg(request->url, "enable_web_server", tmpA, sizeof(tmpA)));
+	if (CFG_GetEnableWebServer()){
+		poststr(request, "<br>");
+		poststr(request, "Webapp will be disabled on next boot!");
 	}
 
 	poststr(request, "<br>");

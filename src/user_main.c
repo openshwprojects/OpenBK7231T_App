@@ -42,6 +42,8 @@
 #ifdef PLATFORM_BEKEN
 #include <mcu_ps.h>
 #include <fake_clock_pub.h>
+#include "BkDriverWdg.h"
+
 void bg_register_irda_check_func(FUNCPTR func);
 #endif
 
@@ -1147,13 +1149,15 @@ void Main_Init_After_Delay()
 	}
 
 	ADDLOGF_INFO("Using SSID [%s]\r\n", wifi_ssid);
-	ADDLOGF_INFO("Using Pass [%s]\r\n", wifi_pass);
+	ADDLOGF_INFO("Using Pass [%s]\r\n", "********");
 
 	// NOT WORKING, I done it other way, see ethernetif.c
 	//net_dhcp_hostname_set(g_shortDeviceName);
 
-	HTTPServer_Start();
-	ADDLOGF_DEBUG("Started http tcp server\r\n");
+	if (CFG_GetEnableWebServer() || bSafeMode) {
+		HTTPServer_Start();
+		ADDLOGF_DEBUG("Started http tcp server\r\n");
+	} 
 
 	// only initialise certain things if we are not in AP mode
 	if (!bSafeMode)
