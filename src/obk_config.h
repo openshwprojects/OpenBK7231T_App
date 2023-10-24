@@ -68,17 +68,14 @@
 // set to 0 to disable
 #define MQTT_USE_TLS            1          
 #define ENABLE_LITTLEFS			1
-#define ENABLE_NTP    1
+#define ENABLE_NTP              1
 #define ENABLE_DRIVER_LED       1
 #define ENABLE_DRIVER_BL0937    1
 #define ENABLE_DRIVER_BL0942    1
 #define ENABLE_DRIVER_BL0942SPI 1
 #define ENABLE_DRIVER_CSE7766   1
-//TLS use 100k rom e 44k ram. If enabled IR e MCU disabled to fit 
-#ifndef MQTT_USE_TLS
 #define ENABLE_DRIVER_TUYAMCU   1
 #define ENABLE_DRIVER_IR        1 
-#endif
 //#define ENABLE_DRIVER_HT16K33   1
 //#define ENABLE_DRIVER_MAX72XX	  1
 #define ENABLE_I2C			    1
