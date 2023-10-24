@@ -1247,11 +1247,6 @@ static int MQTT_do_connect(mqtt_client_t* client)
 			size_t ca_len = 0;
 			u8_t* ca = NULL;
 			if (mqtt_verify_tls_cert) {
-				if (!NTP_IsTimeSynced()) {
-					addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Verify certificate enabled. Wait NTP Synced");
-					// silently allow retry next frame
-					return ERR_RTE;
-				}
 				if (strlen(CFG_GetMQTTCertFile()) > 0) {
 					addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Load certificate %s", CFG_GetMQTTCertFile());
 					ca = LFS_ReadFile(CFG_GetMQTTCertFile());
@@ -2378,8 +2373,24 @@ int mbedtls_hardclock_poll(void* data, unsigned char* output, size_t len, size_t
 #endif  //MBEDTLS_ENTROPY_HARDWARE_ALT
 
 #ifdef MBEDTLS_PLATFORM_GMTIME_R_ALT
+struct tm* cvt_date(char const* date, char const* time, struct tm* t);
+struct tm* cvt_date(char const* date, char const* time, struct tm* t)
+{
+	char s_month[5];
+	int year;
+	static const char month_names[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
+	sscanf(date, "%s %d %d", s_month, &t->tm_mday, &year);
+	sscanf(time, "%2d %*c %2d %*c %2d", &t->tm_hour, &t->tm_min, &t->tm_sec);
+	// Find where is s_month in month_names. Deduce month value.
+	t->tm_mon = (strstr(month_names, s_month) - month_names) / 3 + 1;
+	t->tm_year = year - 1900;
+	return t;
+}
 struct tm* mbedtls_platform_gmtime_r(const mbedtls_time_t* tt, struct tm* tm_buf) {
-	// Use NTP time
+	// If NTP time not synced return compile time
+	if (!NTP_IsTimeSynced()) {		
+		return cvt_date(__DATE__, __TIME__, tm_buf);
+	}
 	return gmtime_r((time_t*)&g_ntpTime, tm_buf);
 }
 #endif  //MBEDTLS_PLATFORM_GMTIME_R_ALT

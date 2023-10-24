@@ -609,7 +609,6 @@ static commandResult_t CMD_WebServer(const void* context, const char* cmd, const
 		return CMD_RES_OK;
 	} 
 	if (value == 1) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "ARG0 (%s), ARG1 (%s)", Tokenizer_GetArg(0), Tokenizer_GetArg(1));
 		if (strcmp(Tokenizer_GetArg(0) , "0") == 0) {
 			ADDLOG_INFO(LOG_FEATURE_CMD, "Stop WebServer");
 			CFG_SetEnableWebServer(false);
