@@ -1098,11 +1098,11 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_connection_cb: Successfully connected\n");
 
 #if LWIP_ALTCP_TLS_MBEDTLS
-		if (client && client->conn && client->conn->state) {
+		if (CFG_GetMQTTUseTls() && client && client->conn && client->conn->state) {
 			altcp_mbedtls_state_t* state = client->conn->state;
 			mbedtls_ssl_context* ssl = &state->ssl_context;
-			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT TSL VERSION: %s\n", mbedtls_ssl_get_version(ssl));
-			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT TSL CIPHER : %s\n", mbedtls_ssl_get_ciphersuite(ssl));
+			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT TLS VERSION: %s\n", mbedtls_ssl_get_version(ssl));
+			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT TLS CIPHER : %s\n", mbedtls_ssl_get_ciphersuite(ssl));
 		}
 #endif
 
