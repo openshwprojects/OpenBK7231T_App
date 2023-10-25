@@ -1,4 +1,5 @@
 // based on MCP9808_RT by RobTillaart
+// See also: https://www.elektroda.pl/rtvforum/topic3988466.html
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
@@ -229,6 +230,13 @@ commandResult_t MCP9808_AlertMin(const void* context, const char* cmd, const cha
 // startDriver MCP9808 26 24
 // startDriver MCP9808 26 24 1
 // startDriver MCP9808 12 13 1
+
+// Sample config for module from here: https://www.elektroda.pl/rtvforum/topic3988466.html
+/*
+startDriver MCP9808 7 8 1
+MCP9808_Adr 0x30
+MCP9808_Cycle 1
+*/
 void MCP9808_Init() {
 
 	uint8_t buff[4];
