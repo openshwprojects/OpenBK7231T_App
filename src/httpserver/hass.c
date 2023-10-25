@@ -86,7 +86,13 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 	case CURRENT_SENSOR:
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "current", index);
 		break;
+	case HASS_RSSI:
+		sprintf(uniq_id, "%s_rssi", longDeviceName);
+		break;	
 	default:
+		// TODO: USE type here as well?
+		// If type is not set, and we use "sensor" naming, we can easily make collision
+		//sprintf(uniq_id, "%s_%s_%d_%d", longDeviceName, "sensor", (int)type, index);
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "sensor", index);
 		break;
 	}
