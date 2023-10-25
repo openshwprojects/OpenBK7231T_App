@@ -160,6 +160,10 @@ void Test_LEDDriver_RGBCW() {
 	SELFTEST_ASSERT_CHANNEL(3, 0);
 	SELFTEST_ASSERT_CHANNEL(4, 0);
 	SELFTEST_ASSERT_CHANNEL(5, 0);
+
+
+	//CMD_ExecuteCommand("{\"color\":{\"b\":255,\"c\":0,\"g\":255,\"r\":255},\"state\":\"1\"}", "");
+
 }
 void Test_LEDDriver_RGB() {
 	// reset whole device

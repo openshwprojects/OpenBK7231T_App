@@ -88,7 +88,8 @@ void Test_HassDiscovery_Channel_Current_div100() {
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "~", mqttName);
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "dev_cla", "current");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "unit_of_meas", "A");
-	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "val_tpl", "{{ float(value)*0.01|round(3) }}");
+	//SELFTEST_ASSERT_JSON_VALUE_STRING(0, "val_tpl", "{{ float(value)*0.01|round(3) }}");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "val_tpl", "{{ '%0.3f'|format(float(value)*0.01) }}");
 	// in this example, i am using channel 4
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "stat_t", "~/4/get");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "stat_cla", "measurement");
@@ -120,7 +121,8 @@ void Test_HassDiscovery_Channel_Current_div1000() {
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "~", mqttName);
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "dev_cla", "current");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "unit_of_meas", "A");
-	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "val_tpl", "{{ float(value)*0.001|round(3) }}");
+	//SELFTEST_ASSERT_JSON_VALUE_STRING(0, "val_tpl", "{{ float(value)*0.001|round(3) }}");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "val_tpl", "{{ '%0.3f'|format(float(value)*0.001) }}");
 	// in this example, i am using channel 14
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "stat_t", "~/14/get");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "stat_cla", "measurement");
@@ -152,7 +154,9 @@ void Test_HassDiscovery_Channel_Voltage_div10() {
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "~", mqttName);
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "dev_cla", "voltage");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "unit_of_meas", "V");
-	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "val_tpl", "{{ float(value)*0.1|round(2) }}");
+	//SELFTEST_ASSERT_JSON_VALUE_STRING(0, "val_tpl", "{{ float(value)*0.1|round(2) }}");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "val_tpl", "{{ '%0.2f'|format(float(value)*0.1) }}");
+	
 	// in this example, i am using channel 23
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "stat_t", "~/23/get");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "stat_cla", "measurement");
@@ -213,7 +217,8 @@ void Test_HassDiscovery_Channel_Temperature_div10() {
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "dev_cla", "temperature");
 	//SELFTEST_ASSERT_JSON_VALUE_STRING(0, "unit_of_meas", "C");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "stat_t", "~/3/get");
-	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "val_tpl", "{{ float(value)*0.1|round(2) }}");
+	//SELFTEST_ASSERT_JSON_VALUE_STRING(0, "val_tpl", "{{ float(value)*0.1|round(2) }}");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "val_tpl", "{{ '%0.2f'|format(float(value)*0.1) }}");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "stat_cla", "measurement");
 }
 void Test_HassDiscovery_Channel_Toggle() {

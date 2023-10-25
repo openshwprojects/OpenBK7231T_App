@@ -373,6 +373,30 @@ int http_fn_index(http_request_t* request) {
 			poststr(request, "</td></tr>");
 
 		}
+		else if (channelType == ChType_TimerSeconds) {
+
+			iValue = CHANNEL_Get(i);
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "Timer Channel %s value ", CHANNEL_GetLabel(i));
+			if (iValue < 60) {
+				hprintf255(request, "%i seconds<br>", iValue);
+			}
+			else if (iValue < 3600) {
+				int minutes = iValue / 60;
+				int seconds = iValue % 60;
+				hprintf255(request, "%i minutes %i seconds<br>", minutes, seconds);
+			}
+			else {
+				int hours = iValue / 3600;
+				int remainingSeconds = iValue % 3600;
+				int minutes = remainingSeconds / 60;
+				int seconds = remainingSeconds % 60;
+				hprintf255(request, "%i hours %i minutes %i seconds<br>", hours, minutes, seconds);
+			}
+			poststr(request, "</td></tr>");
+
+		}
 		else if (channelType == ChType_Temperature_div2) {
 
 			iValue = CHANNEL_Get(i);
@@ -2060,6 +2084,14 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		}
 	}
 #endif
+	if (1) {
+		dev_info = hass_init_sensor_device_info(HASS_RSSI, 0, -1, -1, 1);
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+
+		discoveryQueued = true;
+
+	}
 	if (discoveryQueued) {
 		MQTT_InvokeCommandAtEnd(PublishChannels);
 	}

@@ -297,6 +297,26 @@ static commandResult_t CMD_StartupCommand(const void* context, const char* cmd, 
 
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_Choice(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int indexToUse;
+	const char *cmdToUse;
+
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	indexToUse = Tokenizer_GetArgInteger(0);
+	cmdToUse = Tokenizer_GetArg(1+indexToUse);
+
+	CMD_ExecuteCommand(cmdToUse, cmdFlags);
+
+
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_PingHost(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, 0);
 
@@ -723,6 +743,7 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_StartupCommand","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("StartupCommand", CMD_StartupCommand, NULL);
+	CMD_RegisterCommand("Choice", CMD_Choice, NULL);
 	//CMD_RegisterCommand("FindPattern", CMD_FindPattern, NULL);
 	
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)

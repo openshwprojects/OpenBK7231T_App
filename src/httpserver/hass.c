@@ -86,7 +86,13 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 	case CURRENT_SENSOR:
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "current", index);
 		break;
+	case HASS_RSSI:
+		sprintf(uniq_id, "%s_rssi", longDeviceName);
+		break;	
 	default:
+		// TODO: USE type here as well?
+		// If type is not set, and we use "sensor" naming, we can easily make collision
+		//sprintf(uniq_id, "%s_%s_%d_%d", longDeviceName, "sensor", (int)type, index);
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "sensor", index);
 		break;
 	}
@@ -244,6 +250,9 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload
 		break;
 	case ILLUMINANCE_SENSOR:
 		sprintf(g_hassBuffer, "Illuminance");
+		break;
+	case HASS_RSSI:
+		sprintf(g_hassBuffer, "RSSI");
 		break;
 	default:
 		sprintf(g_hassBuffer, "%s", CHANNEL_GetLabel(index));
@@ -433,7 +442,27 @@ HassDeviceInfo* hass_init_power_sensor_device_info(int index) {
 
 // generate string like "{{ float(value)*0.1|round(2) }}"
 // {{ float(value)*0.1 }} for value=12 give 1.2000000000000002, using round() to limit the decimal places
+// 2023 10 19 - it is not a perfect solution, it's better to use:
+// {{ '%0.2f'|format(states('sensor.varasto2_osram_temp')|float + 0.7) }}
+//
 char *hass_generate_multiplyAndRound_template(int decimalPlacesForRounding, int decimalPointOffset, int divider) {
+#if 1
+	char tmp[8];
+	int i;
+
+	strcpy(g_hassBuffer, "{{ '%0.");
+	sprintf(tmp, "%if", decimalPlacesForRounding);
+	strcat(g_hassBuffer, tmp);
+	strcat(g_hassBuffer, "'|format(float(value)");
+	if (decimalPointOffset != 0) {
+		strcat(g_hassBuffer, "*0.");
+		for (i = 1; i < decimalPointOffset; i++) {
+			strcat(g_hassBuffer, "0");
+		}
+		strcat(g_hassBuffer, "1");
+	}
+	strcat(g_hassBuffer, ") }}");
+#else
 	char tmp[8];
 	int i;
 
@@ -451,7 +480,7 @@ char *hass_generate_multiplyAndRound_template(int decimalPlacesForRounding, int 
 	sprintf(tmp, "%i", decimalPlacesForRounding);
 	strcat(g_hassBuffer, tmp);
 	strcat(g_hassBuffer, ") }}");
-
+#endif
 	return g_hassBuffer;
 }
 
@@ -583,13 +612,20 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 		cJSON_AddStringToObject(info->root, "val_tpl", g_template_lowMidHigh);
 
 		break;
+	case HASS_RSSI:
+		cJSON_AddStringToObject(info->root, "dev_cla", "signal_strength");
+		cJSON_AddStringToObject(info->root, "stat_t", "~/rssi");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "dBm");
+		//cJSON_AddStringToObject(info->root, "icon_template", "mdi:access-point");
+
+		break;
 	default:
 		sprintf(g_hassBuffer, "~/%d/get", channel);
 		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		return NULL;
 	}
 
-	if (type != READONLYLOWMIDHIGH_SENSOR && type != ENERGY_SENSOR) {
+	if (type != READONLYLOWMIDHIGH_SENSOR && type != ENERGY_SENSOR && type != HASS_RSSI) {
 		cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
 	}
 

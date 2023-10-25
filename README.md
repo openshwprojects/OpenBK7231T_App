@@ -51,7 +51,7 @@ OpenBeken features:
 - Short startup command (up to 512 characters) storage in flash config, so you can easily init your drivers (eg. BL0942) without LittleFS
 - Advanced scripting and events system (allows you to mirror Tasmota rules, for example catch button click, double click, hold)
 - Easily configurable via commands (see [tutorial](https://www.elektroda.com/rtvforum/topic3947241.html))
-- Thanks to keeping Tasmota standard, OBK has basic compatibility with [ioBroker](https://www.youtube.com/watch?v=x4p3JHXbK1E&ab_channel=Elektrodacom) and similiar systems through TELE/STAT/CMND MQTT packets, Tasmota Control app is also supported
+- Thanks to keeping Tasmota standard, OBK has basic compatibility with [ioBroker](https://www.youtube.com/watch?v=x4p3JHXbK1E&ab_channel=Elektrodacom) and similar systems through TELE/STAT/CMND MQTT packets, Tasmota Control app is also supported
 - DDP lighting protocol support ("startDriver DDP" in autoexec.bat/short startup command), works with xLights
 - Can be scripted to even [work with shutters](https://www.elektroda.com/rtvforum/topic3972935.html)
 - Advanced deep sleep with GPIO/timer wakeup and hybrid power save systems, fully scriptable, can be configured to last longer than Tuya
@@ -70,7 +70,7 @@ See [our GUI easy flash tool](https://github.com/openshwprojects/BK7231GUIFlashT
  
 # [Docs - MQTT topics, Console Commands, Flags, Constants, Pin Roles, Channel Types, FAQ, autoexec.bat examples](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs)
    
-# Futher reading
+# Further reading
   
 For technical insights and generic SDK information related to Beken, WinnerMicro, Bouffallo Lab and XRadio modules, please refer:
   

@@ -48,3 +48,4 @@ Do not add anything here, as it will overwritten with next rebuild.
 | 40 | [MQTT] Use kWh unit for energy consumption (total, last hour, today) instead of Wh |
 | 41 | [BTN] Ignore all button events (aka child lock) |
 | 42 | [DoorSensor] Invert state |
+| 43 | [TuyaMCU] Use queue |

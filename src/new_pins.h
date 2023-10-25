@@ -866,6 +866,13 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Temperature_div2,
+	//chandetail:{"name":"TimerSeconds",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"This will display time formatted to minutes, hours, etc.",
+	//chandetail:"enum":"ChType_TimerSeconds",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_TimerSeconds,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",

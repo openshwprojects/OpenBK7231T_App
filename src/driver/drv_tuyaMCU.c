@@ -193,8 +193,9 @@ static byte g_defaultTuyaMCUWiFiState = 0x00;
 
 // LED lighitng 
 // See: https://www.elektroda.com/rtvforum/viewtopic.php?p=20646359#20646359
-static short g_tuyaMCUled_dpID = -1;
+static short g_tuyaMCUled_id_color = -1;
 static short g_tuyaMCUled_format = -1;
+static int g_tuyaMCUled_id_power = -1;
 
 #define TUYAMCU_BUFFER_SIZE		256
 
@@ -659,8 +660,10 @@ commandResult_t Cmd_TuyaMCU_SetupLED(const void* context, const char* cmd, const
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
-	g_tuyaMCUled_dpID = Tokenizer_GetArgInteger(0);
+	g_tuyaMCUled_id_color = Tokenizer_GetArgInteger(0);
 	g_tuyaMCUled_format = Tokenizer_GetArgInteger(1);
+	// TODO: parse it
+	g_tuyaMCUled_id_power = 20;;
 
 	return CMD_RES_OK;
 }
@@ -1047,6 +1050,11 @@ void TuyaMCU_ForcePublishChannelValues() {
 void TuyaMCU_ApplyMapping(int fnID, int value) {
 	tuyaMCUMapping_t* mapping;
 	int mappedValue = value;
+
+	// hardcoded values
+	if (fnID == g_tuyaMCUled_id_power) {
+		LED_SetEnableAll(value);
+	}
 
 	// find mapping (where to save received data)
 	mapping = TuyaMCU_FindDefForID(fnID);
@@ -1950,7 +1958,7 @@ static SemaphoreHandle_t g_mutex = 0;
 static int g_previousLEDPower = -1;
 
 void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMode, float brightnessRange01, float temperatureRange01) {
-	if (g_tuyaMCUled_dpID == -1) {
+	if (g_tuyaMCUled_id_color == -1) {
 		return;
 	}
 	if (g_mutex == 0)
@@ -1965,7 +1973,7 @@ void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMo
 	if (g_previousLEDPower != bLightEnableAll) {
 		rtos_delay_milliseconds(50);
 		// dpID 20: switch light on and off
-		TuyaMCU_SendBool(20, bLightEnableAll);
+		TuyaMCU_SendBool(g_tuyaMCUled_id_power, bLightEnableAll);
 		g_previousLEDPower = bLightEnableAll;
 	}
 	if (bLightEnableAll == false) {
@@ -1980,7 +1988,7 @@ void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMo
 		rtos_delay_milliseconds(50);
 
 		// dpID 24: color(and indirectly brightness) in RGB mode, handled by your code already fine
-		TuyaMCU_SendColor(g_tuyaMCUled_dpID, rgbcw[0] / 255.0f, rgbcw[1] / 255.0f, rgbcw[2] / 255.0f, g_tuyaMCUled_format);
+		TuyaMCU_SendColor(g_tuyaMCUled_id_color, rgbcw[0] / 255.0f, rgbcw[1] / 255.0f, rgbcw[2] / 255.0f, g_tuyaMCUled_format);
 	}
 	else {
 		// dpID 21: switch between RGB and white mode : 0->white, 1->RGB
@@ -2001,7 +2009,7 @@ void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMo
 
 }
 bool TuyaMCU_IsLEDRunning() {
-	if (g_tuyaMCUled_dpID == -1)
+	if (g_tuyaMCUled_id_color == -1)
 		return false;
 	return true;
 }

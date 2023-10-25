@@ -47,6 +47,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | clearIO |  | Clears all pins setting, channels settings.<br/><br/>See also [clearIO on forum](https://www.elektroda.com/rtvforum/find.php?q=clearIO). |
 | ClearNoPingTime |  | Command for ping watchdog; it sets the 'time since last ping reply' to 0 again.<br/><br/>See also [ClearNoPingTime on forum](https://www.elektroda.com/rtvforum/find.php?q=ClearNoPingTime). |
 | clearRepeatingEvents |  | Clears all repeating events.<br/><br/>See also [clearRepeatingEvents on forum](https://www.elektroda.com/rtvforum/find.php?q=clearRepeatingEvents). |
+| CMD_SetChannelPrivate | [ChannelIndex][bPrivate] | Channels marked as private are NEVER published via MQTT.<br/><br/>See also [CMD_SetChannelPrivate on forum](https://www.elektroda.com/rtvforum/find.php?q=CMD_SetChannelPrivate). |
 | Color | [HexValue] | Puts the LED driver in RGB mode and sets given color.<br/><br/>See also [Color on forum](https://www.elektroda.com/rtvforum/find.php?q=Color). |
 | ConsumptionThreshold | [FloatValue] | Setup value for automatic save of consumption data [1..100].<br/><br/>See also [ConsumptionThreshold on forum](https://www.elektroda.com/rtvforum/find.php?q=ConsumptionThreshold). |
 | crashNull |  | Causes a crash.<br/><br/>See also [crashNull on forum](https://www.elektroda.com/rtvforum/find.php?q=crashNull). |

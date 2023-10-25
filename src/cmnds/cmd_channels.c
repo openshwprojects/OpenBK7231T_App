@@ -559,9 +559,9 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_SetChannelVisible","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetChannelVisible", CMD_SetChannelVisible, NULL);
-	//cmddetail:{"name":"SetChannelPrivate","args":"[ChannelIndex][bPrivate]",
+	//cmddetail:{"name":"CMD_SetChannelPrivate","args":"[ChannelIndex][bPrivate]",
 	//cmddetail:"descr":"Channels marked as private are NEVER published via MQTT.",
-	//cmddetail:"fn":"CMD_SetChannelPrivate","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("CMD_SetChannelPrivate", CMD_SetChannelPrivate, NULL);
 	//cmddetail:{"name":"Ch","args":"[InputValue]",
