@@ -171,11 +171,6 @@ void CFG_SetDefaultConfig() {
 #endif
 	
 	CFG_SetDefaultLEDCorrectionTable();
-	CFG_SetMQTTUseTls(false);
-	CFG_SetMQTTVerifyTlsCert(false);
-	CFG_SetMQTTCertFile("");
-	CFG_SetEnableWebServer(true);
-	CFG_SetDefaultLEDCorrectionTable();
 
 	g_cfg_pendingChanges++;
 }
@@ -723,13 +718,13 @@ uint32_t CFG_GetLFS_Size() {
 }
 #endif
 
-bool CFG_GetEnableWebServer() {
-	return g_cfg.enable_web_server;
+bool CFG_GetDisableWebServer() {
+	return g_cfg.disable_web_server;
 }
-void CFG_SetEnableWebServer(bool value) {
+void CFG_SetDisableWebServer(bool value) {
 	// is there a change?
-	if (g_cfg.enable_web_server != value) {
-		g_cfg.enable_web_server = value;
+	if (g_cfg.disable_web_server != value) {
+		g_cfg.disable_web_server = value;
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
 	}

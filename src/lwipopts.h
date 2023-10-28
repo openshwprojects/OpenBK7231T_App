@@ -32,13 +32,11 @@
 #ifndef __LWIPOPTS_H__
 #define __LWIPOPTS_H__
 
-#include "obk_config.h"
-
 #if MQTT_USE_TLS
 #define LWIP_ALTCP                 	1
 #define LWIP_ALTCP_TLS             	1
 #define LWIP_ALTCP_TLS_MBEDTLS     	1
-#define ALTCP_MBEDTLS_DEBUG			LWIP_DBG_ON
+#define ALTCP_MBEDTLS_DEBUG			LWIP_DBG_OFF
 #endif
 
  /**

@@ -620,25 +620,25 @@ commandResult_t CMD_DeepSleep_SetEdge(const void* context, const char* cmd, cons
 }
 
 static commandResult_t CMD_WebServer(const void* context, const char* cmd, const char* args, int cmdFlags) {	
-	int value;
+	int arg_count;
 	Tokenizer_TokenizeString(args, 0);
-	value = Tokenizer_GetArgsCount();
-	if (value == 0)
+	arg_count = Tokenizer_GetArgsCount();
+	if (arg_count == 0)
 	{
-		ADDLOG_INFO(LOG_FEATURE_CMD, "WebServer:%d", CFG_GetEnableWebServer());
+		ADDLOG_INFO(LOG_FEATURE_CMD, "WebServer:%d", !CFG_GetDisableWebServer());
 		return CMD_RES_OK;
 	} 
-	if (value == 1) {
+	if (arg_count == 1) {
 		if (strcmp(Tokenizer_GetArg(0) , "0") == 0) {
 			ADDLOG_INFO(LOG_FEATURE_CMD, "Stop WebServer");
-			CFG_SetEnableWebServer(false);
+			CFG_SetDisableWebServer(true);
 			CFG_Save_IfThereArePendingChanges();
 			HTTPServer_Stop();
 			return CMD_RES_OK;
 		}
 		else if (strcmp(Tokenizer_GetArg(0), "1") == 0) {
 			ADDLOG_INFO(LOG_FEATURE_CMD, "Enable WebServer and restart");
-			CFG_SetEnableWebServer(true);
+			CFG_SetDisableWebServer(false);
 			CFG_Save_IfThereArePendingChanges();
 			HAL_RebootModule();
 			return CMD_RES_OK;

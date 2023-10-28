@@ -1178,7 +1178,7 @@ int http_fn_cfg_webapp(http_request_t* request) {
 	add_label_text_field(request, "URL of the Webapp", "url", CFG_GetWebappRoot(), "<form action=\"/cfg_webapp_set\">");
 
 	hprintf255(request, "<input type=\"checkbox\" id=\"enable_web_server\" name=\"enable_web_server\" value=\"1\"");
-	if (CFG_GetEnableWebServer()) {
+	if (!CFG_GetDisableWebServer()) {
 		hprintf255(request, " checked>");
 	}
 	hprintf255(request, "<label for=\"enable_web_server\">Web Server Enabled</label><br>");
@@ -1204,8 +1204,8 @@ int http_fn_cfg_webapp_set(http_request_t* request) {
 		poststr(request, "Webapp url not set because you didn't specify the argument.");
 	}
 
-	CFG_SetEnableWebServer(http_getArg(request->url, "enable_web_server", tmpA, sizeof(tmpA)));
-	if (CFG_GetEnableWebServer()){
+	CFG_SetDisableWebServer(!http_getArg(request->url, "enable_web_server", tmpA, sizeof(tmpA)));
+	if (CFG_GetDisableWebServer()){
 		poststr(request, "<br>");
 		poststr(request, "Webapp will be disabled on next boot!");
 	}
