@@ -102,7 +102,7 @@ void PT6523_Init()
 
 int loop = 0;
 int _containerSize = 16;
-byte g_container[16];
+byte g_container[17];
 void PT6523_SetLetters() {
 	byte j = 1;
 	int _n = 0;
@@ -155,7 +155,7 @@ void PT6523_RunFrame()
 		// Maybe there is some specal turn-off bit here?
 		g_symbols[i] = 0x0;// ff;// rand();
 	}
-	PT6523_DrawString("OOOOOOOOOO");
+	PT6523_DrawString("OpenBK  ");
 	PT6523_SetLetters();
 	PT6523_AnimateVolume(loop);
 	g_symbolDisc = loop % 2;
