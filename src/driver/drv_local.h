@@ -28,6 +28,9 @@ void DRV_MAX72XX_Clock_Init();
 void DRV_ADCButton_Init();
 void DRV_ADCButton_RunFrame();
 
+void PT6523_Init();
+void PT6523_RunFrame();
+
 void SM2135_Init();
 
 void SM2235_Init();

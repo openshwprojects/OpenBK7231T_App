@@ -370,6 +370,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\driver\drv_ntp_events.c" />
+    <ClCompile Include="src\driver\drv_pt6523.c" />
     <ClCompile Include="src\driver\drv_pwmToggler.c" />
     <ClCompile Include="src\driver\drv_pwrCal.c" />
     <ClCompile Include="src\driver\drv_sgp.c" />
