@@ -1,4 +1,5 @@
-
+// PT6523 LCD driver
+// Based on GPL work of by Firat SOYGÜL, 20 Aralik 2017
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
@@ -18,6 +19,41 @@ byte pt_di = 8;
 byte g_screen[15];
 byte g_symbols[5];
 byte g_address = 130;
+byte g_volumeStart = 0;
+byte g_volumeEnd = 8;
+byte g_volumeDir = 1;
+
+void PT6523_AnimateVolume(int levelValue) {
+	float convertedLevelValue =
+		ceil((levelValue - g_volumeStart) /
+			ceil((g_volumeEnd - g_volumeStart) / 7));
+	int _volumeLevel;
+	if (!g_volumeDir) {
+		g_symbols[3] = 0b11111100;
+		g_symbols[3] <<= 7 - (int)convertedLevelValue;
+		// BIT_SET_TO(g_symbols[1], 7, _iconRock);
+		_volumeLevel = (int)convertedLevelValue;
+		if (_volumeLevel == 0) {
+			BIT_SET_TO(g_symbols[2], 0, 0);
+		}
+		else {
+			BIT_SET_TO(g_symbols[2], 0, 1);
+		}
+	} else {
+		g_symbols[3] = 0b11111100;
+		g_symbols[2] = 0b00000001;
+		g_symbols[3] >>= 7 - (int)convertedLevelValue;
+		g_symbols[2] >>= 7 - (int)convertedLevelValue;
+		// BIT_SET_TO(g_symbols[1], 7, _iconRock);
+		_volumeLevel = (int)convertedLevelValue;
+		if (_volumeLevel == 0) {
+			BIT_SET_TO(g_symbols[3], 2, 0);
+		}
+		else {
+			BIT_SET_TO(g_symbols[3], 2, 1);
+		}
+	}
+}
 
 void PT6523_shiftOut(byte *data, int totalBytes) {
 	for (int j = 0; j < totalBytes; j++) {
@@ -61,6 +97,7 @@ void PT6523_Init()
 	HAL_PIN_SetOutputValue(pt_di, 0);
 }
 
+int loop = 0;
 
 void PT6523_RunFrame()
 {
@@ -72,6 +109,9 @@ void PT6523_RunFrame()
 		// Maybe there is some specal turn-off bit here?
 		g_symbols[i] = 0x0;// ff;// rand();
 	}
+	PT6523_AnimateVolume(loop);
+	loop++;
+	loop %= 8;
 	PT6523_Print();
 }
 
