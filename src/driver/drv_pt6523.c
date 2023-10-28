@@ -12,6 +12,8 @@
 #include "../httpserver/new_http.h"
 #include "../hal/hal_pins.h"
 
+#include "drv_pt6523_font.h"
+
 byte pt_inh = 10;
 byte pt_ce = 11;
 byte pt_clk = 24;
@@ -22,6 +24,7 @@ byte g_address = 130;
 byte g_volumeStart = 0;
 byte g_volumeEnd = 8;
 byte g_volumeDir = 1;
+bool g_symbolDisc;
 
 void PT6523_AnimateVolume(int levelValue) {
 	float convertedLevelValue =
@@ -98,7 +101,50 @@ void PT6523_Init()
 }
 
 int loop = 0;
-
+int _containerSize = 16;
+byte g_container[16];
+void PT6523_SetLetters() {
+	byte j = 1;
+	int _n = 0;
+	for (int i = 0; i <= 14; i += 2) {
+		g_screen[i] = (g_container[_n] << j) | (g_container[_n + 1] >> (8 - j));
+		if (i < 2) {
+			g_screen[i + 1] = g_container[_n + 1] << j;
+		}
+		else if (i >= _containerSize) {
+			g_screen[i] = g_container[_n + 1];
+			g_screen[i + 1] = 0;
+		}
+		else {
+			g_screen[i + 1] =
+				(g_container[_n + 1] << j) | (g_container[_n + 2] >> (7 - j));
+		}
+		if ((_n + 2) > _containerSize) {
+			_n = 0;
+			g_screen[i + 1] =
+				g_container[_containerSize] << j | g_container[0] >> (7 - j);
+		}
+		else {
+			_n += 2;
+		}
+		j++;
+	}
+}
+void PT6523_DrawString(char gk[]) {
+	int d = 0;
+	for (int i = 0; i < 8; i++) {
+		int c = gk[i] - 32;
+		if (c >= 0 && c <= 94) {
+			g_container[d] = pt_character14SEG[c][0];
+			g_container[d + 1] = pt_character14SEG[c][1];
+		}
+		else {
+			g_container[d] = 0;
+			g_container[d + 1] = 0;
+		}
+		d += 2;
+	}
+}
 void PT6523_RunFrame()
 {
 	for (int i = 0; i < sizeof(g_screen); i++) {
@@ -109,7 +155,11 @@ void PT6523_RunFrame()
 		// Maybe there is some specal turn-off bit here?
 		g_symbols[i] = 0x0;// ff;// rand();
 	}
+	PT6523_DrawString("OOOOOOOOOO");
+	PT6523_SetLetters();
 	PT6523_AnimateVolume(loop);
+	g_symbolDisc = loop % 2;
+	BIT_SET_TO(g_screen[7], 3, g_symbolDisc);
 	loop++;
 	loop %= 8;
 	PT6523_Print();

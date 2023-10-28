@@ -1068,6 +1068,7 @@
     <ClInclude Include="src\driver\drv_dht_internal.h" />
     <ClInclude Include="src\driver\drv_ht16k33.h" />
     <ClInclude Include="src\driver\drv_max72xx_internal.h" />
+    <ClInclude Include="src\driver\drv_pt6523_font.h" />
     <ClInclude Include="src\driver\drv_sgp.h" />
     <ClInclude Include="src\driver\drv_sht3x.h" />
     <ClInclude Include="src\driver\drv_sm2235.h" />
