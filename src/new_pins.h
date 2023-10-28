@@ -1185,7 +1185,7 @@ typedef struct mainConfig_s {
 	// offset 0x00000C86 (3206 decimal)
 	char mqtt_cert_file[20];
 	// offset 0x00000C9A (3226 decimal)
-	bool enable_web_server;
+	bool disable_web_server;
 	// offset 0x00000C9B (3227 decimal)
 	char unused[357];
 #endif

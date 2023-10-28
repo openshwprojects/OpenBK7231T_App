@@ -100,8 +100,8 @@ void CFG_SetLFS_Size(uint32_t value);
 uint32_t CFG_GetLFS_Size();
 #endif 
 
-bool CFG_GetEnableWebServer();
-void CFG_SetEnableWebServer(bool value);
+bool CFG_GetDisableWebServer();
+void CFG_SetDisableWebServer(bool value);
 
 #endif
 

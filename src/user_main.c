@@ -1154,7 +1154,7 @@ void Main_Init_After_Delay()
 	// NOT WORKING, I done it other way, see ethernetif.c
 	//net_dhcp_hostname_set(g_shortDeviceName);
 
-	if (CFG_GetEnableWebServer() || bSafeMode) {
+	if (!CFG_GetDisableWebServer() || bSafeMode) {
 		HTTPServer_Start();
 		ADDLOGF_DEBUG("Started http tcp server\r\n");
 	} 
