@@ -18,7 +18,9 @@
 #include <time.h>
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_local.h"
+#ifdef PLATFORM_BEKEN
 #include "start_type_pub.h"
+#endif
 
 static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"></form>";
 
