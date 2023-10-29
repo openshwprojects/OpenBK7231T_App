@@ -32,7 +32,7 @@ submodules:
 ifdef GITHUB_ACTIONS
 	@echo Submodules already checked out during setup
 else
-#	git submodule update --init --recursive --remote
+	git submodule update --init --recursive --remote
 endif
 
 update-submodules: submodules
@@ -71,7 +71,7 @@ sdk/OpenW600/sharedAppContainer/sharedApp:
 	ln -s "$(shell pwd)/" "sdk/OpenW600/sharedAppContainer/sharedApp"
 
 # Build main binaries
-OpenBK7231T: output/mbedtls-2.28.5	
+OpenBK7231T:
 	$(MAKE) APP_NAME=OpenBK7231T TARGET_PLATFORM=bk7231t SDK_PATH=sdk/OpenBK7231T APPS_BUILD_PATH=../bk7231t_os build-BK7231
 
 OpenBK7231N:
@@ -80,6 +80,7 @@ OpenBK7231N:
 
 sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q2:
 	cd sdk/OpenXR809/tools && wget -q "https://launchpad.net/gcc-arm-embedded/4.9/4.9-2015-q2-update/+download/gcc-arm-none-eabi-4_9-2015q2-20150609-linux.tar.bz2" && tar -xf *.tar.bz2 && rm -f *.tar.bz2
+
 
 	
 .PHONY: OpenXR809 build-XR809

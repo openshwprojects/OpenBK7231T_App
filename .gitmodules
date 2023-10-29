@@ -1,24 +1,24 @@
-# [submodule "sdk/OpenXR809"]
-# 	path = sdk/OpenXR809
-# 	url = https://github.com/openshwprojects/OpenXR809.git
-# 	branch = master
-# [submodule "sdk/OpenBK7231T"]
-# 	path = sdk/OpenBK7231T
-# 	url = https://github.com/openshwprojects/OpenBK7231T.git
-# 	branch = master
+[submodule "sdk/OpenXR809"]
+	path = sdk/OpenXR809
+	url = https://github.com/openshwprojects/OpenXR809.git
+	branch = master
+[submodule "sdk/OpenBK7231T"]
+	path = sdk/OpenBK7231T
+	url = https://github.com/openshwprojects/OpenBK7231T.git
+	branch = master
 [submodule "sdk/OpenBK7231N"]
 	path = sdk/OpenBK7231N
 	url = https://github.com/openshwprojects/OpenBK7231N.git
 	branch = master
-# [submodule "sdk/OpenBL602"]
-# 	path = sdk/OpenBL602
-# 	url = https://github.com/openshwprojects/OpenBL602.git
-# 	branch = master
-# [submodule "sdk/OpenW800"]
-# 	path = sdk/OpenW800
-# 	url = https://github.com/openshwprojects/OpenW800.git
-# 	branch = master
-# [submodule "sdk/OpenW600"]
-# 	path = sdk/OpenW600
-# 	url = https://github.com/openshwprojects/OpenW600.git
-# 	branch = master
+[submodule "sdk/OpenBL602"]
+	path = sdk/OpenBL602
+	url = https://github.com/openshwprojects/OpenBL602.git
+	branch = master
+[submodule "sdk/OpenW800"]
+	path = sdk/OpenW800
+	url = https://github.com/openshwprojects/OpenW800.git
+	branch = master
+[submodule "sdk/OpenW600"]
+	path = sdk/OpenW600
+	url = https://github.com/openshwprojects/OpenW600.git
+	branch = master
