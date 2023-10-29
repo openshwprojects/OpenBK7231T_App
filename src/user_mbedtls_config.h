@@ -1,3 +1,32 @@
+/******************************************************************************
+ * @version V1.0.0
+ * @date    05-Oct-2023
+ * 
+ * This file contains specific configuration for mbedtls 
+ * Due to environment limitations there is only one version of TSL 
+ * and only one cipher enabled:
+ * TSL VERSION: TLSv1.2
+ * TSL CIPHER : TLS-ECDHE-RSA-WITH-AES-128-GCM-SHA256
+ *
+ * This is a common configuration supported by the mosquitto MQTT server
+ *
+ * Tested only with LWIP MQTT client application on BK7231N platform
+ * It's possible that it will also work on other platforms, 
+ * but I don't have specific hardware to test.
+ *
+ * The web server MQTT page has been updated to specify whether MQTT 
+ * uses TSL and if the certificate needs to be validated.
+ * The CA certificate or public certificate (in case of self-signed)
+ * must be uploaded in PEM format to LFS
+ *
+ * To validate the certificate dates, the NTP driver must be enabled,
+ * otherwise the build date will be used to validate.
+ *
+ * Author: alexsandroz@gmail.com
+ * 
+ ******************************************************************************/
+
+
 #ifndef USER_MBEDTLS_CONFIG_H
 #define USER_MBEDTLS_CONFIG_H
 

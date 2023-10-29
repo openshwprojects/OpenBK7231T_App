@@ -1,6 +1,5 @@
 # HACK - if COMPILE_PREX defined then we are being called running from original build_app.sh script in standard SDK
 # Required to not break old build_app.sh script lines 74-77
-MBEDTLS_DIR := ../../../apps/$(APP_BIN_NAME)
 ifdef COMPILE_PREX
 all:
 	@echo Calling original build_app.sh script
@@ -72,15 +71,15 @@ sdk/OpenW600/sharedAppContainer/sharedApp:
 	ln -s "$(shell pwd)/" "sdk/OpenW600/sharedAppContainer/sharedApp"
 
 # Build main binaries
-OpenBK7231T:
+OpenBK7231T: output/mbedtls-2.28.5	
 	$(MAKE) APP_NAME=OpenBK7231T TARGET_PLATFORM=bk7231t SDK_PATH=sdk/OpenBK7231T APPS_BUILD_PATH=../bk7231t_os build-BK7231
 
 OpenBK7231N:
+	if [ ! -d "output/mbedtls-2.28.5" ]; then wget -q "https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v2.28.5.tar.gz"; tar -xf v2.28.5.tar.gz -C output; rm -f v2.28.5.tar.gz; fi	
 	$(MAKE) APP_NAME=OpenBK7231N TARGET_PLATFORM=bk7231n SDK_PATH=sdk/OpenBK7231N APPS_BUILD_PATH=../bk7231n_os build-BK7231
 
 sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q2:
 	cd sdk/OpenXR809/tools && wget -q "https://launchpad.net/gcc-arm-embedded/4.9/4.9-2015-q2-update/+download/gcc-arm-none-eabi-4_9-2015q2-20150609-linux.tar.bz2" && tar -xf *.tar.bz2 && rm -f *.tar.bz2
-
 
 	
 .PHONY: OpenXR809 build-XR809
