@@ -13,7 +13,7 @@
 //ENABLE_DRIVER_BL0942 - Enable support for BL0942
 //ENABLE_DRIVER_CSE7766 - Enable support for CSE7766
 //ENABLE_DRIVER_TUYAMCU - Enable support for TuyaMCU and tmSensor
- 
+
 
 #if PLATFORM_XR809
 

@@ -746,7 +746,7 @@ void MQTT_ProcessCommandReplyJSON(const char *cmd, const char *args, int flags) 
 }
 int tasCmnd(obk_mqtt_request_t* request) {
 	const char *p, *args;
-	//const char *p2;
+    //const char *p2;
 
 	p = MQTT_RemoveClientFromTopic(request->topic, "cmnd");
 	if (p == 0) {
@@ -888,7 +888,7 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 		{
 			strcpy(pub_topic, sChannel);
 		}
-		else
+		else 
 		{
 			sprintf(pub_topic, "%s/%s%s", sTopic, sChannel, (appendGet == true ? "/get" : ""));
 		}
@@ -1762,8 +1762,8 @@ void MQTT_InitCallbacks() {
 		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 7, tasCmnd);
 	}
 }
-// initialise things MQTT
-// called from user_main
+ // initialise things MQTT
+ // called from user_main
 void MQTT_init()
 {
 	// WINDOWS must support reinit
