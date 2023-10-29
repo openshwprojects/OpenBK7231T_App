@@ -1,5 +1,5 @@
 // PT6523 LCD driver
-// Based on GPL work of by Firat SOYGÜL, 20 Aralik 2017
+// Based on GPL work of by Firat SOYGÃœL, 20 Aralik 2017
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
@@ -11,6 +11,7 @@
 #include "drv_uart.h"
 #include "../httpserver/new_http.h"
 #include "../hal/hal_pins.h"
+#include <math.h>
 
 #include "drv_pt6523_font.h"
 
