@@ -33,7 +33,7 @@ Build using:
 
 You can also do advanced builds using `build_app.sh`:
 `./build_app.sh apps/<appname> <appname> <appversion>`
-(appname must be identical to foldername in `apps/` folder)
+(appname must be identical to folder name in `apps/` folder)
 
 e.g. `./build_app.sh apps/openbk7231app openbk7231app 1.0.0`.
 
