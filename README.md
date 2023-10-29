@@ -1,3 +1,5 @@
+<div id="top"></div>
+
 # Introduction
 
 OpenBK7231T/OpenBeken is a Tasmota/Esphome replacement for new Tuya modules featuring MQTT and Home Assistant compatibility.
@@ -85,3 +87,5 @@ https://www.elektroda.com/rtvforum/topic3806769.html
 If you want to support project, please donate at: https://www.paypal.com/paypalme/openshwprojects
   
 Special thanks for Tasmota/Esphome/etc contributors for making a great reference for implementing Tuya module drivers 
+
+<p align="right">(<a href="#top">🔼 Back to top</a>)</p>
