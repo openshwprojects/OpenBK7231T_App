@@ -286,15 +286,6 @@ const char *CFG_GetOpenBekenHostName() {
 int CFG_GetMQTTPort() {
 	return g_cfg.mqtt_port;
 }
-bool CFG_GetMQTTUseTls() {
-	return g_cfg.mqtt_use_tls;
-}
-bool CFG_GetMQTTVerifyTlsCert() {
-	return g_cfg.mqtt_verify_tls_cert;
-}
-const char* CFG_GetMQTTCertFile() {
-	return g_cfg.mqtt_cert_file;
-}
 
 void CFG_SetShortDeviceName(const char *s) {
 
@@ -315,29 +306,6 @@ void CFG_SetMQTTPort(int p) {
 	// is there a change?
 	if(g_cfg.mqtt_port != p) {
 		g_cfg.mqtt_port = p;
-		// mark as dirty (value has changed)
-		g_cfg_pendingChanges++;
-	}
-}
-void CFG_SetMQTTUseTls(bool value) {
-	// is there a change?
-	if(g_cfg.mqtt_use_tls != value) {
-		g_cfg.mqtt_use_tls = value;
-		// mark as dirty (value has changed)
-		g_cfg_pendingChanges++;
-	}
-}
-void CFG_SetMQTTVerifyTlsCert(bool value) {
-	// is there a change?
-	if (g_cfg.mqtt_verify_tls_cert != value) {
-		g_cfg.mqtt_verify_tls_cert = value;
-		// mark as dirty (value has changed)
-		g_cfg_pendingChanges++;
-	}
-}
-void CFG_SetMQTTCertFile(const char* s) {
-	// this will return non-zero if there were any changes
-	if (strcpy_safe_checkForChanges(g_cfg.mqtt_cert_file, s, sizeof(g_cfg.mqtt_cert_file))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
 	}
@@ -718,6 +686,39 @@ uint32_t CFG_GetLFS_Size() {
 }
 #endif
 
+#if MQTT_USE_TLS
+bool CFG_GetMQTTUseTls() {
+	return g_cfg.mqtt_use_tls;
+}
+bool CFG_GetMQTTVerifyTlsCert() {
+	return g_cfg.mqtt_verify_tls_cert;
+}
+const char* CFG_GetMQTTCertFile() {
+	return g_cfg.mqtt_cert_file;
+}
+void CFG_SetMQTTUseTls(bool value) {
+	// is there a change?
+	if (g_cfg.mqtt_use_tls != value) {
+		g_cfg.mqtt_use_tls = value;
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+void CFG_SetMQTTVerifyTlsCert(bool value) {
+	// is there a change?
+	if (g_cfg.mqtt_verify_tls_cert != value) {
+		g_cfg.mqtt_verify_tls_cert = value;
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+void CFG_SetMQTTCertFile(const char* s) {
+	// this will return non-zero if there were any changes
+	if (strcpy_safe_checkForChanges(g_cfg.mqtt_cert_file, s, sizeof(g_cfg.mqtt_cert_file))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
 bool CFG_GetDisableWebServer() {
 	return g_cfg.disable_web_server;
 }
@@ -729,6 +730,8 @@ void CFG_SetDisableWebServer(bool value) {
 		g_cfg_pendingChanges++;
 	}
 }
+#endif
+
 void CFG_InitAndLoad() {
 	byte chkSum;
 

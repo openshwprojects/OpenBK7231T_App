@@ -1183,8 +1183,10 @@ static int MQTT_do_connect(mqtt_client_t* client)
 	mqtt_pass = CFG_GetMQTTPass();
 	mqtt_clientID = CFG_GetMQTTClientId();
 	mqtt_port = CFG_GetMQTTPort();
+#if MQTT_USE_TLS
 	mqtt_use_tls = CFG_GetMQTTUseTls();
 	mqtt_verify_tls_cert = CFG_GetMQTTVerifyTlsCert();
+#endif
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_userName %s\r\nmqtt_pass %s\r\nmqtt_clientID %s\r\nmqtt_host %s:%d\r\n",
 		mqtt_userName,

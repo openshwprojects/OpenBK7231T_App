@@ -1057,6 +1057,7 @@ int http_fn_cfg_mqtt(http_request_t* request) {
 	//	if (hex) {
 	//		poststr(request, " checked");
 	//	}
+#if MQTT_USE_TLS
 	hprintf255(request, "<input type=\"checkbox\" id=\"mqtt_use_tls\" name=\"mqtt_use_tls\" value=\"1\"");
 	if (CFG_GetMQTTUseTls()) {
 		hprintf255(request, " checked>");
@@ -1070,6 +1071,7 @@ int http_fn_cfg_mqtt(http_request_t* request) {
 	hprintf255(request, "<label for=\"mqtt_use_tls\">Verify TLS Certificate</label><br>");
 
 	add_label_text_field(request, "Certificate File (CA Root or Public Certificate PEM format)", "mqtt_cert_file", CFG_GetMQTTCertFile(), "<br>");
+#endif
 
 	add_label_text_field(request, "Client Topic (Base Topic)", "client", CFG_GetMQTTClientId(), "<br>");
 	add_label_text_field(request, "Group Topic (Secondary Topic to only receive cmnds)", "group", CFG_GetMQTTGroupTopic(), "<br>");
@@ -1086,7 +1088,7 @@ int http_fn_cfg_mqtt(http_request_t* request) {
 int http_fn_cfg_ip(http_request_t* request) {
 	char tmp[64];
 	int g_changes = 0;
-	//byte ip[4];
+	//byte ip[4]; unused. comment for silent warning
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "IP");
 	poststr_h2(request, "Here you can set static IP or DHCP");
@@ -1143,10 +1145,12 @@ int http_fn_cfg_mqtt_set(http_request_t* request) {
 		CFG_SetMQTTPort(atoi(tmpA));
 	}
 
+#if MQTT_USE_TLS
 	CFG_SetMQTTUseTls(http_getArg(request->url, "mqtt_use_tls", tmpA, sizeof(tmpA)));
 	CFG_SetMQTTVerifyTlsCert(http_getArg(request->url, "mqtt_verify_tls_cert", tmpA, sizeof(tmpA)));
 	http_getArg(request->url, "mqtt_cert_file", tmpA, sizeof(tmpA));
 	CFG_SetMQTTCertFile(tmpA);
+#endif
 
 	if (http_getArg(request->url, "user", tmpA, sizeof(tmpA))) {
 		CFG_SetMQTTUserName(tmpA);
@@ -1179,11 +1183,13 @@ int http_fn_cfg_webapp(http_request_t* request) {
 	http_html_start(request, "Set Webapp");
 	add_label_text_field(request, "URL of the Webapp", "url", CFG_GetWebappRoot(), "<form action=\"/cfg_webapp_set\">");
 
+#if MQTT_USE_TLS
 	hprintf255(request, "<input type=\"checkbox\" id=\"enable_web_server\" name=\"enable_web_server\" value=\"1\"");
 	if (!CFG_GetDisableWebServer()) {
 		hprintf255(request, " checked>");
 	}
 	hprintf255(request, "<label for=\"enable_web_server\">Web Server Enabled</label><br>");
+#endif
 
 	poststr(request, SUBMIT_AND_END_FORM);
 	poststr(request, htmlFooterReturnToCfgLink);
@@ -1206,11 +1212,13 @@ int http_fn_cfg_webapp_set(http_request_t* request) {
 		poststr(request, "Webapp url not set because you didn't specify the argument.");
 	}
 
+#if MQTT_USE_TLS
 	CFG_SetDisableWebServer(!http_getArg(request->url, "enable_web_server", tmpA, sizeof(tmpA)));
 	if (CFG_GetDisableWebServer()){
 		poststr(request, "<br>");
 		poststr(request, "Webapp will be disabled on next boot!");
 	}
+#endif
 
 	poststr(request, "<br>");
 	poststr(request, htmlFooterReturnToCfgLink);

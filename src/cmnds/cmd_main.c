@@ -619,6 +619,7 @@ commandResult_t CMD_DeepSleep_SetEdge(const void* context, const char* cmd, cons
 	return CMD_RES_OK;
 }
 
+#if MQTT_USE_TLS
 static commandResult_t CMD_WebServer(const void* context, const char* cmd, const char* args, int cmdFlags) {	
 	int arg_count;
 	Tokenizer_TokenizeString(args, 0);
@@ -647,7 +648,7 @@ static commandResult_t CMD_WebServer(const void* context, const char* cmd, const
 	ADDLOG_ERROR(LOG_FEATURE_CMD, "Invalid Argument");
 	return CMD_RES_BAD_ARGUMENT;
 }
-
+#endif
 
 void CMD_Init_Early() {
 	//cmddetail:{"name":"alias","args":"[Alias][Command with spaces]",
@@ -776,12 +777,14 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("StartupCommand", CMD_StartupCommand, NULL);
 	CMD_RegisterCommand("Choice", CMD_Choice, NULL);
+#if MQTT_USE_TLS
 	//CMD_RegisterCommand("FindPattern", CMD_FindPattern, NULL);
 	//cmddetail:{"name":"WebServer","args":"[0 - Stop / 1 - Start]",
 	//cmddetail:"descr":"Setting state of WebServer",
 	//cmddetail:"fn":"CMD_WebServer","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("WebServer", CMD_WebServer, NULL);
+#endif
 	
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	CMD_InitScripting();

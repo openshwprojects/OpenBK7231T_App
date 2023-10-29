@@ -30,6 +30,8 @@
 #ifndef USER_MBEDTLS_CONFIG_H
 #define USER_MBEDTLS_CONFIG_H
 
+#if MQTT_USE_TLS
+
 #include "mbedtls/config.h"
 
 // Plataform specific
@@ -160,4 +162,5 @@
 #undef  MBEDTLS_GENPRIME
 #undef  MBEDTLS_X509_RSASSA_PSS_SUPPORT
 
-#endif
+#endif   //MQTT_USE_TLS
+#endif   //USER_MBEDTLS_CONFIG_H
