@@ -61,3 +61,57 @@ SRC_C += ${MBEDTLS_DIR}/library/ssl_cli.c
 
 endif   #ifeq ($(CFG_USE_MQTT_TLS),1)
 endif   #ifeq ($(TARGET_PLATFORM),bk7231n)
+
+
+# Wolfssl sources
+# ifeq ($(CFG_ENABLE_MQTT_TLS),1)
+# SRC_TLS_C += $(WOLFSSL_DIR)/src/ssl.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/src/internal.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/src/tls.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/src/keys.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/src/wolfio.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/src/crl.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/src/ocsp.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/wc_port.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/hash.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/memory.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/asn.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/sha.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/sha3.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/rsa.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/random.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/md5.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/dh.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/arc4.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/des3.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/aes.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/sha256.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/sha512.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/integer.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/hmac.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/coding.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/error.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/sp_int.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/kdf.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/dsa.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/wolfmath.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/ecc.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/tfm.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/srp.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/chacha.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/poly1305.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/curve448.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/ed448.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/fe_448.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/ge_448.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/curve25519.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/ed25519.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/fe_operations.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/fe_low_mem.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/ge_operations.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/ge_low_mem.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/wc_encrypt.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/pwdbased.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/camellia.c
+# SRC_TLS_C += $(WOLFSSL_DIR)/wolfcrypt/src/logging.c
+# endif
