@@ -6,8 +6,15 @@ ifeq ($(CFG_USE_MQTT_TLS),1)
 
 MBEDTLS_DIR = $(TOP_DIR)/apps/$(APP_BIN_NAME)/output/mbedtls-2.28.5
 INCLUDES := -I$(MBEDTLS_DIR)/include -I$(TOP_DIR)/apps/$(APP_BIN_NAME)/src $(INCLUDES)
-CPPDEFINES += -DMQTT_USE_TLS=1 -DMBEDTLS_CONFIG_FILE='"user_mbedtls_config.h"'
-OSFLAGS += -DMQTT_USE_TLS=1 -DMBEDTLS_CONFIG_FILE='"user_mbedtls_config.h"'
+MQTT_TLS_DEFS += -DMQTT_USE_TLS=1
+MQTT_TLS_DEFS += -DLWIP_ALTCP=1
+MQTT_TLS_DEFS += -DLWIP_ALTCP_TLS=1
+MQTT_TLS_DEFS += -DLWIP_ALTCP_TLS_MBEDTLS=1
+MQTT_TLS_DEFS += -DMEMP_NUM_ALTCP_PCB=4
+MQTT_TLS_DEFS += -DMBEDTLS_CONFIG_FILE='"user_mbedtls_config.h"'
+CPPDEFINES += $(MQTT_TLS_DEFS) -Wno-misleading-indentation
+OSFLAGS += $(MQTT_TLS_DEFS)
+LFLAGS += -Wl,--print-memory-usage
 
 SRC_C += ./beken378/func/lwip_intf/lwip-2.1.3/src/apps/altcp_tls/altcp_tls_mbedtls.c
 SRC_C += ./beken378/func/lwip_intf/lwip-2.1.3/src/apps/altcp_tls/altcp_tls_mbedtls_mem.c
