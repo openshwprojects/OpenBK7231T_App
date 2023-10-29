@@ -389,6 +389,7 @@
     <ClCompile Include="src\driver\drv_test_drivers.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_textScroller.c" />
     <ClCompile Include="src\driver\drv_tm1637.c" />
     <ClCompile Include="src\driver\drv_tm1638.c" />
     <ClCompile Include="src\driver\drv_tm_gn_display_shared.c" />

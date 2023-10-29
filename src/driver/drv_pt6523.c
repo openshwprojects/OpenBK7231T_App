@@ -73,7 +73,7 @@ void PT6523_shiftOut(byte *data, int totalBytes) {
 	}
 }
 
-void PT6523_Print() {
+void PT6523_Refresh() {
 	HAL_PIN_SetOutputValue(pt_ce, 0);
 	// Address Data (A1- A8)
 	PT6523_shiftOut(&g_address,1);
@@ -130,10 +130,13 @@ void PT6523_SetLetters() {
 		j++;
 	}
 }
-void PT6523_DrawString(char gk[]) {
-	int d = 0;
-	for (int i = 0; i < 8; i++) {
-		int c = gk[i] - 32;
+void PT6523_ClearString() {
+	memset(g_container, 0, sizeof(g_container));
+}
+void PT6523_DrawString(char gk[], int startOfs) {
+	int d = startOfs*2;
+	for (int i = startOfs; i < 8; i++) {
+		int c = gk[i- startOfs] - 32;
 		if (c >= 0 && c <= 94) {
 			g_container[d] = pt_character14SEG[c][0];
 			g_container[d + 1] = pt_character14SEG[c][1];
@@ -144,9 +147,11 @@ void PT6523_DrawString(char gk[]) {
 		}
 		d += 2;
 	}
+	PT6523_SetLetters();
 }
 void PT6523_RunFrame()
 {
+#if 0
 	for (int i = 0; i < sizeof(g_screen); i++) {
 		g_screen[i] = rand();
 	}
@@ -156,13 +161,13 @@ void PT6523_RunFrame()
 		g_symbols[i] = 0x0;// ff;// rand();
 	}
 	PT6523_DrawString("OpenBK  ");
-	PT6523_SetLetters();
 	PT6523_AnimateVolume(loop);
 	g_symbolDisc = loop % 2;
 	BIT_SET_TO(g_screen[7], 3, g_symbolDisc);
 	loop++;
 	loop %= 8;
-	PT6523_Print();
+	PT6523_Refresh();
+#endif
 }
 
 

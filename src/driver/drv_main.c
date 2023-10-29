@@ -153,6 +153,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "PT6523",	PT6523_Init,		PT6523_RunFrame,			NULL, NULL, NULL, NULL, false },
 #endif
+#ifdef ENABLE_DRIVER_TEXTSCROLLER
+	//drvdetail:{"name":"TextScroller",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"BQQQK",
+	//drvdetail:"requires":""}
+	{ "TextScroller",	TS_Init,		NULL,			NULL, TS_RunQuickTick, NULL, NULL, false },
+#endif
 #if PLATFORM_BEKEN
 #if PLATFORM_BK7231N
 	//drvdetail:{"name":"SM16703P",

@@ -30,6 +30,11 @@ void DRV_ADCButton_RunFrame();
 
 void PT6523_Init();
 void PT6523_RunFrame();
+void PT6523_DrawString(char gk[], int startOfs);
+void PT6523_ClearString();
+
+void TS_RunQuickTick();
+void TS_Init();
 
 void SM2135_Init();
 
