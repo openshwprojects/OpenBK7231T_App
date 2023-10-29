@@ -15,15 +15,5 @@
 	"C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: LLVM, UseTab: Always, IndentWidth: 4, TabWidth: 4, BreakBeforeBraces: Attach, AllowShortIfStatementsOnASingleLine: false, IndentCaseLabels: false, ColumnLimit: 0, AccessModifierOffset: -4, NamespaceIndentation: All, FixNamespaceComments: false }",
 	"prettier.tabWidth": 4,
 	"prettier.useTabs": true,
-	"prettier.printWidth": 120,
-	"files.associations": {
-		"altcp_tls.h": "c",
-		"system_error": "cpp",
-		"logging.h": "c",
-		"opt.h": "c",
-		"altcp_tls_mbedtls_opts.h": "c",
-		"fake_clock_pub.h": "c",
-		"check_config.h": "c",
-		"cmd_public.h": "c"
-	}
+	"prettier.printWidth": 120
 }

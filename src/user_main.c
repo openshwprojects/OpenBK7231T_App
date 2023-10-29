@@ -1149,7 +1149,7 @@ void Main_Init_After_Delay()
 	}
 
 	ADDLOGF_INFO("Using SSID [%s]\r\n", wifi_ssid);
-	ADDLOGF_INFO("Using Pass [%s]\r\n", "********");
+	ADDLOGF_INFO("Using Pass [%s]\r\n", wifi_pass);
 
 	// NOT WORKING, I done it other way, see ethernetif.c
 	//net_dhcp_hostname_set(g_shortDeviceName);
