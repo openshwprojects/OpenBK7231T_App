@@ -22,6 +22,9 @@
  * To validate the certificate dates, the NTP driver must be enabled,
  * otherwise the build date will be used to validate.
  *
+ * Additionally, an option to disable the web app has been added to 
+ * strengthen security. Communication only with secure mqtt connection
+ *
  * Author: alexsandroz@gmail.com
  * 
  ******************************************************************************/

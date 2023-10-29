@@ -9,14 +9,14 @@
 	},
 	"repository": {
 	  "type": "git",
-	  "url": "git+https://github.com/alexsandroz/OpenBK7231T_App.git"
+	  "url": "git+https://github.com/openshwprojects/OpenBK7231T_App.git"
 	},
 	"author": "",
 	"license": "ISC",
 	"bugs": {
-	  "url": "https://github.com/alexsandroz/OpenBK7231T_App/issues"
+	  "url": "https://github.com/openshwprojects/OpenBK7231T_App/issues"
 	},
-	"homepage": "https://github.com/alexsandroz/OpenBK7231T_App#readme",
+	"homepage": "https://github.com/openshwprojects/OpenBK7231T_App#readme",
 	"devDependencies": {
 	  "gulp": "^4.0.2",
 	  "gulp-cssnano": "^2.1.3",

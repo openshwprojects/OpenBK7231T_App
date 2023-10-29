@@ -1052,11 +1052,6 @@ int http_fn_cfg_mqtt(http_request_t* request) {
 	add_label_text_field(request, "Host", "host", CFG_GetMQTTHost(), "<form action=\"/cfg_mqtt_set\">");
 	add_label_numeric_field(request, "Port", "port", CFG_GetMQTTPort(), "<br>");
 
-	//	poststr(request, "<label for=\"hex\">Show all hex?</label><br>");
-	//	poststr(request, "<input type=\"checkbox\" id=\"hex\" name=\"hex\" value=\"1\"");
-	//	if (hex) {
-	//		poststr(request, " checked");
-	//	}
 #if MQTT_USE_TLS
 	hprintf255(request, "<input type=\"checkbox\" id=\"mqtt_use_tls\" name=\"mqtt_use_tls\" value=\"1\"");
 	if (CFG_GetMQTTUseTls()) {
@@ -1088,7 +1083,7 @@ int http_fn_cfg_mqtt(http_request_t* request) {
 int http_fn_cfg_ip(http_request_t* request) {
 	char tmp[64];
 	int g_changes = 0;
-	//byte ip[4]; unused. comment for silent warning
+	byte ip[4];
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "IP");
 	poststr_h2(request, "Here you can set static IP or DHCP");
@@ -1204,7 +1199,7 @@ int http_fn_cfg_webapp_set(http_request_t* request) {
 	http_html_start(request, "Saving Webapp");
 
 	if (http_getArg(request->url, "url", tmpA, sizeof(tmpA))) {
-		CFG_SetWebappRoot(tmpA);		
+		CFG_SetWebappRoot(tmpA);
 		CFG_Save_IfThereArePendingChanges();
 		hprintf255(request, "Webapp url set to %s", tmpA);
 	}
@@ -1214,7 +1209,7 @@ int http_fn_cfg_webapp_set(http_request_t* request) {
 
 #if MQTT_USE_TLS
 	CFG_SetDisableWebServer(!http_getArg(request->url, "enable_web_server", tmpA, sizeof(tmpA)));
-	if (CFG_GetDisableWebServer()){
+	if (CFG_GetDisableWebServer()) {
 		poststr(request, "<br>");
 		poststr(request, "Webapp will be disabled on next boot!");
 	}
@@ -2396,8 +2391,7 @@ int http_fn_cm(http_request_t* request) {
 	if (request->method == HTTP_GET) {
 		commandLen = http_getArg(request->url, "cmnd", tmpA, sizeof(tmpA));
 		//ADDLOG_INFO(LOG_FEATURE_HTTP, "Got here (GET) %s;%s;%d\n", request->url, tmpA, commandLen);
-	}
-	else if (request->method == HTTP_POST || request->method == HTTP_PUT) {
+	} else if (request->method == HTTP_POST || request->method == HTTP_PUT) {
 		commandLen = http_getRawArg(request->bodystart, "cmnd", tmpA, sizeof(tmpA));
 		//ADDLOG_INFO(LOG_FEATURE_HTTP, "Got here (POST) %s;%s;%d\n", request->bodystart, tmpA, commandLen);
 	}
@@ -2408,8 +2402,7 @@ int http_fn_cm(http_request_t* request) {
 			if (long_str_alloced) {
 				if (request->method == HTTP_GET) {
 					http_getArg(request->url, "cmnd", long_str_alloced, commandLen);
-				}
-				else if (request->method == HTTP_POST || request->method == HTTP_PUT) {
+				} else if (request->method == HTTP_POST || request->method == HTTP_PUT) {
 					http_getRawArg(request->bodystart, "cmnd", long_str_alloced, commandLen);
 				}
 				CMD_ExecuteCommand(long_str_alloced, COMMAND_FLAG_SOURCE_HTTP);

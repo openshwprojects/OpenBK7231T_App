@@ -286,7 +286,6 @@ const char *CFG_GetOpenBekenHostName() {
 int CFG_GetMQTTPort() {
 	return g_cfg.mqtt_port;
 }
-
 void CFG_SetShortDeviceName(const char *s) {
 
 	// this will return non-zero if there were any changes

@@ -13,7 +13,7 @@
 //ENABLE_DRIVER_BL0942 - Enable support for BL0942
 //ENABLE_DRIVER_CSE7766 - Enable support for CSE7766
 //ENABLE_DRIVER_TUYAMCU - Enable support for TuyaMCU and tmSensor
-//ENABLE_DRIVER_IR - Enable suporte for IR 
+ 
 
 #if PLATFORM_XR809
 
@@ -67,14 +67,13 @@
 
 // set to 0 to disable
 #define ENABLE_LITTLEFS			1
-#define ENABLE_NTP              1
+#define ENABLE_NTP    1
 #define ENABLE_DRIVER_LED       1
 #define ENABLE_DRIVER_BL0937    1
 #define ENABLE_DRIVER_BL0942    1
 #define ENABLE_DRIVER_BL0942SPI 1
 #define ENABLE_DRIVER_CSE7766   1
 #define ENABLE_DRIVER_TUYAMCU   1
-#define ENABLE_DRIVER_IR        1 
 //#define ENABLE_DRIVER_HT16K33   1
 //#define ENABLE_DRIVER_MAX72XX	  1
 #define ENABLE_I2C			    1
