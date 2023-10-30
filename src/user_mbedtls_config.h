@@ -22,8 +22,15 @@
  * To validate the certificate dates, the NTP driver must be enabled,
  * otherwise the build date will be used to validate.
  *
+ * You can use Mqtt TSL without a CA or public certificate if you disable 
+ * validation, but this is not recommended.
+ * Your client will be vulnerable to the MIT attack.
+ *
  * Additionally, an option to disable the web app has been added to 
- * strengthen security. Communication only with secure mqtt connection
+ * strengthen security. After connected to mqtt use 
+ * cmnd/<topic>/WebServer 0 to disable web interface
+ * cmnd/<topic>/WebServer 1 to enable web interface
+ * Communication only with secure mqtt connection
  *
  * Author: alexsandroz@gmail.com
  * 

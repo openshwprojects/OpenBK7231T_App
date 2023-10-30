@@ -95,14 +95,14 @@ uint32_t CFG_GetLFS_Size();
 #endif 
 
 #if MQTT_USE_TLS
-void CFG_SetMQTTUseTls(bool value);
-void CFG_SetMQTTVerifyTlsCert(bool value);
+void CFG_SetMQTTUseTls(byte value);
+void CFG_SetMQTTVerifyTlsCert(byte value);
 void CFG_SetMQTTCertFile(const char* s);
-bool CFG_GetMQTTUseTls();
-bool CFG_GetMQTTVerifyTlsCert();
+byte CFG_GetMQTTUseTls();
+byte CFG_GetMQTTVerifyTlsCert();
 const char* CFG_GetMQTTCertFile();
-bool CFG_GetDisableWebServer();
-void CFG_SetDisableWebServer(bool value);
+byte CFG_GetDisableWebServer();
+void CFG_SetDisableWebServer(byte value);
 #endif
 
 #endif

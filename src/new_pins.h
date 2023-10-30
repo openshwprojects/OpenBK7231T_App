@@ -1186,13 +1186,13 @@ typedef struct mainConfig_s {
 	// offset 0x00000C40 (3136 decimal)
 	char wifi_pass2[68];
 	// offset 0x00000C84 (3204 decimal)
-	bool mqtt_use_tls;
+	byte mqtt_use_tls;
 	// offset 0x00000C85 (3205 decimal)
-	bool mqtt_verify_tls_cert;
+	byte mqtt_verify_tls_cert;
 	// offset 0x00000C86 (3206 decimal)
 	char mqtt_cert_file[20];
 	// offset 0x00000C9A (3226 decimal)
-	bool disable_web_server;
+	byte disable_web_server;
 	// offset 0x00000C9B (3227 decimal)
 	char unused[357];
 #endif
