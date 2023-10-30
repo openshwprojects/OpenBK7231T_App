@@ -252,6 +252,15 @@ float getHour(const char *s) {
 float getSecond(const char *s) {
 	return NTP_GetSecond();
 }
+float getYear(const char *s) {
+	return NTP_GetYear();
+}
+float getMonth(const char *s) {
+	return NTP_GetMonth();
+}
+float getMDay(const char *s) {
+	return NTP_GetMDay();
+}
 
 const constant_t g_constants[] = {
 	//cnstdetail:{"name":"MQTTOn",
@@ -375,11 +384,21 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Current second from NTP",
 	//cnstdetail:"requires":""}
 	{ "$second", &getSecond },
+	////cnstdetail:{"name":"$mday",
+	////cnstdetail:"title":"$mday",
+	////cnstdetail:"descr":"Current mday from NTP",
+	////cnstdetail:"requires":""}
+	{ "$mday", &getMDay },
 	////cnstdetail:{"name":"$month",
 	////cnstdetail:"title":"$month",
 	////cnstdetail:"descr":"Current month from NTP",
 	////cnstdetail:"requires":""}
-	//{ "$month", &getMonth },
+	{ "$month", &getMonth },
+	////cnstdetail:{"name":"$year",
+	////cnstdetail:"title":"$year",
+	////cnstdetail:"descr":"Current Year from NTP",
+	////cnstdetail:"requires":""}
+	{ "$year", &getYear },
 	//cnstdetail:{"name":"$NTPOn",
 	//cnstdetail:"title":"$NTPOn",
 	//cnstdetail:"descr":"Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0.",

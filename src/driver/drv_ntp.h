@@ -15,6 +15,9 @@ int NTP_GetWeekDay();
 int NTP_GetHour();
 int NTP_GetMinute();
 int NTP_GetSecond();
+int NTP_GetMDay();
+int NTP_GetMonth();
+int NTP_GetYear();
 // for Simulator only, on Windows, for unit testing
 void NTP_SetSimulatedTime(unsigned int timeNow);
 // drv_ntp_events.c

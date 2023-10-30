@@ -165,6 +165,42 @@ int NTP_GetSecond() {
 
 	return ltm->tm_sec;
 }
+int NTP_GetMDay() {
+	struct tm *ltm;
+
+	// NOTE: on windows, you need _USE_32BIT_TIME_T 
+	ltm = localtime((time_t*)&g_ntpTime);
+
+	if (ltm == 0) {
+		return 0;
+	}
+
+	return ltm->tm_mday;
+}
+int NTP_GetMonth() {
+	struct tm *ltm;
+
+	// NOTE: on windows, you need _USE_32BIT_TIME_T 
+	ltm = localtime((time_t*)&g_ntpTime);
+
+	if (ltm == 0) {
+		return 0;
+	}
+
+	return ltm->tm_mon+1;
+}
+int NTP_GetYear() {
+	struct tm *ltm;
+
+	// NOTE: on windows, you need _USE_32BIT_TIME_T 
+	ltm = localtime((time_t*)&g_ntpTime);
+
+	if (ltm == 0) {
+		return 0;
+	}
+
+	return ltm->tm_year+1900;
+}
 #if WINDOWS
 bool b_ntp_simulatedTime = false;
 void NTP_SetSimulatedTime(unsigned int timeNow) {
