@@ -1,5 +1,9 @@
 // PT6523 LCD driver
 // Based on GPL work of by Firat SOYGÜL, 20 Aralik 2017
+#include "../obk_config.h"
+
+#if ENABLE_DRIVER_PT6523
+
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
@@ -171,6 +175,8 @@ void PT6523_RunFrame()
 #endif
 }
 
+
+#endif // ENABLE_DRIVER_PT6523
 
 
 

@@ -4,7 +4,7 @@
   (https://github.com/firatsoygul/PT6523)
 */
 
-const byte pt_character14SEG[95][2] = {
+const static byte pt_character14SEG[95][2] = {
 	{0, 0}, // SPACE - ASCII 32
 	{0, 132}, // !
 	{2, 0}, // "
