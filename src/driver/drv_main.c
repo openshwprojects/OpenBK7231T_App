@@ -146,14 +146,14 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "CSE7766",	CSE7766_Init,		CSE7766_RunFrame,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
-#ifdef ENABLE_DRIVER_PT6523
+#if ENABLE_DRIVER_PT6523
 	//drvdetail:{"name":"PT6523",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"BQQQK",
 	//drvdetail:"requires":""}
 	{ "PT6523",	PT6523_Init,		PT6523_RunFrame,			NULL, NULL, NULL, NULL, false },
 #endif
-#ifdef ENABLE_DRIVER_TEXTSCROLLER
+#if ENABLE_DRIVER_TEXTSCROLLER
 	//drvdetail:{"name":"TextScroller",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"BQQQK",
