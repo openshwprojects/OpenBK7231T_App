@@ -43,6 +43,16 @@ https://developer.tuya.com/en/docs/iot/tuyacloudlowpoweruniversalserialaccesspro
 #define TUYA_CMD_SET_RSSI      0x24
 #define TUYA_CMD_NETWORK_STATUS 0x2B
 
+#define TUYA_V0_CMD_PRODUCTINFORMATION      0x01
+#define TUYA_V0_CMD_NETWEORKSTATUS          0x02
+#define TUYA_V0_CMD_RESETWIFI               0x03
+#define TUYA_V0_CMD_RESETWIFI_AND_SEL_CONF  0x04
+#define TUYA_V0_CMD_REALTIMESTATUS          0x05
+#define TUYA_V0_CMD_OBTAINLOCALTIME         0x06
+#define TUYA_V0_CMD_RECORDSTATUS            0x08
+#define TUYA_V0_CMD_OBTAINDPCACHE           0x10
+#define TUYA_V0_CMD_QUERYSIGNALSTRENGTH		0x0B
+
 #define TUYA_NETWORK_STATUS_AP_MODE             0x01
 #define TUYA_NETWORK_STATUS_NOT_CONNECTED       0x02
 #define TUYA_NETWORK_STATUS_CONNECTED_TO_ROUTER 0x03
@@ -119,6 +129,8 @@ const char* TuyaMCU_GetCommandTypeLabel(int t) {
 		return "NetworkStatus";
 	if (t == TUYA_CMD_SET_RSSI)
 		return "SetRSSI";
+	if (t == TUYA_V0_CMD_QUERYSIGNALSTRENGTH)
+		return "QuerySignalStrngth";
 	return "Unknown";
 }
 typedef struct rtcc_s {
@@ -680,6 +692,12 @@ commandResult_t Cmd_TuyaMCU_Send_RSSI(const void* context, const char* cmd, cons
 	}
 	TuyaMCU_Send_RSSI(toSend);
 	return CMD_RES_OK;
+}
+void TuyaMCU_Send_SignalStrength(byte state, byte strength) {
+	byte payload_buffer[2];
+	payload_buffer[0] = state;
+	payload_buffer[1] = strength;
+	TuyaMCU_SendCommandWithData(TUYA_V0_CMD_QUERYSIGNALSTRENGTH, payload_buffer, sizeof(payload_buffer));
 }
 void TuyaMCU_Send_SetTime(struct tm* pTime, bool bSensorMode) {
 	byte payload_buffer[8];
@@ -1433,15 +1451,6 @@ void TuyaMCU_ResetWiFi() {
 		g_openAP = 1;
 	}
 }
-#define TUYA_V0_CMD_PRODUCTINFORMATION      0x01
-#define TUYA_V0_CMD_NETWEORKSTATUS          0x02
-#define TUYA_V0_CMD_RESETWIFI               0x03
-#define TUYA_V0_CMD_RESETWIFI_AND_SEL_CONF  0x04
-#define TUYA_V0_CMD_REALTIMESTATUS          0x05
-#define TUYA_V0_CMD_OBTAINLOCALTIME         0x06
-#define TUYA_V0_CMD_RECORDSTATUS            0x08
-#define TUYA_V0_CMD_OBTAINDPCACHE           0x10
-
 void TuyaMCU_V0_SendDPCacheReply() {
 #if 0
 	// send empty?
@@ -1628,6 +1637,16 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 			// 0x08 packet for version 0 (not 0x03) of TuyaMCU
 			// This packet includes first a DateTime, then RealTimeDataStorage
 			TuyaMCU_V0_ParseRealTimeWithRecordStorage(data + 6, len - 6, true);
+		}
+		else {
+
+		}
+		break;
+	case TUYA_V0_CMD_QUERYSIGNALSTRENGTH:
+		if (version == 0) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU_ProcessIncoming: received TUYA_V0_CMD_QUERYSIGNALSTRENGTH, so sending back signal");
+
+			TuyaMCU_Send_SignalStrength(1,80);
 		}
 		else {
 
