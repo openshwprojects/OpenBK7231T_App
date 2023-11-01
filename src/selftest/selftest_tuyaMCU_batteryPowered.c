@@ -327,6 +327,34 @@ void Test_TuyaMCU_BatteryPowered_DPcacheFeature2() {
 
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	10		00 02	0100	12");
 }
+void Test_TuyaMCU_BatteryPowered_QuerySignalStrength() {
+	// reset whole device
+	SIM_ClearOBK(0);
+	SIM_UART_InitReceiveRingBuffer(1024);
+
+	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+	CMD_ExecuteCommand("startDriver tmSensor", 0);
+
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	/*
+	Pressed: 1. Send query product information
+	(simulated delays are disabled)
+	Sent: 55 AA 00 01 00 00 00
+	Sent: Ver=0, Cmd=QueryInfo, Len=0, CHECKSUM OK
+	*/
+	Sim_RunSeconds(3.0f, false);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA 00 01 00 00 00");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	
+	CMD_ExecuteCommand("uartFakeHex 55 AA 00 0B 00 00 0A", 0);
+	Sim_RunSeconds(0.1f, false);
+	
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA 00 0B 00 02 01 50 5D");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+}
 void Test_TuyaMCU_BatteryPowered() {
 	Test_TuyaMCU_BatteryPowered_Style2();
 	Test_TuyaMCU_BatteryPowered_Style1();
@@ -336,6 +364,8 @@ void Test_TuyaMCU_BatteryPowered() {
 	Test_TuyaMCU_BatteryPowered_DPcacheFeature2();
 	Test_TuyaMCU_BatteryPowered_DPcacheFeature3();
 	Test_TuyaMCU_BatteryPowered_DPcacheFeature4();
+
+	Test_TuyaMCU_BatteryPowered_QuerySignalStrength();
 }
 
 #endif
