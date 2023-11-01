@@ -100,7 +100,9 @@ void add_label_input(http_request_t* request, char* inputType, char* label, char
 	}
 
 	hprintf255(request, "<label for=\"%s\">%s:</label><br>", fieldId, label);
-	hprintf255(request, "<input type=\"%s\" id=\"%s\" name=\"%s\" value=\"%s\">", inputType, fieldId, fieldId, value);
+	hprintf255(request, "<input type=\"%s\" id=\"%s\" name=\"%s\" value=\"", inputType, fieldId, fieldId);
+	poststr(request, value);
+	hprintf255(request, "\">");
 }
 
 /// @brief Generates a pair of label and text field elements.
