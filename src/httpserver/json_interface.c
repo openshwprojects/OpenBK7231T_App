@@ -526,17 +526,17 @@ static int http_tasmota_json_status_MEM(void* request, jsonCb_t printer) {
 }
 // Test command: http://192.168.0.159/cm?cmnd=STATUS%205
 static int http_tasmota_json_status_NET(void* request, jsonCb_t printer) {
-	char tmpMac[16];
-	HAL_GetMACStr(tmpMac);
+	char tmpStr[16];
+	HAL_GetMACStr(tmpStr);
 
 	printer(request, "\"StatusNET\":{");
 	JSON_PrintKeyValue_String(request, printer, "Hostname", CFG_GetShortDeviceName(), true);
 	JSON_PrintKeyValue_String(request, printer, "IPAddress", HAL_GetMyIPString(), true);
-	JSON_PrintKeyValue_String(request, printer, "Gateway", "192.168.0.1", true);
-	JSON_PrintKeyValue_String(request, printer, "Subnetmask", "255.255.255.0", true);
-	JSON_PrintKeyValue_String(request, printer, "DNSServer1", "192.168.0.1", true);
+	JSON_PrintKeyValue_String(request, printer, "Gateway", HAL_GetMyGatewayString(), true);
+	JSON_PrintKeyValue_String(request, printer, "Subnetmask", HAL_GetMyMaskString(), true);
+	JSON_PrintKeyValue_String(request, printer, "DNSServer1", HAL_GetMyDNSString(), true);
 	JSON_PrintKeyValue_String(request, printer, "DNSServer2", "0.0.0.0", true);
-	JSON_PrintKeyValue_String(request, printer, "Mac", tmpMac, true);
+	JSON_PrintKeyValue_String(request, printer, "Mac", tmpStr, true);
 	JSON_PrintKeyValue_Int(request, printer, "Webserver", 2, true);
 	JSON_PrintKeyValue_Int(request, printer, "HTTP_API", 1, true);
 	JSON_PrintKeyValue_Int(request, printer, "WifiConfig", 4, true);

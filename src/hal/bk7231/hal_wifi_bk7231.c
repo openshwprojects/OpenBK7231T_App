@@ -33,6 +33,48 @@ const char* HAL_GetMyIPString() {
 	strcpy(g_IP, ipStatus.ip);
 	return g_IP;
 }
+const char* HAL_GetMyGatewayString() {
+	IPStatusTypedef ipStatus;
+
+	os_memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
+	if (g_bOpenAccessPointMode) {
+		bk_wlan_get_ip_status(&ipStatus, SOFT_AP);
+	}
+	else {
+		bk_wlan_get_ip_status(&ipStatus, STATION);
+	}
+
+	strcpy(g_IP, ipStatus.gate);
+	return g_IP;
+}
+const char* HAL_GetMyDNSString() {
+	IPStatusTypedef ipStatus;
+
+	os_memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
+	if (g_bOpenAccessPointMode) {
+		bk_wlan_get_ip_status(&ipStatus, SOFT_AP);
+	}
+	else {
+		bk_wlan_get_ip_status(&ipStatus, STATION);
+	}
+
+	strcpy(g_IP, ipStatus.dns);
+	return g_IP;
+}
+const char* HAL_GetMyMaskString() {
+	IPStatusTypedef ipStatus;
+
+	os_memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
+	if (g_bOpenAccessPointMode) {
+		bk_wlan_get_ip_status(&ipStatus, SOFT_AP);
+	}
+	else {
+		bk_wlan_get_ip_status(&ipStatus, STATION);
+	}
+
+	strcpy(g_IP, ipStatus.mask);
+	return g_IP;
+}
 
 ////////////////////
 // NOTE: this gets the STA mac
