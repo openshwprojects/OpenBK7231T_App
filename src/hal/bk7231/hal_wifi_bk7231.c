@@ -20,6 +20,7 @@ char *get_security_type(int type);
 // This must return correct IP for both SOFT_AP and STATION modes,
 // because, for example, javascript control panel requires it
 const char* HAL_GetMyIPString() {
+	IPStatusTypedef ipStatus;
 
 	os_memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
 	if (g_bOpenAccessPointMode) {
