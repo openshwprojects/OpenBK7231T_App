@@ -20,7 +20,6 @@ char *get_security_type(int type);
 // This must return correct IP for both SOFT_AP and STATION modes,
 // because, for example, javascript control panel requires it
 const char* HAL_GetMyIPString() {
-	IPStatusTypedef ipStatus;
 
 	os_memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
 	if (g_bOpenAccessPointMode) {
@@ -30,7 +29,7 @@ const char* HAL_GetMyIPString() {
 		bk_wlan_get_ip_status(&ipStatus, STATION);
 	}
 
-	strcpy(g_IP, ipStatus.ip);
+	strncpy(g_IP, ipStatus.ip, 16);
 	return g_IP;
 }
 const char* HAL_GetMyGatewayString() {
@@ -44,7 +43,7 @@ const char* HAL_GetMyGatewayString() {
 		bk_wlan_get_ip_status(&ipStatus, STATION);
 	}
 
-	strcpy(g_IP, ipStatus.gate);
+	strncpy(g_IP, ipStatus.gate, 16);
 	return g_IP;
 }
 const char* HAL_GetMyDNSString() {
@@ -58,7 +57,7 @@ const char* HAL_GetMyDNSString() {
 		bk_wlan_get_ip_status(&ipStatus, STATION);
 	}
 
-	strcpy(g_IP, ipStatus.dns);
+	strncpy(g_IP, ipStatus.dns, 16);
 	return g_IP;
 }
 const char* HAL_GetMyMaskString() {
@@ -72,7 +71,7 @@ const char* HAL_GetMyMaskString() {
 		bk_wlan_get_ip_status(&ipStatus, STATION);
 	}
 
-	strcpy(g_IP, ipStatus.mask);
+	strncpy(g_IP, ipStatus.mask, 16);
 	return g_IP;
 }
 
