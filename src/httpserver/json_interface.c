@@ -532,9 +532,15 @@ static int http_tasmota_json_status_NET(void* request, jsonCb_t printer) {
 	printer(request, "\"StatusNET\":{");
 	JSON_PrintKeyValue_String(request, printer, "Hostname", CFG_GetShortDeviceName(), true);
 	JSON_PrintKeyValue_String(request, printer, "IPAddress", HAL_GetMyIPString(), true);
+#if 0
 	JSON_PrintKeyValue_String(request, printer, "Gateway", HAL_GetMyGatewayString(), true);
 	JSON_PrintKeyValue_String(request, printer, "Subnetmask", HAL_GetMyMaskString(), true);
 	JSON_PrintKeyValue_String(request, printer, "DNSServer1", HAL_GetMyDNSString(), true);
+#else
+	JSON_PrintKeyValue_String(request, printer, "Gateway", "192.168.0.1", true);
+	JSON_PrintKeyValue_String(request, printer, "Subnetmask", "255.255.255.0", true);
+	JSON_PrintKeyValue_String(request, printer, "DNSServer1", "192.168.0.1", true);
+#endif
 	JSON_PrintKeyValue_String(request, printer, "DNSServer2", "0.0.0.0", true);
 	JSON_PrintKeyValue_String(request, printer, "Mac", tmpStr, true);
 	JSON_PrintKeyValue_Int(request, printer, "Webserver", 2, true);
