@@ -17,10 +17,10 @@ static char g_IP[32] = "unknown";
 static int g_bOpenAccessPointMode = 0;
 char *get_security_type(int type);
 
+IPStatusTypedef ipStatus;
 // This must return correct IP for both SOFT_AP and STATION modes,
 // because, for example, javascript control panel requires it
 const char* HAL_GetMyIPString() {
-	IPStatusTypedef ipStatus;
 
 	os_memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
 	if (g_bOpenAccessPointMode) {
@@ -34,44 +34,14 @@ const char* HAL_GetMyIPString() {
 	return g_IP;
 }
 const char* HAL_GetMyGatewayString() {
-	IPStatusTypedef ipStatus;
-
-	os_memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
-	if (g_bOpenAccessPointMode) {
-		bk_wlan_get_ip_status(&ipStatus, SOFT_AP);
-	}
-	else {
-		bk_wlan_get_ip_status(&ipStatus, STATION);
-	}
-
 	strncpy(g_IP, ipStatus.gate, 16);
 	return g_IP;
 }
 const char* HAL_GetMyDNSString() {
-	IPStatusTypedef ipStatus;
-
-	os_memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
-	if (g_bOpenAccessPointMode) {
-		bk_wlan_get_ip_status(&ipStatus, SOFT_AP);
-	}
-	else {
-		bk_wlan_get_ip_status(&ipStatus, STATION);
-	}
-
 	strncpy(g_IP, ipStatus.dns, 16);
 	return g_IP;
 }
 const char* HAL_GetMyMaskString() {
-	IPStatusTypedef ipStatus;
-
-	os_memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
-	if (g_bOpenAccessPointMode) {
-		bk_wlan_get_ip_status(&ipStatus, SOFT_AP);
-	}
-	else {
-		bk_wlan_get_ip_status(&ipStatus, STATION);
-	}
-
 	strncpy(g_IP, ipStatus.mask, 16);
 	return g_IP;
 }
