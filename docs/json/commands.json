@@ -252,6 +252,15 @@
     "examples": ""
   },
   {
+    "name": "Choice",
+    "args": "CMD_Choice",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "chSetupLimit",
     "args": "[limitChannelIndex] [maxAllowedLimitChannelDelta] [timeoutOr-1] [commandToRun]",
     "descr": "After executing this command, chargingLimit driver will watch channel for changes and count down timer. When a timer runs our or channel change (from the initial state) is larger than given margin, given command is run",
@@ -2318,6 +2327,24 @@
     "descr": "Sets the VALUE of given output. Handles toggler_set0, toggler_set1, etc. The last digit after command name is changed to slot index.",
     "fn": "Toggler_SetX",
     "file": "driver/drv_pwmToggler.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "TS_Clear",
+    "args": "CMD_TS_Clear",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_textScroller.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "TS_Print",
+    "args": "CMD_TS_Print",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_textScroller.c",
     "requires": "",
     "examples": ""
   },

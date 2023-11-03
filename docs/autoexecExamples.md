@@ -60,6 +60,18 @@ linkTuyaMCUOutputToChannel 2 val 2
 ```
 
 
+[Automatic relay turn off after given relay (aka inching)](https://www.elektroda.com/rtvforum/viewtopic.php?p=20797236#20797236)
+<br>
+```
+// This aliased command will turn off relay on CH1 after 10 seconds
+// addRepeatingEvent	[IntervalSeconds][RepeatsOr-1][CommandToRun]
+alias turn_off_after_time addRepeatingEvent 10 1 setChannel 1 0
+// this will run the turn off command every time that CH1 becomes 1
+addChangeHandler Channel1 == 1 turn_off_after_time 
+
+```
+
+
 [Configuration for controlling LED strip with IR receiver by TV Remote](https://www.elektroda.com/rtvforum/topic3944210.html)
 <br>
 ```// You must set IRRecv role for one of the pins
@@ -106,6 +118,7 @@ setChannelType 22 TextField
 setChannelType 23 TextField
 
 // link output 1 to channel 1
+// linkTuyaMCUOutputToChannel dpId varType tgChannel
 linkTuyaMCUOutputToChannel 1 1 1
 
 // link output 3 to channel 3
@@ -554,6 +567,7 @@ setChannelType 9 TextField
 setChannelType 10 TextField
 setChannelType 14 TextField
 
+// linkTuyaMCUOutputToChannel dpId varType tgChannel
 linkTuyaMCUOutputToChannel 1 1 1
 linkTuyaMCUOutputToChannel 2 1 2
 linkTuyaMCUOutputToChannel 3 1 3

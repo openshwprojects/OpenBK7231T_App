@@ -144,6 +144,24 @@
     "requires": ""
   },
   {
+    "name": "$mday",
+    "title": "$mday",
+    "descr": "TODO",
+    "requires": ""
+  },
+  {
+    "name": "$month",
+    "title": "$month",
+    "descr": "TODO",
+    "requires": ""
+  },
+  {
+    "name": "$year",
+    "title": "$year",
+    "descr": "TODO",
+    "requires": ""
+  },
+  {
     "name": "$NTPOn",
     "title": "$NTPOn",
     "descr": "Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0.",

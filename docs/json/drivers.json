@@ -72,6 +72,18 @@
     "requires": ""
   },
   {
+    "name": "PT6523",
+    "title": "TODO",
+    "descr": "BQQQK",
+    "requires": ""
+  },
+  {
+    "name": "TextScroller",
+    "title": "TODO",
+    "descr": "BQQQK",
+    "requires": ""
+  },
+  {
     "name": "SM16703P",
     "title": "TODO",
     "descr": "SM16703P is an individually addressable LEDs controller like WS2812B. Currently SM16703P LEDs are supported through hardware SPI, LEDs data should be connected to P16 (MOSI), [here you can read](https://www.elektroda.com/rtvforum/topic4005865.html) how to break it out on CB2S.",

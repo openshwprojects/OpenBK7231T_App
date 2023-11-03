@@ -115,7 +115,15 @@ void TS_Init() {
 	g_buffer = malloc(g_maxScrollingText);
 	TS_SetText("THIS IS A SCROLLING TEXT 123456789");
 
+	//cmddetail:{"name":"TS_Clear","args":"CMD_TS_Clear",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_textScroller.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TS_Clear", CMD_TS_Clear, NULL);
+	//cmddetail:{"name":"TS_Print","args":"CMD_TS_Print",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_textScroller.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TS_Print", CMD_TS_Print, NULL);
 }
 

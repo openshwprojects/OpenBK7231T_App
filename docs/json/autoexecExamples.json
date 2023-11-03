@@ -12,6 +12,10 @@
 "file": "autoexecs/TH06-thermometer-hygrometer.bat"
 },
 {
+"title": "[Automatic relay turn off after given relay (aka inching)](https://www.elektroda.com/rtvforum/viewtopic.php?p=20797236#20797236)",
+"file": "autoexecs/turn_off_relay_after_time.bat"
+},
+{
 "title": "[Configuration for controlling LED strip with IR receiver by TV Remote](https://www.elektroda.com/rtvforum/topic3944210.html)",
 "file": "autoexecs/LED-strip-with-IR-receiver.bat"
 },

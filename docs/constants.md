@@ -30,6 +30,9 @@ Do not add anything here, as it will overwritten with next rebuild.
 | $hour |  Current hour from NTP |
 | $minute |  Current minute from NTP |
 | $second |  Current second from NTP |
+| $mday |  TODO |
+| $month |  TODO |
+| $year |  TODO |
 | $NTPOn |  Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0. |
 | $batteryVoltage |  Battery driver voltage |
 | $batteryLevel |  Battery driver level |

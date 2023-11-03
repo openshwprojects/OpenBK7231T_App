@@ -743,6 +743,10 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_StartupCommand","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("StartupCommand", CMD_StartupCommand, NULL);
+	//cmddetail:{"name":"Choice","args":"CMD_Choice",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Choice", CMD_Choice, NULL);
 	//CMD_RegisterCommand("FindPattern", CMD_FindPattern, NULL);
 	
