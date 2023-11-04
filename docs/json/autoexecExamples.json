@@ -16,6 +16,10 @@
 "file": "autoexecs/turn_off_relay_after_time.bat"
 },
 {
+"title": "[Advanced turn off after time with timer on UI](https://www.elektroda.com/rtvforum/viewtopic.php?p=20797440#20797440)",
+"file": "autoexecs/turn_off_relay_after_time_advanced.bat"
+},
+{
 "title": "[Configuration for controlling LED strip with IR receiver by TV Remote](https://www.elektroda.com/rtvforum/topic3944210.html)",
 "file": "autoexecs/LED-strip-with-IR-receiver.bat"
 },
