@@ -253,8 +253,8 @@
   },
   {
     "name": "Choice",
-    "args": "CMD_Choice",
-    "descr": "",
+    "args": "[IndexToExecute][Option0][Option1][Option2][OptionN][etc]",
+    "descr": "This will choose a given argument by index and execute it as a command. Index to execute can be a variable like $CH1.",
     "fn": "NULL);",
     "file": "cmnds/cmd_main.c",
     "requires": "",
@@ -2332,8 +2332,8 @@
   },
   {
     "name": "TS_Clear",
-    "args": "CMD_TS_Clear",
-    "descr": "",
+    "args": "",
+    "descr": "Clears the text scroller buffer",
     "fn": "NULL);",
     "file": "driver/drv_textScroller.c",
     "requires": "",
@@ -2341,8 +2341,8 @@
   },
   {
     "name": "TS_Print",
-    "args": "CMD_TS_Print",
-    "descr": "",
+    "args": "[StartOfs] [MaxLenOr0] [StringText] [optionalBClampWithZeroesForClock]",
+    "descr": "Prints a text to the text scroller buffer",
     "fn": "NULL);",
     "file": "driver/drv_textScroller.c",
     "requires": "",

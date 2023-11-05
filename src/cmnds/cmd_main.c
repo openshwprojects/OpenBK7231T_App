@@ -743,8 +743,8 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_StartupCommand","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("StartupCommand", CMD_StartupCommand, NULL);
-	//cmddetail:{"name":"Choice","args":"CMD_Choice",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"Choice","args":"[IndexToExecute][Option0][Option1][Option2][OptionN][etc]",
+	//cmddetail:"descr":"This will choose a given argument by index and execute it as a command. Index to execute can be a variable like $CH1.",
 	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Choice", CMD_Choice, NULL);
