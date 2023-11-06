@@ -210,7 +210,7 @@ void CSE7766_Init(void) {
 	UART_InitReceiveRingBuffer(512);
 }
 
-void CSE7766_RunFrame(void) {
+void CSE7766_RunEverySecond(void) {
     //addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"UART buffer size %i\n", UART_GetDataSize());
 
 	CSE7766_TryToGetNextCSE7766Packet();

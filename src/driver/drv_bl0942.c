@@ -226,7 +226,7 @@ void BL0942_UART_Init(void) {
                   BL0942_MODE_DEFAULT | BL0942_MODE_RMS_UPDATE_SEL_800_MS);
 }
 
-void BL0942_UART_RunFrame(void) {
+void BL0942_UART_RunEverySecond(void) {
     UART_TryToGetNextPacket();
 
     UART_InitUART(BL0942_UART_BAUD_RATE);
@@ -254,7 +254,7 @@ void BL0942_SPI_Init(void) {
                  BL0942_MODE_DEFAULT | BL0942_MODE_RMS_UPDATE_SEL_800_MS);
 }
 
-void BL0942_SPI_RunFrame(void) {
+void BL0942_SPI_RunEverySecond(void) {
     bl0942_data_t data;
     SPI_ReadReg(BL0942_REG_I_RMS, &data.i_rms);
     SPI_ReadReg(BL0942_REG_V_RMS, &data.v_rms);

@@ -173,7 +173,7 @@ void BL0937_Init(void) {
 	BL0937_Init_Pins();
 }
 
-void BL0937_RunFrame(void) {
+void BL0937_RunEverySecond(void) {
     float final_v;
 	float final_c;
 	float final_p;

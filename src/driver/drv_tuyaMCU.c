@@ -1945,7 +1945,7 @@ void TuyaMCU_RunFrame() {
 		}
 	}
 }
-void TuyaMCU_RunSecond() {
+void TuyaMCU_RunEverySecond() {
 	g_sensorMode = DRV_IsRunning("tmSensor");
 	if (g_sensorMode) {
 		TuyaMCU_RunStateMachine_BatteryPowered();

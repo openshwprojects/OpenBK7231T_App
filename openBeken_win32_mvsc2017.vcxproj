@@ -1065,7 +1065,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\driver\drv_bl0937.h" />
+    <ClInclude Include="src\driver\drv_bl0942.h" />
     <ClInclude Include="src\driver\drv_cht8305.h" />
+    <ClInclude Include="src\driver\drv_cse7766.h" />
     <ClInclude Include="src\driver\drv_dht_internal.h" />
     <ClInclude Include="src\driver\drv_ht16k33.h" />
     <ClInclude Include="src\driver\drv_max72xx_internal.h" />
@@ -1073,6 +1076,7 @@
     <ClInclude Include="src\driver\drv_sgp.h" />
     <ClInclude Include="src\driver\drv_sht3x.h" />
     <ClInclude Include="src\driver\drv_sm2235.h" />
+    <ClInclude Include="src\driver\drv_test_drivers.h" />
     <ClInclude Include="src\driver\drv_tm1637.h" />
     <ClInclude Include="src\driver\drv_tm_gn_display_shared.h" />
     <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ac_LG.h" />

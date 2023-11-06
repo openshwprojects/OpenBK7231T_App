@@ -66,7 +66,7 @@ bool DRV_IsRunning(const char* name);
 void DGR_ProcessIncomingPacket(char* msgbuf, int nbytes);
 void DGR_SpoofNextDGRPacketSource(const char* ipStrs);
 
-void TuyaMCU_Sensor_RunFrame();
+void TuyaMCU_Sensor_RunEverySecond();
 void TuyaMCU_Sensor_Init();
 
 

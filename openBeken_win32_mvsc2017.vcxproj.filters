@@ -1310,6 +1310,16 @@
       <Filter>LFS</Filter>
     </ClInclude>
     <ClInclude Include="src\driver\drv_pt6523_font.h">
+    <ClInclude Include="src\driver\drv_bl0937.h">
+      <Filter>Drv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\driver\drv_bl0942.h">
+      <Filter>Drv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\driver\drv_cse7766.h">
+      <Filter>Drv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\driver\drv_test_drivers.h">
       <Filter>Drv</Filter>
     </ClInclude>
   </ItemGroup>

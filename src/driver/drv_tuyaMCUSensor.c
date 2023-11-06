@@ -22,7 +22,7 @@
 void TuyaMCU_Sensor_Init() {
 	//g_elapsedTime = 0;
 }
-void TuyaMCU_Sensor_RunFrame() {
+void TuyaMCU_Sensor_RunEverySecond() {
 	//int i;
 
 	//g_elapsedTime++;
