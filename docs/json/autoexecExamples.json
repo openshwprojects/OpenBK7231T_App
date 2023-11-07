@@ -40,6 +40,10 @@
 "file": "autoexecs/single_button_for_five_relays.bat"
 },
 {
+"title": "[Script for LED acting like WiFi state LED during connecting to network but like Relay state LED when online](https://www.elektroda.com/rtvforum/viewtopic.php?p=20804036#20804036)",
+"file": "autoexecs/wifiled_and_relay_state.bat"
+},
+{
 "title": "Simple example showing how to do MQTT publish on button event (double click, etc). It also includes button hold event to adjust dimmer.",
 "file": "autoexecs/buttom_custom_events_mqtt_publishes.bat"
 },
