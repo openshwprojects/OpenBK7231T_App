@@ -2359,8 +2359,8 @@
   },
   {
     "name": "tuyaMcu_sendColor",
-    "args": "Cmd_TuyaMCU_SendColor",
-    "descr": "",
+    "args": "[dpID] [red01] [green01] [blue01] [tuyaRGBformat]",
+    "descr": "This sends a TuyaMCU color string of given format for given RGB values, where each value is in [0,1] range as float",
     "fn": "NULL);",
     "file": "driver/drv_tuyaMCU.c",
     "requires": "",
@@ -2449,8 +2449,8 @@
   },
   {
     "name": "tuyaMcu_setupLED",
-    "args": "Cmd_TuyaMCU_SetupLED",
-    "descr": "",
+    "args": "[dpIDColor] [TasFormat] [dpIDPower]",
+    "descr": "Setups the TuyaMCU LED driver for given color dpID and power dpID. Also allows you to choose color format.",
     "fn": "NULL);",
     "file": "driver/drv_tuyaMCU.c",
     "requires": "",

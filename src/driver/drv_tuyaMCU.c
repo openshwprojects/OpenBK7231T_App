@@ -664,7 +664,7 @@ commandResult_t Cmd_TuyaMCU_SendColor(const void* context, const char* cmd, cons
 
 	return CMD_RES_OK;
 }
-// tuyaMCU_setupLED dpID TasFormat
+// tuyaMCU_setupLED dpIDColor TasFormat dpIDPower
 commandResult_t Cmd_TuyaMCU_SetupLED(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, 0);
@@ -674,8 +674,7 @@ commandResult_t Cmd_TuyaMCU_SetupLED(const void* context, const char* cmd, const
 
 	g_tuyaMCUled_id_color = Tokenizer_GetArgInteger(0);
 	g_tuyaMCUled_format = Tokenizer_GetArgInteger(1);
-	// TODO: parse it
-	g_tuyaMCUled_id_power = 20;;
+	g_tuyaMCUled_id_power = Tokenizer_GetArgIntegerDefault(2, 20);
 
 	return CMD_RES_OK;
 }
@@ -2067,7 +2066,6 @@ void TuyaMCU_Init()
 	//cmddetail:"fn":"TuyaMCU_Send_SetTime_Current","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_sendCurTime", TuyaMCU_Send_SetTime_Current, NULL);
-	///CMD_RegisterCommand("tuyaMcu_sendSimple","",TuyaMCU_Send_Simple, "Appends a 0x55 0xAA header to a data, append a checksum at end and send");
 	//cmddetail:{"name":"linkTuyaMCUOutputToChannel","args":"[dpId][varType][channelID][bDPCache-Optional]",
 	//cmddetail:"descr":"Used to map between TuyaMCU dpIDs and our internal channels. Last argument is optional and 0 by default. You can set it to 1 for battery powered devices, so a variable is set with DPCache, for example a sampling interval for humidity/temperature sensor. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap. Please see [Tuya Docs](https://developer.tuya.com/en/docs/iot/tuya-cloud-universal-serial-port-access-protocol?id=K9hhi0xxtn9cb) for info about TuyaMCU. You can also see our [TuyaMCU Analyzer Tool](https://www.elektroda.com/rtvforum/viewtopic.php?p=20528459#20528459)",
 	//cmddetail:"fn":"TuyaMCU_LinkTuyaMCUOutputToChannel","file":"driver/drv_tuyaMCU.c","requires":"",
@@ -2124,14 +2122,14 @@ void TuyaMCU_Init()
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_defWiFiState", Cmd_TuyaMCU_Set_DefaultWiFiState, NULL);
 
-	//cmddetail:{"name":"tuyaMcu_sendColor","args":"Cmd_TuyaMCU_SendColor",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"tuyaMcu_sendColor","args":"[dpID] [red01] [green01] [blue01] [tuyaRGBformat]",
+	//cmddetail:"descr":"This sends a TuyaMCU color string of given format for given RGB values, where each value is in [0,1] range as float",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_sendColor", Cmd_TuyaMCU_SendColor, NULL);
 
-	//cmddetail:{"name":"tuyaMcu_setupLED","args":"Cmd_TuyaMCU_SetupLED",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"tuyaMcu_setupLED","args":"[dpIDColor] [TasFormat] [dpIDPower]",
+	//cmddetail:"descr":"Setups the TuyaMCU LED driver for given color dpID and power dpID. Also allows you to choose color format.",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_setupLED", Cmd_TuyaMCU_SetupLED, NULL);
