@@ -279,6 +279,20 @@ addEventHandler On5Click 26 ToggleChannel 5
 ```
 
 
+[Script for LED acting like WiFi state LED during connecting to network but like Relay state LED when online](https://www.elektroda.com/rtvforum/viewtopic.php?p=20804036#20804036)
+<br>
+```
+alias mode_wifi setPinRole 10 WifiLED_n
+alias mode_relay setPinRole 10 LED_n
+
+// at reboot, set WiFiLEd
+mode_wifi
+// then, setup handlers
+addChangeHandler WiFiState == 4 mode_relay 
+addChangeHandler WiFiState != 4 mode_wifi 
+```
+
+
 Simple example showing how to do MQTT publish on button event (double click, etc). It also includes button hold event to adjust dimmer.
 <br>
 ```// A simple script per user request.
