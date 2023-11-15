@@ -248,7 +248,7 @@ static driver_t g_drivers[] = {
 	{ "BP1658CJ",	BP1658CJ_Init,		NULL,			NULL, NULL, NULL, NULL, false },
 	//drvdetail:{"name":"SM2235",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"SM2335 andd SM2235 custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both SM2235 pin roles. This may need you to remap the RGBCW indexes with SM2235_Map command",
+	//drvdetail:"descr":"SM2335 andd SM2235 custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both SM2235 pin roles. This may need you to remap the RGBCW indexes with SM2235_Map command. This driver also works for SM2185N.",
 	//drvdetail:"requires":""}
 	{ "SM2235",		SM2235_Init,		NULL,			NULL, NULL, NULL, NULL, false },
 #endif
