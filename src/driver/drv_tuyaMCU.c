@@ -772,28 +772,8 @@ Info:TuyaMCU:TuyaMCU_V0_ParseRealTimeWithRecordStorage: raw data 1 byte:
 Info:GEN:No change in channel 1 (still set to 0) - ignoring
 */
 
-
-commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	const char* dpTypeString;
-	byte dpId;
-	byte dpType;
-	byte channelID;
-	byte argsCount;
-	byte bDPCache;
-
-	// linkTuyaMCUOutputToChannel dpId varType channelID
-	// linkTuyaMCUOutputToChannel 1 val 1
-	Tokenizer_TokenizeString(args, 0);
-
-	argsCount = Tokenizer_GetArgsCount();
-	// following check must be done after 'Tokenizer_TokenizeString',
-	// so we know arguments count in Tokenizer. 'cmd' argument is
-	// only for warning display
-	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
-	dpId = Tokenizer_GetArgInteger(0);
-	dpTypeString = Tokenizer_GetArg(1);
+int TuyaMCU_ParseDPType(const char *dpTypeString) {
+	int dpType;
 	if (!stricmp(dpTypeString, "bool")) {
 		dpType = DP_TYPE_BOOL;
 	}
@@ -828,10 +808,35 @@ commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void* context, const ch
 			dpType = atoi(dpTypeString);
 		}
 		else {
-			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU_LinkTuyaMCUOutputToChannel: %s is not a valid var type\n", dpTypeString);
-			return CMD_RES_BAD_ARGUMENT;
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "%s is not a valid var type\n", dpTypeString);
+			return DP_TYPE_VALUE;
 		}
 	}
+	return dpType;
+}
+
+commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	const char* dpTypeString;
+	byte dpId;
+	byte dpType;
+	byte channelID;
+	byte argsCount;
+	byte bDPCache;
+
+	// linkTuyaMCUOutputToChannel dpId varType channelID
+	// linkTuyaMCUOutputToChannel 1 val 1
+	Tokenizer_TokenizeString(args, 0);
+
+	argsCount = Tokenizer_GetArgsCount();
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	dpId = Tokenizer_GetArgInteger(0);
+	dpTypeString = Tokenizer_GetArg(1);
+	dpType = TuyaMCU_ParseDPType(dpTypeString);
 	if (argsCount < 2) {
 		channelID = -999;
 	}
@@ -998,7 +1003,7 @@ commandResult_t TuyaMCU_SendStateCmd(const void* context, const char* cmd, const
 	}
 
 	dpId = Tokenizer_GetArgInteger(0);
-	dpType = Tokenizer_GetArgInteger(1);
+	dpType = TuyaMCU_ParseDPType(Tokenizer_GetArg(1)); ;
 	if (dpType == DP_TYPE_STRING) {
 		valStr = Tokenizer_GetArg(2);
 		TuyaMCU_SendState(dpId, DP_TYPE_STRING, (uint8_t*)valStr);
