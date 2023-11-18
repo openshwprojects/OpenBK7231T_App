@@ -5,6 +5,8 @@ https://github.com/openshwprojects/BK7231GUIFlashTool
 For step by step process, you can see those guides:
 - https://www.elektroda.com/rtvforum/topic3875654.html
 - https://www.elektroda.com/rtvforum/topic3874289.html
+You can check our Youtube channel for many per-device flashing guides:
+https://www.youtube.com/@elektrodacom
 
 # Flashing for BK7231T (alternate method)
 
@@ -46,13 +48,13 @@ See: https://github.com/openshwprojects/BK7231_SPI_Flasher
 
 Once the firmware has been flashed for the first time, it can be flashed over wifi.
 
-Go to "Open Web Application", OTA tab, drag and drop proper RBL file on the field, press a button to start OTA proccess
+Go to "Open Web Application", OTA tab, drag and drop proper RBL file on the field, press a button to start OTA process
 
 ## First run
 
 At first boot, if the new firmware does not find your wifi SSID and password in the Tuya flash, it will start as an access point.
 
-The access point will come up on 192.168.4.1, however some machines may not get an ip from it - you may need to configure your connecting for a staitc IP on that network, e.g. 192.168.4.10
+The access point will come up on 192.168.4.1, however some machines may not get an ip from it - you may need to configure your connecting for a static IP on that network, e.g. 192.168.4.10
 
 Once you are connected and have an IP, go to http://192.168.4.1/index , select config then wifi, and setup your wifi.
 
