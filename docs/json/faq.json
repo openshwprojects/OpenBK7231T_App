@@ -33,7 +33,7 @@
     },
     {
         "question": "How to remove autoexec.bat breaking the device in safe mode?",
-        "answer": "You can use lfs_format command to clear LittleFS even in SafeMode. This can be useful if you've written a script that immediatelly shuts down or crashes OBK and prevents you from accessing the page."
+        "answer": "You can use lfs_format command to clear LittleFS even in SafeMode. This can be useful if you've written a script that immediately shuts down or crashes OBK and prevents you from accessing the page."
     },
     {
         "question": "How to make device discoverable by Alexa?",
