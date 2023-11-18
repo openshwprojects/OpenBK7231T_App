@@ -5,6 +5,7 @@ https://github.com/openshwprojects/BK7231GUIFlashTool
 For step by step process, you can see those guides:
 - https://www.elektroda.com/rtvforum/topic3875654.html
 - https://www.elektroda.com/rtvforum/topic3874289.html
+
 You can check our Youtube channel for many per-device flashing guides:
 https://www.youtube.com/@elektrodacom
 
