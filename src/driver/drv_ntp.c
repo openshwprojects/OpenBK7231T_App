@@ -70,6 +70,7 @@ int NTP_GetTimesZoneOfsSeconds()
 commandResult_t NTP_SetTimeZoneOfs(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int a, b;
 	const char *arg;
+	int oldOfs;
 
     Tokenizer_TokenizeString(args,0);
 	// following check must be done after 'Tokenizer_TokenizeString',
@@ -79,6 +80,7 @@ commandResult_t NTP_SetTimeZoneOfs(const void *context, const char *cmd, const c
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	arg = Tokenizer_GetArg(0);
+	oldOfs = g_timeOffsetSeconds;
 	if (strchr(arg, ':')) {
 		int useSign = 1;
 		if (*arg == '-') {
@@ -91,7 +93,9 @@ commandResult_t NTP_SetTimeZoneOfs(const void *context, const char *cmd, const c
 	else {
 		g_timeOffsetSeconds = Tokenizer_GetArgInteger(0) * 60 * 60;
 	}
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP offset set, wait for next ntp packet to apply changes");
+	g_ntpTime -= oldOfs;
+	g_ntpTime += g_timeOffsetSeconds;
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP offset set");
     return CMD_RES_OK;
 }
 
