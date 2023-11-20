@@ -94,7 +94,7 @@ static commandResult_t CMD_Ch(const void *context, const char *cmd, const char *
 
 	p = cmd + 2;
 	type = *p;
-	if (p == '+') {
+	if (*p == '+') {
 		p++;
 	}
 	ch = atoi(p);
