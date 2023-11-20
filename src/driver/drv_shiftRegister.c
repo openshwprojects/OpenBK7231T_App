@@ -91,7 +91,7 @@ void Shift_OnChannelChanged(int ch, int value) {
 	if (ch < 0) {
 		return;
 	}
-	if (ch >= g_totalRegisters) {
+	if (ch >= totalChannelsMapped) {
 		return;
 	}
 	if (g_invert) {
