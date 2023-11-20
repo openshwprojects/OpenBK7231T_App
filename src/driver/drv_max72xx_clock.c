@@ -117,8 +117,8 @@ void Clock_SendTemperature() {
 static int cycle = 0;
 
 void Run_NoAnimation() {
-	int max_cycle;
-	bool bHasDHT;
+	//int max_cycle;
+	//bool bHasDHT;
 
 	cycle+=4;
 	if (cycle < 10) {

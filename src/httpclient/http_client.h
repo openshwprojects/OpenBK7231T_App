@@ -97,7 +97,8 @@ typedef struct httprequest_t_tag{
     int (*data_callback)(struct httprequest_t_tag *request);
     httpclient_t client;
     const char *url;
-    const char *header;
+	// This will be freed if HTTPREQUEST_FLAG_FREE_HEADER flag is set
+    char *header;
     int port;
     short method;
 	// eg. HTTPREQUEST_FLAG_FREE_SELFONDONE

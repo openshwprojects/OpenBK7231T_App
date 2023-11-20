@@ -245,7 +245,8 @@ int httpclient_get_info(httpclient_t *client, char *send_buf, int *send_idx, cha
 
 void HTTPClient_SetCustomHeader(httpclient_t *client, const char *header)
 {
-    client->header = header;
+	// NOTE: this will be freed if a HTTPREQUEST_FLAG_FREE_HEADER flag is set
+    client->header = (char*)header;
 }
 
 int httpclient_basic_auth(httpclient_t *client, char *user, char *password)
@@ -788,7 +789,7 @@ int httpclient_response_parse(httpclient_t *client, char *data, int len, uint32_
             os_memmove(data, &data[crlf_pos + 2], len - (crlf_pos + 2) + 1); /* Be sure to move NULL-terminating char as well */
             len -= (crlf_pos + 2);
 
-        } else if ((n == 1) && (key)) {
+        } else if ((n == 1) && (key[0])) {
             ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "Read header : %s: <no value>\r\n", key);
             os_memmove(data, &data[crlf_pos + 2], len - (crlf_pos + 2) + 1); /* Be sure to move NULL-terminating char as well */
             len -= (crlf_pos + 2);

@@ -76,7 +76,6 @@ void SGP_StopDriver() {
 
 void SGP_GetBaseline()
 {
-	uint32_t baseline;
 	uint8_t buff[6];
 	// launch measurement on sensor. 
 	Soft_I2C_Start(&g_sgpI2C, SGP_I2C_ADDRESS);
@@ -100,7 +99,6 @@ commandResult_t SGP_GetBaselinecmd(const void* context, const char* cmd, const c
 
 void SGP_GetVersion()
 {
-	uint32_t baseline;
 	uint8_t buff[3];
 	uint16_t feature_set_version;
 	uint8_t product_type;

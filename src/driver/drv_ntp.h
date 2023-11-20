@@ -24,6 +24,8 @@ void NTP_SetSimulatedTime(unsigned int timeNow);
 int NTP_PrintEventList();
 int NTP_RemoveClockEvent(int id);
 int NTP_ClearEvents();
+void NTP_Init_Events();
+int NTP_ClearEvents();
 
 extern unsigned int g_ntpTime;
 

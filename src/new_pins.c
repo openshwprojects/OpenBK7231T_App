@@ -662,8 +662,6 @@ void CHANNEL_DoSpecialToggleAll() {
 	}
 	for (i = 0; i < CHANNEL_MAX; i++) {
 		if (CHANNEL_IsPowerRelayChannel(i)) {
-			int valToSet;
-
 			CHANNEL_Set(i, !anyEnabled, 0);
 		}
 	}

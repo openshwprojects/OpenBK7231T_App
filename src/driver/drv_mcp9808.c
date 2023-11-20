@@ -239,7 +239,7 @@ MCP9808_Cycle 1
 */
 void MCP9808_Init() {
 
-	uint8_t buff[4];
+	//uint8_t buff[4];
 
 	g_softI2C.pin_clk = Tokenizer_GetArgIntegerDefault(1, 26);
 	g_softI2C.pin_data = Tokenizer_GetArgIntegerDefault(2, 24);

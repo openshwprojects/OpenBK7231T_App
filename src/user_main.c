@@ -42,6 +42,7 @@
 #ifdef PLATFORM_BEKEN
 #include <mcu_ps.h>
 #include <fake_clock_pub.h>
+#include <BkDriverWdg.h>
 void bg_register_irda_check_func(FUNCPTR func);
 #endif
 

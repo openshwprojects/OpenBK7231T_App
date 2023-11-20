@@ -222,7 +222,7 @@ enum TuyaMCUV0State {
 };
 static byte g_tuyaBatteryPoweredState = 0;
 static byte g_hello[] = { 0x55, 0xAA, 0x00, 0x01, 0x00, 0x00, 0x00 };
-static byte g_request_state[] = { 0x55, 0xAA, 0x00, 0x02, 0x00, 0x01, 0x04, 0x06 };
+//static byte g_request_state[] = { 0x55, 0xAA, 0x00, 0x02, 0x00, 0x01, 0x04, 0x06 };
 
 typedef struct tuyaMCUPacket_s {
 	byte *data;
@@ -648,7 +648,6 @@ void TuyaMCU_SendColor(int dpID, float fR, float fG, float fB, int tuyaRGB) {
 // green:
 // tuyaMCU_sendColor 24 0 1 0 1
 commandResult_t Cmd_TuyaMCU_SendColor(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	int toSend;
 	float fR, fG, fB;
 	int dpID, tuyaRGB;
 
@@ -819,7 +818,7 @@ commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void* context, const ch
 	const char* dpTypeString;
 	byte dpId;
 	byte dpType;
-	byte channelID;
+	int channelID;
 	byte argsCount;
 	byte bDPCache;
 
@@ -1056,7 +1055,6 @@ void TuyaMCU_ForcePublishChannelValues() {
 		MQTT_ChannelPublish(cur->channel, 0);
 		cur = cur->next;
 	}
-	return 0;
 }
 // ntp_timeZoneOfs 2
 // addRepeatingEvent 10 -1 uartSendHex 55AA0008000007
@@ -1461,7 +1459,6 @@ void TuyaMCU_V0_SendDPCacheReply() {
 	byte dat = 0x00;
 	TuyaMCU_SendCommandWithData(0x10, &dat, 1);
 #else
-	int i;
 	int dataLen;
 	int value;
 	int writtenCount;

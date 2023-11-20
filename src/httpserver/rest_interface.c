@@ -665,14 +665,14 @@ static int http_rest_get_pins(http_request_t* request) {
 	// TODO: maybe we should cull futher channels that are not used?
 	// I support many channels because I plan to use 16x relays module with I2C MCP23017 driver
 	poststr(request, "],\"channels\":[");
-	for (i = 0; i < CHANNEL_MAX; i++) {
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if (i) {
 			hprintf255(request, ",");
 		}
 		hprintf255(request, "%d", g_cfg.pins.channels[i]);
 	}
 	poststr(request, "],\"states\":[");
-	for (i = 0; i < CHANNEL_MAX; i++) {
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if (i) {
 			hprintf255(request, ",");
 		}
