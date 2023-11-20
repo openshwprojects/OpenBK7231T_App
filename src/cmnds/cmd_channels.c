@@ -59,7 +59,7 @@ const char *CHANNEL_GetLabel(int ch) {
 static commandResult_t CMD_SetChannelLabel(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int ch;
 	const char *s;
-	int bHideTogglePrefix = 0;
+	int bHideTogglePrefix = 1;
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 	// following check must be done after 'Tokenizer_TokenizeString',
@@ -72,7 +72,7 @@ static commandResult_t CMD_SetChannelLabel(const void *context, const char *cmd,
 	ch = Tokenizer_GetArgInteger(0);
 	s = Tokenizer_GetArg(1);
 	if (Tokenizer_GetArgsCount() > 2) {
-		bHideTogglePrefix = Tokenizer_GetArg(2);
+		bHideTogglePrefix = Tokenizer_GetArgInteger(2);
 	}
 
 	CHANNEL_SetLabel(ch, s, bHideTogglePrefix);
