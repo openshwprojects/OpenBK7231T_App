@@ -362,6 +362,9 @@ void EventHandlers_FireEvent2(byte eventCode, int argument, int argument2) {
 		ev = ev->next;
 	}
 }
+
+void CMD_Script_ProcessWaitersForEvent(byte eventCode, int argument);
+
 void EventHandlers_FireEvent(byte eventCode, int argument) {
 	struct eventHandler_s *ev;
 

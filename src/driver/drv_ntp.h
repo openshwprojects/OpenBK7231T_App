@@ -26,6 +26,7 @@ int NTP_RemoveClockEvent(int id);
 int NTP_ClearEvents();
 void NTP_Init_Events();
 int NTP_ClearEvents();
+void NTP_RunEvents(unsigned int newTime, bool bTimeValid);
 
 extern unsigned int g_ntpTime;
 
