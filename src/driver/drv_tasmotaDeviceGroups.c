@@ -254,7 +254,6 @@ void DRV_DGR_Send_Generic(byte *message, int len) {
 }
 
 void DRV_DGR_Dump(byte *message, int len){
-#ifdef DGRLOADMOREDEBUG	
 	char tmp[100];
 	char *p = tmp;
 	for (int i = 0; i < len && i < 49; i++){
@@ -263,7 +262,6 @@ void DRV_DGR_Dump(byte *message, int len){
 	}
 	*p = 0;
 	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_Send_Generic: %s",tmp);
-#endif	
 }
 
 void DRV_DGR_Send_Power(const char *groupName, int channelValues, int numChannels){
@@ -534,6 +532,12 @@ int DGR_CheckSequence(uint16_t seq) {
 }
 
 void DRV_DGR_RunEverySecond() {
+	const char *myip;
+
+	// TODO: do it only on IP change?
+	myip = HAL_GetMyIPString();
+	g_mySockAddr.sin_addr.s_addr = inet_addr(myip);
+
 	if(g_dgr_socket_receive<=0 || g_dgr_socket_send <= 0) {
 		dgr_retry_time_left--;
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"no sockets, will retry creation soon, in %i secs\n",dgr_retry_time_left);
@@ -572,16 +576,17 @@ void DGR_ProcessIncomingPacket(char *msgbuf, int nbytes) {
 
 	// don't send things that result from something we rxed...
 	g_inCmdProcessing = 1;
+#ifdef DGRLOADMOREDEBUG	
 	DRV_DGR_Dump((byte*)msgbuf, nbytes);
-
+#endif
 	DGR_Parse((byte*)msgbuf, nbytes, &def, (struct sockaddr *)&addr);
 	g_inCmdProcessing = 0;
 
 }
+struct sockaddr_in g_mySockAddr;
+
 void DRV_DGR_RunQuickTick() {
-    	char msgbuf[64];
-	struct sockaddr_in me;
-	const char *myip;
+    char msgbuf[64];
 	socklen_t addrlen;
 	int nbytes;
 	int i;
@@ -589,11 +594,8 @@ void DRV_DGR_RunQuickTick() {
 	if(g_dgr_socket_receive<=0 || g_dgr_socket_send <= 0) {
 		return ;
 	}
-    	// send pending
+    // send pending
 	DGR_FlushSendQueue();
-
-	myip = HAL_GetMyIPString();
-	me.sin_addr.s_addr = inet_addr(myip);
 	
 	// NOTE: 'addr' is global, and used in callbacks to determine the member.
 	for (i = 0; i < 10; i++) {
@@ -611,7 +613,7 @@ void DRV_DGR_RunQuickTick() {
 		}
 
 
-		if (me.sin_addr.s_addr == addr.sin_addr.s_addr) {
+		if (g_mySockAddr.sin_addr.s_addr == addr.sin_addr.s_addr) {
 			continue;
 		}
 
