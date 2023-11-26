@@ -579,7 +579,7 @@ void DGR_ProcessIncomingPacket(char *msgbuf, int nbytes) {
 
 }
 void DRV_DGR_RunQuickTick() {
-    char msgbuf[64];
+    	char msgbuf[64];
 	struct sockaddr_in me;
 	const char *myip;
 	socklen_t addrlen;
@@ -589,17 +589,12 @@ void DRV_DGR_RunQuickTick() {
 	if(g_dgr_socket_receive<=0 || g_dgr_socket_send <= 0) {
 		return ;
 	}
-    // send pending
+    	// send pending
 	DGR_FlushSendQueue();
-	//if (g_dgr_ledDimmerPendingSend) {
-	//	g_dgr_ledDimmerPendingSend = false;
-	//	DRV_DGR_Send_Brightness(CFG_DeviceGroups_GetName(), Val100ToVal255(g_dgr_ledDimmerPendingSend_value));
-	//}
-	//if (g_dgr_ledPowerPendingSend) {
-	//	g_dgr_ledPowerPendingSend = false;
-	//	DRV_DGR_Send_Power(CFG_DeviceGroups_GetName(), g_dgr_ledPowerPendingSend_value, 1);
-	//}
 
+	myip = HAL_GetMyIPString();
+	me.sin_addr.s_addr = inet_addr(myip);
+	
 	// NOTE: 'addr' is global, and used in callbacks to determine the member.
 	for (i = 0; i < 10; i++) {
 		addrlen = sizeof(addr);
@@ -612,16 +607,12 @@ void DRV_DGR_RunQuickTick() {
 			&addrlen
 		);
 		if (nbytes <= 0) {
-			//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"nothing\n");
 			return;
 		}
 
-		myip = HAL_GetMyIPString();
-		me.sin_addr.s_addr = inet_addr(myip);
 
 		if (me.sin_addr.s_addr == addr.sin_addr.s_addr) {
-			addLogAdv(LOG_INFO, LOG_FEATURE_DGR, "Ignoring message from self");
-			return;
+			continue;
 		}
 
 		g_dgr_stat_received++;
