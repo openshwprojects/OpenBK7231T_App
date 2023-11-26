@@ -1418,7 +1418,7 @@ int http_fn_cfg_loglevel_set(http_request_t* request) {
 	if (http_getArg(request->url, "loglevel", tmpA, sizeof(tmpA))) {
 #if WINDOWS
 #else
-		loglevel = atoi(tmpA);
+		g_loglevel = atoi(tmpA);
 #endif
 		poststr(request, "LOG level changed.");
 	}
@@ -1427,7 +1427,7 @@ int http_fn_cfg_loglevel_set(http_request_t* request) {
 #if WINDOWS
 	add_label_text_field(request, "Loglevel", "loglevel", "", "<form action=\"/cfg_loglevel_set\">");
 #else
-	add_label_numeric_field(request, "Loglevel", "loglevel", loglevel, "<form action=\"/cfg_loglevel_set\">");
+	add_label_numeric_field(request, "Loglevel", "loglevel", g_loglevel, "<form action=\"/cfg_loglevel_set\">");
 #endif
 	poststr(request, "<br><br>\
 <input type=\"submit\" value=\"Submit\" >\

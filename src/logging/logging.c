@@ -10,7 +10,7 @@
 
 extern uint8_t g_StartupDelayOver;
 
-int loglevel = LOG_INFO; // default to info
+int g_loglevel = LOG_INFO; // default to info
 unsigned int logfeatures = (
 	(1 << 0) |
 	(1 << 1) |
@@ -289,7 +289,7 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 	if (!((1 << feature) & logfeatures)) {
 		return;
 	}
-	if (level > loglevel) {
+	if (level > g_loglevel) {
 		return;
 	}
 
@@ -748,7 +748,7 @@ commandResult_t log_command(const void* context, const char* cmd, const char* ar
 			res = sscanf(args, "%d", &level);
 			if (res == 1) {
 				if ((level >= 0) && (level <= 9)) {
-					loglevel = level;
+					g_loglevel = level;
 					result = CMD_RES_OK;
 					ADDLOG_DEBUG(LOG_FEATURE_CMD, "loglevel set %d", level);
 				}
@@ -758,7 +758,7 @@ commandResult_t log_command(const void* context, const char* cmd, const char* ar
 				}
 			}
 			else {
-				ADDLOG_ERROR(LOG_FEATURE_CMD, "loglevel '%s' invalid? current is %i", args, loglevel);
+				ADDLOG_ERROR(LOG_FEATURE_CMD, "loglevel '%s' invalid? current is %i", args, g_loglevel);
 				result = CMD_RES_BAD_ARGUMENT;
 			}
 			break;

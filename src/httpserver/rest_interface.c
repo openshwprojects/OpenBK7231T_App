@@ -722,7 +722,7 @@ static int http_rest_get_channelTypes(http_request_t* request) {
 static int http_rest_get_logconfig(http_request_t* request) {
 	int i;
 	http_setup(request, httpMimeTypeJson);
-	hprintf255(request, "{\"level\":%d,", loglevel);
+	hprintf255(request, "{\"level\":%d,", g_loglevel);
 	hprintf255(request, "\"features\":%d,", logfeatures);
 	poststr(request, "\"levelnames\":[");
 	for (i = 0; i < LOG_MAX; i++) {
@@ -794,7 +794,7 @@ static int http_rest_post_logconfig(http_request_t* request) {
 			if (t[i + 1].type != JSMN_PRIMITIVE) {
 				continue; /* We expect groups to be an array of strings */
 			}
-			loglevel = atoi(json_str + t[i + 1].start);
+			g_loglevel = atoi(json_str + t[i + 1].start);
 			i += t[i + 1].size + 1;
 		}
 		else if (jsoneq(json_str, &t[i], "features") == 0) {

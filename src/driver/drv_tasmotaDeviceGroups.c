@@ -21,6 +21,7 @@ static int g_dgr_socket_send = -1;
 // statistics
 static int g_dgr_stat_sent = 0;
 static int g_dgr_stat_received = 0;
+struct sockaddr_in g_mySockAddr;
 
 static uint16_t g_dgr_send_seq = 0;
 
@@ -583,7 +584,6 @@ void DGR_ProcessIncomingPacket(char *msgbuf, int nbytes) {
 	g_inCmdProcessing = 0;
 
 }
-struct sockaddr_in g_mySockAddr;
 
 void DRV_DGR_RunQuickTick() {
     char msgbuf[64];
