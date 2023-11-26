@@ -326,7 +326,6 @@ void DRV_DGR_CreateSocket_Receive() {
 	int iResult = 1;
 
     // create what looks like an ordinary UDP socket
-    //
     g_dgr_socket_receive = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (g_dgr_socket_receive < 0) {
 		g_dgr_socket_receive = -1;
@@ -336,7 +335,6 @@ void DRV_DGR_CreateSocket_Receive() {
 
 	if(broadcast)
 	{
-
 		iResult = setsockopt(g_dgr_socket_receive, SOL_SOCKET, SO_BROADCAST, (char *)&flag, sizeof(flag));
 		if (iResult != 0)
 		{
@@ -348,7 +346,6 @@ void DRV_DGR_CreateSocket_Receive() {
 	}
 	else{
 		// allow multiple sockets to use the same PORT number
-		//
 		if (
 			setsockopt(
 				g_dgr_socket_receive, SOL_SOCKET, SO_REUSEADDR, (char*) &flag, sizeof(flag)
@@ -361,15 +358,13 @@ void DRV_DGR_CreateSocket_Receive() {
 		}
 	}
 
-        // set up destination address
-    //
+    // set up destination address
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = htonl(INADDR_ANY); // differs from sender
     addr.sin_port = htons(dgr_port);
 
     // bind to receive address
-    //
     if (bind(g_dgr_socket_receive, (struct sockaddr*) &addr, sizeof(addr)) < 0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_CreateSocket_Receive: failed to do bind\n");
 		close(g_dgr_socket_receive);
@@ -387,19 +382,13 @@ void DRV_DGR_CreateSocket_Receive() {
 	}
 	else
 	{
-
-	  // use setsockopt() to request that the kernel join a multicast group
-		//
+	    // use setsockopt() to request that the kernel join a multicast group
 		mreq.imr_multiaddr.s_addr = inet_addr(dgr_group);
 		//mreq.imr_interface.s_addr = htonl(INADDR_ANY);
-	mreq.imr_interface.s_addr = htonl(INADDR_ANY);//inet_addr(MY_CAPTURE_IP);
+		mreq.imr_interface.s_addr = htonl(INADDR_ANY);//inet_addr(MY_CAPTURE_IP);
     	///mreq.imr_interface.s_addr = inet_addr("192.168.0.122");
-	iResult = setsockopt(
-				g_dgr_socket_receive, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*) &mreq, sizeof(mreq)
-			);
-		if (
-			iResult < 0
-		){
+		iResult = setsockopt(g_dgr_socket_receive, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*) &mreq, sizeof(mreq));
+		if (iResult < 0) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_CreateSocket_Receive: failed to do setsockopt IP_ADD_MEMBERSHIP %i\n",iResult);
 			close(g_dgr_socket_receive);
 			g_dgr_socket_receive = -1;
@@ -453,25 +442,16 @@ void DRV_DGR_processBrightnessPowerOn(byte brightness) {
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"DRV_DGR_processBrightnessPowerOn: %i\n",(int)brightness);
 
 	LED_SetDimmer(Val255ToVal100(brightness));
-
-	//numPWMs = PIN_CountPinsWithRole(IOR_PWM,IOR_PWM_n);
-	//idx_pin = PIN_FindPinIndexForRole(IOR_PWM,IOR_PWM_n,0);
-	//idx_channel = PIN_GetPinChannelForPinIndex(idx_pin);
-
-	//CHANNEL_Set(idx_channel,brightness,0);
-	
 }
 void DRV_DGR_processLightFixedColor(byte fixedColor) {
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR, "DRV_DGR_processLightFixedColor: %i\n", (int)fixedColor);
 
 	LED_SetColorByIndex(fixedColor);
-
 }
 void DRV_DGR_processLightBrightness(byte brightness) {
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"DRV_DGR_processLightBrightness: %i\n",(int)brightness);
 
 	LED_SetDimmer(Val255ToVal100(brightness));
-	
 }
 typedef struct dgrMmember_s {
 	int ip;
@@ -618,7 +598,11 @@ void DRV_DGR_RunQuickTick() {
 		}
 
 		g_dgr_stat_received++;
-		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "Received %i bytes from %s\n", nbytes, inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr));
+
+		// IMPORTANT: do not call inet_ntoa if log level is not extradebug...
+		if (g_loglevel >= LOG_EXTRADEBUG) {
+			addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "Received %i bytes from %s\n", nbytes, inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr));
+		}
 
 		DGR_ProcessIncomingPacket(msgbuf, nbytes);
 	}
