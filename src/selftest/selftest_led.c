@@ -89,6 +89,112 @@ void Test_LEDDriver_CW() {
 	}
 }
 
+void Test_LEDDriver_CW_Alternate() {
+	int i;
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	// Alternate CW mode - one PWM is temperature, second is brightness
+	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(24, 1);
+
+	PIN_SetPinRoleForPinIndex(26, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(26, 2);
+
+	CFG_SetFlag(OBK_FLAG_LED_ALTERNATE_CW_MODE, true);
+
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+	CMD_ExecuteCommand("led_dimmer 100", 0);
+
+
+	// check expressions (not really LED related but ok)
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll", 1.0f);
+	// Set 100% Warm
+	CMD_ExecuteCommand("led_temperature 500", 0);
+
+	printf("Channel temperature is %i, channel brightness is %i\n", CHANNEL_Get(1), CHANNEL_Get(2));
+
+	SELFTEST_ASSERT_CHANNEL(1, 100); // 100 temperature
+	SELFTEST_ASSERT_CHANNEL(2, 100); // 100 brightness
+
+	// check read access
+	SELFTEST_ASSERT_EXPRESSION("$led_temperature", 500.0f);
+
+	// check expressions (not really LED related but ok)
+	SELFTEST_ASSERT_EXPRESSION("$led_temperature*2", 1000.0f);
+	SELFTEST_ASSERT_EXPRESSION("2*$led_temperature", 1000.0f);
+
+	// Set 100% Cold
+	CMD_ExecuteCommand("led_temperature 154", 0);
+	// check read access
+	SELFTEST_ASSERT_EXPRESSION("$led_temperature", 154.0f);
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll", 1.0f);
+	SELFTEST_ASSERT_CHANNEL(1, 0); // 0 temperature
+	SELFTEST_ASSERT_CHANNEL(2, 100); // 100 brightness
+
+	// Tasmota style command should disable LED
+	Test_FakeHTTPClientPacket_GET("cm?cmnd=POWER%200");
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll", 0.0f);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	// Tasmota style command should enable LED
+	Test_FakeHTTPClientPacket_GET("cm?cmnd=POWER%201");
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll", 1.0f);
+	SELFTEST_ASSERT_CHANNEL(1, 0); // 0 temperature
+	SELFTEST_ASSERT_CHANNEL(2, 100); // 100 brightness
+
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("POWER", "ON");
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll", 1.0f);
+	SELFTEST_ASSERT_CHANNEL(1, 0); // 0 temperature
+	SELFTEST_ASSERT_CHANNEL(2, 100); // 100 brightness
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("POWER", "OFF");
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll", 0.0f);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("POWER", "ON");
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll", 1.0f);
+	SELFTEST_ASSERT_CHANNEL(1, 0); // 0 temperature
+	SELFTEST_ASSERT_CHANNEL(2, 100); // 100 brightness
+
+	for (i = 0; i <= 100; i++) {
+		char buffer[64];
+		sprintf(buffer, "Dimmer %i", i);
+		CMD_ExecuteCommand(buffer, 0);
+		//printf("Dimmer loop test: %i\n",i);
+		SELFTEST_ASSERT_EXPRESSION("$led_dimmer", i);
+
+		SELFTEST_ASSERT_CHANNEL(1, 0); // 0 temperature
+		SELFTEST_ASSERT_CHANNEL(2, i); // i brightness
+	}
+	// Set 100% Warm
+	CMD_ExecuteCommand("led_temperature 500", 0);
+	for (i = 0; i <= 100; i++) {
+		char buffer[64];
+		sprintf(buffer, "Dimmer %i", i);
+		CMD_ExecuteCommand(buffer, 0);
+		//printf("Dimmer loop test: %i\n",i);
+		SELFTEST_ASSERT_EXPRESSION("$led_dimmer", i);
+
+		SELFTEST_ASSERT_CHANNEL(1, 100); // 100 temperature
+		SELFTEST_ASSERT_CHANNEL(2, i); // i brightness
+	}
+
+	for (i = 154; i <= 500; i++) {
+		char buffer[64];
+		sprintf(buffer, "CT %i", i);
+		CMD_ExecuteCommand(buffer, 0);
+		//printf("Dimmer loop test: %i\n",i);
+		SELFTEST_ASSERT_EXPRESSION("$led_temperature", i);
+	}
+	CMD_ExecuteCommand("Dimmer 0", 0);
+	for (i = 0; i < 100; i++) {
+		SELFTEST_ASSERT_EXPRESSION("$led_dimmer", i);
+		CMD_ExecuteCommand("add_dimmer 1", 0);
+		SELFTEST_ASSERT_EXPRESSION("$led_dimmer", i + 1);
+	}
+}
+
 
 void Test_LEDDriver_RGBCW() {
 	// reset whole device
@@ -263,6 +369,7 @@ void Test_LEDDriver_RGB() {
 }
 void Test_LEDDriver() {
 
+	Test_LEDDriver_CW_Alternate();
 	Test_LEDDriver_CW();
 	Test_LEDDriver_RGB();
 	Test_LEDDriver_RGBCW();
