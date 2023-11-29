@@ -1759,6 +1759,10 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 #endif
 	//if (relayCount > 0) {
 		for (i = 0; i < CHANNEL_MAX; i++) {
+			// if already included by light, skip
+			if (BIT_CHECK(flagsChannelPublished, i)) {
+				continue;
+			}
 			bool bToggleInv = g_cfg.pins.channelTypes[i] == ChType_Toggle_Inv;
 			if (h_isChannelRelay(i) || g_cfg.pins.channelTypes[i] == ChType_Toggle || bToggleInv) {
 				// TODO: flags are 32 bit and there are 64 max channels
