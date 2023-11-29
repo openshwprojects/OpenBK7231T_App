@@ -633,6 +633,7 @@ void TuyaMCU_SendColor(int dpID, float fR, float fG, float fB, int tuyaRGB) {
 		sprintf(str, "%04x%04x%04x", iHue, iSat * 10, iVal * 10);
 		break;
 	case 2: // Uppercase Type 2 payload
+		// RRGGBBFFFF6464 
 		//snprintf(str, sizeof(str), ("%sFFFF6464"), scolor);
 		break;
 	case 3: // Lowercase Type 2 payload

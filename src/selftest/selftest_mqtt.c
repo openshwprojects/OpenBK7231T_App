@@ -225,6 +225,11 @@ void Test_MQTT_LED_RGB() {
 	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
 	SIM_ClearMQTTHistory();
 
+	// Assert raw channels for RGB
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 100);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+
 
 	SIM_SendFakeMQTTAndRunSimFrame_CMND("led_dimmer", "50");
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBbulb/led_dimmer/get", "50", false);
@@ -255,13 +260,197 @@ void Test_MQTT_LED_RGB() {
 	// half of FF is 7F
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBbulb/led_finalcolor_rgb/get", "003700", false);
 
+	// Assert raw channels for RGB
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNELEPSILON(2, (0x37/256.0f)*100.0f, 1.0f);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("led_dimmer", "100");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBbulb/led_dimmer/get", "100", false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBbulb/led_finalcolor_rgb/get", "00FF00", false);
+
+	// Assert raw channels for RGB
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 100);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
 
 
 	//SIM_SendFakeMQTTAndRunSimFrame_CMND("{\"color\":{\"b\":255,\"c\":0,\"g\":255,\"r\":255},\"state\":\"1\"}", "");
 	//SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBbulb/led_dimmer/get", "52", false);
 	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
 	SIM_ClearMQTTHistory();
+}
+void Test_MQTT_LED_RGBCW() {
+	SIM_ClearOBK(0);
+	SIM_ClearAndPrepareForMQTTTesting("fakeRGBCWbulb", "bekens");
 
+	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(24, 1);
+
+	PIN_SetPinRoleForPinIndex(26, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(26, 2);
+
+	PIN_SetPinRoleForPinIndex(9, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(9, 3);
+
+	PIN_SetPinRoleForPinIndex(8, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(8, 4);
+
+	PIN_SetPinRoleForPinIndex(7, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(7, 5);
+
+	CFG_SetFlag(OBK_FLAG_MQTT_BROADCASTLEDFINALCOLOR, true);
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("led_enableAll", "1");
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("led_basecolor_rgb", "00FF00");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBCWbulb/led_basecolor_rgb/get", "00FF00", false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBCWbulb/led_enableAll/get", "1", false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBCWbulb/led_finalcolor_rgb/get", "00FF00", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	// Assert raw channels for RGB
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 100);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("led_dimmer", "50");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBCWbulb/led_dimmer/get", "50", false);
+	// half of FF is 7F
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBCWbulb/led_finalcolor_rgb/get", "003700", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("add_dimmer", "1");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBCWbulb/led_dimmer/get", "51", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("add_dimmer", "1");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBCWbulb/led_dimmer/get", "52", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("led_dimmer", "55");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBCWbulb/led_dimmer/get", "55", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("add_dimmer", "-5");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBCWbulb/led_dimmer/get", "50", false);
+	// half of FF is 7F
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBCWbulb/led_finalcolor_rgb/get", "003700", false);
+
+	// Assert raw channels for RGB
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNELEPSILON(2, (0x37 / 256.0f)*100.0f, 1.0f);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("led_dimmer", "100");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBCWbulb/led_dimmer/get", "100", false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBCWbulb/led_finalcolor_rgb/get", "00FF00", false);
+
+	// Assert raw channels for RGB
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 100);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBCWbulb/led_enableAll/get", "1", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("led_dimmer 100", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBCWbulb/led_dimmer/get", "100", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("led_temperature 153", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBCWbulb/led_temperature/get", "153", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 100);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+
+	CMD_ExecuteCommand("led_enableAll 0", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBCWbulb/led_enableAll/get", "0", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBCWbulb/led_enableAll/get", "1", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("led_temperature 500", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBCWbulb/led_temperature/get", "500", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 100);
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("led_dimmer", "50");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBCWbulb/led_dimmer/get", "50", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 21);
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("led_dimmer", "100");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBCWbulb/led_dimmer/get", "100", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 100);
+
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("led_basecolor_rgb", "00FFFF");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBCWbulb/led_basecolor_rgb/get", "00FFFF", false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBCWbulb/led_finalcolor_rgb/get", "00FFFF", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	// Assert raw channels for RGB
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 100);
+	SELFTEST_ASSERT_CHANNEL(3, 100);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+
+
+	//SIM_SendFakeMQTTAndRunSimFrame_CMND("{\"color\":{\"b\":255,\"c\":0,\"g\":255,\"r\":255},\"state\":\"1\"}", "");
+	//SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("fakeRGBCWbulb/led_dimmer/get", "52", false);
 	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
 	SIM_ClearMQTTHistory();
 }
@@ -454,6 +643,7 @@ void Test_MQTT(){
 	Test_MQTT_Channels();
 	Test_MQTT_LED_CW();
 	Test_MQTT_LED_RGB();
+	Test_MQTT_LED_RGBCW();
 	Test_MQTT_Topic_With_Slash();
 	Test_MQTT_Topic_With_Slashes();
 	Test_MQTT_Average();
