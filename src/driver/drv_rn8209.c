@@ -5,11 +5,26 @@
 #include "drv_bl_shared.h"
 #include "drv_uart.h"
 
-#define BL0942_UART_PACKET_LEN 12
-#define BL0942_UART_PACKET_HEAD 12
+#define RN8209_RMS_CURRENT_A				0x22
+#define RN8209_RMS_CURRENT_A_SIZE			3
+#define RN8209_RMS_CURRENT_B				0x23
+#define RN8209_RMS_CURRENT_B_SIZE			3
+#define RN8209_RMS_VOLTAGE					0x24
+#define RN8209_RMS_VOLTAGE_SIZE				3
+#define RN8209_RMS_FREQUENCY				0x25
+#define RN8209_RMS_FREQUENCY_SIZE			2
+#define RN8209_AVG_ACTIVEPOWER_A			0x26
+#define RN8209_AVG_ACTIVEPOWER_A_SIZE		4
+#define RN8209_AVG_ACTIVEPOWER_B			0x27
+#define RN8209_AVG_ACTIVEPOWER_B_SIZE		4
+#define RN8209_AVG_REACTIVEPOWER			0x28
+#define RN8209_AVG_REACTIVEPOWER_SIZE		4
+#define RN8209_AVG_REACTIVEENERGY_1			0x29
+#define RN8209_AVG_REACTIVEENERGY_1_SIZE	3
+#define RN8209_AVG_REACTIVEENERGY_2			0x2A
+#define RN8209_AVG_REACTIVEENERGY_2_SIZE	3
 
-
-static void UART_WriteReg(byte reg, byte *data, int len) {
+static void RN8209_WriteReg(byte reg, byte *data, int len) {
 	byte crc;
 
 	reg = reg | 0x80;
@@ -25,7 +40,7 @@ static void UART_WriteReg(byte reg, byte *data, int len) {
 	
     UART_SendByte(crc);
 }
-static void UART_ReadReg(byte reg) {
+static void RN8029_ReadReg(byte reg) {
 	byte crc;
 	byte data[32];
 	int size, i;
@@ -66,7 +81,7 @@ void RN8209_Init(void) {
 }
 
 void RN8029_RunEverySecond(void) {
-	UART_ReadReg(0x24);
+	RN8029_ReadReg(0x24);
 
 }
 /*
