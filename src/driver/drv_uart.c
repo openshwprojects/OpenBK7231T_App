@@ -305,14 +305,14 @@ void UART_ResetForSimulator() {
 	g_uart_init_counter = 0;
 }
 
-int UART_InitUART(int baud) {
+int UART_InitUART(int baud, int parity) {
     g_uart_init_counter++;
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
     bk_uart_config_t config;
 
     config.baud_rate = baud;
     config.data_width = 0x03;
-	config.parity = 0;    //0:no parity,1:odd,2:even
+	config.parity = parity;    //0:no parity,1:odd,2:even
 	config.stop_bits = 0;   //0:1bit,1:2bit
 	config.flow_control = 0;   //FLOW_CTRL_DISABLED
     config.flags = 0;
@@ -400,7 +400,7 @@ commandResult_t CMD_UART_Init(const void *context, const char *cmd, const char *
 
     baud = Tokenizer_GetArgInteger(0);
 
-    UART_InitUART(baud);
+    UART_InitUART(baud, 0);
     g_uart_manualInitCounter = g_uart_init_counter;
     UART_InitReceiveRingBuffer(512);
 

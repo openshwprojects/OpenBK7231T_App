@@ -112,6 +112,13 @@ static driver_t g_drivers[] = {
 	{ "I2C",		DRV_I2C_Init,		DRV_I2C_EverySecond,		NULL, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_BL0942
+	//drvdetail:{"name":"qq",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Bqqqqqqqqqq ",
+	//drvdetail:"requires":""}
+	{ "RN8209", RN8209_Init, RN8029_RunEverySecond, NULL, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_BL0942
 	//drvdetail:{"name":"BL0942",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [LSPA9 teardown example](https://www.elektroda.com/rtvforum/topic3887748.html). ",

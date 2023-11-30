@@ -16,6 +16,8 @@ static int UART_TryToGetNextPacket(void) {
 
 	do {
 		cs = UART_GetDataSize();
+		if (cs == 0)
+			break;
 		i = UART_GetByte(0);
 
 		ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
@@ -84,11 +86,26 @@ static void UART_WriteReg(byte reg, byte *data, int len) {
 	
     UART_SendByte(crc);
 }
-static void UART_ReadReg(byte reg, byte *data, int len) {
+static void UART_ReadReg(byte reg) {
 	byte crc;
+	byte data[32];
+	int size;
 
 	UART_SendByte(reg);
 
+	rtos_delay_milliseconds(10);
+
+	data[0] = reg;
+	size = 1;
+/*
+	while(UART_GetDataSize()) {
+		data[size] = UART_GetByte(0);
+		size++;
+		ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
+			"UA %i\n",
+			(int)data[size]);
+		UART_ConsumeBytes(1);
+	} while (cs > 0);*/
 	/*crc = reg;
 
 	for (int i = 0; i < len; i++) {
@@ -99,17 +116,30 @@ static void UART_ReadReg(byte reg, byte *data, int len) {
 
 	UART_SendByte(crc);*/
 }
-
-void RN8209_UART_Init(void) {
-	UART_InitUART(4800);
+// startDriver RN8209
+void RN8209_Init(void) {
+	UART_InitUART(4800, 1);
 	UART_InitReceiveRingBuffer(256);
 
 }
 
-void RN8029_UART_RunEverySecond(void) {
+void RN8029_RunEverySecond(void) {
     UART_TryToGetNextPacket();
 
 	UART_ReadReg(0x24,0,0);
 
 }
+/*
+Send: 36 (command code)
 
+Received:
+Warn:EnergyMeter:UA 32
+Warn:EnergyMeter:UA 51
+Warn:EnergyMeter:UA 225
+Warn:EnergyMeter:UA 167
+
+Let's verify checksum (sum modulo 256 and negated):
+(36+32+51+225)%256=88
+88  -> 01011000
+167 -> 10100111
+*/

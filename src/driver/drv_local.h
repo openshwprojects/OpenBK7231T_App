@@ -121,6 +121,8 @@ void ChargingLimit_Init();
 void ChargingLimit_OnEverySecond();
 void ChargingLimit_AppendInformationToHTTPIndexPage(http_request_t *request);
 
+void RN8209_Init(void);
+void RN8029_RunEverySecond(void);
 
 #define SM2135_DELAY         4
 
