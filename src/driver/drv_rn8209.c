@@ -40,10 +40,11 @@ static void RN8209_WriteReg(byte reg, byte *data, int len) {
 	
     UART_SendByte(crc);
 }
-static void RN8029_ReadReg(byte reg) {
+static bool RN8029_ReadReg(byte reg, int *res) {
 	byte crc;
 	byte data[32];
 	int size, i;
+	int dataSize;
 
 	UART_SendByte(reg);
 
@@ -64,14 +65,21 @@ static void RN8029_ReadReg(byte reg) {
 		crc += data[i];
 	}
 	crc = ~crc;
-	if (crc == data[size - 1]) {
+	if (crc != data[size - 1]) {
 		ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
-			"CRC OK\n");
+			"CRC BAD, expected %i, got %i\n", (int)crc, (int)data[size - 1]);
+		return 1;
 	}
-	else {
-		ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
-			"CRC BAD, expected %i, got %i\n",(int)crc,(int)data[size - 1]);
+	ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
+		"CRC OK\n");
+	*res = 0;
+	dataSize = size - 2;
+	// Multi-byte registers will first transmit high-byte contents followed by low-byte contents
+	for (i = 0; i < dataSize; i++) {
+		int val = data[i + 1];
+		*res += val << ((dataSize-1-i) * 8);
 	}
+	return 0;
 }
 // startDriver RN8209
 void RN8209_Init(void) {
@@ -79,10 +87,31 @@ void RN8209_Init(void) {
 	UART_InitReceiveRingBuffer(256);
 
 }
-
+int g_voltage = 0, g_currentA = 0, g_currentB = 0, g_powerA = 0, g_powerB = 0;
+int g_meas = 0;
 void RN8029_RunEverySecond(void) {
-	RN8029_ReadReg(0x24);
+	g_meas++;
+	g_meas %= 5;
+	switch (g_meas) {
+	case 0:
+		RN8029_ReadReg(RN8209_RMS_VOLTAGE, &g_voltage);
+		break;
+	case 1:
+		RN8029_ReadReg(RN8209_RMS_CURRENT_A, &g_currentA);
+		break;
+	case 2:
+		RN8029_ReadReg(RN8209_RMS_CURRENT_B, &g_currentB);
+		break;
+	case 3:
+		RN8029_ReadReg(RN8209_AVG_ACTIVEPOWER_A, &g_powerA);
+		break;
+	case 4:
+		RN8029_ReadReg(RN8209_AVG_ACTIVEPOWER_B, &g_powerB);
+		break;
+	}
 
+	ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
+		"V %i, C %i %i, P %i %i\n", g_voltage, g_currentA, g_currentB, g_powerA, g_powerB);
 }
 /*
 Send: 36 (command code)
