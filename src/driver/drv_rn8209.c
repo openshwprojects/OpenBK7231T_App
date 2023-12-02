@@ -5,70 +5,26 @@
 #include "drv_bl_shared.h"
 #include "drv_uart.h"
 
-#define BL0942_UART_PACKET_LEN 12
-#define BL0942_UART_PACKET_HEAD 12
+#define RN8209_RMS_CURRENT_A				0x22
+#define RN8209_RMS_CURRENT_A_SIZE			3
+#define RN8209_RMS_CURRENT_B				0x23
+#define RN8209_RMS_CURRENT_B_SIZE			3
+#define RN8209_RMS_VOLTAGE					0x24
+#define RN8209_RMS_VOLTAGE_SIZE				3
+#define RN8209_RMS_FREQUENCY				0x25
+#define RN8209_RMS_FREQUENCY_SIZE			2
+#define RN8209_AVG_ACTIVEPOWER_A			0x26
+#define RN8209_AVG_ACTIVEPOWER_A_SIZE		4
+#define RN8209_AVG_ACTIVEPOWER_B			0x27
+#define RN8209_AVG_ACTIVEPOWER_B_SIZE		4
+#define RN8209_AVG_REACTIVEPOWER			0x28
+#define RN8209_AVG_REACTIVEPOWER_SIZE		4
+#define RN8209_AVG_REACTIVEENERGY_1			0x29
+#define RN8209_AVG_REACTIVEENERGY_1_SIZE	3
+#define RN8209_AVG_REACTIVEENERGY_2			0x2A
+#define RN8209_AVG_REACTIVEENERGY_2_SIZE	3
 
-static int UART_TryToGetNextPacket(void) {
-	int cs;
-	int i;
-	int c_garbage_consumed = 0;
-	byte checksum;
-
-	do {
-		cs = UART_GetDataSize();
-		i = UART_GetByte(0);
-
-		ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
-		                   "UA %i\n",
-		                i);
-		UART_ConsumeBytes(1);
-	} while (cs > 0);
-
-
-	//if(cs < BL0942_UART_PACKET_LEN) {
-	//	return 0;
-	//}
-	//// skip garbage data (should not happen)
-	//while(cs > 0) {
- //       if (UART_GetByte(0) != BL0942_UART_PACKET_HEAD) {
-	//		UART_ConsumeBytes(1);
-	//		c_garbage_consumed++;
-	//		cs--;
-	//	} else {
-	//		break;
-	//	}
-	//}
-	//if(c_garbage_consumed > 0){
- //       ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
- //                   "Consumed %i unwanted non-header byte in BL0942 buffer\n",
- //                   c_garbage_consumed);
-	//}
-	//if(cs < BL0942_UART_PACKET_LEN) {
-	//	return 0;
-	//}
- //   if (UART_GetByte(0) != 0x55)
-	//	return 0;
- //   checksum = BL0942_UART_CMD_READ(BL0942_UART_ADDR);
-
- //   for(i = 0; i < BL0942_UART_PACKET_LEN-1; i++) {
- //       checksum += UART_GetByte(i);
-	//}
-	//checksum ^= 0xFF;
-
- //   if (checksum != UART_GetByte(BL0942_UART_PACKET_LEN - 1)) {
- //       ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
- //                   "Skipping packet with bad checksum %02X wanted %02X\n",
- //                   UART_GetByte(BL0942_UART_PACKET_LEN - 1), checksum);
- //       UART_ConsumeBytes(BL0942_UART_PACKET_LEN);
-	//	return 1;
-	//}
-
-
- //   UART_ConsumeBytes(BL0942_UART_PACKET_LEN);
-	return 0;
-}
-
-static void UART_WriteReg(byte reg, byte *data, int len) {
+static void RN8209_WriteReg(byte reg, byte *data, int len) {
 	byte crc;
 
 	reg = reg | 0x80;
@@ -84,32 +40,100 @@ static void UART_WriteReg(byte reg, byte *data, int len) {
 	
     UART_SendByte(crc);
 }
-static void UART_ReadReg(byte reg, byte *data, int len) {
+static bool RN8029_ReadReg(byte reg, int *res) {
 	byte crc;
+	byte data[32];
+	int size, i;
+	int dataSize;
 
 	UART_SendByte(reg);
 
-	/*crc = reg;
+	rtos_delay_milliseconds(30);
 
-	for (int i = 0; i < len; i++) {
-		UART_SendByte(data[i]);
+	data[0] = reg;
+	size = 1;
+	crc = reg;
+	while(UART_GetDataSize()) {
+		data[size] = UART_GetByte(0);
+		ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
+			"UA %i\n",
+			(int)data[size]);
+		size++;
+		UART_ConsumeBytes(1);
+	}
+	for (i = 1; i < size - 1; i++) {
 		crc += data[i];
 	}
 	crc = ~crc;
-
-	UART_SendByte(crc);*/
+	if (crc != data[size - 1]) {
+		ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
+			"CRC BAD, expected %i, got %i\n", (int)crc, (int)data[size - 1]);
+		return 1;
+	}
+	ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
+		"CRC OK\n");
+	*res = 0;
+	dataSize = size - 2;
+	// Multi-byte registers will first transmit high-byte contents followed by low-byte contents
+	for (i = 0; i < dataSize; i++) {
+		int val = data[i + 1];
+		*res += val << ((dataSize-1-i) * 8);
+	}
+	return 0;
 }
-
-void RN8209_UART_Init(void) {
-	UART_InitUART(4800);
+// startDriver RN8209
+void RN8209_Init(void) {
+	UART_InitUART(4800, 1);
 	UART_InitReceiveRingBuffer(256);
 
 }
+int g_voltage = 0, g_currentA = 0, g_currentB = 0, g_powerA = 0, g_powerB = 0;
+int g_meas = 0;
+void RN8029_RunEverySecond(void) {
+	g_meas++;
+	g_meas %= 5;
+	switch (g_meas) {
+	case 0:
+		RN8029_ReadReg(RN8209_RMS_VOLTAGE, &g_voltage);
+		break;
+	case 1:
+		RN8029_ReadReg(RN8209_RMS_CURRENT_A, &g_currentA);
+		break;
+	case 2:
+		RN8029_ReadReg(RN8209_RMS_CURRENT_B, &g_currentB);
+		break;
+	case 3:
+		RN8029_ReadReg(RN8209_AVG_ACTIVEPOWER_A, &g_powerA);
+		break;
+	case 4:
+		RN8029_ReadReg(RN8209_AVG_ACTIVEPOWER_B, &g_powerB);
+		break;
+	}
 
-void RN8029_UART_RunEverySecond(void) {
-    UART_TryToGetNextPacket();
-
-	UART_ReadReg(0x24,0,0);
-
+	ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
+		"V %i, C %i %i, P %i %i\n", g_voltage, g_currentA, g_currentB, g_powerA, g_powerB);
 }
+/*
+Send: 36 (command code)
 
+Received:
+Warn:EnergyMeter:UA 32
+Warn:EnergyMeter:UA 51
+Warn:EnergyMeter:UA 225
+Warn:EnergyMeter:UA 167
+
+Let's verify checksum (sum modulo 256 and negated):
+(36+32+51+225)%256=88
+88  -> 01011000
+167 -> 10100111
+
+Send: 36 (command code)
+Warn:EnergyMeter:UA 32
+Warn:EnergyMeter:UA 38
+Warn:EnergyMeter:UA 227
+Warn:EnergyMeter:UA 178
+Let's verify checksum (sum modulo 256 and negated):
+(36+32+38+227)%256=77
+77  -> 01001101
+178 -> 10110010
+*/
