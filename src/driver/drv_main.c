@@ -567,7 +567,9 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t* request) {
 
 bool DRV_IsMeasuringPower() {
 #ifndef OBK_DISABLE_ALL_DRIVERS
-	return DRV_IsRunning("BL0937") || DRV_IsRunning("BL0942") || DRV_IsRunning("CSE7766") || DRV_IsRunning("TESTPOWER");
+	return DRV_IsRunning("BL0937") || DRV_IsRunning("BL0942") 
+		|| DRV_IsRunning("CSE7766") || DRV_IsRunning("TESTPOWER")
+		|| DRV_IsRunning("BL0942SPI");
 #else
 	return false;
 #endif
