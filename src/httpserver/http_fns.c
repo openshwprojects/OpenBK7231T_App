@@ -552,6 +552,14 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "Frequency %.2fHz (ch %s)", fValue, CHANNEL_GetLabel(i));
 			poststr(request, "</td></tr>");
 		}
+		else if (channelType == ChType_Frequency_div10) {
+			iValue = CHANNEL_Get(i);
+			fValue = iValue * 0.1f;
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "Frequency %.2fHz (ch %s)", fValue, CHANNEL_GetLabel(i));
+			poststr(request, "</td></tr>");
+		}
 		else if (channelType == ChType_EnergyToday_kWh_div1000) {
 			iValue = CHANNEL_Get(i);
 			fValue = iValue * 0.001f;
@@ -2065,6 +2073,15 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			case ChType_Frequency_div100:
 			{
 				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, i, 3, 2, 1);
+				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+				hass_free_device_info(dev_info);
+
+				discoveryQueued = true;
+			}
+			break;
+			case ChType_Frequency_div10:
+			{
+				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, i, 3, 1, 1);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 
