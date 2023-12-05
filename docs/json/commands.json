@@ -361,8 +361,8 @@
   },
   {
     "name": "CMD_SetChannelPrivate",
-    "args": "[ChannelIndex][bPrivate]",
-    "descr": "Channels marked as private are NEVER published via MQTT.",
+    "args": "CMD_SetChannelPrivate",
+    "descr": "",
     "fn": "NULL);",
     "file": "cmnds/cmd_channels.c",
     "requires": "",
@@ -1678,6 +1678,15 @@
     "args": "[ChannelIndex][Str][bHideTogglePrefix]",
     "descr": "Sets a channel label for UI. If you use 1 for bHideTogglePrefix, then the 'Toggle ' prefix from button will be omitted",
     "fn": "CMD_SetChannelLabel",
+    "file": "cmnds/cmd_channels.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "SetChannelPrivate",
+    "args": "[ChannelIndex][bPrivate]",
+    "descr": "Channels marked as private are NEVER published via MQTT.",
+    "fn": "NULL);",
     "file": "cmnds/cmd_channels.c",
     "requires": "",
     "examples": ""

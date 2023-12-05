@@ -559,11 +559,11 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_SetChannelVisible","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetChannelVisible", CMD_SetChannelVisible, NULL);
-	//cmddetail:{"name":"CMD_SetChannelPrivate","args":"[ChannelIndex][bPrivate]",
+	//cmddetail:{"name":"SetChannelPrivate","args":"[ChannelIndex][bPrivate]",
 	//cmddetail:"descr":"Channels marked as private are NEVER published via MQTT.",
 	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("CMD_SetChannelPrivate", CMD_SetChannelPrivate, NULL);
+	CMD_RegisterCommand("SetChannelPrivate", CMD_SetChannelPrivate, NULL);
 	//cmddetail:{"name":"Ch","args":"[InputValue]",
 	//cmddetail:"descr":"An alternate command to access channels. It returns all used channels in JSON format. The syntax is ChINDEX value, there is no space between Ch and channel index. It can be sent without value to poll channel values.",
 	//cmddetail:"fn":"CMD_Ch","file":"cmnds/cmd_channels.c","requires":"",

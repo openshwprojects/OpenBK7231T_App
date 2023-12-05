@@ -42,6 +42,12 @@
     "requires": ""
   },
   {
+    "name": "qq",
+    "title": "TODO",
+    "descr": "Bqqqqqqqqqq ",
+    "requires": ""
+  },
+  {
     "name": "BL0942",
     "title": "TODO",
     "descr": "BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [LSPA9 teardown example](https://www.elektroda.com/rtvforum/topic3887748.html). ",
@@ -170,7 +176,7 @@
   {
     "name": "SM2235",
     "title": "TODO",
-    "descr": "SM2335 andd SM2235 custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both SM2235 pin roles. This may need you to remap the RGBCW indexes with SM2235_Map command",
+    "descr": "SM2335 andd SM2235 custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both SM2235 pin roles. This may need you to remap the RGBCW indexes with SM2235_Map command. This driver also works for SM2185N.",
     "requires": ""
   },
   {
