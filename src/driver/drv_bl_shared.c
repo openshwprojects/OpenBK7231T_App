@@ -96,6 +96,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
         mode = "BL0942SPI";
     } else if(DRV_IsRunning("CSE7766")) {
         mode = "CSE7766";
+    } else if(DRV_IsRunning("RN8209")) {
+        mode = "RN8209";
     } else {
         mode = "PWR";
     }

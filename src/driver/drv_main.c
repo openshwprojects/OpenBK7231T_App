@@ -116,7 +116,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Bqqqqqqqqqq ",
 	//drvdetail:"requires":""}
-	{ "RN8209", RN8209_Init, RN8029_RunEverySecond, NULL, NULL, NULL, NULL, false },
+	{ "RN8209", RN8209_Init, RN8029_RunEverySecond, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_BL0942
 	//drvdetail:{"name":"BL0942",

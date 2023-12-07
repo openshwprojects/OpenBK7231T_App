@@ -4,6 +4,8 @@
 #include "../new_pins.h"
 #include "drv_bl_shared.h"
 #include "drv_uart.h"
+#include <math.h>
+#include "drv_pwrCal.h"
 
 #define RN8209_RMS_CURRENT_A				0x22
 #define RN8209_RMS_CURRENT_A_SIZE			3
@@ -81,15 +83,25 @@ static bool RN8029_ReadReg(byte reg, int *res) {
 	}
 	return 0;
 }
+#define DEFAULT_VOLTAGE_CAL 8810
+#define DEFAULT_CURRENT_CAL 57
+#define DEFAULT_POWER_CAL 8810
 // startDriver RN8209
 void RN8209_Init(void) {
 	UART_InitUART(4800, 1);
 	UART_InitReceiveRingBuffer(256);
 
+	BL_Shared_Init();
+	PwrCal_Init(PWR_CAL_DIVIDE, DEFAULT_VOLTAGE_CAL, DEFAULT_CURRENT_CAL,
+		DEFAULT_POWER_CAL);
 }
 int g_voltage = 0, g_currentA = 0, g_currentB = 0, g_powerA = 0, g_powerB = 0;
 int g_meas = 0;
 void RN8029_RunEverySecond(void) {
+	float final_v;
+	float final_c;
+	float final_p;
+
 	g_meas++;
 	g_meas %= 5;
 	switch (g_meas) {
@@ -112,6 +124,9 @@ void RN8029_RunEverySecond(void) {
 
 	ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
 		"V %i, C %i %i, P %i %i\n", g_voltage, g_currentA, g_currentB, g_powerA, g_powerB);
+
+	PwrCal_Scale(g_voltage, g_currentA, g_powerA, &final_v, &final_c, &final_p);
+	BL_ProcessUpdate(final_v, final_c, final_p, NAN, NAN);
 }
 /*
 Send: 36 (command code)
