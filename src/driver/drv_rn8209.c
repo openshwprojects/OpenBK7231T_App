@@ -1,5 +1,8 @@
 
-
+// NOTE:
+// Use this for reference:
+// https://github.com/RN8209C/RN8209C-SDK/blob/master/src/rn8209c_u.c
+// Search for rn8209c_read_current
 #include "../logging/logging.h"
 #include "../new_pins.h"
 #include "drv_bl_shared.h"
@@ -42,7 +45,7 @@ static void RN8209_WriteReg(byte reg, byte *data, int len) {
 	
     UART_SendByte(crc);
 }
-static bool RN8029_ReadReg(byte reg, int *res) {
+static bool RN8029_ReadReg(byte reg, unsigned int *res) {
 	byte crc;
 	byte data[32];
 	int size, i;
@@ -85,7 +88,7 @@ static bool RN8029_ReadReg(byte reg, int *res) {
 }
 #define DEFAULT_VOLTAGE_CAL 8810
 #define DEFAULT_CURRENT_CAL 57
-#define DEFAULT_POWER_CAL 8810
+#define DEFAULT_POWER_CAL 71572720
 // startDriver RN8209
 void RN8209_Init(void) {
 	UART_InitUART(4800, 1);
@@ -95,7 +98,7 @@ void RN8209_Init(void) {
 	PwrCal_Init(PWR_CAL_DIVIDE, DEFAULT_VOLTAGE_CAL, DEFAULT_CURRENT_CAL,
 		DEFAULT_POWER_CAL);
 }
-int g_voltage = 0, g_currentA = 0, g_currentB = 0, g_powerA = 0, g_powerB = 0;
+unsigned int g_voltage = 0, g_currentA = 0, g_currentB = 0, g_powerA = 0, g_powerB = 0;
 int g_meas = 0;
 void RN8029_RunEverySecond(void) {
 	float final_v;
@@ -109,13 +112,22 @@ void RN8029_RunEverySecond(void) {
 		RN8029_ReadReg(RN8209_RMS_VOLTAGE, &g_voltage);
 		break;
 	case 1:
-		RN8029_ReadReg(RN8209_RMS_CURRENT_A, &g_currentA);
+		if (RN8029_ReadReg(RN8209_RMS_CURRENT_A, &g_currentA) == 0) {
+			if (g_currentA & 0x800000) {
+				g_currentA = 0;
+			}
+		}
 		break;
 	case 2:
 		RN8029_ReadReg(RN8209_RMS_CURRENT_B, &g_currentB);
 		break;
 	case 3:
-		RN8029_ReadReg(RN8209_AVG_ACTIVEPOWER_A, &g_powerA);
+		if (RN8029_ReadReg(RN8209_AVG_ACTIVEPOWER_A, &g_powerA) == 0) {
+			if (g_powerA & 0x80000000) {
+				g_powerA = ~g_powerA;
+				g_powerA += 1;
+			}
+		}
 		break;
 	case 4:
 		RN8029_ReadReg(RN8209_AVG_ACTIVEPOWER_B, &g_powerB);
@@ -123,7 +135,7 @@ void RN8029_RunEverySecond(void) {
 	}
 
 	ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
-		"V %i, C %i %i, P %i %i\n", g_voltage, g_currentA, g_currentB, g_powerA, g_powerB);
+		"V %u, C %u %u, P %u %u\n", g_voltage, g_currentA, g_currentB, g_powerA, g_powerB);
 
 	PwrCal_Scale(g_voltage, g_currentA, g_powerA, &final_v, &final_c, &final_p);
 	BL_ProcessUpdate(final_v, final_c, final_p, NAN, NAN);
