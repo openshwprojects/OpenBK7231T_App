@@ -310,14 +310,8 @@ void LED_RunQuickColorLerp(int deltaMS) {
 
 	deltaSeconds = deltaMS * 0.001f;
 
-	// The color order is RGBCW.
-	// some people set RED to channel 0, and some of them set RED to channel 1
-	// Let's detect if there is a PWM on channel 0
-	if(CHANNEL_HasChannelPinWithRoleOrRole(0, IOR_PWM, IOR_PWM_n)) {
-		firstChannelIndex = 0;
-	} else {
-		firstChannelIndex = 1;
-	}
+	firstChannelIndex = LED_GetFirstChannelIndex();
+
 	if (CFG_HasFlag(OBK_FLAG_LED_EMULATE_COOL_WITH_RGB)) {
 		emulatedCool = firstChannelIndex + 3;
 	}
@@ -423,6 +417,29 @@ float led_gamma_correction (int color, float iVal) { // apply LED gamma and RGB 
 void LED_SaveStateToFlashVarsNow() {
 	HAL_FlashVars_SaveLED(g_lightMode, g_brightness0to100, led_temperature_current, baseColors[0], baseColors[1], baseColors[2], g_lightEnableAll);
 }
+// The color order is RGBCW.
+// some people set RED to channel 0, and some of them set RED to channel 1
+// Let's detect if there is a PWM on channel 0
+int LED_GetFirstChannelIndex() {
+#if 0
+	int firstChannelIndex;
+	if (CHANNEL_HasChannelPinWithRoleOrRole(0, IOR_PWM, IOR_PWM_n)) {
+		firstChannelIndex = 0;
+	}
+	else {
+		firstChannelIndex = 1;
+	}
+	return firstChannelIndex;
+#else
+	int i;
+	for (i = 0; i < 5; i++) {
+		if (CHANNEL_HasChannelPinWithRoleOrRole(i, IOR_PWM, IOR_PWM_n)) {
+			return i;
+		}
+	}
+	return 0;
+#endif
+}
 void apply_smart_light() {
 	int i;
 	int firstChannelIndex;
@@ -434,14 +451,8 @@ void apply_smart_light() {
 	int value_brightness = 0;
 	int value_cold_or_warm = 0;
 
-	// The color order is RGBCW.
-	// some people set RED to channel 0, and some of them set RED to channel 1
-	// Let's detect if there is a PWM on channel 0
-	if(CHANNEL_HasChannelPinWithRoleOrRole(0, IOR_PWM, IOR_PWM_n)) {
-		firstChannelIndex = 0;
-	} else {
-		firstChannelIndex = 1;
-	}
+
+	firstChannelIndex = LED_GetFirstChannelIndex();
 
 	if (CFG_HasFlag(OBK_FLAG_LED_EMULATE_COOL_WITH_RGB)) {
 		emulatedCool = firstChannelIndex + 3;
