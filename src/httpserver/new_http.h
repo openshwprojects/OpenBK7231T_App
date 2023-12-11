@@ -88,5 +88,7 @@ typedef int (*http_callback_fn)(http_request_t* request);
 // urls must be unique (i.e. you can't have /about and /aboutme or /about/me)
 int HTTP_RegisterCallback(const char* url, int method, http_callback_fn callback, int auth_required);
 
+int my_strnicmp(const char* a, const char* b, int len);
+
 #endif
 
