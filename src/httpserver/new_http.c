@@ -725,21 +725,17 @@ int HTTP_ProcessPacket(http_request_t* request) {
 		if (http_startsWith(urlStr, &url[1])) {
 			int method = callbacks[i]->method;
 			if (method == HTTP_ANY || method == request->method) {
-#if ALLOW_WEB_PASSWORD
 				if (callbacks[i]->auth_required > 0 && http_basic_auth_run(request) == HTTP_BASIC_AUTH_FAIL) {
 					return 0;
 				}
-#endif
 				return callbacks[i]->callback(request);
 			}
 		}
 	}
 
-#if ALLOW_WEB_PASSWORD
 	if (http_basic_auth_run(request) == HTTP_BASIC_AUTH_FAIL) {
 		return 0;
 	}
-#endif
 
 	if (http_checkUrlBase(urlStr, "")) return http_fn_empty_url(request);
 
