@@ -732,7 +732,7 @@ int HTTP_ProcessPacket(http_request_t* request) {
 			}
 		}
 	}
-	
+
 	if (http_basic_auth_run(request) == HTTP_BASIC_AUTH_FAIL) {
 		return 0;
 	}

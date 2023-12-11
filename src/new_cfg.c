@@ -671,7 +671,7 @@ const char *CFG_GetWebPassword() {
 #if ALLOW_WEB_PASSWORD
 	return g_cfg.webPassword;
 #else
-	return ""
+	return "";
 #endif
 }
 void CFG_SetWebPassword(const char *s) {
@@ -729,10 +729,12 @@ void CFG_InitAndLoad() {
 		strcpy_safe(g_cfg.mqtt_clientId, g_cfg.shortDeviceName, sizeof(g_cfg.mqtt_clientId));
 		g_cfg_pendingChanges++;
 	}
+#if ALLOW_WEB_PASSWORD
 	// add web admin password configuration
 	if (g_cfg.version<5) {
 		strcpy_safe(g_cfg.webPassword, "", sizeof(g_cfg.webPassword));
 	}
+#endif
 	g_cfg.version = MAIN_CFG_VERSION;
 
 	if(g_cfg.buttonHoldRepeat == 0) {
