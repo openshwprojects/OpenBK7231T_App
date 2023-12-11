@@ -7,6 +7,7 @@
 #define LOG_FEATURE LOG_FEATURE_HTTP
 
 int http_basic_auth_eval(http_request_t *request) {
+#if ALLOW_WEB_PASSWORD
 	if (strlen(g_cfg.webPassword) == 0) {
 		return HTTP_BASIC_AUTH_OK;
 	}
@@ -34,12 +35,15 @@ int http_basic_auth_eval(http_request_t *request) {
 		}
 	}
     return HTTP_BASIC_AUTH_FAIL;
+#else
+	return HTTP_BASIC_AUTH_OK;
+#endif
 }
 
 int http_basic_auth_run(http_request_t *request) {
     int result = http_basic_auth_eval(request);
     if (result == HTTP_BASIC_AUTH_FAIL) {
-	    poststr(request, "HTTP/1.1 401 Unauthorized\r\n");
+		poststr(request, "HTTP/1.1 401 Unauthorized\r\n");
         poststr(request, "Connection: close");
         poststr(request, "\r\n");
         poststr(request, "WWW-Authenticate: Basic realm=\"OpenBeken HTTP Server\"");
