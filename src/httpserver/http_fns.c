@@ -1335,6 +1335,8 @@ int http_fn_cfg_wifi(http_request_t* request) {
 	poststr_h2(request, "Alternate WiFi (used when first one is not responding)");
 	add_label_text_field(request, "SSID2", "ssid2", CFG_GetWiFiSSID2(), "");
 	add_label_password_field(request, "Password2", "pass2", CFG_GetWiFiPass2(), "<br>");
+	poststr_h2(request, "Web Authentication");
+	add_label_password_field(request, "Admin Password", "web_admin_password", CFG_GetWebPassword(), "");
 	poststr(request, "<br><br>\
 <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check SSID and pass twice?')\">\
 </form>");
@@ -1409,6 +1411,11 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 	}
 	if (http_getArg(request->url, "pass2", tmpA, sizeof(tmpA))) {
 		bChanged |= CFG_SetWiFiPass2(tmpA);
+	}
+	if (http_getArg(request->url, "web_admin_password", tmpA, sizeof(tmpA))) {
+		CFG_SetWebPassword(tmpA);
+	} else {
+		CFG_SetWebPassword("");
 	}
 	CFG_Save_SetupTimer();
 	if (bChanged == 0) {

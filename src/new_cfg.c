@@ -29,7 +29,7 @@ int g_cfg_pendingChanges = 0;
 #if PLATFORM_W600
 #define MAIN_CFG_VERSION 3
 #else
-#define MAIN_CFG_VERSION 4
+#define MAIN_CFG_VERSION 5
 #endif
 
 static byte CFG_CalcChecksum(mainConfig_t *inf) {
@@ -667,6 +667,23 @@ void CFG_SetButtonRepeatPressTime(int value) {
 		g_cfg_pendingChanges++;
 	}
 }
+const char *CFG_GetWebPassword() {
+#if ALLOW_WEB_PASSWORD
+	return g_cfg.webPassword;
+#else
+	return ""
+#endif
+}
+void CFG_SetWebPassword(const char *s) {
+#if ALLOW_WEB_PASSWORD
+	// this will return non-zero if there were any changes
+	if(strcpy_safe_checkForChanges(g_cfg.webPassword, s,sizeof(g_cfg.webPassword))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+#endif
+}
+
 
 #if ENABLE_LITTLEFS
 void CFG_SetLFS_Size(uint32_t value) {
@@ -711,6 +728,10 @@ void CFG_InitAndLoad() {
 		addLogAdv(LOG_WARN, LOG_FEATURE_CFG, "CFG_InitAndLoad: Old config version found, updating to v3.");
 		strcpy_safe(g_cfg.mqtt_clientId, g_cfg.shortDeviceName, sizeof(g_cfg.mqtt_clientId));
 		g_cfg_pendingChanges++;
+	}
+	// add web admin password configuration
+	if (g_cfg.version<5) {
+		strcpy_safe(g_cfg.webPassword, "", sizeof(g_cfg.webPassword));
 	}
 	g_cfg.version = MAIN_CFG_VERSION;
 

@@ -248,6 +248,6 @@ void HUE_Init() {
 
 
 	//HTTP_RegisterCallback("/api", HTTP_ANY, HUE_APICall);
-	HTTP_RegisterCallback("/description.xml", HTTP_GET, HUE_Setup);
+	HTTP_RegisterCallback("/description.xml", HTTP_GET, HUE_Setup, 0);
 }
 
