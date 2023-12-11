@@ -1,8 +1,8 @@
 #include "http_basic_auth.h"
+#include <stdio.h>
 #include "../logging/logging.h"
 #include "../base64/base64.h"
 #include "../new_pins.h"
-#include "new_http.h"
 
 #define LOG_FEATURE LOG_FEATURE_HTTP
 
