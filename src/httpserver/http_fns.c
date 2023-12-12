@@ -2680,6 +2680,7 @@ const char* g_obk_flagNames[] = {
 	"[BTN] Ignore all button events (aka child lock)",
 	"[DoorSensor] Invert state",
 	"[TuyaMCU] Use queue",
+	"[HTTP] Disable authentication in safe mode (not recommended)",
 	"error",
 	"error",
 };

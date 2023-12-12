@@ -8,7 +8,7 @@
 
 int http_basic_auth_eval(http_request_t *request) {
 #if ALLOW_WEB_PASSWORD
-	if (strlen(g_cfg.webPassword) == 0) {
+	if (strlen(g_cfg.webPassword) == 0 || (bSafeMode && CFG_HasFlag(OBK_FLAG_HTTP_DISABLE_AUTH_IN_SAFE_MODE))) {
 		return HTTP_BASIC_AUTH_OK;
 	}
 	char tmp_auth[256];
