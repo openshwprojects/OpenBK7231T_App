@@ -435,14 +435,14 @@ void DRV_SSDP_Init()
     );
 
 	DRV_SSDP_CreateSocket_Receive();
-    HTTP_RegisterCallback("/ssdp.xml", HTTP_GET, DRV_SSDP_Service_Http);
+    HTTP_RegisterCallback("/ssdp.xml", HTTP_GET, DRV_SSDP_Service_Http, 0);
 	//cmddetail:{"name":"obkDeviceList","args":"",
 	//cmddetail:"descr":"Generate the SSDP list of OpenBeken devices found on the network.",
 	//cmddetail:"fn":"Cmd_obkDeviceList","file":"driver/drv_ssdp.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("obkDeviceList", Cmd_obkDeviceList, NULL);
 
-    HTTP_RegisterCallback("/obkdevicelist", HTTP_GET, http_rest_get_devicelist);
+    HTTP_RegisterCallback("/obkdevicelist", HTTP_GET, http_rest_get_devicelist, 0);
 
     DRV_SSDP_Active = 1;
 }

@@ -1335,6 +1335,14 @@ int http_fn_cfg_wifi(http_request_t* request) {
 	poststr_h2(request, "Alternate WiFi (used when first one is not responding)");
 	add_label_text_field(request, "SSID2", "ssid2", CFG_GetWiFiSSID2(), "");
 	add_label_password_field(request, "Password2", "pass2", CFG_GetWiFiPass2(), "<br>");
+#if ALLOW_WEB_PASSWORD
+	int web_password_enabled = strcmp(CFG_GetWebPassword(), "") == 0 ? 0 : 1;
+	poststr_h2(request, "Web Authentication");
+	poststr(request, "<p>Enabling web authentication will protect this web interface and API using basic HTTP authentication. Username is always <b>admin</b>.</p>");
+	hprintf255(request, "<div><input type=\"checkbox\" name=\"web_admin_password_enabled\" id=\"web_admin_password_enabled\" value=\"1\"%s>", (web_password_enabled > 0 ? " checked" : ""));
+	poststr(request, "<label for=\"web_admin_password_enabled\">Enable web authentication</label></div>");
+	add_label_password_field(request, "Admin Password", "web_admin_password", CFG_GetWebPassword(), "");
+#endif
 	poststr(request, "<br><br>\
 <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check SSID and pass twice?')\">\
 </form>");
@@ -1410,12 +1418,27 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 	if (http_getArg(request->url, "pass2", tmpA, sizeof(tmpA))) {
 		bChanged |= CFG_SetWiFiPass2(tmpA);
 	}
+#if ALLOW_WEB_PASSWORD
+	if (http_getArg(request->url, "web_admin_password_enabled", tmpA, sizeof(tmpA))) {
+		int web_password_enabled = atoi(tmpA);
+		if (web_password_enabled > 0 && http_getArg(request->url, "web_admin_password", tmpA, sizeof(tmpA))) {
+			if (strlen(tmpA) < 5) {
+				poststr_h4(request, "Web password needs to be at least 5 characters long!");
+			} else {
+				poststr(request, "<p>Web password has been changed.</p>");
+				CFG_SetWebPassword(tmpA);
+			}
+		}
+	} else {
+		CFG_SetWebPassword("");
+	}
+#endif
 	CFG_Save_SetupTimer();
 	if (bChanged == 0) {
-		poststr(request, "No changes detected.");
+		poststr(request, "<p>WiFi: No changes detected.</p>");
 	}
 	else {
-		poststr(request, "Please wait for module to reset...");
+		poststr(request, "<p>WiFi: Please wait for module to reset...</p>");
 		RESET_ScheduleModuleReset(3);
 	}
 	poststr(request, "<br><a href=\"cfg_wifi\">Return to WiFi settings</a><br>");
@@ -2426,7 +2449,7 @@ int http_fn_cfg(http_request_t* request) {
 	postFormAction(request, "cfg_generic", "Configure General/Flags");
 	postFormAction(request, "cfg_startup", "Configure Startup");
 	postFormAction(request, "cfg_dgr", "Configure Device Groups");
-	postFormAction(request, "cfg_wifi", "Configure WiFi");
+	postFormAction(request, "cfg_wifi", "Configure WiFi &amp; Web");
 	postFormAction(request, "cfg_ip", "Configure IP");
 	postFormAction(request, "cfg_mqtt", "Configure MQTT");
 	postFormAction(request, "cfg_name", "Configure Names");
@@ -2657,6 +2680,7 @@ const char* g_obk_flagNames[] = {
 	"[BTN] Ignore all button events (aka child lock)",
 	"[DoorSensor] Invert state",
 	"[TuyaMCU] Use queue",
+	"[HTTP] Disable authentication in safe mode (not recommended)",
 	"error",
 	"error",
 };

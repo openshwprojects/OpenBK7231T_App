@@ -88,6 +88,8 @@ void CFG_SetPowerMeasurementCalibrationFloat(int index, float value);
 void CFG_SetButtonLongPressTime(int value);
 void CFG_SetButtonShortPressTime(int value);
 void CFG_SetButtonRepeatPressTime(int value);
+const char *CFG_GetWebPassword();
+void CFG_SetWebPassword(const char *s);
 
 #if ENABLE_LITTLEFS
     void CFG_SetLFS_Size(uint32_t value);

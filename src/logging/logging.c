@@ -183,8 +183,8 @@ static void initLog(void)
 	logMemory.mutex = xSemaphoreCreateMutex();
 	initialised = 1;
 	startSerialLog();
-	HTTP_RegisterCallback("/logs", HTTP_GET, http_getlog);
-	HTTP_RegisterCallback("/lograw", HTTP_GET, http_getlograw);
+	HTTP_RegisterCallback("/logs", HTTP_GET, http_getlog, 1);
+	HTTP_RegisterCallback("/lograw", HTTP_GET, http_getlograw, 1);
 
 	//cmddetail:{"name":"loglevel","args":"[Value]",
 	//cmddetail:"descr":"Correct values are 0 to 7. Default is 3. Higher value includes more logs. Log levels are: ERROR = 1, WARN = 2, INFO = 3, DEBUG = 4, EXTRADEBUG = 5. WARNING: you also must separately select logging level filter on web panel in order for more logs to show up there",

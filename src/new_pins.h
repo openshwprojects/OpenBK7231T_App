@@ -1013,8 +1013,9 @@ typedef struct pinsState_s {
 #define OBK_FLAG_BUTTON_DISABLE_ALL					41
 #define OBK_FLAG_DOORSENSOR_INVERT_STATE			42
 #define OBK_FLAG_TUYAMCU_USE_QUEUE					43
+#define OBK_FLAG_HTTP_DISABLE_AUTH_IN_SAFE_MODE		44
 
-#define OBK_TOTAL_FLAGS 44
+#define OBK_TOTAL_FLAGS 45
 
 #define LOGGER_FLAG_MQTT_DEDUPER					1
 #define LOGGER_FLAG_POWER_SAVE						2
@@ -1191,16 +1192,20 @@ typedef struct mainConfig_s {
 	//char initCommandLine[512];
 #if PLATFORM_W600 || PLATFORM_W800
 #define ALLOW_SSID2 0
+#define ALLOW_WEB_PASSWORD 0
 	char initCommandLine[512];
 #else
 #define ALLOW_SSID2 1
+#define ALLOW_WEB_PASSWORD 1
 	char initCommandLine[1568];
 	// offset 0x00000C00 (3072 decimal)
 	char wifi_ssid2[64];
 	// offset 0x00000C40 (3136 decimal)
 	char wifi_pass2[68];
 	// offset 0x00000C84 (3204 decimal)
-	char unused[380];
+	char webPassword[33];
+	// offset 0x00000CA5 (3237 decimal)
+	char unused[347];
 #endif
 } mainConfig_t; 
 

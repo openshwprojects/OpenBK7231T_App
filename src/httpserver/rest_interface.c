@@ -105,9 +105,9 @@ static int http_rest_post_cmd(http_request_t* request);
 
 
 void init_rest() {
-	HTTP_RegisterCallback("/api/", HTTP_GET, http_rest_get);
-	HTTP_RegisterCallback("/api/", HTTP_POST, http_rest_post);
-	HTTP_RegisterCallback("/app", HTTP_GET, http_rest_app);
+	HTTP_RegisterCallback("/api/", HTTP_GET, http_rest_get, 1);
+	HTTP_RegisterCallback("/api/", HTTP_POST, http_rest_post, 1);
+	HTTP_RegisterCallback("/app", HTTP_GET, http_rest_app, 1);
 }
 
 /* Extracts string token value into outBuffer (128 char). Returns true if the operation was successful. */
