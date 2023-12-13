@@ -154,6 +154,12 @@ commandResult_t CMD_NTP_AddClockEvent(const void *context, const char *cmd, cons
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	s = Tokenizer_GetArg(0);
+	// FIX: Somehow sscanf fails if string starts with "08:20", etc,
+	// but it works if it starts like "8:20"
+	if (isdigit(s[0]) && isdigit(s[1])) {
+		if (*s == '0')
+			s++;
+	}
 	if (sscanf(s, "%i:%i:%i", &hour, &minute, &second) <= 1) {
 		return CMD_RES_BAD_ARGUMENT;
 	}
