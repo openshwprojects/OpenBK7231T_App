@@ -282,6 +282,8 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, NULL, NULL, false },
 #endif
+// Shared driver for TM1637, GN6932, TM1638 - TM_GN_Display_SharedInit
+#if ENABLE_DRIVER_TMGN
 	//drvdetail:{"name":"TM1637",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK interface.",
@@ -297,6 +299,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK/STB interface. TM1638 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20553628#20553628) for details.",
 	//drvdetail:"requires":""}
 	{ "TM1638",	TM1638_Init,		NULL,		NULL, TMGN_RunQuickTick,NULL,  NULL, false },
+#endif
 	//drvdetail:{"name":"ADCSmoother",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"qq",
