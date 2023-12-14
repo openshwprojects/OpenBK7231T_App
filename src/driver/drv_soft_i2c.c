@@ -63,6 +63,11 @@ bool Soft_I2C_WriteByte(softI2C_t *i2c, uint8_t value) {
 	return (0 == ack);
 }
 
+void Soft_I2C_Start_Internal(softI2C_t *i2c) {
+	Soft_I2C_SetLow(i2c->pin_data);
+	usleep(SM2135_DELAY);
+	Soft_I2C_SetLow(i2c->pin_clk);
+}
 bool Soft_I2C_Start(softI2C_t *i2c, uint8_t addr) {
 	Soft_I2C_SetLow(i2c->pin_data);
 	usleep(SM2135_DELAY);

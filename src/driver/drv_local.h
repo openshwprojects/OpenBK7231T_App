@@ -15,6 +15,10 @@ void DRV_DDP_RunFrame();
 void DRV_DDP_Shutdown();
 void DRV_DDP_AppendInformationToHTTPIndexPage(http_request_t* request);
 
+void BMP280_Init();
+void BMP280_OnEverySecond();
+void BMP280_AppendInformationToHTTPIndexPage(http_request_t* request);
+
 void DoorDeepSleep_Init();
 void DoorDeepSleep_OnEverySecond();
 void DoorDeepSleep_StopDriver();
