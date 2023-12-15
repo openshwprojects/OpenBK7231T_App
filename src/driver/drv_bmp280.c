@@ -10,7 +10,7 @@
 #include "../httpserver/new_http.h"
 #include "../hal/hal_pins.h"
 
-static int32_t g_temperature, g_pressure;
+static uint32_t g_temperature, g_pressure;
 static char g_targetChannelTemperature = -1, g_targetChannelPressure = -1;
 static softI2C_t g_softI2C;
 
