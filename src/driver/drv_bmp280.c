@@ -11,6 +11,7 @@
 #include "../hal/hal_pins.h"
 
 static int32_t g_temperature, g_pressure;
+static char g_targetChannelTemperature = -1, g_targetChannelPressure = -1;
 static softI2C_t g_softI2C;
 
 unsigned short BMP280_Start(void) {
@@ -32,13 +33,16 @@ void BMP280_Stop(void) {		//manufacturer ID
 
 #include "BMP280.h"
 
-// startDriver BMP280
+// startDriver BMP280 8 14 1 2
+
 void BMP280_Init() {
 
 	uint8_t buff[4];
 
-	g_softI2C.pin_clk = 8;
-	g_softI2C.pin_data = 14;
+	g_softI2C.pin_clk = Tokenizer_GetArgIntegerDefault(1, 8);
+	g_softI2C.pin_data = Tokenizer_GetArgIntegerDefault(2, 14);
+	g_targetChannelTemperature = Tokenizer_GetArgIntegerDefault(3, -1);
+	g_targetChannelPressure = Tokenizer_GetArgIntegerDefault(4, -1);
 
 	Soft_I2C_PreInit(&g_softI2C);
 
@@ -57,6 +61,12 @@ void BMP280_OnEverySecond() {
 	BMP280_readPressure(&g_pressure);        // read pressure
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "T %i, P %i!", g_temperature, g_pressure);
+	if (g_targetChannelTemperature != -1) {
+		CHANNEL_Set(g_targetChannelTemperature, g_temperature, 0);
+	}
+	if (g_targetChannelPressure != -1) {
+		CHANNEL_Set(g_targetChannelPressure, g_pressure, 0);
+	}
 }
 
 void BMP280_AppendInformationToHTTPIndexPage(http_request_t* request)
