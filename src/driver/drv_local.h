@@ -138,6 +138,7 @@ typedef struct softI2C_s {
 	short pin_stb;
 	// I must somehow be able to tell which proto we have?
 	//short protocolType;
+	byte address8bit;
 } softI2C_t;
 
 void Soft_I2C_SetLow(uint8_t pin);

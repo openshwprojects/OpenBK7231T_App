@@ -16,12 +16,8 @@
 
 #include <stdint.h>
 
-
-#ifndef BMP280_I2C_ADDRESS
-  #define BMP280_I2C_ADDRESS  236
-#endif
-
 #define BMP280_CHIP_ID        0x58
+#define BME280_CHIP_ID        0x60
 
 #define BMP280_REG_DIG_T1     0x88
 #define BMP280_REG_DIG_T2     0x8A
@@ -110,7 +106,7 @@ struct
 void BMP280_Write8(uint8_t reg_addr, uint8_t _data)
 {
   BMP280_Start();
-  BMP280_Write(BMP280_I2C_ADDRESS);
+  BMP280_Write(g_softI2C.address8bit);
   BMP280_Write(reg_addr);
   BMP280_Write(_data);
   BMP280_Stop();
@@ -122,11 +118,11 @@ uint8_t BMP280_Read8(uint8_t reg_addr)
   uint8_t ret;
 
   BMP280_Start();
-  BMP280_Write(BMP280_I2C_ADDRESS);
+  BMP280_Write(g_softI2C.address8bit);
   BMP280_Write(reg_addr);
   Soft_I2C_Stop(&g_softI2C);
   BMP280_Start();
-  BMP280_Write(BMP280_I2C_ADDRESS | 1);
+  BMP280_Write(g_softI2C.address8bit | 1);
   ret = BMP280_Read(0);
   BMP280_Stop();
 
@@ -143,11 +139,11 @@ uint16_t BMP280_Read16(uint8_t reg_addr)
   } ret;
 
   BMP280_Start();
-  BMP280_Write(BMP280_I2C_ADDRESS);
+  BMP280_Write(g_softI2C.address8bit);
   BMP280_Write(reg_addr);
   Soft_I2C_Stop(&g_softI2C);
   BMP280_Start();
-  BMP280_Write(BMP280_I2C_ADDRESS | 1);
+  BMP280_Write(g_softI2C.address8bit | 1);
   ret.b[0] = BMP280_Read(1);
   ret.b[1] = BMP280_Read(0);
   BMP280_Stop();
@@ -176,11 +172,15 @@ uint8_t BMP280_begin(BMP280_mode mode,
                   standby_time  standby)
 {
 	int id = BMP280_Read8(BMP280_REG_CHIPID);
-	if (id != BMP280_CHIP_ID) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BMP280_REG_CHIPID error!");
+	if (id == BMP280_CHIP_ID) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BMP280 detected!");
+	} else if (id == BME280_CHIP_ID) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BME280 detected!");
+	}
+	else {
+		addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BMx280 wrong ID!");
 		return 0;
-   }
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BMP280_REG_CHIPID OK!");
+	}
 
   // reset the BMP280 with soft reset
   BMP280_Write8(BMP280_REG_SOFTRESET, 0xB6);
@@ -238,11 +238,11 @@ void BMP280_Update()
   ret.b[3] = 0x00;
 
   BMP280_Start();
-  BMP280_Write(BMP280_I2C_ADDRESS);
+  BMP280_Write(g_softI2C.address8bit);
   BMP280_Write(BMP280_REG_PRESS_MSB);
   Soft_I2C_Stop(&g_softI2C);
   BMP280_Start();
-  BMP280_Write(BMP280_I2C_ADDRESS | 1);
+  BMP280_Write(g_softI2C.address8bit | 1);
   ret.b[2] = BMP280_Read(1);
   ret.b[1] = BMP280_Read(1);
   ret.b[0] = BMP280_Read(1);

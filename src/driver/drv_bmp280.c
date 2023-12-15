@@ -33,8 +33,8 @@ void BMP280_Stop(void) {		//manufacturer ID
 
 #include "BMP280.h"
 
-// startDriver BMP280 8 14 1 2
-
+// startDriver BMP280 8 14 1 2 236
+// startDriver BMP280 [CLK] [DATA] [ChannelForTemp] [ChannelForPressure] [Adr8bit]
 void BMP280_Init() {
 
 	uint8_t buff[4];
@@ -43,6 +43,7 @@ void BMP280_Init() {
 	g_softI2C.pin_data = Tokenizer_GetArgIntegerDefault(2, 14);
 	g_targetChannelTemperature = Tokenizer_GetArgIntegerDefault(3, -1);
 	g_targetChannelPressure = Tokenizer_GetArgIntegerDefault(4, -1);
+	g_softI2C.address8bit = Tokenizer_GetArgIntegerDefault(5, 236);
 
 	Soft_I2C_PreInit(&g_softI2C);
 
@@ -62,10 +63,10 @@ void BMP280_OnEverySecond() {
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "T %i, P %i!", g_temperature, g_pressure);
 	if (g_targetChannelTemperature != -1) {
-		CHANNEL_Set(g_targetChannelTemperature, g_temperature, 0);
+		CHANNEL_Set(g_targetChannelTemperature, g_temperature, CHANNEL_SET_FLAG_SILENT);
 	}
 	if (g_targetChannelPressure != -1) {
-		CHANNEL_Set(g_targetChannelPressure, g_pressure, 0);
+		CHANNEL_Set(g_targetChannelPressure, g_pressure, CHANNEL_SET_FLAG_SILENT);
 	}
 }
 
