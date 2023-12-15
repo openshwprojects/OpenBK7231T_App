@@ -146,6 +146,7 @@ void Soft_I2C_SetHigh(uint8_t pin);
 bool Soft_I2C_PreInit(softI2C_t* i2c);
 bool Soft_I2C_WriteByte(softI2C_t* i2c, uint8_t value);
 bool Soft_I2C_Start(softI2C_t* i2c, uint8_t addr);
+void Soft_I2C_Start_Internal(softI2C_t *i2c);
 void Soft_I2C_Stop(softI2C_t* i2c);
 uint8_t Soft_I2C_ReadByte(softI2C_t* i2c, bool nack);
 void Soft_I2C_ReadBytes(softI2C_t* i2c, uint8_t* buf, int numOfBytes);
