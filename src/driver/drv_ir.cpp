@@ -437,7 +437,7 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
     }
 
     int ournamelen = (p - args);
-    int protocol = 0;
+    int protocol = -1;
     for (int i = 0; i < numProtocols; i++){
         const char *name = ProtocolNames[i];
         int namelen = strlen(name);
@@ -446,6 +446,10 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
             break;
         }
     }
+	if (protocol == -1) {
+		ADDLOG_ERROR(LOG_FEATURE_IR, "Unknown IR protocol in send!");
+		protocol = 0;
+	}
 
     p++;
     int addr = strtol(p, &p, 16);
