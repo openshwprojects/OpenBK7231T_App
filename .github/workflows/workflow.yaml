@@ -14,7 +14,7 @@ env:
 jobs:
   refs:
     name: Prepare CI Environment
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     outputs:
       sha_short: ${{ steps.refs.outputs.sha_short }}
       short_ref: ${{ steps.refs.outputs.short_ref }}
