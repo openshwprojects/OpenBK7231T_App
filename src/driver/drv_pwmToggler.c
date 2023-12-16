@@ -180,7 +180,22 @@ commandResult_t Toggler_SetX(const void *context, const char *cmd, const char *a
 		return CMD_RES_BAD_ARGUMENT;
 	}
 
-	g_values[index] = atoi(args);
+	if (*args == '+') {
+		args++;
+		g_values[index] += atoi(args);
+	}
+	else if (*args == '-') {
+		args++;
+		g_values[index] -= atoi(args);
+	}
+	else {
+		g_values[index] = atoi(args);
+	}
+
+	if (g_values[index] < 0)
+		g_values[index] = 0;
+	if (g_values[index] > 100)
+		g_values[index] = 100;
 
 	apply(index);
 
@@ -307,7 +322,7 @@ void DRV_InitPWMToggler() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("toggler_enable", Toggler_EnableX, NULL);
 	//cmddetail:{"name":"toggler_set","args":"[Value]",
-	//cmddetail:"descr":"Sets the VALUE of given output. Handles toggler_set0, toggler_set1, etc. The last digit after command name is changed to slot index.",
+	//cmddetail:"descr":"Sets the VALUE of given output. Handles toggler_set0, toggler_set1, etc. The last digit after command name is changed to slot index. It can also add to current value if you write value like +25 and subtract if you prefix it with - like -25",
 	//cmddetail:"fn":"Toggler_SetX","file":"driver/drv_pwmToggler.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("toggler_set", Toggler_SetX, NULL);
