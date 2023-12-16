@@ -282,6 +282,23 @@ void Test_LEDDriver_CW_Alternate() {
 }
 
 
+void Test_LEDDriver_Palette() {
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(24, 1);
+
+	PIN_SetPinRoleForPinIndex(26, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(26, 2);
+
+	PIN_SetPinRoleForPinIndex(9, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(9, 3);
+
+	CMD_ExecuteCommand("SPC 0 FF00FF", 0);
+
+}
+
 void Test_LEDDriver_RGBCW() {
 	// reset whole device
 	SIM_ClearOBK(0);
@@ -462,6 +479,7 @@ void Test_LEDDriver() {
 	Test_LEDDriver_RGB(0);
 	Test_LEDDriver_RGB(1);
 	Test_LEDDriver_RGBCW();
+	Test_LEDDriver_Palette();
 }
 
 #endif

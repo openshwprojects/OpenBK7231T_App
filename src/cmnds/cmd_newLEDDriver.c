@@ -1540,6 +1540,9 @@ static commandResult_t setHue(const void *context, const char *cmd, const char *
 float LED_GetHue() {
 	return g_hsv_h;
 }
+
+commandResult_t commandSetPaletteColor(const void *context, const char *cmd, const char *args, int cmdFlags);
+
 void NewLED_InitCommands(){
 	int pwmCount;
 
@@ -1684,6 +1687,11 @@ void NewLED_InitCommands(){
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("led_saveInterval", cmdSaveStateIfModifiedInterval, NULL);
 
+	//cmddetail:{"name":"SPC","args":"[Index][RGB]",
+	//cmddetail:"descr":"Sets Palette Color by index.",
+	//cmddetail:"fn":"commandSetPaletteColor","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("SPC", commandSetPaletteColor, NULL);
 	
 }
 
