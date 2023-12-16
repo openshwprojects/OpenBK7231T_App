@@ -180,6 +180,12 @@
     "requires": ""
   },
   {
+    "name": "BMP280",
+    "title": "TODO",
+    "descr": "BMP280 is a Temperature and Pressure sensor with I2C interface.",
+    "requires": ""
+  },
+  {
     "name": "CHT8305",
     "title": "TODO",
     "descr": "CHT8305 is a Temperature and Humidity sensor with I2C interface.",

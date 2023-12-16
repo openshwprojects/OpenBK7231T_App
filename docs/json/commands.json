@@ -360,15 +360,6 @@
     "examples": ""
   },
   {
-    "name": "CMD_SetChannelPrivate",
-    "args": "CMD_SetChannelPrivate",
-    "descr": "",
-    "fn": "NULL);",
-    "file": "cmnds/cmd_channels.c",
-    "requires": "",
-    "examples": ""
-  },
-  {
     "name": "Color",
     "args": "[HexValue]",
     "descr": "Puts the LED driver in RGB mode and sets given color.",
