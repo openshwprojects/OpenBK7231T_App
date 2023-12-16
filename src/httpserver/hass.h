@@ -65,8 +65,9 @@ typedef enum {
 	ILLUMINANCE_SENSOR,
 	// dBm unit
 	HASS_RSSI,
-
 	ENERGY_SENSOR,
+	// hPa
+	PRESSURE_SENSOR,
 
 } ENTITY_TYPE;
 

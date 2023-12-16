@@ -86,6 +86,9 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 	case CURRENT_SENSOR:
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "current", index);
 		break;
+	case PRESSURE_SENSOR:
+		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "pressure", index);
+		break;
 	case HASS_RSSI:
 		sprintf(uniq_id, "%s_rssi", longDeviceName);
 		break;	
@@ -234,6 +237,10 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 	case SMOKE_SENSOR:
 		isSensor = true;
 		sprintf(g_hassBuffer, "Smoke");
+		break;
+	case PRESSURE_SENSOR:
+		isSensor = true;
+		sprintf(g_hassBuffer, "Pressure");
 		break;
 	case TVOC_SENSOR:
 		isSensor = true;
@@ -538,6 +545,12 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 	case CO2_SENSOR:
 		cJSON_AddStringToObject(info->root, "dev_cla", "carbon_dioxide");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "ppm");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break; 
+	case PRESSURE_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "pressure");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "hPa");
 		sprintf(g_hassBuffer, "~/%d/get", channel);
 		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		break;
