@@ -50,6 +50,7 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "relay", index);
 		break;
 
+	case VCP_SENSOR:
 	case POWER_SENSOR:
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "sensor", index);
 		break;
@@ -138,6 +139,7 @@ void hass_populate_device_config_channel(ENTITY_TYPE type, char* uniq_id, HassDe
 	case CO2_SENSOR:
 	case TVOC_SENSOR:
 	case POWER_SENSOR:
+	case VCP_SENSOR:
 	case BATTERY_SENSOR:
 	case BATTERY_VOLTAGE_SENSOR:
 	case TEMPERATURE_SENSOR:
@@ -212,14 +214,21 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 		//for 2 PWM case.
 		sprintf(g_hassBuffer, "Light");
 		break;
-	case POWER_SENSOR:
+	case VCP_SENSOR:
 		isSensor = true;
 #ifndef OBK_DISABLE_ALL_DRIVERS
 		if ((index >= OBK_VOLTAGE) && (index <= OBK_POWER))
 			sprintf(g_hassBuffer, "%s", sensor_mqttNames[index]);
 		else if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_CONSUMPTION_STATS))
 			sprintf(g_hassBuffer, "%s", counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
+		else
+			sprintf(g_hassBuffer, "Power");
+
 #endif
+		break;
+	case POWER_SENSOR:
+		isSensor = true;
+		sprintf(g_hassBuffer, "Power");
 		break;
 
 	case TEMPERATURE_SENSOR:
@@ -412,7 +421,7 @@ HassDeviceInfo* hass_init_power_sensor_device_info(int index) {
 	//device_class automatically assigns unit,icon
 	if ((index >= OBK_VOLTAGE) && (index <= OBK_POWER))
 	{
-		info = hass_init_device_info(POWER_SENSOR, index, NULL, NULL);
+		info = hass_init_device_info(VCP_SENSOR, index, NULL, NULL);
 		cJSON_AddStringToObject(info->root, "dev_cla", sensor_mqtt_device_classes[index]);   //device_class=voltage,current,power
 		cJSON_AddStringToObject(info->root, "unit_of_meas", sensor_mqtt_device_units[index]);   //unit_of_measurement
 
@@ -423,7 +432,7 @@ HassDeviceInfo* hass_init_power_sensor_device_info(int index) {
 	}
 	else if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_CONSUMPTION_STATS))
 	{
-		info = hass_init_device_info(POWER_SENSOR, index, NULL, NULL);
+		info = hass_init_device_info(VCP_SENSOR, index, NULL, NULL);
 		const char* device_class_value = counter_devClasses[index - OBK_CONSUMPTION_TOTAL];
 		if (strlen(device_class_value) > 0) {
 			cJSON_AddStringToObject(info->root, "dev_cla", device_class_value);  //device_class=energy
