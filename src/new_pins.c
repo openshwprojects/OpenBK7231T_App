@@ -1072,6 +1072,7 @@ int ChannelType_GetDivider(int type) {
 	case ChType_EnergyExport_kWh_div1000:
 	case ChType_EnergyToday_kWh_div1000:
 	case ChType_Current_div1000:
+	case ChType_LeakageCurrent_div1000:
 		return 1000;
 	case ChType_Temperature_div2:
 		return 2;
