@@ -79,6 +79,6 @@ void BMP280_OnEverySecond() {
 
 void BMP280_AppendInformationToHTTPIndexPage(http_request_t* request)
 {
-	hprintf255(request, "<h2>BMP280 Temperature=%f C, Pressure=%f hPa</h2>", g_temperature*0.01f, g_pressure*0.01f);
+	hprintf255(request, "<h2>BMP280 Temperature=%.2f C, Pressure=%.2f hPa</h2>", g_temperature*0.01f, g_pressure*0.01f);
 }
 

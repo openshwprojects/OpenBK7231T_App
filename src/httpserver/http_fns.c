@@ -419,6 +419,26 @@ int http_fn_index(http_request_t* request) {
 			poststr(request, "</td></tr>");
 
 		}
+		else if (channelType == ChType_Pressure_div100) {
+
+			iValue = CHANNEL_Get(i);
+			fValue = iValue * 0.01f;
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "Pressure Channel %s value %.2f hPa<br>", CHANNEL_GetLabel(i), fValue);
+			poststr(request, "</td></tr>");
+
+		}
+		else if (channelType == ChType_Temperature_div100) {
+
+			iValue = CHANNEL_Get(i);
+			fValue = iValue * 0.01f;
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "Temperature Channel %s value %.2f C<br>", CHANNEL_GetLabel(i), fValue);
+			poststr(request, "</td></tr>");
+
+		}
 		else  if (channelType == ChType_Humidity) {
 
 			iValue = CHANNEL_Get(i);
@@ -2032,6 +2052,15 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			case ChType_Temperature_div10:
 			{
 				dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, i, 2, 1, 1);
+				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+				hass_free_device_info(dev_info);
+
+				discoveryQueued = true;
+			}
+			break;
+			case ChType_Temperature_div100:
+			{
+				dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, i, 2, 2, 1);
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 

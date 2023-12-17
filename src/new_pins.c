@@ -1058,6 +1058,7 @@ float CHANNEL_GetFinalValue(int channel) {
 	case ChType_Voltage_div100:
 	case ChType_PowerFactor_div100:
 	case ChType_Pressure_div100:
+	case ChType_Temperature_div100:
 		dVal = (float)iVal / 100;
 		break;
 	case ChType_PowerFactor_div1000:
@@ -1878,7 +1879,7 @@ const char* g_channelTypeNames[] = {
 	"Frequency_div10",
 	"PowerFactor_div100",
 	"Pressure_div100",
-	"error",
+	"Temperature_div100",
 	"error",
 	"error",
 	"error",

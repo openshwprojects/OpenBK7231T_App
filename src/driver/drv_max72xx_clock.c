@@ -41,6 +41,8 @@ bool CHANNEL_IsTemperature(int type) {
 		return true;
 	if (type == ChType_Temperature_div10)
 		return true;
+	if (type == ChType_Temperature_div100)
+		return true;
 	return false;
 }
 bool CHANNEL_GetGenericOfType(float *out, bool (*checker)(int type)) {

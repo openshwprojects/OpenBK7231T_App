@@ -894,6 +894,13 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Pressure_div100,
+	//chandetail:{"name":"Temperature_div100",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Just like humidity_div100, but for temperature.",
+	//chandetail:"enum":"ChType_Temperature_div100",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Temperature_div100,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
