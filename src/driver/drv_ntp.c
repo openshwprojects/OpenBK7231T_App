@@ -14,6 +14,9 @@
 
 #include "drv_ntp.h"
 
+extern void NTP_Init_Events(void);
+extern void NTP_RunEvents(unsigned int newTime, bool bTimeValid);
+
 #define LOG_FEATURE LOG_FEATURE_NTP
 
 typedef struct
@@ -59,7 +62,8 @@ static int adrLen;
 static int g_ntp_delay = 0;
 static bool g_synced;
 // time offset (time zone?) in seconds
-static int g_timeOffsetSeconds;
+#define CFG_DEFAULT_TIMEOFFSETSECONDS (-8 * 60 * 60)
+static int g_timeOffsetSeconds = CFG_DEFAULT_TIMEOFFSETSECONDS;
 // current time
 unsigned int g_ntpTime;
 
@@ -95,9 +99,43 @@ commandResult_t NTP_SetTimeZoneOfs(const void *context, const char *cmd, const c
 	}
 	g_ntpTime -= oldOfs;
 	g_ntpTime += g_timeOffsetSeconds;
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP offset set");
+	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP offset set");
+	return CMD_RES_OK;
+}
+
+#if ENABLE_NTP_SUNRISE_SUNSET
+
+/* sunrise/sunset defaults */
+#define CFG_DEFAULT_LATITUDE	43.994131
+#define CFG_DEFAULT_LONGITUDE -123.095854
+
+struct SUN_DATA sun_data =
+	{
+	.latitude = (int) (CFG_DEFAULT_LATITUDE * 1000000),
+	.longitude = (int) (CFG_DEFAULT_LONGITUDE * 1000000),
+	};
+
+//Set Latitude and Longitude for sunrise/sunset calc
+commandResult_t NTP_SetLatlong(const void *context, const char *cmd, const char *args, int cmdFlags) {
+    const char *newValue;
+
+    Tokenizer_TokenizeString(args,0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+    newValue = Tokenizer_GetArg(0);
+    sun_data.latitude = (int) (atof(newValue) * 1000000);
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP latitude set to %s", newValue);
+
+    newValue = Tokenizer_GetArg(1);
+		sun_data.longitude = (int) (atof(newValue) * 1000000);
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP longitude set to %s", newValue);
     return CMD_RES_OK;
 }
+#endif
 
 //Set custom NTP server
 commandResult_t NTP_SetServer(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -229,6 +267,13 @@ void NTP_Init() {
 	//cmddetail:"fn":"NTP_SetServer","file":"driver/drv_ntp.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ntp_setServer", NTP_SetServer, NULL);
+#if ENABLE_NTP_SUNRISE_SUNSET
+	//cmddetail:{"name":"ntp_setLatlong","args":"[Latlong]",
+	//cmddetail:"descr":"Sets the NTP latitude and longitude",
+	//cmddetail:"fn":"NTP_SetLatlong","file":"driver/drv_ntp.c","requires":"",
+	//cmddetail:"examples":"NTP_SetLatlong -34.911498 138.809488"}
+    CMD_RegisterCommand("ntp_setLatLong",NTP_SetLatlong, NULL);
+#endif
 	//cmddetail:{"name":"ntp_info","args":"",
 	//cmddetail:"descr":"Display NTP related settings",
 	//cmddetail:"fn":"NTP_Info","file":"driver/drv_ntp.c","requires":"",
@@ -357,7 +402,7 @@ void NTP_CheckForReceive() {
 #endif
 
     if(recv_len < 0){
-        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP_CheckForReceive: Error while receiving server's msg");
+			addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP_CheckForReceive: Error while receiving server's msg");
         return;
     }
     highWord = MAKE_WORD(ptr[40], ptr[41]);
