@@ -1167,11 +1167,10 @@ const char *ChannelType_GetTitle(int type) {
 	return "";
 }
 float CHANNEL_GetFinalValue(int channel) {
-	int iVal;
 	float dVal;
 
-	iVal = CHANNEL_Get(channel);
-	iVal /= ChannelType_GetDivider(CHANNEL_GetType(channel));
+	dVal = CHANNEL_Get(channel);
+	dVal /= ChannelType_GetDivider(CHANNEL_GetType(channel));
 
 	return dVal;
 }
