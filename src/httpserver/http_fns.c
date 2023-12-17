@@ -367,16 +367,7 @@ int http_fn_index(http_request_t* request) {
 		}
 
 		channelType = CHANNEL_GetType(i);
-		if (channelType == ChType_Temperature) {
-
-			iValue = CHANNEL_Get(i);
-			poststr(request, "<tr><td>");
-			hprintf255(request, "Temperature Channel %s value %i C<br>", CHANNEL_GetLabel(i), iValue);
-			poststr(request, "</td></tr>");
-
-		}
-		else if (channelType == ChType_TimerSeconds) {
-
+		if (channelType == ChType_TimerSeconds) {
 			iValue = CHANNEL_Get(i);
 
 			poststr(request, "<tr><td>");
@@ -396,65 +387,6 @@ int http_fn_index(http_request_t* request) {
 				int seconds = remainingSeconds % 60;
 				hprintf255(request, "%i hours %i minutes %i seconds<br>", hours, minutes, seconds);
 			}
-			poststr(request, "</td></tr>");
-
-		}
-		else if (channelType == ChType_Temperature_div2) {
-
-			iValue = CHANNEL_Get(i);
-			fValue = iValue * 0.5f;
-
-			poststr(request, "<tr><td>");
-			hprintf255(request, "Temperature Channel %s value %.2f C<br>", CHANNEL_GetLabel(i), fValue);
-			poststr(request, "</td></tr>");
-
-		}
-		else if (channelType == ChType_Temperature_div10) {
-
-			iValue = CHANNEL_Get(i);
-			fValue = iValue * 0.1f;
-
-			poststr(request, "<tr><td>");
-			hprintf255(request, "Temperature Channel %s value %.2f C<br>", CHANNEL_GetLabel(i), fValue);
-			poststr(request, "</td></tr>");
-
-		}
-		else if (channelType == ChType_Pressure_div100) {
-
-			iValue = CHANNEL_Get(i);
-			fValue = iValue * 0.01f;
-
-			poststr(request, "<tr><td>");
-			hprintf255(request, "Pressure Channel %s value %.2f hPa<br>", CHANNEL_GetLabel(i), fValue);
-			poststr(request, "</td></tr>");
-
-		}
-		else if (channelType == ChType_Temperature_div100) {
-
-			iValue = CHANNEL_Get(i);
-			fValue = iValue * 0.01f;
-
-			poststr(request, "<tr><td>");
-			hprintf255(request, "Temperature Channel %s value %.2f C<br>", CHANNEL_GetLabel(i), fValue);
-			poststr(request, "</td></tr>");
-
-		}
-		else  if (channelType == ChType_Humidity) {
-
-			iValue = CHANNEL_Get(i);
-
-			poststr(request, "<tr><td>");
-			hprintf255(request, "Humidity Channel %s value %i Percent<br>", CHANNEL_GetLabel(i), iValue);
-			poststr(request, "</td></tr>");
-
-		}
-		else if (channelType == ChType_Humidity_div10) {
-
-			iValue = CHANNEL_Get(i);
-			fValue = iValue * 0.1f;
-
-			poststr(request, "<tr><td>");
-			hprintf255(request, "Humidity Channel %s value %.2f Percent<br>", CHANNEL_GetLabel(i), fValue);
 			poststr(request, "</td></tr>");
 
 		}
@@ -550,144 +482,11 @@ int http_fn_index(http_request_t* request) {
 			poststr(request, "</td></tr>");
 
 		}
-		else if (channelType == ChType_Illuminance) {
-			iValue = CHANNEL_Get(i);
-
-			poststr(request, "<tr><td>");
-			hprintf255(request, "Illuminance (%s) = %i Lux", CHANNEL_GetLabel(i), iValue);
-			poststr(request, "</td></tr>");
-		}
 		else if (channelType == ChType_ReadOnly) {
 			iValue = CHANNEL_Get(i);
 
 			poststr(request, "<tr><td>");
 			hprintf255(request, "Channel %s = %i", CHANNEL_GetLabel(i), iValue);
-			poststr(request, "</td></tr>");
-		}
-		else if (channelType == ChType_Frequency_div100) {
-			iValue = CHANNEL_Get(i);
-			fValue = iValue * 0.01f;
-
-			poststr(request, "<tr><td>");
-			hprintf255(request, "Frequency %.2fHz (ch %s)", fValue, CHANNEL_GetLabel(i));
-			poststr(request, "</td></tr>");
-		}
-		else if (channelType == ChType_Frequency_div10) {
-			iValue = CHANNEL_Get(i);
-			fValue = iValue * 0.1f;
-
-			poststr(request, "<tr><td>");
-			hprintf255(request, "Frequency %.2fHz (ch %s)", fValue, CHANNEL_GetLabel(i));
-			poststr(request, "</td></tr>");
-		}
-		else if (channelType == ChType_EnergyToday_kWh_div1000) {
-			iValue = CHANNEL_Get(i);
-			fValue = iValue * 0.001f;
-
-			poststr(request, "<tr><td>");
-			hprintf255(request, "EnergyToday %.2fkWh (ch %s)", fValue, CHANNEL_GetLabel(i));
-			poststr(request, "</td></tr>");
-		}
-		else if (channelType == ChType_EnergyExport_kWh_div1000) {
-			iValue = CHANNEL_Get(i);
-			fValue = iValue * 0.001f;
-
-			poststr(request, "<tr><td>");
-			hprintf255(request, "EnergyExport(back to grid) %.2fkWh (ch %s)", fValue, CHANNEL_GetLabel(i));
-			poststr(request, "</td></tr>");
-		}
-		else if (channelType == ChType_EnergyTotal_kWh_div1000) {
-			iValue = CHANNEL_Get(i);
-			fValue = iValue * 0.001f;
-
-			poststr(request, "<tr><td>");
-			hprintf255(request, "EnergyTotal %.2fkWh (ch %s)", fValue, CHANNEL_GetLabel(i));
-			poststr(request, "</td></tr>");
-		}
-		else if (channelType == ChType_EnergyTotal_kWh_div100) {
-			iValue = CHANNEL_Get(i);
-			fValue = iValue * 0.01f;
-
-			poststr(request, "<tr><td>");
-			hprintf255(request, "EnergyTotal %.2fkWh (ch %s)", fValue, CHANNEL_GetLabel(i));
-			poststr(request, "</td></tr>");
-		}
-		else if (channelType == ChType_Voltage_div10) {
-			iValue = CHANNEL_Get(i);
-			fValue = iValue * 0.1f;
-
-			poststr(request, "<tr><td>");
-			hprintf255(request, "Voltage %.2fV (ch %s)", fValue, CHANNEL_GetLabel(i));
-			poststr(request, "</td></tr>");
-		}
-		else if (channelType == ChType_Voltage_div100) {
-			iValue = CHANNEL_Get(i);
-			fValue = iValue * 0.01f;
-
-			poststr(request, "<tr><td>");
-			hprintf255(request, "Voltage %.3fV (ch %s)", fValue, CHANNEL_GetLabel(i));
-			poststr(request, "</td></tr>");
-		}
-		else if (channelType == ChType_ReactivePower) {
-			iValue = CHANNEL_Get(i);
-
-			poststr(request, "<tr><td>");
-			hprintf255(request, "ReactivePower %iVAr (ch %s)", iValue, CHANNEL_GetLabel(i));
-			poststr(request, "</td></tr>");
-		}
-		else if (channelType == ChType_Power_div10) {
-			iValue = CHANNEL_Get(i);
-
-			poststr(request, "<tr><td>");
-			hprintf255(request, "Power %.2fW (ch %s)", (iValue * 0.1f), CHANNEL_GetLabel(i));
-			poststr(request, "</td></tr>");
-		}
-		else if (channelType == ChType_Power) {
-			iValue = CHANNEL_Get(i);
-
-			poststr(request, "<tr><td>");
-			hprintf255(request, "Power %iW (ch %s)", iValue, CHANNEL_GetLabel(i));
-			poststr(request, "</td></tr>");
-		}
-		else if (channelType == ChType_PowerFactor_div1000) {
-			iValue = CHANNEL_Get(i);
-			fValue = iValue * 0.001f;
-
-			poststr(request, "<tr><td>");
-			hprintf255(request, "PowerFactor %.4f (ch %i)", fValue, i);
-			poststr(request, "</td></tr>");
-		}
-		else if (channelType == ChType_PowerFactor_div100) {
-			iValue = CHANNEL_Get(i);
-			fValue = iValue * 0.01f;
-
-			poststr(request, "<tr><td>");
-			hprintf255(request, "PowerFactor %.4f (ch %i)", fValue, i);
-			poststr(request, "</td></tr>");
-		}
-		else if (channelType == ChType_Current_div100) {
-			iValue = CHANNEL_Get(i);
-			fValue = iValue * 0.01f;
-
-			poststr(request, "<tr><td>");
-			hprintf255(request, "Current %.3fA (ch %s)", fValue, CHANNEL_GetLabel(i));
-			poststr(request, "</td></tr>");
-		}
-		else if (channelType == ChType_Current_div1000) {
-			iValue = CHANNEL_Get(i);
-			fValue = iValue * 0.001f;
-
-			poststr(request, "<tr><td>");
-			hprintf255(request, "Current %.4fA (ch %s)", fValue, CHANNEL_GetLabel(i));
-			poststr(request, "</td></tr>");
-		}
-		else if (channelType == ChType_BatteryLevelPercent) {
-			iValue = CHANNEL_Get(i);
-
-			poststr(request, "<tr><td>");
-			hprintf255(request, "Battery level: %i", iValue);
-			poststr(request, "%");
-			hprintf255(request, " (ch %i)", i);
 			poststr(request, "</td></tr>");
 		}
 		else if (channelType == ChType_OpenClosed) {
@@ -758,6 +557,34 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "</form>");
 			poststr(request, "</td></tr>");
 
+		}
+		else {
+			const char *channelTitle;
+
+			channelTitle = ChannelType_GetTitle(channelType);
+
+			if (*channelTitle) {
+				int div;
+				const char *channelUnit;
+				char formatStr[16];
+				strcpy(formatStr, " %.4f");
+
+				div = ChannelType_GetDivider(channelType);
+				channelUnit = ChannelType_GetUnit(channelType);
+
+				iValue = CHANNEL_Get(i);
+				fValue = (float)iValue / (float)div;
+
+				poststr(request, "<tr><td>");
+				poststr(request, channelTitle);
+				// how many decimal places?
+				formatStr[3] = '0'+ChannelType_GetDecimalPlaces(channelType);
+
+				hprintf255(request, formatStr, fValue);
+				poststr(request, channelUnit);
+				hprintf255(request, " (%s)", CHANNEL_GetLabel(i));
+				poststr(request, "</td></tr>");
+			}
 		}
 	}
 
@@ -2094,6 +1921,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				discoveryQueued = true;
 			}
 			break;
+			case ChType_LeakageCurrent_div1000:
 			case ChType_Current_div1000:
 			{
 				dev_info = hass_init_sensor_device_info(CURRENT_SENSOR, i, 3, 3, 1);

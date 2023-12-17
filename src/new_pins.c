@@ -1038,20 +1038,27 @@ void CFG_ApplyChannelStartValues() {
 		}
 	}
 }
-float CHANNEL_GetFinalValue(int channel) {
-	int iVal;
-	float dVal;
-	iVal = CHANNEL_Get(channel);
+int ChannelType_GetDecimalPlaces(int type) {
+	int pl;
 
-	switch (CHANNEL_GetType(channel))
+	int div = ChannelType_GetDivider(type);
+	int cur = 10;
+	for (pl = 0; pl < 6; pl++) {
+		if (div < cur)
+			return pl + 1;
+		cur *= 10;
+	}
+	return pl;
+}
+int ChannelType_GetDivider(int type) {
+	switch (type)
 	{
 	case ChType_Humidity_div10:
 	case ChType_Temperature_div10:
 	case ChType_Voltage_div10:
 	case ChType_Power_div10:
 	case ChType_Frequency_div10:
-		dVal = (float)iVal / 10;
-		break;
+		return 10;
 	case ChType_Frequency_div100:
 	case ChType_Current_div100:
 	case ChType_EnergyTotal_kWh_div100:
@@ -1059,19 +1066,113 @@ float CHANNEL_GetFinalValue(int channel) {
 	case ChType_PowerFactor_div100:
 	case ChType_Pressure_div100:
 	case ChType_Temperature_div100:
-		dVal = (float)iVal / 100;
-		break;
+		return 100;
 	case ChType_PowerFactor_div1000:
 	case ChType_EnergyTotal_kWh_div1000:
 	case ChType_EnergyExport_kWh_div1000:
 	case ChType_EnergyToday_kWh_div1000:
 	case ChType_Current_div1000:
-		dVal = (float)iVal / 1000;
-		break;
-	default:
-		dVal = (float)iVal;
-		break;
+		return 1000;
+	case ChType_Temperature_div2:
+		return 2;
 	}
+	return 1;
+}
+const char *ChannelType_GetUnit(int type) {
+	switch (type)
+	{
+	case ChType_BatteryLevelPercent:
+	case ChType_Humidity:
+	case ChType_Humidity_div10:
+		return "%";
+	case ChType_Temperature_div100:
+	case ChType_Temperature_div10:
+	case ChType_Temperature_div2:
+	case ChType_Temperature:
+		return "C";
+	case ChType_Voltage_div100:
+	case ChType_Voltage_div10:
+		return "V";
+	case ChType_Power:
+	case ChType_Power_div10:
+		return "W";
+	case ChType_Frequency_div10:
+	case ChType_Frequency_div100:
+		return "Hz";
+	case ChType_LeakageCurrent_div1000:
+	case ChType_Current_div1000:
+	case ChType_Current_div100:
+		return "A";
+	case ChType_EnergyTotal_kWh_div1000:
+	case ChType_EnergyExport_kWh_div1000:
+	case ChType_EnergyToday_kWh_div1000:
+	case ChType_EnergyTotal_kWh_div100:
+		return "kWh";
+	case ChType_PowerFactor_div1000:
+	case ChType_PowerFactor_div100:
+		return "";
+	case ChType_Pressure_div100:
+		return "hPa";
+	case ChType_ReactivePower:
+		return "vAr";
+	case ChType_Illuminance:
+		return "Lux";
+	}
+	return "";
+}
+const char *ChannelType_GetTitle(int type) {
+	switch (type)
+	{
+	case ChType_BatteryLevelPercent:
+		return "Battery";
+	case ChType_Humidity:
+	case ChType_Humidity_div10:
+		return "Humidity";
+	case ChType_Temperature_div100:
+	case ChType_Temperature_div10:
+	case ChType_Temperature_div2:
+	case ChType_Temperature:
+		return "Temperature";
+	case ChType_Voltage_div100:
+	case ChType_Voltage_div10:
+		return "Voltage"; 
+	case ChType_Power:
+	case ChType_Power_div10:
+		return "Power";
+	case ChType_Frequency_div10:
+	case ChType_Frequency_div100:
+		return "Frequency";
+	case ChType_Current_div1000:
+	case ChType_Current_div100:
+		return "Current";
+	case ChType_LeakageCurrent_div1000:
+		return "Leakage"; 
+	case ChType_EnergyTotal_kWh_div1000:
+	case ChType_EnergyTotal_kWh_div100:
+		return "EnergyTotal";
+	case ChType_EnergyExport_kWh_div1000:
+		return "EnergyExport";
+	case ChType_EnergyToday_kWh_div1000:
+		return "EnergyToday";
+	case ChType_PowerFactor_div1000:
+	case ChType_PowerFactor_div100:
+		return "PowerFactor";
+	case ChType_Pressure_div100:
+		return "Pressure";
+	case ChType_ReactivePower:
+		return "ReactivePower";
+	case ChType_Illuminance:
+		return "Illuminance";
+	}
+	return "";
+}
+float CHANNEL_GetFinalValue(int channel) {
+	int iVal;
+	float dVal;
+
+	iVal = CHANNEL_Get(channel);
+	iVal /= ChannelType_GetDivider(CHANNEL_GetType(channel));
+
 	return dVal;
 }
 float CHANNEL_GetFloat(int ch) {
@@ -1880,7 +1981,7 @@ const char* g_channelTypeNames[] = {
 	"PowerFactor_div100",
 	"Pressure_div100",
 	"Temperature_div100",
-	"error",
+	"LeakageCurrent_div1000",
 	"error",
 	"error",
 };

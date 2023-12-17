@@ -901,6 +901,13 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Temperature_div100,
+	//chandetail:{"name":"LeakageCurrent_div1000",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":".",
+	//chandetail:"enum":"ChType_LeakageCurrent_div1000",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_LeakageCurrent_div1000,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
@@ -1296,6 +1303,10 @@ int h_isChannelPWM(int tg_ch);
 int h_isChannelRelay(int tg_ch);
 int h_isChannelDigitalInput(int tg_ch);
 
+const char *ChannelType_GetTitle(int type);
+const char *ChannelType_GetUnit(int type);
+int ChannelType_GetDivider(int type);
+int ChannelType_GetDecimalPlaces(int type);
 
 //int PIN_GetPWMIndexForPinIndex(int pin);
 
