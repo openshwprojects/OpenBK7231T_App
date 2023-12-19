@@ -166,6 +166,7 @@ void Win_DoUnitTests() {
 	Test_EnergyMeter();
 	Test_Tasmota();
 	Test_NTP();
+	Test_NTP_SunsetSunrise();
 	Test_HTTP_Client();
 	Test_ExpandConstant();
 	Test_ChangeHandlers_MQTT();
@@ -385,8 +386,8 @@ int __cdecl main(int argc, char **argv)
 		printf("OFFSETOF(mainConfig_t, wifi_pass2) != 0x00000C40: %i\n", OFFSETOF(mainConfig_t, wifi_pass2));
 		system("pause");
 	}
-	if (OFFSETOF(mainConfig_t, unused) != 0x00000C84) {
-		printf("OFFSETOF(mainConfig_t, unused) != 0x00000C84: %i\n", OFFSETOF(mainConfig_t, unused));
+	if (OFFSETOF(mainConfig_t, unused) != 0x00000CA5) {
+		printf("OFFSETOF(mainConfig_t, unused) != 0x00000CA5: %i\n", OFFSETOF(mainConfig_t, unused));
 		system("pause");
 	}
 	// Test expansion
