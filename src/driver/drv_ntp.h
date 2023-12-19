@@ -24,11 +24,12 @@ void NTP_SetSimulatedTime(unsigned int timeNow);
 int NTP_PrintEventList();
 int NTP_RemoveClockEvent(int id);
 int NTP_ClearEvents();
-void NTP_Init_Events();
-int NTP_ClearEvents();
-void NTP_RunEvents(unsigned int newTime, bool bTimeValid);
 
 extern unsigned int g_ntpTime;
+extern struct SUN_DATA {  /* sunrise / sunset globals */
+	int latitude;  /* latitude * 1000000 */
+	int longitude;  /* longitude * 1000000 */
+	} sun_data;
 
 #endif /* __DRV_NTP_H__ */
 
