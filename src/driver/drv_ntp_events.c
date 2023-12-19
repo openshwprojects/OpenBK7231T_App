@@ -158,14 +158,14 @@ static int calc_day_offset(int tm_wday, int weekDayFlags)
 		}
 	return (day_offset);
 	}
-#endif
-
 void NTP_CalculateSunrise(byte *outHour, byte *outMinute) {
-	dusk2Dawn(&sun_data, SUNRISE_FLAG, outHour, outMinute, 0); 
+	dusk2Dawn(&sun_data, SUNRISE_FLAG, outHour, outMinute, 0);
 }
 void NTP_CalculateSunset(byte *outHour, byte *outMinute) {
 	dusk2Dawn(&sun_data, SUNSET_FLAG, outHour, outMinute, 0);
 }
+#endif
+
 void NTP_RunEventsForSecond(unsigned int runTime) {
 	ntpEvent_t *e;
 	struct tm *ltm;
