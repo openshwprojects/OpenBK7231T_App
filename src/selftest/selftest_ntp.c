@@ -39,6 +39,7 @@ void Test_NTP() {
 	SELFTEST_ASSERT_FLOATCOMPARE(NTP_GetTimesZoneOfsSeconds(), -(12 * 60 * 60 + 5 * 60));
 
 
+
 }
 
 

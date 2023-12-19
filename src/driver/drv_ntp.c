@@ -62,8 +62,8 @@ static int adrLen;
 static int g_ntp_delay = 0;
 static bool g_synced;
 // time offset (time zone?) in seconds
-#define CFG_DEFAULT_TIMEOFFSETSECONDS (-8 * 60 * 60)
-static int g_timeOffsetSeconds = CFG_DEFAULT_TIMEOFFSETSECONDS;
+//#define CFG_DEFAULT_TIMEOFFSETSECONDS (-8 * 60 * 60)
+static int g_timeOffsetSeconds = 0;
 // current time
 unsigned int g_ntpTime;
 
@@ -108,11 +108,12 @@ commandResult_t NTP_SetTimeZoneOfs(const void *context, const char *cmd, const c
 /* sunrise/sunset defaults */
 #define CFG_DEFAULT_LATITUDE	43.994131
 #define CFG_DEFAULT_LONGITUDE -123.095854
+#define SUN_DATA_COORD_MULT		1000000
 
 struct SUN_DATA sun_data =
 	{
-	.latitude = (int) (CFG_DEFAULT_LATITUDE * 1000000),
-	.longitude = (int) (CFG_DEFAULT_LONGITUDE * 1000000),
+	.latitude = (int) (CFG_DEFAULT_LATITUDE * SUN_DATA_COORD_MULT),
+	.longitude = (int) (CFG_DEFAULT_LONGITUDE * SUN_DATA_COORD_MULT),
 	};
 
 //Set Latitude and Longitude for sunrise/sunset calc
@@ -127,11 +128,11 @@ commandResult_t NTP_SetLatlong(const void *context, const char *cmd, const char 
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
     newValue = Tokenizer_GetArg(0);
-    sun_data.latitude = (int) (atof(newValue) * 1000000);
+    sun_data.latitude = (int) (atof(newValue) * SUN_DATA_COORD_MULT);
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP latitude set to %s", newValue);
 
     newValue = Tokenizer_GetArg(1);
-		sun_data.longitude = (int) (atof(newValue) * 1000000);
+		sun_data.longitude = (int) (atof(newValue) * SUN_DATA_COORD_MULT);
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP longitude set to %s", newValue);
     return CMD_RES_OK;
 }

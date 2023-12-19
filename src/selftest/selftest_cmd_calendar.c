@@ -7,6 +7,7 @@ void Test_Commands_Calendar() {
 	SIM_ClearOBK(0);
 
 	CMD_ExecuteCommand("startDriver NTP", 0);
+	//CMD_ExecuteCommand("ntp_timeZoneOfs 0", 0);
 	// set 2022, 06, 10, 11:27:34, Friday
 	NTP_SetSimulatedTime(1654853254);
 
@@ -56,6 +57,8 @@ void Test_Commands_Calendar() {
 	SELFTEST_ASSERT_CHANNEL(1, 54);
 	SELFTEST_ASSERT_CHANNEL(2, 0);
 	SELFTEST_ASSERT_CHANNEL(3, (312+88));
+
+
 
 
 }
