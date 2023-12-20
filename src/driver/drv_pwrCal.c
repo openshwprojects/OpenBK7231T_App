@@ -12,12 +12,12 @@ static float current_cal = 1;
 static float power_cal = 1;
 
 static int latest_raw_voltage;
-static int latest_raw_current;
+static float latest_raw_current;
 static int latest_raw_power;
 
 //#define PWRCAL_DEBUG
 
-static commandResult_t Calibrate(const char *cmd, const char *args, int raw,
+static commandResult_t Calibrate(const char *cmd, const char *args, float raw,
                                  float *cal, int cfg_index) {
     Tokenizer_TokenizeString(args, 0);
     if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
@@ -25,7 +25,7 @@ static commandResult_t Calibrate(const char *cmd, const char *args, int raw,
     }
 
     float real = Tokenizer_GetArgFloat(0);
-	if (real == 0.0f) {
+    if (real == 0.0f) {
         ADDLOG_ERROR(LOG_FEATURE_ENERGYMETER, "%s",
                      CMD_GetResultString(CMD_RES_BAD_ARGUMENT));
         return CMD_RES_BAD_ARGUMENT;
@@ -58,7 +58,7 @@ static commandResult_t CalibratePower(const void *context, const char *cmd,
     return Calibrate(cmd, args, latest_raw_power, &power_cal, CFG_OBK_POWER);
 }
 
-static float Scale(int raw, float cal) {
+static float Scale(float raw, float cal) {
     return (cal_type == PWR_CAL_MULTIPLY ? raw * cal : raw / cal);
 }
 
@@ -73,24 +73,24 @@ void PwrCal_Init(pwr_cal_type_t type, float default_voltage_cal,
     power_cal = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER,
                                                         default_power_cal);
 
-	//cmddetail:{"name":"VoltageSet","args":"Voltage",
-	//cmddetail:"descr":"Measure the real voltage with an external, reliable power meter and enter this voltage via this command to calibrate. The calibration is automatically saved in the flash memory.",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
-	//cmddetail:"examples":""}
+    //cmddetail:{"name":"VoltageSet","args":"Voltage",
+    //cmddetail:"descr":"Measure the real voltage with an external, reliable power meter and enter this voltage via this command to calibrate. The calibration is automatically saved in the flash memory.",
+    //cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
+    //cmddetail:"examples":""}
     CMD_RegisterCommand("VoltageSet", CalibrateVoltage, NULL);
-	//cmddetail:{"name":"CurrentSet","args":"Current",
-	//cmddetail:"descr":"Measure the real Current with an external, reliable power meter and enter this Current via this command to calibrate. The calibration is automatically saved in the flash memory.",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
-	//cmddetail:"examples":""}
+    //cmddetail:{"name":"CurrentSet","args":"Current",
+    //cmddetail:"descr":"Measure the real Current with an external, reliable power meter and enter this Current via this command to calibrate. The calibration is automatically saved in the flash memory.",
+    //cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
+    //cmddetail:"examples":""}
     CMD_RegisterCommand("CurrentSet", CalibrateCurrent, NULL);
-	//cmddetail:{"name":"PowerSet","args":"Power",
-	//cmddetail:"descr":"Measure the real Power with an external, reliable power meter and enter this Power via this command to calibrate. The calibration is automatically saved in the flash memory.",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
-	//cmddetail:"examples":""}
+    //cmddetail:{"name":"PowerSet","args":"Power",
+    //cmddetail:"descr":"Measure the real Power with an external, reliable power meter and enter this Power via this command to calibrate. The calibration is automatically saved in the flash memory.",
+    //cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
+    //cmddetail:"examples":""}
     CMD_RegisterCommand("PowerSet", CalibratePower, NULL);
 }
 
-void PwrCal_Scale(int raw_voltage, int raw_current, int raw_power,
+void PwrCal_Scale(int raw_voltage, float raw_current, int raw_power,
                   float *real_voltage, float *real_current, float *real_power) {
     latest_raw_voltage = raw_voltage;
     latest_raw_current = raw_current;
