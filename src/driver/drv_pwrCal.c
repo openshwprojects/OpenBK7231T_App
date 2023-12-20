@@ -25,7 +25,7 @@ static commandResult_t Calibrate(const char *cmd, const char *args, float raw,
     }
 
     float real = Tokenizer_GetArgFloat(0);
-    if (real == 0.0f) {
+	if (real == 0.0f) {
         ADDLOG_ERROR(LOG_FEATURE_ENERGYMETER, "%s",
                      CMD_GetResultString(CMD_RES_BAD_ARGUMENT));
         return CMD_RES_BAD_ARGUMENT;
@@ -73,20 +73,20 @@ void PwrCal_Init(pwr_cal_type_t type, float default_voltage_cal,
     power_cal = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER,
                                                         default_power_cal);
 
-    //cmddetail:{"name":"VoltageSet","args":"Voltage",
-    //cmddetail:"descr":"Measure the real voltage with an external, reliable power meter and enter this voltage via this command to calibrate. The calibration is automatically saved in the flash memory.",
-    //cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
-    //cmddetail:"examples":""}
+	//cmddetail:{"name":"VoltageSet","args":"Voltage",
+	//cmddetail:"descr":"Measure the real voltage with an external, reliable power meter and enter this voltage via this command to calibrate. The calibration is automatically saved in the flash memory.",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("VoltageSet", CalibrateVoltage, NULL);
-    //cmddetail:{"name":"CurrentSet","args":"Current",
-    //cmddetail:"descr":"Measure the real Current with an external, reliable power meter and enter this Current via this command to calibrate. The calibration is automatically saved in the flash memory.",
-    //cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
-    //cmddetail:"examples":""}
+	//cmddetail:{"name":"CurrentSet","args":"Current",
+	//cmddetail:"descr":"Measure the real Current with an external, reliable power meter and enter this Current via this command to calibrate. The calibration is automatically saved in the flash memory.",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("CurrentSet", CalibrateCurrent, NULL);
-    //cmddetail:{"name":"PowerSet","args":"Power",
-    //cmddetail:"descr":"Measure the real Power with an external, reliable power meter and enter this Power via this command to calibrate. The calibration is automatically saved in the flash memory.",
-    //cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
-    //cmddetail:"examples":""}
+	//cmddetail:{"name":"PowerSet","args":"Power",
+	//cmddetail:"descr":"Measure the real Power with an external, reliable power meter and enter this Power via this command to calibrate. The calibration is automatically saved in the flash memory.",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("PowerSet", CalibratePower, NULL);
 }
 
