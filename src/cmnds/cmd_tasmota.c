@@ -217,6 +217,44 @@ byte *LFS_ReadFile(const char *fname) {
 #endif
 	return 0;
 }
+int LFS_WriteFile(const char *fname, const byte *data, int len, bool bAppend) {
+#if ENABLE_LITTLEFS
+	init_lfs(1);
+	if (lfs_present()) {
+		lfs_file_t file;
+		int lfsres;
+
+		memset(&file, 0, sizeof(lfs_file_t));
+		if (bAppend) {
+			lfsres = lfs_file_open(&lfs, &file, fname, LFS_O_APPEND | LFS_O_WRONLY);
+		}
+		else {
+			lfs_remove(&lfs, fname);
+			lfsres = lfs_file_open(&lfs, &file, fname, LFS_O_CREAT | LFS_O_WRONLY);
+		}
+
+		if (lfsres >= 0) {
+			ADDLOG_DEBUG(LOG_FEATURE_CMD, "LFS_ReadFile: openned file %s", fname);
+
+			lfsres = lfs_file_write(&lfs, &file, data, len);
+			lfs_file_close(&lfs, &file);
+			ADDLOG_DEBUG(LOG_FEATURE_CMD, "LFS_ReadFile: closed file %s", fname);
+			return lfsres;
+		}
+		else {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: failed to file %s", fname);
+		}
+	}
+	else {
+#if WINDOWS
+		// sstop sim spam
+#else
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "LFS_WriteFile: lfs is absent");
+#endif
+	}
+#endif
+	return 1;
+}
 
 static commandResult_t cmnd_lfsexec(const void * context, const char *cmd, const char *args, int cmdFlags){
 #if ENABLE_LITTLEFS

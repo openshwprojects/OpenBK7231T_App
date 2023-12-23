@@ -5,13 +5,20 @@
 #include "cmd_local.h"
 
 // SendGet http://192.168.0.112/cm?cmnd=Power0%20Toggle
-// addRepeatingEvent 5 SendGet http://192.168.0.112/cm?cmnd=Power0%20Toggle
+// addRepeatingEvent 5 -1 SendGet http://192.168.0.112/cm?cmnd=Power0%20Toggle
 // addEventHandler OnClick 8 SendGet http://192.168.0.112/cm?cmnd=Power0%20Toggle
+// Following command will just send get:
+// SendGet http://example.com/
+// Following command will send get and save result to file:
+// SendGet http://example.com/ myFile.html
+// test code: addRepeatingEvent 30 -1 SendGet http://example.com/ myFile.html
 static commandResult_t CMD_SendGET(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	ADDLOG_INFO(LOG_FEATURE_CMD, " CMD_SendGET received with args %s", args);
 
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS);
+
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
-	HTTPClient_Async_SendGet(args);
+	HTTPClient_Async_SendGet(Tokenizer_GetArg(0), Tokenizer_GetArg(1));
 #else
 	ADDLOG_INFO(LOG_FEATURE_CMD, " CMD_SendGET not supported!");
 

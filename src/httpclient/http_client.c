@@ -928,6 +928,9 @@ void httpclient_freeMemory(httprequest_t *request)
 	if(request->flags & HTTPREQUEST_FLAG_FREE_URLONDONE) {
 		free((void*)request->url);
 	}
+	if (request->flags & HTTPREQUEST_FLAG_FREE_RESPONSEBUF) {
+		free((void*)request->client_data.response_buf);
+	}
 	if(request->flags & HTTPREQUEST_FLAG_FREE_SELFONDONE) {
 		free((void*)request);
 	}
@@ -1177,7 +1180,24 @@ httprequest_t testreq;
 #else
 
 #endif
-int HTTPClient_Async_SendGet(const char *url_in){
+int HTTPClient_CB_Data(struct httprequest_t_tag *request) {
+	if (request->state == 1) {
+		//printf("%s\n", request->client_data.response_buf);
+		if (!strcmp(request->targetFile, "cmd")) {
+			CMD_ExecuteCommand(request->client_data.response_buf, 0);
+		}
+		else {
+			LFS_WriteFile(request->targetFile,
+				request->client_data.response_buf, request->client_data.response_buf_filled,
+				request->client_data.userCounter!= 0);
+
+			request->client_data.userCounter++;
+		}
+		return 0;
+	}
+	return 0;
+}
+int HTTPClient_Async_SendGet(const char *url_in, const char *tgFile){
 	httprequest_t *request;
 	httpclient_t *client;
 	httpclient_data_t *client_data;
@@ -1231,6 +1251,14 @@ int HTTPClient_Async_SendGet(const char *url_in){
 	request->url = url;
 	request->method = HTTPCLIENT_GET;
 	request->timeout = 10000;
+	if (tgFile && *tgFile) {
+		client_data->response_buf_len = 2048;
+		client_data->response_buf = malloc(client_data->response_buf_len);
+		request->flags |= HTTPREQUEST_FLAG_FREE_RESPONSEBUF;
+		strcpy_safe(request->targetFile, tgFile, sizeof(request->targetFile));
+		request->data_callback = HTTPClient_CB_Data;
+	}
+
 	HTTPClient_Async_SendGeneric(request);
 
 

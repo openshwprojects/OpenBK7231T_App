@@ -256,6 +256,7 @@ const char* CMD_GetResultString(commandResult_t r);
 void SVM_RunThreads(int deltaMS);
 void CMD_InitScripting();
 byte* LFS_ReadFile(const char* fname);
+int LFS_WriteFile(const char *fname, const byte *data, int len, bool bAppend);
 
 commandResult_t CMD_ClearAllHandlers(const void* context, const char* cmd, const char* args, int cmdFlags);
 commandResult_t RepeatingEvents_Cmd_ClearRepeatingEvents(const void* context, const char* cmd, const char* args, int cmdFlags);
