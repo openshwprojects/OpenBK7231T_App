@@ -47,6 +47,18 @@ static void CHT8305_ReadEnv(float* temp, float* hum) {
 	Soft_I2C_ReadBytes(&g_softI2C, buff, 4);
 	Soft_I2C_Stop(&g_softI2C);
 
+	//In case we have the new sensor 8310, overwrite humidity data reading it from 0x01, as it cannot be directrly read from 0x00, there is parity
+	if(sensor_id!=0x8305)
+	{
+		Soft_I2C_Start(&g_softI2C, CHT8305_I2C_ADDR);
+		Soft_I2C_WriteByte(&g_softI2C, 0x01);
+		Soft_I2C_Stop(&g_softI2C);
+
+		Soft_I2C_Start(&g_softI2C, CHT8305_I2C_ADDR | 1);
+		Soft_I2C_ReadBytes(&g_softI2C, buff+2, 2);
+		Soft_I2C_Stop(&g_softI2C);
+	}
+	
 	th = buff[0];
 	tl = buff[1];
 	hh = buff[2];
@@ -60,7 +72,7 @@ static void CHT8305_ReadEnv(float* temp, float* hum) {
 	else
 	{
 		(*temp)=((th << 8 | tl)>>1)/128.0+g_calTemp;
-		(*hum) = (((hh << 8 | hl)&0x7fff)/32768.0*100)+ g_calHum;
+		(*hum) = ((((hh << 8 | hl) & 0x7fff) / 32768.0 ) * 100.0)+ g_calHum;
 	}
 }
 
@@ -118,7 +130,7 @@ void CHT8305_Init() {
 	//Identify chip ID and keep if for later use
 	sensor_id=(buff[3] << 8 | buff[4]);
 	if(sensor_id!=0x8305)
-	{//it should be 8310, we enable low power mode, so only 50uA are drawn from sensor, 
+	{//it should be 8310, we enable low power mode, so only 50nA are drawn from sensor, 
 	//but need to write something to one shot register to trigger new measurement
 
 
