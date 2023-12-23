@@ -1595,52 +1595,54 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	// try to pair toggles with dimmers. This is needed only for TuyaMCU, 
 	// where custom channel types are used. This is NOT used for simple
 	// CW/RGB/RGBCW/etc lights.
-	while (true) {
-		// find first dimmer
-		dimmer = -1;
-		for (i = 0; i < CHANNEL_MAX; i++) {
-			type = g_cfg.pins.channelTypes[i];
-			if (BIT_CHECK(flagsChannelPublished, i)) {
-				continue;
+	if (CFG_HasFlag(OBK_FLAG_DISCOVERY_DONT_MERGE_LIGHTS) == false) {
+		while (true) {
+			// find first dimmer
+			dimmer = -1;
+			for (i = 0; i < CHANNEL_MAX; i++) {
+				type = g_cfg.pins.channelTypes[i];
+				if (BIT_CHECK(flagsChannelPublished, i)) {
+					continue;
+				}
+				if (type == ChType_Dimmer) {
+					brightness_scale = 100;
+					dimmer = i;
+					break;
+				}
+				if (type == ChType_Dimmer1000) {
+					brightness_scale = 1000;
+					dimmer = i;
+					break;
+				}
+				if (type == ChType_Dimmer256) {
+					brightness_scale = 256;
+					dimmer = i;
+					break;
+				}
 			}
-			if (type == ChType_Dimmer) {
-				brightness_scale = 100;
-				dimmer = i;
+			// find first togle
+			toggle = -1;
+			for (i = 0; i < CHANNEL_MAX; i++) {
+				type = g_cfg.pins.channelTypes[i];
+				if (BIT_CHECK(flagsChannelPublished, i)) {
+					continue;
+				}
+				if (type == ChType_Toggle) {
+					toggle = i;
+					break;
+				}
+			}
+			// if nothing found, stop
+			if (toggle == -1 || dimmer == -1) {
 				break;
 			}
-			if (type == ChType_Dimmer1000) {
-				brightness_scale = 1000;
-				dimmer = i;
-				break;
-			}
-			if (type == ChType_Dimmer256) {
-				brightness_scale = 256;
-				dimmer = i;
-				break;
-			}
-		}
-		// find first togle
-		toggle = -1;
-		for (i = 0; i < CHANNEL_MAX; i++) {
-			type = g_cfg.pins.channelTypes[i];
-			if (BIT_CHECK(flagsChannelPublished, i)) {
-				continue;
-			}
-			if (type == ChType_Toggle) {
-				toggle = i;
-				break;
-			}
-		}
-		// if nothing found, stop
-		if (toggle == -1 || dimmer == -1) {
-			break;
-		}
 
-		BIT_SET(flagsChannelPublished, toggle);
-		BIT_SET(flagsChannelPublished, dimmer);
-		dev_info = hass_init_light_singleColor_onChannels(toggle, dimmer, brightness_scale);
-		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-		hass_free_device_info(dev_info);
+			BIT_SET(flagsChannelPublished, toggle);
+			BIT_SET(flagsChannelPublished, dimmer);
+			dev_info = hass_init_light_singleColor_onChannels(toggle, dimmer, brightness_scale);
+			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+			hass_free_device_info(dev_info);
+		}
 	}
 #endif
 	//if (relayCount > 0) {
@@ -2547,7 +2549,7 @@ const char* g_obk_flagNames[] = {
 	"[DoorSensor] Invert state",
 	"[TuyaMCU] Use queue",
 	"[HTTP] Disable authentication in safe mode (not recommended)",
-	"error",
+	"[MQTT Discovery] Don't merge toggles and dimmers into lights",
 	"error",
 };
 int http_fn_cfg_generic(http_request_t* request) {
