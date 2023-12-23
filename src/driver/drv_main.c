@@ -125,6 +125,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "BL0942",		BL0942_UART_Init,	BL0942_UART_RunEverySecond,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_PWM_GROUP
+	//drvdetail:{"name":"PWMG",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":" ",
+	//drvdetail:"requires":""}
+	{ "PWMG",		PWMG_Init,	NULL,		NULL, NULL, NULL, NULL, false },
+#endif
 #if ENABLE_DRIVER_BL0942SPI
 	//drvdetail:{"name":"BL0942SPI",
 	//drvdetail:"title":"TODO",
