@@ -12,12 +12,12 @@ static float current_cal = 1;
 static float power_cal = 1;
 
 static int latest_raw_voltage;
-static int latest_raw_current;
+static float latest_raw_current;
 static int latest_raw_power;
 
 //#define PWRCAL_DEBUG
 
-static commandResult_t Calibrate(const char *cmd, const char *args, int raw,
+static commandResult_t Calibrate(const char *cmd, const char *args, float raw,
                                  float *cal, int cfg_index) {
     Tokenizer_TokenizeString(args, 0);
     if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
@@ -58,7 +58,7 @@ static commandResult_t CalibratePower(const void *context, const char *cmd,
     return Calibrate(cmd, args, latest_raw_power, &power_cal, CFG_OBK_POWER);
 }
 
-static float Scale(int raw, float cal) {
+static float Scale(float raw, float cal) {
     return (cal_type == PWR_CAL_MULTIPLY ? raw * cal : raw / cal);
 }
 
@@ -90,7 +90,7 @@ void PwrCal_Init(pwr_cal_type_t type, float default_voltage_cal,
     CMD_RegisterCommand("PowerSet", CalibratePower, NULL);
 }
 
-void PwrCal_Scale(int raw_voltage, int raw_current, int raw_power,
+void PwrCal_Scale(int raw_voltage, float raw_current, int raw_power,
                   float *real_voltage, float *real_current, float *real_power) {
     latest_raw_voltage = raw_voltage;
     latest_raw_current = raw_current;
