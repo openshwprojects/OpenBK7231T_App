@@ -27,7 +27,7 @@ static void CHT8305_ReadEnv(float* temp, float* hum) {
 	uint8_t buff[4];
 	unsigned int th, tl, hh, hl;
 
-	if(sensor_id!=0x8305)
+	if(sensor_id==0x8215)
 	{
 		//Make dymmy write to Oneshot register to trigger a measurement, sensor is otherwise sleeping
 		Soft_I2C_Start(&g_softI2C, CHT8305_I2C_ADDR);
@@ -48,7 +48,7 @@ static void CHT8305_ReadEnv(float* temp, float* hum) {
 	Soft_I2C_Stop(&g_softI2C);
 
 	//In case we have the new sensor 8310, overwrite humidity data reading it from 0x01, as it cannot be directrly read from 0x00, there is parity
-	if(sensor_id!=0x8305)
+	if(sensor_id==0x8215)
 	{
 		Soft_I2C_Start(&g_softI2C, CHT8305_I2C_ADDR);
 		Soft_I2C_WriteByte(&g_softI2C, 0x01);
@@ -64,16 +64,17 @@ static void CHT8305_ReadEnv(float* temp, float* hum) {
 	hh = buff[2];
 	hl = buff[3];
 
-	if(sensor_id==8305)
-	{
-		(*temp) = ((th << 8 | tl) * 165.0 / 65535.0 - 40.0)+ g_calTemp;
-		(*hum) = ((hh << 8 | hl) * 100.0 / 65535.0)+ g_calHum;
-	}
-	else
+	if(sensor_id==0x8215)
 	{
 		(*temp)=((th << 8 | tl)>>1)/128.0+g_calTemp;
 		(*hum) = ((((hh << 8 | hl) & 0x7fff) / 32768.0 ) * 100.0)+ g_calHum;
 	}
+	else
+	{
+		(*temp) = ((th << 8 | tl) * 165.0 / 65535.0 - 40.0)+ g_calTemp;
+		(*hum) = ((hh << 8 | hl) * 100.0 / 65535.0)+ g_calHum;
+	}
+
 }
 
 commandResult_t CHT_Calibrate(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -122,15 +123,27 @@ void CHT8305_Init() {
 	Soft_I2C_WriteByte(&g_softI2C, 0xfe);			//manufacturer ID 2 bytes + sensor version 2 bytes from 0xff
 	Soft_I2C_Stop(&g_softI2C);
 	Soft_I2C_Start(&g_softI2C, CHT8305_I2C_ADDR | 1);
-	Soft_I2C_ReadBytes(&g_softI2C, buff, 4);
+	Soft_I2C_ReadBytes(&g_softI2C, buff, 2);
 	Soft_I2C_Stop(&g_softI2C);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "DRV_CHT8304_init: ID: %02X %02X %02X %02X", buff[0], buff[1],buff[2],buff[3]);
+
+	//Read Sensor version separately on the last 2 bytes of the buffer
+	Soft_I2C_Start(&g_softI2C, CHT8305_I2C_ADDR);
+	Soft_I2C_WriteByte(&g_softI2C, 0xff);
+	Soft_I2C_Stop(&g_softI2C);
+
+	Soft_I2C_Start(&g_softI2C, CHT8305_I2C_ADDR | 1);
+	Soft_I2C_ReadBytes(&g_softI2C, buff+2, 2);
+	Soft_I2C_Stop(&g_softI2C);
+
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "DRV_CHT8305_init: ID: %02X %02X %02X %02X", buff[0], buff[1],buff[2],buff[3]);
 
 	//Identify chip ID and keep if for later use
 	sensor_id=(buff[3] << 8 | buff[4]);
-	if(sensor_id!=0x8305)
-	{//it should be 8310, we enable low power mode, so only 50nA are drawn from sensor, 
+
+	if(sensor_id==0x8215)
+	{//it should be 8310 id is 0x8215, we enable low power mode, so only 50nA are drawn from sensor, 
 	//but need to write something to one shot register to trigger new measurement
 
 
