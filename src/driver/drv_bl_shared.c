@@ -43,7 +43,7 @@ byte roundingPrecision[4] = {
 // what are the last values we sent over the MQTT?
 float lastSentValues[OBK_NUM_MEASUREMENTS];
 // energyCounter in Wh
-float energyCounter = 0.0f;
+static double energyCounter = 0.0;
 portTickType energyCounterStamp;
 
 bool energyCounterStatsEnable = false;
@@ -57,7 +57,7 @@ bool energyCounterStatsJSONEnable = false;
 // how much update frames has passed without sending MQTT update of read values?
 int noChangeFrames[OBK_NUM_MEASUREMENTS];
 int noChangeFrameEnergyCounter;
-float lastSentEnergyCounterValue = 0.0f; 
+double lastSentEnergyCounterValue = 0.0; 
 float changeSendThresholdEnergy = 0.1f;
 float lastSentEnergyCounterLastHour = 0.0f;
 float dailyStats[DAILY_STATS_LENGTH];
@@ -149,7 +149,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
     poststr(request,
             "<tr><td><b>Energy Total</b></td><td style='text-align: right;'>");
 	// convert from Wh to kWh (thus / 1000.0f)
-    hprintf255(request, "%.3f</td><td>kWh</td>", energyCounter / 1000.0f);
+    hprintf255(request, "%.3f</td><td>kWh</td>", ((float)(energyCounter / 1000.0f)));
 
     poststr(request, "</table>");
 
@@ -219,7 +219,7 @@ void BL09XX_SaveEmeteringStatistics()
 
     memset(&data, 0, sizeof(ENERGY_METERING_DATA));
 
-    data.TotalConsumption = energyCounter;
+    data.TotalConsumption = (float)energyCounter;
     data.TodayConsumpion = dailyStats[0];
     data.YesterdayConsumption = dailyStats[1];
     data.actual_mday = actual_mday;
@@ -239,7 +239,7 @@ commandResult_t BL09XX_ResetEnergyCounter(const void *context, const char *cmd, 
 
     if(args==0||*args==0) 
     {
-        energyCounter = 0.0f;
+        energyCounter = 0.0;
         energyCounterStamp = xTaskGetTickCount();
         if (energyCounterStatsEnable == true)
         {
@@ -534,7 +534,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     if (energy < 0)
         energy = 0.0;
 
-    energyCounter += energy;
+    energyCounter += (double)energy;
     energyCounterStamp = xTaskGetTickCount();
     HAL_FlashVars_SaveTotalConsumption(energyCounter);
 
