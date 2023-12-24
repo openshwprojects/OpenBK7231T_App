@@ -108,9 +108,7 @@ commandResult_t CHT_cycle(const void* context, const char* cmd, const char* args
 }
 // startDriver CHT8305
 void CHT8305_Init() {
-
 	uint8_t buff[4];
-
 
 	g_softI2C.pin_clk = 9;
 	g_softI2C.pin_data = 14;
@@ -120,7 +118,7 @@ void CHT8305_Init() {
 	Soft_I2C_PreInit(&g_softI2C);
 
 	Soft_I2C_Start(&g_softI2C, CHT8305_I2C_ADDR);
-	Soft_I2C_WriteByte(&g_softI2C, 0xfe);			//manufacturer ID 2 bytes + sensor version 2 bytes from 0xff
+	Soft_I2C_WriteByte(&g_softI2C, 0xfe);			//manufacturer ID 2 bytes
 	Soft_I2C_Stop(&g_softI2C);
 	Soft_I2C_Start(&g_softI2C, CHT8305_I2C_ADDR | 1);
 	Soft_I2C_ReadBytes(&g_softI2C, buff, 2);
@@ -136,16 +134,15 @@ void CHT8305_Init() {
 	Soft_I2C_ReadBytes(&g_softI2C, buff+2, 2);
 	Soft_I2C_Stop(&g_softI2C);
 
-
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "DRV_CHT8305_init: ID: %02X %02X %02X %02X", buff[0], buff[1],buff[2],buff[3]);
-
 	//Identify chip ID and keep if for later use
-	sensor_id=(buff[3] << 8 | buff[4]);
+	sensor_id=(buff[2] << 8 | buff[3]);
+
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "DRV_CHT8305_init: ID: %02X %02X %04X", buff[0], buff[1], sensor_id);
+
 
 	if(sensor_id==0x8215)
 	{//it should be 8310 id is 0x8215, we enable low power mode, so only 50nA are drawn from sensor, 
 	//but need to write something to one shot register to trigger new measurement
-
 
 		Soft_I2C_Start(&g_softI2C, CHT8305_I2C_ADDR);
 		Soft_I2C_WriteByte(&g_softI2C, 0x03);			//config register
