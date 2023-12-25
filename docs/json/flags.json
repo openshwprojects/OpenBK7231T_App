@@ -313,5 +313,12 @@
     "title": "todo",
     "file": "new_pins.h",
     "descr": "[HTTP] Disable authentication in safe mode (not recommended)"
+  },
+  {
+    "index": "45",
+    "enum": "OBK_FLAG_DISCOVERY_DONT_MERGE_LIGHTS",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[MQTT Discovery] Don't merge toggles and dimmers into lights"
   }
 ]

@@ -759,21 +759,28 @@ goto again
 ```
 
 
-[Choose command/color table example (with index wrap)](https://www.elektroda.com/rtvforum/viewtopic.php?p=20863886#20863886)
+[Setup for EZB-WBZS1H16N-A V1.0 Tuya mini smart switch showing sunrise/sunset events](https://www.elektroda.com/rtvforum/topic3967141.html)
 <br>
-```
+```NOTE: Set Time offset, latitude, longitude accordingly
 
-alias col1 led_basecolor_rgb 0xFF0000
-alias col2 led_basecolor_rgb 0x00FF00
-alias col3 led_basecolor_rgb 0x0000FF
-alias col4 led_basecolor_rgb 0xFFFF00
-alias col5 led_basecolor_rgb 0xFF00FF
-alias col6 led_basecolor_rgb 0x00FFFF
+// autoexec for mini smart switch
+PowerSave 1
+addEventHandler OnHold 8 SafeMode
+startDriver ntp
+ntp_timeZoneOfs -8
+ntp_setLatlong 44.002130 -123.091473
+setPinRole 6 WifiLed_n
+setPinRole 8 Btn_Tgl_All
+setPinRole 14 TglChanOnTgl
+setPinChannel 14 0
+setPinRole 15 Rel
+setPinChannel 15 0
+removeClockEvent 12
+removeClockEvent 13
+waitFor NTPState 1
+addClockEvent sunrise 0x7f 12 POWER OFF
+addClockEvent sunset 0x7f 13 POWER ON
 
-// use choice to choose effect by index stored in $CH10
-alias do_chosen_effect Choice $CH10 col1 col2 col3 col4 col5 col6
-// when click on Btn_ScriptOnly on P24 happens, add 1 to $CH10 (wrap to 0-5) and do effect
-addEventHandler OnClick 24 backlog addChannel 10 1 0 5 1; do_chosen_effect
 ```
 
 

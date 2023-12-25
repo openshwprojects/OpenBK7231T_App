@@ -269,11 +269,11 @@ void NTP_Init() {
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ntp_setServer", NTP_SetServer, NULL);
 #if ENABLE_NTP_SUNRISE_SUNSET
-	//cmddetail:{"name":"ntp_setLatlong","args":"[Latlong]",
+	//cmddetail:{"name":"ntp_setLatLong","args":"[Latlong]",
 	//cmddetail:"descr":"Sets the NTP latitude and longitude",
 	//cmddetail:"fn":"NTP_SetLatlong","file":"driver/drv_ntp.c","requires":"",
 	//cmddetail:"examples":"NTP_SetLatlong -34.911498 138.809488"}
-    CMD_RegisterCommand("ntp_setLatLong",NTP_SetLatlong, NULL);
+    CMD_RegisterCommand("ntp_setLatLong", NTP_SetLatlong, NULL);
 #endif
 	//cmddetail:{"name":"ntp_info","args":"",
 	//cmddetail:"descr":"Display NTP related settings",

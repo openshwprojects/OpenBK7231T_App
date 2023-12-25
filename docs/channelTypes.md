@@ -51,4 +51,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | TimerSeconds |  This will display time formatted to minutes, hours, etc. |
 | Frequency_div10 |  For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI |
 | PowerFactor_div100 |  For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI |
+| Pressure_div100 |  . |
+| Temperature_div100 |  Just like humidity_div100, but for temperature. |
+| LeakageCurrent_div1000 |  . |
 | Max |  This is the current total number of available channel types. |

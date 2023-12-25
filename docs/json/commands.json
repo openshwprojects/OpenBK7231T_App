@@ -37,8 +37,8 @@
   },
   {
     "name": "addClockEvent",
-    "args": "[Time] [WeekDayFlags] [UniqueIDForRemoval][Command]",
-    "descr": "Schedule command to run on given time in given day of week. NTP must be running. Time is a time like HH:mm or HH:mm:ss, WeekDayFlag is a bitflag on which day to run, 0xff mean all days, 0x01 means sunday, 0x02 monday, 0x03 sunday and monday, etc, id is an unique id so event can be removede later",
+    "args": "[Time or sunrise or sunset] [WeekDayFlags] [UniqueIDForRemoval][Command]",
+    "descr": "Schedule command to run on given time in given day of week. NTP must be running. Time is a time like HH:mm or HH:mm:ss, WeekDayFlag is a bitflag on which day to run, 0xff mean all days, 0x01 means sunday, 0x02 monday, 0x03 sunday and monday, etc, id is an unique id so event can be removed later. (NOTE: Use of sunrise/sunset requires compiling with ENABLE_NTP_SUNRISE_SUNSET set which adds about 11k of code",
     "fn": "CMD_NTP_AddClockEvent",
     "file": "driver/drv_ntp_events.c",
     "requires": "",
@@ -496,8 +496,8 @@
   },
   {
     "name": "DSEdge",
-    "args": "[edgeCode]",
-    "descr": "DeepSleep (PinDeepSleep) wake configuration command. 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2",
+    "args": "[edgeCode][optionalPinIndex]",
+    "descr": "DeepSleep (PinDeepSleep) wake configuration command. 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2. Second argument is optional and allows to set per-pin DSEdge instead of setting it for all pins.",
     "fn": "CMD_DeepSleep_SetEdge",
     "file": "drv/drv_doorSensorWithDeepSleep.c",
     "requires": "",
@@ -1314,6 +1314,15 @@
     "examples": ""
   },
   {
+    "name": "ntp_setLatLong",
+    "args": "[Latlong]",
+    "descr": "Sets the NTP latitude and longitude",
+    "fn": "NTP_SetLatlong",
+    "file": "driver/drv_ntp.c",
+    "requires": "",
+    "examples": "NTP_SetLatlong -34.911498 138.809488"
+  },
+  {
     "name": "ntp_setServer",
     "args": "[ServerIP]",
     "descr": "Sets the NTP server",
@@ -1499,6 +1508,15 @@
     "descr": "Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an integer, so you can also use math expressions like $CH10*10, etc.",
     "fn": "MQTT_PublishCommand",
     "file": "mqtt/new_mqtt.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "PWMG_Setup",
+    "args": "CMD_PWMG_Setup",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_pwm_groups.c",
     "requires": "",
     "examples": ""
   },
@@ -2007,6 +2025,15 @@
     "examples": ""
   },
   {
+    "name": "SPC",
+    "args": "[Index][RGB]",
+    "descr": "Sets Palette Color by index.",
+    "fn": "commandSetPaletteColor",
+    "file": "cmnds/cmd_newLEDDriver.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "SPITestFlash_Erase",
     "args": "CMD_SPITestFlash_Erase",
     "descr": "",
@@ -2324,7 +2351,7 @@
   {
     "name": "toggler_set",
     "args": "[Value]",
-    "descr": "Sets the VALUE of given output. Handles toggler_set0, toggler_set1, etc. The last digit after command name is changed to slot index.",
+    "descr": "Sets the VALUE of given output. Handles toggler_set0, toggler_set1, etc. The last digit after command name is changed to slot index. It can also add to current value if you write value like +25 and subtract if you prefix it with - like -25",
     "fn": "Toggler_SetX",
     "file": "driver/drv_pwmToggler.c",
     "requires": "",

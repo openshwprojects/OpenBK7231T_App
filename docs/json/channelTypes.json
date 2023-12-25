@@ -368,6 +368,30 @@
     "driver": ""
   },
   {
+    "name": "Pressure_div100",
+    "title": "TODO",
+    "descr": ".",
+    "enum": "Pressure_div100",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Temperature_div100",
+    "title": "TODO",
+    "descr": "Just like humidity_div100, but for temperature.",
+    "enum": "ChType_Temperature_div100",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "LeakageCurrent_div1000",
+    "title": "TODO",
+    "descr": ".",
+    "enum": "ChType_LeakageCurrent_div1000",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
     "name": "Max",
     "title": "TODO",
     "descr": "This is the current total number of available channel types.",
