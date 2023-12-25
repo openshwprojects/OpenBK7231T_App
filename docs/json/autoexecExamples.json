@@ -98,7 +98,7 @@
 {
 "title": "[Custom countdown/timer system with HTTP GUI for TuyaMCU relay](https://www.elektroda.com/rtvforum/topic4009196.html)",
 "file": "autoexecs/custom_timer_for_relay.bat"
-}
+},
 {
 "title": "[Setup for EZB-WBZS1H16N-A V1.0 Tuya mini smart switch showing sunrise/sunset events](https://www.elektroda.com/rtvforum/topic3967141.html)",
 "file": "autoexecs/sunrise_sunset.bat"
