@@ -90,9 +90,9 @@ const char* TuyaMCU_GetDataTypeString(int dpId) {
 	if (DP_TYPE_BOOL == dpId)
 		return "bool";
 	if (DP_TYPE_VALUE == dpId)
-		return "value";
+		return "val";
 	if (DP_TYPE_STRING == dpId)
-		return "string";
+		return "str";
 	if (DP_TYPE_ENUM == dpId)
 		return "enum";
 	if (DP_TYPE_BITMAP == dpId)

@@ -146,7 +146,7 @@ void Test_TuyaMCU_Basic() {
 	// above command will just put into buffer - need at least a frame to parse it
 	Sim_RunFrames(1000, false);
 	// Now, expect a certain MQTT packet to be published....
-	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/tm/value/2", "120", false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/tm/val/2", "120", false);
 	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
 	SIM_ClearMQTTHistory();
 
@@ -159,6 +159,18 @@ void Test_TuyaMCU_Basic() {
 	// Now, expect a certain MQTT packet to be published....
 	// NOTE: I just did hex to ascii on payload 
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/tm/raw/17", "0400001E", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	// This packet sets dpID 104 of type RAW
+	// dpID 104
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 104 MQTT", 0);
+	CMD_ExecuteCommand("uartFakeHex 55AA03070008680200040000000180",0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(1000, false);
+	// Now, expect a certain MQTT packet to be published....
+	// NOTE: I just did hex to ascii on payload 
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/tm/val/104", "1", false);
 	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
 	SIM_ClearMQTTHistory();
 
