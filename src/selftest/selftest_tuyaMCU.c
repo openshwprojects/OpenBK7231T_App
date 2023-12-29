@@ -133,6 +133,38 @@ void Test_TuyaMCU_Basic() {
 	// nothing is sent by OBK at that point
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 
+
+	SIM_ClearOBK(0);
+	SIM_ClearAndPrepareForMQTTTesting("myTestDevice", "bekens");
+	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+
+	// This packet sets dpID 2 of type Value to 120
+	// linkTuyaMCUOutputToChannel dpId varType channelID
+	// Special Syntax! is used to link it to MQTT
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 2 MQTT", 0);
+	CMD_ExecuteCommand("uartFakeHex 55AA03070008020200040000007891", 0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(1000, false);
+	// Now, expect a certain MQTT packet to be published....
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/tm/value/2", "120", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	// This packet sets dpID 17 of type RAW
+	// dpID 17: Leak protection
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 17 MQTT", 0);
+	CMD_ExecuteCommand("uartFakeHex 55AA03070008110000040400001E48", 0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(1000, false);
+	// Now, expect a certain MQTT packet to be published....
+	// NOTE: I just did hex to ascii on payload 
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/tm/raw/17", "0400001E", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SIM_ClearUART();
+
+
 	// cause error
 	//SELFTEST_ASSERT_CHANNEL(15, 666);
 }
