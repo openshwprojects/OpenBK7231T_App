@@ -82,21 +82,22 @@ static byte g_resetWiFiEvents = 0;
 #define			DP_TYPE_RAW_TAC2121C_VCP		201
 #define			DP_TYPE_RAW_TAC2121C_YESTERDAY	202
 #define			DP_TYPE_RAW_TAC2121C_LASTMONTH	203
+#define			DP_TYPE_PUBLISH_TO_MQTT			204
 
 const char* TuyaMCU_GetDataTypeString(int dpId) {
 	if (DP_TYPE_RAW == dpId)
-		return "DP_TYPE_RAW";
+		return "raw";
 	if (DP_TYPE_BOOL == dpId)
-		return "DP_TYPE_BOOL";
+		return "bool";
 	if (DP_TYPE_VALUE == dpId)
-		return "DP_TYPE_VALUE";
+		return "value";
 	if (DP_TYPE_STRING == dpId)
-		return "DP_TYPE_STRING";
+		return "string";
 	if (DP_TYPE_ENUM == dpId)
-		return "DP_TYPE_ENUM";
+		return "enum";
 	if (DP_TYPE_BITMAP == dpId)
-		return "DP_TYPE_BITMAP";
-	return "DP_ERROR";
+		return "bitmap";
+	return "error";
 }
 
 
@@ -212,6 +213,7 @@ static int g_tuyaMCUled_id_power = -1;
 #define TUYAMCU_BUFFER_SIZE		256
 
 static byte *g_tuyaMCUpayloadBuffer = 0;
+static int g_tuyaMCUpayloadBufferSize = 0;
 
 // battery powered device state
 enum TuyaMCUV0State {
@@ -456,7 +458,7 @@ void TuyaMCU_SendStateInternal(uint8_t id, uint8_t type, void* value, int dataLe
 {
 	uint16_t payload_len = 0;
 	
-	payload_len = TuyaMCU_AppendStateInternal(g_tuyaMCUpayloadBuffer, TUYAMCU_BUFFER_SIZE,
+	payload_len = TuyaMCU_AppendStateInternal(g_tuyaMCUpayloadBuffer, g_tuyaMCUpayloadBuffer,
 		payload_len, id, type, value, dataLen);
 
 	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, g_tuyaMCUpayloadBuffer, payload_len);
@@ -470,13 +472,13 @@ void TuyaMCU_SendTwoVals(byte idA, int valA, byte idB, int valB)
 	swap[1] = ((byte*)&valA)[2];
 	swap[2] = ((byte*)&valA)[1];
 	swap[3] = ((byte*)&valA)[0];
-	payload_len = TuyaMCU_AppendStateInternal(g_tuyaMCUpayloadBuffer, TUYAMCU_BUFFER_SIZE,
+	payload_len = TuyaMCU_AppendStateInternal(g_tuyaMCUpayloadBuffer, g_tuyaMCUpayloadBuffer,
 		payload_len, idA, DP_TYPE_VALUE, swap, 4);
 	swap[0] = ((byte*)&valB)[3];
 	swap[1] = ((byte*)&valB)[2];
 	swap[2] = ((byte*)&valB)[1];
 	swap[3] = ((byte*)&valB)[0];
-	payload_len = TuyaMCU_AppendStateInternal(g_tuyaMCUpayloadBuffer, TUYAMCU_BUFFER_SIZE,
+	payload_len = TuyaMCU_AppendStateInternal(g_tuyaMCUpayloadBuffer, g_tuyaMCUpayloadBuffer,
 		payload_len, idB, DP_TYPE_VALUE, swap, 4);
 
 	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, g_tuyaMCUpayloadBuffer, payload_len);
@@ -803,6 +805,9 @@ int TuyaMCU_ParseDPType(const char *dpTypeString) {
 	else if (!stricmp(dpTypeString, "RAW_TAC2121C_LastMonth")) {
 		dpType = DP_TYPE_RAW_TAC2121C_LASTMONTH;
 	}
+	else if (!stricmp(dpTypeString, "MQTT")) {
+		dpType = DP_TYPE_PUBLISH_TO_MQTT;
+	}
 	else {
 		if (strIsInteger(dpTypeString)) {
 			dpType = atoi(dpTypeString);
@@ -1068,8 +1073,7 @@ void TuyaMCU_ForcePublishChannelValues() {
 // same as above but merged
 // backlog ntp_timeZoneOfs 2; addRepeatingEvent 10 -1 uartSendHex 55AA0008000007; setChannelType 1 temperature_div10; setChannelType 2 humidity; linkTuyaMCUOutputToChannel 1 1; linkTuyaMCUOutputToChannel 2 2; addRepeatingEvent 10 -1 tuyaMcu_sendCurTime
 //
-void TuyaMCU_ApplyMapping(int fnID, int value) {
-	tuyaMCUMapping_t* mapping;
+void TuyaMCU_ApplyMapping(tuyaMCUMapping_t* mapping, int fnID, int value) {
 	int mappedValue = value;
 
 	// hardcoded values
@@ -1077,8 +1081,6 @@ void TuyaMCU_ApplyMapping(int fnID, int value) {
 		LED_SetEnableAll(value);
 	}
 
-	// find mapping (where to save received data)
-	mapping = TuyaMCU_FindDefForID(fnID);
 
 	if (mapping == 0) {
 		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "TuyaMCU_ApplyMapping: id %i with value %i is not mapped\n", fnID, value);
@@ -1280,6 +1282,7 @@ void TuyaMCU_V0_ParseRealTimeWithRecordStorage(const byte* data, int len, bool b
 	int sectorLen;
 	int fnId;
 	int dataType;
+	tuyaMCUMapping_t* mapping;
 
 	if (bIncludesDate) {
 		//data[0]; // bDateValid
@@ -1303,18 +1306,20 @@ void TuyaMCU_V0_ParseRealTimeWithRecordStorage(const byte* data, int len, bool b
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU_V0_ParseRealTimeWithRecordStorage: processing dpId %i, dataType %i-%s and %i data bytes\n",
 			fnId, dataType, TuyaMCU_GetDataTypeString(dataType), sectorLen);
 
+		// find mapping (where to save received data)
+		mapping = TuyaMCU_FindDefForID(fnId);
 
 		if (sectorLen == 1) {
 			int iVal = (int)data[ofs + 4];
 			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU_V0_ParseRealTimeWithRecordStorage: raw data 1 byte: %i\n", iVal);
 			// apply to channels
-			TuyaMCU_ApplyMapping(fnId, iVal);
+			TuyaMCU_ApplyMapping(mapping, fnId, iVal);
 		}
 		if (sectorLen == 4) {
 			int iVal = data[ofs + 4] << 24 | data[ofs + 5] << 16 | data[ofs + 6] << 8 | data[ofs + 7];
 			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU_V0_ParseRealTimeWithRecordStorage: raw data 4 int: %i\n", iVal);
 			// apply to channels
-			TuyaMCU_ApplyMapping(fnId, iVal);
+			TuyaMCU_ApplyMapping(mapping, fnId, iVal);
 		}
 
 		// size of header (type, datatype, len 2 bytes) + data sector size
@@ -1332,7 +1337,83 @@ void TuyaMCU_V0_ParseRealTimeWithRecordStorage(const byte* data, int len, bool b
 		}
 	}
 }
+void TuyaMCU_PublishDPToMQTT(const byte *data, int ofs) {
+	int sectorLen;
+	int fnId;
+	int dataType;
+	char sName[32];
+	int strLen;
+	char *s;
+	const byte *payload;
+	int index;
+
+	sectorLen = data[ofs + 2] << 8 | data[ofs + 3];
+	fnId = data[ofs];
+	dataType = data[ofs + 1];
+
+	// really it's just +1 for NULL character but let's keep more space
+	strLen = sectorLen * 2 + 16;
+	if (g_tuyaMCUpayloadBufferSize < strLen) {
+		g_tuyaMCUpayloadBuffer = realloc(g_tuyaMCUpayloadBuffer, strLen);
+		g_tuyaMCUpayloadBufferSize = strLen;
+	}
+	s = (char*)g_tuyaMCUpayloadBuffer;
+	*s = 0;
+
+	const char *typeStr;
+	typeStr = TuyaMCU_GetDataTypeString(dataType);
+
+	sprintf(sName, "tm/%s/%i", typeStr, fnId);
+	payload = data + (ofs + 4);
+	switch (dataType) 
+	{
+	case DP_TYPE_BOOL:
+	case DP_TYPE_VALUE:
+	case DP_TYPE_ENUM:
+		if (sectorLen == 4){
+			index = payload[0] << 24 | payload[1] << 16 | payload[2] << 8 | payload[3];
+		} else if (sectorLen == 1) {
+			index = (int)payload[0];
+		}
+		else if (sectorLen == 2) {
+			index =  payload[1] << 8 | payload[0];
+		}
+		else {
+			index = 0;
+		}
+		sprintf(s, "%i", index);
+		break;
+	case DP_TYPE_STRING:
+		memcpy(s, payload, sectorLen);
+		s[sectorLen] = 0;
+		break;
+	case DP_TYPE_RAW:
+	case DP_TYPE_BITMAP:
+		// convert payload bytes string like FFAABB in s
+		index = 0;
+		if (0) {
+			*s = '0';
+			s++; index++;
+			*s = 'x';
+			s++; index++;
+		}
+		for (int i = 0; i < sectorLen; i++) {
+			// convert each byte to two hexadecimal characters
+			s[index++] = "0123456789ABCDEF"[(*payload >> 4) & 0xF];
+			s[index++] = "0123456789ABCDEF"[*payload & 0xF];
+			payload++;
+		}
+		s[index] = 0; // null-terminate the string
+		break;
+		
+	}
+	if (*s == 0)
+		return;
+
+	MQTT_PublishMain_StringString(sName, s, OBK_PUBLISH_FLAG_FORCE_REMOVE_GET);
+}
 void TuyaMCU_ParseStateMessage(const byte* data, int len) {
+	tuyaMCUMapping_t* mapping;
 	int ofs;
 	int sectorLen;
 	int fnId;
@@ -1350,23 +1431,24 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU_ParseStateMessage: processing dpId %i, dataType %i-%s and %i data bytes\n",
 			fnId, dataType, TuyaMCU_GetDataTypeString(dataType), sectorLen);
 
+		mapping = TuyaMCU_FindDefForID(fnId);
+		if (mapping && mapping->dpType == DP_TYPE_PUBLISH_TO_MQTT) {
+			TuyaMCU_PublishDPToMQTT(data, ofs);
+		}
 
 		if (sectorLen == 1) {
 			iVal = (int)data[ofs + 4];
 			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU_ParseStateMessage: raw data 1 byte: %i\n", iVal);
 			// apply to channels
-			TuyaMCU_ApplyMapping(fnId, iVal);
+			TuyaMCU_ApplyMapping(mapping, fnId, iVal);
 		}
 		else if (sectorLen == 4) {
 			iVal = data[ofs + 4] << 24 | data[ofs + 5] << 16 | data[ofs + 6] << 8 | data[ofs + 7];
 			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU_ParseStateMessage: raw data 4 int: %i\n", iVal);
 			// apply to channels
-			TuyaMCU_ApplyMapping(fnId, iVal);
+			TuyaMCU_ApplyMapping(mapping, fnId, iVal);
 		}
 		else {
-			tuyaMCUMapping_t* mapping;
-
-			mapping = TuyaMCU_FindDefForID(fnId);
 
 			if (mapping != 0) {
 				switch (mapping->dpType) {
@@ -2053,6 +2135,7 @@ void TuyaMCU_Init()
 	g_tuyaMCUConfirmationsToSend_0x05 = 0;
 	g_tuyaMCUConfirmationsToSend_0x08 = 0;
 	if (g_tuyaMCUpayloadBuffer == 0) {
+		g_tuyaMCUpayloadBufferSize = TUYAMCU_BUFFER_SIZE;
 		g_tuyaMCUpayloadBuffer = (byte*)malloc(TUYAMCU_BUFFER_SIZE);
 	}
 
