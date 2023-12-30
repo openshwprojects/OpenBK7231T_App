@@ -451,7 +451,7 @@ addRepeatingEvent 2 1 setChannel 4 0
 ```
 
 
-Advanced config for TuyaMCU power meter and electric car charging limit driver
+[Advanced config for TuyaMCU power meter and electric car charging limit driver](https://www.elektroda.com/rtvforum/topic3936455.html)
 <br>
 ```// Config for TAC2121C-like TuyaMCU power meter device
 // Also a charging limit driver is setup for charging electric cars
@@ -648,7 +648,7 @@ addEventHandler OnChannelChange 4 setChannel 204 $CH4
 ```
 
 
-Shift register setup, usage and control with channels
+[Shift register setup, usage and control with channels](https://www.elektroda.com/rtvforum/viewtopic.php?p=20533505#20533505)
 <br>
 ```// Start shiftRegister driver and map pins, also map channels to outputs
 // startDriver ShiftRegister [DataPin] [LatchPin] [ClkPin] [FirstChannel] [Order] [TotalRegisters] [Invert]
@@ -781,6 +781,33 @@ waitFor NTPState 1
 addClockEvent sunrise 0x7f 12 POWER OFF
 addClockEvent sunset 0x7f 13 POWER ON
 
+```
+
+
+[Setup for PJ-MGW1103 T-Clamp TuyaMCU with a device state request demonstation](https://www.elektroda.com/rtvforum/viewtopic.php?p=20882983#20882983)
+<br>
+```
+// config for PJ-MGW1103 CT-Clamp Energy Meter by Tuya, BL0942, CB2S Components
+// Source: https://www.elektroda.com/rtvforum/viewtopic.php?p=20882983#20882983
+// Teadown: https://www.elektroda.com/rtvforum/topic3946128.html
+startDriver TuyaMCU
+tuyaMcu_setBaudRate 115200
+tuyaMcu_defWiFiState 4
+
+setChannelType 2 Voltage_div10
+setChannelType 3 Power_div10
+setChannelType 4 Current_div1000
+
+// linkTuyaMCUOutputToChannel dpId variableType tgChannel
+//ch 2(dpid 20) voltage
+linkTuyaMCUOutputToChannel  20 1 2
+//ch 3(dpid 19) power watts
+linkTuyaMCUOutputToChannel 19 1 3
+//ch 4(dpid 18) current in mA
+linkTuyaMCUOutputToChannel 18 1 4
+
+// every 15 seconds query measurements from the MCU
+addRepeatingEvent 5 -1 tuyaMcu_sendQueryState
 ```
 
 

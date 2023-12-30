@@ -76,7 +76,7 @@
 "file": "autoexecs/blink_led_on_device_boot.bat"
 },
 {
-"title": "Advanced config for TuyaMCU power meter and electric car charging limit driver",
+"title": "[Advanced config for TuyaMCU power meter and electric car charging limit driver](https://www.elektroda.com/rtvforum/topic3936455.html)",
 "file": "autoexecs/TAC2121C_tuyaMCU_and_car_chargerLimit.bat"
 },
 {
@@ -92,7 +92,7 @@
 "file": "autoexecs/manual_tuyamcu_flash_save.bat"
 },
 {
-"title": "Shift register setup, usage and control with channels",
+"title": "[Shift register setup, usage and control with channels](https://www.elektroda.com/rtvforum/viewtopic.php?p=20533505#20533505)",
 "file": "autoexecs/shiftRegister.bat"
 },
 {
@@ -102,5 +102,9 @@
 {
 "title": "[Setup for EZB-WBZS1H16N-A V1.0 Tuya mini smart switch showing sunrise/sunset events](https://www.elektroda.com/rtvforum/topic3967141.html)",
 "file": "autoexecs/sunrise_sunset.bat"
+},
+{
+"title": "[Setup for PJ-MGW1103 T-Clamp TuyaMCU with a device state request demonstation](https://www.elektroda.com/rtvforum/viewtopic.php?p=20882983#20882983)",
+"file": "autoexecs/PJ-MGW1103_CT-Clamp_tuyaMCU_with_request.bat"
 }
 ]
