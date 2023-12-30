@@ -763,7 +763,9 @@ extern "C" void DRV_IR_RunFrame(){
                 if (ourReceiver->decodedIRData.protocol == UNKNOWN){
                     snprintf(out, sizeof(out), "IR_%s 0x%lX %d", name, (unsigned long)ourReceiver->decodedIRData.decodedRawData, repeat);
                 } else {
-                    snprintf(out, sizeof(out), "IR_%s 0x%X 0x%X %d", name, ourReceiver->decodedIRData.address, ourReceiver->decodedIRData.command, repeat);
+                    snprintf(out, sizeof(out), "IR_%s 0x%X 0x%X %d (%i bits)", 
+						name, ourReceiver->decodedIRData.address, ourReceiver->decodedIRData.command,
+						repeat, ourReceiver->decodedIRData.numberOfBits);
                 }
 				// if user wants us to publish every received IR data, do it now
 				if(CFG_HasFlag(OBK_FLAG_IR_PUBLISH_RECEIVED)) {
