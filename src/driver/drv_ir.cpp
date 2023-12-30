@@ -468,18 +468,32 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
         p++;
         repeats = strtol(p, &p, 16);
     }
+	int bits;
+	if (protocol == SONY) {
+		bits = 12;
+	}
+	else {
+		bits = 0;
+	}
+	if ((*p == '-') || (*p == ' ')) {
+		p++;
+		bits = strtol(p, &p, 16);
+	}
+
 
     data.protocol = (decode_type_t)protocol;
     data.address = addr;
     data.command = command;
     data.flags = 0;
+	data.numberOfBits = bits;
 
     if (pIRsend){
         pIRsend->write(&data, (int_fast8_t) repeats);
         // add a 100ms delay after command
         // NOTE: this is NOT a delay here.  it adds 100ms 'space' in the TX queue
         pIRsend->delay(100);
-        ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send %s protocol %d addr 0x%X cmd 0x%X repeats %d", args, (int)data.protocol, (int)data.address, (int)data.command, (int)repeats);
+        ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send %s protocol %d addr 0x%X cmd 0x%X repeats %d bits override %i", 
+			args, (int)data.protocol, (int)data.address, (int)data.command, (int)repeats, (int)bits);
         return CMD_RES_OK;
     } else {
         ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR NOT send (no IRsend running) %s protocol %d addr 0x%X cmd 0x%X repeats %d", args, (int)data.protocol, (int)data.address, (int)data.command, (int)repeats);
@@ -630,8 +644,8 @@ extern "C" void DRV_IR_Init(){
             pIRsend = pIRsendTemp;
             //bk_pwm_stop((bk_pwm_t)pIRsend->pwmIndex);
 
-	//cmddetail:{"name":"IRSend","args":"[PROT-ADDR-CMD-REP]",
-	//cmddetail:"descr":"Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0",
+	//cmddetail:{"name":"IRSend","args":"[PROT-ADDR-CMD-REP-BITS]",
+	//cmddetail:"descr":"Sends IR commands in the form PROT-ADDR-CMD-REP-BITS, e.g. NEC-1-1A-0-0, note that -BITS is optional, it can be 0 for default one, so you can just do NEC-1-1A-0",
 	//cmddetail:"fn":"IR_Send_Cmd","file":"driver/drv_ir.cpp","requires":"",
 	//cmddetail:"examples":""}
             CMD_RegisterCommand("IRSend",IR_Send_Cmd, NULL);
