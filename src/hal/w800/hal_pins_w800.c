@@ -161,7 +161,7 @@ void HAL_PIN_Setup_Output(int index) {
 	tls_gpio_cfg(realCode, WM_GPIO_DIR_OUTPUT, WM_GPIO_ATTR_FLOATING);
 }
 
-static int pwm_demo_multiplex_config(u8 channel. int obkPin)
+static int pwm_demo_multiplex_config(u8 channel, int obkPin)
 {
 	int realCode;
 	realCode = g_pins[index].code;
