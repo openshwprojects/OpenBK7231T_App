@@ -265,6 +265,13 @@ public:
 		//pwmfrequency = ((uint32_t)aFrequencyKHz) * 1000;
 		pwmperiod = (26000000 / freq);
 		pwmduty = pwmperiod / (100/duty);
+		
+		
+#if PLATFORM_BK7231N
+		bk_pwm_update_param((bk_pwm_t)this->pwmIndex, this->pwmperiod, pwmduty, 0, 0);
+#else
+		bk_pwm_update_param((bk_pwm_t)this->pwmIndex, this->pwmperiod, pwmduty);
+#endif
 	}
 
 	void resetsendqueue() {
