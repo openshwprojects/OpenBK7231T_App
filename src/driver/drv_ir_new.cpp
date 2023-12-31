@@ -1,4 +1,5 @@
 #if PLATFORM_BEKEN
+// drv_ir_new.cpp - IRremoteESP8266
 
 extern "C" {
 	// these cause error: conflicting declaration of 'int bk_wlan_mcu_suppress_and_sleep(unsigned int)' with 'C' linkage
