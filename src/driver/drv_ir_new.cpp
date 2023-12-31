@@ -736,6 +736,8 @@ extern "C" void DRV_IR_Init() {
 			pIRsendTemp->resetsendqueue();
 			pIRsendTemp->enableIROut(pwmfrequency,50);
 			pIRsendTemp->pwmIndex = pwmIndex;
+			pIRsendTemp->pwmduty = duty;
+			pIRsendTemp->pwmperiod = period;
 
 			pIRsend = pIRsendTemp;
 			//bk_pwm_stop((bk_pwm_t)pIRsend->pwmIndex);
