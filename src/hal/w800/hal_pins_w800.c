@@ -224,7 +224,12 @@ void HAL_PIN_PWM_Update(int index, float value) {
 	if (channel == -1)
 		return;
 
-	tls_pwm_duty_set(channel, value * 2.55f);
+	if (value == 0) {
+		tls_pwm_stop(channel);
+	} else {
+		tls_pwm_start(channel);
+		tls_pwm_duty_set(channel, value * 2.55f);
+	}
 }
 
 unsigned int HAL_GetGPIOPin(int index) {
