@@ -164,7 +164,7 @@ void HAL_PIN_Setup_Output(int index) {
 static int pwm_demo_multiplex_config(u8 channel, int obkPin)
 {
 	int realCode;
-	realCode = g_pins[index].code;
+	realCode = g_pins[obkPin].code;
 	switch (channel)
 	{
 	case 0:
