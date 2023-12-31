@@ -44,6 +44,7 @@ commandResult_t CMD_ExecuteCommandArgs(const char* cmd, const char* args, int cm
 // Please remember to free the returned string
 char* CMD_ExpandingStrdup(const char* in);
 commandResult_t CMD_CreateAliasHelper(const char *alias, const char *ocmd);
+const char *CMD_ExpandConstant(const char *s, const char *stop, float *out);
 
 enum EventCode {
 	CMD_EVENT_NONE,
@@ -120,6 +121,10 @@ enum EventCode {
 
 	CMD_EVENT_NTP_STATE,
 
+	// custom buttons
+	CMD_EVENT_CUSTOM_DOWN,
+	CMD_EVENT_CUSTOM_UP,
+
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
 };
@@ -152,6 +157,7 @@ enum LightMode {
 #define TOKENIZER_ALTERNATE_EXPAND_AT_START		4
 // force single argument mode
 #define TOKENIZER_FORCE_SINGLE_ARGUMENT_MODE	8
+#define TOKENIZER_ALLOW_ESCAPING_QUOTATIONS		16
 
 // cmd_tokenizer.c
 int Tokenizer_GetArgsCount();
@@ -203,7 +209,7 @@ void LED_SetFinalCW(byte c, byte w);
 void LED_SetFinalRGB(byte r, byte g, byte b);
 void LED_SetFinalRGBCW(byte* rgbcw);
 void LED_GetFinalChannels100(byte* rgbcw);
-void LED_GetFinalHSV(int* hsv);
+void LED_GetTasmotaHSV(int* hsv);
 void LED_GetFinalRGBCW(byte* rgbcw);
 // color indices are as in Tasmota
 void LED_SetColorByIndex(int index);
@@ -214,6 +220,7 @@ bool LED_IsLedDriverChipRunning();
 bool LED_IsLEDRunning();
 void LED_SetEnableAll(int bEnable);
 int LED_GetEnableAll();
+void LED_SaveStateToFlashVarsNow();
 void LED_GetBaseColorString(char* s);
 void LED_SetBaseColorByIndex(int i, float f, bool bApply);
 int LED_GetMode();
@@ -223,6 +230,7 @@ float LED_GetGreen255();
 float LED_GetRed255();
 float LED_GetBlue255();
 void LED_RunQuickColorLerp(int deltaMS);
+void LED_RunOnEverySecond();
 OBK_Publish_Result sendFinalColor();
 OBK_Publish_Result sendColorChange();
 OBK_Publish_Result LED_SendEnableAllState();
@@ -248,6 +256,7 @@ const char* CMD_GetResultString(commandResult_t r);
 void SVM_RunThreads(int deltaMS);
 void CMD_InitScripting();
 byte* LFS_ReadFile(const char* fname);
+int LFS_WriteFile(const char *fname, const byte *data, int len, bool bAppend);
 
 commandResult_t CMD_ClearAllHandlers(const void* context, const char* cmd, const char* args, int cmdFlags);
 commandResult_t RepeatingEvents_Cmd_ClearRepeatingEvents(const void* context, const char* cmd, const char* args, int cmdFlags);

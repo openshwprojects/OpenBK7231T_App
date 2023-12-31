@@ -20,8 +20,12 @@ void CFG_ClearIO();
 void CFG_SetDefaultConfig();
 const char *CFG_GetWiFiSSID();
 const char *CFG_GetWiFiPass();
-void CFG_SetWiFiSSID(const char *s);
-void CFG_SetWiFiPass(const char *s);
+const char *CFG_GetWiFiSSID2();
+const char *CFG_GetWiFiPass2();
+int CFG_SetWiFiSSID(const char *s);
+int CFG_SetWiFiPass(const char *s);
+int CFG_SetWiFiSSID2(const char *s);
+int CFG_SetWiFiPass2(const char *s);
 const char *CFG_GetMQTTHost();
 const char *CFG_GetMQTTClientId();
 const char *CFG_GetMQTTGroupTopic();
@@ -84,12 +88,13 @@ void CFG_SetPowerMeasurementCalibrationFloat(int index, float value);
 void CFG_SetButtonLongPressTime(int value);
 void CFG_SetButtonShortPressTime(int value);
 void CFG_SetButtonRepeatPressTime(int value);
+const char *CFG_GetWebPassword();
+void CFG_SetWebPassword(const char *s);
 
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
     void CFG_SetLFS_Size(uint32_t value);
     uint32_t CFG_GetLFS_Size();
-#endif
-
 #endif 
 
+#endif
 

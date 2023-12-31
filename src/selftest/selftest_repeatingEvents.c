@@ -1,6 +1,6 @@
 #ifdef WINDOWS
 
-#include "selftest_local.h".
+#include "selftest_local.h"
 
 void Test_RepeatingEvents() {
 	// reset whole device

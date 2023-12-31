@@ -59,7 +59,9 @@ addEventHandler LEDState 0 backlog toggler_enable0 0; toggler_enable1 0;
 // Comment out if you don't want it!
 addEventHandler LEDState 1 backlog toggler_enable0 1; toggler_enable1 1; 
 
-
+To set startup value, use:
+toggler_set0 50
+toggler_enable0 1
 
 */
 
@@ -76,13 +78,13 @@ void publish_enableState(int index) {
 	char topic[32];
 	snprintf(topic, sizeof(topic), "toggler_enable%i", index);
 
-	MQTT_PublishMain_StringInt(topic, g_enabled[index]);
+	MQTT_PublishMain_StringInt(topic, g_enabled[index], 0);
 }
 void publish_value(int index) {
 	char topic[32];
 	snprintf(topic, sizeof(topic), "toggler_set%i", index);
 
-	MQTT_PublishMain_StringInt(topic, g_values[index]);
+	MQTT_PublishMain_StringInt(topic, g_values[index], 0);
 }
 void apply(int index) {
 	if (index < 0)
@@ -178,7 +180,22 @@ commandResult_t Toggler_SetX(const void *context, const char *cmd, const char *a
 		return CMD_RES_BAD_ARGUMENT;
 	}
 
-	g_values[index] = atoi(args);
+	if (*args == '+') {
+		args++;
+		g_values[index] += atoi(args);
+	}
+	else if (*args == '-') {
+		args++;
+		g_values[index] -= atoi(args);
+	}
+	else {
+		g_values[index] = atoi(args);
+	}
+
+	if (g_values[index] < 0)
+		g_values[index] = 0;
+	if (g_values[index] > 100)
+		g_values[index] = 100;
 
 	apply(index);
 
@@ -305,7 +322,7 @@ void DRV_InitPWMToggler() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("toggler_enable", Toggler_EnableX, NULL);
 	//cmddetail:{"name":"toggler_set","args":"[Value]",
-	//cmddetail:"descr":"Sets the VALUE of given output. Handles toggler_set0, toggler_set1, etc. The last digit after command name is changed to slot index.",
+	//cmddetail:"descr":"Sets the VALUE of given output. Handles toggler_set0, toggler_set1, etc. The last digit after command name is changed to slot index. It can also add to current value if you write value like +25 and subtract if you prefix it with - like -25",
 	//cmddetail:"fn":"Toggler_SetX","file":"driver/drv_pwmToggler.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("toggler_set", Toggler_SetX, NULL);

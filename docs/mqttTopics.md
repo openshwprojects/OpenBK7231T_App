@@ -6,7 +6,7 @@ Hint: in HA, you can use MQTT wildcard to listen to multiple publishes. OBK_DEV_
 Publishes send by OBK device:
 | Topic        | Sample Value          | Description  |
 |:------------- |:------------- | -----:|
-| OBK_DEV_NAME/INDEX/get | 1 | send when a given channel is changed. INDEX is a number representing channel index. Some channels are not published by default, see flags. You can have any variable in channel, even a custom, fully scriptable counter |
+| OBK_DEV_NAME/INDEX/get | 1 | send when a given channel is changed. INDEX is a number representing channel index. Most of channels are not published by default. See flags to change it. If you want given channel to be published, you can also change its channel type in the Web App, just select one that fits your needs or just a generic 'Custom' type. You can have any variable in channel, even a custom, fully scriptable counter. |
 | OBK_DEV_NAME/connected | online | Sent on connect. |
 | OBK_DEV_NAME/sockets | 5 | Send on connect and every N seconds (default: 60, if enabled) |
 | OBK_DEV_NAME/rssi | -70 | Send on connect and every N seconds (default: 60, if enabled) |
@@ -25,7 +25,7 @@ Publishes send by OBK device:
 | tele/OBK_DEV_NAME/STATE | Tasmota JSON | OBK can publish Tasmota STATE style message if you enable TELE/etc publishes in options. This is used for compatibility with ioBroker, etc |
 | stat/OBK_DEV_NAME/RESULT | Tasmota JSON | See above. You can also see related self test code for details |
 | tele/OBK_DEV_NAME/SENSOR | { "Time": "1970-01-01T00:00:00", "ENERGY": { "Power": 0, "ApparentPower": 0, "ReactivePower": 0, "Factor": 0, "Voltage": 249.932449, "Current": 0,"ConsumptionTotal": 255.346664,"ConsumptionLastHour": 0 }} | See above. Published by power metering devices, BL0937, BL0942, etc). Make sure NTP is running to get time. |
-| [similiar tasmota messages] | Tasmota JSON | See above. See related self test code for details |
+| [similar tasmota messages] | Tasmota JSON | See above. See related self test code for details |
 | OBK_DEV_NAME/RESULT | { "IrReceived": { "Protocol": "Samsung", "Bits": 32, "Data": "0xEE110707" } } | Sent if Tasmota syntax IR publish is enabled in flags. NOTE: we may fix it and add tele prefix soon? |
 
 

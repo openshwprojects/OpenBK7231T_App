@@ -1,6 +1,6 @@
 #ifdef WINDOWS
 
-#include "selftest_local.h".
+#include "selftest_local.h"
 
 /*
 Example autoexec.bat usage - wait for MQTT connect on startup:

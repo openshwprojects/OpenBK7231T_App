@@ -19,7 +19,6 @@ int get_cmd(const char *s, char *dest, int maxlen, int stripnum);
 float CMD_EvaluateExpression(const char *s, const char *stop);
 commandResult_t CMD_If(const void *context, const char *cmd, const char *args, int cmdFlags);
 void CMD_ExpandConstantsWithinString(const char *in, char *out, int outLen);
-const char *CMD_ExpandConstant(const char *s, const char *stop, float *out);
 
 #endif // __CMD_LOCAL_H__
 

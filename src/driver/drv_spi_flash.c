@@ -127,7 +127,7 @@ void spi_test_erase() {
 	// THIS WILL TAKE TIME! YOU will have to wait (and check status register to see if it's ready)
 
 }
-void spi_test_write(int adr, byte *data, int cnt) {
+void spi_test_write(int adr, const byte *data, int cnt) {
 	int i;
 	softSPI_t spi;
 
@@ -158,8 +158,6 @@ void spi_test_write(int adr, byte *data, int cnt) {
 	SPI_End(&spi); // disable SPI communication with the flash
 
 	OBK_ENABLE_INTERRUPTS;
-	free(data);
-
 }
 // SPITestFlash_ReadData 0 16
 static commandResult_t CMD_SPITestFlash_ReadData(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -205,7 +203,7 @@ static commandResult_t CMD_SPITestFlash_WriteStr(const void* context, const char
 		}
 	}
 
-	spi_test_write(addr, str, strlen(str));
+	spi_test_write(addr, (const byte*)str, strlen(str));
 
 	return CMD_RES_OK;
 }

@@ -112,7 +112,7 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 			byte channels[5];
 
 			LED_GetFinalRGBCW(rgbcw);
-			LED_GetFinalHSV(hsv);
+			LED_GetTasmotaHSV(hsv);
 			LED_GetFinalChannels100(channels);
 
 			// it looks like they include C and W in color
@@ -205,7 +205,7 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 	energy_hour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
 
 	if (DRV_IsMeasuringBattery()) {
-#if defined(PLATFORM_BEKEN)
+#ifdef ENABLE_DRIVER_BATTERY
 		voltage = Battery_lastreading(OBK_BATT_VOLTAGE) / 1000.00;
 		batterypercentage = Battery_lastreading(OBK_BATT_LEVEL);
 #endif
@@ -413,16 +413,16 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bA
 	printer(request, "{");
 	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", localtime(&localTime));
 	JSON_PrintKeyValue_String(request, printer, "Time", buff, true);
-	format_time(Time_getUpTimeSeconds(), buff, sizeof(buff));
+	format_time(g_secondsElapsed, buff, sizeof(buff));
 	JSON_PrintKeyValue_String(request, printer, "Uptime", buff, true);
 	//JSON_PrintKeyValue_String(request, printer, "Uptime", "30T02:59:30", true);
-	JSON_PrintKeyValue_Int(request, printer, "UptimeSec", Time_getUpTimeSeconds(), true);
+	JSON_PrintKeyValue_Int(request, printer, "UptimeSec", g_secondsElapsed, true);
 	JSON_PrintKeyValue_Int(request, printer, "Heap", 25, true);
 	JSON_PrintKeyValue_String(request, printer, "SleepMode", "Dynamic", true);
 	JSON_PrintKeyValue_Int(request, printer, "Sleep", 10, true);
 	JSON_PrintKeyValue_Int(request, printer, "LoadAvg", 99, true);
 	JSON_PrintKeyValue_Int(request, printer, "MqttCount", 23, true);
-#if defined(PLATFORM_BEKEN)
+#ifdef ENABLE_DRIVER_BATTERY
 	if (DRV_IsRunning("Battery")) {
 		printer(request, "\"Vcc\":%.4f,", Battery_lastreading(OBK_BATT_VOLTAGE) / 1000.00);
 	}
@@ -470,6 +470,7 @@ static int http_tasmota_json_status_FWR(void* request, jsonCb_t printer) {
 	// NOTE: what is this value? It's not a reboot count
 	JSON_PrintKeyValue_Int(request, printer, "Boot", 7, true);
 	JSON_PrintKeyValue_String(request, printer, "Core", "0.0", true);
+	// do not change it - Flasher scanner is using it, it should be obk on all platforms!
 	JSON_PrintKeyValue_String(request, printer, "SDK", "obk", true);
 	JSON_PrintKeyValue_Int(request, printer, "CpuFrequency", 80, true);
 	JSON_PrintKeyValue_String(request, printer, "Hardware", PLATFORM_MCU_NAME, true);
@@ -525,17 +526,23 @@ static int http_tasmota_json_status_MEM(void* request, jsonCb_t printer) {
 }
 // Test command: http://192.168.0.159/cm?cmnd=STATUS%205
 static int http_tasmota_json_status_NET(void* request, jsonCb_t printer) {
-	char tmpMac[16];
-	HAL_GetMACStr(tmpMac);
+	char tmpStr[16];
+	HAL_GetMACStr(tmpStr);
 
 	printer(request, "\"StatusNET\":{");
 	JSON_PrintKeyValue_String(request, printer, "Hostname", CFG_GetShortDeviceName(), true);
 	JSON_PrintKeyValue_String(request, printer, "IPAddress", HAL_GetMyIPString(), true);
+#if 0
+	JSON_PrintKeyValue_String(request, printer, "Gateway", HAL_GetMyGatewayString(), true);
+	JSON_PrintKeyValue_String(request, printer, "Subnetmask", HAL_GetMyMaskString(), true);
+	JSON_PrintKeyValue_String(request, printer, "DNSServer1", HAL_GetMyDNSString(), true);
+#else
 	JSON_PrintKeyValue_String(request, printer, "Gateway", "192.168.0.1", true);
 	JSON_PrintKeyValue_String(request, printer, "Subnetmask", "255.255.255.0", true);
 	JSON_PrintKeyValue_String(request, printer, "DNSServer1", "192.168.0.1", true);
+#endif
 	JSON_PrintKeyValue_String(request, printer, "DNSServer2", "0.0.0.0", true);
-	JSON_PrintKeyValue_String(request, printer, "Mac", tmpMac, true);
+	JSON_PrintKeyValue_String(request, printer, "Mac", tmpStr, true);
 	JSON_PrintKeyValue_Int(request, printer, "Webserver", 2, true);
 	JSON_PrintKeyValue_Int(request, printer, "HTTP_API", 1, true);
 	JSON_PrintKeyValue_Int(request, printer, "WifiConfig", 4, true);
@@ -653,9 +660,9 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	JSON_PrintKeyValue_String(request, printer, "GroupTopic", CFG_DeviceGroups_GetName(), true);
 	JSON_PrintKeyValue_String(request, printer, "OtaUrl", "https://github.com/openshwprojects/OpenBK7231T_App/releases/latest", true);
 	JSON_PrintKeyValue_String(request, printer, "RestartReason", "HardwareWatchdog", true);
-	JSON_PrintKeyValue_Int(request, printer, "Uptime", Time_getUpTimeSeconds(), true);
+	JSON_PrintKeyValue_Int(request, printer, "Uptime", g_secondsElapsed, true);
 	struct tm* ltm;
-	int ntpTime = NTP_GetCurrentTime() - Time_getUpTimeSeconds();
+	int ntpTime = NTP_GetCurrentTime() - g_secondsElapsed;
 	ltm = localtime((time_t*)&ntpTime);
 
 	if (ltm != 0) {
@@ -688,7 +695,7 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	printer(request, "\"LogHost\":\"\",");
 	printer(request, "\"LogPort\":514,");
 	printer(request, "\"SSId1\":\"%s\",", CFG_GetWiFiSSID());
-	printer(request, "\"SSId2\":\"\",");
+	printer(request, "\"SSId2\":\"%s\",", CFG_GetWiFiSSID2());
 	printer(request, "\"TelePeriod\":300,");
 	printer(request, "\"Resolution\":\"558180C0\",");
 	printer(request, "\"SetOption\":[");
@@ -861,7 +868,7 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "RESULT");
 		}
 	}
-	else if (!wal_strnicmp(cmd, "Color", 5)) {
+	else if (!wal_strnicmp(cmd, "Color", 5) || !wal_strnicmp(cmd, "HsbColor", 8)) {
 		printer(request, "{");
 		//if (*arg == 0) {
 		//	http_tasmota_json_Colo(request, printer);
@@ -934,6 +941,14 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 			printer(request, "}");
 			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
 				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "STATUS4");
+			}
+		}
+		else if (!stricmp(arg, "11")) {
+			printer(request, "{");
+			http_tasmota_json_status_STS(request, printer, true);
+			printer(request, "}");
+			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
+				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "STATUS11");
 			}
 		}
 		else if (!stricmp(arg, "2")) {

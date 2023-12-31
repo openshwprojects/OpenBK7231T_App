@@ -1,6 +1,6 @@
 #ifdef WINDOWS
 
-#include "selftest_local.h".
+#include "selftest_local.h"
 
 void Test_NTP() {
 	// reset whole device
@@ -37,6 +37,7 @@ void Test_NTP() {
 	// - 12 hour 5 minutes
 	CMD_ExecuteCommand("ntp_timeZoneOfs -12:05", 0);
 	SELFTEST_ASSERT_FLOATCOMPARE(NTP_GetTimesZoneOfsSeconds(), -(12 * 60 * 60 + 5 * 60));
+
 
 
 }

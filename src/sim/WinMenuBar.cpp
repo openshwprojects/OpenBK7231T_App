@@ -6,7 +6,28 @@
 #include "Shape.h"
 #include "PrefabManager.h"
 #include <nfd.h>
+
+#if DEBUG
 #pragma comment (lib, "nfd_d.lib")
+#else
+#pragma comment (lib, "nfd.lib")
+#pragma comment (lib, "vcruntime.lib")
+char *strncat(char *s1, const char *s2, size_t n)
+{
+	unsigned int len1 = strlen(s1);
+	unsigned int len2 = strlen(s2);
+
+	if (len2 < n) {
+		strcpy(&s1[len1], s2);
+	}
+	else {
+		strncpy(&s1[len1], s2, n);
+		s1[len1 + n] = '\0';
+	}
+	return s1;
+}
+
+#endif
 
 CWinMenuBar::CWinMenuBar() {
 

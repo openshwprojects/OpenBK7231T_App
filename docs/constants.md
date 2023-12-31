@@ -11,6 +11,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | $CH*** |  Provides channel access, so you can do math expressions on channel values. $CH1 is channel 1, $CH20 is channel 20, $CH140 is channel 140, etc |
 | $CH** |  Provides channel access, as above. |
 | $CH* |  Provides channel access, as above. |
+| $FLAG** |  Provides flag access, as above. |
+| $FLAG* |  Provides flag access, as above. |
 | $led_dimmer |  Current value of LED dimmer, 0-100 range |
 | $led_enableAll |  Returns 1 if LED is enabled, otherwise 0. |
 | $led_hue |  Current LED Hue value |
@@ -23,10 +25,16 @@ Do not add anything here, as it will overwritten with next rebuild.
 | $voltage |  Current value of voltage from energy metering chip. You can use those variables to make, for example, a change handler that fires when voltage is above 245, etc. |
 | $current |  Current value of current from energy metering chip |
 | $power |  Current value of power from energy metering chip |
+| $energy |  Current value of energy counter from energy metering chip |
 | $day |  Current weekday from NTP |
 | $hour |  Current hour from NTP |
 | $minute |  Current minute from NTP |
 | $second |  Current second from NTP |
+| $mday |  TODO |
+| $month |  TODO |
+| $year |  TODO |
 | $NTPOn |  Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0. |
+| $batteryVoltage |  Battery driver voltage |
+| $batteryLevel |  Battery driver level |
 | $uptime |  Time since reboot in seconds |
 | $failedBoots |  Get number of failed boots (too quick reboots). Remember that you can change the uptime required to mark boot as 'okay' in general/flags menu |

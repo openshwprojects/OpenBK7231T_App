@@ -43,17 +43,20 @@ OpenBeken features:
 - Hardware and software I2C, supports multiple I2C devices, like TC74 temperature sensor, MCP23017 port expander, PCF8574T LCD 2x16 (or other?), etc
 - Hardware and software SPI, support for SPI BL0942, etc
 - NTP time from network (can be used with [TH06](https://www.elektroda.com/rtvforum/topic3942730.html) and other TuyaMCU devices), can run any script on selected weekday hour:minute:second
-- basic support for [TuyaMCU Battery Powered devices protocol](https://www.elektroda.com/rtvforum/topic3914412.html) (TuyaMCU enables WiFi module only to report the state, eg. for door sensors, water sensors)
-- [RGBCW LED lighting control](https://www.youtube.com/watch?v=YQdR7r6lXRY) compatible with Home Assistant (both PWM LEDs, SM2135 LEDs and BP5758 LEDs)
+- support for [TuyaMCU Battery Powered devices protocol](https://www.elektroda.com/rtvforum/topic3914412.html) (TuyaMCU enables WiFi module only to report the state, eg. for door sensors, water sensors)
+- Dedicated TuyaMCU analyzer tool for decoding new devices ([tutorial here](https://www.elektroda.com/rtvforum/topic3970199.html), code [repository here](https://github.com/openshwprojects/TuyaMCUAnalyzer))
+- [RGBCW LED lighting control](https://www.youtube.com/watch?v=YQdR7r6lXRY) compatible with Home Assistant (including PWM LEDs, and SM2135, BP5758, etc )
 - LittleFS integration for large files (you can write scripts there, you can host a page there with REST interface control of device)
 - Command line system for starting and configuring drivers, for controlling channels, etc
 - Short startup command (up to 512 characters) storage in flash config, so you can easily init your drivers (eg. BL0942) without LittleFS
 - Advanced scripting and events system (allows you to mirror Tasmota rules, for example catch button click, double click, hold)
 - Easily configurable via commands (see [tutorial](https://www.elektroda.com/rtvforum/topic3947241.html))
-- Thanks to keeping Tasmota standard, OBK has basic compatibility with [ioBroker](https://www.youtube.com/watch?v=x4p3JHXbK1E&ab_channel=Elektrodacom) and similiar systems through TELE/STAT/CMND MQTT packets, Tasmota Control app is also supported
+- Thanks to keeping Tasmota standard, OBK has basic compatibility with [ioBroker](https://www.youtube.com/watch?v=x4p3JHXbK1E&ab_channel=Elektrodacom) and similar systems through TELE/STAT/CMND MQTT packets, Tasmota Control app is also supported
 - DDP lighting protocol support ("startDriver DDP" in autoexec.bat/short startup command), works with xLights
 - Can be scripted to even [work with shutters](https://www.elektroda.com/rtvforum/topic3972935.html)
-- Automatic reconnect when WiFi network goes out
+- Password-protected Web security [see tutorial](https://www.elektroda.com/rtvforum/topic4021160.html)
+- Advanced deep sleep with GPIO/timer wakeup and [hybrid power save systems](https://youtu.be/eupL16eB7BA), fully scriptable, can be configured to last longer than Tuya
+- Supports automatic GPIO setup with [Tuya GPIO extraction](https://www.youtube.com/watch?v=WunlqIMAdgw), [cloudcutter templates](https://www.elektroda.com/rtvforum/topic3973669.html), can also import/export [OpenBeken templates](https://openbekeniot.github.io/webapp/devicesList.html), you can also use [GPIODoctor to find out quickly GPIO roles](https://www.elektroda.com/rtvforum/topic3976371.html)
 - and much more
 
 There is also a bit more outdated [WIKI](https://github.com/openshwprojects/OpenBK7231T_App/wiki/Wiki-Home)
@@ -64,11 +67,11 @@ OpenBeken supports online builds for all platforms (BK7231T, BK7231N, XR809, BL6
 
 # Flashing
 
-See  [FLASHING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/FLASHING.md)
+See [our GUI easy flash tool](https://github.com/openshwprojects/BK7231GUIFlashTool), also see [FLASHING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/FLASHING.md)
  
 # [Docs - MQTT topics, Console Commands, Flags, Constants, Pin Roles, Channel Types, FAQ, autoexec.bat examples](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs)
    
-# Futher reading
+# Further reading
   
 For technical insights and generic SDK information related to Beken, WinnerMicro, Bouffallo Lab and XRadio modules, please refer:
   

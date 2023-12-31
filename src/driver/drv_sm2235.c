@@ -2,6 +2,7 @@
 // device with SM2335, just use SM2235 driver and
 // it will work just fine.
 // SM2235 and SM2335 are 10 bit LED drivers, SM2135 is 8bit
+// NOTE: SM2235 driver seems to work for SM2185N
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"

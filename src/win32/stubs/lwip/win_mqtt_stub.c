@@ -1387,7 +1387,7 @@ void WIN_RunMQTTClient(mqtt_client_t *cl) {
 			}
 		}
 		else {
-			printf("MQTT: Connection in progress\n");
+			//printf("MQTT: Connection in progress\n");
 		}
 	}
 	else {

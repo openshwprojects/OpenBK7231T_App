@@ -2,6 +2,7 @@
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
+#include "../quicktick.h"
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 #include "../mqtt/new_mqtt.h"
@@ -17,6 +18,7 @@
 
 static softI2C_t g_i2c;
 static byte g_brightness;
+static int g_buttonReadIntervalMS;
 static byte g_digits[] = {
 	0x3f, // 0
 	0x06, // 1
@@ -41,6 +43,7 @@ static byte g_digits[] = {
 static byte g_remap[16] = {
 	2,1,0,5,4,3,8,7,6
 };
+static byte g_doTM1638RowsToColumnsSwap = 0;
 static byte g_numDigits = sizeof(g_digits) / sizeof(g_digits[0]);
 static byte *tmgn_buffer = 0;
 static int g_totalDigits = 6;
@@ -87,6 +90,24 @@ static bool TM_GN_WriteByte(softI2C_t *i2c, byte b) {
 
 	}
 	return ack;
+}
+static byte TM_GN_ReadByte(softI2C_t *i2c) {
+	int i;
+	byte ret;
+	ret = 0;
+	if (i2c->pin_stb != -1) {
+		for (i = 0; i < 8; i++) {
+			HAL_PIN_SetOutputValue(i2c->pin_clk, false);
+			GN6932_DELAY;
+			ret |= HAL_PIN_ReadDigitalInput(i2c->pin_data) << i;
+			GN6932_DELAY;
+			HAL_PIN_SetOutputValue(i2c->pin_clk, true);
+		}
+	}
+	else {
+		// TODO?
+	}
+	return ret;
 }
 static void TM_GN_Start(softI2C_t *i2c) {
 	if (i2c->pin_stb != -1) {
@@ -145,9 +166,7 @@ static void TM1650_SendSegments(const byte *segments, byte length, byte pos) {
 }
 
 
-
-
-static void TM_GN_WriteCommand(softI2C_t *i2c, byte command, const byte *data, int dataSize) {
+static void TM_GN_ReadCommand(softI2C_t *i2c, byte command, byte *data, int dataSize) {
 	int i;
 
 	TM_GN_Start(i2c);
@@ -155,15 +174,83 @@ static void TM_GN_WriteCommand(softI2C_t *i2c, byte command, const byte *data, i
 	TM_GN_WriteByte(i2c, command);
 	// write data, if available
 	if (data && dataSize) {
+		HAL_PIN_Setup_Input(i2c->pin_data);
 		for (i = 0; i < dataSize; i++) {
-			TM_GN_WriteByte(i2c, data[i]);
+			data[i] = TM_GN_ReadByte(i2c);
+		}
+		HAL_PIN_Setup_Output(i2c->pin_data);
+	}
+	TM_GN_Stop(i2c);
+}
+
+int g_previousButtons = 0;
+
+// Usage:
+// addEventHandler OnCustomDown 1 echo Button 1 is going down
+// addEventHandler OnCustomUp 1 echo Button 1 has been released
+void TMGN_ReadButtons() {
+	int tmp;
+	int i;
+	TM_GN_ReadCommand(&g_i2c, TM1638_I2C_COM1_READ, (byte*)&tmp, 4);
+	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_MAIN, "CMD_TMGN_Read: %i", tmp);
+	for (i = 0; i < 32; i++) {
+		if (!BIT_CHECK(g_previousButtons, i) && BIT_CHECK(tmp, i)) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Button %i went down", i);
+			EventHandlers_FireEvent(CMD_EVENT_CUSTOM_DOWN, i);
+		} else if (BIT_CHECK(g_previousButtons, i) && !BIT_CHECK(tmp, i)) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Button %i went up", i);
+			EventHandlers_FireEvent(CMD_EVENT_CUSTOM_UP, i);
+		}
+	}
+	g_previousButtons = tmp;
+}
+// TMGN_SetupButtons [ScanIntervalMS]
+// For example: TMGN_SetupButtons 100 , this will scan every 100ms
+static commandResult_t CMD_TMGN_SetupButtons(const void *context, const char *cmd, const char *args, int flags) {
+
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 1) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	g_buttonReadIntervalMS = Tokenizer_GetArgInteger(0);
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_TMGN_Read(const void *context, const char *cmd, const char *args, int flags) {
+	TMGN_ReadButtons();
+	return CMD_RES_OK;
+}
+static void TM_GN_WriteCommand(softI2C_t *i2c, byte command, const byte *data, int dataSize) {
+	int i, j;
+	byte tmp;
+
+	TM_GN_Start(i2c);
+	// write command
+	TM_GN_WriteByte(i2c, command);
+	// write data, if available
+	if (data && dataSize) {
+		if (g_doTM1638RowsToColumnsSwap && dataSize == 16) {
+			for (j = 0; j < 8; j++) {
+				tmp = 0;
+				for (i = 0; i < 8; i++) {
+					if (BIT_CHECK(data[i], j)) {
+						BIT_SET(tmp, i);
+					}
+				}
+				TM_GN_WriteByte(i2c, tmp);
+				TM_GN_WriteByte(i2c, 0);
+			}
+		}
+		else {
+			for (i = 0; i < dataSize; i++) {
+				TM_GN_WriteByte(i2c, data[i]);
+			}
 		}
 	}
 	TM_GN_Stop(i2c);
 }
 static void TM1637_SendSegments(const byte *segments, byte length, byte pos) {
-	int i;
-
 	// set COM1 (no data, just command)
 	TM_GN_WriteCommand(&g_i2c, TM1637_I2C_COM1, 0, 0);
 
@@ -230,7 +317,7 @@ static commandResult_t CMD_TM1650_Test(const void *context, const char *cmd, con
 	byte segments[8];
 	int i;
 	for (i = 0; i < 8; i++) {
-		segments[i] = g_digits[(Time_getUpTimeSeconds() + i) % 10];
+		segments[i] = g_digits[(g_secondsElapsed + i) % 10];
 	}
 
 	TM1650_SendSegments(segments, 4, 0);
@@ -241,7 +328,7 @@ static commandResult_t CMD_TM1637_Test(const void *context, const char *cmd, con
 	byte segments[8];
 	int i;
 	for (i = 0; i < 8; i++) {
-		segments[i] = g_digits[(Time_getUpTimeSeconds() + i) % 10];
+		segments[i] = g_digits[(g_secondsElapsed + i) % 10];
 	}
 
 	TM1637_SendSegments(segments, 6, 0);
@@ -275,7 +362,6 @@ static commandResult_t CMD_TM1637_SetBit(const void *context, const char *cmd, c
 static commandResult_t CMD_TM1637_Char(const void *context, const char *cmd, const char *args, int flags) {
 	int index;
 	int code;
-	const char *s;
 
 	Tokenizer_TokenizeString(args, 0);
 
@@ -457,8 +543,21 @@ delay_s 0.1
 goto again
 
 */
+
+static int g_curButtonIntervalMS;
+void TMGN_RunQuickTick() {
+	if (g_buttonReadIntervalMS) {
+		g_curButtonIntervalMS -= g_deltaTimeMS;
+		if (g_curButtonIntervalMS <= 0) {
+			g_curButtonIntervalMS = g_buttonReadIntervalMS;
+			TMGN_ReadButtons();
+		}
+	}
+}
 void TM_GN_Display_SharedInit() {
 	int i;
+
+	g_doTM1638RowsToColumnsSwap = 0;
 
 	if (PIN_FindPinIndexForRole(IOR_TM1637_CLK, -1) != -1) {
 		g_i2c.pin_clk = PIN_FindPinIndexForRole(IOR_TM1637_CLK, 16);
@@ -471,19 +570,30 @@ void TM_GN_Display_SharedInit() {
 		HAL_PIN_SetOutputValue(g_i2c.pin_clk, true);
 		HAL_PIN_SetOutputValue(g_i2c.pin_data, true);
 
-		g_totalDigits = 6; 
+		g_totalDigits = 6;
 	}
 	else {
-		g_i2c.pin_clk = 17;// PIN_FindPinIndexForRole(IOR_TM1637_CLK, 16);
-		g_i2c.pin_data = 15;// PIN_FindPinIndexForRole(IOR_TM1637_DIO, 14);
-		g_i2c.pin_stb = 28;// PIN_FindPinIndexForRole(IOR_TM1637_DIO, 14);
-		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using SPI mode (GN6932)");
-
-		// GN6932 has no remap
-		for (i = 0; i < sizeof(g_remap); i++) {
-			g_remap[i] = i;
+		if (PIN_FindPinIndexForRole(IOR_TM1638_CLK, -1) != -1) {
+			g_i2c.pin_clk = PIN_FindPinIndexForRole(IOR_TM1638_CLK, 17);
+			g_i2c.pin_data = PIN_FindPinIndexForRole(IOR_TM1638_DAT, 15);
+			g_i2c.pin_stb = PIN_FindPinIndexForRole(IOR_TM1638_STB, 28);
+			addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using SPI mode (TM1638)");
+			g_doTM1638RowsToColumnsSwap = 1;
+			
+			for (i = 0; i < 8; i++) {
+				g_remap[i] = 7-i;
+			}
 		}
-
+		else {
+			g_i2c.pin_clk = PIN_FindPinIndexForRole(IOR_GN6932_CLK, 17);
+			g_i2c.pin_data = PIN_FindPinIndexForRole(IOR_GN6932_DAT, 15);
+			g_i2c.pin_stb = PIN_FindPinIndexForRole(IOR_GN6932_STB, 28);
+			addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using SPI mode (GN6932)");
+			// GN6932 has no remap
+			for (i = 0; i < sizeof(g_remap); i++) {
+				g_remap[i] = i;
+			}
+		}
 		HAL_PIN_Setup_Output(g_i2c.pin_clk);
 		HAL_PIN_Setup_Output(g_i2c.pin_stb);
 		HAL_PIN_Setup_Output(g_i2c.pin_data);
@@ -543,4 +653,14 @@ void TM_GN_Display_SharedInit() {
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TM1650_Test", CMD_TM1650_Test, NULL);
+	//cmddetail:{"name":"TMGN_Read","args":"CMD_TMGN_Read",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("TMGN_Read", CMD_TMGN_Read, NULL);
+	//cmddetail:{"name":"TMGN_SetupButtons","args":"CMD_TMGN_SetupButtons",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("TMGN_SetupButtons", CMD_TMGN_SetupButtons, NULL);
 }

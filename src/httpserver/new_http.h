@@ -67,6 +67,7 @@ int postany(http_request_t* request, const char* str, int len);
 void misc_formatUpTimeString(int totalSeconds, char* o);
 // void HTTP_AddBuildFooter(http_request_t *request);
 // void HTTP_AddHeader(http_request_t *request);
+int http_getRawArg(const char* base, const char* name, char* o, int maxSize);
 int http_getArg(const char* base, const char* name, char* o, int maxSize);
 int http_getArgInteger(const char* base, const char* name);
 
@@ -85,7 +86,9 @@ typedef enum {
 typedef int (*http_callback_fn)(http_request_t* request);
 // url MUST start with '/'
 // urls must be unique (i.e. you can't have /about and /aboutme or /about/me)
-int HTTP_RegisterCallback(const char* url, int method, http_callback_fn callback);
+int HTTP_RegisterCallback(const char* url, int method, http_callback_fn callback, int auth_required);
+
+int my_strnicmp(const char* a, const char* b, int len);
 
 #endif
 

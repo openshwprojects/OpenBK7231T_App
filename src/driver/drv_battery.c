@@ -22,12 +22,15 @@ static void Batt_Measure() {
 	float batt_ref, batt_res, vref;
 	ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : Measure Battery volt en perc");
 	g_pin_adc = PIN_FindPinIndexForRole(IOR_BAT_ADC, g_pin_adc);
-	if (PIN_FindPinIndexForRole(IOR_BAT_Relay, -1) == -1) {
+	if (PIN_FindPinIndexForRole(IOR_BAT_Relay, -1) == -1 && PIN_FindPinIndexForRole(IOR_BAT_Relay_n, -1) == -1) {
 		g_vdivider = 1;
 	}
 	// if divider equal to 1 then no need for relay activation
 	if (g_vdivider > 1) {
-		g_pin_rel = PIN_FindPinIndexForRole(IOR_BAT_Relay, g_pin_rel);
+		g_pin_rel = PIN_FindPinIndexForRole(IOR_BAT_Relay, -1);
+		if (g_pin_rel == -1) {
+			g_pin_rel = PIN_FindPinIndexForRole(IOR_BAT_Relay_n, -1);
+		}
 		channel_rel = g_cfg.pins.channels[g_pin_rel];
 	}
 	HAL_ADC_Init(g_pin_adc);
@@ -59,11 +62,14 @@ static void Batt_Measure() {
 	if (g_battlevel > 100)
 		g_battlevel = 100;
 
-	MQTT_PublishMain_StringInt("voltage", (int)g_battvoltage);
-	MQTT_PublishMain_StringInt("battery", (int)g_battlevel);
+	MQTT_PublishMain_StringInt("voltage", (int)g_battvoltage, 0);
+	MQTT_PublishMain_StringInt("battery", (int)g_battlevel, 0);
 	g_lastbattlevel = (int)g_battlevel;
 	g_lastbattvoltage = (int)g_battvoltage;
 	ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : battery voltage : %f and percentage %f%%", g_battvoltage, g_battlevel);
+}
+void Simulator_Force_Batt_Measure() {
+	Batt_Measure();
 }
 
 int Battery_lastreading(int type)
@@ -128,8 +134,8 @@ commandResult_t Battery_cycle(const void* context, const char* cmd, const char* 
 // startDriver Battery
 void Batt_Init() {
 
-	//cmddetail:{"name":"Battery_Setup","args":"[float][float][float][float][float]",
-	//cmddetail:"descr":"measure battery based on ADC args minbatt and maxbatt in mv. optional V_divider(2), Vref(default 2400) and ADC bits(4096) and   ",
+	//cmddetail:{"name":"Battery_Setup","args":"[minbatt][maxbatt][V_divider][Vref][AD Bits]",
+	//cmddetail:"descr":"measure battery based on ADC. <br />req. args: minbatt in mv, maxbatt in mv. <br />optional: V_divider(2), Vref(default 2400), ADC bits(4096)",
 	//cmddetail:"fn":"Battery_Setup","file":"drv/drv_battery.c","requires":"",
 	//cmddetail:"examples":"Battery_Setup 1500 3000 2 2400 4096"}
 	CMD_RegisterCommand("Battery_Setup", Battery_Setup, NULL);
@@ -137,7 +143,7 @@ void Batt_Init() {
 	//cmddetail:{"name":"Battery_cycle","args":"[int]",
 	//cmddetail:"descr":"change cycle of measurement by default every 10 seconds",
 	//cmddetail:"fn":"Battery_cycle","file":"drv/drv_battery.c","requires":"",
-	//cmddetail:"examples":"Battery_Setup 60"}
+	//cmddetail:"examples":"Battery_cycle 60"}
 	CMD_RegisterCommand("Battery_cycle", Battery_cycle, NULL);
 
 }
@@ -162,6 +168,6 @@ void Batt_StopDriver() {
 }
 void Batt_AppendInformationToHTTPIndexPage(http_request_t* request)
 {
-	hprintf255(request, "<h2>Battery level=%.2f, voltage=%.2f</h2>", g_battlevel, g_battvoltage);
+	hprintf255(request, "<h2>Battery level=%.2f%%, voltage=%.2fmV</h2>", g_battlevel, g_battvoltage);
 }
 

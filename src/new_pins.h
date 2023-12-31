@@ -488,6 +488,69 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_ADC_Button,
+	//iodetail:{"name":"GN6932_CLK",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"QQQ",
+	//iodetail:"enum":"GN6932_CLK",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_GN6932_CLK,
+	//iodetail:{"name":"GN6932_DAT",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"QQQ",
+	//iodetail:"enum":"GN6932_DAT",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_GN6932_DAT,
+	//iodetail:{"name":"GN6932_STB",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"QQQ",
+	//iodetail:"enum":"GN6932_STB",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_GN6932_STB,
+	//iodetail:{"name":"TM1638_CLK",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"QQQ",
+	//iodetail:"enum":"TM1638_CLK",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_TM1638_CLK,
+	//iodetail:{"name":"TM1638_DAT",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"QQQ",
+	//iodetail:"enum":"TM1638_DAT",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_TM1638_DAT,
+	//iodetail:{"name":"TM1638_STB",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"QQQ",
+	//iodetail:"enum":"TM1638_STB",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_TM1638_STB,
+	//iodetail:{"name":"BAT_Relay_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"Like BAT_Relay, but inversed. See [battery driver topic here](https://www.elektroda.com/rtvforum/topic3959103.html)",
+	//iodetail:"enum":"IOR_BAT_Relay_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_BAT_Relay_n,
+	//iodetail:{"name":"KP18058_CLK",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"QQQ",
+	//iodetail:"enum":"KP18058_CLK",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_KP18058_CLK,
+	//iodetail:{"name":"KP18058_DAT",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"QQQ",
+	//iodetail:"enum":"KP18058_DAT",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_KP18058_DAT,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
@@ -740,6 +803,111 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_OffLowMidHighHighest,
+	//chandetail:{"name":"Custom",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"A custom channel type that is still send to HA.",
+	//chandetail:"enum":"ChType_Custom",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Custom,
+	//chandetail:{"name":"Power_div10",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Just like power, but with one decimal place (but stored as integer, for TuyaMCU support)",
+	//chandetail:"enum":"ChType_Power_div10",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Power_div10,
+	//chandetail:{"name":"ReadOnlyLowMidHigh",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Like LowMidHigh, but just read only",
+	//chandetail:"enum":"ChType_ReadOnlyLowMidHigh",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_ReadOnlyLowMidHigh,
+	//chandetail:{"name":"SmokePercent",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Smoke percentage",
+	//chandetail:"enum":"ChType_SmokePercent",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_SmokePercent,
+	//chandetail:{"name":"Illuminance",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Illuminance in Lux",
+	//chandetail:"enum":"ChType_Illuminance",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Illuminance,
+	//chandetail:{"name":"Toggle_Inv",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Like a Toggle, but inverted states.",
+	//chandetail:"enum":"ChType_Toggle_Inv",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Toggle_Inv,
+	//chandetail:{"name":"OffOnRemember",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Radio buttons with 3 options: off, on and 'remember'. This is used for TuyaMCU memory state",
+	//chandetail:"enum":"ChType_OffOnRemember",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_OffOnRemember,
+	//chandetail:{"name":"Voltage_div100",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI",
+	//chandetail:"enum":"ChType_Voltage_div100",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Voltage_div100,
+	//chandetail:{"name":"Temperature_div2",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Just like ChType_Temperature_div10, but for multiplied by 0.5.",
+	//chandetail:"enum":"ChType_Temperature_div2",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Temperature_div2,
+	//chandetail:{"name":"TimerSeconds",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"This will display time formatted to minutes, hours, etc.",
+	//chandetail:"enum":"ChType_TimerSeconds",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_TimerSeconds,
+	//chandetail:{"name":"Frequency_div10",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI",
+	//chandetail:"enum":"ChType_Frequency_div10",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Frequency_div10,
+	//chandetail:{"name":"PowerFactor_div100",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI",
+	//chandetail:"enum":"ChType_PowerFactor_div100",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_PowerFactor_div100,
+	//chandetail:{"name":"Pressure_div100",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":".",
+	//chandetail:"enum":"Pressure_div100",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Pressure_div100,
+	//chandetail:{"name":"Temperature_div100",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Just like humidity_div100, but for temperature.",
+	//chandetail:"enum":"ChType_Temperature_div100",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Temperature_div100,
+	//chandetail:{"name":"LeakageCurrent_div1000",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":".",
+	//chandetail:"enum":"ChType_LeakageCurrent_div1000",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_LeakageCurrent_div1000,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
@@ -862,8 +1030,14 @@ typedef struct pinsState_s {
 #define OBK_FLAG_WIFI_FAST_CONNECT		            37
 #define OBK_FLAG_POWER_FORCE_ZERO_IF_RELAYS_OPEN    38
 #define OBK_FLAG_MQTT_PUBLISH_ALL_CHANNELS			39
+#define OBK_FLAG_MQTT_ENERGY_IN_KWH					40
+#define OBK_FLAG_BUTTON_DISABLE_ALL					41
+#define OBK_FLAG_DOORSENSOR_INVERT_STATE			42
+#define OBK_FLAG_TUYAMCU_USE_QUEUE					43
+#define OBK_FLAG_HTTP_DISABLE_AUTH_IN_SAFE_MODE		44
+#define OBK_FLAG_DISCOVERY_DONT_MERGE_LIGHTS		45
 
-#define OBK_TOTAL_FLAGS 40
+#define OBK_TOTAL_FLAGS 46
 
 #define LOGGER_FLAG_MQTT_DEDUPER					1
 #define LOGGER_FLAG_POWER_SAVE						2
@@ -946,30 +1120,42 @@ typedef struct mainConfig_s {
 	byte crc;
 	// 0x4
 	int version;
+	// 0x08
 	int genericFlags;
+	// 0x0C
 	int genericFlags2;
+	// 0x10
 	unsigned short changeCounter;
 	unsigned short otaCounter;
+	// 0x14
 	// target wifi credentials
 	char wifi_ssid[64];
+	// 0x54
 	char wifi_pass[64];
+	// 0x94
 	// MQTT information for Home Assistant
 	char mqtt_host[256];
+	// ofs 0x194
 	// note: #define CGF_MQTT_CLIENT_ID_SIZE			64
 	char mqtt_clientId[CGF_MQTT_CLIENT_ID_SIZE];
+	// ofs 0x1D4
 	char mqtt_userName[64];
+	// ofs 0x214
 	char mqtt_pass[128];
 	//mqtt_port at offs 0x00000294 
 	int mqtt_port;
 	// addon JavaScript panel is hosted on external server
+	// at offs 0x298 
 	char webappRoot[64];
 	// TODO?
 	byte mac[6];
+	// at ofs: 0x2DE
 	// NOTE: NO LONGER 4 byte aligned!!!
 	// TODO?
 	// #define CGF_SHORT_DEVICE_NAME_SIZE		32
 	char shortDeviceName[CGF_SHORT_DEVICE_NAME_SIZE];
 	// #define CGF_DEVICE_NAME_SIZE			64
+	// at ofs: 0x2FE
 	char longDeviceName[CGF_DEVICE_NAME_SIZE];
 
 	//pins at offs 0x0000033E
@@ -978,11 +1164,15 @@ typedef struct mainConfig_s {
 	// startChannelValues at offs 0x000003DE
 	// 64 * 2
 	short startChannelValues[CHANNEL_MAX];
-	// dgr_sendFlags at offs 0x0000045E 
+	// unused_fill at offs 0x0000045E 
 	short unused_fill; // correct alignment
+	// dgr_sendFlags at offs 0x00000460 
 	int dgr_sendFlags;
+	// dgr_recvFlags at offs 0x00000464 
 	int dgr_recvFlags;
+	// dgr_name at offs 0x00000468
 	char dgr_name[16];
+	// at offs 0x478
 	char ntpServer[32];
 	// 8 * 4 = 32 bytes
 	cfgPowerMeasurementCalibration_t cal;
@@ -990,8 +1180,11 @@ typedef struct mainConfig_s {
 	// short press 1 means 100 ms short press time
 	// So basically unit is 0.1 second
 	byte buttonShortPress;
+	// offs 0x000004B9
 	byte buttonLongPress;
+	// offs 0x000004BA
 	byte buttonHoldRepeat;
+	// offs 0x000004BB
 	byte unused_fill1;
 
 	// offset 0x000004BC
@@ -1010,27 +1203,51 @@ typedef struct mainConfig_s {
 	char mqtt_group[64];
 	// offs 0x00000594
 	byte unused_bytefill[3];
+	// offs 0x00000597
 	byte timeRequiredToMarkBootSuccessfull;
 	//offs 0x00000598
 	int ping_interval;
 	int ping_seconds;
 	// 0x000005A0
 	char ping_host[64];
+	// ofs 0x000005E0 (dec 1504)
+	//char initCommandLine[512];
+#if PLATFORM_W600 || PLATFORM_W800
+#define ALLOW_SSID2 0
+#define ALLOW_WEB_PASSWORD 0
 	char initCommandLine[512];
-} mainConfig_t; // size 0x000007E0 (2016 decimal)
-#define MAGIC_CONFIG_SIZE		2016
+#else
+#define ALLOW_SSID2 1
+#define ALLOW_WEB_PASSWORD 1
+	char initCommandLine[1568];
+	// offset 0x00000C00 (3072 decimal)
+	char wifi_ssid2[64];
+	// offset 0x00000C40 (3136 decimal)
+	char wifi_pass2[68];
+	// offset 0x00000C84 (3204 decimal)
+	char webPassword[33];
+	// offset 0x00000CA5 (3237 decimal)
+	char unused[347];
+#endif
+} mainConfig_t; 
+
+// one sector is 4096 so it we still have some expand possibility
+#define MAGIC_CONFIG_SIZE_V3		2016
+#define MAGIC_CONFIG_SIZE_V4		3584
 
 extern mainConfig_t g_cfg;
 
 extern char g_enable_pins;
 extern int g_initialPinStates;
-extern byte g_defaultDoorWakeEdge;
 
 #define CHANNEL_SET_FLAG_FORCE		1
 #define CHANNEL_SET_FLAG_SKIP_MQTT	2
 #define CHANNEL_SET_FLAG_SILENT		4
 
 void PIN_ticks(void* param);
+
+void PIN_DeepSleep_SetWakeUpEdge(int pin, byte edgeCode);
+void PIN_DeepSleep_SetAllWakeUpEdges(byte edgeCode);
 
 void PIN_set_wifi_led(int value);
 void PIN_AddCommands(void);
@@ -1067,7 +1284,7 @@ bool CHANNEL_IsPowerRelayChannel(int ch);
 // See: enum channelType_t
 void CHANNEL_SetType(int ch, int type);
 int CHANNEL_GetType(int ch);
-void CHANNEL_SetAllChannelsByType(int requiredType, int newVal);
+void CHANNEL_SetFirstChannelByType(int requiredType, int newVal);
 // CHANNEL_SET_FLAG_*
 void CHANNEL_SetAll(int iVal, int iFlags);
 void CHANNEL_SetStateOnly(int iVal);
@@ -1079,6 +1296,7 @@ int CHANNEL_FindMaxValueForChannel(int ch);
 // cmd_channels.c
 const char* CHANNEL_GetLabel(int ch);
 bool CHANNEL_ShouldAddTogglePrefixToUI(int ch);
+bool CHANNEL_HasNeverPublishFlag(int ch);
 //ledRemap_t *CFG_GetLEDRemap();
 
 void PIN_get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount);
@@ -1086,6 +1304,10 @@ int h_isChannelPWM(int tg_ch);
 int h_isChannelRelay(int tg_ch);
 int h_isChannelDigitalInput(int tg_ch);
 
+const char *ChannelType_GetTitle(int type);
+const char *ChannelType_GetUnit(int type);
+int ChannelType_GetDivider(int type);
+int ChannelType_GetDecimalPlaces(int type);
 
 //int PIN_GetPWMIndexForPinIndex(int pin);
 
@@ -1093,62 +1315,5 @@ int PIN_ParsePinRoleName(const char* name);
 const char* PIN_RoleToString(int role);
 
 extern const char* g_channelTypeNames[];
-
-// from new_builtin.c
-/*
-
-WARNING! THIS IS OBSOLETE NOW!
-
-WE ARE USING THIS DATABASE:
-https://github.com/OpenBekenIOT/webapp/blob/gh-pages/devices.json
-Submit pull requests to the list above! Post teardowns on Elektroda.com!
-
-
-HERE IS FRONTEND:
-https://openbekeniot.github.io/webapp/devicesList.html
-See above link for more info!
-
-*/
-//void Setup_Device_Empty();
-//void Setup_Device_TuyaWL_SW01_16A();
-//void Setup_Device_TuyaSmartLife4CH10A();
-//void Setup_Device_BK7231N_TuyaLightBulb_RGBCW_5PWMs();
-//void Setup_Device_IntelligentLife_NF101A();
-//void Setup_Device_TuyaLEDDimmerSingleChannel();
-//void Setup_Device_CalexLEDDimmerFiveChannel();
-//void Setup_Device_CalexPowerStrip_900018_1v1_0UK();
-//void Setup_Device_ArlecCCTDownlight();
-//void Setup_Device_ArlecRGBCCTDownlight();
-//void Setup_Device_CasaLifeCCTDownlight();
-//void Setup_Device_NedisWIFIPO120FWT_16A();
-//void Setup_Device_NedisWIFIP130FWT_10A();
-//void Setup_Device_EmaxHome_EDU8774();
-//void Setup_Device_TuyaSmartPFW02G();
-//void Setup_Device_BK7231N_CB2S_QiachipSmartSwitch();
-//void Setup_Device_BK7231T_WB2S_QiachipSmartSwitch();
-//void Setup_Device_BK7231T_Raw_PrimeWiFiSmartOutletsOutdoor_CCWFIO232PK();
-//void Setup_Device_AvatarASL04();
-//void Setup_Device_TuyaSmartWIFISwith_4Gang_CB3S();
-//void Setup_Device_BL602_MagicHome_IR_RGB_LedStrip();
-//void Setup_Device_BL602_MagicHome_CCT_LedStrip();
-//void Setup_Device_Sonoff_MiniR3();
-//void Setup_Device_WiFi_DIY_Switch_WB2S_ZN268131();
-//void Setup_Device_BK7231N_CB2S_LSPA9_BL0942();
-//void Setup_Device_LSC_Smart_Connect_Plug_CB2S();
-//void Setup_Device_DS_102_1Gang_WB3S();
-//void Setup_Device_DS_102_2Gang_WB3S();
-//void Setup_Device_DS_102_3Gang_WB3S();
-//void Setup_Device_BK7231T_Gosund_Switch_SW5_A_V2_1();
-//void Setup_Device_13A_Socket_CB2S();
-//void Setup_Device_Deta_Smart_Double_Power_Point_6922HA_Series2();
-//void Setup_Device_BK7231N_KS_602_TOUCH();
-//void Setup_Device_Enbrighten_WFD4103();
-//void Setup_Device_Aubess_Mini_Smart_Switch_16A();
-//void Setup_Device_Zemismart_Light_Switch_KS_811_3();
-//void Setup_Device_TeslaSmartPlus_TSL_SPL_1();
-//void Setup_Device_Calex_900011_1_WB2S();
-//void Setup_Device_Immax_NEO_LITE_NAS_WR07W();
-//void Setup_Device_MOES_TouchSwitch_WS_EU1_RFW_N();
-
 
 #endif

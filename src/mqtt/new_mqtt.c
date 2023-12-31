@@ -48,6 +48,9 @@ static int g_intervalBetweenMQTTBroadcasts = 60;
 // While doing self state broadcast, it limits the number of publishes 
 // per second in order not to overload LWIP
 static int g_maxBroadcastItemsPublishedPerSecond = 1;
+// interval for automatic publish of tasmota tele/sensor and tele/state
+static short g_teleState_interval = 120;
+static short g_teleSensor_interval = 3;
 
 /////////////////////////////////////////////////////////////
 // mqtt receive buffer, so we can action in our threads, not
@@ -527,7 +530,10 @@ const char* MQTT_RemoveClientFromTopic(const char* topic, const char *prefix) {
 	}
 	return p2;
 }
-
+bool stribegins(const char *str, const char *needle) {
+	int l = strlen(needle);
+	return !wal_strnicmp(str, needle, l);
+}
 // this accepts obkXXXXXX/<chan>/get to request channel publish
 int channelGet(obk_mqtt_request_t* request) {
 	//int len = request->receivedLen;
@@ -550,23 +556,23 @@ int channelGet(obk_mqtt_request_t* request) {
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelGet part topic %s", p);
 
-	if (!stricmp(p, "led_enableAll")) {
+	if (stribegins(p, "led_enableAll")) {
 		LED_SendEnableAllState();
 		return 1;
 	}
-	if (!stricmp(p, "led_dimmer")) {
+	if (stribegins(p, "led_dimmer")) {
 		LED_SendDimmerChange();
 		return 1;
 	}
-	if (!stricmp(p, "led_temperature")) {
+	if (stribegins(p, "led_temperature")) {
 		sendTemperatureChange();
 		return 1;
 	}
-	if (!stricmp(p, "led_finalcolor_rgb")) {
+	if (stribegins(p, "led_finalcolor_rgb")) {
 		sendFinalColor();
 		return 1;
 	}
-	if (!stricmp(p, "led_basecolor_rgb")) {
+	if (stribegins(p, "led_basecolor_rgb")) {
 		sendColorChange();
 		return 1;
 	}
@@ -848,7 +854,14 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 	if ((pub_topic != NULL) && (sVal != NULL))
 	{
 		sVal_len = strlen(sVal);
-		sprintf(pub_topic, "%s/%s%s", sTopic, sChannel, (appendGet == true ? "/get" : ""));
+		if (flags & OBK_PUBLISH_FLAG_RAW_TOPIC_NAME)
+		{
+			strcpy(pub_topic, sChannel);
+		}
+		else 
+		{
+			sprintf(pub_topic, "%s/%s%s", sTopic, sChannel, (appendGet == true ? "/get" : ""));
+		}
 		if (sVal_len < 128)
 		{
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publishing val %s to %s retain=%i\n", sVal, pub_topic, retain);
@@ -1211,22 +1224,26 @@ static int MQTT_do_connect(mqtt_client_t* client)
 	return 0;
 }
 
-OBK_Publish_Result MQTT_PublishMain_StringInt(const char* sChannel, int iv)
+OBK_Publish_Result MQTT_PublishMain_StringInt(const char* sChannel, int iv, int flags)
 {
 	char valueStr[16];
 
 	sprintf(valueStr, "%i", iv);
 
-	return MQTT_PublishMain(mqtt_client, sChannel, valueStr, 0, true);
+	return MQTT_PublishMain(mqtt_client, sChannel, valueStr, flags, true);
 
 }
-OBK_Publish_Result MQTT_PublishMain_StringFloat(const char* sChannel, float f)
+OBK_Publish_Result MQTT_PublishMain_StringFloat(const char* sChannel, float f, int maxDecimalPlaces, int flags)
 {
 	char valueStr[16];
 
 	sprintf(valueStr, "%f", f);
+	// fix decimal places
+	if (maxDecimalPlaces >= 0) {
+		stripDecimalPlaces(valueStr, maxDecimalPlaces);
+	}
 
-	return MQTT_PublishMain(mqtt_client, sChannel, valueStr, 0, true);
+	return MQTT_PublishMain(mqtt_client, sChannel, valueStr, flags, true);
 
 }
 OBK_Publish_Result MQTT_PublishMain_StringString(const char* sChannel, const char* valueStr, int flags)
@@ -1240,6 +1257,11 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 {
 	char channelNameStr[8];
 	char valueStr[16];
+
+	// allow users to force-hide some channels (those channels are NEVER published)
+	if (CHANNEL_HasNeverPublishFlag(channel)) {
+		return OBK_PUBLISH_OK;
+	}
 
 	if (CFG_HasFlag(OBK_FLAG_PUBLISH_MULTIPLIED_VALUES)) {
 		float dVal = CHANNEL_GetFinalValue(channel);
@@ -1255,6 +1277,7 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 	}
 
 	MQTT_BroadcastTasmotaTeleSTATE();
+	MQTT_BroadcastTasmotaTeleSENSOR();
 
 	// String from channel number
 	sprintf(channelNameStr, "%i", channel);
@@ -1295,8 +1318,9 @@ commandResult_t MQTT_PublishChannel(const void* context, const char* cmd, const 
 commandResult_t MQTT_PublishCommand(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	const char* topic, * value;
 	OBK_Publish_Result ret;
+	int flags = 0;
 
-	Tokenizer_TokenizeString(args, 0);
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS);
 
 	if (Tokenizer_GetArgsCount() < 2) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish command requires two arguments (topic and value)");
@@ -1304,8 +1328,11 @@ commandResult_t MQTT_PublishCommand(const void* context, const char* cmd, const 
 	}
 	topic = Tokenizer_GetArg(0);
 	value = Tokenizer_GetArg(1);
-
-	ret = MQTT_PublishMain_StringString(topic, value, 0);
+	// optional third argument to remove get, etc
+	if (Tokenizer_GetArgIntegerDefault(2, 0) != 0) {
+		flags = OBK_PUBLISH_FLAG_RAW_TOPIC_NAME;
+	}
+	ret = MQTT_PublishMain_StringString(topic, value, flags);
 
 	return CMD_RES_OK;
 }
@@ -1315,6 +1342,7 @@ commandResult_t MQTT_PublishCommandInteger(const void* context, const char* cmd,
 	const char* topic;
 	int value;
 	OBK_Publish_Result ret;
+	int flags = 0;
 
 	Tokenizer_TokenizeString(args, 0);
 
@@ -1324,8 +1352,11 @@ commandResult_t MQTT_PublishCommandInteger(const void* context, const char* cmd,
 	}
 	topic = Tokenizer_GetArg(0);
 	value = Tokenizer_GetArgInteger(1);
-
-	ret = MQTT_PublishMain_StringInt(topic, value);
+	// optional third argument to remove get, etc
+	if (Tokenizer_GetArgIntegerDefault(2, 0) != 0) {
+		flags = OBK_PUBLISH_FLAG_RAW_TOPIC_NAME;
+	}
+	ret = MQTT_PublishMain_StringInt(topic, value, flags);
 
 	return CMD_RES_OK;
 }
@@ -1336,6 +1367,7 @@ commandResult_t MQTT_PublishCommandFloat(const void* context, const char* cmd, c
 	const char* topic;
 	float value;
 	OBK_Publish_Result ret;
+	int flags = 0;
 
 	Tokenizer_TokenizeString(args, 0);
 
@@ -1346,7 +1378,11 @@ commandResult_t MQTT_PublishCommandFloat(const void* context, const char* cmd, c
 	topic = Tokenizer_GetArg(0);
 	value = Tokenizer_GetArgFloat(1);
 
-	ret = MQTT_PublishMain_StringFloat(topic, value);
+	// optional third argument to remove get, etc
+	if (Tokenizer_GetArgIntegerDefault(2, 0) != 0) {
+		flags = OBK_PUBLISH_FLAG_RAW_TOPIC_NAME;
+	}
+	ret = MQTT_PublishMain_StringFloat(topic, value, -1, flags);
 
 	return CMD_RES_OK;
 }
@@ -1442,12 +1478,28 @@ void MQTT_Test_Tick(void* param)
 	}
 }
 
+commandResult_t MQTT_SetTasTeleIntervals(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+	Tokenizer_TokenizeString(args, 0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	g_teleSensor_interval = Tokenizer_GetArgInteger(0);
+	g_teleState_interval = Tokenizer_GetArgInteger(1);
+
+	return CMD_RES_OK;
+}
 commandResult_t MQTT_SetMaxBroadcastItemsPublishedPerSecond(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
 	Tokenizer_TokenizeString(args, 0);
-
-	if (Tokenizer_GetArgsCount() < 1) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Requires 1 arg");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	g_maxBroadcastItemsPublishedPerSecond = Tokenizer_GetArgInteger(0);
@@ -1457,9 +1509,10 @@ commandResult_t MQTT_SetMaxBroadcastItemsPublishedPerSecond(const void* context,
 commandResult_t MQTT_SetBroadcastInterval(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
 	Tokenizer_TokenizeString(args, 0);
-
-	if (Tokenizer_GetArgsCount() < 1) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Requires 1 arg");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	g_intervalBetweenMQTTBroadcasts = Tokenizer_GetArgInteger(0);
@@ -1625,17 +1678,17 @@ void MQTT_init()
 	mqtt_initialised = 1;
 
 	//cmddetail:{"name":"publish","args":"[Topic][Value]",
-	//cmddetail:"descr":"Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get. You can use argument expansion here, so $CH11 will change to value of the channel 11",
+	//cmddetail:"descr":"Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'. You can use argument expansion here, so $CH11 will change to value of the channel 11",
 	//cmddetail:"fn":"MQTT_PublishCommand","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("publish", MQTT_PublishCommand, NULL);
 	//cmddetail:{"name":"publishInt","args":"[Topic][Value]",
-	//cmddetail:"descr":"Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an integer, so you can also use math expressions like $CH10*10, etc.",
+	//cmddetail:"descr":"Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an integer, so you can also use math expressions like $CH10*10, etc.",
 	//cmddetail:"fn":"MQTT_PublishCommand","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("publishInt", MQTT_PublishCommandInteger, NULL);
 	//cmddetail:{"name":"publishFloat","args":"[Topic][Value]",
-	//cmddetail:"descr":"Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an float, so you can also use math expressions like $CH10*0.0, etc.",
+	//cmddetail:"descr":"Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an float, so you can also use math expressions like $CH10*0.0, etc.",
 	//cmddetail:"fn":"MQTT_PublishCommand","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("publishFloat", MQTT_PublishCommandFloat, NULL);
@@ -1669,6 +1722,11 @@ void MQTT_init()
 	//cmddetail:"fn":"MQTT_SetMaxBroadcastItemsPublishedPerSecond","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("mqtt_broadcastItemsPerSec", MQTT_SetMaxBroadcastItemsPublishedPerSecond, NULL);
+	//cmddetail:{"name":"TasTeleInterval","args":"[SensorInterval][StateInterval]",
+	//cmddetail:"descr":"This allows you to configure Tasmota TELE publish intervals, only if you have TELE flag enabled. First argument is interval for sensor publish (energy metering, etc), second is interval for State tele publish.",
+	//cmddetail:"fn":"MQTT_SetTasTeleIntervals","file":"mqtt/new_mqtt.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("TasTeleInterval", MQTT_SetTasTeleIntervals, NULL);
 }
 
 OBK_Publish_Result MQTT_DoItemPublishString(const char* sChannel, const char* valueStr)
@@ -1721,6 +1779,11 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 	case PUBLISHITEM_SELF_MAC:
 		return MQTT_DoItemPublishString("mac", HAL_GetMACStr(dataStr));
 
+	case PUBLISHITEM_SELF_SSID:
+		// TODO: correct SSID
+		return MQTT_DoItemPublishString("ssid", CFG_GetWiFiSSID());
+
+
 	case PUBLISHITEM_SELF_DATETIME:
 		//Drivers are only built on BK7231 chips
 #ifndef OBK_DISABLE_ALL_DRIVERS
@@ -1744,7 +1807,7 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 		return MQTT_DoItemPublishString("rssi", dataStr);
 
 	case PUBLISHITEM_SELF_UPTIME:
-		sprintf(dataStr, "%d", Time_getUpTimeSeconds());
+		sprintf(dataStr, "%d", g_secondsElapsed);
 		return MQTT_DoItemPublishString("uptime", dataStr);
 
 	case PUBLISHITEM_SELF_FREEHEAP:
@@ -1785,9 +1848,11 @@ int MQTT_RunQuickTick(){
 	return 0;
 }
 
-int g_timeSinceLastTasmotaTeleSent = 99;
 int g_wantTasmotaTeleSend = 0;
 void MQTT_BroadcastTasmotaTeleSENSOR() {
+	if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES) == false) {
+		return;
+	}
 	bool bHasAnySensor = false;
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	if (DRV_IsMeasuringPower()) {
@@ -1802,13 +1867,7 @@ void MQTT_BroadcastTasmotaTeleSTATE() {
 	if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES) == false) {
 		return;
 	}
-	if (g_timeSinceLastTasmotaTeleSent < 1) {
-		g_wantTasmotaTeleSend = 1;
-		return;
-	}
 	MQTT_ProcessCommandReplyJSON("STATE", "", COMMAND_FLAG_SOURCE_TELESENDER);
-	MQTT_BroadcastTasmotaTeleSENSOR();
-	g_wantTasmotaTeleSend = 0;
 }
 // called from user timer.
 int MQTT_RunEverySecondUpdate()
@@ -1915,10 +1974,9 @@ int MQTT_RunEverySecondUpdate()
 		// things to do in our threads on connection accepted.
 		if (g_just_connected){
 			g_just_connected = 0;
-			// publish TELE
-			MQTT_BroadcastTasmotaTeleSTATE();
 			// publish all values on state
 			if (CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEONCONNECT)) {
+				g_wantTasmotaTeleSend = 1;
 				MQTT_PublishWholeDeviceState();
 			}
 			else {
@@ -1929,10 +1987,11 @@ int MQTT_RunEverySecondUpdate()
 		MQTT_Mutex_Free();
 		// below mutex is not required any more
 
-		// it is connected
-		g_timeSinceLastTasmotaTeleSent++;
+		// it is connected publish TELE
 		if (g_wantTasmotaTeleSend) {
 			MQTT_BroadcastTasmotaTeleSTATE();
+			MQTT_BroadcastTasmotaTeleSENSOR();
+			g_wantTasmotaTeleSend = 0;
 		}
 		g_timeSinceLastMQTTPublish++;
 #if WINDOWS
@@ -1951,13 +2010,16 @@ int MQTT_RunEverySecondUpdate()
 #endif
 
 		if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES)) {
-			static int g_mqtt_tasmotaTeleCounter = 0;
-			g_mqtt_tasmotaTeleCounter++;
-			if (g_mqtt_tasmotaTeleCounter % 3 == 0) {
+			static int g_mqtt_tasmotaTeleCounter_sensor = 0;
+			g_mqtt_tasmotaTeleCounter_sensor++;
+			if (g_mqtt_tasmotaTeleCounter_sensor >= g_teleSensor_interval) {
+				g_mqtt_tasmotaTeleCounter_sensor = 0;
 				MQTT_BroadcastTasmotaTeleSENSOR();
 			}
-			if (g_mqtt_tasmotaTeleCounter > 120) {
-				g_mqtt_tasmotaTeleCounter = 0;
+			static int g_mqtt_tasmotaTeleCounter_state = 0;
+			g_mqtt_tasmotaTeleCounter_state++;
+			if (g_mqtt_tasmotaTeleCounter_state >= g_teleState_interval) {
+				g_mqtt_tasmotaTeleCounter_state = 0;
 				MQTT_BroadcastTasmotaTeleSTATE();
 			}
 		}

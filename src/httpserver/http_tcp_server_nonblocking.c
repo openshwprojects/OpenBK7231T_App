@@ -10,7 +10,7 @@
 
  SOCKET ListenSocket = INVALID_SOCKET;
 
-int g_port = 80;
+int g_httpPort = 80;
 
 int HTTPServer_Start() {
 
@@ -30,7 +30,7 @@ int HTTPServer_Start() {
 	}
     // Resolve the server address and port
 	char service[6];
-	snprintf(service, sizeof(service), "%u", g_port);
+	snprintf(service, sizeof(service), "%u", g_httpPort);
 
 	iResult = getaddrinfo(NULL, service, &hints, &result);
     if ( iResult != 0 ) {
@@ -133,7 +133,7 @@ void HTTPServer_RunQuickTick() {
 				outbuf[0] = '\0';
 				request.reply = outbuf;
 				request.replylen = 0;
-
+				request.responseCode = HTTP_RESPONSE_OK;
 				request.replymaxlen = DEFAULT_BUFLEN;
 
 				//printf("HTTP Server for Windows: Bytes received: %d \n", iResult);
@@ -173,22 +173,22 @@ void HTTPServer_RunQuickTick() {
 		//Sleep(50);
 		// shutdown the connection since we're done
 		iResult = shutdown(ClientSocket, SD_SEND);
-		long firstAttempt = timeGetTime();
-		while (1) {
-			iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
-			if (iResult == 0)
-				break;
-			err = WSAGetLastError();
-			if (err != WSAEWOULDBLOCK) {
-				break;
-			}
-			long delta = timeGetTime() - firstAttempt;
-			if (delta > 2) {
-				printf("HTTP server would freeze to long!\n");
-				break; // too long freeze!
+		//long firstAttempt = timeGetTime();
+		//while (1) {
+		//	iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
+		//	if (iResult == 0)
+		//		break;
+		//	err = WSAGetLastError();
+		//	if (err != WSAEWOULDBLOCK) {
+		//		break;
+		//	}
+		//	long delta = timeGetTime() - firstAttempt;
+		//	if (delta > 2) {
+		//		printf("HTTP server would freeze to long!\n");
+		//		break; // too long freeze!
 
-			}
-		}
+		//	}
+		//}
 		//Sleep(50);
 		//iResult = closesocket(ClientSocket);
 		//if (iResult == SOCKET_ERROR) {

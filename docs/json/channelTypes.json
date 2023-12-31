@@ -272,6 +272,126 @@
     "driver": ""
   },
   {
+    "name": "Custom",
+    "title": "TODO",
+    "descr": "A custom channel type that is still send to HA.",
+    "enum": "ChType_Custom",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Power_div10",
+    "title": "TODO",
+    "descr": "Just like power, but with one decimal place (but stored as integer, for TuyaMCU support)",
+    "enum": "ChType_Power_div10",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "ReadOnlyLowMidHigh",
+    "title": "TODO",
+    "descr": "Like LowMidHigh, but just read only",
+    "enum": "ChType_ReadOnlyLowMidHigh",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "SmokePercent",
+    "title": "TODO",
+    "descr": "Smoke percentage",
+    "enum": "ChType_SmokePercent",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Illuminance",
+    "title": "TODO",
+    "descr": "Illuminance in Lux",
+    "enum": "ChType_Illuminance",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Toggle_Inv",
+    "title": "TODO",
+    "descr": "Like a Toggle, but inverted states.",
+    "enum": "ChType_Toggle_Inv",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "OffOnRemember",
+    "title": "TODO",
+    "descr": "Radio buttons with 3 options: off, on and 'remember'. This is used for TuyaMCU memory state",
+    "enum": "ChType_OffOnRemember",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Voltage_div100",
+    "title": "TODO",
+    "descr": "For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI",
+    "enum": "ChType_Voltage_div100",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Temperature_div2",
+    "title": "TODO",
+    "descr": "Just like ChType_Temperature_div10, but for multiplied by 0.5.",
+    "enum": "ChType_Temperature_div2",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "TimerSeconds",
+    "title": "TODO",
+    "descr": "This will display time formatted to minutes, hours, etc.",
+    "enum": "ChType_TimerSeconds",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Frequency_div10",
+    "title": "TODO",
+    "descr": "For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI",
+    "enum": "ChType_Frequency_div10",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "PowerFactor_div100",
+    "title": "TODO",
+    "descr": "For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI",
+    "enum": "ChType_PowerFactor_div100",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Pressure_div100",
+    "title": "TODO",
+    "descr": ".",
+    "enum": "Pressure_div100",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Temperature_div100",
+    "title": "TODO",
+    "descr": "Just like humidity_div100, but for temperature.",
+    "enum": "ChType_Temperature_div100",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "LeakageCurrent_div1000",
+    "title": "TODO",
+    "descr": ".",
+    "enum": "ChType_LeakageCurrent_div1000",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
     "name": "Max",
     "title": "TODO",
     "descr": "This is the current total number of available channel types.",

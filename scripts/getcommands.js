@@ -166,7 +166,7 @@ function getFolder(name, cb){
                                 try {
                                     let chan = JSON.parse(json);
                                     if (chanindex[chan.name]) {
-                                        console.error('duplicate command docs at file: ' + file + ' line: ' + line);
+                                        console.error('duplicate channel docs at file: ' + file + ' line: ' + line);
                                         console.error(line);
                                     } else {
                                         channels.push(chan);
@@ -308,7 +308,7 @@ function getFolder(name, cb){
                                 try {
                                     let io = JSON.parse(json);
                                     if (ioindex[io.name]) {
-                                        console.error('duplicate command docs at file: ' + file + ' line: ' + line);
+                                        console.error('duplicate io docs at file: ' + file + ' line: ' + line);
                                         console.error(line);
                                     } else {
                                         ios.push(io);
@@ -394,7 +394,7 @@ function getFolder(name, cb){
                                 try {
                                     let drv = JSON.parse(json);
                                     if (drvindex[drv.name]) {
-                                        console.error('duplicate command docs at file: ' + file + ' line: ' + line);
+                                        console.error('duplicate driver docs at file: ' + file + ' line: ' + line);
                                         console.error(line);
                                     } else {
                                         drvs.push(drv);
@@ -569,9 +569,10 @@ function getFolder(name, cb){
                         try{
                             let cmd = JSON.parse(json);
                             if (cmdindex[cmd.name]){
-                                console.error('duplicate command docs at file: '+file+' line: '+line);
+                                console.error('duplicate command "' + cmd.name + '" docs at file: '+file+' line: '+line);
                                 console.error(line);
                             } else {
+                              // console.error('new command "' + cmd.name + '" docs at file: ' + file + ' line: ' + line);
                                 commands.push(cmd);
                                 cmdindex[cmd.name] = cmd;
                             }
@@ -796,11 +797,14 @@ Publishes send by OBK device:
 |:------------- |:------------- | -----:|
 `;
 
+function genReadMore(name) {
+    let textmore = `See also [${name} on forum](https://www.elektroda.com/rtvforum/find.php?q=${name}).`;
+   return textmore;
+}
 for (let i = 0; i < mqttTopics.publishes.length; i++){
 
 
     let pub =  mqttTopics.publishes[i];
-
     let textshort = `| ${pub.topic} | ${pub.example} | ${pub.description} |`;
 
     // allow multi-row entries in table entries.
@@ -845,6 +849,24 @@ for (let i = 0; i < flags.length; i++) {
     }
 }
 
+// Sort commands by Name alphabetically 
+commands.sort((a, b) => {
+	if (a.name.toUpperCase() < b.name.toUpperCase())
+		return -1;
+	if (a.name.toUpperCase() > b.name.toUpperCase())
+		return 1;
+	return 0;
+});
+function formatDesc(descBasic) {
+
+    if (!descBasic.endsWith('.')) {
+        descBasic += '.';
+    }
+    if (descBasic.length > 0) {
+        descBasic = descBasic.charAt(0).toUpperCase() + descBasic.slice(1);
+    }
+    return descBasic;
+}
 for (let i = 0; i < commands.length; i++){
 
     /* like:
@@ -855,8 +877,11 @@ for (let i = 0; i < commands.length; i++){
     */
     let cmd = commands[i];
 
-    let textshort = `| ${cmd.name} | ${cmd.args}${cmd.requires?'\nReq:'+cmd.requires:''} | ${cmd.descr}${cmd.examples?'\ne.g.:'+cmd.examples:''} |`;
-    let textlong = `| ${cmd.name} | ${cmd.args}${cmd.requires?'\nReq:'+cmd.requires:''} | ${cmd.descr}${cmd.examples?'\ne.g.:'+cmd.examples:''} | File: ${cmd.file}\nFunction: ${cmd.fn} |`;
+
+    let descMore = "<br/><br/>" + genReadMore(cmd.name);
+    let descBasic = formatDesc(cmd.descr);
+    let textshort = `| ${cmd.name} | ${cmd.args}${cmd.requires ? '\nReq:' + cmd.requires : ''} | ${descBasic}${cmd.examples ? '<br/><br/>Example: ' + cmd.examples : ''}${descMore} |`;
+    let textlong = `| ${cmd.name} | ${cmd.args}${cmd.requires ? '\nReq:' + cmd.requires : ''} | ${descBasic}${cmd.examples ? '<br/><br/>Example: ' + cmd.examples : ''}${descMore} | File: ${cmd.file}\nFunction: ${cmd.fn} |`;
 
     // allow multi-row entries in table entries.
     textshort = textshort.replace(/\n/g, '<br/>');
@@ -964,12 +989,15 @@ for (let i = 0; i < cnsts.length; i++) {
     constantsmdshort += textshort;
     constantsmdshort += '\n';
 }
+
 for (let i = 0; i < drvs.length; i++) {
 
 
     let drv = drvs[i];
 
-    let textshort = `| ${drv.name} |  ${drv.descr} |`;
+    let descMore = "<br/>" + genReadMore(drv.name);
+    let descBasic = formatDesc(drv.descr);
+    let textshort = `| ${drv.name} |  ${descBasic}${descMore} |`;
 
     // allow multi-row entries in table entries.
     textshort = textshort.replace(/\n/g, '<br/>');
@@ -1063,6 +1091,7 @@ function writeDocMD_Page(page) {
 
     page.fullMDPath = fullName;
 }
+
 writeDocMD_Array('ioRoles', iosmdshort, ios, "IO/Pin Roles", true, generic.pins);
 writeDocMD_Array('flags', flagsmdshort, flags, "Flags", true, generic.flags);
 writeDocMD_Array('drivers', driversmdshort, drvs, "Drivers", true, generic.drivers);

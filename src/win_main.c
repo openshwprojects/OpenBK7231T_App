@@ -9,6 +9,7 @@
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "obk_config.h"
 #include "new_common.h"
 #include "driver\drv_public.h"
 #include "cmnds\cmd_public.h"
@@ -28,7 +29,7 @@ int accum_time = 0;
 int win_frameNum = 0;
 // this time counter is simulated, I need this for unit tests to work
 int g_simulatedTimeNow = 0;
-extern int g_port;
+extern int g_httpPort;
 #define DEFAULT_FRAME_TIME 5
 
 
@@ -111,7 +112,9 @@ void SIM_Hack_ClearSimulatedPinRoles();
 void SIM_ClearOBK(const char *flashPath) {
 	if (bObkStarted) {
 		DRV_ShutdownAllDrivers();
+#if ENABLE_LITTLEFS
 		release_lfs();
+#endif
 		SIM_Hack_ClearSimulatedPinRoles();
 		WIN_ResetMQTT();
 		UART_ResetForSimulator();
@@ -127,12 +130,24 @@ void SIM_ClearOBK(const char *flashPath) {
 	Main_Init();
 }
 void Win_DoUnitTests() {
+
+	Test_Command_If_Else();
+	Test_MQTT();
+	Test_ChargeLimitDriver();
+	// this is slowest
+	Test_TuyaMCU_Basic();
+	Test_Battery();
+	Test_TuyaMCU_BatteryPowered();
+	Test_JSON_Lib();
+	Test_MQTT_Get_LED_EnableAll();
 	Test_Commands_Startup();
 	Test_IF_Inside_Backlog();
 	Test_WaitFor();
 	Test_TwoPWMsOneChannel();
 	Test_ClockEvents();
+	Test_HassDiscovery_Base();
 	Test_HassDiscovery();
+	Test_HassDiscovery_Ext();
 	Test_Role_ToggleAll_2();
 	Test_Demo_ButtonToggleGroup();
 	Test_Demo_ButtonScrollingChannelValues();
@@ -151,7 +166,7 @@ void Win_DoUnitTests() {
 	Test_EnergyMeter();
 	Test_Tasmota();
 	Test_NTP();
-	Test_MQTT();
+	Test_NTP_SunsetSunrise();
 	Test_HTTP_Client();
 	Test_ExpandConstant();
 	Test_ChangeHandlers_MQTT();
@@ -165,13 +180,10 @@ void Win_DoUnitTests() {
 	Test_Scripting();
 	Test_Commands_Channels();
 	Test_Command_If();
-	Test_Command_If_Else(); 
 	Test_Tokenizer();
 	Test_Http();
 	Test_DeviceGroups();
 
-	// this is slowest
-	Test_TuyaMCU_Basic();
 
 
 
@@ -223,7 +235,7 @@ int __cdecl main(int argc, char **argv)
 					i++;
 
 					if (i < argc && sscanf(argv[i], "%d", &value) == 1) {
-						g_port = value;
+						g_httpPort = value;
 					}
 				} else if (wal_strnicmp(argv[i] + 1, "w", 1) == 0) {
 					i++;
@@ -290,8 +302,52 @@ int __cdecl main(int argc, char **argv)
 		system("pause");
 	}
 	//printf("Offset MQTT Group: %i", OFFSETOF(mainConfig_t, mqtt_group));
-	if (sizeof(mainConfig_t) != MAGIC_CONFIG_SIZE) {
+	if (sizeof(mainConfig_t) != MAGIC_CONFIG_SIZE_V4) {
 		printf("sizeof(mainConfig_t) != MAGIC_CONFIG_SIZE!: %i\n", sizeof(mainConfig_t));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, staticIP) != 0x00000527) {
+		printf("OFFSETOF(mainConfig_t, staticIP) != 0x00000527z: %i\n", OFFSETOF(mainConfig_t, staticIP));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, wifi_ssid) != 0x00000014) {
+		printf("OFFSETOF(mainConfig_t, wifi_ssid) != 0x00000014: %i\n", OFFSETOF(mainConfig_t, wifi_ssid));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, wifi_pass) != 0x00000054) {
+		printf("OFFSETOF(mainConfig_t, wifi_pass) != 0x00000054: %i\n", OFFSETOF(mainConfig_t, wifi_pass));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, unused_fill) != 0x0000045E) {
+		printf("OFFSETOF(mainConfig_t, unused_fill) != 0x0000045E: %i\n", OFFSETOF(mainConfig_t, unused_fill));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, buttonHoldRepeat) != 0x000004BA) {
+		printf("OFFSETOF(mainConfig_t, buttonHoldRepeat) != 0x000004BA: %i\n", OFFSETOF(mainConfig_t, buttonHoldRepeat));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, shortDeviceName) != 0x2DE) {
+		printf("OFFSETOF(mainConfig_t, shortDeviceName) != 0x2DE: %i\n", OFFSETOF(mainConfig_t, shortDeviceName));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, timeRequiredToMarkBootSuccessfull) != 0x00000597) {
+		printf("OFFSETOF(mainConfig_t, timeRequiredToMarkBootSuccessfull) != 0x00000597: %i\n", OFFSETOF(mainConfig_t, timeRequiredToMarkBootSuccessfull));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, dgr_sendFlags) != 0x00000460) {
+		printf("OFFSETOF(mainConfig_t, dgr_sendFlags) != 0x00000460: %i\n", OFFSETOF(mainConfig_t, dgr_sendFlags));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, mqtt_host) != 0x00000094) {
+		printf("OFFSETOF(mainConfig_t, mqtt_host) != 0x00000094: %i\n", OFFSETOF(mainConfig_t, mqtt_host));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, mqtt_userName) != 0x1D4) {
+		printf("OFFSETOF(mainConfig_t, mqtt_userName) != 0x1D4: %i\n", OFFSETOF(mainConfig_t, mqtt_userName));
+		system("pause");
+}
+	if (OFFSETOF(mainConfig_t, mqtt_port) != 0x294) {
+		printf("OFFSETOF(mainConfig_t, mqtt_port) != 0x294: %i\n", OFFSETOF(mainConfig_t, mqtt_port));
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, mqtt_group) != 0x00000554) {
@@ -316,6 +372,22 @@ int __cdecl main(int argc, char **argv)
 	}
 	if (OFFSETOF(mainConfig_t, version) != 0x00000004) {
 		printf("OFFSETOF(mainConfig_t, version) != 0x00000004: %i\n", OFFSETOF(mainConfig_t, version));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, initCommandLine) != 0x000005E0) {
+		printf("OFFSETOF(mainConfig_t, initCommandLine) != 0x000005E0: %i\n", OFFSETOF(mainConfig_t, initCommandLine));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, wifi_ssid2) != 0x00000C00) {
+		printf("OFFSETOF(mainConfig_t, wifi_ssid2) != 0x00000C00: %i\n", OFFSETOF(mainConfig_t, wifi_ssid2));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, wifi_pass2) != 0x00000C40) {
+		printf("OFFSETOF(mainConfig_t, wifi_pass2) != 0x00000C40: %i\n", OFFSETOF(mainConfig_t, wifi_pass2));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, unused) != 0x00000CA5) {
+		printf("OFFSETOF(mainConfig_t, unused) != 0x00000CA5: %i\n", OFFSETOF(mainConfig_t, unused));
 		system("pause");
 	}
 	// Test expansion

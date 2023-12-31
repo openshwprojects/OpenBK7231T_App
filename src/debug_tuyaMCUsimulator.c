@@ -7,7 +7,11 @@ const char *dataToSimulate[] =
 	// dummy entry in order to avoid problems with empty table
 	"",
 #if 1
-	""
+	"",
+#elif 0
+	"55AA0307000E0600000A094C00000000000000007C",
+#elif 0
+	"55AA000100247B2270223A227971697162616C6474723069376D7275222C2276223A22312E312E36227D0755AA000200000155AA000200000155AA000200000155AA00100001001055AA00050008010200040000011D3155AA0005000802020004000000324655AA000600000500"
 #elif 1
 	// 0x21 packet type - Weather Data - for testing
 	"55AA002100400108772E74656D702E300004000000160C772E68756D69646974792E3000040000004608772E706D32352E3000040000002607772E6171692E3000040000006C30",
@@ -109,11 +113,17 @@ void NewTuyaMCUSimulator_RunQuickTick(int deltaMS) {
 	if (curP == 0) {
 		curP = dataToSimulate[curString];
 	}
-
-#if 1
+	if (*curP == 0) {
+		curString++;
+		curString %= g_totalStrings;
+		curP = dataToSimulate[curString];
+		return;
+	}
+#if 0
 #elif 1
 	if (DRV_IsRunning("TuyaMCU") == 0) {
 		CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+		CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 6 RAW_TAC2121C_VCP", 0);
 	}
 #elif 0
 	if (DRV_IsRunning("TuyaMCU") == 0) {
@@ -153,7 +163,7 @@ void NewTuyaMCUSimulator_RunQuickTick(int deltaMS) {
 			break;
 		}
 		b = hexbyte(curP);
-		UART_AppendByteToCircularBuffer(b);
+		UART_AppendByteToReceiveRingBuffer(b);
 		curP += 2;
 	}
 	if (*curP == 0) {

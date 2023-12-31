@@ -18,6 +18,7 @@ setChannelType 22 TextField
 setChannelType 23 TextField
 
 // link output 1 to channel 1
+// linkTuyaMCUOutputToChannel dpId varType tgChannel
 linkTuyaMCUOutputToChannel 1 1 1
 
 // link output 3 to channel 3

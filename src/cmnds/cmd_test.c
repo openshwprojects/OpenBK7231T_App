@@ -7,7 +7,7 @@
 #include "../cJSON/cJSON.h"
 #include <ctype.h>
 #include "cmd_local.h"
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 	#include "../littlefs/our_lfs.h"
 #endif
 
@@ -164,7 +164,7 @@ static commandResult_t testJSON(const void * context, const char *cmd, const cha
 
 
 		root = cJSON_CreateObject();
-		cJSON_AddNumberToObject(root, "uptime", Time_getUpTimeSeconds());
+		cJSON_AddNumberToObject(root, "uptime", g_secondsElapsed);
 		cJSON_AddNumberToObject(root, "consumption_total", ra1 );
 		cJSON_AddNumberToObject(root, "consumption_last_hour",  ra2);
 		cJSON_AddNumberToObject(root, "consumption_stat_index", ra3);
@@ -191,7 +191,7 @@ static commandResult_t testJSON(const void * context, const char *cmd, const cha
 
 // Usage for continous test: addRepeatingEvent 1 -1 lfs_test1 ir.bat
 static commandResult_t cmnd_lfs_test1(const void * context, const char *cmd, const char *args, int cmdFlags) {
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 	if (lfs_present()) {
 		lfs_file_t file;
 		int lfsres;
@@ -227,7 +227,7 @@ static commandResult_t cmnd_lfs_test1(const void * context, const char *cmd, con
 }
 // Usage for continous test: addRepeatingEvent 1 -1 lfs_test2 ir.bat
 static commandResult_t cmnd_lfs_test2(const void * context, const char *cmd, const char *args, int cmdFlags) {
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 	if (lfs_present()) {
 		lfs_file_t *file;
 		int lfsres;
@@ -266,6 +266,30 @@ static commandResult_t cmnd_lfs_test2(const void * context, const char *cmd, con
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "cmnd_lfs_test2: lfs is absent");
 	}
 #endif
+	return CMD_RES_OK;
+}
+
+static commandResult_t cmnd_json_test(const void * context, const char *cmd, const char *args, int cmdFlags) {
+	int i;
+	cJSON* root;
+	cJSON* stats;
+	char *msg;
+	float dailyStats[4] = { 00000095.44071197,00000171.84954833,00000181.58737182,00000331.35061645 };
+
+	root = cJSON_CreateObject();
+	{
+		stats = cJSON_CreateArray();
+		for (i = 0; i < 4; i++)
+		{
+			cJSON_AddItemToArray(stats, cJSON_CreateNumber(dailyStats[i]));
+		}
+		cJSON_AddItemToObject(root, "consumption_daily", stats);
+	}
+
+	msg = cJSON_PrintUnformatted(root);
+	cJSON_Delete(root);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Test JSON reads: %s", msg);
+	free(msg);
 	return CMD_RES_OK;
 }
 // Usage for continous test: addRepeatingEvent 1 -1 lfs_test3 ir.bat
@@ -330,6 +354,13 @@ int CMD_InitTestCommands(){
 	//cmddetail:"fn":"cmnd_lfs_test3","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_test3", cmnd_lfs_test3, NULL);
+	//cmddetail:{"name":"json_test","args":"cmnd_json_test",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("json_test", cmnd_json_test, NULL);
+
+	
     return 0;
 }
 

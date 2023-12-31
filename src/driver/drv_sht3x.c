@@ -15,7 +15,7 @@
 
 #define SHT3X_I2C_ADDR (0x44 << 1)
 
-static byte channel_temp = 0, channel_humid = 0, g_shtcycle = 1, g_shtcycleref = 10;
+static byte channel_temp = 0, channel_humid = 0, g_sht_secondsUntilNextMeasurement = 1, g_sht_secondsBetweenMeasurements = 10;
 static float g_temp = 0.0, g_humid = 0.0, g_caltemp = 0.0, g_calhum = 0.0;
 static bool g_shtper = false;
 static softI2C_t g_softI2C;
@@ -86,10 +86,11 @@ commandResult_t SHT3X_ChangePer(const void* context, const char* cmd, const char
 commandResult_t SHT3X_Heater(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int g_state_heat;
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-	if (Tokenizer_GetArgsCount() < 1) {
-		ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT Heater: 1 or 0 to activate");
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		//ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT Heater: 1 or 0 to activate");
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
+
 	g_state_heat = Tokenizer_GetArgInteger(0);
 	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR);
 
@@ -371,10 +372,10 @@ commandResult_t SHT3X_SetAlertCmd(const void* context, const char* cmd, const ch
 	float temperatureLowSet, temperatureLowClear, temperatureHighClear, temperatureHighSet;
 	float humidityLowSet, humidityLowClear, humidityHighClear, humidityHighSet;
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-	if (Tokenizer_GetArgsCount() < 4) {
-		ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT Set alert: require Temp low/high and Humidity low/high arg");
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 4)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
+	//ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT Set alert: require Temp low/high and Humidity low/high arg");
 	temperatureHighSet = Tokenizer_GetArgFloat(0);
 	temperatureLowSet = Tokenizer_GetArgFloat(1);
 	temperatureLowClear = Tokenizer_GetArgFloat(1) + 0.5;
@@ -416,13 +417,12 @@ commandResult_t SHT3X_SetAlertCmd(const void* context, const char* cmd, const ch
 commandResult_t SHT_cycle(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-	if (Tokenizer_GetArgsCount() < 1) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "SHT Cycle : Need integer args for seconds cycle");
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	g_shtcycleref = Tokenizer_GetArgFloat(0);
+	g_sht_secondsBetweenMeasurements = Tokenizer_GetArgInteger(0);
 
-	ADDLOG_INFO(LOG_FEATURE_CMD, "SHT Cycle : Measurement will run every %i seconds", g_shtcycleref);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Measurement will run every %i seconds", g_sht_secondsBetweenMeasurements);
 
 	return CMD_RES_OK;
 }
@@ -443,7 +443,7 @@ void SHT3X_Init() {
 
 
 	//cmddetail:{"name":"SHT_cycle","args":"[int]",
-	//cmddetail:"descr":"change cycle of measurement by default every 10 seconds 0 to deactivate",
+	//cmddetail:"descr":"This is the interval between measurements in seconds, by default 10. Max is 255.",
 	//cmddetail:"fn":"SHT_cycle","file":"drv/drv_sht3x.c","requires":"",
 	//cmddetail:"examples":"SHT_Cycle 60"}
 	CMD_RegisterCommand("SHT_cycle", SHT_cycle, NULL);
@@ -501,7 +501,7 @@ void SHT3X_Init() {
 void SHT3X_OnEverySecond()
 {
 
-	if (g_shtcycle == 1) {
+	if (g_sht_secondsUntilNextMeasurement <= 0) {
 		if (g_shtper)
 		{
 			SHT3X_MeasurePercmd();
@@ -510,13 +510,11 @@ void SHT3X_OnEverySecond()
 		{
 			SHT3X_Measurecmd();
 		}
-		g_shtcycle = g_shtcycleref;
+		g_sht_secondsUntilNextMeasurement = g_sht_secondsBetweenMeasurements;
 	}
-	if (g_shtcycle > 0) {
-		--g_shtcycle;
+	if (g_sht_secondsUntilNextMeasurement > 0) {
+		g_sht_secondsUntilNextMeasurement--;
 	}
-	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_SHT : Measurement will run in  %i cycle", g_shtcycle);
-
 }
 
 void SHT3X_AppendInformationToHTTPIndexPage(http_request_t* request)

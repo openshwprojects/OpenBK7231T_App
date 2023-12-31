@@ -829,7 +829,7 @@ void CMD_InitScripting(){
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("goto", CMD_GoTo, NULL);
 	//cmddetail:{"name":"delay_s","args":"[ValueSeconds]",
-	//cmddetail:"descr":"Script-only command. Pauses current script thread for given amount of seconds.",
+	//cmddetail:"descr":"Script-only command. Pauses current script thread for given amount of seconds. Argument can be a floating point, so 0.1 etc will work",
 	//cmddetail:"fn":"CMD_Delay_s","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("delay_s", CMD_Delay_s, NULL);

@@ -281,7 +281,7 @@ bool DHT_read(dht_t *dht, bool force) {
 	byte *data = dht->data;
 	// Check if sensor was read less than two seconds ago and return early
 	// to use last reading.
-	uint32_t currenttime = Time_getUpTimeSeconds();
+	uint32_t currenttime = g_secondsElapsed;
 	if (!force && ((currenttime - dht->_lastreadtime) < 3)) {
 		return dht->_lastresult; // return last correct measurement
 	}

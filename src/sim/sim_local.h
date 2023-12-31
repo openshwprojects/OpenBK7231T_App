@@ -48,7 +48,7 @@ extern int gridSize;
 extern "C" {
 	void CMD_ExpandConstantsWithinString(const char *in, char *out, int outLen);
 	int UART_GetDataSize();
-	void UART_AppendByteToCircularBuffer(int rc);
+	void UART_AppendByteToReceiveRingBuffer(int rc);
 	int CMD_ExecuteCommand(const char* s, int cmdFlags);
 }
 

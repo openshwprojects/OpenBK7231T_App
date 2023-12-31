@@ -23,20 +23,21 @@ void MQTT_BroadcastTasmotaTeleSTATE();
 void MQTT_BroadcastTasmotaTeleSENSOR();
 
 
-#define PUBLISHITEM_ALL_INDEX_FIRST   -15
+#define PUBLISHITEM_ALL_INDEX_FIRST   -16
 
 //These 3 values are pretty much static
-#define PUBLISHITEM_SELF_STATIC_RESERVED_2      -15
-#define PUBLISHITEM_SELF_STATIC_RESERVED_1      -14
-#define PUBLISHITEM_SELF_HOSTNAME               -13  //Device name
-#define PUBLISHITEM_SELF_BUILD                  -12  //Build
-#define PUBLISHITEM_SELF_MAC                    -11  //Device mac
+#define PUBLISHITEM_SELF_STATIC_RESERVED_2      -16
+#define PUBLISHITEM_SELF_STATIC_RESERVED_1      -15
+#define PUBLISHITEM_SELF_HOSTNAME               -14  //Device name
+#define PUBLISHITEM_SELF_BUILD                  -13  //Build
+#define PUBLISHITEM_SELF_MAC                    -12  //Device mac
 
-#define PUBLISHITEM_DYNAMIC_INDEX_FIRST         -10
+#define PUBLISHITEM_DYNAMIC_INDEX_FIRST         -11
 
-#define PUBLISHITEM_QUEUED_VALUES               -10  //Publish queued items
+#define PUBLISHITEM_QUEUED_VALUES               -11  //Publish queued items
 
 //These values are dynamic
+#define PUBLISHITEM_SELF_SSID		            -10  // SSID
 #define PUBLISHITEM_SELF_DATETIME               -9  //Current unix datetime
 #define PUBLISHITEM_SELF_SOCKETS                -8  //Active sockets
 #define PUBLISHITEM_SELF_RSSI                   -7  //Link strength
@@ -60,6 +61,9 @@ enum OBK_Publish_Result_e {
 #define OBK_PUBLISH_FLAG_MUTEX_SILENT			1
 #define OBK_PUBLISH_FLAG_RETAIN					2
 #define OBK_PUBLISH_FLAG_FORCE_REMOVE_GET		4
+// do not add anything to given topic
+#define OBK_PUBLISH_FLAG_RAW_TOPIC_NAME			8
+
 
 #include "new_mqtt_deduper.h"
 
@@ -99,7 +103,7 @@ typedef struct MqttPublishItem
 
 // Count of queued items published at once.
 #define MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE	3
-#define MQTT_MAX_QUEUE_SIZE	                7
+#define MQTT_MAX_QUEUE_SIZE	                16
 
 // callback function for mqtt.
 // return 0 to allow the incoming topic/data to be processed by others/channel set.
@@ -135,8 +139,9 @@ int MQTT_Post_Received_Str(const char *topic, const char *data);
 void MQTT_GetStats(int* outUsed, int* outMax, int* outFreeMem);
 
 OBK_Publish_Result MQTT_DoItemPublish(int idx);
-OBK_Publish_Result MQTT_PublishMain_StringFloat(const char* sChannel, float f);
-OBK_Publish_Result MQTT_PublishMain_StringInt(const char* sChannel, int val);
+OBK_Publish_Result MQTT_PublishMain_StringFloat(const char* sChannel, float f, 
+	int maxDecimalPlaces, int flags);
+OBK_Publish_Result MQTT_PublishMain_StringInt(const char* sChannel, int val, int flags);
 OBK_Publish_Result MQTT_PublishMain_StringString(const char* sChannel, const char* valueStr, int flags);
 void MQTT_PublishOnlyDeviceChannelsIfPossible();
 void MQTT_QueuePublish(const char* topic, const char* channel, const char* value, int flags);

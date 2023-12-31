@@ -8,9 +8,7 @@
 #include "../ota/ota.h"
 #include "../hal/hal_wifi.h"
 #include "../hal/hal_flashVars.h"
-#ifdef ENABLE_LITTLEFS
 #include "../littlefs/our_lfs.h"
-#endif
 #include "lwip/sockets.h"
 
 #if PLATFORM_XR809
@@ -81,7 +79,7 @@ static int http_rest_get_seriallog(http_request_t* request);
 static int http_rest_post_logconfig(http_request_t* request);
 static int http_rest_get_logconfig(http_request_t* request);
 
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 static int http_rest_get_lfs_delete(http_request_t* request);
 static int http_rest_get_lfs_file(http_request_t* request);
 static int http_rest_post_lfs_file(http_request_t* request);
@@ -107,9 +105,9 @@ static int http_rest_post_cmd(http_request_t* request);
 
 
 void init_rest() {
-	HTTP_RegisterCallback("/api/", HTTP_GET, http_rest_get);
-	HTTP_RegisterCallback("/api/", HTTP_POST, http_rest_post);
-	HTTP_RegisterCallback("/app", HTTP_GET, http_rest_app);
+	HTTP_RegisterCallback("/api/", HTTP_GET, http_rest_get, 1);
+	HTTP_RegisterCallback("/api/", HTTP_POST, http_rest_post, 1);
+	HTTP_RegisterCallback("/app", HTTP_GET, http_rest_app, 1);
 }
 
 /* Extracts string token value into outBuffer (128 char). Returns true if the operation was successful. */
@@ -152,7 +150,7 @@ static int http_rest_get(http_request_t* request) {
 		return http_rest_get_seriallog(request);
 	}
 
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 	if (!strcmp(request->url, "api/fsblock")) {
 		uint32_t newsize = CFG_GetLFS_Size();
 		uint32_t newstart = (LFS_BLOCKS_END - newsize);
@@ -173,7 +171,7 @@ static int http_rest_get(http_request_t* request) {
 	}
 #endif
 
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 	if (!strncmp(request->url, "api/lfs/", 8)) {
 		return http_rest_get_lfs_file(request);
 	}
@@ -254,7 +252,7 @@ static int http_rest_post(http_request_t* request) {
 	}
 
 
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 	if (!strcmp(request->url, "api/fsblock")) {
 		if (lfs_present()) {
 			release_lfs();
@@ -328,7 +326,7 @@ static int http_rest_app(http_request_t* request) {
 	return 0;
 }
 
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 
 int EndsWith(const char* str, const char* suffix)
 {
@@ -348,6 +346,7 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 	int lfsres;
 	int total = 0;
 	lfs_file_t* file;
+	char *args;
 
 	// don't start LFS just because we're trying to read a file -
 	// it won't exist anyway
@@ -365,6 +364,12 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 	memset(file, 0, sizeof(lfs_file_t));
 
 	strcpy(fpath, request->url + strlen("api/lfs/"));
+
+	// strip HTTP args with ?
+	args = strchr(fpath, '?');
+	if (args) {
+		*args = 0;
+	}
 
 	ADDLOG_DEBUG(LOG_FEATURE_API, "LFS read of %s", fpath);
 	lfsres = lfs_file_open(&lfs, file, fpath, LFS_O_RDONLY);
@@ -645,32 +650,33 @@ static int http_rest_get_pins(http_request_t* request) {
 	poststr(request, "{\"rolenames\":[");
 	for (i = 0; i < IOR_Total_Options; i++) {
 		if (i) {
-			hprintf255(request, ",\"%s\"", htmlPinRoleNames[i]);
+			hprintf255(request, ",");
 		}
-		else {
-			hprintf255(request, "\"%s\"", htmlPinRoleNames[i]);
-		}
+		hprintf255(request, "\"%s\"", htmlPinRoleNames[i]);
 	}
 	poststr(request, "],\"roles\":[");
 
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if (i) {
-			hprintf255(request, ",%d", g_cfg.pins.roles[i]);
+			hprintf255(request, ",");
 		}
-		else {
-			hprintf255(request, "%d", g_cfg.pins.roles[i]);
-		}
+		hprintf255(request, "%d", g_cfg.pins.roles[i]);
 	}
 	// TODO: maybe we should cull futher channels that are not used?
 	// I support many channels because I plan to use 16x relays module with I2C MCP23017 driver
 	poststr(request, "],\"channels\":[");
-	for (i = 0; i < CHANNEL_MAX; i++) {
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if (i) {
-			hprintf255(request, ",%d", g_cfg.pins.channels[i]);
+			hprintf255(request, ",");
 		}
-		else {
-			hprintf255(request, "%d", g_cfg.pins.channels[i]);
+		hprintf255(request, "%d", g_cfg.pins.channels[i]);
+	}
+	poststr(request, "],\"states\":[");
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (i) {
+			hprintf255(request, ",");
 		}
+		hprintf255(request, "%d", CHANNEL_Get(g_cfg.pins.channels[i]));
 	}
 	poststr(request, "]}");
 	poststr(request, NULL);
@@ -716,7 +722,7 @@ static int http_rest_get_channelTypes(http_request_t* request) {
 static int http_rest_get_logconfig(http_request_t* request) {
 	int i;
 	http_setup(request, httpMimeTypeJson);
-	hprintf255(request, "{\"level\":%d,", loglevel);
+	hprintf255(request, "{\"level\":%d,", g_loglevel);
 	hprintf255(request, "\"features\":%d,", logfeatures);
 	poststr(request, "\"levelnames\":[");
 	for (i = 0; i < LOG_MAX; i++) {
@@ -788,7 +794,7 @@ static int http_rest_post_logconfig(http_request_t* request) {
 			if (t[i + 1].type != JSMN_PRIMITIVE) {
 				continue; /* We expect groups to be an array of strings */
 			}
-			loglevel = atoi(json_str + t[i + 1].start);
+			g_loglevel = atoi(json_str + t[i + 1].start);
 			i += t[i + 1].size + 1;
 		}
 		else if (jsoneq(json_str, &t[i], "features") == 0) {
@@ -819,7 +825,7 @@ static int http_rest_post_logconfig(http_request_t* request) {
 static int http_rest_get_info(http_request_t* request) {
 	char macstr[3 * 6 + 1];
 	http_setup(request, httpMimeTypeJson);
-	hprintf255(request, "{\"uptime_s\":%d,", Time_getUpTimeSeconds());
+	hprintf255(request, "{\"uptime_s\":%d,", g_secondsElapsed);
 	hprintf255(request, "\"build\":\"%s\",", g_build_str);
 	hprintf255(request, "\"ip\":\"%s\",", HAL_GetMyIPString());
 	hprintf255(request, "\"mac\":\"%s\",", HAL_GetMACStr(macstr));
@@ -828,6 +834,7 @@ static int http_rest_get_info(http_request_t* request) {
 	hprintf255(request, "\"mqtttopic\":\"%s\",", CFG_GetMQTTClientId());
 	hprintf255(request, "\"chipset\":\"%s\",", PLATFORM_MCU_NAME);
 	hprintf255(request, "\"webapp\":\"%s\",", CFG_GetWebappRoot());
+	hprintf255(request, "\"shortName\":\"%s\",", CFG_GetShortDeviceName());
 	
 	hprintf255(request, "\"startcmd\":\"%s\",", CFG_GetShortStartupCommand());
 #ifndef OBK_DISABLE_ALL_DRIVERS

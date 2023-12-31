@@ -1,5 +1,7 @@
 #include "drv_test_drivers.h"
 
+#include <math.h>
+
 #include "../cmnds/cmd_public.h"
 #include "drv_bl_shared.h"
 
@@ -36,7 +38,7 @@ void Test_Power_Init(void) {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetupTestPower", TestPower_Setup, NULL);
 }
-void Test_Power_RunFrame(void) {
+void Test_Power_RunEverySecond(void) {
     float final_v = base_v;
 	float final_c = base_c;
 	float final_p = base_p;
@@ -46,11 +48,11 @@ void Test_Power_RunFrame(void) {
 		final_v += (rand() % 100) * 0.1f;
 		final_p += (rand() % 100) * 0.1f;
 	}
-	BL_ProcessUpdate(final_v, final_c, final_p, 0.0f);
+	BL_ProcessUpdate(final_v, final_c, final_p, NAN, NAN);
 }
 
 //Test LED driver
 void Test_LED_Driver_Init(void) {}
-void Test_LED_Driver_RunFrame(void) {}
+void Test_LED_Driver_RunEverySecond(void) {}
 void Test_LED_Driver_OnChannelChanged(int ch, int value) {
 }

@@ -80,6 +80,9 @@ bool SIM_IsPinADC(int index) {
 		return true;
 	return false;
 }
+void SIM_SetIntegerValueADCPin(int index, int v) {
+	g_simulatedADCValues[index] = v;
+}
 void SIM_SetVoltageOnADCPin(int index, float v) {
 	if (g_pinModes[index] != SIM_PIN_ADC)
 		return;
@@ -90,7 +93,7 @@ void SIM_SetVoltageOnADCPin(int index, float v) {
 		v = 0;
 	float f = v / 3.3f;
 	int iVal = f * 1024;
-	g_simulatedADCValues[index] = iVal;
+	SIM_SetIntegerValueADCPin(index, v);
 }
 int SIM_GetPWMValue(int index) {
 	return g_simulatedPWMs[index];

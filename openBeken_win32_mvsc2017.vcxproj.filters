@@ -842,6 +842,63 @@
     <ClCompile Include="src\selftest\selftest_cmd_startup.c">
       <Filter>SelfTest</Filter>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_tm1638.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_mqtt_get.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_json_lib.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_tuyaMCU_batteryPowered.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sim\sim_uart.c">
+      <Filter>Simulator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_hass_discovery_base.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_hass_discovery_ext.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_flashSearch.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_batteryDriver.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_ht16k33.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_hue.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cmnds\cmd_simulatorOnly.c">
+      <Filter>Cmd</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_kp18058.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_chargingLimit.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_chargingDriver.c">
+      <Filter>SelfTest</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_adcSmoother.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_pt6523.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_textScroller.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
+    <ClCompile Include="src\driver\drv_mcp9808.c">
+      <Filter>Drv</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\new_cfg.h" />
@@ -1246,6 +1303,25 @@
     <ClInclude Include="src\driver\drv_sgp.h">
       <Filter>Drv</Filter>
     </ClInclude>
+    <ClInclude Include="src\driver\drv_ht16k33.h">
+      <Filter>Drv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\littlefs\our_lfs.h">
+      <Filter>LFS</Filter>
+    </ClInclude>
+    <ClInclude Include="src\driver\drv_pt6523_font.h">
+    <ClInclude Include="src\driver\drv_bl0937.h">
+      <Filter>Drv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\driver\drv_bl0942.h">
+      <Filter>Drv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\driver\drv_cse7766.h">
+      <Filter>Drv</Filter>
+    </ClInclude>
+    <ClInclude Include="src\driver\drv_test_drivers.h">
+      <Filter>Drv</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\include\net_param_pub.h" />
@@ -1339,9 +1415,6 @@
     <Filter Include="HAL">
       <UniqueIdentifier>{e385d68c-eb29-44e3-bbb3-560d53712634}</UniqueIdentifier>
     </Filter>
-    <Filter Include="HTTP">
-      <UniqueIdentifier>{e980596d-3f72-423b-9b22-afc2901a273f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="LFS">
       <UniqueIdentifier>{ea59e797-47c5-4aa4-b0df-13a40b08dd3c}</UniqueIdentifier>
     </Filter>
@@ -1353,6 +1426,9 @@
     </Filter>
     <Filter Include="IRRemote-ESP">
       <UniqueIdentifier>{553d6b46-d893-4259-b8b1-77e58da2a2ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HTTP">
+      <UniqueIdentifier>{e980596d-3f72-423b-9b22-afc2901a273f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

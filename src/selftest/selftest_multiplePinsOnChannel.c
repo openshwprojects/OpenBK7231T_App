@@ -1,6 +1,6 @@
 #ifdef WINDOWS
 
-#include "selftest_local.h".
+#include "selftest_local.h"
 
 static int PIN_BUTTON = 10;
 static int PIN_LED_n = 11;

@@ -33,9 +33,29 @@
 int BTN_SHORT_MS;
 int BTN_LONG_MS;
 int BTN_HOLD_REPEAT_MS;
-byte g_defaultDoorWakeEdge = 2;
+byte *g_defaultWakeEdge = 0;
 int g_initialPinStates = 0;
 
+void PIN_DeepSleep_MakeSureEdgesAreAlloced() {
+	int i;
+	if (g_defaultWakeEdge == 0) {
+		g_defaultWakeEdge = (byte*)malloc(PLATFORM_GPIO_MAX);
+		for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+			g_defaultWakeEdge[i] = 2;//default
+		}
+	}
+}
+void PIN_DeepSleep_SetWakeUpEdge(int pin, byte edgeCode) {
+	PIN_DeepSleep_MakeSureEdgesAreAlloced();
+	g_defaultWakeEdge[pin] = edgeCode;
+}
+void PIN_DeepSleep_SetAllWakeUpEdges(byte edgeCode) {
+	int i;
+	PIN_DeepSleep_MakeSureEdgesAreAlloced();
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		g_defaultWakeEdge[i] = edgeCode;
+	}
+}
 typedef enum {
 	BTN_PRESS_DOWN = 0,
 	BTN_PRESS_UP,
@@ -142,7 +162,7 @@ void PINS_BeginDeepSleepWithPinWakeUp() {
 			// https://www.elektroda.pl/rtvforum/viewtopic.php?p=20543190#20543190
 			// forcing a certain edge for both states helps on some door sensors, somehow
 			// 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising
-			if (g_defaultDoorWakeEdge == 2) {
+			if (g_defaultWakeEdge == NULL || g_defaultWakeEdge[i] == 2) {
 				value = HAL_PIN_ReadDigitalInput(i);
 				if (value) {
 					// on falling edge wake up
@@ -154,7 +174,7 @@ void PINS_BeginDeepSleepWithPinWakeUp() {
 				}
 			}
 			else {
-				falling = g_defaultDoorWakeEdge;
+				falling = g_defaultWakeEdge[i];
 			}
 			setGPIActive(i, 1, falling);
 		}
@@ -306,12 +326,22 @@ void RAW_SetPinValue(int index, int iVal) {
 	}
 }
 void Button_OnPressRelease(int index) {
+	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
+		return;
+	}
 	// fire event - button on pin <index> was released
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ONRELEASE, index);
 }
 void Button_OnInitialPressDown(int index)
 {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i Button_OnInitialPressDown\r\n", index);
+
+	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
+		return;
+	}
+
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ONPRESS, index);
 
 	// so-called SetOption13 - instant reaction to touch instead of waiting for release
@@ -354,6 +384,10 @@ void Button_OnInitialPressDown(int index)
 void Button_OnShortClick(int index)
 {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i key_short_press\r\n", index);
+	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
+		return;
+	}
 	// fire event - button on pin <index> was clicked
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ONCLICK, index);
 	// so-called SetOption13 - instant reaction to touch instead of waiting for release
@@ -394,6 +428,10 @@ void Button_OnShortClick(int index)
 void Button_OnDoubleClick(int index)
 {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i key_double_press\r\n", index);
+	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
+		return;
+	}
 	if (g_cfg.pins.roles[index] == IOR_Button_ToggleAll || g_cfg.pins.roles[index] == IOR_Button_ToggleAll_n)
 	{
 		CHANNEL_DoSpecialToggleAll();
@@ -419,6 +457,10 @@ void Button_OnDoubleClick(int index)
 void Button_OnTripleClick(int index)
 {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i key_triple_press\r\n", index);
+	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
+		return;
+	}
 	// fire event - button on pin <index> was 3clicked
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ON3CLICK, index);
 	if (g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs || g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs_n) {
@@ -430,17 +472,29 @@ void Button_OnTripleClick(int index)
 void Button_OnQuadrupleClick(int index)
 {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i key_quadruple_press\r\n", index);
+	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
+		return;
+	}
 	// fire event - button on pin <index> was 4clicked
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ON4CLICK, index);
 }
 void Button_On5xClick(int index)
 {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i key_5x_press\r\n", index);
+	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
+		return;
+	}
 	// fire event - button on pin <index> was 4clicked
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ON5CLICK, index);
 }
 void Button_OnLongPressHold(int index) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i Button_OnLongPressHold\r\n", index);
+	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
+		return;
+	}
 	// fire event - button on pin <index> was held
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ONHOLD, index);
 
@@ -458,21 +512,32 @@ void Button_OnLongPressHold(int index) {
 }
 void Button_OnLongPressHoldStart(int index) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i Button_OnLongPressHoldStart\r\n", index);
+	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
+		return;
+	}
 	// fire event - button on pin <index> was held
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ONHOLDSTART, index);
 }
 
 bool BTN_ShouldInvert(int index) {
+	int role;
 	if (index < 0 || index >= PLATFORM_GPIO_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "BTN_ShouldInvert: Pin index %i out of range <0,%i).", index, PLATFORM_GPIO_MAX);
 		return false;
 	}
-	if (g_cfg.pins.roles[index] == IOR_Button_n || g_cfg.pins.roles[index] == IOR_Button_ToggleAll_n ||
-		g_cfg.pins.roles[index] == IOR_DigitalInput_n || g_cfg.pins.roles[index] == IOR_DigitalInput_NoPup_n
-		|| g_cfg.pins.roles[index] == IOR_Button_NextColor_n || g_cfg.pins.roles[index] == IOR_Button_NextDimmer_n
-		|| g_cfg.pins.roles[index] == IOR_Button_NextTemperature_n || g_cfg.pins.roles[index] == IOR_Button_ScriptOnly_n
-		|| g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs_n) {
+	role = g_cfg.pins.roles[index];
+	if (role == IOR_Button_n || role == IOR_Button_ToggleAll_n ||
+		role == IOR_DigitalInput_n || role == IOR_DigitalInput_NoPup_n
+		|| role == IOR_Button_NextColor_n || role == IOR_Button_NextDimmer_n
+		|| role == IOR_Button_NextTemperature_n || role == IOR_Button_ScriptOnly_n
+		|| role == IOR_SmartButtonForLEDs_n) {
 		return true;
+	}
+	if (CFG_HasFlag(OBK_FLAG_DOORSENSOR_INVERT_STATE)) {
+		if (role == IOR_DoorSensorWithDeepSleep || role == IOR_DoorSensorWithDeepSleep_NoPup || role == IOR_DoorSensorWithDeepSleep_pd) {
+			return true;
+		}
 	}
 	return false;
 }
@@ -506,12 +571,13 @@ void NEW_button_init(pinButton_s* handle, uint8_t(*pin_level)(void* self), uint8
 	handle->button_level = handle->hal_button_Level(handle);
 	handle->active_level = active_level;
 }
-void CHANNEL_SetAllChannelsByType(int requiredType, int newVal) {
+void CHANNEL_SetFirstChannelByType(int requiredType, int newVal) {
 	int i;
 
 	for (i = 0; i < CHANNEL_MAX; i++) {
 		if (CHANNEL_GetType(i) == requiredType) {
 			CHANNEL_Set(i, newVal, 0);
+			return;
 		}
 	}
 }
@@ -544,6 +610,7 @@ void CHANNEL_SetAll(int iVal, int iFlags) {
 		case IOR_LED:
 		case IOR_LED_n:
 		case IOR_BAT_Relay:
+		case IOR_BAT_Relay_n:
 		case IOR_Relay:
 		case IOR_Relay_n:
 			CHANNEL_Set(g_cfg.pins.channels[i], iVal, iFlags);
@@ -596,8 +663,6 @@ void CHANNEL_DoSpecialToggleAll() {
 	}
 	for (i = 0; i < CHANNEL_MAX; i++) {
 		if (CHANNEL_IsPowerRelayChannel(i)) {
-			int valToSet;
-
 			CHANNEL_Set(i, !anyEnabled, 0);
 		}
 	}
@@ -657,6 +722,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_LED:
 		case IOR_LED_n:
 		case IOR_BAT_Relay:
+		case IOR_BAT_Relay_n:
 		case IOR_Relay:
 		case IOR_Relay_n:
 		case IOR_LED_WIFI:
@@ -795,6 +861,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_LED:
 		case IOR_LED_n:
 		case IOR_BAT_Relay:
+		case IOR_BAT_Relay_n:
 		case IOR_Relay:
 		case IOR_Relay_n:
 		{
@@ -805,7 +872,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			channelValue = g_channelValues[channelIndex];
 
 			HAL_PIN_Setup_Output(index);
-			if (role == IOR_LED_n || role == IOR_Relay_n) {
+			if (role == IOR_LED_n || role == IOR_Relay_n || role == IOR_BAT_Relay_n) {
 				HAL_PIN_SetOutputValue(index, !channelValue);
 			}
 			else {
@@ -932,7 +999,7 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 			if (g_cfg.pins.roles[i] == IOR_Relay || g_cfg.pins.roles[i] == IOR_BAT_Relay || g_cfg.pins.roles[i] == IOR_LED) {
 				RAW_SetPinValue(i, bOn);
 			}
-			else if (g_cfg.pins.roles[i] == IOR_Relay_n || g_cfg.pins.roles[i] == IOR_LED_n) {
+			else if (g_cfg.pins.roles[i] == IOR_Relay_n || g_cfg.pins.roles[i] == IOR_LED_n || g_cfg.pins.roles[i] == IOR_BAT_Relay_n) {
 				RAW_SetPinValue(i, !bOn);
 			}
 			else if (g_cfg.pins.roles[i] == IOR_PWM) {
@@ -963,43 +1030,150 @@ void CFG_ApplyChannelStartValues() {
 
 		iValue = g_cfg.startChannelValues[i];
 		if (iValue == -1) {
-			g_channelValues[i] = HAL_FlashVars_GetChannelValue(i);
+			g_channelValuesFloats[i] = g_channelValues[i] = HAL_FlashVars_GetChannelValue(i);
 			//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CFG_ApplyChannelStartValues: Channel %i is being set to REMEMBERED state %i", i, g_channelValues[i]);
 		}
 		else {
-			g_channelValues[i] = iValue;
+			g_channelValuesFloats[i] = g_channelValues[i] = iValue;
 			//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CFG_ApplyChannelStartValues: Channel %i is being set to constant state %i", i, g_channelValues[i]);
 		}
 	}
 }
-float CHANNEL_GetFinalValue(int channel) {
-	int iVal;
-	float dVal;
-	iVal = CHANNEL_Get(channel);
+int ChannelType_GetDecimalPlaces(int type) {
+	int pl;
 
-	switch (CHANNEL_GetType(channel))
+	int div = ChannelType_GetDivider(type);
+	int cur = 10;
+	for (pl = 0; pl < 6; pl++) {
+		if (div < cur)
+			return pl + 1;
+		cur *= 10;
+	}
+	return pl;
+}
+int ChannelType_GetDivider(int type) {
+	switch (type)
 	{
 	case ChType_Humidity_div10:
 	case ChType_Temperature_div10:
 	case ChType_Voltage_div10:
-		dVal = (float)iVal / 10;
-		break;
+	case ChType_Power_div10:
+	case ChType_Frequency_div10:
+		return 10;
 	case ChType_Frequency_div100:
 	case ChType_Current_div100:
 	case ChType_EnergyTotal_kWh_div100:
-		dVal = (float)iVal / 100;
-		break;
+	case ChType_Voltage_div100:
+	case ChType_PowerFactor_div100:
+	case ChType_Pressure_div100:
+	case ChType_Temperature_div100:
+		return 100;
 	case ChType_PowerFactor_div1000:
 	case ChType_EnergyTotal_kWh_div1000:
 	case ChType_EnergyExport_kWh_div1000:
 	case ChType_EnergyToday_kWh_div1000:
 	case ChType_Current_div1000:
-		dVal = (float)iVal / 1000;
-		break;
-	default:
-		dVal = (float)iVal;
-		break;
+	case ChType_LeakageCurrent_div1000:
+		return 1000;
+	case ChType_Temperature_div2:
+		return 2;
 	}
+	return 1;
+}
+const char *ChannelType_GetUnit(int type) {
+	switch (type)
+	{
+	case ChType_BatteryLevelPercent:
+	case ChType_Humidity:
+	case ChType_Humidity_div10:
+		return "%";
+	case ChType_Temperature_div100:
+	case ChType_Temperature_div10:
+	case ChType_Temperature_div2:
+	case ChType_Temperature:
+		return "C";
+	case ChType_Voltage_div100:
+	case ChType_Voltage_div10:
+		return "V";
+	case ChType_Power:
+	case ChType_Power_div10:
+		return "W";
+	case ChType_Frequency_div10:
+	case ChType_Frequency_div100:
+		return "Hz";
+	case ChType_LeakageCurrent_div1000:
+	case ChType_Current_div1000:
+	case ChType_Current_div100:
+		return "A";
+	case ChType_EnergyTotal_kWh_div1000:
+	case ChType_EnergyExport_kWh_div1000:
+	case ChType_EnergyToday_kWh_div1000:
+	case ChType_EnergyTotal_kWh_div100:
+		return "kWh";
+	case ChType_PowerFactor_div1000:
+	case ChType_PowerFactor_div100:
+		return "";
+	case ChType_Pressure_div100:
+		return "hPa";
+	case ChType_ReactivePower:
+		return "vAr";
+	case ChType_Illuminance:
+		return "Lux";
+	}
+	return "";
+}
+const char *ChannelType_GetTitle(int type) {
+	switch (type)
+	{
+	case ChType_BatteryLevelPercent:
+		return "Battery";
+	case ChType_Humidity:
+	case ChType_Humidity_div10:
+		return "Humidity";
+	case ChType_Temperature_div100:
+	case ChType_Temperature_div10:
+	case ChType_Temperature_div2:
+	case ChType_Temperature:
+		return "Temperature";
+	case ChType_Voltage_div100:
+	case ChType_Voltage_div10:
+		return "Voltage"; 
+	case ChType_Power:
+	case ChType_Power_div10:
+		return "Power";
+	case ChType_Frequency_div10:
+	case ChType_Frequency_div100:
+		return "Frequency";
+	case ChType_Current_div1000:
+	case ChType_Current_div100:
+		return "Current";
+	case ChType_LeakageCurrent_div1000:
+		return "Leakage"; 
+	case ChType_EnergyTotal_kWh_div1000:
+	case ChType_EnergyTotal_kWh_div100:
+		return "EnergyTotal";
+	case ChType_EnergyExport_kWh_div1000:
+		return "EnergyExport";
+	case ChType_EnergyToday_kWh_div1000:
+		return "EnergyToday";
+	case ChType_PowerFactor_div1000:
+	case ChType_PowerFactor_div100:
+		return "PowerFactor";
+	case ChType_Pressure_div100:
+		return "Pressure";
+	case ChType_ReactivePower:
+		return "ReactivePower";
+	case ChType_Illuminance:
+		return "Illuminance";
+	}
+	return "";
+}
+float CHANNEL_GetFinalValue(int channel) {
+	float dVal;
+
+	dVal = CHANNEL_Get(channel);
+	dVal /= ChannelType_GetDivider(CHANNEL_GetType(channel));
+
 	return dVal;
 }
 float CHANNEL_GetFloat(int ch) {
@@ -1309,7 +1483,7 @@ bool CHANNEL_ShouldBePublished(int ch) {
 		if (g_cfg.pins.channels[i] == ch) {
 			if (role == IOR_Relay || role == IOR_Relay_n
 				|| role == IOR_LED || role == IOR_LED_n
-				|| role == IOR_ADC || role == IOR_BAT_ADC || role == IOR_BAT_Relay
+				|| role == IOR_ADC || role == IOR_BAT_ADC 
 				|| role == IOR_CHT8305_DAT || role == IOR_SHT3X_DAT || role == IOR_SGP_DAT
 				|| role == IOR_DigitalInput || role == IOR_DigitalInput_n
 				|| role == IOR_DoorSensorWithDeepSleep || role == IOR_DoorSensorWithDeepSleep_NoPup
@@ -1350,6 +1524,7 @@ int CHANNEL_GetRoleForOutputChannel(int ch) {
 		if (g_cfg.pins.channels[i] == ch) {
 			switch (g_cfg.pins.roles[i]) {
 			case IOR_BAT_Relay:
+			case IOR_BAT_Relay_n:
 			case IOR_Relay:
 			case IOR_Relay_n:
 			case IOR_LED:
@@ -1686,10 +1861,17 @@ void PIN_ticks(void* param)
 					if (g_lastValidState[i] != value) {
 						// became up
 						g_lastValidState[i] = value;
-						CHANNEL_Toggle(g_cfg.pins.channels[i]);
-						// fire event - IOR_ToggleChannelOnToggle has been toggle
-						// Argument is a pin number (NOT channel)
-						EventHandlers_FireEvent(CMD_EVENT_PIN_ONTOGGLE, i);
+
+
+						if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
+							addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
+						}
+						else {
+							CHANNEL_Toggle(g_cfg.pins.channels[i]);
+							// fire event - IOR_ToggleChannelOnToggle has been toggle
+							// Argument is a pin number (NOT channel)
+							EventHandlers_FireEvent(CMD_EVENT_PIN_ONTOGGLE, i);
+						}
 						// lock for given time
 						g_times[i] = debounceMS;
 					}
@@ -1786,10 +1968,21 @@ const char* g_channelTypeNames[] = {
 	"OffDimBright",
 	"LowMidHighHighest",
 	"OffLowMidHighHighest",
-	"error",
-	"error",
-	"error",
-	"error",
+	"Custom",
+	"Power_div10",
+	"ReadOnlyLowMidHigh",
+	"SmokePercent",
+	"Illuminance",
+	"Toggle_Inv",
+	"OffOnRemember",
+	"Voltage_div100",
+	"Temperature_div2",
+	"TimerSeconds",
+	"Frequency_div10",
+	"PowerFactor_div100",
+	"Pressure_div100",
+	"Temperature_div100",
+	"LeakageCurrent_div1000",
 	"error",
 	"error",
 };
@@ -1914,7 +2107,6 @@ void PIN_get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount) {
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		int role = PIN_GetPinRoleForPinIndex(i);
 		switch (role) {
-		case IOR_BAT_Relay:
 		case IOR_Relay:
 		case IOR_Relay_n:
 		case IOR_LED:
@@ -1980,7 +2172,7 @@ int h_isChannelRelay(int tg_ch) {
 		if (tg_ch != ch)
 			continue;
 		role = PIN_GetPinRoleForPinIndex(i);
-		if (role == IOR_BAT_Relay || role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
+		if (role == IOR_Relay || role == IOR_Relay_n || role == IOR_LED || role == IOR_LED_n) {
 			return true;
 		}
 		if ((role == IOR_BridgeForward) || (role == IOR_BridgeReverse))

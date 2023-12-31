@@ -30,21 +30,23 @@
 #include "mqtt/new_mqtt.h"
 #include "ota/ota.h"
 
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 #include "littlefs/our_lfs.h"
 #endif
 
 
 #include "driver/drv_ntp.h"
 #include "driver/drv_ssdp.h"
+#include "driver/drv_uart.h"
 
 #ifdef PLATFORM_BEKEN
 #include <mcu_ps.h>
 #include <fake_clock_pub.h>
+#include <BkDriverWdg.h>
 void bg_register_irda_check_func(FUNCPTR func);
 #endif
 
-static int g_secondsElapsed = 0;
+int g_secondsElapsed = 0;
 // open access point after this number of seconds
 int g_openAP = 0;
 // connect to wifi after this number of seconds
@@ -165,10 +167,6 @@ void MAIN_ScheduleUnsafeInit(int delSeconds) {
 }
 void RESET_ScheduleModuleReset(int delSeconds) {
 	g_reset = delSeconds;
-}
-
-int Time_getUpTimeSeconds() {
-	return g_secondsElapsed;
 }
 
 
@@ -359,6 +357,7 @@ bool Main_HasFastConnect() {
 	}
 	return false;
 }
+static byte g_secondsSpentInLowMemoryWarning = 0;
 void Main_OnEverySecond()
 {
 	int newMQTTState;
@@ -397,8 +396,12 @@ void Main_OnEverySecond()
 	g_noMQTTTime = i;
 
 	MQTT_Dedup_Tick();
+	LED_RunOnEverySecond();
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602)
+	UART_RunEverySecond();
+#endif
 #endif
 
 #if WINDOWS
@@ -412,6 +415,19 @@ void Main_OnEverySecond()
 		CFG_Save_IfThereArePendingChanges();
 	}
 
+	// On Beken, do reboot if we ran into heap size problem
+#if PLATFORM_BEKEN
+	if (xPortGetFreeHeapSize() < 25 * 1000) {
+		g_secondsSpentInLowMemoryWarning++;
+		ADDLOGF_ERROR("Low heap warning!\n");
+		if (g_secondsSpentInLowMemoryWarning > 5) {
+			HAL_RebootModule();
+		}
+	}
+	else {
+		g_secondsSpentInLowMemoryWarning = 0;
+	}
+#endif
 	if (bSafeMode == 0) {
 		const char* ip = HAL_GetMyIPString();
 		// this will return non-zero if there were any changes
@@ -872,7 +888,7 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	PIN_AddCommands();
 	ADDLOGF_DEBUG("Initialised pins\r\n");
 
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 	// initialise the filesystem, only if present.
 	// don't create if it does not mount
 	// do this for ST mode only, as it may be something in FS which is killing us,
@@ -902,6 +918,9 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	// so ALL commands expected in autoexec.bat should have been registered by now...
 	// but DON't run autoexec if we have had 2+ boot failures
 	CMD_Init_Early();
+#if WINDOWS
+	CMD_InitSimulatorOnlyCommands();
+#endif
 
 	/* Automatic disable of PIN MONITOR after reboot */
 	if (CFG_HasFlag(OBK_FLAG_HTTP_PINMONITOR)) {
@@ -933,6 +952,11 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 			if (PIN_FindPinIndexForRole(IOR_BP1658CJ_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_BP1658CJ_DAT, -1) != -1) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("BP1658CJ");
+#endif
+			}
+			if (PIN_FindPinIndexForRole(IOR_KP18058_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_KP18058_DAT, -1) != -1) {
+#ifndef OBK_DISABLE_ALL_DRIVERS
+				DRV_StartDriver("KP18058");
 #endif
 			}
 			if (PIN_FindPinIndexForRole(IOR_BL0937_CF, -1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_CF1, -1) != -1
@@ -980,6 +1004,22 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 				DRV_StartDriver("TM1637");
 #endif
 			}
+			if ((PIN_FindPinIndexForRole(IOR_GN6932_CLK, -1) != -1) &&
+				(PIN_FindPinIndexForRole(IOR_GN6932_DAT, -1) != -1) &&
+				(PIN_FindPinIndexForRole(IOR_GN6932_STB, -1) != -1))
+			{
+#ifndef OBK_DISABLE_ALL_DRIVERS
+				DRV_StartDriver("GN6932");
+#endif
+			}
+			if ((PIN_FindPinIndexForRole(IOR_TM1638_CLK, -1) != -1) &&
+				(PIN_FindPinIndexForRole(IOR_TM1638_DAT, -1) != -1) &&
+				(PIN_FindPinIndexForRole(IOR_TM1638_STB, -1) != -1))
+			{
+#ifndef OBK_DISABLE_ALL_DRIVERS
+				DRV_StartDriver("TM1638");
+#endif
+			}
 		}
 	}
 
@@ -1024,7 +1064,7 @@ void Main_Init_Before_Delay()
 	}
 	CFG_InitAndLoad();
 
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 	LFSAddCmds();
 #endif
 

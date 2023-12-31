@@ -6,7 +6,7 @@
 #include "cmd_local.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 	#include "../littlefs/our_lfs.h"
 #endif
 
@@ -105,9 +105,8 @@ static commandResult_t cmnd_backlog(const void * context, const char *cmd, const
 	int count = 0;
     char copy[128];
     char *c;
-	if (stricmp(cmd, "backlog")){
-		return -1;
-	}
+	int localRes;
+	int res = CMD_RES_OK;
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "backlog [%s]", args);
 
 	subcmd = args;
@@ -126,19 +125,22 @@ static commandResult_t cmnd_backlog(const void * context, const char *cmd, const
 		}
 		*c = 0;
 		count++;
-		CMD_ExecuteCommand(copy, cmdFlags);
+		localRes = CMD_ExecuteCommand(copy, cmdFlags);
+		if (localRes != CMD_RES_OK) {
+			res = localRes;
+		}
 		subcmd = p;
 	}
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "backlog executed %d", count);
 
-	return CMD_RES_OK;
+	return res;
 }
 
 // Our wrapper for LFS.
 // Returns a buffer created with malloc.
 // You must free it later.
 byte *LFS_ReadFile(const char *fname) {
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 	if (lfs_present()){
 		lfs_file_t file;
 		int lfsres;
@@ -206,14 +208,56 @@ byte *LFS_ReadFile(const char *fname) {
 			ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: failed to file %s", fname);
 		}
 	} else {
+#if WINDOWS
+		// sstop sim spam
+#else
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "LFS_ReadFile: lfs is absent");
+#endif
 	}
 #endif
 	return 0;
 }
+int LFS_WriteFile(const char *fname, const byte *data, int len, bool bAppend) {
+#if ENABLE_LITTLEFS
+	init_lfs(1);
+	if (lfs_present()) {
+		lfs_file_t file;
+		int lfsres;
+
+		memset(&file, 0, sizeof(lfs_file_t));
+		if (bAppend) {
+			lfsres = lfs_file_open(&lfs, &file, fname, LFS_O_APPEND | LFS_O_WRONLY);
+		}
+		else {
+			lfs_remove(&lfs, fname);
+			lfsres = lfs_file_open(&lfs, &file, fname, LFS_O_CREAT | LFS_O_WRONLY);
+		}
+
+		if (lfsres >= 0) {
+			ADDLOG_DEBUG(LOG_FEATURE_CMD, "LFS_ReadFile: openned file %s", fname);
+
+			lfsres = lfs_file_write(&lfs, &file, data, len);
+			lfs_file_close(&lfs, &file);
+			ADDLOG_DEBUG(LOG_FEATURE_CMD, "LFS_ReadFile: closed file %s", fname);
+			return lfsres;
+		}
+		else {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: failed to file %s", fname);
+		}
+	}
+	else {
+#if WINDOWS
+		// sstop sim spam
+#else
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "LFS_WriteFile: lfs is absent");
+#endif
+	}
+#endif
+	return 1;
+}
 
 static commandResult_t cmnd_lfsexec(const void * context, const char *cmd, const char *args, int cmdFlags){
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "exec %s", args);
 	if (lfs_present()){
 		lfs_file_t *file = os_malloc(sizeof(lfs_file_t));

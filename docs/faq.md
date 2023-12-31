@@ -12,6 +12,9 @@ All questions/answers were taken from json file.
 **Question:** *I entered wrong SSID and my device is not accessible. How to recover?*<br>**A:** Do five short power on/power off cycles (but not too short, because device might have capacitors and they need to discharge every time). Device will go back to AP mode (aka Safe Mode). Remember that in Safe Mode, pins are disabled, drivers are also not run, so don't worry if you see your device seemingly not responding to buttons, etc, etc.
 
 
+**Question:** *My BL0937 power metering socket shows visible measurement spikes, what's wrong?*<br>**A:** Enabled PowerSave may cause it. Remove PowerSave 1 command from startup and reboot
+
+
 **Question:** *How do I enable more logging? How to make more logs visible?*<br>**A:** First type 'loglevel x' in console, where x is 0 to 7, default value is 3 (log all up to info), value 4 will also log debug logs, and value 5 will include 'extradebug'. Then, on online panel, also switch filter to 'All' (both steps must be done for logs to show up)
 
 
@@ -24,13 +27,16 @@ All questions/answers were taken from json file.
 **Question:** *How to make device discoverable by Windows?*<br>**A:** OpenBeken devices will show up in Windows Network if you run SSDP driver. This driver must be run at each startup. You could just do 'startDriver SSDP' in console but that will not run again after reboot, so either use Short Startup Command or autoexec.bat to run that command with each reboot
 
 
+**Question:** *How to remove autoexec.bat breaking the device in safe mode?*<br>**A:** You can use lfs_format command to clear LittleFS even in SafeMode. This can be useful if you've written a script that immediately shuts down or crashes OBK and prevents you from accessing the page.
+
+
 **Question:** *How to make device discoverable by Alexa?*<br>**A:** Just like with SSDP, but in this case you MUST run both SSDP and Wemo drivers. So, use that command for startup: backlog startDriver SSDP; startDriver Wemo
 
 
 **Question:** *My device name ends with 00000, is it normal?*<br>**A:** Device name is generated based on MAC, that would mean you have accidentally cleared your MAC, so see question below.
 
 
-**Question:** *I somehow lost my MAC address and I am unable to change it in Options! My MAC ends with 000000, how to fix?*<br>**A:** You have most likely overwrote the TLV header of RF partition of BK7231. You might have done something wrong while flashing or/and done unnecessary 'Erase all' for the chip. The RF partition is normaly NOT overwritten when a device is flashed correctly, because it starts far after the end of OBK binary. For BK7231, we have a way to restore it - open Web App, go to Flash tab, and press 'Restore RF Config'. Note that removing original RF partition (which was already done, if you have 00000) may slightly reduce your device WiFi range and perfomance
+**Question:** *I somehow lost my MAC address and I am unable to change it in Options! My MAC ends with 000000, how to fix?*<br>**A:** You have most likely overwrote the TLV header of RF partition of BK7231. You might have done something wrong while flashing or/and done unnecessary 'Erase all' for the chip. The RF partition is normaly NOT overwritten when a device is flashed correctly, because it starts far after the end of OBK binary. For BK7231, we have a way to restore it - open Web App, go to Flash tab, and press 'Restore RF Config'. Note that removing original RF partition (which was already done, if you have 00000) may slightly reduce your device WiFi range and performance
 
 
 **Question:** *How do I setup single button to control two relays (first on click, second on double click)?*<br>**A:** If you set a pin role to 'Button', you will get a second textbox after saving pins. First checkbox is a channel to toggle on single click, and second textbox is a channel to toggle on double click.
@@ -57,7 +63,7 @@ All questions/answers were taken from json file.
 **Question:** *My device does not publish channels, what's wrong?*<br>**A:** First make sure that MQTT status on main page is connected. Then check your flags - maybe you need to enable 'publish MQTT values on connect' or 'publish every N seconds' or 'publish all TuyaMCU channels'? Not all values are published by default.
 
 
-**Question:** *How to setup RGB LED which is using 'I2C' LED driver like SM2135?*<br>**A:** In case of SM2135 and similiar LED drivers, you need to figure out two pins - SDA and SCL lines of that driver. Set their roles for pins, then reboot. Then the LED driver will start, but you may also need to remap the order of colours with appropriate Map function, for example with SM2135_Map 0 2 1 3 4.<br>You can also [see this topic](https://www.elektroda.com/rtvforum/topic3906898.html)
+**Question:** *How to setup RGB LED which is using 'I2C' LED driver like SM2135?*<br>**A:** In case of SM2135 and similar LED drivers, you need to figure out two pins - SDA and SCL lines of that driver. Set their roles for pins, then reboot. Then the LED driver will start, but you may also need to remap the order of colours with appropriate Map function, for example with SM2135_Map 0 2 1 3 4.<br>You can also [see this topic](https://www.elektroda.com/rtvforum/topic3906898.html)
 
 
 **Question:** *How to enter multiple startup commands? For example, to start both NTP and BL0942 drivers?*<br>**A:** Use backlog - like in Tasmota. Open Config->Short startup command, and enter, for example: backlog startDriver BL0942; startDriver NTP; ntp_setServer 217.147.223.78.<br> Second option would to be open the Web Application, go to LittleFS tab, and just create autoexec.bat and enter commands there, each in new line.
@@ -73,6 +79,9 @@ All questions/answers were taken from json file.
 
 
 **Question:** *I flashed OpenBeken, configured my SSID and pass in AP mode, but now it does not connect to my WiFi, what's wrong?*<br>**A:** Multiple things may have gone wrong. <br>First of all, make sure you power your wifi module from reliable 3.3V power supply. This problem happens frequently on BL602 if you power module outside circuit from cheap 3.3V USB to UART converter.<br>Second issue might be just incorrect SSID/WiFi data - do 5 power off/on cycles to go to Safe Mode and correct the credentials.<br>Third issue happens on some BK modules. They might have RF partition broken. To fix that, use either our BK7231 flash tool, click button 'Restore RF partition', or in our Web Application, in Flash Tab, click 'Restore RF partition' button. This will also assign new MAC.
+
+
+**Question:** *How to disable MQTT?*<br>**A:** On MQTT configure page, just enter empty host name. Alternatively, use MqttHost ""  command
 
 
 **Question:** *How to configure ping watchdog to do a relay cycle when given IP does not respond for a given amount of time?*<br>**A:** See the following [example here](https://www.elektroda.com/rtvforum/viewtopic.php?p=20368812#20368812)

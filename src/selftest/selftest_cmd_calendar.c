@@ -1,14 +1,40 @@
 #ifdef WINDOWS
 
-#include "selftest_local.h".
+#include "selftest_local.h"
 
 void Test_Commands_Calendar() {
 	// reset whole device
 	SIM_ClearOBK(0);
 
 	CMD_ExecuteCommand("startDriver NTP", 0);
+	//CMD_ExecuteCommand("ntp_timeZoneOfs 0", 0);
 	// set 2022, 06, 10, 11:27:34, Friday
 	NTP_SetSimulatedTime(1654853254);
+
+	SELFTEST_ASSERT_EXPRESSION("$minute",27);
+	SELFTEST_ASSERT_EXPRESSION("$hour", 11);
+	SELFTEST_ASSERT_EXPRESSION("$second", 34);
+	SELFTEST_ASSERT_EXPRESSION("$day", 5);
+	//SELFTEST_ASSERT_EXPRESSION("$month", 5);
+	//SELFTEST_ASSERT_EXPRESSION("$year", 2022);
+
+//	CMD_ExecuteCommand("setChannel 5 $year", 0);
+//	SELFTEST_ASSERT_EXPRESSION("$CH5", 2022);
+
+//	CMD_ExecuteCommand("setChannel 5 $month", 0);
+//	SELFTEST_ASSERT_EXPRESSION("$CH5", 5);
+
+	CMD_ExecuteCommand("setChannel 5 $second", 0);
+	SELFTEST_ASSERT_EXPRESSION("$CH5", 34);
+
+	CMD_ExecuteCommand("setChannel 5 $minute", 0);
+	SELFTEST_ASSERT_EXPRESSION("$CH5", 27);
+
+	CMD_ExecuteCommand("setChannel 5 $hour", 0);
+	SELFTEST_ASSERT_EXPRESSION("$CH5", 11);
+
+	CMD_ExecuteCommand("setChannel 5 $hour+$minute", 0);
+	SELFTEST_ASSERT_EXPRESSION("$CH5", 11+27);
 
 	SELFTEST_ASSERT_CHANNEL(1, 0);
 
@@ -31,6 +57,8 @@ void Test_Commands_Calendar() {
 	SELFTEST_ASSERT_CHANNEL(1, 54);
 	SELFTEST_ASSERT_CHANNEL(2, 0);
 	SELFTEST_ASSERT_CHANNEL(3, (312+88));
+
+
 
 
 }

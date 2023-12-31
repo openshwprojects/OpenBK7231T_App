@@ -30,6 +30,18 @@
     "requires": ""
   },
   {
+    "name": "$FLAG**",
+    "title": "$FLAG**",
+    "descr": "Provides flag access, as above.",
+    "requires": ""
+  },
+  {
+    "name": "$FLAG*",
+    "title": "$FLAG*",
+    "descr": "Provides flag access, as above.",
+    "requires": ""
+  },
+  {
     "name": "$led_dimmer",
     "title": "$led_dimmer",
     "descr": "Current value of LED dimmer, 0-100 range",
@@ -102,6 +114,12 @@
     "requires": ""
   },
   {
+    "name": "$energy",
+    "title": "$energy",
+    "descr": "Current value of energy counter from energy metering chip",
+    "requires": ""
+  },
+  {
     "name": "$day",
     "title": "$day",
     "descr": "Current weekday from NTP",
@@ -126,9 +144,39 @@
     "requires": ""
   },
   {
+    "name": "$mday",
+    "title": "$mday",
+    "descr": "TODO",
+    "requires": ""
+  },
+  {
+    "name": "$month",
+    "title": "$month",
+    "descr": "TODO",
+    "requires": ""
+  },
+  {
+    "name": "$year",
+    "title": "$year",
+    "descr": "TODO",
+    "requires": ""
+  },
+  {
     "name": "$NTPOn",
     "title": "$NTPOn",
     "descr": "Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0.",
+    "requires": ""
+  },
+  {
+    "name": "$batteryVoltage",
+    "title": "$batteryVoltage",
+    "descr": "Battery driver voltage",
+    "requires": ""
+  },
+  {
+    "name": "$batteryLevel",
+    "title": "$batteryLevel",
+    "descr": "Battery driver level",
     "requires": ""
   },
   {

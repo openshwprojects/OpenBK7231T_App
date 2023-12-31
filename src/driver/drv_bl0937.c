@@ -1,5 +1,7 @@
 #include "drv_bl0937.h"
 
+#include <math.h>
+
 #include "../cmnds/cmd_public.h"
 #include "../hal/hal_pins.h"
 #include "../logging/logging.h"
@@ -171,7 +173,7 @@ void BL0937_Init(void) {
 	BL0937_Init_Pins();
 }
 
-void BL0937_RunFrame(void) {
+void BL0937_RunEverySecond(void) {
     float final_v;
 	float final_c;
 	float final_p;
@@ -284,5 +286,5 @@ void BL0937_RunFrame(void) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
 	}
 #endif
-	BL_ProcessUpdate(final_v, final_c, final_p, 0.0f);
+	BL_ProcessUpdate(final_v, final_c, final_p, NAN, NAN);
 }

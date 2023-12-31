@@ -2,7 +2,7 @@
 #define __HAL_WIFI_H__
 
 #define MAC2STR(a) (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5]
-#define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x "
+#define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x"
 
 typedef enum HALWifiStatus {
 	WIFI_UNDEFINED,
@@ -28,6 +28,9 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code));
 // This must return correct IP for both SOFT_AP and STATION modes,
 // because, for example, javascript control panel requires it
 const char* HAL_GetMyIPString();
+const char* HAL_GetMyGatewayString();
+const char* HAL_GetMyDNSString();
+const char* HAL_GetMyMaskString();
 const char* HAL_GetMACStr(char* macstr);
 void WiFI_GetMacAddress(char* mac);
 int WiFI_SetMacAddress(char* mac);

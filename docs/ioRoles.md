@@ -74,4 +74,13 @@ Do not add anything here, as it will overwritten with next rebuild.
 | SGP_CLK | SGP Quality Sensor Clock line. will autostart related driver |
 | SGP_DAT | SGP Quality Sensor Data line. will autostart related driver |
 | ADC_Button | Single ADC with multiple buttons connected.d |
+| GN6932_CLK | QQQ |
+| GN6932_DAT | QQQ |
+| GN6932_STB | QQQ |
+| TM1638_CLK | QQQ |
+| TM1638_DAT | QQQ |
+| TM1638_STB | QQQ |
+| BAT_Relay_n | Like BAT_Relay, but inversed. See [battery driver topic here](https://www.elektroda.com/rtvforum/topic3959103.html) |
+| KP18058_CLK | QQQ |
+| KP18058_DAT | QQQ |
 | Total_Options | Current total number of available IOR roles |

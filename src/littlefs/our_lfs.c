@@ -21,7 +21,7 @@
 //https://github.com/littlefs-project/littlefs
 
 
-#ifdef ENABLE_LITTLEFS
+#if ENABLE_LITTLEFS
 // define the feature ADDLOGF_XXX will use
 #define LOG_FEATURE LOG_FEATURE_LFS
 

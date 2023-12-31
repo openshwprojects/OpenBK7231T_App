@@ -39,4 +39,19 @@ Do not add anything here, as it will overwritten with next rebuild.
 | OffDimBright |  A 3 options radio button for lighting control. |
 | LowMidHighHighest |  Like LowMidHigh, but with 4 options. Some of TuyaMCU fans might require that. |
 | OffLowMidHighHighest |  Like LowMidHigh, but with 5 options. Some of TuyaMCU fans might require that. |
+| Custom |  A custom channel type that is still send to HA. |
+| Power_div10 |  Just like power, but with one decimal place (but stored as integer, for TuyaMCU support) |
+| ReadOnlyLowMidHigh |  Like LowMidHigh, but just read only |
+| SmokePercent |  Smoke percentage |
+| Illuminance |  Illuminance in Lux |
+| Toggle_Inv |  Like a Toggle, but inverted states. |
+| OffOnRemember |  Radio buttons with 3 options: off, on and 'remember'. This is used for TuyaMCU memory state |
+| Voltage_div100 |  For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI |
+| Temperature_div2 |  Just like ChType_Temperature_div10, but for multiplied by 0.5. |
+| TimerSeconds |  This will display time formatted to minutes, hours, etc. |
+| Frequency_div10 |  For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI |
+| PowerFactor_div100 |  For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI |
+| Pressure_div100 |  . |
+| Temperature_div100 |  Just like humidity_div100, but for temperature. |
+| LeakageCurrent_div1000 |  . |
 | Max |  This is the current total number of available channel types. |

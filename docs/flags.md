@@ -45,3 +45,9 @@ Do not add anything here, as it will overwritten with next rebuild.
 | 37 | [WiFi] Quick connect to WiFi on reboot (TODO: check if it works for you and report on github) |
 | 38 | [Power] Set power and current to zero if all relays are open |
 | 39 | [MQTT] [Debug] Publish all channels (don't enable it, it will be publish all 64 possible channels on connect) |
+| 40 | [MQTT] Use kWh unit for energy consumption (total, last hour, today) instead of Wh |
+| 41 | [BTN] Ignore all button events (aka child lock) |
+| 42 | [DoorSensor] Invert state |
+| 43 | [TuyaMCU] Use queue |
+| 44 | [HTTP] Disable authentication in safe mode (not recommended) |
+| 45 | [MQTT Discovery] Don't merge toggles and dimmers into lights |

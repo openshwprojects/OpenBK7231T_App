@@ -14,8 +14,10 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 	SelfTest_Failed(__FILE__, __FUNCTION__, __LINE__, #expr)
 
 #define SELFTEST_ASSERT_FLOATCOMPARE(exp, res) SELFTEST_ASSERT(Float_Equals(exp, res));
+#define SELFTEST_ASSERT_FLOATCOMPAREEPSILON(exp, res, eps) SELFTEST_ASSERT(Float_EqualsEpsilon(exp, res, eps));
 #define SELFTEST_ASSERT_EXPRESSION(exp, res) SELFTEST_ASSERT(Float_Equals(CMD_EvaluateExpression(exp,0), res));
 #define SELFTEST_ASSERT_CHANNEL(channelIndex, res) SELFTEST_ASSERT(Float_Equals(CHANNEL_Get(channelIndex), res));
+#define SELFTEST_ASSERT_CHANNELEPSILON(channelIndex, res, marg) SELFTEST_ASSERT(Float_EqualsEpsilon(CHANNEL_Get(channelIndex), res, marg));
 #define SELFTEST_ASSERT_CHANNELTYPE(channelIndex, res) SELFTEST_ASSERT(CHANNEL_GetType(channelIndex)==res);
 #define SELFTEST_ASSERT_PIN_BOOLEAN(pinIndex, res) SELFTEST_ASSERT((SIM_GetSimulatedPinValue(pinIndex)== res));
 #define SELFTEST_ASSERT_ARGUMENT(argumentIndex, res) SELFTEST_ASSERT(!strcmp(Tokenizer_GetArg(argumentIndex), res));
@@ -35,12 +37,17 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 #define SELFTEST_ASSERT_FLAG(flag, value) SELFTEST_ASSERT(CFG_HasFlag(flag)==value);
 #define SELFTEST_ASSERT_HAS_MQTT_JSON_SENT(topic, bPrefixMode) SELFTEST_ASSERT(!SIM_BeginParsingMQTTJSON(topic, bPrefixMode));
 #define SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY(topic, bPrefixMode, object1, object2, key, value) SELFTEST_ASSERT(SIM_HasMQTTHistoryStringWithJSONPayload(topic, bPrefixMode, object1, object2, key, value));
-
+#define SELFTEST_ASSERT_HAS_SENT_UART_STRING(str) SELFTEST_ASSERT(SIM_UART_ExpectAndConsumeHexStr(str));
+#define SELFTEST_ASSERT_HAS_UART_EMPTY() SELFTEST_ASSERT(SIM_UART_GetDataSize()==0);
 
 //#define FLOAT_EQUALS (a,b) (fabs(a-b)<0.001f)
 inline bool Float_Equals(float a, float b) {
 	float res = fabs(a - b);
 	return res < 0.001f;
+}
+inline bool Float_EqualsEpsilon(float a, float b, float epsilon) {
+	float res = fabs(a - b);
+	return res < epsilon;
 }
 
 #define VA_BUFFER_SIZE 4096
@@ -61,7 +68,9 @@ inline const char *va(const char *fmt, ...) {
 	return p;
 }
 
-
+void Test_Battery();
+void Test_Flash_Search();
+void Test_JSON_Lib();
 void Test_Commands_Startup();
 void Test_TwoPWMsOneChannel();
 void Test_ClockEvents();
@@ -79,6 +88,7 @@ void Test_RepeatingEvents();
 void Test_HTTP_Client();
 void Test_DeviceGroups();
 void Test_NTP();
+void Test_NTP_SunsetSunrise();
 void Test_MQTT();
 void Test_Tasmota();
 void Test_EnergyMeter();
@@ -86,6 +96,8 @@ void Test_DHT();
 void Test_Flags();
 void Test_MultiplePinsOnChannel();
 void Test_HassDiscovery();
+void Test_HassDiscovery_Base();
+void Test_HassDiscovery_Ext();
 void Test_Demo_ExclusiveRelays();
 void Test_MapRanges();
 void Test_Demo_MapFanSpeedToRelays();
@@ -101,6 +113,9 @@ void Test_Demo_ButtonToggleGroup();
 void Test_Role_ToggleAll_2();
 void Test_WaitFor();
 void Test_IF_Inside_Backlog();
+void Test_MQTT_Get_LED_EnableAll();
+void Test_TuyaMCU_BatteryPowered();
+void Test_ChargeLimitDriver();
 
 void Test_GetJSONValue_Setup(const char *text);
 void Test_FakeHTTPClientPacket_GET(const char *tg);
@@ -133,5 +148,15 @@ const char *SIM_GetMQTTHistoryString(const char *topic, bool bPrefixMode);
 bool SIM_BeginParsingMQTTJSON(const char *topic, bool bPrefixMode);
 
 void SIM_SimulateUserClickOnPin(int pin);
+
+// simulated UART
+void SIM_UART_InitReceiveRingBuffer(int size);
+int SIM_UART_GetDataSize();
+byte SIM_UART_GetByte(int index);
+void SIM_UART_ConsumeBytes(int idx);
+void SIM_AppendUARTByte(byte rc);
+bool SIM_UART_ExpectAndConsumeHByte(byte b);
+bool SIM_UART_ExpectAndConsumeHexStr(const char *hexString);
+void SIM_ClearUART();
 
 #endif

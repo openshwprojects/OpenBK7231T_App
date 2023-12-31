@@ -375,6 +375,7 @@ int wal_stricmp(const char *a, const char *b) ;
 
 const char* skipToNextWord(const char* p);
 char *strdup(const char *s);
+void stripDecimalPlaces(char *p, int maxDecimalPlaces);
 int wal_stricmp(const char *a, const char *b);
 int wal_strnicmp(const char *a, const char *b, int count);
 int strcat_safe(char *tg, const char *src, int tgMaxLen);
@@ -385,7 +386,6 @@ int strIsInteger(const char *s);
 const char* strcasestr(const char* str1, const char* str2);
 
 // user_main.c
-int Time_getUpTimeSeconds();
 char Tiny_CRC8(const char *data,int length);
 void RESET_ScheduleModuleReset(int delSeconds);
 void MAIN_ScheduleUnsafeInit(int delSeconds);
@@ -442,6 +442,7 @@ extern int g_timeSinceLastPingReply;
 extern int g_startPingWatchDogAfter;
 extern int g_openAP;
 extern int g_bootFailures;
+extern int g_secondsElapsed;
 
 typedef int(*jsonCb_t)(void *userData, const char *fmt, ...);
 int JSON_ProcessCommandReply(const char *cmd, const char *args, void *request, jsonCb_t printer, int flags);
@@ -449,6 +450,7 @@ void ScheduleDriverStart(const char *name, int delay);
 bool isWhiteSpace(char ch);
 void convert_IP_to_string(char *o, unsigned char *ip);
 int str_to_ip(const char *s, byte *ip);
+int STR_ReplaceWhiteSpacesWithUnderscore(char *p);
 
 #endif /* __NEW_COMMON_H__ */
 

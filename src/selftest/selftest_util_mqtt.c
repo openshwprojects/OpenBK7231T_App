@@ -65,6 +65,18 @@ bool SIM_CheckMQTTHistoryForString(const char *topic, const char *value, bool bR
 	}
 	return false;
 }
+bool ST_IsIntegerString(const char *s) {
+	if (s == 0)
+		return false;
+	if (*s == 0)
+		return false;
+	while (*s) {
+		if (isdigit(*s) == false)
+			return false;
+		s++;
+	}
+	return true;
+}
 bool SIM_HasMQTTHistoryStringWithJSONPayload(const char *topic, bool bPrefixMode, const char *object1, const char *object2, const char *key, const char *value) {
 	mqttHistoryEntry_t *ne;
 	int cur = history_tail;
@@ -96,9 +108,21 @@ bool SIM_HasMQTTHistoryStringWithJSONPayload(const char *topic, bool bPrefixMode
 					if (tmp) {
 						tmp = cJSON_GetObjectItemCaseSensitive(tmp, key);
 						if (tmp) {
-							const char *ret = tmp->valuestring;
-							if (!strcmp(ret, value)) {
-								return true;
+							if (tmp->valuestring) {
+								const char *ret = tmp->valuestring;
+								if (!strcmp(ret, value)) {
+									return true;
+								}
+							}
+							else {
+								if (ST_IsIntegerString(value)) {
+									if (atoi(value) == tmp->valueint) {
+										return true;
+									}
+								}
+								else {
+									printf("TODO: float compare selftest");
+								}
 							}
 						}
 					}
@@ -170,6 +194,7 @@ void SIM_OnMQTTPublish(const char *topic, const char *value, int len, int qos, b
 		f = fopen("sim_lastPublish.txt", "wb");
 		if (f != 0) {
 			fprintf(f, "Topic: %s", topic);
+			fprintf(f, "\n");
 			fprintf(f, "Payload: %s", value);
 			fclose(f);
 		}
@@ -177,6 +202,7 @@ void SIM_OnMQTTPublish(const char *topic, const char *value, int len, int qos, b
 			f = fopen("sim_lastPublish_long.txt", "wb");
 			if (f != 0) {
 				fprintf(f, "Topic: %s", topic);
+				fprintf(f, "\n");
 				fprintf(f, "Payload: %s", value);
 				fclose(f);
 			}
@@ -185,6 +211,7 @@ void SIM_OnMQTTPublish(const char *topic, const char *value, int len, int qos, b
 		if (f != 0) {
 			fprintf(f, "\n");
 			fprintf(f, "Topic: %s", topic);
+			fprintf(f, "\n");
 			fprintf(f, "Payload: %s", value);
 			fclose(f);
 		}

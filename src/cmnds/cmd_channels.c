@@ -12,6 +12,8 @@
 int g_hiddenChannels = 0;
 static char *g_channelLabels[CHANNEL_MAX] = { 0 };
 static int g_bHideTogglePrefix = 0;
+// same, for hiding from MQTT
+int g_doNotPublishChannels = 0;
 
 void CHANNEL_SetLabel(int ch, const char *s, int bHideTogglePrefix) {
 	if (ch < 0)
@@ -34,6 +36,16 @@ bool CHANNEL_ShouldAddTogglePrefixToUI(int ch) {
 		return false;
 	return true;
 }
+bool CHANNEL_HasNeverPublishFlag(int ch) {
+	if (ch < 0)
+		return false;
+	if (ch >= 32)
+		return false;
+	if (BIT_CHECK(g_doNotPublishChannels, ch))
+		return true;
+	return false;
+}
+
 const char *CHANNEL_GetLabel(int ch) {
 	if (ch >= 0 && ch < CHANNEL_MAX) {
 		if (g_channelLabels[ch])
@@ -47,7 +59,7 @@ const char *CHANNEL_GetLabel(int ch) {
 static commandResult_t CMD_SetChannelLabel(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int ch;
 	const char *s;
-	int bHideTogglePrefix = 0;
+	int bHideTogglePrefix = 1;
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 	// following check must be done after 'Tokenizer_TokenizeString',
@@ -60,7 +72,7 @@ static commandResult_t CMD_SetChannelLabel(const void *context, const char *cmd,
 	ch = Tokenizer_GetArgInteger(0);
 	s = Tokenizer_GetArg(1);
 	if (Tokenizer_GetArgsCount() > 2) {
-		bHideTogglePrefix = Tokenizer_GetArg(2);
+		bHideTogglePrefix = Tokenizer_GetArgInteger(2);
 	}
 
 	CHANNEL_SetLabel(ch, s, bHideTogglePrefix);
@@ -82,7 +94,7 @@ static commandResult_t CMD_Ch(const void *context, const char *cmd, const char *
 
 	p = cmd + 2;
 	type = *p;
-	if (p == '+') {
+	if (*p == '+') {
 		p++;
 	}
 	ch = atoi(p);
@@ -356,6 +368,32 @@ static commandResult_t CMD_SetChannelVisible(const void *context, const char *cm
 
 	return CMD_RES_OK;
 }
+// hide/show channel from MQTT
+static commandResult_t CMD_SetChannelPrivate(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	int targetCH;
+	int bOn;
+
+	Tokenizer_TokenizeString(args, 0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	targetCH = Tokenizer_GetArgInteger(0);
+	bOn = Tokenizer_GetArgInteger(1);
+
+	if (bOn) {
+		// private means "do not publish"
+		BIT_SET(g_doNotPublishChannels, targetCH);
+	}
+	else {
+		BIT_CLEAR(g_doNotPublishChannels, targetCH);
+	}
+
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_GetReadings(const void *context, const char *cmd, const char *args, int cmdFlags){
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	char tmp[96];
@@ -431,26 +469,6 @@ static commandResult_t CMD_FullBootTime(const void *context, const char *cmd, co
 
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_SetFlag(const void *context, const char *cmd, const char *args, int cmdFlags) {
-	const char *s;
-	int flag;
-	int bOn;
-	Tokenizer_TokenizeString(args, 0);
-	// following check must be done after 'Tokenizer_TokenizeString',
-	// so we know arguments count in Tokenizer. 'cmd' argument is
-	// only for warning display
-	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
-	s = CFG_GetDeviceName();
-	flag = Tokenizer_GetArgInteger(0);
-	bOn = Tokenizer_GetArgInteger(1);
-
-	CFG_SetFlag(flag, bOn);
-	ADDLOG_INFO(LOG_FEATURE_CMD, "Flag %i set to %i",flag,bOn);
-
-	return CMD_RES_OK;
-}
 static commandResult_t CMD_PinDeepSleep(const void *context, const char *cmd, const char *args, int cmdFlags){
 	g_bWantPinDeepSleep = 1;
 	return CMD_RES_OK;
@@ -516,11 +534,6 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_PinDeepSleep","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PinDeepSleep", CMD_PinDeepSleep, NULL);
-	//cmddetail:{"name":"SetFlag","args":"[FlagIndex][1or0]",
-	//cmddetail:"descr":"Enables/disables given flag.",
-	//cmddetail:"fn":"CMD_SetFlag","file":"cmnds/cmd_channels.c","requires":"",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("SetFlag", CMD_SetFlag, NULL);
 	//cmddetail:{"name":"FullBootTime","args":"[Value]",
 	//cmddetail:"descr":"Sets time in seconds after which boot is marked as valid. This is related to emergency AP mode which is enabled by powering on/off device 5 times quickly.",
 	//cmddetail:"fn":"CMD_FullBootTime","file":"cmnds/cmd_channels.c","requires":"",
@@ -537,7 +550,7 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MapRanges", CMD_MapRanges, NULL);
 	//cmddetail:{"name":"Map","args":"[TargetChannel][InputValue][InMin][InMax][OutMin][OutMax]",
-	//cmddetail:"descr":"qqq",
+	//cmddetail:"descr":"Used to convert a value from one range into a proportional value of another range.",
 	//cmddetail:"fn":"CMD_Map","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Map", CMD_Map, NULL);
@@ -546,6 +559,11 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_SetChannelVisible","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetChannelVisible", CMD_SetChannelVisible, NULL);
+	//cmddetail:{"name":"SetChannelPrivate","args":"[ChannelIndex][bPrivate]",
+	//cmddetail:"descr":"Channels marked as private are NEVER published via MQTT.",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("SetChannelPrivate", CMD_SetChannelPrivate, NULL);
 	//cmddetail:{"name":"Ch","args":"[InputValue]",
 	//cmddetail:"descr":"An alternate command to access channels. It returns all used channels in JSON format. The syntax is ChINDEX value, there is no space between Ch and channel index. It can be sent without value to poll channel values.",
 	//cmddetail:"fn":"CMD_Ch","file":"cmnds/cmd_channels.c","requires":"",

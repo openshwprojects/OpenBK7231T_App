@@ -10,7 +10,7 @@
 
 extern uint8_t g_StartupDelayOver;
 
-int loglevel = LOG_INFO; // default to info
+int g_loglevel = LOG_INFO; // default to info
 unsigned int logfeatures = (
 	(1 << 0) |
 	(1 << 1) |
@@ -128,16 +128,53 @@ static struct tag_logMemory {
 static int initialised = 0;
 static int tcpLogStarted = 0;
 
+commandResult_t log_command(const void* context, const char* cmd, const char* args, int cmdFlags);
+
 #if PLATFORM_BEKEN
 // to get uart.h
 #include "command_line.h"
 
-#define UART_PORT UART2_PORT 
-#define UART_DEV_NAME UART2_DEV_NAME
-#define UART_PORT_INDEX 1 
+int UART_PORT = UART2_PORT;
+int UART_PORT_INDEX = 1;
+
+
+commandResult_t log_port(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int idx;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	idx = Tokenizer_GetArgInteger(0);
+	switch (idx) {
+	case 1:
+		UART_PORT = UART1_PORT;
+		UART_PORT_INDEX = 0;
+		break;
+	case 2:
+		UART_PORT = UART2_PORT;
+		UART_PORT_INDEX = 1;
+		break;
+	}
+
+	return CMD_RES_OK;
+}
 #endif
 
-commandResult_t log_command(const void* context, const char* cmd, const char* args, int cmdFlags);
+// Here is how you can get log print on UART1:
+/*
+// Enable "[UART] Enable UART command line"
+// this also can be done in flags, enable command line on UART1 at 115200 baud
+SetFlag 31 1
+// UART1 is RXD1/TXD1 which is used for programming and for TuyaMCU/BL0942,
+// but now we will set that UART1 is used for log
+logPort 1 
+*/
 
 static void initLog(void)
 {
@@ -146,8 +183,8 @@ static void initLog(void)
 	logMemory.mutex = xSemaphoreCreateMutex();
 	initialised = 1;
 	startSerialLog();
-	HTTP_RegisterCallback("/logs", HTTP_GET, http_getlog);
-	HTTP_RegisterCallback("/lograw", HTTP_GET, http_getlograw);
+	HTTP_RegisterCallback("/logs", HTTP_GET, http_getlog, 1);
+	HTTP_RegisterCallback("/lograw", HTTP_GET, http_getlograw, 1);
 
 	//cmddetail:{"name":"loglevel","args":"[Value]",
 	//cmddetail:"descr":"Correct values are 0 to 7. Default is 3. Higher value includes more logs. Log levels are: ERROR = 1, WARN = 2, INFO = 3, DEBUG = 4, EXTRADEBUG = 5. WARNING: you also must separately select logging level filter on web panel in order for more logs to show up there",
@@ -169,6 +206,13 @@ static void initLog(void)
 	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("logdelay", log_command, NULL);
+#if PLATFORM_BEKEN
+	//cmddetail:{"name":"logport","args":"[Index]",
+	//cmddetail:"descr":"Allows you to change log output port. On Beken, the UART1 is used for flashing and for TuyaMCU/BL0942, while UART2 is for log. Sometimes it might be easier for you to have log on UART1, so now you can just use this command like backlog uartInit 115200; logport 1 to enable logging on UART1..",
+	//cmddetail:"fn":"log_port","file":"logging/logging.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("logport", log_port, NULL);
+#endif
 
 	bk_printf("Commands registered!\r\n");
 	bk_printf("initLog() done!\r\n");
@@ -245,7 +289,7 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 	if (!((1 << feature) & logfeatures)) {
 		return;
 	}
-	if (level > loglevel) {
+	if (level > g_loglevel) {
 		return;
 	}
 
@@ -704,7 +748,7 @@ commandResult_t log_command(const void* context, const char* cmd, const char* ar
 			res = sscanf(args, "%d", &level);
 			if (res == 1) {
 				if ((level >= 0) && (level <= 9)) {
-					loglevel = level;
+					g_loglevel = level;
 					result = CMD_RES_OK;
 					ADDLOG_DEBUG(LOG_FEATURE_CMD, "loglevel set %d", level);
 				}
@@ -714,7 +758,7 @@ commandResult_t log_command(const void* context, const char* cmd, const char* ar
 				}
 			}
 			else {
-				ADDLOG_ERROR(LOG_FEATURE_CMD, "loglevel '%s' invalid? current is %i", args, loglevel);
+				ADDLOG_ERROR(LOG_FEATURE_CMD, "loglevel '%s' invalid? current is %i", args, g_loglevel);
 				result = CMD_RES_BAD_ARGUMENT;
 			}
 			break;
