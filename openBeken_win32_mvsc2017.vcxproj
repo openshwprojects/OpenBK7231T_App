@@ -268,6 +268,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Win322|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\base64\base64.c" />
     <ClCompile Include="src\bitmessage\bitmessage_read.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -538,6 +539,7 @@
     <ClCompile Include="src\httpserver\hass.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\httpserver\http_basic_auth.c" />
     <ClCompile Include="src\httpserver\http_fns.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -969,6 +971,7 @@
     <ClCompile Include="src\selftest\selftest_if_inside_backlog.c" />
     <ClCompile Include="src\selftest\selftest_json_lib.c" />
     <ClCompile Include="src\selftest\selftest_mqtt_get.c" />
+    <ClCompile Include="src\selftest\selftest_ntp_sunsetSunrise.c" />
     <ClCompile Include="src\selftest\selftest_role_toggleAll_2.c" />
     <ClCompile Include="src\selftest\selftest_cfg_via_http.c" />
     <ClCompile Include="src\selftest\selftest_changeHandlers.c" />
@@ -1066,6 +1069,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\base64\base64.h" />
     <ClInclude Include="src\driver\drv_bl0937.h" />
     <ClInclude Include="src\driver\drv_bl0942.h" />
     <ClInclude Include="src\driver\drv_cht8305.h" />
@@ -1080,6 +1084,7 @@
     <ClInclude Include="src\driver\drv_test_drivers.h" />
     <ClInclude Include="src\driver\drv_tm1637.h" />
     <ClInclude Include="src\driver\drv_tm_gn_display_shared.h" />
+    <ClInclude Include="src\httpserver\http_basic_auth.h" />
     <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ac_LG.h" />
     <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ac_LG.hpp" />
     <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\digitalWriteFast.h" />
