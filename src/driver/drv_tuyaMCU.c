@@ -1090,7 +1090,7 @@ void TuyaMCU_ApplyMapping(tuyaMCUMapping_t* mapping, int fnID, int value) {
 	}
 	if (fnID == g_tuyaMCUled_id_cw_brightness) {
 		// TuyaMCU sends in 0-1000 range, we need 0-100
-		LED_SetDimmerIfChanged(value*0.1f);
+		LED_SetDimmerForDisplayOnly(value*0.1f);
 	}
 
 

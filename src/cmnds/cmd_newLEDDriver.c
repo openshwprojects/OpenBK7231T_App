@@ -1034,11 +1034,8 @@ void LED_NextDimmerHold() {
 	// the dimmer is 0 and anyColor * 0 gives 0)
 	LED_AddDimmer(led_defaultDimmerDeltaForHold, 1, 2);
 }
-void LED_SetDimmerIfChanged(int iVal) {
-	if (((int)g_brightness0to100) == iVal) {
-		return;
-	}
-	LED_SetDimmer(iVal);
+void LED_SetDimmerForDisplayOnly(int iVal) {
+	g_brightness0to100 = iVal;
 }
 void LED_SetDimmer(int iVal) {
 
