@@ -208,7 +208,9 @@ static byte g_defaultTuyaMCUWiFiState = 0x00;
 // See: https://www.elektroda.com/rtvforum/viewtopic.php?p=20646359#20646359
 static short g_tuyaMCUled_id_color = -1;
 static short g_tuyaMCUled_format = -1;
-static int g_tuyaMCUled_id_power = -1;
+static short g_tuyaMCUled_id_cw_brightness = -1;
+static short g_tuyaMCUled_id_power = -1;
+static short g_tuyaMCUled_id_cw_temperature = -1;
 
 #define TUYAMCU_BUFFER_SIZE		256
 
@@ -677,6 +679,8 @@ commandResult_t Cmd_TuyaMCU_SetupLED(const void* context, const char* cmd, const
 	g_tuyaMCUled_id_color = Tokenizer_GetArgInteger(0);
 	g_tuyaMCUled_format = Tokenizer_GetArgInteger(1);
 	g_tuyaMCUled_id_power = Tokenizer_GetArgIntegerDefault(2, 20);
+	g_tuyaMCUled_id_cw_brightness = Tokenizer_GetArgIntegerDefault(3, 22);
+	g_tuyaMCUled_id_cw_temperature = Tokenizer_GetArgIntegerDefault(4, 23);
 
 	return CMD_RES_OK;
 }
@@ -1079,6 +1083,14 @@ void TuyaMCU_ApplyMapping(tuyaMCUMapping_t* mapping, int fnID, int value) {
 	// hardcoded values
 	if (fnID == g_tuyaMCUled_id_power) {
 		LED_SetEnableAll(value);
+	}
+	if (fnID == g_tuyaMCUled_id_cw_temperature) {
+		float temperatureRange01 = 1.0f - ((value - 10) / 980.0f);
+		LED_SetTemperature0to1Range(temperatureRange01);
+	}
+	if (fnID == g_tuyaMCUled_id_cw_brightness) {
+		// TuyaMCU sends in 0-1000 range, we need 0-100
+		LED_SetDimmerForDisplayOnly(value*0.1f);
 	}
 
 
@@ -2099,12 +2111,12 @@ void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMo
 		// dpID 22: brightness only in white mode: The range is from 50 (dark) to 1000 (light), 
 		// NOTE: when changing this value, dpID 21 is set to 0 -> white automatically
 		int mcu_brightness = brightnessRange01 * 1000.0f;
-		TuyaMCU_SendValue(22, mcu_brightness);
+		TuyaMCU_SendValue(g_tuyaMCUled_id_cw_brightness, mcu_brightness);
 		rtos_delay_milliseconds(50);
 		// dpID 23: Kelvin value of white : The range is from 10 (ww)to 990 (cw), 
 		// NOTE : when changing this value, dpID 21 is set to 0->white automatically
 		int mcu_temperature = 10 + (1.0f - temperatureRange01) * 980.0f;
-		TuyaMCU_SendValue(23, mcu_temperature);
+		TuyaMCU_SendValue(g_tuyaMCUled_id_cw_temperature, mcu_temperature);
 		//TuyaMCU_SendTwoVals(22, mcu_brightness, 23, mcu_temperature);
 	}
 	xSemaphoreGive(g_mutex);
