@@ -620,7 +620,7 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	JSON_PrintKeyValue_String(request, printer, "DeviceName", deviceName, true);
 	printer(request, "\"FriendlyName\":[");
 	if (relayCount == 0) {
-		printer(request, "\"%s\"", deviceName);
+		printer(request, "\"%s\"", friendlyName);
 	}
 	else {
 		int c_printed = 0;
