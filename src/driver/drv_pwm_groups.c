@@ -21,6 +21,8 @@
 int PIN_GetPWMIndexForPinIndex(int pin);
 
 
+// PWMG_Set 10 10 10 1000
+// PWMG_Set Duty1Percent Duty2Percent DeadTimePercent Frequency PinA PinB
 static commandResult_t CMD_PWMG_Set(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 	// following check must be done after 'Tokenizer_TokenizeString',
@@ -90,7 +92,7 @@ static commandResult_t CMD_PWMG_Raw(const void* context, const char* cmd, const 
 	return CMD_RES_OK;
 }
 // backlog startDriver PWMG; PWMG_Raw 100 500 10 1000
-// backlog startDriver PWMG; PWMG_Test
+// backlog startDriver PWMG; PWMG_Set 10 10 10 1000
 void PWMG_Init() {
 
 	CMD_RegisterCommand("PWMG_Raw", CMD_PWMG_Raw, NULL);
