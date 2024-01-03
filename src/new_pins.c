@@ -564,7 +564,7 @@ static uint8_t button_generic_get_gpio_value(void* param)
 
 void NEW_button_init(pinButton_s* handle, uint8_t(*pin_level)(void* self), uint8_t active_level)
 {
-	memset(handle, sizeof(pinButton_s), 0);
+	memset(handle, 0, sizeof(pinButton_s));
 
 	handle->event = (uint8_t)BTN_NONE_PRESS;
 	handle->hal_button_Level = pin_level;
