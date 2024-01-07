@@ -24,10 +24,19 @@
 
 static uint8_t data_translate[4] = {0b10001000, 0b10001110, 0b11101000, 0b11101110};
 
+void Set_Constants(byte a, byte b) {
+	data_translate[0] = (a << 4) | a;
+	data_translate[1] = (b << 4) | a;
+	data_translate[2] = (a << 4) | b;
+	data_translate[3] = (b << 4) | b;
+}
+
+
 UINT8 *send_buf;
 struct spi_message *spi_msg;
 BOOLEAN initialized = false;
 uint32_t pixel_count = 0;
+uint32_t buffer_size = 0;
 
 static uint8_t translate_2bit(uint8_t input) {
 	//ADDLOG_INFO(LOG_FEATURE_CMD, "Translate 0x%02x to 0x%02x", (input & 0b00000011), data_translate[(input & 0b00000011)]);
@@ -72,6 +81,29 @@ void SM16703P_setPixel(int pixel, int r, int g, int b) {
 	translate_byte(b, spi_msg->send_buf + (2 + 8 + (pixel * 3 * 4)));
 }
 
+commandResult_t SM16703P_CMD_Set_Constants(const void *context, const char *cmd, const char *args, int flags) {
+	int a, b;
+	Tokenizer_TokenizeString(args, 0);
+
+	a = Tokenizer_GetArgIntegerRange(0, 0, 255);
+	b = Tokenizer_GetArgIntegerRange(1, 0, 255);
+
+	Set_Constants(a, b);
+
+	return CMD_RES_OK;
+}
+commandResult_t SM16703P_CMD_Test(const void *context, const char *cmd, const char *args, int flags) {
+
+	// Iterate over pixel
+	uint8_t *dst = spi_msg->send_buf;
+	for (uint32_t i = 0; i < buffer_size; i++) {
+		*dst++ = 0b01010101;
+		*dst++ = 0b01010101;
+		*dst++ = 0b01010101;
+		*dst++ = 0b01010101;
+	}
+	return CMD_RES_OK;
+}
 commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, const char *args, int flags) {
 	int pixel, i, r, g, b;
 	Tokenizer_TokenizeString(args, 0);
@@ -115,9 +147,6 @@ commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, cons
 	return CMD_RES_OK;
 }
 
-static void SM16703P_Send(byte *data, int dataSize) {
-	// ToDo
-}
 
 commandResult_t SM16703P_Start(const void *context, const char *cmd, const char *args, int flags) {
 
@@ -133,7 +162,7 @@ commandResult_t SM16703P_Start(const void *context, const char *cmd, const char 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Register driver with %i LEDs", pixel_count);
 
 	// Prepare buffer
-	uint32_t buffer_size = 2 + (pixel_count * 3 * 4);			  //Add two bytes for "Reset"
+	buffer_size = 2 + (pixel_count * 3 * 4);			  //Add two bytes for "Reset"
 	send_buf = (UINT8 *)os_malloc(sizeof(UINT8) * (buffer_size)); //18LEDs x RGB x 4Bytes
 	int i;
 
@@ -154,16 +183,37 @@ commandResult_t SM16703P_Start(const void *context, const char *cmd, const char 
 
 	return CMD_RES_OK;
 }
-
+void SM16703P_CMD_Clear() {
+	if (spi_msg == 0)
+		return;
+	memset(spi_msg->send_buf, 0, buffer_size);
+}
 static commandResult_t SM16703P_StartTX(const void *context, const char *cmd, const char *args, int flags) {
 	if (!initialized)
 		return CMD_RES_ERROR;
 
+	GLOBAL_INT_DECLARATION();
+	GLOBAL_INT_DISABLE();
+
+	send_buf[0] = 0;
+	send_buf[1] = 0;
+
 	SPIDMA_StartTX(spi_msg);
+
+	while (!SPIDMA_Ready()) {
+
+	}
+
+	GLOBAL_INT_RESTORE();
 	return CMD_RES_OK;
 }
 
-// startDriver SM16703P
+/*
+startDriver SM16703P
+SM16703P_Init 1
+SM16703P_SetPixel 0 255 0 0
+SM16703P_Start
+*/
 // backlog startDriver SM16703P; SM16703P_Test
 void SM16703P_Init() {
 
@@ -199,5 +249,12 @@ void SM16703P_Init() {
 	//cmddetail:"fn":"NULL);","file":"driver/drv_sm16703P.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SM16703P_SetPixel", SM16703P_CMD_setPixel, NULL);
+
+	CMD_RegisterCommand("SM16703P_Clear", SM16703P_CMD_Clear, NULL);
+
+	CMD_RegisterCommand("SM16703P_Test", SM16703P_CMD_Test, NULL);
+
+	CMD_RegisterCommand("Set_Constants", SM16703P_CMD_Set_Constants, NULL);
+	
 }
 #endif

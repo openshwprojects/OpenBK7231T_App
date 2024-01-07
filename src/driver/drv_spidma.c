@@ -230,6 +230,11 @@ static void spidma_spi_unconfigure(void) {
 	sddev_control(SPI_DEV_NAME, CMD_SPI_DEINIT_MSTEN, NULL);
 }
 
+bool SPIDMA_Ready() {
+	if (spi_dev->flag & TX_FINISH_FLAG)
+		return 0;
+	return 1;
+}
 int spidma_spi_master_deinit(void) {
 	if (spi_dev == NULL)
 		return 0;
