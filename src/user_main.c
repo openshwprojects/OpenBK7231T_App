@@ -124,13 +124,11 @@ void extended_app_waiting_for_launch2(void) {
 
 
 #if defined(PLATFORM_LN882H)
-/** Publish data to topic */
-err_t mqtt_publish(mqtt_client_t *client, const char *topic, const void *payload, u16_t payload_length, u8_t qos, u8_t retain,
-	mqtt_request_cb_t cb, void *arg) {
 
+int LWIP_GetMaxSockets() {
+	return 0;
 }
-/** Check connection status */
-u8_t mqtt_client_is_connected(mqtt_client_t *client) {
+int LWIP_GetActiveSockets() {
 	return 0;
 }
 #endif
