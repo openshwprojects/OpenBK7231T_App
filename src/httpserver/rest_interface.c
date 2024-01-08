@@ -1254,6 +1254,8 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 		socket_fwup_err(0, nRetCode);
 		return http_rest_error(request, nRetCode, error_message);
 	}
+#elif PLATFORM_LN882H
+	
 
 #elif PLATFORM_BL602
 	int sockfd, i;

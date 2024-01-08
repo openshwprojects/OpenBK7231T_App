@@ -1540,7 +1540,7 @@ static void mqtt_timer_thread(void* param)
 		MQTT_Test_Tick(param);
 	}
 }
-#elif PLATFORM_XR809
+#elif PLATFORM_XR809 || PLATFORM_LN882H
 static OS_Timer_t timer;
 #else
 static beken_timer_t g_mqtt_timer;
@@ -1575,7 +1575,7 @@ commandResult_t MQTT_StartMQTTTestThread(const void* context, const char* cmd, c
 	xTaskCreate(mqtt_timer_thread, "mqtt", 1024, (void*)info, 15, NULL);
 #elif PLATFORM_W600 || PLATFORM_W800
 	xTaskCreate(mqtt_timer_thread, "mqtt", 1024, (void*)info, 15, NULL);
-#elif PLATFORM_XR809
+#elif PLATFORM_XR809 || PLATFORM_LN882H
 	OS_TimerSetInvalid(&timer);
 	if (OS_TimerCreate(&timer, OS_TIMER_PERIODIC, MQTT_Test_Tick, (void*)info, MQTT_TMR_DURATION) != OS_OK)
 	{
