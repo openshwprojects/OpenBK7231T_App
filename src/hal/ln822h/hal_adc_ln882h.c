@@ -18,7 +18,7 @@ void HAL_ADC_Init(int pinNumber) {
 }
 
 int HAL_ADC_Read(int pinNumber) {
-	adc_ch_t ch = ADC_CH0;
+    adc_ch_t ch = ADC_CH0;
     uint16_t read_adc = 0;
 
     while(hal_adc_get_conv_status(ADC_BASE, ch) == 0); 
