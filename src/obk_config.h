@@ -96,6 +96,10 @@
 #define ENABLE_DRIVER_PWM_GROUP 1
 #endif
 
+#elif PLATFORM_LN882H
+
+#define OBK_DISABLE_ALL_DRIVERS       1
+
 #else
 
 #error "Platform not defined"

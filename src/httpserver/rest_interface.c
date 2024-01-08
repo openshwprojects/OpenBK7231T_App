@@ -45,6 +45,8 @@ uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
 
 #elif PLATFORM_W800
 
+#elif PLATFORM_LN882H
+
 #else
 
 extern UINT32 flash_read(char* user_buf, UINT32 count, UINT32 address);
@@ -1519,6 +1521,9 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 		res = 0;
 #elif PLATFORM_W600 || PLATFORM_W800
 		res = 0;
+#elif PLATFORM_LN882H
+// TODO:LN882H flash read?
+        res = 0;
 #else
 		res = flash_read((char*)buffer, readlen, startaddr);
 #endif
