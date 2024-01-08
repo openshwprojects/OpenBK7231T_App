@@ -122,7 +122,18 @@ void extended_app_waiting_for_launch2(void) {
 }
 #endif
 
-#if defined(PLATFORM_BL602) || defined(PLATFORM_W800) || defined(PLATFORM_W600)
+
+#if defined(PLATFORM_LN882H)
+
+int LWIP_GetMaxSockets() {
+	return 0;
+}
+int LWIP_GetActiveSockets() {
+	return 0;
+}
+#endif
+
+#if defined(PLATFORM_BL602) || defined(PLATFORM_W800) || defined(PLATFORM_W600)|| defined(PLATFORM_LN882H)
 
 
 
