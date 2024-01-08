@@ -779,7 +779,7 @@ void quick_timer_thread(void* param)
 		QuickTick(0);
 	}
 }
-#elif PLATFORM_XR809
+#elif PLATFORM_XR809 || PLATFORM_LN882H
 OS_Timer_t g_quick_timer;
 #else
 beken_timer_t g_quick_timer;
@@ -794,7 +794,7 @@ void QuickTick_StartThread(void)
 #elif PLATFORM_W600 || PLATFORM_W800
 
 	xTaskCreate(quick_timer_thread, "quick", 1024, NULL, 15, NULL);
-#elif PLATFORM_XR809
+#elif PLATFORM_XR809 || PLATFORM_LN882H
 
 	OS_TimerSetInvalid(&g_quick_timer);
 	if (OS_TimerCreate(&g_quick_timer, OS_TIMER_PERIODIC, QuickTick, NULL,
