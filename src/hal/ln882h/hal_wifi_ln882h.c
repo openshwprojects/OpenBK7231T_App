@@ -1,3 +1,5 @@
+#ifdef PLATFORM_LN882H
+
 #include "../hal_wifi.h"
 
 
@@ -75,3 +77,4 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	return 0;
 }
 
+#endif // PLATFORM_LN882H

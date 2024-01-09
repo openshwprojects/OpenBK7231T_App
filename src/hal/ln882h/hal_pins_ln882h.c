@@ -1,3 +1,5 @@
+#ifdef PLATFORM_LN882H
+
 
 #include "../../new_common.h"
 #include "../../logging/logging.h"
@@ -46,3 +48,5 @@ void HAL_PIN_PWM_Update(int index, float value) {
 unsigned int HAL_GetGPIOPin(int index) {
 	return index;
 }
+
+#endif // PLATFORM_LN882H
