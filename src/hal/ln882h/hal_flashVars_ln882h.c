@@ -1,6 +1,4 @@
-
-#ifndef PLATFORM_XR809
-
+#ifdef PLATFORM_LN882H
 
 #include "../../new_common.h"
 #include "../hal_flashVars.h"
@@ -68,5 +66,5 @@ void HAL_FlashVars_SaveTotalConsumption(float total_consumption)
 
 }
 
-#endif
+#endif // PLATFORM_LN882H
 
