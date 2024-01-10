@@ -46,6 +46,7 @@ int HAL_PIN_CanThisPinBePWM(int index) {
 	
 	return 1;
 }
+
 void HAL_PIN_SetOutputValue(int index, int iVal) {
 }
 
@@ -64,6 +65,7 @@ void My_LN882_Basic_GPIO_Setup(lnPinMapping_t *pin, int direction) {
 	gpio_init.speed = GPIO_HIGH_SPEED;
 	hal_gpio_init(pin->base, &gpio_init);
 }
+
 void HAL_PIN_Setup_Input_Pullup(int index) {
 	if (index >= g_numPins)
 		return;
@@ -71,6 +73,7 @@ void HAL_PIN_Setup_Input_Pullup(int index) {
 	My_LN882_Basic_GPIO_Setup(pin, GPIO_INPUT);
 	hal_gpio_pin_pull_set(pin->base,pin->pin, GPIO_PULL_UP);
 }
+
 void HAL_PIN_Setup_Input_Pulldown(int index) {
 	if (index >= g_numPins)
 		return;
@@ -78,6 +81,7 @@ void HAL_PIN_Setup_Input_Pulldown(int index) {
 	My_LN882_Basic_GPIO_Setup(pin, GPIO_INPUT);
 	hal_gpio_pin_pull_set(pin->base, pin->pin, GPIO_PULL_DOWN);
 }
+
 void HAL_PIN_Setup_Input(int index) {
 	if (index >= g_numPins)
 		return;
@@ -85,6 +89,7 @@ void HAL_PIN_Setup_Input(int index) {
 	My_LN882_Basic_GPIO_Setup(pin, GPIO_INPUT);
 	hal_gpio_pin_pull_set(pin->base, pin->pin, GPIO_PULL_NONE);
 }
+
 void HAL_PIN_Setup_Output(int index) {
 	if (index >= g_numPins)
 		return;
@@ -92,6 +97,7 @@ void HAL_PIN_Setup_Output(int index) {
 	My_LN882_Basic_GPIO_Setup(pin, GPIO_OUTPUT);
 	hal_gpio_pin_pull_set(pin->base, pin->pin, GPIO_PULL_NONE);
 }
+
 void HAL_PIN_PWM_Stop(int index) {
 
 }
