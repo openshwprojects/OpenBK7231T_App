@@ -57,6 +57,7 @@ int HAL_PIN_ReadDigitalInput(int index) {
 }
 
 void My_LN882_Basic_GPIO_Setup(lnPinMapping_t *pin, int direction) {
+	gpio_init_t_def gpio_init;
 	memset(&gpio_init, 0, sizeof(gpio_init));
 	gpio_init.dir = direction;
 	gpio_init.pin = pin->pin;
@@ -66,8 +67,6 @@ void My_LN882_Basic_GPIO_Setup(lnPinMapping_t *pin, int direction) {
 void HAL_PIN_Setup_Input_Pullup(int index) {
 	if (index >= g_numPins)
 		return;
-	gpio_init_t_def gpio_init;
-
 	lnPinMapping_t *pin = g_pins + index;
 	My_LN882_Basic_GPIO_Setup(pin, GPIO_INPUT);
 	hal_gpio_pin_pull_set(pin->base,pin->pin, GPIO_PULL_UP);
@@ -75,8 +74,6 @@ void HAL_PIN_Setup_Input_Pullup(int index) {
 void HAL_PIN_Setup_Input_Pulldown(int index) {
 	if (index >= g_numPins)
 		return;
-	gpio_init_t_def gpio_init;
-
 	lnPinMapping_t *pin = g_pins + index;
 	My_LN882_Basic_GPIO_Setup(pin, GPIO_INPUT);
 	hal_gpio_pin_pull_set(pin->base, pin->pin, GPIO_PULL_DOWN);
@@ -84,8 +81,6 @@ void HAL_PIN_Setup_Input_Pulldown(int index) {
 void HAL_PIN_Setup_Input(int index) {
 	if (index >= g_numPins)
 		return;
-	gpio_init_t_def gpio_init;
-
 	lnPinMapping_t *pin = g_pins + index;
 	My_LN882_Basic_GPIO_Setup(pin, GPIO_INPUT);
 	hal_gpio_pin_pull_set(pin->base, pin->pin, GPIO_PULL_NONE);
@@ -93,8 +88,6 @@ void HAL_PIN_Setup_Input(int index) {
 void HAL_PIN_Setup_Output(int index) {
 	if (index >= g_numPins)
 		return;
-	gpio_init_t_def gpio_init;
-
 	lnPinMapping_t *pin = g_pins + index;
 	My_LN882_Basic_GPIO_Setup(pin, GPIO_OUTPUT);
 	hal_gpio_pin_pull_set(pin->base, pin->pin, GPIO_PULL_NONE);
