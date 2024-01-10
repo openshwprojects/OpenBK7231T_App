@@ -57,6 +57,7 @@ int HAL_PIN_ReadDigitalInput(int index) {
 }
 
 void My_LN882_Basic_GPIO_Setup(lnPinMapping_t *pin, int direction) {
+	gpio_init_t_def gpio_init;
 	memset(&gpio_init, 0, sizeof(gpio_init));
 	gpio_init.dir = direction;
 	gpio_init.pin = pin->pin;
