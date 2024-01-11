@@ -62,6 +62,14 @@ int HAL_PIN_CanThisPinBePWM(int index) {
 }
 
 void HAL_PIN_SetOutputValue(int index, int iVal) {
+	if (index >= g_numPins)
+		return 0;
+	lnPinMapping_t *pin = g_pins + index;
+	if (iVal) {
+		hal_gpio_pin_set(pin->base, pin->pin);
+	} else {
+		hal_gpio_pin_reset(pin->base, pin->pin);
+	}
 }
 
 int HAL_PIN_ReadDigitalInput(int index) {
@@ -109,7 +117,7 @@ void HAL_PIN_Setup_Output(int index) {
 		return;
 	lnPinMapping_t *pin = g_pins + index;
 	My_LN882_Basic_GPIO_Setup(pin, GPIO_OUTPUT);
-	hal_gpio_pin_pull_set(pin->base, pin->pin, GPIO_PULL_NONE);
+	///hal_gpio_pin_pull_set(pin->base, pin->pin, GPIO_PULL_NONE);
 }
 
 void HAL_PIN_PWM_Stop(int index) {
