@@ -93,3 +93,6 @@ All questions/answers were taken from json file.
 **Question:** *How to setup shutters via scripting?*<br>**A:** It's possible to script shutters behaviour entirely in OBK. Please see [forum example here](https://www.elektroda.com/rtvforum/viewtopic.php?t=3972935).
 
 
+**Question:** *Why my device bootloops and/or firmware does not start?*<br>**A:** Make sure you're powering it with good power supply. Powering desodlered WiFi module directly from 3.3V pin used to select voltage levels on USB to UART converter will not work. This happens especially often for BL602. This may also cause device to fail in STA mode but work in AP. In general, when powering WiFi module outside original board, use good power supply.
+
+
