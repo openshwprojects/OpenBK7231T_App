@@ -41,11 +41,13 @@ int WiFI_SetMacAddress(char* mac)
 
 void WiFI_GetMacAddress(char* mac)
 {
+	sysparam_sta_mac_get((unsigned char*)mac);
 }
 
 const char* HAL_GetMACStr(char* macstr)
 {
 	unsigned char mac[6];
+	sysparam_sta_mac_get((unsigned char*)mac);
 	sprintf(macstr, MACSTR, MAC2STR(mac));
 	return macstr;
 }
