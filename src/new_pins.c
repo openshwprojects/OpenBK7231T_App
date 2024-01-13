@@ -1471,6 +1471,11 @@ bool CHANNEL_IsPowerRelayChannel(int ch) {
 			if (role == IOR_Relay || role == IOR_Relay_n) {
 				return true;
 			}
+			// Also allow toggling Bridge channel
+			// https://www.elektroda.com/rtvforum/viewtopic.php?p=20906463#20906463
+			if (role == IOR_BridgeForward || role == IOR_BridgeReverse) {
+				return true;
+			}
 		}
 	}
 	return false;
