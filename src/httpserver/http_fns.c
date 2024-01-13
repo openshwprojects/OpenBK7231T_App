@@ -1955,7 +1955,16 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 
 				discoveryQueued = true;
 			}
-			break; 
+			break;
+			case ChType_Power_div100:
+			{
+				dev_info = hass_init_sensor_device_info(POWER_SENSOR, i, 3, 2, 1);
+				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+				hass_free_device_info(dev_info);
+
+				discoveryQueued = true;
+			}
+			break;
 			case ChType_PowerFactor_div100:
 			{
 				dev_info = hass_init_sensor_device_info(POWERFACTOR_SENSOR, i, 3, 2, 1);
