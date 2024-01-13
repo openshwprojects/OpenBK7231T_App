@@ -1067,6 +1067,7 @@ int ChannelType_GetDivider(int type) {
 	case ChType_PowerFactor_div100:
 	case ChType_Pressure_div100:
 	case ChType_Temperature_div100:
+	case ChType_Power_div100:
 		return 100;
 	case ChType_PowerFactor_div1000:
 	case ChType_EnergyTotal_kWh_div1000:
@@ -1097,6 +1098,7 @@ const char *ChannelType_GetUnit(int type) {
 		return "V";
 	case ChType_Power:
 	case ChType_Power_div10:
+	case ChType_Power_div100:
 		return "W";
 	case ChType_Frequency_div10:
 	case ChType_Frequency_div100:
@@ -1140,6 +1142,7 @@ const char *ChannelType_GetTitle(int type) {
 		return "Voltage"; 
 	case ChType_Power:
 	case ChType_Power_div10:
+	case ChType_Power_div100:
 		return "Power";
 	case ChType_Frequency_div10:
 	case ChType_Frequency_div100:
@@ -1988,6 +1991,7 @@ const char* g_channelTypeNames[] = {
 	"Pressure_div100",
 	"Temperature_div100",
 	"LeakageCurrent_div1000",
+	"Power_div100",
 	"error",
 	"error",
 };
