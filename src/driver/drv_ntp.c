@@ -136,6 +136,26 @@ commandResult_t NTP_SetLatlong(const void *context, const char *cmd, const char 
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP longitude set to %s", newValue);
     return CMD_RES_OK;
 }
+
+int NTP_GetSunrise()
+{
+	byte hour, minute;
+	int sunriseInSecondsFromMidnight;
+
+	NTP_CalculateSunrise(&hour, &minute);
+	sunriseInSecondsFromMidnight = ((int)hour * 3600) + ((int)minute * 60);
+	return sunriseInSecondsFromMidnight;
+}
+
+int NTP_GetSunset()
+{
+	byte hour, minute;
+	int sunsetInSecondsFromMidnight;
+
+	NTP_CalculateSunset(&hour, &minute);
+	sunsetInSecondsFromMidnight =  ((int)hour * 3600) + ((int)minute * 60);
+	return sunsetInSecondsFromMidnight;
+}
 #endif
 
 //Set custom NTP server

@@ -18,6 +18,8 @@ int NTP_GetSecond();
 int NTP_GetMDay();
 int NTP_GetMonth();
 int NTP_GetYear();
+int NTP_GetSunrise();
+int NTP_GetSunset();
 // for Simulator only, on Windows, for unit testing
 void NTP_SetSimulatedTime(unsigned int timeNow);
 // drv_ntp_events.c
