@@ -5,6 +5,7 @@
 
 void Test_NTP_SunsetSunrise() {
 	byte hour, minute;
+	int sunrise, sunset;
 
 	// reset whole device
 	SIM_ClearOBK(0);
@@ -13,17 +14,23 @@ void Test_NTP_SunsetSunrise() {
 	CMD_ExecuteCommand("startDriver NTP", 0);
 	CMD_ExecuteCommand("ntp_timeZoneOfs 1", 0);
 	CMD_ExecuteCommand("ntp_setLatlong 44.272563 19.900690", 0);
+
 	// set Tue, 19 Dec 2023 20:14:52
 	NTP_SetSimulatedTime(1703016892);
+
+	sunrise = NTP_GetSunrise();
 	NTP_CalculateSunrise(&hour, &minute);
 	// Expect sunrise at 7:11
 	SELFTEST_ASSERT(hour == 7);
 	SELFTEST_ASSERT(minute == 11);
+	SELFTEST_ASSERT(sunrise == 25860);
+
+	sunset = NTP_GetSunset();
 	NTP_CalculateSunset(&hour, &minute);
 	// Expect sunset at 16:02
 	SELFTEST_ASSERT(hour == 16);
 	SELFTEST_ASSERT(minute == 2);
-
+	SELFTEST_ASSERT(sunset == 57720);
 
 	// setup test case - Los Angeles
 	CMD_ExecuteCommand("ntp_timeZoneOfs -8", 0);
@@ -31,16 +38,20 @@ void Test_NTP_SunsetSunrise() {
 
 	// set Tue, 19 Dec 2023 20:14:52
 	NTP_SetSimulatedTime(1703016892);
+	
+	sunrise = NTP_GetSunrise();
 	NTP_CalculateSunrise(&hour, &minute);
 	// Expect sunrise at 6:52
 	SELFTEST_ASSERT(hour == 6);
 	SELFTEST_ASSERT(minute == 52);
+	SELFTEST_ASSERT(sunrise == 24720);
+	
+	sunset = NTP_GetSunset();
 	NTP_CalculateSunset(&hour, &minute);
 	// Expect sunset at 16:462
 	SELFTEST_ASSERT(hour == 16);
 	SELFTEST_ASSERT(minute == 45);
-
-
+	SELFTEST_ASSERT(sunset == 60300);
 
 	// setup test case - Austin
 	CMD_ExecuteCommand("ntp_timeZoneOfs -5", 0);
@@ -48,14 +59,20 @@ void Test_NTP_SunsetSunrise() {
 
 	// set Wed Jul 12 2023 13:47:13 GMT+0000
 	NTP_SetSimulatedTime(1689169633);
+
+	sunrise = NTP_GetSunrise();
 	NTP_CalculateSunrise(&hour, &minute);
 	// Expect sunrise at 6:37
 	SELFTEST_ASSERT(hour == 6);
 	SELFTEST_ASSERT(minute == 37);
+	SELFTEST_ASSERT(sunrise == 23820);
+
+	sunset = NTP_GetSunset();
 	NTP_CalculateSunset(&hour, &minute);
 	// Expect sunset at 20:34
 	SELFTEST_ASSERT(hour == 20);
 	SELFTEST_ASSERT(minute == 34);
+	SELFTEST_ASSERT(sunset == 74040);
 
 
 	// set Warsaw
