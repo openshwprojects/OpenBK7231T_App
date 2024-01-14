@@ -3,13 +3,17 @@
 #include "../hal_wifi.h"
 #include "wifi.h"
 #include "wifi_port.h"
+#include "dhcp.h"
 #include "netif/ethernetif.h"
 #include "wifi_manager.h"
 #include "lwip/tcpip.h"
 #include "utils/system_parameter.h"
 #include "ln_wifi_err.h"
+#include "ln_misc.h"
+#include "ln_psk_calc.h"
 #include "utils/sysparam_factory_setting.h"
 #include <lwip/sockets.h>
+
 
 #define PM_WIFI_DEFAULT_PS_MODE           (WIFI_NO_POWERSAVE)
 
@@ -26,7 +30,7 @@ void alert_log(const char *format, ...) {
     LOG(LOG_LVL_INFO, "----------------------------------------\r\n");
 }
 
-// lenght of "192.168.103.103" is 15 but we also need a NULL terminating character
+// length of "192.168.103.103" is 15 but we also need a NULL terminating character
 static char g_IP[32] = "unknown";
 static int g_bOpenAccessPointMode = 0;
 static uint8_t mac_addr[6]        = {0x00, 0x50, 0xC2, 0x5E, 0x88, 0x99};
@@ -36,31 +40,32 @@ tcpip_ip_info_t ip_info = {0};
 // This must return correct IP for both SOFT_AP and STATION modes,
 // because, for example, javascript control panel requires it
 const char* HAL_GetMyIPString() {
-	alert_log("HAL_GetMyIPString");
-    /*
-	memset(&ip_info, 0x0, sizeof(tcpip_ip_info_t));
-	if (0 != netdev_get_ip_info(netdev_get_active(), &ip_info)) {
-		inet_ntop(AF_INET, &ip_info.ip, g_IP, sizeof(g_IP));
-	}
-	*/
+    if (netdev_got_ip()) {
+        struct netif *nif = NULL;
+        netif_idx_t active = netdev_get_active();
+        nif = netdev_get_netif(active);
+
+        if (nif != NULL) {
+            char* ip_addr = ip4addr_ntoa(&nif->ip_addr);
+            strncpy(g_IP, ip_addr, 16);
+        }
+    }
+	alert_log("HAL_GetMyIPString: %s", g_IP);
 	return g_IP;
 }
 
 const char* HAL_GetMyGatewayString() {
     alert_log("HAL_GetMyGatewayString");
-	// inet_ntop(AF_INET, &ip_info.gw, g_IP, sizeof(g_IP));
 	return g_IP;
 }
 
 const char* HAL_GetMyDNSString() {
     alert_log("HAL_GetMyDNSString");
-
 	return g_IP;
 }
 
 const char* HAL_GetMyMaskString() {
     alert_log("HAL_GetMyMaskString");
-	// inet_ntop(AF_INET, &ip_info.netmask, g_IP, sizeof(g_IP));
 	return g_IP;
 }
 
@@ -74,13 +79,14 @@ int WiFI_SetMacAddress(char* mac)
 void WiFI_GetMacAddress(char* mac)
 {
     alert_log("WiFI_GetMacAddress");
-	// netdev_get_mac_addr(NETIF_IDX_STA, mac_addr);
+	sysparam_sta_mac_get((unsigned char*)mac);
 }
 
 const char* HAL_GetMACStr(char* macstr)
 {
     alert_log("HAL_GetMACStr");
 	unsigned char mac[6];
+    sysparam_sta_mac_get((unsigned char*)mac);
 	sprintf(macstr, MACSTR, MAC2STR(mac));
 	return macstr;
 }
@@ -97,12 +103,10 @@ int HAL_GetWifiStrength()
 	return 0;
 }
 
-
 void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 {
     alert_log("HAL_WiFi_SetupStatusCallback");
 	g_wifiStatusCallback = cb;
-
 }
 
 static void wifi_scan_complete_cb(void * arg)
@@ -172,7 +176,7 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
     wifi_manager_reg_event_callback(WIFI_MGR_EVENT_STA_SCAN_COMPLETE, &wifi_scan_complete_cb);
 
     if(WIFI_ERR_NONE != wifi_sta_start(mac_addr, ps_mode)){
-        LOG(LOG_LVL_ERROR, "[%s]wifi sta start filed!!!\r\n", __func__);
+        LOG(LOG_LVL_ERROR, "[%s]wifi sta start failed!!!\r\n", __func__);
     }
 
     connect.psk_value = NULL;
@@ -182,7 +186,7 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
             hexdump(LOG_LVL_INFO, "psk value ", psk_value, sizeof(psk_value));
         }
     }
-
+    
     wifi_sta_connect(&connect, &scan_cfg);
 }
 
@@ -190,7 +194,7 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 {
     alert_log("HAL_ConnectToWiFi");
 	g_bOpenAccessPointMode = 0;
-	// wifi_init_sta(oob_ssid, connect_key, ip);
+	wifi_init_sta(oob_ssid, connect_key, ip);
 }
 
 void HAL_DisconnectFromWifi()
