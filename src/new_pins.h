@@ -908,6 +908,13 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_LeakageCurrent_div1000,
+	//chandetail:{"name":"Power_div100",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Just like power, but with one decimal place (but stored as integer, for TuyaMCU support)",
+	//chandetail:"enum":"ChType_Power_div100",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Power_div100,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
@@ -926,6 +933,8 @@ typedef enum channelType_e {
 #define PLATFORM_GPIO_MAX 17
 #elif PLATFORM_W800
 #define PLATFORM_GPIO_MAX 44
+#elif PLATFORM_LN882H
+#define PLATFORM_GPIO_MAX 26
 #else
 #define PLATFORM_GPIO_MAX 29
 #endif

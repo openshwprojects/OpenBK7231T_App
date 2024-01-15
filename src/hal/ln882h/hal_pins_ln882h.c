@@ -28,6 +28,20 @@ lnPinMapping_t g_pins[] = {
 	{ "A10", GPIOA_BASE, GPIO_PIN_10 },
 	{ "A11", GPIOA_BASE, GPIO_PIN_11 },
 	{ "A12", GPIOA_BASE, GPIO_PIN_12 },
+	{ "A13", GPIOA_BASE, GPIO_PIN_13 },
+	{ "A14", GPIOA_BASE, GPIO_PIN_14 },
+	{ "A15", GPIOA_BASE, GPIO_PIN_15 },
+	// port B
+	{ "B0", GPIOB_BASE, GPIO_PIN_0 },
+	{ "B1", GPIOB_BASE, GPIO_PIN_1 },
+	{ "B2", GPIOB_BASE, GPIO_PIN_2 },
+	{ "B3", GPIOB_BASE, GPIO_PIN_3 },
+	{ "B4", GPIOB_BASE, GPIO_PIN_4 },
+	{ "B5", GPIOB_BASE, GPIO_PIN_5 },
+	{ "B6", GPIOB_BASE, GPIO_PIN_6 },
+	{ "B7", GPIOB_BASE, GPIO_PIN_7 },
+	{ "B8", GPIOB_BASE, GPIO_PIN_8 },
+	{ "B9", GPIOB_BASE, GPIO_PIN_9 },
 	// ETC TODO
 };
 static int g_numPins = sizeof(g_pins) / sizeof(g_pins[0]);
@@ -48,6 +62,14 @@ int HAL_PIN_CanThisPinBePWM(int index) {
 }
 
 void HAL_PIN_SetOutputValue(int index, int iVal) {
+	if (index >= g_numPins)
+		return 0;
+	lnPinMapping_t *pin = g_pins + index;
+	if (iVal) {
+		hal_gpio_pin_set(pin->base, pin->pin);
+	} else {
+		hal_gpio_pin_reset(pin->base, pin->pin);
+	}
 }
 
 int HAL_PIN_ReadDigitalInput(int index) {
@@ -95,7 +117,7 @@ void HAL_PIN_Setup_Output(int index) {
 		return;
 	lnPinMapping_t *pin = g_pins + index;
 	My_LN882_Basic_GPIO_Setup(pin, GPIO_OUTPUT);
-	hal_gpio_pin_pull_set(pin->base, pin->pin, GPIO_PULL_NONE);
+	///hal_gpio_pin_pull_set(pin->base, pin->pin, GPIO_PULL_NONE);
 }
 
 void HAL_PIN_PWM_Stop(int index) {
