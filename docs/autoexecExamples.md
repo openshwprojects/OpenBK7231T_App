@@ -333,6 +333,21 @@ addChangeHandler noPingTime > 600 reboot
 ```
 
 
+HTTP-only control of Tasmota/OBK device from OBK.
+<br>
+```// HTTP calls example
+// This example shows how can one OBK device control another OBK or Tasmota device via HTTP
+// No MQTT is needed
+// Make sure to add a button with channel 1
+// Also make sure that target device IP is correct
+
+// when channel 1 becomes 0, send OFF
+addChangeHandler Channel1 == 0 SendGet http://192.168.0.112/cm?cmnd=Power0%20OFF
+// when channel 1 becomes 1, send ON
+addChangeHandler Channel1 == 1 SendGet http://192.168.0.112/cm?cmnd=Power0%20ON
+```
+
+
 NTP and 'waitFor' command example. You can use 'waitFor NTPState 1' in autoexec.bat to wait for NTP sync. After that, you can be sure that correct time is set. 'waitFor' will block execution until given event.
 <br>
 ```// do anything on startup
