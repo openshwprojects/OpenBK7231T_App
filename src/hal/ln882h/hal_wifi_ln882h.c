@@ -33,9 +33,7 @@ void alert_log(const char *format, ...) {
 // length of "192.168.103.103" is 15 but we also need a NULL terminating character
 static char g_IP[32] = "unknown";
 static int g_bOpenAccessPointMode = 0;
-static uint8_t mac_addr[6]        = {0x00, 0x50, 0xC2, 0x5E, 0x88, 0x99};
 static uint8_t psk_value[40]      = {0x0};
-tcpip_ip_info_t ip_info = {0};
 
 
 struct netif* get_connected_nif() {
@@ -87,6 +85,14 @@ const char* HAL_GetMyMaskString() {
 int WiFI_SetMacAddress(char* mac)
 {
     alert_log("WiFI_SetMacAddress");
+    if (netdev_got_ip()) {
+        netif_idx_t active = netdev_get_active();
+        if (active == NETIF_IDX_STA) {
+            sysparam_sta_mac_update((const uint8_t *) mac);
+            netdev_set_mac_addr(NETIF_IDX_STA, (uint8_t *) mac);
+            return 1;
+        }
+    }
 	return 0; // error
 }
 
@@ -109,8 +115,10 @@ void HAL_PrintNetworkInfo()
 {
     struct netif *nif = get_connected_nif();
     if (nif != NULL) {
+        netif_idx_t active = netdev_get_active();
         uint8_t * mac = nif->hwaddr;
         LOG(LOG_LVL_INFO, "+--------------- net device info ------------+\r\n");
+        LOG(LOG_LVL_INFO, "|netif type    : %-16s            |\r\n", active == NETIF_IDX_STA ? "STA" : "AP");
         LOG(LOG_LVL_INFO, "|netif hostname: %-16s            |\r\n", nif->hostname);
         LOG(LOG_LVL_INFO, "|netif ip      = %-16s            |\r\n", ip4addr_ntoa(&nif->ip_addr));
         LOG(LOG_LVL_INFO, "|netif mask    = %-16s            |\r\n", ip4addr_ntoa(&nif->netmask));
@@ -159,6 +167,23 @@ static void wifi_scan_complete_cb(void * arg)
     wifi_manager_ap_list_update_enable(LN_TRUE);
 }
 
+static void wifi_connected_cb(void * arg)
+{
+    LN_UNUSED(arg);
+    if (g_wifiStatusCallback != NULL) {
+        g_wifiStatusCallback(WIFI_STA_CONNECTED);
+    }    
+}
+
+static void wifi_connect_failed_cb(void* arg) {
+    wifi_sta_connect_failed_reason_t reason = *((wifi_sta_connect_failed_reason_t*) arg);
+    if (reason == WIFI_STA_CONN_WRONG_PWD) {
+        if (g_wifiStatusCallback != NULL) {
+            g_wifiStatusCallback(WIFI_STA_AUTH_FAILED);
+        }    
+    }
+}
+
 void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip)
 {
     sta_ps_mode_t ps_mode = PM_WIFI_DEFAULT_PS_MODE;
@@ -176,7 +201,8 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
 	};
 
     //1. sta mac get
-     if (SYSPARAM_ERR_NONE != sysparam_sta_mac_get(mac_addr)) {
+    uint8_t mac_addr[6];
+    if (SYSPARAM_ERR_NONE != sysparam_sta_mac_get(mac_addr)) {
         LOG(LOG_LVL_ERROR, "[%s]sta mac get failed!!!\r\n", __func__);
         return;
     }
@@ -209,7 +235,14 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
             hexdump(LOG_LVL_INFO, "psk value ", psk_value, sizeof(psk_value));
         }
     }
-    
+
+    if (g_wifiStatusCallback != NULL) {
+        g_wifiStatusCallback(WIFI_STA_CONNECTING);
+    }
+
+    wifi_manager_reg_event_callback(WIFI_MGR_EVENT_STA_CONNECTED, &wifi_connected_cb);
+    wifi_manager_reg_event_callback(WIFI_MGR_EVENT_STA_CONNECT_FAILED, &wifi_connect_failed_cb);
+
     wifi_sta_connect(&connect, &scan_cfg);
 }
 
@@ -229,32 +262,19 @@ void HAL_DisconnectFromWifi()
     }
 }
 
-
 static void ap_startup_cb(void * arg)
 {
+    LN_UNUSED(arg);
     netdev_set_state(NETIF_IDX_AP, NETDEV_UP);
     if (g_wifiStatusCallback != NULL) {
         g_wifiStatusCallback(WIFI_AP_CONNECTED);
     }
-
 }
 
 void wifi_init_ap(const char* ssid)
 {
     tcpip_ip_info_t  ip_info;
     server_config_t  server_config;
-	wifi_softap_cfg_t ap_cfg = {
-		.ssid            = ssid,
-		.pwd             = "",
-		.bssid           = mac_addr,
-		.ext_cfg = {
-			.channel         = 6,
-			.authmode        = WIFI_AUTH_OPEN,
-			.ssid_hidden     = 0,
-			.beacon_interval = 100,
-			.psk_value = NULL,
-		}
-	};
 
     ip_info.ip.addr      = ipaddr_addr((const char *)"192.168.4.1");
     ip_info.gw.addr      = ipaddr_addr((const char *)"192.168.4.1");
@@ -271,6 +291,7 @@ void wifi_init_ap(const char* ssid)
 
     // fix to generate unique AP MAC, mirrors STA code
     //1. AP mac get
+    uint8_t mac_addr[6];
      if (SYSPARAM_ERR_NONE != sysparam_softap_mac_get(mac_addr)) {
         LOG(LOG_LVL_ERROR, "[%s]softap mac get failed!!!\r\n", __func__);
         return;
@@ -285,6 +306,19 @@ void wifi_init_ap(const char* ssid)
         ln_generate_random_mac(mac_addr);
         sysparam_softap_mac_update((const uint8_t *)mac_addr);
     }
+
+    wifi_softap_cfg_t ap_cfg = {
+		.ssid            = ssid,
+		.pwd             = "",
+		.bssid           = mac_addr,
+		.ext_cfg = {
+			.channel         = 6,
+			.authmode        = WIFI_AUTH_OPEN,
+			.ssid_hidden     = 0,
+			.beacon_interval = 100,
+			.psk_value = NULL,
+		}
+	};
 
     //2. net device(lwip).
     netdev_set_mac_addr(NETIF_IDX_AP, mac_addr);
