@@ -17,7 +17,7 @@
 
 #define PM_WIFI_DEFAULT_PS_MODE           (WIFI_NO_POWERSAVE)
 
-static void (*g_wifiStatusCallback)(int code);
+static void (*g_wifiStatusCallback)(int code)  = NULL;
 
 void alert_log(const char *format, ...) {
      va_list args;
@@ -37,25 +37,34 @@ static uint8_t mac_addr[6]        = {0x00, 0x50, 0xC2, 0x5E, 0x88, 0x99};
 static uint8_t psk_value[40]      = {0x0};
 tcpip_ip_info_t ip_info = {0};
 
+
+struct netif* get_connected_nif() {
+    struct netif *nif = NULL;
+    if (netdev_got_ip()) {
+        netif_idx_t active = netdev_get_active();
+        nif = netdev_get_netif(active);
+    }
+    return nif;
+}
+
 // This must return correct IP for both SOFT_AP and STATION modes,
 // because, for example, javascript control panel requires it
 const char* HAL_GetMyIPString() {
-    if (netdev_got_ip()) {
-        struct netif *nif = NULL;
-        netif_idx_t active = netdev_get_active();
-        nif = netdev_get_netif(active);
-
-        if (nif != NULL) {
-            char* ip_addr = ip4addr_ntoa(&nif->ip_addr);
-            strncpy(g_IP, ip_addr, 16);
-        }
+    struct netif *nif = get_connected_nif();
+    if (nif != NULL) {
+        char* ip_addr = ip4addr_ntoa(&nif->ip_addr);
+        strncpy(g_IP, ip_addr, 16);
     }
-	alert_log("HAL_GetMyIPString: %s", g_IP);
 	return g_IP;
 }
 
 const char* HAL_GetMyGatewayString() {
     alert_log("HAL_GetMyGatewayString");
+    struct netif *nif = get_connected_nif();
+    if (nif != NULL) {
+        char* ip_addr = ip4addr_ntoa(&nif->gw);
+        strncpy(g_IP, ip_addr, 16);
+    }
 	return g_IP;
 }
 
@@ -66,6 +75,11 @@ const char* HAL_GetMyDNSString() {
 
 const char* HAL_GetMyMaskString() {
     alert_log("HAL_GetMyMaskString");
+    struct netif *nif = get_connected_nif();
+    if (nif != NULL) {
+        char* ip_addr = ip4addr_ntoa(&nif->netmask);
+        strncpy(g_IP, ip_addr, 16);
+    }
 	return g_IP;
 }
 
@@ -91,10 +105,19 @@ const char* HAL_GetMACStr(char* macstr)
 	return macstr;
 }
 
-
 void HAL_PrintNetworkInfo()
 {
-    alert_log("HAL_PrintNetworkInfo");
+    struct netif *nif = get_connected_nif();
+    if (nif != NULL) {
+        uint8_t * mac = nif->hwaddr;
+        LOG(LOG_LVL_INFO, "+--------------- net device info ------------+\r\n");
+        LOG(LOG_LVL_INFO, "|netif hostname: %-16s            |\r\n", nif->hostname);
+        LOG(LOG_LVL_INFO, "|netif ip      = %-16s            |\r\n", ip4addr_ntoa(&nif->ip_addr));
+        LOG(LOG_LVL_INFO, "|netif mask    = %-16s            |\r\n", ip4addr_ntoa(&nif->netmask));
+        LOG(LOG_LVL_INFO, "|netif gateway = %-16s            |\r\n", ip4addr_ntoa(&nif->gw));
+        LOG(LOG_LVL_INFO, "|netif mac     : [%02X:%02X:%02X:%02X:%02X:%02X] %-7s |\r\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], "");
+        LOG(LOG_LVL_INFO, "+--------------------------------------------+\r\n");
+    }
 }
 
 int HAL_GetWifiStrength()
@@ -200,13 +223,20 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 void HAL_DisconnectFromWifi()
 {
     alert_log("HAL_DisconnectFromWifi");
-	// wifi_sta_disconnect();
+    wifi_sta_disconnect();
+    if (g_wifiStatusCallback != NULL) {
+        g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
+    }
 }
 
 
 static void ap_startup_cb(void * arg)
 {
     netdev_set_state(NETIF_IDX_AP, NETDEV_UP);
+    if (g_wifiStatusCallback != NULL) {
+        g_wifiStatusCallback(WIFI_AP_CONNECTED);
+    }
+
 }
 
 void wifi_init_ap(const char* ssid)
@@ -239,19 +269,37 @@ void wifi_init_ap(const char* ssid)
     server_config.client_max    = 3;
     dhcpd_curr_config_set(&server_config);
 
-    //1. net device(lwip).
+    // fix to generate unique AP MAC, mirrors STA code
+    //1. AP mac get
+     if (SYSPARAM_ERR_NONE != sysparam_softap_mac_get(mac_addr)) {
+        LOG(LOG_LVL_ERROR, "[%s]softap mac get failed!!!\r\n", __func__);
+        return;
+    }
+
+    if (mac_addr[0] == SOFTAP_MAC_ADDR0 &&
+        mac_addr[1] == SOFTAP_MAC_ADDR1 &&
+        mac_addr[2] == SOFTAP_MAC_ADDR2 &&
+        mac_addr[3] == SOFTAP_MAC_ADDR3 &&
+        mac_addr[4] == SOFTAP_MAC_ADDR4 &&
+        mac_addr[5] == SOFTAP_MAC_ADDR5) {
+        ln_generate_random_mac(mac_addr);
+        sysparam_softap_mac_update((const uint8_t *)mac_addr);
+    }
+
+    //2. net device(lwip).
     netdev_set_mac_addr(NETIF_IDX_AP, mac_addr);
     netdev_set_ip_info(NETIF_IDX_AP, &ip_info);
     netdev_set_active(NETIF_IDX_AP);
     wifi_manager_reg_event_callback(WIFI_MGR_EVENT_SOFTAP_STARTUP, &ap_startup_cb);
 
-    sysparam_softap_mac_update((const uint8_t *)mac_addr);
-
     ap_cfg.ext_cfg.psk_value = NULL;
 
-    //2. wifi
+    //3. wifi
     if(WIFI_ERR_NONE !=  wifi_softap_start(&ap_cfg)){
         LOG(LOG_LVL_ERROR, "[%s, %d]wifi_start() fail.\r\n", __func__, __LINE__);
+        if (g_wifiStatusCallback != NULL) {
+            g_wifiStatusCallback(WIFI_AP_FAILED);
+        }
     }
 }
 
