@@ -2,8 +2,9 @@
 
 #include "../hal_flashConfig.h"
 #include "hal/hal_flash.h"
+#include "flash_partition_table.h"
 
-#define CONFIG_OFFSET 0x100000
+#define CONFIG_OFFSET USER_SPACE_OFFSET + USER_SPACE_SIZE - 4096
 
 int HAL_Configuration_ReadConfigMemory(void *target, int dataLen){
 
