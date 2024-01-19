@@ -141,10 +141,11 @@ OpenW600: sdk/OpenW600/tools/gcc-arm-none-eabi-4_9-2014q4/bin sdk/OpenW600/share
 
 .PHONY: OpenLN882H
 OpenLN882H: submodules sdk/OpenLN882H/project/OpenBeken/app
-	CROSS_TOOLCHAIN_ROOT="/usr/" cmake sdk/OpenLN882H -B sdk/OpenLN882H
-	CROSS_TOOLCHAIN_ROOT="/usr/" cmake --build ./sdk/OpenLN882H/
+	CROSS_TOOLCHAIN_ROOT="/usr/" cmake sdk/OpenLN882H -B sdk/OpenLN882H/build
+	CROSS_TOOLCHAIN_ROOT="/usr/" cmake --build ./sdk/OpenLN882H/build
 	mkdir -p output/$(APP_VERSION)
-	cp sdk/OpenLN882H/bin/flashimage.bin output/$(APP_VERSION)/OpenLN882H_$(APP_VERSION).bin
+	cp sdk/OpenLN882H/build/bin/flashimage.bin output/$(APP_VERSION)/OpenLN882H_$(APP_VERSION).bin
+	cp sdk/OpenLN882H/build/bin/flashimage-ota-xz-v0.1.bin output/$(APP_VERSION)/OpenLN882H_$(APP_VERSION)_OTA.bin
 
 # clean .o files and output directory
 .PHONY: clean
@@ -155,7 +156,7 @@ clean:
 	$(MAKE) -C sdk/OpenXR809/project/oxr_sharedApp/gcc clean
 	$(MAKE) -C sdk/OpenW800 clean
 	$(MAKE) -C sdk/OpenW600 clean
-	cmake --build ./sdk/OpenLN882H/ --target clean
+	test -d ./sdk/OpenLN882H/build && cmake --build ./sdk/OpenLN882H/build --target clean
 
 # Add custom Makefile if required
 -include custom.mk
