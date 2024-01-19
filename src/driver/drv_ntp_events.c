@@ -171,7 +171,7 @@ void NTP_RunEventsForSecond(unsigned int runTime) {
 	struct tm *ltm;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = localtime((time_t*)&runTime);
+	ltm = gmtime((time_t*)&runTime);
 	
 	if (ltm == 0) {
 		return;
@@ -312,7 +312,7 @@ commandResult_t CMD_NTP_AddClockEvent(const void *context, const char *cmd, cons
 #if ENABLE_NTP_SUNRISE_SUNSET
 	uint8_t hour_b, minute_b;
 	int sunflags = 0;
-	struct tm *ltm = localtime((time_t*) &ntp_eventsTime);
+	struct tm *ltm = gmtime((time_t*) &ntp_eventsTime);
 #endif
 
 	Tokenizer_TokenizeString(args, 0);

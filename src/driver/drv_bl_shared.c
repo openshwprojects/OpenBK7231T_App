@@ -197,7 +197,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
                     hprintf255(request, ",%1.1f", dailyStats[i]);
             }
             hprintf255(request, "]<br>");
-            ltm = localtime(&ConsumptionResetTime);
+            ltm = gmtime(&ConsumptionResetTime);
             hprintf255(request, "Consumption Reset Time: %04d/%02d/%02d %02d:%02d:%02d",
                        ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
         } else {
@@ -540,7 +540,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
     if (NTP_IsTimeSynced()) {
         ntpTime = (time_t)NTP_GetCurrentTime();
-        ltm = localtime(&ntpTime);
+        ltm = gmtime(&ntpTime);
         if (ConsumptionResetTime == 0)
             ConsumptionResetTime = (time_t)ntpTime;
 
@@ -570,7 +570,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
             }
             if (MQTT_IsReady() == true)
             {
-                ltm = localtime(&ConsumptionResetTime);
+                ltm = gmtime(&ConsumptionResetTime);
                 /* 2019-09-07T15:50-04:00 */
                 if (NTP_GetTimesZoneOfsSeconds()>0)
                 {
@@ -609,7 +609,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
                 {
                     cJSON_AddNumberToObject(root, "consumption_today", BL_ChangeEnergyUnitIfNeeded(dailyStats[0]));
                     cJSON_AddNumberToObject(root, "consumption_yesterday", BL_ChangeEnergyUnitIfNeeded(dailyStats[1]));
-                    ltm = localtime(&ConsumptionResetTime);
+                    ltm = gmtime(&ConsumptionResetTime);
                     if (NTP_GetTimesZoneOfsSeconds()>0)
                     {
                        snprintf(datetime,sizeof(datetime), "%04i-%02i-%02iT%02i:%02i+%02i:%02i",
@@ -758,7 +758,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
                 MQTT_PublishMain_StringFloat(counter_mqttNames[4], 
 					BL_ChangeEnergyUnitIfNeeded(dailyStats[0]), roundingPrecision[PRECISION_ENERGY],0);
                 stat_updatesSent++;
-                ltm = localtime(&ConsumptionResetTime);
+                ltm = gmtime(&ConsumptionResetTime);
                 snprintf(datetime,sizeof(datetime), "%04i-%02i-%02i %02i:%02i:%02i",
                         ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
                 MQTT_PublishMain_StringString(counter_mqttNames[5], datetime, 0);

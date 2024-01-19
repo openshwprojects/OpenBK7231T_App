@@ -77,7 +77,7 @@ int __cdecl main(void)
 	ConsumptionResetTime = time(0);
           
 	
-	ltm = localtime(&ConsumptionResetTime);
+	ltm = gmtime(&ConsumptionResetTime);
 
 	addLogAdv(1,1,"Scheme str is too small (%u >= %u)", max_scheme_len, some_uint_32);
 	addLogAdv(1,1,"Simon test %f!",1.0f/3.0f);

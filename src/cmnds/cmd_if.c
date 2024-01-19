@@ -410,11 +410,11 @@ const constant_t g_constants[] = {
 	////cnstdetail:"descr":"Current Year from NTP",
 	////cnstdetail:"requires":""}
 	{ "$year", &getYear },
+#if ENABLE_NTP_SUNRISE_SUNSET
 	////cnstdetail:{"name":"$sunrise",
 	////cnstdetail:"title":"$sunrise",
 	////cnstdetail:"descr":"Next sunrise as a TimerSeconds from midnight",
 	////cnstdetail:"requires":""}
-#if ENABLE_NTP_SUNRISE_SUNSET
 	{ "$sunrise", &getSunrise },
 	////cnstdetail:{"name":"$sunset",
 	////cnstdetail:"title":"$sunset",
