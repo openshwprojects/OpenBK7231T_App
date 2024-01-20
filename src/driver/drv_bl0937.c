@@ -132,10 +132,10 @@ void BL0937_Init_Pins() {
 	}
 	else {
 		g_invertSEL = false;
-		GPIO_HLW_SEL = PIN_FindPinIndexForRole(IOR_BL0937_SEL, GPIO_HLW_SEL);
+		GPIO_HLW_SEL = 21; //PIN_FindPinIndexForRole(IOR_BL0937_SEL, GPIO_HLW_SEL);
 	}
-	GPIO_HLW_CF = PIN_FindPinIndexForRole(IOR_BL0937_CF, GPIO_HLW_CF);
-	GPIO_HLW_CF1 = PIN_FindPinIndexForRole(IOR_BL0937_CF1, GPIO_HLW_CF1);
+	GPIO_HLW_CF = 3; //PIN_FindPinIndexForRole(IOR_BL0937_CF, GPIO_HLW_CF);
+	GPIO_HLW_CF1 = 14; //PIN_FindPinIndexForRole(IOR_BL0937_CF1, GPIO_HLW_CF1);
 
 #if PLATFORM_W600
 	GPIO_HLW_CF1_pin = HAL_GetGPIOPin(GPIO_HLW_CF1);
