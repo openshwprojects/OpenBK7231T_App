@@ -52,6 +52,10 @@
 "file": "autoexecs/ping_watchdog.bat"
 },
 {
+"title": "HTTP-only control of Tasmota/OBK device from OBK.",
+"file": "autoexecs/http_calls.bat"
+},
+{
 "title": "NTP and 'waitFor' command example. You can use 'waitFor NTPState 1' in autoexec.bat to wait for NTP sync. After that, you can be sure that correct time is set. 'waitFor' will block execution until given event.",
 "file": "autoexecs/waiting_for_NTP_sync.bat"
 },
