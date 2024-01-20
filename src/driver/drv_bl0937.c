@@ -63,6 +63,15 @@ static void HlwCfInterrupt(void* context) {
 	g_p_pulses++;
 }
 
+#elif PLATFORM_BL602
+
+static void HlwCf1Interrupt(void* arg) {
+	g_vc_pulses++;
+}
+static void HlwCfInterrupt(void* arg) {
+	g_p_pulses++;
+}
+
 #else
 
 void HlwCf1Interrupt(unsigned char pinNum) {  // Service Voltage and Current
@@ -101,6 +110,8 @@ void BL0937_Shutdown_Pins()
 #if PLATFORM_W600
 	tls_gpio_irq_disable(GPIO_HLW_CF1_pin);
 	tls_gpio_irq_disable(GPIO_HLW_CF_pin);
+#elif PLATFORM_BL602
+	//Todo how?
 #elif PLATFORM_BEKEN
 	gpio_int_disable(GPIO_HLW_CF1);
 	gpio_int_disable(GPIO_HLW_CF);
@@ -140,6 +151,8 @@ void BL0937_Init_Pins() {
 #if PLATFORM_W600
 	tls_gpio_isr_register(GPIO_HLW_CF1_pin, HlwCf1Interrupt, NULL);
 	tls_gpio_irq_enable(GPIO_HLW_CF1_pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
+#elif PLATFORM_BL602
+        hal_gpio_register_handler(HlwCf1Interrupt, GPIO_HLW_CF1, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_LEVEL, (void*) NULL)
 #elif PLATFORM_BEKEN
 	gpio_int_enable(GPIO_HLW_CF1, IRQ_TRIGGER_FALLING_EDGE, HlwCf1Interrupt);
 #endif
@@ -149,6 +162,8 @@ void BL0937_Init_Pins() {
 #if PLATFORM_W600
 	tls_gpio_isr_register(GPIO_HLW_CF_pin, HlwCfInterrupt, NULL);
 	tls_gpio_irq_enable(GPIO_HLW_CF_pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
+#elif PLATFORM_BL602
+        hal_gpio_register_handler(HlwCfInterrupt, GPIO_HLW_CF, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_LEVEL, (void*) NULL)
 #elif PLATFORM_BEKEN
 	gpio_int_enable(GPIO_HLW_CF, IRQ_TRIGGER_FALLING_EDGE, HlwCfInterrupt);
 #endif
