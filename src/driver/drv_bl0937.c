@@ -25,6 +25,7 @@
 #elif PLATFORM_BL602
 
 #include "../../../../../../components/hal_drv/bl602_hal/hal_gpio.h"
+#include "../../../../../../components/hal_drv/bl602_hal/bl_gpio.h"
 #else
 
 #endif
