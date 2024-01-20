@@ -25,6 +25,7 @@
 #elif PLATFORM_BL602
 
 #include "../../../../../../components/hal_drv/bl602_hal/hal_gpio.h"
+#include "../../../../../../components/hal_drv/bl602_hal/bl_gpio.h"
 #else
 
 #endif
@@ -70,9 +71,11 @@ static void HlwCfInterrupt(void* context) {
 
 static void HlwCf1Interrupt(void* arg) {
 	g_vc_pulses++;
+	bl_gpio_intmask(GPIO_HLW_CF1, 0);
 }
 static void HlwCfInterrupt(void* arg) {
 	g_p_pulses++;
+	bl_gpio_intmask(GPIO_HLW_CF, 0);
 }
 
 #else
