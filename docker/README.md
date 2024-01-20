@@ -26,6 +26,7 @@ When running the docker image, you may pass the following environment variables 
   * `OpenBL602`
   * `OpenW800`
   * `OpenW600`
+  * `OpenLN882H`
 
   For example, to build `OpenBK7231T` and `OpenXR809`, the options should be `-env TARGET_SDKS="OpenBK7231T,OpenXR809"`
 * `MAKEFLAGS` - This is the standard `make` environment variable for setting default `make` flags. It is recommended to use this to configure `make` to use multiple cores. for exmaple, to use 8 cores: `--env MAKEFLAGS="-j 8"`

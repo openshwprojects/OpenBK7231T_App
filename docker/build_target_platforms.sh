@@ -12,6 +12,7 @@ if [ ! -v TARGET_SDKS ]; then
             "OpenBL602"
             "OpenW800"
             "OpenW600"
+            "OpenLN882H"
         )
 else
     target_platforms=(${TARGET_SDKS//,/ })
