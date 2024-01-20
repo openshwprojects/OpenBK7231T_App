@@ -72,6 +72,10 @@
 "file": "autoexecs/automatic_day_and_night_lights_v2.bat"
 },
 {
+"title": "A more complete demo with the addition of: An NTP server configured on the LAN, off/low/high modes for the lights, make use of sunset event and constant to determine when the light should start to be on.",
+"file": "autoexecs/automatic_day_and_night_lights_v3.bat"
+},
+{
 "title": "Simple UART log redirection to UART1 instead of UART2 on Beken with UART command line support",
 "file": "autoexecs/logging_for_uart1.bat"
 },

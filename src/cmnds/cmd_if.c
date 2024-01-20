@@ -262,6 +262,17 @@ float getMDay(const char *s) {
 	return NTP_GetMDay();
 }
 
+#if ENABLE_NTP_SUNRISE_SUNSET
+
+float getSunrise(const char *s) {
+	return NTP_GetSunrise();
+}
+float getSunset(const char *s) {
+	return NTP_GetSunset();
+}
+
+#endif
+
 const constant_t g_constants[] = {
 	//cnstdetail:{"name":"MQTTOn",
 	//cnstdetail:"title":"MQTTOn",
@@ -399,6 +410,18 @@ const constant_t g_constants[] = {
 	////cnstdetail:"descr":"Current Year from NTP",
 	////cnstdetail:"requires":""}
 	{ "$year", &getYear },
+#if ENABLE_NTP_SUNRISE_SUNSET
+	////cnstdetail:{"name":"$sunrise",
+	////cnstdetail:"title":"$sunrise",
+	////cnstdetail:"descr":"Next sunrise as a TimerSeconds from midnight",
+	////cnstdetail:"requires":""}
+	{ "$sunrise", &getSunrise },
+	////cnstdetail:{"name":"$sunset",
+	////cnstdetail:"title":"$sunset",
+	////cnstdetail:"descr":"Next sunset as a TimerSeconds from midnight",
+	////cnstdetail:"requires":""}
+	{ "$sunset", &getSunset },
+#endif
 	//cnstdetail:{"name":"$NTPOn",
 	//cnstdetail:"title":"$NTPOn",
 	//cnstdetail:"descr":"Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0.",

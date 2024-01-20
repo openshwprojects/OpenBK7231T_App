@@ -162,6 +162,18 @@
     "requires": ""
   },
   {
+    "name": "$sunrise",
+    "title": "$sunrise",
+    "descr": "Next sunrise as a TimerSeconds from midnight. (NOTE: Requires compiling with ENABLE_NTP_SUNRISE_SUNSET set which adds about 11k of code)",
+    "requires": ""
+  },
+  {
+    "name": "$sunset",
+    "title": "$sunset",
+    "descr": "Next sunset as a TimerSeconds from midnight. (NOTE: Requires compiling with ENABLE_NTP_SUNRISE_SUNSET set which adds about 11k of code)",
+    "requires": ""
+  },
+  {
     "name": "$NTPOn",
     "title": "$NTPOn",
     "descr": "Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0.",

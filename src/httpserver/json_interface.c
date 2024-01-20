@@ -330,7 +330,7 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 	printer(request, "{");
 
 	time_t localTime = (time_t)NTP_GetCurrentTime();
-	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", localtime(&localTime));
+	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", gmtime(&localTime));
 	JSON_PrintKeyValue_String(request, printer, "Time", buff, false);
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
@@ -411,7 +411,7 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bA
 		printer(request, "\"StatusSTS\":");
 	}
 	printer(request, "{");
-	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", localtime(&localTime));
+	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", gmtime(&localTime));
 	JSON_PrintKeyValue_String(request, printer, "Time", buff, true);
 	format_time(g_secondsElapsed, buff, sizeof(buff));
 	JSON_PrintKeyValue_String(request, printer, "Uptime", buff, true);
@@ -449,9 +449,9 @@ static int http_tasmota_json_status_TIM(void* request, jsonCb_t printer) {
 	time_t localTime = (time_t)NTP_GetCurrentTime();
 	time_t localUTC = (time_t)NTP_GetCurrentTimeWithoutOffset();
 	printer(request, "\"StatusTIM\":{");
-	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", localtime(&localUTC));
+	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", gmtime(&localUTC));
 	JSON_PrintKeyValue_String(request, printer, "UTC", buff, true);
-	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", localtime(&localTime));
+	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", gmtime(&localTime));
 	JSON_PrintKeyValue_String(request, printer, "Local", buff, true);
 	JSON_PrintKeyValue_String(request, printer, "StartDST", "2022-03-27T02:00:00", true);
 	JSON_PrintKeyValue_String(request, printer, "EndDST", "2022-10-30T03:00:00", true);
@@ -663,7 +663,7 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	JSON_PrintKeyValue_Int(request, printer, "Uptime", g_secondsElapsed, true);
 	struct tm* ltm;
 	int ntpTime = NTP_GetCurrentTime() - g_secondsElapsed;
-	ltm = localtime((time_t*)&ntpTime);
+	ltm = gmtime((time_t*)&ntpTime);
 
 	if (ltm != 0) {
 		printer(request, "\"StartupUTC\":\"%04d-%02d-%02dT%02d:%02d:%02d\",", ltm->tm_year + 1900, ltm->tm_mon + 1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
