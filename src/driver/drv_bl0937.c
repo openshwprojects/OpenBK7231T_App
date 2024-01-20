@@ -70,9 +70,11 @@ static void HlwCfInterrupt(void* context) {
 
 static void HlwCf1Interrupt(void* arg) {
 	g_vc_pulses++;
+	bl_gpio_intmask(GPIO_HLW_CF1, 0);
 }
 static void HlwCfInterrupt(void* arg) {
 	g_p_pulses++;
+	bl_gpio_intmask(GPIO_HLW_CF, 0);
 }
 
 #else
