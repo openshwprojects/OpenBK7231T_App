@@ -20,7 +20,7 @@ addClockEvent 23:00 0xff 3 off_lights
 waitFor NTPState 1
 
 // set the current time as TimerSeconds in register for checks below
-setChannel 11 ($hour*3600)+($minute*60)
+setChannel 11 $hour*3600+$minute*60
 
 // Set initial light state to match the above clock events
 // sunset - 21:00   lights set to high (evening activities)
