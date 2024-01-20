@@ -22,3 +22,6 @@
 	path = sdk/OpenW600
 	url = https://github.com/openshwprojects/OpenW600.git
 	branch = master
+[submodule "sdk/OpenLN882H"]
+	path = sdk/OpenLN882H
+	url = https://github.com/openshwprojects/OpenLN882H.git
