@@ -9,7 +9,7 @@ RUN dpkg --add-architecture i386 \
  && apt-get install -y \
                 wget git python3 python-is-python3 python3-pip \
                 libc6-i386 make \
-                build-essential
+                build-essential cmake gcc-arm-none-eabi
 
 RUN pip3 install pycryptodomex configobj toml fdt
 
