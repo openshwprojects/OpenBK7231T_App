@@ -22,6 +22,9 @@
 
 #define ELE_HW_TIME 1
 #define HW_TIMER_ID 0
+#elif PLATFORM_BL602
+
+#include "../../../../../../components/hal_drv/bl602_hal/hal_gpio.h"
 #else
 
 #endif
