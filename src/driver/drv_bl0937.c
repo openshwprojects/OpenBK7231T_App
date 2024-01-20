@@ -132,10 +132,10 @@ void BL0937_Init_Pins() {
 	}
 	else {
 		g_invertSEL = false;
-		GPIO_HLW_SEL = 21; //PIN_FindPinIndexForRole(IOR_BL0937_SEL, GPIO_HLW_SEL);
+		GPIO_HLW_SEL = PIN_FindPinIndexForRole(IOR_BL0937_SEL, GPIO_HLW_SEL);
 	}
-	GPIO_HLW_CF = 3; //PIN_FindPinIndexForRole(IOR_BL0937_CF, GPIO_HLW_CF);
-	GPIO_HLW_CF1 = 14; //PIN_FindPinIndexForRole(IOR_BL0937_CF1, GPIO_HLW_CF1);
+	GPIO_HLW_CF = PIN_FindPinIndexForRole(IOR_BL0937_CF, GPIO_HLW_CF);
+	GPIO_HLW_CF1 = PIN_FindPinIndexForRole(IOR_BL0937_CF1, GPIO_HLW_CF1);
 
 #if PLATFORM_W600
 	GPIO_HLW_CF1_pin = HAL_GetGPIOPin(GPIO_HLW_CF1);
@@ -155,7 +155,9 @@ void BL0937_Init_Pins() {
 	tls_gpio_isr_register(GPIO_HLW_CF1_pin, HlwCf1Interrupt, NULL);
 	tls_gpio_irq_enable(GPIO_HLW_CF1_pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
 #elif PLATFORM_BL602
-        hal_gpio_register_handler(HlwCf1Interrupt, GPIO_HLW_CF1, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_LEVEL, (void*) NULL);
+        tmp = hal_gpio_register_handler(HlwCf1Interrupt, GPIO_HLW_CF1, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_LEVEL, (void*) NULL);
+	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"registering cf1 handler status: %i \n", tmp);
+
 #elif PLATFORM_BEKEN
 	gpio_int_enable(GPIO_HLW_CF1, IRQ_TRIGGER_FALLING_EDGE, HlwCf1Interrupt);
 #endif
@@ -166,7 +168,8 @@ void BL0937_Init_Pins() {
 	tls_gpio_isr_register(GPIO_HLW_CF_pin, HlwCfInterrupt, NULL);
 	tls_gpio_irq_enable(GPIO_HLW_CF_pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
 #elif PLATFORM_BL602
-        hal_gpio_register_handler(HlwCfInterrupt, GPIO_HLW_CF, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_LEVEL, (void*) NULL);
+        tmp = hal_gpio_register_handler(HlwCfInterrupt, GPIO_HLW_CF, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_LEVEL, (void*) NULL);
+	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"registering cf handler status: %i \n", tmp);
 #elif PLATFORM_BEKEN
 	gpio_int_enable(GPIO_HLW_CF, IRQ_TRIGGER_FALLING_EDGE, HlwCfInterrupt);
 #endif
