@@ -54,7 +54,8 @@
 #define ENABLE_DRIVER_PT6523	1
 #define ENABLE_DRIVER_TEXTSCROLLER	1
 #define ENABLE_NTP_SUNRISE_SUNSET	1
-
+// parse things like $CH1 or $hour etc
+#define ENABLE_EXPAND_CONSTANT		1
 
 #elif PLATFORM_BL602
 
@@ -95,6 +96,8 @@
 #if PLATFORM_BK7231N
 #define ENABLE_DRIVER_PWM_GROUP 1
 #endif
+// parse things like $CH1 or $hour etc
+#define ENABLE_EXPAND_CONSTANT		1
 
 #elif PLATFORM_LN882H
 
