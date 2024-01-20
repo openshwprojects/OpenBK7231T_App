@@ -1,5 +1,5 @@
 #include "drv_bl0937.h"
-
+//dummy
 #include <math.h>
 
 #include "../cmnds/cmd_public.h"
@@ -22,6 +22,9 @@
 
 #define ELE_HW_TIME 1
 #define HW_TIMER_ID 0
+#elif PLATFORM_BL602
+
+#include "../../../../../../components/hal_drv/bl602_hal/hal_gpio.h"
 #else
 
 #endif
@@ -152,7 +155,9 @@ void BL0937_Init_Pins() {
 	tls_gpio_isr_register(GPIO_HLW_CF1_pin, HlwCf1Interrupt, NULL);
 	tls_gpio_irq_enable(GPIO_HLW_CF1_pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
 #elif PLATFORM_BL602
-        hal_gpio_register_handler(HlwCf1Interrupt, GPIO_HLW_CF1, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_LEVEL, (void*) NULL)
+        tmp = hal_gpio_register_handler(HlwCf1Interrupt, GPIO_HLW_CF1, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_LEVEL, (void*) NULL);
+	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Registering cf1 handler status: %i \n", tmp);
+
 #elif PLATFORM_BEKEN
 	gpio_int_enable(GPIO_HLW_CF1, IRQ_TRIGGER_FALLING_EDGE, HlwCf1Interrupt);
 #endif
@@ -163,7 +168,8 @@ void BL0937_Init_Pins() {
 	tls_gpio_isr_register(GPIO_HLW_CF_pin, HlwCfInterrupt, NULL);
 	tls_gpio_irq_enable(GPIO_HLW_CF_pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
 #elif PLATFORM_BL602
-        hal_gpio_register_handler(HlwCfInterrupt, GPIO_HLW_CF, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_LEVEL, (void*) NULL)
+        tmp = hal_gpio_register_handler(HlwCfInterrupt, GPIO_HLW_CF, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_LEVEL, (void*) NULL);
+	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Registering cf handler status: %i \n", tmp);
 #elif PLATFORM_BEKEN
 	gpio_int_enable(GPIO_HLW_CF, IRQ_TRIGGER_FALLING_EDGE, HlwCfInterrupt);
 #endif
