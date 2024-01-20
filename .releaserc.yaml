@@ -170,6 +170,7 @@ publish:
       - path: "output/**/OpenBL602*"
       - path: "output/**/OpenW600*"
       - path: "output/**/OpenW800*"
+      - path: "output/**/OpenLN882H*"
 
 success:
   - "@semantic-release/github"
