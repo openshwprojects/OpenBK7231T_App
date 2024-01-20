@@ -152,7 +152,7 @@ void BL0937_Init_Pins() {
 	tls_gpio_isr_register(GPIO_HLW_CF1_pin, HlwCf1Interrupt, NULL);
 	tls_gpio_irq_enable(GPIO_HLW_CF1_pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
 #elif PLATFORM_BL602
-        hal_gpio_register_handler(HlwCf1Interrupt, GPIO_HLW_CF1, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_LEVEL, (void*) NULL)
+        hal_gpio_register_handler(HlwCf1Interrupt, GPIO_HLW_CF1, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_LEVEL, (void*) NULL);
 #elif PLATFORM_BEKEN
 	gpio_int_enable(GPIO_HLW_CF1, IRQ_TRIGGER_FALLING_EDGE, HlwCf1Interrupt);
 #endif
@@ -163,7 +163,7 @@ void BL0937_Init_Pins() {
 	tls_gpio_isr_register(GPIO_HLW_CF_pin, HlwCfInterrupt, NULL);
 	tls_gpio_irq_enable(GPIO_HLW_CF_pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
 #elif PLATFORM_BL602
-        hal_gpio_register_handler(HlwCfInterrupt, GPIO_HLW_CF, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_LEVEL, (void*) NULL)
+        hal_gpio_register_handler(HlwCfInterrupt, GPIO_HLW_CF, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_LEVEL, (void*) NULL);
 #elif PLATFORM_BEKEN
 	gpio_int_enable(GPIO_HLW_CF, IRQ_TRIGGER_FALLING_EDGE, HlwCfInterrupt);
 #endif
