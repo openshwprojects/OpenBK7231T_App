@@ -460,6 +460,7 @@ static int g_totalConstants = sizeof(g_constants) / sizeof(g_constants[0]);
 // Returns true if constant matches
 // Returns false if no constants found
 const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
+#if ENABLE_EXPAND_CONSTANT
 	const constant_t *var;
 	int i;
 	var = g_constants;
@@ -472,6 +473,7 @@ const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
 			return ret;
 		}
 	}
+#endif
 	return false;
 }
 #if WINDOWS
