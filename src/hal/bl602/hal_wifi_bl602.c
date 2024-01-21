@@ -181,7 +181,9 @@ void HAL_PrintNetworkInfo() {
 
 }
 int HAL_GetWifiStrength() {
-    return -1;
+    int rssi = -1;
+    wifi_mgmr_rssi_get(&rssi);
+    return rssi;	
 }
 
 const char *HAL_GetMyIPString() {
