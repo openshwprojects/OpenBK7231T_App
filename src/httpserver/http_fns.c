@@ -749,6 +749,15 @@ int http_fn_index(http_request_t* request) {
 	hprintf255(request, "<h5>Cfg size: %i, change counter: %i, ota counter: %i, boot incompletes %i (might change to 0 if you wait to 30 sec)!</h5>",
 		sizeof(g_cfg), g_cfg.changeCounter, g_cfg.otaCounter, g_bootFailures);
 
+#if PLATFORM_LN882H
+	// Quick hack to display LN-only temperature,
+	// we may improve it in the future
+	extern float g_wifi_temperature;
+
+	hprintf255(request, "<h5>LN temp: %f</h5>",
+		g_wifi_temperature);
+#endif
+
 	inputName = CFG_GetPingHost();
 	if (inputName && *inputName && CFG_GetPingDisconnectedSecondsToRestart()) {
 		hprintf255(request, "<h5>Ping watchdog (%s) - ", inputName);
