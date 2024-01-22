@@ -86,10 +86,11 @@ int WiFI_SetMacAddress(char* mac)
 {
     alert_log("WiFI_SetMacAddress");
     if (netdev_got_ip()) {
-        netif_idx_t active = netdev_get_active();
-        if (active == NETIF_IDX_STA) {
             sysparam_sta_mac_update((const uint8_t *) mac);
-            netdev_set_mac_addr(NETIF_IDX_STA, (uint8_t *) mac);
+            if (netdev_get_active() == NETIF_IDX_STA) {
+                // this probably requires a reboot. Not sure if this actually does anything
+                netdev_set_mac_addr(NETIF_IDX_STA, (uint8_t *) mac);
+            }
             return 1;
         }
     }
