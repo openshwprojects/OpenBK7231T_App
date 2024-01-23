@@ -3,6 +3,84 @@
 
 #include "selftest_local.h"
 
+void Test_TuyaMCU_RawAccess() {
+	// reset whole device
+	SIM_ClearOBK(0);
+	SIM_ClearAndPrepareForMQTTTesting("TuyaMCU", "bekens");
+
+	SIM_UART_InitReceiveRingBuffer(2048);
+
+	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+
+	CFG_SetFlag(OBK_FLAG_TUYAMCU_STORE_RAW_DATA, 1);
+
+	// This will map TuyaMCU fnID 2 of type Value to channel 15
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 2 val 15", 0);
+	SELFTEST_ASSERT_CHANNEL(15, 0);
+	// This packet sets fnID 2 of type Value to 100
+	CMD_ExecuteCommand("uartFakeHex 55AA0307000802020004000000647D", 0);
+
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Dp", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/TuyaMCU/DP", false);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "id", 2);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "type", 0x02);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "data", 100);
+
+	SIM_ClearMQTTHistory();
+
+	// This packet sets fnID 2 of type Value to 90
+	CMD_ExecuteCommand("uartFakeHex 55AA03070008020200040000005A73", 0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(1000, false);
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Dp", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/TuyaMCU/DP", false);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "id", 2);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "type", 0x02);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "data", 90);
+
+	SIM_ClearMQTTHistory();
+
+
+	// This packet sets dpID 18 of type RAW
+	// dpID 18
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 18 Raw", 0);
+	CMD_ExecuteCommand("uartFakeHex 55AA030700101200000C0101003F030100FA040100AA25", 0);
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Dp", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/TuyaMCU/DP", false);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "id", 18);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "type", 0x00);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_STR(0, "data", "0101003F030100FA040100AA");
+
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(1, "id", 2);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(1, "type", 0x02);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(1, "data", 90);
+
+	SIM_ClearMQTTHistory();
+
+	// This packet sets dpID 104 of type RAW
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 104 Raw", 0);
+	CMD_ExecuteCommand("uartFakeHex 55AA03070008680200040000000180", 0);
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Dp", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/TuyaMCU/DP", false);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "id", 104);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "type", 0x00);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_STR(0, "data", "00000001");
+
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(1, "id", 18);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(1, "type", 0x00);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_STR(1, "data", "0101003F030100FA040100AA");
+
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(2, "id", 2);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(2, "type", 0x02);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(2, "data", 90);
+
+	SIM_ClearMQTTHistory();
+
+}
 void Test_TuyaMCU_Basic() {
 	// reset whole device
 	SIM_ClearOBK(0);

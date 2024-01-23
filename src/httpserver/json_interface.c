@@ -744,6 +744,9 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 
 	return 0;
 }
+// drv_tuyaMCU.c
+int http_obk_json_dps(int id, void* request, jsonCb_t printer);
+
 int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, jsonCb_t printer, int flags) {
 	int i;
 
@@ -1026,6 +1029,14 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 	}
 	else if (!wal_strnicmp(cmd, "Ch", 2)) {
 		http_obk_json_channels(request, printer);
+	}
+	else if (!wal_strnicmp(cmd, "Dp", 2)) {
+		int id = -1;
+		sscanf(cmd + 2, "%i", &id);
+		http_obk_json_dps(id,request, printer);
+		if (flags == COMMAND_FLAG_SOURCE_MQTT) {
+			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "DP");
+		}
 	}
 	else {
 		printer(request, "{");
