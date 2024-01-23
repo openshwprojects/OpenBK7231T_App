@@ -1031,6 +1031,7 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		http_obk_json_channels(request, printer);
 	}
 #ifndef OBK_DISABLE_ALL_DRIVERS
+#if ENABLE_DRIVER_TUYAMCU
 	else if (!wal_strnicmp(cmd, "Dp", 2)) {
 		int id = -1;
 		sscanf(cmd + 2, "%i", &id);
@@ -1039,6 +1040,7 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "DP");
 		}
 	}
+#endif
 #endif
 	else {
 		printer(request, "{");
