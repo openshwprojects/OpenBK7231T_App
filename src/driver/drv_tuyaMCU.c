@@ -1300,27 +1300,34 @@ int http_obk_json_dps(int id, void* request, jsonCb_t printer) {
 			}
 			iCnt++;
 			printer(request, "{\"id\":%i,\"type\":%i,\"data\":", cur->fnId, cur->dpType);
-			if (cur->dpType == DP_TYPE_BOOL || cur->dpType == DP_TYPE_ENUM
-				|| cur->dpType == DP_TYPE_VALUE) {
-				if (cur->rawDataLen == 1) {
-					i = cur->rawData[0];
+			if (cur->rawData == 0) {
+				printer(request, "0\"}", cur->rawData);
+			}
+			else {
+				if (cur->dpType == DP_TYPE_BOOL || cur->dpType == DP_TYPE_ENUM
+					|| cur->dpType == DP_TYPE_VALUE) {
+					if (cur->rawDataLen == 1) {
+						i = cur->rawData[0];
+					}
+					else if (cur->rawDataLen == 4) {
+						i = cur->rawData[0] << 24 | cur->rawData[1] << 16 | cur->rawData[2] << 8 | cur->rawData[3];
+					}
+					else {
+						i = 0;
+					}
+					printer(request, "%i}", i);
 				}
-				else if (cur->rawDataLen == 4) {
-					i = cur->rawData[0] << 24 | cur->rawData[1] << 16 | cur->rawData[2] << 8 | cur->rawData[3];
+				else if (cur->dpType == DP_TYPE_STRING) {
+					printer(request, "\"%s\"}", cur->rawData);
 				}
 				else {
-					i = 0;
+					printer(request, "\"");
+					for (i = 0; i < cur->rawDataLen; i++) {
+						sprintf(tmp, "%02X", cur->rawData[i]);
+						printer(request, "%s", tmp);
+					}
+					printer(request, "\"}");
 				}
-				printer(request, "%i}", i);
-			} else if (cur->dpType == DP_TYPE_STRING) {
-				printer(request, "\"%s\"}", cur->rawData);
-			} else {
-				printer(request, "\"");
-				for (i = 0; i < cur->rawDataLen; i++) {
-					sprintf(tmp, "%02X", cur->rawData[i]);
-					printer(request, "%s", tmp);
-				}
-				printer(request, "\"}");
 			}
 		}
 		cur = cur->next;
