@@ -2605,7 +2605,10 @@ int http_fn_cfg_generic(http_request_t* request) {
 
 	CFG_Save_IfThereArePendingChanges();
 
+	// 32 bit type
 	hprintf255(request, "<h4>Flags (Current value=%i)</h4>", CFG_GetFlags());
+	// 64 bit - TODO fixme
+	//hprintf255(request, "<h4>Flags (Current value=%lu)</h4>", CFG_GetFlags64());
 	poststr(request, "<form action=\"/cfg_generic\">");
 
 	for (i = 0; i < OBK_TOTAL_FLAGS; i++) {

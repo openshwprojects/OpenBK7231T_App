@@ -1315,12 +1315,12 @@ int http_obk_json_dps(int id, void* request, jsonCb_t printer) {
 			} else if (cur->dpType == DP_TYPE_STRING) {
 				printer(request, "\"%s\"}", cur->rawData);
 			} else {
-				printer(request, "\"", cur->rawData);
+				printer(request, "\"");
 				for (i = 0; i < cur->rawDataLen; i++) {
 					sprintf(tmp, "%02X", cur->rawData[i]);
 					printer(request, "%s", tmp);
 				}
-				printer(request, "\"}", cur->rawData);
+				printer(request, "\"}");
 			}
 		}
 		cur = cur->next;

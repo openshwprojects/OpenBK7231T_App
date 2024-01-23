@@ -1034,7 +1034,9 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 #if ENABLE_DRIVER_TUYAMCU
 	else if (!wal_strnicmp(cmd, "Dp", 2)) {
 		int id = -1;
-		sscanf(cmd + 2, "%i", &id);
+		if (isdigit(cmd[2])) {
+			sscanf(cmd + 2, "%i", &id);
+		}
 		http_obk_json_dps(id,request, printer);
 		if (flags == COMMAND_FLAG_SOURCE_MQTT) {
 			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "DP");
