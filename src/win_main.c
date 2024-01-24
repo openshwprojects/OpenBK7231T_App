@@ -136,6 +136,7 @@ void Win_DoUnitTests() {
 	Test_ChargeLimitDriver();
 	// this is slowest
 	Test_TuyaMCU_Basic();
+	Test_TuyaMCU_RawAccess();
 	Test_Battery();
 	Test_TuyaMCU_BatteryPowered();
 	Test_JSON_Lib();

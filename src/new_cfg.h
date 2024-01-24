@@ -76,6 +76,7 @@ void CFG_SetLoggerFlag(int flag, bool bValue);
 bool CFG_HasLoggerFlag(int flag);
 void CFG_SetMac(char *mac);
 int CFG_GetFlags();
+unsigned long CFG_GetFlags64();
 const char* CFG_GetNTPServer();
 void CFG_SetNTPServer(const char *s);
 // BL0937, BL0942, etc constants
