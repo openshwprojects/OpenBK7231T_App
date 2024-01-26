@@ -57,81 +57,17 @@ bool Tokenizer_IsArgInteger(int i) {
 	}
 	return strIsInteger(g_args[i]);
 }
-const char *Tokenizer_GetArgExpanding(int i) {
-	const char *s;
-	char tokLine[sizeof(g_argsExpanded[i])];
-	char Templine[sizeof(g_argsExpanded[i])];
-	char convert[10];
 
-	if (i >= g_numArgs)
-		return 0;
-
-	s = g_args[i];
-
-	//séparators for strtok to detect constants
-	const char * separators = "${}";
-	//pointer for strstr function
-	char *ptrConst;
-
-	//copy input string before manipulations
-	strcpy_safe(g_argsExpanded[i], s, sizeof(g_argsExpanded[i]));
-	strcpy_safe(tokLine, s, sizeof(tokLine));
-
-	//start strtok
-	char *strToken = strtok(tokLine, separators);
-	while (strToken != NULL) {
-		//build tconst with ${<token>} and try find it
-		char tconst[20] = "${";
-		strcat(tconst, strToken);
-		strcat(tconst, "}");
-		ptrConst = strstr(g_argsExpanded[i], tconst);
-		if (ptrConst == NULL) {
-			// we didn't find ${<token>} so we try with $<token>
-			strcpy(tconst, "$");
-			strcat(tconst, strToken);
-			ptrConst = strstr(g_argsExpanded[i], tconst);
-		}
-		// if we found ${<token>} or $<token> it means we found a constant
-		if (ptrConst != NULL) {
-			//put 0 on the start of the constant to copy the left part of the input string
-			ptrConst[0] = 0;
-			strcpy_safe(Templine, g_argsExpanded[i], sizeof(Templine));
-			//analyse the constant found to replace it with it's value/string and concat it with the left part of the input string
-			if (!strcmp(tconst, "${IP}") || !strcmp(tconst, "$IP")) {
-				strcat_safe(Templine, HAL_GetMyIPString(), sizeof(Templine));
-			}
-			else if (!strcmp(tconst, "${ShortName}") || !strcmp(tconst, "$ShortName")) {
-				strcat_safe(Templine, CFG_GetShortDeviceName(), sizeof(Templine));
-			}
-			else if (!strcmp(tconst, "${Name}") || !strcmp(tconst, "$Name")) {
-				strcat_safe(Templine, CFG_GetDeviceName(), sizeof(Templine));
-			}
-			else {
-				float f;
-				int iValue;
-				CMD_ExpandConstant(tconst, 0, &f);
-				iValue = f;
-				sprintf(convert, "%i", iValue);
-				strcat_safe(Templine, convert, sizeof(Templine));
-			}
-			//concat with the right part, after the constant
-			strcat_safe(Templine, ptrConst + strlen(tconst), sizeof(Templine));
-			//update the input string with the replaced constant
-			strcpy_safe(g_argsExpanded[i], Templine, sizeof(g_argsExpanded[i]));
-		}
-		//look for next token
-		strToken = strtok(NULL, separators);
-
-	}
-
-	return g_argsExpanded[i];
-
-}
 const char *Tokenizer_GetArg(int i) {
 	const char *s;
 
 	if (i >= g_numArgs)
 		return 0;
+
+	if (g_argsExpanded[i][0] != 0)
+	{
+		return g_argsExpanded[i];
+	}
 
 	s = g_args[i];
 
@@ -148,11 +84,15 @@ const char *Tokenizer_GetArg(int i) {
 		return g_argsExpanded[i];
 	}
 #else
-	if (g_bAllowExpand && s[0] == '$') {
+	if (g_bAllowExpand && (tok_flags & TOKENIZER_ALTERNATE_EXPAND_AT_START)) {
+		CMD_ExpandConstantsWithinString(s, g_argsExpanded[i], sizeof(g_argsExpanded[i]));
+		return g_argsExpanded[i];
+	}
+	else if (g_bAllowExpand && s[0] == '$') {
 		// quick hack for str expansion here, may do it in a better way later
 		if (!strcmp(s + 1, "IP")) {
 			strcpy_safe(g_argsExpanded[i], HAL_GetMyIPString(), sizeof(g_argsExpanded[i]));
-	}
+		}
 		else if (!strcmp(s + 1, "ShortName")) {
 			strcpy_safe(g_argsExpanded[i], CFG_GetShortDeviceName(), sizeof(g_argsExpanded[i]));
 		}
@@ -167,7 +107,7 @@ const char *Tokenizer_GetArg(int i) {
 			sprintf(g_argsExpanded[i], "%i", iValue);
 		}
 		return g_argsExpanded[i];
-}
+	}
 
 #endif
 
@@ -276,6 +216,7 @@ void expandQuotes(char* str) {
 
 	str[writeIndex] = 0;
 }
+
 void Tokenizer_TokenizeString(const char *s, int flags) {
 	char *p;
 
@@ -295,14 +236,12 @@ void Tokenizer_TokenizeString(const char *s, int flags) {
 	}
 
 	// not really needed, but nice for testing
-	memset(g_args, 0, sizeof(g_args));
-	memset(g_argsFrom, 0, sizeof(g_argsFrom));
+	memset(g_args, 0, sizeof(g_args)); // backing buffer is g_buffer, which is mutated where spaces on arg boundaries are set to null char
+	memset(g_argsFrom, 0, sizeof(g_argsFrom)); // backing buffer is s, original unmutated string
+	memset(g_argsExpanded, 0, sizeof(g_argsExpanded));
 
-	if (flags & TOKENIZER_ALTERNATE_EXPAND_AT_START) {
-		CMD_ExpandConstantsWithinString(s, g_buffer, sizeof(g_buffer));
-	} else {
-		strcpy_safe(g_buffer, s, sizeof(g_buffer));
-	}
+	strcpy_safe(g_buffer, s, sizeof(g_buffer));
+
 	if (flags & TOKENIZER_FORCE_SINGLE_ARGUMENT_MODE) {
 		g_args[g_numArgs] = g_buffer;
 		g_argsFrom[g_numArgs] = g_buffer;
