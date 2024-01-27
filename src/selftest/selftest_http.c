@@ -208,6 +208,33 @@ int Test_GetJSONValue_Integer(const char *keyword, const char *obj) {
 	printf("Test_GetJSONValue_Integer will return %i for %s\n", tmp->valueint, keyword);
 	return tmp->valueint;
 }
+int Test_GetJSONValue_IntFromArray(int index, const char *key) {
+	cJSON *tmp;
+	cJSON *parent;
+
+	parent = cJSON_GetArrayItem(g_json, index);
+
+	if (parent == 0)
+		return 0;
+	tmp = cJSON_GetObjectItemCaseSensitive(parent, key);
+	if (tmp == 0)
+		return 0;
+	return tmp->valueint;
+}
+const char *Test_GetJSONValue_StrFromArray(int index, const char *key) {
+	cJSON *tmp;
+	cJSON *parent;
+
+	parent = cJSON_GetArrayItem(g_json, index);
+
+	if (parent == 0)
+		return "";
+	tmp = cJSON_GetObjectItemCaseSensitive(parent, key);
+	if (tmp == 0)
+		return "";
+	return tmp->valuestring;
+}
+
 const char *Test_GetJSONValue_String(const char *keyword, const char *obj) {
 	cJSON *tmp;
 	tmp = Test_GetJSONValue_Generic(keyword, obj);

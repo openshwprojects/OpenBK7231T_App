@@ -29,6 +29,9 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 #define SELFTEST_ASSERT_JSON_VALUE_INTEGER_NESTED2(par1, par2, varName, res) SELFTEST_ASSERT((Test_GetJSONValue_Integer_Nested2(par1, par2,varName) == res));
 #define SELFTEST_ASSERT_JSON_VALUE_FLOAT_NESTED2(par1, par2, varName, res) SELFTEST_ASSERT((Float_Equals(Test_GetJSONValue_Float_Nested2(par1, par2,varName),res)));
 #define SELFTEST_ASSERT_JSON_VALUE_STRING_NESTED2(par1, par2, varName, res) SELFTEST_ASSERT((!strcmp(Test_GetJSONValue_String_Nested2(par1, par2,varName),res)));
+#define SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(index, key, valInt) SELFTEST_ASSERT((Test_GetJSONValue_IntFromArray(index,key)==valInt));
+#define SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_STR(index, key, valInt) SELFTEST_ASSERT((!strcmp(Test_GetJSONValue_StrFromArray(index,key),valInt)));
+
 #define SELFTEST_ASSERT_STRING(current,expected) SELFTEST_ASSERT((strcmp(expected,current) == 0));
 #define SELFTEST_ASSERT_INTEGER(current,expected) SELFTEST_ASSERT((expected==current));
 #define SELFTEST_ASSERT_HTML_REPLY(expected) SELFTEST_ASSERT((strcmp(Test_GetLastHTMLReply(),expected) == 0));
@@ -77,6 +80,7 @@ void Test_ClockEvents();
 void Test_Commands_Channels();
 void Test_LEDDriver();
 void Test_TuyaMCU_Basic();
+void Test_TuyaMCU_RawAccess();
 void Test_Command_If();
 void Test_Command_If_Else();
 void Test_LFS();
@@ -134,6 +138,8 @@ int Test_GetJSONValue_Integer(const char *keyword, const char *obj);
 const char *Test_GetJSONValue_String(const char *keyword, const char *obj);
 const char *Test_GetJSONValue_String_Nested(const char *par1, const char *keyword);
 const char *Test_GetJSONValue_String_Nested2(const char *par1, const char *par2, const char *keyword);
+int Test_GetJSONValue_IntFromArray(int index, const char *obj);
+const char *Test_GetJSONValue_StrFromArray(int index, const char *obj);
 
 void SIM_SendFakeMQTT(const char *text, const char *arguments);
 void SIM_SendFakeMQTTAndRunSimFrame_CMND(const char *command, const char *arguments);

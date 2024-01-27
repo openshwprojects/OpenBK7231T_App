@@ -52,6 +52,10 @@
 "file": "autoexecs/ping_watchdog.bat"
 },
 {
+"title": "Alternate Ping Watchdog usage.",
+"file": "autoexecs/ping_watchdog2.bat"
+},
+{
 "title": "HTTP-only control of Tasmota/OBK device from OBK.",
 "file": "autoexecs/http_calls.bat"
 },

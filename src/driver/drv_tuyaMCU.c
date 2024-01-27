@@ -159,6 +159,10 @@ typedef struct tuyaMCUMapping_s {
 	byte bDPCache;
 	// store last channel value to avoid sending it again
 	int prevValue;
+	// allow storing raw data for later usage
+	byte *rawData;
+	int rawBufferSize;
+	int rawDataLen;
 	// TODO
 	//int mode;
 	// list
@@ -326,6 +330,9 @@ void TuyaMCU_MapIDToChannel(int fnId, int dpType, int channel, int bDPCache) {
 		cur->bDPCache = bDPCache;
 		cur->prevValue = 0;
 		cur->next = g_tuyaMappings;
+		cur->rawData = 0;
+		cur->rawDataLen = 0;
+		cur->rawBufferSize = 0;
 		g_tuyaMappings = cur;
 	}
 
@@ -1273,6 +1280,64 @@ void TuyaMCU_ParseWeatherData(const byte* data, int len) {
 		ofs += stringLen;
 	}
 }
+
+
+
+int http_obk_json_dps(int id, void* request, jsonCb_t printer) {
+	int i;
+	int iCnt = 0;
+	char tmp[8];
+	tuyaMCUMapping_t* cur;
+
+	printer(request, "[");
+
+
+	cur = g_tuyaMappings;
+	while (cur) {
+		if (id == -1 || id == cur->fnId) {
+			if (iCnt) {
+				printer(request, ",");
+			}
+			iCnt++;
+			printer(request, "{\"id\":%i,\"type\":%i,\"data\":", cur->fnId, cur->dpType);
+			if (cur->rawData == 0) {
+				printer(request, "0\"}", cur->rawData);
+			}
+			else {
+				if (cur->dpType == DP_TYPE_BOOL || cur->dpType == DP_TYPE_ENUM
+					|| cur->dpType == DP_TYPE_VALUE) {
+					if (cur->rawDataLen == 1) {
+						i = cur->rawData[0];
+					}
+					else if (cur->rawDataLen == 4) {
+						i = cur->rawData[0] << 24 | cur->rawData[1] << 16 | cur->rawData[2] << 8 | cur->rawData[3];
+					}
+					else {
+						i = 0;
+					}
+					printer(request, "%i}", i);
+				}
+				else if (cur->dpType == DP_TYPE_STRING) {
+					printer(request, "\"%s\"}", cur->rawData);
+				}
+				else {
+					printer(request, "\"");
+					for (i = 0; i < cur->rawDataLen; i++) {
+						sprintf(tmp, "%02X", cur->rawData[i]);
+						printer(request, "%s", tmp);
+					}
+					printer(request, "\"}");
+				}
+			}
+		}
+		cur = cur->next;
+	}
+
+
+	printer(request, "]");
+	return 0;
+}
+
 // Protocol version - 0x00 (not 0x03)
 // Used for battery powered devices, eg. door sensor.
 // Packet ID: 0x08
@@ -1446,6 +1511,17 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 		mapping = TuyaMCU_FindDefForID(fnId);
 		if (mapping && mapping->dpType == DP_TYPE_PUBLISH_TO_MQTT) {
 			TuyaMCU_PublishDPToMQTT(data, ofs);
+		}
+
+		if (CFG_HasFlag(OBK_FLAG_TUYAMCU_STORE_RAW_DATA)) {
+			if (mapping) {
+				if (mapping->rawBufferSize < sectorLen) {
+					mapping->rawData = realloc(mapping->rawData, sectorLen);
+					mapping->rawBufferSize = sectorLen;
+				}
+				mapping->rawDataLen = sectorLen;
+				memcpy(mapping->rawData, data + ofs + 4, sectorLen);
+			}
 		}
 
 		if (sectorLen == 1) {
@@ -1997,10 +2073,16 @@ void TuyaMCU_RunStateMachine_BatteryPowered() {
 		break;
 	case TM0_STATE_AWAITING_MQTT:
 		if (g_tuyaNextRequestDelay <= 0) {
+			
 #if WINDOWS
 			if (true)
 #else
-			if (Main_HasMQTTConnected() || g_defaultTuyaMCUWiFiState == 0x04)
+			if (Main_HasMQTTConnected()
+				||
+				g_defaultTuyaMCUWiFiState == 0x04
+				||
+				g_cfg.mqtt_host[0] == 0
+				)
 #endif
 			{
 				// send wifi state 0x04 
