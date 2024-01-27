@@ -2073,10 +2073,16 @@ void TuyaMCU_RunStateMachine_BatteryPowered() {
 		break;
 	case TM0_STATE_AWAITING_MQTT:
 		if (g_tuyaNextRequestDelay <= 0) {
+			
 #if WINDOWS
 			if (true)
 #else
-			if (Main_HasMQTTConnected() || g_defaultTuyaMCUWiFiState == 0x04)
+			if (Main_HasMQTTConnected()
+				||
+				g_defaultTuyaMCUWiFiState == 0x04
+				||
+				g_cfg.mqtt_host[0] == 0
+				)
 #endif
 			{
 				// send wifi state 0x04 
