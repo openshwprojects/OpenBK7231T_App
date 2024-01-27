@@ -1494,7 +1494,8 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 #define OTA_PROGRAM_SIZE (512)
 	int ota_header_found, use_xz;
 	ota_header_t *ota_header = 0;
-
+	OTA_ResetProgress();
+	OTA_SetTotalBytes(totalLen);
 	ret = bl_mtd_open(BL_MTD_PARTITION_NAME_FW_DEFAULT, &handle, BL_MTD_OPEN_FLAG_BACKUP);
 	if (ret) {
 		return http_rest_error(request, -20, "Open Default FW partition failed");
@@ -1614,6 +1615,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 		total += writelen;
 		startaddr += writelen;
 		towrite -= writelen;
+		OTA_IncrementProgress(writelen);
 
 
 		if (towrite > 0) {
