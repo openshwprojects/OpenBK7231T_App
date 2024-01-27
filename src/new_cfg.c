@@ -557,6 +557,9 @@ bool CFG_HasLoggerFlag(int flag) {
 int CFG_GetFlags() {
 	return g_cfg.genericFlags;
 }
+unsigned long CFG_GetFlags64() {
+	return *((unsigned long*)&g_cfg.genericFlags);
+}
 bool CFG_HasFlag(int flag) {
 	if (flag >= 32) {
 		flag -= 32;

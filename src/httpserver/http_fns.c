@@ -2573,8 +2573,11 @@ const char* g_obk_flagNames[] = {
 	"[TuyaMCU] Use queue",
 	"[HTTP] Disable authentication in safe mode (not recommended)",
 	"[MQTT Discovery] Don't merge toggles and dimmers into lights",
+	"[TuyaMCU] Store raw data",
 	"error",
-};
+	"error",
+}; 
+
 int http_fn_cfg_generic(http_request_t* request) {
 	int i;
 	char tmpA[64];
@@ -2611,7 +2614,10 @@ int http_fn_cfg_generic(http_request_t* request) {
 
 	CFG_Save_IfThereArePendingChanges();
 
+	// 32 bit type
 	hprintf255(request, "<h4>Flags (Current value=%i)</h4>", CFG_GetFlags());
+	// 64 bit - TODO fixme
+	//hprintf255(request, "<h4>Flags (Current value=%lu)</h4>", CFG_GetFlags64());
 	poststr(request, "<form action=\"/cfg_generic\">");
 
 	for (i = 0; i < OBK_TOTAL_FLAGS; i++) {
