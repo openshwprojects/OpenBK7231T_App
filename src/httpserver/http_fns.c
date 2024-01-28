@@ -806,7 +806,7 @@ typedef enum {
 		hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", i, s);
 	}
 #elif PLATFORM_BL602
-	char[26] reason;
+	char reason[26];
 	bl_sys_rstinfo_getsting(reason);
 	hprintf255(request, "<h5>Reboot reason: %s</h5>", reason);
 #endif
