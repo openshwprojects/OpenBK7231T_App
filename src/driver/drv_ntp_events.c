@@ -307,7 +307,6 @@ int NTP_RemoveClockEvent(int id) {
 commandResult_t CMD_NTP_AddClockEvent(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int hour, minute = 0, second = 0;
 	const char *s;
-	int timeComponentsParsed;
 	int flags;
 	int id;
 #if ENABLE_NTP_SUNRISE_SUNSET
@@ -316,7 +315,7 @@ commandResult_t CMD_NTP_AddClockEvent(const void *context, const char *cmd, cons
 	struct tm *ltm = gmtime((time_t*) &ntp_eventsTime);
 #endif
 
-	Tokenizer_TokenizeString(args, 0);
+	Tokenizer_TokenizeString(args, TOKENIZER_ALTERNATE_EXPAND_AT_START);
 	// following check must be done after 'Tokenizer_TokenizeString',
 	// so we know arguments count in Tokenizer. 'cmd' argument is
 	// only for warning display
@@ -326,14 +325,8 @@ commandResult_t CMD_NTP_AddClockEvent(const void *context, const char *cmd, cons
 	s = Tokenizer_GetArg(0);
 	flags = Tokenizer_GetArgInteger(1);
 
-	timeComponentsParsed = sscanf(s, "%i:%i:%i", &hour, &minute, &second);
-	if (timeComponentsParsed == 1) {
-		// single integer value indicates the clock value is TimerSeconds from midnight
-		second = hour % 60;
-		minute = (hour / 60) % 60;
-		hour = (hour / 3600) % 24;
-	}
-	else if (timeComponentsParsed > 1) {
+	if (sscanf(s, "%i:%i:%i", &hour, &minute, &second) >= 2) {
+		// hour, minute and second has correct value parsed
 	}
 #if ENABLE_NTP_SUNRISE_SUNSET
 	else if (strcasestr(s, "sunrise")) {
@@ -344,7 +337,12 @@ commandResult_t CMD_NTP_AddClockEvent(const void *context, const char *cmd, cons
 	}
 #endif
 	else {
-		return CMD_RES_BAD_ARGUMENT;
+		hour = Tokenizer_GetArgInteger(0);
+
+		// single integer value indicates the clock value is TimerSeconds from midnight
+		second = hour % 60;
+		minute = (hour / 60) % 60;
+		hour = (hour / 3600) % 24;
 	}
 
 	id = Tokenizer_GetArgInteger(2);

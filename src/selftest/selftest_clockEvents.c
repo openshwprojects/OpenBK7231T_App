@@ -121,6 +121,9 @@ void Test_ClockEvents() {
 	CMD_ExecuteCommand("setChannel 7 10", 0);
 
 	CMD_ExecuteCommand("addClockEvent $CH6 0xff 4 backlog addChannel 1 $CH7; echo test event for 4", 0);
+	CMD_ExecuteCommand("addClockEvent $CH4:$CH5 0xff 5 backlog addChannel 2 20; echo test event for 5", 0);
+	CMD_ExecuteCommand("addClockEvent $CH4:$CH5:01 0xff 6 backlog addChannel 3 30; echo test event for 6", 0);
+	CMD_ExecuteCommand("addClockEvent $CH4*3600+54*60+59 0xff 7 backlog addChannel 4 40; echo test event for 7", 0);
 
 	CMD_ExecuteCommand("setChannel 7 25", 0);
 
@@ -131,6 +134,9 @@ void Test_ClockEvents() {
 
 	// Event handler command should expand constants when the handler is run.
 	SELFTEST_ASSERT_CHANNEL(1, 25);
+	SELFTEST_ASSERT_CHANNEL(2, 20);
+	SELFTEST_ASSERT_CHANNEL(3, 30);
+	SELFTEST_ASSERT_CHANNEL(4, 53);
 }
 
 #endif
