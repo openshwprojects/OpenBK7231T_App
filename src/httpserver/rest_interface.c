@@ -1796,7 +1796,7 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 #define FLASH_INDEX_XR809 0
 		res = flash_read(FLASH_INDEX_XR809, startaddr, buffer, readlen);
 #elif PLATFORM_BL602
-		res = bl_flash_read(startaddr, buffer, readlen);
+		res = bl_flash_read(startaddr, (uint8t *)buffer, readlen);
 #elif PLATFORM_W600 || PLATFORM_W800
 		res = 0;
 #elif PLATFORM_LN882H
