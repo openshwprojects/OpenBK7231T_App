@@ -238,8 +238,9 @@ typedef struct scriptInstance_s {
 	const char *curLine;
 	int currentDelayMS;
 
-	int waitingForEvent;
 	int waitingForArgument;
+	unsigned short waitingForEvent;
+	char waitingForRelation;
 
 	struct scriptInstance_s *next;
 } scriptInstance_t;
@@ -460,10 +461,42 @@ void CMD_Script_ProcessWaitersForEvent(byte eventCode, int argument) {
 
 	while (t) {
 		if (t->waitingForEvent == eventCode) {
-			if (t->waitingForArgument == argument) {
-				// unlock!
-				t->waitingForArgument = 0;
-				t->waitingForEvent = 0;
+			switch (t->waitingForRelation) {
+				case 0: {
+					if (t->waitingForArgument == argument) {
+						// unlock!
+						t->waitingForArgument = 0;
+						t->waitingForEvent = 0;
+					}
+				}
+				break;
+				case '<': {
+					// waitFor noPingTime < 5
+					if (argument < t->waitingForArgument) {
+						// unlock!
+						t->waitingForArgument = 0;
+						t->waitingForEvent = 0;
+					}
+				}
+				break;
+				case '>': {
+					// waitFor noPingTime > 5
+					if (argument > t->waitingForArgument) {
+						// unlock!
+						t->waitingForArgument = 0;
+						t->waitingForEvent = 0;
+					}
+				}
+				break;
+				case '!': {
+					// waitFor noPingTime ! 5
+					if (argument != t->waitingForArgument) {
+						// unlock!
+						t->waitingForArgument = 0;
+						t->waitingForEvent = 0;
+					}
+				}
+				 break;
 			}
 		}
 		t = t->next;
@@ -772,8 +805,9 @@ commandResult_t CMD_resetSVM(const void *context, const char *cmd, const char *a
 	return CMD_RES_OK;
 }
 commandResult_t CMD_waitFor(const void *context, const char *cmd, const char *args, int cmdFlags) {
-	const char *eventName;
+	const char *s;
 	int reqArg, eventCode;
+	char relation;
 
 	if (g_activeThread == 0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_waitFor: this can be only used from a script");
@@ -787,18 +821,30 @@ commandResult_t CMD_waitFor(const void *context, const char *cmd, const char *ar
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	eventName = Tokenizer_GetArg(0);
-
-	eventCode = EVENT_ParseEventName(eventName);
+	s = Tokenizer_GetArg(0);
+	eventCode = EVENT_ParseEventName(s);
 	if (eventCode == CMD_EVENT_NONE) {
-		ADDLOG_ERROR(LOG_FEATURE_EVENT, "%s is not a valid event", eventName);
+		ADDLOG_ERROR(LOG_FEATURE_EVENT, "%s is not a valid event", s);
 		return CMD_RES_BAD_ARGUMENT;
 	}
-
-	reqArg = Tokenizer_GetArgInteger(1);
-
+	s = Tokenizer_GetArg(1);
+	if (*s == '<') {
+		relation = '<';
+	} else if (*s == '>') {
+		relation = '>';
+	} else if (*s == '!') {
+		relation = '!';
+	} else {
+		relation = 0;
+	}
+	if (relation) {
+		s = Tokenizer_GetArg(2);
+	}
+	reqArg = atoi(s);
+	
 	g_activeThread->waitingForEvent = eventCode;
 	g_activeThread->waitingForArgument = reqArg;
+	g_activeThread->waitingForRelation = relation;
 
 	return CMD_RES_OK;
 }
