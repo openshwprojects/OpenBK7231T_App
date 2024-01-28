@@ -1540,7 +1540,6 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	if (request->contentLength >= 0) {
 		towrite = request->contentLength;
 	}
-	
 	// get header
 	// recv_buffer	
 	//buffer_offset = 0;
