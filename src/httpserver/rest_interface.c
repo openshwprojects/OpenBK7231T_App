@@ -1500,7 +1500,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 		return http_rest_error(request, -20, "Open Default FW partition failed");
 	}
 
-	recv_buffer = pvPortMalloc(OTA_PROGRAM_SIZE);
+	recv_buffer = pvPortMalloc(OTA_PROGRAM_SIZE*8);
 
 	unsigned int buffer_offset, flash_offset, ota_addr;
 	uint32_t bin_size, part_size;
@@ -1539,8 +1539,6 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	if (request->contentLength >= 0) {
 		towrite = request->contentLength;
 	}
-	OTA_ResetProgress();
-	OTA_SetTotalBytes(towrite);
 	
 	// get header
 	// recv_buffer	
@@ -1616,7 +1614,6 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 		total += writelen;
 		startaddr += writelen;
 		towrite -= writelen;
-		OTA_IncrementProgress(writelen);
 
 
 		if (towrite > 0) {
