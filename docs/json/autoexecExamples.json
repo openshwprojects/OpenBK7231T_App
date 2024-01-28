@@ -68,6 +68,10 @@
 "file": "autoexecs/waiting_for_MQTT_connect.bat"
 },
 {
+"title": "WaitFor advanced syntax.",
+"file": "autoexecs/waitfor_syntax.bat"
+},
+{
 "title": "This script will use NTP and 'addClockEvent' to change light styles in the morning and in the evening. Here you can see how  'waitFor NTPState 1' and 'addClockEvent' and $hour script functions/variables are used.",
 "file": "autoexecs/automatic_day_and_night_lights.bat"
 },
