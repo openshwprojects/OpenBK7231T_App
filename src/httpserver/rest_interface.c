@@ -38,6 +38,7 @@ uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
 #include <utils_sha256.h>
 #include <bl_sys_ota.h>
 #include <bl_mtd.h>
+#include <bl_flash.h>
 #elif PLATFORM_W600
 
 #include "wm_socket_fwup.h"
@@ -1500,7 +1501,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 		return http_rest_error(request, -20, "Open Default FW partition failed");
 	}
 
-	recv_buffer = pvPortMalloc(OTA_PROGRAM_SIZE*8);
+	recv_buffer = pvPortMalloc(OTA_PROGRAM_SIZE);
 
 	unsigned int buffer_offset, flash_offset, ota_addr;
 	uint32_t bin_size, part_size;
@@ -1795,7 +1796,7 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 #define FLASH_INDEX_XR809 0
 		res = flash_read(FLASH_INDEX_XR809, startaddr, buffer, readlen);
 #elif PLATFORM_BL602
-		res = 0;
+		res = bl_flash_read(startaddr, buffer, readlen);
 #elif PLATFORM_W600 || PLATFORM_W800
 		res = 0;
 #elif PLATFORM_LN882H
@@ -1809,6 +1810,7 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 		postany(request, buffer, readlen);
 	}
 	poststr(request, NULL);
+	os_free(buffer);
 	return 0;
 }
 
