@@ -67,6 +67,7 @@ int bSafeMode = 0;
 // not really <time>, but rather a loop count, but it doesn't really matter much
 // start disabled.
 int g_timeSinceLastPingReply = -1;
+int g_prevTimeSinceLastPingReply = -1;
 // was it ran?
 static int g_bPingWatchDogStarted = 0;
 // current IP string, this is compared with IP returned from HAL
@@ -462,8 +463,9 @@ void Main_OnEverySecond()
 	{
 		// cast event so users can script anything easily, run custom commands
 		// Usage: addChangeHandler noPingTime > 600 reboot
-		EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_NOPINGTIME, g_timeSinceLastPingReply, g_timeSinceLastPingReply + 1);
 		g_timeSinceLastPingReply++;
+		EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_NOPINGTIME, g_prevTimeSinceLastPingReply, g_timeSinceLastPingReply);
+		g_prevTimeSinceLastPingReply = g_timeSinceLastPingReply;
 		// this is an old mechanism that just tries to reconnect (but without reboot)
 		if (CFG_GetPingDisconnectedSecondsToRestart() > 0 && g_timeSinceLastPingReply >= CFG_GetPingDisconnectedSecondsToRestart())
 		{
