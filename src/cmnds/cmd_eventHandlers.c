@@ -298,6 +298,10 @@ void EventHandlers_ProcessVariableChange_Integer(byte eventCode, int oldValue, i
 		}
 		ev = ev->next;
 	}
+
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+	CMD_Script_ProcessWaitersForEvent(eventCode, newValue);
+#endif
 }
 
 void EventHandlers_AddEventHandler_Integer(byte eventCode, int type, int requiredArgument, int requiredArgument2, int requiredArgument3, const char *commandToRun)
