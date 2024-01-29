@@ -11,7 +11,7 @@ This repository is named "OpenBK7231T_App", but now it's a multiplatform app, su
 - [LF686](https://www.leapfive.com/wp-content/uploads/2020/09/LF686-Datasheet.pdf) (flash it [as BL602](https://www.elektroda.com/rtvforum/topic4024917.html))
 - W800 (W800-C400, WinnerMicro WiFi & Bluetooth), W801
 - [W600](https://www.elektroda.com/rtvforum/viewtopic.php?p=20252619#20252619) (WinnerMicro chip), W601 ([WIS600, ESP-01W](https://www.elektroda.com/rtvforum/topic3950611.html), [TW-02](https://www.elektroda.com/rtvforum/viewtopic.php?p=20239610#20239610), [TW-03](https://www.elektroda.com/rtvforum/topic3929601.html), etc)
-- [LN882H](https://www.elektroda.com/rtvforum/topic4027545.html) WIP platform
+- [LN882H](https://www.elektroda.com/rtvforum/topic4027545.html) WIP platform, see [sample device teardown and flashing](https://www.elektroda.com/rtvforum/topic4032240.html)
 
 Please use automatically compiled binaries from the Releases tab. To build yourself for a given platform, just checkout first our version of SDK and then checkout this app repository into it, details later.
 
