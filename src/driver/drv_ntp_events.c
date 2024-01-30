@@ -315,7 +315,7 @@ commandResult_t CMD_NTP_AddClockEvent(const void *context, const char *cmd, cons
 	struct tm *ltm = gmtime((time_t*) &ntp_eventsTime);
 #endif
 
-	Tokenizer_TokenizeString(args, 0);
+	Tokenizer_TokenizeString(args, TOKENIZER_ALTERNATE_EXPAND_AT_START);
 	// following check must be done after 'Tokenizer_TokenizeString',
 	// so we know arguments count in Tokenizer. 'cmd' argument is
 	// only for warning display
@@ -324,23 +324,27 @@ commandResult_t CMD_NTP_AddClockEvent(const void *context, const char *cmd, cons
 	}
 	s = Tokenizer_GetArg(0);
 	flags = Tokenizer_GetArgInteger(1);
-	if (sscanf(s, "%i:%i:%i", &hour, &minute, &second) <= 1) {
+
+	if (sscanf(s, "%i:%i:%i", &hour, &minute, &second) >= 2) {
+		// hour, minute and second has correct value parsed
+	}
 #if ENABLE_NTP_SUNRISE_SUNSET
-		if (strcasestr(s, "sunrise")) {
-			sunflags |= SUNRISE_FLAG;
-			}
-		else {
-			if (strcasestr(s, "sunset")) {
-				sunflags |= SUNSET_FLAG;
-				}
-			else {
-				return CMD_RES_BAD_ARGUMENT;
-				}
-			}
-#else
-		return CMD_RES_BAD_ARGUMENT;
+	else if (strcasestr(s, "sunrise")) {
+		sunflags |= SUNRISE_FLAG;
+	}
+	else if (strcasestr(s, "sunset")) {
+		sunflags |= SUNSET_FLAG;
+	}
 #endif
-		}
+	else {
+		hour = Tokenizer_GetArgInteger(0);
+
+		// single integer value indicates the clock value is TimerSeconds from midnight
+		second = hour % 60;
+		minute = (hour / 60) % 60;
+		hour = (hour / 3600) % 24;
+	}
+
 	id = Tokenizer_GetArgInteger(2);
 	s = Tokenizer_GetArgFrom(3);
 #if ENABLE_NTP_SUNRISE_SUNSET
@@ -348,7 +352,7 @@ commandResult_t CMD_NTP_AddClockEvent(const void *context, const char *cmd, cons
 		dusk2Dawn(&sun_data, sunflags, &hour_b, &minute_b, calc_day_offset(ltm->tm_wday, flags));
 		hour = hour_b;
 		minute = minute_b;
-		}
+	}
 
 	NTP_AddClockEvent(hour, minute, second, flags, id, sunflags, s);
 #else
@@ -463,8 +467,8 @@ commandResult_t CMD_NTP_ClearEvents(const void* context, const char* cmd, const 
 }
 void NTP_Init_Events() {
 
-	//cmddetail:{"name":"addClockEvent","args":"[Time or sunrise or sunset] [WeekDayFlags] [UniqueIDForRemoval][Command]",
-	//cmddetail:"descr":"Schedule command to run on given time in given day of week. NTP must be running. Time is a time like HH:mm or HH:mm:ss, WeekDayFlag is a bitflag on which day to run, 0xff mean all days, 0x01 means sunday, 0x02 monday, 0x03 sunday and monday, etc, id is an unique id so event can be removed later. (NOTE: Use of sunrise/sunset requires compiling with ENABLE_NTP_SUNRISE_SUNSET set which adds about 11k of code",
+	//cmddetail:{"name":"addClockEvent","args":"[TimerSeconds or Time or sunrise or sunset] [WeekDayFlags] [UniqueIDForRemoval][Command]",
+	//cmddetail:"descr":"Schedule command to run on given time in given day of week. NTP must be running. TimerSeconds is seconds from midnight, Time is a time like HH:mm or HH:mm:ss, WeekDayFlag is a bitflag on which day to run, 0xff mean all days, 0x01 means sunday, 0x02 monday, 0x03 sunday and monday, etc, id is an unique id so event can be removed later. (NOTE: Use of sunrise/sunset requires compiling with ENABLE_NTP_SUNRISE_SUNSET set which adds about 11k of code)",
 	//cmddetail:"fn":"CMD_NTP_AddClockEvent","file":"driver/drv_ntp_events.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("addClockEvent",CMD_NTP_AddClockEvent, NULL);

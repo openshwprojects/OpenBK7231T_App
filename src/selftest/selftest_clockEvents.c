@@ -3,13 +3,24 @@
 #include "selftest_local.h"
 #include "../driver/drv_ntp.h"
 
+static void ResetEventsAndChannels(int eventsCleared) {
+	SELFTEST_ASSERT(NTP_ClearEvents() == eventsCleared);
+	SELFTEST_ASSERT(NTP_PrintEventList() == 0);
+
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	CMD_ExecuteCommand("setChannel 2 0", 0);
+	CMD_ExecuteCommand("setChannel 3 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+}
+
 void Test_ClockEvents() {
 	// reset whole device
 	SIM_ClearOBK(0);
 
 	CMD_ExecuteCommand("startDriver NTP", 0);
 	
-
 	SELFTEST_ASSERT(NTP_PrintEventList() == 0);
 	CMD_ExecuteCommand("addClockEvent 15:30:00 0xff 123 POWER0 ON", 0);
 	// now there is 1
@@ -64,18 +75,8 @@ void Test_ClockEvents() {
 	CMD_ExecuteCommand("addClockEvent 15:30:00 0xff 1008 POWER0 ON", 0);
 	// now there is 3
 	SELFTEST_ASSERT(NTP_PrintEventList() == 3);
-	// removed all 3
-	SELFTEST_ASSERT(NTP_ClearEvents() == 3);
-	// now there is 0
-	SELFTEST_ASSERT(NTP_PrintEventList() == 0);
 
-
-	CMD_ExecuteCommand("setChannel 1 0", 0);
-	CMD_ExecuteCommand("setChannel 2 0", 0);
-	CMD_ExecuteCommand("setChannel 3 0", 0);
-	SELFTEST_ASSERT_CHANNEL(1, 0);
-	SELFTEST_ASSERT_CHANNEL(2, 0);
-	SELFTEST_ASSERT_CHANNEL(3, 0);
+	ResetEventsAndChannels(3);
 
 	CMD_ExecuteCommand("addClockEvent 13:54:59 0xff 4 backlog setChannel 1 10; echo test event for 4", 0);
 	CMD_ExecuteCommand("addClockEvent 13:55 0xff 5 backlog setChannel 2 20; echo test event for 5", 0);
@@ -91,17 +92,7 @@ void Test_ClockEvents() {
 
 
 	for (int test = 0; test < 10; test++) {
-		// removed all 3
-		SELFTEST_ASSERT(NTP_ClearEvents() == 3);
-		// now there is 0
-		SELFTEST_ASSERT(NTP_PrintEventList() == 0);
-
-		CMD_ExecuteCommand("setChannel 1 0", 0);
-		CMD_ExecuteCommand("setChannel 2 0", 0);
-		CMD_ExecuteCommand("setChannel 3 0", 0);
-		SELFTEST_ASSERT_CHANNEL(1, 0);
-		SELFTEST_ASSERT_CHANNEL(2, 0);
-		SELFTEST_ASSERT_CHANNEL(3, 0);
+		ResetEventsAndChannels(3);
 
 		CMD_ExecuteCommand("addClockEvent 13:54:59 0xff 4 backlog addChannel 1 10; echo test event for 4", 0);
 		CMD_ExecuteCommand("addClockEvent 13:55 0xff 5 backlog addChannel 2 20; echo test event for 5", 0);
@@ -119,11 +110,33 @@ void Test_ClockEvents() {
 		SELFTEST_ASSERT_CHANNEL(2, 20);
 		SELFTEST_ASSERT_CHANNEL(3, 30);
 	}
+
+	// Test with calculated times
+	ResetEventsAndChannels(3);
+
+	CMD_ExecuteCommand("setChannel 4 13", 0);
+	CMD_ExecuteCommand("setChannel 5 55", 0);
+	CMD_ExecuteCommand("setChannel 6 $CH4*3600+54*60+59", 0);
+
+	CMD_ExecuteCommand("setChannel 7 10", 0);
+
+	CMD_ExecuteCommand("addClockEvent $CH6 0xff 4 backlog addChannel 1 $CH7; echo test event for 4", 0);
+	CMD_ExecuteCommand("addClockEvent $CH4:$CH5 0xff 5 backlog addChannel 2 20; echo test event for 5", 0);
+	CMD_ExecuteCommand("addClockEvent $CH4:$CH5:01 0xff 6 backlog addChannel 3 30; echo test event for 6", 0);
+	CMD_ExecuteCommand("addClockEvent $CH4*3600+54*60+59 0xff 7 backlog addChannel 4 40; echo test event for 7", 0);
+
+	CMD_ExecuteCommand("setChannel 7 25", 0);
+
+	simTime = 1681998870;
+	for (int i = 0; i < 100; i++) {
+		NTP_RunEvents(simTime + i, true);
+	}
+
+	// Event handler command should expand constants when the handler is run.
+	SELFTEST_ASSERT_CHANNEL(1, 25);
+	SELFTEST_ASSERT_CHANNEL(2, 20);
+	SELFTEST_ASSERT_CHANNEL(3, 30);
+	SELFTEST_ASSERT_CHANNEL(4, 53);
 }
-
-
-
-
-
 
 #endif
