@@ -24,7 +24,7 @@ static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"
 #ifdef WINDOWS
 // nothing
 #elif PLATFORM_BL602
-
+#include <bl_sys.h>
 #elif PLATFORM_W600 || PLATFORM_W800
 
 #elif PLATFORM_XR809
@@ -805,6 +805,10 @@ typedef enum {
 			s = "Wdt";
 		hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", i, s);
 	}
+#elif PLATFORM_BL602
+	char reason[26];
+	bl_sys_rstinfo_getsting(reason);
+	hprintf255(request, "<h5>Reboot reason: %s</h5>", reason);
 #endif
 	if (CFG_GetMQTTHost()[0] == 0) {
 		hprintf255(request, "<h5>MQTT State: not configured<br>");
