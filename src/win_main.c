@@ -172,6 +172,7 @@ void Win_DoUnitTests() {
 	Test_ExpandConstant();
 	Test_ChangeHandlers_MQTT();
 	Test_ChangeHandlers();
+	Test_ChangeHandlers_EnsureThatChannelVariableIsExpandedAtHandlerRunTime();
 	Test_RepeatingEvents();
 	Test_ButtonEvents();
 	Test_Commands_Alias();
