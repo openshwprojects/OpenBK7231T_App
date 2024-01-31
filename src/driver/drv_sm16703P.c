@@ -46,7 +46,7 @@ static void translate_byte(uint8_t input, uint8_t *dst) {
 	*dst++ = translate_2bit(input);
 }
 
-static void SM16703P_setMultiplePixel(uint32_t pixel, UINT8 *data) {
+void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 
 	// Return if driver is not loaded
 	if (!initialized)
@@ -64,6 +64,9 @@ static void SM16703P_setMultiplePixel(uint32_t pixel, UINT8 *data) {
 		*dst++ = translate_2bit((input >> 4));
 		*dst++ = translate_2bit((input >> 2));
 		*dst++ = translate_2bit(input);
+	}
+	if (push) {
+		SPIDMA_StartTX(spi_msg);
 	}
 }
 void SM16703P_setPixel(int pixel, int r, int g, int b) {
