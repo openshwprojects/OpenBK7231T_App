@@ -534,9 +534,9 @@ extern "C" commandResult_t IR_Enable(const void *context, const char *cmd, const
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
-	char args[20];
-	strncpy(args, args_in, 19);
-	args[19] = 0;
+	char args[128];
+	strncpy(args, args_in, sizeof(args)-1);
+	args[sizeof(args)-1] = 0;
 	char *p = args;
 	int enable = 1;
 	if (!my_strnicmp(p, "RXTX", 4)) {
