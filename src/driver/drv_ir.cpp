@@ -422,7 +422,7 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
     int numProtocols = sizeof(ProtocolNames)/sizeof(*ProtocolNames);
     if (!args_in) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     char args[128];
-    strncpy(args, args_in, 19);
+    strncpy(args, args_in, sizeof(args)-1);
     args[sizeof(args)-1] = 0;
 
     // split arg at hyphen;
