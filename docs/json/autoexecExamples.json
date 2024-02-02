@@ -60,6 +60,10 @@
 "file": "autoexecs/ping_watchdog2.bat"
 },
 {
+"title": "[Artificial delay for relay open (and no delay for close)](https://www.elektroda.com/rtvforum/viewtopic.php?p=20940593#20940593)",
+"file": "autoexecs/relay_open_delay.bat"
+},
+{
 "title": "HTTP-only control of Tasmota/OBK device from OBK.",
 "file": "autoexecs/http_calls.bat"
 },
