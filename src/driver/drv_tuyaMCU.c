@@ -1105,7 +1105,7 @@ void TuyaMCU_ApplyMapping(tuyaMCUMapping_t* mapping, int fnID, int value) {
 
 
 	if (mapping == 0) {
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "TuyaMCU_ApplyMapping: id %i with value %i is not mapped\n", fnID, value);
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "TuyaMCU_ApplyMapping: id %i (val %i) not mapped\n", fnID, value);
 		return;
 	}
 
@@ -1508,7 +1508,7 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 		sectorLen = data[ofs + 2] << 8 | data[ofs + 3];
 		fnId = data[ofs];
 		dataType = data[ofs + 1];
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU_ParseStateMessage: processing dpId %i, dataType %i-%s and %i data bytes\n",
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU_ParseStateMessage: dpId %i type %i-%s len %i\n",
 			fnId, dataType, TuyaMCU_GetDataTypeString(dataType), sectorLen);
 
 		mapping = TuyaMCU_FindDefForID(fnId);
@@ -1529,13 +1529,13 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 
 		if (sectorLen == 1) {
 			iVal = (int)data[ofs + 4];
-			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU_ParseStateMessage: raw data 1 byte: %i\n", iVal);
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU_ParseStateMessage: byte %i\n", iVal);
 			// apply to channels
 			TuyaMCU_ApplyMapping(mapping, fnId, iVal);
 		}
 		else if (sectorLen == 4) {
 			iVal = data[ofs + 4] << 24 | data[ofs + 5] << 16 | data[ofs + 6] << 8 | data[ofs + 7];
-			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU_ParseStateMessage: raw data 4 int: %i\n", iVal);
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU_ParseStateMessage: int32 %i\n", iVal);
 			// apply to channels
 			TuyaMCU_ApplyMapping(mapping, fnId, iVal);
 		}
