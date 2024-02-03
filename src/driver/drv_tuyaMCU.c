@@ -1743,7 +1743,7 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		return;
 	}
 	cmd = data[3];
-	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming[ver=%i]: command %i (%s) len %i\n", version, cmd, TuyaMCU_GetCommandTypeLabel(cmd), len);
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming[v=%i]: cmd %i (%s) len %i\n", version, cmd, TuyaMCU_GetCommandTypeLabel(cmd), len);
 	switch (cmd)
 	{
 	case TUYA_CMD_HEARTBEAT:
