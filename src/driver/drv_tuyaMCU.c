@@ -1711,7 +1711,10 @@ void TuyaMCU_V0_SendDPCacheReply() {
 void TuyaMCU_ParseReportStatusType(const byte *value, int len) {
 	int command = value[0];
 	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "0x34 command %i\n", command);
-
+	// query: 55 AA 03 34 00 01 04 3B
+	// reply: 55 aa 00 34 00 02 04 00 39
+	byte reply[2] = { 0x04, 00 };
+	TuyaMCU_SendCommandWithData(0x34, reply, 2);
 }
 void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 	int checkLen;
