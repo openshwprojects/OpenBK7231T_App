@@ -42,6 +42,7 @@ https://developer.tuya.com/en/docs/iot/tuyacloudlowpoweruniversalserialaccesspro
 #define TUYA_CMD_WEATHERDATA   0x21
 #define TUYA_CMD_SET_RSSI      0x24
 #define TUYA_CMD_NETWORK_STATUS 0x2B
+#define TUYA_CMD_REPORT_STATUS_RECORD_TYPE		0x34 
 
 #define TUYA_V0_CMD_PRODUCTINFORMATION      0x01
 #define TUYA_V0_CMD_NETWEORKSTATUS          0x02
@@ -132,6 +133,8 @@ const char* TuyaMCU_GetCommandTypeLabel(int t) {
 		return "SetRSSI";
 	if (t == TUYA_V0_CMD_QUERYSIGNALSTRENGTH)
 		return "QuerySignalStrngth";
+	if (t == TUYA_CMD_REPORT_STATUS_RECORD_TYPE)
+		return "TUYA_CMD_REPORT_STATUS_RECORD_TYPE";
 	return "Unknown";
 }
 typedef struct rtcc_s {
@@ -1705,6 +1708,11 @@ void TuyaMCU_V0_SendDPCacheReply() {
 	TuyaMCU_SendCommandWithData(0x10, buffer, dataLen);
 #endif
 }
+void TuyaMCU_ParseReportStatusType(const byte *value, int len) {
+	int command = value[0];
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "0x34 command %i\n", command);
+
+}
 void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 	int checkLen;
 	int i;
@@ -1863,7 +1871,14 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 			TuyaMCU_Send_RSSI(HAL_GetWifiStrength());
 		}
 		break;
-
+	case TUYA_CMD_REPORT_STATUS_RECORD_TYPE:
+		//This is sent by https://www.elektroda.pl/rtvforum/viewtopic.php?p=20941591#20941591
+		//Info:TuyaMCU:TUYAMCU received: 55 AA 03 34 00 01 04 3B
+		// uartFakeHex 55AA03340001043B
+		if (version == 3) {
+			TuyaMCU_ParseReportStatusType(data + 6, len - 6);
+		}
+		break;
 	case TUYA_CMD_NETWORK_STATUS:
 		//This is sent by S09
 		//Info:TuyaMCU:TUYAMCU received: 55 AA 03 2B 00 00 2D
