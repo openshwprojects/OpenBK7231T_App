@@ -1383,7 +1383,7 @@ void TuyaMCU_V0_ParseRealTimeWithRecordStorage(const byte* data, int len, bool b
 		sectorLen = data[ofs + 2] << 8 | data[ofs + 3];
 		fnId = data[ofs];
 		dataType = data[ofs + 1];
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "V0_ParseRealTimeWithRecordStorage: processing dpId %i, dataType %i-%s and %i data bytes\n",
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "V0_ParseRealTimeWithRecordStorage: processing id %i, dataType %i-%s and %i data bytes\n",
 			fnId, dataType, TuyaMCU_GetDataTypeString(dataType), sectorLen);
 
 		// find mapping (where to save received data)
@@ -1391,13 +1391,13 @@ void TuyaMCU_V0_ParseRealTimeWithRecordStorage(const byte* data, int len, bool b
 
 		if (sectorLen == 1) {
 			int iVal = (int)data[ofs + 4];
-			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "V0_ParseRealTimeWithRecordStorage: raw data 1 byte: %i\n", iVal);
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "V0_ParseRealTimeWithRecordStorage: byte %i\n", iVal);
 			// apply to channels
 			TuyaMCU_ApplyMapping(mapping, fnId, iVal);
 		}
 		if (sectorLen == 4) {
 			int iVal = data[ofs + 4] << 24 | data[ofs + 5] << 16 | data[ofs + 6] << 8 | data[ofs + 7];
-			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "V0_ParseRealTimeWithRecordStorage: raw data 4 int: %i\n", iVal);
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "V0_ParseRealTimeWithRecordStorage: int32 %i\n", iVal);
 			// apply to channels
 			TuyaMCU_ApplyMapping(mapping, fnId, iVal);
 		}
@@ -1508,7 +1508,7 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 		sectorLen = data[ofs + 2] << 8 | data[ofs + 3];
 		fnId = data[ofs];
 		dataType = data[ofs + 1];
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseStateMessage: dpId %i type %i-%s len %i\n",
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseState: id %i type %i-%s len %i\n",
 			fnId, dataType, TuyaMCU_GetDataTypeString(dataType), sectorLen);
 
 		mapping = TuyaMCU_FindDefForID(fnId);
@@ -1529,13 +1529,13 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 
 		if (sectorLen == 1) {
 			iVal = (int)data[ofs + 4];
-			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseStateMessage: byte %i\n", iVal);
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseState: byte %i\n", iVal);
 			// apply to channels
 			TuyaMCU_ApplyMapping(mapping, fnId, iVal);
 		}
 		else if (sectorLen == 4) {
 			iVal = data[ofs + 4] << 24 | data[ofs + 5] << 16 | data[ofs + 6] << 8 | data[ofs + 7];
-			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseStateMessage: int32 %i\n", iVal);
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseState: int32 %i\n", iVal);
 			// apply to channels
 			TuyaMCU_ApplyMapping(mapping, fnId, iVal);
 		}
@@ -1743,7 +1743,7 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		return;
 	}
 	cmd = data[3];
-	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming[ver=%i]: processing command %i (%s) with %i bytes\n", version, cmd, TuyaMCU_GetCommandTypeLabel(cmd), len);
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming[ver=%i]: command %i (%s) len %i\n", version, cmd, TuyaMCU_GetCommandTypeLabel(cmd), len);
 	switch (cmd)
 	{
 	case TUYA_CMD_HEARTBEAT:
