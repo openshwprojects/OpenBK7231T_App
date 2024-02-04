@@ -524,6 +524,7 @@ static int http_rest_post_lfs_file(http_request_t* request) {
 	int len;
 	int lfsres;
 	int total = 0;
+	int loops = 0;
 
 	// allocated variables
 	lfs_file_t* file;
@@ -576,6 +577,11 @@ static int http_rest_post_lfs_file(http_request_t* request) {
 		}
 
 		do {
+			loops++;
+			if (loops > 10) {
+				loops = 0;
+				rtos_delay_milliseconds(10);
+			}
 			//ADDLOG_DEBUG(LOG_FEATURE_API, "%d bytes to write", writelen);
 			len = lfs_file_write(&lfs, file, writebuf, writelen);
 			if (len < 0) {
