@@ -793,14 +793,6 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 
 			// digital input
 			HAL_PIN_Setup_Input_Pullup(index);
-#ifdef PLATFORM_BEKEN
-			//20231217 XJIKKA
-			//On the BK7231N Mini WiFi Smart Switch, the correct state of the ADC input pin
-			//can be readed 1000us after the pin is initialized. Maybe there is a capacitor?
-			//Without delay, g_lastValidState is after restart set to 0, so the light will toggle, if the switch on input pin is on (1).
-			//To be sure, we will wait for 2000us.
-			usleep(2000);
-#endif
 
 			// init button after initializing pin role
 			NEW_button_init(bt, button_generic_get_gpio_value, 0);
@@ -823,7 +815,15 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 
 			// digital input
 			HAL_PIN_Setup_Input_Pullup(index);
-			// otherwise we get a toggle on start
+			// otherwise we get a toggle on start			
+#ifdef PLATFORM_BEKEN
+			//20231217 XJIKKA
+			//On the BK7231N Mini WiFi Smart Switch, the correct state of the ADC input pin
+			//can be readed 1000us after the pin is initialized. Maybe there is a capacitor?
+			//Without delay, g_lastValidState is after restart set to 0, so the light will toggle, if the switch on input pin is on (1).
+			//To be sure, we will wait for 2000us.
+			usleep(2000);
+#endif
 			g_lastValidState[index] = PIN_ReadDigitalInputValue_WithInversionIncluded(index);
 			// this is input - sample initial state down below
 			bSampleInitialState = true;
