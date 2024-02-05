@@ -229,7 +229,7 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 							beken_thread_function_t function,
 							uint32_t stack_size, beken_thread_arg_t arg );
 typedef unsigned int u32;
-		
+
 
 #elif PLATFORM_XR809
 
@@ -341,6 +341,7 @@ typedef void *beken_thread_arg_t;
 typedef void *beken_thread_t;
 typedef void (*beken_thread_function_t)( beken_thread_arg_t arg );
 typedef int OSStatus;
+typedef unsigned int u32;
 
 #define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
 #define BEKEN_APPLICATION_PRIORITY         (7)
