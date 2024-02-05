@@ -752,10 +752,13 @@ int http_fn_index(http_request_t* request) {
 		sizeof(g_cfg), g_cfg.changeCounter, g_cfg.otaCounter, g_bootFailures);
 
 #if PLATFORM_BEKEN
-	UINT32 temperature;
-	temp_single_get_current_temperature(&temperature);
-	hprintf255(request, "<h5>Internal temperature: %lu</h5>",
-		temperature);	
+	if(!bSafeMode && g_bootFailures <= 1) // only in Normal mode, and if boot is not failing
+	{
+		UINT32 temperature;
+		temp_single_get_current_temperature(&temperature);
+		hprintf255(request, "<h5>Internal temperature: %lu</h5>",
+			temperature);
+	}
 #elif PLATFORM_LN882H
 	// Quick hack to display LN-only temperature,
 	// we may improve it in the future
