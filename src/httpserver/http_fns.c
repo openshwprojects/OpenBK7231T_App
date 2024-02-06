@@ -33,6 +33,7 @@ static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"
 // tuya-iotos-embeded-sdk-wifi-ble-bk7231n/sdk/include/tuya_hal_storage.h
 #include "tuya_hal_storage.h"
 #include "BkDriverFlash.h"
+#include "temp_detect_pub.h"
 #elif defined(PLATFORM_LN882H)
 
 #else
@@ -40,6 +41,7 @@ static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"
 // tuya-iotos-embeded-sdk-wifi-ble-bk7231t/platforms/bk7231t/tuya_os_adapter/include/driver/tuya_hal_storge.h
 #include "tuya_hal_storge.h"
 #include "BkDriverFlash.h"
+#include "temp_detect_pub.h"
 #endif
 
 #if defined(PLATFORM_BK7231T) || defined(PLATFORM_BK7231N)
@@ -749,12 +751,20 @@ int http_fn_index(http_request_t* request) {
 	hprintf255(request, "<h5>Cfg size: %i, change counter: %i, ota counter: %i, boot incompletes %i (might change to 0 if you wait to 30 sec)!</h5>",
 		sizeof(g_cfg), g_cfg.changeCounter, g_cfg.otaCounter, g_bootFailures);
 
-#if PLATFORM_LN882H
+#if PLATFORM_BEKEN
+	if(!bSafeMode && g_bootFailures <= 1) // only in Normal mode, and if boot is not failing
+	{
+		UINT32 temperature;
+		temp_single_get_current_temperature(&temperature);
+		hprintf255(request, "<h5>Internal temperature: %lu</h5>",
+			temperature);
+	}
+#elif PLATFORM_LN882H
 	// Quick hack to display LN-only temperature,
 	// we may improve it in the future
 	extern float g_wifi_temperature;
 
-	hprintf255(request, "<h5>LN temp: %f</h5>",
+	hprintf255(request, "<h5>Internal temperature: %f</h5>",
 		g_wifi_temperature);
 #endif
 
