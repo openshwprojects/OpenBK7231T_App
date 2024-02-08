@@ -413,8 +413,13 @@ void Button_OnShortClick(int index)
 		}
 		if (g_cfg.pins.roles[index] == IOR_Button_ScriptOnly || g_cfg.pins.roles[index] == IOR_Button_ScriptOnly_n)
 		{
+		  OBK_Publish_Result ret;
+		  char chStr[16];
+		  sprintf(chStr, "%i/btn", g_cfg.pins.channels[index]);
+		  ret = MQTT_PublishMain_StringString(chStr, "clickx1", 0);
 			return;
 		}
+
 		// is it a device with RGB/CW/single color/etc LED driver?
 		if (LED_IsLEDRunning()) {
 			LED_ToggleEnabled();
@@ -445,6 +450,13 @@ void Button_OnDoubleClick(int index)
 		// double click toggles SECOND CHANNEL linked to this button
 		CHANNEL_Toggle(g_cfg.pins.channels2[index]);
 	}
+	if (g_cfg.pins.roles[index] == IOR_Button_ScriptOnly || g_cfg.pins.roles[index] == IOR_Button_ScriptOnly_n) {
+	        OBK_Publish_Result ret;
+		char chStr[16];
+		sprintf(chStr, "%i/btn", g_cfg.pins.channels[index]);
+		ret = MQTT_PublishMain_StringString(chStr, "clickx2", 0);
+	}
+
 	if (g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs || g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs_n) {
 		LED_NextColor();
 		// make it easier for users, enable LED by default
@@ -468,6 +480,13 @@ void Button_OnTripleClick(int index)
 		// make it easier for users, enable LED by default
 		LED_SetEnableAll(true);
 	}
+	if (g_cfg.pins.roles[index] == IOR_Button_ScriptOnly || g_cfg.pins.roles[index] == IOR_Button_ScriptOnly_n) {
+	        OBK_Publish_Result ret;
+		char chStr[16];
+		sprintf(chStr, "%i/btn", g_cfg.pins.channels[index]);
+	        ret = MQTT_PublishMain_StringString(chStr, "clickx3", 0);
+	}
+
 }
 void Button_OnQuadrupleClick(int index)
 {
@@ -475,6 +494,12 @@ void Button_OnQuadrupleClick(int index)
 	if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
 		return;
+	}
+	if (g_cfg.pins.roles[index] == IOR_Button_ScriptOnly || g_cfg.pins.roles[index] == IOR_Button_ScriptOnly_n) {
+	        OBK_Publish_Result ret;
+		char chStr[16];
+		sprintf(chStr, "%i/btn", g_cfg.pins.channels[index]);
+	        ret = MQTT_PublishMain_StringString(chStr, "clickx4", 0);
 	}
 	// fire event - button on pin <index> was 4clicked
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ON4CLICK, index);
@@ -486,6 +511,13 @@ void Button_On5xClick(int index)
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
 		return;
 	}
+	if (g_cfg.pins.roles[index] == IOR_Button_ScriptOnly || g_cfg.pins.roles[index] == IOR_Button_ScriptOnly_n) {
+	        OBK_Publish_Result ret;
+		char chStr[16];
+		sprintf(chStr, "%i/btn", g_cfg.pins.channels[index]);
+	        ret = MQTT_PublishMain_StringString(chStr, "clickx5", 0);
+	}
+	
 	// fire event - button on pin <index> was 4clicked
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ON5CLICK, index);
 }
@@ -509,6 +541,13 @@ void Button_OnLongPressHold(int index) {
 		// make it easier for users, enable LED by default
 		LED_SetEnableAll(true);
 	}
+	if (g_cfg.pins.roles[index] == IOR_Button_ScriptOnly || g_cfg.pins.roles[index] == IOR_Button_ScriptOnly_n) {
+	        OBK_Publish_Result ret;
+		char chStr[16];
+		sprintf(chStr, "%i/btn", g_cfg.pins.channels[index]);
+	        ret = MQTT_PublishMain_StringString(chStr, "clickx20", 0);
+	}
+	
 }
 void Button_OnLongPressHoldStart(int index) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i Button_OnLongPressHoldStart\r\n", index);
@@ -2102,10 +2141,20 @@ static commandResult_t CMD_SetChannelType(const void* context, const char* cmd, 
 	return CMD_RES_OK;
 }
 
-/// @brief Computes the Relay and PWM count.
+/// @brief Computes the Relay, PWM and Input count.
 /// @param relayCount Number of relay and LED channels.
 /// @param pwmCount Number of PWM channels.
+/// @param dInputCount, Number of Input channels.
 void PIN_get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount) {
+	PIN_get_Relay_PWM_Btn_Count(relayCount, pwmCount, dInputCount, 0);
+}
+
+/// @brief Computes the Relay, PWM, Input and Button count.
+/// @param relayCount Number of relay and LED channels.
+/// @param pwmCount Number of PWM channels.
+/// @param dInputCount, Number of Input channels.
+/// @param dButtonCount Number of Button channels.
+void PIN_get_Relay_PWM_Btn_Count(int* relayCount, int* pwmCount, int* dInputCount, int* dButtonCount) {
 	int i;
 	int pwmBits;
 	if (relayCount) {
@@ -2116,6 +2165,9 @@ void PIN_get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount) {
 	}
 	if (dInputCount) {
 		(*dInputCount) = 0;
+	}
+	if (dButtonCount) {
+		(*dButtonCount) = 0;
 	}
 
 	// if we have two PWMs on single channel, count it once
@@ -2147,6 +2199,12 @@ void PIN_get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount) {
 		case IOR_DoorSensorWithDeepSleep_pd:
 			if (dInputCount) {
 				(*dInputCount)++;
+			}
+			break;
+		case IOR_Button_ScriptOnly:
+		case IOR_Button_ScriptOnly_n:
+			if (dButtonCount) {
+				(*dButtonCount)++;
 			}
 			break;
 		default:
@@ -2212,6 +2270,21 @@ int h_isChannelDigitalInput(int tg_ch) {
 			return true;
 		}
 		if (role == IOR_DoorSensorWithDeepSleep || role == IOR_DoorSensorWithDeepSleep_NoPup || role == IOR_DoorSensorWithDeepSleep_pd) {
+			return true;
+		}
+	}
+	return false;
+}
+int h_isChannelButton(int tg_ch) {
+	int i;
+	int role;
+
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		int ch = PIN_GetPinChannelForPinIndex(i);
+		if (tg_ch != ch)
+			continue;
+		role = PIN_GetPinRoleForPinIndex(i);
+		if (role == IOR_Button_ScriptOnly || role == IOR_Button_ScriptOnly_n) { 
 			return true;
 		}
 	}

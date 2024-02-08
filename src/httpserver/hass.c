@@ -61,6 +61,10 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "binary_sensor", index);
 		break;
 
+	case SCENE_BUTTON:
+		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "btn", index);
+		break;
+
 	case TEMPERATURE_SENSOR:
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "temperature", index);
 		break;
@@ -137,6 +141,9 @@ void hass_populate_device_config_channel(ENTITY_TYPE type, char* uniq_id, HassDe
 	case BINARY_SENSOR:
 		sprintf(info->channel, "binary_sensor/%s/config", uniq_id);
 		break;
+	case SCENE_BUTTON:
+		sprintf(info->channel, "device_automation/%s/config", uniq_id);
+		break;
 	case SMOKE_SENSOR:
 	case CO2_SENSOR:
 	case TVOC_SENSOR:
@@ -191,6 +198,10 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "hass_init_device_info=%p", info);
 
 	hass_populate_unique_id(type, index, info->unique_id);
+	if (type == SCENE_BUTTON) {
+	  strcat(info->unique_id, payload_on);
+	}
+
 	hass_populate_device_config_channel(type, info->unique_id, info);
 
 	info->ids = cJSON_CreateArray();
@@ -202,6 +213,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 	cJSON_AddItemToObject(info->root, "dev", info->device);    //device
 
 	bool isSensor = false;	//This does not count binary_sensor
+	bool isButton = false;
 
 	//Build the `name`
 	switch (type) {
@@ -260,6 +272,10 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 		isSensor = true;
 		sprintf(g_hassBuffer, "Battery");
 		break;
+	case SCENE_BUTTON:
+		isButton = true;
+  	        sprintf(g_hassBuffer, "Button");
+		break;
 	case BATTERY_VOLTAGE_SENSOR:
 	case VOLTAGE_SENSOR:
 		isSensor = (type == BATTERY_VOLTAGE_SENSOR);
@@ -306,8 +322,10 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 			cJSON_AddStringToObject(info->root, "avty_t", "~/connected");   //availability_topic, `online` value is broadcasted
 		}
 	}
-
-	if (!isSensor) {	//Sensors (except binary_sensor) don't use payload 
+	if (isButton) {
+ 	        cJSON_AddStringToObject(info->root, "automation_type", "trigger");
+	}
+	else if (!isSensor) {	//Sensors (except binary_sensor) don't use payload
 		cJSON_AddStringToObject(info->root, "pl_on", payload_on);    //payload_on
 		cJSON_AddStringToObject(info->root, "pl_off", payload_off);   //payload_off
 	}
@@ -423,6 +441,46 @@ HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse) {
 
 	sprintf(g_hassBuffer, "~/%i/get", index);
 	cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);   //state_topic
+
+	return info;
+}
+
+/// @brief Initializes HomeAssistant button device discovery storage.
+/// @param index
+/// @return
+HassDeviceInfo* hass_init_button_device_info(int index, int click_type) {
+
+	sprintf(g_hassBuffer, "_c%i", click_type);
+	HassDeviceInfo* info = hass_init_device_info(SCENE_BUTTON, index, g_hassBuffer, "");
+
+	sprintf(g_hassBuffer, "~/%i/btn/get", index);
+	cJSON_AddStringToObject(info->root, "topic", g_hassBuffer);   //state_topic
+
+	sprintf(g_hassBuffer, "clickx%i", click_type);
+	cJSON_AddStringToObject(info->root, "payload", g_hassBuffer);
+
+	switch (click_type) {
+	case 1:
+	  cJSON_AddStringToObject(info->root, "type", "button_short_press");
+	  break;
+	case 2:
+	  cJSON_AddStringToObject(info->root, "type", "button_double_press");
+	  break;
+	case 3:
+	  cJSON_AddStringToObject(info->root, "type", "button_triple_press");
+	  break;
+	case 4:
+	  cJSON_AddStringToObject(info->root, "type", "button_quadruple_press");
+	  break;
+	case 5:
+	  cJSON_AddStringToObject(info->root, "type", "button_quintuple_press");
+	  break;
+	case 20:
+	  cJSON_AddStringToObject(info->root, "type", "button_long_press");
+	  break;
+	}
+	sprintf(g_hassBuffer, "button_%i", index);
+	cJSON_AddStringToObject(info->root, "subtype", g_hassBuffer);
 
 	return info;
 }
