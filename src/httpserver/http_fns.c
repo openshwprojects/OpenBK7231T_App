@@ -756,15 +756,15 @@ int http_fn_index(http_request_t* request) {
 	{
 		UINT32 temperature;
 		temp_single_get_current_temperature(&temperature);
-		hprintf255(request, "<h5>Internal temperature: %lu</h5>",
-			temperature);
+		hprintf255(request, "<h5>Internal temperature: %.1f°C</h5>",
+			temperature/10.0f);
 	}
 #elif PLATFORM_LN882H
 	// Quick hack to display LN-only temperature,
 	// we may improve it in the future
 	extern float g_wifi_temperature;
 
-	hprintf255(request, "<h5>Internal temperature: %f</h5>",
+	hprintf255(request, "<h5>Internal temperature: %f°C</h5>",
 		g_wifi_temperature);
 #endif
 
