@@ -131,12 +131,10 @@ int LED_GetFirstChannelIndex() {
 
 bool LED_IsLedDriverChipRunning()
 {
-#ifndef PLATFORM_W600
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#if	ENABLE_DRIVER_TUYAMCU
 	if (TuyaMCU_IsLEDRunning()) {
 		return true;
 	}
-#endif
 #endif
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	return DRV_IsRunning("SM2135") || DRV_IsRunning("BP5758D") 
@@ -573,13 +571,11 @@ void apply_smart_light() {
 		// something was changed, mark as dirty
 		g_ledStateSavePending = 1;
 	}
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#if	ENABLE_TASMOTADEVICEGROUPS
 	DRV_DGR_OnLedFinalColorsChange(baseRGBCW);
 #endif
-#ifndef PLATFORM_W600
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#if	ENABLE_DRIVER_TUYAMCU
 	TuyaMCU_OnRGBCWChange(finalColors, g_lightEnableAll, g_lightMode, g_brightness0to100*0.01f, LED_GetTemperature0to1Range());
-#endif
 #endif
 	
 	// I am not sure if it's the best place to do it
@@ -869,7 +865,7 @@ void LED_SetEnableAll(int bEnable) {
 	g_lightEnableAll = bEnable;
 
 	apply_smart_light();
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#if	ENABLE_TASMOTADEVICEGROUPS
 	DRV_DGR_OnLedEnableAllChange(bEnable);
 #endif
 	LED_SendEnableAllState();
@@ -1045,7 +1041,7 @@ void LED_SetDimmer(int iVal) {
 		LED_SetEnableAll(true);
 	}
 
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#if	ENABLE_TASMOTADEVICEGROUPS
 	DRV_DGR_OnLedDimmerChange(iVal);
 #endif
 
