@@ -102,7 +102,8 @@
 
 #elif PLATFORM_LN882H
 
-#define OBK_DISABLE_ALL_DRIVERS       1
+//#define OBK_DISABLE_ALL_DRIVERS       1
+#define ENABLE_NTP				1
 
 #else
 
