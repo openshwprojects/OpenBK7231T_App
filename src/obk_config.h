@@ -109,6 +109,7 @@
 //#define OBK_DISABLE_ALL_DRIVERS       1
 //#define ENABLE_TASMOTADEVICEGROUPS 1
 #define ENABLE_NTP				1
+#define ENABLE_DRIVER_BL0937    1
 
 #else
 
