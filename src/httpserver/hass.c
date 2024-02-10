@@ -222,7 +222,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 		isSensor = true;
 #ifndef OBK_DISABLE_ALL_DRIVERS
 		if ((index >= OBK_VOLTAGE) && (index <= OBK_POWER))
-			sprintf(g_hassBuffer, "%s", sensor_mqttNames[index]);
+			sprintf(g_hassBuffer, "%s", sensor_hassNames[index]);
 		else
 			sprintf(g_hassBuffer, "Voltage or Current or Power");
 #endif
@@ -275,14 +275,14 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 		isSensor = true;
 #ifndef OBK_DISABLE_ALL_DRIVERS		
 		if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_CONSUMPTION_TODAY))
-			sprintf(g_hassBuffer, "%s", counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
+			sprintf(g_hassBuffer, "%s", sensor_hassNames[index]);
 		else
 			sprintf(g_hassBuffer, "Energy");
 #endif
 		break;
 	case TIMESTAMP_SENSOR:
 		if (index == OBK_CONSUMPTION_CLEAR_DATE)
-			sprintf(g_hassBuffer, "%s", counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
+			sprintf(g_hassBuffer, "%s", sensor_hassNames[index]);
 		else
 			sprintf(g_hassBuffer, "Timestamp");
 		break;

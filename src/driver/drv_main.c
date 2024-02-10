@@ -47,7 +47,19 @@ const char* counter_devClasses[OBK_NUM_COUNTERS] = {
 	"",
 	"energy",
 	"energy",
-	"timestamp"
+	"" //"timestamp" //TODO timestamp requires string formatted with timezone offset, e.g. "2024-02-10T13:00:00+11:00" works. Otherwise HA shows 'unknown'
+};
+
+const char* sensor_hassNames[OBK_NUM_EMUNS_MAX] = {
+	"Voltage",
+	"Current",
+	"Power",
+	"Energy Total",
+	"Energy Last Hour",
+	"Consumption Stats",
+	"Energy Yesterday",
+	"Energy Today",
+	"Energy Clear Date",
 };
 
 typedef struct driver_s {
