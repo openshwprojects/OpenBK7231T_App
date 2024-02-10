@@ -47,7 +47,7 @@ const char* counter_devClasses[OBK_NUM_COUNTERS] = {
 	"",
 	"energy",
 	"energy",
-	"" //"timestamp" //TODO timestamp requires string formatted with timezone offset, e.g. "2024-02-10T13:00:00+11:00" works. Otherwise HA shows 'unknown'
+	"timestamp"
 };
 
 const char* sensor_hassNames[OBK_NUM_EMUNS_MAX] = {

@@ -24,7 +24,7 @@ typedef enum {
 	/// @brief RGB + temperature (5 PWM or LED driver)
 	LIGHT_RGBCW,
 
-	/// @brief Power sensors (voltage, current, power, energy, timestamp)
+	/// @brief Power sensors (voltage, current, power)
 	VCP_SENSOR,
 
 	POWER_SENSOR,
@@ -67,6 +67,7 @@ typedef enum {
 	ILLUMINANCE_SENSOR,
 	// dBm unit
 	HASS_RSSI,
+	/// @brief Wh, kWh
 	ENERGY_SENSOR,
 	// hPa
 	PRESSURE_SENSOR,
