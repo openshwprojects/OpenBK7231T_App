@@ -52,6 +52,8 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 
 	case VCP_SENSOR:
 	case POWER_SENSOR:
+	case ENERGY_SENSOR:
+	case TIMESTAMP_SENSOR:
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "sensor", index);
 		break;
 
@@ -140,6 +142,8 @@ void hass_populate_device_config_channel(ENTITY_TYPE type, char* uniq_id, HassDe
 	case TVOC_SENSOR:
 	case POWER_SENSOR:
 	case VCP_SENSOR:
+	case ENERGY_SENSOR:
+	case TIMESTAMP_SENSOR:
 	case BATTERY_SENSOR:
 	case BATTERY_VOLTAGE_SENSOR:
 	case TEMPERATURE_SENSOR:
@@ -219,11 +223,8 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 #ifndef OBK_DISABLE_ALL_DRIVERS
 		if ((index >= OBK_VOLTAGE) && (index <= OBK_POWER))
 			sprintf(g_hassBuffer, "%s", sensor_mqttNames[index]);
-		else if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_CONSUMPTION_STATS))
-			sprintf(g_hassBuffer, "%s", counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
 		else
-			sprintf(g_hassBuffer, "Power");
-
+			sprintf(g_hassBuffer, "Voltage or Current or Power");
 #endif
 		break;
 	case POWER_SENSOR:
@@ -269,6 +270,21 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 		break;
 	case HASS_RSSI:
 		sprintf(g_hassBuffer, "RSSI");
+		break;
+	case ENERGY_SENSOR:
+		isSensor = true;
+#ifndef OBK_DISABLE_ALL_DRIVERS		
+		if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_CONSUMPTION_TODAY))
+			sprintf(g_hassBuffer, "%s", counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
+		else
+			sprintf(g_hassBuffer, "Energy");
+#endif
+		break;
+	case TIMESTAMP_SENSOR:
+		if (index == OBK_CONSUMPTION_CLEAR_DATE)
+			sprintf(g_hassBuffer, "%s", counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
+		else
+			sprintf(g_hassBuffer, "Timestamp");
 		break;
 	default:
 		sprintf(g_hassBuffer, "%s", CHANNEL_GetLabel(index));
@@ -430,21 +446,24 @@ HassDeviceInfo* hass_init_power_sensor_device_info(int index) {
 
 		cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
 	}
-	else if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_CONSUMPTION_STATS))
+	else if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_NUM_EMUNS_MAX))
 	{
-		info = hass_init_device_info(VCP_SENSOR, index, NULL, NULL);
+		if (index >= OBK_CONSUMPTION_YESTERDAY && !DRV_IsRunning("NTP")) return info; //include daily stats only when time is valid
+
+		info = hass_init_device_info(index == OBK_CONSUMPTION_CLEAR_DATE ? TIMESTAMP_SENSOR : ENERGY_SENSOR, index, NULL, NULL);
 		const char* device_class_value = counter_devClasses[index - OBK_CONSUMPTION_TOTAL];
 		if (strlen(device_class_value) > 0) {
-			cJSON_AddStringToObject(info->root, "dev_cla", device_class_value);  //device_class=energy
-			if (CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH)) {
-				cJSON_AddStringToObject(info->root, "unit_of_meas", "kWh");   //unit_of_measurement
+			cJSON_AddStringToObject(info->root, "dev_cla", device_class_value);  //device_class=energy,timestamp
+			if (!strcmp(device_class_value, "energy")) {
+				if (CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH)) {
+					cJSON_AddStringToObject(info->root, "unit_of_meas", "kWh");   //unit_of_measurement
+				}
+				else {
+					cJSON_AddStringToObject(info->root, "unit_of_meas", "Wh");   //unit_of_measurement
+				}
+				//state_class can be measurement, total or total_increasing. Energy values should be total_increasing.
+				cJSON_AddStringToObject(info->root, "stat_cla", "total_increasing");
 			}
-			else {
-				cJSON_AddStringToObject(info->root, "unit_of_meas", "Wh");   //unit_of_measurement
-			}
-
-			//state_class can be measurement, total or total_increasing. Energy values should be total_increasing.
-			cJSON_AddStringToObject(info->root, "stat_cla", "total_increasing");
 		}
 
 		sprintf(g_hassBuffer, "~/%s/get", counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
