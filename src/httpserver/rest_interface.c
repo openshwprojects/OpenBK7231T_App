@@ -1540,8 +1540,23 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 
 	printf("[OTA] [TEST] Erase flash with size %lu...", bin_size);
 	hal_update_mfg_ptable();
-	bl_mtd_erase_all(handle);
-	printf("Done\r\n");
+
+	//Erase in chunks, because erasing everything at once is slow and causes issues with http connection
+	uint32_t erase_offset = 0;
+	uint32_t erase_len = 0;
+	while (erase_offset < bin_size)
+	{
+		erase_len = bin_size - erase_offset;
+		if (erase_len > 0x10000)
+		{
+			erase_len = 0x10000; //Erase in 64kb chunks
+		}
+		bl_mtd_erase(handle, erase_offset, erase_len);
+		printf("[OTA] Erased:  %lu / %lu \r\n", erase_offset, erase_len);
+		erase_offset += erase_len;
+		rtos_delay_milliseconds(100);
+	}
+	printf("[OTA] Done\r\n");
 
 	if (request->contentLength >= 0) {
 		towrite = request->contentLength;

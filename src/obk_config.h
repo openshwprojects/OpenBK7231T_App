@@ -22,6 +22,7 @@
 #elif PLATFORM_W600
 
 // Some limited drivers are supported on W600, OBK_DISABLE_ALL_DRIVERS is not defined
+#define ENABLE_TASMOTADEVICEGROUPS 1
 #define ENABLE_NTP				1
 #define ENABLE_DRIVER_BL0937    1
 
@@ -31,6 +32,7 @@
 
 #elif WINDOWS
 
+#define ENABLE_TASMOTADEVICEGROUPS 1
 #define ENABLE_LITTLEFS			1
 #define ENABLE_NTP				1
 #define ENABLE_DRIVER_LED       1
@@ -60,6 +62,7 @@
 #elif PLATFORM_BL602
 
 // I have enabled drivers on BL602
+#define ENABLE_TASMOTADEVICEGROUPS 1
 #define ENABLE_NTP    1
 #define ENABLE_DRIVER_LED       1
 #define ENABLE_DRIVER_BL0937    1
@@ -70,6 +73,7 @@
 #elif PLATFORM_BEKEN
 
 // set to 0 to disable
+#define ENABLE_TASMOTADEVICEGROUPS 1
 #define ENABLE_LITTLEFS			1
 #define ENABLE_NTP    1
 #define ENABLE_NTP_SUNRISE_SUNSET	1
@@ -78,6 +82,7 @@
 #define ENABLE_DRIVER_BL0942    1
 #define ENABLE_DRIVER_BL0942SPI 1
 #define ENABLE_DRIVER_CSE7766   1
+//#define ENABLE_DRIVER_BMP280 1
 //#define ENABLE_DRIVER_PT6523	1
 //#define ENABLE_DRIVER_TEXTSCROLLER	1
 #define ENABLE_DRIVER_TUYAMCU   1
@@ -101,7 +106,10 @@
 
 #elif PLATFORM_LN882H
 
-#define OBK_DISABLE_ALL_DRIVERS       1
+//#define OBK_DISABLE_ALL_DRIVERS       1
+//#define ENABLE_TASMOTADEVICEGROUPS 1
+#define ENABLE_NTP				1
+#define ENABLE_DRIVER_BL0937    1
 
 #else
 

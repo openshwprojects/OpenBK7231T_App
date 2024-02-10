@@ -196,13 +196,14 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 
 static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 	float power, voltage, current, batterypercentage = 0;
-	float energy, energy_hour;
+	float energy, energy_hour, energy_yesterday;
 
 	voltage = DRV_GetReading(OBK_VOLTAGE);
 	current = DRV_GetReading(OBK_CURRENT);
 	power = DRV_GetReading(OBK_POWER);
 	energy = DRV_GetReading(OBK_CONSUMPTION_TOTAL);
 	energy_hour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
+	energy_yesterday = DRV_GetReading(OBK_CONSUMPTION_YESTERDAY);
 
 	if (DRV_IsMeasuringBattery()) {
 #ifdef ENABLE_DRIVER_BATTERY
@@ -223,8 +224,11 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 		if (OBK_IS_NAN(energy_hour)) {
 			energy_hour = 0;
 		}
+		if (OBK_IS_NAN(energy_yesterday)) {
+			energy_yesterday = 0;
+		}
 
-		printer(request, "{");
+		printer(request, "{"); 
 		printer(request, "\"Power\": %f,", power);
 		printer(request, "\"ApparentPower\": %f,", g_apparentPower);
 		printer(request, "\"ReactivePower\": %f,", g_reactivePower);
@@ -232,6 +236,7 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 		printer(request, "\"Voltage\":%f,", voltage);
 		printer(request, "\"Current\":%f,", current);
 		printer(request, "\"ConsumptionTotal\":%f,", energy);
+		printer(request, "\"Yesterday\": %f,", energy_yesterday);
 		printer(request, "\"ConsumptionLastHour\":%f", energy_hour);
 		// close ENERGY block
 		printer(request, "}");
