@@ -10,7 +10,8 @@
 #include "drv_spi.h"
 #include "drv_uart.h"
 
-#define BL0942_UART_BAUD_RATE 4800
+static unsigned short bl0942_baudRate = 4800;
+
 #define BL0942_UART_RECEIVE_BUFFER_SIZE 256
 #define BL0942_UART_ADDR 0 // 0 - 3
 #define BL0942_UART_CMD_READ(addr) (0x58 | addr)
@@ -215,10 +216,14 @@ static void Init(void) {
                 DEFAULT_POWER_CAL);
 }
 
+// THIS IS called by 'startDriver BL0942' command
+// You can set alternate baud with 'startDriver BL0942 9600' syntax
 void BL0942_UART_Init(void) {
 	Init();
 
-	UART_InitUART(BL0942_UART_BAUD_RATE, 0);
+	bl0942_baudRate = Tokenizer_GetArgIntegerDefault(1, 4800);
+
+	UART_InitUART(bl0942_baudRate, 0);
 	UART_InitReceiveRingBuffer(BL0942_UART_RECEIVE_BUFFER_SIZE);
 
     UART_WriteReg(BL0942_REG_USR_WRPROT, BL0942_USR_WRPROT_DISABLE);
@@ -229,7 +234,7 @@ void BL0942_UART_Init(void) {
 void BL0942_UART_RunEverySecond(void) {
     UART_TryToGetNextPacket();
 
-    UART_InitUART(BL0942_UART_BAUD_RATE, 0);
+    UART_InitUART(bl0942_baudRate, 0);
 
     UART_SendByte(BL0942_UART_CMD_READ(BL0942_UART_ADDR));
     UART_SendByte(BL0942_UART_REG_PACKET);
