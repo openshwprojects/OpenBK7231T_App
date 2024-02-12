@@ -5,6 +5,7 @@
 
 #include "../logging/logging.h"
 #include "../new_pins.h"
+#include "../cmnds/cmd_public.h"
 #include "drv_bl_shared.h"
 #include "drv_pwrCal.h"
 #include "drv_spi.h"
