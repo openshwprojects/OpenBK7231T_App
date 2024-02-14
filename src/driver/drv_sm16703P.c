@@ -28,6 +28,7 @@ UINT8 *send_buf;
 struct spi_message *spi_msg;
 BOOLEAN initialized = false;
 uint32_t pixel_count = 0;
+bool format_grb = false; // swap R/G for SK6812
 
 static uint8_t translate_2bit(uint8_t input) {
 	//ADDLOG_INFO(LOG_FEATURE_CMD, "Translate 0x%02x to 0x%02x", (input & 0b00000011), data_translate[(input & 0b00000011)]);
@@ -58,20 +59,41 @@ void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 
 	// Iterate over pixel
 	uint8_t *dst = spi_msg->send_buf + 2;
-	for (uint32_t i = 0; i < pixel * 3; i++) {
-		uint8_t input = *data++;
-		*dst++ = translate_2bit((input >> 6));
-		*dst++ = translate_2bit((input >> 4));
-		*dst++ = translate_2bit((input >> 2));
-		*dst++ = translate_2bit(input);
+	for (uint32_t i = 0; i < pixel; i++) {
+		uint8_t r, g, b;
+		if (format_grb) {
+			g = *data++;
+			r = *data++;
+		} else {
+			r = *data++;
+			g = *data++;
+		}
+		b = *data++;
+		*dst++ = translate_2bit((r >> 6));
+		*dst++ = translate_2bit((r >> 4));
+		*dst++ = translate_2bit((r >> 2));
+		*dst++ = translate_2bit(r);
+		*dst++ = translate_2bit((g >> 6));
+		*dst++ = translate_2bit((g >> 4));
+		*dst++ = translate_2bit((g >> 2));
+		*dst++ = translate_2bit(g);
+		*dst++ = translate_2bit((b >> 6));
+		*dst++ = translate_2bit((b >> 4));
+		*dst++ = translate_2bit((b >> 2));
+		*dst++ = translate_2bit(b);
 	}
 	if (push) {
 		SPIDMA_StartTX(spi_msg);
 	}
 }
 void SM16703P_setPixel(int pixel, int r, int g, int b) {
-	translate_byte(r, spi_msg->send_buf + (2 + 0 + (pixel * 3 * 4)));
-	translate_byte(g, spi_msg->send_buf + (2 + 4 + (pixel * 3 * 4)));
+	if (format_grb) {
+		translate_byte(g, spi_msg->send_buf + (2 + 0 + (pixel * 3 * 4)));
+		translate_byte(r, spi_msg->send_buf + (2 + 4 + (pixel * 3 * 4)));
+	} else {
+		translate_byte(r, spi_msg->send_buf + (2 + 0 + (pixel * 3 * 4)));
+		translate_byte(g, spi_msg->send_buf + (2 + 4 + (pixel * 3 * 4)));
+	}
 	translate_byte(b, spi_msg->send_buf + (2 + 8 + (pixel * 3 * 4)));
 }
 
@@ -132,6 +154,12 @@ commandResult_t SM16703P_Start(const void *context, const char *cmd, const char 
 	}
 
 	pixel_count = Tokenizer_GetArgIntegerRange(0, 0, 255);
+	if (Tokenizer_GetArgsCount() > 1) {
+		const char *format = Tokenizer_GetArg(1);
+		if (!strcmp(format, "SK6812") || !strcmp(format, "sk6812") || !strcmp(format, "GRB") || !strcmp(format, "grb")) {
+			format_grb = true;
+		}
+	}
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Register driver with %i LEDs", pixel_count);
 
