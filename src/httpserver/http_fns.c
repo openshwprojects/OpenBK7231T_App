@@ -1794,7 +1794,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				  hass_free_device_info(dev_info);
 				  dev_info = NULL;
 				}
-				for (int loop_x = 20; loop_x <= 20; loop_x++) { // Loop for LongPress and others
+				for (int loop_x = 20; loop_x <= 22; loop_x++) { // Loop for LongPress, LongPressRelease and BtnRelease
 				  dev_info = hass_init_button_device_info(i, loop_x);
 				  MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				  hass_free_device_info(dev_info);

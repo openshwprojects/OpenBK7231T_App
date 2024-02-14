@@ -36,6 +36,9 @@ int BTN_HOLD_REPEAT_MS;
 byte *g_defaultWakeEdge = 0;
 int g_initialPinStates = 0;
 
+// TODO: wrong place here, need be in each btn info data 
+int g_is_btn_hold_start = false;
+
 void PIN_DeepSleep_MakeSureEdgesAreAlloced() {
 	int i;
 	if (g_defaultWakeEdge == 0) {
@@ -332,7 +335,20 @@ void Button_OnPressRelease(int index) {
 	}
 	// fire event - button on pin <index> was released
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ONRELEASE, index);
+	if (g_cfg.pins.roles[index] == IOR_Button_ScriptOnly || g_cfg.pins.roles[index] == IOR_Button_ScriptOnly_n) {
+	        OBK_Publish_Result ret;
+		char chStr[16];
+		sprintf(chStr, "%i/btn", g_cfg.pins.channels[index]);
+		if (g_is_btn_hold_start) {
+			ret = MQTT_PublishMain_StringString(chStr, "holdrel", 0);
+		}
+		else {
+			ret = MQTT_PublishMain_StringString(chStr, "btnrel", 0);
+		}
+		g_is_btn_hold_start = false;
+	}
 }
+	
 void Button_OnInitialPressDown(int index)
 {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i Button_OnInitialPressDown\r\n", index);
@@ -518,7 +534,7 @@ void Button_On5xClick(int index)
 	        ret = MQTT_PublishMain_StringString(chStr, "clickx5", 0);
 	}
 	
-	// fire event - button on pin <index> was 4clicked
+	// fire event - button on pin <index> was 5clicked
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ON5CLICK, index);
 }
 void Button_OnLongPressHold(int index) {
@@ -541,13 +557,6 @@ void Button_OnLongPressHold(int index) {
 		// make it easier for users, enable LED by default
 		LED_SetEnableAll(true);
 	}
-	if (g_cfg.pins.roles[index] == IOR_Button_ScriptOnly || g_cfg.pins.roles[index] == IOR_Button_ScriptOnly_n) {
-	        OBK_Publish_Result ret;
-		char chStr[16];
-		sprintf(chStr, "%i/btn", g_cfg.pins.channels[index]);
-	        ret = MQTT_PublishMain_StringString(chStr, "clickx20", 0);
-	}
-	
 }
 void Button_OnLongPressHoldStart(int index) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i Button_OnLongPressHoldStart\r\n", index);
@@ -557,6 +566,14 @@ void Button_OnLongPressHoldStart(int index) {
 	}
 	// fire event - button on pin <index> was held
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ONHOLDSTART, index);
+	if (g_cfg.pins.roles[index] == IOR_Button_ScriptOnly || g_cfg.pins.roles[index] == IOR_Button_ScriptOnly_n) {
+	        OBK_Publish_Result ret;
+		char chStr[16];
+		g_is_btn_hold_start = true;
+		sprintf(chStr, "%i/btn", g_cfg.pins.channels[index]);
+	        ret = MQTT_PublishMain_StringString(chStr, "hold", 0);
+	}
+	
 }
 
 bool BTN_ShouldInvert(int index) {

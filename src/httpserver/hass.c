@@ -213,7 +213,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 	cJSON_AddItemToObject(info->root, "dev", info->device);    //device
 
 	bool isSensor = false;	//This does not count binary_sensor
-	bool isButton = false;
+	bool isButton = false;  //This does not count Btn only Btn_ScriptOnly
 
 	//Build the `name`
 	switch (type) {
@@ -449,15 +449,24 @@ HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse) {
 /// @param index
 /// @return
 HassDeviceInfo* hass_init_button_device_info(int index, int click_type) {
-
-	sprintf(g_hassBuffer, "_c%i", click_type);
+	if (click_type == 20) { // Hold
+		sprintf(g_hassBuffer, "_h");
+	}
+	else if (click_type == 21) {  // Hold Release
+		sprintf(g_hassBuffer, "_hr");
+	}
+	else if (click_type == 22) {  // Short Btn Release
+		sprintf(g_hassBuffer, "_br");
+	}
+	else {  // Short Btn x time press
+		sprintf(g_hassBuffer, "_c%i", click_type);
+	}
 	HassDeviceInfo* info = hass_init_device_info(SCENE_BUTTON, index, g_hassBuffer, "");
 
 	sprintf(g_hassBuffer, "~/%i/btn/get", index);
 	cJSON_AddStringToObject(info->root, "topic", g_hassBuffer);   //state_topic
 
-	sprintf(g_hassBuffer, "clickx%i", click_type);
-	cJSON_AddStringToObject(info->root, "payload", g_hassBuffer);
+	sprintf(g_hassBuffer, "clickx%i", click_type); // only for 1-5 clicks
 
 	switch (click_type) {
 	case 1:
@@ -475,10 +484,21 @@ HassDeviceInfo* hass_init_button_device_info(int index, int click_type) {
 	case 5:
 	  cJSON_AddStringToObject(info->root, "type", "button_quintuple_press");
 	  break;
-	case 20:
+	case 20:  // Hold
+	  sprintf(g_hassBuffer, "hold"); 
 	  cJSON_AddStringToObject(info->root, "type", "button_long_press");
 	  break;
+	case 21:  // Hold release
+	  sprintf(g_hassBuffer, "holdrel"); 
+	  cJSON_AddStringToObject(info->root, "type", "button_long_release");
+	  break;
+	case 22:  // Btn short release
+	  sprintf(g_hassBuffer, "btnrel"); 
+	  cJSON_AddStringToObject(info->root, "type", "button_short_release");
+	  break;
 	}
+	cJSON_AddStringToObject(info->root, "payload", g_hassBuffer);
+
 	sprintf(g_hassBuffer, "button_%i", index);
 	cJSON_AddStringToObject(info->root, "subtype", g_hassBuffer);
 
