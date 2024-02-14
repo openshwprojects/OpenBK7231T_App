@@ -28,6 +28,8 @@ UINT8 *send_buf;
 struct spi_message *spi_msg;
 BOOLEAN initialized = false;
 uint32_t pixel_count = 0;
+uint32_t pixel_offset = 0;
+uint32_t pixel_padding = 64;
 bool format_grb = false; // swap R/G for SK6812
 
 static uint8_t translate_2bit(uint8_t input) {
@@ -58,7 +60,7 @@ void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 		pixel = pixel_count;
 
 	// Iterate over pixel
-	uint8_t *dst = spi_msg->send_buf + 2;
+	uint8_t *dst = spi_msg->send_buf + pixel_offset;
 	for (uint32_t i = 0; i < pixel; i++) {
 		uint8_t r, g, b;
 		if (format_grb) {
@@ -88,13 +90,13 @@ void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 }
 void SM16703P_setPixel(int pixel, int r, int g, int b) {
 	if (format_grb) {
-		translate_byte(g, spi_msg->send_buf + (2 + 0 + (pixel * 3 * 4)));
-		translate_byte(r, spi_msg->send_buf + (2 + 4 + (pixel * 3 * 4)));
+		translate_byte(g, spi_msg->send_buf + (pixel_offset + 0 + (pixel * 3 * 4)));
+		translate_byte(r, spi_msg->send_buf + (pixel_offset + 4 + (pixel * 3 * 4)));
 	} else {
-		translate_byte(r, spi_msg->send_buf + (2 + 0 + (pixel * 3 * 4)));
-		translate_byte(g, spi_msg->send_buf + (2 + 4 + (pixel * 3 * 4)));
+		translate_byte(r, spi_msg->send_buf + (pixel_offset + 0 + (pixel * 3 * 4)));
+		translate_byte(g, spi_msg->send_buf + (pixel_offset + 4 + (pixel * 3 * 4)));
 	}
-	translate_byte(b, spi_msg->send_buf + (2 + 8 + (pixel * 3 * 4)));
+	translate_byte(b, spi_msg->send_buf + (pixel_offset + 8 + (pixel * 3 * 4)));
 }
 
 commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, const char *args, int flags) {
@@ -122,18 +124,18 @@ commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, cons
 		SM16703P_setPixel(pixel, r, g, b);
 
 		ADDLOG_INFO(LOG_FEATURE_CMD, "Raw Data 0x%02x 0x%02x 0x%02x 0x%02x - 0x%02x 0x%02x 0x%02x 0x%02x - 0x%02x 0x%02x 0x%02x 0x%02x",
-			spi_msg->send_buf[2 + 0 + (pixel * 3 * 4)],
-			spi_msg->send_buf[2 + 1 + (pixel * 3 * 4)],
-			spi_msg->send_buf[2 + 2 + (pixel * 3 * 4)],
-			spi_msg->send_buf[2 + 3 + (pixel * 3 * 4)],
-			spi_msg->send_buf[2 + 4 + (pixel * 3 * 4)],
-			spi_msg->send_buf[2 + 5 + (pixel * 3 * 4)],
-			spi_msg->send_buf[2 + 6 + (pixel * 3 * 4)],
-			spi_msg->send_buf[2 + 7 + (pixel * 3 * 4)],
-			spi_msg->send_buf[2 + 8 + (pixel * 3 * 4)],
-			spi_msg->send_buf[2 + 9 + (pixel * 3 * 4)],
-			spi_msg->send_buf[2 + 10 + (pixel * 3 * 4)],
-			spi_msg->send_buf[2 + 11 + (pixel * 3 * 4)]);
+			spi_msg->send_buf[pixel_offset + 0 + (pixel * 3 * 4)],
+			spi_msg->send_buf[pixel_offset + 1 + (pixel * 3 * 4)],
+			spi_msg->send_buf[pixel_offset + 2 + (pixel * 3 * 4)],
+			spi_msg->send_buf[pixel_offset + 3 + (pixel * 3 * 4)],
+			spi_msg->send_buf[pixel_offset + 4 + (pixel * 3 * 4)],
+			spi_msg->send_buf[pixel_offset + 5 + (pixel * 3 * 4)],
+			spi_msg->send_buf[pixel_offset + 6 + (pixel * 3 * 4)],
+			spi_msg->send_buf[pixel_offset + 7 + (pixel * 3 * 4)],
+			spi_msg->send_buf[pixel_offset + 8 + (pixel * 3 * 4)],
+			spi_msg->send_buf[pixel_offset + 9 + (pixel * 3 * 4)],
+			spi_msg->send_buf[pixel_offset + 10 + (pixel * 3 * 4)],
+			spi_msg->send_buf[pixel_offset + 11 + (pixel * 3 * 4)]);
 	}
 
 
@@ -160,19 +162,28 @@ commandResult_t SM16703P_Start(const void *context, const char *cmd, const char 
 			format_grb = true;
 		}
 	}
+	if (Tokenizer_GetArgsCount() > 2) {
+		pixel_offset = Tokenizer_GetArgIntegerRange(2, 0, 255);
+	}
+	if (Tokenizer_GetArgsCount() > 3) {
+		pixel_padding = Tokenizer_GetArgIntegerRange(3, 0, 255);
+	}
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Register driver with %i LEDs", pixel_count);
 
 	// Prepare buffer
-	uint32_t buffer_size = 2 + (pixel_count * 3 * 4);			  //Add two bytes for "Reset"
+	uint32_t buffer_size = pixel_offset + (pixel_count * 3 * 4) + pixel_padding; //Add `pixel_offset` bytes for "Reset"
 	send_buf = (UINT8 *)os_malloc(sizeof(UINT8) * (buffer_size)); //18LEDs x RGB x 4Bytes
 	int i;
 
-	send_buf[0] = 0;
-	send_buf[1] = 0;
-
-	for (i = 2; i < buffer_size; i++) {
-		send_buf[i] = 0b11101110;
+	for (i = 0; i < pixel_offset; i++) {
+		send_buf[i] = 0;
+	}
+	for (i = pixel_offset; i < buffer_size - pixel_padding; i++) {
+		send_buf[i] = 0b10001000;
+	}
+	for (i = buffer_size - pixel_padding; i < buffer_size; i++) {
+		send_buf[i] = 0;
 	}
 
 	spi_msg = os_malloc(sizeof(struct spi_message));
