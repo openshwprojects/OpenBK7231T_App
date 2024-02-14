@@ -123,6 +123,7 @@ void DDP_Parse(byte *data, int len) {
 		LED_SetFinalRGB(r,g,b);
 
 #if PLATFORM_BK7231N
+		// Note that with DDP msgbuf[64] the max here is (64-10)/3 = 18 pixel.
 		uint32_t pixel = (len - 10) / 3;
 		// This immediately activates the pixels, maybe we should read the PUSH flag
 		SM16703P_setMultiplePixel(pixel, &data[10], true);
@@ -160,7 +161,6 @@ void DRV_DDP_RunFrame() {
 			return;
 		}
 		//addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"Received %i bytes from %s\n",nbytes,inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr));
-		msgbuf[nbytes] = '\0';
 
 		stat_packetsReceived++;
 		stat_bytesReceived += nbytes;
