@@ -5,6 +5,7 @@
 #include "../new_cfg.h"
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
+#include "../driver/drv_public.h"
 #include "../logging/logging.h"
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
@@ -120,6 +121,12 @@ void DDP_Parse(byte *data, int len) {
 		b = data[12];
 
 		LED_SetFinalRGB(r,g,b);
+
+#if PLATFORM_BK7231N
+		uint32_t pixel = (len - 10) / 3;
+		// This immediately activates the pixels, maybe we should read the PUSH flag
+		SM16703P_setMultiplePixel(pixel, &data[10], true);
+#endif
 	}
 }
 void DRV_DDP_RunFrame() {
