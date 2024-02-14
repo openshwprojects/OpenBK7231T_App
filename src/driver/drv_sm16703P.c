@@ -156,7 +156,7 @@ commandResult_t SM16703P_Start(const void *context, const char *cmd, const char 
 	pixel_count = Tokenizer_GetArgIntegerRange(0, 0, 255);
 	if (Tokenizer_GetArgsCount() > 1) {
 		const char *format = Tokenizer_GetArg(1);
-		if (!strcmp(format, "SK6812") || !strcmp(format, "sk6812") || !strcmp(format, "GRB") || !strcmp(format, "grb")) {
+		if (!stricmp(format, "GRB")) {
 			format_grb = true;
 		}
 	}
