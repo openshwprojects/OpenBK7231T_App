@@ -27,10 +27,15 @@ static uint8_t data_translate[4] = {0b10001000, 0b10001110, 0b11101000, 0b111011
 UINT8 *send_buf;
 struct spi_message *spi_msg;
 BOOLEAN initialized = false;
+// Number of pixels that can be addressed
 uint32_t pixel_count = 0;
+// Number of empty bytes to send before pixel data on each frame
+// Likely not needed as the data line should be LOW (reset) between frames anyway
 uint32_t pixel_offset = 0;
+// Number of empty bytes to send after pixel data on each frame
+// Workaround to stuff the SPI buffer with empty bytes after a transmission (s.a. #1055)
 uint32_t pixel_padding = 64;
-bool format_grb = false; // swap R/G for SK6812
+bool format_grb = false; // option to swap R/G for SK6812
 
 static uint8_t translate_2bit(uint8_t input) {
 	//ADDLOG_INFO(LOG_FEATURE_CMD, "Translate 0x%02x to 0x%02x", (input & 0b00000011), data_translate[(input & 0b00000011)]);
@@ -63,6 +68,7 @@ void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 	uint8_t *dst = spi_msg->send_buf + pixel_offset;
 	for (uint32_t i = 0; i < pixel; i++) {
 		uint8_t r, g, b;
+		// Load data to GRB or RGB format
 		if (format_grb) {
 			g = *data++;
 			r = *data++;
@@ -89,6 +95,7 @@ void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 	}
 }
 void SM16703P_setPixel(int pixel, int r, int g, int b) {
+	// Load data to GRB or RGB format
 	if (format_grb) {
 		translate_byte(g, spi_msg->send_buf + (pixel_offset + 0 + (pixel * 3 * 4)));
 		translate_byte(r, spi_msg->send_buf + (pixel_offset + 4 + (pixel * 3 * 4)));
@@ -155,16 +162,20 @@ commandResult_t SM16703P_Start(const void *context, const char *cmd, const char 
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
+	// First arg: number of pixel to address
 	pixel_count = Tokenizer_GetArgIntegerRange(0, 0, 255);
+	// Second arg (optional, default "RGB"): pixel format of "RGB" or "GRB"
 	if (Tokenizer_GetArgsCount() > 1) {
 		const char *format = Tokenizer_GetArg(1);
 		if (!stricmp(format, "GRB")) {
 			format_grb = true;
 		}
 	}
+	// Third arg (optional, default "0"): pixel_offset to prepend to each transmission
 	if (Tokenizer_GetArgsCount() > 2) {
 		pixel_offset = Tokenizer_GetArgIntegerRange(2, 0, 255);
 	}
+	// Fourth arg (optional, default "64"): pixel_padding to append to each transmission
 	if (Tokenizer_GetArgsCount() > 3) {
 		pixel_padding = Tokenizer_GetArgIntegerRange(3, 0, 255);
 	}
@@ -176,12 +187,15 @@ commandResult_t SM16703P_Start(const void *context, const char *cmd, const char 
 	send_buf = (UINT8 *)os_malloc(sizeof(UINT8) * (buffer_size)); //18LEDs x RGB x 4Bytes
 	int i;
 
+	// Fill `pixel_offset` slice of the buffer with zero
 	for (i = 0; i < pixel_offset; i++) {
 		send_buf[i] = 0;
 	}
+	// Fill data slice of the buffer with data bits that decode to black color
 	for (i = pixel_offset; i < buffer_size - pixel_padding; i++) {
 		send_buf[i] = 0b10001000;
 	}
+	// Fill `pixel_padding` slice of the buffer with zero
 	for (i = buffer_size - pixel_padding; i < buffer_size; i++) {
 		send_buf[i] = 0;
 	}
