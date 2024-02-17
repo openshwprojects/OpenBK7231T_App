@@ -18,6 +18,8 @@ static int g_ddp_socket_receive = -1;
 static int g_retry_delay = 5;
 static int stat_packetsReceived = 0;
 static int stat_bytesReceived = 0;
+static char *g_ddp_buffer = 0;
+static int g_ddp_bufferSize = 512;
 
 void DRV_DDP_CreateSocket_Receive() {
 
@@ -131,7 +133,6 @@ void DDP_Parse(byte *data, int len) {
 	}
 }
 void DRV_DDP_RunFrame() {
-    char msgbuf[64];
 	struct sockaddr_in addr;
 	int nbytes;
 
@@ -150,8 +151,8 @@ void DRV_DDP_RunFrame() {
 		socklen_t addrlen = sizeof(addr);
 		nbytes = recvfrom(
 			g_ddp_socket_receive,
-			msgbuf,
-			sizeof(msgbuf),
+			g_ddp_buffer,
+			g_ddp_bufferSize,
 			0,
 			(struct sockaddr *) &addr,
 			&addrlen
@@ -165,7 +166,7 @@ void DRV_DDP_RunFrame() {
 		stat_packetsReceived++;
 		stat_bytesReceived += nbytes;
 
-		DDP_Parse((byte*)msgbuf, nbytes);
+		DDP_Parse((byte*)g_ddp_buffer, nbytes);
 
 		if (stat_packetsReceived % 10 == 0) {
 			rtos_delay_milliseconds(5);
@@ -185,6 +186,11 @@ void DRV_DDP_AppendInformationToHTTPIndexPage(http_request_t* request)
 }
 void DRV_DDP_Init()
 {
+	g_ddp_bufferSize = Tokenizer_GetArgIntegerDefault(1, 512);
+	if (g_ddp_buffer) {
+		free(g_ddp_buffer);
+	}
+	g_ddp_buffer = malloc(g_ddp_bufferSize);
 	DRV_DDP_CreateSocket_Receive();
 }
 
