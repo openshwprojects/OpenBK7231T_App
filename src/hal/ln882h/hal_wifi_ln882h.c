@@ -130,8 +130,9 @@ void HAL_PrintNetworkInfo()
 
 int HAL_GetWifiStrength()
 {
-    alert_log("HAL_GetWifiStrength");
-	return 0;
+    int8_t val;
+    wifi_sta_get_rssi(&val);
+    return val;
 }
 
 void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
