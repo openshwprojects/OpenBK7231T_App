@@ -54,7 +54,8 @@ static void translate_byte(uint8_t input, uint8_t *dst) {
 	*dst++ = translate_2bit(input);
 }
 void SM16703P_setRaw(int start_offset, const char *s, int push) {
-	uint8_t *dst = spi_msg->send_buf + pixel_offset + start_offset;
+	// start offset is in bytes, and we do 2 bits per dst byte, so *4
+	uint8_t *dst = spi_msg->send_buf + pixel_offset + start_offset*4;
 
 	// parse hex string like FFAABB0011 byte by byte
 	while (s[0] && s[1]) {
