@@ -135,6 +135,7 @@ commandResult_t SM16703P_CMD_setRaw(const void *context, const char *cmd, const 
 }
 commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, const char *args, int flags) {
 	int pixel, i, r, g, b;
+	const char *all = 0;
 	Tokenizer_TokenizeString(args, 0);
 
 	if (Tokenizer_GetArgsCount() != 4) {
@@ -142,14 +143,21 @@ commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, cons
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
-	pixel = Tokenizer_GetArgInteger(0);
+	all = Tokenizer_GetArg(0);
+	if (*all == 'a') {
+
+	}
+	else {
+		pixel = Tokenizer_GetArgInteger(0);
+		all = 0;
+	}
 	r = Tokenizer_GetArgIntegerRange(1, 0, 255);
 	g = Tokenizer_GetArgIntegerRange(2, 0, 255);
 	b = Tokenizer_GetArgIntegerRange(3, 0, 255);
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Set Pixel %i to R %i G %i B %i", pixel, r, g, b);
 
-	if (pixel < 0) {
+	if (all) {
 		for (i = 0; i < pixel_count; i++) {
 			SM16703P_setPixel(i, r, g, b);
 		}
