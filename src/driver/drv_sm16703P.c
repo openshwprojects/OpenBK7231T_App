@@ -115,7 +115,7 @@ commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, cons
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
-	pixel = Tokenizer_GetArgIntegerRange(0, 0, 255);
+	pixel = Tokenizer_GetArgInteger(0);
 	r = Tokenizer_GetArgIntegerRange(1, 0, 255);
 	g = Tokenizer_GetArgIntegerRange(2, 0, 255);
 	b = Tokenizer_GetArgIntegerRange(3, 0, 255);
