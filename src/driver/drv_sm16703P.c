@@ -53,6 +53,24 @@ static void translate_byte(uint8_t input, uint8_t *dst) {
 	*dst++ = translate_2bit((input >> 2));
 	*dst++ = translate_2bit(input);
 }
+void SM16703P_setRaw(int start_offset, const char *s, int push) {
+	uint8_t *dst = spi_msg->send_buf + pixel_offset + start_offset;
+
+	// parse hex string like FFAABB0011 byte by byte
+	while (s[0] && s[1]) {
+		byte b;
+		b = hexbyte(s);
+		*dst++ = translate_2bit((b >> 6));
+		*dst++ = translate_2bit((b >> 4));
+		*dst++ = translate_2bit((b >> 2));
+		*dst++ = translate_2bit(b);
+		s += 2;
+	}
+	if (push) {
+		SPIDMA_StartTX(spi_msg);
+	}
+}
+
 
 void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 
@@ -106,6 +124,14 @@ void SM16703P_setPixel(int pixel, int r, int g, int b) {
 	translate_byte(b, spi_msg->send_buf + (pixel_offset + 8 + (pixel * 3 * 4)));
 }
 
+commandResult_t SM16703P_CMD_setRaw(const void *context, const char *cmd, const char *args, int flags) {
+	int ofs, bPush;
+	Tokenizer_TokenizeString(args, 0);
+	bPush = Tokenizer_GetArgInteger(0);
+	ofs = Tokenizer_GetArgInteger(1);
+	SM16703P_setRaw(ofs, Tokenizer_GetArg(2), bPush);
+	return CMD_RES_OK;
+}
 commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, const char *args, int flags) {
 	int pixel, i, r, g, b;
 	Tokenizer_TokenizeString(args, 0);
@@ -255,5 +281,8 @@ void SM16703P_Init() {
 	//cmddetail:"fn":"NULL);","file":"driver/drv_sm16703P.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SM16703P_SetPixel", SM16703P_CMD_setPixel, NULL);
+
+	CMD_RegisterCommand("SM16703P_SetRaw", SM16703P_CMD_setRaw, NULL);
+
 }
 #endif
