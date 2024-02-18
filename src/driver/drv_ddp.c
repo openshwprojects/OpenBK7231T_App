@@ -5,6 +5,7 @@
 #include "../new_cfg.h"
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
+#include "../driver/drv_public.h"
 #include "../logging/logging.h"
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
@@ -17,6 +18,8 @@ static int g_ddp_socket_receive = -1;
 static int g_retry_delay = 5;
 static int stat_packetsReceived = 0;
 static int stat_bytesReceived = 0;
+static char *g_ddp_buffer = 0;
+static int g_ddp_bufferSize = 512;
 
 void DRV_DDP_CreateSocket_Receive() {
 
@@ -120,10 +123,16 @@ void DDP_Parse(byte *data, int len) {
 		b = data[12];
 
 		LED_SetFinalRGB(r,g,b);
+
+#if PLATFORM_BK7231N
+		// Note that with DDP msgbuf[64] the max here is (64-10)/3 = 18 pixel.
+		uint32_t pixel = (len - 10) / 3;
+		// This immediately activates the pixels, maybe we should read the PUSH flag
+		SM16703P_setMultiplePixel(pixel, &data[10], true);
+#endif
 	}
 }
 void DRV_DDP_RunFrame() {
-    char msgbuf[64];
 	struct sockaddr_in addr;
 	int nbytes;
 
@@ -142,8 +151,8 @@ void DRV_DDP_RunFrame() {
 		socklen_t addrlen = sizeof(addr);
 		nbytes = recvfrom(
 			g_ddp_socket_receive,
-			msgbuf,
-			sizeof(msgbuf),
+			g_ddp_buffer,
+			g_ddp_bufferSize,
 			0,
 			(struct sockaddr *) &addr,
 			&addrlen
@@ -153,12 +162,11 @@ void DRV_DDP_RunFrame() {
 			return;
 		}
 		//addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"Received %i bytes from %s\n",nbytes,inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr));
-		msgbuf[nbytes] = '\0';
 
 		stat_packetsReceived++;
 		stat_bytesReceived += nbytes;
 
-		DDP_Parse((byte*)msgbuf, nbytes);
+		DDP_Parse((byte*)g_ddp_buffer, nbytes);
 
 		if (stat_packetsReceived % 10 == 0) {
 			rtos_delay_milliseconds(5);
@@ -178,6 +186,11 @@ void DRV_DDP_AppendInformationToHTTPIndexPage(http_request_t* request)
 }
 void DRV_DDP_Init()
 {
+	g_ddp_bufferSize = Tokenizer_GetArgIntegerDefault(1, 512);
+	if (g_ddp_buffer) {
+		free(g_ddp_buffer);
+	}
+	g_ddp_buffer = malloc(g_ddp_bufferSize);
 	DRV_DDP_CreateSocket_Receive();
 }
 
