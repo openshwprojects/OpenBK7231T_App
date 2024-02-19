@@ -1954,8 +1954,8 @@
   },
   {
     "name": "SM16703P_Init",
-    "args": "SM16703P_Start",
-    "descr": "",
+    "args": "[NumberOfLEDs]",
+    "descr": "This will setup LED driver for a strip with given number of LEDs",
     "fn": "NULL);",
     "file": "driver/drv_sm16703P.c",
     "requires": "",
@@ -1963,8 +1963,8 @@
   },
   {
     "name": "SM16703P_SetPixel",
-    "args": "SM16703P_CMD_setPixel",
-    "descr": "",
+    "args": "[index/all] R G B",
+    "descr": "Sets a pixel for LED strip. Index can be a number or 'all' keyword to set all. Then, 3 integer values for R, G and B",
     "fn": "NULL);",
     "file": "driver/drv_sm16703P.c",
     "requires": "",
@@ -1972,8 +1972,8 @@
   },
   {
     "name": "SM16703P_SetRaw",
-    "args": "SM16703P_CMD_setRaw",
-    "descr": "",
+    "args": "bUpdate byteOfs HexData",
+    "descr": "Sets the raw data bytes for SPI DMA LED driver at the given offset. Hex data should be as a hex string, for example, FF00AA, etc. The bUpdate, if set to 1, will run SM16703P_Start automatically after setting data.",
     "fn": "NULL);",
     "file": "driver/drv_sm16703P.c",
     "requires": "",
@@ -1981,8 +1981,8 @@
   },
   {
     "name": "SM16703P_Start",
-    "args": "SM16703P_StartTX",
-    "descr": "",
+    "args": "",
+    "descr": "This will send the currently set data to the strip",
     "fn": "NULL);",
     "file": "driver/drv_sm16703P.c",
     "requires": "",
