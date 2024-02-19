@@ -26,6 +26,30 @@ const char *g_template_lowMidHigh = "{% if value == '0' %}\n"
 			"	Unknown\n"
 			"{% endif %}";
 
+
+const char HASS_DEV_CLASS_VOLTAGE[] 		= "voltage";
+const char HASS_DEV_CLASS_CURRENT[]			= "current";
+const char HASS_DEV_CLASS_POWER[] 			= "power";
+const char HASS_DEV_CLASS_ENERGY[] 			= "energy";	//note that Wh/kWh units are overridden in hass_init_power_sensor_device_info()
+const char HASS_DEV_CLASS_TIMESTAMP[] 		= "timestamp";
+const char HASS_DEV_CLASS_APPARENT_POWER[] 	= "apparent_power"; //VA
+const char HASS_DEV_CLASS_REACTIVE_POWER[] 	= "reactive_power"; //var
+const char HASS_DEV_CLASS_POWER_FACTOR[] 	= "power_factor";   //%
+
+struct {
+	const char* dev_class;					const char* name;				const char* units;		
+} const hass_power_sensors_info[OBK_NUM_EMUNS_MAX] = {
+	{.dev_class = HASS_DEV_CLASS_VOLTAGE,	.name = "Voltage",				.units = "V"	},
+	{.dev_class = HASS_DEV_CLASS_CURRENT,	.name = "Current",				.units = "A"	},
+	{.dev_class = HASS_DEV_CLASS_POWER,		.name = "Power",				.units = "W"	},
+	{.dev_class = HASS_DEV_CLASS_ENERGY,	.name = "Energy Total",			.units = "Wh"	},	
+	{.dev_class = HASS_DEV_CLASS_ENERGY,	.name = "Energy Last Hour",		.units = "Wh"	},		
+	{.dev_class = "",						.name = "Consumption Stats",	.units = ""		},		
+	{.dev_class = HASS_DEV_CLASS_ENERGY,	.name = "Energy Yesterday",		.units = "Wh"	},		
+	{.dev_class = HASS_DEV_CLASS_ENERGY,	.name = "Energy Today",			.units = "Wh"	},		
+	{.dev_class = HASS_DEV_CLASS_TIMESTAMP,	.name = "Energy Clear Date",	.units = ""		},		
+};
+
 /// @brief Populates HomeAssistant unique id for the entity.
 /// @param type Entity type
 /// @param index Entity index (Ignored for RGB)
@@ -50,7 +74,7 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "relay", index);
 		break;
 
-	case VCP_SENSOR:
+	case ENERGY_METER_SENSOR:
 	case POWER_SENSOR:
 	case ENERGY_SENSOR:
 	case TIMESTAMP_SENSOR:
@@ -141,7 +165,7 @@ void hass_populate_device_config_channel(ENTITY_TYPE type, char* uniq_id, HassDe
 	case CO2_SENSOR:
 	case TVOC_SENSOR:
 	case POWER_SENSOR:
-	case VCP_SENSOR:
+	case ENERGY_METER_SENSOR:
 	case ENERGY_SENSOR:
 	case TIMESTAMP_SENSOR:
 	case BATTERY_SENSOR:
@@ -218,20 +242,19 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 		//for 2 PWM case.
 		sprintf(g_hassBuffer, "Light");
 		break;
-	case VCP_SENSOR:
+	case ENERGY_METER_SENSOR:
 		isSensor = true;
 #ifndef OBK_DISABLE_ALL_DRIVERS
-		if ((index >= OBK_VOLTAGE) && (index <= OBK_POWER))
-			sprintf(g_hassBuffer, "%s", sensor_hassNames[index]);
+		if (index < OBK_NUM_EMUNS_MAX)
+			sprintf(g_hassBuffer, "%s", hass_power_sensors_info[index].name);
 		else
-			sprintf(g_hassBuffer, "Voltage or Current or Power");
+			sprintf(g_hassBuffer, "Un-nmaed Energy Meter Sensor");
 #endif
 		break;
 	case POWER_SENSOR:
 		isSensor = true;
 		sprintf(g_hassBuffer, "Power");
 		break;
-
 	case TEMPERATURE_SENSOR:
 		isSensor = true;
 		sprintf(g_hassBuffer, "Temperature");
@@ -274,17 +297,11 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 	case ENERGY_SENSOR:
 		isSensor = true;
 #ifndef OBK_DISABLE_ALL_DRIVERS		
-		if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_CONSUMPTION_TODAY))
-			sprintf(g_hassBuffer, "%s", sensor_hassNames[index]);
-		else
-			sprintf(g_hassBuffer, "Energy");
+		sprintf(g_hassBuffer, "Energy");
 #endif
 		break;
 	case TIMESTAMP_SENSOR:
-		if (index == OBK_CONSUMPTION_CLEAR_DATE)
-			sprintf(g_hassBuffer, "%s", sensor_hassNames[index]);
-		else
-			sprintf(g_hassBuffer, "Timestamp");
+		sprintf(g_hassBuffer, "Timestamp");
 		break;
 	default:
 		sprintf(g_hassBuffer, "%s", CHANNEL_GetLabel(index));
@@ -427,6 +444,8 @@ HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse) {
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
 
+
+
 /// @brief Initializes HomeAssistant power sensor device discovery storage.
 /// @param index Index corresponding to sensor_mqttNames.
 /// @return 
@@ -435,41 +454,25 @@ HassDeviceInfo* hass_init_power_sensor_device_info(int index) {
 
 	//https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes
 	//device_class automatically assigns unit,icon
-	if ((index >= OBK_VOLTAGE) && (index <= OBK_POWER))
-	{
-		info = hass_init_device_info(VCP_SENSOR, index, NULL, NULL);
-		cJSON_AddStringToObject(info->root, "dev_cla", sensor_mqtt_device_classes[index]);   //device_class=voltage,current,power
-		cJSON_AddStringToObject(info->root, "unit_of_meas", sensor_mqtt_device_units[index]);   //unit_of_measurement
+	if (index >= OBK_NUM_EMUNS_MAX) return info;
+	if (index >= OBK_CONSUMPTION_YESTERDAY && !DRV_IsRunning("NTP")) return info; //include daily stats only when time is valid
 
-		sprintf(g_hassBuffer, "~/%s/get", sensor_mqttNames[index]);
-		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+	info = hass_init_device_info(ENERGY_METER_SENSOR, index, NULL, NULL);
 
+	cJSON_AddStringToObject(info->root, "dev_cla", hass_power_sensors_info[index].dev_class);   //device_class=voltage,current,power, energy, timestamp
+	cJSON_AddStringToObject(info->root, "unit_of_meas", hass_power_sensors_info[index].units);   //unit_of_measurement. Sets as empty string if not present. HA doesn't seem to mind
+
+	sprintf(g_hassBuffer, "~/%s/get", index < OBK_NUM_MEASUREMENTS ? sensor_mqttNames[index] : counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
+	cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+
+	if (hass_power_sensors_info[index].dev_class == HASS_DEV_CLASS_ENERGY) {
+		//state_class can be measurement, total or total_increasing. Energy values should be total_increasing.
+		cJSON_AddStringToObject(info->root, "stat_cla", "total_increasing");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH) ? "kWh" : "Wh");
+	} else {
 		cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", hass_power_sensors_info[index].units);
 	}
-	else if ((index >= OBK_CONSUMPTION_TOTAL) && (index <= OBK_NUM_EMUNS_MAX))
-	{
-		if (index >= OBK_CONSUMPTION_YESTERDAY && !DRV_IsRunning("NTP")) return info; //include daily stats only when time is valid
-
-		info = hass_init_device_info(index == OBK_CONSUMPTION_CLEAR_DATE ? TIMESTAMP_SENSOR : ENERGY_SENSOR, index, NULL, NULL);
-		const char* device_class_value = counter_devClasses[index - OBK_CONSUMPTION_TOTAL];
-		if (strlen(device_class_value) > 0) {
-			cJSON_AddStringToObject(info->root, "dev_cla", device_class_value);  //device_class=energy,timestamp
-			if (!strcmp(device_class_value, "energy")) {
-				if (CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH)) {
-					cJSON_AddStringToObject(info->root, "unit_of_meas", "kWh");   //unit_of_measurement
-				}
-				else {
-					cJSON_AddStringToObject(info->root, "unit_of_meas", "Wh");   //unit_of_measurement
-				}
-				//state_class can be measurement, total or total_increasing. Energy values should be total_increasing.
-				cJSON_AddStringToObject(info->root, "stat_cla", "total_increasing");
-			}
-		}
-
-		sprintf(g_hassBuffer, "~/%s/get", counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
-		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
-	}
-
 	return info;
 }
 

@@ -19,19 +19,6 @@ const char* sensor_mqttNames[OBK_NUM_MEASUREMENTS] = {
 	"power"
 };
 
-//sensor_device_classes just so happens to be the same as sensor_mqttNames.
-const char* sensor_mqtt_device_classes[OBK_NUM_MEASUREMENTS] = {
-	"voltage",
-	"current",
-	"power"
-};
-
-const char* sensor_mqtt_device_units[OBK_NUM_MEASUREMENTS] = {
-	"V",
-	"A",
-	"W"
-};
-
 const char* counter_mqttNames[OBK_NUM_COUNTERS] = {
 	"energycounter",
 	"energycounter_last_hour",
@@ -41,26 +28,6 @@ const char* counter_mqttNames[OBK_NUM_COUNTERS] = {
 	"energycounter_clear_date",
 };
 
-const char* counter_devClasses[OBK_NUM_COUNTERS] = {
-	"energy",
-	"energy",
-	"",
-	"energy",
-	"energy",
-	"timestamp"
-};
-
-const char* sensor_hassNames[OBK_NUM_EMUNS_MAX] = {
-	"Voltage",
-	"Current",
-	"Power",
-	"Energy Total",
-	"Energy Last Hour",
-	"Consumption Stats",
-	"Energy Yesterday",
-	"Energy Today",
-	"Energy Clear Date",
-};
 
 typedef struct driver_s {
 	const char* name;

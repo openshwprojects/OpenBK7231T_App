@@ -25,7 +25,7 @@ typedef enum {
 	LIGHT_RGBCW,
 
 	/// @brief Power sensors (voltage, current, power)
-	VCP_SENSOR,
+	ENERGY_METER_SENSOR,
 
 	POWER_SENSOR,
 
