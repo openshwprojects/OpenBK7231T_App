@@ -164,13 +164,13 @@
   {
     "name": "$sunrise",
     "title": "$sunrise",
-    "descr": "Next sunrise as a TimerSeconds from midnight. (NOTE: Requires compiling with ENABLE_NTP_SUNRISE_SUNSET set which adds about 11k of code)",
+    "descr": "TODO",
     "requires": ""
   },
   {
     "name": "$sunset",
     "title": "$sunset",
-    "descr": "Next sunset as a TimerSeconds from midnight. (NOTE: Requires compiling with ENABLE_NTP_SUNRISE_SUNSET set which adds about 11k of code)",
+    "descr": "TODO",
     "requires": ""
   },
   {
