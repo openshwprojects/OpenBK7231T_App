@@ -1955,7 +1955,7 @@
   {
     "name": "SM16703P_Init",
     "args": "[NumberOfLEDs]",
-    "descr": "This will setup LED driver for a strip with given number of LEDs",
+    "descr": "This will setup LED driver for a strip with given number of LEDs. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
     "fn": "NULL);",
     "file": "driver/drv_sm16703P.c",
     "requires": "",
@@ -1963,8 +1963,8 @@
   },
   {
     "name": "SM16703P_SetPixel",
-    "args": "[index/all] R G B",
-    "descr": "Sets a pixel for LED strip. Index can be a number or 'all' keyword to set all. Then, 3 integer values for R, G and B",
+    "args": "[index/all] [R] [G] [B]",
+    "descr": "Sets a pixel for LED strip. Index can be a number or 'all' keyword to set all. Then, 3 integer values for R, G and B. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
     "fn": "NULL);",
     "file": "driver/drv_sm16703P.c",
     "requires": "",
@@ -1972,8 +1972,8 @@
   },
   {
     "name": "SM16703P_SetRaw",
-    "args": "bUpdate byteOfs HexData",
-    "descr": "Sets the raw data bytes for SPI DMA LED driver at the given offset. Hex data should be as a hex string, for example, FF00AA, etc. The bUpdate, if set to 1, will run SM16703P_Start automatically after setting data.",
+    "args": "[bUpdate] [byteOfs] [HexData]",
+    "descr": "Sets the raw data bytes for SPI DMA LED driver at the given offset. Hex data should be as a hex string, for example, FF00AA, etc. The bUpdate, if set to 1, will run SM16703P_Start automatically after setting data. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
     "fn": "NULL);",
     "file": "driver/drv_sm16703P.c",
     "requires": "",
@@ -1982,7 +1982,7 @@
   {
     "name": "SM16703P_Start",
     "args": "",
-    "descr": "This will send the currently set data to the strip",
+    "descr": "This will send the currently set data to the strip. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
     "fn": "NULL);",
     "file": "driver/drv_sm16703P.c",
     "requires": "",
