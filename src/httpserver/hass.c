@@ -27,28 +27,6 @@ const char *g_template_lowMidHigh = "{% if value == '0' %}\n"
 			"{% endif %}";
 
 
-const char HASS_DEV_CLASS_VOLTAGE[] 		= "voltage";
-const char HASS_DEV_CLASS_CURRENT[]			= "current";
-const char HASS_DEV_CLASS_POWER[] 			= "power";
-const char HASS_DEV_CLASS_ENERGY[] 			= "energy";	//note that Wh/kWh units are overridden in hass_init_power_sensor_device_info()
-const char HASS_DEV_CLASS_TIMESTAMP[] 		= "timestamp";
-const char HASS_DEV_CLASS_APPARENT_POWER[] 	= "apparent_power"; //VA
-const char HASS_DEV_CLASS_REACTIVE_POWER[] 	= "reactive_power"; //var
-const char HASS_DEV_CLASS_POWER_FACTOR[] 	= "power_factor";   //%
-
-struct {
-	const char* dev_class;					const char* name;				const char* units;		
-} const hass_power_sensors_info[OBK_NUM_EMUNS_MAX] = {
-	{.dev_class = HASS_DEV_CLASS_VOLTAGE,	.name = "Voltage",				.units = "V"	},
-	{.dev_class = HASS_DEV_CLASS_CURRENT,	.name = "Current",				.units = "A"	},
-	{.dev_class = HASS_DEV_CLASS_POWER,		.name = "Power",				.units = "W"	},
-	{.dev_class = HASS_DEV_CLASS_ENERGY,	.name = "Energy Total",			.units = "Wh"	},	
-	{.dev_class = HASS_DEV_CLASS_ENERGY,	.name = "Energy Last Hour",		.units = "Wh"	},		
-	{.dev_class = "",						.name = "Consumption Stats",	.units = ""		},		
-	{.dev_class = HASS_DEV_CLASS_ENERGY,	.name = "Energy Yesterday",		.units = "Wh"	},		
-	{.dev_class = HASS_DEV_CLASS_ENERGY,	.name = "Energy Today",			.units = "Wh"	},		
-	{.dev_class = HASS_DEV_CLASS_TIMESTAMP,	.name = "Energy Clear Date",	.units = ""		},		
-};
 
 /// @brief Populates HomeAssistant unique id for the entity.
 /// @param type Entity type
@@ -206,7 +184,7 @@ cJSON* hass_build_device_node(cJSON* ids) {
 /// @brief Initializes HomeAssistant device discovery storage with common values.
 /// @param type 
 /// @param index This is used to generate generate unique_id and name. 
-/// It is ignored for RGB. For power sensors, index corresponds to sensor_mqttNames. For regular sensor, index can be be the channel.
+/// It is ignored for RGB. For power sensors, index corresponds to energy_sensors_info. For regular sensor, index can be be the channel.
 /// @param payload_on The payload that represents enabled state. This is not added for POWER_SENSOR.
 /// @param payload_off The payload that represents disabled state. This is not added for POWER_SENSOR.
 /// @return 
@@ -246,7 +224,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 		isSensor = true;
 #ifndef OBK_DISABLE_ALL_DRIVERS
 		if (index < OBK_NUM_EMUNS_MAX)
-			sprintf(g_hassBuffer, "%s", hass_power_sensors_info[index].name);
+			sprintf(g_hassBuffer, "%s", energy_sensors_info[index].name_friendly);
 		else
 			sprintf(g_hassBuffer, "Un-nmaed Energy Meter Sensor");
 #endif
@@ -447,7 +425,7 @@ HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse) {
 
 
 /// @brief Initializes HomeAssistant power sensor device discovery storage.
-/// @param index Index corresponding to sensor_mqttNames.
+/// @param index Index corresponding to energy_sensors_info[].
 /// @return 
 HassDeviceInfo* hass_init_power_sensor_device_info(int index) {
 	HassDeviceInfo* info = 0;
@@ -459,19 +437,19 @@ HassDeviceInfo* hass_init_power_sensor_device_info(int index) {
 
 	info = hass_init_device_info(ENERGY_METER_SENSOR, index, NULL, NULL);
 
-	cJSON_AddStringToObject(info->root, "dev_cla", hass_power_sensors_info[index].dev_class);   //device_class=voltage,current,power, energy, timestamp
-	cJSON_AddStringToObject(info->root, "unit_of_meas", hass_power_sensors_info[index].units);   //unit_of_measurement. Sets as empty string if not present. HA doesn't seem to mind
+	cJSON_AddStringToObject(info->root, "dev_cla", energy_sensors_info[index].hass_dev_class);   //device_class=voltage,current,power, energy, timestamp
+	cJSON_AddStringToObject(info->root, "unit_of_meas", energy_sensors_info[index].units);   //unit_of_measurement. Sets as empty string if not present. HA doesn't seem to mind
 
-	sprintf(g_hassBuffer, "~/%s/get", index < OBK_NUM_MEASUREMENTS ? sensor_mqttNames[index] : counter_mqttNames[index - OBK_CONSUMPTION_TOTAL]);
+	sprintf(g_hassBuffer, "~/%s/get", energy_sensors_info[index].name_mqtt);
 	cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 
-	if (hass_power_sensors_info[index].dev_class == HASS_DEV_CLASS_ENERGY) {
+	if (!strcmp(energy_sensors_info[index].hass_dev_class, "energy")) {
 		//state_class can be measurement, total or total_increasing. Energy values should be total_increasing.
 		cJSON_AddStringToObject(info->root, "stat_cla", "total_increasing");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH) ? "kWh" : "Wh");
 	} else {
 		cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
-		cJSON_AddStringToObject(info->root, "unit_of_meas", hass_power_sensors_info[index].units);
+		cJSON_AddStringToObject(info->root, "unit_of_meas", energy_sensors_info[index].units);
 	}
 	return info;
 }

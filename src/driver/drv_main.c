@@ -13,20 +13,6 @@
 #include "drv_tuyaMCU.h"
 #include "drv_uart.h"
 
-const char* sensor_mqttNames[OBK_NUM_MEASUREMENTS] = {
-	"voltage",
-	"current",
-	"power"
-};
-
-const char* counter_mqttNames[OBK_NUM_COUNTERS] = {
-	"energycounter",
-	"energycounter_last_hour",
-	"consumption_stats",
-	"energycounter_yesterday",
-	"energycounter_today",
-	"energycounter_clear_date",
-};
 
 
 typedef struct driver_s {

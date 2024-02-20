@@ -23,9 +23,13 @@ enum {
 #define OBK_NUM_COUNTERS            (OBK_NUM_EMUNS_MAX-OBK_NUM_MEASUREMENTS)
 #define OBK_NUM_SENSOR_COUNT         OBK_NUM_EMUNS_MAX
 
-// MQTT names of sensors (voltage, current, power)
-extern const char* sensor_mqttNames[];
-extern const char* counter_mqttNames[];
+struct energy_sensor_info {	
+	const char* hass_dev_class;
+	const char* units;
+	const char* name_friendly;
+	const char* name_mqtt;				
+} extern const energy_sensors_info[OBK_NUM_EMUNS_MAX];
+
 extern int g_dhtsCount;
 
 void DRV_Generic_Init();
