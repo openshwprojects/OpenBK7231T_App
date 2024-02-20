@@ -59,6 +59,7 @@ OpenBeken features:
 - Advanced deep sleep with GPIO/timer wakeup and [hybrid power save systems](https://youtu.be/eupL16eB7BA), fully scriptable, can be configured to last longer than Tuya
 - Supports automatic GPIO setup with [Tuya GPIO extraction](https://www.youtube.com/watch?v=WunlqIMAdgw), [cloudcutter templates](https://www.elektroda.com/rtvforum/topic3973669.html), can also import/export [OpenBeken templates](https://openbekeniot.github.io/webapp/devicesList.html), you can also use [GPIODoctor to find out quickly GPIO roles](https://www.elektroda.com/rtvforum/topic3976371.html)
 - Advanced and custom drivers like [synchronized PWM groups with configurable dead time](https://www.elektroda.com/rtvforum/topic4025665.html)
+- WS2812B support, see [scripting tutorial](https://www.elektroda.com/rtvforum/topic4036716.html)
 - and much more
 
 There is also a bit more outdated [WIKI](https://github.com/openshwprojects/OpenBK7231T_App/wiki/Wiki-Home)

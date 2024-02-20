@@ -1952,15 +1952,11 @@ void TuyaMCU_RunWiFiUpdateAndPackets() {
 		//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"Wifi_State timer");
 	}
 }
-void TuyaMCU_RunReceive() {
-	byte data[128];
+void TuyaMCU_PrintPacket(byte *data, int len) {
+	int i;
 	char buffer_for_log[256];
 	char buffer2[4];
-	int len, i;
-	while (1)
-	{
-		len = UART_TryToGetNextTuyaPacket(data, sizeof(data));
-		if (len > 0) {
+	
 			buffer_for_log[0] = 0;
 			for (i = 0; i < len; i++) {
 				snprintf(buffer2, sizeof(buffer2), "%02X ", data[i]);
@@ -1979,6 +1975,15 @@ void TuyaMCU_RunReceive() {
 			// when an UART string is received...
 			EventHandlers_FireEvent_String(CMD_EVENT_ON_UART, buffer_for_log);
 #endif
+}
+void TuyaMCU_RunReceive() {
+	byte data[192];
+	int len;
+	while (1)
+	{
+		len = UART_TryToGetNextTuyaPacket(data, sizeof(data));
+		if (len > 0) {
+			TuyaMCU_PrintPacket(data,len);
 			TuyaMCU_ProcessIncoming(data, len);
 		}
 		else {

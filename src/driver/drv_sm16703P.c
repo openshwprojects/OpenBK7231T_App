@@ -125,6 +125,8 @@ void SM16703P_setPixel(int pixel, int r, int g, int b) {
 	translate_byte(b, spi_msg->send_buf + (pixel_offset + 8 + (pixel * 3 * 4)));
 }
 
+// SM16703P_SetRaw bUpdate byteOfs HexData
+// SM16703P_SetRaw 1 0 FF000000FF000000FF
 commandResult_t SM16703P_CMD_setRaw(const void *context, const char *cmd, const char *args, int flags) {
 	int ofs, bPush;
 	Tokenizer_TokenizeString(args, 0);
@@ -184,11 +186,7 @@ commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, cons
 	return CMD_RES_OK;
 }
 
-static void SM16703P_Send(byte *data, int dataSize) {
-	// ToDo
-}
-
-commandResult_t SM16703P_Start(const void *context, const char *cmd, const char *args, int flags) {
+commandResult_t SM16703P_InitForLEDCount(const void *context, const char *cmd, const char *args, int flags) {
 
 	Tokenizer_TokenizeString(args, 0);
 
@@ -275,22 +273,25 @@ void SM16703P_Init() {
 	param = PWD_SPI_CLK_BIT;
 	sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_UP, &param);
 
-	//cmddetail:{"name":"SM16703P_Init","args":"SM16703P_Start",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"SM16703P_Init","args":"[NumberOfLEDs]",
+	//cmddetail:"descr":"This will setup LED driver for a strip with given number of LEDs. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_sm16703P.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("SM16703P_Init", SM16703P_Start, NULL);
-	//cmddetail:{"name":"SM16703P_Start","args":"SM16703P_StartTX",
-	//cmddetail:"descr":"",
+	CMD_RegisterCommand("SM16703P_Init", SM16703P_InitForLEDCount, NULL);
+	//cmddetail:{"name":"SM16703P_Start","args":"",
+	//cmddetail:"descr":"This will send the currently set data to the strip. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_sm16703P.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SM16703P_Start", SM16703P_StartTX, NULL);
-	//cmddetail:{"name":"SM16703P_SetPixel","args":"SM16703P_CMD_setPixel",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"SM16703P_SetPixel","args":"[index/all] [R] [G] [B]",
+	//cmddetail:"descr":"Sets a pixel for LED strip. Index can be a number or 'all' keyword to set all. Then, 3 integer values for R, G and B. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_sm16703P.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SM16703P_SetPixel", SM16703P_CMD_setPixel, NULL);
-
+	//cmddetail:{"name":"SM16703P_SetRaw","args":"[bUpdate] [byteOfs] [HexData]",
+	//cmddetail:"descr":"Sets the raw data bytes for SPI DMA LED driver at the given offset. Hex data should be as a hex string, for example, FF00AA, etc. The bUpdate, if set to 1, will run SM16703P_Start automatically after setting data. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_sm16703P.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SM16703P_SetRaw", SM16703P_CMD_setRaw, NULL);
 
 }

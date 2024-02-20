@@ -51,3 +51,4 @@ Do not add anything here, as it will overwritten with next rebuild.
 | 43 | [TuyaMCU] Use queue |
 | 44 | [HTTP] Disable authentication in safe mode (not recommended) |
 | 45 | [MQTT Discovery] Don't merge toggles and dimmers into lights |
+| 46 | [TuyaMCU] Store raw data |
