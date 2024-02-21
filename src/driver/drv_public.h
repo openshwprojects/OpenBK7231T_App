@@ -7,6 +7,9 @@ enum {
 	OBK_VOLTAGE, // must match order in cmd_public.h
 	OBK_CURRENT,
 	OBK_POWER,
+	OBK_POWER_APPARENT,
+	OBK_POWER_REACTIVE,
+	OBK_POWER_FACTOR,
 	OBK_NUM_MEASUREMENTS,
 };
 
@@ -17,7 +20,7 @@ enum {
 	OBK_CONSUMPTION_YESTERDAY,
 	OBK_CONSUMPTION_TODAY,
 	OBK_CONSUMPTION_CLEAR_DATE,
-	OBK_NUM_EMUNS_MAX
+	OBK_NUM_ENUMS_MAX
 };
 
 #define OBK_NUM_COUNTERS            (OBK_NUM_EMUNS_MAX-OBK_NUM_MEASUREMENTS)
@@ -27,8 +30,9 @@ struct energy_sensor_info {
 	const char* hass_dev_class;
 	const char* units;
 	const char* name_friendly;
-	const char* name_mqtt;				
-} extern const energy_sensors_info[OBK_NUM_EMUNS_MAX];
+	const char* name_mqtt;
+	byte rounding_precision;				
+} extern energy_sensors[OBK_NUM_ENUMS_MAX];
 
 extern int g_dhtsCount;
 

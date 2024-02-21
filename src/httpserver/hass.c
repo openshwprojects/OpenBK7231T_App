@@ -26,8 +26,6 @@ const char *g_template_lowMidHigh = "{% if value == '0' %}\n"
 			"	Unknown\n"
 			"{% endif %}";
 
-
-
 /// @brief Populates HomeAssistant unique id for the entity.
 /// @param type Entity type
 /// @param index Entity index (Ignored for RGB)
@@ -53,6 +51,10 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 		break;
 
 	case ENERGY_METER_SENSOR:
+#ifndef OBK_DISABLE_ALL_DRIVERS
+		sprintf(uniq_id, "%s_%s", longDeviceName, energy_sensors[index].name_mqtt);
+#endif
+		break;
 	case POWER_SENSOR:
 	case ENERGY_SENSOR:
 	case TIMESTAMP_SENSOR:
@@ -184,7 +186,7 @@ cJSON* hass_build_device_node(cJSON* ids) {
 /// @brief Initializes HomeAssistant device discovery storage with common values.
 /// @param type 
 /// @param index This is used to generate generate unique_id and name. 
-/// It is ignored for RGB. For power sensors, index corresponds to energy_sensors_info. For regular sensor, index can be be the channel.
+/// It is ignored for RGB. For power sensors, index corresponds to energy_sensors. For regular sensor, index can be be the channel.
 /// @param payload_on The payload that represents enabled state. This is not added for POWER_SENSOR.
 /// @param payload_off The payload that represents disabled state. This is not added for POWER_SENSOR.
 /// @return 
@@ -223,8 +225,8 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 	case ENERGY_METER_SENSOR:
 		isSensor = true;
 #ifndef OBK_DISABLE_ALL_DRIVERS
-		if (index < OBK_NUM_EMUNS_MAX)
-			sprintf(g_hassBuffer, "%s", energy_sensors_info[index].name_friendly);
+		if (index < OBK_NUM_ENUMS_MAX)
+			sprintf(g_hassBuffer, "%s", energy_sensors[index].name_friendly);
 		else
 			sprintf(g_hassBuffer, "Un-nmaed Energy Meter Sensor");
 #endif
@@ -274,9 +276,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 		break;
 	case ENERGY_SENSOR:
 		isSensor = true;
-#ifndef OBK_DISABLE_ALL_DRIVERS		
 		sprintf(g_hassBuffer, "Energy");
-#endif
 		break;
 	case TIMESTAMP_SENSOR:
 		sprintf(g_hassBuffer, "Timestamp");
@@ -422,34 +422,35 @@ HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse) {
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
 
-
-
 /// @brief Initializes HomeAssistant power sensor device discovery storage.
-/// @param index Index corresponding to energy_sensors_info[].
+/// @param index Index corresponding to energy_sensors[].
 /// @return 
 HassDeviceInfo* hass_init_power_sensor_device_info(int index) {
 	HassDeviceInfo* info = 0;
 
 	//https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes
 	//device_class automatically assigns unit,icon
-	if (index >= OBK_NUM_EMUNS_MAX) return info;
+	if (index >= OBK_NUM_ENUMS_MAX) return info;
 	if (index >= OBK_CONSUMPTION_YESTERDAY && !DRV_IsRunning("NTP")) return info; //include daily stats only when time is valid
 
 	info = hass_init_device_info(ENERGY_METER_SENSOR, index, NULL, NULL);
 
-	cJSON_AddStringToObject(info->root, "dev_cla", energy_sensors_info[index].hass_dev_class);   //device_class=voltage,current,power, energy, timestamp
-	cJSON_AddStringToObject(info->root, "unit_of_meas", energy_sensors_info[index].units);   //unit_of_measurement. Sets as empty string if not present. HA doesn't seem to mind
+	cJSON_AddStringToObject(info->root, "dev_cla", energy_sensors[index].hass_dev_class);   //device_class=voltage,current,power, energy, timestamp
+	cJSON_AddStringToObject(info->root, "unit_of_meas", energy_sensors[index].units);   //unit_of_measurement. Sets as empty string if not present. HA doesn't seem to mind
 
-	sprintf(g_hassBuffer, "~/%s/get", energy_sensors_info[index].name_mqtt);
+	sprintf(g_hassBuffer, "~/%s/get", energy_sensors[index].name_mqtt);
 	cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 
-	if (!strcmp(energy_sensors_info[index].hass_dev_class, "energy")) {
+	if (!strcmp(energy_sensors[index].hass_dev_class, "energy")) {
 		//state_class can be measurement, total or total_increasing. Energy values should be total_increasing.
 		cJSON_AddStringToObject(info->root, "stat_cla", "total_increasing");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH) ? "kWh" : "Wh");
 	} else {
 		cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
-		cJSON_AddStringToObject(info->root, "unit_of_meas", energy_sensors_info[index].units);
+		cJSON_AddStringToObject(info->root, "unit_of_meas", energy_sensors[index].units);
+	}
+	if (index == OBK_CONSUMPTION_STATS) { //hide this as its not working anyway at present
+		cJSON_AddStringToObject(info->root, "enabled_by_default ", "false");
 	}
 	return info;
 }
@@ -636,6 +637,7 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 		cJSON_AddStringToObject(info->root, "dev_cla", "signal_strength");
 		cJSON_AddStringToObject(info->root, "stat_t", "~/rssi");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "dBm");
+		cJSON_AddStringToObject(info->root, "entity_category", "diagnostic");
 		//cJSON_AddStringToObject(info->root, "icon_template", "mdi:access-point");
 
 		break;
