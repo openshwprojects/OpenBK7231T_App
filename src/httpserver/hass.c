@@ -52,7 +52,8 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 
 	case ENERGY_METER_SENSOR:
 #ifndef OBK_DISABLE_ALL_DRIVERS
-		sprintf(uniq_id, "%s_%s", longDeviceName, energy_sensors[index].name_mqtt);
+		sprintf(uniq_id, "%s_%02d", longDeviceName, index); //TODO number ordering changed with power sensor additions...
+		//sprintf(uniq_id, "%s_%s", longDeviceName, energy_sensors[index].name_mqtt); //length must be kept short otherwise too high chance of exceeding MQTT_PUBLISH_ITEM_CHANNEL_LENGTH
 #endif
 		break;
 	case POWER_SENSOR:

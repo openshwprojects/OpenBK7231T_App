@@ -31,7 +31,7 @@ struct energy_sensor_info {
 	const char* units;
 	const char* name_friendly;
 	const char* name_mqtt;
-	byte rounding_precision;				
+	byte rounding_precision;
 } extern energy_sensors[OBK_NUM_ENUMS_MAX];
 
 extern int g_dhtsCount;
