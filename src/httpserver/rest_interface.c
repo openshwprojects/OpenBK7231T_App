@@ -829,12 +829,14 @@ static int http_rest_post_logconfig(http_request_t* request) {
 
 static int http_rest_get_info(http_request_t* request) {
 	char macstr[3 * 6 + 1];
+	long int* pAllGenericFlags = (long int*)&g_cfg.genericFlags;
+
 	http_setup(request, httpMimeTypeJson);
 	hprintf255(request, "{\"uptime_s\":%d,", g_secondsElapsed);
 	hprintf255(request, "\"build\":\"%s\",", g_build_str);
 	hprintf255(request, "\"ip\":\"%s\",", HAL_GetMyIPString());
 	hprintf255(request, "\"mac\":\"%s\",", HAL_GetMACStr(macstr));
-	hprintf255(request, "\"flags\":\"%ld\",", *((long int*)&g_cfg.genericFlags));
+	hprintf255(request, "\"flags\":\"%ld\",", *pAllGenericFlags);
 	hprintf255(request, "\"mqtthost\":\"%s:%d\",", CFG_GetMQTTHost(), CFG_GetMQTTPort());
 	hprintf255(request, "\"mqtttopic\":\"%s\",", CFG_GetMQTTClientId());
 	hprintf255(request, "\"chipset\":\"%s\",", PLATFORM_MCU_NAME);
