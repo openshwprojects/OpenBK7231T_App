@@ -281,10 +281,12 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 #endif
 		break;
 	case TIMESTAMP_SENSOR:
+#ifndef OBK_DISABLE_ALL_DRIVERS
 		if (index == OBK_CONSUMPTION_CLEAR_DATE)
 			sprintf(g_hassBuffer, "%s", sensor_hassNames[index]);
 		else
 			sprintf(g_hassBuffer, "Timestamp");
+#endif
 		break;
 	default:
 		sprintf(g_hassBuffer, "%s", CHANNEL_GetLabel(index));
