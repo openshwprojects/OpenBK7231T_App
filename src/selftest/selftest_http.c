@@ -660,14 +660,168 @@ StatusSTS sample from Tasmota RGBCW (5 PWMs set):
 	  }
    }
 */
+
+#define MAX_SEARCH_PARMS 32
+typedef struct  {
+	const char *name;
+	const char *value;
+} SearchParm;
+typedef struct {
+	const char *tag;
+	SearchParm parms[MAX_SEARCH_PARMS];
+} SearchCriteria;
+
+int startsWith(const char *str, const char *prefix) {
+	return strncmp(str, prefix, strlen(prefix)) == 0;
+}
+
+int isWhitespace(char c) {
+	return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+}
+const char* searchElement(const char *html, const SearchCriteria *criteria) {
+	const char *ptr = html;
+
+	while ((ptr = strstr(ptr, "<")) != NULL) {
+		const char *elem = ptr;
+		// find closing '>'
+		const char *closing = strchr(ptr, '>');
+		// skip '<'
+		ptr++;
+		if (isWhitespace(*ptr)) {
+			continue;
+		}
+		if (startsWith(ptr, criteria->tag)) {
+			bool bOk = true;
+			for (int i = 0; bOk && (i < MAX_SEARCH_PARMS); i++) {
+				const char *key = criteria->parms[i].name;
+				const char *val = criteria->parms[i].value;
+				if (key == 0)
+					continue;
+				char fullStr[64];
+				sprintf(fullStr, "%s=\"", key);
+				char *realVal = strstr(ptr, fullStr);
+				if (realVal == 0 || realVal > closing) {
+					bOk = false;
+					break;
+				}
+				int skip = strlen(fullStr);
+				realVal += skip;
+				if (strncmp(realVal, val,strlen(val))) {
+					bOk = false;
+					break;
+				}
+				if (realVal[strlen(val)] != '"') {
+					bOk = false;
+					break;
+				}
+			}
+			if (bOk) {
+				return elem;
+			}
+		}
+		ptr++;
+	}
+
+	return NULL; // Element not found
+}
+
+bool SIM_HasHTTPTemperature() {
+	SearchCriteria s;
+	memset(&s, 0, sizeof(s));
+	s.tag = "input";
+	s.parms[0].name = "type";
+	s.parms[0].value = "range";
+	s.parms[1].name = "onchange";
+	s.parms[1].value = "submitTemperature(this);";
+
+	const char *has = searchElement(replyAt, &s);
+	if (has)
+		return true;
+	return false;
+}
+bool SIM_HasHTTPRGB() {
+	SearchCriteria s;
+	memset(&s, 0, sizeof(s));
+	s.tag = "input";
+	s.parms[0].name = "type";
+	s.parms[0].value = "color";
+	s.parms[1].name = "oninput";
+	s.parms[1].value = "this.form.submit()";
+	s.parms[2].name = "name";
+	s.parms[2].value = "rgb";
+
+	const char *has = searchElement(replyAt, &s);
+	if (has)
+		return true;
+	return false;
+}
+bool SIM_HasHTTP_LED_Toggler(bool bIsNowOn) {
+	SearchCriteria s;
+	memset(&s, 0, sizeof(s));
+	s.tag = "input";
+	s.parms[0].name = "class";
+	if (bIsNowOn) {
+		s.parms[0].value = "bgrn";
+	}
+	else {
+		s.parms[0].value = "bred";
+	}
+	s.parms[1].name = "type";
+	s.parms[1].value = "submit";
+	s.parms[2].name = "value";
+	s.parms[2].value = "Toggle Light";
+
+	const char *has = searchElement(replyAt, &s);
+	if (has)
+		return true;
+	return false;
+}
+bool SIM_HasHTTP_Active_RGB() {
+	const char *has = strstr(replyAt, "LED RGB Color [ACTIVE]");
+	if (has)
+		return true;
+	return false;
+}
+
+bool SIM_HasHTTPDimmer() {
+	SearchCriteria s;
+	memset(&s, 0, sizeof(s));
+	s.tag = "input";
+	s.parms[0].name = "type";
+	s.parms[0].value = "range";
+	s.parms[1].name = "min";
+	s.parms[1].value = "0";
+	s.parms[2].name = "max";
+	s.parms[2].value = "100";
+	s.parms[3].name = "name";
+	s.parms[3].value = "dim";
+
+	const char *has = searchElement(replyAt, &s);
+	if (has)
+		return true;
+	return false;
+}
+
+
+
 void Test_Http_LED_SingleChannel() {
 
 	SIM_ClearOBK(0);
+	// Setup single PWM Device
 	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
 	PIN_SetPinChannelForPinIndex(24, 1);
 
 	CMD_ExecuteCommand("led_enableAll 1", 0);
 	CMD_ExecuteCommand("led_dimmer 100", 0);
+
+	// HTML page must contains dimmer, but no RGB and no temeprature controls
+	Test_FakeHTTPClientPacket_GET("index");
+	SELFTEST_ASSERT_HTTP_HAS_LED_DIMMER(true);
+	SELFTEST_ASSERT_HTTP_HAS_LED_TEMPERATURE(false);
+	SELFTEST_ASSERT_HTTP_HAS_LED_RGB(false);
+	// the green button is on the page
+	SELFTEST_ASSERT_HTTP_HAS_BUTTON_LEDS_ON(true);
+	SELFTEST_ASSERT_HTTP_HAS_BUTTON_LEDS_OFF(false);
 	
 	// StatusSTS contains POWER and Dimmer
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
@@ -679,6 +833,17 @@ void Test_Http_LED_SingleChannel() {
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
 	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "OFF");
+
+
+	// HTML page must contains dimmer, but no RGB and no temeprature controls
+	Test_FakeHTTPClientPacket_GET("index");
+	SELFTEST_ASSERT_HTTP_HAS_LED_DIMMER(true);
+	SELFTEST_ASSERT_HTTP_HAS_LED_TEMPERATURE(false);
+	SELFTEST_ASSERT_HTTP_HAS_LED_RGB(false);
+	// the red button is on the page
+	SELFTEST_ASSERT_HTTP_HAS_BUTTON_LEDS_ON(false);
+	SELFTEST_ASSERT_HTTP_HAS_BUTTON_LEDS_OFF(true);
+
 
 	CMD_ExecuteCommand("led_dimmer 61", 0);
 	// StatusSTS contains POWER and Dimmer
@@ -711,6 +876,18 @@ void Test_Http_LED_CW() {
 
 	SELFTEST_ASSERT_CHANNEL(1, 100);
 	SELFTEST_ASSERT_CHANNEL(2, 0);
+
+
+	// HTML page must contains dimmer and temperature control
+	Test_FakeHTTPClientPacket_GET("index");
+	SELFTEST_ASSERT_HTTP_HAS_LED_DIMMER(true);
+	SELFTEST_ASSERT_HTTP_HAS_LED_TEMPERATURE(true);
+	SELFTEST_ASSERT_HTTP_HAS_LED_RGB(false);
+	// the green button is on the page
+	SELFTEST_ASSERT_HTTP_HAS_BUTTON_LEDS_ON(true);
+	SELFTEST_ASSERT_HTTP_HAS_BUTTON_LEDS_OFF(false);
+
+
 
 	// StatusSTS contains POWER and Dimmer
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");

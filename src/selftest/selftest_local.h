@@ -31,6 +31,12 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 #define SELFTEST_ASSERT_JSON_VALUE_STRING_NESTED2(par1, par2, varName, res) SELFTEST_ASSERT((!strcmp(Test_GetJSONValue_String_Nested2(par1, par2,varName),res)));
 #define SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(index, key, valInt) SELFTEST_ASSERT((Test_GetJSONValue_IntFromArray(index,key)==valInt));
 #define SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_STR(index, key, valInt) SELFTEST_ASSERT((!strcmp(Test_GetJSONValue_StrFromArray(index,key),valInt)));
+#define SELFTEST_ASSERT_HTTP_HAS_LED_DIMMER(bHas) SELFTEST_ASSERT((bHas) == SIM_HasHTTPDimmer());
+#define SELFTEST_ASSERT_HTTP_HAS_LED_TEMPERATURE(bHas) SELFTEST_ASSERT((bHas) == SIM_HasHTTPTemperature());
+#define SELFTEST_ASSERT_HTTP_HAS_LED_RGB(bHas) SELFTEST_ASSERT((bHas) == SIM_HasHTTPRGB());
+#define SELFTEST_ASSERT_HTTP_HAS_BUTTON_LEDS_ON(bHas) SELFTEST_ASSERT((bHas) == SIM_HasHTTP_LED_Toggler(true));
+#define SELFTEST_ASSERT_HTTP_HAS_BUTTON_LEDS_OFF(bHas) SELFTEST_ASSERT((bHas) == SIM_HasHTTP_LED_Toggler(false));
+
 
 #define SELFTEST_ASSERT_STRING(current,expected) SELFTEST_ASSERT((strcmp(expected,current) == 0));
 #define SELFTEST_ASSERT_INTEGER(current,expected) SELFTEST_ASSERT((expected==current));
