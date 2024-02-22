@@ -17,9 +17,6 @@
 
 #include "drv_sm2235.h"
 
-#include "../ota/ota.h"
-
-
 static softI2C_t g_softI2C;
 
 void SM2235_Write(float *rgbcw) {
