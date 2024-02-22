@@ -15,26 +15,36 @@
 #include <math.h>
 #include <time.h>
 
-#define DAILY_STATS_LENGTH 4
 
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
 
 // Order corrsponds to enums OBK_VOLTAGE - OBK_NUM_ENUMS_MAX
 // note that Wh/kWh units are overridden in hass_init_power_sensor_device_info()
-struct energy_sensor_info energy_sensors[OBK_NUM_ENUMS_MAX] = { 
-	{.hass_dev_class = "voltage",		.units = "V",	.name_friendly = "Voltage",				.name_mqtt = "voltage",					.rounding_precision = 1},	// OBK_VOLTAGE
-	{.hass_dev_class = "current",		.units = "A",	.name_friendly = "Current",				.name_mqtt = "current",					.rounding_precision = 3},	// OBK_CURRENT
-	{.hass_dev_class = "power",			.units = "W",	.name_friendly = "Power",				.name_mqtt = "power",					.rounding_precision = 2},	// OBK_POWER
-	{.hass_dev_class = "apparent_power",.units = "VA",	.name_friendly = "Apparent Power",		.name_mqtt = "power_apparent",			.rounding_precision = 2},	// OBK_POWER_APPARENT
-	{.hass_dev_class = "reactive_power",.units = "var",	.name_friendly = "Reactive Power",		.name_mqtt = "power_reactive",			.rounding_precision = 2},	// OBK_POWER_REACTIVE
-	{.hass_dev_class = "power_factor",	.units = "",	.name_friendly = "Power Factor",		.name_mqtt = "power_factor",			.rounding_precision = 2},	// OBK_POWER_FACTOR
-	{.hass_dev_class = "energy",		.units = "Wh",	.name_friendly = "Energy Total",		.name_mqtt = "energycounter",			.rounding_precision = 3},	// OBK_CONSUMPTION_TOTAL
-	{.hass_dev_class = "energy",		.units = "Wh",	.name_friendly = "Energy Last Hour",	.name_mqtt = "energycounter_last_hour",	.rounding_precision = 3},	// OBK_CONSUMPTION_LAST_HOUR
-	{.hass_dev_class = "",				.units = "",	.name_friendly = "Consumption Stats",	.name_mqtt = "consumption_stats",		.rounding_precision = 0},	// OBK_CONSUMPTION_STATS
-	{.hass_dev_class = "energy",		.units = "Wh",	.name_friendly = "Energy Yesterday",	.name_mqtt = "energycounter_yesterday",	.rounding_precision = 3},	// OBK_CONSUMPTION_YESTERDAY
-	{.hass_dev_class = "energy",		.units = "Wh",	.name_friendly = "Energy Today",		.name_mqtt = "energycounter_today",		.rounding_precision = 3},	// OBK_CONSUMPTION_TODAY
-	{.hass_dev_class = "timestamp",		.units = "",	.name_friendly = "Energy Clear Date",	.name_mqtt = "energycounter_clear_date",.rounding_precision = 0},	// OBK_CONSUMPTION_CLEAR_DATE	
+
+struct {
+	energy_sensor_names names;
+	byte rounding_decimals;
+	float changeSendThreshold;
+	//float lastReading;
+	//float lastSentValue;
+	//int noChangeFrame; // how much update frames has passed without sending MQTT update of read values?
+} energy_sensors[OBK_NUM_ENUMS_MAX] = { 
+	//.hass_dev_class, 	.units,	.name_friendly,			.name_mqtt,		 .hass_id_compatibility, .rounding_decimals, .changeSendThreshold		
+	{{"voltage",		"V",	"Voltage",				"voltage",					"0",		},  1,			0.25,		},	// OBK_VOLTAGE
+	{{"current",		"A",	"Current",				"current",					"1",		},	3,			0.002,		},	// OBK_CURRENT
+	{{"power",			"W",	"Power",				"power",					"2",		},	2,			0.25,		},	// OBK_POWER
+	{{"apparent_power",	"VA",	"Apparent Power",		"power_apparent",			"9",		},	2,			0.25,		},	// OBK_POWER_APPARENT
+	{{"reactive_power",	"var",	"Reactive Power",		"power_reactive",			"10",		},	2,			0.25,		},	// OBK_POWER_REACTIVE
+	{{"power_factor",	"",		"Power Factor",			"power_factor",				"11",		},	2,			0.05,		},	// OBK_POWER_FACTOR
+	{{"energy",			"Wh",	"Energy Total",			"energycounter",			"3",		},	3,			0.1,		},	// OBK_CONSUMPTION_TOTAL
+	{{"energy",			"Wh",	"Energy Last Hour",		"energycounter_last_hour",	"4",		},	3,			0.1,		},	// OBK_CONSUMPTION_LAST_HOUR
+	//{{"",				"",		"Consumption Stats",	"consumption_stats",		"5",		},	0,			0,			},	// OBK_CONSUMPTION_STATS
+	{{"energy",			"Wh",	"Energy Today",			"energycounter_today",		"7",		},	3,			0.1,		},	// OBK_CONSUMPTION_TODAY
+	{{"energy",			"Wh",	"Energy Yesterday",		"energycounter_yesterday",	"6",		},	3,			0.1,		},	// OBK_CONSUMPTION_YESTERDAY
+	{{"energy",			"Wh",	"Energy 2 Days Ago",	"energycounter_2_days_ago",	"12",		},	3,			0.1,		},	// OBK_CONSUMPTION_2_DAYS_AGO
+	{{"energy",			"Wh",	"Energy 3 Days Ago",	"energycounter_3_days_ago",	"13",		},	3,			0.1,		},	// OBK_CONSUMPTION_3_DAYS_AGO
+	{{"timestamp",		"",		"Energy Clear Date",	"energycounter_clear_date",	"8",		},	0,			1,			},	// OBK_CONSUMPTION_CLEAR_DATE	
 }; 
 //TODO..... rounding precision
 // Current values
@@ -70,6 +80,14 @@ int noChangeFrameEnergyCounter;
 double lastSentEnergyCounterValue = 0.0; 
 float changeSendThresholdEnergy = 0.1f;
 float lastSentEnergyCounterLastHour = 0.0f;
+
+typedef enum DAILY_STATS {
+	DAILY_STATS_TODAY = 0,
+	DAILY_STATS_YESTERDAY,
+	DAILY_STATS_2_DAYS_AGO,
+	DAILY_STATS_3_DAYS_AGO,
+	DAILY_STATS_LENGTH
+};
 float dailyStats[DAILY_STATS_LENGTH];
 int actual_mday = -1;
 float lastSavedEnergyCounterValue = 0.0f;
@@ -122,25 +140,25 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 	for (int i = OBK_VOLTAGE; i < OBK_NUM_MEASUREMENTS; i++) {
 		poststr(request, "<tr><td><b>");
-		poststr(request, energy_sensors[i].name_friendly);
+		poststr(request, energy_sensors[i].names.name_friendly);
 		poststr(request, "</b></td><td style='text-align: right;'>");
-		hprintf255(request, "%.*f</td><td>%s</td>", energy_sensors[i].rounding_precision, lastReadings[i], energy_sensors[i].units);
+		hprintf255(request, "%.*f</td><td>%s</td>", energy_sensors[i].rounding_decimals, lastReadings[i], energy_sensors[i].names.units);
 	};
 
     if (NTP_IsTimeSynced()) {
         poststr(request, "<tr><td><b>Energy Today</b></td><td "
                          "style='text-align: right;'>");
-        hprintf255(request, "%.1f</td><td>Wh</td>", dailyStats[0]);
+        hprintf255(request, "%.1f</td><td>Wh</td>", dailyStats[DAILY_STATS_TODAY]);
 
         poststr(request, "<tr><td><b>Energy Yesterday</b></td><td "
                          "style='text-align: right;'>");
-        hprintf255(request, "%.1f</td><td>Wh</td>", dailyStats[1]);
+        hprintf255(request, "%.1f</td><td>Wh</td>", dailyStats[DAILY_STATS_YESTERDAY]);
     }
 
     poststr(request,
             "<tr><td><b>Energy Total</b></td><td style='text-align: right;'>");
 	// convert from Wh to kWh (thus / 1000.0f)
-    hprintf255(request, "%.3f</td><td>kWh</td>", ((float)(energyCounter / 1000.0f)));
+    hprintf255(request, "%.*f</td><td>kWh</td>", energy_sensors[OBK_CONSUMPTION_TOTAL].rounding_decimals, ((float)(energyCounter / 1000.0f)));
 
     poststr(request, "</table>");
 
@@ -152,7 +170,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
     {
         /********************************************************************************************************************/
         hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
-        hprintf255(request,"%1.1f Wh<br>", DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+        hprintf255(request,"%1.*f Wh<br>", energy_sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
         hprintf255(request,"Sampling interval: %d sec<br>History length: ",energyCounterSampleInterval);
         hprintf255(request,"%d samples<br>History per samples:<br>",energyCounterSampleCount);
         if (energyCounterMinutes != NULL)
@@ -179,8 +197,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
         if(NTP_IsTimeSynced() == true)
         {
-            hprintf255(request, "Today: %1.1f Wh DailyStats: [", dailyStats[0]);
-            for(i = 1; i < DAILY_STATS_LENGTH; i++)
+            hprintf255(request, "Today: %1.1f Wh DailyStats: [", dailyStats[DAILY_STATS_TODAY]);
+            for(i = DAILY_STATS_YESTERDAY; i < DAILY_STATS_LENGTH; i++)
             {
                 if (i==1)
                     hprintf255(request, "%1.1f", dailyStats[i]);
@@ -211,11 +229,11 @@ void BL09XX_SaveEmeteringStatistics()
     memset(&data, 0, sizeof(ENERGY_METERING_DATA));
 
     data.TotalConsumption = (float)energyCounter;
-    data.TodayConsumpion = dailyStats[0];
-    data.YesterdayConsumption = dailyStats[1];
+    data.TodayConsumpion = dailyStats[DAILY_STATS_TODAY];
+    data.YesterdayConsumption = dailyStats[DAILY_STATS_YESTERDAY];
     data.actual_mday = actual_mday;
-    data.ConsumptionHistory[0] = dailyStats[2];
-    data.ConsumptionHistory[1] = dailyStats[3];
+    data.ConsumptionHistory[0] = dailyStats[DAILY_STATS_2_DAYS_AGO];
+    data.ConsumptionHistory[1] = dailyStats[DAILY_STATS_3_DAYS_AGO];
     data.ConsumptionResetTime = ConsumptionResetTime;
     ConsumptionSaveCounter++;
     data.save_counter = ConsumptionSaveCounter;
@@ -244,7 +262,7 @@ commandResult_t BL09XX_ResetEnergyCounter(const void *context, const char *cmd, 
             energyCounterMinutesStamp = xTaskGetTickCount();
             energyCounterMinutesIndex = 0;
         }
-        for(i = 0; i < DAILY_STATS_LENGTH; i++)
+        for(i = DAILY_STATS_TODAY; i < DAILY_STATS_LENGTH; i++)
         {
             dailyStats[i] = 0.0;
         }
@@ -388,19 +406,19 @@ commandResult_t BL09XX_VCPPrecision(const void *context, const char *cmd, const 
 		int val = Tokenizer_GetArgInteger(i);
 			switch(i) {
 			case 0: // voltage
-				energy_sensors[OBK_VOLTAGE].rounding_precision = val;
+				energy_sensors[OBK_VOLTAGE].rounding_decimals = val;
 				break;
 			case 1: // current
-				energy_sensors[OBK_CURRENT].rounding_precision = val;
+				energy_sensors[OBK_CURRENT].rounding_decimals = val;
 				break;
 			case 2: // power
-				energy_sensors[OBK_POWER].rounding_precision = val;
-				energy_sensors[OBK_POWER_APPARENT].rounding_precision = val;
-				energy_sensors[OBK_POWER_REACTIVE].rounding_precision = val;
+				energy_sensors[OBK_POWER].rounding_decimals = val;
+				energy_sensors[OBK_POWER_APPARENT].rounding_decimals = val;
+				energy_sensors[OBK_POWER_REACTIVE].rounding_decimals = val;
 				break;
 			case 3: // energy
-				for (int j = OBK_CONSUMPTION_TOTAL; j <= OBK_CONSUMPTION_TODAY; j++) {
-					energy_sensors[j].rounding_precision = val;
+				for (int j = OBK_CONSUMPTION_TOTAL; j <= OBK_CONSUMPTION_3_DAYS_AGO; j++) {
+					energy_sensors[j].rounding_decimals = val;
 				};
 
 			};
@@ -562,10 +580,10 @@ void BL_ProcessUpdate(float voltage, float current, float power,
             for (i = DAILY_STATS_LENGTH - 1; i > 0; i--)
                 dailyStats[i] = dailyStats[i - 1];
 
-            dailyStats[0] = 0.0;
+            dailyStats[DAILY_STATS_TODAY] = 0.0;
             actual_mday = ltm->tm_mday;
-            MQTT_PublishMain_StringFloat(energy_sensors[OBK_CONSUMPTION_YESTERDAY].name_mqtt, BL_ChangeEnergyUnitIfNeeded(dailyStats[1]),
-										energy_sensors[OBK_CONSUMPTION_YESTERDAY].rounding_precision, 0);
+            MQTT_PublishMain_StringFloat(energy_sensors[OBK_CONSUMPTION_YESTERDAY].names.name_mqtt, BL_ChangeEnergyUnitIfNeeded(dailyStats[DAILY_STATS_YESTERDAY]),
+										energy_sensors[OBK_CONSUMPTION_YESTERDAY].rounding_decimals, 0);
             stat_updatesSent++;
 #if WINDOWS
 #elif PLATFORM_BL602
@@ -592,13 +610,13 @@ void BL_ProcessUpdate(float voltage, float current, float power,
                             ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
                             abs(NTP_GetTimesZoneOfsSeconds()/3600), (abs(NTP_GetTimesZoneOfsSeconds())/60) % 60);
                 }
-                MQTT_PublishMain_StringString(energy_sensors[OBK_CONSUMPTION_CLEAR_DATE].name_mqtt, datetime, 0);
+                MQTT_PublishMain_StringString(energy_sensors[OBK_CONSUMPTION_CLEAR_DATE].names.name_mqtt, datetime, 0);
                 stat_updatesSent++;
             }
         }
     }
 
-    dailyStats[0] += energy;
+    dailyStats[DAILY_STATS_TODAY] += energy;
 
     if (energyCounterStatsEnable == true)
     {
@@ -617,8 +635,8 @@ void BL_ProcessUpdate(float voltage, float current, float power,
                 cJSON_AddNumberToObject(root, "consumption_sampling_period", energyCounterSampleInterval);
                 if(NTP_IsTimeSynced() == true)
                 {
-                    cJSON_AddNumberToObject(root, "consumption_today", BL_ChangeEnergyUnitIfNeeded(dailyStats[0]));
-                    cJSON_AddNumberToObject(root, "consumption_yesterday", BL_ChangeEnergyUnitIfNeeded(dailyStats[1]));
+                    cJSON_AddNumberToObject(root, "consumption_today", BL_ChangeEnergyUnitIfNeeded(dailyStats[DAILY_STATS_TODAY]));
+                    cJSON_AddNumberToObject(root, "consumption_yesterday", BL_ChangeEnergyUnitIfNeeded(dailyStats[DAILY_STATS_YESTERDAY]));
                     ltm = gmtime(&ConsumptionResetTime);
                     if (NTP_GetTimesZoneOfsSeconds()>0)
                     {
@@ -650,7 +668,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
                 if(NTP_IsTimeSynced() == true)
                 {
                     stats = cJSON_CreateArray();
-                    for(i = 0; i < DAILY_STATS_LENGTH; i++)
+                    for(i = DAILY_STATS_TODAY; i < DAILY_STATS_LENGTH; i++)
                     {
                         cJSON_AddItemToArray(stats, cJSON_CreateNumber(dailyStats[i]));
                     }
@@ -662,7 +680,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
                // addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "JSON Printed: %d bytes", strlen(msg));
 
-                MQTT_PublishMain_StringString(energy_sensors[OBK_CONSUMPTION_STATS].name_mqtt, msg, 0);
+                MQTT_PublishMain_StringString("consumption_stats", msg, 0);
                 stat_updatesSent++;
                 os_free(msg);
             }
@@ -685,8 +703,8 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
             if (MQTT_IsReady() == true)
             {
-                MQTT_PublishMain_StringFloat(energy_sensors[OBK_CONSUMPTION_LAST_HOUR].name_mqtt,
-					BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR)), energy_sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_precision, 0);
+                MQTT_PublishMain_StringFloat(energy_sensors[OBK_CONSUMPTION_LAST_HOUR].names.name_mqtt,
+					BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR)), energy_sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, 0);
                 EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR, lastSentEnergyCounterLastHour, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
                 lastSentEnergyCounterLastHour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
                 stat_updatesSent++;
@@ -723,7 +741,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
             if (MQTT_IsReady() == true)
             {
                 lastSentValues[i] = lastReadings[i];
-                MQTT_PublishMain_StringFloat(energy_sensors[i].name_mqtt, lastReadings[i], energy_sensors[i].rounding_precision, 0);
+                MQTT_PublishMain_StringFloat(energy_sensors[i].names.name_mqtt, lastReadings[i], energy_sensors[i].rounding_decimals, 0);
                 stat_updatesSent++;
             }
         } else {
@@ -746,28 +764,28 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     {
         if (MQTT_IsReady() == true)
         {
-            MQTT_PublishMain_StringFloat(energy_sensors[OBK_CONSUMPTION_TOTAL].name_mqtt,
-				BL_ChangeEnergyUnitIfNeeded(energyCounter), energy_sensors[OBK_CONSUMPTION_TOTAL].rounding_precision, 0);
+            MQTT_PublishMain_StringFloat(energy_sensors[OBK_CONSUMPTION_TOTAL].names.name_mqtt,
+				BL_ChangeEnergyUnitIfNeeded(energyCounter), energy_sensors[OBK_CONSUMPTION_TOTAL].rounding_decimals, 0);
 
             EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CONSUMPTION_TOTAL, lastSentEnergyCounterValue, energyCounter);
             lastSentEnergyCounterValue = energyCounter;
             noChangeFrameEnergyCounter = 0;
             stat_updatesSent++;
 
-            MQTT_PublishMain_StringFloat(energy_sensors[OBK_CONSUMPTION_LAST_HOUR].name_mqtt, 
-				BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR)), energy_sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_precision, 0);
+            MQTT_PublishMain_StringFloat(energy_sensors[OBK_CONSUMPTION_LAST_HOUR].names.name_mqtt, 
+				BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR)), energy_sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, 0);
 
             EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR, lastSentEnergyCounterLastHour, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
             lastSentEnergyCounterLastHour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
             stat_updatesSent++;
             if(NTP_IsTimeSynced() == true)
             {
-                MQTT_PublishMain_StringFloat(energy_sensors[OBK_CONSUMPTION_YESTERDAY].name_mqtt, 
-					BL_ChangeEnergyUnitIfNeeded(dailyStats[1]), energy_sensors[OBK_CONSUMPTION_YESTERDAY].rounding_precision,0);
-                stat_updatesSent++;
-                MQTT_PublishMain_StringFloat(energy_sensors[OBK_CONSUMPTION_TODAY].name_mqtt, 
-					BL_ChangeEnergyUnitIfNeeded(dailyStats[0]), energy_sensors[OBK_CONSUMPTION_TODAY].rounding_precision,0);
-                stat_updatesSent++;
+                for (int i = OBK_CONSUMPTION_TODAY; i < OBK_CONSUMPTION_3_DAYS_AGO; i++) {
+					MQTT_PublishMain_StringFloat(energy_sensors[i].names.name_mqtt, 
+						BL_ChangeEnergyUnitIfNeeded(dailyStats[i - OBK_CONSUMPTION_TODAY]), energy_sensors[i].rounding_decimals,0);
+					stat_updatesSent++;
+				}
+
                 ltm = gmtime(&ConsumptionResetTime);
 				if (NTP_GetTimesZoneOfsSeconds()>0)
 				{
@@ -779,7 +797,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 							ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
 							abs(NTP_GetTimesZoneOfsSeconds()/3600), (abs(NTP_GetTimesZoneOfsSeconds())/60) % 60);
 				}
-                MQTT_PublishMain_StringString(energy_sensors[OBK_CONSUMPTION_CLEAR_DATE].name_mqtt, datetime, 0);
+                MQTT_PublishMain_StringString(energy_sensors[OBK_CONSUMPTION_CLEAR_DATE].names.name_mqtt, datetime, 0);
                 stat_updatesSent++;
             }
         }
@@ -835,7 +853,7 @@ void BL_Shared_Init(void)
         energyCounterMinutesIndex = 0;
     }
 
-    for(i = 0; i < DAILY_STATS_LENGTH; i++)
+    for(i = DAILY_STATS_TODAY; i < DAILY_STATS_LENGTH; i++)
     {
         dailyStats[i] = 0;
     }
@@ -844,12 +862,12 @@ void BL_Shared_Init(void)
 
     HAL_GetEnergyMeterStatus(&data);
     energyCounter = data.TotalConsumption;
-    dailyStats[0] = data.TodayConsumpion;
-    dailyStats[1] = data.YesterdayConsumption;
+    dailyStats[DAILY_STATS_TODAY] = data.TodayConsumpion;
+    dailyStats[DAILY_STATS_YESTERDAY] = data.YesterdayConsumption;
     actual_mday = data.actual_mday;    
     lastSavedEnergyCounterValue = energyCounter;
-    dailyStats[2] = data.ConsumptionHistory[0];
-    dailyStats[3] = data.ConsumptionHistory[1];
+    dailyStats[DAILY_STATS_2_DAYS_AGO] = data.ConsumptionHistory[0];
+    dailyStats[DAILY_STATS_3_DAYS_AGO] = data.ConsumptionHistory[1];
     ConsumptionResetTime = data.ConsumptionResetTime;
     ConsumptionSaveCounter = data.save_counter;
     lastConsumptionSaveStamp = xTaskGetTickCount();
@@ -889,7 +907,7 @@ void BL_Shared_Init(void)
 }
 
 // OBK_POWER etc
-float DRV_GetReading(int type) 
+float DRV_GetReading(OBK_ENERGY_SENSOR type) 
 {
     int i;
     float hourly_sum = 0.0;
@@ -917,12 +935,16 @@ float DRV_GetReading(int type)
             }
             return hourly_sum;
         case OBK_CONSUMPTION_YESTERDAY:
-            return dailyStats[1];
+            return dailyStats[DAILY_STATS_YESTERDAY];
         case OBK_CONSUMPTION_TODAY:
-            return dailyStats[0];
+            return dailyStats[DAILY_STATS_TODAY];
         default:
             break;
     }
     return 0.0f;
 }
 
+energy_sensor_names* DRV_GetEnergySensorNames(OBK_ENERGY_SENSOR type)
+{
+	return &energy_sensors[type].names;
+}

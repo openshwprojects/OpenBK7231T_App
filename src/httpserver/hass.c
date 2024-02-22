@@ -52,8 +52,13 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 
 	case ENERGY_METER_SENSOR:
 #ifndef OBK_DISABLE_ALL_DRIVERS
-		sprintf(uniq_id, "%s_%02d", longDeviceName, index); //TODO number ordering changed with power sensor additions...
-		//sprintf(uniq_id, "%s_%s", longDeviceName, energy_sensors[index].name_mqtt); //length must be kept short otherwise too high chance of exceeding MQTT_PUBLISH_ITEM_CHANNEL_LENGTH
+		;const bool HASS_ID_COMPATIBILITY = true;
+		if (HASS_ID_COMPATIBILITY) {
+			sprintf(uniq_id, "%s_sensor_%s", longDeviceName, DRV_GetEnergySensorNames(index)->hass_id_compatibility);
+		} else {
+			sprintf(uniq_id, "%s_sensor_%02d", longDeviceName, index); 
+		}
+		//sprintf(uniq_id, "%s_%s", longDeviceName, energy_sensors[index].name_mqtt); //can't do this - too high chance of exceeding MQTT_PUBLISH_ITEM_CHANNEL_LENGTH
 #endif
 		break;
 	case POWER_SENSOR:
@@ -99,6 +104,9 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 		break;
 	case HASS_RSSI:
 		sprintf(uniq_id, "%s_rssi", longDeviceName);
+		break;
+	case HASS_UPTIME:
+		sprintf(uniq_id, "%s_uptime", longDeviceName);
 		break;	
 	default:
 		// TODO: USE type here as well?
@@ -227,7 +235,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 		isSensor = true;
 #ifndef OBK_DISABLE_ALL_DRIVERS
 		if (index < OBK_NUM_ENUMS_MAX)
-			sprintf(g_hassBuffer, "%s", energy_sensors[index].name_friendly);
+			sprintf(g_hassBuffer, "%s", DRV_GetEnergySensorNames(index)->name_friendly);
 		else
 			sprintf(g_hassBuffer, "Un-nmaed Energy Meter Sensor");
 #endif
@@ -274,6 +282,9 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 		break;
 	case HASS_RSSI:
 		sprintf(g_hassBuffer, "RSSI");
+		break;
+	case HASS_UPTIME:
+		sprintf(g_hassBuffer, "Uptime");
 		break;
 	case ENERGY_SENSOR:
 		isSensor = true;
@@ -436,23 +447,23 @@ HassDeviceInfo* hass_init_power_sensor_device_info(int index) {
 
 	info = hass_init_device_info(ENERGY_METER_SENSOR, index, NULL, NULL);
 
-	cJSON_AddStringToObject(info->root, "dev_cla", energy_sensors[index].hass_dev_class);   //device_class=voltage,current,power, energy, timestamp
-	cJSON_AddStringToObject(info->root, "unit_of_meas", energy_sensors[index].units);   //unit_of_measurement. Sets as empty string if not present. HA doesn't seem to mind
+	cJSON_AddStringToObject(info->root, "dev_cla", DRV_GetEnergySensorNames(index)->hass_dev_class);   //device_class=voltage,current,power, energy, timestamp
+	cJSON_AddStringToObject(info->root, "unit_of_meas", DRV_GetEnergySensorNames(index)->units);   //unit_of_measurement. Sets as empty string if not present. HA doesn't seem to mind
 
-	sprintf(g_hassBuffer, "~/%s/get", energy_sensors[index].name_mqtt);
+	sprintf(g_hassBuffer, "~/%s/get", DRV_GetEnergySensorNames(index)->name_mqtt);
 	cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 
-	if (!strcmp(energy_sensors[index].hass_dev_class, "energy")) {
+	if (!strcmp(DRV_GetEnergySensorNames(index)->hass_dev_class, "energy")) {
 		//state_class can be measurement, total or total_increasing. Energy values should be total_increasing.
 		cJSON_AddStringToObject(info->root, "stat_cla", "total_increasing");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH) ? "kWh" : "Wh");
 	} else {
 		cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
-		cJSON_AddStringToObject(info->root, "unit_of_meas", energy_sensors[index].units);
+		cJSON_AddStringToObject(info->root, "unit_of_meas", DRV_GetEnergySensorNames(index)->units);
 	}
-	if (index == OBK_CONSUMPTION_STATS) { //hide this as its not working anyway at present
-		cJSON_AddStringToObject(info->root, "enabled_by_default ", "false");
-	}
+	// if (index == OBK_CONSUMPTION_STATS) { //hide this as its not working anyway at present
+	// 	cJSON_AddStringToObject(info->root, "enabled_by_default ", "false");
+	// }
 	return info;
 }
 
@@ -640,7 +651,13 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "dBm");
 		cJSON_AddStringToObject(info->root, "entity_category", "diagnostic");
 		//cJSON_AddStringToObject(info->root, "icon_template", "mdi:access-point");
-
+		break;
+	case HASS_UPTIME:
+		cJSON_AddStringToObject(info->root, "dev_cla", "duration");
+		cJSON_AddStringToObject(info->root, "stat_t", "~/uptime");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "s");
+		cJSON_AddStringToObject(info->root, "entity_category", "diagnostic");
+		cJSON_AddStringToObject(info->root, "stat_cla", "total_increasing");
 		break;
 	default:
 		sprintf(g_hassBuffer, "~/%d/get", channel);
@@ -648,7 +665,7 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 		return NULL;
 	}
 
-	if (type != READONLYLOWMIDHIGH_SENSOR && type != ENERGY_SENSOR && type != HASS_RSSI) {
+	if (type != READONLYLOWMIDHIGH_SENSOR && !cJSON_HasObjectItem(info->root, "stat_cla")) {
 		cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
 	}
 
