@@ -62,10 +62,20 @@ void Test_Command_If() {
 	CMD_ExecuteCommand("setChannel 7 0", 0);
 	CMD_ExecuteCommand("if $CH7==0 then \"setChannel 23 7654\"", 0);
 	SELFTEST_ASSERT_CHANNEL(23, 7654);
+	CMD_ExecuteCommand("setChannel 23 0", 0);
+	SELFTEST_ASSERT_CHANNEL(23, 0);
+	CMD_ExecuteCommand("if $CH7==0 then setChannel 23 7654", 0);
+	SELFTEST_ASSERT_CHANNEL(23, 7654);
+
+
 	CMD_ExecuteCommand("setChannel 7 1", 0);
 	CMD_ExecuteCommand("if $CH7!=0 then \"setChannel 23 1234\"", 0);
 	SELFTEST_ASSERT_CHANNEL(23, 1234);
 
+	CMD_ExecuteCommand("setChannel 23 0", 0);
+	SELFTEST_ASSERT_CHANNEL(23, 0);
+	CMD_ExecuteCommand("if $CH7!=0 then setChannel 23 1234", 0);
+	SELFTEST_ASSERT_CHANNEL(23, 1234);
 	// cause error
 	//SELFTEST_ASSERT_CHANNEL(1, 666);
 
