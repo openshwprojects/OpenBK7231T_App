@@ -184,6 +184,7 @@ void Win_DoUnitTests() {
 	Test_Command_If();
 	Test_Tokenizer();
 	Test_Http();
+	Test_Http_LED();
 	Test_DeviceGroups();
 
 
