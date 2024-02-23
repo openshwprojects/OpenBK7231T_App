@@ -820,6 +820,7 @@ int TuyaMCU_ParseDPType(const char *dpTypeString) {
 		dpType = DP_TYPE_RAW_TAC2121C_LASTMONTH;
 	}
 	else if (!stricmp(dpTypeString, "MQTT")) {
+		// linkTuyaMCUOutputToChannel 6 MQTT
 		dpType = DP_TYPE_PUBLISH_TO_MQTT;
 	}
 	else {
