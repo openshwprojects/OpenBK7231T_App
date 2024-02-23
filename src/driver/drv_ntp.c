@@ -17,6 +17,11 @@
 extern void NTP_Init_Events(void);
 extern void NTP_RunEvents(unsigned int newTime, bool bTimeValid);
 
+#if ENABLE_NTP_SUNRISE_SUNSET
+extern void NTP_CalculateSunrise(byte *outHour, byte *outMinute);
+extern void NTP_CalculateSunset(byte *outHour, byte *outMinute);
+#endif
+
 #define LOG_FEATURE LOG_FEATURE_NTP
 
 typedef struct

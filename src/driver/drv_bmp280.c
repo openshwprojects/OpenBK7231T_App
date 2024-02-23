@@ -10,7 +10,7 @@
 #include "../httpserver/new_http.h"
 #include "../hal/hal_pins.h"
 
-static int g_temperature;
+static int32_t g_temperature;
 static uint32_t g_pressure;
 static char g_targetChannelTemperature = -1, g_targetChannelPressure = -1;
 static softI2C_t g_softI2C;
@@ -43,8 +43,6 @@ void BMP280_Stop(void) {		//manufacturer ID
 // startDriver BMP280 8 14 1 2 236
 // startDriver BMP280 [CLK] [DATA] [ChannelForTemp] [ChannelForPressure] [Adr8bit]
 void BMP280_Init() {
-
-	uint8_t buff[4];
 
 	g_softI2C.pin_clk = Tokenizer_GetArgIntegerDefault(1, 8);
 	g_softI2C.pin_data = Tokenizer_GetArgIntegerDefault(2, 14);
