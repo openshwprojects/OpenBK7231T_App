@@ -470,7 +470,7 @@ void TuyaMCU_SendStateInternal(uint8_t id, uint8_t type, void* value, int dataLe
 {
 	uint16_t payload_len = 0;
 	
-	payload_len = TuyaMCU_AppendStateInternal(g_tuyaMCUpayloadBuffer, (int)g_tuyaMCUpayloadBuffer,
+	payload_len = TuyaMCU_AppendStateInternal(g_tuyaMCUpayloadBuffer, g_tuyaMCUpayloadBufferSize,
 		payload_len, id, type, value, dataLen);
 
 	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, g_tuyaMCUpayloadBuffer, payload_len);
@@ -484,13 +484,13 @@ void TuyaMCU_SendTwoVals(byte idA, int valA, byte idB, int valB)
 	swap[1] = ((byte*)&valA)[2];
 	swap[2] = ((byte*)&valA)[1];
 	swap[3] = ((byte*)&valA)[0];
-	payload_len = TuyaMCU_AppendStateInternal(g_tuyaMCUpayloadBuffer, (int)g_tuyaMCUpayloadBuffer,
+	payload_len = TuyaMCU_AppendStateInternal(g_tuyaMCUpayloadBuffer, g_tuyaMCUpayloadBufferSize,
 		payload_len, idA, DP_TYPE_VALUE, swap, 4);
 	swap[0] = ((byte*)&valB)[3];
 	swap[1] = ((byte*)&valB)[2];
 	swap[2] = ((byte*)&valB)[1];
 	swap[3] = ((byte*)&valB)[0];
-	payload_len = TuyaMCU_AppendStateInternal(g_tuyaMCUpayloadBuffer, (int)g_tuyaMCUpayloadBuffer,
+	payload_len = TuyaMCU_AppendStateInternal(g_tuyaMCUpayloadBuffer, g_tuyaMCUpayloadBufferSize,
 		payload_len, idB, DP_TYPE_VALUE, swap, 4);
 
 	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, g_tuyaMCUpayloadBuffer, payload_len);
