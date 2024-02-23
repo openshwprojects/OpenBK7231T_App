@@ -172,6 +172,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "CSE7766",	CSE7766_Init,		CSE7766_RunEverySecond,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_MAX6675
+	//drvdetail:{"name":"MAX6675",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"BQQQK",
+	//drvdetail:"requires":""}
+	{ "MAX6675",	MAX6675_Init,		MAX6675_RunEverySecond,			NULL, NULL, NULL, NULL, false },
+#endif
 #if ENABLE_DRIVER_PT6523
 	//drvdetail:{"name":"PT6523",
 	//drvdetail:"title":"TODO",
