@@ -67,9 +67,12 @@ typedef enum {
 	ILLUMINANCE_SENSOR,
 	// dBm unit
 	HASS_RSSI,
+	/// @brief Wh, kWh
 	ENERGY_SENSOR,
 	// hPa
 	PRESSURE_SENSOR,
+	/// @Brief Timestamp Sensor
+	TIMESTAMP_SENSOR,
 
 } ENTITY_TYPE;
 

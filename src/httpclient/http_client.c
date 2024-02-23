@@ -1188,7 +1188,7 @@ int HTTPClient_CB_Data(struct httprequest_t_tag *request) {
 		}
 		else {
 			LFS_WriteFile(request->targetFile,
-				request->client_data.response_buf, request->client_data.response_buf_filled,
+				(const byte *)request->client_data.response_buf, request->client_data.response_buf_filled,
 				request->client_data.userCounter!= 0);
 
 			request->client_data.userCounter++;
