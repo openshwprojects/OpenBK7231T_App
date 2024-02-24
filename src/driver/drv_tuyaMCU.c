@@ -1305,7 +1305,7 @@ int http_obk_json_dps(int id, void* request, jsonCb_t printer) {
 			iCnt++;
 			printer(request, "{\"id\":%i,\"type\":%i,\"data\":", cur->fnId, cur->dpType);
 			if (cur->rawData == 0) {
-				printer(request, "0\"}", cur->rawData);
+				printer(request, "0}", cur->rawData);
 			}
 			else {
 				if (cur->dpType == DP_TYPE_BOOL || cur->dpType == DP_TYPE_ENUM
