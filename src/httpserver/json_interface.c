@@ -194,7 +194,7 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 */
 
 // returns NaN values as 0
-static float _getReading_NanToZero(OBK_ENERGY_SENSOR type) {
+static float _getReading_NanToZero(energySensor_t type) {
 	float retval = DRV_GetReading(type);
 	return OBK_IS_NAN(retval) ? 0 : retval;
 }
