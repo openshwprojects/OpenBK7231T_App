@@ -16,6 +16,7 @@
 #include "../httpserver/new_http.h"
 #include "../hal/hal_pins.h"
 #include "../hal/hal_adc.h"
+#include "../ota/ota.h"
 
 static int setting_timeRequiredUntilDeepSleep = 60;
 static int g_noChangeTimePassed = 0;

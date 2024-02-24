@@ -246,7 +246,7 @@ static commandResult_t CMD_SetPinRole(const void *context, const char *cmd, cons
 	return CMD_RES_OK;
 }
 static commandResult_t CMD_SetPinChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
-	int pin, ch;
+	int pin, ch, ch2;
 
 	Tokenizer_TokenizeString(args,0);
 	// following check must be done after 'Tokenizer_TokenizeString',
@@ -258,6 +258,10 @@ static commandResult_t CMD_SetPinChannel(const void *context, const char *cmd, c
 
 	pin = Tokenizer_GetArgInteger(0);
 	ch = Tokenizer_GetArgInteger(1);
+	if (Tokenizer_GetArgsCount() > 2) {
+		ch2 = Tokenizer_GetArgInteger(2);
+		PIN_SetPinChannel2ForPinIndex(pin, ch2);
+	}
 
 	PIN_SetPinChannelForPinIndex(pin,ch);
 
@@ -504,7 +508,7 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_SetPinRole","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SetPinRole", CMD_SetPinRole, NULL);
-	//cmddetail:{"name":"SetPinChannel","args":"[PinIndex][ChannelIndex]",
+	//cmddetail:{"name":"SetPinChannel","args":"[PinIndex][ChannelIndex][optionalChannel2Index]",
 	//cmddetail:"descr":"This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command.",
 	//cmddetail:"fn":"CMD_SetPinChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}

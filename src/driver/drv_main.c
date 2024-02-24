@@ -15,6 +15,18 @@
 
 
 
+const char* sensor_hassNames[OBK_NUM_EMUNS_MAX] = {
+	"Voltage",
+	"Current",
+	"Power",
+	"Energy Total",
+	"Energy Last Hour",
+	"Consumption Stats",
+	"Energy Yesterday",
+	"Energy Today",
+	"Energy Clear Date",
+};
+
 typedef struct driver_s {
 	const char* name;
 	void (*initFunc)();
@@ -124,6 +136,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK",
 	//drvdetail:"requires":""}
 	{ "CSE7766",	CSE7766_Init,		CSE7766_RunEverySecond,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_MAX6675
+	//drvdetail:{"name":"MAX6675",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"BQQQK",
+	//drvdetail:"requires":""}
+	{ "MAX6675",	MAX6675_Init,		MAX6675_RunEverySecond,			NULL, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_PT6523
 	//drvdetail:{"name":"PT6523",

@@ -740,6 +740,7 @@ int http_obk_json_dps(int id, void* request, jsonCb_t printer);
 
 int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, jsonCb_t printer, int flags) {
 	int i;
+	long int* pAllGenericFlags = (long int*)&g_cfg.genericFlags;
 
 	if (!wal_strnicmp(cmd, "POWER", 5)) {
 
@@ -1015,7 +1016,7 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 	}
 	else if (!wal_strnicmp(cmd, "Flags", 5)) {
 		printer(request, "{");
-		printer(request, "\"Flags\":\"%ld\"", *((long int*)&g_cfg.genericFlags));
+		printer(request, "\"Flags\":\"%ld\"", *pAllGenericFlags);
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "Ch", 2)) {

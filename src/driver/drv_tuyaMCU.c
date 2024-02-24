@@ -470,7 +470,7 @@ void TuyaMCU_SendStateInternal(uint8_t id, uint8_t type, void* value, int dataLe
 {
 	uint16_t payload_len = 0;
 	
-	payload_len = TuyaMCU_AppendStateInternal(g_tuyaMCUpayloadBuffer, g_tuyaMCUpayloadBuffer,
+	payload_len = TuyaMCU_AppendStateInternal(g_tuyaMCUpayloadBuffer, g_tuyaMCUpayloadBufferSize,
 		payload_len, id, type, value, dataLen);
 
 	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, g_tuyaMCUpayloadBuffer, payload_len);
@@ -484,13 +484,13 @@ void TuyaMCU_SendTwoVals(byte idA, int valA, byte idB, int valB)
 	swap[1] = ((byte*)&valA)[2];
 	swap[2] = ((byte*)&valA)[1];
 	swap[3] = ((byte*)&valA)[0];
-	payload_len = TuyaMCU_AppendStateInternal(g_tuyaMCUpayloadBuffer, g_tuyaMCUpayloadBuffer,
+	payload_len = TuyaMCU_AppendStateInternal(g_tuyaMCUpayloadBuffer, g_tuyaMCUpayloadBufferSize,
 		payload_len, idA, DP_TYPE_VALUE, swap, 4);
 	swap[0] = ((byte*)&valB)[3];
 	swap[1] = ((byte*)&valB)[2];
 	swap[2] = ((byte*)&valB)[1];
 	swap[3] = ((byte*)&valB)[0];
-	payload_len = TuyaMCU_AppendStateInternal(g_tuyaMCUpayloadBuffer, g_tuyaMCUpayloadBuffer,
+	payload_len = TuyaMCU_AppendStateInternal(g_tuyaMCUpayloadBuffer, g_tuyaMCUpayloadBufferSize,
 		payload_len, idB, DP_TYPE_VALUE, swap, 4);
 
 	TuyaMCU_SendCommandWithData(TUYA_CMD_SET_DP, g_tuyaMCUpayloadBuffer, payload_len);
@@ -820,6 +820,7 @@ int TuyaMCU_ParseDPType(const char *dpTypeString) {
 		dpType = DP_TYPE_RAW_TAC2121C_LASTMONTH;
 	}
 	else if (!stricmp(dpTypeString, "MQTT")) {
+		// linkTuyaMCUOutputToChannel 6 MQTT
 		dpType = DP_TYPE_PUBLISH_TO_MQTT;
 	}
 	else {
@@ -976,7 +977,7 @@ void TuyaMCU_SendStateRawFromString(int dpId, const char *args) {
 }
 const char *STR_FindArg(const char *s, int arg) {
 	while (1) {
-		while (isspace(*s)) {
+		while (isspace((int)*s)) {
 			if (*s == 0)
 				return "";
 			s++;
@@ -985,7 +986,7 @@ const char *STR_FindArg(const char *s, int arg) {
 		if (arg < 0) {
 			return s;
 		}
-		while (isspace(*s) == false) {
+		while (isspace((int)*s) == false) {
 			if (*s == 0)
 				return "";
 			s++;
@@ -1952,15 +1953,11 @@ void TuyaMCU_RunWiFiUpdateAndPackets() {
 		//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"Wifi_State timer");
 	}
 }
-void TuyaMCU_RunReceive() {
-	byte data[128];
+void TuyaMCU_PrintPacket(byte *data, int len) {
+	int i;
 	char buffer_for_log[256];
 	char buffer2[4];
-	int len, i;
-	while (1)
-	{
-		len = UART_TryToGetNextTuyaPacket(data, sizeof(data));
-		if (len > 0) {
+	
 			buffer_for_log[0] = 0;
 			for (i = 0; i < len; i++) {
 				snprintf(buffer2, sizeof(buffer2), "%02X ", data[i]);
@@ -1979,6 +1976,15 @@ void TuyaMCU_RunReceive() {
 			// when an UART string is received...
 			EventHandlers_FireEvent_String(CMD_EVENT_ON_UART, buffer_for_log);
 #endif
+}
+void TuyaMCU_RunReceive() {
+	byte data[192];
+	int len;
+	while (1)
+	{
+		len = UART_TryToGetNextTuyaPacket(data, sizeof(data));
+		if (len > 0) {
+			TuyaMCU_PrintPacket(data,len);
 			TuyaMCU_ProcessIncoming(data, len);
 		}
 		else {

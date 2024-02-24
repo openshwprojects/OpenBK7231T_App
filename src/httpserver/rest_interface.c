@@ -658,6 +658,7 @@ static int http_rest_get_seriallog(http_request_t* request) {
 
 static int http_rest_get_pins(http_request_t* request) {
 	int i;
+	int maxNonZero;
 	http_setup(request, httpMimeTypeJson);
 	poststr(request, "{\"rolenames\":[");
 	for (i = 0; i < IOR_Total_Options; i++) {
@@ -676,12 +677,37 @@ static int http_rest_get_pins(http_request_t* request) {
 	}
 	// TODO: maybe we should cull futher channels that are not used?
 	// I support many channels because I plan to use 16x relays module with I2C MCP23017 driver
+
+	// find max non-zero ch
+	//maxNonZero = -1;
+	//for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+	//	if (g_cfg.pins.channels[i] != 0) {
+	//		maxNonZero = i;
+	//	}
+	//}
+
 	poststr(request, "],\"channels\":[");
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if (i) {
 			hprintf255(request, ",");
 		}
 		hprintf255(request, "%d", g_cfg.pins.channels[i]);
+	}
+	// find max non-zero ch2
+	maxNonZero = -1;	
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (g_cfg.pins.channels2[i] != 0) {
+			maxNonZero = i;
+		}
+	}
+	if (maxNonZero != -1) {
+		poststr(request, "],\"channels2\":[");
+		for (i = 0; i <= maxNonZero; i++) {
+			if (i) {
+				hprintf255(request, ",");
+			}
+			hprintf255(request, "%d", g_cfg.pins.channels2[i]);
+		}
 	}
 	poststr(request, "],\"states\":[");
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
@@ -836,12 +862,14 @@ static int http_rest_post_logconfig(http_request_t* request) {
 
 static int http_rest_get_info(http_request_t* request) {
 	char macstr[3 * 6 + 1];
+	long int* pAllGenericFlags = (long int*)&g_cfg.genericFlags;
+
 	http_setup(request, httpMimeTypeJson);
 	hprintf255(request, "{\"uptime_s\":%d,", g_secondsElapsed);
 	hprintf255(request, "\"build\":\"%s\",", g_build_str);
 	hprintf255(request, "\"ip\":\"%s\",", HAL_GetMyIPString());
 	hprintf255(request, "\"mac\":\"%s\",", HAL_GetMACStr(macstr));
-	hprintf255(request, "\"flags\":\"%ld\",", *((long int*)&g_cfg.genericFlags));
+	hprintf255(request, "\"flags\":\"%ld\",", *pAllGenericFlags);
 	hprintf255(request, "\"mqtthost\":\"%s:%d\",", CFG_GetMQTTHost(), CFG_GetMQTTPort());
 	hprintf255(request, "\"mqtttopic\":\"%s\",", CFG_GetMQTTClientId());
 	hprintf255(request, "\"chipset\":\"%s\",", PLATFORM_MCU_NAME);

@@ -320,5 +320,12 @@
     "title": "todo",
     "file": "new_pins.h",
     "descr": "[MQTT Discovery] Don't merge toggles and dimmers into lights"
+  },
+  {
+    "index": "46",
+    "enum": "OBK_FLAG_TUYAMCU_STORE_RAW_DATA",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[TuyaMCU] Store raw data"
   }
 ]

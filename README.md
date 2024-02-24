@@ -35,8 +35,8 @@ You can help us by giving like, a comment and subscribe!
 # Features
 
 OpenBeken features:
-- Tasmota-like setup, configuration and experience on all supported platforms (supports common Tasmota JSON over http and MQTT, etc)
-- OTA firmware upgrade system (for BK, W*00, BL602); to use OTA, drag and drop proper OTA file on OTA field on new Web App Javascript Console
+- Tasmota-like setup, configuration and experience on all supported platforms (supports [common Tasmota JSON over http](https://www.youtube.com/watch?v=OhdkEJ-SuTU) and MQTT, etc)
+- OTA firmware upgrade system (for BK, W*00, BL602); to use OTA, [drag and drop](https://www.youtube.com/watch?v=OPcppowaxaA) proper OTA file on OTA field on new Web App Javascript Console
 - Online [builds for all platforms](https://github.com/openshwprojects/OpenBK7231T_App/releases) via Github, also supports [Docker builds](https://github.com/openshwprojects/OpenBK7231T_App/tree/main/docker)
 - MQTT compatibility with Home Assistant (with both Yaml generator and [HA Discovery](https://youtu.be/pkcspey25V4)) 
 - Support for multiple relays, buttons, leds, inputs and PWMs, everything fully scriptable
@@ -47,7 +47,7 @@ OpenBeken features:
 - support for [TuyaMCU Battery Powered devices protocol](https://www.elektroda.com/rtvforum/topic3914412.html) (TuyaMCU enables WiFi module only to report the state, eg. for door sensors, water sensors)
 - Dedicated TuyaMCU analyzer tool for decoding new devices ([tutorial here](https://www.elektroda.com/rtvforum/topic3970199.html), code [repository here](https://github.com/openshwprojects/TuyaMCUAnalyzer))
 - [RGBCW LED lighting control](https://www.youtube.com/watch?v=YQdR7r6lXRY) compatible with Home Assistant (including PWM LEDs, and SM2135, BP5758, etc )
-- LittleFS integration for large files (you can write scripts there, you can host a page there with REST interface control of device)
+- LittleFS integration for scripts and large files (you can [write scripts there](https://www.youtube.com/watch?v=kXi8S12tmC8), you can host a page there with REST interface control of device)
 - Command line system for starting and configuring drivers, for controlling channels, etc
 - Short startup command (up to 512 characters) storage in flash config, so you can easily init your drivers (eg. BL0942) without LittleFS
 - Advanced scripting and events system (allows you to mirror Tasmota rules, for example catch button click, double click, hold)
@@ -59,6 +59,8 @@ OpenBeken features:
 - Advanced deep sleep with GPIO/timer wakeup and [hybrid power save systems](https://youtu.be/eupL16eB7BA), fully scriptable, can be configured to last longer than Tuya
 - Supports automatic GPIO setup with [Tuya GPIO extraction](https://www.youtube.com/watch?v=WunlqIMAdgw), [cloudcutter templates](https://www.elektroda.com/rtvforum/topic3973669.html), can also import/export [OpenBeken templates](https://openbekeniot.github.io/webapp/devicesList.html), you can also use [GPIODoctor to find out quickly GPIO roles](https://www.elektroda.com/rtvforum/topic3976371.html)
 - Advanced and custom drivers like [synchronized PWM groups with configurable dead time](https://www.elektroda.com/rtvforum/topic4025665.html)
+- WS2812B support, see [scripting tutorial](https://www.elektroda.com/rtvforum/topic4036716.html)
+- LFS and REST API allows you to create and host a custom HTML+CSS+JS page on device with a custom GUI/display of channels/TuyaMCU dpIDs, see [tutorial](https://www.elektroda.com/rtvforum/topic3971355.html) and see [sample page](https://www.elektroda.com/rtvforum/viewtopic.php?p=20932186#20932186)
 - and much more
 
 There is also a bit more outdated [WIKI](https://github.com/openshwprojects/OpenBK7231T_App/wiki/Wiki-Home)

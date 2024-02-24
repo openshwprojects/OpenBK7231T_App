@@ -37,6 +37,7 @@ typedef struct energySensorNames_s {
 	const char* const hass_uniq_id_suffix; //keep identifiers persistent in case OBK_ENERG_SENSOR changes
 } energySensorNames_t;
 
+extern const char* sensor_hassNames[];
 extern int g_dhtsCount;
 
 void DRV_Generic_Init();

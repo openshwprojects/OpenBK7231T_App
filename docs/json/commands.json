@@ -37,8 +37,8 @@
   },
   {
     "name": "addClockEvent",
-    "args": "[Time or sunrise or sunset] [WeekDayFlags] [UniqueIDForRemoval][Command]",
-    "descr": "Schedule command to run on given time in given day of week. NTP must be running. Time is a time like HH:mm or HH:mm:ss, WeekDayFlag is a bitflag on which day to run, 0xff mean all days, 0x01 means sunday, 0x02 monday, 0x03 sunday and monday, etc, id is an unique id so event can be removed later. (NOTE: Use of sunrise/sunset requires compiling with ENABLE_NTP_SUNRISE_SUNSET set which adds about 11k of code",
+    "args": "[TimerSeconds or Time or sunrise or sunset] [WeekDayFlags] [UniqueIDForRemoval][Command]",
+    "descr": "Schedule command to run on given time in given day of week. NTP must be running. TimerSeconds is seconds from midnight, Time is a time like HH:mm or HH:mm:ss, WeekDayFlag is a bitflag on which day to run, 0xff mean all days, 0x01 means sunday, 0x02 monday, 0x03 sunday and monday, etc, id is an unique id so event can be removed later. (NOTE: Use of sunrise/sunset requires compiling with ENABLE_NTP_SUNRISE_SUNSET set which adds about 11k of code)",
     "fn": "CMD_NTP_AddClockEvent",
     "file": "driver/drv_ntp_events.c",
     "requires": "",
@@ -721,8 +721,8 @@
   },
   {
     "name": "IRSend",
-    "args": "[PROT-ADDR-CMD-REP]",
-    "descr": "Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0",
+    "args": "[PROT-ADDR-CMD-REP-BITS]",
+    "descr": "Sends IR commands in the form PROT-ADDR-CMD-REP-BITS, e.g. NEC-1-1A-0-0, note that -BITS is optional, it can be 0 for default one, so you can just do NEC-1-1A-0",
     "fn": "IR_Send_Cmd",
     "file": "driver/drv_ir.cpp",
     "requires": "",
@@ -1512,8 +1512,17 @@
     "examples": ""
   },
   {
-    "name": "PWMG_Setup",
-    "args": "CMD_PWMG_Setup",
+    "name": "PWMG_Raw",
+    "args": "CMD_PWMG_Raw",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_pwm_groups.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "PWMG_Set",
+    "args": "CMD_PWMG_Set",
     "descr": "",
     "fn": "NULL);",
     "file": "driver/drv_pwm_groups.c",
@@ -1945,8 +1954,8 @@
   },
   {
     "name": "SM16703P_Init",
-    "args": "SM16703P_Start",
-    "descr": "",
+    "args": "[NumberOfLEDs]",
+    "descr": "This will setup LED driver for a strip with given number of LEDs. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
     "fn": "NULL);",
     "file": "driver/drv_sm16703P.c",
     "requires": "",
@@ -1954,8 +1963,17 @@
   },
   {
     "name": "SM16703P_SetPixel",
-    "args": "SM16703P_CMD_setPixel",
-    "descr": "",
+    "args": "[index/all] [R] [G] [B]",
+    "descr": "Sets a pixel for LED strip. Index can be a number or 'all' keyword to set all. Then, 3 integer values for R, G and B. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
+    "fn": "NULL);",
+    "file": "driver/drv_sm16703P.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "SM16703P_SetRaw",
+    "args": "[bUpdate] [byteOfs] [HexData]",
+    "descr": "Sets the raw data bytes for SPI DMA LED driver at the given offset. Hex data should be as a hex string, for example, FF00AA, etc. The bUpdate, if set to 1, will run SM16703P_Start automatically after setting data. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
     "fn": "NULL);",
     "file": "driver/drv_sm16703P.c",
     "requires": "",
@@ -1963,8 +1981,8 @@
   },
   {
     "name": "SM16703P_Start",
-    "args": "SM16703P_StartTX",
-    "descr": "",
+    "args": "",
+    "descr": "This will send the currently set data to the strip. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
     "fn": "NULL);",
     "file": "driver/drv_sm16703P.c",
     "requires": "",
