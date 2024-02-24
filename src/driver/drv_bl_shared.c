@@ -570,7 +570,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
                 root = cJSON_CreateObject();
                 cJSON_AddNumberToObject(root, "uptime", g_secondsElapsed);
                 cJSON_AddNumberToObject(root, "consumption_total", BL_ChangeEnergyUnitIfNeeded(sensors[OBK_CONSUMPTION_TOTAL].lastReading));
-                cJSON_AddNumberToObject(root, "consumption_last_hour",  BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+                cJSON_AddNumberToObject(root, "consumption_last_hour", BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
                 cJSON_AddNumberToObject(root, "consumption_stat_index", energyCounterMinutesIndex);
                 cJSON_AddNumberToObject(root, "consumption_sample_count", energyCounterSampleCount);
                 cJSON_AddNumberToObject(root, "consumption_sampling_period", energyCounterSampleInterval);
