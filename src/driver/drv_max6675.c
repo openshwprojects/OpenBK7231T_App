@@ -12,6 +12,7 @@
 int port_cs = 24;
 int sclk = 26;
 int miso = 6;
+int targetChannel = -1;
 
 byte MAX6675_ReadByte(void) {
 	int i;
@@ -56,9 +57,23 @@ float MAX6675_ReadTemperature() {
 void MAX6675_RunEverySecond() {
 	float f = MAX6675_ReadTemperature();
 	addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "T %f.", f);
+	if (targetChannel != -1) {
+		int type = CHANNEL_GetType(targetChannel);
+		if (type == ChType_Temperature_div10) {
+			CHANNEL_Set(targetChannel, f*0.1f, 0);
+		}
+		else {
+			CHANNEL_Set(targetChannel, f, 0);
+		}
+	}
 }
-// startDriver MAX6675
+// startDriver MAX6675 24 26 6 1
 void MAX6675_Init() {
+	port_cs = Tokenizer_GetArgIntegerDefault(1, port_cs);
+	sclk = Tokenizer_GetArgIntegerDefault(2, sclk);
+	miso = Tokenizer_GetArgIntegerDefault(3, miso);
+	targetChannel = Tokenizer_GetArgIntegerDefault(4, targetChannel);
+
 	// define pin modes
 	HAL_PIN_Setup_Output(port_cs);
 	HAL_PIN_Setup_Output(sclk);
