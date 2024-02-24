@@ -151,8 +151,6 @@ void hass_populate_device_config_channel(ENTITY_TYPE type, char* uniq_id, HassDe
 	case ENERGY_METER_SENSOR:
 	case ENERGY_SENSOR:
 	case TIMESTAMP_SENSOR:
-	case ENERGY_SENSOR:
-	case TIMESTAMP_SENSOR:
 	case BATTERY_SENSOR:
 	case BATTERY_VOLTAGE_SENSOR:
 	case TEMPERATURE_SENSOR:

@@ -14,19 +14,6 @@
 #include "drv_uart.h"
 
 
-
-const char* sensor_hassNames[OBK_NUM_EMUNS_MAX] = {
-	"Voltage",
-	"Current",
-	"Power",
-	"Energy Total",
-	"Energy Last Hour",
-	"Consumption Stats",
-	"Energy Yesterday",
-	"Energy Today",
-	"Energy Clear Date",
-};
-
 typedef struct driver_s {
 	const char* name;
 	void (*initFunc)();
