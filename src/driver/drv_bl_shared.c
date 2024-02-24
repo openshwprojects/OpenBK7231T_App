@@ -11,7 +11,7 @@
 #include "drv_ntp.h"
 #include "drv_public.h"
 #include "drv_uart.h"
-
+#include "../cmnds/cmd_public.h" //for enum EventCode
 #include <math.h>
 #include <time.h>
 
@@ -19,51 +19,43 @@
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
 
-// Order corrsponds to enums OBK_VOLTAGE - OBK_NUM_ENUMS_MAX
-// note that Wh/kWh units are overridden in hass_init_power_sensor_device_info()
-
+// Order corrsponds to enums OBK_VOLTAGE - OBK__LAST
+// note that Wh/kWh units are overridden in hass_init_energy_sensor_device_info()
+const char UNIT_WH[] = "Wh";
 struct {
-	energy_sensor_names names;
+	energySensorNames_t names;
 	byte rounding_decimals;
+	// Variables below are for optimization
+	// We can't send a full MQTT update every second.
+	// It's too much for Beken, and it's too much for LWIP 2 MQTT library,
+	// especially when actively browsing site and using JS app Log Viewer.
+	// It even fails to publish with -1 error (can't alloc next packet)
+	// So we publish when value changes from certain threshold or when a certain time passes.
 	float changeSendThreshold;
-	//float lastReading;
-	//float lastSentValue;
-	//int noChangeFrame; // how much update frames has passed without sending MQTT update of read values?
-} energy_sensors[OBK_NUM_ENUMS_MAX] = { 
-	//.hass_dev_class, 	.units,	.name_friendly,			.name_mqtt,		 .hass_id_compatibility, .rounding_decimals, .changeSendThreshold		
-	{{"voltage",		"V",	"Voltage",				"voltage",					"0",		},  1,			0.25,		},	// OBK_VOLTAGE
-	{{"current",		"A",	"Current",				"current",					"1",		},	3,			0.002,		},	// OBK_CURRENT
-	{{"power",			"W",	"Power",				"power",					"2",		},	2,			0.25,		},	// OBK_POWER
-	{{"apparent_power",	"VA",	"Apparent Power",		"power_apparent",			"9",		},	2,			0.25,		},	// OBK_POWER_APPARENT
-	{{"reactive_power",	"var",	"Reactive Power",		"power_reactive",			"10",		},	2,			0.25,		},	// OBK_POWER_REACTIVE
-	{{"power_factor",	"",		"Power Factor",			"power_factor",				"11",		},	2,			0.05,		},	// OBK_POWER_FACTOR
-	{{"energy",			"Wh",	"Energy Total",			"energycounter",			"3",		},	3,			0.1,		},	// OBK_CONSUMPTION_TOTAL
-	{{"energy",			"Wh",	"Energy Last Hour",		"energycounter_last_hour",	"4",		},	3,			0.1,		},	// OBK_CONSUMPTION_LAST_HOUR
-	//{{"",				"",		"Consumption Stats",	"consumption_stats",		"5",		},	0,			0,			},	// OBK_CONSUMPTION_STATS
-	{{"energy",			"Wh",	"Energy Today",			"energycounter_today",		"7",		},	3,			0.1,		},	// OBK_CONSUMPTION_TODAY
-	{{"energy",			"Wh",	"Energy Yesterday",		"energycounter_yesterday",	"6",		},	3,			0.1,		},	// OBK_CONSUMPTION_YESTERDAY
-	{{"energy",			"Wh",	"Energy 2 Days Ago",	"energycounter_2_days_ago",	"12",		},	3,			0.1,		},	// OBK_CONSUMPTION_2_DAYS_AGO
-	{{"energy",			"Wh",	"Energy 3 Days Ago",	"energycounter_3_days_ago",	"13",		},	3,			0.1,		},	// OBK_CONSUMPTION_3_DAYS_AGO
-	{{"timestamp",		"",		"Energy Clear Date",	"energycounter_clear_date",	"8",		},	0,			1,			},	// OBK_CONSUMPTION_CLEAR_DATE	
+	double lastReading; //double only needed for energycounter i.e. OBK_CONSUMPTION_TOTAL to avoid rounding errors as value becomes high
+	double lastSentValue; // what are the last values we sent over the MQTT?
+	int noChangeFrame; // how much update frames has passed without sending MQTT update of read values?
+} sensors[OBK__NUM_SENSORS] = { 
+	//.hass_dev_class, 	.units,		.name_friendly,			.name_mqtt,		 .hass_uniq_id_suffix, .rounding_decimals, .changeSendThreshold		
+	{{"voltage",		"V",		"Voltage",				"voltage",					"0",		},  1,			0.25,		},	// OBK_VOLTAGE
+	{{"current",		"A",		"Current",				"current",					"1",		},	3,			0.002,		},	// OBK_CURRENT
+	{{"power",			"W",		"Power",				"power",					"2",		},	2,			0.25,		},	// OBK_POWER
+	{{"apparent_power",	"VA",		"Apparent Power",		"power_apparent",			"9",		},	2,			0.25,		},	// OBK_POWER_APPARENT
+	{{"reactive_power",	"var",		"Reactive Power",		"power_reactive",			"10",		},	2,			0.25,		},	// OBK_POWER_REACTIVE
+	{{"power_factor",	"",			"Power Factor",			"power_factor",				"11",		},	2,			0.05,		},	// OBK_POWER_FACTOR
+	{{"energy",			UNIT_WH,	"Energy Total",			"energycounter",			"3",		},	3,			0.1,		},	// OBK_CONSUMPTION_TOTAL
+	{{"energy",			UNIT_WH,	"Energy Last Hour",		"energycounter_last_hour",	"4",		},	3,			0.1,		},	// OBK_CONSUMPTION_LAST_HOUR
+	//{{"",				"",			"Consumption Stats",	"consumption_stats",		"5",		},	0,			0,			},	// OBK_CONSUMPTION_STATS
+	{{"energy",			UNIT_WH,	"Energy Today",			"energycounter_today",		"7",		},	3,			0.1,		},	// OBK_CONSUMPTION_TODAY
+	{{"energy",			UNIT_WH,	"Energy Yesterday",		"energycounter_yesterday",	"6",		},	3,			0.1,		},	// OBK_CONSUMPTION_YESTERDAY
+	{{"energy",			UNIT_WH,	"Energy 2 Days Ago",	"energycounter_2_days_ago",	"12",		},	3,			0.1,		},	// OBK_CONSUMPTION_2_DAYS_AGO
+	{{"energy",			UNIT_WH,	"Energy 3 Days Ago",	"energycounter_3_days_ago",	"13",		},	3,			0.1,		},	// OBK_CONSUMPTION_3_DAYS_AGO
+	{{"timestamp",		"",			"Energy Clear Date",	"energycounter_clear_date",	"8",		},	0,			86400,		},	// OBK_CONSUMPTION_CLEAR_DATE	
 }; 
-//TODO..... rounding precision
-// Current values
-float lastReadings[OBK_NUM_MEASUREMENTS];
+
 float lastReadingFrequency = NAN;
 
-
-//
-// Variables below are for optimization
-// We can't send a full MQTT update every second.
-// It's too much for Beken, and it's too much for LWIP 2 MQTT library,
-// especially when actively browsing site and using JS app Log Viewer.
-// It even fails to publish with -1 error (can't alloc next packet)
-// So we publish when value changes from certain threshold or when a certain time passes.
-//
-// what are the last values we sent over the MQTT?
-float lastSentValues[OBK_NUM_MEASUREMENTS];
-// energyCounter in Wh
-static double energyCounter = 0.0;
+//static double energyCounter = 0.0;
 portTickType energyCounterStamp;
 
 bool energyCounterStatsEnable = false;
@@ -74,37 +66,12 @@ portTickType energyCounterMinutesStamp;
 long energyCounterMinutesIndex;
 bool energyCounterStatsJSONEnable = false;
 
-// how much update frames has passed without sending MQTT update of read values?
-int noChangeFrames[OBK_NUM_MEASUREMENTS];
-int noChangeFrameEnergyCounter;
-double lastSentEnergyCounterValue = 0.0; 
-float changeSendThresholdEnergy = 0.1f;
-float lastSentEnergyCounterLastHour = 0.0f;
-
-typedef enum DAILY_STATS {
-	DAILY_STATS_TODAY = 0,
-	DAILY_STATS_YESTERDAY,
-	DAILY_STATS_2_DAYS_AGO,
-	DAILY_STATS_3_DAYS_AGO,
-	DAILY_STATS_LENGTH
-};
-float dailyStats[DAILY_STATS_LENGTH];
 int actual_mday = -1;
 float lastSavedEnergyCounterValue = 0.0f;
 float changeSavedThresholdEnergy = 10.0f;
 long ConsumptionSaveCounter = 0;
 portTickType lastConsumptionSaveStamp;
 time_t ConsumptionResetTime = 0;
-
-// how much of value have to change in order to be send over MQTT again?
-float changeSendThresholds[OBK_NUM_MEASUREMENTS] = {
-    0.25f, // voltage - OBK_VOLTAGE
-    0.002f, // current - OBK_CURRENT
-    0.25f, // power - OBK_POWER
-	0.25f, // apparent power - OBK_POWER_APPARENT
-	0.25f, // reactive power - OBK_POWER_REACTIVE
-	0.05f, // power factor - OBK_POWER_FACTOR
-};
 
 int changeSendAlwaysFrames = 60;
 int changeDoNotSendMinFrames = 5;
@@ -137,28 +104,16 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
         hprintf255(request, "%.2f</td><td>Hz</td>", lastReadingFrequency);
     }
 
-
-	for (int i = OBK_VOLTAGE; i < OBK_NUM_MEASUREMENTS; i++) {
-		poststr(request, "<tr><td><b>");
-		poststr(request, energy_sensors[i].names.name_friendly);
-		poststr(request, "</b></td><td style='text-align: right;'>");
-		hprintf255(request, "%.*f</td><td>%s</td>", energy_sensors[i].rounding_decimals, lastReadings[i], energy_sensors[i].names.units);
+	for (int i = OBK__FIRST; i <= OBK_CONSUMPTION__DAILY_LAST; i++) {
+		if (i <= OBK__NUM_MEASUREMENTS || NTP_IsTimeSynced()) {
+			poststr(request, "<tr><td><b>");
+			poststr(request, sensors[i].names.name_friendly);
+			poststr(request, "</b></td><td style='text-align: right;'>");
+			hprintf255(request, "%.*f</td><td>%s</td>", sensors[i].rounding_decimals, 
+					(i == OBK_CONSUMPTION_TOTAL ? 0.001 : 1) * sensors[i].lastReading, //always display OBK_CONSUMPTION_TOTAL in kwh
+					i == OBK_CONSUMPTION_TOTAL ? "kWh": sensors[i].names.units);
+		}
 	};
-
-    if (NTP_IsTimeSynced()) {
-        poststr(request, "<tr><td><b>Energy Today</b></td><td "
-                         "style='text-align: right;'>");
-        hprintf255(request, "%.1f</td><td>Wh</td>", dailyStats[DAILY_STATS_TODAY]);
-
-        poststr(request, "<tr><td><b>Energy Yesterday</b></td><td "
-                         "style='text-align: right;'>");
-        hprintf255(request, "%.1f</td><td>Wh</td>", dailyStats[DAILY_STATS_YESTERDAY]);
-    }
-
-    poststr(request,
-            "<tr><td><b>Energy Total</b></td><td style='text-align: right;'>");
-	// convert from Wh to kWh (thus / 1000.0f)
-    hprintf255(request, "%.*f</td><td>kWh</td>", energy_sensors[OBK_CONSUMPTION_TOTAL].rounding_decimals, ((float)(energyCounter / 1000.0f)));
 
     poststr(request, "</table>");
 
@@ -166,11 +121,28 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
                stat_updatesSent, stat_updatesSkipped, ConsumptionSaveCounter,
                mode);
 
+	poststr(request, "<h5>Energy Clear Date: ");
+	if (ConsumptionResetTime) {
+		ltm = gmtime(&ConsumptionResetTime);
+		hprintf255(request, "%04d-%02d-%02d %02d:%02d:%02d",
+					ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+	} else {
+		poststr(request, "(not set)");
+	}
+
+	hprintf255(request, "<br>");
+	if(DRV_IsRunning("NTP")==false) {
+		hprintf255(request,"NTP driver is not started, daily energy stats disbled.");
+	} else if (!NTP_IsTimeSynced()) {
+		hprintf255(request,"Daily energy stats awaiting NTP driver to sync real time...");
+	}
+	hprintf255(request, "</h5>");
+
     if (energyCounterStatsEnable == true)
     {
         /********************************************************************************************************************/
         hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
-        hprintf255(request,"%1.*f Wh<br>", energy_sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+        hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
         hprintf255(request,"Sampling interval: %d sec<br>History length: ",energyCounterSampleInterval);
         hprintf255(request,"%d samples<br>History per samples:<br>",energyCounterSampleCount);
         if (energyCounterMinutes != NULL)
@@ -195,26 +167,6 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
                     (energyCounterStatsJSONEnable == true) ? "enabled" : "disabled");
         }
 
-        if(NTP_IsTimeSynced() == true)
-        {
-            hprintf255(request, "Today: %1.1f Wh DailyStats: [", dailyStats[DAILY_STATS_TODAY]);
-            for(i = DAILY_STATS_YESTERDAY; i < DAILY_STATS_LENGTH; i++)
-            {
-                if (i==1)
-                    hprintf255(request, "%1.1f", dailyStats[i]);
-                else
-                    hprintf255(request, ",%1.1f", dailyStats[i]);
-            }
-            hprintf255(request, "]<br>");
-            ltm = gmtime(&ConsumptionResetTime);
-            hprintf255(request, "Consumption Reset Time: %04d/%02d/%02d %02d:%02d:%02d",
-                       ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
-        } else {
-            if(DRV_IsRunning("NTP")==false)
-                hprintf255(request,"NTP driver is not started, daily stats disbled.");
-            else
-                hprintf255(request,"Daily stats require NTP driver to sync real time.");
-        }
         hprintf255(request, "</h5>");
     } else {
         hprintf255(request,"<h5>Periodic Statistics disabled. Use startup command SetupEnergyStats to enable function.</h5>");
@@ -228,12 +180,12 @@ void BL09XX_SaveEmeteringStatistics()
 
     memset(&data, 0, sizeof(ENERGY_METERING_DATA));
 
-    data.TotalConsumption = (float)energyCounter;
-    data.TodayConsumpion = dailyStats[DAILY_STATS_TODAY];
-    data.YesterdayConsumption = dailyStats[DAILY_STATS_YESTERDAY];
+    data.TotalConsumption = sensors[OBK_CONSUMPTION_TOTAL].lastReading;
+    data.TodayConsumpion = sensors[OBK_CONSUMPTION_TODAY].lastReading;
+    data.YesterdayConsumption = sensors[OBK_CONSUMPTION_YESTERDAY].lastReading;
     data.actual_mday = actual_mday;
-    data.ConsumptionHistory[0] = dailyStats[DAILY_STATS_2_DAYS_AGO];
-    data.ConsumptionHistory[1] = dailyStats[DAILY_STATS_3_DAYS_AGO];
+    data.ConsumptionHistory[0] = sensors[OBK_CONSUMPTION_2_DAYS_AGO].lastReading;
+    data.ConsumptionHistory[1] = sensors[OBK_CONSUMPTION_3_DAYS_AGO].lastReading;
     data.ConsumptionResetTime = ConsumptionResetTime;
     ConsumptionSaveCounter++;
     data.save_counter = ConsumptionSaveCounter;
@@ -248,7 +200,7 @@ commandResult_t BL09XX_ResetEnergyCounter(const void *context, const char *cmd, 
 
     if(args==0||*args==0) 
     {
-        energyCounter = 0.0;
+        sensors[OBK_CONSUMPTION_TOTAL].lastReading = 0.0;
         energyCounterStamp = xTaskGetTickCount();
         if (energyCounterStatsEnable == true)
         {
@@ -262,13 +214,13 @@ commandResult_t BL09XX_ResetEnergyCounter(const void *context, const char *cmd, 
             energyCounterMinutesStamp = xTaskGetTickCount();
             energyCounterMinutesIndex = 0;
         }
-        for(i = DAILY_STATS_TODAY; i < DAILY_STATS_LENGTH; i++)
+        for(i = OBK_CONSUMPTION__DAILY_FIRST; i <= OBK_CONSUMPTION__DAILY_LAST; i++)
         {
-            dailyStats[i] = 0.0;
+            sensors[i].lastReading = 0.0;
         }
     } else {
         value = atof(args);
-        energyCounter = value;
+        sensors[OBK_CONSUMPTION_TOTAL].lastReading = value;
         energyCounterStamp = xTaskGetTickCount();
     }
     ConsumptionResetTime = (time_t)NTP_GetCurrentTime();
@@ -406,19 +358,19 @@ commandResult_t BL09XX_VCPPrecision(const void *context, const char *cmd, const 
 		int val = Tokenizer_GetArgInteger(i);
 			switch(i) {
 			case 0: // voltage
-				energy_sensors[OBK_VOLTAGE].rounding_decimals = val;
+				sensors[OBK_VOLTAGE].rounding_decimals = val;
 				break;
 			case 1: // current
-				energy_sensors[OBK_CURRENT].rounding_decimals = val;
+				sensors[OBK_CURRENT].rounding_decimals = val;
 				break;
 			case 2: // power
-				energy_sensors[OBK_POWER].rounding_decimals = val;
-				energy_sensors[OBK_POWER_APPARENT].rounding_decimals = val;
-				energy_sensors[OBK_POWER_REACTIVE].rounding_decimals = val;
+				sensors[OBK_POWER].rounding_decimals = val;
+				sensors[OBK_POWER_APPARENT].rounding_decimals = val;
+				sensors[OBK_POWER_REACTIVE].rounding_decimals = val;
 				break;
 			case 3: // energy
-				for (int j = OBK_CONSUMPTION_TOTAL; j <= OBK_CONSUMPTION_3_DAYS_AGO; j++) {
-					energy_sensors[j].rounding_decimals = val;
+				for (int j = OBK_CONSUMPTION__DAILY_FIRST; j <= OBK_CONSUMPTION__DAILY_LAST; j++) {
+					sensors[j].rounding_decimals = val;
 				};
 
 			};
@@ -436,12 +388,17 @@ commandResult_t BL09XX_VCPPublishThreshold(const void *context, const char *cmd,
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
-	changeSendThresholds[OBK_VOLTAGE] = Tokenizer_GetArgFloat(0);
-	changeSendThresholds[OBK_CURRENT] = Tokenizer_GetArgFloat(1);
-	changeSendThresholds[OBK_POWER] = Tokenizer_GetArgFloat(2);
-	if (Tokenizer_GetArgsCount() >= 4)
-		changeSendThresholdEnergy = Tokenizer_GetArgFloat(3);
-
+	sensors[OBK_VOLTAGE].changeSendThreshold = Tokenizer_GetArgFloat(0);
+	sensors[OBK_CURRENT].changeSendThreshold = Tokenizer_GetArgFloat(1);
+	sensors[OBK_POWER].changeSendThreshold = Tokenizer_GetArgFloat(2);
+	sensors[OBK_POWER_APPARENT].changeSendThreshold = Tokenizer_GetArgFloat(2);
+	sensors[OBK_POWER_REACTIVE].changeSendThreshold = Tokenizer_GetArgFloat(2);
+	
+	if (Tokenizer_GetArgsCount() >= 4) {
+		for (int i = OBK_CONSUMPTION_LAST_HOUR; i <= OBK_CONSUMPTION__DAILY_LAST; i++) {
+			sensors[i].changeSendThreshold = Tokenizer_GetArgFloat(3);
+		}
+	}
 	return CMD_RES_OK;
 }
 
@@ -535,16 +492,16 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 		}
 	}
 
-    lastReadings[OBK_VOLTAGE] = voltage;
-    lastReadings[OBK_CURRENT] = current;
-	lastReadings[OBK_POWER] = power;
-	lastReadings[OBK_POWER_APPARENT] = lastReadings[OBK_VOLTAGE] * lastReadings[OBK_CURRENT];
-    lastReadings[OBK_POWER_REACTIVE] = (lastReadings[OBK_POWER_APPARENT] <= fabsf(lastReadings[OBK_POWER])
+    sensors[OBK_VOLTAGE].lastReading = voltage;
+    sensors[OBK_CURRENT].lastReading = current;
+	sensors[OBK_POWER].lastReading = power;
+	sensors[OBK_POWER_APPARENT].lastReading = sensors[OBK_VOLTAGE].lastReading * sensors[OBK_CURRENT].lastReading;
+    sensors[OBK_POWER_REACTIVE].lastReading = (sensors[OBK_POWER_APPARENT].lastReading <= fabsf(sensors[OBK_POWER].lastReading)
 										? 0
-										: sqrtf(powf(lastReadings[OBK_POWER_APPARENT], 2) -
-												powf(lastReadings[OBK_POWER], 2)));  
-	lastReadings[OBK_POWER_FACTOR] =
-        (lastReadings[OBK_POWER_APPARENT] == 0 ? 1 : lastReadings[OBK_POWER] / lastReadings[OBK_POWER_APPARENT]);
+										: sqrtf(powf(sensors[OBK_POWER_APPARENT].lastReading, 2) -
+												powf(sensors[OBK_POWER].lastReading, 2)));  
+	sensors[OBK_POWER_FACTOR].lastReading =
+        (sensors[OBK_POWER_APPARENT].lastReading == 0 ? 1 : sensors[OBK_POWER].lastReading / sensors[OBK_POWER_APPARENT].lastReading);
 
 	lastReadingFrequency = frequency;
 
@@ -561,9 +518,10 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     if (energy < 0)
         energy = 0.0;
 
-    energyCounter += (double)energy;
+    sensors[OBK_CONSUMPTION_TOTAL].lastReading += (double)energy;
     energyCounterStamp = xTaskGetTickCount();
-    HAL_FlashVars_SaveTotalConsumption(energyCounter);
+    HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
+	sensors[OBK_CONSUMPTION_TODAY].lastReading  += energy;
 
     if (NTP_IsTimeSynced()) {
         ntpTime = (time_t)NTP_GetCurrentTime();
@@ -577,14 +535,15 @@ void BL_ProcessUpdate(float voltage, float current, float power,
         }
         if (actual_mday != ltm->tm_mday)
         {
-            for (i = DAILY_STATS_LENGTH - 1; i > 0; i--)
-                dailyStats[i] = dailyStats[i - 1];
-
-            dailyStats[DAILY_STATS_TODAY] = 0.0;
+            for (i = OBK_CONSUMPTION__DAILY_LAST; i >= OBK_CONSUMPTION__DAILY_FIRST; i--) {
+                sensors[i].lastReading = sensors[i - 1].lastReading;
+			}
+            sensors[OBK_CONSUMPTION_TODAY].lastReading = 0.0;
             actual_mday = ltm->tm_mday;
-            MQTT_PublishMain_StringFloat(energy_sensors[OBK_CONSUMPTION_YESTERDAY].names.name_mqtt, BL_ChangeEnergyUnitIfNeeded(dailyStats[DAILY_STATS_YESTERDAY]),
-										energy_sensors[OBK_CONSUMPTION_YESTERDAY].rounding_decimals, 0);
-            stat_updatesSent++;
+
+            //MQTT_PublishMain_StringFloat(sensors[OBK_CONSUMPTION_YESTERDAY].names.name_mqtt, BL_ChangeEnergyUnitIfNeeded(sensors[OBK_CONSUMPTION_YESTERDAY].lastReading ),
+			//							sensors[OBK_CONSUMPTION_YESTERDAY].rounding_decimals, 0);
+            //stat_updatesSent++;
 #if WINDOWS
 #elif PLATFORM_BL602
 #elif PLATFORM_W600 || PLATFORM_W800
@@ -596,27 +555,9 @@ void BL_ProcessUpdate(float voltage, float current, float power,
                 BL09XX_SaveEmeteringStatistics();
                 lastConsumptionSaveStamp = xTaskGetTickCount();
             }
-            if (MQTT_IsReady() == true)
-            {
-                ltm = gmtime(&ConsumptionResetTime);
-                /* 2019-09-07T15:50-04:00 */
-                if (NTP_GetTimesZoneOfsSeconds()>0)
-                {
-                    snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i+%02i:%02i",
-                            ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
-                            NTP_GetTimesZoneOfsSeconds()/3600, (NTP_GetTimesZoneOfsSeconds()/60) % 60);
-                } else {
-                    snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i-%02i:%02i",
-                            ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
-                            abs(NTP_GetTimesZoneOfsSeconds()/3600), (abs(NTP_GetTimesZoneOfsSeconds())/60) % 60);
-                }
-                MQTT_PublishMain_StringString(energy_sensors[OBK_CONSUMPTION_CLEAR_DATE].names.name_mqtt, datetime, 0);
-                stat_updatesSent++;
-            }
+
         }
     }
-
-    dailyStats[DAILY_STATS_TODAY] += energy;
 
     if (energyCounterStatsEnable == true)
     {
@@ -628,15 +569,15 @@ void BL_ProcessUpdate(float voltage, float current, float power,
             {
                 root = cJSON_CreateObject();
                 cJSON_AddNumberToObject(root, "uptime", g_secondsElapsed);
-                cJSON_AddNumberToObject(root, "consumption_total", BL_ChangeEnergyUnitIfNeeded(energyCounter) );
-                cJSON_AddNumberToObject(root, "consumption_last_hour",  DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
-                cJSON_AddNumberToObject(root, "consumption_stat_index", BL_ChangeEnergyUnitIfNeeded(energyCounterMinutesIndex));
+                cJSON_AddNumberToObject(root, "consumption_total", BL_ChangeEnergyUnitIfNeeded(sensors[OBK_CONSUMPTION_TOTAL].lastReading));
+                cJSON_AddNumberToObject(root, "consumption_last_hour",  BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+                cJSON_AddNumberToObject(root, "consumption_stat_index", energyCounterMinutesIndex);
                 cJSON_AddNumberToObject(root, "consumption_sample_count", energyCounterSampleCount);
                 cJSON_AddNumberToObject(root, "consumption_sampling_period", energyCounterSampleInterval);
                 if(NTP_IsTimeSynced() == true)
                 {
-                    cJSON_AddNumberToObject(root, "consumption_today", BL_ChangeEnergyUnitIfNeeded(dailyStats[DAILY_STATS_TODAY]));
-                    cJSON_AddNumberToObject(root, "consumption_yesterday", BL_ChangeEnergyUnitIfNeeded(dailyStats[DAILY_STATS_YESTERDAY]));
+                    cJSON_AddNumberToObject(root, "consumption_today", BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_TODAY)));
+                    cJSON_AddNumberToObject(root, "consumption_yesterday", BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_YESTERDAY)));
                     ltm = gmtime(&ConsumptionResetTime);
                     if (NTP_GetTimesZoneOfsSeconds()>0)
                     {
@@ -668,9 +609,9 @@ void BL_ProcessUpdate(float voltage, float current, float power,
                 if(NTP_IsTimeSynced() == true)
                 {
                     stats = cJSON_CreateArray();
-                    for(i = DAILY_STATS_TODAY; i < DAILY_STATS_LENGTH; i++)
+                    for(i = OBK_CONSUMPTION__DAILY_FIRST; i <= OBK_CONSUMPTION__DAILY_LAST; i++)
                     {
-                        cJSON_AddItemToArray(stats, cJSON_CreateNumber(dailyStats[i]));
+                        cJSON_AddItemToArray(stats, cJSON_CreateNumber(DRV_GetReading(i)));
                     }
                     cJSON_AddItemToObject(root, "consumption_daily", stats);
                 }
@@ -701,111 +642,79 @@ void BL_ProcessUpdate(float voltage, float current, float power,
             energyCounterMinutesStamp = xTaskGetTickCount();
             energyCounterMinutesIndex++;
 
-            if (MQTT_IsReady() == true)
-            {
-                MQTT_PublishMain_StringFloat(energy_sensors[OBK_CONSUMPTION_LAST_HOUR].names.name_mqtt,
-					BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR)), energy_sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, 0);
-                EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR, lastSentEnergyCounterLastHour, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
-                lastSentEnergyCounterLastHour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
-                stat_updatesSent++;
-            }
         }
 
         if (energyCounterMinutes != NULL)
             energyCounterMinutes[0] += energy;
     }
 
-    for(i = 0; i < OBK_NUM_MEASUREMENTS; i++)
+    for(i = OBK__FIRST; i <= OBK__LAST; i++)
     {
         // send update only if there was a big change or if certain time has passed
         // Do not send message with every measurement. 
-		diff = lastSentValues[i] - lastReadings[i];
-		// get absolute value
-		if (diff < 0)
-			diff = -diff;
+		diff = sensors[i].lastSentValue - sensors[i].lastReading;
 		// check for change
-        if ( ((diff > changeSendThresholds[i]) &&
-               (noChangeFrames[i] >= changeDoNotSendMinFrames)) ||
-             (noChangeFrames[i] >= changeSendAlwaysFrames) )
+        if ( ((abs(diff) > sensors[i].changeSendThreshold) &&
+               (sensors[i].noChangeFrame >= changeDoNotSendMinFrames)) ||
+             (sensors[i].noChangeFrame >= changeSendAlwaysFrames) )
         {
-            noChangeFrames[i] = 0;
-            if(i == OBK_CURRENT)
-            {
-                int prev_mA, now_mA;
-                prev_mA = lastSentValues[i] * 1000;
-                now_mA = lastReadings[i] * 1000;
-                EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CURRENT, prev_mA,now_mA);
-            } else {
-                EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_VOLTAGE+i, lastSentValues[i], lastReadings[i]);
-            }
+            sensors[i].noChangeFrame = 0;
+
+			enum EventCode eventChangeCode;
+			switch (i) {
+			case OBK_VOLTAGE:				eventChangeCode = CMD_EVENT_CHANGE_VOLTAGE;	break;
+			case OBK_CURRENT:				eventChangeCode = CMD_EVENT_CHANGE_CURRENT;	break;
+			case OBK_POWER:					eventChangeCode = CMD_EVENT_CHANGE_POWER; break;
+			case OBK_CONSUMPTION_TOTAL:		eventChangeCode = CMD_EVENT_CHANGE_CONSUMPTION_TOTAL; break;
+			case OBK_CONSUMPTION_LAST_HOUR:	eventChangeCode = CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR; break;
+			default:						eventChangeCode = CMD_EVENT_NONE; break;
+			}
+			switch (eventChangeCode) {
+			case CMD_EVENT_NONE:
+				break;
+			case CMD_EVENT_CHANGE_CURRENT: ;
+                int prev_mA = sensors[i].lastSentValue * 1000;
+                int now_mA = sensors[i].lastReading * 1000;
+                EventHandlers_ProcessVariableChange_Integer(eventChangeCode, prev_mA,now_mA);
+				break;
+			default:
+				EventHandlers_ProcessVariableChange_Integer(eventChangeCode, sensors[i].lastSentValue, sensors[i].lastReading);
+				break;
+			}
+
             if (MQTT_IsReady() == true)
             {
-                lastSentValues[i] = lastReadings[i];
-                MQTT_PublishMain_StringFloat(energy_sensors[i].names.name_mqtt, lastReadings[i], energy_sensors[i].rounding_decimals, 0);
-                stat_updatesSent++;
-            }
+				sensors[i].lastSentValue = sensors[i].lastReading;
+				if (i == OBK_CONSUMPTION_CLEAR_DATE) {
+					sensors[i].lastReading = ConsumptionResetTime; //Only to make the 'nochangeframe' mechanism work here
+					ltm = gmtime(&ConsumptionResetTime);
+					/* 2019-09-07T15:50-04:00 */
+					if (NTP_GetTimesZoneOfsSeconds()>0)
+					{
+						snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i+%02i:%02i",
+								ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
+								NTP_GetTimesZoneOfsSeconds()/3600, (NTP_GetTimesZoneOfsSeconds()/60) % 60);
+					} else {
+						snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i-%02i:%02i",
+								ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
+								abs(NTP_GetTimesZoneOfsSeconds()/3600), (abs(NTP_GetTimesZoneOfsSeconds())/60) % 60);
+					}
+					MQTT_PublishMain_StringString(sensors[i].names.name_mqtt, datetime, 0);
+				} else { //all other sensors
+					float val = sensors[i].lastReading;
+					if (sensors[i].names.units == UNIT_WH) val = BL_ChangeEnergyUnitIfNeeded(val);
+					MQTT_PublishMain_StringFloat(sensors[i].names.name_mqtt, val, sensors[i].rounding_decimals, 0);
+				}
+				stat_updatesSent++;
+			}
         } else {
             // no change frame
-            noChangeFrames[i]++;
+            sensors[i].noChangeFrame++;
             stat_updatesSkipped++;
         }
-    }
+    }        
 
-	// send update only if there was a big change or if certain time has passed
-	// Do not send message with every measurement. 
-	diff = energyCounter - lastSentEnergyCounterValue;
-	// get absolute value
-	if (diff < 0)
-		diff = -diff;
-	// check for change
-    if ( (((diff) >= changeSendThresholdEnergy) &&
-          (noChangeFrameEnergyCounter >= changeDoNotSendMinFrames)) || 
-         (noChangeFrameEnergyCounter >= changeSendAlwaysFrames) )
-    {
-        if (MQTT_IsReady() == true)
-        {
-            MQTT_PublishMain_StringFloat(energy_sensors[OBK_CONSUMPTION_TOTAL].names.name_mqtt,
-				BL_ChangeEnergyUnitIfNeeded(energyCounter), energy_sensors[OBK_CONSUMPTION_TOTAL].rounding_decimals, 0);
-
-            EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CONSUMPTION_TOTAL, lastSentEnergyCounterValue, energyCounter);
-            lastSentEnergyCounterValue = energyCounter;
-            noChangeFrameEnergyCounter = 0;
-            stat_updatesSent++;
-
-            MQTT_PublishMain_StringFloat(energy_sensors[OBK_CONSUMPTION_LAST_HOUR].names.name_mqtt, 
-				BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR)), energy_sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, 0);
-
-            EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR, lastSentEnergyCounterLastHour, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
-            lastSentEnergyCounterLastHour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
-            stat_updatesSent++;
-            if(NTP_IsTimeSynced() == true)
-            {
-                for (int i = OBK_CONSUMPTION_TODAY; i < OBK_CONSUMPTION_3_DAYS_AGO; i++) {
-					MQTT_PublishMain_StringFloat(energy_sensors[i].names.name_mqtt, 
-						BL_ChangeEnergyUnitIfNeeded(dailyStats[i - OBK_CONSUMPTION_TODAY]), energy_sensors[i].rounding_decimals,0);
-					stat_updatesSent++;
-				}
-
-                ltm = gmtime(&ConsumptionResetTime);
-				if (NTP_GetTimesZoneOfsSeconds()>0)
-				{
-					snprintf(datetime,sizeof(datetime), "%04i-%02i-%02iT%02i:%02i+%02i:%02i",
-							ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
-							NTP_GetTimesZoneOfsSeconds()/3600, (NTP_GetTimesZoneOfsSeconds()/60) % 60);
-				} else {
-					snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i-%02i:%02i",
-							ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
-							abs(NTP_GetTimesZoneOfsSeconds()/3600), (abs(NTP_GetTimesZoneOfsSeconds())/60) % 60);
-				}
-                MQTT_PublishMain_StringString(energy_sensors[OBK_CONSUMPTION_CLEAR_DATE].names.name_mqtt, datetime, 0);
-                stat_updatesSent++;
-            }
-        }
-    } else {
-        noChangeFrameEnergyCounter++;
-        stat_updatesSkipped++;
-    }
-    if (((energyCounter - lastSavedEnergyCounterValue) >= changeSavedThresholdEnergy) ||
+    if (((sensors[OBK_CONSUMPTION_TOTAL].lastReading - lastSavedEnergyCounterValue) >= changeSavedThresholdEnergy) ||
         ((xTaskGetTickCount() - lastConsumptionSaveStamp) >= (6 * 3600 * 1000 / portTICK_PERIOD_MS)))
     {
 #if WINDOWS
@@ -816,7 +725,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
         if (ota_progress() == -1)
 #endif
         {
-            lastSavedEnergyCounterValue = energyCounter;
+            lastSavedEnergyCounterValue = sensors[OBK_CONSUMPTION_TOTAL].lastReading;
             BL09XX_SaveEmeteringStatistics();
             lastConsumptionSaveStamp = xTaskGetTickCount();
         }
@@ -828,12 +737,11 @@ void BL_Shared_Init(void)
     int i;
     ENERGY_METERING_DATA data;
 
-    for(i = 0; i < OBK_NUM_MEASUREMENTS; i++)
+    for(i = OBK__FIRST; i <= OBK__LAST; i++)
     {
-        noChangeFrames[i] = 0;
-        lastReadings[i] = 0;
+        sensors[i].noChangeFrame = 0;
+        sensors[i].lastReading = 0;
     }
-    noChangeFrameEnergyCounter = 0;
     energyCounterStamp = xTaskGetTickCount(); 
 
     if (energyCounterStatsEnable == true)
@@ -853,21 +761,16 @@ void BL_Shared_Init(void)
         energyCounterMinutesIndex = 0;
     }
 
-    for(i = DAILY_STATS_TODAY; i < DAILY_STATS_LENGTH; i++)
-    {
-        dailyStats[i] = 0;
-    }
-
     addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Read ENERGYMETER status values. sizeof(ENERGY_METERING_DATA)=%d\n", sizeof(ENERGY_METERING_DATA));
 
     HAL_GetEnergyMeterStatus(&data);
-    energyCounter = data.TotalConsumption;
-    dailyStats[DAILY_STATS_TODAY] = data.TodayConsumpion;
-    dailyStats[DAILY_STATS_YESTERDAY] = data.YesterdayConsumption;
+    sensors[OBK_CONSUMPTION_TOTAL].lastReading = data.TotalConsumption;
+    sensors[OBK_CONSUMPTION_TODAY].lastReading = data.TodayConsumpion;
+    sensors[OBK_CONSUMPTION_YESTERDAY].lastReading = data.YesterdayConsumption;
     actual_mday = data.actual_mday;    
-    lastSavedEnergyCounterValue = energyCounter;
-    dailyStats[DAILY_STATS_2_DAYS_AGO] = data.ConsumptionHistory[0];
-    dailyStats[DAILY_STATS_3_DAYS_AGO] = data.ConsumptionHistory[1];
+    lastSavedEnergyCounterValue = data.TotalConsumption;
+    sensors[OBK_CONSUMPTION_2_DAYS_AGO].lastReading = data.ConsumptionHistory[0];
+    sensors[OBK_CONSUMPTION_3_DAYS_AGO].lastReading = data.ConsumptionHistory[1];
     ConsumptionResetTime = data.ConsumptionResetTime;
     ConsumptionSaveCounter = data.save_counter;
     lastConsumptionSaveStamp = xTaskGetTickCount();
@@ -907,21 +810,12 @@ void BL_Shared_Init(void)
 }
 
 // OBK_POWER etc
-float DRV_GetReading(OBK_ENERGY_SENSOR type) 
+float DRV_GetReading(energySensor_t type) 
 {
     int i;
-    float hourly_sum = 0.0;
+    float hourly_sum = 0;
     switch (type)
     {
-        case OBK_VOLTAGE: // must match order in cmd_public.h
-        case OBK_CURRENT:
-        case OBK_POWER:
-		case OBK_POWER_APPARENT:
-		case OBK_POWER_REACTIVE:
-		case OBK_POWER_FACTOR:
-            return lastReadings[type];
-        case OBK_CONSUMPTION_TOTAL:
-            return energyCounter;
         case OBK_CONSUMPTION_LAST_HOUR:
             if (energyCounterStatsEnable == true)
             {
@@ -934,17 +828,13 @@ float DRV_GetReading(OBK_ENERGY_SENSOR type)
                 }
             }
             return hourly_sum;
-        case OBK_CONSUMPTION_YESTERDAY:
-            return dailyStats[DAILY_STATS_YESTERDAY];
-        case OBK_CONSUMPTION_TODAY:
-            return dailyStats[DAILY_STATS_TODAY];
         default:
-            break;
+			return sensors[type].lastReading;
     }
     return 0.0f;
 }
 
-energy_sensor_names* DRV_GetEnergySensorNames(OBK_ENERGY_SENSOR type)
+energySensorNames_t* DRV_GetEnergySensorNames(energySensor_t type)
 {
-	return &energy_sensors[type].names;
+	return &sensors[type].names;
 }

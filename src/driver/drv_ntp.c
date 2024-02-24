@@ -521,7 +521,7 @@ void NTP_AppendInformationToHTTPIndexPage(http_request_t* request)
         hprintf255(request, "<h5>NTP (%s): Local Time: %04d/%02d/%02d %02d:%02d:%02d </h5>",
 			CFG_GetNTPServer(),ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
     else 
-        hprintf255(request, "<h5>NTP: Syncing with %s....",CFG_GetNTPServer());
+        hprintf255(request, "<h5>NTP: Syncing with %s....</h5>",CFG_GetNTPServer());
 }
 
 bool NTP_IsTimeSynced()

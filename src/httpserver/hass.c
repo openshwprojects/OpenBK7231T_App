@@ -52,13 +52,7 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 
 	case ENERGY_METER_SENSOR:
 #ifndef OBK_DISABLE_ALL_DRIVERS
-		;const bool HASS_ID_COMPATIBILITY = true;
-		if (HASS_ID_COMPATIBILITY) {
-			sprintf(uniq_id, "%s_sensor_%s", longDeviceName, DRV_GetEnergySensorNames(index)->hass_id_compatibility);
-		} else {
-			sprintf(uniq_id, "%s_sensor_%02d", longDeviceName, index); 
-		}
-		//sprintf(uniq_id, "%s_%s", longDeviceName, energy_sensors[index].name_mqtt); //can't do this - too high chance of exceeding MQTT_PUBLISH_ITEM_CHANNEL_LENGTH
+		sprintf(uniq_id, "%s_sensor_%s", longDeviceName, DRV_GetEnergySensorNames(index)->hass_uniq_id_suffix);
 #endif
 		break;
 	case POWER_SENSOR:
@@ -195,7 +189,7 @@ cJSON* hass_build_device_node(cJSON* ids) {
 /// @brief Initializes HomeAssistant device discovery storage with common values.
 /// @param type 
 /// @param index This is used to generate generate unique_id and name. 
-/// It is ignored for RGB. For power sensors, index corresponds to energy_sensors. For regular sensor, index can be be the channel.
+/// It is ignored for RGB. For energy sensors, index corresponds to energySensor_t. For regular sensor, index can be be the channel.
 /// @param payload_on The payload that represents enabled state. This is not added for POWER_SENSOR.
 /// @param payload_off The payload that represents disabled state. This is not added for POWER_SENSOR.
 /// @return 
@@ -234,10 +228,10 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 	case ENERGY_METER_SENSOR:
 		isSensor = true;
 #ifndef OBK_DISABLE_ALL_DRIVERS
-		if (index < OBK_NUM_ENUMS_MAX)
+		if (index < OBK__LAST)
 			sprintf(g_hassBuffer, "%s", DRV_GetEnergySensorNames(index)->name_friendly);
 		else
-			sprintf(g_hassBuffer, "Un-nmaed Energy Meter Sensor");
+			sprintf(g_hassBuffer, "Unknown Energy Meter Sensor");
 #endif
 		break;
 	case POWER_SENSOR:
@@ -435,15 +429,15 @@ HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 
 /// @brief Initializes HomeAssistant power sensor device discovery storage.
-/// @param index Index corresponding to energy_sensors[].
+/// @param index Index corresponding to energySensor_t.
 /// @return 
-HassDeviceInfo* hass_init_power_sensor_device_info(int index) {
+HassDeviceInfo* hass_init_energy_sensor_device_info(int index) {
 	HassDeviceInfo* info = 0;
 
 	//https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes
 	//device_class automatically assigns unit,icon
-	if (index >= OBK_NUM_ENUMS_MAX) return info;
-	if (index >= OBK_CONSUMPTION_YESTERDAY && !DRV_IsRunning("NTP")) return info; //include daily stats only when time is valid
+	if (index > OBK__LAST) return info;
+	if (index >= OBK_CONSUMPTION__DAILY_FIRST && !DRV_IsRunning("NTP")) return info; //include daily stats only when time is valid
 
 	info = hass_init_device_info(ENERGY_METER_SENSOR, index, NULL, NULL);
 
