@@ -212,6 +212,7 @@ typedef int bool;
 #define bk_printf printf
 
 #define rtos_delay_milliseconds vTaskDelay
+#define delay_ms vTaskDelay
 
 #define kNoErr                      0       //! No error occurred.
 typedef void *beken_thread_arg_t;
