@@ -16,7 +16,7 @@ typedef enum energySensor_e {
 
 	OBK_CONSUMPTION_LAST_HOUR,
 	//OBK_CONSUMPTION_STATS, // represents a variable size array of energy samples, not a sensor
-	
+	// below here are sensors that are assumed to require NTP driver
 	OBK_CONSUMPTION__DAILY_FIRST, //daily consumptions are assumed to be in chronological order
 	OBK_CONSUMPTION_TODAY = OBK_CONSUMPTION__DAILY_FIRST, 
 	OBK_CONSUMPTION_YESTERDAY,
@@ -37,7 +37,6 @@ typedef struct energySensorNames_s {
 	const char* const hass_uniq_id_suffix; //keep identifiers persistent in case OBK_ENERG_SENSOR changes
 } energySensorNames_t;
 
-extern const char* sensor_hassNames[];
 extern int g_dhtsCount;
 
 void DRV_Generic_Init();

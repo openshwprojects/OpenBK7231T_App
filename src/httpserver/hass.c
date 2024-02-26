@@ -228,7 +228,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 	case ENERGY_METER_SENSOR:
 		isSensor = true;
 #ifndef OBK_DISABLE_ALL_DRIVERS
-		if (index < OBK__LAST)
+		if (index <= OBK__LAST)
 			sprintf(g_hassBuffer, "%s", DRV_GetEnergySensorNames(index)->name_friendly);
 		else
 			sprintf(g_hassBuffer, "Unknown Energy Meter Sensor");

@@ -1819,7 +1819,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	if (measuringPower == true) {
-		for (i = 0; i < OBK__LAST; i++)
+		for (i = OBK__FIRST; i < OBK__LAST; i++)
 		{
 			dev_info = hass_init_energy_sensor_device_info(i);
 			if (dev_info) {
