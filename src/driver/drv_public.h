@@ -14,7 +14,10 @@ typedef enum energySensor_e {
 	OBK_CONSUMPTION_TOTAL,
 	OBK__NUM_MEASUREMENTS = OBK_CONSUMPTION_TOTAL,
 
-	OBK_CONSUMPTION_LAST_HOUR,
+	// TODO OBK_CONSUMPTION_LAST_HOUR is actally "sum of consumption stats recording period"
+	// and won't correspond to 'last hour' unless cmd SetupEnergyStats is enabled and configured to record one hour
+	// e.g. 'SetupEnergyStats 1 60 60 0': 60 sec intervals, 60 samples
+	OBK_CONSUMPTION_LAST_HOUR,	
 	//OBK_CONSUMPTION_STATS, // represents a variable size array of energy samples, not a sensor
 	// below here are sensors that are assumed to require NTP driver
 	OBK_CONSUMPTION__DAILY_FIRST, //daily consumptions are assumed to be in chronological order

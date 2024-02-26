@@ -393,7 +393,8 @@ commandResult_t BL09XX_VCPPublishThreshold(const void *context, const char *cmd,
 	sensors[OBK_POWER].changeSendThreshold = Tokenizer_GetArgFloat(2);
 	sensors[OBK_POWER_APPARENT].changeSendThreshold = Tokenizer_GetArgFloat(2);
 	sensors[OBK_POWER_REACTIVE].changeSendThreshold = Tokenizer_GetArgFloat(2);
-	
+	//sensors[OBK_POWER_FACTOR].changeSendThreshold = Tokenizer_GetArgFloat(TODO);
+
 	if (Tokenizer_GetArgsCount() >= 4) {
 		for (int i = OBK_CONSUMPTION_LAST_HOUR; i <= OBK_CONSUMPTION__DAILY_LAST; i++) {
 			sensors[i].changeSendThreshold = Tokenizer_GetArgFloat(3);
@@ -565,6 +566,12 @@ void BL_ProcessUpdate(float voltage, float current, float power,
         interval *= (1000 / portTICK_PERIOD_MS); 
         if ((xTaskGetTickCount() - energyCounterMinutesStamp) >= interval)
         {
+			if (energyCounterMinutes != NULL) {
+				sensors[OBK_CONSUMPTION_LAST_HOUR].lastReading = 0;
+				for(int i = 0; i < energyCounterSampleCount; i++) {
+					sensors[OBK_CONSUMPTION_LAST_HOUR].lastReading  += energyCounterMinutes[i];
+				}
+			}
             if ((energyCounterStatsJSONEnable == true) && (MQTT_IsReady() == true))
             {
                 root = cJSON_CreateObject();
@@ -812,26 +819,7 @@ void BL_Shared_Init(void)
 // OBK_POWER etc
 float DRV_GetReading(energySensor_t type) 
 {
-    int i;
-    float hourly_sum = 0;
-    switch (type)
-    {
-        case OBK_CONSUMPTION_LAST_HOUR:
-            if (energyCounterStatsEnable == true)
-            {
-                if (energyCounterMinutes != NULL)
-                {
-                    for(i=0;i<energyCounterSampleCount;i++)
-                    {
-                        hourly_sum += energyCounterMinutes[i];
-                    }
-                }
-            }
-            return hourly_sum;
-        default:
-			return sensors[type].lastReading;
-    }
-    return 0.0f;
+	return sensors[type].lastReading;
 }
 
 energySensorNames_t* DRV_GetEnergySensorNames(energySensor_t type)
