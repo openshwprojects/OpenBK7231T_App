@@ -12,6 +12,8 @@
 #include "../driver/drv_tuyaMCU.h"
 #include "../ota/ota.h"
 
+#define BUILD_AND_VERSION_FOR_MQTT PLATFORM_MCU_NAME " " __DATE__ " " __TIME__ " v " USER_SW_VER
+
 #ifndef LWIP_MQTT_EXAMPLE_IPADDR_INIT
 #if LWIP_IPV4
 #define LWIP_MQTT_EXAMPLE_IPADDR_INIT = IPADDR4_INIT(PP_HTONL(IPADDR_LOOPBACK))
@@ -1774,7 +1776,7 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 		return MQTT_DoItemPublishString("host", CFG_GetShortDeviceName());
 
 	case PUBLISHITEM_SELF_BUILD:
-		return MQTT_DoItemPublishString("build", g_build_str);
+		return MQTT_DoItemPublishString("build", BUILD_AND_VERSION_FOR_MQTT);
 
 	case PUBLISHITEM_SELF_MAC:
 		return MQTT_DoItemPublishString("mac", HAL_GetMACStr(dataStr));
