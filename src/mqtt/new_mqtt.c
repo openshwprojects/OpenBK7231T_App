@@ -12,7 +12,7 @@
 #include "../driver/drv_tuyaMCU.h"
 #include "../ota/ota.h"
 
-#define BUILD_AND_VERSION_FOR_MQTT "Open" +PLATFORM_MCU_NAME " " USER_SW_VER " " __DATE__ " " __TIME__ 
+#define BUILD_AND_VERSION_FOR_MQTT "Open" PLATFORM_MCU_NAME " " USER_SW_VER " " __DATE__ " " __TIME__ 
 
 #ifndef LWIP_MQTT_EXAMPLE_IPADDR_INIT
 #if LWIP_IPV4
