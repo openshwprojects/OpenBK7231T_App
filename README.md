@@ -40,7 +40,7 @@ OpenBeken features:
 - Online [builds for all platforms](https://github.com/openshwprojects/OpenBK7231T_App/releases) via Github, also supports [Docker builds](https://github.com/openshwprojects/OpenBK7231T_App/tree/main/docker)
 - MQTT compatibility with Home Assistant (with both Yaml generator and [HA Discovery](https://youtu.be/pkcspey25V4)) 
 - Support for multiple relays, buttons, leds, inputs and PWMs, everything fully scriptable
-- [Driver system](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/drivers.md) for custom peripherals, including [TuyaMCU](https://www.elektroda.com/rtvforum/topic3898502.html), I2C bus and [BL0942](https://www.elektroda.com/rtvforum/topic3887748.html), BL0937 power metering chips, Motor Driver Bridge.
+- [Driver system](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/drivers.md) for custom peripherals, including [TuyaMCU](https://www.elektroda.com/rtvforum/topic4038151.html) (see [Dimmer tutorial](https://www.elektroda.com/rtvforum/topic3898502.html)), I2C bus and [BL0942](https://www.elektroda.com/rtvforum/topic3887748.html), BL0937 power metering chips, Motor Driver Bridge.
 - Hardware and software I2C, supports multiple I2C devices, like TC74 temperature sensor, MCP23017 port expander, PCF8574T LCD 2x16 (or other?), etc
 - Hardware and software SPI, support for SPI BL0942, etc
 - NTP time from network (can be used with [TH06](https://www.elektroda.com/rtvforum/topic3942730.html) and other TuyaMCU devices), can run any script on selected weekday hour:minute:second
