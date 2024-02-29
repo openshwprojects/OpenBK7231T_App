@@ -1898,6 +1898,31 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 	}
 	EventHandlers_FireEvent(CMD_EVENT_TUYAMCU_PARSED, cmd);
 }
+// tuyaMcu_sendCmd 0x30 000000
+// This will send 55 AA 00 30 00 03 00 00 00 32
+// 
+commandResult_t TuyaMCU_SendUserCmd(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	byte packet[128];
+	int c = 0;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	int command = Tokenizer_GetArgInteger(0);
+	const char *s = Tokenizer_GetArg(1);
+
+	while (*s) {
+		byte b;
+		b = hexbyte(s);
+
+		if (sizeof(packet) > c + 1) {
+			packet[c] = b;
+			c++;
+		}
+		s += 2;
+	}
+	TuyaMCU_SendCommandWithData(command,packet, c);
+	return CMD_RES_OK;
+}
 
 commandResult_t TuyaMCU_FakePacket(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	byte packet[256];
@@ -2305,6 +2330,8 @@ void TuyaMCU_Init()
 	//cmddetail:"fn":"TuyaMCU_SendMCUConf","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_sendMCUConf", TuyaMCU_SendMCUConf, NULL);
+
+	CMD_RegisterCommand("tuyaMcu_sendCmd", TuyaMCU_SendUserCmd, NULL);
 	//cmddetail:{"name":"fakeTuyaPacket","args":"[HexString]",
 	//cmddetail:"descr":"This simulates packet being sent from TuyaMCU to our OBK device.",
 	//cmddetail:"fn":"TuyaMCU_FakePacket","file":"driver/drv_tuyaMCU.c","requires":"",
