@@ -483,7 +483,7 @@ const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
 byte CMD_ParseOrExpandHexByte(const char **p) {
 	int val;
 	float fv = 0; // silence warning
-	while (iswspace(*(*p))) {
+	while (isWhiteSpace(*(*p))) {
 		(*p)++;
 	}
 	if (*(*p) == '$') {
@@ -507,7 +507,7 @@ byte CMD_ParseOrExpandHexByte(const char **p) {
 			}
 		}
 	}
-	while (iswspace(*(*p))) {
+	while (isWhiteSpace(*(*p))) {
 		(*p)++;
 	}
 	return val;
