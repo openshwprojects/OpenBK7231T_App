@@ -320,8 +320,15 @@ void Test_TuyaMCU_Basic() {
 	//
 	// tuyaMcu_sendCmd tests
 	//
+	// This command will calculate checksum as well - 0x32
 	CMD_ExecuteCommand("tuyaMcu_sendCmd 0x30 000000", 0);
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA 00 30 00 03 00 00 00 32");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	SIM_ClearMQTTHistory();
+	// This command will calculate checksum as well - 0x38
+	CMD_ExecuteCommand("tuyaMcu_sendCmd 0x30 000006", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA 00 30 00 03 00 00 06 38");
 	// nothing is sent by OBK at that point
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 	SIM_ClearMQTTHistory();
