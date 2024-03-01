@@ -266,6 +266,68 @@ void Test_TuyaMCU_Basic() {
 
 	SIM_ClearUART();
 
+	//
+	// uartSendHex tests
+	//
+	CMD_ExecuteCommand("uartSendHex FFAABB", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("FF AA	BB");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("setChannel 12 0xCC", 0);
+	CMD_ExecuteCommand("uartSendHex FF$CH12$BB", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("FF CC	BB");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("setChannel 12 0xDD", 0);
+	CMD_ExecuteCommand("uartSendHex FF$CH12$BB", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("FF DD	BB");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("setChannel 13 0xEE", 0);
+	CMD_ExecuteCommand("uartSendHex FF$CH12$$CH13$", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("FF DD	EE");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	SIM_ClearMQTTHistory();
+
+
+	CMD_ExecuteCommand("uartSendHex FF$CH12$00$CH13$00", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("FF DD 00 EE 00");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	SIM_ClearMQTTHistory();
+
+	// make sure that spaces won't break stuff
+	CMD_ExecuteCommand("uartSendHex FF$CH12$00$CH13$00  ", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("FF DD 00 EE 00");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	SIM_ClearMQTTHistory();
+
+	// make sure that spaces won't break stuff
+	CMD_ExecuteCommand("uartSendHex   FF  $CH12$  00  $CH13$   00  ", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("FF DD 00 EE 00");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	SIM_ClearMQTTHistory();
+
+	//
+	// tuyaMcu_sendCmd tests
+	//
+	CMD_ExecuteCommand("tuyaMcu_sendCmd 0x30 000000", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA 00 30 00 03 00 00 00 32");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	SIM_ClearMQTTHistory();
+
+	SIM_ClearUART();
+
 
 	// cause error
 	//SELFTEST_ASSERT_CHANNEL(15, 666);

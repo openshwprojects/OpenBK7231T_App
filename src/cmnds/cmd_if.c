@@ -477,6 +477,39 @@ const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
 #endif
 	return false;
 }
+
+byte CMD_ParseOrExpandHexByte(const char **p) {
+	int val;
+	float fv;
+	while (iswspace(*(*p))) {
+		(*p)++;
+	}
+	if (*(*p) == '$') {
+		const char *stop = (*p) + 1;
+		while (*stop && *stop != '$') {
+			stop++;
+		}
+		CMD_ExpandConstant(*p, stop, &fv);
+		val = fv;
+
+		*p = stop;
+		if (**p != 0)
+			(*p)++;
+	}
+	else {
+		val = hexbyte(*p);
+		if (**p) {
+			(*p)++;
+			if (**p) {
+				(*p)++;
+			}
+		}
+	}
+	while (iswspace(*(*p))) {
+		(*p)++;
+	}
+	return val;
+}
 #if WINDOWS
 
 void SIM_GenerateChannelStatesDesc(char *o, int outLen) {

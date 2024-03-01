@@ -949,29 +949,8 @@ void TuyaMCU_SendStateRawFromString(int dpId, const char *args) {
 			addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU, "Tuya raw buff overflow");
 			return;
 		}
-		if (*args == ' ') {
-			args++;
-			continue;
-		}
-		if (*args == '$') {
-			stop = args + 1;
-			while (*stop && *stop != '$') {
-				stop++;
-			}
-			CMD_ExpandConstant(args, stop, &val);
-			buffer[cur] = (int)val;
-			cur++;
-
-			if (*stop == 0)
-				break;
-			args = stop + 1;
-			continue;
-		}
-
-		buffer[cur] = hexbyte(args);
+		buffer[cur] = CMD_ParseOrExpandHexByte(&args);
 		cur++;
-
-		args += 2;
 	}
 	TuyaMCU_SendStateInternal(dpId, DP_TYPE_RAW, buffer, cur);
 }
@@ -1912,13 +1891,12 @@ commandResult_t TuyaMCU_SendUserCmd(const void* context, const char* cmd, const 
 
 	while (*s) {
 		byte b;
-		b = hexbyte(s);
+		b = CMD_ParseOrExpandHexByte(&s);
 
 		if (sizeof(packet) > c + 1) {
 			packet[c] = b;
 			c++;
 		}
-		s += 2;
 	}
 	TuyaMCU_SendCommandWithData(command,packet, c);
 	return CMD_RES_OK;
