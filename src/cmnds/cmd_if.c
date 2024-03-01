@@ -49,6 +49,7 @@ typedef enum {
 	OP_SUB,
 	OP_MUL,
 	OP_DIV,
+	OP_MODULO,
 } opCode_t;
 
 static sOperator_t g_operators[] = {
@@ -64,6 +65,7 @@ static sOperator_t g_operators[] = {
 	{ "-", 1, 6 },
 	{ "*", 1, 4 },
 	{ "/", 1, 4 },
+	{ "%", 1, 4 },
 };
 static int g_numOperators = sizeof(g_operators) / sizeof(g_operators[0]);
 
@@ -480,7 +482,7 @@ const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
 
 byte CMD_ParseOrExpandHexByte(const char **p) {
 	int val;
-	float fv;
+	float fv = 0; // silence warning
 	while (iswspace(*(*p))) {
 		(*p)++;
 	}
@@ -786,6 +788,9 @@ float CMD_EvaluateExpression(const char *s, const char *stop) {
 			break;
 		case OP_DIV:
 			c = a / b;
+			break;
+		case OP_MODULO:
+			c = ((int)a) % ((int)b);
 			break;
 		default:
 			c = 0;
