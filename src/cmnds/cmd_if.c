@@ -237,6 +237,13 @@ float getNTPOn(const char *s) {
 
 #endif
 
+float getRand(const char *s) {
+	return rand();
+}
+// return float in [0,1] range
+float getRand01(const char *s) {
+	return ((float)rand()) / (float)(RAND_MAX);
+}
 float getFailedBoots(const char *s) {
 	return g_bootFailures;
 }
@@ -453,6 +460,16 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Get number of failed boots (too quick reboots). Remember that you can change the uptime required to mark boot as 'okay' in general/flags menu",
 	//cnstdetail:"requires":""}
 	{ "$failedBoots", &getFailedBoots },
+	//cnstdetail:{"name":"$rand01",
+	//cnstdetail:"title":"$rand01",
+	//cnstdetail:"descr":"Random float between [0,1]",
+	//cnstdetail:"requires":""}
+	{ "$rand01", &getRand01 },
+	//cnstdetail:{"name":"$rand",
+	//cnstdetail:"title":"$rand",
+	//cnstdetail:"descr":"Random unsigned value",
+	//cnstdetail:"requires":""}
+	{ "$rand", &getRand },
 };
 static int g_totalConstants = sizeof(g_constants) / sizeof(g_constants[0]);
 
