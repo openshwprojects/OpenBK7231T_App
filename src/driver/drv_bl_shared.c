@@ -661,7 +661,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
         // Do not send message with every measurement. 
 		diff = sensors[i].lastSentValue - sensors[i].lastReading;
 		// check for change
-        if ( ((abs(diff) > sensors[i].changeSendThreshold) &&
+        if ( ((fabsf(diff) > sensors[i].changeSendThreshold) &&
                (sensors[i].noChangeFrame >= changeDoNotSendMinFrames)) ||
              (sensors[i].noChangeFrame >= changeSendAlwaysFrames) )
         {
