@@ -2309,6 +2309,10 @@ void TuyaMCU_Init()
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_sendMCUConf", TuyaMCU_SendMCUConf, NULL);
 
+	//cmddetail:{"name":"tuyaMcu_sendCmd","args":"TuyaMCU_SendUserCmd",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_sendCmd", TuyaMCU_SendUserCmd, NULL);
 	//cmddetail:{"name":"fakeTuyaPacket","args":"[HexString]",
 	//cmddetail:"descr":"This simulates packet being sent from TuyaMCU to our OBK device.",

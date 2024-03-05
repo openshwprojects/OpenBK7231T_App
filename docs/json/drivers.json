@@ -84,6 +84,12 @@
     "requires": ""
   },
   {
+    "name": "MAX6675",
+    "title": "TODO",
+    "descr": "BQQQK",
+    "requires": ""
+  },
+  {
     "name": "PT6523",
     "title": "TODO",
     "descr": "BQQQK",

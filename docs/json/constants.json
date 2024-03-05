@@ -202,5 +202,17 @@
     "title": "$failedBoots",
     "descr": "Get number of failed boots (too quick reboots). Remember that you can change the uptime required to mark boot as 'okay' in general/flags menu",
     "requires": ""
+  },
+  {
+    "name": "$rand01",
+    "title": "$rand01",
+    "descr": "Random float between [0,1]",
+    "requires": ""
+  },
+  {
+    "name": "$rand",
+    "title": "$rand",
+    "descr": "Random unsigned value",
+    "requires": ""
   }
 ]
