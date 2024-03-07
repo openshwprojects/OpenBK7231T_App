@@ -1819,9 +1819,9 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	if (measuringPower == true) {
-		for (i = 0; i < OBK_NUM_SENSOR_COUNT; i++)
+		for (i = OBK__FIRST; i < OBK__LAST; i++)
 		{
-			dev_info = hass_init_power_sensor_device_info(i);
+			dev_info = hass_init_energy_sensor_device_info(i);
 			if (dev_info) {
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
@@ -2130,7 +2130,9 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		dev_info = hass_init_sensor_device_info(HASS_RSSI, 0, -1, -1, 1);
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
-
+		dev_info = hass_init_sensor_device_info(HASS_UPTIME, 0, -1, -1, 1);
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
 		discoveryQueued = true;
 
 	}

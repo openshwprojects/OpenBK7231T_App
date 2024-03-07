@@ -193,17 +193,14 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 {"StatusSNS":{"Time":"2022-07-30T10:11:26","ENERGY":{"TotalStartTime":"2022-05-12T10:56:31","Total":0.003,"Yesterday":0.003,"Today":0.000,"Power": 0,"ApparentPower": 0,"ReactivePower": 0,"Factor":0.00,"Voltage":236,"Current":0.000}}}
 */
 
+// returns NaN values as 0
+static float _getReading_NanToZero(energySensor_t type) {
+	float retval = DRV_GetReading(type);
+	return OBK_IS_NAN(retval) ? 0 : retval;
+}
 
 static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
-	float power, voltage, current, batterypercentage = 0;
-	float energy, energy_hour, energy_yesterday;
-
-	voltage = DRV_GetReading(OBK_VOLTAGE);
-	current = DRV_GetReading(OBK_CURRENT);
-	power = DRV_GetReading(OBK_POWER);
-	energy = DRV_GetReading(OBK_CONSUMPTION_TOTAL);
-	energy_hour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
-	energy_yesterday = DRV_GetReading(OBK_CONSUMPTION_YESTERDAY);
+	float voltage, batterypercentage = 0;
 
 	if (DRV_IsMeasuringBattery()) {
 #ifdef ENABLE_DRIVER_BATTERY
@@ -211,33 +208,22 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 		batterypercentage = Battery_lastreading(OBK_BATT_LEVEL);
 #endif
 		printer(request, "{");
-		printer(request, "\"Voltage\":%.4f,", voltage);
+		printer(request, "\"Voltage\":%.4f,", _getReading_NanToZero(OBK_VOLTAGE));
 		printer(request, "\"Batterypercentage\":%.0f", batterypercentage);
 		// close ENERGY block
 		printer(request, "}");
 	}
 	else {
-		// following check will clear NaN values
-		if (OBK_IS_NAN(energy)) {
-			energy = 0;
-		}
-		if (OBK_IS_NAN(energy_hour)) {
-			energy_hour = 0;
-		}
-		if (OBK_IS_NAN(energy_yesterday)) {
-			energy_yesterday = 0;
-		}
-
 		printer(request, "{"); 
-		printer(request, "\"Power\": %f,", power);
-		printer(request, "\"ApparentPower\": %f,", g_apparentPower);
-		printer(request, "\"ReactivePower\": %f,", g_reactivePower);
-		printer(request, "\"Factor\":%f,", g_powerFactor);
-		printer(request, "\"Voltage\":%f,", voltage);
-		printer(request, "\"Current\":%f,", current);
-		printer(request, "\"ConsumptionTotal\":%f,", energy);
-		printer(request, "\"Yesterday\": %f,", energy_yesterday);
-		printer(request, "\"ConsumptionLastHour\":%f", energy_hour);
+		printer(request, "\"Power\": %f,", _getReading_NanToZero(OBK_POWER));
+		printer(request, "\"ApparentPower\": %f,", _getReading_NanToZero(OBK_POWER_APPARENT));
+		printer(request, "\"ReactivePower\": %f,", _getReading_NanToZero(OBK_POWER_REACTIVE));
+		printer(request, "\"Factor\":%f,", _getReading_NanToZero(OBK_POWER_FACTOR));
+		printer(request, "\"Voltage\":%f,", _getReading_NanToZero(OBK_VOLTAGE));
+		printer(request, "\"Current\":%f,", _getReading_NanToZero(OBK_CURRENT));
+		printer(request, "\"ConsumptionTotal\":%f,", _getReading_NanToZero(OBK_CONSUMPTION_TOTAL));
+		printer(request, "\"Yesterday\": %f,", _getReading_NanToZero(OBK_CONSUMPTION_YESTERDAY));
+		printer(request, "\"ConsumptionLastHour\":%f", _getReading_NanToZero(OBK_CONSUMPTION_LAST_HOUR));
 		// close ENERGY block
 		printer(request, "}");
 	}

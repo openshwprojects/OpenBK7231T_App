@@ -21,6 +21,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | ChargingLimit |  Mechanism to perform an action based on a max. delta value and max time. Used to control Electric Vehicle chargers. See [discussion](https://github.com/openshwprojects/OpenBK7231T_App/issues/892).<br/>See also [ChargingLimit on forum](https://www.elektroda.com/rtvforum/find.php?q=ChargingLimit). |
 | BL0937 |  BL0937 is a power-metering chip which uses custom protocol to report data. It requires setting 3 pins in pin config: CF, CF1 and SEL.<br/>See also [BL0937 on forum](https://www.elektroda.com/rtvforum/find.php?q=BL0937). |
 | CSE7766 |  BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK.<br/>See also [CSE7766 on forum](https://www.elektroda.com/rtvforum/find.php?q=CSE7766). |
+| MAX6675 |  BQQQK.<br/>See also [MAX6675 on forum](https://www.elektroda.com/rtvforum/find.php?q=MAX6675). |
 | PT6523 |  BQQQK.<br/>See also [PT6523 on forum](https://www.elektroda.com/rtvforum/find.php?q=PT6523). |
 | TextScroller |  BQQQK.<br/>See also [TextScroller on forum](https://www.elektroda.com/rtvforum/find.php?q=TextScroller). |
 | SM16703P |  SM16703P is an individually addressable LEDs controller like WS2812B. Currently SM16703P LEDs are supported through hardware SPI, LEDs data should be connected to P16 (MOSI), [here you can read](https://www.elektroda.com/rtvforum/topic4005865.html) how to break it out on CB2S.<br/>See also [SM16703P on forum](https://www.elektroda.com/rtvforum/find.php?q=SM16703P). |

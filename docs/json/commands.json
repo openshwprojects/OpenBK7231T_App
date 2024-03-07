@@ -1738,7 +1738,7 @@
   },
   {
     "name": "SetPinChannel",
-    "args": "[PinIndex][ChannelIndex]",
+    "args": "[PinIndex][ChannelIndex][optionalChannel2Index]",
     "descr": "This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command.",
     "fn": "CMD_SetPinChannel",
     "file": "cmnds/cmd_channels.c",
@@ -2398,6 +2398,15 @@
     "args": "",
     "descr": "Command sets the default WiFi state for TuyaMCU when device is not online. It may be required for some devices to work, because Tuya designs them to ignore touch buttons or beep when not paired. Please see [values table and description here](https://www.elektroda.com/rtvforum/viewtopic.php?p=20483899#20483899).",
     "fn": "Cmd_TuyaMCU_Send_RSSI",
+    "file": "driver/drv_tuyaMCU.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "tuyaMcu_sendCmd",
+    "args": "TuyaMCU_SendUserCmd",
+    "descr": "",
+    "fn": "NULL);",
     "file": "driver/drv_tuyaMCU.c",
     "requires": "",
     "examples": ""
