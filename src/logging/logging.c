@@ -724,7 +724,7 @@ static int http_getlog(http_request_t* request) {
 	char* post = "</pre>";
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Log");
-	poststr(request, htmlFooterReturnToMenu);
+	poststr(request, htmlFooterReturnToMainPage);
 
 	poststr(request, "<pre>");
 
