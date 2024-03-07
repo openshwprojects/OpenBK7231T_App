@@ -113,6 +113,7 @@
 //#define ENABLE_TASMOTADEVICEGROUPS 1
 #define ENABLE_NTP				1
 #define ENABLE_DRIVER_BL0937    1
+#define ENABLE_DRIVER_BP5758    1
 
 #else
 
