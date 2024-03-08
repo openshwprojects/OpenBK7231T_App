@@ -189,6 +189,7 @@ void PINS_BeginDeepSleepWithPinWakeUp() {
 	extern void deep_sleep_wakeup_with_gpio(UINT32 gpio_index_map, UINT32 gpio_edge_map);
 	deep_sleep_wakeup_with_gpio(g_gpio_index_map[0], g_gpio_edge_map[0]);
 #else
+	extern void bk_enter_deep_sleep(UINT32 g_gpio_index_map, UINT32 g_gpio_edge_map);
 	bk_enter_deep_sleep(g_gpio_index_map[0], g_gpio_edge_map[0]);
 #endif
 #else
