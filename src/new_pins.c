@@ -142,7 +142,7 @@ void setGPIActive(int index, int active, int falling) {
 			g_gpio_edge_map[0] &= ~(1 << index);
 	}
 }
-void PINS_BeginDeepSleepWithPinWakeUp() {
+void PINS_BeginDeepSleepWithPinWakeUp(unsigned int wakeUpTime) {
 	int i;
 	int value;
 	int falling;
@@ -190,7 +190,16 @@ void PINS_BeginDeepSleepWithPinWakeUp() {
 	deep_sleep_wakeup_with_gpio(g_gpio_index_map[0], g_gpio_edge_map[0]);
 #else
 	extern void bk_enter_deep_sleep(UINT32 g_gpio_index_map, UINT32 g_gpio_edge_map);
-	bk_enter_deep_sleep(g_gpio_index_map[0], g_gpio_edge_map[0]);
+	extern void deep_sleep_wakeup(const UINT32* g_gpio_index_map,
+		const UINT32* g_gpio_edge_map, const UINT32* sleep_time);
+	if (wakeUpTime) {
+		deep_sleep_wakeup(&g_gpio_index_map[0],
+			&g_gpio_edge_map[0],
+			&wakeUpTime);
+	}
+	else {
+		bk_enter_deep_sleep(g_gpio_index_map[0], g_gpio_edge_map[0]);
+	}
 #endif
 #else
 

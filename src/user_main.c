@@ -694,6 +694,7 @@ static int g_wifi_ledState = 0;
 static uint32_t g_time = 0;
 static uint32_t g_last_time = 0;
 int g_bWantPinDeepSleep;
+int g_pinDeepSleepWakeUp = 0;
 unsigned int g_deltaTimeMS;
 
 /////////////////////////////////////////////////////
@@ -702,7 +703,7 @@ void QuickTick(void* param)
 {
 	if (g_bWantPinDeepSleep) {
 		g_bWantPinDeepSleep = 0;
-		PINS_BeginDeepSleepWithPinWakeUp();
+		PINS_BeginDeepSleepWithPinWakeUp(g_pinDeepSleepWakeUp);
 		return;
 	}
 

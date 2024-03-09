@@ -478,6 +478,7 @@ WIFI_RSSI_LEVEL wifi_rssi_scale(int8_t rssi_value);
 extern const char *str_rssi[];
 extern int bSafeMode;
 extern int g_bWantPinDeepSleep;
+extern int g_pinDeepSleepWakeUp;
 extern int g_timeSinceLastPingReply;
 extern int g_startPingWatchDogAfter;
 extern int g_openAP;
