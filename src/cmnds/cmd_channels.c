@@ -474,6 +474,10 @@ static commandResult_t CMD_FullBootTime(const void *context, const char *cmd, co
 	return CMD_RES_OK;
 }
 static commandResult_t CMD_PinDeepSleep(const void *context, const char *cmd, const char *args, int cmdFlags){
+
+	Tokenizer_TokenizeString(args, 0); 
+	
+	g_pinDeepSleepWakeUp = Tokenizer_GetArgIntegerDefault(0, 0);
 	g_bWantPinDeepSleep = 1;
 	return CMD_RES_OK;
 }
