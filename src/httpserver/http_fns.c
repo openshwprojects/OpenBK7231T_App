@@ -874,20 +874,18 @@ typedef enum {
 } RESET_SOURCE_STATUS;
 */
 
-	int bk_misc_get_start_type();
 
 	{
 		const char* s = "Unk";
-		i = bk_misc_get_start_type();
-		if (i == 0)
+		if (g_rebootReason == 0)
 			s = "Pwr";
-		else if (i == 1)
+		else if (g_rebootReason == 1)
 			s = "Rbt";
-		else if (i == 2)
+		else if (g_rebootReason == 2)
 			s = "Wdt";
-		else if (i == 3)
+		else if (g_rebootReason == 3)
 			s = "Pin Interrupt";
-		else if (i == 4)
+		else if (g_rebootReason == 4)
 			s = "Sleep Timer";
 		hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", i, s);
 	}

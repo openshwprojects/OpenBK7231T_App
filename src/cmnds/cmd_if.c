@@ -282,6 +282,10 @@ float getSunset(const char *s) {
 }
 
 #endif
+float getRebootReason(const char *s) {
+	return g_rebootReason;
+}
+
 
 const constant_t g_constants[] = {
 	//cnstdetail:{"name":"MQTTOn",
@@ -470,6 +474,13 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Random unsigned value",
 	//cnstdetail:"requires":""}
 	{ "$rand", &getRand },
+#ifdef PLATFORM_BEKEN
+	//cnstdetail:{"name":"$rebootReason",
+	//cnstdetail:"title":"$rebootReason",
+	//cnstdetail:"descr":"Reboot reason",
+	//cnstdetail:"requires":""}
+	{ "$rebootReason", &getRebootReason },
+#endif
 };
 static int g_totalConstants = sizeof(g_constants) / sizeof(g_constants[0]);
 
