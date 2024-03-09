@@ -885,6 +885,10 @@ typedef enum {
 			s = "Rbt";
 		else if (i == 2)
 			s = "Wdt";
+		else if (i == 3)
+			s = "Pin Interrupt";
+		else if (i == 4)
+			s = "Sleep Timer";
 		hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", i, s);
 	}
 #elif PLATFORM_BL602
