@@ -282,6 +282,8 @@ float getSunset(const char *s) {
 }
 
 #endif
+
+
 float getRebootReason(const char *s) {
 	return g_rebootReason;
 }

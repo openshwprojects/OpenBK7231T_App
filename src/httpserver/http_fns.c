@@ -887,7 +887,7 @@ typedef enum {
 			s = "Pin Interrupt";
 		else if (g_rebootReason == 4)
 			s = "Sleep Timer";
-		hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", i, s);
+		hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", g_rebootReason, s);
 	}
 #elif PLATFORM_BL602
 	char reason[26];
