@@ -46,10 +46,16 @@ bool CHANNEL_HasNeverPublishFlag(int ch) {
 	return false;
 }
 
-const char *CHANNEL_GetLabel(int ch) {
+bool CHANNEL_HasLabel(int ch) {
 	if (ch >= 0 && ch < CHANNEL_MAX) {
-		if (g_channelLabels[ch])
-			return g_channelLabels[ch];
+		return g_channelLabels[ch];
+	}
+	return false;
+}
+
+const char *CHANNEL_GetLabel(int ch) {
+	if (CHANNEL_HasLabel(ch)) {
+		return g_channelLabels[ch];
 	}
 	static char tmp[8];
 	sprintf(tmp, "%i", ch);
