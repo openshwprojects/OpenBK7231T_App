@@ -277,6 +277,7 @@ void Main_OnPingCheckerReply(int ms)
 
 int g_doHomeAssistantDiscoveryIn = 0;
 int g_bBootMarkedOK = 0;
+int g_rebootReason = 0;
 static int bMQTTconnected = 0;
 
 int Main_HasMQTTConnected()
@@ -894,6 +895,11 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_Generic_Init();
 #endif
+#ifdef PLATFORM_BEKEN
+	int bk_misc_get_start_type();
+	g_rebootReason = bk_misc_get_start_type();
+#endif
+
 	RepeatingEvents_Init();
 
 	// set initial values for channels.
