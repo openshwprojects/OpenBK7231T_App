@@ -939,8 +939,6 @@ commandResult_t TuyaMCU_SendQueryState(const void* context, const char* cmd, con
 }
 
 void TuyaMCU_SendStateRawFromString(int dpId, const char *args) {
-	const char *stop;
-	float val;
 	int cur = 0;
 	byte buffer[64];
 

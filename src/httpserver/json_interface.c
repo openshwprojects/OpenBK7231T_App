@@ -1026,7 +1026,7 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 #if ENABLE_DRIVER_TUYAMCU
 	else if (!wal_strnicmp(cmd, "Dp", 2)) {
 		int id = -1;
-		if (isdigit(cmd[2])) {
+		if (isdigit((int)cmd[2])) {
 			sscanf(cmd + 2, "%i", &id);
 		}
 		http_obk_json_dps(id,request, printer);
