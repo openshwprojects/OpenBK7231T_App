@@ -136,7 +136,8 @@ commandResult_t SM16703P_CMD_setRaw(const void *context, const char *cmd, const 
 	return CMD_RES_OK;
 }
 commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, const char *args, int flags) {
-	int pixel, i, r, g, b;
+	int i, r, g, b;
+	int pixel = 0;
 	const char *all = 0;
 	Tokenizer_TokenizeString(args, 0);
 

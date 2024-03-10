@@ -206,31 +206,9 @@ SpoofIrReceiver IrReceiver;
 
 #include "../libraries/Arduino-IRremote-mod/src/IRProtocol.h"
 
-// this is to replicate places where the library uses the static class.
-// will need to update to call our dynamic class
-class SpoofIrSender {
-    public:
-        void enableIROut(uint_fast8_t freq){
 
-        }
-        void mark(unsigned int  aMarkMicros){
 
-        }
-        void space(unsigned int  aMarkMicros){
 
-        }
-        void sendPulseDistanceWidthFromArray(uint_fast8_t aFrequencyKHz, unsigned int aHeaderMarkMicros,
-            unsigned int aHeaderSpaceMicros, unsigned int aOneMarkMicros, unsigned int aOneSpaceMicros, unsigned int aZeroMarkMicros,
-            unsigned int aZeroSpaceMicros, uint32_t *aDecodedRawDataArray, unsigned int aNumberOfBits, bool aMSBFirst,
-            bool aSendStopBit, unsigned int aRepeatPeriodMillis, int_fast8_t aNumberOfRepeats) {
-
-        }
-        void sendPulseDistanceWidthFromArray(PulsePauseWidthProtocolConstants *aProtocolConstants, uint32_t *aDecodedRawDataArray,
-            unsigned int aNumberOfBits, int_fast8_t aNumberOfRepeats) {
-            
-        }
-
-};
 
 SpoofIrSender IrSender;
 
@@ -245,7 +223,7 @@ extern "C" int PIN_GetPWMIndexForPinIndex(int pin) ;
 // we simply note the numbers into a rolling buffer, assume the first is a mark()
 // and then every 50us service the rolling buffer, changing the PWM from 0 duty to 50% duty
 // appropriately.
-#define SEND_MAXBITS 128
+
 class myIRsend : public IRsend {
     public:
         myIRsend(uint_fast8_t aSendPin){
@@ -340,6 +318,42 @@ class myIRsend : public IRsend {
         uint32_t our_us;
 };
 
+
+// this is to replicate places where the library uses the static class.
+// will need to update to call our dynamic class
+void SpoofIrSender::enableIROut(uint_fast8_t freq){
+	if ( Parent != NULL){
+
+	}
+}
+void SpoofIrSender::mark(unsigned int  aMarkMicros){
+	if ( Parent != NULL){
+
+	}
+}
+void SpoofIrSender::space(unsigned int  aMarkMicros){
+	if ( Parent != NULL){
+
+	}
+}
+void SpoofIrSender::sendPulseDistanceWidthFromArray(uint_fast8_t aFrequencyKHz, unsigned int aHeaderMarkMicros,
+    unsigned int aHeaderSpaceMicros, unsigned int aOneMarkMicros, unsigned int aOneSpaceMicros, unsigned int aZeroMarkMicros,
+    unsigned int aZeroSpaceMicros, uint32_t *aDecodedRawDataArray, unsigned int aNumberOfBits, bool aMSBFirst,
+    bool aSendStopBit, unsigned int aRepeatPeriodMillis, int_fast8_t aNumberOfRepeats) {
+	if ( Parent != NULL){
+		Parent->sendPulseDistanceWidthFromArray(aFrequencyKHz, aHeaderMarkMicros, aHeaderSpaceMicros, aOneMarkMicros, aOneSpaceMicros, aZeroMarkMicros,  aZeroSpaceMicros, aDecodedRawDataArray, aNumberOfBits,  aMSBFirst,     aSendStopBit, aRepeatPeriodMillis, aNumberOfRepeats);
+	}
+}
+void SpoofIrSender::sendPulseDistanceWidthFromArray(PulsePauseWidthProtocolConstants *aProtocolConstants, uint32_t *aDecodedRawDataArray,
+    unsigned int aNumberOfBits, int_fast8_t aNumberOfRepeats) {
+	if ( Parent != NULL){
+		Parent->sendPulseDistanceWidthFromArray(aProtocolConstants,aDecodedRawDataArray,aNumberOfBits,aNumberOfRepeats);
+	}
+}
+void SpoofIrSender::SetParent(myIRsend *IRParent)
+{
+	this->Parent=IRParent;
+}
 
 // our send/receive instances
 myIRsend *pIRsend = NULL;
@@ -488,6 +502,7 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
 	data.numberOfBits = bits;
 
     if (pIRsend){
+		IrSender.SetParent(pIRsend);
         pIRsend->write(&data, (int_fast8_t) repeats);
         // add a 100ms delay after command
         // NOTE: this is NOT a delay here.  it adds 100ms 'space' in the TX queue

@@ -15,12 +15,6 @@ static uint32_t g_pressure;
 static char g_targetChannelTemperature = -1, g_targetChannelPressure = -1;
 static softI2C_t g_softI2C;
 
-#if PLATFORM_BL602
-void delay_ms(unsigned int ms_count) {
-	// TODO
-}
-#endif
-
 unsigned short BMP280_Start(void) {
 	Soft_I2C_Start_Internal(&g_softI2C);
 	return 0;

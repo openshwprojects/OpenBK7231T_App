@@ -212,6 +212,7 @@ typedef int bool;
 #define bk_printf printf
 
 #define rtos_delay_milliseconds vTaskDelay
+#define delay_ms vTaskDelay
 
 #define kNoErr                      0       //! No error occurred.
 typedef void *beken_thread_arg_t;
@@ -477,11 +478,13 @@ WIFI_RSSI_LEVEL wifi_rssi_scale(int8_t rssi_value);
 extern const char *str_rssi[];
 extern int bSafeMode;
 extern int g_bWantPinDeepSleep;
+extern int g_pinDeepSleepWakeUp;
 extern int g_timeSinceLastPingReply;
 extern int g_startPingWatchDogAfter;
 extern int g_openAP;
 extern int g_bootFailures;
 extern int g_secondsElapsed;
+extern int g_rebootReason;
 
 typedef int(*jsonCb_t)(void *userData, const char *fmt, ...);
 int JSON_ProcessCommandReply(const char *cmd, const char *args, void *request, jsonCb_t printer, int flags);

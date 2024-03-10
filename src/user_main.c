@@ -277,6 +277,7 @@ void Main_OnPingCheckerReply(int ms)
 
 int g_doHomeAssistantDiscoveryIn = 0;
 int g_bBootMarkedOK = 0;
+int g_rebootReason = 0;
 static int bMQTTconnected = 0;
 
 int Main_HasMQTTConnected()
@@ -694,6 +695,7 @@ static int g_wifi_ledState = 0;
 static uint32_t g_time = 0;
 static uint32_t g_last_time = 0;
 int g_bWantPinDeepSleep;
+int g_pinDeepSleepWakeUp = 0;
 unsigned int g_deltaTimeMS;
 
 /////////////////////////////////////////////////////
@@ -702,7 +704,7 @@ void QuickTick(void* param)
 {
 	if (g_bWantPinDeepSleep) {
 		g_bWantPinDeepSleep = 0;
-		PINS_BeginDeepSleepWithPinWakeUp();
+		PINS_BeginDeepSleepWithPinWakeUp(g_pinDeepSleepWakeUp);
 		return;
 	}
 
@@ -893,6 +895,11 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_Generic_Init();
 #endif
+#ifdef PLATFORM_BEKEN
+	int bk_misc_get_start_type();
+	g_rebootReason = bk_misc_get_start_type();
+#endif
+
 	RepeatingEvents_Init();
 
 	// set initial values for channels.

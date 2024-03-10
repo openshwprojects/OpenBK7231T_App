@@ -201,41 +201,14 @@ void UART_SendByte(byte b) {
 	//bl_uart_data_send(g_id, b);
 #endif
 }
-
 commandResult_t CMD_UART_Send_Hex(const void *context, const char *cmd, const char *args, int cmdFlags) {
-    byte b;
-    float val;
-    const char *stop;
-
-	//const char *args = CMD_GetArg(1);
     if (!(*args)) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "CMD_UART_Send_Hex: requires 1 argument (hex string, like FFAABB00CCDD\n");
         return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
     while (*args) {
-        if (*args == ' ') {
-            args++;
-            continue;
-        }
-        if (*args == '$') {
-            stop = args + 1;
-            while (*stop && *stop != '$') {
-                stop++;
-            }
-            CMD_ExpandConstant(args, stop, &val);
-            b = (int)val;
-            UART_SendByte(b);
-
-            if (*stop == 0)
-                break;
-            args = stop + 1;
-            continue;
-        }
-        b = hexbyte(args);
-
+		byte b = CMD_ParseOrExpandHexByte(&args);
         UART_SendByte(b);
-
-        args += 2;
     }
     return CMD_RES_OK;
 }

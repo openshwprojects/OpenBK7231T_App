@@ -939,8 +939,6 @@ commandResult_t TuyaMCU_SendQueryState(const void* context, const char* cmd, con
 }
 
 void TuyaMCU_SendStateRawFromString(int dpId, const char *args) {
-	const char *stop;
-	float val;
 	int cur = 0;
 	byte buffer[64];
 
@@ -949,29 +947,8 @@ void TuyaMCU_SendStateRawFromString(int dpId, const char *args) {
 			addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU, "Tuya raw buff overflow");
 			return;
 		}
-		if (*args == ' ') {
-			args++;
-			continue;
-		}
-		if (*args == '$') {
-			stop = args + 1;
-			while (*stop && *stop != '$') {
-				stop++;
-			}
-			CMD_ExpandConstant(args, stop, &val);
-			buffer[cur] = (int)val;
-			cur++;
-
-			if (*stop == 0)
-				break;
-			args = stop + 1;
-			continue;
-		}
-
-		buffer[cur] = hexbyte(args);
+		buffer[cur] = CMD_ParseOrExpandHexByte(&args);
 		cur++;
-
-		args += 2;
 	}
 	TuyaMCU_SendStateInternal(dpId, DP_TYPE_RAW, buffer, cur);
 }
@@ -1305,7 +1282,7 @@ int http_obk_json_dps(int id, void* request, jsonCb_t printer) {
 			iCnt++;
 			printer(request, "{\"id\":%i,\"type\":%i,\"data\":", cur->fnId, cur->dpType);
 			if (cur->rawData == 0) {
-				printer(request, "0\"}", cur->rawData);
+				printer(request, "0}", cur->rawData);
 			}
 			else {
 				if (cur->dpType == DP_TYPE_BOOL || cur->dpType == DP_TYPE_ENUM
@@ -1898,6 +1875,30 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 	}
 	EventHandlers_FireEvent(CMD_EVENT_TUYAMCU_PARSED, cmd);
 }
+// tuyaMcu_sendCmd 0x30 000000
+// This will send 55 AA 00 30 00 03 00 00 00 32
+// 
+commandResult_t TuyaMCU_SendUserCmd(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	byte packet[128];
+	int c = 0;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	int command = Tokenizer_GetArgInteger(0);
+	const char *s = Tokenizer_GetArg(1);
+
+	while (*s) {
+		byte b;
+		b = CMD_ParseOrExpandHexByte(&s);
+
+		if (sizeof(packet) > c + 1) {
+			packet[c] = b;
+			c++;
+		}
+	}
+	TuyaMCU_SendCommandWithData(command,packet, c);
+	return CMD_RES_OK;
+}
 
 commandResult_t TuyaMCU_FakePacket(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	byte packet[256];
@@ -2305,6 +2306,12 @@ void TuyaMCU_Init()
 	//cmddetail:"fn":"TuyaMCU_SendMCUConf","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_sendMCUConf", TuyaMCU_SendMCUConf, NULL);
+
+	//cmddetail:{"name":"tuyaMcu_sendCmd","args":"TuyaMCU_SendUserCmd",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("tuyaMcu_sendCmd", TuyaMCU_SendUserCmd, NULL);
 	//cmddetail:{"name":"fakeTuyaPacket","args":"[HexString]",
 	//cmddetail:"descr":"This simulates packet being sent from TuyaMCU to our OBK device.",
 	//cmddetail:"fn":"TuyaMCU_FakePacket","file":"driver/drv_tuyaMCU.c","requires":"",

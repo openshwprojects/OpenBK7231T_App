@@ -49,6 +49,7 @@ typedef enum {
 	OP_SUB,
 	OP_MUL,
 	OP_DIV,
+	OP_MODULO,
 } opCode_t;
 
 static sOperator_t g_operators[] = {
@@ -64,6 +65,7 @@ static sOperator_t g_operators[] = {
 	{ "-", 1, 6 },
 	{ "*", 1, 4 },
 	{ "/", 1, 4 },
+	{ "%", 1, 4 },
 };
 static int g_numOperators = sizeof(g_operators) / sizeof(g_operators[0]);
 
@@ -235,6 +237,13 @@ float getNTPOn(const char *s) {
 
 #endif
 
+float getRand(const char *s) {
+	return rand();
+}
+// return float in [0,1] range
+float getRand01(const char *s) {
+	return ((float)rand()) / (float)(RAND_MAX);
+}
 float getFailedBoots(const char *s) {
 	return g_bootFailures;
 }
@@ -273,6 +282,12 @@ float getSunset(const char *s) {
 }
 
 #endif
+
+
+float getRebootReason(const char *s) {
+	return g_rebootReason;
+}
+
 
 const constant_t g_constants[] = {
 	//cnstdetail:{"name":"MQTTOn",
@@ -451,6 +466,23 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Get number of failed boots (too quick reboots). Remember that you can change the uptime required to mark boot as 'okay' in general/flags menu",
 	//cnstdetail:"requires":""}
 	{ "$failedBoots", &getFailedBoots },
+	//cnstdetail:{"name":"$rand01",
+	//cnstdetail:"title":"$rand01",
+	//cnstdetail:"descr":"Random float between [0,1]",
+	//cnstdetail:"requires":""}
+	{ "$rand01", &getRand01 },
+	//cnstdetail:{"name":"$rand",
+	//cnstdetail:"title":"$rand",
+	//cnstdetail:"descr":"Random unsigned value",
+	//cnstdetail:"requires":""}
+	{ "$rand", &getRand },
+#ifdef PLATFORM_BEKEN
+	//cnstdetail:{"name":"$rebootReason",
+	//cnstdetail:"title":"$rebootReason",
+	//cnstdetail:"descr":"Reboot reason",
+	//cnstdetail:"requires":""}
+	{ "$rebootReason", &getRebootReason },
+#endif
 };
 static int g_totalConstants = sizeof(g_constants) / sizeof(g_constants[0]);
 
@@ -476,6 +508,39 @@ const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
 	}
 #endif
 	return false;
+}
+
+byte CMD_ParseOrExpandHexByte(const char **p) {
+	int val;
+	float fv = 0; // silence warning
+	while (isWhiteSpace(*(*p))) {
+		(*p)++;
+	}
+	if (*(*p) == '$') {
+		const char *stop = (*p) + 1;
+		while (*stop && *stop != '$') {
+			stop++;
+		}
+		CMD_ExpandConstant(*p, stop, &fv);
+		val = fv;
+
+		*p = stop;
+		if (**p != 0)
+			(*p)++;
+	}
+	else {
+		val = hexbyte(*p);
+		if (**p) {
+			(*p)++;
+			if (**p) {
+				(*p)++;
+			}
+		}
+	}
+	while (isWhiteSpace(*(*p))) {
+		(*p)++;
+	}
+	return val;
 }
 #if WINDOWS
 
@@ -753,6 +818,9 @@ float CMD_EvaluateExpression(const char *s, const char *stop) {
 			break;
 		case OP_DIV:
 			c = a / b;
+			break;
+		case OP_MODULO:
+			c = ((int)a) % ((int)b);
 			break;
 		default:
 			c = 0;

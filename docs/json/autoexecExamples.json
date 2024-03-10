@@ -130,5 +130,9 @@
 {
 "title": "[Setup for PJ-MGW1103 T-Clamp TuyaMCU with a device state request demonstation](https://www.elektroda.com/rtvforum/viewtopic.php?p=20882983#20882983)",
 "file": "autoexecs/PJ-MGW1103_CT-Clamp_tuyaMCU_with_request.bat"
+},
+{
+"title": "[TOMPD-63-WIFI TuyaMCU power meter config with alternate HTML panel hosted in LittleFS](https://www.elektroda.com/rtvforum/topic4040354.html)",
+"file": "autoexecs/TOMPD-63-WIFI.bat"
 }
 ]

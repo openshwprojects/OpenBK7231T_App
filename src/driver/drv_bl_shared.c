@@ -661,7 +661,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
         // Do not send message with every measurement. 
 		diff = sensors[i].lastSentValue - sensors[i].lastReading;
 		// check for change
-        if ( ((abs(diff) > sensors[i].changeSendThreshold) &&
+        if ( ((fabsf(diff) > sensors[i].changeSendThreshold) &&
                (sensors[i].noChangeFrame >= changeDoNotSendMinFrames)) ||
              (sensors[i].noChangeFrame >= changeSendAlwaysFrames) )
         {
@@ -784,8 +784,8 @@ void BL_Shared_Init(void)
 
     //int HAL_SetEnergyMeterStatus(ENERGY_METERING_DATA *data);
 
-	//cmddetail:{"name":"EnergyCntReset","args":"",
-	//cmddetail:"descr":"Resets the total Energy Counter, the one that is usually kept after device reboots. After this commands, the counter will start again from 0.",
+	//cmddetail:{"name":"EnergyCntReset","args":"[OptionalNewValue]",
+	//cmddetail:"descr":"Resets the total Energy Counter, the one that is usually kept after device reboots. After this commands, the counter will start again from 0 (or from the value you specified).",
 	//cmddetail:"fn":"BL09XX_ResetEnergyCounter","file":"driver/drv_bl_shared.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("EnergyCntReset", BL09XX_ResetEnergyCounter, NULL);
