@@ -192,7 +192,8 @@ cJSON* hass_build_device_node(cJSON* ids) {
 /// @brief Initializes HomeAssistant device discovery storage with common values.
 /// @param type 
 /// @param index This is used to generate generate unique_id and name. 
-/// It is ignored for RGB. For energy sensors, index corresponds to energySensor_t. For regular sensor, index can be be the channel.
+/// It is ignored for RGB and diagnostic sensors (HASS_RSSI, HASS_UPTIME, HASS_BUILD...).
+/// For energy sensors, index corresponds to energySensor_t. For regular sensor, index can be be the channel.
 /// @param payload_on The payload that represents enabled state. This is not added for POWER_SENSOR.
 /// @param payload_off The payload that represents disabled state. This is not added for POWER_SENSOR.
 /// @return 
@@ -214,7 +215,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 	bool isSensor = false;	//This does not count binary_sensor
 
 	//Build the `name`
-	if (CHANNEL_HasLabel(index)) {
+	if (CHANNEL_HasLabel(index) && type != ENERGY_METER_SENSOR) {
 		sprintf(g_hassBuffer, "%s", CHANNEL_GetLabel(index));
 	} else {
 		switch (type) {
