@@ -142,7 +142,7 @@ OpenW600: sdk/OpenW600/tools/gcc-arm-none-eabi-4_9-2014q4/bin sdk/OpenW600/share
 .PHONY: OpenLN882H
 OpenLN882H: submodules sdk/OpenLN882H/project/OpenBeken/app
 	CROSS_TOOLCHAIN_ROOT="/usr/" cmake -DUSER_SW_VER=$(APP_VERSION) sdk/OpenLN882H -B sdk/OpenLN882H/build
-	CROSS_TOOLCHAIN_ROOT="/usr/" cmake --build ./sdk/OpenLN882H/build -DUSER_SW_VER=$(APP_VERSION) 
+	CROSS_TOOLCHAIN_ROOT="/usr/" cmake -DUSER_SW_VER=$(APP_VERSION) --build ./sdk/OpenLN882H/build 
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenLN882H/build/bin/flashimage.bin output/$(APP_VERSION)/OpenLN882H_$(APP_VERSION).bin
 	cp sdk/OpenLN882H/build/bin/flashimage-ota-xz-v0.1.bin output/$(APP_VERSION)/OpenLN882H_$(APP_VERSION)_OTA.bin
