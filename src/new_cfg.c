@@ -558,7 +558,8 @@ int CFG_GetFlags() {
 	return g_cfg.genericFlags;
 }
 unsigned long CFG_GetFlags64() {
-	return *((unsigned long*)&g_cfg.genericFlags);
+	unsigned long* pAllGenericFlags = (unsigned long*)&g_cfg.genericFlags;
+	return *pAllGenericFlags;
 }
 bool CFG_HasFlag(int flag) {
 	if (flag >= 32) {

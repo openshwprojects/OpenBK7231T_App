@@ -13,9 +13,9 @@ extern const char htmlShortcutIcon[];
 extern const char htmlDoctype[];
 extern const char htmlHeadMeta[];
 
-extern const char htmlFooterReturnToMenu[];
+extern const char htmlFooterReturnToMainPage[];
 extern const char htmlFooterRefreshLink[];
-extern const char htmlFooterReturnToCfgLink[];
+extern const char htmlFooterReturnToCfgOrMainPage[];
 
 extern const char* htmlPinRoleNames[];
 

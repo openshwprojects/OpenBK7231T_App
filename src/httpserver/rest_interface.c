@@ -324,7 +324,7 @@ static int http_rest_app(http_request_t* request) {
 	}
 	else {
 		http_html_start(request, "Not available");
-		poststr(request, htmlFooterReturnToMenu);
+		poststr(request, htmlFooterReturnToMainPage);
 		poststr(request, "no APP available<br/>");
 		http_html_end(request);
 	}

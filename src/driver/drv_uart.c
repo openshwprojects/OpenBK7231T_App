@@ -202,11 +202,6 @@ void UART_SendByte(byte b) {
 #endif
 }
 commandResult_t CMD_UART_Send_Hex(const void *context, const char *cmd, const char *args, int cmdFlags) {
-    byte b;
-    float val;
-    const char *stop;
-
-	//const char *args = CMD_GetArg(1);
     if (!(*args)) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "CMD_UART_Send_Hex: requires 1 argument (hex string, like FFAABB00CCDD\n");
         return CMD_RES_NOT_ENOUGH_ARGUMENTS;
