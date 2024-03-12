@@ -370,6 +370,14 @@ bool Main_HasFastConnect() {
 	}
 	return false;
 }
+#if PLATFORM_LN882H
+// Quick hack to display LN-only temperature,
+// we may improve it in the future
+extern float g_wifi_temperature;
+#else
+float g_wifi_temperature = 0;
+#endif
+
 static byte g_secondsSpentInLowMemoryWarning = 0;
 void Main_OnEverySecond()
 {
@@ -381,6 +389,20 @@ void Main_OnEverySecond()
 	g_bHasWiFiConnected = 1;
 #endif
 
+	// display temperature - thanks to giedriuslt
+// only in Normal mode, and if boot is not failing
+	if (!bSafeMode && g_bootFailures <= 1)
+	{
+#if PLATFORM_BEKEN
+		UINT32 temperature;
+		temp_single_get_current_temperature(&temperature);
+		g_wifi_temperature = temperature / 10.0f;
+#elif PLATFORM_BL602
+		get_tsen_adc(&g_wifi_temperature, 0);
+#elif PLATFORM_LN882H
+		// this is set externally, I am just leaving comment here
+#endif
+	}
 	// run_adc_test();
 	newMQTTState = MQTT_RunEverySecondUpdate();
 	if (newMQTTState != bMQTTconnected) {

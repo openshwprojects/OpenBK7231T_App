@@ -289,6 +289,11 @@ float getRebootReason(const char *s) {
 }
 
 
+float getInternalTemperature(const char *s) {
+	return g_wifi_temperature;
+}
+
+
 const constant_t g_constants[] = {
 	//cnstdetail:{"name":"MQTTOn",
 	//cnstdetail:"title":"MQTTOn",

@@ -818,27 +818,11 @@ int http_fn_index(http_request_t* request) {
 
   // display temperature - thanks to giedriuslt
   // only in Normal mode, and if boot is not failing
-	if(!bSafeMode && g_bootFailures <= 1) 
-	{
-#if PLATFORM_BEKEN
-		UINT32 temperature;
-		temp_single_get_current_temperature(&temperature);
-		hprintf255(request, "<h5>Internal temperature: %.1f°C</h5>",
-			temperature/10.0f);
-#elif PLATFORM_BL602
-	float wifi_temperature;
-	get_tsen_adc(&wifi_temperature, 0);
-	hprintf255(request, "<h5>Internal Temperature: %.1f°C</h5>",
-		wifi_temperature);
-#elif PLATFORM_LN882H
-	// Quick hack to display LN-only temperature,
-	// we may improve it in the future
-	extern float g_wifi_temperature;
-
-	hprintf255(request, "<h5>Internal temperature: %.1f°C</h5>",
-		g_wifi_temperature);
+#if PLATFORM_BK7231T
+	hprintf255(request, "<h5>Internal temperature: [IGNORE IT - yet to be calibrated] %.1f°C</h5>", g_wifi_temperature);
+#else
+	hprintf255(request, "<h5>Internal temperature: %.1f°C</h5>", g_wifi_temperature);
 #endif
-	}
 
 	inputName = CFG_GetPingHost();
 	if (inputName && *inputName && CFG_GetPingDisconnectedSecondsToRestart()) {
