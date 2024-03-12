@@ -468,7 +468,7 @@ void Main_OnEverySecond()
 		UINT32 temperature;
 		temp_single_get_current_temperature(&temperature);
 #if PLATFORM_BK7231T
-		g_wifi_temperature = temperature / 15.0f;
+		g_wifi_temperature = temperature / 25.0f;
 #else
 		g_wifi_temperature = temperature / 10.0f;
 #endif
