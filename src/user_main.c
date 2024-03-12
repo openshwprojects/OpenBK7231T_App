@@ -39,12 +39,19 @@
 #include "driver/drv_ssdp.h"
 #include "driver/drv_uart.h"
 
-#ifdef PLATFORM_BEKEN
+#if PLATFORM_BEKEN
 #include <mcu_ps.h>
 #include <fake_clock_pub.h>
 #include <BkDriverWdg.h>
+#include "temp_detect_pub.h"
 void bg_register_irda_check_func(FUNCPTR func);
+#elif PLATFORM_BL602
+#include <bl_sys.h>
+#include <bl_adc.h>     //  For BL602 ADC HAL
+#include <bl602_adc.h>  //  For BL602 ADC Standard Driver
+#include <bl602_glb.h>  //  For BL602 Global Register Standard Driver
 #endif
+
 
 int g_secondsElapsed = 0;
 // open access point after this number of seconds
