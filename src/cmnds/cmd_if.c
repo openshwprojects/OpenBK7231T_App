@@ -289,6 +289,11 @@ float getRebootReason(const char *s) {
 }
 
 
+float getInternalTemperature(const char *s) {
+	return g_wifi_temperature;
+}
+
+
 const constant_t g_constants[] = {
 	//cnstdetail:{"name":"MQTTOn",
 	//cnstdetail:"title":"MQTTOn",
@@ -483,7 +488,13 @@ const constant_t g_constants[] = {
 	//cnstdetail:"requires":""}
 	{ "$rebootReason", &getRebootReason },
 #endif
+	//cnstdetail:{"name":"$intTemp",
+	//cnstdetail:"title":"$intTemp",
+	//cnstdetail:"descr":"Internal temperature (of WiFi module sensor)",
+	//cnstdetail:"requires":""}
+	{ "$intTemp", &getInternalTemperature },
 };
+
 static int g_totalConstants = sizeof(g_constants) / sizeof(g_constants[0]);
 
 // tries to expand a given string into a constant
