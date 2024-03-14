@@ -756,11 +756,7 @@ int http_fn_index(http_request_t* request) {
 
   // display temperature - thanks to giedriuslt
   // only in Normal mode, and if boot is not failing
-#if PLATFORM_BK7231T
-	hprintf255(request, "<h5>Internal temperature: [IGNORE IT - yet to be calibrated] %.1f°C</h5>", g_wifi_temperature);
-#else
 	hprintf255(request, "<h5>Internal temperature: %.1f°C</h5>", g_wifi_temperature);
-#endif
 
 	inputName = CFG_GetPingHost();
 	if (inputName && *inputName && CFG_GetPingDisconnectedSecondsToRestart()) {
