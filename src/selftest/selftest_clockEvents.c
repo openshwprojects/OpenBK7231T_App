@@ -72,9 +72,13 @@ void Test_ClockEvents() {
 	CMD_ExecuteCommand("addClockEvent 15:30:00 0xff 1007 POWER0 ON", 0);
 	// now there is 2
 	SELFTEST_ASSERT(NTP_PrintEventList() == 2);
-	CMD_ExecuteCommand("addClockEvent 15:30:00 0xff 1008 POWER0 ON", 0);
+	CMD_ExecuteCommand("addClockEvent 09:08:07 0xff 1008 POWER0 ON", 0);
 	// now there is 3
 	SELFTEST_ASSERT(NTP_PrintEventList() == 3);
+
+	SELFTEST_ASSERT(NTP_GetEventTime(1006) == 15 * 3600 + 30 * 60);
+	SELFTEST_ASSERT(NTP_GetEventTime(1007) == 15 * 3600 + 30 * 60);
+	SELFTEST_ASSERT(NTP_GetEventTime(1008) == 9 * 3600 + 8 * 60 + 7);
 
 	ResetEventsAndChannels(3);
 
