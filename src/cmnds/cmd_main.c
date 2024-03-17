@@ -74,6 +74,13 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	else {
 		wifi_mgmr_sta_powersaving(0);
 	}
+#elif defined(PLATFORM_LN882H)
+	if (bOn) {
+		sysparam_sta_powersave_update(WIFI_MAX_POWERSAVE);
+	}
+	else {
+		sysparam_sta_powersave_update(WIFI_NO_POWERSAVE);
+	}
 #else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave is not implemented on this platform");
 #endif    
