@@ -18,6 +18,8 @@ int cmd_uartInitIndex = 0;
 #endif
 #ifdef PLATFORM_BL602
 #include <wifi_mgmr_ext.h>
+#elif PLATFORM_LN882H
+#include <wifi.h>
 #endif
 
 #define HASH_SIZE 128
