@@ -801,12 +801,27 @@ bool SIM_HasHTTPDimmer() {
 		return true;
 	return false;
 }
+void Test_Http_WiFi() {
+	Test_FakeHTTPClientPacket_GET("cfg_wifi_set?ssid=Hello&pass=1234&ssid2=&pass2=&web_admin_password=");
+	SELFTEST_ASSERT_STRING(CFG_GetWiFiSSID(), "Hello");
+	SELFTEST_ASSERT_STRING(CFG_GetWiFiPass(), "1234");
 
+	Test_FakeHTTPClientPacket_GET("cfg_wifi_set?ssid=Hello%20World&pass=1234&ssid2=&pass2=&web_admin_password=");
+	SELFTEST_ASSERT_STRING(CFG_GetWiFiSSID(), "Hello World");
+	SELFTEST_ASSERT_STRING(CFG_GetWiFiPass(), "1234");
+
+	Test_FakeHTTPClientPacket_GET("cfg_wifi_set?ssid=Hello%20World%20!%40%23%24%25%5E&pass=1234&ssid2=&pass2=&web_admin_password=");
+	SELFTEST_ASSERT_STRING(CFG_GetWiFiSSID(), "Hello World !@#$%^");
+	SELFTEST_ASSERT_STRING(CFG_GetWiFiPass(), "1234");
+	//Test_FakeHTTPClientPacket_GET("/cfg_wifi_set?ssid=WiFi+with+space&pass=123&ssid2=&pass2=&web_admin_password=");
+
+}
 
 void Test_Http() {
 	Test_Http_SingleRelayOnChannel1();
 	Test_Http_TwoRelays();
 	Test_Http_FourRelays();
+	Test_Http_WiFi();
 }
 
 
