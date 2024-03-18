@@ -42,3 +42,5 @@ Do not add anything here, as it will overwritten with next rebuild.
 | $failedBoots |  Get number of failed boots (too quick reboots). Remember that you can change the uptime required to mark boot as 'okay' in general/flags menu |
 | $rand01 |  Random float between [0,1] |
 | $rand |  Random unsigned value |
+| $rebootReason |  Reboot reason |
+| $intTemp |  Internal temperature (of WiFi module sensor) |

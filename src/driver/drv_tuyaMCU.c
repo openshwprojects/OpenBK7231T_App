@@ -1496,12 +1496,16 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 
 		if (CFG_HasFlag(OBK_FLAG_TUYAMCU_STORE_RAW_DATA)) {
 			if (mapping) {
-				if (mapping->rawBufferSize < sectorLen) {
-					mapping->rawData = realloc(mapping->rawData, sectorLen);
-					mapping->rawBufferSize = sectorLen;
+				// add space for NULL terminating character
+				int useLen = sectorLen + 1;
+				if (mapping->rawBufferSize < useLen) {
+					mapping->rawData = realloc(mapping->rawData, useLen);
+					mapping->rawBufferSize = useLen;
 				}
 				mapping->rawDataLen = sectorLen;
 				memcpy(mapping->rawData, data + ofs + 4, sectorLen);
+				// TuyaMCU strings are without NULL terminating character
+				mapping->rawData[sectorLen] = 0;
 			}
 		}
 

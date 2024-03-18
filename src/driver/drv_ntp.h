@@ -24,6 +24,7 @@ int NTP_GetSunset();
 void NTP_SetSimulatedTime(unsigned int timeNow);
 // drv_ntp_events.c
 int NTP_PrintEventList();
+int NTP_GetEventTime(int id);
 int NTP_RemoveClockEvent(int id);
 int NTP_ClearEvents();
 

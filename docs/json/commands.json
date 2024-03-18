@@ -523,8 +523,8 @@
   },
   {
     "name": "EnergyCntReset",
-    "args": "",
-    "descr": "Resets the total Energy Counter, the one that is usually kept after device reboots. After this commands, the counter will start again from 0.",
+    "args": "[OptionalNewValue]",
+    "descr": "Resets the total Energy Counter, the one that is usually kept after device reboots. After this commands, the counter will start again from 0 (or from the value you specified).",
     "fn": "BL09XX_ResetEnergyCounter",
     "file": "driver/drv_bl_shared.c",
     "requires": "",
@@ -1378,8 +1378,8 @@
   },
   {
     "name": "PinDeepSleep",
-    "args": "",
-    "descr": "Starts a pin deep sleep (deep sleep that can be interrupted by external IO events like a button press)",
+    "args": "[OptionalTimerForWakeup]",
+    "descr": "Starts a pin deep sleep (deep sleep that can be interrupted by external IO events like a button press). The argument is an optional extra time to wake up also by timer. See [tutorial](https://www.elektroda.com/rtvforum/topic4041971.html)",
     "fn": "CMD_PinDeepSleep",
     "file": "cmnds/cmd_channels.c",
     "requires": "",

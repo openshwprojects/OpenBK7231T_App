@@ -537,8 +537,8 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_FriendlyName","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("FriendlyName", CMD_FriendlyName, NULL);
-	//cmddetail:{"name":"PinDeepSleep","args":"",
-	//cmddetail:"descr":"Starts a pin deep sleep (deep sleep that can be interrupted by external IO events like a button press)",
+	//cmddetail:{"name":"PinDeepSleep","args":"[OptionalTimerForWakeup]",
+	//cmddetail:"descr":"Starts a pin deep sleep (deep sleep that can be interrupted by external IO events like a button press). The argument is an optional extra time to wake up also by timer. See [tutorial](https://www.elektroda.com/rtvforum/topic4041971.html)",
 	//cmddetail:"fn":"CMD_PinDeepSleep","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PinDeepSleep", CMD_PinDeepSleep, NULL);
