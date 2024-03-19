@@ -554,7 +554,7 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("FullBootTime", CMD_FullBootTime, NULL);
 	//cmddetail:{"name":"SetChannelLabel","args":"[ChannelIndex][Str][bHideTogglePrefix]",
-	//cmddetail:"descr":"Sets a channel label for UI. If you use 1 for bHideTogglePrefix, then the 'Toggle ' prefix from button will be omitted",
+	//cmddetail:"descr":"Sets a channel label for UI and default entity name for Home Assistant discovery. If you use 1 for bHideTogglePrefix, then the 'Toggle ' prefix from UI button will be omitted",
 	//cmddetail:"fn":"CMD_SetChannelLabel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetChannelLabel", CMD_SetChannelLabel, NULL);
@@ -574,7 +574,7 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetChannelVisible", CMD_SetChannelVisible, NULL);
 	//cmddetail:{"name":"SetChannelPrivate","args":"[ChannelIndex][bPrivate]",
-	//cmddetail:"descr":"Channels marked as private are NEVER published via MQTT.",
+	//cmddetail:"descr":"Channels marked as private are NEVER published via MQTT and excluded from Home Assistant discovery",
 	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetChannelPrivate", CMD_SetChannelPrivate, NULL);
