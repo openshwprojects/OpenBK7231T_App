@@ -565,7 +565,7 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	const char* friendlyName;
 	const char* clientId;
 	int powerCode;
-	int relayCount, pwmCount, dInputCount, i;
+	int relayCount, pwmCount, dInputCount, dButtonCount, i;
 	bool bRelayIndexingStartsWithZero;
 
 	deviceName = CFG_GetShortDeviceName();
@@ -577,7 +577,7 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 
 	bRelayIndexingStartsWithZero = CHANNEL_HasChannelPinWithRoleOrRole(0, IOR_Relay, IOR_Relay_n);
 
-	PIN_get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
+	PIN_get_Relay_PWM_Btn_Count(&relayCount, &pwmCount, &dInputCount, &dButtonCount);
 
 	if (LED_IsLEDRunning()) {
 		powerCode = LED_GetEnableAll();

@@ -1576,7 +1576,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	int i;
 	int relayCount;
 	int pwmCount;
-	int dInputCount;
+	int dInputCount, dButtonCount;
 	bool ledDriverChipRunning;
 	HassDeviceInfo* dev_info = NULL;
 	bool measuringPower = false;
@@ -1601,8 +1601,8 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	measuringBattery = DRV_IsMeasuringBattery();
 #endif
 
-	PIN_get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
-	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HASS counts: %i rels, %i pwms, %i inps", relayCount, pwmCount, dInputCount);
+	PIN_get_Relay_PWM_Btn_Count(&relayCount, &pwmCount, &dInputCount, &dButtonCount);
+	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HASS counts: %i rels, %i pwms, %i inps, %i buttons", relayCount, pwmCount, dInputCount, dButtonCount);
 
 	ledDriverChipRunning = LED_IsLedDriverChipRunning();
 
@@ -1698,6 +1698,28 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 				dev_info = NULL;
+				discoveryQueued = true;
+			}
+		}
+	}
+
+	if (dButtonCount > 0) {
+		for (i = 0; i < CHANNEL_MAX; i++) {
+			if (h_isChannelButton(i)) {
+				// TODO: flags are 32 bit and there are 64 max channels
+				BIT_SET(flagsChannelPublished, i);
+				for (int loop_x = 1; loop_x <= 5; loop_x++) {
+				  dev_info = hass_init_button_device_info(i, loop_x);
+				  MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+				  hass_free_device_info(dev_info);
+				  dev_info = NULL;
+				}
+				for (int loop_x = 20; loop_x <= 22; loop_x++) { // Loop for LongPress, LongPressRelease and BtnRelease
+				  dev_info = hass_init_button_device_info(i, loop_x);
+				  MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+				  hass_free_device_info(dev_info);
+				  dev_info = NULL;
+				}
 				discoveryQueued = true;
 			}
 		}
@@ -2130,7 +2152,7 @@ void hprintf_qos_payload(http_request_t* request, const char* clientId) {
 int http_fn_ha_cfg(http_request_t* request) {
 	int relayCount;
 	int pwmCount;
-	int dInputCount;
+	int dInputCount, dButtonCount;
 	const char* shortDeviceName;
 	const char* clientId;
 	int i;
@@ -2153,7 +2175,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 
 	poststr(request, "<textarea rows=\"40\" cols=\"50\">");
 
-	PIN_get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
+	PIN_get_Relay_PWM_Btn_Count(&relayCount, &pwmCount, &dInputCount, &dButtonCount);
 
 	if (relayCount > 0) {
 
@@ -2511,10 +2533,15 @@ int http_fn_cfg_pins(http_request_t* request) {
 			&& si != IOR_LED_WIFI && si != IOR_LED_WIFI_n && si != IOR_LED_WIFI_n
 			&& !(si >= IOR_IRRecv && si <= IOR_DHT11)
 			&& !(si >= IOR_SM2135_DAT && si <= IOR_BP1658CJ_CLK))
-			|| IS_PIN_DHT_ROLE(si))
+		        || IS_PIN_DHT_ROLE(si))
 		{
 			hprintf255(request, "<input class=\"hele\" name=\"r%i\" type=\"text\" value=\"%i\"/>", i, ch);
 		}
+		if (si == IOR_Button_ScriptOnly || si == IOR_Button_ScriptOnly_n)
+		{
+			hprintf255(request, "<input class=\"hele\" name=\"r%i\" type=\"text\" value=\"%i\"/> Btn_ID", i, ch);
+		}
+
 		// Secondary linked channel
 		// For button, is relay index to toggle on double click
 		if (si == IOR_Button || si == IOR_Button_n || IS_PIN_DHT_ROLE(si) || IS_PIN_TEMP_HUM_SENSOR_ROLE(si) || IS_PIN_AIR_SENSOR_ROLE(si))

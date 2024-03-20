@@ -1310,9 +1310,11 @@ bool CHANNEL_HasNeverPublishFlag(int ch);
 //ledRemap_t *CFG_GetLEDRemap();
 
 void PIN_get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount);
+void PIN_get_Relay_PWM_Btn_Count(int* relayCount, int* pwmCount, int* dInputCount, int* dButtonCount);
 int h_isChannelPWM(int tg_ch);
 int h_isChannelRelay(int tg_ch);
 int h_isChannelDigitalInput(int tg_ch);
+int h_isChannelButton(int tg_ch);
 
 const char *ChannelType_GetTitle(int type);
 const char *ChannelType_GetUnit(int type);
