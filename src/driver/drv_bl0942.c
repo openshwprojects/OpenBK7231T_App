@@ -37,7 +37,7 @@ static unsigned short bl0942_baudRate = 4800;
 
 // User operation register (read and write)
 #define BL0942_REG_MODE 0x19
-#define BL0942_MODE_DEFAULT 0x87
+#define BL0942_MODE_DEFAULT 0x07
 #define BL0942_MODE_RMS_UPDATE_SEL_800_MS (1 << 3)
 
 #define DEFAULT_VOLTAGE_CAL 15188
