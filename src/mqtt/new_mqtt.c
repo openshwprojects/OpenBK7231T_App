@@ -2379,14 +2379,18 @@ struct tm* cvt_date(char const* date, char const* time, struct tm* t)
 	sscanf(date, "%s %d %d", s_month, &t->tm_mday, &year);
 	sscanf(time, "%2d %*c %2d %*c %2d", &t->tm_hour, &t->tm_min, &t->tm_sec);
 	// Find where is s_month in month_names. Deduce month value.
-	t->tm_mon = (strstr(month_names, s_month) - month_names) / 3 + 1;
+	t->tm_mon = (strstr(month_names, s_month) - month_names) / 3;
 	t->tm_year = year - 1900;
 	return t;
 }
 struct tm* mbedtls_platform_gmtime_r(const mbedtls_time_t* tt, struct tm* tm_buf) {
 	// If NTP time not synced return compile time
-	if (!NTP_IsTimeSynced()) {		
-		return cvt_date(__DATE__, __TIME__, tm_buf);
+	struct tm* ltm;
+	if (!NTP_IsTimeSynced()) {	
+		ltm = cvt_date(__DATE__, __TIME__, tm_buf);
+		//addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "MBEDTLS Time : %04d/%02d/%02d %02d:%02d:%02d",
+		//	ltm->tm_year + 1900, ltm->tm_mon + 1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+		return ltm;
 	}
 	return gmtime_r((time_t*)&g_ntpTime, tm_buf);
 }
