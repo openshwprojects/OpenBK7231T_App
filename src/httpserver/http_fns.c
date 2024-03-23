@@ -1577,6 +1577,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	int relayCount;
 	int pwmCount;
 	int dInputCount;
+	int excludedCount = 0;
 	bool ledDriverChipRunning;
 	HassDeviceInfo* dev_info = NULL;
 	bool measuringPower = false;
@@ -1592,6 +1593,13 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	// no channels published yet
 	flagsChannelPublished = 0;
 
+	for (i = 0; i < CHANNEL_MAX; i++) {
+		if (CHANNEL_HasNeverPublishFlag(i)) {
+			BIT_SET(flagsChannelPublished, i);
+			excludedCount++;
+		}
+	}
+	
 	if (topic == 0 || *topic == 0) {
 		topic = "homeassistant";
 	}
@@ -1602,7 +1610,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 #endif
 
 	PIN_get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
-	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HASS counts: %i rels, %i pwms, %i inps", relayCount, pwmCount, dInputCount);
+	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HASS counts: %i rels, %i pwms, %i inps, %i excluded", relayCount, pwmCount, dInputCount, excludedCount);
 
 	ledDriverChipRunning = LED_IsLedDriverChipRunning();
 
@@ -1739,7 +1747,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	if (measuringPower == true) {
-		for (i = OBK__FIRST; i < OBK__LAST; i++)
+		for (i = OBK__FIRST; i <= OBK__LAST; i++)
 		{
 			dev_info = hass_init_energy_sensor_device_info(i);
 			if (dev_info) {
@@ -2047,10 +2055,14 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	}
 #endif
 	if (1) {
-		dev_info = hass_init_sensor_device_info(HASS_RSSI, 0, -1, -1, 1);
+		//use -1 for channel as these don't correspond to channels
+		dev_info = hass_init_sensor_device_info(HASS_RSSI, -1, -1, -1, 1);
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
-		dev_info = hass_init_sensor_device_info(HASS_UPTIME, 0, -1, -1, 1);
+		dev_info = hass_init_sensor_device_info(HASS_UPTIME, -1, -1, -1, 1);
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		dev_info = hass_init_sensor_device_info(HASS_BUILD, -1, -1, -1, 1);
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
 		discoveryQueued = true;

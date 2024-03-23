@@ -102,6 +102,9 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 	case HASS_UPTIME:
 		sprintf(uniq_id, "%s_uptime", longDeviceName);
 		break;	
+	case HASS_BUILD:
+		sprintf(uniq_id, "%s_build", longDeviceName);
+		break;		
 	default:
 		// TODO: USE type here as well?
 		// If type is not set, and we use "sensor" naming, we can easily make collision
@@ -189,7 +192,8 @@ cJSON* hass_build_device_node(cJSON* ids) {
 /// @brief Initializes HomeAssistant device discovery storage with common values.
 /// @param type 
 /// @param index This is used to generate generate unique_id and name. 
-/// It is ignored for RGB. For energy sensors, index corresponds to energySensor_t. For regular sensor, index can be be the channel.
+/// It is ignored for RGB and diagnostic sensors (HASS_RSSI, HASS_UPTIME, HASS_BUILD...).
+/// For energy sensors, index corresponds to energySensor_t. For regular sensor, index can be be the channel.
 /// @param payload_on The payload that represents enabled state. This is not added for POWER_SENSOR.
 /// @param payload_off The payload that represents disabled state. This is not added for POWER_SENSOR.
 /// @return 
@@ -211,85 +215,92 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 	bool isSensor = false;	//This does not count binary_sensor
 
 	//Build the `name`
-	switch (type) {
-	case LIGHT_ON_OFF:
-	case LIGHT_PWM:
-	case RELAY:
-	case BINARY_SENSOR:
+	if (CHANNEL_HasLabel(index) && type != ENERGY_METER_SENSOR) {
 		sprintf(g_hassBuffer, "%s", CHANNEL_GetLabel(index));
-		break;
-	case LIGHT_PWMCW:
-	case LIGHT_RGB:
-	case LIGHT_RGBCW:
-		//There can only be one RGB so we can skip including index in the name. Do the same
-		//for 2 PWM case.
-		sprintf(g_hassBuffer, "Light");
-		break;
-	case ENERGY_METER_SENSOR:
-		isSensor = true;
-#ifndef OBK_DISABLE_ALL_DRIVERS
-		if (index <= OBK__LAST)
-			sprintf(g_hassBuffer, "%s", DRV_GetEnergySensorNames(index)->name_friendly);
-		else
-			sprintf(g_hassBuffer, "Unknown Energy Meter Sensor");
-#endif
-		break;
-	case POWER_SENSOR:
-		isSensor = true;
-		sprintf(g_hassBuffer, "Power");
-		break;
-	case TEMPERATURE_SENSOR:
-		isSensor = true;
-		sprintf(g_hassBuffer, "Temperature");
-		break;
-	case HUMIDITY_SENSOR:
-		isSensor = true;
-		sprintf(g_hassBuffer, "Humidity");
-		break;
-	case CO2_SENSOR:
-		isSensor = true;
-		sprintf(g_hassBuffer, "CO2");
-		break;
-	case SMOKE_SENSOR:
-		isSensor = true;
-		sprintf(g_hassBuffer, "Smoke");
-		break;
-	case PRESSURE_SENSOR:
-		isSensor = true;
-		sprintf(g_hassBuffer, "Pressure");
-		break;
-	case TVOC_SENSOR:
-		isSensor = true;
-		sprintf(g_hassBuffer, "Tvoc");
-		break;
-	case BATTERY_SENSOR:
-		isSensor = true;
-		sprintf(g_hassBuffer, "Battery");
-		break;
-	case BATTERY_VOLTAGE_SENSOR:
-	case VOLTAGE_SENSOR:
-		isSensor = (type == BATTERY_VOLTAGE_SENSOR);
-		sprintf(g_hassBuffer, "Voltage");
-		break;
-	case ILLUMINANCE_SENSOR:
-		sprintf(g_hassBuffer, "Illuminance");
-		break;
-	case HASS_RSSI:
-		sprintf(g_hassBuffer, "RSSI");
-		break;
-	case HASS_UPTIME:
-		sprintf(g_hassBuffer, "Uptime");
-		break;
-	case ENERGY_SENSOR:
-		isSensor = true;
-		sprintf(g_hassBuffer, "Energy");
-		break;
-	case TIMESTAMP_SENSOR:
-		sprintf(g_hassBuffer, "Timestamp");
-		break;
-	default:
-		sprintf(g_hassBuffer, "%s", CHANNEL_GetLabel(index));
-		break;
+	} else {
+		switch (type) {
+		case LIGHT_ON_OFF:
+		case LIGHT_PWM:
+		case RELAY:
+		case BINARY_SENSOR:
+			sprintf(g_hassBuffer, "%s", CHANNEL_GetLabel(index));
+			break;
+		case LIGHT_PWMCW:
+		case LIGHT_RGB:
+		case LIGHT_RGBCW:
+			//There can only be one RGB so we can skip including index in the name. Do the same
+			//for 2 PWM case.
+			sprintf(g_hassBuffer, "Light");
+			break;
+		case ENERGY_METER_SENSOR:
+			isSensor = true;
+	#ifndef OBK_DISABLE_ALL_DRIVERS
+			if (index <= OBK__LAST)
+				sprintf(g_hassBuffer, "%s", DRV_GetEnergySensorNames(index)->name_friendly);
+			else
+				sprintf(g_hassBuffer, "Unknown Energy Meter Sensor");
+	#endif
+			break;
+		case POWER_SENSOR:
+			isSensor = true;
+			sprintf(g_hassBuffer, "Power");
+			break;
+		case TEMPERATURE_SENSOR:
+			isSensor = true;
+			sprintf(g_hassBuffer, "Temperature");
+			break;
+		case HUMIDITY_SENSOR:
+			isSensor = true;
+			sprintf(g_hassBuffer, "Humidity");
+			break;
+		case CO2_SENSOR:
+			isSensor = true;
+			sprintf(g_hassBuffer, "CO2");
+			break;
+		case SMOKE_SENSOR:
+			isSensor = true;
+			sprintf(g_hassBuffer, "Smoke");
+			break;
+		case PRESSURE_SENSOR:
+			isSensor = true;
+			sprintf(g_hassBuffer, "Pressure");
+			break;
+		case TVOC_SENSOR:
+			isSensor = true;
+			sprintf(g_hassBuffer, "Tvoc");
+			break;
+		case BATTERY_SENSOR:
+			isSensor = true;
+			sprintf(g_hassBuffer, "Battery");
+			break;
+		case BATTERY_VOLTAGE_SENSOR:
+		case VOLTAGE_SENSOR:
+			isSensor = (type == BATTERY_VOLTAGE_SENSOR);
+			sprintf(g_hassBuffer, "Voltage");
+			break;
+		case ILLUMINANCE_SENSOR:
+			sprintf(g_hassBuffer, "Illuminance");
+			break;
+		case HASS_RSSI:
+			sprintf(g_hassBuffer, "RSSI");
+			break;
+		case HASS_UPTIME:
+			sprintf(g_hassBuffer, "Uptime");
+			break;
+		case HASS_BUILD:
+			sprintf(g_hassBuffer, "Build");
+			break;		
+		case ENERGY_SENSOR:
+			isSensor = true;
+			sprintf(g_hassBuffer, "Energy");
+			break;
+		case TIMESTAMP_SENSOR:
+			sprintf(g_hassBuffer, "Timestamp");
+			break;
+		default:
+			sprintf(g_hassBuffer, "%s", CHANNEL_GetLabel(index));
+			break;
+		}
 	}
 	cJSON_AddStringToObject(info->root, "name", g_hassBuffer);
 	cJSON_AddStringToObject(info->root, "~", CFG_GetMQTTClientId());      //base topic
@@ -653,13 +664,17 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 		cJSON_AddStringToObject(info->root, "entity_category", "diagnostic");
 		cJSON_AddStringToObject(info->root, "stat_cla", "total_increasing");
 		break;
+	case HASS_BUILD:
+		cJSON_AddStringToObject(info->root, "stat_t", "~/build");
+		cJSON_AddStringToObject(info->root, "entity_category", "diagnostic");
+		break;	
 	default:
 		sprintf(g_hassBuffer, "~/%d/get", channel);
 		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		return NULL;
 	}
 
-	if (type != READONLYLOWMIDHIGH_SENSOR && !cJSON_HasObjectItem(info->root, "stat_cla")) {
+	if (type != READONLYLOWMIDHIGH_SENSOR && type != HASS_BUILD && !cJSON_HasObjectItem(info->root, "stat_cla")) {
 		cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
 	}
 
