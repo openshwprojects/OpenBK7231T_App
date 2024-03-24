@@ -63,7 +63,7 @@ typedef struct OBK_DEVICE_tag{
     int timeout; // seconds
 } OBK_DEVICE;
 
-OBK_DEVICE obkDevices[MAX_OBK_DEVICES];
+static OBK_DEVICE obkDevices[MAX_OBK_DEVICES];
 
 static void obkDeviceTick(uint32_t ip){
     int i;
