@@ -112,9 +112,10 @@
 //#define ENABLE_TASMOTADEVICEGROUPS 1
 #define ENABLE_NTP				1
 #define ENABLE_DRIVER_BL0937    1
-#define ENABLE_DRIVER_LED 1
-#define ENABLE_DRIVER_WEMO		1
-#define ENABLE_DRIVER_HUE		1
+// https://www.elektroda.com/rtvforum/topic4044482.html
+//#define ENABLE_DRIVER_LED 1
+//#define ENABLE_DRIVER_WEMO		1
+//#define ENABLE_DRIVER_HUE		1
 
 #else
 
