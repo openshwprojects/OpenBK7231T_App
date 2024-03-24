@@ -325,7 +325,7 @@ commandResult_t CMD_NTP_AddClockEvent(const void *context, const char *cmd, cons
 	s = Tokenizer_GetArg(0);
 	flags = Tokenizer_GetArgInteger(1);
 
-	if (sscanf(s, "%i:%i:%i", &hour, &minute, &second) >= 2) {
+	if (sscanf(s, "%2d:%2d:%2d", &hour, &minute, &second) >= 2) {
 		// hour, minute and second has correct value parsed
 	}
 #if ENABLE_NTP_SUNRISE_SUNSET
@@ -415,6 +415,19 @@ commandResult_t CMD_NTP_RemoveClockEvent(const void* context, const char* cmd, c
 
 	return CMD_RES_OK;
 }
+
+int NTP_GetEventTime(int id) {
+	for (ntpEvent_t* e = ntp_events; e; e = e->next)
+	{
+		if (e->id == id)
+		{
+			return (int)e->hour * 3600 + (int)e->minute * 60 + (int)e->second;
+		}
+	}
+
+	return -1;
+}
+
 int NTP_PrintEventList() {
 	ntpEvent_t* e;
 	int t;

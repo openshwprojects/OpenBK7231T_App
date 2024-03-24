@@ -237,7 +237,6 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "SM2235",		SM2235_Init,		NULL,			NULL, NULL, NULL, NULL, false },
 #endif
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 
 #if ENABLE_DRIVER_BMP280
 	//drvdetail:{"name":"BMP280",
@@ -246,6 +245,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "BMP280", BMP280_Init, BMP280_OnEverySecond, BMP280_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	//drvdetail:{"name":"CHT8305",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"CHT8305 is a Temperature and Humidity sensor with I2C interface.",

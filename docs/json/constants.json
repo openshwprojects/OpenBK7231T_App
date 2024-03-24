@@ -214,5 +214,17 @@
     "title": "$rand",
     "descr": "Random unsigned value",
     "requires": ""
+  },
+  {
+    "name": "$rebootReason",
+    "title": "$rebootReason",
+    "descr": "Reboot reason",
+    "requires": ""
+  },
+  {
+    "name": "$intTemp",
+    "title": "$intTemp",
+    "descr": "Internal temperature (of WiFi module sensor)",
+    "requires": ""
   }
 ]
