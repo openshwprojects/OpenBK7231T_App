@@ -6,6 +6,7 @@ all:
 	@echo Calling original build_app.sh script
 	mkdir -p output
 	if [ ! -d "$(MBEDTLS)" ]; then wget -q "https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v2.28.5.tar.gz"; tar -xf v2.28.5.tar.gz -C output; rm -f v2.28.5.tar.gz; fi	
+	mv $(MBEDTLS)/library/base64.c $(MBEDTLS)/library/base64_mbedtls.c
 	cd $(PWD)/../../platforms/$(TARGET_PLATFORM)/toolchain/$(TUYA_APPS_BUILD_PATH) && sh $(TUYA_APPS_BUILD_CMD) $(APP_NAME) $(APP_VERSION) $(TARGET_PLATFORM) $(USER_CMD)
 else
 
