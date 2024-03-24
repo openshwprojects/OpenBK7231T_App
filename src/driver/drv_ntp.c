@@ -189,7 +189,8 @@ int NTP_GetWeekDay() {
 	struct tm *ltm;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime((time_t*)&g_ntpTime);
+	time_t mytime=(time_t)g_ntpTime;
+	ltm = gmtime(&mytime);
 
 	if (ltm == 0) {
 		return 0;
@@ -201,7 +202,8 @@ int NTP_GetHour() {
 	struct tm *ltm;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime((time_t*)&g_ntpTime);
+	time_t mytime=(time_t)g_ntpTime;
+	ltm = gmtime(&mytime);
 
 	if (ltm == 0) {
 		return 0;
@@ -213,7 +215,8 @@ int NTP_GetMinute() {
 	struct tm *ltm;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime((time_t*)&g_ntpTime);
+	time_t mytime=(time_t)g_ntpTime;
+	ltm = gmtime(&mytime);
 
 	if (ltm == 0) {
 		return 0;
@@ -225,7 +228,8 @@ int NTP_GetSecond() {
 	struct tm *ltm;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime((time_t*)&g_ntpTime);
+	time_t mytime=(time_t)g_ntpTime;
+	ltm = gmtime(&mytime);
 
 	if (ltm == 0) {
 		return 0;
@@ -237,7 +241,8 @@ int NTP_GetMDay() {
 	struct tm *ltm;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime((time_t*)&g_ntpTime);
+	time_t mytime=(time_t)g_ntpTime;
+	ltm = gmtime(&mytime);
 
 	if (ltm == 0) {
 		return 0;
@@ -249,7 +254,8 @@ int NTP_GetMonth() {
 	struct tm *ltm;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime((time_t*)&g_ntpTime);
+	time_t mytime=(time_t)g_ntpTime;
+	ltm = gmtime(&mytime);
 
 	if (ltm == 0) {
 		return 0;
@@ -261,7 +267,8 @@ int NTP_GetYear() {
 	struct tm *ltm;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime((time_t*)&g_ntpTime);
+	time_t mytime=(time_t)g_ntpTime;
+	ltm = gmtime(&mytime);
 
 	if (ltm == 0) {
 		return 0;
@@ -441,7 +448,8 @@ void NTP_CheckForReceive() {
     g_ntpTime = secsSince1900 - NTP_OFFSET;
     g_ntpTime += g_timeOffsetSeconds;
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time  : %u",g_ntpTime);
-    ltm = gmtime((time_t*)&g_ntpTime);
+    time_t mytime=(time_t)g_ntpTime;
+    ltm = gmtime(&mytime);
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Local Time : %04d/%02d/%02d %02d:%02d:%02d",
             ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
 
@@ -519,8 +527,8 @@ void NTP_OnEverySecond()
 void NTP_AppendInformationToHTTPIndexPage(http_request_t* request)
 {
     struct tm *ltm;
-
-    ltm = gmtime((time_t*)&g_ntpTime);
+    time_t mytime= (time_t)g_ntpTime;	
+    ltm = gmtime(&mytime);
 
     if (g_synced == true)
         hprintf255(request, "<h5>NTP (%s): Local Time: %04d/%02d/%02d %02d:%02d:%02d </h5>",
