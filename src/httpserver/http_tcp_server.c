@@ -54,6 +54,17 @@ void HTTPServer_Start()
 	}
 }
 
+void HTTPServer_Stop()
+{
+	OSStatus err = kNoErr;
+
+	err = rtos_delete_thread(&g_http_thread);
+
+	if (err != kNoErr)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "stop \"TCP_server\" thread failed with %i!\r\n", err);
+	}
+}
 
 int sendfn(int fd, char* data, int len) {
 	if (fd) {
