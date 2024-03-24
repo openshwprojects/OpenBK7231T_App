@@ -76,6 +76,7 @@ void CFG_SetLoggerFlag(int flag, bool bValue);
 bool CFG_HasLoggerFlag(int flag);
 void CFG_SetMac(char *mac);
 int CFG_GetFlags();
+unsigned long CFG_GetFlags64();
 const char* CFG_GetNTPServer();
 void CFG_SetNTPServer(const char *s);
 // BL0937, BL0942, etc constants
@@ -88,6 +89,8 @@ void CFG_SetPowerMeasurementCalibrationFloat(int index, float value);
 void CFG_SetButtonLongPressTime(int value);
 void CFG_SetButtonShortPressTime(int value);
 void CFG_SetButtonRepeatPressTime(int value);
+const char *CFG_GetWebPassword();
+void CFG_SetWebPassword(const char *s);
 
 #if ENABLE_LITTLEFS
 void CFG_SetLFS_Size(uint32_t value);

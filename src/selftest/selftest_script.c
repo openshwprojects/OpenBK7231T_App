@@ -28,6 +28,19 @@ const char *demo_loop_3 =
 "    if $CH20>0 then goto again\r\n"
 "    setChannel 0 0\r\n";
 
+const char *demo_nested_loop =
+"setChannel 30 0\r\n"
+"setChannel 10 0\r\n"
+"outer_loop:\r\n"
+"    setChannel 31 0\r\n"
+"    inner_loop:\r\n"
+"        addChannel 31 1\r\n"
+"        addChannel 10 10\r\n"
+"        if $CH31<5 then goto inner_loop\r\n"
+"    addChannel 30 1\r\n"
+"    if $CH30<3 then goto outer_loop\r\n"
+"setChannel 32 100\r\n";
+
 void Test_Scripting_Loop1() {
 	char buffer[64];
 
@@ -108,10 +121,34 @@ void Test_Scripting_Loop3() {
 	SELFTEST_ASSERT_CHANNEL(20, 0);
 	//system("pause");
 }
+
+void Test_Scripting_NestedLoop() {
+	// reset whole device
+	SIM_ClearOBK(0);
+	CMD_ExecuteCommand("lfs_format", 0);
+
+	// put file in LittleFS
+	Test_FakeHTTPClientPacket_POST("api/lfs/demo_nested_loop.txt", demo_nested_loop);
+	// get this file 
+	Test_FakeHTTPClientPacket_GET("api/lfs/demo_nested_loop.txt");
+	SELFTEST_ASSERT_HTML_REPLY(demo_nested_loop);
+
+	CMD_ExecuteCommand("startScript demo_nested_loop.txt", 0);
+	SELFTEST_ASSERT_INTEGER(CMD_GetCountActiveScriptThreads(), 1);
+
+	Sim_RunFrames(50, false);
+
+	SELFTEST_ASSERT_INTEGER(CMD_GetCountActiveScriptThreads(), 0);
+	SELFTEST_ASSERT_CHANNEL(10, 150);
+	SELFTEST_ASSERT_CHANNEL(30, 3);
+	SELFTEST_ASSERT_CHANNEL(31, 5); // Ensure inner loop executed 5 times
+	SELFTEST_ASSERT_CHANNEL(32, 100);
+}
 void Test_Scripting() {
 	Test_Scripting_Loop1();
 	Test_Scripting_Loop2();
 	Test_Scripting_Loop3();
+	Test_Scripting_NestedLoop();
 }
 
 #endif

@@ -2,7 +2,7 @@
 
 #include "selftest_local.h"
 
-void Test_Commands_Alias() {
+void Test_Commands_Alias_Generic() {
 	// reset whole device
 	SIM_ClearOBK(0);
 
@@ -51,6 +51,66 @@ void Test_Commands_Alias() {
 	// this check will fail obviously!
 	//SELFTEST_ASSERT_CHANNEL(5, 666);
 }
+void Test_Commands_Alias_Chain() {
+	// reset whole device
+	SIM_ClearOBK(0);
 
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+	SELFTEST_ASSERT_CHANNEL(6, 0);
+
+	CMD_ExecuteCommand("alias test1 backlog addChannel 1 123", 0);
+	CMD_ExecuteCommand("alias test2 backlog addChannel 2 234; test1", 0);
+	CMD_ExecuteCommand("alias test3 backlog addChannel 3 333; test2", 0);
+	CMD_ExecuteCommand("alias test4 backlog addChannel 4 404; test3", 0);
+	CMD_ExecuteCommand("alias test5 backlog addChannel 5 500; test4", 0);
+	CMD_ExecuteCommand("alias test6 backlog addChannel 6 666; test5", 0);
+	CMD_ExecuteCommand("test6", 0);
+
+	SELFTEST_ASSERT_CHANNEL(1, 123);
+	SELFTEST_ASSERT_CHANNEL(2, 234);
+	SELFTEST_ASSERT_CHANNEL(3, 333);
+	SELFTEST_ASSERT_CHANNEL(4, 404);
+	SELFTEST_ASSERT_CHANNEL(5, 500);
+	SELFTEST_ASSERT_CHANNEL(6, 666);
+}
+void Test_Commands_Alias_Chain2() {
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+	SELFTEST_ASSERT_CHANNEL(6, 0);
+
+	CMD_ExecuteCommand("alias test10 backlog addChannel 10 111", 0);
+
+	CMD_ExecuteCommand("alias test1 backlog addChannel 1 123; test10", 0);
+	CMD_ExecuteCommand("alias test2 backlog addChannel 2 234; test1", 0);
+	CMD_ExecuteCommand("alias test3 backlog addChannel 3 333; test2; test1", 0);
+	CMD_ExecuteCommand("alias test4 backlog addChannel 4 404; test3", 0);
+	CMD_ExecuteCommand("alias test5 backlog addChannel 5 500; test4; test1; test1", 0);
+	CMD_ExecuteCommand("alias test6 backlog addChannel 6 666; test5", 0);
+	CMD_ExecuteCommand("test6", 0);
+
+	SELFTEST_ASSERT_CHANNEL(1, 123*4);
+	SELFTEST_ASSERT_CHANNEL(2, 234);
+	SELFTEST_ASSERT_CHANNEL(3, 333);
+	SELFTEST_ASSERT_CHANNEL(4, 404);
+	SELFTEST_ASSERT_CHANNEL(5, 500);
+	SELFTEST_ASSERT_CHANNEL(6, 666);
+	SELFTEST_ASSERT_CHANNEL(10, 4*111);
+}
+
+void Test_Commands_Alias() {
+	Test_Commands_Alias_Generic();
+	Test_Commands_Alias_Chain();
+	Test_Commands_Alias_Chain2();
+}
 
 #endif

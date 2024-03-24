@@ -13,42 +13,6 @@
 #include "drv_tuyaMCU.h"
 #include "drv_uart.h"
 
-const char* sensor_mqttNames[OBK_NUM_MEASUREMENTS] = {
-	"voltage",
-	"current",
-	"power"
-};
-
-//sensor_device_classes just so happens to be the same as sensor_mqttNames.
-const char* sensor_mqtt_device_classes[OBK_NUM_MEASUREMENTS] = {
-	"voltage",
-	"current",
-	"power"
-};
-
-const char* sensor_mqtt_device_units[OBK_NUM_MEASUREMENTS] = {
-	"V",
-	"A",
-	"W"
-};
-
-const char* counter_mqttNames[OBK_NUM_COUNTERS] = {
-	"energycounter",
-	"energycounter_last_hour",
-	"consumption_stats",
-	"energycounter_yesterday",
-	"energycounter_today",
-	"energycounter_clear_date",
-};
-
-const char* counter_devClasses[OBK_NUM_COUNTERS] = {
-	"energy",
-	"energy",
-	"",
-	"energy",
-	"energy",
-	"timestamp"
-};
 
 typedef struct driver_s {
 	const char* name;
@@ -62,47 +26,47 @@ typedef struct driver_s {
 } driver_t;
 
 
-void TuyaMCU_RunSecond();
+void TuyaMCU_RunEverySecond();
 
 // startDriver BL0937
 static driver_t g_drivers[] = {
-#ifdef ENABLE_DRIVER_TUYAMCU
+#if ENABLE_DRIVER_TUYAMCU
 	//drvdetail:{"name":"TuyaMCU",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"TuyaMCU is a protocol used for communication between WiFI module and external MCU. This protocol is using usually RX1/TX1 port of BK chips. See [TuyaMCU dimmer example](https://www.elektroda.com/rtvforum/topic3929151.html), see [TH06 LCD humidity/temperature sensor example](https://www.elektroda.com/rtvforum/topic3942730.html), see [fan controller example](https://www.elektroda.com/rtvforum/topic3908093.html), see [simple switch example](https://www.elektroda.com/rtvforum/topic3906443.html)",
 	//drvdetail:"requires":""}
-	{ "TuyaMCU",	TuyaMCU_Init,		TuyaMCU_RunSecond,			NULL, TuyaMCU_RunFrame, NULL, NULL, false },
+	{ "TuyaMCU",	TuyaMCU_Init,		TuyaMCU_RunEverySecond,			NULL, TuyaMCU_RunFrame, NULL, NULL, false },
 	//drvdetail:{"name":"tmSensor",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"The tmSensor must be used only when TuyaMCU is already started. tmSensor is a TuyaMcu Sensor, it's used for Low Power TuyaMCU communication on devices like TuyaMCU door sensor, or TuyaMCU humidity sensor. After device reboots, tmSensor uses TuyaMCU to request data update from the sensor and reports it on MQTT. Then MCU turns off WiFi module again and goes back to sleep. See an [example door sensor here](https://www.elektroda.com/rtvforum/topic3914412.html).",
 	//drvdetail:"requires":""}
-	{ "tmSensor",	TuyaMCU_Sensor_Init, TuyaMCU_Sensor_RunFrame,	NULL, NULL, NULL, NULL, false },
+	{ "tmSensor",	TuyaMCU_Sensor_Init, TuyaMCU_Sensor_RunEverySecond,	NULL, NULL, NULL, NULL, false },
 #endif
-#ifdef ENABLE_NTP
+#if ENABLE_NTP
 	//drvdetail:{"name":"NTP",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"NTP driver is required to get current time and date from web. Without it, there is no correct datetime. Put 'startDriver NTP' in short startup line or autoexec.bat to run it on start.",
 	//drvdetail:"requires":""}
 	{ "NTP",		NTP_Init,			NTP_OnEverySecond,			NTP_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
-#ifdef ENABLE_HTTPBUTTONS
+#if ENABLE_HTTPBUTTONS
 	//drvdetail:{"name":"HTTPButtons",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"This driver allows you to create custom, scriptable buttons on main WWW page. You can create those buttons in autoexec.bat and assign commands to them",
 	//drvdetail:"requires":""}
 	{ "HTTPButtons",	DRV_InitHTTPButtons, NULL, NULL, NULL, NULL, NULL, false },
 #endif
-#ifdef ENABLE_TEST_DRIVERS
+#if ENABLE_TEST_DRIVERS
 	//drvdetail:{"name":"TESTPOWER",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"This is a fake POWER measuring socket driver, only for testing",
 	//drvdetail:"requires":""}
-	{ "TESTPOWER",	Test_Power_Init,	 Test_Power_RunFrame,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	{ "TESTPOWER",	Test_Power_Init,	 Test_Power_RunEverySecond,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 	//drvdetail:{"name":"TESTLED",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"This is a fake I2C LED driver, only for testing",
 	//drvdetail:"requires":""}
-	{ "TESTLED",	Test_LED_Driver_Init, Test_LED_Driver_RunFrame, NULL, NULL, NULL, Test_LED_Driver_OnChannelChanged, false },
+	{ "TESTLED",	Test_LED_Driver_Init, Test_LED_Driver_RunEverySecond, NULL, NULL, NULL, Test_LED_Driver_OnChannelChanged, false },
 #endif
 #if ENABLE_I2C
 	//drvdetail:{"name":"I2C",
@@ -111,40 +75,75 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "I2C",		DRV_I2C_Init,		DRV_I2C_EverySecond,		NULL, NULL, NULL, NULL, false },
 #endif
-#ifdef ENABLE_DRIVER_BL0942
+#if ENABLE_DRIVER_BL0942
+	//drvdetail:{"name":"qq",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Bqqqqqqqqqq ",
+	//drvdetail:"requires":""}
+	{ "RN8209", RN8209_Init, RN8029_RunEverySecond, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_BL0942
 	//drvdetail:{"name":"BL0942",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [LSPA9 teardown example](https://www.elektroda.com/rtvforum/topic3887748.html). ",
+	//drvdetail:"descr":"BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [LSPA9 teardown example](https://www.elektroda.com/rtvforum/topic3887748.html). By default, it uses 4800 baud, but you can also enable it with baud 9600 by using 'startDriver BL0942 9600', see [related topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20957896#20957896)",
 	//drvdetail:"requires":""}
-	{ "BL0942",		BL0942_UART_Init,	BL0942_UART_RunFrame,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	{ "BL0942",		BL0942_UART_Init,	BL0942_UART_RunEverySecond,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
-#ifdef ENABLE_DRIVER_BL0942SPI
+#if ENABLE_DRIVER_PWM_GROUP
+	//drvdetail:{"name":"PWMG",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":" ",
+	//drvdetail:"requires":""}
+	{ "PWMG",		PWMG_Init,	NULL,		NULL, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_BL0942SPI
 	//drvdetail:{"name":"BL0942SPI",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"BL0942 is a power-metering chip which uses SPI protocol for communication. It's usually connected to SPI1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [PZIOT-E01 teardown example](https://www.elektroda.com/rtvforum/topic3945667.html). ",
 	//drvdetail:"requires":""}
-	{ "BL0942SPI",	BL0942_SPI_Init,	BL0942_SPI_RunFrame,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	{ "BL0942SPI",	BL0942_SPI_Init,	BL0942_SPI_RunEverySecond,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
-#ifdef ENABLE_DRIVER_CHARGINGLIMIT
+#if ENABLE_DRIVER_CHARGINGLIMIT
 	//drvdetail:{"name":"ChargingLimit",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Mechanism to perform an action based on a max. delta value and max time. Used to control Electric Vehicle chargers. See [discussion](https://github.com/openshwprojects/OpenBK7231T_App/issues/892).",
 	//drvdetail:"requires":""}
 	{ "ChargingLimit", ChargingLimit_Init, ChargingLimit_OnEverySecond, ChargingLimit_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
-#ifdef ENABLE_DRIVER_BL0937
+#if ENABLE_DRIVER_BL0937
 	//drvdetail:{"name":"BL0937",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"BL0937 is a power-metering chip which uses custom protocol to report data. It requires setting 3 pins in pin config: CF, CF1 and SEL",
 	//drvdetail:"requires":""}
-	{ "BL0937",		BL0937_Init,		BL0937_RunFrame,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	{ "BL0937",		BL0937_Init,		BL0937_RunEverySecond,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
-#ifdef ENABLE_DRIVER_CSE7766
+#if ENABLE_DRIVER_CSE7766
 	//drvdetail:{"name":"CSE7766",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK",
 	//drvdetail:"requires":""}
-	{ "CSE7766",	CSE7766_Init,		CSE7766_RunFrame,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	{ "CSE7766",	CSE7766_Init,		CSE7766_RunEverySecond,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_MAX6675
+	//drvdetail:{"name":"MAX6675",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"BQQQK",
+	//drvdetail:"requires":""}
+	{ "MAX6675",	MAX6675_Init,		MAX6675_RunEverySecond,			NULL, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_PT6523
+	//drvdetail:{"name":"PT6523",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"BQQQK",
+	//drvdetail:"requires":""}
+	{ "PT6523",	PT6523_Init,		PT6523_RunFrame,			NULL, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_TEXTSCROLLER
+	//drvdetail:{"name":"TextScroller",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"BQQQK",
+	//drvdetail:"requires":""}
+	{ "TextScroller",	TS_Init,		NULL,			NULL, TS_RunQuickTick, NULL, NULL, false },
 #endif
 #if PLATFORM_BEKEN
 #if PLATFORM_BK7231N
@@ -203,7 +202,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "DoorSensor",		DoorDeepSleep_Init,		DoorDeepSleep_OnEverySecond,	DoorDeepSleep_AppendInformationToHTTPIndexPage, NULL, NULL, DoorDeepSleep_OnChannelChanged, false },
 
-#ifdef ENABLE_DRIVER_MAX72XX
+#if ENABLE_DRIVER_MAX72XX
 	//drvdetail:{"name":"MAX72XX_Clock",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Simple hardcoded driver for MAX72XX clock. Requires manual start of MAX72XX driver with MAX72XX setup and NTP start.",
@@ -216,7 +215,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "ADCButton",		DRV_ADCButton_Init,		NULL,	NULL, DRV_ADCButton_RunFrame, NULL, NULL, false },
 #endif
-#ifdef ENABLE_DRIVER_LED
+#if ENABLE_DRIVER_LED
 	//drvdetail:{"name":"SM2135",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"SM2135 custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both SM2135 pin roles. This may need you to remap the RGBCW indexes with SM2135_Map command",
@@ -234,9 +233,17 @@ static driver_t g_drivers[] = {
 	{ "BP1658CJ",	BP1658CJ_Init,		NULL,			NULL, NULL, NULL, NULL, false },
 	//drvdetail:{"name":"SM2235",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"SM2335 andd SM2235 custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both SM2235 pin roles. This may need you to remap the RGBCW indexes with SM2235_Map command",
+	//drvdetail:"descr":"SM2335 andd SM2235 custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both SM2235 pin roles. This may need you to remap the RGBCW indexes with SM2235_Map command. This driver also works for SM2185N.",
 	//drvdetail:"requires":""}
 	{ "SM2235",		SM2235_Init,		NULL,			NULL, NULL, NULL, NULL, false },
+#endif
+
+#if ENABLE_DRIVER_BMP280
+	//drvdetail:{"name":"BMP280",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"BMP280 is a Temperature and Pressure sensor with I2C interface.",
+	//drvdetail:"requires":""}
+	{ "BMP280", BMP280_Init, BMP280_OnEverySecond, BMP280_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	//drvdetail:{"name":"CHT8305",
@@ -254,13 +261,15 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"KP18058 I2C LED driver. Supports also KP18068. Working, see reverse-engineering [topic](https://www.elektroda.pl/rtvforum/topic3991620.html)",
 	//drvdetail:"requires":""}
 	{ "KP18058",		KP18058_Init,		NULL,			NULL, NULL, NULL, NULL, false },
-#ifdef ENABLE_DRIVER_MAX72XX
+#if ENABLE_DRIVER_MAX72XX
 	//drvdetail:{"name":"MAX72XX",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"MAX72XX LED matrix display driver with font and simple script interface. See [protocol explanation](https://www.elektroda.pl/rtvforum/viewtopic.php?p=18040628#18040628)",
 	//drvdetail:"requires":""}
 	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, NULL, NULL, false },
 #endif
+// Shared driver for TM1637, GN6932, TM1638 - TM_GN_Display_SharedInit
+#if ENABLE_DRIVER_TMGN
 	//drvdetail:{"name":"TM1637",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK interface.",
@@ -276,6 +285,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK/STB interface. TM1638 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20553628#20553628) for details.",
 	//drvdetail:"requires":""}
 	{ "TM1638",	TM1638_Init,		NULL,		NULL, TMGN_RunQuickTick,NULL,  NULL, false },
+#endif
 	//drvdetail:{"name":"ADCSmoother",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"qq",
@@ -305,14 +315,14 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "ShiftRegister",	    Shift_Init,		Shift_OnEverySecond,		NULL, NULL, NULL, Shift_OnChannelChanged, false },
 #endif
-#ifdef ENABLE_DRIVER_BATTERY
+#if ENABLE_DRIVER_BATTERY
 	//drvdetail:{"name":"Battery",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Custom mechanism to measure battery level with ADC and an optional relay. See [example here](https://www.elektroda.com/rtvforum/topic3959103.html).",
 	//drvdetail:"requires":""}
 	{ "Battery",	Batt_Init,		Batt_OnEverySecond,		Batt_AppendInformationToHTTPIndexPage, NULL, Batt_StopDriver, NULL, false },
 #endif
-#ifdef ENABLE_DRIVER_BRIDGE
+#if ENABLE_DRIVER_BRIDGE
 	//drvdetail:{"name":"Bridge",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"A bridge relay driver, added for [TONGOU TO-Q-SY1-JWT Din Rail Switch](https://www.elektroda.com/rtvforum/topic3934580.html). See linked topic for info.",
@@ -553,7 +563,9 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t* request) {
 
 bool DRV_IsMeasuringPower() {
 #ifndef OBK_DISABLE_ALL_DRIVERS
-	return DRV_IsRunning("BL0937") || DRV_IsRunning("BL0942") || DRV_IsRunning("CSE7766") || DRV_IsRunning("TESTPOWER");
+	return DRV_IsRunning("BL0937") || DRV_IsRunning("BL0942") 
+		|| DRV_IsRunning("CSE7766") || DRV_IsRunning("TESTPOWER")
+		|| DRV_IsRunning("BL0942SPI") || DRV_IsRunning("RN8209");
 #else
 	return false;
 #endif

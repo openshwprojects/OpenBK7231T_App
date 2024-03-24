@@ -136,6 +136,7 @@ void Win_DoUnitTests() {
 	Test_ChargeLimitDriver();
 	// this is slowest
 	Test_TuyaMCU_Basic();
+	Test_TuyaMCU_RawAccess();
 	Test_Battery();
 	Test_TuyaMCU_BatteryPowered();
 	Test_JSON_Lib();
@@ -166,10 +167,12 @@ void Win_DoUnitTests() {
 	Test_EnergyMeter();
 	Test_Tasmota();
 	Test_NTP();
+	Test_NTP_SunsetSunrise();
 	Test_HTTP_Client();
 	Test_ExpandConstant();
 	Test_ChangeHandlers_MQTT();
 	Test_ChangeHandlers();
+	Test_ChangeHandlers_EnsureThatChannelVariableIsExpandedAtHandlerRunTime();
 	Test_RepeatingEvents();
 	Test_ButtonEvents();
 	Test_Commands_Alias();
@@ -181,6 +184,7 @@ void Win_DoUnitTests() {
 	Test_Command_If();
 	Test_Tokenizer();
 	Test_Http();
+	Test_Http_LED();
 	Test_DeviceGroups();
 
 
@@ -385,8 +389,8 @@ int __cdecl main(int argc, char **argv)
 		printf("OFFSETOF(mainConfig_t, wifi_pass2) != 0x00000C40: %i\n", OFFSETOF(mainConfig_t, wifi_pass2));
 		system("pause");
 	}
-	if (OFFSETOF(mainConfig_t, unused) != 0x00000C84) {
-		printf("OFFSETOF(mainConfig_t, unused) != 0x00000C84: %i\n", OFFSETOF(mainConfig_t, unused));
+	if (OFFSETOF(mainConfig_t, unused) != 0x00000CA5) {
+		printf("OFFSETOF(mainConfig_t, unused) != 0x00000CA5: %i\n", OFFSETOF(mainConfig_t, unused));
 		system("pause");
 	}
 	// Test expansion

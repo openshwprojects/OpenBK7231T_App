@@ -873,6 +873,48 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_TimerSeconds,
+	//chandetail:{"name":"Frequency_div10",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI",
+	//chandetail:"enum":"ChType_Frequency_div10",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Frequency_div10,
+	//chandetail:{"name":"PowerFactor_div100",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI",
+	//chandetail:"enum":"ChType_PowerFactor_div100",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_PowerFactor_div100,
+	//chandetail:{"name":"Pressure_div100",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":".",
+	//chandetail:"enum":"Pressure_div100",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Pressure_div100,
+	//chandetail:{"name":"Temperature_div100",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Just like humidity_div100, but for temperature.",
+	//chandetail:"enum":"ChType_Temperature_div100",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Temperature_div100,
+	//chandetail:{"name":"LeakageCurrent_div1000",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":".",
+	//chandetail:"enum":"ChType_LeakageCurrent_div1000",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_LeakageCurrent_div1000,
+	//chandetail:{"name":"Power_div100",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Just like power, but with one decimal place (but stored as integer, for TuyaMCU support)",
+	//chandetail:"enum":"ChType_Power_div100",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Power_div100,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
@@ -891,6 +933,8 @@ typedef enum channelType_e {
 #define PLATFORM_GPIO_MAX 17
 #elif PLATFORM_W800
 #define PLATFORM_GPIO_MAX 44
+#elif PLATFORM_LN882H
+#define PLATFORM_GPIO_MAX 26
 #else
 #define PLATFORM_GPIO_MAX 29
 #endif
@@ -999,8 +1043,11 @@ typedef struct pinsState_s {
 #define OBK_FLAG_BUTTON_DISABLE_ALL					41
 #define OBK_FLAG_DOORSENSOR_INVERT_STATE			42
 #define OBK_FLAG_TUYAMCU_USE_QUEUE					43
+#define OBK_FLAG_HTTP_DISABLE_AUTH_IN_SAFE_MODE		44
+#define OBK_FLAG_DISCOVERY_DONT_MERGE_LIGHTS		45
+#define OBK_FLAG_TUYAMCU_STORE_RAW_DATA				46
 
-#define OBK_TOTAL_FLAGS 44
+#define OBK_TOTAL_FLAGS 47
 
 #define LOGGER_FLAG_MQTT_DEDUPER					1
 #define LOGGER_FLAG_POWER_SAVE						2
@@ -1175,26 +1222,30 @@ typedef struct mainConfig_s {
 	char ping_host[64];
 	// ofs 0x000005E0 (dec 1504)
 	//char initCommandLine[512];
-#if PLATFORM_W600
+#if PLATFORM_W600 || PLATFORM_W800
 #define ALLOW_SSID2 0
+#define ALLOW_WEB_PASSWORD 0
 	char initCommandLine[512];
 #else
 #define ALLOW_SSID2 1
+#define ALLOW_WEB_PASSWORD 1
 	char initCommandLine[1568];
 	// offset 0x00000C00 (3072 decimal)
 	char wifi_ssid2[64];
 	// offset 0x00000C40 (3136 decimal)
 	char wifi_pass2[68];
 	// offset 0x00000C84 (3204 decimal)
+	char webPassword[33];
+	// offset 0x00000CA5 (3237 decimal)
 	byte mqtt_use_tls;
-	// offset 0x00000C85 (3205 decimal)
+	// offset 0x00000CA6 (3238 decimal)
 	byte mqtt_verify_tls_cert;
-	// offset 0x00000C86 (3206 decimal)
+	// offset 0x00000CA7 (3239 decimal)
 	char mqtt_cert_file[20];
-	// offset 0x00000C9A (3226 decimal)
+	// offset 0x00000CBB (3259 decimal)
 	byte disable_web_server;
-	// offset 0x00000C9B (3227 decimal)
-	char unused[357];
+	// offset 0x00000CBC (3260 decimal)
+	char unused[324];
 #endif
 } mainConfig_t;
 
@@ -1218,7 +1269,7 @@ void PIN_DeepSleep_SetAllWakeUpEdges(byte edgeCode);
 
 void PIN_set_wifi_led(int value);
 void PIN_AddCommands(void);
-void PINS_BeginDeepSleepWithPinWakeUp();
+void PINS_BeginDeepSleepWithPinWakeUp(unsigned int wakeUpTime);
 void PIN_SetupPins();
 void PIN_OnReboot();
 void CFG_ClearPins();
@@ -1251,7 +1302,7 @@ bool CHANNEL_IsPowerRelayChannel(int ch);
 // See: enum channelType_t
 void CHANNEL_SetType(int ch, int type);
 int CHANNEL_GetType(int ch);
-void CHANNEL_SetAllChannelsByType(int requiredType, int newVal);
+void CHANNEL_SetFirstChannelByType(int requiredType, int newVal);
 // CHANNEL_SET_FLAG_*
 void CHANNEL_SetAll(int iVal, int iFlags);
 void CHANNEL_SetStateOnly(int iVal);
@@ -1261,6 +1312,7 @@ bool CHANNEL_IsInUse(int ch);
 void Channel_SaveInFlashIfNeeded(int ch);
 int CHANNEL_FindMaxValueForChannel(int ch);
 // cmd_channels.c
+bool CHANNEL_HasLabel(int ch);
 const char* CHANNEL_GetLabel(int ch);
 bool CHANNEL_ShouldAddTogglePrefixToUI(int ch);
 bool CHANNEL_HasNeverPublishFlag(int ch);
@@ -1271,6 +1323,10 @@ int h_isChannelPWM(int tg_ch);
 int h_isChannelRelay(int tg_ch);
 int h_isChannelDigitalInput(int tg_ch);
 
+const char *ChannelType_GetTitle(int type);
+const char *ChannelType_GetUnit(int type);
+int ChannelType_GetDivider(int type);
+int ChannelType_GetDecimalPlaces(int type);
 
 //int PIN_GetPWMIndexForPinIndex(int pin);
 

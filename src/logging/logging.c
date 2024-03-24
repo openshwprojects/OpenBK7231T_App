@@ -10,7 +10,7 @@
 
 extern uint8_t g_StartupDelayOver;
 
-int loglevel = LOG_INFO; // default to info
+int g_loglevel = LOG_INFO; // default to info
 unsigned int logfeatures = (
 	(1 << 0) |
 	(1 << 1) |
@@ -183,8 +183,8 @@ static void initLog(void)
 	logMemory.mutex = xSemaphoreCreateMutex();
 	initialised = 1;
 	startSerialLog();
-	HTTP_RegisterCallback("/logs", HTTP_GET, http_getlog);
-	HTTP_RegisterCallback("/lograw", HTTP_GET, http_getlograw);
+	HTTP_RegisterCallback("/logs", HTTP_GET, http_getlog, 1);
+	HTTP_RegisterCallback("/lograw", HTTP_GET, http_getlograw, 1);
 
 	//cmddetail:{"name":"loglevel","args":"[Value]",
 	//cmddetail:"descr":"Correct values are 0 to 7. Default is 3. Higher value includes more logs. Log levels are: ERROR = 1, WARN = 2, INFO = 3, DEBUG = 4, EXTRADEBUG = 5. WARNING: you also must separately select logging level filter on web panel in order for more logs to show up there",
@@ -289,7 +289,7 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 	if (!((1 << feature) & logfeatures)) {
 		return;
 	}
-	if (level > loglevel) {
+	if (level > g_loglevel) {
 		return;
 	}
 
@@ -724,7 +724,7 @@ static int http_getlog(http_request_t* request) {
 	char* post = "</pre>";
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Log");
-	poststr(request, htmlFooterReturnToMenu);
+	poststr(request, htmlFooterReturnToMainPage);
 
 	poststr(request, "<pre>");
 
@@ -748,7 +748,7 @@ commandResult_t log_command(const void* context, const char* cmd, const char* ar
 			res = sscanf(args, "%d", &level);
 			if (res == 1) {
 				if ((level >= 0) && (level <= 9)) {
-					loglevel = level;
+					g_loglevel = level;
 					result = CMD_RES_OK;
 					ADDLOG_DEBUG(LOG_FEATURE_CMD, "loglevel set %d", level);
 				}
@@ -758,7 +758,7 @@ commandResult_t log_command(const void* context, const char* cmd, const char* ar
 				}
 			}
 			else {
-				ADDLOG_ERROR(LOG_FEATURE_CMD, "loglevel '%s' invalid? current is %i", args, loglevel);
+				ADDLOG_ERROR(LOG_FEATURE_CMD, "loglevel '%s' invalid? current is %i", args, g_loglevel);
 				result = CMD_RES_BAD_ARGUMENT;
 			}
 			break;

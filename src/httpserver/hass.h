@@ -25,6 +25,8 @@ typedef enum {
 	LIGHT_RGBCW,
 
 	/// @brief Power sensors (voltage, current, power)
+	ENERGY_METER_SENSOR,
+
 	POWER_SENSOR,
 
 	/// @Brief Binary Sensor
@@ -63,10 +65,18 @@ typedef enum {
 	READONLYLOWMIDHIGH_SENSOR,
 	// lx unit
 	ILLUMINANCE_SENSOR,
-	// dBm unit
+	/// @brief dBm unit
 	HASS_RSSI,
-
+	/// @brief Time firmware is alive in secs
+	HASS_UPTIME,
+	/// @brief Firmware build info
+	HASS_BUILD,
+	/// @brief Wh, kWh
 	ENERGY_SENSOR,
+	// hPa
+	PRESSURE_SENSOR,
+	/// @Brief Timestamp Sensor
+	TIMESTAMP_SENSOR,
 
 } ENTITY_TYPE;
 
@@ -94,9 +104,9 @@ typedef struct HassDeviceInfo_s {
 
 void hass_print_unique_id(http_request_t* request, const char* fmt, ENTITY_TYPE type, int index);
 HassDeviceInfo* hass_init_relay_device_info(int index, ENTITY_TYPE type, bool bInverse);
-HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, char* payload_on, char* payload_off);
+HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* payload_on, const char* payload_off);
 HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type);
-HassDeviceInfo* hass_init_power_sensor_device_info(int index);
+HassDeviceInfo* hass_init_energy_sensor_device_info(int index);
 HassDeviceInfo* hass_init_light_singleColor_onChannels(int toggle, int dimmer, int brightness_scale);
 HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse);
 HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int decPlaces, int decOffset, int divider);

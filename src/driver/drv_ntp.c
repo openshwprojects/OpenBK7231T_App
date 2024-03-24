@@ -14,6 +14,14 @@
 
 #include "drv_ntp.h"
 
+extern void NTP_Init_Events(void);
+extern void NTP_RunEvents(unsigned int newTime, bool bTimeValid);
+
+#if ENABLE_NTP_SUNRISE_SUNSET
+extern void NTP_CalculateSunrise(byte *outHour, byte *outMinute);
+extern void NTP_CalculateSunset(byte *outHour, byte *outMinute);
+#endif
+
 #define LOG_FEATURE LOG_FEATURE_NTP
 
 typedef struct
@@ -59,7 +67,8 @@ static int adrLen;
 static int g_ntp_delay = 0;
 static bool g_synced;
 // time offset (time zone?) in seconds
-static int g_timeOffsetSeconds;
+//#define CFG_DEFAULT_TIMEOFFSETSECONDS (-8 * 60 * 60)
+static int g_timeOffsetSeconds = 0;
 // current time
 unsigned int g_ntpTime;
 
@@ -70,6 +79,7 @@ int NTP_GetTimesZoneOfsSeconds()
 commandResult_t NTP_SetTimeZoneOfs(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int a, b;
 	const char *arg;
+	int oldOfs;
 
     Tokenizer_TokenizeString(args,0);
 	// following check must be done after 'Tokenizer_TokenizeString',
@@ -79,6 +89,7 @@ commandResult_t NTP_SetTimeZoneOfs(const void *context, const char *cmd, const c
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	arg = Tokenizer_GetArg(0);
+	oldOfs = g_timeOffsetSeconds;
 	if (strchr(arg, ':')) {
 		int useSign = 1;
 		if (*arg == '-') {
@@ -91,9 +102,66 @@ commandResult_t NTP_SetTimeZoneOfs(const void *context, const char *cmd, const c
 	else {
 		g_timeOffsetSeconds = Tokenizer_GetArgInteger(0) * 60 * 60;
 	}
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP offset set, wait for next ntp packet to apply changes");
+	g_ntpTime -= oldOfs;
+	g_ntpTime += g_timeOffsetSeconds;
+	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP offset set");
+	return CMD_RES_OK;
+}
+
+#if ENABLE_NTP_SUNRISE_SUNSET
+
+/* sunrise/sunset defaults */
+#define CFG_DEFAULT_LATITUDE	43.994131
+#define CFG_DEFAULT_LONGITUDE -123.095854
+#define SUN_DATA_COORD_MULT		1000000
+
+struct SUN_DATA sun_data =
+	{
+	.latitude = (int) (CFG_DEFAULT_LATITUDE * SUN_DATA_COORD_MULT),
+	.longitude = (int) (CFG_DEFAULT_LONGITUDE * SUN_DATA_COORD_MULT),
+	};
+
+//Set Latitude and Longitude for sunrise/sunset calc
+commandResult_t NTP_SetLatlong(const void *context, const char *cmd, const char *args, int cmdFlags) {
+    const char *newValue;
+
+    Tokenizer_TokenizeString(args,0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+    newValue = Tokenizer_GetArg(0);
+    sun_data.latitude = (int) (atof(newValue) * SUN_DATA_COORD_MULT);
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP latitude set to %s", newValue);
+
+    newValue = Tokenizer_GetArg(1);
+		sun_data.longitude = (int) (atof(newValue) * SUN_DATA_COORD_MULT);
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP longitude set to %s", newValue);
     return CMD_RES_OK;
 }
+
+int NTP_GetSunrise()
+{
+	byte hour, minute;
+	int sunriseInSecondsFromMidnight;
+
+	NTP_CalculateSunrise(&hour, &minute);
+	sunriseInSecondsFromMidnight = ((int)hour * 3600) + ((int)minute * 60);
+	return sunriseInSecondsFromMidnight;
+}
+
+int NTP_GetSunset()
+{
+	byte hour, minute;
+	int sunsetInSecondsFromMidnight;
+
+	NTP_CalculateSunset(&hour, &minute);
+	sunsetInSecondsFromMidnight =  ((int)hour * 3600) + ((int)minute * 60);
+	return sunsetInSecondsFromMidnight;
+}
+#endif
 
 //Set custom NTP server
 commandResult_t NTP_SetServer(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -121,7 +189,7 @@ int NTP_GetWeekDay() {
 	struct tm *ltm;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = localtime((time_t*)&g_ntpTime);
+	ltm = gmtime((time_t*)&g_ntpTime);
 
 	if (ltm == 0) {
 		return 0;
@@ -133,7 +201,7 @@ int NTP_GetHour() {
 	struct tm *ltm;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = localtime((time_t*)&g_ntpTime);
+	ltm = gmtime((time_t*)&g_ntpTime);
 
 	if (ltm == 0) {
 		return 0;
@@ -145,7 +213,7 @@ int NTP_GetMinute() {
 	struct tm *ltm;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = localtime((time_t*)&g_ntpTime);
+	ltm = gmtime((time_t*)&g_ntpTime);
 
 	if (ltm == 0) {
 		return 0;
@@ -157,13 +225,49 @@ int NTP_GetSecond() {
 	struct tm *ltm;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = localtime((time_t*)&g_ntpTime);
+	ltm = gmtime((time_t*)&g_ntpTime);
 
 	if (ltm == 0) {
 		return 0;
 	}
 
 	return ltm->tm_sec;
+}
+int NTP_GetMDay() {
+	struct tm *ltm;
+
+	// NOTE: on windows, you need _USE_32BIT_TIME_T 
+	ltm = gmtime((time_t*)&g_ntpTime);
+
+	if (ltm == 0) {
+		return 0;
+	}
+
+	return ltm->tm_mday;
+}
+int NTP_GetMonth() {
+	struct tm *ltm;
+
+	// NOTE: on windows, you need _USE_32BIT_TIME_T 
+	ltm = gmtime((time_t*)&g_ntpTime);
+
+	if (ltm == 0) {
+		return 0;
+	}
+
+	return ltm->tm_mon+1;
+}
+int NTP_GetYear() {
+	struct tm *ltm;
+
+	// NOTE: on windows, you need _USE_32BIT_TIME_T 
+	ltm = gmtime((time_t*)&g_ntpTime);
+
+	if (ltm == 0) {
+		return 0;
+	}
+
+	return ltm->tm_year+1900;
 }
 #if WINDOWS
 bool b_ntp_simulatedTime = false;
@@ -189,6 +293,13 @@ void NTP_Init() {
 	//cmddetail:"fn":"NTP_SetServer","file":"driver/drv_ntp.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ntp_setServer", NTP_SetServer, NULL);
+#if ENABLE_NTP_SUNRISE_SUNSET
+	//cmddetail:{"name":"ntp_setLatLong","args":"[Latlong]",
+	//cmddetail:"descr":"Sets the NTP latitude and longitude",
+	//cmddetail:"fn":"NTP_SetLatlong","file":"driver/drv_ntp.c","requires":"",
+	//cmddetail:"examples":"NTP_SetLatlong -34.911498 138.809488"}
+    CMD_RegisterCommand("ntp_setLatLong", NTP_SetLatlong, NULL);
+#endif
 	//cmddetail:{"name":"ntp_info","args":"",
 	//cmddetail:"descr":"Display NTP related settings",
 	//cmddetail:"fn":"NTP_Info","file":"driver/drv_ntp.c","requires":"",
@@ -317,7 +428,7 @@ void NTP_CheckForReceive() {
 #endif
 
     if(recv_len < 0){
-        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP_CheckForReceive: Error while receiving server's msg");
+			addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP_CheckForReceive: Error while receiving server's msg");
         return;
     }
     highWord = MAKE_WORD(ptr[40], ptr[41]);
@@ -330,7 +441,7 @@ void NTP_CheckForReceive() {
     g_ntpTime = secsSince1900 - NTP_OFFSET;
     g_ntpTime += g_timeOffsetSeconds;
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time  : %u",g_ntpTime);
-    ltm = localtime((time_t*)&g_ntpTime);
+    ltm = gmtime((time_t*)&g_ntpTime);
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Local Time : %04d/%02d/%02d %02d:%02d:%02d",
             ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
 
@@ -339,7 +450,7 @@ void NTP_CheckForReceive() {
 	}
     g_synced = true;
 #if 0
-    //ptm = localtime (&g_ntpTime);
+    //ptm = gmtime (&g_ntpTime);
     ptm = gmtime(&g_ntpTime);
     if(ptm == 0) {
         addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime somehow returned 0\n");
@@ -409,13 +520,13 @@ void NTP_AppendInformationToHTTPIndexPage(http_request_t* request)
 {
     struct tm *ltm;
 
-    ltm = localtime((time_t*)&g_ntpTime);
+    ltm = gmtime((time_t*)&g_ntpTime);
 
     if (g_synced == true)
         hprintf255(request, "<h5>NTP (%s): Local Time: %04d/%02d/%02d %02d:%02d:%02d </h5>",
 			CFG_GetNTPServer(),ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
     else 
-        hprintf255(request, "<h5>NTP: Syncing with %s....",CFG_GetNTPServer());
+        hprintf255(request, "<h5>NTP: Syncing with %s....</h5>",CFG_GetNTPServer());
 }
 
 bool NTP_IsTimeSynced()

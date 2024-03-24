@@ -9,11 +9,219 @@
     <ClCompile Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\lwip_intf\lwip-2.0.2\src\core\tcp.c" />
     <ClCompile Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\net_param_intf\net_param.c" />
     <ClCompile Include="..\main.c" />
+    <ClCompile Include="src\base64\base64.c" />
+    <ClCompile Include="src\bitmessage\bitmessage_read.c" />
+    <ClCompile Include="src\bitmessage\bitmessage_write.c" />
+    <ClCompile Include="src\cJSON\cJSON.c" />
+    <ClCompile Include="src\cmnds\cmd_channels.c" />
+    <ClCompile Include="src\cmnds\cmd_eventHandlers.c" />
+    <ClCompile Include="src\cmnds\cmd_if.c" />
+    <ClCompile Include="src\cmnds\cmd_main.c" />
+    <ClCompile Include="src\cmnds\cmd_newLEDDriver.c" />
+    <ClCompile Include="src\cmnds\cmd_newLEDDriver_colors.c" />
+    <ClCompile Include="src\cmnds\cmd_repeatingEvents.c" />
+    <ClCompile Include="src\cmnds\cmd_script.c" />
+    <ClCompile Include="src\cmnds\cmd_send.c" />
+    <ClCompile Include="src\cmnds\cmd_simulatorOnly.c" />
+    <ClCompile Include="src\cmnds\cmd_tasmota.c" />
+    <ClCompile Include="src\cmnds\cmd_tcp.c" />
+    <ClCompile Include="src\cmnds\cmd_test.c" />
+    <ClCompile Include="src\cmnds\cmd_tokenizer.c" />
     <ClCompile Include="src\debug_tuyaMCUsimulator.c" />
+    <ClCompile Include="src\devicegroups\deviceGroups_read.c" />
+    <ClCompile Include="src\devicegroups\deviceGroups_util.c" />
+    <ClCompile Include="src\devicegroups\deviceGroups_write.c" />
+    <ClCompile Include="src\driver\drv_adcButton.c" />
+    <ClCompile Include="src\driver\drv_adcSmoother.c" />
+    <ClCompile Include="src\driver\drv_battery.c" />
+    <ClCompile Include="src\driver\drv_bl0937.c" />
+    <ClCompile Include="src\driver\drv_bl0942.c" />
+    <ClCompile Include="src\driver\drv_bl_shared.c" />
+    <ClCompile Include="src\driver\drv_bp1658cj.c" />
+    <ClCompile Include="src\driver\drv_bp5758d.c" />
+    <ClCompile Include="src\driver\drv_bridge_driver.c" />
+    <ClCompile Include="src\driver\drv_chargingLimit.c" />
+    <ClCompile Include="src\driver\drv_cht8305.c" />
+    <ClCompile Include="src\driver\drv_cse7766.c" />
+    <ClCompile Include="src\driver\drv_ddp.c" />
+    <ClCompile Include="src\driver\drv_debouncer.c" />
+    <ClCompile Include="src\driver\drv_dht.c" />
+    <ClCompile Include="src\driver\drv_dht_internal.c" />
+    <ClCompile Include="src\driver\drv_doorSensorWithDeepSleep.c" />
+    <ClCompile Include="src\driver\drv_gn6932.c" />
+    <ClCompile Include="src\driver\drv_ht16k33.c" />
+    <ClCompile Include="src\driver\drv_httpButtons.c" />
+    <ClCompile Include="src\driver\drv_hue.c" />
+    <ClCompile Include="src\driver\drv_ir.cpp" />
+    <ClCompile Include="src\driver\drv_kp18058.c" />
+    <ClCompile Include="src\driver\drv_kp18068.c" />
+    <ClCompile Include="src\driver\drv_main.c" />
+    <ClCompile Include="src\driver\drv_max72xx_clock.c" />
+    <ClCompile Include="src\driver\drv_max72xx_internal.c" />
+    <ClCompile Include="src\driver\drv_max72xx_single.c" />
+    <ClCompile Include="src\driver\drv_mcp9808.c" />
+    <ClCompile Include="src\driver\drv_ntp.c" />
+    <ClCompile Include="src\driver\drv_ntp_events.c" />
+    <ClCompile Include="src\driver\drv_pt6523.c" />
+    <ClCompile Include="src\driver\drv_pwmToggler.c" />
+    <ClCompile Include="src\driver\drv_pwrCal.c" />
+    <ClCompile Include="src\driver\drv_rn8209.c" />
+    <ClCompile Include="src\driver\drv_sgp.c" />
+    <ClCompile Include="src\driver\drv_shiftRegister.c" />
+    <ClCompile Include="src\driver\drv_sht3x.c" />
+    <ClCompile Include="src\driver\drv_sm2135.c" />
+    <ClCompile Include="src\driver\drv_sm2235.c" />
+    <ClCompile Include="src\driver\drv_soft_i2c.c" />
+    <ClCompile Include="src\driver\drv_spi.c" />
+    <ClCompile Include="src\driver\drv_ssdp.c" />
+    <ClCompile Include="src\driver\drv_tasmotaDeviceGroups.c" />
+    <ClCompile Include="src\driver\drv_test_drivers.c" />
+    <ClCompile Include="src\driver\drv_textScroller.c" />
+    <ClCompile Include="src\driver\drv_tm1637.c" />
+    <ClCompile Include="src\driver\drv_tm1638.c" />
+    <ClCompile Include="src\driver\drv_tm_gn_display_shared.c" />
+    <ClCompile Include="src\driver\drv_tuyaMCU.c" />
+    <ClCompile Include="src\driver\drv_tuyaMCUSensor.c" />
+    <ClCompile Include="src\driver\drv_wemo.c" />
+    <ClCompile Include="src\driver\drv_uart.c" />
+    <ClCompile Include="src\driver\drv_ucs1912.c" />
+    <ClCompile Include="src\hal\bk7231\hal_adc_bk7231.c" />
+    <ClCompile Include="src\hal\bk7231\hal_flashConfig_bk7231.c" />
+    <ClCompile Include="src\hal\bk7231\hal_flashVars_bk7231.c" />
+    <ClCompile Include="src\hal\bk7231\hal_generic_bk7231.c" />
+    <ClCompile Include="src\hal\bk7231\hal_main_bk7231.c" />
+    <ClCompile Include="src\hal\bk7231\hal_pins_bk7231.c" />
+    <ClCompile Include="src\hal\bk7231\hal_wifi_bk7231.c" />
+    <ClCompile Include="src\hal\bl602\hal_flashConfig_bl602.c" />
+    <ClCompile Include="src\hal\bl602\hal_flashVars_bl602.c" />
+    <ClCompile Include="src\hal\bl602\hal_generic_bl602.c" />
+    <ClCompile Include="src\hal\bl602\hal_main_bl602.c" />
+    <ClCompile Include="src\hal\bl602\hal_pins_bl602.c" />
+    <ClCompile Include="src\hal\bl602\hal_wifi_bl602.c" />
+    <ClCompile Include="src\hal\w800\hal_adc_w800.c" />
+    <ClCompile Include="src\hal\w800\hal_flashConfig_w800.c" />
+    <ClCompile Include="src\hal\w800\hal_flashVars_w800.c" />
+    <ClCompile Include="src\hal\w800\hal_generic_w800.c" />
+    <ClCompile Include="src\hal\w800\hal_main_w800.c" />
+    <ClCompile Include="src\hal\w800\hal_pins_w800.c" />
+    <ClCompile Include="src\hal\w800\hal_wifi_w800.c" />
+    <ClCompile Include="src\hal\win32\hal_adc_win32.c" />
+    <ClCompile Include="src\hal\win32\hal_flashConfig_win32.c" />
+    <ClCompile Include="src\hal\win32\hal_flashVars_win32.c" />
+    <ClCompile Include="src\hal\win32\hal_generic_win32.c" />
+    <ClCompile Include="src\hal\win32\hal_main_win32.c" />
+    <ClCompile Include="src\hal\win32\hal_pins_win32.c" />
+    <ClCompile Include="src\hal\win32\hal_wifi_win32.c" />
+    <ClCompile Include="src\hal\xr809\hal_flashConfig_xr809.c" />
+    <ClCompile Include="src\hal\xr809\hal_flashVars_xr809.c" />
+    <ClCompile Include="src\hal\xr809\hal_generic_xr809.c" />
+    <ClCompile Include="src\hal\xr809\hal_main_xr809.c" />
+    <ClCompile Include="src\hal\xr809\hal_pins_xr809.c" />
+    <ClCompile Include="src\hal\xr809\hal_wifi_xr809.c" />
+    <ClCompile Include="src\httpclient\http_client.c" />
     <ClCompile Include="src\httpclient\utils_net.c" />
     <ClCompile Include="src\httpclient\utils_timer.c" />
+    <ClCompile Include="src\httpserver\hass.c" />
+    <ClCompile Include="src\httpserver\http_basic_auth.c" />
+    <ClCompile Include="src\httpserver\http_fns.c" />
+    <ClCompile Include="src\httpserver\http_tcp_server.c" />
+    <ClCompile Include="src\httpserver\http_tcp_server_nonblocking.c" />
+    <ClCompile Include="src\httpserver\json_interface.c" />
     <ClCompile Include="src\httpserver\new_http.c" />
     <ClCompile Include="src\httpserver\rest_interface.c" />
+    <ClCompile Include="src\i2c\drv_i2c_lcd_pcf8574t.c" />
+    <ClCompile Include="src\i2c\drv_i2c_main.c" />
+    <ClCompile Include="src\i2c\drv_i2c_mcp23017.c" />
+    <ClCompile Include="src\i2c\drv_i2c_tc74.c" />
+    <ClCompile Include="src\jsmn\jsmn.c" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRac.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRproto.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRrecv.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRsend.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRtext.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRtimer.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRutils.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Airton.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Airwell.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Aiwa.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Amcor.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Argo.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Arris.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Bosch.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Bose.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Carrier.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_ClimaButler.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Coolix.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Corona.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Daikin.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Delonghi.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Denon.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Dish.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Doshisha.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Ecoclim.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Electra.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_EliteScreens.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Epson.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Fujitsu.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_GICable.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_GlobalCache.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Goodweather.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Gorenje.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Gree.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Haier.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Hitachi.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Inax.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_JVC.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Kelon.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Kelvinator.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Lasertag.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Lego.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_LG.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Lutron.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Magiquest.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Metz.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Midea.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_MilesTag2.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Mirage.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Mitsubishi.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_MitsubishiHeavy.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Multibrackets.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_MWM.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_NEC.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Neoclima.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Nikai.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Panasonic.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Pioneer.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Pronto.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_RC5_RC6.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_RCMM.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Rhoss.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Samsung.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Sanyo.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Sharp.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Sherwood.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Sony.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Symphony.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Tcl.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Technibel.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Teco.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Teknopoint.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Toshiba.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Toto.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Transcold.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Trotec.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Truma.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Vestel.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Voltas.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Whirlpool.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Whynter.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Wowwee.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Xmp.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Zepeal.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\itoa.cpp" />
+    <ClCompile Include="src\libraries\IRremoteESP8266\src\String.cpp" />
+    <ClCompile Include="src\littlefs\lfs.c" />
+    <ClCompile Include="src\littlefs\lfs_util.c" />
     <ClCompile Include="src\littlefs\our_lfs.c" />
     <ClCompile Include="src\logging\logging.c" />
     <ClCompile Include="src\mqtt\new_mqtt.c" />
@@ -24,6 +232,91 @@
     <ClCompile Include="src\new_pins.c" />
     <ClCompile Include="src\ota\ota.c" />
     <ClCompile Include="src\rgb2hsv.c" />
+    <ClCompile Include="src\selftest\selftest_batteryDriver.c" />
+    <ClCompile Include="src\selftest\selftest_buttonEvents.c" />
+    <ClCompile Include="src\selftest\selftest_chargingDriver.c" />
+    <ClCompile Include="src\selftest\selftest_clockEvents.c" />
+    <ClCompile Include="src\selftest\selftest_cmd_startup.c" />
+    <ClCompile Include="src\selftest\selftest_flashSearch.c" />
+    <ClCompile Include="src\selftest\selftest_hass_discovery_base.c" />
+    <ClCompile Include="src\selftest\selftest_hass_discovery_ext.c" />
+    <ClCompile Include="src\selftest\selftest_if_inside_backlog.c" />
+    <ClCompile Include="src\selftest\selftest_json_lib.c" />
+    <ClCompile Include="src\selftest\selftest_mqtt_get.c" />
+    <ClCompile Include="src\selftest\selftest_ntp_sunsetSunrise.c" />
+    <ClCompile Include="src\selftest\selftest_role_toggleAll_2.c" />
+    <ClCompile Include="src\selftest\selftest_cfg_via_http.c" />
+    <ClCompile Include="src\selftest\selftest_changeHandlers.c" />
+    <ClCompile Include="src\selftest\selftest_changeHandlers_mqtt.c" />
+    <ClCompile Include="src\selftest\selftest_cmd_alias.c" />
+    <ClCompile Include="src\selftest\selftest_cmd_calendar.c" />
+    <ClCompile Include="src\selftest\selftest_cmd_channels.c" />
+    <ClCompile Include="src\selftest\selftest_cmd_generic.c" />
+    <ClCompile Include="src\selftest\selftest_demo_buttonScrollingChannelValue.c" />
+    <ClCompile Include="src\selftest\selftest_demo_buttonToggleGroup.c" />
+    <ClCompile Include="src\selftest\selftest_demo_fanCyclingRelays.c" />
+    <ClCompile Include="src\selftest\selftest_demo_mapFanSpeedToRelays.c" />
+    <ClCompile Include="src\selftest\selftest_demo_scriptForShutters.c" />
+    <ClCompile Include="src\selftest\selftest_deviceGroups.c" />
+    <ClCompile Include="src\selftest\selftest_DHT.c" />
+    <ClCompile Include="src\selftest\selftest_energyMeter.c" />
+    <ClCompile Include="src\selftest\selftest_expandConstant.c" />
+    <ClCompile Include="src\selftest\selftest_expressions.c" />
+    <ClCompile Include="src\selftest\selftest_flags.c" />
+    <ClCompile Include="src\selftest\selftest_hass_discovery.c" />
+    <ClCompile Include="src\selftest\selftest_http.c" />
+    <ClCompile Include="src\selftest\selftest_http_client.c" />
+    <ClCompile Include="src\selftest\selftest_if.c" />
+    <ClCompile Include="src\selftest\selftest_led.c" />
+    <ClCompile Include="src\selftest\selftest_lfs.c" />
+    <ClCompile Include="src\selftest\selftest_main.c" />
+    <ClCompile Include="src\selftest\selftest_mapRanges.c" />
+    <ClCompile Include="src\selftest\selftest_mqtt.c" />
+    <ClCompile Include="src\selftest\selftest_multiplePinsOnChannel.c" />
+    <ClCompile Include="src\selftest\selftest_ntp.c" />
+    <ClCompile Include="src\selftest\selftest_repeatingEvents.c" />
+    <ClCompile Include="src\selftest\selftest_role_toggleAll.c" />
+    <ClCompile Include="src\selftest\selftest_script.c" />
+    <ClCompile Include="src\selftest\selftest_demo_exclusiveRelays.c" />
+    <ClCompile Include="src\selftest\selftest_tasmota.c" />
+    <ClCompile Include="src\selftest\selftest_tokenizer.c" />
+    <ClCompile Include="src\selftest\selftest_tuyaMCU.c" />
+    <ClCompile Include="src\selftest\selftest_tuyaMCU_batteryPowered.c" />
+    <ClCompile Include="src\selftest\selftest_twoPWMsOneChannel.c" />
+    <ClCompile Include="src\selftest\selftest_util_mqtt.c" />
+    <ClCompile Include="src\selftest\selftest_util_mqtt_json.c" />
+    <ClCompile Include="src\selftest\selftest_waitFor.c" />
+    <ClCompile Include="src\sim\Circle.cpp" />
+    <ClCompile Include="src\sim\Controller_BL0942.cpp" />
+    <ClCompile Include="src\sim\Controller_Bulb.cpp" />
+    <ClCompile Include="src\sim\Controller_Button.cpp" />
+    <ClCompile Include="src\sim\Controller_Pot.cpp" />
+    <ClCompile Include="src\sim\Controller_SimulatorLink.cpp" />
+    <ClCompile Include="src\sim\CursorManager.cpp" />
+    <ClCompile Include="src\sim\Junction.cpp" />
+    <ClCompile Include="src\sim\Line.cpp" />
+    <ClCompile Include="src\sim\PrefabManager.cpp" />
+    <ClCompile Include="src\sim\RecentList.cpp" />
+    <ClCompile Include="src\sim\Rect.cpp" />
+    <ClCompile Include="src\sim\SaveLoad.cpp" />
+    <ClCompile Include="src\sim\Shape.cpp" />
+    <ClCompile Include="src\sim\Simulation.cpp" />
+    <ClCompile Include="src\sim\Simulator.cpp" />
+    <ClCompile Include="src\sim\sim_sdl.cpp" />
+    <ClCompile Include="src\sim\sim_uart.c" />
+    <ClCompile Include="src\sim\Solver.cpp" />
+    <ClCompile Include="src\sim\Text.cpp" />
+    <ClCompile Include="src\sim\Texture.cpp" />
+    <ClCompile Include="src\sim\TextureManager.cpp" />
+    <ClCompile Include="src\sim\Tool_Copy.cpp" />
+    <ClCompile Include="src\sim\Tool_Delete.cpp" />
+    <ClCompile Include="src\sim\Tool_Info.cpp" />
+    <ClCompile Include="src\sim\Tool_Move.cpp" />
+    <ClCompile Include="src\sim\Tool_Text.cpp" />
+    <ClCompile Include="src\sim\Tool_Use.cpp" />
+    <ClCompile Include="src\sim\Tool_Wire.cpp" />
+    <ClCompile Include="src\sim\WinMenuBar.cpp" />
+    <ClCompile Include="src\sim\Wire.cpp" />
     <ClCompile Include="src\tiny_crc8.c" />
     <ClCompile Include="src\user_main.c" />
     <ClCompile Include="src\win32\stubs\lwip\win_mqtt_stub.c" />
@@ -32,867 +325,150 @@
     <ClCompile Include="src\win_main.c" />
     <ClCompile Include="src\win_main_scriptOnly.c" />
     <ClCompile Include="src\win_stubs.c" />
-    <ClCompile Include="src\sim\Circle.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\cmnds\cmd_channels.c">
-      <Filter>Cmd</Filter>
-    </ClCompile>
-    <ClCompile Include="src\cmnds\cmd_eventHandlers.c">
-      <Filter>Cmd</Filter>
-    </ClCompile>
-    <ClCompile Include="src\cmnds\cmd_if.c">
-      <Filter>Cmd</Filter>
-    </ClCompile>
-    <ClCompile Include="src\cmnds\cmd_main.c">
-      <Filter>Cmd</Filter>
-    </ClCompile>
-    <ClCompile Include="src\cmnds\cmd_newLEDDriver.c">
-      <Filter>Cmd</Filter>
-    </ClCompile>
-    <ClCompile Include="src\cmnds\cmd_newLEDDriver_colors.c">
-      <Filter>Cmd</Filter>
-    </ClCompile>
-    <ClCompile Include="src\cmnds\cmd_repeatingEvents.c">
-      <Filter>Cmd</Filter>
-    </ClCompile>
-    <ClCompile Include="src\cmnds\cmd_script.c">
-      <Filter>Cmd</Filter>
-    </ClCompile>
-    <ClCompile Include="src\cmnds\cmd_send.c">
-      <Filter>Cmd</Filter>
-    </ClCompile>
-    <ClCompile Include="src\cmnds\cmd_tasmota.c">
-      <Filter>Cmd</Filter>
-    </ClCompile>
-    <ClCompile Include="src\cmnds\cmd_tcp.c">
-      <Filter>Cmd</Filter>
-    </ClCompile>
-    <ClCompile Include="src\cmnds\cmd_test.c">
-      <Filter>Cmd</Filter>
-    </ClCompile>
-    <ClCompile Include="src\cmnds\cmd_tokenizer.c">
-      <Filter>Cmd</Filter>
-    </ClCompile>
-    <ClCompile Include="src\devicegroups\deviceGroups_read.c">
-      <Filter>DGR</Filter>
-    </ClCompile>
-    <ClCompile Include="src\devicegroups\deviceGroups_util.c">
-      <Filter>DGR</Filter>
-    </ClCompile>
-    <ClCompile Include="src\devicegroups\deviceGroups_write.c">
-      <Filter>DGR</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\CursorManager.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\Controller_Button.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\bitmessage\bitmessage_read.c">
-      <Filter>DGR</Filter>
-    </ClCompile>
-    <ClCompile Include="src\bitmessage\bitmessage_write.c">
-      <Filter>DGR</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_bl_shared.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_bl0937.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_bl0942.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_bp1658cj.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_bp5758d.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_cse7766.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\i2c\drv_i2c_lcd_pcf8574t.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\i2c\drv_i2c_main.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\i2c\drv_i2c_mcp23017.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\i2c\drv_i2c_tc74.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_ir.cpp">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_main.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_ntp.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_sm2135.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_tasmotaDeviceGroups.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_test_drivers.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_tuyaMCU.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_tuyaMCUSensor.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_uart.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_ucs1912.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\w800\hal_adc_w800.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\win32\hal_adc_win32.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\bk7231\hal_flashConfig_bk7231.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\bl602\hal_flashConfig_bl602.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\w800\hal_flashConfig_w800.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\win32\hal_flashConfig_win32.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\xr809\hal_flashConfig_xr809.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\bk7231\hal_flashVars_bk7231.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\bl602\hal_flashVars_bl602.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\w800\hal_flashVars_w800.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\win32\hal_flashVars_win32.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\xr809\hal_flashVars_xr809.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\bk7231\hal_generic_bk7231.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\bl602\hal_generic_bl602.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\w800\hal_generic_w800.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\win32\hal_generic_win32.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\xr809\hal_generic_xr809.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\bk7231\hal_main_bk7231.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\bl602\hal_main_bl602.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\w800\hal_main_w800.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\win32\hal_main_win32.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\xr809\hal_main_xr809.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\bk7231\hal_pins_bk7231.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\bl602\hal_pins_bl602.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\w800\hal_pins_w800.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\win32\hal_pins_win32.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\xr809\hal_pins_xr809.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\bk7231\hal_wifi_bk7231.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\bl602\hal_wifi_bl602.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\w800\hal_wifi_w800.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\win32\hal_wifi_win32.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\xr809\hal_wifi_xr809.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\Junction.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\Line.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\cJSON\cJSON.c">
-      <Filter>HTTP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\httpserver\hass.c">
-      <Filter>HTTP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\httpclient\http_client.c">
-      <Filter>HTTP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\httpserver\http_fns.c">
-      <Filter>HTTP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\httpserver\http_tcp_server.c">
-      <Filter>HTTP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\httpserver\http_tcp_server_nonblocking.c">
-      <Filter>HTTP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\jsmn\jsmn.c">
-      <Filter>HTTP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\littlefs\lfs.c">
-      <Filter>LFS</Filter>
-    </ClCompile>
-    <ClCompile Include="src\littlefs\lfs_util.c">
-      <Filter>LFS</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\Shape.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\Rect.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\Text.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\Texture.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\TextureManager.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\Tool_Delete.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\Tool_Move.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\Tool_Use.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\Tool_Wire.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\Simulator.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\Simulation.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\Wire.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\sim_sdl.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_buttonEvents.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_changeHandlers.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_cmd_alias.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_cmd_channels.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_expandConstant.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_expressions.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_http.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_http_client.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_if.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_led.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_lfs.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_main.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_repeatingEvents.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_script.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_tokenizer.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_tuyaMCU.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\Tool_Info.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\Controller_SimulatorLink.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\Controller_Bulb.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\Solver.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\Tool_Copy.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\WinMenuBar.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\PrefabManager.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\SaveLoad.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\Tool_Text.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\RecentList.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_pwmToggler.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\Controller_BL0942.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\Controller_Pot.cpp">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_util_mqtt.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hal\bk7231\hal_adc_bk7231.c">
-      <Filter>HAL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_deviceGroups.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_ssdp.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_ddp.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_httpButtons.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_dht_internal.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_dht.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_ntp.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_mqtt.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_tasmota.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_energyMeter.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_DHT.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_flags.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_multiplePinsOnChannel.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_cht8305.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_max72xx_internal.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_max72xx_single.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_sm2235.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_sht3x.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_hass_discovery.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_util_mqtt_json.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_demo_exclusiveRelays.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_wemo.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_mapRanges.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_demo_mapFanSpeedToRelays.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_demo_fanCyclingRelays.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_role_toggleAll.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_debouncer.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_demo_scriptForShutters.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_cmd_generic.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\httpserver\json_interface.c">
-      <Filter>HTTP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_changeHandlers_mqtt.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_bridge_driver.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_ntp_events.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_cmd_calendar.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_battery.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Airton.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Airwell.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Aiwa.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Amcor.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Argo.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Arris.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Bosch.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Bose.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Carrier.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_ClimaButler.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Coolix.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Corona.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Daikin.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Delonghi.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Denon.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Dish.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Doshisha.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Ecoclim.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Electra.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_EliteScreens.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Epson.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Fujitsu.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_GICable.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_GlobalCache.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Goodweather.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Gorenje.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Gree.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Haier.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Hitachi.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Inax.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_JVC.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Kelon.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Kelvinator.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Lasertag.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Lego.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_LG.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Lutron.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Magiquest.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Metz.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Midea.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_MilesTag2.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Mirage.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Mitsubishi.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_MitsubishiHeavy.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Multibrackets.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_MWM.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_NEC.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Neoclima.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Nikai.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Panasonic.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Pioneer.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Pronto.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_RC5_RC6.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_RCMM.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Rhoss.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Samsung.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Sanyo.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Sharp.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Sherwood.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Sony.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Symphony.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Tcl.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Technibel.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Teco.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Teknopoint.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Toshiba.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Toto.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Transcold.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Trotec.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Truma.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Vestel.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Voltas.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Whirlpool.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Whynter.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Wowwee.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Xmp.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\ir_Zepeal.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRac.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRproto.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRrecv.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRsend.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRtext.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRtimer.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\IRutils.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\itoa.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libraries\IRremoteESP8266\src\String.cpp">
-      <Filter>IRRemote-ESP</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_cfg_via_http.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_doorSensorWithDeepSleep.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_soft_i2c.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_demo_buttonScrollingChannelValue.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_tm1637.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_demo_buttonToggleGroup.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_role_toggleAll_2.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_spi.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_clockEvents.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_pwrCal.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_max72xx_clock.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_twoPWMsOneChannel.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_shiftRegister.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_gn6932.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_tm_gn_display_shared.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_kp18068.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_sgp.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_adcButton.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_waitFor.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_if_inside_backlog.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_cmd_startup.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_tm1638.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_mqtt_get.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_json_lib.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_tuyaMCU_batteryPowered.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sim\sim_uart.c">
-      <Filter>Simulator</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_hass_discovery_base.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_hass_discovery_ext.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_flashSearch.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_batteryDriver.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_ht16k33.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_hue.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_mcp9808.c" />
-    <ClCompile Include="src\cmnds\cmd_simulatorOnly.c">
-      <Filter>Cmd</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_kp18058.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_chargingLimit.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
-    <ClCompile Include="src\selftest\selftest_chargingDriver.c">
-      <Filter>SelfTest</Filter>
-    </ClCompile>
-    <ClCompile Include="src\driver\drv_adcSmoother.c">
-      <Filter>Drv</Filter>
-    </ClCompile>
+    <ClCompile Include="src\selftest\selftest_http_led.c" />
+    <ClCompile Include="src\driver\drv_max6675.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\base64\base64.h" />
+    <ClInclude Include="src\driver\drv_bl0937.h" />
+    <ClInclude Include="src\driver\drv_bl0942.h" />
+    <ClInclude Include="src\driver\drv_cht8305.h" />
+    <ClInclude Include="src\driver\drv_cse7766.h" />
+    <ClInclude Include="src\driver\drv_dht_internal.h" />
+    <ClInclude Include="src\driver\drv_ht16k33.h" />
+    <ClInclude Include="src\driver\drv_max72xx_internal.h" />
+    <ClInclude Include="src\driver\drv_pt6523_font.h" />
+    <ClInclude Include="src\driver\drv_sgp.h" />
+    <ClInclude Include="src\driver\drv_sht3x.h" />
+    <ClInclude Include="src\driver\drv_sm2235.h" />
+    <ClInclude Include="src\driver\drv_test_drivers.h" />
+    <ClInclude Include="src\driver\drv_tm1637.h" />
+    <ClInclude Include="src\driver\drv_tm_gn_display_shared.h" />
+    <ClInclude Include="src\httpserver\http_basic_auth.h" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ac_LG.h" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ac_LG.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\digitalWriteFast.h" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRFeedbackLED.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRProtocol.h" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRReceive.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRremote.h" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRremote.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRremoteInt.h" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRSend.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_BangOlufsen.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_BoseWave.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Denon.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_DistanceProtocol.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_JVC.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Kaseikyo.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Lego.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_LG.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_MagiQuest.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_NEC.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Others.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Pronto.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_RC5_RC6.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Samsung.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Sony.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Template.hpp" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\LongUnion.h" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\TinyIRReceiver.h" />
+    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\TinyIRReceiver.hpp" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\i18n.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRac.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRmacros.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRproto.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRrecv.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRremoteESP8266.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRsend.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRtext.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRtimer.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRutils.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Airton.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Airwell.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Amcor.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Argo.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Bosch.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Carrier.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Coolix.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Corona.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Daikin.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Delonghi.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Ecoclim.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Electra.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Fujitsu.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Goodweather.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Gree.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Haier.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Hitachi.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Kelon.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Kelvinator.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_LG.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Magiquest.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Midea.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Mirage.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Mitsubishi.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_MitsubishiHeavy.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_NEC.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Neoclima.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Panasonic.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Rhoss.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Samsung.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Sanyo.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Sharp.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Tcl.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Technibel.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Teco.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Toshiba.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Transcold.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Trotec.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Truma.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Vestel.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Voltas.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Whirlpool.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\itoa.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\minmax.h" />
+    <ClInclude Include="src\libraries\IRremoteESP8266\src\String.h" />
+    <ClInclude Include="src\littlefs\our_lfs.h" />
+    <ClInclude Include="src\selftest\selftest_local.h" />
+    <ClInclude Include="src\sim\Bounds.h" />
+    <ClInclude Include="src\sim\Circle.h" />
+    <ClInclude Include="src\sim\Controller_BL0942.h" />
+    <ClInclude Include="src\sim\Controller_Bulb.h" />
+    <ClInclude Include="src\sim\Controller_Button.h" />
+    <ClInclude Include="src\sim\Controller_Pot.h" />
+    <ClInclude Include="src\sim\Controller_SimulatorLink.h" />
+    <ClInclude Include="src\sim\CursorManager.h" />
+    <ClInclude Include="src\sim\Junction.h" />
+    <ClInclude Include="src\sim\Line.h" />
+    <ClInclude Include="src\sim\PrefabManager.h" />
+    <ClInclude Include="src\sim\RecentList.h" />
+    <ClInclude Include="src\sim\Rect.h" />
+    <ClInclude Include="src\sim\SaveLoad.h" />
+    <ClInclude Include="src\sim\Shape.h" />
+    <ClInclude Include="src\sim\sim_local.h" />
+    <ClInclude Include="src\sim\Solver.h" />
+    <ClInclude Include="src\sim\Text.h" />
+    <ClInclude Include="src\sim\Texture.h" />
+    <ClInclude Include="src\sim\TextureManager.h" />
+    <ClInclude Include="src\sim\Tool_Copy.h" />
+    <ClInclude Include="src\sim\Tool_Delete.h" />
+    <ClInclude Include="src\sim\Tool_Info.h" />
+    <ClInclude Include="src\sim\Tool_Move.h" />
+    <ClInclude Include="src\sim\Tool_Text.h" />
+    <ClInclude Include="src\sim\Tool_Use.h" />
+    <ClInclude Include="src\sim\Tool_Wire.h" />
+    <ClInclude Include="src\sim\WinMenuBar.h" />
+    <ClInclude Include="src\sim\Wire.h" />
+    <ClInclude Include="src\hal\hal_adc.h" />
+    <ClInclude Include="src\hal\hal_flashConfig.h" />
+    <ClInclude Include="src\hal\hal_flashVars.h" />
+    <ClInclude Include="src\hal\hal_generic.h" />
+    <ClInclude Include="src\hal\hal_pins.h" />
+    <ClInclude Include="src\hal\hal_wifi.h" />
+    <ClInclude Include="src\httpserver\http_tcp_server.h" />
+    <ClInclude Include="src\littlefs\lfs.h" />
+    <ClInclude Include="src\littlefs\lfs_util.h" />
     <ClInclude Include="src\new_cfg.h" />
     <ClInclude Include="src\new_cmd.h" />
     <ClInclude Include="src\new_common.h" />
@@ -902,512 +478,39 @@
     <ClInclude Include="src\new_tokenizer.h" />
     <ClInclude Include="src\ntp_time.h" />
     <ClInclude Include="src\obk_config.h" />
-    <ClInclude Include="src\hal\hal_adc.h">
-      <Filter>HAL</Filter>
-    </ClInclude>
-    <ClInclude Include="src\hal\hal_flashConfig.h">
-      <Filter>HAL</Filter>
-    </ClInclude>
-    <ClInclude Include="src\hal\hal_flashVars.h">
-      <Filter>HAL</Filter>
-    </ClInclude>
-    <ClInclude Include="src\hal\hal_generic.h">
-      <Filter>HAL</Filter>
-    </ClInclude>
-    <ClInclude Include="src\hal\hal_pins.h">
-      <Filter>HAL</Filter>
-    </ClInclude>
-    <ClInclude Include="src\hal\hal_wifi.h">
-      <Filter>HAL</Filter>
-    </ClInclude>
-    <ClInclude Include="src\httpserver\http_tcp_server.h">
-      <Filter>HTTP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\littlefs\lfs.h">
-      <Filter>LFS</Filter>
-    </ClInclude>
-    <ClInclude Include="src\littlefs\lfs_util.h">
-      <Filter>LFS</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\Texture.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\TextureManager.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\sim_local.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\selftest\selftest_local.h">
-      <Filter>SelfTest</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\Tool_Info.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\Solver.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\Tool_Copy.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\WinMenuBar.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\PrefabManager.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\SaveLoad.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\Tool_Text.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\RecentList.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\Controller_BL0942.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\Controller_Pot.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\Tool_Move.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\Tool_Delete.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\Tool_Use.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\Tool_Wire.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\Wire.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\Text.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\Shape.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\Rect.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\Line.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\Junction.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\CursorManager.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\Controller_SimulatorLink.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\Controller_Button.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\Controller_Bulb.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\Circle.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sim\Bounds.h">
-      <Filter>Simulator</Filter>
-    </ClInclude>
-    <ClInclude Include="src\driver\drv_dht_internal.h">
-      <Filter>Drv</Filter>
-    </ClInclude>
-    <ClInclude Include="src\driver\drv_cht8305.h">
-      <Filter>Drv</Filter>
-    </ClInclude>
-    <ClInclude Include="src\driver\drv_max72xx_internal.h">
-      <Filter>Drv</Filter>
-    </ClInclude>
-    <ClInclude Include="src\driver\drv_sm2235.h">
-      <Filter>Drv</Filter>
-    </ClInclude>
-    <ClInclude Include="src\driver\drv_sht3x.h">
-      <Filter>Drv</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ac_LG.h">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ac_LG.hpp">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\digitalWriteFast.h">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_BangOlufsen.hpp">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_BoseWave.hpp">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Denon.hpp">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_DistanceProtocol.hpp">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_JVC.hpp">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Kaseikyo.hpp">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Lego.hpp">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_LG.hpp">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_MagiQuest.hpp">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_NEC.hpp">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Others.hpp">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Pronto.hpp">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_RC5_RC6.hpp">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Samsung.hpp">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Sony.hpp">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\ir_Template.hpp">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRFeedbackLED.hpp">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRProtocol.h">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRReceive.hpp">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRremote.h">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRremote.hpp">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRremoteInt.h">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\IRSend.hpp">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\LongUnion.h">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\TinyIRReceiver.h">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\Arduino-IRremote-mod\src\TinyIRReceiver.hpp">
-      <Filter>IRRemote-old</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\i18n.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Airton.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Airwell.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Amcor.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Argo.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Bosch.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Carrier.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Coolix.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Corona.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Daikin.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Delonghi.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Ecoclim.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Electra.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Fujitsu.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Goodweather.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Gree.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Haier.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Hitachi.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Kelon.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Kelvinator.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_LG.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Magiquest.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Midea.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Mirage.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Mitsubishi.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_MitsubishiHeavy.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_NEC.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Neoclima.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Panasonic.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Rhoss.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Samsung.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Sanyo.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Sharp.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Tcl.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Technibel.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Teco.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Toshiba.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Transcold.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Trotec.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Truma.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Vestel.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Voltas.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\ir_Whirlpool.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRac.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRmacros.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRproto.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRrecv.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRremoteESP8266.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRsend.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRtext.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRtimer.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\IRutils.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\itoa.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\minmax.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libraries\IRremoteESP8266\src\String.h">
-      <Filter>IRRemote-ESP</Filter>
-    </ClInclude>
-    <ClInclude Include="src\driver\drv_tm1637.h">
-      <Filter>Drv</Filter>
-    </ClInclude>
-    <ClInclude Include="src\driver\drv_tm_gn_display_shared.h">
-      <Filter>Drv</Filter>
-    </ClInclude>
-    <ClInclude Include="src\driver\drv_sgp.h">
-      <Filter>Drv</Filter>
-    </ClInclude>
-    <ClInclude Include="src\driver\drv_ht16k33.h">
-      <Filter>Drv</Filter>
-    </ClInclude>
-    <ClInclude Include="src\littlefs\our_lfs.h">
-      <Filter>LFS</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\include\net_param_pub.h" />
     <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\key\multi_button.h" />
     <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\lwip_intf\lwip-2.0.2\src\include\lwip\apps\mqtt.h" />
     <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\user_driver\BkDriverI2c.h" />
+    <CustomBuild Include="src\bitmessage\bitmessage_public.h" />
+    <CustomBuild Include="src\cJSON\cJSON.h" />
+    <CustomBuild Include="src\cmnds\cmd_local.h" />
+    <CustomBuild Include="src\cmnds\cmd_public.h" />
+    <CustomBuild Include="src\devicegroups\deviceGroups_local.h" />
+    <CustomBuild Include="src\devicegroups\deviceGroups_public.h" />
+    <CustomBuild Include="src\driver\drv_bp1658cj.h" />
+    <CustomBuild Include="src\driver\drv_bp5758d.h" />
+    <CustomBuild Include="src\driver\drv_config.h" />
+    <CustomBuild Include="src\driver\drv_ir.h" />
+    <CustomBuild Include="src\driver\drv_local.h" />
+    <CustomBuild Include="src\driver\drv_public.h" />
+    <CustomBuild Include="src\driver\drv_sm2135.h" />
+    <CustomBuild Include="src\driver\drv_tuyaMCU.h" />
+    <CustomBuild Include="src\driver\drv_uart.h" />
+    <CustomBuild Include="src\httpclient\http_client.h" />
     <CustomBuild Include="src\httpclient\iot_export_errno.h" />
     <CustomBuild Include="src\httpclient\utils_net.h" />
     <CustomBuild Include="src\httpclient\utils_timer.h" />
+    <CustomBuild Include="src\httpserver\hass.h" />
+    <CustomBuild Include="src\httpserver\http_fns.h" />
     <CustomBuild Include="src\httpserver\new_http.h" />
+    <CustomBuild Include="src\i2c\drv_i2c_local.h" />
+    <CustomBuild Include="src\i2c\drv_i2c_mcp23017.h" />
+    <CustomBuild Include="src\i2c\drv_i2c_public.h" />
     <CustomBuild Include="src\mqtt\new_mqtt_deduper.h" />
     <CustomBuild Include="src\rgb2hsv.h" />
-    <CustomBuild Include="src\cmnds\cmd_local.h">
-      <Filter>Cmd</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\cmnds\cmd_public.h">
-      <Filter>Cmd</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\devicegroups\deviceGroups_local.h">
-      <Filter>DGR</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\devicegroups\deviceGroups_public.h">
-      <Filter>DGR</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\bitmessage\bitmessage_public.h">
-      <Filter>DGR</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\driver\drv_bp1658cj.h">
-      <Filter>Drv</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\driver\drv_bp5758d.h">
-      <Filter>Drv</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\driver\drv_config.h">
-      <Filter>Drv</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\i2c\drv_i2c_local.h">
-      <Filter>Drv</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\i2c\drv_i2c_mcp23017.h">
-      <Filter>Drv</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\i2c\drv_i2c_public.h">
-      <Filter>Drv</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\driver\drv_ir.h">
-      <Filter>Drv</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\driver\drv_local.h">
-      <Filter>Drv</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\driver\drv_public.h">
-      <Filter>Drv</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\driver\drv_sm2135.h">
-      <Filter>Drv</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\driver\drv_tuyaMCU.h">
-      <Filter>Drv</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\driver\drv_uart.h">
-      <Filter>Drv</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\cJSON\cJSON.h">
-      <Filter>HTTP</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\httpserver\hass.h">
-      <Filter>HTTP</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\httpclient\http_client.h">
-      <Filter>HTTP</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\httpserver\http_fns.h">
-      <Filter>HTTP</Filter>
-    </CustomBuild>
     <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\application.mk" />
-  </ItemGroup>
-  <ItemGroup>
-    <Filter Include="Simulator">
-      <UniqueIdentifier>{9f4c6f6e-a873-459a-851f-f1d1765678cb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Cmd">
-      <UniqueIdentifier>{c80fadcc-89e7-4380-8c8e-262dfab4240c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="DGR">
-      <UniqueIdentifier>{b2359e07-df0d-4c96-990e-3c39516c8d34}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Drv">
-      <UniqueIdentifier>{542e4943-f31c-4550-978f-20adbb8d7933}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="HAL">
-      <UniqueIdentifier>{e385d68c-eb29-44e3-bbb3-560d53712634}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="LFS">
-      <UniqueIdentifier>{ea59e797-47c5-4aa4-b0df-13a40b08dd3c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="SelfTest">
-      <UniqueIdentifier>{0d71deec-4234-4353-b50a-d55394522055}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="IRRemote-old">
-      <UniqueIdentifier>{b5fe6300-6717-4382-acc5-5d4736e28b25}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="IRRemote-ESP">
-      <UniqueIdentifier>{553d6b46-d893-4259-b8b1-77e58da2a2ed}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="HTTP">
-      <UniqueIdentifier>{e980596d-3f72-423b-9b22-afc2901a273f}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
 </Project>

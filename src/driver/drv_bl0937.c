@@ -1,5 +1,5 @@
 #include "drv_bl0937.h"
-
+//dummy
 #include <math.h>
 
 #include "../cmnds/cmd_public.h"
@@ -22,7 +22,16 @@
 
 #define ELE_HW_TIME 1
 #define HW_TIMER_ID 0
+#elif PLATFORM_BL602
+
+#include "../../../../../../components/hal_drv/bl602_hal/hal_gpio.h"
+#include "../../../../../../components/hal_drv/bl602_hal/bl_gpio.h"
+
+#elif PLATFORM_LN882H
+#include "../../sdk/OpenLN882H/mcu/driver_ln882h/hal/hal_common.h"
+#include "../../sdk/OpenLN882H/mcu/driver_ln882h/hal/hal_gpio.h"
 #else
+
 
 #endif
 
@@ -63,6 +72,72 @@ static void HlwCfInterrupt(void* context) {
 	g_p_pulses++;
 }
 
+#elif PLATFORM_BL602
+
+static void HlwCf1Interrupt(void* arg) {
+	g_vc_pulses++;
+	bl_gpio_intmask(GPIO_HLW_CF1, 0);
+}
+static void HlwCfInterrupt(void* arg) {
+	g_p_pulses++;
+	bl_gpio_intmask(GPIO_HLW_CF, 0);
+}
+
+#elif PLATFORM_LN882H
+
+uint32_t GetBaseForPin(int pinIndex)
+{
+	return pinIndex < 16 ? GPIOA_BASE : GPIOB_BASE;
+}
+
+int GetIRQForPin(int pinIndex)
+{
+	return pinIndex < 16 ? GPIOA_IRQn : GPIOB_IRQn;
+}
+
+uint16_t GetGPIOForPin(int pinIndex)
+{
+	return (uint16_t)1 << (uint16_t)(pinIndex % 16);
+}
+
+void GPIOA_IRQHandler()
+{
+	uint32_t base = GetBaseForPin(GPIO_HLW_CF1);
+	uint16_t gpio_pin = GetGPIOForPin(GPIO_HLW_CF1);
+	if (hal_gpio_pin_get_it_flag(base, gpio_pin) == HAL_SET)
+	{
+		hal_gpio_pin_clr_it_flag(base, gpio_pin);
+		g_vc_pulses++;
+	}
+
+	base = GetBaseForPin(GPIO_HLW_CF);
+	gpio_pin = GetGPIOForPin(GPIO_HLW_CF);
+	if (hal_gpio_pin_get_it_flag(base, gpio_pin) == HAL_SET)
+	{
+		hal_gpio_pin_clr_it_flag(base, gpio_pin);
+		g_p_pulses++;
+	}
+}
+
+void GPIOB_IRQHandler()
+{
+	uint32_t base = GetBaseForPin(GPIO_HLW_CF1);
+	uint16_t gpio_pin = GetGPIOForPin(GPIO_HLW_CF1);
+	if (hal_gpio_pin_get_it_flag(base, gpio_pin) == HAL_SET)
+	{
+		hal_gpio_pin_clr_it_flag(base, gpio_pin);
+		g_vc_pulses++;
+	}
+
+	base = GetBaseForPin(GPIO_HLW_CF);
+	gpio_pin = GetGPIOForPin(GPIO_HLW_CF);
+	if (hal_gpio_pin_get_it_flag(base, gpio_pin) == HAL_SET)
+	{
+		hal_gpio_pin_clr_it_flag(base, gpio_pin);
+		g_p_pulses++;
+	}
+}
+
 #else
 
 void HlwCf1Interrupt(unsigned char pinNum) {  // Service Voltage and Current
@@ -101,6 +176,8 @@ void BL0937_Shutdown_Pins()
 #if PLATFORM_W600
 	tls_gpio_irq_disable(GPIO_HLW_CF1_pin);
 	tls_gpio_irq_disable(GPIO_HLW_CF_pin);
+#elif PLATFORM_BL602
+	//Todo how?
 #elif PLATFORM_BEKEN
 	gpio_int_disable(GPIO_HLW_CF1);
 	gpio_int_disable(GPIO_HLW_CF);
@@ -140,6 +217,15 @@ void BL0937_Init_Pins() {
 #if PLATFORM_W600
 	tls_gpio_isr_register(GPIO_HLW_CF1_pin, HlwCf1Interrupt, NULL);
 	tls_gpio_irq_enable(GPIO_HLW_CF1_pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
+#elif PLATFORM_BL602
+        tmp = hal_gpio_register_handler(HlwCf1Interrupt, GPIO_HLW_CF1, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_PULSE, (void*) NULL);
+	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Registering CF1 handler status: %i \n", tmp);
+
+#elif PLATFORM_LN882H
+	hal_gpio_pin_it_cfg(GetBaseForPin(GPIO_HLW_CF1), GetGPIOForPin(GPIO_HLW_CF1), GPIO_INT_FALLING);
+	hal_gpio_pin_it_en(GetBaseForPin(GPIO_HLW_CF1), GetGPIOForPin(GPIO_HLW_CF1), HAL_ENABLE);
+	NVIC_SetPriority(GetIRQForPin(GPIO_HLW_CF1), 1);
+	NVIC_EnableIRQ(GetIRQForPin(GPIO_HLW_CF1));
 #elif PLATFORM_BEKEN
 	gpio_int_enable(GPIO_HLW_CF1, IRQ_TRIGGER_FALLING_EDGE, HlwCf1Interrupt);
 #endif
@@ -149,6 +235,15 @@ void BL0937_Init_Pins() {
 #if PLATFORM_W600
 	tls_gpio_isr_register(GPIO_HLW_CF_pin, HlwCfInterrupt, NULL);
 	tls_gpio_irq_enable(GPIO_HLW_CF_pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
+#elif PLATFORM_BL602
+        tmp = hal_gpio_register_handler(HlwCfInterrupt, GPIO_HLW_CF, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_PULSE, (void*) NULL);
+	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Registering CF handler status: %i \n", tmp);
+
+#elif PLATFORM_LN882H
+	hal_gpio_pin_it_cfg(GetBaseForPin(GPIO_HLW_CF), GetGPIOForPin(GPIO_HLW_CF), GPIO_INT_FALLING);
+	hal_gpio_pin_it_en(GetBaseForPin(GPIO_HLW_CF), GetGPIOForPin(GPIO_HLW_CF), HAL_ENABLE);
+	NVIC_SetPriority(GetIRQForPin(GPIO_HLW_CF), 1);
+	NVIC_EnableIRQ(GetIRQForPin(GPIO_HLW_CF));
 #elif PLATFORM_BEKEN
 	gpio_int_enable(GPIO_HLW_CF, IRQ_TRIGGER_FALLING_EDGE, HlwCfInterrupt);
 #endif
@@ -173,7 +268,7 @@ void BL0937_Init(void) {
 	BL0937_Init_Pins();
 }
 
-void BL0937_RunFrame(void) {
+void BL0937_RunEverySecond(void) {
     float final_v;
 	float final_c;
 	float final_p;

@@ -167,8 +167,7 @@ static void TM1650_SendSegments(const byte *segments, byte length, byte pos) {
 
 
 static void TM_GN_ReadCommand(softI2C_t *i2c, byte command, byte *data, int dataSize) {
-	int i, j;
-	byte tmp;
+	int i;
 
 	TM_GN_Start(i2c);
 	// write command
@@ -252,8 +251,6 @@ static void TM_GN_WriteCommand(softI2C_t *i2c, byte command, const byte *data, i
 	TM_GN_Stop(i2c);
 }
 static void TM1637_SendSegments(const byte *segments, byte length, byte pos) {
-	int i;
-
 	// set COM1 (no data, just command)
 	TM_GN_WriteCommand(&g_i2c, TM1637_I2C_COM1, 0, 0);
 
@@ -365,7 +362,6 @@ static commandResult_t CMD_TM1637_SetBit(const void *context, const char *cmd, c
 static commandResult_t CMD_TM1637_Char(const void *context, const char *cmd, const char *args, int flags) {
 	int index;
 	int code;
-	const char *s;
 
 	Tokenizer_TokenizeString(args, 0);
 

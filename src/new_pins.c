@@ -142,7 +142,7 @@ void setGPIActive(int index, int active, int falling) {
 			g_gpio_edge_map[0] &= ~(1 << index);
 	}
 }
-void PINS_BeginDeepSleepWithPinWakeUp() {
+void PINS_BeginDeepSleepWithPinWakeUp(unsigned int wakeUpTime) {
 	int i;
 	int value;
 	int falling;
@@ -189,7 +189,17 @@ void PINS_BeginDeepSleepWithPinWakeUp() {
 	extern void deep_sleep_wakeup_with_gpio(UINT32 gpio_index_map, UINT32 gpio_edge_map);
 	deep_sleep_wakeup_with_gpio(g_gpio_index_map[0], g_gpio_edge_map[0]);
 #else
-	bk_enter_deep_sleep(g_gpio_index_map[0], g_gpio_edge_map[0]);
+	extern void bk_enter_deep_sleep(UINT32 g_gpio_index_map, UINT32 g_gpio_edge_map);
+	extern void deep_sleep_wakeup(const UINT32* g_gpio_index_map,
+		const UINT32* g_gpio_edge_map, const UINT32* sleep_time);
+	if (wakeUpTime) {
+		deep_sleep_wakeup(&g_gpio_index_map[0],
+			&g_gpio_edge_map[0],
+			&wakeUpTime);
+	}
+	else {
+		bk_enter_deep_sleep(g_gpio_index_map[0], g_gpio_edge_map[0]);
+	}
 #endif
 #else
 
@@ -564,19 +574,20 @@ static uint8_t button_generic_get_gpio_value(void* param)
 
 void NEW_button_init(pinButton_s* handle, uint8_t(*pin_level)(void* self), uint8_t active_level)
 {
-	memset(handle, sizeof(pinButton_s), 0);
+	memset(handle, 0, sizeof(pinButton_s));
 
 	handle->event = (uint8_t)BTN_NONE_PRESS;
 	handle->hal_button_Level = pin_level;
 	handle->button_level = handle->hal_button_Level(handle);
 	handle->active_level = active_level;
 }
-void CHANNEL_SetAllChannelsByType(int requiredType, int newVal) {
+void CHANNEL_SetFirstChannelByType(int requiredType, int newVal) {
 	int i;
 
 	for (i = 0; i < CHANNEL_MAX; i++) {
 		if (CHANNEL_GetType(i) == requiredType) {
 			CHANNEL_Set(i, newVal, 0);
+			return;
 		}
 	}
 }
@@ -662,8 +673,6 @@ void CHANNEL_DoSpecialToggleAll() {
 	}
 	for (i = 0; i < CHANNEL_MAX; i++) {
 		if (CHANNEL_IsPowerRelayChannel(i)) {
-			int valToSet;
-
 			CHANNEL_Set(i, !anyEnabled, 0);
 		}
 	}
@@ -816,7 +825,15 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 
 			// digital input
 			HAL_PIN_Setup_Input_Pullup(index);
-			// otherwise we get a toggle on start
+			// otherwise we get a toggle on start			
+#ifdef PLATFORM_BEKEN
+			//20231217 XJIKKA
+			//On the BK7231N Mini WiFi Smart Switch, the correct state of the ADC input pin
+			//can be readed 1000us after the pin is initialized. Maybe there is a capacitor?
+			//Without delay, g_lastValidState is after restart set to 0, so the light will toggle, if the switch on input pin is on (1).
+			//To be sure, we will wait for 2000us.
+			usleep(2000);
+#endif
 			g_lastValidState[index] = PIN_ReadDigitalInputValue_WithInversionIncluded(index);
 			// this is input - sample initial state down below
 			bSampleInitialState = true;
@@ -1040,36 +1057,144 @@ void CFG_ApplyChannelStartValues() {
 		}
 	}
 }
-float CHANNEL_GetFinalValue(int channel) {
-	int iVal;
-	float dVal;
-	iVal = CHANNEL_Get(channel);
+int ChannelType_GetDecimalPlaces(int type) {
+	int pl;
 
-	switch (CHANNEL_GetType(channel))
+	int div = ChannelType_GetDivider(type);
+	int cur = 10;
+	for (pl = 0; pl < 6; pl++) {
+		if (div < cur)
+			return pl + 1;
+		cur *= 10;
+	}
+	return pl;
+}
+int ChannelType_GetDivider(int type) {
+	switch (type)
 	{
 	case ChType_Humidity_div10:
 	case ChType_Temperature_div10:
 	case ChType_Voltage_div10:
 	case ChType_Power_div10:
-		dVal = (float)iVal / 10;
-		break;
+	case ChType_Frequency_div10:
+		return 10;
 	case ChType_Frequency_div100:
 	case ChType_Current_div100:
 	case ChType_EnergyTotal_kWh_div100:
 	case ChType_Voltage_div100:
-		dVal = (float)iVal / 100;
-		break;
+	case ChType_PowerFactor_div100:
+	case ChType_Pressure_div100:
+	case ChType_Temperature_div100:
+	case ChType_Power_div100:
+		return 100;
 	case ChType_PowerFactor_div1000:
 	case ChType_EnergyTotal_kWh_div1000:
 	case ChType_EnergyExport_kWh_div1000:
 	case ChType_EnergyToday_kWh_div1000:
 	case ChType_Current_div1000:
-		dVal = (float)iVal / 1000;
-		break;
-	default:
-		dVal = (float)iVal;
-		break;
+	case ChType_LeakageCurrent_div1000:
+		return 1000;
+	case ChType_Temperature_div2:
+		return 2;
 	}
+	return 1;
+}
+const char *ChannelType_GetUnit(int type) {
+	switch (type)
+	{
+	case ChType_BatteryLevelPercent:
+	case ChType_Humidity:
+	case ChType_Humidity_div10:
+		return "%";
+	case ChType_Temperature_div100:
+	case ChType_Temperature_div10:
+	case ChType_Temperature_div2:
+	case ChType_Temperature:
+		return "C";
+	case ChType_Voltage_div100:
+	case ChType_Voltage_div10:
+		return "V";
+	case ChType_Power:
+	case ChType_Power_div10:
+	case ChType_Power_div100:
+		return "W";
+	case ChType_Frequency_div10:
+	case ChType_Frequency_div100:
+		return "Hz";
+	case ChType_LeakageCurrent_div1000:
+	case ChType_Current_div1000:
+	case ChType_Current_div100:
+		return "A";
+	case ChType_EnergyTotal_kWh_div1000:
+	case ChType_EnergyExport_kWh_div1000:
+	case ChType_EnergyToday_kWh_div1000:
+	case ChType_EnergyTotal_kWh_div100:
+		return "kWh";
+	case ChType_PowerFactor_div1000:
+	case ChType_PowerFactor_div100:
+		return "";
+	case ChType_Pressure_div100:
+		return "hPa";
+	case ChType_ReactivePower:
+		return "vAr";
+	case ChType_Illuminance:
+		return "Lux";
+	}
+	return "";
+}
+const char *ChannelType_GetTitle(int type) {
+	switch (type)
+	{
+	case ChType_BatteryLevelPercent:
+		return "Battery";
+	case ChType_Humidity:
+	case ChType_Humidity_div10:
+		return "Humidity";
+	case ChType_Temperature_div100:
+	case ChType_Temperature_div10:
+	case ChType_Temperature_div2:
+	case ChType_Temperature:
+		return "Temperature";
+	case ChType_Voltage_div100:
+	case ChType_Voltage_div10:
+		return "Voltage"; 
+	case ChType_Power:
+	case ChType_Power_div10:
+	case ChType_Power_div100:
+		return "Power";
+	case ChType_Frequency_div10:
+	case ChType_Frequency_div100:
+		return "Frequency";
+	case ChType_Current_div1000:
+	case ChType_Current_div100:
+		return "Current";
+	case ChType_LeakageCurrent_div1000:
+		return "Leakage"; 
+	case ChType_EnergyTotal_kWh_div1000:
+	case ChType_EnergyTotal_kWh_div100:
+		return "EnergyTotal";
+	case ChType_EnergyExport_kWh_div1000:
+		return "EnergyExport";
+	case ChType_EnergyToday_kWh_div1000:
+		return "EnergyToday";
+	case ChType_PowerFactor_div1000:
+	case ChType_PowerFactor_div100:
+		return "PowerFactor";
+	case ChType_Pressure_div100:
+		return "Pressure";
+	case ChType_ReactivePower:
+		return "ReactivePower";
+	case ChType_Illuminance:
+		return "Illuminance";
+	}
+	return "";
+}
+float CHANNEL_GetFinalValue(int channel) {
+	float dVal;
+
+	dVal = CHANNEL_Get(channel);
+	dVal /= ChannelType_GetDivider(CHANNEL_GetType(channel));
+
 	return dVal;
 }
 float CHANNEL_GetFloat(int ch) {
@@ -1365,6 +1490,11 @@ bool CHANNEL_IsPowerRelayChannel(int ch) {
 			int role = g_cfg.pins.roles[i];
 			// NOTE: do not include Battery relay
 			if (role == IOR_Relay || role == IOR_Relay_n) {
+				return true;
+			}
+			// Also allow toggling Bridge channel
+			// https://www.elektroda.com/rtvforum/viewtopic.php?p=20906463#20906463
+			if (role == IOR_BridgeForward || role == IOR_BridgeReverse) {
 				return true;
 			}
 		}
@@ -1874,11 +2004,12 @@ const char* g_channelTypeNames[] = {
 	"Voltage_div100",
 	"Temperature_div2",
 	"TimerSeconds",
-	"error",
-	"error",
-	"error",
-	"error",
-	"error",
+	"Frequency_div10",
+	"PowerFactor_div100",
+	"Pressure_div100",
+	"Temperature_div100",
+	"LeakageCurrent_div1000",
+	"Power_div100",
 	"error",
 	"error",
 };

@@ -37,8 +37,8 @@
   },
   {
     "name": "addClockEvent",
-    "args": "[Time] [WeekDayFlags] [UniqueIDForRemoval][Command]",
-    "descr": "Schedule command to run on given time in given day of week. NTP must be running. Time is a time like HH:mm or HH:mm:ss, WeekDayFlag is a bitflag on which day to run, 0xff mean all days, 0x01 means sunday, 0x02 monday, 0x03 sunday and monday, etc, id is an unique id so event can be removede later",
+    "args": "[TimerSeconds or Time or sunrise or sunset] [WeekDayFlags] [UniqueIDForRemoval][Command]",
+    "descr": "Schedule command to run on given time in given day of week. NTP must be running. TimerSeconds is seconds from midnight, Time is a time like HH:mm or HH:mm:ss, WeekDayFlag is a bitflag on which day to run, 0xff mean all days, 0x01 means sunday, 0x02 monday, 0x03 sunday and monday, etc, id is an unique id so event can be removed later. (NOTE: Use of sunrise/sunset requires compiling with ENABLE_NTP_SUNRISE_SUNSET set which adds about 11k of code)",
     "fn": "CMD_NTP_AddClockEvent",
     "file": "driver/drv_ntp_events.c",
     "requires": "",
@@ -252,6 +252,15 @@
     "examples": ""
   },
   {
+    "name": "Choice",
+    "args": "[IndexToExecute][Option0][Option1][Option2][OptionN][etc]",
+    "descr": "This will choose a given argument by index and execute it as a command. Index to execute can be a variable like $CH1.",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "chSetupLimit",
     "args": "[limitChannelIndex] [maxAllowedLimitChannelDelta] [timeoutOr-1] [commandToRun]",
     "descr": "After executing this command, chargingLimit driver will watch channel for changes and count down timer. When a timer runs our or channel change (from the initial state) is larger than given margin, given command is run",
@@ -347,15 +356,6 @@
     "descr": "Clears all repeating events.",
     "fn": "RepeatingEvents_Cmd_ClearRepeatingEvents",
     "file": "cmnds/cmd_repeatingEvents.c",
-    "requires": "",
-    "examples": ""
-  },
-  {
-    "name": "CMD_SetChannelPrivate",
-    "args": "[ChannelIndex][bPrivate]",
-    "descr": "Channels marked as private are NEVER published via MQTT.",
-    "fn": "NULL);",
-    "file": "cmnds/cmd_channels.c",
     "requires": "",
     "examples": ""
   },
@@ -496,8 +496,8 @@
   },
   {
     "name": "DSEdge",
-    "args": "[edgeCode]",
-    "descr": "DeepSleep (PinDeepSleep) wake configuration command. 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2",
+    "args": "[edgeCode][optionalPinIndex]",
+    "descr": "DeepSleep (PinDeepSleep) wake configuration command. 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2. Second argument is optional and allows to set per-pin DSEdge instead of setting it for all pins.",
     "fn": "CMD_DeepSleep_SetEdge",
     "file": "drv/drv_doorSensorWithDeepSleep.c",
     "requires": "",
@@ -523,8 +523,8 @@
   },
   {
     "name": "EnergyCntReset",
-    "args": "",
-    "descr": "Resets the total Energy Counter, the one that is usually kept after device reboots. After this commands, the counter will start again from 0.",
+    "args": "[OptionalNewValue]",
+    "descr": "Resets the total Energy Counter, the one that is usually kept after device reboots. After this commands, the counter will start again from 0 (or from the value you specified).",
     "fn": "BL09XX_ResetEnergyCounter",
     "file": "driver/drv_bl_shared.c",
     "requires": "",
@@ -721,8 +721,8 @@
   },
   {
     "name": "IRSend",
-    "args": "[PROT-ADDR-CMD-REP]",
-    "descr": "Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0",
+    "args": "[PROT-ADDR-CMD-REP-BITS]",
+    "descr": "Sends IR commands in the form PROT-ADDR-CMD-REP-BITS, e.g. NEC-1-1A-0-0, note that -BITS is optional, it can be 0 for default one, so you can just do NEC-1-1A-0",
     "fn": "IR_Send_Cmd",
     "file": "driver/drv_ir.cpp",
     "requires": "",
@@ -1314,6 +1314,15 @@
     "examples": ""
   },
   {
+    "name": "ntp_setLatLong",
+    "args": "[Latlong]",
+    "descr": "Sets the NTP latitude and longitude",
+    "fn": "NTP_SetLatlong",
+    "file": "driver/drv_ntp.c",
+    "requires": "",
+    "examples": "NTP_SetLatlong -34.911498 138.809488"
+  },
+  {
     "name": "ntp_setServer",
     "args": "[ServerIP]",
     "descr": "Sets the NTP server",
@@ -1369,8 +1378,8 @@
   },
   {
     "name": "PinDeepSleep",
-    "args": "",
-    "descr": "Starts a pin deep sleep (deep sleep that can be interrupted by external IO events like a button press)",
+    "args": "[OptionalTimerForWakeup]",
+    "descr": "Starts a pin deep sleep (deep sleep that can be interrupted by external IO events like a button press). The argument is an optional extra time to wake up also by timer. See [tutorial](https://www.elektroda.com/rtvforum/topic4041971.html)",
     "fn": "CMD_PinDeepSleep",
     "file": "cmnds/cmd_channels.c",
     "requires": "",
@@ -1499,6 +1508,24 @@
     "descr": "Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an integer, so you can also use math expressions like $CH10*10, etc.",
     "fn": "MQTT_PublishCommand",
     "file": "mqtt/new_mqtt.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "PWMG_Raw",
+    "args": "CMD_PWMG_Raw",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_pwm_groups.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "PWMG_Set",
+    "args": "CMD_PWMG_Set",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_pwm_groups.c",
     "requires": "",
     "examples": ""
   },
@@ -1674,6 +1701,15 @@
     "examples": ""
   },
   {
+    "name": "SetChannelPrivate",
+    "args": "[ChannelIndex][bPrivate]",
+    "descr": "Channels marked as private are NEVER published via MQTT.",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_channels.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "setChannelType",
     "args": "[ChannelIndex][TypeString]",
     "descr": "Sets a custom type for channel. Types are mostly used to determine how to display channel value on GUI",
@@ -1702,7 +1738,7 @@
   },
   {
     "name": "SetPinChannel",
-    "args": "[PinIndex][ChannelIndex]",
+    "args": "[PinIndex][ChannelIndex][optionalChannel2Index]",
     "descr": "This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command.",
     "fn": "CMD_SetPinChannel",
     "file": "cmnds/cmd_channels.c",
@@ -1918,8 +1954,8 @@
   },
   {
     "name": "SM16703P_Init",
-    "args": "SM16703P_Start",
-    "descr": "",
+    "args": "[NumberOfLEDs]",
+    "descr": "This will setup LED driver for a strip with given number of LEDs. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
     "fn": "NULL);",
     "file": "driver/drv_sm16703P.c",
     "requires": "",
@@ -1927,8 +1963,17 @@
   },
   {
     "name": "SM16703P_SetPixel",
-    "args": "SM16703P_CMD_setPixel",
-    "descr": "",
+    "args": "[index/all] [R] [G] [B]",
+    "descr": "Sets a pixel for LED strip. Index can be a number or 'all' keyword to set all. Then, 3 integer values for R, G and B. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
+    "fn": "NULL);",
+    "file": "driver/drv_sm16703P.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "SM16703P_SetRaw",
+    "args": "[bUpdate] [byteOfs] [HexData]",
+    "descr": "Sets the raw data bytes for SPI DMA LED driver at the given offset. Hex data should be as a hex string, for example, FF00AA, etc. The bUpdate, if set to 1, will run SM16703P_Start automatically after setting data. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
     "fn": "NULL);",
     "file": "driver/drv_sm16703P.c",
     "requires": "",
@@ -1936,8 +1981,8 @@
   },
   {
     "name": "SM16703P_Start",
-    "args": "SM16703P_StartTX",
-    "descr": "",
+    "args": "",
+    "descr": "This will send the currently set data to the strip. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
     "fn": "NULL);",
     "file": "driver/drv_sm16703P.c",
     "requires": "",
@@ -1994,6 +2039,15 @@
     "descr": "Don't use it. It's for direct access of SM2235 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",
     "fn": "SM2235_RGBCW",
     "file": "driver/drv_sm2235.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "SPC",
+    "args": "[Index][RGB]",
+    "descr": "Sets Palette Color by index.",
+    "fn": "commandSetPaletteColor",
+    "file": "cmnds/cmd_newLEDDriver.c",
     "requires": "",
     "examples": ""
   },
@@ -2315,9 +2369,27 @@
   {
     "name": "toggler_set",
     "args": "[Value]",
-    "descr": "Sets the VALUE of given output. Handles toggler_set0, toggler_set1, etc. The last digit after command name is changed to slot index.",
+    "descr": "Sets the VALUE of given output. Handles toggler_set0, toggler_set1, etc. The last digit after command name is changed to slot index. It can also add to current value if you write value like +25 and subtract if you prefix it with - like -25",
     "fn": "Toggler_SetX",
     "file": "driver/drv_pwmToggler.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "TS_Clear",
+    "args": "",
+    "descr": "Clears the text scroller buffer",
+    "fn": "NULL);",
+    "file": "driver/drv_textScroller.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "TS_Print",
+    "args": "[StartOfs] [MaxLenOr0] [StringText] [optionalBClampWithZeroesForClock]",
+    "descr": "Prints a text to the text scroller buffer",
+    "fn": "NULL);",
+    "file": "driver/drv_textScroller.c",
     "requires": "",
     "examples": ""
   },
@@ -2331,9 +2403,18 @@
     "examples": ""
   },
   {
-    "name": "tuyaMcu_sendColor",
-    "args": "Cmd_TuyaMCU_SendColor",
+    "name": "tuyaMcu_sendCmd",
+    "args": "TuyaMCU_SendUserCmd",
     "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_tuyaMCU.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "tuyaMcu_sendColor",
+    "args": "[dpID] [red01] [green01] [blue01] [tuyaRGBformat]",
+    "descr": "This sends a TuyaMCU color string of given format for given RGB values, where each value is in [0,1] range as float",
     "fn": "NULL);",
     "file": "driver/drv_tuyaMCU.c",
     "requires": "",
@@ -2422,8 +2503,8 @@
   },
   {
     "name": "tuyaMcu_setupLED",
-    "args": "Cmd_TuyaMCU_SetupLED",
-    "descr": "",
+    "args": "[dpIDColor] [TasFormat] [dpIDPower]",
+    "descr": "Setups the TuyaMCU LED driver for given color dpID and power dpID. Also allows you to choose color format.",
     "fn": "NULL);",
     "file": "driver/drv_tuyaMCU.c",
     "requires": "",

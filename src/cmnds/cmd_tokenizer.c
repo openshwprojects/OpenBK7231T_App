@@ -11,7 +11,7 @@
 #define MAX_ARGS 32
 
 static char g_buffer[MAX_CMD_LEN];
-static const char *g_args[MAX_ARGS];
+static char *g_args[MAX_ARGS];
 static char g_argsExpanded[MAX_ARGS][40];
 static const char *g_argsFrom[MAX_ARGS];
 static int g_numArgs = 0;
@@ -133,6 +133,10 @@ const char *Tokenizer_GetArg(int i) {
 	if (i >= g_numArgs)
 		return 0;
 
+	if (g_argsExpanded[i][0] != 0) {
+		return g_argsExpanded[i];
+	}
+
 	s = g_args[i];
 
 #if 0
@@ -148,11 +152,15 @@ const char *Tokenizer_GetArg(int i) {
 		return g_argsExpanded[i];
 	}
 #else
-	if (g_bAllowExpand && s[0] == '$') {
+	if (g_bAllowExpand && (tok_flags & TOKENIZER_ALTERNATE_EXPAND_AT_START)) {
+		CMD_ExpandConstantsWithinString(s, g_argsExpanded[i], sizeof(g_argsExpanded[i]));
+		return g_argsExpanded[i];
+	}
+	else if (g_bAllowExpand && s[0] == '$') {
 		// quick hack for str expansion here, may do it in a better way later
 		if (!strcmp(s + 1, "IP")) {
 			strcpy_safe(g_argsExpanded[i], HAL_GetMyIPString(), sizeof(g_argsExpanded[i]));
-	}
+		}
 		else if (!strcmp(s + 1, "ShortName")) {
 			strcpy_safe(g_argsExpanded[i], CFG_GetShortDeviceName(), sizeof(g_argsExpanded[i]));
 		}
@@ -167,7 +175,7 @@ const char *Tokenizer_GetArg(int i) {
 			sprintf(g_argsExpanded[i], "%i", iValue);
 		}
 		return g_argsExpanded[i];
-}
+	}
 
 #endif
 
@@ -276,6 +284,7 @@ void expandQuotes(char* str) {
 
 	str[writeIndex] = 0;
 }
+
 void Tokenizer_TokenizeString(const char *s, int flags) {
 	char *p;
 
@@ -295,14 +304,12 @@ void Tokenizer_TokenizeString(const char *s, int flags) {
 	}
 
 	// not really needed, but nice for testing
-	memset(g_args, 0, sizeof(g_args));
-	memset(g_argsFrom, 0, sizeof(g_argsFrom));
+	memset(g_args, 0, sizeof(g_args)); // backing buffer is g_buffer, which is mutated where spaces on arg boundaries are set to null char
+	memset(g_argsFrom, 0, sizeof(g_argsFrom)); // backing buffer is s, original unmutated string
+	memset(g_argsExpanded, 0, sizeof(g_argsExpanded));
 
-	if (flags & TOKENIZER_ALTERNATE_EXPAND_AT_START) {
-		CMD_ExpandConstantsWithinString(s, g_buffer, sizeof(g_buffer));
-	} else {
-		strcpy_safe(g_buffer, s, sizeof(g_buffer));
-	}
+	strcpy_safe(g_buffer, s, sizeof(g_buffer));
+
 	if (flags & TOKENIZER_FORCE_SINGLE_ARGUMENT_MODE) {
 		g_args[g_numArgs] = g_buffer;
 		g_argsFrom[g_numArgs] = g_buffer;

@@ -70,6 +70,16 @@ const char *HAL_GetMyIPString() {
 	strcpy(g_ipStr,"127.0.0.1");
 	return g_ipStr;
 }
+const char* HAL_GetMyGatewayString() {
+	return "192.168.0.1";
+}
+const char* HAL_GetMyDNSString() {
+	return "192.168.0.1";
+}
+const char* HAL_GetMyMaskString() {
+	return "255.255.255.0";
+}
+
 const char *HAL_GetMACStr(char *macstr) {
 	unsigned char mac[32]= { 0 };
 //	WiFI_GetMacAddress((char *)mac);

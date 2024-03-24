@@ -70,6 +70,11 @@ void OTA_RequestDownloadFromHTTP(const char *s);
 
 typedef long BaseType_t;
 
+#elif PLATFORM_LN882H
+#define DEVICENAME_PREFIX_FULL "OpenLN882H"
+#define DEVICENAME_PREFIX_SHORT "ln882h"
+#define PLATFORM_MCU_NAME "LN882H"
+#define MANUFACTURER "LightningSemi"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -93,6 +98,8 @@ This platform is not supported, error!
 #define USER_SW_VER "W600_Test"
 #elif defined(PLATFORM_W800)
 #define USER_SW_VER "W800_Test"
+#elif defined(PLATFORM_LN882H)
+#define USER_SW_VER "LN882H_Test"
 #else
 #define USER_SW_VER "unknown"
 #endif
@@ -205,6 +212,7 @@ typedef int bool;
 #define bk_printf printf
 
 #define rtos_delay_milliseconds vTaskDelay
+#define delay_ms vTaskDelay
 
 #define kNoErr                      0       //! No error occurred.
 typedef void *beken_thread_arg_t;
@@ -312,6 +320,38 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 							beken_thread_function_t function,
 							uint32_t stack_size, beken_thread_arg_t arg );
 
+
+#elif PLATFORM_LN882H
+
+// TODO:LN882H Platform setup here.
+typedef int bool;
+#define true 1
+#define false 0
+
+#define ASSERT
+#define os_strcpy strcpy
+#define os_malloc malloc
+#define os_free free
+#define os_memset memset
+
+#define bk_printf printf
+
+#define kNoErr                      0       //! No error occurred.
+#define rtos_delay_milliseconds OS_MsDelay
+typedef void *beken_thread_arg_t;
+typedef void *beken_thread_t;
+typedef void (*beken_thread_function_t)( beken_thread_arg_t arg );
+typedef int OSStatus;
+
+#define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
+#define BEKEN_APPLICATION_PRIORITY         (7)
+
+// wrappers for XR809??? threads to work like bekken
+OSStatus rtos_delete_thread( beken_thread_t* thread );
+OSStatus rtos_create_thread( beken_thread_t* thread,
+							uint8_t priority, const char* name,
+							beken_thread_function_t function,
+							uint32_t stack_size, beken_thread_arg_t arg );
 
 #else
 
@@ -438,11 +478,14 @@ WIFI_RSSI_LEVEL wifi_rssi_scale(int8_t rssi_value);
 extern const char *str_rssi[];
 extern int bSafeMode;
 extern int g_bWantPinDeepSleep;
+extern int g_pinDeepSleepWakeUp;
 extern int g_timeSinceLastPingReply;
 extern int g_startPingWatchDogAfter;
 extern int g_openAP;
 extern int g_bootFailures;
 extern int g_secondsElapsed;
+extern int g_rebootReason;
+extern float g_wifi_temperature;
 
 typedef int(*jsonCb_t)(void *userData, const char *fmt, ...);
 int JSON_ProcessCommandReply(const char *cmd, const char *args, void *request, jsonCb_t printer, int flags);

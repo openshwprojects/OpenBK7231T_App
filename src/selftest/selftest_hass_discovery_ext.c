@@ -29,6 +29,31 @@ void Test_HassDiscovery_TuyaMCU_VoltageCurrentPower() {
 
 }
 
+void Test_HassDiscovery_TuyaMCU_Power10() {
+	const char *shortName = "WinTuyatest";
+	const char *fullName = "Windows Fake Tuya";
+	const char *mqttName = "testTuya";
+	SIM_ClearOBK(shortName);
+	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
+
+	CFG_SetShortDeviceName(shortName);
+	CFG_SetDeviceName(fullName);
+
+	CHANNEL_SetType(1, ChType_Power_div10);
+
+	SIM_ClearMQTTHistory();
+	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
+	Sim_RunSeconds(5, false);
+
+	// OBK device should publish JSON on MQTT topic "homeassistant"
+	/*SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "name", shortName);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "sw", USER_SW_VER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mf", MANUFACTURER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mdl", PLATFORM_MCU_NAME);*/
+
+}
+
 
 void Test_HassDiscovery_Channel_Humidity() {
 	const char *shortName = "WinHumTest";
@@ -250,6 +275,64 @@ void Test_HassDiscovery_Channel_Toggle() {
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "pl_on", "1");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "pl_off", "0");
 }
+void Test_HassDiscovery_Channel_DimmerLightDetection_Dual() {
+	const char *shortName = "DualMCUDimmer";
+	const char *fullName = "WinDualMCUDimmer";
+	const char *mqttName = "dualDimmer";
+	SIM_ClearOBK(shortName);
+	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
+
+	CFG_SetShortDeviceName(shortName);
+	CFG_SetDeviceName(fullName);
+
+	CHANNEL_SetType(2, ChType_Toggle);
+	CHANNEL_SetType(3, ChType_Dimmer);
+
+	CHANNEL_SetType(4, ChType_Toggle);
+	CHANNEL_SetType(5, ChType_Dimmer);
+
+	SIM_ClearMQTTHistory();
+	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
+	Sim_RunSeconds(5, false);
+
+	// homeassistant/light/WinDualMCUDimmer_light_2/config
+
+	// OBK device should publish JSON on MQTT topic "homeassistant"
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant/light/WinDualMCUDimmer_light_2/config", true);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "name", shortName);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "sw", USER_SW_VER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mf", MANUFACTURER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mdl", PLATFORM_MCU_NAME);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "~", mqttName);
+	//SELFTEST_ASSERT_JSON_VALUE_STRING(0, "unit_of_meas", "C");
+	// state topic (toggle)
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "stat_t", "~/2/get");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "cmd_t", "~/2/set");
+	// brightness topic (dimmer)
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "bri_stat_t", "~/3/get");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "bri_cmd_t", "~/3/set");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "pl_on", "1");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "pl_off", "0");
+
+	// OBK device should publish JSON on MQTT topic "homeassistant"
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant/light/WinDualMCUDimmer_light_4/config", true);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "name", shortName);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "sw", USER_SW_VER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mf", MANUFACTURER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mdl", PLATFORM_MCU_NAME);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "~", mqttName);
+	//SELFTEST_ASSERT_JSON_VALUE_STRING(0, "unit_of_meas", "C");
+	// state topic (toggle)
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "stat_t", "~/4/get");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "cmd_t", "~/4/set");
+	// brightness topic (dimmer)
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "bri_stat_t", "~/5/get");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "bri_cmd_t", "~/5/set");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "pl_on", "1");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "pl_off", "0");
+
+
+}
 void Test_HassDiscovery_Channel_DimmerLightDetection() {
 	const char *shortName = "WinDimmerTest";
 	const char *fullName = "Windows Fake Dimmer";
@@ -268,7 +351,7 @@ void Test_HassDiscovery_Channel_DimmerLightDetection() {
 	Sim_RunSeconds(5, false);
 
 	// OBK device should publish JSON on MQTT topic "homeassistant"
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant/light", true);
 	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "name", shortName);
 	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "sw", USER_SW_VER);
 	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mf", MANUFACTURER);
@@ -279,15 +362,11 @@ void Test_HassDiscovery_Channel_DimmerLightDetection() {
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "stat_t", "~/4/get");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "cmd_t", "~/4/set");
 	// brightness topic (dimmer)
-#if 0
-	// cause error
-	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "bri_stat_t", "~/4/get");
-#else
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "bri_stat_t", "~/5/get");
-#endif
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "bri_cmd_t", "~/5/set");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "pl_on", "1");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "pl_off", "0");
+
 }
 void Test_HassDiscovery_Channel_Toggle_2x() {
 	const char *shortName = "WinToggleTest";
@@ -325,6 +404,7 @@ void Test_HassDiscovery_Channel_Toggle_2x() {
 }
 void Test_HassDiscovery_Ext() {
 	Test_HassDiscovery_TuyaMCU_VoltageCurrentPower();
+	Test_HassDiscovery_TuyaMCU_Power10();
 	Test_HassDiscovery_Channel_Humidity();
 	Test_HassDiscovery_Channel_Temperature();
 	Test_HassDiscovery_Channel_Temperature_div10();
@@ -334,6 +414,7 @@ void Test_HassDiscovery_Ext() {
 	Test_HassDiscovery_Channel_Toggle();
 	Test_HassDiscovery_Channel_Toggle_2x();
 	Test_HassDiscovery_Channel_DimmerLightDetection();
+	Test_HassDiscovery_Channel_DimmerLightDetection_Dual();
 }
 
 

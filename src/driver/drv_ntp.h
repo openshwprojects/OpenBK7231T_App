@@ -15,14 +15,24 @@ int NTP_GetWeekDay();
 int NTP_GetHour();
 int NTP_GetMinute();
 int NTP_GetSecond();
+int NTP_GetMDay();
+int NTP_GetMonth();
+int NTP_GetYear();
+int NTP_GetSunrise();
+int NTP_GetSunset();
 // for Simulator only, on Windows, for unit testing
 void NTP_SetSimulatedTime(unsigned int timeNow);
 // drv_ntp_events.c
 int NTP_PrintEventList();
+int NTP_GetEventTime(int id);
 int NTP_RemoveClockEvent(int id);
 int NTP_ClearEvents();
 
 extern unsigned int g_ntpTime;
+extern struct SUN_DATA {  /* sunrise / sunset globals */
+	int latitude;  /* latitude * 1000000 */
+	int longitude;  /* longitude * 1000000 */
+	} sun_data;
 
 #endif /* __DRV_NTP_H__ */
 

@@ -61,6 +61,18 @@ void Test_Flags() {
 		bool bSet = false;
 		SELFTEST_ASSERT_FLAG(i, bSet);
 	}
+	// test for bug from:
+	// https://www.elektroda.com/rtvforum/viewtopic.php?p=20932845#20932845
+	CMD_ExecuteCommand("flags 1156  ", 0);
+	for (int i = 0; i < 64; i++) {
+		bool bSet = false;
+		// 2, 7 and 10
+		// 2^2+2^7+2^10=1156
+		if (i == 2 || i == 7 || i == 10) {
+			bSet = true;
+		}
+		SELFTEST_ASSERT_FLAG(i, bSet);
+	}
 }
 
 

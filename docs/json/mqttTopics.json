@@ -96,7 +96,7 @@
 		"description": "See above. Published by power metering devices, BL0937, BL0942, etc). Make sure NTP is running to get time."
 		},
 		{
-		"topic": "[similiar tasmota messages]",
+		"topic": "[similar tasmota messages]",
 		"example": "Tasmota JSON",
 		"description": "See above. See related self test code for details"
 		},

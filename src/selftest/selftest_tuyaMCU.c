@@ -3,6 +3,84 @@
 
 #include "selftest_local.h"
 
+void Test_TuyaMCU_RawAccess() {
+	// reset whole device
+	SIM_ClearOBK(0);
+	SIM_ClearAndPrepareForMQTTTesting("TuyaMCU", "bekens");
+
+	SIM_UART_InitReceiveRingBuffer(2048);
+
+	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+
+	CFG_SetFlag(OBK_FLAG_TUYAMCU_STORE_RAW_DATA, 1);
+
+	// This will map TuyaMCU fnID 2 of type Value to channel 15
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 2 val 15", 0);
+	SELFTEST_ASSERT_CHANNEL(15, 0);
+	// This packet sets fnID 2 of type Value to 100
+	CMD_ExecuteCommand("uartFakeHex 55AA0307000802020004000000647D", 0);
+
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Dp", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/TuyaMCU/DP", false);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "id", 2);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "type", 0x02);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "data", 100);
+
+	SIM_ClearMQTTHistory();
+
+	// This packet sets fnID 2 of type Value to 90
+	CMD_ExecuteCommand("uartFakeHex 55AA03070008020200040000005A73", 0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(1000, false);
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Dp", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/TuyaMCU/DP", false);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "id", 2);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "type", 0x02);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "data", 90);
+
+	SIM_ClearMQTTHistory();
+
+
+	// This packet sets dpID 18 of type RAW
+	// dpID 18
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 18 Raw", 0);
+	CMD_ExecuteCommand("uartFakeHex 55AA030700101200000C0101003F030100FA040100AA25", 0);
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Dp", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/TuyaMCU/DP", false);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "id", 18);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "type", 0x00);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_STR(0, "data", "0101003F030100FA040100AA");
+
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(1, "id", 2);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(1, "type", 0x02);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(1, "data", 90);
+
+	SIM_ClearMQTTHistory();
+
+	// This packet sets dpID 104 of type RAW
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 104 Raw", 0);
+	CMD_ExecuteCommand("uartFakeHex 55AA03070008680200040000000180", 0);
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Dp", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/TuyaMCU/DP", false);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "id", 104);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "type", 0x00);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_STR(0, "data", "00000001");
+
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(1, "id", 18);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(1, "type", 0x00);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_STR(1, "data", "0101003F030100FA040100AA");
+
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(2, "id", 2);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(2, "type", 0x02);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(2, "data", 90);
+
+	SIM_ClearMQTTHistory();
+
+}
 void Test_TuyaMCU_Basic() {
 	// reset whole device
 	SIM_ClearOBK(0);
@@ -132,6 +210,131 @@ void Test_TuyaMCU_Basic() {
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	06		00 14	1100001001010050030100F5040100A008000032	64");
 	// nothing is sent by OBK at that point
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
+
+
+	SIM_ClearOBK(0);
+	SIM_ClearAndPrepareForMQTTTesting("myTestDevice", "bekens");
+	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+
+	// This packet sets dpID 2 of type Value to 120
+	// linkTuyaMCUOutputToChannel dpId varType channelID
+	// Special Syntax! is used to link it to MQTT
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 2 MQTT", 0);
+	CMD_ExecuteCommand("uartFakeHex 55AA03070008020200040000007891", 0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(1000, false);
+	// Now, expect a certain MQTT packet to be published....
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/tm/val/2", "120", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	// This packet sets dpID 17 of type RAW
+	// dpID 17: Leak protection
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 17 MQTT", 0);
+	CMD_ExecuteCommand("uartFakeHex 55AA03070008110000040400001E48", 0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(1000, false);
+	// Now, expect a certain MQTT packet to be published....
+	// NOTE: I just did hex to ascii on payload 
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/tm/raw/17", "0400001E", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	// This packet sets dpID 18 of type RAW
+	// dpID 18
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 18 MQTT", 0);
+	CMD_ExecuteCommand("uartFakeHex 55AA030700101200000C0101003F030100FA040100AA25",0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(1000, false);
+	// Now, expect a certain MQTT packet to be published....
+	// NOTE: I just did hex to ascii on payload 
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/tm/raw/18", "0101003F030100FA040100AA", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	// This packet sets dpID 104 of type RAW
+	// dpID 104
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 104 MQTT", 0);
+	CMD_ExecuteCommand("uartFakeHex 55AA03070008680200040000000180",0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(1000, false);
+	// Now, expect a certain MQTT packet to be published....
+	// NOTE: I just did hex to ascii on payload 
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/tm/val/104", "1", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SIM_ClearUART();
+
+	//
+	// uartSendHex tests
+	//
+	CMD_ExecuteCommand("uartSendHex FFAABB", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("FF AA	BB");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("setChannel 12 0xCC", 0);
+	CMD_ExecuteCommand("uartSendHex FF$CH12$BB", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("FF CC	BB");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("setChannel 12 0xDD", 0);
+	CMD_ExecuteCommand("uartSendHex FF$CH12$BB", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("FF DD	BB");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("setChannel 13 0xEE", 0);
+	CMD_ExecuteCommand("uartSendHex FF$CH12$$CH13$", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("FF DD	EE");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	SIM_ClearMQTTHistory();
+
+
+	CMD_ExecuteCommand("uartSendHex FF$CH12$00$CH13$00", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("FF DD 00 EE 00");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	SIM_ClearMQTTHistory();
+
+	// make sure that spaces won't break stuff
+	CMD_ExecuteCommand("uartSendHex FF$CH12$00$CH13$00  ", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("FF DD 00 EE 00");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	SIM_ClearMQTTHistory();
+
+	// make sure that spaces won't break stuff
+	CMD_ExecuteCommand("uartSendHex   FF  $CH12$  00  $CH13$   00  ", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("FF DD 00 EE 00");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	SIM_ClearMQTTHistory();
+
+	//
+	// tuyaMcu_sendCmd tests
+	//
+	// This command will calculate checksum as well - 0x32
+	CMD_ExecuteCommand("tuyaMcu_sendCmd 0x30 000000", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA 00 30 00 03 00 00 00 32");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	SIM_ClearMQTTHistory();
+	// This command will calculate checksum as well - 0x38
+	CMD_ExecuteCommand("tuyaMcu_sendCmd 0x30 000006", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA 00 30 00 03 00 00 06 38");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	SIM_ClearMQTTHistory();
+
+	SIM_ClearUART();
+
 
 	// cause error
 	//SELFTEST_ASSERT_CHANNEL(15, 666);

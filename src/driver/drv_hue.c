@@ -59,7 +59,7 @@ const  char *hue_resp3 = "ST: urn:schemas-upnp-org:device:basic:1\r\n"
    "\r\n";
 
 void DRV_HUE_Send_Advert_To(struct sockaddr_in *addr) {
-	const char *useType;
+	//const char *useType;
 
 	if (g_uid == 0) {
 		// not running
@@ -220,8 +220,9 @@ int HUE_APICall(http_request_t* request) {
 		return 0;
 	}
 	// skip "api/"
-	const char *api = request->url + 4;
-	int urlLen = strlen(request->url);
+	//const char *api = request->url + 4;
+	//int urlLen = strlen(request->url);
+	// TODO
 
 	return 0;
 }
@@ -247,6 +248,6 @@ void HUE_Init() {
 
 
 	//HTTP_RegisterCallback("/api", HTTP_ANY, HUE_APICall);
-	HTTP_RegisterCallback("/description.xml", HTTP_GET, HUE_Setup);
+	HTTP_RegisterCallback("/description.xml", HTTP_GET, HUE_Setup, 0);
 }
 

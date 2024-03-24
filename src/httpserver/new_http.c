@@ -9,6 +9,8 @@
 #include "../new_cfg.h"
 #include "../ota/ota.h"
 #include "../hal/hal_wifi.h"
+#include "../base64/base64.h"
+#include "http_basic_auth.h"
 
 
 // define the feature ADDLOGF_XXX will use
@@ -39,9 +41,11 @@ const char htmlBodyStart2[] =
 "</a></h1>";
 const char htmlBodyEnd[] = "</div></body></html>";
 
-const char htmlFooterReturnToMenu[] = "<a href=\"index\">Return to menu</a>";
+const char htmlFooterReturnToMainPage[] = "<a href=\"index\">MAIN page</a>";
 const char htmlFooterRefreshLink[] = "<a href=\"index\">Refresh</a>";
-const char htmlFooterReturnToCfgLink[] = "<a href=\"cfg\">Return to cfg</a>";
+const char htmlFooterReturnToCfgOrMainPage[] =
+"<a href=\"cfg\">Return to cfg</a> | "
+"<a href=\"index\">MAIN page</a>";
 
 const char htmlFooterInfo[] =
 "<a target=\"_blank\" "
@@ -77,13 +81,14 @@ typedef struct http_callback_tag {
 	char* url;
 	int method;
 	http_callback_fn callback;
+	int auth_required;
 } http_callback_t;
 
 #define MAX_HTTP_CALLBACKS 32
 static http_callback_t* callbacks[MAX_HTTP_CALLBACKS];
 static int numCallbacks = 0;
 
-int HTTP_RegisterCallback(const char* url, int method, http_callback_fn callback) {
+int HTTP_RegisterCallback(const char* url, int method, http_callback_fn callback, int auth_required) {
 	int i;
 
 	if (!url || !callback) {
@@ -112,6 +117,7 @@ int HTTP_RegisterCallback(const char* url, int method, http_callback_fn callback
 	strcpy(callbacks[numCallbacks]->url, url);
 	callbacks[numCallbacks]->callback = callback;
 	callbacks[numCallbacks]->method = method;
+	callbacks[numCallbacks]->auth_required = auth_required > 0 ? 1 : 0;
 
 	numCallbacks++;
 
@@ -721,10 +727,18 @@ int HTTP_ProcessPacket(http_request_t* request) {
 		if (http_startsWith(urlStr, &url[1])) {
 			int method = callbacks[i]->method;
 			if (method == HTTP_ANY || method == request->method) {
+				if (callbacks[i]->auth_required > 0 && http_basic_auth_run(request) == HTTP_BASIC_AUTH_FAIL) {
+					return 0;
+				}
 				return callbacks[i]->callback(request);
 			}
 		}
 	}
+
+	if (http_basic_auth_run(request) == HTTP_BASIC_AUTH_FAIL) {
+		return 0;
+	}
+
 	if (http_checkUrlBase(urlStr, "")) return http_fn_empty_url(request);
 
 	if (http_checkUrlBase(urlStr, "testmsg")) return http_fn_testmsg(request);

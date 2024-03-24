@@ -144,6 +144,36 @@
     "requires": ""
   },
   {
+    "name": "$mday",
+    "title": "$mday",
+    "descr": "TODO",
+    "requires": ""
+  },
+  {
+    "name": "$month",
+    "title": "$month",
+    "descr": "TODO",
+    "requires": ""
+  },
+  {
+    "name": "$year",
+    "title": "$year",
+    "descr": "TODO",
+    "requires": ""
+  },
+  {
+    "name": "$sunrise",
+    "title": "$sunrise",
+    "descr": "TODO",
+    "requires": ""
+  },
+  {
+    "name": "$sunset",
+    "title": "$sunset",
+    "descr": "TODO",
+    "requires": ""
+  },
+  {
     "name": "$NTPOn",
     "title": "$NTPOn",
     "descr": "Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0.",
@@ -171,6 +201,30 @@
     "name": "$failedBoots",
     "title": "$failedBoots",
     "descr": "Get number of failed boots (too quick reboots). Remember that you can change the uptime required to mark boot as 'okay' in general/flags menu",
+    "requires": ""
+  },
+  {
+    "name": "$rand01",
+    "title": "$rand01",
+    "descr": "Random float between [0,1]",
+    "requires": ""
+  },
+  {
+    "name": "$rand",
+    "title": "$rand",
+    "descr": "Random unsigned value",
+    "requires": ""
+  },
+  {
+    "name": "$rebootReason",
+    "title": "$rebootReason",
+    "descr": "Reboot reason",
+    "requires": ""
+  },
+  {
+    "name": "$intTemp",
+    "title": "$intTemp",
+    "descr": "Internal temperature (of WiFi module sensor)",
     "requires": ""
   }
 ]

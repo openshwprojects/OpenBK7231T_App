@@ -113,6 +113,8 @@ generateNotes:
         | W800     | UART Flash | [OpenW800_{{version}}.fls]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenW800_{{version}}.fls)               |
         | W600     | OTA Update | [OpenW600_{{version}}_gz.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenW600_{{version}}_gz.img)         |
         | W600     | UART Flash | [OpenW600_{{version}}.fls]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenW600_{{version}}.fls)               |
+        | LN882H   | OTA Update | [OpenLN882H_{{version}}_OTA.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenLN882H_{{version}}_OTA.bin)   |
+        | LN882H   | UART Flash | [OpenLN882H_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenLN882H_{{version}}.bin)           |
 
         CCtr Flash = Tuya cloud Cutter flash
         SPI Flash can be flashed through SPI, even if you broke BK bootloader
@@ -168,6 +170,7 @@ publish:
       - path: "output/**/OpenBL602*"
       - path: "output/**/OpenW600*"
       - path: "output/**/OpenW800*"
+      - path: "output/**/OpenLN882H*"
 
 success:
   - "@semantic-release/github"

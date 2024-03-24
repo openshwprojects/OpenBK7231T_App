@@ -12,6 +12,18 @@
 "file": "autoexecs/TH06-thermometer-hygrometer.bat"
 },
 {
+"title": "[Automatic relay turn off after given relay (aka inching)](https://www.elektroda.com/rtvforum/viewtopic.php?p=20797236#20797236)",
+"file": "autoexecs/turn_off_relay_after_time.bat"
+},
+{
+"title": "[Better turn off after time with timer on UI](https://www.elektroda.com/rtvforum/viewtopic.php?p=20797440#20797440)",
+"file": "autoexecs/turn_off_relay_after_time_advanced.bat"
+},
+{
+"title": "[Advanced turn off after time with timer on UI and timer setting on UI and kept in flash](https://www.elektroda.com/rtvforum/viewtopic.php?t=4032982&highlight=)",
+"file": "autoexecs/advanced_countdown_timer.bat"
+},
+{
 "title": "[Configuration for controlling LED strip with IR receiver by TV Remote](https://www.elektroda.com/rtvforum/topic3944210.html)",
 "file": "autoexecs/LED-strip-with-IR-receiver.bat"
 },
@@ -32,12 +44,28 @@
 "file": "autoexecs/single_button_for_five_relays.bat"
 },
 {
+"title": "[Script for LED acting like WiFi state LED during connecting to network but like Relay state LED when online](https://www.elektroda.com/rtvforum/viewtopic.php?p=20804036#20804036)",
+"file": "autoexecs/wifiled_and_relay_state.bat"
+},
+{
 "title": "Simple example showing how to do MQTT publish on button event (double click, etc). It also includes button hold event to adjust dimmer.",
 "file": "autoexecs/buttom_custom_events_mqtt_publishes.bat"
 },
 {
 "title": "Basic Ping Watchdog usage. Ping given IP with given interval and run script if there was no ping reply within given time.",
 "file": "autoexecs/ping_watchdog.bat"
+},
+{
+"title": "Alternate Ping Watchdog usage.",
+"file": "autoexecs/ping_watchdog2.bat"
+},
+{
+"title": "[Artificial delay for relay open (and no delay for close)](https://www.elektroda.com/rtvforum/viewtopic.php?p=20940593#20940593)",
+"file": "autoexecs/relay_open_delay.bat"
+},
+{
+"title": "HTTP-only control of Tasmota/OBK device from OBK.",
+"file": "autoexecs/http_calls.bat"
 },
 {
 "title": "NTP and 'waitFor' command example. You can use 'waitFor NTPState 1' in autoexec.bat to wait for NTP sync. After that, you can be sure that correct time is set. 'waitFor' will block execution until given event.",
@@ -48,12 +76,20 @@
 "file": "autoexecs/waiting_for_MQTT_connect.bat"
 },
 {
+"title": "WaitFor advanced syntax.",
+"file": "autoexecs/waitfor_syntax.bat"
+},
+{
 "title": "This script will use NTP and 'addClockEvent' to change light styles in the morning and in the evening. Here you can see how  'waitFor NTPState 1' and 'addClockEvent' and $hour script functions/variables are used.",
 "file": "autoexecs/automatic_day_and_night_lights.bat"
 },
 {
 "title": "Alternate 'addClockEvent' demo - just like previous one, but written by using AddEventHandler instead of waitFor",
 "file": "autoexecs/automatic_day_and_night_lights_v2.bat"
+},
+{
+"title": "A more complete demo with the addition of: An NTP server configured on the LAN, off/low/high modes for the lights, make use of sunset event and constant to determine when the light should start to be on.",
+"file": "autoexecs/automatic_day_and_night_lights_v3.bat"
 },
 {
 "title": "Simple UART log redirection to UART1 instead of UART2 on Beken with UART command line support",
@@ -64,7 +100,7 @@
 "file": "autoexecs/blink_led_on_device_boot.bat"
 },
 {
-"title": "Advanced config for TuyaMCU power meter and electric car charging limit driver",
+"title": "[Advanced config for TuyaMCU power meter and electric car charging limit driver](https://www.elektroda.com/rtvforum/topic3936455.html)",
 "file": "autoexecs/TAC2121C_tuyaMCU_and_car_chargerLimit.bat"
 },
 {
@@ -80,11 +116,23 @@
 "file": "autoexecs/manual_tuyamcu_flash_save.bat"
 },
 {
-"title": "Shift register setup, usage and control with channels",
+"title": "[Shift register setup, usage and control with channels](https://www.elektroda.com/rtvforum/viewtopic.php?p=20533505#20533505)",
 "file": "autoexecs/shiftRegister.bat"
 },
 {
 "title": "[Custom countdown/timer system with HTTP GUI for TuyaMCU relay](https://www.elektroda.com/rtvforum/topic4009196.html)",
 "file": "autoexecs/custom_timer_for_relay.bat"
+},
+{
+"title": "[Setup for EZB-WBZS1H16N-A V1.0 Tuya mini smart switch showing sunrise/sunset events](https://www.elektroda.com/rtvforum/topic3967141.html)",
+"file": "autoexecs/sunrise_sunset.bat"
+},
+{
+"title": "[Setup for PJ-MGW1103 T-Clamp TuyaMCU with a device state request demonstation](https://www.elektroda.com/rtvforum/viewtopic.php?p=20882983#20882983)",
+"file": "autoexecs/PJ-MGW1103_CT-Clamp_tuyaMCU_with_request.bat"
+},
+{
+"title": "[TOMPD-63-WIFI TuyaMCU power meter config with alternate HTML panel hosted in LittleFS](https://www.elektroda.com/rtvforum/topic4040354.html)",
+"file": "autoexecs/TOMPD-63-WIFI.bat"
 }
 ]

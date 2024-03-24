@@ -75,6 +75,32 @@ static byte g_color[][3] = {
 // https://www.elektroda.com/rtvforum/viewtopic.php?p=20280817#20280817
 static byte g_numColors = sizeof(g_color)/sizeof(g_color[0]);
 
+commandResult_t commandSetPaletteColor(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	int index;
+	const char *s;
+
+	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
+	Tokenizer_TokenizeString(args, 0);
+
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	index = Tokenizer_GetArgInteger(0);
+	// string is in format like FF00FF
+	s = Tokenizer_GetArg(1);
+	// convert 0xFF00AA to FF00AA
+	if (s[1] == 'x') {
+		s += 2;
+	}
+	sscanf(s, "%02hhx%02hhx%02hhx", 
+		&g_color[index][0], &g_color[index][1], &g_color[index][2]);
+
+	return CMD_RES_OK;
+}
 
 void LED_SetColorByIndex(int index) {
 	char tmp[8];

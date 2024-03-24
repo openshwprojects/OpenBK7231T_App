@@ -17,10 +17,10 @@ static char g_IP[32] = "unknown";
 static int g_bOpenAccessPointMode = 0;
 char *get_security_type(int type);
 
+IPStatusTypedef ipStatus;
 // This must return correct IP for both SOFT_AP and STATION modes,
 // because, for example, javascript control panel requires it
 const char* HAL_GetMyIPString() {
-	IPStatusTypedef ipStatus;
 
 	os_memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
 	if (g_bOpenAccessPointMode) {
@@ -30,7 +30,19 @@ const char* HAL_GetMyIPString() {
 		bk_wlan_get_ip_status(&ipStatus, STATION);
 	}
 
-	strcpy(g_IP, ipStatus.ip);
+	strncpy(g_IP, ipStatus.ip, 16);
+	return g_IP;
+}
+const char* HAL_GetMyGatewayString() {
+	strncpy(g_IP, ipStatus.gate, 16);
+	return g_IP;
+}
+const char* HAL_GetMyDNSString() {
+	strncpy(g_IP, ipStatus.dns, 16);
+	return g_IP;
+}
+const char* HAL_GetMyMaskString() {
+	strncpy(g_IP, ipStatus.mask, 16);
 	return g_IP;
 }
 

@@ -26,5 +26,6 @@ void CMD_InitSimulatorOnlyCommands() {
 	CMD_RegisterCommand("ExitSimulator", CMD_ExitSimulator, NULL);
 }
 
-#endif WINDOWS
+#endif
+
 

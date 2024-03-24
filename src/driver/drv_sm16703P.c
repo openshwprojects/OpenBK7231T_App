@@ -27,7 +27,15 @@ static uint8_t data_translate[4] = {0b10001000, 0b10001110, 0b11101000, 0b111011
 UINT8 *send_buf;
 struct spi_message *spi_msg;
 BOOLEAN initialized = false;
+// Number of pixels that can be addressed
 uint32_t pixel_count = 0;
+// Number of empty bytes to send before pixel data on each frame
+// Likely not needed as the data line should be LOW (reset) between frames anyway
+uint32_t pixel_offset = 0;
+// Number of empty bytes to send after pixel data on each frame
+// Workaround to stuff the SPI buffer with empty bytes after a transmission (s.a. #1055)
+uint32_t pixel_padding = 64;
+bool format_grb = false; // option to swap R/G for SK6812
 
 static uint8_t translate_2bit(uint8_t input) {
 	//ADDLOG_INFO(LOG_FEATURE_CMD, "Translate 0x%02x to 0x%02x", (input & 0b00000011), data_translate[(input & 0b00000011)]);
@@ -45,8 +53,27 @@ static void translate_byte(uint8_t input, uint8_t *dst) {
 	*dst++ = translate_2bit((input >> 2));
 	*dst++ = translate_2bit(input);
 }
+void SM16703P_setRaw(int start_offset, const char *s, int push) {
+	// start offset is in bytes, and we do 2 bits per dst byte, so *4
+	uint8_t *dst = spi_msg->send_buf + pixel_offset + start_offset*4;
 
-static void SM16703P_setMultiplePixel(uint32_t pixel, UINT8 *data) {
+	// parse hex string like FFAABB0011 byte by byte
+	while (s[0] && s[1]) {
+		byte b;
+		b = hexbyte(s);
+		*dst++ = translate_2bit((b >> 6));
+		*dst++ = translate_2bit((b >> 4));
+		*dst++ = translate_2bit((b >> 2));
+		*dst++ = translate_2bit(b);
+		s += 2;
+	}
+	if (push) {
+		SPIDMA_StartTX(spi_msg);
+	}
+}
+
+
+void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 
 	// Return if driver is not loaded
 	if (!initialized)
@@ -57,23 +84,61 @@ static void SM16703P_setMultiplePixel(uint32_t pixel, UINT8 *data) {
 		pixel = pixel_count;
 
 	// Iterate over pixel
-	uint8_t *dst = spi_msg->send_buf + 2;
-	for (uint32_t i = 0; i < pixel * 3; i++) {
-		uint8_t input = *data++;
-		*dst++ = translate_2bit((input >> 6));
-		*dst++ = translate_2bit((input >> 4));
-		*dst++ = translate_2bit((input >> 2));
-		*dst++ = translate_2bit(input);
+	uint8_t *dst = spi_msg->send_buf + pixel_offset;
+	for (uint32_t i = 0; i < pixel; i++) {
+		uint8_t r, g, b;
+		// Load data to GRB or RGB format
+		if (format_grb) {
+			g = *data++;
+			r = *data++;
+		} else {
+			r = *data++;
+			g = *data++;
+		}
+		b = *data++;
+		*dst++ = translate_2bit((r >> 6));
+		*dst++ = translate_2bit((r >> 4));
+		*dst++ = translate_2bit((r >> 2));
+		*dst++ = translate_2bit(r);
+		*dst++ = translate_2bit((g >> 6));
+		*dst++ = translate_2bit((g >> 4));
+		*dst++ = translate_2bit((g >> 2));
+		*dst++ = translate_2bit(g);
+		*dst++ = translate_2bit((b >> 6));
+		*dst++ = translate_2bit((b >> 4));
+		*dst++ = translate_2bit((b >> 2));
+		*dst++ = translate_2bit(b);
+	}
+	if (push) {
+		SPIDMA_StartTX(spi_msg);
 	}
 }
 void SM16703P_setPixel(int pixel, int r, int g, int b) {
-	translate_byte(r, spi_msg->send_buf + (2 + 0 + (pixel * 3 * 4)));
-	translate_byte(g, spi_msg->send_buf + (2 + 4 + (pixel * 3 * 4)));
-	translate_byte(b, spi_msg->send_buf + (2 + 8 + (pixel * 3 * 4)));
+	// Load data to GRB or RGB format
+	if (format_grb) {
+		translate_byte(g, spi_msg->send_buf + (pixel_offset + 0 + (pixel * 3 * 4)));
+		translate_byte(r, spi_msg->send_buf + (pixel_offset + 4 + (pixel * 3 * 4)));
+	} else {
+		translate_byte(r, spi_msg->send_buf + (pixel_offset + 0 + (pixel * 3 * 4)));
+		translate_byte(g, spi_msg->send_buf + (pixel_offset + 4 + (pixel * 3 * 4)));
+	}
+	translate_byte(b, spi_msg->send_buf + (pixel_offset + 8 + (pixel * 3 * 4)));
 }
 
+// SM16703P_SetRaw bUpdate byteOfs HexData
+// SM16703P_SetRaw 1 0 FF000000FF000000FF
+commandResult_t SM16703P_CMD_setRaw(const void *context, const char *cmd, const char *args, int flags) {
+	int ofs, bPush;
+	Tokenizer_TokenizeString(args, 0);
+	bPush = Tokenizer_GetArgInteger(0);
+	ofs = Tokenizer_GetArgInteger(1);
+	SM16703P_setRaw(ofs, Tokenizer_GetArg(2), bPush);
+	return CMD_RES_OK;
+}
 commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, const char *args, int flags) {
-	int pixel, i, r, g, b;
+	int i, r, g, b;
+	int pixel = 0;
+	const char *all = 0;
 	Tokenizer_TokenizeString(args, 0);
 
 	if (Tokenizer_GetArgsCount() != 4) {
@@ -81,14 +146,21 @@ commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, cons
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
-	pixel = Tokenizer_GetArgIntegerRange(0, 0, 255);
+	all = Tokenizer_GetArg(0);
+	if (*all == 'a') {
+
+	}
+	else {
+		pixel = Tokenizer_GetArgInteger(0);
+		all = 0;
+	}
 	r = Tokenizer_GetArgIntegerRange(1, 0, 255);
 	g = Tokenizer_GetArgIntegerRange(2, 0, 255);
 	b = Tokenizer_GetArgIntegerRange(3, 0, 255);
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Set Pixel %i to R %i G %i B %i", pixel, r, g, b);
 
-	if (pixel < 0) {
+	if (all) {
 		for (i = 0; i < pixel_count; i++) {
 			SM16703P_setPixel(i, r, g, b);
 		}
@@ -97,29 +169,25 @@ commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, cons
 		SM16703P_setPixel(pixel, r, g, b);
 
 		ADDLOG_INFO(LOG_FEATURE_CMD, "Raw Data 0x%02x 0x%02x 0x%02x 0x%02x - 0x%02x 0x%02x 0x%02x 0x%02x - 0x%02x 0x%02x 0x%02x 0x%02x",
-			spi_msg->send_buf[2 + 0 + (pixel * 3 * 4)],
-			spi_msg->send_buf[2 + 1 + (pixel * 3 * 4)],
-			spi_msg->send_buf[2 + 2 + (pixel * 3 * 4)],
-			spi_msg->send_buf[2 + 3 + (pixel * 3 * 4)],
-			spi_msg->send_buf[2 + 4 + (pixel * 3 * 4)],
-			spi_msg->send_buf[2 + 5 + (pixel * 3 * 4)],
-			spi_msg->send_buf[2 + 6 + (pixel * 3 * 4)],
-			spi_msg->send_buf[2 + 7 + (pixel * 3 * 4)],
-			spi_msg->send_buf[2 + 8 + (pixel * 3 * 4)],
-			spi_msg->send_buf[2 + 9 + (pixel * 3 * 4)],
-			spi_msg->send_buf[2 + 10 + (pixel * 3 * 4)],
-			spi_msg->send_buf[2 + 11 + (pixel * 3 * 4)]);
+			spi_msg->send_buf[pixel_offset + 0 + (pixel * 3 * 4)],
+			spi_msg->send_buf[pixel_offset + 1 + (pixel * 3 * 4)],
+			spi_msg->send_buf[pixel_offset + 2 + (pixel * 3 * 4)],
+			spi_msg->send_buf[pixel_offset + 3 + (pixel * 3 * 4)],
+			spi_msg->send_buf[pixel_offset + 4 + (pixel * 3 * 4)],
+			spi_msg->send_buf[pixel_offset + 5 + (pixel * 3 * 4)],
+			spi_msg->send_buf[pixel_offset + 6 + (pixel * 3 * 4)],
+			spi_msg->send_buf[pixel_offset + 7 + (pixel * 3 * 4)],
+			spi_msg->send_buf[pixel_offset + 8 + (pixel * 3 * 4)],
+			spi_msg->send_buf[pixel_offset + 9 + (pixel * 3 * 4)],
+			spi_msg->send_buf[pixel_offset + 10 + (pixel * 3 * 4)],
+			spi_msg->send_buf[pixel_offset + 11 + (pixel * 3 * 4)]);
 	}
 
 
 	return CMD_RES_OK;
 }
 
-static void SM16703P_Send(byte *data, int dataSize) {
-	// ToDo
-}
-
-commandResult_t SM16703P_Start(const void *context, const char *cmd, const char *args, int flags) {
+commandResult_t SM16703P_InitForLEDCount(const void *context, const char *cmd, const char *args, int flags) {
 
 	Tokenizer_TokenizeString(args, 0);
 
@@ -128,20 +196,42 @@ commandResult_t SM16703P_Start(const void *context, const char *cmd, const char 
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
+	// First arg: number of pixel to address
 	pixel_count = Tokenizer_GetArgIntegerRange(0, 0, 255);
+	// Second arg (optional, default "RGB"): pixel format of "RGB" or "GRB"
+	if (Tokenizer_GetArgsCount() > 1) {
+		const char *format = Tokenizer_GetArg(1);
+		if (!stricmp(format, "GRB")) {
+			format_grb = true;
+		}
+	}
+	// Third arg (optional, default "0"): pixel_offset to prepend to each transmission
+	if (Tokenizer_GetArgsCount() > 2) {
+		pixel_offset = Tokenizer_GetArgIntegerRange(2, 0, 255);
+	}
+	// Fourth arg (optional, default "64"): pixel_padding to append to each transmission
+	if (Tokenizer_GetArgsCount() > 3) {
+		pixel_padding = Tokenizer_GetArgIntegerRange(3, 0, 255);
+	}
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Register driver with %i LEDs", pixel_count);
 
 	// Prepare buffer
-	uint32_t buffer_size = 2 + (pixel_count * 3 * 4);			  //Add two bytes for "Reset"
+	uint32_t buffer_size = pixel_offset + (pixel_count * 3 * 4) + pixel_padding; //Add `pixel_offset` bytes for "Reset"
 	send_buf = (UINT8 *)os_malloc(sizeof(UINT8) * (buffer_size)); //18LEDs x RGB x 4Bytes
 	int i;
 
-	send_buf[0] = 0;
-	send_buf[1] = 0;
-
-	for (i = 2; i < buffer_size; i++) {
-		send_buf[i] = 0b11101110;
+	// Fill `pixel_offset` slice of the buffer with zero
+	for (i = 0; i < pixel_offset; i++) {
+		send_buf[i] = 0;
+	}
+	// Fill data slice of the buffer with data bits that decode to black color
+	for (i = pixel_offset; i < buffer_size - pixel_padding; i++) {
+		send_buf[i] = 0b10001000;
+	}
+	// Fill `pixel_padding` slice of the buffer with zero
+	for (i = buffer_size - pixel_padding; i < buffer_size; i++) {
+		send_buf[i] = 0;
 	}
 
 	spi_msg = os_malloc(sizeof(struct spi_message));
@@ -184,20 +274,26 @@ void SM16703P_Init() {
 	param = PWD_SPI_CLK_BIT;
 	sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_UP, &param);
 
-	//cmddetail:{"name":"SM16703P_Init","args":"SM16703P_Start",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"SM16703P_Init","args":"[NumberOfLEDs]",
+	//cmddetail:"descr":"This will setup LED driver for a strip with given number of LEDs. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_sm16703P.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("SM16703P_Init", SM16703P_Start, NULL);
-	//cmddetail:{"name":"SM16703P_Start","args":"SM16703P_StartTX",
-	//cmddetail:"descr":"",
+	CMD_RegisterCommand("SM16703P_Init", SM16703P_InitForLEDCount, NULL);
+	//cmddetail:{"name":"SM16703P_Start","args":"",
+	//cmddetail:"descr":"This will send the currently set data to the strip. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_sm16703P.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SM16703P_Start", SM16703P_StartTX, NULL);
-	//cmddetail:{"name":"SM16703P_SetPixel","args":"SM16703P_CMD_setPixel",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"SM16703P_SetPixel","args":"[index/all] [R] [G] [B]",
+	//cmddetail:"descr":"Sets a pixel for LED strip. Index can be a number or 'all' keyword to set all. Then, 3 integer values for R, G and B. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_sm16703P.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SM16703P_SetPixel", SM16703P_CMD_setPixel, NULL);
+	//cmddetail:{"name":"SM16703P_SetRaw","args":"[bUpdate] [byteOfs] [HexData]",
+	//cmddetail:"descr":"Sets the raw data bytes for SPI DMA LED driver at the given offset. Hex data should be as a hex string, for example, FF00AA, etc. The bUpdate, if set to 1, will run SM16703P_Start automatically after setting data. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_sm16703P.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("SM16703P_SetRaw", SM16703P_CMD_setRaw, NULL);
+
 }
 #endif

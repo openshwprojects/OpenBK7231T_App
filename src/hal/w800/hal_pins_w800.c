@@ -66,33 +66,29 @@ static wmPin_t g_pins[] = {
     {"PB27",WM_IO_PB_27, -1}
 };
 
-static int g_pwmChannelPins[] = { WM_IO_PB_00, WM_IO_PB_01, WM_IO_PB_02, WM_IO_PB_03, WM_IO_PA_07 };
-
 #else
 
 //W600 pinouts is based on W600-User Manual which lists pins for TW-02 and TW-03 modules.
 static wmPin_t g_pins[] = {
     {"PA0",WM_IO_PA_00, -1},
-	{"PA1",WM_IO_PA_01, -1},
-	{"PA4",WM_IO_PA_04, -1},
-	{"PA5",WM_IO_PA_05, -1},
-	{"PB6",WM_IO_PB_06, -1},
+	{"PA1",WM_IO_PA_01, 1},
+	{"PA4",WM_IO_PA_04, 4},
+	{"PA5",WM_IO_PA_05, 0},
+	{"PB6",WM_IO_PB_06, 3},
 	{"PB7",WM_IO_PB_07, -1},
-	{"PB8",WM_IO_PB_08, -1},
+	{"PB8",WM_IO_PB_08, 4},
 	{"PB9",WM_IO_PB_09, -1},
 	{"PB10",WM_IO_PB_10, -1},
 	{"PB11",WM_IO_PB_11, -1},
     
 	{"PB12",WM_IO_PB_12, -1},
-	{"PB13",WM_IO_PB_13, -1},
+	{"PB13",WM_IO_PB_13, 1},
 	{"PB14",WM_IO_PB_14, 4},
 	{"PB15",WM_IO_PB_15, 3},
 	{"PB16",WM_IO_PB_16, 2},
 	{"PB17",WM_IO_PB_17, 1},
 	{"PB18",WM_IO_PB_18, 0}
 };
-
-static int g_pwmChannelPins[] = { WM_IO_PB_18, WM_IO_PB_17, WM_IO_PB_16, WM_IO_PB_15, WM_IO_PB_14 };
 
 #endif
 
@@ -165,24 +161,26 @@ void HAL_PIN_Setup_Output(int index) {
 	tls_gpio_cfg(realCode, WM_GPIO_DIR_OUTPUT, WM_GPIO_ATTR_FLOATING);
 }
 
-static int pwm_demo_multiplex_config(u8 channel)
+static int pwm_demo_multiplex_config(u8 channel, int obkPin)
 {
+	int realCode;
+	realCode = g_pins[obkPin].code;
 	switch (channel)
 	{
 	case 0:
-		wm_pwm1_config(g_pwmChannelPins[channel]);
+		wm_pwm1_config(realCode);
 		break;
 	case 1:
-		wm_pwm2_config(g_pwmChannelPins[channel]);
+		wm_pwm2_config(realCode);
 		break;
 	case 2:
-		wm_pwm3_config(g_pwmChannelPins[channel]);
+		wm_pwm3_config(realCode);
 		break;
 	case 3:
-		wm_pwm4_config(g_pwmChannelPins[channel]);
+		wm_pwm4_config(realCode);
 		break;
 	case 4:
-		wm_pwm5_config(g_pwmChannelPins[channel]);
+		wm_pwm5_config(realCode);
 		break;
 	default:
 		break;
@@ -211,7 +209,7 @@ void HAL_PIN_PWM_Start(int index) {
 	if (channel == -1)
 		return;
 
-	pwm_demo_multiplex_config(channel);
+	pwm_demo_multiplex_config(channel, index);
 	ret = tls_pwm_init(channel, 1000, 0, 0);
 	if (ret != WM_SUCCESS)
 		return;
@@ -226,7 +224,12 @@ void HAL_PIN_PWM_Update(int index, float value) {
 	if (channel == -1)
 		return;
 
-	tls_pwm_duty_set(channel, value * 2.55f);
+	if (value == 0) {
+		tls_pwm_stop(channel);
+	} else {
+		tls_pwm_start(channel);
+		tls_pwm_duty_set(channel, value * 2.55f);
+	}
 }
 
 unsigned int HAL_GetGPIOPin(int index) {

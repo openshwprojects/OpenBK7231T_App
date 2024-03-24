@@ -306,5 +306,26 @@
     "title": "todo",
     "file": "new_pins.h",
     "descr": "[TuyaMCU] Use queue"
+  },
+  {
+    "index": "44",
+    "enum": "OBK_FLAG_HTTP_DISABLE_AUTH_IN_SAFE_MODE",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[HTTP] Disable authentication in safe mode (not recommended)"
+  },
+  {
+    "index": "45",
+    "enum": "OBK_FLAG_DISCOVERY_DONT_MERGE_LIGHTS",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[MQTT Discovery] Don't merge toggles and dimmers into lights"
+  },
+  {
+    "index": "46",
+    "enum": "OBK_FLAG_TUYAMCU_STORE_RAW_DATA",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[TuyaMCU] Store raw data"
   }
 ]

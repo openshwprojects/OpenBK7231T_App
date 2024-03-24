@@ -12,6 +12,8 @@
 #include "../driver/drv_tuyaMCU.h"
 #include "../ota/ota.h"
 
+#define BUILD_AND_VERSION_FOR_MQTT "Open" PLATFORM_MCU_NAME " " USER_SW_VER " " __DATE__ " " __TIME__ 
+
 #if MQTT_USE_TLS
 #include "lwip/altcp_tls.h"
 #include "lwip/apps/mqtt_priv.h"
@@ -1638,7 +1640,7 @@ static void mqtt_timer_thread(void* param)
 		MQTT_Test_Tick(param);
 	}
 }
-#elif PLATFORM_XR809
+#elif PLATFORM_XR809 || PLATFORM_LN882H
 static OS_Timer_t timer;
 #else
 static beken_timer_t g_mqtt_timer;
@@ -1673,7 +1675,7 @@ commandResult_t MQTT_StartMQTTTestThread(const void* context, const char* cmd, c
 	xTaskCreate(mqtt_timer_thread, "mqtt", 1024, (void*)info, 15, NULL);
 #elif PLATFORM_W600 || PLATFORM_W800
 	xTaskCreate(mqtt_timer_thread, "mqtt", 1024, (void*)info, 15, NULL);
-#elif PLATFORM_XR809
+#elif PLATFORM_XR809 || PLATFORM_LN882H
 	OS_TimerSetInvalid(&timer);
 	if (OS_TimerCreate(&timer, OS_TIMER_PERIODIC, MQTT_Test_Tick, (void*)info, MQTT_TMR_DURATION) != OS_OK)
 	{
@@ -1872,7 +1874,7 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 		return MQTT_DoItemPublishString("host", CFG_GetShortDeviceName());
 
 	case PUBLISHITEM_SELF_BUILD:
-		return MQTT_DoItemPublishString("build", g_build_str);
+		return MQTT_DoItemPublishString("build", BUILD_AND_VERSION_FOR_MQTT);
 
 	case PUBLISHITEM_SELF_MAC:
 		return MQTT_DoItemPublishString("mac", HAL_GetMACStr(dataStr));

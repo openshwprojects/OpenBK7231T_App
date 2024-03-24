@@ -81,6 +81,7 @@ typedef struct {
     char *post_buf; /**< User data to be posted. */
     char *response_buf; /**< Buffer to store the response data. */
     uint32_t response_buf_filled; /** how much real data in response_buff */
+	int userCounter;
 } httpclient_data_t;
 
 // should the library call free( ) on request struct when done?
@@ -91,13 +92,15 @@ typedef struct {
 #define HTTPREQUEST_FLAG_FREE_POST_BUF			4
 #define HTTPREQUEST_FLAG_FREE_HEADER		8
 #define HTTPREQUEST_FLAG_FREE_POST_CONTENT_TYPE	16
+#define HTTPREQUEST_FLAG_FREE_RESPONSEBUF	32
 
 typedef struct httprequest_t_tag{
     int state;
     int (*data_callback)(struct httprequest_t_tag *request);
     httpclient_t client;
     const char *url;
-    const char *header;
+	// This will be freed if HTTPREQUEST_FLAG_FREE_HEADER flag is set
+    char *header;
     int port;
     short method;
 	// eg. HTTPREQUEST_FLAG_FREE_SELFONDONE
@@ -105,6 +108,7 @@ typedef struct httprequest_t_tag{
     const char *ca_crt;
     uint32_t timeout;
     httpclient_data_t client_data;
+	char targetFile[32];
     void *usercontext; // anything you like
 } httprequest_t;
 
@@ -153,7 +157,7 @@ typedef struct httprequest_t_tag{
  * @endcode
  */
 int HTTPClient_Async_SendGeneric(httprequest_t *request);
-int HTTPClient_Async_SendGet(const char *url_in);
+int HTTPClient_Async_SendGet(const char *url_in, const char *tgFile);
 int HTTPClient_Async_SendPost(const char *url_in, int http_port, const char *content_type, const char *post_content, const char *post_header);
 void HTTPClient_SetCustomHeader(httpclient_t *client, const char *header);
 

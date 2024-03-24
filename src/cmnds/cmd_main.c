@@ -20,6 +20,8 @@ int cmd_uartInitIndex = 0;
 #endif
 #ifdef PLATFORM_BL602
 #include <wifi_mgmr_ext.h>
+#elif PLATFORM_LN882H
+#include <wifi.h>
 #endif
 
 #define HASH_SIZE 128
@@ -75,6 +77,15 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	}
 	else {
 		wifi_mgmr_sta_powersaving(0);
+	}
+#elif defined(PLATFORM_LN882H)
+	if (bOn) {
+		sysparam_sta_powersave_update(WIFI_MAX_POWERSAVE);
+		wifi_sta_set_powersave(WIFI_MAX_POWERSAVE);
+	}
+	else {
+		sysparam_sta_powersave_update(WIFI_NO_POWERSAVE);
+		wifi_sta_set_powersave(WIFI_NO_POWERSAVE);
 	}
 #else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave is not implemented on this platform");
@@ -396,7 +407,7 @@ static commandResult_t CMD_SafeMode(const void* context, const char* cmd, const 
 
 void CMD_UARTConsole_Init() {
 #if PLATFORM_BEKEN
-	UART_InitUART(115200);
+	UART_InitUART(115200, 0);
 	cmd_uartInitIndex = g_uart_init_counter;
 	UART_InitReceiveRingBuffer(512);
 #endif
@@ -610,9 +621,11 @@ commandResult_t CMD_DeepSleep_SetEdge(const void* context, const char* cmd, cons
 	}
 	// strlen("DSEdge") == 6
 	if (Tokenizer_GetArgsCount() > 1) {
+		// DSEdge [Edge] [Pin]
 		PIN_DeepSleep_SetWakeUpEdge(Tokenizer_GetArgInteger(1),Tokenizer_GetArgInteger(0));
 	}
 	else {
+		// DSEdge [Edge]
 		PIN_DeepSleep_SetAllWakeUpEdges(Tokenizer_GetArgInteger(0));
 	}
 
@@ -751,8 +764,8 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_OpenAP","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("OpenAP", CMD_OpenAP, NULL);
-	//cmddetail:{"name":"DSEdge","args":"[edgeCode]",
-	//cmddetail:"descr":"DeepSleep (PinDeepSleep) wake configuration command. 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2",
+	//cmddetail:{"name":"DSEdge","args":"[edgeCode][optionalPinIndex]",
+	//cmddetail:"descr":"DeepSleep (PinDeepSleep) wake configuration command. 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2. Second argument is optional and allows to set per-pin DSEdge instead of setting it for all pins.",
 	//cmddetail:"fn":"CMD_DeepSleep_SetEdge","file":"drv/drv_doorSensorWithDeepSleep.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DSEdge", CMD_DeepSleep_SetEdge, NULL);
@@ -776,6 +789,10 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_StartupCommand","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("StartupCommand", CMD_StartupCommand, NULL);
+	//cmddetail:{"name":"Choice","args":"[IndexToExecute][Option0][Option1][Option2][OptionN][etc]",
+	//cmddetail:"descr":"This will choose a given argument by index and execute it as a command. Index to execute can be a variable like $CH1.",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Choice", CMD_Choice, NULL);
 #if MQTT_USE_TLS
 	//CMD_RegisterCommand("FindPattern", CMD_FindPattern, NULL);

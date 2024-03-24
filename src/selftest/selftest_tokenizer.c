@@ -118,8 +118,23 @@ void Test_Tokenizer() {
 	SELFTEST_ASSERT_ARGUMENT(4, "{ \"a\":123, \"b\":77 }");
 	SELFTEST_ASSERT_ARGUMENT_INTEGER(5, 0);
 	
-	//system("pause");
-}
 
+	CMD_ExecuteCommand("setChannel 1 12", 0);
+	CMD_ExecuteCommand("setChannel 3 55", 0);
+	CMD_ExecuteCommand("setChannel 5 77", 0);
+
+	Tokenizer_TokenizeString("Turn on $CH1:$CH3 level=$CH5 $CH6",
+		TOKENIZER_ALTERNATE_EXPAND_AT_START | TOKENIZER_FORCE_SINGLE_ARGUMENT_MODE);
+
+	SELFTEST_ASSERT_ARGUMENT(0, "Turn on 12:55 level=77 0");
+
+	Tokenizer_TokenizeString("TurnOn $CH1:$CH3 level=$CH5 $CH6", TOKENIZER_ALTERNATE_EXPAND_AT_START);
+
+	SELFTEST_ASSERT_ARGUMENT(0, "TurnOn");
+	SELFTEST_ASSERT_ARGUMENT(1, "12:55");
+	SELFTEST_ASSERT_ARGUMENT(2, "level=77");
+	SELFTEST_ASSERT_ARGUMENT(3, "0");
+	SELFTEST_ASSERT_STRING(Tokenizer_GetArgFrom(2), "level=$CH5 $CH6")
+}
 
 #endif

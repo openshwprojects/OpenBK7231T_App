@@ -181,7 +181,9 @@ void HAL_PrintNetworkInfo() {
 
 }
 int HAL_GetWifiStrength() {
-    return -1;
+    int rssi = -1;
+    wifi_mgmr_rssi_get(&rssi);
+    return rssi;	
 }
 
 const char *HAL_GetMyIPString() {
@@ -199,6 +201,17 @@ const char *HAL_GetMyIPString() {
 
 	return g_ipStr;
 }
+
+const char* HAL_GetMyGatewayString() {
+	return "192.168.0.1";
+}
+const char* HAL_GetMyDNSString() {
+	return "192.168.0.1";
+}
+const char* HAL_GetMyMaskString() {
+	return "255.255.255.0";
+}
+
 void WiFI_GetMacAddress(char *mac) {
 	// FOR station mode
 	wifi_mgmr_sta_mac_get((uint8_t*)mac);

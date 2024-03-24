@@ -19,7 +19,7 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 	int cs;
 	int i;
 	int c_garbage_consumed = 0;
-	byte a;
+	//byte a;
 	byte checksum;
 	int CSE7766_PACKET_LEN = 24;
 	byte header;
@@ -33,8 +33,8 @@ int CSE7766_TryToGetNextCSE7766Packet() {
     header = UART_GetByte(0);
     // skip garbage data (should not happen)
 	while(cs > 0) {
-        a = UART_GetByte(1);
-        if(a != 0x5A) {
+        //a = UART_GetByte(1);
+        if(UART_GetByte(0) != 0x55 || UART_GetByte(1) != 0x5A) {
 			UART_ConsumeBytes(1);
 			c_garbage_consumed++;
 			cs--;
@@ -48,8 +48,8 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 	if(cs < CSE7766_PACKET_LEN) {
 		return 0;
 	}
-    a = UART_GetByte(1);
-    if(a != 0x5A) {
+    //a = UART_GetByte(1);
+    if(UART_GetByte(0) != 0x55 || UART_GetByte(1) != 0x5A) {
 		return 0;
 	}
 	checksum = 0;
@@ -133,20 +133,22 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 		backlog startDriver CSE7766; uartFakeHex 555A02FCD800062F00413200D7F2537B18023E9F7171FEEC
 		*/
 
+#define CSC_GetByte(x) ((unsigned long)UART_GetByte(x))
+
         adjustement = UART_GetByte(20);
         int vol_par =
-            UART_GetByte(2) << 16 | UART_GetByte(3) << 8 | UART_GetByte(4);
+			CSC_GetByte(2) << 16 | CSC_GetByte(3) << 8 | CSC_GetByte(4);
         int cur_par =
-            UART_GetByte(8) << 16 | UART_GetByte(9) << 8 | UART_GetByte(10);
+			CSC_GetByte(8) << 16 | CSC_GetByte(9) << 8 | CSC_GetByte(10);
         int pow_par =
-            UART_GetByte(14) << 16 | UART_GetByte(15) << 8 | UART_GetByte(16);
+			CSC_GetByte(14) << 16 | CSC_GetByte(15) << 8 | CSC_GetByte(16);
         float raw_unscaled_voltage =
-            UART_GetByte(5) << 16 | UART_GetByte(6) << 8 | UART_GetByte(7);
+			CSC_GetByte(5) << 16 | CSC_GetByte(6) << 8 | UART_GetByte(7);
         float raw_unscaled_current =
-            UART_GetByte(11) << 16 | UART_GetByte(12) << 8 | UART_GetByte(13);
+			CSC_GetByte(11) << 16 | CSC_GetByte(12) << 8 | CSC_GetByte(13);
         float raw_unscaled_power =
-            UART_GetByte(17) << 16 | UART_GetByte(18) << 8 | UART_GetByte(19);
-        cf_pulses = UART_GetByte(21) << 8 | UART_GetByte(22);
+			CSC_GetByte(17) << 16 | CSC_GetByte(18) << 8 | CSC_GetByte(19);
+        cf_pulses = CSC_GetByte(21) << 8 | CSC_GetByte(22);
 
         // i am not sure about these flags
 		if (adjustement & 0x40) {  // Voltage valid
@@ -206,11 +208,11 @@ void CSE7766_Init(void) {
     PwrCal_Init(PWR_CAL_MULTIPLY, DEFAULT_VOLTAGE_CAL, DEFAULT_CURRENT_CAL,
                 DEFAULT_POWER_CAL);
 
-	UART_InitUART(CSE7766_BAUD_RATE);
+	UART_InitUART(CSE7766_BAUD_RATE, 0);
 	UART_InitReceiveRingBuffer(512);
 }
 
-void CSE7766_RunFrame(void) {
+void CSE7766_RunEverySecond(void) {
     //addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"UART buffer size %i\n", UART_GetDataSize());
 
 	CSE7766_TryToGetNextCSE7766Packet();

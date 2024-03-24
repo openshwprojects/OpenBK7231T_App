@@ -105,14 +105,36 @@ void LED_ResetGlobalVariablesToDefaults() {
 	led_temperature_current = HASS_TEMPERATURE_MIN;
 }
 
+// The color order is RGBCW.
+// some people set RED to channel 0, and some of them set RED to channel 1
+// Let's detect if there is a PWM on channel 0
+int LED_GetFirstChannelIndex() {
+#if 0
+	int firstChannelIndex;
+	if (CHANNEL_HasChannelPinWithRoleOrRole(0, IOR_PWM, IOR_PWM_n)) {
+		firstChannelIndex = 0;
+	}
+	else {
+		firstChannelIndex = 1;
+	}
+	return firstChannelIndex;
+#else
+	int i;
+	for (i = 0; i < 5; i++) {
+		if (CHANNEL_HasChannelPinWithRoleOrRole(i, IOR_PWM, IOR_PWM_n)) {
+			return i;
+		}
+	}
+	return 0;
+#endif
+}
+
 bool LED_IsLedDriverChipRunning()
 {
-#ifndef PLATFORM_W600
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#if	ENABLE_DRIVER_TUYAMCU
 	if (TuyaMCU_IsLEDRunning()) {
 		return true;
 	}
-#endif
 #endif
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	return DRV_IsRunning("SM2135") || DRV_IsRunning("BP5758D") 
@@ -310,14 +332,8 @@ void LED_RunQuickColorLerp(int deltaMS) {
 
 	deltaSeconds = deltaMS * 0.001f;
 
-	// The color order is RGBCW.
-	// some people set RED to channel 0, and some of them set RED to channel 1
-	// Let's detect if there is a PWM on channel 0
-	if(CHANNEL_HasChannelPinWithRoleOrRole(0, IOR_PWM, IOR_PWM_n)) {
-		firstChannelIndex = 0;
-	} else {
-		firstChannelIndex = 1;
-	}
+	firstChannelIndex = LED_GetFirstChannelIndex();
+
 	if (CFG_HasFlag(OBK_FLAG_LED_EMULATE_COOL_WITH_RGB)) {
 		emulatedCool = firstChannelIndex + 3;
 	}
@@ -434,14 +450,8 @@ void apply_smart_light() {
 	int value_brightness = 0;
 	int value_cold_or_warm = 0;
 
-	// The color order is RGBCW.
-	// some people set RED to channel 0, and some of them set RED to channel 1
-	// Let's detect if there is a PWM on channel 0
-	if(CHANNEL_HasChannelPinWithRoleOrRole(0, IOR_PWM, IOR_PWM_n)) {
-		firstChannelIndex = 0;
-	} else {
-		firstChannelIndex = 1;
-	}
+
+	firstChannelIndex = LED_GetFirstChannelIndex();
 
 	if (CFG_HasFlag(OBK_FLAG_LED_EMULATE_COOL_WITH_RGB)) {
 		emulatedCool = firstChannelIndex + 3;
@@ -561,13 +571,11 @@ void apply_smart_light() {
 		// something was changed, mark as dirty
 		g_ledStateSavePending = 1;
 	}
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#if	ENABLE_TASMOTADEVICEGROUPS
 	DRV_DGR_OnLedFinalColorsChange(baseRGBCW);
 #endif
-#ifndef PLATFORM_W600
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#if	ENABLE_DRIVER_TUYAMCU
 	TuyaMCU_OnRGBCWChange(finalColors, g_lightEnableAll, g_lightMode, g_brightness0to100*0.01f, LED_GetTemperature0to1Range());
-#endif
 #endif
 	
 	// I am not sure if it's the best place to do it
@@ -857,7 +865,7 @@ void LED_SetEnableAll(int bEnable) {
 	g_lightEnableAll = bEnable;
 
 	apply_smart_light();
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#if	ENABLE_TASMOTADEVICEGROUPS
 	DRV_DGR_OnLedEnableAllChange(bEnable);
 #endif
 	LED_SendEnableAllState();
@@ -1022,6 +1030,9 @@ void LED_NextDimmerHold() {
 	// the dimmer is 0 and anyColor * 0 gives 0)
 	LED_AddDimmer(led_defaultDimmerDeltaForHold, 1, 2);
 }
+void LED_SetDimmerForDisplayOnly(int iVal) {
+	g_brightness0to100 = iVal;
+}
 void LED_SetDimmer(int iVal) {
 
 	g_brightness0to100 = iVal;
@@ -1030,7 +1041,7 @@ void LED_SetDimmer(int iVal) {
 		LED_SetEnableAll(true);
 	}
 
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#if	ENABLE_TASMOTADEVICEGROUPS
 	DRV_DGR_OnLedDimmerChange(iVal);
 #endif
 
@@ -1528,6 +1539,9 @@ static commandResult_t setHue(const void *context, const char *cmd, const char *
 float LED_GetHue() {
 	return g_hsv_h;
 }
+
+commandResult_t commandSetPaletteColor(const void *context, const char *cmd, const char *args, int cmdFlags);
+
 void NewLED_InitCommands(){
 	int pwmCount;
 
@@ -1672,6 +1686,11 @@ void NewLED_InitCommands(){
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("led_saveInterval", cmdSaveStateIfModifiedInterval, NULL);
 
+	//cmddetail:{"name":"SPC","args":"[Index][RGB]",
+	//cmddetail:"descr":"Sets Palette Color by index.",
+	//cmddetail:"fn":"commandSetPaletteColor","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("SPC", commandSetPaletteColor, NULL);
 	
 }
 

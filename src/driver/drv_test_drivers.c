@@ -38,7 +38,7 @@ void Test_Power_Init(void) {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetupTestPower", TestPower_Setup, NULL);
 }
-void Test_Power_RunFrame(void) {
+void Test_Power_RunEverySecond(void) {
     float final_v = base_v;
 	float final_c = base_c;
 	float final_p = base_p;
@@ -53,6 +53,6 @@ void Test_Power_RunFrame(void) {
 
 //Test LED driver
 void Test_LED_Driver_Init(void) {}
-void Test_LED_Driver_RunFrame(void) {}
+void Test_LED_Driver_RunEverySecond(void) {}
 void Test_LED_Driver_OnChannelChanged(int ch, int value) {
 }

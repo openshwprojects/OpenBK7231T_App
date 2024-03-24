@@ -49,6 +49,7 @@ typedef enum {
 	OP_SUB,
 	OP_MUL,
 	OP_DIV,
+	OP_MODULO,
 } opCode_t;
 
 static sOperator_t g_operators[] = {
@@ -64,8 +65,9 @@ static sOperator_t g_operators[] = {
 	{ "-", 1, 6 },
 	{ "*", 1, 4 },
 	{ "/", 1, 4 },
+	{ "%", 1, 4 },
 };
-static int g_numOperators = sizeof(g_operators)/sizeof(g_operators[0]);
+static int g_numOperators = sizeof(g_operators) / sizeof(g_operators[0]);
 
 const char *CMD_FindOperator(const char *s, const char *stop, byte *oCode) {
 	byte bestPriority;
@@ -80,13 +82,13 @@ const char *CMD_FindOperator(const char *s, const char *stop, byte *oCode) {
 	}
 	if (*s == 0)
 		return 0;
-	
+
 	retVal = 0;
 	bestPriority = 0;
 
-	while(s[0] && s[1] && (s < stop || stop == 0)) {
-		for(o = 0; o < g_numOperators; o++) {
-			if(!strncmp(s,g_operators[o].txt,g_operators[o].len)) {
+	while (s[0] && s[1] && (s < stop || stop == 0)) {
+		for (o = 0; o < g_numOperators; o++) {
+			if (!strncmp(s, g_operators[o].txt, g_operators[o].len)) {
 				if (g_operators[o].prio >= bestPriority) {
 					bestPriority = g_operators[o].prio;
 					retVal = s;
@@ -103,7 +105,7 @@ const char *strCompareBound(const char *s, const char *templ, const char *stoppe
 
 	s_start = s;
 
-	while(true) {
+	while (true) {
 		if (stopper == 0) {
 			// allow early end
 			// template ended and reached stopper
@@ -118,23 +120,24 @@ const char *strCompareBound(const char *s, const char *templ, const char *stoppe
 			}
 		}
 		// template ended and reached end of string
-		if(*s == 0 && *templ == 0) {
+		if (*s == 0 && *templ == 0) {
 			return s;
 		}
 		// reached end of string but template still has smth
-		if(*s == 0)
+		if (*s == 0)
 		{
 			return 0;
 		}
 		// are the chars the same?
-		if(bAllowWildCard && *templ == '*') {
+		if (bAllowWildCard && *templ == '*') {
 			if (isdigit((int)(*s))) {
 
 			}
 			else {
 				return 0;
 			}
-		}  else {
+		}
+		else {
 			char c1 = tolower((unsigned char)*s);
 			char c2 = tolower((unsigned char)*templ);
 			if (c1 != c2) {
@@ -234,6 +237,13 @@ float getNTPOn(const char *s) {
 
 #endif
 
+float getRand(const char *s) {
+	return rand();
+}
+// return float in [0,1] range
+float getRand01(const char *s) {
+	return ((float)rand()) / (float)(RAND_MAX);
+}
 float getFailedBoots(const char *s) {
 	return g_bootFailures;
 }
@@ -252,6 +262,37 @@ float getHour(const char *s) {
 float getSecond(const char *s) {
 	return NTP_GetSecond();
 }
+float getYear(const char *s) {
+	return NTP_GetYear();
+}
+float getMonth(const char *s) {
+	return NTP_GetMonth();
+}
+float getMDay(const char *s) {
+	return NTP_GetMDay();
+}
+
+#if ENABLE_NTP_SUNRISE_SUNSET
+
+float getSunrise(const char *s) {
+	return NTP_GetSunrise();
+}
+float getSunset(const char *s) {
+	return NTP_GetSunset();
+}
+
+#endif
+
+
+float getRebootReason(const char *s) {
+	return g_rebootReason;
+}
+
+
+float getInternalTemperature(const char *s) {
+	return g_wifi_temperature;
+}
+
 
 const constant_t g_constants[] = {
 	//cnstdetail:{"name":"MQTTOn",
@@ -375,11 +416,33 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Current second from NTP",
 	//cnstdetail:"requires":""}
 	{ "$second", &getSecond },
+	////cnstdetail:{"name":"$mday",
+	////cnstdetail:"title":"$mday",
+	////cnstdetail:"descr":"Current mday from NTP",
+	////cnstdetail:"requires":""}
+	{ "$mday", &getMDay },
 	////cnstdetail:{"name":"$month",
 	////cnstdetail:"title":"$month",
 	////cnstdetail:"descr":"Current month from NTP",
 	////cnstdetail:"requires":""}
-	//{ "$month", &getMonth },
+	{ "$month", &getMonth },
+	////cnstdetail:{"name":"$year",
+	////cnstdetail:"title":"$year",
+	////cnstdetail:"descr":"Current Year from NTP",
+	////cnstdetail:"requires":""}
+	{ "$year", &getYear },
+#if ENABLE_NTP_SUNRISE_SUNSET
+	////cnstdetail:{"name":"$sunrise",
+	////cnstdetail:"title":"$sunrise",
+	////cnstdetail:"descr":"Next sunrise as a TimerSeconds from midnight",
+	////cnstdetail:"requires":""}
+	{ "$sunrise", &getSunrise },
+	////cnstdetail:{"name":"$sunset",
+	////cnstdetail:"title":"$sunset",
+	////cnstdetail:"descr":"Next sunset as a TimerSeconds from midnight",
+	////cnstdetail:"requires":""}
+	{ "$sunset", &getSunset },
+#endif
 	//cnstdetail:{"name":"$NTPOn",
 	//cnstdetail:"title":"$NTPOn",
 	//cnstdetail:"descr":"Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0.",
@@ -408,7 +471,30 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Get number of failed boots (too quick reboots). Remember that you can change the uptime required to mark boot as 'okay' in general/flags menu",
 	//cnstdetail:"requires":""}
 	{ "$failedBoots", &getFailedBoots },
+	//cnstdetail:{"name":"$rand01",
+	//cnstdetail:"title":"$rand01",
+	//cnstdetail:"descr":"Random float between [0,1]",
+	//cnstdetail:"requires":""}
+	{ "$rand01", &getRand01 },
+	//cnstdetail:{"name":"$rand",
+	//cnstdetail:"title":"$rand",
+	//cnstdetail:"descr":"Random unsigned value",
+	//cnstdetail:"requires":""}
+	{ "$rand", &getRand },
+#ifdef PLATFORM_BEKEN
+	//cnstdetail:{"name":"$rebootReason",
+	//cnstdetail:"title":"$rebootReason",
+	//cnstdetail:"descr":"Reboot reason",
+	//cnstdetail:"requires":""}
+	{ "$rebootReason", &getRebootReason },
+#endif
+	//cnstdetail:{"name":"$intTemp",
+	//cnstdetail:"title":"$intTemp",
+	//cnstdetail:"descr":"Internal temperature (of WiFi module sensor)",
+	//cnstdetail:"requires":""}
+	{ "$intTemp", &getInternalTemperature },
 };
+
 static int g_totalConstants = sizeof(g_constants) / sizeof(g_constants[0]);
 
 // tries to expand a given string into a constant
@@ -418,6 +504,7 @@ static int g_totalConstants = sizeof(g_constants) / sizeof(g_constants[0]);
 // Returns true if constant matches
 // Returns false if no constants found
 const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
+#if ENABLE_EXPAND_CONSTANT
 	const constant_t *var;
 	int i;
 	var = g_constants;
@@ -430,7 +517,41 @@ const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
 			return ret;
 		}
 	}
+#endif
 	return false;
+}
+
+byte CMD_ParseOrExpandHexByte(const char **p) {
+	int val;
+	float fv = 0; // silence warning
+	while (isWhiteSpace(*(*p))) {
+		(*p)++;
+	}
+	if (*(*p) == '$') {
+		const char *stop = (*p) + 1;
+		while (*stop && *stop != '$') {
+			stop++;
+		}
+		CMD_ExpandConstant(*p, stop, &fv);
+		val = fv;
+
+		*p = stop;
+		if (**p != 0)
+			(*p)++;
+	}
+	else {
+		val = hexbyte(*p);
+		if (**p) {
+			(*p)++;
+			if (**p) {
+				(*p)++;
+			}
+		}
+	}
+	while (isWhiteSpace(*(*p))) {
+		(*p)++;
+	}
+	return val;
 }
 #if WINDOWS
 
@@ -447,7 +568,7 @@ void SIM_GenerateChannelStatesDesc(char *o, int outLen) {
 				continue;
 			if (bFound == false) {
 				bFound = true;
-				snprintf(buffer, sizeof(buffer), "Ch %i - value %i - ",i,CHANNEL_Get(i));
+				snprintf(buffer, sizeof(buffer), "Ch %i - value %i - ", i, CHANNEL_Get(i));
 				strcat_safe(o, buffer, outLen);
 			}
 			else {
@@ -545,10 +666,10 @@ const char *CMD_ExpandConstantToString(const char *constant, char *out, char *st
 	if (delta < 0)
 		delta = -delta;
 	if (delta < 0.001f) {
-		snprintf(out, outLen,  "%i", valueInt);
+		snprintf(out, outLen, "%i", valueInt);
 	}
 	else {
-		snprintf(out, outLen,"%f", value);
+		snprintf(out, outLen, "%f", value);
 	}
 	return after;
 }
@@ -624,17 +745,17 @@ float CMD_EvaluateExpression(const char *s, const char *stop) {
 	float a, b, c;
 	int idx;
 
-	if(s == 0)
+	if (s == 0)
 		return 0;
-	if(*s == 0)
+	if (*s == 0)
 		return 0;
 
 	// cull whitespaces at the end of expression
-	if(stop == 0) {
+	if (stop == 0) {
 		stop = s + strlen(s);
 	}
-	while(stop > s && isspace(((int)stop[-1]))) {
-		stop --;
+	while (stop > s && isspace(((int)stop[-1]))) {
+		stop--;
 	}
 	while (isspace(((int)*s))) {
 		s++;
@@ -642,21 +763,21 @@ float CMD_EvaluateExpression(const char *s, const char *stop) {
 			return 0;
 		}
 	}
-	if(g_expDebugBuffer==0){
+	if (g_expDebugBuffer == 0) {
 		g_expDebugBuffer = malloc(EXPRESSION_DEBUG_BUFFER_SIZE);
 	}
-	if(1) {
+	if (1) {
 		idx = stop - s;
-		memcpy(g_expDebugBuffer,s,idx);
+		memcpy(g_expDebugBuffer, s, idx);
 		g_expDebugBuffer[idx] = 0;
-		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: will run '%s'",g_expDebugBuffer);
+		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: will run '%s'", g_expDebugBuffer);
 	}
 
 	op = CMD_FindOperator(s, stop, &opCode);
-	if(op) {
+	if (op) {
 		const char *p2;
 
-		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: operator %i",opCode);
+		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: operator %i", opCode);
 
 		// first token block begins at 's' and ends at 'op'
 		// second token block begins at 'p2' and ends at NULL
@@ -671,7 +792,7 @@ float CMD_EvaluateExpression(const char *s, const char *stop) {
 		//sprintf(g_expDebugBuffer,"CMD_EvaluateExpression: a = %f, b = %f", a, b);
 		//ADDLOG_INFO(LOG_FEATURE_EVENT, g_expDebugBuffer);
 
-		switch(opCode)
+		switch (opCode)
 		{
 		case OP_EQUAL:
 			c = a == b;
@@ -709,30 +830,33 @@ float CMD_EvaluateExpression(const char *s, const char *stop) {
 		case OP_DIV:
 			c = a / b;
 			break;
+		case OP_MODULO:
+			c = ((int)a) % ((int)b);
+			break;
 		default:
 			c = 0;
 			break;
 		}
 		return c;
 	}
-	if(s[0] == '!') {
-		return !CMD_EvaluateExpression(s+1,stop);
+	if (s[0] == '!') {
+		return !CMD_EvaluateExpression(s + 1, stop);
 	}
-	if(CMD_ExpandConstant(s,stop,&c)) {
+	if (CMD_ExpandConstant(s, stop, &c)) {
 		return c;
 	}
 
-	if(1) {
+	if (1) {
 		idx = stop - s;
-		memcpy(g_expDebugBuffer,s,idx);
+		memcpy(g_expDebugBuffer, s, idx);
 		g_expDebugBuffer[idx] = 0;
 	}
-	ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: will call atof for %s",g_expDebugBuffer);
+	ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: will call atof for %s", g_expDebugBuffer);
 	return atof(g_expDebugBuffer);
 }
 
 // if MQTTOnline then "qq" else "qq"
-commandResult_t CMD_If(const void *context, const char *cmd, const char *args, int cmdFlags){
+commandResult_t CMD_If(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *cmdA;
 	const char *cmdB;
 	const char *condition;
@@ -748,29 +872,37 @@ commandResult_t CMD_If(const void *context, const char *cmd, const char *args, i
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	condition = Tokenizer_GetArg(0);
-	if(stricmp(Tokenizer_GetArg(1),"then")) {
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: second argument always must be 'then', but it's '%s'",Tokenizer_GetArg(1));
+	if (stricmp(Tokenizer_GetArg(1), "then")) {
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: second argument always must be 'then', but it's '%s'", Tokenizer_GetArg(1));
 		return CMD_RES_BAD_ARGUMENT;
 	}
 	argsCount = Tokenizer_GetArgsCount();
-	if(argsCount >= 5) {
+	int elsePos = -1;
+	for (int i = 2; i < argsCount; i++) {
+		if (!stricmp(Tokenizer_GetArg(i), "else")) {
+			elsePos = i;
+		}
+	}
+	if (elsePos != -1) {
 		cmdA = Tokenizer_GetArg(2);
-		if(stricmp(Tokenizer_GetArg(3),"else")) {
-			ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: fourth argument always must be 'else', but it's '%s'",Tokenizer_GetArg(3));
+		// TODO: better else
+		if (stricmp(Tokenizer_GetArg(3), "else")) {
+			ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_If: fourth argument always must be 'else', but it's '%s'", Tokenizer_GetArg(3));
 			return CMD_RES_BAD_ARGUMENT;
 		}
 		cmdB = Tokenizer_GetArg(4);
-	} else {
+	}
+	else {
 		cmdA = Tokenizer_GetArgFrom(2);
 		cmdB = 0;
 	}
 
 #ifdef WINDOWS
-	ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_If: cmdA is '%s'",cmdA);
-	if(cmdB) {
-		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_If: cmdB is '%s'",cmdB);
+	ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_If: cmdA is '%s'", cmdA);
+	if (cmdB) {
+		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_If: cmdB is '%s'", cmdB);
 	}
-	ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_If: condition is '%s'",condition);
+	ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_If: condition is '%s'", condition);
 #endif
 
 	value = CMD_EvaluateExpression(condition, 0);
@@ -782,11 +914,11 @@ commandResult_t CMD_If(const void *context, const char *cmd, const char *args, i
 	//else
 	//	strcpy_safe(buffer,cmdB);
 	//CMD_ExecuteCommand(buffer,0);
-	if(value)
-		CMD_ExecuteCommand(cmdA,0);
+	if (value)
+		CMD_ExecuteCommand(cmdA, 0);
 	else {
-		if(cmdB) {
-			CMD_ExecuteCommand(cmdB,0);
+		if (cmdB) {
+			CMD_ExecuteCommand(cmdB, 0);
 		}
 	}
 

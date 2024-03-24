@@ -41,6 +41,8 @@ bool CHANNEL_IsTemperature(int type) {
 		return true;
 	if (type == ChType_Temperature_div10)
 		return true;
+	if (type == ChType_Temperature_div100)
+		return true;
 	return false;
 }
 bool CHANNEL_GetGenericOfType(float *out, bool (*checker)(int type)) {
@@ -68,7 +70,7 @@ void Clock_Send(int type) {
 	char *p;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = localtime((time_t*)&g_ntpTime);
+	ltm = gmtime((time_t*)&g_ntpTime);
 
 	if (ltm == 0) {
 		return;
@@ -117,8 +119,8 @@ void Clock_SendTemperature() {
 static int cycle = 0;
 
 void Run_NoAnimation() {
-	int max_cycle;
-	bool bHasDHT;
+	//int max_cycle;
+	//bool bHasDHT;
 
 	cycle+=4;
 	if (cycle < 10) {
@@ -141,7 +143,7 @@ void Run_Animated() {
 	char *p;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = localtime((time_t*)&g_ntpTime);
+	ltm = gmtime((time_t*)&g_ntpTime);
 
 	if (ltm == 0) {
 		return;

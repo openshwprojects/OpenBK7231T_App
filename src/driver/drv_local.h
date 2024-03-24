@@ -15,6 +15,10 @@ void DRV_DDP_RunFrame();
 void DRV_DDP_Shutdown();
 void DRV_DDP_AppendInformationToHTTPIndexPage(http_request_t* request);
 
+void BMP280_Init();
+void BMP280_OnEverySecond();
+void BMP280_AppendInformationToHTTPIndexPage(http_request_t* request);
+
 void DoorDeepSleep_Init();
 void DoorDeepSleep_OnEverySecond();
 void DoorDeepSleep_StopDriver();
@@ -27,6 +31,14 @@ void DRV_MAX72XX_Clock_Init();
 
 void DRV_ADCButton_Init();
 void DRV_ADCButton_RunFrame();
+
+void PT6523_Init();
+void PT6523_RunFrame();
+void PT6523_DrawString(char gk[], int startOfs);
+void PT6523_ClearString();
+
+void TS_RunQuickTick();
+void TS_Init();
 
 void SM2135_Init();
 
@@ -58,7 +70,7 @@ bool DRV_IsRunning(const char* name);
 void DGR_ProcessIncomingPacket(char* msgbuf, int nbytes);
 void DGR_SpoofNextDGRPacketSource(const char* ipStrs);
 
-void TuyaMCU_Sensor_RunFrame();
+void TuyaMCU_Sensor_RunEverySecond();
 void TuyaMCU_Sensor_Init();
 
 
@@ -113,6 +125,13 @@ void ChargingLimit_Init();
 void ChargingLimit_OnEverySecond();
 void ChargingLimit_AppendInformationToHTTPIndexPage(http_request_t *request);
 
+void RN8209_Init(void);
+void RN8029_RunEverySecond(void);
+
+void MAX6675_Init(void);
+void MAX6675_RunEverySecond(void);
+
+void PWMG_Init();
 
 #define SM2135_DELAY         4
 
@@ -124,6 +143,7 @@ typedef struct softI2C_s {
 	short pin_stb;
 	// I must somehow be able to tell which proto we have?
 	//short protocolType;
+	byte address8bit;
 } softI2C_t;
 
 void Soft_I2C_SetLow(uint8_t pin);
@@ -131,6 +151,7 @@ void Soft_I2C_SetHigh(uint8_t pin);
 bool Soft_I2C_PreInit(softI2C_t* i2c);
 bool Soft_I2C_WriteByte(softI2C_t* i2c, uint8_t value);
 bool Soft_I2C_Start(softI2C_t* i2c, uint8_t addr);
+void Soft_I2C_Start_Internal(softI2C_t *i2c);
 void Soft_I2C_Stop(softI2C_t* i2c);
 uint8_t Soft_I2C_ReadByte(softI2C_t* i2c, bool nack);
 void Soft_I2C_ReadBytes(softI2C_t* i2c, uint8_t* buf, int numOfBytes);

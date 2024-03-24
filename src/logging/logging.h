@@ -30,7 +30,7 @@ void LOG_SetRawSocketCallback(int newFD);
 #define ADDLOGF_EXTRADEBUG(fmt, ...) addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE, fmt, ##__VA_ARGS__)
 
 
-extern int loglevel;
+extern int g_loglevel;
 extern char *loglevelnames[];
 
 extern unsigned int logfeatures;

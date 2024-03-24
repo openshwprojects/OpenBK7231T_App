@@ -45,6 +45,7 @@ commandResult_t CMD_ExecuteCommandArgs(const char* cmd, const char* args, int cm
 char* CMD_ExpandingStrdup(const char* in);
 commandResult_t CMD_CreateAliasHelper(const char *alias, const char *ocmd);
 const char *CMD_ExpandConstant(const char *s, const char *stop, float *out);
+byte CMD_ParseOrExpandHexByte(const char **p);
 
 enum EventCode {
 	CMD_EVENT_NONE,
@@ -204,6 +205,7 @@ void LED_SetTemperature(int tmpInteger, bool bApply);
 float LED_GetTemperature0to1Range();
 void LED_SetTemperature0to1Range(float f);
 void LED_SetDimmer(int iVal);
+void LED_SetDimmerForDisplayOnly(int iVal);
 commandResult_t LED_SetBaseColor(const void* context, const char* cmd, const char* args, int bAll);
 void LED_SetFinalCW(byte c, byte w);
 void LED_SetFinalRGB(byte r, byte g, byte b);
@@ -256,6 +258,7 @@ const char* CMD_GetResultString(commandResult_t r);
 void SVM_RunThreads(int deltaMS);
 void CMD_InitScripting();
 byte* LFS_ReadFile(const char* fname);
+int LFS_WriteFile(const char *fname, const byte *data, int len, bool bAppend);
 
 commandResult_t CMD_ClearAllHandlers(const void* context, const char* cmd, const char* args, int cmdFlags);
 commandResult_t RepeatingEvents_Cmd_ClearRepeatingEvents(const void* context, const char* cmd, const char* args, int cmdFlags);

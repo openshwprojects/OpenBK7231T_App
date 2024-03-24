@@ -14,7 +14,7 @@ env:
 jobs:
   refs:
     name: Prepare CI Environment
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     outputs:
       sha_short: ${{ steps.refs.outputs.sha_short }}
       short_ref: ${{ steps.refs.outputs.short_ref }}
@@ -61,11 +61,11 @@ jobs:
   build:
     name: Build
     needs: refs
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
-        platform: [OpenBK7231T, OpenBK7231N, OpenXR809, OpenBL602, OpenW800, OpenW600]
+        platform: [OpenBK7231T, OpenBK7231N, OpenXR809, OpenBL602, OpenW800, OpenW600, OpenLN882H]
     steps:
       - name: Source checkout
         uses: actions/checkout@v2
@@ -79,7 +79,7 @@ jobs:
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get update
-          sudo apt-get -y install libc6-i386 make
+          sudo apt-get -y install libc6-i386 make cmake gcc-arm-none-eabi
           pip3 install pycryptodomex
           pip3 install configobj
           pip3 install toml
@@ -110,7 +110,7 @@ jobs:
 
   release:
     name: Semantic Release Images and Artifacts
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: [ refs, build ]
     if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
     steps:

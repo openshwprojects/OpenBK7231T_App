@@ -206,31 +206,9 @@ SpoofIrReceiver IrReceiver;
 
 #include "../libraries/Arduino-IRremote-mod/src/IRProtocol.h"
 
-// this is to replicate places where the library uses the static class.
-// will need to update to call our dynamic class
-class SpoofIrSender {
-    public:
-        void enableIROut(uint_fast8_t freq){
 
-        }
-        void mark(unsigned int  aMarkMicros){
 
-        }
-        void space(unsigned int  aMarkMicros){
 
-        }
-        void sendPulseDistanceWidthFromArray(uint_fast8_t aFrequencyKHz, unsigned int aHeaderMarkMicros,
-            unsigned int aHeaderSpaceMicros, unsigned int aOneMarkMicros, unsigned int aOneSpaceMicros, unsigned int aZeroMarkMicros,
-            unsigned int aZeroSpaceMicros, uint32_t *aDecodedRawDataArray, unsigned int aNumberOfBits, bool aMSBFirst,
-            bool aSendStopBit, unsigned int aRepeatPeriodMillis, int_fast8_t aNumberOfRepeats) {
-
-        }
-        void sendPulseDistanceWidthFromArray(PulsePauseWidthProtocolConstants *aProtocolConstants, uint32_t *aDecodedRawDataArray,
-            unsigned int aNumberOfBits, int_fast8_t aNumberOfRepeats) {
-            
-        }
-
-};
 
 SpoofIrSender IrSender;
 
@@ -245,7 +223,7 @@ extern "C" int PIN_GetPWMIndexForPinIndex(int pin) ;
 // we simply note the numbers into a rolling buffer, assume the first is a mark()
 // and then every 50us service the rolling buffer, changing the PWM from 0 duty to 50% duty
 // appropriately.
-#define SEND_MAXBITS 128
+
 class myIRsend : public IRsend {
     public:
         myIRsend(uint_fast8_t aSendPin){
@@ -341,6 +319,42 @@ class myIRsend : public IRsend {
 };
 
 
+// this is to replicate places where the library uses the static class.
+// will need to update to call our dynamic class
+void SpoofIrSender::enableIROut(uint_fast8_t freq){
+	if ( Parent != NULL){
+
+	}
+}
+void SpoofIrSender::mark(unsigned int  aMarkMicros){
+	if ( Parent != NULL){
+
+	}
+}
+void SpoofIrSender::space(unsigned int  aMarkMicros){
+	if ( Parent != NULL){
+
+	}
+}
+void SpoofIrSender::sendPulseDistanceWidthFromArray(uint_fast8_t aFrequencyKHz, unsigned int aHeaderMarkMicros,
+    unsigned int aHeaderSpaceMicros, unsigned int aOneMarkMicros, unsigned int aOneSpaceMicros, unsigned int aZeroMarkMicros,
+    unsigned int aZeroSpaceMicros, uint32_t *aDecodedRawDataArray, unsigned int aNumberOfBits, bool aMSBFirst,
+    bool aSendStopBit, unsigned int aRepeatPeriodMillis, int_fast8_t aNumberOfRepeats) {
+	if ( Parent != NULL){
+		Parent->sendPulseDistanceWidthFromArray(aFrequencyKHz, aHeaderMarkMicros, aHeaderSpaceMicros, aOneMarkMicros, aOneSpaceMicros, aZeroMarkMicros,  aZeroSpaceMicros, aDecodedRawDataArray, aNumberOfBits,  aMSBFirst,     aSendStopBit, aRepeatPeriodMillis, aNumberOfRepeats);
+	}
+}
+void SpoofIrSender::sendPulseDistanceWidthFromArray(PulsePauseWidthProtocolConstants *aProtocolConstants, uint32_t *aDecodedRawDataArray,
+    unsigned int aNumberOfBits, int_fast8_t aNumberOfRepeats) {
+	if ( Parent != NULL){
+		Parent->sendPulseDistanceWidthFromArray(aProtocolConstants,aDecodedRawDataArray,aNumberOfBits,aNumberOfRepeats);
+	}
+}
+void SpoofIrSender::SetParent(myIRsend *IRParent)
+{
+	this->Parent=IRParent;
+}
+
 // our send/receive instances
 myIRsend *pIRsend = NULL;
 IRrecv *ourReceiver = NULL;
@@ -421,9 +435,9 @@ extern "C" void DRV_IR_ISR(UINT8 t){
 extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, const char *args_in, int cmdFlags) {
     int numProtocols = sizeof(ProtocolNames)/sizeof(*ProtocolNames);
     if (!args_in) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-    char args[20];
-    strncpy(args, args_in, 19);
-    args[19] = 0;
+    char args[128];
+    strncpy(args, args_in, sizeof(args)-1);
+    args[sizeof(args)-1] = 0;
 
     // split arg at hyphen;
     char *p = args;
@@ -437,7 +451,7 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
     }
 
     int ournamelen = (p - args);
-    int protocol = 0;
+    int protocol = -1;
     for (int i = 0; i < numProtocols; i++){
         const char *name = ProtocolNames[i];
         int namelen = strlen(name);
@@ -446,6 +460,10 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
             break;
         }
     }
+	if (protocol == -1) {
+		ADDLOG_ERROR(LOG_FEATURE_IR, "Unknown IR protocol in send!");
+		protocol = 0;
+	}
 
     p++;
     int addr = strtol(p, &p, 16);
@@ -464,18 +482,33 @@ extern "C" commandResult_t IR_Send_Cmd(const void *context, const char *cmd, con
         p++;
         repeats = strtol(p, &p, 16);
     }
+	int bits;
+	if (protocol == SONY) {
+		bits = 12;
+	}
+	else {
+		bits = 0;
+	}
+	if ((*p == '-') || (*p == ' ')) {
+		p++;
+		bits = strtol(p, &p, 16);
+	}
+
 
     data.protocol = (decode_type_t)protocol;
     data.address = addr;
     data.command = command;
     data.flags = 0;
+	data.numberOfBits = bits;
 
     if (pIRsend){
+		IrSender.SetParent(pIRsend);
         pIRsend->write(&data, (int_fast8_t) repeats);
         // add a 100ms delay after command
         // NOTE: this is NOT a delay here.  it adds 100ms 'space' in the TX queue
         pIRsend->delay(100);
-        ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send %s protocol %d addr 0x%X cmd 0x%X repeats %d", args, (int)data.protocol, (int)data.address, (int)data.command, (int)repeats);
+        ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR send %s protocol %d addr 0x%X cmd 0x%X repeats %d bits override %i", 
+			args, (int)data.protocol, (int)data.address, (int)data.command, (int)repeats, (int)bits);
         return CMD_RES_OK;
     } else {
         ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR NOT send (no IRsend running) %s protocol %d addr 0x%X cmd 0x%X repeats %d", args, (int)data.protocol, (int)data.address, (int)data.command, (int)repeats);
@@ -626,8 +659,8 @@ extern "C" void DRV_IR_Init(){
             pIRsend = pIRsendTemp;
             //bk_pwm_stop((bk_pwm_t)pIRsend->pwmIndex);
 
-	//cmddetail:{"name":"IRSend","args":"[PROT-ADDR-CMD-REP]",
-	//cmddetail:"descr":"Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0",
+	//cmddetail:{"name":"IRSend","args":"[PROT-ADDR-CMD-REP-BITS]",
+	//cmddetail:"descr":"Sends IR commands in the form PROT-ADDR-CMD-REP-BITS, e.g. NEC-1-1A-0-0, note that -BITS is optional, it can be 0 for default one, so you can just do NEC-1-1A-0",
 	//cmddetail:"fn":"IR_Send_Cmd","file":"driver/drv_ir.cpp","requires":"",
 	//cmddetail:"examples":""}
             CMD_RegisterCommand("IRSend",IR_Send_Cmd, NULL);
@@ -759,7 +792,9 @@ extern "C" void DRV_IR_RunFrame(){
                 if (ourReceiver->decodedIRData.protocol == UNKNOWN){
                     snprintf(out, sizeof(out), "IR_%s 0x%lX %d", name, (unsigned long)ourReceiver->decodedIRData.decodedRawData, repeat);
                 } else {
-                    snprintf(out, sizeof(out), "IR_%s 0x%X 0x%X %d", name, ourReceiver->decodedIRData.address, ourReceiver->decodedIRData.command, repeat);
+                    snprintf(out, sizeof(out), "IR_%s 0x%X 0x%X %d (%i bits)", 
+						name, ourReceiver->decodedIRData.address, ourReceiver->decodedIRData.command,
+						repeat, ourReceiver->decodedIRData.numberOfBits);
                 }
 				// if user wants us to publish every received IR data, do it now
 				if(CFG_HasFlag(OBK_FLAG_IR_PUBLISH_RECEIVED)) {
