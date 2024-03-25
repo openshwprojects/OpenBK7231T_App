@@ -515,9 +515,10 @@ void BL_ProcessUpdate(float voltage, float current, float power,
         energy = xPassedTicks * power / (3600000.0f / portTICK_PERIOD_MS);
     } else
         energy = energyWh;
-
-    if (energy < 0)
-        energy = 0.0;
+	
+	// Comment out lines below to allow measurement of reverse currents.
+    /*if (energy < 0)
+        energy = 0.0;*/
 
     sensors[OBK_CONSUMPTION_TOTAL].lastReading += (double)energy;
     energyCounterStamp = xTaskGetTickCount();
