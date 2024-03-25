@@ -308,6 +308,12 @@ static commandResult_t CMD_StartupCommand(const void* context, const char* cmd, 
 
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_TimeSize(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	ADDLOG_INFO(LOG_FEATURE_CMD, "sizeof(time_t) = %i, sizeof(int) = %i",sizeof(time_t), sizeof(int));
+
+
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_Choice(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int indexToUse;
 	const char *cmdToUse;
@@ -762,7 +768,9 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Choice", CMD_Choice, NULL);
 	//CMD_RegisterCommand("FindPattern", CMD_FindPattern, NULL);
-	
+
+	CMD_RegisterCommand("TimeSize", CMD_TimeSize, NULL);
+
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	CMD_InitScripting();
 #endif
