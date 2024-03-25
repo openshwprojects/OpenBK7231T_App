@@ -20,6 +20,7 @@ int cmd_uartInitIndex = 0;
 #include <wifi_mgmr_ext.h>
 #elif PLATFORM_LN882H
 #include <wifi.h>
+#include <power_mgmt/ln_pm.h>
 #endif
 
 #define HASH_SIZE 128
