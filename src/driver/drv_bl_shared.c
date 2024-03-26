@@ -223,7 +223,7 @@ commandResult_t BL09XX_ResetEnergyCounter(const void *context, const char *cmd, 
         sensors[OBK_CONSUMPTION_TOTAL].lastReading = value;
         energyCounterStamp = xTaskGetTickCount();
     }
-    ConsumptionResetTime = (time_t)NTP_GetCurrentTime();
+    ConsumptionResetTime = (time_t)GetCurrentTime();
 #if WINDOWS
 #elif PLATFORM_BL602
 #elif PLATFORM_W600 || PLATFORM_W800
@@ -524,8 +524,8 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
 	sensors[OBK_CONSUMPTION_TODAY].lastReading  += energy;
 
-    if (NTP_IsTimeSynced()) {
-        ntpTime = (time_t)NTP_GetCurrentTime();
+    if (IsTimeSynced()) {
+        ntpTime = (time_t)GetCurrentTime();
         ltm = gmtime(&ntpTime);
         if (ConsumptionResetTime == 0)
             ConsumptionResetTime = (time_t)ntpTime;
@@ -613,7 +613,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
                     cJSON_AddItemToObject(root, "consumption_samples", stats);
                 }
 
-                if(NTP_IsTimeSynced() == true)
+                if(IsTimeSynced() == true)
                 {
                     stats = cJSON_CreateArray();
                     for(i = OBK_CONSUMPTION__DAILY_FIRST; i <= OBK_CONSUMPTION__DAILY_LAST; i++)

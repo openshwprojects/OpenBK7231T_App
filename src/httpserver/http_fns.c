@@ -151,6 +151,31 @@ int http_fn_testmsg(http_request_t* request) {
 
 }
 
+// poor mans NTP
+int http_fn_pmntp(http_request_t* request) {
+	char tmpA[128];
+	uint32_t actepoch;
+	// javascripts "getTime()" should return time since 01.01.1970 (UTC)
+	// we want local time, so we need to add the UTC offset (if there is one)
+	if (http_getArg(request->url, "EPOCH", tmpA, sizeof(tmpA))) {
+		actepoch = (uint32_t)strtoul(tmpA,0,10);
+		g_epochOnStartup = actepoch - g_secondsElapsed ;
+//addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"PoormMansNTP - set g_epochOnStartup to %u -- got actepoch=%u secondsElapsed=%u!! \n",g_epochOnStartup,actepoch, g_secondsElapsed);	
+	}
+	if (http_getArg(request->url, "OFFSET", tmpA, sizeof(tmpA))) {
+	// if actual time is during DST period, javascript will return 
+	// an offset including the one additional hour of DST  
+	// if this is the case, set g_DST_offset to 3600 and reduce the 
+	// offset to the offset from timesone (sbtract 3600 seconds)
+		g_UTCoffset = testNsetDST(actepoch)==1 ? atoi(tmpA)-3600 : atoi(tmpA);
+//addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"PoormMansNTP - set g_UTCoffset to %u -- got offset=%i -- next switch at %u!! \n",g_UTCoffset,atoi(tmpA),g_next_dst_change);	
+	}
+	poststr(request, "HTTP/1.1 302 OK\nLocation: /index\nConnection: close\n\n");
+	poststr(request, NULL);
+	return 0;
+}
+
+
 // bit mask telling which channels are hidden from HTTP
 // If given bit is set, then given channel is hidden
 extern int g_hiddenChannels;
@@ -903,6 +928,7 @@ typedef enum {
 		}
 		poststr(request, "<form action=\"/app\" target=\"_blank\"><input type=\"submit\" value=\"Launch Web Application\"></form> ");
 		poststr(request, "<form action=\"about\"><input type=\"submit\" value=\"About\"/></form>");
+		poststr(request, "<input type=\"submit\" value=\"Poor mans NTP\" onclick=\"location.href = PoorMansNTP() ;\" > ");
 
 		poststr(request, htmlFooterRefreshLink);
 		http_html_end(request);

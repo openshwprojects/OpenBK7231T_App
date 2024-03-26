@@ -487,6 +487,29 @@ extern int g_secondsElapsed;
 extern int g_rebootReason;
 extern float g_wifi_temperature;
 
+// some variables and functions for handling device time even without NTP driver present
+// vars will be initialised in new_common.c 
+// "eoch" on startup of device; If we add g_secondsElapsed we get the actual time  
+extern uint32_t g_epochOnStartup ;
+// UTC offset
+extern int g_UTCoffset;
+extern int g_DST_offset;
+extern uint32_t g_next_dst_change;
+
+// to use ticks for time keeping
+// since usual ticktimer (uint32_t) rolls over after approx 50 days,
+// we need to count this rollovers
+extern TickType_t lastTick;
+extern uint8_t timer_rollover; // I don't expect uptime > 35 years ...
+
+uint32_t getSecondsElapsed();
+
+uint32_t GetCurrentTime(); 			// might replace for NTP_GetCurrentTime() to return time regardless of NTP present/running
+uint32_t GetCurrentTimeNew(); 			// might replace for NTP_GetCurrentTime() to return time regardless of NTP present/running
+uint32_t GetCurrentTimeWithoutOffset(); 	// ... same forNTP_GetCurrentTimeWithoutOffset()...
+bool IsTimeSynced(); 				// ... and for NTP_IsTimeSynced()
+int GetTimesZoneOfsSeconds();			// ... and for NTP_GetTimesZoneOfsSeconds()
+
 typedef int(*jsonCb_t)(void *userData, const char *fmt, ...);
 int JSON_ProcessCommandReply(const char *cmd, const char *args, void *request, jsonCb_t printer, int flags);
 void ScheduleDriverStart(const char *name, int delay);

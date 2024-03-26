@@ -320,9 +320,13 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 	}
 	printer(request, "{");
 
-	time_t localTime = (time_t)NTP_GetCurrentTime();
+	time_t localTime = (time_t)GetCurrentTime();
 	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", gmtime(&localTime));
-	JSON_PrintKeyValue_String(request, printer, "Time", buff, false);
+	JSON_PrintKeyValue_String(request, printer, "Time", buff, true);
+	localTime = (time_t)GetCurrentTimeNew();
+	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", gmtime(&localTime));
+	JSON_PrintKeyValue_String(request, printer, "TimeNEW", buff, false);
+
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
 
@@ -348,14 +352,9 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 //XR809 does not support drivers but its build script compiles many drivers including ntp.
 
 #else
-#ifndef ENABLE_NTP
-unsigned int NTP_GetCurrentTime() {
-	return 0;
-}
-unsigned int NTP_GetCurrentTimeWithoutOffset() {
-	return 0;
-}
-#endif
+// replaced "NTP_GetCurrentTime()" and "NTP_GetCurrentTimeWithoutOffset()" 
+// with "GetCurrentTime()" and "GetCurrentTimeWithoutOffset" 
+// (defined in new_commen), so no more need for a workaround here...
 #endif
 
 // Topic:  tele/tasmota_48E7F3/STATE
@@ -396,7 +395,7 @@ void format_time(int total_seconds, char* output, int outLen) {
 
 static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bAppendHeader) {
 	char buff[20];
-	time_t localTime = (time_t)NTP_GetCurrentTime();
+	time_t localTime = (time_t)GetCurrentTime();
 
 	if (bAppendHeader) {
 		printer(request, "\"StatusSTS\":");
@@ -437,13 +436,16 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bA
 static int http_tasmota_json_status_TIM(void* request, jsonCb_t printer) {
 	char buff[20];
 
-	time_t localTime = (time_t)NTP_GetCurrentTime();
-	time_t localUTC = (time_t)NTP_GetCurrentTimeWithoutOffset();
+	time_t localTime = (time_t)GetCurrentTime();
+	time_t localUTC = (time_t)GetCurrentTimeWithoutOffset();
 	printer(request, "\"StatusTIM\":{");
 	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", gmtime(&localUTC));
 	JSON_PrintKeyValue_String(request, printer, "UTC", buff, true);
 	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", gmtime(&localTime));
 	JSON_PrintKeyValue_String(request, printer, "Local", buff, true);
+	localTime = (time_t)GetCurrentTimeNew();
+	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", gmtime(&localTime));
+	JSON_PrintKeyValue_String(request, printer, "LocalNEW", buff, true);	
 	JSON_PrintKeyValue_String(request, printer, "StartDST", "2022-03-27T02:00:00", true);
 	JSON_PrintKeyValue_String(request, printer, "EndDST", "2022-10-30T03:00:00", true);
 	JSON_PrintKeyValue_String(request, printer, "Timezone", "+01:00", true);
@@ -653,8 +655,8 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	JSON_PrintKeyValue_String(request, printer, "RestartReason", "HardwareWatchdog", true);
 	JSON_PrintKeyValue_Int(request, printer, "Uptime", g_secondsElapsed, true);
 	struct tm* ltm;
-	int ntpTime = NTP_GetCurrentTime() - g_secondsElapsed;
-	ltm = gmtime((time_t*)&ntpTime);
+	time_t ntpTime = (time_t)(GetCurrentTimeWithoutOffset() - g_secondsElapsed);
+	ltm = gmtime(&ntpTime);
 
 	if (ltm != 0) {
 		printer(request, "\"StartupUTC\":\"%04d-%02d-%02dT%02d:%02d:%02d\",", ltm->tm_year + 1900, ltm->tm_mon + 1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
