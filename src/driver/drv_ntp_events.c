@@ -16,6 +16,8 @@
 #define LOG_FEATURE LOG_FEATURE_NTP
 
 unsigned int ntp_eventsTime = 0;
+// to use time.h functions, we can't rely on time_t being unsigned int, so we need conversion to time_t in some cases
+static time_t tmptime;
 
 typedef struct ntpEvent_s {
 	byte hour;
@@ -171,7 +173,9 @@ void NTP_RunEventsForSecond(unsigned int runTime) {
 	struct tm *ltm;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime((time_t*)&runTime);
+	// make sure to call gmtime with proper pointer to a time_t value
+	tmptime = (time_t)runTime;
+	ltm = gmtime(&tmptime);
 	
 	if (ltm == 0) {
 		return;
@@ -312,7 +316,9 @@ commandResult_t CMD_NTP_AddClockEvent(const void *context, const char *cmd, cons
 #if ENABLE_NTP_SUNRISE_SUNSET
 	uint8_t hour_b, minute_b;
 	int sunflags = 0;
-	struct tm *ltm = gmtime((time_t*) &ntp_eventsTime);
+	// make sure to call gmtime with proper pointer to a time_t value
+	tmptime = (time_t)ntp_eventsTime;
+	struct tm *ltm = gmtime(&tmptime);
 #endif
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALTERNATE_EXPAND_AT_START);
