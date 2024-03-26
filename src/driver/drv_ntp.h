@@ -28,7 +28,7 @@ int NTP_GetEventTime(int id);
 int NTP_RemoveClockEvent(int id);
 int NTP_ClearEvents();
 
-extern unsigned int g_ntpTime;
+extern time_t g_ntpTime;
 extern struct SUN_DATA {  /* sunrise / sunset globals */
 	int latitude;  /* latitude * 1000000 */
 	int longitude;  /* longitude * 1000000 */
