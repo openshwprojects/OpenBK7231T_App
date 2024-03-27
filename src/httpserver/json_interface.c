@@ -653,14 +653,15 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	JSON_PrintKeyValue_String(request, printer, "RestartReason", "HardwareWatchdog", true);
 	JSON_PrintKeyValue_Int(request, printer, "Uptime", g_secondsElapsed, true);
 	struct tm* ltm;
-	int ntpTime = NTP_GetCurrentTime() - g_secondsElapsed;
-	ltm = gmtime((time_t*)&ntpTime);
-
+	time_t ntpTime = 0; // if no NTP_time set, we will not change this value, but just stick to 0 and hence "fake" start of epoch 1970-01-01T00:00:00
+	if (NTP_GetCurrentTimeWithoutOffset() > g_secondsElapsed) {	// would be negative else, leading to unwanted results when converted to (unsigned) time_t 
+		ntpTime = (time_t)NTP_GetCurrentTimeWithoutOffset() - (time_t)g_secondsElapsed;
+	}
+	ltm = gmtime(&ntpTime);
 	if (ltm != 0) {
 		printer(request, "\"StartupUTC\":\"%04d-%02d-%02dT%02d:%02d:%02d\",", ltm->tm_year + 1900, ltm->tm_mon + 1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
 	}
 	else {
-
 	}
 	JSON_PrintKeyValue_Int(request, printer, "Sleep", 50, true);
 	JSON_PrintKeyValue_Int(request, printer, "CfgHolder", 4617, true);
