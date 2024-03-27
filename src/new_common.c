@@ -404,8 +404,7 @@ uint32_t GetCurrentTime(){ 			// might replace for NTP_GetCurrentTime() to retur
 uint32_t GetCurrentTimeNew(){ 			// might replace for NTP_GetCurrentTime() to return time regardless of NTP present/running
 	// if g_epochOnStartup is set, return it - we migth (mis-)use a very small value as status,
 	// so check for > 10. A hack, but as we will not go back in time ... 
-//	return g_epochOnStartup > 10 ? g_epochOnStartup + (uint32_t)(OS_TicksToMSecs(OS_GetTicks())/1000) + g_UTCoffset + g_DSToffset : 0;
-	return g_epochOnStartup > 10 ? g_epochOnStartup + OS_GetTime() + g_UTCoffset + g_DSToffset : 0;
+	return g_epochOnStartup > 10 ? g_epochOnStartup + g_secondsElapsed + g_UTCoffset + g_DSToffset : 0;
 };
 
 uint32_t GetCurrentTimeWithoutOffset(){ 	// ... same forNTP_GetCurrentTimeWithoutOffset()...
