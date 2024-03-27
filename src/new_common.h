@@ -309,7 +309,9 @@ typedef void *beken_thread_arg_t;
 typedef void *beken_thread_t;
 typedef void (*beken_thread_function_t)( beken_thread_arg_t arg );
 typedef int OSStatus;
-
+#ifdef PLATFORM_W600
+	typedef portTickType TickType_t;		// W600/W800: xTaskGetTickCount() is of type "portTickType", all others "TickType_t" , W600 has no definition for TickType_t
+#endif
 #define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
 #define BEKEN_APPLICATION_PRIORITY         (7)
 
@@ -495,6 +497,7 @@ extern uint32_t g_epochOnStartup ;
 extern int g_UTCoffset;
 extern int g_DST_offset;
 extern uint32_t g_next_dst_change;
+int testNsetDST(uint32_t val);
 
 // to use ticks for time keeping
 // since usual ticktimer (uint32_t) rolls over after approx 50 days,

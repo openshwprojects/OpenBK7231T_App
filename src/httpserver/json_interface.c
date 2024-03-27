@@ -322,11 +322,7 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 
 	time_t localTime = (time_t)GetCurrentTime();
 	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", gmtime(&localTime));
-	JSON_PrintKeyValue_String(request, printer, "Time", buff, true);
-	localTime = (time_t)GetCurrentTimeNew();
-	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", gmtime(&localTime));
-	JSON_PrintKeyValue_String(request, printer, "TimeNEW", buff, false);
-
+	JSON_PrintKeyValue_String(request, printer, "Time", buff, false);
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
 
@@ -354,7 +350,7 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 #else
 // replaced "NTP_GetCurrentTime()" and "NTP_GetCurrentTimeWithoutOffset()" 
 // with "GetCurrentTime()" and "GetCurrentTimeWithoutOffset" 
-// (defined in new_commen), so no more need for a workaround here...
+// (with this version now defined in new_common), so no more need for a workaround here...
 #endif
 
 // Topic:  tele/tasmota_48E7F3/STATE
@@ -443,9 +439,6 @@ static int http_tasmota_json_status_TIM(void* request, jsonCb_t printer) {
 	JSON_PrintKeyValue_String(request, printer, "UTC", buff, true);
 	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", gmtime(&localTime));
 	JSON_PrintKeyValue_String(request, printer, "Local", buff, true);
-	localTime = (time_t)GetCurrentTimeNew();
-	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", gmtime(&localTime));
-	JSON_PrintKeyValue_String(request, printer, "LocalNEW", buff, true);	
 	JSON_PrintKeyValue_String(request, printer, "StartDST", "2022-03-27T02:00:00", true);
 	JSON_PrintKeyValue_String(request, printer, "EndDST", "2022-10-30T03:00:00", true);
 	JSON_PrintKeyValue_String(request, printer, "Timezone", "+01:00", true);

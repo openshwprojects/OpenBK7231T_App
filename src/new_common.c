@@ -448,27 +448,6 @@ int GetTimesZoneOfsSeconds()			// ... and for NTP_GetTimesZoneOfsSeconds()
 
 }
 
-// check if date is in DST or not
-// test against (GMT)epoch dates of start and end in EU
-// from 2024 up to 2030
-bool is_EU_dst(uint32_t val){
-	// 2024: 2024-03-31 02:0:00 +0000 to 2024-10-26 03:0:00 +0000 
-	if ( val >= 1711850400 && val <= 1729911600) return 1 ;
-	// 2025: 2025-03-30 02:0:00 +0000 to 2025-10-26 03:0:00 +0000 
-	if ( val >= 1743300000 && val <= 1761447600) return 1 ;
-	// 2026: 2026-03-29 02:0:00 +0000 to 2026-10-25 03:0:00 +0000 
-	if ( val >= 1774749600 && val <= 1792897200) return 1 ;
-	// 2027: 2027-03-28 02:0:00 +0000 to 2027-10-31 03:0:00 +0000 
-	if ( val >= 1806199200 && val <= 1824951600) return 1 ;
-	// 2028: 2028-03-26 02:0:00 +0000 to 2028-10-29 03:0:00 +0000 
-	if ( val >= 1837648800 && val <= 1856401200) return 1 ;
-	// 2029: 2029-03-25 02:0:00 +0000 to 2029-10-28 03:0:00 +0000 
-	if ( val >= 1869098400 && val <= 1887850800) return 1 ;
-	// 2030: 2030-03-31 02:0:00 +0000 to 2030-10-27 03:0:00 +0000 
-	if ( val >= 1901152800 && val <= 1919300400) return 1 ;
-};
-
-
 // table of epoch timestamps, when DST events take place (DST starts or ends)
 // there are some constraints to the table to work:
 // - the timestamps in the table must be in desending order to work properly
@@ -543,20 +522,19 @@ uint32_t dst_switch_times_NYC[]={
 
 // return 1 if checked time is during DST period 
 // set g_next_dst_change to next DST event
-
-
-char tempmsg[200]="";
-
 int testNsetDST(uint32_t val)
 {
 	// no information about times after last or before first date, so we return 0 = "no DST"
+	// in cas of "before the earliest entry" we also set the next time of switch event to the lowest entry
+	// if time is above "latest entry", we set it to MAX, so we don't check any more
 	int arlength= sizeof(dst_switch_times) / sizeof(dst_switch_times[0]);
-//		printf("Array hat %i Elemente: [0]=%u - [%i]=%u\n",arlength,dst_switch_times[0],arlength-1,dst_switch_times[arlength-1]);
-	if ( val >= dst_switch_times[0] )  return 10;
+	if ( val >= dst_switch_times[0] ){
+		g_next_dst_change = -1;		// g_next_dst_change is unsigned type, so "-1" should be MAX Value
+		return 0;
+	}
 	if ( val <= dst_switch_times[arlength-1] ) { 
 		g_next_dst_change = dst_switch_times[arlength-1]; 
-//		ADDLOGF_INFO("Tested time (%u) is before my fist entry (%u), which will also be the next switch time. So let's assume its normal time.\n",val,g_next_dst_change);
-		return 11;
+		return 0;
 	}
 	for (int i=1; i < arlength; i++) {
 //		printf("prüfe %u gegen %u\n",val,dst_switch_times[i]);

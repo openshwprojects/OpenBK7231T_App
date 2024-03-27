@@ -154,7 +154,7 @@ int http_fn_testmsg(http_request_t* request) {
 // poor mans NTP
 int http_fn_pmntp(http_request_t* request) {
 	char tmpA[128];
-	uint32_t actepoch;
+	uint32_t actepoch=0;
 	// javascripts "getTime()" should return time since 01.01.1970 (UTC)
 	// we want local time, so we need to add the UTC offset (if there is one)
 	if (http_getArg(request->url, "EPOCH", tmpA, sizeof(tmpA))) {
@@ -162,7 +162,7 @@ int http_fn_pmntp(http_request_t* request) {
 		g_epochOnStartup = actepoch - g_secondsElapsed ;
 //addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"PoormMansNTP - set g_epochOnStartup to %u -- got actepoch=%u secondsElapsed=%u!! \n",g_epochOnStartup,actepoch, g_secondsElapsed);	
 	}
-	if (http_getArg(request->url, "OFFSET", tmpA, sizeof(tmpA))) {
+	if (http_getArg(request->url, "OFFSET", tmpA, sizeof(tmpA)) && actepoch != 0 ) {
 	// if actual time is during DST period, javascript will return 
 	// an offset including the one additional hour of DST  
 	// if this is the case, set g_DST_offset to 3600 and reduce the 
