@@ -79,9 +79,11 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 #elif defined(PLATFORM_LN882H)
 	if (bOn) {
 		sysparam_sta_powersave_update(WIFI_MAX_POWERSAVE);
+		wifi_sta_set_powersave(WIFI_MAX_POWERSAVE);
 	}
 	else {
 		sysparam_sta_powersave_update(WIFI_NO_POWERSAVE);
+		wifi_sta_set_powersave(WIFI_NO_POWERSAVE);
 	}
 #else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave is not implemented on this platform");
@@ -302,6 +304,12 @@ static commandResult_t CMD_StartupCommand(const void* context, const char* cmd, 
 	else {
 		CFG_SetShortStartupCommand(cmdToSet);
 	}
+
+
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_TimeSize(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	ADDLOG_INFO(LOG_FEATURE_CMD, "sizeof(time_t) = %i, sizeof(int) = %i",sizeof(time_t), sizeof(int));
 
 
 	return CMD_RES_OK;
@@ -760,7 +768,9 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Choice", CMD_Choice, NULL);
 	//CMD_RegisterCommand("FindPattern", CMD_FindPattern, NULL);
-	
+
+	CMD_RegisterCommand("TimeSize", CMD_TimeSize, NULL);
+
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN)
 	CMD_InitScripting();
 #endif

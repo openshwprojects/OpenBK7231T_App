@@ -1304,6 +1304,7 @@ bool CHANNEL_IsInUse(int ch);
 void Channel_SaveInFlashIfNeeded(int ch);
 int CHANNEL_FindMaxValueForChannel(int ch);
 // cmd_channels.c
+bool CHANNEL_HasLabel(int ch);
 const char* CHANNEL_GetLabel(int ch);
 bool CHANNEL_ShouldAddTogglePrefixToUI(int ch);
 bool CHANNEL_HasNeverPublishFlag(int ch);
