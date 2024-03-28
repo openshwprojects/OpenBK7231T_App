@@ -1,8 +1,6 @@
 #include "drv_bl0942.h"
-
 #include <math.h>
 #include <stdint.h>
-
 #include "../logging/logging.h"
 #include "../new_pins.h"
 #include "../cmnds/cmd_public.h"
@@ -10,9 +8,7 @@
 #include "drv_pwrCal.h"
 #include "drv_spi.h"
 #include "drv_uart.h"
-
 static unsigned short bl0942_baudRate = 4800;
-
 #define BL0942_UART_RECEIVE_BUFFER_SIZE 256
 #define BL0942_UART_ADDR 0 // 0 - 3
 #define BL0942_UART_CMD_READ(addr) (0x58 | addr)
@@ -20,74 +16,68 @@ static unsigned short bl0942_baudRate = 4800;
 #define BL0942_UART_REG_PACKET 0xAA
 #define BL0942_UART_PACKET_HEAD 0x55
 #define BL0942_UART_PACKET_LEN 23
-
 // Datasheet says 900 kHz is supported, but it produced ~50% check sum errors  
 #define BL0942_SPI_BAUD_RATE 800000 // 900000
 #define BL0942_SPI_CMD_READ 0x58
 #define BL0942_SPI_CMD_WRITE 0xA8
-
 // Electric parameter register (read only)
 #define BL0942_REG_I_RMS 0x03
 #define BL0942_REG_V_RMS 0x04
 #define BL0942_REG_WATT 0x06
-#define BL0942_REG_CF_CNT 0x7
+#define BL0942_REG_CF_CNT 0x07
 #define BL0942_REG_FREQ 0x08
 #define BL0942_REG_USR_WRPROT 0x1D
 #define BL0942_USR_WRPROT_DISABLE 0x55
-
 // User operation register (read and write)
+#define BL0942_REG_WA_CREEP 0x14	// Minimun power measurement register
 #define BL0942_REG_MODE 0x19
-#define BL0942_MODE_DEFAULT 0x87
+#define BL0942_REG_CF_CNT_CLR_SEL
+#define BL0942_MODE_DEFAULT 0xC7	// Default: 0x87 - Bit 6 = 1 - counter cleaned on every read to avoid possible overflow
 #define BL0942_MODE_RMS_UPDATE_SEL_800_MS (1 << 3)
-
+#define BL0942_STATUS 0x09		// Status register. Biy 0 indicates the direction of the last energy Pulse CF (0: active forward; 1: active reverse)
+#define DEFAULT_WA_CREEP_VAL 64		// Minimun power measurement value. Increase the value up to 255.
 #define DEFAULT_VOLTAGE_CAL 15188
 #define DEFAULT_CURRENT_CAL 251210
 #define DEFAULT_POWER_CAL 598
-
 #define CF_CNT_INVALID (1 << 31)
-
 typedef struct {
     uint32_t i_rms;
     uint32_t v_rms;
     int32_t watt;
     uint32_t cf_cnt;
     uint32_t freq;
+    uint32_t status;
 } bl0942_data_t;
-
 static uint32_t PrevCfCnt = CF_CNT_INVALID;
-
 static int32_t Int24ToInt32(int32_t val) {
     return (val & (1 << 23) ? val | (0xFF << 24) : val);
 }
-
 static void ScaleAndUpdate(bl0942_data_t *data) {
     float voltage, current, power;
     PwrCal_Scale(data->v_rms, data->i_rms, data->watt, &voltage, &current,
                  &power);
-
     float frequency = 2 * 500000.0f / data->freq;
 
     float energyWh = 0;
-    if (PrevCfCnt != CF_CNT_INVALID) {
-        int diff = (data->cf_cnt < PrevCfCnt
-                        ? data->cf_cnt + (0xFFFFFF - PrevCfCnt) + 1
-                        : data->cf_cnt - PrevCfCnt);
-        energyWh =
-            fabsf(PwrCal_ScalePowerOnly(diff)) * 1638.4f * 256.0f / 3600.0f;
-    }
-    PrevCfCnt = data->cf_cnt;
-
+	if((data->status) & 1<<(8)) // Bit 0 of status register indicates the direction of the last energy Pulse CF - 0: active forward; 1: active reverse
+		 // later on, these rules can be used to create two separate counters for Forward / Reverse Energy. Now, A single counter with absolute value is used.
+		 {
+		 // If Energy is negative
+		 energyWh = fabsf(PwrCal_ScalePowerOnly(data->cf_cnt)) * 1638.4f * 256.0f / -3600.0f;
+		 }
+	 else
+		 {
+		 // If energy is positive
+		 energyWh = fabsf(PwrCal_ScalePowerOnly(data->cf_cnt)) * 1638.4f * 256.0f / 3600.0f;
+	 	 }
     BL_ProcessUpdate(voltage, current, power, frequency, energyWh);
 }
-
 static int UART_TryToGetNextPacket(void) {
 	int cs;
 	int i;
 	int c_garbage_consumed = 0;
 	byte checksum;
-
 	cs = UART_GetDataSize();
-
 	if(cs < BL0942_UART_PACKET_LEN) {
 		return 0;
 	}
@@ -112,12 +102,10 @@ static int UART_TryToGetNextPacket(void) {
     if (UART_GetByte(0) != 0x55)
 		return 0;
     checksum = BL0942_UART_CMD_READ(BL0942_UART_ADDR);
-
     for(i = 0; i < BL0942_UART_PACKET_LEN-1; i++) {
         checksum += UART_GetByte(i);
 	}
 	checksum ^= 0xFF;
-
     if (checksum != UART_GetByte(BL0942_UART_PACKET_LEN - 1)) {
         ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
                     "Skipping packet with bad checksum %02X wanted %02X\n",
@@ -125,7 +113,6 @@ static int UART_TryToGetNextPacket(void) {
         UART_ConsumeBytes(BL0942_UART_PACKET_LEN);
 		return 1;
 	}
-
     bl0942_data_t data;
     data.i_rms =
         (UART_GetByte(3) << 16) | (UART_GetByte(2) << 8) | UART_GetByte(1);
@@ -136,12 +123,14 @@ static int UART_TryToGetNextPacket(void) {
     data.cf_cnt =
         (UART_GetByte(15) << 16) | (UART_GetByte(14) << 8) | UART_GetByte(13);
     data.freq = (UART_GetByte(17) << 8) | UART_GetByte(16);
+	// I added this to read the status register (and polarity of energy flow) but doesn't work. It needs to be troubleshooted.
+    data.status = 
+    	// Read Status register to get direction of energy flow (Reverse / Active)
+	(UART_GetByte(20) << 16) | (UART_GetByte(19) << 8) | UART_GetByte(18);
     ScaleAndUpdate(&data);
-
     UART_ConsumeBytes(BL0942_UART_PACKET_LEN);
 	return BL0942_UART_PACKET_LEN;
 }
-
 static void UART_WriteReg(uint8_t reg, uint32_t val) {
     uint8_t send[5];
     send[0] = BL0942_UART_CMD_WRITE(BL0942_UART_ADDR);
@@ -150,22 +139,18 @@ static void UART_WriteReg(uint8_t reg, uint32_t val) {
     send[3] = ((val >> 8) & 0xFF);
     send[4] = ((val >> 16) & 0xFF);
     uint8_t crc = 0;
-
     for (int i = 0; i < sizeof(send); i++) {
         UART_SendByte(send[i]);
         crc += send[i];
     }
-
     UART_SendByte(crc ^ 0xFF);
 }
-
 static int SPI_ReadReg(uint8_t reg, uint32_t *val) {
 	uint8_t send[2];
 	uint8_t recv[4];
 	send[0] = BL0942_SPI_CMD_READ;
 	send[1] = reg;
 	SPI_Transmit(send, sizeof(send), recv, sizeof(recv));
-
 	uint8_t checksum = send[0] + send[1] + recv[0] + recv[1] + recv[2];
 	checksum ^= 0xFF;
 	if (recv[3] != checksum) {
@@ -174,11 +159,9 @@ static int SPI_ReadReg(uint8_t reg, uint32_t *val) {
                     reg, recv[3], checksum);
 		return -1;
 	}
-
 	*val = (recv[0] << 16) | (recv[1] << 8) | recv[2];
 	return 0;
 }
-
 static int SPI_WriteReg(uint8_t reg, uint32_t val) {
     uint8_t send[6];
     send[0] = BL0942_SPI_CMD_WRITE;
@@ -186,13 +169,10 @@ static int SPI_WriteReg(uint8_t reg, uint32_t val) {
     send[2] = ((val >> 16) & 0xFF);
     send[3] = ((val >> 8) & 0xFF);
     send[4] = (val & 0xFF);
-
     // checksum
     send[5] = send[0] + send[1] + send[2] + send[3] + send[4];
     send[5] ^= 0xFF;
-
     SPI_WriteBytes(send, sizeof(send));
-
     uint32_t read;
     SPI_ReadReg(reg, &read);
     if (read == val ||
@@ -201,49 +181,38 @@ static int SPI_WriteReg(uint8_t reg, uint32_t val) {
          read == 0x1)) {
         return 0;
     }
-
     ADDLOG_ERROR(LOG_FEATURE_ENERGYMETER,
                  "Failed to write reg %02X val %02X: read %02X", reg, val,
                  read);
     return -1;
 }
-
 static void Init(void) {
     PrevCfCnt = CF_CNT_INVALID;
-
     BL_Shared_Init();
-
     PwrCal_Init(PWR_CAL_DIVIDE, DEFAULT_VOLTAGE_CAL, DEFAULT_CURRENT_CAL,
                 DEFAULT_POWER_CAL);
 }
-
 // THIS IS called by 'startDriver BL0942' command
 // You can set alternate baud with 'startDriver BL0942 9600' syntax
 void BL0942_UART_Init(void) {
 	Init();
-
 	bl0942_baudRate = Tokenizer_GetArgIntegerDefault(1, 4800);
-
 	UART_InitUART(bl0942_baudRate, 0);
 	UART_InitReceiveRingBuffer(BL0942_UART_RECEIVE_BUFFER_SIZE);
-
     UART_WriteReg(BL0942_REG_USR_WRPROT, BL0942_USR_WRPROT_DISABLE);
     UART_WriteReg(BL0942_REG_MODE,
                   BL0942_MODE_DEFAULT | BL0942_MODE_RMS_UPDATE_SEL_800_MS);
+	    // Set the minimun power measurement
+    UART_WriteReg(BL0942_REG_WA_CREEP,DEFAULT_WA_CREEP_VAL);
 }
-
 void BL0942_UART_RunEverySecond(void) {
     UART_TryToGetNextPacket();
-
     UART_InitUART(bl0942_baudRate, 0);
-
     UART_SendByte(BL0942_UART_CMD_READ(BL0942_UART_ADDR));
     UART_SendByte(BL0942_UART_REG_PACKET);
 }
-
 void BL0942_SPI_Init(void) {
 	Init();
-
 	SPI_DriverInit();
 	spi_config_t cfg;
 	cfg.role = SPI_ROLE_MASTER;
@@ -254,12 +223,10 @@ void BL0942_SPI_Init(void) {
 	cfg.baud_rate = BL0942_SPI_BAUD_RATE;
 	cfg.bit_order = SPI_MSB_FIRST;
 	SPI_Init(&cfg);
-
     SPI_WriteReg(BL0942_REG_USR_WRPROT, BL0942_USR_WRPROT_DISABLE);
     SPI_WriteReg(BL0942_REG_MODE,
                  BL0942_MODE_DEFAULT | BL0942_MODE_RMS_UPDATE_SEL_800_MS);
 }
-
 void BL0942_SPI_RunEverySecond(void) {
     bl0942_data_t data;
     SPI_ReadReg(BL0942_REG_I_RMS, &data.i_rms);
