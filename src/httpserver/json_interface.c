@@ -657,7 +657,6 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 		printer(request, "\"StartupUTC\":\"%04d-%02d-%02dT%02d:%02d:%02d\",", ltm->tm_year + 1900, ltm->tm_mon + 1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
 	}
 	else {
-
 	}
 	JSON_PrintKeyValue_Int(request, printer, "Sleep", 50, true);
 	JSON_PrintKeyValue_Int(request, printer, "CfgHolder", 4617, true);

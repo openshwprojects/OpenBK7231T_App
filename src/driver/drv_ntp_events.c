@@ -15,7 +15,7 @@
 #define M_PI   3.14159265358979323846264338327950288
 #define LOG_FEATURE LOG_FEATURE_NTP
 
-unsigned int ntp_eventsTime = 0;
+time_t  ntp_eventsTime = 0;
 
 typedef struct ntpEvent_s {
 	byte hour;
@@ -166,12 +166,12 @@ void NTP_CalculateSunset(byte *outHour, byte *outMinute) {
 }
 #endif
 
-void NTP_RunEventsForSecond(unsigned int runTime) {
+void NTP_RunEventsForSecond(time_t runTime) {
 	ntpEvent_t *e;
 	struct tm *ltm;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime((time_t*)&runTime);
+	ltm = gmtime(&runTime);
 	
 	if (ltm == 0) {
 		return;
@@ -218,17 +218,17 @@ void NTP_RunEvents(unsigned int newTime, bool bTimeValid) {
 	}
 	// old time invalid, but new one ok?
 	if (ntp_eventsTime == 0) {
-		ntp_eventsTime = newTime;
+		ntp_eventsTime = (time_t)newTime;
 		return;
 	}
 	// time went backwards
 	if (newTime < ntp_eventsTime) {
-		ntp_eventsTime = newTime;
+		ntp_eventsTime = (time_t)newTime;
 		return;
 	}
 	if (ntp_events) {
 		// NTP resynchronization could cause us to skip some seconds in some rare cases?
-		delta = newTime - ntp_eventsTime;
+		delta = (unsigned int)((time_t)newTime - ntp_eventsTime);
 		// a large shift in time is not expected, so limit to a constant number of seconds
 		if (delta > 100)
 			delta = 100;
@@ -236,7 +236,7 @@ void NTP_RunEvents(unsigned int newTime, bool bTimeValid) {
 			NTP_RunEventsForSecond(ntp_eventsTime + i);
 		}
 	}
-	ntp_eventsTime = newTime;
+	ntp_eventsTime = (time_t)newTime;
 }
 
 #if ENABLE_NTP_SUNRISE_SUNSET
@@ -312,7 +312,7 @@ commandResult_t CMD_NTP_AddClockEvent(const void *context, const char *cmd, cons
 #if ENABLE_NTP_SUNRISE_SUNSET
 	uint8_t hour_b, minute_b;
 	int sunflags = 0;
-	struct tm *ltm = gmtime((time_t*) &ntp_eventsTime);
+	struct tm *ltm = gmtime(&ntp_eventsTime);
 #endif
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALTERNATE_EXPAND_AT_START);

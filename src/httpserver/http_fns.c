@@ -836,6 +836,19 @@ typedef enum {
 	char reason[26];
 	bl_sys_rstinfo_getsting(reason);
 	hprintf255(request, "<h5>Reboot reason: %s</h5>", reason);
+#elif PLATFORM_LN882H
+	// type is chip_reboot_cause_t
+	g_rebootReason = ln_chip_get_reboot_cause();
+	{
+		const char* s = "Unk";
+		if (g_rebootReason == 0)
+			s = "Pwr";
+		else if (g_rebootReason == 1)
+			s = "Soft";
+		else if (g_rebootReason == 2)
+			s = "Wdt";
+		hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", g_rebootReason, s);
+	}
 #endif
 	if (CFG_GetMQTTHost()[0] == 0) {
 		hprintf255(request, "<h5>MQTT State: not configured<br>");
