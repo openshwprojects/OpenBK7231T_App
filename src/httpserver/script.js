@@ -66,6 +66,12 @@ function updateOnlineFor() {
 	onlineForEl.textContent = fmtUpTime(++onlineFor);
 }
 
+function PoorMansNTP() {
+	var d=new Date(); 
+	d.getTime(); 
+	return '/pmntp?EPOCH=' + parseInt(d/1000) + '&OFFSET=' + d.getTimezoneOffset()* - 60;
+};
+
 function onLoad() {
 	onlineForEl = getElement("onlineFor");
 	if (onlineForEl) {
