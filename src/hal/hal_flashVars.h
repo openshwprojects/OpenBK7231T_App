@@ -9,6 +9,7 @@
 
 /* Fixed size 32 bytes */
 typedef struct ENERGY_METERING_DATA {
+	float TotalGeneration
 	float TotalConsumption;
 	float TodayConsumpion;
 	float YesterdayConsumption;
