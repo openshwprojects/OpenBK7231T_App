@@ -541,14 +541,14 @@ if(inPseudoEditMode) {
 }
 
 
-     */
-   	// {
+     /*
+   	 {
 	if (energyWh > 0){
 		 energy = energyWh;}
 	 if (energyWh<0){
 		generation = energyWh;
-		}
-	}
+		}*/
+	//}
     sensors[OBK_CONSUMPTION_TOTAL].lastReading += (double)energy;
     sensors[OBK_GENERATION_TOTAL].lastReading += (double)generation;
     energyCounterStamp = xTaskGetTickCount();
