@@ -102,8 +102,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
         poststr(request,
                 "<tr><td><b>Frequency</b></td><td style='text-align: right;'>");
         hprintf255(request, "%.2f</td><td>Hz</td>", lastReadingFrequency);
-	   poststr(request, "<tr><td><b>Generation</b></td><td style='text-align: right;'>");
-        hprintf255(request, "%.3f</td><td>KWh</td>", sensors[OBK_CONSUMPTION_TODAY].lastReading );
+
     }
 
 	for (int i = OBK__FIRST; i <= (OBK_CONSUMPTION__DAILY_LAST); i++) {
@@ -116,9 +115,13 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 					(i == OBK_CONSUMPTION_TOTAL ? 0.001 : 1) * sensors[i].lastReading, //always display OBK_CONSUMPTION_TOTAL in kwh
 					i == OBK_CONSUMPTION_TOTAL ? "kWh": sensors[i].names.units);
 
-			//hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
-        		//hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+			
 		}
+	
+		hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
+        		hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+		poststr(request, "<tr><td><b>Generation</b></td><td style='text-align: right;'>");
+        hprintf255(request, "%.3f</td><td>KWh</td>", sensors[OBK_CONSUMPTION_TODAY].lastReading );
 	};
 
     poststr(request, "</table>");
