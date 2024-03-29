@@ -534,7 +534,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 		}
 	}
     sensors[OBK_CONSUMPTION_TOTAL].lastReading += (double)energy;
-    sensors[OBK_CONSUMPTION_TODAY].lastReading += (double)generation;
+    sensors[OBK_GENERATION_TODAY].lastReading += (double)generation;
     energyCounterStamp = xTaskGetTickCount();
     HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
 	sensors[OBK_CONSUMPTION_TODAY].lastReading  += energy;
