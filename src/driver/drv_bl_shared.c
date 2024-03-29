@@ -43,7 +43,7 @@ struct {
 	{{"apparent_power",	"VA",		"Apparent Power",		"power_apparent",			"9",		},	2,			0.25,		},	// OBK_POWER_APPARENT
 	{{"reactive_power",	"var",		"Reactive Power",		"power_reactive",			"10",		},	2,			0.25,		},	// OBK_POWER_REACTIVE
 	{{"power_factor",	"",			"Power Factor",			"power_factor",				"11",		},	2,			0.05,		},	// OBK_POWER_FACTOR
-	{{"energy",			UNIT_WH,	"Energy Total",			"energycounter",			"3",		},	3,			0.1,		},	// OBK_CONSUMPTION_TOTAL
+	{{"energy",			UNIT_WH,	"Total Consumption",			"energycounter",			"3",		},	3,			0.1,		},	// OBK_CONSUMPTION_TOTAL
 	{{"energy",			UNIT_WH,	"Energy Last Hour",		"energycounter_last_hour",	"4",		},	3,			0.1,		},	// OBK_CONSUMPTION_LAST_HOUR
 	//{{"",				"",			"Consumption Stats",	"consumption_stats",		"5",		},	0,			0,			},	// OBK_CONSUMPTION_STATS
 	{{"energy",			UNIT_WH,	"Energy Today",			"energycounter_today",		"7",		},	3,			0.1,		},	// OBK_CONSUMPTION_TODAY
@@ -119,17 +119,25 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 			
 		}
-		if (!statistics)
+		/*if (!statistics)
 		{
 		hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
         	hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
 		poststr(request, "<tr><td><b>Generation</b></td><td style='text-align: right;'>");
         	hprintf255(request, "%.3f</td><td>KWh</td>", sensors[OBK_CONSUMPTION_TODAY].lastReading );
 		statistics = 1;
-		}
+		}*/
 	};
 
-    poststr(request, "</table>");
+    //if (!statistics)
+		//{
+		hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
+        	hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+		poststr(request, "<tr><td><b>Total Generation</b></td><td style='text-align: right;'>");
+        	hprintf255(request, "%.3f</td><td>KWh</td>", sensors[OBK_CONSUMPTION_TODAY].lastReading );
+		statistics = 1;
+		//}
+	poststr(request, "</table>");
 
     hprintf255(request, "(changes sent %i, skipped %i, saved %li) - %s<hr>",
                stat_updatesSent, stat_updatesSkipped, ConsumptionSaveCounter,
