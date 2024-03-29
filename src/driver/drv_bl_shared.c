@@ -104,7 +104,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
         hprintf255(request, "%.2f</td><td>Hz</td>", lastReadingFrequency);
     }
 
-	for (int i = OBK__FIRST; i <= OBK_CONSUMPTION__DAILY_LAST; i++) {
+	for (int i = OBK__FIRST; i <= (OBK_CONSUMPTION__DAILY_LAST); i++) {
 		if (i <= OBK__NUM_MEASUREMENTS || NTP_IsTimeSynced()) {
 			poststr(request, "<tr><td><b>");
 			poststr(request, sensors[i].names.name_friendly);
@@ -507,22 +507,36 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	lastReadingFrequency = frequency;
 
     float energy = 0;
+    float generation = 0;
     if (isnan(energyWh)) {
         xPassedTicks = (int)(xTaskGetTickCount() - energyCounterStamp);
         // FIXME: Wrong calculation if tick count overflows
         if (xPassedTicks <= 0)
             xPassedTicks = 1;
         energy = xPassedTicks * power / (3600000.0f / portTICK_PERIOD_MS);
-    } else
-        energy = energyWh;
-
-    if (energy < 0)
-        energy = 0.0;
-
+    } 
+    else
+   	 {
+		if (energy > 0)
+		{
+        	energy = energyWh;
+		}
+		else if (energy < 0)
+		{
+		generation = energyWh;
+		}
+	}
     sensors[OBK_CONSUMPTION_TOTAL].lastReading += (double)energy;
+    sensors[OBK_CONSUMPTION_TODAY].lastReading += (double)generation;
+    //
+        hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
+        hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+
+	
+    //
     energyCounterStamp = xTaskGetTickCount();
     HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
-	sensors[OBK_CONSUMPTION_TODAY].lastReading  += energy;
+	//sensors[OBK_CONSUMPTION_TODAY].lastReading  += energy;
 
     if (NTP_IsTimeSynced()) {
         ntpTime = (time_t)NTP_GetCurrentTime();
@@ -572,7 +586,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 					sensors[OBK_CONSUMPTION_LAST_HOUR].lastReading  += energyCounterMinutes[i];
 				}
 			}
-            if ((energyCounterStatsJSONEnable == true) && (MQTT_IsReady() == true))
+            /*if ((energyCounterStatsJSONEnable == true) && (MQTT_IsReady() == true))
             {
                 root = cJSON_CreateObject();
                 cJSON_AddNumberToObject(root, "uptime", g_secondsElapsed);
@@ -631,7 +645,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
                 MQTT_PublishMain_StringString("consumption_stats", msg, 0);
                 stat_updatesSent++;
                 os_free(msg);
-            }
+            }*/
 
             if (energyCounterMinutes != NULL)
             {
