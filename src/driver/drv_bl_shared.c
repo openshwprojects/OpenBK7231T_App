@@ -692,9 +692,10 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			case OBK_VOLTAGE:				eventChangeCode = CMD_EVENT_CHANGE_VOLTAGE;	break;
 			case OBK_CURRENT:				eventChangeCode = CMD_EVENT_CHANGE_CURRENT;	break;
 			case OBK_POWER:					eventChangeCode = CMD_EVENT_CHANGE_POWER; break;
-			case OBK_CONSUMPTION_TOTAL:		eventChangeCode = CMD_EVENT_CHANGE_CONSUMPTION_TOTAL; break;
-			case OBK_CONSUMPTION_LAST_HOUR:	eventChangeCode = CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR; break;
-			default:						eventChangeCode = CMD_EVENT_NONE; break;
+			case OBK_CONSUMPTION_TOTAL:			eventChangeCode = CMD_EVENT_CHANGE_CONSUMPTION_TOTAL; break;
+			case OBK_GENERATION_TOTAL:			eventChangeCode = CMD_EVENT_CHANGE_GENERATION_TOTAL	; break;
+			case OBK_CONSUMPTION_LAST_HOUR:			eventChangeCode = CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR; break;
+			default:					eventChangeCode = CMD_EVENT_NONE; break;
 			}
 			switch (eventChangeCode) {
 			case CMD_EVENT_NONE:
