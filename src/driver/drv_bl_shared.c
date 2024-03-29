@@ -541,7 +541,7 @@ if(inPseudoEditMode) {
 }
 
 
-     /*
+     
    	 {
 	if (energyWh > 0){
 		 energy = energyWh;}
