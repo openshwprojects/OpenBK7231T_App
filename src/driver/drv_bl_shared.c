@@ -1,4 +1,4 @@
-erg#include "drv_bl_shared.h"
+#include "drv_bl_shared.h"
 
 #include "../new_cfg.h"
 #include "../new_pins.h"
