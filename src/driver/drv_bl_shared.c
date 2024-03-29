@@ -112,6 +112,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			hprintf255(request, "%.*f</td><td>%s</td>", sensors[i].rounding_decimals, 
 					(i == OBK_CONSUMPTION_TOTAL ? 0.001 : 1) * sensors[i].lastReading, //always display OBK_CONSUMPTION_TOTAL in kwh
 					i == OBK_CONSUMPTION_TOTAL ? "kWh": sensors[i].names.units);
+
+			//hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
+        		//hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
 		}
 	};
 
@@ -530,7 +533,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     sensors[OBK_CONSUMPTION_TODAY].lastReading += (double)generation;
     //
         hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
-        hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+        hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_TODAY].lastReading += (double)generation;
 
 	
     //
