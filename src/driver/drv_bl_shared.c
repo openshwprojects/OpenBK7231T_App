@@ -528,11 +528,11 @@ void BL_ProcessUpdate(float voltage, float current, float power,
    	 {
 		if (energy > 0)
 		{
-        	energy = energy;
+        	energy = energyWh;
 		}
 		else if (energy < 0)
 		{
-		generation = energy;
+		generation = energyWh;
 		}
 	}
     sensors[OBK_CONSUMPTION_TOTAL].lastReading += (double)energy;
