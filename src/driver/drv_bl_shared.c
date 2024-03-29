@@ -125,6 +125,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
         	hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
 		poststr(request, "<tr><td><b>Generation</b></td><td style='text-align: right;'>");
         	hprintf255(request, "%.3f</td><td>KWh</td>", sensors[OBK_CONSUMPTION_TODAY].lastReading );
+		statistics = 1;
 		}
 	};
 
