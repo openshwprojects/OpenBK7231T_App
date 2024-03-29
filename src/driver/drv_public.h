@@ -12,6 +12,7 @@ typedef enum energySensor_e {
 	OBK_POWER_REACTIVE,
 	OBK_POWER_FACTOR,
 	OBK_CONSUMPTION_TOTAL,
+	OBK_GENERATION_TOTAL,
 	OBK__NUM_MEASUREMENTS = OBK_CONSUMPTION_TOTAL,
 
 	// TODO OBK_CONSUMPTION_LAST_HOUR is actally "sum of consumption stats recording period"
