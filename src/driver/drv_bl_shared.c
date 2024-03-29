@@ -103,7 +103,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
                 "<tr><td><b>Frequency</b></td><td style='text-align: right;'>");
         hprintf255(request, "%.2f</td><td>Hz</td>", lastReadingFrequency);
 	   poststr(request, "<tr><td><b>Generation</b></td><td style='text-align: right;'>");
-        hprintf255(request, "%.3f</td><td>KWh</td>", generation );
+        hprintf255(request, "%.3f</td><td>KWh</td>", sensors[OBK_CONSUMPTION_TODAY].lastReading );
     }
 
 	for (int i = OBK__FIRST; i <= (OBK_CONSUMPTION__DAILY_LAST); i++) {
