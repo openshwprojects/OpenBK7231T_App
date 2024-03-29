@@ -102,10 +102,12 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
         poststr(request,
                 "<tr><td><b>Frequency</b></td><td style='text-align: right;'>");
         hprintf255(request, "%.2f</td><td>Hz</td>", lastReadingFrequency);
+	   poststr(request, "<tr><td><b>Generation</b></td><td style='text-align: right;'>");
+        hprintf255(request, "%.3f</td><td>KWh</td>", generation );
     }
 
-	//for (int i = OBK__FIRST; i <= (OBK_CONSUMPTION__DAILY_LAST); i++) {
-	for (int i = 0; i <= (15); i++) {
+	for (int i = OBK__FIRST; i <= (OBK_CONSUMPTION__DAILY_LAST); i++) {
+	//for (int i = 0; i <= (15); i++) {
 		if (i <= OBK__NUM_MEASUREMENTS || NTP_IsTimeSynced()) {
 			poststr(request, "<tr><td><b>");
 			poststr(request, sensors[i].names.name_friendly);
