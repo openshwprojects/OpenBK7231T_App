@@ -79,7 +79,6 @@ int changeDoNotSendMinFrames = 5;
 void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 {
     int i;
-    int statistics = 1;
     const char *mode;
     struct tm *ltm;
 
@@ -103,8 +102,6 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
         poststr(request,
                 "<tr><td><b>Frequency</b></td><td style='text-align: right;'>");
         hprintf255(request, "%.2f</td><td>Hz</td>", lastReadingFrequency);
-	    statistics = 0;
-
     }
 
 	for (int i = OBK__FIRST; i <= (OBK_CONSUMPTION__DAILY_LAST); i++) {
@@ -116,30 +113,19 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			hprintf255(request, "%.*f</td><td>%s</td>", sensors[i].rounding_decimals, 
 					(i == OBK_CONSUMPTION_TOTAL ? 0.001 : 1) * sensors[i].lastReading, //always display OBK_CONSUMPTION_TOTAL in kwh
 					i == OBK_CONSUMPTION_TOTAL ? "kWh": sensors[i].names.units);
-
 			
 		}
-		/*if (!statistics)
-		{
-		hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
-        	hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
-		poststr(request, "<tr><td><b>Generation</b></td><td style='text-align: right;'>");
-        	hprintf255(request, "%.3f</td><td>KWh</td>", sensors[OBK_CONSUMPTION_TODAY].lastReading );
-		statistics = 1;
-		}*/
 	};
 
-    //if (!statistics)
-		//{
-		hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
-        	hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
-		poststr(request, "<tr><td><b>Total Generation</b></td><td style='text-align: right;'>");
-        	hprintf255(request, "%.3f</td><td>KWh</td>", sensors[OBK_CONSUMPTION_TODAY].lastReading );
-		statistics = 1;
-		//}
+	// Print out periodic statistics and Total Generation at the bottom of the page.
+	hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
+        hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+	poststr(request, "<tr><td><b>Total Generation</b></td><td style='text-align: right;'>");
+        hprintf255(request, "%.3f</td><td>KWh</td>", sensors[OBK_CONSUMPTION_TODAY].lastReading );
+
 	poststr(request, "</table>");
 
-    hprintf255(request, "(changes sent %i, skipped %i, saved %li) - %s<hr>",
+    	hprintf255(request, "(changes sent %i, skipped %i, saved %li) - %s<hr>",
                stat_updatesSent, stat_updatesSkipped, ConsumptionSaveCounter,
                mode);
 
@@ -203,6 +189,7 @@ void BL09XX_SaveEmeteringStatistics()
     memset(&data, 0, sizeof(ENERGY_METERING_DATA));
 
     data.TotalConsumption = sensors[OBK_CONSUMPTION_TOTAL].lastReading;
+    data.TotalGeneration = sensors[OBK_GENERATION_TOTAL].lastReading;
     data.TodayConsumpion = sensors[OBK_CONSUMPTION_TODAY].lastReading;
     data.YesterdayConsumption = sensors[OBK_CONSUMPTION_YESTERDAY].lastReading;
     data.actual_mday = actual_mday;
@@ -558,6 +545,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     //
     energyCounterStamp = xTaskGetTickCount();
     HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
+    //HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
 	//sensors[OBK_CONSUMPTION_TODAY].lastReading  += energy;
 
     if (NTP_IsTimeSynced()) {
@@ -809,7 +797,7 @@ void BL_Shared_Init(void)
 
     HAL_GetEnergyMeterStatus(&data);
     sensors[OBK_CONSUMPTION_TOTAL].lastReading = data.TotalConsumption;
-    sensors[OBK_CONSUMPTION_TODAY].lastReading = data.TodayConsumpion;
+    sensors[OBK_GENERATION_TOTAL].lastReading = data.TodayGeneration;
     sensors[OBK_CONSUMPTION_YESTERDAY].lastReading = data.YesterdayConsumption;
     actual_mday = data.actual_mday;    
     lastSavedEnergyCounterValue = data.TotalConsumption;
