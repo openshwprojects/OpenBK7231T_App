@@ -1,4 +1,4 @@
-#include "drv_bl_shared.h"
+erg#include "drv_bl_shared.h"
 
 #include "../new_cfg.h"
 #include "../new_pins.h"
@@ -528,11 +528,11 @@ void BL_ProcessUpdate(float voltage, float current, float power,
    	 {
 		if (energy > 0)
 		{
-        	energy = energyWh;
+        	energy = energy;
 		}
 		else if (energy < 0)
 		{
-		generation = energyWh;
+		generation = energy;
 		}
 	}
     sensors[OBK_CONSUMPTION_TOTAL].lastReading += (double)energy;
