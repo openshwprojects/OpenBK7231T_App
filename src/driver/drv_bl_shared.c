@@ -526,12 +526,8 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     } 
     else
    	 {
-		if (energyWh > 0)
-		{
-        	energy = energyWh;
-		}
-		else if (energyWh < 0)
-		{
+		energy = energyWh;
+	 if (energyWh<0){
 		generation = energyWh;
 		}
 	}
