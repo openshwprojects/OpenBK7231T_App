@@ -526,27 +526,20 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     } 
     else
    	 {
-		if (energy > 0)
+		if (energyWh > 0)
 		{
         	energy = energyWh;
 		}
-		else if (energy < 0)
+		else if (energyWh < 0)
 		{
 		generation = energyWh;
 		}
 	}
     sensors[OBK_CONSUMPTION_TOTAL].lastReading += (double)energy;
     sensors[OBK_CONSUMPTION_TODAY].lastReading += (double)generation;
-    //
-      //  hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
-       // hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_TODAY].lastReading += (double)generation;
-
-	
-    //
     energyCounterStamp = xTaskGetTickCount();
     HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
-    //HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
-	//sensors[OBK_CONSUMPTION_TODAY].lastReading  += energy;
+	sensors[OBK_CONSUMPTION_TODAY].lastReading  += energy;
 
     if (NTP_IsTimeSynced()) {
         ntpTime = (time_t)NTP_GetCurrentTime();
