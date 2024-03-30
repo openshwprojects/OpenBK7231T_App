@@ -126,7 +126,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		}
 	};
 
-	if ((energyCounterStatsJSONEnable == true) && (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)) 
+	if ((energyCounterStatsJSONEnable == true) && (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)))
 	{
 		//int minute = NTP_GetMinute();
 		//Create a 15min delay to reset net metering statistics
