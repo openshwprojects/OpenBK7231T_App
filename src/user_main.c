@@ -50,6 +50,7 @@ void bg_register_irda_check_func(FUNCPTR func);
 #include <bl_adc.h>     //  For BL602 ADC HAL
 #include <bl602_adc.h>  //  For BL602 ADC Standard Driver
 #include <bl602_glb.h>  //  For BL602 Global Register Standard Driver
+#include <bl_wdt.h>
 #endif
 
 
