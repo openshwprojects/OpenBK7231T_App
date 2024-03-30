@@ -223,8 +223,8 @@ void BL09XX_SaveEmeteringStatistics()
 
     memset(&data, 0, sizeof(ENERGY_METERING_DATA));
 
-    data.TotalConsumption = sensors[OBK_CONSUMPTION_TOTAL].lastReading;
     data.TotalGeneration = sensors[OBK_GENERATION_TOTAL].lastReading;
+    data.TotalConsumption = sensors[OBK_CONSUMPTION_TOTAL].lastReading;
     data.TodayConsumpion = sensors[OBK_CONSUMPTION_TODAY].lastReading;
     data.YesterdayConsumption = sensors[OBK_CONSUMPTION_YESTERDAY].lastReading;
     data.actual_mday = actual_mday;
@@ -726,8 +726,8 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			case OBK_VOLTAGE:				eventChangeCode = CMD_EVENT_CHANGE_VOLTAGE;			break;
 			case OBK_CURRENT:				eventChangeCode = CMD_EVENT_CHANGE_CURRENT;			break;
 			case OBK_POWER:					eventChangeCode = CMD_EVENT_CHANGE_POWER; 			break;
+			case OBK_GENERATION_TOTAL:			eventChangeCode = CMD_EVENT_CHANGE_GENERATION_TOTAL; 		break;
 			case OBK_CONSUMPTION_TOTAL:			eventChangeCode = CMD_EVENT_CHANGE_CONSUMPTION_TOTAL; 		break;
-			//case OBK_GENERATION_TOTAL:			eventChangeCode = CMD_EVENT_CHANGE_GENERATION_TOTAL; 		break;
 			case OBK_CONSUMPTION_LAST_HOUR:			eventChangeCode = CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR; 	break;
 			default:					eventChangeCode = CMD_EVENT_NONE; 				break;
 			}
