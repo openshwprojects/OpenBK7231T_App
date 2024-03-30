@@ -135,6 +135,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		if (delay_net_metering - previous_delay_net_metering  >= net_metring_interval) {
 		// This is used for the timing function.
 		//Load NetMetering variables once, at startup
+
 		if (!first_run)
 		{
 		previous_delay_net_metering = delay_net_metering;
@@ -567,7 +568,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	
 	// Generation (device to Grid)
 	
-	else{
+	if (energyWh < 0){
 		generation = (-1*energyWh);
 		// Possibly not needed - energy already filtered by positive results.
 		/*if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)) 
@@ -577,8 +578,8 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	}	
 	}
     // Apply values. Add Extra variable for generation 
-    sensors[OBK_CONSUMPTION_TOTAL].lastReading += (double)energy;
-    sensors[OBK_GENERATION_TOTAL].lastReading += (double)generation;
+    sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
+    sensors[OBK_GENERATION_TOTAL].lastReading += generation;
     energyCounterStamp = xTaskGetTickCount();
     HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
 	sensors[OBK_CONSUMPTION_TODAY].lastReading  += energy;
