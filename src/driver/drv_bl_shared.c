@@ -18,6 +18,9 @@
 
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
+unsigned long previous_delay_net_metering = millis();
+long starting_net_metering_value = 0;
+const long net_metring_interval = 60000;
 
 // Order corrsponds to enums OBK_VOLTAGE - OBK__LAST
 // note that Wh/kWh units are overridden in hass_init_energy_sensor_device_info()
@@ -79,6 +82,8 @@ int changeDoNotSendMinFrames = 5;
 void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 {
     int i;
+	
+    //float net_metering = (sensors[OBK_CONSUMPTION_TOTAL].rounding_decimals-sensors[OBK_GENERATION_TOTAL].rounding_decimals);
     const char *mode;
     struct tm *ltm;
 
@@ -117,8 +122,18 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		}
 	};
 
+	// Create a 15min delay to reset net metering statistics
+	unsigned long delay_net_metering = millis();
+	 
+	if (delay_net_metering - previous_delay_net_metering  >= net_metring_interval) {
+    	// save the current readings, so we know the difference in the next time period
+    	previous_delay_net_metering = delay_net_metering;
+        starting_net_metering_value = sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading;
+   	 }
+  }
+}
 	// Print out periodic statistics and Total Generation at the bottom of the page.
-	hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
+	hprintf255(request,"<h2>Periodic Statistics</h2><h5>NetMetering (Last 15min): ");
         hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
 	poststr(request, "<tr><td><b>Total Generation</b></td><td style='text-align: right;'>");
         hprintf255(request, "%.3f</td><td>KWh</td>", (sensors[OBK_GENERATION_TOTAL].lastReading * 0.001)); //always display OBK_GNERATION_TOTAL in kwh
@@ -476,6 +491,8 @@ void BL_ProcessUpdate(float voltage, float current, float power,
                       float frequency, float energyWh) {
     int i;
     int xPassedTicks;
+float time counter
+	
     cJSON* root;
     cJSON* stats;
     char *msg;
@@ -527,12 +544,16 @@ void BL_ProcessUpdate(float voltage, float current, float power,
         energy = xPassedTicks * power / (3600000.0f / portTICK_PERIOD_MS);
     } 
     else
-	{
+	// Check if the last power reading is positive or negative. Increment the correct counter.
+    	{
+	// Consumption (Grid to Device)
 	if (energyWh > 0){
 		 energy = energyWh;}
+	// Generation (device to Grid)
 	else{
 		generation = (-1*energyWh);}
-	}
+}
+    // Apply values. Add Extra variable for generation 
     sensors[OBK_CONSUMPTION_TOTAL].lastReading += (double)energy;
     sensors[OBK_GENERATION_TOTAL].lastReading += (double)generation;
     energyCounterStamp = xTaskGetTickCount();
@@ -557,9 +578,6 @@ void BL_ProcessUpdate(float voltage, float current, float power,
             sensors[OBK_CONSUMPTION_TODAY].lastReading = 0.0;
             actual_mday = ltm->tm_mday;
 
-            //MQTT_PublishMain_StringFloat(sensors[OBK_CONSUMPTION_YESTERDAY].names.name_mqtt, BL_ChangeEnergyUnitIfNeeded(sensors[OBK_CONSUMPTION_YESTERDAY].lastReading ),
-			//							sensors[OBK_CONSUMPTION_YESTERDAY].rounding_decimals, 0);
-            //stat_updatesSent++;
 #if WINDOWS
 #elif PLATFORM_BL602
 #elif PLATFORM_W600 || PLATFORM_W800
