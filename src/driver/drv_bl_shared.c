@@ -19,8 +19,6 @@
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
 
-
-static int starting_net_metering_value = 0;
 static int net_metring_interval = 1;
 float net_energy = 0;
 float net_energy_start = 0;
@@ -135,18 +133,18 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		int delay_net_metering = NTP_GetMinute();
 		 
 		if (delay_net_metering - previous_delay_net_metering  >= net_metring_interval) {
-	    	// Clear net metering stats
-		//float last_reading = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
+		// This is used for the timing function.
+		previous_delay_net_metering = delay_net_metering;
+	    	// save the current readings, so we know the difference during the measuring period
 		net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
-		// save the current readings, so we know the difference in the next time period
-	    	previous_delay_net_metering = delay_net_metering;
-	        //starting_net_metering_value = ((sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 	   	 }
+		
+		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		// Print out periodic statistics and Total Generation at the bottom of the page.
 		hprintf255(request,"<h2>Periodic Statistics</h2><h5>NetMetering (Last 15min): ");
 		//hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
-	        hprintf255(request, "%.3f<td>Wh</td>", ((net_energy))); Net metering shown in Wh (Small value)
+	        hprintf255(request, "%.3f<td>Wh</td>", ((net_energy))); //Net metering shown in Wh (Small value)
 		poststr(request, "<tr><td><b>Total Generation</b></td><td style='text-align: right;'>");
 	        hprintf255(request, "%.3f</td><td>KWh</td>", (starting_net_metering_value + (sensors[OBK_CONSUMPTION_TOTAL].lastReading-sensors[OBK_GENERATION_TOTAL].lastReading) * 0.001)); //always display OBK_GNERATION_TOTAL in kwh
 	}
