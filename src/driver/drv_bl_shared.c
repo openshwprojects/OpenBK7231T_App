@@ -140,9 +140,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
 		// save the current readings, so we know the difference in the next time period
 	    	previous_delay_net_metering = delay_net_metering;
-	        starting_net_metering_value = ((sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
+	        //starting_net_metering_value = ((sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 	   	 }
-		net_energy = (starting_net_metering_value-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
+		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		// Print out periodic statistics and Total Generation at the bottom of the page.
 		hprintf255(request,"<h2>Periodic Statistics</h2><h5>NetMetering (Last 15min): ");
 		//hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
