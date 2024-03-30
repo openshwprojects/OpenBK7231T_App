@@ -21,7 +21,7 @@ int stat_updatesSent = 0;
 
 
 static int starting_net_metering_value = 0;
-static int net_metring_interval = 60;
+static int net_metring_interval = 1;
 
 // Order corrsponds to enums OBK_VOLTAGE - OBK__LAST
 // note that Wh/kWh units are overridden in hass_init_energy_sensor_device_info()
@@ -126,7 +126,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		}
 	};
 
-	if (/*(energyCounterStatsJSONEnable == true) && (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))*/1)
+	//if ((energyCounterStatsJSONEnable == true) && (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)))
 	{
 		//int minute = NTP_GetMinute();
 		//Create a 15min delay to reset net metering statistics
