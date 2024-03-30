@@ -565,11 +565,13 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	// Generation (device to Grid)
 	
 	else{
-		energy = 0;
-		if (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)) 
+		generation = (-1*energyWh);
+		// I don't think this is needed here, as energy is already filtered by positive results.
+		/*if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)) 
 		{
-		generation = (-1*energyWh);}}
-}
+		energy = 0;
+		}*/
+	}	
     // Apply values. Add Extra variable for generation 
     sensors[OBK_CONSUMPTION_TOTAL].lastReading += (double)energy;
     sensors[OBK_GENERATION_TOTAL].lastReading += (double)generation;
