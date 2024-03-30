@@ -572,6 +572,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 		energy = 0;
 		}*/
 	}	
+	}
     // Apply values. Add Extra variable for generation 
     sensors[OBK_CONSUMPTION_TOTAL].lastReading += (double)energy;
     sensors[OBK_GENERATION_TOTAL].lastReading += (double)generation;
