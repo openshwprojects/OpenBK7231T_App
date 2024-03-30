@@ -20,8 +20,8 @@ int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
 
 
-long starting_net_metering_value = 0;
-const long net_metring_interval = 60000;
+static int starting_net_metering_value = 0;
+static int net_metring_interval = 60;
 
 // Order corrsponds to enums OBK_VOLTAGE - OBK__LAST
 // note that Wh/kWh units are overridden in hass_init_energy_sensor_device_info()
@@ -126,22 +126,24 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		}
 	};
 
-	// Create a 15min delay to reset net metering statistics
-	unsigned long delay_net_metering = millis();
-	 
-	if (delay_net_metering - previous_delay_net_metering  >= net_metring_interval) {
-    	// save the current readings, so we know the difference in the next time period
-    	previous_delay_net_metering = delay_net_metering;
-        starting_net_metering_value = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
-   	 }
-	// Print out periodic statistics and Total Generation at the bottom of the page.
-	hprintf255(request,"<h2>Periodic Statistics</h2><h5>NetMetering (Last 15min): ");
-	//hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
-        hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
-	poststr(request, "<tr><td><b>Total Generation</b></td><td style='text-align: right;'>");
-        hprintf255(request, "%.3f</td><td>KWh</td>", (starting_net_metering_value + (sensors[OBK_CONSUMPTION_TOTAL].lastReading-sensors[OBK_GENERATION_TOTAL].lastReading) * 0.001)); //always display OBK_GNERATION_TOTAL in kwh
-		
-		//sensors[OBK_CONSUMPTION_TODAY].lastReading );
+	if ((energyCounterStatsJSONEnable == true) && (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)) 
+	{
+		//int minute = NTP_GetMinute();
+		//Create a 15min delay to reset net metering statistics
+		int delay_net_metering = NTP_GetMinute();
+		 
+		if (delay_net_metering - previous_delay_net_metering  >= net_metring_interval) {
+	    	// save the current readings, so we know the difference in the next time period
+	    	previous_delay_net_metering = delay_net_metering;
+	        starting_net_metering_value = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
+	   	 }
+		// Print out periodic statistics and Total Generation at the bottom of the page.
+		hprintf255(request,"<h2>Periodic Statistics</h2><h5>NetMetering (Last 15min): ");
+		//hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
+	        hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+		poststr(request, "<tr><td><b>Total Generation</b></td><td style='text-align: right;'>");
+	        hprintf255(request, "%.3f</td><td>KWh</td>", (starting_net_metering_value + (sensors[OBK_CONSUMPTION_TOTAL].lastReading-sensors[OBK_GENERATION_TOTAL].lastReading) * 0.001)); //always display OBK_GNERATION_TOTAL in kwh
+	}
 
 	poststr(request, "</table>");
 
@@ -552,9 +554,14 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	// Consumption (Grid to Device)
 	if (energyWh > 0){
 		 energy = energyWh;}
+	
 	// Generation (device to Grid)
+	
 	else{
-		generation = (-1*energyWh);}
+		energy = 0;
+		if (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)) 
+		{
+		generation = (-1*energyWh);}}
 }
     // Apply values. Add Extra variable for generation 
     sensors[OBK_CONSUMPTION_TOTAL].lastReading += (double)energy;
@@ -608,7 +615,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 					sensors[OBK_CONSUMPTION_LAST_HOUR].lastReading  += energyCounterMinutes[i];
 				}
 			}
-            /*if ((energyCounterStatsJSONEnable == true) && (MQTT_IsReady() == true))
+            if ((energyCounterStatsJSONEnable == true) && (MQTT_IsReady() == true))
             {
                 root = cJSON_CreateObject();
                 cJSON_AddNumberToObject(root, "uptime", g_secondsElapsed);
@@ -667,7 +674,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
                 MQTT_PublishMain_StringString("consumption_stats", msg, 0);
                 stat_updatesSent++;
                 os_free(msg);
-            }*/
+            }
 
             if (energyCounterMinutes != NULL)
             {
