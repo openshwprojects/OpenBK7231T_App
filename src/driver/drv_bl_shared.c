@@ -146,7 +146,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		// Print out periodic statistics and Total Generation at the bottom of the page.
 		hprintf255(request,"<h2>Periodic Statistics</h2><h5>NetMetering (Last 15min): ");
 		//hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
-	        hprintf255(request, "%.3f</td><td>KWh</td>", ((net_energy) * 0.001)); //always display OBK_GNERATION_TOTAL in kwh
+	        hprintf255(request, "%.3f<td>Wh</td>", ((net_energy))); Net metering shown in Wh (Small value)
 		poststr(request, "<tr><td><b>Total Generation</b></td><td style='text-align: right;'>");
 	        hprintf255(request, "%.3f</td><td>KWh</td>", (starting_net_metering_value + (sensors[OBK_CONSUMPTION_TOTAL].lastReading-sensors[OBK_GENERATION_TOTAL].lastReading) * 0.001)); //always display OBK_GNERATION_TOTAL in kwh
 	}
@@ -566,7 +566,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	
 	else{
 		generation = (-1*energyWh);
-		// I don't think this is needed here, as energy is already filtered by positive results.
+		// Possibly not needed - energy already filtered by positive results.
 		/*if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)) 
 		{
 		energy = 0;
