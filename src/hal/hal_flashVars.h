@@ -12,7 +12,7 @@ typedef struct ENERGY_METERING_DATA {
 	float TotalGeneration;
 	float TotalConsumption;
 	float TodayConsumpion;
-	//float YesterdayConsumption;
+	float YesterdayConsumption;
 	long save_counter;
 	float ConsumptionHistory[2];
 	time_t ConsumptionResetTime;
