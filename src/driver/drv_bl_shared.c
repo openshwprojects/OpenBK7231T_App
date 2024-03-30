@@ -131,16 +131,16 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		//int minute = NTP_GetMinute();
 		//Create a 15min delay to reset net metering statistics
 		int delay_net_metering = NTP_GetMinute();
-		 
+		if (!first_run)
+			{
+			//An update is forced at startup, so the energy values are correct.
+			previous_delay_net_metering = delay_net_metering;
+			first_run = 1;
+			}
 		if (delay_net_metering - previous_delay_net_metering  >= net_metring_interval) {
 		// This is used for the timing function.
-		//Load NetMetering variables once, at startup
-
-		if (!first_run)
-		{
+		//Each time it runs, we update the time it did.
 		previous_delay_net_metering = delay_net_metering;
-		first_run = 1;
-		}
 	    	// save the current readings, so we know the difference during the measuring period
 		net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
 	   	 }
