@@ -128,11 +128,11 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	if (delay_net_metering - previous_delay_net_metering  >= net_metring_interval) {
     	// save the current readings, so we know the difference in the next time period
     	previous_delay_net_metering = delay_net_metering;
-        starting_net_metering_value = sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading;
+        starting_net_metering_value = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
    	 }
-  }
 	// Print out periodic statistics and Total Generation at the bottom of the page.
 	hprintf255(request,"<h2>Periodic Statistics</h2><h5>NetMetering (Last 15min): ");
+	//hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
         hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
 	poststr(request, "<tr><td><b>Total Generation</b></td><td style='text-align: right;'>");
         hprintf255(request, "%.3f</td><td>KWh</td>", (starting_net_metering_value + (sensors[OBK_CONSUMPTION_TOTAL].lastReading-sensors[OBK_GENERATION_TOTAL].lastReading) * 0.001)); //always display OBK_GNERATION_TOTAL in kwh
