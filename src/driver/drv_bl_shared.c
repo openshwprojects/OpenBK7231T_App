@@ -18,7 +18,7 @@
 
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
-long previous_delay_net_metering = 0;
+
 
 long starting_net_metering_value = 0;
 const long net_metring_interval = 60000;
@@ -79,6 +79,9 @@ time_t ConsumptionResetTime = 0;
 
 int changeSendAlwaysFrames = 60;
 int changeDoNotSendMinFrames = 5;
+
+unsigned long previous_delay_net_metering  = 0;
+	      //previous_delay_net_metering
 
 void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 {
