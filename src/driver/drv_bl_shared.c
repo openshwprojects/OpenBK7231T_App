@@ -18,7 +18,7 @@
 
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
-unsigned long previous_delay_net_metering = millis();
+long previous_delay_net_metering = millis();
 long starting_net_metering_value = 0;
 const long net_metring_interval = 60000;
 
@@ -131,12 +131,11 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
         starting_net_metering_value = sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading;
    	 }
   }
-}
 	// Print out periodic statistics and Total Generation at the bottom of the page.
 	hprintf255(request,"<h2>Periodic Statistics</h2><h5>NetMetering (Last 15min): ");
         hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
 	poststr(request, "<tr><td><b>Total Generation</b></td><td style='text-align: right;'>");
-        hprintf255(request, "%.3f</td><td>KWh</td>", (sensors[OBK_GENERATION_TOTAL].lastReading * 0.001)); //always display OBK_GNERATION_TOTAL in kwh
+        hprintf255(request, "%.3f</td><td>KWh</td>", ((starting_net_metering_value + (sensors[OBK_CONSUMPTION_TOTAL].lastReading-sensors[OBK_GENERATION_TOTAL].lastReading) * 0.001)); //always display OBK_GNERATION_TOTAL in kwh
 		
 		//sensors[OBK_CONSUMPTION_TODAY].lastReading );
 
