@@ -771,6 +771,8 @@ void Main_OnEverySecond()
 #endif
 #ifdef PLATFORM_BEKEN
 	bk_wdg_reload();
+#elif PLATFORM_BL602
+	bl_wdt_feed();
 #endif
 	// force it to sleep...  we MUST have some idle task processing
 	// else task memory doesn't get freed
@@ -985,6 +987,10 @@ void Main_Init_AfterDelay_Unsafe(bool bStartAutoRunScripts) {
 	}
 #ifdef PLATFORM_BEKEN
 	bk_wdg_initialize(10000);
+#elif PLATFORM_BL602
+	// max is 4 seconds or so...
+	// #define MAX_MS_WDT (65535/16)
+	bl_wdt_init(3000);
 #endif
 }
 void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
