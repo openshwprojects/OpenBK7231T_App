@@ -18,7 +18,7 @@
 
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
-
+static int first_run = 0;
 static int net_metring_interval = 1;
 float net_energy = 0;
 float net_energy_start = 0;
@@ -134,7 +134,12 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		 
 		if (delay_net_metering - previous_delay_net_metering  >= net_metring_interval) {
 		// This is used for the timing function.
+		//Load NetMetering variables once, at startup
+		if (!first_run)
+		{
 		previous_delay_net_metering = delay_net_metering;
+		first_run = 1;
+		}
 	    	// save the current readings, so we know the difference during the measuring period
 		net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
 	   	 }
