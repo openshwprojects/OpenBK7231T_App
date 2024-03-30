@@ -490,7 +490,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
                       float frequency, float energyWh) {
     int i;
     int xPassedTicks;
-float time counter
+    //float time counter
 	
     cJSON* root;
     cJSON* stats;
