@@ -992,8 +992,6 @@ void Main_Init_AfterDelay_Unsafe(bool bStartAutoRunScripts) {
 	// max is 4 seconds or so...
 	// #define MAX_MS_WDT (65535/16)
 	bl_wdt_init(3000);
-	int bl_timer_tick_enable(void);
-	bl_timer_tick_enable(void);
 #endif
 }
 void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
