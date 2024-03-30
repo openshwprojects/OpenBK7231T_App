@@ -18,7 +18,8 @@
 
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
-long previous_delay_net_metering = 0;
+//long previous_delay_net_metering = 0;
+
 long starting_net_metering_value = 0;
 const long net_metring_interval = 60000;
 
