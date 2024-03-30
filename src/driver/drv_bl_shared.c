@@ -126,7 +126,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		}
 	};
 
-	if ((energyCounterStatsJSONEnable == true) && (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)))
+	if (/*(energyCounterStatsJSONEnable == true) && (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))*/1)
 	{
 		//int minute = NTP_GetMinute();
 		//Create a 15min delay to reset net metering statistics
@@ -198,7 +198,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
         }
 
         hprintf255(request, "</h5>");
-    } else {
+    } 
+    else {
         hprintf255(request,"<h5>Periodic Statistics disabled. Use startup command SetupEnergyStats to enable function.</h5>");
     }
     /********************************************************************************************************************/
