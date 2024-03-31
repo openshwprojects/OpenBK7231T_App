@@ -128,8 +128,12 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		}
 	};
 
-	//if ((energyCounterStatsJSONEnable == true) && (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)))
-	/*{
+	if (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
+	{
+		//Create a field to display energy produced.
+		poststr(request, "<tr><td><b>Total Consumption</b></td><td style='text-align: right;'>");
+		hprintf255(request, "%.3f</td><td>KWh</td>", (sensors[OBK_GENERATION_TOTAL].lastReading) * 0.001); //always display OBK_GNERATION_TOTAL in kwh
+	}/*
 		
 		//int minute = NTP_GetMinute();
 		//Create a 15min delay to reset net metering statistics
