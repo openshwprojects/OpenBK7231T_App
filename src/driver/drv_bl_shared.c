@@ -130,12 +130,15 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 	//if ((energyCounterStatsJSONEnable == true) && (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)))
 	{
+		
 		//int minute = NTP_GetMinute();
 		//Create a 15min delay to reset net metering statistics
 		int delay_net_metering = NTP_GetMinute();
 
 		if (!first_run)
 				{
+				// Start NTP
+				CMD_ExecuteCommand("startDriver NTP");
 				//An update is forced at startup, so the energy values are correct.
 				//previous_delay_net_metering = net_metring_interval;
 				net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
@@ -151,11 +154,13 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	   	 }
 		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)) 
    		{
+			
+			
 			// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 			net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 			// Print out periodic statistics and Total Generation at the bottom of the page.
 			//hprintf255(request,"<h5>NetMetering (Last 15min): ");
-			hprintf255(request, "<h5>NetMetering Last %d min: %.3f Wh </h5>", delay_net_metering, net_energy); //Net metering shown in Wh (Small value)
+			hprintf255(request, "<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", delay_net_metering, net_energy, energyCounterSampleInterval); //Net metering shown in Wh (Small value)
 			//hprintf255(request, "%.3f Wh </h5>", ((net_energy))); //Net metering shown in Wh (Small value)
 			//hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
 		        //hprintf255(request, "%.3fWh </h5>", ((net_energy))); //Net metering shown in Wh (Small value)
