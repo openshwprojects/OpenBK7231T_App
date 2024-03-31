@@ -133,6 +133,11 @@ void MAX6675_RunEverySecond(void);
 
 void PWMG_Init();
 
+void Freeze_Init();
+void Freeze_OnEverySecond();
+void Freeze_RunFrame();
+
+
 #define SM2135_DELAY         4
 
 // Software I2C 
