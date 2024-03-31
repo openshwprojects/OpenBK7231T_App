@@ -762,7 +762,7 @@ void Main_OnEverySecond()
 		}
 	}
 
-#if defined(PLATFORM_BEKEN) || defined(PLATFORM_BL602) || defined(PLATFORM_W600) || defined(WINDOWS) || defined(PLATFORM_LN882H)
+#if ENABLE_DRIVER_DHT
 	if (g_dhtsCount > 0) {
 		if (bSafeMode == 0) {
 			DHT_OnEverySecond();
