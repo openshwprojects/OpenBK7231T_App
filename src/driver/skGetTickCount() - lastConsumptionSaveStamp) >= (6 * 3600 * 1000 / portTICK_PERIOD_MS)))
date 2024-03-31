@@ -73,6 +73,7 @@ bool energyCounterStatsJSONEnable = false;
 
 int actual_mday = -1;
 float lastSavedEnergyCounterValue = 0.0f;
+float lastSavedGenerationCounterValue = 0.0f;
 float changeSavedThresholdEnergy = 10.0f;
 long ConsumptionSaveCounter = 0;
 portTickType lastConsumptionSaveStamp;
@@ -852,6 +853,7 @@ void BL_Shared_Init(void)
     sensors[OBK_CONSUMPTION_YESTERDAY].lastReading = data.YesterdayConsumption;
     actual_mday = data.actual_mday;    
     lastSavedEnergyCounterValue = data.TotalConsumption;
+    lastSavedGenerationCounterValue = data.TotalGeneration;
     sensors[OBK_CONSUMPTION_2_DAYS_AGO].lastReading = data.ConsumptionHistory[0];
     sensors[OBK_CONSUMPTION_3_DAYS_AGO].lastReading = data.ConsumptionHistory[1];
     ConsumptionResetTime = data.ConsumptionResetTime;
