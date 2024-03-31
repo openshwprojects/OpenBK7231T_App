@@ -156,7 +156,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			hprintf255(request,"<h5>NetMetering (Last 15min): ");
 			//hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
 		        hprintf255(request, "%.3fWh </h5>", ((net_energy))); //Net metering shown in Wh (Small value)
-			poststr(request, "<tr><td><b>Total Generation</b></td><td style='text-align: right;'>");
+			poststr(request, "<tr><td><b>Total Consumption</b></td><td style='text-align: right;'>");
 		        hprintf255(request, "%.3f</td><td>KWh</td>", (sensors[OBK_GENERATION_TOTAL].lastReading) * 0.001); //always display OBK_GNERATION_TOTAL in kwh
     		}
 	}
