@@ -796,6 +796,23 @@ void BL_ProcessUpdate(float voltage, float current, float power,
             lastConsumptionSaveStamp = xTaskGetTickCount();
         }
     }
+
+	if (((sensors[OBK_GENERATION_TOTAL].lastReading - lastSavedGenerationCounterValue) >= changeSavedThresholdEnergy) ||
+        ((xTaskGetTickCount() - lastConsumptionSaveStamp) >= (6 * 3600 * 1000 / portTICK_PERIOD_MS)))
+    {
+#if WINDOWS
+#elif PLATFORM_BL602
+#elif PLATFORM_W600 || PLATFORM_W800
+#elif PLATFORM_XR809
+#elif PLATFORM_BK7231N || PLATFORM_BK7231T
+        if (ota_progress() == -1)
+#endif
+        {
+            lastSavedGenerationCounterValue = sensors[OBK_GENERATION_TOTAL].lastReading;
+            BL09XX_SaveEmeteringStatistics();
+            lastConsumptionSaveStamp = xTaskGetTickCount();
+        }
+    }
 }
 
 void BL_Shared_Init(void)
