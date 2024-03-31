@@ -175,7 +175,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 	poststr(request, "</table>");
 
-    	hprintf255(request, "(changes sent %i, skipped %i, saved %li) - %s<hr>",
+    	hprintf255(request, "<p><h5>Changes: %isent; %i Skipped, %li Saved - %s<hr></p>",
                stat_updatesSent, stat_updatesSkipped, ConsumptionSaveCounter,
                mode);
 
