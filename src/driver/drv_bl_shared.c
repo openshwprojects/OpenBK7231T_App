@@ -129,7 +129,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	};
 
 	//if ((energyCounterStatsJSONEnable == true) && (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)))
-	{
+	/*{
 		
 		//int minute = NTP_GetMinute();
 		//Create a 15min delay to reset net metering statistics
@@ -138,7 +138,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		if (!first_run)
 				{
 				// Start NTP
-				CMD_ExecuteCommand("startDriver NTP");
+				//CMD_ExecuteCommand("startDriver NTP");
 				//An update is forced at startup, so the energy values are correct.
 				//previous_delay_net_metering = net_metring_interval;
 				net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
@@ -167,7 +167,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			poststr(request, "<tr><td><b>Total Consumption</b></td><td style='text-align: right;'>");
 		        hprintf255(request, "%.3f</td><td>KWh</td>", (sensors[OBK_GENERATION_TOTAL].lastReading) * 0.001); //always display OBK_GNERATION_TOTAL in kwh
     		}
-	}
+	}*/
 
 	poststr(request, "</table>");
 
@@ -194,7 +194,44 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
     if (energyCounterStatsEnable == true)
     {
-        /********************************************************************************************************************/
+       		//If we are measuring negative power, we can run the commands to get the netmetering stats
+		// We need NTP enabled for this, as well as the statistics. They need to be manually configured because of duration and time zone.
+		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
+		{
+		int delay_net_metering = NTP_GetMinute();
+		net_metring_interval = energyCounterSampleInterval;
+
+		if (!first_run)
+				{
+				// Start NTP
+				//CMD_ExecuteCommand("startDriver NTP");
+				//An update is forced at startup, so the energy values are correct.
+				//previous_delay_net_metering = net_metring_interval;
+				net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
+				first_run = 1;
+				}
+		
+		if (delay_net_metering - previous_delay_net_metering  >= net_metring_interval) {
+		// This is used for the timing function.
+		//Each time it runs, we update the time it did.
+		previous_delay_net_metering = delay_net_metering;
+	    	// save the current readings, so we know the difference during the measuring period
+		net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
+	   	 }			
+		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
+		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
+		// Print out periodic statistics and Total Generation at the bottom of the page.
+		//hprintf255(request,"<h5>NetMetering (Last 15min): ");
+		hprintf255(request, "<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", delay_net_metering, net_energy, energyCounterSampleInterval); //Net metering shown in Wh (Small value)
+		//hprintf255(request, "%.3f Wh </h5>", ((net_energy))); //Net metering shown in Wh (Small value)
+		//hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
+		//hprintf255(request, "%.3fWh </h5>", ((net_energy))); //Net metering shown in Wh (Small value)
+		poststr(request, "<tr><td><b>Total Consumption</b></td><td style='text-align: right;'>");
+		hprintf255(request, "%.3f</td><td>KWh</td>", (sensors[OBK_GENERATION_TOTAL].lastReading) * 0.001); //always display OBK_GNERATION_TOTAL in kwh
+    		}
+//end 
+	    
+	/********************************************************************************************************************/
         hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
         hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
         hprintf255(request,"Sampling interval: %d sec<br>History length: ",energyCounterSampleInterval);
