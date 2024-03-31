@@ -18,10 +18,13 @@
 
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
+int time_division_factor = 1;
 static int first_run = 0;
 static int net_metring_interval = 1;
 float net_energy = 0;
 float net_energy_start = 0;
+// We use this to sync the time on the NetMetering fucntion, so it's always referenced to the start of the hour
+int time_division_factor = 60/energyCounterSampleInterval;
 
 // Order corrsponds to enums OBK_VOLTAGE - OBK__LAST
 // note that Wh/kWh units are overridden in hass_init_energy_sensor_device_info()
@@ -128,13 +131,17 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		}
 	};
 
+	// Print total consumption
+	poststr(request, "<tr><td><b>Total Consumption</b></td><td style='text-align: right;'>");
+	hprintf255(request, "%.3f</td><td>KWh</td>", (sensors[OBK_ENERGY_TOTAL].lastReading) * 0.001); //always display OBK_GNERATION_TOTAL in kwh
+	// print total generation (If applicable)
 	if (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
 	{
 		//Create a field to display energy produced.
-		poststr(request, "<tr><td><b>Total Consumption</b></td><td style='text-align: right;'>");
+		poststr(request, "<tr><td><b>Total Generation</b></td><td style='text-align: right;'>");
 		hprintf255(request, "%.3f</td><td>KWh</td>", (sensors[OBK_GENERATION_TOTAL].lastReading) * 0.001); //always display OBK_GNERATION_TOTAL in kwh
-	}/*
-		
+	}
+		/*
 		//int minute = NTP_GetMinute();
 		//Create a 15min delay to reset net metering statistics
 		int delay_net_metering = NTP_GetMinute();
@@ -175,7 +182,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 	poststr(request, "</table>");
 
-    	hprintf255(request, "<p><h5>Changes: %isent; %i Skipped, %li Saved - %s<hr></p>",
+    	hprintf255(request, "<p><h5>Changes: %i sent; %i Skipped, %li Saved - %s<hr></p>",
                stat_updatesSent, stat_updatesSkipped, ConsumptionSaveCounter,
                mode);
 
@@ -195,9 +202,11 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		hprintf255(request,"Daily energy stats awaiting NTP driver to sync real time...");
 	}
 	hprintf255(request, "</h5>");
+	/********************************************************************************************************************/
+        hprintf255(request,"<hr><h2>Periodic Statistics</h2>");
 
-    if (energyCounterStatsEnable == true)
-    {
+    	if (energyCounterStatsEnable == true)
+    	{
        		//If we are measuring negative power, we can run the commands to get the netmetering stats
 		// We need NTP enabled for this, as well as the statistics. They need to be manually configured because of duration and time zone.
 		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
@@ -213,6 +222,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				//previous_delay_net_metering = net_metring_interval;
 				net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
 				first_run = 1;
+				time_division_factor = (60/energyCounterSampleInterval);
 				}
 		
 		if (delay_net_metering - previous_delay_net_metering  >= net_metring_interval) {
@@ -226,17 +236,14 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		// Print out periodic statistics and Total Generation at the bottom of the page.
 		//hprintf255(request,"<h5>NetMetering (Last 15min): ");
-		hprintf255(request, "<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", delay_net_metering, net_energy, energyCounterSampleInterval); //Net metering shown in Wh (Small value)
+		hprintf255(request, "<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", delay_net_metering, energyCounterSampleInterval, net_energy,); //Net metering shown in Wh (Small value)
 		//hprintf255(request, "%.3f Wh </h5>", ((net_energy))); //Net metering shown in Wh (Small value)
 		//hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
 		//hprintf255(request, "%.3fWh </h5>", ((net_energy))); //Net metering shown in Wh (Small value)
-		poststr(request, "<tr><td><b>Total Consumption</b></td><td style='text-align: right;'>");
-		hprintf255(request, "%.3f</td><td>KWh</td>", (sensors[OBK_GENERATION_TOTAL].lastReading) * 0.001); //always display OBK_GNERATION_TOTAL in kwh
-    		}
-//end 
+    		}// End of NetMetering stuff 
 	    
 	/********************************************************************************************************************/
-        hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
+        hprintf255(request,"<hr><h5>Consumption (during this period): ");
         hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
         hprintf255(request,"Sampling interval: %d sec<br>History length: ",energyCounterSampleInterval);
         hprintf255(request,"%d samples<br>History per samples:<br>",energyCounterSampleCount);
@@ -258,7 +265,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			// energyCounterMinutesIndex is a long type, we need to use %ld instead of %d
             if ((i%20)!=0)
                 hprintf255(request, "<br>");
-            hprintf255(request, "History Index: %ld<br>JSON Stats: %s <br>", energyCounterMinutesIndex,
+            hprintf255(request, "History Index: %ld<hr><br>JSON Stats: %s <br>", energyCounterMinutesIndex,
                     (energyCounterStatsJSONEnable == true) ? "enabled" : "disabled");
         }
 
