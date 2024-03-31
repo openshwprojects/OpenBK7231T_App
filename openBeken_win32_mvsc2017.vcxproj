@@ -351,6 +351,7 @@
     <ClCompile Include="src\driver\drv_dht.c" />
     <ClCompile Include="src\driver\drv_dht_internal.c" />
     <ClCompile Include="src\driver\drv_doorSensorWithDeepSleep.c" />
+    <ClCompile Include="src\driver\drv_freeze.c" />
     <ClCompile Include="src\driver\drv_gn6932.c" />
     <ClCompile Include="src\driver\drv_ht16k33.c" />
     <ClCompile Include="src\driver\drv_httpButtons.c" />
