@@ -19,7 +19,6 @@
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
 static int first_run = 0;
-//static int net_metring_interval = 1;
 float net_energy = 0;
 float net_energy_start = 0;
 int sync = 0;
