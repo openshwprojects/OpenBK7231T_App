@@ -116,14 +116,16 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			poststr(request, "<tr><td><b>");
 			poststr(request, sensors[i].names.name_friendly);
 			poststr(request, "</b></td><td style='text-align: right;'>");
-			if (i == (OBK_CONSUMPTION_TOTAL || OBK_GENERATION_TOTAL))
+			(i == OBK_CONSUMPTION_TOTAL ? 0.001 : 1) * sensors[i].lastReading, //always display OBK_CONSUMPTION_TOTAL in kwh
+					i == OBK_CONSUMPTION_TOTAL ? "kWh": sensors[i].names.units);
+			/*if (i == (OBK_CONSUMPTION_TOTAL || OBK_GENERATION_TOTAL))
 			{
 				hprintf255(request, "%.*f</td><td>%s</td>", sensors[i].rounding_decimals, (0.001*sensors[i].lastReading), "KWh": sensors[i].names.units);
 			}
 			else
 			{
 				hprintf255(request, "%.*f</td><td>%s</td>", sensors[i].rounding_decimals, sensors[i].lastReading, sensors[i].names.units);
-			}
+			}*/
 			//hprintf255(request, "%.*f</td><td>%s</td>", sensors[i].rounding_decimals, 
 				// These lines report consumprion and generation in KWh
 				//(i == (OBK_CONSUMPTION_TOTAL ? 0.001 : 1) * sensors[i].lastReading, 
