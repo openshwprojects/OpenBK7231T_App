@@ -137,7 +137,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	}
 	// Close the table
 	poststr(request, "</table>");
-	hprintf255(request, "<br><font size=1>Default Saving: Every %.2fkW</font>", changeSavedThresholdEnergy);
+	hprintf255(request, "<font size=1>Saving Interval: %.2fkW</font>", (changeSavedThresholdEnergy)* 0.001);
 	// Some other stats...
     	hprintf255(request, "<p><br><h5>Changes: %i sent, %i Skipped, %li Saved. <br> %s<hr></p>",
                stat_updatesSent, stat_updatesSkipped, ConsumptionSaveCounter,
