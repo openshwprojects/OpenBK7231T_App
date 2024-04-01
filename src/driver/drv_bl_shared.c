@@ -133,8 +133,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
 	{
 		//Create a field to display energy produced.
-		poststr(request, "<tr><td><b>Total Generation</b></td><td style='text-align: right;'>");
-		hprintf255(request, "%.3f</td><td>kWh</td>", (sensors[OBK_GENERATION_TOTAL].lastReading) * 0.001); //always display OBK_GNERATION_TOTAL in kwh
+		//poststr(request, "<tr><td><b>Total Generation</b></td><td style='text-align: right;'>");
+		//hprintf255(request, "%.3f</td><td>kWh</td>", (sensors[OBK_GENERATION_TOTAL].lastReading) * 0.001); //always display OBK_GNERATION_TOTAL in kwh
 		if (!first_run)
 				{
 				// Start NTP
