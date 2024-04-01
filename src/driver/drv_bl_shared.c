@@ -115,7 +115,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
     }
 
 	for (int i = (OBK__FIRST); i <= (OBK_CONSUMPTION__DAILY_LAST); i++) {
-		if (i = OBK_GENERATION_TOTAL && (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){i++;}
+		if (i == OBK_GENERATION_TOTAL && (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){i++;}
 		//if (i == 7){i++;}
 		if (i <= OBK__NUM_MEASUREMENTS || NTP_IsTimeSynced()) {
 			poststr(request, "<tr><td><b>");
