@@ -122,8 +122,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			poststr(request, sensors[i].names.name_friendly);
 			poststr(request, "</b></td><td style='text-align: right;'>");
 			hprintf255(request, "%.*f</td><td>%s</td>", sensors[i].rounding_decimals, 
-					(i == OBK_CONSUMPTION_TOTAL ? 0.001 : 1) * sensors[i].lastReading, //always display OBK_CONSUMPTION_TOTAL in kwh
-					i == OBK_CONSUMPTION_TOTAL ? "kWh": sensors[i].names.units);
+				// These lines report consumprion and generation in KWh
+				(i == OBK_CONSUMPTION_TOTAL || OBK_GENERATION_TOTAL)  ? 0.001 : 1) * sensors[i].lastReading, 
+				(i == OBK_CONSUMPTION_TOTAL || OBK_GENERATION_TOTAL) ? "KWh": sensors[i].names.units);
 			
 		}
 	}/*;*/ // Why was this here?
