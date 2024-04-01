@@ -191,7 +191,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 	net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 	// Print out periodic statistics and Total Generation at the bottom of the page.
-	hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5", delay_net_metering, energyCounterSampleInterval, net_energy); //Net metering shown in Wh (Small value)    
+	hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", delay_net_metering, energyCounterSampleInterval, net_energy); //Net metering shown in Wh (Small value)    
 	/********************************************************************************************************************/
         hprintf255(request,"<h5>Consumption (during this period): ");
         hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
