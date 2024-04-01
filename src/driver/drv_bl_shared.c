@@ -133,10 +133,11 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	{
 		//Create a field to display energy produced.
 		poststr(request, "<tr><td><b>Total Generation</b></td><td style='text-align: right;'>");
-		hprintf255(request, "%.3f</td><td>KWh</td>", (sensors[OBK_GENERATION_TOTAL].lastReading) * 0.001); //always display OBK_GNERATION_TOTAL in kwh
+		hprintf255(request, "%.3f</td><td>kWh</td>", (sensors[OBK_GENERATION_TOTAL].lastReading) * 0.001); //always display OBK_GNERATION_TOTAL in kwh
 	}
 	// Close the table
 	poststr(request, "</table>");
+	hprintf255(request, "<br><font size="4">Default Saving: Every %.2fkW</font>", changeSavedThresholdEnergy);
 	// Some other stats...
     	hprintf255(request, "<p><br><h5>Changes: %i sent, %i Skipped, %li Saved. <br> %s<hr></p>",
                stat_updatesSent, stat_updatesSkipped, ConsumptionSaveCounter,
