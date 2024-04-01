@@ -74,7 +74,7 @@ bool energyCounterStatsJSONEnable = false;
 int actual_mday = -1;
 float lastSavedEnergyCounterValue = 0.0f;
 float lastSavedGenerationCounterValue = 0.0f;
-float changeSavedThresholdEnergy = 10.0f;
+float changeSavedThresholdEnergy = 100.0f;
 long ConsumptionSaveCounter = 0;
 portTickType lastConsumptionSaveStamp;
 time_t ConsumptionResetTime = 0;
@@ -138,7 +138,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	// Close the table
 	poststr(request, "</table>");
 	// Some other stats...
-    	hprintf255(request, "<p><br><h5>Changes: %i sent, %i Skipped, %li Saved <br> %s<hr></p>",
+    	hprintf255(request, "<p><br><h5>Changes: %i sent, %i Skipped, %li Saved. <br> %s<hr></p>",
                stat_updatesSent, stat_updatesSkipped, ConsumptionSaveCounter,
                mode);
 
