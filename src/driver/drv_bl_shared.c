@@ -61,7 +61,6 @@ struct {
 
 float lastReadingFrequency = NAN;
 
-//static double energyCounter = 0.0;
 portTickType energyCounterStamp;
 
 bool energyCounterStatsEnable = false;
@@ -82,9 +81,6 @@ time_t ConsumptionResetTime = 0;
 
 int changeSendAlwaysFrames = 60;
 int changeDoNotSendMinFrames = 5;
-
-unsigned long previous_delay_net_metering  = 0;
-	      //previous_delay_net_metering
 
 void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 {
@@ -123,8 +119,10 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			poststr(request, "</b></td><td style='text-align: right;'>");
 			hprintf255(request, "%.*f</td><td>%s</td>", sensors[i].rounding_decimals, 
 				// These lines report consumprion and generation in KWh
-				(i == (OBK_CONSUMPTION_TOTAL || OBK_GENERATION_TOTAL)  ? 0.001 : 1) * sensors[i].lastReading, 
-				(i == (OBK_CONSUMPTION_TOTAL || OBK_GENERATION_TOTAL) ? "KWh": sensors[i].names.units);
+				(i == (OBK_CONSUMPTION_TOTAL ? 0.001 : 1) * sensors[i].lastReading, 
+				(i == (OBK_CONSUMPTION_TOTAL ? "KWh": sensors[i].names.units);
+				(i == (OBK_GENERATION_TOTAL ? 0.001 : 1) * sensors[i].lastReading, 
+				(i == (OBK_GENERATION_TOTAL ? "KWh": sensors[i].names.units);
 			
 		}
 	}/*;*/ // Why was this here?
@@ -133,15 +131,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	// Only Active if 'Set flag 25' (Negative energy) is checked.
 	if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
 	{
-		//Create a field to display energy produced.
-		//poststr(request, "<tr><td><b>Total Generation</b></td><td style='text-align: right;'>");
-		//hprintf255(request, "%.3f</td><td>kWh</td>", (sensors[OBK_GENERATION_TOTAL].lastReading) * 0.001); //always display OBK_GNERATION_TOTAL in kwh
 		if (!first_run)
 				{
-				// Start NTP
-				//CMD_ExecuteCommand("startDriver NTP");
 				//An update is forced at startup, so the energy values are correct.
-				//previous_delay_net_metering = net_metring_interval;
 				net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
 				first_run = 1;
 				}
