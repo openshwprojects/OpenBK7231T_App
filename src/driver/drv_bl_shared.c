@@ -18,13 +18,10 @@
 
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
-int time_division_factor = 1;
 static int first_run = 0;
 static int net_metring_interval = 1;
 float net_energy = 0;
 float net_energy_start = 0;
-// We use this to sync the time on the NetMetering fucntion, so it's always referenced to the start of the hour
-int time_division_factor = 60/energyCounterSampleInterval;
 
 // Order corrsponds to enums OBK_VOLTAGE - OBK__LAST
 // note that Wh/kWh units are overridden in hass_init_energy_sensor_device_info()
@@ -133,7 +130,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 	// Print total consumption
 	poststr(request, "<tr><td><b>Total Consumption</b></td><td style='text-align: right;'>");
-	hprintf255(request, "%.3f</td><td>KWh</td>", (sensors[OBK_ENERGY_TOTAL].lastReading) * 0.001); //always display OBK_GNERATION_TOTAL in kwh
+	hprintf255(request, "%.3f</td><td>KWh</td>", (sensors[OBK_CONSUMPTION_TOTAL].lastReading) * 0.001); //always display OBK_GNERATION_TOTAL in kwh
 	// print total generation (If applicable)
 	if (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
 	{
@@ -222,7 +219,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				//previous_delay_net_metering = net_metring_interval;
 				net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
 				first_run = 1;
-				time_division_factor = (60/energyCounterSampleInterval);
+				//time_division_factor = (60/energyCounterSampleInterval);
 				}
 		
 		if (delay_net_metering - previous_delay_net_metering  >= net_metring_interval) {
@@ -240,7 +237,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		//hprintf255(request, "%.3f Wh </h5>", ((net_energy))); //Net metering shown in Wh (Small value)
 		//hprintf255(request,"<h2>Periodic Statistics</h2><h5>Consumption (during this period): ");
 		//hprintf255(request, "%.3fWh </h5>", ((net_energy))); //Net metering shown in Wh (Small value)
-    		}// End of NetMetering stuff 
+    		//}// End of NetMetering stuff 
 	    
 	/********************************************************************************************************************/
         hprintf255(request,"<hr><h5>Consumption (during this period): ");
