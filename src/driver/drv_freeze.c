@@ -7,9 +7,7 @@ void Freeze_OnEverySecond() {
 	}
 }
 void Freeze_RunFrame() {
-	while (1) {
-		// freeze
-	}
+	//don't freeze, seems this does not allow watchdog reset to work on BL602
 }
 void Freeze_Init() {
 	// don't freeze
