@@ -89,8 +89,6 @@ unsigned long previous_delay_net_metering  = 0;
 void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 {
     int i;
-	
-    //float net_metering = (sensors[OBK_CONSUMPTION_TOTAL].rounding_decimals-sensors[OBK_GENERATION_TOTAL].rounding_decimals);
     const char *mode;
     struct tm *ltm;
 
@@ -118,7 +116,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 	for (int i = (OBK__FIRST); i <= (OBK_CONSUMPTION__DAILY_LAST); i++) {
 	//for (int i = 0; i <= (15); i++) {
-		if (i </*=*/ OBK__NUM_MEASUREMENTS || NTP_IsTimeSynced()) {
+		if (i <= OBK__NUM_MEASUREMENTS || NTP_IsTimeSynced()) {
 			poststr(request, "<tr><td><b>");
 			poststr(request, sensors[i].names.name_friendly);
 			poststr(request, "</b></td><td style='text-align: right;'>");
@@ -746,7 +744,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			case OBK_VOLTAGE:				eventChangeCode = CMD_EVENT_CHANGE_VOLTAGE;			break;
 			case OBK_CURRENT:				eventChangeCode = CMD_EVENT_CHANGE_CURRENT;			break;
 			case OBK_POWER:					eventChangeCode = CMD_EVENT_CHANGE_POWER; 			break;
-			//case OBK_GENERATION_TOTAL:			eventChangeCode = CMD_EVENT_CHANGE_GENERATION_TOTAL; 		break;
+			case OBK_GENERATION_TOTAL:			eventChangeCode = CMD_EVENT_CHANGE_GENERATION_TOTAL; 		break;
 			case OBK_CONSUMPTION_TOTAL:			eventChangeCode = CMD_EVENT_CHANGE_CONSUMPTION_TOTAL; 		break;
 			case OBK_CONSUMPTION_LAST_HOUR:			eventChangeCode = CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR; 	break;
 			default:					eventChangeCode = CMD_EVENT_NONE; 				break;
