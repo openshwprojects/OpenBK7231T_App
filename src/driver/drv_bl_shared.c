@@ -139,7 +139,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		hprintf255(request, "%.3f</td><td>KWh</td>", (sensors[OBK_GENERATION_TOTAL].lastReading) * 0.001); //always display OBK_GNERATION_TOTAL in kwh
 	}
 	poststr(request, "</table>");
-    	hprintf255(request, "<p><h5>Changes: %i sent, %i Skipped, %li Saved <br> %s<hr></p>",
+    	hprintf255(request, "<p><br><h5>Changes: %i sent, %i Skipped, %li Saved <br> %s<hr></p>",
                stat_updatesSent, stat_updatesSkipped, ConsumptionSaveCounter,
                mode);
 
