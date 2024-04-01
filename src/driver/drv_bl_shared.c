@@ -127,10 +127,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			
 		}
 	};
-
-	// Print total consumption
-	//poststr(request, "<tr><td><b>Total Consumption</b></td><td style='text-align: right;'>");
-	//hprintf255(request, "%.3f</td><td>KWh</td>", (sensors[OBK_CONSUMPTION_TOTAL].lastReading) * 0.001); //always display OBK_GNERATION_TOTAL in kwh
+	
 	// print total generation (If applicable)
 	if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
 	{
@@ -138,7 +135,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		poststr(request, "<tr><td><b>Total Generation</b></td><td style='text-align: right;'>");
 		hprintf255(request, "%.3f</td><td>KWh</td>", (sensors[OBK_GENERATION_TOTAL].lastReading) * 0.001); //always display OBK_GNERATION_TOTAL in kwh
 	}
+	// Close the table
 	poststr(request, "</table>");
+	// Some other stats...
     	hprintf255(request, "<p><br><h5>Changes: %i sent, %i Skipped, %li Saved <br> %s<hr></p>",
                stat_updatesSent, stat_updatesSkipped, ConsumptionSaveCounter,
                mode);
@@ -178,7 +177,6 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				//previous_delay_net_metering = net_metring_interval;
 				net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
 				first_run = 1;
-				//time_division_factor = (60/energyCounterSampleInterval);
 				}
 		
 		if (delay_net_metering - previous_delay_net_metering  >= net_metring_interval) {
@@ -191,7 +189,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 	net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 	// Print out periodic statistics and Total Generation at the bottom of the page.
-	hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", delay_net_metering, energyCounterSampleInterval, net_energy); //Net metering shown in Wh (Small value)    
+	hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", delay_net_metering, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)    
 	/********************************************************************************************************************/
         hprintf255(request,"<h5>Consumption (during this period): ");
         hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
