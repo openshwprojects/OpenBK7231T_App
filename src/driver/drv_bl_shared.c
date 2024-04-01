@@ -19,9 +19,10 @@
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
 static int first_run = 0;
-static int net_metring_interval = 1;
+//static int net_metring_interval = 1;
 float net_energy = 0;
 float net_energy_start = 0;
+int sync = 0;
 
 // Order corrsponds to enums OBK_VOLTAGE - OBK__LAST
 // note that Wh/kWh units are overridden in hass_init_energy_sensor_device_info()
@@ -210,7 +211,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		// Print out periodic statistics and Total Generation at the bottom of the page.
-		hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", delay_net_metering, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)    
+		hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", energyCounterSampleInterval, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)    
 		}	
 	/********************************************************************************************************************/
         hprintf255(request,"<h5>Consumption (during this period): ");
