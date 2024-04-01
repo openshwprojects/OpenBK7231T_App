@@ -123,7 +123,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				//(i == (OBK_GENERATION_TOTAL ? 0.001 : 1) * sensors[i].lastReading, 
 				//(i == (OBK_GENERATION_TOTAL ? "KWh": sensors[i].names.units);
 				(i == (OBK_CONSUMPTION_TOTAL||OBK_GENERATION_TOTAL) ? 0.001 : 1) * sensors[i].lastReading,
-				(i == (OBK_GENERATION_TOTAL||OBK_GENERATION_TOTAL) ? "KWh": sensors[i].names.units);
+				i == (OBK_GENERATION_TOTAL||OBK_GENERATION_TOTAL) ? "KWh": sensors[i].names.units);
 			
 		}
 	}/*;*/ // Why was this here?
