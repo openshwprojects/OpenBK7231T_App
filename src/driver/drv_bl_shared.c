@@ -160,8 +160,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		if (check_time)	{
 			// At XX:01 or above, reset the flag, so that synchronization occurs again next hour (XX:00).
 			sync = 1;
-			}
-	 }			
+			}		
 	// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 	net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		
@@ -192,6 +191,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	hprintf255(request, "</h5>");
 	/********************************************************************************************************************/
     	if (energyCounterStatsEnable == true)
+	{	
     	
        		hprintf255(request,"<hr><h2>Periodic Statistics</h2>");
 		//If we are measuring negative power, we can run the commands to get the netmetering stats
@@ -211,8 +211,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		// Print out periodic statistics and Total Generation at the bottom of the page.
 		hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", delay_net_metering, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)    
-		}
-			
+		}	
 	/********************************************************************************************************************/
         hprintf255(request,"<h5>Consumption (during this period): ");
         hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
@@ -238,7 +237,6 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
             hprintf255(request, "History Index: %ld<hr><br>JSON Stats: %s <br>", energyCounterMinutesIndex,
                     (energyCounterStatsJSONEnable == true) ? "enabled" : "disabled");
         }
-
         hprintf255(request, "</h5>");
     } 
     else {
