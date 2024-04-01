@@ -141,14 +141,14 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		int check_time = NTP_GetMinute();
 		// Reset the counter once, at the turn of the hour (XX:00min), to match readings by the utility company
 		// Reset the timer if we go over the timer interval
-		if (((!check_time) && (!sync))||(energyCounterMinutesIndex >= energyCounterSampleInterval)){
+		if (((!check_time) && (sync))||(energyCounterMinutesIndex >= energyCounterSampleCount)){
 			energyCounterMinutesIndex = 0;
 			// Zero the counter. What was not used, was exported to the grid now
 			net_energy = 0;
 			// save the current readings, so we know the difference during the measuring period
 			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
 			// Avoid running this loop again more than once
-			sync = 1;
+			sync = 0;
 			}
 		if (check_time)	{
 			// At XX:01 or above, reset the flag, so that synchronization occurs again next hour (XX:00).
