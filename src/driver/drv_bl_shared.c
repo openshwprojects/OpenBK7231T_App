@@ -117,7 +117,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			poststr(request, sensors[i].names.name_friendly);
 			poststr(request, "</b></td><td style='text-align: right;'>");
 			(i == OBK_CONSUMPTION_TOTAL ? 0.001 : 1 * sensors[i].lastReading, //always display OBK_CONSUMPTION_TOTAL in kwh
-					i == OBK_CONSUMPTION_TOTAL ? "kWh": sensors[i].names.units);
+			i == OBK_CONSUMPTION_TOTAL ? "kWh": sensors[i].names.units);
 			/*if (i == (OBK_CONSUMPTION_TOTAL || OBK_GENERATION_TOTAL))
 			{
 				hprintf255(request, "%.*f</td><td>%s</td>", sensors[i].rounding_decimals, (0.001*sensors[i].lastReading), "KWh": sensors[i].names.units);
@@ -136,7 +136,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				//((i == (OBK_CONSUMPTION_TOTAL || OBK_GENERATION_TOTAL)) ? 0.001 : 1) * sensors[i].lastReading,sensors[i].names.units);
 			
 		}
-	}/*;*/ // Why was this here?
+	};/*;*/ // Why was this here?
 	
 	// print total generation (If applicable). This routine changes the behaviour of statistics to reset every hour and sync to the beginning of the hour.
 	// Only Active if 'Set flag 25' (Negative energy) is checked.
