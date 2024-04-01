@@ -116,7 +116,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
         hprintf255(request, "%.2f</td><td>Hz</td>", lastReadingFrequency);
     }
 
-	for (int i = OBK__FIRST; i <= (OBK_CONSUMPTION__DAILY_LAST); i++) {
+	for (int i = (1+OBK__FIRST); i <= (OBK_CONSUMPTION__DAILY_LAST); i++) {
 	//for (int i = 0; i <= (15); i++) {
 		if (i <= OBK__NUM_MEASUREMENTS || NTP_IsTimeSynced()) {
 			poststr(request, "<tr><td><b>");
@@ -211,7 +211,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
         hprintf255(request,"%d samples<br>History per samples:<br>",energyCounterSampleCount);
         if (energyCounterMinutes != NULL)
         {
-            for(i=1; i<energyCounterSampleCount; i++)
+            for(i=0; i<energyCounterSampleCount; i++)
             {
                 if ((i%20)==0) {
                     hprintf255(request, "%1.1f", energyCounterMinutes[i]);
