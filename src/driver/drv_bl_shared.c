@@ -199,15 +199,6 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		// We need NTP enabled for this, as well as the statistics. They need to be manually configured because of duration and time zone.
 		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
 		{
-		//int delay_net_metering = NTP_GetMinute();
-		//energyCounterMinutesIndex = energyCounterSampleInterval;
-		/*if (delay_net_metering - previous_delay_net_metering  >= net_metring_interval) {
-			// This is used for the timing function.
-			//Each time it runs, we update the time it did.
-			previous_delay_net_metering = delay_net_metering;
-		    	// save the current readings, so we know the difference during the measuring period
-			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
-		   	 }		*/	
 		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		// Print out periodic statistics and Total Generation at the bottom of the page.
@@ -220,7 +211,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
         hprintf255(request,"%d samples<br>History per samples:<br>",energyCounterSampleCount);
         if (energyCounterMinutes != NULL)
         {
-            for(i=0; i<energyCounterSampleCount; i++)
+            for(i=1; i<energyCounterSampleCount; i++)
             {
                 if ((i%20)==0) {
                     hprintf255(request, "%1.1f", energyCounterMinutes[i]);
