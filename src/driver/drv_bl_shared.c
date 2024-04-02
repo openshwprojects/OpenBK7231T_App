@@ -180,6 +180,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		}
 	}
 
+	// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
+	net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
+	hprintf255(request, "<font size=1>Production excess relay Status: %d</font>", dump_load_relay);
 			
 	// Reset the counter once, at the turn of the hour (XX:00min), to match readings by the utility company
 	// Reset the timer if we go over the timer interval
@@ -191,19 +194,16 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
 			// Avoid running this loop again more than once
 		sync = 0;
-		}
 	if (check_time)	{
 		// At XX:01 or above, reset the flag, so that synchronization occurs again next hour (XX:00).
 		sync = 1;
 		}		
-	// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
-	net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
-	hprintf255(request, "<font size=1>Saving Interval: %.2fkW</font>", (changeSavedThresholdEnergy)* 0.001);
+	
 	}
-
+	// print saving interval in small text
 	hprintf255(request, "<font size=1>Saving Interval: %.2fkW</font>", (changeSavedThresholdEnergy)* 0.001);
 	// Some other stats...
-    	hprintf255(request, "<p><br><h5>Changes: %i sent, %i Skipped, %li Saved. <br> %s<hr></p>",
+    hprintf255(request, "<p><br><h5>Changes: %i sent, %i Skipped, %li Saved. <br> %s<hr></p>",
                stat_updatesSent, stat_updatesSkipped, ConsumptionSaveCounter,
                mode);
 
@@ -215,6 +215,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	} else {
 		poststr(request, "(not set)");
 	}
+	
 	/********************************************************************************************************************/
 	hprintf255(request, "<br>");
 	if(DRV_IsRunning("NTP")==false) {
@@ -237,6 +238,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		// Print out periodic statistics and Total Generation at the bottom of the page.
 		hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", energyCounterMinutesIndex, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)    
 		}	
+	
 	/********************************************************************************************************************/
         hprintf255(request,"<h5>Consumption (during this period): ");
         hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
