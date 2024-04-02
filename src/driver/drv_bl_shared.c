@@ -192,10 +192,12 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			// Avoid running this loop again more than once
 		sync = 0;
 		}
-		if (check_time)	{
-			// At XX:01 or above, reset the flag, so that synchronization occurs again next hour (XX:00).
-			sync = 1;
-			}	
+	if (check_time)	{
+		// At XX:01 or above, reset the flag, so that synchronization occurs again next hour (XX:00).
+		sync = 1;
+		}		
+	// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
+	net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 	hprintf255(request, "<font size=1>Saving Interval: %.2fkW</font>", (changeSavedThresholdEnergy)* 0.001);
 	}
 
