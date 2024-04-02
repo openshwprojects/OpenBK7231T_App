@@ -158,14 +158,15 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		//Now we turn out a remote load if we are exporting excess energy
-		
+
+		//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 		if (check_time - lastsync >= dump_load_hysteresis) {
     			// save the last time the loop was run
    			lastsync = check_time;
-			CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20TOGGLE", 0);
+			//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20TOGGLE", 0);
 			// Are we exporting enough? If so, turn the relay on
-			if (((sensors[OBK_POWER].lastReading)>min_production)&&(net_energy>dump_load_on))
+			if (((sensors[OBK_POWER].lastReading)>min_production))/*&&(net_energy>dump_load_on))*/
 			{
 				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 				//poststr(request, "http://192.168.8.164/cm?cmnd=Power%20on");
@@ -179,6 +180,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				hprintf255(request, "<font size=1>Saving Interval: %d</font>", dump_load_relay);
 			}
 		}
+		//-------------------------------------------------------------------------------------------------------------------------------------------------
 		// Update status of the diversion relay on webpage
 		hprintf255(request, "<font size=1>Production diversion relay: %d <br></font>", dump_load_relay);
 	}
