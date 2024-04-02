@@ -36,7 +36,9 @@ unsigned int logfeatures = (
 	(1 << 21) |
 	(1 << 22) |
 	(1 << 23) |
-	(1 << 24)
+	(1 << 24) |
+	(1 << 25) |
+	(1 << 26)
 	);
 static int log_delay = 0;
 
@@ -77,8 +79,8 @@ char* logfeaturenames[] = {
 	"SENSOR:", // = 21
     "DRV:", // = 22,
 	"ERROR",// = 23,
-	"ERROR",// = 24,
-	"ERROR",// = 25,
+	"CLOCK",// = 24,
+	"CLOCK_EVENTS",// = 25,
 	"ERROR",// = 26,
 	"ERROR",// = 27,
     "ERROR",// = 28,

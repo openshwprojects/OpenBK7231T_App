@@ -98,7 +98,7 @@ void Test_RepeatingEvents();
 void Test_HTTP_Client();
 void Test_DeviceGroups();
 void Test_NTP();
-void Test_NTP_SunsetSunrise();
+void Test_SunsetSunrise();
 void Test_MQTT();
 void Test_Tasmota();
 void Test_EnergyMeter();

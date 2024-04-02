@@ -7,6 +7,7 @@
 #include "../driver/drv_public.h"
 #include "../driver/drv_battery.h"
 #include "../driver/drv_ntp.h"
+#include "../driver/drv_deviceclock.h"
 #include <ctype.h> // isspace
 
 /*
@@ -251,34 +252,34 @@ float getUpTime(const char *s) {
 	return g_secondsElapsed;
 }
 float getWeekDay(const char *s) {
-	return NTP_GetWeekDay();
+	return GetWeekDay();
 }
 float getMinute(const char *s) {
-	return NTP_GetMinute();
+	return GetMinute();
 }
 float getHour(const char *s) {
-	return NTP_GetHour();
+	return GetHour();
 }
 float getSecond(const char *s) {
-	return NTP_GetSecond();
+	return GetSecond();
 }
 float getYear(const char *s) {
-	return NTP_GetYear();
+	return GetYear();
 }
 float getMonth(const char *s) {
-	return NTP_GetMonth();
+	return GetMonth();
 }
 float getMDay(const char *s) {
-	return NTP_GetMDay();
+	return GetMDay();
 }
 
-#if ENABLE_NTP_SUNRISE_SUNSET
+#if ENABLE_SUNRISE_SUNSET
 
 float getSunrise(const char *s) {
-	return NTP_GetSunrise();
+	return GetSunrise();
 }
 float getSunset(const char *s) {
-	return NTP_GetSunset();
+	return GetSunset();
 }
 
 #endif
@@ -431,7 +432,7 @@ const constant_t g_constants[] = {
 	////cnstdetail:"descr":"Current Year from NTP",
 	////cnstdetail:"requires":""}
 	{ "$year", &getYear },
-#if ENABLE_NTP_SUNRISE_SUNSET
+#if ENABLE_SUNRISE_SUNSET
 	////cnstdetail:{"name":"$sunrise",
 	////cnstdetail:"title":"$sunrise",
 	////cnstdetail:"descr":"Next sunrise as a TimerSeconds from midnight",

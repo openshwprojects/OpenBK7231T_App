@@ -507,11 +507,14 @@ extern uint8_t timer_rollover; // I don't expect uptime > 35 years ...
 
 uint32_t getSecondsElapsed();
 
+/*
+moved to drv_deviceclock.c
 uint32_t GetCurrentTime(); 			// might replace for NTP_GetCurrentTime() to return time regardless of NTP present/running
 uint32_t GetCurrentTimeNew(); 			// might replace for NTP_GetCurrentTime() to return time regardless of NTP present/running
 uint32_t GetCurrentTimeWithoutOffset(); 	// ... same forNTP_GetCurrentTimeWithoutOffset()...
 bool IsTimeSynced(); 				// ... and for NTP_IsTimeSynced()
 int GetTimesZoneOfsSeconds();			// ... and for NTP_GetTimesZoneOfsSeconds()
+*/
 
 typedef int(*jsonCb_t)(void *userData, const char *fmt, ...);
 int JSON_ProcessCommandReply(const char *cmd, const char *args, void *request, jsonCb_t printer, int flags);

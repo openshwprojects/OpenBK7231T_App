@@ -86,6 +86,8 @@ typedef enum {
     LOG_FEATURE_SENSOR          = 21,
     LOG_FEATURE_DRV             = 22,
     LOG_FEATURE_MAX             = 23,
+    LOG_FEATURE_CLOCK           = 24,
+    LOG_FEATURE_CLOCK_EVENTS    = 25,    
 } log_features;
 
 #endif

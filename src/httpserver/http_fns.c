@@ -16,8 +16,9 @@
 #include "hass.h"
 #include "../cJSON/cJSON.h"
 #include <time.h>
-#include "../driver/drv_ntp.h"
+#include "../driver/drv_deviceclock.h"
 #include "../driver/drv_local.h"
+#include "../driver/drv_deviceclock.h"
 
 static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"></form>";
 
@@ -159,16 +160,16 @@ int http_fn_pmntp(http_request_t* request) {
 	// we want local time, so we need to add the UTC offset (if there is one)
 	if (http_getArg(request->url, "EPOCH", tmpA, sizeof(tmpA))) {
 		actepoch = (uint32_t)strtoul(tmpA,0,10);
-		g_epochOnStartup = actepoch - g_secondsElapsed ;
-//addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"PoormMansNTP - set g_epochOnStartup to %u -- got actepoch=%u secondsElapsed=%u!! \n",g_epochOnStartup,actepoch, g_secondsElapsed);	
+		setDeviceTime(actepoch);
+addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"PoormMansNTP - set g_epochOnStartup to %u -- got actepoch=%u secondsElapsed=%u!! \n",g_epochOnStartup,actepoch, g_secondsElapsed);	
 	}
 	if (http_getArg(request->url, "OFFSET", tmpA, sizeof(tmpA)) && actepoch != 0 ) {
 	// if actual time is during DST period, javascript will return 
 	// an offset including the one additional hour of DST  
 	// if this is the case, set g_DST_offset to 3600 and reduce the 
 	// offset to the offset from timesone (sbtract 3600 seconds)
-		g_UTCoffset = testNsetDST(actepoch)==1 ? atoi(tmpA)-3600 : atoi(tmpA);
-//addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"PoormMansNTP - set g_UTCoffset to %u -- got offset=%i -- next switch at %u!! \n",g_UTCoffset,atoi(tmpA),g_next_dst_change);	
+		setDeviceTimeOffset(testNsetDST(actepoch)==1 ? atoi(tmpA)-3600 : atoi(tmpA));
+addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"PoormMansNTP - set g_timeOffsetSeconds to %i (%i) -- got offset=%i -- next switch at %u!! \n",GetTimesZoneOfsSeconds(),g_timeOffsetSeconds,atoi(tmpA),g_next_dst_change);	
 	}
 	poststr(request, "HTTP/1.1 302 OK\nLocation: /index\nConnection: close\n\n");
 	poststr(request, NULL);

@@ -62,6 +62,18 @@ function fmtUpTime(totalSeconds) {
 	return `just ${seconds} seconds`;
 }
 
+
+// based on suggestion found here https://stackoverflow.com/a/76150458
+// Seconds to Days Hours Minutes Seconds function
+const formatUptime = s => {
+  const calc = (v, f) => { const x = (v/f)|0; return [x, v-x*f]; },
+    [m, sr] = calc(s, 60),
+    [h, mr] = calc(m, 60),
+    [d, hr] = calc(h, 24);
+  return `${d} d, ${hr} h, ${mr} m, ${sr} s`;
+}
+
+
 function updateOnlineFor() {
 	onlineForEl.textContent = fmtUpTime(++onlineFor);
 }

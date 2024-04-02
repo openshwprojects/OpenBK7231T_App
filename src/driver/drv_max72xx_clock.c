@@ -8,7 +8,7 @@
 #include "../hal/hal_pins.h"
 #include "drv_public.h"
 #include "drv_local.h"
-#include "drv_ntp.h"
+#include "drv_deviceclock.h"
 #include <time.h>
 
 char *my_strcat(char *p, const char *s) {
@@ -70,7 +70,7 @@ void Clock_Send(int type) {
 	char *p;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime(&g_ntpTime);
+	ltm = gmtime(&g_deviceTime);
 
 	if (ltm == 0) {
 		return;
@@ -143,7 +143,7 @@ void Run_Animated() {
 	char *p;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime(&g_ntpTime);
+	ltm = gmtime(&g_deviceTime);
 
 	if (ltm == 0) {
 		return;

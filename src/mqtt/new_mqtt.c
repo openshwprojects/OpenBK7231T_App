@@ -9,6 +9,7 @@
 #include "../hal/hal_wifi.h"
 #include "../driver/drv_public.h"
 #include "../driver/drv_ntp.h"
+#include "../driver/drv_deviceclock.h"
 #include "../driver/drv_tuyaMCU.h"
 #include "../ota/ota.h"
 
@@ -1790,7 +1791,7 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 		//Drivers are only built on BK7231 chips
 #ifndef OBK_DISABLE_ALL_DRIVERS
 		if (DRV_IsRunning("NTP")) {
-			sprintf(dataStr, "%d", NTP_GetCurrentTime());
+			sprintf(dataStr, "%d", GetCurrentTime());
 			return MQTT_DoItemPublishString("datetime", dataStr);
 		}
 		else {

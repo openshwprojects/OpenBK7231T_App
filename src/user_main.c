@@ -36,6 +36,7 @@
 
 
 #include "driver/drv_ntp.h"
+#include "driver/drv_deviceclock.h"
 #include "driver/drv_ssdp.h"
 #include "driver/drv_uart.h"
 
@@ -461,6 +462,7 @@ void Main_OnEverySecond()
 	g_bHasWiFiConnected = 1;
 #endif
 
+Clock_OnEverySecond();
 	// display temperature - thanks to giedriuslt
 // only in Normal mode, and if boot is not failing
 	if (!bSafeMode && g_bootFailures <= 1)
@@ -655,16 +657,6 @@ void Main_OnEverySecond()
 		HAL_PrintNetworkInfo();
 		// adjust g_secondsElapsed to rtos ticks to be more reliable
 		getSecondsElapsed(); // getSecondsElapsed() will set g_secondsElapsed to a tick based counter
-/*		//
-		// since GetCurrentTimeWithoutOffset() is 0 if time is not set, we don't need to test for "IsTimeSynced()" in advance 
-		// (0 will never be > g_next_dst_change, even if g_next_dst_change was never set and hence is also 0
-		
-//ADDLOGF_INFO("DST: Next DST switch at epoch %u -- g_DSToffset is %i ! \n",g_next_dst_change, g_DSToffset);				
-		if  ( GetCurrentTimeWithoutOffset() > g_next_dst_change ){ // since GetCurrentTimeWithoutOffset() is 0 if time is not set, we don't need to test if time is set before
-			if (testNsetDST(GetCurrentTimeWithoutOffset())) ADDLOGF_INFO("DST switch from normal time to DST at epoch %u -- next switch at %u!! \n", GetCurrentTimeWithoutOffset(), g_next_dst_change);
-			else  ADDLOGF_INFO("DST switch back from DST at epoch %u -- next switch at %u!! \n", GetCurrentTimeWithoutOffset(),g_next_dst_change);
-		}
-*/
 	}
 
 		// since GetCurrentTimeWithoutOffset() is 0 if time is not set, we don't need to test for "IsTimeSynced()" in advance 
