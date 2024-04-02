@@ -173,7 +173,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				hprintf255(request, "<font size=1>Saving Interval: %d</font>", dump_load_relay);
 			}
 			// Are we close to zero export? Turn the relay off.
-			if (net_energy<dump_load_off)
+			if (net_energy>dump_load_off)
 			{
 				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
 				//poststr(request, "http://192.168.8.164/cm?cmnd=Power%20off");
