@@ -17,12 +17,23 @@
 
 
 int stat_updatesSkipped = 0;
+int lastsync = 0;
 int stat_updatesSent = 0;
 static int first_run = 0;
 float net_energy = 0;
 float net_energy_start = 0;
+// Variables for the solar dump load timer
 int sync = 0;
-
+dump_load_hysteresis = 2;	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
+dump load_min = 150		// The minimun instantaneous solar production that will trigger the dump load.
+dump_load_on = 40		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
+dump_load_off = 15		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
+dump_load_relay = 0;
+//Command to turn remote plug on/off
+const char* rem_relay_on = "http://192.168.8.164/cm?cmnd=Power%20on";
+const char* rem_relay_off = "http://192.168.8.164/cm?cmnd=Power%20off";
+//-----------------------------------------------------------
+	
 // Order corrsponds to enums OBK_VOLTAGE - OBK__LAST
 // note that Wh/kWh units are overridden in hass_init_energy_sensor_device_info()
 const char UNIT_WH[] = "Wh";
@@ -127,6 +138,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		}
 	};/*;*/ // Why was this here?
 	
+	// Close the table
+	poststr(request, "</table>");
+
 	// print total generation (If applicable). This routine changes the behaviour of statistics to reset every hour and sync to the beginning of the hour.
 	// Only Active if 'Set flag 25' (Negative energy) is checked.
 	if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
@@ -138,28 +152,54 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				first_run = 1;
 				}
 
+		//sync with the clock
 		int check_time = NTP_GetMinute();
-		// Reset the counter once, at the turn of the hour (XX:00min), to match readings by the utility company
-		// Reset the timer if we go over the timer interval
-		if (((!check_time) && (sync))||(energyCounterMinutesIndex >= energyCounterSampleCount)){
-			energyCounterMinutesIndex = 0;
-			// Zero the counter. What was not used, was exported to the grid now
-			net_energy = 0;
-			// save the current readings, so we know the difference during the measuring period
-			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
-			// Avoid running this loop again more than once
-			sync = 0;
+		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
+		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
+		//Now we turn out a remote load if we are exporting excess energy
+		
+
+		int check_time = NTP_GetMinute();
+
+		if (check_time - lastsync >= dump_load_hysteresis) {
+    			// save the last time the loop was run
+   			lastsync = check_time;
+			// Are we exporting enough? If so, turn the relay on
+			if ((sensors[OBK_GENERATION_TOTAL].lastReading>dump load_min)&&(net_energy>dump load_min_on))
+			{
+				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
+				//poststr(request, "http://192.168.8.164/cm?cmnd=Power%20on");
+				hprintf255(request, "<font size=1>Saving Interval: %d</font>", dump_load_relay);
 			}
+			// Are we close to zero export? Turn the relay off.
+			if (net_energy<dump_load_off)
+			{
+				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
+				//poststr(request, "http://192.168.8.164/cm?cmnd=Power%20off");
+				hprintf255(request, "<font size=1>Saving Interval: %d</font>", dump_load_relay);
+			}
+		}
+	}
+
+			
+	// Reset the counter once, at the turn of the hour (XX:00min), to match readings by the utility company
+	// Reset the timer if we go over the timer interval
+	if (((!check_time) && (sync))||(energyCounterMinutesIndex >= energyCounterSampleCount)){
+		energyCounterMinutesIndex = 0;
+		// Zero the counter. What was not used, was exported to the grid now
+		net_energy = 0;
+		// save the current readings, so we know the difference during the measuring period
+		net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
+			// Avoid running this loop again more than once
+		sync = 0;
+		}
 		if (check_time)	{
 			// At XX:01 or above, reset the flag, so that synchronization occurs again next hour (XX:00).
 			sync = 1;
-			}		
-	// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
-	net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
-		
+			}	
+	hprintf255(request, "<font size=1>Saving Interval: %.2fkW</font>", (changeSavedThresholdEnergy)* 0.001);
 	}
-	// Close the table
-	poststr(request, "</table>");
+
 	hprintf255(request, "<font size=1>Saving Interval: %.2fkW</font>", (changeSavedThresholdEnergy)* 0.001);
 	// Some other stats...
     	hprintf255(request, "<p><br><h5>Changes: %i sent, %i Skipped, %li Saved. <br> %s<hr></p>",
