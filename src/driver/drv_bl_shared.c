@@ -166,7 +166,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
    			lastsync = check_time;
 			//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20TOGGLE", 0);
 			// Are we exporting enough? If so, turn the relay on
-			if (((sensors[OBK_POWER].lastReading)>min_production))/*&&(net_energy>dump_load_on))*/
+			if (min_production>(sensors[OBK_POWER].lastReading))/*&&(net_energy>dump_load_on))*/
 			{
 				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 				//poststr(request, "http://192.168.8.164/cm?cmnd=Power%20on");
