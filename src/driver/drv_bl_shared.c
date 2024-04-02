@@ -24,10 +24,11 @@ float net_energy = 0;
 float net_energy_start = 0;
 // Variables for the solar dump load timer
 int sync = 0;
+int check_time = 0;
 int dump_load_hysteresis = 2;	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
-int dump_load_min = 150		// The minimun instantaneous solar production that will trigger the dump load.
-int dump_load_on = 40		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
-int dump_load_off = 15		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
+int dump_load_min = 150;	// The minimun instantaneous solar production that will trigger the dump load.
+int dump_load_on = 40;		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
+int dump_load_off = 15;		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
 int dump_load_relay = 0;
 //Command to turn remote plug on/off
 const char* rem_relay_on = "http://192.168.8.164/cm?cmnd=Power%20on";
@@ -153,7 +154,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				}
 
 		//sync with the clock
-		int check_time = NTP_GetMinute();
+		check_time = NTP_GetMinute();
 		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		//Now we turn out a remote load if we are exporting excess energy
@@ -163,7 +164,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
     			// save the last time the loop was run
    			lastsync = check_time;
 			// Are we exporting enough? If so, turn the relay on
-			if (((sensors[OBK_GENERATION_TOTAL].lastReading)>dump_load_min)&&(net_energy>dump_load_min_on))
+			if (((sensors[OBK_GENERATION_TOTAL].lastReading)>dump_load_min)&&(net_energy>dump_load_min))
 			{
 				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 				//poststr(request, "http://192.168.8.164/cm?cmnd=Power%20on");
