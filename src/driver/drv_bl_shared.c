@@ -191,8 +191,6 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	// Reset the timer if we go over the timer interval
 	if (((!check_time) && (sync))||(energyCounterMinutesIndex >= energyCounterSampleCount)){
 		energyCounterMinutesIndex = 0;
-		// sync the relay timer too.
-		lastsync = check_time;
 		// Zero the counter. What was not used, was exported to the grid now
 		net_energy = 0;
 		// save the current readings, so we know the difference during the measuring period
