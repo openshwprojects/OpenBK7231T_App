@@ -197,7 +197,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		}*/
 
 		// Reset the timer if it goes over the period
-		if ((energyCounterMinutesIndex=> energyCounterSampleCount)||((check_time==0)&&(energyCounterMinutesIndex>0)))
+		if ((energyCounterMinutesIndex >= energyCounterSampleCount)||((check_time==0)&&(energyCounterMinutesIndex>0)))
 		{
 			energyCounterMinutesIndex = 0;
 		}
