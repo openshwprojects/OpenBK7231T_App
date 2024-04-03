@@ -31,8 +31,8 @@ int dump_load_on = 10;		// The ammount of 'excess' energy stored over the period
 int dump_load_off = 5;		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
 int dump_load_relay = 0;
 //Command to turn remote plug on/off
-const char* rem_relay_on = "http://192.168.8.164/cm?cmnd=Power%20on";
-const char* rem_relay_off = "http://192.168.8.164/cm?cmnd=Power%20off";
+//const char* rem_relay_on = "http://<ip>/cm?cmnd=Power%20on";
+//const char* rem_relay_off = "http://<ip>/cm?cmnd=Power%20off";
 //-----------------------------------------------------------
 	
 // Order corrsponds to enums OBK_VOLTAGE - OBK__LAST
@@ -165,7 +165,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
 
-		if (check_time - lastsync >= dump_load_hysteresis) {
+		if ((check_time - lastsync) >= dump_load_hysteresis) {
     			// save the last time the loop was run
    			lastsync = check_time;
 			//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20TOGGLE", 0);
@@ -184,22 +184,27 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
 				}
 			}
+
+		}
 		// Update status of the diversion relay on webpage
 		hprintf255(request, "<font size=1>Diversion relay: %d <br></font>", dump_load_relay);
-		}
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
 		
-		// Reset the counter once, at the turn of the hour (XX:00min), to match readings by the utility company
-		// Reset the timer if we go over the timer interval
-		if (((!check_time) && (sync))||(energyCounterMinutesIndex >= energyCounterSampleCount)){
-			energyCounterMinutesIndex = 0;
+		// Sync the counter at the turn of the hour. This only runs when time = XX:00 and our counter is not zero.
+		if ((check_time==0)&&(energyCounterMinutesIndex>0))
+		{
+		energyCounterMinutesIndex = 0;
+		}
+		
+		// At each overflow, reset generation statistics ONCE.
+		if ((sync>0)&&(energyCounterMinutesIndex==0)){
 			// Zero the counter. What was not used, was exported to the grid now
 			net_energy = 0;
 			// save the current readings, so we know the difference during the measuring period
 			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
-				// Avoid running this loop again more than once
+				// Avoid running this loop more that once 
 			sync = 0;
-		if (check_time)	{
+		if (energyCounterMinutesIndex>0)	{
 			// At XX:01 or above, reset the flag, so that synchronization occurs again next hour (XX:00).
 			sync = 1;
 			}		
@@ -910,17 +915,17 @@ void BL_Shared_Init(void)
 	//cmddetail:"descr":"Resets the total Energy Counter, the one that is usually kept after device reboots. After this commands, the counter will start again from 0 (or from the value you specified).",
 	//cmddetail:"fn":"BL09XX_ResetEnergyCounter","file":"driver/drv_bl_shared.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("EnergyCntReset", BL09XX_ResetEnergyCounter, NULL);
+  	CMD_RegisterCommand("EnergyCntReset", BL09XX_ResetEnergyCounter, NULL);
 	//cmddetail:{"name":"SetupEnergyStats","args":"[Enable1or0][SampleTime][SampleCount][JSonEnable]",
 	//cmddetail:"descr":"Setup Energy Statistic Parameters: [enable 0 or 1] [sample_time[10..90]] [sample_count[10..180]] [JsonEnable 0 or 1]. JSONEnable is optional.",
 	//cmddetail:"fn":"BL09XX_SetupEnergyStatistic","file":"driver/drv_bl_shared.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("SetupEnergyStats", BL09XX_SetupEnergyStatistic, NULL);
+  	CMD_RegisterCommand("SetupEnergyStats", BL09XX_SetupEnergyStatistic, NULL);
 	//cmddetail:{"name":"ConsumptionThreshold","args":"[FloatValue]",
 	//cmddetail:"descr":"Setup value for automatic save of consumption data [1..100]",
 	//cmddetail:"fn":"BL09XX_SetupConsumptionThreshold","file":"driver/drv_bl_shared.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("ConsumptionThreshold", BL09XX_SetupConsumptionThreshold, NULL);
+    	CMD_RegisterCommand("ConsumptionThreshold", BL09XX_SetupConsumptionThreshold, NULL);
 	//cmddetail:{"name":"VCPPublishThreshold","args":"[VoltageDeltaVolts][CurrentDeltaAmpers][PowerDeltaWats][EnergyDeltaWh]",
 	//cmddetail:"descr":"Sets the minimal change between previous reported value over MQTT and next reported value over MQTT. Very useful for BL0942, BL0937, etc. So, if you set, VCPPublishThreshold 0.5 0.001 0.5, it will only report voltage again if the delta from previous reported value is largen than 0.5V. Remember, that the device will also ALWAYS force-report values every N seconds (default 60)",
 	//cmddetail:"fn":"BL09XX_VCPPublishThreshold","file":"driver/drv_bl_shared.c","requires":"",
