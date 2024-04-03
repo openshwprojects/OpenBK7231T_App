@@ -155,6 +155,10 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 		//sync with the clock
 		check_time = NTP_GetMinute();
+
+		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
+		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
+		
 		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		//Now we turn out a remote load if we are exporting excess energy
@@ -180,31 +184,27 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
 				}
 			}
-		}
-		//-------------------------------------------------------------------------------------------------------------------------------------------------
 		// Update status of the diversion relay on webpage
 		hprintf255(request, "<font size=1>Diversion relay: %d <br></font>", dump_load_relay);
-	}
-
-	// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
-	net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
-	
-			
-	// Reset the counter once, at the turn of the hour (XX:00min), to match readings by the utility company
-	// Reset the timer if we go over the timer interval
-	if (((!check_time) && (sync))||(energyCounterMinutesIndex >= energyCounterSampleCount)){
-		energyCounterMinutesIndex = 0;
-		// Zero the counter. What was not used, was exported to the grid now
-		net_energy = 0;
-		// save the current readings, so we know the difference during the measuring period
-		net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
-			// Avoid running this loop again more than once
-		sync = 0;
-	if (check_time)	{
-		// At XX:01 or above, reset the flag, so that synchronization occurs again next hour (XX:00).
-		sync = 1;
-		}		
-	
+		}
+		//-------------------------------------------------------------------------------------------------------------------------------------------------
+		
+		// Reset the counter once, at the turn of the hour (XX:00min), to match readings by the utility company
+		// Reset the timer if we go over the timer interval
+		if (((!check_time) && (sync))||(energyCounterMinutesIndex >= energyCounterSampleCount)){
+			energyCounterMinutesIndex = 0;
+			// Zero the counter. What was not used, was exported to the grid now
+			net_energy = 0;
+			// save the current readings, so we know the difference during the measuring period
+			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
+				// Avoid running this loop again more than once
+			sync = 0;
+		if (check_time)	{
+			// At XX:01 or above, reset the flag, so that synchronization occurs again next hour (XX:00).
+			sync = 1;
+			}		
+		}
+	/* old code here */		
 	}
 	// print saving interval in small text
 	hprintf255(request, "<font size=1>Saving Interval: %.2fkW</font>", (changeSavedThresholdEnergy)* 0.001);
@@ -245,33 +245,33 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", energyCounterMinutesIndex, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)    
 		}	
 	
-	/********************************************************************************************************************/
-        hprintf255(request,"<h5>Consumption (during this period): ");
-        hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
-        hprintf255(request,"Sampling interval: %d sec<br>History length: ",energyCounterSampleInterval);
-        hprintf255(request,"%d samples<br>History per samples:<br>",energyCounterSampleCount);
-        if (energyCounterMinutes != NULL)
-        {
-            for(i=0; i<energyCounterSampleCount; i++)
-            {
-                if ((i%20)==0) {
-                    hprintf255(request, "%1.1f", energyCounterMinutes[i]);
-                } 
-		else {
-                    hprintf255(request, ", %1.1f", energyCounterMinutes[i]);
-                }
-                if ((i%20)==19){
-                    hprintf255(request, "<br>");
-                }
-            }
-			// energyCounterMinutesIndex is a long type, we need to use %ld instead of %d
-            if ((i%20)!=0)
-                hprintf255(request, "<br>");
-            hprintf255(request, "History Index: %ld<hr><br>JSON Stats: %s <br>", energyCounterMinutesIndex,
-                    (energyCounterStatsJSONEnable == true) ? "enabled" : "disabled");
-        }
-        hprintf255(request, "</h5>");
-    } 
+		/********************************************************************************************************************/
+	        hprintf255(request,"<h5>Consumption (during this period): ");
+	        hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
+	        hprintf255(request,"Sampling interval: %d sec<br>History length: ",energyCounterSampleInterval);
+	        hprintf255(request,"%d samples<br>History per samples:<br>",energyCounterSampleCount);
+	        if (energyCounterMinutes != NULL)
+	        {
+	            for(i=0; i<energyCounterSampleCount; i++)
+	            {
+	                if ((i%20)==0) {
+	                    hprintf255(request, "%1.1f", energyCounterMinutes[i]);
+	                } 
+			else {
+	                    hprintf255(request, ", %1.1f", energyCounterMinutes[i]);
+	                }
+	                if ((i%20)==19){
+	                    hprintf255(request, "<br>");
+	                }
+	            }
+				// energyCounterMinutesIndex is a long type, we need to use %ld instead of %d
+	            if ((i%20)!=0)
+	                hprintf255(request, "<br>");
+	            hprintf255(request, "History Index: %ld<hr><br>JSON Stats: %s <br>", energyCounterMinutesIndex,
+	                    (energyCounterStatsJSONEnable == true) ? "enabled" : "disabled");
+	        }
+	        hprintf255(request, "</h5>");
+	    } 
     else {
         hprintf255(request,"<h5>Periodic Statistics disabled. Use startup command SetupEnergyStats to enable function.</h5>");
     }
