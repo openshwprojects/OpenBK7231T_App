@@ -197,19 +197,22 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		}*/
 
 		// Reset the timer if it goes over the period
-		if ((energyCounterMinutesIndex >= energyCounterSampleCount)||((check_time==0)&&(energyCounterMinutesIndex>0)))
+		if ((energyCounterMinutesIndex >= energyCounterSampleCount)||((check_time==0)&&(energyCounterMinutesIndex>0)&&(sync==1)))
 		{
 			energyCounterMinutesIndex = 0;
+			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
+			net_energy = 0;
+			sync = 0;
 		}
 		
 		// At each overflow, reset generation statistics ONCE.
-		if ((sync>0)&&(energyCounterMinutesIndex==0)){
+		/*if ((sync>0)&&(energyCounterMinutesIndex==0)){
 			// Zero the counter. What was not used, was exported to the grid now
 			net_energy = 0;
 			// save the current readings, so we know the difference during the measuring period
 			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
 				// Avoid running this loop more that once 
-			sync = 0;
+			sync = 0;*/
 		if (energyCounterMinutesIndex>0)	{
 			// At XX:01 or above, reset the flag, so that synchronization occurs again next hour (XX:00).
 			sync = 1;
