@@ -191,9 +191,15 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
 		
 		// Sync the counter at the turn of the hour. This only runs when time = XX:00 and our counter is not zero.
-		if ((check_time==0)&&(energyCounterMinutesIndex>0))
+		/*if ((check_time==0)&&(energyCounterMinutesIndex>0))
 		{
 		energyCounterMinutesIndex = 0;
+		}*/
+
+		// Reset the timer if it goes over the period
+		if ((energyCounterMinutesIndex=> energyCounterSampleCount)||((check_time==0)&&(energyCounterMinutesIndex>0)))
+		{
+			energyCounterMinutesIndex = 0;
 		}
 		
 		// At each overflow, reset generation statistics ONCE.
