@@ -85,7 +85,7 @@ bool energyCounterStatsJSONEnable = false;
 int actual_mday = -1;
 float lastSavedEnergyCounterValue = 0.0f;
 float lastSavedGenerationCounterValue = 0.0f;
-float changeSavedThresholdEnergy = 25.0f;
+float changeSavedThresholdEnergy = 100.0f;
 long ConsumptionSaveCounter = 0;
 portTickType lastConsumptionSaveStamp;
 time_t ConsumptionResetTime = 0;
@@ -180,7 +180,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		}
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
 		// Update status of the diversion relay on webpage
-		hprintf255(request, "<font size=1>Production diversion relay: %d <br></font>", dump_load_relay);
+		hprintf255(request, "<font size=1>Diversion relay: %d <br></font>", dump_load_relay);
 	}
 
 	// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
