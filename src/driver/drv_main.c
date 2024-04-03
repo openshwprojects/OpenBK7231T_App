@@ -42,6 +42,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "tmSensor",	TuyaMCU_Sensor_Init, TuyaMCU_Sensor_RunEverySecond,	NULL, NULL, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_FREEZE
+	//drvdetail:{"name":"FREEZE",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Freeze is a test driver for watchdog. Enabling this will freeze device main loop.",
+	//drvdetail:"requires":""}
+	{ "Freeze",		Freeze_Init,			Freeze_OnEverySecond,			NULL, Freeze_RunFrame, NULL, NULL, false },
+#endif
 #if ENABLE_NTP
 	//drvdetail:{"name":"NTP",
 	//drvdetail:"title":"TODO",
