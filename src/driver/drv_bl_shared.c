@@ -196,7 +196,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		energyCounterMinutesIndex = 0;
 		}*/
 
-		// Reset the timer if it goes over the period
+		// Reset the timer and Netmetering generation stats: 1)if it goes over the time period; 2) If the hour is HH:00min - For synchronization
 		if ((energyCounterMinutesIndex >= energyCounterSampleCount)||((check_time==0)&&(energyCounterMinutesIndex>0)&&(sync==1)))
 		{
 			energyCounterMinutesIndex = 0;
