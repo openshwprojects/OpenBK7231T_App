@@ -3,8 +3,6 @@
 var firstTime,
 	lastTime,
 	req = null;
-var onlineFor;
-var onlineForEl = null;
 
 var getElement = (id) => document.getElementById(id);
 
@@ -21,13 +19,20 @@ function showState() {
 		if (req.readyState == 4 && req.statusText == "OK") {
 			if (
 				!(
+				/*
 					document.activeElement.tagName == "INPUT" &&
 					(document.activeElement.type == "number" || document.activeElement.type == "color")
+				*/
+				// save some bytes and use regular expression
+					(actEl=document.activeElement).tagName == "INPUT" && (/number|color/.test(actEl.type))
 				)
 			) {
 				var stateEl = getElement("state");
 				if (stateEl) {
 					stateEl.innerHTML = req.responseText;
+					var valel = getElement("DATA").dataset;
+					getElement("DT").textContent= valel.time > 10 ? Date(valel.time*1e3) : "unset";
+					getElement("onlineFor").textContent=valel.online;
 				}
 			}
 			clearTimeout(firstTime);
@@ -40,66 +45,19 @@ function showState() {
 	firstTime = setTimeout(showState, 3e3);
 }
 
-function fmtUpTime(totalSeconds) {
-	var days, hours, minutes, seconds;
-
-	days = Math.floor(totalSeconds / (24 * 60 * 60));
-	totalSeconds = totalSeconds % (24 * 60 * 60);
-	hours = Math.floor(totalSeconds / (60 * 60));
-	totalSeconds = totalSeconds % (60 * 60);
-	minutes = Math.floor(totalSeconds / 60);
-	seconds = totalSeconds % 60;
-
-	if (days > 0) {
-		return `${days} days, ${hours} hours, ${minutes} minutes and ${seconds} seconds`;
-	}
-	if (hours > 0) {
-		return `${hours} hours, ${minutes} minutes and ${seconds} seconds`;
-	}
-	if (minutes > 0) {
-		return `${minutes} minutes and ${seconds} seconds`;
-	}
-	return `just ${seconds} seconds`;
-}
-
-
-// based on suggestion found here https://stackoverflow.com/a/76150458
-// Seconds to Days Hours Minutes Seconds function
-const formatUptime = s => {
-  const calc = (v, f) => { const x = (v/f)|0; return [x, v-x*f]; },
-    [m, sr] = calc(s, 60),
-    [h, mr] = calc(m, 60),
-    [d, hr] = calc(h, 24);
-  return `${d} d, ${hr} h, ${mr} m, ${sr} s`;
-}
-
-
-function updateOnlineFor() {
-	onlineForEl.textContent = fmtUpTime(++onlineFor);
-}
-
 function PoorMansNTP() {
 	var d=new Date(); 
-	d.getTime(); 
-	return '/pmntp?EPOCH=' + parseInt(d/1000) + '&OFFSET=' + d.getTimezoneOffset()* - 60;
+	return '/pmntp?EPOCH=' + (d/1000|0) + '&OFFSET=' + d.getTimezoneOffset()* - 60;
 };
 
 function onLoad() {
-	onlineForEl = getElement("onlineFor");
-	if (onlineForEl) {
-		onlineFor = parseInt(onlineForEl.dataset.initial, 10); //We have some valid value
-		if (onlineFor) {
-			setInterval(updateOnlineFor, 1000);
-		}
-	}
-
 	showState();
 }
 
 function submitTemperature(slider) {
 	var form = getElement("form132");
 	var kelvinField = getElement("kelvin132");
-	kelvinField.value = Math.round(1000000 / parseInt(slider.value));
+	kelvinField.value =(1000000 / slider.value|0)|0;
 	form.submit();
 }
 

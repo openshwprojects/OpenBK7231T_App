@@ -273,13 +273,9 @@ void http_html_end(http_request_t* request) {
 	poststr(request, htmlFooterInfo);
 	poststr(request, "<br>");
 	poststr(request, g_build_str);
-
-//	hprintf255(request, "<br>Online for&nbsp;<span id=\"onlineFor\" data-initial=\"%i\" data-utc=\"%u\>-</span><span ", g_secondsElapsed);
-//	if (!IsTimeSynced()) hprintf255(request, " style=\"display:none\" ");
-//	hprintf255(request, " ><br>Device time:&nbsp;<span id=\"DT\" data-initial=\"%u\">-</span></span>",IsTimeSynced()? GetCurrentTimeWithoutOffset()-g_secondsElapsed : 0);
-	hprintf255(request, "<br>Online for&nbsp;<span id=\"onlineFor\" data-initial=\"%i\">-</span>", g_secondsElapsed);
-//	hprintf255(request, "<br>NTP time:&nbsp;<span id=\"NTP\" data-initial=\"%u\">-</span>",NTP_IsTimeSynced()? GetCurrentTimeWithoutOffset() : 1);
-	hprintf255(request, "<br>Device time:&nbsp;<span id=\"DT\" data-initial=\"%u\">-</span>",IsTimeSynced()? GetCurrentTimeWithoutOffset() : 1);
+// data to be filled with status updates (index?state=1)
+	hprintf255(request, "<br>Online for&nbsp;<span id=\"onlineFor\" >-</span>");
+	hprintf255(request, "<br>Device time:&nbsp;<span id=\"DT\" >-</span>");
 	WiFI_GetMacAddress((char*)mac);
 
 	snprintf(upTimeStr, sizeof(upTimeStr), "<br>Device MAC: %02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
@@ -804,7 +800,7 @@ const char htmlHeadStyle[] = "<style>div,fieldset,input,select{padding:5px;font-
 //region_end htmlHeadStyle
 
 //region_start pageScript
-const char pageScript[] = "<script type='text/javascript'>var firstTime,lastTime,onlineFor,req=null,onlineForEl=null,getElement=e=>document.getElementById(e);function showState(){clearTimeout(firstTime),clearTimeout(lastTime),null!=req&&req.abort(),(req=new XMLHttpRequest).onreadystatechange=()=>{var e;4==req.readyState&&\"OK\"==req.statusText&&((\"INPUT\"!=document.activeElement.tagName||\"number\"!=document.activeElement.type&&\"color\"!=document.activeElement.type)&&(e=getElement(\"state\"))&&(e.innerHTML=req.responseText),clearTimeout(firstTime),clearTimeout(lastTime),lastTime=setTimeout(showState,3e3))},req.open(\"GET\",\"index?state=1\",!0),req.send(),firstTime=setTimeout(showState,3e3)}function fmtUpTime(e){var t,n,o=Math.floor(e/86400);return e%=86400,t=Math.floor(e/3600),e%=3600,n=Math.floor(e/60),e=e%60,0<o?o+` days, ${t} hours, ${n} minutes and ${e} seconds`:0<t?t+` hours, ${n} minutes and ${e} seconds`:0<n?n+` minutes and ${e} seconds`:`just ${e} seconds`}function updateOnlineFor(){onlineForEl.textContent=fmtUpTime(++onlineFor); getElement(\"DT\").textContent= utc > 10 ? new Date(Date.now()+utcdiff) : \"unset\";}function PoorMansNTP(){var e=new Date;return e.getTime(),\"/pmntp?EPOCH=\"+parseInt(e/1e3)+\"&OFFSET=\"+-60*e.getTimezoneOffset()}function onLoad(){(onlineForEl=getElement(\"onlineFor\"))&&(onlineFor=+onlineForEl.dataset.initial)&&(utc=+getElement(\"DT\").dataset.initial)&&(utcdiff=1e3*utc- Date.now())&&setInterval(updateOnlineFor,1e3),showState()}function submitTemperature(e){var t=getElement(\"form132\");getElement(\"kelvin132\").value=Math.round(1e6/parseInt(e.value)),t.submit()}window.addEventListener(\"load\",onLoad),history.pushState(null,\"\",window.location.pathname.slice(1)),setTimeout(()=>{var e=getElement(\"changed\");e&&(e.innerHTML=\"\")},5e3);</script>";
+const char pageScript[] = "<script type='text/javascript'>var firstTime,lastTime,req=null,getElement=e=>document.getElementById(e);function showState(){clearTimeout(firstTime),clearTimeout(lastTime),null!=req&&req.abort(),(req=new XMLHttpRequest).onreadystatechange=()=>{var e;4==req.readyState&&\"OK\"==req.statusText&&(\"INPUT\"==(actEl=document.activeElement).tagName&&/number|color/.test(actEl.type)||(e=getElement(\"state\"))&&(e.innerHTML=req.responseText,e=getElement(\"DATA\").dataset,getElement(\"DT\").textContent=10<e.time?Date(1e3*e.time):\"unset\",getElement(\"onlineFor\").textContent=e.online),clearTimeout(firstTime),clearTimeout(lastTime),lastTime=setTimeout(showState,3e3))},req.open(\"GET\",\"index?state=1\",!0),req.send(),firstTime=setTimeout(showState,3e3)}function PoorMansNTP(){var e=new Date;return\"/pmntp?EPOCH=\"+(e/1e3|0)+\"&OFFSET=\"+-60*e.getTimezoneOffset()}function onLoad(){showState()}function submitTemperature(e){var t=getElement(\"form132\");getElement(\"kelvin132\").value=1e6/e.value|0,t.submit()}window.addEventListener(\"load\",onLoad),history.pushState(null,\"\",window.location.pathname.slice(1)),setTimeout(()=>{var e=getElement(\"changed\");e&&(e.innerHTML=\"\")},5e3);</script>";
 //region_end pageScript
 
 //region_start ha_discovery_script

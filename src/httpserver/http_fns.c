@@ -799,6 +799,7 @@ int http_fn_index(http_request_t* request) {
 	{
 		hprintf255(request, "<h5>Wifi RSSI: %s (%idBm)</h5>", str_rssi[wifi_rssi_scale(HAL_GetWifiStrength())], HAL_GetWifiStrength());
 	}
+	hprintf255(request, "<input style=\"display:none;\" id=\"DATA\" data-time=\"%u\" data-online=\"%i d, %02i h, %02i m, %02i s\">", IsTimeSynced()? GetCurrentTimeWithoutOffset() : 1, (int)(g_secondsElapsed/86400), (int)((g_secondsElapsed%86400)/3600), (int)((g_secondsElapsed%3600)/60), g_secondsElapsed%60) ;
 #if PLATFORM_BEKEN
 	/*
 typedef enum {
