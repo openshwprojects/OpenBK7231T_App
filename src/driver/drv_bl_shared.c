@@ -174,6 +174,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			{
 				dump_load_relay = 1;
 				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
+				digitalWrite(PIN_RELAY, 1);
 			}
 			// Are we close to zero export? Turn the relay off.
 			else 
@@ -182,6 +183,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				{
 				dump_load_relay = 0;
 				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
+				digitalWrite(PIN_RELAY, 0);
 				}
 			}
 
@@ -206,19 +208,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		}
 		else if(energyCounterMinutesIndex>0)
 		{
-		
-		// At each overflow, reset generation statistics ONCE.
-		/*if ((sync>0)&&(energyCounterMinutesIndex==0)){
-			// Zero the counter. What was not used, was exported to the grid now
-			net_energy = 0;
-			// save the current readings, so we know the difference during the measuring period
-			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
-				// Avoid running this loop more that once 
-			sync = 0;
-		if (energyCounterMinutesIndex>0)	{
-			// At XX:01 or above, reset the flag, so that synchronization occurs again next hour (XX:00).*/
 			sync = 1;
-			//}	
 		}
 	/* old code here */		
 	}
