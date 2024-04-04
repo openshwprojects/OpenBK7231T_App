@@ -689,6 +689,12 @@ void HAL_FlashVars_SaveEnergyExport(float f)
 	// I don't think it will cause a clash, power metering devices dont use that many channels anyway
 	memcpy(&flash_vars.savedValues[MAX_RETAIN_CHANNELS - 2], &f, sizeof(float));
 }
+float HAL_FlashVars_GetEnergyExport()
+{
+	float f;
+	memcpy(&f, &flash_vars.savedValues[MAX_RETAIN_CHANNELS - 2], sizeof(float));
+	return f;
+}
 
 #endif
 
