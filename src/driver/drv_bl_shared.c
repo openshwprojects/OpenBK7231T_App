@@ -174,7 +174,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			{
 				dump_load_relay = 1;
 				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
-				digitalWrite(PIN_RELAY, 1);
+				digitalWrite(PIN_LED, 1);
 			}
 			// Are we close to zero export? Turn the relay off.
 			else 
@@ -183,7 +183,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				{
 				dump_load_relay = 0;
 				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
-				digitalWrite(PIN_RELAY, 0);
+				digitalWrite(PIN_LED, 0);
 				}
 			}
 
