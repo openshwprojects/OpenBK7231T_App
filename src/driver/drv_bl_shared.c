@@ -105,7 +105,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
     }
 
 	for (int i = OBK__FIRST; i <= OBK_CONSUMPTION__DAILY_LAST; i++) {
-		if (i <= OBK__NUM_MEASUREMENTS || NTP_IsTimeSynced()) {
+		if (i <= OBK__NUM_MEASUREMENTS || Clock_IsTimeSynced()) {
 			poststr(request, "<tr><td><b>");
 			poststr(request, sensors[i].names.name_friendly);
 			poststr(request, "</b></td><td style='text-align: right;'>");
@@ -131,10 +131,10 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	}
 
 	hprintf255(request, "<br>");
-	if(DRV_IsRunning("NTP")==false) {
+	if(DRV_IsRunning("NTP")==false && Clock_IsTimeSynced()== false) {
 		hprintf255(request,"NTP driver is not started, daily energy stats disbled.");
-	} else if (!NTP_IsTimeSynced()) {
-		hprintf255(request,"Daily energy stats awaiting NTP driver to sync real time...");
+	} else if (!Clock_IsTimeSynced()) {
+		hprintf255(request,"Daily energy stats awaiting time to sync real time...");
 	}
 	hprintf255(request, "</h5>");
 
@@ -223,7 +223,7 @@ commandResult_t BL09XX_ResetEnergyCounter(const void *context, const char *cmd, 
         sensors[OBK_CONSUMPTION_TOTAL].lastReading = value;
         energyCounterStamp = xTaskGetTickCount();
     }
-    ConsumptionResetTime = (time_t)NTP_GetCurrentTime();
+    ConsumptionResetTime = (time_t)Clock_GetCurrentTime();
 #if WINDOWS
 #elif PLATFORM_BL602
 #elif PLATFORM_W600 || PLATFORM_W800
@@ -524,8 +524,8 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
 	sensors[OBK_CONSUMPTION_TODAY].lastReading  += energy;
 
-    if (NTP_IsTimeSynced()) {
-        ntpTime = (time_t)NTP_GetCurrentTime();
+    if (Clock_IsTimeSynced()) {
+        ntpTime = (time_t)Clock_GetCurrentTime();
         ltm = gmtime(&ntpTime);
         if (ConsumptionResetTime == 0)
             ConsumptionResetTime = (time_t)ntpTime;
@@ -581,20 +581,20 @@ void BL_ProcessUpdate(float voltage, float current, float power,
                 cJSON_AddNumberToObject(root, "consumption_stat_index", energyCounterMinutesIndex);
                 cJSON_AddNumberToObject(root, "consumption_sample_count", energyCounterSampleCount);
                 cJSON_AddNumberToObject(root, "consumption_sampling_period", energyCounterSampleInterval);
-                if(NTP_IsTimeSynced() == true)
+                if(Clock_IsTimeSynced() == true)
                 {
                     cJSON_AddNumberToObject(root, "consumption_today", BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_TODAY)));
                     cJSON_AddNumberToObject(root, "consumption_yesterday", BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_YESTERDAY)));
                     ltm = gmtime(&ConsumptionResetTime);
-                    if (NTP_GetTimesZoneOfsSeconds()>0)
+                    if (Clock_GetTimesZoneOfsSeconds()>0)
                     {
                        snprintf(datetime,sizeof(datetime), "%04i-%02i-%02iT%02i:%02i+%02i:%02i",
                                ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
-                               NTP_GetTimesZoneOfsSeconds()/3600, (NTP_GetTimesZoneOfsSeconds()/60) % 60);
+                               Clock_GetTimesZoneOfsSeconds()/3600, (Clock_GetTimesZoneOfsSeconds()/60) % 60);
                     } else {
                        snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i-%02i:%02i",
                                ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
-                               abs(NTP_GetTimesZoneOfsSeconds()/3600), (abs(NTP_GetTimesZoneOfsSeconds())/60) % 60);
+                               abs(Clock_GetTimesZoneOfsSeconds()/3600), (abs(Clock_GetTimesZoneOfsSeconds())/60) % 60);
                     }
                     cJSON_AddStringToObject(root, "consumption_clear_date", datetime);
                 }
@@ -613,7 +613,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
                     cJSON_AddItemToObject(root, "consumption_samples", stats);
                 }
 
-                if(NTP_IsTimeSynced() == true)
+                if(Clock_IsTimeSynced() == true)
                 {
                     stats = cJSON_CreateArray();
                     for(i = OBK_CONSUMPTION__DAILY_FIRST; i <= OBK_CONSUMPTION__DAILY_LAST; i++)
@@ -696,16 +696,10 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 					sensors[i].lastReading = ConsumptionResetTime; //Only to make the 'nochangeframe' mechanism work here
 					ltm = gmtime(&ConsumptionResetTime);
 					/* 2019-09-07T15:50-04:00 */
-					if (NTP_GetTimesZoneOfsSeconds()>0)
-					{
-						snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i+%02i:%02i",
-								ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
-								NTP_GetTimesZoneOfsSeconds()/3600, (NTP_GetTimesZoneOfsSeconds()/60) % 60);
-					} else {
-						snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i-%02i:%02i",
-								ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
-								abs(NTP_GetTimesZoneOfsSeconds()/3600), (abs(NTP_GetTimesZoneOfsSeconds())/60) % 60);
-					}
+					snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i%s%02i:%02i",
+							ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
+							Clock_GetTimesZoneOfsSeconds()>0 ? "+" : "-",
+							abs(Clock_GetTimesZoneOfsSeconds()/3600), (abs(Clock_GetTimesZoneOfsSeconds())/60) % 60);
 					MQTT_PublishMain_StringString(sensors[i].names.name_mqtt, datetime, 0);
 				} else { //all other sensors
 					float val = sensors[i].lastReading;
