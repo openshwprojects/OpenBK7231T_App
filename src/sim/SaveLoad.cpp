@@ -18,10 +18,25 @@ class CProject *CSaveLoad::loadProjectFile(const char *fname) {
 		return 0;
 	}
 	cJSON *n_jProj = cJSON_Parse(jsonData);
-	cJSON *n_jProjCreated = cJSON_GetObjectItemCaseSensitive(n_jProj, "created");
-	cJSON *n_jProjModified = cJSON_GetObjectItemCaseSensitive(n_jProj, "lastModified");
-	p->setCreated(n_jProjCreated->valuestring);
-	p->setLastModified(n_jProjModified->valuestring);
+	if (0==n_jProj) {
+		printf("Warning: failed to parse JSON data %s\n", fname);
+	}
+	else {
+		cJSON *n_jProjCreated = cJSON_GetObjectItemCaseSensitive(n_jProj, "created");
+		cJSON *n_jProjModified = cJSON_GetObjectItemCaseSensitive(n_jProj, "lastModified");
+		if (n_jProjCreated) {
+			p->setCreated(n_jProjCreated->valuestring);
+		}
+		else {
+			printf("Warning: missing 'created' node in %s\n", fname);
+		}
+		if (n_jProjModified) {
+			p->setLastModified(n_jProjModified->valuestring);
+		}
+		else {
+			printf("Warning: missing 'lastModified' node in %s\n", fname);
+		}
+	}
 	return p;
 }
 void CSaveLoad::saveProjectToFile(class CProject *projToSave, const char *fname) {

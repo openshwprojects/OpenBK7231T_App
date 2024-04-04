@@ -169,8 +169,10 @@ char *FS_ReadTextFile(const char *fname) {
 	int len = ftell(f);
 	fseek(f, 0, SEEK_SET);
 	char *r = (char*)malloc(len + 1);
-	fread(r, 1, len, f);
-	r[len] = 0;
+	if (r) {
+		fread(r, 1, len, f);
+		r[len] = 0;
+	}
 	fclose(f);
 	return r;
 }
