@@ -134,7 +134,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			{
 				poststr(request, "<hr><br> **** TOTALS **** <hr><br>");
 			}
-			if ((i == OBK_CONSUMPTION_TOTAL) || (i == OBK_GENERATION_TOTAL) || (i == OBK_GENERATION_SOLD_TOTAL))
+			if ((i >= OBK_CONSUMPTION_TOTAL) /*|| (i == OBK_GENERATION_TOTAL) || (i == OBK_GENERATION_SOLD_TOTAL)*/)
 			{
 				hprintf255(request, "%.*f</td><td>kWh</td>", sensors[i].rounding_decimals, (0.001*sensors[i].lastReading));
 			}
