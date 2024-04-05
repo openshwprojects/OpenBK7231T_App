@@ -683,7 +683,7 @@ void HAL_FlashVars_SaveTotalConsumption(float total_consumption)
 	flash_vars.emetering.TotalConsumption = total_consumption;
 #endif
 }
-
+#endif
 
 void HAL_FlashVars_SaveEnergyExport(float f)
 {
