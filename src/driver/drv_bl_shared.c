@@ -61,6 +61,7 @@ struct {
 	{{"power_factor",	"",		"Power Factor",			"power_factor",			"11",		},	2,			0.05,		},	// OBK_POWER_FACTOR
 	{{"energy",		UNIT_WH,	"Total Consumption",		"energycounter",		"3",		},	3,			0.1,		},	// OBK_CONSUMPTION_TOTAL
 	{{"energy",		UNIT_WH,	"Total Generation",		"energycounter_generation",	"14",		},	3,			0.1,		},	// OBK_GENERATION_TOTAL	
+	{{"energy",		UNIT_WH,	"Total Generation sold",	"energycounter_generation_sold","15",		},	3,			0.1,		};	// OKB_GENERATION_SOLD_TOTAL
 	{{"energy",		UNIT_WH,	"Energy Last Hour",		"energycounter_last_hour",	"4",		},	3,			0.1,		},	// OBK_CONSUMPTION_LAST_HOUR
 	//{{"",			"",		"Consumption Stats",		"consumption_stats",		"5",		},	0,			0,		},	// OBK_CONSUMPTION_STATS
 	{{"energy",		UNIT_WH,	"Energy Today",			"energycounter_today",		"7",		},	3,			0.1,		},	// OBK_CONSUMPTION_TODAY
@@ -85,6 +86,7 @@ bool energyCounterStatsJSONEnable = false;
 int actual_mday = -1;
 float lastSavedEnergyCounterValue = 0.0f;
 float lastSavedGenerationCounterValue = 0.0f;
+float lastSavedGenerationSoldCounterValue = 0.0f;
 float changeSavedThresholdEnergy = 100.0f;
 long ConsumptionSaveCounter = 0;
 portTickType lastConsumptionSaveStamp;
@@ -291,6 +293,7 @@ void BL09XX_SaveEmeteringStatistics()
     memset(&data, 0, sizeof(ENERGY_METERING_DATA));
 
     data.TotalGeneration = sensors[OBK_GENERATION_TOTAL].lastReading;
+    data.TotalSoldGeneration = sensors[OBK_GENERATION_SOLD_TOTAL].lastReading;
     data.TotalConsumption = sensors[OBK_CONSUMPTION_TOTAL].lastReading;
     data.TodayConsumpion = sensors[OBK_CONSUMPTION_TODAY].lastReading;
     data.YesterdayConsumption = sensors[OBK_CONSUMPTION_YESTERDAY].lastReading;
@@ -621,6 +624,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
     float energy = 0;
     float generation = 0;
+    float generation_sold = 0;
     if (isnan(energyWh)) {
         xPassedTicks = (int)(xTaskGetTickCount() - energyCounterStamp);
         // FIXME: Wrong calculation if tick count overflows
@@ -644,6 +648,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     // Apply values. Add Extra variable for generation 
     sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
     sensors[OBK_GENERATION_TOTAL].lastReading += generation;
+    sensors[OBK_GENERATION_SOLD__TOTAL].lastReading += generation_sold;
     energyCounterStamp = xTaskGetTickCount();
     HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
 	sensors[OBK_CONSUMPTION_TODAY].lastReading  += energy;
@@ -795,6 +800,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			case OBK_POWER:					eventChangeCode = CMD_EVENT_CHANGE_POWER; 			break;
 			case OBK_CONSUMPTION_TOTAL:			eventChangeCode = CMD_EVENT_CHANGE_CONSUMPTION_TOTAL; 		break;
 			case OBK_GENERATION_TOTAL:			eventChangeCode = CMD_EVENT_CHANGE_GENERATION_TOTAL; 		break;
+			case OBK_GENERATION_SOLD_TOTAL:			eventChangeCode = CMD_EVENT_CHANGE_GENERATION_SOLD_TOTAL; 	break;
 			case OBK_CONSUMPTION_LAST_HOUR:			eventChangeCode = CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR; 	break;
 			default:					eventChangeCode = CMD_EVENT_NONE; 				break;
 			}
@@ -846,7 +852,8 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 // Save the total counters periodically   
 if (((sensors[OBK_CONSUMPTION_TOTAL].lastReading - lastSavedEnergyCounterValue) >= changeSavedThresholdEnergy) ||
         ((xTaskGetTickCount() - lastConsumptionSaveStamp) >= (6 * 3600 * 1000 / portTICK_PERIOD_MS)) || 
-	((sensors[OBK_GENERATION_TOTAL].lastReading - lastSavedGenerationCounterValue) >= changeSavedThresholdEnergy))
+	((sensors[OBK_GENERATION_TOTAL].lastReading - lastSavedGenerationCounterValue) >= changeSavedThresholdEnergy)
+	|| ((sensors[OBK_GENERATION_SOLD_TOTAL].lastReading - lastSavedGenerationSoldCounterValue) >= changeSavedThresholdEnergy))
     {
 #if WINDOWS
 #elif PLATFORM_BL602
@@ -860,7 +867,11 @@ if (((sensors[OBK_CONSUMPTION_TOTAL].lastReading - lastSavedEnergyCounterValue) 
 	    lastSavedEnergyCounterValue = sensors[OBK_CONSUMPTION_TOTAL].lastReading;
 	    // Save Generation
 	    lastSavedGenerationCounterValue = sensors[OBK_GENERATION_TOTAL].lastReading;
+	    lastSavedGenerationSoldCounterValue = sensors[OBK_GENERATION_SOLD_TOTAL].lastReading;
             BL09XX_SaveEmeteringStatistics();
+	    //HAL_FlashVars_SaveEnergyExport();
+	    //HAL_FlashVars_SaveEnergySold();
+		
             lastConsumptionSaveStamp = xTaskGetTickCount();
         }
     }
@@ -900,10 +911,12 @@ void BL_Shared_Init(void)
     HAL_GetEnergyMeterStatus(&data);
     sensors[OBK_CONSUMPTION_TOTAL].lastReading = data.TotalConsumption;
     sensors[OBK_GENERATION_TOTAL].lastReading = data.TotalGeneration;
+    sensors[OBK_GENERATION_SOLD_TOTAL].lastReading = data.TotalGenerationSold;
     sensors[OBK_CONSUMPTION_YESTERDAY].lastReading = data.YesterdayConsumption;
     actual_mday = data.actual_mday;    
     lastSavedEnergyCounterValue = data.TotalConsumption;
     lastSavedGenerationCounterValue = data.TotalGeneration;
+    lastSavedGenerationSoldCounterValue = data.TotalGenerationSold;
     sensors[OBK_CONSUMPTION_2_DAYS_AGO].lastReading = data.ConsumptionHistory[0];
     sensors[OBK_CONSUMPTION_3_DAYS_AGO].lastReading = data.ConsumptionHistory[1];
     ConsumptionResetTime = data.ConsumptionResetTime;
