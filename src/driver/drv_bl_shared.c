@@ -61,7 +61,7 @@ struct {
 	{{"power_factor",	"",		"Power Factor",			"power_factor",			"11",		},	2,			0.05,		},	// OBK_POWER_FACTOR
 	{{"energy",		UNIT_WH,	"Total Consumption",		"energycounter",		"3",		},	3,			0.1,		},	// OBK_CONSUMPTION_TOTAL
 	{{"energy",		UNIT_WH,	"Total Generation",		"energycounter_generation",	"14",		},	3,			0.1,		},	// OBK_GENERATION_TOTAL	
-	{{"energy",		UNIT_WH,	"Total Generation sold",	"energycounter_generation_sold","15",		},	3,			0.1,		};	// OKB_GENERATION_SOLD_TOTAL
+	{{"energy",		UNIT_WH,	"Total Generation sold",	"energycounter_generation_sold","15",		},	3,			0.1,		},	// OKB_GENERATION_SOLD_TOTAL
 	{{"energy",		UNIT_WH,	"Energy Last Hour",		"energycounter_last_hour",	"4",		},	3,			0.1,		},	// OBK_CONSUMPTION_LAST_HOUR
 	//{{"",			"",		"Consumption Stats",		"consumption_stats",		"5",		},	0,			0,		},	// OBK_CONSUMPTION_STATS
 	{{"energy",		UNIT_WH,	"Energy Today",			"energycounter_today",		"7",		},	3,			0.1,		},	// OBK_CONSUMPTION_TODAY
