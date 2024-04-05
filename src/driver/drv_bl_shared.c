@@ -207,6 +207,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
 			net_energy = 0;
 			sync = 0;
+			// Adjust Netmetering
 		}
 		else if(energyCounterMinutesIndex>0)
 		{
