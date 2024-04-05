@@ -684,5 +684,25 @@ void HAL_FlashVars_SaveTotalConsumption(float total_consumption)
 #endif
 }
 
+
+
+#endif
+
+void HAL_FlashVars_SaveEnergyExport(float f)
+{
+	// use two last retain channels as float,
+	// I don't think it will cause a clash, power metering devices dont use that many channels anyway
+	memcpy(&flash_vars.savedValues[MAX_RETAIN_CHANNELS - 2], &f, sizeof(float));
+}
+
+#endif
+
+void HAL_FlashVars_SaveEnergySold(float f)
+{
+	// use two last retain channels as float,
+	// I don't think it will cause a clash, power metering devices dont use that many channels anyway
+	memcpy(&flash_vars.savedValues[MAX_RETAIN_CHANNELS - 4], &f, sizeof(float));
+}
+
 #endif
 
