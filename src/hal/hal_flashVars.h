@@ -51,9 +51,9 @@ void HAL_FlashVars_ReadLED(byte* mode, short* brightness, short* temperature, by
 int HAL_FlashVars_GetChannelValue(int ch);
 int HAL_GetEnergyMeterStatus(ENERGY_METERING_DATA* data);
 int HAL_SetEnergyMeterStatus(ENERGY_METERING_DATA* data);
-void HAL_FlashVars_SaveTotalConsumption(float total_consumption);
-void HAL_FlashVars_SaveEnergyExport(float f);
-void HAL_FlashVars_SaveEnergySold(float f);
+//void HAL_FlashVars_SaveTotalConsumption(float total_consumption);
+//void HAL_FlashVars_SaveEnergyExport(float f);
+//void HAL_FlashVars_SaveEnergySold(float f);
 
 
 #endif /* __HALK_FLASH_VARS_H__ */
