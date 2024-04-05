@@ -27,8 +27,8 @@ int sync = 0;
 int check_time = 0;
 int dump_load_hysteresis = 2;	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
 int min_production = -120;	// The minimun instantaneous solar production that will trigger the dump load.
-int dump_load_on = 10;		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
-int dump_load_off = 5;		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
+int dump_load_on = -2;		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
+int dump_load_off = 0;		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
 int dump_load_relay = 0;
 //Command to turn remote plug on/off
 //const char* rem_relay_on = "http://<ip>/cm?cmnd=Power%20on";
