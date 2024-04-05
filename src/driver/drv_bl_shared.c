@@ -293,7 +293,7 @@ void BL09XX_SaveEmeteringStatistics()
     memset(&data, 0, sizeof(ENERGY_METERING_DATA));
 
     data.TotalGeneration = sensors[OBK_GENERATION_TOTAL].lastReading;
-    data.TotalSoldGeneration = sensors[OBK_GENERATION_SOLD_TOTAL].lastReading;
+    data.TotalGenerationSold = sensors[OBK_GENERATION_SOLD_TOTAL].lastReading;
     data.TotalConsumption = sensors[OBK_CONSUMPTION_TOTAL].lastReading;
     data.TodayConsumpion = sensors[OBK_CONSUMPTION_TODAY].lastReading;
     data.YesterdayConsumption = sensors[OBK_CONSUMPTION_YESTERDAY].lastReading;
