@@ -26,9 +26,9 @@ float net_energy_start = 0;
 int sync = 0;
 int check_time = 0;
 int dump_load_hysteresis = 2;	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
-int min_production = -120;	// The minimun instantaneous solar production that will trigger the dump load.
-int dump_load_on = -2;		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
-int dump_load_off = 0;		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
+int min_production = -50;	// The minimun instantaneous solar production that will trigger the dump load.
+int dump_load_on = 3;		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
+int dump_load_off = 1;		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
 int dump_load_relay = 0;
 //Command to turn remote plug on/off
 //const char* rem_relay_on = "http://<ip>/cm?cmnd=Power%20on";
@@ -170,7 +170,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
    			lastsync = check_time;
 			//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20TOGGLE", 0);
 			// Are we exporting enough? If so, turn the relay on
-			if ((min_production>(sensors[OBK_POWER].lastReading)&&(net_energy>dump_load_on)))
+			if ((/*min_production>(sensors[OBK_POWER].lastReading)&&*/(net_energy>dump_load_on)))
 			{
 				dump_load_relay = 1;
 				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
