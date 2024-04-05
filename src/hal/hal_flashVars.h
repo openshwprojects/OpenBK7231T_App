@@ -5,7 +5,7 @@
 #include "../new_common.h"
 
 #define BOOT_COMPLETE_SECONDS 30
-#define MAX_RETAIN_CHANNELS 10
+#define MAX_RETAIN_CHANNELS 8
 
 /* Fixed size 32 bytes */
 typedef struct ENERGY_METERING_DATA {
@@ -51,5 +51,8 @@ int HAL_FlashVars_GetChannelValue(int ch);
 int HAL_GetEnergyMeterStatus(ENERGY_METERING_DATA* data);
 int HAL_SetEnergyMeterStatus(ENERGY_METERING_DATA* data);
 void HAL_FlashVars_SaveTotalConsumption(float total_consumption);
+void HAL_FlashVars_SaveEnergyExport(float f);
+void HAL_FlashVars_SaveEnergySold(float f);
+
 
 #endif /* __HALK_FLASH_VARS_H__ */
