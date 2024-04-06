@@ -123,6 +123,30 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
         hprintf255(request, "%.2f</td><td>Hz</td>", lastReadingFrequency);
     }
 
+	//-----------------------
+
+	for (int i = (OBK_CONSUMPTION_TOTAL); i <= (OBK_CONSUMPTION__DAILY_LAST); i++) {
+		if (i == OBK_GENERATION_TOTAL && (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){i++;}
+		//if (i == 7){i++;}
+		if (i <= OBK__NUM_MEASUREMENTS || NTP_IsTimeSynced()) {
+			poststr(request, "<tr><td><b>");
+			poststr(request, sensors[i].names.name_friendly);
+			poststr(request, "</b></td><td style='text-align: right;'>");
+			//hprintf255(request, "%.*f</td><td>%s</td>", sensors[i].rounding_decimals, sensors[i].lastReading, sensors[i].names.units);
+			hprintf255(request, "%.*f</td><td>kWh</td>", sensors[i].rounding_decimals, (0.001*sensors[i].lastReading));
+			
+			//if ((i >= OBK_CONSUMPTION_TOTAL) /*|| (i == OBK_GENERATION_TOTAL) || (i == OBK_GENERATION_SOLD_TOTAL)*/)
+			//{
+			//	hprintf255(request, "%.*f</td><td>kWh</td>", sensors[i].rounding_decimals, (0.001*sensors[i].lastReading));
+			//}
+			
+		}
+	}
+	//-----------------------
+poststr(request, "<br><hr> **** TOTALS **** ");
+poststr(request, "</table>");
+poststr(request, "<hr><table style='width:100%'>");	
+	
 	for (int i = (OBK__FIRST); i <= (OBK_CONSUMPTION__DAILY_LAST); i++) {
 		if (i == OBK_GENERATION_TOTAL && (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){i++;}
 		//if (i == 7){i++;}
@@ -138,7 +162,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				poststr(request, "<br><hr> **** TOTALS **** ");
 				poststr(request, "<hr><table style='width:100%'>");
 				//poststr(request, "</b></td><td style='text-align: right;'>");
-				poststr(request, sensors[i].names.name_friendly);
+				//poststr(request, sensors[i].names.name_friendly);
 				//poststr(request, sensors[i].names.name_friendly);
 				//i++;
 			}
