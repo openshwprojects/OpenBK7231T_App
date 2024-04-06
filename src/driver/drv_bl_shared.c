@@ -195,18 +195,20 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				// We can do a loop here to run after sunset...
 			}
 			// Are we close to zero export? Turn the relay off.
-			else 
+			//else 
 			{
-				if (net_energy<dump_load_off)
+			else if (check_hour>bypass_on_time<bypass_off_time)
+				//if (net_energy<dump_load_off)
 				{
 				// We make an exception to manually turn on the bypass load, for example - Winter.
-					if (check_hour>=bypass_on_time && check_hour<bypass_off_time)
+					//if (check_hour>=bypass_on_time && check_hour<bypass_off_time)
 						{
 						dump_load_relay = 1;
 						//CMD_ExecuteCommand("SendGet" rem_relay_on, 0);
 						CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 						CMD_ExecuteCommand("setChannel 1 1", 0);
 						}
+				}
 					else
 						{
 						dump_load_relay = 0;
@@ -217,7 +219,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				}
 			}
 
-		}
+		//}
 		// Update status of the diversion relay on webpage
 		hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min. <br></font>", dump_load_relay, time_on);
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
