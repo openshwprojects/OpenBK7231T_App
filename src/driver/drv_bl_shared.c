@@ -186,7 +186,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				CMD_ExecuteCommand("setChannel 1 1", 0);
 				time_on++;
 				// Reset timer late in night
-				check_hour = NTP_Get_hour();
+				check_hour = NTP_GetHour();
 				if (check_hour > 21)
 				{
 					time_on = 0;
