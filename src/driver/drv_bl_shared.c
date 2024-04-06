@@ -60,8 +60,8 @@ struct {
 	{{"reactive_power",	"var",		"Reactive Power",		"power_reactive",		"10",		},	2,			0.25,		},	// OBK_POWER_REACTIVE
 	{{"power_factor",	"",		"Power Factor",			"power_factor",			"11",		},	2,			0.05,		},	// OBK_POWER_FACTOR
 	{{"energy",		UNIT_WH,	"Consumption",			"energycounter",		"3",		},	3,			0.1,		},	// OBK_CONSUMPTION_TOTAL
-	{{"energy",		UNIT_WH,	"Self-Consumption		","energycounter_generation",	"14",		},	3,			0.1,		},	// OBK_GENERATION_TOTAL	
-	{{"energy",		UNIT_WH,	"Export",			"energycounter_generation_sold","15",		},	3,			0.1,		},	// OKB_GENERATION_SOLD_TOTAL
+	{{"energy",		UNIT_WH,	"Export",			"energycounter_generation",	"14",		},	3,			0.1,		},	// OBK_GENERATION_TOTAL	
+	{{"energy",		UNIT_WH,	"Export (Net)",			"energycounter_generation_sold","15",		},	3,			0.1,		},	// OKB_GENERATION_SOLD_TOTAL
 	{{"energy",		UNIT_WH,	"Energy Last Hour",		"energycounter_last_hour",	"4",		},	3,			0.1,		},	// OBK_CONSUMPTION_LAST_HOUR
 	//{{"",			"",		"Consumption Stats",		"consumption_stats",		"5",		},	0,			0,		},	// OBK_CONSUMPTION_STATS
 	{{"energy",		UNIT_WH,	"Energy Today",			"energycounter_today",		"7",		},	3,			0.1,		},	// OBK_CONSUMPTION_TODAY
@@ -115,7 +115,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
         mode = "PWR";
     }
 
- 	  // Print Stats
+ 	// Print Stats
 	// Create a table here
 	poststr(request, "<hr><table style='width:100%'>");
 
@@ -136,11 +136,11 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			}
 	// Print Consumption Values
 	poststr(request, "</table>");
-	poststr(request, "<hr> **** TOTALS **** <hr>");
+	poststr(request, "<br><hr> **** TOTALS **** ");
 	poststr(request, "<hr><table style='width:100%'>");	
 	//Print the totals:
 	for (int i = (OBK_CONSUMPTION_TOTAL); i <= (OBK_CONSUMPTION__DAILY_LAST); i++) {
-		if ((i == OBK_GENERATION_TOTAL) /*|| (i == OBK_GENERATION_SALE_TOTAL)) */&& (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){i++;}
+		if (((i == OBK_GENERATION_TOTAL) || (i == OBK_GENERATION_SOLD_TOTAL)) && (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){i++;}
 		if (i <= OBK__NUM_MEASUREMENTS || NTP_IsTimeSynced()) {
 			poststr(request, "<tr><td><b>");
 			poststr(request, sensors[i].names.name_friendly);
@@ -165,9 +165,6 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 		//sync with the clock
 		check_time = NTP_GetMinute();
-
-		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
-		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		
 		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
@@ -202,12 +199,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		hprintf255(request, "<font size=1>Diversion relay: %d <br></font>", dump_load_relay);
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
 		
-		// Sync the counter at the turn of the hour. This only runs when time = XX:00 and our counter is not zero.
-		/*if ((check_time==0)&&(energyCounterMinutesIndex>0))
-		{
-		energyCounterMinutesIndex = 0;
-		}*/
-
+		// Sync the counter at the turn of the hour. This only runs when time = XX:00 and our counter is not zero
 		// Reset the timer and Netmetering generation stats: 1)if it goes over the time period; 2) If the hour is HH:00min - For synchronization
 		if ((energyCounterMinutesIndex >= energyCounterSampleCount)||((check_time==0)&&(energyCounterMinutesIndex>0)&&(sync==1)))
 		{
@@ -233,11 +225,6 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			sync = 1;
 		}
 
-		// sampke
-		  /*  sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
-    sensors[OBK_GENERATION_TOTAL].lastReading += generation;
-    sensors[OBK_GENERATION_SOLD_TOTAL].lastReading += generation_sold;*/
-		///
 	/* old code here */		
 	}
 	// print saving interval in small text
