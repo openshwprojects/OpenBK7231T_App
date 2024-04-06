@@ -167,7 +167,6 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 		//sync with the clock
 		check_time = NTP_GetMinute();
-		check_hour = Get_hout();
 		
 		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
@@ -186,10 +185,13 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 				CMD_ExecuteCommand("setChannel 1 1", 0);
 				time_on++;
+				// Reset timer late in night
+				check_hour = NTP_Get_hour();
 				if (check_hour > 21)
 				{
 					time_on = 0;
 				}
+				// We can do a loop here to run after sunset...
 				
 			}
 			// Are we close to zero export? Turn the relay off.
