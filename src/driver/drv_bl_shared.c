@@ -171,7 +171,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
 
-		if ((check_time - lastsync) >= dump_load_hysteresis) {
+		if ((check_time - lastsync) >= dump_load_hysteresis) 
+		{
     			// save the last time the loop was run
    			lastsync = check_time;
 			//sync with the clock
@@ -211,7 +212,6 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
 			CMD_ExecuteCommand("setChannel 1 0", 0);
 			}
-	}
 
 	// Update status of the diversion relay on webpage
 	hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min. System time now is %d:%d<br></font>", dump_load_relay, time_on, check_hour, check_time);
@@ -235,7 +235,6 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	}
 	// This ensures the loop only runs once an hour.
 	else if(energyCounterMinutesIndex>0){sync = 1;}
-
 	/* old code here */		
 	}
 	// print saving interval in small text
@@ -250,7 +249,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		ltm = gmtime(&ConsumptionResetTime);
 		hprintf255(request, "%04d-%02d-%02d %02d:%02d:%02d",
 					ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
-	} else {
+	} 
+	else 
+	{
 		poststr(request, "(not set)");
 	}
 	
