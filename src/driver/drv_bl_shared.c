@@ -217,7 +217,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			// Did we Export?
 			if (net_energy > 0)
 			{
-				//(sensors[OBK_CONSUMPTION_TOTAL].lastReading
+				sensors[OBK_GENERATION_SOLD_TOTAL].lastReading += net_energy;
 			}
 			// Did we import?
 			else
