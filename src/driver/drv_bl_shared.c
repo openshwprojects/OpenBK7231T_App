@@ -129,15 +129,11 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			poststr(request, "<tr><td><b>");
 			poststr(request, sensors[i].names.name_friendly);
 			poststr(request, "</b></td><td style='text-align: right;'>");
-			//hprintf255(request, "%.*f</td><td>%s</td>", sensors[i].rounding_decimals, sensors[i].lastReading, sensors[i].names.units);
-			hprintf255(request, "%.*f</td><td>kWh</td>", sensors[i].rounding_decimals, (0.001*sensors[i].lastReading));
-
+			hprintf255(request, "%.*f</td><td>%s</td>", sensors[i].rounding_decimals, sensors[i].lastReading, sensors[i].names.units);
+			//hprintf255(request, "%.*f</td><td>kWh</td>", sensors[i].rounding_decimals, (0.001*sensors[i].lastReading));
 			}
-			
-				//hprintf255(request, "%.*f</td><td>kWh</td>", sensors[i].rounding_decimals, (0.001*sensors[i].lastReading));
-
-		}
-	};/*;*/ // Why was this here?
+			}
+	//};/*;*/ // Why was this here?
 
 	poststr(request, "<br><hr> **** TOTALS **** ");
 	poststr(request, "</table>");
@@ -151,6 +147,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			poststr(request, sensors[i].names.name_friendly);
 			poststr(request, "</b></td><td style='text-align: right;'>");
 			hprintf255(request, "%.*f</td><td>kWh</td>", sensors[i].rounding_decimals, (0.001*sensors[i].lastReading));
+		}
+	};
 	//End
 	// Close the table
 	poststr(request, "</table>");
