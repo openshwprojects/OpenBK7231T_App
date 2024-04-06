@@ -343,6 +343,7 @@ commandResult_t BL09XX_ResetEnergyCounter(const void *context, const char *cmd, 
     if(args==0||*args==0) 
     {
         sensors[OBK_CONSUMPTION_TOTAL].lastReading = 0.0;
+	sensors[OBK_GENERATION_TOTAL].lastReading = 0.0;
         energyCounterStamp = xTaskGetTickCount();
         if (energyCounterStatsEnable == true)
         {
@@ -362,7 +363,7 @@ commandResult_t BL09XX_ResetEnergyCounter(const void *context, const char *cmd, 
         }
     } else {
         value = atof(args);
-        sensors[OBK_CONSUMPTION_TOTAL].lastReading = value;
+        sensors[OBK__TOTAL].lastReading = value;
         energyCounterStamp = xTaskGetTickCount();
     }
     ConsumptionResetTime = (time_t)NTP_GetCurrentTime();
@@ -665,7 +666,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	if (energyWh >= 0){
 		 energy = energyWh;}
 	// Generation (device to Grid)
-	else if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)){
+	else if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)&&(energy<0)){
 		// Add the calculated value to generation 
 		generation+=(-1*energyWh);}	
 	}
