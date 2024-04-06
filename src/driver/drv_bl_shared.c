@@ -165,6 +165,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 		//sync with the clock
 		check_time = NTP_GetMinute();
+		check_hour = NTP_GetHour();
 		
 		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
@@ -185,7 +186,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				CMD_ExecuteCommand("setChannel 1 1", 0);
 				time_on++;
 				// Reset timer late in night
-				check_hour = NTP_GetHour();
+				//check_hour = NTP_GetHour();
 				
 				// This resets the time the bypass relay was on throughout the day. Should run at midnight
 				if (check_hour > bypass_timer_reset)
@@ -221,7 +222,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 		//}
 		// Update status of the diversion relay on webpage
-		hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min. <br></font>", dump_load_relay, time_on);
+		hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min. System time now is %d:%d<br></font>", dump_load_relay, time_on, check_hour, check_time));
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
 		
 		// Sync the counter at the turn of the hour. This only runs when time = XX:00 and our counter is not zero
