@@ -209,7 +209,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 						CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 						CMD_ExecuteCommand("setChannel 1 1", 0);
 						}
-				//}
+				}
 					else
 						{
 						dump_load_relay = 0;
@@ -222,7 +222,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 		//}
 		// Update status of the diversion relay on webpage
-		hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min. System time now is %d:%d<br></font>"), dump_load_relay, time_on, check_hour, check_time));
+		hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min. System time now is %d:%d<br></font>", dump_load_relay, time_on, check_hour, check_time);
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
 		
 		// Sync the counter at the turn of the hour. This only runs when time = XX:00 and our counter is not zero
