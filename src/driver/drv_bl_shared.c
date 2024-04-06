@@ -15,6 +15,11 @@
 #include <math.h>
 #include <time.h>
 
+// We use these to reset the stats and program the time for the bypass cylinder to run in the evening, if there is no solar.
+byte bypass_timer_reset = 0;
+byte bypass_on_tim = 16;
+byte bypass_off_time = 20;
+
 
 int stat_updatesSkipped = 0;
 int lastsync = 0;
@@ -33,8 +38,8 @@ int dump_load_off = 3;		// The minimun 'excess' energy stored over the period. B
 int dump_load_relay = 0;
 int time_on = 0;
 //Command to turn remote plug on/off
-//const char* rem_relay_on = "http://<ip>/cm?cmnd=Power%20on";
-//const char* rem_relay_off = "http://<ip>/cm?cmnd=Power%20off";
+const char* rem_relay_on = "http://<ip>/cm?cmnd=Power%20on";
+const char* rem_relay_off = "http://<ip>/cm?cmnd=Power%20off";
 //-----------------------------------------------------------
 	
 // Order corrsponds to enums OBK_VOLTAGE - OBK__LAST
@@ -87,7 +92,6 @@ bool energyCounterStatsJSONEnable = false;
 int actual_mday = -1;
 float lastSavedEnergyCounterValue = 0.0f;
 float lastSavedGenerationCounterValue = 0.0f;
-//float lastSavedGenerationSoldCounterValue = 0.0f;
 float changeSavedThresholdEnergy = 100.0f;
 long ConsumptionSaveCounter = 0;
 portTickType lastConsumptionSaveStamp;
@@ -95,6 +99,9 @@ time_t ConsumptionResetTime = 0;
 
 int changeSendAlwaysFrames = 60;
 int changeDoNotSendMinFrames = 5;
+
+float energy = 0;
+float generation = 0;
 
 void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 {
@@ -174,33 +181,46 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			if ((/*min_production>(sensors[OBK_POWER].lastReading)&&*/(net_energy>dump_load_on)))
 			{
 				dump_load_relay = 1;
-				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
+				CMD_ExecuteCommand("SendGet", rem_relay_on, 0);
+				//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 				CMD_ExecuteCommand("setChannel 1 1", 0);
 				time_on++;
 				// Reset timer late in night
 				check_hour = NTP_GetHour();
-				if (check_hour > 21)
+				
+				// This resets the time the bypass relay was on throughout the day. Should run at midnight
+				if (check_hour > bypass_timer_reset)
 				{
 					time_on = 0;
 				}
 				// We can do a loop here to run after sunset...
-				
 			}
 			// Are we close to zero export? Turn the relay off.
 			else 
 			{
 				if (net_energy<dump_load_off)
 				{
-				dump_load_relay = 0;
-				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
-				CMD_ExecuteCommand("setChannel 1 0", 0);
+				// We make an exception to manually turn on the bypass load, for example - Winter.
+					if ((check_hour >= bypass_on_tim) && (check_hour <= bypass_off_time))
+						{
+						dump_load_relay = 1;
+						CMD_ExecuteCommand("SendGet" rem_relay_on, 0);
+						//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
+						CMD_ExecuteCommand("setChannel 1 1", 0);
+						}
+					else
+						{
+						dump_load_relay = 0;
+						//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
+						CMD_ExecuteCommand("SendGet", rem_relay_off, 0);
+						CMD_ExecuteCommand("setChannel 1 0", 0);
+						}
 				}
 			}
 
 		}
 		// Update status of the diversion relay on webpage
 		hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min. <br></font>", dump_load_relay, time_on);
-		//hprintf255(request, "<font size=1>Diversion Relay on for %d min.<br></font>", time_on);
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
 		
 		// Sync the counter at the turn of the hour. This only runs when time = XX:00 and our counter is not zero
@@ -304,7 +324,6 @@ void BL09XX_SaveEmeteringStatistics()
     memset(&data, 0, sizeof(ENERGY_METERING_DATA));
 
     data.TotalGeneration = sensors[OBK_GENERATION_TOTAL].lastReading;
-    //data.TotalGenerationSold = sensors[OBK_GENERATION_SOLD_TOTAL].lastReading;
     data.TotalConsumption = sensors[OBK_CONSUMPTION_TOTAL].lastReading;
     data.TodayConsumpion = sensors[OBK_CONSUMPTION_TODAY].lastReading;
     data.YesterdayConsumption = sensors[OBK_CONSUMPTION_YESTERDAY].lastReading;
@@ -633,9 +652,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
 	lastReadingFrequency = frequency;
 
-    float energy = 0;
-    float generation = 0;
-   // float generation_sold = 0;
+
     if (isnan(energyWh)) {
         xPassedTicks = (int)(xTaskGetTickCount() - energyCounterStamp);
         // FIXME: Wrong calculation if tick count overflows
@@ -656,7 +673,6 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     // Apply values. Add Extra variable for generation 
     sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
     //sensors[OBK_GENERATION_TOTAL].lastReading += generation;
-    //sensors[OBK_GENERATION_SOLD_TOTAL].lastReading += generation_sold;
     energyCounterStamp = xTaskGetTickCount();
     HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
 	sensors[OBK_CONSUMPTION_TODAY].lastReading  += energy;
@@ -808,7 +824,6 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			case OBK_POWER:					eventChangeCode = CMD_EVENT_CHANGE_POWER; 			break;
 			case OBK_CONSUMPTION_TOTAL:			eventChangeCode = CMD_EVENT_CHANGE_CONSUMPTION_TOTAL; 		break;
 			case OBK_GENERATION_TOTAL:			eventChangeCode = CMD_EVENT_CHANGE_GENERATION_TOTAL; 		break;
-			//case OBK_GENERATION_SOLD_TOTAL:			eventChangeCode = CMD_EVENT_CHANGE_GENERATION_SOLD_TOTAL; 	break;
 			case OBK_CONSUMPTION_LAST_HOUR:			eventChangeCode = CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR; 	break;
 			default:					eventChangeCode = CMD_EVENT_NONE; 				break;
 			}
@@ -861,7 +876,6 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 if (((sensors[OBK_CONSUMPTION_TOTAL].lastReading - lastSavedEnergyCounterValue) >= changeSavedThresholdEnergy) ||
         ((xTaskGetTickCount() - lastConsumptionSaveStamp) >= (6 * 3600 * 1000 / portTICK_PERIOD_MS)) || 
 	((sensors[OBK_GENERATION_TOTAL].lastReading - lastSavedGenerationCounterValue) >= changeSavedThresholdEnergy))
-	//|| ((sensors[OBK_GENERATION_SOLD_TOTAL].lastReading - lastSavedGenerationSoldCounterValue) >= changeSavedThresholdEnergy))
     {
 #if WINDOWS
 #elif PLATFORM_BL602
@@ -875,10 +889,8 @@ if (((sensors[OBK_CONSUMPTION_TOTAL].lastReading - lastSavedEnergyCounterValue) 
 	    lastSavedEnergyCounterValue = sensors[OBK_CONSUMPTION_TOTAL].lastReading;
 	    // Save Generation
 	    lastSavedGenerationCounterValue = sensors[OBK_GENERATION_TOTAL].lastReading;
-	    //lastSavedGenerationSoldCounterValue = sensors[OBK_GENERATION_SOLD_TOTAL].lastReading;
             BL09XX_SaveEmeteringStatistics();
 	    //HAL_FlashVars_SaveEnergyExport();
-	    //HAL_FlashVars_SaveEnergySold();
 		
             lastConsumptionSaveStamp = xTaskGetTickCount();
         }
@@ -919,12 +931,10 @@ void BL_Shared_Init(void)
     HAL_GetEnergyMeterStatus(&data);
     sensors[OBK_CONSUMPTION_TOTAL].lastReading = data.TotalConsumption;
     sensors[OBK_GENERATION_TOTAL].lastReading = data.TotalGeneration;
-   // sensors[OBK_GENERATION_SOLD_TOTAL].lastReading = data.TotalGenerationSold;
     sensors[OBK_CONSUMPTION_YESTERDAY].lastReading = data.YesterdayConsumption;
     actual_mday = data.actual_mday;    
     lastSavedEnergyCounterValue = data.TotalConsumption;
     lastSavedGenerationCounterValue = data.TotalGeneration;
-   // lastSavedGenerationSoldCounterValue = data.TotalGenerationSold;
     sensors[OBK_CONSUMPTION_2_DAYS_AGO].lastReading = data.ConsumptionHistory[0];
     sensors[OBK_CONSUMPTION_3_DAYS_AGO].lastReading = data.ConsumptionHistory[1];
     ConsumptionResetTime = data.ConsumptionResetTime;
