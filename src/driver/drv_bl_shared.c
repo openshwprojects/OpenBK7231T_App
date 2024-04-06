@@ -115,14 +115,15 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
         mode = "PWR";
     }
 
-    poststr(request, "<hr><table style='width:100%'>");
+ 	  // Print Stats
+	// Create a table here
+	poststr(request, "<hr><table style='width:100%'>");
 
     if (!isnan(lastReadingFrequency)) {
         poststr(request,
                 "<tr><td><b>Frequency</b></td><td style='text-align: right;'>");
         hprintf255(request, "%.2f</td><td>Hz</td>", lastReadingFrequency);
     }
-	
 	for (int i = (OBK__FIRST); i <= (OBK_POWER_FACTOR); i++) {
 		//if (i == 7){i++;}
 		if (i <= OBK__NUM_MEASUREMENTS || NTP_IsTimeSynced()) {
@@ -133,15 +134,13 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			//hprintf255(request, "%.*f</td><td>kWh</td>", sensors[i].rounding_decimals, (0.001*sensors[i].lastReading));
 			}
 			}
-	//};/*;*/ // Why was this here?
-
-	poststr(request, "<br><hr> **** TOTALS **** ");
+	// Print Consumption Values
 	poststr(request, "</table>");
+	poststr(request, "<hr> **** TOTALS **** <hr>");
 	poststr(request, "<hr><table style='width:100%'>");	
 	//Print the totals:
 	for (int i = (OBK_CONSUMPTION_TOTAL); i <= (OBK_CONSUMPTION__DAILY_LAST); i++) {
-		if (i == OBK_GENERATION_TOTAL && (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){i++;}
-		//if (i == 7){i++;}
+		if (((i == OBK_GENERATION_TOTAL) || (i == OBK_GENERATION_SALE_TOTAL)) && (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){i++;}
 		if (i <= OBK__NUM_MEASUREMENTS || NTP_IsTimeSynced()) {
 			poststr(request, "<tr><td><b>");
 			poststr(request, sensors[i].names.name_friendly);
