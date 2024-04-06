@@ -130,7 +130,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			poststr(request, "<tr><td><b>");
 			poststr(request, sensors[i].names.name_friendly);
 			poststr(request, "</b></td><td style='text-align: right;'>");
-			if (i == OBK_CONSUMPTION_TOTAL)
+			if (i == OBK_POWER_FACTOR)
 			{
 				poststr(request, "</table>");
 				poststr(request, "<br><hr> **** TOTALS **** ");
