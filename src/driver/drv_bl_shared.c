@@ -122,11 +122,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
                 "<tr><td><b>Frequency</b></td><td style='text-align: right;'>");
         hprintf255(request, "%.2f</td><td>Hz</td>", lastReadingFrequency);
     }
-
-	//-----------------------
-
-	for (int i = (OBK_CONSUMPTION_TOTAL); i <= (OBK_CONSUMPTION__DAILY_LAST); i++) {
-		if (i == OBK_GENERATION_TOTAL && (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){i++;}
+	
+	for (int i = (OBK__FIRST); i <= (OBK_POWER_FACTOR); i++) {
 		//if (i == 7){i++;}
 		if (i <= OBK__NUM_MEASUREMENTS || NTP_IsTimeSynced()) {
 			poststr(request, "<tr><td><b>");
@@ -134,49 +131,27 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			poststr(request, "</b></td><td style='text-align: right;'>");
 			//hprintf255(request, "%.*f</td><td>%s</td>", sensors[i].rounding_decimals, sensors[i].lastReading, sensors[i].names.units);
 			hprintf255(request, "%.*f</td><td>kWh</td>", sensors[i].rounding_decimals, (0.001*sensors[i].lastReading));
+
+			}
 			
-			//if ((i >= OBK_CONSUMPTION_TOTAL) /*|| (i == OBK_GENERATION_TOTAL) || (i == OBK_GENERATION_SOLD_TOTAL)*/)
-			//{
-			//	hprintf255(request, "%.*f</td><td>kWh</td>", sensors[i].rounding_decimals, (0.001*sensors[i].lastReading));
-			//}
-			
+				//hprintf255(request, "%.*f</td><td>kWh</td>", sensors[i].rounding_decimals, (0.001*sensors[i].lastReading));
+
 		}
-	}
-	//-----------------------
-poststr(request, "<br><hr> **** TOTALS **** ");
-poststr(request, "</table>");
-poststr(request, "<hr><table style='width:100%'>");	
-	
-	for (int i = (OBK__FIRST); i <= (OBK_CONSUMPTION__DAILY_LAST); i++) {
+	};/*;*/ // Why was this here?
+
+	poststr(request, "<br><hr> **** TOTALS **** ");
+	poststr(request, "</table>");
+	poststr(request, "<hr><table style='width:100%'>");	
+	//Print the totals:
+	for (int i = (OBK_CONSUMPTION_TOTAL); i <= (OBK_CONSUMPTION__DAILY_LAST); i++) {
 		if (i == OBK_GENERATION_TOTAL && (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){i++;}
 		//if (i == 7){i++;}
 		if (i <= OBK__NUM_MEASUREMENTS || NTP_IsTimeSynced()) {
 			poststr(request, "<tr><td><b>");
 			poststr(request, sensors[i].names.name_friendly);
 			poststr(request, "</b></td><td style='text-align: right;'>");
-			//hprintf255(request, "%.*f</td><td>%s</td>", sensors[i].rounding_decimals, sensors[i].lastReading, sensors[i].names.units);
-			if (i == OBK_POWER_FACTOR)
-			{
-				hprintf255(request, "%.*f</td><td>%s</td>", sensors[i].rounding_decimals, sensors[i].lastReading, sensors[i].names.units);
-				poststr(request, "</table>");
-				poststr(request, "<br><hr> **** TOTALS **** ");
-				poststr(request, "<hr><table style='width:100%'>");
-				//poststr(request, "</b></td><td style='text-align: right;'>");
-				//poststr(request, sensors[i].names.name_friendly);
-				//poststr(request, sensors[i].names.name_friendly);
-				//i++;
-			}
-			if ((i >= OBK_CONSUMPTION_TOTAL) /*|| (i == OBK_GENERATION_TOTAL) || (i == OBK_GENERATION_SOLD_TOTAL)*/)
-			{
-				hprintf255(request, "%.*f</td><td>kWh</td>", sensors[i].rounding_decimals, (0.001*sensors[i].lastReading));
-			}
-			else
-			{
-				hprintf255(request, "%.*f</td><td>%s</td>", sensors[i].rounding_decimals, sensors[i].lastReading, sensors[i].names.units);
-			}
-		}
-	};/*;*/ // Why was this here?
-	
+			hprintf255(request, "%.*f</td><td>kWh</td>", sensors[i].rounding_decimals, (0.001*sensors[i].lastReading));
+	//End
 	// Close the table
 	poststr(request, "</table>");
 
