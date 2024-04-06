@@ -212,7 +212,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			energyCounterMinutesIndex = 0;
 			// Adjust NetMetering
 			// Did we Export?
-			if (netenergy > 0)
+			if (net_energy > 0)
 			{
 				//(sensors[OBK_CONSUMPTION_TOTAL].lastReading
 			}
