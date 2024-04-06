@@ -30,7 +30,7 @@ float net_energy_start = 0;
 // Variables for the solar dump load timer
 int sync = 0;
 int check_time = 0;
-byte check_hour = 0;
+int check_hour = 0;
 int dump_load_hysteresis = 1;	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
 int dump_load_on = 15;		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
 int dump_load_off = 3;		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
