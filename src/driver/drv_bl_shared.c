@@ -666,7 +666,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	if (energyWh >= 0){
 		 energy = energyWh;}
 	// Generation (device to Grid)
-	else if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)&&(energy<0)){
+	if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)&&(energy<0)){
 		// Add the calculated value to generation 
 		generation+=(-1*energyWh);}	
 	}
@@ -674,7 +674,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     //generation += generation;
     energyCounterStamp = xTaskGetTickCount();
     HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
-	sensors[OBK_CONSUMPTION_TODAY].lastReading  += energy;
+	sensors[OBK_CONSUMPTION_TODAY].lastReading += energy;
 
     if (NTP_IsTimeSynced()) {
         ntpTime = (time_t)NTP_GetCurrentTime();
