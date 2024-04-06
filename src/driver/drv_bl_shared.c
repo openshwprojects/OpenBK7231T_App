@@ -132,7 +132,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			poststr(request, "</b></td><td style='text-align: right;'>");
 			if (i == OBK_CONSUMPTION_TOTAL)
 			{
-				poststr(request, "<hr> **** TOTALS **** ");
+				poststr(request, "</table>");
+				poststr(request, "<br><hr> **** TOTALS **** ");
+				poststr(request, "<hr><table style='width:100%'>");
 			}
 			if ((i >= OBK_CONSUMPTION_TOTAL) /*|| (i == OBK_GENERATION_TOTAL) || (i == OBK_GENERATION_SOLD_TOTAL)*/)
 			{
@@ -208,15 +210,32 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		if ((energyCounterMinutesIndex >= energyCounterSampleCount)||((check_time==0)&&(energyCounterMinutesIndex>0)&&(sync==1)))
 		{
 			energyCounterMinutesIndex = 0;
+			// Adjust NetMetering
+			// Did we Export?
+			if (netenergy > 0)
+			{
+				(sensors[OBK_CONSUMPTION_TOTAL].lastReading
+			}
+			// Did we import?
+			else
+			{
+			}
 			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
 			net_energy = 0;
 			sync = 0;
-			// Adjust Netmetering
+			
+			
 		}
 		else if(energyCounterMinutesIndex>0)
 		{
 			sync = 1;
 		}
+
+		// sampke
+		  /*  sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
+    sensors[OBK_GENERATION_TOTAL].lastReading += generation;
+    sensors[OBK_GENERATION_SOLD_TOTAL].lastReading += generation_sold;*/
+		///
 	/* old code here */		
 	}
 	// print saving interval in small text
