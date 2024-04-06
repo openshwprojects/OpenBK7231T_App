@@ -11,7 +11,7 @@
 typedef struct ENERGY_METERING_DATA {
 	float TotalGeneration;
 	float TotalConsumption;
-	float TotalGenerationSold;
+	//float TotalGenerationSold;
 	float TodayConsumpion;
 	float YesterdayConsumption;
 	long save_counter;
