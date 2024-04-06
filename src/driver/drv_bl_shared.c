@@ -139,7 +139,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				poststr(request, "<hr><table style='width:100%'>");
 				poststr(request, "</b></td><td style='text-align: right;'>");
 				poststr(request, sensors[i].names.name_friendly);
-				i++;
+				//poststr(request, sensors[i].names.name_friendly);
+				//i++;
 			}
 			if ((i >= OBK_CONSUMPTION_TOTAL) /*|| (i == OBK_GENERATION_TOTAL) || (i == OBK_GENERATION_SOLD_TOTAL)*/)
 			{
