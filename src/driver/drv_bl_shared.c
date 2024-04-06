@@ -140,7 +140,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	poststr(request, "<hr><table style='width:100%'>");	
 	//Print the totals:
 	for (int i = (OBK_CONSUMPTION_TOTAL); i <= (OBK_CONSUMPTION__DAILY_LAST); i++) {
-		if (((i == OBK_GENERATION_TOTAL) /*|| (i == OBK_GENERATION_SALE_TOTAL)) */&& (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){i++;}
+		if ((i == OBK_GENERATION_TOTAL) /*|| (i == OBK_GENERATION_SALE_TOTAL)) */&& (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){i++;}
 		if (i <= OBK__NUM_MEASUREMENTS || NTP_IsTimeSynced()) {
 			poststr(request, "<tr><td><b>");
 			poststr(request, sensors[i].names.name_friendly);
