@@ -165,8 +165,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				first_run = 1;
 				}
 
-
-		
+		//sync with the clock
+		check_time = NTP_GetMinute();
+		check_hour = NTP_GetHour();
 		
 		//Now we turn out a remote load if we are exporting excess energy
 
@@ -174,11 +175,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 		if ((check_time - lastsync) >= dump_load_hysteresis) 
 		{
-    			// save the last time the loop was run
+    			
+			// save the last time the loop was run
    			lastsync = check_time;
-			//sync with the clock
-			check_time = NTP_GetMinute();
-			check_hour = NTP_GetHour();
 			//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20TOGGLE", 0);
 			// Are we exporting enough? If so, turn the relay on
 			if (net_energy>dump_load_on)
