@@ -35,7 +35,7 @@ int dump_load_hysteresis = 1;	// This is shortest time the relay will turn on or
 int dump_load_on = 15;		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
 int dump_load_off = 3;		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
 int dump_load_relay = 0;
-int time_on = 0;
+int time_on = 0;		// 0 equals midnight, 23 is the maximun value.
 //Command to turn remote plug on/off
 const char* rem_relay_on = "http://<ip>/cm?cmnd=Power%20on";
 const char* rem_relay_off = "http://<ip>/cm?cmnd=Power%20off";
@@ -197,8 +197,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			}
 			// Are we close to zero export? Turn the relay off.
 			//else 
-			{
-			else if (check_hour>bypass_on_time<bypass_off_time)
+		//	{
+			else if (check_hour > bypass_on_time && check_hour < bypass_off_time)
 				//if (net_energy<dump_load_off)
 				{
 				// We make an exception to manually turn on the bypass load, for example - Winter.
@@ -209,7 +209,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 						CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 						CMD_ExecuteCommand("setChannel 1 1", 0);
 						}
-				}
+				//}
 					else
 						{
 						dump_load_relay = 0;
@@ -218,11 +218,11 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 						CMD_ExecuteCommand("setChannel 1 0", 0);
 						}
 				}
-			}
+			//}
 
 		//}
 		// Update status of the diversion relay on webpage
-		hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min. System time now is %d:%d<br></font>", dump_load_relay, time_on, check_hour, check_time));
+		hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min. System time now is %d:%d<br></font>"), dump_load_relay, time_on, check_hour, check_time));
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
 		
 		// Sync the counter at the turn of the hour. This only runs when time = XX:00 and our counter is not zero
