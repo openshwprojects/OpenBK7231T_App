@@ -18,7 +18,7 @@
 // We use these to reset the stats and program the time for the bypass cylinder to run in the evening, if there is no solar.
 byte bypass_timer_reset = 0;
 byte bypass_on_time = 16;
-byte bypass_off_time = 23;
+byte bypass_off_time = 22;
 
 
 int stat_updatesSkipped = 0;
@@ -163,9 +163,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				first_run = 1;
 				}
 
-		//sync with the clock
-		check_time = NTP_GetMinute();
-		check_hour = NTP_GetHour();
+
 		
 		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
@@ -176,6 +174,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		if ((check_time - lastsync) >= dump_load_hysteresis) {
     			// save the last time the loop was run
    			lastsync = check_time;
+			//sync with the clock
+			check_time = NTP_GetMinute();
+			check_hour = NTP_GetHour();
 			//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20TOGGLE", 0);
 			// Are we exporting enough? If so, turn the relay on
 			if (net_energy>dump_load_on)
@@ -189,62 +190,51 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				//check_hour = NTP_GetHour();
 				
 				// This resets the time the bypass relay was on throughout the day. Should run at midnight
-				if (check_hour > bypass_timer_reset)
-				{
-					time_on = 0;
-				}
-				// We can do a loop here to run after sunset...
+				if (check_hour > bypass_timer_reset){time_on = 0;}
 			}
-			// Are we close to zero export? Turn the relay off.
-			//else 
-		//	{
 			else if (check_hour > bypass_on_time && check_hour < bypass_off_time)
 				//if (net_energy<dump_load_off)
 				{
 				// We make an exception to manually turn on the bypass load, for example - Winter.
-					//if (check_hour>=bypass_on_time && check_hour<bypass_off_time)
-						{
-						dump_load_relay = 1;
-						//CMD_ExecuteCommand("SendGet" rem_relay_on, 0);
-						CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
-						CMD_ExecuteCommand("setChannel 1 1", 0);
-						}
+				//if (check_hour>=bypass_on_time && check_hour<bypass_off_time)
+				dump_load_relay = 1;
+				//CMD_ExecuteCommand("SendGet" rem_relay_on, 0);
+				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
+				CMD_ExecuteCommand("setChannel 1 1", 0);
 				}
-					else
-						{
-						dump_load_relay = 0;
-						//CMD_ExecuteCommand("SendGet", rem_relay_off, 0);
-						CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
-						CMD_ExecuteCommand("setChannel 1 0", 0);
-						}
-				}
-			//}
-
-		//}
-		// Update status of the diversion relay on webpage
-		hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min. System time now is %d:%d<br></font>", dump_load_relay, time_on, check_hour, check_time);
-		//-------------------------------------------------------------------------------------------------------------------------------------------------
-		
-		// Sync the counter at the turn of the hour. This only runs when time = XX:00 and our counter is not zero
-		// Reset the timer and Netmetering generation stats: 1)if it goes over the time period; 2) If the hour is HH:00min - For synchronization
-		if ((energyCounterMinutesIndex >= energyCounterSampleCount)||((check_time==0)&&(energyCounterMinutesIndex>0)&&(sync==1)))
-		{
-			energyCounterMinutesIndex = 0;
-			// Adjust NetMetering
-			// Did we Export?
-			if (net_energy > 0)
+		}
+		else
 			{
-				sensors[OBK_GENERATION_TOTAL].lastReading += net_energy;
-				//sensors[OBK_GENERATION_SOLD_TOTAL].lastReading += net_energy;
+			// If none of the exemptions applies, we turn the diversion load off.
+			dump_load_relay = 0;
+			//CMD_ExecuteCommand("SendGet", rem_relay_off, 0);
+			CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
+			CMD_ExecuteCommand("setChannel 1 0", 0);
 			}
-			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
-			net_energy = 0;
-			sync = 0;	
-		}
-		else if(energyCounterMinutesIndex>0)
+	}
+
+	// Update status of the diversion relay on webpage
+	hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min. System time now is %d:%d<br></font>", dump_load_relay, time_on, check_hour, check_time);
+	//-------------------------------------------------------------------------------------------------------------------------------------------------
+		
+	// Sync the counter at the turn of the hour. This only runs when time = XX:00 and our counter is not zero
+	// Reset the timer and Netmetering generation stats: 1)if it goes over the time period; 2) If the hour is HH:00min - For synchronization
+	if ((energyCounterMinutesIndex >= energyCounterSampleCount)||((check_time==0)&&(energyCounterMinutesIndex>0)&&(sync==1)))
+	{
+		energyCounterMinutesIndex = 0;
+		// Adjust NetMetering
+		// Did we Export?
+		if (net_energy > 0)
 		{
-			sync = 1;
+			sensors[OBK_GENERATION_TOTAL].lastReading += net_energy;
+			//sensors[OBK_GENERATION_SOLD_TOTAL].lastReading += net_energy;
 		}
+		net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
+		net_energy = 0;
+		sync = 0;	
+	}
+	// This ensures the loop only runs once an hour.
+	else if(energyCounterMinutesIndex>0){sync = 1;}
 
 	/* old code here */		
 	}
