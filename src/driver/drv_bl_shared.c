@@ -18,7 +18,7 @@
 // We use these to reset the stats and program the time for the bypass cylinder to run in the evening, if there is no solar.
 byte bypass_timer_reset = 0;
 byte bypass_on_time = 16;
-byte bypass_off_time = 22;
+byte bypass_off_time = 23;
 
 
 int stat_updatesSkipped = 0;
