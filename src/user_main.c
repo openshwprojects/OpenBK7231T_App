@@ -51,6 +51,8 @@ void bg_register_irda_check_func(FUNCPTR func);
 #include <bl602_adc.h>  //  For BL602 ADC Standard Driver
 #include <bl602_glb.h>  //  For BL602 Global Register Standard Driver
 #include <bl_wdt.h>
+#elif PLATFORM_W600 || PLATFORM_W800
+#include "wm_watchdog.h"
 #endif
 
 
@@ -774,6 +776,8 @@ void Main_OnEverySecond()
 	bk_wdg_reload();
 #elif PLATFORM_BL602
 	bl_wdt_feed();
+#elif PLATFORM_W600 || PLATFORM_W800
+	tls_watchdog_clr();
 #endif
 	// force it to sleep...  we MUST have some idle task processing
 	// else task memory doesn't get freed
@@ -992,6 +996,8 @@ void Main_Init_AfterDelay_Unsafe(bool bStartAutoRunScripts) {
 	// max is 4 seconds or so...
 	// #define MAX_MS_WDT (65535/16)
 	bl_wdt_init(3000);
+#elif PLATFORM_W600 || PLATFORM_W800
+	tls_watchdog_init(5*1000*1000);
 #endif
 }
 void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
