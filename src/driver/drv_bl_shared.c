@@ -17,8 +17,8 @@
 
 // We use these to reset the stats and program the time for the bypass cylinder to run in the evening, if there is no solar.
 byte bypass_timer_reset = 0;
-byte bypass_on_tim = 16;
-byte bypass_off_time = 20;
+byte bypass_on_time = 16;
+byte bypass_off_time = 22;
 
 
 int stat_updatesSkipped = 0;
@@ -30,7 +30,7 @@ float net_energy_start = 0;
 // Variables for the solar dump load timer
 int sync = 0;
 int check_time = 0;
-int check_hour = 0;
+byte check_hour = 0;
 int dump_load_hysteresis = 1;	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
 int dump_load_on = 15;		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
 int dump_load_off = 3;		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
@@ -200,7 +200,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				if (net_energy<dump_load_off)
 				{
 				// We make an exception to manually turn on the bypass load, for example - Winter.
-					if ((check_hour >= bypass_on_tim) && (check_hour <= bypass_off_time))
+					if (check_hour>=bypass_on_time && check_hour<bypass_off_time)
 						{
 						dump_load_relay = 1;
 						//CMD_ExecuteCommand("SendGet" rem_relay_on, 0);
