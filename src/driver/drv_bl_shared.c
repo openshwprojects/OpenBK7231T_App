@@ -159,14 +159,15 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		if (!first_run)
 				{
 				//An update is forced at startup, so the energy values are correct.
-				net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
+				net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading);
+				// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
+				//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading) + generation));
 				first_run = 1;
 				}
 
 
 		
-		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
-		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
+		
 		//Now we turn out a remote load if we are exporting excess energy
 
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -197,7 +198,6 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				//if (net_energy<dump_load_off)
 				{
 				// We make an exception to manually turn on the bypass load, for example - Winter.
-				//if (check_hour>=bypass_on_time && check_hour<bypass_off_time)
 				dump_load_relay = 1;
 				//CMD_ExecuteCommand("SendGet" rem_relay_on, 0);
 				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
@@ -224,13 +224,19 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		energyCounterMinutesIndex = 0;
 		// Adjust NetMetering
 		// Did we Export?
+		// If the value is negative, it doesn't matter - we already increase the consumption counter during the loop
 		if (net_energy > 0)
 		{
+			// Save the total generation. We can only save at the end of the netmetering period since HA doesn't like the counters to go backwards!
 			sensors[OBK_GENERATION_TOTAL].lastReading += net_energy;
 			//sensors[OBK_GENERATION_SOLD_TOTAL].lastReading += net_energy;
 		}
-		net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
+		// We can load the value we saved just now, This keeps the counter low as we only keep energy for a brief period of time, rater than for days on end
+		net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading);
+		// Now we clear the net_energy and generation variables, for the same reason.
 		net_energy = 0;
+		generation = 0;
+		// This stops the loop from running agaian during the same minute. It is reset at minutes 1+, so that it runs again at minute 0
 		sync = 0;	
 	}
 	// This ensures the loop only runs once an hour.
@@ -271,8 +277,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		// We need NTP enabled for this, as well as the statistics. They need to be manually configured because of duration and time zone.
 		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
 		{
-		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
-		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
+		// Calculate the Effective energy consumed / produced during the period by subtracting present consumption from initial consumption and adding any generation
+		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading) + generation));
 		// Print out periodic statistics and Total Generation at the bottom of the page.
 		hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", energyCounterMinutesIndex, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)    
 		}	
@@ -661,11 +667,11 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 		 energy = energyWh;}
 	// Generation (device to Grid)
 	else if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)){
-		generation = (-1*energyWh);}	
+		// Add the calculated value to generation 
+		generation+=(-1*energyWh);}	
 	}
-    // Apply values. Add Extra variable for generation 
     sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
-    //sensors[OBK_GENERATION_TOTAL].lastReading += generation;
+    //generation += generation;
     energyCounterStamp = xTaskGetTickCount();
     HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
 	sensors[OBK_CONSUMPTION_TODAY].lastReading  += energy;
