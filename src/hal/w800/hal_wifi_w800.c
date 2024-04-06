@@ -105,7 +105,7 @@ int HAL_GetWifiStrength()
 {
 	struct tls_curr_bss_t bss;
 	tls_wifi_get_current_bss(&bss);
-	return bss.rssi;
+	return bss.rssi-0x100; //this should be adjusted according to example
 }
 
 static void apsta_net_status(u8 status)
