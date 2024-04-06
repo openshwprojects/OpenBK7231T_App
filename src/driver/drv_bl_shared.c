@@ -181,8 +181,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			if ((/*min_production>(sensors[OBK_POWER].lastReading)&&*/(net_energy>dump_load_on)))
 			{
 				dump_load_relay = 1;
-				CMD_ExecuteCommand("SendGet", rem_relay_on, 0);
-				//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
+				//CMD_ExecuteCommand("SendGet", rem_relay_on, 0);
+				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 				CMD_ExecuteCommand("setChannel 1 1", 0);
 				time_on++;
 				// Reset timer late in night
@@ -204,15 +204,15 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 					if ((check_hour >= bypass_on_tim) && (check_hour <= bypass_off_time))
 						{
 						dump_load_relay = 1;
-						CMD_ExecuteCommand("SendGet" rem_relay_on, 0);
-						//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
+						//CMD_ExecuteCommand("SendGet" rem_relay_on, 0);
+						CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 						CMD_ExecuteCommand("setChannel 1 1", 0);
 						}
 					else
 						{
 						dump_load_relay = 0;
-						//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
-						CMD_ExecuteCommand("SendGet", rem_relay_off, 0);
+						//CMD_ExecuteCommand("SendGet", rem_relay_off, 0);
+						CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
 						CMD_ExecuteCommand("setChannel 1 0", 0);
 						}
 				}
