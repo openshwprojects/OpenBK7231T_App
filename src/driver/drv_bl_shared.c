@@ -363,7 +363,7 @@ commandResult_t BL09XX_ResetEnergyCounter(const void *context, const char *cmd, 
         }
     } else {
         value = atof(args);
-        sensors[OBK__TOTAL].lastReading = value;
+        sensors[OBK_CONSUMPTION_TOTAL].lastReading = value;
         energyCounterStamp = xTaskGetTickCount();
     }
     ConsumptionResetTime = (time_t)NTP_GetCurrentTime();
