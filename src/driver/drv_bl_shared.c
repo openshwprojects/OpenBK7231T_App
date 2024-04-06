@@ -60,8 +60,8 @@ struct {
 	{{"reactive_power",	"var",		"Reactive Power",		"power_reactive",		"10",		},	2,			0.25,		},	// OBK_POWER_REACTIVE
 	{{"power_factor",	"",		"Power Factor",			"power_factor",			"11",		},	2,			0.05,		},	// OBK_POWER_FACTOR
 	{{"energy",		UNIT_WH,	"Consumption",			"energycounter",		"3",		},	3,			0.1,		},	// OBK_CONSUMPTION_TOTAL
-	{{"energy",		UNIT_WH,	"Generation (Self Consumption)","energycounter_generation",	"14",		},	3,			0.1,		},	// OBK_GENERATION_TOTAL	
-	{{"energy",		UNIT_WH,	"Generation (Export)",		"energycounter_generation_sold","15",		},	3,			0.1,		},	// OKB_GENERATION_SOLD_TOTAL
+	{{"energy",		UNIT_WH,	"Self-Consumption		","energycounter_generation",	"14",		},	3,			0.1,		},	// OBK_GENERATION_TOTAL	
+	{{"energy",		UNIT_WH,	"Export",			"energycounter_generation_sold","15",		},	3,			0.1,		},	// OKB_GENERATION_SOLD_TOTAL
 	{{"energy",		UNIT_WH,	"Energy Last Hour",		"energycounter_last_hour",	"4",		},	3,			0.1,		},	// OBK_CONSUMPTION_LAST_HOUR
 	//{{"",			"",		"Consumption Stats",		"consumption_stats",		"5",		},	0,			0,		},	// OBK_CONSUMPTION_STATS
 	{{"energy",		UNIT_WH,	"Energy Today",			"energycounter_today",		"7",		},	3,			0.1,		},	// OBK_CONSUMPTION_TODAY
@@ -132,7 +132,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			poststr(request, "</b></td><td style='text-align: right;'>");
 			if (i == OBK_CONSUMPTION_TOTAL)
 			{
-				poststr(request, "<hr><br> **** TOTALS **** <hr><br>");
+				poststr(request, "<hr> **** TOTALS **** ");
 			}
 			if ((i >= OBK_CONSUMPTION_TOTAL) /*|| (i == OBK_GENERATION_TOTAL) || (i == OBK_GENERATION_SOLD_TOTAL)*/)
 			{
