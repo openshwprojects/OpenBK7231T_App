@@ -629,8 +629,18 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 		generation += negative_energy;}	
 		counter_two++;
 	}
-    sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
-    //generation += generation;
+    
+	if (energy > 0)
+	{
+	sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
+	}
+else
+	{
+	generation += energy;
+	sensors[OBK_GENERATION_TODAY].lastReading += energy;
+	}
+
+    generation += generation;
     energyCounterStamp = xTaskGetTickCount();
     HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
 	sensors[OBK_CONSUMPTION_TODAY].lastReading += energy;
