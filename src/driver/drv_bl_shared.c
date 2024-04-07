@@ -354,7 +354,8 @@ commandResult_t BL09XX_ResetEnergyCounter(const void *context, const char *cmd, 
 
     if(args==0||*args==0) 
     {
-        sensors[OBK_CONSUMPTION_TOTAL].lastReading = 0.0;
+        sensors[OBK_GENERATION_TOTAL].lastReading = 0.0;
+	sensors[OBK_CONSUMPTION_TOTAL].lastReading = 0.0;
         energyCounterStamp = xTaskGetTickCount();
         if (energyCounterStatsEnable == true)
         {
