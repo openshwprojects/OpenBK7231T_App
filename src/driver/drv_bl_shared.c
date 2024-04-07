@@ -207,7 +207,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		{
 			energyCounterMinutesIndex = 0;
 			// Add any excess (if any) to the generation variable, which is updated here.
-			if (net_energy > 0){sensors[OBK_GENERATION_TOTAL].lastReading += net_energy};
+			if (net_energy > 0){sensors[OBK_GENERATION_TOTAL].lastReading += net_energy;}
 			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
 			real_export = sensors[OBK_CONSUMPTION_TOTAL].lastReading; // Update the Export, to reflect the 
 			net_energy = 0;
