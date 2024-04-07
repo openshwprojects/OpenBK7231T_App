@@ -676,14 +676,14 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     	{
 	// Consumption (Grid to Device)
 	if (energyWh > 0){
-		// energy = energyWh;}	Some models seem to display positive watts, but reverse current
-		 generation = energyWh;}
+		 energy = energyWh;}	//Some models seem to display positive watts, but reverse current
+		 //generation = energyWh;}
 	
 	// Generation (device to Grid)
 	
 	if ((energyWh < 0) && (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){
-		//generation = (-1*energyWh);
-		energy = energyWh;}
+		generation = (-1*energyWh);
+		//energy = energyWh;}
 	}
     // Apply values. Add Extra variable for generation 
     sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
