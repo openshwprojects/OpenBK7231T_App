@@ -161,7 +161,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				//An update is forced at startup, so the energy values are correct.
 				net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading);
 				// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
-				net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading) + generation));
+				net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading) + generation);
 				first_run = 1;
 				}
 
@@ -169,7 +169,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		check_time = NTP_GetMinute();
 		check_hour = NTP_GetHour();
 		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
-		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading) + generation));
+		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading) + generation);
 		//Now we turn out a remote load if we are exporting excess energy
 
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
