@@ -618,7 +618,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     	{
 	tempwh = energyWh;
 	// Consumption (Grid to Device)
-	if (energyWh >= 0){
+	/*if (energyWh >= 0)*/{
 		 energy = energyWh;}
 	}
 	//else if (energy <0)
