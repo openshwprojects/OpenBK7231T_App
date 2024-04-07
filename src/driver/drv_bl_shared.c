@@ -30,9 +30,9 @@ int min_production = -50;	// The minimun instantaneous solar production that wil
 int dump_load_on = 3;		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
 int dump_load_off = 1;		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
 // These variables are used to program the bypass load, for example turn it on late afternoon if there was no sun for the day
-byte bypass_timer_reset = 0;
-byte bypass_on_time = 16;
-byte bypass_off_time = 22;
+byte bypass_timer_reset = 23;	// Just so it doesn't accidentally reset when the device is rebooted (0)...
+int bypass_on_time = 16;
+int bypass_off_time = 22;
 int time_on;			// Variable to count how long the Bypass load ran during the day
 byte dump_load_relay;		// Variable to Indicate on the Webpage if the Bypass load is on
 int lastsync; 			// Variable to run the bypass relay loop. It's used to take note of the last time it run
@@ -183,7 +183,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
 		// Bypass load code. Runs if there is excess energy and at a programmable time, in case there was no sun
-				if ((check_time - lastsync) >= dump_load_hysteresis) 
+		if ((check_time - lastsync) >= dump_load_hysteresis) 
 		{
     			
 			// save the last time the loop was run
