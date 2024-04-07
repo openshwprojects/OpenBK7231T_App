@@ -26,7 +26,7 @@ float real_export = 0;
 // Variables for the solar dump load timer
 int sync = 0;
 int dump_load_hysteresis = 2;	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
-int min_production = -50;	// The minimun instantaneous solar production that will trigger the dump load.
+//int min_production = -50;	// The minimun instantaneous solar production that will trigger the dump load.
 int dump_load_on = 3;		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
 int dump_load_off = 1;		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
 // These variables are used to program the bypass load, for example turn it on late afternoon if there was no sun for the day
@@ -212,16 +212,15 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 				CMD_ExecuteCommand("setChannel 1 1", 0);
 				}
+			else
+				{
+				// If none of the exemptions applies, we turn the diversion load off.
+				dump_load_relay = 0;
+				//CMD_ExecuteCommand("SendGet", rem_relay_off, 0);
+				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
+				CMD_ExecuteCommand("setChannel 1 0", 0);
+				}
 		}
-		else
-			{
-			// If none of the exemptions applies, we turn the diversion load off.
-			dump_load_relay = 0;
-			//CMD_ExecuteCommand("SendGet", rem_relay_off, 0);
-			CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
-			CMD_ExecuteCommand("setChannel 1 0", 0);
-			}
-		
 		//--------------------------------------------------------------------------------------------------
 		// Update status of the diversion relay on webpage
 		// Update status of the diversion relay on webpage
