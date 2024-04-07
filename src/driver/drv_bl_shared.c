@@ -93,6 +93,7 @@ int changeSendAlwaysFrames = 60;
 int changeDoNotSendMinFrames = 5;
 float energy = 0;
 float generation = 0;
+int counter_two;
 void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 {
     int i;
@@ -265,7 +266,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		net_energy = ((sensors[OBK_CONSUMPTION_TOTAL].lastReading)-net_energy_start + generation);
 		//net_energy = ((net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading) + generation));
 		// Print out periodic statistics and Total Generation at the bottom of the page.
-		hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh, counter %d</h5>", energyCounterMinutesIndex, energyCounterSampleCount, test_counter); //Net metering shown in Wh (Small value)    
+		hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh, counter %d, counter2 %d</h5>", energyCounterMinutesIndex, energyCounterSampleCount, test_counter, counter_two); //Net metering shown in Wh (Small value)    
 		}	
 	
 		/********************************************************************************************************************/
@@ -618,12 +619,13 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	if (energyWh >= 0){
 		 energy = energyWh;}
 	}
-	else if (energy <0)
+	//else if (energy <0)
 	// Generation (device to Grid)
 	if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)&&(energyWh<0)){
 		// Add the calculated value to generation 
 		int negative_energy = energyWh;
 		generation += negative_energy;}	
+		countertwo++;
 	//}
     sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
     //generation += generation;
