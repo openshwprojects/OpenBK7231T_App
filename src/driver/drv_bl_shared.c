@@ -613,7 +613,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     	{
 	tempwh = energyWh;
 	// Consumption (Grid to Device)
-	if (energyWh >= 0){
+	/*if (energyWh >= 0)*/{
 		 energy = energyWh;}
 	}
 	// Generation (device to Grid)
@@ -621,7 +621,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 		// Add the calculated value to generation 
 		int negative_energy = energyWh;
 		generation += negative_energy;}	
-	}
+	//}
     sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
     //generation += generation;
     energyCounterStamp = xTaskGetTickCount();
