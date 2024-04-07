@@ -146,7 +146,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				//An update is forced at startup, so the energy values are correct.
 				net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading);
 				// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
-				net_energy = (sensors[OBK_CONSUMPTION_TOTAL].lastReading)-net_energy_start + generation));
+				net_energy = ((sensors[OBK_CONSUMPTION_TOTAL].lastReading)-net_energy_start + generation);
 				first_run = 1;
 				}
 		//sync with the clock
@@ -259,7 +259,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
 		{
 		// Calculate the Effective energy consumed / produced during the period by subtracting present consumption from initial consumption and adding any generation
-		net_energy = (sensors[OBK_CONSUMPTION_TOTAL].lastReading)-net_energy_start + generation));
+		net_energy = ((sensors[OBK_CONSUMPTION_TOTAL].lastReading)-net_energy_start + generation);
 		//net_energy = ((net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading) + generation));
 		// Print out periodic statistics and Total Generation at the bottom of the page.
 		hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", energyCounterMinutesIndex, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)    
