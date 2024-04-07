@@ -196,7 +196,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				//CMD_ExecuteCommand("SendGet", rem_relay_on, 0);
 				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 				CMD_ExecuteCommand("setChannel 1 1", 0);
-				time_on++;
+				time_on += dump_load_hysteresis;	// Increase the timer.
 				// Reset timer late in night
 				//check_hour = NTP_GetHour();
 				
