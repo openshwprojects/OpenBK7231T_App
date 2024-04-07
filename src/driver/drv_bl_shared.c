@@ -226,6 +226,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		// Adjust NetMetering
 		// Did we Export?
 		// If the value is negative, it doesn't matter - we already increase the consumption counter during the loop
+		net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading);
+		net_energy = ((net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading) + generation));
 		if (net_energy > 0)
 		{
 			// Save the total generation. We can only save at the end of the netmetering period since HA doesn't like the counters to go backwards!
