@@ -158,10 +158,13 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				{
 				//An update is forced at startup, so the energy values are correct.
 				// We load from memory at first run, then add to our temp variable
-				net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
+				net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading); // OK
 				real_export = (sensors[OBK_GENERATION_TOTAL].lastReading);
 				//real_export = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
 				//real_export = net_energy_start;
+
+				//Now we calculate the net_energy. Because we started to run
+				net_energy = net_energy_start;	
 				first_run = 1;
 				}
 
@@ -173,7 +176,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		
 		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
-		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading + real_export));
+		net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
+		
 		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		//Now we turn out a remote load if we are exporting excess energy
 
@@ -234,12 +238,13 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		if ((energyCounterMinutesIndex >= energyCounterSampleCount)||((check_time==0)&&(energyCounterMinutesIndex>0)&&(sync==1)))
 		{
 			energyCounterMinutesIndex = 0;
+			net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading-real_export))			// calculate difference since start
 			// Add any excess (if any) to the generation variable, which is updated here.
-			if (net_energy > 0){sensors[OBK_GENERATION_TOTAL].lastReading += net_energy;}
-			// Then we calculate the 'Zero value'
-			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
-			real_export = sensors[OBK_GENERATION_TOTAL].lastReading; // Update the Export, to reflect the 
-			net_energy = 0;
+			if (net_energy > 0){sensors[OBK_GENERATION_TOTAL].lastReading += net_energy;}					// Save new value, if positive
+			// Then we calculate the 'Zero value' - The sum of the consumption and export counters
+			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);	// Start again
+			//real_export = sensors[OBK_GENERATION_TOTAL].lastReading; // Update the Export, to reflect the 
+			net_energy = net_energy_start;
 			sync = 0;
 		}
 		else if(energyCounterMinutesIndex>0)
@@ -282,8 +287,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
 		{
 		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
-		
-		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading + real_export));
+		net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
+		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
 		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		// Print out periodic statistics and Total Generation at the bottom of the page.
 		hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", energyCounterMinutesIndex, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)    
