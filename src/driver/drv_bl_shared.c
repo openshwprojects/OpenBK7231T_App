@@ -625,7 +625,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 		// Add the calculated value to generation 
 		int negative_energy = energyWh;
 		generation += negative_energy;}	
-		countertwo++;
+		counter_two++;
 	//}
     sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
     //generation += generation;
