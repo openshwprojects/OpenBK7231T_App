@@ -32,6 +32,7 @@ int dump_load_on = 15;		// The ammount of 'excess' energy stored over the period
 int dump_load_off = 3;		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
 int dump_load_relay = 0;
 int time_on = 0;		// 0 equals midnight, 23 is the maximun value.
+int tempwh = 0;
 //Command to turn remote plug on/off
 const char* rem_relay_on = "http://<ip>/cm?cmnd=Power%20on";
 const char* rem_relay_off = "http://<ip>/cm?cmnd=Power%20off";
@@ -195,7 +196,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			}
 
 	// Update status of the diversion relay on webpage
-	hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min. System time now is %d:%d<br></font>", energyWh /*dump_load_relay*/, time_on, check_hour, check_time);
+	hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min. System time now is %d:%d<br></font>", tempwh /*dump_load_relay*/, time_on, check_hour, check_time);
 	//hprintf255(request, "<font size=1>During this period, the following breakdown applies: Total Generation %dW, Total Consumption: %dW. <br></font>", generation, energy);
 	//-------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -610,6 +611,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     // Check if the last power reading is positive or negative. Increment the correct counter.
     else	
     	{
+	tempwh = energyWh;
 	// Consumption (Grid to Device)
 	if (energyWh >= 0){
 		 energy = energyWh;}
