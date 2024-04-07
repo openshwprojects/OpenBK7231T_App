@@ -31,6 +31,15 @@ int min_production = -50;	// The minimun instantaneous solar production that wil
 int dump_load_on = 3;		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
 int dump_load_off = 1;		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
 int dump_load_relay = 0;
+// These variables are used to program the bypass load, for example turn it on late afternoon if there was no sun for the day
+byte bypass_timer_reset = 0;
+byte bypass_on_time = 16;
+byte bypass_off_time = 22;
+int time_on++;			// Variable to count how long the Bypass load ran during the day
+byte dump_load_relay;		// Variable to Indicate on the Webpage if the Bypass load is on
+int lastsync; 			// Variable to run the bypass relay loop. It's used to take note of the last time it run
+byte check_time; 		// Variable for Minutes
+byte check_hour;		// Variable for Hour	
 //Command to turn remote plug on/off
 //const char* rem_relay_on = "http://<ip>/cm?cmnd=Power%20on";
 //const char* rem_relay_off = "http://<ip>/cm?cmnd=Power%20off";
@@ -158,6 +167,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 		//sync with the clock
 		check_time = NTP_GetMinute();
+		check_hour = NTP_GetHour();
 
 		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
@@ -168,32 +178,50 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		//Now we turn out a remote load if we are exporting excess energy
 
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-		if ((check_time - lastsync) >= dump_load_hysteresis) {
-    			// save the last time the loop was run
+		// Bypass load code. Runs if there is excess energy and at a programmable time, in case there was no sun
+				if ((check_time - lastsync) >= dump_load_hysteresis) 
+		{
+    			
+			// save the last time the loop was run
    			lastsync = check_time;
 			//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20TOGGLE", 0);
 			// Are we exporting enough? If so, turn the relay on
-			if ((/*min_production>(sensors[OBK_POWER].lastReading)&&*/(net_energy>dump_load_on)))
+			if (net_energy>dump_load_on)
 			{
 				dump_load_relay = 1;
+				//CMD_ExecuteCommand("SendGet", rem_relay_on, 0);
 				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 				CMD_ExecuteCommand("setChannel 1 1", 0);
+				time_on++;
+				// Reset timer late in night
+				//check_hour = NTP_GetHour();
+				
+				// This resets the time the bypass relay was on throughout the day. Should run at midnight
+				if (check_hour > bypass_timer_reset){time_on = 0;}
 			}
-			// Are we close to zero export? Turn the relay off.
-			else 
-			{
-				if (net_energy<dump_load_off)
+			else if (check_hour > bypass_on_time && check_hour < bypass_off_time)
+				//if (net_energy<dump_load_off)
 				{
-				dump_load_relay = 0;
-				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
-				CMD_ExecuteCommand("setChannel 1 0", 0);
+				// We make an exception to manually turn on the bypass load, for example - Winter.
+				dump_load_relay = 1;
+				//CMD_ExecuteCommand("SendGet" rem_relay_on, 0);
+				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
+				CMD_ExecuteCommand("setChannel 1 1", 0);
 				}
-			}
-
 		}
+		else
+			{
+			// If none of the exemptions applies, we turn the diversion load off.
+			dump_load_relay = 0;
+			//CMD_ExecuteCommand("SendGet", rem_relay_off, 0);
+			CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
+			CMD_ExecuteCommand("setChannel 1 0", 0);
+			}
+		
+		//--------------------------------------------------------------------------------------------------
 		// Update status of the diversion relay on webpage
-		hprintf255(request, "<font size=1>Diversion relay: %d <br></font>", dump_load_relay);
+		// Update status of the diversion relay on webpage
+		hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min. System time now is %d:%d<br></font>", dump_load_relay, time_on, check_hour, check_time);
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
 		
 		// Sync the counter at the turn of the hour. This only runs when time = XX:00 and our counter is not zero.
