@@ -618,7 +618,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	// Generation (device to Grid)
 	if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)/*&&(energyWh<0)*/){
 		// Add the calculated value to generation 
-		int negative_energy = (-1*energyWh);
+		int negative_energy = -100;// (-1*energyWh);
 		generation += negative_energy;}	
 	}
     sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
