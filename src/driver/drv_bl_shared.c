@@ -265,7 +265,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		net_energy = ((sensors[OBK_CONSUMPTION_TOTAL].lastReading)-net_energy_start + generation);
 		//net_energy = ((net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading) + generation));
 		// Print out periodic statistics and Total Generation at the bottom of the page.
-		hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh, counter %d</h5>", energyCounterMinutesIndex, energyCounterSampleCount, test_counter,f); //Net metering shown in Wh (Small value)    
+		hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh, counter %d</h5>", energyCounterMinutesIndex, energyCounterSampleCount, test_counter); //Net metering shown in Wh (Small value)    
 		}	
 	
 		/********************************************************************************************************************/
