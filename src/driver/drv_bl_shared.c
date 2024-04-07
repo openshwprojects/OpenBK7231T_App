@@ -33,6 +33,7 @@ int dump_load_off = 3;		// The minimun 'excess' energy stored over the period. B
 int dump_load_relay = 0;
 int time_on = 0;		// 0 equals midnight, 23 is the maximun value.
 int tempwh = 0;
+int test_counter;
 //Command to turn remote plug on/off
 const char* rem_relay_on = "http://<ip>/cm?cmnd=Power%20on";
 const char* rem_relay_off = "http://<ip>/cm?cmnd=Power%20off";
@@ -259,11 +260,12 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		// We need NTP enabled for this, as well as the statistics. They need to be manually configured because of duration and time zone.
 		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
 		{
+			test_counter++;
 		// Calculate the Effective energy consumed / produced during the period by subtracting present consumption from initial consumption and adding any generation
 		net_energy = ((sensors[OBK_CONSUMPTION_TOTAL].lastReading)-net_energy_start + generation);
 		//net_energy = ((net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading) + generation));
 		// Print out periodic statistics and Total Generation at the bottom of the page.
-		hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", energyCounterMinutesIndex, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)    
+		hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh, counter %d</h5>", energyCounterMinutesIndex, energyCounterSampleCount, test_counter,f); //Net metering shown in Wh (Small value)    
 		}	
 	
 		/********************************************************************************************************************/
@@ -613,9 +615,10 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     	{
 	tempwh = energyWh;
 	// Consumption (Grid to Device)
-	/*if (energyWh >= 0)*/{
+	if (energyWh >= 0){
 		 energy = energyWh;}
 	}
+	else if (energy <0)
 	// Generation (device to Grid)
 	if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)&&(energyWh<0)){
 		// Add the calculated value to generation 
