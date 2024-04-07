@@ -162,7 +162,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				//net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading);
 				// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 				//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading) + generation);
-				net_energy = (sensors[OBK_CONSUMPTION_TOTAL].lastReading) + generation);
+				net_energy = ((sensors[OBK_CONSUMPTION_TOTAL].lastReading) + generation);
 				first_run = 1;
 				}
 
@@ -170,7 +170,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		check_time = NTP_GetMinute();
 		check_hour = NTP_GetHour();
 		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
-		net_energy = (sensors[OBK_CONSUMPTION_TOTAL].lastReading) + generation);
+		net_energy = ((sensors[OBK_CONSUMPTION_TOTAL].lastReading) + generation);
 		//Now we turn out a remote load if we are exporting excess energy
 
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -237,8 +237,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			//sensors[OBK_GENERATION_SOLD_TOTAL].lastReading += net_energy;
 		}
 		// We can load the value we saved just now, This keeps the counter low as we only keep energy for a brief period of time, rater than for days on end
-		net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading);
-		net_energy = (sensors[OBK_CONSUMPTION_TOTAL].lastReading);
+		//net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading);
+		//net_energy = (sensors[OBK_CONSUMPTION_TOTAL].lastReading);
+		sensors[OBK_GENERATION_TOTAL].lastReading += net_energy;
 		// Now we clear the net_energy and generation variables, for the same reason.
 		net_energy = 0;
 		generation = 0;
