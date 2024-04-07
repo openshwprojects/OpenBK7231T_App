@@ -32,7 +32,7 @@ int dump_load_off = 1;		// The minimun 'excess' energy stored over the period. B
 // These variables are used to program the bypass load, for example turn it on late afternoon if there was no sun for the day
 byte bypass_timer_reset = 23;	// Just so it doesn't accidentally reset when the device is rebooted (0)...
 int bypass_on_time = 16;
-int bypass_off_time = 22;
+int bypass_off_time = 20;
 int time_on;			// Variable to count how long the Bypass load ran during the day
 byte dump_load_relay;		// Variable to Indicate on the Webpage if the Bypass load is on
 int lastsync; 			// Variable to run the bypass relay loop. It's used to take note of the last time it run
@@ -203,7 +203,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				// This resets the time the bypass relay was on throughout the day. Should run at midnight
 				if (check_hour > bypass_timer_reset){time_on = 0;}
 			}
-			else if (check_hour > bypass_on_time && check_hour < bypass_off_time)
+			else if ((check_hour > bypass_on_time) && (check_hour < bypass_off_time))
 				//if (net_energy<dump_load_off)
 				{
 				// We make an exception to manually turn on the bypass load, for example - Winter.
@@ -682,7 +682,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	// Generation (device to Grid)
 	
 	if ((energyWh < 0) && (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){
-		generation = (-1*energyWh);
+		generation = (-1*energyWh)};
 		//energy = energyWh;}
 	}
     // Apply values. Add Extra variable for generation 
