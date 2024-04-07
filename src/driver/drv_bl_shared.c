@@ -22,6 +22,7 @@ int stat_updatesSent = 0;
 static int first_run = 0;
 float net_energy = 0;
 float net_energy_start = 0;
+float real_export = 0;
 // Variables for the solar dump load timer
 int sync = 0;
 int check_time = 0;
@@ -149,7 +150,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		if (!first_run)
 				{
 				//An update is forced at startup, so the energy values are correct.
+				// We load from memory at first run, then add to our temp variable
 				net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
+				real_export = net_energy_start;
 				first_run = 1;
 				}
 
@@ -160,7 +163,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		
 		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
-		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
+		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
+		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		//Now we turn out a remote load if we are exporting excess energy
 
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -202,7 +206,10 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		if ((energyCounterMinutesIndex >= energyCounterSampleCount)||((check_time==0)&&(energyCounterMinutesIndex>0)&&(sync==1)))
 		{
 			energyCounterMinutesIndex = 0;
+			// Add any excess (if any) to the generation variable, which is updated here.
+			if (net_energy > 0){sensors[OBK_GENERATION_TOTAL].lastReading += net_energy};
 			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
+			real_export = sensors[OBK_CONSUMPTION_TOTAL].lastReading; // Update the Export, to reflect the 
 			net_energy = 0;
 			sync = 0;
 		}
@@ -246,7 +253,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
 		{
 		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
-		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
+		
+		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
+		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		// Print out periodic statistics and Total Generation at the bottom of the page.
 		hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", energyCounterMinutesIndex, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)    
 		}	
@@ -643,7 +652,9 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	}
     // Apply values. Add Extra variable for generation 
     sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
-    sensors[OBK_GENERATION_TOTAL].lastReading += generation;
+    // We use a temp variable so the timer can go up or down. This would cause issues with Home assistant
+    real_export += generation;
+    //sensors[OBK_GENERATION_TOTAL].lastReading += generation;
     energyCounterStamp = xTaskGetTickCount();
     HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
 	sensors[OBK_CONSUMPTION_TODAY].lastReading  += energy;
