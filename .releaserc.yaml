@@ -83,7 +83,7 @@ generateNotes:
         - BL602 (DT-BL200, SM-028_V1.3 etc)
         - LF686 (based on BL602)
         - W800 (W800-C400, WinnerMicro WiFi & Bluetooth), W801
-        - W600 (TW-02 etc), W601
+        - W600 (TW-01, TW-02, TW-03 etc), W601 (WIS600, ESP-01W etc)
         - LN882H (LN-02, WL2S, WL2H etc)
 
       footerPartial: |
