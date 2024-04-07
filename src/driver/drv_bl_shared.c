@@ -217,7 +217,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	// Update status of the diversion relay on webpage
 	hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min. System time now is %d:%d<br></font>", dump_load_relay, time_on, check_hour, check_time); 
 	//int tempvar = ((sensors[OBK_CONSUMPTION_TOTAL].lastReading)-net_energy_start);
-	hprintf255(request, "<font size=1>During this period, the following breakdown applies: Total Generation %dW, Total Consumption: %dW, Net Energy Start: %dW <br></font>", generation, tempvar, (sensors[OBK_CONSUMPTION_TOTAL].lastReading));
+	//hprintf255(request, "<font size=1>During this period, the following breakdown applies: Total Generation %dW, Total Consumption: %dW, Net Energy Start: %dW <br></font>", generation, tempvar, (sensors[OBK_CONSUMPTION_TOTAL].lastReading));
 	//-------------------------------------------------------------------------------------------------------------------------------------------------
 		
 	// Sync the counter at the turn of the hour. This only runs when time = XX:00 and our counter is not zero
