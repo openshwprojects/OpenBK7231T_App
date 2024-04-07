@@ -621,7 +621,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	}
 	//else if (energy <0)
 	// Generation (device to Grid)
-	if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)&&(energyWh<0)){
+	if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)/*&&(energyWh<0)*/){
 		// Add the calculated value to generation 
 		int negative_energy = energyWh;
 		generation += negative_energy;}	
