@@ -159,9 +159,10 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		if (!first_run)
 				{
 				//An update is forced at startup, so the energy values are correct.
-				net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading);
+				//net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading);
 				// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
-				net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading) + generation);
+				//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading) + generation);
+				net_energy = (sensors[OBK_CONSUMPTION_TOTAL].lastReading) + generation);
 				first_run = 1;
 				}
 
@@ -169,7 +170,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		check_time = NTP_GetMinute();
 		check_hour = NTP_GetHour();
 		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
-		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading) + generation);
+		net_energy = (sensors[OBK_CONSUMPTION_TOTAL].lastReading) + generation);
 		//Now we turn out a remote load if we are exporting excess energy
 
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -216,7 +217,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	// Update status of the diversion relay on webpage
 	hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min. System time now is %d:%d<br></font>", dump_load_relay, time_on, check_hour, check_time); 
 	int tempvar = ((sensors[OBK_CONSUMPTION_TOTAL].lastReading)-net_energy_start);
-	hprintf255(request, "<font size=1>During this period, the following breakdown applies: Total Generation %dW, Total Consumption: %dW, Net Energy Start: %dKW <br></font>", generation, tempvar, net_energy_start);
+	hprintf255(request, "<font size=1>During this period, the following breakdown applies: Total Generation %dW, Total Consumption: %dW, Net Energy Start: %dW <br></font>", generation, tempvar, (sensors[OBK_CONSUMPTION_TOTAL].lastReading));
 	//-------------------------------------------------------------------------------------------------------------------------------------------------
 		
 	// Sync the counter at the turn of the hour. This only runs when time = XX:00 and our counter is not zero
@@ -237,6 +238,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		}
 		// We can load the value we saved just now, This keeps the counter low as we only keep energy for a brief period of time, rater than for days on end
 		net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading);
+		net_energy = (sensors[OBK_CONSUMPTION_TOTAL].lastReading);
 		// Now we clear the net_energy and generation variables, for the same reason.
 		net_energy = 0;
 		generation = 0;
@@ -676,7 +678,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 		generation += (-1*energyWh);}	
 	}
     sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
-    //generation += generation;
+    //sensors[OBK_GENERATION_TOTAL].lastReading += generation;
     energyCounterStamp = xTaskGetTickCount();
     HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
 	sensors[OBK_CONSUMPTION_TODAY].lastReading += energy;
