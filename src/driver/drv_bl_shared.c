@@ -37,8 +37,8 @@ int dump_load_off = 3;		// The minimun 'excess' energy stored over the period. B
 int dump_load_relay = 0;
 int time_on = 0;		// 0 equals midnight, 23 is the maximun value.
 //Command to turn remote plug on/off
-const char* rem_relay_on = "http://<ip>/cm?cmnd=Power%20on";
-const char* rem_relay_off = "http://<ip>/cm?cmnd=Power%20off";
+//const char* rem_relay_on = "http://<ip>/cm?cmnd=Power%20on";
+//const char* rem_relay_off = "http://<ip>/cm?cmnd=Power%20off";
 //-----------------------------------------------------------
 	
 // Order corrsponds to enums OBK_VOLTAGE - OBK__LAST
@@ -161,14 +161,15 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				//An update is forced at startup, so the energy values are correct.
 				net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading);
 				// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
-				//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading) + generation));
+				net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading) + generation));
 				first_run = 1;
 				}
 
 		//sync with the clock
 		check_time = NTP_GetMinute();
 		check_hour = NTP_GetHour();
-		
+		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
+		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading) + generation));
 		//Now we turn out a remote load if we are exporting excess energy
 
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -214,7 +215,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 	// Update status of the diversion relay on webpage
 	hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min. System time now is %d:%d<br></font>", dump_load_relay, time_on, check_hour, check_time);
-	hprintf255(request, "<font size=1>During this period, the following breakdown applies: Total Generation %dW, Total Consumption: %dW. <br></font>", generation, energy);
+	hprintf255(request, "<font size=1>During this period, the following breakdown applies: Total Generation %dW, Total Consumption: %dW. <br></font>", generation, (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading));
 	//-------------------------------------------------------------------------------------------------------------------------------------------------
 		
 	// Sync the counter at the turn of the hour. This only runs when time = XX:00 and our counter is not zero
@@ -669,7 +670,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	// Generation (device to Grid)
 	if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)&&(energy<0)){
 		// Add the calculated value to generation 
-		generation+=(-1*energyWh);}	
+		generation += (-1*energyWh);}	
 	}
     sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
     //generation += generation;
