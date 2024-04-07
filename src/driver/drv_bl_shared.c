@@ -1,4 +1,5 @@
 #include "drv_bl_shared.h"
+
 #include "../new_cfg.h"
 #include "../new_pins.h"
 #include "../cJSON/cJSON.h"
@@ -13,10 +14,8 @@
 #include "../cmnds/cmd_public.h" //for enum EventCode
 #include <math.h>
 #include <time.h>
-// We use these to reset the stats and program the time for the bypass cylinder to run in the evening, if there is no solar.
-byte bypass_timer_reset = 0;
-byte bypass_on_time = 16;
-byte bypass_off_time = 22;
+
+
 int stat_updatesSkipped = 0;
 int lastsync = 0;
 int stat_updatesSent = 0;
@@ -26,17 +25,14 @@ float net_energy_start = 0;
 // Variables for the solar dump load timer
 int sync = 0;
 int check_time = 0;
-int check_hour = 0;
-int dump_load_hysteresis = 1;	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
-int dump_load_on = 15;		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
-int dump_load_off = 3;		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
+int dump_load_hysteresis = 2;	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
+int min_production = -50;	// The minimun instantaneous solar production that will trigger the dump load.
+int dump_load_on = 3;		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
+int dump_load_off = 1;		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
 int dump_load_relay = 0;
-int time_on = 0;		// 0 equals midnight, 23 is the maximun value.
-int tempwh = 0;
-int test_counter;
 //Command to turn remote plug on/off
-const char* rem_relay_on = "http://<ip>/cm?cmnd=Power%20on";
-const char* rem_relay_off = "http://<ip>/cm?cmnd=Power%20off";
+//const char* rem_relay_on = "http://<ip>/cm?cmnd=Power%20on";
+//const char* rem_relay_off = "http://<ip>/cm?cmnd=Power%20off";
 //-----------------------------------------------------------
 	
 // Order corrsponds to enums OBK_VOLTAGE - OBK__LAST
@@ -63,8 +59,8 @@ struct {
 	{{"apparent_power",	"VA",		"Apparent Power",		"power_apparent",		"9",		},	2,			0.25,		},	// OBK_POWER_APPARENT
 	{{"reactive_power",	"var",		"Reactive Power",		"power_reactive",		"10",		},	2,			0.25,		},	// OBK_POWER_REACTIVE
 	{{"power_factor",	"",		"Power Factor",			"power_factor",			"11",		},	2,			0.05,		},	// OBK_POWER_FACTOR
-	{{"energy",		UNIT_WH,	"Consumption Total",		"energycounter",		"3",		},	3,			0.1,		},	// OBK_CONSUMPTION_TOTAL
-	{{"energy",		UNIT_WH,	"Export Total",			"energycounter_generation",	"14",		},	3,			0.1,		},	// OBK_GENERATION_TOTAL	
+	{{"energy",		UNIT_WH,	"Total Consumption",		"energycounter",		"3",		},	3,			0.1,		},	// OBK_CONSUMPTION_TOTAL
+	{{"energy",		UNIT_WH,	"Total Generation",		"energycounter_generation",	"14",		},	3,			0.1,		},	// OBK_GENERATION_TOTAL	
 	{{"energy",		UNIT_WH,	"Energy Last Hour",		"energycounter_last_hour",	"4",		},	3,			0.1,		},	// OBK_CONSUMPTION_LAST_HOUR
 	//{{"",			"",		"Consumption Stats",		"consumption_stats",		"5",		},	0,			0,		},	// OBK_CONSUMPTION_STATS
 	{{"energy",		UNIT_WH,	"Energy Today",			"energycounter_today",		"7",		},	3,			0.1,		},	// OBK_CONSUMPTION_TODAY
@@ -73,8 +69,11 @@ struct {
 	{{"energy",		UNIT_WH,	"Energy 3 Days Ago",		"energycounter_3_days_ago",	"13",		},	3,			0.1,		},	// OBK_CONSUMPTION_3_DAYS_AGO
 	{{"timestamp",		"",		"Energy Clear Date",		"energycounter_clear_date",	"8",		},	0,			86400,		},	// OBK_CONSUMPTION_CLEAR_DATE	
 }; 
+
 float lastReadingFrequency = NAN;
+
 portTickType energyCounterStamp;
+
 bool energyCounterStatsEnable = false;
 int energyCounterSampleCount = 60;
 int energyCounterSampleInterval = 60;
@@ -82,6 +81,7 @@ float *energyCounterMinutes = NULL;
 portTickType energyCounterMinutesStamp;
 long energyCounterMinutesIndex;
 bool energyCounterStatsJSONEnable = false;
+
 int actual_mday = -1;
 float lastSavedEnergyCounterValue = 0.0f;
 float lastSavedGenerationCounterValue = 0.0f;
@@ -89,16 +89,16 @@ float changeSavedThresholdEnergy = 100.0f;
 long ConsumptionSaveCounter = 0;
 portTickType lastConsumptionSaveStamp;
 time_t ConsumptionResetTime = 0;
+
 int changeSendAlwaysFrames = 60;
 int changeDoNotSendMinFrames = 5;
-float energy = 0;
-float generation = 0;
-int counter_two;
+
 void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 {
     int i;
     const char *mode;
     struct tm *ltm;
+
     if(DRV_IsRunning("BL0937")) {
         mode = "BL0937";
     } else if(DRV_IsRunning("BL0942")) {
@@ -112,34 +112,36 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
     } else {
         mode = "PWR";
     }
- 	// Print Stats
-	// Create a table here
-	poststr(request, "<hr><table style='width:100%'>");
+
+    poststr(request, "<hr><table style='width:100%'>");
+
     if (!isnan(lastReadingFrequency)) {
         poststr(request,
                 "<tr><td><b>Frequency</b></td><td style='text-align: right;'>");
         hprintf255(request, "%.2f</td><td>Hz</td>", lastReadingFrequency);
     }
-	for (int i = (OBK__FIRST); i <= (OBK_POWER_FACTOR); i++) {
-		if (i <= OBK__NUM_MEASUREMENTS || NTP_IsTimeSynced()) {
-			poststr(request, "<tr><td><b>");
-			poststr(request, sensors[i].names.name_friendly);
-			poststr(request, "</b></td><td style='text-align: right;'>");
-			hprintf255(request, "%.*f</td><td>%s</td>", sensors[i].rounding_decimals, sensors[i].lastReading, sensors[i].names.units);
-			}
-			}
-	// Print Consumption Values
-	for (int i = (OBK_CONSUMPTION_TOTAL); i <= (OBK_CONSUMPTION__DAILY_LAST); i++) {
+
+	for (int i = (OBK__FIRST); i <= (OBK_CONSUMPTION__DAILY_LAST); i++) {
 		if (i == OBK_GENERATION_TOTAL && (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){i++;}
+		//if (i == 7){i++;}
 		if (i <= OBK__NUM_MEASUREMENTS || NTP_IsTimeSynced()) {
 			poststr(request, "<tr><td><b>");
 			poststr(request, sensors[i].names.name_friendly);
 			poststr(request, "</b></td><td style='text-align: right;'>");
-			hprintf255(request, "%.*f</td><td>kWh</td>", sensors[i].rounding_decimals, (0.001*sensors[i].lastReading));
+			if ((i == OBK_CONSUMPTION_TOTAL) || (i == OBK_GENERATION_TOTAL))
+			{
+				hprintf255(request, "%.*f</td><td>kWh</td>", sensors[i].rounding_decimals, (0.001*sensors[i].lastReading));
+			}
+			else
+			{
+				hprintf255(request, "%.*f</td><td>%s</td>", sensors[i].rounding_decimals, sensors[i].lastReading, sensors[i].names.units);
+			}
 		}
-	};
-	// End. Close the table
+	};/*;*/ // Why was this here?
+	
+	// Close the table
 	poststr(request, "</table>");
+
 	// print total generation (If applicable). This routine changes the behaviour of statistics to reset every hour and sync to the beginning of the hour.
 	// Only Active if 'Set flag 25' (Negative energy) is checked.
 	if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
@@ -147,85 +149,67 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		if (!first_run)
 				{
 				//An update is forced at startup, so the energy values are correct.
-				net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading);
-				// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
-				net_energy = ((sensors[OBK_CONSUMPTION_TOTAL].lastReading)-net_energy_start + generation);
+				net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
 				first_run = 1;
 				}
+
 		//sync with the clock
 		check_time = NTP_GetMinute();
-		check_hour = NTP_GetHour();
+
+		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
+		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		
+		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
+		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		//Now we turn out a remote load if we are exporting excess energy
+
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
-		if ((check_time - lastsync) >= dump_load_hysteresis) 
-		{
-    			
-			// save the last time the loop was run
+
+		if ((check_time - lastsync) >= dump_load_hysteresis) {
+    			// save the last time the loop was run
    			lastsync = check_time;
 			//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20TOGGLE", 0);
 			// Are we exporting enough? If so, turn the relay on
-			if (net_energy>dump_load_on)
+			if ((/*min_production>(sensors[OBK_POWER].lastReading)&&*/(net_energy>dump_load_on)))
 			{
 				dump_load_relay = 1;
-				//CMD_ExecuteCommand("SendGet", rem_relay_on, 0);
 				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 				CMD_ExecuteCommand("setChannel 1 1", 0);
-				time_on++;
-				// Reset timer late in night
-				//check_hour = NTP_GetHour();
-				
-				// This resets the time the bypass relay was on throughout the day. Should run at midnight
-				if (check_hour > bypass_timer_reset){time_on = 0;}
 			}
-			else if (check_hour > bypass_on_time && check_hour < bypass_off_time)
-				//if (net_energy<dump_load_off)
+			// Are we close to zero export? Turn the relay off.
+			else 
+			{
+				if (net_energy<dump_load_off)
 				{
-				// We make an exception to manually turn on the bypass load, for example - Winter.
-				dump_load_relay = 1;
-				//CMD_ExecuteCommand("SendGet" rem_relay_on, 0);
-				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
-				CMD_ExecuteCommand("setChannel 1 1", 0);
+				dump_load_relay = 0;
+				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
+				CMD_ExecuteCommand("setChannel 1 0", 0);
 				}
-		}
-		else
-			{
-			// If none of the exemptions applies, we turn the diversion load off.
-			dump_load_relay = 0;
-			//CMD_ExecuteCommand("SendGet", rem_relay_off, 0);
-			CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
-			CMD_ExecuteCommand("setChannel 1 0", 0);
 			}
 
-	// Update status of the diversion relay on webpage
-	hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min. System time now is %d:%d<br></font>", tempwh /*dump_load_relay*/, time_on, check_hour, check_time);
-	//hprintf255(request, "<font size=1>During this period, the following breakdown applies: Total Generation %dW, Total Consumption: %dW. <br></font>", generation, energy);
-	//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-	// Sync the counter at the turn of the hour. This only runs when time = XX:00 and our counter is not zero
-	// Reset the timer and Netmetering generation stats: 1)if it goes over the time period; 2) If the hour is HH:00min - For synchronization
-	if ((energyCounterMinutesIndex >= energyCounterSampleCount)||((check_time==0)&&(energyCounterMinutesIndex>0)&&(sync==1)))
-	{
-		energyCounterMinutesIndex = 0;
-		// Adjust NetMetering
-		// Did we Export?
-		// If the value is negative, it doesn't matter - we already increase the consumption counter during the loop
-		if (net_energy > 0)
-		{
-			// Save the total generation. We can only save at the end of the netmetering period since HA doesn't like the counters to go backwards!
-			sensors[OBK_GENERATION_TOTAL].lastReading += net_energy;
-			//sensors[OBK_GENERATION_SOLD_TOTAL].lastReading += net_energy;
 		}
-		// We can load the value we saved just now, This keeps the counter low as we only keep energy for a brief period of time, rater than for days on end
-		net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading);
-		// Now we clear the net_energy and generation variables, for the same reason.
-		net_energy = 0;
-		generation = 0;
-		// This stops the loop from running agaian during the same minute. It is reset at minutes 1+, so that it runs again at minute 0
-		sync = 0;	
-	}
-	// This ensures the loop only runs once an hour.
-	else if(energyCounterMinutesIndex>0){sync = 1;}
+		// Update status of the diversion relay on webpage
+		hprintf255(request, "<font size=1>Diversion relay: %d <br></font>", dump_load_relay);
+		//-------------------------------------------------------------------------------------------------------------------------------------------------
+		
+		// Sync the counter at the turn of the hour. This only runs when time = XX:00 and our counter is not zero.
+		/*if ((check_time==0)&&(energyCounterMinutesIndex>0))
+		{
+		energyCounterMinutesIndex = 0;
+		}*/
+
+		// Reset the timer and Netmetering generation stats: 1)if it goes over the time period; 2) If the hour is HH:00min - For synchronization
+		if ((energyCounterMinutesIndex >= energyCounterSampleCount)||((check_time==0)&&(energyCounterMinutesIndex>0)&&(sync==1)))
+		{
+			energyCounterMinutesIndex = 0;
+			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
+			net_energy = 0;
+			sync = 0;
+		}
+		else if(energyCounterMinutesIndex>0)
+		{
+			sync = 1;
+		}
 	/* old code here */		
 	}
 	// print saving interval in small text
@@ -234,19 +218,18 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
     	hprintf255(request, "<p><br><h5>Changes: %i sent, %i Skipped, %li Saved. <br> %s<hr></p>",
                stat_updatesSent, stat_updatesSkipped, ConsumptionSaveCounter,
                mode);
+
 	poststr(request, "<h5>Energy Clear Date: ");
 	if (ConsumptionResetTime) {
 		ltm = gmtime(&ConsumptionResetTime);
 		hprintf255(request, "%04d-%02d-%02d %02d:%02d:%02d",
 					ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
-	} 
-	else 
-	{
+	} else {
 		poststr(request, "(not set)");
 	}
 	
 	/********************************************************************************************************************/
-	//hprintf255(request, "<br>");
+	hprintf255(request, "<br>");
 	if(DRV_IsRunning("NTP")==false) {
 		hprintf255(request,"NTP driver is not started, daily energy stats disbled.");
 	} else if (!NTP_IsTimeSynced()) {
@@ -256,17 +239,16 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	/********************************************************************************************************************/
     	if (energyCounterStatsEnable == true)
 	{	
+    	
        		hprintf255(request,"<hr><h2>Periodic Statistics</h2>");
 		//If we are measuring negative power, we can run the commands to get the netmetering stats
 		// We need NTP enabled for this, as well as the statistics. They need to be manually configured because of duration and time zone.
 		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
 		{
-			test_counter++;
-		// Calculate the Effective energy consumed / produced during the period by subtracting present consumption from initial consumption and adding any generation
-		net_energy = ((sensors[OBK_CONSUMPTION_TOTAL].lastReading)-net_energy_start + generation);
-		//net_energy = ((net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading) + generation));
+		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
+		net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		// Print out periodic statistics and Total Generation at the bottom of the page.
-		hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh, counter %d, counter2 %d</h5>", energyCounterMinutesIndex, energyCounterSampleCount, test_counter, counter_two); //Net metering shown in Wh (Small value)    
+		hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", energyCounterMinutesIndex, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)    
 		}	
 	
 		/********************************************************************************************************************/
@@ -301,10 +283,13 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
     }
     /********************************************************************************************************************/
 }
+
 void BL09XX_SaveEmeteringStatistics()
 {
     ENERGY_METERING_DATA data;
+
     memset(&data, 0, sizeof(ENERGY_METERING_DATA));
+
     data.TotalGeneration = sensors[OBK_GENERATION_TOTAL].lastReading;
     data.TotalConsumption = sensors[OBK_CONSUMPTION_TOTAL].lastReading;
     data.TodayConsumpion = sensors[OBK_CONSUMPTION_TODAY].lastReading;
@@ -315,16 +300,18 @@ void BL09XX_SaveEmeteringStatistics()
     data.ConsumptionResetTime = ConsumptionResetTime;
     ConsumptionSaveCounter++;
     data.save_counter = ConsumptionSaveCounter;
+
     HAL_SetEnergyMeterStatus(&data);
 }
+
 commandResult_t BL09XX_ResetEnergyCounter(const void *context, const char *cmd, const char *args, int cmdFlags)
 {
     float value;
     int i;
+
     if(args==0||*args==0) 
     {
         sensors[OBK_CONSUMPTION_TOTAL].lastReading = 0.0;
-	sensors[OBK_GENERATION_TOTAL].lastReading = 0.0;
         energyCounterStamp = xTaskGetTickCount();
         if (energyCounterStatsEnable == true)
         {
@@ -361,6 +348,7 @@ commandResult_t BL09XX_ResetEnergyCounter(const void *context, const char *cmd, 
     }
     return CMD_RES_OK;
 }
+
 commandResult_t BL09XX_SetupEnergyStatistic(const void *context, const char *cmd, const char *args, int cmdFlags)
 {
     // SetupEnergyStats enable sample_time sample_count
@@ -368,6 +356,7 @@ commandResult_t BL09XX_SetupEnergyStatistic(const void *context, const char *cmd
     int sample_time;
     int sample_count;
     int json_enable;
+
     Tokenizer_TokenizeString(args,0);
 	// following check must be done after 'Tokenizer_TokenizeString',
 	// so we know arguments count in Tokenizer. 'cmd' argument is
@@ -375,6 +364,7 @@ commandResult_t BL09XX_SetupEnergyStatistic(const void *context, const char *cmd
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
+
     enable = Tokenizer_GetArgInteger(0);
     sample_time = Tokenizer_GetArgInteger(1);
     sample_count = Tokenizer_GetArgInteger(2);
@@ -382,16 +372,19 @@ commandResult_t BL09XX_SetupEnergyStatistic(const void *context, const char *cmd
         json_enable = Tokenizer_GetArgInteger(3);
     else
         json_enable = 0;
+
     /* Security limits for sample interval */
     if (sample_time <10)
         sample_time = 10;
     if (sample_time >900)
         sample_time = 900;
+
     /* Security limits for sample count */
     if (sample_count < 10)
         sample_count = 10;
     if (sample_count > 180)
         sample_count = 180;   
+
     /* process changes */
     if (enable != 0)
     {
@@ -425,6 +418,7 @@ commandResult_t BL09XX_SetupEnergyStatistic(const void *context, const char *cmd
             }
         }
         addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Sample Interval: %d", energyCounterSampleInterval);
+
         energyCounterMinutesStamp = xTaskGetTickCount();
         energyCounterMinutesIndex = 0;
     } else {
@@ -439,9 +433,12 @@ commandResult_t BL09XX_SetupEnergyStatistic(const void *context, const char *cmd
         energyCounterSampleCount = sample_count;
         energyCounterSampleInterval = sample_time;
     }
+
     energyCounterStatsJSONEnable = (json_enable != 0) ? true : false; 
+
     return CMD_RES_OK;
 }
+
 commandResult_t BL09XX_VCPPublishIntervals(const void *context, const char *cmd, const char *args, int cmdFlags)
 {
 	Tokenizer_TokenizeString(args, 0);
@@ -451,8 +448,10 @@ commandResult_t BL09XX_VCPPublishIntervals(const void *context, const char *cmd,
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
+
 	changeDoNotSendMinFrames = Tokenizer_GetArgInteger(0);
 	changeSendAlwaysFrames = Tokenizer_GetArgInteger(1);
+
 	return CMD_RES_OK;
 }
 commandResult_t BL09XX_VCPPrecision(const void *context, const char *cmd, const char *args, int cmdFlags)
@@ -465,6 +464,7 @@ commandResult_t BL09XX_VCPPrecision(const void *context, const char *cmd, const 
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
+
 	for (i = 0; i < Tokenizer_GetArgsCount(); i++) {
 		int val = Tokenizer_GetArgInteger(i);
 			switch(i) {
@@ -483,8 +483,10 @@ commandResult_t BL09XX_VCPPrecision(const void *context, const char *cmd, const 
 				for (int j = OBK_CONSUMPTION__DAILY_FIRST; j <= OBK_CONSUMPTION__DAILY_LAST; j++) {
 					sensors[j].rounding_decimals = val;
 				};
+
 			};
 	}
+
 	return CMD_RES_OK;
 }
 commandResult_t BL09XX_VCPPublishThreshold(const void *context, const char *cmd, const char *args, int cmdFlags)
@@ -496,12 +498,14 @@ commandResult_t BL09XX_VCPPublishThreshold(const void *context, const char *cmd,
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
+
 	sensors[OBK_VOLTAGE].changeSendThreshold = Tokenizer_GetArgFloat(0);
 	sensors[OBK_CURRENT].changeSendThreshold = Tokenizer_GetArgFloat(1);
 	sensors[OBK_POWER].changeSendThreshold = Tokenizer_GetArgFloat(2);
 	sensors[OBK_POWER_APPARENT].changeSendThreshold = Tokenizer_GetArgFloat(2);
 	sensors[OBK_POWER_REACTIVE].changeSendThreshold = Tokenizer_GetArgFloat(2);
 	//sensors[OBK_POWER_FACTOR].changeSendThreshold = Tokenizer_GetArgFloat(TODO);
+
 	if (Tokenizer_GetArgsCount() >= 4) {
 		for (int i = OBK_CONSUMPTION_LAST_HOUR; i <= OBK_CONSUMPTION__DAILY_LAST; i++) {
 			sensors[i].changeSendThreshold = Tokenizer_GetArgFloat(3);
@@ -509,6 +513,7 @@ commandResult_t BL09XX_VCPPublishThreshold(const void *context, const char *cmd,
 	}
 	return CMD_RES_OK;
 }
+
 commandResult_t BL09XX_SetupConsumptionThreshold(const void *context, const char *cmd, const char *args, int cmdFlags)
 {
     float threshold;
@@ -521,16 +526,20 @@ commandResult_t BL09XX_SetupConsumptionThreshold(const void *context, const char
 	}
     
     threshold = atof(Tokenizer_GetArg(0)); 
+
     if (threshold<1.0f)
         threshold = 1.0f;
     if (threshold>200.0f)
         threshold = 200.0f;
     changeSavedThresholdEnergy = threshold;
     addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "ConsumptionThreshold: %1.1f", changeSavedThresholdEnergy);
+
     return CMD_RES_OK;
 }
+
 bool Channel_AreAllRelaysOpen() {
 	int i, role, ch;
+
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		role = g_cfg.pins.roles[i];
 		ch = g_cfg.pins.channels[i];
@@ -555,12 +564,14 @@ bool Channel_AreAllRelaysOpen() {
 	}
 	return true;
 }
+
 float BL_ChangeEnergyUnitIfNeeded(float Wh) {
 	if (CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH)) {
 		return Wh * 0.001f;
 	}
 	return Wh;
 }
+
 void BL_ProcessUpdate(float voltage, float current, float power,
                       float frequency, float energyWh) {
     int i;
@@ -575,6 +586,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     struct tm *ltm;
     char datetime[64];
 	float diff;
+
 	// I had reports that BL0942 sometimes gives 
 	// a large, negative peak of current/power
 	if (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)) 
@@ -593,6 +605,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			current = 0;
 		}
 	}
+
     sensors[OBK_VOLTAGE].lastReading = voltage;
     sensors[OBK_CURRENT].lastReading = current;
 	sensors[OBK_POWER].lastReading = power;
@@ -603,54 +616,44 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 												powf(sensors[OBK_POWER].lastReading, 2)));  
 	sensors[OBK_POWER_FACTOR].lastReading =
         (sensors[OBK_POWER_APPARENT].lastReading == 0 ? 1 : sensors[OBK_POWER].lastReading / sensors[OBK_POWER_APPARENT].lastReading);
+
 	lastReadingFrequency = frequency;
+
+    float energy = 0;
+    float generation = 0;
     if (isnan(energyWh)) {
         xPassedTicks = (int)(xTaskGetTickCount() - energyCounterStamp);
         // FIXME: Wrong calculation if tick count overflows
         if (xPassedTicks <= 0)
             xPassedTicks = 1;
         energy = xPassedTicks * power / (3600000.0f / portTICK_PERIOD_MS);
-	// counter_three++;  
-	    tempwh = energy;
     } 
-    // Check if the last power reading is positive or negative. Increment the correct counter.
-    else	
+    else
+	// Check if the last power reading is positive or negative. Increment the correct counter.
     	{
-	tempwh = energyWh;
 	// Consumption (Grid to Device)
-	if (energyWh >= 0){
-		 energy = energyWh;
-		sensors[OBK_CONSUMPTION_TOTAL].lastReading += energyWh;}
-
+	if (energyWh > 0){
+		 energy = energyWh;}
+	
 	// Generation (device to Grid)
-	if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)&&(energyWh<0)){
-		sensors[OBK_GENERATION_TOTAL].lastReading += energy;
+	
+	if ((energyWh < 0) && (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){
+		generation = (-1*energyWh);
+	}	
 	}
-		// Add the calculated value to generation 
-		//int negative_energy = energyWh;
-		//generation += negative_energy;}	
-		//counter_two++;
-	}
-    
-	/*if (energy > 0)
-	{
-	sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
-	}
-else
-	{
-	generation += energy;
-	sensors[OBK_GENERATION_TODAY].lastReading += energy;
-	}
-
-    generation += generation;*/
+    // Apply values. Add Extra variable for generation 
+    sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
+    sensors[OBK_GENERATION_TOTAL].lastReading += generation;
     energyCounterStamp = xTaskGetTickCount();
     HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
-	//sensors[OBK_CONSUMPTION_TODAY].lastReading += energy;
+	sensors[OBK_CONSUMPTION_TODAY].lastReading  += energy;
+
     if (NTP_IsTimeSynced()) {
         ntpTime = (time_t)NTP_GetCurrentTime();
         ltm = gmtime(&ntpTime);
         if (ConsumptionResetTime == 0)
             ConsumptionResetTime = (time_t)ntpTime;
+
         if (actual_mday == -1)
         {
             actual_mday = ltm->tm_mday;
@@ -662,6 +665,7 @@ else
 			}
             sensors[OBK_CONSUMPTION_TODAY].lastReading = 0.0;
             actual_mday = ltm->tm_mday;
+
 #if WINDOWS
 #elif PLATFORM_BL602
 #elif PLATFORM_W600 || PLATFORM_W800
@@ -673,8 +677,10 @@ else
                 BL09XX_SaveEmeteringStatistics();
                 lastConsumptionSaveStamp = xTaskGetTickCount();
             }
+
         }
     }
+
     if (energyCounterStatsEnable == true)
     {
         interval = energyCounterSampleInterval;
@@ -713,6 +719,7 @@ else
                     }
                     cJSON_AddStringToObject(root, "consumption_clear_date", datetime);
                 }
+
                 if (energyCounterMinutes != NULL)
                 {
                     stats = cJSON_CreateArray();
@@ -726,6 +733,7 @@ else
                     }
                     cJSON_AddItemToObject(root, "consumption_samples", stats);
                 }
+
                 if(NTP_IsTimeSynced() == true)
                 {
                     stats = cJSON_CreateArray();
@@ -735,13 +743,17 @@ else
                     }
                     cJSON_AddItemToObject(root, "consumption_daily", stats);
                 }
+
                 msg = cJSON_PrintUnformatted(root);
                 cJSON_Delete(root);
+
                // addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "JSON Printed: %d bytes", strlen(msg));
+
                 MQTT_PublishMain_StringString("consumption_stats", msg, 0);
                 stat_updatesSent++;
                 os_free(msg);
             }
+
             if (energyCounterMinutes != NULL)
             {
                 for (i=energyCounterSampleCount-1;i>0;i--)
@@ -757,10 +769,13 @@ else
             }
             energyCounterMinutesStamp = xTaskGetTickCount();
             energyCounterMinutesIndex++;
+
         }
+
         if (energyCounterMinutes != NULL)
             energyCounterMinutes[0] += energy;
     }
+
     for(i = OBK__FIRST; i <= OBK__LAST; i++)
     {
         // send update only if there was a big change or if certain time has passed
@@ -772,6 +787,7 @@ else
              (sensors[i].noChangeFrame >= changeSendAlwaysFrames) )
         {
             sensors[i].noChangeFrame = 0;
+
 			enum EventCode eventChangeCode;
 			switch (i) {
 			case OBK_VOLTAGE:				eventChangeCode = CMD_EVENT_CHANGE_VOLTAGE;			break;
@@ -794,6 +810,7 @@ else
 				EventHandlers_ProcessVariableChange_Integer(eventChangeCode, sensors[i].lastSentValue, sensors[i].lastReading);
 				break;
 			}
+
             if (MQTT_IsReady() == true)
             {
 				sensors[i].lastSentValue = sensors[i].lastReading;
@@ -825,6 +842,7 @@ else
             stat_updatesSkipped++;
         }
     }        
+
 // Save the total counters periodically   
 if (((sensors[OBK_CONSUMPTION_TOTAL].lastReading - lastSavedEnergyCounterValue) >= changeSavedThresholdEnergy) ||
         ((xTaskGetTickCount() - lastConsumptionSaveStamp) >= (6 * 3600 * 1000 / portTICK_PERIOD_MS)) || 
@@ -843,22 +861,23 @@ if (((sensors[OBK_CONSUMPTION_TOTAL].lastReading - lastSavedEnergyCounterValue) 
 	    // Save Generation
 	    lastSavedGenerationCounterValue = sensors[OBK_GENERATION_TOTAL].lastReading;
             BL09XX_SaveEmeteringStatistics();
-	    //HAL_FlashVars_SaveEnergyExport();
-		
             lastConsumptionSaveStamp = xTaskGetTickCount();
         }
     }
 }
+
 void BL_Shared_Init(void)
 {
     int i;
     ENERGY_METERING_DATA data;
+
     for(i = OBK__FIRST; i <= OBK__LAST; i++)
     {
         sensors[i].noChangeFrame = 0;
         sensors[i].lastReading = 0;
     }
     energyCounterStamp = xTaskGetTickCount(); 
+
     if (energyCounterStatsEnable == true)
     {
         if (energyCounterMinutes == NULL)
@@ -875,7 +894,9 @@ void BL_Shared_Init(void)
         energyCounterMinutesStamp = xTaskGetTickCount();
         energyCounterMinutesIndex = 0;
     }
+
     addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Read ENERGYMETER status values. sizeof(ENERGY_METERING_DATA)=%d\n", sizeof(ENERGY_METERING_DATA));
+
     HAL_GetEnergyMeterStatus(&data);
     sensors[OBK_CONSUMPTION_TOTAL].lastReading = data.TotalConsumption;
     sensors[OBK_GENERATION_TOTAL].lastReading = data.TotalGeneration;
@@ -888,7 +909,9 @@ void BL_Shared_Init(void)
     ConsumptionResetTime = data.ConsumptionResetTime;
     ConsumptionSaveCounter = data.save_counter;
     lastConsumptionSaveStamp = xTaskGetTickCount();
+
     //int HAL_SetEnergyMeterStatus(ENERGY_METERING_DATA *data);
+
 	//cmddetail:{"name":"EnergyCntReset","args":"[OptionalNewValue]",
 	//cmddetail:"descr":"Resets the total Energy Counter, the one that is usually kept after device reboots. After this commands, the counter will start again from 0 (or from the value you specified).",
 	//cmddetail:"fn":"BL09XX_ResetEnergyCounter","file":"driver/drv_bl_shared.c","requires":"",
@@ -920,11 +943,13 @@ void BL_Shared_Init(void)
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("VCPPublishIntervals", BL09XX_VCPPublishIntervals, NULL);
 }
+
 // OBK_POWER etc
 float DRV_GetReading(energySensor_t type) 
 {
 	return sensors[type].lastReading;
 }
+
 energySensorNames_t* DRV_GetEnergySensorNames(energySensor_t type)
 {
 	return &sensors[type].names;
