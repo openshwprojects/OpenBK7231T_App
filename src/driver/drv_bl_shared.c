@@ -25,17 +25,15 @@ float net_energy_start = 0;
 float real_export = 0;
 // Variables for the solar dump load timer
 int sync = 0;
-int check_time = 0;
 int dump_load_hysteresis = 2;	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
 int min_production = -50;	// The minimun instantaneous solar production that will trigger the dump load.
 int dump_load_on = 3;		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
 int dump_load_off = 1;		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
-int dump_load_relay = 0;
 // These variables are used to program the bypass load, for example turn it on late afternoon if there was no sun for the day
 byte bypass_timer_reset = 0;
 byte bypass_on_time = 16;
 byte bypass_off_time = 22;
-int time_on++;			// Variable to count how long the Bypass load ran during the day
+int time_on;			// Variable to count how long the Bypass load ran during the day
 byte dump_load_relay;		// Variable to Indicate on the Webpage if the Bypass load is on
 int lastsync; 			// Variable to run the bypass relay loop. It's used to take note of the last time it run
 byte check_time; 		// Variable for Minutes
