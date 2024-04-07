@@ -238,7 +238,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		if ((energyCounterMinutesIndex >= energyCounterSampleCount)||((check_time==0)&&(energyCounterMinutesIndex>0)&&(sync==1)))
 		{
 			energyCounterMinutesIndex = 0;
-			net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading-real_export))			// calculate difference since start
+			net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading-real_export));			// calculate difference since start
 			// Add any excess (if any) to the generation variable, which is updated here.
 			if (net_energy > 0){sensors[OBK_GENERATION_TOTAL].lastReading += net_energy;}					// Save new value, if positive
 			// Then we calculate the 'Zero value' - The sum of the consumption and export counters
