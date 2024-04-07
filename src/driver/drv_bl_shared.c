@@ -616,7 +616,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     // Check if the last power reading is positive or negative. Increment the correct counter.
     else	
     	{
-	//tempwh = energy;
+	tempwh = energyWh;
 	// Consumption (Grid to Device)
 	if (energyWh >= 0){
 		 energy = energyWh;}
