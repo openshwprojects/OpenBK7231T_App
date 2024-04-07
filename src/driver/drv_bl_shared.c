@@ -618,19 +618,21 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     	{
 	tempwh = energyWh;
 	// Consumption (Grid to Device)
-	/*if (energyWh >= 0)*/{
-		 energy = energyWh;}
-	//}
-	//else if (energy <0)
+	if (energyWh >= 0){
+		 energy = energyWh;
+		sensors[OBK_CONSUMPTION_TOTAL].lastReading += energyWh;}
+
 	// Generation (device to Grid)
-	if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)/*&&(energyWh<0)*/){
+	if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)&&(energyWh<0)){
+		sensors[OBK_GENERATION_TODAY].lastReading += energy;
+	}
 		// Add the calculated value to generation 
-		int negative_energy = energyWh;
-		generation += negative_energy;}	
-		counter_two++;
+		//int negative_energy = energyWh;
+		//generation += negative_energy;}	
+		//counter_two++;
 	}
     
-	if (energy > 0)
+	/*if (energy > 0)
 	{
 	sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
 	}
@@ -640,10 +642,10 @@ else
 	sensors[OBK_GENERATION_TODAY].lastReading += energy;
 	}
 
-    generation += generation;
+    generation += generation;*/
     energyCounterStamp = xTaskGetTickCount();
     HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
-	sensors[OBK_CONSUMPTION_TODAY].lastReading += energy;
+	//sensors[OBK_CONSUMPTION_TODAY].lastReading += energy;
     if (NTP_IsTimeSynced()) {
         ntpTime = (time_t)NTP_GetCurrentTime();
         ltm = gmtime(&ntpTime);
