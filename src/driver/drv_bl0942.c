@@ -88,12 +88,12 @@ static void ScaleAndUpdate(bl0942_data_t *data) {
 		 // later on, these rules can be used to create two separate counters for Forward / Reverse Energy. Now, A single counter with absolute value is used.
 		 {
 		 // If Energy is negative
-		 energyWh = fabsf(PwrCal_ScalePowerOnly(data->cf_cnt)) * 1638.4f * 256.0f / 3600.0f;
+		 energyWh = fabsf(PwrCal_ScalePowerOnly(data->cf_cnt)) * 1638.4f * 256.0f / -3600.0f;
 		 }
 	 else
 		 {
 		 // If energy is positive
-		 energyWh = fabsf(PwrCal_ScalePowerOnly(data->cf_cnt)) * 1638.4f * 256.0f / -3600.0f;
+		 energyWh = fabsf(PwrCal_ScalePowerOnly(data->cf_cnt)) * 1638.4f * 256.0f / 3600.0f;
 	 	 }
     BL_ProcessUpdate(voltage, current, power, frequency, energyWh);
 }
