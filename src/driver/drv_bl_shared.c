@@ -159,7 +159,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				//An update is forced at startup, so the energy values are correct.
 				// We load from memory at first run, then add to our temp variable
 				net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
-				real_export = sensors[OBK_GENERATION_TOTAL].lastReading);
+				real_export = (sensors[OBK_GENERATION_TOTAL].lastReading);
 				//real_export = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
 				//real_export = net_energy_start;
 				first_run = 1;
