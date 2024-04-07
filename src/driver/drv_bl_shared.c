@@ -610,11 +610,13 @@ void BL_ProcessUpdate(float voltage, float current, float power,
         if (xPassedTicks <= 0)
             xPassedTicks = 1;
         energy = xPassedTicks * power / (3600000.0f / portTICK_PERIOD_MS);
+	// counter_three++;  
+	    tempwh = energy;
     } 
     // Check if the last power reading is positive or negative. Increment the correct counter.
     else	
     	{
-	tempwh = energyWh;
+	//tempwh = energy;
 	// Consumption (Grid to Device)
 	if (energyWh >= 0){
 		 energy = energyWh;}
