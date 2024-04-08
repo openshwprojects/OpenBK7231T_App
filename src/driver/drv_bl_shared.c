@@ -201,8 +201,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				//real_export = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
 				//real_export = net_energy_start;
 
-				//Now we calculate the net_energy. Because we started to run
-				net_energy = net_energy_start;	
+				//Now we calculate the net_energy, which is zero.
+				net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading-real_export));
 				first_run = 1;
 				}
 
