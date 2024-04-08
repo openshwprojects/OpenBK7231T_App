@@ -246,6 +246,10 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			
 			//Make sure to reset the old time at every hour, otherwise the loop will not run, because old minutes are ahead in time!
 			if (lastsync <0) {lastsync = 0;}
+			// This resets the time the bypass relay was on throughout the day. Should run at midnight
+			if (check_hour > bypass_timer_reset){time_on = 0;}
+			// Status Check
+			dump_load_relay = 4;
 			if ((check_time - lastsync) >= dump_load_hysteresis) 
 			{
 				// save the last time the loop was run
@@ -263,8 +267,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 					//check_hour = NTP_GetHour();
 					//hprintf255(request,"<hr><h5>Diversion relay On. Cause: Excess production</h5>"); 
 					
-					// This resets the time the bypass relay was on throughout the day. Should run at midnight
-					if (check_hour > bypass_timer_reset){time_on = 0;}
+					
 				}
 				else if ((check_hour > bypass_on_time) && (check_hour < bypass_off_time))
 					//if (net_energy<dump_load_off)
@@ -297,7 +300,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			//--------------------------------------------------------------------------------------------------
 			// Update status of the diversion relay on webpage
 			// Update status of the diversion relay on webpage
-			hprintf255(request, "<font size=1>Diversion relay total on-time today was %d min.<br>System time now is %d:%d<br></font>", time_on, check_hour, check_time);
+			hprintf255(request, "<font size=1>Diversion relay total on-time today was %d min. Current Status: &d<br>System time now is %d:%d<br></font>", time_on, dump_load_relay, check_hour, check_time);
 			//-------------------------------------------------------------------------------------------------------------------------------------------------
 			
 			}	
