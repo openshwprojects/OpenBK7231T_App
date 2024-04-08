@@ -213,9 +213,6 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 			//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 			
-			//Make sure to reset the old time at every hour, otherwise the loop will not run, because old minutes are ahead!!
-			if (lastsync <0) {lastsync = 0;}
-			
 			//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 			//Now we turn out a remote load if we are exporting excess energy
 			//-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -233,7 +230,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				// Then we calculate the 'Zero value' - The sum of the consumption and export counters
 				net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);	// Start again
 				//real_export = sensors[OBK_GENERATION_TOTAL].lastReading; // Update the Export, to reflect the 
-				net_energy = net_energy_start;
+				net_energy = 0;
 				sync = 0;
 			}
 			else if(energyCounterMinutesIndex>0)
@@ -246,6 +243,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			}
 			// ------------------------------------------------------------------------------------------------------------------
 			// Bypass load code. Runs if there is excess energy and at a programmable time, in case there was no sun
+			
+			//Make sure to reset the old time at every hour, otherwise the loop will not run, because old minutes are ahead in time!
+			if (lastsync <0) {lastsync = 0;}
 			if ((check_time - lastsync) >= dump_load_hysteresis) 
 			{
 				// save the last time the loop was run
@@ -261,6 +261,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 					time_on += dump_load_hysteresis;	// Increase the timer.
 					// Reset timer late in night
 					//check_hour = NTP_GetHour();
+					hprintf255(request,"<hr><h5>Diversion relay On. Cause: Excess production</h5>"); 
 					
 					// This resets the time the bypass relay was on throughout the day. Should run at midnight
 					if (check_hour > bypass_timer_reset){time_on = 0;}
@@ -273,6 +274,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 					//CMD_ExecuteCommand("SendGet" rem_relay_on, 0);
 					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 					CMD_ExecuteCommand("setChannel 1 1", 0);
+					hprintf255(request,"<hr><h5>Diversion relay On. Cause: Timer</h5>"); 
 					}
 				else
 					{
@@ -281,6 +283,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 					//CMD_ExecuteCommand("SendGet", rem_relay_off, 0);
 					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
 					CMD_ExecuteCommand("setChannel 1 0", 0);
+					hprintf255(request,"<hr><h5>Diversion relay is Off</h5>"); 
 					}
 			}
 			// ------------------------------------------------------------------------------------------------------------------
@@ -294,7 +297,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			//--------------------------------------------------------------------------------------------------
 			// Update status of the diversion relay on webpage
 			// Update status of the diversion relay on webpage
-			hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min.<br>System time now is %d:%d<br></font>", dump_load_relay, time_on, check_hour, check_time);
+			hprintf255(request, "<font size=1>Diversion relay total on-time today was %d min.<br>System time now is %d:%d<br></font>", time_on, check_hour, check_time);
 			//-------------------------------------------------------------------------------------------------------------------------------------------------
 			
 			}	
