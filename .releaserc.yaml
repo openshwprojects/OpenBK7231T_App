@@ -75,13 +75,16 @@ generateNotes:
 
         OpenBK7231T/OpenBeken is a Tasmota/Esphome replacement for new Tuya modules featuring MQTT and Home Assistant compatibility. This repository is named <code>OpenBK7231T_App</code>, but now it's a multiplatform app, supporting build for multiple separate chips:
 
-        - BK7231T (WB3S, WB2S, WB2L, etc)
-        - BK7231N (CB2S, CB2L, WB2L_M1, etc)
-        - T34 (T34 is based on BK7231N)
-        - XR809 (XR3, etc)
-        - BL602
+        - BK7231T (WB3S, WB2S, WB2L etc)
+        - BK7231N (CB2S, CB2L, WB2L_M1 etc)
+        - T34 (based on BK7231N)
+        - BL2028N (based on BK7231N)
+        - XR809 (XR3 etc)
+        - BL602 (DT-BL200, SM-028_V1.3 etc)
+        - LF686 (based on BL602)
         - W800 (W800-C400, WinnerMicro WiFi & Bluetooth), W801
-        - W600
+        - W600 (TW-01, TW-02, TW-03 etc), W601 (WIS600, ESP-01W etc)
+        - LN882H (LN-02, WL2S, WL2H etc)
 
       footerPartial: |
         {{#if noteGroups}}
