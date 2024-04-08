@@ -24,14 +24,15 @@ static float net_energy_start = 0;
 static float real_export = 0;
 // Variables for the solar dump load timer
 static byte sync = 0;
-#define dump_load_hysteresis 1	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
+#define dump_load_hysteresis 2	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
 //int min_production = -50;	// The minimun instantaneous solar production that will trigger the dump load.
 #define dump_load_on 15		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
 #define dump_load_off 3		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
 // These variables are used to program the bypass load, for example turn it on late afternoon if there was no sun for the day
-#define bypass_timer_reset 23	// Just so it doesn't accidentally reset when the device is rebooted (0)...
-#define bypass_on_time 15
-#define bypass_off_time 23
+#define bypass_timer_reset 18	// Just so it doesn't accidentally reset when the device is rebooted (0)...
+#define bypass_on_time 16
+#define bypass_off_time 18
+#define min_daily_time_on 150	// Runs the diversion load up to this specified ammount of time, if there wasn't enough sun over the day.
 int time_on = 0;			// Variable to count how long the Bypass load ran during the day
 int dump_load_relay = 0;		// Variable to Indicate on the Webpage if the Bypass load is on
 int lastsync = 0; 			// Variable to run the bypass relay loop. It's used to take note of the last time it run
@@ -92,7 +93,7 @@ bool energyCounterStatsJSONEnable = false;
 int actual_mday = -1;
 float lastSavedEnergyCounterValue = 0.0f;
 float lastSavedGenerationCounterValue = 0.0f;
-float changeSavedThresholdEnergy = 100.0f;
+float changeSavedThresholdEnergy = 500.0f;
 long ConsumptionSaveCounter = 0;
 portTickType lastConsumptionSaveStamp;
 time_t ConsumptionResetTime = 0;
@@ -257,20 +258,21 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				// Are we exporting enough? If so, turn the relay on
 				if ((int)net_energy>dump_load_on)
 				{
-					int last_run = ((check_hour*60)+check_time);
+					//int last_run = ((check_hour*60)+check_time);
 					dump_load_relay = 1;
 					//CMD_ExecuteCommand("SendGet", rem_relay_on, 0);
 					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 					CMD_ExecuteCommand("setChannel 1 1", 0);
 					time_on += dump_load_hysteresis;	// Increase the timer.
 				}
-				else if ((check_hour >= bypass_on_time) && (check_hour < bypass_off_time))
+				else if ((check_hour >= bypass_on_time) && (check_hour < bypass_off_time) && (time_on < min_daily_time_on))
 					{
 					// We make an exception to manually turn on the bypass load, for example - Winter.
 					dump_load_relay = 2;
 					//CMD_ExecuteCommand("SendGet" rem_relay_on, 0);
 					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 					CMD_ExecuteCommand("setChannel 1 1", 0);
+					time_on += dump_load_hysteresis;	
 					//hprintf255(request,"<hr><h5>Diversion relay On. Cause: Timer</h5>"); 
 					}
 				else
@@ -294,7 +296,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 			// Print out periodic statistics and Total Generation at the bottom of the page.
 			hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", energyCounterMinutesIndex, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)  
-			hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min.<br> System time now is %d:%d,<br></font>", dump_load_relay, time_on, check_hour, check_time);
+			hprintf255(request, "<font size=1>Diversion relay Status: %d. Total on-time today was %d min.<br> System time now is %d:%d,<br></font>", dump_load_relay, time_on, check_hour, check_time);
 			//--------------------------------------------------------------------------------------------------
 			// Update status of the diversion relay on webpage
 			// Update status of the diversion relay on webpage
