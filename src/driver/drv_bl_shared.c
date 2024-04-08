@@ -193,7 +193,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			// Add any excess (if any) to the generation variable, which is updated here.
 			if (net_energy > 0){
 				sensors[OBK_GENERATION_TOTAL].lastReading += net_energy; // Save new value, if positive
-				real_export -= net_energy;				 // And deduct it from the running variable, as it was exported.
+				//real_export -= net_energy;				 // And deduct it from the running variable, as it was exported.
 			}			
 			
 			// Then we calculate the 'Zero value' - The sum of the consumption and export counters
