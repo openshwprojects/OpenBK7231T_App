@@ -252,7 +252,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			//dump_load_relay = 4;
 			if ((check_time - lastsync) >= dump_load_hysteresis) 
 			{
-				dump_load_relay = (4+check_time - lastsync);
+				//dump_load_relay = (4+check_time - lastsync);
 				// save the last time the loop was run
 	   			lastsync = check_time;
 				//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20TOGGLE", 0);
@@ -290,6 +290,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 					//hprintf255(request,"<hr><h5>Diversion relay is Off</h5>"); 
 					}
 			}
+			//dEBUG
+			hprintf255(request,"<h3>DEBUG (Last %d min out of %d): %.3f Wh</h3>", energyCounterMinutesIndex, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)  
 			// ------------------------------------------------------------------------------------------------------------------
 			// Print netmetering.
 			// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
@@ -301,10 +303,12 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			//--------------------------------------------------------------------------------------------------
 			// Update status of the diversion relay on webpage
 			// Update status of the diversion relay on webpage
-			hprintf255(request, "<font size=1>Diversion relay total on-time today was %d min. Current Status: %d<br>System time now is %d:%d<br></font>", time_on, dump_load_relay, check_hour, check_time);
+			
 			//-------------------------------------------------------------------------------------------------------------------------------------------------
 			
 			}	
+			hprintf255(request, "<font size=1>lastsync: %d, check_time: %d, net_energy: %d, dump_load_on: %d, check_hour: %d, lastsync: &d, dump_load_relay: %d ) . Current Status: %d<br>System time now is %d:%d<br></font>", 
+				lastsync, check_time, net_energy, dump_load_on, check_hour, lastsync, dump_load_relay);
 		}		
 		/********************************************************************************************************************/
 	        hprintf255(request,"<h5>Consumption (during this period): ");
