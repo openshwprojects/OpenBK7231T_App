@@ -305,7 +305,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			
 			}	
 			hprintf255(request, "<font size=1>lastsync: %dmin. Boosting from %dh to %dh<br> Relay Thresholds: On @ %dWh, Off @ %dWh<br></font>", 
-				lastsync, bypass_on_time, bypass_off_time, check_hour, check_time, dump_load_on, define dump_load_off);
+				lastsync, bypass_on_time, bypass_off_time, check_hour, check_time, dump_load_on, dump_load_off);
 		}		
 		/********************************************************************************************************************/
 	        hprintf255(request,"<h5>Consumption (during this period): ");
