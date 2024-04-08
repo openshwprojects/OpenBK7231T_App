@@ -176,7 +176,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		
 		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
-		net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
+		//net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
+		net_energy = 50;
 		
 		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		//Now we turn out a remote load if we are exporting excess energy
@@ -197,8 +198,6 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 				CMD_ExecuteCommand("setChannel 1 1", 0);
 				time_on += dump_load_hysteresis;	// Increase the timer.
-				// Reset timer late in night
-				//check_hour = NTP_GetHour();
 				
 				// This resets the time the bypass relay was on throughout the day. Should run at midnight
 				if (check_hour > bypass_timer_reset){time_on = 0;}
