@@ -177,53 +177,17 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		
 		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 		//net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
-		net_energy = 50;
+		//net_energy = 50;
 		
 		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		//Now we turn out a remote load if we are exporting excess energy
 
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
-		// Bypass load code. Runs if there is excess energy and at a programmable time, in case there was no sun
-		if ((check_time - lastsync) >= dump_load_hysteresis) 
-		{
-    			
-			// save the last time the loop was run
-   			lastsync = check_time;
-			//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20TOGGLE", 0);
-			// Are we exporting enough? If so, turn the relay on
-			if (net_energy>dump_load_on)
-			{
-				dump_load_relay = 1;
-				//CMD_ExecuteCommand("SendGet", rem_relay_on, 0);
-				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
-				CMD_ExecuteCommand("setChannel 1 1", 0);
-				time_on += dump_load_hysteresis;	// Increase the timer.
-				
-				// This resets the time the bypass relay was on throughout the day. Should run at midnight
-				if (check_hour > bypass_timer_reset){time_on = 0;}
-			}
-			else if ((check_hour > bypass_on_time) && (check_hour < bypass_off_time))
-				//if (net_energy<dump_load_off)
-				{
-				// We make an exception to manually turn on the bypass load, for example - Winter.
-				dump_load_relay = 1;
-				//CMD_ExecuteCommand("SendGet" rem_relay_on, 0);
-				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
-				CMD_ExecuteCommand("setChannel 1 1", 0);
-				}
-			else
-				{
-				// If none of the exemptions applies, we turn the diversion load off.
-				dump_load_relay = 0;
-				//CMD_ExecuteCommand("SendGet", rem_relay_off, 0);
-				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
-				CMD_ExecuteCommand("setChannel 1 0", 0);
-				}
-		}
+		
 		//--------------------------------------------------------------------------------------------------
 		// Update status of the diversion relay on webpage
 		// Update status of the diversion relay on webpage
-		hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min. System time now is %d:%d<br></font>", dump_load_relay, time_on, check_hour, check_time);
+		
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
 		
 		// Sync the counter at the turn of the hour. This only runs when time = XX:00 and our counter is not zero.
@@ -286,6 +250,46 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		{
 		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 		net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
+		///
+		// Bypass load code. Runs if there is excess energy and at a programmable time, in case there was no sun
+		if ((check_time - lastsync) >= dump_load_hysteresis) 
+		{
+    			
+			// save the last time the loop was run
+   			lastsync = check_time;
+			//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20TOGGLE", 0);
+			// Are we exporting enough? If so, turn the relay on
+			if (net_energy>dump_load_on)
+			{
+				dump_load_relay = 1;
+				//CMD_ExecuteCommand("SendGet", rem_relay_on, 0);
+				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
+				CMD_ExecuteCommand("setChannel 1 1", 0);
+				time_on += dump_load_hysteresis;	// Increase the timer.
+				
+				// This resets the time the bypass relay was on throughout the day. Should run at midnight
+				if (check_hour > bypass_timer_reset){time_on = 0;}
+			}
+			else if ((check_hour > bypass_on_time) && (check_hour < bypass_off_time))
+				//if (net_energy<dump_load_off)
+				{
+				// We make an exception to manually turn on the bypass load, for example - Winter.
+				dump_load_relay = 1;
+				//CMD_ExecuteCommand("SendGet" rem_relay_on, 0);
+				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
+				CMD_ExecuteCommand("setChannel 1 1", 0);
+				}
+			else
+				{
+				// If none of the exemptions applies, we turn the diversion load off.
+				dump_load_relay = 0;
+				//CMD_ExecuteCommand("SendGet", rem_relay_off, 0);
+				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
+				CMD_ExecuteCommand("setChannel 1 0", 0);
+				}
+		}
+		hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min.<br></font>", dump_load_relay, time_on);
+		/// Bypass code End
 		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
 		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		// Print out periodic statistics and Total Generation at the bottom of the page.
