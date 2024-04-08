@@ -300,7 +300,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			//--------------------------------------------------------------------------------------------------
 			// Update status of the diversion relay on webpage
 			// Update status of the diversion relay on webpage
-			hprintf255(request, "<font size=1>Diversion relay total on-time today was %d min. Current Status: &d<br>System time now is %d:%d<br></font>", time_on, dump_load_relay, check_hour, check_time);
+			hprintf255(request, "<font size=1>Diversion relay total on-time today was %d min. Current Status: %d<br>System time now is %d:%d<br></font>", time_on, dump_load_relay, check_hour, check_time);
 			//-------------------------------------------------------------------------------------------------------------------------------------------------
 			
 			}	
