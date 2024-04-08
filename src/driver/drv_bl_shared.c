@@ -31,7 +31,7 @@ static byte sync = 0;
 // These variables are used to program the bypass load, for example turn it on late afternoon if there was no sun for the day
 #define bypass_timer_reset 23	// Just so it doesn't accidentally reset when the device is rebooted (0)...
 #define bypass_on_time 16
-#define bypass_off_time 20
+#define bypass_off_time 22
 int time_on = 0;			// Variable to count how long the Bypass load ran during the day
 int dump_load_relay = 0;		// Variable to Indicate on the Webpage if the Bypass load is on
 int lastsync = 0; 			// Variable to run the bypass relay loop. It's used to take note of the last time it run
@@ -270,8 +270,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 					
 					
 				}
-				else if ((check_hour > bypass_on_time) && (check_hour < bypass_off_time))
-					//if (net_energy<dump_load_off)
+				else if ((check_hour >= bypass_on_time) && (check_hour < bypass_off_time))
 					{
 					// We make an exception to manually turn on the bypass load, for example - Winter.
 					dump_load_relay = 2;
@@ -291,7 +290,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 					}
 			}
 			//dEBUG
-			hprintf255(request,"<h3>DEBUG (Last %d min out of %d): %.3f Wh</h3>", energyCounterMinutesIndex, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)  
+			//hprintf255(request,"<h3>DEBUG (Last %d min out of %d): %.3f Wh</h3>", energyCounterMinutesIndex, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)  
+			//hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min.<br> System time now is %d:%d</font>", dump_load_relay, time_on, check_hour, check_time);
 			// ------------------------------------------------------------------------------------------------------------------
 			// Print netmetering.
 			// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
@@ -300,6 +300,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 			// Print out periodic statistics and Total Generation at the bottom of the page.
 			hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", energyCounterMinutesIndex, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)  
+			hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min.<br> System time now is %d:%d</font>", dump_load_relay, time_on, check_hour, check_time);
 			//--------------------------------------------------------------------------------------------------
 			// Update status of the diversion relay on webpage
 			// Update status of the diversion relay on webpage
@@ -307,8 +308,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			//-------------------------------------------------------------------------------------------------------------------------------------------------
 			
 			}	
-			hprintf255(request, "<font size=1>lastsync: %d, check_time: %d, net_energy: %d, dump_load_on: %d, check_hour: %d, lastsync: &d, dump_load_relay: %d. Current Status: %d<br>System time now is %d:%d<br></font>", 
-				lastsync, check_time, (int)net_energy, dump_load_on, check_hour, lastsync, dump_load_relay);
+			hprintf255(request, "<font size=1>lastsync: %d, check_time: %d, net_energy: %d, dump_load_on: %d, check_hour: %d, dump_load_relay: %d. Current Status: %d<br>System time now is %d:%d<br></font>", 
+				lastsync, check_time, (int)net_energy, dump_load_on, check_hour, dump_load_relay);
 		}		
 		/********************************************************************************************************************/
 	        hprintf255(request,"<h5>Consumption (during this period): ");
