@@ -20,24 +20,24 @@ int stat_updatesSkipped = 0;
 int lastsync = 0;
 int stat_updatesSent = 0;
 static int first_run = 0;
-float net_energy = 0;
-float net_energy_start = 0;
-float real_export = 0;
+static float net_energy = 0;
+static float net_energy_start = 0;
+static float real_export = 0;
 // Variables for the solar dump load timer
-int sync = 0;
-int dump_load_hysteresis = 1;	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
+static byte sync = 0;
+#define dump_load_hysteresis 1	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
 //int min_production = -50;	// The minimun instantaneous solar production that will trigger the dump load.
-int dump_load_on = 15;		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
-int dump_load_off = 3;		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
+#define dump_load_on 15		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
+#define dump_load_off 3		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
 // These variables are used to program the bypass load, for example turn it on late afternoon if there was no sun for the day
-byte bypass_timer_reset = 23;	// Just so it doesn't accidentally reset when the device is rebooted (0)...
-int bypass_on_time = 16;
-int bypass_off_time = 20;
-int time_on;			// Variable to count how long the Bypass load ran during the day
-byte dump_load_relay;		// Variable to Indicate on the Webpage if the Bypass load is on
-int lastsync; 			// Variable to run the bypass relay loop. It's used to take note of the last time it run
-byte check_time; 		// Variable for Minutes
-byte check_hour;		// Variable for Hour	
+#define bypass_timer_reset 23	// Just so it doesn't accidentally reset when the device is rebooted (0)...
+#define bypass_on_time 16
+#define bypass_off_time 20
+int time_on = 0;			// Variable to count how long the Bypass load ran during the day
+int dump_load_relay = 0;		// Variable to Indicate on the Webpage if the Bypass load is on
+int lastsync = 0; 			// Variable to run the bypass relay loop. It's used to take note of the last time it run
+byte check_time = 0; 		// Variable for Minutes
+byte check_hour = 0;		// Variable for Hour	
 //Command to turn remote plug on/off
 //const char* rem_relay_on = "http://<ip>/cm?cmnd=Power%20on";
 //const char* rem_relay_off = "http://<ip>/cm?cmnd=Power%20off";
@@ -307,8 +307,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			//-------------------------------------------------------------------------------------------------------------------------------------------------
 			
 			}	
-			hprintf255(request, "<font size=1>lastsync: %d, check_time: %d, net_energy: %d, dump_load_on: %d, check_hour: %d, lastsync: &d, dump_load_relay: %d ) . Current Status: %d<br>System time now is %d:%d<br></font>", 
-				lastsync, check_time, net_energy, dump_load_on, check_hour, lastsync, dump_load_relay);
+			int net_energy_int = (int)net_energy;
+			hprintf255(request, "<font size=1>lastsync: %d, check_time: %d, net_energy: %d, dump_load_on: %d, check_hour: %d, lastsync: &d, dump_load_relay: %d. Current Status: %d<br>System time now is %d:%d<br></font>", 
+				lastsync, check_time, net_energy_int, dump_load_on, check_hour, lastsync, dump_load_relay);
 		}		
 		/********************************************************************************************************************/
 	        hprintf255(request,"<h5>Consumption (during this period): ");
