@@ -168,9 +168,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				first_run = 1;
 				}
 
-		//sync with the clock
-		check_time = NTP_GetMinute();
-		check_hour = NTP_GetHour();
+
 
 		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
@@ -251,10 +249,15 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 		net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
 		///
+		//sync with the clock. Make sure to reset the old time at every hour, otherwise the loop will not run, because old minutes are ahead!!
 		// Bypass load code. Runs if there is excess energy and at a programmable time, in case there was no sun
-		if ((check_time - lastsync) >= dump_load_hysteresis) 
+		check_time = NTP_GetMinute();
+		check_hour = NTP_GetHour();
+		//Make sure to reset the old time at every hour, otherwise the loop will not run, because old minutes are ahead!!
+		if (check_time <0) {check_time = 0;}
+		// Bypass load code. Runs if there is excess energy and at a programmable time, in case there was no sun
+		if ((check_time - lastsync) > dump_load_hysteresis) || (check_time == 0)
 		{
-    			
 			// save the last time the loop was run
    			lastsync = check_time;
 			//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20TOGGLE", 0);
