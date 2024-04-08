@@ -168,8 +168,6 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				first_run = 1;
 				}
 
-
-
 		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		
@@ -230,18 +228,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				}
 		}
 		hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min.<br></font>", dump_load_relay, time_on);
-		//--------------------------------------------------------------------------------------------------
-		// Update status of the diversion relay on webpage
-		// Update status of the diversion relay on webpage
 		
-		//-------------------------------------------------------------------------------------------------------------------------------------------------
-		
-		// Sync the counter at the turn of the hour. This only runs when time = XX:00 and our counter is not zero.
-		/*if ((check_time==0)&&(energyCounterMinutesIndex>0))
-		{
-		energyCounterMinutesIndex = 0;
-		}*/
-
 		// Reset the timer and Netmetering generation stats: 1)if it goes over the time period; 2) If the hour is HH:00min - For synchronization
 		if ((energyCounterMinutesIndex >= energyCounterSampleCount)||((check_time==0)&&(energyCounterMinutesIndex>0)&&(sync==1)))
 		{
