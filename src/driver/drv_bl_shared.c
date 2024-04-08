@@ -29,7 +29,7 @@ static byte sync = 0;
 #define dump_load_on 15		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
 #define dump_load_off 3		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
 // These variables are used to program the bypass load, for example turn it on late afternoon if there was no sun for the day
-#define bypass_timer_reset 18	// Just so it doesn't accidentally reset when the device is rebooted (0)...
+#define bypass_timer_reset 23	// Just so it doesn't accidentally reset when the device is rebooted (0)...
 #define bypass_on_time 16
 #define bypass_off_time 18
 #define min_daily_time_on 150	// Runs the diversion load up to this specified ammount of time, if there wasn't enough sun over the day.
@@ -304,9 +304,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			//-------------------------------------------------------------------------------------------------------------------------------------------------
 			
 			}	
-			hprintf255(request, "<font size=1>lastsync: %dmin. Boosting from %dh to %dh %d<br>System time now is %d:%d<br></font>", 
-				lastsync, dump_load_on, dump_load_relay, check_hour, check_time);
-
+			hprintf255(request, "<font size=1>lastsync: %dmin. Boosting from %dh to %dh<br> Relay Thresholds: On @ %dWh, Off @ %dWh<br></font>", 
+				lastsync, bypass_on_time, bypass_off_time, check_hour, check_time, dump_load_on, define dump_load_off);
 		}		
 		/********************************************************************************************************************/
 	        hprintf255(request,"<h5>Consumption (during this period): ");
