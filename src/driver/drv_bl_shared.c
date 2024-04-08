@@ -25,10 +25,10 @@ float net_energy_start = 0;
 float real_export = 0;
 // Variables for the solar dump load timer
 int sync = 0;
-int dump_load_hysteresis = 2;	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
+int dump_load_hysteresis = 1;	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
 //int min_production = -50;	// The minimun instantaneous solar production that will trigger the dump load.
-int dump_load_on = 3;		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
-int dump_load_off = 1;		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
+int dump_load_on = 15;		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
+int dump_load_off = 3;		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
 // These variables are used to program the bypass load, for example turn it on late afternoon if there was no sun for the day
 byte bypass_timer_reset = 23;	// Just so it doesn't accidentally reset when the device is rebooted (0)...
 int bypass_on_time = 16;
@@ -261,7 +261,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 					time_on += dump_load_hysteresis;	// Increase the timer.
 					// Reset timer late in night
 					//check_hour = NTP_GetHour();
-					hprintf255(request,"<hr><h5>Diversion relay On. Cause: Excess production</h5>"); 
+					//hprintf255(request,"<hr><h5>Diversion relay On. Cause: Excess production</h5>"); 
 					
 					// This resets the time the bypass relay was on throughout the day. Should run at midnight
 					if (check_hour > bypass_timer_reset){time_on = 0;}
@@ -270,20 +270,20 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 					//if (net_energy<dump_load_off)
 					{
 					// We make an exception to manually turn on the bypass load, for example - Winter.
-					dump_load_relay = 1;
+					dump_load_relay = 2;
 					//CMD_ExecuteCommand("SendGet" rem_relay_on, 0);
 					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 					CMD_ExecuteCommand("setChannel 1 1", 0);
-					hprintf255(request,"<hr><h5>Diversion relay On. Cause: Timer</h5>"); 
+					//hprintf255(request,"<hr><h5>Diversion relay On. Cause: Timer</h5>"); 
 					}
 				else
 					{
 					// If none of the exemptions applies, we turn the diversion load off.
-					dump_load_relay = 0;
+					dump_load_relay = 3;
 					//CMD_ExecuteCommand("SendGet", rem_relay_off, 0);
 					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
 					CMD_ExecuteCommand("setChannel 1 0", 0);
-					hprintf255(request,"<hr><h5>Diversion relay is Off</h5>"); 
+					//hprintf255(request,"<hr><h5>Diversion relay is Off</h5>"); 
 					}
 			}
 			// ------------------------------------------------------------------------------------------------------------------
