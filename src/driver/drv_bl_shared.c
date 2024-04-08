@@ -149,119 +149,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	
 	// Close the table
 	poststr(request, "</table>");
-
-	// print total generation (If applicable). This routine changes the behaviour of statistics to reset every hour and sync to the beginning of the hour.
-	// Only Active if 'Set flag 25' (Negative energy) is checked.
-	if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
-	{
-		if (!first_run)
-				{
-				//An update is forced at startup, so the energy values are correct.
-				// We load from memory at first run, then add to our temp variable
-				net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading); // OK
-				real_export = (sensors[OBK_GENERATION_TOTAL].lastReading);
-				//real_export = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
-				//real_export = net_energy_start;
-
-				//Now we calculate the net_energy. Because we started to run
-				net_energy = net_energy_start;	
-				first_run = 1;
-				}
-
-		//sync with the clock
-		check_time = NTP_GetMinute();
-		check_hour = NTP_GetHour();
-
-		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
-		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
-		
-		//Make sure to reset the old time at every hour, otherwise the loop will not run, because old minutes are ahead!!
-		if (lastsync <0) {lastsync = 0;}
-		
-		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
-		net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
-		
-		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
-		//Now we turn out a remote load if we are exporting excess energy
-		//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-		// Reset the timer and Netmetering generation stats: 1)if it goes over the time period; 2) If the hour is HH:00min - For synchronization
-		if ((energyCounterMinutesIndex >= energyCounterSampleCount)||((check_time==0)&&(energyCounterMinutesIndex>0)&&(sync==1)))
-		{
-			energyCounterMinutesIndex = 0;
-			net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading-real_export));			// calculate difference since start
-			// Add any excess (if any) to the generation variable, which is updated here.
-			if (net_energy > 0){
-				sensors[OBK_GENERATION_TOTAL].lastReading += net_energy; // Save new value, if positive
-				//real_export -= net_energy;				 // And deduct it from the running variable, as it was exported.
-			}			
+	
+	//else - loose else was here. keep for debuging
 			
-			// Then we calculate the 'Zero value' - The sum of the consumption and export counters
-			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);	// Start again
-			//real_export = sensors[OBK_GENERATION_TOTAL].lastReading; // Update the Export, to reflect the 
-			net_energy = net_energy_start;
-			sync = 0;
-		}
-		else if(energyCounterMinutesIndex>0)
-		{
-			sync = 1;
-		}
-		
-		//-------------------------------------------------------------------------------------------------------------------------------------------------
-		// Bypass load code. Runs if there is excess energy and at a programmable time, in case there was no sun
-		if ((check_time - lastsync) >= dump_load_hysteresis) 
-		{
-    			
-			// save the last time the loop was run
-   			lastsync = check_time;
-			//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20TOGGLE", 0);
-			// Are we exporting enough? If so, turn the relay on
-			if (net_energy>dump_load_on)
-			{
-				dump_load_relay = 1;
-				//CMD_ExecuteCommand("SendGet", rem_relay_on, 0);
-				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
-				CMD_ExecuteCommand("setChannel 1 1", 0);
-				time_on += dump_load_hysteresis;	// Increase the timer.
-				// Reset timer late in night
-				//check_hour = NTP_GetHour();
-				
-				// This resets the time the bypass relay was on throughout the day. Should run at midnight
-				if (check_hour > bypass_timer_reset){time_on = 0;}
-			}
-			else if ((check_hour > bypass_on_time) && (check_hour < bypass_off_time))
-				//if (net_energy<dump_load_off)
-				{
-				// We make an exception to manually turn on the bypass load, for example - Winter.
-				dump_load_relay = 1;
-				//CMD_ExecuteCommand("SendGet" rem_relay_on, 0);
-				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
-				CMD_ExecuteCommand("setChannel 1 1", 0);
-				}
-			else
-				{
-				// If none of the exemptions applies, we turn the diversion load off.
-				dump_load_relay = 0;
-				//CMD_ExecuteCommand("SendGet", rem_relay_off, 0);
-				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
-				CMD_ExecuteCommand("setChannel 1 0", 0);
-				}
-		}
-		//--------------------------------------------------------------------------------------------------
-		// Update status of the diversion relay on webpage
-		// Update status of the diversion relay on webpage
-		hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min. System time now is %d:%d<br></font>", dump_load_relay, time_on, check_hour, check_time);
-		//-------------------------------------------------------------------------------------------------------------------------------------------------
-		
-		// Sync the counter at the turn of the hour. This only runs when time = XX:00 and our counter is not zero.
-		/*if ((check_time==0)&&(energyCounterMinutesIndex>0))
-		{
-		energyCounterMinutesIndex = 0;
-		}*/
-
-		
-	/* old code here */		
-	}
 	// print saving interval in small text
 	hprintf255(request, "<font size=1>Saving Interval: %.2fkW</font>", (changeSavedThresholdEnergy)* 0.001);
 	// Some other stats...
@@ -290,19 +180,125 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
     	if (energyCounterStatsEnable == true)
 	{	
     	
-       		hprintf255(request,"<hr><h2>Periodic Statistics</h2>");
-		//If we are measuring negative power, we can run the commands to get the netmetering stats
-		// We need NTP enabled for this, as well as the statistics. They need to be manually configured because of duration and time zone.
+       				// Bypass load code. Runs if there is excess energy and at a programmable time, in case there was no sun
+		
+		hprintf255(request,"<hr><h2>Periodic Statistics</h2>");
+		// ------------------------------------------------------------------------------------------------------------------
+		// This only runs if we are measuring negative energy. It calculates Netmetering. NTP and Statistics must be enabled
+		// ------------------------------------------------------------------------------------------------------------------
 		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
 		{
-		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
-		net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
-		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
-		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
-		// Print out periodic statistics and Total Generation at the bottom of the page.
-		hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", energyCounterMinutesIndex, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)    
-		}	
+			
+			// ------------------------------------------------------------------------------------------------------------------
+			if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
+			{
+				if (!first_run)
+				{
+				//An update is forced at startup, so the energy values are correct.
+				// We load from memory at first run, then add to our temp variable
+				net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading); // OK
+				real_export = (sensors[OBK_GENERATION_TOTAL].lastReading);
+				//real_export = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
+				//real_export = net_energy_start;
+
+				//Now we calculate the net_energy. Because we started to run
+				net_energy = net_energy_start;	
+				first_run = 1;
+				}
+
+			//sync with the clock
+			check_time = NTP_GetMinute();
+			check_hour = NTP_GetHour();
 	
+			// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
+			//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
+			
+			//Make sure to reset the old time at every hour, otherwise the loop will not run, because old minutes are ahead!!
+			if (lastsync <0) {lastsync = 0;}
+			
+			//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
+			//Now we turn out a remote load if we are exporting excess energy
+			//-------------------------------------------------------------------------------------------------------------------------------------------------
+			// Reset the timer and Netmetering generation stats: 1)if it goes over the time period; 2) If the hour is HH:00min - For synchronization
+			if ((energyCounterMinutesIndex >= energyCounterSampleCount)||((check_time==0)&&(energyCounterMinutesIndex>0)&&(sync==1)))
+			{
+				energyCounterMinutesIndex = 0;
+				net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading-real_export));			// calculate difference since start
+				// Add any excess (if any) to the generation variable, which is updated here.
+				if (net_energy > 0){
+					sensors[OBK_GENERATION_TOTAL].lastReading += net_energy; // Save new value, if positive
+					//real_export -= net_energy;				 // And deduct it from the running variable, as it was exported.
+				}			
+				
+				// Then we calculate the 'Zero value' - The sum of the consumption and export counters
+				net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);	// Start again
+				//real_export = sensors[OBK_GENERATION_TOTAL].lastReading; // Update the Export, to reflect the 
+				net_energy = net_energy_start;
+				sync = 0;
+			}
+			else if(energyCounterMinutesIndex>0)
+			{
+				sync = 1;
+	
+				// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
+				// We avoid running this at T = 0, as it can cause some wrong values as the variables update.
+				net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
+			}
+			// ------------------------------------------------------------------------------------------------------------------
+			// Bypass load code. Runs if there is excess energy and at a programmable time, in case there was no sun
+			if ((check_time - lastsync) >= dump_load_hysteresis) 
+			{
+				// save the last time the loop was run
+	   			lastsync = check_time;
+				//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20TOGGLE", 0);
+				// Are we exporting enough? If so, turn the relay on
+				if (net_energy>dump_load_on)
+				{
+					dump_load_relay = 1;
+					//CMD_ExecuteCommand("SendGet", rem_relay_on, 0);
+					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
+					CMD_ExecuteCommand("setChannel 1 1", 0);
+					time_on += dump_load_hysteresis;	// Increase the timer.
+					// Reset timer late in night
+					//check_hour = NTP_GetHour();
+					
+					// This resets the time the bypass relay was on throughout the day. Should run at midnight
+					if (check_hour > bypass_timer_reset){time_on = 0;}
+				}
+				else if ((check_hour > bypass_on_time) && (check_hour < bypass_off_time))
+					//if (net_energy<dump_load_off)
+					{
+					// We make an exception to manually turn on the bypass load, for example - Winter.
+					dump_load_relay = 1;
+					//CMD_ExecuteCommand("SendGet" rem_relay_on, 0);
+					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
+					CMD_ExecuteCommand("setChannel 1 1", 0);
+					}
+				else
+					{
+					// If none of the exemptions applies, we turn the diversion load off.
+					dump_load_relay = 0;
+					//CMD_ExecuteCommand("SendGet", rem_relay_off, 0);
+					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
+					CMD_ExecuteCommand("setChannel 1 0", 0);
+					}
+			}
+			// ------------------------------------------------------------------------------------------------------------------
+			// Print netmetering.
+			// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
+			//net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
+			//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
+			//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
+			// Print out periodic statistics and Total Generation at the bottom of the page.
+			hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", energyCounterMinutesIndex, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)  
+			//--------------------------------------------------------------------------------------------------
+			// Update status of the diversion relay on webpage
+			// Update status of the diversion relay on webpage
+			hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min.<br>System time now is %d:%d<br></font>", dump_load_relay, time_on, check_hour, check_time);
+			//-------------------------------------------------------------------------------------------------------------------------------------------------
+			
+			}	
+		}		
 		/********************************************************************************************************************/
 	        hprintf255(request,"<h5>Consumption (during this period): ");
 	        hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
@@ -332,7 +328,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	    } 
     else {
         hprintf255(request,"<h5>Periodic Statistics disabled. Use startup command SetupEnergyStats to enable function.</h5>");
-    }
+   	 }
     /********************************************************************************************************************/
 }
 
