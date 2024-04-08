@@ -256,7 +256,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				lastsync = check_time;
 				//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20TOGGLE", 0);
 				// Are we exporting enough? If so, turn the relay on
-				if ((int)net_energy>dump_load_on)
+				if ((int)net_energy>(int)dump_load_on)
 				{
 					//int last_run = ((check_hour*60)+check_time);
 					dump_load_relay = 1;
@@ -295,8 +295,10 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
 			//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 			// Print out periodic statistics and Total Generation at the bottom of the page.
-			hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", energyCounterMinutesIndex, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)  
-			hprintf255(request, "<font size=1>Diversion relay Status: %d. Total on-time today was %d min.<br> System time now is %d:%d,<br></font>", dump_load_relay, time_on, check_hour, check_time);
+			hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", 
+				energyCounterMinutesIndex, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)  
+			hprintf255(request, "<font size=1>Diversion relay Status: %d. Total on-time today was %d min.<br> System time now is %d:%d,<br></font>", 
+				dump_load_relay, time_on, check_hour, check_time);
 			//--------------------------------------------------------------------------------------------------
 			// Update status of the diversion relay on webpage
 			// Update status of the diversion relay on webpage
@@ -304,8 +306,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			//-------------------------------------------------------------------------------------------------------------------------------------------------
 			
 			}	
-			hprintf255(request, "<font size=1>lastsync: %dmin. Boosting from %dh to %dh<br> Relay Thresholds: On @ %dWh, Off @ %dWh<br></font>", 
-				lastsync, bypass_on_time, bypass_off_time, check_hour, check_time, dump_load_on, dump_load_off);
+			hprintf255(request, "<font size=1>lastsync: %dmin. Boosting from %dh to %dh<br> Relay Thresholds: On: %d Wh, Off: %dWh<br></font>", 
+				lastsync, bypass_on_time, bypass_off_time, check_hour, check_time, (int)dump_load_on, (int)dump_load_off);
 		}		
 		/********************************************************************************************************************/
 	        hprintf255(request,"<h5>Consumption (during this period): ");
