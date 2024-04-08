@@ -30,8 +30,8 @@ static byte sync = 0;
 #define dump_load_off 3		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
 // These variables are used to program the bypass load, for example turn it on late afternoon if there was no sun for the day
 #define bypass_timer_reset 23	// Just so it doesn't accidentally reset when the device is rebooted (0)...
-#define bypass_on_time 16
-#define bypass_off_time 22
+#define bypass_on_time 15
+#define bypass_off_time 23
 int time_on = 0;			// Variable to count how long the Bypass load ran during the day
 int dump_load_relay = 0;		// Variable to Indicate on the Webpage if the Bypass load is on
 int lastsync = 0; 			// Variable to run the bypass relay loop. It's used to take note of the last time it run
