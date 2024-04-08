@@ -17,7 +17,6 @@
 
 
 int stat_updatesSkipped = 0;
-int lastsync = 0;
 int stat_updatesSent = 0;
 static int first_run = 0;
 static float net_energy = 0;
@@ -248,6 +247,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			if (lastsync <0) {lastsync = 0;}
 			// This resets the time the bypass relay was on throughout the day. Should run at midnight
 			if (check_hour > bypass_timer_reset){time_on = 0;}
+			int net_energy_int = (int)net_energy;
 			// Status Check
 			//dump_load_relay = 4;
 			if ((check_time - lastsync) >= dump_load_hysteresis) 
@@ -257,7 +257,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	   			lastsync = check_time;
 				//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20TOGGLE", 0);
 				// Are we exporting enough? If so, turn the relay on
-				if (net_energy>dump_load_on)
+				if (net_energy_int>dump_load_on)
 				{
 					dump_load_relay = 1;
 					//CMD_ExecuteCommand("SendGet", rem_relay_on, 0);
@@ -307,7 +307,6 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			//-------------------------------------------------------------------------------------------------------------------------------------------------
 			
 			}	
-			int net_energy_int = (int)net_energy;
 			hprintf255(request, "<font size=1>lastsync: %d, check_time: %d, net_energy: %d, dump_load_on: %d, check_hour: %d, lastsync: &d, dump_load_relay: %d. Current Status: %d<br>System time now is %d:%d<br></font>", 
 				lastsync, check_time, net_energy_int, dump_load_on, check_hour, lastsync, dump_load_relay);
 		}		
