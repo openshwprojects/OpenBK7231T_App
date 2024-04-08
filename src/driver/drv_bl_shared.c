@@ -304,7 +304,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			//-------------------------------------------------------------------------------------------------------------------------------------------------
 			
 			}	
-			hprintf255(request, "<font size=1>lastsync: %d, dump_load_on: %d, dump_load_relay: %d<br>System time now is %d:%d<br></font>", 
+			hprintf255(request, "<font size=1>lastsync: %dmin. Boosting from %dh to %dh %d<br>System time now is %d:%d<br></font>", 
 				lastsync, dump_load_on, dump_load_relay, check_hour, check_time);
 
 		}		
