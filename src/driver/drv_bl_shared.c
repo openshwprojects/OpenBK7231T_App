@@ -183,7 +183,30 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		
 		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		//Now we turn out a remote load if we are exporting excess energy
+		//-------------------------------------------------------------------------------------------------------------------------------------------------
 
+		// Reset the timer and Netmetering generation stats: 1)if it goes over the time period; 2) If the hour is HH:00min - For synchronization
+		if ((energyCounterMinutesIndex >= energyCounterSampleCount)||((check_time==0)&&(energyCounterMinutesIndex>0)&&(sync==1)))
+		{
+			energyCounterMinutesIndex = 0;
+			net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading-real_export));			// calculate difference since start
+			// Add any excess (if any) to the generation variable, which is updated here.
+			if (net_energy > 0){
+				sensors[OBK_GENERATION_TOTAL].lastReading += net_energy; // Save new value, if positive
+				real_export -= net_energy;				 // And deduct it from the running variable, as it was exported.
+			}			
+			
+			// Then we calculate the 'Zero value' - The sum of the consumption and export counters
+			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);	// Start again
+			//real_export = sensors[OBK_GENERATION_TOTAL].lastReading; // Update the Export, to reflect the 
+			net_energy = net_energy_start;
+			sync = 0;
+		}
+		else if(energyCounterMinutesIndex>0)
+		{
+			sync = 1;
+		}
+		
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
 		// Bypass load code. Runs if there is excess energy and at a programmable time, in case there was no sun
 		if ((check_time - lastsync) >= dump_load_hysteresis) 
@@ -236,27 +259,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		energyCounterMinutesIndex = 0;
 		}*/
 
-		// Reset the timer and Netmetering generation stats: 1)if it goes over the time period; 2) If the hour is HH:00min - For synchronization
-		if ((energyCounterMinutesIndex >= energyCounterSampleCount)||((check_time==0)&&(energyCounterMinutesIndex>0)&&(sync==1)))
-		{
-			energyCounterMinutesIndex = 0;
-			net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading-real_export));			// calculate difference since start
-			// Add any excess (if any) to the generation variable, which is updated here.
-			if (net_energy > 0){
-				sensors[OBK_GENERATION_TOTAL].lastReading += net_energy; // Save new value, if positive
-				real_export -= net_energy;				 // And deduct it from the running variable, as it was exported.
-			}			
-			
-			// Then we calculate the 'Zero value' - The sum of the consumption and export counters
-			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);	// Start again
-			//real_export = sensors[OBK_GENERATION_TOTAL].lastReading; // Update the Export, to reflect the 
-			net_energy = net_energy_start;
-			sync = 0;
-		}
-		else if(energyCounterMinutesIndex>0)
-		{
-			sync = 1;
-		}
+		
 	/* old code here */		
 	}
 	// print saving interval in small text
