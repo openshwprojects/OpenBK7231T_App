@@ -192,7 +192,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		check_time = NTP_GetMinute();
 		check_hour = NTP_GetHour();
 		//Make sure to reset the old time at every hour, otherwise the loop will not run, because old minutes are ahead!!
-		if (check_time <0) {lastsync = 0;}
+		if (lastsync <0) {lastsync = 0;}
 		// Bypass load code. Runs if there is excess energy and at a programmable time, in case there was no sun
 		if ((check_time - lastsync) > dump_load_hysteresis)
 		{
