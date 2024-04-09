@@ -307,7 +307,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			
 			}	
 			hprintf255(request, "<font size=1>Last sync at minute: %dmin. Boosting from %dh to %dh<br> Relay Thresholds: On: %d Wh, Off: %dWh<br> Instant Power: %dW, Consumption: %dW, Generation: %dW <br></font>", 
-				lastsync, bypass_on_time, bypass_off_time, dump_load_on, dump_load_off, (int)sensors[OBK_POWER].lastReading, (int)sensors[OBK_CONSUMPTION_TOTAL].lastReading, (int)generation );
+				lastsync, bypass_on_time, bypass_off_time, dump_load_on, dump_load_off, (int)sensors[OBK_POWER].lastReading, (int)sensors[OBK_CONSUMPTION_TOTAL].lastReading, (int)real_export);
 		}		
 		/********************************************************************************************************************/
 	        hprintf255(request,"<h5>Consumption (during this period): ");
