@@ -625,9 +625,9 @@ bool Channel_AreAllRelaysOpen() {
 }
 
 // Lets hide this as I'm using the flag for testing purposes
-/*float BL_ChangeEnergyUnitIfNeeded(float Wh) {
+float BL_ChangeEnergyUnitIfNeeded(float Wh) {
 	if (CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH)) {
-		return Wh * 0.001f;
+		/*return Wh * 0.001f;*/
 	}
 	return Wh;
 }*/
