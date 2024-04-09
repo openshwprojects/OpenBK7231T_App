@@ -692,13 +692,13 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	// Check if the last power reading is positive or negative. Increment the correct counter.
     	{
 	// Consumption (Grid to Device)
-	if (energyWh > 0){
+	if (power>=0) /*(energyWh > 0)*/{
 		 energy = energyWh;}	//Some models seem to display positive watts, but reverse current
 		 //generation = energyWh;}
 	
 	// Generation (device to Grid)
-	
-	if ((energyWh < 0) && (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){
+	if (power<0){
+	//if ((energyWh < 0) && (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){
 		generation = (-1*energyWh);}
 		//energy = energyWh;}
 	}
