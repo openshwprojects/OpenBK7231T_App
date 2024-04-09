@@ -201,8 +201,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				//real_export = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);
 				//real_export = net_energy_start;
 
-				//Now we calculate the net_energy, which is zero.
-				net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading-real_export));
+				//Now we calculate the net_energy, which is zero, because we just started!
+				net_energy = 0;
 				first_run = 1;
 				}
 
@@ -225,6 +225,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				if (net_energy > 0){
 					sensors[OBK_GENERATION_TOTAL].lastReading += net_energy; // Save new value, if positive
 					//real_export -= net_energy;				 // And deduct it from the running variable, as it was exported.
+					real_export = ensors[OBK_GENERATION_TOTAL].lastReading;
 				}			
 				
 				// Then we calculate the 'Zero value' - The sum of the consumption and export counters
