@@ -15,7 +15,7 @@
 #include <math.h>
 #include <time.h>
 
-
+static int power_flag = 0;
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
 static int first_run = 0;
@@ -307,8 +307,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			//-------------------------------------------------------------------------------------------------------------------------------------------------
 			
 			}	
-			hprintf255(request, "<font size=1>Last sync at minute: %dmin. Boosting from %dh to %dh<br> Relay Thresholds: On: %d Wh, Off: %dWh<br></font>", 
-				lastsync, bypass_on_time, bypass_off_time, dump_load_on, dump_load_off);
+			hprintf255(request, "<font size=1>Last sync at minute: %dmin. Boosting from %dh to %dh<br> Relay Thresholds: On: %d Wh, Off: %dWh<br> %dpower, %dpower_flag <br></font>", 
+				lastsync, bypass_on_time, bypass_off_time, dump_load_on, dump_load_off, (int)power, power_flag);
 		}		
 		/********************************************************************************************************************/
 	        hprintf255(request,"<h5>Consumption (during this period): ");
@@ -692,14 +692,14 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	// Check if the last power reading is positive or negative. Increment the correct counter.
     	{
 	// Consumption (Grid to Device)
-	if (power>=0) /*(energyWh > 0)*/{
-		 energy = energyWh;}	//Some models seem to display positive watts, but reverse current
+	if ((int)power>=0) /*(energyWh > 0)*/{
+		 energy = energyWh; power_flag = 1;}	//Some models seem to display positive watts, but reverse current
 		 //generation = energyWh;}
 	
 	// Generation (device to Grid)
-	if (power<0){
+	else ((int)power<0){
 	//if ((energyWh < 0) && (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){
-		generation = (-1*energyWh);}
+		generation = (-1*energyWh); power_flag = 2;}
 		//energy = energyWh;}
 	}
     // Apply values. Add Extra variable for generation 
