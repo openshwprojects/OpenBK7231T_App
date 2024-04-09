@@ -692,14 +692,13 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	// Check if the last power reading is positive or negative. Increment the correct counter.
     	{
 	// Generation (Device to grid - Negative Flow)
-	if (((int)sensors[OBK_POWER].lastReading>=0)&&(!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){
+	if (((int)sensors[OBK_POWER].lastReading>=0)&&(CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){
 		generation = energyWh;}
 	
 	// Consumption (Device to grid - Positive Flow)
 	else if (((int)sensors[OBK_POWER].lastReading)<0){
 	//if ((energyWh < 0) && (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){
 		energy = energyWh;}
-	}
 	// Consumption (Negative flow) Reverese
 	else 
 	{
