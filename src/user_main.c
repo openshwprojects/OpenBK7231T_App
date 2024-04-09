@@ -831,7 +831,7 @@ void QuickTick(void* param)
 	g_last_time = g_time;
 
 
-#if (defined WINDOWS) || (defined PLATFORM_BEKEN)
+#if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602)
 	SVM_RunThreads(g_deltaTimeMS);
 #endif
 	RepeatingEvents_RunUpdate(g_deltaTimeMS * 0.001f);
