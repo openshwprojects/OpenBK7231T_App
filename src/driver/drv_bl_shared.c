@@ -624,12 +624,13 @@ bool Channel_AreAllRelaysOpen() {
 	return true;
 }
 
-float BL_ChangeEnergyUnitIfNeeded(float Wh) {
+// Lets hide this as I'm using the flag for testing purposes
+/*float BL_ChangeEnergyUnitIfNeeded(float Wh) {
 	if (CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH)) {
 		return Wh * 0.001f;
 	}
 	return Wh;
-}
+}*/
 
 void BL_ProcessUpdate(float voltage, float current, float power,
                       float frequency, float energyWh) {
@@ -690,17 +691,28 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     else
 	// Check if the last power reading is positive or negative. Increment the correct counter.
     	{
+	// ---------------------------------------------------------------------------------------
+	// This line swaps Consumption and Generation
+	// ---------------------------------------------------------------------------------------
+	if (CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH)) {		
+		if ((int)power<0){
+			if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
+			{generation = energyWh;}
+			else {energy = energyWh;}	
+		}
+	}
+	else{
+	// ---------------------------------------------------------------------------------------
 	// Generation (Device to grid - Negative Flow)
-	if ((int)power<0){
-		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
-		{generation = energyWh;}
-		else
-		{energy = energyWh;}	
+		if ((int)power<0){
+			if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
+			{generation = energyWh;}
+			else {energy = energyWh;}	
+		}
+		else {energy = energyWh;}	
+		}
 	}
-	else
-	{energy = energyWh;}	
-	}
-	
+    // -------------------------------------------------------------------------------------------
     // Apply values. Add Extra variable for generation 
     sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
     // We use a temp variable so the timer can go up or down. This would cause issues with Home assistant
