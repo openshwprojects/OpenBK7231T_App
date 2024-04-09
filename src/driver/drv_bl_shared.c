@@ -691,18 +691,19 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     else
 	// Check if the last power reading is positive or negative. Increment the correct counter.
     	{
-	// Consumption (Grid to Device)
-	if (((int)sensors[OBK_POWER].lastReading)>=0) /*(energyWh > 0){*/{
-		energy = energyWh; 
-		power_flag = 1;}	//Some models seem to display positive watts, but reverse current
-		 //generation = energyWh;}
+	// Generation (Device to grid - Negative Flow)
+	if (((int)sensors[OBK_POWER].lastReading>=0)&&(!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){
+		generation = energyWh;}
 	
-	// Generation (device to Grid)
-	else /*if (((int)sensors[OBK_POWER].lastReading)<0)*/{
+	// Consumption (Device to grid - Positive Flow)
+	else if (((int)sensors[OBK_POWER].lastReading)<0){
 	//if ((energyWh < 0) && (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){
-		generation = energyWh; 
-		power_flag = 2;}
-		//energy = energyWh;}
+		energy = energyWh;}
+	}
+	// Consumption (Negative flow) Reverese
+	else 
+	{
+		energy = energyWh;}
 	}
     // Apply values. Add Extra variable for generation 
     sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
