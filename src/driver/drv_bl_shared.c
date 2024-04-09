@@ -308,7 +308,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			
 			}	
 			hprintf255(request, "<font size=1>Last sync at minute: %dmin. Boosting from %dh to %dh<br> Relay Thresholds: On: %d Wh, Off: %dWh<br> %dpower, %dpower_flag <br></font>", 
-				lastsync, bypass_on_time, bypass_off_time, dump_load_on, dump_load_off, (int)power, power_flag);
+				lastsync, bypass_on_time, bypass_off_time, dump_load_on, dump_load_off, (int)sensors[OBK_POWER].lastReading, power_flag);
 		}		
 		/********************************************************************************************************************/
 	        hprintf255(request,"<h5>Consumption (during this period): ");
@@ -692,12 +692,12 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	// Check if the last power reading is positive or negative. Increment the correct counter.
     	{
 	// Consumption (Grid to Device)
-	if ((int)power>=0) /*(energyWh > 0)*/{
+	if ((int)sensors[OBK_POWER].lastReading>=0) /*(energyWh > 0)*/{
 		 energy = energyWh; power_flag = 1;}	//Some models seem to display positive watts, but reverse current
 		 //generation = energyWh;}
 	
 	// Generation (device to Grid)
-	else ((int)power<0){
+	else ((int)sensors[OBK_POWER].lastReading<0){
 	//if ((energyWh < 0) && (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){
 		generation = (-1*energyWh); power_flag = 2;}
 		//energy = energyWh;}
