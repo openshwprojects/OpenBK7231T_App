@@ -698,7 +698,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 		 //generation = energyWh;}
 	
 	// Generation (device to Grid)
-	else (((int)sensors[OBK_POWER].lastReading)<0){
+	else /*(((int)sensors[OBK_POWER].lastReading)<0)*/{
 	//if ((energyWh < 0) && (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){
 		generation = (-1*energyWh); 
 		power_flag = 2;}
