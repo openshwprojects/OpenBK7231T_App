@@ -61,7 +61,7 @@ typedef struct {
     uint32_t status;
 } bl0942_data_t;
 
-static int polarity = 0;
+//static int polarity = 0;
 
 static uint32_t PrevCfCnt = CF_CNT_INVALID;
 
