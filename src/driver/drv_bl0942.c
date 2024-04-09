@@ -84,7 +84,7 @@ static void ScaleAndUpdate(bl0942_data_t *data) {
         energyWh =
             fabsf(PwrCal_ScalePowerOnly(diff)) * 1638.4f * 256.0f / 3600.0f;
     }
-    PrevCfCnt = data->cf_cnt;*/
+    PrevCfCnt = data->cf_cnt;
 	 else
 		 {
 		 // If energy is positive
