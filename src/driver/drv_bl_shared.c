@@ -697,11 +697,12 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	if (CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH)) {		
 		if ((int)power<0){
 			if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
-			{generation = energyWh;}
-			else {energy = energyWh;}	
+			{generation = energyWh*-;}
+			else {energy = energyWh*-;}	
+			}	
+		else{energy = energyWh*-1;}	
 		}
-	}
-	else{
+		
 	// ---------------------------------------------------------------------------------------
 	// Generation (Device to grid - Negative Flow)
 		if ((int)power<0){
@@ -710,7 +711,6 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			else {energy = energyWh;}	
 		}
 		else {energy = energyWh;}	
-		}
 	}
     // -------------------------------------------------------------------------------------------
     // Apply values. Add Extra variable for generation 
