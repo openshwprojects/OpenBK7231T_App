@@ -61,6 +61,8 @@ typedef struct {
     uint32_t status;
 } bl0942_data_t;
 
+static int polarity = 0;
+
 static uint32_t PrevCfCnt = CF_CNT_INVALID;
 
 static int32_t Int24ToInt32(int32_t val) {
@@ -83,8 +85,8 @@ static void ScaleAndUpdate(bl0942_data_t *data) {
             fabsf(PwrCal_ScalePowerOnly(diff)) * 1638.4f * 256.0f / 3600.0f;
     }
     PrevCfCnt = data->cf_cnt;*/
-
-	if(!((data->status) & 1<<(8))) // Bit 0 of status register indicates the direction of the last energy Pulse CF - 0: active forward; 1: active reverse
+	if ((int32_t)data.watt)
+	//if(!((data->status) & 1<<(8))) // Bit 0 of status register indicates the direction of the last energy Pulse CF - 0: active forward; 1: active reverse
 		 // later on, these rules can be used to create two separate counters for Forward / Reverse Energy. Now, A single counter with absolute value is used.
 		 {
 		 // If Energy is negative
