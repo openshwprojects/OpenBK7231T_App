@@ -630,7 +630,7 @@ float BL_ChangeEnergyUnitIfNeeded(float Wh) {
 		/*return Wh * 0.001f;*/
 	}
 	return Wh;
-}*/
+}
 
 void BL_ProcessUpdate(float voltage, float current, float power,
                       float frequency, float energyWh) {
