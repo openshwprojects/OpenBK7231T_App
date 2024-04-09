@@ -77,14 +77,15 @@ static void ScaleAndUpdate(bl0942_data_t *data) {
     float frequency = 2 * 500000.0f / data->freq;
 
     float energyWh = 0;
-    if (PrevCfCnt != CF_CNT_INVALID) {
+    /* if (PrevCfCnt != CF_CNT_INVALID) {
         int diff = (data->cf_cnt < PrevCfCnt
                         ? data->cf_cnt + (0xFFFFFF - PrevCfCnt) + 1
                         : data->cf_cnt - PrevCfCnt);
         energyWh =
             fabsf(PwrCal_ScalePowerOnly(diff)) * 1638.4f * 256.0f / 3600.0f;
     }
-    PrevCfCnt = data->cf_cnt;
+    PrevCfCnt = data->cf_cnt;*/
+    energyWh = fabsf(PwrCal_ScalePowerOnly(data->cf_cnt)) * 1638.4f * 256.0f / 3600.0f;
     BL_ProcessUpdate(voltage, current, power, frequency, energyWh);
 }
 
