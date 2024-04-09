@@ -705,12 +705,12 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 		
 	// ---------------------------------------------------------------------------------------
 	// Generation (Device to grid - Negative Flow)
-		if ((int)power<0){
-			if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
-			{generation = energyWh;}
-			else {energy = energyWh;}	
-		}
+	else if ((int)power<0){
+		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
+		{generation = energyWh;}
 		else {energy = energyWh;}	
+		}
+	else {energy = energyWh;}	
 	}
     // -------------------------------------------------------------------------------------------
     // Apply values. Add Extra variable for generation 
