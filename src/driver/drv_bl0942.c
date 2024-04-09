@@ -77,7 +77,7 @@ static void ScaleAndUpdate(bl0942_data_t *data) {
     float frequency = 2 * 500000.0f / data->freq;
 
     float energyWh = 0;
-    /*if (PrevCfCnt != CF_CNT_INVALID) {
+    if (PrevCfCnt != CF_CNT_INVALID) {
         int diff = (data->cf_cnt < PrevCfCnt
                         ? data->cf_cnt + (0xFFFFFF - PrevCfCnt) + 1
                         : data->cf_cnt - PrevCfCnt);
@@ -85,13 +85,6 @@ static void ScaleAndUpdate(bl0942_data_t *data) {
             fabsf(PwrCal_ScalePowerOnly(diff)) * 1638.4f * 256.0f / 3600.0f;
     }
     PrevCfCnt = data->cf_cnt;*/
-	if ((int32_t)power)
-	//if(!((data->status) & 1<<(8))) // Bit 0 of status register indicates the direction of the last energy Pulse CF - 0: active forward; 1: active reverse
-		 // later on, these rules can be used to create two separate counters for Forward / Reverse Energy. Now, A single counter with absolute value is used.
-		 {
-		 // If Energy is negative
-		 energyWh = fabsf(PwrCal_ScalePowerOnly(data->cf_cnt)) * 1638.4f * 256.0f / -3600.0f;
-		 }
 	 else
 		 {
 		 // If energy is positive
