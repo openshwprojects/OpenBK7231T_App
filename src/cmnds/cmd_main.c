@@ -771,7 +771,7 @@ void CMD_Init_Early() {
 
 	CMD_RegisterCommand("TimeSize", CMD_TimeSize, NULL);
 
-#if (defined WINDOWS) || (defined PLATFORM_BEKEN)
+#if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602)
 	CMD_InitScripting();
 #endif
 	if (!bSafeMode) {
