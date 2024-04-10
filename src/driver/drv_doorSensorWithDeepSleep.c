@@ -72,8 +72,9 @@ void DoorDeepSleep_Init() {
 }
 
 void DoorDeepSleep_OnEverySecond() {
-	int i, bValue;
-	char tmp[8];
+	int i;
+	char sChannel[8]; // channel as a string
+	char sValue[8];   // channel value as a string
 
 #if PLATFORM_BK7231N || PLATFORM_BK7231T
 	if (ota_progress() >= 0) {
@@ -83,27 +84,20 @@ void DoorDeepSleep_OnEverySecond() {
 		// update active
 		g_noChangeTimePassed = 0;
 		g_emergencyTimeWithNoConnection = 0;
-	} else if (Main_HasMQTTConnected() && Main_HasWiFiConnected()) {
-		if (g_initialStateSent < 3) {
+	} else if (Main_HasMQTTConnected() && Main_HasWiFiConnected()) { // executes every second when connection is established
+			
+			PublishQueuedItems(); // publish those items that were queued when device was offline
 			for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 				if (g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep ||
 					g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_NoPup ||
 					g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_pd) {
-					sprintf(tmp, "%i", g_cfg.pins.channels[i]);
-					bValue = BIT_CHECK(g_initialPinStates, i);
-					MQTT_PublishMain_StringInt(tmp,bValue, 0);
+
+						// publish the current state. The value for publishing is 
+						// calculated winthin MQTT_ChannelPublish()
+						MQTT_ChannelPublish(g_cfg.pins.channels[i], 0);
 				}
 			}
-			g_initialStateSent++;
-		} else {
-			for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
-				if (g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep ||
-					g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_NoPup ||
-					g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_pd) {
-					MQTT_ChannelPublish(g_cfg.pins.channels[i], 0);
-				}
-			}
-		}
+		// }
 		g_noChangeTimePassed++;
 		if (g_noChangeTimePassed >= setting_timeRequiredUntilDeepSleep) {
 			// start deep sleep in the next loop
@@ -115,7 +109,29 @@ void DoorDeepSleep_OnEverySecond() {
 			g_pinDeepSleepWakeUp = setting_automaticWakeUpAfterSleepTime;
 		}
 	}
-	else {
+	else { // executes every second while the device is woken up, but offline
+		for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+			if (g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep ||
+				g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_NoPup ||
+				g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_pd) {
+					int channel = g_cfg.pins.channels[i];
+					sprintf(sChannel, "%i/get", channel); // manually adding the suffix "/get" to the topic
+					// Explanation: I manually add "/get" suffix to the sChannel, because for some reason, 
+					// when queued messages are published through PuublishQueuedItems(), the  
+					// functionality of appendding /get is disabled (inMQTT_PublishTopicToClient()), 
+					// and there is no flag to enforce it. 
+					// There is only a flag (OBK_PUBLISH_FLAG_FORCE_REMOVE_GET) to remove 
+					// suffix, but for some reason there is no flag to add it. 
+					// Would be great if such flag exists, so I can add it when calling
+					// MQTT_QueuePublish(), so /get is appended when published through
+					// PublishQueuedItems(). 
+
+					sprintf(sValue, "%i", CHANNEL_Get(channel)); // get the value of the channel
+					MQTT_QueuePublish(CFG_GetMQTTClientId(), sChannel, sValue, 0); // queue the publishing
+					// Current state (or state change) will be queued and published when device establishes 
+					// the connection to WiFi and MQTT Broker (300 seconds by default for that).  
+			}
+		}
 		g_emergencyTimeWithNoConnection++;
 		if (g_emergencyTimeWithNoConnection >= EMERGENCY_TIME_TO_SLEEP_WITHOUT_MQTT) {
 			g_bWantPinDeepSleep = true;
@@ -143,6 +159,7 @@ void DoorDeepSleep_AppendInformationToHTTPIndexPage(http_request_t* request)
 }
 
 void DoorDeepSleep_OnChannelChanged(int ch, int value) {
+
 	// detect door state change
 	// (only sleep when there are no changes for certain time)
 	if (CHANNEL_HasChannelPinWithRoleOrRole(ch, IOR_DoorSensorWithDeepSleep, IOR_DoorSensorWithDeepSleep_NoPup)
