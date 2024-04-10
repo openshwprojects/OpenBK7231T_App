@@ -386,7 +386,7 @@ uint32_t getSecondsElapsed(){
   // in the SDK we find in src/os/rtos/wm_osal_rtos.c that this corresponds to "vTaskDelay(1000)"
   // and this leads to void vTaskDelay( portTickType xTicksToDelay ) --> so xTicks should be in ms 
  TickType_t actTick=xTaskGetTickCount();
-#fi
+#endif
  // to make this work, getSecondsElapsed() must be called once before rollover, which is 
  // no problem for the usual choice of TickType_t = uint32_t:
  // 	rollover will take place after 4294967295 ms (almost 50 days)
