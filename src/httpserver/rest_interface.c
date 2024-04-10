@@ -875,8 +875,10 @@ static int http_rest_get_info(http_request_t* request) {
 	hprintf255(request, "\"chipset\":\"%s\",", PLATFORM_MCU_NAME);
 	hprintf255(request, "\"webapp\":\"%s\",", CFG_GetWebappRoot());
 	hprintf255(request, "\"shortName\":\"%s\",", CFG_GetShortDeviceName());
-	
-	hprintf255(request, "\"startcmd\":\"%s\",", CFG_GetShortStartupCommand());
+	poststr(request, "\"startcmd\":\"");
+	// This can be longer than 255
+	poststr(request, CFG_GetShortStartupCommand());
+	poststr(request, "\",");
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	hprintf255(request, "\"supportsSSDP\":%d,", DRV_IsRunning("SSDP") ? 1 : 0);
 #else
