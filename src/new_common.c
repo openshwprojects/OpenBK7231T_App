@@ -373,7 +373,20 @@ uint8_t timer_rollovers=0; // I don't expect uptime > 35 years ...
 // if we want to use this for emulating an RTC, we should get the time as good as possible 
 
 uint32_t getSecondsElapsed(){
+#if PLATFORM_BEKEN
+   // e.g. in sdk/platforms/bk7231n/bk7231n_os/beken378/os/FreeRTOSv9.0.0/rtos_pub.c
+   // we find a factor 2 for converting ticks to ms in Beken devices
+   // (uint32_t ms_to_tick_ratio = 2;)
+ TickType_t actTick=2*xTaskGetTickCount();
+#else
+  // for LN882H and BL602 we have reports that ticks are corresponding to ms
+  // for WL600/WL800 we should be o.k., but no test up to now:
+  // e.g in     /src/hal/w800/hal_main_w800.c
+  // we find "tls_os_time_delay(1000);"
+  // in the SDK we find in src/os/rtos/wm_osal_rtos.c that this corresponds to "vTaskDelay(1000)"
+  // and this leads to void vTaskDelay( portTickType xTicksToDelay ) --> so xTicks should be in ms 
  TickType_t actTick=xTaskGetTickCount();
+#fi
  // to make this work, getSecondsElapsed() must be called once before rollover, which is 
  // no problem for the usual choice of TickType_t = uint32_t:
  // 	rollover will take place after 4294967295 ms (almost 50 days)
