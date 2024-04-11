@@ -97,7 +97,15 @@ void HAL_PrintNetworkInfo()
 
 	struct tls_ethif* tmpethif = tls_netif_get_ethif();
 	char buffer[256];
-	wm_vsnprintf(buffer, 256, "ip=%v,gate=%v,mask=%v,dns=%v\r\n", &tmpethif->ip_addr, &tmpethif->gw, &tmpethif->netmask, &tmpethif->dns1);
+	char ip[16] = {0};
+	strcpy(ip, inet_ntoa(tmpethif->ip_addr));
+	char gw[16] = {0};
+	strcpy(gw, inet_ntoa(tmpethif->gw));
+	char netmask[16] = {0};
+	strcpy(netmask, inet_ntoa(tmpethif->netmask));
+	char dns[16] = {0};
+	strcpy(dns, inet_ntoa(tmpethif->dns1));
+	snprintf(buffer, 256, "ip=%s,gate=%s,mask=%s,dns=%s\r\n", ip, gw, netmask, dns);
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, buffer);
 }
 
