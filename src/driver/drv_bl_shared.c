@@ -273,12 +273,15 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		// Here we define a Bypass. For example if a very heavy load is connected, it's likelly our bypass load is not desired.
 		// In this case, we turn the load off and wait for the next cycle for a new update.
 
-		if ((sensors[OBK_POWER].lastReading) > max_power_bypass_off) {high_power_debounce ++;}
-		if (high_power_debounce > 2)	
-		{
-			(lastsync = dump_load_hysteresis);
+		// This resets the bypass load if we are drawing too much power
+		if ((sensors[OBK_POWER].lastReading) > max_power_bypass_off) {
+			high_power_debounce ++;
+			if (high_power_debounce > 2)	
+			{
+				lastsync = check_time+dump_load_hysteresis);
+			}
+			//else	{high_power_debounce = 0;}
 		}
-		else	{high_power_debounce = 0;}
 		
 		if ((check_time - lastsync) >= dump_load_hysteresis)
 		{
@@ -312,6 +315,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				//CMD_ExecuteCommand("SendGet", rem_relay_off, 0);
 				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
 				CMD_ExecuteCommand("setChannel 1 0", 0);
+				high_power_debounce = 0;
 				//hprintf255(request,"<hr><h5>Diversion relay is Off</h5>"); 
 				}
 			else
