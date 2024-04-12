@@ -27,6 +27,7 @@ static int net_energy_timer = 0;
 //static int sync_time = 0;
 static byte hour_reset = 0;
 static byte min_reset = 0;
+static byte old_time = 0;
 #define dump_load_hysteresis 2	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
 //int min_production = -50;	// The minimun instantaneous solar production that will trigger the dump load.
 #define dump_load_on 20		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
@@ -210,12 +211,14 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		//check_second = NTP_GetSecond();
 			
 
-		if ((check_time > net_energy_timer)&&(!(net_energy_timer==0)))
+		if ((check_time > old_time)&&(!(net_energy_timer==0)))
 		{
 			net_energy_timer++;	
+			old_time = check_time;
 		}
-		else if (((check_time == 0)&&(!(net_energy_timer == 0)))||(net_energy_timer >= energyCounterSampleCount))
+		else if (((check_time == 0)&&(!(net_energy_timer == 0)))||(net_energy_timer > energyCounterSampleCount))
 		{
+			net_energy_timer = 1;
 			net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading-real_export));			// calculate difference since start
 			// Add any excess (if any) to the generation variable, which is updated here.
 			if (net_energy > 0){
