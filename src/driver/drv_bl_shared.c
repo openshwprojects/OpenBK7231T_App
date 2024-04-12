@@ -28,7 +28,7 @@ static int net_energy_timer = 0;
 static byte hour_reset = 0;
 static byte min_reset = 0;
 static byte old_time = 0;
-static high_power_debounce = 0;
+static int high_power_debounce = 0;
 #define max_power_bypass_off 1000
 #define dump_load_hysteresis 2	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
 //int min_production = -50;	// The minimun instantaneous solar production that will trigger the dump load.
@@ -273,7 +273,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		// Here we define a Bypass. For example if a very heavy load is connected, it's likelly our bypass load is not desired.
 		// In this case, we turn the load off and wait for the next cycle for a new update.
 
-		if ((sensors[OBK_POWER].lastReading) > define max_power_bypass_off) {high_power_debounce ++;}
+		if ((sensors[OBK_POWER].lastReading) > max_power_bypass_off) {high_power_debounce ++;}
 		if (high_power_debounce > 2)	
 		{
 			(lastsync = dump_load_hysteresis);
@@ -305,10 +305,19 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				//time_on += dump_load_hysteresis;	
 				//hprintf255(request,"<hr><h5>Diversion relay On. Cause: Timer</h5>"); 
 				}
-			else
+			else if ((high_power_debounce >= 2)
 				{
 				// If none of the exemptions applies, we turn the diversion load off.
 				dump_load_relay = 3;
+				//CMD_ExecuteCommand("SendGet", rem_relay_off, 0);
+				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
+				CMD_ExecuteCommand("setChannel 1 0", 0);
+				//hprintf255(request,"<hr><h5>Diversion relay is Off</h5>"); 
+				}
+			else
+				{
+				// If none of the exemptions applies, we turn the diversion load off.
+				dump_load_relay = 4;
 				//CMD_ExecuteCommand("SendGet", rem_relay_off, 0);
 				CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
 				CMD_ExecuteCommand("setChannel 1 0", 0);
