@@ -44,6 +44,9 @@ int dump_load_relay = 0;	// Variable to Indicate on the Webpage if the Bypass lo
 int lastsync = 0; 		// Variable to run the bypass relay loop. It's used to take note of the last time it run
 byte check_time = 0; 		// Variable for Minutes
 byte check_hour = 0;		// Variable for Hour	
+byte check_time_power = 0; 		// Variable for Minutes
+byte check_hour_power = 0;		
+
 //Command to turn remote plug on/off
 //const char* rem_relay_on = "http://<ip>/cm?cmnd=Power%20on";
 //const char* rem_relay_off = "http://<ip>/cm?cmnd=Power%20off";
@@ -320,6 +323,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				CMD_ExecuteCommand("setChannel 1 0", 0);
 				high_power_debounce = 0;
 				//hprintf255(request,"<hr><h5>Diversion relay is Off</h5>"); 
+				check_time_power =check_time;
+				check_hour_power = check_hour;
+					
 				}
 			else
 				{
@@ -334,7 +340,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		//dEBUG
 		
 		//hprintf255(request,"<font size=1> Time was last synchronized at: %d:%d</font><br>", 1,2); // Save the value at which the counter was synchronized
-		hprintf255(request,"<font size=1> Last NetMetering reset occured at: %d:%d</font>", hour_reset, min_reset); // Save the value at which the counter was synchronized
+		hprintf255(request,"<font size=1> Last NetMetering reset occured at: %d:%d<br></font>", hour_reset, min_reset); // Save the value at which the counter was synchronized
+		hprintf255(request,"<font size=1> Last diversion Load Bypass: %d:%d </font><br>",check_time_power, check_hour_power);
 		//hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min.<br> System time now is %d:%d</font>", dump_load_relay, time_on, check_hour, check_time);
 		// ------------------------------------------------------------------------------------------------------------------
 		// Print netmetering.
@@ -361,6 +368,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	        hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
 	        hprintf255(request,"Sampling interval: %d sec<br>History length: ",energyCounterSampleInterval);
 	        hprintf255(request,"%d samples<br>History per samples:<br>",energyCounterSampleCount);
+		
 	        if (energyCounterMinutes != NULL)
 	        {
 	            for(i=0; i<energyCounterSampleCount; i++)
