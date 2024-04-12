@@ -273,9 +273,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		// Here we define a Bypass. For example if a very heavy load is connected, it's likelly our bypass load is not desired.
 		// In this case, we turn the load off and wait for the next cycle for a new update.
 
-		if (sensors[OBK_POWER].lastReading) > define max_power_bypass_off) {high_power_debounce ++;}
-		if (debounce > 2)	{(lastsync = dump_load_hysteresis)}
-		else	{high_power_debounce_debounce = 0;}
+		if ((sensors[OBK_POWER].lastReading) > define max_power_bypass_off) {high_power_debounce ++;}
+		if (high_power_debounce > 2)	{(lastsync = dump_load_hysteresis);}
+		else	{high_power_debounce = 0;}
 		
 		if ((check_time - lastsync) >= dump_load_hysteresis)
 		{
