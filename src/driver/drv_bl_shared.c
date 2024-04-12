@@ -210,7 +210,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		//check_second = NTP_GetSecond();
 			
 
-		if ((check_time > net_energy_timer)&&(!(net_energy_timer==0))
+		if ((check_time > net_energy_timer)&&(!(net_energy_timer==0)))
 		{
 			net_energy_timer++;	
 		}
