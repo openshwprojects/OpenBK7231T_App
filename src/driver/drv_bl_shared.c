@@ -23,7 +23,7 @@ static float net_energy_start = 0;
 static float real_export = 0;
 static int net_energy_timer = 0;
 // Variables for the solar dump load timer
-static byte sync = 0;
+//static byte sync = 0;
 //static int sync_time = 0;
 static byte hour_reset = 0;
 static byte min_reset = 0;
@@ -210,7 +210,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		//check_second = NTP_GetSecond();
 			
 
-		if (check_time > net_energy_timer)&&(!(net_energy_timer==0))
+		if ((check_time > net_energy_timer)&&(!(net_energy_timer==0))
 		{
 			net_energy_timer++;	
 		}
