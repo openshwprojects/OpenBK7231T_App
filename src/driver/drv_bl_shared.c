@@ -28,15 +28,17 @@ static int net_energy_timer = 0;
 static byte hour_reset = 0;
 static byte min_reset = 0;
 static byte old_time = 0;
+static high_power_debounce = 0;
+#define max_power_bypass_off 1000
 #define dump_load_hysteresis 2	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
 //int min_production = -50;	// The minimun instantaneous solar production that will trigger the dump load.
-#define dump_load_on 20		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
+#define dump_load_on 25		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
 #define dump_load_off 5		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
 // These variables are used to program the bypass load, for example turn it on late afternoon if there was no sun for the day
 //#define bypass_timer_reset 23	// Just so it doesn't accidentally reset when the device is rebooted (0)...
 #define bypass_on_time 15
 #define bypass_off_time 19
-#define min_daily_time_on 210	// Runs the diversion load up to this specified ammount of time, if there wasn't enough sun over the day.
+#define min_daily_time_on 150	// Runs the diversion load up to this specified ammount of time, if there wasn't enough sun over the day.
 int time_on = 0;		// Variable to count how long the Bypass load ran during the day
 int dump_load_relay = 0;	// Variable to Indicate on the Webpage if the Bypass load is on
 int lastsync = 0; 		// Variable to run the bypass relay loop. It's used to take note of the last time it run
@@ -240,7 +242,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			// For Debugging
 			hour_reset = check_hour;
 			min_reset = check_time;
-			//lastsync = 0;
+			lastsync = 0;
 			// reset flg if time is ! 0.
 			/*if (check_time > 0)
 			{
@@ -267,13 +269,21 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		if (check_hour < 5) {time_on = 0;}
 		// Status Check
 		//dump_load_relay = 4;
+
+		// Here we define a Bypass. For example if a very heavy load is connected, it's likelly our bypass load is not desired.
+		// In this case, we turn the load off and wait for the next cycle for a new update.
+
+		if (sensors[OBK_POWER].lastReading) > define max_power_bypass_off) {high_power_debounce ++;}
+		if (debounce > 2)	{(lastsync = dump_load_hysteresis)}
+		else	{high_power_debounce_debounce = 0;}
+		
 		if ((check_time - lastsync) >= dump_load_hysteresis)
 		{
 			// save the last time the loop was run
 			lastsync = check_time;
 	
 			// Are we exporting enough? If so, turn the relay on
-			if ((int)net_energy>(int)dump_load_on)
+			if (((int)net_energy>(int)dump_load_on)&&(high_power_debounce < 2))
 			{
 				//int last_run = ((check_hour*60)+check_time);
 				dump_load_relay = 1;
@@ -282,7 +292,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				CMD_ExecuteCommand("setChannel 1 1", 0);
 				time_on += dump_load_hysteresis;	// Increase the timer.
 			}
-			else if ((check_hour >= bypass_on_time) && (check_hour < bypass_off_time) && (time_on < min_daily_time_on))
+			else if ((check_hour >= bypass_on_time) && (check_hour < bypass_off_time) && (time_on < min_daily_time_on)&&(high_power_debounce < 2))
 				{
 				// We make an exception to manually turn on the bypass load, for example - Winter.
 				dump_load_relay = 2;
