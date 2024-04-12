@@ -210,15 +210,19 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		check_hour = NTP_GetHour();
 		//check_second = NTP_GetSecond();
 			
-
-		if ((check_time > old_time)&&(!(net_energy_timer==0)))
+		if ((check_time > old_time))
 		{
 			net_energy_timer++;	
 			old_time = check_time;
 		}
-		else if (((check_time == 0)&&(!(net_energy_timer == 0)))||(net_energy_timer > energyCounterSampleCount))
+		else if (((check_time == 0)&&(!(net_energy_timer == 1)))||(net_energy_timer > energyCounterSampleCount))
 		{
+			old_time = 0;
 			net_energy_timer = 1;
+			/*if (!(check_time == 0))
+			{
+				net_energy_timer++;
+			}*/
 			net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading-real_export));			// calculate difference since start
 			// Add any excess (if any) to the generation variable, which is updated here.
 			if (net_energy > 0){
@@ -250,6 +254,10 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 			// We avoid running this at T = 0, as it can cause some wrong values as the variables update.
 			net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
+			//if (!(check_time == 0))
+			//{
+			//	net_energy_timer++
+			//}
 		}
 		// ------------------------------------------------------------------------------------------------------------------
 		// Bypass load code. Runs if there is excess energy and at a programmable time, in case there was no sun
