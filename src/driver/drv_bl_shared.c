@@ -278,7 +278,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			high_power_debounce ++;
 			if (high_power_debounce > 2)	
 			{
-				lastsync = check_time+dump_load_hysteresis);
+				lastsync = (check_time+dump_load_hysteresis);
 			}
 			//else	{high_power_debounce = 0;}
 		}
