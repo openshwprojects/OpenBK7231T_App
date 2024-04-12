@@ -14,7 +14,7 @@
 #include "../cmnds/cmd_public.h" //for enum EventCode
 #include <math.h>
 #include <time.h>
-static int power_flag = 0;
+//static int power_flag = 0;
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
 static byte first_run = 0;
@@ -23,7 +23,7 @@ static float net_energy_start = 0;
 static float real_export = 0;
 // Variables for the solar dump load timer
 static byte sync = 0;
-static int sync_time = 0;
+//static int sync_time = 0;
 static byte hour_reset = 0;
 static byte min_reset = 0;
 #define dump_load_hysteresis 2	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
@@ -209,7 +209,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 		// Now we run some checks :-)
 		// Synchronize the counters every hour. This will run the loop below.
-		If ((check_time == 0)&&(sync == 1)){energyCounterMinutesIndex = energyCounterSampleCount;}
+		if ((check_time == 0) && (sync == 1)){energyCounterMinutesIndex = energyCounterSampleCount;}
 	
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
 		// Reset the timer and Netmetering generation stats: 1)if it goes over the time period; 2) If the hour is HH:00min - For synchronization
