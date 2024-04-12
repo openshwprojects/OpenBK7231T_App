@@ -305,7 +305,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				//time_on += dump_load_hysteresis;	
 				//hprintf255(request,"<hr><h5>Diversion relay On. Cause: Timer</h5>"); 
 				}
-			else if ((high_power_debounce >= 2)
+			else if (high_power_debounce >= 2)
 				{
 				// If none of the exemptions applies, we turn the diversion load off.
 				dump_load_relay = 3;
