@@ -219,7 +219,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		}
 		else if (((check_time == 0)&&(!(net_energy_timer == 1)))||(net_energy_timer > energyCounterSampleCount))
 		{
-			old_time = 0;
+			old_time = check_time;
 			net_energy_timer = 1;
 			/*if (!(check_time == 0))
 			{
