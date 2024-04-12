@@ -232,6 +232,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			// For Debugging
 			hour_reset = check_hour;
 			min_reset = check_time;
+			lastsync = 0;
 		}
 		else if(energyCounterMinutesIndex>0)
 		{
@@ -249,7 +250,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		if (check_hour < 5) {time_on = 0;}
 		// Status Check
 		//dump_load_relay = 4;
-		if (((check_time - lastsync) >= dump_load_hysteresis) || (check_time - lastsync)<0)
+		if ((check_time - lastsync) >= dump_load_hysteresis)
 		{
 			// save the last time the loop was run
 			lastsync = check_time;
