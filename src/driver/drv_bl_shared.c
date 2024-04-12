@@ -21,6 +21,7 @@ static byte first_run = 0;
 static float net_energy = 0;
 static float net_energy_start = 0;
 static float real_export = 0;
+static int net_energy_timer = 0;
 // Variables for the solar dump load timer
 static byte sync = 0;
 //static int sync_time = 0;
@@ -206,38 +207,43 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		//sync with the clock
 		check_time = NTP_GetMinute();
 		check_hour = NTP_GetHour();
+		//check_second = NTP_GetSecond();
+			
 
-		// Now we run some checks :-)
-		// Synchronize the counters every hour. This will run the loop below.
-		if ((check_time == 0) && (sync == 1)){energyCounterMinutesIndex = energyCounterSampleCount;}
-	
-		//-------------------------------------------------------------------------------------------------------------------------------------------------
-		// Reset the timer and Netmetering generation stats: 1)if it goes over the time period; 2) If the hour is HH:00min - For synchronization
-		if (energyCounterMinutesIndex >= energyCounterSampleCount)
+		if (check_time > net_energy_timer)&&(!(net_energy_timer==0))
 		{
-			energyCounterMinutesIndex = 0;
+			net_energy_timer++;	
+		}
+		else if (((check_time == 0)&&(!(net_energy_timer == 0)))||(net_energy_timer >= energyCounterSampleCount))
+		{
 			net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading-real_export));			// calculate difference since start
 			// Add any excess (if any) to the generation variable, which is updated here.
 			if (net_energy > 0){
 				sensors[OBK_GENERATION_TOTAL].lastReading += net_energy; // Save new value, if positive
 				//real_export -= net_energy;				 // And deduct it from the running variable, as it was exported.
-				real_export = sensors[OBK_GENERATION_TOTAL].lastReading;
+				//real_export = sensors[OBK_GENERATION_TOTAL].lastReading;
 			}			
-				
+			real_export = sensors[OBK_GENERATION_TOTAL].lastReading;
 			// Then we calculate the 'Zero value' - The sum of the consumption and export counters
 			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);	// Start again
 			//real_export = sensors[OBK_GENERATION_TOTAL].lastReading; // Update the Export, to reflect the 
 			net_energy = 0;
-			sync = 0;
+			// Do not run again until next hour
+			//sync = 1;
 			// For Debugging
 			hour_reset = check_hour;
 			min_reset = check_time;
-			lastsync = 0;
+			//lastsync = 0;
+			// reset flg if time is ! 0.
+			/*if (check_time > 0)
+			{
+				sync = 0;
+			}*/
 		}
-		else if(energyCounterMinutesIndex>0)
+		else /*if(energyCounterMinutesIndex>0)*/
 		{
 			// Reset the timing loop, so that it will run again next hour.
-			sync = 1;
+			/*sync = 1;*/
 			// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 			// We avoid running this at T = 0, as it can cause some wrong values as the variables update.
 			net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
@@ -298,7 +304,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		// Print out periodic statistics and Total Generation at the bottom of the page.
 		hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", 
-			energyCounterMinutesIndex, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)  
+			net_energy_timer, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)  
 		hprintf255(request, "<font size=1>Diversion relay Status: %d. Total on-time today was %d min.<br> System time now is %d:%d and last sync at minute %d<br></font>", 
 			dump_load_relay, time_on, check_hour, check_time, lastsync);
 		//--------------------------------------------------------------------------------------------------
