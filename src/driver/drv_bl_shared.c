@@ -31,8 +31,8 @@ static int net_energy_timer = 0;
 //static byte sync = 0;
 //static int sync_time = 0;
 static byte old_hour = 0;
-static byte hour_reset = 0;
-static byte min_reset = 0;
+static byte time_hour_reset = 0;
+static byte time_min_reset = 0;
 static byte old_time = 0;
 static int high_power_debounce = 0;
 #define max_power_bypass_off 1000
@@ -164,47 +164,10 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	
 	// Close the table
 	poststr(request, "</table>");
-	
-	//else - loose else was here. keep for debuging
-			
-	// print saving interval in small text
-	hprintf255(request, "<font size=1>Saving Interval: %.2fkW</font>", (changeSavedThresholdEnergy)* 0.001);
-	// Some other stats...
-    	hprintf255(request, "<p><br><h5>Changes: %i sent, %i Skipped, %li Saved. <br> %s<hr></p>",
-               stat_updatesSent, stat_updatesSkipped, ConsumptionSaveCounter,
-               mode);
 
-	poststr(request, "<h5>Energy Clear Date: ");
-	if (ConsumptionResetTime) {
-		ltm = gmtime(&ConsumptionResetTime);
-		hprintf255(request, "%04d-%02d-%02d %02d:%02d:%02d",
-					ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
-	} else {
-		poststr(request, "(not set)");
-	}
-	
-	/********************************************************************************************************************/
-	hprintf255(request, "<br>");
-	if(DRV_IsRunning("NTP")==false) {
-		hprintf255(request,"NTP driver is not started, daily energy stats disbled.");
-	} else if (!NTP_IsTimeSynced()) {
-		hprintf255(request,"Daily energy stats awaiting NTP driver to sync real time...");
-	}
-	hprintf255(request, "</h5>");
-	/********************************************************************************************************************/
-    	if (energyCounterStatsEnable == true)
-	{	
-    	
-       				// Bypass load code. Runs if there is excess energy and at a programmable time, in case there was no sun
-		
-		hprintf255(request,"<hr><h2>Periodic Statistics</h2>");
-		// ------------------------------------------------------------------------------------------------------------------
-		// This only runs if we are measuring negative energy. It calculates Netmetering. NTP and Statistics must be enabled
-		// ------------------------------------------------------------------------------------------------------------------
-		// ------------------------------------------------------------------------------------------------------------------
-		void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
-		// Start of the loop for negative energy / netMetering
-		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
+	// Aditional code for power monitoring
+        //------------------------------------------------------------------------------------------------------------------------------------------
+	if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
 		{			
 			if (!first_run)
 			{
@@ -227,7 +190,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			if (!(check_hour == old_hour))
 			{
 				hour_reset = 1;
-				old_hour = check_hour
+				old_hour = check_hour;
 				// This resets the time the bypass relay was on throughout the day, before sunset.
 				if (check_hour < 5) {time_on = 0;}
 			}
@@ -248,7 +211,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				{
 					// Hold the loop
 					lastsync = 0;
-					hour_reset = 0;
+					//hour_reset = 0;
 					dump_load_relay = 4;
 					//CMD_ExecuteCommand("SendGet", rem_relay_off, 0);
 					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
@@ -283,8 +246,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				// Do not run again until next hour
 				//sync = 1;
 				// For Debugging
-				hour_reset = check_hour;
-				min_reset = check_time;
+				time_hour_reset = check_hour;
+				time_min_reset = check_time;
 				}
 			else
 			{
@@ -336,7 +299,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			//dEBUG
 			// We print some stats, mainly for debugging
 			//hprintf255(request,"<font size=1> Time was last synchronized at: %d:%d</font><br>", 1,2); // Save the value at which the counter was synchronized
-			hprintf255(request,"<font size=1> Last NetMetering reset occured at: %d:%d<br></font>", hour_reset, min_reset); // Save the value at which the counter was synchronized
+			hprintf255(request,"<font size=1> Last NetMetering reset occured at: %d:%d<br></font>", time_hour_reset, time_min_reset); // Save the value at which the counter was synchronized
 			hprintf255(request,"<font size=1> Last diversion Load Bypass: %d:%d </font><br>",check_time_power, check_hour_power);
 			//hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min.<br> System time now is %d:%d</font>", dump_load_relay, time_on, check_hour, check_time);
 			// ------------------------------------------------------------------------------------------------------------------
@@ -363,14 +326,53 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			// -------------------------------------------------------------------------------------------------------------------
 			// This was the original loop 'energyCounterStatsEnable == true'
 			/********************************************************************************************************************/
+	//------------------------------------------------------------------------------------------------------------------------------------------
+	// print saving interval in small text
+	hprintf255(request, "<font size=1>Saving Interval: %.2fkW</font>", (changeSavedThresholdEnergy)* 0.001);
+	// Some other stats...
+    	hprintf255(request, "<p><br><h5>Changes: %i sent, %i Skipped, %li Saved. <br> %s<hr></p>",
+               stat_updatesSent, stat_updatesSkipped, ConsumptionSaveCounter,
+               mode);
 
-		
+	poststr(request, "<h5>Energy Clear Date: ");
+	if (ConsumptionResetTime) {
+		ltm = gmtime(&ConsumptionResetTime);
+		hprintf255(request, "%04d-%02d-%02d %02d:%02d:%02d",
+					ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+	} else {
+		poststr(request, "(not set)");
+	}
+	
+	/********************************************************************************************************************/
+	hprintf255(request, "<br>");
+	if(DRV_IsRunning("NTP")==false) {
+		hprintf255(request,"NTP driver is not started, daily energy stats disbled.");
+	} else if (!NTP_IsTimeSynced()) {
+		hprintf255(request,"Daily energy stats awaiting NTP driver to sync real time...");
+	}
+	hprintf255(request, "</h5>");
+	/********************************************************************************************************************/
+    	if (energyCounterStatsEnable == true)
+	{	
+    	
+       		hprintf255(request,"<hr><h2>Periodic Statistics</h2>");
+		//If we are measuring negative power, we can run the commands to get the netmetering stats
+		// We need NTP enabled for this, as well as the statistics. They need to be manually configured because of duration and time zone.
+		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
+		{
+		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
+		net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
+		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
+		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
+		// Print out periodic statistics and Total Generation at the bottom of the page.
+		hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", energyCounterMinutesIndex, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)    
+		}	
+	
 		/********************************************************************************************************************/
 	        hprintf255(request,"<h5>Consumption (during this period): ");
 	        hprintf255(request,"%1.*f Wh<br>", sensors[OBK_CONSUMPTION_LAST_HOUR].rounding_decimals, DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR));
 	        hprintf255(request,"Sampling interval: %d sec<br>History length: ",energyCounterSampleInterval);
 	        hprintf255(request,"%d samples<br>History per samples:<br>",energyCounterSampleCount);
-		
 	        if (energyCounterMinutes != NULL)
 	        {
 	            for(i=0; i<energyCounterSampleCount; i++)
@@ -395,8 +397,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	    } 
     else {
         hprintf255(request,"<h5>Periodic Statistics disabled. Use startup command SetupEnergyStats to enable function.</h5>");
-   	 }
-    /********************************************************************************************************************/
+    }
+    /********************************************************************************************************************/	
 }
 
 void BL09XX_SaveEmeteringStatistics()
