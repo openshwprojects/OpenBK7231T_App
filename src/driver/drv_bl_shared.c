@@ -349,7 +349,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				}
 		}
 		//dEBUG
-		}
+		}}
 		//hprintf255(request,"<font size=1> Time was last synchronized at: %d:%d</font><br>", 1,2); // Save the value at which the counter was synchronized
 		hprintf255(request,"<font size=1> Last NetMetering reset occured at: %d:%d<br></font>", hour_reset, min_reset); // Save the value at which the counter was synchronized
 		hprintf255(request,"<font size=1> Last diversion Load Bypass: %d:%d </font><br>",check_time_power, check_hour_power);
@@ -401,7 +401,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	                    (energyCounterStatsJSONEnable == true) ? "enabled" : "disabled");
 	        }
 	        hprintf255(request, "</h5>");
-	    } }
+}
     else {
         hprintf255(request,"<h5>Periodic Statistics disabled. Use startup command SetupEnergyStats to enable function.</h5>");
    	 }
