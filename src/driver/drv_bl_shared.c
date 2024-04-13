@@ -366,8 +366,14 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		
 		// We print some stats, mainly for debugging
-		hprintf255(request, "<font size=1>Diversion relay Status: %d. Total on-time today was %d min.<br> System time now is %d:%d and last sync at minute %d<br></font>", 
-				dump_load_relay, time_on, check_hour, check_time, lastsync);
+		hprintf255(request, "<font size=1>Diversion relay total on-time today was %d min.<br> System time now is %d:%d. Next sync in %d minutes. ", 
+				dump_load_relay, time_on, check_hour, check_time, (dump_load_hysteresis-lastsync);
+			// Print Status of relay)
+			if (dump_load_relay == 1){poststr(request,"Status: ON - Solar Power <br></font>");}
+			else if (dump_load_relay == 2) {poststr(request,"Status: ON - Timer <br></font>");}
+			else if (dump_load_relay == 3) {poststr(request,"Status: OFF <br></font>");}
+			else {poststr(request,"STATUS: OFF - Bypass due to high AC load <br></font>");}
+			//----------------------
 		hprintf255(request,"<font size=1> Last NetMetering reset occured at: %d:%d<br></font>", time_hour_reset, time_min_reset); // Save the value at which the counter was synchronized
 		hprintf255(request,"<font size=1> Last diversion Load Bypass: %d:%d </font><br>", check_hour_power, check_time_power);	
 		// Print out periodic statistics and Total Generation at the bottom of the page.
