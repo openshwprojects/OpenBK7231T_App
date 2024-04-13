@@ -234,7 +234,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		// For Hourly NetMetering
 		//else if ((check_time == 0)&&(!(net_energy_timer == 1)))
 		// For 15min NetMetering
-		else if ((((check_time == 0)||(check_time == 15)||(check_time == 30)||(check_time == 45))&&(!(net_energy_timer == 1))))
+		/*else*/ if ((((check_time == 0)||(check_time == 15)||(check_time == 30)||(check_time == 45))&&(!(net_energy_timer == 1))))
 		{
 			old_time = check_time;
 			net_energy_timer = 1;
