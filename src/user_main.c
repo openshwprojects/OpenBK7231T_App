@@ -53,6 +53,9 @@ void bg_register_irda_check_func(FUNCPTR func);
 #include <bl_wdt.h>
 #elif PLATFORM_W600 || PLATFORM_W800
 #include "wm_watchdog.h"
+#elif PLATFORM_LN882H
+#include "hal/hal_wdt.h"
+#include "hal/hal_gpio.h"
 #endif
 
 
@@ -778,6 +781,8 @@ void Main_OnEverySecond()
 	bl_wdt_feed();
 #elif PLATFORM_W600 || PLATFORM_W800
 	tls_watchdog_clr();
+#elif PLATFORM_LN882H
+	hal_wdt_cnt_restart(WDT_BASE);
 #endif
 	// force it to sleep...  we MUST have some idle task processing
 	// else task memory doesn't get freed
@@ -998,6 +1003,21 @@ void Main_Init_AfterDelay_Unsafe(bool bStartAutoRunScripts) {
 	bl_wdt_init(3000);
 #elif PLATFORM_W600 || PLATFORM_W800
 	tls_watchdog_init(5*1000*1000);
+#elif PLATFORM_LN882H
+	/* Watchdog initialization */
+	wdt_init_t_def wdt_init;
+	memset(&wdt_init,0,sizeof(wdt_init));
+	wdt_init.wdt_rmod = WDT_RMOD_1;         // When equal to 0, the counter is reset directly when it overflows; when equal to 1, an interrupt is generated first when the counter overflows, and if it overflows again, it resets.
+	wdt_init.wdt_rpl = WDT_RPL_32_PCLK;     // Set the reset delay time
+	wdt_init.top = WDT_TOP_VALUE_9;         //wdt cnt value = 0x1FFFF   Time = 4.095 s
+	hal_wdt_init(WDT_BASE, &wdt_init);
+    
+	/* Configure watchdog interrupt */
+	NVIC_SetPriority(WDT_IRQn,     4);
+	NVIC_EnableIRQ(WDT_IRQn);
+    
+	/* Enable watchdog */
+	hal_wdt_en(WDT_BASE,HAL_ENABLE);
 #endif
 }
 void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
