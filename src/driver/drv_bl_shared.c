@@ -349,7 +349,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				}
 		}
 		//dEBUG
-		
+		}
 		//hprintf255(request,"<font size=1> Time was last synchronized at: %d:%d</font><br>", 1,2); // Save the value at which the counter was synchronized
 		hprintf255(request,"<font size=1> Last NetMetering reset occured at: %d:%d<br></font>", hour_reset, min_reset); // Save the value at which the counter was synchronized
 		hprintf255(request,"<font size=1> Last diversion Load Bypass: %d:%d </font><br>",check_time_power, check_hour_power);
@@ -369,7 +369,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		// Update status of the diversion relay on webpage		
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
 		
-		}	
+		//}	
 		//hprintf255(request, "<font size=1>Last sync at minute: %dmin. Boosting from %dh to %dh<br> Relay Thresholds: On: %d Wh, Off: %dWh<br> Instant Power: %dW, Consumption: %dW, Generation: %dW <br></font>", 
 		//	lastsync, bypass_on_time, bypass_off_time, dump_load_on, dump_load_off, (int)sensors[OBK_POWER].lastReading, (int)sensors[OBK_CONSUMPTION_TOTAL].lastReading, (int)real_export);
 		// -------------------------------------------------------------------------------------------------------------------
