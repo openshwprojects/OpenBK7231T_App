@@ -20,6 +20,7 @@
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
 
+static byte overpower_reset = 0;
 static byte min_reset = 0;
 static byte hour_reset = 0;
 static byte first_run = 0;
@@ -224,7 +225,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			// For Hourly NetMetering
 			//else if ((check_time == 0)&&(!(net_energy_timer == 1)))
 			// For 15min NetMetering
-			if (((check_time == 15)||(check_time == 30)||(check_time == 45)&&(min_reset == 1))||(hour_reset == 1))
+			if ((((check_time == 15)||(check_time == 30)||(check_time == 45))&&(min_reset == 1))||(hour_reset == 1))
 				{
 				// Reset the timing variables, so this loop runs once.
 				min_reset = 0;
