@@ -366,8 +366,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		
 		// We print some stats, mainly for debugging
-		hprintf255(request, "<font size=1>Diversion relay total on-time today was %d min.<br> System time now is %d:%d. Next sync in %d minutes. ", 
-				dump_load_relay, time_on, check_hour, check_time, (dump_load_hysteresis-lastsync);
+		hprintf255(request, "<font size=1>Diversion relay total on-time today was %d min.<br> System time is %d:%d. Next sync in %d minutes. ", 
+				dump_load_relay, time_on, check_hour, check_time, (dump_load_hysteresis-lastsync));
 			// Print Status of relay)
 			if (dump_load_relay == 1){poststr(request,"Status: ON - Solar Power <br></font>");}
 			else if (dump_load_relay == 2) {poststr(request,"Status: ON - Timer <br></font>");}
