@@ -299,19 +299,18 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			}
 			//dEBUG
 			// We print some stats, mainly for debugging
-			//hprintf255(request,"<font size=1> Time was last synchronized at: %d:%d</font><br>", 1,2); // Save the value at which the counter was synchronized
-			hprintf255(request,"<font size=1> Last NetMetering reset occured at: %d:%d<br></font>", time_hour_reset, time_min_reset); // Save the value at which the counter was synchronized
-			hprintf255(request,"<font size=1> Last diversion Load Bypass: %d:%d </font><br>",check_time_power, check_hour_power);
+			//hprintf255(request,"<font size=1> Last NetMetering reset occured at: %d:%d<br></font>", time_hour_reset, time_min_reset); // Save the value at which the counter was synchronized
+			//hprintf255(request,"<font size=1> Last diversion Load Bypass: %d:%d </font><br>",check_time_power, check_hour_power);
 			//hprintf255(request, "<font size=1>Diversion relay: %d. Total on-time today was %d min.<br> System time now is %d:%d</font>", dump_load_relay, time_on, check_hour, check_time);
 			// ------------------------------------------------------------------------------------------------------------------
 			// Print netmetering.
 			// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 		
 			// Print out periodic statistics and Total Generation at the bottom of the page.
-			hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", 
-				net_energy_timer, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)  
-			hprintf255(request, "<font size=1>Diversion relay Status: %d. Total on-time today was %d min.<br> System time now is %d:%d and last sync at minute %d<br></font>", 
-				dump_load_relay, time_on, check_hour, check_time, lastsync);
+			//hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", 
+				//net_energy_timer, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)  
+			//hprintf255(request, "<font size=1>Diversion relay Status: %d. Total on-time today was %d min.<br> System time now is %d:%d and last sync at minute %d<br></font>", 
+				//dump_load_relay, time_on, check_hour, check_time, lastsync);
 			//--------------------------------------------------------------------------------------------------
 			// Update status of the diversion relay on webpage		
 			//-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -365,6 +364,12 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
 		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
 		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
+		
+		// We print some stats, mainly for debugging
+		hprintf255(request, "<font size=1>Diversion relay Status: %d. Total on-time today was %d min.<br> System time now is %d:%d and last sync at minute %d<br></font>", 
+				dump_load_relay, time_on, check_hour, check_time, lastsync);
+		hprintf255(request,"<font size=1> Last NetMetering reset occured at: %d:%d<br></font>", time_hour_reset, time_min_reset); // Save the value at which the counter was synchronized
+		hprintf255(request,"<font size=1> Last diversion Load Bypass: %d:%d </font><br>", check_hour_power, check_time_power);	
 		// Print out periodic statistics and Total Generation at the bottom of the page.
 		hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", energyCounterMinutesIndex, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)    
 		}	
