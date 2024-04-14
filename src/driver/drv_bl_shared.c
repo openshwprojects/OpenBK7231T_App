@@ -43,13 +43,13 @@ static byte old_time = 0;
 #define max_power_bypass_off 1000
 #define dump_load_hysteresis 3	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
 //int min_production = -50;	// The minimun instantaneous solar production that will trigger the dump load.
-#define dump_load_on 30		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
-#define dump_load_off 5		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
+#define dump_load_on 15		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
+#define dump_load_off 1		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
 // These variables are used to program the bypass load, for example turn it on late afternoon if there was no sun for the day
 //#define bypass_timer_reset 23	// Just so it doesn't accidentally reset when the device is rebooted (0)...
 #define bypass_on_time 15
-#define bypass_off_time 19
-#define min_daily_time_on 150	// Runs the diversion load up to this specified ammount of time, if there wasn't enough sun over the day.
+#define bypass_off_time 18
+#define min_daily_time_on 120	// Runs the diversion load up to this specified ammount of time, if there wasn't enough sun over the day.
 int time_on = 0;		// Variable to count how long the Bypass load ran during the day
 int dump_load_relay = 0;	// Variable to Indicate on the Webpage if the Bypass load is on
 int lastsync = 0; 		// Variable to run the bypass relay loop. It's used to take note of the last time it run
@@ -352,7 +352,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			/********************************************************************************************************************/
 	//------------------------------------------------------------------------------------------------------------------------------------------
 	// print saving interval in small text
-	hprintf255(request, "<font size=1>Saving Interval: %.2fkW</font>", (changeSavedThresholdEnergy)* 0.001);
+	//hprintf255(request, "<font size=1>Saving Interval: %.2fkW</font>", (changeSavedThresholdEnergy)* 0.001);
 	// Some other stats...
     	hprintf255(request, "<p><br><h5>Changes: %i sent, %i Skipped, %li Saved. <br> %s<hr></p>",
                stat_updatesSent, stat_updatesSkipped, ConsumptionSaveCounter,
