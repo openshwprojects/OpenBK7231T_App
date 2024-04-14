@@ -20,7 +20,7 @@
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
 
-static byte overpower_reset = 3;
+//static byte overpower_reset = 2;
 static byte min_reset = 0;
 static byte hour_reset = 0;
 static byte first_run = 0;
@@ -39,7 +39,7 @@ static byte old_time = 0;
 #define max_power_bypass_off 1000
 #define dump_load_hysteresis 3	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
 //int min_production = -50;	// The minimun instantaneous solar production that will trigger the dump load.
-#define dump_load_on 25		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
+#define dump_load_on 30		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
 #define dump_load_off 5		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
 // These variables are used to program the bypass load, for example turn it on late afternoon if there was no sun for the day
 //#define bypass_timer_reset 23	// Just so it doesn't accidentally reset when the device is rebooted (0)...
@@ -199,7 +199,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			{
 				// This runs once a minute
 				min_reset = 1;
-				overpower_reset = 1;
+				//overpower_reset = 1;
 				old_time = check_time;
 				lastsync++;
 			}
@@ -231,6 +231,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				energyCounterMinutesIndex = 0;
 				min_reset = 0;
 				hour_reset = 0;
+				// reset the timing variable. if we are producing enough, if wont cycle the diversion load.
+				lastsync = 0;
 				//net_energy_timer = 0;
 				
 				net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading-real_export));			// calculate difference since start
