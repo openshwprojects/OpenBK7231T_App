@@ -37,7 +37,7 @@ static byte time_min_reset = 0;
 static byte old_time = 0;
 static int high_power_debounce = 0;
 #define max_power_bypass_off 1000
-#define dump_load_hysteresis 2	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
+#define dump_load_hysteresis 3	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
 //int min_production = -50;	// The minimun instantaneous solar production that will trigger the dump load.
 #define dump_load_on 25		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
 #define dump_load_off 5		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
@@ -228,6 +228,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			if ((((check_time == 15)||(check_time == 30)||(check_time == 45))&&(min_reset == 1))||(hour_reset == 1))
 				{
 				// Reset the timing variables, so this loop runs once.
+				energyCounterMinutesIndex = 0;
 				min_reset = 0;
 				hour_reset = 0;
 				//net_energy_timer = 0;
@@ -268,7 +269,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			// In this case, we turn the load off and wait for the next cycle for a new update.
 
 			//The relay is updated ever x numer of minutes as defined on 'dump_load_hysteresis'
-			if (lastsync > dump_load_hysteresis)
+			if (lastsync >= dump_load_hysteresis)
 			{
 				// save the last time the loop was run
 				lastsync = 0;
