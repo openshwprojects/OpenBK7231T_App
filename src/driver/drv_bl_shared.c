@@ -20,6 +20,8 @@
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
 
+static byte savetoflash = 0;
+static byte mqtt_update = 0;
 static byte flash_overpower = 0;
 //static byte overpower_reset = 2;
 static byte min_reset = 0;
@@ -241,6 +243,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			if ((((check_time == 15)||(check_time == 30)||(check_time == 45))&&(min_reset == 1))||(hour_reset == 1))
 				{
 				// Reset the timing variables, so this loop runs once.
+				savetoflash = 1;
 				energyCounterMinutesIndex = 0;
 				min_reset = 0;
 				hour_reset = 0;
@@ -292,6 +295,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			{
 				// save the last time the loop was run
 				lastsync = 0;
+				mqtt_update = 1;
 				//high_power_debounce--;
 		
 				// Are we exporting enough? If so, turn the relay on
@@ -805,11 +809,10 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	}
     // -------------------------------------------------------------------------------------------
     // Apply values. Add Extra variable for generation 
-    /*sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;*/
-    real_consumption += energy;
-    // We use a temp variable so the timer can go up or down. This would cause issues with Home assistant
-    real_export += generation;
-    //sensors[OBK_GENERATION_TOTAL].lastReading += generation;
+    // We use temp variables so the timer can go up or down. This would cause issues with Home assistant.
+    // We also take advantage of this to save at regular intervals.
+    	real_consumption += energy;
+	real_export += generation;     //sensors[OBK_GENERATION_TOTAL].lastReading += generation;
     energyCounterStamp = xTaskGetTickCount();
     HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
 	sensors[OBK_CONSUMPTION_TODAY].lastReading  += energy;
@@ -977,7 +980,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				break;
 			}
 
-            if (MQTT_IsReady() == true)
+            if ((MQTT_IsReady() == true) && (lastsync == 1) && (mqtt_update == 1))
             {
 				sensors[i].lastSentValue = sensors[i].lastReading;
 				if (i == OBK_CONSUMPTION_CLEAR_DATE) {
@@ -1010,10 +1013,13 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     }        
 
 // Save the total counters periodically   
-if (((sensors[OBK_CONSUMPTION_TOTAL].lastReading - lastSavedEnergyCounterValue) >= changeSavedThresholdEnergy) ||
+
+/*if (((sensors[OBK_CONSUMPTION_TOTAL].lastReading - lastSavedEnergyCounterValue) >= changeSavedThresholdEnergy) ||
         ((xTaskGetTickCount() - lastConsumptionSaveStamp) >= (6 * 3600 * 1000 / portTICK_PERIOD_MS)) || 
 	((sensors[OBK_GENERATION_TOTAL].lastReading - lastSavedGenerationCounterValue) >= changeSavedThresholdEnergy))
-    {
+    {*/
+if (savetoflash == 1)
+{
 #if WINDOWS
 #elif PLATFORM_BL602
 #elif PLATFORM_W600 || PLATFORM_W800
