@@ -276,14 +276,14 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				high_power_debounce--;
 		
 				// Are we exporting enough? If so, turn the relay on
-				if (((int)net_energy>(int)dump_load_on)&&(high_power_debounce == 0))
+				if (((int)net_energy>(int)dump_load_on))
 					{
 					dump_load_relay = 1;
 					time_on += dump_load_hysteresis;	// Increase the timer.
 					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 					CMD_ExecuteCommand("setChannel 1 1", 0);
 					}
-				else if ((check_hour >= bypass_on_time) && (check_hour < bypass_off_time) && (time_on < min_daily_time_on)&&(high_power_debounce == 0))
+				else if ((check_hour >= bypass_on_time) && (check_hour < bypass_off_time) && (time_on < min_daily_time_on))
 					{
 					// We make an exception to manually turn on the bypass load, for example - Winter.
 					dump_load_relay = 2;
