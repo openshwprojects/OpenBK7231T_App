@@ -20,7 +20,7 @@
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
 
-static byte overpower_reset = 0;
+static byte overpower_reset = 3;
 static byte min_reset = 0;
 static byte hour_reset = 0;
 static byte first_run = 0;
@@ -176,7 +176,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			// We load from memory at first run, then add to our temp variable
 			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading); // OK
 			real_export = (sensors[OBK_GENERATION_TOTAL].lastReading);
-
+			dump_load_relay = 3;
 			//Now we calculate the net_energy, which is zero, because we just started!
 			net_energy = 0;
 			first_run = 1;
