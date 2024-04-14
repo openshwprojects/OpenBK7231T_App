@@ -210,7 +210,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			//Make an animation to indicate bypass is on
 			if (dump_load_relay == 4)
 			{
-				flash_overpower = ++;
+				flash_overpower ++;
 				// Indicator On
 				if (flash_overpower > 1) {CMD_ExecuteCommand("setChannel 1 1", 0); flash_overpower = 0;}
 				// Indicator Off
