@@ -28,7 +28,7 @@ static float net_energy = 0;
 static float net_energy_start = 0;
 static float real_export = 0;
 static float real_consumption = 0;
-static int net_energy_timer = 0;
+//static int net_energy_timer = 0;
 // Variables for the solar dump load timer
 //static byte sync = 0;
 //static int sync_time = 0;
@@ -429,7 +429,7 @@ void BL09XX_SaveEmeteringStatistics()
     memset(&data, 0, sizeof(ENERGY_METERING_DATA));
 
     data.TotalGeneration = sensors[OBK_GENERATION_TOTAL].lastReading;
-    data.TotalConsumption = sensors[].lastReading;
+    data.TotalConsumption = sensors[OBK_CONSUMPTION_TOTAL].lastReading;
     data.TodayConsumpion = sensors[OBK_CONSUMPTION_TODAY].lastReading;
     data.YesterdayConsumption = sensors[OBK_CONSUMPTION_YESTERDAY].lastReading;
     data.actual_mday = actual_mday;
