@@ -245,7 +245,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 					//real_export = sensors[OBK_GENERATION_TOTAL].lastReading;
 				}	
 				else if (net_energy < 0){
-					sensors[OBK_CONSUMPTION_TOTAL].lastReading += net_energy; // Save new value, if positive
+					sensors[OBK_CONSUMPTION_TOTAL].lastReading -= net_energy; // Save new value. The result is negative, so we subtract (-- == +)
 						}
 				real_export = sensors[OBK_GENERATION_TOTAL].lastReading;
 				real_consumption = sensors[OBK_CONSUMPTION_TOTAL].lastReading;
@@ -429,7 +429,7 @@ void BL09XX_SaveEmeteringStatistics()
     memset(&data, 0, sizeof(ENERGY_METERING_DATA));
 
     data.TotalGeneration = sensors[OBK_GENERATION_TOTAL].lastReading;
-    data.TotalConsumption = sensors[OBK_CONSUMPTION_TOTAL].lastReading;
+    data.TotalConsumption = sensors[].lastReading;
     data.TodayConsumpion = sensors[OBK_CONSUMPTION_TODAY].lastReading;
     data.YesterdayConsumption = sensors[OBK_CONSUMPTION_YESTERDAY].lastReading;
     data.actual_mday = actual_mday;
@@ -794,7 +794,8 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	}
     // -------------------------------------------------------------------------------------------
     // Apply values. Add Extra variable for generation 
-    sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
+    /*sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;*/
+    real_consumption += energy;
     // We use a temp variable so the timer can go up or down. This would cause issues with Home assistant
     real_export += generation;
     //sensors[OBK_GENERATION_TOTAL].lastReading += generation;
