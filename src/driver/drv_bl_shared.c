@@ -381,7 +381,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
 		{
 		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
-		net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
+		//net_energy = (net_energy_start - (real_consumption - real_export));
 		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
 		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		
