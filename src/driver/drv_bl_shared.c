@@ -1020,6 +1020,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     {*/
 if (savetoflash == 1)
 {
+savetoflash = 0;
 #if WINDOWS
 #elif PLATFORM_BL602
 #elif PLATFORM_W600 || PLATFORM_W800
