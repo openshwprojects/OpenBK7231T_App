@@ -35,7 +35,7 @@ static byte old_hour = 0;
 static byte time_hour_reset = 0;
 static byte time_min_reset = 0;
 static byte old_time = 0;
-static int high_power_debounce = 0;
+//static int high_power_debounce = 0;
 #define max_power_bypass_off 1000
 #define dump_load_hysteresis 3	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
 //int min_production = -50;	// The minimun instantaneous solar production that will trigger the dump load.
@@ -273,7 +273,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			{
 				// save the last time the loop was run
 				lastsync = 0;
-				high_power_debounce--;
+				//high_power_debounce--;
 		
 				// Are we exporting enough? If so, turn the relay on
 				if (((int)net_energy>(int)dump_load_on))
@@ -367,7 +367,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
 		
 		// We print some stats, mainly for debugging
-		hprintf255(request, "<font size=1>Diversion relay total on-time today was %d min.<br> Next sync in %d minutes. ", 
+		hprintf255(request, "<font size=1>Diversion relay total on-time today was %d min.<br> Next sync in %d min. ", 
 				time_on, (dump_load_hysteresis-lastsync));
 			// Print Status of relay)
 			if (dump_load_relay == 1){poststr(request," ON - Solar Power <br></font>");}
