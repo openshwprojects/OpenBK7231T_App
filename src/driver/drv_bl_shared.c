@@ -27,6 +27,7 @@ static byte first_run = 0;
 static float net_energy = 0;
 static float net_energy_start = 0;
 static float real_export = 0;
+static float real_consumption = 0;
 static int net_energy_timer = 0;
 // Variables for the solar dump load timer
 //static byte sync = 0;
@@ -176,6 +177,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			// We load from memory at first run, then add to our temp variable
 			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading); // OK
 			real_export = (sensors[OBK_GENERATION_TOTAL].lastReading);
+			real_consumption = (sensors[OBK_CONSUMPTION_TOTAL].lastReading);
 			dump_load_relay = 3;
 			//Now we calculate the net_energy, which is zero, because we just started!
 			net_energy = 0;
@@ -235,14 +237,18 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				lastsync = 0;
 				//net_energy_timer = 0;
 				
-				net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading-real_export));			// calculate difference since start
+				net_energy = (net_energy_start - (real_consumption-real_export));			// calculate difference since start
 				// Add any excess (if any) to the generation variable, which is updated here.
 				if (net_energy > 0){
 					sensors[OBK_GENERATION_TOTAL].lastReading += net_energy; // Save new value, if positive
 					//real_export -= net_energy;				 // And deduct it from the running variable, as it was exported.
 					//real_export = sensors[OBK_GENERATION_TOTAL].lastReading;
-				}			
+				}	
+				else if (net_energy < 0){
+					sensors[OBK_CONSUMPTION_TOTAL].lastReading += net_energy; // Save new value, if positive
+						}
 				real_export = sensors[OBK_GENERATION_TOTAL].lastReading;
+				real_consumption = sensors[OBK_CONSUMPTION_TOTAL].lastReading;
 				// Then we calculate the 'Zero value' - The sum of the consumption and export counters
 				net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);	// Start again
 				//real_export = sensors[OBK_GENERATION_TOTAL].lastReading; // Update the Export, to reflect the 
@@ -257,7 +263,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			{
 				// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
 				// We avoid running this at T = 0, as it can cause some wrong values as the variables update.
-				net_energy = (net_energy_start - (sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
+				net_energy = (net_energy_start - (real_consumption - real_export));
 			}
 			// ------------------------------------------------------------------------------------------------------------------
 			// Bypass load code. Runs if there is excess energy and at a programmable time, in case there was no sun
