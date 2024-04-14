@@ -218,7 +218,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			}
 			
 			// This turns the bypass load off if we are using a lot of power
-			if ((sensors[OBK_POWER].lastReading) > max_power_bypass_off) 
+			if (((sensors[OBK_POWER].lastReading) > max_power_bypass_off) && (!(dump_load_relay == 4)))
 			{
 				// Make sure we don't run it twice on the same minute
 				if (!(check_time == check_time_power))
