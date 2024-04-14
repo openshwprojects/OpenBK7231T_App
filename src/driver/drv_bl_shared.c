@@ -1013,14 +1013,13 @@ void BL_ProcessUpdate(float voltage, float current, float power,
         }
     }        
 
-// Save the total counters periodically   
-
-/*if (((sensors[OBK_CONSUMPTION_TOTAL].lastReading - lastSavedEnergyCounterValue) >= changeSavedThresholdEnergy) ||
+// Save the total counters periodically  
+// If we are measuring bi-directional we save every net metering period instead. This is about 100x a day.
+if (((((sensors[OBK_CONSUMPTION_TOTAL].lastReading - lastSavedEnergyCounterValue) >= changeSavedThresholdEnergy) ||
         ((xTaskGetTickCount() - lastConsumptionSaveStamp) >= (6 * 3600 * 1000 / portTICK_PERIOD_MS)) || 
-	((sensors[OBK_GENERATION_TOTAL].lastReading - lastSavedGenerationCounterValue) >= changeSavedThresholdEnergy))
-    {*/
-if (savetoflash == 1)
-{
+	((sensors[OBK_GENERATION_TOTAL].lastReading - lastSavedGenerationCounterValue) >= changeSavedThresholdEnergy)) && (!(CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))))||(savetoflash == 1))
+    {
+
 savetoflash = 0;
 #if WINDOWS
 #elif PLATFORM_BL602
