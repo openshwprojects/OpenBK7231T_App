@@ -771,7 +771,8 @@ int http_fn_index(http_request_t* request) {
 	}
 	if (Main_HasWiFiConnected())
 	{
-		hprintf255(request, "<h5>Wifi RSSI: %s (%idBm)</h5>", str_rssi[wifi_rssi_scale(HAL_GetWifiStrength())], HAL_GetWifiStrength());
+		int rssi = HAL_GetWifiStrength();
+		hprintf255(request, "<h5>Wifi RSSI: %s (%idBm)</h5>", str_rssi[wifi_rssi_scale(rssi)], rssi);
 	}
 #if PLATFORM_BEKEN
 	/*
