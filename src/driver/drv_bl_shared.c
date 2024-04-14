@@ -20,6 +20,7 @@
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
 
+static byte flash_overpower = 0;
 //static byte overpower_reset = 2;
 static byte min_reset = 0;
 static byte hour_reset = 0;
@@ -204,6 +205,16 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				//overpower_reset = 1;
 				old_time = check_time;
 				lastsync++;
+			}
+
+			//Make an animation to indicate bypass is on
+			if (dump_load_relay == 4)
+			{
+				flash_overpower = ++;
+				// Indicator On
+				if (flash_overpower > 1) {CMD_ExecuteCommand("setChannel 1 1", 0); flash_overpower = 0;}
+				// Indicator Off
+				else {CMD_ExecuteCommand("setChannel 1 0", 0);}
 			}
 			
 			// This turns the bypass load off if we are using a lot of power
