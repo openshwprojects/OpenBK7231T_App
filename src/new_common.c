@@ -373,35 +373,27 @@ uint8_t timer_rollovers=0; // I don't expect uptime > 35 years ...
 // if we want to use this for emulating an RTC, we should get the time as good as possible 
 
 uint32_t getSecondsElapsed(){
-#if PLATFORM_BEKEN
-   // e.g. in sdk/platforms/bk7231n/bk7231n_os/beken378/os/FreeRTOSv9.0.0/rtos_pub.c
-   // we find a factor 2 for converting ticks to ms in Beken devices
-   // (uint32_t ms_to_tick_ratio = 2;)
- TickType_t actTick=2*xTaskGetTickCount();
-#else
-  // for LN882H and BL602 we have reports that ticks are corresponding to ms
-  // for WL600/WL800 we should be o.k., but no test up to now:
-  // e.g in     /src/hal/w800/hal_main_w800.c
-  // we find "tls_os_time_delay(1000);"
-  // in the SDK we find in src/os/rtos/wm_osal_rtos.c that this corresponds to "vTaskDelay(1000)"
-  // and this leads to void vTaskDelay( portTickType xTicksToDelay ) --> so xTicks should be in ms 
- TickType_t actTick=xTaskGetTickCount();
-#endif
- // to make this work, getSecondsElapsed() must be called once before rollover, which is 
- // no problem for the usual choice of TickType_t = uint32_t:
- // 	rollover will take place after 4294967295 ms (almost 50 days)
- // but it might be a more of challenge for uint16_t its with only 65535 ms (one Minute and 5 seconds)!! 
- if (actTick < lastTick ) timer_rollovers++;
- lastTick = actTick;
- // 
- // version 1 :
- // use the time also to adjust g_secondsElapsed 
- g_secondsElapsed = (uint32_t)(((uint64_t) timer_rollovers << 32 | actTick) / 1000 );
- return  g_secondsElapsed;
- // 
- // possible version 2 :
- // without adjusting g_secondsElapsed :
-// return (uint32_t)(((uint64_t) timer_rollovers << 32 | actTick) / 1000 );
+
+	// xTicks are not bound to be in ms, 
+	// but for all plattforms xTicks can be converted to MS with "portTICK_RATE_MS"
+
+ 	TickType_t actTick=portTICK_RATE_MS*xTaskGetTickCount();
+
+	 // to make this work, getSecondsElapsed() must be called once before rollover, which is 
+	 // no problem for the usual choice of TickType_t = uint32_t:
+	 // 	rollover will take place after 4294967295 ms (almost 50 days)
+	 // but it might be a more of challenge for uint16_t its with only 65535 ms (one Minute and 5 seconds)!! 
+	 if (actTick < lastTick ) timer_rollovers++;
+	 lastTick = actTick;
+	 // 
+	 // version 1 :
+	 // use the time also to adjust g_secondsElapsed 
+	 g_secondsElapsed = (uint32_t)(((uint64_t) timer_rollovers << 32 | actTick) / 1000 );
+	 return  g_secondsElapsed;
+	 // 
+	 // possible version 2 :
+	 // without adjusting g_secondsElapsed :
+	// return (uint32_t)(((uint64_t) timer_rollovers << 32 | actTick) / 1000 );
 }
 
 
