@@ -313,7 +313,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 					CMD_ExecuteCommand("setChannel 1 1", 0);
 					}
-				else
+				else if (((int)net_energy<(int)dump_load_off))
 					{
 					// If none of the exemptions applies, we turn the diversion load off.
 					dump_load_relay = 3;
