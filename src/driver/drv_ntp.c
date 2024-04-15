@@ -442,7 +442,7 @@ void NTP_CheckForReceive() {
     g_ntpTime += g_timeOffsetSeconds;
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time  : %u",(unsigned int)g_ntpTime);
     ltm = gmtime(&g_ntpTime);
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Local Time : %04d/%02d/%02d %02d:%02d:%02d",
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Local Time : %04d-%02d-%02d %02d:%02d:%02d",
             ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
 
 	if (g_synced == false) {
@@ -523,7 +523,7 @@ void NTP_AppendInformationToHTTPIndexPage(http_request_t* request)
     ltm = gmtime(&g_ntpTime);
 
     if (g_synced == true)
-        hprintf255(request, "<h5>NTP (%s): Local Time: %04d/%02d/%02d %02d:%02d:%02d </h5>",
+        hprintf255(request, "<h5>NTP (%s): Local Time: %04d-%02d-%02d %02d:%02d:%02d </h5>",
 			CFG_GetNTPServer(),ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
     else 
         hprintf255(request, "<h5>NTP: Syncing with %s....</h5>",CFG_GetNTPServer());

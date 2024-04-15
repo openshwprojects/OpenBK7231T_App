@@ -534,6 +534,14 @@ static int http_rest_post_lfs_file(http_request_t* request) {
 	// create if it does not exist
 	init_lfs(1);
 
+	if (!lfs_present()) {
+		request->responseCode = 400;
+		http_setup(request, httpMimeTypeText);
+		poststr(request, "LittleFS is not abailable");
+		poststr(request, NULL);
+		return 0;
+	}
+
 	fpath = os_malloc(strlen(request->url) - strlen("api/lfs/") + 1);
 	file = os_malloc(sizeof(lfs_file_t));
 	memset(file, 0, sizeof(lfs_file_t));
@@ -875,8 +883,10 @@ static int http_rest_get_info(http_request_t* request) {
 	hprintf255(request, "\"chipset\":\"%s\",", PLATFORM_MCU_NAME);
 	hprintf255(request, "\"webapp\":\"%s\",", CFG_GetWebappRoot());
 	hprintf255(request, "\"shortName\":\"%s\",", CFG_GetShortDeviceName());
-	
-	hprintf255(request, "\"startcmd\":\"%s\",", CFG_GetShortStartupCommand());
+	poststr(request, "\"startcmd\":\"");
+	// This can be longer than 255
+	poststr(request, CFG_GetShortStartupCommand());
+	poststr(request, "\",");
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	hprintf255(request, "\"supportsSSDP\":%d,", DRV_IsRunning("SSDP") ? 1 : 0);
 #else

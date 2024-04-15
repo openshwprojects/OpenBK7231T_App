@@ -35,7 +35,14 @@ uint32_t pixel_offset = 0;
 // Number of empty bytes to send after pixel data on each frame
 // Workaround to stuff the SPI buffer with empty bytes after a transmission (s.a. #1055)
 uint32_t pixel_padding = 64;
-bool format_grb = false; // option to swap R/G for SK6812
+
+#define SM16703P_COLOR_ORDER_RGB         0x00
+#define SM16703P_COLOR_ORDER_RBG         0x01
+#define SM16703P_COLOR_ORDER_BRG         0x02
+#define SM16703P_COLOR_ORDER_BGR         0x03
+#define SM16703P_COLOR_ORDER_GRB         0x04
+#define SM16703P_COLOR_ORDER_GBR         0x05
+int color_order = SM16703P_COLOR_ORDER_RGB; // default to RGB
 
 static uint8_t translate_2bit(uint8_t input) {
 	//ADDLOG_INFO(LOG_FEATURE_CMD, "Translate 0x%02x to 0x%02x", (input & 0b00000011), data_translate[(input & 0b00000011)]);
@@ -87,15 +94,37 @@ void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 	uint8_t *dst = spi_msg->send_buf + pixel_offset;
 	for (uint32_t i = 0; i < pixel; i++) {
 		uint8_t r, g, b;
-		// Load data to GRB or RGB format
-		if (format_grb) {
-			g = *data++;
+		if (color_order == SM16703P_COLOR_ORDER_RGB) {
 			r = *data++;
-		} else {
+			g = *data++;
+			b = *data++;
+		}
+		if (color_order == SM16703P_COLOR_ORDER_RBG) {
+			r = *data++;
+			b = *data++;
+			g = *data++;
+		}
+		if (color_order == SM16703P_COLOR_ORDER_BRG) {
+			b = *data++;
 			r = *data++;
 			g = *data++;
 		}
-		b = *data++;
+		if (color_order == SM16703P_COLOR_ORDER_BGR) {
+			b = *data++;
+			g = *data++;
+			r = *data++;
+		}
+		if (color_order == SM16703P_COLOR_ORDER_GRB) {
+			g = *data++;
+			r = *data++;
+			b = *data++;
+		}
+		if (color_order == SM16703P_COLOR_ORDER_GBR) {
+			g = *data++;
+			b = *data++;
+			r = *data++;
+		}
+
 		*dst++ = translate_2bit((r >> 6));
 		*dst++ = translate_2bit((r >> 4));
 		*dst++ = translate_2bit((r >> 2));
@@ -114,15 +143,41 @@ void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 	}
 }
 void SM16703P_setPixel(int pixel, int r, int g, int b) {
-	// Load data to GRB or RGB format
-	if (format_grb) {
-		translate_byte(g, spi_msg->send_buf + (pixel_offset + 0 + (pixel * 3 * 4)));
-		translate_byte(r, spi_msg->send_buf + (pixel_offset + 4 + (pixel * 3 * 4)));
-	} else {
-		translate_byte(r, spi_msg->send_buf + (pixel_offset + 0 + (pixel * 3 * 4)));
-		translate_byte(g, spi_msg->send_buf + (pixel_offset + 4 + (pixel * 3 * 4)));
+	// Load data in correct format
+	int b0, b1, b2;
+	if (color_order == SM16703P_COLOR_ORDER_RGB) {
+		b0 = r;
+		b1 = g;
+		b2 = b;
 	}
-	translate_byte(b, spi_msg->send_buf + (pixel_offset + 8 + (pixel * 3 * 4)));
+	if (color_order == SM16703P_COLOR_ORDER_RBG) {
+		b0 = r;
+		b1 = b;
+		b2 = g;
+	}
+	if (color_order == SM16703P_COLOR_ORDER_BRG) {
+		b0 = b;
+		b1 = r;
+		b2 = g;
+	}
+	if (color_order == SM16703P_COLOR_ORDER_BGR) {
+		b0 = b;
+		b1 = g;
+		b2 = r;
+	}
+	if (color_order == SM16703P_COLOR_ORDER_GRB) {
+		b0 = g;
+		b1 = r;
+		b2 = b;
+	}
+	if (color_order == SM16703P_COLOR_ORDER_GBR) {
+		b0 = g;
+		b1 = b;
+		b2 = r;
+	}
+	translate_byte(b0, spi_msg->send_buf + (pixel_offset + 0 + (pixel * 3 * 4)));
+	translate_byte(b1, spi_msg->send_buf + (pixel_offset + 4 + (pixel * 3 * 4)));
+	translate_byte(b2, spi_msg->send_buf + (pixel_offset + 8 + (pixel * 3 * 4)));
 }
 
 // SM16703P_SetRaw bUpdate byteOfs HexData
@@ -201,8 +256,26 @@ commandResult_t SM16703P_InitForLEDCount(const void *context, const char *cmd, c
 	// Second arg (optional, default "RGB"): pixel format of "RGB" or "GRB"
 	if (Tokenizer_GetArgsCount() > 1) {
 		const char *format = Tokenizer_GetArg(1);
-		if (!stricmp(format, "GRB")) {
-			format_grb = true;
+		if (!stricmp(format, "RGB")) {
+			color_order = SM16703P_COLOR_ORDER_RGB;
+		}
+		else if (!stricmp(format, "RBG")) {
+			color_order = SM16703P_COLOR_ORDER_RBG;
+		}
+		else if (!stricmp(format, "BRG")) {
+			color_order = SM16703P_COLOR_ORDER_BRG;
+		}
+		else if (!stricmp(format, "BGR")) {
+			color_order = SM16703P_COLOR_ORDER_BGR;
+		}
+		else if (!stricmp(format, "GRB")) {
+			color_order = SM16703P_COLOR_ORDER_GRB;
+		}
+		else if (!stricmp(format, "GBR")) {
+			color_order = SM16703P_COLOR_ORDER_GBR;
+		} else {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "Invalid color format, should be combination of R,G,B", format);
+			return CMD_RES_ERROR;
 		}
 	}
 	// Third arg (optional, default "0"): pixel_offset to prepend to each transmission
@@ -274,8 +347,8 @@ void SM16703P_Init() {
 	param = PWD_SPI_CLK_BIT;
 	sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_UP, &param);
 
-	//cmddetail:{"name":"SM16703P_Init","args":"[NumberOfLEDs]",
-	//cmddetail:"descr":"This will setup LED driver for a strip with given number of LEDs. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
+	//cmddetail:{"name":"SM16703P_Init","args":"[NumberOfLEDs][ColorOrder]",
+	//cmddetail:"descr":"This will setup LED driver for a strip with given number of LEDs. Please note that it also works for WS2812B and similiar LEDs. You can optionally set the color order with either RGB, RBG, BRG, BGB, GRB or GBR (default RGB). See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_sm16703P.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SM16703P_Init", SM16703P_InitForLEDCount, NULL);
