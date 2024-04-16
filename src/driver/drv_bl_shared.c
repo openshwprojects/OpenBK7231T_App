@@ -20,6 +20,7 @@
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
 
+static byte old_dump_load_relay = 0;
 static byte savetoflash = 0;
 static byte mqtt_update = 0;
 static byte flash_overpower = 0;
@@ -219,24 +220,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				else {CMD_ExecuteCommand("setChannel 1 0", 0);}
 			}
 			
-			// This turns the bypass load off if we are using a lot of power
-			if (((sensors[OBK_POWER].lastReading) > max_power_bypass_off) && (!(dump_load_relay == 4)))
-			{
-				// Make sure we don't run it twice on the same minute
-				if (!(check_time == check_time_power))
-				{
-					// Hold the loop
-					lastsync = 0;
-					//hour_reset = 0;
-					dump_load_relay = 4;
-					//CMD_ExecuteCommand("SendGet", rem_relay_off, 0);
-					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
-					CMD_ExecuteCommand("setChannel 1 0", 0);
-					check_time_power = check_time;
-					check_hour_power = check_hour;
-				}
-				
-			}
+			
 			// For Hourly NetMetering
 			//else if ((check_time == 0)&&(!(net_energy_timer == 1)))
 			// For 15min NetMetering
@@ -291,7 +275,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			// In this case, we turn the load off and wait for the next cycle for a new update.
 
 			//The relay is updated ever x numer of minutes as defined on 'dump_load_hysteresis'
-			if (lastsync >= dump_load_hysteresis)
+			if (lastsync >= dump_load_hysteresis)&&
 			{
 				// save the last time the loop was run
 				lastsync = 0;
@@ -303,24 +287,58 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 					{
 					dump_load_relay = 1;
 					time_on += dump_load_hysteresis;	// Increase the timer.
-					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
+					//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 					CMD_ExecuteCommand("setChannel 1 1", 0);
 					}
 				else if ((check_hour >= bypass_on_time) && (check_hour < bypass_off_time) && (time_on < min_daily_time_on))
 					{
 					// We make an exception to manually turn on the bypass load, for example - Winter.
 					dump_load_relay = 2;
-					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
+					//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 					CMD_ExecuteCommand("setChannel 1 1", 0);
 					}
 				else if (((int)net_energy<(int)dump_load_off))
 					{
 					// If none of the exemptions applies, we turn the diversion load off.
 					dump_load_relay = 3;
-					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
+					//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
 					CMD_ExecuteCommand("setChannel 1 0", 0);
 					}
 			}
+
+			// This turns the bypass load off if we are using a lot of power
+			if (((sensors[OBK_POWER].lastReading) > max_power_bypass_off) && (!(dump_load_relay == 4)))
+			{
+				// Make sure we don't run it twice on the same minute
+				if (!(check_time == check_time_power))
+				{
+					// Hold the loop
+					lastsync = 0;
+					//hour_reset = 0;
+					dump_load_relay = 4;
+					//CMD_ExecuteCommand("SendGet", rem_relay_off, 0);
+					//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
+					CMD_ExecuteCommand("setChannel 1 0", 0);
+					check_time_power = check_time;
+					check_hour_power = check_hour;
+				}
+				
+			}
+
+			// check last status - So we don't send an update unless something changes.
+			if (!(dump_load_relay == old_dump_load_relay)
+				{
+				old_dump_load_relay = dump_load_relay;
+				if (dump_load_relay <2)
+					{
+					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
+					}
+				else if (dump_load_relay >2)
+					{
+					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
+					}
+				}
+			
 			//dEBUG
 			// We print some stats, mainly for debugging
 			//hprintf255(request,"<font size=1> Last NetMetering reset occured at: %d:%d<br></font>", time_hour_reset, time_min_reset); // Save the value at which the counter was synchronized
@@ -980,7 +998,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				break;
 			}
 
-            if ((MQTT_IsReady() == true) && (lastsync == 1) && (mqtt_update == 1))
+            if ((MQTT_IsReady() == true) && (mqtt_update == 1))
             {
 		    		mqtt_update = 0;
 				sensors[i].lastSentValue = sensors[i].lastReading;
