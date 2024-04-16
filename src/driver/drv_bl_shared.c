@@ -21,7 +21,7 @@ int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
 
 static byte savetoflash = 0;
-static byte mqtt_update = 0;
+//static byte mqtt_update = 0;
 static byte flash_overpower = 0;
 //static byte overpower_reset = 2;
 static byte min_reset = 0;
@@ -297,7 +297,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			{
 				// save the last time the loop was run
 				lastsync = 0;
-				mqtt_update = 1;
+				//mqtt_update = 1;
 				//high_power_debounce--;
 		
 				// Are we exporting enough? If so, turn the relay on
@@ -986,7 +986,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
             if ((MQTT_IsReady() == true) /*&& (lastsync == 1) && (mqtt_update == 1)*/)
             {
-		    		mqtt_update = 0;
+		    		//mqtt_update = 0;
 				sensors[i].lastSentValue = sensors[i].lastReading;
 				if (i == OBK_CONSUMPTION_CLEAR_DATE) {
 					sensors[i].lastReading = ConsumptionResetTime; //Only to make the 'nochangeframe' mechanism work here
