@@ -275,7 +275,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			// In this case, we turn the load off and wait for the next cycle for a new update.
 
 			//The relay is updated ever x numer of minutes as defined on 'dump_load_hysteresis'
-			if (lastsync >= dump_load_hysteresis)&&
+			if (lastsync >= dump_load_hysteresis)
 			{
 				// save the last time the loop was run
 				lastsync = 0;
