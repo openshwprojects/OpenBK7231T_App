@@ -332,7 +332,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				{
 				bypass_relay_update = 0;
 				old_dump_load_relay = dump_load_relay;
-				if (dump_load_relay <2)
+				if (dump_load_relay <=2)
 					{
 					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 					}
