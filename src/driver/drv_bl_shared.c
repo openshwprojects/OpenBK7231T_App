@@ -20,6 +20,7 @@
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
 
+static bypass_relay_update = 0;
 static byte old_dump_load_relay = 0;
 static byte savetoflash = 0;
 static byte mqtt_update = 0;
@@ -280,6 +281,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				// save the last time the loop was run
 				lastsync = 0;
 				mqtt_update = 1;
+				bypass_relay_update = 1;
 				//high_power_debounce--;
 		
 				// Are we exporting enough? If so, turn the relay on
@@ -317,7 +319,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 					//hour_reset = 0;
 					dump_load_relay = 4;
 					//CMD_ExecuteCommand("SendGet", rem_relay_off, 0);
-					//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
+					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
 					CMD_ExecuteCommand("setChannel 1 0", 0);
 					check_time_power = check_time;
 					check_hour_power = check_hour;
@@ -326,8 +328,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			}
 
 			// check last status - So we don't send an update unless something changes.
-			if (!(dump_load_relay == old_dump_load_relay)
+			if ((!(dump_load_relay == old_dump_load_relay))&&(bypass_relay_update = 1))
 				{
+				bypass_relay_update = 0;
 				old_dump_load_relay = dump_load_relay;
 				if (dump_load_relay <2)
 					{
