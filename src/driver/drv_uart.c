@@ -221,7 +221,7 @@ commandResult_t CMD_UART_Send_Hex(const void *context, const char *cmd, const ch
 
 uartFakeHex 55 AA 00 05 00 05 01 04 00 01 01 10 55
 55 AA	00	05		00 05	0104000101	10
-HEADER	VER=00	Unk		LEN	fnId=1 Enum V=1	CHK
+HEADER	VER=00	Unk		LEN	dpId=1 Enum V=1	CHK
 
 backlog startDriver TuyaMCU; uartFakeHex 55 AA 00 05 00 05 01 04 00 01 01 10 55
 */

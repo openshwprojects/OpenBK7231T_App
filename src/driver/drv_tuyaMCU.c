@@ -153,7 +153,7 @@ typedef struct rtcc_s {
 
 typedef struct tuyaMCUMapping_s {
 	// internal Tuya variable index
-	byte fnId;
+	byte dpId;
 	// target channel
 	byte channel;
 	// data point type (one of the DP_TYPE_xxx defines)
@@ -299,12 +299,12 @@ bool TUYAMCU_SendFromQueue() {
 	return true;
 }
 
-tuyaMCUMapping_t* TuyaMCU_FindDefForID(int fnId) {
+tuyaMCUMapping_t* TuyaMCU_FindDefForID(int dpId) {
 	tuyaMCUMapping_t* cur;
 
 	cur = g_tuyaMappings;
 	while (cur) {
-		if (cur->fnId == fnId)
+		if (cur->dpId == dpId)
 			return cur;
 		cur = cur->next;
 	}
@@ -323,14 +323,14 @@ tuyaMCUMapping_t* TuyaMCU_FindDefForChannel(int channel) {
 	return 0;
 }
 
-void TuyaMCU_MapIDToChannel(int fnId, int dpType, int channel, int bDPCache, float mul) {
+void TuyaMCU_MapIDToChannel(int dpId, int dpType, int channel, int bDPCache, float mul) {
 	tuyaMCUMapping_t* cur;
 
-	cur = TuyaMCU_FindDefForID(fnId);
+	cur = TuyaMCU_FindDefForID(dpId);
 
 	if (cur == 0) {
 		cur = (tuyaMCUMapping_t*)malloc(sizeof(tuyaMCUMapping_t));
-		cur->fnId = fnId;
+		cur->dpId = dpId;
 		cur->dpType = dpType;
 		cur->bDPCache = bDPCache;
 		cur->mult = mul;
@@ -1180,15 +1180,15 @@ void TuyaMCU_OnChannelChanged(int channel, int iVal) {
 	switch (mapping->dpType)
 	{
 	case DP_TYPE_BOOL:
-		TuyaMCU_SendBool(mapping->fnId, mappediVal != 0);
+		TuyaMCU_SendBool(mapping->dpId, mappediVal != 0);
 		break;
 
 	case DP_TYPE_ENUM:
-		TuyaMCU_SendEnum(mapping->fnId, mappediVal);
+		TuyaMCU_SendEnum(mapping->dpId, mappediVal);
 		break;
 
 	case DP_TYPE_VALUE:
-		TuyaMCU_SendValue(mapping->fnId, mappediVal);
+		TuyaMCU_SendValue(mapping->dpId, mappediVal);
 		break;
 
 	default:
@@ -1280,12 +1280,12 @@ int http_obk_json_dps(int id, void* request, jsonCb_t printer) {
 
 	cur = g_tuyaMappings;
 	while (cur) {
-		if (id == -1 || id == cur->fnId) {
+		if (id == -1 || id == cur->dpId) {
 			if (iCnt) {
 				printer(request, ",");
 			}
 			iCnt++;
-			printer(request, "{\"id\":%i,\"type\":%i,\"data\":", cur->fnId, cur->dpType);
+			printer(request, "{\"id\":%i,\"type\":%i,\"data\":", cur->dpId, cur->dpType);
 			if (cur->rawData == 0) {
 				printer(request, "0}", cur->rawData);
 			}
@@ -1343,12 +1343,12 @@ int http_obk_json_dps(int id, void* request, jsonCb_t printer) {
 //
 // When bIncludesDate = false
 // 55AA 00 06 0005  10   0100 01 00 1C
-// Head v0 ID lengh fnId leen tp vl CHKSUM
+// Head v0 ID lengh dpId leen tp vl CHKSUM
 
 void TuyaMCU_V0_ParseRealTimeWithRecordStorage(const byte* data, int len, bool bIncludesDate) {
 	int ofs;
 	int sectorLen;
-	int fnId;
+	int dpId;
 	int dataType;
 	tuyaMCUMapping_t* mapping;
 
@@ -1369,25 +1369,25 @@ void TuyaMCU_V0_ParseRealTimeWithRecordStorage(const byte* data, int len, bool b
 
 	while (ofs + 4 < len) {
 		sectorLen = data[ofs + 2] << 8 | data[ofs + 3];
-		fnId = data[ofs];
+		dpId = data[ofs];
 		dataType = data[ofs + 1];
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "V0_ParseRealTimeWithRecordStorage: processing id %i, dataType %i-%s and %i data bytes\n",
-			fnId, dataType, TuyaMCU_GetDataTypeString(dataType), sectorLen);
+			dpId, dataType, TuyaMCU_GetDataTypeString(dataType), sectorLen);
 
 		// find mapping (where to save received data)
-		mapping = TuyaMCU_FindDefForID(fnId);
+		mapping = TuyaMCU_FindDefForID(dpId);
 
 		if (sectorLen == 1) {
 			int iVal = (int)data[ofs + 4];
 			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "V0_ParseRealTimeWithRecordStorage: byte %i\n", iVal);
 			// apply to channels
-			TuyaMCU_ApplyMapping(mapping, fnId, iVal);
+			TuyaMCU_ApplyMapping(mapping, dpId, iVal);
 		}
 		if (sectorLen == 4) {
 			int iVal = data[ofs + 4] << 24 | data[ofs + 5] << 16 | data[ofs + 6] << 8 | data[ofs + 7];
 			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "V0_ParseRealTimeWithRecordStorage: int32 %i\n", iVal);
 			// apply to channels
-			TuyaMCU_ApplyMapping(mapping, fnId, iVal);
+			TuyaMCU_ApplyMapping(mapping, dpId, iVal);
 		}
 
 		// size of header (type, datatype, len 2 bytes) + data sector size
@@ -1407,7 +1407,7 @@ void TuyaMCU_V0_ParseRealTimeWithRecordStorage(const byte* data, int len, bool b
 }
 void TuyaMCU_PublishDPToMQTT(const byte *data, int ofs) {
 	int sectorLen;
-	int fnId;
+	int dpId;
 	int dataType;
 	char sName[32];
 	int strLen;
@@ -1416,7 +1416,7 @@ void TuyaMCU_PublishDPToMQTT(const byte *data, int ofs) {
 	int index;
 
 	sectorLen = data[ofs + 2] << 8 | data[ofs + 3];
-	fnId = data[ofs];
+	dpId = data[ofs];
 	dataType = data[ofs + 1];
 
 	// really it's just +1 for NULL character but let's keep more space
@@ -1431,7 +1431,7 @@ void TuyaMCU_PublishDPToMQTT(const byte *data, int ofs) {
 	const char *typeStr;
 	typeStr = TuyaMCU_GetDataTypeString(dataType);
 
-	sprintf(sName, "tm/%s/%i", typeStr, fnId);
+	sprintf(sName, "tm/%s/%i", typeStr, dpId);
 	payload = data + (ofs + 4);
 	switch (dataType) 
 	{
@@ -1484,7 +1484,7 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 	tuyaMCUMapping_t* mapping;
 	int ofs;
 	int sectorLen;
-	int fnId;
+	int dpId;
 	int dataType;
 	int day, month, year;
 	//int channelType;
@@ -1494,12 +1494,12 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 
 	while (ofs + 4 < len) {
 		sectorLen = data[ofs + 2] << 8 | data[ofs + 3];
-		fnId = data[ofs];
+		dpId = data[ofs];
 		dataType = data[ofs + 1];
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseState: id %i type %i-%s len %i\n",
-			fnId, dataType, TuyaMCU_GetDataTypeString(dataType), sectorLen);
+			dpId, dataType, TuyaMCU_GetDataTypeString(dataType), sectorLen);
 
-		mapping = TuyaMCU_FindDefForID(fnId);
+		mapping = TuyaMCU_FindDefForID(dpId);
 		if (mapping && mapping->dpType == DP_TYPE_PUBLISH_TO_MQTT) {
 			TuyaMCU_PublishDPToMQTT(data, ofs);
 		}
@@ -1523,13 +1523,13 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 			iVal = (int)data[ofs + 4];
 			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseState: byte %i\n", iVal);
 			// apply to channels
-			TuyaMCU_ApplyMapping(mapping, fnId, iVal);
+			TuyaMCU_ApplyMapping(mapping, dpId, iVal);
 		}
 		else if (sectorLen == 4) {
 			iVal = data[ofs + 4] << 24 | data[ofs + 5] << 16 | data[ofs + 6] << 8 | data[ofs + 7];
 			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseState: int32 %i\n", iVal);
 			// apply to channels
-			TuyaMCU_ApplyMapping(mapping, fnId, iVal);
+			TuyaMCU_ApplyMapping(mapping, dpId, iVal);
 		}
 		else {
 
@@ -1644,15 +1644,15 @@ void TuyaMCU_V0_SendDPCacheReply() {
 	// 01 02 
 	// result 1 (OK), numVars 2
 	// 11 02 0004 00000001  		
-	// fnId = 17 Len = 0004 Val V = 1
+	// dpId = 17 Len = 0004 Val V = 1
 	// 12 02 0004 00000001
-	// fnId = 18 Len = 0004 Val V = 1	
+	// dpId = 18 Len = 0004 Val V = 1	
 	// 
 	while (map) {
 		if (map->bDPCache) {
 			writtenCount++;
 			// dpID
-			*p = map->fnId;
+			*p = map->dpId;
 			p++;
 			// type
 			*p = map->dpType;
