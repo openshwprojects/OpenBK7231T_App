@@ -218,6 +218,16 @@ int Tokenizer_GetArgIntegerDefault(int i, int def) {
 
 	return r;
 }
+float Tokenizer_GetArgFloatDefault(int i, float def) {
+	float r;
+
+	if (g_numArgs <= i) {
+		return def;
+	}
+	r = Tokenizer_GetArgFloat(i);
+
+	return r;
+}
 int Tokenizer_GetArgInteger(int i) {
 	const char *s;
 	int ret;
