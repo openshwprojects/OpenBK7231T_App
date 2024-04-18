@@ -523,10 +523,11 @@ void BL_ProcessUpdate(float voltage, float current, float power,
         energy = energyWh;
    }
    
-    if(energy < 0) {
+    if(power < 0) {
         if(CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)) {
             // If energy is negative, account as generation
-            generation = (energy*-1);
+            generation = energy;
+            energy = 0.0;
         } else {
             // If negative flag is disable, make sure that energy is positive
             energy = 0.0;
