@@ -9,7 +9,6 @@
 
 /* Fixed size 32 bytes */
 typedef struct ENERGY_METERING_DATA {
-	float TotalGeneration;
 	float TotalConsumption;
 	float TodayConsumpion;
 	float YesterdayConsumption;
@@ -18,6 +17,7 @@ typedef struct ENERGY_METERING_DATA {
 	time_t ConsumptionResetTime;
 	unsigned char reseved[3];
 	char actual_mday;
+	float TotalGeneration;
 } ENERGY_METERING_DATA;
 
 typedef struct flash_vars_structure
