@@ -86,6 +86,7 @@ void Test_ClockEvents();
 void Test_Commands_Channels();
 void Test_LEDDriver();
 void Test_TuyaMCU_Basic();
+void Test_TuyaMCU_Mult();
 void Test_TuyaMCU_RawAccess();
 void Test_Command_If();
 void Test_Command_If_Else();
