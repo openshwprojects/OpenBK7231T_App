@@ -793,7 +793,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	// ---------------------------------------------------------------------------------------
 	// This line swaps Consumption and Generation
 	// ---------------------------------------------------------------------------------------
-	if (CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH)) {		
+	/*if (CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH)) {		
 		if ((int)power<0){
 			if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
 			{generation = (energyWh*-1);}
@@ -804,7 +804,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 		
 	// ---------------------------------------------------------------------------------------
 	// Generation (Device to grid - Negative Flow)
-	else if ((int)power<0){
+	else */if ((int)power<0){
 		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
 		{generation = energyWh;}
 		else {energy = energyWh;}	
