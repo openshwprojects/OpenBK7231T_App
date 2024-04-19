@@ -280,7 +280,7 @@ void BL0942_SPI_RunEverySecond(void) {
     SPI_ReadReg(BL0942_REG_I_RMS, &data.i_rms);
     SPI_ReadReg(BL0942_REG_V_RMS, &data.v_rms);
     SPI_ReadReg(BL0942_REG_WATT, (uint32_t *)&data.watt);
-    data.watt = Int24ToInt32(data.watt);}
+    data.watt = Int24ToInt32(data.watt);
     if (CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH)){
 		data.watt = (-1*data.watt);}
     SPI_ReadReg(BL0942_REG_CF_CNT, &data.cf_cnt);
