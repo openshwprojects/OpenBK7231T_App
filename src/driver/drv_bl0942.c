@@ -86,7 +86,12 @@ static void ScaleAndUpdate(bl0942_data_t *data) {
     }
     PrevCfCnt = data->cf_cnt;*/
     energyWh = fabsf(PwrCal_ScalePowerOnly(data->cf_cnt)) * 1638.4f * 256.0f / 3600.0f;
-    BL_ProcessUpdate(voltage, current, power, frequency, energyWh);
+    
+	if (CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH)){
+	BL_ProcessUpdate(voltage, current, (-1*power), frequency, energyWh);}
+	else{
+		BL_ProcessUpdate(voltage, current, power, frequency, energyWh);}
+		
 }
 
 static int UART_TryToGetNextPacket(void) {
@@ -281,8 +286,8 @@ void BL0942_SPI_RunEverySecond(void) {
     SPI_ReadReg(BL0942_REG_V_RMS, &data.v_rms);
     SPI_ReadReg(BL0942_REG_WATT, (uint32_t *)&data.watt);
     data.watt = Int24ToInt32(data.watt);
-    if (CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH)){
-		data.watt = (-1*data.watt);}
+   // if (CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH)){
+		//data.watt = (-1*data.watt);}
     SPI_ReadReg(BL0942_REG_CF_CNT, &data.cf_cnt);
     SPI_ReadReg(BL0942_REG_FREQ, &data.freq);
     ScaleAndUpdate(&data);
