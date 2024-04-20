@@ -551,6 +551,20 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_KP18058_DAT,
+	//iodetail:{"name":"IOR_AHT2X_DAT",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"DAT pin of AHT sensor. Setting this pin role and saving will reveal two fields next to it. Set first field to 1 and second to 2. Those are related channel numbers to store temperature and humidity.",
+	//iodetail:"enum":"IOR_AHT2X_DAT",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_AHT2X_DAT,
+	//iodetail:{"name":"IOR_AHT2X_CLK",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"CLK pin of AHT sensor.",
+	//iodetail:"enum":"IOR_AHT2X_CLK",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_AHT2X_CLK,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
@@ -561,7 +575,7 @@ typedef enum ioRole_e {
 } ioRole_t;
 
 #define IS_PIN_DHT_ROLE(role) (((role)>=IOR_DHT11) && ((role)<=IOR_DHT22))
-#define IS_PIN_TEMP_HUM_SENSOR_ROLE(role) (((role)==IOR_SHT3X_DAT) || ((role)==IOR_CHT8305_DAT))
+#define IS_PIN_TEMP_HUM_SENSOR_ROLE(role) (((role)==IOR_SHT3X_DAT) || ((role)==IOR_CHT8305_DAT) || ((role)==IOR_AHT2X_DAT))
 #define IS_PIN_AIR_SENSOR_ROLE(role) (((role)==IOR_SGP_DAT))
 
 typedef enum channelType_e {

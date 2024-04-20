@@ -2532,7 +2532,8 @@ int http_fn_cfg_pins(http_request_t* request) {
 		poststr(request, "</select>");
 		// Primary linked channel
 		// Some roles do not need any channels
-		if ((si != IOR_SGP_CLK && si != IOR_SHT3X_CLK && si != IOR_CHT8305_CLK && si != IOR_Button_ToggleAll && si != IOR_Button_ToggleAll_n
+		if ((si != IOR_AHT2X_CLK && si != IOR_SGP_CLK && si != IOR_SHT3X_CLK
+			&& si != IOR_CHT8305_CLK && si != IOR_Button_ToggleAll && si != IOR_Button_ToggleAll_n
 			&& si != IOR_BL0937_CF && si != IOR_BL0937_CF1 && si != IOR_BL0937_SEL
 			&& si != IOR_LED_WIFI && si != IOR_LED_WIFI_n && si != IOR_LED_WIFI_n
 			&& !(si >= IOR_IRRecv && si <= IOR_DHT11)

@@ -315,6 +315,11 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"SGP Air Quality sensor with I2C interface. See [this DIY sensor](https://www.elektroda.com/rtvforum/topic3967174.html) for setup information.",
 	//drvdetail:"requires":""}
 	{ "SGP",	    SGP_Init,		SGP_OnEverySecond,		SGP_AppendInformationToHTTPIndexPage, NULL, SGP_StopDriver, NULL, false },
+	//drvdetail:{"name":"AHT2X",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"AHT Humidity/temperature sensor. Supported sensors are: AHT10, AHT2X, AHT30.",
+	//drvdetail:"requires":""}
+	{ "AHT2X",	AHT2X_Init,	AHT2X_OnEverySecond,	AHT2X_AppendInformationToHTTPIndexPage,	NULL,	AHT2X_StopDriver,	NULL,	false },
 
 	//drvdetail:{"name":"ShiftRegister",
 	//drvdetail:"title":"TODO",
@@ -587,7 +592,7 @@ bool DRV_IsMeasuringBattery() {
 
 bool DRV_IsSensor() {
 #ifndef OBK_DISABLE_ALL_DRIVERS
-	return DRV_IsRunning("SHT3X") || DRV_IsRunning("CHT8305") || DRV_IsRunning("SGP");
+	return DRV_IsRunning("SHT3X") || DRV_IsRunning("CHT8305") || DRV_IsRunning("SGP") || DRV_IsRunning("AHT2X");
 #else
 	return false;
 #endif

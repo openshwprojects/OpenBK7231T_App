@@ -1170,6 +1170,12 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 				DRV_StartDriver("TM1638");
 #endif
 			}
+			if(PIN_FindPinIndexForRole(IOR_AHT2X_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_AHT2X_DAT, -1) != -1)
+			{
+#ifndef OBK_DISABLE_ALL_DRIVERS
+				DRV_StartDriver("AHT2X");
+#endif
+			}
 		}
 	}
 
