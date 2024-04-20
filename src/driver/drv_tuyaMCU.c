@@ -323,7 +323,7 @@ tuyaMCUMapping_t* TuyaMCU_FindDefForChannel(int channel) {
 	return 0;
 }
 
-void TuyaMCU_MapIDToChannel(int dpId, int dpType, int channel, int bDPCache, float mul) {
+tuyaMCUMapping_t* TuyaMCU_MapIDToChannel(int dpId, int dpType, int channel, int bDPCache, float mul) {
 	tuyaMCUMapping_t* cur;
 
 	cur = TuyaMCU_FindDefForID(dpId);
@@ -343,6 +343,7 @@ void TuyaMCU_MapIDToChannel(int dpId, int dpType, int channel, int bDPCache, flo
 	}
 
 	cur->channel = channel;
+	return cur;
 }
 
 
@@ -1091,6 +1092,9 @@ void TuyaMCU_ApplyMapping(tuyaMCUMapping_t* mapping, int fnID, int value) {
 		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "ApplyMapping: id %i (val %i) not mapped\n", fnID, value);
 		return;
 	}
+	if (mapping->channel == -1) {
+		return;
+	}
 
 	// map value depending on channel type
 	switch (CHANNEL_GetType(mapping->channel))
@@ -1505,6 +1509,11 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 		}
 
 		if (CFG_HasFlag(OBK_FLAG_TUYAMCU_STORE_RAW_DATA)) {
+			if (CFG_HasFlag(OBK_FLAG_TUYAMCU_STORE_ALL_DATA)) {
+				if (mapping == 0) {
+					mapping = TuyaMCU_MapIDToChannel(dpId, dataType, -1, 0, 1.0f);
+				}
+			}
 			if (mapping) {
 				// add space for NULL terminating character
 				int useLen = sectorLen + 1;
