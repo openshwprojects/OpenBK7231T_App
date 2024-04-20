@@ -20,6 +20,7 @@ int cmd_uartInitIndex = 0;
 #include <wifi_mgmr_ext.h>
 #elif PLATFORM_LN882H
 #include <wifi.h>
+#include <power_mgmt/ln_pm.h>
 #endif
 
 #define HASH_SIZE 128
@@ -80,15 +81,22 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	if (bOn) {
 		sysparam_sta_powersave_update(WIFI_MAX_POWERSAVE);
 		wifi_sta_set_powersave(WIFI_MAX_POWERSAVE);
+		if (bOn > 1) {
+			 ln_pm_sleep_mode_set(LIGHT_SLEEP);
+		}
+		else {	// to be able to switch from PowerSave from > 1 to 1 (without sleep) 
+			 ln_pm_sleep_mode_set(ACTIVE);
+		}
 	}
 	else {
 		sysparam_sta_powersave_update(WIFI_NO_POWERSAVE);
 		wifi_sta_set_powersave(WIFI_NO_POWERSAVE);
+		ln_pm_sleep_mode_set(ACTIVE);
 	}
 #else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave is not implemented on this platform");
 #endif    
-	g_powersave = bOn;
+	g_powersave = (bOn);
 	return CMD_RES_OK;
 }
 static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const char* args, int cmdFlags) {
