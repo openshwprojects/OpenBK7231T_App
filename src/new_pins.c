@@ -1523,7 +1523,7 @@ bool CHANNEL_ShouldBePublished(int ch) {
 			if (IS_PIN_DHT_ROLE(role)) {
 				return true;
 			}
-			// SGP, CHT8305, SHT3X and AHT2X uses secondary channel for humidity
+			// SGP, CHT8305 and SHT3X uses secondary channel for humidity
 			if (role == IOR_CHT8305_DAT || role == IOR_SHT3X_DAT || role == IOR_SGP_DAT) {
 				return true;
 			}
