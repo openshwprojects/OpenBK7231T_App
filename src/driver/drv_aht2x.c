@@ -106,16 +106,21 @@ void AHT2X_Measure()
 		ADDLOG_INFO(LOG_FEATURE_SENSOR, "AHT2X_Measure: Unrealistic humidity, will not update values.");
 		return;
 	}
+
 	uint32_t raw_temperature = ((data[3] & 0x0F) << 16) | (data[4] << 8) | data[5];
 	uint32_t raw_humidity = ((data[1] << 16) | (data[2] << 8) | data[3]) >> 4;
 
 	g_humid = ((float)raw_humidity * 100.0f / 1048576.0f) + g_calHum;
 	g_temp = (((200.0f * (float)raw_temperature) / 1048576.0f) - 50.0f) + g_calTemp;
 
-	channel_temp = g_cfg.pins.channels[g_softI2C.pin_data];
-	channel_humid = g_cfg.pins.channels2[g_softI2C.pin_data];
-	CHANNEL_Set(channel_temp, (int)(g_temp * 10), 0);
-	CHANNEL_Set(channel_humid, (int)(g_humid), 0);
+	if(channel_temp > -1)
+	{
+		CHANNEL_Set(channel_temp, (int)(g_temp * 10), 0);
+	}
+	if(channel_humid > -1)
+	{
+		CHANNEL_Set(channel_humid, (int)(g_humid), 0);
+	}
 
 	ADDLOG_INFO(LOG_FEATURE_SENSOR, "AHT2X_Measure: Temperature:%fC Humidity:%f%%", g_temp, g_humid);
 }
@@ -123,12 +128,13 @@ void AHT2X_Measure()
 commandResult_t AHT2X_Calibrate(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-	if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2))
+	if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1))
 	{
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
+
 	g_calTemp = Tokenizer_GetArgFloat(0);
-	g_calHum = Tokenizer_GetArgFloat(1);
+	g_calHum = Tokenizer_GetArgFloatDefault(1, 0.0f);
 
 	ADDLOG_INFO(LOG_FEATURE_SENSOR, "AHT2X_Calibrate: Calibration done temp %f and humidity %f", g_calTemp, g_calHum);
 
@@ -179,13 +185,10 @@ commandResult_t AHT2X_Reinit(const void* context, const char* cmd, const char* a
 
 void AHT2X_Init()
 {
-	g_softI2C.pin_clk = 9;
-	g_softI2C.pin_data = 14;
-	g_softI2C.pin_clk = PIN_FindPinIndexForRole(IOR_AHT2X_CLK, g_softI2C.pin_clk);
-	g_softI2C.pin_data = PIN_FindPinIndexForRole(IOR_AHT2X_DAT, g_softI2C.pin_data);
-
-	channel_temp = g_cfg.pins.channels[g_softI2C.pin_data];
-	channel_humid = g_cfg.pins.channels2[g_softI2C.pin_data];
+	g_softI2C.pin_clk = Tokenizer_GetArgIntegerDefault(1, 9);
+	g_softI2C.pin_data = Tokenizer_GetArgIntegerDefault(2, 14);
+	channel_temp = Tokenizer_GetArgIntegerDefault(3, -1);
+	channel_humid = Tokenizer_GetArgIntegerDefault(4, -1);
 
 	Soft_I2C_PreInit(&g_softI2C);
 	rtos_delay_milliseconds(100);

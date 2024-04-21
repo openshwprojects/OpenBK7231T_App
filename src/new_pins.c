@@ -1510,8 +1510,7 @@ bool CHANNEL_ShouldBePublished(int ch) {
 			if (role == IOR_Relay || role == IOR_Relay_n
 				|| role == IOR_LED || role == IOR_LED_n
 				|| role == IOR_ADC || role == IOR_BAT_ADC
-				|| role == IOR_CHT8305_DAT || role == IOR_SHT3X_DAT
-				|| role == IOR_SGP_DAT || role == IOR_AHT2X_DAT
+				|| role == IOR_CHT8305_DAT || role == IOR_SHT3X_DAT || role == IOR_SGP_DAT
 				|| role == IOR_DigitalInput || role == IOR_DigitalInput_n
 				|| role == IOR_DoorSensorWithDeepSleep || role == IOR_DoorSensorWithDeepSleep_NoPup
 				|| role == IOR_DoorSensorWithDeepSleep_pd
@@ -1525,8 +1524,7 @@ bool CHANNEL_ShouldBePublished(int ch) {
 				return true;
 			}
 			// SGP, CHT8305, SHT3X and AHT2X uses secondary channel for humidity
-			if (role == IOR_CHT8305_DAT || role == IOR_SHT3X_DAT
-				|| role == IOR_SGP_DAT || role == IOR_AHT2X_DAT) {
+			if (role == IOR_CHT8305_DAT || role == IOR_SHT3X_DAT || role == IOR_SGP_DAT) {
 				return true;
 			}
 		}
