@@ -111,6 +111,7 @@
 // parse things like $CH1 or $hour etc
 #define ENABLE_EXPAND_CONSTANT	1
 #define ENABLE_DRIVER_DHT		1
+//#define ENABLE_DRIVER_AHT2X 1
 
 #elif PLATFORM_LN882H
 

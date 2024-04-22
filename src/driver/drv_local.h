@@ -93,6 +93,11 @@ void SHT3X_AppendInformationToHTTPIndexPage(http_request_t* request);
 void SHT3X_OnEverySecond();
 void SHT3X_StopDriver();
 
+void AHT2X_Init();
+void AHT2X_AppendInformationToHTTPIndexPage(http_request_t* request);
+void AHT2X_OnEverySecond();
+void AHT2X_StopDriver();
+
 void SGP_Init();
 void SGP_AppendInformationToHTTPIndexPage(http_request_t* request);
 void SGP_OnEverySecond();
