@@ -2607,6 +2607,8 @@ const char* g_obk_flagNames[] = {
 	"[HTTP] Disable authentication in safe mode (not recommended)",
 	"[MQTT Discovery] Don't merge toggles and dimmers into lights",
 	"[TuyaMCU] Store raw data",
+	"[PWR] Invert AC dir",
+	"error",
 	"error",
 	"error",
 }; 
