@@ -87,7 +87,7 @@ static void ScaleAndUpdate(bl0942_data_t *data) {
     PrevCfCnt = data->cf_cnt;*/
     energyWh = fabsf(PwrCal_ScalePowerOnly(data->cf_cnt)) * 1638.4f * 256.0f / 3600.0f;
     
-	if (CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH)){
+	if (CFG_HasFlag(OBK_FLAG_POWER_INVERT_AC)){
 	BL_ProcessUpdate(voltage, current, (-1*power), frequency, energyWh);}
 	else{
 		BL_ProcessUpdate(voltage, current, power, frequency, energyWh);}
