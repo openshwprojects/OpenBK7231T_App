@@ -198,8 +198,10 @@ typedef int (*beken_thread_function_t)(void *p);
 #include <task.h>
 #include <portable.h>
 #include <semphr.h>
+#include <stdbool.h>
+#include <stdint.h>
 
-typedef int bool;
+//typedef int bool;
 #define true 1
 #define false 0
 
