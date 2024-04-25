@@ -639,14 +639,29 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				}
 				
 			}
-			
-			
-			// For Hourly NetMetering
-			//else if ((check_time == 0)&&(!(net_energy_timer == 1)))
-			// For 15min NetMetering
-			if ((((check_time == 15)||(check_time == 30)||(check_time == 45))&&(min_reset == 1))||(hour_reset == 1))
+
+
+			// Run Netmetering calculations for 60min
+			if (hour_reset == 1)
+			{
+				if ((CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN))&&(!(CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))))
+				reset_counter = 1;
+			}
+			// Run Netmetering calculations for 15min
+			//else if ((((check_time == 15)||(check_time == 30)||(check_time == 45))&&(min_reset == 1)&&(CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))&&(!(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN))))||(hour_reset == 1))
+			else if ((((check_time == 15)||(check_time == 30)||(check_time == 45))&&(min_reset == 1))||(hour_reset == 1))
+			{
+				if  ((CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))&&(!(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN))))
+				{
+				reset_counter = 1;
+				}
+			}
+		
+			//if ((((check_time == 15)||(check_time == 30)||(check_time == 45))&&(min_reset == 1))||(hour_reset == 1))
+			if (reset_counter == 1)
 				{
 				// Reset the timing variables, so this loop runs once.
+				reset_counter = 0;
 				savetoflash = 1;
 				energyCounterMinutesIndex = 0;
 				min_reset = 0;
@@ -817,6 +832,14 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     // We also take advantage of this to save at regular intervals.
     	real_consumption += energy;
 	real_export += generation;     //sensors[OBK_GENERATION_TOTAL].lastReading += generation;
+
+    // Netmetering not enabled? Let's save directly.
+    if (!((CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))&&(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN))))
+	    {
+	    sensors[OBK_CONSUMPTION_TOTAL].lastReading += consumption;
+	    sensors[OBK_GENERATION_TOTAL].lastReading += generation;
+	    }
+	
     energyCounterStamp = xTaskGetTickCount();
     HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
 	sensors[OBK_CONSUMPTION_TODAY].lastReading  += energy;
