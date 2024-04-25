@@ -835,9 +835,9 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	real_export += generation;     //sensors[OBK_GENERATION_TOTAL].lastReading += generation;
 
     // Netmetering not enabled? Let's save directly.
-    if (!((CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))&&(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN))))
+    if (!((CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))&&(CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))&&(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN))))
 	    {
-	    sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy
+	    sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
 	    sensors[OBK_GENERATION_TOTAL].lastReading += generation;
 	    }
 	
