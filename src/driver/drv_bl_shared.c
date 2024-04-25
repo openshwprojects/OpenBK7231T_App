@@ -20,6 +20,7 @@
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
 
+static byte reset_counter = 0;
 static byte savetoflash = 0;
 //static byte mqtt_update = 0;
 static byte flash_overpower = 0;
@@ -836,7 +837,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     // Netmetering not enabled? Let's save directly.
     if (!((CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))&&(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN))))
 	    {
-	    sensors[OBK_CONSUMPTION_TOTAL].lastReading += consumption;
+	    sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy
 	    sensors[OBK_GENERATION_TOTAL].lastReading += generation;
 	    }
 	
