@@ -2608,6 +2608,9 @@ const char* g_obk_flagNames[] = {
 	"[MQTT Discovery] Don't merge toggles and dimmers into lights",
 	"[TuyaMCU] Store raw data",
 	"[PWR] Invert AC dir",
+        "[PWR] NetMetering: 15min",
+	"[PWR] NetMetering: 60min",
+
 	"error",
 	"error",
 	"error",
