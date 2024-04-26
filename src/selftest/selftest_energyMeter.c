@@ -95,6 +95,37 @@ void Test_EnergyMeter_Events() {
 	Sim_RunSeconds(10, false);
 	SELFTEST_ASSERT_CHANNEL(10, 2345);
 
+	// same works for voltage
+	CMD_ExecuteCommand("addChangeHandler Voltage > 251 SetChannel 11 5555", 0);
+	SELFTEST_ASSERT_CHANNEL(11, 0);
+	CMD_ExecuteCommand("SetupTestPower 241 0.36 20 0", 0);
+	Sim_RunSeconds(10, false);
+	SELFTEST_ASSERT_CHANNEL(11, 0);
+	CMD_ExecuteCommand("SetupTestPower 245 0.36 20 0", 0);
+	Sim_RunSeconds(10, false);
+	SELFTEST_ASSERT_CHANNEL(11, 0);
+	// This will trigger - voltage is over 251
+	CMD_ExecuteCommand("SetupTestPower 255 0.36 20 0", 0);
+	Sim_RunSeconds(10, false);
+	SELFTEST_ASSERT_CHANNEL(11, 5555);
+	CMD_ExecuteCommand("SetChannel 11 5", 0);
+	SELFTEST_ASSERT_CHANNEL(11, 5);
+	// no trigger
+	CMD_ExecuteCommand("SetupTestPower 256 0.36 20 0", 0);
+	Sim_RunSeconds(10, false);
+	SELFTEST_ASSERT_CHANNEL(11, 5);
+	// no trigger
+	CMD_ExecuteCommand("SetupTestPower 266 0.36 20 0", 0);
+	Sim_RunSeconds(10, false);
+	SELFTEST_ASSERT_CHANNEL(11, 5);
+	// no trigger
+	CMD_ExecuteCommand("SetupTestPower 276 0.36 20 0", 0);
+	Sim_RunSeconds(10, false);
+	SELFTEST_ASSERT_CHANNEL(11, 5);
+	// no trigger
+	CMD_ExecuteCommand("SetupTestPower 221 0.36 20 0", 0);
+	Sim_RunSeconds(10, false);
+	SELFTEST_ASSERT_CHANNEL(11, 5);
 }
 void Test_EnergyMeter_Tasmota() {
 	SIM_ClearOBK(0);
