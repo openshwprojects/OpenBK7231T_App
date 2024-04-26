@@ -641,16 +641,15 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				
 			}
 
-
-			// Run Netmetering calculations for 60min
-			if (hour_reset == 1)
+			// If netmetering is enabled, we reset every hour.
+			if (((CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))||(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN)))&&(hour_reset == 1))
 			{
-				if ((CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN))&&(!(CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))))
-				reset_counter = 1;
+				reset_counter = 1;		
 			}
-			// Run Netmetering calculations for 15min
+
+			// If Netmetering is set to 15minutes, we need to reset more often.
 			//else if ((((check_time == 15)||(check_time == 30)||(check_time == 45))&&(min_reset == 1)&&(CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))&&(!(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN))))||(hour_reset == 1))
-			else if ((((check_time == 15)||(check_time == 30)||(check_time == 45))&&(min_reset == 1))||(hour_reset == 1))
+			else if ((((check_time == 15)||(check_time == 30)||(check_time == 45)))&&(min_reset == 1))
 			{
 				if  ((CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))&&(!(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN))))
 				{
@@ -835,7 +834,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	real_export += generation;     //sensors[OBK_GENERATION_TOTAL].lastReading += generation;
 
     // Netmetering not enabled? Let's save directly.
-    if (!((CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))&&(CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))&&(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN))))
+    if ((!(CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN)))&&(!(CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)))&&(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN)))
 	    {
 	    sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
 	    sensors[OBK_GENERATION_TOTAL].lastReading += generation;
