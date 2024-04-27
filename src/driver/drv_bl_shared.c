@@ -615,11 +615,11 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			//Make an animation to indicate bypass is on
 			if (dump_load_relay == 4)
 			{
-				flash_overpower ++;
+				//flash_overpower ++;
 				// Indicator On
-				if (flash_overpower > 1) {CMD_ExecuteCommand("setChannel 1 1", 0); flash_overpower = 0;}
+				// if (flash_overpower > 1) {CMD_ExecuteCommand("setChannel 1 1", 0); flash_overpower = 0;}
 				// Indicator Off
-				else {CMD_ExecuteCommand("setChannel 1 0", 0);}
+				// else {CMD_ExecuteCommand("setChannel 1 0", 0);}
 			}
 			
 			// This turns the bypass load off if we are using a lot of power
