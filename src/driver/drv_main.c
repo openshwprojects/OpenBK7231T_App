@@ -42,6 +42,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "tmSensor",	TuyaMCU_Sensor_Init, TuyaMCU_Sensor_RunEverySecond,	NULL, NULL, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_FREEZE
+	//drvdetail:{"name":"FREEZE",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Freeze is a test driver for watchdog. Enabling this will freeze device main loop.",
+	//drvdetail:"requires":""}
+	{ "Freeze",		Freeze_Init,			Freeze_OnEverySecond,			NULL, Freeze_RunFrame, NULL, NULL, false },
+#endif
 #if ENABLE_NTP
 	//drvdetail:{"name":"NTP",
 	//drvdetail:"title":"TODO",
@@ -308,7 +315,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"SGP Air Quality sensor with I2C interface. See [this DIY sensor](https://www.elektroda.com/rtvforum/topic3967174.html) for setup information.",
 	//drvdetail:"requires":""}
 	{ "SGP",	    SGP_Init,		SGP_OnEverySecond,		SGP_AppendInformationToHTTPIndexPage, NULL, SGP_StopDriver, NULL, false },
-
+#if ENABLE_DRIVER_AHT2X
+	//drvdetail:{"name":"AHT2X",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"AHT Humidity/temperature sensor. Supported sensors are: AHT10, AHT2X, AHT30.",
+	//drvdetail:"requires":""}
+	{ "AHT2X",	AHT2X_Init,	AHT2X_OnEverySecond,	AHT2X_AppendInformationToHTTPIndexPage,	NULL,	AHT2X_StopDriver,	NULL,	false },
+#endif
 	//drvdetail:{"name":"ShiftRegister",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Simple Shift Register driver that allows you to map channels to shift register output. See [related topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20533505#20533505)",
@@ -580,7 +593,7 @@ bool DRV_IsMeasuringBattery() {
 
 bool DRV_IsSensor() {
 #ifndef OBK_DISABLE_ALL_DRIVERS
-	return DRV_IsRunning("SHT3X") || DRV_IsRunning("CHT8305") || DRV_IsRunning("SGP");
+	return DRV_IsRunning("SHT3X") || DRV_IsRunning("CHT8305") || DRV_IsRunning("SGP") || DRV_IsRunning("AHT2X");
 #else
 	return false;
 #endif

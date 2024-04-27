@@ -25,6 +25,7 @@
 #define ENABLE_TASMOTADEVICEGROUPS 1
 #define ENABLE_NTP				1
 #define ENABLE_DRIVER_BL0937    1
+#define ENABLE_DRIVER_DHT		1
 
 #elif PLATFORM_W800
 
@@ -59,17 +60,21 @@
 #define ENABLE_NTP_SUNRISE_SUNSET	1
 // parse things like $CH1 or $hour etc
 #define ENABLE_EXPAND_CONSTANT		1
+#define ENABLE_DRIVER_DHT		1
 
 #elif PLATFORM_BL602
 
 // I have enabled drivers on BL602
 #define ENABLE_TASMOTADEVICEGROUPS 1
+#define ENABLE_LITTLEFS			1
 #define ENABLE_NTP    1
 #define ENABLE_DRIVER_LED       1
 #define ENABLE_DRIVER_BL0937    1
 #define ENABLE_DRIVER_BL0942    1
 #define ENABLE_DRIVER_CSE7766   1
 #define ENABLE_DRIVER_WEMO		1
+#define ENABLE_DRIVER_FREEZE	0
+#define ENABLE_DRIVER_DHT		1
 
 #elif PLATFORM_BEKEN
 
@@ -104,7 +109,9 @@
 #define ENABLE_DRIVER_PWM_GROUP 1
 #endif
 // parse things like $CH1 or $hour etc
-#define ENABLE_EXPAND_CONSTANT		1
+#define ENABLE_EXPAND_CONSTANT	1
+#define ENABLE_DRIVER_DHT		1
+//#define ENABLE_DRIVER_AHT2X 1
 
 #elif PLATFORM_LN882H
 
@@ -115,6 +122,7 @@
 #define ENABLE_DRIVER_LED 1
 #define ENABLE_DRIVER_WEMO		1
 #define ENABLE_DRIVER_HUE		1
+#define ENABLE_DRIVER_DHT		1
 
 #else
 

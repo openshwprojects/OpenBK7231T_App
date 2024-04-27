@@ -97,7 +97,15 @@ void HAL_PrintNetworkInfo()
 
 	struct tls_ethif* tmpethif = tls_netif_get_ethif();
 	char buffer[256];
-	wm_vsnprintf(buffer, 256, "ip=%v,gate=%v,mask=%v,dns=%v\r\n", &tmpethif->ip_addr, &tmpethif->gw, &tmpethif->netmask, &tmpethif->dns1);
+	char ip[16] = {0};
+	strcpy(ip, inet_ntoa(tmpethif->ip_addr));
+	char gw[16] = {0};
+	strcpy(gw, inet_ntoa(tmpethif->gw));
+	char netmask[16] = {0};
+	strcpy(netmask, inet_ntoa(tmpethif->netmask));
+	char dns[16] = {0};
+	strcpy(dns, inet_ntoa(tmpethif->dns1));
+	snprintf(buffer, 256, "ip=%s,gate=%s,mask=%s,dns=%s\r\n", ip, gw, netmask, dns);
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, buffer);
 }
 
@@ -105,7 +113,7 @@ int HAL_GetWifiStrength()
 {
 	struct tls_curr_bss_t bss;
 	tls_wifi_get_current_bss(&bss);
-	return bss.rssi;
+	return (signed char)(0x100-bss.rssi); //this is adjusted according to example
 }
 
 static void apsta_net_status(u8 status)
@@ -158,7 +166,7 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 	g_wifiStatusCallback = cb;
 	tls_netif_add_status_event(apsta_net_status);
 }
-static int connect_wifi_demo(char* ssid, char* pwd)
+static int connect_wifi_demo(char* ssid, char* pwd, obkStaticIP_t *ip)
 {
 	int ret;
 	struct tls_param_ip* ip_param = NULL;
@@ -183,7 +191,17 @@ static int connect_wifi_demo(char* ssid, char* pwd)
 	if (ip_param)
 	{
 		tls_param_get(TLS_PARAM_ID_IP, ip_param, FALSE);
-		ip_param->dhcp_enable = TRUE;
+		if (ip->localIPAddr[0] == 0) {
+			ip_param->dhcp_enable = TRUE;
+		}
+		else {
+			ip_param->dhcp_enable = FALSE;
+			MEMCPY(ip_param->ip, ip->localIPAddr, 4);
+			MEMCPY(ip_param->netmask, ip->netMask, 4);
+			MEMCPY(ip_param->gateway, ip->gatewayIPAddr, 4);
+			MEMCPY(ip_param->dns1, ip->dnsServerIpAddr, 4);
+			MEMCPY(ip_param->dns2, ip->dnsServerIpAddr, 4);
+		}
 		tls_param_set(TLS_PARAM_ID_IP, ip_param, FALSE);
 		tls_mem_free(ip_param);
 	}
@@ -199,7 +217,7 @@ static int connect_wifi_demo(char* ssid, char* pwd)
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip)
 {
 	g_bOpenAccessPointMode = 0;
-	connect_wifi_demo(oob_ssid, connect_key);
+	connect_wifi_demo(oob_ssid, connect_key, ip);
 }
 
 void HAL_DisconnectFromWifi()

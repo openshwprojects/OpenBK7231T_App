@@ -5,8 +5,7 @@ ifdef COMPILE_PREX
 all:
 	@echo Calling original build_app.sh script
 	mkdir -p output
-	if [ ! -d "$(MBEDTLS)" ]; then wget -q "https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v2.28.5.tar.gz"; tar -xf v2.28.5.tar.gz -C output; rm -f v2.28.5.tar.gz; fi	
-	mv $(MBEDTLS)/library/base64.c $(MBEDTLS)/library/base64_mbedtls.c
+	if [ ! -d "$(MBEDTLS)" ]; then wget -q "https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v2.28.5.tar.gz"; tar -xf v2.28.5.tar.gz -C output; rm -f v2.28.5.tar.gz; mv $(MBEDTLS)/library/base64.c $(MBEDTLS)/library/base64_mbedtls.c; fi
 	cd $(PWD)/../../platforms/$(TARGET_PLATFORM)/toolchain/$(TUYA_APPS_BUILD_PATH) && sh $(TUYA_APPS_BUILD_CMD) $(APP_NAME) $(APP_VERSION) $(TARGET_PLATFORM) $(USER_CMD)
 else
 
@@ -82,14 +81,12 @@ sdk/OpenLN882H/project/OpenBeken/app:
 # Build main binaries
 OpenBK7231T:
 	mkdir -p output
-	if [ ! -d "$(MBEDTLS)" ]; then wget -q "https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v2.28.5.tar.gz"; tar -xf v2.28.5.tar.gz -C output; rm -f v2.28.5.tar.gz; fi	
-	mv $(MBEDTLS)/library/base64.c $(MBEDTLS)/library/base64_mbedtls.c
+	if [ ! -d "$(MBEDTLS)" ]; then wget -q "https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v2.28.5.tar.gz"; tar -xf v2.28.5.tar.gz -C output; rm -f v2.28.5.tar.gz; mv $(MBEDTLS)/library/base64.c $(MBEDTLS)/library/base64_mbedtls.c; fi 
 	$(MAKE) APP_NAME=OpenBK7231T TARGET_PLATFORM=bk7231t SDK_PATH=sdk/OpenBK7231T APPS_BUILD_PATH=../bk7231t_os build-BK7231
 
 OpenBK7231N:
 	mkdir -p output
-	if [ ! -d "$(MBEDTLS)" ]; then wget -q "https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v2.28.5.tar.gz"; tar -xf v2.28.5.tar.gz -C output; rm -f v2.28.5.tar.gz; fi	
-	mv $(MBEDTLS)/library/base64.c $(MBEDTLS)/library/base64_mbedtls.c
+	if [ ! -d "$(MBEDTLS)" ]; then wget -q "https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v2.28.5.tar.gz"; tar -xf v2.28.5.tar.gz -C output; rm -f v2.28.5.tar.gz; mv $(MBEDTLS)/library/base64.c $(MBEDTLS)/library/base64_mbedtls.c; fi
 	$(MAKE) APP_NAME=OpenBK7231N TARGET_PLATFORM=bk7231n SDK_PATH=sdk/OpenBK7231N APPS_BUILD_PATH=../bk7231n_os build-BK7231
 
 sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q2:

@@ -7,7 +7,12 @@
 #ifndef LFS_UTIL_H
 #define LFS_UTIL_H
 
+#if PLATFORM_BEKEN
 #include "mem_pub.h"
+#elif PLATFORM_BL602
+#define os_free free
+#define os_malloc malloc
+#endif
 
 // Users can override lfs_util.h with their own configuration by defining
 // LFS_CONFIG as a header file to include (-DLFS_CONFIG=lfs_config.h).

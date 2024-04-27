@@ -21,7 +21,19 @@ static int tok_flags = 0;
 #define g_bAllowExpand (!(tok_flags&TOKENIZER_DONT_EXPAND))
 
 int str_to_ip(const char *s, byte *ip) {
+#if PLATFORM_W600
+	//seems like sscanf in W600 does not support %hhu and uses it as %u, thus overwriting more memory, use temp array for it
+	int tmp_ip[4];
+	int res; 
+	res = sscanf(s, IP_STRING_FORMAT, &tmp_ip[0], &tmp_ip[1], &tmp_ip[2], &tmp_ip[3]);
+	ip[0]=tmp_ip[0];
+	ip[1]=tmp_ip[1];
+	ip[2]=tmp_ip[2];
+	ip[3]=tmp_ip[3];
+	return res;
+#else
 	return sscanf(s, IP_STRING_FORMAT, &ip[0], &ip[1], &ip[2], &ip[3]);
+#endif
 }
 void convert_IP_to_string(char *o, unsigned char *ip) {
 	sprintf(o, IP_STRING_FORMAT, ip[0], ip[1], ip[2], ip[3]);
@@ -203,6 +215,16 @@ int Tokenizer_GetArgIntegerDefault(int i, int def) {
 		return def;
 	}
 	r = Tokenizer_GetArgInteger(i);
+
+	return r;
+}
+float Tokenizer_GetArgFloatDefault(int i, float def) {
+	float r;
+
+	if (g_numArgs <= i) {
+		return def;
+	}
+	r = Tokenizer_GetArgFloat(i);
 
 	return r;
 }

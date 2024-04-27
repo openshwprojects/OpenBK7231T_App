@@ -8,14 +8,23 @@
 *****************************************************************************/
 
 #include "../new_common.h"
-#include "typedef.h"
 #include "our_lfs.h"
 #include "../logging/logging.h"
-#include "flash_pub.h"
 #include "../new_cfg.h"
 #include "../new_cfg.h"
 #include "../cmnds/cmd_public.h"
 
+#if PLATFORM_BEKEN || WINDOWS
+
+#include "typedef.h"
+#include "flash_pub.h"
+
+#elif PLATFORM_BL602
+
+#include <bl_flash.h>
+#include <bl_mtd.h>
+
+#endif
 
 
 //https://github.com/littlefs-project/littlefs
@@ -31,9 +40,11 @@ lfs_t lfs;
 lfs_file_t file;
 
 // from flash.c
+#if PLATFORM_BEKEN
 extern UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address);
 extern UINT32 flash_write(char *user_buf, UINT32 count, UINT32 address);
 extern UINT32 flash_ctrl(UINT32 cmd, void *parm);
+#endif 
 
 #ifdef LFS_BOOTCOUNT
 int boot_count = -1;
@@ -371,6 +382,27 @@ void init_lfs(int create){
             return;
         }
 
+	#if PLATFORM_BL602
+	// ensure we have media partition at correct place, because it can change depending on bldevcube version
+	// this supports 1.4.8
+	    
+	int ret;
+    	bl_mtd_info_t info;
+	bl_mtd_handle_t handle;
+
+    	ret = bl_mtd_open(BL_MTD_PARTITION_NAME_ROMFS, &handle, BL_MTD_OPEN_FLAG_BUSADDR);
+    	if (ret < 0) {
+		ADDLOGF_ERROR("LFS media partition not found %d", ret);
+		return;
+	}
+    	memset(&info, 0, sizeof(info));
+        bl_mtd_info(handle, &info);
+	if (info.offset != LFS_BLOCKS_START ){
+		ADDLOGF_ERROR("LFS media partition position 0x%X while expected is 0x%X", info.offset, LFS_BLOCKS_START);
+		return;
+	}
+	#endif
+
         LFS_Start = newstart;
         LFS_Size = newsize;
         cfg.block_count = (newsize/LFS_BLOCK_SIZE);
@@ -427,6 +459,7 @@ void release_lfs(){
 }
 
 
+#if PLATFORM_BEKEN || WINDOWS
 // Read a region in a block. Negative error codes are propogated
 // to the user.
 static int lfs_read(const struct lfs_config *c, lfs_block_t block,
@@ -486,6 +519,50 @@ static int lfs_erase(const struct lfs_config *c, lfs_block_t block){
     GLOBAL_INT_RESTORE();
     return res;
 }
+#elif PLATFORM_BL602
+
+static int lfs_read(const struct lfs_config *c, lfs_block_t block,
+        lfs_off_t off, void *buffer, lfs_size_t size){
+    int res;
+    unsigned int startAddr = LFS_Start;
+    startAddr += block*LFS_BLOCK_SIZE;
+    startAddr += off;
+    res = bl_flash_read(startAddr, (uint8_t *)buffer, size );
+    return res;
+}
+
+// Program a region in a block. The block must have previously
+// been erased. Negative error codes are propogated to the user.
+// May return LFS_ERR_CORRUPT if the block should be considered bad.
+static int lfs_write(const struct lfs_config *c, lfs_block_t block,
+        lfs_off_t off, const void *buffer, lfs_size_t size){
+    int res;
+    unsigned int startAddr = LFS_Start;
+
+
+    startAddr += block*LFS_BLOCK_SIZE;
+    startAddr += off;
+
+	res = bl_flash_write(startAddr, (uint8_t *)buffer, size );
+
+
+    return res;
+}
+
+// Erase a block. A block must be erased before being programmed.
+// The state of an erased block is undefined. Negative error codes
+// are propogated to the user.
+// May return LFS_ERR_CORRUPT if the block should be considered bad.
+static int lfs_erase(const struct lfs_config *c, lfs_block_t block){
+    int res;
+    unsigned int startAddr = LFS_Start;
+    startAddr += block*LFS_BLOCK_SIZE;
+    res =  bl_flash_erase(startAddr, LFS_BLOCK_SIZE);
+    return res;
+}
+
+
+#endif 
 
 // Sync the state of the underlying block device. Negative error codes
 // are propogated to the user.

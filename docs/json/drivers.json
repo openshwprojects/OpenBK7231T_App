@@ -12,6 +12,12 @@
     "requires": ""
   },
   {
+    "name": "FREEZE",
+    "title": "TODO",
+    "descr": "Freeze is a test driver for watchdog. Enabling this will freeze device main loop.",
+    "requires": ""
+  },
+  {
     "name": "NTP",
     "title": "TODO",
     "descr": "NTP driver is required to get current time and date from web. Without it, there is no correct datetime. Put 'startDriver NTP' in short startup line or autoexec.bat to run it on start.",

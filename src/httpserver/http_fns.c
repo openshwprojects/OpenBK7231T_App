@@ -774,7 +774,8 @@ int http_fn_index(http_request_t* request) {
 	}
 	if (Main_HasWiFiConnected())
 	{
-		hprintf255(request, "<h5>Wifi RSSI: %s (%idBm)</h5>", str_rssi[wifi_rssi_scale(HAL_GetWifiStrength())], HAL_GetWifiStrength());
+		int rssi = HAL_GetWifiStrength();
+		hprintf255(request, "<h5>Wifi RSSI: %s (%idBm)</h5>", str_rssi[wifi_rssi_scale(rssi)], rssi);
 	}
 #if PLATFORM_BEKEN
 	/*
@@ -814,6 +815,19 @@ typedef enum {
 	char reason[26];
 	bl_sys_rstinfo_getsting(reason);
 	hprintf255(request, "<h5>Reboot reason: %s</h5>", reason);
+#elif PLATFORM_LN882H
+	// type is chip_reboot_cause_t
+	g_rebootReason = ln_chip_get_reboot_cause();
+	{
+		const char* s = "Unk";
+		if (g_rebootReason == 0)
+			s = "Pwr";
+		else if (g_rebootReason == 1)
+			s = "Soft";
+		else if (g_rebootReason == 2)
+			s = "Wdt";
+		hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", g_rebootReason, s);
+	}
 #endif
 	if (CFG_GetMQTTHost()[0] == 0) {
 		hprintf255(request, "<h5>MQTT State: not configured<br>");
@@ -918,7 +932,7 @@ typedef enum {
 int http_fn_about(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "About");
-	poststr_h2(request, "Open source firmware for BK7231N, BK7231T, XR809 and BL602 by OpenSHWProjects");
+	poststr_h2(request, "Open source firmware for BK7231N, BK7231T, T34, BL2028N, XR809, W600/W601, W800/W801, BL602, LF686 and LN882H by OpenSHWProjects");
 	poststr(request, htmlFooterReturnToMainPage);
 	http_html_end(request);
 	poststr(request, NULL);
@@ -2639,10 +2653,12 @@ const char* g_obk_flagNames[] = {
 	"[HTTP] Disable authentication in safe mode (not recommended)",
 	"[MQTT Discovery] Don't merge toggles and dimmers into lights",
 	"[TuyaMCU] Store raw data",
+	"[TuyaMCU] Store ALL data",
+	"[PWR] Invert AC dir",
+	"error",
 	"error",
 	"error",
 }; 
-
 int http_fn_cfg_generic(http_request_t* request) {
 	int i;
 	char tmpA[64];

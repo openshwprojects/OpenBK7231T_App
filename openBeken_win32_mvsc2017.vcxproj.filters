@@ -327,6 +327,7 @@
     <ClCompile Include="src\win_stubs.c" />
     <ClCompile Include="src\selftest\selftest_http_led.c" />
     <ClCompile Include="src\driver\drv_max6675.c" />
+    <ClCompile Include="src\driver\drv_freeze.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\base64\base64.h" />

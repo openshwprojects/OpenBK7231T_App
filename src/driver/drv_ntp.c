@@ -69,8 +69,8 @@ static bool g_synced;
 // time offset (time zone?) in seconds
 //#define CFG_DEFAULT_TIMEOFFSETSECONDS (-8 * 60 * 60)
 static int g_timeOffsetSeconds = 0;
-// current time
-unsigned int g_ntpTime;
+// current time - this may be 32 or 64 bit, depending on platform
+time_t g_ntpTime;
 
 int NTP_GetTimesZoneOfsSeconds()
 {
@@ -189,7 +189,7 @@ int NTP_GetWeekDay() {
 	struct tm *ltm;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime((time_t*)&g_ntpTime);
+	ltm = gmtime(&g_ntpTime);
 
 	if (ltm == 0) {
 		return 0;
@@ -201,7 +201,7 @@ int NTP_GetHour() {
 	struct tm *ltm;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime((time_t*)&g_ntpTime);
+	ltm = gmtime(&g_ntpTime);
 
 	if (ltm == 0) {
 		return 0;
@@ -213,7 +213,7 @@ int NTP_GetMinute() {
 	struct tm *ltm;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime((time_t*)&g_ntpTime);
+	ltm = gmtime(&g_ntpTime);
 
 	if (ltm == 0) {
 		return 0;
@@ -225,7 +225,7 @@ int NTP_GetSecond() {
 	struct tm *ltm;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime((time_t*)&g_ntpTime);
+	ltm = gmtime(&g_ntpTime);
 
 	if (ltm == 0) {
 		return 0;
@@ -237,7 +237,7 @@ int NTP_GetMDay() {
 	struct tm *ltm;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime((time_t*)&g_ntpTime);
+	ltm = gmtime(&g_ntpTime);
 
 	if (ltm == 0) {
 		return 0;
@@ -249,7 +249,7 @@ int NTP_GetMonth() {
 	struct tm *ltm;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime((time_t*)&g_ntpTime);
+	ltm = gmtime(&g_ntpTime);
 
 	if (ltm == 0) {
 		return 0;
@@ -261,7 +261,7 @@ int NTP_GetYear() {
 	struct tm *ltm;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime((time_t*)&g_ntpTime);
+	ltm = gmtime(&g_ntpTime);
 
 	if (ltm == 0) {
 		return 0;
@@ -440,9 +440,9 @@ void NTP_CheckForReceive() {
 
     g_ntpTime = secsSince1900 - NTP_OFFSET;
     g_ntpTime += g_timeOffsetSeconds;
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time  : %u",g_ntpTime);
-    ltm = gmtime((time_t*)&g_ntpTime);
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Local Time : %04d/%02d/%02d %02d:%02d:%02d",
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time  : %u",(unsigned int)g_ntpTime);
+    ltm = gmtime(&g_ntpTime);
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Local Time : %04d-%02d-%02d %02d:%02d:%02d",
             ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
 
 	if (g_synced == false) {
@@ -520,10 +520,10 @@ void NTP_AppendInformationToHTTPIndexPage(http_request_t* request)
 {
     struct tm *ltm;
 
-    ltm = gmtime((time_t*)&g_ntpTime);
+    ltm = gmtime(&g_ntpTime);
 
     if (g_synced == true)
-        hprintf255(request, "<h5>NTP (%s): Local Time: %04d/%02d/%02d %02d:%02d:%02d </h5>",
+        hprintf255(request, "<h5>NTP (%s): Local Time: %04d-%02d-%02d %02d:%02d:%02d </h5>",
 			CFG_GetNTPServer(),ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
     else 
         hprintf255(request, "<h5>NTP: Syncing with %s....</h5>",CFG_GetNTPServer());
