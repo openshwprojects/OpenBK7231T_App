@@ -176,11 +176,11 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			
 			poststr(request, "<table>");
 			// Table Format and headers
-			//poststr(request, "<tr><b>");
+			//poststr(request, "<tr>");
 			poststr(request, "<b><tr><th>Time </th>");
 			poststr(request, "<th>Consumption </th>");
 			poststr(request, "<th>Export </th>");
-			poststr(request, "<th>Net Metering </th></tr></b>");
+			poststr(request, "<th>Net Metering </th></tr>");
 
 			// First field: Time
 			poststr(request, "<tr>");
@@ -189,10 +189,13 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				//hprintf255(request, "<th>Consumption </th>");
 				//poststr(request, "<th>Net Metering </th></tr>,</b>");
 				hprintf255(request, "<td> %i:00 </td>", q);
+				hprintf255(request, "<td> %iW </td>", consumption_matrix[q]);
+				hprintf255(request, "<td> %iW </td>", export_matrix[q]);
+				hprintf255(request, "<td> %iW </td>", net_matrix[q]);
 			}
 			poststr(request, "</tr>");
 	
-			// Second Field: Consumption Stats
+			/*// Second Field: Consumption Stats
 			poststr(request, "<tr>");
 			for (int q=0; q<24; q++)
 			{
@@ -213,7 +216,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			for (int q=0; q<24; q++)
 			{
 				hprintf255(request, "<td> %iW </td>", net_matrix[q]);
-			}
+			}*/
 			poststr(request, "</tr></table>");
 
 
