@@ -391,6 +391,28 @@ class CShape *PrefabManager::generateStrip_RGBCW() {
 	}
 	return o;
 }
+class CShape *PrefabManager::generateWS2812B() {
+
+	float bulb_radius = 20.0f;
+
+	CShape *o = new CShape();
+	o->addText(-40, -25, "WS2812");
+	o->setName("WS2812");
+	CShape *filler = o->addRect(-bulb_radius,-bulb_radius, bulb_radius*2, bulb_radius*2);
+	CShape *body = o->addRect(-bulb_radius, -bulb_radius, bulb_radius * 2, bulb_radius * 2);
+	filler->setFill(true);
+	CJunction *a = o->addJunction(-bulb_radius, 0);
+	a->setName("A");
+	a->addText(-5, -5, "");
+	CJunction *b = o->addJunction(bulb_radius, 0);
+	b->setName("B");
+	b->addText(-25, -5, "");
+	CControllerBulb *bulb = new CControllerBulb(a, b);
+	o->setController(bulb);
+	filler->setName("internal_bulb_filler");
+	bulb->setShape(filler);
+	return o;
+}
 class CShape *PrefabManager::generateStrip_RGB() {
 	float bulb_radius = 20.0f;
 
@@ -465,6 +487,7 @@ void PrefabManager::createDefaultPrefabs() {
 	addPrefab(generateVDD());
 	addPrefab(generateBL0942());
 	addPrefab(generatePot());
+	addPrefab(generateWS2812B());
 }
 
 
