@@ -34,6 +34,19 @@ void Test_WS2812B() {
 	CMD_ExecuteCommand("SM16703P_SetPixel 1 10+$CH5 2*33+10 44/4", 0);
 	SELFTEST_ASSERT_PIXEL(1, 10+ 124, 2 * 33+10, 44/4);
 
+	CMD_ExecuteCommand("SM16703P_Init 6", 0);
+	CMD_ExecuteCommand("SM16703P_SetPixel 0 255 0 0", 0);
+	CMD_ExecuteCommand("SM16703P_SetPixel 1 0 255 0", 0);
+	CMD_ExecuteCommand("SM16703P_SetPixel 2 0 0 255", 0);
+	CMD_ExecuteCommand("SM16703P_SetPixel 3 255 0 0", 0);
+	CMD_ExecuteCommand("SM16703P_SetPixel 4 0 255 0", 0);
+	CMD_ExecuteCommand("SM16703P_SetPixel 5 0 0 255", 0);
+	SELFTEST_ASSERT_PIXEL(0, 255, 0, 0);
+	SELFTEST_ASSERT_PIXEL(1, 0, 255, 0);
+	SELFTEST_ASSERT_PIXEL(2, 0, 0, 255);
+	SELFTEST_ASSERT_PIXEL(3, 255, 0, 0);
+	SELFTEST_ASSERT_PIXEL(4, 0, 255, 0);
+	SELFTEST_ASSERT_PIXEL(5, 0, 0, 255);
 }
 
 
