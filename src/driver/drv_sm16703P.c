@@ -1,14 +1,5 @@
-#if PLATFORM_BK7231N
+#if PLATFORM_BK7231N || WINDOWS
 
-#include "arm_arch.h"
-#include "drv_model_pub.h"
-#include "gpio.h"
-#include "gpio_pub.h"
-#include "icu_pub.h"
-#include "include.h"
-#include "intc_pub.h"
-#include "sys_ctrl_pub.h"
-#include "uart_pub.h"
 
 #include "../new_cfg.h"
 #include "../new_common.h"
@@ -21,6 +12,20 @@
 #include "../mqtt/new_mqtt.h"
 
 #include "drv_spidma.h"
+
+#if WINDOWS
+
+void SPIDMA_Init(struct spi_message *spi_msg) {
+
+}
+void SPIDMA_StartTX(struct spi_message *spi_msg) {
+
+}
+void SPIDMA_StopTX(void) {
+
+}
+
+#endif
 
 static uint8_t data_translate[4] = {0b10001000, 0b10001110, 0b11101000, 0b11101110};
 
@@ -333,7 +338,7 @@ void SM16703P_Init() {
 	initialized = false;
 
 	uint32_t val;
-
+#if PLATFORM_BK7231N
 	val = GFUNC_MODE_SPI_USE_GPIO_14;
 	sddev_control(GPIO_DEV_NAME, CMD_GPIO_ENABLE_SECOND, &val);
 
@@ -346,7 +351,10 @@ void SM16703P_Init() {
 
 	param = PWD_SPI_CLK_BIT;
 	sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_UP, &param);
+#else
 
+
+#endif
 	//cmddetail:{"name":"SM16703P_Init","args":"[NumberOfLEDs][ColorOrder]",
 	//cmddetail:"descr":"This will setup LED driver for a strip with given number of LEDs. Please note that it also works for WS2812B and similiar LEDs. You can optionally set the color order with either RGB, RBG, BRG, BGB, GRB or GBR (default RGB). See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_sm16703P.c","requires":"",

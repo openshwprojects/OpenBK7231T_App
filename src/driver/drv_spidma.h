@@ -1,7 +1,35 @@
 #pragma once
 
 #include "../new_common.h"
+
+#if PLATFORM_BK7231N 
+
+#include "arm_arch.h"
+#include "drv_model_pub.h"
+#include "gpio.h"
+#include "gpio_pub.h"
+#include "icu_pub.h"
+#include "include.h"
+#include "intc_pub.h"
+#include "sys_ctrl_pub.h"
+#include "uart_pub.h"
 #include "spi_pub.h"
+
+#elif WINDOWS
+
+struct spi_message
+{
+	UINT8*send_buf;
+	UINT32 send_len;
+
+	UINT8*recv_buf;
+	UINT32 recv_len;
+};
+
+typedef int beken_semaphore_t;
+typedef int beken_mutex_t;
+
+#endif
 
 #define SPI_TX_DMA_CHANNEL GDMA_CHANNEL_3
 

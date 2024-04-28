@@ -131,6 +131,7 @@ void SIM_ClearOBK(const char *flashPath) {
 }
 void Win_DoUnitTests() {
 
+	Test_WS2812B();
 	Test_Command_If_Else();
 	Test_MQTT();
 	Test_ChargeLimitDriver();

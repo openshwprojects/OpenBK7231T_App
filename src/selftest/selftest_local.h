@@ -129,6 +129,7 @@ void Test_IF_Inside_Backlog();
 void Test_MQTT_Get_LED_EnableAll();
 void Test_TuyaMCU_BatteryPowered();
 void Test_ChargeLimitDriver();
+void Test_WS2812B();
 
 void Test_GetJSONValue_Setup(const char *text);
 void Test_FakeHTTPClientPacket_GET(const char *tg);
