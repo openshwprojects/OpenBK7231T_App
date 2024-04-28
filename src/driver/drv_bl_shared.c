@@ -1,5 +1,6 @@
 // Last working on 13/04/24 - Sometimes locks during generation
 
+int power_matrix [24][24][24] = {0};
 #include "drv_bl_shared.h"
 
 #include "../new_cfg.h"
@@ -141,6 +142,35 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
     } else {
         mode = "PWR";
     }
+
+
+//--
+
+poststr(request, "<hr><table style='width:100%'>");
+	
+//	int main(int argc, char* argv[]) {
+
+   // int cube_matrix[24][24][24] = {1,2,3,4,5,6,7,8,9,10};
+    int i, j, k;
+
+    for (i=0; i<24; i++) 
+            for (j=0; j<24; j++)
+                    for (k=0; k<24; k++)
+			    {
+			   
+			poststr(request, "<tr><td><b>");
+			poststr(request, sensors[i].names.name_friendly);
+			poststr(request, "</b></td><td style='text-align: right;'>");
+                        printf("%i %i %i: %i\n", i, j, k, cube_matrix[i][j][k]);
+			    }
+}
+
+// Close the table
+	poststr(request, "</table>");
+	
+	//------------------------
+	//--
+	
 
     poststr(request, "<hr><table style='width:100%'>");
 
