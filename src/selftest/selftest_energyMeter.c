@@ -126,6 +126,10 @@ void Test_EnergyMeter_Events() {
 	CMD_ExecuteCommand("SetupTestPower 221 0.36 20 0", 0);
 	Sim_RunSeconds(10, false);
 	SELFTEST_ASSERT_CHANNEL(11, 5);
+	// This will trigger - voltage is over 251
+	CMD_ExecuteCommand("SetupTestPower 255 0.36 20 0", 0);
+	Sim_RunSeconds(10, false);
+	SELFTEST_ASSERT_CHANNEL(11, 5555);
 }
 void Test_EnergyMeter_Tasmota() {
 	SIM_ClearOBK(0);
