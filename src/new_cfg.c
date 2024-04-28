@@ -32,6 +32,30 @@ int g_cfg_pendingChanges = 0;
 #define MAIN_CFG_VERSION 5
 #endif
 
+
+#if ENABLE_LOCAL_CLOCK_ADVANCED
+/// default set to EU TZ and DST
+#define CLOCK_SETTINGS_DEFAULT 111728867327873328
+/*
+//this uint64_t value equals to 
+union DST g_clocksettings={
+.DST_H = 0,
+.DST_Ws = 0,
+.DST_Ms = 3,
+.DST_Ds = 1,
+.DST_hs = 2,
+.Tstd = 60,
+.DST_We = 0,
+.DST_Me = 10,
+.DST_De = 1,
+.DST_he = 3,
+.Tdst = 60,
+.TZ = 99	// use DST
+};
+*/
+#endif
+
+
 static byte CFG_CalcChecksum(mainConfig_t *inf) {
 	int header_size;
 	int remaining_size;
@@ -154,6 +178,10 @@ void CFG_SetDefaultConfig() {
 #endif
 
 	strcpy(g_cfg.ntpServer, DEFAULT_NTP_SERVER);
+#if ENABLE_LOCAL_CLOCK_ADVANCED
+	g_cfg.CLOCK_SETTINGS = CLOCK_SETTINGS_DEFAULT;
+	g_clocksettings.value = CLOCK_SETTINGS_DEFAULT;
+#endif
 
 	
 	// default value is 5, which means 500ms
@@ -703,6 +731,21 @@ uint32_t CFG_GetLFS_Size() {
 		size = LFS_BLOCKS_DEFAULT_LEN;
 	}
 	return size;
+}
+#endif
+#if ENABLE_LOCAL_CLOCK_ADVANCED
+void CFG_SetCLOCK_SETTINGS(uint64_t value) {
+	if(g_cfg.CLOCK_SETTINGS != value) {
+		g_cfg.CLOCK_SETTINGS = value;
+		g_cfg_pendingChanges++;
+	}
+}
+uint64_t CFG_GetCLOCK_SETTINGS() {
+	uint64_t conf = g_cfg.CLOCK_SETTINGS;
+	if (conf == 0){
+		conf = CLOCK_SETTINGS_DEFAULT;
+	}
+	return conf;
 }
 #endif
 

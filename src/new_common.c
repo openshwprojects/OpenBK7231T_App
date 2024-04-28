@@ -1,6 +1,13 @@
 #include "new_common.h"
+#if ENABLE_LOCAL_CLOCK_ADVANCED
+#include "new_cfg.h" // for CFG_SetCLOCK_SETTINGS() - used in CMD_CLOCK_SetConfig()
+#include <time.h>
+// Commands register, execution API and cmd tokenizer
+#include "cmnds/cmd_public.h"
+#endif
 #include <stdio.h>
 #include <stdlib.h>
+#include "logging/logging.h"
 
 const char *str_rssi[] = { "N/A", "Weak", "Fair", "Good", "Excellent" };
 
@@ -353,6 +360,8 @@ WIFI_RSSI_LEVEL wifi_rssi_scale(int8_t rssi_value)
 // "eoch" on startup of device; If we add g_secondsElapsed we get the actual time  
 #if ENABLE_LOCAL_CLOCK
 uint32_t g_epochOnStartup = 0;
+
+
 #endif
 // UTC offset
 int g_UTCoffset = 0;
@@ -364,8 +373,14 @@ uint32_t g_next_dst_change=0;
 #endif
 
 TickType_t lastTick=0;
-uint8_t timer_rollovers=0; // I don't expect uptime > 35 years ...
-
+// it's a pitty we cant use rtos' "xNumOfOverflows" here, but its not accessable, so we need to take care of owerflows here
+// a 32 bit TickType_t counter of ms will rollover after (4294836225÷1000÷3600÷24=49,7088) ~ 49,7 days we should expect uptimes 
+// bigger than this value!
+//
+// I don't expect uptime > 35 years, so uint8_t could be sufficient if TickType_t is 32 bit ( 255×4294967295 ms = 1,09521666×10¹² ms = 1095216660 s ~ 12676 days ~ 34,7 years)
+// but just to be sure use uint16_t (65535 x 4294967295 ms = 2,814706817×10¹⁴ ms = 281470681677,825 s ~ 3257762 days ~ 8919 years)
+// if TickType_t is also uint16_t it will last for approx 50 days, while uint8_t will rollover after 4,65 hours !! 
+uint16_t timer_rollovers=0; 
 
 
 // g_secondsElapsed is drifting of after some time (for me it was ~ 1 to 2 minutes (!) a day)
@@ -383,12 +398,16 @@ uint32_t getSecondsElapsed(){
 	 // no problem for the usual choice of TickType_t = uint32_t:
 	 // 	rollover will take place after 4294967295 ms (almost 50 days)
 	 // but it might be a more of challenge for uint16_t its with only 65535 ms (one Minute and 5 seconds)!! 
-	 if (actTick < lastTick ) timer_rollovers++;
+	 if (actTick < lastTick ){
+		timer_rollovers++;
+		ADDLOG_INFO(LOG_FEATURE_RAW, "\r\n\r\nCLOCK: Rollover of tick counter! Actual value of timer_rollovers=%u \r\n\r\n",timer_rollovers);
+
+	 }
 	 lastTick = actTick;
 	 // 
 	 // version 1 :
 	 // use the time also to adjust g_secondsElapsed 
-	 g_secondsElapsed = (uint32_t)(((uint64_t) timer_rollovers << 32 | actTick) / 1000 );
+	 g_secondsElapsed = (uint32_t)(((uint64_t) timer_rollovers << (sizeof(TickType_t)*8) | actTick) / 1000 );
 	 return  g_secondsElapsed;
 	 // 
 	 // possible version 2 :
@@ -472,110 +491,309 @@ int Clock_GetTimesZoneOfsSeconds()			// ... and for NTP_GetTimesZoneOfsSeconds()
 }
 
 #if ENABLE_LOCAL_CLOCK_ADVANCED
-// handle daylight saving time
-// here for EU, might be changed to other regions by giving the correct
-// moments, when DST changes
+// handle daylight saving time and so on
 
-// table of epoch timestamps, when DST events take place (DST starts or ends)
-// there are some constraints to the table to work:
-// - the timestamps in the table must be in desending order to work properly
-// - for every Dst period, both timestamps (end and start) must be present
-// --> since the entries are in desneding order, every pair is "DST end" "DST start"
-//
-// so every time on an "even" index is "DST end", every "odd" entry is "DST start" 
-// 
-// timestamps for EU 
-uint32_t dst_switch_times[]={
-2550704400, 2531955600,  // 2050: 30.10.2050 (2550704400) , 27.3.2050 (2531955600)
-2519254800, 2500506000,  // 2049: 31.10.2049 (2519254800) , 28.3.2049 (2500506000)
-2487200400, 2469056400,  // 2048: 25.10.2048 (2487200400) , 29.3.2048 (2469056400)
-2455750800, 2437606800,  // 2047: 27.10.2047 (2455750800) , 31.3.2047 (2437606800)
-2424301200, 2405552400,  // 2046: 28.10.2046 (2424301200) , 25.3.2046 (2405552400)
-2392851600, 2374102800,  // 2045: 29.10.2045 (2392851600) , 26.3.2045 (2374102800)
-2361402000, 2342653200,  // 2044: 30.10.2044 (2361402000) , 27.3.2044 (2342653200)
-2329347600, 2311203600,  // 2043: 25.10.2043 (2329347600) , 29.3.2043 (2311203600)
-2297898000, 2279754000,  // 2042: 26.10.2042 (2297898000) , 30.3.2042 (2279754000)
-2266448400, 2248304400,  // 2041: 27.10.2041 (2266448400) , 31.3.2041 (2248304400)
-2234998800, 2216250000,  // 2040: 28.10.2040 (2234998800) , 25.3.2040 (2216250000)
-2203549200, 2184800400,  // 2039: 30.10.2039 (2203549200) , 27.3.2039 (2184800400)
-2172099600, 2153350800,  // 2038: 31.10.2038 (2172099600) , 28.3.2038 (2153350800)
-2140045200, 2121901200,  // 2037: 25.10.2037 (2140045200) , 29.3.2037 (2121901200)
-2108595600, 2090451600,  // 2036: 26.10.2036 (2108595600) , 30.3.2036 (2090451600)
-2077146000, 2058397200,  // 2035: 28.10.2035 (2077146000) , 25.3.2035 (2058397200)
-2045696400, 2026947600,  // 2034: 29.10.2034 (2045696400) , 26.3.2034 (2026947600)
-2014246800, 1995498000,  // 2033: 30.10.2033 (2014246800) , 27.3.2033 (1995498000)
-1982797200, 1964048400,  // 2032: 31.10.2032 (1982797200) , 28.3.2032 (1964048400)
-1950742800, 1932598800,  // 2031: 26.10.2031 (1950742800) , 30.3.2031 (1932598800)
-1919293200, 1901149200,  // 2030: 27.10.2030 (1919293200) , 31.3.2030 (1901149200)
-1887843600, 1869094800,  // 2029: 28.10.2029 (1887843600) , 25.3.2029 (1869094800)
-1856394000, 1837645200,  // 2028: 29.10.2028 (1856394000) , 26.3.2028 (1837645200)
-1824944400, 1806195600,  // 2027: 31.10.2027 (1824944400) , 28.3.2027 (1806195600)
-1792890000, 1774746000,  // 2026: 25.10.2026 (1792890000) , 29.3.2026 (1774746000)
-1761440400, 1743296400,  // 2025: 26.10.2025 (1761440400) , 30.3.2025 (1743296400)
-1729990800, 1711846800   // 2024: 27.10.2024 (1729990800) , 31.3.2024 (1711846800)
-};
+union DST g_clocksettings;
 
-/*
-//timestapms for US/NYC, just as another example
-uint32_t dst_switch_times_NYC[]={
- 2551330800, 2530767600,  // 2050:  2050/11/6 (2551330800) -- 2050/3/13 (2530767600)
- 2519881200, 2499318000,  // 2049:  2049/11/7 (2519881200) -- 2049/3/14 (2499318000)
- 2487826800, 2467263600,  // 2048:  2048/11/1 (2487826800) -- 2048/3/8 (2467263600)
- 2456377200, 2435814000,  // 2047:  2047/11/3 (2456377200) -- 2047/3/10 (2435814000)
- 2424927600, 2404364400,  // 2046:  2046/11/4 (2424927600) -- 2046/3/11 (2404364400)
- 2393478000, 2372914800,  // 2045:  2045/11/5 (2393478000) -- 2045/3/12 (2372914800)
- 2362028400, 2341465200,  // 2044:  2044/11/6 (2362028400) -- 2044/3/13 (2341465200)
- 2329974000, 2309410800,  // 2043:  2043/11/1 (2329974000) -- 2043/3/8 (2309410800)
- 2298524400, 2277961200,  // 2042:  2042/11/2 (2298524400) -- 2042/3/9 (2277961200)
- 2267074800, 2246511600,  // 2041:  2041/11/3 (2267074800) -- 2041/3/10 (2246511600)
- 2235625200, 2215062000,  // 2040:  2040/11/4 (2235625200) -- 2040/3/11 (2215062000)
- 2204175600, 2183612400,  // 2039:  2039/11/6 (2204175600) -- 2039/3/13 (2183612400)
- 2172726000, 2152162800,  // 2038:  2038/11/7 (2172726000) -- 2038/3/14 (2152162800)
- 2140671600, 2120108400,  // 2037:  2037/11/1 (2140671600) -- 2037/3/8 (2120108400)
- 2109222000, 2088658800,  // 2036:  2036/11/2 (2109222000) -- 2036/3/9 (2088658800)
- 2077772400, 2057209200,  // 2035:  2035/11/4 (2077772400) -- 2035/3/11 (2057209200)
- 2046322800, 2025759600,  // 2034:  2034/11/5 (2046322800) -- 2034/3/12 (2025759600)
- 2014873200, 1994310000,  // 2033:  2033/11/6 (2014873200) -- 2033/3/13 (1994310000)
- 1983423600, 1962860400,  // 2032:  2032/11/7 (1983423600) -- 2032/3/14 (1962860400)
- 1951369200, 1930806000,  // 2031:  2031/11/2 (1951369200) -- 2031/3/9 (1930806000)
- 1919919600, 1899356400,  // 2030:  2030/11/3 (1919919600) -- 2030/3/10 (1899356400)
- 1888470000, 1867906800,  // 2029:  2029/11/4 (1888470000) -- 2029/3/11 (1867906800)
- 1857020400, 1836457200,  // 2028:  2028/11/5 (1857020400) -- 2028/3/12 (1836457200)
- 1825570800, 1805007600,  // 2027:  2027/11/7 (1825570800) -- 2027/3/14 (1805007600)
- 1793516400, 1772953200,  // 2026:  2026/11/1 (1793516400) -- 2026/3/8 (1772953200)
- 1762066800, 1741503600,  // 2025:  2025/11/2 (1762066800) -- 2025/3/9 (1741503600)
- 1730617200, 1710054000   // 2024:  2024/11/3 (1730617200) -- 2024/3/10 (1710054000)
+const uint32_t SECS_PER_DAY = 3600UL * 24UL;
+
+// function derived from tasmotas "RuleToTime"
+uint32_t RuleToTime(uint8_t dow, uint8_t mo, uint8_t week,  uint8_t hr, int yr) {
+  struct tm tm={0};
+  uint32_t t;
+  uint8_t m=mo-1;		// we use struct tm here, so month values 0..11
+  uint8_t w=week;		// temp copies of mo(nth) and week
+
+  if (0 == w) {			// Last week = 0
+    if (++m > 11) {		// for "Last", go to the next month ...
+      m = 0;			// .. and to next year, if we need last XY in December
+      yr++;
+    }
+    w = 1;			// search first week of next month, we will subtract 7 days later
+  }
+  tm.tm_hour = hr;
+// tm is set to {0}, so we shouldn't need to set values equal to "0"
+//  tm.tm_min = 0;
+//  tm.tm_sec = 0;
+  tm.tm_mday = 1;		// first day of (next) month
+  tm.tm_mon = m ;
+  tm.tm_year = yr - 1900;
+//  t = (uint32_t)timegm(&tm);         // First day of the month, or first day of next month for "Last" rules
+  t = (uint32_t)mktime(&tm);         // First day of the month, or first day of next month for "Last" rules
+//  since we use time functions, weekdays are 0 to 6 but tasmote settings use 1 to 7 (e.g. Sunday = 1)
+// so we have to subtract 1 from dow to match tm_weekday here
+  t += (7 * (w - 1) + (dow - 1 - tm.tm_wday + 7) % 7) * SECS_PER_DAY;
+  if (0 == week) {
+    t -= 7 * SECS_PER_DAY;  // back one week if this is a "Last" rule
+  }
+  return t;
 }
-*/
+
+void printtime(uint32_t time, char* string){
+	time_t tmpt=(time_t)time;
+	struct tm * tm=gmtime(&tmpt);
+	// e.g. "Sun, 2024-10-27 01:00:00 UTC"
+	strftime(string,30,"%a, %F %T UTC",tm);
+}
+
+// helper, for printf won't print uint64_t (%llu) correctly
+void dump_u64(uint64_t x,char *ret)
+{
+    int i=0;
+    uint64_t n=x;
+    while (n != 0)
+    {
+        i++;
+        n /= 10;
+    }
+    ret[i] = '\0';
+    do
+    {
+        ret[--i] = '0' + (x % 10);
+        x /= 10;
+    } while (x && i>=1);
+}
+
 
 // return 1 if checked time is during DST period 
 // set g_next_dst_change to next DST event
 int testNsetDST(uint32_t val)
 {
-	// no information about times after last or before first date, so we return 0 = "no DST"
-	// in cas of "before the earliest entry" we also set the next time of switch event to the lowest entry
-	// if time is above "latest entry", we set it to MAX, so we don't check any more
-	int arlength= sizeof(dst_switch_times) / sizeof(dst_switch_times[0]);
-	if ( val >= dst_switch_times[0] ){
-		g_next_dst_change = -1;		// g_next_dst_change is unsigned type, so "-1" should be MAX Value
-		return 0;
-	}
-	if ( val <= dst_switch_times[arlength-1] ) { 
-		g_next_dst_change = dst_switch_times[arlength-1]; 
-		return 0;
-	}
-	for (int i=1; i < arlength; i++) {
-//		printf("prüfe %u gegen %u\n",val,dst_switch_times[i]);
-		if (val >= dst_switch_times[i]) {
-//			ADDLOGF_INFO("Next switch at %u (was %u before)  - its %s\n",dst_switch_times[i-1], g_next_dst_change, i%2 == 0 ? "normal time" : "daylight saving time");
-			g_DSToffset = i%2 == 1 ? 3600 : 0;
-			g_next_dst_change = dst_switch_times[i-1];
-			return i%2 == 1 ;
+	// DST calculation can be split in three pases during a year:
+	// 1. at the beginning the time before DST starts/ends
+	// 2. after first DST change - but before second (during DST in northern or during regular time in southern hemisphere)
+	// 3. after second DST change (after DST in northern or during DST in southern hemisphere)
+	// For this three cases, we known
+	// 1. next switch will take place at first DST change of this year - no DST for nothern hemisphere, in DST for southern
+	// 2. we are between the two DST changes, next switch will take place at second DST change of this year - DST in N, regular time in S
+	// 3. after second DST switch, next switch will take place at first DST change of next year - regular time in N, DST in S
+	// so we will need mimimum the first DST change of this year, we calculate both and check for minimum.
+	// This check is needed, for "H" setting will not work in every case:
+	// e.g. in Ireland (northern / H=0), which uses "DST" in winter for a "negative" DST, so DST "starts" in fall and not in spring as expected for N
+	//
+	// we can be gratious for calculating the actual year by dividing epoch
+	// if we are off a day (leap year), it won't matter, as long as around the switch of the year there is no DST event...
+	// so we use 1 Year = 365.24 days = 31556926 Seconds
+	// and can be sure to have the correct year for a date if it's > Jan 1st and < Dec 31st which is true for all known DST dates
+
+
+	// so lets try to find the year corresponding to val
+	int year=(int)(val/31556926)+1970;
+
+
+	uint32_t b= RuleToTime(g_clocksettings.DST_Ds,g_clocksettings.DST_Ms,g_clocksettings.DST_Ws,g_clocksettings.DST_hs-g_clocksettings.Tstd/60,year);
+	uint32_t e= RuleToTime(g_clocksettings.DST_De,g_clocksettings.DST_Me,g_clocksettings.DST_We,g_clocksettings.DST_he-(g_clocksettings.Tstd+g_clocksettings.Tdst)/60,year);
+	char tmp[30];	// to hold date string of timestamp
+	dump_u64(g_clocksettings.value,tmp);  // printf with %llu doesn't work :-( so we print it to a string by our own
+//	ADDLOG_INFO(LOG_FEATURE_RAW, "INFO: in testNsetDST with ClockSettings: %i  %i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i -- g_clocksettings.value as uint64_t:%s \r\n",g_clocksettings.TZ,  g_clocksettings.DST_H, g_clocksettings.DST_We, g_clocksettings.DST_Me, g_clocksettings.DST_De, g_clocksettings.DST_he, g_clocksettings.Tstd, g_clocksettings.DST_Ws, g_clocksettings.DST_Ms, g_clocksettings.DST_Ds, g_clocksettings.DST_hs, g_clocksettings.Tdst,tmp);
+	ADDLOG_INFO(LOG_FEATURE_RAW, "Info: epoch %lu in year %i -- b=%lu -- e=%lu\n\r\n\r",val,year,b,e);
+	if ( b < e ) {	// Northern --> begin before end
+		if (val < b) {
+			printtime(b,tmp);
+			ADDLOG_INFO(LOG_FEATURE_RAW, "Before first DST switch in %i. Next switch at %lu (%s)\r\n",year,b,tmp);
+			g_next_dst_change=b;
+			g_DSToffset = 0;
+			return 0;
+		} else if ( val < e ){
+			printtime(e,tmp);
+			ADDLOG_INFO(LOG_FEATURE_RAW, "In DST of %i. Next switch at %lu (%s)\r\n",year,e,tmp);
+			g_next_dst_change=e;
+			g_DSToffset = 60*g_clocksettings.Tdst;
+			return 1;
+		} else {
+			b=RuleToTime(g_clocksettings.DST_Ds,g_clocksettings.DST_Ms,g_clocksettings.DST_Ws,g_clocksettings.DST_hs-g_clocksettings.Tstd/60,year+1);
+			printtime(b,tmp);
+			ADDLOG_INFO(LOG_FEATURE_RAW, "After DST in %i. Next switch at %lu (%s - thats next year)\r\n",year,b,tmp);
+			g_next_dst_change=b;
+			g_DSToffset = 0;
+			return 0;
+		}
+	} else {	// so end of DST before begin of DST --> southern
+			if (val < e) {
+			printtime(e,tmp);
+			ADDLOG_INFO(LOG_FEATURE_RAW, "In first DST period of %i. Next switch at %lu (%s)\r\n",year,e,tmp);
+			g_next_dst_change=e;
+			g_DSToffset = 60*g_clocksettings.Tdst;
+			return 1;
+		} else if ( val < b ){
+			printtime(b,tmp);
+			ADDLOG_INFO(LOG_FEATURE_RAW, "Regular time of %i. Next switch at %lu (%s)\r\n",year,b,tmp);
+			g_next_dst_change=b;
+			g_DSToffset = 0;
+			return 0;
+		} else {
+			e=RuleToTime(g_clocksettings.DST_De,g_clocksettings.DST_Me,g_clocksettings.DST_We,g_clocksettings.DST_he-(g_clocksettings.Tstd+g_clocksettings.Tdst)/60,year+1);
+			printtime(e,tmp);
+			ADDLOG_INFO(LOG_FEATURE_RAW, "In second DST of %i. Next switch at %lu (%s - thats next year)\r\n",year,e,tmp);
+			g_next_dst_change=e;
+			g_DSToffset = 60*g_clocksettings.Tdst;
+			return 1;
 		}
 	}
-return 0;
+
 
 }
-#endif
+
+
+
+/*
+Similar to tasmota settings, but all in one command
+
+Set policies for the beginning of daylight saving time (DST) and return back to standard time (STD) 
+Use the Tasmota timezone table to find the commands for your time zone.
+0 = reset parameters to firmware defaults
+H,W,M,D,h,T
+H = hemisphere (0 = northern hemisphere / 1 = southern hemisphere)
+W = week (0 = last week of month, 1..4 = first .. fourth)
+M = month (1..12)
+D = day of week (1..7 1 = Sunday 7 = Saturday)
+h = hour (0..23) in local time
+T = time zone (-780..780) (offset from UTC in MINUTES - 780min / 60min=13hrs)
+Example: TIMEDST 1,1,10,1,2,660
+_If time zone is NOT 99, DST is not used (even if displayed)
+
+Since we keep everything in one struct, we have dst start and ending formulas,
+the regular UTC offset aund the ammount of minutes to add during dst
+
+So here is a matching of the variables as used in tasmota commands and our struct/union
+
+TimeStd H,W,M,D,h,T --> He=H; We=W; Me=M; De=D; he=h; Tstd=T
+TimeDST H,W,M,D,h,T --> Hs=H; Ws=W; Ms=M; Ds=D; hs=h; Tdst=T-Tstd
+
+We use an all in on setting command:
+
+Clock_SetConfig TZ,H,We,Me,De,he,Tstd,Ws,Ms,Ds,hs,Tdst
+TZ:	Timezone (+/-HH or +/-HH:MM or 99 for DST)
+<x>=s: 	Values for daylight saving time "start of DTS"
+<x>=e: 	Values for standard time "end of DTS"
+	W<x> = week (0 = last week of month, 1..4 = first .. fourth)
+	M<x> = month (1..12)
+	D<x> = day of week (1..7 1 = Sunday 7 = Saturday)
+	h<x> = hour (0..23) in local time
+	Tsdt = standard offset during regular time
+	Tdst = offset to add during DST (allmost everywhere 60 [minutes], -60 in Eire ("negative DST") and seldom 120 or 30) 
+
+example for EU DST (with UTC+1):
+	TZ=99 --> use DST settings
+	northern hmisphere				(H=0)
+	start last sun in march at 2 local time 	(Ws=0 [last ...] Ds=1 [Sunday] Ms=3 [March] hs=2 [2:00] Tdst=60 [add 60 minutes=1 hour for DST])
+	end last sun in October at 3 local (dst) time	(We=0 [last ...] De=1 [Sunday] Me=10 [Oct] he=3 [3:00] Tdstd=60 [standard time is UTC+1 (UTC+60 minutes)])
+clock_setConfig 99,0,0,10,1,3,60,0,3,2,1,60
+
+
+
+We can also derive all settings from Tasmota settings
+
+Settings for EU
+Tasmota: 	Europe/Berlin 	Backlog0 Timezone 99; TimeStd 0,0,10,1,3,60; TimeDst 0,0,3,1,2,120
+Our config:	clock_setConfig 99 0,0,10,1,3,60,0,3,1,2,60
+
+Settings for NYC
+Tasmota: 	USA/NYC		Backlog0 Timezone 99; TimeStd 0,1,11,1,2,-300; TimeDst 0,2,3,1,2,-240
+Our config:	clock_setConfig 99 0,1,11,1,2,-300,2,3,1,2,60
+
+
+*/
+// CLOCK_SetConfig [TimeZone] [DST-Settings]
+commandResult_t CMD_CLOCK_SetConfig(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	int a,b;
+	uint8_t H,We,Ws,Me,Ms,De,Ds,he,hs;
+	int8_t Tdst;
+	int16_t Tstd,TZ=1;
+	const char *s;
+
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_GetArgsCount() < 1) {	// so we have no args
+//	ADDLOG_INFO(LOG_FEATURE_CMD, "Actual ClockSettings: %i  %i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i \r\n",g_clocksettings.TZ,  g_clocksettings.DST_H, g_clocksettings.DST_We, g_clocksettings.DST_Me, g_clocksettings.DST_De, g_clocksettings.DST_he, g_clocksettings.Tstd, g_clocksettings.DST_Ws, g_clocksettings.DST_Ms, g_clocksettings.DST_Ds, g_clocksettings.DST_hs, g_clocksettings.Tdst);
+	addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Actual ClockSettings %i%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i\r\n", g_clocksettings.TZ,  g_clocksettings.DST_H, g_clocksettings.DST_We, g_clocksettings.DST_Me, g_clocksettings.DST_De, g_clocksettings.DST_he, g_clocksettings.Tstd, g_clocksettings.DST_Ws, g_clocksettings.DST_Ms, g_clocksettings.DST_Ds, g_clocksettings.DST_hs, g_clocksettings.Tdst);
+	}
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+// handle first parameter: timezone
+// can be a string like "-10:30" or an integer like -10
+// we accept a single parameter (TZ) or a complete set of daylight saving time settings
+	s = Tokenizer_GetArg(0);
+	if (strchr(s, ':')) {
+//		printf("CLOCK_SetConfigs: TZ with : time TZ=%s\r\n", s);
+		ADDLOG_INFO(LOG_FEATURE_RAW, "CLOCK_SetConfigs: TZ with : time TZ=%s\r\n", s);
+		if (*s == '-') {
+			s++;
+//			printf("CLOCK_SetConfigs: TZ negative (-)\r\n");
+			ADDLOG_INFO(LOG_FEATURE_RAW, "CLOCK_SetConfigs: TZ negative (-)\r\n");
+			TZ = -1;
+		} else if  (*s == '+') {
+//			printf("CLOCK_SetConfigs: TZ posiive (+)\r\n");
+			ADDLOG_INFO(LOG_FEATURE_RAW, "CLOCK_SetConfigs: TZ posiive (+)\r\n");
+			s++;
+		}
+		sscanf(s, "%d:%2d", &a, &b);
+//			printf("CLOCK_SetConfigs: a=%i b=%i (s=%s)\r\n",a,b,s);
+			ADDLOG_INFO(LOG_FEATURE_RAW, "CLOCK_SetConfigs: a=%i b=%i (s=%s)\r\n",a,b,s);
+		TZ *= (a * 100 + b); // we use time as signed number <hour><minutes> of the time zone eg: -1400 for -14:00
+	}
+	else {
+		TZ = Tokenizer_GetArgInteger(0);
+	}
+
+	g_clocksettings.TZ=TZ;	
+
+	if (Tokenizer_GetArgsCount() > 1) {	// so we have more than 1 argument (TZ)
+		s = Tokenizer_GetArg(1);
+//		ADDLOG_INFO(LOG_FEATURE_CMD, "CLOCK_SetConfigs: we have %i Args, TZ is set to %i", a,TZ);
+//		if (TZ <> 99) ADDLOG_INFO(LOG_FEATURE_CMD, "!!!Warning: Setting DST but TZ is not 99 but set to %i!!!\n",TZ);
+//		printf("CLOCK_SetConfigs: we have %u Args, TZ is set to %i -- S=%s\r\n", Tokenizer_GetArgsCount(),TZ,s);
+		ADDLOG_INFO(LOG_FEATURE_RAW, "CLOCK_SetConfigs: we have %u Args, TZ is set to %i -- S=%s\r\n", Tokenizer_GetArgsCount(),TZ,s);
+
+//		g_clocksettings.H=Tokenizer_GetArgInteger(1);
+// 		do this later, so we can do some sanity checks before ...
+//		so use local vars here
+//		Clock_SetConfig TZ,H,We,Me,De,he,Tstd,Ws,Ms,Ds,hs,Tdst
+
+		H = Tokenizer_GetArgInteger(1);
+		We = Tokenizer_GetArgInteger(2);
+		Me = Tokenizer_GetArgInteger(3);
+		De = Tokenizer_GetArgInteger(4);
+		he = Tokenizer_GetArgInteger(5);
+		Tstd = Tokenizer_GetArgInteger(6);
+		Ws = Tokenizer_GetArgInteger(7);
+		Ms = Tokenizer_GetArgInteger(8);
+		Ds = Tokenizer_GetArgInteger(9);
+		hs = Tokenizer_GetArgInteger(10);
+		Tdst = Tokenizer_GetArgInteger(11);
+ADDLOG_INFO(LOG_FEATURE_RAW, "read values: %u,%u,%u,%u,%u,%i,%u,%u,%u,%u,%i\r\n", H, We, Me, De, he, Tstd, Ws, Ms, Ds, hs, Tdst);
+// todo: check numbers before assigning them
+		g_clocksettings.DST_H=H;
+		g_clocksettings.DST_We=We;
+		g_clocksettings.DST_Me=Me;
+		g_clocksettings.DST_De=De;
+		g_clocksettings.DST_he=he;
+		g_clocksettings.Tstd=Tstd;
+		g_clocksettings.DST_Ws=Ws;
+		g_clocksettings.DST_Ms=Ms;
+		g_clocksettings.DST_Ds=Ds;
+		g_clocksettings.DST_hs=hs;
+		g_clocksettings.Tdst=Tdst;
+	}; //
+	// save settings
+	CFG_SetCLOCK_SETTINGS(g_clocksettings.value);
+	  return CMD_RES_OK;
+};
+
+commandResult_t CMD_CLOCK_GetConfig(const void *context, const char *cmd, const char *args, int cmdFlags) {
+//	ADDLOG_INFO(LOG_FEATURE_CMD, "ClockSettings: %i  %i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i \r\n",g_clocksettings.TZ,  g_clocksettings.DST_H, g_clocksettings.DST_We, g_clocksettings.DST_Me, g_clocksettings.DST_De, g_clocksettings.DST_he, g_clocksettings.Tstd, g_clocksettings.DST_Ws, g_clocksettings.DST_Ms, g_clocksettings.DST_Ds, g_clocksettings.DST_hs, g_clocksettings.Tdst);
+	addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "ClockSettings: %i  %i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i \r\n",g_clocksettings.TZ,  g_clocksettings.DST_H, g_clocksettings.DST_We, g_clocksettings.DST_Me, g_clocksettings.DST_De, g_clocksettings.DST_he, g_clocksettings.Tstd, g_clocksettings.DST_Ws, g_clocksettings.DST_Ms, g_clocksettings.DST_Ds, g_clocksettings.DST_hs, g_clocksettings.Tdst);
+
+
+
+
+	return CMD_RES_OK;
+}
+
+#endif	// to #if ENABLE_LOCAL_CLOCK_ADVANCED
 
 

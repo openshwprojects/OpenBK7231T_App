@@ -96,6 +96,10 @@ void CFG_SetWebPassword(const char *s);
     void CFG_SetLFS_Size(uint32_t value);
     uint32_t CFG_GetLFS_Size();
 #endif 
+#if ENABLE_LOCAL_CLOCK_ADVANCED
+    void CFG_SetCLOCK_SETTINGS(uint64_t value);
+    uint64_t CFG_GetCLOCK_SETTINGS();
+#endif
 
 #endif
 

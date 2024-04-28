@@ -327,6 +327,8 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 typedef int bool;
 #define true 1
 #define false 0
+#include <FreeRTOS.h>
+#include <task.h>
 
 #define ASSERT
 #define os_strcpy strcpy
@@ -495,6 +497,39 @@ extern uint32_t g_epochOnStartup ;
 extern int g_UTCoffset;
 extern int g_DST_offset;
 extern uint32_t g_next_dst_change;
+#if ENABLE_LOCAL_CLOCK_ADVANCED
+// handle daylight saving time
+
+// define a union to hold all settings regarding local clock (timezone, dst settings ...)
+// we will use somthing simmilar to tasmotas handling of dst with the commands:
+// TimeStd
+// TimeDst
+// use a union, to be able to save/restore all values as one 64 bit integer
+union DST{
+	struct {
+		uint32_t DST_H : 1;	// 0-1		only once - you can only be in one DST_hemisphere ;-)
+		uint32_t DST_Ws : 3; // 0-7
+		uint32_t DST_Ms : 4; // 0-15
+		uint32_t DST_Ds : 3; // 0-7
+		uint32_t DST_hs : 5; // 0-31
+		// up to here: 16 bits
+		int32_t Tstd : 11; // -1024 - +1023 	( regular (non DST)  offset to UTC max 14 h = 840 Min) 
+		uint32_t DST_he : 5; // 0-31
+		// up to here: 32 bits
+		uint32_t DST_We : 3; // 0-7
+		uint32_t DST_Me : 4; // 0-15
+		uint32_t DST_De : 3; // 0-7
+		int32_t Tdst : 8; // -128 - +127  (Eire has "negative" DST in winter (-60) ...; max DST offset is 120 minutes)
+		int32_t TZ : 12; //  -2048 - 2047 for TZ hours (max offset is +14h and - 12h  -- we will use 99 as indicator for "DST" like tasmota, all otDST_hers values are interpreted as the <hour><minutes> of the time zone eg: -1400 for -14:00)
+		// up to here: 62 bits
+		};
+	uint64_t value;	// to save/store all values in one large integer 
+};
+
+extern union DST g_clocksettings;
+
+#endif
+
 int testNsetDST(uint32_t val);
 
 // to use ticks for time keeping

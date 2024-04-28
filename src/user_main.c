@@ -1237,6 +1237,10 @@ void Main_Init_Before_Delay()
 		ADDLOGF_INFO("###### safe mode activated - boot failures %d", g_bootFailures);
 	}
 	CFG_InitAndLoad();
+#if ENABLE_LOCAL_CLOCK_ADVANCED
+	// set clocksettings to stored values
+	g_clocksettings.value=CFG_GetCLOCK_SETTINGS();
+#endif
 
 #if ENABLE_LITTLEFS
 	LFSAddCmds();
@@ -1341,6 +1345,12 @@ void Main_Init_After_Delay()
 		Main_Init_AfterDelay_Unsafe(true);
 	}
 
+#if ENABLE_LOCAL_CLOCK
+	extern commandResult_t CMD_CLOCK_SetConfig(); 	// defined in new_common.c
+	CMD_RegisterCommand("clock_setConfig",CMD_CLOCK_SetConfig, NULL);
+	extern commandResult_t CMD_CLOCK_GetConfig(); 	// defined in new_common.c
+	CMD_RegisterCommand("clock_getConfig",CMD_CLOCK_GetConfig, NULL);
+#endif
 	ADDLOGF_INFO("Main_Init_After_Delay done");
 }
 

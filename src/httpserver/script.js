@@ -81,7 +81,6 @@ function onLoad() {
 			setInterval(updateOnlineFor, 1000);
 		}
 	}
-	utc=+getElement("DT").dataset.initial;	// unary "+" in "+value" even one byte shorter than "value|0" to get integer - instead of parseInt()
 	showState();
 }
 
