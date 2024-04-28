@@ -84,6 +84,37 @@ void SM16703P_setRaw(int start_offset, const char *s, int push) {
 	}
 }
 
+bool SM16703P_VerifyPixel(uint32_t pixel, byte r, byte g, byte b) {
+	uint8_t *dst = spi_msg->send_buf + pixel_offset + (pixel * 3 * 4);
+
+	if (*dst++ != translate_2bit((r >> 6)))
+		return false;
+	if (*dst++ != translate_2bit((r >> 4)))
+		return false;
+	if (*dst++ != translate_2bit((r >> 2)))
+		return false;
+	if (*dst++ != translate_2bit(r))
+		return false;
+	if (*dst++ != translate_2bit((g >> 6)))
+		return false;
+	if (*dst++ != translate_2bit((g >> 4)))
+		return false;
+	if (*dst++ != translate_2bit((g >> 2)))
+		return false;
+	if (*dst++ != translate_2bit(g))
+		return false;
+	if (*dst++ != translate_2bit((b >> 6)))
+		return false;
+	if (*dst++ != translate_2bit((b >> 4)))
+		return false;
+	if (*dst++ != translate_2bit((b >> 2)))
+		return false;
+	if (*dst++ != translate_2bit(b))
+		return false;
+
+	return true;
+}
+
 
 void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 
