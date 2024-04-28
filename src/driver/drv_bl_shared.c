@@ -26,9 +26,6 @@ int stat_updatesSent = 0;
 
 static byte reset_counter = 0;
 static byte savetoflash = 0;
-//static byte mqtt_update = 0;
-static byte flash_overpower = 0;
-//static byte overpower_reset = 2;
 static byte min_reset = 0;
 static byte hour_reset = 0;
 static byte first_run = 0;
@@ -36,20 +33,17 @@ static float net_energy = 0;
 static float net_energy_start = 0;
 static float real_export = 0;
 static float real_consumption = 0;
-//static int net_energy_timer = 0;
+
 // Variables for the solar dump load timer
-//static byte sync = 0;
-//static int sync_time = 0;
 static byte old_hour = 0;
 static byte time_hour_reset = 0;
 static byte time_min_reset = 0;
 static byte old_time = 0;
-//static int high_power_debounce = 0;
 #define max_power_bypass_off 1000
 #define dump_load_hysteresis 3	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
-//int min_production = -50;	// The minimun instantaneous solar production that will trigger the dump load.
 #define dump_load_on 15		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
 #define dump_load_off 1		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
+
 // These variables are used to program the bypass load, for example turn it on late afternoon if there was no sun for the day
 //#define bypass_timer_reset 23	// Just so it doesn't accidentally reset when the device is rebooted (0)...
 #define bypass_on_time 15
@@ -68,7 +62,7 @@ byte check_hour_power = 0;
 //const char* rem_relay_off = "http://<ip>/cm?cmnd=Power%20off";
 //-----------------------------------------------------------
 	
-// Order corrsponds to enums OBK_VOLTAGE - OBK__LAST
+// Order corresponds to enums OBK_VOLTAGE - OBK__LAST
 // note that Wh/kWh units are overridden in hass_init_energy_sensor_device_info()
 const char UNIT_WH[] = "Wh";
 struct {
