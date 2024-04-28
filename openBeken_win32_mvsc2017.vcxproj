@@ -1025,6 +1025,7 @@
     <ClCompile Include="src\sim\Controller_Button.cpp" />
     <ClCompile Include="src\sim\Controller_Pot.cpp" />
     <ClCompile Include="src\sim\Controller_SimulatorLink.cpp" />
+    <ClCompile Include="src\sim\Controller_WS2812.cpp" />
     <ClCompile Include="src\sim\CursorManager.cpp" />
     <ClCompile Include="src\sim\Junction.cpp" />
     <ClCompile Include="src\sim\Line.cpp" />
@@ -1348,6 +1349,7 @@
     <ClInclude Include="src\sim\Controller_Button.h" />
     <ClInclude Include="src\sim\Controller_Pot.h" />
     <ClInclude Include="src\sim\Controller_SimulatorLink.h" />
+    <ClInclude Include="src\sim\Controller_WS2812.h" />
     <ClInclude Include="src\sim\CursorManager.h" />
     <ClInclude Include="src\sim\Junction.h" />
     <ClInclude Include="src\sim\Line.h" />

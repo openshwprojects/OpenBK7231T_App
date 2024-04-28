@@ -27,7 +27,7 @@ void CSolver::solveVoltages() {
 	}
 }
 // Idea: count steps to VDD/GND and use it to support multiple objects on line?
-void CSolver::floodJunctions(CJunction *ju, float voltage, float duty) {
+void CSolver::floodJunctions(CJunction *ju, float voltage, float duty, int depth) {
 	if (ju == 0)
 		return;
 	if (ju->getVisitCount() != 0)
@@ -35,20 +35,21 @@ void CSolver::floodJunctions(CJunction *ju, float voltage, float duty) {
 	ju->setVisitCount(1);
 	ju->setVoltage(voltage);
 	ju->setDuty(duty);
+	ju->setDepth(depth);
 	for (int i = 0; i < ju->getLinksCount(); i++) {
 		CJunction *other = ju->getLink(i);
-		floodJunctions(other, voltage, duty);
+		floodJunctions(other, voltage, duty, depth);
 	}
 	for (int i = 0; i < ju->getEdgesCount(); i++) {
 		CEdge *e = ju->getEdge(i);
 		CJunction *o = e->getOther(ju);
-		floodJunctions(o, voltage, duty);
+		floodJunctions(o, voltage, duty, depth);
 	}
 	CControllerBase *cntr = ju->findOwnerController_r();
 	if (cntr != 0) {
 		CJunction *other = cntr->findOtherJunctionIfPassable(ju);
 		if (other) {
-			floodJunctions(other, voltage, duty);
+			floodJunctions(other, voltage, duty, depth+1);
 		}
 	}
 }

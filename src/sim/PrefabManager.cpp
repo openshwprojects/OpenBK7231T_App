@@ -8,6 +8,7 @@
 #include "Controller_SimulatorLink.h"
 #include "Controller_BL0942.h"
 #include "Controller_Pot.h"
+#include "Controller_WS2812.h"
 #include "Junction.h"
 
 class CShape *PrefabManager::generateVDD() {
@@ -407,7 +408,7 @@ class CShape *PrefabManager::generateWS2812B() {
 	CJunction *b = o->addJunction(bulb_radius, 0);
 	b->setName("B");
 	b->addText(-25, -5, "");
-	CControllerBulb *bulb = new CControllerBulb(a, b);
+	CControllerWS2812 *bulb = new CControllerWS2812(a, b);
 	o->setController(bulb);
 	filler->setName("internal_bulb_filler");
 	bulb->setShape(filler);

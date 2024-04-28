@@ -35,9 +35,10 @@ class CJunction : public CShape {
 	float duty;
 	int visitCount;
 	bool bCurrentSource;
+	int depth;
 public:
 	CJunction() {
-
+		depth = 0;
 	}
 	CJunction(int _x, int _y, const char *s, int gpio = -1) {
 		this->setPosition(_x, _y);
@@ -47,6 +48,7 @@ public:
 		this->duty = 100;
 		this->visitCount = 0;
 		this->bCurrentSource = false;
+		this->depth = 0;
 	}
 	virtual ~CJunction();
 	virtual CShape *cloneShape();
@@ -73,6 +75,12 @@ public:
 	}
 	int getGPIO() const {
 		return gpioIndex;
+	}
+	int getDepth() const {
+		return this->depth;
+	}
+	void setDepth(int d) {
+		this->depth = d;
 	}
 	void setVoltage(float f) {
 		voltage = f;
