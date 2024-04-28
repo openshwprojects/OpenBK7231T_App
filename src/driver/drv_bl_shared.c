@@ -167,21 +167,51 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	};/*;*/ // Why was this here?
 	
 	// Close the table
-	poststr(request, "</table>");
+	poststr(request, "<style> table {text-align: left;} </style>");
 
 	//
 
-	  poststr(request, "<hr><table style='width:100%'>");
-	for (int q=0; q<24; q++)
-			    {
-			   
-			poststr(request, "<tr><td><b>");
-			//poststr(request, sensors[i].names.name_friendly);
-			poststr(request, "</b></td><td style='text-align: right;'>");
-                        hprintf255(request, "%i %i %i \n", consumption_matrix[q], export_matrix[q], net_matrix[q]);
-			    }
-	// Close the table
-	poststr(request, "</table>");
+	  poststr(request, "<style> table {  text-align: left;}</style>");  
+	poststr(request, " <h2>HEnergy Stats</h2>");
+			
+			poststr(request, "<table>");
+			// Time
+			poststr("<tr><b>");
+			for (int q=0; q<24; q++)
+			{
+				hprintf255(request, "<th>Consumption </th>");
+				hprintf255(request, "%i:00", q
+			}
+	
+			// Consumption Stats
+			poststr("<tr><b>");
+			for (int q=0; q<24; q++)
+			{
+				hprintf255(request, "<th>Consumption </th>");
+				hprintf255(request, "%i, consumption_matrix[q]
+			}
+			poststr(request, "</tr>");
+			// Export Stats
+			poststr("<tr><b>");
+			for (int q=0; q<24; q++)
+			{
+				hprintf255(request, "<th>Export </th>");
+				hprintf255(request, "%i, export_matrix[q]
+			}
+			poststr(request, "</tr>");
+
+			//Net Energy Stats
+			poststr("<tr><b>");
+			for (int q=0; q<24; q++)
+			{
+				hprintf255(request, ",th>Net Energy </th>");
+				hprintf255(request, "%i, net_matrix[q]
+			}
+			poststr(request, "</tr></table>");
+
+
+				
+				// hprintf255(request, "<tr> Consumption: %i Export: %i Net Energy: %i \n", consumption_matrix[q], export_matrix[q], net_matrix[q]);
 	//
 
 	// Aditional code for power monitoring
