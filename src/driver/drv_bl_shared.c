@@ -1,6 +1,9 @@
 // Last working on 13/04/24 - Sometimes locks during generation
 
-int power_matrix [24][24][24] = {0};
+int consumption_matrix [24][24][24] = {0};
+int export_matrix[24] = {0};
+int net_matrix[24] = {0};
+
 #include "drv_bl_shared.h"
 
 #include "../new_cfg.h"
@@ -150,18 +153,16 @@ poststr(request, "<hr><table style='width:100%'>");
 	
 //	int main(int argc, char* argv[]) {
 
-   // int cube_matrix[24][24][24] = {1,2,3,4,5,6,7,8,9,10};
-    int o, p, q;
-
-    for (o=0; o<24; o++) 
-            for (p=0; p<24; p++)
+   // int cconsumption_matrix[24][24][24] = {1,2,3,4,5,6,7,8,9,10};
+    int q;
+	
                     for (q=0; q<24; q++)
 			    {
 			   
 			poststr(request, "<tr><td><b>");
 			//poststr(request, sensors[i].names.name_friendly);
 			poststr(request, "</b></td><td style='text-align: right;'>");
-                        poststr(request, "%i %i %i: %i\n", o, p, q, power_matrix[o][p][q]);
+                        poststr(request, "%i %i %i: %i\n", consumption_matrix[q], export_matrix[q], net_matrix[q]);
 			    }
 }
 
