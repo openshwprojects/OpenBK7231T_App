@@ -175,41 +175,47 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	poststr(request, " <h2>HEnergy Stats</h2>");
 			
 			poststr(request, "<table>");
-			// Time
-			poststr(request, "<tr><b>");
-			for (int q=0; q<24; q++)
-			{
-				hprintf255(request, "<th>Consumption </th>");
-				hprintf255(request, "%i:00", q);
-			}
-			poststr(request, "</tr></b>");
-	
-			// Consumption Stats
-			poststr(request, "<tr><b>");
-			for (int q=0; q<24; q++)
-			{
-				hprintf255(request, "<th>Consumption </th>");
-				hprintf255(request, "%iW", consumption_matrix[q]);
-			}
-			poststr(request, "</tr></b>");
-			
-			// Export Stats
-			poststr(request, "<tr><b>");
-			for (int q=0; q<24; q++)
-			{
-				hprintf255(request, "<th>Export </th>");
-				hprintf255(request, "%iW", export_matrix[q]);
-			}
-			poststr(request, "</tr></b>");
+			// Table Format and headers
+			//poststr(request, "<tr><b>");
+			poststr(request, "<b><tr><th>Time </th>");
+			poststr(request, "<th>Consumption </th>");
+			poststr(request, "<th>Export </th>");
+			poststr(request, "<th>Net Metering </th></tr>,</b>");
 
-			//Net Energy Stats
-			poststr(request, "<tr><b>");
+			// First field: Time
+			poststr(request, "<tr>");
 			for (int q=0; q<24; q++)
 			{
-				hprintf255(request, ",th>Net Energy </th>");
-				hprintf255(request, "%iW", net_matrix[q]);
+				//hprintf255(request, "<th>Consumption </th>");
+				//poststr(request, "<th>Net Metering </th></tr>,</b>");
+				hprintf255(request, "<td> %i:00 </td>", q);
 			}
-			poststr(request, "</tr></b></table>");
+			poststr(request, "</tr>");
+	
+			// Second Field: Consumption Stats
+			poststr(request, "<tr>");
+			for (int q=0; q<24; q++)
+			{
+				//hprintf255(request, "<th> Consumption </th>");
+				hprintf255(request, "<td> %iW" </td>, consumption_matrix[q]);
+			}
+			poststr(request, "</tr>");
+			
+			// Third Field: Export Stats
+			poststr(request, "<tr>");
+			for (int q=0; q<24; q++)
+			{
+				hprintf255(request, "<td> %iW </td>", export_matrix[q]);
+			}
+			poststr(request, "</tr>");
+
+			//Fourth Field: Net Energy Stats
+			poststr(request, "<tr>");
+			for (int q=0; q<24; q++)
+			{
+				hprintf255(request, "<td> %iW </td>", net_matrix[q]);
+			}
+			poststr(request, "</tr></table>");
 
 
 				
