@@ -1,6 +1,6 @@
 // Last working on 13/04/24 - Sometimes locks during generation
 
-int consumption_matrix [24][24][24] = {0};
+int consumption_matrix [24] = {0};
 int export_matrix[24] = {0};
 int net_matrix[24] = {0};
 
@@ -150,10 +150,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 //--
 
 poststr(request, "<hr><table style='width:100%'>");
-	
-//	int main(int argc, char* argv[]) {
 
-   // int cconsumption_matrix[24][24][24] = {1,2,3,4,5,6,7,8,9,10};
     int q;
 	
                     for (q=0; q<24; q++)
@@ -164,7 +161,6 @@ poststr(request, "<hr><table style='width:100%'>");
 			poststr(request, "</b></td><td style='text-align: right;'>");
                         poststr(request, "%i %i %i: %i\n", consumption_matrix[q], export_matrix[q], net_matrix[q]);
 			    }
-}
 
 // Close the table
 	poststr(request, "</table>");
