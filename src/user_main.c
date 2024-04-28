@@ -281,6 +281,13 @@ void ScheduleDriverStart(const char* name, int delay) {
 	}
 }
 
+#if defined(PLATFORM_LN882H)
+// LN882H hack, maybe place somewhere else?
+// this will be applied after WiFi connect
+extern int g_ln882h_pendingPowerSaveCommand;
+void LN882H_ApplyPowerSave(int bOn);
+#endif
+
 void Main_OnWiFiStatusChange(int code)
 {
 	// careful what you do in here.
@@ -324,7 +331,14 @@ void Main_OnWiFiStatusChange(int code)
 				//DRV_SSDP_Restart(); // this kills things
 			}
 		}
-
+#if defined(PLATFORM_LN882H)
+		// LN882H hack, maybe place somewhere else?
+		// this will be applied after WiFi connect
+		if (g_ln882h_pendingPowerSaveCommand != -1) {
+			LN882H_ApplyPowerSave(g_ln882h_pendingPowerSaveCommand);
+			g_ln882h_pendingPowerSaveCommand = -1;
+		}
+#endif
 		break;
 		/* for softap mode */
 	case WIFI_AP_CONNECTED:
