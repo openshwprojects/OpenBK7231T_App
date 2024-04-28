@@ -151,17 +151,17 @@ poststr(request, "<hr><table style='width:100%'>");
 //	int main(int argc, char* argv[]) {
 
    // int cube_matrix[24][24][24] = {1,2,3,4,5,6,7,8,9,10};
-    int i, j, k;
+    int o, p, q;
 
-    for (i=0; i<24; i++) 
-            for (j=0; j<24; j++)
-                    for (k=0; k<24; k++)
+    for (o=0; o<24; o++) 
+            for (p=0; p<24; p++)
+                    for (q=0; q<24; q++)
 			    {
 			   
 			poststr(request, "<tr><td><b>");
-			poststr(request, sensors[i].names.name_friendly);
+			//poststr(request, sensors[i].names.name_friendly);
 			poststr(request, "</b></td><td style='text-align: right;'>");
-                        printf("%i %i %i: %i\n", i, j, k, cube_matrix[i][j][k]);
+                        poststr(request, "%i %i %i: %i\n", o, p, q, power_matrix[o][p][q]);
 			    }
 }
 
