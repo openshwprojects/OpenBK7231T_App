@@ -146,29 +146,6 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
         mode = "PWR";
     }
 
-
-//--
-
-poststr(request, "<hr><table style='width:100%'>");
-
-    int q;
-	
-                    for (q=0; q<24; q++)
-			    {
-			   
-			poststr(request, "<tr><td><b>");
-			//poststr(request, sensors[i].names.name_friendly);
-			poststr(request, "</b></td><td style='text-align: right;'>");
-                        poststr(request, "%i %i %i: %i\n", consumption_matrix[q], export_matrix[q], net_matrix[q]);
-			    }
-
-// Close the table
-	poststr(request, "</table>");
-	
-	//------------------------
-	//--
-	
-
     poststr(request, "<hr><table style='width:100%'>");
 
     if (!isnan(lastReadingFrequency)) {
@@ -197,6 +174,21 @@ poststr(request, "<hr><table style='width:100%'>");
 	
 	// Close the table
 	poststr(request, "</table>");
+
+	//
+
+	  poststr(request, "<hr><table style='width:100%'>");
+	for (q=0; q<24; q++)
+			    {
+			   
+			poststr(request, "<tr><td><b>");
+			//poststr(request, sensors[i].names.name_friendly);
+			poststr(request, "</b></td><td style='text-align: right;'>");
+                        poststr(request, "%i %i %i: %i\n", consumption_matrix[q], export_matrix[q], net_matrix[q]);
+			    }
+	// Close the table
+	poststr(request, "</table>");
+	//
 
 	// Aditional code for power monitoring
         //------------------------------------------------------------------------------------------------------------------------------------------
