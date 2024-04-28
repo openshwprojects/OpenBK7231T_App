@@ -65,6 +65,32 @@ static void translate_byte(uint8_t input, uint8_t *dst) {
 	*dst++ = translate_2bit((input >> 2));
 	*dst++ = translate_2bit(input);
 }
+static uint8_t reverse_translate_2bit(uint8_t input) {
+	uint8_t i;
+	for (i = 0; i < 4; ++i) {
+		if (data_translate[i] == input) {
+			return i;
+		}
+	}
+	return 0;
+}
+
+static void reverse_translate_byte(uint8_t *input, uint8_t *dst) {
+	*dst++ = (reverse_translate_2bit(*input++) << 6) | (reverse_translate_2bit(*input++) << 4) | (reverse_translate_2bit(*input++) << 2) | reverse_translate_2bit(*input++);
+}
+bool SM16703P_GetPixel(uint32_t pixel, byte *dst) {
+	int i;
+	uint8_t *input;
+
+	if (spi_msg == 0)
+		return;
+	
+	input = spi_msg->send_buf + pixel_offset + (pixel * 3 * 4);
+
+	for (i = 0; i < 3; i++) {
+		*dst++ = (reverse_translate_2bit(*input++) << 6) | (reverse_translate_2bit(*input++) << 4) | (reverse_translate_2bit(*input++) << 2) | reverse_translate_2bit(*input++);
+	}
+}
 void SM16703P_setRaw(int start_offset, const char *s, int push) {
 	// start offset is in bytes, and we do 2 bits per dst byte, so *4
 	uint8_t *dst = spi_msg->send_buf + pixel_offset + start_offset*4;
