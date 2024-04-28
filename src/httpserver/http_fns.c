@@ -2645,10 +2645,12 @@ const char* g_obk_flagNames[] = {
 	"[HTTP] Disable authentication in safe mode (not recommended)",
 	"[MQTT Discovery] Don't merge toggles and dimmers into lights",
 	"[TuyaMCU] Store raw data",
+	"[TuyaMCU] Store ALL data",
+	"[PWR] Invert AC dir",
+	"error",
 	"error",
 	"error",
 }; 
-
 int http_fn_cfg_generic(http_request_t* request) {
 	int i;
 	char tmpA[64];

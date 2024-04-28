@@ -1063,7 +1063,7 @@
   },
   {
     "name": "linkTuyaMCUOutputToChannel",
-    "args": "[dpId][varType][channelID][bDPCache-Optional]",
+    "args": "[dpId][varType][channelID][bDPCache-Optional][mult-optional]",
     "descr": "Used to map between TuyaMCU dpIDs and our internal channels. Last argument is optional and 0 by default. You can set it to 1 for battery powered devices, so a variable is set with DPCache, for example a sampling interval for humidity/temperature sensor. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap. Please see [Tuya Docs](https://developer.tuya.com/en/docs/iot/tuya-cloud-universal-serial-port-access-protocol?id=K9hhi0xxtn9cb) for info about TuyaMCU. You can also see our [TuyaMCU Analyzer Tool](https://www.elektroda.com/rtvforum/viewtopic.php?p=20528459#20528459)",
     "fn": "TuyaMCU_LinkTuyaMCUOutputToChannel",
     "file": "driver/drv_tuyaMCU.c",
@@ -1694,7 +1694,7 @@
   {
     "name": "SetChannelLabel",
     "args": "[ChannelIndex][Str][bHideTogglePrefix]",
-    "descr": "Sets a channel label for UI. If you use 1 for bHideTogglePrefix, then the 'Toggle ' prefix from button will be omitted",
+    "descr": "Sets a channel label for UI and default entity name for Home Assistant discovery. If you use 1 for bHideTogglePrefix, then the 'Toggle ' prefix from UI button will be omitted",
     "fn": "CMD_SetChannelLabel",
     "file": "cmnds/cmd_channels.c",
     "requires": "",
@@ -1703,7 +1703,7 @@
   {
     "name": "SetChannelPrivate",
     "args": "[ChannelIndex][bPrivate]",
-    "descr": "Channels marked as private are NEVER published via MQTT.",
+    "descr": "Channels marked as private are NEVER published via MQTT and excluded from Home Assistant discovery",
     "fn": "NULL);",
     "file": "cmnds/cmd_channels.c",
     "requires": "",
@@ -1954,8 +1954,8 @@
   },
   {
     "name": "SM16703P_Init",
-    "args": "[NumberOfLEDs]",
-    "descr": "This will setup LED driver for a strip with given number of LEDs. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
+    "args": "[NumberOfLEDs][ColorOrder]",
+    "descr": "This will setup LED driver for a strip with given number of LEDs. Please note that it also works for WS2812B and similiar LEDs. You can optionally set the color order with either RGB, RBG, BRG, BGB, GRB or GBR (default RGB). See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
     "fn": "NULL);",
     "file": "driver/drv_sm16703P.c",
     "requires": "",
@@ -2237,6 +2237,15 @@
     "descr": "Test strdup function to see if it allocs news string correctly, also test freeing the string",
     "fn": "testStrdup",
     "file": "cmnds/cmd_test.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "TimeSize",
+    "args": "CMD_TimeSize",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_main.c",
     "requires": "",
     "examples": ""
   },

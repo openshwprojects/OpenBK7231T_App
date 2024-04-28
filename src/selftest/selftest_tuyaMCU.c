@@ -81,6 +81,93 @@ void Test_TuyaMCU_RawAccess() {
 	SIM_ClearMQTTHistory();
 
 }
+void Test_TuyaMCU_Mult_Internal(float mul) {
+	// reset whole device
+	SIM_ClearOBK(0);
+	SIM_ClearAndPrepareForMQTTTesting("TuyaMCU", "bekens");
+
+	SIM_UART_InitReceiveRingBuffer(2048);
+
+	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+
+	CFG_SetFlag(OBK_FLAG_TUYAMCU_STORE_RAW_DATA, 1);
+
+	char cmd[256];
+	// This will map TuyaMCU fnID 2 of type Value to channel 15 and mult %f
+	sprintf(cmd,"linkTuyaMCUOutputToChannel 2 val 15 0 %f",mul);
+	CMD_ExecuteCommand(cmd, 0);
+	SELFTEST_ASSERT_CHANNEL(15, 0);
+	// This packet sets fnID 2 of type Value to 100
+	CMD_ExecuteCommand("uartFakeHex 55AA0307000802020004000000647D", 0);
+
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Dp", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/TuyaMCU/DP", false);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "id", 2);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "type", 0x02);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "data", 100 * mul);
+
+	SIM_ClearMQTTHistory();
+
+	// This packet sets fnID 2 of type Value to 90
+	CMD_ExecuteCommand("uartFakeHex 55AA03070008020200040000005A73", 0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(1000, false);
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Dp", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/TuyaMCU/DP", false);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "id", 2);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "type", 0x02);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "data", 90 * mul);
+
+	SIM_ClearMQTTHistory();
+
+
+	// This packet sets dpID 18 of type RAW
+	// dpID 18
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 18 Raw", 0);
+	CMD_ExecuteCommand("uartFakeHex 55AA030700101200000C0101003F030100FA040100AA25", 0);
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Dp", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/TuyaMCU/DP", false);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "id", 18);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "type", 0x00);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_STR(0, "data", "0101003F030100FA040100AA");
+
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(1, "id", 2);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(1, "type", 0x02);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(1, "data", 90 * mul);
+
+	SIM_ClearMQTTHistory();
+
+	// This packet sets dpID 104 of type RAW
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 104 Raw", 0);
+	CMD_ExecuteCommand("uartFakeHex 55AA03070008680200040000000180", 0);
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Dp", "");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/TuyaMCU/DP", false);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "id", 104);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(0, "type", 0x00);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_STR(0, "data", "00000001");
+
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(1, "id", 18);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(1, "type", 0x00);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_STR(1, "data", "0101003F030100FA040100AA");
+
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(2, "id", 2);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(2, "type", 0x02);
+	SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(2, "data", 90 * mul);
+
+	SIM_ClearMQTTHistory();
+
+}
+void Test_TuyaMCU_Mult() {
+	Test_TuyaMCU_Mult_Internal(1.0f);
+	Test_TuyaMCU_Mult_Internal(-1.0f);
+	Test_TuyaMCU_Mult_Internal(-5.0f);
+	Test_TuyaMCU_Mult_Internal(0.5f);
+	Test_TuyaMCU_Mult_Internal(100.0f);
+}
 void Test_TuyaMCU_Basic() {
 	// reset whole device
 	SIM_ClearOBK(0);
@@ -127,7 +214,7 @@ void Test_TuyaMCU_Basic() {
 	//
 	// OBK sends: 
 	// 55 AA	00	06		00 05	1001000100	1C
-	//HEADER	VER = 00	SetDP		LEN	fnId = 16 Bool V = 0	CHK
+	//HEADER	VER = 00	SetDP		LEN	dpId = 16 Bool V = 0	CHK
 	CMD_ExecuteCommand("tuyaMcu_sendState 16 1 0", 0);
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	06		00 05	1001000100	1C");
 	// nothing is sent by OBK at that point
@@ -135,7 +222,7 @@ void Test_TuyaMCU_Basic() {
 
 	// OBK sends: 
 	// 55 AA	00	06		00 05	0101000101	0E
-	// HEADER	VER = 00	Unk		LEN	fnId = 1 Bool V = 1	CHK
+	// HEADER	VER = 00	Unk		LEN	dpId = 1 Bool V = 1	CHK
 	CMD_ExecuteCommand("tuyaMcu_sendState 1 1 1", 0);
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	06		00 05	0101000101	0E");
 	// nothing is sent by OBK at that point
@@ -143,7 +230,7 @@ void Test_TuyaMCU_Basic() {
 
 	// OBK sends: 
 	// 55 AA	00	06		00 05	0101000100	0D
-	// HEADER	VER = 00	Unk		LEN	fnId = 1 Bool V = 0	CHK
+	// HEADER	VER = 00	Unk		LEN	dpId = 1 Bool V = 0	CHK
 	CMD_ExecuteCommand("tuyaMcu_sendState 1 1 0", 0);
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	06		00 05	0101000100	0D");
 	// nothing is sent by OBK at that point
@@ -152,7 +239,7 @@ void Test_TuyaMCU_Basic() {
 
 	// OBK sends: 
 	// 55 AA	00	06		00 05	6C01000101	79
-	// HEADER	VER = 00	Unk		LEN	fnId = 108 Bool V = 1	CHK
+	// HEADER	VER = 00	Unk		LEN	dpId = 108 Bool V = 1	CHK
 	CMD_ExecuteCommand("tuyaMcu_sendState 108 1 1", 0);
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	06		00 05	6C01000101	79");
 	// nothing is sent by OBK at that point
@@ -162,7 +249,7 @@ void Test_TuyaMCU_Basic() {
 
 	// OBK sends: 
 	// 55 AA	00	06		00 05	6D04000110	8C
-	// HEADER	VER = 00	Unk		LEN	fnId = 109 Enum V = 16	CHK
+	// HEADER	VER = 00	Unk		LEN	dpId = 109 Enum V = 16	CHK
 	CMD_ExecuteCommand("tuyaMcu_sendState 109 4 16", 0);
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	06		00 05	6D04000110	8C");
 	// nothing is sent by OBK at that point
@@ -176,7 +263,7 @@ void Test_TuyaMCU_Basic() {
 
 	// OBK sends: 
 	// 55 AA	00	06		00 14	1100001001010050030100F5040100A008000032	64
-	//HEADER	VER = 00	Unk		LEN	fnId = 17 Raw V = 01 01 00 50 03 01 00 F5 04 01 00 A0 08 00 00 32	CHK
+	//HEADER	VER = 00	Unk		LEN	dpId = 17 Raw V = 01 01 00 50 03 01 00 F5 04 01 00 A0 08 00 00 32	CHK
 	CMD_ExecuteCommand("tuyaMcu_sendState 17 0 01010050030100F5040100A008000032", 0);
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	06		00 14	1100001001010050030100F5040100A008000032	64");
 	// nothing is sent by OBK at that point

@@ -167,6 +167,7 @@ const char* Tokenizer_GetArg(int i);
 const char* Tokenizer_GetArgFrom(int i);
 int Tokenizer_GetArgInteger(int i);
 int Tokenizer_GetArgIntegerDefault(int i, int def);
+float Tokenizer_GetArgFloatDefault(int i, float def);
 bool Tokenizer_IsArgInteger(int i);
 float Tokenizer_GetArgFloat(int i);
 int Tokenizer_GetArgIntegerRange(int i, int rangeMax, int rangeMin);

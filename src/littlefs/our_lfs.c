@@ -14,7 +14,7 @@
 #include "../new_cfg.h"
 #include "../cmnds/cmd_public.h"
 
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || WINDOWS
 
 #include "typedef.h"
 #include "flash_pub.h"
@@ -459,7 +459,7 @@ void release_lfs(){
 }
 
 
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || WINDOWS
 // Read a region in a block. Negative error codes are propogated
 // to the user.
 static int lfs_read(const struct lfs_config *c, lfs_block_t block,
