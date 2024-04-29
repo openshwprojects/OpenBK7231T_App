@@ -167,33 +167,33 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	};/*;*/ // Why was this here?
 	
 	// Close the table
-	poststr(request, "<style> table {text-align: left;} </style>");
+	poststr(request, "</table>");
 
 	//
-
-	  poststr(request, "<style> table {  text-align: left;}</style>");  
+	poststr(request, "<hr><table style='width:100%'>");
+	poststr(request, "<table style='text-align: left'></style>");
+	//poststr(request, "<style> table {  text-align: left;}</style>");  
+	//poststr(request, "<hr><table style='width:100%'> text-align: left");
 	poststr(request, " <h2>HEnergy Stats</h2>");
 			
 			poststr(request, "<table>");
 			// Table Format and headers
 			//poststr(request, "<tr>");
-			poststr(request, "<b><tr><th>Time </th>");
+			poststr(request, "<th>Time </th>");
 			poststr(request, "<th>Consumption </th>");
 			poststr(request, "<th>Export </th>");
-			poststr(request, "<th>Net Metering </th></tr>");
+			poststr(request, "<th>Net Metering </th></tr><hr>");
 
 			// First field: Time
-			poststr(request, "<tr>");
+			//poststr(request, "<tr>");
 			for (int q=0; q<24; q++)
 			{
-				//hprintf255(request, "<th>Consumption </th>");
-				//poststr(request, "<th>Net Metering </th></tr>,</b>");
-				hprintf255(request, "<td> %i:00 </td>", q);
-				hprintf255(request, "<td> %iW </td>", consumption_matrix[q]);
+				hprintf255(request, "<tr><td> %i:00 </td> ", q);
+				hprintf255(request, "<td> %iW </td> ", consumption_matrix[q]);
 				hprintf255(request, "<td> %iW </td>", export_matrix[q]);
-				hprintf255(request, "<td> %iW </td>", net_matrix[q]);
+				hprintf255(request, "<td> %iW </td> </tr>", net_matrix[q]);
 			}
-			poststr(request, "</tr>");
+			//poststr(request, "</tr>");
 	
 			/*// Second Field: Consumption Stats
 			poststr(request, "<tr>");
