@@ -56,7 +56,7 @@ static byte old_time = 0;
 #define bypass_off_time 18
 #define min_daily_time_on 120	// Runs the diversion load up to this specified ammount of time, if there wasn't enough sun over the day.
 int time_on = 0;		// Variable to count how long the Bypass load ran during the day
-int dump_load_relay = 0;	// Variable to Indicate on the Webpage if the Bypass load is on
+int dump_load_relay = 3;	// Variable to Indicate on the Webpage if the Bypass load is on
 int lastsync = 0; 		// Variable to run the bypass relay loop. It's used to take note of the last time it run
 byte check_time = 0; 		// Variable for Minutes
 byte check_hour = 0;		// Variable for Hour	
@@ -614,7 +614,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
 		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
 		{			
-			if (!first_run)
+			/*if (!first_run)
 			{
 			//An update is forced at startup, so the energy values are correct.
 			// We load from memory at first run, then add to our temp variable
@@ -627,7 +627,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			real_export = 0;
 			real_consumption = 0;
 			first_run = 1;
-			}
+			}*/
 
 			//sync with the clock
 			check_time = NTP_GetMinute();
@@ -709,34 +709,31 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			savetoflash = 1;
 			}
 
-			// If Netmetering is set to 15minutes, we need to reset more often.
+			// If Netmetering is set to 15minutes, we need to reset more often. We can't save, since our temp variable is not being reset, to keep the hourly records.
 			//else if ((((check_time == 15)||(check_time == 30)||(check_time == 45))&&(min_reset == 1)&&(CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))&&(!(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN))))||(hour_reset == 1))
 			else if ((((check_time == 15)||(check_time == 30)||(check_time == 45)))&&(min_reset == 1))
 			{
-				if  ((CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))&&(!(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN))))
+				if  (CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))
 				{
 				// reset the timing variable. if we are producing enough, if wont cycle the diversion load.
 				lastsync = 0;
-				// Save new value, if positive
-				if (net_energy > 0){sensors[OBK_GENERATION_TOTAL].lastReading += net_energy;}
-				// Save new value, if negative (minus add minus equals plus, so we increment consumption)
-				else {sensors[OBK_CONSUMPTION_TOTAL].lastReading -= net_energy;}
+				// Save new value, if positive. We need to do some magic to keep the values on the table for one hour
+				if (net_energy > 0)
+					{			
+					//Now we calculate a deduction to the value - As it was effectivelly exported and not available to offset anymore.
+					Export deduction = net_energy;
+					
+					}
 				}
 				
 			// Clear the variables
-			net_energy = 0;
-			real_export = 0;
-			real_consumption = 0;
 			min_reset = 0;
-			hour_reset = 0;
 			energyCounterMinutesIndex = 0;
-			// Save to Flash
-			savetoflash = 1;
 			}
 	
 			// ------------------------------------------------------------------------------------------------------------------
 			// Calculate the Effective energy consumed / produced during the period by summing both counters and deduct their values at the start of the period
-			net_energy = (int)(real_consumption - real_export);			// calculate difference since start
+			net_energy = (int)(real_consumption - real_export - export_deduction);			// calculate difference since start
 			// ------------------------------------------------------------------------------------------------------------------
 			
 			// Bypass load code. Runs if there is excess energy and at a programmable time, in case there was no sun
