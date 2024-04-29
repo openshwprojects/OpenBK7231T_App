@@ -643,10 +643,10 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			{
 			//An update is forced at startup, so the energy values are correct.
 			// We load from memory at first run, then add to our temp variable
-			//net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading); // OK
-			//real_export = (sensors[OBK_GENERATION_TOTAL].lastReading);
+			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading); // OK
+			real_export = (sensors[OBK_GENERATION_TOTAL].lastReading);
 			
-			//real_consumption = (sensors[OBK_CONSUMPTION_TOTAL].lastReading);
+			real_consumption = (sensors[OBK_CONSUMPTION_TOTAL].lastReading);
 				
 			dump_load_relay = 3;
 			//Now we calculate the net_energy, which is zero, because we just started!
@@ -688,9 +688,9 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
 			// -----------------------------------------------------------------------------------------------------------------------
 			// Update stat's stable
-			consumption_matrix[check_hour] = real_consumption;
-			export_matrix[check_hour] = real_export;
-			net_matrix[check_hour] = net_energy;
+			//consumption_matrix[check_hour] = real_consumption;
+			//export_matrix[check_hour] = real_export;
+			//net_matrix[check_hour] = net_energy;
 			// ------------------------------------------------------------------------------------------------------------------------
 			
 			// This turns the bypass load off if we are using a lot of power
