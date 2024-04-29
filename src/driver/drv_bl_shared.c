@@ -711,7 +711,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				
 			}
 
-			// If netmetering is enabled, we reset every hour.
+		/*	// If netmetering is enabled, we reset every hour.
 			if (((CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))||(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN)))&&(hour_reset == 1))
 			{
 				reset_counter = 1;		
@@ -778,7 +778,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
 			// Here we define a Bypass. For example if a very heavy load is connected, it's likelly our bypass load is not desired.
 			// In this case, we turn the load off and wait for the next cycle for a new update.
-
+*/
 			//The relay is updated ever x numer of minutes as defined on 'dump_load_hysteresis'
 			if (lastsync >= dump_load_hysteresis)
 			{
@@ -900,14 +900,47 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     // Apply values. Add Extra variable for generation 
     // We use temp variables so the timer can go up or down. This would cause issues with Home assistant.
     // We also take advantage of this to save at regular intervals.
-    	real_consumption += energy;
-	real_export += generation;     //sensors[OBK_GENERATION_TOTAL].lastReading += generation;
+    	//real_consumption += energy;
+	//real_export += generation;     //sensors[OBK_GENERATION_TOTAL].lastReading += generation;
 
     // Netmetering not enabled? Let's save directly.
     if ((!(CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN)))&&(!(CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)))&&(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN)))
 	    {
 	    sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
 	    sensors[OBK_GENERATION_TOTAL].lastReading += generation;
+	    consumption_matrix [check_hour] += energy
+	    export_matrix[check_hour] += generation;
+	    net_matrix[check_hour] = ((int)(consumption_matrix [check_hour] -  export_matrix[check_hour]))
+	    energy = 0;
+	    generation = 0;
+	    }
+	else
+	    {
+	    consumption_matrix [check_hour] += energy
+	    export_matrix[check_hour] += generation;
+	    net_matrix[check_hour] = ((int)(consumption_matrix [check_hour] -  export_matrix[check_hour]))
+	    energy = 0;
+	    generation = 0;
+	    // calculate consumption
+	    if (hour_reset)
+		    {
+		    	int (check_hour_temp);
+			if (check_hour > 0) {check_hour_temp = (check_hour -1);}
+			else {check_hour_temp = 23;}
+			if (net_matrix [check_hour_temp] > 0)
+			{
+				//If positive, we generated
+				sensors[OBK_GENERATION_TOTAL].lastReading += generation_matrix [check_hour_temp];
+			}
+			else
+			{
+				//If Negative, we consumed
+				sensors[OBK_CONSUMPTION_TOTAL].lastReading -= consumption_matrix [check_hour_temp];
+			}
+			hour_reset = 0;
+			time_hour_reset = check_hour;
+			time_min_reset = check_time;
+		    }
 	    }
 	
     energyCounterStamp = xTaskGetTickCount();
