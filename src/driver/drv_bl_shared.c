@@ -688,7 +688,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
 				//We want the last hour values to be recovered. SO we use some logic.
 				if (check_hour >0) {net_matrix[check_hour-1] += net_energy;}
-				else {net_matrix[23] += net_energyt;}
+				else {net_matrix[23] += net_energy;}
 				// Clear old data from our current time table.
 				net_matrix[check_hour] = 0;
 				consumption_matrix [check_hour] = 0;
