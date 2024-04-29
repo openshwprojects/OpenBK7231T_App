@@ -4,6 +4,9 @@ static int consumption_matrix [24] = {0};
 static int export_matrix[24] = {0};
 static int net_matrix[24] = {0};
 
+static int old_export_energy = 0;
+static int old_real_consumption = 0;
+
 #include "drv_bl_shared.h"
 
 #include "../new_cfg.h"
@@ -26,7 +29,7 @@ int stat_updatesSent = 0;
 
 //static byte reset_counter = 0;
 static byte savetoflash = 0;
-static int export_deduction = 0;
+//static int export_deduction = 0;
 //static byte mqtt_update = 0;
 //static byte flash_overpower = 0;
 //static byte overpower_reset = 2;
