@@ -30,10 +30,11 @@ static int export_deduction = 0;
 //static byte mqtt_update = 0;
 //static byte flash_overpower = 0;
 //static byte overpower_reset = 2;
+static byte index = 0;
 static byte min_reset = 0;
 static byte hour_reset = 0;
 //static byte first_run = 0;
-static float net_energy = 0;
+static float net_energy[4] = {0};
 //static float net_energy_start = 0;
 static float real_export = 0;
 static float real_consumption = 0;
@@ -257,6 +258,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		{
 		
 		// We print some stats, mainly for debugging
+		hprintf255(request, "<font size=1>Netmetering Index now is  %d<br>", index);
 		hprintf255(request, "<font size=1>Diversion relay total on-time today was %d min.<br> Next sync in %d min. ", 
 				time_on, (dump_load_hysteresis-lastsync));
 			// Print Status of relay)
@@ -268,7 +270,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		hprintf255(request,"<font size=1> Last NetMetering reset occured at: %d:%d<br></font>", time_hour_reset, time_min_reset); // Save the value at which the counter was synchronized
 		hprintf255(request,"<font size=1> Last diversion Load Bypass: %d:%d </font><br>", check_hour_power, check_time_power);	
 		// Print out periodic statistics and Total Generation at the bottom of the page.
-		hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", energyCounterMinutesIndex, energyCounterSampleCount, net_energy); //Net metering shown in Wh (Small value)    
+		hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", energyCounterMinutesIndex, energyCounterSampleCount, net_energy[index]); //Net metering shown in Wh (Small value)    
 		}	
 	
 		/********************************************************************************************************************/
@@ -665,7 +667,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
 	// Add to the table ---------------------------------------------------------------------------------
 		//real_consumption
-		net_matrix[check_hour] = (int)net_energy;
+		net_matrix[check_hour] = (int)net_energy[index];
 		export_matrix[check_hour] = (int)real_export;
 		consumption_matrix [check_hour] = (int)real_consumption;		
 
@@ -674,16 +676,18 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			// If netmetering is enabled, we reset every hour.
 			if (((CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))||(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN)))&&(hour_reset == 1))
 			{
+				index = 1;
 				// reset the timing variable. if we are producing enough, if wont cycle the diversion load.
 				lastsync = 0;
 				// Save new value, if positive
 				
-				if (net_energy < 0){sensors[OBK_GENERATION_TOTAL].lastReading -= (net_energy);}
+				if ((net_energy[index] < 0){sensors[OBK_GENERATION_TOTAL].lastReading -= (net_energy[index];}
 				// Save new value, if negative (minus add minus equals plus, so we increment consumption)
-				else {sensors[OBK_CONSUMPTION_TOTAL].lastReading += net_energy;}
+				
+				else {sensors[OBK_CONSUMPTION_TOTAL].lastReading += (net_energy[index];}
 				
 			// Clear the variables
-			net_energy = 0;
+			net_energy[] = {0};
 			real_export = 0;
 			real_consumption = 0;
 			min_reset = 0;
@@ -694,22 +698,25 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			// Save the time
 			time_hour_reset = check_hour;
 			time_min_reset = check_time;	
+			index = 0;
 			}
 
 			// If Netmetering is set to 15minutes, we need to reset more often. We can't save, since our temp variable is not being reset, to keep the hourly records.
 			//else if ((((check_time == 15)||(check_time == 30)||(check_time == 45))&&(min_reset == 1)&&(CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))&&(!(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN))))||(hour_reset == 1))
 			else if ((((check_time == 15)||(check_time == 30)||(check_time == 45)))&&(min_reset == 1))
 			{
+				index++;
+				net_energy[index];
 				if  (CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))
 				{
 				// reset the timing variable. if we are producing enough, if wont cycle the diversion load.
 				lastsync = 0;
 				// Save new value, if positive. We need to do some magic to keep the values on the table for one hour
-				if (net_energy < 0) // If negative, we exported
-								
+				if (net_energy[index] < 0) // If negative, we exported		
 					//Now we calculate a deduction to the value - As it was effectivelly exported and not available to offset anymore.
-					{sensors[OBK_GENERATION_TOTAL].lastReading -= (net_energy);}
-				else {sensors[OBK_CONSUMPTION_TOTAL].lastReading += net_energy;}	
+					{sensors[OBK_GENERATION_TOTAL].lastReading -= (net_energy[index];}
+				
+				else {sensors[OBK_CONSUMPTION_TOTAL].lastReading += (net_energy[index];}	
 					
 				}
 				
@@ -723,7 +730,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	
 			// ------------------------------------------------------------------------------------------------------------------
 			// Calculate the Effective energy consumed / produced during the period by summing both counters and deduct their values at the start of the period
-			net_energy = (int)(real_consumption - real_export);			// calculate difference since start
+			net_energy[index] = (int)(real_consumption - real_export);			// calculate difference since start
 			// ------------------------------------------------------------------------------------------------------------------
 			
 			// Bypass load code. Runs if there is excess energy and at a programmable time, in case there was no sun
@@ -740,7 +747,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				lastsync = 0;
 		
 				// Are we exporting enough? If so, turn the relay on
-				if (((int)net_energy>(int)dump_load_on))
+				if (((int)net_energy[index]>(int)dump_load_on))
 					{
 					dump_load_relay = 1;
 					time_on += dump_load_hysteresis;	// Increase the timer.
@@ -754,7 +761,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 					CMD_ExecuteCommand("setChannel 1 1", 0);
 					}
-				else if (((int)net_energy<(int)dump_load_off))
+				else if (((int)net_energy[index]<(int)dump_load_off))
 					{
 					// If none of the exemptions applies, we turn the diversion load off.
 					dump_load_relay = 3;
