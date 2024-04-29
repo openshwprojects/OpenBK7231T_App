@@ -687,8 +687,8 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				else {sensors[OBK_CONSUMPTION_TOTAL].lastReading += net_energy;}
 
 				//We want the last hour values to be recovered. SO we use some logic.
-				if (check_hour >0) {net_matrix[check_hour-1] += net_export;}
-				else {net_matrix[23] += net_export;}
+				if (check_hour >0) {net_matrix[check_hour-1] += net_energy;}
+				else {net_matrix[23] += net_energyt;}
 				// Clear old data from our current time table.
 				net_matrix[check_hour] = 0;
 				consumption_matrix [check_hour] = 0;
@@ -709,7 +709,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			// Save the time
 			time_hour_reset = check_hour;
 			time_min_reset = check_time;	
-			net_export = 0;
+			net_energy = 0;
 			}
 
 			// If Netmetering is set to 15minutes, we need to reset more often. We can't save, since our temp variable is not being reset, to keep the hourly records.
@@ -724,11 +724,11 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				// We save the old values, so we can work with the current period only and deduct the netmetering, while keeping stats for last hour
 				old_export_energy += (int)real_export;
 				old_real_consumption +=(int)real_consumption;	
-				net_matrix[check_hour] += net_export;
+				net_matrix[check_hour] += net_energy;
 				// Now we reset everything to start again a new cycle.
 				real_export = 0;
 				real_consumption = 0;
-				net_export = 0;
+				net_energy = 0;
 				}
 				
 			// Clear the variables
