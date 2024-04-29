@@ -681,10 +681,15 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				lastsync = 0;
 				// Save new value, if positive
 				
-				if (net_energy[index1] < 0){sensors[OBK_GENERATION_TOTAL].lastReading -= (net_energy[index1]);}
+                        if (net_energy[index1] < 0)
+			{
+				sensors[OBK_GENERATION_TOTAL].lastReading -= (net_energy[index1]);
+			}
 				// Save new value, if negative (minus add minus equals plus, so we increment consumption)
-				
-				else {sensors[OBK_CONSUMPTION_TOTAL].lastReading += (net_energy[index1]);}
+				else 
+				{
+				sensors[OBK_CONSUMPTION_TOTAL].lastReading += (net_energy[index1]);
+				}
 				
 			// Clear the variables
 			net_energy[0] = 0;
