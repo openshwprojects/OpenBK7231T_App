@@ -190,16 +190,16 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				if (q == check_hour)
 				{
 				hprintf255(request, "<tr><td> <b> %i:00 </td> ", q);
-				hprintf255(request, "<td> <b> %.*fW </td> ", consumption_matrix[q]);
-				hprintf255(request, "<td> <b> %.*fW </td>", export_matrix[q]);
-				hprintf255(request, "<td> <b> %iW </td> </tr>", net_matrix[q]);
+				hprintf255(request, "<td> <b> %dW </td> ", (int)consumption_matrix[q]);
+				hprintf255(request, "<td> <b> %dfW </td>", (int)export_matrix[q]);
+				hprintf255(request, "<td> <b> %dW </td> </tr>", net_matrix[q]);
 				}
 			else
 				{
 				hprintf255(request, "<tr><td> %i:00 </td> ", q);
-				hprintf255(request, "<td> %.*fW </td> ", consumption_matrix[q]);
-				hprintf255(request, "<td> %.*fW </td>", export_matrix[q]);
-				hprintf255(request, "<td> %iW </td> </tr>", net_matrix[q]);
+				hprintf255(request, "<td> %dW </td> ", (int)consumption_matrix[q]);
+				hprintf255(request, "<td> %dW </td>", (int)export_matrix[q]);
+				hprintf255(request, "<td> %dW </td> </tr>", net_matrix[q]);
 				}
 			}
 			//poststr(request, "</tr>");
