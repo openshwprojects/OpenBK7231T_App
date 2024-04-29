@@ -24,9 +24,11 @@ static int net_matrix[24] = {0};
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
 
-// static byte reset_counter = 0;
-static int check_hour_temp = 0;
+static byte reset_counter = 0;
 static byte savetoflash = 0;
+//static byte mqtt_update = 0;
+static byte flash_overpower = 0;
+//static byte overpower_reset = 2;
 static byte min_reset = 0;
 static byte hour_reset = 0;
 static byte first_run = 0;
@@ -34,17 +36,20 @@ static float net_energy = 0;
 static float net_energy_start = 0;
 static float real_export = 0;
 static float real_consumption = 0;
-
+//static int net_energy_timer = 0;
 // Variables for the solar dump load timer
+//static byte sync = 0;
+//static int sync_time = 0;
 static byte old_hour = 0;
 static byte time_hour_reset = 0;
 static byte time_min_reset = 0;
 static byte old_time = 0;
+//static int high_power_debounce = 0;
 #define max_power_bypass_off 1000
 #define dump_load_hysteresis 3	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
+//int min_production = -50;	// The minimun instantaneous solar production that will trigger the dump load.
 #define dump_load_on 15		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
 #define dump_load_off 1		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
-
 // These variables are used to program the bypass load, for example turn it on late afternoon if there was no sun for the day
 //#define bypass_timer_reset 23	// Just so it doesn't accidentally reset when the device is rebooted (0)...
 #define bypass_on_time 15
@@ -54,16 +59,16 @@ int time_on = 0;		// Variable to count how long the Bypass load ran during the d
 int dump_load_relay = 0;	// Variable to Indicate on the Webpage if the Bypass load is on
 int lastsync = 0; 		// Variable to run the bypass relay loop. It's used to take note of the last time it run
 byte check_time = 0; 		// Variable for Minutes
-static byte check_hour = 0;		// Variable for Hour	
-static byte check_time_power = 0; 		// Variable for Minutes
-static byte check_hour_power = 0;		
+byte check_hour = 0;		// Variable for Hour	
+byte check_time_power = 0; 		// Variable for Minutes
+byte check_hour_power = 0;		
 
 //Command to turn remote plug on/off
 //const char* rem_relay_on = "http://<ip>/cm?cmnd=Power%20on";
 //const char* rem_relay_off = "http://<ip>/cm?cmnd=Power%20off";
 //-----------------------------------------------------------
 	
-// Order corresponds to enums OBK_VOLTAGE - OBK__LAST
+// Order corrsponds to enums OBK_VOLTAGE - OBK__LAST
 // note that Wh/kWh units are overridden in hass_init_energy_sensor_device_info()
 const char UNIT_WH[] = "Wh";
 struct {
@@ -170,7 +175,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	// Close the table
 	poststr(request, "</table>");
 
-	
+	// Aditional code for power monitoring
+        //------------------------------------------------------------------------------------------------------------------------------------------
 	poststr(request, "<table style='width:100%'>");
 	poststr(request, "<table style='text-align: center'></style>");
 	poststr(request, " <h2>Energy Stats</h2>");
@@ -202,40 +208,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				hprintf255(request, "<td> %dW </td> </tr>", net_matrix[q]);
 				}
 			}
-			//poststr(request, "</tr>");
+	poststr(request, "</tr></table>");
 	
-			/*// Second Field: Consumption Stats
-			poststr(request, "<tr>");
-			for (int q=0; q<24; q++)
-			{
-				hprintf255(request, "<td> %iW </td>", consumption_matrix[q]);
-			}
-			poststr(request, "</tr>");
-			
-			// Third Field: Export Stats
-			poststr(request, "<tr>");
-			for (int q=0; q<24; q++)
-			{
-				hprintf255(request, "<td> %iW </td>", export_matrix[q]);
-			}
-			poststr(request, "</tr>");
-
-			//Fourth Field: Net Energy Stats
-			poststr(request, "<tr>");
-			for (int q=0; q<24; q++)
-			{
-				hprintf255(request, "<td> %iW </td>", net_matrix[q]);
-			}*/
-			poststr(request, "</tr></table>");
-
-
-				
-				// hprintf255(request, "<tr> Consumption: %i Export: %i Net Energy: %i \n", consumption_matrix[q], export_matrix[q], net_matrix[q]);
-	//
-
-	// Aditional code for power monitoring
-        //------------------------------------------------------------------------------------------------------------------------------------------
-			//--------------------------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------------------------------
 			// Update status of the diversion relay on webpage		
 			//-------------------------------------------------------------------------------------------------------------------------------------------------
 			
@@ -645,9 +620,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			// We load from memory at first run, then add to our temp variable
 			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading); // OK
 			real_export = (sensors[OBK_GENERATION_TOTAL].lastReading);
-			
 			real_consumption = (sensors[OBK_CONSUMPTION_TOTAL].lastReading);
-				
 			dump_load_relay = 3;
 			//Now we calculate the net_energy, which is zero, because we just started!
 			net_energy = 0;
@@ -685,13 +658,6 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				// Indicator Off
 				// else {CMD_ExecuteCommand("setChannel 1 0", 0);}
 			}
-
-			// -----------------------------------------------------------------------------------------------------------------------
-			// Update stat's stable
-			//consumption_matrix[check_hour] = real_consumption;
-			//export_matrix[check_hour] = real_export;
-			//net_matrix[check_hour] = net_energy;
-			// ------------------------------------------------------------------------------------------------------------------------
 			
 			// This turns the bypass load off if we are using a lot of power
 			if (((sensors[OBK_POWER].lastReading) > max_power_bypass_off) && (!(dump_load_relay == 4)))
@@ -712,7 +678,13 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				
 			}
 
-		/*	// If netmetering is enabled, we reset every hour.
+	// Add to the table ---------------------------------------------------------------------------------
+		net_matrix[check_hour] =  (net_energy_start - (real_consumption-real_export));
+		export_matrix[check_hour] = 0;
+		consumption_matrix [check_hour] = 0;				
+	// End of Add to the table --------------------------------------------------------------------------
+			
+			// If netmetering is enabled, we reset every hour.
 			if (((CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))||(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN)))&&(hour_reset == 1))
 			{
 				reset_counter = 1;		
@@ -742,6 +714,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				//net_energy_timer = 0;
 				
 				net_energy = (net_energy_start - (real_consumption-real_export));			// calculate difference since start
+
 				// Add any excess (if any) to the generation variable, which is updated here.
 				if (net_energy > 0){
 					sensors[OBK_GENERATION_TOTAL].lastReading += net_energy; // Save new value, if positive
@@ -779,7 +752,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
 			// Here we define a Bypass. For example if a very heavy load is connected, it's likelly our bypass load is not desired.
 			// In this case, we turn the load off and wait for the next cycle for a new update.
-*/
+
 			//The relay is updated ever x numer of minutes as defined on 'dump_load_hysteresis'
 			if (lastsync >= dump_load_hysteresis)
 			{
@@ -901,48 +874,14 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     // Apply values. Add Extra variable for generation 
     // We use temp variables so the timer can go up or down. This would cause issues with Home assistant.
     // We also take advantage of this to save at regular intervals.
-    	//real_consumption += energy;
-	//real_export += generation;     //sensors[OBK_GENERATION_TOTAL].lastReading += generation;
+    	real_consumption += energy;
+	real_export += generation;     //sensors[OBK_GENERATION_TOTAL].lastReading += generation;
 
     // Netmetering not enabled? Let's save directly.
-    if ((!(CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN)))&&(!(CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)))&&(!(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN))))
+    if ((!(CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN)))&&(!(CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)))&&(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN)))
 	    {
 	    sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
 	    sensors[OBK_GENERATION_TOTAL].lastReading += generation;
-	    consumption_matrix[check_hour] += energy;
-	    export_matrix[check_hour] += generation;
-	    net_matrix[check_hour] = ((consumption_matrix [check_hour] - export_matrix[check_hour]));
-
-	    }
-	else
-	    {
-	    consumption_matrix[check_hour] += energy;
-	    export_matrix[check_hour] += generation;
-	    net_matrix[check_hour] = ((int)((export_matrix[check_hour])-(consumption_matrix [check_hour])));
-	    //energy = 0;
-	    //generation = 0;
-	    // calculate consumption
-	    if (hour_reset)
-		    {
-		    	//int (check_hour_temp);
-			if (check_hour > 0) {check_hour_temp = (check_hour -1);}
-			else {check_hour_temp = 23;}
-			if (net_matrix[check_hour_temp] > 0)
-			{
-				//If positive, we generated
-				sensors[OBK_GENERATION_TOTAL].lastReading += export_matrix[check_hour_temp];
-			}
-			else
-			{
-				//If Negative, we consumed
-				sensors[OBK_CONSUMPTION_TOTAL].lastReading -= consumption_matrix[check_hour_temp];
-			}
-			hour_reset = 0;
-			time_hour_reset = check_hour;
-			time_min_reset = check_time;
-			energy = 0;
-	   		generation = 0;
-		    }
 	    }
 	
     energyCounterStamp = xTaskGetTickCount();
