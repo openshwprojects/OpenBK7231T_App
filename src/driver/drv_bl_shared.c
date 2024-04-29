@@ -254,7 +254,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		//If we are measuring negative power, we can run the commands to get the netmetering stats
 		// We need NTP enabled for this, as well as the statistics. They need to be manually configured because of duration and time zone.
 		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
-		{		
+		{
+		
 		// We print some stats, mainly for debugging
 		hprintf255(request, "<font size=1>Diversion relay total on-time today was %d min.<br> Next sync in %d min. ", 
 				time_on, (dump_load_hysteresis-lastsync));
@@ -692,7 +693,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			savetoflash = 1;
 			// Save the time
 			time_hour_reset = check_hour;
-			time_min_reset = check_time;
+			time_min_reset = check_time;	
 			}
 
 			// If Netmetering is set to 15minutes, we need to reset more often. We can't save, since our temp variable is not being reset, to keep the hourly records.
@@ -704,21 +705,20 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				// reset the timing variable. if we are producing enough, if wont cycle the diversion load.
 				lastsync = 0;
 				// Save new value, if positive. We need to do some magic to keep the values on the table for one hour
-				if (net_energy < 0){sensors[OBK_GENERATION_TOTAL].lastReading -= (net_energy);}
-				// Save new value, if negative (minus add minus equals plus, so we increment consumption)
-				else {sensors[OBK_CONSUMPTION_TOTAL].lastReading += net_energy;}
-				// Update the tables (NetMetering)
-				// Update the tables (Export)
-				// Update the tables (Consumption)
+				if (net_energy < 0) // If negative, we exported
+								
+					//Now we calculate a deduction to the value - As it was effectivelly exported and not available to offset anymore.
+					{sensors[OBK_GENERATION_TOTAL].lastReading -= (net_energy);}
+				else {sensors[OBK_CONSUMPTION_TOTAL].lastReading += net_energy;}	
+					
 				}
-			}
 				
 			// Clear the variables
 			min_reset = 0;
 			energyCounterMinutesIndex = 0;
-			// Save the time
+			/ Save the time
 			time_hour_reset = check_hour;
-			time_min_reset = check_time;
+			time_min_reset = check_time;	
 			}
 	
 			// ------------------------------------------------------------------------------------------------------------------
