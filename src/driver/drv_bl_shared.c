@@ -26,7 +26,7 @@ int stat_updatesSent = 0;
 
 //static byte reset_counter = 0;
 static byte savetoflash = 0;
-static int export_deduction = 0;
+//static int export_deduction = 0;
 //static byte mqtt_update = 0;
 //static byte flash_overpower = 0;
 //static byte overpower_reset = 2;
@@ -676,7 +676,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			// If netmetering is enabled, we reset every hour.
 			if (((CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))||(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN)))&&(hour_reset == 1))
 			{
-				index1 = 1;
+				index1 = 0;
 				// reset the timing variable. if we are producing enough, if wont cycle the diversion load.
 				lastsync = 0;
 				// Save new value, if positive
@@ -687,7 +687,10 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				else {sensors[OBK_CONSUMPTION_TOTAL].lastReading += (net_energy[index1]);}
 				
 			// Clear the variables
-			net_energy[] = {0};
+			net_energy[0] = {0};
+			net_energy[1] = {0};
+			net_energy[2] = {0};
+			net_energy[3] = {0};
 			real_export = 0;
 			real_consumption = 0;
 			min_reset = 0;
