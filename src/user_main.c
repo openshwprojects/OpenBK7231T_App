@@ -331,6 +331,15 @@ void Main_OnWiFiStatusChange(int code)
 				//DRV_SSDP_Restart(); // this kills things
 			}
 		}
+#if defined(PLATFORM_LN882H)
+		// LN882H hack, maybe place somewhere else?
+		// this will be applied only if WiFi is connected
+		if (g_ln882h_pendingPowerSaveCommand != -1) {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_PowerSave: applying delayed setting. PowerSave will set to %i", g_ln882h_pendingPowerSaveCommand);
+			LN882H_ApplyPowerSave(g_ln882h_pendingPowerSaveCommand);
+			g_ln882h_pendingPowerSaveCommand = -1;
+		}
+#endif
 		break;
 		/* for softap mode */
 	case WIFI_AP_CONNECTED:
@@ -730,14 +739,6 @@ void Main_OnEverySecond()
 				}
 			}
 		}
-#if defined(PLATFORM_LN882H)
-		// LN882H hack, maybe place somewhere else?
-		// this will be applied only if WiFi is connected
-		if (g_ln882h_pendingPowerSaveCommand != -1) {
-			LN882H_ApplyPowerSave(g_ln882h_pendingPowerSaveCommand);
-			g_ln882h_pendingPowerSaveCommand = -1;
-		}
-#endif
 
 	}
 	if (g_connectToWiFi)

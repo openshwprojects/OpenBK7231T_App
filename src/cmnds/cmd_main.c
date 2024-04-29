@@ -76,7 +76,12 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	if (Tokenizer_GetArgsCount() > 0) {
 		bOn = Tokenizer_GetArgInteger(0);
 	}
+#if (PLATFORM_LN882H)	
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_PowerSave: will set to %i%s", bOn, Main_IsConnectedToWiFi() == 0 ? " after WiFi is connected" : "");
+#else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_PowerSave: will set to %i", bOn);
+#endif
+	
 
 #ifdef PLATFORM_BEKEN
 	extern int bk_wlan_power_save_set_level(BK_PS_LEVEL level);
@@ -102,7 +107,10 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	}
 #elif defined(PLATFORM_LN882H)
 	// this will be applied after WiFi connect
-	g_ln882h_pendingPowerSaveCommand = bOn;
+	if (Main_IsConnectedToWiFi() == 0){
+		g_ln882h_pendingPowerSaveCommand = bOn;
+	}
+	else LN882H_ApplyPowerSave(bOn);
 #else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave is not implemented on this platform");
 #endif    
