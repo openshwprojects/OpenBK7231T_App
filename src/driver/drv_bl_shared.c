@@ -169,12 +169,10 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	// Close the table
 	poststr(request, "</table>");
 
-	//
-	poststr(request, "<hr><table style='width:100%'>");
-	poststr(request, "<table style='text-align: left'></style>");
-	//poststr(request, "<style> table {  text-align: left;}</style>");  
-	//poststr(request, "<hr><table style='width:100%'> text-align: left");
-	poststr(request, " <h2>HEnergy Stats</h2>");
+	
+	poststr(request, "<table style='width:100%'>");
+	poststr(request, "<table style='text-align: center'></style>");
+	poststr(request, " <h2>Energy Stats</h2>");
 			
 			poststr(request, "<table>");
 			// Table Format and headers
@@ -188,10 +186,20 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			//poststr(request, "<tr>");
 			for (int q=0; q<24; q++)
 			{
+				if (q == check_hour)
+				{
+				hprintf255(request, "<tr><td> <b> %i:00 </td> ", q);
+				hprintf255(request, "<td> <b> %iW </td> ", consumption_matrix[q]);
+				hprintf255(request, "<td> <b> %iW </td>", export_matrix[q]);
+				hprintf255(request, "<td> <b> %iW </td> </tr>", net_matrix[q]);
+				}
+			else
+				{
 				hprintf255(request, "<tr><td> %i:00 </td> ", q);
 				hprintf255(request, "<td> %iW </td> ", consumption_matrix[q]);
 				hprintf255(request, "<td> %iW </td>", export_matrix[q]);
 				hprintf255(request, "<td> %iW </td> </tr>", net_matrix[q]);
+				}
 			}
 			//poststr(request, "</tr>");
 	
@@ -636,7 +644,9 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			// We load from memory at first run, then add to our temp variable
 			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading); // OK
 			real_export = (sensors[OBK_GENERATION_TOTAL].lastReading);
+			
 			real_consumption = (sensors[OBK_CONSUMPTION_TOTAL].lastReading);
+				
 			dump_load_relay = 3;
 			//Now we calculate the net_energy, which is zero, because we just started!
 			net_energy = 0;
@@ -674,6 +684,13 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				// Indicator Off
 				// else {CMD_ExecuteCommand("setChannel 1 0", 0);}
 			}
+
+			// -----------------------------------------------------------------------------------------------------------------------
+			// Update stat's stable
+			consumption_matrix [check_hour] = real_consumption;
+			export_matrix[check_hour] = real_export;
+			net_matrix[check_hour] = net_energy;
+			// ------------------------------------------------------------------------------------------------------------------------
 			
 			// This turns the bypass load off if we are using a lot of power
 			if (((sensors[OBK_POWER].lastReading) > max_power_bypass_off) && (!(dump_load_relay == 4)))
