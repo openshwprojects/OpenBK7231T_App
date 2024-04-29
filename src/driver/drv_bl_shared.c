@@ -30,7 +30,7 @@ static int export_deduction = 0;
 //static byte mqtt_update = 0;
 //static byte flash_overpower = 0;
 //static byte overpower_reset = 2;
-static byte index = 0;
+static byte index1 = 0;
 static byte min_reset = 0;
 static byte hour_reset = 0;
 //static byte first_run = 0;
@@ -114,7 +114,7 @@ int energyCounterSampleCount = 60;
 int energyCounterSampleInterval = 60;
 float *energyCounterMinutes = NULL;
 portTickType energyCounterMinutesStamp;
-long energyCounterMinutesIndex;
+long energyCounterMinutesindex1;
 bool energyCounterStatsJSONEnable = false;
 
 int actual_mday = -1;
@@ -128,7 +128,7 @@ time_t ConsumptionResetTime = 0;
 int changeSendAlwaysFrames = 60;
 int changeDoNotSendMinFrames = 5;
 
-void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
+void BL09XX_AppendInformationToHTTPindex1Page(http_request_t *request)
 {
     int i;
     const char *mode;
@@ -258,7 +258,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		{
 		
 		// We print some stats, mainly for debugging
-		hprintf255(request, "<font size=1>Netmetering Index now is  %d<br>", index);
+		hprintf255(request, "<font size=1>Netmetering index1 now is  %d<br>", index1);
 		hprintf255(request, "<font size=1>Diversion relay total on-time today was %d min.<br> Next sync in %d min. ", 
 				time_on, (dump_load_hysteresis-lastsync));
 			// Print Status of relay)
@@ -270,7 +270,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		hprintf255(request,"<font size=1> Last NetMetering reset occured at: %d:%d<br></font>", time_hour_reset, time_min_reset); // Save the value at which the counter was synchronized
 		hprintf255(request,"<font size=1> Last diversion Load Bypass: %d:%d </font><br>", check_hour_power, check_time_power);	
 		// Print out periodic statistics and Total Generation at the bottom of the page.
-		hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", energyCounterMinutesIndex, energyCounterSampleCount, net_energy[index]); //Net metering shown in Wh (Small value)    
+		hprintf255(request,"<h5>NetMetering (Last %d min out of %d): %.3f Wh</h5>", energyCounterMinutesindex1, energyCounterSampleCount, net_energy[index1]); //Net metering shown in Wh (Small value)    
 		}	
 	
 		/********************************************************************************************************************/
@@ -292,10 +292,10 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	                    hprintf255(request, "<br>");
 	                }
 	            }
-				// energyCounterMinutesIndex is a long type, we need to use %ld instead of %d
+				// energyCounterMinutesindex1 is a long type, we need to use %ld instead of %d
 	            if ((i%20)!=0)
 	                hprintf255(request, "<br>");
-	            hprintf255(request, "History Index: %ld<hr><br>JSON Stats: %s <br>", energyCounterMinutesIndex,
+	            hprintf255(request, "History index1: %ld<hr><br>JSON Stats: %s <br>", energyCounterMinutesindex1,
 	                    (energyCounterStatsJSONEnable == true) ? "enabled" : "disabled");
 	        }
 	        hprintf255(request, "</h5>");
@@ -346,7 +346,7 @@ commandResult_t BL09XX_ResetEnergyCounter(const void *context, const char *cmd, 
                 }
             }
             energyCounterMinutesStamp = xTaskGetTickCount();
-            energyCounterMinutesIndex = 0;
+            energyCounterMinutesindex1 = 0;
         }
         for(i = OBK_CONSUMPTION__DAILY_FIRST; i <= OBK_CONSUMPTION__DAILY_LAST; i++)
         {
@@ -443,7 +443,7 @@ commandResult_t BL09XX_SetupEnergyStatistic(const void *context, const char *cmd
         addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Sample Interval: %d", energyCounterSampleInterval);
 
         energyCounterMinutesStamp = xTaskGetTickCount();
-        energyCounterMinutesIndex = 0;
+        energyCounterMinutesindex1 = 0;
     } else {
         /* Disable Consimption Nistory */
         addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Consumption History disabled");
@@ -667,7 +667,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
 	// Add to the table ---------------------------------------------------------------------------------
 		//real_consumption
-		net_matrix[check_hour] = (int)net_energy[index];
+		net_matrix[check_hour] = (int)net_energy[index1];
 		export_matrix[check_hour] = (int)real_export;
 		consumption_matrix [check_hour] = (int)real_consumption;		
 
@@ -676,15 +676,15 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			// If netmetering is enabled, we reset every hour.
 			if (((CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))||(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN)))&&(hour_reset == 1))
 			{
-				index = 1;
+				index1 = 1;
 				// reset the timing variable. if we are producing enough, if wont cycle the diversion load.
 				lastsync = 0;
 				// Save new value, if positive
 				
-				if ((net_energy[index] < 0){sensors[OBK_GENERATION_TOTAL].lastReading -= (net_energy[index];}
+				if ((net_energy[index1] < 0){sensors[OBK_GENERATION_TOTAL].lastReading -= (net_energy[index1]);}
 				// Save new value, if negative (minus add minus equals plus, so we increment consumption)
 				
-				else {sensors[OBK_CONSUMPTION_TOTAL].lastReading += (net_energy[index];}
+				else {sensors[OBK_CONSUMPTION_TOTAL].lastReading += (net_energy[index1];}
 				
 			// Clear the variables
 			net_energy[] = {0};
@@ -692,37 +692,37 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			real_consumption = 0;
 			min_reset = 0;
 			hour_reset = 0;
-			energyCounterMinutesIndex = 0;
+			energyCounterMinutesindex1 = 0;
 			// Save to Flash
 			savetoflash = 1;
 			// Save the time
 			time_hour_reset = check_hour;
 			time_min_reset = check_time;	
-			index = 0;
+			index1 = 0;
 			}
 
 			// If Netmetering is set to 15minutes, we need to reset more often. We can't save, since our temp variable is not being reset, to keep the hourly records.
 			//else if ((((check_time == 15)||(check_time == 30)||(check_time == 45))&&(min_reset == 1)&&(CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))&&(!(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN))))||(hour_reset == 1))
 			else if ((((check_time == 15)||(check_time == 30)||(check_time == 45)))&&(min_reset == 1))
 			{
-				index++;
-				net_energy[index];
+				index1++;
+				net_energy[index1];
 				if  (CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))
 				{
 				// reset the timing variable. if we are producing enough, if wont cycle the diversion load.
 				lastsync = 0;
 				// Save new value, if positive. We need to do some magic to keep the values on the table for one hour
-				if (net_energy[index] < 0) // If negative, we exported		
+				if (net_energy[index1] < 0) // If negative, we exported		
 					//Now we calculate a deduction to the value - As it was effectivelly exported and not available to offset anymore.
-					{sensors[OBK_GENERATION_TOTAL].lastReading -= (net_energy[index];}
+					{sensors[OBK_GENERATION_TOTAL].lastReading -= (net_energy[index1];}
 				
-				else {sensors[OBK_CONSUMPTION_TOTAL].lastReading += (net_energy[index];}	
+				else {sensors[OBK_CONSUMPTION_TOTAL].lastReading += (net_energy[index1];}	
 					
 				}
 				
 			// Clear the variables
 			min_reset = 0;
-			energyCounterMinutesIndex = 0;
+			energyCounterMinutesindex1 = 0;
 			// Save the time
 			time_hour_reset = check_hour;
 			time_min_reset = check_time;	
@@ -730,7 +730,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	
 			// ------------------------------------------------------------------------------------------------------------------
 			// Calculate the Effective energy consumed / produced during the period by summing both counters and deduct their values at the start of the period
-			net_energy[index] = (int)(real_consumption - real_export);			// calculate difference since start
+			net_energy[index1] = (int)(real_consumption - real_export);			// calculate difference since start
 			// ------------------------------------------------------------------------------------------------------------------
 			
 			// Bypass load code. Runs if there is excess energy and at a programmable time, in case there was no sun
@@ -747,7 +747,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				lastsync = 0;
 		
 				// Are we exporting enough? If so, turn the relay on
-				if (((int)net_energy[index]>(int)dump_load_on))
+				if (((int)net_energy[index1]>(int)dump_load_on))
 					{
 					dump_load_relay = 1;
 					time_on += dump_load_hysteresis;	// Increase the timer.
@@ -761,7 +761,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
 					CMD_ExecuteCommand("setChannel 1 1", 0);
 					}
-				else if (((int)net_energy[index]<(int)dump_load_off))
+				else if (((int)net_energy[index1]<(int)dump_load_off))
 					{
 					// If none of the exemptions applies, we turn the diversion load off.
 					dump_load_relay = 3;
@@ -907,7 +907,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
                 cJSON_AddNumberToObject(root, "uptime", g_secondsElapsed);
                 cJSON_AddNumberToObject(root, "consumption_total", BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_TOTAL)));
                 cJSON_AddNumberToObject(root, "consumption_last_hour", BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR)));
-                cJSON_AddNumberToObject(root, "consumption_stat_index", energyCounterMinutesIndex);
+                cJSON_AddNumberToObject(root, "consumption_stat_index1", energyCounterMinutesindex1);
                 cJSON_AddNumberToObject(root, "consumption_sample_count", energyCounterSampleCount);
                 cJSON_AddNumberToObject(root, "consumption_sampling_period", energyCounterSampleInterval);
                 if(NTP_IsTimeSynced() == true)
@@ -976,7 +976,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
                 energyCounterMinutes[0] = 0.0;
             }
             energyCounterMinutesStamp = xTaskGetTickCount();
-            energyCounterMinutesIndex++;
+            energyCounterMinutesindex1++;
 
         }
 
@@ -1104,7 +1104,7 @@ void BL_Shared_Init(void)
             }   
         }
         energyCounterMinutesStamp = xTaskGetTickCount();
-        energyCounterMinutesIndex = 0;
+        energyCounterMinutesindex1 = 0;
     }
 
     addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Read ENERGYMETER status values. sizeof(ENERGY_METERING_DATA)=%d\n", sizeof(ENERGY_METERING_DATA));
