@@ -254,12 +254,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		//If we are measuring negative power, we can run the commands to get the netmetering stats
 		// We need NTP enabled for this, as well as the statistics. They need to be manually configured because of duration and time zone.
 		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
-		{
-		// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
-		//net_energy = (net_energy_start - (real_consumption - real_export));
-		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - real_export));
-		//net_energy = (net_energy_start-(sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading));
-		
+		{		
 		// We print some stats, mainly for debugging
 		hprintf255(request, "<font size=1>Diversion relay total on-time today was %d min.<br> Next sync in %d min. ", 
 				time_on, (dump_load_hysteresis-lastsync));
@@ -615,20 +610,6 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
 		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
 		{			
-			/*if (!first_run)
-			{
-			//An update is forced at startup, so the energy values are correct.
-			// We load from memory at first run, then add to our temp variable
-			//net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading); // OK
-			//real_export = (sensors[OBK_GENERATION_TOTAL].lastReading);
-			//real_consumption = (sensors[OBK_CONSUMPTION_TOTAL].lastReading);
-			dump_load_relay = 3;
-			//Now we calculate the net_energy, which is zero, because we just started!
-			net_energy = 0;
-			real_export = 0;
-			real_consumption = 0;
-			first_run = 1;
-			}*/
 
 			//sync with the clock
 			check_time = NTP_GetMinute();
@@ -683,7 +664,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
 	// Add to the table ---------------------------------------------------------------------------------
 		//real_consumption
-		net_matrix[check_hour] = (int)(real_consumption - real_export);
+		net_matrix[check_hour] = (int)net_metering;
 		export_matrix[check_hour] = (int)real_export;
 		consumption_matrix [check_hour] = (int)real_consumption;		
 
@@ -696,7 +677,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				lastsync = 0;
 				// Save new value, if positive
 				
-				if (net_energy < 0){sensors[OBK_GENERATION_TOTAL].lastReading -= (net_energy-export_deduction);}
+				if (net_energy < 0){sensors[OBK_GENERATION_TOTAL].lastReading -= (net_energy);}
 				// Save new value, if negative (minus add minus equals plus, so we increment consumption)
 				else {sensors[OBK_CONSUMPTION_TOTAL].lastReading += net_energy;}
 				
@@ -709,6 +690,9 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			energyCounterMinutesIndex = 0;
 			// Save to Flash
 			savetoflash = 1;
+			// Save the time
+			time_hour_reset = check_hour;
+			time_min_reset = check_time;
 			}
 
 			// If Netmetering is set to 15minutes, we need to reset more often. We can't save, since our temp variable is not being reset, to keep the hourly records.
@@ -720,22 +704,26 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				// reset the timing variable. if we are producing enough, if wont cycle the diversion load.
 				lastsync = 0;
 				// Save new value, if positive. We need to do some magic to keep the values on the table for one hour
-				if (net_energy < 0) // If negative, we exported
-					{			
-					//Now we calculate a deduction to the value - As it was effectivelly exported and not available to offset anymore.
-					export_deduction -= net_energy;
-					
-					}
+				if (net_energy < 0){sensors[OBK_GENERATION_TOTAL].lastReading -= (net_energy);}
+				// Save new value, if negative (minus add minus equals plus, so we increment consumption)
+				else {sensors[OBK_CONSUMPTION_TOTAL].lastReading += net_energy;}
+				// Update the tables (NetMetering)
+				// Update the tables (Export)
+				// Update the tables (Consumption)
 				}
+			}
 				
 			// Clear the variables
 			min_reset = 0;
 			energyCounterMinutesIndex = 0;
+			// Save the time
+			time_hour_reset = check_hour;
+			time_min_reset = check_time;
 			}
 	
 			// ------------------------------------------------------------------------------------------------------------------
 			// Calculate the Effective energy consumed / produced during the period by summing both counters and deduct their values at the start of the period
-			net_energy = (int)(real_consumption - real_export - export_deduction);			// calculate difference since start
+			net_energy = (int)(real_consumption - real_export);			// calculate difference since start
 			// ------------------------------------------------------------------------------------------------------------------
 			
 			// Bypass load code. Runs if there is excess energy and at a programmable time, in case there was no sun
