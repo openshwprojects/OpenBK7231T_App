@@ -1,8 +1,8 @@
 // Last working on 13/04/24 - Sometimes locks during generation
 
-float consumption_matrix [24] = {0};
-float export_matrix[24] = {0};
-int net_matrix[24] = {0};
+static int consumption_matrix [24] = {0};
+static int export_matrix[24] = {0};
+static int net_matrix[24] = {0};
 
 #include "drv_bl_shared.h"
 
@@ -911,17 +911,16 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	    sensors[OBK_GENERATION_TOTAL].lastReading += generation;
 	    consumption_matrix[check_hour] += energy;
 	    export_matrix[check_hour] += generation;
-	    net_matrix[check_hour] = ((int)(consumption_matrix [check_hour] - export_matrix[check_hour]));
-	    energy = 0;
-	    generation = 0;
+	    net_matrix[check_hour] = ((consumption_matrix [check_hour] - export_matrix[check_hour]));
+
 	    }
 	else
 	    {
 	    consumption_matrix[check_hour] += energy;
 	    export_matrix[check_hour] += generation;
 	    net_matrix[check_hour] = ((int)((export_matrix[check_hour])-(consumption_matrix [check_hour])));
-	    energy = 0;
-	    generation = 0;
+	    //energy = 0;
+	    //generation = 0;
 	    // calculate consumption
 	    if (hour_reset)
 		    {
@@ -941,6 +940,8 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			hour_reset = 0;
 			time_hour_reset = check_hour;
 			time_min_reset = check_time;
+			energy = 0;
+	   		generation = 0;
 		    }
 	    }
 	
