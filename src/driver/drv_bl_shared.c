@@ -716,7 +716,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			// Clear the variables
 			min_reset = 0;
 			energyCounterMinutesIndex = 0;
-			/ Save the time
+			// Save the time
 			time_hour_reset = check_hour;
 			time_min_reset = check_time;	
 			}
