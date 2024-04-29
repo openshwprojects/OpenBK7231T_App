@@ -618,12 +618,14 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			{
 			//An update is forced at startup, so the energy values are correct.
 			// We load from memory at first run, then add to our temp variable
-			net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading); // OK
-			real_export = (sensors[OBK_GENERATION_TOTAL].lastReading);
-			real_consumption = (sensors[OBK_CONSUMPTION_TOTAL].lastReading);
+			//net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading); // OK
+			//real_export = (sensors[OBK_GENERATION_TOTAL].lastReading);
+			//real_consumption = (sensors[OBK_CONSUMPTION_TOTAL].lastReading);
 			dump_load_relay = 3;
 			//Now we calculate the net_energy, which is zero, because we just started!
 			net_energy = 0;
+			real_export = 0;
+			real_consumption = 0;
 			first_run = 1;
 			}
 
@@ -679,7 +681,8 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			}
 
 	// Add to the table ---------------------------------------------------------------------------------
-		net_matrix[check_hour] = (int)(net_energy_start - (real_consumption-real_export));
+		//real_consumption
+		net_matrix[check_hour] = (int)(real_consumption - real_export);
 		export_matrix[check_hour] = (int)real_export;
 		consumption_matrix [check_hour] = (int)real_consumption;		
 
@@ -714,7 +717,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				lastsync = 0;
 				//net_energy_timer = 0;
 				
-				net_energy = (net_energy_start - (real_consumption-real_export));			// calculate difference since start
+				//net_energy = (int)(real_consumption - real_export);			// calculate difference since start
 
 				// Add any excess (if any) to the generation variable, which is updated here.
 				if (net_energy > 0){
@@ -725,10 +728,14 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				else if (net_energy < 0){
 					sensors[OBK_CONSUMPTION_TOTAL].lastReading -= net_energy; // Save new value. The result is negative, so we subtract (-- == +)
 						}
-				real_export = sensors[OBK_GENERATION_TOTAL].lastReading;
-				real_consumption = sensors[OBK_CONSUMPTION_TOTAL].lastReading;
+				
+				net_energy = 0;
+				real_export = 0;
+				real_consumption = 0;
+				//real_export = sensors[OBK_GENERATION_TOTAL].lastReading;
+				//real_consumption = sensors[OBK_CONSUMPTION_TOTAL].lastReading;
 				// Then we calculate the 'Zero value' - The sum of the consumption and export counters
-				net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);	// Start again
+				//net_energy_start = (sensors[OBK_CONSUMPTION_TOTAL].lastReading - sensors[OBK_GENERATION_TOTAL].lastReading);	// Start again
 				//real_export = sensors[OBK_GENERATION_TOTAL].lastReading; // Update the Export, to reflect the 
 				net_energy = 0;
 				// Do not run again until next hour
@@ -739,9 +746,10 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				}
 			else
 			{
-				// Calculate the Effective energy consumer / produced during the period by summing both counters and deduct their values at the start of the period
+				// Calculate the Effective energy consumed / produced during the period by summing both counters and deduct their values at the start of the period
 				// We avoid running this at T = 0, as it can cause some wrong values as the variables update.
-				net_energy = (net_energy_start - (real_consumption - real_export));
+				//net_energy = (net_energy_start - (real_consumption - real_export));
+				net_energy = (int)(real_consumption - real_export);			// calculate difference since start
 			}
 			// ------------------------------------------------------------------------------------------------------------------
 			// Bypass load code. Runs if there is excess energy and at a programmable time, in case there was no sun
