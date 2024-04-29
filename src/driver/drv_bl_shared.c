@@ -1,7 +1,7 @@
 // Last working on 13/04/24 - Sometimes locks during generation
 
-int consumption_matrix [24] = {0};
-int export_matrix[24] = {0};
+float consumption_matrix [24] = {0};
+float export_matrix[24] = {0};
 int net_matrix[24] = {0};
 
 #include "drv_bl_shared.h"
@@ -904,7 +904,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	//real_export += generation;     //sensors[OBK_GENERATION_TOTAL].lastReading += generation;
 
     // Netmetering not enabled? Let's save directly.
-    if ((!(CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN)))&&(!(CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)))&&(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN)))
+    if ((!(CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN)))&&(!(CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)))&&(!(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN))))
 	    {
 	    sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
 	    sensors[OBK_GENERATION_TOTAL].lastReading += generation;
@@ -927,7 +927,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 		    	int (check_hour_temp);
 			if (check_hour > 0) {check_hour_temp = (check_hour -1);}
 			else {check_hour_temp = 23;}
-			if (net_matrix [check_hour_temp] > 0)
+			if (net_matrix[check_hour_temp] > 0)
 			{
 				//If positive, we generated
 				sensors[OBK_GENERATION_TOTAL].lastReading += export_matrix[check_hour_temp];
