@@ -687,10 +687,10 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				else {sensors[OBK_CONSUMPTION_TOTAL].lastReading += (net_energy[index1]);}
 				
 			// Clear the variables
-			net_energy[0] = {0};
-			net_energy[1] = {0};
-			net_energy[2] = {0};
-			net_energy[3] = {0};
+			net_energy[0] = 0;
+			net_energy[1] = 0;
+			net_energy[2] = 0;
+			net_energy[3] = 0;
 			real_export = 0;
 			real_consumption = 0;
 			min_reset = 0;
