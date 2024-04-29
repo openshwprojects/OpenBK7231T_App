@@ -104,18 +104,9 @@ void DoorDeepSleep_OnEverySecond() {
 		g_emergencyTimeWithNoConnection = 0;
 	} else if (Main_HasMQTTConnected() && Main_HasWiFiConnected()) { // executes every second when connection is established
 			
-			DoorDeepSleep_QueueNewEvents();
-			PublishQueuedItems(); // publish those items that were queued when device was offline
-			// for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
-			// 	if (g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep ||
-			// 		g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_NoPup ||
-			// 		g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_pd) {
-
-			// 			// publish the current state. The value for publishing is 
-			// 			// calculated winthin MQTT_ChannelPublish()
-			// 			MQTT_ChannelPublish(g_cfg.pins.channels[i], 0);
-			// 	}
-			// }
+		DoorDeepSleep_QueueNewEvents();
+		PublishQueuedItems(); 
+			
 		g_noChangeTimePassed++;
 		if (g_noChangeTimePassed >= setting_timeRequiredUntilDeepSleep) {
 			// start deep sleep in the next loop
