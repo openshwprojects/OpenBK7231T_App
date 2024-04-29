@@ -696,7 +696,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				lastsync = 0;
 				// Save new value, if positive
 				
-				if (net_energy < 0){sensors[OBK_GENERATION_TOTAL].lastReading -= (net_energy+deduction);}
+				if (net_energy < 0){sensors[OBK_GENERATION_TOTAL].lastReading -= (net_energy-export_deduction);}
 				// Save new value, if negative (minus add minus equals plus, so we increment consumption)
 				else {sensors[OBK_CONSUMPTION_TOTAL].lastReading += net_energy;}
 				
@@ -720,10 +720,10 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				// reset the timing variable. if we are producing enough, if wont cycle the diversion load.
 				lastsync = 0;
 				// Save new value, if positive. We need to do some magic to keep the values on the table for one hour
-				if (net_energy < 0)
+				if (net_energy < 0) // If negative, we exported
 					{			
 					//Now we calculate a deduction to the value - As it was effectivelly exported and not available to offset anymore.
-					export_deduction += net_energy;
+					export_deduction -= net_energy;
 					
 					}
 				}
