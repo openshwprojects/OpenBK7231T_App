@@ -54,9 +54,9 @@ int time_on = 0;		// Variable to count how long the Bypass load ran during the d
 int dump_load_relay = 0;	// Variable to Indicate on the Webpage if the Bypass load is on
 int lastsync = 0; 		// Variable to run the bypass relay loop. It's used to take note of the last time it run
 byte check_time = 0; 		// Variable for Minutes
-byte check_hour = 0;		// Variable for Hour	
-byte check_time_power = 0; 		// Variable for Minutes
-byte check_hour_power = 0;		
+static byte check_hour = 0;		// Variable for Hour	
+static byte check_time_power = 0; 		// Variable for Minutes
+static byte check_hour_power = 0;		
 
 //Command to turn remote plug on/off
 //const char* rem_relay_on = "http://<ip>/cm?cmnd=Power%20on";
