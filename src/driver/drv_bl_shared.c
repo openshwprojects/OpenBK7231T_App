@@ -664,7 +664,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
 	// Add to the table ---------------------------------------------------------------------------------
 		//real_consumption
-		net_matrix[check_hour] = (int)net_metering;
+		net_matrix[check_hour] = (int)net_energy;
 		export_matrix[check_hour] = (int)real_export;
 		consumption_matrix [check_hour] = (int)real_consumption;		
 
