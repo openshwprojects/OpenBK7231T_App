@@ -668,7 +668,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
 	// Add to the table ---------------------------------------------------------------------------------
 		//real_consumption
-		net_matrix[check_hour] = net_energy;
+		//net_matrix[check_hour] = net_energy;
 		//net_matrix[check_hour] = (int)real_consumption+(int)real_export;
 		export_matrix[check_hour] = old_export_energy + (int)real_export;
 		consumption_matrix [check_hour] = old_real_consumption + (int)real_consumption;		
@@ -685,6 +685,15 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				if (net_energy < 0){sensors[OBK_GENERATION_TOTAL].lastReading -= (net_energy);}
 				// Save new value, if negative (minus add minus equals plus, so we increment consumption)
 				else {sensors[OBK_CONSUMPTION_TOTAL].lastReading += net_energy;}
+
+				//We want the last hour values to be recovered. SO we use some logic.
+				if (check_hour >0) {net_matrix[check_hour-1] += net_export;}
+				else {net_matrix[23] += net_export;}
+				// Clear old data from our current time table.
+				net_matrix[check_hour] = 0;
+				consumption_matrix [check_hour] = 0;
+				export_matrix[check_hour] = 0;
+				
 				
 			// Clear the variables
 			old_export_energy = 0;
@@ -700,6 +709,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			// Save the time
 			time_hour_reset = check_hour;
 			time_min_reset = check_time;	
+			net_export = 0;
 			}
 
 			// If Netmetering is set to 15minutes, we need to reset more often. We can't save, since our temp variable is not being reset, to keep the hourly records.
@@ -714,9 +724,11 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				// We save the old values, so we can work with the current period only and deduct the netmetering, while keeping stats for last hour
 				old_export_energy += (int)real_export;
 				old_real_consumption +=(int)real_consumption;	
+				net_matrix[check_hour] += net_export;
 				// Now we reset everything to start again a new cycle.
 				real_export = 0;
 				real_consumption = 0;
+				net_export = 0;
 				}
 				
 			// Clear the variables
