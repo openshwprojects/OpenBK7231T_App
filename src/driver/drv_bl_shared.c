@@ -930,7 +930,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			if (net_matrix [check_hour_temp] > 0)
 			{
 				//If positive, we generated
-				sensors[OBK_GENERATION_TOTAL].lastReading += generation_matrix[check_hour_temp];
+				sensors[OBK_GENERATION_TOTAL].lastReading += export_matrix[check_hour_temp];
 			}
 			else
 			{
