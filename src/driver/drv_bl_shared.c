@@ -24,7 +24,7 @@ int net_matrix[24] = {0};
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
 
-static byte reset_counter = 0;
+// static byte reset_counter = 0;
 static byte savetoflash = 0;
 static byte min_reset = 0;
 static byte hour_reset = 0;
@@ -908,17 +908,17 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	    {
 	    sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
 	    sensors[OBK_GENERATION_TOTAL].lastReading += generation;
-	    consumption_matrix [check_hour] += energy
+	    consumption_matrix[check_hour] += energy;
 	    export_matrix[check_hour] += generation;
-	    net_matrix[check_hour] = ((int)(consumption_matrix [check_hour] -  export_matrix[check_hour]))
+	    net_matrix[check_hour] = ((int)(consumption_matrix [check_hour] - export_matrix[check_hour]));
 	    energy = 0;
 	    generation = 0;
 	    }
 	else
 	    {
-	    consumption_matrix [check_hour] += energy
+	    consumption_matrix[check_hour] += energy;
 	    export_matrix[check_hour] += generation;
-	    net_matrix[check_hour] = ((int)(consumption_matrix [check_hour] -  export_matrix[check_hour]))
+	    net_matrix[check_hour] = ((int)(consumption_matrix [check_hour] - export_matrix[check_hour]));
 	    energy = 0;
 	    generation = 0;
 	    // calculate consumption
@@ -930,12 +930,12 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			if (net_matrix [check_hour_temp] > 0)
 			{
 				//If positive, we generated
-				sensors[OBK_GENERATION_TOTAL].lastReading += generation_matrix [check_hour_temp];
+				sensors[OBK_GENERATION_TOTAL].lastReading += generation_matrix[check_hour_temp];
 			}
 			else
 			{
 				//If Negative, we consumed
-				sensors[OBK_CONSUMPTION_TOTAL].lastReading -= consumption_matrix [check_hour_temp];
+				sensors[OBK_CONSUMPTION_TOTAL].lastReading -= consumption_matrix[check_hour_temp];
 			}
 			hour_reset = 0;
 			time_hour_reset = check_hour;
