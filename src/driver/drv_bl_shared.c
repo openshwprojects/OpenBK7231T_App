@@ -197,7 +197,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				{
 				hprintf255(request, "<tr><td> <b> %i:00 </td> ", q);
 				hprintf255(request, "<td> <b> %dW </td> ", (int)consumption_matrix[q]);
-				hprintf255(request, "<td> <b> %dfW </td>", (int)export_matrix[q]);
+				hprintf255(request, "<td> <b> %dW </td>", (int)export_matrix[q]);
 				hprintf255(request, "<td> <b> %dW </td> </tr>", net_matrix[q]);
 				}
 			else
@@ -679,9 +679,10 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			}
 
 	// Add to the table ---------------------------------------------------------------------------------
-		net_matrix[check_hour] =  (net_energy_start - (real_consumption-real_export));
-		export_matrix[check_hour] = 0;
-		consumption_matrix [check_hour] = 0;				
+		net_matrix[check_hour] = (int)(net_energy_start - (real_consumption-real_export));
+		export_matrix[check_hour] = (int)real_export;
+		consumption_matrix [check_hour] = (int)real_consumption;		
+
 	// End of Add to the table --------------------------------------------------------------------------
 			
 			// If netmetering is enabled, we reset every hour.
