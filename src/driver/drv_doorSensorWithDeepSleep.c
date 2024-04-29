@@ -22,6 +22,7 @@ static int setting_timeRequiredUntilDeepSleep = 60;
 static int g_noChangeTimePassed = 0;
 static int g_initialStateSent = 0;
 static int g_emergencyTimeWithNoConnection = 0;
+static int g_lastEventState = -1;
 
 #define EMERGENCY_TIME_TO_SLEEP_WITHOUT_MQTT 60 * 5
 
@@ -58,6 +59,36 @@ void DoorDeepSleep_Init() {
 	CMD_RegisterCommand("DSTime", DoorDeepSleep_SetTime, NULL);
 }
 
+void DoorDeepSleep_QueueNewEvents() {
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep ||
+			g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_NoPup ||
+			g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_pd) {
+
+			int channel = g_cfg.pins.channels[i];
+			sprintf(sChannel, "%i/get", channel); // manually adding the suffix "/get" to the topic
+			// Explanation: I manually add "/get" suffix to the sChannel, because for some reason, 
+			// when queued messages are published through PuublishQueuedItems(), the  
+			// functionality of appendding /get is disabled (in MQTT_PublishTopicToClient()), 
+			// and there is no flag to enforce it. 
+			// There is only a flag (OBK_PUBLISH_FLAG_FORCE_REMOVE_GET) to remove 
+			// suffix, but for some reason there is no flag to add it. 
+			// Would be great if such flag exists, so I can add it when calling
+			// MQTT_QueuePublish(), so /get is appended when published through
+			// PublishQueuedItems(). 
+
+			curr_value = CHANNEL_Get(channel);
+			if (curr_value != g_lastEventState) {
+				g_lastEventState = curr_value;
+				sprintf(sValue, "%i", curr_value); // get the value of the channel
+				MQTT_QueuePublish(CFG_GetMQTTClientId(), sChannel, sValue, 0); // queue the publishing
+				// Current state (or state change) will be queued and published when device establishes 
+				// the connection to WiFi and MQTT Broker (300 seconds by default for that).  
+			}
+		}
+	}
+}
+
 void DoorDeepSleep_OnEverySecond() {
 	int i;
 	char sChannel[8]; // channel as a string
@@ -73,18 +104,18 @@ void DoorDeepSleep_OnEverySecond() {
 		g_emergencyTimeWithNoConnection = 0;
 	} else if (Main_HasMQTTConnected() && Main_HasWiFiConnected()) { // executes every second when connection is established
 			
+			DoorDeepSleep_QueueNewEvents();
 			PublishQueuedItems(); // publish those items that were queued when device was offline
-			for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
-				if (g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep ||
-					g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_NoPup ||
-					g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_pd) {
+			// for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+			// 	if (g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep ||
+			// 		g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_NoPup ||
+			// 		g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_pd) {
 
-						// publish the current state. The value for publishing is 
-						// calculated winthin MQTT_ChannelPublish()
-						MQTT_ChannelPublish(g_cfg.pins.channels[i], 0);
-				}
-			}
-		// }
+			// 			// publish the current state. The value for publishing is 
+			// 			// calculated winthin MQTT_ChannelPublish()
+			// 			MQTT_ChannelPublish(g_cfg.pins.channels[i], 0);
+			// 	}
+			// }
 		g_noChangeTimePassed++;
 		if (g_noChangeTimePassed >= setting_timeRequiredUntilDeepSleep) {
 			// start deep sleep in the next loop
@@ -96,28 +127,8 @@ void DoorDeepSleep_OnEverySecond() {
 		}
 	}
 	else { // executes every second while the device is woken up, but offline
-		for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
-			if (g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep ||
-				g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_NoPup ||
-				g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_pd) {
-					int channel = g_cfg.pins.channels[i];
-					sprintf(sChannel, "%i/get", channel); // manually adding the suffix "/get" to the topic
-					// Explanation: I manually add "/get" suffix to the sChannel, because for some reason, 
-					// when queued messages are published through PuublishQueuedItems(), the  
-					// functionality of appendding /get is disabled (in MQTT_PublishTopicToClient()), 
-					// and there is no flag to enforce it. 
-					// There is only a flag (OBK_PUBLISH_FLAG_FORCE_REMOVE_GET) to remove 
-					// suffix, but for some reason there is no flag to add it. 
-					// Would be great if such flag exists, so I can add it when calling
-					// MQTT_QueuePublish(), so /get is appended when published through
-					// PublishQueuedItems(). 
-
-					sprintf(sValue, "%i", CHANNEL_Get(channel)); // get the value of the channel
-					MQTT_QueuePublish(CFG_GetMQTTClientId(), sChannel, sValue, 0); // queue the publishing
-					// Current state (or state change) will be queued and published when device establishes 
-					// the connection to WiFi and MQTT Broker (300 seconds by default for that).  
-			}
-		}
+		DoorDeepSleep_QueueNewEvents();
+		
 		g_emergencyTimeWithNoConnection++;
 		if (g_emergencyTimeWithNoConnection >= EMERGENCY_TIME_TO_SLEEP_WITHOUT_MQTT) {
 			g_bWantPinDeepSleep = true;
