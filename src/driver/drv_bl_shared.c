@@ -24,16 +24,17 @@ static int net_matrix[24] = {0};
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
 
-static byte reset_counter = 0;
+//static byte reset_counter = 0;
 static byte savetoflash = 0;
+static int export_deduction = 0;
 //static byte mqtt_update = 0;
-static byte flash_overpower = 0;
+//static byte flash_overpower = 0;
 //static byte overpower_reset = 2;
 static byte min_reset = 0;
 static byte hour_reset = 0;
-static byte first_run = 0;
+//static byte first_run = 0;
 static float net_energy = 0;
-static float net_energy_start = 0;
+//static float net_energy_start = 0;
 static float real_export = 0;
 static float real_consumption = 0;
 //static int net_energy_timer = 0;
@@ -694,9 +695,10 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				// reset the timing variable. if we are producing enough, if wont cycle the diversion load.
 				lastsync = 0;
 				// Save new value, if positive
-				if (net_energy > 0){sensors[OBK_GENERATION_TOTAL].lastReading += net_energy;}
+				
+				if (net_energy < 0){sensors[OBK_GENERATION_TOTAL].lastReading -= (net_energy+deduction);}
 				// Save new value, if negative (minus add minus equals plus, so we increment consumption)
-				else {sensors[OBK_CONSUMPTION_TOTAL].lastReading -= net_energy;}
+				else {sensors[OBK_CONSUMPTION_TOTAL].lastReading += net_energy;}
 				
 			// Clear the variables
 			net_energy = 0;
@@ -718,10 +720,10 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				// reset the timing variable. if we are producing enough, if wont cycle the diversion load.
 				lastsync = 0;
 				// Save new value, if positive. We need to do some magic to keep the values on the table for one hour
-				if (net_energy > 0)
+				if (net_energy < 0)
 					{			
 					//Now we calculate a deduction to the value - As it was effectivelly exported and not available to offset anymore.
-					Export deduction = net_energy;
+					export_deduction += net_energy;
 					
 					}
 				}
