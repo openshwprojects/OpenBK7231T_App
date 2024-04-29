@@ -25,6 +25,7 @@ int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
 
 // static byte reset_counter = 0;
+static int check_hour_temp = 0;
 static byte savetoflash = 0;
 static byte min_reset = 0;
 static byte hour_reset = 0;
@@ -687,7 +688,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
 			// -----------------------------------------------------------------------------------------------------------------------
 			// Update stat's stable
-			consumption_matrix [check_hour] = real_consumption;
+			consumption_matrix[check_hour] = real_consumption;
 			export_matrix[check_hour] = real_export;
 			net_matrix[check_hour] = net_energy;
 			// ------------------------------------------------------------------------------------------------------------------------
@@ -918,13 +919,13 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	    {
 	    consumption_matrix[check_hour] += energy;
 	    export_matrix[check_hour] += generation;
-	    net_matrix[check_hour] = ((int)(consumption_matrix [check_hour] - export_matrix[check_hour]));
+	    net_matrix[check_hour] = ((int)((export_matrix[check_hour])-(consumption_matrix [check_hour])));
 	    energy = 0;
 	    generation = 0;
 	    // calculate consumption
 	    if (hour_reset)
 		    {
-		    	int (check_hour_temp);
+		    	//int (check_hour_temp);
 			if (check_hour > 0) {check_hour_temp = (check_hour -1);}
 			else {check_hour_temp = 23;}
 			if (net_matrix[check_hour_temp] > 0)
