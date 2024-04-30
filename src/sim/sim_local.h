@@ -148,7 +148,11 @@ public:
 	operator float*() {
 		return &r;
 	}
-
+	void fromRGB(const byte *rgb) {
+		r = (rgb[0]) / 255.0f;
+		g = (rgb[1]) / 255.0f;
+		b = (rgb[2]) / 255.0f;
+	}
 	operator const float *() const  {
 		return &r;
 	}

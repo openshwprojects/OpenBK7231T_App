@@ -328,6 +328,9 @@
     <ClCompile Include="src\selftest\selftest_http_led.c" />
     <ClCompile Include="src\driver\drv_max6675.c" />
     <ClCompile Include="src\driver\drv_freeze.c" />
+    <ClCompile Include="src\driver\drv_sm16703P.c" />
+    <ClCompile Include="src\selftest\selftest_ws2812b.c" />
+    <ClCompile Include="src\sim\Controller_WS2812.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\base64\base64.h" />
@@ -479,6 +482,7 @@
     <ClInclude Include="src\new_tokenizer.h" />
     <ClInclude Include="src\ntp_time.h" />
     <ClInclude Include="src\obk_config.h" />
+    <ClInclude Include="src\sim\Controller_WS2812.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\include\net_param_pub.h" />

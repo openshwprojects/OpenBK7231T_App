@@ -20,6 +20,7 @@ int cmd_uartInitIndex = 0;
 #include <wifi_mgmr_ext.h>
 #elif PLATFORM_LN882H
 #include <wifi.h>
+#include <power_mgmt/ln_pm.h>
 #endif
 
 #define HASH_SIZE 128
@@ -45,6 +46,29 @@ static int generateHashValue(const char* fname) {
 command_t* g_commands[HASH_SIZE] = { NULL };
 bool g_powersave;
 
+#if defined(PLATFORM_LN882H)
+// this will be applied after WiFi connect
+int g_ln882h_pendingPowerSaveCommand = -1;
+
+void LN882H_ApplyPowerSave(int bOn) {
+	if (bOn) {
+		sysparam_sta_powersave_update(WIFI_MAX_POWERSAVE);
+		wifi_sta_set_powersave(WIFI_MAX_POWERSAVE);
+		if (bOn > 1) {
+			ln_pm_sleep_mode_set(LIGHT_SLEEP);
+		}
+		else {	// to be able to switch from PowerSave from > 1 to 1 (without sleep) 
+			ln_pm_sleep_mode_set(ACTIVE);
+		}
+	}
+	else {
+		sysparam_sta_powersave_update(WIFI_NO_POWERSAVE);
+		wifi_sta_set_powersave(WIFI_NO_POWERSAVE);
+		ln_pm_sleep_mode_set(ACTIVE);
+	}
+}
+#endif
+
 static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int bOn = 1;
 	Tokenizer_TokenizeString(args, 0);
@@ -52,7 +76,12 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	if (Tokenizer_GetArgsCount() > 0) {
 		bOn = Tokenizer_GetArgInteger(0);
 	}
+#if (PLATFORM_LN882H)	
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_PowerSave: will set to %i%s", bOn, Main_IsConnectedToWiFi() == 0 ? " after WiFi is connected" : "");
+#else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_PowerSave: will set to %i", bOn);
+#endif
+	
 
 #ifdef PLATFORM_BEKEN
 	extern int bk_wlan_power_save_set_level(BK_PS_LEVEL level);
@@ -77,18 +106,15 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 		wifi_mgmr_sta_powersaving(0);
 	}
 #elif defined(PLATFORM_LN882H)
-	if (bOn) {
-		sysparam_sta_powersave_update(WIFI_MAX_POWERSAVE);
-		wifi_sta_set_powersave(WIFI_MAX_POWERSAVE);
+	// this will be applied after WiFi connect
+	if (Main_IsConnectedToWiFi() == 0){
+		g_ln882h_pendingPowerSaveCommand = bOn;
 	}
-	else {
-		sysparam_sta_powersave_update(WIFI_NO_POWERSAVE);
-		wifi_sta_set_powersave(WIFI_NO_POWERSAVE);
-	}
+	else LN882H_ApplyPowerSave(bOn);
 #else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave is not implemented on this platform");
 #endif    
-	g_powersave = bOn;
+	g_powersave = (bOn);
 	return CMD_RES_OK;
 }
 static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const char* args, int cmdFlags) {

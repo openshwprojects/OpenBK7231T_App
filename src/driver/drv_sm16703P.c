@@ -1,14 +1,5 @@
-#if PLATFORM_BK7231N
+#if PLATFORM_BK7231N || WINDOWS
 
-#include "arm_arch.h"
-#include "drv_model_pub.h"
-#include "gpio.h"
-#include "gpio_pub.h"
-#include "icu_pub.h"
-#include "include.h"
-#include "intc_pub.h"
-#include "sys_ctrl_pub.h"
-#include "uart_pub.h"
 
 #include "../new_cfg.h"
 #include "../new_common.h"
@@ -21,6 +12,20 @@
 #include "../mqtt/new_mqtt.h"
 
 #include "drv_spidma.h"
+
+#if WINDOWS
+
+void SPIDMA_Init(struct spi_message *spi_msg) {
+
+}
+void SPIDMA_StartTX(struct spi_message *spi_msg) {
+
+}
+void SPIDMA_StopTX(void) {
+
+}
+
+#endif
 
 static uint8_t data_translate[4] = {0b10001000, 0b10001110, 0b11101000, 0b11101110};
 
@@ -60,6 +65,32 @@ static void translate_byte(uint8_t input, uint8_t *dst) {
 	*dst++ = translate_2bit((input >> 2));
 	*dst++ = translate_2bit(input);
 }
+static uint8_t reverse_translate_2bit(uint8_t input) {
+	uint8_t i;
+	for (i = 0; i < 4; ++i) {
+		if (data_translate[i] == input) {
+			return i;
+		}
+	}
+	return 0;
+}
+
+static void reverse_translate_byte(uint8_t *input, uint8_t *dst) {
+	*dst++ = (reverse_translate_2bit(*input++) << 6) | (reverse_translate_2bit(*input++) << 4) | (reverse_translate_2bit(*input++) << 2) | reverse_translate_2bit(*input++);
+}
+bool SM16703P_GetPixel(uint32_t pixel, byte *dst) {
+	int i;
+	uint8_t *input;
+
+	if (spi_msg == 0)
+		return;
+	
+	input = spi_msg->send_buf + pixel_offset + (pixel * 3 * 4);
+
+	for (i = 0; i < 3; i++) {
+		*dst++ = (reverse_translate_2bit(*input++) << 6) | (reverse_translate_2bit(*input++) << 4) | (reverse_translate_2bit(*input++) << 2) | reverse_translate_2bit(*input++);
+	}
+}
 void SM16703P_setRaw(int start_offset, const char *s, int push) {
 	// start offset is in bytes, and we do 2 bits per dst byte, so *4
 	uint8_t *dst = spi_msg->send_buf + pixel_offset + start_offset*4;
@@ -77,6 +108,37 @@ void SM16703P_setRaw(int start_offset, const char *s, int push) {
 	if (push) {
 		SPIDMA_StartTX(spi_msg);
 	}
+}
+
+bool SM16703P_VerifyPixel(uint32_t pixel, byte r, byte g, byte b) {
+	uint8_t *dst = spi_msg->send_buf + pixel_offset + (pixel * 3 * 4);
+
+	if (*dst++ != translate_2bit((r >> 6)))
+		return false;
+	if (*dst++ != translate_2bit((r >> 4)))
+		return false;
+	if (*dst++ != translate_2bit((r >> 2)))
+		return false;
+	if (*dst++ != translate_2bit(r))
+		return false;
+	if (*dst++ != translate_2bit((g >> 6)))
+		return false;
+	if (*dst++ != translate_2bit((g >> 4)))
+		return false;
+	if (*dst++ != translate_2bit((g >> 2)))
+		return false;
+	if (*dst++ != translate_2bit(g))
+		return false;
+	if (*dst++ != translate_2bit((b >> 6)))
+		return false;
+	if (*dst++ != translate_2bit((b >> 4)))
+		return false;
+	if (*dst++ != translate_2bit((b >> 2)))
+		return false;
+	if (*dst++ != translate_2bit(b))
+		return false;
+
+	return true;
 }
 
 
@@ -333,7 +395,7 @@ void SM16703P_Init() {
 	initialized = false;
 
 	uint32_t val;
-
+#if PLATFORM_BK7231N
 	val = GFUNC_MODE_SPI_USE_GPIO_14;
 	sddev_control(GPIO_DEV_NAME, CMD_GPIO_ENABLE_SECOND, &val);
 
@@ -346,7 +408,10 @@ void SM16703P_Init() {
 
 	param = PWD_SPI_CLK_BIT;
 	sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_UP, &param);
+#else
 
+
+#endif
 	//cmddetail:{"name":"SM16703P_Init","args":"[NumberOfLEDs][ColorOrder]",
 	//cmddetail:"descr":"This will setup LED driver for a strip with given number of LEDs. Please note that it also works for WS2812B and similiar LEDs. You can optionally set the color order with either RGB, RBG, BRG, BGB, GRB or GBR (default RGB). See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_sm16703P.c","requires":"",
