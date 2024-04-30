@@ -696,9 +696,9 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				lastsync = 0;
 				// Save new value, if positive
 				
-				if (net_energy < 0){sensors[OBK_GENERATION_TOTAL].lastReading -= (net_energy);}
+				//if (net_energy < 0){sensors[OBK_GENERATION_TOTAL].lastReading -= (net_energy);}
 				// Save new value, if negative (minus add minus equals plus, so we increment consumption)
-				else {sensors[OBK_CONSUMPTION_TOTAL].lastReading += net_energy;}
+				//else {sensors[OBK_CONSUMPTION_TOTAL].lastReading += net_energy;}
 
 				//We want the last hour values to be recovered. SO we use some logic.
 				if (check_hour >0) {net_matrix[check_hour-1] += net_energy;}
@@ -846,7 +846,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
 		{
 			// If the power is negative - Load the generation counter, but only if we allow negative measurements :-)
-			generation = energyWh;
+			//generation = energyWh;
 			sensors[OBK_GENERATION_TOTAL].lastReading += energyWh;	
 			//real_consumption += energyWh;	
 			real_export += energyWh;	
@@ -855,7 +855,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 		{
 			// In the case we're measuring only consumption, then we just load any positive value straight to the counter
 			sensors[OBK_CONSUMPTION_TOTAL].lastReading += energyWh;
-			energy = energyWh;
+			//energy = energyWh;
 			real_consumption += energyWh;
 		}	
 	}
