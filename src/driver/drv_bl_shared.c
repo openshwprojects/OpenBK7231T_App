@@ -198,9 +198,10 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	int total_export = 0;
 	for (int q=0; q<24; q++)
 		{
-		int calculate_net_energy = (net_matrix[q]+(int)net_energy);
+		//int calculate_net_energy = (net_matrix[q]+(int)net_energy);
 		if (q == check_hour)
 			{
+			int calculate_net_energy = (net_matrix[q]+(int)net_energy);
 			hprintf255(request, "<tr><td> <b> %i:00 </td> ", q);
 			hprintf255(request, "<td> <b> %dW </td> ", (int)consumption_matrix[q]);
 			hprintf255(request, "<td> <b> %dW </td>", (int)export_matrix[q]);
