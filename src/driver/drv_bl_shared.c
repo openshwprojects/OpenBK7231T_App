@@ -189,32 +189,28 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 			// First field: Time
 			//poststr(request, "<tr>");
-			for (int q=0; q<25; q++)
+			for (int q=0; q<24; q++)
 			{
-				if (q == check_hour)
+			total_net_consumption = 0;
+			total_net_export = 0;
+			total_consumption = 0;
+			total_export = 0;
+			if (net_matrix[q])
+				{
+					(net_matrix[q]) += total_net_consumption
+				}
+			else
+				{
+					(net_matrix[q]) -= total_net_export 
+				}
+			if (q == check_hour)
 				{
 				hprintf255(request, "<tr><td> <b> %i:00 </td> ", q);
 				hprintf255(request, "<td> <b> %dW </td> ", (int)consumption_matrix[q]);
 				hprintf255(request, "<td> <b> %dW </td>", (int)export_matrix[q]);
 				hprintf255(request, "<td> <b> %dW </td> </tr>", net_matrix[q]);
-				}
-			else if (q == 25)
-				{
-				poststr(request, "<tr><td> Total </td>");
-				// clear the last values and re-calculate them
-				total_consumption = 0;
-				total_export = 0;
-				total_net = 0;
-				for (int p=0; p<24; p++)
-				{
-					total_consumption += consumption_matrix[p];
-					total_export += export_matrix[p];
-					total_net += net_matrix[p];
-				}
-					total_net += (int)net_energy;
-				hprintf255(request, "<td> %dW </td> ", total_consumption);
-				hprintf255(request, "<td> %dW </td>", total_export);
-				hprintf255(request, "<td> %dW </td> </tr>", total_net);	
+				total_consumption += consumption_matrix[p];	
+					
 				}
 			else
 				{
@@ -222,9 +218,15 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				hprintf255(request, "<td> %dW </td> ", (int)consumption_matrix[q]);
 				hprintf255(request, "<td> %dW </td>", (int)export_matrix[q]);
 				hprintf255(request, "<td> %dW </td> </tr>", net_matrix[q]);
+				total_consumption += consumption_matrix[p];
 				}
 			}
 	poststr(request, "</tr></table>");
+	
+
+	hprintf255(request, "Total Coonsumption: %iW (Import), %iW, (Export)", total_consumption, total_export);
+	hprintf255(request, "Total Netmetering:  %iW (Import), %iW (Export)", total_net_consumption, total_net_export);
+
 	
 	//--------------------------------------------------------------------------------------------------
 			// Update status of the diversion relay on webpage		
