@@ -840,24 +840,25 @@ void BL_ProcessUpdate(float voltage, float current, float power,
         energy = xPassedTicks * power / (3600000.0f / portTICK_PERIOD_MS);
     } 
     else
-	// Check if the last power reading is positive or negative. Increment the correct counter.
+	// Check if the last power reading is positive or negative. If positive Increment consumption.
     	{
-	if ((int)power<0){
+	if ((int)power>0)
+	{
+		sensors[OBK_CONSUMPTION_TOTAL].lastReading += energyWh;
+		real_consumption += energyWh;
+	}
+	else
+	{
+		//If not positive, we check if the negative power flag is enabled. If so, we load the generation counter.
 		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
 		{
+			//if ((int)power<0){
 			// If the power is negative - Load the generation counter, but only if we allow negative measurements :-)
 			//generation = energyWh;
 			sensors[OBK_GENERATION_TOTAL].lastReading += energyWh;	
 			//real_consumption += energyWh;	
 			real_export += energyWh;	
 		}
-		else 
-		{
-			// In the case we're measuring only consumption, then we just load any positive value straight to the counter
-			sensors[OBK_CONSUMPTION_TOTAL].lastReading += energyWh;
-			//energy = energyWh;
-			real_consumption += energyWh;
-		}	
 	}
 	}
     // -------------------------------------------------------------------------------------------
