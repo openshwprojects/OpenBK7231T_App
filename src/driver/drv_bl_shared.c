@@ -199,11 +199,11 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			total_export = 0;
 			if (net_matrix[q])
 				{
-					net_matrix[q] += total_net_consumption
+					net_matrix[q] += total_net_consumption;
 				}
 			else
 				{
-					net_matrix[q] -= total_net_export 
+					net_matrix[q] -= total_net_export;
 				}
 			if (q == check_hour)
 				{
