@@ -4,11 +4,11 @@ static int consumption_matrix [24] = {0};
 static int export_matrix[24] = {0};
 static int net_matrix[24] = {0};
 
-int total_consumption = 0;
-int total_export = 0;
+//int total_consumption = 0;
+//int total_export = 0;
 //int total_net = 0;
-int total_net_consumption = 0;
-int total_net_export = 0;
+//int total_net_consumption = 0;
+//int total_net_export = 0;
 
 static int old_export_energy = 0;
 static int old_real_consumption = 0;
@@ -191,10 +191,10 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 			// First field: Time
 			//poststr(request, "<tr>");
-			total_net_consumption = 0;
-			total_net_export = 0;
-			total_consumption = 0;
-			total_export = 0;
+			int total_net_consumption = 0;
+			int total_net_export = 0;
+			int total_consumption = 0;
+			int total_export = 0;
 			for (int q=0; q<24; q++)
 			{
 			if (q == check_hour)
@@ -202,31 +202,23 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				hprintf255(request, "<tr><td> <b> %i:00 </td> ", q);
 				hprintf255(request, "<td> <b> %dW </td> ", consumption_matrix[q]);
 				hprintf255(request, "<td> <b> %dW </td>", export_matrix[q]);
-				hprintf255(request, "<td> <b> %dW </td> </tr>", net_matrix[q]);
-				//total_consumption += consumption_matrix[q];
-				//total_export += export_matrix[q];			
+				hprintf255(request, "<td> <b> %dW </td> </tr>", net_matrix[q]);			
 				}
 			else
 				{
 				hprintf255(request, "<tr><td> %i:00 </td> ", q);
 				hprintf255(request, "<td> %dW </td> ", (int)consumption_matrix[q]);
 				hprintf255(request, "<td> %dW </td>", (int)export_matrix[q]);
-				hprintf255(request, "<td> %dW </td> </tr>", net_matrix[q]);
-				//total_consumption += consumption_matrix[q];
-				//total_export += export_matrix[q];	
+				hprintf255(request, "<td> %dW </td> </tr>", net_matrix[q]);	
 				}
-			//--
+			// Summ  all the data on the table to summarize below.
+			// Real Grid Consumption / Export
 			total_consumption += consumption_matrix[q];
 			total_export += export_matrix[q];	
-			if (net_matrix[q]>0)
-				{
-					net_matrix[q] += total_net_consumption;
-				}
-			else
-				{
-					net_matrix[q] -= total_net_export;
-				}
-				//--
+			// Calculated Net Values
+			if (net_matrix[q]>0)	{total_net_consumption += total_net_consumption;}
+			else	{total_net_export -= total_net_export;}
+			//--
 			}
 	poststr(request, "</tr></table><br>");
 	
