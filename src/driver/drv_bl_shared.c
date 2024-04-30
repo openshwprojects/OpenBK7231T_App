@@ -4,6 +4,10 @@ static int consumption_matrix [24] = {0};
 static int export_matrix[24] = {0};
 static int net_matrix[24] = {0};
 
+int total_consumption = 0;
+int total_export = 0;
+int total_net = 0;
+
 static int old_export_energy = 0;
 static int old_real_consumption = 0;
 
@@ -196,16 +200,19 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				}
 			else if (q == 25)
 				{
-				poststr(request, "<tr><td> Total </td> ");
+				poststr(request, "<tr><td> Total </td>");
+				// clear the last values and re-calculate them
+				total_consumption = 0;
+				total_export = 0;
+				total_net = 0;
 				for (int p=0; p<24; p++)
 				{
-					int total_consumption += consumption_matrix[p]
-					int total_export += export_matrix[p];
-					int total_net += net_matrix[p];
-					total_net += (int)net_energy;
+					total_consumption += consumption_matrix[p];
+					total_export += export_matrix[p];
+					total_net += net_matrix[p];
 				}
+					total_net += (int)net_energy[p];
 				hprintf255(request, "<td> %dW </td> ", total_consumption);
-				
 				hprintf255(request, "<td> %dW </td>", total_export);
 				hprintf255(request, "<td> %dW </td> </tr>", total_net);	
 				}
