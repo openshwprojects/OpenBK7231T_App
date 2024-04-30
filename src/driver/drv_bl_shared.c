@@ -212,7 +212,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			hprintf255(request, "<tr><td> %i:00 </td> ", q);
 			hprintf255(request, "<td> %dW </td> ", (int)consumption_matrix[q]);
 			hprintf255(request, "<td> %dW </td>", (int)export_matrix[q]);
-			hprintf255(request, "<td> %dW </td> </tr>", calculate_net_energy);	
+			//hprintf255(request, "<td> %dW </td> </tr>", net_matrix[q]);	
 			}
 		// Summ  all the data on the table to summarize below.
 		// Real Grid Consumption / Export
