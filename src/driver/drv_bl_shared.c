@@ -23,37 +23,27 @@ static int old_real_consumption = 0;
 #include "../cmnds/cmd_public.h" //for enum EventCode
 #include <math.h>
 #include <time.h>
-//static int power_flag = 0;
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
 
-//static byte reset_counter = 0;
+
 static byte savetoflash = 0;
-//static int export_deduction = 0;
-//static byte mqtt_update = 0;
-//static byte flash_overpower = 0;
-//static byte overpower_reset = 2;
 static byte min_reset = 0;
 static byte hour_reset = 0;
-//static byte first_run = 0;
 static float net_energy = 0;
-//static float net_energy_start = 0;
 static float real_export = 0;
 static float real_consumption = 0;
-//static int net_energy_timer = 0;
 // Variables for the solar dump load timer
-//static byte sync = 0;
-//static int sync_time = 0;
 static byte old_hour = 0;
 static byte time_hour_reset = 0;
 static byte time_min_reset = 0;
 static byte old_time = 0;
-//static int high_power_debounce = 0;
 #define max_power_bypass_off 1000
 #define dump_load_hysteresis 3	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
 //int min_production = -50;	// The minimun instantaneous solar production that will trigger the dump load.
 #define dump_load_on 15		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
 #define dump_load_off 1		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
+
 // These variables are used to program the bypass load, for example turn it on late afternoon if there was no sun for the day
 //#define bypass_timer_reset 23	// Just so it doesn't accidentally reset when the device is rebooted (0)...
 #define bypass_on_time 15
@@ -667,9 +657,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			}
 
 	// Add to the table ---------------------------------------------------------------------------------
-		//real_consumption
-		//net_matrix[check_hour] = net_energy;
-		//net_matrix[check_hour] = (int)real_consumption+(int)real_export;
+			
 		export_matrix[check_hour] = old_export_energy + (int)real_export;
 		consumption_matrix [check_hour] = old_real_consumption + (int)real_consumption;		
 
@@ -844,24 +832,25 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	// Generation (Device to grid - Negative Flow)
 	else */if ((int)power<0){
 		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
-		{generation = energyWh;}
-		else {energy = energyWh;}	
+		{
+			// If the power is negative - Load the generation counter, but only if we allow negative measurements :-)
+			//generation = energyWh;
+			sensors[OBK_GENERATION_TOTAL].lastReading += energyWh;		
 		}
-	else {energy = energyWh;}	
+		else 
+		{
+			// In the case we're measuring only consumption, then we just load any positive value straight to the counter
+			sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
+			//energy = energyWh;
+		}	
+	}
 	}
     // -------------------------------------------------------------------------------------------
     // Apply values. Add Extra variable for generation 
     // We use temp variables so the timer can go up or down. This would cause issues with Home assistant.
     // We also take advantage of this to save at regular intervals.
-    	real_consumption += energy;
-	real_export += generation;     //sensors[OBK_GENERATION_TOTAL].lastReading += generation;
-
-    // Netmetering not enabled? Let's save directly.
-    if ((!(CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN)))&&(!(CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)))&&(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN)))
-	    {
-	    sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
-	    sensors[OBK_GENERATION_TOTAL].lastReading += generation;
-	    }
+    	real_consumption = sensors[OBK_CONSUMPTION_TOTAL].lastReading;
+	real_export = sensors[OBK_GENERATION_TOTAL].lastReading
 	
     energyCounterStamp = xTaskGetTickCount();
     HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
