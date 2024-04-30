@@ -197,22 +197,14 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			total_export = 0;
 			for (int q=0; q<24; q++)
 			{
-			if (net_matrix[q])
-				{
-					net_matrix[q] += total_net_consumption;
-				}
-			else
-				{
-					net_matrix[q] -= total_net_export;
-				}
 			if (q == check_hour)
 				{
 				hprintf255(request, "<tr><td> <b> %i:00 </td> ", q);
 				hprintf255(request, "<td> <b> %dW </td> ", consumption_matrix[q]);
 				hprintf255(request, "<td> <b> %dW </td>", export_matrix[q]);
 				hprintf255(request, "<td> <b> %dW </td> </tr>", net_matrix[q]);
-				total_consumption += consumption_matrix[q];	
-					
+				//total_consumption += consumption_matrix[q];
+				//total_export += export_matrix[q];			
 				}
 			else
 				{
@@ -220,8 +212,21 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				hprintf255(request, "<td> %dW </td> ", (int)consumption_matrix[q]);
 				hprintf255(request, "<td> %dW </td>", (int)export_matrix[q]);
 				hprintf255(request, "<td> %dW </td> </tr>", net_matrix[q]);
-				total_consumption += consumption_matrix[q];
+				//total_consumption += consumption_matrix[q];
+				//total_export += export_matrix[q];	
 				}
+			//--
+			total_consumption += consumption_matrix[q];
+			total_export += export_matrix[q];	
+			if (net_matrix[q]>0)
+				{
+					net_matrix[q] += total_net_consumption;
+				}
+			else
+				{
+					net_matrix[q] -= total_net_export;
+				}
+				//--
 			}
 	poststr(request, "</tr></table><br>");
 	
