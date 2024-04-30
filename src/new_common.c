@@ -708,7 +708,7 @@ commandResult_t CMD_CLOCK_SetConfig(const void *context, const char *cmd, const 
 	// only for warning display
 	if (Tokenizer_GetArgsCount() < 1) {	// so we have no args
 //	ADDLOG_INFO(LOG_FEATURE_CMD, "Actual ClockSettings: %i  %i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i \r\n",g_clocksettings.TZ,  g_clocksettings.DST_H, g_clocksettings.DST_We, g_clocksettings.DST_Me, g_clocksettings.DST_De, g_clocksettings.DST_he, g_clocksettings.Tstd, g_clocksettings.DST_Ws, g_clocksettings.DST_Ms, g_clocksettings.DST_Ds, g_clocksettings.DST_hs, g_clocksettings.Tdst);
-	addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Actual ClockSettings %i%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i\r\n", g_clocksettings.TZ,  g_clocksettings.DST_H, g_clocksettings.DST_We, g_clocksettings.DST_Me, g_clocksettings.DST_De, g_clocksettings.DST_he, g_clocksettings.Tstd, g_clocksettings.DST_Ws, g_clocksettings.DST_Ms, g_clocksettings.DST_Ds, g_clocksettings.DST_hs, g_clocksettings.Tdst);
+	addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Actual ClockSettings %i %i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i\r\n", g_clocksettings.TZ,  g_clocksettings.DST_H, g_clocksettings.DST_We, g_clocksettings.DST_Me, g_clocksettings.DST_De, g_clocksettings.DST_he, g_clocksettings.Tstd, g_clocksettings.DST_Ws, g_clocksettings.DST_Ms, g_clocksettings.DST_Ds, g_clocksettings.DST_hs, g_clocksettings.Tdst);
 	}
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
