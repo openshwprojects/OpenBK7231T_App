@@ -203,14 +203,14 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			hprintf255(request, "<tr><td> <b> %i:00 </td> ", q);
 			hprintf255(request, "<td> <b> %dW </td> ", consumption_matrix[q]);
 			hprintf255(request, "<td> <b> %dW </td>", export_matrix[q]);
-			hprintf255(request, "<td> <b> %dW </td> </tr>",(net_matrix[q])+net_energy);			
+			hprintf255(request, "<td> <b> %dW </td> </tr>",(net_matrix[q])+(real_consumption - real_export));			
 			}
 		else
 			{
 			hprintf255(request, "<tr><td> %i:00 </td> ", q);
 			hprintf255(request, "<td> %dW </td> ", (int)consumption_matrix[q]);
 			hprintf255(request, "<td> %dW </td>", (int)export_matrix[q]);
-			hprintf255(request, "<td> %dW </td> </tr>", (net_matrix[q])+net_energy);	
+			hprintf255(request, "<td> %dW </td> </tr>", (net_matrix[q])+(real_consumption - real_export));	
 			}
 		// Summ  all the data on the table to summarize below.
 		// Real Grid Consumption / Export
@@ -717,7 +717,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			// Save the time
 			time_hour_reset = check_hour;
 			time_min_reset = check_time;	
-			net_energy = 0;
+			//net_energy = 0;
 			}
 
 			// If Netmetering is set to 15minutes, we need to reset more often. We can't save, since our temp variable is not being reset, to keep the hourly records.
