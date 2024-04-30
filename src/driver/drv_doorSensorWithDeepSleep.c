@@ -85,7 +85,7 @@ void DoorDeepSleep_QueueNewEvents() {
 			int channel = g_cfg.pins.channels[i];
 			sprintf(sChannel, "%i/get", channel); // manually adding the suffix "/get" to the topic
 			// Explanation: I manually add "/get" suffix to the sChannel, because for some reason, 
-			// when queued messages are published through PuublishQueuedItems(), the  
+			// when queued messages are published through PublishQueuedItems(), the  
 			// functionality of appendding /get is disabled (in MQTT_PublishTopicToClient()), 
 			// and there is no flag to enforce it. 
 			// There is only a flag (OBK_PUBLISH_FLAG_FORCE_REMOVE_GET) to remove 
@@ -118,7 +118,6 @@ void DoorDeepSleep_OnEverySecond() {
 		g_emergencyTimeWithNoConnection = 0;
 	} else if (Main_HasMQTTConnected() && Main_HasWiFiConnected()) { // executes every second when connection is established
 			
-<<<<<<< HEAD
 			DoorDeepSleep_QueueNewEvents();
 			PublishQueuedItems(); // publish those items that were queued when device was offline
 			
@@ -132,20 +131,6 @@ void DoorDeepSleep_OnEverySecond() {
 				g_bWantPinDeepSleep = true;
 				g_pinDeepSleepWakeUp = setting_automaticWakeUpAfterSleepTime;
 			}
-=======
-		DoorDeepSleep_QueueNewEvents();
-		PublishQueuedItems(); 
-			
-		g_noChangeTimePassed++;
-		if (g_noChangeTimePassed >= setting_timeRequiredUntilDeepSleep) {
-			// start deep sleep in the next loop
-			// The deep sleep start will check for role: IOR_DoorSensorWithDeepSleep
-			// and for those pins, it will wake up on the pin change to opposite state
-			// (so if door sensor is low, it will wake up on rising edge,
-			// if door sensor is high, it will wake up on falling)
-			g_bWantPinDeepSleep = true;
-		}
->>>>>>> 40e9f121 (code cleanup)
 	}
 	else { // executes every second while the device is woken up, but offline
 		DoorDeepSleep_QueueNewEvents();
@@ -177,7 +162,6 @@ void DoorDeepSleep_AppendInformationToHTTPIndexPage(http_request_t* request)
 }
 
 void DoorDeepSleep_OnChannelChanged(int ch, int value) {
-
 	// detect door state change
 	// (only sleep when there are no changes for certain time)
 	if (CHANNEL_HasChannelPinWithRoleOrRole(ch, IOR_DoorSensorWithDeepSleep, IOR_DoorSensorWithDeepSleep_NoPup)
