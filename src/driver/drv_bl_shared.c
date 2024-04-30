@@ -211,7 +211,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 					total_export += export_matrix[p];
 					total_net += net_matrix[p];
 				}
-					total_net += (int)net_energy[p];
+					total_net += (int)net_energy;
 				hprintf255(request, "<td> %dW </td> ", total_consumption);
 				hprintf255(request, "<td> %dW </td>", total_export);
 				hprintf255(request, "<td> %dW </td> </tr>", total_net);	
@@ -827,7 +827,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	lastReadingFrequency = frequency;
 
     float energy = 0;
-    float generation = 0;
+   // float generation = 0;
     if (isnan(energyWh)) {
         xPassedTicks = (int)(xTaskGetTickCount() - energyCounterStamp);
         // FIXME: Wrong calculation if tick count overflows
