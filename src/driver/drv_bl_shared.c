@@ -191,10 +191,10 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 			// First field: Time
 			//poststr(request, "<tr>");
-			int total_net_consumption = 0;
-			int total_net_export = 0;
-			int total_consumption = 0;
-			int total_export = 0;
+			//int total_net_consumption = 0;
+			//int total_net_export = 0;
+			//int total_consumption = 0;
+			//int total_export = 0;
 			for (int q=0; q<24; q++)
 			{
 			if (q == check_hour)
