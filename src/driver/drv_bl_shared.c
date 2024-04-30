@@ -203,14 +203,14 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			hprintf255(request, "<tr><td> <b> %i:00 </td> ", q);
 			hprintf255(request, "<td> <b> %dW </td> ", consumption_matrix[q]);
 			hprintf255(request, "<td> <b> %dW </td>", export_matrix[q]);
-			hprintf255(request, "<td> <b> %dW </td> </tr>", net_matrix[q]);			
+			hprintf255(request, "<td> <b> %dW </td> </tr>",(net_matrix[q])+net_energy);			
 			}
 		else
 			{
 			hprintf255(request, "<tr><td> %i:00 </td> ", q);
 			hprintf255(request, "<td> %dW </td> ", (int)consumption_matrix[q]);
 			hprintf255(request, "<td> %dW </td>", (int)export_matrix[q]);
-			hprintf255(request, "<td> %dW </td> </tr>", net_matrix[q]);	
+			hprintf255(request, "<td> %dW </td> </tr>", (net_matrix[q])+net_energy);	
 			}
 		// Summ  all the data on the table to summarize below.
 		// Real Grid Consumption / Export
