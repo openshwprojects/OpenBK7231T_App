@@ -220,6 +220,7 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
 
     //2. net device(lwip)
     netdev_set_mac_addr(NETIF_IDX_STA, mac_addr);
+    sysparam_sta_hostname_update(CFG_GetDeviceName());
     netdev_set_active(NETIF_IDX_STA);
 
     //3. wifi start
