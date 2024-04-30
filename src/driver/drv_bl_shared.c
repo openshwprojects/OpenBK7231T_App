@@ -175,71 +175,68 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	// Close the table
 	poststr(request, "</table>");
 
-	// Aditional code for power monitoring
-        //------------------------------------------------------------------------------------------------------------------------------------------
+	// Aditional code for power monitoring. Creates a table with 24h stats
+        // ------------------------------------------------------------------------------------------------------------------------------------------
 	poststr(request, "<table style='width:100%'>");
 	poststr(request, "<table style='text-align: center'></style>");
 	poststr(request, " <h2>Energy Stats</h2>");
 			
 	poststr(request, "<table>");
+	
 	// Table Format and headers
 	//poststr(request, "<tr>");
-			poststr(request, "<th>Time </th>");
-			poststr(request, "<th>Consumption </th>");
-			poststr(request, "<th>Export </th>");
-			poststr(request, "<th>Net Metering </th></tr><hr>");
+	poststr(request, "<th>Time </th>");
+	poststr(request, "<th>Consumption </th>");	
+	poststr(request, "<th>Export </th>");
+	poststr(request, "<th>Net Metering </th></tr><hr>");
 
-			// First field: Time
-			//poststr(request, "<tr>");
-			int total_net_consumption = 0;
-			int total_net_export = 0;
-			int total_consumption = 0;
-			int total_export = 0;
-			for (int q=0; q<24; q++)
+	// First field: Time
+	// Initialize temp variables
+	int total_net_consumption = 0;
+	int total_net_export = 0;
+	int total_consumption = 0;
+	int total_export = 0;
+	for (int q=0; q<24; q++)
+		{
+		if (q == check_hour)
 			{
-			if (q == check_hour)
-				{
-				hprintf255(request, "<tr><td> <b> %i:00 </td> ", q);
-				hprintf255(request, "<td> <b> %dW </td> ", consumption_matrix[q]);
-				hprintf255(request, "<td> <b> %dW </td>", export_matrix[q]);
-				hprintf255(request, "<td> <b> %dW </td> </tr>", net_matrix[q]);			
-				}
-			else
-				{
-				hprintf255(request, "<tr><td> %i:00 </td> ", q);
-				hprintf255(request, "<td> %dW </td> ", (int)consumption_matrix[q]);
-				hprintf255(request, "<td> %dW </td>", (int)export_matrix[q]);
-				hprintf255(request, "<td> %dW </td> </tr>", net_matrix[q]);	
-				}
-			// Summ  all the data on the table to summarize below.
-			// Real Grid Consumption / Export
-			total_consumption += consumption_matrix[q];
-			total_export += export_matrix[q];	
-			// Calculated Net Values
-			if (net_matrix[q]>0)	{total_net_consumption += total_net_consumption;}
-			else	{total_net_export -= total_net_export;}
-			//--
+			hprintf255(request, "<tr><td> <b> %i:00 </td> ", q);
+			hprintf255(request, "<td> <b> %dW </td> ", consumption_matrix[q]);
+			hprintf255(request, "<td> <b> %dW </td>", export_matrix[q]);
+			hprintf255(request, "<td> <b> %dW </td> </tr>", net_matrix[q]);			
 			}
+		else
+			{
+			hprintf255(request, "<tr><td> %i:00 </td> ", q);
+			hprintf255(request, "<td> %dW </td> ", (int)consumption_matrix[q]);
+			hprintf255(request, "<td> %dW </td>", (int)export_matrix[q]);
+			hprintf255(request, "<td> %dW </td> </tr>", net_matrix[q]);	
+			}
+		// Summ  all the data on the table to summarize below.
+		// Real Grid Consumption / Export
+		total_consumption += consumption_matrix[q];
+		total_export += export_matrix[q];	
+		// Calculated Net Values
+		if (net_matrix[q]>0)	{total_net_consumption += total_net_consumption;}
+		else	{total_net_export -= total_net_export;}
+		// -----------------------------------------------------
+		}
 	poststr(request, "</tr></table><br>");
-	
-
 	hprintf255(request, "Total Consumption: %iW (Import), %iW (Export) <br>", total_consumption, total_export);
 	hprintf255(request, "Total Netmetering:  %iW (Import), %iW (Export) <br>", total_net_consumption, total_net_export);
-
-	
 	//--------------------------------------------------------------------------------------------------
-			// Update status of the diversion relay on webpage		
-			//-------------------------------------------------------------------------------------------------------------------------------------------------
-			
-			//-----------------------------------------------------------------------------------------------------
-			//hprintf255(request, "<font size=1>Last sync at minute: %dmin. Boosting from %dh to %dh<br> Relay Thresholds: On: %d Wh, Off: %dWh<br> Instant Power: %dW, Consumption: %dW, Generation: %dW <br></font>", 
-			//	lastsync, bypass_on_time, bypass_off_time, dump_load_on, dump_load_off, (int)sensors[OBK_POWER].lastReading, (int)sensors[OBK_CONSUMPTION_TOTAL].lastReading, (int)real_export);
-			// -------------------------------------------------------------------------------------------------------------------
-			// This was the original loop 'energyCounterStatsEnable == true'
-			/********************************************************************************************************************/
+		// Update status of the diversion relay on webpage		
+		//-------------------------------------------------------------------------------------------------------------------------------------------------
+		
+		//-----------------------------------------------------------------------------------------------------
+		//hprintf255(request, "<font size=1>Last sync at minute: %dmin. Boosting from %dh to %dh<br> Relay Thresholds: On: %d Wh, Off: %dWh<br> Instant Power: %dW, Consumption: %dW, Generation: %dW <br></font>", 
+		//	lastsync, bypass_on_time, bypass_off_time, dump_load_on, dump_load_off, (int)sensors[OBK_POWER].lastReading, (int)sensors[OBK_CONSUMPTION_TOTAL].lastReading, (int)real_export);
+		// -------------------------------------------------------------------------------------------------------------------
+		// This was the original loop 'energyCounterStatsEnable == true'
+		/********************************************************************************************************************/
 	//------------------------------------------------------------------------------------------------------------------------------------------
 	// print saving interval in small text
-	//hprintf255(request, "<font size=1>Saving Interval: %.2fkW</font>", (changeSavedThresholdEnergy)* 0.001);
+	// hprintf255(request, "<font size=1>Saving Interval: %.2fkW</font>", (changeSavedThresholdEnergy)* 0.001);
 	// Some other stats...
     	hprintf255(request, "<p><br><h5>Changes: %i sent, %i Skipped, %li Saved. <br> %s<hr></p>",
                stat_updatesSent, stat_updatesSkipped, ConsumptionSaveCounter,
