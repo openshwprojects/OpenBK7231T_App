@@ -185,7 +185,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 			// First field: Time
 			//poststr(request, "<tr>");
-			for (int q=0; q<24; q++)
+			for (int q=0; q<25; q++)
 			{
 				if (q == check_hour)
 				{
@@ -193,6 +193,21 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				hprintf255(request, "<td> <b> %dW </td> ", (int)consumption_matrix[q]);
 				hprintf255(request, "<td> <b> %dW </td>", (int)export_matrix[q]);
 				hprintf255(request, "<td> <b> %dW </td> </tr>", net_matrix[q]);
+				}
+			else if (q == 25)
+				{
+				poststr(request, "<tr><td> Total </td> ");
+				for (int p=0; p<24; p++)
+				{
+					int total_consumption += consumption_matrix[p]
+					int total_export += export_matrix[p];
+					int total_net += net_matrix[p];
+					total_net += (int)net_energy;
+				}
+				hprintf255(request, "<td> %dW </td> ", total_consumption);
+				
+				hprintf255(request, "<td> %dW </td>", total_export);
+				hprintf255(request, "<td> %dW </td> </tr>", total_net);	
 				}
 			else
 				{
@@ -816,21 +831,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     else
 	// Check if the last power reading is positive or negative. Increment the correct counter.
     	{
-	// ---------------------------------------------------------------------------------------
-	// This line swaps Consumption and Generation
-	// ---------------------------------------------------------------------------------------
-	/*if (CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH)) {		
-		if ((int)power<0){
-			if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
-			{generation = (energyWh*-1);}
-			else {energy = (energyWh*-1);}	
-			}	
-		else{energy = (energyWh*-1);}	
-		}
-		
-	// ---------------------------------------------------------------------------------------
-	// Generation (Device to grid - Negative Flow)
-	else */if ((int)power<0){
+	if ((int)power<0){
 		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
 		{
 			// If the power is negative - Load the generation counter, but only if we allow negative measurements :-)
@@ -850,7 +851,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     // We use temp variables so the timer can go up or down. This would cause issues with Home assistant.
     // We also take advantage of this to save at regular intervals.
     	real_consumption = sensors[OBK_CONSUMPTION_TOTAL].lastReading;
-	real_export = sensors[OBK_GENERATION_TOTAL].lastReading
+	real_export = sensors[OBK_GENERATION_TOTAL].lastReading;
 	
     energyCounterStamp = xTaskGetTickCount();
     HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
