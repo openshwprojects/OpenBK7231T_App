@@ -191,12 +191,12 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 			// First field: Time
 			//poststr(request, "<tr>");
-			for (int q=0; q<24; q++)
-			{
 			total_net_consumption = 0;
 			total_net_export = 0;
 			total_consumption = 0;
 			total_export = 0;
+			for (int q=0; q<24; q++)
+			{
 			if (net_matrix[q])
 				{
 					net_matrix[q] += total_net_consumption;
@@ -208,8 +208,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 			if (q == check_hour)
 				{
 				hprintf255(request, "<tr><td> <b> %i:00 </td> ", q);
-				hprintf255(request, "<td> <b> %dW </td> ", (int)consumption_matrix[q]);
-				hprintf255(request, "<td> <b> %dW </td>", (int)export_matrix[q]);
+				hprintf255(request, "<td> <b> %dW </td> ", consumption_matrix[q]);
+				hprintf255(request, "<td> <b> %dW </td>", export_matrix[q]);
 				hprintf255(request, "<td> <b> %dW </td> </tr>", net_matrix[q]);
 				total_consumption += consumption_matrix[q];	
 					
@@ -220,14 +220,14 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				hprintf255(request, "<td> %dW </td> ", (int)consumption_matrix[q]);
 				hprintf255(request, "<td> %dW </td>", (int)export_matrix[q]);
 				hprintf255(request, "<td> %dW </td> </tr>", net_matrix[q]);
-				//total_consumption += consumption_matrix[q];
+				total_consumption += consumption_matrix[q];
 				}
 			}
-	poststr(request, "</tr></table>");
+	poststr(request, "</tr></table><br>");
 	
 
-	hprintf255(request, "Total Coonsumption: %iW (Import), %iW, (Export)", total_consumption, total_export);
-	hprintf255(request, "Total Netmetering:  %iW (Import), %iW (Export)", total_net_consumption, total_net_export);
+	hprintf255(request, "Total Consumption: %iW (Import), %iW (Export) <br>", total_consumption, total_export);
+	hprintf255(request, "Total Netmetering: %iW (Import), %iW (Export) <br>", total_net_consumption, total_net_export);
 
 	
 	//--------------------------------------------------------------------------------------------------
@@ -847,13 +847,16 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 		{
 			// If the power is negative - Load the generation counter, but only if we allow negative measurements :-)
 			//generation = energyWh;
-			sensors[OBK_GENERATION_TOTAL].lastReading += energyWh;		
+			sensors[OBK_GENERATION_TOTAL].lastReading += energyWh;	
+			//real_consumption += energyWh;	
+			real_export += energyWh;	
 		}
 		else 
 		{
 			// In the case we're measuring only consumption, then we just load any positive value straight to the counter
-			sensors[OBK_CONSUMPTION_TOTAL].lastReading += energy;
+			sensors[OBK_CONSUMPTION_TOTAL].lastReading += energyWh;
 			//energy = energyWh;
+			real_consumption += energyWh;
 		}	
 	}
 	}
@@ -861,8 +864,8 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     // Apply values. Add Extra variable for generation 
     // We use temp variables so the timer can go up or down. This would cause issues with Home assistant.
     // We also take advantage of this to save at regular intervals.
-    	real_consumption = sensors[OBK_CONSUMPTION_TOTAL].lastReading;
-	real_export = sensors[OBK_GENERATION_TOTAL].lastReading;
+    	//real_consumption = sensors[OBK_CONSUMPTION_TOTAL].lastReading;
+	//real_export = sensors[OBK_GENERATION_TOTAL].lastReading;
 	
     energyCounterStamp = xTaskGetTickCount();
     HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
