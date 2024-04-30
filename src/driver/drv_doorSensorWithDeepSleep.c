@@ -59,6 +59,10 @@ void DoorDeepSleep_Init() {
 }
 
 void DoorDeepSleep_QueueNewEvents() {
+	int i, curr_value;
+	char sChannel[8]; // channel as a string
+	char sValue[8];   // channel value as a string
+
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if (g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep ||
 			g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_NoPup ||
@@ -153,9 +157,3 @@ void DoorDeepSleep_OnChannelChanged(int ch, int value) {
 		g_emergencyTimeWithNoConnection = 0;
 	}
 }
-
-
-
-
-
-
