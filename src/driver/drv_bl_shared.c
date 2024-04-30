@@ -181,9 +181,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	poststr(request, "<table style='text-align: center'></style>");
 	poststr(request, " <h2>Energy Stats</h2>");
 			
-			poststr(request, "<table>");
-			// Table Format and headers
-			//poststr(request, "<tr>");
+	poststr(request, "<table>");
+	// Table Format and headers
+	//poststr(request, "<tr>");
 			poststr(request, "<th>Time </th>");
 			poststr(request, "<th>Consumption </th>");
 			poststr(request, "<th>Export </th>");
@@ -191,10 +191,10 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 			// First field: Time
 			//poststr(request, "<tr>");
-			//int total_net_consumption = 0;
-			//int total_net_export = 0;
-			//int total_consumption = 0;
-			//int total_export = 0;
+			int total_net_consumption = 0;
+			int total_net_export = 0;
+			int total_consumption = 0;
+			int total_export = 0;
 			for (int q=0; q<24; q++)
 			{
 			if (q == check_hour)
