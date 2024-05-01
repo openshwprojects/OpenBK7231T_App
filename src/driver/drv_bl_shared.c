@@ -842,11 +842,8 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 		//If not positive, we check if the negative power flag is enabled. If so, we load the generation counter.
 		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
 		{
-			//if ((int)power<0){
 			// If the power is negative - Load the generation counter, but only if we allow negative measurements :-)
-			//generation = energyWh;
 			sensors[OBK_GENERATION_TOTAL].lastReading += energyWh;	
-			//real_consumption += energyWh;	
 			real_export += energyWh;	
 		}
 	}
@@ -988,8 +985,26 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
         if (energyCounterMinutes != NULL)
             //energyCounterMinutes[0] += energy;
-	    // Should allow it to measure both import and export
-	    energyCounterMinutes[0] += energyWh;
+	    
+	// Changes below should allow it to measure both import and export
+	// energyCounterMinutes[0] += energyWh;
+	//-----------------------------------------------------------------------------------------------------------------------------
+	if ((int)power>0)
+	{
+		sensors[OBK_CONSUMPTION_TOTAL].lastReading += energyWh;
+		energyCounterMinutes[0] += energyWh;
+	}
+	else
+	{
+		//If not positive, we check if the negative power flag is enabled. If so, we load the generation counter.
+		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
+		{
+			// If the power is negative - Load the generation counter, but only if we allow negative measurements :-)
+			sensors[OBK_GENERATION_TOTAL].lastReading += energyWh;	
+			energyCounterMinutes[0] -= energyWh;	
+		}
+	}
+	//-----------------------------------------------------------------------------------------------------------------------------
     }
 
     for(i = OBK__FIRST; i <= OBK__LAST; i++)
