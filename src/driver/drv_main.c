@@ -54,7 +54,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"PixelAnim provides a simple set of WS2812B animations",
 	//drvdetail:"requires":""}
-	{ "PixelAnim",		NULL,			NULL,			NULL, PixelAnim_RunQuickTick, NULL, NULL, false },
+	{ "PixelAnim",		PixelAnim_Init,			NULL,			NULL, PixelAnim_RunQuickTick, NULL, NULL, false },
 #endif
 	
 #if ENABLE_NTP

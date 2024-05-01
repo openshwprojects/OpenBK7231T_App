@@ -205,6 +205,8 @@ void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 	}
 }
 void SM16703P_setPixel(int pixel, int r, int g, int b) {
+	if (!initialized)
+		return;
 	// Load data in correct format
 	int b0, b1, b2;
 	if (color_order == SM16703P_COLOR_ORDER_RGB) {
@@ -380,11 +382,13 @@ commandResult_t SM16703P_InitForLEDCount(const void *context, const char *cmd, c
 	return CMD_RES_OK;
 }
 
+void SM16703P_Show() {
+	SPIDMA_StartTX(spi_msg);
+}
 static commandResult_t SM16703P_StartTX(const void *context, const char *cmd, const char *args, int flags) {
 	if (!initialized)
 		return CMD_RES_ERROR;
-
-	SPIDMA_StartTX(spi_msg);
+	SM16703P_Show();
 	return CMD_RES_OK;
 }
 
