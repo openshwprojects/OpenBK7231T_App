@@ -142,6 +142,7 @@ void Freeze_Init();
 void Freeze_OnEverySecond();
 void Freeze_RunFrame();
 
+void PixelAnim_RunQuickTick();
 
 #define SM2135_DELAY         4
 
