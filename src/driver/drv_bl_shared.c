@@ -5,7 +5,6 @@ static int export_matrix[24] = {0};
 static int net_matrix[24] = {0};
 static int old_export_energy = 0;
 static int old_real_consumption = 0;
-//static energy_counter_data = 0;
 
 #include "drv_bl_shared.h"
 
@@ -192,7 +191,6 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	int total_export = 0;
 	for (int q=0; q<24; q++)
 		{
-		//int calculate_net_energy = (net_matrix[q]+(int)net_energy);
 		if (q == check_hour)
 			{
 			int calculate_net_energy = (net_matrix[q]+(int)net_energy);
@@ -215,10 +213,11 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		// Calculated Net Values
 		if (net_matrix[q]<0)	{total_net_consumption -= net_matrix[q];}
 		else	{total_net_export += net_matrix[q];}
-		if (net_energy<0) {total_net_consumption -= net_energy;}
-		else {total_net_export += net_energy;}
 		// -----------------------------------------------------
 		}
+	// Add the values for this metering period (not yet saved)
+	if (net_energy<0) {total_net_consumption -= net_energy;}
+	else {total_net_export += net_energy;}
 	poststr(request, "</tr></table><br>");
 	hprintf255(request, "Total Consumption: %iW (Import), %iW (Export) <br>", total_consumption, total_export);
 	hprintf255(request, "Total Netmetering:  %iW (Import), %iW (Export) <br>", total_net_consumption, total_net_export);
@@ -687,13 +686,8 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			{
 				// reset the timing variable. if we are producing enough, if wont cycle the diversion load.
 				lastsync = 0;
-				// Save new value, if positive
-				
-				//if (net_energy < 0){sensors[OBK_GENERATION_TOTAL].lastReading -= (net_energy);}
-				// Save new value, if negative (minus add minus equals plus, so we increment consumption)
-				//else {sensors[OBK_CONSUMPTION_TOTAL].lastReading += net_energy;}
 
-				//We want the last hour values to be recovered. SO we use some logic.
+				//We want the last hour values to be recovered. So we use some logic.
 				if (check_hour >0) {net_matrix[check_hour-1] += net_energy;}
 				else {net_matrix[23] += net_energy;}
 				// Clear old data from our current time table.
