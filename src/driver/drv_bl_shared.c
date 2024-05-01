@@ -987,7 +987,8 @@ void BL_ProcessUpdate(float voltage, float current, float power,
         }
 
         if (energyCounterMinutes != NULL)
-            energyCounterMinutes[0] += energy;
+            //energyCounterMinutes[0] += energy;
+	    energyCounterMinutes[0] += energyWh;
     }
 
     for(i = OBK__FIRST; i <= OBK__LAST; i++)
