@@ -205,6 +205,8 @@ void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 	}
 }
 void SM16703P_setPixel(int pixel, int r, int g, int b) {
+	if (!initialized)
+		return;
 	// Load data in correct format
 	int b0, b1, b2;
 	if (color_order == SM16703P_COLOR_ORDER_RGB) {
@@ -241,6 +243,56 @@ void SM16703P_setPixel(int pixel, int r, int g, int b) {
 	translate_byte(b1, spi_msg->send_buf + (pixel_offset + 4 + (pixel * 3 * 4)));
 	translate_byte(b2, spi_msg->send_buf + (pixel_offset + 8 + (pixel * 3 * 4)));
 }
+extern float g_brightness0to100;//TODO
+void SM16703P_setPixelWithBrig(int pixel, int r, int g, int b) {
+	r = (int)(r * g_brightness0to100*0.01f);
+	g = (int)(g * g_brightness0to100*0.01f);
+	b = (int)(b * g_brightness0to100*0.01f);
+	SM16703P_setPixel(pixel,r, g, b);
+}
+void SM16703P_setAllPixels(int r, int g, int b) {
+	int pixel;
+	if (!initialized)
+		return;
+	// Load data in correct format
+	int b0, b1, b2;
+	if (color_order == SM16703P_COLOR_ORDER_RGB) {
+		b0 = r;
+		b1 = g;
+		b2 = b;
+	}
+	if (color_order == SM16703P_COLOR_ORDER_RBG) {
+		b0 = r;
+		b1 = b;
+		b2 = g;
+	}
+	if (color_order == SM16703P_COLOR_ORDER_BRG) {
+		b0 = b;
+		b1 = r;
+		b2 = g;
+	}
+	if (color_order == SM16703P_COLOR_ORDER_BGR) {
+		b0 = b;
+		b1 = g;
+		b2 = r;
+	}
+	if (color_order == SM16703P_COLOR_ORDER_GRB) {
+		b0 = g;
+		b1 = r;
+		b2 = b;
+	}
+	if (color_order == SM16703P_COLOR_ORDER_GBR) {
+		b0 = g;
+		b1 = b;
+		b2 = r;
+	}
+	for (pixel = 0; pixel < pixel_count; pixel++) {
+		translate_byte(b0, spi_msg->send_buf + (pixel_offset + 0 + (pixel * 3 * 4)));
+		translate_byte(b1, spi_msg->send_buf + (pixel_offset + 4 + (pixel * 3 * 4)));
+		translate_byte(b2, spi_msg->send_buf + (pixel_offset + 8 + (pixel * 3 * 4)));
+	}
+}
+
 
 // SM16703P_SetRaw bUpdate byteOfs HexData
 // SM16703P_SetRaw 1 0 FF000000FF000000FF
@@ -380,11 +432,13 @@ commandResult_t SM16703P_InitForLEDCount(const void *context, const char *cmd, c
 	return CMD_RES_OK;
 }
 
+void SM16703P_Show() {
+	SPIDMA_StartTX(spi_msg);
+}
 static commandResult_t SM16703P_StartTX(const void *context, const char *cmd, const char *args, int flags) {
 	if (!initialized)
 		return CMD_RES_ERROR;
-
-	SPIDMA_StartTX(spi_msg);
+	SM16703P_Show();
 	return CMD_RES_OK;
 }
 

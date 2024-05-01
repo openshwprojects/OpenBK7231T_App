@@ -5,6 +5,7 @@
 #include "cmd_public.h"
 #include "../obk_config.h"
 #include "../driver/drv_public.h"
+#include "../driver/drv_local.h"
 #include "../hal/hal_flashVars.h"
 #include "../hal/hal_flashConfig.h"
 #include "../rgb2hsv.h"
@@ -140,6 +141,7 @@ bool LED_IsLedDriverChipRunning()
 	return DRV_IsRunning("SM2135") || DRV_IsRunning("BP5758D") 
 		|| DRV_IsRunning("TESTLED") || DRV_IsRunning("SM2235") || DRV_IsRunning("BP1658CJ")
 		|| DRV_IsRunning("KP18058")
+		|| DRV_IsRunning("SM16703P")
 		;
 #else
 	return false;
@@ -576,6 +578,12 @@ void apply_smart_light() {
 #endif
 #if	ENABLE_DRIVER_TUYAMCU
 	TuyaMCU_OnRGBCWChange(finalColors, g_lightEnableAll, g_lightMode, g_brightness0to100*0.01f, LED_GetTemperature0to1Range());
+#endif
+#if	ENABLE_DRIVER_SM16703P
+	if (pixel_count > 0) {
+		SM16703P_setAllPixels(finalColors[0], finalColors[1], finalColors[2]);
+		SM16703P_Show();
+	}
 #endif
 	
 	// I am not sure if it's the best place to do it
