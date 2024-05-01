@@ -973,12 +973,14 @@ void BL_ProcessUpdate(float voltage, float current, float power,
             {
                 for (i=energyCounterSampleCount-1;i>0;i--)
                 {
-                    if (energyCounterMinutes[i-1]>0.0)
+                // Modified to save negative energy 
+		energyCounterMinutes[i] = energyCounterMinutes[i-1];   
+		/* if (energyCounterMinutes[i-1]>0.0)
                     {
                         energyCounterMinutes[i] = energyCounterMinutes[i-1];
                     } else {
                         energyCounterMinutes[i] = 0.0;
-                    }
+                    }*/
                 }
                 energyCounterMinutes[0] = 0.0;
             }
