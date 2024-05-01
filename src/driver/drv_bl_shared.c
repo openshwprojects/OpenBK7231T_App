@@ -3,13 +3,6 @@
 static int consumption_matrix [24] = {0};
 static int export_matrix[24] = {0};
 static int net_matrix[24] = {0};
-
-//int total_consumption = 0;
-//int total_export = 0;
-//int total_net = 0;
-//int total_net_consumption = 0;
-//int total_net_export = 0;
-
 static int old_export_energy = 0;
 static int old_real_consumption = 0;
 
@@ -219,8 +212,10 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		total_consumption += consumption_matrix[q];
 		total_export += export_matrix[q];	
 		// Calculated Net Values
-		if (net_matrix[q]<0)	{total_net_consumption -= net_matrix[q];	total_net_consumption -= net_energy;}
-		else	{total_net_export += net_matrix[q];	total_net_export += net_energy;}
+		if (net_matrix[q]<0)	{total_net_consumption -= net_matrix[q];}
+		else	{total_net_export += net_matrix[q];}
+		if (net_energy<0) {total_net_consumption -= net_energy;}
+		else {total_net_export += net_energy;}
 		// -----------------------------------------------------
 		}
 	poststr(request, "</tr></table><br>");
