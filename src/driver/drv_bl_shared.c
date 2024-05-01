@@ -992,7 +992,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	if ((int)power>0)
 	{
 		sensors[OBK_CONSUMPTION_TOTAL].lastReading += energyWh;
-		energyCounterMinutes[0] += energyWh;
+		energyCounterMinutes[0] += (int)energyWh;
 	}
 	else
 	{
@@ -1001,7 +1001,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 		{
 			// If the power is negative - Load the generation counter, but only if we allow negative measurements :-)
 			sensors[OBK_GENERATION_TOTAL].lastReading += energyWh;	
-			energyCounterMinutes[0] -= energyWh;	
+			energyCounterMinutes[0] -= (int)energyWh;	
 		}
 	}
 	//-----------------------------------------------------------------------------------------------------------------------------
