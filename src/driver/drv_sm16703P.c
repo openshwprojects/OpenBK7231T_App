@@ -243,6 +243,13 @@ void SM16703P_setPixel(int pixel, int r, int g, int b) {
 	translate_byte(b1, spi_msg->send_buf + (pixel_offset + 4 + (pixel * 3 * 4)));
 	translate_byte(b2, spi_msg->send_buf + (pixel_offset + 8 + (pixel * 3 * 4)));
 }
+extern float g_brightness0to100;//TODO
+void SM16703P_setPixelWithBrig(int pixel, int r, int g, int b) {
+	r = (int)(r * g_brightness0to100*0.01f);
+	g = (int)(g * g_brightness0to100*0.01f);
+	b = (int)(b * g_brightness0to100*0.01f);
+	SM16703P_setPixel(pixel,r, g, b);
+}
 void SM16703P_setAllPixels(int r, int g, int b) {
 	int pixel;
 	if (!initialized)

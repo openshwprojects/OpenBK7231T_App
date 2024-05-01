@@ -48,12 +48,75 @@ void RainbowWheel_Run() {
 
 	for (i = 0; i < pixel_count; i++) {
 		c = RainbowWheel_Wheel(((i * 256 / pixel_count) + j) & 255);
-		SM16703P_setPixel(pixel_count - 1 - i, *c, *(c + 1), *(c + 2));
+		SM16703P_setPixelWithBrig(pixel_count - 1 - i, *c, *(c + 1), *(c + 2));
 	}
 	SM16703P_Show();
 	j++;
 	j %= 256;
 }
+
+void Fire_setPixelHeatColor(int Pixel, byte temperature) {
+	// Rescale heat from 0-255 to 0-191
+	byte t192 = round((temperature / 255.0) * 191);
+
+	// Calculate ramp up from
+	byte heatramp = t192 & 0x3F; // 0...63
+	heatramp <<= 2; // scale up to 0...252
+
+	// Figure out which third of the spectrum we're in:
+	if (t192 > 0x80) {                    // hottest
+		SM16703P_setPixelWithBrig(Pixel, 255, 255, heatramp);
+	}
+	else if (t192 > 0x40) {               // middle
+		SM16703P_setPixelWithBrig(Pixel, 255, heatramp, 0);
+	}
+	else {                               // coolest
+		SM16703P_setPixelWithBrig(Pixel, heatramp, 0, 0);
+	}
+}
+// FlameHeight - Use larger value for shorter flames, default=50.
+// Sparks - Use larger value for more ignitions and a more active fire (between 0 to 255), default=100.
+// DelayDuration - Use larger value for slower flame speed, default=10.
+int FlameHeight = 50;
+int Sparks = 100;
+static byte heat[32];
+int random(int min, int max) {
+	int r = rand() % (max - min);
+	return min + r;
+}
+void Fire_Run() {
+	int cooldown;
+
+	// Cool down each cell a little
+	for (int i = 0; i < pixel_count; i++) {
+		cooldown = random(0, ((FlameHeight * 10) / pixel_count) + 2);
+
+		if (cooldown > heat[i]) {
+			heat[i] = 0;
+		}
+		else {
+			heat[i] = heat[i] - cooldown;
+		}
+	}
+
+	// Heat from each cell drifts up and diffuses slightly
+	for (int k = (pixel_count - 1); k >= 2; k--) {
+		heat[k] = (heat[k - 1] + heat[k - 2] + heat[k - 2]) / 3;
+	}
+
+	// Randomly ignite new Sparks near bottom of the flame
+	if (rand()%255 < Sparks) {
+		int y = rand()%7;
+		heat[y] = heat[y] + random(160, 255);
+	}
+
+	// Convert heat to LED colors
+	for (int j = 0; j < pixel_count; j++) {
+		Fire_setPixelHeatColor(j, heat[j]);
+	}
+
+}
+
 // startDriver PixelAnim
 
 typedef struct ledAnim_s {
@@ -64,7 +127,7 @@ typedef struct ledAnim_s {
 int activeAnim = -1;
 ledAnim_t g_anims[] = {
 	{ "Rainbow Wheel", RainbowWheel_Run },
-	{ "Test123", RainbowWheel_Run }
+	{ "Fire", Fire_Run }
 };
 int g_numAnims = sizeof(g_anims) / sizeof(g_anims[0]);
 

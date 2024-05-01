@@ -670,7 +670,7 @@ int http_fn_index(http_request_t* request) {
 			poststr(request, "</td></tr>");
 		}
 #if ENABLE_DRIVER_PIXELANIM
-		if (1) {
+		if (DRV_IsRunning("PixelAnim")) {
 			PixelAnim_CreatePanel(request);
 		}
 #endif
