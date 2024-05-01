@@ -626,12 +626,12 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			if (!first_run)
 				{
 				//60min Net metering. Checks only one of the flags is enabled.
-				if ((!(CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))||(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN)))
+				if ((!(CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN)))||(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN)))
 				{
 					CMD_ExecuteCommand("SetupEnergyStats 1 60 60", 0); 
 				}
 				//15min Net metering. Checks only one of the flags is enabled.
-				else if  ((!(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN))||(CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN)))
+				else if  ((!(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN)))||(CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN)))
 				{
 					CMD_ExecuteCommand("SetupEnergyStats 1 60 15", 0); 
 				}
