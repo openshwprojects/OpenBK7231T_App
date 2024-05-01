@@ -3,12 +3,12 @@
 #include "../new_pins.h"
 #include "../obk_config.h"
 #include <ctype.h>
-#include "cmd_local.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #if ENABLE_LITTLEFS
 	#include "../littlefs/our_lfs.h"
 #endif
+#include "cmd_local.h"
 
 
 

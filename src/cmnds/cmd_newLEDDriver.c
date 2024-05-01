@@ -1,3 +1,6 @@
+#if ENABLE_LITTLEFS
+	#include "../littlefs/our_lfs.h"
+#endif
 
 #include "../logging/logging.h"
 #include "../new_pins.h"
@@ -14,9 +17,6 @@
 #include "../cJSON/cJSON.h"
 #include <string.h>
 #include <math.h>
-#if ENABLE_LITTLEFS
-	#include "../littlefs/our_lfs.h"
-#endif
 
 //  My HA config for system below:
 /*

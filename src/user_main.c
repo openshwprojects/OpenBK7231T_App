@@ -3,11 +3,20 @@
  */
  //
 
+
+#if ENABLE_LITTLEFS
+#include "littlefs/our_lfs.h"
+#endif
+
+
 #include "hal/hal_wifi.h"
 #include "hal/hal_generic.h"
 #include "hal/hal_flashVars.h"
 #include "hal/hal_adc.h"
 #include "new_common.h"
+
+
+
 
 //#include "driver/drv_ir.h"
 #include "driver/drv_public.h"
@@ -30,9 +39,6 @@
 #include "mqtt/new_mqtt.h"
 #include "ota/ota.h"
 
-#if ENABLE_LITTLEFS
-#include "littlefs/our_lfs.h"
-#endif
 
 
 #include "driver/drv_ntp.h"

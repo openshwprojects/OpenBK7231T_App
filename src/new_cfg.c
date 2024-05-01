@@ -1,4 +1,7 @@
 
+#if ENABLE_LITTLEFS
+#include "littlefs/our_lfs.h"
+#endif
 #include "new_common.h"
 #include "logging/logging.h"
 #include "httpserver/new_http.h"
@@ -8,9 +11,7 @@
 #include "hal/hal_wifi.h"
 #include "hal/hal_flashConfig.h"
 #include "cmnds/cmd_public.h"
-#if ENABLE_LITTLEFS
-#include "littlefs/our_lfs.h"
-#endif
+
 
 
 #define DEFAULT_BOOT_SUCCESS_TIME 5
@@ -698,6 +699,9 @@ void CFG_SetLFS_Size(uint32_t value) {
 }
 
 uint32_t CFG_GetLFS_Size() {
+#ifndef LFS_BLOCKS_DEFAULT_LEN // nasty hack. There is something strange with the includes of littlefs in conjunction with LN882H - this define is included in our_lfs.h but not there ?!?!? 
+#define LFS_BLOCKS_DEFAULT_LEN 0x8000
+#endif
 	uint32_t size = g_cfg.LFS_Size;
 	if (size == 0){
 		size = LFS_BLOCKS_DEFAULT_LEN;
