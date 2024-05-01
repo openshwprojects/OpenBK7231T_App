@@ -1,4 +1,5 @@
-// Last working on 13/04/24 - Sometimes locks during generation
+// Power measurement: Last working on 01/05/24
+// Netmetering only available locally. Other stats, including export saved and passed on to MQTT.
 
 static int consumption_matrix [24] = {0};
 static int export_matrix[24] = {0};
