@@ -211,13 +211,13 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		total_consumption += consumption_matrix[q];
 		total_export += export_matrix[q];	
 		// Calculated Net Values
-		if (net_matrix[q]<0)	{total_net_consumption -= net_matrix[q];}
-		else	{total_net_export += net_matrix[q];}
+		if (net_matrix[q]<0)	{total_net_consumption += net_matrix[q];}
+		else	{total_net_export -= net_matrix[q];}
 		// -----------------------------------------------------
 		}
 	// Add the values for this metering period (not yet saved)
-	if (net_energy<0) {total_net_consumption -= net_energy;}
-	else {total_net_export += net_energy;}
+	if (net_energy<0) {total_net_consumption += net_energy;}
+	else {total_net_export -= net_energy;}
 	poststr(request, "</tr></table><br>");
 	hprintf255(request, "Total Consumption: %iW (Import), %iW (Export) <br>", total_consumption, total_export);
 	hprintf255(request, "Total Netmetering:  %iW (Import), %iW (Export) <br>", total_net_consumption, total_net_export);
