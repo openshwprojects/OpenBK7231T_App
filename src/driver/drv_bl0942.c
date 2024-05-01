@@ -30,16 +30,22 @@ static unsigned short bl0942_baudRate = 4800;
 #define BL0942_REG_I_RMS 0x03
 #define BL0942_REG_V_RMS 0x04
 #define BL0942_REG_WATT 0x06
-#define BL0942_REG_CF_CNT 0x7
+//#define BL0942_REG_CF_CNT 0x7
+#define BL0942_REG_CF_CNT 0x07
 #define BL0942_REG_FREQ 0x08
 #define BL0942_REG_USR_WRPROT 0x1D
 #define BL0942_USR_WRPROT_DISABLE 0x55
 
 // User operation register (read and write)
+#define BL0942_REG_WA_CREEP 0x14	// Minimun power measurement register
 #define BL0942_REG_MODE 0x19
-#define BL0942_MODE_DEFAULT 0x87
+//#define BL0942_MODE_DEFAULT 0x87
+#define BL0942_REG_CF_CNT_CLR_SEL
+#define BL0942_MODE_DEFAULT 0xC7	// Default: 0x87 - Bit 6 = 1 - counter cleaned on every read to avoid possible overflow
 #define BL0942_MODE_RMS_UPDATE_SEL_800_MS (1 << 3)
 
+#define BL0942_STATUS 0x09		// Status register. Biy 0 indicates the direction of the last energy Pulse CF (0: active forward; 1: active reverse)
+#define DEFAULT_WA_CREEP_VAL 64		// Minimun power measurement value. Increase the value up to 255.
 #define DEFAULT_VOLTAGE_CAL 15188
 #define DEFAULT_CURRENT_CAL 251210
 #define DEFAULT_POWER_CAL 598
@@ -52,7 +58,10 @@ typedef struct {
     int32_t watt;
     uint32_t cf_cnt;
     uint32_t freq;
+    uint32_t status;
 } bl0942_data_t;
+
+//static int polarity = 0;
 
 static uint32_t PrevCfCnt = CF_CNT_INVALID;
 
@@ -68,16 +77,21 @@ static void ScaleAndUpdate(bl0942_data_t *data) {
     float frequency = 2 * 500000.0f / data->freq;
 
     float energyWh = 0;
-    if (PrevCfCnt != CF_CNT_INVALID) {
+    /* if (PrevCfCnt != CF_CNT_INVALID) {
         int diff = (data->cf_cnt < PrevCfCnt
                         ? data->cf_cnt + (0xFFFFFF - PrevCfCnt) + 1
                         : data->cf_cnt - PrevCfCnt);
         energyWh =
             fabsf(PwrCal_ScalePowerOnly(diff)) * 1638.4f * 256.0f / 3600.0f;
     }
-    PrevCfCnt = data->cf_cnt;
-
-    BL_ProcessUpdate(voltage, current, power, frequency, energyWh);
+    PrevCfCnt = data->cf_cnt;*/
+    energyWh = fabsf(PwrCal_ScalePowerOnly(data->cf_cnt)) * 1638.4f * 256.0f / 3600.0f;
+    
+	if (CFG_HasFlag(OBK_FLAG_POWER_INVERT_AC)){
+	BL_ProcessUpdate(voltage, current, (-1*power), frequency, energyWh);}
+	else{
+		BL_ProcessUpdate(voltage, current, power, frequency, energyWh);}
+		
 }
 
 static int UART_TryToGetNextPacket(void) {
@@ -136,6 +150,10 @@ static int UART_TryToGetNextPacket(void) {
     data.cf_cnt =
         (UART_GetByte(15) << 16) | (UART_GetByte(14) << 8) | UART_GetByte(13);
     data.freq = (UART_GetByte(17) << 8) | UART_GetByte(16);
+	// I added this to read the status register (and polarity of energy flow) but doesn't work. It needs to be troubleshooted.
+    data.status = 
+    	// Read Status register to get direction of energy flow (Reverse / Active)
+	(UART_GetByte(20) << 16) | (UART_GetByte(19) << 8) | UART_GetByte(18);
     ScaleAndUpdate(&data);
 
     UART_ConsumeBytes(BL0942_UART_PACKET_LEN);
@@ -230,6 +248,8 @@ void BL0942_UART_Init(void) {
     UART_WriteReg(BL0942_REG_USR_WRPROT, BL0942_USR_WRPROT_DISABLE);
     UART_WriteReg(BL0942_REG_MODE,
                   BL0942_MODE_DEFAULT | BL0942_MODE_RMS_UPDATE_SEL_800_MS);
+	    // Set the minimun power measurement
+    UART_WriteReg(BL0942_REG_WA_CREEP,DEFAULT_WA_CREEP_VAL);
 }
 
 void BL0942_UART_RunEverySecond(void) {
@@ -266,6 +286,8 @@ void BL0942_SPI_RunEverySecond(void) {
     SPI_ReadReg(BL0942_REG_V_RMS, &data.v_rms);
     SPI_ReadReg(BL0942_REG_WATT, (uint32_t *)&data.watt);
     data.watt = Int24ToInt32(data.watt);
+   // if (CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH)){
+		//data.watt = (-1*data.watt);}
     SPI_ReadReg(BL0942_REG_CF_CNT, &data.cf_cnt);
     SPI_ReadReg(BL0942_REG_FREQ, &data.freq);
     ScaleAndUpdate(&data);
