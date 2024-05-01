@@ -5,10 +5,11 @@
 #include "../new_common.h"
 
 #define BOOT_COMPLETE_SECONDS 30
-#define MAX_RETAIN_CHANNELS 12
+#define MAX_RETAIN_CHANNELS 10
 
 /* Fixed size 32 bytes */
 typedef struct ENERGY_METERING_DATA {
+	float TotalGeneration;
 	float TotalConsumption;
 	float TodayConsumpion;
 	float YesterdayConsumption;
