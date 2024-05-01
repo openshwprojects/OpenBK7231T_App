@@ -200,6 +200,8 @@ typedef int (*beken_thread_function_t)(void *p);
 #include <semphr.h>
 #include <stdbool.h>
 #include <stdint.h>
+// Solves compilation errors on BL602
+#include <new_cfg.h>
 
 #define ASSERT
 #define os_strcpy strcpy
