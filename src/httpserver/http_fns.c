@@ -2622,6 +2622,8 @@ const char* g_obk_flagNames[] = {
 	"[TuyaMCU] Store raw data",
 	"[TuyaMCU] Store ALL data",
 	"[PWR] Invert AC dir",
+	"[PWR] NetMetering: 15min",
+	"[PWR] NetMetering: 60min",
 	"error",
 	"error",
 	"error",
