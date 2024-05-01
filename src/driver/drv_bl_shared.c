@@ -665,8 +665,8 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 					//hour_reset = 0;
 					dump_load_relay = 4;
 					//CMD_ExecuteCommand("SendGet", rem_relay_off, 0);
-					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
-					CMD_ExecuteCommand("setChannel 1 0", 0);
+					//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
+					//CMD_ExecuteCommand("setChannel 1 0", 0);
 					check_time_power = check_time;
 					check_hour_power = check_hour;
 				}
@@ -766,22 +766,22 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 					{
 					dump_load_relay = 1;
 					time_on += dump_load_hysteresis;	// Increase the timer.
-					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
-					CMD_ExecuteCommand("setChannel 1 1", 0);
+					//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
+					
 					}
 				else if ((check_hour >= bypass_on_time) && (check_hour < bypass_off_time) && (time_on < min_daily_time_on))
 					{
 					// We make an exception to manually turn on the bypass load, for example - Winter.
 					dump_load_relay = 2;
-					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
-					CMD_ExecuteCommand("setChannel 1 1", 0);
+					//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
+					//CMD_ExecuteCommand("setChannel 1 1", 0);
 					}
 				else if (((int)net_energy<(int)dump_load_off))
 					{
 					// If none of the exemptions applies, we turn the diversion load off.
 					dump_load_relay = 3;
-					CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
-					CMD_ExecuteCommand("setChannel 1 0", 0);
+					//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
+					//CMD_ExecuteCommand("setChannel 1 0", 0);
 					}
 			}
 				
@@ -988,6 +988,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
         if (energyCounterMinutes != NULL)
             //energyCounterMinutes[0] += energy;
+	    // Should allow it to measure both import and export
 	    energyCounterMinutes[0] += energyWh;
     }
 
