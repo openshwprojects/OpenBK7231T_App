@@ -8,7 +8,7 @@
 #include "drv_local.h"
 #include "../hal/hal_pins.h"
 
-int numLEDs = 16;
+extern uint32_t pixel_count;
 
 // Credit: https://github.com/Electriangle/RainbowCycle_Main
 byte *RainbowWheel_Wheel(byte WheelPosition) {
@@ -45,9 +45,9 @@ void PixelAnim_RunQuickTick() {
 	byte *c;
 	uint16_t i;
 
-	for (i = 0; i < numLEDs; i++) {
-		c = RainbowWheel_Wheel(((i * 256 / numLEDs) + j) & 255);
-		SM16703P_setPixel(numLEDs - 1 - i,*c, *(c + 1), *(c + 2));
+	for (i = 0; i < pixel_count; i++) {
+		c = RainbowWheel_Wheel(((i * 256 / pixel_count) + j) & 255);
+		SM16703P_setPixel(pixel_count - 1 - i,*c, *(c + 1), *(c + 2));
 	}
 	SM16703P_Show();
 	j++;
