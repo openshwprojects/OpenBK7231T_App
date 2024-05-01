@@ -220,7 +220,6 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		total_export += export_matrix[q];	
 		// Calculated Net Values
 		if (net_matrix[q]<1)	{total_net_consumption += net_matrix[q];}
-		if (net_energy < 0)
 		else	{total_net_export -= net_matrix[q];}
 		if (net_energy < 0)
 		{
