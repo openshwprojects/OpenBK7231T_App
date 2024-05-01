@@ -9,6 +9,7 @@
 #include "../logging/logging.h"
 #include "drv_local.h"
 #include "../hal/hal_pins.h"
+#include <math.h>
 
 /*
 // Usage:
