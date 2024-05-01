@@ -1045,6 +1045,3 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 
 	return 0;
 }
-
-
-
