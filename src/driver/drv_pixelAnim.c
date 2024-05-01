@@ -1,3 +1,5 @@
+// WS2812B etc animations
+// For the animations themselves credit goes to https://github.com/Electriangle
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
@@ -9,7 +11,7 @@
 #include "../hal/hal_pins.h"
 
 /*
-
+// Usage:
 startDriver SM16703P
 SM16703P_Init 16
 startDriver PixelAnim
@@ -80,7 +82,7 @@ void Fire_setPixelHeatColor(int Pixel, byte temperature) {
 int FlameHeight = 50;
 int Sparks = 100;
 static byte heat[32];
-int random(int min, int max) {
+int RandomRange(int min, int max) {
 	int r = rand() % (max - min);
 	return min + r;
 }
@@ -89,7 +91,7 @@ void Fire_Run() {
 
 	// Cool down each cell a little
 	for (int i = 0; i < pixel_count; i++) {
-		cooldown = random(0, ((FlameHeight * 10) / pixel_count) + 2);
+		cooldown = RandomRange(0, ((FlameHeight * 10) / pixel_count) + 2);
 
 		if (cooldown > heat[i]) {
 			heat[i] = 0;
@@ -107,7 +109,7 @@ void Fire_Run() {
 	// Randomly ignite new Sparks near bottom of the flame
 	if (rand()%255 < Sparks) {
 		int y = rand()%7;
-		heat[y] = heat[y] + random(160, 255);
+		heat[y] = heat[y] + RandomRange(160, 255);
 	}
 
 	// Convert heat to LED colors
