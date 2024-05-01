@@ -243,6 +243,49 @@ void SM16703P_setPixel(int pixel, int r, int g, int b) {
 	translate_byte(b1, spi_msg->send_buf + (pixel_offset + 4 + (pixel * 3 * 4)));
 	translate_byte(b2, spi_msg->send_buf + (pixel_offset + 8 + (pixel * 3 * 4)));
 }
+void SM16703P_setAllPixels(int r, int g, int b) {
+	int pixel;
+	if (!initialized)
+		return;
+	// Load data in correct format
+	int b0, b1, b2;
+	if (color_order == SM16703P_COLOR_ORDER_RGB) {
+		b0 = r;
+		b1 = g;
+		b2 = b;
+	}
+	if (color_order == SM16703P_COLOR_ORDER_RBG) {
+		b0 = r;
+		b1 = b;
+		b2 = g;
+	}
+	if (color_order == SM16703P_COLOR_ORDER_BRG) {
+		b0 = b;
+		b1 = r;
+		b2 = g;
+	}
+	if (color_order == SM16703P_COLOR_ORDER_BGR) {
+		b0 = b;
+		b1 = g;
+		b2 = r;
+	}
+	if (color_order == SM16703P_COLOR_ORDER_GRB) {
+		b0 = g;
+		b1 = r;
+		b2 = b;
+	}
+	if (color_order == SM16703P_COLOR_ORDER_GBR) {
+		b0 = g;
+		b1 = b;
+		b2 = r;
+	}
+	for (pixel = 0; pixel < pixel_count; pixel++) {
+		translate_byte(b0, spi_msg->send_buf + (pixel_offset + 0 + (pixel * 3 * 4)));
+		translate_byte(b1, spi_msg->send_buf + (pixel_offset + 4 + (pixel * 3 * 4)));
+		translate_byte(b2, spi_msg->send_buf + (pixel_offset + 8 + (pixel * 3 * 4)));
+	}
+}
+
 
 // SM16703P_SetRaw bUpdate byteOfs HexData
 // SM16703P_SetRaw 1 0 FF000000FF000000FF

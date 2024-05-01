@@ -8,7 +8,6 @@
 #include "drv_local.h"
 #include "../hal/hal_pins.h"
 
-extern uint32_t pixel_count;
 
 // Credit: https://github.com/Electriangle/RainbowCycle_Main
 byte *RainbowWheel_Wheel(byte WheelPosition) {
