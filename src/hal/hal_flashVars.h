@@ -54,4 +54,5 @@ void HAL_FlashVars_SaveTotalConsumption(float total_consumption);
 void HAL_FlashVars_SaveEnergyExport(float f);
 float HAL_FlashVars_GetEnergyExport();
 
+
 #endif /* __HALK_FLASH_VARS_H__ */
