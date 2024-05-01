@@ -5,6 +5,7 @@ static int export_matrix[24] = {0};
 static int net_matrix[24] = {0};
 static int old_export_energy = 0;
 static int old_real_consumption = 0;
+//static energy_counter_data = 0;
 
 #include "drv_bl_shared.h"
 
@@ -609,6 +610,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     int i;
     int xPassedTicks;
     //float time counter
+    float energy_counter_data = 0;
 	
     cJSON* root;
     cJSON* stats;
@@ -836,6 +838,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	{
 		sensors[OBK_CONSUMPTION_TOTAL].lastReading += energyWh;
 		real_consumption += energyWh;
+		energy_counter_data += energyWh;
 	}
 	else
 	{
@@ -844,7 +847,8 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 		{
 			// If the power is negative - Load the generation counter, but only if we allow negative measurements :-)
 			sensors[OBK_GENERATION_TOTAL].lastReading += energyWh;	
-			real_export += energyWh;	
+			real_export += energyWh;
+			energy_counter_data -= energyWh;
 		}
 	}
 	}
@@ -987,9 +991,10 @@ void BL_ProcessUpdate(float voltage, float current, float power,
             //energyCounterMinutes[0] += energy;
 	    
 	// Changes below should allow it to measure both import and export
-	// energyCounterMinutes[0] += energyWh;
+	energyCounterMinutes[0] += energy_counter_data;
+	//energy_counter_data = 0;
 	//-----------------------------------------------------------------------------------------------------------------------------
-	if ((int)power>0)
+	/*if ((int)power>0)
 	{
 		sensors[OBK_CONSUMPTION_TOTAL].lastReading += energyWh;
 		energyCounterMinutes[0] += (int)energyWh;
@@ -1003,7 +1008,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			sensors[OBK_GENERATION_TOTAL].lastReading += energyWh;	
 			energyCounterMinutes[0] -= (int)energyWh;	
 		}
-	}
+	}*/
 	//-----------------------------------------------------------------------------------------------------------------------------
     }
 
