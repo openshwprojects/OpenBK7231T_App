@@ -49,6 +49,14 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "Freeze",		Freeze_Init,			Freeze_OnEverySecond,			NULL, Freeze_RunFrame, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_PIXELANIM
+	//drvdetail:{"name":"PixelAnim",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"PixelAnim provides a simple set of WS2812B animations",
+	//drvdetail:"requires":""}
+	{ "PixelAnim",		PixelAnim_Init,			NULL,			NULL, PixelAnim_RunQuickTick, NULL, NULL, false },
+#endif
+	
 #if ENABLE_NTP
 	//drvdetail:{"name":"NTP",
 	//drvdetail:"title":"TODO",
