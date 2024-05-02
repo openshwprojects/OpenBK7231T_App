@@ -643,7 +643,7 @@ commandResult_t CMD_FindPattern(const void *context, const char *cmd, const char
 
 int g_pwmFrequency = PWM_FREQUENCY_DEFAULT;
 
-commandResult_t CMD_PWMHz(const void* context, const char* cmd, const char* args, int cmdFlags) {
+commandResult_t CMD_PWMFrequency(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
 	// following check must be done after 'Tokenizer_TokenizeString',
@@ -815,7 +815,7 @@ void CMD_Init_Early() {
 
 	CMD_RegisterCommand("TimeSize", CMD_TimeSize, NULL);
 
-	CMD_RegisterCommand("PWMHz", CMD_PWMHz, NULL);
+	CMD_RegisterCommand("PWMFrequency", CMD_PWMFrequency, NULL);
 	
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602)
 	CMD_InitScripting();
