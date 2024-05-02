@@ -322,9 +322,7 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 #elif PLATFORM_LN882H
 
 // TODO:LN882H Platform setup here.
-typedef int bool;
-#define true 1
-#define false 0
+#include <stdbool.h>
 
 #define ASSERT
 #define os_strcpy strcpy

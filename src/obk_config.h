@@ -126,7 +126,7 @@
 #define ENABLE_DRIVER_HUE		0
 #define ENABLE_DRIVER_DHT		0
 #define ENABLE_LITTLEFS			1
-
+#define ENABLE_TEST_COMMANDS		1
 #else
 
 #error "Platform not defined"

@@ -3,6 +3,7 @@
 #include "../logging/logging.h"
 #include "../obk_config.h"
 #include <ctype.h>
+#include "cmd_local.h"
 #include "../driver/drv_ir.h"
 #include "../driver/drv_uart.h"
 #include "../driver/drv_public.h"
@@ -21,7 +22,6 @@ int cmd_uartInitIndex = 0;
 #include <wifi.h>
 #include <power_mgmt/ln_pm.h>
 #endif
-#include "cmd_local.h"
 
 #define HASH_SIZE 128
 
