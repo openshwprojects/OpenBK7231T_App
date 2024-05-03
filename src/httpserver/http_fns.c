@@ -205,6 +205,13 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "<h3>Enabled %s!</h3>", CHANNEL_GetLabel(j));
 			CHANNEL_Set(j, 255, 1);
 		}
+#if ENABLE_DRIVER_PIXELANIM
+		if (http_getArg(request->url, "an", tmpA, sizeof(tmpA))) {
+			j = atoi(tmpA);
+			hprintf255(request, "<h3>Ran %i!</h3>", (j));
+			PixelAnim_Run(j);
+		}
+#endif
 		if (http_getArg(request->url, "rgb", tmpA, sizeof(tmpA))) {
 			hprintf255(request, "<h3>Set RGB to %s!</h3>", tmpA);
 			LED_SetBaseColor(0, "led_basecolor", tmpA, 0);
@@ -662,6 +669,11 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "<input  type=\"submit\" class='disp-none' value=\"Toggle Light\"/></form>");
 			poststr(request, "</td></tr>");
 		}
+#if ENABLE_DRIVER_PIXELANIM
+		if (DRV_IsRunning("PixelAnim")) {
+			PixelAnim_CreatePanel(request);
+		}
+#endif
 		if (c_pwms == 2 || c_pwms >= 4) {
 			// TODO: temperature slider
 			int pwmValue;

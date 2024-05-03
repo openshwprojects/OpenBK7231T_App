@@ -52,6 +52,11 @@ void KP18058_Init();
 
 
 void SM16703P_Init();
+void SM16703P_setPixel(int pixel, int r, int g, int b);
+void SM16703P_setPixelWithBrig(int pixel, int r, int g, int b);
+void SM16703P_setAllPixels(int r, int g, int b);
+void SM16703P_Show();
+extern uint32_t pixel_count;
 
 void TM1637_Init();
 
@@ -142,6 +147,9 @@ void Freeze_Init();
 void Freeze_OnEverySecond();
 void Freeze_RunFrame();
 
+void PixelAnim_Init();
+void PixelAnim_RunQuickTick();
+void PixelAnim_Run(int j);
 
 #define SM2135_DELAY         4
 

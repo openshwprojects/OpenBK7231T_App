@@ -150,6 +150,7 @@ enum LightMode {
 	Light_Temperature,
 	Light_RGB,
 	Light_All,
+	Light_Anim,
 };
 
 #define TOKENIZER_ALLOW_QUOTES					1

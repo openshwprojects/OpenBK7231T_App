@@ -639,6 +639,23 @@ commandResult_t CMD_FindPattern(const void *context, const char *cmd, const char
 	return CMD_RES_OK;
 }*/
 
+#define PWM_FREQUENCY_DEFAULT 1000 //Default Frequency
+
+int g_pwmFrequency = PWM_FREQUENCY_DEFAULT;
+
+commandResult_t CMD_PWMFrequency(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1))
+	{
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	
+	g_pwmFrequency = Tokenizer_GetArgInteger(0);
+	return CMD_RES_OK;
+}
 commandResult_t CMD_DeepSleep_SetEdge(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
@@ -797,6 +814,9 @@ void CMD_Init_Early() {
 
 	CMD_RegisterCommand("TimeSize", CMD_TimeSize, NULL);
 
+	CMD_RegisterCommand("PWMFrequency", CMD_PWMFrequency, NULL);
+
+	
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602)
 	CMD_InitScripting();
 #endif
