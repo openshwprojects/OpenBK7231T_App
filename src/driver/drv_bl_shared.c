@@ -679,8 +679,8 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
 	// End of Add to the table --------------------------------------------------------------------------
 			
-			// If netmetering is enabled, we reset every hour.
-			if (((CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))||(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN)))&&(hour_reset == 1))
+			// We reset every hour, to calculate Netmetering
+			if (hour_reset == 1)
 			{
 				// reset the timing variable. if we are producing enough, if wont cycle the diversion load.
 				lastsync = 0;
@@ -708,35 +708,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			// Save the time
 			time_hour_reset = check_hour;
 			time_min_reset = check_time;	
-			}
-
-			// If Netmetering is set to 15minutes, we need to reset more often. We can't save, since our temp variable is not being reset, to keep the hourly records.
-			//else if ((((check_time == 15)||(check_time == 30)||(check_time == 45))&&(min_reset == 1)&&(CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))&&(!(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN))))||(hour_reset == 1))
-			else if ((((check_time == 15)||(check_time == 30)||(check_time == 45)))&&(min_reset == 1))
-			{
-				
-				if  (CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))
-				{
-				// reset the timing variable. if we are producing enough, if wont cycle the diversion load.
-				lastsync = 0;
-				// We save the old values, so we can work with the current period only and deduct the netmetering, while keeping stats for last hour
-				old_export_energy += (int)real_export;
-				old_real_consumption +=(int)real_consumption;	
-				net_matrix[check_hour] += net_energy;
-				// Now we reset everything to start again a new cycle.
-				real_export = 0;
-				real_consumption = 0;
-				net_energy = 0;
-				}
-				
-			// Clear the variables
-			min_reset = 0;
-			energyCounterMinutesIndex = 0;
-			// Save the time
-			time_hour_reset = check_hour;
-			time_min_reset = check_time;	
-			}
-	
+			}	
 			// ------------------------------------------------------------------------------------------------------------------
 			// Calculate the Effective energy consumed / produced during the period by summing both counters and deduct their values at the start of the period
 			net_energy = (real_consumption - real_export);			// calculate difference since start
