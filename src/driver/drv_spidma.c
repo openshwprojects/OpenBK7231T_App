@@ -460,10 +460,10 @@ int spidma_spi_master_dma_send(struct spi_message *spi_msg) {
 	GLOBAL_INT_DISABLE();
 	spi_dev->flag |= TX_FINISH_FLAG;
 	GLOBAL_INT_RESTORE();
-	ADDLOG_ERROR(LOG_FEATURE_CMD, "before enable tx 0x%08x\r\n", REG_READ(SPI_CONFIG));
+	ADDLOG_DEBUG(LOG_FEATURE_CMD, "before enable tx 0x%08x\r\n", REG_READ(SPI_CONFIG));
 
 	spidma_dma_tx_enable(1);
-	ADDLOG_ERROR(LOG_FEATURE_CMD, "enable tx 0x%08x\r\n", REG_READ(SPI_CONFIG));
+	ADDLOG_DEBUG(LOG_FEATURE_CMD, "enable tx 0x%08x\r\n", REG_READ(SPI_CONFIG));
 	/* wait tx finish */
 	//if (user_dma_tx_finish_callback == NULL) {
 	//因为写DMA是主动操作，所以DMA传输完成后，SPI不一定发送完成了。
