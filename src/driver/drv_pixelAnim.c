@@ -117,6 +117,7 @@ void Fire_Run() {
 	for (int j = 0; j < pixel_count; j++) {
 		Fire_setPixelHeatColor(j, heat[j]);
 	}
+	SM16703P_Show();
 
 }
 
