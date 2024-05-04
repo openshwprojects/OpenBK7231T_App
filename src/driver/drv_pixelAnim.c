@@ -44,8 +44,36 @@ byte *RainbowWheel_Wheel(byte WheelPosition) {
 	return c;
 }
 uint16_t j = 0;
-
-void RainbowWheel_Run() {
+uint16_t count = 0;
+int direction = 1;
+void fadeToBlackBy(uint8_t fadeBy)
+{
+	SM16703P_scaleAllPixels(255-fadeBy);
+}
+extern float baseColors[5]; // TODO
+void ShootingStar_Run() {
+	int tail_length = 32;
+	if (direction == -1) {        // Reverse direction option for LEDs
+		if (count < pixel_count) {
+			SM16703P_setPixelWithBrig(pixel_count - (count % (pixel_count + 1)),
+				baseColors[0], baseColors[1], baseColors[2]);    // Set LEDs with the color value
+		}
+		count++;
+	}
+	else {
+		if (count < pixel_count) {     // Forward direction option for LEDs
+			SM16703P_setPixelWithBrig(count % pixel_count,
+				baseColors[0], baseColors[1], baseColors[2]);    // Set LEDs with the color value
+		}
+		count++;
+	}
+	if (count > pixel_count + 16) {
+		count = 0;
+	}
+	fadeToBlackBy(tail_length);                 // Fade the tail LEDs to black
+	SM16703P_Show();
+}
+void RainbowCycle_Run() {
 	byte *c;
 	uint16_t i;
 
@@ -130,8 +158,9 @@ typedef struct ledAnim_s {
 
 int activeAnim = -1;
 ledAnim_t g_anims[] = {
-	{ "Rainbow Wheel", RainbowWheel_Run },
-	{ "Fire", Fire_Run }
+	{ "Rainbow Cycle", RainbowCycle_Run },
+	{ "Fire", Fire_Run },
+	{ "Shooting Star", ShootingStar_Run }
 };
 int g_numAnims = sizeof(g_anims) / sizeof(g_anims[0]);
 int g_speed = 0;
