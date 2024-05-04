@@ -823,7 +823,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	
     energyCounterStamp = xTaskGetTickCount();
     HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
-	sensors[OBK_CONSUMPTION_TODAY].lastReading  += energy;
+	sensors[OBK_CONSUMPTION_TODAY].lastReading  += energyWh;
 
     if (NTP_IsTimeSynced()) {
         ntpTime = (time_t)NTP_GetCurrentTime();
