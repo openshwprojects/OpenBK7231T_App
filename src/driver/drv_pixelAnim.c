@@ -180,9 +180,22 @@ commandResult_t PA_Cmd_Anim(const void *context, const char *cmd, const char *ar
 
 	return CMD_RES_OK;
 }
+commandResult_t PA_Cmd_AnimSpeed(const void *context, const char *cmd, const char *args, int flags) {
+
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() == 0) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	g_speed = Tokenizer_GetArgInteger(0);
+
+	return CMD_RES_OK;
+}
 void PixelAnim_Init() {
 
 	CMD_RegisterCommand("Anim", PA_Cmd_Anim, NULL);
+	CMD_RegisterCommand("AnimSpeed", PA_Cmd_AnimSpeed, NULL);
 }
 
 void PixelAnim_CreatePanel(http_request_t *request) {
