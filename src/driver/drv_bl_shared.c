@@ -167,7 +167,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	poststr(request, "</table>");
 
 	// print saving interval in small text
-	hprintf255(request, "<font size=1>Saving Threshold: %.3fkW</font>", (changeSavedThresholdEnergy*0.001));
+	float changeSavedThresholdEnergy_kw = changeSavedThresholdEnergy*0.001;
+	hprintf255(request, "<font size=1>Saving Threshold: %.*fKW</font>", changeSavedThresholdEnergy_kw);
 
 	// Aditional code for power monitoring. Creates a table with 24h stats
         // ------------------------------------------------------------------------------------------------------------------------------------------
