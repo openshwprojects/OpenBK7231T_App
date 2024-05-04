@@ -44,8 +44,35 @@ byte *RainbowWheel_Wheel(byte WheelPosition) {
 	return c;
 }
 uint16_t j = 0;
-
-void RainbowWheel_Run() {
+uint16_t count = 0;
+int direction = 1;
+void fadeToBlackBy(uint8_t fadeBy)
+{
+	SM16703P_scaleAllPixels(255-fadeBy);
+}
+void ShootingStar_Run() {
+	int tail_length = 32;
+	if (direction == -1) {        // Reverse direction option for LEDs
+		if (count < pixel_count) {
+			SM16703P_setPixelWithBrig(pixel_count - (count % (pixel_count + 1)),
+				led_baseColors[0], led_baseColors[1], led_baseColors[2]);    // Set LEDs with the color value
+		}
+		count++;
+	}
+	else {
+		if (count < pixel_count) {     // Forward direction option for LEDs
+			SM16703P_setPixelWithBrig(count % pixel_count,
+				led_baseColors[0], led_baseColors[1], led_baseColors[2]);    // Set LEDs with the color value
+		}
+		count++;
+	}
+	if (count > pixel_count + 16) {
+		count = 0;
+	}
+	fadeToBlackBy(tail_length);                 // Fade the tail LEDs to black
+	SM16703P_Show();
+}
+void RainbowCycle_Run() {
 	byte *c;
 	uint16_t i;
 
@@ -130,19 +157,70 @@ typedef struct ledAnim_s {
 
 int activeAnim = -1;
 ledAnim_t g_anims[] = {
-	{ "Rainbow Wheel", RainbowWheel_Run },
-	{ "Fire", Fire_Run }
+	{ "Rainbow Cycle", RainbowCycle_Run },
+	{ "Fire", Fire_Run },
+	{ "Shooting Star", ShootingStar_Run }
 };
 int g_numAnims = sizeof(g_anims) / sizeof(g_anims[0]);
+int g_speed = 0;
 
+void PixelAnim_SetAnim(int j) {
+	activeAnim = j;
+	g_lightMode = Light_Anim;
+}
+commandResult_t PA_Cmd_Anim(const void *context, const char *cmd, const char *args, int flags) {
+
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() == 0) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	PixelAnim_SetAnim(Tokenizer_GetArgInteger(0));
+
+	return CMD_RES_OK;
+}
+commandResult_t PA_Cmd_AnimSpeed(const void *context, const char *cmd, const char *args, int flags) {
+
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() == 0) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	g_speed = Tokenizer_GetArgInteger(0);
+
+	return CMD_RES_OK;
+}
 void PixelAnim_Init() {
 
+	CMD_RegisterCommand("Anim", PA_Cmd_Anim, NULL);
+	CMD_RegisterCommand("AnimSpeed", PA_Cmd_AnimSpeed, NULL);
 }
-extern byte g_lightEnableAll;
-extern byte g_lightMode;
+
 void PixelAnim_CreatePanel(http_request_t *request) {
 	const char* activeStr = "";
+	char tmpA[16];
 	int i;
+
+	if (http_getArg(request->url, "an", tmpA, sizeof(tmpA))) {
+		j = atoi(tmpA);
+		hprintf255(request, "<h3>Ran %i!</h3>", (j));
+		PixelAnim_SetAnim(j);
+	}
+	if (http_getArg(request->url, "spd", tmpA, sizeof(tmpA))) {
+		j = atoi(tmpA);
+		hprintf255(request, "<h3>Speed %i!</h3>", (j));
+		g_speed = j;
+	}
+
+	poststr(request, "<tr><td>");
+	hprintf255(request, "<h5>Speed</h5>");
+	hprintf255(request, "<form action=\"index\">");
+	hprintf255(request, "<input type=\"range\" min=\"0\" max=\"10\" name=\"spd\" id=\"spd\" value=\"%i\" onchange=\"this.form.submit()\">",
+		g_speed);
+	hprintf255(request, "<input  type=\"submit\" class='disp-none'></form>");
+	poststr(request, "</td></tr>");
 
 	if (g_lightMode == Light_Anim) {
 		activeStr = "[ACTIVE]";
@@ -165,11 +243,8 @@ void PixelAnim_CreatePanel(http_request_t *request) {
 	}
 	poststr(request, "</td></tr>");
 }
-void PixelAnim_Run(int j) {
-	activeAnim = j;
-	g_lightMode = Light_Anim;
-}
-void PixelAnim_RunQuickTick() {
+int g_ticks = 0;
+void PixelAnim_SetAnimQuickTick() {
 	if (g_lightEnableAll == 0) {
 		// disabled
 		return;
@@ -179,7 +254,11 @@ void PixelAnim_RunQuickTick() {
 		return;
 	}
 	if (activeAnim != -1) {
-		g_anims[activeAnim].runFunc();
+		g_ticks++;
+		if (g_ticks >= g_speed) {
+			g_anims[activeAnim].runFunc();
+			g_ticks = 0;
+		}
 	}
 }
 

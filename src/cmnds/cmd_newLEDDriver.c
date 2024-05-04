@@ -52,7 +52,7 @@ int parsePowerArgument(const char *s);
 
 
 // Those are base colors, normalized, without brightness applied
-float baseColors[5] = { 255, 255, 255, 255, 255 };
+float led_baseColors[5] = { 255, 255, 255, 255, 255 };
 // Those have brightness included
 float finalColors[5] = { 0, 0, 0, 0, 0 };
 float g_hsv_h = 0; // 0 to 360
@@ -91,7 +91,7 @@ void LED_ResetGlobalVariablesToDefaults() {
 
 	g_lightMode = Light_RGB;
 	for (i = 0; i < 5; i++) {
-		baseColors[i] = 255;
+		led_baseColors[i] = 255;
 		finalColors[i] = 0;
 	}
 	g_hsv_h = 0; // 0 to 360
@@ -421,9 +421,9 @@ float led_gamma_correction (int color, float iVal) { // apply LED gamma and RGB 
 	if (color < 3) {
 		rgb_used_corr[color] = g_cfg.led_corr.rgb_cal[color];
 		// boost gain to get full brightness when one RGB base color is dominant:
-		float sum_other_colors = baseColors[0] + baseColors[1] + baseColors[2] - baseColors[color];
-		if (baseColors[color] > sum_other_colors) {
-			rgb_used_corr[color] += (1.0f - rgb_used_corr[color]) * (1.0f - sum_other_colors / baseColors[color]);
+		float sum_other_colors = led_baseColors[0] + led_baseColors[1] + led_baseColors[2] - led_baseColors[color];
+		if (led_baseColors[color] > sum_other_colors) {
+			rgb_used_corr[color] += (1.0f - rgb_used_corr[color]) * (1.0f - sum_other_colors / led_baseColors[color]);
 		}
 		oVal *= rgb_used_corr[color];
 	}
@@ -439,7 +439,7 @@ float led_gamma_correction (int color, float iVal) { // apply LED gamma and RGB 
 } //
 
 void LED_SaveStateToFlashVarsNow() {
-	HAL_FlashVars_SaveLED(g_lightMode, g_brightness0to100, led_temperature_current, baseColors[0], baseColors[1], baseColors[2], g_lightEnableAll);
+	HAL_FlashVars_SaveLED(g_lightMode, g_brightness0to100, led_temperature_current, led_baseColors[0], led_baseColors[1], led_baseColors[2], g_lightEnableAll);
 }
 void apply_smart_light() {
 	int i;
@@ -485,9 +485,9 @@ void apply_smart_light() {
 		if(g_lightEnableAll) {
 			float brightnessNormalized0to1 = g_brightness0to100 * 0.01f;
 			for(i = 3; i < 5; i++) {
-				finalColors[i] = baseColors[i] * brightnessNormalized0to1;
-				finalRGBCW[i] = baseColors[i] * brightnessNormalized0to1;
-				baseRGBCW[i] = baseColors[i];
+				finalColors[i] = led_baseColors[i] * brightnessNormalized0to1;
+				finalRGBCW[i] = led_baseColors[i] * brightnessNormalized0to1;
+				baseRGBCW[i] = led_baseColors[i];
 			}
 		}
 		if(CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == false) {
@@ -498,9 +498,9 @@ void apply_smart_light() {
 		for(i = 0; i < maxPossibleIndexToSet; i++) {
 			float final = 0.0f;
 
-			baseRGBCW[i] = baseColors[i];
+			baseRGBCW[i] = led_baseColors[i];
 			if(g_lightEnableAll) {
-				final = led_gamma_correction (i, baseColors[i]);
+				final = led_gamma_correction (i, led_baseColors[i]);
 			}
 			if(g_lightMode == Light_Temperature) {
 				// skip channels 0, 1, 2
@@ -604,17 +604,17 @@ commandResult_t led_gamma_control (const void *context, const char *cmd, const c
 
 	if (strncmp ("cal", args, 3) == 0) { // calibrate RGB
 		float cal_factor[3];
-		if (args[3] == 0) { // no parameters - use baseColors[] to calculate calibration values
+		if (args[3] == 0) { // no parameters - use led_baseColors[] to calculate calibration values
 			// find color with highest start-point value:
 			int ref_color = 0;
-			if (baseColors[ref_color] < baseColors[1])
+			if (led_baseColors[ref_color] < led_baseColors[1])
 				ref_color = 1;
-			if (baseColors[ref_color] < baseColors[2])
+			if (led_baseColors[ref_color] < led_baseColors[2])
 				ref_color = 2;
 	
 			// calculate RGB correction factors:
 			for (c = 0; c < 3; c++) {
-				cal_factor[c] = (1.0f / baseColors[ref_color]) * baseColors[c];
+				cal_factor[c] = (1.0f / led_baseColors[ref_color]) * led_baseColors[c];
 			}
 		} else { // use parameters as calibration values
 			const char *p = args;
@@ -688,9 +688,9 @@ OBK_Publish_Result sendColorChange() {
 		return OBK_PUBLISH_WAS_NOT_REQUIRED;
 	}
 
-	c[0] = (byte)(baseColors[0]);
-	c[1] = (byte)(baseColors[1]);
-	c[2] = (byte)(baseColors[2]);
+	c[0] = (byte)(led_baseColors[0]);
+	c[1] = (byte)(led_baseColors[1]);
+	c[2] = (byte)(led_baseColors[2]);
 
 	snprintf(s, sizeof(s), "%02X%02X%02X",c[0],c[1],c[2]);
 
@@ -699,9 +699,9 @@ OBK_Publish_Result sendColorChange() {
 void LED_GetBaseColorString(char * s) {
 	byte c[3];
 
-	c[0] = (byte)(baseColors[0]);
-	c[1] = (byte)(baseColors[1]);
-	c[2] = (byte)(baseColors[2]);
+	c[0] = (byte)(led_baseColors[0]);
+	c[1] = (byte)(led_baseColors[1]);
+	c[2] = (byte)(led_baseColors[2]);
 
 	sprintf(s, "%02X%02X%02X",c[0],c[1],c[2]);
 }
@@ -759,7 +759,7 @@ void SET_LightMode(int newMode) {
 void LED_SetBaseColorByIndex(int i, float f, bool bApply) {
 	if (i < 0 || i >= 5)
 		return;
-	baseColors[i] = f;
+	led_baseColors[i] = f;
 	if (bApply) {
 		if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_ANY_ACTION)) {
 			LED_SetEnableAll(true);
@@ -803,8 +803,8 @@ void LED_SetTemperature(int tmpInteger, bool bApply) {
 
 	f = LED_GetTemperature0to1Range();
 
-	baseColors[3] = (255.0f) * (1-f);
-	baseColors[4] = (255.0f) * f;
+	led_baseColors[3] = (255.0f) * (1-f);
+	led_baseColors[4] = (255.0f) * f;
 
 	if(bApply) {
 		if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_ANY_ACTION)) {
@@ -1188,19 +1188,19 @@ void LED_SetFinalCW(byte c, byte w) {
 		LED_SetEnableAll(true);
 	}
 
-	baseColors[3] = c;
-	baseColors[4] = w;
+	led_baseColors[3] = c;
+	led_baseColors[4] = w;
 
 	apply_smart_light();
 }
 void LED_SetFinalRGB(byte r, byte g, byte b) {
 	SET_LightMode(Light_RGB);
 
-	baseColors[0] = r;
-	baseColors[1] = g;
-	baseColors[2] = b;
+	led_baseColors[0] = r;
+	led_baseColors[1] = g;
+	led_baseColors[2] = b;
 
-	RGBtoHSV(baseColors[0]/255.0f, baseColors[1]/255.0f, baseColors[2]/255.0f, &g_hsv_h, &g_hsv_s, &g_hsv_v);
+	RGBtoHSV(led_baseColors[0]/255.0f, led_baseColors[1]/255.0f, led_baseColors[2]/255.0f, &g_hsv_h, &g_hsv_s, &g_hsv_v);
 
 	if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_ANY_ACTION)) {
 		LED_SetEnableAll(true);
@@ -1224,9 +1224,9 @@ static void onHSVChanged() {
 
 	HSVtoRGB(&r, &g, &b, g_hsv_h, g_hsv_s, g_hsv_v);
 
-	baseColors[0] = r * 255.0f;
-	baseColors[1] = g * 255.0f;
-	baseColors[2] = b * 255.0f;
+	led_baseColors[0] = r * 255.0f;
+	led_baseColors[1] = g * 255.0f;
+	led_baseColors[2] = b * 255.0f;
 
 	if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_ANY_ACTION)) {
 		LED_SetEnableAll(true);
@@ -1312,12 +1312,12 @@ commandResult_t LED_SetBaseColor(const void *context, const char *cmd, const cha
 
 			g_numBaseColors = 0;
 			if(!stricmp(c,"rand")) {
-				baseColors[0] = rand()%255;
-				baseColors[1] = rand()%255;
-				baseColors[2] = rand()%255;
+				led_baseColors[0] = rand()%255;
+				led_baseColors[1] = rand()%255;
+				led_baseColors[2] = rand()%255;
 				if(bAll){
-					baseColors[3] = rand()%255;
-					baseColors[4] = rand()%255;
+					led_baseColors[3] = rand()%255;
+					led_baseColors[4] = rand()%255;
 				}
 			} else {
 				while (*c && g_numBaseColors < 5){
@@ -1337,7 +1337,7 @@ commandResult_t LED_SetBaseColor(const void *context, const char *cmd, const cha
 
 					//ADDLOG_DEBUG(LOG_FEATURE_CMD, "BASECOLOR found chan %d -> val255 %d (from %s)", g_numBaseColors, val, tmp);
 
-					baseColors[g_numBaseColors] = val;
+					led_baseColors[g_numBaseColors] = val;
 				//	baseColorChannels[g_numBaseColors] = channel;
 					g_numBaseColors++;
 
@@ -1345,7 +1345,7 @@ commandResult_t LED_SetBaseColor(const void *context, const char *cmd, const cha
 				// keep hsv in sync
 			}
 
-			RGBtoHSV(baseColors[0]/255.0f, baseColors[1]/255.0f, baseColors[2]/255.0f, &g_hsv_h, &g_hsv_s, &g_hsv_v);
+			RGBtoHSV(led_baseColors[0]/255.0f, led_baseColors[1]/255.0f, led_baseColors[2]/255.0f, &g_hsv_h, &g_hsv_s, &g_hsv_v);
 
 			if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_ANY_ACTION)) {
 				LED_SetEnableAll(true);
@@ -1383,13 +1383,13 @@ static commandResult_t colorMult(const void *context, const char *cmd, const cha
 }
 
 float LED_GetGreen255() {
-	return baseColors[1];
+	return led_baseColors[1];
 }
 float LED_GetRed255() {
-	return baseColors[0];
+	return led_baseColors[0];
 }
 float LED_GetBlue255() {
-	return baseColors[2];
+	return led_baseColors[2];
 }
 static void led_setBrightness(float sat) {
 
@@ -1716,9 +1716,9 @@ void NewLED_RestoreSavedStateIfNeeded() {
 		SET_LightMode(mod);
 		g_brightness0to100 = brig;
 		LED_SetTemperature(tmp,0);
-		baseColors[0] = rgb[0];
-		baseColors[1] = rgb[1];
-		baseColors[2] = rgb[2];
+		led_baseColors[0] = rgb[0];
+		led_baseColors[1] = rgb[1];
+		led_baseColors[2] = rgb[2];
 		apply_smart_light();
 	} else {
 	}

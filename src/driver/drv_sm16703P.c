@@ -54,17 +54,6 @@ static uint8_t translate_2bit(uint8_t input) {
 	return data_translate[(input & 0b00000011)];
 }
 
-static void translate_byte(uint8_t input, uint8_t *dst) {
-	// return 0x00000000 |
-	// 	   translate_2bit((input >> 6)) |
-	// 	   translate_2bit((input >> 4)) |
-	// 	   translate_2bit((input >> 2)) |
-	// 	   translate_2bit(input);
-	*dst++ = translate_2bit((input >> 6));
-	*dst++ = translate_2bit((input >> 4));
-	*dst++ = translate_2bit((input >> 2));
-	*dst++ = translate_2bit(input);
-}
 static uint8_t reverse_translate_2bit(uint8_t input) {
 	uint8_t i;
 	for (i = 0; i < 4; ++i) {
@@ -75,8 +64,31 @@ static uint8_t reverse_translate_2bit(uint8_t input) {
 	return 0;
 }
 
-static void reverse_translate_byte(uint8_t *input, uint8_t *dst) {
-	*dst++ = (reverse_translate_2bit(*input++) << 6) | (reverse_translate_2bit(*input++) << 4) | (reverse_translate_2bit(*input++) << 2) | reverse_translate_2bit(*input++);
+static byte reverse_translate_byte(uint8_t *input) {
+	byte dst;
+	dst = (reverse_translate_2bit(*input++) << 6);
+	dst |= (reverse_translate_2bit(*input++) << 4);
+	dst |= (reverse_translate_2bit(*input++) << 2);
+	dst |= (reverse_translate_2bit(*input++) << 0);
+	return dst;
+}
+static void translate_byte(uint8_t input, uint8_t *dst) {
+	// return 0x00000000 |
+	// 	   translate_2bit((input >> 6)) |
+	// 	   translate_2bit((input >> 4)) |
+	// 	   translate_2bit((input >> 2)) |
+	// 	   translate_2bit(input);
+	*dst++ = translate_2bit((input >> 6));
+	*dst++ = translate_2bit((input >> 4));
+	*dst++ = translate_2bit((input >> 2));
+	*dst++ = translate_2bit(input);
+
+#if WINDOWS
+	byte test = reverse_translate_byte(dst - 4);
+	if (input != test) {
+		printf("reverse_translate_byte is brken");
+	}
+#endif
 }
 bool SM16703P_GetPixel(uint32_t pixel, byte *dst) {
 	int i;
@@ -88,7 +100,7 @@ bool SM16703P_GetPixel(uint32_t pixel, byte *dst) {
 	input = spi_msg->send_buf + pixel_offset + (pixel * 3 * 4);
 
 	for (i = 0; i < 3; i++) {
-		*dst++ = (reverse_translate_2bit(*input++) << 6) | (reverse_translate_2bit(*input++) << 4) | (reverse_translate_2bit(*input++) << 2) | reverse_translate_2bit(*input++);
+		*dst++ = reverse_translate_byte(input + i * 4);
 	}
 }
 void SM16703P_setRaw(int start_offset, const char *s, int push) {
@@ -111,33 +123,14 @@ void SM16703P_setRaw(int start_offset, const char *s, int push) {
 }
 
 bool SM16703P_VerifyPixel(uint32_t pixel, byte r, byte g, byte b) {
-	uint8_t *dst = spi_msg->send_buf + pixel_offset + (pixel * 3 * 4);
-
-	if (*dst++ != translate_2bit((r >> 6)))
+	byte real[3];
+	SM16703P_GetPixel(pixel, real);
+	if (real[0] != r)
 		return false;
-	if (*dst++ != translate_2bit((r >> 4)))
+	if (real[1] != g)
 		return false;
-	if (*dst++ != translate_2bit((r >> 2)))
+	if (real[2] != b)
 		return false;
-	if (*dst++ != translate_2bit(r))
-		return false;
-	if (*dst++ != translate_2bit((g >> 6)))
-		return false;
-	if (*dst++ != translate_2bit((g >> 4)))
-		return false;
-	if (*dst++ != translate_2bit((g >> 2)))
-		return false;
-	if (*dst++ != translate_2bit(g))
-		return false;
-	if (*dst++ != translate_2bit((b >> 6)))
-		return false;
-	if (*dst++ != translate_2bit((b >> 4)))
-		return false;
-	if (*dst++ != translate_2bit((b >> 2)))
-		return false;
-	if (*dst++ != translate_2bit(b))
-		return false;
-
 	return true;
 }
 
@@ -249,6 +242,23 @@ void SM16703P_setPixelWithBrig(int pixel, int r, int g, int b) {
 	g = (int)(g * g_brightness0to100*0.01f);
 	b = (int)(b * g_brightness0to100*0.01f);
 	SM16703P_setPixel(pixel,r, g, b);
+}
+#define SCALE8_PIXEL(x, scale) (uint8_t)(((uint32_t)x * (uint32_t)scale) / 256)
+
+void SM16703P_scaleAllPixels(int scale) {
+	int pixel;
+	byte b;
+	int ofs;
+	byte *data, *input;
+
+	for (pixel = 0; pixel < pixel_count; pixel++) {
+		for (ofs = 0; ofs < 3; ofs++) {
+			data = spi_msg->send_buf + (pixel_offset + ofs * 4 + (pixel * 3 * 4));
+			b = reverse_translate_byte(data);
+			b = SCALE8_PIXEL(b, scale);
+			translate_byte(b, data);
+		}
+	}
 }
 void SM16703P_setAllPixels(int r, int g, int b) {
 	int pixel;
