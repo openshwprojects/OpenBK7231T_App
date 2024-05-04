@@ -408,16 +408,15 @@ static commandResult_t CMD_GetReadings(const void *context, const char *cmd, con
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	char tmp[96];
 	float v, c, p;
-    float e, elx, elh;
+    float e, elh;
 
 	v = DRV_GetReading(OBK_VOLTAGE);
 	c = DRV_GetReading(OBK_CURRENT);
 	p = DRV_GetReading(OBK_POWER);
     e = DRV_GetReading(OBK_CONSUMPTION_TOTAL);
-    elx = DRV_GetReading(OBK_GENERATION_TOTAL);
-    elh = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR); 
+    elh = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
 
-	snprintf(tmp, sizeof(tmp), "%f %f %f %f %f %f",v,c,p,e,elx,elh);
+	snprintf(tmp, sizeof(tmp), "%f %f %f %f %f",v,c,p,e,elh);
 
 	if(cmdFlags & COMMAND_FLAG_SOURCE_TCP) {
 		ADDLOG_INFO(LOG_FEATURE_RAW, tmp);
