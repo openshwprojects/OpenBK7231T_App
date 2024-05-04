@@ -231,7 +231,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		/********************************************************************************************************************/
 	//------------------------------------------------------------------------------------------------------------------------------------------
 	// print saving interval in small text
-	hprintf255(request, "<font size=1>Saving Threshold: %.2fkW</font>", (changeSavedThresholdEnergy)* 0.001);
+	hprintf255(request, "<font size=1>Saving Threshold: %.2fkW</font>", changeSavedThresholdEnergy);
 	// Some other stats...
     	hprintf255(request, "<p><br><h5>Changes: %i sent, %i Skipped, %li Saved. <br> %s<hr></p>",
                stat_updatesSent, stat_updatesSkipped, ConsumptionSaveCounter,
