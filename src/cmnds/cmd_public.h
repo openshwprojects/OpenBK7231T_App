@@ -234,6 +234,8 @@ float LED_GetGreen255();
 float LED_GetRed255();
 float LED_GetBlue255();
 extern float led_baseColors[5];
+extern byte g_lightEnableAll;
+extern byte g_lightMode;
 void LED_RunQuickColorLerp(int deltaMS);
 void LED_RunOnEverySecond();
 OBK_Publish_Result sendFinalColor();
