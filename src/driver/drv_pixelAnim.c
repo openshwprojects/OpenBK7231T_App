@@ -50,20 +50,19 @@ void fadeToBlackBy(uint8_t fadeBy)
 {
 	SM16703P_scaleAllPixels(255-fadeBy);
 }
-extern float baseColors[5]; // TODO
 void ShootingStar_Run() {
 	int tail_length = 32;
 	if (direction == -1) {        // Reverse direction option for LEDs
 		if (count < pixel_count) {
 			SM16703P_setPixelWithBrig(pixel_count - (count % (pixel_count + 1)),
-				baseColors[0], baseColors[1], baseColors[2]);    // Set LEDs with the color value
+				led_baseColors[0], led_baseColors[1], led_baseColors[2]);    // Set LEDs with the color value
 		}
 		count++;
 	}
 	else {
 		if (count < pixel_count) {     // Forward direction option for LEDs
 			SM16703P_setPixelWithBrig(count % pixel_count,
-				baseColors[0], baseColors[1], baseColors[2]);    // Set LEDs with the color value
+				led_baseColors[0], led_baseColors[1], led_baseColors[2]);    // Set LEDs with the color value
 		}
 		count++;
 	}

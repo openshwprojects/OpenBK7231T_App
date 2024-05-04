@@ -233,6 +233,7 @@ float LED_GetSaturation();
 float LED_GetGreen255();
 float LED_GetRed255();
 float LED_GetBlue255();
+extern float led_baseColors[5];
 void LED_RunQuickColorLerp(int deltaMS);
 void LED_RunOnEverySecond();
 OBK_Publish_Result sendFinalColor();
