@@ -117,6 +117,7 @@ void Fire_Run() {
 	for (int j = 0; j < pixel_count; j++) {
 		Fire_setPixelHeatColor(j, heat[j]);
 	}
+	SM16703P_Show();
 
 }
 
@@ -133,7 +134,7 @@ ledAnim_t g_anims[] = {
 	{ "Fire", Fire_Run }
 };
 int g_numAnims = sizeof(g_anims) / sizeof(g_anims[0]);
-
+int g_speed = 0;
 void PixelAnim_Init() {
 
 }
@@ -141,7 +142,27 @@ extern byte g_lightEnableAll;
 extern byte g_lightMode;
 void PixelAnim_CreatePanel(http_request_t *request) {
 	const char* activeStr = "";
+	char tmpA[16];
 	int i;
+
+	if (http_getArg(request->url, "an", tmpA, sizeof(tmpA))) {
+		j = atoi(tmpA);
+		hprintf255(request, "<h3>Ran %i!</h3>", (j));
+		PixelAnim_Run(j);
+	}
+	if (http_getArg(request->url, "spd", tmpA, sizeof(tmpA))) {
+		j = atoi(tmpA);
+		hprintf255(request, "<h3>Speed %i!</h3>", (j));
+		g_speed = j;
+	}
+
+	poststr(request, "<tr><td>");
+	hprintf255(request, "<h5>Speed</h5>");
+	hprintf255(request, "<form action=\"index\">");
+	hprintf255(request, "<input type=\"range\" min=\"0\" max=\"10\" name=\"spd\" id=\"spd\" value=\"%i\" onchange=\"this.form.submit()\">",
+		g_speed);
+	hprintf255(request, "<input  type=\"submit\" class='disp-none'></form>");
+	poststr(request, "</td></tr>");
 
 	if (g_lightMode == Light_Anim) {
 		activeStr = "[ACTIVE]";
@@ -168,6 +189,7 @@ void PixelAnim_Run(int j) {
 	activeAnim = j;
 	g_lightMode = Light_Anim;
 }
+int g_ticks = 0;
 void PixelAnim_RunQuickTick() {
 	if (g_lightEnableAll == 0) {
 		// disabled
@@ -178,7 +200,11 @@ void PixelAnim_RunQuickTick() {
 		return;
 	}
 	if (activeAnim != -1) {
-		g_anims[activeAnim].runFunc();
+		g_ticks++;
+		if (g_ticks >= g_speed) {
+			g_anims[activeAnim].runFunc();
+			g_ticks = 0;
+		}
 	}
 }
 

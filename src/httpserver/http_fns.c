@@ -170,8 +170,14 @@ int http_fn_index(http_request_t* request) {
 	bForceShowRGBCW = CFG_HasFlag(OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER);
 	bForceShowRGB = CFG_HasFlag(OBK_FLAG_LED_FORCE_MODE_RGB);
 
-	if (LED_IsLedDriverChipRunning()) {
-		bForceShowRGBCW = true;
+	// user override is always stronger, so if no override set
+	if (bForceShowRGB == false && bForceShowRGB == false) {
+		if (DRV_IsRunning("SM16703P")) {
+			bForceShowRGB = true;
+		}
+		else if (LED_IsLedDriverChipRunning()) {
+			bForceShowRGBCW = true;
+		}
 	}
 	http_setup(request, httpMimeTypeHTML);	//Add mimetype regardless of the request
 
@@ -205,13 +211,6 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "<h3>Enabled %s!</h3>", CHANNEL_GetLabel(j));
 			CHANNEL_Set(j, 255, 1);
 		}
-#if ENABLE_DRIVER_PIXELANIM
-		if (http_getArg(request->url, "an", tmpA, sizeof(tmpA))) {
-			j = atoi(tmpA);
-			hprintf255(request, "<h3>Ran %i!</h3>", (j));
-			PixelAnim_Run(j);
-		}
-#endif
 		if (http_getArg(request->url, "rgb", tmpA, sizeof(tmpA))) {
 			hprintf255(request, "<h3>Set RGB to %s!</h3>", tmpA);
 			LED_SetBaseColor(0, "led_basecolor", tmpA, 0);
