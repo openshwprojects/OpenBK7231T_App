@@ -166,9 +166,6 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	// Close the table
 	poststr(request, "</table>");
 
-	// print saving interval in small text
-	hprintf255(request, "<font size=1>Saving Threshold: %.3fkW</font>", (changeSavedThresholdEnergy*0.001));
-
 	// Aditional code for power monitoring. Creates a table with 24h stats
         // ------------------------------------------------------------------------------------------------------------------------------------------
 	poststr(request, "<table style='width:100%'>");
@@ -220,8 +217,10 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	if (net_energy<0) {total_net_export -= net_energy;}
 	else {total_net_consumption += net_energy;}
 	poststr(request, "</tr></table><br>");
-	hprintf255(request, "Total Consumption: %iW (Import), %iW (Export) <br>", total_consumption, total_export);
-	hprintf255(request, "Total Netmetering:  %iW (Import), %iW (Export) <br>", total_net_consumption, total_net_export);
+
+	poststr(request, "Totals:<br>");
+	hprintf255(request, "Consumption: %iW, Export: %iW (Real Values) <br>", total_consumption, total_export);
+	hprintf255(request, "Consumption: %iW, Export: %iW (Netmetering) <br>", total_net_consumption, total_net_export);
 	//--------------------------------------------------------------------------------------------------
 		// Update status of the diversion relay on webpage		
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -233,6 +232,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		// This was the original loop 'energyCounterStatsEnable == true'
 		/********************************************************************************************************************/
 	//------------------------------------------------------------------------------------------------------------------------------------------
+	// print saving interval in small text
+	hprintf255(request, "<font size=1>Saving Threshold: %.2fkW</font>", changeSavedThresholdEnergy);
 	// Some other stats...
     	hprintf255(request, "<p><br><h5>Changes: %i sent, %i Skipped, %li Saved. <br> %s<hr></p>",
                stat_updatesSent, stat_updatesSkipped, ConsumptionSaveCounter,
