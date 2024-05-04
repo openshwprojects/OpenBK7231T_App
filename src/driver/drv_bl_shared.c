@@ -166,6 +166,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	// Close the table
 	poststr(request, "</table>");
 
+	// print saving interval in small text
+	hprintf255(request, "<font size=1>Saving Threshold: %.3fkW</font>", (changeSavedThresholdEnergy*0.001));
+
 	// Aditional code for power monitoring. Creates a table with 24h stats
         // ------------------------------------------------------------------------------------------------------------------------------------------
 	poststr(request, "<table style='width:100%'>");
@@ -230,8 +233,6 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		// This was the original loop 'energyCounterStatsEnable == true'
 		/********************************************************************************************************************/
 	//------------------------------------------------------------------------------------------------------------------------------------------
-	// print saving interval in small text
-	hprintf255(request, "<font size=1>Saving Threshold: %.2fkW</font>", changeSavedThresholdEnergy);
 	// Some other stats...
     	hprintf255(request, "<p><br><h5>Changes: %i sent, %i Skipped, %li Saved. <br> %s<hr></p>",
                stat_updatesSent, stat_updatesSkipped, ConsumptionSaveCounter,
