@@ -177,12 +177,8 @@ int EVENT_ParseEventName(const char *s) {
 		return CMD_EVENT_LED_STATE;
 	if (!stricmp(s, "LEDMode"))
 		return CMD_EVENT_LED_MODE;
-    if(!stricmp(s,"energycounter_export") || !stricmp(s, "energy"))
+    if(!stricmp(s,"energycounter") || !stricmp(s, "energy"))
         return CMD_EVENT_CHANGE_CONSUMPTION_TOTAL;
-	// New! saves Generation / Export Energy
-    if(!stricmp(s,"energycounter_generation"))
-        return CMD_EVENT_CHANGE_GENERATION_TOTAL;
-	//-------------------------------------
     if(!stricmp(s,"energycounter_last_hour"))
         return CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR;
     if(!stricmp(s,"IR_RC5"))
@@ -589,6 +585,3 @@ void EventHandlers_Init() {
     CMD_RegisterCommand("clearAllHandlers", CMD_ClearAllHandlers, NULL);
 
 }
-
-
-
