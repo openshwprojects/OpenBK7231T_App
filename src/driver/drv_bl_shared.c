@@ -188,7 +188,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	int total_net_export = 0;
 	int total_consumption = 0;
 	int total_export = 0;
-	for (int q=0; q<check_hour; q++)
+	for (int q=0; q<=check_hour; q++)
 		{
 		if (q == check_hour)
 			{
