@@ -25,7 +25,6 @@ static int old_real_consumption = 0;
 int stat_updatesSkipped = 0;
 int stat_updatesSent = 0;
 
-static byte savetoflash = 0;
 static byte min_reset = 0;
 static byte hour_reset = 0;
 static float net_energy = 0;
@@ -232,7 +231,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		/********************************************************************************************************************/
 	//------------------------------------------------------------------------------------------------------------------------------------------
 	// print saving interval in small text
-	// hprintf255(request, "<font size=1>Saving Interval: %.2fkW</font>", (changeSavedThresholdEnergy)* 0.001);
+	hprintf255(request, "<font size=1>Saving Threshold: %.2fkW</font>", (changeSavedThresholdEnergy)* 0.001);
 	// Some other stats...
     	hprintf255(request, "<p><br><h5>Changes: %i sent, %i Skipped, %li Saved. <br> %s<hr></p>",
                stat_updatesSent, stat_updatesSkipped, ConsumptionSaveCounter,
@@ -559,8 +558,9 @@ commandResult_t BL09XX_SetupConsumptionThreshold(const void *context, const char
 
     if (threshold<1.0f)
         threshold = 1.0f;
-    if (threshold>200.0f)
-        threshold = 200.0f;
+    // Value increased from 200 to 1000 to reduce flash wear in whole house measurements.
+    if (threshold>1000.0f)
+        threshold = 1000.0f;
     changeSavedThresholdEnergy = threshold;
     addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "ConsumptionThreshold: %1.1f", changeSavedThresholdEnergy);
 
@@ -1048,12 +1048,11 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
 // Save the total counters periodically  
 // If we are measuring bi-directional we save every net metering period instead. This is about 100x a day.
-if (((((sensors[OBK_CONSUMPTION_TOTAL].lastReading - lastSavedEnergyCounterValue) >= changeSavedThresholdEnergy) ||
+if (((sensors[OBK_CONSUMPTION_TOTAL].lastReading - lastSavedEnergyCounterValue) >= changeSavedThresholdEnergy) ||
         ((xTaskGetTickCount() - lastConsumptionSaveStamp) >= (6 * 3600 * 1000 / portTICK_PERIOD_MS)) || 
-	((sensors[OBK_GENERATION_TOTAL].lastReading - lastSavedGenerationCounterValue) >= changeSavedThresholdEnergy)) && (!(CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))))||(savetoflash == 1))
+	((sensors[OBK_GENERATION_TOTAL].lastReading - lastSavedGenerationCounterValue) >= changeSavedThresholdEnergy))
     {
 
-savetoflash = 0;
 #if WINDOWS
 #elif PLATFORM_BL602
 #elif PLATFORM_W600 || PLATFORM_W800
