@@ -767,7 +767,17 @@ int http_fn_index(http_request_t* request) {
 
   // display temperature - thanks to giedriuslt
   // only in Normal mode, and if boot is not failing
-	hprintf255(request, "<h5>Internal temperature: %.1f°C</h5>", g_wifi_temperature);
+	extern bool g_powersave;
+  	char ps=0x20;
+  	if (g_powersave){
+  		int ps=1;
+#if PLATFORM_LN882H
+#include <power_mgmt/ln_pm.h>
+		if (ln_pm_sleep_mode_get() != ACTIVE ) ps = 2;
+#endif  		
+  		sprintf(tmpA," - Powersave %d",ps);
+	}
+	hprintf255(request, "<h5>Internal temperature: %.1f°C%s</h5>", g_wifi_temperature, g_powersave ? tmpA : "");
 
 	inputName = CFG_GetPingHost();
 	if (inputName && *inputName && CFG_GetPingDisconnectedSecondsToRestart()) {
@@ -783,7 +793,21 @@ int http_fn_index(http_request_t* request) {
 	if (Main_HasWiFiConnected())
 	{
 		int rssi = HAL_GetWifiStrength();
-		hprintf255(request, "<h5>Wifi RSSI: %s (%idBm)</h5>", str_rssi[wifi_rssi_scale(rssi)], rssi);
+//		hprintf255(request, "<h5>Wifi RSSI: %s (%idBm)</h5>", str_rssi[wifi_rssi_scale(rssi)], rssi);
+		hprintf255(request, "<h5>Wifi RSSI: %s (%idBm)", str_rssi[wifi_rssi_scale(rssi)], rssi);
+//		hprintf255(request, "<h5>Wifi RSSI: %s (%idBm)", str_rssi[wifi_rssi_scale(HAL_GetWifiStrength())], HAL_GetWifiStrength());
+#if PLATFORM_LN882H
+	// use for AP info: 		int     wifi_get_sta_conn_info(const char **ssid, const uint8_t **bssid);
+	char bssid[33]={0};
+	char ssid[33]={0};
+	uint8_t channel=0;
+	HAL_GetWiFiSSID(ssid);
+	HAL_GetWiFiBSSID(bssid);
+	HAL_GetWiFiChannel(&channel);
+
+	hprintf255(request, "  --  CH=%i  --  SSID=%s  --  BSSI=[%s] ",channel, ssid, bssid);
+#endif
+		hprintf255(request, "</h5>");
 	}
 #if PLATFORM_BEKEN
 	/*
