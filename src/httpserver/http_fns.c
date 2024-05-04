@@ -170,8 +170,14 @@ int http_fn_index(http_request_t* request) {
 	bForceShowRGBCW = CFG_HasFlag(OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER);
 	bForceShowRGB = CFG_HasFlag(OBK_FLAG_LED_FORCE_MODE_RGB);
 
-	if (LED_IsLedDriverChipRunning()) {
-		bForceShowRGBCW = true;
+	// user override is always stronger, so if no override set
+	if (bForceShowRGB == false && bForceShowRGB == false) {
+		if (DRV_IsRunning("SM16703P")) {
+			bForceShowRGB = true;
+		}
+		else if (LED_IsLedDriverChipRunning()) {
+			bForceShowRGBCW = true;
+		}
 	}
 	http_setup(request, httpMimeTypeHTML);	//Add mimetype regardless of the request
 
