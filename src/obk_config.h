@@ -128,6 +128,7 @@
 #define ENABLE_DRIVER_DHT		1
 #define ENABLE_LITTLEFS			1
 #define ENABLE_TEST_COMMANDS		0
+#define ENABLE_EXPAND_CONSTANT		1
 #else
 
 #error "Platform not defined"
