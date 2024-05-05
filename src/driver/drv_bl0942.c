@@ -36,6 +36,7 @@ static unsigned short bl0942_baudRate = 4800;
 #define BL0942_USR_WRPROT_DISABLE 0x55
 
 // User operation register (read and write)
+#define BL0942_REG_WA_CREEP 0x14	// Minimun power measurement register
 #define BL0942_REG_MODE 0x19
 #define BL0942_REG_CF_CNT_CLR_SEL
 // Changed to reset at every read. This way we end up summing little values
