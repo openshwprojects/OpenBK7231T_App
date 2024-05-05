@@ -778,7 +778,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	lastReadingFrequency = frequency;
 
     float energy = 0;
-   // float generation = 0;
+    float energy_today_temp = 0;
     if (isnan(energyWh)) {
         xPassedTicks = (int)(xTaskGetTickCount() - energyCounterStamp);
         // FIXME: Wrong calculation if tick count overflows
@@ -794,6 +794,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 		sensors[OBK_CONSUMPTION_TOTAL].lastReading += energyWh;
 		real_consumption += energyWh;
 		energy_counter_data += energyWh;
+		energy_today_temp = energyWh;
 	}
 	else
 	{
@@ -816,7 +817,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	
     energyCounterStamp = xTaskGetTickCount();
     HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
-	sensors[OBK_CONSUMPTION_TODAY].lastReading  += energy;
+	sensors[OBK_CONSUMPTION_TODAY].lastReading  += energy_today_temp;
 
     if (NTP_IsTimeSynced()) {
         ntpTime = (time_t)NTP_GetCurrentTime();
