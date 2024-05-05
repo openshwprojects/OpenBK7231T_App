@@ -7,8 +7,6 @@
 #include <string.h>
 #include <time.h>
 #include <stdarg.h>
-// This resolves compilation errors on BL602
-#include <new_cfg.h>
 
 #include "obk_config.h"
 
@@ -202,6 +200,8 @@ typedef int (*beken_thread_function_t)(void *p);
 #include <semphr.h>
 #include <stdbool.h>
 #include <stdint.h>
+// Needed to resolve compilation errors
+#include <new_cfg.h>
 
 #define ASSERT
 #define os_strcpy strcpy
