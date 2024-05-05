@@ -3,7 +3,6 @@ static int export_matrix[24] = {0};
 static int net_matrix[24] = {0};
 static int old_export_energy = 0;
 static int old_real_consumption = 0;
-static int estimated_production_hour = 0;
 
 #include "drv_bl_shared.h"
 
@@ -37,12 +36,11 @@ static byte old_hour = 0;
 static byte time_hour_reset = 0;
 static byte time_min_reset = 0;
 static byte old_time = 0;
-#define max_power_bypass_off -500
+#define max_power_bypass_off 1000
 #define dump_load_hysteresis 3	// This is shortest time the relay will turn on or off. Recommended 1/4 of the netmetering period. Never use less than 1min as this stresses the relay/load.
 //int min_production = -50;	// The minimun instantaneous solar production that will trigger the dump load.
 #define dump_load_on 15		// The ammount of 'excess' energy stored over the period. Above this, the dump load will be turned on.
 #define dump_load_off 1		// The minimun 'excess' energy stored over the period. Below this, the dump load will be turned off.
-#define max_export 3600
 
 // These variables are used to program the bypass load, for example turn it on late afternoon if there was no sun for the day
 //#define bypass_timer_reset 23	// Just so it doesn't accidentally reset when the device is rebooted (0)...
@@ -112,7 +110,7 @@ bool energyCounterStatsJSONEnable = false;
 int actual_mday = -1;
 float lastSavedEnergyCounterValue = 0.0f;
 float lastSavedGenerationCounterValue = 0.0f;
-float changeSavedThresholdEnergy = 500.0f;
+float changeSavedThresholdEnergy = 10.0f;
 long ConsumptionSaveCounter = 0;
 portTickType lastConsumptionSaveStamp;
 time_t ConsumptionResetTime = 0;
@@ -228,15 +226,6 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	poststr(request, "Totals: <br>");
 	hprintf255(request, "Consumption: %iW, Export: %iW (Metering) <br>", total_consumption, total_export);
 	hprintf255(request, "Consumption: %iW, Export: %iW (Net Metering)  <br>", total_net_consumption, total_net_export);
-	// This gives me an estimate based on what I am producing now.
-	estimated_production_hour = (net_matrix[check_hour]*(check_time/60));
-	hprintf255(request, "Estimated energy this hour: %iW, <br>", estimated_production_hour);
-	/*if (estimated_production_hour>max_export)
-	{
-		
-	}*/
-	//--------------------------------------------------------------------------------------------------
-		mtqq_total_net_export = net_matrix[check_hour];
 	//--------------------------------------------------------------------------------------------------
 		// Update status of the diversion relay on webpage		
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -523,8 +512,7 @@ commandResult_t BL09XX_VCPPrecision(const void *context, const char *cmd, const 
 			case 2: // power
 				sensors[OBK_POWER].rounding_decimals = val;
 				sensors[OBK_POWER_APPARENT].rounding_decimals = val;
-				//sensors[OBK_POWER_REACTIVE].rounding_decimals = val;
-				sensors[OBK_POWER_REACTIVE].rounding_decimals = mtqq_total_net_export;
+				sensors[OBK_POWER_REACTIVE].rounding_decimals = val;
 				break;
 			case 3: // energy
 				for (int j = OBK_CONSUMPTION__DAILY_FIRST; j <= OBK_CONSUMPTION__DAILY_LAST; j++) {
@@ -667,7 +655,6 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			}
 			
 			// This turns the bypass load off if we are using a lot of power
-			//if (((sensors[OBK_POWER].lastReading) > max_power_bypass_off) && (!(dump_load_relay == 4)))
 			if (((sensors[OBK_POWER].lastReading) > max_power_bypass_off) && (!(dump_load_relay == 4)))
 			{
 				// Make sure we don't run it twice on the same minute
@@ -677,7 +664,6 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 					lastsync = 0;
 					//hour_reset = 0;
 					dump_load_relay = 4;
-					CMD_ExecuteCommand("SendGet http://192.168.5.4/cm?cmnd=Power%20off", 0);
 					check_time_power = check_time;
 					check_hour_power = check_hour;
 				}
@@ -741,19 +727,16 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				lastsync = 0;
 		
 				// Are we exporting enough? If so, turn the relay on
-				//if (((int)net_energy>(int)dump_load_on))
-				if (estimated_production_hour>max_export)
+				if (((int)net_energy>(int)dump_load_on))
 					{
 					dump_load_relay = 1;
-					time_on += dump_load_hysteresis;	// Increase the timer.	
-					CMD_ExecuteCommand("SendGet http://192.168.5.4/cm?cmnd=Power%20off", 0);
+					time_on += dump_load_hysteresis;	// Increase the timer.					
 					}
-				/*else if ((check_hour >= bypass_on_time) && (check_hour < bypass_off_time) && (time_on < min_daily_time_on))
+				else if ((check_hour >= bypass_on_time) && (check_hour < bypass_off_time) && (time_on < min_daily_time_on))
 					{
 					dump_load_relay = 2;
-					}*/
-				else if (estimated_production_hour>max_export)
-				//else if (((int)net_energy<(int)dump_load_off))
+					}
+				else if (((int)net_energy<(int)dump_load_off))
 					{
 					// If none of the exemptions applies, we turn the diversion load off.
 					dump_load_relay = 3;
