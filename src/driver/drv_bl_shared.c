@@ -1098,6 +1098,7 @@ void BL_Shared_Init(void)
     HAL_GetEnergyMeterStatus(&data);
     sensors[OBK_CONSUMPTION_TOTAL].lastReading = data.TotalConsumption;
     sensors[OBK_GENERATION_TOTAL].lastReading = data.TotalGeneration;
+    sensors[OBK_CONSUMPTION_TODAY].lastReading = data.TodayConsumpion;
     sensors[OBK_CONSUMPTION_YESTERDAY].lastReading = data.YesterdayConsumption;
     actual_mday = data.actual_mday;    
     lastSavedEnergyCounterValue = data.TotalConsumption;
