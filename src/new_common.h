@@ -7,6 +7,8 @@
 #include <string.h>
 #include <time.h>
 #include <stdarg.h>
+// This resolves compilation errors on BL602
+#include <new_cfg.h>
 
 #include "obk_config.h"
 
