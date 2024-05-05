@@ -30,15 +30,24 @@ static unsigned short bl0942_baudRate = 4800;
 #define BL0942_REG_I_RMS 0x03
 #define BL0942_REG_V_RMS 0x04
 #define BL0942_REG_WATT 0x06
-#define BL0942_REG_CF_CNT 0x7
+#define BL0942_REG_CF_CNT 0x07
 #define BL0942_REG_FREQ 0x08
 #define BL0942_REG_USR_WRPROT 0x1D
 #define BL0942_USR_WRPROT_DISABLE 0x55
 
 // User operation register (read and write)
 #define BL0942_REG_MODE 0x19
-#define BL0942_MODE_DEFAULT 0x87
+#define BL0942_REG_CF_CNT_CLR_SEL
+// Changed to reset at every read. This way we end up summing little values
+// Instead of ever increasing ones, which should resolve overflow issues
+// Bit 6 = 1
+#define BL0942_MODE_DEFAULT 0xC7	
 #define BL0942_MODE_RMS_UPDATE_SEL_800_MS (1 << 3)
+
+// Minimun power measurement value. Can be in the range of 0 to 255.
+// below this value, consumption is reported at zero. Ideal for parasitic loads or where
+// the device measures it's own power concumption
+#define DEFAULT_WA_CREEP_VAL 64		
 
 #define DEFAULT_VOLTAGE_CAL 15188
 #define DEFAULT_CURRENT_CAL 251210
@@ -68,16 +77,20 @@ static void ScaleAndUpdate(bl0942_data_t *data) {
     float frequency = 2 * 500000.0f / data->freq;
 
     float energyWh = 0;
-    if (PrevCfCnt != CF_CNT_INVALID) {
-        int diff = (data->cf_cnt < PrevCfCnt
-                        ? data->cf_cnt + (0xFFFFFF - PrevCfCnt) + 1
-                        : data->cf_cnt - PrevCfCnt);
-        energyWh =
-            fabsf(PwrCal_ScalePowerOnly(diff)) * 1638.4f * 256.0f / 3600.0f;
-    }
-    PrevCfCnt = data->cf_cnt;
+    energyWh = fabsf(PwrCal_ScalePowerOnly(data->cf_cnt)) * 1638.4f * 256.0f / 3600.0f;
 
-    BL_ProcessUpdate(voltage, current, power, frequency, energyWh);
+    // Changed how power is calculated to accomodate bi-directional capability
+    // based on status of OBK_FLAG_POWER_INVERT_AC
+    
+	if (CFG_HasFlag(OBK_FLAG_POWER_INVERT_AC))
+		{
+		BL_ProcessUpdate(voltage, current, (-1*power), frequency, energyWh);
+		}
+	else
+		{
+	   	 BL_ProcessUpdate(voltage, current, power, frequency, energyWh);
+		}
+    // End of change
 }
 
 static int UART_TryToGetNextPacket(void) {
@@ -230,6 +243,8 @@ void BL0942_UART_Init(void) {
     UART_WriteReg(BL0942_REG_USR_WRPROT, BL0942_USR_WRPROT_DISABLE);
     UART_WriteReg(BL0942_REG_MODE,
                   BL0942_MODE_DEFAULT | BL0942_MODE_RMS_UPDATE_SEL_800_MS);
+    // Set the minimun power measurement
+    UART_WriteReg(BL0942_REG_WA_CREEP,DEFAULT_WA_CREEP_VAL);
 }
 
 void BL0942_UART_RunEverySecond(void) {
