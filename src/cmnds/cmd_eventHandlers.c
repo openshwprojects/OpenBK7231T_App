@@ -585,6 +585,3 @@ void EventHandlers_Init() {
     CMD_RegisterCommand("clearAllHandlers", CMD_ClearAllHandlers, NULL);
 
 }
-
-
-

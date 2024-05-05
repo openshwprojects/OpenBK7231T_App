@@ -221,6 +221,7 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 		printer(request, "\"Factor\":%f,", _getReading_NanToZero(OBK_POWER_FACTOR));
 		printer(request, "\"Voltage\":%f,", _getReading_NanToZero(OBK_VOLTAGE));
 		printer(request, "\"Current\":%f,", _getReading_NanToZero(OBK_CURRENT));
+		printer(request, "\"GenerationtionTotal\":%f,", _getReading_NanToZero(OBK_GENERATION_TOTAL));
 		printer(request, "\"ConsumptionTotal\":%f,", _getReading_NanToZero(OBK_CONSUMPTION_TOTAL));
 		printer(request, "\"Yesterday\": %f,", _getReading_NanToZero(OBK_CONSUMPTION_YESTERDAY));
 		printer(request, "\"ConsumptionLastHour\":%f", _getReading_NanToZero(OBK_CONSUMPTION_LAST_HOUR));
@@ -1049,6 +1050,3 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 
 	return 0;
 }
-
-
-
