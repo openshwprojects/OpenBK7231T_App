@@ -1,5 +1,3 @@
-// Last working on 13/04/24 - Sometimes locks during generation
-
 static int consumption_matrix [24] = {0};
 static int export_matrix[24] = {0};
 static int net_matrix[24] = {0};
@@ -112,7 +110,7 @@ bool energyCounterStatsJSONEnable = false;
 int actual_mday = -1;
 float lastSavedEnergyCounterValue = 0.0f;
 float lastSavedGenerationCounterValue = 0.0f;
-float changeSavedThresholdEnergy = 500.0f;
+float changeSavedThresholdEnergy = 10.0f;
 long ConsumptionSaveCounter = 0;
 portTickType lastConsumptionSaveStamp;
 time_t ConsumptionResetTime = 0;
@@ -164,13 +162,18 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 				hprintf255(request, "%.*f</td><td>%s</td>", sensors[i].rounding_decimals, sensors[i].lastReading, sensors[i].names.units);
 			}
 		}
-	};/*;*/ // Why was this here?
+	};
 	
 	// Close the table
 	poststr(request, "</table>");
+	// print saving interval in small text
+	hprintf255(request, "<font size=1>Saving Interval: %.2fW</font>", changeSavedThresholdEnergy);
 
 	// Aditional code for power monitoring. Creates a table with 24h stats
         // ------------------------------------------------------------------------------------------------------------------------------------------
+	
+	if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
+	{
 	poststr(request, "<table style='width:100%'>");
 	poststr(request, "<table style='text-align: center'></style>");
 	poststr(request, " <h2>Energy Stats</h2>");
@@ -190,7 +193,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	int total_net_export = 0;
 	int total_consumption = 0;
 	int total_export = 0;
-	for (int q=0; q<24; q++)
+	for (int q=0; q<=check_hour; q++)
 		{
 		if (q == check_hour)
 			{
@@ -220,8 +223,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 	if (net_energy<0) {total_net_export -= net_energy;}
 	else {total_net_consumption += net_energy;}
 	poststr(request, "</tr></table><br>");
-	hprintf255(request, "Total Consumption: %iW (Import), %iW (Export) <br>", total_consumption, total_export);
-	hprintf255(request, "Total Netmetering:  %iW (Import), %iW (Export) <br>", total_net_consumption, total_net_export);
+	poststr(request, "Totals: <br>");
+	hprintf255(request, "Consumption: %iW, Export: %iW (Metering) <br>", total_consumption, total_export);
+	hprintf255(request, "Consumption: %iW, Export: %iW (Net Metering)  <br>", total_net_consumption, total_net_export);
 	//--------------------------------------------------------------------------------------------------
 		// Update status of the diversion relay on webpage		
 		//-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -233,8 +237,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 		// This was the original loop 'energyCounterStatsEnable == true'
 		/********************************************************************************************************************/
 	//------------------------------------------------------------------------------------------------------------------------------------------
-	// print saving interval in small text
-	// hprintf255(request, "<font size=1>Saving Interval: %.2fkW</font>", (changeSavedThresholdEnergy)* 0.001);
+	}
 	// Some other stats...
     	hprintf255(request, "<p><br><h5>Changes: %i sent, %i Skipped, %li Saved. <br> %s<hr></p>",
                stat_updatesSent, stat_updatesSkipped, ConsumptionSaveCounter,
@@ -559,10 +562,11 @@ commandResult_t BL09XX_SetupConsumptionThreshold(const void *context, const char
     
     threshold = atof(Tokenizer_GetArg(0)); 
 
+    // Icreased maximun value to 1000. This will allow less flash wear on devices measuring large ammounts of power, such as solar
     if (threshold<1.0f)
         threshold = 1.0f;
-    if (threshold>200.0f)
-        threshold = 200.0f;
+    if (threshold>1000.0f)
+        threshold = 1000.0f;
     changeSavedThresholdEnergy = threshold;
     addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "ConsumptionThreshold: %1.1f", changeSavedThresholdEnergy);
 
@@ -623,24 +627,9 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
 		if (CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))
 		{			
-			if (!first_run)
-				{
-				//60min Net metering. Checks only one of the flags is enabled.
-				if ((!(CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN)))||(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN)))
-				{
-					CMD_ExecuteCommand("SetupEnergyStats 1 60 60", 0); 
-				}
-				//15min Net metering. Checks only one of the flags is enabled.
-				else if  ((!(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN)))||(CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN)))
-				{
-					CMD_ExecuteCommand("SetupEnergyStats 1 60 15", 0); 
-				}
-			first_run = 1;
-			}
 			//sync with the clock
 			check_time = NTP_GetMinute();
 			check_hour = NTP_GetHour();
-			//check_second = NTP_GetSecond();
 
 			// This variable runs once every hour
 			if (!(check_hour == old_hour))
@@ -662,11 +651,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			//Make an animation to indicate bypass is on
 			if (dump_load_relay == 4)
 			{
-				//flash_overpower ++;
-				// Indicator On
-				// if (flash_overpower > 1) {CMD_ExecuteCommand("setChannel 1 1", 0); flash_overpower = 0;}
-				// Indicator Off
-				// else {CMD_ExecuteCommand("setChannel 1 0", 0);}
+				// In case we want to do something here. Not currently implemented.
 			}
 			
 			// This turns the bypass load off if we are using a lot of power
@@ -679,9 +664,6 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 					lastsync = 0;
 					//hour_reset = 0;
 					dump_load_relay = 4;
-					//CMD_ExecuteCommand("SendGet", rem_relay_off, 0);
-					//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
-					//CMD_ExecuteCommand("setChannel 1 0", 0);
 					check_time_power = check_time;
 					check_hour_power = check_hour;
 				}
@@ -696,7 +678,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	// End of Add to the table --------------------------------------------------------------------------
 			
 			// If netmetering is enabled, we reset every hour.
-			if (((CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))||(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN)))&&(hour_reset == 1))
+			if (hour_reset == 1)
 			{
 				// reset the timing variable. if we are producing enough, if wont cycle the diversion load.
 				lastsync = 0;
@@ -725,33 +707,6 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			time_hour_reset = check_hour;
 			time_min_reset = check_time;	
 			}
-
-			// If Netmetering is set to 15minutes, we need to reset more often. We can't save, since our temp variable is not being reset, to keep the hourly records.
-			//else if ((((check_time == 15)||(check_time == 30)||(check_time == 45))&&(min_reset == 1)&&(CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))&&(!(CFG_HasFlag(OBK_FLAG_NETMETERING_60MIN))))||(hour_reset == 1))
-			else if ((((check_time == 15)||(check_time == 30)||(check_time == 45)))&&(min_reset == 1))
-			{
-				
-				if  (CFG_HasFlag(OBK_FLAG_NETMETERING_15MIN))
-				{
-				// reset the timing variable. if we are producing enough, if wont cycle the diversion load.
-				lastsync = 0;
-				// We save the old values, so we can work with the current period only and deduct the netmetering, while keeping stats for last hour
-				old_export_energy += (int)real_export;
-				old_real_consumption +=(int)real_consumption;	
-				net_matrix[check_hour] += net_energy;
-				// Now we reset everything to start again a new cycle.
-				real_export = 0;
-				real_consumption = 0;
-				net_energy = 0;
-				}
-				
-			// Clear the variables
-			min_reset = 0;
-			energyCounterMinutesIndex = 0;
-			// Save the time
-			time_hour_reset = check_hour;
-			time_min_reset = check_time;	
-			}
 	
 			// ------------------------------------------------------------------------------------------------------------------
 			// Calculate the Effective energy consumed / produced during the period by summing both counters and deduct their values at the start of the period
@@ -775,28 +730,21 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				if (((int)net_energy>(int)dump_load_on))
 					{
 					dump_load_relay = 1;
-					time_on += dump_load_hysteresis;	// Increase the timer.
-					//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
-					
+					time_on += dump_load_hysteresis;	// Increase the timer.					
 					}
 				else if ((check_hour >= bypass_on_time) && (check_hour < bypass_off_time) && (time_on < min_daily_time_on))
 					{
-					// We make an exception to manually turn on the bypass load, for example - Winter.
 					dump_load_relay = 2;
-					//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20on", 0);
-					//CMD_ExecuteCommand("setChannel 1 1", 0);
 					}
 				else if (((int)net_energy<(int)dump_load_off))
 					{
 					// If none of the exemptions applies, we turn the diversion load off.
 					dump_load_relay = 3;
-					//CMD_ExecuteCommand("SendGet http://192.168.8.164/cm?cmnd=Power%20off", 0);
-					//CMD_ExecuteCommand("setChannel 1 0", 0);
 					}
 			}
 				
 			//-------------------------------------------------------------------------------------------------------------------------------------------------
-			} // end of my negative flag loop
+			} // end of negative flag loop
 
 	// I had reports that BL0942 sometimes gives 
 	// a large, negative peak of current/power
@@ -831,7 +779,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	lastReadingFrequency = frequency;
 
     float energy = 0;
-   // float generation = 0;
+    float energy_today_temp = 0;
     if (isnan(energyWh)) {
         xPassedTicks = (int)(xTaskGetTickCount() - energyCounterStamp);
         // FIXME: Wrong calculation if tick count overflows
@@ -847,6 +795,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 		sensors[OBK_CONSUMPTION_TOTAL].lastReading += energyWh;
 		real_consumption += energyWh;
 		energy_counter_data += energyWh;
+		energy_today_temp = energyWh;
 	}
 	else
 	{
@@ -869,7 +818,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	
     energyCounterStamp = xTaskGetTickCount();
     HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
-	sensors[OBK_CONSUMPTION_TODAY].lastReading  += energy;
+	sensors[OBK_CONSUMPTION_TODAY].lastReading  += energy_today_temp;
 
     if (NTP_IsTimeSynced()) {
         ntpTime = (time_t)NTP_GetCurrentTime();
@@ -1057,9 +1006,8 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				break;
 			}
 
-            if ((MQTT_IsReady() == true) /*&& (lastsync == 1) && (mqtt_update == 1)*/)
+            if (MQTT_IsReady() == true)
             {
-		    		//mqtt_update = 0;
 				sensors[i].lastSentValue = sensors[i].lastReading;
 				if (i == OBK_CONSUMPTION_CLEAR_DATE) {
 					sensors[i].lastReading = ConsumptionResetTime; //Only to make the 'nochangeframe' mechanism work here
