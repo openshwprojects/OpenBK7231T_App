@@ -470,6 +470,7 @@ static commandResult_t CMD_TM1637_Brightness(const void *context, const char *cm
 // NOTE: TMGN_Brightness [Brightness0to8] [bOn]
 // The bOn is optional, default is 1
 
+// backlog startDriver HD2015; TMGN_Print 0 0 123456
 // backlog startDriver TM1637; TMGN_Test
 // backlog startDriver TM1637; TMGN_Print 0 0 123456
 // backlog TMGN_Brightness 5; TMGN_Test
@@ -576,7 +577,8 @@ void TMGN_RunQuickTick() {
 }
 void TM_GN_Display_SharedInit(tmGnType_t type) {
 	int i;
-
+	
+	g_displayType = type;
 	g_doTM1638RowsToColumnsSwap = 0;
 
 	if (PIN_FindPinIndexForRole(IOR_TM1637_CLK, -1) != -1) {
