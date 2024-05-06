@@ -265,7 +265,7 @@ static void TM1637_SendSegments(const byte *segments, byte length, byte pos) {
 		usleep(100);
 
 		for (i = 0; i < length; i++) {
-			HD2015_WriteCommandSingle(&g_i2c, 0x68 + (i+pos) * 2, g_digits[segments[i]]);
+			HD2015_WriteCommandSingle(&g_i2c, 0x68 + (i+pos) * 2, segments[i]);
 			usleep(100);
 		}
 		return;
