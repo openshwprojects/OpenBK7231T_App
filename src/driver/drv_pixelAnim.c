@@ -109,13 +109,30 @@ void Fire_setPixelHeatColor(int Pixel, byte temperature) {
 // DelayDuration - Use larger value for slower flame speed, default=10.
 int FlameHeight = 50;
 int Sparks = 100;
-static byte heat[32];
+static byte *pix_workBuffer = 0;
+static int pix_workBufferSize = 0;
+
+void Pix_EnsureAllocatedWork(int bytes) {
+	if (bytes < pix_workBufferSize)
+		return;
+	pix_workBufferSize = bytes + 16;
+	pix_workBuffer = (byte*)realloc(pix_workBuffer, pix_workBufferSize);
+}
 int RandomRange(int min, int max) {
 	int r = rand() % (max - min);
 	return min + r;
 }
 void Fire_Run() {
 	int cooldown;
+
+	// we need a buffer for that
+	Pix_EnsureAllocatedWork(pixel_count);
+	// in case that realloc failed...
+	if (pix_workBuffer == 0) {
+		return;
+	}
+	// alias it as 'heat'
+	byte *heat = pix_workBuffer;
 
 	// Cool down each cell a little
 	for (int i = 0; i < pixel_count; i++) {
