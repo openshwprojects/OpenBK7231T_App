@@ -312,6 +312,11 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 /*
 {"StatusSNS":{"Time":"2023-04-10T10:19:55"}}
 */
+static void format_date(char *buffer, int buflength, struct tm *ltm)
+{
+	snprintf(buffer, buflength, "%04d-%02d-%02dT%02d:%02d:%02d",ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+}
+
 static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bAppendHeader) {
 	char buff[20];
 
@@ -321,7 +326,7 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 	printer(request, "{");
 
 	time_t localTime = (time_t)NTP_GetCurrentTime();
-	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", gmtime(&localTime));
+	format_date(buff, sizeof(buff), gmtime(&localTime));
 	JSON_PrintKeyValue_String(request, printer, "Time", buff, false);
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
@@ -402,7 +407,7 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bA
 		printer(request, "\"StatusSTS\":");
 	}
 	printer(request, "{");
-	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", gmtime(&localTime));
+	format_date(buff, sizeof(buff), gmtime(&localTime));
 	JSON_PrintKeyValue_String(request, printer, "Time", buff, true);
 	format_time(g_secondsElapsed, buff, sizeof(buff));
 	JSON_PrintKeyValue_String(request, printer, "Uptime", buff, true);
@@ -440,9 +445,9 @@ static int http_tasmota_json_status_TIM(void* request, jsonCb_t printer) {
 	time_t localTime = (time_t)NTP_GetCurrentTime();
 	time_t localUTC = (time_t)NTP_GetCurrentTimeWithoutOffset();
 	printer(request, "\"StatusTIM\":{");
-	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", gmtime(&localUTC));
+	format_date(buff, sizeof(buff), gmtime(&localUTC));
 	JSON_PrintKeyValue_String(request, printer, "UTC", buff, true);
-	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", gmtime(&localTime));
+	format_date(buff, sizeof(buff), gmtime(&localTime));
 	JSON_PrintKeyValue_String(request, printer, "Local", buff, true);
 	JSON_PrintKeyValue_String(request, printer, "StartDST", "2022-03-27T02:00:00", true);
 	JSON_PrintKeyValue_String(request, printer, "EndDST", "2022-10-30T03:00:00", true);

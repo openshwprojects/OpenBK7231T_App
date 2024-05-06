@@ -171,11 +171,14 @@ int http_fn_index(http_request_t* request) {
 	bForceShowRGB = CFG_HasFlag(OBK_FLAG_LED_FORCE_MODE_RGB);
 
 	// user override is always stronger, so if no override set
-	if (bForceShowRGB == false && bForceShowRGB == false) {
+	if (bForceShowRGB == false && bForceShowRGBCW == false) {
+#ifndef OBK_DISABLE_ALL_DRIVERS
 		if (DRV_IsRunning("SM16703P")) {
 			bForceShowRGB = true;
 		}
-		else if (LED_IsLedDriverChipRunning()) {
+		else
+#endif
+		if (LED_IsLedDriverChipRunning()) {
 			bForceShowRGBCW = true;
 		}
 	}
