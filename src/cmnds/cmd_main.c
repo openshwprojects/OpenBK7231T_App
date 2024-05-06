@@ -648,12 +648,16 @@ int g_pwmFrequency = PWM_FREQUENCY_DEFAULT;
 
 static softI2C_t g_softI2C;
 
-commandResult_t CMD_PWMFrequency(const void* context, const char* cmd, const char* args, int cmdFlags) {
+commandResult_t CMD_Test1(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	g_softI2C.pin_clk = 11;
 	g_softI2C.pin_data = 24;
 
 	g_softI2C.pin_stb = 19; // B3
+
+	Soft_I2C_PreInit(&g_softI2C);
+
+
 	Soft_I2C_Start(&g_softI2C, 0x48);
 	Soft_I2C_WriteByte(&g_softI2C, 0x11);
 	Soft_I2C_Stop(&g_softI2C);

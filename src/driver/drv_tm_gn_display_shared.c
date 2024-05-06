@@ -594,12 +594,23 @@ void TM_GN_Display_SharedInit() {
 				g_remap[i] = i;
 			}
 		}
+		g_i2c.pin_clk = 11; // A11
+		g_i2c.pin_data = 24; // B8
+		g_i2c.pin_stb = 19; // B3
+
+
 		HAL_PIN_Setup_Output(g_i2c.pin_clk);
 		HAL_PIN_Setup_Output(g_i2c.pin_stb);
 		HAL_PIN_Setup_Output(g_i2c.pin_data);
 		HAL_PIN_SetOutputValue(g_i2c.pin_clk, true);
 		HAL_PIN_SetOutputValue(g_i2c.pin_stb, true);
 		HAL_PIN_SetOutputValue(g_i2c.pin_data, true);
+
+		usleep(100);
+
+		TM_GN_WriteCommand(&g_i2c, 0x24, 0, 0);
+		usleep(100);
+		return;
 
 		g_totalDigits = 16;
 	}
@@ -663,4 +674,5 @@ void TM_GN_Display_SharedInit() {
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TMGN_SetupButtons", CMD_TMGN_SetupButtons, NULL);
+
 }
