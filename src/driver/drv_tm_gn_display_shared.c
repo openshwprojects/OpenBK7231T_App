@@ -609,6 +609,7 @@ void TM_GN_Display_SharedInit() {
 		HAL_PIN_SetOutputValue(g_i2c.pin_stb, true);
 		HAL_PIN_SetOutputValue(g_i2c.pin_data, true);
 
+		g_i2c.pin_stb = -1; // B3
 		usleep(100);
 
 		TM_GN_WriteCommangSingle(&g_i2c, 0x24, 0x71);
